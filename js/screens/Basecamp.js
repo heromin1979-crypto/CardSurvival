@@ -7,7 +7,8 @@ import CraftUI        from '../ui/CraftUI.js';
 import BoardRenderer  from '../ui/BoardRenderer.js';
 import StatRenderer   from '../ui/StatRenderer.js';
 import SaveManager    from '../persistence/SaveManager.js';
-import EquipmentModal from '../ui/EquipmentModal.js';
+import EquipmentModal  from '../ui/EquipmentModal.js';
+import LandmarkModal   from '../ui/LandmarkModal.js';
 
 const Basecamp = {
   _el: null,
@@ -37,6 +38,7 @@ const Basecamp = {
     }
     CraftUI.init();
     EquipmentModal.init();
+    LandmarkModal.init();
   },
 
   _buildLayout() {
@@ -113,6 +115,11 @@ const Basecamp = {
       <!-- Equipment modal -->
       <div class="modal-overlay" id="equip-modal">
         <div class="equip-modal-box"></div>
+      </div>
+
+      <!-- Landmark modal -->
+      <div class="modal-overlay" id="landmark-modal">
+        <div class="landmark-modal-box"></div>
       </div>
 
       <!-- Craft modal -->

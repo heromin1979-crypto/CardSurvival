@@ -43,6 +43,7 @@ import CardFactory      from './ui/CardFactory.js';
 import CardContextMenu  from './ui/CardContextMenu.js';
 import SeoulMapModal    from './ui/SeoulMapModal.js';
 import EquipmentModal   from './ui/EquipmentModal.js';
+import LandmarkModal    from './ui/LandmarkModal.js';
 
 // Screens
 import MainMenu     from './screens/MainMenu.js';
@@ -64,6 +65,8 @@ import AutoSave    from './persistence/AutoSave.js';
 
 // ── Bootstrap ────────────────────────────────────────────
 window.__GAME_DATA__ = { items: ITEMS, blueprints: BLUEPRINTS, nodes: NODES, districts: DISTRICTS, subLocations: SUB_LOCATIONS, enemies: ENEMIES, characters: CHARACTERS };
+// LandmarkModal을 CardFactory에서 window 경유로 접근
+window.__LandmarkModal__ = LandmarkModal;
 
 function init() {
   console.log('[Game] Initializing Ruined City...');

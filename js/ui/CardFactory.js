@@ -24,21 +24,38 @@ const CardFactory = {
     // ── 장소 카드 ────────────────────────────────────────────
     if (def.type === 'location') {
       if (def.landmark) {
-        // 랜드마크 카드 — 클릭 불가, 정보 표시 전용
+        // 랜드마크 카드 — 클릭 시 LandmarkModal 오픈
         el.className = 'card location-card landmark-card spawning';
         el.draggable = false;
+        el.style.cursor = 'pointer';
         el.innerHTML = this._buildLandmarkInner(def);
+        el.addEventListener('click', () => {
+          // districtId = lm_{id} → id 추출
+          const districtId = def.id?.replace(/^lm_/, '');
+          if (districtId) {
+            const LandmarkModal = window.__LandmarkModal__;
+            if (LandmarkModal) LandmarkModal.open(districtId);
+          }
+        });
         el.addEventListener('animationend', () => el.classList.remove('spawning'), { once: true });
         return el;
       }
 
-      el.className = 'card location-card spawning';
+      // 현재 위치 카드: 클릭 불가, 강조 테두리
+      const isCurrent = GameState.location.currentDistrict === def.nodeId;
+      el.className = `card location-card spawning${isCurrent ? ' is-current-loc' : ''}`;
       el.draggable = false;
       el.innerHTML = this._buildLocationInner(def);
 
-      el.addEventListener('click', () => {
-        EventBus.emit('travelRequest', { nodeId: def.nodeId });
-      });
+      if (!isCurrent) {
+        el.style.cursor = 'pointer';
+        el.addEventListener('click', () => {
+          EventBus.emit('travelRequest', { nodeId: def.nodeId });
+        });
+      } else {
+        el.style.cursor = 'default';
+        el.title = '현재 위치';
+      }
 
       el.addEventListener('animationend', () => el.classList.remove('spawning'), { once: true });
       return el;
@@ -78,8 +95,8 @@ const CardFactory = {
 
   _buildLocationInner(def) {
     const gs         = GameState;
-    const isCurrent  = gs.location.currentNode === def.nodeId;
-    const isVisited  = gs.location.nodesVisited?.includes(def.nodeId);
+    const isCurrent  = (gs.location.currentDistrict ?? gs.location.currentNode) === def.nodeId;
+    const isVisited  = gs.location.districtsVisited?.includes(def.nodeId) ?? gs.location.nodesVisited?.includes(def.nodeId);
     const danger     = def.dangerLevel ?? 0;
     const color      = DANGER_COLORS[Math.min(danger, DANGER_COLORS.length - 1)];
     const dangerDots = '●'.repeat(danger) + '○'.repeat(Math.max(0, 3 - danger));
