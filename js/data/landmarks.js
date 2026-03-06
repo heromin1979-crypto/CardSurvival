@@ -1561,9 +1561,11 @@ export const LANDMARK_DATA = {
  */
 export function rollLoot(table, count) {
   if (!table || table.length === 0) return [];
-  const totalWeight = table.reduce((s, e) => s + e.weight, 0);
+  const n = Math.max(0, Math.floor(count));
+  const totalWeight = table.reduce((s, e) => s + (e.weight > 0 ? e.weight : 0), 0);
+  if (totalWeight <= 0) return [];
   const result = [];
-  for (let i = 0; i < count; i++) {
+  for (let i = 0; i < n; i++) {
     let r = Math.random() * totalWeight;
     for (const entry of table) {
       r -= entry.weight;

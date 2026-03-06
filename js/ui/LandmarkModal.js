@@ -8,9 +8,10 @@ import { rollEnemyGroup } from '../data/enemies.js';
 import LANDMARK_DATA, { rollLoot } from '../data/landmarks.js';
 
 const LandmarkModal = {
-  _initialized: false,
-  _overlay:     null,
-  _districtId:  null,   // 현재 표시 중인 구 ID
+  _initialized:  false,
+  _overlay:      null,
+  _districtId:   null,   // 현재 표시 중인 구 ID
+  _isExploring:  false,  // 더블클릭 방어 플래그
 
   init() {
     this._overlay = document.getElementById('landmark-modal');
@@ -24,11 +25,16 @@ const LandmarkModal = {
           this.close();
         }
       });
-    }
 
-    this._overlay.addEventListener('click', e => {
-      if (e.target === this._overlay) this.close();
-    });
+      // overlay 배경 클릭 — 최초 1회만 (document 레벨로 등록 시 DOM 재빌드에도 유효)
+      document.addEventListener('click', e => {
+        const overlay = document.getElementById('landmark-modal');
+        if (e.target === overlay) this.close();
+      });
+
+      // EventBus를 통한 오픈 요청 (CardFactory → window 전역 의존 제거)
+      EventBus.on('openLandmarkModal', ({ districtId }) => this.open(districtId));
+    }
   },
 
   open(districtId) {
@@ -105,6 +111,7 @@ const LandmarkModal = {
   _bindSubLocEvents(box, data) {
     box.querySelectorAll('.lm-subloc-card').forEach(el => {
       el.addEventListener('click', () => {
+        if (this._isExploring) return;  // 중복 클릭 방어
         const locId = el.dataset.sublocId;
         const loc   = data.subLocations.find(l => l.id === locId);
         if (loc) this._explore(loc);
@@ -117,7 +124,9 @@ const LandmarkModal = {
   _explore(loc) {
     const gs         = GameState;
     const districtId = this._districtId;
+    if (!districtId) return;  // [L-3] null 가드
 
+    this._isExploring = true;
     const tpCost = 1;
 
     // 조우 체크 (dangerMod 기반 추가 확률)
@@ -126,6 +135,7 @@ const LandmarkModal = {
     if (Math.random() < encounterChance) {
       EventBus.emit('notify', { message: `⚠️ ${loc.name}에서 적과 조우!`, type: 'danger' });
       TickEngine.skipTP(tpCost);
+      this._isExploring = false;
       this.close();
       const DISTRICTS   = window.__GAME_DATA__?.districts ?? {};
       const dangerLevel = DISTRICTS[districtId]?.dangerLevel ?? 1;
@@ -192,6 +202,7 @@ const LandmarkModal = {
     }
 
     EventBus.emit('boardChanged', {});
+    this._isExploring = false;
     this.close();
   },
 };

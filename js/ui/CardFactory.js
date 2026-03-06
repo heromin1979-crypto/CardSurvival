@@ -30,12 +30,9 @@ const CardFactory = {
         el.style.cursor = 'pointer';
         el.innerHTML = this._buildLandmarkInner(def);
         el.addEventListener('click', () => {
-          // districtId = lm_{id} → id 추출
+          // districtId = lm_{id} → id 추출 후 EventBus 경유
           const districtId = def.id?.replace(/^lm_/, '');
-          if (districtId) {
-            const LandmarkModal = window.__LandmarkModal__;
-            if (LandmarkModal) LandmarkModal.open(districtId);
-          }
+          if (districtId) EventBus.emit('openLandmarkModal', { districtId });
         });
         el.addEventListener('animationend', () => el.classList.remove('spawning'), { once: true });
         return el;
