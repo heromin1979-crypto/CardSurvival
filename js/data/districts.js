@@ -15,7 +15,7 @@ const DISTRICTS = {
     id: 'gangnam', name: '강남구', icon: '🏥',
     description: '의료 인프라가 집중된 지역. 삼성서울병원이 최대 물자 보고지만 좀비 밀도가 극히 높다.',
     dangerLevel: 3, travelCostTP: 2, radiation: 0,
-    encounterChance: 0.50, noiseGen: 7,
+    encounterChance: 0.35, noiseGen: 7,
     adjacentDistricts: ['seocho', 'songpa', 'dongjak'],
     landmark: 'lm_gangnam',
     lootTable: [
@@ -34,7 +34,7 @@ const DISTRICTS = {
     id: 'gangdong', name: '강동구', icon: '🏘️',
     description: '외곽 주거지역. 약탈이 덜 된 아파트 단지에서 식량과 생필품을 찾을 수 있다.',
     dangerLevel: 2, travelCostTP: 2, radiation: 0,
-    encounterChance: 0.30, noiseGen: 5,
+    encounterChance: 0.15, noiseGen: 5,
     adjacentDistricts: ['songpa', 'geumcheon', 'gwangjin'],   // gwangjin = 동쪽 다리
     landmark: 'lm_gangdong',
     lootTable: [
@@ -52,7 +52,7 @@ const DISTRICTS = {
     id: 'gangbuk', name: '강북구', icon: '⛰️',
     description: '북한산 아래 주거지역. 산악 접근로 덕분에 비교적 안전하고 자연 자원이 있다.',
     dangerLevel: 2, travelCostTP: 2, radiation: 0,
-    encounterChance: 0.10, noiseGen: 2,
+    encounterChance: 0.0, noiseGen: 2,
     adjacentDistricts: ['dobong', 'seongbuk', 'jungrang', 'dongdaemun'],
     landmark: 'lm_gangbuk',
     lootTable: [
@@ -70,7 +70,7 @@ const DISTRICTS = {
     id: 'gangseo', name: '강서구', icon: '✈️',
     description: '김포공항 인근 공항 복합 지역. 항공 물류 창고에서 공구와 장비 부품을 찾을 수 있다.',
     dangerLevel: 2, travelCostTP: 2, radiation: 0,
-    encounterChance: 0.35, noiseGen: 6,
+    encounterChance: 0.2, noiseGen: 6,
     adjacentDistricts: ['yeongdeungpo', 'yangcheon'],
     landmark: 'lm_gangseo',
     lootTable: [
@@ -89,7 +89,7 @@ const DISTRICTS = {
     id: 'gwanak', name: '관악구', icon: '🎓',
     description: '서울대학교 캠퍼스. 연구소에 의약품 원료와 정수 장비가 남아있다.',
     dangerLevel: 1, travelCostTP: 2, radiation: 0,
-    encounterChance: 0.20, noiseGen: 3,
+    encounterChance: 0.05, noiseGen: 3,
     adjacentDistricts: ['dongjak', 'geumcheon', 'songpa'],
     landmark: 'lm_gwanak',
     lootTable: [
@@ -107,7 +107,7 @@ const DISTRICTS = {
     id: 'gwangjin', name: '광진구', icon: '🌉',
     description: '한강 인접 주거지역. 뚝섬과 어린이대공원 주변에 생활용품과 식량이 남아있다.',
     dangerLevel: 2, travelCostTP: 2, radiation: 0,
-    encounterChance: 0.20, noiseGen: 4,
+    encounterChance: 0.05, noiseGen: 4,
     adjacentDistricts: ['seongdong', 'gangdong'],   // gangdong = 동쪽 다리
     landmark: 'lm_gwangjin',
     lootTable: [
@@ -125,7 +125,7 @@ const DISTRICTS = {
     id: 'guro', name: '구로구', icon: '🏭',
     description: '구로디지털단지. 공장과 창고에 공구, 전자부품, 금속 재료가 풍부하다.',
     dangerLevel: 2, travelCostTP: 2, radiation: 0,
-    encounterChance: 0.35, noiseGen: 6,
+    encounterChance: 0.2, noiseGen: 6,
     adjacentDistricts: ['yangcheon', 'dongjak', 'seocho'],
     landmark: 'lm_guro',
     lootTable: [
@@ -143,7 +143,7 @@ const DISTRICTS = {
     id: 'geumcheon', name: '금천구', icon: '⚙️',
     description: '중소 공장 밀집 지역. 방사선 오염이 약간 있지만 금속 재료와 공구가 넘친다.',
     dangerLevel: 2, travelCostTP: 2, radiation: 5,
-    encounterChance: 0.35, noiseGen: 5,
+    encounterChance: 0.2, noiseGen: 5,
     adjacentDistricts: ['gwanak', 'gangdong'],
     landmark: 'lm_geumcheon',
     lootTable: [
@@ -161,7 +161,7 @@ const DISTRICTS = {
     id: 'nowon', name: '노원구', icon: '🏙️',
     description: '대규모 아파트 단지. 약탈됐지만 숨겨진 창고에서 식량과 생필품을 찾을 수 있다.',
     dangerLevel: 1, travelCostTP: 2, radiation: 0,
-    encounterChance: 0.15, noiseGen: 3,
+    encounterChance: 0.0, noiseGen: 3,
     adjacentDistricts: ['dobong', 'jungrang'],
     landmark: 'lm_nowon',
     lootTable: [
@@ -179,7 +179,7 @@ const DISTRICTS = {
     id: 'dobong', name: '도봉구', icon: '🌲',
     description: '도봉산 아래 조용한 외곽지역. 감염자가 적고 자연 자원을 수집할 수 있다.',
     dangerLevel: 1, travelCostTP: 3, radiation: 0,
-    encounterChance: 0.05, noiseGen: 2,
+    encounterChance: 0.0, noiseGen: 2,
     adjacentDistricts: ['nowon', 'gangbuk'],
     landmark: 'lm_dobong',
     lootTable: [
@@ -197,7 +197,7 @@ const DISTRICTS = {
     id: 'dongdaemun', name: '동대문구', icon: '🧵',
     description: '동대문 의류시장이 있던 섬유 중심지. 천과 의류 재료가 풍부하고 식료품도 남아있다.',
     dangerLevel: 2, travelCostTP: 2, radiation: 0,
-    encounterChance: 0.25, noiseGen: 5,
+    encounterChance: 0.1, noiseGen: 5,
     adjacentDistricts: ['jongno', 'gangbuk', 'seongdong', 'junggoo'],
     landmark: 'lm_dongdaemun',
     lootTable: [
@@ -215,7 +215,7 @@ const DISTRICTS = {
     id: 'dongjak', name: '동작구', icon: '🌊',
     description: '한강 남안 주거지역. 국립현충원이 있어 약탈이 적었고 생필품이 남아있다.',
     dangerLevel: 1, travelCostTP: 2, radiation: 0,
-    encounterChance: 0.20, noiseGen: 3,
+    encounterChance: 0.05, noiseGen: 3,
     adjacentDistricts: ['guro', 'gwanak', 'gangnam'],
     landmark: 'lm_dongjak',
     lootTable: [
@@ -233,7 +233,7 @@ const DISTRICTS = {
     id: 'mapo', name: '마포구', icon: '🏙️',
     description: '홍대·합정·여의나루. 한때 젊음의 거리였던 홍대와 발전소 인근 합정이 혼재한다.',
     dangerLevel: 2, travelCostTP: 2, radiation: 3,
-    encounterChance: 0.25, noiseGen: 4,
+    encounterChance: 0.1, noiseGen: 4,
     adjacentDistricts: ['seodaemun', 'jongno', 'yeongdeungpo'],   // yeongdeungpo = 서쪽 다리
     landmark: 'lm_mapo',
     lootTable: [
@@ -252,7 +252,7 @@ const DISTRICTS = {
     id: 'seodaemun', name: '서대문구', icon: '🏫',
     description: '연세대·세브란스병원. 의약품과 의료장비가 집중된 지역. 감염자 밀도 높음.',
     dangerLevel: 3, travelCostTP: 2, radiation: 0,
-    encounterChance: 0.35, noiseGen: 5,
+    encounterChance: 0.2, noiseGen: 5,
     adjacentDistricts: ['eunpyeong', 'seongbuk', 'mapo'],
     landmark: 'lm_seodaemun',
     lootTable: [
@@ -270,7 +270,7 @@ const DISTRICTS = {
     id: 'seocho', name: '서초구', icon: '⚖️',
     description: '법조타운·예술의전당. 고급 주거지였으나 현재는 감염자와 약탈자가 공존한다.',
     dangerLevel: 3, travelCostTP: 2, radiation: 0,
-    encounterChance: 0.45, noiseGen: 6,
+    encounterChance: 0.3, noiseGen: 6,
     adjacentDistricts: ['gangnam', 'guro'],
     landmark: 'lm_seocho',
     lootTable: [
@@ -288,7 +288,7 @@ const DISTRICTS = {
     id: 'seongdong', name: '성동구', icon: '🏭',
     description: '성수 공장지대. 금속 재료와 제작 도구가 풍부하나 방사선 오염이 있다.',
     dangerLevel: 2, travelCostTP: 2, radiation: 5,
-    encounterChance: 0.25, noiseGen: 4,
+    encounterChance: 0.1, noiseGen: 4,
     adjacentDistricts: ['dongdaemun', 'jungrang', 'gwangjin'],
     landmark: 'lm_seongdong',
     lootTable: [
@@ -307,7 +307,7 @@ const DISTRICTS = {
     id: 'seongbuk', name: '성북구', icon: '🏛️',
     description: '고려대·성신여대 등 대학가. 학교 식당과 기숙사에 식량이 남아있다.',
     dangerLevel: 2, travelCostTP: 2, radiation: 0,
-    encounterChance: 0.20, noiseGen: 3,
+    encounterChance: 0.05, noiseGen: 3,
     adjacentDistricts: ['seodaemun', 'gangbuk', 'jongno'],
     landmark: 'lm_seongbuk',
     lootTable: [
@@ -325,7 +325,7 @@ const DISTRICTS = {
     id: 'songpa', name: '송파구', icon: '🗼',
     description: '롯데타워·올림픽경기장. 최후 생존자 거점이 있었던 곳. 물자는 풍부하나 위험하다.',
     dangerLevel: 3, travelCostTP: 2, radiation: 0,
-    encounterChance: 0.45, noiseGen: 7,
+    encounterChance: 0.3, noiseGen: 7,
     adjacentDistricts: ['gangnam', 'gangdong', 'gwanak'],
     landmark: 'lm_songpa',
     lootTable: [
@@ -344,7 +344,7 @@ const DISTRICTS = {
     id: 'yangcheon', name: '양천구', icon: '🏡',
     description: '목동 주거지역. 대규모 아파트 단지로 약탈이 많이 됐지만 구석에 식량이 남아있다.',
     dangerLevel: 1, travelCostTP: 2, radiation: 0,
-    encounterChance: 0.10, noiseGen: 3,
+    encounterChance: 0.0, noiseGen: 3,
     adjacentDistricts: ['gangseo', 'guro'],
     landmark: 'lm_yangcheon',
     lootTable: [
@@ -362,7 +362,7 @@ const DISTRICTS = {
     id: 'yeongdeungpo', name: '영등포구', icon: '📡',
     description: '여의도·KBS방송국. 한강 섬. 방송 장비와 전자부품, 군용 물자가 있다.',
     dangerLevel: 3, travelCostTP: 3, radiation: 0,
-    encounterChance: 0.50, noiseGen: 7,
+    encounterChance: 0.35, noiseGen: 7,
     adjacentDistricts: ['gangseo', 'mapo'],   // mapo = 서쪽 다리
     landmark: 'lm_yeongdeungpo',
     lootTable: [
@@ -381,7 +381,7 @@ const DISTRICTS = {
     id: 'yongsan', name: '용산구', icon: '💻',
     description: '전자상가·이태원·미군기지. 무기, 전자부품, 군용 장비가 집중된 전략 거점.',
     dangerLevel: 3, travelCostTP: 2, radiation: 0,
-    encounterChance: 0.40, noiseGen: 6,
+    encounterChance: 0.25, noiseGen: 6,
     adjacentDistricts: ['jongno', 'junggoo'],
     landmark: 'lm_yongsan',
     lootTable: [
@@ -401,7 +401,7 @@ const DISTRICTS = {
     id: 'eunpyeong', name: '은평구', icon: '🌲',
     description: '북한산 인접 외곽 지역. 비교적 안전하지만 물자가 부족하다. 신장동 쪽에 구청 창고가 있다.',
     dangerLevel: 1, travelCostTP: 3, radiation: 0,
-    encounterChance: 0.08, noiseGen: 2,
+    encounterChance: 0.0, noiseGen: 2,
     adjacentDistricts: ['seodaemun'],
     landmark: 'lm_eunpyeong',
     lootTable: [
@@ -419,7 +419,7 @@ const DISTRICTS = {
     id: 'jongno', name: '종로구', icon: '🏯',
     description: '서울의 심장. 광화문 정부청사와 경복궁. 군의 최후 방어선이 붕괴된 극위험 구역.',
     dangerLevel: 4, travelCostTP: 2, radiation: 10,
-    encounterChance: 0.55, noiseGen: 8,
+    encounterChance: 0.4, noiseGen: 8,
     adjacentDistricts: ['mapo', 'seongbuk', 'dongdaemun', 'yongsan'],
     landmark: 'lm_jongno',
     lootTable: [
@@ -438,7 +438,7 @@ const DISTRICTS = {
     id: 'junggoo', name: '중구', icon: '🏙️',
     description: '명동·남대문시장·서울시청. 과거 상업 중심지. 좀비 밀도 높지만 다양한 물자가 있다.',
     dangerLevel: 3, travelCostTP: 2, radiation: 0,
-    encounterChance: 0.40, noiseGen: 6,
+    encounterChance: 0.25, noiseGen: 6,
     adjacentDistricts: ['yongsan', 'dongdaemun'],
     landmark: 'lm_junggoo',
     lootTable: [
@@ -456,7 +456,7 @@ const DISTRICTS = {
     id: 'jungrang', name: '중랑구', icon: '🌿',
     description: '중랑천 인근 주거지역. 중랑공원에서 자연 자원을 수집할 수 있다.',
     dangerLevel: 2, travelCostTP: 2, radiation: 0,
-    encounterChance: 0.18, noiseGen: 3,
+    encounterChance: 0.03, noiseGen: 3,
     adjacentDistricts: ['nowon', 'gangbuk', 'seongdong'],
     landmark: 'lm_jungrang',
     lootTable: [
