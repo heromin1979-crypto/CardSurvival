@@ -16,7 +16,7 @@ const SLOT_META = {
   accessory:   { label: '장식',   icon: '💎',  row: 6, col: 'right', locked: true },
 };
 
-const TABS = ['방어구', '무기', '가방/도구'];
+const TABS = ['방어구', '무기', '가방/도구', '소지품'];
 
 const EquipmentModal = {
   _initialized: false,
@@ -240,9 +240,11 @@ const EquipmentModal = {
     ).join('');
 
     const items = this._getFilteredItems();
-    const listHtml = items.length
-      ? items.map(c => this._buildInvRow(c.instanceId)).join('')
-      : `<div class="equip-inv-empty">장착 가능한 아이템 없음</div>`;
+    const isEmpty = items.length === 0;
+    const emptyMsg = this._activeTab === 3 ? '소지품 없음' : '장착 가능한 아이템 없음';
+    const listHtml = isEmpty
+      ? `<div class="equip-inv-empty">${emptyMsg}</div>`
+      : items.map(c => this._buildInvRow(c.instanceId, { isInventory: !!c.isInventory })).join('');
 
     return `
       <div class="equip-inv-panel">
@@ -253,8 +255,16 @@ const EquipmentModal = {
   },
 
   _getFilteredItems() {
-    const equippable = EquipmentSystem.getEquippableBoardItems();
     const tab = this._activeTab;
+
+    // 소지품 탭: bottom row 전체 (장착 가능 여부 무관)
+    if (tab === 3) {
+      return GameState.board.bottom
+        .filter(id => id && GameState.cards[id])
+        .map(id => ({ instanceId: id, isInventory: true }));
+    }
+
+    const equippable = EquipmentSystem.getEquippableBoardItems();
     return equippable.filter(c => {
       const def = GameState.getCardDef(c.instanceId);
       if (!def) return false;
@@ -265,21 +275,28 @@ const EquipmentModal = {
     });
   },
 
-  _buildInvRow(instanceId) {
+  _buildInvRow(instanceId, opts = {}) {
     const def  = GameState.getCardDef(instanceId);
     const inst = GameState.cards[instanceId];
     if (!def || !inst) return '';
 
-    const isSelected = this._selectedId === instanceId;
-    const durStr     = inst.durability != null ? ` · ${Math.round(inst.durability)}%` : '';
-    const slots      = EquipmentSystem.getSlotsForDef(def).map(s => SLOT_META[s]?.label ?? s).join(', ');
+    const isSelected   = this._selectedId === instanceId;
+    const durStr       = inst.durability != null ? ` · ${Math.round(inst.durability)}%` : '';
+    const equipSlots   = EquipmentSystem.getSlotsForDef(def);
+    const slotsLabel   = equipSlots.map(s => SLOT_META[s]?.label ?? s).join(', ');
+    const qtyStr       = (inst.quantity ?? 1) > 1 ? ` ×${inst.quantity}` : '';
+
+    // 소지품 탭: 장착 슬롯 없으면 아이템 타입 표시
+    const subLabel = opts.isInventory
+      ? (slotsLabel || def.subtype || def.type)
+      : slotsLabel;
 
     return `
-      <div class="equip-inv-row${isSelected ? ' selected' : ''}" data-inv-id="${instanceId}">
+      <div class="equip-inv-row${isSelected ? ' selected' : ''}${opts.isInventory ? ' inv-item' : ''}" data-inv-id="${instanceId}">
         <div class="equip-inv-icon">${def.icon ?? '?'}</div>
         <div class="equip-inv-info">
-          <div class="equip-inv-name">${def.name}</div>
-          <div class="equip-inv-sub">${slots}${durStr}</div>
+          <div class="equip-inv-name">${def.name}${qtyStr}</div>
+          <div class="equip-inv-sub">${subLabel}${durStr}</div>
         </div>
       </div>
     `;
@@ -333,6 +350,10 @@ const EquipmentModal = {
     box.querySelectorAll('.equip-inv-row').forEach(el => {
       el.addEventListener('click', () => {
         const id = el.dataset.invId;
+        const def = GameState.getCardDef(id);
+        // 소지품 탭에서 장착 불가 아이템은 선택 무시
+        if (def && EquipmentSystem.getSlotsForDef(def).length === 0) return;
+
         if (this._selectedId === id) {
           this._selectedId = null;
         } else {

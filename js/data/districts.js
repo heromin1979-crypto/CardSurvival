@@ -14,9 +14,10 @@ const DISTRICTS = {
   gangnam: {
     id: 'gangnam', name: '강남구', icon: '🏥',
     description: '의료 인프라가 집중된 지역. 삼성서울병원이 최대 물자 보고지만 좀비 밀도가 극히 높다.',
-    dangerLevel: 2, travelCostTP: 2, radiation: 0,
-    encounterChance: 0.40, noiseGen: 6,
+    dangerLevel: 3, travelCostTP: 2, radiation: 0,
+    encounterChance: 0.50, noiseGen: 7,
     adjacentDistricts: ['seocho', 'songpa', 'dongjak'],
+    landmark: 'lm_gangnam',
     lootTable: [
       { definitionId: 'first_aid_kit', weight: 30, minQty: 1, maxQty: 2 },
       { definitionId: 'bandage',       weight: 30, minQty: 2, maxQty: 5 },
@@ -32,9 +33,10 @@ const DISTRICTS = {
   gangdong: {
     id: 'gangdong', name: '강동구', icon: '🏘️',
     description: '외곽 주거지역. 약탈이 덜 된 아파트 단지에서 식량과 생필품을 찾을 수 있다.',
-    dangerLevel: 1, travelCostTP: 2, radiation: 0,
-    encounterChance: 0.20, noiseGen: 4,
+    dangerLevel: 2, travelCostTP: 2, radiation: 0,
+    encounterChance: 0.30, noiseGen: 5,
     adjacentDistricts: ['songpa', 'geumcheon', 'gwangjin'],   // gwangjin = 동쪽 다리
+    landmark: 'lm_gangdong',
     lootTable: [
       { definitionId: 'canned_food',   weight: 30, minQty: 1, maxQty: 3, contamChance: 0.05 },
       { definitionId: 'water_bottle',  weight: 25, minQty: 1, maxQty: 2, contamChance: 0.10 },
@@ -52,6 +54,7 @@ const DISTRICTS = {
     dangerLevel: 2, travelCostTP: 2, radiation: 0,
     encounterChance: 0.10, noiseGen: 2,
     adjacentDistricts: ['dobong', 'seongbuk', 'jungrang', 'dongdaemun'],
+    landmark: 'lm_gangbuk',
     lootTable: [
       { definitionId: 'contaminated_water', weight: 25, minQty: 1, maxQty: 2, contamChance: 0.35 },
       { definitionId: 'cloth',         weight: 25, minQty: 1, maxQty: 3 },
@@ -66,9 +69,10 @@ const DISTRICTS = {
   gangseo: {
     id: 'gangseo', name: '강서구', icon: '✈️',
     description: '김포공항 인근 공항 복합 지역. 항공 물류 창고에서 공구와 장비 부품을 찾을 수 있다.',
-    dangerLevel: 1, travelCostTP: 2, radiation: 0,
-    encounterChance: 0.25, noiseGen: 5,
+    dangerLevel: 2, travelCostTP: 2, radiation: 0,
+    encounterChance: 0.35, noiseGen: 6,
     adjacentDistricts: ['yeongdeungpo', 'yangcheon'],
+    landmark: 'lm_gangseo',
     lootTable: [
       { definitionId: 'scrap_metal',   weight: 25, minQty: 2, maxQty: 4 },
       { definitionId: 'rope',          weight: 20, minQty: 1, maxQty: 2 },
@@ -87,6 +91,7 @@ const DISTRICTS = {
     dangerLevel: 1, travelCostTP: 2, radiation: 0,
     encounterChance: 0.20, noiseGen: 3,
     adjacentDistricts: ['dongjak', 'geumcheon', 'songpa'],
+    landmark: 'lm_gwanak',
     lootTable: [
       { definitionId: 'water_filter',  weight: 25, minQty: 1, maxQty: 2 },
       { definitionId: 'bandage',       weight: 25, minQty: 2, maxQty: 4 },
@@ -104,6 +109,7 @@ const DISTRICTS = {
     dangerLevel: 2, travelCostTP: 2, radiation: 0,
     encounterChance: 0.20, noiseGen: 4,
     adjacentDistricts: ['seongdong', 'gangdong'],   // gangdong = 동쪽 다리
+    landmark: 'lm_gwangjin',
     lootTable: [
       { definitionId: 'canned_food',   weight: 30, minQty: 1, maxQty: 3, contamChance: 0.05 },
       { definitionId: 'water_bottle',  weight: 25, minQty: 1, maxQty: 2, contamChance: 0.10 },
@@ -118,9 +124,10 @@ const DISTRICTS = {
   guro: {
     id: 'guro', name: '구로구', icon: '🏭',
     description: '구로디지털단지. 공장과 창고에 공구, 전자부품, 금속 재료가 풍부하다.',
-    dangerLevel: 1, travelCostTP: 2, radiation: 0,
-    encounterChance: 0.25, noiseGen: 5,
+    dangerLevel: 2, travelCostTP: 2, radiation: 0,
+    encounterChance: 0.35, noiseGen: 6,
     adjacentDistricts: ['yangcheon', 'dongjak', 'seocho'],
+    landmark: 'lm_guro',
     lootTable: [
       { definitionId: 'scrap_metal',   weight: 35, minQty: 2, maxQty: 5 },
       { definitionId: 'duct_tape',     weight: 20, minQty: 1, maxQty: 2 },
@@ -135,9 +142,10 @@ const DISTRICTS = {
   geumcheon: {
     id: 'geumcheon', name: '금천구', icon: '⚙️',
     description: '중소 공장 밀집 지역. 방사선 오염이 약간 있지만 금속 재료와 공구가 넘친다.',
-    dangerLevel: 1, travelCostTP: 2, radiation: 5,
-    encounterChance: 0.25, noiseGen: 4,
+    dangerLevel: 2, travelCostTP: 2, radiation: 5,
+    encounterChance: 0.35, noiseGen: 5,
     adjacentDistricts: ['gwanak', 'gangdong'],
+    landmark: 'lm_geumcheon',
     lootTable: [
       { definitionId: 'scrap_metal',   weight: 40, minQty: 2, maxQty: 6 },
       { definitionId: 'rope',          weight: 20, minQty: 1, maxQty: 3 },
@@ -155,6 +163,7 @@ const DISTRICTS = {
     dangerLevel: 1, travelCostTP: 2, radiation: 0,
     encounterChance: 0.15, noiseGen: 3,
     adjacentDistricts: ['dobong', 'jungrang'],
+    landmark: 'lm_nowon',
     lootTable: [
       { definitionId: 'canned_food',   weight: 30, minQty: 1, maxQty: 3, contamChance: 0.05 },
       { definitionId: 'water_bottle',  weight: 25, minQty: 1, maxQty: 2 },
@@ -172,6 +181,7 @@ const DISTRICTS = {
     dangerLevel: 1, travelCostTP: 3, radiation: 0,
     encounterChance: 0.05, noiseGen: 2,
     adjacentDistricts: ['nowon', 'gangbuk'],
+    landmark: 'lm_dobong',
     lootTable: [
       { definitionId: 'contaminated_water', weight: 30, minQty: 1, maxQty: 2, contamChance: 0.30 },
       { definitionId: 'rope',          weight: 25, minQty: 1, maxQty: 2 },
@@ -189,6 +199,7 @@ const DISTRICTS = {
     dangerLevel: 2, travelCostTP: 2, radiation: 0,
     encounterChance: 0.25, noiseGen: 5,
     adjacentDistricts: ['jongno', 'gangbuk', 'seongdong', 'junggoo'],
+    landmark: 'lm_dongdaemun',
     lootTable: [
       { definitionId: 'cloth',         weight: 35, minQty: 2, maxQty: 5 },
       { definitionId: 'canned_food',   weight: 20, minQty: 1, maxQty: 3 },
@@ -206,6 +217,7 @@ const DISTRICTS = {
     dangerLevel: 1, travelCostTP: 2, radiation: 0,
     encounterChance: 0.20, noiseGen: 3,
     adjacentDistricts: ['guro', 'gwanak', 'gangnam'],
+    landmark: 'lm_dongjak',
     lootTable: [
       { definitionId: 'bandage',       weight: 25, minQty: 1, maxQty: 3 },
       { definitionId: 'canned_food',   weight: 25, minQty: 1, maxQty: 3 },
@@ -223,6 +235,7 @@ const DISTRICTS = {
     dangerLevel: 2, travelCostTP: 2, radiation: 3,
     encounterChance: 0.25, noiseGen: 4,
     adjacentDistricts: ['seodaemun', 'jongno', 'yeongdeungpo'],   // yeongdeungpo = 서쪽 다리
+    landmark: 'lm_mapo',
     lootTable: [
       { definitionId: 'canned_food',   weight: 25, minQty: 1, maxQty: 3, contamChance: 0.08 },
       { definitionId: 'cloth',         weight: 20, minQty: 1, maxQty: 3 },
@@ -241,6 +254,7 @@ const DISTRICTS = {
     dangerLevel: 3, travelCostTP: 2, radiation: 0,
     encounterChance: 0.35, noiseGen: 5,
     adjacentDistricts: ['eunpyeong', 'seongbuk', 'mapo'],
+    landmark: 'lm_seodaemun',
     lootTable: [
       { definitionId: 'first_aid_kit', weight: 25, minQty: 1, maxQty: 2 },
       { definitionId: 'bandage',       weight: 30, minQty: 2, maxQty: 5 },
@@ -255,9 +269,10 @@ const DISTRICTS = {
   seocho: {
     id: 'seocho', name: '서초구', icon: '⚖️',
     description: '법조타운·예술의전당. 고급 주거지였으나 현재는 감염자와 약탈자가 공존한다.',
-    dangerLevel: 2, travelCostTP: 2, radiation: 0,
-    encounterChance: 0.35, noiseGen: 5,
+    dangerLevel: 3, travelCostTP: 2, radiation: 0,
+    encounterChance: 0.45, noiseGen: 6,
     adjacentDistricts: ['gangnam', 'guro'],
+    landmark: 'lm_seocho',
     lootTable: [
       { definitionId: 'first_aid_kit', weight: 20, minQty: 1, maxQty: 2 },
       { definitionId: 'canned_food',   weight: 25, minQty: 1, maxQty: 3 },
@@ -275,6 +290,7 @@ const DISTRICTS = {
     dangerLevel: 2, travelCostTP: 2, radiation: 5,
     encounterChance: 0.25, noiseGen: 4,
     adjacentDistricts: ['dongdaemun', 'jungrang', 'gwangjin'],
+    landmark: 'lm_seongdong',
     lootTable: [
       { definitionId: 'scrap_metal',   weight: 40, minQty: 2, maxQty: 6 },
       { definitionId: 'rope',          weight: 20, minQty: 1, maxQty: 3 },
@@ -293,6 +309,7 @@ const DISTRICTS = {
     dangerLevel: 2, travelCostTP: 2, radiation: 0,
     encounterChance: 0.20, noiseGen: 3,
     adjacentDistricts: ['seodaemun', 'gangbuk', 'jongno'],
+    landmark: 'lm_seongbuk',
     lootTable: [
       { definitionId: 'canned_food',   weight: 25, minQty: 1, maxQty: 3 },
       { definitionId: 'water_bottle',  weight: 20, minQty: 1, maxQty: 2 },
@@ -307,9 +324,10 @@ const DISTRICTS = {
   songpa: {
     id: 'songpa', name: '송파구', icon: '🗼',
     description: '롯데타워·올림픽경기장. 최후 생존자 거점이 있었던 곳. 물자는 풍부하나 위험하다.',
-    dangerLevel: 2, travelCostTP: 2, radiation: 0,
-    encounterChance: 0.35, noiseGen: 6,
+    dangerLevel: 3, travelCostTP: 2, radiation: 0,
+    encounterChance: 0.45, noiseGen: 7,
     adjacentDistricts: ['gangnam', 'gangdong', 'gwanak'],
+    landmark: 'lm_songpa',
     lootTable: [
       { definitionId: 'canned_food',   weight: 25, minQty: 1, maxQty: 4, contamChance: 0.08 },
       { definitionId: 'energy_bar',    weight: 20, minQty: 1, maxQty: 3 },
@@ -328,6 +346,7 @@ const DISTRICTS = {
     dangerLevel: 1, travelCostTP: 2, radiation: 0,
     encounterChance: 0.10, noiseGen: 3,
     adjacentDistricts: ['gangseo', 'guro'],
+    landmark: 'lm_yangcheon',
     lootTable: [
       { definitionId: 'canned_food',   weight: 30, minQty: 1, maxQty: 3, contamChance: 0.05 },
       { definitionId: 'water_bottle',  weight: 25, minQty: 1, maxQty: 2 },
@@ -342,9 +361,10 @@ const DISTRICTS = {
   yeongdeungpo: {
     id: 'yeongdeungpo', name: '영등포구', icon: '📡',
     description: '여의도·KBS방송국. 한강 섬. 방송 장비와 전자부품, 군용 물자가 있다.',
-    dangerLevel: 2, travelCostTP: 3, radiation: 0,
-    encounterChance: 0.40, noiseGen: 6,
+    dangerLevel: 3, travelCostTP: 3, radiation: 0,
+    encounterChance: 0.50, noiseGen: 7,
     adjacentDistricts: ['gangseo', 'mapo'],   // mapo = 서쪽 다리
+    landmark: 'lm_yeongdeungpo',
     lootTable: [
       { definitionId: 'flashlight',    weight: 20, minQty: 1, maxQty: 2 },
       { definitionId: 'scrap_metal',   weight: 15, minQty: 1, maxQty: 3 },
@@ -363,6 +383,7 @@ const DISTRICTS = {
     dangerLevel: 3, travelCostTP: 2, radiation: 0,
     encounterChance: 0.40, noiseGen: 6,
     adjacentDistricts: ['jongno', 'junggoo'],
+    landmark: 'lm_yongsan',
     lootTable: [
       { definitionId: 'flashlight',    weight: 20, minQty: 1, maxQty: 2 },
       { definitionId: 'scrap_metal',   weight: 15, minQty: 1, maxQty: 3 },
@@ -382,6 +403,7 @@ const DISTRICTS = {
     dangerLevel: 1, travelCostTP: 3, radiation: 0,
     encounterChance: 0.08, noiseGen: 2,
     adjacentDistricts: ['seodaemun'],
+    landmark: 'lm_eunpyeong',
     lootTable: [
       { definitionId: 'bandage',       weight: 25, minQty: 1, maxQty: 3 },
       { definitionId: 'canned_food',   weight: 25, minQty: 1, maxQty: 3 },
@@ -399,6 +421,7 @@ const DISTRICTS = {
     dangerLevel: 4, travelCostTP: 2, radiation: 10,
     encounterChance: 0.55, noiseGen: 8,
     adjacentDistricts: ['mapo', 'seongbuk', 'dongdaemun', 'yongsan'],
+    landmark: 'lm_jongno',
     lootTable: [
       { definitionId: 'pistol',        weight: 15, minQty: 1, maxQty: 1 },
       { definitionId: 'pistol_ammo',   weight: 20, minQty: 4, maxQty: 10 },
@@ -417,6 +440,7 @@ const DISTRICTS = {
     dangerLevel: 3, travelCostTP: 2, radiation: 0,
     encounterChance: 0.40, noiseGen: 6,
     adjacentDistricts: ['yongsan', 'dongdaemun'],
+    landmark: 'lm_junggoo',
     lootTable: [
       { definitionId: 'cloth',         weight: 25, minQty: 2, maxQty: 5 },
       { definitionId: 'canned_food',   weight: 25, minQty: 1, maxQty: 3 },
@@ -434,6 +458,7 @@ const DISTRICTS = {
     dangerLevel: 2, travelCostTP: 2, radiation: 0,
     encounterChance: 0.18, noiseGen: 3,
     adjacentDistricts: ['nowon', 'gangbuk', 'seongdong'],
+    landmark: 'lm_jungrang',
     lootTable: [
       { definitionId: 'contaminated_water', weight: 25, minQty: 1, maxQty: 2, contamChance: 0.25 },
       { definitionId: 'canned_food',   weight: 25, minQty: 1, maxQty: 3 },

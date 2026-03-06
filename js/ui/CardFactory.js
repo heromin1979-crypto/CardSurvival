@@ -23,6 +23,15 @@ const CardFactory = {
 
     // ── 장소 카드 ────────────────────────────────────────────
     if (def.type === 'location') {
+      if (def.landmark) {
+        // 랜드마크 카드 — 클릭 불가, 정보 표시 전용
+        el.className = 'card location-card landmark-card spawning';
+        el.draggable = false;
+        el.innerHTML = this._buildLandmarkInner(def);
+        el.addEventListener('animationend', () => el.classList.remove('spawning'), { once: true });
+        return el;
+      }
+
       el.className = 'card location-card spawning';
       el.draggable = false;
       el.innerHTML = this._buildLocationInner(def);
@@ -55,6 +64,17 @@ const CardFactory = {
   },
 
   // ── 장소 카드 내부 HTML ──────────────────────────────────
+
+  _buildLandmarkInner(def) {
+    return `
+      <div class="lc-header lm-header">
+        <span class="lm-badge">랜드마크</span>
+      </div>
+      <div class="lc-icon">${def.icon ?? '📍'}</div>
+      <div class="lc-name">${def.name}</div>
+      <div class="lm-bonus">${def.landmarkBonus ?? ''}</div>
+    `;
+  },
 
   _buildLocationInner(def) {
     const gs         = GameState;

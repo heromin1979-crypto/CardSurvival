@@ -72,7 +72,7 @@ const GameState = {
   // ── board ─────────────────────────────────────────────
   // Each row: array of slot entries (null | instanceId)
   board: {
-    top:    [null, null, null, null, null, null, null], // 7칸: [현재구][인접구×6]
+    top:    [null, null, null, null, null, null, null, null], // 8칸: [현재구][인접구×6][랜드마크]
     middle: [null, null, null, null, null, null, null, null],  // 8칸
     bottom: [null, null, null, null, null, null, null, null],  // 소지품 8칸 (가방으로 확장 가능)
   },

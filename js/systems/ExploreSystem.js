@@ -28,7 +28,7 @@ const ExploreSystem = {
     const gs    = GameState;
     const items = window.__GAME_DATA__?.items ?? {};
 
-    // 기존 top row 위치 카드 제거
+    // 기존 top row 위치·랜드마크 카드 제거
     for (let i = 0; i < gs.board.top.length; i++) {
       const instId = gs.board.top[i];
       if (!instId) continue;
@@ -48,16 +48,24 @@ const ExploreSystem = {
       if (inst) gs.board.top[0] = inst.instanceId;
     }
 
-    // 인접 구 카드 → top[1..]
+    // 인접 구 카드 → top[1..6]
     const adjacent = getAdjacentDistricts(districtId);
     let slot = 1;
     for (const adj of adjacent) {
-      if (slot >= gs.board.top.length) break;
+      if (slot >= gs.board.top.length - 1) break; // top[7] 예약 (랜드마크)
       const defId = `loc_${adj.id}`;
       if (items[defId]) {
         const inst = gs.createCardInstance(defId);
         if (inst) gs.board.top[slot++] = inst.instanceId;
       }
+    }
+
+    // 랜드마크 카드 → top[7] (마지막 고정 슬롯)
+    const district = DISTRICTS[districtId];
+    const lmDefId  = district?.landmark;
+    if (lmDefId && items[lmDefId]) {
+      const lmInst = gs.createCardInstance(lmDefId);
+      if (lmInst) gs.board.top[7] = lmInst.instanceId;
     }
 
     gs._updateEncumbrance();

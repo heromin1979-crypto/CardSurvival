@@ -378,12 +378,20 @@ const CharCreate = {
     const adjacent = getAdjacentDistricts(districtId);
     let topSlot = 1;
     for (const adj of adjacent) {
-      if (topSlot >= gs.board.top.length) break;
+      if (topSlot >= gs.board.top.length - 1) break; // top[7] 예약 (랜드마크)
       const defId = `loc_${adj.id}`;
       if (items[defId]) {
         const inst = gs.createCardInstance(defId);
         if (inst) gs.board.top[topSlot++] = inst.instanceId;
       }
+    }
+
+    // 랜드마크 카드 → top[7]
+    const districts = window.__GAME_DATA__?.districts ?? {};
+    const lmDefId   = districts[districtId]?.landmark ?? `lm_${districtId}`;
+    if (items[lmDefId]) {
+      const lmInst = gs.createCardInstance(lmDefId);
+      if (lmInst) gs.board.top[7] = lmInst.instanceId;
     }
 
     // ── 하단 행: 기본 시작 소지품 + 캐릭터 추가 아이템 ──────
