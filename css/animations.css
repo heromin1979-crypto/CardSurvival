@@ -1,0 +1,266 @@
+/* === ANIMATIONS === */
+
+/* Stat danger pulse */
+@keyframes dangerPulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+/* Card spawn */
+@keyframes cardSpawn {
+  from {
+    opacity: 0;
+    transform: translateY(-12px) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.card.spawning {
+  animation: cardSpawn 0.25s ease forwards;
+}
+
+/* Card remove */
+@keyframes cardRemove {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.88) translateY(8px);
+  }
+}
+
+.card.removing {
+  animation: cardRemove 0.2s ease forwards;
+  pointer-events: none;
+}
+
+/* Stat change flash */
+@keyframes statFlashGood {
+  0%   { background: rgba(80,160,80,0.5); }
+  100% { background: transparent; }
+}
+
+@keyframes statFlashBad {
+  0%   { background: rgba(160,60,60,0.5); }
+  100% { background: transparent; }
+}
+
+.stat-bar-group.flash-good { animation: statFlashGood 0.5s ease; }
+.stat-bar-group.flash-bad  { animation: statFlashBad  0.5s ease; }
+
+/* Radiation flicker */
+@keyframes radiationFlicker {
+  0%, 100% { opacity: 1; color: var(--stat-radiation); }
+  33%       { opacity: 0.6; color: #ccff44; }
+  66%       { opacity: 0.9; }
+}
+
+.stat-bar-group.radiation.danger .stat-bar-name {
+  animation: radiationFlicker 1.5s ease infinite;
+}
+
+/* Noise pulse on influx */
+@keyframes noiseInflux {
+  0%   { transform: scaleX(1); }
+  20%  { transform: scaleX(1.04); }
+  40%  { transform: scaleX(0.98); }
+  60%  { transform: scaleX(1.02); }
+  100% { transform: scaleX(1); }
+}
+
+.noise-track.influx { animation: noiseInflux 0.4s ease; }
+
+/* Screen fade-in */
+@keyframes screenFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.screen.active {
+  animation: screenFadeIn 0.2s ease;
+}
+
+/* Combat hit flash */
+@keyframes hitFlash {
+  0%   { filter: brightness(1); }
+  30%  { filter: brightness(2.5) saturate(0); }
+  100% { filter: brightness(1); }
+}
+
+.combat-side.hit,
+.combat-entity-zone.hit,
+.enemy-card.hit {
+  animation: hitFlash 0.3s ease;
+}
+
+/* TP clock tick */
+@keyframes tpTick {
+  0%   { transform: scaleX(1); }
+  50%  { transform: scaleX(0.98); }
+  100% { transform: scaleX(1); }
+}
+
+.tp-clock-fill.tick { animation: tpTick 0.15s ease; }
+
+/* Craft complete burst */
+@keyframes craftBurst {
+  0%   { box-shadow: 0 0 0 0 rgba(200,160,96,0.6); }
+  70%  { box-shadow: 0 0 0 12px rgba(200,160,96,0); }
+  100% { box-shadow: 0 0 0 0 rgba(200,160,96,0); }
+}
+
+.craft-queue-item.complete {
+  animation: craftBurst 0.5s ease;
+}
+
+/* Notification slide */
+@keyframes notifyIn {
+  from { transform: translateX(50px); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+
+/* Hover glow for unique cards */
+.card[data-rarity="unique"]:hover {
+  box-shadow: 0 6px 20px rgba(150,80,40,0.5);
+}
+
+/* Screen transition */
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.menu-box {
+  animation: slideUp 0.3s ease;
+}
+
+/* Death screen */
+@keyframes deathFade {
+  from { filter: saturate(1); }
+  to   { filter: saturate(0) brightness(0.3); }
+}
+
+#screen-game-over.active {
+  animation: deathFade 1.5s ease forwards;
+}
+
+/* ── 상호작용 성공 버스트 ── */
+@keyframes interactionBurst {
+  0%   { box-shadow: 0 0 0 0 rgba(200,160,60,0.7); }
+  50%  { box-shadow: 0 0 0 14px rgba(200,160,60,0); }
+  100% { box-shadow: 0 0 0 0 rgba(200,160,60,0); }
+}
+
+.card.interaction-burst {
+  animation: interactionBurst 0.4s ease;
+}
+
+/* ── 카드 소멸 (상호작용 소모) ── */
+@keyframes cardDespawn {
+  from { opacity: 1; transform: scale(1); }
+  to   { opacity: 0; transform: scale(0.7) rotate(5deg); filter: blur(2px); }
+}
+
+.card.despawning {
+  animation: cardDespawn 0.25s ease forwards;
+  pointer-events: none;
+}
+
+/* ── 루팅 오버레이 등장 ── */
+@keyframes lootOverlayIn {
+  from { opacity: 0; transform: translateY(20px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.loot-overlay {
+  animation: lootOverlayIn 0.3s ease forwards;
+}
+
+/* ── 루팅 아이템 카드 — 3D 뒤집기 등장 ── */
+@keyframes lootCardFlip {
+  0%   { transform: perspective(500px) rotateY(90deg) scale(0.85); opacity: 0; }
+  55%  { transform: perspective(500px) rotateY(-8deg)  scale(1.03); opacity: 1; }
+  80%  { transform: perspective(500px) rotateY(3deg)   scale(1.00); }
+  100% { transform: perspective(500px) rotateY(0deg)   scale(1);    opacity: 1; }
+}
+
+.loot-item-card {
+  animation: lootCardFlip 0.5s cubic-bezier(0.34, 1.36, 0.64, 1) both;
+  transform-origin: left center;
+}
+.loot-item-card:nth-child(1) { animation-delay: 0.04s; }
+.loot-item-card:nth-child(2) { animation-delay: 0.14s; }
+.loot-item-card:nth-child(3) { animation-delay: 0.24s; }
+.loot-item-card:nth-child(4) { animation-delay: 0.34s; }
+.loot-item-card:nth-child(5) { animation-delay: 0.44s; }
+.loot-item-card:nth-child(6) { animation-delay: 0.54s; }
+.loot-item-card:nth-child(7) { animation-delay: 0.64s; }
+.loot-item-card:nth-child(8) { animation-delay: 0.74s; }
+
+/* ── 데미지 팝업 ── */
+@keyframes dmgPop {
+  0%   { transform: translate(-50%, -50%) scale(1);    opacity: 1; }
+  60%  { transform: translate(-50%, -90%) scale(1.3);  opacity: 1; }
+  100% { transform: translate(-50%,-130%) scale(0.8);  opacity: 0; }
+}
+
+.dmg-popup {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  font-size: 22px;
+  font-weight: 700;
+  color: #e74c3c;
+  pointer-events: none;
+  animation: dmgPop 0.9s ease-out forwards;
+  z-index: 99;
+  text-shadow: 0 0 6px rgba(0,0,0,0.8);
+  white-space: nowrap;
+}
+
+.dmg-popup.crit {
+  color: #f39c12;
+  font-size: 28px;
+  text-shadow: 0 0 12px rgba(243,156,18,0.8);
+}
+
+/* ── 상태이상 배지 ── */
+.status-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: center;
+  margin-top: 4px;
+  min-height: 18px;
+}
+
+.status-badge {
+  background: rgba(231, 76, 60, 0.25);
+  border: 1px solid rgba(231, 76, 60, 0.6);
+  color: #e74c3c;
+  font-size: 9px;
+  padding: 1px 5px;
+  border-radius: 8px;
+  font-family: var(--font-mono);
+}
+
+.status-badge.enemy {
+  background: rgba(155, 89, 182, 0.25);
+  border-color: rgba(155, 89, 182, 0.6);
+  color: #9b59b6;
+}
+
+/* ── 노드 카드 펄스 (현재 위치) ── */
+@keyframes currentNodePulse {
+  0%, 100% { box-shadow: 0 0 6px rgba(200,160,96,0.3); }
+  50%       { box-shadow: 0 0 14px rgba(200,160,96,0.7); }
+}
+
+.node-card.current {
+  animation: currentNodePulse 2s ease infinite;
+}

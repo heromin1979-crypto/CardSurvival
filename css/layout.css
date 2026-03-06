@@ -1,0 +1,339 @@
+/* === MAIN LAYOUT === */
+#app {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* Screen container */
+.screen {
+  display: none;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  inset: 0;
+}
+.screen.active { display: flex; }
+
+/* === BASECAMP: 2-COLUMN SIDEBAR + MAIN === */
+#screen-basecamp.active {
+  display: grid;
+  grid-template-columns: 175px 1fr;
+  overflow: hidden;
+}
+
+/* Left sidebar */
+.bc-sidebar {
+  background: var(--bg-surface);
+  border-right: 1px solid var(--border-dim);
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+  padding: var(--gap-sm);
+  z-index: var(--z-hud);
+}
+
+/* Main scroll area */
+.bc-main {
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: var(--bg-base);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Minimap block */
+.bc-minimap {
+  background: rgba(0,0,0,0.4);
+  border: 1px solid var(--border-dim);
+  border-radius: var(--radius-sm);
+  height: 90px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 28px;
+  color: var(--text-dim);
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.bc-minimap:hover {
+  background: rgba(200,160,96,0.08);
+  border-color: var(--accent-dim);
+}
+
+.bc-minimap-label {
+  font-size: 8px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Time block */
+.bc-time-block {
+  background: rgba(0,0,0,0.2);
+  border: 1px solid var(--border-dim);
+  border-radius: var(--radius-sm);
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.bc-day-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.bc-day {
+  font-size: var(--font-size-md);
+  color: var(--accent-primary);
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.bc-clock {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+.bc-tp-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.bc-tp-label {
+  font-size: 9px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  min-width: 14px;
+}
+
+/* Character block */
+.bc-char-block {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  background: rgba(0,0,0,0.2);
+  border: 1px solid var(--border-dim);
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+
+.bc-avatar {
+  font-size: 26px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.bc-char-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.bc-char-name {
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+  font-weight: bold;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bc-char-sub {
+  font-size: 9px;
+  color: var(--text-dim);
+}
+
+.bc-char-hp {
+  font-size: 9px;
+  color: var(--text-secondary);
+}
+
+/* Noise block in sidebar */
+.bc-noise-block {
+  padding: 4px 0;
+  flex-shrink: 0;
+}
+
+.bc-noise-block .noise-track {
+  width: 100%;
+}
+
+/* Enc block in sidebar */
+.bc-enc-block {
+  font-size: var(--font-size-xs);
+  color: var(--text-dim);
+  padding: 2px 0;
+  flex-shrink: 0;
+}
+
+/* Quest/blueprint block */
+.bc-quests-block {
+  border: 1px solid var(--border-dim);
+  border-radius: var(--radius-sm);
+  padding: 6px 8px;
+  flex: 1;
+  min-height: 40px;
+}
+
+.bc-block-title {
+  font-size: 9px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+
+.bc-block-content {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+/* Sidebar footer buttons */
+.bc-sidebar-btns {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+  padding-top: var(--gap-xs);
+  flex-shrink: 0;
+}
+
+.bc-sidebar-btns .toolbar-btn {
+  width: 100%;
+  text-align: left;
+  font-size: var(--font-size-xs);
+}
+
+/* === LEGACY GAME LAYOUT (kept for other screens) === */
+.game-layout {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  grid-template-columns: 1fr 280px;
+  grid-template-areas:
+    "hud       hud"
+    "board     panel"
+    "toolbar   toolbar";
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.hud-area {
+  grid-area: hud;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-dim);
+  padding: 6px var(--gap-lg);
+  display: flex;
+  align-items: center;
+  gap: var(--gap-xl);
+  min-height: 52px;
+  z-index: var(--z-hud);
+}
+
+.board-area {
+  grid-area: board;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: var(--gap-md);
+  background: var(--bg-base);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--gap-md);
+}
+
+.panel-area {
+  grid-area: panel;
+  background: var(--bg-surface);
+  border-left: 1px solid var(--border-dim);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.toolbar-area {
+  grid-area: toolbar;
+  background: var(--bg-surface);
+  border-top: 1px solid var(--border-dim);
+  padding: var(--gap-sm) var(--gap-lg);
+  display: flex;
+  align-items: center;
+  gap: var(--gap-md);
+  min-height: 44px;
+}
+
+/* === MENU SCREENS === */
+.menu-screen {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-void);
+  gap: var(--gap-lg);
+}
+
+.menu-box {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-mid);
+  padding: var(--gap-xl);
+  min-width: 340px;
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-md);
+}
+
+.menu-title {
+  font-size: var(--font-size-xl);
+  color: var(--accent-primary);
+  text-align: center;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: var(--gap-sm);
+}
+
+.menu-subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  text-align: center;
+  margin-bottom: var(--gap-lg);
+}
+
+/* === EXPLORE SCREEN === */
+#screen-explore .game-layout {
+  grid-template-areas:
+    "hud       hud"
+    "map       panel"
+    "toolbar   toolbar";
+}
+
+/* === COMBAT SCREEN === */
+#screen-combat {
+  flex-direction: column;
+  background: var(--bg-void);
+}
+
+.combat-layout {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  height: 100%;
+}
+
+/* === SCROLLBAR === */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg-base); }
+::-webkit-scrollbar-thumb { background: var(--border-mid); border-radius: 2px; }

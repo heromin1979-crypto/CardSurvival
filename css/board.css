@@ -1,0 +1,197 @@
+/* === 3-ROW BOARD === */
+.board {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 0;
+}
+
+/* Row — each becomes a visual section */
+.board-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+  padding: var(--gap-md);
+  border-bottom: 1px solid var(--border-dim);
+}
+
+.board-row-label {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  padding: 0 2px 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.board-row-slots {
+  display: flex;
+  gap: var(--gap-sm);
+  flex-wrap: wrap;
+  min-height: var(--slot-h);
+  padding: var(--gap-xs);
+  background: rgba(0,0,0,0.15);
+  border: 1px solid var(--border-dim);
+  border-radius: var(--radius-sm);
+}
+
+/* Individual slot */
+.slot {
+  width: var(--slot-w);
+  height: var(--slot-h);
+  background: var(--slot-empty);
+  border: 1px dashed var(--border-dim);
+  border-radius: var(--radius-sm);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.slot:empty::after,
+.slot.empty-hint::after {
+  content: attr(data-hint);
+  font-size: var(--font-size-xs);
+  color: var(--text-dim);
+  text-align: center;
+  pointer-events: none;
+  padding: 4px;
+}
+
+/* Drop target states */
+.slot.drag-over-valid {
+  background: var(--slot-valid);
+  border-color: var(--text-good);
+  border-style: solid;
+}
+
+.slot.drag-over-invalid {
+  background: var(--slot-invalid);
+  border-color: var(--text-danger);
+  border-style: solid;
+}
+
+.slot.drag-over-hover {
+  background: var(--slot-hover);
+  border-color: var(--accent-dim);
+  border-style: solid;
+}
+
+/* Row-specific accent */
+.board-row.row-top .board-row-slots {
+  border-color: rgba(80,80,100,0.3);
+}
+.board-row.row-middle .board-row-slots {
+  border-color: rgba(80,100,80,0.3);
+}
+.board-row.row-bottom .board-row-slots {
+  border-color: rgba(100,80,60,0.3);
+}
+
+/* Card within slot */
+.slot .card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.slot .card:hover {
+  transform: translate(-50%, -55%);
+}
+
+/* Row section colors */
+.row-top    { background: rgba(0,0,0,0.1); }
+.row-middle { background: var(--bg-base); }
+.row-bottom { background: rgba(200,160,96,0.02); border-bottom: none; }
+
+.row-top    .board-row-label { color: var(--accent-primary); font-size: var(--font-size-sm); }
+.row-middle .board-row-label { color: var(--text-secondary); }
+.row-bottom .board-row-label { color: var(--stat-hydration); }
+
+.row-top    .board-row-label::before { content: "📍"; }
+.row-middle .board-row-label::before { content: "◆"; color: var(--accent-primary); }
+.row-bottom .board-row-label::before { content: "🎒"; }
+
+/* ── 장소 정보 패널 ── */
+.location-info-bar {
+  margin: 0;
+  padding: var(--gap-sm) var(--gap-md);
+  background: rgba(30, 40, 50, 0.6);
+  border-bottom: 1px solid rgba(80,100,120,0.3);
+  border-top: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.loc-info-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.loc-info-icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.loc-info-name {
+  font-size: var(--font-size-sm);
+  font-weight: bold;
+  color: var(--text-primary);
+  flex: 1;
+}
+
+.loc-info-danger {
+  font-size: 11px;
+  color: var(--text-danger);
+  letter-spacing: 1px;
+}
+
+.loc-info-desc {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.loc-info-tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.loc-info-tag {
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+}
+
+.loc-info-tag.loc-rad {
+  color: var(--stat-radiation);
+  background: rgba(180,80,80,0.15);
+  border: 1px solid rgba(180,80,80,0.3);
+}
+
+.loc-info-tag.loc-enc {
+  color: var(--text-warn);
+  background: rgba(180,140,40,0.12);
+  border: 1px solid rgba(180,140,40,0.25);
+}
+
+/* Interaction highlight between cards */
+.slot.can-interact {
+  animation: pulseSlot 1.2s ease infinite;
+}
+
+@keyframes pulseSlot {
+  0%, 100% { border-color: var(--accent-dim); }
+  50%       { border-color: var(--accent-primary); }
+}

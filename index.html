@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Card Survival: Ruined City</title>
+
+  <!-- CSS (order matters) -->
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/reset.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/cards.css">
+  <link rel="stylesheet" href="css/board.css">
+  <link rel="stylesheet" href="css/ui.css">
+  <link rel="stylesheet" href="css/modals.css">
+  <link rel="stylesheet" href="css/screens.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <link rel="stylesheet" href="css/equipment.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!--  MAIN MENU                                  -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div id="screen-main-menu" class="screen menu-screen active">
+    <!-- Populated by MainMenu.js -->
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!--  CHARACTER CREATION                         -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div id="screen-char-create" class="screen menu-screen">
+    <!-- Populated by CharCreate.js -->
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!--  BASECAMP (main game screen)                -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div id="screen-basecamp" class="screen">
+    <!-- Layout built by Basecamp.js -->
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!--  EXPLORE                                    -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div id="screen-explore" class="screen">
+    <!-- Populated by ExploreUI.js -->
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!--  ENCOUNTER                                  -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div id="screen-encounter" class="screen menu-screen">
+    <!-- Populated by Encounter.js -->
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!--  COMBAT                                     -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div id="screen-combat" class="screen" style="flex-direction:column;">
+    <!-- Populated by CombatUI.js -->
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!--  COMBAT RESULT                              -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div id="screen-combat-result" class="screen menu-screen">
+    <!-- Populated by CombatResult.js -->
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!--  REST                                       -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div id="screen-rest" class="screen menu-screen">
+    <!-- Populated by Rest.js -->
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!--  GAME OVER                                  -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div id="screen-game-over" class="screen menu-screen">
+    <!-- Populated by GameOver.js -->
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!--  PAUSE                                      -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div id="screen-pause" class="screen menu-screen" style="position:fixed;z-index:500;">
+    <!-- Populated by Pause.js -->
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!--  ENDING                                     -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div id="screen-ending" class="screen menu-screen">
+    <!-- Populated by Ending.js -->
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!--  ENDING GALLERY                             -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div id="screen-ending-gallery" class="screen menu-screen">
+    <!-- Populated by EndingGallery.js -->
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!--  MODAL OVERLAY (shared)                     -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div id="modal-overlay" class="modal-overlay">
+    <div id="modal-box" class="modal-box">
+      <!-- Dynamic content -->
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!--  NOTIFICATION CONTAINER                     -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div id="notification-container" class="notification-container"></div>
+
+</div>
+
+<!-- ES6 modules: no bundler needed -->
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
