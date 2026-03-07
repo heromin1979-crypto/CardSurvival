@@ -21,6 +21,7 @@ const GameState = {
     radiation:   { current: 0,   max: 100, decayPerTP: 0   },
     infection:   { current: 0,   max: 100, decayPerTP: 0   },
     fatigue:     { current: 10,  max: 100, decayPerTP: 0.8 },
+    stamina:     { current: 100, max: 100 },  // 스태미나: 이동·과적에 의해 소모, 휴식 시 회복
   },
 
   // ── player ────────────────────────────────────────────
@@ -34,10 +35,11 @@ const GameState = {
     deathCause:          null,
     encounterRateReduct: 0,   // barricade onTick으로 매 TP 갱신
     encumbrance:{
-      current:  0,
-      max:      30,
-      tier:     0,   // 0=free, 1=light, 2=heavy, 3=overloaded
-      tpMult:   1.0,
+      current:   0,
+      max:       30,    // 캐릭터 선택 시 덮어씀
+      tier:      0,     // 0=free,1=light,2=heavy,3=overloaded,4=immobile(>200%)
+      tpMult:    1.0,
+      weightPct: 0,     // current/max 비율 (0.0~) — StatSystem·ExploreSystem에서 참조
     },
     // ── 캐릭터 능력 효과 기본값 ──────────────────────────
     healBonus:               1.0,   // 의료 아이템 치료량 배수
@@ -54,6 +56,7 @@ const GameState = {
     bandageHpBonus:          0,     // 붕대 추가 HP 회복
     craftSuccessBonus:       0,     // 제작 성공률 추가 (공학자)
     // ── 장착 슬롯 ────────────────────────────────────────
+    diseases:    [],     // [{ id, tpElapsed, tpDuration, fatalTp }] 활성 질병 목록
     equipped: {
       head:        null,  // 헬멧 등
       body:        null,  // 방어구 (조끼/풀바디/의복)
@@ -72,7 +75,7 @@ const GameState = {
   // ── board ─────────────────────────────────────────────
   // Each row: array of slot entries (null | instanceId)
   board: {
-    top:    [null, null, null, null, null, null, null, null], // 8칸: [현재구][인접구×6][랜드마크]
+    top:    [null, null, null, null, null, null, null, null], // 8칸: [현재구][랜드마크][인접구×6]
     middle: [null, null, null, null, null, null, null, null],  // 8칸
     bottom: [null, null, null, null, null, null, null, null],  // 소지품 8칸 (가방으로 확장 가능)
   },
@@ -83,14 +86,20 @@ const GameState = {
 
   // ── location ──────────────────────────────────────────
   location: {
-    currentDistrict:  'mapo',  // 현재 위치한 구(gu)
-    currentNode:      'mapo',  // currentDistrict 와 동기화
-    isExploring:      false,
-    travelCostTP:     0,
-    nodesVisited:     [],
-    districtsVisited: [],      // 방문한 구 목록
-    districtsLooted:  [],      // 루팅 완료한 구 목록 (재방문 시 희귀 리스폰)
+    currentDistrict:    'mapo',  // 현재 위치한 구(gu)
+    currentNode:        'mapo',  // currentDistrict 와 동기화
+    isExploring:        false,
+    travelCostTP:       0,
+    nodesVisited:       [],
+    districtsVisited:   [],      // 방문한 구 목록
+    districtsLooted:    [],      // 루팅 완료한 구 목록 (재방문 시 희귀 리스폰)
+    currentLandmark:    null,    // 랜드마크 내부 진입 시 districtId (null = 랜드마크 밖)
+    currentSubLocation: null,    // 현재 세부 장소 ID (null = 랜드마크 로비 또는 밖)
   },
+
+  // ── 위치별 바닥 아이템 저장 ──────────────────────────
+  // { [districtId]: instanceId[] } — 각 지역에 남겨진 바닥 아이템
+  locationFloors: {},
 
   // ── noise ─────────────────────────────────────────────
   noise: {
@@ -142,6 +151,24 @@ const GameState = {
   // ── pending loot (탐색 후 플레이어 확인 전까지 보관) ───
   pendingLoot: [],  // [{ definitionId, quantity, contamination }]
 
+  // ── weather ───────────────────────────────────────────
+  // WeatherSystem이 매 TP마다 업데이트
+  weather: {
+    id:          'sunny',
+    name:        '맑음',
+    icon:        '☀️',
+    tempMod:     0,
+    tpRemaining: 96,
+    tempJitter:  0,
+  },
+
+  // ── season ────────────────────────────────────────────
+  // SeasonSystem이 매 TP마다 동기화
+  season: {
+    current:         'spring',  // 'spring'|'summer'|'autumn'|'winter'
+    eventsTriggered: [],        // 이미 발동된 이벤트 id 목록
+  },
+
   // ── flags ─────────────────────────────────────────────
   flags: {
     tutorialSeen: false,
@@ -161,6 +188,8 @@ const GameState = {
     jongnoVisited:       false, // 종로구 방문 여부 (광화문)
     infectionCured:      false, // 감염이 50 이상에서 0으로 회복된 이력
     collapseCount:       0,    // 피로 붕괴 횟수 (2회째 → 사망)
+    survivedSummer:      false, // Day 180 이후 생존 플래그 (여름 생존 엔딩)
+    diseaseDeathId:      null,  // 질병 사망 시 질병 ID (엔딩 선택용)
   },
 
   // ── HELPERS ───────────────────────────────────────────
@@ -294,12 +323,14 @@ const GameState = {
       return sum + ((def?.weight ?? 0) * (c.quantity ?? 1));
     }, 0);
     const enc = this.player.encumbrance;
-    enc.current = parseFloat(total.toFixed(2));
-    const pct = enc.current / enc.max;
-    if      (pct <= 0.5)  { enc.tier = 0; enc.tpMult = 1.0; }
+    enc.current   = parseFloat(total.toFixed(2));
+    const pct     = enc.max > 0 ? enc.current / enc.max : 0;
+    enc.weightPct = pct;
+    if      (pct <= 0.50) { enc.tier = 0; enc.tpMult = 1.0; }
     else if (pct <= 0.75) { enc.tier = 1; enc.tpMult = 1.2; }
-    else if (pct <= 1.0)  { enc.tier = 2; enc.tpMult = 1.5; }
-    else                  { enc.tier = 3; enc.tpMult = 2.0; }
+    else if (pct <= 1.00) { enc.tier = 2; enc.tpMult = 1.5; }
+    else if (pct <= 2.00) { enc.tier = 3; enc.tpMult = 2.0; }
+    else                  { enc.tier = 4; enc.tpMult = 3.0; } // >200% — 이동 불가
   },
 
   serialize() {
@@ -317,6 +348,9 @@ const GameState = {
       ui:            { currentState: this.ui.currentState, basecampMode: this.ui.basecampMode },
       flags:         this.flags,
       combatRespawn: this.combatRespawn,
+      season:         this.season,
+      weather:        this.weather,
+      locationFloors: this.locationFloors,
     });
   },
 
@@ -337,6 +371,11 @@ const GameState = {
       this.player.equipped = { ...equippedDefaults, ...this.player.equipped };
     }
     if (this.player.extraSlots === undefined) this.player.extraSlots = 0;
+    if (!this.player.gender) this.player.gender = 'M';
+    // 구버전 세이브 호환: stamina 필드 자동 생성
+    if (!this.stats.stamina) this.stats.stamina = { current: 100, max: 100 };
+    // 구버전 세이브 호환: encumbrance weightPct 필드
+    if (this.player.encumbrance.weightPct === undefined) this.player.encumbrance.weightPct = 0;
     // 구버전 세이브 호환: top 행이 부족하면 7칸으로 확장
     if (d.board?.top && d.board.top.length < 7) {
       while (d.board.top.length < 7) d.board.top.push(null);
@@ -367,11 +406,26 @@ const GameState = {
     if (ef.jongnoVisited       === undefined) ef.jongnoVisited       = false;
     if (ef.infectionCured      === undefined) ef.infectionCured      = false;
     if (ef.collapseCount       === undefined) ef.collapseCount       = 0;
+    if (ef.survivedSummer      === undefined) ef.survivedSummer      = false;
+    // season 필드 복원 (구버전 세이브 호환)
+    if (d.season) {
+      Object.assign(this.season, d.season);
+      if (!this.season.eventsTriggered) this.season.eventsTriggered = [];
+    }
+    // weather 필드 복원
+    if (d.weather) Object.assign(this.weather, d.weather);
+    // locationFloors 복원 (구버전 세이브 호환)
+    this.locationFloors = d.locationFloors ?? {};
+    // diseases 필드 복원 (구버전 세이브 호환)
+    if (!this.player.diseases) this.player.diseases = [];
     // 구버전 세이브 호환: 필드 없으면 기본값
     if (!this.location.currentDistrict)  this.location.currentDistrict  = 'mapo';
     if (!this.location.currentNode)      this.location.currentNode      = this.location.currentDistrict;
     if (!this.location.districtsVisited) this.location.districtsVisited = [];
     if (!this.location.districtsLooted)  this.location.districtsLooted  = [];
+    // 구버전 세이브 호환: 랜드마크 진입 상태 필드
+    if (this.location.currentLandmark    === undefined) this.location.currentLandmark    = null;
+    if (this.location.currentSubLocation === undefined) this.location.currentSubLocation = null;
     this._updateEncumbrance();
   },
 };

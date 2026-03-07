@@ -38,18 +38,33 @@ const SlotResolver = {
       return false;
     }
 
+    // 이동 전 definitionId 보존 (작업 중 카드가 제거될 수 있음)
+    const defId = GameState.cards[instanceId]?.definitionId;
+
     // 스택 병합 우선 시도: 같은 정의 ID + stackable + maxStack 여유 있을 때
     const targetId = GameState.board[toRow]?.[toSlot];
     if (targetId && targetId !== instanceId) {
-      if (this._tryStack(instanceId, targetId)) return true;
+      if (this._tryStack(instanceId, targetId)) {
+        // 같은 타입의 나머지 카드도 전부 targetId 슬롯으로 합산
+        if (defId) BoardManager.consolidateSameType(defId, targetId);
+        return true;
+      }
     }
 
     const currentPos = BoardManager.findCard(instanceId);
+    let success;
     if (currentPos) {
-      return BoardManager.moveCard(instanceId, toRow, toSlot);
+      success = BoardManager.moveCard(instanceId, toRow, toSlot);
     } else {
-      return BoardManager.addCard(instanceId, toRow, toSlot);
+      success = BoardManager.addCard(instanceId, toRow, toSlot);
     }
+
+    // 이동 성공 시 보드 전체의 같은 타입 카드를 목적지(instanceId)로 합산
+    if (success && defId) {
+      BoardManager.consolidateSameType(defId, instanceId);
+    }
+
+    return success;
   },
 
   // 스택 병합: 같은 아이템이면 수량을 합산. 소스가 0이 되면 제거.

@@ -22,6 +22,15 @@
   animation: cardSpawn 0.25s ease forwards;
 }
 
+/* 장소 카드는 이동 없이 페이드인만 (translateY 낙하 효과 제거) */
+@keyframes locSpawn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.location-card.spawning {
+  animation: locSpawn 0.18s ease forwards;
+}
+
 /* Card remove */
 @keyframes cardRemove {
   from {

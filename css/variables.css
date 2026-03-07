@@ -24,6 +24,8 @@
   --rarity-unique:   #774422;
 
   /* Stat colors */
+  --stat-hp:           #dd4444;
+  --stat-stamina:      #44aadd;
   --stat-hydration:    #4488cc;
   --stat-nutrition:    #66aa44;
   --stat-temperature:  #cc8833;

@@ -465,10 +465,11 @@ const CombatSystem = {
       }
     }
 
-    // 보드 무기 (장착되지 않은 것)
+    // 보드 무기 (장착되지 않은 것, 장소/랜드마크 제외)
     for (const card of gs.getBoardCards()) {
       if (seen.has(card.instanceId)) continue;
-      if (gs.getCardDef(card.instanceId)?.type === 'weapon') result.push(card);
+      const def = gs.getCardDef(card.instanceId);
+      if (def?.type === 'weapon') result.push(card);
     }
 
     return result;
@@ -491,7 +492,11 @@ const CombatSystem = {
   },
 
   getAvailableMedicals() {
-    return GameState.getBoardCards().filter(c => GameState.getCardDef(c.instanceId)?.tags?.includes('medical'));
+    return GameState.getBoardCards().filter(c => {
+      const def = GameState.getCardDef(c.instanceId);
+      if (!def || def.type === 'location') return false;
+      return def.tags?.includes('medical');
+    });
   },
 };
 

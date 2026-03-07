@@ -13,8 +13,19 @@ const ROW_CONFIG = [
 
 const BoardRenderer = {
   _container: null,
-
   _listenersRegistered: false,
+  _renderScheduled: false,  // 디바운싱: 1프레임에 1번만 render() 실행
+
+  // 다수의 동기 이벤트(cardMoved, boardChanged 등)가 한 번에 발생해도
+  // 다음 animationFrame에 render()를 딱 한 번만 실행한다.
+  scheduleRender() {
+    if (this._renderScheduled) return;
+    this._renderScheduled = true;
+    requestAnimationFrame(() => {
+      this._renderScheduled = false;
+      this.render();
+    });
+  },
 
   init() {
     // 리스너는 container 존재 여부와 무관하게 항상 먼저 등록한다.
@@ -22,15 +33,25 @@ const BoardRenderer = {
     // init() 시점에는 DOM에 없을 수 있다.
     if (!this._listenersRegistered) {
       this._listenersRegistered = true;
-      EventBus.on('cardPlaced',   () => this.render());
-      EventBus.on('cardMoved',    () => this.render());
-      EventBus.on('cardRemoved',  () => this.render());
-      EventBus.on('boardChanged',  () => this.render());
-      EventBus.on('craftComplete', () => this.render());
-      EventBus.on('boardReinit',   () => { if (this._container) { this._buildDOM(); this.render(); } });
-      EventBus.on('tpAdvance',    () => this.render());
-      EventBus.on('locationChanged', ({ nodeId, node }) => { this._updateLocationInfo(nodeId, node); this.render(); });
-      EventBus.on('loaded',       () => { this._container = document.getElementById('board-container'); this._buildDOM(); this.render(); });
+      EventBus.on('cardPlaced',    () => this.scheduleRender());
+      EventBus.on('cardMoved',     () => this.scheduleRender());
+      EventBus.on('cardRemoved',   () => this.scheduleRender());
+      EventBus.on('boardChanged',  () => this.scheduleRender());
+      EventBus.on('craftComplete', () => this.scheduleRender());
+      EventBus.on('tpAdvance',     () => this.scheduleRender());
+      EventBus.on('locationChanged', ({ nodeId, node }) => {
+        this._updateLocationInfo(nodeId, node);
+        this.scheduleRender();
+      });
+      EventBus.on('boardReinit', () => {
+        if (this._container) { this._buildDOM(); this.scheduleRender(); }
+      });
+      // 게임 로드 시점은 경합 이벤트가 없으므로 직접 render
+      EventBus.on('loaded', () => {
+        this._container = document.getElementById('board-container');
+        this._buildDOM();
+        this.render();
+      });
     }
 
     this._container = document.getElementById('board-container');
@@ -139,10 +160,12 @@ const BoardRenderer = {
     }
 
     // ── Step 5: FLIP 애니메이션 — 이동한 카드를 부드럽게 슬라이드 ──
+    // 장소 카드(location-card)는 항상 재생성되므로 FLIP 대상에서 제외
     requestAnimationFrame(() => {
       Object.entries(prevRects).forEach(([instanceId, oldRect]) => {
         const el = this._container.querySelector(`[data-instance-id="${instanceId}"]`);
-        if (!el) return; // 보드에서 제거된 카드
+        if (!el) return;
+        if (el.classList.contains('location-card')) return;
 
         const newRect = el.getBoundingClientRect();
         const dx = oldRect.left - newRect.left;
@@ -151,18 +174,25 @@ const BoardRenderer = {
         // 2px 미만 이동은 무시 (렌더링 오차)
         if (Math.abs(dx) < 2 && Math.abs(dy) < 2) return;
 
-        // 이동 카드: spawn 애니메이션 제거 후 FLIP 슬라이드 적용
-        el.classList.remove('spawning');
-        el.style.transition = 'none';
-        el.style.transform  = `translate(${dx}px, ${dy}px)`;
+        // 이동 거리에 따라 자연스러운 속도 계산 (짧은 이동 0.18s ↔ 먼 이동 0.32s)
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        const dur  = Math.max(0.18, Math.min(0.32, 0.14 + dist * 0.0004));
 
-        requestAnimationFrame(() => {
-          el.style.transition = 'transform 0.22s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-          el.style.transform  = '';
-          el.addEventListener('transitionend', () => {
-            el.style.transition = '';
-          }, { once: true });
-        });
+        el.classList.remove('spawning');
+        el.style.transition    = 'none';
+        el.style.transform     = `translate(${dx}px, ${dy}px)`;
+        el.style.pointerEvents = 'none'; // 이동 중 클릭 방지
+
+        // layout flush: 브라우저가 시작 위치를 확정한 뒤 전환 시작
+        void el.getBoundingClientRect();
+
+        el.style.transition = `transform ${dur}s cubic-bezier(0.25, 0.46, 0.45, 0.94)`;
+        el.style.transform  = '';
+        el.addEventListener('transitionend', () => {
+          el.style.transition    = '';
+          el.style.transform     = '';
+          el.style.pointerEvents = '';
+        }, { once: true });
       });
     });
   },

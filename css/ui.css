@@ -108,6 +108,8 @@
 }
 
 /* Stat colors */
+.stat-bar-fill.hp           { background: var(--stat-hp); }
+.stat-bar-fill.stamina      { background: var(--stat-stamina); }
 .stat-bar-fill.hydration    { background: var(--stat-hydration); }
 .stat-bar-fill.nutrition    { background: var(--stat-nutrition); }
 .stat-bar-fill.temperature  { background: var(--stat-temperature); }

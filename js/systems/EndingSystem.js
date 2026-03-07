@@ -81,7 +81,25 @@ const EndingSystem = {
       case '극도 피로':
         return 'death_exhaustion';
       default:
+        // 질병 사망 처리
+        if (cause.startsWith('질병:')) {
+          const diseaseId = cause.replace('질병:', '');
+          return this._selectDiseaseEnding(diseaseId, gs);
+        }
         return 'death_combat';
+    }
+  },
+
+  _selectDiseaseEnding(diseaseId, gs) {
+    switch (diseaseId) {
+      case 'cholera':
+      case 'dysentery':   return 'death_disease_water';
+      case 'sepsis':
+      case 'influenza':   return 'death_disease_infection';
+      case 'hypothermia': return 'death_hypothermia';
+      case 'heatstroke':  return 'death_disease_heat';
+      case 'radiation_sickness': return 'death_radiation';
+      default:            return 'death_disease_infection';
     }
   },
 

@@ -11,7 +11,7 @@ const ITEMS_COMBAT = {
     defaultDurability: 80, defaultContamination: 0,
     icon: '🔩', description: '단순하지만 효과적인 둔기. 가공하면 더 강력해진다.',
     tags: ['weapon', 'melee'],
-    combat: { damage: [7, 12], accuracy: 0.78, noiseOnUse: 5, durabilityLoss: 3, critChance: 0.10, critMultiplier: 1.5 },
+    combat: { damage: [12, 20], accuracy: 0.78, noiseOnUse: 5, durabilityLoss: 3, critChance: 0.10, critMultiplier: 1.5 },
     dismantle: [{ definitionId: 'scrap_metal', qty: 2, chance: 0.9 }],
   },
 
@@ -21,7 +21,7 @@ const ITEMS_COMBAT = {
     defaultDurability: 70, defaultContamination: 0,
     icon: '🔪', description: '소음 없이 적을 처치. 내구도가 소모된다.',
     tags: ['weapon', 'melee', 'silent'],
-    combat: { damage: [8, 14], accuracy: 0.80, noiseOnUse: 1, durabilityLoss: 5, critChance: 0.25, critMultiplier: 1.8 },
+    combat: { damage: [14, 22], accuracy: 0.80, noiseOnUse: 1, durabilityLoss: 5, critChance: 0.25, critMultiplier: 1.8 },
     dismantle: [{ definitionId: 'sharp_blade', qty: 1, chance: 0.7 }],
   },
 
@@ -31,7 +31,7 @@ const ITEMS_COMBAT = {
     defaultDurability: 90, defaultContamination: 0,
     icon: '🏒', description: '튼튼한 둔기. 문 개방에도 활용.',
     tags: ['weapon', 'melee'],
-    combat: { damage: [10, 18], accuracy: 0.70, noiseOnUse: 6, durabilityLoss: 2, critChance: 0.15, critMultiplier: 2.0 },
+    combat: { damage: [16, 28], accuracy: 0.70, noiseOnUse: 6, durabilityLoss: 2, critChance: 0.15, critMultiplier: 2.0 },
     dismantle: [{ definitionId: 'scrap_metal', qty: 2, chance: 0.9 }],
   },
 
@@ -41,7 +41,7 @@ const ITEMS_COMBAT = {
     defaultDurability: 60, defaultContamination: 0,
     icon: '🪃', description: '타격 무기. 업그레이드 가능.',
     tags: ['weapon', 'melee'],
-    combat: { damage: [8, 15], accuracy: 0.75, noiseOnUse: 5, durabilityLoss: 3, critChance: 0.15, critMultiplier: 1.7 },
+    combat: { damage: [13, 22], accuracy: 0.75, noiseOnUse: 5, durabilityLoss: 3, critChance: 0.15, critMultiplier: 1.7 },
     dismantle: [{ definitionId: 'wood', qty: 1, chance: 0.8 }],
   },
 
@@ -51,7 +51,7 @@ const ITEMS_COMBAT = {
     defaultDurability: 90, defaultContamination: 0,
     icon: '⚾', description: '못이 박힌 배트. 피해량이 크게 증가.',
     tags: ['weapon', 'melee', 'crafted'],
-    combat: { damage: [18, 28], accuracy: 0.72, noiseOnUse: 8, durabilityLoss: 2, critChance: 0.20, critMultiplier: 2.2 },
+    combat: { damage: [26, 40], accuracy: 0.72, noiseOnUse: 8, durabilityLoss: 2, critChance: 0.20, critMultiplier: 2.2 },
     dismantle: [
       { definitionId: 'wood', qty: 1, chance: 0.8 },
       { definitionId: 'scrap_metal', qty: 1, chance: 0.6 },
@@ -66,7 +66,7 @@ const ITEMS_COMBAT = {
     icon: '⚙️', description: '못이 박힌 철파이프. 출혈을 유발한다.',
     tags: ['weapon', 'melee', 'crafted'],
     combat: {
-      damage: [15, 24], accuracy: 0.68, noiseOnUse: 7, durabilityLoss: 3,
+      damage: [22, 35], accuracy: 0.68, noiseOnUse: 7, durabilityLoss: 3,
       critChance: 0.20, critMultiplier: 2.0,
       statusInflict: { id: 'bleed', name: '출혈', duration: 2, effect: { hpPerRound: -4 }, chance: 0.40 },
     },
@@ -82,7 +82,7 @@ const ITEMS_COMBAT = {
     defaultDurability: 75, defaultContamination: 0,
     icon: '🗡️', description: '정글 도검. 빠른 연속 공격에 특화.',
     tags: ['weapon', 'melee'],
-    combat: { damage: [12, 20], accuracy: 0.82, noiseOnUse: 4, durabilityLoss: 4, critChance: 0.22, critMultiplier: 1.9 },
+    combat: { damage: [18, 30], accuracy: 0.82, noiseOnUse: 4, durabilityLoss: 4, critChance: 0.22, critMultiplier: 1.9 },
     dismantle: [
       { definitionId: 'sharp_blade', qty: 1, chance: 0.8 },
       { definitionId: 'leather', qty: 1, chance: 0.5 },
@@ -95,7 +95,7 @@ const ITEMS_COMBAT = {
     defaultDurability: 70, defaultContamination: 0,
     icon: '🏹', description: '장거리 근접 무기. 명중 시 높은 피해.',
     tags: ['weapon', 'melee', 'crafted'],
-    combat: { damage: [14, 22], accuracy: 0.65, noiseOnUse: 3, durabilityLoss: 4, critChance: 0.18, critMultiplier: 2.5 },
+    combat: { damage: [20, 32], accuracy: 0.65, noiseOnUse: 3, durabilityLoss: 4, critChance: 0.18, critMultiplier: 2.5 },
     dismantle: [
       { definitionId: 'wood', qty: 1, chance: 0.9 },
       { definitionId: 'sharp_blade', qty: 1, chance: 0.6 },
@@ -110,7 +110,7 @@ const ITEMS_COMBAT = {
     icon: '⚡', description: '고압 전류로 기절 유발. 조용하고 치명적.',
     tags: ['weapon', 'melee', 'silent'],
     combat: {
-      damage: [8, 16], accuracy: 0.75, noiseOnUse: 2, durabilityLoss: 6,
+      damage: [14, 26], accuracy: 0.75, noiseOnUse: 2, durabilityLoss: 6,
       critChance: 0.15, critMultiplier: 1.5,
       statusInflict: { id: 'stun', name: '기절', duration: 1, effect: { skipTurn: true }, chance: 0.35 },
     },
@@ -128,7 +128,7 @@ const ITEMS_COMBAT = {
     defaultDurability: 85, defaultContamination: 0,
     icon: '🔫', description: '원거리 무기. 소음이 크다.',
     tags: ['weapon', 'firearm', 'loud'],
-    combat: { damage: [20, 30], accuracy: 0.70, noiseOnUse: 30, durabilityLoss: 1, requiresAmmo: 'pistol_ammo', critChance: 0.20, critMultiplier: 2.0 },
+    combat: { damage: [30, 45], accuracy: 0.70, noiseOnUse: 30, durabilityLoss: 1, requiresAmmo: 'pistol_ammo', critChance: 0.20, critMultiplier: 2.0 },
     dismantle: [
       { definitionId: 'scrap_metal', qty: 2, chance: 0.7 },
       { definitionId: 'spring', qty: 1, chance: 0.5 },
@@ -141,7 +141,7 @@ const ITEMS_COMBAT = {
     defaultDurability: 80, defaultContamination: 0,
     icon: '🪃', description: '강력한 원거리 화기. 다수 적에 광역 피해.',
     tags: ['weapon', 'firearm', 'loud'],
-    combat: { damage: [30, 50], accuracy: 0.60, noiseOnUse: 50, durabilityLoss: 2, requiresAmmo: 'shotgun_ammo', critChance: 0.15, critMultiplier: 2.5 },
+    combat: { damage: [45, 75], accuracy: 0.60, noiseOnUse: 50, durabilityLoss: 2, requiresAmmo: 'shotgun_ammo', critChance: 0.15, critMultiplier: 2.5 },
     dismantle: [
       { definitionId: 'scrap_metal', qty: 3, chance: 0.7 },
       { definitionId: 'wood', qty: 1, chance: 0.6 },
@@ -154,7 +154,7 @@ const ITEMS_COMBAT = {
     defaultDurability: 70, defaultContamination: 0,
     icon: '🏹', description: '소음 없는 원거리 무기. 화살을 재사용 가능.',
     tags: ['weapon', 'ranged', 'silent', 'crafted'],
-    combat: { damage: [18, 28], accuracy: 0.72, noiseOnUse: 3, durabilityLoss: 2, requiresAmmo: 'crossbow_bolt', critChance: 0.25, critMultiplier: 2.2 },
+    combat: { damage: [26, 40], accuracy: 0.72, noiseOnUse: 3, durabilityLoss: 2, requiresAmmo: 'crossbow_bolt', critChance: 0.25, critMultiplier: 2.2 },
     dismantle: [
       { definitionId: 'wood', qty: 2, chance: 0.8 },
       { definitionId: 'spring', qty: 1, chance: 0.6 },
@@ -195,7 +195,7 @@ const ITEMS_COMBAT = {
     defaultDurability: 100, defaultContamination: 0,
     icon: '🔥', description: '광역 화염 피해. 소음 매우 큼.',
     tags: ['weapon', 'throwable', 'explosive', 'crafted'],
-    combat: { damage: [25, 40], accuracy: 0.65, noiseOnUse: 40, durabilityLoss: 100, critChance: 0.10, critMultiplier: 2.0 },
+    combat: { damage: [38, 58], accuracy: 0.65, noiseOnUse: 40, durabilityLoss: 100, critChance: 0.10, critMultiplier: 2.0 },
     dismantle: [
       { definitionId: 'empty_bottle', qty: 1, chance: 0.6 },
       { definitionId: 'cloth_scrap', qty: 1, chance: 0.5 },
@@ -208,7 +208,7 @@ const ITEMS_COMBAT = {
     defaultDurability: 100, defaultContamination: 0,
     icon: '💣', description: '폭발 + 관통 피해. 다수 적을 제압.',
     tags: ['weapon', 'throwable', 'explosive', 'crafted'],
-    combat: { damage: [30, 50], accuracy: 0.60, noiseOnUse: 60, durabilityLoss: 100, critChance: 0.15, critMultiplier: 2.5 },
+    combat: { damage: [45, 70], accuracy: 0.60, noiseOnUse: 60, durabilityLoss: 100, critChance: 0.15, critMultiplier: 2.5 },
     dismantle: [],
   },
 

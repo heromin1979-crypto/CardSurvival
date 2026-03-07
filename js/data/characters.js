@@ -5,6 +5,8 @@ export const CHARACTERS = [
   {
     id: 'doctor',
     name: '이지수',
+    gender: 'F',
+    maxCarryWeight: 30,
     title: '응급의학과 전문의',
     portrait: '🩺',
     story: `2026년 1월 17일, 강남 삼성서울병원 응급실. 이지수 전문의(38세)는 11시간째 수술 중이었다.
@@ -49,6 +51,8 @@ export const CHARACTERS = [
   {
     id: 'soldier',
     name: '강민준',
+    gender: 'M',
+    maxCarryWeight: 50,
     title: '특수전 부사관',
     portrait: '⚔️',
     story: `2026년 1월 16일, 종로 광화문정부청사. 강민준 하사(29세)는 비상사태 격상 직전 VIP 경호 임무를 받았다.
@@ -92,6 +96,8 @@ export const CHARACTERS = [
   {
     id: 'firefighter',
     name: '박영철',
+    gender: 'M',
+    maxCarryWeight: 45,
     title: '소방관',
     portrait: '🔥',
     story: `2026년 1월 16일 새벽 3시. 용산에서 대형 화재 신고가 들어왔다.
@@ -136,6 +142,8 @@ export const CHARACTERS = [
   {
     id: 'homeless',
     name: '최형식',
+    gender: 'M',
+    maxCarryWeight: 32,
     title: '전직 사업가 · 노숙인',
     portrait: '🏕️',
     story: `최형식(52세)은 한때 중견 건설회사 대표였다. 2023년 보증 실패로 모든 것을 잃었다.
@@ -180,6 +188,8 @@ export const CHARACTERS = [
   {
     id: 'pharmacist',
     name: '한소희',
+    gender: 'F',
+    maxCarryWeight: 28,
     title: '약사',
     portrait: '💊',
     story: `한소희(31세)는 홍대 입구 골목 작은 약국의 원장이었다.
@@ -224,6 +234,8 @@ export const CHARACTERS = [
   {
     id: 'engineer',
     name: '정대한',
+    gender: 'M',
+    maxCarryWeight: 38,
     title: '기계공학자',
     portrait: '🔧',
     story: `정대한(35세)은 성수동 소규모 금속 가공 공장의 기술 이사였다.

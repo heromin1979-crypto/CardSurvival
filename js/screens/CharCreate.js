@@ -255,7 +255,15 @@ const CharCreate = {
     // ── 플레이어 초기화 ──────────────────────────────────────
     gs.player.name        = name;
     gs.player.characterId = char.id;
+    gs.player.gender      = char.gender ?? 'M';
     gs.player.isAlive     = true;
+    // 캐릭터별 최대 무게 설정
+    gs.player.encumbrance.max      = char.maxCarryWeight ?? 30;
+    gs.player.encumbrance.current  = 0;
+    gs.player.encumbrance.tier     = 0;
+    gs.player.encumbrance.weightPct= 0;
+    // 스태미나 초기화
+    gs.stats.stamina = { current: 100, max: 100 };
     gs.player.deathCause  = null;
     gs.player.hp          = { current: 100, max: 100 };
     gs.player.xp          = 0;
@@ -357,7 +365,13 @@ const CharCreate = {
       yeongdeungpoVisited: false, seodaemunVisited: false,
       songpaVisited: false, jongnoVisited: false,
       infectionCured: false, collapseCount: 0,
+      survivedSummer: false, diseaseDeathId: null,
     };
+
+    // ── 신규 시스템 리셋 ─────────────────────────────────────
+    gs.player.diseases = [];
+    gs.season = { current: 'spring', eventsTriggered: [] };
+    gs.weather = { id: 'sunny', name: '맑음', icon: '☀️', tempMod: 0, tpRemaining: 96, tempJitter: 0 };
 
     // ── 위치: 선택한 구로 설정 ───────────────────────────────
     gs.location.currentDistrict  = districtId;
@@ -375,30 +389,52 @@ const CharCreate = {
       if (inst) gs.board.top[0] = inst.instanceId;
     }
 
-    const adjacent = getAdjacentDistricts(districtId);
-    let topSlot = 1;
-    for (const adj of adjacent) {
-      if (topSlot >= gs.board.top.length - 1) break; // top[7] 예약 (랜드마크)
-      const defId = `loc_${adj.id}`;
-      if (items[defId]) {
-        const inst = gs.createCardInstance(defId);
-        if (inst) gs.board.top[topSlot++] = inst.instanceId;
-      }
-    }
-
-    // 랜드마크 카드 → top[7]
+    // 랜드마크 카드 → top[1] (현재 위치 바로 오른쪽)
     const districts = window.__GAME_DATA__?.districts ?? {};
     const lmDefId   = districts[districtId]?.landmark ?? `lm_${districtId}`;
     if (items[lmDefId]) {
       const lmInst = gs.createCardInstance(lmDefId);
-      if (lmInst) gs.board.top[7] = lmInst.instanceId;
+      if (lmInst) gs.board.top[1] = lmInst.instanceId;
     }
 
-    // ── 하단 행: 기본 시작 소지품 + 캐릭터 추가 아이템 ──────
+    // 인접 구 카드 → top[2..7] (구 위치 카드 사용)
+    const adjacent = getAdjacentDistricts(districtId);
+    let topSlot = 2;
+    for (const adj of adjacent) {
+      if (topSlot >= gs.board.top.length) break;
+      const useId = `loc_${adj.id}`;
+      if (items[useId]) {
+        const inst = gs.createCardInstance(useId);
+        if (inst) gs.board.top[topSlot++] = inst.instanceId;
+      }
+    }
+
+    // ── 하단 행: 기본 시작 소지품 + 캐릭터 추가 아이템 (같은 아이템은 합산) ──────
     const starters = this._getStarterItems(districtId);
+    // 같은 definitionId끼리 수량 집계
+    const itemCounts = new Map();
     for (const defId of [...starters, ...extraStartItems]) {
-      const inst = gs.createCardInstance(defId);
-      if (inst) gs.placeCardInRow(inst.instanceId, 'bottom');
+      itemCounts.set(defId, (itemCounts.get(defId) ?? 0) + 1);
+    }
+    // 수량을 반영해 카드 생성 (stackable은 하나의 스택으로, 아닌 것은 개별 배치)
+    for (const [defId, count] of itemCounts.entries()) {
+      const def = items[defId];
+      if (!def) continue;
+      if (def.stackable) {
+        const maxStack = def.maxStack ?? 99;
+        let remaining = count;
+        while (remaining > 0) {
+          const qty  = Math.min(maxStack, remaining);
+          const inst = gs.createCardInstance(defId, { quantity: qty });
+          if (inst) gs.placeCardInRow(inst.instanceId, 'bottom');
+          remaining -= qty;
+        }
+      } else {
+        for (let i = 0; i < count; i++) {
+          const inst = gs.createCardInstance(defId);
+          if (inst) gs.placeCardInRow(inst.instanceId, 'bottom');
+        }
+      }
     }
 
     // ── 작은 가방 지급 및 자동 장착 ─────────────────────────

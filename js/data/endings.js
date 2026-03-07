@@ -387,6 +387,100 @@ export const ENDINGS = {
       '경사면을 오르며, 처음으로 서울 외곽을 봤다.',
     ],
   },
+
+  // ── 질병 사망 엔딩 (3) ─────────────────────────────────────────
+
+  death_disease_water: {
+    id: 'death_disease_water', category: 'death',
+    title: '오염된 물',            subtitle: '수인성 질병',
+    gradient: 'linear-gradient(160deg,#050a08 0%,#0a1410 60%,#050a08 100%)',
+    narrative: [
+      '그 물을 마신 것이 실수였다.',
+      '처음엔 배가 아팠다. 다음엔 멈출 수 없는 구토.',
+      '수분이 빠져나갔다. 물이 없었다. 맑은 물이.',
+      '서울의 어느 폐건물 구석에서, 홀로.',
+      '오염된 도시가 결국 이겼다.',
+    ],
+  },
+
+  death_disease_infection: {
+    id: 'death_disease_infection', category: 'death',
+    title: '감염의 끝',            subtitle: '패혈증 · 독감 합병증',
+    gradient: 'linear-gradient(160deg,#080508 0%,#120a10 60%,#080508 100%)',
+    narrative: [
+      '열이 사흘째 내리지 않았다.',
+      '항생제가 있었다면. 의료 시설이 있었다면.',
+      '폐허의 서울엔 아무것도 없었다.',
+      '몸이 스스로를 공격하는 소리가 들리는 것 같았다.',
+      '마지막 생각은 이상하게도 봄날의 햇볕이었다.',
+    ],
+  },
+
+  death_disease_heat: {
+    id: 'death_disease_heat', category: 'death',
+    title: '폭염의 도시',          subtitle: '열사병',
+    gradient: 'linear-gradient(160deg,#1a0800 0%,#200a00 60%,#140600 100%)',
+    narrative: [
+      '서울의 여름은 살인적이었다. 문자 그대로.',
+      '35도를 넘은 날씨에 그늘도, 물도 부족했다.',
+      '머리가 흐려졌다. 방향을 잃었다.',
+      '아스팔트 위에서 멈췄다. 일어나려 했지만 몸이 말을 듣지 않았다.',
+      '태양이 지는 것을 봤다. 마지막으로.',
+    ],
+  },
+
+  // ── 계절 엔딩 (3) ──────────────────────────────────────────────
+
+  survived_summer: {
+    id: 'survived_summer', category: 'milestone',
+    title: '폭염을 넘어',            subtitle: '서울의 여름 생존',
+    gradient: 'linear-gradient(160deg,#1a0a00 0%,#2a1400 60%,#1a0800 100%)',
+    condition: (gs) => {
+      return gs.time.day >= 181
+          && (gs.flags.survivedSummer ?? false);
+    },
+    narrative: [
+      '영하 20도의 겨울이 지나고, 이번엔 35도를 넘는 여름이었다.',
+      '물이 없으면 하루를 버티기도 힘들었다.',
+      '폐허가 된 도시의 여름은 산 자보다 죽은 자에게 더 친절했다.',
+      '그러나 당신은 버텼다. 물을 찾고, 그늘을 찾고, 하루씩.',
+      '가을바람이 불어왔다. 살아있다는 것이 실감났다.',
+    ],
+  },
+
+  winter_survivor: {
+    id: 'winter_survivor', category: 'milestone',
+    title: '한겨울의 생존자',          subtitle: '서울의 겨울 완전 생존',
+    gradient: 'linear-gradient(160deg,#000a1a 0%,#00101a 60%,#000610 100%)',
+    condition: (gs) => {
+      return gs.time.day >= 360
+          && gs.player.isAlive;
+    },
+    narrative: [
+      '영하의 서울. 캠프파이어 하나가 전부였다.',
+      '식량이 떨어질 때마다, 조금 더 멀리 나갔다.',
+      '좀비들도 추위를 피했다. 오직 당신만이 거리에 있었다.',
+      '봄이 올 거라 믿었다. 믿지 않으면 버틸 수 없었기 때문에.',
+      '눈이 녹기 시작했다. 겨울을 이겼다.',
+    ],
+  },
+
+  four_seasons: {
+    id: 'four_seasons', category: 'milestone',
+    title: '사계절의 서울',            subtitle: '1년 완전 생존',
+    gradient: 'linear-gradient(160deg,#0a1a0a 0%,#141a10 60%,#080e08 100%)',
+    condition: (gs) => {
+      return gs.time.day >= 365
+          && gs.player.isAlive;
+    },
+    narrative: [
+      '봄에는 꽃이 피었다. 폐허 사이로.',
+      '여름엔 모든 것이 타오를 것 같았다. 그래도 버텼다.',
+      '가을엔 홀로 낙엽을 밟았다. 소리가 너무 크게 들렸다.',
+      '겨울엔 다 끝날 것이라 생각했다. 틀렸다.',
+      '1년이 지났다. 서울은 여전히 폐허지만, 당신은 살아 있다.',
+    ],
+  },
 };
 
 export default ENDINGS;

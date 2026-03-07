@@ -6,9 +6,11 @@ import TickEngine  from '../core/TickEngine.js';
 import { NODES, DISTRICTS, generateRouteCards } from '../data/nodes.js';
 import { getAdjacentDistricts } from '../data/districts.js';
 import { rollEnemyGroup } from '../data/enemies.js';
+import { LANDMARK_DATA } from '../data/landmarks.js';
 import NoiseSystem   from './NoiseSystem.js';
 import TraitSystem   from './TraitSystem.js';
 import StatSystem    from './StatSystem.js';
+import SeasonSystem  from './SeasonSystem.js';
 
 const ExploreSystem = {
   init() {
@@ -17,6 +19,37 @@ const ExploreSystem = {
       const screen = document.getElementById('screen-basecamp');
       if (screen && screen.classList.contains('active')) {
         this.travelTo(nodeId);
+      }
+    });
+
+    // 세이브 로드 시 현재 구의 top row 카드 갱신
+    // (저장 당시 코드 버전 차이로 인접 구 카드가 누락될 수 있음)
+    EventBus.on('loaded', () => {
+      const districtId = GameState.location.currentDistrict;
+      if (districtId) this._updateTopRowCards(districtId);
+    });
+
+    // 랜드마크 진입 요청
+    EventBus.on('landmarkRequest', ({ districtId }) => {
+      const screen = document.getElementById('screen-basecamp');
+      if (screen && screen.classList.contains('active')) {
+        this.enterLandmark(districtId);
+      }
+    });
+
+    // 세부 장소 진입 요청
+    EventBus.on('sublocationRequest', ({ districtId, subLocationId }) => {
+      const screen = document.getElementById('screen-basecamp');
+      if (screen && screen.classList.contains('active')) {
+        this.enterSubLocation(districtId, subLocationId);
+      }
+    });
+
+    // 랜드마크 퇴장 요청
+    EventBus.on('exitLandmarkRequest', () => {
+      const screen = document.getElementById('screen-basecamp');
+      if (screen && screen.classList.contains('active')) {
+        this.exitLandmark();
       }
     });
   },
@@ -48,24 +81,24 @@ const ExploreSystem = {
       if (inst) gs.board.top[0] = inst.instanceId;
     }
 
-    // 인접 구 카드 → top[1..6]
-    const adjacent = getAdjacentDistricts(districtId);
-    let slot = 1;
-    for (const adj of adjacent) {
-      if (slot >= gs.board.top.length - 1) break; // top[7] 예약 (랜드마크)
-      const defId = `loc_${adj.id}`;
-      if (items[defId]) {
-        const inst = gs.createCardInstance(defId);
-        if (inst) gs.board.top[slot++] = inst.instanceId;
-      }
-    }
-
-    // 랜드마크 카드 → top[7] (마지막 고정 슬롯)
+    // 랜드마크 카드 → top[1] (현재 위치 바로 오른쪽)
     const district = DISTRICTS[districtId];
     const lmDefId  = district?.landmark;
     if (lmDefId && items[lmDefId]) {
       const lmInst = gs.createCardInstance(lmDefId);
-      if (lmInst) gs.board.top[7] = lmInst.instanceId;
+      if (lmInst) gs.board.top[1] = lmInst.instanceId;
+    }
+
+    // 인접 구 카드 → top[2..7] (구 위치 카드 사용)
+    const adjacent = getAdjacentDistricts(districtId);
+    let slot = 2;
+    for (const adj of adjacent) {
+      if (slot >= gs.board.top.length) break;
+      const useId = `loc_${adj.id}`;
+      if (items[useId]) {
+        const inst = gs.createCardInstance(useId);
+        if (inst) gs.board.top[slot++] = inst.instanceId;
+      }
     }
 
     gs._updateEncumbrance();
@@ -95,6 +128,25 @@ const ExploreSystem = {
       return;
     }
 
+    // ── 이동 제한 체크 ──────────────────────────────────────
+    const enc = gs.player.encumbrance;
+    const weightPct = enc.weightPct ?? 0;
+    if (weightPct >= 2.0) {
+      EventBus.emit('notify', {
+        message: `⛔ 짐이 너무 무거워 이동할 수 없습니다! (${Math.round(weightPct * 100)}%) 아이템을 버리거나 내려놓아야 합니다.`,
+        type: 'danger',
+      });
+      return;
+    }
+    const st = gs.stats.stamina;
+    if (st && st.current <= 0) {
+      EventBus.emit('notify', { message: '💀 기력이 다해 이동할 수 없습니다. 먼저 휴식이 필요합니다.', type: 'danger' });
+      return;
+    }
+    if (st && st.current / st.max < 0.3) {
+      EventBus.emit('notify', { message: '😮‍💨 몸을 움직이기 힘들어집니다. (스태미나 30% 미만)', type: 'warn' });
+    }
+
     // TP 소비
     const costTP = district.travelCostTP ?? 2;
     if (costTP > 0) TickEngine.skipTP(costTP, `${district.name}(으)로 이동`);
@@ -105,6 +157,15 @@ const ExploreSystem = {
       gs.flags.nukeZoneEntered = (gs.flags.nukeZoneEntered ?? 0) + 1;
       EventBus.emit('notify', { message: `⚠ 방사선 구역! +${district.radiation}`, type: 'danger' });
     }
+
+    // ── 바닥(중간 행) 위치별 저장 ──────────────────────────
+    // 현재 지역 바닥 아이템을 저장하고 새 지역 바닥으로 교체
+    if (!gs.locationFloors) gs.locationFloors = {};
+    gs.locationFloors[currentDistrictId] = [...gs.board.middle];
+
+    const newFloor = gs.locationFloors[districtId] ?? [];
+    const floorSize = gs.board.middle.length;
+    gs.board.middle = Array.from({ length: floorSize }, (_, i) => newFloor[i] ?? null);
 
     // 상태 갱신
     gs.location.currentDistrict = districtId;
@@ -118,6 +179,12 @@ const ExploreSystem = {
     if (districtId === 'seodaemun')    gs.flags.seodaemunVisited    = true;
     if (districtId === 'songpa')       gs.flags.songpaVisited       = true;
     if (districtId === 'jongno')       gs.flags.jongnoVisited       = true;
+
+    // ── 이동 시 스태미나 소모 ──────────────────────────────
+    // 기본 10 × 무게 배율 × 저스태미나 패널티
+    const travelWeightMult = StatSystem._getWeightMult(weightPct);
+    const lowStaminaMult   = (st && st.current / st.max < 0.3) ? 1.5 : 1;
+    StatSystem.drainStamina(Math.ceil(10 * travelWeightMult * lowStaminaMult));
 
     this._updateTopRowCards(districtId);
 
@@ -136,7 +203,31 @@ const ExploreSystem = {
     const district   = DISTRICTS[districtId];
     if (!district) return;
 
+    // ── 탐색 이동 제한 체크 ─────────────────────────────────
+    const encExp    = gs.player.encumbrance;
+    const wPctExp   = encExp.weightPct ?? 0;
+    if (wPctExp >= 2.0) {
+      EventBus.emit('notify', {
+        message: `⛔ 짐이 너무 무거워 탐색할 수 없습니다! (${Math.round(wPctExp * 100)}%)`,
+        type: 'danger',
+      });
+      return;
+    }
+    const stExp = gs.stats.stamina;
+    if (stExp && stExp.current <= 0) {
+      EventBus.emit('notify', { message: '💀 기력이 다해 탐색할 수 없습니다. 먼저 휴식이 필요합니다.', type: 'danger' });
+      return;
+    }
+    if (stExp && stExp.current / stExp.max < 0.3) {
+      EventBus.emit('notify', { message: '😮‍💨 몸을 움직이기 힘들어집니다. (스태미나 30% 미만)', type: 'warn' });
+    }
+
     TickEngine.skipTP(1, `${district.name} 탐색`);
+
+    // ── 탐색 스태미나 소모 (이동의 절반) ────────────────────
+    const expWeightMult   = StatSystem._getWeightMult(wPctExp);
+    const expLowStamMult  = (stExp && stExp.current / stExp.max < 0.3) ? 1.5 : 1;
+    StatSystem.drainStamina(Math.ceil(5 * expWeightMult * expLowStamMult));
 
     const toolEffects = this._collectToolEffects();
 
@@ -209,6 +300,13 @@ const ExploreSystem = {
           if (traitBonus > 0) {
             const extra = loot[Math.floor(Math.random() * loot.length)];
             for (let i = 0; i < traitBonus; i++) loot.push({ ...extra, quantity: 1 });
+          }
+        }
+        // 계절 보너스 루팅
+        const seasonalLoot = SeasonSystem.rollSeasonalLoot();
+        for (const item of seasonalLoot) {
+          if (window.__GAME_DATA__?.items[item.definitionId]) {
+            loot.push({ definitionId: item.definitionId, quantity: item.quantity });
           }
         }
         this._placeLoot(loot);
@@ -311,6 +409,164 @@ const ExploreSystem = {
       if (u.scoutBonus)         result.scoutBonus         += u.scoutBonus;
     }
     return result;
+  },
+
+  // ── 랜드마크 진입 ────────────────────────────────────────
+
+  enterLandmark(districtId) {
+    const gs = GameState;
+    const lmData = LANDMARK_DATA[districtId];
+    if (!lmData) {
+      EventBus.emit('notify', { message: '랜드마크 정보를 찾을 수 없습니다.', type: 'warn' });
+      return;
+    }
+    gs.location.currentLandmark    = districtId;
+    gs.location.currentSubLocation = null;
+    this._updateTopRowForLandmark(districtId);
+    EventBus.emit('notify', { message: `🏛 ${lmData.name} 진입`, type: 'info' });
+    EventBus.emit('boardChanged', {});
+  },
+
+  _updateTopRowForLandmark(districtId) {
+    const gs    = GameState;
+    const items = window.__GAME_DATA__?.items ?? {};
+    const lmData = LANDMARK_DATA[districtId];
+
+    // 기존 top row 위치 카드 모두 제거
+    for (let i = 0; i < gs.board.top.length; i++) {
+      const instId = gs.board.top[i];
+      if (!instId) continue;
+      const inst = gs.cards[instId];
+      if (!inst) { gs.board.top[i] = null; continue; }
+      const def = items[inst.definitionId];
+      if (def?.type === 'location') {
+        delete gs.cards[instId];
+        gs.board.top[i] = null;
+      }
+    }
+
+    // 귀환 카드 (현재 구 카드) → top[0]
+    const returnDefId = `loc_${districtId}`;
+    if (items[returnDefId]) {
+      const inst = gs.createCardInstance(returnDefId);
+      if (inst) gs.board.top[0] = inst.instanceId;
+    }
+
+    // 세부 장소 카드 → top[1..N]
+    let slot = 1;
+    for (const sub of lmData?.subLocations ?? []) {
+      if (slot >= gs.board.top.length) break;
+      const slDefId = `sl_${sub.id}`;
+      if (items[slDefId]) {
+        const inst = gs.createCardInstance(slDefId);
+        if (inst) gs.board.top[slot++] = inst.instanceId;
+      }
+    }
+
+    gs._updateEncumbrance();
+  },
+
+  // ── 세부 장소 탐색 ───────────────────────────────────────
+
+  enterSubLocation(districtId, subLocationId) {
+    const gs     = GameState;
+    const lmData = LANDMARK_DATA[districtId];
+    const sub    = lmData?.subLocations?.find(s => s.id === subLocationId);
+    if (!sub) return;
+
+    gs.location.currentSubLocation = subLocationId;
+    gs.location.currentNode        = subLocationId;
+
+    // 과적 체크
+    const enc = gs.player.encumbrance;
+    if ((enc.weightPct ?? 0) >= 2.0) {
+      EventBus.emit('notify', { message: '짐이 너무 무거워 탐색할 수 없습니다!', type: 'danger' });
+      return;
+    }
+
+    // 스태미나 체크
+    const st = gs.stats.stamina;
+    if (st && st.current <= 0) {
+      EventBus.emit('notify', { message: '기력이 다해 탐색할 수 없습니다.', type: 'danger' });
+      return;
+    }
+
+    // 1 TP 소비
+    TickEngine.skipTP(1, `${sub.name} 탐색`);
+
+    // 소음 생성
+    const district  = DISTRICTS[districtId];
+    const noiseBase = district?.noiseGen ?? 3;
+    NoiseSystem.addNoise(noiseBase * 0.8);
+
+    // 조우 체크
+    const baseEncounter = (district?.encounterChance ?? 0) + (sub.dangerMod ?? 0);
+    const reduction     = gs.player.encounterRateReduct ?? 0;
+    const finalChance   = baseEncounter * (1 - Math.min(0.80, reduction));
+    if (finalChance > 0 && Math.random() < finalChance) {
+      const enemies = rollEnemyGroup(district?.dangerLevel ?? 1, gs.noise.level);
+      StateMachine.transition('encounter', {
+        nodeId:      districtId,
+        enemies,
+        enemy:       enemies[0],
+        dangerLevel: district?.dangerLevel ?? 1,
+        noiseLevel:  gs.noise.level,
+      });
+      return;
+    }
+
+    // 방사선 체크 (건물 내부는 절반)
+    if ((district?.radiation ?? 0) > 0) {
+      StatSystem.applyRadiation(district.radiation * 0.5);
+    }
+
+    // 루팅 생성 및 배치
+    const loot = this._generateSubLocationLoot(sub);
+    this._placeLoot(loot);
+
+    EventBus.emit('notify', { message: `📍 ${sub.name} 탐색 완료`, type: 'info' });
+    EventBus.emit('boardChanged', {});
+  },
+
+  _generateSubLocationLoot(sub) {
+    const table      = sub.lootTable ?? [];
+    const [minCount, maxCount] = sub.lootCount ?? [1, 3];
+    const count      = minCount + Math.floor(Math.random() * (maxCount - minCount + 1));
+    const totalWeight = table.reduce((s, e) => s + e.weight, 0);
+    const results    = [];
+    const items      = window.__GAME_DATA__?.items ?? {};
+
+    for (let i = 0; i < count; i++) {
+      let rand = Math.random() * totalWeight;
+      for (const entry of table) {
+        rand -= entry.weight;
+        if (rand <= 0) {
+          if (!items[entry.id]) break; // 아이템 정의 없으면 스킵
+          const contaminated = Math.random() < (entry.contamChance ?? 0);
+          results.push({
+            definitionId:  entry.id,
+            quantity:      1,
+            contamination: contaminated ? 60 : 0,
+          });
+          break;
+        }
+      }
+    }
+    return results;
+  },
+
+  // ── 랜드마크 퇴장 ────────────────────────────────────────
+
+  exitLandmark() {
+    const gs         = GameState;
+    const districtId = gs.location.currentLandmark ?? gs.location.currentDistrict;
+    gs.location.currentLandmark    = null;
+    gs.location.currentSubLocation = null;
+    gs.location.currentNode        = districtId;
+    this._updateTopRowCards(districtId);
+    const district = DISTRICTS[districtId];
+    EventBus.emit('notify', { message: `↩ ${district?.name ?? districtId} 귀환`, type: 'info' });
+    EventBus.emit('boardChanged', {});
   },
 
   // 레거시 stub

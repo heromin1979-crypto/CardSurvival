@@ -64,7 +64,7 @@ export const LANDMARK_DATA = {
   },
 
   // ── 중구 — 남대문시장 ─────────────────────────────────────
-  junggu: {
+  junggoo: {
     name: '남대문시장',
     desc: '서울 최대 재래시장. 식료품, 의류, 잡화 등 온갖 생존 물자가 있을 수 있다.',
     icon: '🏪',
@@ -370,7 +370,7 @@ export const LANDMARK_DATA = {
   },
 
   // ── 중랑구 — 용마랜드 폐유원지 ──────────────────────────
-  jungnang: {
+  jungrang: {
     name: '용마랜드 폐유원지',
     desc: '수십 년째 방치된 유원지. 녹슨 놀이기구와 음산한 분위기.',
     icon: '🎠',
@@ -1552,6 +1552,46 @@ export const LANDMARK_DATA = {
 };
 
 // ── 유틸리티 ────────────────────────────────────────────────
+
+/**
+ * 각 랜드마크 세부 장소(sublocation)에 대한 아이템 정의를 생성하여
+ * window.__GAME_DATA__.items 에 등록한다.
+ * main.js에서 window.__GAME_DATA__ 초기화 직후 호출해야 한다.
+ */
+export function registerSubLocationItems() {
+  const items = window.__GAME_DATA__?.items;
+  if (!items) return;
+
+  for (const [districtId, lmData] of Object.entries(LANDMARK_DATA)) {
+    for (const sub of lmData.subLocations ?? []) {
+      const id = `sl_${sub.id}`;
+      if (items[id]) continue; // 이미 등록된 경우 스킵
+      items[id] = {
+        id,
+        name:                  sub.name,
+        type:                  'location',
+        subtype:               'sublocation',
+        sublocation:           true,
+        districtId,
+        subLocationId:         sub.id,
+        icon:                  sub.icon,
+        description:           sub.desc,
+        rarity:                'common',
+        weight:                0,
+        stackable:             false,
+        maxStack:              1,
+        defaultDurability:     100,
+        defaultContamination:  0,
+        tags:                  ['location', 'sublocation'],
+        requiresSlot:          'top',
+        dismantle:             [],
+        dangerMod:             sub.dangerMod ?? 0,
+        lootTable:             sub.lootTable,
+        lootCount:             sub.lootCount,
+      };
+    }
+  }
+}
 
 /**
  * 가중치 기반 추첨으로 lootTable에서 N개 아이템을 선택한다.

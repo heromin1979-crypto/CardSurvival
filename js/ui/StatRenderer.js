@@ -4,13 +4,14 @@ import EventBus  from '../core/EventBus.js';
 import GameState from '../core/GameState.js';
 
 const STAT_CONFIG = [
-  { key: 'hydration',   label: '수분',   icon: '💧' },
-  { key: 'nutrition',   label: '영양',   icon: '🥗' },
-  { key: 'temperature', label: '체온',   icon: '🌡' },
-  { key: 'morale',      label: '사기',   icon: '😐' },
-  { key: 'radiation',   label: '방사선', icon: '☢' },
-  { key: 'infection',   label: '감염',   icon: '🦠' },
-  { key: 'fatigue',     label: '피로',   icon: '😴' },
+  { key: 'hydration',   label: '수분',    icon: '💧' },
+  { key: 'nutrition',   label: '영양',    icon: '🥗' },
+  { key: 'stamina',     label: '스태미나', icon: '💪', isGood: true },  // 높을수록 좋음
+  { key: 'temperature', label: '체온',    icon: '🌡' },
+  { key: 'morale',      label: '사기',    icon: '😐' },
+  { key: 'radiation',   label: '방사선',  icon: '☢' },
+  { key: 'infection',   label: '감염',    icon: '🦠' },
+  { key: 'fatigue',     label: '피로',    icon: '😴' },
 ];
 
 const StatRenderer = {
@@ -38,7 +39,18 @@ const StatRenderer = {
     const statsDiv = document.getElementById('hud-stat-bars');
     if (!statsDiv) return;
 
-    statsDiv.innerHTML = STAT_CONFIG.map(s => `
+    const hpBarHTML = `
+      <div class="stat-bar-group hp" id="statbar-hp">
+        <div class="stat-bar-label">
+          <span class="stat-bar-name">❤️ HP</span>
+          <span class="stat-bar-value" id="statval-hp">--</span>
+        </div>
+        <div class="stat-bar-track">
+          <div class="stat-bar-fill hp" id="statfill-hp" style="width:0%"></div>
+        </div>
+      </div>
+    `;
+    statsDiv.innerHTML = hpBarHTML + STAT_CONFIG.map(s => `
       <div class="stat-bar-group ${s.key}" id="statbar-${s.key}">
         <div class="stat-bar-label">
           <span class="stat-bar-name">${s.icon} ${s.label}</span>
@@ -72,7 +84,11 @@ const StatRenderer = {
         group.classList.remove('flash-bad', 'flash-good');
 
         const isAccum = ['radiation','infection','fatigue'].includes(s.key);
-        if (isAccum) {
+        if (s.isGood) {
+          // 스태미나: 낮을수록 위험 (hydration/nutrition과 동일)
+          if (pct < 15) fill.classList.add('danger');
+          else if (pct < 30) fill.classList.add('warn');
+        } else if (isAccum) {
           if (pct > 70) fill.classList.add('danger');
           else if (pct > 40) fill.classList.add('warn');
         } else {
@@ -80,6 +96,19 @@ const StatRenderer = {
           else if (pct < 30) fill.classList.add('warn');
         }
       }
+    }
+
+    // HP bar
+    const hpFill  = document.getElementById('statfill-hp');
+    const hpBarVal = document.getElementById('statval-hp');
+    if (hpFill && hpBarVal) {
+      const hp  = gs.player.hp;
+      const pct = (hp.current / hp.max) * 100;
+      hpFill.style.width = Math.max(0, Math.min(100, pct)) + '%';
+      hpBarVal.textContent = `${Math.round(hp.current)}/${hp.max}`;
+      hpFill.classList.remove('danger', 'warn');
+      if (pct < 25) hpFill.classList.add('danger');
+      else if (pct < 50) hpFill.classList.add('warn');
     }
 
     // Day/hour display
@@ -109,8 +138,13 @@ const StatRenderer = {
     // Encumbrance
     const encEl = document.getElementById('hud-enc');
     if (encEl) {
-      const enc = gs.player.encumbrance;
-      encEl.textContent = `${enc.current.toFixed(1)}/${enc.max}kg`;
+      const enc    = gs.player.encumbrance;
+      const pctVal = Math.round((enc.weightPct ?? 0) * 100);
+      encEl.textContent = `${enc.current.toFixed(1)}/${enc.max}kg (${pctVal}%)`;
+      // 과적 경고 색상
+      encEl.style.color = enc.tier >= 4 ? 'var(--text-danger)'
+                        : enc.tier >= 3 ? 'var(--text-warn)'
+                        : '';
     }
   },
 

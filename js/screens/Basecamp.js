@@ -9,6 +9,8 @@ import StatRenderer   from '../ui/StatRenderer.js';
 import SaveManager    from '../persistence/SaveManager.js';
 import EquipmentModal  from '../ui/EquipmentModal.js';
 import LandmarkModal   from '../ui/LandmarkModal.js';
+import SeasonSystem    from '../systems/SeasonSystem.js';
+import WeatherSystem   from '../systems/WeatherSystem.js';
 
 const Basecamp = {
   _el: null,
@@ -39,6 +41,15 @@ const Basecamp = {
     CraftUI.init();
     EquipmentModal.init();
     LandmarkModal.init();
+    // 계절 배지 초기화
+    const seasonInfo = SeasonSystem.getSeasonInfo();
+    const seasonBadge = document.getElementById('season-badge');
+    if (seasonBadge) {
+      seasonBadge.textContent = `${seasonInfo.icon} ${seasonInfo.name}`;
+      seasonBadge.dataset.season = seasonInfo.id;
+    }
+    // 날씨 표시 갱신
+    WeatherSystem.renderHUD();
   },
 
   _buildLayout() {
@@ -63,6 +74,13 @@ const Basecamp = {
             </div>
             <span class="tp-clock-value" id="tp-clock-val">0</span>
           </div>
+          <!-- 계절 + 날씨 행 -->
+          <div class="bc-season-weather-row">
+            <div id="season-badge" class="bc-season-badge" data-season="spring">🌸 봄</div>
+            <div id="weather-display" class="bc-weather-badge" data-weather="sunny">☀️ 맑음</div>
+          </div>
+          <!-- 온도 표시 -->
+          <div id="outdoor-temp" class="bc-temp-display temp-normal">🌡 --°C</div>
         </div>
 
         <!-- Character (클릭 → 장비 창) -->
@@ -74,6 +92,9 @@ const Basecamp = {
             <div class="bc-char-hp"><span id="hud-hp">❤ 100/100</span></div>
           </div>
         </div>
+
+        <!-- 질병 상태 표시 (DiseaseSystem이 채움) -->
+        <div id="disease-status" class="bc-disease-status" style="display:none;"></div>
 
         <!-- Stat bars (StatRenderer fills this) -->
         <div id="hud-stat-bars" class="stat-bars"></div>

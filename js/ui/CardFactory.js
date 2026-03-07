@@ -19,26 +19,48 @@ const CardFactory = {
     el.dataset.definitionId = inst.definitionId;
     el.dataset.rarity = def.rarity ?? 'common';
     el.dataset.type   = def.type   ?? 'material';
-    el.title = def.description ?? '';
 
     // ── 장소 카드 ────────────────────────────────────────────
     if (def.type === 'location') {
-      if (def.landmark) {
-        // 랜드마크 카드 — 클릭 시 LandmarkModal 오픈
-        el.className = 'card location-card landmark-card spawning';
+      // ── 세부 장소 카드 (랜드마크 내부 탐색 슬롯) ─────────
+      if (def.sublocation) {
+        el.className = 'card location-card sublocation-card spawning';
         el.draggable = false;
         el.style.cursor = 'pointer';
-        el.innerHTML = this._buildLandmarkInner(def);
+        el.innerHTML = this._buildSubLocationInner(def);
         el.addEventListener('click', () => {
-          // districtId = lm_{id} → id 추출 후 EventBus 경유
-          const districtId = def.id?.replace(/^lm_/, '');
-          if (districtId) EventBus.emit('openLandmarkModal', { districtId });
+          EventBus.emit('sublocationRequest', { districtId: def.districtId, subLocationId: def.subLocationId });
         });
         el.addEventListener('animationend', () => el.classList.remove('spawning'), { once: true });
         return el;
       }
 
-      // 현재 위치 카드: 클릭 불가, 강조 테두리
+      if (def.landmark) {
+        const districtId = def.id?.replace(/^lm_/, '');
+        const isCurrent  = GameState.location.currentDistrict === districtId;
+
+        el.className = `card location-card landmark-card spawning${isCurrent ? ' is-current-loc' : ''}`;
+        el.draggable = false;
+        el.style.cursor = 'pointer';
+        el.innerHTML = this._buildLandmarkInner(def, isCurrent);
+
+        if (isCurrent) {
+          // 현재 구 랜드마크 → 랜드마크 진입
+          el.addEventListener('click', () => {
+            if (districtId) EventBus.emit('landmarkRequest', { districtId });
+          });
+        } else {
+          // 다른 구 랜드마크 → 해당 구로 이동 (travel card)
+          el.addEventListener('click', () => {
+            if (districtId) EventBus.emit('travelRequest', { nodeId: districtId });
+          });
+        }
+
+        el.addEventListener('animationend', () => el.classList.remove('spawning'), { once: true });
+        return el;
+      }
+
+      // 현재 위치 카드: 랜드마크 내부라면 귀환 버튼, 그 외 클릭 불가
       const isCurrent = GameState.location.currentDistrict === def.nodeId;
       el.className = `card location-card spawning${isCurrent ? ' is-current-loc' : ''}`;
       el.draggable = false;
@@ -50,8 +72,17 @@ const CardFactory = {
           EventBus.emit('travelRequest', { nodeId: def.nodeId });
         });
       } else {
-        el.style.cursor = 'default';
-        el.title = '현재 위치';
+        // 랜드마크 내부에서 현재 구 카드 클릭 → 귀환
+        if (GameState.location.currentLandmark) {
+          el.style.cursor = 'pointer';
+          el.classList.add('landmark-return');
+          el.addEventListener('click', () => {
+            EventBus.emit('exitLandmarkRequest', {});
+          });
+        } else {
+          el.style.cursor = 'default';
+          // title 제거 — 브라우저 네이티브 툴팁이 hover 시 시각적 노이즈 유발
+        }
       }
 
       el.addEventListener('animationend', () => el.classList.remove('spawning'), { once: true });
@@ -59,6 +90,7 @@ const CardFactory = {
     }
 
     // ── 일반 카드 ────────────────────────────────────────────
+    el.title = def.description ?? '';  // 일반 카드만 설명 툴팁
     el.className = 'card spawning';
     el.draggable = true;
     el.innerHTML = this._buildInner(inst, def);
@@ -79,14 +111,40 @@ const CardFactory = {
 
   // ── 장소 카드 내부 HTML ──────────────────────────────────
 
-  _buildLandmarkInner(def) {
+  _buildLandmarkInner(def, isCurrent = false) {
+    if (isCurrent) {
+      // 현재 위치 → 탐색 UI (랜드마크 보너스 표시)
+      return `
+        <div class="lc-header lm-header">
+          <span class="lm-badge">랜드마크</span>
+          <span class="lc-current-badge">현재</span>
+        </div>
+        <div class="lc-icon">${def.icon ?? '📍'}</div>
+        <div class="lc-name">${def.name}</div>
+        <div class="lm-bonus">${def.landmarkBonus ?? ''}</div>
+      `;
+    }
+
+    // 다른 구 → 이동 UI (위험도·TP 표시)
+    const districtId = def.id?.replace(/^lm_/, '');
+    const district   = window.__GAME_DATA__?.districts?.[districtId];
+    const danger     = district?.dangerLevel ?? 0;
+    const color      = DANGER_COLORS[Math.min(danger, DANGER_COLORS.length - 1)];
+    const dangerDots = '●'.repeat(danger) + '○'.repeat(Math.max(0, 3 - danger));
+    const costTP     = district?.travelCostTP ?? 2;
+    const encPct     = district ? Math.round((district.encounterChance ?? 0) * 100) : 0;
+
     return `
       <div class="lc-header lm-header">
         <span class="lm-badge">랜드마크</span>
       </div>
       <div class="lc-icon">${def.icon ?? '📍'}</div>
       <div class="lc-name">${def.name}</div>
-      <div class="lm-bonus">${def.landmarkBonus ?? ''}</div>
+      <div class="lc-danger" style="color:${color};">${dangerDots}</div>
+      <div class="lc-meta">
+        <span>${costTP}TP</span>
+        <span>${encPct > 0 ? `조우 ${encPct}%` : '안전'}</span>
+      </div>
     `;
   },
 
@@ -101,7 +159,7 @@ const CardFactory = {
     const currentBadge = isCurrent
       ? `<span class="lc-current-badge">현재 위치</span>` : '';
     const visitedDot = isVisited && !isCurrent
-      ? `<span class="lc-visited-dot" title="방문함">✓</span>` : '';
+      ? `<span class="lc-visited-dot">✓</span>` : '';
     const encounterText = def.encounterChance > 0
       ? `조우 ${Math.round(def.encounterChance * 100)}%` : '안전';
     const tpText = def.travelCostTP > 0
@@ -113,12 +171,33 @@ const CardFactory = {
       </div>
       <div class="lc-icon">${def.icon ?? '📍'}</div>
       <div class="lc-name">${def.name}</div>
-      <div class="lc-danger" style="color:${color};" title="위험도 ${danger}/3">
+      <div class="lc-danger" style="color:${color};">
         ${dangerDots}
       </div>
       <div class="lc-meta">
         <span>${tpText}</span>
         <span>${encounterText}</span>
+      </div>
+    `;
+  },
+
+  // ── 세부 장소 카드 내부 HTML ─────────────────────────────
+
+  _buildSubLocationInner(def) {
+    const dangerPct   = Math.round((def.dangerMod ?? 0) * 100);
+    const dangerColor = dangerPct <= 10 ? '#449944' : dangerPct <= 20 ? '#cc8822' : '#cc3333';
+    return `
+      <div class="lc-header">
+        <span class="lm-badge">내부</span>
+      </div>
+      <div class="lc-icon">${def.icon}</div>
+      <div class="lc-name">${def.name}</div>
+      <div class="lc-danger" style="color:${dangerColor}; font-size:9px; margin-top:2px;">
+        위험 ${dangerPct > 0 ? '+' + dangerPct + '%' : '낮음'}
+      </div>
+      <div class="lc-meta">
+        <span>🔍 탐색</span>
+        <span>1TP</span>
       </div>
     `;
   },
@@ -217,7 +296,15 @@ const CardFactory = {
     if (!def) return;
 
     if (def.type === 'location') {
-      el.innerHTML = this._buildLocationInner(def);
+      if (def.landmark) {
+        const districtId = def.id?.replace(/^lm_/, '');
+        const isCurrent  = GameState.location.currentDistrict === districtId;
+        el.innerHTML = this._buildLandmarkInner(def, isCurrent);
+        if (isCurrent) el.classList.add('is-current-loc');
+        else            el.classList.remove('is-current-loc');
+      } else {
+        el.innerHTML = this._buildLocationInner(def);
+      }
     } else {
       el.innerHTML = this._buildInner(inst, def);
     }

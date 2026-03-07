@@ -291,10 +291,14 @@
   background: rgba(200,160,96,0.10) !important;
   cursor: default !important;
   box-shadow: 0 0 10px rgba(200,160,96,0.30) !important;
+  transition: none !important;  /* hover 전환 애니메이션 완전 비활성 */
 }
 .location-card.is-current-loc:hover {
-  transform: none !important;
-  box-shadow: 0 0 12px rgba(200,160,96,0.40) !important;
+  transform: translate(-50%, -50%) !important;   /* 슬롯 중앙 정렬 유지 (none 시 위치 튐 버그) */
+  background: rgba(200,160,96,0.10) !important;
+  border-color: var(--accent-primary) !important;
+  box-shadow: 0 0 10px rgba(200,160,96,0.30) !important;
+  z-index: auto !important;
 }
 
 /* ── 랜드마크 카드 ── */
@@ -303,12 +307,13 @@
   background: rgba(200,140,20,0.07) !important;
   cursor: pointer !important;
 }
-/* hover wobble 완전 차단 — location-card:hover 상속 방지 */
+/* hover — 슬롯 중앙 정렬 유지 (none 시 위치 튐 버그 방지) */
 .landmark-card:hover {
-  transform: none !important;
+  transform: translate(-50%, -50%) !important;   /* 중앙 정렬 유지 */
   background: rgba(200,140,20,0.14) !important;
   border-color: var(--accent-primary) !important;
   box-shadow: 0 0 12px rgba(200,160,96,0.35) !important;
+  z-index: auto !important;
 }
 .lm-header {
   border-bottom: 1px solid rgba(200,160,96,0.25) !important;
@@ -376,4 +381,31 @@
 @keyframes tipAppear {
   from { opacity: 0; transform: translateX(-50%) translateY(4px); }
   to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* ── 세부 장소 카드 (랜드마크 내부) ── */
+.sublocation-card {
+  border-color: rgba(150, 180, 200, 0.6) !important;
+  background: rgba(30, 60, 80, 0.5) !important;
+  cursor: pointer !important;
+}
+.sublocation-card:hover {
+  transform: translate(-50%, -50%) !important;
+  background: rgba(40, 80, 110, 0.7) !important;
+  border-color: rgba(100, 160, 220, 0.9) !important;
+  box-shadow: 0 0 12px rgba(100, 160, 220, 0.35) !important;
+  z-index: auto !important;
+}
+
+/* ── 랜드마크 귀환 카드 (첫 번째 슬롯, 랜드마크 내부) ── */
+.location-card.landmark-return {
+  border-color: rgba(200, 160, 96, 0.8) !important;
+  cursor: pointer !important;
+}
+.location-card.landmark-return:hover {
+  transform: translate(-50%, -50%) !important;
+  background: rgba(200, 160, 96, 0.15) !important;
+  border-color: var(--accent-primary) !important;
+  box-shadow: 0 0 12px rgba(200, 160, 96, 0.5) !important;
+  z-index: auto !important;
 }

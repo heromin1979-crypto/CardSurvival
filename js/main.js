@@ -13,10 +13,14 @@ import BLUEPRINTS from './data/blueprints.js';
 import NODES, { DISTRICTS, SUB_LOCATIONS } from './data/nodes.js';
 import ENEMIES    from './data/enemies.js';
 import CHARACTERS from './data/characters.js';
+import { registerSubLocationItems } from './data/landmarks.js';
 
 // Systems
 import EndingSystem         from './systems/EndingSystem.js';
 import StatSystem           from './systems/StatSystem.js';
+import SeasonSystem         from './systems/SeasonSystem.js';
+import DiseaseSystem        from './systems/DiseaseSystem.js';
+import WeatherSystem        from './systems/WeatherSystem.js';
 import EquipmentSystem      from './systems/EquipmentSystem.js';
 import NoiseSystem          from './systems/NoiseSystem.js';
 import ContaminationSystem  from './systems/ContaminationSystem.js';
@@ -65,6 +69,7 @@ import AutoSave    from './persistence/AutoSave.js';
 
 // ── Bootstrap ────────────────────────────────────────────
 window.__GAME_DATA__ = { items: ITEMS, blueprints: BLUEPRINTS, nodes: NODES, districts: DISTRICTS, subLocations: SUB_LOCATIONS, enemies: ENEMIES, characters: CHARACTERS };
+registerSubLocationItems();
 
 function init() {
   console.log('[Game] Initializing Ruined City...');
@@ -72,6 +77,9 @@ function init() {
   // Systems
   EndingSystem.init();
   StatSystem.init();
+  SeasonSystem.init();
+  DiseaseSystem.init();
+  WeatherSystem.init();
   NoiseSystem.init();
   ContaminationSystem.init();
   EncumbranceSystem.init();
