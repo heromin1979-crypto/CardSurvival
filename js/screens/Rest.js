@@ -11,8 +11,8 @@ const REST_OPTIONS = [
     name: '짧은 수면',
     cost: '4 TP',
     tpCost: 4,
-    desc: '피로 -40, 소량 HP 회복',
-    effect: { fatigue: -40, hp: 10 },
+    desc: '피로 -40, 스태미나 +30, HP +10',
+    effect: { fatigue: -40, stamina: 30, hp: 10 },
   },
   {
     id: 'sleep',
@@ -20,8 +20,8 @@ const REST_OPTIONS = [
     name: '완전 수면',
     cost: '8 TP',
     tpCost: 8,
-    desc: '피로 초기화, HP 30 회복',
-    effect: { fatigue: -80, hp: 30, hydration: -20, nutrition: -10 },
+    desc: '피로 -80, 스태미나 +70, HP +30',
+    effect: { fatigue: -80, stamina: 70, hp: 30, hydration: -20, nutrition: -10 },
   },
   {
     id: 'meditate',
@@ -29,8 +29,8 @@ const REST_OPTIONS = [
     name: '명상',
     cost: '2 TP',
     tpCost: 2,
-    desc: '사기 +20, 피로 -10',
-    effect: { morale: 20, fatigue: -10 },
+    desc: '사기 +20, 피로 -10, 스태미나 +15',
+    effect: { morale: 20, fatigue: -10, stamina: 15 },
   },
 ];
 

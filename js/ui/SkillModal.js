@@ -1,0 +1,141 @@
+// === SKILL MODAL ===
+// 숙련도 패널 UI — 3탭 (전투/생존/제작)
+import SkillSystem from '../systems/SkillSystem.js';
+import EventBus   from '../core/EventBus.js';
+import { SKILL_CATEGORIES } from '../data/skillDefs.js';
+
+const SkillModal = {
+  _el:      null,
+  _box:     null,
+  _tab:     'combat',
+
+  init() {
+    this._el  = document.getElementById('skill-modal');
+    this._box = this._el?.querySelector('.skill-modal-box');
+    if (!this._el) return;
+
+    // 오버레이 클릭 시 닫기
+    this._el.addEventListener('click', e => {
+      if (e.target === this._el) this.close();
+    });
+
+    // 레벨업 시 열려있으면 재렌더링
+    EventBus.on('skillLevelUp', () => {
+      if (this._el?.classList.contains('open')) this.render();
+    });
+  },
+
+  open() {
+    if (!this._el) return;
+    this._el.classList.add('open');
+    this.render();
+  },
+
+  close() {
+    this._el?.classList.remove('open');
+  },
+
+  render() {
+    if (!this._box) return;
+    const allData = SkillSystem.getAllSkillData();
+
+    const tabsHtml = Object.entries(SKILL_CATEGORIES).map(([catId, cat]) => `
+      <button class="skill-tab-btn${this._tab === catId ? ' active' : ''}" data-cat="${catId}">
+        ${cat.icon} ${cat.label}
+      </button>
+    `).join('');
+
+    const skills = allData.filter(s => s.def.category === this._tab);
+    const skillsHtml = skills.map(s => this._buildSkillCard(s)).join('');
+
+    this._box.innerHTML = `
+      <div class="skill-modal-header">
+        <span class="skill-modal-title">📊 숙련도</span>
+        <button class="skill-close-btn" id="skill-close-btn">✕</button>
+      </div>
+      <div class="skill-tab-nav">${tabsHtml}</div>
+      <div class="skill-list">${skillsHtml}</div>
+    `;
+
+    // 탭 버튼 이벤트
+    this._box.querySelectorAll('.skill-tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        this._tab = btn.dataset.cat;
+        this.render();
+      });
+    });
+
+    // 닫기 버튼
+    this._box.querySelector('#skill-close-btn')?.addEventListener('click', () => this.close());
+  },
+
+  _buildSkillCard({ id, def, skill, progress }) {
+    const level      = skill.level;
+    const isMastery  = level >= 20;
+    const levelClass = isMastery ? 'mastery' : level >= 10 ? 'high' : level >= 5 ? 'mid' : '';
+    const pctInt     = Math.round(progress.pct * 100);
+
+    const xpText = isMastery
+      ? '최대 레벨 달성'
+      : `${progress.current} / ${progress.required} XP`;
+
+    const bonusLines = this._buildBonusLines(def, level);
+    const masteryHtml = isMastery
+      ? `<div class="skill-mastery-badge">🌟 마스터리: ${def.masteryDesc}</div>`
+      : (level >= 15
+        ? `<div class="skill-mastery-hint">Lv.${20 - level} 후 마스터리: ${def.masteryDesc}</div>`
+        : '');
+
+    return `
+      <div class="skill-card">
+        <div class="skill-card-header">
+          <span class="skill-icon">${def.icon}</span>
+          <span class="skill-name">${def.name}</span>
+          <span class="skill-level-badge ${levelClass}">Lv.${level}</span>
+        </div>
+        <div class="skill-desc">${def.description}</div>
+        <div class="skill-xp-bar-wrap">
+          <div class="skill-xp-bar">
+            <div class="skill-xp-fill ${levelClass}" style="width:${pctInt}%"></div>
+          </div>
+          <span class="skill-xp-text">${xpText}</span>
+        </div>
+        ${bonusLines}
+        ${masteryHtml}
+      </div>
+    `;
+  },
+
+  _buildBonusLines(def, level) {
+    if (level === 0) {
+      const src = def.xpSources?.join(' · ') ?? '';
+      return `<div class="skill-bonus-zero">미숙련 — ${src}</div>`;
+    }
+    const b = def.getBonuses(level);
+    const lines = [];
+
+    // 스킬별 보너스 설명 생성
+    const pct  = v => `+${Math.round(v * 100)}%`;
+    const mult = v => `×${v.toFixed(2)}`;
+
+    if (b.dmgMult    !== undefined) lines.push(`피해량 ${mult(b.dmgMult)}`);
+    if (b.durSaveChance)            lines.push(`내구도 절약 ${pct(b.durSaveChance)}`);
+    if (b.accBonus)                 lines.push(`명중률 ${pct(b.accBonus)}`);
+    if (b.critBonus)                lines.push(`치명타 ${pct(b.critBonus)}`);
+    if (b.damageReduction)          lines.push(`피해 감소 ${pct(b.damageReduction)}`);
+    if (b.extraLootChance)          lines.push(`추가 루팅 ${pct(b.extraLootChance)}`);
+    if (b.healMult    !== undefined && b.healMult !== 1) lines.push(`치료량 ${mult(b.healMult)}`);
+    if (b.foodEffectMult !== undefined && b.foodEffectMult !== 1) lines.push(`음식 효과 ${mult(b.foodEffectMult)}`);
+    if (b.extraMaterialChance)      lines.push(`추가 재료 ${pct(b.extraMaterialChance)}`);
+    if (b.saveChance)               lines.push(`재료 절약 ${pct(b.saveChance)}`);
+    if (b.weaponDurBonus)           lines.push(`무기 내구도 ${pct(b.weaponDurBonus)}`);
+    if (b.armorDefBonus)            lines.push(`방어구 성능 ${pct(b.armorDefBonus)}`);
+    if (b.structureEffectBonus)     lines.push(`구조물 효과 ${pct(b.structureEffectBonus)}`);
+
+    return lines.length
+      ? `<div class="skill-bonus-list">${lines.map(l => `<span class="skill-bonus-tag">${l}</span>`).join('')}</div>`
+      : '';
+  },
+};
+
+export default SkillModal;

@@ -6,6 +6,9 @@ export const CHARACTERS = [
     id: 'doctor',
     name: '이지수',
     gender: 'F',
+    maxHp: 90,
+    strength: 55,   // 체력(힘): 스태미나 상한의 기반
+    endurance: 70,  // 인내심: 체력을 스태미나로 변환하는 효율 (→ stamina ≈ 77)
     maxCarryWeight: 30,
     title: '응급의학과 전문의',
     portrait: '🩺',
@@ -45,6 +48,10 @@ export const CHARACTERS = [
         effect: { startingItems: ['bandage', 'bandage', 'antiseptic', 'painkiller'] },
       },
     ],
+    startingSkills: {
+      medicine:   4,  // 의사 — 의료 숙련도 최상
+      scavenging: 2,  // 약품·의료재료 탐색 경험
+    },
     homeDist: 'gangnam',
   },
 
@@ -52,6 +59,9 @@ export const CHARACTERS = [
     id: 'soldier',
     name: '강민준',
     gender: 'M',
+    maxHp: 130,
+    strength: 90,   // 체력(힘) — 군인: 최고 수준
+    endurance: 90,  // 인내심 — 극한 훈련 (→ stamina ≈ 162)
     maxCarryWeight: 50,
     title: '특수전 부사관',
     portrait: '⚔️',
@@ -90,6 +100,12 @@ export const CHARACTERS = [
         effect: { startingItems: ['knife', 'rope', 'bandage'] },
       },
     ],
+    startingSkills: {
+      melee:   4,  // 군인 — 근접무기 전문
+      ranged:  4,  // 군인 — 총기 훈련
+      defense: 3,  // 방어 전술
+      unarmed: 3,  // 격투 훈련
+    },
     homeDist: 'jongno',
   },
 
@@ -97,6 +113,9 @@ export const CHARACTERS = [
     id: 'firefighter',
     name: '박영철',
     gender: 'M',
+    maxHp: 120,
+    strength: 80,   // 체력(힘) — 소방관: 높은 신체 능력
+    endurance: 85,  // 인내심 — 현장 임무 단련 (→ stamina ≈ 136)
     maxCarryWeight: 45,
     title: '소방관',
     portrait: '🔥',
@@ -111,8 +130,8 @@ export const CHARACTERS = [
         id: 'physical_conditioning',
         name: '체력 단련',
         icon: '💪',
-        desc: '최대 HP +20',
-        effect: { hpMax: 20 },
+        desc: '피로 감소 속도 -20%',
+        effect: { fatigueDecay: -0.2 },
       },
       {
         id: 'rescue_technique',
@@ -136,6 +155,11 @@ export const CHARACTERS = [
         effect: { startingItems: ['rope', 'scrap_metal', 'bandage'] },
       },
     ],
+    startingSkills: {
+      unarmed:    3,  // 소방관 — 신체 단련, 격투
+      building:   3,  // 구조물 지식, 현장 경험
+      scavenging: 2,  // 구조 현장 탐색 경험
+    },
     homeDist: 'yongsan',
   },
 
@@ -143,6 +167,9 @@ export const CHARACTERS = [
     id: 'homeless',
     name: '최형식',
     gender: 'M',
+    maxHp: 65,
+    strength: 50,   // 체력(힘) — 거리 생활로 단련
+    endurance: 40,  // 인내심 — 야생 생존형, 지속력은 보통 (→ stamina ≈ 40)
     maxCarryWeight: 32,
     title: '전직 사업가 · 노숙인',
     portrait: '🏕️',
@@ -178,10 +205,15 @@ export const CHARACTERS = [
         id: 'bare_start',
         name: '맨손 시작',
         icon: '✊',
-        desc: '추가 아이템 없음 + 최대 HP +10 보너스',
-        effect: { hpMax: 10 },
+        desc: '추가 지급 아이템 없음. 없어도 살아남는 법을 안다.',
+        effect: {},
       },
     ],
+    startingSkills: {
+      scavenging:  4,  // 노숙인 — 뭐든 찾는 생존 본능
+      harvesting:  3,  // 자원 채취 (거리 생활)
+      cooking:     3,  // 야전 요리
+    },
     homeDist: 'songpa',
   },
 
@@ -189,6 +221,9 @@ export const CHARACTERS = [
     id: 'pharmacist',
     name: '한소희',
     gender: 'F',
+    maxHp: 80,
+    strength: 50,   // 체력(힘) — 약사: 신체적으로 약함
+    endurance: 60,  // 인내심 — 집중력은 있지만 신체 지속력 낮음 (→ stamina ≈ 60)
     maxCarryWeight: 28,
     title: '약사',
     portrait: '💊',
@@ -228,6 +263,11 @@ export const CHARACTERS = [
         effect: { startingItems: ['purification_tablet', 'painkiller', 'bandage', 'bandage'] },
       },
     ],
+    startingSkills: {
+      medicine:  3,  // 약사 — 의약품 지식
+      crafting:  3,  // 조제·제조 능력
+      cooking:   2,  // 약재 조합 기초
+    },
     homeDist: 'mapo',
   },
 
@@ -235,6 +275,9 @@ export const CHARACTERS = [
     id: 'engineer',
     name: '정대한',
     gender: 'M',
+    maxHp: 110,
+    strength: 75,   // 체력(힘) — 엔지니어: 공장 육체 노동으로 단련
+    endurance: 75,  // 인내심 — 균형 잡힌 지속력 (→ stamina ≈ 113)
     maxCarryWeight: 38,
     title: '기계공학자',
     portrait: '🔧',
@@ -274,6 +317,12 @@ export const CHARACTERS = [
         effect: { startingItems: ['scrap_metal', 'scrap_metal', 'rope', 'cloth'] },
       },
     ],
+    startingSkills: {
+      crafting:    4,  // 엔지니어 — 핵심 제작 능력
+      building:    4,  // 공학 설계·건설
+      weaponcraft: 3,  // 금속 가공 → 무기 제작
+      armorcraft:  2,  // 기초 방어구 제작
+    },
     homeDist: 'seongdong',
   },
 ];

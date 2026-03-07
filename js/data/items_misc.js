@@ -116,6 +116,41 @@ const ITEMS_MISC = {
     dismantle: [],
   },
 
+  herbal_tea: {
+    id: 'herbal_tea', name: '허브차', type: 'consumable', subtype: 'drink',
+    rarity: 'common', weight: 0.3,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🍵', description: '야생 허브를 끓여 만든 차. 근육을 이완시키고 체력을 소폭 회복.',
+    onConsume: { stamina: 20, fatigue: -10, morale: 5, hydration: 15 },
+    leaveOnConsume: { definitionId: 'empty_bottle', qty: 1 },
+    tags: ['drinkable', 'medical', 'stamina', 'crafted'],
+    dismantle: [],
+  },
+
+  stamina_tonic: {
+    id: 'stamina_tonic', name: '활력 강장제', type: 'consumable', subtype: 'medical',
+    rarity: 'uncommon', weight: 0.2,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🧉', description: '허브차를 농축 추출한 강장제. 빠른 체력 회복에 유용.',
+    onConsume: { stamina: 45, fatigue: -20, morale: 10 },
+    leaveOnConsume: { definitionId: 'empty_bottle', qty: 1 },
+    tags: ['medical', 'stamina', 'crafted'],
+    dismantle: [{ definitionId: 'herbal_tea', qty: 1, chance: 0.5 }],
+  },
+
+  battle_ration: {
+    id: 'battle_ration', name: '전투 식량팩', type: 'consumable', subtype: 'food',
+    rarity: 'rare', weight: 0.4,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🪖', description: '특수 제조된 군용 전투 식량. 스태미나·체력·영양을 한 번에 회복.',
+    onConsume: { stamina: 80, fatigue: -35, hp: 15, nutrition: 25, morale: 15 },
+    tags: ['edible', 'medical', 'stamina', 'crafted'],
+    dismantle: [
+      { definitionId: 'stamina_tonic', qty: 1, chance: 0.4 },
+      { definitionId: 'energy_bar',    qty: 1, chance: 0.6 },
+    ],
+  },
+
   // ─── 도구 (10) ────────────────────────────────────────────
 
   flashlight: {

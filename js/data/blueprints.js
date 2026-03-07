@@ -362,6 +362,53 @@ const BLUEPRINTS = {
     }],
   },
 
+  brew_herbal_tea: {
+    id: 'brew_herbal_tea', name: '허브차 끓이기', category: 'medical',
+    description: '비타민(약초)을 끓인 물에 우려 허브차를 만든다. 캠프파이어 필요.',
+    output: [{ definitionId: 'herbal_tea', qty: 2 }],
+    requiredTools: ['campfire'],
+    stages: [{
+      stageIndex: 0, label: '차 우리기', tpCost: 1,
+      requiredItems: [
+        { definitionId: 'vitamins',     qty: 1 },
+        { definitionId: 'boiled_water', qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  make_stamina_tonic: {
+    id: 'make_stamina_tonic', name: '활력 강장제 제조', category: 'medical',
+    description: '허브차를 알코올로 농축해 강장제를 만든다.',
+    output: [{ definitionId: 'stamina_tonic', qty: 1 }],
+    requiredTools: [],
+    stages: [{
+      stageIndex: 0, label: '성분 농축', tpCost: 2,
+      requiredItems: [
+        { definitionId: 'herbal_tea',       qty: 2 },
+        { definitionId: 'alcohol_solution', qty: 1 },
+        { definitionId: 'empty_bottle',     qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  make_battle_ration: {
+    id: 'make_battle_ration', name: '전투 식량팩 제작', category: 'medical',
+    description: '강장제·에너지바·건육을 압축 포장한 고성능 전투 식량.',
+    output: [{ definitionId: 'battle_ration', qty: 1 }],
+    requiredTools: ['workbench'],
+    stages: [{
+      stageIndex: 0, label: '식량 압축 포장', tpCost: 3,
+      requiredItems: [
+        { definitionId: 'stamina_tonic', qty: 1 },
+        { definitionId: 'energy_bar',    qty: 2 },
+        { definitionId: 'dried_meat',    qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
   // ══════════════════════════════════════════════════════════════
   //  무기 (Weapons)
   // ══════════════════════════════════════════════════════════════

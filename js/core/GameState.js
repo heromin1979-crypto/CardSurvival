@@ -21,7 +21,7 @@ const GameState = {
     radiation:   { current: 0,   max: 100, decayPerTP: 0   },
     infection:   { current: 0,   max: 100, decayPerTP: 0   },
     fatigue:     { current: 10,  max: 100, decayPerTP: 0.8 },
-    stamina:     { current: 100, max: 100 },  // 스태미나: 이동·과적에 의해 소모, 휴식 시 회복
+    stamina:     { current: 100, max: 100, decayPerTP: 0 },  // 스태미나: _updateStamina()가 별도 관리
   },
 
   // ── player ────────────────────────────────────────────
@@ -42,6 +42,8 @@ const GameState = {
       weightPct: 0,     // current/max 비율 (0.0~) — StatSystem·ExploreSystem에서 참조
     },
     // ── 캐릭터 능력 효과 기본값 ──────────────────────────
+    strength:                60,    // 체력(힘): 스태미나 상한의 기반 (캐릭터 생성 시 덮어씀)
+    endurance:               60,    // 인내심: 체력→스태미나 변환 효율 (캐릭터 생성 시 덮어씀)
     healBonus:               1.0,   // 의료 아이템 치료량 배수
     noiseReduct:             0,     // 소음 감소율 (0~1)
     exploreBonus:            0,     // 탐색 추가 아이템 수
@@ -57,6 +59,21 @@ const GameState = {
     craftSuccessBonus:       0,     // 제작 성공률 추가 (공학자)
     // ── 장착 슬롯 ────────────────────────────────────────
     diseases:    [],     // [{ id, tpElapsed, tpDuration, fatalTp }] 활성 질병 목록
+    // ── 스킬 숙련도 ─────────────────────────────────────────
+    skills: {
+      unarmed:     { xp: 0, level: 0 },  // 맨손격투
+      melee:       { xp: 0, level: 0 },  // 근접무기
+      ranged:      { xp: 0, level: 0 },  // 원거리무기
+      defense:     { xp: 0, level: 0 },  // 방어술
+      scavenging:  { xp: 0, level: 0 },  // 탐색
+      medicine:    { xp: 0, level: 0 },  // 의료
+      cooking:     { xp: 0, level: 0 },  // 요리
+      harvesting:  { xp: 0, level: 0 },  // 자원채취
+      crafting:    { xp: 0, level: 0 },  // 기초제작
+      weaponcraft: { xp: 0, level: 0 },  // 무기제작
+      armorcraft:  { xp: 0, level: 0 },  // 방어구제작
+      building:    { xp: 0, level: 0 },  // 건설
+    },
     equipped: {
       head:        null,  // 헬멧 등
       body:        null,  // 방어구 (조끼/풀바디/의복)
@@ -66,6 +83,7 @@ const GameState = {
       weapon_main: null,  // 주무기
       weapon_sub:  null,  // 보조무기
       backpack:    null,  // 가방 (인벤토리 확장)
+      boots:       null,  // 신발
       belt:        null,  // 허리띠 (잠금 예비)
       accessory:   null,  // 액세서리 (잠금 예비)
     },
@@ -100,6 +118,22 @@ const GameState = {
   // ── 위치별 바닥 아이템 저장 ──────────────────────────
   // { [districtId]: instanceId[] } — 각 지역에 남겨진 바닥 아이템
   locationFloors: {},
+
+  // ── 랜드마크 탐색 이력 ─────────────────────────────
+  // { [subLocId]: visitCount } — 세부 장소별 탐색 횟수
+  landmarkHistory: {},
+
+  // ── 베이스캠프 거점 ────────────────────────────────
+  basecamp: {
+    level: 0,    // 0-5
+    xp:    0,    // 거점 경험치 (업그레이드 시 누적)
+  },
+
+  // ── 퀘스트 ────────────────────────────────────────
+  quests: {
+    active:    [],    // [{ id, progress, startDay }]
+    completed: [],    // [id, ...]
+  },
 
   // ── noise ─────────────────────────────────────────────
   noise: {
@@ -346,11 +380,14 @@ const GameState = {
       crafting: this.crafting,
       combat:   this.combat,
       ui:            { currentState: this.ui.currentState, basecampMode: this.ui.basecampMode },
-      flags:         this.flags,
-      combatRespawn: this.combatRespawn,
-      season:         this.season,
-      weather:        this.weather,
-      locationFloors: this.locationFloors,
+      flags:           this.flags,
+      combatRespawn:   this.combatRespawn,
+      season:          this.season,
+      weather:         this.weather,
+      locationFloors:  this.locationFloors,
+      landmarkHistory: this.landmarkHistory,
+      basecamp:        this.basecamp,
+      quests:          this.quests,
     });
   },
 
@@ -363,7 +400,7 @@ const GameState = {
     const equippedDefaults = {
       head:null, body:null, hands:null, offhand:null,
       face:null, weapon_main:null, weapon_sub:null,
-      backpack:null, belt:null, accessory:null,
+      backpack:null, boots:null, belt:null, accessory:null,
     };
     if (!this.player.equipped) {
       this.player.equipped = { ...equippedDefaults };
@@ -372,8 +409,12 @@ const GameState = {
     }
     if (this.player.extraSlots === undefined) this.player.extraSlots = 0;
     if (!this.player.gender) this.player.gender = 'M';
-    // 구버전 세이브 호환: stamina 필드 자동 생성
-    if (!this.stats.stamina) this.stats.stamina = { current: 100, max: 100 };
+    // 구버전 세이브 호환: stamina 필드 자동 생성 + decayPerTP 누락 보정
+    if (!this.stats.stamina) this.stats.stamina = { current: 100, max: 100, decayPerTP: 0 };
+    if (this.stats.stamina.decayPerTP == null) this.stats.stamina.decayPerTP = 0;
+    // 구버전 세이브 호환: strength/endurance 필드 (체력·인내심)
+    if (this.player.strength  == null) this.player.strength  = 60;
+    if (this.player.endurance == null) this.player.endurance = 60;
     // 구버전 세이브 호환: encumbrance weightPct 필드
     if (this.player.encumbrance.weightPct === undefined) this.player.encumbrance.weightPct = 0;
     // 구버전 세이브 호환: top 행이 부족하면 7칸으로 확장
@@ -415,7 +456,13 @@ const GameState = {
     // weather 필드 복원
     if (d.weather) Object.assign(this.weather, d.weather);
     // locationFloors 복원 (구버전 세이브 호환)
-    this.locationFloors = d.locationFloors ?? {};
+    this.locationFloors  = d.locationFloors  ?? {};
+    // 랜드마크 탐색 이력 복원
+    this.landmarkHistory = d.landmarkHistory ?? {};
+    // 베이스캠프 복원
+    if (d.basecamp) Object.assign(this.basecamp, d.basecamp);
+    // 퀘스트 복원
+    if (d.quests) Object.assign(this.quests, d.quests);
     // diseases 필드 복원 (구버전 세이브 호환)
     if (!this.player.diseases) this.player.diseases = [];
     // 구버전 세이브 호환: 필드 없으면 기본값
@@ -426,6 +473,15 @@ const GameState = {
     // 구버전 세이브 호환: 랜드마크 진입 상태 필드
     if (this.location.currentLandmark    === undefined) this.location.currentLandmark    = null;
     if (this.location.currentSubLocation === undefined) this.location.currentSubLocation = null;
+    // 구버전 세이브 호환: skills 필드 자동 생성
+    const allSkillIds = ['unarmed','melee','ranged','defense','scavenging','medicine','cooking','harvesting','crafting','weaponcraft','armorcraft','building'];
+    if (!this.player.skills) {
+      this.player.skills = Object.fromEntries(allSkillIds.map(id => [id, { xp: 0, level: 0 }]));
+    } else {
+      for (const id of allSkillIds) {
+        if (!this.player.skills[id]) this.player.skills[id] = { xp: 0, level: 0 };
+      }
+    }
     this._updateEncumbrance();
   },
 };

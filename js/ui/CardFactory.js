@@ -117,7 +117,6 @@ const CardFactory = {
       return `
         <div class="lc-header lm-header">
           <span class="lm-badge">랜드마크</span>
-          <span class="lc-current-badge">현재</span>
         </div>
         <div class="lc-icon">${def.icon ?? '📍'}</div>
         <div class="lc-name">${def.name}</div>
@@ -156,8 +155,9 @@ const CardFactory = {
     const color      = DANGER_COLORS[Math.min(danger, DANGER_COLORS.length - 1)];
     const dangerDots = '●'.repeat(danger) + '○'.repeat(Math.max(0, 3 - danger));
 
+    const isInLandmark = !!GameState.location.currentLandmark;
     const currentBadge = isCurrent
-      ? `<span class="lc-current-badge">현재 위치</span>` : '';
+      ? `<span class="lc-current-badge">${isInLandmark ? '돌아가기' : '현재 위치'}</span>` : '';
     const visitedDot = isVisited && !isCurrent
       ? `<span class="lc-visited-dot">✓</span>` : '';
     const encounterText = def.encounterChance > 0

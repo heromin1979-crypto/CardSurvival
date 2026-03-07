@@ -4,6 +4,7 @@ import GameState       from '../core/GameState.js';
 import StateMachine    from '../core/StateMachine.js';
 import { DISTRICTS, getAdjacentDistricts } from '../data/districts.js';
 import { CHARACTERS }  from '../data/characters.js';
+import { LEVEL_XP_TABLE } from '../data/skillDefs.js';
 import EquipmentSystem from '../systems/EquipmentSystem.js';
 
 const DANGER_COLORS = ['#336633', '#4a7a33', '#886622', '#882222', '#550000', '#330000'];
@@ -194,6 +195,13 @@ const CharCreate = {
         <div>
           <div class="char-detail-name">${c.name}</div>
           <div class="char-detail-title">${c.title}</div>
+          <div class="char-base-stats">
+            <span class="char-stat-badge hp">❤️ HP ${c.maxHp}</span>
+            <span class="char-stat-badge str">💪 체력 ${c.strength}</span>
+            <span class="char-stat-badge end">🧘 인내심 ${c.endurance}</span>
+            <span class="char-stat-badge sta">⚡ 스태미나 ${Math.round(c.strength * c.endurance / 50)}</span>
+            <span class="char-stat-badge wt">🎒 ${c.maxCarryWeight}kg</span>
+          </div>
         </div>
       </div>
       <div class="char-story">${c.story}</div>
@@ -262,10 +270,13 @@ const CharCreate = {
     gs.player.encumbrance.current  = 0;
     gs.player.encumbrance.tier     = 0;
     gs.player.encumbrance.weightPct= 0;
-    // 스태미나 초기화
-    gs.stats.stamina = { current: 100, max: 100 };
+    // 체력·인내심 → 스태미나 계산: stamina = strength × (endurance / 50)
+    gs.player.strength  = char.strength  ?? 60;
+    gs.player.endurance = char.endurance ?? 60;
+    const maxStamina = Math.round(gs.player.strength * gs.player.endurance / 50);
+    gs.stats.stamina = { current: maxStamina, max: maxStamina, decayPerTP: 0 };
     gs.player.deathCause  = null;
-    gs.player.hp          = { current: 100, max: 100 };
+    gs.player.hp          = { current: char.maxHp, max: char.maxHp };
     gs.player.xp          = 0;
     gs.player.traits      = [];
 
@@ -289,7 +300,6 @@ const CharCreate = {
     for (const ability of char.abilities) {
       const e = ability.effect;
       if (e.healBonus)               gs.player.healBonus = e.healBonus;
-      if (e.hpMax)                   gs.player.hp.max += e.hpMax;
       if (e.fatigueDecay !== undefined) gs.stats.fatigue.decayPerTP = 0.8 * (1 + e.fatigueDecay);
       if (e.noiseReduct)             gs.player.noiseReduct = e.noiseReduct;
       if (e.exploreBonus)            gs.player.exploreBonus = e.exploreBonus;
@@ -337,6 +347,18 @@ const CharCreate = {
       if (e.fatigueDecay !== undefined) gs.stats.fatigue.decayPerTP = 0.8 * (1 + e.fatigueDecay);
       if (e.hydrationDecay)  gs.stats.hydration.decayPerTP *= e.hydrationDecay;
       if (e.nutritionDecay)  gs.stats.nutrition.decayPerTP *= e.nutritionDecay;
+    }
+
+    // ── 캐릭터 시작 스킬 적용 ────────────────────────────────
+    // startingSkills: { skillId: targetLevel } — XP를 해당 레벨 임계값으로 설정
+    if (char.startingSkills) {
+      for (const [skillId, targetLevel] of Object.entries(char.startingSkills)) {
+        const skill = gs.player.skills[skillId];
+        if (skill && targetLevel >= 1 && targetLevel <= 20) {
+          skill.xp    = LEVEL_XP_TABLE[targetLevel] ?? 0;
+          skill.level = targetLevel;
+        }
+      }
     }
 
     // ── 보드·카드 초기화 ─────────────────────────────────────

@@ -57,17 +57,22 @@ const MainMenu = {
       const saved   = this._relativeTime(meta.savedAt);
       const dayStr  = `Day ${meta.day}`;
       const nameStr = meta.playerName ?? 'Survivor';
+      const isDead  = !!meta.isDead;
+      const icon    = isDead ? '💀' : '🧍';
+      const loadBtn = isDead
+        ? `<button class="menu-btn save-slot-load disabled" data-slot="${slot}" disabled title="사망한 캐릭터는 이어할 수 없습니다">이어하기 불가</button>`
+        : `<button class="menu-btn primary save-slot-load" data-slot="${slot}">이어하기</button>`;
       return `
-        <div class="save-slot-card occupied" data-slot="${slot}">
+        <div class="save-slot-card occupied${isDead ? ' is-dead' : ''}" data-slot="${slot}">
           <div class="save-slot-header">
             <span class="save-slot-num">슬롯 ${slot + 1}</span>
             <button class="save-slot-delete" data-slot="${slot}" title="삭제">✕</button>
           </div>
-          <div class="save-slot-icon">💀</div>
+          <div class="save-slot-icon">${icon}</div>
           <div class="save-slot-name">${nameStr}</div>
-          <div class="save-slot-day">${dayStr}</div>
+          <div class="save-slot-day">${dayStr}${isDead ? ' — 사망' : ''}</div>
           <div class="save-slot-time">${saved}</div>
-          <button class="menu-btn primary save-slot-load" data-slot="${slot}">이어하기</button>
+          ${loadBtn}
         </div>
       `;
     } else {
@@ -97,8 +102,10 @@ const MainMenu = {
         const slot = parseInt(btn.dataset.slot, 10);
         if (SaveManager.load(slot)) {
           GameState.ui.saveSlot = slot;
+          // deserialize가 currentState를 'basecamp'로 복원하므로
+          // StateMachine이 from===to 조건으로 조기 리턴하는 것을 방지
+          GameState.ui.currentState = 'main_menu';
           StateMachine.transition('basecamp');
-          EventBus.emit('loaded', { slot });
         }
       });
     });

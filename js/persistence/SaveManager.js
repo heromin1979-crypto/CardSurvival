@@ -16,6 +16,7 @@ const SaveManager = {
         day:        GameState.time.day,
         totalTP:    Math.floor(GameState.time.totalTP),
         playerName: GameState.player.name,
+        isDead:     !GameState.player.isAlive,
         savedAt:    new Date().toISOString(),
       };
       localStorage.setItem(`${META_KEY}${slot}_meta`, JSON.stringify(meta));
