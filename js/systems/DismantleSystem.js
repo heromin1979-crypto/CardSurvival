@@ -1,7 +1,8 @@
 // === DISMANTLE SYSTEM ===
 // 카드 분해: 확률 기반으로 재료 아이템을 생성 후 보드에 배치
-import EventBus  from '../core/EventBus.js';
-import GameState from '../core/GameState.js';
+import EventBus    from '../core/EventBus.js';
+import GameState  from '../core/GameState.js';
+import SkillSystem from './SkillSystem.js';
 
 const DismantleSystem = {
 
@@ -23,19 +24,30 @@ const DismantleSystem = {
 
     const gained = [];
 
+    const harvestBonus = SkillSystem.getBonus('harvesting', 'extraMaterialChance');
+    const doubleMat    = SkillSystem.hasMastery('harvesting');
+
     for (const entry of def.dismantle) {
       if (Math.random() < entry.chance) {
-        const newInst = GameState.createCardInstance(entry.definitionId, { quantity: entry.qty });
+        let qty = entry.qty;
+        // 마스터리: 재료 2배
+        if (doubleMat) qty *= 2;
+        // 스킬 보너스: 추가 재료 확률
+        else if (harvestBonus > 0 && Math.random() < harvestBonus) qty += 1;
+
+        const newInst = GameState.createCardInstance(entry.definitionId, { quantity: qty });
         if (newInst) {
           const placed = GameState.placeCardInRow(newInst.instanceId);
           if (!placed) {
-            // 보드 공간 없음 — 그냥 인스턴스만 생성 (pendingLoot 등으로 처리 불가)
             EventBus.emit('notify', { message: '보드 공간 부족으로 일부 재료를 배치하지 못했습니다.', type: 'warn' });
           }
           gained.push(newInst.instanceId);
         }
       }
     }
+
+    // 자원채취 스킬 XP
+    SkillSystem.gainXp('harvesting', 3);
 
     // dismantleExtraItem 보너스: 추가 고철 획득
     const extraCount = GameState.player.dismantleExtraItem ?? 0;

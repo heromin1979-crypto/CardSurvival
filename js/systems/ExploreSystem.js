@@ -11,6 +11,8 @@ import NoiseSystem   from './NoiseSystem.js';
 import TraitSystem   from './TraitSystem.js';
 import StatSystem    from './StatSystem.js';
 import SeasonSystem  from './SeasonSystem.js';
+import SkillSystem      from './SkillSystem.js';
+import BasecampSystem   from './BasecampSystem.js';
 
 const ExploreSystem = {
   init() {
@@ -242,9 +244,10 @@ const ExploreSystem = {
       EventBus.emit('notify', { message: `⚠ 방사선 구역! +${district.radiation}`, type: 'danger' });
     }
 
-    // 조우 체크
-    const baseReduction   = (gs.player.encounterRateReduct ?? 0) + (toolEffects.encounterReduction ?? 0);
-    const encounterChance = district.encounterChance * (1 - Math.min(0.80, baseReduction));
+    // 조우 체크 (거점 효과 포함)
+    const basecampReduct  = BasecampSystem.getEffects().encounterReduct;
+    const baseReduction   = (gs.player.encounterRateReduct ?? 0) + (toolEffects.encounterReduction ?? 0) + basecampReduct;
+    const encounterChance = district.encounterChance * (1 - Math.min(0.85, baseReduction));
     if (encounterChance > 0 && Math.random() < encounterChance) {
       const noiseLevel = gs.noise.level;
       const enemies    = rollEnemyGroup(district.dangerLevel, noiseLevel);
@@ -300,6 +303,20 @@ const ExploreSystem = {
           if (traitBonus > 0) {
             const extra = loot[Math.floor(Math.random() * loot.length)];
             for (let i = 0; i < traitBonus; i++) loot.push({ ...extra, quantity: 1 });
+          }
+        }
+        // 탐색 스킬 보너스 루팅
+        if (loot.length > 0) {
+          const scavBonus = SkillSystem.getBonus('scavenging', 'extraLootChance');
+          if (scavBonus > 0 && Math.random() < scavBonus) {
+            const extra = loot[Math.floor(Math.random() * loot.length)];
+            loot.push({ ...extra, quantity: 1 });
+          }
+          // 탐색 마스터리: 5% 희귀 아이템
+          if (SkillSystem.hasMastery('scavenging') && Math.random() < 0.05) {
+            const rarePool = ['bandage', 'painkiller', 'antiseptic', 'rope', 'wire'];
+            const rareId   = rarePool[Math.floor(Math.random() * rarePool.length)];
+            if (window.__GAME_DATA__?.items[rareId]) loot.push({ definitionId: rareId, quantity: 1 });
           }
         }
         // 계절 보너스 루팅
@@ -389,6 +406,8 @@ const ExploreSystem = {
 
     if (foundNames.length > 0) {
       gs.flags.totalItemsFound = (gs.flags.totalItemsFound ?? 0) + foundNames.length;
+      // 탐색 스킬 XP: 아이템 발견당 2 XP
+      SkillSystem.gainXp('scavenging', foundNames.length * 2);
       EventBus.emit('notify', { message: `발견: ${foundNames.join(', ')}`, type: 'good' });
     } else {
       EventBus.emit('notify', { message: '바닥이 가득 차 아이템을 놓을 수 없다.', type: 'warn' });
@@ -524,6 +543,8 @@ const ExploreSystem = {
     const loot = this._generateSubLocationLoot(sub);
     this._placeLoot(loot);
 
+    // 세부장소 탐색 완료 XP
+    SkillSystem.gainXp('scavenging', 3);
     EventBus.emit('notify', { message: `📍 ${sub.name} 탐색 완료`, type: 'info' });
     EventBus.emit('boardChanged', {});
   },

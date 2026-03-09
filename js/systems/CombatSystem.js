@@ -5,6 +5,7 @@ import StateMachine from '../core/StateMachine.js';
 import NoiseSystem  from './NoiseSystem.js';
 import StatSystem   from './StatSystem.js';
 import EndingSystem from './EndingSystem.js';
+import SkillSystem  from './SkillSystem.js';
 import { rollEnemyGroup } from '../data/enemies.js';
 
 const CombatSystem = {
@@ -148,6 +149,8 @@ const CombatSystem = {
     let critChance = 0, critMultiplier = 1.5;
     let weaponName = '맨손';
     let isCrit = false;
+    let skillId = 'unarmed';  // 사용 스킬 (XP 훅용)
+    let isRanged = false;
 
     if (weaponId && gs.cards[weaponId]) {
       const def = gs.getCardDef(weaponId);
@@ -160,33 +163,51 @@ const CombatSystem = {
         critChance     = def.combat.critChance     ?? 0;
         critMultiplier = def.combat.critMultiplier ?? 1.5;
         weaponName     = def.name;
+        isRanged       = !!(def.combat.requiresAmmo);
+        skillId        = isRanged ? 'ranged' : 'melee';
 
-        if (def.combat.requiresAmmo) {
+        if (isRanged) {
+          // 원거리: 명중률·치명타 스킬 보너스 적용
+          accuracy   = Math.min(1, accuracy   + SkillSystem.getBonus('ranged', 'accBonus'));
+          critChance = Math.min(1, critChance + SkillSystem.getBonus('ranged', 'critBonus'));
+
           const ammoInst = gs.getBoardCards().find(c => c.definitionId === def.combat.requiresAmmo);
           if (!ammoInst) {
             EventBus.emit('notify', { message: '탄약 없음! 근접 공격으로 대체.', type: 'warn' });
             damage = 5 + Math.floor(Math.random() * 6);
-            accuracy = 0.65; noise = 3;
+            accuracy = 0.65; noise = 3; skillId = 'melee';
           } else {
-            ammoInst.quantity = (ammoInst.quantity ?? 1) - 1;
-            if (ammoInst.quantity <= 0) {
-              gs.removeCardInstance(ammoInst.instanceId);
-              EventBus.emit('cardRemoved', { instanceId: ammoInst.instanceId });
+            // 마스터리: 20% 확률 탄약 미소모
+            const ammoSave = SkillSystem.hasMastery('ranged') && Math.random() < 0.20;
+            if (!ammoSave) {
+              ammoInst.quantity = (ammoInst.quantity ?? 1) - 1;
+              if (ammoInst.quantity <= 0) {
+                gs.removeCardInstance(ammoInst.instanceId);
+                EventBus.emit('cardRemoved', { instanceId: ammoInst.instanceId });
+              }
             }
           }
         }
 
         if (durLoss > 0 && gs.cards[weaponId]) {
-          gs.cards[weaponId].durability = Math.max(0, gs.cards[weaponId].durability - durLoss);
-          if (gs.cards[weaponId].durability <= 0) {
-            EventBus.emit('notify', { message: `${weaponName} 파손됨!`, type: 'warn' });
-            gs.removeCardInstance(weaponId);
-            EventBus.emit('cardRemoved', { instanceId: weaponId });
+          // 근접무기 내구도 절약 (스킬 durSaveChance)
+          const durSave = skillId === 'melee'
+            ? Math.random() < SkillSystem.getBonus('melee', 'durSaveChance')
+            : false;
+          if (!durSave) {
+            gs.cards[weaponId].durability = Math.max(0, gs.cards[weaponId].durability - durLoss);
+            if (gs.cards[weaponId].durability <= 0) {
+              EventBus.emit('notify', { message: `${weaponName} 파손됨!`, type: 'warn' });
+              gs.removeCardInstance(weaponId);
+              EventBus.emit('cardRemoved', { instanceId: weaponId });
+            }
           }
         }
       }
     } else {
-      damage = 3 + Math.floor(Math.random() * 5);
+      // 맨손: 스킬 dmgMult 적용
+      const unarmedMult = SkillSystem.getBonus('unarmed', 'dmgMult');
+      damage = Math.floor((3 + Math.floor(Math.random() * 5)) * unarmedMult);
     }
 
     NoiseSystem.addNoise(noise);
@@ -195,10 +216,30 @@ const CombatSystem = {
     if (hit) {
       const effectiveCritChance = Math.min(1, critChance + (gs.player.critBonus ?? 0));
       if (Math.random() < effectiveCritChance) { isCrit = true; damage = Math.floor(damage * critMultiplier); }
+
+      // 근접/원거리 스킬 dmgMult 적용 (무기 있는 경우)
+      if (skillId === 'melee') {
+        damage = Math.floor(damage * SkillSystem.getBonus('melee', 'dmgMult'));
+      } else if (skillId === 'ranged') {
+        // 원거리 dmgMult는 별도 보너스 없음 (명중률·치명타로 대체)
+      }
+
       damage = Math.floor(damage * (gs.player.combatDmgBonus ?? 1.0));
       const finalDmg = Math.max(1, damage - (enemy.defense ?? 0));
       enemy.currentHp = Math.max(0, enemy.currentHp - finalDmg);
       gs.combat.lastHit = { target: 'enemy', damage: finalDmg, isCrit, enemyIndex: gs.combat.targetIndex };
+
+      // XP 획득
+      SkillSystem.gainXp(skillId, isCrit ? 4 : 2);
+
+      // 맨손 마스터리: 기절 확률
+      if (skillId === 'unarmed' && SkillSystem.hasMastery('unarmed')) {
+        if (Math.random() < 0.10 && !gs.combat.enemyStatus.some(s => s.id === 'stun')) {
+          enemy.currentHp = Math.max(0, enemy.currentHp - 0); // 기절 — HP 추가 피해 없음
+          gs.combat.log.push(`[맨손 마스터리] ${enemy.name} 기절!`);
+        }
+      }
+
       if (isCrit) return `[크리티컬!] ${weaponName}으로 ${enemy.name}에게 ${finalDmg} 피해!`;
       return `[공격] ${weaponName}으로 ${enemy.name}에게 ${finalDmg} 피해! (HP: ${enemy.currentHp}/${enemy.maxHp})`;
     }
@@ -287,10 +328,12 @@ const CombatSystem = {
         const [dMin, dMax] = skill.damage;
         let dmg = dMin + Math.floor(Math.random() * (dMax - dMin + 1));
 
-        // 방어구 효과: 피해 감소 + 크리티컬(스킬) 감소
-        const armor = StatSystem.getArmorEffects();
-        if (armor.damageReduction > 0) {
-          dmg = Math.max(1, Math.floor(dmg * (1 - armor.damageReduction)));
+        // 방어구 효과: 피해 감소 + 방어술 스킬 보너스
+        const armor         = StatSystem.getArmorEffects();
+        const defSkillBonus = SkillSystem.getBonus('defense', 'damageReduction');
+        const totalReduct   = Math.min(0.80, armor.damageReduction + defSkillBonus);
+        if (totalReduct > 0) {
+          dmg = Math.max(1, Math.floor(dmg * (1 - totalReduct)));
         }
         // critReduction: 스킬의 stunChance도 비례 감소
         const effectiveStunChance = skill.stunChance
@@ -328,14 +371,25 @@ const CombatSystem = {
     const hit    = Math.random() < enemy.attack.accuracy;
 
     if (hit) {
-      // 방어구 효과 적용
-      const armor = StatSystem.getArmorEffects();
-      if (armor.damageReduction > 0) {
-        damage = Math.max(1, Math.floor(damage * (1 - armor.damageReduction)));
+      // 방어구 효과 + 방어술 스킬 감소
+      const armor         = StatSystem.getArmorEffects();
+      const defSkillBonus = SkillSystem.getBonus('defense', 'damageReduction');
+      const totalReduct   = Math.min(0.80, armor.damageReduction + defSkillBonus);
+      if (totalReduct > 0) {
+        damage = Math.max(1, Math.floor(damage * (1 - totalReduct)));
       }
 
       gs.player.hp.current = Math.max(0, gs.player.hp.current - damage);
       gs.combat.lastHit    = { target: 'player', damage, isCrit: false };
+
+      // 방어술 XP
+      SkillSystem.gainXp('defense', 1);
+
+      // 방어술 마스터리: 15% 확률 반격
+      if (SkillSystem.hasMastery('defense') && Math.random() < 0.15) {
+        enemy.currentHp = Math.max(0, enemy.currentHp - 5);
+        gs.combat.log.push(`[방어술 마스터리] 반격! ${enemy.name}에게 5 피해!`);
+      }
 
       if (enemy.onHitEffect) {
         if (enemy.onHitEffect.infection) gs.modStat('infection', enemy.onHitEffect.infection);
@@ -394,6 +448,14 @@ const CombatSystem = {
     gs.player.xp     = (gs.player.xp ?? 0) + xp;
     gs.combat.xpGained += xp;
     gs.combat.log.push(`[처치] ${enemy.name} 처치! +${xp} XP`);
+
+    // 처치 시 사용 무기 스킬 XP
+    const weapMain = gs.player.equipped?.weapon_main;
+    const weapSub  = gs.player.equipped?.weapon_sub;
+    const weapInst = weapMain ? gs.cards[weapMain] : (weapSub ? gs.cards[weapSub] : null);
+    const weapDef  = weapInst ? gs.getCardDef(weapInst.instanceId) : null;
+    const killSkill = weapDef?.combat?.requiresAmmo ? 'ranged' : (weapDef ? 'melee' : 'unarmed');
+    SkillSystem.gainXp(killSkill, 5);
 
     for (const lootEntry of (enemy.lootTable ?? [])) {
       if (Math.random() < 0.6) {

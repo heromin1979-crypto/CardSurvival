@@ -77,14 +77,22 @@
 - [x] 전투 이미지 깨짐 수정: mix-blend-mode: multiply → normal (어두운 배경에서 이미지 검게 표시되던 문제)
 - [x] 위치별 바닥 아이템 저장 — locationFloors{} 시스템 (이동 시 바닥 아이템 해당 지역에 보존)
 
-## 다음 작업 후보
+### Phase I — 스킬 숙련도 시스템 ✅ (2026-03-07)
+- [x] js/data/skillDefs.js — 12개 스킬, XP 테이블, getBonuses()
+- [x] js/systems/SkillSystem.js — gainXp, getBonus, hasMastery, 레벨업 이벤트
+- [x] js/ui/SkillModal.js — 3탭 숙련도 모달 (전투/생존/제작)
+- [x] css/skills.css — 모달 스타일
+- [x] CombatSystem / StatSystem / ExploreSystem / CraftSystem / DismantleSystem XP 훅 삽입
 
-- [ ] 장비 슬롯 boots 잠금 해제 + 신발 아이템 추가
-- [ ] 랜드마크 탐색 이력 저장 (재방문 시 루팅 감소)
-- [ ] 베이스캠프 레벨업 / 방어 강화 시스템
-- [ ] 엔딩 갤러리 UI 개선
-- [ ] 모바일 터치 UX 개선
-- [ ] 계절별 이벤트 → 퀘스트 연동 (봄: 물 비축 할당량, 여름: 냉각 구조물 제작 등)
+### Phase J — 게임플레이 확장 ✅ (2026-03-07)
+- [x] 장비 슬롯 boots 잠금 해제 + 신발 4종 (running_shoes/hiking_boots/combat_boots/hazmat_boots)
+- [x] 랜드마크 탐색 이력 저장 — 재방문 시 루팅 감소 (70%→45%→25%)
+- [x] 베이스캠프 레벨업 시스템 Lv.0-5 (js/systems/BasecampSystem.js + BasecampUpgrades 정의)
+- [x] 엔딩 갤러리 UI 개선 — 달성일, 카테고리별 통계, 정렬 모드
+- [x] 모바일 터치 UX 개선 — 롱프레스 드래그, 햅틱, css/mobile.css
+- [x] 퀘스트 시스템 (js/systems/QuestSystem.js) — 7개 계절 퀘스트, 베이스캠프 패널 연동
+
+## 다음 작업 후보
 
 ---
 

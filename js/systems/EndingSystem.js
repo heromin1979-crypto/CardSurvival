@@ -4,7 +4,8 @@ import GameState  from '../core/GameState.js';
 import TickEngine from '../core/TickEngine.js';
 import ENDINGS    from '../data/endings.js';
 
-const STORAGE_KEY = 'CARD_SURVIVAL_ENDINGS_v1';
+const STORAGE_KEY      = 'CARD_SURVIVAL_ENDINGS_v1';
+const STORAGE_META_KEY = 'CARD_SURVIVAL_ENDINGS_v1_meta';
 
 // Victory check priority: character > escape > milestone
 const VICTORY_CATEGORIES = ['character', 'escape', 'milestone'];
@@ -140,6 +141,17 @@ const EndingSystem = {
     // Pause tick engine
     if (gs) gs.time.isPaused = true;
 
+    // 사망 엔딩이면 메타에 isDead 플래그를 기록 (이어하기 버튼 비활성화용)
+    if (ending.category === 'death' && gs) {
+      const slot    = gs.ui.saveSlot ?? 0;
+      const metaKey = `CARD_SURVIVAL_SAVE_v1_slot${slot}_meta`;
+      try {
+        const meta = JSON.parse(localStorage.getItem(metaKey) ?? '{}');
+        meta.isDead = true;
+        localStorage.setItem(metaKey, JSON.stringify(meta));
+      } catch { /* ignore */ }
+    }
+
     const isFirst = !this.isUnlocked(endingId);
     this.unlockEnding(endingId);
 
@@ -169,10 +181,28 @@ const EndingSystem = {
       list.push(id);
       try { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); } catch { /* ignore */ }
     }
+    // 달성일 메타 저장
+    try {
+      const meta = this.getUnlockMeta();
+      if (!meta[id]) {
+        const gs  = (typeof GameState !== 'undefined') ? GameState : null;
+        meta[id]  = { day: gs?.time?.day ?? 1 };
+        localStorage.setItem(STORAGE_META_KEY, JSON.stringify(meta));
+      }
+    } catch { /* ignore */ }
   },
 
   isUnlocked(id) {
     return this.getUnlocked().includes(id);
+  },
+
+  // { [endingId]: { day } }
+  getUnlockMeta() {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_META_KEY) ?? '{}');
+    } catch {
+      return {};
+    }
   },
 
   getAllWithStatus() {

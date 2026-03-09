@@ -1,7 +1,8 @@
 // === CRAFT SYSTEM ===
-import EventBus  from '../core/EventBus.js';
-import GameState from '../core/GameState.js';
+import EventBus    from '../core/EventBus.js';
+import GameState  from '../core/GameState.js';
 import BLUEPRINTS from '../data/blueprints.js';
+import SkillSystem from './SkillSystem.js';
 
 const CraftSystem = {
   init() {
@@ -170,6 +171,27 @@ const CraftSystem = {
 
     EventBus.emit('craftComplete', { blueprintId: bp.id, outputInstanceIds: outputIds });
     EventBus.emit('notify', { message: `✅ ${bp.name} 완성!`, type: 'good' });
+
+    // 제작 스킬 XP: 블루프린트 카테고리별
+    const craftSkillMap = {
+      structure: 'building',
+      material:  'crafting',
+      food:      'cooking',
+      medical:   'crafting',
+      weapon:    'weaponcraft',
+      armor:     'armorcraft',
+      tool:      'crafting',
+    };
+    const craftSkillId  = craftSkillMap[bp.category] ?? 'crafting';
+    const craftXpBase   = { building: 10, weaponcraft: 8, armorcraft: 8, cooking: 5, crafting: 5 };
+    const craftXp       = craftXpBase[craftSkillId] ?? 5;
+    SkillSystem.gainXp(craftSkillId, craftXp * (bp.stages?.length ?? 1));
+    // 요리 제작 시 flags에 crafted=true 표시를 위한 output 태깅
+    if (craftSkillId === 'cooking') {
+      for (const id of outputIds) {
+        if (GameState.cards[id]) GameState.cards[id]._crafted = true;
+      }
+    }
   },
 
   getQueueProgress(entry) {

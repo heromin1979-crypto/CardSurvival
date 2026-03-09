@@ -180,6 +180,34 @@
   opacity: 1;
 }
 
+/* ── 방문 이력 배지 ── */
+.lm-visit-row {
+  margin-top: 5px;
+}
+
+.lm-visit-badge {
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: rgba(180,140,40,0.15);
+  color: var(--text-warn, #c8a060);
+  border: 1px solid rgba(180,140,40,0.25);
+}
+
+.lm-visit-badge.fresh {
+  background: rgba(80,160,80,0.15);
+  color: var(--text-good, #70b870);
+  border-color: rgba(80,160,80,0.25);
+}
+
+.lm-subloc-card.visited {
+  opacity: 0.85;
+}
+
+.lm-subloc-card.visited .lm-subloc-icon {
+  filter: grayscale(0.4);
+}
+
 /* ── 푸터 ── */
 .lm-modal-footer {
   padding: 10px 16px;

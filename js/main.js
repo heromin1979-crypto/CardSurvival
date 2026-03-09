@@ -28,6 +28,9 @@ import EncumbranceSystem    from './systems/EncumbranceSystem.js';
 import CraftSystem          from './systems/CraftSystem.js';
 import CombatSystem         from './systems/CombatSystem.js';
 import ExploreSystem        from './systems/ExploreSystem.js';
+import SkillSystem          from './systems/SkillSystem.js';
+import BasecampSystem       from './systems/BasecampSystem.js';
+import QuestSystem          from './systems/QuestSystem.js';
 
 // Board
 import BoardManager from './board/BoardManager.js';
@@ -86,6 +89,9 @@ function init() {
   CraftSystem.init();
   CombatSystem.init();
   ExploreSystem.init();
+  SkillSystem.init();
+  BasecampSystem.init();
+  QuestSystem.init();
 
   // Board
   BoardManager.init();

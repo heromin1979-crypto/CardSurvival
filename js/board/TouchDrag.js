@@ -6,12 +6,21 @@ import SlotResolver from './SlotResolver.js';
 import GameState    from '../core/GameState.js';
 import EventBus     from '../core/EventBus.js';
 
+// 롱프레스 임계값 (ms) — 이 시간 이상 누르면 드래그 시작
+const LONG_PRESS_MS = 180;
+// 드래그로 간주할 최소 이동 픽셀
+const DRAG_THRESHOLD_PX = 6;
+
 const TouchDrag = {
-  _draggingId: null,
-  _ghostEl:    null,
-  _offsetX:    0,
-  _offsetY:    0,
-  _initialized: false,
+  _draggingId:    null,
+  _ghostEl:       null,
+  _offsetX:       0,
+  _offsetY:       0,
+  _initialized:   false,
+  _longPressTimer: null,
+  _startX:        0,
+  _startY:        0,
+  _pendingCard:   null,
 
   init() {
     if (this._initialized) return;
@@ -24,35 +33,63 @@ const TouchDrag = {
   },
 
   _onPointerDown(e) {
-    if (e.pointerType === 'mouse') return; // 마우스는 HTML5 DnD 사용
+    if (e.pointerType === 'mouse') return;
     const card = e.target.closest('[data-instance-id]');
     if (!card) return;
 
     e.preventDefault();
-    this._draggingId = card.dataset.instanceId;
+    this._startX      = e.clientX;
+    this._startY      = e.clientY;
+    this._pendingCard = card;
 
+    // 롱프레스 후 드래그 시작
+    this._longPressTimer = setTimeout(() => {
+      if (this._pendingCard) this._startDrag(this._pendingCard, e);
+    }, LONG_PRESS_MS);
+  },
+
+  _startDrag(card, e) {
+    this._draggingId = card.dataset.instanceId;
     const rect = card.getBoundingClientRect();
     this._offsetX = e.clientX - rect.left;
     this._offsetY = e.clientY - rect.top;
 
-    // Ghost 생성
+    // Ghost 생성 (반투명 + 살짝 확대)
     const ghost = card.cloneNode(true);
     ghost.style.cssText = `
       position:fixed;
       top:${rect.top}px; left:${rect.left}px;
       width:${rect.width}px; height:${rect.height}px;
-      opacity:0.85; pointer-events:none;
+      opacity:0.80; pointer-events:none;
       z-index:9999; touch-action:none;
       transition:none;
+      transform:scale(1.06);
+      box-shadow:0 8px 24px rgba(0,0,0,0.5);
     `;
     document.body.appendChild(ghost);
     this._ghostEl = ghost;
 
     card.classList.add('dragging');
+
+    // 햅틱 피드백 (지원 시)
+    try { navigator.vibrate?.(30); } catch { /* ignore */ }
   },
 
   _onPointerMove(e) {
-    if (e.pointerType === 'mouse' || !this._draggingId || !this._ghostEl) return;
+    if (e.pointerType === 'mouse') return;
+
+    // 롱프레스 대기 중: 너무 많이 움직이면 취소
+    if (!this._draggingId && this._pendingCard) {
+      const dx = Math.abs(e.clientX - this._startX);
+      const dy = Math.abs(e.clientY - this._startY);
+      if (dx > DRAG_THRESHOLD_PX || dy > DRAG_THRESHOLD_PX) {
+        clearTimeout(this._longPressTimer);
+        this._pendingCard = null;
+      }
+      return;
+    }
+
+    if (!this._draggingId || !this._ghostEl) return;
     e.preventDefault();
 
     const x = e.clientX - this._offsetX;
@@ -94,6 +131,8 @@ const TouchDrag = {
   },
 
   _onPointerUp(e) {
+    clearTimeout(this._longPressTimer);
+    this._pendingCard = null;
     if (e.pointerType === 'mouse' || !this._draggingId) return;
 
     // ghost 숨기고 아래 요소 감지

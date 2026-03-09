@@ -12,6 +12,7 @@ const SLOT_RULES = {
   weapon_main: { type: 'weapon', subtypes: ['melee', 'firearm', 'ranged'] },
   weapon_sub:  { type: 'weapon', subtypes: ['melee', 'firearm', 'ranged', 'throwable'] },
   backpack:    { type: 'tool',   subtypes: ['bag'] },
+  boots:       { type: 'armor',  subtypes: ['boots'] },
   belt:        { locked: true },
   accessory:   { locked: true },
 };

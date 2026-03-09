@@ -316,6 +316,48 @@
   color: var(--text-secondary);
 }
 
+/* ── 퀘스트 패널 ── */
+.bc-quest-empty {
+  font-size: 10px;
+  color: var(--text-dim);
+  font-style: italic;
+}
+
+.bc-quest-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.bc-quest-item:last-child { border-bottom: none; }
+
+.bc-quest-title {
+  font-size: 10px;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.bc-quest-progress-bar {
+  height: 3px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.bc-quest-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #c8a060, #f0c040);
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+
+.bc-quest-meta {
+  font-size: 9px;
+  color: var(--text-dim);
+}
+
 /* Sidebar footer buttons */
 .bc-sidebar-btns {
   display: flex;

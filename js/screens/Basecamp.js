@@ -9,6 +9,9 @@ import StatRenderer   from '../ui/StatRenderer.js';
 import SaveManager    from '../persistence/SaveManager.js';
 import EquipmentModal  from '../ui/EquipmentModal.js';
 import LandmarkModal   from '../ui/LandmarkModal.js';
+import SkillModal      from '../ui/SkillModal.js';
+import BasecampModal  from '../ui/BasecampModal.js';
+import QuestSystem    from '../systems/QuestSystem.js';
 import SeasonSystem    from '../systems/SeasonSystem.js';
 import WeatherSystem   from '../systems/WeatherSystem.js';
 
@@ -19,6 +22,9 @@ const Basecamp = {
     this._el = document.getElementById('screen-basecamp');
     EventBus.on('stateTransition', ({ to }) => {
       if (to === 'basecamp') this._onEnter();
+    });
+    EventBus.on('questListChanged', () => {
+      if (GameState.ui.currentState === 'basecamp') this._updateQuestPanel();
     });
   },
 
@@ -41,6 +47,9 @@ const Basecamp = {
     CraftUI.init();
     EquipmentModal.init();
     LandmarkModal.init();
+    SkillModal.init();
+    BasecampModal.init();
+    this._updateQuestPanel();
     // 계절 배지 초기화
     const seasonInfo = SeasonSystem.getSeasonInfo();
     const seasonBadge = document.getElementById('season-badge');
@@ -122,6 +131,8 @@ const Basecamp = {
         <!-- Action buttons -->
         <div class="bc-sidebar-btns">
           <button class="toolbar-btn" id="btn-craft">🔨 제작</button>
+          <button class="toolbar-btn" id="btn-skills">📊 숙련도</button>
+          <button class="toolbar-btn" id="btn-basecamp">🏕 거점 강화</button>
           <button class="toolbar-btn" id="btn-wait">⏱ 대기</button>
           <button class="toolbar-btn" id="btn-rest">💤 휴식</button>
           <button class="toolbar-btn" id="btn-save">💾 저장</button>
@@ -143,6 +154,16 @@ const Basecamp = {
         <div class="landmark-modal-box"></div>
       </div>
 
+      <!-- Skill modal -->
+      <div class="modal-overlay" id="skill-modal">
+        <div class="skill-modal-box"></div>
+      </div>
+
+      <!-- Basecamp upgrade modal -->
+      <div class="modal-overlay" id="basecamp-upgrade-modal">
+        <div class="bc-upgrade-modal-box"></div>
+      </div>
+
       <!-- Craft modal -->
       <div class="modal-overlay" id="craft-modal">
         <div class="modal-box" style="max-width:420px;max-height:85vh;">
@@ -162,6 +183,16 @@ const Basecamp = {
     // Equipment modal open (char block 클릭)
     this._el.querySelector('#bc-char-block')?.addEventListener('click', () => {
       EquipmentModal.open();
+    });
+
+    // Skill modal open
+    this._el.querySelector('#btn-skills')?.addEventListener('click', () => {
+      SkillModal.open();
+    });
+
+    // Basecamp upgrade modal open
+    this._el.querySelector('#btn-basecamp')?.addEventListener('click', () => {
+      BasecampModal.open();
     });
 
     // Craft modal open
@@ -205,6 +236,32 @@ const Basecamp = {
     const modal = document.getElementById('craft-modal');
     modal?.classList.remove('open');
     GameState.ui.basecampMode = 'INVENTORY';
+  },
+
+  _updateQuestPanel() {
+    const el = document.getElementById('bc-quest-info');
+    if (!el) return;
+
+    const active = QuestSystem.getActiveQuests();
+    if (active.length === 0) {
+      el.innerHTML = '<span class="bc-quest-empty">활성 퀘스트: 0개</span>';
+      return;
+    }
+
+    el.innerHTML = active.map(q => {
+      const def     = q.def;
+      const pct     = def ? Math.round((q.progress / def.objective.count) * 100) : 0;
+      const dayLeft = q.deadline - GameState.time.day;
+      return `
+        <div class="bc-quest-item">
+          <div class="bc-quest-title">${def?.icon ?? '📋'} ${def?.title ?? q.id}</div>
+          <div class="bc-quest-progress-bar">
+            <div class="bc-quest-fill" style="width:${pct}%"></div>
+          </div>
+          <div class="bc-quest-meta">${q.progress}/${def?.objective.count ?? '?'} · 남은 기간 ${dayLeft}일</div>
+        </div>
+      `;
+    }).join('');
   },
 };
 

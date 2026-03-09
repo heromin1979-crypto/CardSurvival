@@ -156,7 +156,7 @@ html, body {
 
 
 /* ═══════════════════════════════════════════════════════════
-   4. 폰 세로 (≤ 480px) — 사이드바 → 상단 HUD 바 전환
+   4. 폰 세로 (≤ 480px) — 사이드바 → 상단 2행 HUD 바 전환
    ═══════════════════════════════════════════════════════════ */
 @media (max-width: 480px) {
   :root {
@@ -172,33 +172,50 @@ html, body {
     grid-template-rows: auto 1fr;
     height: 100dvh;
     overflow: hidden;
+    /* iOS 상태바(노치) 여백 */
+    padding-top: env(safe-area-inset-top);
   }
 
-  /* ── 사이드바 → 가로 스크롤 HUD 바 ──────────────── */
+  /* ── 사이드바 → 2행 HUD 바 ──────────────────────── */
+  /*
+   * flex-wrap + CSS order 트릭으로 2행 구성
+   * 행 1 (order 1~9):  [시간] [캐릭터] [무게]
+   * ::before (order 10, width:100%) → 행 강제 줄바꿈
+   * 행 2 (order 11~):  [스탯바] [소음] [버튼]
+   */
   .bc-sidebar {
     width: 100%;
     min-width: unset;
     height: auto;
-    max-height: 56px;
+    min-height: 80px;
+    display: flex;
     flex-direction: row;
+    flex-wrap: wrap;
+    align-content: center;
     align-items: center;
     gap: 0;
-    padding: 4px 6px;
-    overflow-x: auto;
-    overflow-y: hidden;
+    padding: 3px 8px;
+    overflow: hidden;
     border-right: none;
-    border-bottom: 1px solid var(--border-dim);
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
+    border-bottom: 2px solid var(--border-dim);
     flex-shrink: 0;
   }
-  .bc-sidebar::-webkit-scrollbar { display: none; }
 
-  /* 항목 사이 구분선 */
+  /* 행 구분 (invisible 100%-width spacer) */
+  .bc-sidebar::before {
+    content: '';
+    flex: 0 0 100%;
+    height: 2px;
+    order: 10;
+    background: var(--border-dim);
+    margin: 1px 0;
+  }
+
+  /* 항목 기본 — 구분선 제거, order별 배치 */
   .bc-sidebar > * {
     flex-shrink: 0;
-    padding: 0 8px;
-    border-right: 1px solid var(--border-dim);
+    padding: 0 6px;
+    border-right: none;
   }
   .bc-sidebar > *:last-child { border-right: none; }
 
@@ -209,61 +226,73 @@ html, body {
   #outdoor-temp,
   .bc-season-weather-row { display: none !important; }
 
+  /* ── 행 1 배치 (order 1~9) ───────────────────── */
+  .bc-time-block { order: 1; flex: 0 0 auto; align-self: center; }
+  .bc-char-block { order: 5; flex: 1 0 auto; align-self: center; min-width: 0; }
+  .bc-enc-block  { order: 9; flex: 0 0 auto; align-self: center; }
+
+  /* ── 행 2 배치 (order 11~) ───────────────────── */
+  .stat-bars       { order: 11; flex: 1 1 0; min-width: 0; align-self: center; }
+  .bc-noise-block  { order: 12; flex: 0 0 auto; align-self: center; }
+  .bc-sidebar-btns { order: 15; flex: 0 0 auto; align-self: center; max-width: 150px; overflow-x: auto; scrollbar-width: none; }
+  .bc-sidebar-btns::-webkit-scrollbar { display: none; }
+
   /* ── 시간 블록 ───────────────────────────────── */
   .bc-time-block {
-    flex-direction: row;
-    align-items: center;
-    gap: 5px;
+    flex-direction: column;
+    gap: 2px;
     white-space: nowrap;
   }
   .bc-day-row     { flex-direction: row; gap: 4px; align-items: center; }
   .bc-tp-row      { flex-direction: row; align-items: center; gap: 3px; }
-  .tp-clock-track { width: 36px !important; flex: none !important; }
-  .tp-clock-value { font-size: 9px; }
+  .tp-clock-track { width: 40px !important; flex: none !important; }
+  .tp-clock-value { font-size: 10px; }
   .bc-tp-label    { display: none; }
-  .bc-day         { font-size: 11px; }
-  .bc-clock       { font-size: 10px; }
+  .bc-day         { font-size: 13px; font-weight: bold; }
+  .bc-clock       { font-size: 11px; color: var(--text-secondary); }
 
   /* ── 캐릭터 블록 ─────────────────────────────── */
   .bc-char-block {
     flex-direction: row;
     align-items: center;
-    gap: 4px;
+    gap: 5px;
     white-space: nowrap;
+    overflow: hidden;
   }
-  .bc-avatar    { font-size: 14px; }
-  .bc-char-name { font-size: 10px; }
-  .bc-char-sub  { display: none; }
-  .bc-char-hp   { font-size: 9px; }
-  .bc-char-info { gap: 1px; }
+  .bc-avatar    { font-size: 20px; flex-shrink: 0; }
+  .bc-char-name { font-size: 12px; font-weight: bold; }
+  .bc-char-sub  { font-size: 10px; color: var(--text-secondary); }
+  .bc-char-hp   { font-size: 10px; }
+  .bc-char-info { gap: 1px; min-width: 0; overflow: hidden; }
 
-  /* ── 스탯 바 → 세로 미니 바 가로 나열 ─────────── */
+  /* ── 스탯 바 → 가로 나열 ─────────────────────── */
   .stat-bars {
     flex-direction: row;
     flex-wrap: nowrap;
-    gap: 2px;
+    gap: 3px;
     overflow-x: auto;
     scrollbar-width: none;
+    padding: 2px 0;
   }
   .stat-bars::-webkit-scrollbar { display: none; }
   .stat-bar-group {
     flex-direction: column;
     align-items: center;
-    min-width: 32px;
+    min-width: 36px;
     gap: 1px;
   }
   .stat-bar-label { flex-direction: column; align-items: center; gap: 0; }
-  .stat-bar-name  { font-size: 7px; }
-  .stat-bar-value { font-size: 8px; font-weight: bold; }
-  .stat-bar-track { width: 28px; height: 3px; }
+  .stat-bar-name  { font-size: 8px; }
+  .stat-bar-value { font-size: 10px; font-weight: bold; }
+  .stat-bar-track { width: 32px; height: 5px; border-radius: 3px; }
 
   /* ── 소음 ────────────────────────────────────── */
-  .bc-noise-block { min-width: 64px; }
+  .bc-noise-block { min-width: 60px; }
   .noise-label    { font-size: 9px; }
-  .noise-track    { width: 40px; }
+  .noise-track    { width: 38px; }
 
   /* ── 무게 ────────────────────────────────────── */
-  .bc-enc-block { font-size: 9px; white-space: nowrap; }
+  .bc-enc-block { font-size: 11px; white-space: nowrap; }
 
   /* ── 액션 버튼 ───────────────────────────────── */
   .bc-sidebar-btns {
@@ -272,9 +301,10 @@ html, body {
     margin-top: 0;
   }
   .bc-sidebar-btns .toolbar-btn {
-    padding: 3px 5px;
-    font-size: 9px;
+    padding: 4px 6px;
+    font-size: 10px;
     min-height: 30px;
+    min-width: 30px;
     letter-spacing: 0;
     white-space: nowrap;
   }
@@ -287,15 +317,35 @@ html, body {
     min-height: 0;
   }
 
-  /* ── 장소 행 → 가로 스크롤 ───────────────────── */
+  /* ── 장소 행 → 가로 스크롤 + 큰 탭 영역 ────── */
   .board-row.row-top .board-row-slots {
     overflow-x: auto;
     overflow-y: hidden;
     flex-wrap: nowrap;
     scrollbar-width: none;
     padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+    gap: 6px;
   }
   .board-row.row-top .board-row-slots::-webkit-scrollbar { display: none; }
+
+  /* 장소 슬롯 — 탭 영역 25% 확대 (69×92 → 86×116) */
+  .board-row.row-top .slot {
+    width: 86px !important;
+    min-width: 86px !important;
+    height: 116px;
+    min-height: 116px;
+  }
+  /* 장소 카드 */
+  .board-row.row-top .location-card,
+  .board-row.row-top .card {
+    width: 83px;
+    height: 113px;
+    cursor: pointer;
+  }
+  .board-row.row-top .lc-icon { font-size: 28px; }
+  .board-row.row-top .lc-name { font-size: 10px; }
+  .board-row.row-top .lc-meta { font-size: 8px; }
 
   /* ── 카드 폰트 ───────────────────────────────── */
   .card-icon       { font-size: 11px; width: 13px; height: 13px; }
@@ -349,10 +399,29 @@ html, body {
     --slot-h: 82px;
   }
 
-  .bc-sidebar { max-height: 48px; }
-  .bc-sidebar-btns .toolbar-btn { font-size: 8px; padding: 2px 4px; min-height: 26px; }
-  .stat-bar-group { min-width: 28px; }
-  .stat-bar-track { width: 24px; }
+  /* 2행 HUD 높이 유지하되 내용 압축 */
+  .bc-sidebar { min-height: 74px; padding: 2px 5px; }
+  .bc-day         { font-size: 12px; }
+  .bc-char-name   { font-size: 11px; }
+  .bc-enc-block   { font-size: 10px; }
+  .bc-sidebar-btns { max-width: 120px; }
+  .bc-sidebar-btns .toolbar-btn { font-size: 9px; padding: 3px 4px; min-height: 28px; }
+  .stat-bar-group { min-width: 32px; }
+  .stat-bar-track { width: 28px; height: 4px; }
+  .stat-bar-value { font-size: 9px; }
+
+  /* 장소 슬롯 — 360px에서도 충분한 크기 유지 */
+  .board-row.row-top .slot {
+    width: 78px !important;
+    min-width: 78px !important;
+    height: 104px;
+    min-height: 104px;
+  }
+  .board-row.row-top .location-card,
+  .board-row.row-top .card {
+    width: 75px;
+    height: 101px;
+  }
 }
 
 

@@ -311,6 +311,60 @@ const ITEMS_COMBAT = {
       { definitionId: 'duct_tape', qty: 1, chance: 0.7 },
     ],
   },
+
+  // ─── 신발 (4) ────────────────────────────────────────────
+
+  running_shoes: {
+    id: 'running_shoes', name: '러닝화', type: 'armor', subtype: 'boots',
+    rarity: 'common', weight: 0.4,
+    defaultDurability: 70, defaultContamination: 0,
+    icon: '👟', description: '가볍고 빠른 운동화. 이동 시 피로 소모를 줄인다.',
+    tags: ['armor', 'boots'],
+    onWear: { fatigueMult: 0.85 },
+    dismantle: [
+      { definitionId: 'rubber', qty: 1, chance: 0.6 },
+      { definitionId: 'cloth_scrap', qty: 2, chance: 0.7 },
+    ],
+  },
+
+  hiking_boots: {
+    id: 'hiking_boots', name: '등산화', type: 'armor', subtype: 'boots',
+    rarity: 'uncommon', weight: 0.8,
+    defaultDurability: 85, defaultContamination: 0,
+    icon: '🥾', description: '험한 지형에서 발을 보호. 감염 저항 소폭 향상.',
+    tags: ['armor', 'boots', 'crafted'],
+    onWear: { infectionMult: 0.85, fatigueMult: 0.90 },
+    dismantle: [
+      { definitionId: 'leather', qty: 2, chance: 0.7 },
+      { definitionId: 'rubber', qty: 1, chance: 0.6 },
+    ],
+  },
+
+  combat_boots: {
+    id: 'combat_boots', name: '전투화', type: 'armor', subtype: 'boots',
+    rarity: 'uncommon', weight: 1.2,
+    defaultDurability: 95, defaultContamination: 0,
+    icon: '🪖', description: '군용 전투화. 피해 감소와 치명타 방어 효과.',
+    tags: ['armor', 'boots'],
+    onWear: { damageReduction: 0.05, critReduction: 0.10 },
+    dismantle: [
+      { definitionId: 'leather', qty: 2, chance: 0.8 },
+      { definitionId: 'scrap_metal', qty: 1, chance: 0.5 },
+    ],
+  },
+
+  hazmat_boots: {
+    id: 'hazmat_boots', name: '방호화', type: 'armor', subtype: 'boots',
+    rarity: 'rare', weight: 1.5,
+    defaultDurability: 80, defaultContamination: 0,
+    icon: '🦺', description: '방사선 차단 부츠. 핵오염 지역 탐색 시 필수.',
+    tags: ['armor', 'boots', 'crafted'],
+    onWear: { radiationMult: 0.55, contaminationMult: 0.65 },
+    dismantle: [
+      { definitionId: 'rubber', qty: 2, chance: 0.7 },
+      { definitionId: 'leather', qty: 1, chance: 0.6 },
+    ],
+  },
 };
 
 export default ITEMS_COMBAT;

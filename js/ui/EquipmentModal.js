@@ -14,6 +14,7 @@ const SLOT_META = {
   weapon_sub:  { label: '보조',   icon: '🗡️',  row: 5, col: 'right' },
   belt:        { label: '허리띠', icon: '📎',  row: 6, col: 'left',  locked: true },
   accessory:   { label: '장식',   icon: '💎',  row: 6, col: 'right', locked: true },
+  boots:       { label: '신발',   icon: '👟',  row: 7 },
 };
 
 const TABS = ['방어구', '무기', '가방/도구', '소지품'];
@@ -156,7 +157,7 @@ const EquipmentModal = {
   },
 
   _buildSlotGrid() {
-    // 6행 × 3열 [left, center, right]
+    // 7행 × 3열 [left, center, right]
     return [
       [null,          'head',       null       ],  // 행1
       ['face',        'CHAR',       'offhand'  ],  // 행2
@@ -164,6 +165,7 @@ const EquipmentModal = {
       ['hands',       'CHAR2',      'backpack' ],  // 행4 (CHAR2 = 실루엣 아랫부분)
       ['weapon_main', null,         'weapon_sub'], // 행5
       ['belt',        'accessory',  null       ],  // 행6
+      [null,          'boots',      null       ],  // 행7
     ];
   },
 

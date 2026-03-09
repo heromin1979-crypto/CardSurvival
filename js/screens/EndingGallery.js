@@ -1,18 +1,16 @@
 // === ENDING GALLERY SCREEN ===
 import EventBus     from '../core/EventBus.js';
-import GameState    from '../core/GameState.js';
 import StateMachine from '../core/StateMachine.js';
 import ENDINGS      from '../data/endings.js';
 import EndingSystem from '../systems/EndingSystem.js';
 
 const CATEGORY_META = {
-  death:     { label: '사망',      color: '#c0392b', icon: '💀' },
-  milestone: { label: '마일스톤',  color: '#d4ac0d', icon: '⭐' },
-  escape:    { label: '탈출',      color: '#2980b9', icon: '🏃' },
-  character: { label: '캐릭터',    color: '#8e44ad', icon: '👤' },
+  death:     { label: '사망',      color: '#c0392b', icon: '💀', bg: 'rgba(192,57,43,0.08)' },
+  milestone: { label: '마일스톤',  color: '#d4ac0d', icon: '⭐', bg: 'rgba(212,172,13,0.08)' },
+  escape:    { label: '탈출',      color: '#2980b9', icon: '🏃', bg: 'rgba(41,128,185,0.08)' },
+  character: { label: '캐릭터',    color: '#8e44ad', icon: '👤', bg: 'rgba(142,68,173,0.08)' },
 };
 
-// Vague hints for locked non-death endings (teaser, not a spoiler)
 const LOCKED_HINTS = {
   milestone_fortified:    '거점을 완전히 구축하면 공개됩니다.',
   milestone_survived_year:'오랫동안 살아남으면 공개됩니다.',
@@ -33,10 +31,10 @@ const LOCKED_HINTS = {
 const EndingGallery = {
   _el:             null,
   _activeCategory: 'all',
+  _sortMode:       'category', // 'category' | 'unlock'
 
   init() {
     this._el = document.getElementById('screen-ending-gallery');
-
     EventBus.on('stateTransition', ({ to }) => {
       if (to === 'ending_gallery') this._render();
     });
@@ -46,40 +44,67 @@ const EndingGallery = {
     if (!this._el) return;
     this._el.innerHTML = '';
 
-    const unlocked   = EndingSystem.getUnlocked();
-    const allEndings = Object.values(ENDINGS);
-    const total      = allEndings.length;
-    const doneCount  = unlocked.length;
-    const pct        = Math.round((doneCount / total) * 100);
+    const unlocked    = EndingSystem.getUnlocked();
+    const meta        = EndingSystem.getUnlockMeta();
+    const allEndings  = Object.values(ENDINGS);
+    const total       = allEndings.length;
+    const doneCount   = unlocked.length;
+    const pct         = Math.round((doneCount / total) * 100);
 
     const wrap = document.createElement('div');
     wrap.className = 'eg-wrap';
 
-    // ── Header ──────────────────────────────────────────────────
+    // ── Header ─────────────────────────────────────────────────────
     const header = document.createElement('div');
     header.className = 'eg-header';
     header.innerHTML = `
       <button class="eg-back-btn" id="eg-back">← 메인 메뉴</button>
       <h2 class="eg-title">엔딩 컬렉션</h2>
+      <button class="eg-sort-btn" id="eg-sort" title="정렬 변경">
+        ${this._sortMode === 'category' ? '카테고리순' : '달성순'}
+      </button>
     `;
     wrap.appendChild(header);
 
-    // ── Progress bar ─────────────────────────────────────────────
+    // ── Progress ───────────────────────────────────────────────────
     const prog = document.createElement('div');
     prog.className = 'eg-progress-wrap';
     prog.innerHTML = `
       <div class="eg-progress-bar">
         <div class="eg-progress-fill" style="width:${pct}%"></div>
       </div>
-      <div class="eg-progress-text">달성 <strong>${doneCount}</strong> / ${total}</div>
+      <div class="eg-progress-text">
+        달성 <strong>${doneCount}</strong> / ${total}
+        <span class="eg-pct-badge">${pct}%</span>
+      </div>
     `;
     wrap.appendChild(prog);
 
-    // ── Category tabs ────────────────────────────────────────────
+    // ── Category stats row ─────────────────────────────────────────
+    const statRow = document.createElement('div');
+    statRow.className = 'eg-stat-row';
+    Object.entries(CATEGORY_META).forEach(([catId, m]) => {
+      const catEndings  = allEndings.filter(e => e.category === catId);
+      const catDone     = catEndings.filter(e => unlocked.includes(e.id)).length;
+      const catPct      = catEndings.length > 0 ? Math.round((catDone / catEndings.length) * 100) : 0;
+      statRow.innerHTML += `
+        <div class="eg-stat-cell" style="border-color:${m.color}20">
+          <div class="eg-stat-icon">${m.icon}</div>
+          <div class="eg-stat-label">${m.label}</div>
+          <div class="eg-stat-count" style="color:${m.color}">${catDone}/${catEndings.length}</div>
+          <div class="eg-stat-mini-bar">
+            <div class="eg-stat-mini-fill" style="width:${catPct}%;background:${m.color}"></div>
+          </div>
+        </div>
+      `;
+    });
+    wrap.appendChild(statRow);
+
+    // ── Category tabs ──────────────────────────────────────────────
     const tabs = document.createElement('div');
     tabs.className = 'eg-tabs';
     const tabDefs = [
-      { id: 'all',       label: '전체',     count: total },
+      { id: 'all', label: '전체', count: total },
       ...Object.entries(CATEGORY_META).map(([id, m]) => ({
         id,
         label: m.icon + ' ' + m.label,
@@ -102,7 +127,7 @@ const EndingGallery = {
     });
     wrap.appendChild(tabs);
 
-    // ── Cards grid ───────────────────────────────────────────────
+    // ── Cards grid ─────────────────────────────────────────────────
     const grid = document.createElement('div');
     grid.className = 'eg-grid';
 
@@ -110,55 +135,80 @@ const EndingGallery = {
       ? allEndings
       : allEndings.filter(e => e.category === this._activeCategory);
 
-    // Sort: unlocked first, then by category order
     const categoryOrder = ['character', 'escape', 'milestone', 'death'];
-    const sorted = [...filtered].sort((a, b) => {
-      const aUnlocked = unlocked.includes(a.id) ? 0 : 1;
-      const bUnlocked = unlocked.includes(b.id) ? 0 : 1;
-      if (aUnlocked !== bUnlocked) return aUnlocked - bUnlocked;
-      return categoryOrder.indexOf(a.category) - categoryOrder.indexOf(b.category);
-    });
+    let sorted = [...filtered];
+
+    if (this._sortMode === 'unlock') {
+      sorted.sort((a, b) => {
+        const aDay = meta[a.id]?.day ?? Infinity;
+        const bDay = meta[b.id]?.day ?? Infinity;
+        if (aDay !== bDay) return aDay - bDay;
+        return categoryOrder.indexOf(a.category) - categoryOrder.indexOf(b.category);
+      });
+    } else {
+      sorted.sort((a, b) => {
+        const aU = unlocked.includes(a.id) ? 0 : 1;
+        const bU = unlocked.includes(b.id) ? 0 : 1;
+        if (aU !== bU) return aU - bU;
+        return categoryOrder.indexOf(a.category) - categoryOrder.indexOf(b.category);
+      });
+    }
 
     sorted.forEach(ending => {
       const isUnlocked = unlocked.includes(ending.id);
-      grid.appendChild(this._buildCard(ending, isUnlocked));
+      const unlockDay  = meta[ending.id]?.day ?? null;
+      grid.appendChild(this._buildCard(ending, isUnlocked, unlockDay));
     });
 
     wrap.appendChild(grid);
     this._el.appendChild(wrap);
 
-    // ── Back button ──────────────────────────────────────────────
+    // ── Events ─────────────────────────────────────────────────────
     document.getElementById('eg-back')?.addEventListener('click', () => {
       StateMachine.transition('main_menu');
     });
+    document.getElementById('eg-sort')?.addEventListener('click', () => {
+      this._sortMode = this._sortMode === 'category' ? 'unlock' : 'category';
+      this._render();
+    });
   },
 
-  _buildCard(ending, isUnlocked) {
-    const meta = CATEGORY_META[ending.category] ?? { label: ending.category, color: '#888', icon: '?' };
+  _buildCard(ending, isUnlocked, unlockDay) {
+    const meta = CATEGORY_META[ending.category] ?? { label: ending.category, color: '#888', icon: '?', bg: 'rgba(128,128,128,0.08)' };
     const card = document.createElement('div');
 
     if (isUnlocked) {
       card.className = 'eg-card unlocked';
-      card.style.background = ending.gradient;
+      card.style.cssText = `background:${ending.gradient ?? meta.bg};border-color:${meta.color}30`;
 
-      const preview = ending.narrative?.[0] ?? '';
+      const preview    = ending.narrative?.[0] ?? '';
+      const dayBadge   = unlockDay != null ? `<div class="eg-card-day">Day ${unlockDay} 달성</div>` : '';
+
       card.innerHTML = `
-        <div class="eg-card-badge" style="color:${meta.color};border-color:${meta.color}">
+        <div class="eg-card-badge" style="color:${meta.color};border-color:${meta.color}40;background:${meta.bg}">
           ${meta.icon} ${meta.label}
         </div>
         <div class="eg-card-title">${ending.title}</div>
         <div class="eg-card-subtitle">${ending.subtitle}</div>
         <div class="eg-card-preview">${preview}</div>
-        <div class="eg-card-check">✓</div>
+        ${dayBadge}
+        <div class="eg-card-check" style="color:${meta.color}">✓</div>
       `;
     } else {
+      const isDeath = ending.category === 'death';
       card.className = 'eg-card locked';
+      card.style.cssText = `border-color:${meta.color}20`;
+
       const hint = LOCKED_HINTS[ending.id] ?? '이 엔딩을 달성하면 공개됩니다.';
+      const titleHtml = isDeath
+        ? `<div class="eg-card-title eg-faded">${ending.title}</div>`
+        : `<div class="eg-card-title eg-hidden">???</div>`;
+
       card.innerHTML = `
-        <div class="eg-card-badge" style="color:${meta.color};border-color:${meta.color}">
+        <div class="eg-card-badge" style="color:${meta.color}60;border-color:${meta.color}20;background:${meta.bg}">
           ${meta.icon} ${meta.label}
         </div>
-        <div class="eg-card-title eg-hidden">???</div>
+        ${titleHtml}
         <div class="eg-card-lock">🔒</div>
         <div class="eg-card-hint">${hint}</div>
       `;

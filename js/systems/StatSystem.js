@@ -5,6 +5,7 @@ import TraitSystem  from './TraitSystem.js';
 import EndingSystem from './EndingSystem.js';
 import SeasonSystem  from './SeasonSystem.js';
 import DiseaseSystem from './DiseaseSystem.js';
+import SkillSystem   from './SkillSystem.js';
 
 const StatSystem = {
   init() {
@@ -359,11 +360,14 @@ const StatSystem = {
     const eff = def.onConsume;
     if (!eff) return false;
 
-    // medic 특성: 의료 태그 아이템 회복량 50% 증가
-    const isMedical = def.tags?.includes('medical') ?? false;
-    const healMult  = isMedical
-      ? (TraitSystem.getTraitEffect('medic', 'healMultiplier') ?? 1.0)
-      : 1.0;
+    // medic 특성 + 의료 스킬: 의료 태그 아이템 회복량 배율
+    const isMedical  = def.tags?.includes('medical') ?? false;
+    const isCrafted  = def.crafted ?? false;  // 제작된 음식 여부
+    const isFood     = def.subtype === 'food' || def.subtype === 'drink';
+    const traitMult  = isMedical ? (TraitSystem.getTraitEffect('medic', 'healMultiplier') ?? 1.0) : 1.0;
+    const medSkill   = isMedical ? SkillSystem.getBonus('medicine', 'healMult') : 1.0;
+    const cookSkill  = isFood    ? SkillSystem.getBonus('cooking',  'foodEffectMult') : 1.0;
+    const healMult   = traitMult * (isMedical ? medSkill : (isFood ? cookSkill : 1.0));
 
     if (eff.hydration)    gs.modStat('hydration',  eff.hydration * healMult);
     if (eff.nutrition)    gs.modStat('nutrition',   eff.nutrition * healMult);
@@ -392,6 +396,11 @@ const StatSystem = {
 
     // 아이템 사용 → 질병 치료 체크
     DiseaseSystem.onConsume(def, gs);
+
+    // 스킬 XP: 의료 아이템 사용
+    if (isMedical) SkillSystem.gainXp('medicine', 3);
+    // 스킬 XP: 제작한 음식 섭취
+    if (isFood && isCrafted) SkillSystem.gainXp('cooking', 2);
 
     // stackable 아이템: 수량 1개만 소모, 0이 되면 제거
     const qty = inst.quantity ?? 1;

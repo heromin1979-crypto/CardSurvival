@@ -166,6 +166,7 @@ const SeasonSystem = {
 
     triggered.push(event.id);
     EventBus.emit('notify', { message: event.message, type: event.type });
+    EventBus.emit('seasonalEvent', { eventId: event.id, event });
     this._applyEventEffects(event.effects, gs);
   },
 

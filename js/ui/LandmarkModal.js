@@ -85,8 +85,14 @@ const LandmarkModal = {
   },
 
   _renderSubLoc(loc) {
-    const dangerPct  = Math.round(loc.dangerMod * 100);
-    const dangerCls  = loc.dangerMod >= 0.35 ? 'high' : loc.dangerMod >= 0.20 ? 'mid' : 'low';
+    const dangerPct   = Math.round(loc.dangerMod * 100);
+    const dangerCls   = loc.dangerMod >= 0.35 ? 'high' : loc.dangerMod >= 0.20 ? 'mid' : 'low';
+    const visitCount  = GameState.landmarkHistory[loc.id] ?? 0;
+    const lootMult    = this._getLootMult(visitCount);
+    const lootPct     = Math.round(lootMult * 100);
+    const visitBadge  = visitCount > 0
+      ? `<span class="lm-visit-badge">${visitCount}회 탐색 · 루팅 ${lootPct}%</span>`
+      : `<span class="lm-visit-badge fresh">미탐색</span>`;
     const lootPreview = loc.lootTable.slice(0, 3)
       .map(e => {
         const def = window.__GAME_DATA__?.items[e.id];
@@ -94,7 +100,7 @@ const LandmarkModal = {
       }).join('');
 
     return `
-      <div class="lm-subloc-card" data-subloc-id="${loc.id}">
+      <div class="lm-subloc-card${visitCount > 0 ? ' visited' : ''}" data-subloc-id="${loc.id}">
         <div class="lm-subloc-icon">${loc.icon}</div>
         <div class="lm-subloc-info">
           <div class="lm-subloc-name">${loc.name}</div>
@@ -103,9 +109,18 @@ const LandmarkModal = {
             <span class="lm-danger-badge ${dangerCls}">위험 +${dangerPct}%</span>
             <span class="lm-loot-preview">${lootPreview}</span>
           </div>
+          <div class="lm-visit-row">${visitBadge}</div>
         </div>
       </div>
     `;
+  },
+
+  // 방문 횟수에 따른 루팅 배율 (1회=100%, 2회=70%, 3회=45%, 4+회=25%)
+  _getLootMult(visitCount) {
+    if (visitCount === 0) return 1.0;
+    if (visitCount === 1) return 0.70;
+    if (visitCount === 2) return 0.45;
+    return 0.25;
   },
 
   _bindSubLocEvents(box, data) {
@@ -151,10 +166,16 @@ const LandmarkModal = {
       return;
     }
 
-    // 루팅
+    // 방문 기록 업데이트
+    gs.landmarkHistory[loc.id] = (gs.landmarkHistory[loc.id] ?? 0) + 1;
+    const visitCount = gs.landmarkHistory[loc.id];
+    const lootMult   = this._getLootMult(visitCount - 1); // 이번 방문 전 횟수 기준
+
+    // 루팅 (방문 이력에 따라 루팅량 감소)
     const [minCount, maxCount] = loc.lootCount;
-    const count = minCount + Math.floor(Math.random() * (maxCount - minCount + 1));
-    const defIds = rollLoot(loc.lootTable, count);
+    const rawCount = minCount + Math.floor(Math.random() * (maxCount - minCount + 1));
+    const count    = Math.max(0, Math.round(rawCount * lootMult));
+    const defIds   = rollLoot(loc.lootTable, count);
 
     const items    = window.__GAME_DATA__?.items ?? {};
     const found    = [];
