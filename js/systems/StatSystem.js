@@ -129,11 +129,11 @@ const StatSystem = {
       if (onBoard) gs.modStat('temperature', 2);
     }
 
-    // Cold: morale drop if temp low
-    if (temp < 20) {
-      gs.modStat('morale', -1.0);
-    } else if (temp < 10) {
+    // Cold: morale drop if temp low (severe first)
+    if (temp < 10) {
       gs.modStat('morale', -2.0);
+    } else if (temp < 20) {
+      gs.modStat('morale', -1.0);
     }
 
     // Extreme cold death tick
@@ -362,7 +362,7 @@ const StatSystem = {
 
     // medic 특성 + 의료 스킬: 의료 태그 아이템 회복량 배율
     const isMedical  = def.tags?.includes('medical') ?? false;
-    const isCrafted  = def.crafted ?? false;  // 제작된 음식 여부
+    const isCrafted  = inst._crafted ?? false;  // 제작된 음식 여부
     const isFood     = def.subtype === 'food' || def.subtype === 'drink';
     const traitMult  = isMedical ? (TraitSystem.getTraitEffect('medic', 'healMultiplier') ?? 1.0) : 1.0;
     const medSkill   = isMedical ? SkillSystem.getBonus('medicine', 'healMult') : 1.0;

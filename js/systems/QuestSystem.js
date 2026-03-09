@@ -7,7 +7,7 @@ import GameState from '../core/GameState.js';
 // trigger: 연결된 seasonalEvent id (해당 이벤트 발생 시 자동 시작)
 // objective: { type, target, count }
 //   type: 'collect_item' | 'craft_item' | 'kill_enemies' | 'survive_days' | 'equip_slot'
-// reward: { stat, value } | { item, qty }
+// reward: { morale?, hp? }
 const QUEST_DEFS = {
   spring_water: {
     id:      'spring_water',
@@ -93,9 +93,8 @@ const QuestSystem = {
     // 계절 이벤트 발생 시 연결된 퀘스트 자동 시작
     EventBus.on('seasonalEvent', ({ eventId }) => this._onSeasonalEvent(eventId));
 
-    // 아이템 획득 추적
+    // 아이템 획득 추적 (collect_item + collect_item_type 모두 처리)
     EventBus.on('cardPlaced',     ({ instanceId }) => this._onItemGained(instanceId));
-    EventBus.on('lootConfirmed',  ()               => this._checkAllProgress());
 
     // 제작 완료 추적
     EventBus.on('craftComplete',  ({ blueprintId }) => this._onCraft(blueprintId));
@@ -146,6 +145,7 @@ const QuestSystem = {
     const def = GameState.getCardDef(instanceId);
     if (!def) return;
     this._updateCollectQuests(def);
+    this._updateCollectTypeQuests(def);
   },
 
   _onCraft(blueprintId) {
@@ -240,6 +240,27 @@ const QuestSystem = {
         q.progress  = Math.min(obj.count, count);
         this._checkCompletion(q, qDef);
       }
+    }
+    EventBus.emit('questListChanged', {});
+  },
+
+  _updateCollectTypeQuests(itemDef) {
+    const hasMatch = itemDef.tags || itemDef.subtype;
+    if (!hasMatch) return;
+    for (const q of GameState.quests.active) {
+      const qDef = QUEST_DEFS[q.id];
+      if (!qDef) continue;
+      const obj = qDef.objective;
+      if (obj.type !== 'collect_item_type') continue;
+      if (!itemDef.tags?.includes(obj.itemType) && itemDef.subtype !== obj.itemType) continue;
+      const count = GameState.getBoardCards()
+        .filter(c => {
+          const d = GameState.getCardDef(c.instanceId);
+          return d?.tags?.includes(obj.itemType) || d?.subtype === obj.itemType;
+        })
+        .reduce((s, c) => s + (c.quantity ?? 1), 0);
+      q.progress = Math.min(obj.count, count);
+      this._checkCompletion(q, qDef);
     }
     EventBus.emit('questListChanged', {});
   },

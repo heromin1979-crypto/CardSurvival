@@ -4,6 +4,7 @@ import GameState   from '../core/GameState.js';
 import StateMachine from '../core/StateMachine.js';
 import { rollEnemyGroup } from '../data/enemies.js';
 import TraitSystem from './TraitSystem.js';
+import BasecampSystem from './BasecampSystem.js';
 
 const NoiseSystem = {
   init() {
@@ -23,8 +24,9 @@ const NoiseSystem = {
 
     this.addNoise(structureNoise);
 
-    // Decay
-    const decayed = Math.min(n.level, n.decayPerTP);
+    // Decay (베이스캠프 noiseDecayBonus 반영)
+    const noiseBonus = BasecampSystem.getEffects().noiseDecayBonus;
+    const decayed = Math.min(n.level, n.decayPerTP + noiseBonus);
     n.level = Math.max(0, n.level - decayed);
     n.level = parseFloat(n.level.toFixed(2));
 

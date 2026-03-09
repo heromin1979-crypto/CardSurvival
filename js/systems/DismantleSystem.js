@@ -46,8 +46,8 @@ const DismantleSystem = {
       }
     }
 
-    // 자원채취 스킬 XP
-    SkillSystem.gainXp('harvesting', 3);
+    // 자원채취 스킬 XP (실제로 재료를 얻었을 때만)
+    if (gained.length > 0) SkillSystem.gainXp('harvesting', 3);
 
     // dismantleExtraItem 보너스: 추가 고철 획득
     const extraCount = GameState.player.dismantleExtraItem ?? 0;
