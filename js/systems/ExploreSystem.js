@@ -14,6 +14,7 @@ import SeasonSystem  from './SeasonSystem.js';
 import SkillSystem      from './SkillSystem.js';
 import BasecampSystem   from './BasecampSystem.js';
 import BALANCE          from '../data/gameBalance.js';
+import HiddenElementSystem from './HiddenElementSystem.js';
 
 const ExploreSystem = {
   init() {
@@ -161,6 +162,19 @@ const ExploreSystem = {
       EventBus.emit('notify', { message: `⚠ 방사선 구역! +${district.radiation}`, type: 'danger' });
     }
 
+    // ── 랜드마크 내부에서 구 이동 시 안전장치 ────────────
+    if (gs.location.currentLandmark) {
+      if (!gs.locationFloors) gs.locationFloors = {};
+      const prevSub = gs.location.currentSubLocation;
+      if (prevSub) {
+        gs.locationFloors[`sl:${currentDistrictId}:${prevSub}`] = [...gs.board.middle];
+      }
+      const distFloor = gs.locationFloors[currentDistrictId] ?? [];
+      gs.board.middle = Array.from({ length: gs.board.middle.length }, (_, i) => distFloor[i] ?? null);
+      gs.location.currentLandmark    = null;
+      gs.location.currentSubLocation = null;
+    }
+
     // ── 바닥(중간 행) 위치별 저장 ──────────────────────────
     // 현재 지역 바닥 아이템을 저장하고 새 지역 바닥으로 교체
     if (!gs.locationFloors) gs.locationFloors = {};
@@ -253,6 +267,11 @@ const ExploreSystem = {
     if (district.radiation > 0) {
       StatSystem.applyRadiation(district.radiation);
       EventBus.emit('notify', { message: `⚠ 방사선 구역! +${district.radiation}`, type: 'danger' });
+    }
+
+    // 보스 스폰 체크 (히든 보스)
+    if (HiddenElementSystem.checkBossSpawn(districtId, district.dangerLevel)) {
+      return;
     }
 
     // 조우 체크 (거점 효과 + 계절 encounterMult 포함)
@@ -469,6 +488,12 @@ const ExploreSystem = {
     }
     gs.location.currentLandmark    = districtId;
     gs.location.currentSubLocation = null;
+
+    // 구 바닥 저장 → 랜드마크 로비는 빈 바닥
+    if (!gs.locationFloors) gs.locationFloors = {};
+    gs.locationFloors[districtId] = [...gs.board.middle];
+    gs.board.middle = Array(gs.board.middle.length).fill(null);
+
     this._updateTopRowForLandmark(districtId);
     EventBus.emit('notify', { message: `🏛 ${lmData.name} 진입`, type: 'info' });
     EventBus.emit('boardChanged', {});
@@ -520,6 +545,17 @@ const ExploreSystem = {
     const lmData = LANDMARK_DATA[districtId];
     const sub    = lmData?.subLocations?.find(s => s.id === subLocationId);
     if (!sub) return;
+
+    // 이전 세부 장소 바닥 저장 & 새 바닥 로드
+    if (!gs.locationFloors) gs.locationFloors = {};
+    const prevSub = gs.location.currentSubLocation;
+    if (prevSub) {
+      gs.locationFloors[`sl:${districtId}:${prevSub}`] = [...gs.board.middle];
+    }
+    const slKey = `sl:${districtId}:${subLocationId}`;
+    const savedFloor = gs.locationFloors[slKey] ?? [];
+    const floorSize = gs.board.middle.length;
+    gs.board.middle = Array.from({ length: floorSize }, (_, i) => savedFloor[i] ?? null);
 
     gs.location.currentSubLocation = subLocationId;
     gs.location.currentNode        = subLocationId;
@@ -620,6 +656,17 @@ const ExploreSystem = {
   exitLandmark() {
     const gs         = GameState;
     const districtId = gs.location.currentLandmark ?? gs.location.currentDistrict;
+
+    // 세부 장소 바닥 저장 & 구 바닥 복원
+    if (!gs.locationFloors) gs.locationFloors = {};
+    const prevSub = gs.location.currentSubLocation;
+    if (prevSub) {
+      gs.locationFloors[`sl:${districtId}:${prevSub}`] = [...gs.board.middle];
+    }
+    const districtFloor = gs.locationFloors[districtId] ?? [];
+    const floorSize     = gs.board.middle.length;
+    gs.board.middle = Array.from({ length: floorSize }, (_, i) => districtFloor[i] ?? null);
+
     gs.location.currentLandmark    = null;
     gs.location.currentSubLocation = null;
     gs.location.currentNode        = districtId;
