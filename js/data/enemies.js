@@ -90,6 +90,30 @@ const ENEMIES = {
     stealthDifficulty: 0.8,
   },
 
+  raider_elite: {
+    id: 'raider_elite',
+    name: '정예 약탈자',
+    icon: '🎯',
+    type: 'human',
+    hp: { min: 55, max: 80 },
+    attack: { damage: [18, 28], accuracy: 0.72, noiseOnAttack: 30 },
+    defense: 4,
+    xp: 45,
+    lootTable: [
+      { definitionId: 'pistol_ammo', weight: 30, minQty: 3, maxQty: 8 },
+      { definitionId: 'canned_food', weight: 15, minQty: 1, maxQty: 3 },
+      { definitionId: 'first_aid_kit', weight: 10, minQty: 1, maxQty: 1 },
+      { definitionId: 'knife',       weight: 10, minQty: 1, maxQty: 1 },
+      { definitionId: 'duct_tape',   weight: 10, minQty: 1, maxQty: 2 },
+    ],
+    infectionChance: 0,
+    aiPattern: 'aggressive',
+    specialSkills: [{ id: 'aimed_shot', name: '정조준', damage: [25, 40], cooldown: 3, stunChance: 0.3 }],
+    statusInflict: null,
+    description: '전투 경험이 풍부한 정예 약탈자. 정조준 사격이 치명적이다.',
+    stealthDifficulty: 0.85,
+  },
+
   // ── 패거리 좀비 (Horde) ─────────────────────────────────
   zombie_horde: {
     id: 'zombie_horde',
@@ -185,15 +209,18 @@ const ENCOUNTER_TABLES = {
     { enemyId: 'zombie_brute',  weight: 15 },
     { enemyId: 'zombie_acid',   weight: 15 },
     { enemyId: 'zombie_horde',  weight: 10 },
-    { enemyId: 'raider',        weight: 15 },
+    { enemyId: 'raider',        weight: 10 },
+    { enemyId: 'raider_elite',  weight: 5  },
     { enemyId: 'rabid_dog',     weight: 5  },
   ],
   4: [
     { enemyId: 'zombie_runner', weight: 15 },
     { enemyId: 'zombie_brute',  weight: 25 },
-    { enemyId: 'zombie_horde',  weight: 30 },
-    { enemyId: 'zombie_acid',   weight: 20 },
+    { enemyId: 'zombie_horde',  weight: 25 },
+    { enemyId: 'zombie_acid',   weight: 15 },
     { enemyId: 'raider',        weight: 10 },
+    { enemyId: 'raider_elite',  weight: 5  },
+    { enemyId: 'rabid_dog',     weight: 5  },
   ],
 };
 

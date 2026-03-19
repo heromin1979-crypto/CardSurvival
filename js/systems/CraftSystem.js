@@ -3,6 +3,8 @@ import EventBus    from '../core/EventBus.js';
 import GameState  from '../core/GameState.js';
 import BLUEPRINTS from '../data/blueprints.js';
 import SkillSystem from './SkillSystem.js';
+import StatSystem  from './StatSystem.js';
+import BALANCE from '../data/gameBalance.js';
 
 const CraftSystem = {
   init() {
@@ -151,6 +153,41 @@ const CraftSystem = {
   },
 
   _produceOutput(bp) {
+    // ── 제작 실패 판정 ──────────────────────────────────
+    const craftSkillMap = {
+      structure: 'building', material: 'crafting', food: 'cooking',
+      medical: 'crafting', weapon: 'weaponcraft', armor: 'armorcraft', tool: 'crafting',
+    };
+    const relevantSkill = craftSkillMap[bp.category] ?? 'crafting';
+    const skillReduction = SkillSystem.getBonus(relevantSkill, 'craftSuccessBonus') ?? 0;
+    const charBonus = GameState.player.craftSuccessBonus ?? 0;
+    // 사기 구간별 제작 실패율 배율
+    const moraleTier = StatSystem.getMoraleTier();
+    const failChance = Math.max(
+      BALANCE.crafting.minFailureChance,
+      (BALANCE.crafting.baseFailureChance - skillReduction - charBonus) * (moraleTier.craftFailMult ?? 1.0)
+    );
+
+    if (Math.random() < failChance) {
+      // 실패: 재료 일부 반환
+      const refundRate = BALANCE.crafting.failureRefundRate;
+      for (const stage of bp.stages) {
+        for (const req of stage.requiredItems) {
+          const refundQty = Math.floor(req.qty * refundRate);
+          if (refundQty > 0) {
+            const refundInst = GameState.createCardInstance(req.definitionId, { quantity: refundQty });
+            if (refundInst) GameState.placeCardInRow(refundInst.instanceId, 'middle');
+          }
+        }
+      }
+      EventBus.emit('notify', { message: `❌ ${bp.name} 제작 실패! 재료 일부가 반환됩니다.`, type: 'danger' });
+      EventBus.emit('craftFailed', { blueprintId: bp.id });
+      // 실패해도 스킬 XP (절반)
+      const craftXp = (BALANCE.crafting.xpBase[relevantSkill] ?? 5) * (bp.stages?.length ?? 1);
+      SkillSystem.gainXp(relevantSkill, Math.ceil(craftXp * 0.5));
+      return;
+    }
+
     const outputIds = [];
     if (bp._outputCustom) {
       // Special case: molotov → give a cloth item as placeholder (no molotov def in items.js)
@@ -172,19 +209,9 @@ const CraftSystem = {
     EventBus.emit('craftComplete', { blueprintId: bp.id, outputInstanceIds: outputIds });
     EventBus.emit('notify', { message: `✅ ${bp.name} 완성!`, type: 'good' });
 
-    // 제작 스킬 XP: 블루프린트 카테고리별
-    const craftSkillMap = {
-      structure: 'building',
-      material:  'crafting',
-      food:      'cooking',
-      medical:   'crafting',
-      weapon:    'weaponcraft',
-      armor:     'armorcraft',
-      tool:      'crafting',
-    };
-    const craftSkillId  = craftSkillMap[bp.category] ?? 'crafting';
-    const craftXpBase   = { building: 10, weaponcraft: 8, armorcraft: 8, cooking: 5, crafting: 5 };
-    const craftXp       = craftXpBase[craftSkillId] ?? 5;
+    // 제작 스킬 XP: BALANCE 기반
+    const craftSkillId = craftSkillMap[bp.category] ?? 'crafting';
+    const craftXp      = BALANCE.crafting.xpBase[craftSkillId] ?? 5;
     SkillSystem.gainXp(craftSkillId, craftXp * (bp.stages?.length ?? 1));
     // 요리 제작 시 flags에 crafted=true 표시를 위한 output 태깅
     if (craftSkillId === 'cooking') {

@@ -12,10 +12,10 @@ const TickEngine = {
   _doFullTP() {
     const gs = GameState;
     gs.time.tpInDay++;
-    gs.time.hour = Math.floor((gs.time.tpInDay * 15) / 60) + 6;
+    gs.time.hour = Math.min(23, Math.floor((gs.time.tpInDay * 20) / 60) + 6);
 
     // new day
-    if (gs.time.tpInDay >= 96) {
+    if (gs.time.tpInDay >= 72) {
       gs.time.tpInDay = 0;
       gs.time.day++;
       gs.time.hour = 6;

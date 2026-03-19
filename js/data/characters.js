@@ -6,10 +6,10 @@ export const CHARACTERS = [
     id: 'doctor',
     name: '이지수',
     gender: 'F',
-    maxHp: 90,
-    strength: 55,   // 체력(힘): 스태미나 상한의 기반
-    endurance: 70,  // 인내심: 체력을 스태미나로 변환하는 효율 (→ stamina ≈ 77)
-    maxCarryWeight: 30,
+    maxHp: 95,      // (90 → 95 버프)
+    strength: 58,   // 체력(힘) (55 → 58 버프)
+    endurance: 72,  // 인내심 (70 → 72 버프, stamina ≈ 84)
+    maxCarryWeight: 32, // (30 → 32 버프)
     title: '응급의학과 전문의',
     portrait: '🩺',
     story: `2026년 1월 17일, 강남 삼성서울병원 응급실. 이지수 전문의(38세)는 11시간째 수술 중이었다.
@@ -44,8 +44,8 @@ export const CHARACTERS = [
         id: 'medical_supply',
         name: '의료 물자',
         icon: '🎒',
-        desc: '붕대×2, 소독약, 진통제 추가 지급',
-        effect: { startingItems: ['bandage', 'bandage', 'antiseptic', 'painkiller'] },
+        desc: '붕대×2, 소독약, 진통제, 메스 추가 지급',
+        effect: { startingItems: ['bandage', 'bandage', 'antiseptic', 'painkiller', 'knife'] },
       },
     ],
     startingSkills: {
@@ -59,15 +59,15 @@ export const CHARACTERS = [
     id: 'soldier',
     name: '강민준',
     gender: 'M',
-    maxHp: 130,
-    strength: 90,   // 체력(힘) — 군인: 최고 수준
-    endurance: 90,  // 인내심 — 극한 훈련 (→ stamina ≈ 162)
-    maxCarryWeight: 50,
+    maxHp: 110,     // (130 → 110 너프)
+    strength: 75,   // 체력(힘) — 군인 (90 → 75 너프)
+    endurance: 75,  // 인내심 (90 → 75 너프, stamina ≈ 113)
+    maxCarryWeight: 42, // (50 → 42 너프)
     title: '특수전 부사관',
     portrait: '⚔️',
     story: `2026년 1월 16일, 종로 광화문정부청사. 강민준 하사(29세)는 비상사태 격상 직전 VIP 경호 임무를 받았다.
 청사에서 불과 200미터 거리에서, 팀원 4명이 차례로 쓰러졌다.
-강민준은 홀로 빠져나왔다. 무전기는 잡음뿐이었지만, 끊기지 않는 음성이 하나 있었다.
+광화문에서 후퇴해 용산 미군기지로 철수했다. 무전기는 잡음뿐이었지만, 끊기지 않는 음성이 하나 있었다.
 "여기는 여의도 KBS. 아직 방송 중입니다. 살아계신 분들은 신호를 들어주세요."`,
     goal: '여의도 KBS 방송국에 도달해 비상 방송 장비를 가동하고, 전국의 생존자들에게 서울 집결 좌표를 송출한다.',
     abilities: [
@@ -75,8 +75,8 @@ export const CHARACTERS = [
         id: 'combat_training',
         name: '전투 훈련',
         icon: '⚔️',
-        desc: '전투 데미지 +30%, 크리티컬 확률 +10%',
-        effect: { combatDmgBonus: 1.3, critBonus: 0.10 },
+        desc: '전투 데미지 +20%, 크리티컬 확률 +8%',
+        effect: { combatDmgBonus: 1.2, critBonus: 0.08 },
       },
       {
         id: 'tactical_movement',
@@ -106,7 +106,7 @@ export const CHARACTERS = [
       defense: 3,  // 방어 전술
       unarmed: 3,  // 격투 훈련
     },
-    homeDist: 'jongno',
+    homeDist: 'yongsan',
   },
 
   {
@@ -174,8 +174,8 @@ export const CHARACTERS = [
     title: '전직 사업가 · 노숙인',
     portrait: '🏕️',
     story: `최형식(52세)은 한때 중견 건설회사 대표였다. 2023년 보증 실패로 모든 것을 잃었다.
-잠실 롯데타워에서 멀지 않은 동호대교 아래에서 2년을 살았다. 아무것도 없이 버티는 법을 배웠다.
-2026년 1월, 세상이 끝나는 날 밤에도 그는 다리 아래에 있었다.
+동호대교 아래에서 2년을 살았다. 아무것도 없이 버티는 법을 배웠다.
+2026년 1월, 세상이 끝나는 날 밤에도 그는 다리 아래에 있었다. 강남 쪽으로 이동해 삼성병원 근처에서 버텼다.
 아침이 되자 세상이 끝나 있었다. 그런데 이상하게도, 겁이 나지 않았다.
 이미 한 번 다 잃었으니까. 저 위, 롯데타워에서 사람들이 손을 흔드는 것 같았다.`,
     goal: '잠실 롯데타워의 생존자 요새에 합류하고, 거리 생존 노하우를 공유해 집단 생존 체계를 구축한다.',
@@ -214,7 +214,7 @@ export const CHARACTERS = [
       harvesting:  3,  // 자원 채취 (거리 생활)
       cooking:     3,  // 야전 요리
     },
-    homeDist: 'songpa',
+    homeDist: 'gangnam',
   },
 
   {
@@ -230,7 +230,7 @@ export const CHARACTERS = [
     story: `한소희(31세)는 홍대 입구 골목 작은 약국의 원장이었다.
 2026년 1월 14일, 이상한 증상의 환자들이 오기 시작했다. 발열, 이상 행동, 희번뜩이는 눈.
 소희는 알아차렸다. 사흘 뒤 세상이 무너지기 전에, 그녀는 약국 창고를 비워 배낭을 쌓았다.
-탈출은 2시간 뒤. 도망치면서도 그녀는 관찰했다. 감염자들의 패턴. 증상의 진행 순서.
+홍대에서 도망쳐 삼성병원으로 피신했다. 도망치면서도 그녀는 관찰했다. 감염자들의 패턴. 증상의 진행 순서.
 언젠가 이 데이터가 쓸모가 있을 것이다.`,
     goal: '5종 이상의 의료 재료를 수집해 실험적 항바이러스 합성을 완성하고 감염 차단 방법을 증명한다.',
     abilities: [
@@ -268,7 +268,7 @@ export const CHARACTERS = [
       crafting:  3,  // 조제·제조 능력
       cooking:   2,  // 약재 조합 기초
     },
-    homeDist: 'mapo',
+    homeDist: 'gangnam',
   },
 
   {
@@ -282,7 +282,7 @@ export const CHARACTERS = [
     title: '기계공학자',
     portrait: '🔧',
     story: `정대한(35세)은 성수동 소규모 금속 가공 공장의 기술 이사였다.
-세상이 무너진 날, 그는 공장에서 야근 중이었다. 셔터를 내렸다. 발전기에 경유를 넣었다.
+세상이 무너진 날, 성수동에서 용산 전자상가로 이동해 부품을 확보했다.
 머릿속으로 계산했다. 경유 120리터. 1일 최소 가동 시 15일치.
 하루하루 줄어드는 연료통을 보며 그는 설계도를 그리기 시작했다.
 연료 없이도 달릴 수 있는 무언가. 아니면 연료를 찾을 수 있는 탈것.`,
@@ -292,8 +292,8 @@ export const CHARACTERS = [
         id: 'engineering_intuition',
         name: '공학적 직관',
         icon: '⚙️',
-        desc: '제작 성공률 +20%',
-        effect: { craftSuccessBonus: 0.2 },
+        desc: '제작 성공률 +30%, 제작 속도 -20%',
+        effect: { craftSuccessBonus: 0.3 },
       },
       {
         id: 'dismantle_expert',
@@ -323,7 +323,7 @@ export const CHARACTERS = [
       weaponcraft: 3,  // 금속 가공 → 무기 제작
       armorcraft:  2,  // 기초 방어구 제작
     },
-    homeDist: 'seongdong',
+    homeDist: 'yongsan',
   },
 ];
 

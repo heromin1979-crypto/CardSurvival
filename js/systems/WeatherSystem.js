@@ -21,10 +21,12 @@ const WEATHER_TABLES = {
     { id: 'monsoon', name: '장마',   icon: '🌊',  weight: 25, tempMod: -0.1, contaminateRisk: 0.008 },
   ],
   autumn: [
-    { id: 'sunny',   name: '맑음',   icon: '☀️',  weight: 30, tempMod: 0 },
-    { id: 'windy',   name: '바람',   icon: '🍃',  weight: 25, tempMod: -0.2 },
-    { id: 'cloudy',  name: '흐림',   icon: '⛅',  weight: 30, tempMod: -0.1 },
-    { id: 'foggy',   name: '안개',   icon: '🌫',  weight: 15, tempMod: 0 },
+    { id: 'sunny',     name: '맑음',     icon: '☀️',  weight: 20, tempMod: 0 },
+    { id: 'windy',     name: '바람',     icon: '🍃',  weight: 20, tempMod: -0.2 },
+    { id: 'cloudy',    name: '흐림',     icon: '⛅',  weight: 20, tempMod: -0.1 },
+    { id: 'foggy',     name: '안개',     icon: '🌫',  weight: 15, tempMod: 0 },
+    { id: 'acid_rain', name: '산성비',   icon: '☢️',  weight: 25, tempMod: -0.3,
+      contaminateRisk: 0.010, gardenKill: true },
   ],
   winter: [
     { id: 'clear',   name: '맑고 추움', icon: '❄️', weight: 25, tempMod: -0.3 },
@@ -58,6 +60,7 @@ const WEATHER_TEMP_ADJ = {
   windy:    -3,
   snow:     -5,
   blizzard: -10,
+  acid_rain: -4,
 };
 
 // ── WeatherSystem ──────────────────────────────────────────────
@@ -126,7 +129,7 @@ const WeatherSystem = {
     gs.weather.tempJitter  = parseFloat((Math.random() * 4 - 2).toFixed(1));
 
     // 날씨 변경 알림 (눈에 띄는 날씨만)
-    const notifyIds = ['hot', 'storm', 'monsoon', 'blizzard', 'snow'];
+    const notifyIds = ['hot', 'storm', 'monsoon', 'blizzard', 'snow', 'acid_rain'];
     if (notifyIds.includes(w.id) && w.id !== prev) {
       EventBus.emit('notify', { message: `🌤 날씨 변화: ${w.icon} ${w.name}`, type: 'info' });
     }
@@ -148,8 +151,8 @@ const WeatherSystem = {
   },
 
   _rollDuration() {
-    // 1~3일 (96~288 TP)
-    return 96 + Math.floor(Math.random() * 193);
+    // 1~3일 (72~216 TP)
+    return 72 + Math.floor(Math.random() * 145);
   },
 
   _updateWeatherHUD(weather) {

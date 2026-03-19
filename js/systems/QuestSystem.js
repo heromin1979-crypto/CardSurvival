@@ -1,9 +1,10 @@
 // === QUEST SYSTEM ===
-// 계절별 이벤트 연동 퀘스트 추적 시스템
+// 계절별 이벤트 연동 퀘스트 + 캐릭터 메인 퀘스트 체인
 import EventBus  from '../core/EventBus.js';
 import GameState from '../core/GameState.js';
+import MAIN_QUESTS from '../data/mainQuests.js';
 
-// ── 퀘스트 정의 ──────────────────────────────────────────────────
+// ── 계절 퀘스트 정의 ────────────────────────────────────────────────
 // trigger: 연결된 seasonalEvent id (해당 이벤트 발생 시 자동 시작)
 // objective: { type, target, count }
 //   type: 'collect_item' | 'craft_item' | 'kill_enemies' | 'survive_days' | 'equip_slot'
@@ -87,6 +88,11 @@ const QUEST_DEFS = {
   },
 };
 
+// ── 통합 퀘스트 조회 ────────────────────────────────────────────────
+function _getQuestDef(questId) {
+  return QUEST_DEFS[questId] ?? MAIN_QUESTS[questId] ?? null;
+}
+
 // ── 시스템 ────────────────────────────────────────────────────────
 const QuestSystem = {
   init() {
@@ -102,14 +108,20 @@ const QuestSystem = {
     // 장착 변경 추적
     EventBus.on('equipChanged',   ({ slotId, instanceId }) => this._onEquip(slotId, instanceId));
 
-    // 매일 survive_days 퀘스트 진행
+    // 매일 survive_days 퀘스트 진행 + 메인 퀘스트 트리거 체크
     EventBus.on('tpAdvance',      () => this._onTpAdvance());
+
+    // 지역 이동 시 visit_district 퀘스트 체크
+    EventBus.on('districtChanged', ({ districtId }) => this._onDistrictChanged(districtId));
+
+    // 세이브 로드 시 진행도 재계산
+    EventBus.on('loaded', () => this._checkAllProgress());
   },
 
   // ── 퀘스트 시작 ───────────────────────────────────────────────
 
   startQuest(questId) {
-    const def = QUEST_DEFS[questId];
+    const def = _getQuestDef(questId);
     if (!def) return;
     const gs = GameState;
 
@@ -118,13 +130,19 @@ const QuestSystem = {
     // 이미 활성 중인 퀘스트는 무시
     if (gs.quests.active.find(q => q.id === questId)) return;
 
+    const deadlineDays = def.deadlineDays ?? Infinity;
     const entry = {
       id:         questId,
       progress:   0,
       startDay:   gs.time.day,
-      deadline:   gs.time.day + def.deadlineDays,
+      deadline:   deadlineDays === Infinity ? Infinity : gs.time.day + deadlineDays,
     };
     gs.quests.active.push(entry);
+
+    // 메인 퀘스트 내러티브 알림
+    if (def.narrative?.start) {
+      EventBus.emit('notify', { message: `📖 ${def.narrative.start}`, type: 'story' });
+    }
 
     EventBus.emit('questStarted', { questId, def });
     EventBus.emit('notify', { message: `📋 새 퀘스트: ${def.icon} ${def.title}`, type: 'info' });
@@ -152,7 +170,7 @@ const QuestSystem = {
     const bp = window.__GAME_DATA__?.blueprints?.[blueprintId];
     if (!bp) return;
     for (const q of GameState.quests.active) {
-      const qDef = QUEST_DEFS[q.id];
+      const qDef = _getQuestDef(q.id);
       if (!qDef) continue;
       if (qDef.objective.type === 'craft_item') {
         if (!qDef.objective.category || bp.category === qDef.objective.category) {
@@ -167,7 +185,7 @@ const QuestSystem = {
   _onEquip(slotId, instanceId) {
     if (!instanceId) return;
     for (const q of GameState.quests.active) {
-      const qDef = QUEST_DEFS[q.id];
+      const qDef = _getQuestDef(q.id);
       if (!qDef) continue;
       if (qDef.objective.type === 'equip_slot' && qDef.objective.slot === slotId) {
         q.progress = 1;
@@ -177,19 +195,43 @@ const QuestSystem = {
     EventBus.emit('questListChanged', {});
   },
 
+  /** 지역 이동 시 visit_district 목표 체크 */
+  _onDistrictChanged(districtId) {
+    if (!districtId) return;
+    let changed = false;
+    for (const q of GameState.quests.active) {
+      const qDef = _getQuestDef(q.id);
+      if (!qDef) continue;
+      if (qDef.objective.type === 'visit_district' && qDef.objective.districtId === districtId) {
+        q.progress = 1;
+        this._checkCompletion(q, qDef);
+        changed = true;
+      }
+    }
+    if (changed) EventBus.emit('questListChanged', {});
+  },
+
   _onTpAdvance() {
     const gs  = GameState;
     const day = gs.time.day;
     let changed = false;
 
+    // ① 메인 퀘스트 자동 시작 체크
+    this._checkMainQuestTriggers();
+
     for (let i = gs.quests.active.length - 1; i >= 0; i--) {
       const q    = gs.quests.active[i];
-      const qDef = QUEST_DEFS[q.id];
+      const qDef = _getQuestDef(q.id);
       if (!qDef) continue;
 
       // 기한 초과 → 실패 처리
-      if (day > q.deadline) {
+      if (q.deadline !== Infinity && day > q.deadline) {
         gs.quests.active.splice(i, 1);
+
+        // 실패 패널티 적용
+        const fp = qDef.failPenalty;
+        if (fp?.morale) gs.modStat('morale', fp.morale);
+
         EventBus.emit('notify', { message: `⏰ 퀘스트 기한 만료: ${qDef.title}`, type: 'warn' });
         changed = true;
         continue;
@@ -207,11 +249,35 @@ const QuestSystem = {
     if (changed) EventBus.emit('questListChanged', {});
   },
 
+  // ── 메인 퀘스트 자동 시작 ─────────────────────────────────────
+
+  /** characterId + prerequisite + dayTrigger 3중 체크 */
+  _checkMainQuestTriggers() {
+    const gs  = GameState;
+    const day = gs.time.day;
+    const charId = gs.player.characterId;
+    if (!charId) return;
+
+    for (const def of Object.values(MAIN_QUESTS)) {
+      // 캐릭터 필터
+      if (def.characterId && def.characterId !== charId) continue;
+      // 이미 완료/활성
+      if (gs.quests.completed.includes(def.id)) continue;
+      if (gs.quests.active.find(q => q.id === def.id)) continue;
+      // 날짜 조건
+      if (day < def.dayTrigger) continue;
+      // 선행 퀘스트 조건
+      if (def.prerequisite && !gs.quests.completed.includes(def.prerequisite)) continue;
+
+      this.startQuest(def.id);
+    }
+  },
+
   // ── 진행 체크 ─────────────────────────────────────────────────
 
   _checkAllProgress() {
     for (const q of GameState.quests.active) {
-      const qDef = QUEST_DEFS[q.id];
+      const qDef = _getQuestDef(q.id);
       if (!qDef) continue;
       const obj = qDef.objective;
       if (obj.type === 'collect_item') {
@@ -225,6 +291,12 @@ const QuestSystem = {
         }).reduce((s, c) => s + (c.quantity ?? 1), 0);
         q.progress = Math.min(obj.count, count);
         this._checkCompletion(q, qDef);
+      } else if (obj.type === 'visit_district') {
+        // visit_district: 이미 방문한 곳이면 즉시 완료
+        if (GameState.location.districtsVisited?.includes(obj.districtId)) {
+          q.progress = 1;
+          this._checkCompletion(q, qDef);
+        }
       }
     }
     EventBus.emit('questListChanged', {});
@@ -232,7 +304,7 @@ const QuestSystem = {
 
   _updateCollectQuests(itemDef) {
     for (const q of GameState.quests.active) {
-      const qDef = QUEST_DEFS[q.id];
+      const qDef = _getQuestDef(q.id);
       if (!qDef) continue;
       const obj  = qDef.objective;
       if (obj.type === 'collect_item' && itemDef.id === obj.definitionId) {
@@ -248,7 +320,7 @@ const QuestSystem = {
     const hasMatch = itemDef.tags || itemDef.subtype;
     if (!hasMatch) return;
     for (const q of GameState.quests.active) {
-      const qDef = QUEST_DEFS[q.id];
+      const qDef = _getQuestDef(q.id);
       if (!qDef) continue;
       const obj = qDef.objective;
       if (obj.type !== 'collect_item_type') continue;
@@ -281,6 +353,28 @@ const QuestSystem = {
     if (r.morale) gs.modStat('morale', r.morale);
     if (r.hp)     gs.player.hp.current = Math.min(gs.player.hp.max, gs.player.hp.current + r.hp);
 
+    // 아이템 보상
+    if (r.items) {
+      for (const item of r.items) {
+        for (let n = 0; n < (item.qty ?? 1); n++) {
+          const instId = gs.createCardInstance(item.definitionId);
+          if (instId) gs.placeCardInRow(instId);
+        }
+      }
+    }
+
+    // 플래그 보상
+    if (r.flags) {
+      for (const [key, val] of Object.entries(r.flags)) {
+        gs.flags[key] = val;
+      }
+    }
+
+    // 메인 퀘스트 내러티브 완료 알림
+    if (qDef.narrative?.complete) {
+      EventBus.emit('notify', { message: `📖 ${qDef.narrative.complete}`, type: 'story' });
+    }
+
     EventBus.emit('questCompleted', { questId: q.id, def: qDef });
     EventBus.emit('notify', { message: `✅ 퀘스트 완료: ${qDef.icon} ${qDef.title}`, type: 'good' });
     EventBus.emit('questListChanged', {});
@@ -291,12 +385,12 @@ const QuestSystem = {
   getActiveQuests() {
     return GameState.quests.active.map(q => ({
       ...q,
-      def: QUEST_DEFS[q.id],
+      def: _getQuestDef(q.id),
     })).filter(q => q.def);
   },
 
   getQuestDef(questId) {
-    return QUEST_DEFS[questId] ?? null;
+    return _getQuestDef(questId);
   },
 };
 

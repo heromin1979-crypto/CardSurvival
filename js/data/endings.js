@@ -388,6 +388,110 @@ export const ENDINGS = {
     ],
   },
 
+  // ── 메인 퀘스트 엔딩 (6) ───────────────────────────────────────
+
+  mq_doctor: {
+    id: 'mq_doctor', category: 'character', characterId: 'doctor',
+    title: '이지수: 100일의 기록',   subtitle: '치료 프로토콜 송출 성공',
+    gradient: 'linear-gradient(160deg,#001a20 0%,#003040 60%,#001018 100%)',
+    condition: (gs) => {
+      return gs.player.characterId === 'doctor'
+          && (gs.flags.mainQuestComplete_doctor ?? false);
+    },
+    narrative: [
+      '100일. 무전에서 첫 번째 응답이 들렸다.',
+      '"프로토콜을 받았습니다. 효과가 있습니다."',
+      '이지수는 메모지에 적었다. "D+100. 치료법 확인."',
+      '삼성병원 약품 창고에서 시작해, KBS 마이크 앞까지.',
+      '그녀의 기록은 이제 서울 밖으로 퍼져나가고 있었다.',
+    ],
+  },
+
+  mq_soldier: {
+    id: 'mq_soldier', category: 'character', characterId: 'soldier',
+    title: '강민준: 서울 집결 좌표',   subtitle: 'KBS 방송 수신 확인',
+    gradient: 'linear-gradient(160deg,#100a00 0%,#201800 60%,#0a0800 100%)',
+    condition: (gs) => {
+      return gs.player.characterId === 'soldier'
+          && (gs.flags.mainQuestComplete_soldier ?? false);
+    },
+    narrative: [
+      '100일. 무전에서 신호가 들린다.',
+      '경기도 수원에서 첫 번째 응답. "KBS 수신했습니다. 이동 중입니다."',
+      '강민준은 마이크를 다시 잡았다.',
+      '"여기는 서울 KBS. 반복합니다. 서울 집결 좌표를 전송합니다."',
+      '서울은 다시 시작되고 있었다.',
+    ],
+  },
+
+  mq_firefighter: {
+    id: 'mq_firefighter', category: 'character', characterId: 'firefighter',
+    title: '박영철: 은평의 수호자',   subtitle: '가족과 함께 100일 생존',
+    gradient: 'linear-gradient(160deg,#1a0800 0%,#301000 60%,#140600 100%)',
+    condition: (gs) => {
+      return gs.player.characterId === 'firefighter'
+          && (gs.flags.mainQuestComplete_firefighter ?? false);
+    },
+    narrative: [
+      '100일. 가족과 함께 버텼다.',
+      '아내가 아침을 차렸다. 아이들이 뛰어다녔다.',
+      '방벽 위에서 은평구를 내려다봤다. 조용했다.',
+      '이 곳이 새로운 집이다.',
+      '박영철은 소방관이 아닌, 아버지로 서 있었다.',
+    ],
+  },
+
+  mq_homeless: {
+    id: 'mq_homeless', category: 'character', characterId: 'homeless',
+    title: '최형식: 새 집',           subtitle: '롯데타워 거점 확보',
+    gradient: 'linear-gradient(160deg,#0a1000 0%,#141c00 60%,#080c00 100%)',
+    condition: (gs) => {
+      return gs.player.characterId === 'homeless'
+          && (gs.flags.mainQuestComplete_homeless ?? false);
+    },
+    narrative: [
+      '100일. 롯데타워 42층.',
+      '창밖으로 서울이 보였다. 다리 아래에서 올려다보던 그 도시.',
+      '처음으로 집이 생겼다.',
+      '최형식은 커피를 한 모금 마셨다. 인스턴트지만, 따뜻했다.',
+      '아무것도 없던 사람이 집을 얻었다. 세상이 끝난 덕분에.',
+    ],
+  },
+
+  mq_pharmacist: {
+    id: 'mq_pharmacist', category: 'character', characterId: 'pharmacist',
+    title: '한소희: 치료의 증명',     subtitle: '항바이러스 합성 완료',
+    gradient: 'linear-gradient(160deg,#001a14 0%,#003020 60%,#001010 100%)',
+    condition: (gs) => {
+      return gs.player.characterId === 'pharmacist'
+          && (gs.flags.mainQuestComplete_pharmacist ?? false);
+    },
+    narrative: [
+      '100일. 항바이러스 합성체.',
+      '임시 처방이지만, 처방이었다.',
+      '작은 약국에서 시작해 서울대 연구소까지.',
+      '한소희는 시험관을 빛에 비춰봤다. 파란색.',
+      '이것이 시작이다. 끝이 아니라.',
+    ],
+  },
+
+  mq_engineer: {
+    id: 'mq_engineer', category: 'character', characterId: 'engineer',
+    title: '정대한: 탈출 기계',       subtitle: '이동수단 완성 · 서울 탈출',
+    gradient: 'linear-gradient(160deg,#0a0a00 0%,#181800 60%,#080800 100%)',
+    condition: (gs) => {
+      return gs.player.characterId === 'engineer'
+          && (gs.flags.mainQuestComplete_engineer ?? false);
+    },
+    narrative: [
+      '100일. 이동수단이 완성됐다.',
+      '고철과 로프로 만든 간이 이동수단. 공학적으로는 조잡했다.',
+      '하지만 달렸다. 서울의 도로를 따라, 달렸다.',
+      '한강 다리를 건넜다. 경사면을 오르며.',
+      '처음으로 서울 외곽을 봤다. 하늘이 달랐다.',
+    ],
+  },
+
   // ── 질병 사망 엔딩 (3) ─────────────────────────────────────────
 
   death_disease_water: {

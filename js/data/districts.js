@@ -14,8 +14,8 @@ const DISTRICTS = {
   gangnam: {
     id: 'gangnam', name: '강남구', icon: '🏥',
     description: '의료 인프라가 집중된 지역. 삼성서울병원이 최대 물자 보고지만 좀비 밀도가 극히 높다.',
-    dangerLevel: 3, travelCostTP: 2, radiation: 0,
-    encounterChance: 0.35, noiseGen: 7,
+    dangerLevel: 2, travelCostTP: 2, radiation: 0,
+    encounterChance: 0.15, noiseGen: 7,
     adjacentDistricts: ['seocho', 'songpa', 'dongjak'],
     landmark: 'lm_gangnam',
     lootTable: [
@@ -372,6 +372,7 @@ const DISTRICTS = {
       { definitionId: 'bandage',       weight: 20, minQty: 1, maxQty: 3 },
       { definitionId: 'duct_tape',     weight: 15, minQty: 1, maxQty: 2 },
       { definitionId: 'first_aid_kit', weight: 10, minQty: 1, maxQty: 1 },
+      { definitionId: 'shotgun_ammo',  weight: 3,  minQty: 2, maxQty: 4 },
     ],
     special: 'kbs',
   },
@@ -380,8 +381,8 @@ const DISTRICTS = {
   yongsan: {
     id: 'yongsan', name: '용산구', icon: '💻',
     description: '전자상가·이태원·미군기지. 무기, 전자부품, 군용 장비가 집중된 전략 거점.',
-    dangerLevel: 3, travelCostTP: 2, radiation: 0,
-    encounterChance: 0.25, noiseGen: 6,
+    dangerLevel: 2, travelCostTP: 2, radiation: 0,
+    encounterChance: 0.10, noiseGen: 6,
     adjacentDistricts: ['jongno', 'junggoo'],
     landmark: 'lm_yongsan',
     lootTable: [
@@ -392,6 +393,7 @@ const DISTRICTS = {
       { definitionId: 'pistol',        weight: 10, minQty: 1, maxQty: 1 },
       { definitionId: 'water_filter',  weight: 10, minQty: 1, maxQty: 1 },
       { definitionId: 'knife',         weight: 15, minQty: 1, maxQty: 1 },
+      { definitionId: 'shotgun_ammo',  weight: 3,  minQty: 2, maxQty: 4 },
     ],
     special: 'us_base',
   },

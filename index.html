@@ -17,7 +17,9 @@
   <link rel="stylesheet" href="css/board.css">
   <link rel="stylesheet" href="css/ui.css">
   <link rel="stylesheet" href="css/modals.css">
-  <link rel="stylesheet" href="css/screens.css">
+  <link rel="stylesheet" href="css/screens-menu.css">
+  <link rel="stylesheet" href="css/screens-combat.css">
+  <link rel="stylesheet" href="css/screens-game.css">
   <link rel="stylesheet" href="css/animations.css">
   <link rel="stylesheet" href="css/equipment.css">
   <link rel="stylesheet" href="css/skills.css">
@@ -31,42 +33,42 @@
   <!-- ═══════════════════════════════════════════ -->
   <!--  MAIN MENU                                  -->
   <!-- ═══════════════════════════════════════════ -->
-  <div id="screen-main-menu" class="screen menu-screen active">
+  <div id="screen-main-menu" class="screen menu-screen active" role="main" aria-label="메인 메뉴">
     <!-- Populated by MainMenu.js -->
   </div>
 
   <!-- ═══════════════════════════════════════════ -->
   <!--  CHARACTER CREATION                         -->
   <!-- ═══════════════════════════════════════════ -->
-  <div id="screen-char-create" class="screen menu-screen">
+  <div id="screen-char-create" class="screen menu-screen" role="main" aria-label="캐릭터 생성">
     <!-- Populated by CharCreate.js -->
   </div>
 
   <!-- ═══════════════════════════════════════════ -->
   <!--  BASECAMP (main game screen)                -->
   <!-- ═══════════════════════════════════════════ -->
-  <div id="screen-basecamp" class="screen">
+  <div id="screen-basecamp" class="screen" role="main" aria-label="베이스캠프">
     <!-- Layout built by Basecamp.js -->
   </div>
 
   <!-- ═══════════════════════════════════════════ -->
   <!--  EXPLORE                                    -->
   <!-- ═══════════════════════════════════════════ -->
-  <div id="screen-explore" class="screen">
+  <div id="screen-explore" class="screen" role="main" aria-label="탐색">
     <!-- Populated by ExploreUI.js -->
   </div>
 
   <!-- ═══════════════════════════════════════════ -->
   <!--  ENCOUNTER                                  -->
   <!-- ═══════════════════════════════════════════ -->
-  <div id="screen-encounter" class="screen menu-screen">
+  <div id="screen-encounter" class="screen menu-screen" role="main" aria-label="조우">
     <!-- Populated by Encounter.js -->
   </div>
 
   <!-- ═══════════════════════════════════════════ -->
   <!--  COMBAT                                     -->
   <!-- ═══════════════════════════════════════════ -->
-  <div id="screen-combat" class="screen" style="flex-direction:column;">
+  <div id="screen-combat" class="screen" style="flex-direction:column;" role="main" aria-label="전투">
     <!-- Populated by CombatUI.js -->
   </div>
 
@@ -87,7 +89,7 @@
   <!-- ═══════════════════════════════════════════ -->
   <!--  GAME OVER                                  -->
   <!-- ═══════════════════════════════════════════ -->
-  <div id="screen-game-over" class="screen menu-screen">
+  <div id="screen-game-over" class="screen menu-screen" role="alert" aria-label="게임 오버">
     <!-- Populated by GameOver.js -->
   </div>
 
@@ -115,7 +117,7 @@
   <!-- ═══════════════════════════════════════════ -->
   <!--  MODAL OVERLAY (shared)                     -->
   <!-- ═══════════════════════════════════════════ -->
-  <div id="modal-overlay" class="modal-overlay">
+  <div id="modal-overlay" class="modal-overlay" role="dialog" aria-modal="true" aria-label="모달">
     <div id="modal-box" class="modal-box">
       <!-- Dynamic content -->
     </div>
@@ -124,7 +126,7 @@
   <!-- ═══════════════════════════════════════════ -->
   <!--  NOTIFICATION CONTAINER                     -->
   <!-- ═══════════════════════════════════════════ -->
-  <div id="notification-container" class="notification-container"></div>
+  <div id="notification-container" class="notification-container" role="log" aria-live="polite" aria-label="알림"></div>
 
 </div>
 

@@ -131,20 +131,20 @@ const CharCreate = {
         const charId = card.dataset.charId;
         this._selectedChar = CHARACTERS.find(c => c.id === charId) ?? null;
         if (this._selectedChar?.homeDist) {
-          const hd = DISTRICTS[this._selectedChar.homeDist];
-          if (hd && hd.dangerLevel <= 1) {
-            this._selectedDistrict = this._selectedChar.homeDist;
-          }
-          // dangerLevel > 1이면 현재 선택 지역 유지
+          this._selectedDistrict = this._selectedChar.homeDist;
         }
         this._render();
       });
     });
 
-    // 지역 클릭
+    // 지역 클릭 — 시작 위치는 캐릭터 homeDist로 고정
     this._el.querySelectorAll('.dc-node').forEach(el => {
       el.addEventListener('click', () => {
-        this._selectedDistrict = el.dataset.districtId;
+        if (this._selectedChar?.homeDist) {
+          this._selectedDistrict = this._selectedChar.homeDist;
+        } else {
+          this._selectedDistrict = el.dataset.districtId;
+        }
         this._render();
       });
     });
@@ -393,7 +393,7 @@ const CharCreate = {
     // ── 신규 시스템 리셋 ─────────────────────────────────────
     gs.player.diseases = [];
     gs.season = { current: 'spring', eventsTriggered: [] };
-    gs.weather = { id: 'sunny', name: '맑음', icon: '☀️', tempMod: 0, tpRemaining: 96, tempJitter: 0 };
+    gs.weather = { id: 'sunny', name: '맑음', icon: '☀️', tempMod: 0, tpRemaining: 72, tempJitter: 0 };
 
     // ── 위치: 선택한 구로 설정 ───────────────────────────────
     gs.location.currentDistrict  = districtId;

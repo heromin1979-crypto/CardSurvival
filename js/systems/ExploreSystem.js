@@ -13,6 +13,7 @@ import StatSystem    from './StatSystem.js';
 import SeasonSystem  from './SeasonSystem.js';
 import SkillSystem      from './SkillSystem.js';
 import BasecampSystem   from './BasecampSystem.js';
+import BALANCE          from '../data/gameBalance.js';
 
 const ExploreSystem = {
   init() {
@@ -205,6 +206,16 @@ const ExploreSystem = {
     const district   = DISTRICTS[districtId];
     if (!district) return;
 
+    // ── 절망 상태 탐색 차단 ──────────────────────────────────
+    const moraleTier = StatSystem.getMoraleTier();
+    if (moraleTier.blockExplore) {
+      EventBus.emit('notify', {
+        message: '😰 절망에 빠져 탐색할 의지가 없다. 사기를 회복해야 한다.',
+        type: 'danger',
+      });
+      return;
+    }
+
     // ── 탐색 이동 제한 체크 ─────────────────────────────────
     const encExp    = gs.player.encumbrance;
     const wPctExp   = encExp.weightPct ?? 0;
@@ -244,10 +255,11 @@ const ExploreSystem = {
       EventBus.emit('notify', { message: `⚠ 방사선 구역! +${district.radiation}`, type: 'danger' });
     }
 
-    // 조우 체크 (거점 효과 포함)
+    // 조우 체크 (거점 효과 + 계절 encounterMult 포함)
     const basecampReduct  = BasecampSystem.getEffects().encounterReduct;
     const baseReduction   = (gs.player.encounterRateReduct ?? 0) + (toolEffects.encounterReduction ?? 0) + basecampReduct;
-    const encounterChance = district.encounterChance * (1 - Math.min(0.85, baseReduction));
+    const seasonMod       = SeasonSystem.getModifiers();
+    const encounterChance = district.encounterChance * (seasonMod.encounterMult ?? 1.0) * (1 - Math.min(BALANCE.encounter.reductionCap, baseReduction));
     if (encounterChance > 0 && Math.random() < encounterChance) {
       const noiseLevel = gs.noise.level;
       const enemies    = rollEnemyGroup(district.dangerLevel, noiseLevel);
@@ -282,10 +294,26 @@ const ExploreSystem = {
         loot = generateRouteCards(districtId);
         if (!gs.location.districtsLooted) gs.location.districtsLooted = [];
         gs.location.districtsLooted.push(districtId);
+        if (!gs.location.districtLootDay) gs.location.districtLootDay = {};
+        gs.location.districtLootDay[districtId] = gs.time.day;
       } else {
-        if (Math.random() < 0.20) {
-          const full = generateRouteCards(districtId);
-          loot = full.slice(0, 1 + Math.floor(Math.random() * 2));
+        // 루팅 완료 30일 경과 시 감소 리스폰 (50% 드롭률, 수량 절반)
+        if (!gs.location.districtLootDay) gs.location.districtLootDay = {};
+        const lastLootDay = gs.location.districtLootDay[districtId] ?? 0;
+        const daysSinceLoot = gs.time.day - lastLootDay;
+        if (daysSinceLoot >= 30) {
+          const fullLoot = generateRouteCards(districtId);
+          for (const item of fullLoot) {
+            if (Math.random() < 0.5) {
+              loot.push({ ...item, quantity: Math.max(1, Math.floor((item.quantity ?? 1) / 2)) });
+            }
+          }
+          gs.location.districtLootDay[districtId] = gs.time.day;
+          if (loot.length > 0) {
+            EventBus.emit('notify', { message: `${district.name} — 시간이 지나 새로운 물자가 생겼다.`, type: 'info' });
+          } else {
+            EventBus.emit('notify', { message: `${district.name} — 쓸 만한 건 거의 없다.`, type: 'info' });
+          }
         } else {
           EventBus.emit('notify', { message: `${district.name} — 이미 쓸 만한 건 다 가져갔다.`, type: 'info' });
         }
@@ -496,6 +524,11 @@ const ExploreSystem = {
     gs.location.currentSubLocation = subLocationId;
     gs.location.currentNode        = subLocationId;
 
+    // 이미 루팅한 세부장소 체크
+    if (!gs.location.subLocationsLooted) gs.location.subLocationsLooted = [];
+    const subKey       = `${districtId}:${subLocationId}`;
+    const isFirstLoot  = !gs.location.subLocationsLooted.includes(subKey);
+
     // 과적 체크
     const enc = gs.player.encumbrance;
     if ((enc.weightPct ?? 0) >= 2.0) {
@@ -518,10 +551,11 @@ const ExploreSystem = {
     const noiseBase = district?.noiseGen ?? 3;
     NoiseSystem.addNoise(noiseBase * 0.8);
 
-    // 조우 체크
-    const baseEncounter = (district?.encounterChance ?? 0) + (sub.dangerMod ?? 0);
-    const reduction     = gs.player.encounterRateReduct ?? 0;
-    const finalChance   = baseEncounter * (1 - Math.min(0.80, reduction));
+    // 조우 체크 (계절 encounterMult 포함)
+    const baseEncounter   = (district?.encounterChance ?? 0) + (sub.dangerMod ?? 0);
+    const reduction       = gs.player.encounterRateReduct ?? 0;
+    const subSeasonMod    = SeasonSystem.getModifiers();
+    const finalChance     = baseEncounter * (subSeasonMod.encounterMult ?? 1.0) * (1 - Math.min(0.80, reduction));
     if (finalChance > 0 && Math.random() < finalChance) {
       const enemies = rollEnemyGroup(district?.dangerLevel ?? 1, gs.noise.level);
       StateMachine.transition('encounter', {
@@ -539,9 +573,14 @@ const ExploreSystem = {
       StatSystem.applyRadiation(district.radiation * 0.5);
     }
 
-    // 루팅 생성 및 배치
-    const loot = this._generateSubLocationLoot(sub);
-    this._placeLoot(loot);
+    // 루팅: 첫 방문만 아이템 생성 (리스폰 없음 — 식량은 텃밭으로 자급)
+    if (isFirstLoot) {
+      const loot = this._generateSubLocationLoot(sub);
+      this._placeLoot(loot);
+      gs.location.subLocationsLooted.push(subKey);
+    } else {
+      EventBus.emit('notify', { message: `${sub.name} — 이미 수색한 곳이다.`, type: 'info' });
+    }
 
     // 세부장소 탐색 완료 XP
     SkillSystem.gainXp('scavenging', 3);

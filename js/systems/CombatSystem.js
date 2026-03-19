@@ -6,7 +6,9 @@ import NoiseSystem  from './NoiseSystem.js';
 import StatSystem   from './StatSystem.js';
 import EndingSystem from './EndingSystem.js';
 import SkillSystem  from './SkillSystem.js';
+import DiseaseSystem from './DiseaseSystem.js';
 import { rollEnemyGroup } from '../data/enemies.js';
+import BALANCE from '../data/gameBalance.js';
 
 const CombatSystem = {
   init() {
@@ -25,12 +27,19 @@ const CombatSystem = {
       ? data.enemies
       : rollEnemyGroup(dangerLevel, noiseLevel);
 
+    // 습격/약탈자 전투 정보 보존
+    const encounterLabel = data.isHordeWave
+      ? `좀비 습격 제${data.hordeWaveNum}파! (적 ${enemies.length}마리)`
+      : data.isRaiderAttack
+        ? `약탈자 습격! (적 ${enemies.length}마리)`
+        : `전투 시작! (적 ${enemies.length}마리)`;
+
     gs.combat = {
       active:       true,
       enemies,
       targetIndex:  0,
       playerAction: null,
-      log:          [`전투 시작! (적 ${enemies.length}마리)`],
+      log:          [encounterLabel],
       outcome:      null,
       rewards:      [],
       nodeId:       data.nodeId ?? null,
@@ -40,6 +49,7 @@ const CombatSystem = {
       lastHit:      null,
       playerStatus: [],
       enemyStatus:  [],
+      _encounterData: data,
     };
 
     // death_horde 엔딩 조건 추적: 이 전투의 적 수 기록
@@ -121,6 +131,11 @@ const CombatSystem = {
 
     gs.combat.log.push(logEntry);
 
+    // 전투 로그 크기 제한
+    if (gs.combat.log.length > BALANCE.combat.combatLogMaxEntries) {
+      gs.combat.log.splice(0, gs.combat.log.length - BALANCE.combat.combatLogMaxEntries);
+    }
+
     // 타겟 사망 처리
     if (target.currentHp <= 0) {
       this._onEnemyKilled(target);
@@ -178,12 +193,14 @@ const CombatSystem = {
             accuracy = 0.65; noise = 3; skillId = 'melee';
           } else {
             // 마스터리: 20% 확률 탄약 미소모
-            const ammoSave = SkillSystem.hasMastery('ranged') && Math.random() < 0.20;
+            const ammoSave = SkillSystem.hasMastery('ranged') && Math.random() < BALANCE.combat.ammoSaveChance;
             if (!ammoSave) {
               ammoInst.quantity = (ammoInst.quantity ?? 1) - 1;
               if (ammoInst.quantity <= 0) {
                 gs.removeCardInstance(ammoInst.instanceId);
                 EventBus.emit('cardRemoved', { instanceId: ammoInst.instanceId });
+              } else {
+                EventBus.emit('boardChanged', {}); // 탄약 수량 변경 UI 동기화
               }
             }
           }
@@ -205,13 +222,17 @@ const CombatSystem = {
         }
       }
     } else {
-      // 맨손: 스킬 dmgMult 적용
+      // 맨손: BALANCE 기반 데미지 + 스킬 dmgMult 적용
       const unarmedMult = SkillSystem.getBonus('unarmed', 'dmgMult');
-      damage = Math.floor((3 + Math.floor(Math.random() * 5)) * unarmedMult);
+      const [uMin, uMax] = BALANCE.combat.unarmedBaseDmg;
+      damage = Math.floor((uMin + Math.floor(Math.random() * (uMax - uMin + 1))) * unarmedMult);
     }
 
     NoiseSystem.addNoise(noise);
 
+    // 사기 구간별 명중률 보정
+    const moraleTierAcc = StatSystem.getMoraleTier();
+    accuracy = Math.max(0.1, Math.min(1, accuracy + (moraleTierAcc.accBonus ?? 0)));
     const hit = Math.random() < accuracy;
     if (hit) {
       const effectiveCritChance = Math.min(1, critChance + (gs.player.critBonus ?? 0));
@@ -225,6 +246,9 @@ const CombatSystem = {
       }
 
       damage = Math.floor(damage * (gs.player.combatDmgBonus ?? 1.0));
+      // 사기 구간별 데미지 배율
+      const moraleTier = StatSystem.getMoraleTier();
+      damage = Math.floor(damage * (moraleTier.dmgMult ?? 1.0));
       const finalDmg = Math.max(1, damage - (enemy.defense ?? 0));
       enemy.currentHp = Math.max(0, enemy.currentHp - finalDmg);
       gs.combat.lastHit = { target: 'enemy', damage: finalDmg, isCrit, enemyIndex: gs.combat.targetIndex };
@@ -232,11 +256,13 @@ const CombatSystem = {
       // XP 획득
       SkillSystem.gainXp(skillId, isCrit ? 4 : 2);
 
-      // 맨손 마스터리: 기절 확률
+      // 맨손 마스터리: 기절 확률 + 추가 데미지
       if (skillId === 'unarmed' && SkillSystem.hasMastery('unarmed')) {
-        if (Math.random() < 0.10 && !gs.combat.enemyStatus.some(s => s.id === 'stun')) {
-          enemy.currentHp = Math.max(0, enemy.currentHp - 0); // 기절 — HP 추가 피해 없음
-          gs.combat.log.push(`[맨손 마스터리] ${enemy.name} 기절!`);
+        if (Math.random() < BALANCE.combat.unarmedStunChance && !gs.combat.enemyStatus.some(s => s.id === 'stun')) {
+          const stunDmg = BALANCE.combat.unarmedStunDmg;
+          enemy.currentHp = Math.max(0, enemy.currentHp - stunDmg);
+          gs.combat.enemyStatus.push({ id: 'stun', name: '기절', duration: 1, effect: {} });
+          gs.combat.log.push(`[맨손 마스터리] ${enemy.name} 기절! +${stunDmg} 추가 피해!`);
         }
       }
 
@@ -288,16 +314,31 @@ const CombatSystem = {
 
   _fleeAction() {
     const gs      = GameState;
+    const data    = gs.combat._encounterData ?? {};
     const success = Math.random() < 0.6;
     NoiseSystem.addNoise(10);
     if (success) {
       gs.combat.active  = false;
       gs.combat.outcome = 'fled';
       gs.modStat('fatigue', 10);
+
+      // 좀비 습격 도주: 구조물 내구도 25% 감소 + 사기 패널티
+      if (data.isHordeWave) {
+        this._applyStructureDamage(BALANCE.hordeWaves.structureDamage);
+        gs.modStat('morale', BALANCE.hordeWaves.defeatMorale);
+        EventBus.emit('notify', {
+          message: '😰 습격을 피해 도주했지만, 거점 구조물이 파손되었다!',
+          type: 'danger',
+        });
+      }
+
       StateMachine.transition('combat_result', { outcome: 'fled', nodeId: gs.combat.nodeId });
     } else {
-      gs.combat.log.push('[도주] 적이 따라잡았다!');
+      // 도주 실패: 모든 적이 강화 공격 (1.5배 데미지)
+      gs.combat.log.push('[도주] 적이 따라잡았다! 등을 보인 대가를 치른다!');
+      gs.combat._fleeFailed = true;
       if (gs.combat.active) this._allEnemiesAttack();
+      gs.combat._fleeFailed = false;
     }
   },
 
@@ -331,7 +372,7 @@ const CombatSystem = {
         // 방어구 효과: 피해 감소 + 방어술 스킬 보너스
         const armor         = StatSystem.getArmorEffects();
         const defSkillBonus = SkillSystem.getBonus('defense', 'damageReduction');
-        const totalReduct   = Math.min(0.80, armor.damageReduction + defSkillBonus);
+        const totalReduct   = Math.min(BALANCE.armor.specialDmgReductCap, armor.damageReduction + defSkillBonus);
         if (totalReduct > 0) {
           dmg = Math.max(1, Math.floor(dmg * (1 - totalReduct)));
         }
@@ -344,6 +385,7 @@ const CombatSystem = {
         if (!enemy._skillCooldowns) enemy._skillCooldowns = {};
         enemy._skillCooldowns[skill.id] = skill.cooldown;
         gs.combat.lastHit = { target: 'player', damage: dmg, isCrit: false };
+        DiseaseSystem.checkCombatInjury(dmg, gs);
         if (effectiveStunChance > 0 && Math.random() < effectiveStunChance) {
           if (!gs.combat.playerStatus.some(s => s.id === 'stun')) {
             gs.combat.playerStatus.push({ id: 'stun', name: '기절', duration: 1, effect: {} });
@@ -374,13 +416,21 @@ const CombatSystem = {
       // 방어구 효과 + 방어술 스킬 감소
       const armor         = StatSystem.getArmorEffects();
       const defSkillBonus = SkillSystem.getBonus('defense', 'damageReduction');
-      const totalReduct   = Math.min(0.80, armor.damageReduction + defSkillBonus);
+      const totalReduct   = Math.min(BALANCE.armor.damageReductionCap, armor.damageReduction + defSkillBonus);
       if (totalReduct > 0) {
         damage = Math.max(1, Math.floor(damage * (1 - totalReduct)));
       }
 
+      // 도주 실패 시 1.5배 피해 (등을 보인 페널티)
+      if (gs.combat._fleeFailed) {
+        damage = Math.floor(damage * 1.5);
+      }
+
       gs.player.hp.current = Math.max(0, gs.player.hp.current - damage);
       gs.combat.lastHit    = { target: 'player', damage, isCrit: false };
+
+      // 전투 부상 체크 (출혈, 열상, 골절, 뇌진탕)
+      DiseaseSystem.checkCombatInjury(damage, gs);
 
       // 방어술 XP
       SkillSystem.gainXp('defense', 1);
@@ -464,16 +514,44 @@ const CombatSystem = {
         if (inst) { gs.placeCardInRow(inst.instanceId, 'middle'); gs.combat.rewards.push(inst.instanceId); }
       }
     }
+
+    // 의사(doctor) 전용: 좀비 처치 시 30% 확률로 의료 아이템 추가 드롭
+    const charId = gs.player.characterId ?? '';
+    if (charId === 'doctor' && enemy.infectionChance > 0) {
+      if (Math.random() < 0.30) {
+        const medPool = ['bandage', 'gauze', 'antiseptic'];
+        const medId   = medPool[Math.floor(Math.random() * medPool.length)];
+        const medInst = gs.createCardInstance(medId, { quantity: 1 });
+        if (medInst) {
+          gs.placeCardInRow(medInst.instanceId, 'middle');
+          gs.combat.rewards.push(medInst.instanceId);
+          gs.combat.log.push(`[의사 본능] 감염체에서 의료 재료 획득!`);
+        }
+      }
+    }
   },
 
   // ── 전투 종료 ──────────────────────────────────────────
 
   _resolveVictory() {
-    const gs = GameState;
+    const gs   = GameState;
+    const data = gs.combat._encounterData ?? {};
     gs.combat.active  = false;
     gs.combat.outcome = 'victory';
-    gs.modStat('morale', 10);
-    gs.modStat('fatigue', 10);
+
+    // 좀비 습격 승리: 추가 사기 보너스
+    if (data.isHordeWave) {
+      const hw = BALANCE.hordeWaves;
+      gs.modStat('morale', hw.victoryMorale);
+      gs.modStat('fatigue', 15);
+      EventBus.emit('notify', {
+        message: `🎉 좀비 습격 제${data.hordeWaveNum}파를 격퇴했다! 사기 +${hw.victoryMorale}`,
+        type: 'success',
+      });
+    } else {
+      gs.modStat('morale', 10);
+      gs.modStat('fatigue', 10);
+    }
 
     // ── 전투 소음 재조우 타이머 ──────────────────────────
     const noise  = gs.noise.level;
@@ -501,14 +579,45 @@ const CombatSystem = {
   },
 
   _resolveDefeat() {
-    const gs = GameState;
+    const gs   = GameState;
+    const data = gs.combat._encounterData ?? {};
     gs.combat.active       = false;
     gs.combat.outcome      = 'defeat';
+
+    // 좀비 습격 패배: 구조물 내구도 25% 감소
+    if (data.isHordeWave) {
+      this._applyStructureDamage(BALANCE.hordeWaves.structureDamage);
+      gs.modStat('morale', BALANCE.hordeWaves.defeatMorale);
+    }
+
     gs.player.isAlive      = false;
     gs.player.deathCause   = '부상 과다';
     EventBus.emit('combatEnd', { outcome: 'defeat' });
     // EndingSystem 경유: death_combat 또는 death_horde 엔딩 결정
     EndingSystem.triggerDeathEnding('부상 과다', gs);
+  },
+
+  // ── 구조물 피해 (습격 패배/도주) ──────────────────────
+
+  _applyStructureDamage(damagePercent) {
+    const gs    = GameState;
+    const items = window.__GAME_DATA__?.items ?? {};
+    for (const card of gs.getBoardCards()) {
+      const def = items[card.definitionId] ?? gs.getCardDef(card.instanceId);
+      if (!def) continue;
+      if (def.subtype !== '구조물' && !def.tags?.includes('structure')) continue;
+      const inst = gs.cards[card.instanceId];
+      if (!inst || (inst.durability ?? 0) <= 0) continue;
+      const loss = Math.ceil(inst.durability * (damagePercent / 100));
+      inst.durability = Math.max(0, inst.durability - loss);
+      if (inst.durability <= 0) {
+        EventBus.emit('notify', {
+          message: `💥 ${def.name}이(가) 파괴되었다!`,
+          type: 'danger',
+        });
+      }
+    }
+    EventBus.emit('boardChanged', {});
   },
 
   // ── 유틸 ──────────────────────────────────────────────

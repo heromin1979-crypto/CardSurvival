@@ -31,6 +31,7 @@ import ExploreSystem        from './systems/ExploreSystem.js';
 import SkillSystem          from './systems/SkillSystem.js';
 import BasecampSystem       from './systems/BasecampSystem.js';
 import QuestSystem          from './systems/QuestSystem.js';
+import SoundSystem          from './systems/SoundSystem.js';
 
 // Board
 import BoardManager from './board/BoardManager.js';
@@ -92,6 +93,7 @@ function init() {
   SkillSystem.init();
   BasecampSystem.init();
   QuestSystem.init();
+  SoundSystem.init();
 
   // Board
   BoardManager.init();

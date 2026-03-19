@@ -28,7 +28,7 @@ const EndingSystem = {
     // Kill tracking from combat results
     EventBus.on('combatEnd', ({ outcome }) => {
       if (outcome === 'victory') {
-        const kills = GameState.combat.enemies?.length ?? 1;
+        const kills = (GameState.combat.enemies ?? []).filter(e => (e.currentHp ?? 0) <= 0).length || 1;
         GameState.flags.totalKills = (GameState.flags.totalKills ?? 0) + kills;
       }
     });

@@ -315,7 +315,7 @@ const ITEMS_BASE = {
     icon: '🥫', description: '냉전 시대 비상식량. 영양이 적당히 보충된다.',
     onConsume: { hydration: 10, nutrition: 30 },
     leaveOnConsume: { definitionId: 'empty_can', qty: 1 },
-    tags: ['edible', 'preserved'],
+    tags: ['edible', 'preserved', 'food'],
     dismantle: [],
   },
 
@@ -325,7 +325,7 @@ const ITEMS_BASE = {
     defaultDurability: 100, defaultContamination: 0,
     icon: '🍫', description: '고열량 보충제. 피로 회복에 도움.',
     onConsume: { hydration: 5, nutrition: 20, fatigue: -15 },
-    tags: ['edible'],
+    tags: ['edible', 'food'],
     dismantle: [],
   },
 
@@ -335,7 +335,7 @@ const ITEMS_BASE = {
     defaultDurability: 100, defaultContamination: 0,
     icon: '🍜', description: '건조 라면. 끓인 물과 조리하면 더 효과적.',
     onConsume: { nutrition: 15, hydration: -5 },
-    tags: ['edible', 'cookable'],
+    tags: ['edible', 'cookable', 'food'],
     dismantle: [],
   },
 
@@ -345,7 +345,7 @@ const ITEMS_BASE = {
     defaultDurability: 100, defaultContamination: 0,
     icon: '🍲', description: '제대로 조리한 라면. 영양과 사기가 회복된다.',
     onConsume: { nutrition: 35, hydration: 20, morale: 10 },
-    tags: ['edible', 'hot', 'crafted'],
+    tags: ['edible', 'hot', 'crafted', 'food'],
     dismantle: [],
   },
 
@@ -355,7 +355,7 @@ const ITEMS_BASE = {
     defaultDurability: 100, defaultContamination: 0,
     icon: '🌾', description: '생쌀. 조리하면 훨씬 영양가 높아진다.',
     onConsume: { nutrition: 10 },
-    tags: ['edible', 'cookable'],
+    tags: ['edible', 'cookable', 'food'],
     dismantle: [],
   },
 
@@ -365,7 +365,7 @@ const ITEMS_BASE = {
     defaultDurability: 100, defaultContamination: 0,
     icon: '🍚', description: '조리한 쌀밥. 영양을 크게 보충한다.',
     onConsume: { nutrition: 45, hydration: 10, morale: 15 },
-    tags: ['edible', 'hot', 'crafted'],
+    tags: ['edible', 'hot', 'crafted', 'food'],
     dismantle: [],
   },
 
@@ -375,7 +375,7 @@ const ITEMS_BASE = {
     defaultDurability: 100, defaultContamination: 0,
     icon: '🥩', description: '훈제 건조육. 영양이 높고 오래 보관 가능.',
     onConsume: { nutrition: 40, hydration: -5 },
-    tags: ['edible', 'preserved'],
+    tags: ['edible', 'preserved', 'food'],
     dismantle: [],
   },
 
@@ -385,7 +385,7 @@ const ITEMS_BASE = {
     defaultDurability: 100, defaultContamination: 0,
     icon: '📦', description: '전투 식량 패키지. 영양·수분·사기를 모두 회복.',
     onConsume: { nutrition: 50, hydration: 30, morale: 15, fatigue: -10 },
-    tags: ['edible', 'military'],
+    tags: ['edible', 'military', 'food'],
     dismantle: [],
   },
 

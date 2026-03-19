@@ -144,7 +144,7 @@ const ITEMS_MISC = {
     defaultDurability: 100, defaultContamination: 0,
     icon: '🪖', description: '특수 제조된 군용 전투 식량. 스태미나·체력·영양을 한 번에 회복.',
     onConsume: { stamina: 80, fatigue: -35, hp: 15, nutrition: 25, morale: 15 },
-    tags: ['edible', 'medical', 'stamina', 'crafted'],
+    tags: ['edible', 'medical', 'stamina', 'crafted', 'food'],
     dismantle: [
       { definitionId: 'stamina_tonic', qty: 1, chance: 0.4 },
       { definitionId: 'energy_bar',    qty: 1, chance: 0.6 },
@@ -376,6 +376,33 @@ const ITEMS_MISC = {
     dismantle: [
       { definitionId: 'wood', qty: 3, chance: 0.8 },
       { definitionId: 'nail', qty: 5, chance: 0.6 },
+    ],
+  },
+
+  garden: {
+    id: 'garden', name: '텃밭', type: 'structure', subtype: 'food',
+    rarity: 'rare', weight: 4.0,
+    defaultDurability: 72, defaultContamination: 0,
+    icon: '🌱', description: '식량을 자급자족. 내구도가 떨어지면 다시 심어야 한다.',
+    tags: ['structure', 'crafted'],
+    onTick: { nutrition: 0.4, noise: 1 },
+    dismantle: [
+      { definitionId: 'wood', qty: 2, chance: 0.8 },
+      { definitionId: 'rope', qty: 1, chance: 0.6 },
+    ],
+  },
+
+  rain_collector: {
+    id: 'rain_collector', name: '빗물 수집기', type: 'structure', subtype: 'water',
+    rarity: 'uncommon', weight: 2.0,
+    defaultDurability: 160, defaultContamination: 0,
+    icon: '🪣', description: '빗물을 모아 수분을 보충한다. 겨울에는 눈을 녹여 소량 확보.',
+    tags: ['structure', 'crafted'],
+    onTick: { hydration: 0.3 },
+    dismantle: [
+      { definitionId: 'empty_bottle', qty: 1, chance: 0.8 },
+      { definitionId: 'cloth', qty: 1, chance: 0.6 },
+      { definitionId: 'rope', qty: 1, chance: 0.5 },
     ],
   },
 

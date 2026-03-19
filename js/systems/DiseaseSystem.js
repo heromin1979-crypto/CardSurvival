@@ -2,10 +2,12 @@
 // 질병 발병·진행·치료·사망 관리
 // 매 TP마다 StatSystem 이후 호출됨 (main.js init 순서 유지 필수)
 
-import EventBus   from '../core/EventBus.js';
-import GameState  from '../core/GameState.js';
+import EventBus    from '../core/EventBus.js';
+import GameState   from '../core/GameState.js';
 import EndingSystem from './EndingSystem.js';
-import DISEASES   from '../data/diseases.js';
+import SeasonSystem from './SeasonSystem.js';
+import DISEASES    from '../data/diseases.js';
+import BALANCE     from '../data/gameBalance.js';
 
 // ── 내부 노출 추적 카운터 (세이브 불필요 — 런타임 상태) ─────
 let _coldExposureTicks  = 0;  // temp < 20 연속 TP
@@ -45,54 +47,79 @@ const DiseaseSystem = {
     const infection = gs.stats.infection.current;
     const radiation = gs.stats.radiation.current;
 
-    // ── 저체온증 ─────────────────────────────────────────────
+    // ── 저체온증 (48TP ≈ 16시간 연속 저온) ────────────────────
     if (temp < 20) {
       _coldExposureTicks++;
-      if (_coldExposureTicks >= 96 && !this._hasDisease(gs, 'hypothermia')) {
+      if (_coldExposureTicks >= 48 && !this._hasDisease(gs, 'hypothermia')) {
         this._contract(gs, 'hypothermia');
         _coldExposureTicks = 0;
       }
     } else {
-      _coldExposureTicks = Math.max(0, _coldExposureTicks - 2);
+      _coldExposureTicks = Math.max(0, _coldExposureTicks - BALANCE.disease.exposureDecayRate);
     }
+
+    // 계절 감염 보정
+    const seasonMult = SeasonSystem.getModifiers()?.infectionChanceMult ?? 1.0;
 
     // ── 감기 (저온 노출) ─────────────────────────────────────
-    if (temp < 30 && !this._hasDisease(gs, 'common_cold')
+    if (temp < 35 && !this._hasDisease(gs, 'common_cold')
                   && !this._hasDisease(gs, 'influenza')) {
-      if (Math.random() < 0.002) this._contract(gs, 'common_cold');
+      if (Math.random() < 0.004 * seasonMult) this._contract(gs, 'common_cold');
     }
 
-    // ── 열사병 ───────────────────────────────────────────────
+    // ── 열사병 (36TP ≈ 12시간 연속 고온) ────────────────────
     if (temp > 85) {
       _heatExposureTicks++;
-      if (_heatExposureTicks >= 48 && !this._hasDisease(gs, 'heatstroke')) {
+      if (_heatExposureTicks >= 36 && !this._hasDisease(gs, 'heatstroke')) {
         this._contract(gs, 'heatstroke');
         _heatExposureTicks = 0;
       }
     } else {
-      _heatExposureTicks = Math.max(0, _heatExposureTicks - 3);
+      _heatExposureTicks = Math.max(0, _heatExposureTicks - BALANCE.disease.exposureDecayRate);
     }
 
-    // ── 패혈증 (감염 70+ 방치) ───────────────────────────────
-    if (infection > 70) {
+    // ── 패혈증 (감염 60+ 방치, 48TP) ────────────────────────
+    if (infection > 60) {
       _highInfectTicks++;
-      if (_highInfectTicks >= 96 && !this._hasDisease(gs, 'sepsis')) {
+      if (_highInfectTicks >= 48 && !this._hasDisease(gs, 'sepsis')) {
         this._contract(gs, 'sepsis');
         _highInfectTicks = 0;
       }
     } else {
-      _highInfectTicks = Math.max(0, _highInfectTicks - 2);
+      _highInfectTicks = Math.max(0, _highInfectTicks - BALANCE.disease.exposureDecayRate);
     }
 
     // ── 독감 (감염 수치 높을 때) ─────────────────────────────
-    if (infection > 30 && !this._hasDisease(gs, 'influenza')
+    if (infection > 25 && !this._hasDisease(gs, 'influenza')
                        && !this._hasDisease(gs, 'common_cold')) {
-      if (Math.random() < 0.002) this._contract(gs, 'influenza');
+      if (Math.random() < 0.004 * seasonMult) this._contract(gs, 'influenza');
     }
 
     // ── 방사선 질환 ──────────────────────────────────────────
-    if (radiation > 60 && !this._hasDisease(gs, 'radiation_sickness')) {
-      if (Math.random() < 0.003) this._contract(gs, 'radiation_sickness');
+    if (radiation > 50 && !this._hasDisease(gs, 'radiation_sickness')) {
+      if (Math.random() < 0.005 * seasonMult) this._contract(gs, 'radiation_sickness');
+    }
+  },
+
+  // ── 전투 부상 체크 ───────────────────────────────────────────
+  // CombatSystem._enemyAttack() / _runEnemyAI()에서 피격 시 호출
+
+  checkCombatInjury(damage, gs) {
+    if (!gs || !gs.player.isAlive) return;
+    if (!gs.player.diseases) gs.player.diseases = [];
+
+    // 전투 부상 질병 순회
+    for (const [id, def] of Object.entries(DISEASES)) {
+      if (!def.combatInjury) continue;
+      if (this._hasDisease(gs, id)) continue;
+
+      // 피해량 임계치 체크
+      if (damage < (def.triggerDamage ?? 0)) continue;
+
+      // 확률 판정
+      if (Math.random() < (def.triggerChance ?? 0)) {
+        this._contract(gs, id);
+      }
     }
   },
 
@@ -108,16 +135,16 @@ const DiseaseSystem = {
 
     if (!isWater && !isFood) return;
 
-    if (isWater && contamination >= 60) {
+    if (isWater && contamination >= 50) {
       // 심하게 오염된 물 → 콜레라 또는 이질
-      if (Math.random() < 0.45) {
+      if (Math.random() < 0.55) {
         this._contract(gs, 'cholera');
-      } else if (Math.random() < 0.40) {
+      } else if (Math.random() < 0.50) {
         this._contract(gs, 'dysentery');
       }
-    } else if (contamination >= 30) {
+    } else if (contamination >= 20) {
       // 오염된 음식/물 → 이질 위험
-      if (Math.random() < 0.30) this._contract(gs, 'dysentery');
+      if (Math.random() < 0.40) this._contract(gs, 'dysentery');
     }
   },
 
@@ -148,6 +175,26 @@ const DiseaseSystem = {
     // 비타민 / 응급처치 키트 → 감기 완치
     if (itemId === 'vitamins' || itemId === 'first_aid_kit') {
       this._cureByFilter(gs, ['common_cold'], '비타민');
+    }
+
+    // 붕대 / 거즈 → 출혈 지혈
+    if (itemId === 'bandage' || itemId === 'gauze') {
+      this._cureByFilter(gs, ['bleeding'], '붕대');
+    }
+
+    // 구급상자 / 소독약 → 깊은 열상 치료 + 출혈 지혈
+    if (itemId === 'first_aid_kit' || itemId === 'antiseptic') {
+      this._cureByFilter(gs, ['deep_laceration', 'bleeding'], itemId === 'first_aid_kit' ? '구급상자' : '소독약');
+    }
+
+    // 진통제 → 골절 증상 완화 (치료는 아니지만 지속시간 대폭 단축) + 뇌진탕 치료
+    if (itemId === 'painkiller') {
+      this._cureByFilter(gs, ['concussion'], '진통제');
+      const frac = gs.player.diseases.find(d => d.id === 'fracture');
+      if (frac) {
+        frac.tpElapsed = Math.min(frac.tpDuration, frac.tpElapsed + 72 * 3);  // 3일 단축
+        EventBus.emit('notify', { message: '💊 진통제로 골절 회복 촉진 (3일 단축)', type: 'info' });
+      }
     }
 
     // 정수물 / 스포츠 드링크 → 열사병 가속 회복
@@ -198,7 +245,7 @@ const DiseaseSystem = {
 
       // 감기 → 독감 악화 (7일 방치)
       if (disease.id === 'common_cold' && def.escalatesTo) {
-        const escalateTp = (def.escalateDays ?? 7) * 96;
+        const escalateTp = (def.escalateDays ?? 7) * 72;
         if (disease.tpElapsed >= escalateTp) {
           toRemove.push(disease.id);
           this._contract(gs, def.escalatesTo);
@@ -273,8 +320,8 @@ const DiseaseSystem = {
 
     const [minDays, maxDays] = def.durationDays;
     const days       = minDays + Math.floor(Math.random() * (maxDays - minDays + 1));
-    const tpDuration = days * 96;
-    const fatalTp    = def.fatalDays ? def.fatalDays * 96 : null;
+    const tpDuration = days * 72;
+    const fatalTp    = def.fatalDays ? def.fatalDays * 72 : null;
 
     gs.player.diseases.push({ id: diseaseId, tpElapsed: 0, tpDuration, fatalTp });
 

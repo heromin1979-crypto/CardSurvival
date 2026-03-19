@@ -32,22 +32,26 @@ const SEASON_MODIFIERS = {
     infectionChanceMult: 1.5,   // 봄비·꽃가루로 감염 위험 증가
     encounterMult:       1.0,
     lootBonus:           0,
+    gardenYieldMult:     1.0,   // 정상 수확
   },
   summer: {
-    hydrationDecayMult:  1.5,   // 폭염으로 수분 소모 급증
+    hydrationDecayMult:  2.0,   // 폭염으로 수분 소모 급증 (1.5 → 2.0)
     tempDecayPerTP:      0,
     tempRisePerTP:       0.3,   // TP당 체온 +0.3 (방치 시 열사병)
     infectionChanceMult: 1.2,
     encounterMult:       1.0,
     lootBonus:           0,
+    gardenYieldMult:     0.5,   // 텃밭 수확 반감
+    foodSpoilChance:     0.005, // TP당 0.5% 식량 부패
   },
   autumn: {
     hydrationDecayMult:  0.9,   // 선선해서 수분 유지 쉬움
-    tempDecayPerTP:      -0.3,  // 기온 하강 시작
+    tempDecayPerTP:      -0.5,  // 기온 하강 가속 (-0.3 → -0.5)
     tempRisePerTP:       0,
     infectionChanceMult: 1.3,   // 환절기 병 위험
-    encounterMult:       1.0,
+    encounterMult:       1.5,   // 좀비 조우 50% 증가 (1.0 → 1.5)
     lootBonus:           1,     // 수확기 — 탐색마다 아이템 +1
+    gardenYieldMult:     0.8,   // 수확기 말 수확량 감소
   },
   winter: {
     hydrationDecayMult:  0.8,
@@ -56,6 +60,7 @@ const SEASON_MODIFIERS = {
     infectionChanceMult: 1.0,
     encounterMult:       0.8,   // 좀비 행동 둔화
     lootBonus:           0,
+    gardenYieldMult:     0.0,   // 텃밭 완전 정지
   },
 };
 
@@ -65,11 +70,11 @@ const SEASON_MODIFIERS = {
 const SEASON_LOOT = {
   spring: [
     { id: 'vitamins',  qty: 1, chance: 0.40 },  // 봄 나물·비타민
-    { id: 'rainwater', qty: 1, chance: 0.35 },  // 봄비 빗물 수집
+    { id: 'rainwater', qty: 2, chance: 0.40 },  // 봄비 빗물 수집 (qty 1→2, chance 0.35→0.40)
     { id: 'gauze',     qty: 1, chance: 0.25 },  // 약국 재고 남음
   ],
   summer: [
-    { id: 'rainwater',    qty: 1, chance: 0.50 },  // 장마철 빗물
+    { id: 'rainwater',    qty: 3, chance: 0.55 },  // 장마철 빗물 (qty 1→3, chance 0.50→0.55)
     { id: 'sports_drink', qty: 1, chance: 0.30 },  // 더위 대비 음료
     { id: 'empty_bottle', qty: 1, chance: 0.20 },  // 빗물 수집용 병
   ],
@@ -77,11 +82,13 @@ const SEASON_LOOT = {
     { id: 'canned_food',  qty: 1, chance: 0.45 },  // 수확 식량 비축
     { id: 'energy_bar',   qty: 1, chance: 0.35 },  // 에너지 바
     { id: 'rice',         qty: 1, chance: 0.20 },  // 쌀 수확
+    { id: 'rainwater',    qty: 1, chance: 0.15 },  // 가을에도 약간의 빗물
   ],
   winter: [
-    { id: 'wood',    qty: 1, chance: 0.50 },  // 땔감 확보
-    { id: 'cloth',   qty: 1, chance: 0.35 },  // 방한복 재료
-    { id: 'charcoal',qty: 1, chance: 0.25 },  // 숯 (캠프파이어 연료)
+    { id: 'wood',               qty: 1, chance: 0.50 },  // 땔감 확보
+    { id: 'cloth',              qty: 1, chance: 0.35 },  // 방한복 재료
+    { id: 'charcoal',           qty: 1, chance: 0.25 },  // 숯 (캠프파이어 연료)
+    { id: 'contaminated_water', qty: 1, chance: 0.30 },  // 눈 녹인 물
   ],
 };
 

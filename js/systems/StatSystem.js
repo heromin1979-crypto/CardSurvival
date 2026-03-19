@@ -6,10 +6,21 @@ import EndingSystem from './EndingSystem.js';
 import SeasonSystem  from './SeasonSystem.js';
 import DiseaseSystem from './DiseaseSystem.js';
 import SkillSystem   from './SkillSystem.js';
+import BALANCE       from '../data/gameBalance.js';
 
 const StatSystem = {
   init() {
     EventBus.on('tpAdvance', () => this.onTP());
+  },
+
+  // ── 사기 구간별 효과 조회 ─────────────────────────────────────
+  getMoraleTier() {
+    const morale = GameState.stats.morale?.current ?? 50;
+    const tiers  = BALANCE.moraleTiers;
+    if (morale >= tiers.high.threshold)   return { id: 'high',    ...tiers.high };
+    if (morale >= tiers.normal.threshold) return { id: 'normal',  ...tiers.normal };
+    if (morale >= tiers.low.threshold)    return { id: 'low',     ...tiers.low };
+    return { id: 'despair', ...tiers.despair };
   },
 
   onTP() {
@@ -28,20 +39,30 @@ const StatSystem = {
       const isAccumulator = ['radiation', 'infection', 'fatigue'].includes(key);
       if (!isAccumulator) {
         let decay = s.decayPerTP;
-        if (key === 'hydration') decay *= (seasonMod.hydrationDecayMult ?? 1.0);
+        // BALANCE 상수에서 수분/영양/사기 감소율 오버라이드
+        if (key === 'hydration') {
+          decay = BALANCE.stats.hydrationDecayPerTP;
+          decay *= (seasonMod.hydrationDecayMult ?? 1.0);
+        } else if (key === 'nutrition') {
+          decay = BALANCE.stats.nutritionDecayPerTP;
+        } else if (key === 'morale') {
+          decay = BALANCE.stats.moraleDecayPerTP;
+        }
         gs.modStat(key, -decay);
       }
       // accumulators increase via systems (NoiseSystem, ContaminationSystem, etc.)
     }
 
-    // Fatigue natural increase
-    gs.modStat('fatigue', gs.stats.fatigue.decayPerTP);
+    // Fatigue natural increase (사기 구간별 가속)
+    const moraleTier = this.getMoraleTier();
+    gs.modStat('fatigue', gs.stats.fatigue.decayPerTP * (moraleTier.fatigueGainMult ?? 1.0));
 
     // 스태미나 자연 회복 / 과적 소모
     this._updateStamina();
-    // 과적·저스태미나 경고
+    // 과적·저스태미나·저사기 경고
     this._checkWeightWarning();
     this._checkStaminaWarning();
+    this._checkMoraleWarning(moraleTier);
 
     // 계절 체온 변화 적용
     this._applySeasonalTemperature(seasonMod);
@@ -51,6 +72,12 @@ const StatSystem = {
 
     // Structure passive effects (medical_station, barricade 등)
     this._applyStructureEffects();
+
+    // 식량 부패 체크 (여름 foodSpoilChance)
+    const spoilChance = seasonMod.foodSpoilChance ?? 0;
+    if (spoilChance > 0) {
+      this._checkFoodSpoilage(spoilChance);
+    }
 
     // 질병 진행 및 증상 적용
     DiseaseSystem.onTP();
@@ -88,8 +115,123 @@ const StatSystem = {
       }
     }
 
+    // 빗물 수집기: 날씨 연동 수분 보급 + 내구도 소모
+    // 비/장마/눈 → 수집량 증가, 맑음/흐림 → 감소, 산성비 → 중단+경고
+    const collectorCard = gs.getBoardCards().find(c => c.definitionId === 'rain_collector');
+    if (collectorCard && gs.cards[collectorCard.instanceId]) {
+      const cInst = gs.cards[collectorCard.instanceId];
+      if ((cInst.durability ?? 0) > 0) {
+        const cDef = gs.getCardDef(collectorCard.instanceId);
+        const baseHydration = cDef?.onTick?.hydration ?? 0.3;
+        const cWeather = gs.weather;
+        const cWeatherId = cWeather?.id ?? 'sunny';
+        const cIsAcidRain = cWeather?.gardenKill === true;
+
+        // 날씨별 수집 배율
+        const COLLECTOR_WEATHER_MULT = {
+          rainy: 2.0, monsoon: 2.5, storm: 1.5,  // 비/장마/폭풍: 대량 수집
+          snow: 0.5, blizzard: 0.3,               // 눈/폭설: 눈 녹인 물 (소량)
+          cloudy: 0.3, overcast: 0.3, foggy: 0.2, // 흐림/안개: 이슬 수준
+          sunny: 0.1, clear: 0.1, hot: 0.0,       // 맑음/폭염: 거의 없음
+          windy: 0.1,                              // 바람: 증발
+        };
+        const weatherMult = cIsAcidRain ? 0 : (COLLECTOR_WEATHER_MULT[cWeatherId] ?? 0.1);
+
+        const hydrationGain = baseHydration * weatherMult;
+        if (hydrationGain > 0) {
+          gs.modStat('hydration', hydrationGain);
+        }
+
+        // 산성비 경고 (수집기 전용)
+        if (cIsAcidRain && !gs.flags._collectorAcidWarned) {
+          gs.flags._collectorAcidWarned = true;
+          EventBus.emit('notify', {
+            message: '☢ 산성비! 빗물 수집기를 닫았다. 비가 그칠 때까지 수집 중단.',
+            type: 'danger',
+          });
+        } else if (!cIsAcidRain) {
+          gs.flags._collectorAcidWarned = false;
+        }
+
+        // 산성비가 아닐 때만 내구도 소모 (닫혀있으면 마모 없음)
+        if (!cIsAcidRain) {
+          cInst.durability = Math.max(0, cInst.durability - BALANCE.campfire.fuelConsumePerTP);
+          if (cInst.durability <= 0) {
+            EventBus.emit('notify', { message: '🪣 빗물 수집기가 망가졌다! 수리가 필요하다.', type: 'warn' });
+          }
+        }
+      }
+    }
+
+    // 텃밭: 영양 보급 + 내구도 소모 (계절 + 날씨 gardenYieldMult 적용)
+    const gardenCard = gs.getBoardCards().find(c => c.definitionId === 'garden');
+    if (gardenCard && gs.cards[gardenCard.instanceId]) {
+      const inst = gs.cards[gardenCard.instanceId];
+      if ((inst.durability ?? 0) > 0) {
+        const gardenDef = gs.getCardDef(gardenCard.instanceId);
+        const baseNutrition = gardenDef?.onTick?.nutrition ?? 0.4;
+        const seasonMod = SeasonSystem.getModifiers();
+
+        // 산성비 시 텃밭 수확 무효화
+        const weather = gs.weather;
+        const isAcidRain = weather?.gardenKill === true;
+        const yieldMult = isAcidRain ? 0 : (seasonMod.gardenYieldMult ?? 1.0);
+
+        const nutritionGain = baseNutrition * yieldMult;
+        if (nutritionGain > 0) {
+          gs.modStat('nutrition', nutritionGain);
+        }
+        inst.durability = Math.max(0, inst.durability - BALANCE.campfire.fuelConsumePerTP);
+        if (inst.durability <= 0) {
+          EventBus.emit('notify', { message: '텃밭이 시들었다! 다시 심어야 한다.', type: 'warn' });
+        }
+
+        // 산성비 경고 (acid rain 전용)
+        if (isAcidRain && !gs.flags._gardenAcidWarned) {
+          gs.flags._gardenAcidWarned = true;
+          EventBus.emit('notify', {
+            message: '☢ 산성비로 텃밭이 오염되었다! 비가 그칠 때까지 수확 불가.',
+            type: 'danger',
+          });
+        } else if (!isAcidRain) {
+          gs.flags._gardenAcidWarned = false;
+        }
+
+        // 겨울 완전 정지 알림 (gardenYieldMult === 0)
+        if ((seasonMod.gardenYieldMult ?? 1.0) <= 0 && !gs.flags._gardenFrozenWarned) {
+          gs.flags._gardenFrozenWarned = true;
+          EventBus.emit('notify', { message: '❄ 혹한으로 텃밭이 얼었다! 수확이 불가능하다.', type: 'danger' });
+        } else if ((seasonMod.gardenYieldMult ?? 1.0) > 0) {
+          gs.flags._gardenFrozenWarned = false;
+        }
+      }
+    }
+
     // encounterRateReduct을 player에 저장 (ExploreSystem에서 참조)
-    gs.player.encounterRateReduct = Math.min(0.70, encounterReduction);
+    gs.player.encounterRateReduct = Math.min(BALANCE.encounter.structureReductCap, encounterReduction);
+  },
+
+  // ── 식량 부패 (여름 계절 효과) ──────────────────────────────────
+
+  _checkFoodSpoilage(spoilChance) {
+    const gs = GameState;
+    for (const card of gs.getBoardCards()) {
+      const def = gs.getCardDef(card.instanceId);
+      if (!def) continue;
+      // food 타입 소모품만 대상
+      if (def.type !== 'consumable' || (def.subtype !== 'food' && def.subtype !== 'drink')) continue;
+      if (Math.random() >= spoilChance) continue;
+
+      const inst = gs.cards[card.instanceId];
+      if (!inst) continue;
+      inst.contamination = Math.min(100, (inst.contamination ?? 0) + 25);
+      if (inst.contamination >= 100) {
+        EventBus.emit('notify', {
+          message: `🤢 ${def.name}이(가) 완전히 부패했다!`,
+          type: 'danger',
+        });
+      }
+    }
   },
 
   // ── 계절별 체온 효과 ────────────────────────────────────────────
@@ -122,11 +264,17 @@ const StatSystem = {
     const gs = GameState;
     const temp = gs.stats.temperature.current;
 
-    // Structures on board affect temp
-    const campfireSlot = Object.values(gs.cards).find(c => c.definitionId === 'campfire');
-    if (campfireSlot) {
-      const onBoard = GameState.getBoardCards().some(c => c.definitionId === 'campfire');
-      if (onBoard) gs.modStat('temperature', 2);
+    // Structures on board affect temp — 연료(내구도) 소모
+    const campfireCard = GameState.getBoardCards().find(c => c.definitionId === 'campfire');
+    if (campfireCard && gs.cards[campfireCard.instanceId]) {
+      const inst = gs.cards[campfireCard.instanceId];
+      if ((inst.durability ?? 0) > 0) {
+        gs.modStat('temperature', BALANCE.campfire.tempBoostPerTP);
+        inst.durability = Math.max(0, inst.durability - BALANCE.campfire.fuelConsumePerTP);
+        if (inst.durability <= 0) {
+          EventBus.emit('notify', { message: '캠프파이어의 연료가 다 떨어졌다!', type: 'warn' });
+        }
+      }
     }
 
     // Cold: morale drop if temp low (severe first)
@@ -250,10 +398,15 @@ const StatSystem = {
     if (!st) return;
     const pct = gs.player.encumbrance.weightPct ?? 0;
     let delta;
-    if      (pct <= 1.0) delta =  1.5;
+    if      (pct <= 1.0) delta =  BALANCE.stats.staminaRegenPerTP;
     else if (pct <= 1.5) delta = -0.5;
     else if (pct <= 2.0) delta = -1.0;
     else                 delta = -2.0;
+    // 사기 구간별 스태미나 회복 배율 (회복일 때만 적용, 소모에는 미적용)
+    if (delta > 0) {
+      const tier = this.getMoraleTier();
+      delta *= (tier.staminaRegenMult ?? 1.0);
+    }
     gs.modStat('stamina', delta);
   },
 
@@ -319,6 +472,33 @@ const StatSystem = {
   },
 
   /**
+   * 사기 저하 경고: 구간 변경 시 알림 (30TP마다 반복)
+   */
+  _checkMoraleWarning(tier) {
+    const gs  = GameState;
+    if (tier.id === 'high' || tier.id === 'normal') {
+      gs.flags._moraleLowWarnTP = undefined;
+      return;
+    }
+    const now      = Math.floor(gs.time.totalTP ?? 0);
+    const lastWarn = gs.flags._moraleLowWarnTP ?? -999;
+    if (now - lastWarn < 30) return;
+    gs.flags._moraleLowWarnTP = now;
+
+    if (tier.id === 'despair') {
+      EventBus.emit('notify', {
+        message: '😰 절망 상태! 탐색 불가, 전투력 대폭 저하. 명상이나 아이템으로 사기를 회복하라.',
+        type: 'danger',
+      });
+    } else {
+      EventBus.emit('notify', {
+        message: '😟 사기 저하! 전투 명중률 -15%, 피로 가속, 제작 실패율 증가.',
+        type: 'warn',
+      });
+    }
+  },
+
+  /**
    * 장착된 방어구의 onWear 효과를 집산하여 반환 (player.equipped 스캔)
    * @returns {{ damageReduction: number, critReduction: number, radiationMult: number, contaminationMult: number, infectionMult: number }}
    */
@@ -343,9 +523,9 @@ const StatSystem = {
       if (w.contaminationMult) result.contaminationMult *= w.contaminationMult;
       if (w.infectionMult)     result.infectionMult     *= w.infectionMult;
     }
-    // 상한 클램핑: 피해 감소 75%, 크리티컬 감소 90%
-    result.damageReduction = Math.min(0.75, result.damageReduction);
-    result.critReduction   = Math.min(0.90, result.critReduction);
+    // 상한 클램핑: BALANCE 상수 기반
+    result.damageReduction = Math.min(BALANCE.armor.damageReductionCap, result.damageReduction);
+    result.critReduction   = Math.min(BALANCE.armor.critReductionCap, result.critReduction);
     return result;
   },
 

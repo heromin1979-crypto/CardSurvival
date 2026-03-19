@@ -273,3 +273,17 @@
 .node-card.current {
   animation: currentNodePulse 2s ease infinite;
 }
+
+/* ── 모션 감소 모드 ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .screen.active { animation: none; }
+  .card.spawning { animation: none; opacity: 1; }
+  .card.removing { animation: none; }
+  .card.despawning { animation: none; }
+  .dmg-popup { animation: none; opacity: 1; }
+}

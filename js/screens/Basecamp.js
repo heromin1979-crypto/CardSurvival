@@ -26,6 +26,10 @@ const Basecamp = {
     EventBus.on('questListChanged', () => {
       if (GameState.ui.currentState === 'basecamp') this._updateQuestPanel();
     });
+    // 약탈자 협상 이벤트 리스너
+    EventBus.on('raiderDemand', (data) => {
+      if (GameState.ui.currentState === 'basecamp') this._showRaiderModal(data);
+    });
   },
 
   _onEnter() {
@@ -236,6 +240,51 @@ const Basecamp = {
     const modal = document.getElementById('craft-modal');
     modal?.classList.remove('open');
     GameState.ui.basecampMode = 'INVENTORY';
+  },
+
+  // ── 약탈자 협상 모달 ───────────────────────────────────────────
+
+  _showRaiderModal({ demandCardIds, demandCount, onSurrender, onRefuse }) {
+    const gs    = GameState;
+    const items = window.__GAME_DATA__?.items ?? {};
+
+    // 요구 아이템 목록 생성
+    const demandList = demandCardIds.map(id => {
+      const inst = gs.cards[id];
+      if (!inst) return '(불명)';
+      const def = items[inst.definitionId];
+      return `${def?.icon ?? '📦'} ${def?.name ?? inst.definitionId}`;
+    }).join(', ');
+
+    // 모달 생성
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay open';
+    overlay.id = 'raider-demand-modal';
+    overlay.innerHTML = `
+      <div class="modal-box" style="max-width:400px;">
+        <div class="modal-title">🔫 약탈자 등장!</div>
+        <div style="padding:12px;line-height:1.6;">
+          <p>무장한 약탈자가 거점에 나타났다.</p>
+          <p>"물자를 넘기면 살려주지."</p>
+          <p style="margin-top:8px;font-weight:bold;">요구 물자 (${demandCount}개):</p>
+          <p style="color:#ff9800;">${demandList}</p>
+        </div>
+        <div class="modal-actions" style="gap:8px;">
+          <button class="modal-btn" id="raider-surrender" style="background:#e65100;">물자를 넘긴다</button>
+          <button class="modal-btn" id="raider-refuse" style="background:#b71c1c;">싸운다</button>
+        </div>
+      </div>
+    `;
+    this._el.appendChild(overlay);
+
+    overlay.querySelector('#raider-surrender')?.addEventListener('click', () => {
+      overlay.remove();
+      onSurrender();
+    });
+    overlay.querySelector('#raider-refuse')?.addEventListener('click', () => {
+      overlay.remove();
+      onRefuse();
+    });
   },
 
   _updateQuestPanel() {

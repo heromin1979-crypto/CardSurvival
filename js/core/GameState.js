@@ -6,7 +6,7 @@ const GameState = {
   time: {
     totalTP:    0,
     day:        1,
-    tpInDay:    0,   // 0-95 (96 TP/day at 15-min intervals)
+    tpInDay:    0,   // 0-71 (72 TP/day at 20-min intervals)
     hour:       6,   // game hour (0-23)
     isPaused:   false,
     tickRateMs: 3000, // real ms per mini-tick (5 mini = 1 TP)
@@ -192,7 +192,7 @@ const GameState = {
     name:        '맑음',
     icon:        '☀️',
     tempMod:     0,
-    tpRemaining: 96,
+    tpRemaining: 72,
     tempJitter:  0,
   },
 

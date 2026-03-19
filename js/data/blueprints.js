@@ -161,6 +161,46 @@ const BLUEPRINTS = {
     ],
   },
 
+  garden: {
+    id: 'garden', name: '텃밭', category: 'structure',
+    description: '식량을 자급자족할 수 있는 텃밭.',
+    output: [{ definitionId: 'garden', qty: 1 }],
+    requiredTools: [],
+    stages: [
+      {
+        stageIndex: 0, label: '밭 고르기', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'wood', qty: 3 },
+          { definitionId: 'rope', qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '씨앗 심기', tpCost: 2,
+        requiredItems: [
+          { definitionId: 'cloth', qty: 2 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+  },
+
+  rain_collector: {
+    id: 'rain_collector', name: '빗물 수집기', category: 'structure',
+    description: '빗물을 모아 수분을 자급한다. 겨울에는 눈 녹인 물.',
+    output: [{ definitionId: 'rain_collector', qty: 1 }],
+    requiredTools: [],
+    stages: [{
+      stageIndex: 0, label: '수집기 설치', tpCost: 3,
+      requiredItems: [
+        { definitionId: 'empty_bottle', qty: 2 },
+        { definitionId: 'cloth', qty: 1 },
+        { definitionId: 'rope', qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
   // ══════════════════════════════════════════════════════════════
   //  재료 가공 (Material Processing)
   // ══════════════════════════════════════════════════════════════

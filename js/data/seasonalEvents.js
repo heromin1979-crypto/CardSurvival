@@ -32,6 +32,22 @@ export const SEASONAL_EVENTS = [
   // ── 여름 (Day 91-180) ─────────────────────────────────────────
 
   {
+    day: 100, id: 'summer_drought',
+    title: '가뭄',
+    message: '🏜 극심한 가뭄이 이어지고 있습니다. 수원이 마르고 있습니다.',
+    type: 'danger',
+    effects: { morale: -10 },
+  },
+
+  {
+    day: 110, id: 'food_poisoning_alert',
+    title: '식중독 주의보',
+    message: '🤮 고온으로 보관 식량의 부패가 빨라지고 있습니다. 식량 오염 주의!',
+    type: 'warn',
+    effects: { contaminateFood: 20 },
+  },
+
+  {
     day: 91, id: 'summer_start',
     title: '여름 시작',
     message: '☀️ 폭염이 시작되었습니다! 수분 소비가 크게 늘어납니다. 물 비축이 최우선입니다!',
@@ -71,6 +87,22 @@ export const SEASONAL_EVENTS = [
     message: '🍂 선선한 가을바람이 불어옵니다. 수확의 계절입니다. 식량을 비축하십시오.',
     type: 'success',
     effects: { morale: 10 },
+  },
+
+  {
+    day: 185, id: 'zombie_migration',
+    title: '좀비 대이동',
+    message: '🧟 대규모 좀비 무리가 이동 중입니다. 조우 확률이 크게 증가했습니다!',
+    type: 'danger',
+    effects: { morale: -5 },
+  },
+
+  {
+    day: 195, id: 'acid_rain_warning',
+    title: '산성비 경보',
+    message: '☢ 대기 오염으로 산성비가 내리기 시작합니다. 텃밭 작물이 고사할 수 있습니다!',
+    type: 'danger',
+    effects: { contaminateFood: 15, morale: -5 },
   },
 
   {
