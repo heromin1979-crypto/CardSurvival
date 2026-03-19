@@ -44,8 +44,8 @@ export const CHARACTERS = [
         id: 'medical_supply',
         name: '의료 물자',
         icon: '🎒',
-        desc: '붕대×2, 소독약, 진통제, 메스 추가 지급',
-        effect: { startingItems: ['bandage', 'bandage', 'antiseptic', 'painkiller', 'knife'] },
+        desc: '붕대, 소독약 추가 지급',
+        effect: { startingItems: ['bandage', 'antiseptic'] },
       },
     ],
     startingSkills: {
@@ -96,8 +96,8 @@ export const CHARACTERS = [
         id: 'tactical_gear',
         name: '전술 장비',
         icon: '🎒',
-        desc: '나이프, 로프, 붕대 추가 지급',
-        effect: { startingItems: ['knife', 'rope', 'bandage'] },
+        desc: '나이프 추가 지급',
+        effect: { startingItems: ['knife'] },
       },
     ],
     startingSkills: {
@@ -151,8 +151,8 @@ export const CHARACTERS = [
         id: 'rescue_kit',
         name: '구조 키트',
         icon: '🎒',
-        desc: '로프, 고철, 붕대 추가 지급',
-        effect: { startingItems: ['rope', 'scrap_metal', 'bandage'] },
+        desc: '로프 추가 지급',
+        effect: { startingItems: ['rope'] },
       },
     ],
     startingSkills: {
@@ -259,8 +259,8 @@ export const CHARACTERS = [
         id: 'pharmacy_stock',
         name: '약국 재고',
         icon: '🎒',
-        desc: '정수 정제, 진통제, 붕대×2 추가 지급',
-        effect: { startingItems: ['purification_tablet', 'painkiller', 'bandage', 'bandage'] },
+        desc: '소독약, 진통제 추가 지급',
+        effect: { startingItems: ['antiseptic', 'painkiller'] },
       },
     ],
     startingSkills: {
@@ -268,7 +268,7 @@ export const CHARACTERS = [
       crafting:  3,  // 조제·제조 능력
       cooking:   2,  // 약재 조합 기초
     },
-    homeDist: 'gangnam',
+    homeDist: 'mapo',
   },
 
   {
@@ -313,8 +313,8 @@ export const CHARACTERS = [
         id: 'factory_materials',
         name: '공장 자재',
         icon: '🎒',
-        desc: '고철×2, 로프, 천 추가 지급',
-        effect: { startingItems: ['scrap_metal', 'scrap_metal', 'rope', 'cloth'] },
+        desc: '고철, 전선 추가 지급',
+        effect: { startingItems: ['scrap_metal', 'wire'] },
       },
     ],
     startingSkills: {
@@ -323,7 +323,7 @@ export const CHARACTERS = [
       weaponcraft: 3,  // 금속 가공 → 무기 제작
       armorcraft:  2,  // 기초 방어구 제작
     },
-    homeDist: 'yongsan',
+    homeDist: 'seongdong',
   },
 ];
 

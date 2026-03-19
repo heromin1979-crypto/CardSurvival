@@ -9,45 +9,16 @@ import EquipmentSystem from '../systems/EquipmentSystem.js';
 
 const DANGER_COLORS = ['#336633', '#4a7a33', '#886622', '#882222', '#550000', '#330000'];
 
-// 지역 선택 시 안내 문구 (생존 스타일 힌트)
-const DISTRICT_HINTS = {
-  gangnam:      '🏥 의료 최강. 삼성서울병원 접근 — 위험하지만 최고급 물자.',
-  gangdong:     '🏘️ 외곽 주거지. 약탈이 덜 된 아파트에서 식량·생필품 수급.',
-  gangbuk:      '⛰️ 저위험 출발. 북한산 인근 자연 자원으로 안전하게 기반 구축.',
-  gangseo:      '✈️ 공항 인근. 창고·공업 시설로 물자 수급 우수.',
-  geumcheon:    '🏭 제조업 특화. 공단 밀집 지역. 고철·공구·제작 재료 풍부.',
-  gwangjin:     '🌉 한강변 중동부. 이동 거점으로 유리. 자원과 위험이 균형.',
-  gwanak:       '🎓 연구 특화. 서울대 인근. 의약품 제작에 유리.',
-  guro:         '⚙️ 공단 지역. 제작·수리 재료 풍부. 위험 보통.',
-  dobong:       '🏔️ 북부 저위험. 도봉산 인근. 안전하나 물자 확보에 시간 소요.',
-  dongdaemun:   '🏪 상업 중심. 동대문시장 인근 상가에서 다양한 물자 수급.',
-  dongjak:      '🌊 한강 남안. 동작대교 거점. 이동 거점으로 좋고 위험도 보통.',
-  mapo:         '🎭 균형 잡힌 시작. 홍대·합정 권역. 다양한 자원. 초보자 추천.',
-  seodaemun:    '💊 의료 특화. 세브란스 병원 인접. 감염 생존에 유리.',
-  seocho:       '⚖️ 강남 인접 법조 지역. 물자 양호. 인접 이동 편의.',
-  seongdong:    '🏭 성수 공장지대. 제작 재료 풍부. 무기·구조물 제작에 최적.',
-  seongbuk:     '🌿 북부 주거지. 위험 낮고 일상 물자 확보 안정적.',
-  songpa:       '🗼 롯데타워·올림픽공원. 독립적 생존기지로 활용 가능.',
-  yangcheon:    '🏘️ 서남부 주거지. 생필품 위주. 위험 낮고 인접 이동 편리.',
-  yeongdeungpo: '📡 KBS 방송국 거점. 여의도 인접 공업·상업 복합 지역.',
-  yongsan:      '🔧 전자·무기 복합. 용산 전자상가로 제작 재료 확보.',
-  eunpyeong:    '🌲 북서부 저위험. 물자 적지만 안전하게 기반을 다질 수 있다.',
-  jongno:       '🏯 역사적 중심. 광화문·경복궁. 다양한 인접 지역 이동 가능.',
-  junggoo:      '🛒 유통의 중심. 남대문시장 — 다양한 물자 수급 가능.',
-  jungrang:     '🌿 중랑천 인근. 중랑공원 자연 자원. 위험 보통, 이동 유리.',
-  nowon:        '🍃 최북동 저위험. 물자 희소하나 극도로 안전한 시작점.',
-};
-
 const CharCreate = {
   _selectedChar:     null,
-  _selectedDistrict: 'gangseo',  // 기본 선택: 강서구 (dangerLevel 1)
+  _selectedDistrict: null,
 
   init() {
     this._el = document.getElementById('screen-char-create');
     EventBus.on('stateTransition', ({ to }) => {
       if (to === 'char_create') {
         this._selectedChar     = null;
-        this._selectedDistrict = 'gangseo';
+        this._selectedDistrict = null;
         this._render();
       }
     });
@@ -56,9 +27,6 @@ const CharCreate = {
   _render() {
     if (!this._el) return;
 
-    const districtHtml = this._buildDistrictMap();
-    const selected     = DISTRICTS[this._selectedDistrict];
-    const hint         = DISTRICT_HINTS[this._selectedDistrict] ?? '';
     const charGridHtml = this._buildCharGrid();
     const charDetail   = this._buildCharDetail();
 
@@ -81,39 +49,6 @@ const CharCreate = {
 
           <hr class="divider">
 
-          <!-- 시작 위치 선택 -->
-          <div class="form-group">
-            <label class="form-label">🗺 시작 위치 선택</label>
-            <p class="form-hint">서울 지도에서 시작 구(區)를 선택하세요. 인접한 구로만 이동 가능합니다.</p>
-          </div>
-
-          <!-- 지역 지도 (인터랙티브 그리드) -->
-          <div class="district-map-wrap">
-            ${districtHtml}
-          </div>
-
-          <!-- 선택된 지역 정보 -->
-          <div class="selected-district-info" id="selected-district-info">
-            <div class="sdi-header">
-              <span class="sdi-icon">${selected.icon}</span>
-              <span class="sdi-name">${selected.name}</span>
-              <span class="sdi-danger" style="color:${DANGER_COLORS[Math.min(selected.dangerLevel, 5)]}">
-                위험도 ${'█'.repeat(selected.dangerLevel)}${'░'.repeat(Math.max(0, 5 - selected.dangerLevel))}
-              </span>
-            </div>
-            <div class="sdi-desc">${selected.description}</div>
-            <div class="sdi-hint">${hint}</div>
-            <div class="sdi-adjacent">
-              <span class="sdi-subloc-label">인접 이동 가능:</span>
-              ${(selected.adjacentDistricts ?? []).map(id => {
-                const d = DISTRICTS[id];
-                return d ? `<span class="sdi-adj-tag">${d.icon} ${d.name}</span>` : '';
-              }).join('')}
-            </div>
-          </div>
-
-          <hr class="divider">
-
           <div style="font-size:10px; color:var(--text-dim); text-align:center;">
             ⚠ 하드코어 모드 — 죽으면 처음부터
           </div>
@@ -132,18 +67,6 @@ const CharCreate = {
         this._selectedChar = CHARACTERS.find(c => c.id === charId) ?? null;
         if (this._selectedChar?.homeDist) {
           this._selectedDistrict = this._selectedChar.homeDist;
-        }
-        this._render();
-      });
-    });
-
-    // 지역 클릭 — 시작 위치는 캐릭터 homeDist로 고정
-    this._el.querySelectorAll('.dc-node').forEach(el => {
-      el.addEventListener('click', () => {
-        if (this._selectedChar?.homeDist) {
-          this._selectedDistrict = this._selectedChar.homeDist;
-        } else {
-          this._selectedDistrict = el.dataset.districtId;
         }
         this._render();
       });
@@ -207,48 +130,8 @@ const CharCreate = {
       <div class="char-story">${c.story}</div>
       <ul class="char-ability-list">${abilitiesHtml}</ul>
       <div class="char-goal">🎯 ${c.goal}</div>
-    `;
-  },
-
-  // ── 시작 지역 선택 그리드 (dangerLevel 1만 표시) ──────────────
-
-  _buildDistrictMap() {
-    const sel = this._selectedDistrict;
-
-    // 강북 dangerLevel 1 (은평·도봉·노원)
-    const NORTH_IDS = new Set(['eunpyeong', 'dobong', 'nowon']);
-    const allLevel1  = Object.values(DISTRICTS).filter(d => d.dangerLevel === 1);
-    const northList  = allLevel1.filter(d => NORTH_IDS.has(d.id));
-    const southList  = allLevel1
-      .filter(d => !NORTH_IDS.has(d.id))
-      .sort((a, b) => a.name.localeCompare(b.name, 'ko'));
-
-    const renderCard = (d) => {
-      const isSel  = d.id === sel;
-      const color  = DANGER_COLORS[Math.min(d.dangerLevel, 5)];
-      return `
-        <div class="dc-cell">
-          <div class="dc-node ${isSel ? 'selected' : ''}" data-district-id="${d.id}"
-               style="border-color:${isSel ? 'var(--accent-primary)' : color};">
-            <div class="dc-node-icon">${d.icon}</div>
-            <div class="dc-node-name">${d.name}</div>
-            <div class="dc-node-danger" style="color:${color}; font-size:8px;">
-              ${'█'.repeat(d.dangerLevel)}${'░'.repeat(Math.max(0, 5 - d.dangerLevel))}
-            </div>
-            <div class="dc-node-tp" style="font-size:8px; color:var(--text-dim);">
-              ${d.travelCostTP}TP
-            </div>
-          </div>
-        </div>
-      `;
-    };
-
-    return `
-      <div class="district-map-grid">
-        <div class="dc-section-label">🏔 강북 — 안전 지역</div>
-        <div class="dc-row">${northList.map(renderCard).join('')}</div>
-        <div class="dc-section-label">🌆 강남 — 시작 가능</div>
-        <div class="dc-row">${southList.map(renderCard).join('')}</div>
+      <div class="char-start-location" style="margin-top:6px; padding:4px 8px; background:var(--bg-card); border-radius:4px; font-size:11px; color:var(--text-secondary);">
+        📍 시작 위치: ${DISTRICTS[c.homeDist]?.icon ?? ''} ${DISTRICTS[c.homeDist]?.name ?? c.homeDist} — ${DISTRICTS[c.homeDist]?.description ?? ''}
       </div>
     `;
   },
@@ -390,6 +273,28 @@ const CharCreate = {
       survivedSummer: false, diseaseDeathId: null,
     };
 
+    // ── 캐릭터별 시작 조건 및 스토리 플래그 ────────────────────
+    const charStartConditions = {
+      doctor:      { infection: 5, morale: 75, flags: { samsung_hospital_survivor: true } },
+      soldier:     { morale: 65, flags: { gwanghwamun_retreat: true } },
+      firefighter: { fatigue: 20, morale: 60, flags: { jaehoon_infected: true } },
+      homeless:    { morale: 80, flags: { bridge_dweller: true } },
+      pharmacist:  { infection: 3, morale: 70, flags: { hongdae_pharmacy_owner: true } },
+      engineer:    { morale: 72, flags: { seongsu_factory_owner: true } },
+    };
+
+    const startCond = charStartConditions[char.id];
+    if (startCond) {
+      if (startCond.infection !== undefined) gs.stats.infection.current = startCond.infection;
+      if (startCond.morale !== undefined)    gs.stats.morale.current = startCond.morale;
+      if (startCond.fatigue !== undefined)   gs.stats.fatigue.current = startCond.fatigue;
+      if (startCond.flags) {
+        for (const [key, val] of Object.entries(startCond.flags)) {
+          gs.flags[key] = val;
+        }
+      }
+    }
+
     // ── 신규 시스템 리셋 ─────────────────────────────────────
     gs.player.diseases = [];
     gs.season = { current: 'spring', eventsTriggered: [] };
@@ -432,7 +337,7 @@ const CharCreate = {
     }
 
     // ── 하단 행: 기본 시작 소지품 + 캐릭터 추가 아이템 (같은 아이템은 합산) ──────
-    const starters = this._getStarterItems(districtId);
+    const starters = this._getStarterItems();
     // 같은 definitionId끼리 수량 집계
     const itemCounts = new Map();
     for (const defId of [...starters, ...extraStartItems]) {
@@ -459,6 +364,15 @@ const CharCreate = {
       }
     }
 
+    // ── 중간행: 바닥 아이템 배치 ──────────────────────────────
+    const floorItems = this._getDistrictFloorItems(districtId);
+    for (const defId of floorItems) {
+      const def = items[defId];
+      if (!def) continue;
+      const inst = gs.createCardInstance(defId);
+      if (inst) gs.placeCardInRow(inst.instanceId, 'middle');
+    }
+
     // ── 작은 가방 지급 및 자동 장착 ─────────────────────────
     const bagInst = gs.createCardInstance('small_bag');
     if (bagInst) {
@@ -471,38 +385,39 @@ const CharCreate = {
 
   // ── 지역별 기본 시작 아이템 ────────────────────────────────
 
-  _getStarterItems(districtId) {
-    const base = ['water_bottle', 'canned_food', 'bandage', 'cloth'];
+  _getStarterItems() {
+    return ['water_bottle'];
+  },
 
-    const regional = {
-      gangnam:      ['first_aid_kit', 'bandage'],
-      gangdong:     ['canned_food',   'rope'],
-      gangbuk:      ['rope',          'canned_food'],
-      gangseo:      ['scrap_metal',   'duct_tape'],
-      geumcheon:    ['scrap_metal',   'pipe_wrench'],
-      gwangjin:     ['cloth',         'knife'],
-      gwanak:       ['water_filter',  'bandage'],
-      guro:         ['scrap_metal',   'wire'],
-      dobong:       ['rope',          'canned_food'],
-      dongdaemun:   ['canned_food',   'cloth'],
-      dongjak:      ['rope',          'bandage'],
-      mapo:         ['knife',         'scrap_metal'],
-      seodaemun:    ['bandage',       'water_filter'],
-      seocho:       ['bandage',       'canned_food'],
-      seongdong:    ['scrap_metal',   'pipe_wrench'],
-      seongbuk:     ['cloth',         'canned_food'],
-      songpa:       ['canned_food',   'rope'],
-      yangcheon:    ['cloth',         'bandage'],
-      yeongdeungpo: ['pistol_ammo',   'wire'],
-      yongsan:      ['scrap_metal',   'duct_tape'],
-      eunpyeong:    ['rope',          'canned_food'],
-      jongno:       ['flashlight',    'knife'],
-      junggoo:      ['canned_food',   'cloth'],
-      jungrang:     ['rope',          'cloth'],
-      nowon:        ['canned_food',   'rope'],
+  // ── 지역별 바닥(중간행) 아이템 ──────────────────────────────
+
+  _getDistrictFloorItems(districtId) {
+    const floorItems = {
+      // ── 의료 (강남 — 의사·노숙자 시작) ──
+      gangnam: [
+        'broken_chair', 'old_fire_extinguisher',
+        'cloth', 'cloth', 'canned_food', 'bandage', 'rope',
+      ],
+      // ── 군사/전자 (용산 — 군인·소방관 시작) ──
+      yongsan: [
+        'rusted_toolbox', 'collapsed_guard_post',
+        'scrap_metal', 'scrap_metal', 'duct_tape', 'rope', 'bandage',
+      ],
+      // ── 대학/상업 (마포 — 약사 시작) ──
+      mapo: [
+        'collapsed_shelf', 'broken_lamp',
+        'cloth', 'canned_food', 'rope', 'bandage', 'scrap_metal',
+      ],
+      // ── 공업 (성동 — 엔지니어 시작) ──
+      seongdong: [
+        'old_generator', 'rusted_toolbox',
+        'scrap_metal', 'scrap_metal', 'wire', 'rope', 'cloth',
+      ],
     };
-
-    return [...base, ...(regional[districtId] ?? ['knife', 'scrap_metal'])];
+    return floorItems[districtId] ?? [
+      'broken_chair', 'old_fire_extinguisher',
+      'cloth', 'canned_food', 'rope', 'bandage',
+    ];
   },
 };
 
