@@ -58,12 +58,18 @@ const NPCSystem = {
   ensureInitialized() {
     if (!GameState.npcs) {
       GameState.npcs = {
-        // { [npcId]: { spawned, dismissed, trust, isCompanion, cardInstanceId } }
+        // { [npcId]: { spawned, dismissed, trust, isCompanion, cardInstanceId, hp } }
         states: {},
       };
     }
     if (!GameState.companions) {
       GameState.companions = []; // [npcId, ...]
+    }
+    // Ensure hp field exists on all NPC states (save compat)
+    for (const [npcId, state] of Object.entries(GameState.npcs.states)) {
+      if (state.hp === undefined) {
+        state.hp = NPCS[npcId]?.maxHp ?? 50;
+      }
     }
   },
 
@@ -115,6 +121,7 @@ const NPCSystem = {
       trust:          0,
       isCompanion:    false,
       cardInstanceId: inst.instanceId,
+      hp:             npcDef.maxHp ?? 50,
     };
 
     EventBus.emit('notify', {
@@ -326,6 +333,33 @@ const NPCSystem = {
     }
 
     EventBus.emit('npcDismissed', { npcId, reason: isDeath ? 'death' : 'departure' });
+    EventBus.emit('boardChanged', {});
+  },
+
+  // ── Public API: Companion Damage ───────────────────────────────
+
+  damageCompanion(npcId, damage) {
+    this.ensureInitialized();
+    const state = GameState.npcs.states[npcId];
+    if (!state || !state.isCompanion) return;
+
+    state.hp = Math.max(0, (state.hp ?? 50) - damage);
+
+    const name = I18n.itemName(npcId, NPC_ITEMS[npcId]?.name);
+    EventBus.emit('notify', {
+      message: I18n.t('npc.hitInstead', { name, dmg: damage }),
+      type: 'warn',
+    });
+
+    if (state.hp <= 0) {
+      // Permanent death
+      EventBus.emit('notify', { message: I18n.t('npc.died', { name }), type: 'danger' });
+      if (GameState.mental) {
+        GameState.mental.trauma = Math.min(100, (GameState.mental.trauma ?? 0) + 15);
+      }
+      this._removeCompanion(npcId, /* isDeath */ true);
+    }
+
     EventBus.emit('boardChanged', {});
   },
 

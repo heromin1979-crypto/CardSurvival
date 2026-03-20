@@ -290,6 +290,16 @@ const CardFactory = {
     const trust = npcState?.trust ?? 0;
     const trustStars = '★'.repeat(trust) + '☆'.repeat(Math.max(0, 5 - trust));
 
+    // NPC HP bar (for companions)
+    const npcDef = window.__NPCSystem__?.getNPCDef?.(inst.definitionId);
+    const maxHp = npcDef?.maxHp ?? 50;
+    const currentHp = npcState?.hp ?? maxHp;
+    const hpPct = Math.round((currentHp / maxHp) * 100);
+    const hpCls = hpPct > 60 ? 'hp-good' : hpPct > 30 ? 'hp-warn' : 'hp-crit';
+    const hpBar = isCompanion
+      ? `<div class="npc-card-hp"><div class="npc-hp-bar ${hpCls}" style="width:${hpPct}%"></div><span class="npc-hp-text">${currentHp}/${maxHp}</span></div>`
+      : '';
+
     return `
       <div class="npc-card-header">
         <span class="npc-type-badge">${I18n.t('npc.badge')}</span>
@@ -298,6 +308,7 @@ const CardFactory = {
       <div class="npc-card-icon">${def.icon ?? '👤'}</div>
       <div class="npc-card-name">${I18n.itemName(def.id, def.name)}</div>
       <div class="npc-card-trust">${trustStars}</div>
+      ${hpBar}
       <div class="npc-card-hint">${I18n.t('npc.clickHint')}</div>
     `;
   },

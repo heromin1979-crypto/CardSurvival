@@ -124,6 +124,10 @@ const GameState = {
   // { [subLocId]: visitCount } — 세부 장소별 탐색 횟수
   landmarkHistory: {},
 
+  // ── 지하철역 탐색 이력 ─────────────────────────────
+  // { [districtId]: visitCount } — 역별 탐색 횟수
+  subwayStationVisits: {},
+
   // ── 베이스캠프 거점 ────────────────────────────────
   basecamp: {
     level: 0,    // 0-5
@@ -396,8 +400,9 @@ const GameState = {
       season:          this.season,
       weather:         this.weather,
       locationFloors:  this.locationFloors,
-      landmarkHistory: this.landmarkHistory,
-      basecamp:        this.basecamp,
+      landmarkHistory:     this.landmarkHistory,
+      subwayStationVisits: this.subwayStationVisits,
+      basecamp:            this.basecamp,
       quests:          this.quests,
       ecology:         this.ecology ?? null,
       mental:          this.mental ?? null,
@@ -489,7 +494,8 @@ const GameState = {
     // locationFloors 복원 (구버전 세이브 호환)
     this.locationFloors  = d.locationFloors  ?? {};
     // 랜드마크 탐색 이력 복원
-    this.landmarkHistory = d.landmarkHistory ?? {};
+    this.landmarkHistory     = d.landmarkHistory     ?? {};
+    this.subwayStationVisits = d.subwayStationVisits ?? {};
     // 베이스캠프 복원
     if (d.basecamp) Object.assign(this.basecamp, d.basecamp);
     // 퀘스트 복원

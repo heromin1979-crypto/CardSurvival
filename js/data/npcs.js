@@ -70,6 +70,7 @@ const NPCS = {
   npc_old_survivor: {
     id: 'npc_old_survivor',
     personality: 'cautious',  // timid | cautious | neutral | brave | loyal
+    maxHp: 35,
     spawnDistrict: 'gangbuk',
     spawnDay: 10,
     // Dialogue lines indexed by trust tier: [0-1], [2-3], [4-5]
@@ -105,6 +106,7 @@ const NPCS = {
   npc_nurse: {
     id: 'npc_nurse',
     personality: 'brave',
+    maxHp: 45,
     spawnDistrict: 'seocho',
     spawnDay: 15,
     dialogues: {
@@ -136,6 +138,7 @@ const NPCS = {
   npc_soldier_deserter: {
     id: 'npc_soldier_deserter',
     personality: 'brave',
+    maxHp: 80,
     spawnDistrict: 'yongsan',
     spawnDay: 30,
     dialogues: {
@@ -167,6 +170,7 @@ const NPCS = {
   npc_child: {
     id: 'npc_child',
     personality: 'timid',
+    maxHp: 30,
     spawnDistrict: 'nowon',
     spawnDay: 20,
     dialogues: {
@@ -197,6 +201,7 @@ const NPCS = {
   npc_mechanic: {
     id: 'npc_mechanic',
     personality: 'neutral',
+    maxHp: 55,
     spawnDistrict: 'guro',
     spawnDay: 25,
     dialogues: {
@@ -228,6 +233,7 @@ const NPCS = {
   npc_trader: {
     id: 'npc_trader',
     personality: 'neutral',
+    maxHp: 50,
     spawnDistrict: 'yeongdeungpo',
     spawnDay: 12,
     dialogues: {
@@ -263,6 +269,7 @@ const NPCS = {
   npc_student: {
     id: 'npc_student',
     personality: 'cautious',
+    maxHp: 40,
     spawnDistrict: 'gwanak',
     spawnDay: 18,
     dialogues: {
@@ -294,6 +301,7 @@ const NPCS = {
   npc_dog: {
     id: 'npc_dog',
     personality: 'loyal',
+    maxHp: 40,
     spawnDistrict: 'dobong',
     spawnDay: 5,
     dialogues: {

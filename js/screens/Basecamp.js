@@ -147,6 +147,7 @@ const Basecamp = {
           <button class="toolbar-btn" id="btn-wait">${I18n.t('basecamp.wait')}</button>
           <button class="toolbar-btn" id="btn-rest">${I18n.t('basecamp.rest')}</button>
           <button class="toolbar-btn" id="btn-save">${I18n.t('basecamp.save')}</button>
+          <button class="toolbar-btn" id="btn-secret-gallery">${I18n.t('secret.galleryBtn')}</button>
         </div>
       </aside>
 
@@ -240,6 +241,11 @@ const Basecamp = {
     // Save
     this._el.querySelector('#btn-save')?.addEventListener('click', () => {
       SaveManager.save(GameState.ui.saveSlot ?? 0);
+    });
+
+    // Secret Gallery
+    this._el.querySelector('#btn-secret-gallery')?.addEventListener('click', () => {
+      EventBus.emit('openSecretGallery');
     });
   },
 

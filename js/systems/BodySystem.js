@@ -204,6 +204,124 @@ const BodySystem = {
     }
   },
 
+  // ── 의사 전용: 특정 부상 치료 ──────────────────────────────────
+
+  treatInjury(bodyPart, injuryIndex) {
+    this.ensureInitialized();
+    const part = GameState.body[bodyPart];
+    if (!part) return false;
+
+    const injury = part.injuries[injuryIndex];
+    if (!injury) return false;
+
+    // 의사 + 의료 스킬 요구
+    const isDoctor = GameState.player.characterId === 'doctor';
+    if (!isDoctor) return false;
+
+    const medicineLv = GameState.player.skills?.medicine?.level ?? 0;
+    const requiredLv = injury.severity >= 3 ? 5 : 3;
+    if (medicineLv < requiredLv) return false;
+
+    // 의료 아이템 소모 (first_aid_kit, bandage, antiseptic)
+    const medItemIds = ['first_aid_kit', 'bandage', 'antiseptic'];
+    const boardCards = GameState.getBoardCards();
+    const medCard = boardCards.find(c => medItemIds.includes(c.definitionId));
+    if (!medCard) return false;
+
+    // 아이템 1개 소모
+    if ((medCard.quantity ?? 1) <= 1) {
+      GameState.removeCardInstance(medCard.instanceId);
+    } else {
+      medCard.quantity -= 1;
+    }
+
+    // 심각도 1 감소
+    const oldSeverity = Math.ceil(injury.severity);
+    const newSeverity = oldSeverity - 1;
+
+    const partName = I18n.t(`body.${bodyPart}`);
+    const typeName = I18n.t(`body.injury.${injury.type}`);
+
+    if (newSeverity <= 0) {
+      // 부상 제거
+      part.injuries = part.injuries.filter((_, i) => i !== injuryIndex);
+    } else {
+      part.injuries = part.injuries.map((inj, i) => {
+        if (i !== injuryIndex) return inj;
+        const newTpTotal = Math.round((INJURY_HEAL_TP[inj.type] ?? 48) * newSeverity);
+        return { ...inj, severity: newSeverity, tpRemaining: Math.min(inj.tpRemaining, newTpTotal), tpTotal: newTpTotal };
+      });
+    }
+
+    // HP 20 회복
+    part.hp = Math.min(100, part.hp + 20);
+
+    EventBus.emit('notify', {
+      message: I18n.t('body.treated', { part: partName, type: typeName, from: oldSeverity, to: newSeverity }),
+      type: 'good',
+    });
+    EventBus.emit('boardChanged', {});
+    return true;
+  },
+
+  // ── 비의사: 랜덤 경상 치료 ──────────────────────────────────
+
+  healRandom() {
+    this.ensureInitialized();
+    const body = GameState.body;
+
+    // severity 1-2인 부상을 가진 부위들 수집
+    const candidates = [];
+    for (const [partKey, part] of Object.entries(body)) {
+      part.injuries.forEach((inj, idx) => {
+        if (Math.ceil(inj.severity) <= 2 && Math.ceil(inj.severity) >= 1) {
+          candidates.push({ partKey, idx, injury: inj });
+        }
+      });
+    }
+    if (candidates.length === 0) return false;
+
+    // 의료 아이템 소모
+    const medItemIds = ['first_aid_kit', 'bandage', 'antiseptic'];
+    const boardCards = GameState.getBoardCards();
+    const medCard = boardCards.find(c => medItemIds.includes(c.definitionId));
+    if (!medCard) return false;
+
+    if ((medCard.quantity ?? 1) <= 1) {
+      GameState.removeCardInstance(medCard.instanceId);
+    } else {
+      medCard.quantity -= 1;
+    }
+
+    // 랜덤 선택
+    const pick = candidates[Math.floor(Math.random() * candidates.length)];
+    const part = body[pick.partKey];
+    const oldSeverity = Math.ceil(pick.injury.severity);
+    const newSeverity = oldSeverity - 1;
+
+    const partName = I18n.t(`body.${pick.partKey}`);
+    const typeName = I18n.t(`body.injury.${pick.injury.type}`);
+
+    if (newSeverity <= 0) {
+      part.injuries = part.injuries.filter((_, i) => i !== pick.idx);
+    } else {
+      part.injuries = part.injuries.map((inj, i) => {
+        if (i !== pick.idx) return inj;
+        const newTpTotal = Math.round((INJURY_HEAL_TP[inj.type] ?? 48) * newSeverity);
+        return { ...inj, severity: newSeverity, tpRemaining: Math.min(inj.tpRemaining, newTpTotal), tpTotal: newTpTotal };
+      });
+    }
+
+    part.hp = Math.min(100, part.hp + 20);
+
+    EventBus.emit('notify', {
+      message: I18n.t('body.treated', { part: partName, type: typeName, from: oldSeverity, to: newSeverity }),
+      type: 'good',
+    });
+    EventBus.emit('boardChanged', {});
+    return true;
+  },
+
   // ── 부위 치료 (의료 아이템 사용) ──────────────────────────────
 
   healBodyPart(bodyPart, amount) {

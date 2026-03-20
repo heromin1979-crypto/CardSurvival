@@ -363,13 +363,16 @@ const EquipmentModal = {
     if (part.injuries.length === 0) {
       injuriesHtml = `<div class="body-detail-normal">${I18n.t('body.noInjury')}</div>`;
     } else {
-      injuriesHtml = part.injuries.map(inj => {
+      const medicineLv = GameState.player.skills?.medicine?.level ?? 0;
+      injuriesHtml = part.injuries.map((inj, idx) => {
         const icon = INJURY_ICONS[inj.type] ?? '?';
-        const sevKey = `body.severity${Math.min(3, Math.max(1, Math.ceil(inj.severity)))}`;
+        const sevCeil = Math.min(3, Math.max(1, Math.ceil(inj.severity)));
+        const sevKey = `body.severity${sevCeil}`;
         const typeName = I18n.t('body.injury.' + inj.type);
         const sevName = I18n.t(sevKey);
         const tpLeft = I18n.t('body.tpRemaining', { tp: inj.tpRemaining });
-        const canTreat = isDoctor && inj.severity >= 3;
+        const requiredLv = sevCeil >= 3 ? 5 : 3;
+        const canTreat = isDoctor && medicineLv >= requiredLv;
         return `
           <div class="body-detail-injury">
             <span class="body-detail-icon">${icon}</span>
@@ -377,7 +380,7 @@ const EquipmentModal = {
               <span class="body-detail-type">${typeName} (${sevName})</span>
               <span class="body-detail-tp">${tpLeft}</span>
             </span>
-            ${canTreat ? `<span class="body-detail-treat">${I18n.t('body.doctorHeal')}</span>` : ''}
+            ${canTreat ? `<button class="body-detail-treat" data-treat-part="${partKey}" data-treat-idx="${idx}">${I18n.t('body.doctorHeal')}</button>` : ''}
           </div>`;
       }).join('');
     }
@@ -394,6 +397,19 @@ const EquipmentModal = {
       el.addEventListener('click', () => {
         const key = el.dataset.bodypart;
         this._bodyDetailPart = this._bodyDetailPart === key ? null : key;
+        this._render();
+      });
+    });
+
+    // 치료 버튼 클릭 → BodySystem.treatInjury
+    box.querySelectorAll('[data-treat-part]').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const bs = this._getBodySystem();
+        if (!bs) return;
+        const partKey = btn.dataset.treatPart;
+        const idx = parseInt(btn.dataset.treatIdx, 10);
+        bs.treatInjury(partKey, idx);
         this._render();
       });
     });

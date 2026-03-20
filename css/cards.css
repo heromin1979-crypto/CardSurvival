@@ -664,6 +664,33 @@
   text-align: center;
 }
 
+.npc-card-hp {
+  width: 80%;
+  height: 6px;
+  background: rgba(0,0,0,0.4);
+  border-radius: 3px;
+  margin: 2px auto;
+  position: relative;
+  overflow: hidden;
+}
+.npc-hp-bar {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+.npc-hp-bar.hp-good { background: var(--color-good, #4c8); }
+.npc-hp-bar.hp-warn { background: var(--color-warn, #da4); }
+.npc-hp-bar.hp-crit { background: var(--color-danger, #d44); }
+.npc-hp-text {
+  position: absolute;
+  top: -1px; left: 0; right: 0;
+  font-size: 6px;
+  color: #fff;
+  text-align: center;
+  text-shadow: 0 0 2px #000;
+  line-height: 8px;
+}
+
 /* ── NPC 대화 모달 ── */
 
 .npc-dialogue {

@@ -284,6 +284,12 @@ export const ko = {
   'mental.anxietyWarn':  '😟 불안감이 심해지고 있다.',
   'mental.lonelyWarn':   '😔 외로움이 깊어지고 있다.',
   'secret.cooldown':     '아직 다시 사용할 수 없다.',
+  'secret.galleryTitle': '비밀 조합 갤러리',
+  'secret.progress':     '발견: {found}/{total}',
+  'secret.discovered':   '발견됨',
+  'secret.hintOnly':     '힌트',
+  'secret.unknown':      '???',
+  'secret.galleryBtn':   '비밀 조합',
 
   // ── Secret Combo Hints ─────────────────────────────────────
   'hint.discovered':   '새로운 조합 힌트를 발견했다!',
@@ -697,6 +703,8 @@ export const ko = {
   'npc.departMorale':    '{name}: "이대로는 못 버티겠다..."',
   'npc.departed':        '{name}이(가) 떠났다.',
   'npc.died':            '{name}이(가) 죽었다...',
+  'npc.hitInstead':      '{name}이(가) 대신 맞았다! ({dmg} 데미지)',
+  'npc.hpLabel':         'HP {current}/{max}',
 
   // ── Body (신체 부위 부상) ─────────────────────────────────────
   'body.head':              '머리',
@@ -725,6 +733,8 @@ export const ko = {
   'body.effectFlee':        '도주 {val}%',
   'body.doctorHeal':        '치료 가능',
   'body.tpRemaining':       '잔여 {tp}TP',
+  'body.treated':           '{part}의 {type} 치료 (심각도 {from}→{to})',
+  'body.noMedItem':         '의료 아이템이 없습니다',
 
   // ── Subway / Sewer ─────────────────────────────────────────
   'subway.line_2':       '2호선',
@@ -738,6 +748,10 @@ export const ko = {
   'subway.arrived':      '{name}에 도착했다.',
   'subway.sewer':        '하수도',
   'subway.sewerLocked':  '\u{1F512} 잠김',
+  'subway.explore':      '\u{1F526} 역 탐색 (1TP)',
+  'subway.lootFound':    '역에서 아이템을 발견했다!',
+  'subway.lootEmpty':    '역에서 아무것도 찾지 못했다.',
+  'subway.noTP':         'TP가 부족합니다.',
 };
 
 
@@ -1025,6 +1039,12 @@ export const en = {
   'mental.anxietyWarn':  '😟 Anxiety is getting worse.',
   'mental.lonelyWarn':   '😔 Loneliness deepens.',
   'secret.cooldown':     'Not ready yet.',
+  'secret.galleryTitle': 'Secret Combinations',
+  'secret.progress':     'Discovered: {found}/{total}',
+  'secret.discovered':   'Found',
+  'secret.hintOnly':     'Hint',
+  'secret.unknown':      '???',
+  'secret.galleryBtn':   'Secret Combos',
 
   // ── Secret Combo Hints ─────────────────────────────────────
   'hint.discovered':   'You discovered a new combination hint!',
@@ -1783,6 +1803,8 @@ export const en = {
   'npc.departMorale':    '{name}: "I can\'t take this anymore..."',
   'npc.departed':        '{name} has left.',
   'npc.died':            '{name} has died...',
+  'npc.hitInstead':      '{name} took the hit! ({dmg} damage)',
+  'npc.hpLabel':         'HP {current}/{max}',
 
   // ── Body (Body Part Injuries) ─────────────────────────────────
   'body.head':              'Head',
@@ -1811,6 +1833,8 @@ export const en = {
   'body.effectFlee':        'Flee {val}%',
   'body.doctorHeal':        'Can Treat',
   'body.tpRemaining':       '{tp}TP left',
+  'body.treated':           '{part} {type} treated (severity {from}→{to})',
+  'body.noMedItem':         'No medical items available',
 
   // ── Subway / Sewer ─────────────────────────────────────────
   'subway.line_2':       'Line 2',
@@ -1824,4 +1848,8 @@ export const en = {
   'subway.arrived':      'Arrived at {name}.',
   'subway.sewer':        'Sewer',
   'subway.sewerLocked':  '\u{1F512} Locked',
+  'subway.explore':      '\u{1F526} Explore Station (1TP)',
+  'subway.lootFound':    'Found items in the station!',
+  'subway.lootEmpty':    'Nothing found in the station.',
+  'subway.noTP':         'Not enough TP.',
 };

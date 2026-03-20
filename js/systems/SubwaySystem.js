@@ -6,7 +6,7 @@ import I18n         from '../core/I18n.js';
 import StateMachine from '../core/StateMachine.js';
 import TickEngine   from '../core/TickEngine.js';
 import StatSystem   from './StatSystem.js';
-import { SUBWAY_LINES, SEWER_ROUTES } from '../data/subwayRoutes.js';
+import { SUBWAY_LINES, SEWER_ROUTES, STATION_LOOT } from '../data/subwayRoutes.js';
 import { DISTRICTS }   from '../data/districts.js';
 import { rollEnemyGroup } from '../data/enemies.js';
 
@@ -310,6 +310,102 @@ const SubwaySystem = {
   },
 
   // ── Sewer travel execution ───────────────────────────────────
+
+  // ── Station Exploration (역 탐색) ────────────────────────────
+
+  /** Check if a district has a subway station */
+  hasStation(districtId) {
+    for (const line of Object.values(SUBWAY_LINES)) {
+      if (line.stations.includes(districtId)) return true;
+    }
+    return false;
+  },
+
+  /** Explore current subway station for loot */
+  exploreStation(districtId) {
+    const gs = GameState;
+
+    // Must be at a station
+    if (!this.hasStation(districtId)) return;
+
+    // Consume 1 TP
+    TickEngine.skipTP(1, I18n.t('subway.explore'));
+
+    // 25% encounter chance (darkness combat)
+    if (Math.random() < 0.25) {
+      const enemies = rollEnemyGroup(3, gs.noise.level);
+      EventBus.emit('notify', { message: I18n.t('subway.darkCombat'), type: 'danger' });
+      StateMachine.transition('encounter', {
+        nodeId: districtId,
+        enemies,
+        enemy: enemies[0],
+        dangerLevel: 3,
+        noiseLevel: gs.noise.level,
+        darknessPenalty: true,
+        subwayEncounter: true,
+      });
+      return;
+    }
+
+    // Visit tracking + diminishing returns
+    if (!gs.subwayStationVisits) gs.subwayStationVisits = {};
+    const visitCount = gs.subwayStationVisits[districtId] ?? 0;
+    gs.subwayStationVisits[districtId] = visitCount + 1;
+
+    let lootMult;
+    if (visitCount === 0) lootMult = 1.0;
+    else if (visitCount === 1) lootMult = 0.70;
+    else if (visitCount === 2) lootMult = 0.45;
+    else lootMult = 0.25;
+
+    // Build combined loot table
+    const table = [...STATION_LOOT.default];
+    const special = STATION_LOOT.special[districtId];
+    if (special) table.push(...special);
+
+    // Roll 1-3 items (weighted)
+    const rawCount = 1 + Math.floor(Math.random() * 3);
+    const count = Math.max(0, Math.round(rawCount * lootMult));
+    if (count === 0) {
+      EventBus.emit('notify', { message: I18n.t('subway.lootEmpty'), type: 'info' });
+      return;
+    }
+
+    const totalWeight = table.reduce((s, e) => s + (e.weight > 0 ? e.weight : 0), 0);
+    const items = window.__GAME_DATA__?.items ?? {};
+    const found = [];
+
+    for (let i = 0; i < count; i++) {
+      let r = Math.random() * totalWeight;
+      for (const entry of table) {
+        r -= entry.weight;
+        if (r <= 0) {
+          const qty = entry.minQty + Math.floor(Math.random() * (entry.maxQty - entry.minQty + 1));
+          const inst = gs.createCardInstance(entry.id, { quantity: qty });
+          if (inst) {
+            const placed = gs.placeCardInRow(inst.instanceId, 'middle') || gs.placeCardInRow(inst.instanceId, 'bottom');
+            if (placed) {
+              const def = items[entry.id];
+              found.push(`${def?.icon ?? '📦'} ${def?.name ?? entry.id}`);
+            } else {
+              gs.removeCardInstance(inst.instanceId);
+            }
+          }
+          break;
+        }
+      }
+    }
+
+    if (found.length > 0) {
+      EventBus.emit('notify', {
+        message: I18n.t('subway.lootFound') + ' ' + found.join(', '),
+        type: 'good',
+      });
+    } else {
+      EventBus.emit('notify', { message: I18n.t('subway.lootEmpty'), type: 'info' });
+    }
+    EventBus.emit('boardChanged', {});
+  },
 
   /** Execute sewer travel (single hop, no multi-station) */
   executeSewerTravel(sewerId) {

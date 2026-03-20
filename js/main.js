@@ -67,6 +67,7 @@ import EquipmentModal   from './ui/EquipmentModal.js';
 import LandmarkModal       from './ui/LandmarkModal.js';
 import SettingsModal       from './ui/SettingsModal.js';
 import NPCDialogueModal   from './ui/NPCDialogueModal.js';
+import SecretGalleryTab   from './ui/SecretGalleryTab.js';
 
 // Screens
 import MainMenu     from './screens/MainMenu.js';
@@ -160,6 +161,7 @@ function init() {
   // Settings modal
   SettingsModal.init();
   NPCDialogueModal.init();
+  SecretGalleryTab.init();
 
   // Screens
   MainMenu.init();

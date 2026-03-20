@@ -437,6 +437,18 @@ const CombatSystem = {
         damage = Math.floor(damage * 1.5);
       }
 
+      // 20% chance to target a companion instead of the player
+      const companions = gs.companions ?? [];
+      if (companions.length > 0 && Math.random() < 0.20) {
+        const targetNpcId = companions[Math.floor(Math.random() * companions.length)];
+        const npcSys = window.__NPCSystem__;
+        if (npcSys) {
+          npcSys.damageCompanion(targetNpcId, damage);
+          const npcName = I18n.itemName(targetNpcId, window.__GAME_DATA__?.items?.[targetNpcId]?.name);
+          return I18n.t('npc.hitInstead', { name: npcName, dmg: damage });
+        }
+      }
+
       gs.player.hp.current = Math.max(0, gs.player.hp.current - damage);
       gs.combat.lastHit    = { target: 'player', damage, isCrit: false };
       EventBus.emit('playerHit', { damage });

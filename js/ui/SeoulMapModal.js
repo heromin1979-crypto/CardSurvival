@@ -152,6 +152,13 @@ const SeoulMapModal = {
     let html = '<div class="sm-subway-panel">';
     html += `<div class="sm-subway-title">${I18n.t('subway.travel')}</div>`;
 
+    // Station explore button (if player is at a subway station)
+    if (lines.length > 0) {
+      html += `<button class="sm-subway-btn sm-explore-btn" data-explore-station="${currentId}">
+        ${I18n.t('subway.explore')}
+      </button>`;
+    }
+
     // Subway lines
     for (const line of lines) {
       const lineLabel = I18n.t(`subway.${line.lineId}`) || line.name;
@@ -209,6 +216,15 @@ const SeoulMapModal = {
         const sewerId = btn.dataset.sewerId;
         this._close();
         SubwaySystem.executeSewerTravel(sewerId);
+      });
+    });
+
+    // Station explore
+    this._overlay.querySelectorAll('[data-explore-station]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const districtId = btn.dataset.exploreStation;
+        this._close();
+        SubwaySystem.exploreStation(districtId);
       });
     });
   },

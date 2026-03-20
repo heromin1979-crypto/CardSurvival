@@ -79,4 +79,20 @@ const SEWER_ROUTES = {
   },
 };
 
-export { SUBWAY_LINES, SEWER_ROUTES };
+// ── 역 탐색 루팅 테이블 ───────────────────────────────────────
+const STATION_LOOT = {
+  default: [
+    { id: 'energy_bar',   weight: 30, minQty: 1, maxQty: 2 },
+    { id: 'sports_drink', weight: 20, minQty: 1, maxQty: 1 },
+    { id: 'battery',      weight: 15, minQty: 1, maxQty: 2 },
+    { id: 'scrap_metal',  weight: 25, minQty: 2, maxQty: 4 },
+    { id: 'flashlight',   weight: 10, minQty: 1, maxQty: 1 },
+  ],
+  special: {
+    jongno:  [{ id: 'canned_food',      weight: 40, minQty: 2, maxQty: 4 }],
+    gangnam: [{ id: 'first_aid_kit',    weight: 15, minQty: 1, maxQty: 1 }],
+    yongsan: [{ id: 'electronic_parts', weight: 30, minQty: 1, maxQty: 3 }],
+  },
+};
+
+export { SUBWAY_LINES, SEWER_ROUTES, STATION_LOOT };
