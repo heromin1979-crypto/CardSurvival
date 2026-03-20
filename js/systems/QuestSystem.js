@@ -2,6 +2,7 @@
 // 계절별 이벤트 연동 퀘스트 + 캐릭터 메인 퀘스트 체인
 import EventBus  from '../core/EventBus.js';
 import GameState from '../core/GameState.js';
+import I18n      from '../core/I18n.js';
 import MAIN_QUESTS from '../data/mainQuests.js';
 
 // ── 계절 퀘스트 정의 ────────────────────────────────────────────────
@@ -12,8 +13,8 @@ import MAIN_QUESTS from '../data/mainQuests.js';
 const QUEST_DEFS = {
   spring_water: {
     id:      'spring_water',
-    title:   '물 비축',
-    desc:    '오염된 봄비 이전에 깨끗한 물을 비축하십시오.',
+    titleKey: 'quest.waterStockTitle',
+    descKey:  'quest.waterStockDesc',
     icon:    '💧',
     trigger: 'spring_rain',
     objective: { type: 'collect_item', definitionId: 'clean_water', count: 5 },
@@ -23,8 +24,8 @@ const QUEST_DEFS = {
 
   spring_gear: {
     id:      'spring_gear',
-    title:   '방어 준비',
-    desc:    '꽃가루 시즌에 대비해 방독면 또는 장갑을 착용하십시오.',
+    titleKey: 'quest.defenseTitle',
+    descKey:  'quest.defenseDesc',
     icon:    '😷',
     trigger: 'spring_pollen',
     objective: { type: 'equip_slot', slot: 'face', count: 1 },
@@ -34,8 +35,8 @@ const QUEST_DEFS = {
 
   summer_water_stockpile: {
     id:      'summer_water_stockpile',
-    title:   '폭염 대비 — 물 비축',
-    desc:    '폭염이 시작되었습니다. 최소 10개의 깨끗한 물을 보유하십시오.',
+    titleKey: 'quest.heatWaterTitle',
+    descKey:  'quest.heatWaterDesc',
     icon:    '🌊',
     trigger: 'summer_start',
     objective: { type: 'collect_item', definitionId: 'clean_water', count: 10 },
@@ -45,8 +46,8 @@ const QUEST_DEFS = {
 
   summer_structure: {
     id:      'summer_structure',
-    title:   '냉각 구조물 건설',
-    desc:    '장마 전 거점에 구조물을 추가로 건설하십시오.',
+    titleKey: 'quest.coolStructTitle',
+    descKey:  'quest.coolStructDesc',
     icon:    '🏗',
     trigger: 'monsoon',
     objective: { type: 'craft_item', category: 'structure', count: 1 },
@@ -56,8 +57,8 @@ const QUEST_DEFS = {
 
   autumn_food: {
     id:      'autumn_food',
-    title:   '수확의 계절 — 식량 비축',
-    desc:    '풍성한 가을, 식량을 최대한 비축하십시오.',
+    titleKey: 'quest.harvestTitle',
+    descKey:  'quest.harvestDesc',
     icon:    '🌾',
     trigger: 'autumn_harvest',
     objective: { type: 'collect_item_type', itemType: 'food', count: 8 },
@@ -67,8 +68,8 @@ const QUEST_DEFS = {
 
   winter_warmth: {
     id:      'winter_warmth',
-    title:   '방한 준비',
-    desc:    '혹독한 겨울이 왔습니다. 방어구를 착용하십시오.',
+    titleKey: 'quest.winterPrepTitle',
+    descKey:  'quest.winterPrepDesc',
     icon:    '🧥',
     trigger: 'winter_start',
     objective: { type: 'equip_slot', slot: 'body', count: 1 },
@@ -78,8 +79,8 @@ const QUEST_DEFS = {
 
   winter_survive: {
     id:      'winter_survive',
-    title:   '강추위 생존',
-    desc:    '강추위가 닥쳤습니다. 10일간 생존하십시오.',
+    titleKey: 'quest.coldSurvTitle',
+    descKey:  'quest.coldSurvDesc',
     icon:    '🥶',
     trigger: 'extreme_cold',
     objective: { type: 'survive_days', count: 10 },
@@ -145,7 +146,8 @@ const QuestSystem = {
     }
 
     EventBus.emit('questStarted', { questId, def });
-    EventBus.emit('notify', { message: `📋 새 퀘스트: ${def.icon} ${def.title}`, type: 'info' });
+    const title = def.titleKey ? I18n.t(def.titleKey) : def.title;
+    EventBus.emit('notify', { message: I18n.t('quest.newQuest', { icon: def.icon, title }), type: 'info' });
     EventBus.emit('questListChanged', {});
   },
 
@@ -232,7 +234,8 @@ const QuestSystem = {
         const fp = qDef.failPenalty;
         if (fp?.morale) gs.modStat('morale', fp.morale);
 
-        EventBus.emit('notify', { message: `⏰ 퀘스트 기한 만료: ${qDef.title}`, type: 'warn' });
+        const expTitle = qDef.titleKey ? I18n.t(qDef.titleKey) : qDef.title;
+        EventBus.emit('notify', { message: I18n.t('quest.expired', { title: expTitle }), type: 'warn' });
         changed = true;
         continue;
       }
@@ -375,8 +378,9 @@ const QuestSystem = {
       EventBus.emit('notify', { message: `📖 ${qDef.narrative.complete}`, type: 'story' });
     }
 
+    const compTitle = qDef.titleKey ? I18n.t(qDef.titleKey) : qDef.title;
     EventBus.emit('questCompleted', { questId: q.id, def: qDef });
-    EventBus.emit('notify', { message: `✅ 퀘스트 완료: ${qDef.icon} ${qDef.title}`, type: 'good' });
+    EventBus.emit('notify', { message: I18n.t('quest.completed', { icon: qDef.icon, title: compTitle }), type: 'good' });
     EventBus.emit('questListChanged', {});
   },
 

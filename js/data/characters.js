@@ -152,7 +152,7 @@ export const CHARACTERS = [
         name: '구조 키트',
         icon: '🎒',
         desc: '로프 추가 지급',
-        effect: { startingItems: ['rope'] },
+        effect: { startingItems: ['rope', 'hand_axe'] },
       },
     ],
     startingSkills: {

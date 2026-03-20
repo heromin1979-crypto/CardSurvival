@@ -3,6 +3,7 @@
 import GameState from '../core/GameState.js';
 import StatSystem from '../systems/StatSystem.js';
 import EventBus  from '../core/EventBus.js';
+import I18n      from '../core/I18n.js';
 
 // 위험도 색상
 const DANGER_COLORS = ['#449944', '#889933', '#cc8822', '#cc3333', '#881111'];
@@ -11,6 +12,20 @@ const CardFactory = {
   build(instanceId) {
     const inst = GameState.cards[instanceId];
     if (!inst) return null;
+
+    // ── 제작 진행 카드 ─────────────────────────────────────
+    if (inst._crafting) {
+      const def = window.__GAME_DATA__.items[inst.definitionId];
+      const el = document.createElement('div');
+      el.dataset.instanceId   = instanceId;
+      el.dataset.definitionId = inst.definitionId;
+      el.className = 'card crafting-card spawning';
+      el.draggable = false;
+      el.innerHTML = this._buildCraftingInner(inst, def ?? {});
+      el.addEventListener('animationend', () => el.classList.remove('spawning'), { once: true });
+      return el;
+    }
+
     const def  = window.__GAME_DATA__.items[inst.definitionId];
     if (!def)  return null;
 
@@ -116,10 +131,10 @@ const CardFactory = {
       // 현재 위치 → 탐색 UI (랜드마크 보너스 표시)
       return `
         <div class="lc-header lm-header">
-          <span class="lm-badge">랜드마크</span>
+          <span class="lm-badge">${I18n.t('card.landmark')}</span>
         </div>
         <div class="lc-icon">${def.icon ?? '📍'}</div>
-        <div class="lc-name">${def.name}</div>
+        <div class="lc-name">${I18n.itemName(def.id, def.name)}</div>
         <div class="lm-bonus">${def.landmarkBonus ?? ''}</div>
       `;
     }
@@ -135,14 +150,14 @@ const CardFactory = {
 
     return `
       <div class="lc-header lm-header">
-        <span class="lm-badge">랜드마크</span>
+        <span class="lm-badge">${I18n.t('card.landmark')}</span>
       </div>
       <div class="lc-icon">${def.icon ?? '📍'}</div>
-      <div class="lc-name">${def.name}</div>
+      <div class="lc-name">${I18n.itemName(def.id, def.name)}</div>
       <div class="lc-danger" style="color:${color};">${dangerDots}</div>
       <div class="lc-meta">
         <span>${costTP}TP</span>
-        <span>${encPct > 0 ? `조우 ${encPct}%` : '안전'}</span>
+        <span>${encPct > 0 ? I18n.t('card.encounter', { pct: encPct }) : I18n.t('card.safe')}</span>
       </div>
     `;
   },
@@ -157,11 +172,11 @@ const CardFactory = {
 
     const isInLandmark = !!GameState.location.currentLandmark;
     const currentBadge = isCurrent
-      ? `<span class="lc-current-badge">${isInLandmark ? '돌아가기' : '현재 위치'}</span>` : '';
+      ? `<span class="lc-current-badge">${isInLandmark ? I18n.t('card.goBack') : I18n.t('card.currentLoc')}</span>` : '';
     const visitedDot = isVisited && !isCurrent
       ? `<span class="lc-visited-dot">✓</span>` : '';
     const encounterText = def.encounterChance > 0
-      ? `조우 ${Math.round(def.encounterChance * 100)}%` : '안전';
+      ? I18n.t('card.encounter', { pct: Math.round(def.encounterChance * 100) }) : I18n.t('card.safe');
     const tpText = def.travelCostTP > 0
       ? `${def.travelCostTP}TP` : 'Free';
 
@@ -170,7 +185,7 @@ const CardFactory = {
         ${currentBadge}${visitedDot}
       </div>
       <div class="lc-icon">${def.icon ?? '📍'}</div>
-      <div class="lc-name">${def.name}</div>
+      <div class="lc-name">${I18n.districtName(def.nodeId, def.name)}</div>
       <div class="lc-danger" style="color:${color};">
         ${dangerDots}
       </div>
@@ -188,15 +203,15 @@ const CardFactory = {
     const dangerColor = dangerPct <= 10 ? '#449944' : dangerPct <= 20 ? '#cc8822' : '#cc3333';
     return `
       <div class="lc-header">
-        <span class="lm-badge">내부</span>
+        <span class="lm-badge">${I18n.t('card.interior')}</span>
       </div>
       <div class="lc-icon">${def.icon}</div>
-      <div class="lc-name">${def.name}</div>
+      <div class="lc-name">${I18n.itemName(def.id ?? def.subLocationId, def.name)}</div>
       <div class="lc-danger" style="color:${dangerColor}; font-size:9px; margin-top:2px;">
-        위험 ${dangerPct > 0 ? '+' + dangerPct + '%' : '낮음'}
+        ${dangerPct > 0 ? I18n.t('card.dangerHigh', { pct: dangerPct }) : I18n.t('card.dangerLow')}
       </div>
       <div class="lc-meta">
-        <span>🔍 탐색</span>
+        <span>${I18n.t('card.explore')}</span>
         <span>1TP</span>
       </div>
     `;
@@ -223,7 +238,7 @@ const CardFactory = {
 
     const contam = inst.contamination ?? 0;
     const contamBadge = contam > 0
-      ? `<span class="card-contamination" title="오염도 ${contam}%">☣</span>` : '';
+      ? `<span class="card-contamination" title="${I18n.t('card.contamination', { pct: contam })}">☣</span>` : '';
 
     // 스택 배지: 소모품이 아닌 stackable (수량 뱃지가 이름에 없는 경우)
     const stackBadge = (def.stackable && qty > 1 && def.type !== 'consumable')
@@ -255,7 +270,7 @@ const CardFactory = {
     return `
       <div class="card-header">
         <span class="card-icon">${def.icon ?? '📦'}</span>
-        <span class="card-name">${def.name}${nameRemainder ? ' ' : ''}${nameRemainder}</span>
+        <span class="card-name">${I18n.itemName(def.id ?? inst.definitionId, def.name)}${nameRemainder ? ' ' : ''}${nameRemainder}</span>
         ${contamBadge}
       </div>
       <div class="card-body">
@@ -271,9 +286,40 @@ const CardFactory = {
     `;
   },
 
+  // ── 제작 진행 카드 내부 HTML ─────────────────────────────
+  _buildCraftingInner(inst, def) {
+    const ce = inst._craftEntry;
+    if (!ce) return '';
+
+    const consumed   = ce.completedTp + (ce.tpTotal - ce.tpRemaining);
+    const overallPct = ce.totalTpAll > 0 ? (consumed / ce.totalTpAll * 100) : 0;
+
+    const stageInfo = ce.totalStages > 1
+      ? `${ce.stageIndex + 1}/${ce.totalStages} — ${ce.stageLabel}`
+      : ce.stageLabel;
+
+    return `
+      <div class="card-header">
+        <span class="card-icon">⚒️</span>
+        <span class="card-name">${I18n.blueprintName(ce.blueprintId, ce.blueprintName)}</span>
+      </div>
+      <div class="card-body">
+        <span class="card-type-badge">${I18n.t('card.crafting')}</span>
+        <div class="card-art">${def?.icon ?? '📦'}</div>
+        <div class="crafting-stage-label">${stageInfo}</div>
+        <div class="craft-progress-track">
+          <div class="craft-progress-fill" style="width:${overallPct.toFixed(1)}%"></div>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="crafting-tp-label">${I18n.t('card.tpRemaining', { tp: ce.tpRemaining })}</span>
+      </div>
+    `;
+  },
+
   _onDoubleClick(instanceId, def) {
     if (def.type === 'consumable' && def.onConsume) {
-      const confirmed = confirm(`"${def.name}" 사용할까요?`);
+      const confirmed = confirm(I18n.t('card.useConfirm', { name: I18n.itemName(def.id ?? GameState.cards[instanceId]?.definitionId, def.name) }));
       if (confirmed) {
         StatSystem.consumeCard(instanceId);
         EventBus.emit('boardChanged', {});
@@ -292,6 +338,13 @@ const CardFactory = {
     if (!el) return;
     const inst = GameState.cards[instanceId];
     if (!inst) { el.remove(); return; }
+
+    if (inst._crafting) {
+      const def = window.__GAME_DATA__.items[inst.definitionId];
+      el.innerHTML = this._buildCraftingInner(inst, def ?? {});
+      return;
+    }
+
     const def = window.__GAME_DATA__.items[inst.definitionId];
     if (!def) return;
 

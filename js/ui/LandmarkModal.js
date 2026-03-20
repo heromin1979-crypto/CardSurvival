@@ -2,6 +2,7 @@
 // 랜드마크 클릭 시 세부 장소 탐색 UI
 import EventBus      from '../core/EventBus.js';
 import GameState     from '../core/GameState.js';
+import I18n          from '../core/I18n.js';
 import TickEngine    from '../core/TickEngine.js';
 import StateMachine  from '../core/StateMachine.js';
 import { rollEnemyGroup } from '../data/enemies.js';
@@ -57,7 +58,7 @@ const LandmarkModal = {
 
     const data = LANDMARK_DATA[this._districtId];
     if (!data) {
-      box.innerHTML = `<div style="color:var(--text-dim);padding:24px;">랜드마크 정보 없음</div>`;
+      box.innerHTML = `<div style="color:var(--text-dim);padding:24px;">${I18n.t('landmark.noData')}</div>`;
       return;
     }
 
@@ -76,7 +77,7 @@ const LandmarkModal = {
         <div class="lm-subloc-grid">${subLocHtml}</div>
       </div>
       <div class="lm-modal-footer">
-        <span class="lm-modal-tip">📌 장소를 클릭하면 탐색합니다 (1 TP 소모)</span>
+        <span class="lm-modal-tip">${I18n.t('landmark.tip')}</span>
       </div>
     `;
 
@@ -91,8 +92,8 @@ const LandmarkModal = {
     const lootMult    = this._getLootMult(visitCount);
     const lootPct     = Math.round(lootMult * 100);
     const visitBadge  = visitCount > 0
-      ? `<span class="lm-visit-badge">${visitCount}회 탐색 · 루팅 ${lootPct}%</span>`
-      : `<span class="lm-visit-badge fresh">미탐색</span>`;
+      ? `<span class="lm-visit-badge">${I18n.t('landmark.visitBadge', { count: visitCount, pct: lootPct })}</span>`
+      : `<span class="lm-visit-badge fresh">${I18n.t('landmark.fresh')}</span>`;
     const lootPreview = loc.lootTable.slice(0, 3)
       .map(e => {
         const def = window.__GAME_DATA__?.items[e.id];
@@ -106,7 +107,7 @@ const LandmarkModal = {
           <div class="lm-subloc-name">${loc.name}</div>
           <div class="lm-subloc-desc">${loc.desc}</div>
           <div class="lm-subloc-meta">
-            <span class="lm-danger-badge ${dangerCls}">위험 +${dangerPct}%</span>
+            <span class="lm-danger-badge ${dangerCls}">${I18n.t('landmark.danger', { pct: dangerPct })}</span>
             <span class="lm-loot-preview">${lootPreview}</span>
           </div>
           <div class="lm-visit-row">${visitBadge}</div>
@@ -148,7 +149,7 @@ const LandmarkModal = {
     const baseEncounter = 0.10;
     const encounterChance = Math.min(0.90, baseEncounter + loc.dangerMod);
     if (Math.random() < encounterChance) {
-      EventBus.emit('notify', { message: `⚠️ ${loc.name}에서 적과 조우!`, type: 'danger' });
+      EventBus.emit('notify', { message: I18n.t('landmark.encounter', { name: loc.name }), type: 'danger' });
       TickEngine.skipTP(tpCost);
       this._isExploring = false;
       this.close();
@@ -206,18 +207,18 @@ const LandmarkModal = {
     // 결과 알림
     if (found.length > 0) {
       EventBus.emit('notify', {
-        message: `🔍 ${loc.name}: ${found.join(', ')} 획득`,
+        message: I18n.t('landmark.lootFound', { name: loc.name, items: found.join(', ') }),
         type: 'success',
       });
     } else {
       EventBus.emit('notify', {
-        message: `🔍 ${loc.name}: 아무것도 찾지 못했습니다.`,
+        message: I18n.t('landmark.lootNone', { name: loc.name }),
         type: 'info',
       });
     }
     if (overflow > 0) {
       EventBus.emit('notify', {
-        message: `⚠️ 보드가 꽉 찼습니다. ${overflow}개 아이템 손실.`,
+        message: I18n.t('landmark.boardFull', { count: overflow }),
         type: 'warn',
       });
     }

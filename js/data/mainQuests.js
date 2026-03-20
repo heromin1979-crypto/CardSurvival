@@ -1,6 +1,7 @@
-// === MAIN QUEST DEFINITIONS (38 quests) ===
+// === MAIN QUEST DEFINITIONS (58 quests) ===
 // 6 캐릭터별 메인 퀘스트 체인. Day 1~100 스토리라인.
-// objective types: collect_item, craft_item, survive_days, visit_district
+// doctor: 8, soldier/firefighter/homeless/pharmacist/engineer: 각 10
+// objective types: collect_item, craft_item, survive_days, visit_district, collect_item_type
 // deadlineDays: Infinity(∞) = 기한 없음
 
 const MAIN_QUESTS = {
@@ -155,8 +156,9 @@ const MAIN_QUESTS = {
   },
 
   // ══════════════════════════════════════════════════════════════════
-  // 강민준 (soldier) — 6 퀘스트
+  // 강민준 (soldier) — 10 퀘스트
   // 루트: yongsan → jongno(dl4!) → yeongdeungpo
+  // 체인: 01→02→02b→02c→03→04→05→05b→05c→06
   // ══════════════════════════════════════════════════════════════════
 
   mq_soldier_01: {
@@ -195,6 +197,42 @@ const MAIN_QUESTS = {
     },
   },
 
+  mq_soldier_02b: {
+    id: 'mq_soldier_02b',
+    title: '무전기 복원',
+    desc: '기지의 무전기가 고장났다. 전자 부품 2개로 통신을 복원하라.',
+    icon: '📡',
+    characterId: 'soldier',
+    dayTrigger: 5,
+    prerequisite: 'mq_soldier_02',
+    objective: { type: 'collect_item', definitionId: 'electronic_parts', count: 2 },
+    reward: { morale: 5 },
+    failPenalty: { morale: -5 },
+    deadlineDays: 20,
+    narrative: {
+      start: '기지 무전기의 회로가 나갔다. 전자 부품이 있으면 고칠 수 있다. 용산 전자상가라면...',
+      complete: '무전기에서 잡음이 들린다. "...KBS... 방송 중..." 그리고 또 하나. "광화문... 정부청사... 최종 명령..."',
+    },
+  },
+
+  mq_soldier_02c: {
+    id: 'mq_soldier_02c',
+    title: '야전 식량',
+    desc: '광화문까지의 여정에 식량이 필요하다. 식량 5개를 비축하라.',
+    icon: '🍖',
+    characterId: 'soldier',
+    dayTrigger: 8,
+    prerequisite: 'mq_soldier_02b',
+    objective: { type: 'collect_item_type', itemType: 'food', count: 5 },
+    reward: { morale: 5, items: [{ definitionId: 'military_ration', qty: 1 }] },
+    failPenalty: { morale: -5 },
+    deadlineDays: 25,
+    narrative: {
+      start: '광화문까지 최소 이틀. 전투가 불가피하다. 식량을 충분히 확보해야 한다.',
+      complete: '배낭이 묵직하다. 이 정도면 광화문까지 버틸 수 있다.',
+    },
+  },
+
   mq_soldier_03: {
     id: 'mq_soldier_03',
     title: '광화문 돌파',
@@ -202,7 +240,7 @@ const MAIN_QUESTS = {
     icon: '🏛️',
     characterId: 'soldier',
     dayTrigger: 12,
-    prerequisite: 'mq_soldier_02',
+    prerequisite: 'mq_soldier_02c',
     objective: { type: 'visit_district', districtId: 'jongno', count: 1 },
     reward: { morale: 15 },
     failPenalty: { morale: -10 },
@@ -249,6 +287,42 @@ const MAIN_QUESTS = {
     },
   },
 
+  mq_soldier_05b: {
+    id: 'mq_soldier_05b',
+    title: '전우의 인식표',
+    desc: '방송국에서 전사한 전우들의 인식표를 발견했다. 유품을 수습하라.',
+    icon: '🎖️',
+    characterId: 'soldier',
+    dayTrigger: 45,
+    prerequisite: 'mq_soldier_05',
+    objective: { type: 'collect_item', definitionId: 'knife', count: 2 },
+    reward: { morale: 15, items: [{ definitionId: 'military_ration', qty: 2 }] },
+    failPenalty: { morale: -5 },
+    deadlineDays: 80,
+    narrative: {
+      start: 'KBS 방송국 복도에서 군번줄을 발견했다. 광화문에서 함께 후퇴했던... 유품을 수습해야 한다.',
+      complete: '인식표 4개. 박상현, 김태호, 이동훈, 정재민. 전우들의 이름을 기억한다. 기록에서 군 비상 주파수를 발견했다.',
+    },
+  },
+
+  mq_soldier_05c: {
+    id: 'mq_soldier_05c',
+    title: '비상 주파수 송출',
+    desc: '전우의 기록에서 발견한 군 비상 주파수로 집결 좌표를 송출하라.',
+    icon: '📻',
+    characterId: 'soldier',
+    dayTrigger: 55,
+    prerequisite: 'mq_soldier_05b',
+    objective: { type: 'collect_item', definitionId: 'electronic_parts', count: 2 },
+    reward: { morale: 15, flags: { military_frequency_active: true } },
+    failPenalty: { morale: -5 },
+    deadlineDays: 90,
+    narrative: {
+      start: '군 비상 주파수. 민간 방송보다 범위가 넓다. 전자 부품으로 증폭기를 만들면 전국에 닿는다.',
+      complete: '두 개의 주파수로 동시 송출. 민간 KBS와 군 비상 채널. 이제 누군가는 듣고 있을 것이다.',
+    },
+  },
+
   mq_soldier_06: {
     id: 'mq_soldier_06',
     title: '서울 집결 좌표',
@@ -256,7 +330,7 @@ const MAIN_QUESTS = {
     icon: '📖',
     characterId: 'soldier',
     dayTrigger: 65,
-    prerequisite: 'mq_soldier_05',
+    prerequisite: 'mq_soldier_05c',
     objective: { type: 'survive_days', count: 100 },
     reward: { morale: 25, flags: { mainQuestComplete_soldier: true } },
     failPenalty: null,
@@ -268,8 +342,9 @@ const MAIN_QUESTS = {
   },
 
   // ══════════════════════════════════════════════════════════════════
-  // 박영철 (firefighter) — 6 퀘스트
+  // 박영철 (firefighter) — 10 퀘스트
   // 루트: yongsan → seodaemun → eunpyeong
+  // 체인: 01→02→02b→02c→03→04→05→05b→05c→06
   // ══════════════════════════════════════════════════════════════════
 
   mq_fire_01: {
@@ -308,6 +383,42 @@ const MAIN_QUESTS = {
     },
   },
 
+  mq_fire_02b: {
+    id: 'mq_fire_02b',
+    title: '응급 구조 키트',
+    desc: '은평까지의 여정에 의료 물자가 필수다. 의료 아이템 3개를 수집하라.',
+    icon: '🩹',
+    characterId: 'firefighter',
+    dayTrigger: 5,
+    prerequisite: 'mq_fire_02',
+    objective: { type: 'collect_item_type', itemType: 'medical', count: 3 },
+    reward: { morale: 5 },
+    failPenalty: { morale: -5 },
+    deadlineDays: 20,
+    narrative: {
+      start: '소방관의 본능이 말한다. 의료 물자 없이 이동하면 죽는다. 구급 키트를 꾸려야 한다.',
+      complete: '응급 키트가 갖춰졌다. 이재훈이 이것만 있었어도... 아니, 지금은 앞만 보자.',
+    },
+  },
+
+  mq_fire_02c: {
+    id: 'mq_fire_02c',
+    title: '탈출 경로',
+    desc: '건물 사이를 안전하게 이동하려면 로프가 필요하다. 로프 2개를 확보하라.',
+    icon: '🧗',
+    characterId: 'firefighter',
+    dayTrigger: 10,
+    prerequisite: 'mq_fire_02b',
+    objective: { type: 'collect_item', definitionId: 'rope', count: 2 },
+    reward: { morale: 5, items: [{ definitionId: 'bandage', qty: 1 }] },
+    failPenalty: { morale: -5 },
+    deadlineDays: 30,
+    narrative: {
+      start: '서대문까지 직선 루트는 감염자로 가득하다. 옥상과 비상계단을 연결해야 한다.',
+      complete: '로프를 확보했다. 이제 건물 사이를 안전하게 이동할 수 있다.',
+    },
+  },
+
   mq_fire_03: {
     id: 'mq_fire_03',
     title: '은평을 향해',
@@ -315,7 +426,7 @@ const MAIN_QUESTS = {
     icon: '🗺️',
     characterId: 'firefighter',
     dayTrigger: 15,
-    prerequisite: 'mq_fire_02',
+    prerequisite: 'mq_fire_02c',
     objective: { type: 'visit_district', districtId: 'seodaemun', count: 1 },
     reward: { morale: 10 },
     failPenalty: { morale: -5 },
@@ -362,6 +473,42 @@ const MAIN_QUESTS = {
     },
   },
 
+  mq_fire_05b: {
+    id: 'mq_fire_05b',
+    title: '동료 이재훈의 메모',
+    desc: '은평 소방서에서 감염된 동료의 유품을 발견했다. 서대문 소방서를 다시 방문하라.',
+    icon: '📝',
+    characterId: 'firefighter',
+    dayTrigger: 50,
+    prerequisite: 'mq_fire_05',
+    objective: { type: 'visit_district', districtId: 'seodaemun', count: 1 },
+    reward: { morale: 10, items: [{ definitionId: 'first_aid_kit', qty: 1 }] },
+    failPenalty: { morale: -5 },
+    deadlineDays: 85,
+    narrative: {
+      start: '은평 소방서 사물함에서 이재훈의 메모를 발견했다. "서대문 지하 창고... 특수 장비... 네가 쓸 수 있을 거야."',
+      complete: '서대문 소방서 지하 창고. 이재훈이 숨겨둔 물자가 있었다. 마지막까지 동료를 생각한 녀석.',
+    },
+  },
+
+  mq_fire_05c: {
+    id: 'mq_fire_05c',
+    title: '생존자 대피소',
+    desc: '가족 외에도 생존자들이 모여들고 있다. 대피소를 확장하라.',
+    icon: '🏘️',
+    characterId: 'firefighter',
+    dayTrigger: 55,
+    prerequisite: 'mq_fire_05b',
+    objective: { type: 'craft_item', category: 'structure', count: 3 },
+    reward: { morale: 15, flags: { eunpyeong_shelter_built: true } },
+    failPenalty: { morale: -5 },
+    deadlineDays: 90,
+    narrative: {
+      start: '이웃들이 하나둘 모여든다. "소방관 아저씨, 여기 안전한가요?" 대피소가 필요하다.',
+      complete: '바리케이드, 캠프파이어, 정수 시설. 은평 대피소가 완성됐다. 12명의 생존자가 여기에 의지하고 있다.',
+    },
+  },
+
   mq_fire_06: {
     id: 'mq_fire_06',
     title: '은평의 수호자',
@@ -369,7 +516,7 @@ const MAIN_QUESTS = {
     icon: '📖',
     characterId: 'firefighter',
     dayTrigger: 65,
-    prerequisite: 'mq_fire_05',
+    prerequisite: 'mq_fire_05c',
     objective: { type: 'survive_days', count: 100 },
     reward: { morale: 25, flags: { mainQuestComplete_firefighter: true } },
     failPenalty: null,
@@ -381,8 +528,9 @@ const MAIN_QUESTS = {
   },
 
   // ══════════════════════════════════════════════════════════════════
-  // 최형식 (homeless) — 6 퀘스트
+  // 최형식 (homeless) — 10 퀘스트
   // 루트: gangnam → songpa (1홉)
+  // 체인: 01→02→02b→02c→03→04→05→05b→05c→06
   // ══════════════════════════════════════════════════════════════════
 
   mq_homeless_01: {
@@ -421,6 +569,42 @@ const MAIN_QUESTS = {
     },
   },
 
+  mq_homeless_02b: {
+    id: 'mq_homeless_02b',
+    title: '거리의 기술',
+    desc: '오래 거리에서 살았다. 쓸모 있는 재료 5개를 수집하라.',
+    icon: '🔍',
+    characterId: 'homeless',
+    dayTrigger: 5,
+    prerequisite: 'mq_homeless_02',
+    objective: { type: 'collect_item_type', itemType: 'material', count: 5 },
+    reward: { morale: 5 },
+    failPenalty: { morale: -5 },
+    deadlineDays: 18,
+    narrative: {
+      start: '쓰레기통 속에서 보물을 찾는 법을 안다. 남들이 버린 것에서 가치를 발견하는 것. 그게 거리의 기술이다.',
+      complete: '재료가 모였다. 2년간 다리 밑에서 배운 기술이 이제야 빛을 발한다.',
+    },
+  },
+
+  mq_homeless_02c: {
+    id: 'mq_homeless_02c',
+    title: '한강의 길',
+    desc: '롯데타워까지 가려면 한강을 건너야 한다. 깨끗한 물 3개를 비축하라.',
+    icon: '🌊',
+    characterId: 'homeless',
+    dayTrigger: 7,
+    prerequisite: 'mq_homeless_02b',
+    objective: { type: 'collect_item', definitionId: 'clean_water', count: 3 },
+    reward: { morale: 5 },
+    failPenalty: { morale: -5 },
+    deadlineDays: 22,
+    narrative: {
+      start: '한강 다리를 건너야 한다. 물이 없으면 이동 중에 쓰러진다.',
+      complete: '물을 확보했다. 동호대교가 보인다. 저 너머에 롯데타워가 있다.',
+    },
+  },
+
   mq_homeless_03: {
     id: 'mq_homeless_03',
     title: '롯데타워의 불빛',
@@ -428,7 +612,7 @@ const MAIN_QUESTS = {
     icon: '🗼',
     characterId: 'homeless',
     dayTrigger: 10,
-    prerequisite: 'mq_homeless_02',
+    prerequisite: 'mq_homeless_02c',
     objective: { type: 'visit_district', districtId: 'songpa', count: 1 },
     reward: { morale: 10 },
     failPenalty: { morale: -5 },
@@ -475,6 +659,42 @@ const MAIN_QUESTS = {
     },
   },
 
+  mq_homeless_05b: {
+    id: 'mq_homeless_05b',
+    title: '거리의 지혜',
+    desc: '타워 사람들이 네 생존 노하우에 의지한다. 재료 10개를 수급하라.',
+    icon: '🧠',
+    characterId: 'homeless',
+    dayTrigger: 35,
+    prerequisite: 'mq_homeless_05',
+    objective: { type: 'collect_item_type', itemType: 'material', count: 10 },
+    reward: { morale: 10 },
+    failPenalty: { morale: -5 },
+    deadlineDays: 70,
+    narrative: {
+      start: '"대표님, 물자 수급 좀 가르쳐주세요." 타워 사람들이 물었다. 건설회사 사장이었다는 건 비밀이다.',
+      complete: '물자 수급 루트를 확립했다. 타워에서 네 자리가 만들어지고 있다.',
+    },
+  },
+
+  mq_homeless_05c: {
+    id: 'mq_homeless_05c',
+    title: '과거의 빚',
+    desc: '타워에서 옛 사업 파트너를 만났다. 화해의 의미로 식량 5개를 모아라.',
+    icon: '🤝',
+    characterId: 'homeless',
+    dayTrigger: 45,
+    prerequisite: 'mq_homeless_05b',
+    objective: { type: 'collect_item', definitionId: 'canned_food', count: 5 },
+    reward: { morale: 20, flags: { past_reconciled: true } },
+    failPenalty: { morale: -10 },
+    deadlineDays: 80,
+    narrative: {
+      start: '"형식이... 형식이야?" 타워 3층에서 마주친 얼굴. 2023년, 보증 실패의 원인이 된 그 사람. 화해할 수 있을까.',
+      complete: '식량을 나누며 오래된 이야기를 했다. "미안했다." "나도." 빚은 사라졌다. 남은 건 동료뿐.',
+    },
+  },
+
   mq_homeless_06: {
     id: 'mq_homeless_06',
     title: '새 집',
@@ -482,7 +702,7 @@ const MAIN_QUESTS = {
     icon: '📖',
     characterId: 'homeless',
     dayTrigger: 50,
-    prerequisite: 'mq_homeless_05',
+    prerequisite: 'mq_homeless_05c',
     objective: { type: 'survive_days', count: 100 },
     reward: { morale: 25, flags: { mainQuestComplete_homeless: true } },
     failPenalty: null,
@@ -494,8 +714,9 @@ const MAIN_QUESTS = {
   },
 
   // ══════════════════════════════════════════════════════════════════
-  // 한소희 (pharmacist) — 6 퀘스트
-  // 루트: gangnam → gwanak (3홉)
+  // 한소희 (pharmacist) — 10 퀘스트
+  // 루트: gangnam → mapo → gwanak
+  // 체인: 01→02→02b→02c→03→04→05→05b→05c→06
   // ══════════════════════════════════════════════════════════════════
 
   mq_pharma_01: {
@@ -534,6 +755,42 @@ const MAIN_QUESTS = {
     },
   },
 
+  mq_pharma_02b: {
+    id: 'mq_pharma_02b',
+    title: '감염 관찰 일지',
+    desc: '감염 패턴을 관찰하려면 붕대 5개가 필요하다. 환자 접촉 시 사용할 보호 장비다.',
+    icon: '📋',
+    characterId: 'pharmacist',
+    dayTrigger: 5,
+    prerequisite: 'mq_pharma_02',
+    objective: { type: 'collect_item', definitionId: 'bandage', count: 5 },
+    reward: { morale: 5 },
+    failPenalty: { morale: -5 },
+    deadlineDays: 20,
+    narrative: {
+      start: '감염 초기 환자들의 패턴이 다르다. 눈 떨림, 체온 변화, 행동 변이... 관찰하려면 보호 장비가 필요하다.',
+      complete: '관찰 일지 3페이지. 감염 48시간 후 세포 변이 패턴이 달라진다. 이 발견이 열쇠가 될지도.',
+    },
+  },
+
+  mq_pharma_02c: {
+    id: 'mq_pharma_02c',
+    title: '홍대 약국의 기록',
+    desc: '원래 약국이 있던 마포구로 가서 초기 관찰 기록을 회수하라.',
+    icon: '📍',
+    characterId: 'pharmacist',
+    dayTrigger: 8,
+    prerequisite: 'mq_pharma_02b',
+    objective: { type: 'visit_district', districtId: 'mapo', count: 1 },
+    reward: { morale: 10, flags: { pharmacy_records_recovered: true } },
+    failPenalty: { morale: -5 },
+    deadlineDays: 30,
+    narrative: {
+      start: '삼성병원으로 도망치기 전, 약국에 기록을 남겨두었다. 1월 14일부터의 환자 데이터. 돌아가서 회수해야 한다.',
+      complete: '약국은 약탈당했지만 카운터 아래 숨겨둔 노트는 무사했다. 3일치 관찰 데이터. 이것이면 패턴을 증명할 수 있다.',
+    },
+  },
+
   mq_pharma_03: {
     id: 'mq_pharma_03',
     title: '의료 재료 수집',
@@ -541,7 +798,7 @@ const MAIN_QUESTS = {
     icon: '🩹',
     characterId: 'pharmacist',
     dayTrigger: 10,
-    prerequisite: 'mq_pharma_02',
+    prerequisite: 'mq_pharma_02c',
     objective: { type: 'collect_item', definitionId: 'first_aid_kit', count: 3 },
     reward: { morale: 10 },
     failPenalty: { morale: -5 },
@@ -588,6 +845,42 @@ const MAIN_QUESTS = {
     },
   },
 
+  mq_pharma_05b: {
+    id: 'mq_pharma_05b',
+    title: '임상 시험',
+    desc: '합성체의 효과를 검증하려면 추가 의료 아이템 5개가 필요하다.',
+    icon: '🔬',
+    characterId: 'pharmacist',
+    dayTrigger: 45,
+    prerequisite: 'mq_pharma_05',
+    objective: { type: 'collect_item_type', itemType: 'medical', count: 5 },
+    reward: { morale: 10, items: [{ definitionId: 'antibiotics', qty: 1 }] },
+    failPenalty: { morale: -5 },
+    deadlineDays: 80,
+    narrative: {
+      start: '합성체가 시험관에서는 작동한다. 하지만 실제 효과를 증명하려면 더 많은 시약이 필요하다.',
+      complete: '3차 임상 완료. 감염 진행 속도가 68% 감소. 효과가 있다. 이제 이걸 알려야 한다.',
+    },
+  },
+
+  mq_pharma_05c: {
+    id: 'mq_pharma_05c',
+    title: '처방전 배포',
+    desc: '합성법을 기록하여 다른 생존자에게 전달하라. 구조물 2개를 제작하라.',
+    icon: '📄',
+    characterId: 'pharmacist',
+    dayTrigger: 55,
+    prerequisite: 'mq_pharma_05b',
+    objective: { type: 'craft_item', category: 'structure', count: 2 },
+    reward: { morale: 15, flags: { antiviral_distributed: true } },
+    failPenalty: { morale: -5 },
+    deadlineDays: 90,
+    narrative: {
+      start: '합성법을 메모지에 적었다. 하지만 전달하려면 안전한 거점이 필요하다. 배포 거점을 세우자.',
+      complete: '처방전 20부를 필사했다. 거점에 "무료 항바이러스 처방" 안내를 붙였다. 누군가 찾아올 것이다.',
+    },
+  },
+
   mq_pharma_06: {
     id: 'mq_pharma_06',
     title: '치료의 증명',
@@ -595,7 +888,7 @@ const MAIN_QUESTS = {
     icon: '📖',
     characterId: 'pharmacist',
     dayTrigger: 60,
-    prerequisite: 'mq_pharma_05',
+    prerequisite: 'mq_pharma_05c',
     objective: { type: 'survive_days', count: 100 },
     reward: { morale: 25, flags: { mainQuestComplete_pharmacist: true } },
     failPenalty: null,
@@ -607,8 +900,9 @@ const MAIN_QUESTS = {
   },
 
   // ══════════════════════════════════════════════════════════════════
-  // 정대한 (engineer) — 6 퀘스트
-  // 루트: yongsan → seongdong (3홉)
+  // 정대한 (engineer) — 10 퀘스트
+  // 루트: yongsan → seongdong → guro
+  // 체인: 01→02→02b→02c→03→04→05→05b→05c→06
   // ══════════════════════════════════════════════════════════════════
 
   mq_eng_01: {
@@ -647,6 +941,42 @@ const MAIN_QUESTS = {
     },
   },
 
+  mq_eng_02b: {
+    id: 'mq_eng_02b',
+    title: '전자 부품 수거',
+    desc: '용산 전자상가에서 전자 부품 3개를 수거하라. 발전기 수리에 필요하다.',
+    icon: '💡',
+    characterId: 'engineer',
+    dayTrigger: 5,
+    prerequisite: 'mq_eng_02',
+    objective: { type: 'collect_item', definitionId: 'electronic_parts', count: 3 },
+    reward: { morale: 5 },
+    failPenalty: { morale: -5 },
+    deadlineDays: 20,
+    narrative: {
+      start: '전자상가 3층에 부품이 남아있을 것이다. 발전기를 고치려면 전자 부품이 필수다.',
+      complete: '부품 확보. 발전기의 제어 회로를 교체할 수 있다. 연료만 있으면 전력이 나온다.',
+    },
+  },
+
+  mq_eng_02c: {
+    id: 'mq_eng_02c',
+    title: '아버지의 메모',
+    desc: '공장으로 돌아가기 전에 와이어 3개를 수집하라. 배선 작업에 필요하다.',
+    icon: '📐',
+    characterId: 'engineer',
+    dayTrigger: 8,
+    prerequisite: 'mq_eng_02b',
+    objective: { type: 'collect_item', definitionId: 'wire', count: 3 },
+    reward: { morale: 5 },
+    failPenalty: { morale: -5 },
+    deadlineDays: 25,
+    narrative: {
+      start: '아버지의 공장에 설계도가 있다. 가기 전에 배선 재료를 준비해야 한다. 와이어가 필수다.',
+      complete: '와이어 확보. 이제 성수동으로 돌아갈 준비가 됐다.',
+    },
+  },
+
   mq_eng_03: {
     id: 'mq_eng_03',
     title: '성수동 복귀',
@@ -654,7 +984,7 @@ const MAIN_QUESTS = {
     icon: '🏭',
     characterId: 'engineer',
     dayTrigger: 12,
-    prerequisite: 'mq_eng_02',
+    prerequisite: 'mq_eng_02c',
     objective: { type: 'visit_district', districtId: 'seongdong', count: 1 },
     reward: { morale: 10 },
     failPenalty: { morale: -5 },
@@ -701,6 +1031,42 @@ const MAIN_QUESTS = {
     },
   },
 
+  mq_eng_05b: {
+    id: 'mq_eng_05b',
+    title: '연료 문제',
+    desc: '이동수단은 완성됐지만 연료가 없다. 전자 부품 3개로 대체 동력을 설계하라.',
+    icon: '🔋',
+    characterId: 'engineer',
+    dayTrigger: 45,
+    prerequisite: 'mq_eng_05',
+    objective: { type: 'collect_item', definitionId: 'electronic_parts', count: 3 },
+    reward: { morale: 10 },
+    failPenalty: { morale: -5 },
+    deadlineDays: 80,
+    narrative: {
+      start: '경유는 없다. 하지만 배터리와 모터가 있다면 전기 동력으로 전환할 수 있다.',
+      complete: '전기 모터 프로토타입 완성. 아버지의 설계도에 있던 것과 비슷하다. 이제 시운전만 남았다.',
+    },
+  },
+
+  mq_eng_05c: {
+    id: 'mq_eng_05c',
+    title: '시운전',
+    desc: '이동수단 조립 완료. 시험 도로가 있는 구로구에 도달하라.',
+    icon: '🚗',
+    characterId: 'engineer',
+    dayTrigger: 55,
+    prerequisite: 'mq_eng_05b',
+    objective: { type: 'visit_district', districtId: 'guro', count: 1 },
+    reward: { morale: 15, flags: { vehicle_tested: true } },
+    failPenalty: { morale: -10 },
+    deadlineDays: 90,
+    narrative: {
+      start: '구로 디지털단지의 넓은 도로. 시운전에 최적이다. 이동수단을 끌고 가야 한다.',
+      complete: '시동이 걸렸다. 느리지만 움직인다. 100미터... 200미터... 작동한다! 서울 밖으로 갈 수 있다.',
+    },
+  },
+
   mq_eng_06: {
     id: 'mq_eng_06',
     title: '탈출 기계',
@@ -708,7 +1074,7 @@ const MAIN_QUESTS = {
     icon: '📖',
     characterId: 'engineer',
     dayTrigger: 60,
-    prerequisite: 'mq_eng_05',
+    prerequisite: 'mq_eng_05c',
     objective: { type: 'survive_days', count: 100 },
     reward: { morale: 25, flags: { mainQuestComplete_engineer: true } },
     failPenalty: null,

@@ -42,5 +42,10 @@ const EventBus = {
 // saved           { slot }
 // loaded          { slot }
 // notify          { message, type }  // 'info'|'warn'|'danger'|'good'
+// hiddenLocationDiscovered { locationId, location }
+// bossKilled               { bossId, boss }
+// secretEventTriggered     { event }
+// recipeUnlocked           { recipeId, recipe }
+// structureDamage          { damagePercent }
 
 export default EventBus;

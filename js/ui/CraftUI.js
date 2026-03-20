@@ -2,7 +2,14 @@
 import EventBus   from '../core/EventBus.js';
 import GameState  from '../core/GameState.js';
 import CraftSystem from '../systems/CraftSystem.js';
-import BLUEPRINTS  from '../data/blueprints.js';
+import BLUEPRINTS_BASE from '../data/blueprints.js';
+import HIDDEN_RECIPES  from '../data/hiddenRecipes.js';
+import { SKILL_DEFS }  from '../data/skillDefs.js';
+import SkillSystem     from '../systems/SkillSystem.js';
+import I18n            from '../core/I18n.js';
+
+// 전체 레시피 (히든 포함)
+const ALL_BLUEPRINTS = { ...BLUEPRINTS_BASE, ...HIDDEN_RECIPES };
 
 const CraftUI = {
   _panel: null,
@@ -31,7 +38,7 @@ const CraftUI = {
     this._panel.innerHTML = `
       <div class="craft-panel">
         <div style="font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">
-          블루프린트
+          ${I18n.t('craft.blueprints')}
         </div>
         ${this._renderBlueprintList()}
         ${this._renderQueue()}
@@ -58,28 +65,35 @@ const CraftUI = {
   },
 
   _renderBlueprintList() {
-    return Object.values(BLUEPRINTS).map(bp => {
+    // 히든 레시피는 해금된 것만 표시
+    const visibleBlueprints = Object.values(ALL_BLUEPRINTS).filter(bp => {
+      if (!bp.hidden) return true;
+      return (GameState.flags.hiddenRecipesUnlocked ?? []).includes(bp.id);
+    });
+
+    return visibleBlueprints.map(bp => {
       const isSelected = this._selectedBp === bp.id;
       const check      = CraftSystem.canStartBlueprint(bp.id);
 
-      const reqs = bp.stages[0].requiredItems.map(req => {
+      const reqs = (bp.stages?.[0]?.requiredItems ?? []).map(req => {
         const def   = window.__GAME_DATA__.items[req.definitionId];
         const count = GameState.countOnBoard(req.definitionId);
         const met   = count >= req.qty;
         return `<div class="blueprint-req ${met ? 'met' : 'unmet'}">
-          ${def?.name ?? req.definitionId} ×${req.qty}
+          ${I18n.itemName(req.definitionId, def?.name ?? req.definitionId)} ×${req.qty}
           <span>${count}/${req.qty}</span>
         </div>`;
       }).join('');
 
       return `
         <div class="blueprint-item ${isSelected ? 'selected' : ''}" data-bp-id="${bp.id}">
-          <div class="blueprint-name">${bp.name}</div>
+          <div class="blueprint-name">${I18n.blueprintName(bp.id, bp.name)}</div>
           <div class="blueprint-cost">${bp.stages.map(s => `${s.label} (${s.tpCost}TP)`).join(' → ')}</div>
+          ${this._renderSkillReqs(bp)}
           ${isSelected ? `
             <div class="blueprint-req-list">${reqs}</div>
             ${check.ok
-              ? `<button class="toolbar-btn" id="craft-start-btn" style="margin-top:6px;width:100%">제작 시작</button>`
+              ? `<button class="toolbar-btn" id="craft-start-btn" style="margin-top:6px;width:100%">${I18n.t('craft.startCraft')}</button>`
               : `<div style="font-size:9px;color:var(--text-danger);margin-top:4px;">${check.reason}</div>`
             }
           ` : ''}
@@ -88,26 +102,36 @@ const CraftUI = {
     }).join('');
   },
 
+  _renderSkillReqs(bp) {
+    if (!bp.requiredSkills || Object.keys(bp.requiredSkills).length === 0) return '';
+    const reqs = Object.entries(bp.requiredSkills).map(([skillId, minLevel]) => {
+      const met = SkillSystem.getLevel(skillId) >= minLevel;
+      const def = SKILL_DEFS[skillId];
+      return `<span class="blueprint-skill-req ${met ? 'met' : 'unmet'}">${def?.icon ?? ''}${def?.name ?? skillId} Lv.${minLevel}</span>`;
+    }).join('');
+    return `<div class="blueprint-skill-reqs">${reqs}</div>`;
+  },
+
   _renderQueue() {
     const queue = GameState.crafting.activeQueue;
-    if (!queue.length) return `<div class="craft-queue-label" style="margin-top:12px;">작업 큐 비어 있음</div>`;
+    if (!queue.length) return `<div class="craft-queue-label" style="margin-top:12px;">${I18n.t('craft.emptyQueue')}</div>`;
 
     const items = queue.map((entry, i) => {
-      const bp      = BLUEPRINTS[entry.blueprintId];
+      const bp      = ALL_BLUEPRINTS[entry.blueprintId];
       const stage   = bp?.stages[entry.stageIndex];
       const pct     = CraftSystem.getQueueProgress(entry) * 100;
 
       return `
         <div class="craft-queue-item">
           <div class="craft-queue-item-name">
-            ${bp?.name ?? entry.blueprintId}
+            ${I18n.blueprintName(entry.blueprintId, bp?.name ?? entry.blueprintId)}
             <span style="color:var(--text-dim);font-size:9px;"> — ${stage?.label ?? ''}</span>
           </div>
           <div class="craft-progress-track">
             <div class="craft-progress-fill" style="width:${pct.toFixed(1)}%"></div>
           </div>
           <div style="font-size:9px;color:var(--text-dim);margin-top:2px;">
-            ${entry.tpRemaining} TP 남음
+            ${I18n.t('craft.tpRemaining', { tp: entry.tpRemaining })}
           </div>
         </div>
       `;
@@ -115,7 +139,7 @@ const CraftUI = {
 
     return `
       <div class="craft-queue" style="margin-top:12px;">
-        <div class="craft-queue-label">작업 큐 (${queue.length}/${GameState.crafting.maxQueueSize})</div>
+        <div class="craft-queue-label">${I18n.t('craft.queueLabel', { current: queue.length, max: GameState.crafting.maxQueueSize })}</div>
         ${items}
       </div>
     `;

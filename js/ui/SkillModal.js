@@ -2,6 +2,7 @@
 // 숙련도 패널 UI — 3탭 (전투/생존/제작)
 import SkillSystem from '../systems/SkillSystem.js';
 import EventBus   from '../core/EventBus.js';
+import I18n       from '../core/I18n.js';
 import { SKILL_CATEGORIES } from '../data/skillDefs.js';
 
 const SkillModal = {
@@ -21,6 +22,11 @@ const SkillModal = {
 
     // 레벨업 시 열려있으면 재렌더링
     EventBus.on('skillLevelUp', () => {
+      if (this._el?.classList.contains('open')) this.render();
+    });
+
+    // 언어 변경 시 열려있으면 재렌더링
+    EventBus.on('languageChanged', () => {
       if (this._el?.classList.contains('open')) this.render();
     });
   },
@@ -50,8 +56,8 @@ const SkillModal = {
 
     this._box.innerHTML = `
       <div class="skill-modal-header">
-        <span class="skill-modal-title">📊 숙련도</span>
-        <button class="skill-close-btn" id="skill-close-btn">✕</button>
+        <span class="skill-modal-title">${I18n.t('skill.title')}</span>
+        <button class="skill-close-btn" id="skill-close-btn">${I18n.t('skill.close')}</button>
       </div>
       <div class="skill-tab-nav">${tabsHtml}</div>
       <div class="skill-list">${skillsHtml}</div>
@@ -76,15 +82,16 @@ const SkillModal = {
     const pctInt     = Math.round(progress.pct * 100);
 
     const xpText = isMastery
-      ? '최대 레벨 달성'
-      : `${progress.current} / ${progress.required} XP`;
+      ? I18n.t('skill.maxLevel')
+      : I18n.t('skill.xpProgress', { current: progress.current, required: progress.required });
 
     const bonusLines = this._buildBonusLines(def, level);
     const masteryHtml = isMastery
-      ? `<div class="skill-mastery-badge">🌟 마스터리: ${def.masteryDesc}</div>`
+      ? `<div class="skill-mastery-badge">${I18n.t('skill.mastery', { desc: def.masteryDesc })}</div>`
       : (level >= 15
-        ? `<div class="skill-mastery-hint">Lv.${20 - level} 후 마스터리: ${def.masteryDesc}</div>`
+        ? `<div class="skill-mastery-hint">${I18n.t('skill.masteryHint', { remain: 20 - level, desc: def.masteryDesc })}</div>`
         : '');
+    const xpSourcesHtml = this._buildXpSources(def);
 
     return `
       <div class="skill-card">
@@ -101,15 +108,21 @@ const SkillModal = {
           <span class="skill-xp-text">${xpText}</span>
         </div>
         ${bonusLines}
+        ${xpSourcesHtml}
         ${masteryHtml}
       </div>
     `;
   },
 
+  _buildXpSources(def) {
+    const sources = def.xpSources;
+    if (!sources?.length) return '';
+    return `<div class="skill-xp-sources"><span class="skill-xp-sources-label">${I18n.t('skill.xpSources')}</span> ${sources.map(s => `<span class="skill-xp-source-tag">${s}</span>`).join('')}</div>`;
+  },
+
   _buildBonusLines(def, level) {
     if (level === 0) {
-      const src = def.xpSources?.join(' · ') ?? '';
-      return `<div class="skill-bonus-zero">미숙련 — ${src}</div>`;
+      return `<div class="skill-bonus-zero">${I18n.t('skill.unskilled')}</div>`;
     }
     const b = def.getBonuses(level);
     const lines = [];
@@ -118,19 +131,19 @@ const SkillModal = {
     const pct  = v => `+${Math.round(v * 100)}%`;
     const mult = v => `×${v.toFixed(2)}`;
 
-    if (b.dmgMult    !== undefined) lines.push(`피해량 ${mult(b.dmgMult)}`);
-    if (b.durSaveChance)            lines.push(`내구도 절약 ${pct(b.durSaveChance)}`);
-    if (b.accBonus)                 lines.push(`명중률 ${pct(b.accBonus)}`);
-    if (b.critBonus)                lines.push(`치명타 ${pct(b.critBonus)}`);
-    if (b.damageReduction)          lines.push(`피해 감소 ${pct(b.damageReduction)}`);
-    if (b.extraLootChance)          lines.push(`추가 루팅 ${pct(b.extraLootChance)}`);
-    if (b.healMult    !== undefined && b.healMult !== 1) lines.push(`치료량 ${mult(b.healMult)}`);
-    if (b.foodEffectMult !== undefined && b.foodEffectMult !== 1) lines.push(`음식 효과 ${mult(b.foodEffectMult)}`);
-    if (b.extraMaterialChance)      lines.push(`추가 재료 ${pct(b.extraMaterialChance)}`);
-    if (b.saveChance)               lines.push(`재료 절약 ${pct(b.saveChance)}`);
-    if (b.weaponDurBonus)           lines.push(`무기 내구도 ${pct(b.weaponDurBonus)}`);
-    if (b.armorDefBonus)            lines.push(`방어구 성능 ${pct(b.armorDefBonus)}`);
-    if (b.structureEffectBonus)     lines.push(`구조물 효과 ${pct(b.structureEffectBonus)}`);
+    if (b.dmgMult    !== undefined) lines.push(I18n.t('skill.dmgMult', { val: mult(b.dmgMult) }));
+    if (b.durSaveChance)            lines.push(I18n.t('skill.durSave', { val: pct(b.durSaveChance) }));
+    if (b.accBonus)                 lines.push(I18n.t('skill.accBonus', { val: pct(b.accBonus) }));
+    if (b.critBonus)                lines.push(I18n.t('skill.critBonus', { val: pct(b.critBonus) }));
+    if (b.damageReduction)          lines.push(I18n.t('skill.dmgReduce', { val: pct(b.damageReduction) }));
+    if (b.extraLootChance)          lines.push(I18n.t('skill.extraLoot', { val: pct(b.extraLootChance) }));
+    if (b.healMult    !== undefined && b.healMult !== 1) lines.push(I18n.t('skill.healMult', { val: mult(b.healMult) }));
+    if (b.foodEffectMult !== undefined && b.foodEffectMult !== 1) lines.push(I18n.t('skill.foodEffect', { val: mult(b.foodEffectMult) }));
+    if (b.extraMaterialChance)      lines.push(I18n.t('skill.extraMat', { val: pct(b.extraMaterialChance) }));
+    if (b.saveChance)               lines.push(I18n.t('skill.saveMat', { val: pct(b.saveChance) }));
+    if (b.weaponDurBonus)           lines.push(I18n.t('skill.weaponDur', { val: pct(b.weaponDurBonus) }));
+    if (b.armorDefBonus)            lines.push(I18n.t('skill.armorDef', { val: pct(b.armorDefBonus) }));
+    if (b.structureEffectBonus)     lines.push(I18n.t('skill.structEffect', { val: pct(b.structureEffectBonus) }));
 
     return lines.length
       ? `<div class="skill-bonus-list">${lines.map(l => `<span class="skill-bonus-tag">${l}</span>`).join('')}</div>`

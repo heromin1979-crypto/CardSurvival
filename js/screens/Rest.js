@@ -2,34 +2,26 @@
 import EventBus    from '../core/EventBus.js';
 import GameState   from '../core/GameState.js';
 import StateMachine from '../core/StateMachine.js';
+import I18n        from '../core/I18n.js';
 import TickEngine   from '../core/TickEngine.js';
 
 const REST_OPTIONS = [
   {
     id: 'nap',
     icon: '😴',
-    name: '짧은 수면',
-    cost: '4 TP',
     tpCost: 4,
-    desc: '피로 -40, 스태미나 +30, HP +10',
     effect: { fatigue: -40, stamina: 30, hp: 10 },
   },
   {
     id: 'sleep',
     icon: '🛌',
-    name: '완전 수면',
-    cost: '8 TP',
     tpCost: 8,
-    desc: '피로 -80, 스태미나 +70, HP +30',
     effect: { fatigue: -80, stamina: 70, hp: 30, hydration: -20, nutrition: -10 },
   },
   {
     id: 'meditate',
     icon: '🧘',
-    name: '명상',
-    cost: '2 TP',
     tpCost: 2,
-    desc: '사기 +20, 피로 -10, 스태미나 +15',
     effect: { morale: 20, fatigue: -10, stamina: 15 },
   },
 ];
@@ -42,6 +34,9 @@ const Rest = {
     EventBus.on('stateTransition', ({ to, data }) => {
       if (to === 'rest') this._render(data);
     });
+    EventBus.on('languageChanged', () => {
+      if (this._el?.classList.contains('active')) this._render();
+    });
   },
 
   _render(data = {}) {
@@ -52,17 +47,17 @@ const Rest = {
     const optHtml = REST_OPTIONS.map(opt => `
       <div class="rest-option-card" data-rest-id="${opt.id}">
         <div class="rest-option-icon">${opt.icon}</div>
-        <div class="rest-option-name">${opt.name}</div>
-        <div class="rest-option-cost">${opt.cost}</div>
-        <div class="rest-option-desc">${opt.desc}</div>
+        <div class="rest-option-name">${I18n.t('rest.' + opt.id)}</div>
+        <div class="rest-option-cost">${I18n.t('rest.' + opt.id + 'Cost')}</div>
+        <div class="rest-option-desc">${I18n.t('rest.' + opt.id + 'Desc')}</div>
       </div>
     `).join('');
 
     this._el.innerHTML = `
-      <div class="rest-header">💤 휴식</div>
-      ${forced ? '<div style="color:var(--text-danger);font-size:12px;">극도의 피로! 즉시 휴식 필요.</div>' : ''}
+      <div class="rest-header">${I18n.t('rest.title')}</div>
+      ${forced ? `<div style="color:var(--text-danger);font-size:12px;">${I18n.t('rest.forced')}</div>` : ''}
       <div class="rest-options">${optHtml}</div>
-      <button class="toolbar-btn" id="btn-skip-rest">← 취소</button>
+      <button class="toolbar-btn" id="btn-skip-rest">${I18n.t('rest.cancel')}</button>
     `;
 
     this._el.querySelectorAll('.rest-option-card').forEach(card => {
@@ -81,7 +76,7 @@ const Rest = {
     const gs = GameState;
 
     // Skip TP for rest duration
-    TickEngine.skipTP(opt.tpCost, opt.name);
+    TickEngine.skipTP(opt.tpCost, I18n.t('rest.' + opt.id));
 
     // Apply effects
     for (const [key, val] of Object.entries(opt.effect)) {
@@ -92,7 +87,7 @@ const Rest = {
       }
     }
 
-    EventBus.emit('notify', { message: `${opt.name} 완료. 몸 상태가 나아졌다.`, type: 'good' });
+    EventBus.emit('notify', { message: I18n.t('rest.complete', { name: I18n.t('rest.' + opt.id) }), type: 'good' });
     StateMachine.transition('basecamp');
   },
 };

@@ -2,6 +2,7 @@
 // 거점 레벨업 / 방어 강화 로직
 import EventBus   from '../core/EventBus.js';
 import GameState  from '../core/GameState.js';
+import I18n       from '../core/I18n.js';
 import UPGRADES   from '../data/basecampUpgrades.js';
 
 const BasecampSystem = {
@@ -42,12 +43,12 @@ const BasecampSystem = {
   // 업그레이드 가능 여부 체크
   canUpgrade() {
     const next = this.getNextUpgrade();
-    if (!next) return { ok: false, reason: '최고 레벨 달성' };
+    if (!next) return { ok: false, reason: I18n.t('bcSys.maxLevel') };
     for (const req of next.cost) {
       const have = GameState.countOnBoard(req.definitionId);
       if (have < req.qty) {
         const def = window.__GAME_DATA__?.items[req.definitionId];
-        return { ok: false, reason: `${def?.name ?? req.definitionId} 부족 (${have}/${req.qty})` };
+        return { ok: false, reason: I18n.t('bcSys.materialShort', { name: I18n.itemName(req.definitionId, def?.name), have, need: req.qty }) };
       }
     }
     return { ok: true };
@@ -57,7 +58,7 @@ const BasecampSystem = {
   upgrade() {
     const check = this.canUpgrade();
     if (!check.ok) {
-      EventBus.emit('notify', { message: `거점 강화 불가: ${check.reason}`, type: 'warn' });
+      EventBus.emit('notify', { message: I18n.t('bcSys.upgradeFail', { reason: check.reason }), type: 'warn' });
       return false;
     }
     const next = this.getNextUpgrade();
@@ -83,7 +84,7 @@ const BasecampSystem = {
     GameState.basecamp.level += 1;
     EventBus.emit('basecampUpgraded', { level: GameState.basecamp.level });
     EventBus.emit('notify', {
-      message: `🏰 거점 Lv.${GameState.basecamp.level} — ${next.name} 완성!`,
+      message: I18n.t('bcSys.upgradeComplete', { level: GameState.basecamp.level, name: next.name }),
       type: 'good',
     });
     EventBus.emit('boardChanged', {});

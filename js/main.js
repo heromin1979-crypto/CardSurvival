@@ -2,10 +2,12 @@
 // Import order matters: core → data → systems → board → ui → screens → persistence
 
 // Core
-import EventBus   from './core/EventBus.js';
-import GameState  from './core/GameState.js';
-import TickEngine from './core/TickEngine.js';
-import StateMachine from './core/StateMachine.js';
+import EventBus        from './core/EventBus.js';
+import GameState       from './core/GameState.js';
+import TickEngine      from './core/TickEngine.js';
+import StateMachine    from './core/StateMachine.js';
+import SettingsManager from './core/SettingsManager.js';
+import I18n            from './core/I18n.js';
 
 // Data
 import ITEMS      from './data/items.js';
@@ -14,6 +16,10 @@ import NODES, { DISTRICTS, SUB_LOCATIONS } from './data/nodes.js';
 import ENEMIES    from './data/enemies.js';
 import CHARACTERS from './data/characters.js';
 import { registerSubLocationItems } from './data/landmarks.js';
+import { SECRET_ENEMIES } from './data/secretEnemies.js';
+import { HIDDEN_LOCATIONS } from './data/hiddenLocations.js';
+import SECRET_EVENTS      from './data/secretEvents.js';
+import HIDDEN_RECIPES     from './data/hiddenRecipes.js';
 
 // Systems
 import EndingSystem         from './systems/EndingSystem.js';
@@ -32,6 +38,7 @@ import SkillSystem          from './systems/SkillSystem.js';
 import BasecampSystem       from './systems/BasecampSystem.js';
 import QuestSystem          from './systems/QuestSystem.js';
 import SoundSystem          from './systems/SoundSystem.js';
+import HiddenElementSystem  from './systems/HiddenElementSystem.js';
 
 // Board
 import BoardManager from './board/BoardManager.js';
@@ -52,6 +59,7 @@ import CardContextMenu  from './ui/CardContextMenu.js';
 import SeoulMapModal    from './ui/SeoulMapModal.js';
 import EquipmentModal   from './ui/EquipmentModal.js';
 import LandmarkModal    from './ui/LandmarkModal.js';
+import SettingsModal    from './ui/SettingsModal.js';
 
 // Screens
 import MainMenu     from './screens/MainMenu.js';
@@ -72,11 +80,34 @@ import SaveManager from './persistence/SaveManager.js';
 import AutoSave    from './persistence/AutoSave.js';
 
 // ── Bootstrap ────────────────────────────────────────────
-window.__GAME_DATA__ = { items: ITEMS, blueprints: BLUEPRINTS, nodes: NODES, districts: DISTRICTS, subLocations: SUB_LOCATIONS, enemies: ENEMIES, characters: CHARACTERS };
+// 히든 레시피를 BLUEPRINTS에 병합
+const ALL_BLUEPRINTS = { ...BLUEPRINTS, ...HIDDEN_RECIPES };
+// 비밀 적을 ENEMIES에 병합
+const ALL_ENEMIES = { ...ENEMIES, ...SECRET_ENEMIES };
+
+window.__GAME_DATA__ = {
+  items: ITEMS,                // ITEMS already includes LEGENDARY_ITEMS via items.js
+  blueprints: ALL_BLUEPRINTS,
+  nodes: NODES,
+  districts: DISTRICTS,
+  subLocations: SUB_LOCATIONS,
+  enemies: ALL_ENEMIES,
+  characters: CHARACTERS,
+  hiddenLocations: HIDDEN_LOCATIONS,
+  secretEvents: SECRET_EVENTS,
+  hiddenRecipes: HIDDEN_RECIPES,
+};
 registerSubLocationItems();
+
+// HiddenElementSystem에서 StateMachine 접근용
+window.__GAME_SYSTEMS__ = { StateMachine };
 
 function init() {
   console.log('[Game] Initializing Ruined City...');
+
+  // Settings & i18n (must init before other systems)
+  SettingsManager.init();
+  I18n.init();
 
   // Systems
   EndingSystem.init();
@@ -94,6 +125,7 @@ function init() {
   BasecampSystem.init();
   QuestSystem.init();
   SoundSystem.init();
+  HiddenElementSystem.init();
 
   // Board
   BoardManager.init();
@@ -107,6 +139,9 @@ function init() {
   ModalManager.init();
   CardContextMenu.init();
   SeoulMapModal.init();
+
+  // Settings modal
+  SettingsModal.init();
 
   // Screens
   MainMenu.init();

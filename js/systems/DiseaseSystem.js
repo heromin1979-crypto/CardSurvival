@@ -4,6 +4,7 @@
 
 import EventBus    from '../core/EventBus.js';
 import GameState   from '../core/GameState.js';
+import I18n        from '../core/I18n.js';
 import EndingSystem from './EndingSystem.js';
 import SeasonSystem from './SeasonSystem.js';
 import DISEASES    from '../data/diseases.js';
@@ -159,41 +160,41 @@ const DiseaseSystem = {
 
     // 항생제 → 세균성 질환 치료
     if (tags.includes('antibiotic')) {
-      this._cureByFilter(gs, ['influenza', 'dysentery', 'cholera', 'sepsis'], '항생제');
+      this._cureByFilter(gs, ['influenza', 'dysentery', 'cholera', 'sepsis'], I18n.itemName(def.id, def.name));
     }
 
     // 해독제 → 독성 질환 치료
     if (tags.includes('antidote')) {
-      this._cureByFilter(gs, ['dysentery', 'cholera'], '해독제');
+      this._cureByFilter(gs, ['dysentery', 'cholera'], I18n.itemName(def.id, def.name));
     }
 
     // 방사선 차단제 → 방사선 질환 치료
     if (tags.includes('rad_blocker') || itemId === 'rad_blocker') {
-      this._cureByFilter(gs, ['radiation_sickness'], '방사선 차단제');
+      this._cureByFilter(gs, ['radiation_sickness'], I18n.itemName(def.id, def.name));
     }
 
     // 비타민 / 응급처치 키트 → 감기 완치
     if (itemId === 'vitamins' || itemId === 'first_aid_kit') {
-      this._cureByFilter(gs, ['common_cold'], '비타민');
+      this._cureByFilter(gs, ['common_cold'], I18n.itemName(def.id, def.name));
     }
 
     // 붕대 / 거즈 → 출혈 지혈
     if (itemId === 'bandage' || itemId === 'gauze') {
-      this._cureByFilter(gs, ['bleeding'], '붕대');
+      this._cureByFilter(gs, ['bleeding'], I18n.itemName(def.id, def.name));
     }
 
     // 구급상자 / 소독약 → 깊은 열상 치료 + 출혈 지혈
     if (itemId === 'first_aid_kit' || itemId === 'antiseptic') {
-      this._cureByFilter(gs, ['deep_laceration', 'bleeding'], itemId === 'first_aid_kit' ? '구급상자' : '소독약');
+      this._cureByFilter(gs, ['deep_laceration', 'bleeding'], I18n.itemName(def.id, def.name));
     }
 
     // 진통제 → 골절 증상 완화 (치료는 아니지만 지속시간 대폭 단축) + 뇌진탕 치료
     if (itemId === 'painkiller') {
-      this._cureByFilter(gs, ['concussion'], '진통제');
+      this._cureByFilter(gs, ['concussion'], I18n.itemName(def.id, def.name));
       const frac = gs.player.diseases.find(d => d.id === 'fracture');
       if (frac) {
         frac.tpElapsed = Math.min(frac.tpDuration, frac.tpElapsed + 72 * 3);  // 3일 단축
-        EventBus.emit('notify', { message: '💊 진통제로 골절 회복 촉진 (3일 단축)', type: 'info' });
+        EventBus.emit('notify', { message: I18n.t('disease.painkiller'), type: 'info' });
       }
     }
 
@@ -202,7 +203,7 @@ const DiseaseSystem = {
       const hs = gs.player.diseases.find(d => d.id === 'heatstroke');
       if (hs) {
         hs.tpElapsed = Math.max(0, hs.tpElapsed - 48);  // 12시간 단축
-        EventBus.emit('notify', { message: '💧 열사병 회복 중 (수분 보충)', type: 'info' });
+        EventBus.emit('notify', { message: I18n.t('disease.heatstroke'), type: 'info' });
       }
     }
   },
@@ -226,12 +227,12 @@ const DiseaseSystem = {
         const temp = gs.stats.temperature.current;
         if (def.healCondition.tempAbove && temp > def.healCondition.tempAbove) {
           toRemove.push(disease.id);
-          EventBus.emit('notify', { message: `✅ ${def.name} 회복됨 (체온 정상화)`, type: 'success' });
+          EventBus.emit('notify', { message: I18n.t('disease.healTemp', { name: def.name }), type: 'success' });
           continue;
         }
         if (def.healCondition.tempBelow && temp < def.healCondition.tempBelow) {
           toRemove.push(disease.id);
-          EventBus.emit('notify', { message: `✅ ${def.name} 회복됨 (열 내림)`, type: 'success' });
+          EventBus.emit('notify', { message: I18n.t('disease.healFever', { name: def.name }), type: 'success' });
           continue;
         }
       }
@@ -239,7 +240,7 @@ const DiseaseSystem = {
       // 자연 기간 만료
       if (disease.tpElapsed >= disease.tpDuration) {
         toRemove.push(disease.id);
-        EventBus.emit('notify', { message: `✅ ${def.name} 자연 회복됨`, type: 'success' });
+        EventBus.emit('notify', { message: I18n.t('disease.naturalHeal', { name: def.name }), type: 'success' });
         continue;
       }
 
@@ -258,7 +259,7 @@ const DiseaseSystem = {
         const warnAt = Math.floor(disease.fatalTp * 0.5);
         if (disease.tpElapsed === warnAt) {
           EventBus.emit('notify', {
-            message: `⚠️ ${def.name}: 상태가 위험합니다! 즉각 치료가 필요합니다.`,
+            message: I18n.t('disease.warning', { name: def.name }),
             type: 'danger',
           });
         }
@@ -326,7 +327,7 @@ const DiseaseSystem = {
     gs.player.diseases.push({ id: diseaseId, tpElapsed: 0, tpDuration, fatalTp });
 
     EventBus.emit('notify', {
-      message: `🤒 ${def.name} 발병! ${def.description}`,
+      message: I18n.t('disease.contracted', { name: def.name, desc: def.description }),
       type: 'danger',
     });
 
@@ -334,7 +335,7 @@ const DiseaseSystem = {
     if (def.severity >= 3) {
       setTimeout(() => {
         EventBus.emit('notify', {
-          message: `☠️ ${def.name}: 즉각적인 치료 없이는 생존이 어렵습니다!`,
+          message: I18n.t('disease.severe', { name: def.name }),
           type: 'danger',
         });
       }, 200);
@@ -362,7 +363,7 @@ const DiseaseSystem = {
     for (const c of cured) {
       const def = DISEASES[c.id];
       EventBus.emit('notify', {
-        message: `💊 ${itemName}으로 ${def.name} 치료됨!`,
+        message: I18n.t('disease.cured', { item: itemName, name: def.name }),
         type: 'success',
       });
     }

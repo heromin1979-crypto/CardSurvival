@@ -2,6 +2,7 @@
 import EventBus    from '../core/EventBus.js';
 import GameState   from '../core/GameState.js';
 import CombatSystem from '../systems/CombatSystem.js';
+import I18n        from '../core/I18n.js';
 
 const BATTLE_BG    = './assets/images/battle_bg.jpg';
 const PLAYER_IMG_M = './assets/images/player_M.jpg';
@@ -51,7 +52,7 @@ const CombatUI = {
              data-idx="${i}">
           ${spriteHtml}
           <div class="cv-hp-overlay">
-            <div class="cv-hp-name">${enemy.name}${isDead ? ' 💀' : isTarget ? ' ◀' : ''}</div>
+            <div class="cv-hp-name">${I18n.enemyName(enemy.id ?? enemy.definitionId, enemy.name)}${isDead ? ' 💀' : isTarget ? ' ◀' : ''}</div>
             <div class="cv-hp-bar-track">
               <div class="cv-hp-bar-fill ${eHpClass}" style="width:${eHpPct.toFixed(1)}%"></div>
             </div>
@@ -65,10 +66,10 @@ const CombatUI = {
     const weaponBtns = weapons.map(w => {
       const def     = GameState.getCardDef(w.instanceId);
       const critStr = def?.combat?.critChance
-        ? `<span class="btn-sub">치명 ${Math.round(def.combat.critChance * 100)}%</span>`
+        ? `<span class="btn-sub">${I18n.t('combat.crit', { pct: Math.round(def.combat.critChance * 100) })}</span>`
         : '';
       return `<button class="combat-action-btn" data-action="attack" data-weapon="${w.instanceId}">
-        ${def?.icon ?? '⚔'} ${def?.name ?? '무기'} ${critStr}
+        ${def?.icon ?? '⚔'} ${I18n.itemName(def?.id ?? GameState.cards[w.instanceId]?.definitionId, def?.name ?? I18n.t('combat.weapon'))} ${critStr}
       </button>`;
     }).join('');
 
@@ -77,19 +78,19 @@ const CombatUI = {
     const medicalBtns = medicals.map(m => {
       const def = GameState.getCardDef(m.instanceId);
       return `<button class="combat-action-btn medical" data-action="useItem" data-weapon="${m.instanceId}">
-        ${def?.icon ?? '💊'} ${def?.name ?? '아이템'}
+        ${def?.icon ?? '💊'} ${I18n.itemName(def?.id ?? GameState.cards[m.instanceId]?.definitionId, def?.name ?? I18n.t('combat.item'))}
       </button>`;
     }).join('');
 
     // ── 전투 로그 ──
     const LOG_CLS = [
-      ['[크리티컬', 'crit'],
-      ['[공격]',    'hit'],
-      ['[적 공격]', 'dmg'],
-      ['[출혈]',    'bleed'], ['[산성',  'bleed'],
-      ['[기절]',    'warn'],  ['[강타]', 'warn'],
-      ['[아이템]',  'heal'],
-      ['[은신]',    'info'],  ['[도주]', 'info'],
+      [I18n.t('combat.logCrit'),     'crit'],
+      [I18n.t('combat.logAttack'),   'hit'],
+      [I18n.t('combat.logEnemyAtk'), 'dmg'],
+      [I18n.t('combat.logBleed'),    'bleed'], [I18n.t('combat.logAcid'),  'bleed'],
+      [I18n.t('combat.logStun'),     'warn'],  [I18n.t('combat.logSmash'), 'warn'],
+      [I18n.t('combat.logItem'),     'heal'],
+      [I18n.t('combat.logStealth'),  'info'],  [I18n.t('combat.logFlee'), 'info'],
     ];
     const getLogCls = l => (LOG_CLS.find(([prefix]) => l.startsWith(prefix)) ?? ['', 'info'])[1];
     const logHtml   = combat.log.slice(-10).map(l =>
@@ -125,25 +126,25 @@ const CombatUI = {
 
           <!-- 헤더 -->
           <div class="cp-header">
-            <span class="cp-title">⚔ 라운드 ${combat.round}</span>
-            <span class="cp-noise">소음 ${Math.round(gs.noise.level)} · 적 ${aliveCount}/${enemyCount}</span>
+            <span class="cp-title">${I18n.t('combat.round', { round: combat.round })}</span>
+            <span class="cp-noise">${I18n.t('combat.noiseEnemy', { noise: Math.round(gs.noise.level), alive: aliveCount, total: enemyCount })}</span>
           </div>
 
           <!-- 행동 -->
           <div class="cp-section">
-            <div class="cp-section-label">행동</div>
+            <div class="cp-section-label">${I18n.t('combat.actions')}</div>
             <div class="cp-action-grid">
               ${weaponBtns}
-              <button class="combat-action-btn" data-action="unarmed">👊 맨손</button>
+              <button class="combat-action-btn" data-action="unarmed">${I18n.t('combat.unarmed')}</button>
               ${medicalBtns}
-              <button class="combat-action-btn secondary" data-action="stealth">🌑 은신</button>
-              <button class="combat-action-btn secondary" data-action="flee">🏃 도주</button>
+              <button class="combat-action-btn secondary" data-action="stealth">${I18n.t('combat.stealth')}</button>
+              <button class="combat-action-btn secondary" data-action="flee">${I18n.t('combat.flee')}</button>
             </div>
           </div>
 
           <!-- 전투 기록 -->
           <div class="cp-section cp-log-section">
-            <div class="cp-section-label">전투 기록</div>
+            <div class="cp-section-label">${I18n.t('combat.log')}</div>
             <div class="combat-log" id="combat-log">${logHtml}</div>
           </div>
 

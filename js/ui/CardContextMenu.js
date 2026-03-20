@@ -4,6 +4,7 @@
 import EventBus       from '../core/EventBus.js';
 import GameState      from '../core/GameState.js';
 import DismantleSystem from '../systems/DismantleSystem.js';
+import I18n           from '../core/I18n.js';
 
 const LONG_PRESS_MS   = 3000;
 const MOVE_THRESHOLD  = 8;   // px — 이 이상 움직이면 드래그로 판정하여 취소
@@ -97,21 +98,29 @@ const CardContextMenu = {
     // 제목
     const title = document.createElement('div');
     title.className = 'ctx-title';
-    title.textContent = def.name;
+    title.textContent = I18n.itemName(def.id ?? GameState.cards[instanceId]?.definitionId, def.name);
     menu.appendChild(title);
 
     // 분해 버튼
+    const tpCost = def.dismantleTP ?? 0;
+    const tpLabel = tpCost > 0 ? ` (${tpCost}TP)` : '';
+    const remainTP = 72 - GameState.time.tpInDay;
+    const tpInsufficient = tpCost > 0 && remainTP < tpCost;
+
     const btnDismantle = document.createElement('button');
-    btnDismantle.className = `ctx-btn${canDismantle ? '' : ' disabled'}`;
-    btnDismantle.innerHTML = `🔨 분해`;
+    btnDismantle.className = `ctx-btn${canDismantle && !tpInsufficient ? '' : ' disabled'}`;
+    btnDismantle.innerHTML = `${I18n.t('cardMenu.dismantle')}${tpLabel}`;
     if (!canDismantle) {
       btnDismantle.disabled = true;
-      btnDismantle.title = '이 아이템은 분해할 수 없습니다';
+      btnDismantle.title = I18n.t('cardMenu.cantDismantle');
+    } else if (tpInsufficient) {
+      btnDismantle.disabled = true;
+      btnDismantle.title = I18n.t('cardMenu.tpShort', { need: tpCost, remain: remainTP });
     } else {
       const preview = def.dismantle.map(d => {
         const pct = Math.round(d.chance * 100);
         const dDef = window.__GAME_DATA__?.items[d.definitionId];
-        return `${dDef?.icon ?? '?'}${dDef?.name ?? d.definitionId} ×${d.qty} (${pct}%)`;
+        return `${dDef?.icon ?? '?'}${I18n.itemName(d.definitionId, dDef?.name ?? d.definitionId)} ×${d.qty} (${pct}%)`;
       }).join('\n');
       btnDismantle.title = preview;
       btnDismantle.addEventListener('click', () => {
@@ -125,12 +134,12 @@ const CardContextMenu = {
     // 합성 가능 버튼
     const btnCraft = document.createElement('button');
     btnCraft.className = `ctx-btn${craftable.length > 0 ? '' : ' disabled'}`;
-    btnCraft.innerHTML = `⚗️ 합성 가능 (${craftable.length}종)`;
+    btnCraft.innerHTML = I18n.t('cardMenu.craftable', { count: craftable.length });
     if (craftable.length === 0) {
       btnCraft.disabled = true;
-      btnCraft.title = '현재 보드에서 이 카드를 이용한 합성 없음';
+      btnCraft.title = I18n.t('cardMenu.noCraft');
     } else {
-      btnCraft.title = craftable.map(b => b.name).join(', ');
+      btnCraft.title = craftable.map(b => I18n.blueprintName(b.id, b.name)).join(', ');
       btnCraft.addEventListener('click', () => {
         this._close();
         // 제작 패널로 전환 및 필터 하이라이트
@@ -142,7 +151,7 @@ const CardContextMenu = {
     // 닫기 버튼
     const btnClose = document.createElement('button');
     btnClose.className = 'ctx-btn close';
-    btnClose.textContent = '✕ 닫기';
+    btnClose.textContent = I18n.t('cardMenu.close');
     btnClose.addEventListener('click', () => this._close());
     menu.appendChild(btnClose);
 

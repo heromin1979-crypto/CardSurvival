@@ -24,6 +24,8 @@ const STACK_ROWS = [
   ['empty_can'               , true, 15 ],
   ['electronic_parts'        , true, 10 ],
   ['spring'                  , true,  8 ],
+  ['tree_log'                , true,  3 ],
+  ['herb'                    , true, 10 ],
 
   // ── 가공 재료 ─────────────────────────────────────────────────
   ['sharp_blade'             , true,  5 ],
@@ -79,6 +81,7 @@ const STACK_ROWS = [
   ['machete'                 , true,  2 ],
   ['spear'                   , false, 1 ],
   ['stun_gun'                , true,  2 ],
+  ['hand_axe'                , true,  2 ],
 
   // ── 원거리/투척 ───────────────────────────────────────────────
   ['pistol'                  , true,  2 ],
@@ -101,6 +104,7 @@ const STACK_ROWS = [
   ['radio'                   , true,  2 ],
   ['lighter'                 , true,  5 ],
   ['compass'                 , true,  2 ],
+  ['whetstone'               , true,  3 ],
   ['rope_ladder'             , true,  2 ],
 
   // ── 구조물 ────────────────────────────────────────────────────

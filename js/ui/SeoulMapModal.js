@@ -1,6 +1,7 @@
 // === SEOUL MAP MODAL ===
 // 서울 25구 지역 지도 SVG 오버레이 모달
 import GameState from '../core/GameState.js';
+import I18n     from '../core/I18n.js';
 import { DISTRICTS } from '../data/districts.js';
 
 const DANGER_COLORS = ['#336633', '#4a7a33', '#886622', '#aa3333', '#771111', '#440000'];
@@ -88,12 +89,12 @@ const SeoulMapModal = {
       <div class="seoul-map-modal">
 
         <div class="seoul-map-header">
-          <span class="seoul-map-title">🗺 서울 생존 지도</span>
+          <span class="seoul-map-title">${I18n.t('map.title')}</span>
           <div class="seoul-map-legend">
-            <span class="sm-leg sm-leg-current">◉ 현재위치 (${currentName})</span>
-            <span class="sm-leg sm-leg-adjacent">◎ 이동가능</span>
-            <span class="sm-leg sm-leg-visited">○ 방문함</span>
-            <span class="sm-leg sm-leg-fog">▪ 미탐색</span>
+            <span class="sm-leg sm-leg-current">${I18n.t('map.current', { name: I18n.districtName(currentId, currentName) })}</span>
+            <span class="sm-leg sm-leg-adjacent">${I18n.t('map.accessible')}</span>
+            <span class="sm-leg sm-leg-visited">${I18n.t('map.visited')}</span>
+            <span class="sm-leg sm-leg-fog">${I18n.t('map.unexplored')}</span>
           </div>
           <button class="seoul-map-close" id="btn-close-seoulmap">✕</button>
         </div>
@@ -138,7 +139,7 @@ const SeoulMapModal = {
         fill="#1a3a6e" opacity="0.40" rx="3"/>
   <text x="${(SVG_W / 2).toFixed(1)}" y="${(riverMY + 3.5).toFixed(1)}"
         text-anchor="middle" font-size="9" fill="#88bbee" opacity="0.90"
-        font-weight="bold">── 한강 (Han River) ──</text>
+        font-weight="bold">${I18n.t('map.hanRiver')}</text>
 `;
 
     const lines = [...pairSet].map(key => {
@@ -210,7 +211,7 @@ const SeoulMapModal = {
 
       const currentBadge = isCurrent
         ? `<text x="${cx}" y="${barY - 3}"
-             text-anchor="middle" font-size="8" fill="#c8a060">◉ 현재위치</text>`
+             text-anchor="middle" font-size="8" fill="#c8a060">${I18n.t('map.currentBadge')}</text>`
         : '';
 
       const pulseRing = isCurrent ? `
@@ -226,7 +227,7 @@ const SeoulMapModal = {
                 font-family="'Segoe UI Emoji','Apple Color Emoji','Noto Color Emoji',sans-serif"
                 opacity="${iconOpacity}">${d.icon}</text>
           <text x="${cx}" y="${y + 41}" text-anchor="middle"
-                font-size="11" font-weight="bold" fill="${nameColor}">${d.name}</text>
+                font-size="11" font-weight="bold" fill="${nameColor}">${I18n.districtName(id, d.name)}</text>
           <text x="${cx}" y="${y + 52}" text-anchor="middle"
                 font-size="8" fill="#666666">${d.id}</text>
           ${currentBadge}

@@ -2,6 +2,7 @@
 // 드랍 유효성 검사 및 카드 상호작용 실행
 import EventBus    from '../core/EventBus.js';
 import GameState   from '../core/GameState.js';
+import I18n        from '../core/I18n.js';
 import BoardManager from './BoardManager.js';
 import NoiseSystem from '../systems/NoiseSystem.js';
 import { findInteraction } from '../data/interactions.js';
@@ -11,16 +12,16 @@ const SlotResolver = {
   // 드래그 중인 카드를 (row, slot)에 드랍할 수 있는지 검사
   validateDrop(instanceId, toRow, toSlot) {
     const def = GameState.getCardDef(instanceId);
-    if (!def) return { valid: false, reason: '알 수 없는 카드' };
+    if (!def) return { valid: false, reason: I18n.t('slot.unknownCard') };
 
     // 장소 카드: 드래그 불가 (클릭으로만 사용)
     if (def.type === 'location') {
-      return { valid: false, reason: '장소 카드는 이동할 수 없습니다.' };
+      return { valid: false, reason: I18n.t('slot.cantMoveLocation') };
     }
 
     // 상단(장소) 행: 일반 아이템 배치 불가
     if (toRow === 'top') {
-      return { valid: false, reason: '장소 행에는 아이템을 놓을 수 없습니다.' };
+      return { valid: false, reason: I18n.t('slot.cantPlaceOnLocation') };
     }
 
     // ✅ 휴대(bottom) → 바닥(middle): 허용 (아이템을 바닥에 버리기)
@@ -96,7 +97,7 @@ const SlotResolver = {
     }
 
     gs._updateEncumbrance();
-    EventBus.emit('notify', { message: `${def.name} 스택: ${tgtInst.quantity}/${maxStack}`, type: 'info' });
+    EventBus.emit('notify', { message: I18n.t('slot.stackMerge', { name: I18n.itemName(def.id, def.name), qty: tgtInst.quantity, max: maxStack }), type: 'info' });
     EventBus.emit('boardChanged', {});
     return true;
   },

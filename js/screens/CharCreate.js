@@ -2,6 +2,7 @@
 import EventBus        from '../core/EventBus.js';
 import GameState       from '../core/GameState.js';
 import StateMachine    from '../core/StateMachine.js';
+import I18n            from '../core/I18n.js';
 import { DISTRICTS, getAdjacentDistricts } from '../data/districts.js';
 import { CHARACTERS }  from '../data/characters.js';
 import { LEVEL_XP_TABLE } from '../data/skillDefs.js';
@@ -22,6 +23,9 @@ const CharCreate = {
         this._render();
       }
     });
+    EventBus.on('languageChanged', () => {
+      if (this._el?.classList.contains('active')) this._render();
+    });
   },
 
   _render() {
@@ -34,11 +38,11 @@ const CharCreate = {
       <div class="charcreate-layout">
         <div class="charcreate-scroll">
 
-          <div class="menu-title" style="text-align:center; margin-bottom:4px;">생존자 생성</div>
+          <div class="menu-title" style="text-align:center; margin-bottom:4px;">${I18n.t('charCreate.title')}</div>
 
           <!-- 캐릭터 선택 -->
           <div class="form-group">
-            <label class="form-label">직업 선택</label>
+            <label class="form-label">${I18n.t('charCreate.jobSelect')}</label>
             <div class="char-grid">${charGridHtml}</div>
           </div>
 
@@ -50,11 +54,11 @@ const CharCreate = {
           <hr class="divider">
 
           <div style="font-size:10px; color:var(--text-dim); text-align:center;">
-            ⚠ 하드코어 모드 — 죽으면 처음부터
+            ${I18n.t('charCreate.hardcoreWarning')}
           </div>
 
-          <button class="menu-btn primary" id="btn-start">🚀 생존 시작</button>
-          <button class="menu-btn" id="btn-back-menu">← 메인 메뉴</button>
+          <button class="menu-btn primary" id="btn-start">${I18n.t('charCreate.start')}</button>
+          <button class="menu-btn" id="btn-back-menu">${I18n.t('charCreate.back')}</button>
 
         </div>
       </div>
@@ -75,7 +79,7 @@ const CharCreate = {
     // 시작
     this._el.querySelector('#btn-start')?.addEventListener('click', () => {
       if (!this._selectedChar) {
-        EventBus.emit('notify', { message: '직업을 선택하세요!', type: 'warn' });
+        EventBus.emit('notify', { message: I18n.t('charCreate.selectJob'), type: 'warn' });
         return;
       }
       const name = this._selectedChar.name;
@@ -93,7 +97,7 @@ const CharCreate = {
     return CHARACTERS.map(c => `
       <div class="char-card ${this._selectedChar?.id === c.id ? 'selected' : ''}" data-char-id="${c.id}">
         <span class="char-portrait">${c.portrait}</span>
-        <div class="char-card-name">${c.name}</div>
+        <div class="char-card-name">${I18n.characterName(c.id, c.name)}</div>
         <div class="char-card-title">${c.title}</div>
       </div>
     `).join('');
@@ -116,13 +120,13 @@ const CharCreate = {
       <div class="char-detail-header">
         <span class="char-detail-portrait">${c.portrait}</span>
         <div>
-          <div class="char-detail-name">${c.name}</div>
+          <div class="char-detail-name">${I18n.characterName(c.id, c.name)}</div>
           <div class="char-detail-title">${c.title}</div>
           <div class="char-base-stats">
             <span class="char-stat-badge hp">❤️ HP ${c.maxHp}</span>
-            <span class="char-stat-badge str">💪 체력 ${c.strength}</span>
-            <span class="char-stat-badge end">🧘 인내심 ${c.endurance}</span>
-            <span class="char-stat-badge sta">⚡ 스태미나 ${Math.round(c.strength * c.endurance / 50)}</span>
+            <span class="char-stat-badge str">💪 ${I18n.t('charCreate.strength')} ${c.strength}</span>
+            <span class="char-stat-badge end">🧘 ${I18n.t('charCreate.endurance')} ${c.endurance}</span>
+            <span class="char-stat-badge sta">⚡ ${I18n.t('charCreate.stamina')} ${Math.round(c.strength * c.endurance / 50)}</span>
             <span class="char-stat-badge wt">🎒 ${c.maxCarryWeight}kg</span>
           </div>
         </div>
@@ -131,7 +135,7 @@ const CharCreate = {
       <ul class="char-ability-list">${abilitiesHtml}</ul>
       <div class="char-goal">🎯 ${c.goal}</div>
       <div class="char-start-location" style="margin-top:6px; padding:4px 8px; background:var(--bg-card); border-radius:4px; font-size:11px; color:var(--text-secondary);">
-        📍 시작 위치: ${DISTRICTS[c.homeDist]?.icon ?? ''} ${DISTRICTS[c.homeDist]?.name ?? c.homeDist} — ${DISTRICTS[c.homeDist]?.description ?? ''}
+        ${I18n.t('charCreate.startLoc')}: ${DISTRICTS[c.homeDist]?.icon ?? ''} ${I18n.districtName(c.homeDist, DISTRICTS[c.homeDist]?.name ?? c.homeDist)} — ${DISTRICTS[c.homeDist]?.description ?? ''}
       </div>
     `;
   },

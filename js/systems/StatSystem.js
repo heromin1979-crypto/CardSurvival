@@ -1,6 +1,7 @@
 // === STAT SYSTEM ===
 import EventBus     from '../core/EventBus.js';
 import GameState    from '../core/GameState.js';
+import I18n         from '../core/I18n.js';
 import TraitSystem  from './TraitSystem.js';
 import EndingSystem from './EndingSystem.js';
 import SeasonSystem  from './SeasonSystem.js';
@@ -146,7 +147,7 @@ const StatSystem = {
         if (cIsAcidRain && !gs.flags._collectorAcidWarned) {
           gs.flags._collectorAcidWarned = true;
           EventBus.emit('notify', {
-            message: '☢ 산성비! 빗물 수집기를 닫았다. 비가 그칠 때까지 수집 중단.',
+            message: I18n.t('statSys.acidRainCollector'),
             type: 'danger',
           });
         } else if (!cIsAcidRain) {
@@ -157,7 +158,7 @@ const StatSystem = {
         if (!cIsAcidRain) {
           cInst.durability = Math.max(0, cInst.durability - BALANCE.campfire.fuelConsumePerTP);
           if (cInst.durability <= 0) {
-            EventBus.emit('notify', { message: '🪣 빗물 수집기가 망가졌다! 수리가 필요하다.', type: 'warn' });
+            EventBus.emit('notify', { message: I18n.t('statSys.collectorBroken'), type: 'warn' });
           }
         }
       }
@@ -183,14 +184,14 @@ const StatSystem = {
         }
         inst.durability = Math.max(0, inst.durability - BALANCE.campfire.fuelConsumePerTP);
         if (inst.durability <= 0) {
-          EventBus.emit('notify', { message: '텃밭이 시들었다! 다시 심어야 한다.', type: 'warn' });
+          EventBus.emit('notify', { message: I18n.t('statSys.gardenWilted'), type: 'warn' });
         }
 
         // 산성비 경고 (acid rain 전용)
         if (isAcidRain && !gs.flags._gardenAcidWarned) {
           gs.flags._gardenAcidWarned = true;
           EventBus.emit('notify', {
-            message: '☢ 산성비로 텃밭이 오염되었다! 비가 그칠 때까지 수확 불가.',
+            message: I18n.t('statSys.acidRainGarden'),
             type: 'danger',
           });
         } else if (!isAcidRain) {
@@ -200,7 +201,7 @@ const StatSystem = {
         // 겨울 완전 정지 알림 (gardenYieldMult === 0)
         if ((seasonMod.gardenYieldMult ?? 1.0) <= 0 && !gs.flags._gardenFrozenWarned) {
           gs.flags._gardenFrozenWarned = true;
-          EventBus.emit('notify', { message: '❄ 혹한으로 텃밭이 얼었다! 수확이 불가능하다.', type: 'danger' });
+          EventBus.emit('notify', { message: I18n.t('statSys.gardenFrozen'), type: 'danger' });
         } else if ((seasonMod.gardenYieldMult ?? 1.0) > 0) {
           gs.flags._gardenFrozenWarned = false;
         }
@@ -227,7 +228,7 @@ const StatSystem = {
       inst.contamination = Math.min(100, (inst.contamination ?? 0) + 25);
       if (inst.contamination >= 100) {
         EventBus.emit('notify', {
-          message: `🤢 ${def.name}이(가) 완전히 부패했다!`,
+          message: I18n.t('statSys.foodSpoiled', { name: I18n.itemName(def.id, def.name) }),
           type: 'danger',
         });
       }
@@ -272,7 +273,7 @@ const StatSystem = {
         gs.modStat('temperature', BALANCE.campfire.tempBoostPerTP);
         inst.durability = Math.max(0, inst.durability - BALANCE.campfire.fuelConsumePerTP);
         if (inst.durability <= 0) {
-          EventBus.emit('notify', { message: '캠프파이어의 연료가 다 떨어졌다!', type: 'warn' });
+          EventBus.emit('notify', { message: I18n.t('statSys.campfireEmpty'), type: 'warn' });
         }
       }
     }
@@ -300,7 +301,7 @@ const StatSystem = {
     if (morale.current <= 0) {
       gs.flags.despairTicks = (gs.flags.despairTicks ?? 0) + 1;
       if (gs.flags.despairTicks >= 48) {
-        this._killPlayer('절망');
+        this._killPlayer(I18n.t('statSys.deathDespair'));
         return;
       }
     } else {
@@ -315,20 +316,20 @@ const StatSystem = {
     if (infection.current >= 50) gs.flags._infectionWasHigh = true;
 
     if (hydration.current <= 0) {
-      this._killPlayer('탈수');
+      this._killPlayer(I18n.t('statSys.deathDehydration'));
     } else if (nutrition.current <= 0) {
-      this._killPlayer('아사');
+      this._killPlayer(I18n.t('statSys.deathStarvation'));
     } else if (radiation.current >= 100) {
-      this._killPlayer('방사선 중독');
+      this._killPlayer(I18n.t('statSys.deathRadiation'));
     } else if (infection.current >= 100) {
-      this._killPlayer('감염 쇼크');
+      this._killPlayer(I18n.t('statSys.deathInfection'));
     } else if (fatigue.current >= 100) {
       this._forceCollapse();
     }
 
     // HP death
     if (gs.player.hp.current <= 0) {
-      this._killPlayer('부상 과다');
+      this._killPlayer(I18n.t('combatSys.deathCause'));
     }
   },
 
@@ -346,12 +347,12 @@ const StatSystem = {
 
     // 두 번째 붕괴는 사망
     if (gs.flags.collapseCount >= 2) {
-      this._killPlayer('극도 피로');
+      this._killPlayer(I18n.t('statSys.deathFatigue'));
       return;
     }
 
     gs.stats.fatigue.current = 95;
-    EventBus.emit('notify', { message: '극도의 피로로 쓰러졌다! 즉시 휴식 필요.', type: 'danger' });
+    EventBus.emit('notify', { message: I18n.t('statSys.collapse'), type: 'danger' });
     if (gs.ui.currentState !== 'rest') {
       const from = gs.ui.currentState;
       gs.ui.currentState = 'rest';
@@ -438,9 +439,9 @@ const StatSystem = {
     gs.flags._overloadWarnTP = now;
     const pctStr = Math.round(pct * 100);
     if (pct > 1.5) {
-      EventBus.emit('notify', { message: `⚠ 짐이 너무 무겁습니다! (${pctStr}%) 스태미나가 빠르게 소모됩니다.`, type: 'danger' });
+      EventBus.emit('notify', { message: I18n.t('statSys.severeOverload', { pct: pctStr }), type: 'danger' });
     } else {
-      EventBus.emit('notify', { message: `🎒 무거운 짐으로 스태미나가 소모됩니다. (${pctStr}%)`, type: 'warn' });
+      EventBus.emit('notify', { message: I18n.t('statSys.moderateOverload', { pct: pctStr }), type: 'warn' });
     }
   },
 
@@ -456,7 +457,7 @@ const StatSystem = {
     if (st.current <= 0) {
       if (!gs.flags._staminaZeroWarned) {
         gs.flags._staminaZeroWarned = true;
-        EventBus.emit('notify', { message: '💀 기력이 다해 이동할 수 없습니다. 먼저 휴식이 필요합니다.', type: 'danger' });
+        EventBus.emit('notify', { message: I18n.t('statSys.noStamina'), type: 'danger' });
       }
     } else {
       if (gs.flags._staminaZeroWarned) gs.flags._staminaZeroWarned = false;
@@ -465,7 +466,7 @@ const StatSystem = {
         const lastWarn = gs.flags._staminaLowWarnTP ?? -999;
         if (now - lastWarn >= 15) {
           gs.flags._staminaLowWarnTP = now;
-          EventBus.emit('notify', { message: `😮‍💨 몸을 움직이기 힘들어집니다. (스태미나 ${Math.round(stPct * 100)}%)`, type: 'warn' });
+          EventBus.emit('notify', { message: I18n.t('statSys.lowStamina', { pct: Math.round(stPct * 100) }), type: 'warn' });
         }
       }
     }
@@ -487,12 +488,12 @@ const StatSystem = {
 
     if (tier.id === 'despair') {
       EventBus.emit('notify', {
-        message: '😰 절망 상태! 탐색 불가, 전투력 대폭 저하. 명상이나 아이템으로 사기를 회복하라.',
+        message: I18n.t('statSys.despair'),
         type: 'danger',
       });
     } else {
       EventBus.emit('notify', {
-        message: '😟 사기 저하! 전투 명중률 -15%, 피로 가속, 제작 실패율 증가.',
+        message: I18n.t('statSys.lowMorale'),
         type: 'warn',
       });
     }
@@ -568,7 +569,7 @@ const StatSystem = {
       gs.modStat('radiation', radGain);
       gs.modStat('infection', infGain);
       if (contam > 50) {
-        EventBus.emit('notify', { message: '오염 물질을 섭취했다! 방사선·감염 위험.', type: 'danger' });
+        EventBus.emit('notify', { message: I18n.t('statSys.contamConsumed'), type: 'danger' });
       }
       // 오염 음식/물 → 질병 발병 체크
       DiseaseSystem.checkContaminatedConsume(def, inst.contamination, gs);
@@ -600,7 +601,7 @@ const StatSystem = {
           const placed = gs.placeCardInRow(leftover.instanceId);
           if (!placed) {
             gs.removeCardInstance(leftover.instanceId);
-            EventBus.emit('notify', { message: '보드가 꽉 차 빈 용기를 놓을 수 없습니다.', type: 'warn' });
+            EventBus.emit('notify', { message: I18n.t('statSys.boardFullLeftover'), type: 'warn' });
           }
         }
         EventBus.emit('boardChanged', {});

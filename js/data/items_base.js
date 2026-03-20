@@ -140,6 +140,24 @@ const ITEMS_BASE = {
     dismantle: [{ definitionId: 'scrap_metal', qty: 1, chance: 0.8 }],
   },
 
+  tree_log: {
+    id: 'tree_log', name: '통나무', type: 'material', subtype: 'natural',
+    rarity: 'common', weight: 2.0,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🌳', description: '두꺼운 통나무. 도끼로 쪼개면 목재를, 태우면 대량의 숯을 얻는다.',
+    tags: ['material', 'wood', 'heavy'],
+    dismantle: [{ definitionId: 'wood', qty: 2, chance: 1.0 }],
+  },
+
+  herb: {
+    id: 'herb', name: '약초', type: 'material', subtype: 'natural',
+    rarity: 'uncommon', weight: 0.1,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🌿', description: '산에서 채취한 약초. 끓이면 허브차, 가공하면 의약 원료가 된다.',
+    tags: ['material', 'natural', 'medical'],
+    dismantle: [],
+  },
+
   // ─── 가공 재료 (8) ────────────────────────────────────────
 
   sharp_blade: {

@@ -293,6 +293,956 @@ const INTERACTION_RULES = [
   },
 
   // ════════════════════════════════════════════════════════
+  // 확장 상호작용 규칙 (43종 × 양방향)
+  // id 매칭 → type/tag 매칭 순서로 배치
+  // ════════════════════════════════════════════════════════
+
+  // ── A. 재료 가공 (8종) ──────────────────────────────────
+
+  // A1. 목재 + 캠프파이어 → 숯 ×2
+  { id: 'wood_to_charcoal', source: { id: 'wood' }, target: { id: 'campfire' },
+    hint: '목재를 태워 숯 생성',
+    canApply() { return { ok: true }; },
+    apply(s) {
+      s.quantity = (s.quantity ?? 1) * 2;
+      return { transformSrc: 'charcoal', consumeSrc: false, consumeTgt: false, noise: 2, message: '목재를 태워 숯을 만들었다.' };
+    },
+  },
+  { id: 'wood_to_charcoal_rev', source: { id: 'campfire' }, target: { id: 'wood' },
+    hint: '목재를 태워 숯 생성',
+    canApply() { return { ok: true }; },
+    apply(s, t) {
+      t.quantity = (t.quantity ?? 1) * 2;
+      return { transformTgt: 'charcoal', consumeSrc: false, consumeTgt: false, noise: 2, message: '목재를 태워 숯을 만들었다.' };
+    },
+  },
+
+  // A2. 칼 + 천 → 천 조각 ×3
+  { id: 'cut_cloth', source: { id: 'knife' }, target: { id: 'cloth' },
+    hint: '칼로 천 재단 → 천 조각',
+    canApply(s) { return (s.durability ?? 100) >= 10 ? { ok: true } : { ok: false, reason: '칼의 내구도가 너무 낮다.' }; },
+    apply(s, t) {
+      s.durability = Math.max(0, (s.durability ?? 100) - 10);
+      t.quantity = (t.quantity ?? 1) * 3;
+      return { transformTgt: 'cloth_scrap', consumeSrc: false, consumeTgt: false, message: '칼로 천을 잘라 천 조각을 만들었다.' };
+    },
+  },
+  { id: 'cut_cloth_rev', source: { id: 'cloth' }, target: { id: 'knife' },
+    hint: '칼로 천 재단 → 천 조각',
+    canApply(s, t) { return (t.durability ?? 100) >= 10 ? { ok: true } : { ok: false, reason: '칼의 내구도가 너무 낮다.' }; },
+    apply(s, t) {
+      t.durability = Math.max(0, (t.durability ?? 100) - 10);
+      s.quantity = (s.quantity ?? 1) * 3;
+      return { transformSrc: 'cloth_scrap', consumeSrc: false, consumeTgt: false, message: '칼로 천을 잘라 천 조각을 만들었다.' };
+    },
+  },
+
+  // A3. 고철 + 캠프파이어 → 철파이프
+  { id: 'smelt_metal', source: { id: 'scrap_metal' }, target: { id: 'campfire' },
+    hint: '고철 제련 → 철파이프',
+    canApply() { return { ok: true }; },
+    apply() { return { transformSrc: 'iron_pipe', consumeSrc: false, consumeTgt: false, noise: 3, message: '고철을 녹여 철파이프를 만들었다.' }; },
+  },
+  { id: 'smelt_metal_rev', source: { id: 'campfire' }, target: { id: 'scrap_metal' },
+    hint: '고철 제련 → 철파이프',
+    canApply() { return { ok: true }; },
+    apply() { return { transformTgt: 'iron_pipe', consumeSrc: false, consumeTgt: false, noise: 3, message: '고철을 녹여 철파이프를 만들었다.' }; },
+  },
+
+  // A4. 주류 + 캠프파이어 → 알코올 용액
+  { id: 'distill_alcohol', source: { id: 'alcohol_drink' }, target: { id: 'campfire' },
+    hint: '주류 증류 → 알코올 용액',
+    canApply() { return { ok: true }; },
+    apply() { return { transformSrc: 'alcohol_solution', consumeSrc: false, consumeTgt: false, noise: 2, message: '주류를 증류해 알코올 용액을 만들었다.' }; },
+  },
+  { id: 'distill_alcohol_rev', source: { id: 'campfire' }, target: { id: 'alcohol_drink' },
+    hint: '주류 증류 → 알코올 용액',
+    canApply() { return { ok: true }; },
+    apply() { return { transformTgt: 'alcohol_solution', consumeSrc: false, consumeTgt: false, noise: 2, message: '주류를 증류해 알코올 용액을 만들었다.' }; },
+  },
+
+  // A5. 숯 + 천 조각 → 숯 필터
+  { id: 'make_filter_quick', source: { id: 'charcoal' }, target: { id: 'cloth_scrap' },
+    hint: '숯 + 천 조각 → 숯 필터',
+    canApply() { return { ok: true }; },
+    apply() { return { transformTgt: 'charcoal_filter', consumeSrc: true, consumeTgt: false, message: '숯과 천 조각으로 숯 필터를 만들었다.' }; },
+  },
+  { id: 'make_filter_quick_rev', source: { id: 'cloth_scrap' }, target: { id: 'charcoal' },
+    hint: '숯 + 천 조각 → 숯 필터',
+    canApply() { return { ok: true }; },
+    apply() { return { transformSrc: 'charcoal_filter', consumeSrc: false, consumeTgt: true, message: '숯과 천 조각으로 숯 필터를 만들었다.' }; },
+  },
+
+  // A6. 칼 + 고철 → 날카로운 날
+  { id: 'whittle_blade', source: { id: 'knife' }, target: { id: 'scrap_metal' },
+    hint: '고철 연마 → 날카로운 날',
+    canApply(s) { return (s.durability ?? 100) >= 15 ? { ok: true } : { ok: false, reason: '칼의 내구도가 너무 낮다.' }; },
+    apply(s) {
+      s.durability = Math.max(0, (s.durability ?? 100) - 15);
+      return { transformTgt: 'sharp_blade', consumeSrc: false, consumeTgt: false, noise: 2, message: '고철을 갈아 날카로운 날을 만들었다.' };
+    },
+  },
+  { id: 'whittle_blade_rev', source: { id: 'scrap_metal' }, target: { id: 'knife' },
+    hint: '고철 연마 → 날카로운 날',
+    canApply(s, t) { return (t.durability ?? 100) >= 15 ? { ok: true } : { ok: false, reason: '칼의 내구도가 너무 낮다.' }; },
+    apply(s, t) {
+      t.durability = Math.max(0, (t.durability ?? 100) - 15);
+      return { transformSrc: 'sharp_blade', consumeSrc: false, consumeTgt: false, noise: 2, message: '고철을 갈아 날카로운 날을 만들었다.' };
+    },
+  },
+
+  // A7. 손도끼 + 통나무 → 목재 ×3
+  { id: 'chop_log', source: { id: 'hand_axe' }, target: { id: 'tree_log' },
+    hint: '도끼로 통나무 벌목 → 목재 ×3',
+    canApply(s) { return (s.durability ?? 100) >= 8 ? { ok: true } : { ok: false, reason: '도끼 내구도가 너무 낮다.' }; },
+    apply(s, t) {
+      s.durability = Math.max(0, (s.durability ?? 100) - 8);
+      t.quantity = 3;
+      return { transformTgt: 'wood', consumeSrc: false, consumeTgt: false, noise: 4, message: '도끼로 통나무를 쪼개 목재를 얻었다.' };
+    },
+  },
+  { id: 'chop_log_rev', source: { id: 'tree_log' }, target: { id: 'hand_axe' },
+    hint: '도끼로 통나무 벌목 → 목재 ×3',
+    canApply(s, t) { return (t.durability ?? 100) >= 8 ? { ok: true } : { ok: false, reason: '도끼 내구도가 너무 낮다.' }; },
+    apply(s, t) {
+      t.durability = Math.max(0, (t.durability ?? 100) - 8);
+      s.quantity = 3;
+      return { transformSrc: 'wood', consumeSrc: false, consumeTgt: false, noise: 4, message: '도끼로 통나무를 쪼개 목재를 얻었다.' };
+    },
+  },
+
+  // A8. 파이프렌치 + 고철 → 못 ×5
+  { id: 'forge_nails', source: { id: 'pipe_wrench' }, target: { id: 'scrap_metal' },
+    hint: '렌치로 고철 가공 → 못',
+    canApply(s) { return (s.durability ?? 100) >= 10 ? { ok: true } : { ok: false, reason: '렌치 내구도 부족.' }; },
+    apply(s, t) {
+      s.durability = Math.max(0, (s.durability ?? 100) - 10);
+      t.quantity = 5;
+      return { transformTgt: 'nail', consumeSrc: false, consumeTgt: false, noise: 3, message: '고철을 두드려 못을 만들었다.' };
+    },
+  },
+  { id: 'forge_nails_rev', source: { id: 'scrap_metal' }, target: { id: 'pipe_wrench' },
+    hint: '렌치로 고철 가공 → 못',
+    canApply(s, t) { return (t.durability ?? 100) >= 10 ? { ok: true } : { ok: false, reason: '렌치 내구도 부족.' }; },
+    apply(s, t) {
+      t.durability = Math.max(0, (t.durability ?? 100) - 10);
+      s.quantity = 5;
+      return { transformSrc: 'nail', consumeSrc: false, consumeTgt: false, noise: 3, message: '고철을 두드려 못을 만들었다.' };
+    },
+  },
+
+  // ── A+. 재료 가공 확장 (9종) ─────────────────────────────
+
+  // A9. 칼 + 통나무 → 목재 ×2 (비효율 가공)
+  { id: 'carve_log', source: { id: 'knife' }, target: { id: 'tree_log' },
+    hint: '칼로 통나무 깎기 → 목재 ×2',
+    canApply(s) { return (s.durability ?? 100) >= 15 ? { ok: true } : { ok: false, reason: '칼의 내구도가 너무 낮다.' }; },
+    apply(s, t) {
+      s.durability = Math.max(0, (s.durability ?? 100) - 15);
+      t.quantity = 2;
+      return { transformTgt: 'wood', consumeSrc: false, consumeTgt: false, message: '칼로 통나무를 깎아 목재를 얻었다. (비효율적)' };
+    },
+  },
+  { id: 'carve_log_rev', source: { id: 'tree_log' }, target: { id: 'knife' },
+    hint: '칼로 통나무 깎기 → 목재 ×2',
+    canApply(s, t) { return (t.durability ?? 100) >= 15 ? { ok: true } : { ok: false, reason: '칼의 내구도가 너무 낮다.' }; },
+    apply(s, t) {
+      t.durability = Math.max(0, (t.durability ?? 100) - 15);
+      s.quantity = 2;
+      return { transformSrc: 'wood', consumeSrc: false, consumeTgt: false, message: '칼로 통나무를 깎아 목재를 얻었다. (비효율적)' };
+    },
+  },
+
+  // A10. 통나무 + 캠프파이어 → 숯 ×4 (대량 숯)
+  { id: 'burn_log', source: { id: 'tree_log' }, target: { id: 'campfire' },
+    hint: '통나무 태우기 → 숯 ×4',
+    canApply() { return { ok: true }; },
+    apply(s) {
+      s.quantity = 4;
+      return { transformSrc: 'charcoal', consumeSrc: false, consumeTgt: false, noise: 3, message: '통나무를 태워 대량의 숯을 만들었다.' };
+    },
+  },
+  { id: 'burn_log_rev', source: { id: 'campfire' }, target: { id: 'tree_log' },
+    hint: '통나무 태우기 → 숯 ×4',
+    canApply() { return { ok: true }; },
+    apply(s, t) {
+      t.quantity = 4;
+      return { transformTgt: 'charcoal', consumeSrc: false, consumeTgt: false, noise: 3, message: '통나무를 태워 대량의 숯을 만들었다.' };
+    },
+  },
+
+  // A11. 칼 + 로프 → 실 ×3 (로프 풀기)
+  { id: 'unravel_rope', source: { id: 'knife' }, target: { id: 'rope' },
+    hint: '칼로 로프 풀기 → 실 ×3',
+    canApply(s) { return (s.durability ?? 100) >= 5 ? { ok: true } : { ok: false, reason: '칼의 내구도가 너무 낮다.' }; },
+    apply(s, t) {
+      s.durability = Math.max(0, (s.durability ?? 100) - 5);
+      t.quantity = 3;
+      return { transformTgt: 'thread', consumeSrc: false, consumeTgt: false, message: '칼로 로프를 풀어 실을 얻었다.' };
+    },
+  },
+  { id: 'unravel_rope_rev', source: { id: 'rope' }, target: { id: 'knife' },
+    hint: '칼로 로프 풀기 → 실 ×3',
+    canApply(s, t) { return (t.durability ?? 100) >= 5 ? { ok: true } : { ok: false, reason: '칼의 내구도가 너무 낮다.' }; },
+    apply(s, t) {
+      t.durability = Math.max(0, (t.durability ?? 100) - 5);
+      s.quantity = 3;
+      return { transformSrc: 'thread', consumeSrc: false, consumeTgt: false, message: '칼로 로프를 풀어 실을 얻었다.' };
+    },
+  },
+
+  // A12. 빈병 + 캠프파이어 → 유리파편 ×2 (유리 용해)
+  { id: 'smash_bottle', source: { id: 'empty_bottle' }, target: { id: 'campfire' },
+    hint: '빈병 가열 → 유리파편 ×2',
+    canApply() { return { ok: true }; },
+    apply(s) {
+      s.quantity = 2;
+      return { transformSrc: 'glass_shard', consumeSrc: false, consumeTgt: false, noise: 2, message: '빈병을 깨뜨려 유리파편을 얻었다.' };
+    },
+  },
+  { id: 'smash_bottle_rev', source: { id: 'campfire' }, target: { id: 'empty_bottle' },
+    hint: '빈병 가열 → 유리파편 ×2',
+    canApply() { return { ok: true }; },
+    apply(s, t) {
+      t.quantity = 2;
+      return { transformTgt: 'glass_shard', consumeSrc: false, consumeTgt: false, noise: 2, message: '빈병을 깨뜨려 유리파편을 얻었다.' };
+    },
+  },
+
+  // A13. 약초 + 캠프파이어 → 비타민 (약초 가공)
+  { id: 'process_herb', source: { id: 'herb' }, target: { id: 'campfire' },
+    hint: '약초 가공 → 비타민',
+    canApply() { return { ok: true }; },
+    apply() { return { transformSrc: 'vitamins', consumeSrc: false, consumeTgt: false, noise: 1, message: '약초를 끓여 비타민 추출물을 만들었다.' }; },
+  },
+  { id: 'process_herb_rev', source: { id: 'campfire' }, target: { id: 'herb' },
+    hint: '약초 가공 → 비타민',
+    canApply() { return { ok: true }; },
+    apply() { return { transformTgt: 'vitamins', consumeSrc: false, consumeTgt: false, noise: 1, message: '약초를 끓여 비타민 추출물을 만들었다.' }; },
+  },
+
+  // A14. 파이프렌치 + 철파이프 → 스프링 (파이프 감기)
+  { id: 'coil_spring', source: { id: 'pipe_wrench' }, target: { id: 'iron_pipe' },
+    hint: '렌치로 파이프 감기 → 스프링',
+    canApply(s) { return (s.durability ?? 100) >= 10 ? { ok: true } : { ok: false, reason: '렌치 내구도 부족.' }; },
+    apply(s) {
+      s.durability = Math.max(0, (s.durability ?? 100) - 10);
+      return { transformTgt: 'spring', consumeSrc: false, consumeTgt: false, noise: 3, message: '렌치로 철파이프를 감아 스프링을 만들었다.' };
+    },
+  },
+  { id: 'coil_spring_rev', source: { id: 'iron_pipe' }, target: { id: 'pipe_wrench' },
+    hint: '렌치로 파이프 감기 → 스프링',
+    canApply(s, t) { return (t.durability ?? 100) >= 10 ? { ok: true } : { ok: false, reason: '렌치 내구도 부족.' }; },
+    apply(s, t) {
+      t.durability = Math.max(0, (t.durability ?? 100) - 10);
+      return { transformSrc: 'spring', consumeSrc: false, consumeTgt: false, noise: 3, message: '렌치로 철파이프를 감아 스프링을 만들었다.' };
+    },
+  },
+
+  // A15. 쇠지렛대 + 고철 → 철파이프 (지렛대로 고철 펴기)
+  { id: 'pry_metal', source: { id: 'crowbar' }, target: { id: 'scrap_metal' },
+    hint: '쇠지렛대로 고철 펴기 → 철파이프',
+    canApply(s) { return (s.durability ?? 100) >= 10 ? { ok: true } : { ok: false, reason: '쇠지렛대 내구도 부족.' }; },
+    apply(s) {
+      s.durability = Math.max(0, (s.durability ?? 100) - 10);
+      return { transformTgt: 'iron_pipe', consumeSrc: false, consumeTgt: false, noise: 4, message: '쇠지렛대로 고철을 펴서 철파이프를 만들었다.' };
+    },
+  },
+  { id: 'pry_metal_rev', source: { id: 'scrap_metal' }, target: { id: 'crowbar' },
+    hint: '쇠지렛대로 고철 펴기 → 철파이프',
+    canApply(s, t) { return (t.durability ?? 100) >= 10 ? { ok: true } : { ok: false, reason: '쇠지렛대 내구도 부족.' }; },
+    apply(s, t) {
+      t.durability = Math.max(0, (t.durability ?? 100) - 10);
+      return { transformSrc: 'iron_pipe', consumeSrc: false, consumeTgt: false, noise: 4, message: '쇠지렛대로 고철을 펴서 철파이프를 만들었다.' };
+    },
+  },
+
+  // A17. 칼 + 가죽 → 실 ×2 (가죽끈 절단)
+  { id: 'cut_leather_strips', source: { id: 'knife' }, target: { id: 'leather' },
+    hint: '칼로 가죽 절단 → 실 ×2',
+    canApply(s) { return (s.durability ?? 100) >= 10 ? { ok: true } : { ok: false, reason: '칼의 내구도가 너무 낮다.' }; },
+    apply(s, t) {
+      s.durability = Math.max(0, (s.durability ?? 100) - 10);
+      t.quantity = 2;
+      return { transformTgt: 'thread', consumeSrc: false, consumeTgt: false, message: '가죽을 잘라 가죽끈(실)을 만들었다.' };
+    },
+  },
+  { id: 'cut_leather_strips_rev', source: { id: 'leather' }, target: { id: 'knife' },
+    hint: '칼로 가죽 절단 → 실 ×2',
+    canApply(s, t) { return (t.durability ?? 100) >= 10 ? { ok: true } : { ok: false, reason: '칼의 내구도가 너무 낮다.' }; },
+    apply(s, t) {
+      t.durability = Math.max(0, (t.durability ?? 100) - 10);
+      s.quantity = 2;
+      return { transformSrc: 'thread', consumeSrc: false, consumeTgt: false, message: '가죽을 잘라 가죽끈(실)을 만들었다.' };
+    },
+  },
+
+  // ── B. 수리/보수 (5종) ──────────────────────────────────
+
+  // B9. 덕테이프 + 방어구 → 수리 (+20)
+  { id: 'repair_armor_tape', source: { id: 'duct_tape' }, target: { type: 'armor' },
+    hint: '덕테이프로 방어구 수리 (+20)',
+    canApply(s, t) { return (t.durability ?? 100) >= 100 ? { ok: false, reason: '이미 최대 내구도다.' } : { ok: true }; },
+    apply(s, t) {
+      t.durability = Math.min(100, (t.durability ?? 100) + 20);
+      s.quantity = Math.max(0, (s.quantity ?? 1) - 1);
+      return { message: '덕테이프로 방어구를 수리했다.', consumeSrc: s.quantity <= 0, consumeTgt: false };
+    },
+  },
+  { id: 'repair_armor_tape_rev', source: { type: 'armor' }, target: { id: 'duct_tape' },
+    hint: '덕테이프로 방어구 수리 (+20)',
+    canApply(s) { return (s.durability ?? 100) >= 100 ? { ok: false, reason: '이미 최대 내구도다.' } : { ok: true }; },
+    apply(s, t) {
+      s.durability = Math.min(100, (s.durability ?? 100) + 20);
+      t.quantity = Math.max(0, (t.quantity ?? 1) - 1);
+      return { message: '덕테이프로 방어구를 수리했다.', consumeSrc: false, consumeTgt: t.quantity <= 0 };
+    },
+  },
+
+  // B10. 덕테이프 + 구조물 → 수리 (+25)
+  { id: 'repair_structure_tape', source: { id: 'duct_tape' }, target: { type: 'structure' },
+    hint: '덕테이프로 구조물 수리 (+25)',
+    canApply(s, t) {
+      const max = window.__GAME_DATA__?.items[t.definitionId]?.defaultDurability ?? 100;
+      return (t.durability ?? max) >= max ? { ok: false, reason: '이미 최대 내구도다.' } : { ok: true };
+    },
+    apply(s, t) {
+      const max = window.__GAME_DATA__?.items[t.definitionId]?.defaultDurability ?? 100;
+      t.durability = Math.min(max, (t.durability ?? max) + 25);
+      s.quantity = Math.max(0, (s.quantity ?? 1) - 1);
+      return { message: '덕테이프로 구조물을 수리했다.', consumeSrc: s.quantity <= 0, consumeTgt: false };
+    },
+  },
+  { id: 'repair_structure_tape_rev', source: { type: 'structure' }, target: { id: 'duct_tape' },
+    hint: '덕테이프로 구조물 수리 (+25)',
+    canApply(s) {
+      const max = window.__GAME_DATA__?.items[s.definitionId]?.defaultDurability ?? 100;
+      return (s.durability ?? max) >= max ? { ok: false, reason: '이미 최대 내구도다.' } : { ok: true };
+    },
+    apply(s, t) {
+      const max = window.__GAME_DATA__?.items[s.definitionId]?.defaultDurability ?? 100;
+      s.durability = Math.min(max, (s.durability ?? max) + 25);
+      t.quantity = Math.max(0, (t.quantity ?? 1) - 1);
+      return { message: '덕테이프로 구조물을 수리했다.', consumeSrc: false, consumeTgt: t.quantity <= 0 };
+    },
+  },
+
+  // B11. 연료통 + 캠프파이어 → 캠프파이어 완전 수리
+  { id: 'refuel_campfire', source: { id: 'fuel_can' }, target: { id: 'campfire' },
+    hint: '연료 보충 → 캠프파이어 완전 수리',
+    canApply(s, t) { return (t.durability ?? 50) >= 50 ? { ok: false, reason: '캠프파이어가 이미 최대 상태다.' } : { ok: true }; },
+    apply(s, t) { t.durability = 50; return { message: '연료를 부어 캠프파이어를 보충했다.', consumeSrc: true, consumeTgt: false, noise: 2 }; },
+  },
+  { id: 'refuel_campfire_rev', source: { id: 'campfire' }, target: { id: 'fuel_can' },
+    hint: '연료 보충 → 캠프파이어 완전 수리',
+    canApply(s) { return (s.durability ?? 50) >= 50 ? { ok: false, reason: '캠프파이어가 이미 최대 상태다.' } : { ok: true }; },
+    apply(s) { s.durability = 50; return { message: '연료를 부어 캠프파이어를 보충했다.', consumeSrc: false, consumeTgt: true, noise: 2 }; },
+  },
+
+  // B12. 실 + 방어구 → 수선 (+15)
+  { id: 'mend_armor_thread', source: { id: 'thread' }, target: { type: 'armor' },
+    hint: '실로 방어구 수선 (+15)',
+    canApply(s, t) { return (t.durability ?? 100) >= 100 ? { ok: false, reason: '이미 최대 내구도다.' } : { ok: true }; },
+    apply(s, t) {
+      t.durability = Math.min(100, (t.durability ?? 100) + 15);
+      s.quantity = Math.max(0, (s.quantity ?? 1) - 1);
+      return { message: '실로 방어구를 수선했다.', consumeSrc: s.quantity <= 0, consumeTgt: false };
+    },
+  },
+  { id: 'mend_armor_thread_rev', source: { type: 'armor' }, target: { id: 'thread' },
+    hint: '실로 방어구 수선 (+15)',
+    canApply(s) { return (s.durability ?? 100) >= 100 ? { ok: false, reason: '이미 최대 내구도다.' } : { ok: true }; },
+    apply(s, t) {
+      s.durability = Math.min(100, (s.durability ?? 100) + 15);
+      t.quantity = Math.max(0, (t.quantity ?? 1) - 1);
+      return { message: '실로 방어구를 수선했다.', consumeSrc: false, consumeTgt: t.quantity <= 0 };
+    },
+  },
+
+  // B13. 고철 + 근접무기 → 보강 (+15, 소음)
+  { id: 'patch_melee', source: { id: 'scrap_metal' }, target: { tag: 'melee' },
+    hint: '고철로 근접무기 보강 (+15)',
+    canApply(s, t) { return (t.durability ?? 100) >= 100 ? { ok: false, reason: '이미 최대 내구도다.' } : { ok: true }; },
+    apply(s, t) {
+      t.durability = Math.min(100, (t.durability ?? 100) + 15);
+      s.quantity = Math.max(0, (s.quantity ?? 1) - 1);
+      return { message: '고철로 무기를 보강했다.', consumeSrc: s.quantity <= 0, consumeTgt: false, noise: 2 };
+    },
+  },
+  { id: 'patch_melee_rev', source: { tag: 'melee' }, target: { id: 'scrap_metal' },
+    hint: '고철로 근접무기 보강 (+15)',
+    canApply(s) { return (s.durability ?? 100) >= 100 ? { ok: false, reason: '이미 최대 내구도다.' } : { ok: true }; },
+    apply(s, t) {
+      s.durability = Math.min(100, (s.durability ?? 100) + 15);
+      t.quantity = Math.max(0, (t.quantity ?? 1) - 1);
+      return { message: '고철로 무기를 보강했다.', consumeSrc: false, consumeTgt: t.quantity <= 0, noise: 2 };
+    },
+  },
+
+  // ── C. 세정/정화 (5종) ──────────────────────────────────
+
+  // C14. 소독약 + 무기 → 오염 제거
+  { id: 'disinfect_weapon', source: { id: 'antiseptic' }, target: { type: 'weapon' },
+    hint: '소독약으로 무기 오염 제거',
+    canApply(s, t) { return (t.contamination ?? 0) > 0 ? { ok: true } : { ok: false, reason: '오염이 없다.' }; },
+    apply(s, t) {
+      t.contamination = 0;
+      s.quantity = Math.max(0, (s.quantity ?? 1) - 1);
+      return { message: '소독약으로 무기를 소독했다.', consumeSrc: s.quantity <= 0, consumeTgt: false };
+    },
+  },
+  { id: 'disinfect_weapon_rev', source: { type: 'weapon' }, target: { id: 'antiseptic' },
+    hint: '소독약으로 무기 오염 제거',
+    canApply(s) { return (s.contamination ?? 0) > 0 ? { ok: true } : { ok: false, reason: '오염이 없다.' }; },
+    apply(s, t) {
+      s.contamination = 0;
+      t.quantity = Math.max(0, (t.quantity ?? 1) - 1);
+      return { message: '소독약으로 무기를 소독했다.', consumeSrc: false, consumeTgt: t.quantity <= 0 };
+    },
+  },
+
+  // C15. 소독약 + 방어구 → 오염 제거
+  { id: 'disinfect_armor', source: { id: 'antiseptic' }, target: { type: 'armor' },
+    hint: '소독약으로 방어구 오염 제거',
+    canApply(s, t) { return (t.contamination ?? 0) > 0 ? { ok: true } : { ok: false, reason: '오염이 없다.' }; },
+    apply(s, t) {
+      t.contamination = 0;
+      s.quantity = Math.max(0, (s.quantity ?? 1) - 1);
+      return { message: '소독약으로 방어구를 소독했다.', consumeSrc: s.quantity <= 0, consumeTgt: false };
+    },
+  },
+  { id: 'disinfect_armor_rev', source: { type: 'armor' }, target: { id: 'antiseptic' },
+    hint: '소독약으로 방어구 오염 제거',
+    canApply(s) { return (s.contamination ?? 0) > 0 ? { ok: true } : { ok: false, reason: '오염이 없다.' }; },
+    apply(s, t) {
+      s.contamination = 0;
+      t.quantity = Math.max(0, (t.quantity ?? 1) - 1);
+      return { message: '소독약으로 방어구를 소독했다.', consumeSrc: false, consumeTgt: t.quantity <= 0 };
+    },
+  },
+
+  // C16. 소금 + 음식(edible) → 방부 처리 (오염도 -30)
+  { id: 'preserve_food', source: { id: 'salt' }, target: { tag: 'edible' },
+    hint: '소금으로 음식 방부 처리',
+    canApply(s, t) { return (t.contamination ?? 0) > 0 ? { ok: true } : { ok: false, reason: '이미 깨끗한 음식이다.' }; },
+    apply(s, t) {
+      t.contamination = Math.max(0, (t.contamination ?? 0) - 30);
+      s.quantity = Math.max(0, (s.quantity ?? 1) - 1);
+      return { message: '소금으로 음식을 방부 처리했다.', consumeSrc: s.quantity <= 0, consumeTgt: false };
+    },
+  },
+  { id: 'preserve_food_rev', source: { tag: 'edible' }, target: { id: 'salt' },
+    hint: '소금으로 음식 방부 처리',
+    canApply(s) { return (s.contamination ?? 0) > 0 ? { ok: true } : { ok: false, reason: '이미 깨끗한 음식이다.' }; },
+    apply(s, t) {
+      s.contamination = Math.max(0, (s.contamination ?? 0) - 30);
+      t.quantity = Math.max(0, (t.quantity ?? 1) - 1);
+      return { message: '소금으로 음식을 방부 처리했다.', consumeSrc: false, consumeTgt: t.quantity <= 0 };
+    },
+  },
+
+  // C17. 천 + 무기 → 닦기 (오염도 -40)
+  { id: 'wipe_weapon', source: { id: 'cloth' }, target: { type: 'weapon' },
+    hint: '천으로 무기 닦기',
+    canApply(s, t) { return (t.contamination ?? 0) > 0 ? { ok: true } : { ok: false, reason: '오염이 없다.' }; },
+    apply(s, t) {
+      t.contamination = Math.max(0, (t.contamination ?? 0) - 40);
+      s.quantity = Math.max(0, (s.quantity ?? 1) - 1);
+      return { message: '천으로 무기를 닦았다.', consumeSrc: s.quantity <= 0, consumeTgt: false };
+    },
+  },
+  { id: 'wipe_weapon_rev', source: { type: 'weapon' }, target: { id: 'cloth' },
+    hint: '천으로 무기 닦기',
+    canApply(s) { return (s.contamination ?? 0) > 0 ? { ok: true } : { ok: false, reason: '오염이 없다.' }; },
+    apply(s, t) {
+      s.contamination = Math.max(0, (s.contamination ?? 0) - 40);
+      t.quantity = Math.max(0, (t.quantity ?? 1) - 1);
+      return { message: '천으로 무기를 닦았다.', consumeSrc: false, consumeTgt: t.quantity <= 0 };
+    },
+  },
+
+  // C18. 천 + 방어구 → 닦기 (오염도 -40)
+  { id: 'wipe_armor', source: { id: 'cloth' }, target: { type: 'armor' },
+    hint: '천으로 방어구 닦기',
+    canApply(s, t) { return (t.contamination ?? 0) > 0 ? { ok: true } : { ok: false, reason: '오염이 없다.' }; },
+    apply(s, t) {
+      t.contamination = Math.max(0, (t.contamination ?? 0) - 40);
+      s.quantity = Math.max(0, (s.quantity ?? 1) - 1);
+      return { message: '천으로 방어구를 닦았다.', consumeSrc: s.quantity <= 0, consumeTgt: false };
+    },
+  },
+  { id: 'wipe_armor_rev', source: { type: 'armor' }, target: { id: 'cloth' },
+    hint: '천으로 방어구 닦기',
+    canApply(s) { return (s.contamination ?? 0) > 0 ? { ok: true } : { ok: false, reason: '오염이 없다.' }; },
+    apply(s, t) {
+      s.contamination = Math.max(0, (s.contamination ?? 0) - 40);
+      t.quantity = Math.max(0, (t.quantity ?? 1) - 1);
+      return { message: '천으로 방어구를 닦았다.', consumeSrc: false, consumeTgt: t.quantity <= 0 };
+    },
+  },
+
+  // ── D. 장비 강화 (7종) ──────────────────────────────────
+
+  // D19. 못 + 근접무기 → 데미지 +2
+  { id: 'nail_enhance', source: { id: 'nail' }, target: { tag: 'melee' },
+    hint: '못 박기 → 무기 데미지 +2',
+    canApply(s, t) {
+      if (t.nailMod) return { ok: false, reason: '이미 못이 박혀 있다.' };
+      if ((s.quantity ?? 1) < 3) return { ok: false, reason: '못이 3개 이상 필요하다.' };
+      return { ok: true };
+    },
+    apply(s, t) {
+      t.nailMod = true; t.damageBonus = (t.damageBonus ?? 0) + 2;
+      s.quantity = Math.max(0, (s.quantity ?? 1) - 3);
+      return { message: '못을 박아 무기를 강화했다. 데미지 +2.', consumeSrc: s.quantity <= 0, consumeTgt: false, noise: 2 };
+    },
+  },
+  { id: 'nail_enhance_rev', source: { tag: 'melee' }, target: { id: 'nail' },
+    hint: '못 박기 → 무기 데미지 +2',
+    canApply(s, t) {
+      if (s.nailMod) return { ok: false, reason: '이미 못이 박혀 있다.' };
+      if ((t.quantity ?? 1) < 3) return { ok: false, reason: '못이 3개 이상 필요하다.' };
+      return { ok: true };
+    },
+    apply(s, t) {
+      s.nailMod = true; s.damageBonus = (s.damageBonus ?? 0) + 2;
+      t.quantity = Math.max(0, (t.quantity ?? 1) - 3);
+      return { message: '못을 박아 무기를 강화했다. 데미지 +2.', consumeSrc: false, consumeTgt: t.quantity <= 0, noise: 2 };
+    },
+  },
+
+  // D20. 유리파편 + 근접무기 → 데미지 +2, 출혈
+  { id: 'glass_enhance', source: { id: 'glass_shard' }, target: { tag: 'melee' },
+    hint: '유리 부착 → 데미지 +2, 출혈',
+    canApply(s, t) { return t.glassMod ? { ok: false, reason: '이미 유리가 부착되어 있다.' } : { ok: true }; },
+    apply(s, t) {
+      t.glassMod = true; t.damageBonus = (t.damageBonus ?? 0) + 2;
+      return { message: '유리파편을 부착했다. 데미지 +2, 출혈 효과.', consumeSrc: true, consumeTgt: false };
+    },
+  },
+  { id: 'glass_enhance_rev', source: { tag: 'melee' }, target: { id: 'glass_shard' },
+    hint: '유리 부착 → 데미지 +2, 출혈',
+    canApply(s) { return s.glassMod ? { ok: false, reason: '이미 유리가 부착되어 있다.' } : { ok: true }; },
+    apply(s) {
+      s.glassMod = true; s.damageBonus = (s.damageBonus ?? 0) + 2;
+      return { message: '유리파편을 부착했다. 데미지 +2, 출혈 효과.', consumeSrc: false, consumeTgt: true };
+    },
+  },
+
+  // D21. 가죽 + 근접무기 → 명중률 +5%
+  { id: 'leather_grip', source: { id: 'leather' }, target: { tag: 'melee' },
+    hint: '가죽 그립 → 명중률 +5%',
+    canApply(s, t) { return t.leatherMod ? { ok: false, reason: '이미 그립이 감겨 있다.' } : { ok: true }; },
+    apply(s, t) {
+      t.leatherMod = true; t.accuracyBonus = (t.accuracyBonus ?? 0) + 0.05;
+      return { message: '가죽 그립을 감았다. 명중률 +5%.', consumeSrc: true, consumeTgt: false };
+    },
+  },
+  { id: 'leather_grip_rev', source: { tag: 'melee' }, target: { id: 'leather' },
+    hint: '가죽 그립 → 명중률 +5%',
+    canApply(s) { return s.leatherMod ? { ok: false, reason: '이미 그립이 감겨 있다.' } : { ok: true }; },
+    apply(s) {
+      s.leatherMod = true; s.accuracyBonus = (s.accuracyBonus ?? 0) + 0.05;
+      return { message: '가죽 그립을 감았다. 명중률 +5%.', consumeSrc: false, consumeTgt: true };
+    },
+  },
+
+  // D22. 로프 + 무기 → 내구도 +10
+  { id: 'rope_bind', source: { id: 'rope' }, target: { type: 'weapon' },
+    hint: '로프로 무기 보강 (+10)',
+    canApply(s, t) { return (t.durability ?? 100) >= 100 ? { ok: false, reason: '이미 최대 내구도다.' } : { ok: true }; },
+    apply(s, t) {
+      t.durability = Math.min(100, (t.durability ?? 100) + 10);
+      s.quantity = Math.max(0, (s.quantity ?? 1) - 1);
+      return { message: '로프로 무기를 묶어 보강했다.', consumeSrc: s.quantity <= 0, consumeTgt: false };
+    },
+  },
+  { id: 'rope_bind_rev', source: { type: 'weapon' }, target: { id: 'rope' },
+    hint: '로프로 무기 보강 (+10)',
+    canApply(s) { return (s.durability ?? 100) >= 100 ? { ok: false, reason: '이미 최대 내구도다.' } : { ok: true }; },
+    apply(s, t) {
+      s.durability = Math.min(100, (s.durability ?? 100) + 10);
+      t.quantity = Math.max(0, (t.quantity ?? 1) - 1);
+      return { message: '로프로 무기를 묶어 보강했다.', consumeSrc: false, consumeTgt: t.quantity <= 0 };
+    },
+  },
+
+  // D23. 숫돌 + 근접무기 → 데미지 +3 (연마)
+  { id: 'sharpen_melee', source: { id: 'whetstone' }, target: { tag: 'melee' },
+    hint: '숫돌로 무기 연마 → 데미지 +3',
+    canApply(s, t) {
+      if (t.sharpened) return { ok: false, reason: '이미 연마된 무기다.' };
+      if ((s.durability ?? 100) < 15) return { ok: false, reason: '숫돌이 너무 닳았다.' };
+      return { ok: true };
+    },
+    apply(s, t) {
+      t.sharpened = true; t.damageBonus = (t.damageBonus ?? 0) + 3;
+      s.durability = Math.max(0, (s.durability ?? 100) - 15);
+      return { message: '숫돌로 무기를 연마했다. 데미지 +3.', consumeSrc: (s.durability ?? 0) <= 0, consumeTgt: false, noise: 2 };
+    },
+  },
+  { id: 'sharpen_melee_rev', source: { tag: 'melee' }, target: { id: 'whetstone' },
+    hint: '숫돌로 무기 연마 → 데미지 +3',
+    canApply(s, t) {
+      if (s.sharpened) return { ok: false, reason: '이미 연마된 무기다.' };
+      if ((t.durability ?? 100) < 15) return { ok: false, reason: '숫돌이 너무 닳았다.' };
+      return { ok: true };
+    },
+    apply(s, t) {
+      s.sharpened = true; s.damageBonus = (s.damageBonus ?? 0) + 3;
+      t.durability = Math.max(0, (t.durability ?? 100) - 15);
+      return { message: '숫돌로 무기를 연마했다. 데미지 +3.', consumeSrc: false, consumeTgt: (t.durability ?? 0) <= 0, noise: 2 };
+    },
+  },
+
+  // D24. 고철 + 방어구 → 내구도 +20 (소음)
+  { id: 'metal_plate', source: { id: 'scrap_metal' }, target: { type: 'armor' },
+    hint: '고철로 방어구 보강 (+20)',
+    canApply(s, t) { return (t.durability ?? 100) >= 100 ? { ok: false, reason: '이미 최대 내구도다.' } : { ok: true }; },
+    apply(s, t) {
+      t.durability = Math.min(100, (t.durability ?? 100) + 20);
+      s.quantity = Math.max(0, (s.quantity ?? 1) - 1);
+      return { message: '고철판을 덧대 방어구를 보강했다.', consumeSrc: s.quantity <= 0, consumeTgt: false, noise: 2 };
+    },
+  },
+  { id: 'metal_plate_rev', source: { type: 'armor' }, target: { id: 'scrap_metal' },
+    hint: '고철로 방어구 보강 (+20)',
+    canApply(s) { return (s.durability ?? 100) >= 100 ? { ok: false, reason: '이미 최대 내구도다.' } : { ok: true }; },
+    apply(s, t) {
+      s.durability = Math.min(100, (s.durability ?? 100) + 20);
+      t.quantity = Math.max(0, (t.quantity ?? 1) - 1);
+      return { message: '고철판을 덧대 방어구를 보강했다.', consumeSrc: false, consumeTgt: t.quantity <= 0, noise: 2 };
+    },
+  },
+
+  // D25. 숫돌 + 칼 → 칼 내구도 완전 복원
+  { id: 'sharpen_knife', source: { id: 'whetstone' }, target: { id: 'knife' },
+    hint: '숫돌로 칼갈이 → 내구도 완전 복원',
+    canApply(s, t) {
+      if ((t.durability ?? 100) >= 70) return { ok: false, reason: '칼이 아직 충분히 날카롭다.' };
+      if ((s.durability ?? 100) < 20) return { ok: false, reason: '숫돌이 너무 닳았다.' };
+      return { ok: true };
+    },
+    apply(s, t) {
+      t.durability = 70;
+      s.durability = Math.max(0, (s.durability ?? 100) - 20);
+      return { message: '숫돌로 칼을 날카롭게 갈았다.', consumeSrc: (s.durability ?? 0) <= 0, consumeTgt: false, noise: 1 };
+    },
+  },
+  { id: 'sharpen_knife_rev', source: { id: 'knife' }, target: { id: 'whetstone' },
+    hint: '숫돌로 칼갈이 → 내구도 완전 복원',
+    canApply(s, t) {
+      if ((s.durability ?? 100) >= 70) return { ok: false, reason: '칼이 아직 충분히 날카롭다.' };
+      if ((t.durability ?? 100) < 20) return { ok: false, reason: '숫돌이 너무 닳았다.' };
+      return { ok: true };
+    },
+    apply(s, t) {
+      s.durability = 70;
+      t.durability = Math.max(0, (t.durability ?? 100) - 20);
+      return { message: '숫돌로 칼을 날카롭게 갈았다.', consumeSrc: false, consumeTgt: (t.durability ?? 0) <= 0, noise: 1 };
+    },
+  },
+
+  // ── E. 음식 가공 (3종) ──────────────────────────────────
+
+  // E26. 통조림 + 캠프파이어 → 가열 (오염 제거, 사기↑)
+  { id: 'heat_canned', source: { id: 'canned_food' }, target: { id: 'campfire' },
+    hint: '통조림 가열 → 오염 제거, 사기 +5',
+    canApply() { return { ok: true }; },
+    apply(s) {
+      s.contamination = 0; s.heated = true;
+      return { message: '통조림을 가열했다. 따뜻한 한 끼!', consumeSrc: false, consumeTgt: false, noise: 1 };
+    },
+  },
+  { id: 'heat_canned_rev', source: { id: 'campfire' }, target: { id: 'canned_food' },
+    hint: '통조림 가열 → 오염 제거, 사기 +5',
+    canApply() { return { ok: true }; },
+    apply(s, t) {
+      t.contamination = 0; t.heated = true;
+      return { message: '통조림을 가열했다. 따뜻한 한 끼!', consumeSrc: false, consumeTgt: false, noise: 1 };
+    },
+  },
+
+  // E27. 건육 + 캠프파이어 → 훈제 (오염 제거)
+  { id: 'grill_meat', source: { id: 'dried_meat' }, target: { id: 'campfire' },
+    hint: '건육 훈제 → 오염 제거',
+    canApply() { return { ok: true }; },
+    apply(s) {
+      s.contamination = 0;
+      return { message: '건육을 훈제했다. 안전하게 먹을 수 있다.', consumeSrc: false, consumeTgt: false, noise: 1 };
+    },
+  },
+  { id: 'grill_meat_rev', source: { id: 'campfire' }, target: { id: 'dried_meat' },
+    hint: '건육 훈제 → 오염 제거',
+    canApply() { return { ok: true }; },
+    apply(s, t) {
+      t.contamination = 0;
+      return { message: '건육을 훈제했다. 안전하게 먹을 수 있다.', consumeSrc: false, consumeTgt: false, noise: 1 };
+    },
+  },
+
+  // E28. 약초 + 끓인 물 → 허브차
+  { id: 'brew_herb_tea', source: { id: 'herb' }, target: { id: 'boiled_water' },
+    hint: '약초 + 끓인 물 → 허브차',
+    canApply() { return { ok: true }; },
+    apply() { return { transformTgt: 'herbal_tea', consumeSrc: true, consumeTgt: false, message: '약초를 끓인 물에 우려 허브차를 만들었다.' }; },
+  },
+  { id: 'brew_herb_tea_rev', source: { id: 'boiled_water' }, target: { id: 'herb' },
+    hint: '약초 + 끓인 물 → 허브차',
+    canApply() { return { ok: true }; },
+    apply() { return { transformSrc: 'herbal_tea', consumeSrc: false, consumeTgt: true, message: '약초를 끓인 물에 우려 허브차를 만들었다.' }; },
+  },
+
+  // ── F. 의료 조합 (4종) ──────────────────────────────────
+
+  // F29. 소독약 + 붕대 → 강화 붕대 (감염 치유 ↑)
+  { id: 'enhance_bandage', source: { id: 'antiseptic' }, target: { id: 'bandage' },
+    hint: '소독약 + 붕대 → 강화 붕대',
+    canApply(s, t) { return t.enhanced ? { ok: false, reason: '이미 강화된 붕대다.' } : { ok: true }; },
+    apply(s, t) {
+      t.enhanced = true; t.infectionBonus = (t.infectionBonus ?? 0) - 10;
+      s.quantity = Math.max(0, (s.quantity ?? 1) - 1);
+      return { message: '소독약으로 붕대를 강화했다. 감염 치유력 상승.', consumeSrc: s.quantity <= 0, consumeTgt: false };
+    },
+  },
+  { id: 'enhance_bandage_rev', source: { id: 'bandage' }, target: { id: 'antiseptic' },
+    hint: '소독약 + 붕대 → 강화 붕대',
+    canApply(s) { return s.enhanced ? { ok: false, reason: '이미 강화된 붕대다.' } : { ok: true }; },
+    apply(s, t) {
+      s.enhanced = true; s.infectionBonus = (s.infectionBonus ?? 0) - 10;
+      t.quantity = Math.max(0, (t.quantity ?? 1) - 1);
+      return { message: '소독약으로 붕대를 강화했다. 감염 치유력 상승.', consumeSrc: false, consumeTgt: t.quantity <= 0 };
+    },
+  },
+
+  // F30. 소독약 + 거즈 → 멸균 거즈
+  { id: 'sterile_gauze', source: { id: 'antiseptic' }, target: { id: 'gauze' },
+    hint: '소독약 + 거즈 → 멸균 거즈',
+    canApply(s, t) { return t.sterile ? { ok: false, reason: '이미 멸균 처리됐다.' } : { ok: true }; },
+    apply(s, t) {
+      t.sterile = true; t.contamination = 0;
+      s.quantity = Math.max(0, (s.quantity ?? 1) - 1);
+      return { message: '거즈를 멸균 처리했다.', consumeSrc: s.quantity <= 0, consumeTgt: false };
+    },
+  },
+  { id: 'sterile_gauze_rev', source: { id: 'gauze' }, target: { id: 'antiseptic' },
+    hint: '소독약 + 거즈 → 멸균 거즈',
+    canApply(s) { return s.sterile ? { ok: false, reason: '이미 멸균 처리됐다.' } : { ok: true }; },
+    apply(s, t) {
+      s.sterile = true; s.contamination = 0;
+      t.quantity = Math.max(0, (t.quantity ?? 1) - 1);
+      return { message: '거즈를 멸균 처리했다.', consumeSrc: false, consumeTgt: t.quantity <= 0 };
+    },
+  },
+
+  // F31. 천 조각 + 천 조각 → 붕대 (대칭 — 1개 규칙)
+  { id: 'wrap_bandage', source: { id: 'cloth_scrap' }, target: { id: 'cloth_scrap' },
+    hint: '천 조각 둘을 엮어 붕대 제작',
+    canApply() { return { ok: true }; },
+    apply() { return { transformTgt: 'bandage', consumeSrc: true, consumeTgt: false, message: '천 조각을 엮어 붕대를 만들었다.' }; },
+  },
+
+  // F32. 로프 + 목재 → 부목
+  { id: 'make_splint', source: { id: 'rope' }, target: { id: 'wood' },
+    hint: '로프 + 목재 → 부목',
+    canApply() { return { ok: true }; },
+    apply() { return { transformTgt: 'splint', consumeSrc: true, consumeTgt: false, message: '목재와 로프로 부목을 만들었다.' }; },
+  },
+  { id: 'make_splint_rev', source: { id: 'wood' }, target: { id: 'rope' },
+    hint: '로프 + 목재 → 부목',
+    canApply() { return { ok: true }; },
+    apply() { return { transformSrc: 'splint', consumeSrc: false, consumeTgt: true, message: '목재와 로프로 부목을 만들었다.' }; },
+  },
+
+  // ── G. 장비 전문 수리 (4종) ─────────────────────────────
+
+  // G33. 방독면 필터 + 방독면 → 필터 교체 (+40)
+  { id: 'replace_gas_filter', source: { id: 'gas_mask_filter' }, target: { id: 'gas_mask' },
+    hint: '방독면 필터 교체 (+40)',
+    canApply(s, t) { return (t.durability ?? 100) >= 80 ? { ok: false, reason: '필터가 아직 충분하다.' } : { ok: true }; },
+    apply(s, t) { t.durability = Math.min(80, (t.durability ?? 80) + 40); return { message: '방독면 필터를 교체했다.', consumeSrc: true, consumeTgt: false }; },
+  },
+  { id: 'replace_gas_filter_rev', source: { id: 'gas_mask' }, target: { id: 'gas_mask_filter' },
+    hint: '방독면 필터 교체 (+40)',
+    canApply(s) { return (s.durability ?? 100) >= 80 ? { ok: false, reason: '필터가 아직 충분하다.' } : { ok: true }; },
+    apply(s) { s.durability = Math.min(80, (s.durability ?? 80) + 40); return { message: '방독면 필터를 교체했다.', consumeSrc: false, consumeTgt: true }; },
+  },
+
+  // G34. 전자부품 + 무전기 → 수리 (+30)
+  { id: 'repair_radio', source: { id: 'electronic_parts' }, target: { id: 'radio' },
+    hint: '전자부품으로 무전기 수리 (+30)',
+    canApply(s, t) { return (t.durability ?? 100) >= 70 ? { ok: false, reason: '이미 최대 내구도다.' } : { ok: true }; },
+    apply(s, t) {
+      t.durability = Math.min(70, (t.durability ?? 70) + 30);
+      s.quantity = Math.max(0, (s.quantity ?? 1) - 1);
+      return { message: '전자부품으로 무전기를 수리했다.', consumeSrc: s.quantity <= 0, consumeTgt: false };
+    },
+  },
+  { id: 'repair_radio_rev', source: { id: 'radio' }, target: { id: 'electronic_parts' },
+    hint: '전자부품으로 무전기 수리 (+30)',
+    canApply(s) { return (s.durability ?? 100) >= 70 ? { ok: false, reason: '이미 최대 내구도다.' } : { ok: true }; },
+    apply(s, t) {
+      s.durability = Math.min(70, (s.durability ?? 70) + 30);
+      t.quantity = Math.max(0, (t.quantity ?? 1) - 1);
+      return { message: '전자부품으로 무전기를 수리했다.', consumeSrc: false, consumeTgt: t.quantity <= 0 };
+    },
+  },
+
+  // G35. 전자부품 + 손전등 → 수리 (+30)
+  { id: 'repair_flashlight', source: { id: 'electronic_parts' }, target: { id: 'flashlight' },
+    hint: '전자부품으로 손전등 수리 (+30)',
+    canApply(s, t) { return (t.durability ?? 100) >= 80 ? { ok: false, reason: '이미 최대 내구도다.' } : { ok: true }; },
+    apply(s, t) {
+      t.durability = Math.min(80, (t.durability ?? 80) + 30);
+      s.quantity = Math.max(0, (s.quantity ?? 1) - 1);
+      return { message: '전자부품으로 손전등을 수리했다.', consumeSrc: s.quantity <= 0, consumeTgt: false };
+    },
+  },
+  { id: 'repair_flashlight_rev', source: { id: 'flashlight' }, target: { id: 'electronic_parts' },
+    hint: '전자부품으로 손전등 수리 (+30)',
+    canApply(s) { return (s.durability ?? 100) >= 80 ? { ok: false, reason: '이미 최대 내구도다.' } : { ok: true }; },
+    apply(s, t) {
+      s.durability = Math.min(80, (s.durability ?? 80) + 30);
+      t.quantity = Math.max(0, (t.quantity ?? 1) - 1);
+      return { message: '전자부품으로 손전등을 수리했다.', consumeSrc: false, consumeTgt: t.quantity <= 0 };
+    },
+  },
+
+  // G36. 전자부품 + 전기충격기 → 수리 (+30)
+  { id: 'repair_stun_gun', source: { id: 'electronic_parts' }, target: { id: 'stun_gun' },
+    hint: '전자부품으로 전기충격기 수리 (+30)',
+    canApply(s, t) { return (t.durability ?? 100) >= 60 ? { ok: false, reason: '이미 최대 내구도다.' } : { ok: true }; },
+    apply(s, t) {
+      t.durability = Math.min(60, (t.durability ?? 60) + 30);
+      s.quantity = Math.max(0, (s.quantity ?? 1) - 1);
+      return { message: '전자부품으로 전기충격기를 수리했다.', consumeSrc: s.quantity <= 0, consumeTgt: false };
+    },
+  },
+  { id: 'repair_stun_gun_rev', source: { id: 'stun_gun' }, target: { id: 'electronic_parts' },
+    hint: '전자부품으로 전기충격기 수리 (+30)',
+    canApply(s) { return (s.durability ?? 100) >= 60 ? { ok: false, reason: '이미 최대 내구도다.' } : { ok: true }; },
+    apply(s, t) {
+      s.durability = Math.min(60, (s.durability ?? 60) + 30);
+      t.quantity = Math.max(0, (t.quantity ?? 1) - 1);
+      return { message: '전자부품으로 전기충격기를 수리했다.', consumeSrc: false, consumeTgt: t.quantity <= 0 };
+    },
+  },
+
+  // ── H. 특수 상호작용 (7종) ──────────────────────────────
+
+  // H37. 빈캔 + 캠프파이어 → 고철 (용해)
+  { id: 'melt_can', source: { id: 'empty_can' }, target: { id: 'campfire' },
+    hint: '빈캔 용해 → 고철',
+    canApply() { return { ok: true }; },
+    apply() { return { transformSrc: 'scrap_metal', consumeSrc: false, consumeTgt: false, noise: 2, message: '빈캔을 녹여 고철을 얻었다.' }; },
+  },
+  { id: 'melt_can_rev', source: { id: 'campfire' }, target: { id: 'empty_can' },
+    hint: '빈캔 용해 → 고철',
+    canApply() { return { ok: true }; },
+    apply() { return { transformTgt: 'scrap_metal', consumeSrc: false, consumeTgt: false, noise: 2, message: '빈캔을 녹여 고철을 얻었다.' }; },
+  },
+
+  // H38. 생존자 메모 + 무전기 → 방송 (사기 +25)
+  { id: 'broadcast_note', source: { id: 'survivor_note' }, target: { id: 'radio' },
+    hint: '무전기로 메모 방송 → 사기 +25',
+    canApply() { return { ok: true }; },
+    apply(s, t, gs) {
+      gs.modStat('morale', 25);
+      return { message: '무전기로 생존자 메모를 방송했다. 희망이 퍼진다. 사기 +25.', consumeSrc: true, consumeTgt: false };
+    },
+  },
+  { id: 'broadcast_note_rev', source: { id: 'radio' }, target: { id: 'survivor_note' },
+    hint: '무전기로 메모 방송 → 사기 +25',
+    canApply() { return { ok: true }; },
+    apply(s, t, gs) {
+      gs.modStat('morale', 25);
+      return { message: '무전기로 생존자 메모를 방송했다. 희망이 퍼진다. 사기 +25.', consumeSrc: false, consumeTgt: true };
+    },
+  },
+
+  // H39. 라이터 + 목재 → 캠프파이어 (즉석 점화)
+  { id: 'lighter_campfire', source: { id: 'lighter' }, target: { id: 'wood' },
+    hint: '라이터로 불 피우기 → 캠프파이어',
+    canApply(s) { return (s.durability ?? 100) >= 10 ? { ok: true } : { ok: false, reason: '라이터 연료가 부족하다.' }; },
+    apply(s) {
+      s.durability = Math.max(0, (s.durability ?? 100) - 10);
+      return { transformTgt: 'campfire', consumeSrc: false, consumeTgt: false, noise: 1, message: '라이터로 불을 피워 캠프파이어를 만들었다.' };
+    },
+  },
+  { id: 'lighter_campfire_rev', source: { id: 'wood' }, target: { id: 'lighter' },
+    hint: '라이터로 불 피우기 → 캠프파이어',
+    canApply(s, t) { return (t.durability ?? 100) >= 10 ? { ok: true } : { ok: false, reason: '라이터 연료가 부족하다.' }; },
+    apply(s, t) {
+      t.durability = Math.max(0, (t.durability ?? 100) - 10);
+      return { transformSrc: 'campfire', consumeSrc: false, consumeTgt: false, noise: 1, message: '라이터로 불을 피워 캠프파이어를 만들었다.' };
+    },
+  },
+
+  // H40. 라이터 + 캠프파이어 → 재점화 (+20)
+  { id: 'relight_fire', source: { id: 'lighter' }, target: { id: 'campfire' },
+    hint: '라이터로 캠프파이어 재점화 (+20)',
+    canApply(s, t) { return (t.durability ?? 50) >= 50 ? { ok: false, reason: '캠프파이어가 잘 타고 있다.' } : { ok: true }; },
+    apply(s, t) {
+      t.durability = Math.min(50, (t.durability ?? 50) + 20);
+      s.durability = Math.max(0, (s.durability ?? 100) - 5);
+      return { message: '라이터로 캠프파이어를 되살렸다.', consumeSrc: (s.durability ?? 0) <= 0, consumeTgt: false };
+    },
+  },
+  { id: 'relight_fire_rev', source: { id: 'campfire' }, target: { id: 'lighter' },
+    hint: '라이터로 캠프파이어 재점화 (+20)',
+    canApply(s) { return (s.durability ?? 50) >= 50 ? { ok: false, reason: '캠프파이어가 잘 타고 있다.' } : { ok: true }; },
+    apply(s, t) {
+      s.durability = Math.min(50, (s.durability ?? 50) + 20);
+      t.durability = Math.max(0, (t.durability ?? 100) - 5);
+      return { message: '라이터로 캠프파이어를 되살렸다.', consumeSrc: false, consumeTgt: (t.durability ?? 0) <= 0 };
+    },
+  },
+
+  // H41. 약초 + 붕대 → 약초 붕대 (HP 치유 강화)
+  { id: 'herbal_bandage', source: { id: 'herb' }, target: { id: 'bandage' },
+    hint: '약초 + 붕대 → 약초 붕대 (HP 치유↑)',
+    canApply(s, t) { return t.herbalMod ? { ok: false, reason: '이미 약초가 감겨 있다.' } : { ok: true }; },
+    apply(s, t) {
+      t.herbalMod = true; t.hpBonus = (t.hpBonus ?? 0) + 10;
+      s.quantity = Math.max(0, (s.quantity ?? 1) - 1);
+      return { message: '약초를 감아 붕대의 치유력을 강화했다. HP 회복 +10.', consumeSrc: s.quantity <= 0, consumeTgt: false };
+    },
+  },
+  { id: 'herbal_bandage_rev', source: { id: 'bandage' }, target: { id: 'herb' },
+    hint: '약초 + 붕대 → 약초 붕대 (HP 치유↑)',
+    canApply(s) { return s.herbalMod ? { ok: false, reason: '이미 약초가 감겨 있다.' } : { ok: true }; },
+    apply(s, t) {
+      s.herbalMod = true; s.hpBonus = (s.hpBonus ?? 0) + 10;
+      t.quantity = Math.max(0, (t.quantity ?? 1) - 1);
+      return { message: '약초를 감아 붕대의 치유력을 강화했다. HP 회복 +10.', consumeSrc: false, consumeTgt: t.quantity <= 0 };
+    },
+  },
+
+  // H42. 스프링 + 석궁 → 석궁 보강 (+15)
+  { id: 'spring_crossbow', source: { id: 'spring' }, target: { id: 'crossbow' },
+    hint: '스프링으로 석궁 보강 (+15)',
+    canApply(s, t) { return (t.durability ?? 100) >= 70 ? { ok: false, reason: '이미 최대 내구도다.' } : { ok: true }; },
+    apply(s, t) { t.durability = Math.min(70, (t.durability ?? 70) + 15); return { message: '스프링으로 석궁을 보강했다.', consumeSrc: true, consumeTgt: false }; },
+  },
+  { id: 'spring_crossbow_rev', source: { id: 'crossbow' }, target: { id: 'spring' },
+    hint: '스프링으로 석궁 보강 (+15)',
+    canApply(s) { return (s.durability ?? 100) >= 70 ? { ok: false, reason: '이미 최대 내구도다.' } : { ok: true }; },
+    apply(s) { s.durability = Math.min(70, (s.durability ?? 70) + 15); return { message: '스프링으로 석궁을 보강했다.', consumeSrc: false, consumeTgt: true }; },
+  },
+
+  // H43. 로프 + 천 → 작은 가방
+  { id: 'make_bag', source: { id: 'rope' }, target: { id: 'cloth' },
+    hint: '로프 + 천 → 작은 가방',
+    canApply() { return { ok: true }; },
+    apply() { return { transformTgt: 'small_bag', consumeSrc: true, consumeTgt: false, message: '천과 로프로 작은 가방을 만들었다.' }; },
+  },
+  { id: 'make_bag_rev', source: { id: 'cloth' }, target: { id: 'rope' },
+    hint: '로프 + 천 → 작은 가방',
+    canApply() { return { ok: true }; },
+    apply() { return { transformSrc: 'small_bag', consumeSrc: false, consumeTgt: true, message: '천과 로프로 작은 가방을 만들었다.' }; },
+  },
+
+  // ════════════════════════════════════════════════════════
   // 기존 generic 규칙 (위 특수 규칙이 매칭되지 않은 경우 적용)
   // ════════════════════════════════════════════════════════
 

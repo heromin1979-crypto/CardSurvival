@@ -1,31 +1,32 @@
 // === ENDING GALLERY SCREEN ===
 import EventBus     from '../core/EventBus.js';
 import StateMachine from '../core/StateMachine.js';
+import I18n         from '../core/I18n.js';
 import ENDINGS      from '../data/endings.js';
 import EndingSystem from '../systems/EndingSystem.js';
 
 const CATEGORY_META = {
-  death:     { label: '사망',      color: '#c0392b', icon: '💀', bg: 'rgba(192,57,43,0.08)' },
-  milestone: { label: '마일스톤',  color: '#d4ac0d', icon: '⭐', bg: 'rgba(212,172,13,0.08)' },
-  escape:    { label: '탈출',      color: '#2980b9', icon: '🏃', bg: 'rgba(41,128,185,0.08)' },
-  character: { label: '캐릭터',    color: '#8e44ad', icon: '👤', bg: 'rgba(142,68,173,0.08)' },
+  death:     { labelKey: 'ending.catDeath',     color: '#c0392b', icon: '💀', bg: 'rgba(192,57,43,0.08)' },
+  milestone: { labelKey: 'ending.catMilestone', color: '#d4ac0d', icon: '⭐', bg: 'rgba(212,172,13,0.08)' },
+  escape:    { labelKey: 'ending.catEscape',    color: '#2980b9', icon: '🏃', bg: 'rgba(41,128,185,0.08)' },
+  character: { labelKey: 'ending.catCharacter', color: '#8e44ad', icon: '👤', bg: 'rgba(142,68,173,0.08)' },
 };
 
-const LOCKED_HINTS = {
-  milestone_fortified:    '거점을 완전히 구축하면 공개됩니다.',
-  milestone_survived_year:'오랫동안 살아남으면 공개됩니다.',
-  milestone_scavenger:    '수백 개의 아이템을 수집하면 공개됩니다.',
-  milestone_warrior:      '수많은 적을 쓰러뜨리면 공개됩니다.',
-  escape_river:           '한강 주변 지역을 모두 탐색하면 공개됩니다.',
-  escape_helicopter:      '특정 방송국을 방문해 공적을 쌓으면 공개됩니다.',
-  escape_north:           '서울 전역을 답파하면 공개됩니다.',
-  escape_cure:            '오랜 연구 끝에 무언가를 완성하면 공개됩니다.',
-  char_doctor:            '이지수의 목표를 달성하면 공개됩니다.',
-  char_soldier:           '강민준의 목표를 달성하면 공개됩니다.',
-  char_firefighter:       '박영철의 목표를 달성하면 공개됩니다.',
-  char_homeless:          '최형식의 목표를 달성하면 공개됩니다.',
-  char_pharmacist:        '한소희의 목표를 달성하면 공개됩니다.',
-  char_engineer:          '정대한의 목표를 달성하면 공개됩니다.',
+const LOCKED_HINT_KEYS = {
+  milestone_fortified:    'gallery.hint.milestone_fortified',
+  milestone_survived_year:'gallery.hint.milestone_survived_year',
+  milestone_scavenger:    'gallery.hint.milestone_scavenger',
+  milestone_warrior:      'gallery.hint.milestone_warrior',
+  escape_river:           'gallery.hint.escape_river',
+  escape_helicopter:      'gallery.hint.escape_helicopter',
+  escape_north:           'gallery.hint.escape_north',
+  escape_cure:            'gallery.hint.escape_cure',
+  char_doctor:            'gallery.hint.char_doctor',
+  char_soldier:           'gallery.hint.char_soldier',
+  char_firefighter:       'gallery.hint.char_firefighter',
+  char_homeless:          'gallery.hint.char_homeless',
+  char_pharmacist:        'gallery.hint.char_pharmacist',
+  char_engineer:          'gallery.hint.char_engineer',
 };
 
 const EndingGallery = {
@@ -37,6 +38,9 @@ const EndingGallery = {
     this._el = document.getElementById('screen-ending-gallery');
     EventBus.on('stateTransition', ({ to }) => {
       if (to === 'ending_gallery') this._render();
+    });
+    EventBus.on('languageChanged', () => {
+      if (this._el?.classList.contains('active')) this._render();
     });
   },
 
@@ -58,10 +62,10 @@ const EndingGallery = {
     const header = document.createElement('div');
     header.className = 'eg-header';
     header.innerHTML = `
-      <button class="eg-back-btn" id="eg-back">← 메인 메뉴</button>
-      <h2 class="eg-title">엔딩 컬렉션</h2>
-      <button class="eg-sort-btn" id="eg-sort" title="정렬 변경">
-        ${this._sortMode === 'category' ? '카테고리순' : '달성순'}
+      <button class="eg-back-btn" id="eg-back">${I18n.t('gallery.back')}</button>
+      <h2 class="eg-title">${I18n.t('gallery.title')}</h2>
+      <button class="eg-sort-btn" id="eg-sort" title="${I18n.t('gallery.sortChange')}">
+        ${this._sortMode === 'category' ? I18n.t('gallery.sortCategory') : I18n.t('gallery.sortUnlock')}
       </button>
     `;
     wrap.appendChild(header);
@@ -74,7 +78,7 @@ const EndingGallery = {
         <div class="eg-progress-fill" style="width:${pct}%"></div>
       </div>
       <div class="eg-progress-text">
-        달성 <strong>${doneCount}</strong> / ${total}
+        ${I18n.t('gallery.achieved')} <strong>${doneCount}</strong> / ${total}
         <span class="eg-pct-badge">${pct}%</span>
       </div>
     `;
@@ -90,7 +94,7 @@ const EndingGallery = {
       statRow.innerHTML += `
         <div class="eg-stat-cell" style="border-color:${m.color}20">
           <div class="eg-stat-icon">${m.icon}</div>
-          <div class="eg-stat-label">${m.label}</div>
+          <div class="eg-stat-label">${I18n.t(m.labelKey)}</div>
           <div class="eg-stat-count" style="color:${m.color}">${catDone}/${catEndings.length}</div>
           <div class="eg-stat-mini-bar">
             <div class="eg-stat-mini-fill" style="width:${catPct}%;background:${m.color}"></div>
@@ -104,10 +108,10 @@ const EndingGallery = {
     const tabs = document.createElement('div');
     tabs.className = 'eg-tabs';
     const tabDefs = [
-      { id: 'all', label: '전체', count: total },
+      { id: 'all', label: I18n.t('gallery.all'), count: total },
       ...Object.entries(CATEGORY_META).map(([id, m]) => ({
         id,
-        label: m.icon + ' ' + m.label,
+        label: m.icon + ' ' + I18n.t(m.labelKey),
         count: allEndings.filter(e => e.category === id).length,
       })),
     ];
@@ -174,7 +178,8 @@ const EndingGallery = {
   },
 
   _buildCard(ending, isUnlocked, unlockDay) {
-    const meta = CATEGORY_META[ending.category] ?? { label: ending.category, color: '#888', icon: '?', bg: 'rgba(128,128,128,0.08)' };
+    const meta = CATEGORY_META[ending.category] ?? { labelKey: ending.category, color: '#888', icon: '?', bg: 'rgba(128,128,128,0.08)' };
+    const metaLabel = I18n.t(meta.labelKey);
     const card = document.createElement('div');
 
     if (isUnlocked) {
@@ -182,11 +187,11 @@ const EndingGallery = {
       card.style.cssText = `background:${ending.gradient ?? meta.bg};border-color:${meta.color}30`;
 
       const preview    = ending.narrative?.[0] ?? '';
-      const dayBadge   = unlockDay != null ? `<div class="eg-card-day">Day ${unlockDay} 달성</div>` : '';
+      const dayBadge   = unlockDay != null ? `<div class="eg-card-day">${I18n.t('gallery.dayAchieved', { day: unlockDay })}</div>` : '';
 
       card.innerHTML = `
         <div class="eg-card-badge" style="color:${meta.color};border-color:${meta.color}40;background:${meta.bg}">
-          ${meta.icon} ${meta.label}
+          ${meta.icon} ${metaLabel}
         </div>
         <div class="eg-card-title">${ending.title}</div>
         <div class="eg-card-subtitle">${ending.subtitle}</div>
@@ -199,14 +204,15 @@ const EndingGallery = {
       card.className = 'eg-card locked';
       card.style.cssText = `border-color:${meta.color}20`;
 
-      const hint = LOCKED_HINTS[ending.id] ?? '이 엔딩을 달성하면 공개됩니다.';
+      const hintKey = LOCKED_HINT_KEYS[ending.id];
+      const hint = hintKey ? I18n.t(hintKey) : I18n.t('gallery.defaultHint');
       const titleHtml = isDeath
         ? `<div class="eg-card-title eg-faded">${ending.title}</div>`
         : `<div class="eg-card-title eg-hidden">???</div>`;
 
       card.innerHTML = `
         <div class="eg-card-badge" style="color:${meta.color}60;border-color:${meta.color}20;background:${meta.bg}">
-          ${meta.icon} ${meta.label}
+          ${meta.icon} ${metaLabel}
         </div>
         ${titleHtml}
         <div class="eg-card-lock">🔒</div>

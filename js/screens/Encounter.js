@@ -2,6 +2,7 @@
 import EventBus    from '../core/EventBus.js';
 import GameState   from '../core/GameState.js';
 import StateMachine from '../core/StateMachine.js';
+import I18n        from '../core/I18n.js';
 import { rollEnemyGroup } from '../data/enemies.js';
 
 const Encounter = {
@@ -15,6 +16,9 @@ const Encounter = {
         this._data = data;
         this._render();
       }
+    });
+    EventBus.on('languageChanged', () => {
+      if (this._el?.classList.contains('active')) this._render();
     });
   },
 
@@ -30,9 +34,9 @@ const Encounter = {
 
     const count     = enemies.length;
     const leader    = enemies[0];   // 대표 적 (가장 강한 놈)
-    const noiseTag  = noise < 30  ? `<span style="color:var(--text-good);">저소음 — 약한 적</span>`
-                    : noise < 65  ? `<span style="color:var(--text-warn);">중간 소음 — 2마리</span>`
-                    : `<span style="color:var(--text-danger);">고소음 경보! — 강한 무리 3마리</span>`;
+    const noiseTag  = noise < 30  ? `<span style="color:var(--text-good);">${I18n.t('encounter.lowNoise')}</span>`
+                    : noise < 65  ? `<span style="color:var(--text-warn);">${I18n.t('encounter.midNoise')}</span>`
+                    : `<span style="color:var(--text-danger);">${I18n.t('encounter.highNoise')}</span>`;
 
     const iconsHtml = enemies.map((e, i) =>
       `<span style="font-size:${count === 1 ? 64 : count === 2 ? 52 : 42}px;
@@ -41,20 +45,20 @@ const Encounter = {
     ).join('');
 
     this._el.innerHTML = `
-      <div class="encounter-title">⚠ 조우!</div>
+      <div class="encounter-title">${I18n.t('encounter.title')}</div>
       <div style="display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap;">
         ${iconsHtml}
       </div>
       <div class="encounter-desc">
-        <strong>${count > 1 ? `${leader.name} 외 ${count - 1}마리` : leader.name}</strong>이 나타났다!<br>
-        ${leader.description ?? '위험한 적.'}<br><br>
+        <strong>${I18n.t('encounter.appeared', { name: count > 1 ? I18n.t('encounter.appearedPlural', { leader: I18n.enemyName(leader.id, leader.name), rest: count - 1 }) : I18n.enemyName(leader.id, leader.name) })}</strong><br>
+        ${leader.description ?? I18n.t('encounter.defaultDesc')}<br><br>
         ${noiseTag}<br>
-        ${d.noiseInflux ? '<span style="color:var(--text-danger);">소음 임계치 초과로 유인됨!</span>' : ''}
+        ${d.noiseInflux ? `<span style="color:var(--text-danger);">${I18n.t('encounter.noiseInflux')}</span>` : ''}
       </div>
       <div class="encounter-choices">
-        <button class="toolbar-btn" id="enc-fight">⚔ 전투</button>
-        <button class="toolbar-btn" id="enc-stealth">🌑 은신</button>
-        <button class="toolbar-btn" id="enc-flee">🏃 도주</button>
+        <button class="toolbar-btn" id="enc-fight">${I18n.t('encounter.fight')}</button>
+        <button class="toolbar-btn" id="enc-stealth">${I18n.t('encounter.stealth')}</button>
+        <button class="toolbar-btn" id="enc-flee">${I18n.t('encounter.flee')}</button>
       </div>
     `;
 
@@ -71,10 +75,10 @@ const Encounter = {
       const maxDiff = Math.max(...enemies.map(e => e.stealthDifficulty ?? 0.5));
       const success = Math.random() > maxDiff;
       if (success) {
-        EventBus.emit('notify', { message: '은신 성공! 위기를 모면했다.', type: 'good' });
+        EventBus.emit('notify', { message: I18n.t('encounter.stealthOk'), type: 'good' });
         StateMachine.transition('explore');
       } else {
-        EventBus.emit('notify', { message: '은신 실패! 전투 돌입.', type: 'danger' });
+        EventBus.emit('notify', { message: I18n.t('encounter.stealthFail'), type: 'danger' });
         StateMachine.transition('combat', { enemies, dangerLevel, nodeId });
       }
     });
@@ -83,11 +87,11 @@ const Encounter = {
     this._el.querySelector('#enc-flee')?.addEventListener('click', () => {
       const success = Math.random() < 0.65;
       if (success) {
-        EventBus.emit('notify', { message: '도주 성공! 다른 구역으로 이동하라.', type: 'good' });
+        EventBus.emit('notify', { message: I18n.t('encounter.fleeOk'), type: 'good' });
         GameState.modStat('fatigue', 10);
         StateMachine.transition('explore');
       } else {
-        EventBus.emit('notify', { message: '도주 실패! 전투 돌입.', type: 'danger' });
+        EventBus.emit('notify', { message: I18n.t('encounter.fleeFail'), type: 'danger' });
         StateMachine.transition('combat', { enemies, dangerLevel, nodeId });
       }
     });

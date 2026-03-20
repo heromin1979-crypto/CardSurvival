@@ -2,6 +2,8 @@
 // 카드 분해: 확률 기반으로 재료 아이템을 생성 후 보드에 배치
 import EventBus    from '../core/EventBus.js';
 import GameState  from '../core/GameState.js';
+import I18n        from '../core/I18n.js';
+import TickEngine  from '../core/TickEngine.js';
 import SkillSystem from './SkillSystem.js';
 
 const DismantleSystem = {
@@ -18,8 +20,19 @@ const DismantleSystem = {
     if (!def) return { success: false, gained: [] };
 
     if (!def.dismantle?.length) {
-      EventBus.emit('notify', { message: `${def.name}은(는) 분해할 수 없습니다.`, type: 'warn' });
+      EventBus.emit('notify', { message: I18n.t('dismantle.cantDismantle', { name: I18n.itemName(def.id, def.name) }), type: 'warn' });
       return { success: false, gained: [] };
+    }
+
+    // TP 비용 체크
+    const tpCost = def.dismantleTP ?? 0;
+    if (tpCost > 0) {
+      const remainTP = 72 - GameState.time.tpInDay;
+      if (remainTP < tpCost) {
+        EventBus.emit('notify', { message: I18n.t('dismantle.tpShort', { cost: tpCost, remain: remainTP }), type: 'warn' });
+        return { success: false, gained: [] };
+      }
+      TickEngine.skipTP(tpCost, `${def.name} 해체`);
     }
 
     const gained = [];
@@ -39,7 +52,7 @@ const DismantleSystem = {
         if (newInst) {
           const placed = GameState.placeCardInRow(newInst.instanceId);
           if (!placed) {
-            EventBus.emit('notify', { message: '보드 공간 부족으로 일부 재료를 배치하지 못했습니다.', type: 'warn' });
+            EventBus.emit('notify', { message: I18n.t('dismantle.boardFull'), type: 'warn' });
           }
           gained.push(newInst.instanceId);
         }
@@ -67,9 +80,9 @@ const DismantleSystem = {
       const names = gained
         .map(id => GameState.getCardDef(id)?.name ?? '?')
         .join(', ');
-      EventBus.emit('notify', { message: `[분해] ${defName} → ${names}`, type: 'info' });
+      EventBus.emit('notify', { message: I18n.t('dismantle.success', { name: I18n.itemName(def.id, defName), materials: names }), type: 'info' });
     } else {
-      EventBus.emit('notify', { message: `[분해] ${defName} — 재료를 얻지 못했습니다.`, type: 'warn' });
+      EventBus.emit('notify', { message: I18n.t('dismantle.noMaterial', { name: I18n.itemName(def.id, defName) }), type: 'warn' });
     }
 
     EventBus.emit('cardDismantled', { instanceId, definitionId: def.id, gained });

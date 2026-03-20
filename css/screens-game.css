@@ -85,6 +85,11 @@
   color: var(--text-dim);
 }
 
+.blueprint-skill-reqs { margin-top: 2px; display: flex; flex-wrap: wrap; gap: 3px; }
+.blueprint-skill-req { font-size: 8px; padding: 1px 4px; border-radius: 3px; border: 1px solid var(--border-dim); }
+.blueprint-skill-req.met { color: var(--text-good); border-color: var(--text-good); background: rgba(80,160,80,0.08); }
+.blueprint-skill-req.unmet { color: var(--text-danger); border-color: var(--text-danger); background: rgba(192,80,80,0.08); }
+
 .blueprint-req-list {
   margin-top: 4px;
   display: flex;
@@ -1164,6 +1169,7 @@
   background: #0d0d0f;
   overflow-y: auto;
   align-items: flex-start;
+  justify-content: flex-start;
 }
 
 .eg-wrap {

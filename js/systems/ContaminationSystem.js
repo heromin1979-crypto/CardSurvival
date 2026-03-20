@@ -1,6 +1,7 @@
 // === CONTAMINATION SYSTEM ===
 import EventBus  from '../core/EventBus.js';
 import GameState from '../core/GameState.js';
+import I18n      from '../core/I18n.js';
 
 const ContaminationSystem = {
   init() {
@@ -22,7 +23,7 @@ const ContaminationSystem = {
           if (def?.tags?.includes('drinkable')) {
             card.contamination = Math.max(0, card.contamination - 20);
             if (card.contamination === 0) {
-              EventBus.emit('notify', { message: `${def.name} 정수 완료.`, type: 'good' });
+              EventBus.emit('notify', { message: I18n.t('contam.purified', { name: I18n.itemName(def.id, def.name) }), type: 'good' });
             }
           }
         }
@@ -55,7 +56,7 @@ const ContaminationSystem = {
     if (!card) return;
     card.contamination = 0;
     const def = GameState.getCardDef(instanceId);
-    EventBus.emit('notify', { message: `${def?.name ?? '아이템'} 정수됨.`, type: 'good' });
+    EventBus.emit('notify', { message: I18n.t('contam.cardPurified', { name: I18n.itemName(def?.id, def?.name ?? I18n.t('combatResult.item')) }), type: 'good' });
   },
 };
 

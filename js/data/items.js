@@ -10,6 +10,7 @@ import STACK_CONFIG  from './stackConfig.js';
 import ITEMS_BASE    from './items_base.js';
 import ITEMS_COMBAT  from './items_combat.js';
 import ITEMS_MISC    from './items_misc.js';
+import LEGENDARY_ITEMS from './legendaryItems.js';
 
 // ─── 장소 카드 (25개 구) ─────────────────────────────────────
 const ITEMS_LOCATION = {
@@ -455,6 +456,7 @@ const ITEMS = {
   ...ITEMS_BASE,
   ...ITEMS_COMBAT,
   ...ITEMS_MISC,
+  ...LEGENDARY_ITEMS,
   ...ITEMS_LOCATION,
   ...ITEMS_LANDMARK,
 };

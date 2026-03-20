@@ -13,6 +13,7 @@ const BLUEPRINTS = {
     description: '온기와 요리를 제공한다. 소음 주의.',
     output: [{ definitionId: 'campfire', qty: 1 }],
     requiredTools: [],
+    // Tier 0 — 무요구
     stages: [{
       stageIndex: 0, label: '화롯대 설치', tpCost: 1,
       requiredItems: [
@@ -28,6 +29,7 @@ const BLUEPRINTS = {
     description: '오염수를 자동으로 정수하는 장치.',
     output: [{ definitionId: 'water_purifier', qty: 1 }],
     requiredTools: [],
+    requiredSkills: { building: 3, crafting: 2 },
     stages: [
       {
         stageIndex: 0, label: '골조 제작', tpCost: 4,
@@ -53,6 +55,7 @@ const BLUEPRINTS = {
     description: '입구를 막아 조우 확률을 낮춘다.',
     output: [{ definitionId: 'barricade', qty: 1 }],
     requiredTools: [],
+    requiredSkills: { building: 2 },
     stages: [{
       stageIndex: 0, label: '방어벽 설치', tpCost: 3,
       requiredItems: [
@@ -69,6 +72,7 @@ const BLUEPRINTS = {
     description: '적 접근 시 경보를 울린다.',
     output: [{ definitionId: 'alarm_trap', qty: 1 }],
     requiredTools: [],
+    requiredSkills: { building: 2, crafting: 1 },
     stages: [{
       stageIndex: 0, label: '트랩 조립', tpCost: 2,
       requiredItems: [
@@ -85,6 +89,7 @@ const BLUEPRINTS = {
     description: '적에게 자동으로 피해를 준다.',
     output: [{ definitionId: 'spike_trap', qty: 1 }],
     requiredTools: ['pipe_wrench'],
+    requiredSkills: { building: 3, weaponcraft: 1 },
     stages: [{
       stageIndex: 0, label: '트랩 제작', tpCost: 3,
       requiredItems: [
@@ -101,6 +106,7 @@ const BLUEPRINTS = {
     description: '복잡한 제작을 가능하게 한다.',
     output: [{ definitionId: 'workbench', qty: 1 }],
     requiredTools: [],
+    requiredSkills: { building: 3, crafting: 2 },
     stages: [
       {
         stageIndex: 0, label: '골조 제작', tpCost: 3,
@@ -126,6 +132,7 @@ const BLUEPRINTS = {
     description: '아이템을 안전하게 보관한다.',
     output: [{ definitionId: 'storage_box', qty: 1 }],
     requiredTools: [],
+    requiredSkills: { building: 1 },
     stages: [{
       stageIndex: 0, label: '상자 제작', tpCost: 2,
       requiredItems: [
@@ -141,6 +148,7 @@ const BLUEPRINTS = {
     description: 'TP당 HP 자동 회복. 감염 저항 강화.',
     output: [{ definitionId: 'medical_station', qty: 1 }],
     requiredTools: ['workbench'],
+    requiredSkills: { building: 4, medicine: 2 },
     stages: [
       {
         stageIndex: 0, label: '거점 설치', tpCost: 3,
@@ -166,6 +174,7 @@ const BLUEPRINTS = {
     description: '식량을 자급자족할 수 있는 텃밭.',
     output: [{ definitionId: 'garden', qty: 1 }],
     requiredTools: [],
+    requiredSkills: { building: 2 },
     stages: [
       {
         stageIndex: 0, label: '밭 고르기', tpCost: 3,
@@ -190,6 +199,7 @@ const BLUEPRINTS = {
     description: '빗물을 모아 수분을 자급한다. 겨울에는 눈 녹인 물.',
     output: [{ definitionId: 'rain_collector', qty: 1 }],
     requiredTools: [],
+    requiredSkills: { building: 1 },
     stages: [{
       stageIndex: 0, label: '수집기 설치', tpCost: 3,
       requiredItems: [
@@ -210,6 +220,7 @@ const BLUEPRINTS = {
     description: '목재를 태워 숯을 만든다. 캠프파이어 필요.',
     output: [{ definitionId: 'charcoal', qty: 3 }],
     requiredTools: ['campfire'],
+    // Tier 0 — 무요구
     stages: [{
       stageIndex: 0, label: '목재 소각', tpCost: 2,
       requiredItems: [{ definitionId: 'wood', qty: 2 }],
@@ -222,6 +233,7 @@ const BLUEPRINTS = {
     description: '숯과 천 조각으로 정수 필터를 만든다.',
     output: [{ definitionId: 'charcoal_filter', qty: 1 }],
     requiredTools: [],
+    requiredSkills: { crafting: 1 },
     stages: [{
       stageIndex: 0, label: '필터 조립', tpCost: 1,
       requiredItems: [
@@ -237,6 +249,7 @@ const BLUEPRINTS = {
     description: '천 한 장에서 조각 3개를 얻는다.',
     output: [{ definitionId: 'cloth_scrap', qty: 3 }],
     requiredTools: [],
+    // Tier 0 — 무요구
     stages: [{
       stageIndex: 0, label: '천 재단', tpCost: 1,
       requiredItems: [{ definitionId: 'cloth', qty: 1 }],
@@ -249,6 +262,7 @@ const BLUEPRINTS = {
     description: '천 조각을 가공해 거즈를 만든다.',
     output: [{ definitionId: 'gauze', qty: 2 }],
     requiredTools: [],
+    requiredSkills: { crafting: 1 },
     stages: [{
       stageIndex: 0, label: '거즈 가공', tpCost: 1,
       requiredItems: [{ definitionId: 'cloth_scrap', qty: 2 }],
@@ -261,6 +275,7 @@ const BLUEPRINTS = {
     description: '고철을 갈아 날카로운 날을 만든다.',
     output: [{ definitionId: 'sharp_blade', qty: 1 }],
     requiredTools: ['pipe_wrench'],
+    requiredSkills: { weaponcraft: 2 },
     stages: [{
       stageIndex: 0, label: '날 연마', tpCost: 2,
       requiredItems: [{ definitionId: 'scrap_metal', qty: 2 }],
@@ -273,6 +288,7 @@ const BLUEPRINTS = {
     description: '고철을 녹여 철파이프를 만든다.',
     output: [{ definitionId: 'iron_pipe', qty: 1 }],
     requiredTools: ['campfire'],
+    requiredSkills: { crafting: 2 },
     stages: [{
       stageIndex: 0, label: '파이프 주조', tpCost: 2,
       requiredItems: [{ definitionId: 'scrap_metal', qty: 2 }],
@@ -285,6 +301,7 @@ const BLUEPRINTS = {
     description: '주류를 증류해 소독용 알코올을 얻는다.',
     output: [{ definitionId: 'alcohol_solution', qty: 1 }],
     requiredTools: ['campfire'],
+    requiredSkills: { crafting: 2 },
     stages: [{
       stageIndex: 0, label: '증류', tpCost: 2,
       requiredItems: [{ definitionId: 'alcohol_drink', qty: 2 }],
@@ -301,6 +318,7 @@ const BLUEPRINTS = {
     description: '오염수를 끓여 살균한다. 캠프파이어 필요.',
     output: [{ definitionId: 'boiled_water', qty: 1 }],
     requiredTools: ['campfire'],
+    // Tier 0 — 무요구
     stages: [{
       stageIndex: 0, label: '물 끓이기', tpCost: 1,
       requiredItems: [{ definitionId: 'contaminated_water', qty: 1 }],
@@ -313,6 +331,7 @@ const BLUEPRINTS = {
     description: '숯 필터로 물을 완전히 정수한다.',
     output: [{ definitionId: 'purified_water', qty: 1 }],
     requiredTools: [],
+    requiredSkills: { cooking: 1 },
     stages: [{
       stageIndex: 0, label: '정수', tpCost: 1,
       requiredItems: [
@@ -328,6 +347,7 @@ const BLUEPRINTS = {
     description: '끓인 물로 라면을 조리한다.',
     output: [{ definitionId: 'cooked_noodles', qty: 1 }],
     requiredTools: ['campfire'],
+    requiredSkills: { cooking: 1 },
     stages: [{
       stageIndex: 0, label: '조리', tpCost: 1,
       requiredItems: [
@@ -343,6 +363,7 @@ const BLUEPRINTS = {
     description: '끓인 물로 쌀밥을 짓는다.',
     output: [{ definitionId: 'cooked_rice', qty: 1 }],
     requiredTools: ['campfire'],
+    requiredSkills: { cooking: 2 },
     stages: [{
       stageIndex: 0, label: '취사', tpCost: 2,
       requiredItems: [
@@ -362,6 +383,7 @@ const BLUEPRINTS = {
     description: '천 조각으로 붕대를 만든다.',
     output: [{ definitionId: 'bandage', qty: 2 }],
     requiredTools: [],
+    // Tier 0 — 무요구
     stages: [{
       stageIndex: 0, label: '붕대 감기', tpCost: 1,
       requiredItems: [{ definitionId: 'cloth_scrap', qty: 2 }],
@@ -374,6 +396,7 @@ const BLUEPRINTS = {
     description: '붕대·소독약·거즈를 모아 구급키트를 만든다.',
     output: [{ definitionId: 'first_aid_kit', qty: 1 }],
     requiredTools: [],
+    requiredSkills: { crafting: 2, medicine: 1 },
     stages: [{
       stageIndex: 0, label: '키트 조립', tpCost: 2,
       requiredItems: [
@@ -390,6 +413,7 @@ const BLUEPRINTS = {
     description: '구급키트에 추가 약품을 더해 완전 비상키트를 만든다.',
     output: [{ definitionId: 'emergency_kit', qty: 1 }],
     requiredTools: ['workbench'],
+    requiredSkills: { crafting: 3, medicine: 2 },
     stages: [{
       stageIndex: 0, label: '키트 패킹', tpCost: 3,
       requiredItems: [
@@ -407,6 +431,7 @@ const BLUEPRINTS = {
     description: '비타민(약초)을 끓인 물에 우려 허브차를 만든다. 캠프파이어 필요.',
     output: [{ definitionId: 'herbal_tea', qty: 2 }],
     requiredTools: ['campfire'],
+    requiredSkills: { cooking: 1, medicine: 1 },
     stages: [{
       stageIndex: 0, label: '차 우리기', tpCost: 1,
       requiredItems: [
@@ -422,6 +447,7 @@ const BLUEPRINTS = {
     description: '허브차를 알코올로 농축해 강장제를 만든다.',
     output: [{ definitionId: 'stamina_tonic', qty: 1 }],
     requiredTools: [],
+    requiredSkills: { crafting: 3, medicine: 1 },
     stages: [{
       stageIndex: 0, label: '성분 농축', tpCost: 2,
       requiredItems: [
@@ -438,6 +464,7 @@ const BLUEPRINTS = {
     description: '강장제·에너지바·건육을 압축 포장한 고성능 전투 식량.',
     output: [{ definitionId: 'battle_ration', qty: 1 }],
     requiredTools: ['workbench'],
+    requiredSkills: { cooking: 3, crafting: 3 },
     stages: [{
       stageIndex: 0, label: '식량 압축 포장', tpCost: 3,
       requiredItems: [
@@ -458,6 +485,7 @@ const BLUEPRINTS = {
     description: '못이 박혀 피해가 크게 증가한 배트.',
     output: [{ definitionId: 'reinforced_bat', qty: 1 }],
     requiredTools: ['pipe_wrench'],
+    requiredSkills: { weaponcraft: 2 },
     stages: [
       {
         stageIndex: 0, label: '못 박기', tpCost: 2,
@@ -480,6 +508,7 @@ const BLUEPRINTS = {
     description: '철파이프에 못을 박아 출혈 무기를 만든다.',
     output: [{ definitionId: 'spiked_pipe', qty: 1 }],
     requiredTools: ['pipe_wrench'],
+    requiredSkills: { weaponcraft: 3 },
     stages: [{
       stageIndex: 0, label: '못 박기', tpCost: 2,
       requiredItems: [
@@ -496,6 +525,7 @@ const BLUEPRINTS = {
     description: '목재 자루에 날을 달아 창을 만든다.',
     output: [{ definitionId: 'spear', qty: 1 }],
     requiredTools: [],
+    requiredSkills: { weaponcraft: 2 },
     stages: [{
       stageIndex: 0, label: '창 제작', tpCost: 2,
       requiredItems: [
@@ -512,6 +542,7 @@ const BLUEPRINTS = {
     description: '소음 없는 원거리 무기.',
     output: [{ definitionId: 'crossbow', qty: 1 }],
     requiredTools: ['workbench'],
+    requiredSkills: { weaponcraft: 4, crafting: 2 },
     stages: [
       {
         stageIndex: 0, label: '활대 제작', tpCost: 3,
@@ -537,6 +568,7 @@ const BLUEPRINTS = {
     description: '고철과 목재로 화살 5개를 만든다.',
     output: [{ definitionId: 'crossbow_bolt', qty: 5 }],
     requiredTools: [],
+    requiredSkills: { weaponcraft: 2 },
     stages: [{
       stageIndex: 0, label: '화살 제작', tpCost: 1,
       requiredItems: [
@@ -552,6 +584,7 @@ const BLUEPRINTS = {
     description: '알코올과 천을 넣은 유리병.',
     output: [{ definitionId: 'molotov_cocktail', qty: 1 }],
     requiredTools: [],
+    requiredSkills: { weaponcraft: 1 },
     stages: [{
       stageIndex: 0, label: '제조', tpCost: 1,
       requiredItems: [
@@ -568,6 +601,7 @@ const BLUEPRINTS = {
     description: '빈 캔에 못과 화약을 채운다.',
     output: [{ definitionId: 'nail_bomb', qty: 1 }],
     requiredTools: [],
+    requiredSkills: { weaponcraft: 3 },
     stages: [{
       stageIndex: 0, label: '폭탄 조립', tpCost: 2,
       requiredItems: [
@@ -584,6 +618,7 @@ const BLUEPRINTS = {
     description: '전자부품과 천으로 연막탄을 만든다.',
     output: [{ definitionId: 'smoke_bomb', qty: 1 }],
     requiredTools: [],
+    requiredSkills: { weaponcraft: 2, crafting: 1 },
     stages: [{
       stageIndex: 0, label: '연막탄 조립', tpCost: 2,
       requiredItems: [
@@ -604,6 +639,7 @@ const BLUEPRINTS = {
     description: '고철과 가죽으로 보호 헬멧을 만든다.',
     output: [{ definitionId: 'helmet', qty: 1 }],
     requiredTools: ['pipe_wrench'],
+    requiredSkills: { armorcraft: 2 },
     stages: [{
       stageIndex: 0, label: '헬멧 성형', tpCost: 3,
       requiredItems: [
@@ -620,6 +656,7 @@ const BLUEPRINTS = {
     description: '천과 고무로 방수 우비를 만든다.',
     output: [{ definitionId: 'raincoat', qty: 1 }],
     requiredTools: [],
+    requiredSkills: { armorcraft: 2 },
     stages: [{
       stageIndex: 0, label: '우비 봉제', tpCost: 2,
       requiredItems: [
@@ -636,6 +673,7 @@ const BLUEPRINTS = {
     description: '방탄 소재로 된 전술조끼. 작업대 필요.',
     output: [{ definitionId: 'tactical_vest', qty: 1 }],
     requiredTools: ['workbench'],
+    requiredSkills: { armorcraft: 4 },
     stages: [
       {
         stageIndex: 0, label: '소재 재단', tpCost: 3,
@@ -661,6 +699,7 @@ const BLUEPRINTS = {
     description: '우비와 방독면을 결합한 완전 방호복.',
     output: [{ definitionId: 'hazmat_suit', qty: 1 }],
     requiredTools: ['workbench'],
+    requiredSkills: { armorcraft: 5, crafting: 3 },
     stages: [
       {
         stageIndex: 0, label: '방호 기초 제작', tpCost: 3,
@@ -690,6 +729,7 @@ const BLUEPRINTS = {
     description: '고층 진입·탈출용 사다리.',
     output: [{ definitionId: 'rope_ladder', qty: 1 }],
     requiredTools: [],
+    requiredSkills: { crafting: 1 },
     stages: [{
       stageIndex: 0, label: '사다리 제작', tpCost: 2,
       requiredItems: [
@@ -707,6 +747,7 @@ const BLUEPRINTS = {
     description: '천과 끈으로 소형 가방을 만든다. (+3칸)',
     output: [{ definitionId: 'small_bag', qty: 1 }],
     requiredTools: [],
+    // Tier 0 — 무요구
     stages: [{
       stageIndex: 0, label: '가방 봉제', tpCost: 1,
       requiredItems: [
@@ -722,6 +763,7 @@ const BLUEPRINTS = {
     description: '천과 가죽으로 든든한 배낭을 만든다. (+5칸)',
     output: [{ definitionId: 'backpack', qty: 1 }],
     requiredTools: [],
+    requiredSkills: { crafting: 2 },
     stages: [{
       stageIndex: 0, label: '배낭 제작', tpCost: 3,
       requiredItems: [
@@ -738,6 +780,7 @@ const BLUEPRINTS = {
     description: '대형 수납 더플백. (+6칸)',
     output: [{ definitionId: 'duffel_bag', qty: 1 }],
     requiredTools: [],
+    requiredSkills: { crafting: 3 },
     stages: [{
       stageIndex: 0, label: '더플백 제작', tpCost: 4,
       requiredItems: [
@@ -754,6 +797,7 @@ const BLUEPRINTS = {
     description: '고철과 가죽으로 튼튼한 방패를 만든다.',
     output: [{ definitionId: 'shield', qty: 1 }],
     requiredTools: ['pipe_wrench'],
+    requiredSkills: { armorcraft: 3 },
     stages: [
       {
         stageIndex: 0, label: '판금 성형', tpCost: 3,

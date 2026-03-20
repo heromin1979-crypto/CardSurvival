@@ -120,6 +120,19 @@ const ITEMS_COMBAT = {
     ],
   },
 
+  hand_axe: {
+    id: 'hand_axe', name: '손도끼', type: 'weapon', subtype: 'melee',
+    rarity: 'uncommon', weight: 0.8,
+    defaultDurability: 75, defaultContamination: 0,
+    icon: '🪓', description: '나무를 베고 적을 공격하는 다용도 도구. 통나무 가공에 필수.',
+    tags: ['weapon', 'melee', 'tool'],
+    combat: { damage: [15, 25], accuracy: 0.78, noiseOnUse: 4, durabilityLoss: 3, critChance: 0.15, critMultiplier: 1.8 },
+    dismantle: [
+      { definitionId: 'wood', qty: 1, chance: 0.8 },
+      { definitionId: 'sharp_blade', qty: 1, chance: 0.6 },
+    ],
+  },
+
   // ─── 원거리 / 투척 (9) ───────────────────────────────────
 
   pistol: {

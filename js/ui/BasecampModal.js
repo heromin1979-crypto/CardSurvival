@@ -2,6 +2,7 @@
 // 거점 강화 UI
 import EventBus      from '../core/EventBus.js';
 import GameState     from '../core/GameState.js';
+import I18n          from '../core/I18n.js';
 import BasecampSystem from '../systems/BasecampSystem.js';
 
 const BasecampModal = {
@@ -18,6 +19,9 @@ const BasecampModal = {
         if (e.key === 'Escape' && this._overlay?.classList.contains('open')) this.close();
       });
       EventBus.on('basecampUpgraded', () => {
+        if (this._overlay?.classList.contains('open')) this._render();
+      });
+      EventBus.on('languageChanged', () => {
         if (this._overlay?.classList.contains('open')) this._render();
       });
     }
@@ -53,26 +57,26 @@ const BasecampModal = {
 
     const effectsHtml = level > 0 ? `
       <div class="bc-upg-effects">
-        <div class="bc-upg-effects-title">현재 효과</div>
-        ${fx.encounterReduct   > 0 ? `<div class="bc-upg-fx-row">⚔ 조우 확률 <span>-${Math.round(fx.encounterReduct*100)}%</span></div>` : ''}
-        ${fx.hpRegenPerTP      > 0 ? `<div class="bc-upg-fx-row">❤ HP 재생 <span>+${fx.hpRegenPerTP}/TP</span></div>` : ''}
-        ${fx.fatigueRegenBonus > 0 ? `<div class="bc-upg-fx-row">💤 피로 감소 <span>-${fx.fatigueRegenBonus}/TP</span></div>` : ''}
-        ${fx.moraleBonus       > 0 ? `<div class="bc-upg-fx-row">😊 사기 <span>+${fx.moraleBonus}/TP</span></div>` : ''}
-        ${fx.noiseDecayBonus   > 0 ? `<div class="bc-upg-fx-row">🔇 소음 감쇠 <span>+${fx.noiseDecayBonus}/TP</span></div>` : ''}
+        <div class="bc-upg-effects-title">${I18n.t('bcModal.effects')}</div>
+        ${fx.encounterReduct   > 0 ? `<div class="bc-upg-fx-row">${I18n.t('bcModal.encounterReduct', { pct: Math.round(fx.encounterReduct*100) })}</div>` : ''}
+        ${fx.hpRegenPerTP      > 0 ? `<div class="bc-upg-fx-row">${I18n.t('bcModal.hpRegen', { val: fx.hpRegenPerTP })}</div>` : ''}
+        ${fx.fatigueRegenBonus > 0 ? `<div class="bc-upg-fx-row">${I18n.t('bcModal.fatigueReduct', { val: fx.fatigueRegenBonus })}</div>` : ''}
+        ${fx.moraleBonus       > 0 ? `<div class="bc-upg-fx-row">${I18n.t('bcModal.moraleBonus', { val: fx.moraleBonus })}</div>` : ''}
+        ${fx.noiseDecayBonus   > 0 ? `<div class="bc-upg-fx-row">${I18n.t('bcModal.noiseDecay', { val: fx.noiseDecayBonus })}</div>` : ''}
       </div>
-    ` : '<div class="bc-upg-no-effect">거점 강화를 시작하세요.</div>';
+    ` : `<div class="bc-upg-no-effect">${I18n.t('bcModal.noEffect')}</div>`;
 
     const upgradeSection = level >= maxLvl
-      ? `<div class="bc-upg-maxed">🏰 완전 요새화 달성!</div>`
+      ? `<div class="bc-upg-maxed">${I18n.t('bcModal.maxed')}</div>`
       : this._buildNextSection(next);
 
     box.innerHTML = `
       <div class="bc-upg-header">
-        <span class="bc-upg-title">🏕 거점 강화</span>
+        <span class="bc-upg-title">${I18n.t('bcModal.title')}</span>
         <button class="bc-upg-close" id="bc-upg-close">✕</button>
       </div>
       <div class="bc-upg-level-row">
-        <span class="bc-upg-level-text">거점 등급 Lv.${level}</span>
+        <span class="bc-upg-level-text">${I18n.t('bcModal.level', { level })}</span>
         <div class="bc-stars">${starsHtml}</div>
       </div>
       ${effectsHtml}
@@ -92,7 +96,7 @@ const BasecampModal = {
       const have = GameState.countOnBoard(req.definitionId);
       const ok   = have >= req.qty;
       return `<div class="bc-upg-cost-row${ok ? ' ok' : ' missing'}">
-        <span>${def?.icon ?? '📦'} ${def?.name ?? req.definitionId}</span>
+        <span>${def?.icon ?? '📦'} ${I18n.itemName(req.definitionId, def?.name ?? req.definitionId)}</span>
         <span>${have}/${req.qty}</span>
       </div>`;
     }).join('');
@@ -101,12 +105,12 @@ const BasecampModal = {
 
     return `
       <div class="bc-upg-next">
-        <div class="bc-upg-next-title">${next.icon} 다음: ${next.name}</div>
+        <div class="bc-upg-next-title">${I18n.t('bcModal.next', { icon: next.icon, name: next.name })}</div>
         <div class="bc-upg-next-desc">${next.desc}</div>
         <div class="bc-upg-cost-list">${costHtml}</div>
         <button class="bc-upg-btn${check.ok ? '' : ' disabled'}" id="bc-upg-btn"
           ${check.ok ? '' : 'disabled'}>
-          ${check.ok ? '거점 강화' : `재료 부족: ${check.reason}`}
+          ${check.ok ? I18n.t('bcModal.upgrade') : I18n.t('bcModal.noMaterial', { reason: check.reason })}
         </button>
       </div>
     `;

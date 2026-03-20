@@ -1,14 +1,15 @@
 // === ENDING SCREEN ===
 import EventBus     from '../core/EventBus.js';
 import GameState    from '../core/GameState.js';
+import I18n         from '../core/I18n.js';
 import SaveManager  from '../persistence/SaveManager.js';
 import EndingSystem from '../systems/EndingSystem.js';
 
-const CATEGORY_LABELS = {
-  death:     '사망',
-  milestone: '마일스톤',
-  escape:    '탈출',
-  character: '캐릭터',
+const CATEGORY_LABEL_KEYS = {
+  death:     'ending.catDeath',
+  milestone: 'ending.catMilestone',
+  escape:    'ending.catEscape',
+  character: 'ending.catCharacter',
 };
 
 const CATEGORY_COLORS = {
@@ -49,7 +50,7 @@ const Ending = {
     badge.className = 'ending-badge';
     badge.style.borderColor = catColor;
     badge.style.color        = catColor;
-    badge.textContent = CATEGORY_LABELS[cat] ?? cat;
+    badge.textContent = CATEGORY_LABEL_KEYS[cat] ? I18n.t(CATEGORY_LABEL_KEYS[cat]) : cat;
     container.appendChild(badge);
 
     // ── Title ──────────────────────────────────────────────────
@@ -78,7 +79,7 @@ const Ending = {
     if (isFirst) {
       const unlock = document.createElement('div');
       unlock.className = 'ending-unlock';
-      unlock.textContent = '★ 첫 달성!';
+      unlock.textContent = I18n.t('ending.firstUnlock');
       container.appendChild(unlock);
     }
 
@@ -88,7 +89,7 @@ const Ending = {
     const unlocked   = EndingSystem.getUnlocked().length;
     const progress   = document.createElement('div');
     progress.className = 'ending-progress';
-    progress.textContent = `엔딩 달성: ${unlocked} / ${total}`;
+    progress.textContent = I18n.t('ending.progress', { done: unlocked, total });
     container.appendChild(progress);
 
     // ── Action buttons ─────────────────────────────────────────
@@ -97,13 +98,13 @@ const Ending = {
 
     const btnRestart = document.createElement('button');
     btnRestart.className = 'ending-btn primary';
-    btnRestart.textContent = '다시 시작';
+    btnRestart.textContent = I18n.t('ending.restart');
     btnRestart.onclick = () => this._restart();
     actions.appendChild(btnRestart);
 
     const btnTitle = document.createElement('button');
     btnTitle.className = 'ending-btn';
-    btnTitle.textContent = '타이틀로';
+    btnTitle.textContent = I18n.t('ending.toTitle');
     btnTitle.onclick = () => this._goTitle();
     actions.appendChild(btnTitle);
 
@@ -116,11 +117,11 @@ const Ending = {
   _buildStatsHTML(gs) {
     const f  = gs.flags ?? {};
     const items = [
-      { icon: '📅', label: '생존 일수',   value: `${gs.time.day}일` },
-      { icon: '💀', label: '처치한 적',   value: `${f.totalKills ?? 0}명` },
-      { icon: '🎒', label: '발견 아이템', value: `${f.totalItemsFound ?? 0}개` },
-      { icon: '🗺', label: '방문 지역',   value: `${gs.location.districtsVisited?.length ?? 0}곳` },
-      { icon: '🔨', label: '제작 횟수',   value: `${f.totalCrafted ?? 0}회` },
+      { icon: '📅', label: I18n.t('ending.survivalDays'),      value: `${gs.time.day}${I18n.t('ending.dayUnit')}` },
+      { icon: '💀', label: I18n.t('ending.enemiesKilled'),     value: `${f.totalKills ?? 0}${I18n.t('ending.killUnit')}` },
+      { icon: '🎒', label: I18n.t('ending.itemsFound'),        value: `${f.totalItemsFound ?? 0}${I18n.t('ending.itemUnit')}` },
+      { icon: '🗺', label: I18n.t('ending.districtsVisited'),  value: `${gs.location.districtsVisited?.length ?? 0}${I18n.t('ending.placeUnit')}` },
+      { icon: '🔨', label: I18n.t('ending.craftCount'),        value: `${f.totalCrafted ?? 0}${I18n.t('ending.craftUnit')}` },
     ];
     return items.map(i => `
       <div class="ending-stat">

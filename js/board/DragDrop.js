@@ -67,12 +67,10 @@ const DragDrop = {
     // 이전 클래스 정리
     slot.classList.remove('drag-over-valid', 'drag-over-invalid', 'drag-over-hover', 'can-interact');
 
-    // 슬롯에 이미 카드가 있는 경우 → 같은 행일 때만 상호작용 확인 (다른 행 = 이동/교환)
+    // 슬롯에 이미 카드가 있는 경우 → 상호작용 확인 (행 무관)
     const existingId  = GameState.board[row]?.[slotIdx];
-    const srcPos      = existingId ? BoardManager.findCard(this._draggingId) : null;
-    const isSameRow   = srcPos?.row === row;
 
-    if (existingId && existingId !== this._draggingId && isSameRow) {
+    if (existingId && existingId !== this._draggingId) {
       const srcDef = GameState.getCardDef(this._draggingId);
       const tgtDef = GameState.getCardDef(existingId);
       const rule   = findInteraction(srcDef, tgtDef);
@@ -124,11 +122,9 @@ const DragDrop = {
     const slotIdx = parseInt(slot.dataset.slot, 10);
 
     const existingId = GameState.board[row]?.[slotIdx];
-    const srcPos     = existingId ? BoardManager.findCard(this._draggingId) : null;
-    const isSameRow  = srcPos?.row === row;
 
-    if (existingId && existingId !== this._draggingId && isSameRow) {
-      // 같은 행: 상호작용 우선 시도 → 없으면 swap
+    if (existingId && existingId !== this._draggingId) {
+      // 상호작용 우선 시도 (행 무관) → 없으면 swap
       const interacted = SlotResolver.resolveInteraction(this._draggingId, existingId);
       if (!interacted) {
         SlotResolver.executeDrop(this._draggingId, row, slotIdx);

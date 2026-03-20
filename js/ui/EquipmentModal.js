@@ -2,22 +2,29 @@
 import EventBus        from '../core/EventBus.js';
 import GameState       from '../core/GameState.js';
 import EquipmentSystem from '../systems/EquipmentSystem.js';
+import I18n            from '../core/I18n.js';
 
 const SLOT_META = {
-  head:        { label: '머리',   icon: '⛑️',  row: 1 },
-  face:        { label: '방독면', icon: '😷',  row: 2, col: 'left' },
-  body:        { label: '방어구', icon: '🦺',  row: 3 },
-  offhand:     { label: '방패',   icon: '🛡️',  row: 2, col: 'right' },
-  hands:       { label: '장갑',   icon: '🧤',  row: 4, col: 'left' },
-  backpack:    { label: '가방',   icon: '🎒',  row: 4, col: 'right' },
-  weapon_main: { label: '주무기', icon: '⚔️',  row: 5, col: 'left' },
-  weapon_sub:  { label: '보조',   icon: '🗡️',  row: 5, col: 'right' },
-  belt:        { label: '허리띠', icon: '📎',  row: 6, col: 'left',  locked: true },
-  accessory:   { label: '장식',   icon: '💎',  row: 6, col: 'right', locked: true },
-  boots:       { label: '신발',   icon: '👟',  row: 7 },
+  head:        { i18nKey: 'equip.head',       icon: '⛑️',  row: 1 },
+  face:        { i18nKey: 'equip.face',       icon: '😷',  row: 2, col: 'left' },
+  body:        { i18nKey: 'equip.body',       icon: '🦺',  row: 3 },
+  offhand:     { i18nKey: 'equip.offhand',    icon: '🛡️',  row: 2, col: 'right' },
+  hands:       { i18nKey: 'equip.hands',      icon: '🧤',  row: 4, col: 'left' },
+  backpack:    { i18nKey: 'equip.backpack',   icon: '🎒',  row: 4, col: 'right' },
+  weapon_main: { i18nKey: 'equip.weaponMain', icon: '⚔️',  row: 5, col: 'left' },
+  weapon_sub:  { i18nKey: 'equip.weaponSub',  icon: '🗡️',  row: 5, col: 'right' },
+  belt:        { i18nKey: 'equip.belt',       icon: '📎',  row: 6, col: 'left',  locked: true },
+  accessory:   { i18nKey: 'equip.accessory',  icon: '💎',  row: 6, col: 'right', locked: true },
+  boots:       { i18nKey: 'equip.boots',      icon: '👟',  row: 7 },
 };
 
-const TABS = ['방어구', '무기', '가방/도구', '소지품'];
+/** Get localized label for a slot */
+function slotLabel(slotId) {
+  const meta = SLOT_META[slotId];
+  return meta ? I18n.t(meta.i18nKey) : slotId;
+}
+
+const TAB_KEYS = ['equip.tabArmor', 'equip.tabWeapons', 'equip.tabBags', 'equip.tabInventory'];
 
 const EquipmentModal = {
   _initialized: false,
@@ -42,6 +49,9 @@ const EquipmentModal = {
 
       // 장착 변경 시 자동 재렌더
       EventBus.on('equipChanged', () => {
+        if (this._overlay?.classList.contains('open')) this._render();
+      });
+      EventBus.on('languageChanged', () => {
         if (this._overlay?.classList.contains('open')) this._render();
       });
     }
@@ -74,8 +84,8 @@ const EquipmentModal = {
 
     box.innerHTML = `
       <div class="equip-modal-header">
-        <span class="equip-modal-title">⚔ 장비 관리</span>
-        <button class="equip-modal-close" id="equip-close-btn">닫기</button>
+        <span class="equip-modal-title">${I18n.t('equip.title')}</span>
+        <button class="equip-modal-close" id="equip-close-btn">${I18n.t('equip.close')}</button>
       </div>
       <div class="equip-modal-body">
         ${this._renderEffectsPanel()}
@@ -94,28 +104,29 @@ const EquipmentModal = {
 
   _renderEffectsPanel() {
     const fx = EquipmentSystem ? this._getEffects() : null;
+    const none = I18n.t('equip.none');
     const rows = fx ? [
-      { label: '피해 감소',    value: fx.damageReduction   > 0 ? `-${Math.round(fx.damageReduction*100)}%`   : '없음', cls: fx.damageReduction   > 0 ? 'good' : '' },
-      { label: '치명타 감소',  value: fx.critReduction     > 0 ? `-${Math.round(fx.critReduction*100)}%`     : '없음', cls: fx.critReduction     > 0 ? 'good' : '' },
-      { label: '방사선',       value: fx.radiationMult     < 1 ? `×${fx.radiationMult.toFixed(2)}`           : '없음', cls: fx.radiationMult     < 1 ? 'good' : '' },
-      { label: '오염',         value: fx.contaminationMult < 1 ? `×${fx.contaminationMult.toFixed(2)}`       : '없음', cls: fx.contaminationMult < 1 ? 'good' : '' },
-      { label: '감염',         value: fx.infectionMult     < 1 ? `×${fx.infectionMult.toFixed(2)}`           : '없음', cls: fx.infectionMult     < 1 ? 'good' : '' },
+      { label: I18n.t('equip.dmgReduce'),  value: fx.damageReduction   > 0 ? `-${Math.round(fx.damageReduction*100)}%`   : none, cls: fx.damageReduction   > 0 ? 'good' : '' },
+      { label: I18n.t('equip.critReduce'), value: fx.critReduction     > 0 ? `-${Math.round(fx.critReduction*100)}%`     : none, cls: fx.critReduction     > 0 ? 'good' : '' },
+      { label: I18n.t('equip.radResist'),  value: fx.radiationMult     < 1 ? `×${fx.radiationMult.toFixed(2)}`           : none, cls: fx.radiationMult     < 1 ? 'good' : '' },
+      { label: I18n.t('equip.contResist'), value: fx.contaminationMult < 1 ? `×${fx.contaminationMult.toFixed(2)}`       : none, cls: fx.contaminationMult < 1 ? 'good' : '' },
+      { label: I18n.t('equip.infResist'),  value: fx.infectionMult     < 1 ? `×${fx.infectionMult.toFixed(2)}`           : none, cls: fx.infectionMult     < 1 ? 'good' : '' },
     ] : [];
 
     const extraSlots = GameState.player.extraSlots ?? 0;
     if (extraSlots > 0) {
-      rows.push({ label: '가방 슬롯', value: `+${extraSlots}칸`, cls: 'info' });
+      rows.push({ label: I18n.t('equip.bagSlots'), value: `+${extraSlots}${I18n.t('equip.slotUnit')}`, cls: 'info' });
     }
 
     return `
       <div class="equip-effects-panel">
-        <div class="equip-effects-title">장비 효과</div>
+        <div class="equip-effects-title">${I18n.t('equip.effectTitle')}</div>
         ${rows.map(r => `
           <div class="equip-effect-row">
             <span class="equip-effect-label">${r.label}</span>
             <span class="equip-effect-value ${r.cls}">${r.value}</span>
           </div>`).join('')}
-        ${rows.length === 0 ? '<div style="font-size:10px;color:var(--text-dim);text-align:center;margin-top:12px;">장비 없음</div>' : ''}
+        ${rows.length === 0 ? `<div style="font-size:10px;color:var(--text-dim);text-align:center;margin-top:12px;">${I18n.t('equip.noEquip')}</div>` : ''}
       </div>
     `;
   },
@@ -190,7 +201,7 @@ const EquipmentModal = {
     } else {
       innerHtml = `
         <div class="equip-slot-empty-icon">${isLocked ? '🔒' : (meta?.icon ?? '?')}</div>
-        <div class="equip-slot-label">${meta?.label ?? slotId}</div>
+        <div class="equip-slot-label">${meta ? I18n.t(meta.i18nKey) : slotId}</div>
       `;
     }
 
@@ -213,9 +224,9 @@ const EquipmentModal = {
     const def = GameState.getCardDef(instanceId);
     return `
       <div class="equip-slot-menu">
-        <div style="font-size:9px;color:var(--text-dim);margin-bottom:2px;">${def?.name ?? '장착품'}</div>
-        <button class="equip-slot-menu-btn danger" data-action="unequip" data-slot="${slotId}">해제</button>
-        <button class="equip-slot-menu-btn" data-action="cancel-menu">취소</button>
+        <div style="font-size:9px;color:var(--text-dim);margin-bottom:2px;">${def ? I18n.itemName(def.id ?? instanceId, def.name) : I18n.t('equip.equipped')}</div>
+        <button class="equip-slot-menu-btn danger" data-action="unequip" data-slot="${slotId}">${I18n.t('equip.unequip')}</button>
+        <button class="equip-slot-menu-btn" data-action="cancel-menu">${I18n.t('equip.cancel')}</button>
       </div>
     `;
   },
@@ -228,7 +239,7 @@ const EquipmentModal = {
     return `
       <div class="equip-mini-card">
         <div class="equip-mini-icon">${def.icon ?? '?'}</div>
-        <div class="equip-mini-name">${def.name}</div>
+        <div class="equip-mini-name">${I18n.itemName(def.id ?? inst.definitionId, def.name)}</div>
         ${durPct ? `<div class="equip-mini-dur">${durPct}</div>` : ''}
       </div>
     `;
@@ -237,13 +248,13 @@ const EquipmentModal = {
   // ── 인벤토리 패널 (오른쪽) ──────────────────────────
 
   _renderInvPanel() {
-    const tabsHtml = TABS.map((t, i) =>
-      `<button class="equip-inv-tab${this._activeTab === i ? ' active' : ''}" data-tab="${i}">${t}</button>`
+    const tabsHtml = TAB_KEYS.map((key, i) =>
+      `<button class="equip-inv-tab${this._activeTab === i ? ' active' : ''}" data-tab="${i}">${I18n.t(key)}</button>`
     ).join('');
 
     const items = this._getFilteredItems();
     const isEmpty = items.length === 0;
-    const emptyMsg = this._activeTab === 3 ? '소지품 없음' : '장착 가능한 아이템 없음';
+    const emptyMsg = this._activeTab === 3 ? I18n.t('equip.emptyInv') : I18n.t('equip.noEquippable');
     const listHtml = isEmpty
       ? `<div class="equip-inv-empty">${emptyMsg}</div>`
       : items.map(c => this._buildInvRow(c.instanceId, { isInventory: !!c.isInventory })).join('');
@@ -285,7 +296,7 @@ const EquipmentModal = {
     const isSelected   = this._selectedId === instanceId;
     const durStr       = inst.durability != null ? ` · ${Math.round(inst.durability)}%` : '';
     const equipSlots   = EquipmentSystem.getSlotsForDef(def);
-    const slotsLabel   = equipSlots.map(s => SLOT_META[s]?.label ?? s).join(', ');
+    const slotsLabel   = equipSlots.map(s => slotLabel(s)).join(', ');
     const qtyStr       = (inst.quantity ?? 1) > 1 ? ` ×${inst.quantity}` : '';
 
     // 소지품 탭: 장착 슬롯 없으면 아이템 타입 표시
@@ -297,7 +308,7 @@ const EquipmentModal = {
       <div class="equip-inv-row${isSelected ? ' selected' : ''}${opts.isInventory ? ' inv-item' : ''}" data-inv-id="${instanceId}">
         <div class="equip-inv-icon">${def.icon ?? '?'}</div>
         <div class="equip-inv-info">
-          <div class="equip-inv-name">${def.name}${qtyStr}</div>
+          <div class="equip-inv-name">${I18n.itemName(def.id ?? inst.definitionId, def.name)}${qtyStr}</div>
           <div class="equip-inv-sub">${subLabel}${durStr}</div>
         </div>
       </div>

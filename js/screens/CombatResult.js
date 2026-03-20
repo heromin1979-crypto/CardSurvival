@@ -2,6 +2,7 @@
 import EventBus      from '../core/EventBus.js';
 import GameState     from '../core/GameState.js';
 import StateMachine  from '../core/StateMachine.js';
+import I18n          from '../core/I18n.js';
 import ExploreSystem from '../systems/ExploreSystem.js';
 import { NODES }     from '../data/nodes.js';
 
@@ -14,6 +15,9 @@ const CombatResult = {
     EventBus.on('stateTransition', ({ to, data }) => {
       if (to === 'combat_result') this._render(data);
     });
+    EventBus.on('languageChanged', () => {
+      if (this._el?.classList.contains('active')) this._render();
+    });
   },
 
   _render(data = {}) {
@@ -25,10 +29,15 @@ const CombatResult = {
 
     // ── 복귀 장소 결정 (전투 발생 노드, 없으면 기지) ──
     const returnNodeId = data.nodeId ?? GameState.location.currentDistrict ?? 'mapo';
-    const btnLabel     = NODES[returnNodeId]?.name ?? '귀환';
+    const rawLabel     = NODES[returnNodeId]?.name ?? I18n.t('combatResult.return');
+    const btnLabel     = I18n.districtName(returnNodeId, rawLabel);
 
-    const titles = { victory: '승리!', defeat: '패배', fled: '도주 성공' };
-    const title  = titles[outcome] ?? '전투 종료';
+    const titles = {
+      victory: I18n.t('combatResult.victory'),
+      defeat:  I18n.t('combatResult.defeat'),
+      fled:    I18n.t('combatResult.fled'),
+    };
+    const title  = titles[outcome] ?? I18n.t('combatResult.ended');
 
     const rewards  = gs.combat.rewards ?? [];
     const xpGained = gs.combat.xpGained ?? 0;
@@ -43,16 +52,16 @@ const CombatResult = {
             const inst = gs.cards[id];
             return `<div class="result-loot-card">
               <div class="result-loot-icon">${def?.icon ?? '📦'}</div>
-              <div class="result-loot-name">${def?.name ?? '아이템'}</div>
+              <div class="result-loot-name">${def?.name ?? I18n.t('combatResult.item')}</div>
               ${(inst?.quantity > 1) ? `<div class="result-loot-qty">x${inst.quantity}</div>` : ''}
             </div>`;
           }).join('')}
         </div>`
-      : '<div style="color:var(--text-dim);font-size:12px;margin-top:8px;">획득 아이템 없음</div>';
+      : `<div style="color:var(--text-dim);font-size:12px;margin-top:8px;">${I18n.t('combatResult.noLoot')}</div>`;
 
     const xpHtml = (outcome === 'victory' && xpGained > 0)
       ? `<div class="result-xp-section">
-          <div class="result-xp-label">경험치 획득: <span id="xp-counter">0</span> / +${xpGained} XP</div>
+          <div class="result-xp-label">${I18n.t('combatResult.xpLabel')}: <span id="xp-counter">0</span> / +${xpGained} XP</div>
           <div class="result-xp-track">
             <div class="result-xp-fill" id="xp-fill" style="width:0%"></div>
           </div>
@@ -63,13 +72,13 @@ const CombatResult = {
       <div class="result-title ${outcome}">${title}</div>
       <div class="result-summary">
         HP: ${gs.player.hp.current} / ${gs.player.hp.max}
-        &nbsp;·&nbsp; 총 XP: ${playerXp}
+        &nbsp;·&nbsp; ${I18n.t('combatResult.totalXp')}: ${playerXp}
       </div>
       ${xpHtml}
-      <div style="margin-top:16px;font-size:11px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;">전리품</div>
+      <div style="margin-top:16px;font-size:11px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;">${I18n.t('combatResult.loot')}</div>
       ${lootHtml}
       <div style="display:flex;gap:12px;margin-top:24px;">
-        <button class="toolbar-btn" id="res-continue">📍 ${btnLabel} 복귀</button>
+        <button class="toolbar-btn" id="res-continue">${I18n.t('combatResult.returnTo', { name: btnLabel })}</button>
       </div>
     `;
 

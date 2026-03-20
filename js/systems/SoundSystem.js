@@ -2,7 +2,8 @@
 // Web Audio API를 사용한 프로시저럴 효과음 시스템
 // 외부 사운드 파일 없이 합성음으로 피드백 제공
 
-import EventBus from '../core/EventBus.js';
+import EventBus        from '../core/EventBus.js';
+import SettingsManager from '../core/SettingsManager.js';
 
 let audioCtx = null;
 let enabled = true;
@@ -55,6 +56,16 @@ function playNoise(duration, vol = volume * 0.5) {
 
 const SoundSystem = {
   init() {
+    // SettingsManager에서 초기값 로드
+    enabled = SettingsManager.get('sound.enabled') ?? true;
+    volume  = SettingsManager.get('sound.volume')  ?? 0.3;
+
+    // 설정 변경 시 실시간 반영
+    EventBus.on('settingsChanged', ({ key, value }) => {
+      if (key === 'sound.enabled') enabled = !!value;
+      if (key === 'sound.volume')  volume = Math.max(0, Math.min(1, value));
+    });
+
     // 전투 효과음
     EventBus.on('combatEnd', ({ outcome }) => {
       if (outcome === 'victory') {

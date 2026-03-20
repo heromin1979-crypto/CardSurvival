@@ -1,6 +1,7 @@
 // === EXPLORE UI — 서울 25구 탐색 화면 ===
 import EventBus      from '../core/EventBus.js';
 import GameState     from '../core/GameState.js';
+import I18n          from '../core/I18n.js';
 import StateMachine  from '../core/StateMachine.js';
 import ExploreSystem from '../systems/ExploreSystem.js';
 import { DISTRICTS } from '../data/districts.js';
@@ -22,6 +23,10 @@ const ExploreUI = {
     });
 
     EventBus.on('locationChanged', () => {
+      if (GameState.ui.currentState === 'explore') this.renderMap();
+    });
+
+    EventBus.on('languageChanged', () => {
       if (GameState.ui.currentState === 'explore') this.renderMap();
     });
   },
@@ -48,11 +53,11 @@ const ExploreUI = {
 
         <!-- HUD -->
         <div class="explore-hud">
-          <div class="hud-day">🗺 탐색 — Day ${gs.time.day} ${this._fmtHour(gs.time.hour)}</div>
+          <div class="hud-day">${I18n.t('explore.hud', { day: gs.time.day, time: this._fmtHour(gs.time.hour) })}</div>
           <div class="explore-hud-right">
-            <span class="explore-location">📍 ${current?.name ?? currentId}</span>
-            <span class="explore-noise">🔊 소음 ${Math.round(gs.noise.level)}</span>
-            <button class="explore-map-btn" data-action="open-seoul-map" title="서울 전체 지도">🗺</button>
+            <span class="explore-location">${I18n.t('explore.location', { name: I18n.districtName(currentId, current?.name ?? currentId) })}</span>
+            <span class="explore-noise">${I18n.t('explore.noise', { val: Math.round(gs.noise.level) })}</span>
+            <button class="explore-map-btn" data-action="open-seoul-map" title="${I18n.t('explore.mapBtn')}">🗺</button>
           </div>
         </div>
 
@@ -60,27 +65,27 @@ const ExploreUI = {
         <div class="explore-current-banner" style="border-left:3px solid ${color}; padding:10px 14px; margin-bottom:8px; display:flex; align-items:center; gap:12px; background:rgba(0,0,0,0.3);">
           <span style="font-size:28px;">${current?.icon ?? '🗺'}</span>
           <div style="flex:1; min-width:0;">
-            <div style="font-size:15px; font-weight:bold; color:var(--text-primary);">${current?.name ?? currentId}</div>
+            <div style="font-size:15px; font-weight:bold; color:var(--text-primary);">${I18n.districtName(currentId, current?.name ?? currentId)}</div>
             <div style="font-size:11px; color:var(--text-dim); margin-top:2px;">${(current?.description ?? '').slice(0, 70)}</div>
           </div>
           <div style="text-align:right; font-size:11px; flex-shrink:0;">
-            <div style="color:${color};">위험 ${'█'.repeat(Math.min(danger, 5))}${'░'.repeat(Math.max(0, 5 - danger))}</div>
-            <div style="color:var(--text-dim);">💀 조우 ${encPct}%</div>
-            ${current?.radiation > 0 ? `<div class="radiation-badge">☢ 방사선 +${current.radiation}</div>` : ''}
-            ${isLooted ? '<div class="node-visited-badge">탐색 완료</div>' : ''}
+            <div style="color:${color};">${I18n.t('explore.dangerBar')} ${'█'.repeat(Math.min(danger, 5))}${'░'.repeat(Math.max(0, 5 - danger))}</div>
+            <div style="color:var(--text-dim);">${I18n.t('explore.encounterPct', { pct: encPct })}</div>
+            ${current?.radiation > 0 ? `<div class="radiation-badge">${I18n.t('explore.radiation', { val: current.radiation })}</div>` : ''}
+            ${isLooted ? `<div class="node-visited-badge">${I18n.t('explore.explored')}</div>` : ''}
           </div>
         </div>
 
         <!-- 탐색 버튼 -->
         <div style="margin-bottom:12px;">
           <button class="toolbar-btn primary" id="btn-explore-district" style="width:100%; padding:10px; font-size:13px;">
-            🔍 탐색하기 (1TP)${isLooted ? ' — 재탐색 (20% 확률)' : ''}
+            ${I18n.t('explore.exploreBtn')}${isLooted ? I18n.t('explore.reExplore') : ''}
           </button>
         </div>
 
         <!-- 인접 지역 이동 -->
         <div class="explore-section">
-          <div class="explore-map-label">🚶 인접 지역 이동 (${adjacent.length}개)</div>
+          <div class="explore-map-label">${I18n.t('explore.adjacent', { count: adjacent.length })}</div>
           <div class="district-grid">
             ${adjacent.map(d => this._buildDistrictCard(d, visited)).join('')}
           </div>
@@ -88,8 +93,8 @@ const ExploreUI = {
 
         <!-- 툴바 -->
         <div class="explore-toolbar">
-          <button class="toolbar-btn" id="btn-return-base">🏠 귀환 (TP 소비 없음)</button>
-          <span class="explore-hint">지역 클릭: 이동 (TP 소비) • 탐색: 루팅 (1TP)</span>
+          <button class="toolbar-btn" id="btn-return-base">${I18n.t('explore.returnHome')}</button>
+          <span class="explore-hint">${I18n.t('explore.hint')}</span>
         </div>
 
       </div>
@@ -125,13 +130,13 @@ const ExploreUI = {
       <div class="district-card" data-district-id="${district.id}"
            style="border-color:${color};">
         <div class="district-icon">${district.icon}</div>
-        <div class="district-name">${district.name}</div>
+        <div class="district-name">${I18n.districtName(district.id, district.name)}</div>
         <div class="district-desc">${(district.description ?? '').slice(0, 45)}…</div>
         <div class="node-meta">
           <span>🕒 ${district.travelCostTP}TP</span>
           <span>💀 ${encPct}%</span>
           ${district.radiation > 0 ? `<span class="radiation-badge">☢ ${district.radiation}</span>` : ''}
-          ${isVisited ? '<span class="node-visited-badge">방문</span>' : ''}
+          ${isVisited ? `<span class="node-visited-badge">${I18n.t('map.visited')}</span>` : ''}
         </div>
       </div>
     `;

@@ -2,6 +2,7 @@
 import EventBus    from '../core/EventBus.js';
 import GameState   from '../core/GameState.js';
 import StateMachine from '../core/StateMachine.js';
+import I18n        from '../core/I18n.js';
 import TickEngine  from '../core/TickEngine.js';
 import CraftUI        from '../ui/CraftUI.js';
 import BoardRenderer  from '../ui/BoardRenderer.js';
@@ -30,6 +31,12 @@ const Basecamp = {
     EventBus.on('raiderDemand', (data) => {
       if (GameState.ui.currentState === 'basecamp') this._showRaiderModal(data);
     });
+    EventBus.on('languageChanged', () => {
+      if (GameState.ui.currentState === 'basecamp') {
+        this._buildLayout();
+        this._onEnter();
+      }
+    });
   },
 
   _onEnter() {
@@ -46,7 +53,7 @@ const Basecamp = {
     if (districtEl) {
       const distId = GameState.location.currentDistrict ?? 'mapo';
       const node   = window.__GAME_DATA__?.nodes?.[distId];
-      districtEl.textContent = `📍 ${node?.name ?? distId}`;
+      districtEl.textContent = `📍 ${I18n.districtName(distId, node?.name ?? distId)}`;
     }
     CraftUI.init();
     EquipmentModal.init();
@@ -69,9 +76,9 @@ const Basecamp = {
     this._el.innerHTML = `
       <aside class="bc-sidebar">
         <!-- Minimap -->
-        <div class="bc-minimap" data-action="open-seoul-map" title="서울 지도 보기">
+        <div class="bc-minimap" data-action="open-seoul-map" title="${I18n.t('basecamp.viewMap')}">
           <span>🗺</span>
-          <span class="bc-minimap-label">도시 지도</span>
+          <span class="bc-minimap-label">${I18n.t('basecamp.cityMap')}</span>
         </div>
 
         <!-- Day / Time / TP -->
@@ -97,10 +104,10 @@ const Basecamp = {
         </div>
 
         <!-- Character (클릭 → 장비 창) -->
-        <div class="bc-char-block" id="bc-char-block" style="cursor:pointer;" title="장비 관리 클릭">
+        <div class="bc-char-block" id="bc-char-block" style="cursor:pointer;" title="${I18n.t('basecamp.equipHint')}">
           <div class="bc-avatar">👤</div>
           <div class="bc-char-info">
-            <div class="bc-char-name" id="bc-char-name">생존자</div>
+            <div class="bc-char-name" id="bc-char-name">${I18n.t('basecamp.survivor')}</div>
             <div class="bc-char-sub" id="bc-district-name">📍 마포구</div>
             <div class="bc-char-hp"><span id="hud-hp">❤ 100/100</span></div>
           </div>
@@ -115,7 +122,7 @@ const Basecamp = {
         <!-- Noise -->
         <div class="bc-noise-block">
           <div class="noise-label">
-            <span>소음</span>
+            <span>${I18n.t('basecamp.noise')}</span>
             <span id="noise-val">0</span>
           </div>
           <div class="noise-track" id="noise-track">
@@ -128,18 +135,18 @@ const Basecamp = {
 
         <!-- Quest placeholder -->
         <div class="bc-quests-block">
-          <div class="bc-block-title">퀘스트 및 블루프린트</div>
-          <div class="bc-block-content" id="bc-quest-info">활성 퀘스트: 0개</div>
+          <div class="bc-block-title">${I18n.t('basecamp.questTitle')}</div>
+          <div class="bc-block-content" id="bc-quest-info">${I18n.t('basecamp.activeQuests', { count: 0 })}</div>
         </div>
 
         <!-- Action buttons -->
         <div class="bc-sidebar-btns">
-          <button class="toolbar-btn" id="btn-craft">🔨 제작</button>
-          <button class="toolbar-btn" id="btn-skills">📊 숙련도</button>
-          <button class="toolbar-btn" id="btn-basecamp">🏕 거점 강화</button>
-          <button class="toolbar-btn" id="btn-wait">⏱ 대기</button>
-          <button class="toolbar-btn" id="btn-rest">💤 휴식</button>
-          <button class="toolbar-btn" id="btn-save">💾 저장</button>
+          <button class="toolbar-btn" id="btn-craft">${I18n.t('basecamp.craft')}</button>
+          <button class="toolbar-btn" id="btn-skills">${I18n.t('basecamp.skills')}</button>
+          <button class="toolbar-btn" id="btn-basecamp">${I18n.t('basecamp.fortify')}</button>
+          <button class="toolbar-btn" id="btn-wait">${I18n.t('basecamp.wait')}</button>
+          <button class="toolbar-btn" id="btn-rest">${I18n.t('basecamp.rest')}</button>
+          <button class="toolbar-btn" id="btn-save">${I18n.t('basecamp.save')}</button>
         </div>
       </aside>
 
@@ -171,10 +178,10 @@ const Basecamp = {
       <!-- Craft modal -->
       <div class="modal-overlay" id="craft-modal">
         <div class="modal-box" style="max-width:420px;max-height:85vh;">
-          <div class="modal-title">🔨 제작대</div>
+          <div class="modal-title">${I18n.t('basecamp.craftBench')}</div>
           <div id="craft-panel" style="flex:1;overflow-y:auto;"></div>
           <div class="modal-actions">
-            <button class="modal-btn" id="btn-craft-close">닫기</button>
+            <button class="modal-btn" id="btn-craft-close">${I18n.t('basecamp.close')}</button>
           </div>
         </div>
       </div>
@@ -222,7 +229,7 @@ const Basecamp = {
 
     // Wait 1 TP
     this._el.querySelector('#btn-wait')?.addEventListener('click', () => {
-      TickEngine.skipTP(1, '대기');
+      TickEngine.skipTP(1, I18n.t('basecamp.waiting'));
     });
 
     // Rest
@@ -251,7 +258,7 @@ const Basecamp = {
     // 요구 아이템 목록 생성
     const demandList = demandCardIds.map(id => {
       const inst = gs.cards[id];
-      if (!inst) return '(불명)';
+      if (!inst) return I18n.t('basecamp.unknown');
       const def = items[inst.definitionId];
       return `${def?.icon ?? '📦'} ${def?.name ?? inst.definitionId}`;
     }).join(', ');
@@ -262,16 +269,16 @@ const Basecamp = {
     overlay.id = 'raider-demand-modal';
     overlay.innerHTML = `
       <div class="modal-box" style="max-width:400px;">
-        <div class="modal-title">🔫 약탈자 등장!</div>
+        <div class="modal-title">${I18n.t('basecamp.raiderTitle')}</div>
         <div style="padding:12px;line-height:1.6;">
-          <p>무장한 약탈자가 거점에 나타났다.</p>
-          <p>"물자를 넘기면 살려주지."</p>
-          <p style="margin-top:8px;font-weight:bold;">요구 물자 (${demandCount}개):</p>
+          <p>${I18n.t('basecamp.raiderMsg1')}</p>
+          <p>${I18n.t('basecamp.raiderMsg2')}</p>
+          <p style="margin-top:8px;font-weight:bold;">${I18n.t('basecamp.raiderDemand', { count: demandCount })}</p>
           <p style="color:#ff9800;">${demandList}</p>
         </div>
         <div class="modal-actions" style="gap:8px;">
-          <button class="modal-btn" id="raider-surrender" style="background:#e65100;">물자를 넘긴다</button>
-          <button class="modal-btn" id="raider-refuse" style="background:#b71c1c;">싸운다</button>
+          <button class="modal-btn" id="raider-surrender" style="background:#e65100;">${I18n.t('basecamp.raiderSurrender')}</button>
+          <button class="modal-btn" id="raider-refuse" style="background:#b71c1c;">${I18n.t('basecamp.raiderFight')}</button>
         </div>
       </div>
     `;
@@ -293,7 +300,7 @@ const Basecamp = {
 
     const active = QuestSystem.getActiveQuests();
     if (active.length === 0) {
-      el.innerHTML = '<span class="bc-quest-empty">활성 퀘스트: 0개</span>';
+      el.innerHTML = `<span class="bc-quest-empty">${I18n.t('basecamp.activeQuests', { count: 0 })}</span>`;
       return;
     }
 
@@ -307,7 +314,7 @@ const Basecamp = {
           <div class="bc-quest-progress-bar">
             <div class="bc-quest-fill" style="width:${pct}%"></div>
           </div>
-          <div class="bc-quest-meta">${q.progress}/${def?.objective.count ?? '?'} · 남은 기간 ${dayLeft}일</div>
+          <div class="bc-quest-meta">${q.progress}/${def?.objective.count ?? '?'} · ${I18n.t('basecamp.remainDays', { days: dayLeft })}</div>
         </div>
       `;
     }).join('');

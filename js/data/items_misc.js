@@ -1,5 +1,5 @@
 // === ITEMS: MISC (의료·도구·구조물·특수) ===
-// 의료 10 + 도구 10 + 구조물 8 + 특수 6 = 34 items
+// 의료 13 + 도구 10 + 구조물 10 + 환경오브젝트 22 + 가방 5 + 특수 6 = 66 items
 
 const ITEMS_MISC = {
 
@@ -257,6 +257,15 @@ const ITEMS_MISC = {
     dismantle: [],
   },
 
+  whetstone: {
+    id: 'whetstone', name: '숫돌', type: 'tool', subtype: 'utility',
+    rarity: 'uncommon', weight: 0.5,
+    defaultDurability: 80, defaultContamination: 0,
+    icon: '🪨', description: '무기의 날을 세운다. 근접무기 데미지 강화에 사용.',
+    tags: ['tool', 'utility'],
+    dismantle: [],
+  },
+
   rope_ladder: {
     id: 'rope_ladder', name: '로프사다리', type: 'tool', subtype: 'utility',
     rarity: 'uncommon', weight: 1.0,
@@ -270,7 +279,7 @@ const ITEMS_MISC = {
     ],
   },
 
-  // ─── 구조물 (8) ───────────────────────────────────────────
+  // ─── 구조물 (10) + 해체 가능 환경 오브젝트 (22) ───────────
 
   campfire: {
     id: 'campfire', name: '캠프파이어', type: 'structure', subtype: 'heat',
@@ -279,6 +288,7 @@ const ITEMS_MISC = {
     icon: '🔥', description: '온도 회복, 요리, 정수에 사용. 소음 발생.',
     tags: ['structure', 'heat'],
     onTick: { temperature: 2, noise: 3 },
+    dismantleTP: 1,
     dismantle: [
       { definitionId: 'scrap_metal', qty: 1, chance: 0.7 },
       { definitionId: 'cloth', qty: 1, chance: 0.5 },
@@ -291,6 +301,7 @@ const ITEMS_MISC = {
     defaultDurability: 100, defaultContamination: 0,
     icon: '🚰', description: '오염수를 정수. 인접 물병 자동 정화.',
     tags: ['structure', 'crafted'],
+    dismantleTP: 3,
     dismantle: [
       { definitionId: 'scrap_metal', qty: 3, chance: 0.7 },
       { definitionId: 'water_filter', qty: 1, chance: 0.5 },
@@ -305,6 +316,7 @@ const ITEMS_MISC = {
     icon: '🚧', description: '입구를 막는 방어선. 적 조우 확률 감소.',
     tags: ['structure', 'defense', 'crafted'],
     onTick: { encounterReduction: 0.10 },
+    dismantleTP: 2,
     dismantle: [
       { definitionId: 'wood', qty: 3, chance: 0.8 },
       { definitionId: 'nail', qty: 5, chance: 0.6 },
@@ -319,6 +331,7 @@ const ITEMS_MISC = {
     icon: '🔔', description: '적 접근 시 경보 발생. 기습 방지.',
     tags: ['structure', 'trap', 'crafted'],
     onTrigger: { earlyWarning: true, noise: 20 },
+    dismantleTP: 1,
     dismantle: [
       { definitionId: 'electronic_parts', qty: 1, chance: 0.7 },
       { definitionId: 'wire', qty: 1, chance: 0.8 },
@@ -333,6 +346,7 @@ const ITEMS_MISC = {
     icon: '⚠️', description: '적 접근 시 자동 피해. 철파이프와 못으로 제작.',
     tags: ['structure', 'trap', 'crafted'],
     onTrigger: { damage: 20, bleed: true },
+    dismantleTP: 2,
     dismantle: [
       { definitionId: 'iron_pipe', qty: 1, chance: 0.6 },
       { definitionId: 'nail', qty: 5, chance: 0.7 },
@@ -347,6 +361,7 @@ const ITEMS_MISC = {
     icon: '⛺', description: 'TP당 HP를 자동 회복. 감염 저항 강화.',
     tags: ['structure', 'medical', 'crafted'],
     onTick: { hp: 3, infection: -1 },
+    dismantleTP: 3,
     dismantle: [
       { definitionId: 'bandage', qty: 3, chance: 0.7 },
       { definitionId: 'wood', qty: 2, chance: 0.7 },
@@ -360,6 +375,7 @@ const ITEMS_MISC = {
     icon: '🪚', description: '복잡한 제작을 가능하게 한다. 일부 레시피 필수.',
     tags: ['structure', 'crafted'],
     requiredForBlueprints: true,
+    dismantleTP: 2,
     dismantle: [
       { definitionId: 'wood', qty: 4, chance: 0.8 },
       { definitionId: 'scrap_metal', qty: 2, chance: 0.7 },
@@ -373,6 +389,7 @@ const ITEMS_MISC = {
     defaultDurability: 80, defaultContamination: 0,
     icon: '📦', description: '아이템을 안전하게 보관. 인벤토리 확장 효과.',
     tags: ['structure', 'storage', 'crafted'],
+    dismantleTP: 1,
     dismantle: [
       { definitionId: 'wood', qty: 3, chance: 0.8 },
       { definitionId: 'nail', qty: 5, chance: 0.6 },
@@ -386,6 +403,7 @@ const ITEMS_MISC = {
     icon: '🌱', description: '식량을 자급자족. 내구도가 떨어지면 다시 심어야 한다.',
     tags: ['structure', 'crafted'],
     onTick: { nutrition: 0.4, noise: 1 },
+    dismantleTP: 2,
     dismantle: [
       { definitionId: 'wood', qty: 2, chance: 0.8 },
       { definitionId: 'rope', qty: 1, chance: 0.6 },
@@ -399,10 +417,346 @@ const ITEMS_MISC = {
     icon: '🪣', description: '빗물을 모아 수분을 보충한다. 겨울에는 눈을 녹여 소량 확보.',
     tags: ['structure', 'crafted'],
     onTick: { hydration: 0.3 },
+    dismantleTP: 1,
     dismantle: [
       { definitionId: 'empty_bottle', qty: 1, chance: 0.8 },
       { definitionId: 'cloth', qty: 1, chance: 0.6 },
       { definitionId: 'rope', qty: 1, chance: 0.5 },
+    ],
+  },
+
+  // ─── 해체 가능 환경 오브젝트 — 소형 (6) ──────────────────
+
+  broken_radio: {
+    id: 'broken_radio', name: '고장난 라디오', type: 'structure', subtype: 'salvage',
+    rarity: 'common', weight: 1.0,
+    defaultDurability: 40, defaultContamination: 0,
+    icon: '📻', description: '전파가 터지지 않는 낡은 라디오. 부품으로 쓸모가 있다.',
+    tags: ['structure', 'salvage'],
+    dismantleTP: 1,
+    dismantle: [
+      { definitionId: 'electronic_parts', qty: 1, chance: 0.7 },
+      { definitionId: 'wire', qty: 1, chance: 0.6 },
+      { definitionId: 'plastic', qty: 1, chance: 0.5 },
+    ],
+  },
+
+  rusted_toolbox: {
+    id: 'rusted_toolbox', name: '녹슨 공구함', type: 'structure', subtype: 'salvage',
+    rarity: 'common', weight: 2.0,
+    defaultDurability: 50, defaultContamination: 0,
+    icon: '🧰', description: '녹이 슬었지만 안에 쓸만한 부품이 남아있다.',
+    tags: ['structure', 'salvage'],
+    dismantleTP: 1,
+    dismantle: [
+      { definitionId: 'scrap_metal', qty: 2, chance: 0.8 },
+      { definitionId: 'nail', qty: 3, chance: 0.6 },
+      { definitionId: 'spring', qty: 1, chance: 0.4 },
+    ],
+  },
+
+  broken_lamp: {
+    id: 'broken_lamp', name: '부서진 가로등', type: 'structure', subtype: 'salvage',
+    rarity: 'common', weight: 3.0,
+    defaultDurability: 60, defaultContamination: 0,
+    icon: '🪫', description: '기울어진 가로등. 금속과 전선을 회수할 수 있다.',
+    tags: ['structure', 'salvage'],
+    dismantleTP: 1,
+    dismantle: [
+      { definitionId: 'scrap_metal', qty: 1, chance: 0.8 },
+      { definitionId: 'wire', qty: 1, chance: 0.7 },
+      { definitionId: 'glass_shard', qty: 1, chance: 0.6 },
+    ],
+  },
+
+  old_mailbox: {
+    id: 'old_mailbox', name: '낡은 우체통', type: 'structure', subtype: 'salvage',
+    rarity: 'common', weight: 3.0,
+    defaultDurability: 80, defaultContamination: 0,
+    icon: '📮', description: '빨간 우체통. 두꺼운 철판으로 만들어져 있다.',
+    tags: ['structure', 'salvage'],
+    dismantleTP: 1,
+    dismantle: [
+      { definitionId: 'scrap_metal', qty: 2, chance: 0.9 },
+      { definitionId: 'nail', qty: 2, chance: 0.5 },
+    ],
+  },
+
+  broken_chair: {
+    id: 'broken_chair', name: '부서진 의자', type: 'structure', subtype: 'salvage',
+    rarity: 'common', weight: 2.0,
+    defaultDurability: 30, defaultContamination: 0,
+    icon: '🪑', description: '다리가 부러진 의자. 목재와 천 조각을 얻을 수 있다.',
+    tags: ['structure', 'salvage'],
+    dismantleTP: 1,
+    dismantle: [
+      { definitionId: 'wood', qty: 2, chance: 0.8 },
+      { definitionId: 'nail', qty: 2, chance: 0.6 },
+      { definitionId: 'cloth_scrap', qty: 1, chance: 0.5 },
+    ],
+  },
+
+  old_fire_extinguisher: {
+    id: 'old_fire_extinguisher', name: '소화기', type: 'structure', subtype: 'salvage',
+    rarity: 'common', weight: 2.5,
+    defaultDurability: 60, defaultContamination: 0,
+    icon: '🧯', description: '압력이 빠진 소화기. 금속 용기와 부품을 회수.',
+    tags: ['structure', 'salvage'],
+    dismantleTP: 1,
+    dismantle: [
+      { definitionId: 'scrap_metal', qty: 1, chance: 0.9 },
+      { definitionId: 'rubber', qty: 1, chance: 0.6 },
+      { definitionId: 'spring', qty: 1, chance: 0.4 },
+    ],
+  },
+
+  // ─── 해체 가능 환경 오브젝트 — 중형 (8) ──────────────────
+
+  abandoned_fridge: {
+    id: 'abandoned_fridge', name: '버려진 냉장고', type: 'structure', subtype: 'salvage',
+    rarity: 'uncommon', weight: 8.0,
+    defaultDurability: 80, defaultContamination: 0,
+    icon: '🧊', description: '전기가 끊긴 냉장고. 금속과 단열재가 풍부하다.',
+    tags: ['structure', 'salvage'],
+    dismantleTP: 2,
+    dismantle: [
+      { definitionId: 'scrap_metal', qty: 3, chance: 0.8 },
+      { definitionId: 'wire', qty: 2, chance: 0.7 },
+      { definitionId: 'rubber', qty: 1, chance: 0.6 },
+      { definitionId: 'plastic', qty: 1, chance: 0.5 },
+    ],
+  },
+
+  wrecked_bicycle: {
+    id: 'wrecked_bicycle', name: '잔해 자전거', type: 'structure', subtype: 'salvage',
+    rarity: 'uncommon', weight: 5.0,
+    defaultDurability: 40, defaultContamination: 0,
+    icon: '🚲', description: '바퀴가 빠진 자전거. 체인과 기어에서 금속을 얻는다.',
+    tags: ['structure', 'salvage'],
+    dismantleTP: 2,
+    dismantle: [
+      { definitionId: 'scrap_metal', qty: 2, chance: 0.8 },
+      { definitionId: 'wire', qty: 1, chance: 0.7 },
+      { definitionId: 'rubber', qty: 2, chance: 0.6 },
+      { definitionId: 'spring', qty: 1, chance: 0.5 },
+    ],
+  },
+
+  old_generator: {
+    id: 'old_generator', name: '폐발전기', type: 'structure', subtype: 'salvage',
+    rarity: 'uncommon', weight: 10.0,
+    defaultDurability: 60, defaultContamination: 0,
+    icon: '⚡', description: '연료가 바닥난 소형 발전기. 전자부품이 쓸만하다.',
+    tags: ['structure', 'salvage'],
+    dismantleTP: 2,
+    dismantle: [
+      { definitionId: 'electronic_parts', qty: 2, chance: 0.7 },
+      { definitionId: 'wire', qty: 2, chance: 0.8 },
+      { definitionId: 'scrap_metal', qty: 2, chance: 0.6 },
+      { definitionId: 'spring', qty: 1, chance: 0.4 },
+    ],
+  },
+
+  collapsed_shelf: {
+    id: 'collapsed_shelf', name: '무너진 선반', type: 'structure', subtype: 'salvage',
+    rarity: 'uncommon', weight: 6.0,
+    defaultDurability: 50, defaultContamination: 0,
+    icon: '🗄️', description: '상점에서 무너진 진열대. 목재와 못을 회수할 수 있다.',
+    tags: ['structure', 'salvage'],
+    dismantleTP: 2,
+    dismantle: [
+      { definitionId: 'wood', qty: 3, chance: 0.8 },
+      { definitionId: 'nail', qty: 5, chance: 0.7 },
+      { definitionId: 'scrap_metal', qty: 1, chance: 0.5 },
+    ],
+  },
+
+  broken_washing_machine: {
+    id: 'broken_washing_machine', name: '고장난 세탁기', type: 'structure', subtype: 'salvage',
+    rarity: 'uncommon', weight: 10.0,
+    defaultDurability: 80, defaultContamination: 0,
+    icon: '🫧', description: '드럼 세탁기 잔해. 스프링과 금속이 풍부하다.',
+    tags: ['structure', 'salvage'],
+    dismantleTP: 2,
+    dismantle: [
+      { definitionId: 'scrap_metal', qty: 3, chance: 0.8 },
+      { definitionId: 'rubber', qty: 2, chance: 0.6 },
+      { definitionId: 'wire', qty: 1, chance: 0.5 },
+      { definitionId: 'spring', qty: 2, chance: 0.5 },
+    ],
+  },
+
+  street_vendor_cart: {
+    id: 'street_vendor_cart', name: '포장마차 잔해', type: 'structure', subtype: 'salvage',
+    rarity: 'uncommon', weight: 7.0,
+    defaultDurability: 50, defaultContamination: 0,
+    icon: '🏮', description: '포장마차의 잔해. 천막과 골조를 분해할 수 있다.',
+    tags: ['structure', 'salvage'],
+    dismantleTP: 2,
+    dismantle: [
+      { definitionId: 'wood', qty: 2, chance: 0.8 },
+      { definitionId: 'scrap_metal', qty: 2, chance: 0.7 },
+      { definitionId: 'cloth', qty: 1, chance: 0.6 },
+      { definitionId: 'rope', qty: 1, chance: 0.4 },
+    ],
+  },
+
+  traffic_light: {
+    id: 'traffic_light', name: '교통 신호등', type: 'structure', subtype: 'salvage',
+    rarity: 'uncommon', weight: 8.0,
+    defaultDurability: 80, defaultContamination: 0,
+    icon: '🚦', description: '쓰러진 신호등. 전자 부품과 금속 회수.',
+    tags: ['structure', 'salvage'],
+    dismantleTP: 2,
+    dismantle: [
+      { definitionId: 'electronic_parts', qty: 1, chance: 0.7 },
+      { definitionId: 'scrap_metal', qty: 2, chance: 0.8 },
+      { definitionId: 'wire', qty: 2, chance: 0.6 },
+      { definitionId: 'glass_shard', qty: 2, chance: 0.5 },
+    ],
+  },
+
+  vending_machine: {
+    id: 'vending_machine', name: '자판기 잔해', type: 'structure', subtype: 'salvage',
+    rarity: 'uncommon', weight: 12.0,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🥫', description: '부서진 자판기. 두꺼운 철판과 전자부품이 있다.',
+    tags: ['structure', 'salvage'],
+    dismantleTP: 2,
+    dismantle: [
+      { definitionId: 'scrap_metal', qty: 4, chance: 0.8 },
+      { definitionId: 'electronic_parts', qty: 1, chance: 0.6 },
+      { definitionId: 'glass_shard', qty: 1, chance: 0.7 },
+      { definitionId: 'plastic', qty: 2, chance: 0.5 },
+    ],
+  },
+
+  // ─── 해체 가능 환경 오브젝트 — 대형 (5) ──────────────────
+
+  wrecked_car: {
+    id: 'wrecked_car', name: '폐차', type: 'structure', subtype: 'salvage',
+    rarity: 'rare', weight: 20.0,
+    defaultDurability: 120, defaultContamination: 0,
+    icon: '🚗', description: '도로에 버려진 차량. 금속과 부품이 대량으로 나온다.',
+    tags: ['structure', 'salvage'],
+    dismantleTP: 3,
+    dismantle: [
+      { definitionId: 'scrap_metal', qty: 5, chance: 0.8 },
+      { definitionId: 'wire', qty: 2, chance: 0.6 },
+      { definitionId: 'rubber', qty: 2, chance: 0.7 },
+      { definitionId: 'glass_shard', qty: 2, chance: 0.5 },
+      { definitionId: 'leather', qty: 1, chance: 0.4 },
+      { definitionId: 'spring', qty: 2, chance: 0.4 },
+    ],
+  },
+
+  collapsed_scaffold: {
+    id: 'collapsed_scaffold', name: '무너진 비계', type: 'structure', subtype: 'salvage',
+    rarity: 'rare', weight: 25.0,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🏗️', description: '공사 현장의 무너진 비계. 대량의 파이프와 철사.',
+    tags: ['structure', 'salvage'],
+    dismantleTP: 3,
+    dismantle: [
+      { definitionId: 'scrap_metal', qty: 6, chance: 0.8 },
+      { definitionId: 'wire', qty: 3, chance: 0.7 },
+      { definitionId: 'rope', qty: 2, chance: 0.5 },
+    ],
+  },
+
+  old_ac_unit: {
+    id: 'old_ac_unit', name: '에어컨 실외기', type: 'structure', subtype: 'salvage',
+    rarity: 'rare', weight: 15.0,
+    defaultDurability: 80, defaultContamination: 0,
+    icon: '❄️', description: '벽에 매달린 실외기. 구리선과 압축기 부품이 귀하다.',
+    tags: ['structure', 'salvage'],
+    dismantleTP: 3,
+    dismantle: [
+      { definitionId: 'scrap_metal', qty: 4, chance: 0.8 },
+      { definitionId: 'electronic_parts', qty: 2, chance: 0.6 },
+      { definitionId: 'wire', qty: 2, chance: 0.7 },
+      { definitionId: 'rubber', qty: 1, chance: 0.5 },
+    ],
+  },
+
+  subway_gate: {
+    id: 'subway_gate', name: '지하철 개찰구', type: 'structure', subtype: 'salvage',
+    rarity: 'rare', weight: 18.0,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🚇', description: '지하철역의 개찰구. 센서와 금속이 풍부.',
+    tags: ['structure', 'salvage'],
+    dismantleTP: 3,
+    dismantle: [
+      { definitionId: 'scrap_metal', qty: 4, chance: 0.8 },
+      { definitionId: 'electronic_parts', qty: 2, chance: 0.7 },
+      { definitionId: 'wire', qty: 3, chance: 0.6 },
+      { definitionId: 'glass_shard', qty: 1, chance: 0.5 },
+    ],
+  },
+
+  telephone_booth: {
+    id: 'telephone_booth', name: '공중전화 부스', type: 'structure', subtype: 'salvage',
+    rarity: 'rare', weight: 15.0,
+    defaultDurability: 80, defaultContamination: 0,
+    icon: '☎️', description: '유리와 금속 프레임의 공중전화.',
+    tags: ['structure', 'salvage'],
+    dismantleTP: 3,
+    dismantle: [
+      { definitionId: 'scrap_metal', qty: 3, chance: 0.8 },
+      { definitionId: 'glass_shard', qty: 2, chance: 0.7 },
+      { definitionId: 'wire', qty: 2, chance: 0.6 },
+      { definitionId: 'electronic_parts', qty: 1, chance: 0.5 },
+    ],
+  },
+
+  // ─── 해체 가능 환경 오브젝트 — 초대형 (3) ────────────────
+
+  wrecked_bus: {
+    id: 'wrecked_bus', name: '버스 잔해', type: 'structure', subtype: 'salvage',
+    rarity: 'rare', weight: 30.0,
+    defaultDurability: 150, defaultContamination: 0,
+    icon: '🚌', description: '전복된 시내버스. 해체에 오래 걸리지만 자원이 풍부.',
+    tags: ['structure', 'salvage'],
+    dismantleTP: 4,
+    dismantle: [
+      { definitionId: 'scrap_metal', qty: 8, chance: 0.8 },
+      { definitionId: 'glass_shard', qty: 3, chance: 0.6 },
+      { definitionId: 'rubber', qty: 3, chance: 0.7 },
+      { definitionId: 'wire', qty: 2, chance: 0.5 },
+      { definitionId: 'leather', qty: 2, chance: 0.4 },
+      { definitionId: 'spring', qty: 2, chance: 0.4 },
+    ],
+  },
+
+  destroyed_kiosk: {
+    id: 'destroyed_kiosk', name: '파괴된 매점', type: 'structure', subtype: 'salvage',
+    rarity: 'rare', weight: 20.0,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🏪', description: '편의점 잔해. 진열대와 간판에서 재료를 얻는다.',
+    tags: ['structure', 'salvage'],
+    dismantleTP: 4,
+    dismantle: [
+      { definitionId: 'wood', qty: 4, chance: 0.8 },
+      { definitionId: 'scrap_metal', qty: 3, chance: 0.7 },
+      { definitionId: 'glass_shard', qty: 2, chance: 0.6 },
+      { definitionId: 'plastic', qty: 2, chance: 0.5 },
+      { definitionId: 'nail', qty: 5, chance: 0.5 },
+    ],
+  },
+
+  collapsed_guard_post: {
+    id: 'collapsed_guard_post', name: '무너진 초소', type: 'structure', subtype: 'salvage',
+    rarity: 'rare', weight: 20.0,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🛖', description: '군/경비 초소의 잔해. 목재와 철판이 풍부.',
+    tags: ['structure', 'salvage'],
+    dismantleTP: 4,
+    dismantle: [
+      { definitionId: 'wood', qty: 5, chance: 0.8 },
+      { definitionId: 'scrap_metal', qty: 3, chance: 0.7 },
+      { definitionId: 'nail', qty: 8, chance: 0.6 },
+      { definitionId: 'glass_shard', qty: 1, chance: 0.5 },
+      { definitionId: 'wire', qty: 1, chance: 0.4 },
     ],
   },
 

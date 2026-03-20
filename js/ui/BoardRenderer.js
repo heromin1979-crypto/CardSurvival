@@ -4,11 +4,12 @@ import GameState  from '../core/GameState.js';
 import EventBus   from '../core/EventBus.js';
 import CardFactory from './CardFactory.js';
 import BoardManager from '../board/BoardManager.js';
+import I18n       from '../core/I18n.js';
 
 const ROW_CONFIG = [
-  { key: 'top',    label: '장소',   hint: '클릭하여 이동' },
-  { key: 'middle', label: '바닥',   hint: '발견한 아이템' },
-  { key: 'bottom', label: '휴대',   hint: '소지품' },
+  { key: 'top',    labelKey: 'board.location',  hintKey: 'board.locationHint' },
+  { key: 'middle', labelKey: 'board.floor',      hintKey: 'board.floorHint' },
+  { key: 'bottom', labelKey: 'board.inventory',  hintKey: 'board.inventoryHint' },
 ];
 
 const BoardRenderer = {
@@ -46,6 +47,9 @@ const BoardRenderer = {
       EventBus.on('boardReinit', () => {
         if (this._container) { this._buildDOM(); this.scheduleRender(); }
       });
+      EventBus.on('languageChanged', () => {
+        if (this._container) { this._buildDOM(); this.render(); }
+      });
       // 게임 로드 시점은 경합 이벤트가 없으므로 직접 render
       EventBus.on('loaded', () => {
         this._container = document.getElementById('board-container');
@@ -80,7 +84,7 @@ const BoardRenderer = {
 
       const label = document.createElement('div');
       label.className = 'board-row-label';
-      label.textContent = row.label;
+      label.textContent = I18n.t(row.labelKey);
 
       const slots = document.createElement('div');
       slots.className = 'board-row-slots';
@@ -92,7 +96,7 @@ const BoardRenderer = {
         slot.className = 'slot';
         slot.dataset.row  = row.key;
         slot.dataset.slot = i;
-        slot.setAttribute('data-hint', row.hint);
+        slot.setAttribute('data-hint', I18n.t(row.hintKey));
         slots.appendChild(slot);
       }
 
@@ -211,13 +215,13 @@ const BoardRenderer = {
     const danger = node.dangerLevel ?? 0;
     const dangerStars = '★'.repeat(danger) + '☆'.repeat(Math.max(0, 5 - danger));
     const encPct = node.encounterChance > 0 ? Math.round(node.encounterChance * 100) : 0;
-    const radStr = node.radiation > 0 ? `<span class="loc-info-tag loc-rad">☢ 방사선 +${node.radiation}</span>` : '';
-    const encStr = encPct > 0 ? `<span class="loc-info-tag loc-enc">💀 조우 ${encPct}%</span>` : '';
+    const radStr = node.radiation > 0 ? `<span class="loc-info-tag loc-rad">${I18n.t('board.radiation', { val: node.radiation })}</span>` : '';
+    const encStr = encPct > 0 ? `<span class="loc-info-tag loc-enc">${I18n.t('board.encounterBadge', { pct: encPct })}</span>` : '';
 
     bar.innerHTML = `
       <div class="loc-info-header">
         <span class="loc-info-icon">${node.icon ?? '📍'}</span>
-        <span class="loc-info-name">${node.name}</span>
+        <span class="loc-info-name">${I18n.districtName(nodeId, node.name)}</span>
         <span class="loc-info-danger">${dangerStars}</span>
       </div>
       <div class="loc-info-desc">${node.description ?? ''}</div>
@@ -234,7 +238,7 @@ const BoardRenderer = {
     // 바닥 행 레이블
     const middleLabel = this._container?.querySelector('.board-row.row-middle .board-row-label');
     if (middleLabel) {
-      middleLabel.textContent = isBasecamp ? '바닥' : `바닥 — ${nodeName}`;
+      middleLabel.textContent = isBasecamp ? I18n.t('board.floor') : I18n.t('board.floorLabel', { name: I18n.districtName(currentId, nodeName) });
     }
 
     // 장소 카드 현재 위치 강조 갱신

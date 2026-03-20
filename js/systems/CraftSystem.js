@@ -1,10 +1,16 @@
 // === CRAFT SYSTEM ===
-import EventBus    from '../core/EventBus.js';
-import GameState  from '../core/GameState.js';
-import BLUEPRINTS from '../data/blueprints.js';
-import SkillSystem from './SkillSystem.js';
-import StatSystem  from './StatSystem.js';
-import BALANCE from '../data/gameBalance.js';
+import EventBus        from '../core/EventBus.js';
+import GameState       from '../core/GameState.js';
+import I18n            from '../core/I18n.js';
+import BLUEPRINTS_BASE from '../data/blueprints.js';
+import HIDDEN_RECIPES  from '../data/hiddenRecipes.js';
+import { SKILL_DEFS }  from '../data/skillDefs.js';
+import SkillSystem     from './SkillSystem.js';
+import StatSystem      from './StatSystem.js';
+import BALANCE         from '../data/gameBalance.js';
+
+// 히든 레시피 포함 전체 레시피
+const BLUEPRINTS = { ...BLUEPRINTS_BASE, ...HIDDEN_RECIPES };
 
 const CraftSystem = {
   init() {
@@ -17,7 +23,18 @@ const CraftSystem = {
     if (!bp) return { ok: false, reason: 'Unknown blueprint' };
 
     if (GameState.crafting.activeQueue.length >= GameState.crafting.maxQueueSize) {
-      return { ok: false, reason: '작업 큐가 가득 참' };
+      return { ok: false, reason: I18n.t('craftSys.queueFull') };
+    }
+
+    // 스킬 레벨 게이팅
+    if (bp.requiredSkills) {
+      for (const [skillId, minLevel] of Object.entries(bp.requiredSkills)) {
+        const playerLevel = GameState.player.skills?.[skillId]?.level ?? 0;
+        if (playerLevel < minLevel) {
+          const skillName = SKILL_DEFS[skillId]?.name ?? skillId;
+          return { ok: false, reason: I18n.t('craftSys.skillReq', { skill: skillName, min: minLevel, current: playerLevel }) };
+        }
+      }
     }
 
     const stage = bp.stages[0];
@@ -30,7 +47,7 @@ const CraftSystem = {
       const count = gs.countOnBoard(req.definitionId);
       if (count < req.qty) {
         const def = window.__GAME_DATA__.items[req.definitionId];
-        return { ok: false, reason: `${def?.name ?? req.definitionId} 부족 (${count}/${req.qty})` };
+        return { ok: false, reason: I18n.t('craftSys.itemShort', { name: I18n.itemName(req.definitionId, def?.name), have: count, need: req.qty }) };
       }
     }
     // check required tools
@@ -40,7 +57,7 @@ const CraftSystem = {
         const hasIt = gs.getBoardCards().some(c => c.definitionId === toolId);
         if (!hasIt) {
           const def = window.__GAME_DATA__.items[toolId];
-          return { ok: false, reason: `도구 필요: ${def?.name ?? toolId}` };
+          return { ok: false, reason: I18n.t('craftSys.toolReq', { name: I18n.itemName(toolId, def?.name) }) };
         }
       }
     }
@@ -85,10 +102,35 @@ const CraftSystem = {
       tpTotal:      stage.tpCost,
       tpRemaining:  stage.tpCost,
       reservedIds,
+      craftCardId:  null,
     };
 
+    // 바닥(middle) 행에 제작 진행 카드 생성
+    const outputDefId = bp.output?.[0]?.definitionId;
+    if (outputDefId) {
+      const totalTpAll = bp.stages.reduce((sum, s) => sum + s.tpCost, 0);
+      const craftInst = GameState.createCardInstance(outputDefId, {
+        _crafting: true,
+        _craftEntry: {
+          blueprintId,
+          blueprintName: bp.name,
+          stageIndex: 0,
+          stageLabel: stage.label,
+          tpTotal: stage.tpCost,
+          tpRemaining: stage.tpCost,
+          totalStages: bp.stages.length,
+          totalTpAll,
+          completedTp: 0,
+        },
+      });
+      if (craftInst) {
+        GameState.placeCardInRow(craftInst.instanceId, 'middle');
+        entry.craftCardId = craftInst.instanceId;
+      }
+    }
+
     GameState.crafting.activeQueue.push(entry);
-    EventBus.emit('notify', { message: `⚒️ ${bp.name} 제작 시작.`, type: 'info' });
+    EventBus.emit('notify', { message: I18n.t('craftSys.started', { name: I18n.blueprintName(blueprintId, bp.name) }), type: 'info' });
     EventBus.emit('craftStarted', { blueprintId });
     return true;
   },
@@ -100,6 +142,11 @@ const CraftSystem = {
     for (let i = queue.length - 1; i >= 0; i--) {
       const entry = queue[i];
       entry.tpRemaining--;
+
+      // 제작 카드 진행 동기화
+      if (entry.craftCardId && GameState.cards[entry.craftCardId]?._craftEntry) {
+        GameState.cards[entry.craftCardId]._craftEntry.tpRemaining = entry.tpRemaining;
+      }
 
       if (entry.tpRemaining <= 0) {
         const bp = BLUEPRINTS[entry.blueprintId];
@@ -113,7 +160,7 @@ const CraftSystem = {
           if (!stageCheck.ok) {
             // Pause and notify
             entry.tpRemaining = 0;
-            EventBus.emit('notify', { message: `${bp.name} 다음 단계 재료 부족: ${stageCheck.reason}`, type: 'warn' });
+            EventBus.emit('notify', { message: I18n.t('craftSys.nextStageShort', { name: I18n.blueprintName(entry.blueprintId, bp.name), reason: stageCheck.reason }), type: 'warn' });
             continue;
           }
           // Consume next stage items
@@ -138,10 +185,19 @@ const CraftSystem = {
           entry.stageIndex   = nextStageIdx;
           entry.tpTotal      = nextStage.tpCost;
           entry.tpRemaining  = nextStage.tpCost;
+          // 제작 카드 스테이지 진행 동기화
+          if (entry.craftCardId && GameState.cards[entry.craftCardId]?._craftEntry) {
+            const ce = GameState.cards[entry.craftCardId]._craftEntry;
+            ce.completedTp += bp.stages[nextStageIdx - 1].tpCost;
+            ce.stageIndex   = nextStageIdx;
+            ce.stageLabel   = nextStage.label;
+            ce.tpTotal      = nextStage.tpCost;
+            ce.tpRemaining  = nextStage.tpCost;
+          }
         } else {
           // All stages complete — produce output
           completed.push(i);
-          this._produceOutput(bp);
+          this._produceOutput(bp, entry);
         }
       }
     }
@@ -152,7 +208,12 @@ const CraftSystem = {
     }
   },
 
-  _produceOutput(bp) {
+  _produceOutput(bp, entry) {
+    // ── 제작 카드 제거 ───────────────────────────────────
+    if (entry?.craftCardId) {
+      GameState.removeCardInstance(entry.craftCardId);
+    }
+
     // ── 제작 실패 판정 ──────────────────────────────────
     const craftSkillMap = {
       structure: 'building', material: 'crafting', food: 'cooking',
@@ -180,7 +241,7 @@ const CraftSystem = {
           }
         }
       }
-      EventBus.emit('notify', { message: `❌ ${bp.name} 제작 실패! 재료 일부가 반환됩니다.`, type: 'danger' });
+      EventBus.emit('notify', { message: I18n.t('craftSys.failed', { name: I18n.blueprintName(bp.id, bp.name) }), type: 'danger' });
       EventBus.emit('craftFailed', { blueprintId: bp.id });
       // 실패해도 스킬 XP (절반)
       const craftXp = (BALANCE.crafting.xpBase[relevantSkill] ?? 5) * (bp.stages?.length ?? 1);
@@ -188,26 +249,29 @@ const CraftSystem = {
       return;
     }
 
+    // ── 배치 행 결정: structure → 바닥(middle), 그 외 → 휴대(bottom) ──
+    const outputRow = bp.category === 'structure' ? 'middle' : 'bottom';
+
     const outputIds = [];
     if (bp._outputCustom) {
       // Special case: molotov → give a cloth item as placeholder (no molotov def in items.js)
       const reward = GameState.createCardInstance('cloth', { quantity: 1 });
       if (reward) {
-        GameState.placeCardInRow(reward.instanceId, 'middle');
+        GameState.placeCardInRow(reward.instanceId, outputRow);
         outputIds.push(reward.instanceId);
       }
     } else {
       for (const out of bp.output) {
         const inst = GameState.createCardInstance(out.definitionId, { quantity: out.qty });
         if (inst) {
-          GameState.placeCardInRow(inst.instanceId, 'middle');
+          GameState.placeCardInRow(inst.instanceId, outputRow);
           outputIds.push(inst.instanceId);
         }
       }
     }
 
     EventBus.emit('craftComplete', { blueprintId: bp.id, outputInstanceIds: outputIds });
-    EventBus.emit('notify', { message: `✅ ${bp.name} 완성!`, type: 'good' });
+    EventBus.emit('notify', { message: I18n.t('craftSys.complete', { name: I18n.blueprintName(bp.id, bp.name) }), type: 'good' });
 
     // 제작 스킬 XP: BALANCE 기반
     const craftSkillId = craftSkillMap[bp.category] ?? 'crafting';

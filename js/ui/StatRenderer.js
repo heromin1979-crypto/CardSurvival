@@ -2,16 +2,17 @@
 // Updates HUD stat bars and TP clock
 import EventBus  from '../core/EventBus.js';
 import GameState from '../core/GameState.js';
+import I18n      from '../core/I18n.js';
 
 const STAT_CONFIG = [
-  { key: 'hydration',   label: '수분',    icon: '💧' },
-  { key: 'nutrition',   label: '영양',    icon: '🥗' },
-  { key: 'stamina',     label: '스태미나', icon: '💪', isGood: true },  // 높을수록 좋음
-  { key: 'temperature', label: '체온',    icon: '🌡' },
-  { key: 'morale',      label: '사기',    icon: '😐' },
-  { key: 'radiation',   label: '방사선',  icon: '☢' },
-  { key: 'infection',   label: '감염',    icon: '🦠' },
-  { key: 'fatigue',     label: '피로',    icon: '😴' },
+  { key: 'hydration',   i18nKey: 'stat.hydration',   icon: '💧' },
+  { key: 'nutrition',   i18nKey: 'stat.nutrition',   icon: '🥗' },
+  { key: 'stamina',     i18nKey: 'stat.stamina',     icon: '💪', isGood: true },  // 높을수록 좋음
+  { key: 'temperature', i18nKey: 'stat.temperature', icon: '🌡' },
+  { key: 'morale',      i18nKey: 'stat.morale',      icon: '😐' },
+  { key: 'radiation',   i18nKey: 'stat.radiation',   icon: '☢' },
+  { key: 'infection',   i18nKey: 'stat.infection',   icon: '🦠' },
+  { key: 'fatigue',     i18nKey: 'stat.fatigue',     icon: '😴' },
 ];
 
 const StatRenderer = {
@@ -26,6 +27,7 @@ const StatRenderer = {
       EventBus.on('tpAdvance',     () => this.render());
       EventBus.on('miniTick',      () => this._updateTPClock());
       EventBus.on('loaded',        () => { this.buildDOM(); this.render(); });
+      EventBus.on('languageChanged', () => { this.buildDOM(); this.render(); });
     }
   },
 
@@ -53,7 +55,7 @@ const StatRenderer = {
     statsDiv.innerHTML = hpBarHTML + STAT_CONFIG.map(s => `
       <div class="stat-bar-group ${s.key}" id="statbar-${s.key}">
         <div class="stat-bar-label">
-          <span class="stat-bar-name">${s.icon} ${s.label}</span>
+          <span class="stat-bar-name">${s.icon} ${I18n.t(s.i18nKey)}</span>
           <span class="stat-bar-value" id="statval-${s.key}">--</span>
         </div>
         <div class="stat-bar-track">

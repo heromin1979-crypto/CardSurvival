@@ -409,3 +409,33 @@
   box-shadow: 0 0 12px rgba(200, 160, 96, 0.5) !important;
   z-index: auto !important;
 }
+
+/* ── 제작 진행 카드 ── */
+.card.crafting-card {
+  border-color: var(--accent-primary);
+  cursor: default;
+  opacity: 0.9;
+  pointer-events: none;
+}
+.card.crafting-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(200, 160, 96, 0.06);
+  pointer-events: none;
+  border-radius: var(--radius-md);
+}
+.card.crafting-card:hover {
+  transform: none;
+  box-shadow: none;
+}
+.crafting-stage-label {
+  font-size: 9px;
+  color: var(--text-secondary);
+  text-align: center;
+  margin-top: 2px;
+}
+.crafting-tp-label {
+  font-size: 9px;
+  color: var(--text-dim);
+}

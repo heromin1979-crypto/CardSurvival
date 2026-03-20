@@ -1,6 +1,7 @@
 // === EXPLORE SYSTEM (서울 25구 지역 시스템) ===
 import EventBus    from '../core/EventBus.js';
 import GameState   from '../core/GameState.js';
+import I18n        from '../core/I18n.js';
 import StateMachine from '../core/StateMachine.js';
 import TickEngine  from '../core/TickEngine.js';
 import { NODES, DISTRICTS, generateRouteCards } from '../data/nodes.js';
@@ -128,7 +129,7 @@ const ExploreSystem = {
     const adjacent   = getAdjacentDistricts(currentDistrictId);
     const isAdjacent = adjacent.some(d => d.id === districtId);
     if (!isAdjacent) {
-      EventBus.emit('notify', { message: `${district.name}(으)로는 직접 이동할 수 없다. 인접 지역을 거쳐야 한다.`, type: 'warn' });
+      EventBus.emit('notify', { message: I18n.t('exploreSys.notAdjacent', { name: I18n.districtName(districtId, district.name) }), type: 'warn' });
       return;
     }
 
@@ -137,18 +138,18 @@ const ExploreSystem = {
     const weightPct = enc.weightPct ?? 0;
     if (weightPct >= 2.0) {
       EventBus.emit('notify', {
-        message: `⛔ 짐이 너무 무거워 이동할 수 없습니다! (${Math.round(weightPct * 100)}%) 아이템을 버리거나 내려놓아야 합니다.`,
+        message: I18n.t('exploreSys.tooHeavyMove', { pct: Math.round(weightPct * 100) }),
         type: 'danger',
       });
       return;
     }
     const st = gs.stats.stamina;
     if (st && st.current <= 0) {
-      EventBus.emit('notify', { message: '💀 기력이 다해 이동할 수 없습니다. 먼저 휴식이 필요합니다.', type: 'danger' });
+      EventBus.emit('notify', { message: I18n.t('exploreSys.noStaminaMove'), type: 'danger' });
       return;
     }
     if (st && st.current / st.max < 0.3) {
-      EventBus.emit('notify', { message: '😮‍💨 몸을 움직이기 힘들어집니다. (스태미나 30% 미만)', type: 'warn' });
+      EventBus.emit('notify', { message: I18n.t('exploreSys.lowStamina'), type: 'warn' });
     }
 
     // TP 소비
@@ -159,7 +160,7 @@ const ExploreSystem = {
     if (district.radiation > 0) {
       StatSystem.applyRadiation(district.radiation);
       gs.flags.nukeZoneEntered = (gs.flags.nukeZoneEntered ?? 0) + 1;
-      EventBus.emit('notify', { message: `⚠ 방사선 구역! +${district.radiation}`, type: 'danger' });
+      EventBus.emit('notify', { message: I18n.t('exploreSys.radZone', { val: district.radiation }), type: 'danger' });
     }
 
     // ── 랜드마크 내부에서 구 이동 시 안전장치 ────────────
@@ -205,7 +206,7 @@ const ExploreSystem = {
 
     this._updateTopRowCards(districtId);
 
-    EventBus.emit('notify', { message: `🗺 ${district.name} 도착`, type: 'info' });
+    EventBus.emit('notify', { message: I18n.t('exploreSys.arrived', { name: I18n.districtName(districtId, district.name) }), type: 'info' });
     EventBus.emit('districtChanged', { districtId, district });
 
     // 이동 후 보드 화면(베이스캠프)으로 전환 — explore UI(인접지역 재선택 창) 대신 보드를 보여준다
@@ -224,7 +225,7 @@ const ExploreSystem = {
     const moraleTier = StatSystem.getMoraleTier();
     if (moraleTier.blockExplore) {
       EventBus.emit('notify', {
-        message: '😰 절망에 빠져 탐색할 의지가 없다. 사기를 회복해야 한다.',
+        message: I18n.t('exploreSys.despairBlock'),
         type: 'danger',
       });
       return;
@@ -235,18 +236,18 @@ const ExploreSystem = {
     const wPctExp   = encExp.weightPct ?? 0;
     if (wPctExp >= 2.0) {
       EventBus.emit('notify', {
-        message: `⛔ 짐이 너무 무거워 탐색할 수 없습니다! (${Math.round(wPctExp * 100)}%)`,
+        message: I18n.t('exploreSys.tooHeavyExplore', { pct: Math.round(wPctExp * 100) }),
         type: 'danger',
       });
       return;
     }
     const stExp = gs.stats.stamina;
     if (stExp && stExp.current <= 0) {
-      EventBus.emit('notify', { message: '💀 기력이 다해 탐색할 수 없습니다. 먼저 휴식이 필요합니다.', type: 'danger' });
+      EventBus.emit('notify', { message: I18n.t('exploreSys.noStaminaExplore'), type: 'danger' });
       return;
     }
     if (stExp && stExp.current / stExp.max < 0.3) {
-      EventBus.emit('notify', { message: '😮‍💨 몸을 움직이기 힘들어집니다. (스태미나 30% 미만)', type: 'warn' });
+      EventBus.emit('notify', { message: I18n.t('exploreSys.lowStamina'), type: 'warn' });
     }
 
     TickEngine.skipTP(1, `${district.name} 탐색`);
@@ -266,7 +267,7 @@ const ExploreSystem = {
     // 방사선
     if (district.radiation > 0) {
       StatSystem.applyRadiation(district.radiation);
-      EventBus.emit('notify', { message: `⚠ 방사선 구역! +${district.radiation}`, type: 'danger' });
+      EventBus.emit('notify', { message: I18n.t('exploreSys.radZone', { val: district.radiation }), type: 'danger' });
     }
 
     // 보스 스폰 체크 (히든 보스)
@@ -329,12 +330,12 @@ const ExploreSystem = {
           }
           gs.location.districtLootDay[districtId] = gs.time.day;
           if (loot.length > 0) {
-            EventBus.emit('notify', { message: `${district.name} — 시간이 지나 새로운 물자가 생겼다.`, type: 'info' });
+            EventBus.emit('notify', { message: I18n.t('exploreSys.respawnLoot', { name: I18n.districtName(districtId, district.name) }), type: 'info' });
           } else {
-            EventBus.emit('notify', { message: `${district.name} — 쓸 만한 건 거의 없다.`, type: 'info' });
+            EventBus.emit('notify', { message: I18n.t('exploreSys.noRespawn', { name: I18n.districtName(districtId, district.name) }), type: 'info' });
           }
         } else {
-          EventBus.emit('notify', { message: `${district.name} — 이미 쓸 만한 건 다 가져갔다.`, type: 'info' });
+          EventBus.emit('notify', { message: I18n.t('exploreSys.alreadyLooted', { name: I18n.districtName(districtId, district.name) }), type: 'info' });
         }
       }
 
@@ -377,7 +378,7 @@ const ExploreSystem = {
       }
     }
 
-    EventBus.emit('notify', { message: `📍 ${district.name} 탐색 완료`, type: 'info' });
+    EventBus.emit('notify', { message: I18n.t('exploreSys.exploreComplete', { name: I18n.districtName(districtId, district.name) }), type: 'info' });
     EventBus.emit('locationChanged', { nodeId: districtId, node: district });
     EventBus.emit('boardChanged', {});
   },
@@ -401,7 +402,7 @@ const ExploreSystem = {
     if (!gs.location.nodesVisited.includes(nodeId)) {
       gs.location.nodesVisited.push(nodeId);
     }
-    EventBus.emit('notify', { message: `📍 ${node.name} 도착`, type: 'info' });
+    EventBus.emit('notify', { message: I18n.t('exploreSys.arrivedNode', { name: I18n.districtName(nodeId, node.name) }), type: 'info' });
     EventBus.emit('locationChanged', { nodeId, node });
     EventBus.emit('boardChanged', {});
   },
@@ -430,7 +431,7 @@ const ExploreSystem = {
   _placeLoot(loot) {
     const gs = GameState;
     if (!loot?.length) {
-      EventBus.emit('notify', { message: '아무것도 찾지 못했다.', type: 'info' });
+      EventBus.emit('notify', { message: I18n.t('exploreSys.nothingFound'), type: 'info' });
       return;
     }
 
@@ -455,9 +456,9 @@ const ExploreSystem = {
       gs.flags.totalItemsFound = (gs.flags.totalItemsFound ?? 0) + foundNames.length;
       // 탐색 스킬 XP: 아이템 발견당 2 XP
       SkillSystem.gainXp('scavenging', foundNames.length * 2);
-      EventBus.emit('notify', { message: `발견: ${foundNames.join(', ')}`, type: 'good' });
+      EventBus.emit('notify', { message: I18n.t('exploreSys.found', { items: foundNames.join(', ') }), type: 'good' });
     } else {
-      EventBus.emit('notify', { message: '바닥이 가득 차 아이템을 놓을 수 없다.', type: 'warn' });
+      EventBus.emit('notify', { message: I18n.t('exploreSys.boardFull'), type: 'warn' });
     }
   },
 
@@ -483,7 +484,7 @@ const ExploreSystem = {
     const gs = GameState;
     const lmData = LANDMARK_DATA[districtId];
     if (!lmData) {
-      EventBus.emit('notify', { message: '랜드마크 정보를 찾을 수 없습니다.', type: 'warn' });
+      EventBus.emit('notify', { message: I18n.t('exploreSys.landmarkNotFound'), type: 'warn' });
       return;
     }
     gs.location.currentLandmark    = districtId;
@@ -495,7 +496,7 @@ const ExploreSystem = {
     gs.board.middle = Array(gs.board.middle.length).fill(null);
 
     this._updateTopRowForLandmark(districtId);
-    EventBus.emit('notify', { message: `🏛 ${lmData.name} 진입`, type: 'info' });
+    EventBus.emit('notify', { message: I18n.t('exploreSys.landmarkEnter', { name: lmData.name }), type: 'info' });
     EventBus.emit('boardChanged', {});
   },
 
@@ -568,14 +569,14 @@ const ExploreSystem = {
     // 과적 체크
     const enc = gs.player.encumbrance;
     if ((enc.weightPct ?? 0) >= 2.0) {
-      EventBus.emit('notify', { message: '짐이 너무 무거워 탐색할 수 없습니다!', type: 'danger' });
+      EventBus.emit('notify', { message: I18n.t('exploreSys.tooHeavySub'), type: 'danger' });
       return;
     }
 
     // 스태미나 체크
     const st = gs.stats.stamina;
     if (st && st.current <= 0) {
-      EventBus.emit('notify', { message: '기력이 다해 탐색할 수 없습니다.', type: 'danger' });
+      EventBus.emit('notify', { message: I18n.t('exploreSys.noStaminaSub'), type: 'danger' });
       return;
     }
 
@@ -615,12 +616,12 @@ const ExploreSystem = {
       this._placeLoot(loot);
       gs.location.subLocationsLooted.push(subKey);
     } else {
-      EventBus.emit('notify', { message: `${sub.name} — 이미 수색한 곳이다.`, type: 'info' });
+      EventBus.emit('notify', { message: I18n.t('exploreSys.alreadySearched', { name: sub.name }), type: 'info' });
     }
 
     // 세부장소 탐색 완료 XP
     SkillSystem.gainXp('scavenging', 3);
-    EventBus.emit('notify', { message: `📍 ${sub.name} 탐색 완료`, type: 'info' });
+    EventBus.emit('notify', { message: I18n.t('exploreSys.subComplete', { name: sub.name }), type: 'info' });
     EventBus.emit('boardChanged', {});
   },
 
@@ -672,7 +673,7 @@ const ExploreSystem = {
     gs.location.currentNode        = districtId;
     this._updateTopRowCards(districtId);
     const district = DISTRICTS[districtId];
-    EventBus.emit('notify', { message: `↩ ${district?.name ?? districtId} 귀환`, type: 'info' });
+    EventBus.emit('notify', { message: I18n.t('exploreSys.exitLandmark', { name: I18n.districtName(districtId, district?.name ?? districtId) }), type: 'info' });
     EventBus.emit('boardChanged', {});
   },
 

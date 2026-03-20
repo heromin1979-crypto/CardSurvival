@@ -1,6 +1,7 @@
 // === EQUIPMENT SYSTEM ===
 import EventBus  from '../core/EventBus.js';
 import GameState from '../core/GameState.js';
+import I18n      from '../core/I18n.js';
 
 // 슬롯별 장착 규칙 테이블
 const SLOT_RULES = {
@@ -33,23 +34,23 @@ const EquipmentSystem = {
    */
   canEquip(instanceId, slotId) {
     const rule = SLOT_RULES[slotId];
-    if (!rule)          return { ok: false, reason: '알 수 없는 슬롯' };
-    if (rule.locked)    return { ok: false, reason: '잠긴 슬롯 (미구현)' };
+    if (!rule)          return { ok: false, reason: I18n.t('equipSys.unknownSlot') };
+    if (rule.locked)    return { ok: false, reason: I18n.t('equipSys.lockedSlot') };
 
     const inst = GameState.cards[instanceId];
-    if (!inst) return { ok: false, reason: '카드 없음' };
+    if (!inst) return { ok: false, reason: I18n.t('equipSys.noCard') };
 
     const def = GameState.getCardDef(instanceId);
-    if (!def)  return { ok: false, reason: '아이템 정보 없음' };
+    if (!def)  return { ok: false, reason: I18n.t('equipSys.noItemDef') };
 
     if (def.type !== rule.type)
-      return { ok: false, reason: `${rule.type} 타입 아이템 필요` };
+      return { ok: false, reason: I18n.t('equipSys.typeReq', { type: rule.type }) };
 
     if (!rule.subtypes.includes(def.subtype))
-      return { ok: false, reason: `이 슬롯에 맞지 않는 종류` };
+      return { ok: false, reason: I18n.t('equipSys.wrongSlot') };
 
     if (rule.requiresOnWear && !def.onWear)
-      return { ok: false, reason: 'onWear 효과가 없는 아이템' };
+      return { ok: false, reason: I18n.t('equipSys.noWearEffect') };
 
     return { ok: true };
   },
@@ -60,7 +61,7 @@ const EquipmentSystem = {
   equip(instanceId, slotId) {
     const check = this.canEquip(instanceId, slotId);
     if (!check.ok) {
-      EventBus.emit('notify', { message: `장착 불가: ${check.reason}`, type: 'warn' });
+      EventBus.emit('notify', { message: I18n.t('equipSys.cantEquip', { reason: check.reason }), type: 'warn' });
       return false;
     }
 
@@ -71,7 +72,7 @@ const EquipmentSystem = {
     if (existing && gs.cards[existing]) {
       const placed = gs.placeCardInRow(existing);
       if (!placed) {
-        EventBus.emit('notify', { message: '보드가 꽉 차 기존 장착품을 놓을 수 없습니다.', type: 'warn' });
+        EventBus.emit('notify', { message: I18n.t('equipSys.boardFullSwap'), type: 'warn' });
         return false;
       }
     }
@@ -105,7 +106,7 @@ const EquipmentSystem = {
     if (gs.cards[instanceId]) {
       const placed = gs.placeCardInRow(instanceId);
       if (!placed) {
-        EventBus.emit('notify', { message: '보드가 꽉 차 아이템을 놓을 수 없습니다.', type: 'warn' });
+        EventBus.emit('notify', { message: I18n.t('equipSys.boardFullUnequip'), type: 'warn' });
         return false;
       }
     }
@@ -173,7 +174,7 @@ const EquipmentSystem = {
         const id = gs.board.bottom[i];
         if (id) {
           EventBus.emit('notify', {
-            message: '가방 해제: 추가 슬롯 아이템이 분실될 수 있습니다.',
+            message: I18n.t('equipSys.bagRemoveWarn'),
             type: 'warn',
           });
           break;

@@ -1,6 +1,7 @@
 // === NOISE SYSTEM ===
 import EventBus    from '../core/EventBus.js';
 import GameState   from '../core/GameState.js';
+import I18n        from '../core/I18n.js';
 import StateMachine from '../core/StateMachine.js';
 import { rollEnemyGroup } from '../data/enemies.js';
 import TraitSystem from './TraitSystem.js';
@@ -67,7 +68,7 @@ const NoiseSystem = {
     cr.tpRemaining--;
 
     if (cr.tpRemaining === 1) {
-      EventBus.emit('notify', { message: '⚠ 적이 바로 뒤까지 왔다! 지금 이동하라!', type: 'warn' });
+      EventBus.emit('notify', { message: I18n.t('noise.respawnImminent'), type: 'warn' });
     }
 
     if (cr.tpRemaining > 0) return;
@@ -80,7 +81,7 @@ const NoiseSystem = {
       const nodeId  = cr.nodeId;
       const danger  = cr.dangerLevel;
       const enemies = rollEnemyGroup(danger, gs.noise.level);
-      EventBus.emit('notify', { message: '⚠ 몬스터가 뒤따라왔다! 전투 재개!', type: 'danger' });
+      EventBus.emit('notify', { message: I18n.t('noise.caughtUp'), type: 'danger' });
       setTimeout(() => {
         // 타이머 발화 시점에 여전히 같은 노드·basecamp인지 재검증
         if (gs.location.currentNode !== nodeId || gs.ui.currentState !== 'basecamp') return;
@@ -94,7 +95,7 @@ const NoiseSystem = {
       }, 600);
     } else if (cr.nodeId && gs.location.currentNode !== cr.nodeId) {
       // 다른 장소로 이동 → 위협 회피
-      EventBus.emit('notify', { message: '지역을 이동하여 위협을 따돌렸다.', type: 'good' });
+      EventBus.emit('notify', { message: I18n.t('noise.evaded'), type: 'good' });
     }
     // basecamp가 아닌 다른 상태(combat_result 등)에서 만료 → 조용히 취소
   },
@@ -119,7 +120,7 @@ const NoiseSystem = {
       if (enemies.length >= enemyCount) break;
     }
 
-    EventBus.emit('notify', { message: '⚠ 레이드! 대규모 적이 거점을 습격한다!', type: 'danger' });
+    EventBus.emit('notify', { message: I18n.t('noise.raidAttack'), type: 'danger' });
     setTimeout(() => {
       if (gs.ui.currentState !== 'basecamp') return;
       StateMachine.transition('encounter', {
@@ -169,7 +170,7 @@ const NoiseSystem = {
     gs.flags.hordeWaveCount = waveNum;
 
     EventBus.emit('notify', {
-      message: `⚠ 좀비 습격 제${waveNum}파! 대규모 좀비 무리가 거점을 습격한다!`,
+      message: I18n.t('noise.hordeWave', { wave: waveNum }),
       type: 'danger',
     });
 
@@ -218,7 +219,7 @@ const NoiseSystem = {
     if (demandCards.length === 0) {
       // 넘길 물자가 없으면 바로 전투
       EventBus.emit('notify', {
-        message: '🔫 약탈자가 나타났다! 물자가 없어 전투가 불가피하다!',
+        message: I18n.t('noise.raiderNoSupply'),
         type: 'danger',
       });
       this._triggerRaiderCombat();
@@ -247,7 +248,7 @@ const NoiseSystem = {
         }
         gs.modStat('morale', re.surrenderMorale);
         EventBus.emit('notify', {
-          message: `😞 약탈자에게 물자 ${demandCount}개를 넘겼다. 사기가 떨어졌다.`,
+          message: I18n.t('noise.raiderSurrender', { count: demandCount }),
           type: 'warn',
         });
         EventBus.emit('boardChanged', {});
@@ -255,7 +256,7 @@ const NoiseSystem = {
       onRefuse: () => {
         gs.modStat('morale', re.refuseMorale);
         EventBus.emit('notify', {
-          message: '🔫 약탈자와의 전투가 시작된다!',
+          message: I18n.t('noise.raiderCombat'),
           type: 'danger',
         });
         this._triggerRaiderCombat();
@@ -311,7 +312,7 @@ const NoiseSystem = {
 
   _triggerInflux() {
     const gs = GameState;
-    EventBus.emit('notify', { message: '소음 임계치 초과! 적이 몰려온다!', type: 'danger' });
+    EventBus.emit('notify', { message: I18n.t('noise.influx'), type: 'danger' });
 
     // Force an encounter if currently exploring or at basecamp
     if (gs.ui.currentState === 'explore' || gs.ui.currentState === 'basecamp') {

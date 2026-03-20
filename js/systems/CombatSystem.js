@@ -1,6 +1,7 @@
 // === COMBAT SYSTEM ===
 import EventBus    from '../core/EventBus.js';
 import GameState   from '../core/GameState.js';
+import I18n        from '../core/I18n.js';
 import StateMachine from '../core/StateMachine.js';
 import NoiseSystem  from './NoiseSystem.js';
 import StatSystem   from './StatSystem.js';
@@ -29,10 +30,10 @@ const CombatSystem = {
 
     // 습격/약탈자 전투 정보 보존
     const encounterLabel = data.isHordeWave
-      ? `좀비 습격 제${data.hordeWaveNum}파! (적 ${enemies.length}마리)`
+      ? I18n.t('combatSys.hordeWave', { wave: data.hordeWaveNum, count: enemies.length })
       : data.isRaiderAttack
-        ? `약탈자 습격! (적 ${enemies.length}마리)`
-        : `전투 시작! (적 ${enemies.length}마리)`;
+        ? I18n.t('combatSys.raiderAttack', { count: enemies.length })
+        : I18n.t('combatSys.combatStart', { count: enemies.length });
 
     gs.combat = {
       active:       true,
@@ -103,7 +104,7 @@ const CombatSystem = {
     const stunIdx = gs.combat.playerStatus.findIndex(s => s.id === 'stun');
     if (stunIdx !== -1) {
       gs.combat.playerStatus.splice(stunIdx, 1);
-      gs.combat.log.push('[기절] 이번 턴 행동 불가!');
+      gs.combat.log.push(I18n.t('combatSys.stunned'));
       this._tickStatusEffects();
       if (gs.combat.active) this._allEnemiesAttack();
       return;
@@ -144,7 +145,7 @@ const CombatSystem = {
         return;
       }
       this._autoAdvanceTarget();
-      gs.combat.log.push(`[다음 타겟] ${this._getTarget()?.name}`);
+      gs.combat.log.push(I18n.t('combatSys.nextTarget', { name: I18n.enemyName(this._getTarget()?.id, this._getTarget()?.name) }));
     }
 
     // 상태이상 틱
@@ -162,7 +163,7 @@ const CombatSystem = {
     const gs = GameState;
     let damage = 0, accuracy = 0.70, noise = 5, durLoss = 0;
     let critChance = 0, critMultiplier = 1.5;
-    let weaponName = '맨손';
+    let weaponName = I18n.t('combatSys.unarmed');
     let isCrit = false;
     let skillId = 'unarmed';  // 사용 스킬 (XP 훅용)
     let isRanged = false;
@@ -177,7 +178,7 @@ const CombatSystem = {
         durLoss        = def.combat.durabilityLoss ?? 0;
         critChance     = def.combat.critChance     ?? 0;
         critMultiplier = def.combat.critMultiplier ?? 1.5;
-        weaponName     = def.name;
+        weaponName     = I18n.itemName(def.id, def.name);
         isRanged       = !!(def.combat.requiresAmmo);
         skillId        = isRanged ? 'ranged' : 'melee';
 
@@ -188,7 +189,7 @@ const CombatSystem = {
 
           const ammoInst = gs.getBoardCards().find(c => c.definitionId === def.combat.requiresAmmo);
           if (!ammoInst) {
-            EventBus.emit('notify', { message: '탄약 없음! 근접 공격으로 대체.', type: 'warn' });
+            EventBus.emit('notify', { message: I18n.t('combatSys.noAmmo'), type: 'warn' });
             damage = 5 + Math.floor(Math.random() * 6);
             accuracy = 0.65; noise = 3; skillId = 'melee';
           } else {
@@ -214,7 +215,7 @@ const CombatSystem = {
           if (!durSave) {
             gs.cards[weaponId].durability = Math.max(0, gs.cards[weaponId].durability - durLoss);
             if (gs.cards[weaponId].durability <= 0) {
-              EventBus.emit('notify', { message: `${weaponName} 파손됨!`, type: 'warn' });
+              EventBus.emit('notify', { message: I18n.t('combatSys.weaponBroken', { name: weaponName }), type: 'warn' });
               gs.removeCardInstance(weaponId);
               EventBus.emit('cardRemoved', { instanceId: weaponId });
             }
@@ -261,22 +262,23 @@ const CombatSystem = {
         if (Math.random() < BALANCE.combat.unarmedStunChance && !gs.combat.enemyStatus.some(s => s.id === 'stun')) {
           const stunDmg = BALANCE.combat.unarmedStunDmg;
           enemy.currentHp = Math.max(0, enemy.currentHp - stunDmg);
-          gs.combat.enemyStatus.push({ id: 'stun', name: '기절', duration: 1, effect: {} });
-          gs.combat.log.push(`[맨손 마스터리] ${enemy.name} 기절! +${stunDmg} 추가 피해!`);
+          gs.combat.enemyStatus.push({ id: 'stun', name: I18n.t('combatSys.stun'), duration: 1, effect: {} });
+          gs.combat.log.push(I18n.t('combatSys.unarmedMastery', { enemy: I18n.enemyName(enemy.id, enemy.name), dmg: stunDmg }));
         }
       }
 
-      if (isCrit) return `[크리티컬!] ${weaponName}으로 ${enemy.name}에게 ${finalDmg} 피해!`;
-      return `[공격] ${weaponName}으로 ${enemy.name}에게 ${finalDmg} 피해! (HP: ${enemy.currentHp}/${enemy.maxHp})`;
+      const eName = I18n.enemyName(enemy.id, enemy.name);
+      if (isCrit) return I18n.t('combatSys.critHit', { weapon: weaponName, enemy: eName, dmg: finalDmg });
+      return I18n.t('combatSys.normalHit', { weapon: weaponName, enemy: eName, dmg: finalDmg, hp: enemy.currentHp, maxHp: enemy.maxHp });
     }
-    return `[공격] ${weaponName} 빗나감!`;
+    return I18n.t('combatSys.miss', { weapon: weaponName });
   },
 
   _useItemAction(itemId) {
     const gs = GameState;
-    if (!itemId || !gs.cards[itemId]) return '[아이템] 사용 불가.';
+    if (!itemId || !gs.cards[itemId]) return I18n.t('combatSys.itemUnavail');
     const def = gs.getCardDef(itemId);
-    if (!def?.onConsume) return '[아이템] 효과 없음.';
+    if (!def?.onConsume) return I18n.t('combatSys.itemNoEffect');
 
     const { hp, infection, morale } = def.onConsume;
     const msgs = [];
@@ -284,16 +286,16 @@ const CombatSystem = {
       const healMult = gs.player.healBonus ?? 1.0;
       const healed = Math.round(hp * healMult);
       gs.player.hp.current = Math.min(gs.player.hp.max, gs.player.hp.current + healed);
-      msgs.push(`HP +${healed}`);
+      msgs.push(I18n.t('combatSys.hpHeal', { val: healed }));
     }
-    if (infection) { gs.modStat('infection', infection); msgs.push(`감염 ${infection > 0 ? '+' : ''}${infection}`); }
-    if (morale)    { gs.modStat('morale', morale);    msgs.push(`사기 +${morale}`); }
+    if (infection) { gs.modStat('infection', infection); msgs.push(I18n.t('combatSys.infectionChange', { val: `${infection > 0 ? '+' : ''}${infection}` })); }
+    if (morale)    { gs.modStat('morale', morale);    msgs.push(I18n.t('combatSys.moraleUp', { val: morale })); }
 
     const inst = gs.cards[itemId];
     inst.quantity = (inst.quantity ?? 1) - 1;
     if (inst.quantity <= 0) { gs.removeCardInstance(itemId); EventBus.emit('cardRemoved', { instanceId: itemId }); }
 
-    return `[아이템] ${def.name} 사용. ${msgs.join(', ')}`;
+    return I18n.t('combatSys.itemUsed', { name: I18n.itemName(def.id, def.name), effects: msgs.join(', ') });
   },
 
   _stealthAction() {
@@ -307,7 +309,7 @@ const CombatSystem = {
       gs.combat.outcome = 'fled';
       StateMachine.transition('combat_result', { outcome: 'fled', nodeId: gs.combat.nodeId });
     } else {
-      gs.combat.log.push('[은신] 실패! 적이 당신을 발견했다.');
+      gs.combat.log.push(I18n.t('combatSys.stealthFail'));
       if (gs.combat.active) this._allEnemiesAttack();
     }
   },
@@ -327,7 +329,7 @@ const CombatSystem = {
         this._applyStructureDamage(BALANCE.hordeWaves.structureDamage);
         gs.modStat('morale', BALANCE.hordeWaves.defeatMorale);
         EventBus.emit('notify', {
-          message: '😰 습격을 피해 도주했지만, 거점 구조물이 파손되었다!',
+          message: I18n.t('combatSys.hordeFleeDmg'),
           type: 'danger',
         });
       }
@@ -335,7 +337,7 @@ const CombatSystem = {
       StateMachine.transition('combat_result', { outcome: 'fled', nodeId: gs.combat.nodeId });
     } else {
       // 도주 실패: 모든 적이 강화 공격 (1.5배 데미지)
-      gs.combat.log.push('[도주] 적이 따라잡았다! 등을 보인 대가를 치른다!');
+      gs.combat.log.push(I18n.t('combatSys.fleeFail'));
       gs.combat._fleeFailed = true;
       if (gs.combat.active) this._allEnemiesAttack();
       gs.combat._fleeFailed = false;
@@ -388,11 +390,11 @@ const CombatSystem = {
         DiseaseSystem.checkCombatInjury(dmg, gs);
         if (effectiveStunChance > 0 && Math.random() < effectiveStunChance) {
           if (!gs.combat.playerStatus.some(s => s.id === 'stun')) {
-            gs.combat.playerStatus.push({ id: 'stun', name: '기절', duration: 1, effect: {} });
+            gs.combat.playerStatus.push({ id: 'stun', name: I18n.t('combatSys.stun'), duration: 1, effect: {} });
           }
-          logs.push(`[${skill.name}] ${enemy.name}의 강타! ${dmg} 피해 + 기절! (내 HP: ${gs.player.hp.current})`);
+          logs.push(I18n.t('combatSys.enemySkillStun', { skill: skill.name, enemy: I18n.enemyName(enemy.id, enemy.name), dmg, hp: gs.player.hp.current }));
         } else {
-          logs.push(`[${skill.name}] ${enemy.name}의 강타! ${dmg} 피해! (내 HP: ${gs.player.hp.current})`);
+          logs.push(I18n.t('combatSys.enemySkill', { skill: skill.name, enemy: I18n.enemyName(enemy.id, enemy.name), dmg, hp: gs.player.hp.current }));
         }
         return logs;
       }
@@ -438,7 +440,7 @@ const CombatSystem = {
       // 방어술 마스터리: 15% 확률 반격
       if (SkillSystem.hasMastery('defense') && Math.random() < 0.15) {
         enemy.currentHp = Math.max(0, enemy.currentHp - 5);
-        gs.combat.log.push(`[방어술 마스터리] 반격! ${enemy.name}에게 5 피해!`);
+        gs.combat.log.push(I18n.t('combatSys.defMastery', { enemy: I18n.enemyName(enemy.id, enemy.name) }));
       }
 
       if (enemy.onHitEffect) {
@@ -455,11 +457,11 @@ const CombatSystem = {
       }
       if (enemy.infectionChance && Math.random() < enemy.infectionChance) {
         gs.modStat('infection', 10);
-        return `[적 공격] ${enemy.name}이 ${damage} 피해! 감염! (내 HP: ${gs.player.hp.current})`;
+        return I18n.t('combatSys.enemyAtkInfect', { enemy: I18n.enemyName(enemy.id, enemy.name), dmg: damage, hp: gs.player.hp.current });
       }
-      return `[적 공격] ${enemy.name}이 ${damage} 피해! (내 HP: ${gs.player.hp.current})`;
+      return I18n.t('combatSys.enemyAtk', { enemy: I18n.enemyName(enemy.id, enemy.name), dmg: damage, hp: gs.player.hp.current });
     }
-    return `[적 공격] ${enemy.name}의 공격 회피!`;
+    return I18n.t('combatSys.enemyDodge', { enemy: I18n.enemyName(enemy.id, enemy.name) });
   },
 
   // ── 상태이상 틱 ────────────────────────────────────────
@@ -471,7 +473,7 @@ const CombatSystem = {
     gs.combat.playerStatus = gs.combat.playerStatus.filter(s => {
       if (s.effect.hpLossPerRound) {
         gs.player.hp.current = Math.max(0, gs.player.hp.current - s.effect.hpLossPerRound);
-        gs.combat.log.push(`[${s.name}] ${s.effect.hpLossPerRound} 피해! (HP: ${gs.player.hp.current})`);
+        gs.combat.log.push(I18n.t('combatSys.statusTick', { name: s.name, dmg: s.effect.hpLossPerRound, hp: gs.player.hp.current }));
       }
       if (s.effect.infection) gs.modStat('infection', s.effect.infection);
       s.duration--;
@@ -482,7 +484,7 @@ const CombatSystem = {
       gs.combat.enemyStatus = gs.combat.enemyStatus.filter(s => {
         if (s.effect.hpLossPerRound) {
           target.currentHp = Math.max(0, target.currentHp - s.effect.hpLossPerRound);
-          gs.combat.log.push(`[${s.name}] ${target.name}에게 ${s.effect.hpLossPerRound} 피해!`);
+          gs.combat.log.push(I18n.t('combatSys.statusTickEnemy', { name: s.name, target: I18n.enemyName(target.id, target.name), dmg: s.effect.hpLossPerRound }));
         }
         s.duration--;
         return s.duration > 0;
@@ -497,7 +499,10 @@ const CombatSystem = {
     const xp  = enemy.xp ?? 0;
     gs.player.xp     = (gs.player.xp ?? 0) + xp;
     gs.combat.xpGained += xp;
-    gs.combat.log.push(`[처치] ${enemy.name} 처치! +${xp} XP`);
+    gs.combat.log.push(I18n.t('combatSys.kill', { enemy: I18n.enemyName(enemy.id, enemy.name), xp }));
+
+    // 숨겨진 요소 추적: 킬 카운터 갱신
+    gs.flags.totalKills = (gs.flags.totalKills ?? 0) + 1;
 
     // 처치 시 사용 무기 스킬 XP
     const weapMain = gs.player.equipped?.weapon_main;
@@ -506,6 +511,14 @@ const CombatSystem = {
     const weapDef  = weapInst ? gs.getCardDef(weapInst.instanceId) : null;
     const killSkill = weapDef?.combat?.requiresAmmo ? 'ranged' : (weapDef ? 'melee' : 'unarmed');
     SkillSystem.gainXp(killSkill, 5);
+
+    // 근접 킬/은신 킬 추적
+    if (killSkill === 'melee' || killSkill === 'unarmed') {
+      gs.flags.meleeKills = (gs.flags.meleeKills ?? 0) + 1;
+    }
+    if (weapDef?.tags?.includes('silent') && gs.combat.lastHit?.isCrit) {
+      gs.flags.stealthKills = (gs.flags.stealthKills ?? 0) + 1;
+    }
 
     for (const lootEntry of (enemy.lootTable ?? [])) {
       if (Math.random() < 0.6) {
@@ -525,7 +538,7 @@ const CombatSystem = {
         if (medInst) {
           gs.placeCardInRow(medInst.instanceId, 'middle');
           gs.combat.rewards.push(medInst.instanceId);
-          gs.combat.log.push(`[의사 본능] 감염체에서 의료 재료 획득!`);
+          gs.combat.log.push(I18n.t('combatSys.doctorBonus'));
         }
       }
     }
@@ -545,7 +558,7 @@ const CombatSystem = {
       gs.modStat('morale', hw.victoryMorale);
       gs.modStat('fatigue', 15);
       EventBus.emit('notify', {
-        message: `🎉 좀비 습격 제${data.hordeWaveNum}파를 격퇴했다! 사기 +${hw.victoryMorale}`,
+        message: I18n.t('combatSys.hordeVictory', { wave: data.hordeWaveNum, morale: hw.victoryMorale }),
         type: 'success',
       });
     } else {
@@ -563,7 +576,7 @@ const CombatSystem = {
       gs.combatRespawn.nodeId      = nodeId;
       gs.combatRespawn.dangerLevel = gs.combat.dangerLevel;
       EventBus.emit('notify', {
-        message: `⚠ 전투 소음으로 몬스터가 접근 중! ${delayTP}턴 후 재조우`,
+        message: I18n.t('combatSys.respawnWarn', { delay: delayTP }),
         type: 'warn',
       });
     } else {
@@ -591,10 +604,10 @@ const CombatSystem = {
     }
 
     gs.player.isAlive      = false;
-    gs.player.deathCause   = '부상 과다';
+    gs.player.deathCause   = I18n.t('combatSys.deathCause');
     EventBus.emit('combatEnd', { outcome: 'defeat' });
     // EndingSystem 경유: death_combat 또는 death_horde 엔딩 결정
-    EndingSystem.triggerDeathEnding('부상 과다', gs);
+    EndingSystem.triggerDeathEnding(I18n.t('combatSys.deathCause'), gs);
   },
 
   // ── 구조물 피해 (습격 패배/도주) ──────────────────────
@@ -605,14 +618,14 @@ const CombatSystem = {
     for (const card of gs.getBoardCards()) {
       const def = items[card.definitionId] ?? gs.getCardDef(card.instanceId);
       if (!def) continue;
-      if (def.subtype !== '구조물' && !def.tags?.includes('structure')) continue;
+      if (def.subtype !== I18n.t('combatSys.structure') && !def.tags?.includes('structure')) continue;
       const inst = gs.cards[card.instanceId];
       if (!inst || (inst.durability ?? 0) <= 0) continue;
       const loss = Math.ceil(inst.durability * (damagePercent / 100));
       inst.durability = Math.max(0, inst.durability - loss);
       if (inst.durability <= 0) {
         EventBus.emit('notify', {
-          message: `💥 ${def.name}이(가) 파괴되었다!`,
+          message: I18n.t('combatSys.structDestroyed', { name: I18n.itemName(def.id, def.name) }),
           type: 'danger',
         });
       }

@@ -224,6 +224,16 @@ const GameState = {
     collapseCount:       0,    // 피로 붕괴 횟수 (2회째 → 사망)
     survivedSummer:      false, // Day 180 이후 생존 플래그 (여름 생존 엔딩)
     diseaseDeathId:      null,  // 질병 사망 시 질병 ID (엔딩 선택용)
+    // ── 숨겨진 요소 추적 ──────────────────────────────
+    hiddenLocationsDiscovered: [],  // 발견한 히든 장소 ID 배열
+    bossesKilled:              [],  // 처치한 보스 ID 배열
+    legendaryItemsFound:       [],  // 획득한 전설 아이템 ID 배열
+    secretEventsTriggered:     [],  // 발생한 비밀 이벤트 ID 배열
+    hiddenRecipesUnlocked:     [],  // 해금한 레시피 ID 배열
+    eventChainProgress:        {},  // { chainId: stepNumber }
+    stealthKills:              0,   // 무소음 무기 크리킬 카운터
+    diseaseCured:              0,   // 질병 치료 카운터
+    meleeKills:                0,   // 근접무기 킬 카운터
   },
 
   // ── HELPERS ───────────────────────────────────────────
@@ -301,7 +311,7 @@ const GameState = {
     const result = [];
     for (const row of ['top', 'middle', 'bottom']) {
       for (const id of this.board[row]) {
-        if (id) result.push(this.cards[id]);
+        if (id && this.cards[id] && !this.cards[id]._crafting) result.push(this.cards[id]);
       }
     }
     return result;
@@ -448,6 +458,17 @@ const GameState = {
     if (ef.infectionCured      === undefined) ef.infectionCured      = false;
     if (ef.collapseCount       === undefined) ef.collapseCount       = 0;
     if (ef.survivedSummer      === undefined) ef.survivedSummer      = false;
+    // 구버전 세이브 호환: 숨겨진 요소 추적 필드
+    if (!ef.hiddenLocationsDiscovered)  ef.hiddenLocationsDiscovered  = [];
+    if (!ef.bossesKilled)               ef.bossesKilled               = [];
+    if (!ef.legendaryItemsFound)        ef.legendaryItemsFound        = [];
+    if (!ef.secretEventsTriggered)      ef.secretEventsTriggered      = [];
+    if (!ef.hiddenRecipesUnlocked)      ef.hiddenRecipesUnlocked      = [];
+    if (!ef.eventChainProgress)         ef.eventChainProgress         = {};
+    if (ef.stealthKills  === undefined) ef.stealthKills               = 0;
+    if (ef.diseaseCured  === undefined) ef.diseaseCured               = 0;
+    if (ef.meleeKills    === undefined) ef.meleeKills                 = 0;
+    if (!ef._hiddenLocationLastVisit)   ef._hiddenLocationLastVisit   = {};
     // season 필드 복원 (구버전 세이브 호환)
     if (d.season) {
       Object.assign(this.season, d.season);
