@@ -4,8 +4,8 @@ import GameState from '../core/GameState.js';
 
 // Manages the logical state of the 3-row card board
 const BoardManager = {
-  ROWS: ['top', 'middle', 'bottom'],
-  ROW_SIZES: { top: 4, middle: 8, bottom: 8 },
+  ROWS: ['top', 'environment', 'middle', 'bottom'],
+  ROW_SIZES: { top: 4, environment: 3, middle: 8, bottom: 8 },
 
   init() {
     // Ensure board arrays have correct lengths

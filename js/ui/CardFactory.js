@@ -104,6 +104,31 @@ const CardFactory = {
       return el;
     }
 
+    // ── 환경 카드 (날씨 / 이벤트) ─────────────────────────────
+    if (def.type === 'environment') {
+      el.className = `card environment-card env-${def.subtype ?? 'weather'} spawning`;
+      el.draggable = false;
+      el.style.cursor = 'default';
+      el.title = def.description ?? '';
+      el.innerHTML = this._buildEnvironmentInner(inst, def);
+      el.addEventListener('animationend', () => el.classList.remove('spawning'), { once: true });
+      return el;
+    }
+
+    // ── NPC 카드 ─────────────────────────────────────────────────
+    if (def.type === 'npc') {
+      el.className = 'card npc-card spawning';
+      el.draggable = false;
+      el.style.cursor = 'pointer';
+      el.innerHTML = this._buildNPCInner(inst, def);
+      el.addEventListener('dblclick', e => {
+        e.stopPropagation();
+        EventBus.emit('openNPCDialogue', { npcId: inst.definitionId });
+      });
+      el.addEventListener('animationend', () => el.classList.remove('spawning'), { once: true });
+      return el;
+    }
+
     // ── 일반 카드 ────────────────────────────────────────────
     el.title = def.description ?? '';  // 일반 카드만 설명 툴팁
     el.className = 'card spawning';
@@ -214,6 +239,66 @@ const CardFactory = {
         <span>${I18n.t('card.explore')}</span>
         <span>1TP</span>
       </div>
+    `;
+  },
+
+  // ── 환경 카드 내부 HTML ─────────────────────────────────
+
+  _buildEnvironmentInner(inst, def) {
+    const isEvent   = def.subtype === 'event';
+    const isDanger  = def.tags?.includes('danger');
+    const remaining = inst._envTpRemaining ?? 0;
+    const total     = inst._envTpTotal ?? 1;
+    const pct       = total > 0 ? Math.round((remaining / total) * 100) : 0;
+
+    // 이벤트 카드: 남은 시간 바 표시
+    const durationBar = isEvent
+      ? `<div class="env-duration">
+           <div class="env-duration-fill${isDanger ? ' env-danger' : ''}" style="width:${pct}%"></div>
+         </div>
+         <div class="env-remaining">${Math.ceil(remaining / 72)}${I18n.t('env.daysLeft')}</div>`
+      : '';
+
+    // 날씨 카드: 인터랙션 힌트
+    const hintTags = [];
+    if (def.tags?.includes('water_source')) hintTags.push(I18n.t('env.waterCollect'));
+    if (def.tags?.includes('heat'))         hintTags.push(I18n.t('env.heatWarning'));
+    if (def.tags?.includes('cold'))         hintTags.push(I18n.t('env.coldWarning'));
+    if (def.tags?.includes('contamination')) hintTags.push(I18n.t('env.contamWarning'));
+
+    const hintHtml = hintTags.length > 0
+      ? `<div class="env-hints">${hintTags.map(h => `<span class="env-hint-tag">${h}</span>`).join('')}</div>`
+      : '';
+
+    return `
+      <div class="env-header${isDanger ? ' env-header-danger' : ''}">
+        <span class="env-type-badge">${isEvent ? I18n.t('env.event') : I18n.t('env.weather')}</span>
+      </div>
+      <div class="env-icon">${def.icon ?? '🌤'}</div>
+      <div class="env-name">${I18n.itemName(def.id, def.name)}</div>
+      ${hintHtml}
+      ${durationBar}
+    `;
+  },
+
+  // ── NPC 카드 내부 HTML ───────────────────────────────────
+
+  _buildNPCInner(inst, def) {
+    // Lazy-read NPC state for companion badge
+    const npcState = window.__NPCSystem__?.getNPCState?.(inst.definitionId);
+    const isCompanion = npcState?.isCompanion ?? false;
+    const trust = npcState?.trust ?? 0;
+    const trustStars = '★'.repeat(trust) + '☆'.repeat(Math.max(0, 5 - trust));
+
+    return `
+      <div class="npc-card-header">
+        <span class="npc-type-badge">${I18n.t('npc.badge')}</span>
+        ${isCompanion ? `<span class="npc-companion-tag">${I18n.t('npc.companionBadge')}</span>` : ''}
+      </div>
+      <div class="npc-card-icon">${def.icon ?? '👤'}</div>
+      <div class="npc-card-name">${I18n.itemName(def.id, def.name)}</div>
+      <div class="npc-card-trust">${trustStars}</div>
+      <div class="npc-card-hint">${I18n.t('npc.clickHint')}</div>
     `;
   },
 
@@ -358,6 +443,8 @@ const CardFactory = {
       } else {
         el.innerHTML = this._buildLocationInner(def);
       }
+    } else if (def.type === 'npc') {
+      el.innerHTML = this._buildNPCInner(inst, def);
     } else {
       el.innerHTML = this._buildInner(inst, def);
     }

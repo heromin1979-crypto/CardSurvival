@@ -1,9 +1,11 @@
 // === DRAG & DROP ===
-import SlotResolver from './SlotResolver.js';
-import BoardManager from './BoardManager.js';
-import GameState    from '../core/GameState.js';
-import EventBus     from '../core/EventBus.js';
+import SlotResolver   from './SlotResolver.js';
+import BoardManager   from './BoardManager.js';
+import GameState      from '../core/GameState.js';
+import EventBus       from '../core/EventBus.js';
 import { findInteraction } from '../data/interactions.js';
+import CraftDiscovery  from '../systems/CraftDiscovery.js';
+import QuickCraftPrompt from '../ui/QuickCraftPrompt.js';
 
 const DragDrop = {
   _draggingId:  null,
@@ -83,6 +85,21 @@ const DragDrop = {
       }
     }
 
+    // 크래프트 조합 힌트 (행 무관, 상호작용 없을 때)
+    if (existingId && existingId !== this._draggingId) {
+      const srcDef2 = GameState.getCardDef(this._draggingId);
+      const tgtDef2 = GameState.getCardDef(existingId);
+      if (srcDef2 && tgtDef2) {
+        const craftHint = CraftDiscovery.getQuickHint(srcDef2.id, tgtDef2.id);
+        if (craftHint) {
+          slot.classList.add('can-interact');
+          this._showInteractionTip(slot, craftHint.hint);
+          e.dataTransfer.dropEffect = 'move';
+          return;
+        }
+      }
+    }
+
     // 스택 가능 여부 미리보기 (행 무관)
     if (existingId && existingId !== this._draggingId) {
       const srcInst = GameState.cards[this._draggingId];
@@ -124,10 +141,27 @@ const DragDrop = {
     const existingId = GameState.board[row]?.[slotIdx];
 
     if (existingId && existingId !== this._draggingId) {
-      // 상호작용 우선 시도 (행 무관) → 없으면 swap
+      // 1. 상호작용 우선 시도
       const interacted = SlotResolver.resolveInteraction(this._draggingId, existingId);
       if (!interacted) {
-        SlotResolver.executeDrop(this._draggingId, row, slotIdx);
+        // 1.5. 비밀 조합 체크
+        const secreted = SlotResolver.resolveSecretCombo(this._draggingId, existingId);
+        if (!secreted) {
+          // 2. 크래프트 조합 체크 → 프롬프트 표시
+          const srcDef = GameState.getCardDef(this._draggingId);
+          const tgtDef = GameState.getCardDef(existingId);
+          if (srcDef && tgtDef) {
+            const recipes = CraftDiscovery.findRecipes(srcDef.id, tgtDef.id);
+            if (recipes.length > 0) {
+              QuickCraftPrompt.show(srcDef.id, tgtDef.id);
+            } else {
+              // 3. swap/move
+              SlotResolver.executeDrop(this._draggingId, row, slotIdx);
+            }
+          } else {
+            SlotResolver.executeDrop(this._draggingId, row, slotIdx);
+          }
+        }
       }
     } else {
       // 다른 행 또는 빈 슬롯: 항상 이동/교환 허용

@@ -326,6 +326,7 @@ const DiseaseSystem = {
 
     gs.player.diseases.push({ id: diseaseId, tpElapsed: 0, tpDuration, fatalTp });
 
+    EventBus.emit('diseaseContracted', { diseaseId });
     EventBus.emit('notify', {
       message: I18n.t('disease.contracted', { name: def.name, desc: def.description }),
       type: 'danger',

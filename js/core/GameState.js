@@ -93,9 +93,10 @@ const GameState = {
   // ── board ─────────────────────────────────────────────
   // Each row: array of slot entries (null | instanceId)
   board: {
-    top:    [null, null, null, null, null, null, null, null], // 8칸: [현재구][랜드마크][인접구×6]
-    middle: [null, null, null, null, null, null, null, null],  // 8칸
-    bottom: [null, null, null, null, null, null, null, null],  // 소지품 8칸 (가방으로 확장 가능)
+    top:         [null, null, null, null, null, null, null, null], // 8칸: [현재구][랜드마크][인접구×6]
+    environment: [null, null, null],  // 3칸: [날씨 카드][이벤트 카드1][이벤트 카드2]
+    middle:      [null, null, null, null, null, null, null, null],  // 8칸
+    bottom:      [null, null, null, null, null, null, null, null],  // 소지품 8칸 (가방으로 확장 가능)
   },
 
   // ── card instances ────────────────────────────────────
@@ -259,7 +260,7 @@ const GameState = {
   removeCardInstance(instanceId) {
     delete this.cards[instanceId];
     // remove from board if present
-    for (const row of ['top', 'middle', 'bottom']) {
+    for (const row of ['top', 'environment', 'middle', 'bottom']) {
       this.board[row] = this.board[row].map(v => v === instanceId ? null : v);
     }
     // clear from equipped slots if present
@@ -309,7 +310,7 @@ const GameState = {
   // get all cards currently on the board
   getBoardCards() {
     const result = [];
-    for (const row of ['top', 'middle', 'bottom']) {
+    for (const row of ['top', 'environment', 'middle', 'bottom']) {
       for (const id of this.board[row]) {
         if (id && this.cards[id] && !this.cards[id]._crafting) result.push(this.cards[id]);
       }
@@ -398,6 +399,12 @@ const GameState = {
       landmarkHistory: this.landmarkHistory,
       basecamp:        this.basecamp,
       quests:          this.quests,
+      ecology:         this.ecology ?? null,
+      mental:          this.mental ?? null,
+      discoveries:     this.discoveries ?? null,
+      npcs:            this.npcs ?? null,
+      companions:      this.companions ?? null,
+      body:            this.body ?? null,
     });
   },
 
@@ -431,6 +438,9 @@ const GameState = {
     if (d.board?.top && d.board.top.length < 7) {
       while (d.board.top.length < 7) d.board.top.push(null);
     }
+    // 구버전 세이브 호환: environment 행이 없으면 자동 생성
+    if (!d.board.environment) d.board.environment = [null, null, null];
+    while (d.board.environment.length < 3) d.board.environment.push(null);
     Object.assign(this.board,    d.board);
     this.cards   = d.cards;
     this._nextId = d._nextId;
@@ -484,6 +494,17 @@ const GameState = {
     if (d.basecamp) Object.assign(this.basecamp, d.basecamp);
     // 퀘스트 복원
     if (d.quests) Object.assign(this.quests, d.quests);
+    // 생태계 복원 (구버전 세이브 호환: EcologySystem.ensureInitialized()가 처리)
+    if (d.ecology) this.ecology = d.ecology;
+    // 심리 상태 복원 (구버전 세이브 호환: MentalSystem.ensureInitialized()가 처리)
+    if (d.mental) this.mental = d.mental;
+    // 발견 기록 복원
+    if (d.discoveries) this.discoveries = d.discoveries;
+    // NPC 시스템 복원 (구버전 세이브 호환: NPCSystem.ensureInitialized()가 처리)
+    if (d.npcs) this.npcs = d.npcs;
+    if (d.companions) this.companions = d.companions;
+    // 신체 부위 부상 시스템 복원 (구버전 세이브 호환: BodySystem.ensureInitialized()가 처리)
+    if (d.body) this.body = d.body;
     // diseases 필드 복원 (구버전 세이브 호환)
     if (!this.player.diseases) this.player.diseases = [];
     // 구버전 세이브 호환: 필드 없으면 기본값

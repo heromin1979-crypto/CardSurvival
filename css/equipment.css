@@ -53,13 +53,19 @@
   overflow: hidden;
 }
 
-/* ── Left: 효과 패널 ── */
-.equip-effects-panel {
-  width: 200px;
+/* ── Left column: 효과 + 신체 ── */
+.equip-left-col {
+  width: 210px;
   flex-shrink: 0;
-  padding: 12px;
   border-right: 1px solid var(--border-dim);
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Left: 효과 패널 ── */
+.equip-effects-panel {
+  padding: 12px;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -349,3 +355,194 @@
 .equip-slot-menu-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
 .equip-slot-menu-btn.danger { border-color: #442222; color: var(--text-danger); }
 .equip-slot-menu-btn.danger:hover { background: rgba(200,50,50,0.15); }
+
+/* ═══════════════════════════════════════════════════════
+   BODY DIAGRAM — 신체 상태 다이어그램
+   ═══════════════════════════════════════════════════════ */
+
+.body-diagram-section {
+  padding: 10px 12px;
+  border-top: 1px solid var(--border-dim);
+}
+
+.body-diagram-title {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-bottom: 8px;
+}
+
+/* 6-cell grid: humanoid layout
+   Row 1:       [head]
+   Row 2: [larm] [torso] [rarm]
+   Row 3: [lleg]         [rleg]
+*/
+.body-diagram-grid {
+  display: grid;
+  grid-template-areas:
+    ".        bp-head  .       "
+    "bp-larm  bp-torso bp-rarm "
+    "bp-lleg  .        bp-rleg ";
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: auto auto auto;
+  gap: 3px;
+}
+
+/* ── 개별 부위 셀 ── */
+.body-part {
+  border: 1px solid var(--border-dim);
+  border-radius: var(--radius-sm);
+  background: var(--bg-raised);
+  padding: 4px 3px;
+  text-align: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  min-width: 0;
+}
+
+.body-part:hover {
+  border-color: var(--accent-dim);
+  background: var(--bg-hover);
+}
+
+.body-part.active {
+  border-color: var(--accent-primary);
+  background: rgba(200,160,96,0.10);
+}
+
+.body-part-name {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.body-part-hp {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: bold;
+  margin: 1px 0;
+}
+
+/* HP color coding */
+.body-part.hp-good  .body-part-hp { color: var(--text-good); }
+.body-part.hp-warn  .body-part-hp { color: var(--text-warn); }
+.body-part.hp-orange .body-part-hp { color: #d07030; }
+.body-part.hp-crit  .body-part-hp { color: var(--text-danger); }
+
+.body-part-injuries {
+  display: flex;
+  justify-content: center;
+  gap: 2px;
+  flex-wrap: wrap;
+}
+
+.body-injury-icon {
+  font-size: 10px;
+  line-height: 1;
+}
+
+.body-injury-icon sub {
+  font-size: 6px;
+  vertical-align: baseline;
+  color: var(--text-dim);
+}
+
+/* ── 신체 효과 요약 ── */
+.body-effects-list {
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.body-effect-row {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  padding: 2px 5px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-raised);
+}
+
+.body-effect-row.warn {
+  color: var(--text-warn);
+}
+
+/* ── 부위 상세 팝업 ── */
+.body-detail-popup {
+  margin-top: 8px;
+  padding: 8px;
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface);
+}
+
+.body-detail-header {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: bold;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border-dim);
+}
+
+.body-detail-normal {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-good);
+  text-align: center;
+  padding: 4px 0;
+}
+
+.body-detail-injury {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 0;
+}
+
+.body-detail-injury + .body-detail-injury {
+  border-top: 1px solid var(--border-dim);
+}
+
+.body-detail-icon {
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.body-detail-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.body-detail-type {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-primary);
+}
+
+.body-detail-tp {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  color: var(--text-dim);
+}
+
+.body-detail-treat {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  color: var(--text-good);
+  background: rgba(80,160,80,0.15);
+  border: 1px solid rgba(80,160,80,0.3);
+  border-radius: var(--radius-sm);
+  padding: 1px 4px;
+  white-space: nowrap;
+}

@@ -116,12 +116,25 @@ const LandmarkModal = {
     `;
   },
 
-  // 방문 횟수에 따른 루팅 배율 (1회=100%, 2회=70%, 3회=45%, 4+회=25%)
+  // 방문 횟수 + 구역 자원 레벨에 따른 루팅 배율
   _getLootMult(visitCount) {
-    if (visitCount === 0) return 1.0;
-    if (visitCount === 1) return 0.70;
-    if (visitCount === 2) return 0.45;
-    return 0.25;
+    // 기존 방문 횟수 기반 감소
+    let visitMult;
+    if (visitCount === 0) visitMult = 1.0;
+    else if (visitCount === 1) visitMult = 0.70;
+    else if (visitCount === 2) visitMult = 0.45;
+    else visitMult = 0.25;
+
+    // 생태계 자원 레벨 기반 배율 (EcologySystem이 있으면 적용)
+    let ecoMult = 1.0;
+    try {
+      const EcologySystem = window.__EcologySystem__;
+      if (EcologySystem && this._districtId) {
+        ecoMult = EcologySystem.getLootMult(this._districtId);
+      }
+    } catch (_) { /* EcologySystem 미로드 시 무시 */ }
+
+    return visitMult * ecoMult;
   },
 
   _bindSubLocEvents(box, data) {
@@ -145,9 +158,14 @@ const LandmarkModal = {
     this._isExploring = true;
     const tpCost = 1;
 
-    // 조우 체크 (dangerMod 기반 추가 확률)
+    // 조우 체크 (dangerMod + 생태계 좀비 밀도 배율)
     const baseEncounter = 0.10;
-    const encounterChance = Math.min(0.90, baseEncounter + loc.dangerMod);
+    let ecoEncMult = 1.0;
+    try {
+      const EcologySystem = window.__EcologySystem__;
+      if (EcologySystem && districtId) ecoEncMult = EcologySystem.getEncounterMult(districtId);
+    } catch (_) { /* 무시 */ }
+    const encounterChance = Math.min(0.90, (baseEncounter + loc.dangerMod) * ecoEncMult);
     if (Math.random() < encounterChance) {
       EventBus.emit('notify', { message: I18n.t('landmark.encounter', { name: loc.name }), type: 'danger' });
       TickEngine.skipTP(tpCost);
@@ -166,6 +184,9 @@ const LandmarkModal = {
       });
       return;
     }
+
+    // 생태계 자원 소모 이벤트
+    EventBus.emit('locationExplored', { districtId });
 
     // 방문 기록 업데이트
     gs.landmarkHistory[loc.id] = (gs.landmarkHistory[loc.id] ?? 0) + 1;

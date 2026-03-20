@@ -2,9 +2,11 @@
 // Pointer Events 기반 모바일 터치 드래그.
 // HTML5 DragDrop API는 모바일에서 미지원 → PointerEvent로 구현.
 // 마우스 이벤트는 제외 (HTML5 DnD가 처리).
-import SlotResolver from './SlotResolver.js';
-import GameState    from '../core/GameState.js';
-import EventBus     from '../core/EventBus.js';
+import SlotResolver    from './SlotResolver.js';
+import GameState       from '../core/GameState.js';
+import EventBus        from '../core/EventBus.js';
+import CraftDiscovery  from '../systems/CraftDiscovery.js';
+import QuickCraftPrompt from '../ui/QuickCraftPrompt.js';
 
 // 롱프레스 임계값 (ms) — 이 시간 이상 누르면 드래그 시작
 const LONG_PRESS_MS = 180;
@@ -156,7 +158,23 @@ const TouchDrag = {
 
       if (existingId && existingId !== this._draggingId) {
         const interacted = SlotResolver.resolveInteraction(this._draggingId, existingId);
-        if (!interacted) SlotResolver.executeDrop(this._draggingId, row, slotIdx);
+        if (!interacted) {
+          const secreted = SlotResolver.resolveSecretCombo(this._draggingId, existingId);
+          if (!secreted) {
+            const srcDef = GameState.getCardDef(this._draggingId);
+            const tgtDef = GameState.getCardDef(existingId);
+            if (srcDef && tgtDef) {
+              const recipes = CraftDiscovery.findRecipes(srcDef.id, tgtDef.id);
+              if (recipes.length > 0) {
+                QuickCraftPrompt.show(srcDef.id, tgtDef.id);
+              } else {
+                SlotResolver.executeDrop(this._draggingId, row, slotIdx);
+              }
+            } else {
+              SlotResolver.executeDrop(this._draggingId, row, slotIdx);
+            }
+          }
+        }
       } else {
         SlotResolver.executeDrop(this._draggingId, row, slotIdx);
       }

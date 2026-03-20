@@ -39,6 +39,12 @@ import BasecampSystem       from './systems/BasecampSystem.js';
 import QuestSystem          from './systems/QuestSystem.js';
 import SoundSystem          from './systems/SoundSystem.js';
 import HiddenElementSystem  from './systems/HiddenElementSystem.js';
+import BGMSystem            from './systems/BGMSystem.js';
+import EcologySystem        from './systems/EcologySystem.js';
+import MentalSystem         from './systems/MentalSystem.js';
+import NPCSystem            from './systems/NPCSystem.js';
+import BodySystem           from './systems/BodySystem.js';
+import SubwaySystem         from './systems/SubwaySystem.js';
 
 // Board
 import BoardManager from './board/BoardManager.js';
@@ -58,8 +64,9 @@ import CardFactory      from './ui/CardFactory.js';
 import CardContextMenu  from './ui/CardContextMenu.js';
 import SeoulMapModal    from './ui/SeoulMapModal.js';
 import EquipmentModal   from './ui/EquipmentModal.js';
-import LandmarkModal    from './ui/LandmarkModal.js';
-import SettingsModal    from './ui/SettingsModal.js';
+import LandmarkModal       from './ui/LandmarkModal.js';
+import SettingsModal       from './ui/SettingsModal.js';
+import NPCDialogueModal   from './ui/NPCDialogueModal.js';
 
 // Screens
 import MainMenu     from './screens/MainMenu.js';
@@ -116,6 +123,14 @@ function init() {
   DiseaseSystem.init();
   WeatherSystem.init();
   NoiseSystem.init();
+  EcologySystem.init();
+  window.__EcologySystem__ = EcologySystem;  // LandmarkModal·SeoulMapModal에서 참조
+  NPCSystem.init();
+  window.__NPCSystem__ = NPCSystem;         // CardFactory에서 참조 (MentalSystem보다 먼저 — companions 초기화)
+  MentalSystem.init();
+  window.__MentalSystem__ = MentalSystem;   // StatRenderer·CombatSystem에서 참조
+  BodySystem.init();
+  window.__BodySystem__ = BodySystem;  // EquipmentModal 신체 다이어그램에서 참조
   ContaminationSystem.init();
   EncumbranceSystem.init();
   CraftSystem.init();
@@ -125,7 +140,9 @@ function init() {
   BasecampSystem.init();
   QuestSystem.init();
   SoundSystem.init();
+  BGMSystem.init();
   HiddenElementSystem.init();
+  SubwaySystem.init();
 
   // Board
   BoardManager.init();
@@ -142,6 +159,7 @@ function init() {
 
   // Settings modal
   SettingsModal.init();
+  NPCDialogueModal.init();
 
   // Screens
   MainMenu.init();

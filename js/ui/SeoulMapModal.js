@@ -1,8 +1,10 @@
 // === SEOUL MAP MODAL ===
-// 서울 25구 지역 지도 SVG 오버레이 모달
+// 서울 25구 지역 지도 SVG 오버레이 모달 + 지하철/하수도 경로 표시
 import GameState from '../core/GameState.js';
 import I18n     from '../core/I18n.js';
 import { DISTRICTS } from '../data/districts.js';
+import { SUBWAY_LINES, SEWER_ROUTES } from '../data/subwayRoutes.js';
+import SubwaySystem from '../systems/SubwaySystem.js';
 
 const DANGER_COLORS = ['#336633', '#4a7a33', '#886622', '#aa3333', '#771111', '#440000'];
 
@@ -95,6 +97,7 @@ const SeoulMapModal = {
             <span class="sm-leg sm-leg-adjacent">${I18n.t('map.accessible')}</span>
             <span class="sm-leg sm-leg-visited">${I18n.t('map.visited')}</span>
             <span class="sm-leg sm-leg-fog">${I18n.t('map.unexplored')}</span>
+            ${this._buildSubwayLegend()}
           </div>
           <button class="seoul-map-close" id="btn-close-seoulmap">✕</button>
         </div>
@@ -102,6 +105,8 @@ const SeoulMapModal = {
         <div class="seoul-map-body">
           ${this._buildSVG(currentId, adjacentSet, visitedSet)}
         </div>
+
+        ${this._buildSubwayPanel(currentId)}
 
       </div>
     `;
@@ -111,11 +116,101 @@ const SeoulMapModal = {
 
     overlay.addEventListener('click', (e) => { if (e.target === overlay) this._close(); });
     overlay.querySelector('#btn-close-seoulmap')?.addEventListener('click', () => this._close());
+
+    // Bind subway/sewer travel buttons
+    this._bindTravelButtons();
   },
 
   _close() {
     this._overlay?.remove();
     this._overlay = null;
+  },
+
+  // ── Subway legend (colored line indicators) ──────────────────
+
+  _buildSubwayLegend() {
+    const items = Object.entries(SUBWAY_LINES).map(([lineId, line]) => {
+      const unlocked = SubwaySystem.isLineUnlocked(lineId);
+      const opacity  = unlocked ? '1' : '0.4';
+      const label    = I18n.t(`subway.${lineId}`) || line.name;
+      return `<span class="sm-leg" style="opacity:${opacity}">
+        <span style="display:inline-block;width:12px;height:3px;background:${line.color};vertical-align:middle;margin-right:3px;border-radius:1px;${unlocked ? '' : 'opacity:0.4'}"></span>
+        ${line.icon} ${label}
+      </span>`;
+    });
+    return items.join('');
+  },
+
+  // ── Subway travel panel (below map) ──────────────────────────
+
+  _buildSubwayPanel(currentId) {
+    const lines  = SubwaySystem.getLinesAtStation(currentId);
+    const sewers = SubwaySystem.getAvailableSewers(currentId);
+
+    if (lines.length === 0 && sewers.length === 0) return '';
+
+    let html = '<div class="sm-subway-panel">';
+    html += `<div class="sm-subway-title">${I18n.t('subway.travel')}</div>`;
+
+    // Subway lines
+    for (const line of lines) {
+      const lineLabel = I18n.t(`subway.${line.lineId}`) || line.name;
+      if (!line.unlocked) {
+        html += `<div class="sm-subway-row sm-locked">${line.icon} ${lineLabel} — ${I18n.t('subway.locked')}</div>`;
+        continue;
+      }
+      const destinations = SubwaySystem.getDestinations(line.lineId, currentId);
+      for (const dest of destinations) {
+        const district = DISTRICTS[dest.districtId];
+        if (!district) continue;
+        const destName = I18n.districtName(dest.districtId, district.name);
+        const tpLabel  = I18n.t('subway.tpCost', { tp: dest.tpCost, count: dest.stations.length });
+        html += `<button class="sm-subway-btn" data-subway-line="${line.lineId}" data-subway-dest="${dest.districtId}">
+          ${line.icon} ${lineLabel} → ${destName} <span class="sm-tp-badge">${tpLabel}</span>
+        </button>`;
+      }
+    }
+
+    // Sewer routes
+    for (const sewer of sewers) {
+      const district = DISTRICTS[sewer.destination];
+      if (!district) continue;
+      const destName = I18n.districtName(sewer.destination, district.name);
+      if (!sewer.unlocked) {
+        html += `<div class="sm-subway-row sm-locked">${I18n.t('subway.sewer')} → ${destName} — ${I18n.t('subway.sewerLocked')}</div>`;
+        continue;
+      }
+      const tpLabel = `${sewer.tpCost}TP`;
+      html += `<button class="sm-subway-btn sm-sewer-btn" data-sewer-id="${sewer.sewerId}">
+        ${I18n.t('subway.sewer')} → ${destName} <span class="sm-tp-badge">${tpLabel}</span>
+      </button>`;
+    }
+
+    html += '</div>';
+    return html;
+  },
+
+  _bindTravelButtons() {
+    if (!this._overlay) return;
+
+    // Subway line travel
+    this._overlay.querySelectorAll('[data-subway-line]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const lineId = btn.dataset.subwayLine;
+        const dest   = btn.dataset.subwayDest;
+        this._close();
+        SubwaySystem.executeTravel(lineId, dest);
+      });
+    });
+
+    // Sewer travel
+    this._overlay.querySelectorAll('[data-sewer-id]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const sewerId = btn.dataset.sewerId;
+        this._close();
+        SubwaySystem.executeSewerTravel(sewerId);
+      });
+    });
   },
 
   // ── SVG 빌드 ──────────────────────────────────────────────────────
@@ -160,6 +255,12 @@ const SeoulMapModal = {
                     x2="${cb.x.toFixed(1)}" y2="${cb.y.toFixed(1)}"
                     stroke="${stroke}" stroke-width="${sw}" ${dash}/>`;
     }).join('\n');
+
+    // ── 지하철 노선 오버레이 ──────────────────────────────────
+    const subwayLines = this._buildSubwayLineSVG(visitedSet);
+
+    // ── 하수도 경로 오버레이 ──────────────────────────────────
+    const sewerLines = this._buildSewerLineSVG(visitedSet);
 
     // ── 지역 노드 ──────────────────────────────────────────────
     const nodes = Object.entries(POSITIONS).map(([id, [row, col]]) => {
@@ -209,6 +310,23 @@ const SeoulMapModal = {
                  text-anchor="middle" font-size="8" fill="#66aa44">☢ ${d.radiation}</text>`
         : '';
 
+      // ── 생태계 오버레이 (EcologySystem) ──
+      let ecoOverlay = '';
+      try {
+        const EcologySystem = window.__EcologySystem__;
+        if (EcologySystem) {
+          const eco = EcologySystem.getDistrictEcology(id);
+          const zColor = eco.zombie > 60 ? '#cc4444' : eco.zombie > 30 ? '#ccaa44' : '#44aa44';
+          const rColor = eco.resource < 40 ? '#cc4444' : eco.resource < 70 ? '#ccaa44' : '#44aa44';
+          const ecoY = barY - 12;
+          ecoOverlay = `
+            <text x="${x + 6}" y="${ecoY}" font-size="7" fill="${zColor}">🧟${eco.zombie}</text>
+            <text x="${cx}" y="${ecoY}" font-size="7" fill="${rColor}" text-anchor="middle">📦${eco.resource}</text>
+            ${eco.contam > 10 ? `<text x="${x + CW - 6}" y="${ecoY}" font-size="7" fill="#aa66cc" text-anchor="end">☣${eco.contam}</text>` : ''}
+          `;
+        }
+      } catch (_) { /* EcologySystem 미로드 */ }
+
       const currentBadge = isCurrent
         ? `<text x="${cx}" y="${barY - 3}"
              text-anchor="middle" font-size="8" fill="#c8a060">${I18n.t('map.currentBadge')}</text>`
@@ -233,6 +351,7 @@ const SeoulMapModal = {
           ${currentBadge}
           ${dangerBars}
           ${radTag}
+          ${ecoOverlay}
         </g>`;
     }).join('\n');
 
@@ -243,8 +362,88 @@ const SeoulMapModal = {
            class="seoul-map-svg">
         ${hanRiver}
         <g class="sm-lines">${lines}</g>
+        <g class="sm-subway-lines">${subwayLines}${sewerLines}</g>
         <g class="sm-nodes">${nodes}</g>
       </svg>`;
+  },
+
+  // ── Subway line SVG overlay ──────────────────────────────────
+
+  _buildSubwayLineSVG(visitedSet) {
+    const svgParts = [];
+    // Small offset per line so parallel lines don't overlap completely
+    const lineOffsets = { line_2: -4, line_3: -2, line_4: 2, line_7: 4 };
+
+    for (const [lineId, line] of Object.entries(SUBWAY_LINES)) {
+      const unlocked = SubwaySystem.isLineUnlocked(lineId);
+      const offset   = lineOffsets[lineId] ?? 0;
+
+      // Show line if unlocked, or if player has visited at least one station on it
+      const hasVisitedStation = line.stations.some(s => visitedSet.has(s));
+      if (!unlocked && !hasVisitedStation) continue;
+
+      const opacity   = unlocked ? '0.55' : '0.20';
+      const dashAttr  = unlocked ? '' : 'stroke-dasharray="4 3"';
+      const strokeW   = unlocked ? '2.5' : '1.5';
+
+      for (let i = 0; i < line.stations.length - 1; i++) {
+        const a = line.stations[i];
+        const b = line.stations[i + 1];
+        if (!POSITIONS[a] || !POSITIONS[b]) continue;
+        const ca = cellCenter(...POSITIONS[a]);
+        const cb = cellCenter(...POSITIONS[b]);
+        svgParts.push(
+          `<line x1="${(ca.x + offset).toFixed(1)}" y1="${(ca.y + offset).toFixed(1)}"
+                 x2="${(cb.x + offset).toFixed(1)}" y2="${(cb.y + offset).toFixed(1)}"
+                 stroke="${line.color}" stroke-width="${strokeW}" ${dashAttr}
+                 opacity="${opacity}" stroke-linecap="round"/>`
+        );
+      }
+
+      // Circular line: close the loop (last → first)
+      if (line.circular) {
+        const a = line.stations[line.stations.length - 1];
+        const b = line.stations[0];
+        if (POSITIONS[a] && POSITIONS[b]) {
+          const ca = cellCenter(...POSITIONS[a]);
+          const cb = cellCenter(...POSITIONS[b]);
+          svgParts.push(
+            `<line x1="${(ca.x + offset).toFixed(1)}" y1="${(ca.y + offset).toFixed(1)}"
+                   x2="${(cb.x + offset).toFixed(1)}" y2="${(cb.y + offset).toFixed(1)}"
+                   stroke="${line.color}" stroke-width="${strokeW}" ${dashAttr}
+                   opacity="${opacity}" stroke-linecap="round"/>`
+          );
+        }
+      }
+    }
+    return svgParts.join('\n');
+  },
+
+  // ── Sewer route SVG overlay ──────────────────────────────────
+
+  _buildSewerLineSVG(visitedSet) {
+    const svgParts = [];
+    for (const [, route] of Object.entries(SEWER_ROUTES)) {
+      const unlocked = SubwaySystem.isSewerUnlocked(route.id);
+      const hasVisited = visitedSet.has(route.from) || visitedSet.has(route.to);
+      if (!unlocked && !hasVisited) continue;
+
+      if (!POSITIONS[route.from] || !POSITIONS[route.to]) continue;
+      const ca = cellCenter(...POSITIONS[route.from]);
+      const cb = cellCenter(...POSITIONS[route.to]);
+
+      const opacity  = unlocked ? '0.50' : '0.18';
+      const dashAttr = unlocked ? 'stroke-dasharray="6 3"' : 'stroke-dasharray="2 4"';
+      const color    = unlocked ? '#8b6914' : '#555';
+
+      svgParts.push(
+        `<line x1="${ca.x.toFixed(1)}" y1="${(ca.y + 6).toFixed(1)}"
+               x2="${cb.x.toFixed(1)}" y2="${(cb.y + 6).toFixed(1)}"
+               stroke="${color}" stroke-width="2" ${dashAttr}
+               opacity="${opacity}" stroke-linecap="round"/>`
+      );
+    }
+    return svgParts.join('\n');
   },
 };
 

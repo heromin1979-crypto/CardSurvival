@@ -1400,6 +1400,154 @@ const INTERACTION_RULES = [
     },
   },
 
+  // ════════════════════════════════════════════════════════
+  // 환경 카드 인터랙션 (날씨 카드와 아이템 조합)
+  // ════════════════════════════════════════════════════════
+
+  // ── E1. 빈 병 + 비 카드 → 빗물(오염된 물) ─────────────
+  {
+    id: 'rain_collect_bottle',
+    source: { id: 'empty_bottle' },
+    target: { id: 'env_rainy' },
+    hint: '빗물 수집 → 오염된 물',
+    canApply(srcInst) { return { ok: true }; },
+    apply(srcInst) {
+      return {
+        message: '빈 병에 빗물을 받았다. 정수가 필요하다.',
+        transformSrc: 'contaminated_water',
+        consumeSrc: false, consumeTgt: false, noise: 0,
+      };
+    },
+  },
+  // ── E1r. 비 카드 + 빈 병 (역방향) ──────────────────────
+  {
+    id: 'rain_collect_bottle_rev',
+    source: { id: 'env_rainy' },
+    target: { id: 'empty_bottle' },
+    hint: '빗물 수집 → 오염된 물',
+    canApply(srcInst) { return { ok: true }; },
+    apply(srcInst) {
+      return {
+        message: '빈 병에 빗물을 받았다. 정수가 필요하다.',
+        transformTgt: 'contaminated_water',
+        consumeSrc: false, consumeTgt: false, noise: 0,
+      };
+    },
+  },
+
+  // ── E2. 빈 병 + 장마 카드 → 빗물(더 높은 오염) ────────
+  {
+    id: 'monsoon_collect_bottle',
+    source: { id: 'empty_bottle' },
+    target: { id: 'env_monsoon' },
+    hint: '장마 빗물 수집 → 고오염 물',
+    canApply(srcInst) { return { ok: true }; },
+    apply(srcInst, tgtInst, gs) {
+      srcInst.definitionId = 'contaminated_water';
+      srcInst.contamination = 40;
+      return {
+        message: '장마 빗물을 받았다. 오염도가 높다!',
+        consumeSrc: false, consumeTgt: false, noise: 0,
+      };
+    },
+  },
+
+  // ── E3. 빈 병 + 눈 카드 → 저오염 물 ──────────────────
+  {
+    id: 'snow_collect_bottle',
+    source: { id: 'empty_bottle' },
+    target: { id: 'env_snow' },
+    hint: '눈 녹여 물 확보',
+    canApply(srcInst) { return { ok: true }; },
+    apply(srcInst) {
+      srcInst.definitionId = 'contaminated_water';
+      srcInst.contamination = 15;
+      return {
+        message: '눈을 녹여 물을 만들었다. 약간 오염됨.',
+        consumeSrc: false, consumeTgt: false, noise: 0,
+      };
+    },
+  },
+  // ── E3r. 눈 카드 + 빈 병 (역방향) ──────────────────────
+  {
+    id: 'snow_collect_bottle_rev',
+    source: { id: 'env_snow' },
+    target: { id: 'empty_bottle' },
+    hint: '눈 녹여 물 확보',
+    canApply(srcInst) { return { ok: true }; },
+    apply(srcInst, tgtInst) {
+      tgtInst.definitionId = 'contaminated_water';
+      tgtInst.contamination = 15;
+      return {
+        message: '눈을 녹여 물을 만들었다. 약간 오염됨.',
+        consumeSrc: false, consumeTgt: false, noise: 0,
+      };
+    },
+  },
+
+  // ── E4. 캠프파이어 + 폭설 → 연료 소모 경고 ─────────────
+  {
+    id: 'blizzard_campfire_warning',
+    source: { id: 'campfire' },
+    target: { id: 'env_blizzard' },
+    hint: '눈보라 속 모닥불 — 연료 소모 증가',
+    canApply() { return { ok: true }; },
+    apply() {
+      return {
+        message: '눈보라가 불길을 약하게 한다. 연료를 더 넣어야 한다.',
+        consumeSrc: false, consumeTgt: false, noise: 0,
+      };
+    },
+  },
+
+  // ── E5. 음식 + 산성비 → 오염 경고 ──────────────────────
+  {
+    id: 'acid_rain_food_warn',
+    source: { tag: 'edible' },
+    target: { id: 'env_acid_rain' },
+    hint: '⚠️ 산성비에 노출된 음식!',
+    canApply() { return { ok: true }; },
+    apply(srcInst) {
+      srcInst.contamination = Math.min(100, (srcInst.contamination ?? 0) + 25);
+      return {
+        message: '산성비가 음식을 오염시켰다! 오염 +25.',
+        consumeSrc: false, consumeTgt: false, noise: 0,
+      };
+    },
+  },
+
+  // ── E6. 캠프파이어 + 비 → 빗물 끓이기 (깨끗한 물) ──────
+  {
+    id: 'rain_boil_campfire',
+    source: { id: 'env_rainy' },
+    target: { id: 'campfire' },
+    hint: '빗물을 끓여 깨끗한 물 1개 생산',
+    canApply(srcInst, tgtInst) {
+      if ((tgtInst.durability ?? 100) < 10) return { ok: false, reason: '모닥불 연료가 부족하다.' };
+      return { ok: true };
+    },
+    apply(srcInst, tgtInst, gs) {
+      tgtInst.durability = Math.max(0, (tgtInst.durability ?? 100) - 10);
+      const water = gs.createCardInstance('purified_water');
+      if (water) {
+        // 빈 슬롯에 배치
+        const row = gs.board.middle;
+        const emptySlot = row.indexOf(null);
+        if (emptySlot !== -1) {
+          row[emptySlot] = water.instanceId;
+        } else {
+          const row2 = gs.board.bottom;
+          const emptySlot2 = row2.indexOf(null);
+          if (emptySlot2 !== -1) row2[emptySlot2] = water.instanceId;
+        }
+      }
+      return {
+        message: '빗물을 끓여 깨끗한 물을 만들었다!',
+        consumeSrc: false, consumeTgt: false, noise: 1,
+      };
+    },
+  },
+
   // ── 10. 파이프렌치 → 근접무기 강화 ─────────────────────
   {
     id: 'reinforce_melee',

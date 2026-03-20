@@ -8,6 +8,7 @@ import StatSystem   from './StatSystem.js';
 import EndingSystem from './EndingSystem.js';
 import SkillSystem  from './SkillSystem.js';
 import DiseaseSystem from './DiseaseSystem.js';
+import BodySystem    from './BodySystem.js';
 import { rollEnemyGroup } from '../data/enemies.js';
 import BALANCE from '../data/gameBalance.js';
 
@@ -52,6 +53,7 @@ const CombatSystem = {
       enemyStatus:  [],
       _encounterData: data,
     };
+    EventBus.emit('combatStarted', {});
 
     // death_horde 엔딩 조건 추적: 이 전투의 적 수 기록
     gs.flags.lastEnemyCount = enemies.length;
@@ -247,6 +249,9 @@ const CombatSystem = {
       }
 
       damage = Math.floor(damage * (gs.player.combatDmgBonus ?? 1.0));
+      // NPC 동행 전투 보너스
+      const npcCombatMult = window.__NPCSystem__?.getCompanionCombatBonus?.() ?? 1.0;
+      damage = Math.floor(damage * npcCombatMult);
       // 사기 구간별 데미지 배율
       const moraleTier = StatSystem.getMoraleTier();
       damage = Math.floor(damage * (moraleTier.dmgMult ?? 1.0));
@@ -307,6 +312,7 @@ const CombatSystem = {
     if (success) {
       gs.combat.active  = false;
       gs.combat.outcome = 'fled';
+      EventBus.emit('combatEnd', { outcome: 'fled' });
       StateMachine.transition('combat_result', { outcome: 'fled', nodeId: gs.combat.nodeId });
     } else {
       gs.combat.log.push(I18n.t('combatSys.stealthFail'));
@@ -334,6 +340,7 @@ const CombatSystem = {
         });
       }
 
+      EventBus.emit('combatEnd', { outcome: 'fled' });
       StateMachine.transition('combat_result', { outcome: 'fled', nodeId: gs.combat.nodeId });
     } else {
       // 도주 실패: 모든 적이 강화 공격 (1.5배 데미지)
@@ -387,7 +394,9 @@ const CombatSystem = {
         if (!enemy._skillCooldowns) enemy._skillCooldowns = {};
         enemy._skillCooldowns[skill.id] = skill.cooldown;
         gs.combat.lastHit = { target: 'player', damage: dmg, isCrit: false };
+        EventBus.emit('playerHit', { damage: dmg });
         DiseaseSystem.checkCombatInjury(dmg, gs);
+        BodySystem.onCombatHit(dmg, enemy);
         if (effectiveStunChance > 0 && Math.random() < effectiveStunChance) {
           if (!gs.combat.playerStatus.some(s => s.id === 'stun')) {
             gs.combat.playerStatus.push({ id: 'stun', name: I18n.t('combatSys.stun'), duration: 1, effect: {} });
@@ -430,9 +439,12 @@ const CombatSystem = {
 
       gs.player.hp.current = Math.max(0, gs.player.hp.current - damage);
       gs.combat.lastHit    = { target: 'player', damage, isCrit: false };
+      EventBus.emit('playerHit', { damage });
 
       // 전투 부상 체크 (출혈, 열상, 골절, 뇌진탕)
       DiseaseSystem.checkCombatInjury(damage, gs);
+      // 신체 부위별 부상 판정
+      BodySystem.onCombatHit(damage, enemy);
 
       // 방어술 XP
       SkillSystem.gainXp('defense', 1);
@@ -503,6 +515,8 @@ const CombatSystem = {
 
     // 숨겨진 요소 추적: 킬 카운터 갱신
     gs.flags.totalKills = (gs.flags.totalKills ?? 0) + 1;
+    // 생태계: 좀비 밀도 감소
+    EventBus.emit('enemyKilled', { districtId: gs.location.currentDistrict });
 
     // 처치 시 사용 무기 스킬 XP
     const weapMain = gs.player.equipped?.weapon_main;

@@ -7,9 +7,10 @@ import BoardManager from '../board/BoardManager.js';
 import I18n       from '../core/I18n.js';
 
 const ROW_CONFIG = [
-  { key: 'top',    labelKey: 'board.location',  hintKey: 'board.locationHint' },
-  { key: 'middle', labelKey: 'board.floor',      hintKey: 'board.floorHint' },
-  { key: 'bottom', labelKey: 'board.inventory',  hintKey: 'board.inventoryHint' },
+  { key: 'top',         labelKey: 'board.location',     hintKey: 'board.locationHint' },
+  { key: 'environment', labelKey: 'board.environment',  hintKey: 'board.environmentHint' },
+  { key: 'middle',      labelKey: 'board.floor',        hintKey: 'board.floorHint' },
+  { key: 'bottom',      labelKey: 'board.inventory',    hintKey: 'board.inventoryHint' },
 ];
 
 const BoardRenderer = {

@@ -47,5 +47,11 @@ const EventBus = {
 // secretEventTriggered     { event }
 // recipeUnlocked           { recipeId, recipe }
 // structureDamage          { damagePercent }
+// npcSpawned               { npcId }
+// npcTrustChanged          { npcId, oldTrust, newTrust }
+// npcRecruited             { npcId }
+// npcDismissed             { npcId }
+// openNPCDialogue          { npcId }
+// hintUnlocked             { comboId }
 
 export default EventBus;

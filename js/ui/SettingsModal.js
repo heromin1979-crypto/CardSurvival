@@ -3,6 +3,7 @@ import EventBus        from '../core/EventBus.js';
 import SettingsManager from '../core/SettingsManager.js';
 import I18n            from '../core/I18n.js';
 import SoundSystem     from '../systems/SoundSystem.js';
+import BGMSystem       from '../systems/BGMSystem.js';
 
 const SettingsModal = {
   _el: null,
@@ -36,6 +37,7 @@ const SettingsModal = {
     const lang    = SettingsManager.get('language');
     const sndOn   = SettingsManager.get('sound.enabled');
     const vol     = Math.round(SettingsManager.get('sound.volume') * 100);
+    const bgmOn   = SettingsManager.get('bgm.enabled') ?? true;
 
     this._el.innerHTML = `
       <div class="settings-box">
@@ -66,6 +68,12 @@ const SettingsModal = {
                    min="0" max="100" value="${vol}" ${sndOn ? '' : 'disabled'}>
             <span class="settings-volume-val" id="settings-vol-val">${vol}%</span>
           </div>
+          <div class="settings-sound-row">
+            <span class="settings-sound-label">${t('settings.bgm')}</span>
+            <button class="settings-toggle-btn${bgmOn ? '' : ' active'}" id="settings-bgm">
+              ${bgmOn ? t('settings.off') : t('settings.on')}
+            </button>
+          </div>
         </div>
 
         <button class="settings-done-btn" id="settings-done">${t('settings.close')}</button>
@@ -92,6 +100,14 @@ const SettingsModal = {
       const current = SettingsManager.get('sound.enabled');
       SettingsManager.set('sound.enabled', !current);
       SoundSystem.setEnabled(!current);
+      this._render();
+    });
+
+    // BGM 토글
+    this._el.querySelector('#settings-bgm')?.addEventListener('click', () => {
+      const current = SettingsManager.get('bgm.enabled') ?? true;
+      SettingsManager.set('bgm.enabled', !current);
+      if (current) BGMSystem.stop(); else BGMSystem.init();
       this._render();
     });
 

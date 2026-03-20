@@ -81,14 +81,14 @@
 }
 
 .stat-bar-name {
-  font-size: 9px;
+  font-size: var(--font-size-xs);
   text-transform: uppercase;
   letter-spacing: 1px;
   color: var(--text-dim);
 }
 
 .stat-bar-value {
-  font-size: 9px;
+  font-size: var(--font-size-xs);
   color: var(--text-secondary);
 }
 
@@ -118,6 +118,21 @@
 .stat-bar-fill.infection    { background: var(--stat-infection); }
 .stat-bar-fill.fatigue      { background: var(--stat-fatigue); }
 
+/* Mental state bars */
+.stat-divider-label {
+  font-size: 8px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-top: 6px;
+  margin-bottom: 2px;
+  padding-top: 4px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+.stat-bar-fill.mental-fill.anxiety    { background: #c09040; }
+.stat-bar-fill.mental-fill.loneliness { background: #6088b0; }
+.stat-bar-fill.mental-fill.trauma     { background: #a05060; }
+
 /* Danger states */
 .stat-bar-fill.danger { animation: dangerPulse 0.8s ease infinite; }
 .stat-bar-fill.warn   { animation: dangerPulse 1.8s ease infinite; }
@@ -131,7 +146,7 @@
 }
 
 .noise-label {
-  font-size: 9px;
+  font-size: var(--font-size-xs);
   text-transform: uppercase;
   letter-spacing: 1px;
   color: var(--text-dim);

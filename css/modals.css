@@ -254,3 +254,201 @@
   from { opacity: 1; }
   to   { opacity: 0; transform: translateX(20px); }
 }
+
+/* ═══════════════════════════════════════════════════════════
+   Quick Craft Prompt (카드 겹치기 제작 팝업)
+   ═══════════════════════════════════════════════════════════ */
+
+.quick-craft-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  z-index: var(--z-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: qcFadeIn 0.15s ease;
+}
+
+@keyframes qcFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.quick-craft-panel {
+  background: var(--bg-surface);
+  border: 1px solid rgba(200, 160, 96, 0.4);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+  min-width: 280px;
+  max-width: 400px;
+  width: 90%;
+  max-height: 70vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: qcSlideUp 0.2s ease;
+}
+
+@keyframes qcSlideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+
+.qc-title {
+  font-size: var(--font-size-base);
+  color: var(--accent-primary);
+  font-weight: bold;
+  text-align: center;
+  letter-spacing: 1px;
+}
+
+.qc-recipes {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.qc-recipe {
+  background: var(--bg-raised);
+  border: 1px solid var(--border-dim);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.qc-recipe.qc-ready {
+  border-color: rgba(100, 180, 100, 0.4);
+  background: rgba(50, 80, 50, 0.15);
+}
+
+.qc-recipe-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.qc-recipe-name {
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+  font-weight: bold;
+}
+
+.qc-recipe-tp {
+  font-size: 10px;
+  color: var(--text-dim);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+.qc-recipe-output {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.qc-output-item {
+  font-size: var(--font-size-xs);
+  color: var(--text-good);
+  background: rgba(96, 176, 96, 0.1);
+  padding: 2px 6px;
+  border-radius: 3px;
+  border: 1px solid rgba(96, 176, 96, 0.2);
+}
+
+.qc-missing {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+}
+
+.qc-missing-label {
+  font-size: 9px;
+  color: var(--text-warn);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.qc-missing-item {
+  font-size: 9px;
+  color: var(--text-danger);
+  background: rgba(200, 50, 50, 0.1);
+  padding: 1px 5px;
+  border-radius: 2px;
+}
+
+.qc-recipe-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+.qc-craft-btn {
+  padding: 5px 14px;
+  border: 1px solid rgba(100, 180, 100, 0.4);
+  border-radius: var(--radius-sm);
+  background: rgba(50, 100, 50, 0.2);
+  color: var(--text-good);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.qc-craft-btn:hover:not(.disabled) {
+  background: rgba(50, 120, 50, 0.3);
+  border-color: var(--text-good);
+}
+
+.qc-craft-btn.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  color: var(--text-dim);
+  border-color: var(--border-dim);
+  background: transparent;
+}
+
+.qc-detail-btn {
+  padding: 5px 10px;
+  border: 1px solid var(--border-dim);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.qc-detail-btn:hover {
+  border-color: var(--accent-dim);
+  color: var(--accent-primary);
+}
+
+.qc-close-btn {
+  padding: 6px 16px;
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius-sm);
+  background: var(--bg-raised);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  align-self: center;
+  transition: all var(--transition-fast);
+}
+
+.qc-close-btn:hover {
+  border-color: var(--accent-dim);
+  color: var(--text-primary);
+}

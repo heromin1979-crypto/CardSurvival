@@ -52,6 +52,23 @@ const StatRenderer = {
         </div>
       </div>
     `;
+    const mentalBarHTML = `
+      <div class="stat-divider-label">${I18n.t('mental.sectionLabel')}</div>
+      ${['anxiety','loneliness','trauma'].map(key => {
+        const icon = key === 'anxiety' ? '😟' : key === 'loneliness' ? '😔' : '💔';
+        return `
+        <div class="stat-bar-group ${key}" id="statbar-${key}">
+          <div class="stat-bar-label">
+            <span class="stat-bar-name">${icon} ${I18n.t('mental.' + key)}</span>
+            <span class="stat-bar-value" id="statval-${key}">0</span>
+          </div>
+          <div class="stat-bar-track">
+            <div class="stat-bar-fill mental-fill ${key}" id="statfill-${key}" style="width:0%"></div>
+          </div>
+        </div>`;
+      }).join('')}
+    `;
+
     statsDiv.innerHTML = hpBarHTML + STAT_CONFIG.map(s => `
       <div class="stat-bar-group ${s.key}" id="statbar-${s.key}">
         <div class="stat-bar-label">
@@ -62,7 +79,7 @@ const StatRenderer = {
           <div class="stat-bar-fill ${s.key}" id="statfill-${s.key}" style="width:0%"></div>
         </div>
       </div>
-    `).join('');
+    `).join('') + mentalBarHTML;
   },
 
   render() {
@@ -111,6 +128,24 @@ const StatRenderer = {
       hpFill.classList.remove('danger', 'warn');
       if (pct < 25) hpFill.classList.add('danger');
       else if (pct < 50) hpFill.classList.add('warn');
+    }
+
+    // Mental state bars (anxiety, loneliness, trauma)
+    const mental = gs.mental;
+    if (mental) {
+      for (const key of ['anxiety', 'loneliness', 'trauma']) {
+        const val  = Math.round(mental[key] ?? 0);
+        const pct  = Math.max(0, Math.min(100, val));
+        const fill = document.getElementById(`statfill-${key}`);
+        const vEl  = document.getElementById(`statval-${key}`);
+        if (fill) {
+          fill.style.width = pct + '%';
+          fill.classList.remove('danger', 'warn');
+          if (pct > 70) fill.classList.add('danger');
+          else if (pct > 40) fill.classList.add('warn');
+        }
+        if (vEl) vEl.textContent = val;
+      }
     }
 
     // Day/hour display

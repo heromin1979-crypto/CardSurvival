@@ -4,6 +4,7 @@
 
 import EventBus  from '../core/EventBus.js';
 import GameState from '../core/GameState.js';
+import { WEATHER_TO_ENV_CARD } from '../data/items_environment.js';
 
 // ── 계절별 날씨 테이블 ─────────────────────────────────────────
 
@@ -101,6 +102,9 @@ const WeatherSystem = {
       }
     }
 
+    // 환경 카드 TP 틱
+    this._tickEnvironmentCards(gs);
+
     // TP 카운트다운 → 날씨 변경
     gs.weather.tpRemaining--;
     if (gs.weather.tpRemaining <= 0) {
@@ -118,6 +122,8 @@ const WeatherSystem = {
     Object.assign(gs.weather, w);
     gs.weather.tpRemaining = this._rollDuration();
     gs.weather.tempJitter  = parseFloat((Math.random() * 4 - 2).toFixed(1));
+    // 환경 보드 행이 있으면 카드 동기화
+    if (gs.board?.environment) this._syncEnvironmentCard(gs);
   },
 
   _changeWeather(gs) {
@@ -134,6 +140,7 @@ const WeatherSystem = {
       EventBus.emit('notify', { message: `🌤 날씨 변화: ${w.icon} ${w.name}`, type: 'info' });
     }
 
+    this._syncEnvironmentCard(gs);
     EventBus.emit('weatherChanged', { weather: gs.weather });
     this._updateWeatherHUD(gs.weather);
     this._updateTemperatureHUD(this.getOutdoorTemperature());
@@ -202,10 +209,64 @@ const WeatherSystem = {
     el.className = cls;
   },
 
+  // ── 환경 카드 동기화 ─────────────────────────────────────────
+
+  _syncEnvironmentCard(gs) {
+    const envCardId = WEATHER_TO_ENV_CARD[gs.weather.id];
+    if (!envCardId) return;
+
+    // environment 행 slot 0 = 날씨 카드
+    const envRow = gs.board.environment;
+    const oldId  = envRow[0];
+
+    // 기존 날씨 카드 제거
+    if (oldId && gs.cards[oldId]) {
+      delete gs.cards[oldId];
+      envRow[0] = null;
+    }
+
+    // 새 날씨 카드 생성·배치
+    const inst = gs.createCardInstance(envCardId, {
+      _envTpRemaining: gs.weather.tpRemaining,
+      _envTpTotal:     gs.weather.tpRemaining,
+    });
+    if (inst) {
+      envRow[0] = inst.instanceId;
+      EventBus.emit('boardChanged', {});
+    }
+  },
+
+  // environment 카드의 남은 시간을 매 TP 갱신
+  _tickEnvironmentCards(gs) {
+    // 날씨 카드(slot 0) — tpRemaining 동기화
+    const weatherInstId = gs.board.environment[0];
+    if (weatherInstId && gs.cards[weatherInstId]) {
+      gs.cards[weatherInstId]._envTpRemaining = gs.weather.tpRemaining;
+    }
+
+    // 이벤트 카드(slot 1, 2) — duration 카운트다운
+    for (let i = 1; i <= 2; i++) {
+      const evtId = gs.board.environment[i];
+      if (!evtId || !gs.cards[evtId]) continue;
+      const evtInst = gs.cards[evtId];
+      evtInst._envTpRemaining = (evtInst._envTpRemaining ?? 0) - 1;
+      if (evtInst._envTpRemaining <= 0) {
+        // 이벤트 카드 만료 — 자동 제거
+        delete gs.cards[evtId];
+        gs.board.environment[i] = null;
+        EventBus.emit('boardChanged', {});
+      }
+    }
+  },
+
   // Basecamp 입장 시 표시 갱신용
   renderHUD() {
     const gs = GameState;
     if (!gs.weather) this._initWeather(gs);
+    // 환경 카드가 아직 없으면 동기화 (게임 시작·로드 시)
+    if (gs.board?.environment && !gs.board.environment[0]) {
+      this._syncEnvironmentCard(gs);
+    }
     this._updateWeatherHUD(gs.weather);
     this._updateTemperatureHUD(this.getOutdoorTemperature());
   },

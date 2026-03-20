@@ -4,6 +4,24 @@ import GameState       from '../core/GameState.js';
 import EquipmentSystem from '../systems/EquipmentSystem.js';
 import I18n            from '../core/I18n.js';
 
+// ── 부상 타입 → 이모지 매핑 ────────────────────────────────────
+const INJURY_ICONS = {
+  bleeding:   '\uD83E\uDE78',  // 🩸
+  fracture:   '\uD83E\uDDB4',  // 🦴
+  laceration: '\uD83D\uDD2A',  // 🔪
+  concussion: '\uD83D\uDCAB',  // 💫
+};
+
+// ── 부위 키 → 다이어그램 위치 메타 ──────────────────────────────
+const BODY_PARTS = [
+  { key: 'head',     gridArea: 'bp-head'  },
+  { key: 'leftArm',  gridArea: 'bp-larm'  },
+  { key: 'torso',    gridArea: 'bp-torso' },
+  { key: 'rightArm', gridArea: 'bp-rarm'  },
+  { key: 'leftLeg',  gridArea: 'bp-lleg'  },
+  { key: 'rightLeg', gridArea: 'bp-rleg'  },
+];
+
 const SLOT_META = {
   head:        { i18nKey: 'equip.head',       icon: '⛑️',  row: 1 },
   face:        { i18nKey: 'equip.face',       icon: '😷',  row: 2, col: 'left' },
@@ -27,11 +45,12 @@ function slotLabel(slotId) {
 const TAB_KEYS = ['equip.tabArmor', 'equip.tabWeapons', 'equip.tabBags', 'equip.tabInventory'];
 
 const EquipmentModal = {
-  _initialized: false,
-  _overlay:     null,
-  _selectedId:  null,
-  _activeTab:   0,
-  _slotMenuId:  null,
+  _initialized:    false,
+  _overlay:        null,
+  _selectedId:     null,
+  _activeTab:      0,
+  _slotMenuId:     null,
+  _bodyDetailPart: null,   // 클릭된 신체 부위 키 (상세 팝업용)
 
   init() {
     // _overlay는 Basecamp가 매번 DOM을 재빌드하므로 항상 새로 캐시
@@ -66,6 +85,7 @@ const EquipmentModal = {
     if (!this._initialized) this.init();
     this._selectedId = null;
     this._slotMenuId = null;
+    this._bodyDetailPart = null;
     this._render();
     this._overlay?.classList.add('open');
   },
@@ -74,6 +94,7 @@ const EquipmentModal = {
     this._overlay?.classList.remove('open');
     this._selectedId = null;
     this._slotMenuId = null;
+    this._bodyDetailPart = null;
   },
 
   // ── 렌더링 ───────────────────────────────────────────
@@ -88,7 +109,10 @@ const EquipmentModal = {
         <button class="equip-modal-close" id="equip-close-btn">${I18n.t('equip.close')}</button>
       </div>
       <div class="equip-modal-body">
-        ${this._renderEffectsPanel()}
+        <div class="equip-left-col">
+          ${this._renderEffectsPanel()}
+          ${this._renderBodyDiagram()}
+        </div>
         ${this._renderCharPanel()}
         ${this._renderInvPanel()}
       </div>
@@ -98,6 +122,7 @@ const EquipmentModal = {
     this._bindSlotEvents(box);
     this._bindInvEvents(box);
     this._bindTabEvents(box);
+    this._bindBodyEvents(box);
   },
 
   // ── 효과 패널 (왼쪽) ─────────────────────────────────
@@ -243,6 +268,135 @@ const EquipmentModal = {
         ${durPct ? `<div class="equip-mini-dur">${durPct}</div>` : ''}
       </div>
     `;
+  },
+
+  // ── 신체 다이어그램 ─────────────────────────────────
+
+  _getBodySystem() {
+    return window.__BodySystem__ ?? null;
+  },
+
+  _renderBodyDiagram() {
+    const bs = this._getBodySystem();
+    if (bs) bs.ensureInitialized();
+    const body = GameState.body;
+    if (!body) return '';
+
+    const partsHtml = BODY_PARTS.map(({ key, gridArea }) => {
+      const part = body[key];
+      if (!part) return '';
+      const hp = Math.round(part.hp);
+      const colorCls = hp > 70 ? 'hp-good' : hp > 40 ? 'hp-warn' : hp > 20 ? 'hp-orange' : 'hp-crit';
+      const injuryIcons = part.injuries.map(inj => {
+        const icon = INJURY_ICONS[inj.type] ?? '?';
+        const dots = '\u2022'.repeat(Math.min(3, Math.max(1, Math.ceil(inj.severity))));
+        return `<span class="body-injury-icon" title="${I18n.t('body.injury.' + inj.type)}">${icon}<sub>${dots}</sub></span>`;
+      }).join('');
+      const isActive = this._bodyDetailPart === key;
+
+      return `
+        <div class="body-part ${colorCls}${isActive ? ' active' : ''}" style="grid-area:${gridArea}" data-bodypart="${key}">
+          <div class="body-part-name">${I18n.t('body.' + key)}</div>
+          <div class="body-part-hp">${hp}%</div>
+          ${injuryIcons ? `<div class="body-part-injuries">${injuryIcons}</div>` : ''}
+        </div>`;
+    }).join('');
+
+    // 신체 효과 요약
+    const effects = bs ? bs.getEffects() : null;
+    const effectRows = this._buildBodyEffectRows(effects);
+
+    // 상세 팝업
+    const detailHtml = this._bodyDetailPart ? this._renderBodyDetail(this._bodyDetailPart) : '';
+
+    return `
+      <div class="body-diagram-section">
+        <div class="body-diagram-title">${I18n.t('body.statusTitle')}</div>
+        <div class="body-diagram-grid">
+          ${partsHtml}
+        </div>
+        ${effectRows}
+        ${detailHtml}
+      </div>
+    `;
+  },
+
+  _buildBodyEffectRows(effects) {
+    if (!effects) return '';
+    const rows = [];
+    if (effects.accuracyPenalty > 0) {
+      rows.push({ label: I18n.t('body.effectAccuracy', { val: `-${Math.round(effects.accuracyPenalty * 100)}` }), cls: 'warn' });
+    }
+    if (effects.fatigueMult > 1.0) {
+      rows.push({ label: I18n.t('body.effectFatigue', { val: effects.fatigueMult.toFixed(1) }), cls: 'warn' });
+    }
+    if (effects.carryPenalty > 0) {
+      rows.push({ label: I18n.t('body.effectCarry', { val: `-${Math.round(effects.carryPenalty * 100)}` }), cls: 'warn' });
+    }
+    if (effects.damagePenalty > 0) {
+      rows.push({ label: I18n.t('body.effectDamage', { val: `-${Math.round(effects.damagePenalty * 100)}` }), cls: 'warn' });
+    }
+    if (effects.moveTpExtra > 0) {
+      rows.push({ label: I18n.t('body.effectMove', { val: effects.moveTpExtra }), cls: 'warn' });
+    }
+    if (effects.fleePenalty > 0) {
+      rows.push({ label: I18n.t('body.effectFlee', { val: `-${Math.round(effects.fleePenalty * 100)}` }), cls: 'warn' });
+    }
+
+    if (rows.length === 0) return '';
+
+    return `
+      <div class="body-effects-list">
+        ${rows.map(r => `<div class="body-effect-row ${r.cls}">${r.label}</div>`).join('')}
+      </div>`;
+  },
+
+  _renderBodyDetail(partKey) {
+    const part = GameState.body?.[partKey];
+    if (!part) return '';
+
+    const isDoctor = GameState.player.characterId === 'doctor';
+    const partName = I18n.t('body.' + partKey);
+    const hp = Math.round(part.hp);
+
+    let injuriesHtml = '';
+    if (part.injuries.length === 0) {
+      injuriesHtml = `<div class="body-detail-normal">${I18n.t('body.noInjury')}</div>`;
+    } else {
+      injuriesHtml = part.injuries.map(inj => {
+        const icon = INJURY_ICONS[inj.type] ?? '?';
+        const sevKey = `body.severity${Math.min(3, Math.max(1, Math.ceil(inj.severity)))}`;
+        const typeName = I18n.t('body.injury.' + inj.type);
+        const sevName = I18n.t(sevKey);
+        const tpLeft = I18n.t('body.tpRemaining', { tp: inj.tpRemaining });
+        const canTreat = isDoctor && inj.severity >= 3;
+        return `
+          <div class="body-detail-injury">
+            <span class="body-detail-icon">${icon}</span>
+            <span class="body-detail-info">
+              <span class="body-detail-type">${typeName} (${sevName})</span>
+              <span class="body-detail-tp">${tpLeft}</span>
+            </span>
+            ${canTreat ? `<span class="body-detail-treat">${I18n.t('body.doctorHeal')}</span>` : ''}
+          </div>`;
+      }).join('');
+    }
+
+    return `
+      <div class="body-detail-popup">
+        <div class="body-detail-header">${partName} — ${I18n.t('body.hpLabel', { current: hp })}</div>
+        ${injuriesHtml}
+      </div>`;
+  },
+
+  _bindBodyEvents(box) {
+    box.querySelectorAll('.body-part').forEach(el => {
+      el.addEventListener('click', () => {
+        const key = el.dataset.bodypart;
+        this._bodyDetailPart = this._bodyDetailPart === key ? null : key;
+        this._render();
+      });
+    });
   },
 
   // ── 인벤토리 패널 (오른쪽) ──────────────────────────

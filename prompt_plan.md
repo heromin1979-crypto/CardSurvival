@@ -1,509 +1,1850 @@
-# 이지수(의사) 100일 생존 플랜
+# 카드 서바이벌 시스템 확장 — 세부 기획서
 
-> 최종 업데이트: 2026-03-19
-> 유형: 게임플레이 전략 (코드 구현 아님)
-> 이전 개발 기록은 하단 아카이브 참조
-
----
-
-## 캐릭터 분석: 이지수 (응급의학과 전문의)
-
-| 항목 | 수치 | 평가 |
-|------|------|------|
-| HP | 95 | ★★☆ 낮음 |
-| 근력 | 58 | ★★☆ 낮음 |
-| 인내심 | 72 | ★★★ 보통 |
-| 최대 적재량 | 32kg | ★★☆ 낮음 |
-| 스태미나 | ~84 | ★★★ 보통 |
-
-### 특성 (강점)
-- **외상 전문가**: 의료 아이템 치료 +50% → 붕대 하나로도 큰 회복
-- **임상 지식**: 감염 진행 -35% → 질병 관리에 압도적 유리
-- **응급 처치**: 붕대 HP +5 추가 → 붕대가 사실상 응급키트급
-- **시작 아이템**: 붕대, 소독약 → 최소 키트 (나머지는 바닥에서 발견)
-
-### 약점
-- **전투 스킬 0**: 근접/원거리/비무장 모두 없음 → 초반 전투 극히 위험
-- **낮은 근력(58)**: 데미지 낮음, 무거운 장비 패널티
-- **낮은 적재량(32)**: 물자 수송 제한 → 배낭 제작 시급
-- **시작 무기 없음**: 맨손 전투 (데미지 3~7) → 바닥 아이템 수집 + 무기 확보 최우선
-
-### 시작 스킬
-- 의료 Lv.4 (최상) → 치료 효율 극대화
-- 탐색 Lv.2 → 아이템 발견 보너스
+> 최종 업데이트: 2026-03-20
+> 유형: 게임 시스템 설계 (카드 서바이벌: 몽환의 숲 분석 기반)
+> 기반 분석: 카드 서바이벌 시리즈의 "발견의 쾌감" + "시스템 간 창발적 상호작용" 재미 요소
+> 이전 계획은 하단 아카이브 참조
 
 ---
 
-## 시작 위치: 강남구 (🏥)
+## 설계 원칙
 
-| 항목 | 수치 |
-|------|------|
-| 위험도 | 3 |
-| 조우 확률 | 35% |
-| 방사능 | 0 |
-| 주요 루팅 | 의료용품 (응급키트, 붕대, 소독약) |
-| 랜드마크 | 삼성서울병원 |
+모든 기능은 다음 3가지 원칙을 따른다:
 
-**강남은 의사에게 최적의 시작 위치.** 삼성서울병원에서 의료 물자를 풍부하게 수급 가능. 방사능 0이라 안전. 다만 조우 확률 35%는 무기 없는 초반에 위험.
+1. **카드가 곧 세계다** — 시스템 내부에 숨겨진 수치를 카드로 꺼내어 플레이어가 직접 조작할 수 있게 한다
+2. **실험과 발견** — 명시적 설명서 없이 드래그&드롭으로 "이것도 되나?" 시도를 유도한다
+3. **시스템 간 연쇄 반응** — 하나의 행동이 예상치 못한 다른 시스템에 영향을 미친다
 
 ---
 
-## 100일 타임라인: 핵심 이벤트
+## Feature 1: 날씨/이벤트 카드 시각화
 
-| 일차 | 이벤트 | 영향 | 대응 |
-|------|--------|------|------|
-| **D1** | 게임 시작 (봄) | 기온 13°C, 감염 1.5배 | 강남 삼성병원 탐색 |
-| **D7** | 🌧️ 봄비 | 음식 오염 +10 | 퀘스트: 깨끗한 물 5개 (D21까지) |
-| **D12** | ⚠️ 레이드 시작 | 0.3%/TP 기습 확률 | 방어시설 필수 |
-| **D14** | 🌿 꽃가루 시즌 | 감염 +5 | 퀘스트: 방진마스크 착용 (D24까지) |
-| **D30** | ☀️ 봄 온기 | 사기 +5 | 안정기 — 원정 시작 |
-| **D91** | 🔥 여름 시작 | 수분 감소 1.5배! | 물 10개 비축 (D111까지) |
-| **D100** | 📍 플랜 종료 | 여름 초반 | 다음 80일 계획 수립 |
+### 개요
+
+현재 날씨와 계절 이벤트는 HUD 배지 + 알림으로만 표시된다. 이를 **보드 위의 카드**로 만들어 플레이어가 직접 상호작용할 수 있게 한다.
+
+> 비유: 현재는 "비가 온다"는 자막이 뜨는 영화. 개선 후에는 "빗방울 카드"를 빈 병에 드래그하면 빗물이 채워지는 체험.
+
+### 핵심 재미
+
+- 날씨 카드와 아이템 카드의 **조합 가능성** → 발견의 쾌감
+- 위험한 날씨 카드의 **물리적 존재감** → 긴장감 상승
+- 날씨를 "대응"이 아닌 "활용"하는 전략적 선택지 증가
+
+### 데이터 구조
+
+```javascript
+// items_environment.js (신규 파일)
+const ENVIRONMENT_CARDS = {
+  weather_rain: {
+    id: 'weather_rain',
+    name: '비',
+    type: 'environment',
+    subtype: 'weather',
+    icon: '🌧️',
+    description: '하늘에서 비가 내린다. 빈 용기에 담을 수 있다.',
+    weight: 0,
+    stackable: false,
+    draggable: false,      // 환경 카드는 위치 고정
+    tags: ['weather', 'water_source'],
+    duration: null,         // WeatherSystem.tpRemaining과 동기화
+    effects: {
+      contaminateRisk: 0.004,  // 기존 weather 데이터와 동일
+      tempMod: -0.1
+    }
+  },
+  weather_hot: {
+    id: 'weather_hot',
+    name: '폭염',
+    type: 'environment',
+    subtype: 'weather',
+    icon: '🌡️',
+    tags: ['weather', 'heat'],
+    effects: { tempMod: +0.4 }
+  },
+  weather_storm: {
+    id: 'weather_storm',
+    name: '뇌우',
+    type: 'environment',
+    subtype: 'weather',
+    icon: '🌩️',
+    tags: ['weather', 'danger'],
+    effects: { tempMod: -0.2, encounterReduce: 0.20 }
+  },
+  weather_snow: {
+    id: 'weather_snow',
+    name: '눈',
+    type: 'environment',
+    subtype: 'weather',
+    icon: '🌨️',
+    tags: ['weather', 'cold', 'water_source'],
+    effects: { tempMod: -0.4 }
+  },
+  weather_blizzard: {
+    id: 'weather_blizzard',
+    name: '눈보라',
+    type: 'environment',
+    subtype: 'weather',
+    icon: '⛄',
+    tags: ['weather', 'cold', 'danger'],
+    effects: { tempMod: -0.6, encounterReduce: 0.30 }
+  },
+  weather_acid_rain: {
+    id: 'weather_acid_rain',
+    name: '산성비',
+    type: 'environment',
+    subtype: 'weather',
+    icon: '☢️',
+    tags: ['weather', 'danger', 'contamination'],
+    effects: { tempMod: -0.3, contaminateRisk: 0.01, gardenKill: true }
+  },
+  weather_monsoon: {
+    id: 'weather_monsoon',
+    name: '장마',
+    type: 'environment',
+    subtype: 'weather',
+    icon: '🌊',
+    tags: ['weather', 'water_source', 'danger'],
+    effects: { tempMod: -0.1, contaminateRisk: 0.008 }
+  },
+
+  // 계절 이벤트 카드 (일시적)
+  event_pollen: {
+    id: 'event_pollen',
+    name: '꽃가루',
+    type: 'environment',
+    subtype: 'event',
+    icon: '🌿',
+    tags: ['event', 'seasonal', 'infection'],
+    duration: 72,           // 1일 동안 보드에 존재
+    effects: { infection: +5 }
+  },
+  event_heatwave: {
+    id: 'event_heatwave',
+    name: '폭염 경보',
+    type: 'environment',
+    subtype: 'event',
+    icon: '🔥',
+    tags: ['event', 'seasonal', 'heat'],
+    duration: 144,          // 2일
+    effects: { temperature: +15 }
+  },
+  event_typhoon: {
+    id: 'event_typhoon',
+    name: '태풍',
+    type: 'environment',
+    subtype: 'event',
+    icon: '🌪️',
+    tags: ['event', 'seasonal', 'danger'],
+    duration: 72,
+    effects: { structureDamage: 30, morale: -10 }
+  }
+};
+```
+
+### 보드 배치 규칙
+
+```
+┌─────────────────────────────────────────────────────┐
+│ TOP ROW (4 slots)                                   │
+│ [현재 구역] [랜드마크] [인접 구역1] [인접 구역2]     │
+├─────────────────────────────────────────────────────┤
+│ ENVIRONMENT ROW (신규, 2~3 slots)                   │
+│ [날씨 카드] [이벤트 카드?] [시간대 카드?]            │
+├─────────────────────────────────────────────────────┤
+│ MIDDLE ROW (8 slots) — 바닥 아이템                   │
+│ [...기존과 동일...]                                  │
+├─────────────────────────────────────────────────────┤
+│ BOTTOM ROW (8 slots) — 인벤토리                      │
+│ [...기존과 동일...]                                  │
+├─────────────────────────────────────────────────────┤
+```
+
+**방안 A (환경 전용 행 추가)**: 기존 3행 → 4행. 환경 카드 전용 행 (2~3슬롯)
+- 장점: 보드 혼잡 방지, 환경 카드 역할 명확
+- 단점: UI 레이아웃 변경 필요
+
+**방안 B (top row 확장)**: top row를 6슬롯으로 확장, 우측 2슬롯에 환경 카드 배치
+- 장점: 행 추가 없이 가능
+- 단점: top row가 복잡해짐
+
+**추천: 방안 A** — 환경 카드는 독립적 존재감이 있어야 인터랙션 유도됨
+
+### 카드 인터랙션 규칙 (interactions.js 추가)
+
+```javascript
+// 날씨 카드 → 아이템 카드 드래그 인터랙션
+const WEATHER_INTERACTIONS = [
+  // 비 + 빈 병 → 빗물
+  {
+    id: 'rain_collect_bottle',
+    source: { id: 'empty_bottle' },
+    target: { id: 'weather_rain' },
+    hint: '빗물 수집 → 오염된 물',
+    apply: (src, tgt, gs) => ({
+      message: '빈 병에 빗물을 받았다.',
+      transformSrc: 'contaminated_water',
+      consumeTgt: false  // 날씨 카드는 소모 안 됨
+    })
+  },
+  // 비 + 정수기 → 깨끗한 물 보너스 (기존 자동 효과를 명시적 인터랙션으로)
+  {
+    id: 'rain_purifier',
+    source: { id: 'water_purifier' },
+    target: { id: 'weather_rain' },
+    hint: '정수기 빗물 수집 가속',
+    apply: (src, tgt, gs) => ({
+      message: '정수기가 빗물을 처리 중. 깨끗한 물 +2.',
+      spawnCards: [{ definitionId: 'purified_water', qty: 2 }],
+      consumeTgt: false
+    })
+  },
+  // 눈 + 빈 병 → 눈물 (낮은 오염)
+  {
+    id: 'snow_collect',
+    source: { id: 'empty_bottle' },
+    target: { id: 'weather_snow' },
+    hint: '눈 녹여 물 확보',
+    apply: (src, tgt, gs) => ({
+      message: '눈을 녹여 물을 만들었다. 약간 오염됨.',
+      transformSrc: 'contaminated_water',
+      setContamination: 15,  // 비(40)보다 낮은 오염
+      consumeTgt: false
+    })
+  },
+  // 폭염 + 젖은 천 → 냉각 효과 (임시 체온 감소)
+  {
+    id: 'heat_wet_cloth',
+    source: { tag: 'cloth' },
+    target: { id: 'weather_hot' },
+    hint: '천을 적셔 몸 식히기',
+    canApply: (src, tgt) => ({ ok: true }),
+    apply: (src, tgt, gs) => ({
+      message: '젖은 천으로 몸을 식혔다. 체온 -5.',
+      statChange: { temperature: -5 },
+      consumeSrc: false,
+      consumeTgt: false
+    })
+  },
+  // 캠프파이어 + 눈보라 → 연료 소모 2배 (경고)
+  {
+    id: 'blizzard_campfire_warning',
+    source: { id: 'campfire' },
+    target: { id: 'weather_blizzard' },
+    hint: '눈보라 속 모닥불 — 연료 소모 증가',
+    apply: (src, tgt, gs) => ({
+      message: '눈보라가 불길을 약하게 한다. 연료 소모 2배.',
+      setFlag: 'campfire_weather_penalty',
+      consumeTgt: false
+    })
+  },
+  // 산성비 + 음식 → 오염 경고
+  {
+    id: 'acid_rain_food_warning',
+    source: { tag: 'edible' },
+    target: { id: 'weather_acid_rain' },
+    hint: '⚠️ 산성비에 노출된 음식!',
+    apply: (src, tgt, gs) => ({
+      message: '산성비가 음식을 오염시켰다! 오염 +30.',
+      addContamination: 30,
+      consumeTgt: false
+    })
+  }
+];
+```
+
+### 시각 디자인
+
+```
+날씨 카드 외형:
+┌──────────────────┐
+│ 🌧️ 비            │  ← 아이콘 + 이름
+│                  │
+│   ◌ ◌ ◌ ◌ ◌     │  ← 남은 시간 도트 (tpRemaining 비례)
+│                  │
+│  💧 수집 가능     │  ← 인터랙션 힌트 (hover)
+│                  │
+│  [───────60%──]  │  ← 지속시간 바 (날씨 잔여)
+└──────────────────┘
+
+이벤트 카드 외형 (임시):
+┌──────────────────┐
+│ 🌪️ 태풍    ⚠️   │  ← 위험 배지
+│                  │
+│  2일간 지속      │
+│  구조물 내구 -30  │  ← 효과 설명
+│                  │
+│  [█████████100%] │  ← 남은 시간 바 (빨간색)
+└──────────────────┘
+```
+
+### 구현 순서
+
+1. `items_environment.js` 데이터 파일 생성
+2. `GameState.board`에 environment 행 추가 (2~3슬롯)
+3. `BoardRenderer.js` 환경 행 렌더링 추가
+4. `WeatherSystem.js`에서 날씨 변경 시 환경 카드 생성/교체
+5. `SeasonSystem.js`에서 이벤트 발생 시 이벤트 카드 생성 (duration 후 자동 제거)
+6. `interactions.js`에 날씨 인터랙션 규칙 추가
+7. `CardFactory.js`에 environment 카드 렌더링 로직 추가
+8. CSS 환경 카드 스타일
+
+### 밸런스 고려
+
+- 날씨 카드 인터랙션은 **기존 자동 효과를 대체하지 않고 보너스를 추가**
+- 예: 정수기의 자동 빗물 수집은 유지, 날씨 카드 인터랙션은 추가 보너스
+- 위험 날씨(산성비, 눈보라)의 카드 존재감이 긴장감을 자연스럽게 전달
 
 ---
 
-## Phase 1: 생존 기반 확보 (D1~D7)
+## Feature 2: 직관적 카드 조합 크래프팅
 
-> 비유: 비행기가 추락했을 때 첫 72시간이 생사를 결정한다.
-> 첫 7일은 물·불·은신처를 확보하는 '골든 타임'이다.
+### 개요
 
-### 목표
-1. 삼성서울병원 탐색 → 의료 물자 대량 확보
-2. 기본 생존 소재 수집 (고철, 천, 로프, 나무)
-3. 캠프파이어 제작 (고철1 + 천1) → 체온 관리
-4. 무기 확보 (루팅 또는 제작)
-5. 물 정제 수단 확보
+현재 제작 시스템은 블루프린트 메뉴에서 레시피를 선택하는 방식. 이를 **카드를 직접 겹치면 가능한 조합이 표시**되는 방식으로 보강한다.
 
-### 일별 행동 계획
+> 비유: 현재는 "요리책을 펼쳐서 레시피를 고르는 것". 개선 후에는 "냉장고에서 재료를 꺼내 도마 위에 올려놓으면 만들 수 있는 요리가 떠오르는 것".
 
-**D1 (72 TP)**
-| 시간대 | 행동 | TP | 비고 |
-|--------|------|-----|------|
-| 오전 | 강남구 탐색 ×3 | 3 | 첫 방문 = 풀 루팅 (의료용품 기대) |
-| 오전 | 삼성서울병원 세부장소 탐색 ×4 | 4 | 응급실, 약국, 연구실, 창고 |
-| 오후 | 인벤토리 정리 | 0 | 핵심 아이템 선별, 불필요 해체 |
-| 오후 | 캠프파이어 제작 시도 | 1~2 | 고철+천 있으면 즉시 |
-| 저녁 | 대기 (체력 회복) | 나머지 | 스태미나·피로 관리 |
+### 핵심 재미
 
-> **핵심 전략**: 전투 회피 우선. 조우 시 도주 선택 (성공률 60%).
-> 도주 실패 시 맨손 전투 — 붕대로 즉시 치료 (50% 보너스로 효율적).
+- "이것과 저것을 합치면 뭐가 될까?" → 탐험적 크래프팅
+- 블루프린트를 모르더라도 **우연한 발견** 가능
+- 기존 메뉴 기반 제작과 **공존** (둘 다 사용 가능)
 
-**D2~D3: 강남 심층 탐색**
-- 삼성서울병원 나머지 세부 장소 순회
-- 재방문 루팅 감소 (70%→45%) 고려하여 미방문 장소 우선
-- 수집 목표: 붕대 4+, 소독약 2+, 정수 정제 2+, 천 3+
-- 무기 루팅 기대: 야구방망이, 나이프 → 없으면 D4에 제작
+### 게임플레이 흐름
 
-**D4~D5: 소재 수집 + 첫 제작**
-- 캠프파이어 미완성 시 최우선 제작
-- 붕대 제작 (천조각×2 → 붕대 2개) — 의료 스킬로 효율 극대
-- 나이프 또는 야구방망이 확보/제작 → 전투력 확보
-- 배낭 재료 탐색 시작 (천3, 가죽1, 로프1)
+```
+1. 플레이어가 카드 A를 카드 B 위에 드래그
+2. DragDrop._onDragOver()에서 조합 가능성 체크
+3. 가능한 레시피가 있으면:
+   a. 슬롯에 '✨' 이펙트 + 레시피 이름 힌트 표시
+   b. 드롭하면 "퀵 크래프트" 프롬프트 팝업
+   c. 프롬프트에서 확인 → 즉시 제작 시작 (기존 CraftSystem.startBlueprint 호출)
+4. 가능한 레시피가 없으면:
+   a. 기존 interactions.js 규칙 체크 (스택, 변환 등)
+   b. 없으면 일반 이동/교환
+```
 
-**D6~D7: 봄비 대비**
-- 깨끗한 물 확보 시작 (정수 정제 사용 또는 끓인 물)
-- D7 봄비 이벤트: 음식 오염 +10 → 오염된 음식 섭취 주의
-- 퀘스트 자동 시작: "깨끗한 물 5개" (D21 마감)
+### 시스템 설계
 
-### Phase 1 체크리스트
-- [ ] 캠프파이어 설치 (체온 관리)
-- [ ] 근접 무기 1개 이상 확보
-- [ ] 붕대 4개+ 비축
-- [ ] 깨끗한 물 2개+ 확보
-- [ ] 의료 스킬 XP 축적 (치료 시마다 +3 XP)
+```javascript
+// CraftDiscovery.js (신규 파일)
+// 두 카드가 만났을 때 가능한 레시피를 탐색하는 시스템
+
+export function findCraftableRecipes(srcDefId, tgtDefId) {
+  const allBlueprints = window.__GAME_DATA__.blueprints;
+  const matches = [];
+
+  for (const bp of Object.values(allBlueprints)) {
+    // 모든 스테이지의 requiredItems를 평탄화
+    const allRequired = bp.stages.flatMap(s => s.requiredItems.map(r => r.definitionId));
+
+    // src와 tgt가 모두 이 레시피의 재료에 포함되는지 확인
+    const srcNeeded = allRequired.includes(srcDefId);
+    const tgtNeeded = allRequired.includes(tgtDefId);
+
+    if (srcNeeded && tgtNeeded) {
+      matches.push({
+        blueprintId: bp.id,
+        blueprintName: bp.name,
+        category: bp.category,
+        outputPreview: bp.output.map(o => o.definitionId),
+        // 나머지 부족한 재료 목록
+        missingItems: _getMissingItems(bp, [srcDefId, tgtDefId]),
+        canStartNow: false  // 아래에서 전체 재료 체크 후 설정
+      });
+    }
+  }
+
+  // 즉시 제작 가능 여부 체크 (보드 위 전체 재료 확인)
+  for (const match of matches) {
+    match.canStartNow = _checkAllMaterials(match.blueprintId);
+  }
+
+  // 즉시 제작 가능한 것을 상단으로 정렬
+  return matches.sort((a, b) => (b.canStartNow ? 1 : 0) - (a.canStartNow ? 1 : 0));
+}
+
+function _getMissingItems(blueprint, haveDefIds) {
+  // 보드 전체 + 인벤토리의 모든 아이템을 스캔하여 부족한 재료 반환
+  // ...
+}
+
+function _checkAllMaterials(blueprintId) {
+  // 기존 CraftSystem._checkStageReqs() 재활용
+  // ...
+}
+```
+
+### UI 설계: 퀵 크래프트 프롬프트
+
+```
+카드 A를 카드 B 위에 드롭했을 때:
+
+┌──────────────────────────────────┐
+│  ✨ 제작 가능!                    │
+│                                  │
+│  ┌─────┐  +  ┌─────┐  →  ┌─────┐│
+│  │천 ×2│     │로프  │     │배낭  ││
+│  └─────┘     └─────┘     └─────┘│
+│                                  │
+│  부족한 재료:                     │
+│  • 가죽 ×1 (❌ 미보유)           │
+│                                  │
+│  [제작 시작 ✅]  [취소]          │  ← canStartNow일 때만 활성화
+│  [레시피 상세 📋]                │  ← 기존 CraftUI 필터로 이동
+└──────────────────────────────────┘
+```
+
+**드래그 중 미리보기 (DragOver 상태):**
+
+```
+슬롯 하이라이트:
+┌─────────────────────┐
+│ ✨ 배낭 제작 가능    │  ← 힌트 텍스트 (반투명 오버레이)
+│  (재료 1개 부족)     │
+│                     │
+│  ┌─────┐            │
+│  │로프  │ ← 타겟 카드│
+│  └─────┘            │
+└─────────────────────┘
+```
+
+### 기존 시스템과의 통합
+
+```
+우선순위 체인 (SlotResolver.resolveInteraction):
+
+1. interactions.js 규칙 체크 (변환, 요리 등) → 있으면 즉시 적용
+2. CraftDiscovery.findCraftableRecipes() → 있으면 퀵 크래프트 프롬프트
+3. 스택 시도 (_tryStack) → 같은 카드면 합침
+4. 일반 이동 (moveCard) → 위치 교환
+```
+
+### 밸런스 고려
+
+- 퀵 크래프트는 **기존 블루프린트 메뉴의 대체가 아닌 보조 경로**
+- 스킬 요구사항, TP 비용은 동일하게 적용
+- "우연한 발견" 효과: 처음 조합을 시도하면 발견 알림 + 약간의 XP 보너스
+- 이미 발견한 레시피는 "알려진 조합" 배지 표시
 
 ---
 
-## Phase 2: 방어 구축 + 물 퀘스트 (D8~D14)
+## Feature 3: 구역별 생태계 동적 변화
 
-> 비유: 집을 지을 때 기초 공사가 가장 중요하다.
-> D12부터 레이드가 시작되니, 벽을 세우기 전에 기둥(방어시설)부터.
+### 개요
 
-### 목표
-1. 물 퀘스트 완료 (깨끗한 물 5개)
-2. 바리케이드 제작 (나무3 + 못5 + 철사1)
-3. 베이스캠프 Lv.1 업그레이드 준비
-4. 인접 안전 구역 탐색 (관악구 추천)
+현재 구역의 lootTable은 고정(방문 횟수에 따라 감소만). 이를 플레이어의 행동에 따라 **구역 상태가 동적으로 변화**하는 시스템으로 확장한다.
 
-### 핵심 전략
+> 비유: 현재는 "빈 마트에서 물건을 꺼가면 점점 비어가는 것". 개선 후에는 "좀비가 이사 오고, 다른 구역에서 물자가 흘러들고, 날씨에 따라 환경이 바뀌는 살아있는 도시".
 
-**인접 구역 탐색 우선순위:**
+### 핵심 재미
 
-| 우선도 | 구역 | 위험도 | 조우 | 이유 |
-|--------|------|--------|------|------|
-| ★★★★★ | 관악구 (🎓) | 1 | 5% | 극저 위험, 서울대 연구실 (필터, 의료품) |
-| ★★★★☆ | 동작구 | 2 | 15% | 보통 위험, 다양한 물자 |
-| ★★★☆☆ | 서초구 | 3 | 30% | 식량·소재 루팅 |
-| ★★☆☆☆ | 송파구 (🗼) | 3 | 30% | 롯데타워 (식량), 거리 있음 |
+- 구역을 "소모하는 것"에서 "관리하는 것"으로 전환
+- 플레이어 행동의 장기적 결과를 체감
+- 구역 간 연쇄 효과 → 전략적 루트 계획
 
-> **관악구를 최우선 탐색.** 조우 확률 5%로 무기 없어도 안전하고, 서울대 연구실에서 의료·과학 장비 획득 가능.
+### 생태계 상태 모델
 
-**D8~D10: 관악구 원정**
-- 이동: 강남 → 관악 (2 TP, 스태미나 10 소모)
-- 관악구 풀 탐색 (첫 방문 = 풀 루팅)
-- 서울대 연구실 세부 장소 4~6곳 탐색
-- 기대 루팅: 정수 필터, 의료 소재, 전자부품
-- 탐색 후 강남 복귀 → 물건 정리
+```javascript
+// GameState.ecology (신규 필드)
+ecology: {
+  // 구역별 생태계 상태
+  districts: {
+    gangnam: {
+      zombiePopulation: 50,    // 좀비 밀도 (0~100), 초기값 = dangerLevel × 15
+      resourceLevel: 100,      // 자원 잔여량 (0~100), 탐색할 때마다 감소
+      noiseAttraction: 0,      // 소음으로 인한 좀비 유인량 (매 TP 감쇠)
+      contamination: 0,        // 구역 오염도 (0~100), 방사능/산성비 누적
+      barricadeLevel: 0,       // 플레이어가 설치한 방어 시설 효과
+      lastVisitDay: 0,         // 마지막 방문일
+      events: []               // 현재 활성 구역 이벤트
+    },
+    // ... 25개 구
+  },
 
-**D11~D12: 방어 시설 구축**
-- 바리케이드 제작 (나무3 + 못5 + 철사1)
-- ⚠️ D12부터 레이드 가능 — 방어시설 없으면 3~6마리 적과 강제 전투
-- 캠프파이어 연료 관리 (내구도 0.5/TP 소모)
+  // 글로벌 생태계 파라미터
+  global: {
+    totalZombies: 1250,        // 전체 좀비 수 (초기값 = sum of all district populations)
+    migrationRate: 0.02,       // TP당 좀비 이동률
+    resourceRegenRate: 0.05,   // TP당 자원 재생률 (매우 느림)
+    seasonalMod: 1.0           // 계절별 생태계 변화 속도
+  }
+}
+```
 
-**D13~D14: 꽃가루 대비**
-- D14 꽃가루 이벤트: 감염 +5
-- 퀘스트: 방진마스크 착용 (D24까지)
-- 이지수의 임상 지식(-35% 감염)으로 다른 캐릭터보다 유리
-- 방진마스크 없으면 천+철사로 제작 시도
+### 동적 변화 규칙
 
-### Phase 2 체크리스트
-- [ ] 물 퀘스트 완료 (깨끗한 물 5개)
-- [ ] 바리케이드 설치
-- [ ] 관악구 탐색 완료
-- [ ] 배낭 제작 (천3+가죽1+로프1) → 적재량 +5
-- [ ] 방진마스크 확보
+#### 3-1. 좀비 밀도 변화
+
+```
+┌─────────────────────────────────────────────────┐
+│ 좀비 밀도 변화 요인                              │
+│                                                 │
+│ 감소 요인:                                      │
+│   • 전투 처치: -2 per kill                      │
+│   • 베이스캠프 방어시설: -0.5/TP (거주 구역)     │
+│   • 히든 보스 처치: -20 (구역 대소탕)            │
+│                                                 │
+│ 증가 요인:                                      │
+│   • 소음 유인: noise > 40 → +0.3/TP            │
+│   • 인접 구역 이동: 고밀도→저밀도 자연 확산      │
+│   • 시간 경과: 느린 자연 증가 (+0.01/TP)        │
+│   • 가을 좀비 이주 이벤트: 전 구역 +10          │
+│                                                 │
+│ 좀비 밀도 → encounterChance 보정:              │
+│   0-20 (안전): encounterChance × 0.5           │
+│   20-40 (낮음): encounterChance × 0.8          │
+│   40-60 (보통): encounterChance × 1.0          │
+│   60-80 (높음): encounterChance × 1.3          │
+│   80-100 (위험): encounterChance × 1.8         │
+│   + 호드 이벤트 확률 발생                       │
+└─────────────────────────────────────────────────┘
+```
+
+#### 3-2. 자원 재생과 고갈
+
+```
+자원 레벨 (0~100):
+- 탐색 시: -5 per exploration (기존 visit-based 감소 대체)
+- 자연 재생: +0.05/TP (72 TP/day → 하루 +3.6)
+- 계절 보너스: 가을 +50% 재생, 겨울 -50% 재생
+
+자원 레벨 → loot 보정:
+  100-80: lootCount × 1.0 (풍족)
+  80-60: lootCount × 0.8
+  60-40: lootCount × 0.6
+  40-20: lootCount × 0.4 (고갈 경고)
+  20-0: lootCount × 0.2 (거의 고갈)
+
+  + 자원 레벨에 따라 lootTable 가중치 변화
+    높은 자원: 고급 아이템 확률 유지
+    낮은 자원: 기본 아이템만 남음
+```
+
+#### 3-3. 좀비 이동 시뮬레이션
+
+```javascript
+// EcologySystem._simulateMigration() — 매 72 TP (하루 1회) 호출
+function _simulateMigration() {
+  for (const [distId, state] of Object.entries(ecology.districts)) {
+    const dist = DISTRICTS[distId];
+    const myPop = state.zombiePopulation;
+
+    for (const adjId of dist.adjacentDistricts) {
+      const adjState = ecology.districts[adjId];
+      const adjPop = adjState.zombiePopulation;
+
+      // 밀도 차이에 따른 자연 확산
+      const delta = myPop - adjPop;
+      if (delta > 10) {
+        // 고밀도 → 저밀도 이동
+        const migration = Math.floor(delta * ecology.global.migrationRate);
+        state.zombiePopulation -= migration;
+        adjState.zombiePopulation += migration;
+      }
+    }
+
+    // 소음 유인
+    if (state.noiseAttraction > 40) {
+      // 인접 구역의 좀비를 이쪽으로 끌어옴
+      for (const adjId of dist.adjacentDistricts) {
+        const pull = Math.floor(state.noiseAttraction * 0.05);
+        ecology.districts[adjId].zombiePopulation -= pull;
+        state.zombiePopulation += pull;
+      }
+    }
+  }
+}
+```
+
+#### 3-4. 구역 오염도
+
+```
+오염 축적:
+- 방사능 구역: 기존 radiation 필드에 비례하여 구역 오염 증가
+- 산성비 이벤트: 전 구역 +5 오염
+- 핵 폭탄 히든 이벤트: 반경 2구역 +50 오염
+
+오염 효과:
+- 오염 > 30: 음식 루팅 시 기본 오염 +10
+- 오염 > 60: 호흡으로 감염 +0.1/TP
+- 오염 > 80: 방사능 +0.2/TP (방사능 지역과 동일 효과)
+
+정화:
+- 시간 경과: -0.01/TP (매우 느림)
+- 정수기 구역 효과: 거주 구역 -0.05/TP
+```
+
+### UI 표현
+
+**서울 맵 모달 확장:**
+
+```
+기존: 구역 노드에 위험도 바만 표시
+개선: 구역 노드에 생태계 아이콘 오버레이
+
+┌────────────────────────────┐
+│  강남구                     │
+│  ▓▓▓░░ 위험도 3            │
+│  🧟 42  📦 65  ☣️ 12       │
+│  (좀비) (자원) (오염)       │
+└────────────────────────────┘
+
+색상 코딩:
+- 좀비 밀도: 초록(0-20) → 노랑(20-50) → 빨강(50-80) → 보라(80+)
+- 자원 레벨: 초록(80+) → 노랑(40-80) → 빨강(20-40) → 회색(0-20)
+- 오염도: 초록(0-20) → 노랑(20-50) → 빨강(50-80) → 보라(80+)
+```
+
+### 구현 순서
+
+1. `GameState`에 ecology 필드 추가 + 초기화
+2. `EcologySystem.js` 신규 — onTP(), _simulateMigration(), _applyEffects()
+3. `ExploreSystem.js` 수정 — 탐색 시 ecology 연동 (자원 소모, 좀비 처치)
+4. `LandmarkModal.js` 수정 — loot 계산에 resourceLevel 적용
+5. `enemies.js` / encounter 로직 수정 — zombiePopulation 기반 보정
+6. `SeoulMapModal.js` 수정 — 생태계 오버레이 추가
+7. 기존 visit-based 감소 → ecology-based로 전환 (하위 호환 유지)
 
 ---
 
-## Phase 3: 전투력 강화 + 기지 확장 (D15~D30)
+## Feature 4: 정신건강/심리 시스템 확장
 
-> 비유: 성벽만으로는 부족하다. 직접 칼을 들 수 있어야 한다.
-> 의사라도 좀비 앞에서는 전사가 되어야 한다.
+### 개요
 
-### 목표
-1. 근접/원거리 스킬 레벨업 (전투 경험 축적)
-2. 베이스캠프 Lv.1→Lv.2 업그레이드
-3. 정수기 제작 (고철3 + 로프1 + 정수필터1 + 덕테이프1)
-4. 의료 스테이션 제작 (나무2 + 천2 + 붕대5 + 응급키트1)
-5. D30 봄 온기 이벤트 활용
+현재 morale은 단일 수치(0~100). 이를 **4가지 심리 축**으로 확장하여 캐릭터별 차별화와 생존 딜레마를 강화한다.
 
-### 전투 레벨링 전략
+> 비유: 현재는 "기분이 좋다/나쁘다"의 온도계. 개선 후에는 "불안, 외로움, 트라우마, 의지" 4개의 독립된 계기판.
 
-이지수는 전투 스킬 0에서 시작하므로, **안전한 전투 기회**를 선별적으로 활용:
+### 심리 축 설계
 
-```
-전투 XP 획득 구조:
-- 공격 적중: 2 XP (해당 무기 스킬)
-- 크리티컬: +2 XP 보너스
-- 적 처치: 5 XP
-- 피격 방어: 1 XP (방어 스킬)
-
-목표: D30까지 근접 Lv.2+ 달성
-필요 XP: ~50 (적 5~8마리 처치 분량)
+```javascript
+// GameState.mental (신규)
+mental: {
+  morale: 70,          // 기존 유지 — 전반적 사기 (음식, 성공, 날씨 영향)
+  anxiety: 0,          // 불안 (0~100) — 전투, 위험 구역, 소음에 의해 증가
+  loneliness: 0,       // 외로움 (0~100) — 시간 경과, NPC 부재에 의해 증가
+  trauma: 0,           // 트라우마 (0~100) — 전투 부상, 사망 목격, 질병 경험 누적
+  // willpower는 morale + 다른 축의 합산에서 파생
+}
 ```
 
-**전투 원칙:**
-1. 적 1마리 조우 → 전투 (치료 아이템 충분할 때만)
-2. 적 2마리 이상 → 도주 우선 (도주 확률 60%)
-3. 도주 실패 → 전투 후 즉시 붕대 치료 (+50% 효율)
-4. HP 40% 이하 → 즉시 도주 시도
+### 각 축의 메커니즘
 
-**D15~D20: 전투 훈련 + 소재 수집**
-- 동작구/서초구 탐색 (중간 위험도)
-- 전투 시 나이프/야구방망이 사용 → 근접 XP 축적
-- 소재 수집: 나무, 못, 철사, 고철 (베이스캠프 업그레이드용)
-- 의료 스테이션 재료 확보 (붕대 5개 필요 — 제작으로 보충)
+#### 4-1. 불안 (Anxiety)
 
-**D21~D25: 베이스캠프 강화**
-- 물 퀘스트 마감일 (D21) — 이미 완료되어야 함
-- 베이스캠프 Lv.1 업그레이드: 나무5 + 고철5 + 못10
-  - 효과: 조우 -5%, 소음 감쇠 +0.5
-- 정수기 제작 → 안정적 깨끗한 물 공급
-- 의료 스테이션 제작 → HP 자동 회복 + 감염 감소
+```
+증가 요인:
+- 위험도 3+ 구역 체류: +0.3/TP
+- 전투 진입: +5 (즉시)
+- 소음 50+: +0.2/TP
+- 질병 보유: +0.1/TP (질병 하나당)
+- 야간(22시~06시): +0.1/TP
 
-**D26~D30: 안정화 + 봄 온기**
-- D30 봄 온기: 사기 +5 → 원정 준비에 좋은 타이밍
-- 장비 정비: 무기 내구도 확인, 방어구 제작 검토
-- 강화 야구방망이 제작 (야구방망이 + 고철2 + 덕테이프) → 상위 무기
-- 작업대 제작 검토 (나무5 + 고철3 + 로프1 + 못5)
+감소 요인:
+- 안전 구역(위험도 1) 체류: -0.3/TP
+- 베이스캠프 체류: -0.5/TP
+- 캠프파이어 존재: -0.2/TP
+- NPC 동행: -0.3/TP (Feature 6과 연동)
 
-### Phase 3 체크리스트
-- [ ] 근접 스킬 Lv.2+ 달성
-- [ ] 베이스캠프 Lv.1 완료
-- [ ] 정수기 설치
-- [ ] 의료 스테이션 설치
-- [ ] 강화 야구방망이 또는 상위 무기 확보
-- [ ] 방어구 1개 이상 착용 (헬멧 추천)
+불안 효과:
+- 0~30 (안정): 효과 없음
+- 30~60 (불안): 탐색 시 TP 비용 +1 (주저함)
+- 60~80 (공황): 전투 정확도 -10%, 도주 확률 +10%
+- 80~100 (패닉): 랜덤 행동 불능 (3TP당 1TP 행동 불가)
+```
+
+#### 4-2. 외로움 (Loneliness)
+
+```
+증가 요인:
+- 시간 경과: +0.1/TP (기본값 — 인간은 사회적 동물)
+- 혼자 전투 완료: +1
+- 히든 장소 발견 (공유할 사람 없음): +2
+
+감소 요인:
+- NPC 대화: -10 (즉시, Feature 6 연동)
+- NPC 동행: -0.2/TP
+- 라디오 아이템 사용: -5 (외부 세계의 목소리)
+- 일기 쓰기 행동: -3 (신규 아이템: 일기장)
+
+외로움 효과:
+- 0~30: 효과 없음
+- 30~50: 사기(morale) 감쇠 +50% (기본 0.2 → 0.3/TP)
+- 50~70: 환각 이벤트 발생 가능 (정신건강 이벤트 트리거)
+- 70~100: "상상의 친구" 이벤트 → 특수 NPC 카드 등장 (Feature 6 연동)
+            또는 절망 가속 (morale 0 도달 시 사망 타이머 24TP로 단축)
+```
+
+#### 4-3. 트라우마 (Trauma)
+
+```
+증가 요인 (이벤트성, 즉시 적용):
+- 전투 부상 1회: +3
+- 골절/깊은 열상: +5
+- HP 30% 이하 경험: +5
+- 패혈증/콜레라 진단: +8
+- 전투 도주 실패: +4
+- 첫 전투 사망 목격 (적 처치): +2 (1회만)
+
+감소 요인 (매우 느림):
+- 시간 경과: -0.02/TP (약 7일에 -10)
+- 안전한 곳에서 수면(대기): -0.1/TP
+- 의료 스킬 4+: 자가 심리 치료 -0.05/TP
+- 일기장 사용: -3 (1일 1회)
+- 진통제 사용: 일시적 -5 (4시간)
+
+트라우마 효과:
+- 0~20: 효과 없음
+- 20~40: 전투 진입 시 불안 +3 (PTSD 반응)
+- 40~60: 악몽 이벤트 (수면 중 피로 회복 -30%)
+- 60~80: 전투 시 랜덤 행동 불능 (라운드 시작 시 15% 확률)
+- 80~100: 의지 붕괴 — morale 감쇠 2배, 전투 데미지 -20%
+```
+
+### 캐릭터별 심리 특성
+
+```javascript
+// characters.js 확장
+const MENTAL_TRAITS = {
+  doctor: {
+    anxietyResist: 0.8,      // 불안 증가 20% 감소 (의사의 침착함)
+    traumaRecovery: 1.5,      // 트라우마 감소 50% 가속 (자가 심리 치료)
+    lonelinessBase: 1.0,      // 기본값
+    specialAbility: 'self_therapy'  // 1일 1회: 트라우마 -5
+  },
+  soldier: {
+    anxietyResist: 0.5,       // 불안 증가 50% 감소 (군인의 담력)
+    traumaRecovery: 0.7,      // 트라우마 감소 30% 느림 (억압형)
+    lonelinessBase: 0.8,      // 외로움 증가 20% 감소 (독립적)
+    specialAbility: 'battle_calm'   // 전투 중 불안 증가 0
+  },
+  chef: {
+    anxietyResist: 1.0,
+    traumaRecovery: 1.0,
+    lonelinessBase: 1.3,      // 외로움 증가 30% 가속 (사교적)
+    specialAbility: 'comfort_food'  // 요리 시 불안 -5, 외로움 -3
+  },
+  teacher: {
+    anxietyResist: 1.2,       // 불안 증가 20% 가속 (걱정이 많음)
+    traumaRecovery: 1.0,
+    lonelinessBase: 1.5,      // 외로움 증가 50% 가속 (학생들 그리움)
+    specialAbility: 'journaling'    // 일기 쓰기 효과 2배
+  },
+  student: {
+    anxietyResist: 1.5,       // 불안 증가 50% 가속 (젊은 불안)
+    traumaRecovery: 1.3,      // 트라우마 감소 30% 가속 (회복 탄력성)
+    lonelinessBase: 1.8,      // 외로움 증가 80% 가속 (또래 부재)
+    specialAbility: 'adaptability'  // 트라우마 30 이하일 때 학습 XP +20%
+  },
+  engineer: {
+    anxietyResist: 0.9,
+    traumaRecovery: 0.8,      // 트라우마 감소 20% 느림
+    lonelinessBase: 0.7,      // 외로움 증가 30% 감소 (혼자 작업에 익숙)
+    specialAbility: 'problem_solving'  // 불안 50+일 때 제작 성공률 보너스 +5%
+  }
+};
+```
+
+### UI 설계
+
+```
+기존 StatRenderer 하단에 심리 상태 섹션 추가:
+
+[기존 스탯 바들]
+───────────────────
+😟 불안     [████░░░░░░]  32
+😔 외로움   [██░░░░░░░░]  18
+💔 트라우마  [█░░░░░░░░░]   8
+───────────────────
+
+심각 상태 시 경고:
+😰 불안     [████████░░]  78  ⚠️ 공황 상태!
+```
+
+### 구현 순서
+
+1. `GameState`에 mental 필드 추가
+2. `MentalSystem.js` 신규 — onTP(), 각 축 계산
+3. `characters.js` 확장 — 캐릭터별 심리 특성
+4. `StatRenderer.js` 확장 — 심리 상태 UI
+5. `CombatSystem.js` 연동 — 불안/트라우마 전투 효과
+6. `ExploreSystem.js` 연동 — 불안의 탐색 TP 보정
+7. 이벤트 시스템 연동 (악몽, 환각, 상상의 친구)
+8. 기존 morale 로직과의 정합성 확인
+
+### 밸런스 고려
+
+- **초반에는 거의 영향 없어야 한다** — 각 축이 의미 있는 수준에 도달하려면 D20+ 필요
+- 트라우마는 누적형이므로 **중반 이후 긴장감의 주요 원천**
+- 외로움은 NPC 시스템(Feature 6)이 있어야 완전한 기능 발휘
+- 캐릭터별 특성으로 **리플레이 가치 극대화** (같은 전략이 캐릭터마다 다르게 작동)
 
 ---
 
-## Phase 4: 탐색 확장 + 스킬 성장 (D31~D60)
+## Feature 5: 숨겨진 조합 레시피
 
-> 비유: 섬에서 탈출하려면 먼저 섬의 전체 지도를 그려야 한다.
-> 강남만 알아서는 생존할 수 없다. 서울의 자원 지도를 완성하라.
+### 개요
 
-### 목표
-1. 탐색 범위 확대 (6~8개 구 방문)
-2. 근접 스킬 Lv.3, 방어 스킬 Lv.2 달성
-3. 베이스캠프 Lv.2→Lv.3 업그레이드
-4. 크로스보우 제작 (나무2 + 로프2 + 스프링1 + 고철1) → 원거리 전투
-5. 서대문구(세브란스) 첫 방문 → 목표지 정찰
+블루프린트에 표시되지 않는 **비밀 조합**을 추가. 플레이어가 실험적으로 카드를 합쳐볼 때만 발견되며, 발견 자체가 보상이다.
 
-### 탐색 루트 계획
+> 비유: 마인크래프트에서 아무도 알려주지 않은 조합법을 발견했을 때의 쾌감.
+
+### 설계 원칙
+
+1. 비밀 조합은 **블루프린트 목록에 표시되지 않는다** (????? 형태로 힌트만)
+2. 처음 발견하면 **알림 + XP 보너스 + 갤러리 기록**
+3. 힌트는 게임 내 **일기, NPC 대화, 히든 장소 탐색**에서 제공
+4. 비밀 조합 결과물은 일반 제작 불가, **반드시 드래그&드롭 조합으로만 생성**
+
+### 비밀 조합 목록 (20개)
+
+```javascript
+// secretCombinations.js (신규)
+const SECRET_COMBINATIONS = [
+  // === 서바이벌 유틸리티 ===
+  {
+    id: 'sc_molotov',
+    name: '화염병',
+    source: { id: 'empty_bottle' },
+    target: { id: 'campfire' },
+    hint: '빈 병과 불의 만남...',
+    discoveryMessage: '💡 새로운 발견! 화염병을 만들 수 있다!',
+    xpReward: { skill: 'crafting', amount: 15 },
+    result: {
+      spawnItem: 'molotov_cocktail',  // 신규 아이템
+      consumeSrc: true,
+      consumeTgt: false,
+      additionalReq: { definitionId: 'cloth', qty: 1 }  // 천 1개 추가 소모
+    }
+  },
+  {
+    id: 'sc_smoke_bomb',
+    name: '연막탄',
+    source: { tag: 'chemical' },
+    target: { id: 'empty_can' },
+    hint: '화학 물질과 빈 캔의 조합',
+    result: {
+      spawnItem: 'smoke_bomb',  // 전투 중 도주 확률 +40%
+      consumeSrc: true,
+      consumeTgt: true
+    }
+  },
+  {
+    id: 'sc_fishing_rod',
+    name: '낚싯대',
+    source: { id: 'rope' },
+    target: { id: 'wood' },
+    hint: '로프와 나무... 강에서 뭔가 잡을 수 있을 텐데',
+    result: {
+      spawnItem: 'fishing_rod',  // 한강 인접 구역에서 물고기 획득 가능
+      consumeSrc: true,
+      consumeTgt: true
+    }
+  },
+
+  // === 의료 ===
+  {
+    id: 'sc_herbal_medicine',
+    name: '한방 치료제',
+    source: { id: 'vitamins' },
+    target: { id: 'purified_water' },
+    hint: '비타민을 깨끗한 물에 녹이면...',
+    requiredSkill: { medicine: 3 },
+    result: {
+      spawnItem: 'herbal_medicine',  // 감염 -20, 사기 +10
+      consumeSrc: true,
+      consumeTgt: true
+    }
+  },
+  {
+    id: 'sc_field_surgery_kit',
+    name: '현장 수술 키트',
+    source: { id: 'first_aid_kit' },
+    target: { id: 'knife' },
+    hint: '응급 키트와 칼을 결합하면 즉석 수술 도구가...',
+    requiredSkill: { medicine: 5 },
+    result: {
+      spawnItem: 'surgery_kit',  // 골절/깊은열상 즉시 치료 (TP 비용 높음)
+      consumeSrc: true,
+      consumeTgt: false,
+      tpCost: 6
+    }
+  },
+
+  // === 전투 ===
+  {
+    id: 'sc_poison_blade',
+    name: '독날',
+    source: { id: 'antiseptic' },
+    target: { tag: 'melee_weapon' },
+    hint: '소독약을... 무기에 바르면?',
+    result: {
+      transformTgt: null,  // 무기 타입 유지
+      addEffect: { poisonDamage: 3, duration: 5 },  // 5라운드 독 데미지
+      consumeSrc: true
+    }
+  },
+  {
+    id: 'sc_explosive_trap',
+    name: '폭발 함정',
+    source: { id: 'molotov_cocktail' },
+    target: { id: 'alarm_trap' },
+    hint: '화염병과 알람 트랩의 결합체',
+    result: {
+      spawnItem: 'explosive_trap',  // 레이드 시 적 3마리에 20 데미지
+      consumeSrc: true,
+      consumeTgt: true
+    }
+  },
+
+  // === 환경 활용 (Feature 1 연동) ===
+  {
+    id: 'sc_rain_shower',
+    name: '빗물 샤워',
+    source: { id: 'cloth' },
+    target: { id: 'weather_rain' },
+    hint: '비 속에서 천으로 몸을 씻으면...',
+    result: {
+      statChange: { infection: -5, morale: +5 },
+      consumeSrc: false,
+      consumeTgt: false,
+      cooldown: 72  // 1일 쿨다운
+    }
+  },
+
+  // === 특수 ===
+  {
+    id: 'sc_radio_signal',
+    name: '구조 신호',
+    source: { id: 'radio' },
+    target: { id: 'battery' },
+    hint: '라디오에 배터리를 넣으면...',
+    requiredDay: 100,  // D100 이후에만 발견 가능
+    result: {
+      triggerEvent: 'rescue_signal',  // 특수 엔딩 경로 해금
+      consumeSrc: false,
+      consumeTgt: true,
+      message: '... 여기는 서울... 생존자가... 신호를 보내...'
+    }
+  },
+  {
+    id: 'sc_journal',
+    name: '생존 일지',
+    source: { id: 'pen' },      // 신규 아이템: 펜
+    target: { id: 'notebook' },  // 신규 아이템: 공책
+    hint: '기록은 생존의 증거',
+    result: {
+      spawnItem: 'survival_journal',  // 1일 1회 사용: 트라우마 -3, 외로움 -3
+      consumeSrc: true,
+      consumeTgt: true
+    }
+  }
+];
+```
+
+### 발견 시스템
+
+```javascript
+// SecretCombinationSystem.js (신규)
+class SecretCombinationSystem {
+  // GameState.discoveries에 발견 기록 저장
+  // discoveries: { foundCombinations: ['sc_molotov', ...], totalFound: 3, totalAvailable: 20 }
+
+  static checkCombination(srcDef, tgtDef, gs) {
+    for (const combo of SECRET_COMBINATIONS) {
+      if (!_matchesCriteria(srcDef, combo.source)) continue;
+      if (!_matchesCriteria(tgtDef, combo.target)) continue;
+
+      // 이미 발견했는지 확인
+      const isNew = !gs.discoveries.foundCombinations.includes(combo.id);
+
+      // 추가 요구사항 확인
+      if (combo.requiredSkill) {
+        const [skill, level] = Object.entries(combo.requiredSkill)[0];
+        if (gs.player.skills[skill] < level) {
+          return { found: false, hint: `${skill} Lv.${level} 필요` };
+        }
+      }
+      if (combo.requiredDay && gs.time.day < combo.requiredDay) {
+        return { found: false };  // 아직 해금 안 됨 (힌트도 없음)
+      }
+
+      return {
+        found: true,
+        isNew,
+        combo
+      };
+    }
+    return { found: false };
+  }
+}
+```
+
+### 힌트 시스템
 
 ```
-추천 탐색 순서 (강남 기준):
+힌트 획득 경로:
+1. 히든 장소 탐색 → 벽의 메모, 실험 기록 → "빈 병과 불로 무기를 만들 수 있다"
+2. NPC 대화 (Feature 6) → 생존자의 팁 → "화학 물질을 캔에 넣으면..."
+3. 높은 스킬 레벨 → 자동 힌트 알림 → "의료 Lv.5 달성: 현장 수술이 가능할 것 같다"
+4. 일기장 사용 → 낮은 확률로 영감 → "비 속에서 씻으면 감염이 줄지도..."
 
-D31~D35: 서초구 → 동작구 (남서쪽 확보)
-D36~D40: 송파구 → 강동구 (동쪽 확보)
-D41~D45: 용산구 → 마포구 (한강 건너기 — 서쪽 다리)
-D46~D50: 서대문구 정찰 (세브란스 병원!)
-D51~D55: 강남 복귀, 물자 정리
-D56~D60: 베이스캠프 확장, 스킬 레벨링
+힌트 UI (블루프린트 화면 하단):
+┌──────────────────────────────┐
+│ 🔮 미발견 조합 힌트           │
+│                              │
+│ ??? — "빈 병과 불의 만남..."  │
+│ ??? — "로프와 나무... 강에서" │
+│ ??? — [미발견]               │
+│                              │
+│ 발견: 2/20                   │
+└──────────────────────────────┘
 ```
 
-**한강 횡단 전략:**
-- 서쪽 다리: 마포 ↔ 영등포 (교차점)
-- 동쪽 다리: 광진 ↔ 강동
-- 이동 비용: 구역당 2 TP, 스태미나 10
-- 왕복 6~8구 = 12~16 TP + 스태미나 60~80
-- **반드시 스태미나 토닉/전투식량 휴대**
+### 구현 순서
 
-**서대문구 정찰 (D46~D50):**
-| 항목 | 수치 |
-|------|------|
-| 위험도 | 3 |
-| 조우 확률 | 20% |
-| 방사능 | 0 |
-| 랜드마크 | 세브란스 병원 |
-| 기대 루팅 | 고급 의료품, 연구 데이터 |
-
-- 세브란스 병원은 이지수의 최종 목표지
-- 캐릭터 엔딩 조건: D180+, 서대문 방문, 감염 치료
-- **D50 시점에서는 정찰만** — 본격 입성은 Phase 6 이후
-
-### 레이드 대비
-
-D12 이후 레이드 확률이 점진적으로 증가:
-```
-D12: 0.3% + (12×0.02%) = 0.54%/TP
-D30: 0.3% + (30×0.02%) = 0.90%/TP
-D60: 0.3% + (60×0.02%) = 1.50%/TP (최대치 도달!)
-```
-
-D60 즈음이면 레이드가 자주 발생. 대비책:
-- 바리케이드 + 알람 트랩 + 스파이크 트랩 설치
-- 소음 관리: 60 이하 유지 (60 이상 = 강제 조우)
-- 베이스캠프 Lv.3: 조우 -15%, HP 회복 +2/TP
-
-### Phase 4 체크리스트
-- [ ] 6개+ 구 방문
-- [ ] 서대문구 세브란스 병원 정찰 완료
-- [ ] 근접 Lv.3 달성
-- [ ] 크로스보우 제작 (원거리 전투 해금)
-- [ ] 베이스캠프 Lv.2~3 달성
-- [ ] 방어 시설 3종+ 설치
+1. `secretCombinations.js` 데이터 파일 생성
+2. `SecretCombinationSystem.js` — 조합 체크, 발견 기록
+3. `SlotResolver.resolveInteraction()` 수정 — interactions.js 이후, CraftDiscovery 이전에 비밀 조합 체크
+4. `GameState`에 discoveries 필드 추가
+5. 신규 아이템 추가 (화염병, 연막탄, 낚싯대, 일기장 등)
+6. 힌트 시스템 — 히든 장소/NPC/스킬에서 힌트 트리거
+7. 갤러리에 "비밀 조합" 탭 추가
 
 ---
 
-## Phase 5: 전력 완성 + 봄 마무리 (D61~D90)
+## Feature 6: NPC 카드 시스템
 
-> 비유: 마라톤 30km 지점. 여기서 페이스를 유지하면 완주할 수 있다.
-> 여름이 오기 전에 물과 장비를 완벽히 갖춰야 한다.
+### 개요
 
-### 목표
-1. 베이스캠프 Lv.3→Lv.4 업그레이드
-2. 전투 스킬 종합 강화 (근접 Lv.4, 원거리 Lv.2, 방어 Lv.3)
-3. 여름 대비 물자 비축 (물 15+, 식량 10+)
-4. 고급 방어구 세트 완성
-5. 10개+ 구 방문 달성 → 탈출 엔딩 후보 확보
+생존자 NPC를 **보드 위의 카드**로 구현. 대화, 거래, 동행이 카드 인터랙션으로 이루어진다.
 
-### 여름 대비가 핵심
+> 비유: 현재 게임은 "무인도 생존". NPC가 추가되면 "The Walking Dead의 공동체 생존".
 
-D91부터 수분 감소가 **1.5배**로 증가:
+### 핵심 재미
+
+- 포스트아포칼립스에서 **인간 관계**의 가치
+- NPC와의 거래 = 자원 확보의 새 경로
+- 동행 NPC = 전투/탐색 보조 + 외로움 해소 (Feature 4 연동)
+- NPC 관련 선택 = 도덕적 딜레마
+
+### NPC 데이터 구조
+
+```javascript
+// npcs.js (신규)
+const NPC_DATA = {
+  npc_old_survivor: {
+    id: 'npc_old_survivor',
+    name: '노인 생존자',
+    icon: '👴',
+    personality: 'cautious',
+    location: 'gangbuk',           // 초기 위치
+    spawnCondition: { minDay: 10, district: 'gangbuk' },
+
+    // 대화 트리
+    dialogues: {
+      greeting: {
+        text: '"조심해, 젊은이. 이 동네 좀비들이 최근에 부쩍 늘었어..."',
+        options: [
+          { text: '무슨 일이 있었나요?', next: 'story_1' },
+          { text: '거래할 물건이 있나요?', next: 'trade' },
+          { text: '같이 다닐 수 있을까요?', next: 'recruit',
+            condition: { trustLevel: 3 } }
+        ]
+      },
+      story_1: {
+        text: '"서쪽에서 큰 무리가 이동해 왔어. 마포 쪽 다리를 건너온 것 같더라."',
+        rewards: { hint: 'sc_fishing_rod' },  // 비밀 조합 힌트 제공
+        next: 'greeting'
+      },
+      trade: {
+        // 거래 화면으로 전환
+        type: 'trade',
+        offers: [
+          { give: { id: 'canned_food', qty: 2 },
+            receive: { id: 'bandage', qty: 3 } },
+          { give: { id: 'antibiotics', qty: 1 },
+            receive: { id: 'scrap_metal', qty: 5 } }
+        ]
+      },
+      recruit: {
+        text: '"좋아, 나도 혼자는 외로웠다. 함께 가지."',
+        action: 'join_party',
+        trustRequired: 3
+      }
+    },
+
+    // NPC 능력치 (동행 시 적용)
+    companionStats: {
+      combatPower: 5,          // 전투 시 추가 데미지
+      carryBonus: 10,          // 적재량 +10kg
+      scavengeBonus: 0.1,      // 탐색 시 아이템 발견 +10%
+      noise: 3,                // 소음 +3/TP (인원 증가)
+      foodConsumption: 0.3,    // 식량 소비 +0.3/TP
+      lonelinessReduction: 0.3 // 외로움 -0.3/TP (Feature 4 연동)
+    },
+
+    // 신뢰도 시스템
+    trust: {
+      current: 0,
+      max: 5,
+      gainActions: {
+        give_food: 1,          // 음식 제공
+        heal_wound: 2,         // 부상 치료
+        win_combat: 1,         // 함께 전투 승리
+        dialogue: 0.5          // 대화
+      }
+    }
+  },
+
+  npc_nurse: {
+    id: 'npc_nurse',
+    name: '간호사',
+    icon: '👩‍⚕️',
+    personality: 'caring',
+    location: 'seocho',
+    spawnCondition: { minDay: 15, district: 'seocho' },
+
+    companionStats: {
+      combatPower: 2,
+      carryBonus: 5,
+      healBonus: 0.3,          // 의료 아이템 효과 +30%
+      noise: 2,
+      foodConsumption: 0.2,
+      lonelinessReduction: 0.4
+    }
+  },
+
+  npc_soldier_deserter: {
+    id: 'npc_soldier_deserter',
+    name: '탈영병',
+    icon: '🔫',
+    personality: 'aggressive',
+    location: 'yongsan',
+    spawnCondition: { minDay: 30, district: 'yongsan' },
+
+    companionStats: {
+      combatPower: 15,
+      carryBonus: 20,
+      noise: 8,                // 소음이 매우 높음
+      foodConsumption: 0.5,    // 식량 소비 높음
+      lonelinessReduction: 0.1, // 말이 별로 없음
+      moralePenalty: -0.1      // 도덕적 갈등 (탈영 사실)
+    },
+
+    // 특수 이벤트: 신뢰 5 달성 시 과거 폭로 → 선택지
+    specialEvent: {
+      trigger: { trustLevel: 5 },
+      text: '"사실... 나는 동료를 버리고 도망쳤어. 뒤돌아볼 수 없었어."',
+      choices: [
+        { text: '이해해요. 생존이 우선이죠.',
+          effect: { morale: +5, trauma: -3 } },
+        { text: '당신을 믿을 수 없겠네요.',
+          effect: { npcLeave: true, morale: -5 } }
+      ]
+    }
+  },
+
+  npc_child: {
+    id: 'npc_child',
+    name: '고아 소녀',
+    icon: '👧',
+    personality: 'timid',
+    location: 'nowon',
+    spawnCondition: { minDay: 20, district: 'nowon' },
+
+    companionStats: {
+      combatPower: 0,
+      carryBonus: 3,
+      noise: 1,
+      foodConsumption: 0.15,
+      lonelinessReduction: 0.5, // 높은 외로움 감소
+      moraleBonus: 0.1          // "지켜야 할 이유" → 사기 +0.1/TP
+    },
+
+    // 도덕적 딜레마: 위험한 구역에서 데려가면 리스크
+    riskEvent: {
+      trigger: { districtDangerLevel: 4 },
+      text: '아이가 겁에 질려 소리를 지른다!',
+      effect: { noise: +30, anxiety: +10 }
+    }
+  }
+];
+
+// 추가 NPC: 약탈자, 군의관, 대학생, 노숙자, 정비사 등 (총 8~12명)
 ```
-기본 수분 감소: 1.5/TP
-여름 수분 감소: 1.5 × 1.5 = 2.25/TP
-최대 수분: 288
 
-여름에 물 없이 버틸 수 있는 시간:
-288 ÷ 2.25 = 약 128 TP = 약 1.8일! (72 TP/day)
+### 보드 위 NPC 카드 배치
 
-→ 매일 깨끗한 물 1~2개 소비 필수
-→ 정수기 + 정수 정제 대량 비축
+```
+NPC 카드 위치:
+- 발견 전: 해당 구역 탐색 시 조우 이벤트로 등장
+- 발견 후 (비동행): 해당 구역의 middle row에 NPC 카드 배치
+- 동행 중: bottom row의 특수 슬롯에 배치 (인벤토리 옆)
+
+NPC 카드 외형:
+┌──────────────────┐
+│ 👴 노인 생존자    │
+│                  │
+│  ❤️ 신뢰 ★★★☆☆  │
+│                  │
+│  🗣️ 대화 가능    │  ← 더블클릭으로 대화
+│  🤝 거래 가능    │
+│                  │
+│  [────70%────]   │  ← 건강 상태 바
+└──────────────────┘
 ```
 
-**D61~D70: 물자 대량 수집**
-- 안전한 구역 순회하며 물 관련 아이템 집중 수집
-- 정수 정제, 빈 병, 정수 필터 우선
-- 식량도 병행 (통조림, 에너지바, 라면)
+### NPC 인터랙션 (카드 드래그)
 
-**D71~D80: 장비 완성**
-- 헬멧 (고철2 + 천1 + 가죽1) → 머리 방어
-- 방탄 조끼 재료 탐색 → 몸통 방어
-- 크로스보우 화살 비축
-- 작업대 활용 고급 제작
+```javascript
+// 아이템 → NPC 드래그 인터랙션
+const NPC_INTERACTIONS = [
+  // 음식 → NPC = 음식 제공 (신뢰 +1)
+  {
+    source: { tag: 'edible' },
+    target: { type: 'npc' },
+    hint: '음식 제공 → 신뢰도 상승',
+    apply: (src, tgt, gs) => {
+      const npc = gs.npcs[tgt.definitionId];
+      npc.trust.current = Math.min(npc.trust.max, npc.trust.current + 1);
+      return {
+        message: `${npc.name}에게 음식을 주었다. 신뢰도 상승.`,
+        consumeSrc: true
+      };
+    }
+  },
+  // 의료 아이템 → NPC = 치료 (신뢰 +2)
+  {
+    source: { tag: 'medical' },
+    target: { type: 'npc' },
+    hint: '부상 치료 → 신뢰도 크게 상승',
+    apply: (src, tgt, gs) => {
+      const npc = gs.npcs[tgt.definitionId];
+      npc.trust.current = Math.min(npc.trust.max, npc.trust.current + 2);
+      return {
+        message: `${npc.name}의 부상을 치료했다. 신뢰도 크게 상승!`,
+        consumeSrc: true
+      };
+    }
+  },
+  // 무기 → NPC = 무장시키기 (전투력 증가)
+  {
+    source: { tag: 'melee_weapon' },
+    target: { type: 'npc', condition: 'companion' },
+    hint: '동행 NPC 무장',
+    apply: (src, tgt, gs) => {
+      const npc = gs.npcs[tgt.definitionId];
+      npc.companionStats.combatPower += 5;
+      return {
+        message: `${npc.name}에게 무기를 건넸다. 전투력 상승.`,
+        consumeSrc: true
+      };
+    }
+  }
+];
+```
 
-**D81~D90: 최종 점검**
-- 베이스캠프 Lv.4 업그레이드: 가죽5 + 천8 + 로프3 + 고철5
-  - 조우 -20%, HP 회복 +3/TP, 피로 회복 +3/TP
-- 모든 장비 내구도 점검/수리
-- 여름 퀘스트 대비: 깨끗한 물 10개 선제 비축
-- 불필요한 아이템 해체 → 소재 확보
+### NPC 생존 & 이탈
 
-### Phase 5 체크리스트
-- [ ] 베이스캠프 Lv.4 달성
-- [ ] 깨끗한 물 15개+ 비축
-- [ ] 식량 10개+ 비축
-- [ ] 방어구 세트 완성 (머리+몸통)
-- [ ] 10개+ 구 방문
-- [ ] 모든 장비 내구도 50%+
+```
+NPC 건강:
+- NPC도 HP를 가짐 (50~100)
+- 전투 시 NPC도 피격 가능 (적 타겟 분산)
+- NPC HP 0 = 영구 사망 (트라우마 +15, 외로움 +20)
+- 치료하지 않으면 자연 이탈
+
+NPC 이탈 조건:
+- 식량 부족: 2일 연속 식량 미제공 → 이탈
+- 위험 과다: 전투 3회 연속 → 겁쟁이 NPC 이탈
+- 사기 저하: 플레이어 morale 10 이하 → 절망 전염, 이탈
+- 특수 이벤트: 도덕적 선택에 따른 이탈
+```
+
+### 구현 순서
+
+1. `npcs.js` 데이터 파일 생성
+2. `NPCSystem.js` — NPC 스폰, 상태 관리, 대화, 거래, 동행
+3. `GameState`에 npcs 필드 추가
+4. `CardFactory.js` NPC 카드 렌더링
+5. `interactions.js`에 NPC 인터랙션 규칙 추가
+6. `CombatSystem.js` — 동행 NPC 전투 참여 로직
+7. NPC 대화 UI 모달 (`NPCDialogueModal.js`)
+8. NPC 거래 UI (`NPCTradeModal.js`)
+9. Feature 4 (심리 시스템)과 연동 — 외로움, 사기
 
 ---
 
-## Phase 6: 여름 진입 + 적응 (D91~D100)
+## Feature 7: 신체 상세 시뮬레이션
 
-> 비유: 사막에 들어가는 것과 같다. 물이 곧 생명이다.
-> 준비 없이 여름을 맞으면 이틀 안에 탈수로 사망한다.
+### 개요
 
-### 목표
-1. 여름 수분 관리 체계 확립
-2. 여름 물 퀘스트 완료 (깨끗한 물 10개, D111까지)
-3. 열사병 예방 (체온 85°C 이하 유지)
-4. D100 이후 계획 수립
+현재 부상은 질병 시스템의 일부 (출혈, 골절 등). 이를 **부위별 부상 추적**으로 확장하여 의사 캐릭터의 차별화를 극대화한다.
 
-### D91 여름 이벤트 대응
+> 비유: 현재는 "HP가 줄었다". 개선 후에는 "왼쪽 다리에 골절, 오른손에 열상 — 이동 불가, 원거리 공격만 가능".
+
+### 신체 부위 모델
+
+```javascript
+// GameState.body (신규)
+body: {
+  head: {
+    hp: 100,
+    injuries: [],      // [{ type: 'concussion', severity: 2, tpRemaining: 216 }]
+    armor: null,        // 장착된 방어구 참조
+    effects: {
+      visionPenalty: 0,    // 시야 패널티 (탐색 효율)
+      accuracyPenalty: 0   // 정확도 패널티
+    }
+  },
+  torso: {
+    hp: 100,
+    injuries: [],
+    armor: null,
+    effects: {
+      staminaPenalty: 0,   // 스태미나 패널티
+      breathingPenalty: 0  // 호흡 패널티 (피로 가속)
+    }
+  },
+  leftArm: {
+    hp: 100,
+    injuries: [],
+    armor: null,
+    effects: {
+      carryPenalty: 0,     // 적재량 감소
+      shieldPenalty: 0     // 방어 효율 감소
+    }
+  },
+  rightArm: {
+    hp: 100,
+    injuries: [],
+    armor: null,
+    effects: {
+      damagePenalty: 0,    // 공격력 감소
+      craftPenalty: 0      // 제작 정확도 감소
+    }
+  },
+  leftLeg: {
+    hp: 100,
+    injuries: [],
+    armor: null,
+    effects: {
+      movePenalty: 0,      // 이동 TP 증가
+      fleePenalty: 0       // 도주 확률 감소
+    }
+  },
+  rightLeg: {
+    hp: 100,
+    injuries: [],
+    armor: null,
+    effects: {
+      movePenalty: 0,
+      fleePenalty: 0
+    }
+  }
+}
+```
+
+### 부위별 부상 효과
 
 ```
-여름 변화:
-- 기본 기온: 27°C (봄 13°C에서 +14°C)
-- 수분 감소: 1.5배
-- 기온 상승: +0.3°C/TP
-- 열사병 위험: 체온 >85°C에서 48 TP 노출 시 발병
-- 보너스 루팅: 빗물, 스포츠 음료, 빈 병
+┌─────────────────────────────────────────────────────┐
+│ 부위별 부상 매핑                                     │
+│                                                     │
+│ 머리 (head):                                        │
+│   뇌진탕 → 시야 패널티 (탐색 효율 -20%)             │
+│   출혈 → 지속 HP 감소 + 시야 흐림                    │
+│                                                     │
+│ 몸통 (torso):                                       │
+│   깊은 열상 → 호흡 곤란 (피로 +50%)                  │
+│   골절 (갈비뼈) → 스태미나 -30%, 모든 행동 고통       │
+│                                                     │
+│ 팔 (arm):                                           │
+│   골절 → 해당 팔 사용 불가                           │
+│     왼팔 골절: 방패 사용 불가, 적재량 -40%           │
+│     오른팔 골절: 근접 공격 불가, 제작 불가            │
+│   출혈 → 적재량 -20%                                │
+│                                                     │
+│ 다리 (leg):                                         │
+│   골절 → 이동 TP 2배, 도주 확률 -30%                │
+│   출혈 → 이동 TP +50%                               │
+│   양쪽 골절 → 이동 불가! 기지에서만 행동              │
+│                                                     │
+│ 심각도 (1~3):                                       │
+│   1 (경미): 효과 30%, 자연 치유 5일                  │
+│   2 (보통): 효과 70%, 자연 치유 12일                 │
+│   3 (심각): 효과 100%, 치료 필수 (자연치유 불가)     │
+└─────────────────────────────────────────────────────┘
 ```
 
-**핵심 생존 규칙:**
-1. **물 소비 계획**: 매일 물 1~2개 소비 → 10일간 최소 15개 필요
-2. **실내 활동 우선**: 건물 내부 = 외부 온도의 50% → 열사병 예방
-3. **야간 이동**: 자정 보정 -5°C → 더위 회피
-4. **정수기 가동**: 지속적 깨끗한 물 생산
+### 전투 피격 부위 결정
 
-**D91~D95: 여름 적응**
-- 물 소비 패턴 확인 및 조정
-- 불필요한 이동 최소화 (스태미나 = 수분 소비)
-- 스포츠 음료/정수 정제 사용 → 수분 보충
+```javascript
+// CombatSystem 확장
+const HIT_LOCATION_TABLE = {
+  // 무기 유형별 피격 부위 확률
+  melee: {
+    head: 0.10,   torso: 0.35,
+    leftArm: 0.15, rightArm: 0.15,
+    leftLeg: 0.12, rightLeg: 0.13
+  },
+  ranged: {
+    head: 0.15,   torso: 0.45,   // 원거리는 몸통 적중률 높음
+    leftArm: 0.10, rightArm: 0.10,
+    leftLeg: 0.10, rightLeg: 0.10
+  },
+  unarmed: {
+    head: 0.15,   torso: 0.25,
+    leftArm: 0.20, rightArm: 0.20,  // 격투는 팔 적중 높음
+    leftLeg: 0.10, rightLeg: 0.10
+  }
+};
 
-**D96~D100: 안정화 + 다음 계획**
-- 여름 퀘스트 진행 확인 (물 10개 / D111 마감)
-- D120 폭염 이벤트 대비 (기온 +15!)
-- D135 몬순 대비 (음식 오염 +15, 감염 +8)
-- D150 태풍 대비 (구조물 데미지 30!)
+function rollHitLocation(weaponType) {
+  const table = HIT_LOCATION_TABLE[weaponType] ?? HIT_LOCATION_TABLE.melee;
+  let roll = Math.random();
+  for (const [part, chance] of Object.entries(table)) {
+    roll -= chance;
+    if (roll <= 0) return part;
+  }
+  return 'torso';  // fallback
+}
+```
 
-### Phase 6 체크리스트
-- [ ] 일일 물 소비량 안정화
-- [ ] 열사병 미발생
-- [ ] 여름 퀘스트 진행 중 (물 확보 추적)
-- [ ] D100 이후 80일 계획 초안
+### 의사 캐릭터 특화
+
+```
+이지수(의사)의 신체 시뮬레이션 보너스:
+
+1. 부상 진단: 피격 시 부위와 심각도를 정확히 표시
+   (다른 캐릭터: "부상을 입었다" vs 의사: "오른팔에 심각도 2 열상")
+
+2. 자가 치료 효율:
+   - 의료 아이템 → 특정 부위 지정 치료 가능
+   - 다른 캐릭터: 붕대 → 랜덤 부위 치료
+   - 의사: 붕대 → 원하는 부위 선택 치료
+
+3. 수술 가능 (현장 수술 키트 + 의료 Lv.5):
+   - 심각도 3 부상을 심각도 1로 감소 (6 TP)
+   - 다른 캐릭터: 심각도 3은 치료 불가 (자연치유 불가)
+
+4. 진단 힌트:
+   - "왼쪽 다리 골절이 이동을 방해하고 있다. 진통제를 먹으면 일시적으로..."
+```
+
+### UI 설계
+
+```
+장비 모달 내 신체 다이어그램:
+
+       ┌───┐
+       │ 😐│ ← 머리 (클릭: 부상 상세)
+       └─┬─┘
+    ┌────┼────┐
+    │  ┌─┴─┐  │
+    │  │   │  │ ← 몸통
+    └──│   │──┘
+  ┌──┐ │   │ ┌──┐
+  │🩹│ └─┬─┘ │  │ ← 좌/우 팔 (🩹 = 부상 표시)
+  └──┘   │   └──┘
+       ┌─┴─┐
+     ┌─┘   └─┐
+     │       │ ← 좌/우 다리
+     └       └
+
+부위 상태 색상:
+  초록 (80-100%): 건강
+  노랑 (50-80%): 경미한 부상
+  주황 (20-50%): 보통 부상
+  빨강 (0-20%): 심각한 부상
+
+부상 아이콘 오버레이:
+  🩸 출혈
+  🦴 골절
+  🔪 열상
+  💫 뇌진탕
+```
+
+### 기존 시스템과의 통합
+
+```
+기존 DiseaseSystem.checkCombatInjury() 흐름:
+  피격 → 데미지 계산 → 부상 확률 체크 → 질병(출혈/골절) 등록
+
+개선 흐름:
+  피격 → 데미지 계산 → 피격 부위 결정 → 부위별 부상 등록
+  → 부위 HP 감소 → 부위 효과 갱신 → 기존 질병 시스템과 병행
+
+통합 방법:
+  - body.injuries[]는 기존 diseases[]의 서브셋이 아닌 **보조 레이어**
+  - 기존 질병(출혈, 골절)은 유지 → 부위 정보가 추가될 뿐
+  - 치료 시: 기존 질병 치료 + 부위 부상 치유 동시 처리
+```
+
+### 구현 순서
+
+1. `GameState`에 body 필드 추가 + 초기화
+2. `BodySystem.js` 신규 — 부위 관리, 효과 계산
+3. `CombatSystem.js` 수정 — 피격 부위 결정, 부위 HP 감소
+4. `DiseaseSystem.js` 수정 — 부상 시 부위 정보 연동
+5. `StatSystem.js` 수정 — 부위 효과 적용 (이동, 전투, 제작 패널티)
+6. `EquipmentModal.js` 수정 — 신체 다이어그램 UI
+7. 의사 캐릭터 특수 치료 로직
 
 ---
 
-## 100일 종합 자원 예산
+## Feature 10: 맵 상호 연결 (지하철/하수도 비밀 경로)
 
-### 소비 추정
+### 개요
 
-| 자원 | 일일 소비 | 100일 총량 | 비고 |
-|------|-----------|-----------|------|
-| 깨끗한 물 | 1~2개 | 100~200개 | 정수기로 자급 가능 |
-| 식량 | 0.5~1개 | 50~100개 | 요리로 효율↑ |
-| 붕대 | 전투 시 1~2개 | 30~50개 | 제작으로 보충 (천조각×2) |
-| 탄약 | 원거리 전투 시 | 20~30발 | D40+ 크로스보우 사용 |
-| 캠프파이어 연료 | 0.5 내구도/TP | 지속 | 교체 필요 |
+현재 이동은 인접 구역만 가능 (직교 + 한강 다리 2개). **지하철 노선과 하수도 터널**을 숨겨진 이동 경로로 추가하여 전략적 이동 선택지를 확장한다.
 
-### 생산 체계
+> 비유: 체스에서 나이트만 쓰던 플레이어에게 비숍을 주는 것. 대각선 이동이 가능해지면 전략의 깊이가 달라진다.
+
+### 핵심 재미
+
+- **단축 경로 발견** → 탐험 보상
+- **위험-보상 트레이드오프** — 지하철은 빠르지만 어둡고 위험
+- 구역 간 **비선형 접근** → 전략적 루트 다양화
+- 한강 횡단의 새로운 방법 (지하철)
+
+### 지하철 노선 데이터
+
+```javascript
+// subwayRoutes.js (신규)
+// 실제 서울 지하철 노선을 단순화
+
+const SUBWAY_ROUTES = {
+  line_2: {
+    name: '2호선',
+    icon: '🟢',
+    color: '#33A23D',
+    stations: [
+      'gangnam', 'seocho', 'dongjak', 'yeongdeungpo', 'mapo',
+      'seodaemun', 'jongno', 'dongdaemun', 'seongdong', 'gangdong'
+    ],
+    // 순환선: 양쪽 방향 이동 가능
+    circular: true,
+    tpCostPerStation: 1,          // 역당 1 TP (지상 이동보다 빠름)
+    dangerLevel: 3,               // 어두운 지하 = 위험
+    encounterChance: 0.30,        // 높은 조우 확률 (좀비가 숨어있음)
+    unlockCondition: {
+      requiredItem: 'flashlight', // 손전등 필요
+      minDay: 15
+    }
+  },
+  line_3: {
+    name: '3호선',
+    icon: '🟠',
+    color: '#FE5B10',
+    stations: [
+      'gangnam', 'seocho', 'dongjak', 'yongsan', 'jongno',
+      'seodaemun', 'eunpyeong'
+    ],
+    circular: false,
+    tpCostPerStation: 1,
+    dangerLevel: 3,
+    encounterChance: 0.25,
+    unlockCondition: {
+      requiredItem: 'flashlight',
+      minDay: 20
+    }
+  },
+  line_4: {
+    name: '4호선',
+    icon: '🔵',
+    color: '#32A1C8',
+    stations: [
+      'nowon', 'gangbuk', 'seongbuk', 'dongdaemun', 'junggoo',
+      'yongsan', 'dongjak', 'gwanak'
+    ],
+    circular: false,
+    tpCostPerStation: 1,
+    dangerLevel: 2,
+    encounterChance: 0.20,
+    unlockCondition: {
+      requiredItem: 'flashlight',
+      minDay: 10
+    }
+  },
+  line_7: {
+    name: '7호선',
+    icon: '🟤',
+    color: '#747F00',
+    stations: [
+      'dobong', 'nowon', 'jungrang', 'gwangjin', 'gangdong',
+      'songpa', 'gangnam'
+    ],
+    circular: false,
+    tpCostPerStation: 1,
+    dangerLevel: 2,
+    encounterChance: 0.20,
+    unlockCondition: {
+      requiredItem: 'flashlight',
+      minDay: 15
+    }
+  }
+};
+
+// 하수도 (비밀 경로)
+const SEWER_ROUTES = {
+  sewer_gangnam_yongsan: {
+    name: '강남-용산 하수도',
+    icon: '🕳️',
+    from: 'gangnam',
+    to: 'yongsan',
+    tpCost: 3,                    // 직접 이동은 불가능한 구간을 연결
+    dangerLevel: 4,               // 매우 위험
+    encounterChance: 0.40,
+    radiation: 3,                 // 하수도 방사능
+    unlockCondition: {
+      hiddenLocationFound: 'hidden_gangnam_sewer',  // 히든 장소 발견 필요
+      requiredItem: 'gas_mask'    // 방독면 필요
+    }
+  },
+  sewer_jongno_junggoo: {
+    name: '종로-중구 하수도',
+    icon: '🕳️',
+    from: 'jongno',
+    to: 'junggoo',
+    tpCost: 2,
+    dangerLevel: 5,               // 최고 위험
+    encounterChance: 0.50,
+    radiation: 5,
+    unlockCondition: {
+      hiddenLocationFound: 'hidden_jongno_catacomb',
+      requiredItem: 'gas_mask',
+      minDay: 40
+    },
+    specialLoot: [
+      { definitionId: 'scrap_metal', weight: 40, minQty: 3, maxQty: 5 },
+      { definitionId: 'electronic_parts', weight: 20, minQty: 1, maxQty: 2 }
+    ]
+  },
+  // 한강 횡단 하수도 (한강 다리 대안)
+  sewer_mapo_yeongdeungpo_underwater: {
+    name: '마포-영등포 수중 터널',
+    icon: '🌊',
+    from: 'mapo',
+    to: 'yeongdeungpo',
+    tpCost: 4,
+    dangerLevel: 4,
+    encounterChance: 0.35,
+    specialCondition: 'flooding',  // 비 올 때 사용 불가
+    unlockCondition: {
+      minDay: 50,
+      requiredItem: 'rope',
+      minSkill: { building: 3 }
+    }
+  }
+};
+```
+
+### 지하철 이동 흐름
 
 ```
-[탐색] → 원소재 (천, 고철, 나무, 로프)
-   ↓
-[제작] → 가공품 (붕대, 무기, 구조물)
-   ↓
-[의료 스테이션] → HP 자동 회복
-[정수기] → 깨끗한 물 생산
-[캠프파이어] → 체온 유지
+1. 플레이어가 현재 구역에 지하철역이 있는지 확인
+   - SeoulMapModal에서 지하철 노선 오버레이 표시
+   - 또는 탐색 중 "지하철 입구" 발견 이벤트
+
+2. 지하철역 진입 (손전등 필수)
+   - top row에 "지하철 역" 카드 등장
+   - 인접 역 목록 표시 (1~3 정거장 범위)
+
+3. 이동 선택
+   - 목적지 역 선택 → TP 비용 표시 (역 수 × 1 TP)
+   - 조우 확률 표시 (구간별)
+   - "이동" 확인
+
+4. 이동 중 이벤트
+   - 각 역 통과 시 조우 확률 체크
+   - 특수 이벤트: 터널 붕괴 (방향 변경 강제), 어둠 속 소리, 좀비 떼
+   - 조우 시: 어둠 전투 (정확도 -15%, 도주 -20%)
+
+5. 도착
+   - 지상으로 올라옴 → 목적지 구역 도착
+   - 소음 +5 (지하철 문 여는 소리)
 ```
+
+### 지하철 역 특수 루팅
+
+```javascript
+// 지하철 역 자체가 탐색 가능한 장소
+const SUBWAY_STATION_LOOT = {
+  default: [
+    { definitionId: 'energy_bar', weight: 30, minQty: 1, maxQty: 2 },
+    { definitionId: 'sports_drink', weight: 20, minQty: 1, maxQty: 1 },
+    { definitionId: 'flashlight', weight: 10, minQty: 1, maxQty: 1 },
+    { definitionId: 'battery', weight: 15, minQty: 1, maxQty: 2 },
+    { definitionId: 'scrap_metal', weight: 25, minQty: 2, maxQty: 4 }
+  ],
+  // 특수역 보너스 루팅
+  special: {
+    jongno: {  // 종각역 — 지하상가
+      bonusLoot: [
+        { definitionId: 'canned_food', weight: 40, minQty: 2, maxQty: 4 },
+        { definitionId: 'cloth', weight: 30, minQty: 3, maxQty: 5 }
+      ]
+    },
+    gangnam: {  // 강남역 — 대형 역사
+      bonusLoot: [
+        { definitionId: 'first_aid_kit', weight: 15, minQty: 1, maxQty: 1 },
+        { definitionId: 'battery', weight: 25, minQty: 2, maxQty: 3 }
+      ]
+    }
+  }
+};
+```
+
+### 서울 맵 UI 확장
+
+```
+기존 맵 + 지하철 노선 오버레이:
+
+┌──────────────────────────────────────────┐
+│  은평 ── 서대문 ── 종로 ── 동대문        │
+│    │       │  🟠   │  🟢    │            │
+│   ...     마포 ── 용산 ── 성동            │
+│            │  🟢   │  🟠                  │
+│  ═══════ 한강 ═══════════════            │
+│            │       │                      │
+│   영등포 ─ 동작 ── 서초 ── 강남           │
+│     🟢      │  🟠    │  🟢  🟤           │
+│            관악     ...    송파            │
+│                                          │
+│  🟢 2호선  🟠 3호선  🔵 4호선  🟤 7호선  │
+│  🕳️ 하수도 (해금 시 표시)                │
+│                                          │
+│  [지상 이동] [지하철 이동] [하수도]       │
+└──────────────────────────────────────────┘
+
+지하철 노선 토글:
+- 기본: 꺼짐 (손전등 획득 전)
+- 손전등 보유: 자동 활성화
+- 각 노선 색상으로 구역 간 연결선 표시
+- 미해금 노선: 점선 + 자물쇠 아이콘
+```
+
+### 이동 비교 테이블
+
+```
+강남 → 종로 이동 비교:
+
+경로 1 (지상): 강남 → 서초 → 동작 → 마포 다리 → 마포 → 서대문 → 종로
+  TP: 2+2+2+2+2 = 10 TP
+  조우: 5회 체크 (평균 1~2회 전투)
+  위험: 구역별 다양 (위험도 1~4)
+
+경로 2 (2호선): 강남역 → 서초역 → 동작역 → 영등포역 → 마포역 → 서대문역 → 종로역
+  TP: 6 TP (6정거장 × 1TP)
+  조우: 6회 체크 (30% = 평균 1.8회, 어둠 전투)
+  위험: 일정 (위험도 3, 어둠 패널티)
+
+경로 3 (3호선): 강남역 → 서초역 → 동작역 → 용산역 → 종로역
+  TP: 4 TP (4정거장)
+  조우: 4회 체크 (25%)
+  위험: 일정 (위험도 3)
+
+→ 3호선이 가장 효율적이지만 해금 조건이 더 높음 (D20+)
+→ 지상 이동은 느리지만 탐색/루팅 가능
+→ 트레이드오프: 속도 vs 안전 vs 루팅 기회
+```
+
+### 구현 순서
+
+1. `subwayRoutes.js` + `sewerRoutes.js` 데이터 파일 생성
+2. `SubwaySystem.js` 신규 — 노선 해금, 이동 로직, 역간 조우
+3. `ExploreSystem.js` 수정 — 지하철/하수도 이동 경로 추가
+4. `SeoulMapModal.js` 대폭 수정 — 지하철 노선 오버레이, 이동 모드 토글
+5. `SubwayStationModal.js` 신규 — 역 탐색/이동 UI
+6. `CombatSystem.js` — 어둠 전투 패널티 추가
+7. 히든 장소 시스템과 연동 (하수도 해금)
+8. 이동 비용 및 밸런스 조정
 
 ---
 
-## 위험 요소 + 비상 대책
-
-### ⚠️ 위험 등급
-
-| 등급 | 위험 | 확률 | 대책 |
-|------|------|------|------|
-| **치명** | 탈수 사망 (여름) | 물 없으면 1.8일 | 정수기 + 물 15개 비축 |
-| **치명** | 레이드 (D60+) | 1.5%/TP | 바리케이드 + 트랩 + Lv.4 기지 |
-| **높음** | 전투 부상 (출혈·열상) | 피격 시 20% | 붕대 3+, 구급상자 1+ 항상 비축 |
-| **높음** | 패혈증 (감염 60+) | 임상 지식으로 -35% | 항생제 비축 + 소독약 |
-| **높음** | 기아 (영양 0) | 식량 부족 시 | 요리 스킬 + 식량 비축 |
-| **보통** | 절망 (사기 0) | 골절·뇌진탕 누적 | 진통제 비축, 불필요한 전투 회피 |
-| **보통** | 열사병 (여름) | 체온 85+ 36TP | 실내 활동 + 야간 이동 |
-| **보통** | 피로 쓰러짐 | 피로 100 | 대기로 회복 + 기지 효과 |
-| **낮음** | 방사능 | 종로 등 특정 구역 | 해당 구역 회피 |
-
-### 비상 프로토콜
-
-**HP 30% 이하 → RED ALERT**
-1. 즉시 전투 중단, 도주
-2. 붕대 사용 (50% 보너스 = 사실상 최고 효율)
-3. 기지 복귀 (의료 스테이션 HP 회복)
-4. 48 TP 대기 (약 반나절)
-
-**감염 50% 이상 → YELLOW ALERT**
-1. 항생제/소독약 즉시 사용
-2. 오염 음식/물 섭취 금지
-3. 임상 지식 -35%로 진행 느림 → 시간 벌기 가능
-4. 의료 스테이션에서 감염 감소
-
-**소음 50+ → NOISE WARNING**
-1. 불필요한 탐색 중단
-2. 소음 감쇠 대기 (기본 1.0/TP + 기지 보너스)
-3. 60 이상 = 강제 조우 → 즉시 회피 행동
-
----
-
-## 이지수만의 강점 활용 요약
+## 구현 우선순위 & 의존성 맵
 
 ```
-┌─────────────────────────────────────────┐
-│       이지수 100일 핵심 전략 공식        │
-│                                         │
-│  의료 효율 극대화 (치료 +50%)           │
-│  + 감염 저항 (-35%)                     │
-│  + 스마트 전투 (회피 우선, 치료 후 복귀) │
-│  + 자원 순환 (탐색→제작→소비→탐색)       │
-│  = 느리지만 확실한 생존                  │
-│                                         │
-│  ⚠️ 절대 금지: 무모한 전투, 물 낭비     │
-│  ✅ 항상 유지: 물 5+, 붕대 3+, 도주 옵션 │
-└─────────────────────────────────────────┘
+Phase 1 (핵심 기반): Feature 2 → Feature 5
+  이유: 카드 조합 인터랙션 강화가 모든 다른 기능의 기반
+
+Phase 2 (환경 카드화): Feature 1
+  이유: 환경 카드가 있어야 날씨 관련 비밀 조합 가능
+  의존: Feature 2의 퀵 크래프트 인프라
+
+Phase 3 (심리 & 신체): Feature 4 → Feature 7
+  이유: 심리 시스템이 NPC 연동의 전제
+  의존: 독립적 (다른 Feature 없이 구현 가능)
+
+Phase 4 (NPC): Feature 6
+  의존: Feature 4 (외로움), Feature 5 (비밀 조합 힌트 제공)
+
+Phase 5 (세계 확장): Feature 3, Feature 10
+  이유: 동적 생태계 + 지하철이 맵 전략의 깊이를 완성
+  의존: Feature 1 (날씨 카드가 생태계에 영향)
+
+의존성 그래프:
+Feature 2 (카드 조합) ─────┐
+Feature 5 (비밀 조합) ─────┼──→ Feature 1 (환경 카드) ──→ Feature 3 (생태계)
+                           │                              Feature 10 (지하철)
+Feature 4 (심리) ──────────┼──→ Feature 6 (NPC)
+Feature 7 (신체) ──────────┘
 ```
 
----
+### 총 예상 복잡도
 
-## D100 이후 로드맵 (참고)
-
-| 기간 | 목표 | 핵심 이벤트 |
-|------|------|-------------|
-| D101~D120 | 여름 물 퀘스트 완료 | D120 폭염 (+15°C) |
-| D121~D150 | 기지 Lv.5 + 여름 생존 | D135 몬순, D150 태풍 |
-| D151~D180 | 캐릭터 엔딩 준비 | 서대문 재방문, 감염 치료 |
-| D181~D270 | 캐릭터 엔딩 도전 | D181 가을 시작 |
-| D271~D365 | 겨울 생존 + 연간 엔딩 | D271 겨울 (-15°C!) |
-
-**캐릭터 엔딩 조건 (이지수):**
-- Day 180+ 경과
-- 서대문구 방문 완료
-- 감염 치료 달성
-→ "치료 프로토콜 수립" 엔딩 달성
+| Feature | 신규 파일 | 수정 파일 | 난이도 |
+|---------|----------|----------|--------|
+| 1. 환경 카드 | 2 | 6 | 중 |
+| 2. 퀵 크래프트 | 1 | 3 | 중 |
+| 3. 동적 생태계 | 1 | 4 | 높음 |
+| 4. 심리 시스템 | 1 | 5 | 중 |
+| 5. 비밀 조합 | 2 | 3 | 낮음 |
+| 6. NPC 시스템 | 4 | 5 | 높음 |
+| 7. 신체 시뮬 | 1 | 4 | 중 |
+| 10. 지하철/하수도 | 3 | 3 | 중~높음 |
 
 ---
 
 ## 이전 계획 (아카이브)
 
-### 개발 진행 기록 (코드 구현)
+### 이지수(의사) 100일 생존 플랜
 
 <details>
-<summary>Phase A~K 개발 기록 (접기/펴기)</summary>
+<summary>100일 생존 플랜 전문 (접기/펴기)</summary>
+
+> 최종 업데이트: 2026-03-20
+> 유형: 게임플레이 전략 (코드 구현 아님)
+
+#### 캐릭터 분석: 이지수 (응급의학과 전문의)
+
+| 항목 | 수치 | 평가 |
+|------|------|------|
+| HP | 95 | 낮음 |
+| 근력 | 58 | 낮음 |
+| 인내심 | 72 | 보통 |
+| 최대 적재량 | 32kg | 낮음 |
+| 스태미나 | ~84 | 보통 |
+
+특성: 외상 전문가(+50%), 임상 지식(-35% 감염), 응급 처치(+5 HP)
+약점: 전투 스킬 0, 낮은 근력/적재량
+
+Phase 1(D1-7): 삼성서울병원 의료물자 확보, 캠프파이어, 무기
+Phase 2(D8-14): 관악구 탐색, 바리케이드, 물 퀘스트
+Phase 3(D15-30): 전투 훈련, 기지 확장, 정수기/의료스테이션
+Phase 4(D31-60): 6-8구 탐색, 크로스보우, 세브란스 정찰
+Phase 5(D61-90): 기지 Lv.4, 여름 대비 비축
+Phase 6(D91-100): 여름 수분 관리, 열사병 예방
+
+</details>
+
+### 개발 진행 기록 (Phase A~N)
+
+<details>
+<summary>Phase A~N 개발 기록 (접기/펴기)</summary>
 
 ### Phase A — 서울 25구 지역 시스템 ✅
 - js/data/districts.js — 25개 구, adjacency, 위험도, 랜드마크 필드
@@ -563,20 +1904,15 @@ D91부터 수분 감소가 **1.5배**로 증가:
 
 ### Phase L — TP 조정 + 질병·전투 부상 + 날씨 밸런스 ✅ (2026-03-19)
 - TP 간격 15분→20분 (96→72 TP/day), 제작 비용 유지
-- 전투 부상 4종: 출혈·깊은열상·골절·뇌진탕 (diseases.js + DiseaseSystem.js + CombatSystem.js)
+- 전투 부상 4종: 출혈·깊은열상·골절·뇌진탕
 - 질병 발병률 2배, 패널티 20~50%↑, 치사일 1~3일↓
-- 가을 산성비 (WeatherSystem.js), 봄/여름 빗물 수집 강화 (SeasonSystem.js)
-- 300일 시뮬레이션 스크립트 (sim_jisu_300days.mjs) — 생존율 31%, 전투사 39건
 
-### Phase M — 히든 엘리먼트 시스템 🔧 (2026-03-19, 미커밋)
+### Phase M — 히든 엘리먼트 시스템 ✅ (2026-03-19)
 - HiddenElementSystem.js — 히든 장소·보스·비밀 이벤트·히든 레시피 해금 관리
-- hiddenLocations.js — 구역별 조건부 히든 장소 (보상·루팅·보스 트리거)
-- secretEnemies.js — 보스/비밀 적 정의 (스폰 조건·보장 드롭)
-- secretEvents.js — 비밀 이벤트 24종 (선택지·체인 이벤트·결과 분기)
-- hiddenRecipes.js — 조건부 해금 레시피 (히든 장소·보스 처치 연동)
-- legendaryItems.js — 전설 등급 아이템 정의
-- GameState에 추적 필드 9개 + 세이브 호환, CombatSystem에 킬 카운터 추가
-- CraftSystem/CraftUI에 히든 레시피 병합 + 해금 필터링
-- 코드 리뷰 5건 수정 (minHp 단위·import 순서·deserialize 누락·flags 보호·null guard)
+- hiddenLocations.js — 구역별 조건부 히든 장소
+
+### Phase N — 전체 게임 텍스트 i18n 시스템 ✅ (2026-03-20)
+- locales.js — ko/en 딕셔너리 370+ UI 키 + 250+ 데이터 이름 오버라이드
+- I18n.js 재작성 — 38개 파일 i18n 적용
 
 </details>

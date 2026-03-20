@@ -1,11 +1,12 @@
 // === SLOT RESOLVER ===
 // 드랍 유효성 검사 및 카드 상호작용 실행
-import EventBus    from '../core/EventBus.js';
-import GameState   from '../core/GameState.js';
-import I18n        from '../core/I18n.js';
-import BoardManager from './BoardManager.js';
-import NoiseSystem from '../systems/NoiseSystem.js';
-import { findInteraction } from '../data/interactions.js';
+import EventBus                from '../core/EventBus.js';
+import GameState               from '../core/GameState.js';
+import I18n                    from '../core/I18n.js';
+import BoardManager            from './BoardManager.js';
+import NoiseSystem             from '../systems/NoiseSystem.js';
+import { findInteraction }     from '../data/interactions.js';
+import SecretCombinationSystem from '../systems/SecretCombinationSystem.js';
 
 const SlotResolver = {
 
@@ -22,6 +23,11 @@ const SlotResolver = {
     // 상단(장소) 행: 일반 아이템 배치 불가
     if (toRow === 'top') {
       return { valid: false, reason: I18n.t('slot.cantPlaceOnLocation') };
+    }
+
+    // 환경 행: 일반 아이템 배치 불가
+    if (toRow === 'environment') {
+      return { valid: false, reason: I18n.t('slot.cantPlaceOnEnvironment') };
     }
 
     // ✅ 휴대(bottom) → 바닥(middle): 허용 (아이템을 바닥에 버리기)
@@ -159,6 +165,41 @@ const SlotResolver = {
     if (result.noise) NoiseSystem.addNoise(result.noise);
 
     EventBus.emit('notify', { message: result.message, type: 'good' });
+    EventBus.emit('boardChanged', {});
+    return true;
+  },
+
+  // 비밀 조합 체크 및 실행
+  // 반환값: true = 비밀 조합 발동, false = 없음
+  resolveSecretCombo(sourceId, targetId) {
+    const gs      = GameState;
+    const srcDef  = gs.getCardDef(sourceId);
+    const tgtDef  = gs.getCardDef(targetId);
+    if (!srcDef || !tgtDef) return false;
+
+    const check = SecretCombinationSystem.checkCombination(srcDef, tgtDef);
+    if (!check.found) return false;
+
+    if (check.reason) {
+      EventBus.emit('notify', { message: check.reason, type: 'warn' });
+      return true;  // 매칭됐지만 조건 불충족
+    }
+
+    const srcInst = gs.cards[sourceId];
+    const tgtInst = gs.cards[targetId];
+    if (!srcInst || !tgtInst) return false;
+
+    const result = SecretCombinationSystem.applyCombination(check.combo, srcInst, tgtInst);
+
+    if (result.consumeSrc) {
+      BoardManager.removeCard(sourceId);
+      gs.removeCardInstance(sourceId);
+    }
+    if (result.consumeTgt) {
+      BoardManager.removeCard(targetId);
+      gs.removeCardInstance(targetId);
+    }
+
     EventBus.emit('boardChanged', {});
     return true;
   },
