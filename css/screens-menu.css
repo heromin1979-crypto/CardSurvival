@@ -304,10 +304,6 @@
   margin-bottom: 10px;
 }
 
-.char-detail-portrait {
-  font-size: 2rem;
-}
-
 .char-detail-name {
   font-size: var(--font-size-md);
   font-weight: bold;
@@ -365,10 +361,6 @@
 
 .char-ability-list li:last-child {
   border-bottom: none;
-}
-
-.ability-icon {
-  flex-shrink: 0;
 }
 
 .ability-name {
