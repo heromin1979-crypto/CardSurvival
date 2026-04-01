@@ -48,7 +48,6 @@ const Rest = {
 
     const optHtml = REST_OPTIONS.map(opt => `
       <div class="rest-option-card" data-rest-id="${opt.id}">
-        <div class="rest-option-icon">${opt.icon}</div>
         <div class="rest-option-name">${I18n.t('rest.' + opt.id)}</div>
         <div class="rest-option-cost">${I18n.t('rest.' + opt.id + 'Cost')}</div>
         <div class="rest-option-desc">${I18n.t('rest.' + opt.id + 'Desc')}</div>

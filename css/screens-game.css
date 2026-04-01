@@ -276,7 +276,7 @@
   background: var(--bg-surface);
   cursor: pointer;
   transition: all var(--transition-mid);
-  text-align: center;
+  text-align: left;
   display: flex;
   flex-direction: column;
   gap: var(--gap-sm);
@@ -287,7 +287,6 @@
   transform: translateY(-3px);
 }
 
-.rest-option-icon  { font-size: 32px; }
 .rest-option-name  { font-size: var(--font-size-md); color: var(--text-primary); }
 .rest-option-cost  { font-size: var(--font-size-xs); color: var(--text-warn); }
 .rest-option-desc  { font-size: 9px; color: var(--text-dim); }
