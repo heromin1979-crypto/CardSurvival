@@ -250,9 +250,10 @@ const CharCreate = {
 
     // ── 보드·카드 초기화 ─────────────────────────────────────
     gs.board = {
-      top:    [null, null, null, null, null, null, null],
-      middle: [null, null, null, null, null, null, null, null],
-      bottom: [null, null, null, null, null, null, null, null],
+      top:         [null, null, null, null, null, null, null, null],
+      environment: [null, null, null],
+      middle:      [null, null, null, null, null, null, null, null],
+      bottom:      [null, null, null, null, null, null, null, null],
     };
     gs.cards   = {};
     gs._nextId = 1;
@@ -396,31 +397,42 @@ const CharCreate = {
   // ── 지역별 바닥(중간행) 아이템 ──────────────────────────────
 
   _getDistrictFloorItems(districtId) {
+    // 각 지역 바닥에는 캠프파이어 재료(고철+천) + 식량 + 의료 + 도구 보장
     const floorItems = {
-      // ── 의료 (강남 — 의사·노숙자 시작) ──
-      gangnam: [
+      // ── 한강변 주거 (동작 — 의사 시작) ──
+      dongjak: [
         'broken_chair', 'old_fire_extinguisher',
-        'cloth', 'cloth', 'canned_food', 'bandage', 'rope',
+        'scrap_metal', 'cloth', 'cloth', 'canned_food', 'bandage', 'rope',
       ],
-      // ── 군사/전자 (용산 — 군인·소방관 시작) ──
-      yongsan: [
-        'rusted_toolbox', 'collapsed_guard_post',
-        'scrap_metal', 'scrap_metal', 'duct_tape', 'rope', 'bandage',
+      // ── 산악 외곽 (도봉 — 군인 시작) ──
+      dobong: [
+        'broken_chair', 'collapsed_shelf',
+        'scrap_metal', 'wood', 'rope', 'cloth', 'canned_food', 'bandage',
       ],
-      // ── 대학/상업 (마포 — 약사 시작) ──
-      mapo: [
+      // ── 북한산 외곽 (은평 — 소방관 시작) ──
+      eunpyeong: [
+        'rusted_toolbox', 'broken_lamp',
+        'scrap_metal', 'rope', 'cloth', 'bandage', 'wood', 'canned_food',
+      ],
+      // ── 목동 주거 (양천 — 노숙자 시작) ──
+      yangcheon: [
+        'broken_chair', 'old_fire_extinguisher',
+        'cloth', 'canned_food', 'rope', 'scrap_metal', 'bandage', 'wood',
+      ],
+      // ── 대학가 (관악 — 약사 시작) ──
+      gwanak: [
         'collapsed_shelf', 'broken_lamp',
-        'cloth', 'canned_food', 'rope', 'bandage', 'scrap_metal',
+        'cloth', 'canned_food', 'rope', 'bandage', 'scrap_metal', 'wood',
       ],
-      // ── 공업 (성동 — 엔지니어 시작) ──
-      seongdong: [
+      // ── 아파트 단지 (노원 — 엔지니어 시작) ──
+      nowon: [
         'old_generator', 'rusted_toolbox',
-        'scrap_metal', 'scrap_metal', 'wire', 'rope', 'cloth',
+        'scrap_metal', 'cloth', 'wire', 'rope', 'canned_food', 'bandage',
       ],
     };
     return floorItems[districtId] ?? [
       'broken_chair', 'old_fire_extinguisher',
-      'cloth', 'canned_food', 'rope', 'bandage',
+      'scrap_metal', 'cloth', 'canned_food', 'rope', 'bandage', 'wood',
     ];
   },
 };

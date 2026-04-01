@@ -210,8 +210,9 @@ const GameState = {
 
   // ── flags ─────────────────────────────────────────────
   flags: {
-    tutorialSeen: false,
-    firstBlood:   false,
+    tutorialSeen:         false,
+    firstBlood:           false,
+    firstNightHintShown:  false,
     // ── 엔딩 추적 ──────────────────────────────────────
     totalKills:          0,    // 누적 처치 수
     totalItemsFound:     0,    // 누적 발견 아이템 수

@@ -567,3 +567,42 @@ html, body {
     padding: 4px;
   }
 }
+
+/* ── 퀵크래프트 프롬프트 반응형 ─────────────────────────── */
+@media (max-width: 600px) {
+  .quick-craft-panel {
+    width: 95vw;
+    max-height: 85vh;
+    padding: 12px;
+  }
+
+  .qc-title {
+    font-size: 13px;
+  }
+
+  .qc-recipe {
+    padding: 8px;
+  }
+
+  .qc-recipe-actions {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .qc-craft-btn,
+  .qc-detail-btn {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+@media (max-width: 360px) {
+  .quick-craft-panel {
+    padding: 8px;
+  }
+
+  .qc-recipes {
+    gap: 6px;
+  }
+}
+

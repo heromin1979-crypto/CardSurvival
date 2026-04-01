@@ -40,6 +40,7 @@
 
 .modal-title {
   font-size: var(--font-size-lg);
+  font-family: var(--font-title);
   color: var(--accent-primary);
   letter-spacing: 2px;
   text-transform: uppercase;
@@ -390,7 +391,8 @@
 }
 
 .qc-craft-btn {
-  padding: 5px 14px;
+  padding: 10px 14px;
+  min-height: 44px;
   border: 1px solid rgba(100, 180, 100, 0.4);
   border-radius: var(--radius-sm);
   background: rgba(50, 100, 50, 0.2);
@@ -417,7 +419,8 @@
 }
 
 .qc-detail-btn {
-  padding: 5px 10px;
+  padding: 10px 10px;
+  min-height: 44px;
   border: 1px solid var(--border-dim);
   border-radius: var(--radius-sm);
   background: transparent;
@@ -434,7 +437,8 @@
 }
 
 .qc-close-btn {
-  padding: 6px 16px;
+  padding: 10px 16px;
+  min-height: 44px;
   border: 1px solid var(--border-mid);
   border-radius: var(--radius-sm);
   background: var(--bg-raised);

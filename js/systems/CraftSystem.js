@@ -8,6 +8,7 @@ import { SKILL_DEFS }  from '../data/skillDefs.js';
 import SkillSystem     from './SkillSystem.js';
 import StatSystem      from './StatSystem.js';
 import BALANCE         from '../data/gameBalance.js';
+import NightSystem     from './NightSystem.js';
 
 // 히든 레시피 포함 전체 레시피
 const BLUEPRINTS = { ...BLUEPRINTS_BASE, ...HIDDEN_RECIPES };
@@ -19,6 +20,10 @@ const CraftSystem = {
 
   // Check if a blueprint's current stage requirements are met on the board
   canStartBlueprint(blueprintId) {
+    // ── 야간 광원 체크 ──────────────────────────────────────
+    const nightCheck = NightSystem.canActAtNight('craft');
+    if (!nightCheck.allowed) return { ok: false, reason: nightCheck.reason };
+
     const bp = BLUEPRINTS[blueprintId];
     if (!bp) return { ok: false, reason: 'Unknown blueprint' };
 

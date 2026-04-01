@@ -15,7 +15,8 @@ const QuickCraftPrompt = {
    * @param {string} tgtDefId
    */
   show(srcDefId, tgtDefId) {
-    const recipes = CraftDiscovery.findRecipes(srcDefId, tgtDefId);
+    const recipes = CraftDiscovery.findRecipes(srcDefId, tgtDefId)
+      .filter(r => r.canStartNow);
     if (recipes.length === 0) return;
 
     this._removeOverlay();
@@ -28,9 +29,12 @@ const QuickCraftPrompt = {
 
     const panel = document.createElement('div');
     panel.className = 'quick-craft-panel';
+    panel.setAttribute('role', 'dialog');
+    panel.setAttribute('aria-modal', 'true');
+    panel.setAttribute('aria-labelledby', 'qc-title-label');
 
     panel.innerHTML = `
-      <div class="qc-title">✨ ${I18n.t('quickCraft.title')}</div>
+      <div class="qc-title" id="qc-title-label">⚒ ${I18n.t('quickCraft.title')}</div>
       <div class="qc-recipes">
         ${recipes.map((r, i) => this._renderRecipe(r, i)).join('')}
       </div>
@@ -40,6 +44,16 @@ const QuickCraftPrompt = {
     overlay.appendChild(panel);
     document.body.appendChild(overlay);
     this._overlay = overlay;
+
+    // Escape 키로 닫기
+    this._escHandler = (e) => { if (e.key === 'Escape') this._removeOverlay(); };
+    document.addEventListener('keydown', this._escHandler);
+
+    // 첫 번째 버튼에 포커스
+    requestAnimationFrame(() => {
+      const firstBtn = panel.querySelector('button:not([disabled])');
+      if (firstBtn) firstBtn.focus();
+    });
 
     // 이벤트 바인딩
     panel.querySelector('.qc-close-btn')
@@ -107,6 +121,10 @@ const QuickCraftPrompt = {
     if (this._overlay) {
       this._overlay.remove();
       this._overlay = null;
+    }
+    if (this._escHandler) {
+      document.removeEventListener('keydown', this._escHandler);
+      this._escHandler = null;
     }
   },
 };

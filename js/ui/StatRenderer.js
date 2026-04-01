@@ -1,8 +1,9 @@
 // === STAT RENDERER ===
 // Updates HUD stat bars and TP clock
-import EventBus  from '../core/EventBus.js';
-import GameState from '../core/GameState.js';
-import I18n      from '../core/I18n.js';
+import EventBus    from '../core/EventBus.js';
+import GameState   from '../core/GameState.js';
+import I18n        from '../core/I18n.js';
+import NightSystem from '../systems/NightSystem.js';
 
 const STAT_CONFIG = [
   { key: 'hydration',   i18nKey: 'stat.hydration',   icon: '💧' },
@@ -153,6 +154,21 @@ const StatRenderer = {
     const timeEl = document.getElementById('hud-time');
     if (dayEl)  dayEl.textContent  = `Day ${gs.time.day}`;
     if (timeEl) timeEl.textContent = this._formatHour(gs.time.hour);
+
+    // 야간 HUD 인디케이터 (색상 구분)
+    const nightEl = document.getElementById('hud-night-indicator');
+    if (nightEl) {
+      const isNight = NightSystem.isNight();
+      const hasLight = isNight && NightSystem.hasLightSource();
+      nightEl.textContent = isNight ? '🌙' : '';
+      nightEl.className = isNight
+        ? (hasLight ? 'bc-night-indicator night-lit' : 'bc-night-indicator night-dark night-flicker')
+        : 'bc-night-indicator';
+      // 야간 배경 틴트 — CSS 변수 전환
+      document.documentElement.style.setProperty(
+        '--bg-base', isNight ? '#090d12' : '#0d0d0d'
+      );
+    }
 
     // HP
     const hpEl = document.getElementById('hud-hp');

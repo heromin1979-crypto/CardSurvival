@@ -6,6 +6,7 @@ import EventBus  from '../core/EventBus.js';
 import GameState from '../core/GameState.js';
 import I18n      from '../core/I18n.js';
 import { DISTRICTS } from '../data/districts.js';
+import NightSystem   from './NightSystem.js';
 
 // ── 캐릭터별 심리 특성 ───────────────────────────────────────
 const MENTAL_TRAITS = {
@@ -83,15 +84,14 @@ const MentalSystem = {
     if (danger >= 3) anxietyDelta += 0.3;
     if (noise > 50)  anxietyDelta += 0.2;
     if (diseaseCount > 0) anxietyDelta += 0.1 * diseaseCount;
-    if (hour >= 22 || hour < 6) anxietyDelta += 0.1;  // 야간
+    if (NightSystem.isNight()) anxietyDelta += 0.1;  // 야간
 
     // 감소 요인
     if (danger <= 1) anxietyDelta -= 0.3;
     const isBasecamp = gs.ui.currentState === 'basecamp';
     if (isBasecamp) anxietyDelta -= 0.5;
-    // 캠프파이어 존재 시 감소
-    const hasCampfire = gs.getBoardCards().some(c => c.definitionId === 'campfire');
-    if (hasCampfire) anxietyDelta -= 0.2;
+    // 광원(캠프파이어·횃불·램프 등) 존재 시 감소
+    if (NightSystem.hasLightSource()) anxietyDelta -= 0.2;
 
     // 캐릭터 특성 적용
     if (anxietyDelta > 0) anxietyDelta *= traits.anxietyResist;
@@ -139,7 +139,7 @@ const MentalSystem = {
     }
 
     // ── 악몽 이벤트 (야간, 트라우마 기반) ──────────────────
-    if ((hour >= 0 && hour < 6) && Math.random() < traumaTier.nightmareChance) {
+    if (NightSystem.isNight() && Math.random() < traumaTier.nightmareChance) {
       gs.modStat('fatigue', 3);
       m.anxiety = Math.min(100, m.anxiety + 5);
       EventBus.emit('notify', { message: I18n.t('mental.nightmare'), type: 'danger' });
@@ -256,6 +256,18 @@ const MentalSystem = {
   getMentalState() {
     this.ensureInitialized();
     return { ...GameState.mental };
+  },
+
+  /**
+   * 외부 이벤트로 불안 수치를 변경. 증가 시 anxietyResist 특성 적용.
+   * @param {number} delta — 양수=증가, 음수=감소
+   */
+  modifyAnxiety(delta) {
+    this.ensureInitialized();
+    const m = GameState.mental;
+    const traits = this._getTraits();
+    const effective = delta > 0 ? delta * traits.anxietyResist : delta;
+    m.anxiety = Math.max(0, Math.min(100, m.anxiety + effective));
   },
 
   // ── 내부 ─────────────────────────────────────────────────────

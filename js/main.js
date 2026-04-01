@@ -45,6 +45,7 @@ import MentalSystem         from './systems/MentalSystem.js';
 import NPCSystem            from './systems/NPCSystem.js';
 import BodySystem           from './systems/BodySystem.js';
 import SubwaySystem         from './systems/SubwaySystem.js';
+import NightSystem          from './systems/NightSystem.js';
 
 // Board
 import BoardManager from './board/BoardManager.js';
@@ -144,6 +145,8 @@ function init() {
   BGMSystem.init();
   HiddenElementSystem.init();
   SubwaySystem.init();
+  NightSystem.init();
+  window.__NightSystem__ = NightSystem;  // UI에서 야간 표시용
 
   // Board
   BoardManager.init();

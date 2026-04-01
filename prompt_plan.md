@@ -1794,18 +1794,20 @@ Feature 4 (심리) ──────────┼──→ Feature 6 (NPC)
 Feature 7 (신체) ──────────┘
 ```
 
-### 총 예상 복잡도
+### 구현 상태 (2026-03-20 완료)
 
-| Feature | 신규 파일 | 수정 파일 | 난이도 |
-|---------|----------|----------|--------|
-| 1. 환경 카드 | 2 | 6 | 중 |
-| 2. 퀵 크래프트 | 1 | 3 | 중 |
-| 3. 동적 생태계 | 1 | 4 | 높음 |
-| 4. 심리 시스템 | 1 | 5 | 중 |
-| 5. 비밀 조합 | 2 | 3 | 낮음 |
-| 6. NPC 시스템 | 4 | 5 | 높음 |
-| 7. 신체 시뮬 | 1 | 4 | 중 |
-| 10. 지하철/하수도 | 3 | 3 | 중~높음 |
+| Feature | 상태 | 신규 파일 | 주요 시스템 |
+|---------|------|----------|------------|
+| 1. 환경 카드 | ✅ 완료 | items_environment.js | WeatherSystem 연동, 7개 인터랙션 |
+| 2. 퀵 크래프트 | ✅ 완료 | CraftDiscovery.js, QuickCraftPrompt.js | DragDrop 우선순위 체인 통합 |
+| 3. 동적 생태계 | ✅ 완료 | EcologySystem.js | 좀비이동/자원재생/오염, 맵 오버레이 |
+| 4. 심리 시스템 | ✅ 완료 | MentalSystem.js | 3축(불안/외로움/트라우마) + 캐릭터 특성 |
+| 5. 비밀 조합 | ✅ 완료 | secretCombinations.js, SecretCombinationSystem.js | 20종 + 힌트 3경로 + 갤러리 UI |
+| 6. NPC 시스템 | ✅ 완료 | npcs.js, NPCSystem.js, NPCDialogueModal.js | 8명 NPC + HP + 이탈 4조건 |
+| 7. 신체 시뮬 | ✅ 완료 | BodySystem.js | 6부위 + 다이어그램 UI + 치료 연결 |
+| 10. 지하철/하수도 | ✅ 완료 | subwayRoutes.js, SubwaySystem.js | 4노선 + 역탐색 + 맵 오버레이 |
+| + BGM | ✅ 완료 | BGMSystem.js | Web Audio 프로시저럴, 8개 분위기 |
+| + 버그 수정 | ✅ 완료 | — | 이벤트 미발행 4건, init 순서 등 9건 |
 
 ---
 
@@ -1914,5 +1916,18 @@ Phase 6(D91-100): 여름 수분 관리, 열사병 예방
 ### Phase N — 전체 게임 텍스트 i18n 시스템 ✅ (2026-03-20)
 - locales.js — ko/en 딕셔너리 370+ UI 키 + 250+ 데이터 이름 오버라이드
 - I18n.js 재작성 — 38개 파일 i18n 적용
+
+### Phase O — 카드 서바이벌 8대 시스템 확장 ✅ (2026-03-20)
+- Feature 1: items_environment.js (23 환경 카드) + WeatherSystem/SeasonSystem 환경 카드 동기화 + 7개 날씨 인터랙션
+- Feature 2: CraftDiscovery.js + QuickCraftPrompt.js — DragDrop/TouchDrag 우선순위 체인 통합
+- Feature 3: EcologySystem.js — 구역별 좀비밀도/자원/오염 동적 변화 + SeoulMapModal 오버레이
+- Feature 4: MentalSystem.js — 불안/외로움/트라우마 3축 + StatRenderer 심리 바 + 캐릭터별 특성
+- Feature 5: secretCombinations.js (20종) + SecretCombinationSystem.js + 힌트 3경로(NPC/히든장소/스킬) + SecretGalleryTab.js
+- Feature 6: npcs.js (8명) + NPCSystem.js + NPCDialogueModal.js + 이탈 4조건 + NPC HP 추적
+- Feature 7: BodySystem.js — 6부위 피격 판정 + EquipmentModal 다이어그램 UI + 치료 연결
+- Feature 10: subwayRoutes.js + SubwaySystem.js — 4개 노선 + 2개 하수도 + SeoulMapModal 오버레이 + 역 탐색
+- BGMSystem.js — Web Audio API 프로시저럴 앰비언트, 8개 분위기 적응형
+- 플레이테스트 버그 9건 수정 (이벤트 미발행, init 순서, NPC 전투보너스, 아이템 미등록 등)
+- 43 files changed, ~8600 insertions
 
 </details>

@@ -161,17 +161,27 @@ const TouchDrag = {
         if (!interacted) {
           const secreted = SlotResolver.resolveSecretCombo(this._draggingId, existingId);
           if (!secreted) {
-            const srcDef = GameState.getCardDef(this._draggingId);
-            const tgtDef = GameState.getCardDef(existingId);
-            if (srcDef && tgtDef) {
-              const recipes = CraftDiscovery.findRecipes(srcDef.id, tgtDef.id);
-              if (recipes.length > 0) {
-                QuickCraftPrompt.show(srcDef.id, tgtDef.id);
+            // 스택 합산 우선 (크래프트보다 먼저)
+            const srcInst = GameState.cards[this._draggingId];
+            const tgtInst = GameState.cards[existingId];
+            const srcDef  = GameState.getCardDef(this._draggingId);
+            if (srcInst && tgtInst && srcDef?.stackable &&
+                srcInst.definitionId === tgtInst.definitionId) {
+              SlotResolver.executeDrop(this._draggingId, row, slotIdx);
+            } else {
+              // 크래프트 조합 — 재료가 모두 있을 때만
+              const tgtDef = GameState.getCardDef(existingId);
+              if (srcDef && tgtDef) {
+                const recipes = CraftDiscovery.findRecipes(srcDef.id, tgtDef.id)
+                  .filter(r => r.canStartNow);
+                if (recipes.length > 0) {
+                  QuickCraftPrompt.show(srcDef.id, tgtDef.id);
+                } else {
+                  SlotResolver.executeDrop(this._draggingId, row, slotIdx);
+                }
               } else {
                 SlotResolver.executeDrop(this._draggingId, row, slotIdx);
               }
-            } else {
-              SlotResolver.executeDrop(this._draggingId, row, slotIdx);
             }
           }
         }

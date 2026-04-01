@@ -158,7 +158,7 @@ const ITEMS_MISC = {
     rarity: 'common', weight: 0.3,
     defaultDurability: 80, defaultContamination: 0,
     icon: '🔦', description: '어두운 공간 탐색 시 발견 확률 +20%.',
-    tags: ['tool', 'exploration'],
+    tags: ['tool', 'exploration', 'light'],
     onUse: { exploreBonus: 20 },
     dismantle: [
       { definitionId: 'electronic_parts', qty: 1, chance: 0.7 },
@@ -242,7 +242,7 @@ const ITEMS_MISC = {
     rarity: 'common', weight: 0.05,
     defaultDurability: 40, defaultContamination: 0,
     icon: '🔥', description: '불을 붙이는 도구. 캠프파이어 없이도 일부 조리 가능.',
-    tags: ['tool', 'fire'],
+    tags: ['tool', 'fire', 'light'],
     onUse: { fireStart: true },
     dismantle: [],
   },
@@ -286,7 +286,7 @@ const ITEMS_MISC = {
     rarity: 'uncommon', weight: 2.0,
     defaultDurability: 50, defaultContamination: 0,
     icon: '🔥', description: '온도 회복, 요리, 정수에 사용. 소음 발생.',
-    tags: ['structure', 'heat'],
+    tags: ['structure', 'heat', 'light'],
     onTick: { temperature: 2, noise: 3 },
     dismantleTP: 1,
     dismantle: [

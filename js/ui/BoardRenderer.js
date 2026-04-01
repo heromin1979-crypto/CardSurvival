@@ -159,7 +159,11 @@ const BoardRenderer = {
         } else {
           // 새로 생성 (신규 카드)
           const cardEl = CardFactory.build(instanceId);
-          if (cardEl) slotEl.appendChild(cardEl);
+          if (cardEl) {
+            cardEl.classList.add('entering');
+            slotEl.appendChild(cardEl);
+            setTimeout(() => cardEl.classList.remove('entering'), 160);
+          }
         }
       });
     }

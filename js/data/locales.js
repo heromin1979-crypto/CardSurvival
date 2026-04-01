@@ -283,6 +283,21 @@ export const ko = {
   'mental.hallucination':'👻 뭔가가 보인 것 같다... 환각인가?',
   'mental.anxietyWarn':  '😟 불안감이 심해지고 있다.',
   'mental.lonelyWarn':   '😔 외로움이 깊어지고 있다.',
+
+  // ── Night ──────────────────────────────────────────
+  'night.noLightExplore':  '🌙 어둠 속에서는 탐색할 수 없다. 광원이 필요하다.',
+  'night.noLightCraft':    '🌙 어둠 속에서는 제작할 수 없다. 광원이 필요하다.',
+  'night.noLightDismantle':'🌙 어둠 속에서는 분해할 수 없다. 광원이 필요하다.',
+  'night.noLightTravel':   '🌙 어둠 속에서는 이동할 수 없다. 광원이 필요하다.',
+  'night.indicator':       '🌙 야간',
+  'night.darkSleep':       '😰 어둠 속에서 잠들었다... 피로 회복 감소, 불안 증가.',
+  'night.litSleep':        '🕯️ 광원 아래에서 편안히 잠들었다. 불안 감소.',
+  'night.darkNightmare':   '😱 칠흑 같은 어둠 속에서 악몽에 시달렸다!',
+  'night.dangerWarning':   '⚠️ 밤이 되었다. 위험이 증가한다.',
+  'night.travelCostWarn':  '🌙 야간 이동: TP 비용 1.5배',
+  'night.lightBroken':     '🔦 {name}의 배터리가 다 됐다!',
+  'night.firstNightHint':  '🌙 밤이 됐다. 광원(손전등, 캠프파이어)이 없으면 행동이 제한된다. 위험도 2배.',
+
   'secret.cooldown':     '아직 다시 사용할 수 없다.',
   'secret.galleryTitle': '비밀 조합 갤러리',
   'secret.progress':     '발견: {found}/{total}',
@@ -475,6 +490,7 @@ export const ko = {
   'dismantle.cantDismantle': '{name}은(는) 분해할 수 없습니다.',
   'dismantle.tpShort':       '해체에 {cost} TP 필요 (남은 TP: {remain})',
   'dismantle.boardFull':     '보드 공간 부족으로 일부 재료를 배치하지 못했습니다.',
+  'dismantle.noSpace':       '분해하려면 빈 슬롯 {need}칸이 필요합니다. (현재 {have}칸)',
   'dismantle.success':       '[분해] {name} → {materials}',
   'dismantle.noMaterial':    '[분해] {name} — 재료를 얻지 못했습니다.',
 
@@ -1038,6 +1054,21 @@ export const en = {
   'mental.hallucination':'👻 You see something... A hallucination?',
   'mental.anxietyWarn':  '😟 Anxiety is getting worse.',
   'mental.lonelyWarn':   '😔 Loneliness deepens.',
+
+  // ── Night ──────────────────────────────────────────
+  'night.noLightExplore':  '🌙 Too dark to explore. You need a light source.',
+  'night.noLightCraft':    '🌙 Too dark to craft. You need a light source.',
+  'night.noLightDismantle':'🌙 Too dark to dismantle. You need a light source.',
+  'night.noLightTravel':   '🌙 Too dark to travel. You need a light source.',
+  'night.indicator':       '🌙 Night',
+  'night.darkSleep':       '😰 Slept in darkness... Fatigue recovery reduced, anxiety increased.',
+  'night.litSleep':        '🕯️ Slept peacefully by the light. Anxiety decreased.',
+  'night.darkNightmare':   '😱 Nightmares haunted you in the pitch darkness!',
+  'night.dangerWarning':   '⚠️ Night has fallen. Danger increases.',
+  'night.travelCostWarn':  '🌙 Night travel: TP cost ×1.5',
+  'night.lightBroken':     '🔦 {name} battery is dead!',
+  'night.firstNightHint':  '🌙 Night has fallen. Without a light source, actions are restricted. Danger doubled.',
+
   'secret.cooldown':     'Not ready yet.',
   'secret.galleryTitle': 'Secret Combinations',
   'secret.progress':     'Discovered: {found}/{total}',
@@ -1230,6 +1261,7 @@ export const en = {
   'dismantle.cantDismantle': '{name} cannot be dismantled.',
   'dismantle.tpShort':       'Dismantling requires {cost} TP (Remaining: {remain})',
   'dismantle.boardFull':     'Not enough board space for some materials.',
+  'dismantle.noSpace':       'Need {need} empty slots to dismantle. (Currently {have})',
   'dismantle.success':       '[Dismantle] {name} → {materials}',
   'dismantle.noMaterial':    '[Dismantle] {name} — No materials obtained.',
 

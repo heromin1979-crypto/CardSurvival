@@ -17,8 +17,8 @@ const BLUEPRINTS = {
     stages: [{
       stageIndex: 0, label: '화롯대 설치', tpCost: 1,
       requiredItems: [
-        { definitionId: 'scrap_metal', qty: 1 },
-        { definitionId: 'cloth', qty: 1 },
+        { definitionId: 'wood', qty: 2 },
+        { definitionId: 'lighter', qty: 1 },
       ],
       consumeAt: 'start',
     }],

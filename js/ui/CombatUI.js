@@ -109,6 +109,7 @@ const CombatUI = {
           </div>
           <!-- 플레이어 스프라이트 + HP -->
           <div class="cv-player">
+            <img class="cv-player-img" src="${gs.player.gender === 'F' ? PLAYER_IMG_F : PLAYER_IMG_M}" alt="${gs.player.name}">
             <div class="cv-player-info">
               <div class="cv-hp-name">${gs.player.name}</div>
               <div class="cv-hp-bar-track">
@@ -117,7 +118,6 @@ const CombatUI = {
               <div class="cv-hp-text ${hpClass}">${gs.player.hp.current} / ${gs.player.hp.max}</div>
               ${playerStatusHtml ? `<div class="cp-status-row" style="margin-top:3px;">${playerStatusHtml}</div>` : ''}
             </div>
-            <img class="cv-player-img" src="${gs.player.gender === 'F' ? PLAYER_IMG_F : PLAYER_IMG_M}" alt="${gs.player.name}">
           </div>
         </div>
 

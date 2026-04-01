@@ -4,7 +4,8 @@ import EventBus    from '../core/EventBus.js';
 import GameState  from '../core/GameState.js';
 import I18n        from '../core/I18n.js';
 import TickEngine  from '../core/TickEngine.js';
-import SkillSystem from './SkillSystem.js';
+import SkillSystem  from './SkillSystem.js';
+import NightSystem  from './NightSystem.js';
 
 const DismantleSystem = {
 
@@ -21,6 +22,28 @@ const DismantleSystem = {
 
     if (!def.dismantle?.length) {
       EventBus.emit('notify', { message: I18n.t('dismantle.cantDismantle', { name: I18n.itemName(def.id, def.name) }), type: 'warn' });
+      return { success: false, gained: [] };
+    }
+
+    // ── 야간 광원 체크 ──────────────────────────────────────
+    const nightCheck = NightSystem.canActAtNight('dismantle');
+    if (!nightCheck.allowed) {
+      EventBus.emit('notify', { message: nightCheck.reason, type: 'danger' });
+      return { success: false, gained: [] };
+    }
+
+    // 빈 슬롯 체크: 분해 결과물이 들어갈 공간이 있는지 확인
+    // 원본 카드가 빠지면 1슬롯 확보되므로 (최대 결과물 수 - 1)개의 빈 슬롯 필요
+    const maxOutputs = def.dismantle.length + (GameState.player.dismantleExtraItem ?? 0);
+    const emptySlots = ['middle', 'bottom'].reduce((sum, row) =>
+      sum + GameState.board[row].filter(v => v === null).length, 0);
+    // 원본 카드가 차지하는 슬롯 1개를 추가로 확보 가능
+    const availableSlots = emptySlots + 1;
+    if (availableSlots < maxOutputs) {
+      EventBus.emit('notify', {
+        message: I18n.t('dismantle.noSpace', { need: maxOutputs, have: availableSlots }),
+        type: 'warn',
+      });
       return { success: false, gained: [] };
     }
 

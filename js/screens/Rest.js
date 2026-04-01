@@ -4,6 +4,8 @@ import GameState   from '../core/GameState.js';
 import StateMachine from '../core/StateMachine.js';
 import I18n        from '../core/I18n.js';
 import TickEngine   from '../core/TickEngine.js';
+import NightSystem  from '../systems/NightSystem.js';
+import MentalSystem from '../systems/MentalSystem.js';
 
 const REST_OPTIONS = [
   {
@@ -78,13 +80,37 @@ const Rest = {
     // Skip TP for rest duration
     TickEngine.skipTP(opt.tpCost, I18n.t('rest.' + opt.id));
 
-    // Apply effects
+    // ── 수면 품질 판정 ──────────────────────────────────────
+    const sleepQ = NightSystem.getSleepQuality();
+
+    // Apply effects (fatigue 회복에 수면 품질 반영)
     for (const [key, val] of Object.entries(opt.effect)) {
       if (key === 'hp') {
         gs.player.hp.current = Math.min(gs.player.hp.max, gs.player.hp.current + val);
+      } else if (key === 'fatigue') {
+        // 음수(회복)일 때만 품질 배율 적용
+        const adjusted = val < 0 ? Math.round(val * sleepQ.fatigueMult) : val;
+        gs.modStat(key, adjusted);
       } else {
         gs.modStat(key, val);
       }
+    }
+
+    // ── 수면 품질별 추가 효과 ────────────────────────────────
+    if (sleepQ.quality === 'dark') {
+      // 어둠 수면: 불안 증가 + 악몽 확률 상승
+      if (gs.mental) MentalSystem.modifyAnxiety(sleepQ.anxietyDelta);
+      // 악몽 추가 확률 (트라우마 기반 nightmareChance에 보너스)
+      if (Math.random() < sleepQ.nightmareBonus) {
+        gs.modStat('fatigue', 3);
+        if (gs.mental) MentalSystem.modifyAnxiety(5);
+        EventBus.emit('notify', { message: I18n.t('night.darkNightmare'), type: 'danger' });
+      }
+      EventBus.emit('notify', { message: I18n.t('night.darkSleep'), type: 'warn' });
+    } else if (sleepQ.quality === 'lit') {
+      // 광원 수면: 불안 감소
+      if (gs.mental) MentalSystem.modifyAnxiety(sleepQ.anxietyDelta);
+      EventBus.emit('notify', { message: I18n.t('night.litSleep'), type: 'good' });
     }
 
     EventBus.emit('notify', { message: I18n.t('rest.complete', { name: I18n.t('rest.' + opt.id) }), type: 'good' });

@@ -188,44 +188,56 @@ const ENEMIES = {
   },
 };
 
-// Encounter table per node danger level
+// Encounter table per node danger level (1~5)
 const ENCOUNTER_TABLES = {
+  // DL1: 안전 구역 — 약한 적 위주, 드문 특수 감염자
   1: [
-    { enemyId: 'zombie_common', weight: 60 },
-    { enemyId: 'zombie_runner', weight: 20 },
+    { enemyId: 'zombie_common', weight: 65 },
+    { enemyId: 'rabid_dog',     weight: 20 },
+    { enemyId: 'zombie_runner', weight: 10 },
     { enemyId: 'zombie_acid',   weight: 5  },
-    { enemyId: 'rabid_dog',     weight: 15 },
   ],
+  // DL2: 보통 구역 — 약탈자 등장, 러너 증가
   2: [
     { enemyId: 'zombie_common', weight: 30 },
     { enemyId: 'zombie_runner', weight: 25 },
+    { enemyId: 'raider',        weight: 20 },
+    { enemyId: 'rabid_dog',     weight: 15 },
     { enemyId: 'zombie_acid',   weight: 10 },
-    { enemyId: 'raider',        weight: 25 },
-    { enemyId: 'rabid_dog',     weight: 10 },
   ],
+  // DL3: 위험 구역 — 거대 좀비·무리 등장, 정예 약탈자
   3: [
-    { enemyId: 'zombie_common', weight: 20 },
     { enemyId: 'zombie_runner', weight: 20 },
+    { enemyId: 'zombie_common', weight: 15 },
     { enemyId: 'zombie_brute',  weight: 15 },
     { enemyId: 'zombie_acid',   weight: 15 },
+    { enemyId: 'raider',        weight: 15 },
     { enemyId: 'zombie_horde',  weight: 10 },
-    { enemyId: 'raider',        weight: 10 },
     { enemyId: 'raider_elite',  weight: 5  },
     { enemyId: 'rabid_dog',     weight: 5  },
   ],
+  // DL4: 고위험 구역 — 거대 좀비·무리 주력, 정예 약탈자 빈출
   4: [
-    { enemyId: 'zombie_runner', weight: 15 },
     { enemyId: 'zombie_brute',  weight: 25 },
-    { enemyId: 'zombie_horde',  weight: 25 },
+    { enemyId: 'zombie_horde',  weight: 20 },
     { enemyId: 'zombie_acid',   weight: 15 },
-    { enemyId: 'raider',        weight: 10 },
-    { enemyId: 'raider_elite',  weight: 5  },
+    { enemyId: 'raider_elite',  weight: 15 },
+    { enemyId: 'zombie_runner', weight: 15 },
+    { enemyId: 'raider',        weight: 5  },
     { enemyId: 'rabid_dog',     weight: 5  },
+  ],
+  // DL5: 극위험 구역 — 최강 적 위주, 약한 적 없음
+  5: [
+    { enemyId: 'zombie_brute',  weight: 30 },
+    { enemyId: 'zombie_horde',  weight: 30 },
+    { enemyId: 'raider_elite',  weight: 20 },
+    { enemyId: 'zombie_acid',   weight: 15 },
+    { enemyId: 'zombie_runner', weight: 5  },
   ],
 };
 
 function rollEnemy(dangerLevel) {
-  const table = ENCOUNTER_TABLES[Math.min(dangerLevel, 4)] || ENCOUNTER_TABLES[1];
+  const table = ENCOUNTER_TABLES[Math.min(dangerLevel, 5)] || ENCOUNTER_TABLES[1];
   const total = table.reduce((s, e) => s + e.weight, 0);
   let rand = Math.random() * total;
   for (const entry of table) {
@@ -250,7 +262,7 @@ function rollEnemy(dangerLevel) {
  * - 소음 30~64  → 2마리, 위험도 그대로
  * - 소음 65~    → 3마리, 위험도 +1 (강한 적)
  *
- * @param {number} dangerLevel - 장소 위험도 (1~4)
+ * @param {number} dangerLevel - 장소 위험도 (1~5)
  * @param {number} noiseLevel  - 현재 소음 수치 (0~100)
  * @returns {Array} 적 인스턴스 배열
  */
@@ -264,7 +276,7 @@ function rollEnemyGroup(dangerLevel, noiseLevel = 0) {
     effectiveDanger = dangerLevel;
   } else {
     count          = 3;
-    effectiveDanger = Math.min(4, dangerLevel + 1);
+    effectiveDanger = Math.min(5, dangerLevel + 1);
   }
   return Array.from({ length: count }, () => rollEnemy(effectiveDanger));
 }

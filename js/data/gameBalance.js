@@ -144,6 +144,18 @@ const BALANCE = {
     surrenderMorale:  -15,
     refuseMorale:     -5,
   },
+  // ── 야간 ──────────────────────────────────────────
+  night: {
+    startHour:            20,
+    endHour:              6,
+    encounterMult:        2.0,
+    travelCostMult:       1.5,
+    darkSleepFatigueMult: 0.5,   // 어둠 수면 시 피로 회복 ×0.5
+    darkSleepAnxietyGain: 5,     // 어둠 수면 시 불안 +5
+    darkNightmareBonus:   0.10,  // 어둠 수면 시 악몽 확률 +10%
+    litSleepAnxietyDrop:  3,     // 광원 수면 시 불안 -3
+    lightDrainPerTP:      0.5,   // 야간 광원 카드 내구도 감소 (/TP)
+  },
 };
 
 export default BALANCE;

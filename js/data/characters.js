@@ -52,7 +52,7 @@ export const CHARACTERS = [
       medicine:   4,  // 의사 — 의료 숙련도 최상
       scavenging: 2,  // 약품·의료재료 탐색 경험
     },
-    homeDist: 'gangnam',
+    homeDist: 'dongjak',
   },
 
   {
@@ -106,7 +106,7 @@ export const CHARACTERS = [
       defense: 3,  // 방어 전술
       unarmed: 3,  // 격투 훈련
     },
-    homeDist: 'yongsan',
+    homeDist: 'dobong',
   },
 
   {
@@ -160,7 +160,7 @@ export const CHARACTERS = [
       building:   3,  // 구조물 지식, 현장 경험
       scavenging: 2,  // 구조 현장 탐색 경험
     },
-    homeDist: 'yongsan',
+    homeDist: 'eunpyeong',
   },
 
   {
@@ -191,15 +191,15 @@ export const CHARACTERS = [
         id: 'frugal_body',
         name: '절약형 신체',
         icon: '🌿',
-        desc: '수분·영양 감소 -25%',
-        effect: { hydrationDecay: 0.75, nutritionDecay: 0.75 },
+        desc: '수분·영양 감소 -20%',
+        effect: { hydrationDecay: 0.80, nutritionDecay: 0.80 },
       },
       {
         id: 'street_sense',
         name: '거리 감각',
         icon: '🌆',
-        desc: '소음 -30%, 조우 확률 -15%',
-        effect: { noiseReduct: 0.3, encounterRateReduct: 0.15 },
+        desc: '소음 -20%, 조우 확률 -5%',
+        effect: { noiseReduct: 0.2, encounterRateReduct: 0.05 },
       },
       {
         id: 'bare_start',
@@ -214,7 +214,7 @@ export const CHARACTERS = [
       harvesting:  3,  // 자원 채취 (거리 생활)
       cooking:     3,  // 야전 요리
     },
-    homeDist: 'gangnam',
+    homeDist: 'yangcheon',
   },
 
   {
@@ -268,7 +268,7 @@ export const CHARACTERS = [
       crafting:  3,  // 조제·제조 능력
       cooking:   2,  // 약재 조합 기초
     },
-    homeDist: 'mapo',
+    homeDist: 'gwanak',
   },
 
   {
@@ -323,7 +323,7 @@ export const CHARACTERS = [
       weaponcraft: 3,  // 금속 가공 → 무기 제작
       armorcraft:  2,  // 기초 방어구 제작
     },
-    homeDist: 'seongdong',
+    homeDist: 'nowon',
   },
 ];
 

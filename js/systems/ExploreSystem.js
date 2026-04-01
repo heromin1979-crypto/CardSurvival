@@ -16,8 +16,20 @@ import SkillSystem      from './SkillSystem.js';
 import BasecampSystem   from './BasecampSystem.js';
 import BALANCE          from '../data/gameBalance.js';
 import HiddenElementSystem from './HiddenElementSystem.js';
+import NightSystem         from './NightSystem.js';
 
 const ExploreSystem = {
+
+  /** 야간+광원 없음이면 알림 후 false 반환 */
+  _checkNight(action) {
+    const check = NightSystem.canActAtNight(action);
+    if (!check.allowed) {
+      EventBus.emit('notify', { message: check.reason, type: 'danger' });
+      return false;
+    }
+    return true;
+  },
+
   init() {
     // 베이스캠프 화면에서 보드 위 위치 카드 클릭 시 이동
     EventBus.on('travelRequest', ({ nodeId }) => {
@@ -133,6 +145,8 @@ const ExploreSystem = {
       return;
     }
 
+    if (!this._checkNight('travel')) return;
+
     // ── 이동 제한 체크 ──────────────────────────────────────
     const enc = gs.player.encumbrance;
     const weightPct = enc.weightPct ?? 0;
@@ -152,8 +166,8 @@ const ExploreSystem = {
       EventBus.emit('notify', { message: I18n.t('exploreSys.lowStamina'), type: 'warn' });
     }
 
-    // TP 소비
-    const costTP = district.travelCostTP ?? 2;
+    // TP 소비 (야간 1.5배)
+    const costTP = Math.ceil((district.travelCostTP ?? 2) * NightSystem.getNightTravelCostMult());
     if (costTP > 0) TickEngine.skipTP(costTP, `${district.name}(으)로 이동`);
 
     // 방사선 (방어구 radiationMult 적용)
@@ -221,6 +235,8 @@ const ExploreSystem = {
     const district   = DISTRICTS[districtId];
     if (!district) return;
 
+    if (!this._checkNight('explore')) return;
+
     // ── 절망 상태 탐색 차단 ──────────────────────────────────
     const moraleTier = StatSystem.getMoraleTier();
     if (moraleTier.blockExplore) {
@@ -279,7 +295,7 @@ const ExploreSystem = {
     const basecampReduct  = BasecampSystem.getEffects().encounterReduct;
     const baseReduction   = (gs.player.encounterRateReduct ?? 0) + (toolEffects.encounterReduction ?? 0) + basecampReduct;
     const seasonMod       = SeasonSystem.getModifiers();
-    const encounterChance = district.encounterChance * (seasonMod.encounterMult ?? 1.0) * (1 - Math.min(BALANCE.encounter.reductionCap, baseReduction));
+    const encounterChance = district.encounterChance * (seasonMod.encounterMult ?? 1.0) * NightSystem.getNightEncounterMult() * (1 - Math.min(BALANCE.encounter.reductionCap, baseReduction));
     if (encounterChance > 0 && Math.random() < encounterChance) {
       const noiseLevel = gs.noise.level;
       const enemies    = rollEnemyGroup(district.dangerLevel, noiseLevel);
@@ -481,6 +497,8 @@ const ExploreSystem = {
   // ── 랜드마크 진입 ────────────────────────────────────────
 
   enterLandmark(districtId) {
+    if (!this._checkNight('explore')) return;
+
     const gs = GameState;
     const lmData = LANDMARK_DATA[districtId];
     if (!lmData) {
@@ -542,6 +560,8 @@ const ExploreSystem = {
   // ── 세부 장소 탐색 ───────────────────────────────────────
 
   enterSubLocation(districtId, subLocationId) {
+    if (!this._checkNight('explore')) return;
+
     const gs     = GameState;
     const lmData = LANDMARK_DATA[districtId];
     const sub    = lmData?.subLocations?.find(s => s.id === subLocationId);
@@ -592,7 +612,7 @@ const ExploreSystem = {
     const baseEncounter   = (district?.encounterChance ?? 0) + (sub.dangerMod ?? 0);
     const reduction       = gs.player.encounterRateReduct ?? 0;
     const subSeasonMod    = SeasonSystem.getModifiers();
-    const finalChance     = baseEncounter * (subSeasonMod.encounterMult ?? 1.0) * (1 - Math.min(0.80, reduction));
+    const finalChance     = baseEncounter * (subSeasonMod.encounterMult ?? 1.0) * NightSystem.getNightEncounterMult() * (1 - Math.min(0.80, reduction));
     if (finalChance > 0 && Math.random() < finalChance) {
       const enemies = rollEnemyGroup(district?.dangerLevel ?? 1, gs.noise.level);
       StateMachine.transition('encounter', {
