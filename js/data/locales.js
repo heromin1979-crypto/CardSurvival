@@ -112,7 +112,7 @@ export const ko = {
   'combatResult.returnTo':  '📍 {name} 복귀',
 
   // ── Rest ────────────────────────────────────────────────────
-  'rest.title':        '💤 휴식',
+  'rest.title':        '휴식',
   'rest.forced':       '극도의 피로! 즉시 휴식 필요.',
   'rest.cancel':       '← 취소',
   'rest.nap':          '짧은 수면',
@@ -883,7 +883,7 @@ export const en = {
   'combatResult.returnTo': '📍 Return to {name}',
 
   // ── Rest ────────────────────────────────────────────────────
-  'rest.title':        '💤 Rest',
+  'rest.title':        'Rest',
   'rest.forced':       'Extreme fatigue! Rest immediately.',
   'rest.cancel':       '← Cancel',
   'rest.nap':          'Short Nap',
