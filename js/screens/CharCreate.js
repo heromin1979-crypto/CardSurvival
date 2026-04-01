@@ -96,7 +96,6 @@ const CharCreate = {
   _buildCharGrid() {
     return CHARACTERS.map(c => `
       <div class="char-card ${this._selectedChar?.id === c.id ? 'selected' : ''}" data-char-id="${c.id}">
-        <span class="char-portrait">${c.portrait}</span>
         <div class="char-card-name">${I18n.characterName(c.id, c.name)}</div>
         <div class="char-card-title">${c.title}</div>
       </div>
@@ -111,29 +110,27 @@ const CharCreate = {
 
     const abilitiesHtml = c.abilities.map(a => `
       <li>
-        <span class="ability-icon">${a.icon}</span>
         <span><span class="ability-name">${a.name}</span>— ${a.desc}</span>
       </li>
     `).join('');
 
     return `
       <div class="char-detail-header">
-        <span class="char-detail-portrait">${c.portrait}</span>
         <div>
           <div class="char-detail-name">${I18n.characterName(c.id, c.name)}</div>
           <div class="char-detail-title">${c.title}</div>
           <div class="char-base-stats">
-            <span class="char-stat-badge hp">❤️ HP ${c.maxHp}</span>
-            <span class="char-stat-badge str">💪 ${I18n.t('charCreate.strength')} ${c.strength}</span>
-            <span class="char-stat-badge end">🧘 ${I18n.t('charCreate.endurance')} ${c.endurance}</span>
-            <span class="char-stat-badge sta">⚡ ${I18n.t('charCreate.stamina')} ${Math.round(c.strength * c.endurance / 50)}</span>
-            <span class="char-stat-badge wt">🎒 ${c.maxCarryWeight}kg</span>
+            <span class="char-stat-badge hp">HP ${c.maxHp}</span>
+            <span class="char-stat-badge str">${I18n.t('charCreate.strength')} ${c.strength}</span>
+            <span class="char-stat-badge end">${I18n.t('charCreate.endurance')} ${c.endurance}</span>
+            <span class="char-stat-badge sta">${I18n.t('charCreate.stamina')} ${Math.round(c.strength * c.endurance / 50)}</span>
+            <span class="char-stat-badge wt">${c.maxCarryWeight}kg</span>
           </div>
         </div>
       </div>
       <div class="char-story">${c.story}</div>
       <ul class="char-ability-list">${abilitiesHtml}</ul>
-      <div class="char-goal">🎯 ${c.goal}</div>
+      <div class="char-goal">${c.goal}</div>
       <div class="char-start-location" style="margin-top:6px; padding:4px 8px; background:var(--bg-card); border-radius:4px; font-size:11px; color:var(--text-secondary);">
         ${I18n.t('charCreate.startLoc')}: ${DISTRICTS[c.homeDist]?.icon ?? ''} ${I18n.districtName(c.homeDist, DISTRICTS[c.homeDist]?.name ?? c.homeDist)} — ${DISTRICTS[c.homeDist]?.description ?? ''}
       </div>
