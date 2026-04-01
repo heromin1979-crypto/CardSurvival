@@ -175,6 +175,7 @@
 /* === TOOLBAR BUTTONS === */
 .toolbar-btn {
   padding: 5px 14px;
+  min-height: 44px;
   border: 1px solid var(--border-mid);
   border-radius: var(--radius-sm);
   background: var(--bg-raised);
@@ -212,6 +213,7 @@
 .menu-btn {
   width: 100%;
   padding: 10px 16px;
+  min-height: 44px;
   border: 1px solid var(--border-mid);
   border-radius: var(--radius-sm);
   background: var(--bg-raised);
