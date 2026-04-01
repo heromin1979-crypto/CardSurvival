@@ -817,6 +817,188 @@ const BLUEPRINTS = {
       },
     ],
   },
+
+  // ── 식량 (추가) ──────────────────────────────────────────────
+  make_dried_meat: {
+    id: 'make_dried_meat',
+    name: '건어육 제작',
+    category: 'food',
+    description: '날고기를 소금에 절여 건조시킨 보존식. 전투 식량의 핵심 재료.',
+    output: { definitionId: 'dried_meat', qty: 1 },
+    requiredTools: ['campfire'],
+    requiredSkills: { cooking: 1 },
+    stages: [
+      {
+        stageIndex: 0, label: '절이기 & 건조', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'raw_meat', qty: 2 },
+          { definitionId: 'salt', qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+  },
+
+  cook_herb_soup: {
+    id: 'cook_herb_soup',
+    name: '허브 수프 조리',
+    category: 'food',
+    description: '약초와 끓인 물로 만드는 회복 수프. 스태미나·피로 회복 효과.',
+    output: { definitionId: 'herbal_tea', qty: 1 },
+    requiredTools: ['campfire'],
+    requiredSkills: { cooking: 1 },
+    stages: [
+      {
+        stageIndex: 0, label: '끓이기', tpCost: 2,
+        requiredItems: [
+          { definitionId: 'herb', qty: 2 },
+          { definitionId: 'boiled_water', qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+  },
+
+  make_cooked_ration: {
+    id: 'make_cooked_ration',
+    name: '조리 전투 식량 제작',
+    category: 'food',
+    description: '밥과 건어육, 소금으로 만든 고칼로리 전투 식량. 장기 탐험에 필수.',
+    output: { definitionId: 'military_ration', qty: 1 },
+    requiredTools: ['campfire'],
+    requiredSkills: { cooking: 2 },
+    stages: [
+      {
+        stageIndex: 0, label: '조합 & 포장', tpCost: 4,
+        requiredItems: [
+          { definitionId: 'cooked_rice', qty: 1 },
+          { definitionId: 'dried_meat', qty: 1 },
+          { definitionId: 'salt', qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+  },
+
+  // ── 도구 (추가) ──────────────────────────────────────────────
+  make_lockpick: {
+    id: 'make_lockpick',
+    name: '자물쇠 따개 제작',
+    category: 'tool',
+    description: '철사와 날카로운 금속 조각으로 만든 잠금 해제 도구.',
+    output: { definitionId: 'lockpick', qty: 2 },
+    requiredTools: [],
+    requiredSkills: { crafting: 1 },
+    stages: [
+      {
+        stageIndex: 0, label: '성형 & 마감', tpCost: 2,
+        requiredItems: [
+          { definitionId: 'sharp_blade', qty: 1 },
+          { definitionId: 'wire', qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+  },
+
+  make_flashlight: {
+    id: 'make_flashlight',
+    name: '손전등 조립',
+    category: 'tool',
+    description: '전자 부품과 플라스틱 케이스로 조립한 손전등. 야간 탐험의 필수품.',
+    output: { definitionId: 'flashlight', qty: 1 },
+    requiredTools: [],
+    requiredSkills: { crafting: 2 },
+    stages: [
+      {
+        stageIndex: 0, label: '회로 조립 & 케이싱', tpCost: 2,
+        requiredItems: [
+          { definitionId: 'electronic_parts', qty: 1 },
+          { definitionId: 'plastic', qty: 1 },
+          { definitionId: 'wire', qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+  },
+
+  // ── 의료 (추가) ──────────────────────────────────────────────
+  brew_antiseptic: {
+    id: 'brew_antiseptic',
+    name: '소독제 조제',
+    category: 'medical',
+    description: '알코올 용액과 약초를 혼합해 만드는 소독제. 감염 억제에 효과적.',
+    output: { definitionId: 'antiseptic', qty: 2 },
+    requiredTools: [],
+    requiredSkills: { cooking: 1 },
+    stages: [
+      {
+        stageIndex: 0, label: '혼합 & 숙성', tpCost: 2,
+        requiredItems: [
+          { definitionId: 'alcohol_solution', qty: 1 },
+          { definitionId: 'herb', qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+  },
+
+  // ── 무기 (추가) ──────────────────────────────────────────────
+  make_hand_axe: {
+    id: 'make_hand_axe',
+    name: '손도끼 제작',
+    category: 'weapon',
+    description: '고철과 날카로운 금속으로 만든 소형 도끼. 근접 공격과 목재 채집에 활용.',
+    output: { definitionId: 'hand_axe', qty: 1 },
+    requiredTools: ['pipe_wrench'],
+    requiredSkills: { weaponcraft: 3 },
+    stages: [
+      {
+        stageIndex: 0, label: '날 성형', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'scrap_metal', qty: 2 },
+          { definitionId: 'sharp_blade', qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '손잡이 결합', tpCost: 2,
+        requiredItems: [
+          { definitionId: 'wood', qty: 1 },
+          { definitionId: 'rope', qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+  },
+
+  make_machete: {
+    id: 'make_machete',
+    name: '마체테 제작',
+    category: 'weapon',
+    description: '길고 무거운 고철 날로 만든 정글도. 높은 피해와 출혈 효과.',
+    output: { definitionId: 'machete', qty: 1 },
+    requiredTools: ['workbench'],
+    requiredSkills: { weaponcraft: 3 },
+    stages: [
+      {
+        stageIndex: 0, label: '날 연마', tpCost: 4,
+        requiredItems: [
+          { definitionId: 'scrap_metal', qty: 3 },
+          { definitionId: 'sharp_blade', qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '손잡이 감기', tpCost: 2,
+        requiredItems: [
+          { definitionId: 'leather', qty: 1 },
+          { definitionId: 'duct_tape', qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+  },
 };
 
 export default BLUEPRINTS;

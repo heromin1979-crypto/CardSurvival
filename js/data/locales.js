@@ -1452,6 +1452,7 @@ export const en = {
   '_item.military_ration':    'Military Ration',
   '_item.vitamins':           'Vitamins',
   '_item.salt':               'Salt',
+  '_item.raw_meat':           'Raw Meat',
 
   // ── Items: Medical ──────────────────────────────────────────
   '_item.bandage':       'Bandage',
@@ -1565,6 +1566,7 @@ export const en = {
   '_item.acid_gland':             'Acid Gland',
   '_item.horde_crown':            'Horde Crown',
   '_item.cryo_core':              'Cryo Core',
+  '_item.fireproof_barricade':    'Fireproof Barricade',
 
   // ── Districts ───────────────────────────────────────────────
   '_district.gangnam':       'Gangnam-gu',

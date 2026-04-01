@@ -953,6 +953,20 @@ const LEGENDARY_ITEMS = {
     dismantle: [],
   },
 
+  // ─── 캐릭터 전용 제작 결과물 (1) ─────────────────────────
+
+  fireproof_barricade: {
+    id: 'fireproof_barricade', name: '내화 방벽', type: 'structure', subtype: 'defense',
+    rarity: 'legendary', legendary: true, weight: 5.0,
+    defaultDurability: 200, defaultContamination: 0,
+    icon: '🧱', description: '소방관 배지의 내화 기술로 제작된 방벽. 화염 피해를 완전히 차단하고 내구도가 일반 방벽의 3배.',
+    tags: ['structure', 'legendary', 'defense', 'fireproof'],
+    dismantle: [
+      { definitionId: 'scrap_metal', qty: 3, chance: 0.7 },
+      { definitionId: 'wood', qty: 2, chance: 0.5 },
+    ],
+  },
+
   // ─── 이벤트 체인 보상 (1) ─────────────────────────────────
 
   mothers_necklace: {
