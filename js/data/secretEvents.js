@@ -2795,6 +2795,316 @@ export const SECRET_EVENTS = [
     ],
   },
 
+  // ============================================================
+  // CHARACTER EVENTS — 캐릭터 전용 구역 방문 이벤트 (6개)
+  // ============================================================
+
+  {
+    id: 'event_soldier_yongsan',
+    name: '용산의 기억',
+    icon: '⚔️',
+    description: '용산 미군기지. 여기서 모든 것이 시작됐다.',
+    category: 'character',
+    triggerConditions: {
+      dayRange: [1, 999],
+      timeOfDay: null,
+      requiredItems: [],
+      requiredCharacter: 'soldier',
+      weather: null,
+      season: null,
+      minKills: 0,
+      district: 'yongsan',
+      probability: 1.0,
+      requiredFlags: [],
+      minHp: 0,
+      maxNoise: 100,
+      minItemsFound: 0,
+      chainId: null,
+      chainStep: 0,
+    },
+    choices: [
+      {
+        id: 'search_armory',
+        text: '무기고를 수색한다',
+        conditions: null,
+        outcomes: [
+          {
+            weight: 70,
+            text: '미군 무기고의 잠금이 풀려 있었다. 탄약과 장비를 발견했다.',
+            effects: {
+              items: [{ id: 'pistol_ammo', qty: 3 }, { id: 'bandage', qty: 2 }],
+              morale: 10,
+              flags: { soldier_yongsan_searched: true },
+            },
+          },
+          {
+            weight: 30,
+            text: '무기고에 이미 감염자 둘이 있었다.',
+            effects: {
+              combat: { enemyId: 'zombie_soldier', count: 2 },
+            },
+          },
+        ],
+      },
+      {
+        id: 'pay_respects',
+        text: '동료들을 추모한다',
+        conditions: null,
+        outcomes: [
+          {
+            weight: 100,
+            text: '팀원 4명의 이름을 벽에 새겼다. 잊지 않겠다는 다짐.',
+            effects: {
+              morale: 15,
+              mental: { trauma: -10, anxiety: -5 },
+              flags: { soldier_yongsan_searched: true },
+            },
+          },
+        ],
+      },
+    ],
+  },
+
+  {
+    id: 'event_doctor_samsung',
+    name: '삼성병원의 기억',
+    icon: '🩺',
+    description: '강남 삼성서울병원. 지옥이 시작된 곳.',
+    category: 'character',
+    triggerConditions: {
+      dayRange: [1, 999],
+      timeOfDay: null,
+      requiredItems: [],
+      requiredCharacter: 'doctor',
+      weather: null,
+      season: null,
+      minKills: 0,
+      district: 'gangnam',
+      probability: 1.0,
+      requiredFlags: [],
+      minHp: 0,
+      maxNoise: 100,
+      minItemsFound: 0,
+      chainId: null,
+      chainStep: 0,
+    },
+    choices: [
+      {
+        id: 'search_pharmacy',
+        text: '약품 창고를 다시 뒤진다',
+        conditions: null,
+        outcomes: [
+          {
+            weight: 80,
+            text: '아직 손대지 않은 약품이 남아 있었다. 전문의의 눈은 다르다.',
+            effects: {
+              items: [{ id: 'painkiller', qty: 2 }, { id: 'antiseptic', qty: 1 }],
+              morale: 8,
+              flags: { doctor_samsung_searched: true },
+            },
+          },
+          {
+            weight: 20,
+            text: '이미 약탈당한 창고. 하지만 메모 한 장을 발견했다.',
+            effects: {
+              morale: 5,
+              flags: { doctor_samsung_searched: true },
+            },
+          },
+        ],
+      },
+    ],
+  },
+
+  {
+    id: 'event_firefighter_home',
+    name: '은평구, 집',
+    icon: '🏠',
+    description: '불광동 집. 가족이 있는 곳.',
+    category: 'character',
+    triggerConditions: {
+      dayRange: [1, 999],
+      timeOfDay: null,
+      requiredItems: [],
+      requiredCharacter: 'firefighter',
+      weather: null,
+      season: null,
+      minKills: 0,
+      district: 'eunpyeong',
+      probability: 1.0,
+      requiredFlags: [],
+      minHp: 0,
+      maxNoise: 100,
+      minItemsFound: 0,
+      chainId: null,
+      chainStep: 0,
+    },
+    choices: [
+      {
+        id: 'search_family',
+        text: '집으로 달려간다',
+        conditions: null,
+        outcomes: [
+          {
+            weight: 60,
+            text: '집은 비어 있었다. 하지만 냉장고 위에 메모가 있었다. "영철아, 우리 먼저 간다. 처가 쪽으로." 살아있다.',
+            effects: {
+              morale: 25,
+              mental: { trauma: -15 },
+              flags: { firefighter_family_found: true },
+            },
+          },
+          {
+            weight: 40,
+            text: '집 근처에서 감염자들을 발견했다. 하지만 집 안은 안전했다. 가족의 흔적이 남아 있다.',
+            effects: {
+              morale: 10,
+              items: [{ id: 'canned_food', qty: 2 }],
+              flags: { firefighter_family_found: true },
+            },
+          },
+        ],
+      },
+    ],
+  },
+
+  {
+    id: 'event_homeless_hangang',
+    name: '동호대교 아래',
+    icon: '🌉',
+    description: '2년을 살았던 곳. 낯설지 않다.',
+    category: 'character',
+    triggerConditions: {
+      dayRange: [1, 999],
+      timeOfDay: null,
+      requiredItems: [],
+      requiredCharacter: 'homeless',
+      weather: null,
+      season: null,
+      minKills: 0,
+      district: 'seongdong',
+      probability: 1.0,
+      requiredFlags: [],
+      minHp: 0,
+      maxNoise: 100,
+      minItemsFound: 0,
+      chainId: null,
+      chainStep: 0,
+    },
+    choices: [
+      {
+        id: 'old_stash',
+        text: '오래된 은신처를 찾는다',
+        conditions: null,
+        outcomes: [
+          {
+            weight: 90,
+            text: '2년 전 숨겨둔 비상 캐시. 아무도 몰랐다. 담요 하나와 통조림이 남아 있었다.',
+            effects: {
+              items: [{ id: 'canned_food', qty: 2 }, { id: 'cloth', qty: 1 }],
+              morale: 10,
+              flags: { homeless_stash_found: true },
+            },
+          },
+        ],
+      },
+    ],
+  },
+
+  {
+    id: 'event_pharmacist_drugstore',
+    name: '홍대 약국',
+    icon: '💊',
+    description: '내 약국. 사흘 전 조짐을 알아챘던 곳.',
+    category: 'character',
+    triggerConditions: {
+      dayRange: [1, 999],
+      timeOfDay: null,
+      requiredItems: [],
+      requiredCharacter: 'pharmacist',
+      weather: null,
+      season: null,
+      minKills: 0,
+      district: 'mapo',
+      probability: 1.0,
+      requiredFlags: [],
+      minHp: 0,
+      maxNoise: 100,
+      minItemsFound: 0,
+      chainId: null,
+      chainStep: 0,
+    },
+    choices: [
+      {
+        id: 'check_samples',
+        text: '관찰 노트를 확인한다',
+        conditions: null,
+        outcomes: [
+          {
+            weight: 100,
+            text: '증상 관찰 노트가 남아 있었다. 감염 초기 패턴 데이터. 이것은 쓸모 있을 것이다.',
+            effects: {
+              items: [{ id: 'antiseptic', qty: 1 }],
+              morale: 12,
+              flags: { pharmacist_notes_found: true },
+            },
+          },
+        ],
+      },
+    ],
+  },
+
+  {
+    id: 'event_engineer_factory',
+    name: '성수동 공장',
+    icon: '🔧',
+    description: '내 작업장. 여기서 무언가 만들 수 있다.',
+    category: 'character',
+    triggerConditions: {
+      dayRange: [1, 999],
+      timeOfDay: null,
+      requiredItems: [],
+      requiredCharacter: 'engineer',
+      weather: null,
+      season: null,
+      minKills: 0,
+      district: 'seongdong',
+      probability: 1.0,
+      requiredFlags: [],
+      minHp: 0,
+      maxNoise: 100,
+      minItemsFound: 0,
+      chainId: null,
+      chainStep: 0,
+    },
+    choices: [
+      {
+        id: 'salvage_workshop',
+        text: '작업장을 정리한다',
+        conditions: null,
+        outcomes: [
+          {
+            weight: 75,
+            text: '공장 설비가 손상됐지만 자재는 남아 있다. 익숙한 손길로 부품을 챙긴다.',
+            effects: {
+              items: [{ id: 'scrap_metal', qty: 3 }, { id: 'wire', qty: 2 }],
+              morale: 10,
+              flags: { engineer_factory_salvaged: true },
+            },
+          },
+          {
+            weight: 25,
+            text: '공장 안에 감염자가 있었다. 동료였을 수 있다.',
+            effects: {
+              combat: { enemyId: 'zombie_worker', count: 2 },
+              flags: { engineer_factory_salvaged: true },
+            },
+          },
+        ],
+      },
+    ],
+  },
+
 ];
 
 export default SECRET_EVENTS;

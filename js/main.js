@@ -43,6 +43,8 @@ import BGMSystem            from './systems/BGMSystem.js';
 import EcologySystem        from './systems/EcologySystem.js';
 import MentalSystem         from './systems/MentalSystem.js';
 import NPCSystem            from './systems/NPCSystem.js';
+import OnboardingSystem     from './systems/OnboardingSystem.js';
+import SecretCombinationSystem from './systems/SecretCombinationSystem.js';
 import BodySystem           from './systems/BodySystem.js';
 import SubwaySystem         from './systems/SubwaySystem.js';
 import NightSystem          from './systems/NightSystem.js';
@@ -128,6 +130,7 @@ function init() {
   EcologySystem.init();
   window.__EcologySystem__ = EcologySystem;  // LandmarkModal·SeoulMapModal에서 참조
   NPCSystem.init();
+  OnboardingSystem.init();
   window.__NPCSystem__ = NPCSystem;         // CardFactory에서 참조 (MentalSystem보다 먼저 — companions 초기화)
   MentalSystem.init();
   window.__MentalSystem__ = MentalSystem;   // StatRenderer·CombatSystem에서 참조
@@ -141,6 +144,7 @@ function init() {
   SkillSystem.init();
   BasecampSystem.init();
   QuestSystem.init();
+  window.__SecretCombinationSystem__ = SecretCombinationSystem;  // Basecamp 비밀 조합 카운트용
   SoundSystem.init();
   BGMSystem.init();
   HiddenElementSystem.init();

@@ -303,7 +303,7 @@ const NPCS = {
     personality: 'loyal',
     maxHp: 40,
     spawnDistrict: 'dobong',
-    spawnDay: 5,
+    spawnDay: 1,
     dialogues: {
       greet:  ['npc.dog.greet0', 'npc.dog.greet1', 'npc.dog.greet2'],
       hint:   ['npc.dog.hint0', 'npc.dog.hint1', 'npc.dog.hint2'],

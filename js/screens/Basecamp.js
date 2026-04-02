@@ -61,6 +61,7 @@ const Basecamp = {
     SkillModal.init();
     BasecampModal.init();
     this._updateQuestPanel();
+    this._updateSecretComboCount();
     // 계절 배지 초기화
     const seasonInfo = SeasonSystem.getSeasonInfo();
     const seasonBadge = document.getElementById('season-badge');
@@ -148,7 +149,7 @@ const Basecamp = {
           <button class="toolbar-btn" id="btn-wait">${I18n.t('basecamp.wait')}</button>
           <button class="toolbar-btn" id="btn-rest">${I18n.t('basecamp.rest')}</button>
           <button class="toolbar-btn" id="btn-save">${I18n.t('basecamp.save')}</button>
-          <button class="toolbar-btn" id="btn-secret-gallery">${I18n.t('secret.galleryBtn')}</button>
+          <button class="toolbar-btn" id="btn-secret-gallery" title="${I18n.t('secret.galleryHint')}">${I18n.t('secret.galleryBtn')} <span id="secret-combo-count"></span></button>
         </div>
       </aside>
 
@@ -299,6 +300,19 @@ const Basecamp = {
       overlay.remove();
       onRefuse();
     });
+  },
+
+  _updateSecretComboCount() {
+    const el = document.getElementById('secret-combo-count');
+    if (!el) return;
+    try {
+      const SecretCombinationSystem = window.__SecretCombinationSystem__;
+      if (SecretCombinationSystem) {
+        const { found, total } = SecretCombinationSystem.getStats();
+        el.textContent = `(${found}/${total})`;
+        el.style.opacity = found > 0 ? '1' : '0.5';
+      }
+    } catch (_) { /* SecretCombinationSystem 미로드 */ }
   },
 
   _updateQuestPanel() {

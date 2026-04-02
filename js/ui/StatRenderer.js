@@ -101,19 +101,20 @@ const StatRenderer = {
 
       if (fill && group) {
         fill.classList.remove('danger', 'warn');
-        group.classList.remove('flash-bad', 'flash-good');
+        group.classList.remove('flash-bad', 'flash-good', 'critical-alert');
 
         const isAccum = ['radiation','infection','fatigue'].includes(s.key);
         if (s.isGood) {
-          // 스태미나: 낮을수록 위험 (hydration/nutrition과 동일)
           if (pct < 15) fill.classList.add('danger');
           else if (pct < 30) fill.classList.add('warn');
         } else if (isAccum) {
           if (pct > 70) fill.classList.add('danger');
           else if (pct > 40) fill.classList.add('warn');
         } else {
-          if (pct < 15) fill.classList.add('danger');
+          if (pct < 15) { fill.classList.add('danger'); group.classList.add('critical-alert'); }
           else if (pct < 30) fill.classList.add('warn');
+          // 수분 20% 이하 추가 경보
+          if (s.key === 'hydration' && pct < 20) group.classList.add('critical-alert');
         }
       }
     }
@@ -121,13 +122,15 @@ const StatRenderer = {
     // HP bar
     const hpFill  = document.getElementById('statfill-hp');
     const hpBarVal = document.getElementById('statval-hp');
+    const hpGroup  = document.getElementById('statbar-hp');
     if (hpFill && hpBarVal) {
       const hp  = gs.player.hp;
       const pct = (hp.current / hp.max) * 100;
       hpFill.style.width = Math.max(0, Math.min(100, pct)) + '%';
       hpBarVal.textContent = `${Math.round(hp.current)}/${hp.max}`;
       hpFill.classList.remove('danger', 'warn');
-      if (pct < 25) hpFill.classList.add('danger');
+      hpGroup?.classList.remove('critical-alert');
+      if (pct < 25) { hpFill.classList.add('danger'); hpGroup?.classList.add('critical-alert'); }
       else if (pct < 50) hpFill.classList.add('warn');
     }
 

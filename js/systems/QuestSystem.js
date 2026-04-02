@@ -117,6 +117,11 @@ const QuestSystem = {
 
     // 세이브 로드 시 진행도 재계산
     EventBus.on('loaded', () => this._checkAllProgress());
+
+    // 베이스캠프 진입 시 즉시 메인 퀘스트 트리거 체크 (Day 1 포함)
+    EventBus.on('stateTransition', ({ to }) => {
+      if (to === 'basecamp') this._checkMainQuestTriggers();
+    });
   },
 
   // ── 퀘스트 시작 ───────────────────────────────────────────────

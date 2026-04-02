@@ -1084,6 +1084,65 @@ const MAIN_QUESTS = {
       complete: '100일. 이동수단이 완성됐다. 서울 외곽으로 달린다.',
     },
   },
+
+  // ══════════════════════════════════════════════════════════════════
+  // 글로벌 퀘스트 — 모든 캐릭터 공통 (characterId 없음)
+  // Day 30 / 45 / 60 단기 미션으로 중반 동기 제공
+  // ══════════════════════════════════════════════════════════════════
+
+  mq_global_30: {
+    id: 'mq_global_30',
+    title: '첫 번째 물결',
+    desc: '군집이 몰려온다. 방어 구조물을 2개 확보하라.',
+    icon: '🧟',
+    characterId: null,
+    dayTrigger: 28,
+    prerequisite: null,
+    objective: { type: 'craft_item', category: 'structure', count: 2 },
+    reward: { morale: 20 },
+    failPenalty: { morale: -10 },
+    deadlineDays: 20,
+    narrative: {
+      start: 'Day 30이 다가오고 있다. 서울 어딘가에서 군집의 발소리가 들린다. 방어선을 준비하라.',
+      complete: '바리케이드가 세워졌다. 이 정도면 첫 번째 물결은 막을 수 있을 것이다.',
+    },
+  },
+
+  mq_global_45: {
+    id: 'mq_global_45',
+    title: '중반의 고비',
+    desc: '45일을 버텨라. 이 도시에서 이만큼 살아남은 사람은 많지 않다.',
+    icon: '🗺️',
+    characterId: null,
+    dayTrigger: 40,
+    prerequisite: null,
+    objective: { type: 'survive_days', count: 45 },
+    reward: { morale: 15 },
+    failPenalty: { morale: -5 },
+    deadlineDays: 25,
+    narrative: {
+      start: '한 곳에만 머물러서는 살아남을 수 없다. 서울을 더 알아야 한다.',
+      complete: '도시의 윤곽이 눈에 익기 시작했다. 어디에 뭐가 있는지 감이 잡힌다.',
+    },
+  },
+
+  mq_global_60: {
+    id: 'mq_global_60',
+    title: '60일 생존자',
+    desc: '60일을 버텼다. 식량 비축을 늘려라. 식량 8개를 확보하라.',
+    icon: '🥫',
+    characterId: null,
+    dayTrigger: 55,
+    prerequisite: null,
+    objective: { type: 'collect_item_type', itemType: 'food', count: 8 },
+    reward: { morale: 25 },
+    failPenalty: { morale: -10 },
+    deadlineDays: 20,
+    narrative: {
+      start: 'Day 60. 절반의 사람들이 여기까지 못 왔다. 하지만 배고픔과 싸우는 건 아직도 끝나지 않았다.',
+      complete: '창고가 조금 더 찼다. 이것이 생존이다.',
+    },
+  },
 };
 
 export { MAIN_QUESTS };

@@ -266,6 +266,15 @@ const SecretCombinationSystem = {
       total: SECRET_COMBINATIONS.length,
     };
   },
+
+  /** 발견 통계 반환 { found: number, total: number } */
+  getStats() {
+    this._ensureState();
+    return {
+      found: GameState.discoveries.foundCombinations.length,
+      total: window.__GAME_DATA__?.secretCombinations?.length ?? SECRET_COMBINATIONS.length,
+    };
+  },
 };
 
 export default SecretCombinationSystem;

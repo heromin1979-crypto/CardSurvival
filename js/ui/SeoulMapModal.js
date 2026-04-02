@@ -364,6 +364,7 @@ const SeoulMapModal = {
                 font-size="11" font-weight="bold" fill="${nameColor}">${I18n.districtName(id, d.name)}</text>
           <text x="${cx}" y="${y + 52}" text-anchor="middle"
                 font-size="8" fill="#666666">${d.id}</text>
+          ${(isVisited || isAdjacent || isCurrent) ? `<text x="${cx}" y="${y + 63}" text-anchor="middle" font-size="7" fill="#888888">${d.travelCostTP ?? 2}TP · 조우${Math.round((d.encounterChance ?? 0.1) * 100)}%</text>` : ''}
           ${currentBadge}
           ${dangerBars}
           ${radTag}

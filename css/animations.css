@@ -287,3 +287,13 @@
   .card.despawning { animation: none; }
   .dmg-popup { animation: none; opacity: 1; }
 }
+
+/* Critical stat alert — 테두리 강조 */
+@keyframes criticalStatPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(220, 50, 50, 0); }
+  50%       { box-shadow: 0 0 0 3px rgba(220, 50, 50, 0.7); }
+}
+.stat-bar-group.critical-alert {
+  animation: criticalStatPulse 0.9s ease infinite;
+  border-radius: 4px;
+}
