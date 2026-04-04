@@ -8,6 +8,7 @@ import { HIDDEN_LOCATIONS }  from '../data/hiddenLocations.js';
 import { SECRET_ENEMIES }    from '../data/secretEnemies.js';
 import SECRET_EVENTS         from '../data/secretEvents.js';
 import HIDDEN_RECIPES        from '../data/hiddenRecipes.js';
+import BLUEPRINTS            from '../data/blueprints.js';
 
 const HiddenElementSystem = {
   init() {
@@ -548,10 +549,15 @@ const HiddenElementSystem = {
     // 세이브 호환: 필드 없으면 초기화
     if (!gs.flags.hiddenRecipesUnlocked) gs.flags.hiddenRecipesUnlocked = [];
 
-    for (const [recipeId, recipe] of Object.entries(HIDDEN_RECIPES)) {
+    const allRecipeSources = [
+      ...Object.entries(HIDDEN_RECIPES),
+      ...Object.entries(BLUEPRINTS),
+    ];
+
+    for (const [recipeId, recipe] of allRecipeSources) {
       if (!recipe || typeof recipe !== 'object') continue;
-      if (gs.flags.hiddenRecipesUnlocked.includes(recipeId)) continue;
       if (!recipe.hidden) continue;
+      if (gs.flags.hiddenRecipesUnlocked.includes(recipeId)) continue;
 
       const cond = recipe.unlockConditions;
       if (!cond) continue;
@@ -559,7 +565,7 @@ const HiddenElementSystem = {
       if (this._meetsRecipeConditions(cond)) {
         gs.flags.hiddenRecipesUnlocked.push(recipeId);
         EventBus.emit('notify', {
-          message: I18n.t('hidden.recipeUnlock', { name: I18n.blueprintName(recipe.id, recipe.name) }),
+          message: I18n.t('hidden.recipeUnlock', { name: I18n.blueprintName(recipeId, recipe.name) }),
           type: 'good',
         });
         EventBus.emit('recipeUnlocked', { recipeId, recipe });

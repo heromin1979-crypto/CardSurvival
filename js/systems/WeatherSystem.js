@@ -86,14 +86,17 @@ const WeatherSystem = {
     const gs = GameState;
     if (!gs.weather || !gs.weather.id) this._initWeather(gs);
 
+    // 베이스캠프 완공 + 베이스캠프 화면: 날씨 패널티 면제 (안전 지대 효과)
+    const inSafeZone = gs.basecamp?.buildStage >= 3 && gs.ui?.currentState === 'basecamp';
+
     // 체온에 날씨 영향 적용 (미세 조정 — 계절 효과와 별도)
     const weather = gs.weather;
-    if (weather.tempMod && weather.tempMod !== 0) {
+    if (!inSafeZone && weather.tempMod && weather.tempMod !== 0) {
       gs.modStat('temperature', weather.tempMod);
     }
 
-    // 비/장마: 보드의 식량 오염 미세 위험
-    if (weather.contaminateRisk > 0 && Math.random() < weather.contaminateRisk) {
+    // 비/장마: 보드의 식량 오염 미세 위험 (안전 지대에서는 차단)
+    if (!inSafeZone && weather.contaminateRisk > 0 && Math.random() < weather.contaminateRisk) {
       for (const card of gs.getBoardCards()) {
         const def = window.__GAME_DATA__?.items[card.definitionId];
         if (def?.type === 'consumable' && (def.subtype === 'food' || def.subtype === 'drink') && !card._weatherProtected) {

@@ -1930,6 +1930,38 @@ Phase 6(D91-100): 여름 수분 관리, 열사병 예방
 - 플레이테스트 버그 9건 수정 (이벤트 미발행, init 순서, NPC 전투보너스, 아이템 미등록 등)
 - 43 files changed, ~8600 insertions
 
+### Phase P — 안정화 + 거점 재설계 (2026-04-05)
+- fix(balance): 내구도 있는 아이템 스택 불가 처리 (stackConfig)
+- fix(items): alcohol_swab + sharpened_knife stackConfig 등록 누락 수정
+- fix(gameplay): 칼+고철 상호작용 수정 — 날카로운 칼 무기로 변환
+- feat(dev): 알림 로그 UI + Electron 핫리로드 추가 (electron-reload, 알림 6.5s, 로그 패널)
+- feat(basecamp): 거점 시스템 재설계
+  - Day 1-9: 거점 버튼 미표시 (초반 접근 차단)
+  - Day 10+: 안전 가옥 건설 버튼 표시 (목재×10, 천×5, 못×15, 밧줄×3)
+  - 건설 후: 거점 강화 버튼 (기존 Lv1-5 업그레이드)
+  - 구버전 세이브 마이그레이션 (level>0 → built=true)
+- fix(ui): 드래그/클릭 먹통 버그 2건 수정
+  - FLIP 애니메이션 pointer-events 미복구: timeout 폴백 추가
+  - 알림 로그 패널 외부 클릭 자동 닫기
+- GitHub 원격 저장소 연결 (heromin1979-crypto/CardSurvival)
+
+### Phase Q — 레시피 발견 시스템 + 베이스캠프 랜드마크화 (2026-04-05)
+- feat(recipe): 레시피 발견 시스템 구현 (Tropical Island 방식)
+  - blueprints.js: 기본 공개 4개(campfire/make_boiled_water/wrap_bandage/make_cloth_scrap) 제외 49개 레시피에 hidden:true + unlockConditions 추가
+  - HiddenElementSystem.js: BLUEPRINTS import + _checkRecipeUnlocks()에서 BLUEPRINTS도 체크하도록 확장
+  - 해금 조건: minSkillLevel(crafting/building/weaponcraft/armorcraft/cooking/medicine) 또는 minDay 기반
+  - CraftUI는 기존 bp.hidden 필터링 로직 재활용 (수정 불필요)
+- feat(basecamp): 베이스캠프 3단계 건설 시스템 + 랜드마크화
+  - 1단계(Day 7+): 기초 골조 — 목재×8, 못×12, 밧줄×2, 천×3
+  - 2단계: 내부 설비 — 고철×5, 전선×3, 유리조각×4, 덕트테이프×2
+  - 3단계: 마감 완공 — 가죽×3, 천×6, 전자부품×1, 고철×4, 밧줄×3
+  - 완공 시 basecamp_landmark 카드 자동 생성 → top 행 배치
+  - 안전 지대 효과: 날씨 패널티 면역, 식량 오염 차단, 체온 완충 ±0.3/TP, 조우 -10%
+  - WeatherSystem: 베이스캠프 완공 + basecamp 화면 시 tempMod/contaminateRisk 무효
+  - GameState: buildStage(0~3) 필드 추가 + 구버전 마이그레이션
+  - BasecampModal: 3단계 진행 바 UI로 전면 재작성
+  - items.js: basecamp_landmark 카드 정의 추가 (safeZone/weatherProtection/npcShelter 플래그)
+
 </details>
 
 ---

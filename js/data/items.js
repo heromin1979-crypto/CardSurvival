@@ -450,7 +450,29 @@ const ITEMS_LANDMARK = {
     tags: ['location', 'landmark'], requiresSlot: 'top', dismantle: [],
   },
 
-}; // END ITEMS_LANDMARK (25개 랜드마크 카드)
+  // ── 베이스캠프 랜드마크 카드 ──────────────────────────────────
+  basecamp_landmark: {
+    id: 'basecamp_landmark',
+    name: '베이스캠프',
+    type: 'location',
+    subtype: 'shelter',
+    rarity: 'unique',
+    weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0,
+    landmark: true,
+    icon: '🏕',
+    description: '직접 건설한 안전 거점. 비바람과 혹한·혹서를 차단하고, NPC가 합류할 수 있는 숙소 역할을 한다.',
+    landmarkBonus: '날씨 패널티 면역 · 식량 오염 차단 · 체온 ±완충 · 조우 -10%',
+    safeZone: true,          // 안전 지대 플래그
+    weatherProtection: true, // 날씨 체온 패널티 면역
+    contaminationShield: true, // 식량 오염 차단
+    npcShelter: true,        // NPC 합류 가능
+    tags: ['location', 'landmark', 'shelter', 'safe'],
+    requiresSlot: 'top',
+    dismantle: [],
+  },
+
+}; // END ITEMS_LANDMARK (25개 랜드마크 카드 + 베이스캠프)
 
 // ─── 전체 병합 ────────────────────────────────────────────────
 const ITEMS = {

@@ -325,6 +325,20 @@ const ITEMS_COMBAT = {
     ],
   },
 
+  warm_clothes: {
+    id: 'warm_clothes', name: '방한복', type: 'armor', subtype: 'clothing',
+    rarity: 'rare', weight: 1.5,
+    defaultDurability: 85, defaultContamination: 0,
+    icon: '🧥', description: '두꺼운 가죽과 천으로 겹겹이 만든 방한복. 혹한에서 체온 하락 속도를 크게 줄인다.',
+    tags: ['armor', 'clothing', 'crafted'],
+    onWear: { coldResistMult: 0.5, hypothermiaChanceMult: 0.3 },
+    dismantle: [
+      { definitionId: 'leather', qty: 2, chance: 0.6 },
+      { definitionId: 'cloth', qty: 2, chance: 0.7 },
+      { definitionId: 'thread', qty: 2, chance: 0.5 },
+    ],
+  },
+
   hazmat_suit: {
     id: 'hazmat_suit', name: '방호복', type: 'armor', subtype: 'fullbody',
     rarity: 'rare', weight: 4.0,

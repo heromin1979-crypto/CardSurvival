@@ -130,9 +130,11 @@ const GameState = {
 
   // ── 베이스캠프 거점 ────────────────────────────────
   basecamp: {
-    built: false, // 안전 가옥 건설 여부 (Day 10+ 이후 건설 가능)
-    level: 0,     // 강화 단계 0-5 (built=true 이후에만 진행)
-    xp:    0,     // 거점 경험치
+    built:      false, // 안전 가옥 건설 여부 (Day 7+ 이후 건설 가능)
+    buildStage: 0,     // 건설 단계 0=미시작, 1=기초, 2=설비, 3=완공(랜드마크)
+    level:      0,     // 강화 단계 0-5 (built=true 이후에만 진행)
+    xp:         0,     // 거점 경험치
+    landmarkCardInstanceId: null, // 완공 시 생성된 랜드마크 카드 instanceId
   },
 
   // ── 퀘스트 ────────────────────────────────────────
@@ -498,10 +500,13 @@ const GameState = {
     // 랜드마크 탐색 이력 복원
     this.landmarkHistory     = d.landmarkHistory     ?? {};
     this.subwayStationVisits = d.subwayStationVisits ?? {};
-    // 베이스캠프 복원 (구버전 세이브: level>0이면 built=true로 마이그레이션)
+    // 베이스캠프 복원 (구버전 세이브 마이그레이션)
     if (d.basecamp) {
       Object.assign(this.basecamp, d.basecamp);
       if (this.basecamp.level > 0 && !this.basecamp.built) this.basecamp.built = true;
+      // 구버전: built=true지만 buildStage가 없으면 3으로 마이그레이션
+      if (this.basecamp.built && !this.basecamp.buildStage) this.basecamp.buildStage = 3;
+      if (!this.basecamp.landmarkCardInstanceId) this.basecamp.landmarkCardInstanceId = null;
     }
     // 퀘스트 복원
     if (d.quests) Object.assign(this.quests, d.quests);

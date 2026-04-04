@@ -121,6 +121,7 @@ const STACK_ROWS = [
 
   // ── 의복/방어구 (내구도 있음 → 스택 불가) ───────────────────────
   ['raincoat'                , false, 1 ],
+  ['warm_clothes'            , false, 1 ],
   ['tactical_vest'           , false, 1 ],
   ['helmet'                  , false, 1 ],
   ['work_gloves'             , false, 1 ],
@@ -135,6 +136,9 @@ const STACK_ROWS = [
   ['emergency_kit'           , true,  2 ],
   ['flashbang'               , true,  3 ],
   ['premium_ration'          , true,  3 ],
+
+  // ── 베이스캠프 랜드마크 — 겹치기 불가 ──────────────────────────
+  ['basecamp_landmark'       , false, 1 ],
 
   // ── 장소 카드 (25개 구) — 겹치기 불가 ─────────────────────────
   ['loc_gangnam'       , false, 1 ],
