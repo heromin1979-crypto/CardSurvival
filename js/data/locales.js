@@ -64,6 +64,7 @@ export const ko = {
   'basecamp.remainDays':      '남은 기간 {days}일',
   'basecamp.craft':           '제작',
   'basecamp.skills':          '숙련도',
+  'basecamp.buildBase':       '🏠 안전 가옥 건설',
   'basecamp.fortify':         '거점 강화',
   'basecamp.wait':            '대기',
   'basecamp.rest':            '휴식',
@@ -436,6 +437,11 @@ export const ko = {
   'bcModal.next':            '{icon} 다음: {name}',
   'bcModal.upgrade':         '거점 강화',
   'bcModal.noMaterial':      '재료 부족: {reason}',
+  'bcModal.buildTitle':      '🏠 안전 가옥 건설',
+  'bcModal.buildDesc':       '황폐한 건물을 정비하여 안전한 주거지를 만듭니다. 건설 후 거점 강화 메뉴가 열립니다.',
+  'bcModal.buildEffect':     '건설 시 효과: 조우 -5% · 피로 회복 +1/TP · 사기 +1/TP',
+  'bcModal.buildBtn':        '안전 가옥 건설',
+  'bcModal.buildLocked':     '🔒 Day 10 이후에 건설 가능합니다. (현재 Day {day})',
 
   // ── CombatSystem ────────────────────────────────────────────
   'combatSys.hordeWave':       '좀비 습격 제{wave}파! (적 {count}마리)',
@@ -573,6 +579,8 @@ export const ko = {
   'bcSys.materialShort':  '{name} 부족 ({have}/{need})',
   'bcSys.upgradeFail':    '거점 강화 불가: {reason}',
   'bcSys.upgradeComplete':'🏰 거점 Lv.{level} — {name} 완성!',
+  'bcSys.buildFail':     '안전 가옥 건설 불가: {reason}',
+  'bcSys.buildComplete': '🏠 안전 가옥 완성! 이제 거점을 강화할 수 있습니다.',
 
   // ── QuestSystem ─────────────────────────────────────────────
   'quest.newQuest':        '📋 새 퀘스트: {icon} {title}',
@@ -835,6 +843,7 @@ export const en = {
   'basecamp.remainDays':      '{days} days remaining',
   'basecamp.craft':           'Craft',
   'basecamp.skills':          'Skills',
+  'basecamp.buildBase':       '🏠 Build Safe House',
   'basecamp.fortify':         'Fortify',
   'basecamp.wait':            'Wait',
   'basecamp.rest':            'Rest',
@@ -1207,6 +1216,11 @@ export const en = {
   'bcModal.next':            '{icon} Next: {name}',
   'bcModal.upgrade':         'Upgrade Base',
   'bcModal.noMaterial':      'Materials needed: {reason}',
+  'bcModal.buildTitle':      '🏠 Build Safe House',
+  'bcModal.buildDesc':       'Fortify a ruined building into a safe shelter. Unlocks base upgrades after construction.',
+  'bcModal.buildEffect':     'On build: Encounter -5% · Fatigue recovery +1/TP · Morale +1/TP',
+  'bcModal.buildBtn':        'Build Safe House',
+  'bcModal.buildLocked':     '🔒 Available from Day 10. (Current Day {day})',
 
   // ── CombatSystem ────────────────────────────────────────────
   'combatSys.hordeWave':       'Zombie Horde Wave {wave}! ({count} enemies)',
@@ -1344,6 +1358,8 @@ export const en = {
   'bcSys.materialShort':  '{name} insufficient ({have}/{need})',
   'bcSys.upgradeFail':    'Cannot upgrade: {reason}',
   'bcSys.upgradeComplete':'🏰 Base Lv.{level} — {name} complete!',
+  'bcSys.buildFail':     'Cannot build safe house: {reason}',
+  'bcSys.buildComplete': '🏠 Safe house built! You can now fortify your base.',
 
   // ── QuestSystem ─────────────────────────────────────────────
   'quest.newQuest':        '📋 New Quest: {icon} {title}',

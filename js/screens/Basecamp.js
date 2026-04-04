@@ -145,7 +145,12 @@ const Basecamp = {
         <div class="bc-sidebar-btns">
           <button class="toolbar-btn" id="btn-craft">${I18n.t('basecamp.craft')}</button>
           <button class="toolbar-btn" id="btn-skills">${I18n.t('basecamp.skills')}</button>
-          <button class="toolbar-btn" id="btn-basecamp">${I18n.t('basecamp.fortify')}</button>
+          ${GameState.basecamp.built
+            ? `<button class="toolbar-btn" id="btn-basecamp">${I18n.t('basecamp.fortify')}</button>`
+            : GameState.time.day >= 10
+              ? `<button class="toolbar-btn btn-build-highlight" id="btn-build-base">${I18n.t('basecamp.buildBase')}</button>`
+              : ''
+          }
           <button class="toolbar-btn" id="btn-wait">${I18n.t('basecamp.wait')}</button>
           <button class="toolbar-btn" id="btn-rest">${I18n.t('basecamp.rest')}</button>
           <button class="toolbar-btn" id="btn-save">${I18n.t('basecamp.save')}</button>
@@ -204,7 +209,12 @@ const Basecamp = {
       SkillModal.open();
     });
 
-    // Basecamp upgrade modal open
+    // 안전 가옥 건설 버튼 (미건설 + Day 10+)
+    this._el.querySelector('#btn-build-base')?.addEventListener('click', () => {
+      BasecampModal.open();
+    });
+
+    // 거점 강화 버튼 (건설 완료 후)
     this._el.querySelector('#btn-basecamp')?.addEventListener('click', () => {
       BasecampModal.open();
     });

@@ -197,11 +197,16 @@ const BoardRenderer = {
 
         el.style.transition = `transform ${dur}s cubic-bezier(0.25, 0.46, 0.45, 0.94)`;
         el.style.transform  = '';
-        el.addEventListener('transitionend', () => {
+
+        // transitionend가 발화하지 않는 엣지케이스를 방지하기 위해 타임아웃 폴백 사용
+        const cleanup = () => {
+          clearTimeout(fallback);
           el.style.transition    = '';
           el.style.transform     = '';
           el.style.pointerEvents = '';
-        }, { once: true });
+        };
+        const fallback = setTimeout(cleanup, Math.ceil(dur * 1000) + 100);
+        el.addEventListener('transitionend', cleanup, { once: true });
       });
     });
   },

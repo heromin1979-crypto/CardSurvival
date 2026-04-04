@@ -401,6 +401,18 @@
   font-size: var(--font-size-xs);
 }
 
+/* 안전 가옥 건설 버튼 강조 (중반 전환점 유도) */
+.bc-sidebar-btns .btn-build-highlight {
+  border-color: var(--text-good, #5cb85c);
+  color: var(--text-good, #5cb85c);
+  animation: bc-build-pulse 2s ease-in-out infinite;
+}
+
+@keyframes bc-build-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.65; }
+}
+
 /* === LEGACY GAME LAYOUT (kept for other screens) === */
 .game-layout {
   display: grid;

@@ -264,6 +264,15 @@ function _initNotifications() {
     panel.classList.remove('open');
   });
 
+  // 패널 외부 클릭 시 자동 닫기 (카드 상호작용 차단 방지)
+  document.addEventListener('click', (e) => {
+    if (panel.classList.contains('open') &&
+        !panel.contains(e.target) &&
+        e.target !== logBtn) {
+      panel.classList.remove('open');
+    }
+  }, true);
+
   document.getElementById('notif-log-clear').addEventListener('click', () => {
     _log.length = 0;
     document.getElementById('notif-log-list').innerHTML = '<div class="notif-log-empty">알림 기록이 없습니다.</div>';

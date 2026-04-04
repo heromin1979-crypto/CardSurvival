@@ -130,8 +130,9 @@ const GameState = {
 
   // ── 베이스캠프 거점 ────────────────────────────────
   basecamp: {
-    level: 0,    // 0-5
-    xp:    0,    // 거점 경험치 (업그레이드 시 누적)
+    built: false, // 안전 가옥 건설 여부 (Day 10+ 이후 건설 가능)
+    level: 0,     // 강화 단계 0-5 (built=true 이후에만 진행)
+    xp:    0,     // 거점 경험치
   },
 
   // ── 퀘스트 ────────────────────────────────────────
@@ -497,8 +498,11 @@ const GameState = {
     // 랜드마크 탐색 이력 복원
     this.landmarkHistory     = d.landmarkHistory     ?? {};
     this.subwayStationVisits = d.subwayStationVisits ?? {};
-    // 베이스캠프 복원
-    if (d.basecamp) Object.assign(this.basecamp, d.basecamp);
+    // 베이스캠프 복원 (구버전 세이브: level>0이면 built=true로 마이그레이션)
+    if (d.basecamp) {
+      Object.assign(this.basecamp, d.basecamp);
+      if (this.basecamp.level > 0 && !this.basecamp.built) this.basecamp.built = true;
+    }
     // 퀘스트 복원
     if (d.quests) Object.assign(this.quests, d.quests);
     // 생태계 복원 (구버전 세이브 호환: EcologySystem.ensureInitialized()가 처리)
