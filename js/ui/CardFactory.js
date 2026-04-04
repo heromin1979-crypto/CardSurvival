@@ -414,15 +414,8 @@ const CardFactory = {
   },
 
   _onDoubleClick(instanceId, def) {
-    if (def.type === 'consumable' && def.onConsume) {
-      const confirmed = confirm(I18n.t('card.useConfirm', { name: I18n.itemName(def.id ?? GameState.cards[instanceId]?.definitionId, def.name) }));
-      if (confirmed) {
-        StatSystem.consumeCard(instanceId);
-        EventBus.emit('boardChanged', {});
-      }
-    } else {
-      EventBus.emit('openCardInspect', { instanceId });
-    }
+    // 소비 아이템이든 장착 아이템이든 항상 커스텀 모달로 통일
+    EventBus.emit('openCardInspect', { instanceId });
   },
 
   _onRightClick(instanceId, def, e) {

@@ -182,6 +182,17 @@
   color: var(--text-warn);
 }
 
+.card-action-btn.equip {
+  border-color: #223355;
+  color: var(--text-good);
+}
+
+.card-action-btn.equip:hover {
+  border-color: var(--text-good);
+  background: rgba(80, 160, 100, 0.1);
+  color: var(--text-good);
+}
+
 /* 분해 재료 미리보기 */
 .card-inspect-dismantle {
   margin-top: var(--gap-sm);

@@ -1,7 +1,8 @@
 // === MODAL MANAGER ===
-import EventBus  from '../core/EventBus.js';
-import GameState from '../core/GameState.js';
-import I18n      from '../core/I18n.js';
+import EventBus        from '../core/EventBus.js';
+import GameState       from '../core/GameState.js';
+import I18n            from '../core/I18n.js';
+import EquipmentSystem from '../systems/EquipmentSystem.js';
 
 const ModalManager = {
   _overlay: null,
@@ -87,8 +88,10 @@ const ModalManager = {
       </div>`
     ).join('');
 
-    const canConsume  = def.type === 'consumable' && def.onConsume;
+    const canConsume   = def.type === 'consumable' && def.onConsume;
     const canDismantle = Array.isArray(def.dismantle) && def.dismantle.length > 0;
+    const equipSlots   = EquipmentSystem.getSlotsForDef(def);
+    const canEquip     = equipSlots.length > 0;
 
     // 분해 재료 미리보기
     let dismantleHtml = '';
@@ -110,7 +113,21 @@ const ModalManager = {
         </div>`;
     }
 
-    const hasActions = canConsume || canDismantle;
+    const hasActions = canConsume || canDismantle || canEquip;
+
+    // 장착 슬롯 버튼 목록 (슬롯이 여럿이면 각각 버튼 생성)
+    const slotLabels = {
+      head: '머리', face: '얼굴', body: '몸통', offhand: '보조손',
+      hands: '장갑', backpack: '배낭', weapon_main: '주무기', weapon_sub: '보조무기',
+      belt: '벨트', accessory: '장신구', boots: '신발',
+    };
+    const equipBtnsHtml = canEquip
+      ? equipSlots.map(slotId =>
+          `<button class="card-action-btn equip" id="modal-equip-${instanceId}-${slotId}">
+            ⚙️ ${slotLabels[slotId] ?? slotId} 장착
+          </button>`
+        ).join('')
+      : '';
 
     const html = `
       <div class="card-inspect">
@@ -124,6 +141,7 @@ const ModalManager = {
           ${hasActions ? `
           <div class="card-inspect-actions">
             ${canConsume    ? `<button class="card-action-btn" id="modal-consume-${instanceId}">${I18n.t('modal.use')}</button>` : ''}
+            ${equipBtnsHtml}
             ${canDismantle  ? `<button class="card-action-btn dismantle" id="modal-dismantle-${instanceId}">${I18n.t('modal.dismantle')}</button>` : ''}
           </div>` : ''}
         </div>
@@ -140,6 +158,16 @@ const ModalManager = {
           EventBus.emit('boardChanged', {});
         });
       });
+    }
+
+    if (canEquip) {
+      for (const slotId of equipSlots) {
+        document.getElementById(`modal-equip-${instanceId}-${slotId}`)?.addEventListener('click', () => {
+          const ok = EquipmentSystem.equip(instanceId, slotId);
+          this.close();
+          if (ok) EventBus.emit('boardChanged', {});
+        });
+      }
     }
 
     if (canDismantle) {
