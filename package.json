@@ -1,0 +1,63 @@
+{
+  "name": "card-survival-ruined-city",
+  "version": "1.0.0",
+  "description": "Card Survival: Ruined City — 카드 기반 서울 좀비 생존 게임",
+  "main": "electron-main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win portable --x64",
+    "build:dir": "electron-builder --win dir --x64"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0"
+  },
+  "build": {
+    "appId": "com.cardsurvival.ruinedcity",
+    "productName": "Card Survival Ruined City",
+    "copyright": "Copyright © 2026",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build-resources"
+    },
+    "files": [
+      "electron-main.js",
+      "index.html",
+      "css/**/*",
+      "js/**/*",
+      "assets/**/*",
+      "!assets/icons/.gitkeep",
+      "!node_modules/.cache/**",
+      "!dist/**",
+      "!build-resources/**",
+      "!.gstack/**",
+      "!.design-audit/**",
+      "!design-audit-screenshots/**",
+      "!doc/**",
+      "!testdata/**",
+      "!*.py",
+      "!*.mjs",
+      "!*.txt",
+      "!*.md",
+      "!*.bat",
+      "!serve.js",
+      "!prompt_plan.md"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ],
+      "sign": false,
+      "signingHashAlgorithms": null,
+      "signAndEditExecutable": false
+    },
+    "portable": {
+      "artifactName": "CardSurvival-RuinedCity.exe"
+    },
+    "asar": true,
+    "compression": "maximum"
+  }
+}
