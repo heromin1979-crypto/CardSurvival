@@ -61,6 +61,7 @@ const STACK_ROWS = [
 
   // ── 의료 ──────────────────────────────────────────────────────
   ['bandage'                 , true, 10 ],
+  ['alcohol_swab'            , true, 20 ],
   ['first_aid_kit'           , true,  3 ],
   ['antiseptic'              , true,  8 ],
   ['painkiller'              , true, 12 ],
@@ -74,6 +75,7 @@ const STACK_ROWS = [
   // ── 근접 무기 ─────────────────────────────────────────────────
   ['iron_pipe'               , true,  2 ],
   ['knife'                   , true,  3 ],
+  ['sharpened_knife'         , true,  2 ],
   ['crowbar'                 , true,  2 ],
   ['baseball_bat'            , true,  2 ],
   ['reinforced_bat'          , true,  2 ],
