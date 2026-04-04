@@ -203,18 +203,70 @@ function _initNotifications() {
   const container = document.getElementById('notification-container');
   if (!container) return;
 
+  const _log = [];
+
   EventBus.on('notify', ({ message, type = 'info' }) => {
+    // Record in log
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    _log.push({ message, type, time: timeStr });
+
+    // Show toast
     const el = document.createElement('div');
     el.className = `notification ${type}`;
     el.textContent = message;
     container.appendChild(el);
 
-    // Auto-remove after 3s
+    // Auto-remove after 6.5s
     setTimeout(() => {
       el.addEventListener('animationend', () => el.remove(), { once: true });
       el.style.animation = 'fadeOut 0.3s ease forwards';
       setTimeout(() => el.remove(), 350);
-    }, 2800);
+    }, 6500);
+  });
+
+  // Log button
+  const logBtn = document.createElement('button');
+  logBtn.id = 'notif-log-btn';
+  logBtn.className = 'notif-log-btn';
+  logBtn.title = '알림 기록';
+  logBtn.textContent = '📋';
+  document.getElementById('notification-container').insertAdjacentElement('beforebegin', logBtn);
+
+  // Log panel
+  const panel = document.createElement('div');
+  panel.id = 'notif-log-panel';
+  panel.className = 'notif-log-panel';
+  panel.innerHTML = `
+    <div class="notif-log-header">
+      <span class="notif-log-title">알림 기록</span>
+      <button class="notif-log-close" id="notif-log-close">✕</button>
+    </div>
+    <div class="notif-log-list" id="notif-log-list"></div>
+    <button class="notif-log-clear" id="notif-log-clear">기록 지우기</button>
+  `;
+  document.getElementById('app').appendChild(panel);
+
+  logBtn.addEventListener('click', () => {
+    const list = document.getElementById('notif-log-list');
+    list.innerHTML = _log.length === 0
+      ? '<div class="notif-log-empty">알림 기록이 없습니다.</div>'
+      : [..._log].reverse().map(e =>
+          `<div class="notif-log-entry ${e.type}">
+            <span class="notif-log-time">${e.time}</span>
+            <span class="notif-log-msg">${e.message}</span>
+          </div>`
+        ).join('');
+    panel.classList.toggle('open');
+  });
+
+  document.getElementById('notif-log-close').addEventListener('click', () => {
+    panel.classList.remove('open');
+  });
+
+  document.getElementById('notif-log-clear').addEventListener('click', () => {
+    _log.length = 0;
+    document.getElementById('notif-log-list').innerHTML = '<div class="notif-log-empty">알림 기록이 없습니다.</div>';
   });
 }
 

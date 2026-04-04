@@ -8,6 +8,19 @@ const http  = require('http');
 const fs    = require('fs');
 const path  = require('path');
 
+// 개발 모드에서만 파일 변경 감지 → 자동 새로고침
+if (!app.isPackaged) {
+  require('electron-reload')(__dirname, {
+    electron: path.join(__dirname, 'node_modules', '.bin', 'electron.cmd'),
+    awaitWriteFinish: true,
+    watched: [
+      path.join(__dirname, 'js'),
+      path.join(__dirname, 'css'),
+      path.join(__dirname, 'index.html'),
+    ],
+  });
+}
+
 const PORT = 18437; // 고정 포트 (8080 충돌 방지)
 
 // ── 게임 파일 루트 경로 ────────────────────────────────────────
@@ -18,6 +31,25 @@ function getRoot() {
     return app.getAppPath();
   }
   return __dirname;
+}
+
+// ── 포트 충돌 시 기존 프로세스 정리 ───────────────────────────
+function killPortSync(port) {
+  try {
+    const { execSync } = require('child_process');
+    const out = execSync(
+      `powershell -Command "Get-NetTCPConnection -LocalPort ${port} -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess"`,
+      { encoding: 'utf8' }
+    ).trim();
+    if (out) {
+      out.split(/\r?\n/).forEach(pid => {
+        pid = pid.trim();
+        if (pid && pid !== String(process.pid)) {
+          try { execSync(`powershell -Command "Stop-Process -Id ${pid} -Force -ErrorAction SilentlyContinue"`); } catch (_) {}
+        }
+      });
+    }
+  } catch (_) {}
 }
 
 // ── 내장 HTTP 서버 ─────────────────────────────────────────────
@@ -103,9 +135,22 @@ app.whenReady().then(async () => {
   try {
     httpServer = await startServer(root);
   } catch (err) {
-    console.error('서버 시작 실패:', err);
-    app.quit();
-    return;
+    if (err.code === 'EADDRINUSE') {
+      console.log(`포트 ${PORT} 충돌 — 기존 프로세스 종료 후 재시도...`);
+      killPortSync(PORT);
+      await new Promise(r => setTimeout(r, 500));
+      try {
+        httpServer = await startServer(root);
+      } catch (err2) {
+        console.error('서버 시작 실패:', err2);
+        app.quit();
+        return;
+      }
+    } else {
+      console.error('서버 시작 실패:', err);
+      app.quit();
+      return;
+    }
   }
 
   createWindow();
