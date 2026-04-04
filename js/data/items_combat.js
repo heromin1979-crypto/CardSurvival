@@ -19,10 +19,23 @@ const ITEMS_COMBAT = {
     id: 'knife', name: '칼', type: 'weapon', subtype: 'melee',
     rarity: 'common', weight: 0.3,
     defaultDurability: 70, defaultContamination: 0,
-    icon: '🔪', description: '소음 없이 적을 처치. 내구도가 소모된다.',
+    icon: '🔪', description: '소음 없이 적을 처치. 고철로 날을 갈면 더 강해진다.',
     tags: ['weapon', 'melee', 'silent'],
     combat: { damage: [14, 22], accuracy: 0.80, noiseOnUse: 1, durabilityLoss: 5, critChance: 0.25, critMultiplier: 1.8 },
     dismantle: [{ definitionId: 'sharp_blade', qty: 1, chance: 0.7 }],
+  },
+
+  sharpened_knife: {
+    id: 'sharpened_knife', name: '날카로운 칼', type: 'weapon', subtype: 'melee',
+    rarity: 'uncommon', weight: 0.3,
+    defaultDurability: 80, defaultContamination: 0,
+    icon: '🗡️', description: '고철로 날을 갈아 강화된 칼. 더 깊은 상처를 입힌다.',
+    tags: ['weapon', 'melee', 'silent', 'crafted'],
+    combat: { damage: [18, 28], accuracy: 0.82, noiseOnUse: 1, durabilityLoss: 6, critChance: 0.30, critMultiplier: 2.0 },
+    dismantle: [
+      { definitionId: 'sharp_blade', qty: 1, chance: 0.8 },
+      { definitionId: 'scrap_metal', qty: 1, chance: 0.5 },
+    ],
   },
 
   crowbar: {

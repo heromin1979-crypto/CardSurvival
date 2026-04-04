@@ -373,21 +373,19 @@ const INTERACTION_RULES = [
     apply() { return { transformSrc: 'charcoal_filter', consumeSrc: false, consumeTgt: true, message: '숯과 천 조각으로 숯 필터를 만들었다.' }; },
   },
 
-  // A6. 칼 + 고철 → 날카로운 날
+  // A6. 칼 + 고철 → 날카로운 칼 (칼이 강화됨, 고철 소비)
   { id: 'whittle_blade', source: { id: 'knife' }, target: { id: 'scrap_metal' },
-    hint: '고철 연마 → 날카로운 날',
-    canApply(s) { return (s.durability ?? 100) >= 15 ? { ok: true } : { ok: false, reason: '칼의 내구도가 너무 낮다.' }; },
-    apply(s) {
-      s.durability = Math.max(0, (s.durability ?? 100) - 15);
-      return { transformTgt: 'sharp_blade', consumeSrc: false, consumeTgt: false, noise: 2, message: '고철을 갈아 날카로운 날을 만들었다.' };
+    hint: '칼 + 고철 → 날카로운 칼 강화',
+    canApply(s) { return (s.durability ?? 100) >= 20 ? { ok: true } : { ok: false, reason: '칼의 내구도가 너무 낮다.' }; },
+    apply() {
+      return { transformSrc: 'sharpened_knife', consumeSrc: false, consumeTgt: true, noise: 3, message: '고철로 날을 갈아 날카로운 칼을 만들었다! (칼 강화, 고철 소비)' };
     },
   },
   { id: 'whittle_blade_rev', source: { id: 'scrap_metal' }, target: { id: 'knife' },
-    hint: '고철 연마 → 날카로운 날',
-    canApply(s, t) { return (t.durability ?? 100) >= 15 ? { ok: true } : { ok: false, reason: '칼의 내구도가 너무 낮다.' }; },
-    apply(s, t) {
-      t.durability = Math.max(0, (t.durability ?? 100) - 15);
-      return { transformSrc: 'sharp_blade', consumeSrc: false, consumeTgt: false, noise: 2, message: '고철을 갈아 날카로운 날을 만들었다.' };
+    hint: '고철 + 칼 → 날카로운 칼 강화',
+    canApply(s, t) { return (t.durability ?? 100) >= 20 ? { ok: true } : { ok: false, reason: '칼의 내구도가 너무 낮다.' }; },
+    apply() {
+      return { transformTgt: 'sharpened_knife', consumeSrc: true, consumeTgt: false, noise: 3, message: '고철로 날을 갈아 날카로운 칼을 만들었다! (칼 강화, 고철 소비)' };
     },
   },
 
