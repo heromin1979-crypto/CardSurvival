@@ -89,9 +89,11 @@ const BALANCE = {
 
   // ── 조우 ────────────────────────────────────────────
   encounter: {
-    reductionCap:       0.85,
-    structureReductCap: 0.70,
+    reductionCap:          0.85,
+    structureReductCap:    0.70,
     respawnNoiseThreshold: 35,
+    earlyGameGraceDays:    3,     // 초반 N일간 조우 확률 감소 적용
+    earlyGameEncounterMult: 0.45, // 초반 조우 확률 배율 (45%로 감소)
   },
 
   // ── 질병 노출 카운터 ───────────────────────────────

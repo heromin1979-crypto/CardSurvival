@@ -332,6 +332,26 @@ const DiseaseSystem = {
       type: 'danger',
     });
 
+    // 최초 출혈/감염 발생 시 치료 가이드 — 처음 보는 플레이어를 위한 안내
+    if (diseaseId === 'bleeding' && !gs.flags.bleedingGuideShown) {
+      gs.flags.bleedingGuideShown = true;
+      setTimeout(() => {
+        EventBus.emit('notify', {
+          message: '💡 치료법: 붕대(🩹) 또는 알코올 솜(🧴)을 사용하면 출혈을 멈출 수 있습니다.',
+          type: 'info',
+        });
+      }, 300);
+    }
+    if ((diseaseId === 'deep_laceration' || gs.stats?.infection?.current > 20) && !gs.flags.infectionGuideShown) {
+      gs.flags.infectionGuideShown = true;
+      setTimeout(() => {
+        EventBus.emit('notify', {
+          message: '💡 감염 경고: 소독약(🧪) 또는 알코올 솜(🧴)으로 감염 수치를 낮추세요. 70 이상이면 패혈증 위험!',
+          type: 'warn',
+        });
+      }, 600);
+    }
+
     // 중증(3) 질환은 즉시 치료 경고
     if (def.severity >= 3) {
       setTimeout(() => {

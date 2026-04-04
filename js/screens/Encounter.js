@@ -4,6 +4,7 @@ import GameState   from '../core/GameState.js';
 import StateMachine from '../core/StateMachine.js';
 import I18n        from '../core/I18n.js';
 import { rollEnemyGroup } from '../data/enemies.js';
+import StatSystem  from '../systems/StatSystem.js';
 
 const Encounter = {
   _el:     null,
@@ -59,6 +60,7 @@ const Encounter = {
         <button class="toolbar-btn" id="enc-fight">${I18n.t('encounter.fight')}</button>
         <button class="toolbar-btn" id="enc-stealth">${I18n.t('encounter.stealth')}</button>
         <button class="toolbar-btn" id="enc-flee">${I18n.t('encounter.flee')}</button>
+        ${GameState.player.characterId === 'soldier' ? `<button class="toolbar-btn" id="enc-ambush" style="border-color:var(--text-warn)">⚡ 선제 제압</button>` : ''}
       </div>
     `;
 
@@ -94,6 +96,31 @@ const Encounter = {
         EventBus.emit('notify', { message: I18n.t('encounter.fleeFail'), type: 'danger' });
         StateMachine.transition('combat', { enemies, dangerLevel, nodeId });
       }
+    });
+
+    // 군인 전용: 선제 제압 — 근접/비무장 스킬 합산으로 첫 타 확률 상승
+    this._el.querySelector('#enc-ambush')?.addEventListener('click', () => {
+      const melee    = GameState.player.skills?.melee ?? 0;
+      const unarmed  = GameState.player.skills?.unarmed ?? 0;
+      const combined = melee + unarmed;
+      // 스킬 합 8이면 70%, 최소 40%
+      const hitChance = Math.min(0.70, 0.40 + combined * 0.04);
+      const roll = Math.random();
+      if (roll < hitChance) {
+        const bonusDmg = 10 + Math.floor(combined * 1.5);
+        EventBus.emit('notify', {
+          message: `⚡ 선제 제압 성공! 적에게 ${bonusDmg} 추가 피해를 입히고 전투를 시작합니다.`,
+          type: 'good',
+        });
+        StateMachine.transition('combat', { enemies, dangerLevel, nodeId, ambushBonus: bonusDmg });
+      } else {
+        EventBus.emit('notify', {
+          message: '⚡ 선제 제압 실패! 적이 먼저 반응했습니다.',
+          type: 'danger',
+        });
+        StateMachine.transition('combat', { enemies, dangerLevel, nodeId, ambushFailed: true });
+      }
+      GameState.modStat('fatigue', 5);
     });
   },
 };

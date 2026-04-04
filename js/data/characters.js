@@ -96,8 +96,8 @@ export const CHARACTERS = [
         id: 'tactical_gear',
         name: '전술 장비',
         icon: '🎒',
-        desc: '나이프 추가 지급',
-        effect: { startingItems: ['knife'] },
+        desc: '나이프 + 알코올 솜 지급',
+        effect: { startingItems: ['knife', 'alcohol_swab', 'alcohol_swab'] },
       },
     ],
     startingSkills: {

@@ -334,6 +334,9 @@ const HiddenElementSystem = {
   _meetsEventConditions(event, cond) {
     const gs = GameState;
 
+    // cond가 없으면 조건 없는 이벤트로 간주 — 항상 통과
+    if (!cond || typeof cond !== 'object') return true;
+
     // 일자 범위
     if (cond.dayRange) {
       const [minD, maxD] = cond.dayRange;
@@ -542,7 +545,11 @@ const HiddenElementSystem = {
   _checkRecipeUnlocks() {
     const gs = GameState;
 
+    // 세이브 호환: 필드 없으면 초기화
+    if (!gs.flags.hiddenRecipesUnlocked) gs.flags.hiddenRecipesUnlocked = [];
+
     for (const [recipeId, recipe] of Object.entries(HIDDEN_RECIPES)) {
+      if (!recipe || typeof recipe !== 'object') continue;
       if (gs.flags.hiddenRecipesUnlocked.includes(recipeId)) continue;
       if (!recipe.hidden) continue;
 

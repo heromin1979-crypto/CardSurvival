@@ -31,6 +31,14 @@ const TickEngine = {
       this._doFullTP();
     }
     EventBus.emit('notify', { message: `⏩ ${n} TP skipped${reason ? ': '+reason : ''}`, type: 'info' });
+
+    // TP 잔량 경고 — 하루 72 TP 기준
+    const remaining = 72 - GameState.time.tpInDay;
+    if (remaining <= 6 && remaining > 0) {
+      EventBus.emit('notify', { message: `🌙 오늘 남은 행동력: ${remaining} TP — 곧 날이 저뭅니다.`, type: 'warn' });
+    } else if (remaining <= 12 && remaining > 6) {
+      EventBus.emit('notify', { message: `⏳ 오늘 남은 행동력: ${remaining} TP`, type: 'info' });
+    }
   },
 
   setPaused(val) {

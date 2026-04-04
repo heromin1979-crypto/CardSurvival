@@ -11,8 +11,18 @@ const ITEMS_MISC = {
     defaultDurability: 100, defaultContamination: 0,
     icon: '🩹', description: '상처를 감아 출혈을 막는다.',
     onConsume: { hp: 15, infection: -5 },
-    tags: ['medical', 'healing'],
+    tags: ['medical', 'healing', 'bandage'],
     dismantle: [{ definitionId: 'cloth_scrap', qty: 2, chance: 0.8 }],
+  },
+
+  alcohol_swab: {
+    id: 'alcohol_swab', name: '알코올 솜', type: 'consumable', subtype: 'medical',
+    rarity: 'common', weight: 0.02,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🧴', description: '상처 소독용 알코올 솜. 초기 감염을 즉시 제거하고 출혈을 경감한다.',
+    onConsume: { infection: -15, hp: 3 },
+    tags: ['medical', 'antiseptic', 'bandage'],
+    dismantle: [],
   },
 
   first_aid_kit: {

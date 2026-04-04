@@ -404,6 +404,48 @@ const NPCSystem = {
 
     // Check for gift at new trust level
     this._checkGifts(npcId, oldTrust, state.trust);
+
+    // Check for trust milestone events (e.g., npc_dog special bonuses)
+    this._checkTrustEvents(npcId, oldTrust, state.trust);
+  },
+
+  _checkTrustEvents(npcId, oldTrust, newTrust) {
+    const npcDef = NPCS[npcId];
+    if (!npcDef?.trustEvents) return;
+    const gs = GameState;
+
+    for (const evt of npcDef.trustEvents) {
+      if (oldTrust >= evt.trust || newTrust < evt.trust) continue;
+      // 이미 발동된 이벤트는 건너뜀
+      if (!gs.flags.npcTrustEventsFired) gs.flags.npcTrustEventsFired = {};
+      if (gs.flags.npcTrustEventsFired[evt.id]) continue;
+      gs.flags.npcTrustEventsFired[evt.id] = true;
+
+      EventBus.emit('notify', { message: evt.message, type: 'good' });
+
+      // 아이템 지급
+      if (evt.effect?.giveItems) {
+        for (const gift of evt.effect.giveItems) {
+          const inst = GameState.createCardInstance(gift.id, { quantity: gift.qty });
+          if (inst) {
+            const placed = GameState.placeCardInRow(inst.instanceId, 'middle');
+            if (!placed) GameState.removeCardInstance(inst.instanceId);
+          }
+        }
+        EventBus.emit('boardChanged', {});
+      }
+
+      // 동반자 전투 피해 감소 패시브 등록
+      if (evt.effect?.combatDmgReduce) {
+        if (!gs.flags.companionCombatDmgReduce) gs.flags.companionCombatDmgReduce = 0;
+        gs.flags.companionCombatDmgReduce = Math.max(
+          gs.flags.companionCombatDmgReduce,
+          evt.effect.combatDmgReduce,
+        );
+      }
+
+      EventBus.emit('npcTrustEvent', { npcId, eventId: evt.id, effect: evt.effect });
+    }
   },
 
   _checkGifts(npcId, oldTrust, newTrust) {

@@ -325,6 +325,27 @@ const NPCS = {
     },
     gifts: [],
     trades: null,
+    // 신뢰 이벤트: 특정 신뢰 등급 달성 시 1회 트리거
+    trustEvents: [
+      {
+        trust: 2,
+        id: 'dog_trust_2',
+        message: '🐕 개가 낯선 냄새를 맡고 짖습니다. 덕분에 매복을 미리 알아챕니다. (은신 난이도 -0.1)',
+        effect: { stealthBonus: 0.1 },   // 이 세션 동안 은신 성공률 +10%
+      },
+      {
+        trust: 4,
+        id: 'dog_trust_4',
+        message: '🐕 개가 탐색 중 숨겨진 식량 창고 냄새를 맡아냈습니다! (통조림 2개 발견)',
+        effect: { giveItems: [{ id: 'canned_food', qty: 2 }] },
+      },
+      {
+        trust: 5,
+        id: 'dog_trust_5',
+        message: '🐕 개가 전투 중 적의 공격을 대신 받아 당신을 보호합니다. (전투 피해 -15% 패시브 활성화)',
+        effect: { combatDmgReduce: 0.15 },  // 동반자 시 전투 피해 15% 경감
+      },
+    ],
   },
 
 };
