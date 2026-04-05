@@ -3,6 +3,7 @@
 import EventBus  from '../core/EventBus.js';
 import GameState from '../core/GameState.js';
 import { SKILL_DEFS, LEVEL_XP_TABLE, getLevelFromXp, DEFAULT_SKILLS } from '../data/skillDefs.js';
+import NPCS      from '../data/npcs.js';
 
 const SkillSystem = {
 
@@ -22,8 +23,10 @@ const SkillSystem = {
     const skill = gs.player.skills[skillId];
     if (!skill) return;
 
+    // 동행 NPC 스킬 보너스 적용 (XP 배율)
+    const npcMult   = 1 + this.getNpcSkillBonus(skillId);
     const prevLevel = skill.level;
-    skill.xp += amount;
+    skill.xp       += Math.round(amount * npcMult);
 
     const newLevel = getLevelFromXp(skill.xp);
     if (newLevel > prevLevel) {
@@ -99,6 +102,22 @@ const SkillSystem = {
       const bonuses  = def.getBonuses(skill.level);
       return { id, def, skill, progress, bonuses };
     });
+  },
+
+  /**
+   * 동행 NPC의 스킬 XP 보너스 합산 반환 (배율 덧셈 방식)
+   * 예: nurse(medicine+0.3) + engineer(crafting+0.3) 동행 시
+   *     getNpcSkillBonus('medicine') → 0.3
+   * @param {string} skillId
+   * @returns {number} 총 보너스 (0.0 ~ n.n)
+   */
+  getNpcSkillBonus(skillId) {
+    let bonus = 0;
+    for (const npcId of (GameState.companions ?? [])) {
+      const sb = NPCS[npcId]?.companion?.skillBonus;
+      if (sb?.[skillId]) bonus += sb[skillId];
+    }
+    return bonus;
   },
 
   /** 구버전 세이브에서 skills 필드 보완 */

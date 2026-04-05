@@ -169,6 +169,9 @@ const SeasonSystem = {
     if (!gs.season.eventsTriggered) gs.season.eventsTriggered = [];
     const triggered = gs.season.eventsTriggered;
 
+    // 계절 전환 충격 (Day 91/181/271 — 각 1회)
+    this._applySeasonTransitionShock(day, gs, triggered);
+
     const event = SEASONAL_EVENTS.find(e => e.day === day && !triggered.includes(e.id));
     if (!event) return;
 
@@ -177,6 +180,61 @@ const SeasonSystem = {
     EventBus.emit('seasonalEvent', { eventId: event.id, event });
     this._applyEventEffects(event.effects, gs);
     this._placeEventCard(event.id, gs);
+  },
+
+  // ── 계절 전환 충격 ──────────────────────────────────────────────
+  // Day 91(봄→여름) / 181(여름→가을) / 271(가을→겨울) 첫날 1회 발동
+  // 베이스캠프 완공(buildStage≥3) 시 차단
+
+  _applySeasonTransitionShock(day, gs, triggered) {
+    if (![91, 181, 271].includes(day)) return;
+    const shockId = `shock_day${day}`;
+    if (triggered.includes(shockId)) return;
+    triggered.push(shockId);
+
+    const inSafeZone = gs.basecamp?.buildStage >= 3;
+
+    if (day === 91) {
+      // 봄 → 여름: 폭염 충격 — 깨끗한 물 2개 미만 시 탈수 + 체온 급등
+      const cleanWater = ['water_bottle', 'boiled_water', 'purified_water', 'sports_drink']
+        .reduce((sum, id) => sum + gs.countOnBoard(id), 0);
+      if (inSafeZone || cleanWater >= 2) {
+        gs.modStat('morale', 5);
+        EventBus.emit('notify', { message: '☀️ 여름이 시작됩니다. 물 비축이 충분합니다!', type: 'good' });
+      } else {
+        gs.modStat('hydration', -20);
+        gs.modStat('temperature', 10);
+        EventBus.emit('notify', { message: '☀️ 폭염 충격! 물 비축 부족 — 탈수 + 체온 급등', type: 'danger' });
+      }
+
+    } else if (day === 181) {
+      // 여름 → 가을: 식량 위기 — 식량 5개 미만 시 영양 + 사기 급감
+      const foodCount = ['canned_food', 'energy_bar', 'dried_meat', 'rice', 'military_ration', 'cooked_rice', 'premium_ration']
+        .reduce((sum, id) => sum + gs.countOnBoard(id), 0);
+      if (inSafeZone || foodCount >= 5) {
+        gs.modStat('morale', 5);
+        EventBus.emit('notify', { message: '🍂 가을이 시작됩니다. 식량 비축이 충분합니다!', type: 'good' });
+      } else {
+        gs.modStat('nutrition', -15);
+        gs.modStat('morale', -10);
+        EventBus.emit('notify', { message: '🍂 가을 식량 위기! 비축 부족 — 영양 급감', type: 'danger' });
+      }
+
+    } else if (day === 271) {
+      // 가을 → 겨울: 혹한 충격 — 방한복/캠프파이어 없으면 체온 급강하
+      const hasWarmClothes = gs.countOnBoard('warm_clothes') > 0
+        || gs.countOnBoard('hazmat_suit') > 0
+        || gs.countOnBoard('tactical_vest') > 0;
+      const hasCampfire = gs.getBoardCards().some(c => c.definitionId === 'campfire');
+      if (inSafeZone || hasWarmClothes || hasCampfire) {
+        gs.modStat('morale', 8);
+        EventBus.emit('notify', { message: '❄️ 겨울이 시작됩니다. 방한이 잘 되어 있습니다!', type: 'good' });
+      } else {
+        gs.modStat('temperature', -15);
+        gs.modStat('morale', -15);
+        EventBus.emit('notify', { message: '❄️ 혹한 도래! 방한 미비 — 체온 급강하', type: 'danger' });
+      }
+    }
   },
 
   _applyEventEffects(effects, gs) {
