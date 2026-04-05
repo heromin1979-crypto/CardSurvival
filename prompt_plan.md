@@ -1962,6 +1962,18 @@ Phase 6(D91-100): 여름 수분 관리, 열사병 예방
   - BasecampModal: 3단계 진행 바 UI로 전면 재작성
   - items.js: basecamp_landmark 카드 정의 추가 (safeZone/weatherProtection/npcShelter 플래그)
 
+### Phase R — 미구현 시스템 완성: 계절 전환 충격 + NPC 스킬 보너스 (2026-04-05)
+- feat(gameplay): 계절 전환 충격 패널티 — SeasonSystem.js 구현
+  - Day 91(봄→여름): 깨끗한 물 2개 미만 → 탈수(-20) + 체온(+10)
+  - Day 181(여름→가을): 식량 5개 미만 → 영양(-15) + 사기(-10)
+  - Day 271(가을→겨울): 방한복/캠프파이어 없으면 → 체온(-15) + 사기(-15)
+  - 베이스캠프 완공(buildStage≥3) 시 전환 충격 면제 + 사기 보너스 지급
+  - sim_firefighter_300days.mjs에만 있던 로직을 실제 SeasonSystem.js에 이식
+- feat(gameplay): NPC skillBonus XP 배율 연결 — SkillSystem.js 구현
+  - NPCS import 추가 → companion.skillBonus 필드를 gainXp() 시 XP 배율로 반영
+  - getNpcSkillBonus(skillId): 동행 NPC 전체 skillBonus 합산 반환
+  - 예) 간호사 동행 → medicine XP ×1.3, 군인 동행 → melee/ranged XP ×1.2
+
 </details>
 
 ---
