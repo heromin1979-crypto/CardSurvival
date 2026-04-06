@@ -110,6 +110,22 @@
   width: 80px;
 }
 
+.card-inspect-art--img {
+  width: 120px;
+  height: 120px;
+  border-radius: 6px;
+  overflow: hidden;
+  font-size: 0;
+}
+
+.card-inspect-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
 .card-inspect-info {
   flex: 1;
   display: flex;

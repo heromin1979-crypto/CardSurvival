@@ -3,6 +3,7 @@ import EventBus        from '../core/EventBus.js';
 import GameState       from '../core/GameState.js';
 import I18n            from '../core/I18n.js';
 import EquipmentSystem from '../systems/EquipmentSystem.js';
+import CardFactory     from './CardFactory.js';
 
 const ModalManager = {
   _overlay: null,
@@ -129,9 +130,14 @@ const ModalManager = {
         ).join('')
       : '';
 
+    const inspectImgSrc = CardFactory.images[inst.definitionId] ?? null;
+    const inspectArt = inspectImgSrc
+      ? `<div class="card-inspect-art card-inspect-art--img"><img class="card-inspect-img" src="${inspectImgSrc}" alt="${def.name ?? ''}"></div>`
+      : `<div class="card-inspect-art">${def.icon ?? '📦'}</div>`;
+
     const html = `
       <div class="card-inspect">
-        <div class="card-inspect-art">${def.icon ?? '📦'}</div>
+        ${inspectArt}
         <div class="card-inspect-info">
           <div class="card-inspect-name">${I18n.itemName(inst.definitionId, def.name)}</div>
           <div class="card-inspect-type">${def.type} · ${def.rarity}</div>

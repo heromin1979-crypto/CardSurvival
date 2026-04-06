@@ -1974,6 +1974,21 @@ Phase 6(D91-100): 여름 수분 관리, 열사병 예방
   - getNpcSkillBonus(skillId): 동행 NPC 전체 skillBonus 합산 반환
   - 예) 간호사 동행 → medicine XP ×1.3, 군인 동행 → melee/ranged XP ×1.2
 
+### Phase S — 시네마틱 연출 시스템 (2026-04-06)
+- feat(cinematic): 전체화면 시네마틱 오버레이 시스템 구현
+  - js/data/cinematicScenes.js (신규): 31개 씬 정의 + ENDING_TO_CINEMATIC 매핑 (36 엔딩 ID → 씬 ID)
+  - js/ui/CinematicScene.js (신규): EventBus 'showCinematic' 채널 리스너, Ken Burns 배경 줌 애니메이션, 텍스트 라인 stagger 등장, 1500ms 후 클릭/키보드 dismiss
+  - css/cinematic.css (신규): z-index 1100 (모달 950, 알림 999 위), 상하 그라디언트 + 비네트, CTA 펄스 애니메이션, 모바일 대응
+  - js/main.js: CinematicScene.init() 추가, window.__CinematicScene__ 전역 등록
+  - index.html: cinematic.css 링크 추가
+- feat(ending): EndingSystem.js — 엔딩 도달 시 씬 먼저 표시 후 stateTransition
+  - ENDING_TO_CINEMATIC 매핑으로 36개 엔딩을 4개 이미지로 분류
+  - CinematicScene 없거나 매핑 없으면 직접 전환 fallback
+- feat(season): SeasonSystem.js — 계절 전환 시 준비 여부에 따라 다른 씬 표시
+  - isPrepared → cin_season_{계절} / 미준비 → cin_season_shock
+  - 씬 표시 중 게임 일시정지 (gs.time.isPaused), 완료 후 효과 적용
+- assets/images/cinematic/: 25개 webp 이미지 (사망 10 + 계절 5 + 캐릭터 6 + 엔딩 4), 각 1600~2100KB
+
 </details>
 
 ---

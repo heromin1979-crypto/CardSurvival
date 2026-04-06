@@ -1,0 +1,219 @@
+/* === CINEMATIC SCENE OVERLAY === */
+/* 주요 시나리오 분기점에서 표시되는 풀스크린 연출 장면 */
+
+/* ── 기본 오버레이 ────────────────────────────────────────────── */
+
+.cinematic-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1100; /* 알림(999)·모달(950)보다 높게 */
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 600ms ease;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.cinematic-overlay.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.cinematic-overlay.exiting {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ── 배경 이미지 ─────────────────────────────────────────────── */
+
+.cinematic-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0;
+  transition: opacity 800ms ease;
+  transform: scale(1.04); /* 미세한 줌 아웃 효과 */
+  animation: cinematicBgZoom 8s ease-out forwards;
+}
+
+.cinematic-overlay.active .cinematic-bg {
+  opacity: 1;
+}
+
+@keyframes cinematicBgZoom {
+  from { transform: scale(1.06); }
+  to   { transform: scale(1.00); }
+}
+
+/* ── 비녜트 + 그라디언트 오버레이 ───────────────────────────── */
+
+.cinematic-vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 40%,
+    rgba(0,0,0,0.7) 100%
+  );
+  pointer-events: none;
+}
+
+.cinematic-gradient-top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 35%;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.85) 0%, transparent 100%);
+  pointer-events: none;
+}
+
+.cinematic-gradient-bottom {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60%;
+  background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, transparent 100%);
+  pointer-events: none;
+}
+
+/* ── 콘텐츠 영역 ─────────────────────────────────────────────── */
+
+.cinematic-content {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 800px;
+  padding: 0 var(--gap-xl) 80px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-lg);
+  pointer-events: none;
+}
+
+/* ── 제목 영역 ───────────────────────────────────────────────── */
+
+.cinematic-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+}
+
+.cinematic-title {
+  font-family: var(--font-title);
+  font-size: clamp(26px, 5vw, 42px);
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  text-shadow: 0 2px 20px rgba(0,0,0,0.9);
+  opacity: 0;
+  transform: translateY(8px);
+  animation: cinematicFadeUp 800ms 200ms ease forwards;
+}
+
+.cinematic-subtitle {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+  color: var(--accent-primary);
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  text-shadow: 0 1px 10px rgba(0,0,0,0.8);
+  opacity: 0;
+  animation: cinematicFadeIn 600ms 600ms ease forwards;
+}
+
+/* ── 텍스트 라인 ─────────────────────────────────────────────── */
+
+.cinematic-lines {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-md);
+}
+
+.cinematic-line {
+  font-family: var(--font-mono);
+  font-size: clamp(15px, 2.5vw, 19px);
+  color: rgba(212, 201, 168, 0.85);
+  line-height: 1.7;
+  letter-spacing: 0.5px;
+  text-shadow: 0 1px 12px rgba(0,0,0,0.9);
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 700ms ease, transform 700ms ease;
+}
+
+.cinematic-line.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── CTA (계속하기 안내) ─────────────────────────────────────── */
+
+.cinematic-cta {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  color: rgba(200, 160, 96, 0.6);
+  letter-spacing: 2px;
+  text-align: center;
+  margin-top: var(--gap-lg);
+  opacity: 0;
+  transition: opacity 500ms ease;
+  pointer-events: none;
+}
+
+/* ── 애니메이션 ──────────────────────────────────────────────── */
+
+@keyframes cinematicFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes cinematicFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes cinematicPulse {
+  0%, 100% { opacity: 0.5; }
+  50%       { opacity: 0.9; }
+}
+
+/* ── 모바일 대응 ─────────────────────────────────────────────── */
+
+@media (max-width: 600px) {
+  .cinematic-content {
+    padding: 0 var(--gap-lg) 60px;
+    gap: var(--gap-md);
+  }
+
+  .cinematic-title {
+    letter-spacing: 2px;
+  }
+
+  .cinematic-subtitle {
+    letter-spacing: 2px;
+    font-size: var(--font-size-xs);
+  }
+
+  .cinematic-line {
+    font-size: 14px;
+  }
+
+  .cinematic-cta {
+    font-size: 12px;
+    letter-spacing: 1px;
+  }
+}

@@ -8,7 +8,78 @@ import I18n      from '../core/I18n.js';
 // 위험도 색상
 const DANGER_COLORS = ['#449944', '#889933', '#cc8822', '#cc3333', '#881111'];
 
+// 랜드마크 카드 개별 이미지 (assets/images/landmarks/)
+const LANDMARK_IMAGES = {
+  lm_gangnam:      'assets/images/landmarks/lm_gangnam.png',
+  lm_gangdong:     'assets/images/landmarks/lm_gangdong.png',
+  lm_gangbuk:      'assets/images/landmarks/lm_gangbuk.png',
+  lm_gangseo:      'assets/images/landmarks/lm_gangseo.png',
+  lm_gwanak:       'assets/images/landmarks/lm_gwanak.png',
+  lm_gwangjin:     'assets/images/landmarks/lm_gwangjin.png',
+  lm_guro:         'assets/images/landmarks/lm_guro.png',
+  lm_geumcheon:    'assets/images/landmarks/lm_geumcheon.png',
+  lm_nowon:        'assets/images/landmarks/lm_nowon.png',
+  lm_dobong:       'assets/images/landmarks/lm_dobong.png',
+  lm_dongdaemun:   'assets/images/landmarks/lm_dongdaemun.png',
+  lm_dongjak:      'assets/images/landmarks/lm_dongjak.png',
+  lm_mapo:         'assets/images/landmarks/lm_mapo.png',
+  lm_seodaemun:    'assets/images/landmarks/lm_seodaemun.png',
+  lm_seocho:       'assets/images/landmarks/lm_seocho.png',
+  lm_seongdong:    'assets/images/landmarks/lm_seongdong.png',
+  lm_seongbuk:     'assets/images/landmarks/lm_seongbuk.png',
+  lm_songpa:       'assets/images/landmarks/lm_songpa.png',
+  lm_yangcheon:    'assets/images/landmarks/lm_yangcheon.png',
+  lm_yeongdeungpo: 'assets/images/landmarks/lm_yeongdeungpo.png',
+  lm_yongsan:      'assets/images/landmarks/lm_yongsan.png',
+  lm_eunpyeong:    'assets/images/landmarks/lm_eunpyeong.png',
+  lm_jongno:       'assets/images/landmarks/lm_jongno.png',
+  lm_junggoo:      'assets/images/landmarks/lm_junggoo.png',
+  lm_jungrang:     'assets/images/landmarks/lm_jungrang.png',
+  basecamp_landmark: 'assets/images/landmarks/basecamp.png',
+};
+
+// 지역 카드 서브타입별 이미지 (assets/images/locations/)
+const LOCATION_IMAGES = {
+  urban:      'assets/images/locations/urban.png',
+  industrial: 'assets/images/locations/industrial.png',
+  medical:    'assets/images/locations/medical.png',
+  safe:       'assets/images/locations/safe.png',
+  warzone:    'assets/images/locations/warzone.png',
+};
+
+// 아이템 카드 이미지 매핑 (assets/images/materials/)
+const CARD_IMAGES = {
+  scrap_metal:      'assets/images/materials/scrap_metal.png',
+  cloth:            'assets/images/materials/cloth.png',
+  rope:             'assets/images/materials/rope.png',
+  duct_tape:        'assets/images/materials/duct_tape.png',
+  wood:             'assets/images/materials/wood.png',
+  nail:             'assets/images/materials/nail.png',
+  wire:             'assets/images/materials/wire.png',
+  plastic:          'assets/images/materials/plastic.png',
+  glass_shard:      'assets/images/materials/glass_shard.png',
+  rubber:           'assets/images/materials/rubber.png',
+  leather:          'assets/images/materials/leather.png',
+  empty_bottle:     'assets/images/materials/empty_bottle.png',
+  empty_can:        'assets/images/materials/empty_can.png',
+  electronic_parts: 'assets/images/materials/electronic_parts.png',
+  spring:           'assets/images/materials/spring.png',
+  tree_log:         'assets/images/materials/tree_log.png',
+  herb:             'assets/images/materials/herb.png',
+  sharp_blade:      'assets/images/materials/sharp_blade.png',
+  charcoal:         'assets/images/materials/charcoal.png',
+  charcoal_filter:  'assets/images/materials/charcoal_filter.png',
+  cloth_scrap:      'assets/images/materials/cloth_scrap.png',
+  gauze:            'assets/images/materials/gauze.png',
+  alcohol_solution: 'assets/images/materials/alcohol_solution.png',
+  gunpowder:        'assets/images/materials/gunpowder.png',
+  thread:           'assets/images/materials/thread.png',
+};
+
 const CardFactory = {
+  images: CARD_IMAGES,
+  locationImages: LOCATION_IMAGES,
+
   build(instanceId) {
     const inst = GameState.cards[instanceId];
     if (!inst) return null;
@@ -152,19 +223,20 @@ const CardFactory = {
   // ── 장소 카드 내부 HTML ──────────────────────────────────
 
   _buildLandmarkInner(def, isCurrent = false) {
+    const lmImg = LANDMARK_IMAGES[def.id] ?? null;
+    const lmBg  = lmImg ? `style="background-image:url('${lmImg}');background-size:cover;background-position:center;"` : '';
+
     if (isCurrent) {
-      // 현재 위치 → 탐색 UI (랜드마크 보너스 표시)
       return `
         <div class="lc-header lm-header">
           <span class="lm-badge">${I18n.t('card.landmark')}</span>
         </div>
-        <div class="lc-icon">${def.icon ?? '📍'}</div>
+        <div class="lc-scene" ${lmBg}></div>
         <div class="lc-name">${I18n.itemName(def.id, def.name)}</div>
         <div class="lm-bonus">${def.landmarkBonus ?? ''}</div>
       `;
     }
 
-    // 다른 구 → 이동 UI (위험도·TP 표시)
     const districtId = def.id?.replace(/^lm_/, '');
     const district   = window.__GAME_DATA__?.districts?.[districtId];
     const danger     = district?.dangerLevel ?? 0;
@@ -177,7 +249,7 @@ const CardFactory = {
       <div class="lc-header lm-header">
         <span class="lm-badge">${I18n.t('card.landmark')}</span>
       </div>
-      <div class="lc-icon">${def.icon ?? '📍'}</div>
+      <div class="lc-scene" ${lmBg}></div>
       <div class="lc-name">${I18n.itemName(def.id, def.name)}</div>
       <div class="lc-danger" style="color:${color};">${dangerDots}</div>
       <div class="lc-meta">
@@ -205,11 +277,14 @@ const CardFactory = {
     const tpText = def.travelCostTP > 0
       ? `${def.travelCostTP}TP` : 'Free';
 
+    const locImg = LOCATION_IMAGES[def.subtype] ?? null;
+    const locBg  = locImg ? `style="background-image:url('${locImg}');background-size:cover;background-position:center;"` : '';
+
     return `
       <div class="lc-header" style="border-bottom-color:${color}22;">
         ${currentBadge}${visitedDot}
       </div>
-      <div class="lc-icon">${def.icon ?? '📍'}</div>
+      <div class="lc-scene" ${locBg}></div>
       <div class="lc-name">${I18n.districtName(def.nodeId, def.name)}</div>
       <div class="lc-danger" style="color:${color};">
         ${dangerDots}
@@ -363,6 +438,11 @@ const CardFactory = {
       statsHtml = `<div class="card-stats"><span class="card-stat">⚔${dMin}-${dMax}</span><span class="card-stat">🔊${def.combat.noiseOnUse}</span></div>`;
     }
 
+    const imgSrc = CARD_IMAGES[inst.definitionId] ?? null;
+    const artHtml = imgSrc
+      ? `<div class="card-art card-art--img"><img class="card-img" src="${imgSrc}" alt="${def.name ?? ''}"></div>`
+      : `<div class="card-art">${def.icon ?? '📦'}</div>`;
+
     return `
       <div class="card-header">
         <span class="card-icon">${def.icon ?? '📦'}</span>
@@ -371,7 +451,7 @@ const CardFactory = {
       </div>
       <div class="card-body">
         <span class="card-type-badge">${def.subtype ?? def.type}</span>
-        <div class="card-art">${def.icon ?? '📦'}</div>
+        ${artHtml}
         ${statsHtml}
         ${durBar}
       </div>

@@ -71,6 +71,7 @@ import LandmarkModal       from './ui/LandmarkModal.js';
 import SettingsModal       from './ui/SettingsModal.js';
 import NPCDialogueModal   from './ui/NPCDialogueModal.js';
 import SecretGalleryTab   from './ui/SecretGalleryTab.js';
+import CinematicScene     from './ui/CinematicScene.js';
 
 // Screens
 import MainMenu     from './screens/MainMenu.js';
@@ -169,6 +170,8 @@ function init() {
   SettingsModal.init();
   NPCDialogueModal.init();
   SecretGalleryTab.init();
+  CinematicScene.init();
+  window.__CinematicScene__ = CinematicScene;
 
   // Screens
   MainMenu.init();

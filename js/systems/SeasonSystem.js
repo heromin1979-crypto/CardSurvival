@@ -194,46 +194,74 @@ const SeasonSystem = {
 
     const inSafeZone = gs.basecamp?.buildStage >= 3;
 
+    // 계절별 준비 여부 판단 + 효과 함수 정의
+    let cinematicId;
+    let applyEffects;
+
     if (day === 91) {
-      // 봄 → 여름: 폭염 충격 — 깨끗한 물 2개 미만 시 탈수 + 체온 급등
+      // 봄 → 여름
       const cleanWater = ['water_bottle', 'boiled_water', 'purified_water', 'sports_drink']
         .reduce((sum, id) => sum + gs.countOnBoard(id), 0);
-      if (inSafeZone || cleanWater >= 2) {
-        gs.modStat('morale', 5);
-        EventBus.emit('notify', { message: '☀️ 여름이 시작됩니다. 물 비축이 충분합니다!', type: 'good' });
-      } else {
-        gs.modStat('hydration', -20);
-        gs.modStat('temperature', 10);
-        EventBus.emit('notify', { message: '☀️ 폭염 충격! 물 비축 부족 — 탈수 + 체온 급등', type: 'danger' });
-      }
+      const isPrepared = inSafeZone || cleanWater >= 2;
+      cinematicId = isPrepared ? 'cin_season_summer' : 'cin_season_shock';
+      applyEffects = () => {
+        if (isPrepared) {
+          gs.modStat('morale', 5);
+          EventBus.emit('notify', { message: '☀️ 여름이 시작됩니다. 물 비축이 충분합니다!', type: 'good' });
+        } else {
+          gs.modStat('hydration', -20);
+          gs.modStat('temperature', 10);
+          EventBus.emit('notify', { message: '☀️ 폭염 충격! 물 비축 부족 — 탈수 + 체온 급등', type: 'danger' });
+        }
+      };
 
     } else if (day === 181) {
-      // 여름 → 가을: 식량 위기 — 식량 5개 미만 시 영양 + 사기 급감
+      // 여름 → 가을
       const foodCount = ['canned_food', 'energy_bar', 'dried_meat', 'rice', 'military_ration', 'cooked_rice', 'premium_ration']
         .reduce((sum, id) => sum + gs.countOnBoard(id), 0);
-      if (inSafeZone || foodCount >= 5) {
-        gs.modStat('morale', 5);
-        EventBus.emit('notify', { message: '🍂 가을이 시작됩니다. 식량 비축이 충분합니다!', type: 'good' });
-      } else {
-        gs.modStat('nutrition', -15);
-        gs.modStat('morale', -10);
-        EventBus.emit('notify', { message: '🍂 가을 식량 위기! 비축 부족 — 영양 급감', type: 'danger' });
-      }
+      const isPrepared = inSafeZone || foodCount >= 5;
+      cinematicId = isPrepared ? 'cin_season_autumn' : 'cin_season_shock';
+      applyEffects = () => {
+        if (isPrepared) {
+          gs.modStat('morale', 5);
+          EventBus.emit('notify', { message: '🍂 가을이 시작됩니다. 식량 비축이 충분합니다!', type: 'good' });
+        } else {
+          gs.modStat('nutrition', -15);
+          gs.modStat('morale', -10);
+          EventBus.emit('notify', { message: '🍂 가을 식량 위기! 비축 부족 — 영양 급감', type: 'danger' });
+        }
+      };
 
     } else if (day === 271) {
-      // 가을 → 겨울: 혹한 충격 — 방한복/캠프파이어 없으면 체온 급강하
+      // 가을 → 겨울
       const hasWarmClothes = gs.countOnBoard('warm_clothes') > 0
         || gs.countOnBoard('hazmat_suit') > 0
         || gs.countOnBoard('tactical_vest') > 0;
       const hasCampfire = gs.getBoardCards().some(c => c.definitionId === 'campfire');
-      if (inSafeZone || hasWarmClothes || hasCampfire) {
-        gs.modStat('morale', 8);
-        EventBus.emit('notify', { message: '❄️ 겨울이 시작됩니다. 방한이 잘 되어 있습니다!', type: 'good' });
-      } else {
-        gs.modStat('temperature', -15);
-        gs.modStat('morale', -15);
-        EventBus.emit('notify', { message: '❄️ 혹한 도래! 방한 미비 — 체온 급강하', type: 'danger' });
-      }
+      const isPrepared = inSafeZone || hasWarmClothes || hasCampfire;
+      cinematicId = isPrepared ? 'cin_season_winter' : 'cin_season_shock';
+      applyEffects = () => {
+        if (isPrepared) {
+          gs.modStat('morale', 8);
+          EventBus.emit('notify', { message: '❄️ 겨울이 시작됩니다. 방한이 잘 되어 있습니다!', type: 'good' });
+        } else {
+          gs.modStat('temperature', -15);
+          gs.modStat('morale', -15);
+          EventBus.emit('notify', { message: '❄️ 혹한 도래! 방한 미비 — 체온 급강하', type: 'danger' });
+        }
+      };
+    }
+
+    // 시네마틱 표시 후 효과 적용 (게임 일시정지)
+    const cs = window.__CinematicScene__;
+    if (cs && cinematicId) {
+      gs.time.isPaused = true;
+      cs.show(cinematicId, () => {
+        gs.time.isPaused = false;
+        applyEffects?.();
+      });
+    } else {
+      applyEffects?.();
     }
   },
 
