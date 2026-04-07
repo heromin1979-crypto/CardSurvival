@@ -1989,6 +1989,18 @@ Phase 6(D91-100): 여름 수분 관리, 열사병 예방
   - 씬 표시 중 게임 일시정지 (gs.time.isPaused), 완료 후 효과 적용
 - assets/images/cinematic/: 25개 webp 이미지 (사망 10 + 계절 5 + 캐릭터 6 + 엔딩 4), 각 1600~2100KB
 
+### Phase T — 전체 카드 이미지 자산 완성 (2026-04-07)
+- js/ui/CardFactory.js: CARD_IMAGES 매핑 대폭 확장 — 모든 아이템 ID 이미지 연결 완료
+  - tools/ (24개): flashlight, compass, radio, gas_mask, battery 등 전체 도구류
+  - legendary/ (16개): colossus_core, cryo_core, tiger_fang 등 보스 드롭 + 전설 재료
+  - structures/ (19개): workbench, barricade, solar_generator, master_forge 등 설치물 전체
+  - special/ (19개): soldier_dogtag, doctor_badge, helicopter_key 등 퀘스트/스토리 아이템
+  - bags/ (8개): small_bag, duffel_bag, military_bag 등 가방류
+  - debris/ (21개): wrecked_car, vending_machine, subway_gate 등 잔해 오브젝트
+  - weapons/: reinforced_shield, m4_carbine 추가
+- assets/images/debris/ (신규 폴더): 21개 이미지
+- 미매핑 아이템 0개 달성 — 전체 items.js + items_misc.js + legendaryItems.js 커버
+
 </details>
 
 ---
