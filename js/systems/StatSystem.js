@@ -8,6 +8,7 @@ import SeasonSystem  from './SeasonSystem.js';
 import DiseaseSystem from './DiseaseSystem.js';
 import SkillSystem   from './SkillSystem.js';
 import BALANCE       from '../data/gameBalance.js';
+import CharDialogue  from '../data/charDialogues.js';
 
 const StatSystem = {
   init() {
@@ -555,7 +556,10 @@ const StatSystem = {
     if (eff.morale)       gs.modStat('morale',      eff.morale);
     if (eff.fatigue)      gs.modStat('fatigue',     eff.fatigue);
     if (eff.hp) {
-      const healed = Math.round(eff.hp * healMult);
+      // 의사 능력: 붕대 사용 시 bandageHpBonus 추가 회복
+      const isBandage = def.tags?.includes('bandage') ?? false;
+      const bandageBonus = (isBandage && isMedical) ? (gs.player.bandageHpBonus ?? 0) : 0;
+      const healed = Math.round(eff.hp * healMult) + bandageBonus;
       gs.player.hp.current = Math.min(gs.player.hp.max, gs.player.hp.current + healed);
       EventBus.emit('statChanged', { stat: 'hp', oldVal: gs.player.hp.current - healed, newVal: gs.player.hp.current });
     }
@@ -583,9 +587,25 @@ const StatSystem = {
     // 스킬 XP: 제작한 음식 섭취
     if (isFood && isCrafted) SkillSystem.gainXp('cooking', 2);
 
+    // 캐릭터 반응 대사
+    const charId = gs.player.characterId;
+    if (charId && isMedical) {
+      const ctx = def.id === 'bandage' ? 'use_bandage'
+        : def.id === 'antiseptic'      ? 'use_antiseptic'
+        : def.id === 'first_aid_kit'   ? 'use_first_aid_kit'
+        : 'use_medicine';
+      CharDialogue.emit(charId, ctx);
+    }
+
     // stackable 아이템: 수량 1개만 소모, 0이 되면 제거
+    // 약사 능력: 의료 아이템 medicalUsesBonus 확률로 소모 건너뜀
+    const medUsesBonus = (isMedical && (gs.player.medicalUsesBonus ?? 0) > 0)
+      ? Math.random() < (gs.player.medicalUsesBonus / 3)  // 1회 보너스 → 약 33% 절약
+      : false;
     const qty = inst.quantity ?? 1;
-    if (def.stackable && qty > 1) {
+    if (medUsesBonus) {
+      EventBus.emit('notify', { message: '약사의 절약 투약 — 아이템이 소모되지 않았다.', type: 'good' });
+    } else if (def.stackable && qty > 1) {
       inst.quantity = qty - 1;
       gs._updateEncumbrance();
       EventBus.emit('boardChanged', {});

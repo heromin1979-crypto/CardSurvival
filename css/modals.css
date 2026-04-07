@@ -273,6 +273,25 @@
 .notification.warn   { border-left-color: var(--text-warn); }
 .notification.good   { border-left-color: var(--text-good); }
 
+.notification.char-dialogue {
+  border-left-color: #9b7fd4;
+  background: rgba(30, 20, 50, 0.92);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.char-dialogue-name {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #c4a4f0;
+  letter-spacing: 0.04em;
+}
+.char-dialogue-line {
+  font-size: 0.85rem;
+  color: #e8dff8;
+  line-height: 1.4;
+}
+
 @keyframes slideInRight {
   from { transform: translateX(40px); opacity: 0; }
   to   { transform: translateX(0);    opacity: 1; }

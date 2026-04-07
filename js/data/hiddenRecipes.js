@@ -923,6 +923,83 @@ const HIDDEN_RECIPES = {
     },
   },
 
+  // ── 노숙인 전용 히든 레시피 ──────────────────────────────────────────
+  street_snare_trap: {
+    id: 'street_snare_trap',
+    name: '거리 덫',
+    category: 'weapon',
+    rarity: 'rare',
+    description: '폐품으로 만든 소리 없는 함정. 노숙 생활에서 터득한 노하우.',
+    output: [{ definitionId: 'spike_trap', qty: 2 }],
+    requiredTools: [],
+    requiredSkills: { scavenging: 3 },
+    stages: [
+      {
+        name: '재료 가공',
+        tpCost: 2,
+        requiredItems: [
+          { definitionId: 'scrap_metal', qty: 2 },
+          { definitionId: 'wire', qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        name: '덫 조립',
+        tpCost: 1,
+        requiredItems: [
+          { definitionId: 'rope', qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+    unlockConditions: {
+      hiddenLocationId: 'hidden_yangcheon_dongho_bridge',
+      bossKillId: null,
+      requiredCharacter: 'homeless',
+      minDay: 0,
+      minCraftLevel: 0,
+      requiredItems: [],
+      customUnlock: '노숙인 캐릭터 + 동호대교 은신처 발견',
+    },
+  },
+
+  wild_salt_cure: {
+    id: 'wild_salt_cure',
+    name: '야생 소금 절임',
+    category: 'food',
+    rarity: 'uncommon',
+    description: '냉장 없이 식량을 보존하는 거리 생활의 지혜. 부패하지 않고 오래 간다.',
+    output: [{ definitionId: 'dried_meat', qty: 3 }],
+    requiredTools: [],
+    requiredSkills: { cooking: 2, harvesting: 2 },
+    stages: [
+      {
+        name: '재료 준비',
+        tpCost: 1,
+        requiredItems: [
+          { definitionId: 'raw_meat', qty: 2 },
+          { definitionId: 'salt', qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        name: '건조 숙성',
+        tpCost: 3,
+        requiredItems: [],
+        consumeAt: 'start',
+      },
+    ],
+    unlockConditions: {
+      hiddenLocationId: null,
+      bossKillId: null,
+      requiredCharacter: 'homeless',
+      minDay: 5,
+      minCraftLevel: 0,
+      requiredItems: [],
+      customUnlock: '노숙인 캐릭터 + D5+ 도달',
+    },
+  },
+
 };
 
 export default HIDDEN_RECIPES;

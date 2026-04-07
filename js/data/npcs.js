@@ -62,6 +62,13 @@ export const NPC_ITEMS = {
     icon: '🐕', description: '충성스러운 떠돌이 개. 적은 식량으로도 든든한 동반자.',
     tags: ['npc'], dismantle: [],
   },
+  npc_former_colleague: {
+    id: 'npc_former_colleague', name: '전 건설 동료', type: 'npc',
+    rarity: 'rare', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '👷', description: '최형식의 옛 건설사 직원. 오래된 채무와 미안함을 함께 갖고 있다.',
+    tags: ['npc'], dismantle: [],
+  },
 };
 
 // ── NPC Data Definitions ────────────────────────────────────────
@@ -344,6 +351,73 @@ const NPCS = {
         id: 'dog_trust_5',
         message: '🐕 개가 전투 중 적의 공격을 대신 받아 당신을 보호합니다. (전투 피해 -15% 패시브 활성화)',
         effect: { combatDmgReduce: 0.15 },  // 동반자 시 전투 피해 15% 경감
+      },
+    ],
+  },
+
+  // ── 노숙인 전용 NPC ──────────────────────────────────────────────────
+  npc_former_colleague: {
+    id: 'npc_former_colleague',
+    name: '전 건설 동료',
+    type: 'npc',
+    personality: 'guilt',
+    maxHp: 70,
+    spawnDistrict: 'yangcheon',
+    spawnDay: 10,
+    spawnCondition: { requiredCharacter: 'homeless' },
+    dialogues: {
+      greet:  [
+        '형식 씨… 살아계셨군요. 저예요, 김상우. 그때 일은 정말 죄송했어요.',
+        '저도 다 잃었어요. 회사도, 가족도. 형식 씨가 제일 많이 잃었는데 제가 할 말이 없네요.',
+        '빚 문제는… 이 세상에서 이제 의미 없지 않나요. 같이 살아남는 게 먼저겠죠.',
+      ],
+      hint:   [
+        '저 쪽 아파트에 공구 창고가 있어요. 자물쇠만 따면 쓸만한 게 꽤 있을 것 같아요.',
+        '건설 현장 다니면서 배운 게 있어요. 구조물 만들 때 도움 드릴게요.',
+        '형식 씨, 잠실 쪽에 사람들이 모인다는 소문 들었어요? 롯데타워라고.',
+      ],
+      reject: '아직 제 편 아닌가요. 그럼 어쩔 수 없죠.',
+    },
+    trustGainPerTalk: 1,
+    companion: {
+      canRecruit:   true,
+      recruitTrust: 3,
+      combatDmg:    0.4,
+      carryBonus:   8,
+      healBonus:    0,
+      craftBonus:   0.3,  // 건설 경험
+      moralBonus:   0.1,
+      lonelinessReduction: 0.2,
+      noiseAdd:     3,
+      foodCostPerDay: 0.3,
+      skillBonus:   { building: 0.4, crafting: 0.2 },
+    },
+    gifts: [
+      { trust: 2, definitionId: 'scrap_metal', qty: 3, message: '👷 상우가 공사장에서 건진 고철을 내밀었다.' },
+      { trust: 4, definitionId: 'wire', qty: 4, message: '👷 "형식 씨한테만 드리는 거예요. 전선 귀하잖아요."' },
+    ],
+    trades: [
+      { give: 'canned_food', receive: 'scrap_metal', qty: 2 },
+      { give: 'bandage', receive: 'rope', qty: 2 },
+    ],
+    trustEvents: [
+      {
+        trust: 2,
+        id: 'colleague_trust_2',
+        message: '👷 상우가 건설 현장 지식을 공유해줬다. (구조물 제작 재료 -1 효과 1회 획득)',
+        effect: { giveItems: [{ id: 'scrap_metal', qty: 3 }] },
+      },
+      {
+        trust: 4,
+        id: 'colleague_trust_4',
+        message: '👷 "형식 씨, 제가 가진 비상금이에요." 통조림 5개와 진통제를 건넸다.',
+        effect: { giveItems: [{ id: 'canned_food', qty: 5 }, { id: 'painkiller', qty: 2 }] },
+      },
+      {
+        trust: 5,
+        id: 'colleague_trust_5',
+        message: '👷 상우가 함께 싸우기로 했다. 전투 중 옆에 있으면 피해를 나눠 받는다. (전투 피해 -10%)',
+        effect: { combatDmgReduce: 0.10 },
       },
     ],
   },

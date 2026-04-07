@@ -82,9 +82,18 @@ const CraftSystem = {
 
     // Consume items at 'start'
     const reservedIds = [];
+    // 소방관 능력: craftSaveChance 확률로 재료 1개 절약
+    const craftSave = GameState.player.craftSaveChance ?? 0;
+    let savedOnce = false;
     if (stage.consumeAt === 'start') {
       for (const req of stage.requiredItems) {
         let needed = req.qty;
+        // 소방관 재료 절약: 1개 아이템에만 적용 (최초 1회)
+        if (!savedOnce && craftSave > 0 && needed > 0 && Math.random() < craftSave) {
+          needed = Math.max(0, needed - 1);
+          savedOnce = true;
+          EventBus.emit('notify', { message: '도구 숙련 — 재료 1개를 절약했다.', type: 'good' });
+        }
         const matching = GameState.getBoardCards().filter(c => c.definitionId === req.definitionId);
         for (const card of matching) {
           if (needed <= 0) break;
@@ -213,6 +222,40 @@ const CraftSystem = {
     }
   },
 
+  // ── 품질 계산 (스택 불가 아이템에만 적용) ─────────────────
+  _calculateQuality(bp) {
+    const firstOutDef = window.__GAME_DATA__?.items[bp.output?.[0]?.definitionId];
+    if (!firstOutDef || firstOutDef.stackable) return null;
+
+    const craftSkillMap = {
+      structure: 'building', material: 'crafting', food: 'cooking',
+      medical: 'crafting', weapon: 'weaponcraft', armor: 'armorcraft', tool: 'crafting',
+    };
+    const skillId = craftSkillMap[bp.category] ?? 'crafting';
+    const playerLevel   = GameState.player.skills?.[skillId]?.level ?? 0;
+    const requiredLevel = bp.requiredSkills?.[skillId] ?? 0;
+    const skillExcess   = Math.max(0, playerLevel - requiredLevel);
+
+    const Q = BALANCE.quality;
+    let score = Math.random();
+    score += skillExcess * Q.skillBonusPerLevel;
+
+    const queueLen = GameState.crafting.activeQueue.length;
+    if (queueLen <= 1)                               score += Q.focusBonusSolo;
+    else if (queueLen >= BALANCE.crafting.maxQueueSize) score -= Q.focusPenaltyFull;
+
+    const moraleTier = StatSystem.getMoraleTier();
+    if      (moraleTier.craftFailMult < 1.0)  score += Q.moraleBonusHigh;
+    else if (moraleTier.craftFailMult >= 2.0) score -= Q.moralePenaltyDespair;
+    else if (moraleTier.craftFailMult > 1.0)  score -= Q.moralePenaltyLow;
+
+    const t = Q.thresholds;
+    if (score >= t.masterwork) return 'masterwork';
+    if (score >= t.excellent)  return 'excellent';
+    if (score >= t.good)       return 'good';
+    return 'normal';
+  },
+
   _produceOutput(bp, entry) {
     // ── 제작 카드 제거 ───────────────────────────────────
     if (entry?.craftCardId) {
@@ -267,10 +310,20 @@ const CraftSystem = {
       }
     } else {
       for (const out of bp.output) {
-        const inst = GameState.createCardInstance(out.definitionId, { quantity: out.qty });
+        const outDef = window.__GAME_DATA__?.items[out.definitionId];
+        const quality = (!outDef?.stackable) ? this._calculateQuality(bp) : null;
+        const inst = GameState.createCardInstance(out.definitionId, {
+          quantity: out.qty,
+          ...(quality ? { _quality: quality } : {}),
+        });
         if (inst) {
           GameState.placeCardInRow(inst.instanceId, outputRow);
           outputIds.push(inst.instanceId);
+          // 품질 알림 (일반 제외)
+          if (quality && quality !== 'normal') {
+            const tier = BALANCE.quality.tiers[quality];
+            EventBus.emit('notify', { message: `${tier.label} 품질 — ${tier.notify}`, type: 'good' });
+          }
         }
       }
     }

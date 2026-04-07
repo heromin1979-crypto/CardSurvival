@@ -1,6 +1,11 @@
 // === GAME ENTRY POINT ===
 // Import order matters: core → data → systems → board → ui → screens → persistence
 
+// Mobile adapter (Capacitor — Electron/브라우저에서는 no-op)
+import { initMobileAdapter } from './core/MobileAdapter.js';
+// 캐릭터 DLC 구매 관리
+import { initPurchaseManager } from './core/PurchaseManager.js';
+
 // Core
 import EventBus        from './core/EventBus.js';
 import GameState       from './core/GameState.js';
@@ -280,11 +285,43 @@ function _initNotifications() {
     _log.length = 0;
     document.getElementById('notif-log-list').innerHTML = '<div class="notif-log-empty">알림 기록이 없습니다.</div>';
   });
+
+  // 캐릭터 대사 알림
+  const CHAR_NAMES = {
+    doctor:     '이지수',
+    soldier:    '박민준',
+    firefighter:'김영철',
+    homeless:   '최형식',
+    pharmacist: '오소희',
+    engineer:   '김대한',
+  };
+
+  EventBus.on('charDialogue', ({ characterId, line }) => {
+    const name = CHAR_NAMES[characterId] ?? characterId;
+    const el = document.createElement('div');
+    el.className = 'notification char-dialogue';
+    el.innerHTML = `<span class="char-dialogue-name">${name}</span><span class="char-dialogue-line">${line}</span>`;
+    container.appendChild(el);
+
+    setTimeout(() => {
+      el.addEventListener('animationend', () => el.remove(), { once: true });
+      el.style.animation = 'fadeOut 0.3s ease forwards';
+      setTimeout(() => el.remove(), 350);
+    }, 8000);
+  });
 }
 
-// Run on DOM ready
+// Run on DOM ready — 모바일은 deviceready 이후 init
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', init);
+  document.addEventListener('DOMContentLoaded', async () => {
+    await initMobileAdapter();
+    await initPurchaseManager();
+    init();
+  });
 } else {
-  init();
+  (async () => {
+    await initMobileAdapter();
+    await initPurchaseManager();
+    init();
+  })();
 }

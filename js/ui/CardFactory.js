@@ -8,6 +8,10 @@ import I18n      from '../core/I18n.js';
 // 위험도 색상
 const DANGER_COLORS = ['#449944', '#889933', '#cc8822', '#cc3333', '#881111'];
 
+// 품질 등급 레이블 및 데미지 배율
+const QUALITY_LABELS = { good: '양호', excellent: '우수', masterwork: '걸작' };
+const QUALITY_MULT   = { normal: 1.00, good: 1.15, excellent: 1.30, masterwork: 1.50 };
+
 // 랜드마크 카드 개별 이미지 (assets/images/landmarks/)
 const LANDMARK_IMAGES = {
   lm_gangnam:      'assets/images/landmarks/lm_gangnam.png',
@@ -468,6 +472,9 @@ const CardFactory = {
     el.title = def.description ?? '';  // 일반 카드만 설명 툴팁
     el.className = 'card spawning';
     el.draggable = true;
+    if (inst._quality && inst._quality !== 'normal') {
+      el.dataset.quality = inst._quality;
+    }
     el.innerHTML = this._buildInner(inst, def);
 
     // 이미지 로드 실패 시 이모지 폴백
@@ -687,6 +694,11 @@ const CardFactory = {
     const contamBadge = contam > 0
       ? `<span class="card-contamination" title="${I18n.t('card.contamination', { pct: contam })}">☣</span>` : '';
 
+    const quality = inst._quality;
+    const qualityBadge = (quality && quality !== 'normal' && QUALITY_LABELS[quality])
+      ? `<span class="card-quality-badge quality-${quality}">${QUALITY_LABELS[quality]}</span>`
+      : '';
+
     // 스택 배지: 소모품이 아닌 stackable (수량 뱃지가 이름에 없는 경우)
     const stackBadge = (def.stackable && qty > 1 && def.type !== 'consumable')
       ? `<span class="card-stack">×${qty}</span>` : '';
@@ -711,7 +723,10 @@ const CardFactory = {
     }
     if (def.combat) {
       const [dMin, dMax] = def.combat.damage ?? [0, 0];
-      statsHtml = `<div class="card-stats"><span class="card-stat">⚔${dMin}-${dMax}</span><span class="card-stat">🔊${def.combat.noiseOnUse}</span></div>`;
+      const qMult = QUALITY_MULT[inst._quality] ?? 1.0;
+      const adjMin = Math.round(dMin * qMult);
+      const adjMax = Math.round(dMax * qMult);
+      statsHtml = `<div class="card-stats"><span class="card-stat">⚔${adjMin}-${adjMax}</span><span class="card-stat">🔊${def.combat.noiseOnUse}</span></div>`;
     }
 
     const imgSrc = CARD_IMAGES[inst.definitionId] ?? null;
@@ -723,7 +738,7 @@ const CardFactory = {
       <div class="card-header">
         <span class="card-icon">${def.icon ?? '📦'}</span>
         <span class="card-name">${I18n.itemName(def.id ?? inst.definitionId, def.name)}${nameRemainder ? ' ' : ''}${nameRemainder}</span>
-        ${contamBadge}
+        ${qualityBadge}${contamBadge}
       </div>
       <div class="card-body">
         <span class="card-type-badge">${def.subtype ?? def.type}</span>
@@ -806,6 +821,9 @@ const CardFactory = {
     } else if (def.type === 'npc') {
       el.innerHTML = this._buildNPCInner(inst, def);
     } else {
+      // 품질 data 속성 동기화
+      if (inst._quality && inst._quality !== 'normal') el.dataset.quality = inst._quality;
+      else delete el.dataset.quality;
       el.innerHTML = this._buildInner(inst, def);
     }
   },

@@ -11,6 +11,7 @@ import DiseaseSystem from './DiseaseSystem.js';
 import BodySystem    from './BodySystem.js';
 import { rollEnemyGroup } from '../data/enemies.js';
 import BALANCE from '../data/gameBalance.js';
+import CharDialogue from '../data/charDialogues.js';
 
 const CombatSystem = {
   init() {
@@ -35,6 +36,9 @@ const CombatSystem = {
       : data.isRaiderAttack
         ? I18n.t('combatSys.raiderAttack', { count: enemies.length })
         : I18n.t('combatSys.combatStart', { count: enemies.length });
+
+    // 캐릭터 전투 시작 대사
+    CharDialogue.emit(gs.player.characterId, 'combat_start');
 
     gs.combat = {
       active:       true,
@@ -174,7 +178,9 @@ const CombatSystem = {
       const def = gs.getCardDef(weaponId);
       if (def?.combat) {
         const [dMin, dMax] = def.combat.damage;
-        damage         = dMin + Math.floor(Math.random() * (dMax - dMin + 1));
+        const rawDmg = dMin + Math.floor(Math.random() * (dMax - dMin + 1));
+        const qualityMult = BALANCE.quality.tiers[gs.cards[weaponId]?._quality]?.mult ?? 1.0;
+        damage         = Math.round(rawDmg * qualityMult);
         accuracy       = def.combat.accuracy;
         noise          = def.combat.noiseOnUse;
         durLoss        = def.combat.durabilityLoss ?? 0;
@@ -609,6 +615,8 @@ const CombatSystem = {
       gs.combatRespawn.active = false;
     }
 
+    // 캐릭터 전투 승리 대사
+    CharDialogue.emit(gs.player.characterId, 'combat_win');
     EventBus.emit('combatEnd', { outcome: 'victory', rewards: gs.combat.rewards });
     StateMachine.transition('combat_result', {
       outcome: 'victory',

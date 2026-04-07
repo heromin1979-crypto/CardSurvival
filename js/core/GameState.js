@@ -252,11 +252,15 @@ const GameState = {
     if (!def) return null;
 
     const id = 'c' + (this._nextId++);
+    // 엔지니어 능력: 구조물 카드 생성 시 내구도 보너스 적용
+    const isStructure = def.type === 'structure' || def.subtype === 'structure';
+    const durBonus = isStructure ? (this.player?.structureDurabilityBonus ?? 1.0) : 1.0;
+    const baseDur = overrides.durability ?? def.defaultDurability ?? 100;
     const instance = {
       instanceId:    id,
       definitionId,
       quantity:      overrides.quantity      ?? (def.stackable ? 1 : 1),
-      durability:    overrides.durability    ?? def.defaultDurability ?? 100,
+      durability:    Math.round(baseDur * durBonus),
       contamination: overrides.contamination ?? def.defaultContamination ?? 0,
       ...overrides,
     };
