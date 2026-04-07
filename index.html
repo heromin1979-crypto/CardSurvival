@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -33,6 +33,7 @@
   <link rel="stylesheet" href="css/settings.css">
   <link rel="stylesheet" href="css/mobile.css">
   <link rel="stylesheet" href="css/cinematic.css">
+  <link rel="stylesheet" href="css/npc-panel.css">
 </head>
 <body>
 <div id="app">
@@ -141,6 +142,23 @@
   </div>
 
   <div id="notification-container" class="notification-container" role="log" aria-live="polite" aria-label="알림"></div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!--  NPC SIDE PANEL                             -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div id="npc-panel" class="npc-panel hidden" role="complementary" aria-label="NPC 패널">
+    <button id="npc-panel-toggle" class="npc-panel-toggle" title="NPC 패널 접기/펼치기">👥</button>
+    <div class="npc-panel-inner">
+      <div class="npc-panel-section">
+        <div class="npc-panel-section-title">🤝 동반자</div>
+        <div id="npc-panel-companions-list" class="npc-panel-list is-empty"></div>
+      </div>
+      <div class="npc-panel-section">
+        <div class="npc-panel-section-title">📍 현재 위치</div>
+        <div id="npc-panel-location-list" class="npc-panel-list is-empty"></div>
+      </div>
+    </div>
+  </div>
 
 </div>
 

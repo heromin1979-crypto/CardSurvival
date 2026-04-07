@@ -8,6 +8,7 @@ import GameState               from '../core/GameState.js';
 import I18n                    from '../core/I18n.js';
 import SecretCombinationSystem from './SecretCombinationSystem.js';
 import NPCS, { NPC_ITEMS }    from '../data/npcs.js';
+import { NPC_CHEMISTRY }       from '../data/npcChemistry.js';
 
 // ── NPC → Secret Combination Hint Mapping ─────────────────────
 // When trust reaches the threshold, the NPC reveals hints about specific combos.
@@ -29,13 +30,13 @@ const NPCSystem = {
     // Listen for TP advance to check spawns & apply companion effects
     EventBus.on('tpAdvance', () => this._onTP());
 
-    // Listen for location changes to spawn NPCs
+    // Listen for location/screen changes to sync panel
     EventBus.on('stateTransition', ({ to }) => {
-      if (to === 'basecamp') this._checkSpawns();
+      if (to === 'basecamp') { this._checkSpawns(); this._syncNPCPanel(); }
     });
 
-    // Listen for board changes to re-render NPC cards
-    EventBus.on('boardChanged', () => this._syncNPCCards());
+    // District change → re-sync panel (location NPCs appear/disappear)
+    EventBus.on('districtChanged', () => this._syncNPCPanel());
 
     // Track combat events for departure condition (b) — excessive combat
     EventBus.on('combatEnd', () => this._onCombatEnd());
@@ -57,19 +58,16 @@ const NPCSystem = {
 
   ensureInitialized() {
     if (!GameState.npcs) {
-      GameState.npcs = {
-        // { [npcId]: { spawned, dismissed, trust, isCompanion, cardInstanceId, hp } }
-        states: {},
-      };
+      GameState.npcs = { states: {} };
     }
     if (!GameState.companions) {
-      GameState.companions = []; // [npcId, ...]
+      GameState.companions = [];
     }
-    // Ensure hp field exists on all NPC states (save compat)
+    // Save compat: ensure new fields on existing states
     for (const [npcId, state] of Object.entries(GameState.npcs.states)) {
-      if (state.hp === undefined) {
-        state.hp = NPCS[npcId]?.maxHp ?? 50;
-      }
+      if (state.hp          === undefined) state.hp          = NPCS[npcId]?.maxHp ?? 50;
+      if (state.neglectDays === undefined) state.neglectDays = 0;
+      if (state.companionSince === undefined) state.companionSince = null;
     }
   },
 
@@ -80,6 +78,11 @@ const NPCSystem = {
     this._checkSpawns();
     this._applyCompanionEffects();
     this._checkCompanionDeparture();
+    this._checkForage();
+    this._checkSpontaneousDialogue();
+    this._checkNeglect();
+    this._checkSpecialDays();
+    this._applyPendingChemistry();
   },
 
   // ── Spawn Logic ────────────────────────────────────────────────
@@ -103,42 +106,30 @@ const NPCSystem = {
   },
 
   _spawnNPC(npcId, npcDef) {
-    // Create card instance
-    const inst = GameState.createCardInstance(npcId);
-    if (!inst) return;
-
-    // Place on middle row
-    const placed = GameState.placeCardInRow(inst.instanceId, 'middle');
-    if (!placed) {
-      GameState.removeCardInstance(inst.instanceId);
-      return;
-    }
-
-    // Initialize NPC state
+    // Initialize NPC state — no board card, NPC lives in the side panel
     GameState.npcs.states[npcId] = {
-      spawned:        true,
-      dismissed:      false,
-      trust:          0,
-      isCompanion:    false,
-      cardInstanceId: inst.instanceId,
-      hp:             npcDef.maxHp ?? 50,
+      spawned:         true,
+      dismissed:       false,
+      trust:           0,
+      isCompanion:     false,
+      hp:              npcDef.maxHp ?? 50,
+      neglectDays:     0,
+      companionSince:  null,
     };
 
     EventBus.emit('notify', {
       message: I18n.t('npc.spawned', { name: I18n.itemName(npcId, NPC_ITEMS[npcId]?.name) }),
       type: 'info',
     });
-    EventBus.emit('npcSpawned', { npcId });
-    EventBus.emit('boardChanged', {});
+    EventBus.emit('npcSpawned',   { npcId });
+    EventBus.emit('npcPanelAdd',  { npcId, section: 'location' });
   },
 
-  // ── Sync NPC cards when entering district ──────────────────────
+  // ── Sync NPC panel when entering district ──────────────────────
 
-  _syncNPCCards() {
+  _syncNPCPanel() {
     this.ensureInitialized();
-    // Ensure NPC cards are on the board if the player is in the same district
-    // or if the NPC is a companion
-    const district = GameState.location.currentDistrict;
+    const district = GameState.location?.currentDistrict;
 
     for (const [npcId, state] of Object.entries(GameState.npcs.states)) {
       if (!state.spawned || state.dismissed) continue;
@@ -146,23 +137,12 @@ const NPCSystem = {
       if (!npcDef) continue;
 
       const isHere = state.isCompanion || npcDef.spawnDistrict === district;
-      const cardExists = state.cardInstanceId && GameState.cards[state.cardInstanceId];
 
-      if (isHere && !cardExists) {
-        // Re-create card on the board
-        const inst = GameState.createCardInstance(npcId);
-        if (inst) {
-          const placed = GameState.placeCardInRow(inst.instanceId, 'middle');
-          if (placed) {
-            state.cardInstanceId = inst.instanceId;
-          } else {
-            GameState.removeCardInstance(inst.instanceId);
-          }
-        }
-      } else if (!isHere && cardExists && !state.isCompanion) {
-        // Remove card when player leaves district (non-companions)
-        GameState.removeCardInstance(state.cardInstanceId);
-        state.cardInstanceId = null;
+      if (isHere) {
+        const section = state.isCompanion ? 'companion' : 'location';
+        EventBus.emit('npcPanelAdd', { npcId, section });
+      } else {
+        EventBus.emit('npcPanelRemove', { npcId });
       }
     }
   },
@@ -313,14 +293,10 @@ const NPCSystem = {
     gs.companions = (gs.companions ?? []).filter(id => id !== npcId);
 
     // Update NPC state
-    state.isCompanion = false;
-    state.dismissed   = true;
-
-    // Remove NPC card from board
-    if (state.cardInstanceId && gs.cards[state.cardInstanceId]) {
-      gs.removeCardInstance(state.cardInstanceId);
-      state.cardInstanceId = null;
-    }
+    state.isCompanion    = false;
+    state.dismissed      = true;
+    state.companionSince = null;
+    state.neglectDays    = 0;
 
     // Increase loneliness +10 on MentalSystem
     if (gs.mental) {
@@ -332,8 +308,8 @@ const NPCSystem = {
       EventBus.emit('notify', { message: I18n.t('npc.departed', { name }), type: 'info' });
     }
 
-    EventBus.emit('npcDismissed', { npcId, reason: isDeath ? 'death' : 'departure' });
-    EventBus.emit('boardChanged', {});
+    EventBus.emit('npcDismissed',   { npcId, reason: isDeath ? 'death' : 'departure' });
+    EventBus.emit('npcPanelRemove', { npcId });
   },
 
   // ── Public API: Companion Damage ───────────────────────────────
@@ -350,17 +326,15 @@ const NPCSystem = {
       message: I18n.t('npc.hitInstead', { name, dmg: damage }),
       type: 'warn',
     });
+    EventBus.emit('npcPanelUpdate', { npcId });
 
     if (state.hp <= 0) {
-      // Permanent death
       EventBus.emit('notify', { message: I18n.t('npc.died', { name }), type: 'danger' });
       if (GameState.mental) {
         GameState.mental.trauma = Math.min(100, (GameState.mental.trauma ?? 0) + 15);
       }
       this._removeCompanion(npcId, /* isDeath */ true);
     }
-
-    EventBus.emit('boardChanged', {});
   },
 
   // ── Public API: Dialogue ───────────────────────────────────────
@@ -394,8 +368,9 @@ const NPCSystem = {
     const state = GameState.npcs.states[npcId];
     if (!state || !state.spawned) return;
 
-    const oldTrust = state.trust;
-    state.trust = Math.min(5, state.trust + npcDef.trustGainPerTalk);
+    const oldTrust    = state.trust;
+    state.trust       = Math.min(5, state.trust + npcDef.trustGainPerTalk);
+    state.neglectDays = 0;  // V-5: Reset neglect counter on interaction
 
     EventBus.emit('npcTrustChanged', { npcId, oldTrust, newTrust: state.trust });
 
@@ -442,6 +417,18 @@ const NPCSystem = {
           gs.flags.companionCombatDmgReduce,
           evt.effect.combatDmgReduce,
         );
+      }
+
+      // V-4: 스킬 전수 (신뢰 5 달성 시)
+      if (evt.effect?.skillTeach) {
+        if (!gs.flags.npcSkillTaught) gs.flags.npcSkillTaught = {};
+        if (!gs.flags.npcSkillTaught[npcId]) {
+          gs.flags.npcSkillTaught[npcId] = true;
+          if (!gs.player.learnedSkills) gs.player.learnedSkills = {};
+          const { skillId, value } = evt.effect.skillTeach;
+          gs.player.learnedSkills[skillId] =
+            (gs.player.learnedSkills[skillId] ?? 0) + value;
+        }
       }
 
       EventBus.emit('npcTrustEvent', { npcId, eventId: evt.id, effect: evt.effect });
@@ -510,15 +497,15 @@ const NPCSystem = {
     if (!this.canRecruit(npcId)) return false;
     this.ensureInitialized();
 
-    const state = GameState.npcs.states[npcId];
-    state.isCompanion = true;
+    const state          = GameState.npcs.states[npcId];
+    state.isCompanion    = true;
+    state.companionSince = GameState.time?.day ?? 0;
+    state.neglectDays    = 0;
 
-    // Add to companions array
     if (!GameState.companions.includes(npcId)) {
       GameState.companions = [...GameState.companions, npcId];
     }
 
-    // Apply carry bonus
     const comp = NPCS[npcId]?.companion;
     if (comp?.carryBonus > 0) {
       GameState.player.encumbrance.max += comp.carryBonus;
@@ -529,7 +516,9 @@ const NPCSystem = {
       type: 'good',
     });
     EventBus.emit('npcRecruited', { npcId });
-    EventBus.emit('boardChanged', {});
+
+    // V-6: Check chemistry with existing companions
+    this._checkChemistry(npcId);
     return true;
   },
 
@@ -538,29 +527,23 @@ const NPCSystem = {
     const state = GameState.npcs.states[npcId];
     if (!state || !state.isCompanion) return false;
 
-    state.isCompanion = false;
+    state.isCompanion    = false;
+    state.dismissed      = true;
+    state.companionSince = null;
+    state.neglectDays    = 0;
     GameState.companions = GameState.companions.filter(id => id !== npcId);
 
-    // Remove carry bonus
     const comp = NPCS[npcId]?.companion;
     if (comp?.carryBonus > 0) {
       GameState.player.encumbrance.max = Math.max(10, GameState.player.encumbrance.max - comp.carryBonus);
-    }
-
-    // Remove NPC card from board if not in spawn district
-    if (GameState.location.currentDistrict !== NPCS[npcId]?.spawnDistrict) {
-      if (state.cardInstanceId && GameState.cards[state.cardInstanceId]) {
-        GameState.removeCardInstance(state.cardInstanceId);
-        state.cardInstanceId = null;
-      }
     }
 
     EventBus.emit('notify', {
       message: I18n.t('npc.dismissed', { name: I18n.itemName(npcId, NPC_ITEMS[npcId]?.name) }),
       type: 'info',
     });
-    EventBus.emit('npcDismissed', { npcId });
-    EventBus.emit('boardChanged', {});
+    EventBus.emit('npcDismissed',   { npcId });
+    EventBus.emit('npcPanelRemove', { npcId });
     return true;
   },
 
@@ -677,7 +660,7 @@ const NPCSystem = {
   /** Get all spawned NPCs in current district or companions */
   getVisibleNPCs() {
     this.ensureInitialized();
-    const district = GameState.location.currentDistrict;
+    const district = GameState.location?.currentDistrict;
     const result = [];
 
     for (const [npcId, state] of Object.entries(GameState.npcs?.states ?? {})) {
@@ -690,6 +673,231 @@ const NPCSystem = {
       }
     }
     return result;
+  },
+
+  // ══════════════════════════════════════════════════════════════
+  // V-2: 능동적 NPC 행동
+  // ══════════════════════════════════════════════════════════════
+
+  /** 동반자 자율 수집 (1일 1회) */
+  _checkForage() {
+    const companions = GameState.companions ?? [];
+    if (companions.length === 0) return;
+    const totalTP = GameState.time?.totalTP ?? 0;
+    if (totalTP % 96 !== 0) return;
+
+    for (const npcId of companions) {
+      const npcDef = NPCS[npcId];
+      if (!npcDef?.forageItems?.length) continue;
+
+      for (const forage of npcDef.forageItems) {
+        if (Math.random() >= forage.chance) continue;
+        const inst = GameState.createCardInstance(forage.id, { quantity: forage.qty ?? 1 });
+        if (inst) {
+          const placed = GameState.placeCardInRow(inst.instanceId, 'middle')
+                      || GameState.placeCardInRow(inst.instanceId, 'bottom');
+          if (placed) {
+            const name     = I18n.itemName(npcId, NPC_ITEMS[npcId]?.name);
+            const itemDef  = window.__GAME_DATA__?.items[forage.id];
+            const itemName = I18n.itemName(forage.id, itemDef?.name);
+            EventBus.emit('notify', {
+              message: `${name}이(가) ${itemName}을(를) 찾아왔다!`,
+              type: 'good',
+            });
+            EventBus.emit('boardChanged', {});
+          } else {
+            GameState.removeCardInstance(inst.instanceId);
+          }
+        }
+        break; // 1일 1개
+      }
+    }
+  },
+
+  /** NPC 선제 대사 (3/4일 1회, 상황별) */
+  _checkSpontaneousDialogue() {
+    const companions = GameState.companions ?? [];
+    if (companions.length === 0) return;
+    const totalTP = GameState.time?.totalTP ?? 0;
+    if (totalTP % 72 !== 0) return;
+
+    const npcId  = companions[Math.floor(Math.random() * companions.length)];
+    const npcDef = NPCS[npcId];
+    if (!npcDef?.spontaneous?.length) return;
+
+    const gs         = GameState;
+    const hpRatio    = (gs.player?.hp?.current ?? 100) / (gs.player?.hp?.max ?? 100);
+    const nutrition  = gs.stats?.nutrition?.current ?? 100;
+    const isRaining  = gs.weather?.currentWeather === 'rain';
+
+    let line = null;
+    for (const entry of npcDef.spontaneous) {
+      if (entry.condition === 'low_hp'        && hpRatio < 0.3)  { line = entry.line; break; }
+      if (entry.condition === 'low_nutrition' && nutrition < 20)  { line = entry.line; break; }
+      if (entry.condition === 'rain'          && isRaining)       { line = entry.line; break; }
+      if (entry.condition === 'always')                           { line = entry.line; break; }
+    }
+    if (!line) return;
+
+    EventBus.emit('charDialogue', { characterId: npcId, line });
+  },
+
+  // ══════════════════════════════════════════════════════════════
+  // V-5: NPC 상태 변화
+  // ══════════════════════════════════════════════════════════════
+
+  /** 방치 누적 (1일 1회 카운트, 3일→경고, 5일→신뢰감소, 7일→이탈) */
+  _checkNeglect() {
+    const companions = GameState.companions ?? [];
+    if (companions.length === 0) return;
+    const totalTP = GameState.time?.totalTP ?? 0;
+    if (totalTP % 96 !== 0) return;
+
+    for (const npcId of [...companions]) {
+      const state  = GameState.npcs.states[npcId];
+      const npcDef = NPCS[npcId];
+      if (!state || !npcDef) continue;
+
+      state.neglectDays = (state.neglectDays ?? 0) + 1;
+      const name = I18n.itemName(npcId, NPC_ITEMS[npcId]?.name);
+
+      if (state.neglectDays === 3) {
+        EventBus.emit('notify', {
+          message: `${name}이(가) 오랫동안 말을 걸지 않아 섭섭해하는 것 같다.`,
+          type: 'warn',
+        });
+        EventBus.emit('npcPanelUpdate', { npcId });
+      }
+
+      if (state.neglectDays === 5) {
+        const old = state.trust;
+        state.trust = Math.max(0, old - 1);
+        EventBus.emit('notify', {
+          message: `${name}의 신뢰도가 방치로 낮아졌다. (${state.trust}★)`,
+          type: 'warn',
+        });
+        EventBus.emit('npcTrustChanged', { npcId, oldTrust: old, newTrust: state.trust });
+      }
+
+      if (state.neglectDays >= 7 && npcDef.personality !== 'loyal') {
+        EventBus.emit('notify', {
+          message: `${name}이(가) 관심을 잃고 홀로 떠났다.`,
+          type: 'warn',
+        });
+        this._removeCompanion(npcId, false);
+      }
+    }
+  },
+
+  /** 기념일 이벤트 (동반자와 함께한 일수 기준) */
+  _checkSpecialDays() {
+    const companions = GameState.companions ?? [];
+    if (companions.length === 0) return;
+    const day = GameState.time?.day ?? 0;
+
+    for (const npcId of companions) {
+      const state  = GameState.npcs.states[npcId];
+      const npcDef = NPCS[npcId];
+      if (!state || !npcDef?.specialDays?.length) continue;
+
+      const since      = state.companionSince ?? 0;
+      const daysTog    = day - since;
+
+      for (const evt of npcDef.specialDays) {
+        if (daysTog !== evt.day) continue;
+        const flagKey = `specialDay_${npcId}_${evt.day}`;
+        if (GameState.flags[flagKey]) continue;
+        GameState.flags[flagKey] = true;
+
+        EventBus.emit('notify', { message: evt.message, type: 'good' });
+        if (evt.effect?.morale) GameState.modStat('morale', evt.effect.morale);
+        if (evt.effect?.trust) {
+          state.trust = Math.min(5, (state.trust ?? 0) + evt.effect.trust);
+          EventBus.emit('npcPanelUpdate', { npcId });
+        }
+      }
+    }
+  },
+
+  // ══════════════════════════════════════════════════════════════
+  // V-6: NPC 간 케미스트리
+  // ══════════════════════════════════════════════════════════════
+
+  /** 새 동반자 합류 시 기존 동반자와의 케미스트리 체크 */
+  _checkChemistry(newNpcId) {
+    const companions = GameState.companions ?? [];
+    if (companions.length < 2) return;
+
+    for (const entry of NPC_CHEMISTRY) {
+      const flagKey = `chemistry_${entry.id}`;
+      if (GameState.flags[flagKey]) continue;
+
+      const hasA = companions.includes(entry.npcA);
+      const hasB = companions.includes(entry.npcB);
+      if (!hasA || !hasB) continue;
+
+      // triggerDays 후에 발동 — TP 이벤트로 지연 예약
+      const triggerDay = (GameState.time?.day ?? 0) + entry.triggerDays;
+      if (!GameState.flags.pendingChemistry) GameState.flags.pendingChemistry = [];
+      GameState.flags.pendingChemistry.push({ ...entry, triggerDay });
+    }
+  },
+
+  /** 매 TP: 예약된 케미스트리 발동 체크 */
+  _applyPendingChemistry() {
+    const pending = GameState.flags.pendingChemistry;
+    if (!pending?.length) return;
+
+    const day        = GameState.time?.day ?? 0;
+    const companions = GameState.companions ?? [];
+    const remaining  = [];
+
+    for (const entry of pending) {
+      if (day < entry.triggerDay) { remaining.push(entry); continue; }
+      if (GameState.flags[`chemistry_${entry.id}`]) continue;
+      // Both still companions?
+      if (!companions.includes(entry.npcA) || !companions.includes(entry.npcB)) continue;
+
+      GameState.flags[`chemistry_${entry.id}`] = true;
+      EventBus.emit('notify', { message: entry.message, type: 'good' });
+
+      const eff = entry.effect;
+      if (eff?.exploreRiskReduction)  GameState.flags.chemistryExploreRisk  = (GameState.flags.chemistryExploreRisk  ?? 0) + eff.exploreRiskReduction;
+      if (eff?.tradeSaveOne)          GameState.flags.chemistryTradeSave     = true;
+      if (eff?.craftHealBonus)        GameState.flags.chemistryCraftHeal     = (GameState.flags.chemistryCraftHeal ?? 0) + eff.craftHealBonus;
+      if (eff?.moraleBonus)           GameState.modStat?.('morale', eff.moraleBonus);
+      if (eff?.infectionRateReduction) GameState.flags.chemistryInfectReduce = (GameState.flags.chemistryInfectReduce ?? 0) + eff.infectionRateReduction;
+    }
+
+    GameState.flags.pendingChemistry = remaining;
+  },
+
+  // ── Public: companion heal (V-5) ──────────────────────────────
+
+  /** 동반자 HP 회복 (의료 아이템 사용 시 선택 가능) */
+  healCompanion(npcId, amount) {
+    this.ensureInitialized();
+    const state  = GameState.npcs.states[npcId];
+    const npcDef = NPCS[npcId];
+    if (!state || !state.isCompanion || !npcDef) return false;
+
+    const maxHp = npcDef.maxHp ?? 50;
+    const before = state.hp ?? maxHp;
+    state.hp = Math.min(maxHp, before + amount);
+
+    const name = I18n.itemName(npcId, NPC_ITEMS[npcId]?.name);
+    EventBus.emit('notify', {
+      message: `${name}의 HP가 회복되었다. (${before} → ${state.hp})`,
+      type: 'good',
+    });
+    // Trust +1 for healing companion
+    const oldTrust = state.trust;
+    state.trust = Math.min(5, oldTrust + 1);
+    if (state.trust > oldTrust) {
+      EventBus.emit('npcTrustChanged', { npcId, oldTrust, newTrust: state.trust });
+    }
+    EventBus.emit('npcPanelUpdate', { npcId });
+    return true;
   },
 };
 

@@ -1,0 +1,233 @@
+/* === NPC SIDE PANEL === */
+
+.npc-panel {
+  position: fixed;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 200;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  pointer-events: auto;
+  transition: transform 0.25s ease;
+}
+
+.npc-panel.hidden {
+  display: none;
+}
+
+/* Toggle button — always visible on the left edge */
+.npc-panel-toggle {
+  background: var(--bg-surface, #1a1a2e);
+  border: 1px solid var(--border-mid, #3a3a5c);
+  border-right: none;
+  border-radius: 6px 0 0 6px;
+  padding: 8px 6px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  color: var(--text-secondary, #aaa);
+  writing-mode: vertical-rl;
+  letter-spacing: 0.1em;
+  align-self: center;
+  transition: background 0.15s;
+}
+.npc-panel-toggle:hover {
+  background: var(--bg-hover, #252545);
+  color: var(--text-primary, #e0e0e0);
+}
+
+/* Main panel body */
+.npc-panel-inner {
+  background: var(--bg-surface, #1a1a2e);
+  border: 1px solid var(--border-mid, #3a3a5c);
+  border-radius: 8px 0 0 8px;
+  border-right: none;
+  width: 120px;
+  max-height: 70vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 8px 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: width 0.25s ease, opacity 0.25s ease;
+}
+
+.npc-panel.collapsed .npc-panel-inner {
+  width: 0;
+  padding: 0;
+  opacity: 0;
+  border-width: 0;
+}
+
+/* Section header */
+.npc-panel-section-title {
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: var(--text-secondary, #888);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 2px 0 4px;
+  border-bottom: 1px solid var(--border-mid, #333);
+  margin-bottom: 4px;
+}
+
+/* List (companion / location) */
+.npc-panel-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 24px;
+}
+
+.npc-panel-list.is-empty::after {
+  content: '없음';
+  font-size: 0.6rem;
+  color: var(--text-muted, #555);
+  display: block;
+  text-align: center;
+  padding: 4px 0;
+}
+
+/* Mini NPC card */
+.npc-mini-card {
+  position: relative;
+  background: var(--bg-card, #12122a);
+  border: 1px solid var(--border-mid, #333);
+  border-radius: 6px;
+  padding: 6px 4px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  user-select: none;
+}
+.npc-mini-card:hover {
+  border-color: var(--accent, #6a5acd);
+  background: var(--bg-hover, #1e1e40);
+}
+
+.npc-mini-card.companion {
+  border-left: 3px solid #6a5acd;
+}
+.npc-mini-card.location {
+  border-left: 3px solid #4a7a4a;
+}
+
+/* Neglect states */
+.npc-mini-card.neglect-warn {
+  border-color: var(--text-warn, #e0a020);
+}
+.npc-mini-card.neglect-crit {
+  border-color: var(--text-danger, #c04040);
+  animation: pulse-warn 1.5s ease-in-out infinite;
+}
+@keyframes pulse-warn {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.65; }
+}
+
+.npc-mini-icon {
+  font-size: 1.5rem;
+  line-height: 1;
+  margin-bottom: 3px;
+}
+
+.npc-mini-name {
+  font-size: 0.6rem;
+  color: var(--text-primary, #ddd);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 2px;
+}
+
+.npc-mini-trust {
+  font-size: 0.5rem;
+  color: #f0c040;
+  letter-spacing: -0.05em;
+}
+
+/* HP bar */
+.npc-mini-hp {
+  height: 3px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 4px;
+}
+.npc-mini-hp-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+.npc-mini-hp-fill.good { background: #4caf50; }
+.npc-mini-hp-fill.warn { background: #ff9800; }
+.npc-mini-hp-fill.crit { background: #f44336; }
+
+/* Quest badge */
+.npc-mini-quest-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  font-size: 0.7rem;
+  line-height: 1;
+  background: var(--bg-surface, #1a1a2e);
+  border-radius: 50%;
+}
+
+/* === DIALOGUE MODAL ADDITIONS (V-5 heal + V-3 quest) === */
+
+.npc-quest-section,
+.npc-heal-section {
+  margin-top: 10px;
+  padding: 8px 10px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border-mid, #333);
+  border-radius: 6px;
+}
+
+.npc-quest-step {
+  font-size: 0.78rem;
+  color: var(--text-secondary, #aaa);
+  padding: 3px 0;
+}
+.npc-quest-step.done {
+  color: var(--text-good, #4caf50);
+  text-decoration: line-through;
+}
+.npc-quest-step em {
+  font-style: italic;
+  color: var(--text-muted, #666);
+}
+
+.npc-hp-bar-wide {
+  height: 6px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 3px;
+  overflow: hidden;
+  margin: 6px 0;
+}
+
+.npc-action-btn.heal {
+  background: rgba(76, 175, 80, 0.15);
+  border-color: #4caf50;
+  color: #4caf50;
+}
+.npc-action-btn.heal:hover:not(.disabled) {
+  background: rgba(76, 175, 80, 0.3);
+}
+
+/* === MOBILE === */
+@media (max-width: 600px) {
+  .npc-panel-inner {
+    width: 96px;
+  }
+  .npc-mini-icon {
+    font-size: 1.2rem;
+  }
+  .npc-mini-name {
+    font-size: 0.55rem;
+  }
+}

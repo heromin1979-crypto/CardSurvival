@@ -2,11 +2,12 @@
 // Shows NPC dialogue, trust level, trade interface, and recruit/dismiss buttons.
 // Opened via EventBus 'openNPCDialogue' event (fired by CardFactory on dblclick of NPC cards).
 
-import EventBus   from '../core/EventBus.js';
-import GameState  from '../core/GameState.js';
-import I18n       from '../core/I18n.js';
-import NPCSystem  from '../systems/NPCSystem.js';
-import { NPC_ITEMS } from '../data/npcs.js';
+import EventBus        from '../core/EventBus.js';
+import GameState       from '../core/GameState.js';
+import I18n            from '../core/I18n.js';
+import NPCSystem       from '../systems/NPCSystem.js';
+import NPCQuestSystem  from '../systems/NPCQuestSystem.js';
+import { NPC_ITEMS }   from '../data/npcs.js';
 
 const NPCDialogueModal = {
   _overlay: null,
@@ -112,6 +113,51 @@ const NPCDialogueModal = {
         </div>`;
     }
 
+    // Active quest section
+    const activeQuest = NPCQuestSystem.getActiveQuest(npcId);
+    let questHtml = '';
+    if (activeQuest) {
+      const stepDescs = activeQuest.steps.map(s => {
+        if (s.type === 'collect') {
+          const have = GameState.countOnBoard?.(s.itemId) ?? 0;
+          const itemDef = window.__GAME_DATA__?.items[s.itemId];
+          const iname   = I18n.itemName(s.itemId, itemDef?.name);
+          return `<div class="npc-quest-step ${have >= s.qty ? 'done' : ''}">${have >= s.qty ? '✅' : '⬜'} ${iname} ${have}/${s.qty} — <em>${s.hint}</em></div>`;
+        }
+        if (s.type === 'visit') {
+          const visited = GameState.flags?.[`visited_${s.locationId}`] ?? false;
+          return `<div class="npc-quest-step ${visited ? 'done' : ''}">${visited ? '✅' : '⬜'} ${s.locationId} 방문 — <em>${s.hint}</em></div>`;
+        }
+        return '';
+      }).join('');
+      questHtml = `
+        <div class="npc-quest-section">
+          <div class="npc-section-title">❗ 진행 중 의뢰: ${activeQuest.title}</div>
+          <div class="npc-quest-steps">${stepDescs}</div>
+        </div>`;
+    }
+
+    // Companion heal section (V-5)
+    let healHtml = '';
+    if (isCompanion) {
+      const npcDef = NPCSystem.getNPCDef(npcId);
+      const maxHp  = npcDef?.maxHp ?? 50;
+      const curHp  = npcState.hp ?? maxHp;
+      const hpPct  = Math.round((curHp / maxHp) * 100);
+      const hpCls  = hpPct > 60 ? 'good' : hpPct > 30 ? 'warn' : 'crit';
+      const canHeal = GameState.countOnBoard?.('bandage') > 0 || GameState.countOnBoard?.('first_aid_kit') > 0;
+      if (curHp < maxHp) {
+        healHtml = `
+          <div class="npc-heal-section">
+            <div class="npc-section-title">❤️ HP 상태: ${curHp}/${maxHp}</div>
+            <div class="npc-hp-bar-wide"><div class="npc-hp-bar ${hpCls}" style="width:${hpPct}%"></div></div>
+            <button class="npc-action-btn heal ${canHeal ? '' : 'disabled'}" id="npc-heal-btn" ${canHeal ? '' : 'disabled'}>
+              ${canHeal ? '붕대로 치료하기 (붕대/응급키트 소모)' : '치료 아이템 없음'}
+            </button>
+          </div>`;
+      }
+    }
+
     // Build full modal
     const html = `
       <div class="npc-dialogue">
@@ -126,6 +172,8 @@ const NPCDialogueModal = {
             <p class="npc-greeting">"${greeting}"</p>
             ${hint ? `<p class="npc-hint">${hint}</p>` : ''}
           </div>
+          ${questHtml}
+          ${healHtml}
           ${companionHtml}
           ${tradeHtml}
         </div>
@@ -165,6 +213,31 @@ const NPCDialogueModal = {
         const idx = parseInt(btn.dataset.tradeIdx, 10);
         NPCSystem.executeTrade(npcId, idx);
         // Refresh modal to update trade availability
+        this.show(npcId);
+      });
+    }
+
+    // Heal companion button (V-5)
+    const healBtn = document.getElementById('npc-heal-btn');
+    if (healBtn) {
+      healBtn.addEventListener('click', () => {
+        // Prefer first_aid_kit (30hp), then bandage (15hp)
+        const hasFAK    = (GameState.countOnBoard?.('first_aid_kit') ?? 0) > 0;
+        const itemId    = hasFAK ? 'first_aid_kit' : 'bandage';
+        const healAmt   = hasFAK ? 30 : 15;
+        // Consume one unit
+        const cards = GameState.getBoardCards?.() ?? [];
+        for (const card of cards) {
+          if (card.definitionId !== itemId) continue;
+          if ((card.quantity ?? 1) <= 1) {
+            GameState.removeCardInstance(card.instanceId);
+          } else {
+            card.quantity -= 1;
+          }
+          break;
+        }
+        NPCSystem.healCompanion(npcId, healAmt);
+        EventBus.emit('boardChanged', {});
         this.show(npcId);
       });
     }

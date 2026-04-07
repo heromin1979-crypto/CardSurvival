@@ -48,6 +48,7 @@ import BGMSystem            from './systems/BGMSystem.js';
 import EcologySystem        from './systems/EcologySystem.js';
 import MentalSystem         from './systems/MentalSystem.js';
 import NPCSystem            from './systems/NPCSystem.js';
+import NPCQuestSystem       from './systems/NPCQuestSystem.js';
 import OnboardingSystem     from './systems/OnboardingSystem.js';
 import SecretCombinationSystem from './systems/SecretCombinationSystem.js';
 import BodySystem           from './systems/BodySystem.js';
@@ -75,6 +76,7 @@ import EquipmentModal   from './ui/EquipmentModal.js';
 import LandmarkModal       from './ui/LandmarkModal.js';
 import SettingsModal       from './ui/SettingsModal.js';
 import NPCDialogueModal   from './ui/NPCDialogueModal.js';
+import NPCPanel           from './ui/NPCPanel.js';
 import SecretGalleryTab   from './ui/SecretGalleryTab.js';
 import CinematicScene     from './ui/CinematicScene.js';
 
@@ -174,6 +176,8 @@ function init() {
   // Settings modal
   SettingsModal.init();
   NPCDialogueModal.init();
+  NPCPanel.init();
+  NPCQuestSystem.init();
   SecretGalleryTab.init();
   CinematicScene.init();
   window.__CinematicScene__ = CinematicScene;
