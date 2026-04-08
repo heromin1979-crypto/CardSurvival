@@ -353,10 +353,10 @@
   background: rgba(200,160,96,0.10) !important;
   cursor: default !important;
   box-shadow: 0 0 10px rgba(200,160,96,0.30) !important;
-  transition: none !important;  /* hover 전환 애니메이션 완전 비활성 */
+  transition: none !important;
 }
 .location-card.is-current-loc:hover {
-  transform: translate(-50%, -50%) !important;   /* 슬롯 중앙 정렬 유지 (none 시 위치 튐 버그) */
+  transform: none !important;   /* flex 배치 — translate 보정 불필요, 호버 이동 없음 */
   background: rgba(200,160,96,0.10) !important;
   border-color: var(--accent-primary) !important;
   box-shadow: 0 0 10px rgba(200,160,96,0.30) !important;
@@ -369,9 +369,9 @@
   background: rgba(200,140,20,0.07) !important;
   cursor: pointer !important;
 }
-/* hover — 슬롯 중앙 정렬 유지 (none 시 위치 튐 버그 방지) */
+/* hover — flex 배치이므로 translate(-50%,-50%) 불필요 */
 .landmark-card:hover {
-  transform: translate(-50%, -50%) !important;   /* 중앙 정렬 유지 */
+  transform: translateY(-4px) !important;
   background: rgba(200,140,20,0.14) !important;
   border-color: var(--accent-primary) !important;
   box-shadow: 0 0 12px rgba(200,160,96,0.35) !important;
@@ -452,7 +452,7 @@
   cursor: pointer !important;
 }
 .sublocation-card:hover {
-  transform: translate(-50%, -50%) !important;
+  transform: translateY(-4px) !important;
   background: rgba(40, 80, 110, 0.7) !important;
   border-color: rgba(100, 160, 220, 0.9) !important;
   box-shadow: 0 0 12px rgba(100, 160, 220, 0.35) !important;
@@ -465,7 +465,7 @@
   cursor: pointer !important;
 }
 .location-card.landmark-return:hover {
-  transform: translate(-50%, -50%) !important;
+  transform: translateY(-4px) !important;
   background: rgba(200, 160, 96, 0.15) !important;
   border-color: var(--accent-primary) !important;
   box-shadow: 0 0 12px rgba(200, 160, 96, 0.5) !important;
