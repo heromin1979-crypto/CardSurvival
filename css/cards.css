@@ -126,11 +126,11 @@
 
 .card-art {
   flex: 1;
-  min-height: 45px;     /* 카드 최소 높이(120px)에서 헤더+푸터 제외하면 ~55px */
+  min-height: 100px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: clamp(24px, 2.8vh, 40px);  /* 카드 크기에 맞춰 아이콘 축소 */
+  font-size: 40px;
   opacity: 0.7;
 }
 

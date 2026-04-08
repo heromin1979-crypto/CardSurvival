@@ -322,6 +322,33 @@ function _initNotifications() {
   });
 }
 
+// ── Viewport Scale (Steam/Electron 스타일 고정 해상도) ─────────────
+// 설계 기준: 1920×1080. 모든 모니터에서 동일하게 보이도록 CSS scale 적용.
+const DESIGN_W = 1920;
+const DESIGN_H = 1080;
+
+function _applyViewportScale() {
+  const scaleX = window.innerWidth  / DESIGN_W;
+  const scaleY = window.innerHeight / DESIGN_H;
+  const scale  = Math.min(scaleX, scaleY);   // 비율 유지 (letterbox)
+
+  const app = document.getElementById('app');
+  if (!app) return;
+
+  const offsetX = Math.floor((window.innerWidth  - DESIGN_W * scale) / 2);
+  const offsetY = Math.floor((window.innerHeight - DESIGN_H * scale) / 2);
+
+  app.style.width           = DESIGN_W + 'px';
+  app.style.height          = DESIGN_H + 'px';
+  app.style.position        = 'fixed';
+  app.style.left            = offsetX + 'px';
+  app.style.top             = offsetY + 'px';
+  app.style.transformOrigin = '0 0';
+  app.style.transform       = `scale(${scale})`;
+}
+
+window.addEventListener('resize', _applyViewportScale);
+
 function _hideLoadingOverlay() {
   const overlay = document.getElementById('loading-overlay');
   if (overlay) overlay.remove();
@@ -342,6 +369,7 @@ function _showLoadingError(e) {
 // Run on DOM ready — 모바일은 deviceready 이후 init
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', async () => {
+    _applyViewportScale();
     try {
       await initMobileAdapter();
       await initPurchaseManager();
@@ -352,6 +380,7 @@ if (document.readyState === 'loading') {
     }
   });
 } else {
+  _applyViewportScale();
   (async () => {
     try {
       await initMobileAdapter();
