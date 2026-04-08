@@ -10,15 +10,9 @@
 **What:** Vitest 설치 + 42개 단위 테스트 (commit 40130d7)
 **Status:** EventBus(9), SystemRegistry(4), GameData(9), GameState(10), TickEngine(10) — 42/42 통과.
 
-### T2: Module Bundler (Vite/Rollup)
-**What:** Introduce Vite to bundle 50+ ES modules into a single chunk.
-**Why:** 50+ HTTP round-trips on cold load; currently ~1-2s on fast connection, could be ~5s on mobile.
-**Pros:** Faster cold start; tree-shaking; smaller payload.
-**Cons:** Build step required; vanilla JS charm partially lost; yak-shaving before players exist.
-**Context:** Deferred from CEO plan. Revisit when load time becomes a real player complaint.
-**Effort:** M (human) → S (CC+gstack)
-**Priority:** P3
-**Depends on:** Real players and performance complaints.
+### T2: Module Bundler (Vite/Rollup) ✅ DONE
+**What:** vite.config.js 커밋 완료 (commit 2e6fb84)
+**Status:** Capacitor/Web 빌드는 Vite로 번들링. Electron PC 빌드는 네이티브 ES 모듈 유지.
 
 ### T3: Admin/Debug Mode
 **What:** Hidden `?debug=1` URL flag that exposes GameState inspector, TP skip buttons, stat editors.

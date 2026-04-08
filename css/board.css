@@ -1,4 +1,4 @@
-/* === 3-ROW BOARD — flex-fill: 4 rows share viewport height equally === */
+/* === 4-ROW BOARD — flex-fill: 4 rows share viewport height equally === */
 .board {
   width: 100%;
   flex: 1;

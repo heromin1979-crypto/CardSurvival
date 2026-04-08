@@ -49,10 +49,13 @@
   --slot-hover:      rgba(200,160,80,0.15);
 
   /* Card dimensions — 1920×1080 설계 기준 (Scale 방식으로 전체 확대/축소) */
+  /* 4행 레이아웃 기준: 1080px / 4 = 270px/행. 행 오버헤드(패딩24+라벨24+갭4)=52px.
+     슬롯 컨테이너 = 218px, 내부(border2+padding8=10 제외) = 208px.
+     slot-h ≤ 208px 이어야 오버플로 없음. 190px → 여유 18px. */
   --card-w:          120px;
-  --card-h:          200px;
+  --card-h:          178px;
   --slot-w:          130px;
-  --slot-h:          210px;
+  --slot-h:          190px;
 
   /* Spacing */
   --gap-xs:  4px;
