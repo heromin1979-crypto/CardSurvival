@@ -1,9 +1,10 @@
 // === BASECAMP SCREEN ===
-import EventBus    from '../core/EventBus.js';
-import GameState   from '../core/GameState.js';
-import StateMachine from '../core/StateMachine.js';
-import I18n        from '../core/I18n.js';
-import TickEngine  from '../core/TickEngine.js';
+import EventBus        from '../core/EventBus.js';
+import GameState       from '../core/GameState.js';
+import StateMachine    from '../core/StateMachine.js';
+import I18n            from '../core/I18n.js';
+import TickEngine      from '../core/TickEngine.js';
+import SystemRegistry  from '../core/SystemRegistry.js';
 import CraftUI        from '../ui/CraftUI.js';
 import BoardRenderer  from '../ui/BoardRenderer.js';
 import StatRenderer   from '../ui/StatRenderer.js';
@@ -316,7 +317,7 @@ const Basecamp = {
     const el = document.getElementById('secret-combo-count');
     if (!el) return;
     try {
-      const SecretCombinationSystem = window.__SecretCombinationSystem__;
+      const SecretCombinationSystem = SystemRegistry.get('SecretCombinationSystem');
       if (SecretCombinationSystem) {
         const { found, total } = SecretCombinationSystem.getStats();
         el.textContent = `(${found}/${total})`;

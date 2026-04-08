@@ -13,6 +13,7 @@ import TickEngine      from './core/TickEngine.js';
 import StateMachine    from './core/StateMachine.js';
 import SettingsManager from './core/SettingsManager.js';
 import I18n            from './core/I18n.js';
+import SystemRegistry  from './core/SystemRegistry.js';
 
 // Data
 import ITEMS      from './data/items.js';
@@ -121,8 +122,8 @@ window.__GAME_DATA__ = {
 };
 registerSubLocationItems();
 
-// HiddenElementSystem에서 StateMachine 접근용
-window.__GAME_SYSTEMS__ = { StateMachine };
+// HiddenElementSystem에서 StateMachine 접근용 → SystemRegistry로 등록
+SystemRegistry.register('StateMachine', StateMachine);
 
 function init() {
   console.log('[Game] Initializing Ruined City...');
@@ -139,20 +140,18 @@ function init() {
   WeatherSystem.init();
   NoiseSystem.init();
   EcologySystem.init();
-  window.__EcologySystem__ = EcologySystem;  // LandmarkModal·SeoulMapModal에서 참조
+  SystemRegistry.register('EcologySystem', EcologySystem);
   NPCSystem.init();
   NPCRelationSystem.init();
   NPCGroupSystem.init();
   NPCStorySystem.init();
-  window.__NPCRelationSystem__ = NPCRelationSystem;
-  window.__NPCGroupSystem__    = NPCGroupSystem;
-  window.__NPCStorySystem__    = NPCStorySystem;
+  SystemRegistry.register('NPCGroupSystem', NPCGroupSystem);
+  SystemRegistry.register('NPCStorySystem', NPCStorySystem);
   OnboardingSystem.init();
-  window.__NPCSystem__ = NPCSystem;         // CardFactory에서 참조 (MentalSystem보다 먼저 — companions 초기화)
+  SystemRegistry.register('NPCSystem', NPCSystem);
   MentalSystem.init();
-  window.__MentalSystem__ = MentalSystem;   // StatRenderer·CombatSystem에서 참조
   BodySystem.init();
-  window.__BodySystem__ = BodySystem;  // EquipmentModal 신체 다이어그램에서 참조
+  SystemRegistry.register('BodySystem', BodySystem);
   ContaminationSystem.init();
   EncumbranceSystem.init();
   CraftSystem.init();
@@ -161,13 +160,12 @@ function init() {
   SkillSystem.init();
   BasecampSystem.init();
   QuestSystem.init();
-  window.__SecretCombinationSystem__ = SecretCombinationSystem;  // Basecamp 비밀 조합 카운트용
+  SystemRegistry.register('SecretCombinationSystem', SecretCombinationSystem);
   SoundSystem.init();
   BGMSystem.init();
   HiddenElementSystem.init();
   SubwaySystem.init();
   NightSystem.init();
-  window.__NightSystem__ = NightSystem;  // UI에서 야간 표시용
 
   // Board
   BoardManager.init();
@@ -189,7 +187,7 @@ function init() {
   NPCQuestSystem.init();
   SecretGalleryTab.init();
   CinematicScene.init();
-  window.__CinematicScene__ = CinematicScene;
+  SystemRegistry.register('CinematicScene', CinematicScene);
 
   // Screens
   MainMenu.init();

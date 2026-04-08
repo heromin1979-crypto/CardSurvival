@@ -1,8 +1,9 @@
 // === SEOUL MAP MODAL ===
 // 서울 25구 지역 지도 SVG 오버레이 모달 + 지하철/하수도 경로 표시
-import GameState from '../core/GameState.js';
-import I18n     from '../core/I18n.js';
-import { DISTRICTS } from '../data/districts.js';
+import GameState       from '../core/GameState.js';
+import I18n            from '../core/I18n.js';
+import { DISTRICTS }   from '../data/districts.js';
+import SystemRegistry  from '../core/SystemRegistry.js';
 import { SUBWAY_LINES, SEWER_ROUTES } from '../data/subwayRoutes.js';
 import SubwaySystem from '../systems/SubwaySystem.js';
 
@@ -329,7 +330,7 @@ const SeoulMapModal = {
       // ── 생태계 오버레이 (EcologySystem) ──
       let ecoOverlay = '';
       try {
-        const EcologySystem = window.__EcologySystem__;
+        const EcologySystem = SystemRegistry.get('EcologySystem');
         if (EcologySystem) {
           const eco = EcologySystem.getDistrictEcology(id);
           const zColor = eco.zombie > 60 ? '#cc4444' : eco.zombie > 30 ? '#ccaa44' : '#44aa44';

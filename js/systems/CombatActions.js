@@ -1,8 +1,9 @@
 // === COMBAT ACTIONS (가드·투척·다중타겟·동행 액션) ===
 // CombatSystem.js의 800라인 제한 유지를 위해 분리된 액션 로직
 
-import EventBus   from '../core/EventBus.js';
-import GameState  from '../core/GameState.js';
+import EventBus        from '../core/EventBus.js';
+import GameState       from '../core/GameState.js';
+import SystemRegistry  from '../core/SystemRegistry.js';
 import I18n       from '../core/I18n.js';
 import StateMachine from '../core/StateMachine.js';
 import NoiseSystem from './NoiseSystem.js';
@@ -155,7 +156,7 @@ export function applyMultiTarget(primaryDamage, weaponDef, targetIndex, combatSy
 
 export function companionAttack(combatSystemRef) {
   const gs      = GameState;
-  const npcSys  = window.__NPCSystem__;
+  const npcSys  = SystemRegistry.get('NPCSystem');
   if (!npcSys) return I18n.t('combatSys.noCompanion');
 
   const companions = gs.companions ?? [];
@@ -185,7 +186,7 @@ export function companionAttack(combatSystemRef) {
 
 export function companionHeal(combatSystemRef) {
   const gs      = GameState;
-  const npcSys  = window.__NPCSystem__;
+  const npcSys  = SystemRegistry.get('NPCSystem');
   if (!npcSys) return I18n.t('combatSys.noCompanion');
 
   const companions = gs.companions ?? [];

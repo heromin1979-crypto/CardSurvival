@@ -1,8 +1,9 @@
 // === COMBAT SYSTEM ===
-import EventBus    from '../core/EventBus.js';
-import GameState   from '../core/GameState.js';
-import I18n        from '../core/I18n.js';
-import StateMachine from '../core/StateMachine.js';
+import EventBus        from '../core/EventBus.js';
+import GameState       from '../core/GameState.js';
+import I18n            from '../core/I18n.js';
+import StateMachine    from '../core/StateMachine.js';
+import SystemRegistry  from '../core/SystemRegistry.js';
 import NoiseSystem  from './NoiseSystem.js';
 import StatSystem   from './StatSystem.js';
 import EndingSystem from './EndingSystem.js';
@@ -285,7 +286,7 @@ const CombatSystem = {
 
       damage = Math.floor(damage * (gs.player.combatDmgBonus ?? 1.0));
       // NPC 동행 전투 보너스
-      const npcCombatMult = window.__NPCSystem__?.getCompanionCombatBonus?.() ?? 1.0;
+      const npcCombatMult = SystemRegistry.get('NPCSystem')?.getCompanionCombatBonus?.() ?? 1.0;
       damage = Math.floor(damage * npcCombatMult);
       // 사기 구간별 데미지 배율
       const moraleTier = StatSystem.getMoraleTier();
@@ -507,7 +508,7 @@ const CombatSystem = {
       const companions = gs.companions ?? [];
       if (companions.length > 0 && Math.random() < 0.20) {
         const targetNpcId = companions[Math.floor(Math.random() * companions.length)];
-        const npcSys = window.__NPCSystem__;
+        const npcSys = SystemRegistry.get('NPCSystem');
         if (npcSys) {
           npcSys.damageCompanion(targetNpcId, damage);
           const npcName = I18n.itemName(targetNpcId, window.__GAME_DATA__?.items?.[targetNpcId]?.name);

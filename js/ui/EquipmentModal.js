@@ -3,6 +3,7 @@ import EventBus        from '../core/EventBus.js';
 import GameState       from '../core/GameState.js';
 import EquipmentSystem from '../systems/EquipmentSystem.js';
 import I18n            from '../core/I18n.js';
+import SystemRegistry  from '../core/SystemRegistry.js';
 
 // ── 부상 타입 → 이모지 매핑 ────────────────────────────────────
 const INJURY_ICONS = {
@@ -273,7 +274,7 @@ const EquipmentModal = {
   // ── 신체 다이어그램 ─────────────────────────────────
 
   _getBodySystem() {
-    return window.__BodySystem__ ?? null;
+    return SystemRegistry.get('BodySystem');
   },
 
   _renderBodyDiagram() {

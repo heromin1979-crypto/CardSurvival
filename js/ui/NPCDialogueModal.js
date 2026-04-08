@@ -3,6 +3,7 @@
 // Opened via EventBus 'openNPCDialogue' event (fired by CardFactory on dblclick of NPC cards).
 
 import EventBus        from '../core/EventBus.js';
+import SystemRegistry  from '../core/SystemRegistry.js';
 import GameState       from '../core/GameState.js';
 import I18n            from '../core/I18n.js';
 import NPCSystem       from '../systems/NPCSystem.js';
@@ -155,7 +156,7 @@ const NPCDialogueModal = {
       : '';
 
     // W-7: Personal story arc progress
-    const storySystem = window.__NPCStorySystem__;
+    const storySystem = SystemRegistry.get('NPCStorySystem');
     const arcProgress = storySystem?.getArcProgress(npcId);
     let arcHtml = '';
     if (arcProgress && isCompanion) {
@@ -173,7 +174,7 @@ const NPCDialogueModal = {
     let dispatchHtml = '';
     if (isCompanion) {
       const dispatched = npcState.dispatched ?? false;
-      const groupSys = window.__NPCGroupSystem__;
+      const groupSys = SystemRegistry.get('NPCGroupSystem');
       dispatchHtml = `
         <div class="npc-heal-section" style="margin-top:8px">
           <button class="npc-action-btn dispatch ${dispatched ? 'active disabled' : ''}"

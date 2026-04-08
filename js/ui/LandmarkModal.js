@@ -1,8 +1,9 @@
 // === LANDMARK MODAL ===
 // 랜드마크 클릭 시 세부 장소 탐색 UI
-import EventBus      from '../core/EventBus.js';
-import GameState     from '../core/GameState.js';
-import I18n          from '../core/I18n.js';
+import EventBus        from '../core/EventBus.js';
+import GameState       from '../core/GameState.js';
+import I18n            from '../core/I18n.js';
+import SystemRegistry  from '../core/SystemRegistry.js';
 import TickEngine    from '../core/TickEngine.js';
 import StateMachine  from '../core/StateMachine.js';
 import { rollEnemyGroup } from '../data/enemies.js';
@@ -128,7 +129,7 @@ const LandmarkModal = {
     // 생태계 자원 레벨 기반 배율 (EcologySystem이 있으면 적용)
     let ecoMult = 1.0;
     try {
-      const EcologySystem = window.__EcologySystem__;
+      const EcologySystem = SystemRegistry.get('EcologySystem');
       if (EcologySystem && this._districtId) {
         ecoMult = EcologySystem.getLootMult(this._districtId);
       }
@@ -162,7 +163,7 @@ const LandmarkModal = {
     const baseEncounter = 0.10;
     let ecoEncMult = 1.0;
     try {
-      const EcologySystem = window.__EcologySystem__;
+      const EcologySystem = SystemRegistry.get('EcologySystem');
       if (EcologySystem && districtId) ecoEncMult = EcologySystem.getEncounterMult(districtId);
     } catch (_) { /* 무시 */ }
     const encounterChance = Math.min(0.90, (baseEncounter + loc.dangerMod) * ecoEncMult);

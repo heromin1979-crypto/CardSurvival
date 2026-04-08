@@ -3,10 +3,11 @@
 // StatSystem.onTP()에서 getModifiers()를 호출하여 계절별 스탯 보정 적용
 // ExploreSystem._arriveAtDistrict()에서 getSeasonalLootBonus()로 추가 루팅
 
-import EventBus  from '../core/EventBus.js';
-import GameState from '../core/GameState.js';
+import EventBus        from '../core/EventBus.js';
+import GameState       from '../core/GameState.js';
 import SEASONAL_EVENTS from '../data/seasonalEvents.js';
 import { SEASON_EVENT_TO_ENV_CARD } from '../data/items_environment.js';
+import SystemRegistry  from '../core/SystemRegistry.js';
 
 // ── 계절 정의 ──────────────────────────────────────────────────
 
@@ -253,7 +254,7 @@ const SeasonSystem = {
     }
 
     // 시네마틱 표시 후 효과 적용 (게임 일시정지)
-    const cs = window.__CinematicScene__;
+    const cs = SystemRegistry.get('CinematicScene');
     if (cs && cinematicId) {
       gs.time.isPaused = true;
       cs.show(cinematicId, () => {

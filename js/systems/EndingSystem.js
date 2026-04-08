@@ -1,8 +1,9 @@
 // === ENDING SYSTEM ===
-import EventBus   from '../core/EventBus.js';
-import GameState  from '../core/GameState.js';
-import TickEngine from '../core/TickEngine.js';
-import ENDINGS    from '../data/endings.js';
+import EventBus        from '../core/EventBus.js';
+import GameState       from '../core/GameState.js';
+import TickEngine      from '../core/TickEngine.js';
+import ENDINGS         from '../data/endings.js';
+import SystemRegistry  from '../core/SystemRegistry.js';
 import { ENDING_TO_CINEMATIC } from '../data/cinematicScenes.js';
 
 const STORAGE_KEY      = 'CARD_SURVIVAL_ENDINGS_v1';
@@ -169,7 +170,7 @@ const EndingSystem = {
 
     // 시네마틱 장면이 있으면 먼저 표시 후 전환
     const cinematicId = ENDING_TO_CINEMATIC[endingId];
-    const cs = window.__CinematicScene__;
+    const cs = SystemRegistry.get('CinematicScene');
     if (cs && cinematicId) {
       cs.show(cinematicId, doTransition);
     } else {

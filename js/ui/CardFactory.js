@@ -1,8 +1,9 @@
 // === CARD FACTORY ===
 // 카드 DOM 요소 생성. type='location' 카드는 별도 렌더링.
-import GameState from '../core/GameState.js';
-import StatSystem from '../systems/StatSystem.js';
-import EventBus  from '../core/EventBus.js';
+import GameState       from '../core/GameState.js';
+import StatSystem      from '../systems/StatSystem.js';
+import EventBus        from '../core/EventBus.js';
+import SystemRegistry  from '../core/SystemRegistry.js';
 import I18n      from '../core/I18n.js';
 
 // 위험도 색상
@@ -643,13 +644,13 @@ const CardFactory = {
 
   _buildNPCInner(inst, def) {
     // Lazy-read NPC state for companion badge
-    const npcState = window.__NPCSystem__?.getNPCState?.(inst.definitionId);
+    const npcState = SystemRegistry.get('NPCSystem')?.getNPCState?.(inst.definitionId);
     const isCompanion = npcState?.isCompanion ?? false;
     const trust = npcState?.trust ?? 0;
     const trustStars = '★'.repeat(trust) + '☆'.repeat(Math.max(0, 5 - trust));
 
     // NPC HP bar (for companions)
-    const npcDef = window.__NPCSystem__?.getNPCDef?.(inst.definitionId);
+    const npcDef = SystemRegistry.get('NPCSystem')?.getNPCDef?.(inst.definitionId);
     const maxHp = npcDef?.maxHp ?? 50;
     const currentHp = npcState?.hp ?? maxHp;
     const hpPct = Math.round((currentHp / maxHp) * 100);

@@ -1,8 +1,9 @@
 // === HIDDEN ELEMENT SYSTEM ===
 // 숨겨진 장소·보스·이벤트·레시피 해금 관리
 // 마치 보물 지도처럼: 조건을 충족하면 숨겨진 콘텐츠가 열린다.
-import EventBus   from '../core/EventBus.js';
-import GameState  from '../core/GameState.js';
+import EventBus        from '../core/EventBus.js';
+import GameState       from '../core/GameState.js';
+import SystemRegistry  from '../core/SystemRegistry.js';
 import I18n       from '../core/I18n.js';
 import { HIDDEN_LOCATIONS }  from '../data/hiddenLocations.js';
 import { SECRET_ENEMIES }    from '../data/secretEnemies.js';
@@ -234,7 +235,7 @@ const HiddenElementSystem = {
     });
 
     // StateMachine으로 전투 전환
-    const StateMachine = window.__GAME_SYSTEMS__?.StateMachine;
+    const StateMachine = SystemRegistry.get('StateMachine');
     if (StateMachine) {
       StateMachine.transition('encounter', {
         nodeId:      GameState.location.currentDistrict,
@@ -501,7 +502,7 @@ const HiddenElementSystem = {
           const hp = enemyDef.hp.min + Math.floor(Math.random() * (enemyDef.hp.max - enemyDef.hp.min + 1));
           return { ...enemyDef, currentHp: hp, maxHp: hp, _skillCooldowns: {} };
         });
-        const StateMachine = window.__GAME_SYSTEMS__?.StateMachine;
+        const StateMachine = SystemRegistry.get('StateMachine');
         if (StateMachine) {
           StateMachine.transition('encounter', {
             nodeId:  GameState.location.currentDistrict,
