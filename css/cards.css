@@ -119,6 +119,7 @@
 /* Card body */
 .card-body {
   flex: 1;
+  min-height: 0;
   padding: 4px 6px;
   display: flex;
   flex-direction: column;
@@ -131,11 +132,18 @@
   color: var(--text-dim);
   text-transform: uppercase;
   letter-spacing: 1px;
+  order: 1;
+  flex-shrink: 0;
 }
+
+/* 스탯·내구도를 이미지 앞(위)에 배치 — flex:1인 card-art 뒤에 오면 overflow:hidden에 잘림 */
+.card-stats    { order: 2; flex-shrink: 0; }
+.card-durability { order: 3; flex-shrink: 0; }
 
 .card-art {
   flex: 1;
   min-height: 0;
+  order: 4;                   /* 이미지는 남은 공간을 채우며 맨 아래 */
   display: flex;
   align-items: center;
   justify-content: center;
