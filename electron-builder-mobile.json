@@ -1,0 +1,13 @@
+{
+  "extraMetadata": {
+    "main": "electron-main-mobile.js"
+  },
+  "productName": "Card Survival Ruined City Mobile",
+  "directories": {
+    "output": "dist/mobile",
+    "buildResources": "build-resources"
+  },
+  "portable": {
+    "artifactName": "CardSurvival-RuinedCity-Mobile.exe"
+  }
+}
