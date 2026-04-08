@@ -52,9 +52,9 @@
   /* 4행 레이아웃: slot-h는 board-row-slots의 flex:1 결과보다 작아야 오버플로 없음.
      안전값으로 충분히 작게 설정 — 행 간 텍스트 가시성 확보. */
   --card-w:          110px;
-  --card-h:          120px;
+  --card-h:          140px;   /* 슬롯이 동적 높이 — 카드는 고정값 유지 */
   --slot-w:          118px;
-  --slot-h:          130px;
+  --slot-h:          140px;   /* 미사용 (slot height: 100%) — 참고용 */
 
   /* Spacing */
   --gap-xs:  4px;

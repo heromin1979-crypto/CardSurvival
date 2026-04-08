@@ -39,7 +39,7 @@
   min-height: 0;              /* flex:1이 높이를 결정 — min-height가 행 높이를 초과하지 않도록 */
   overflow-x: auto;           /* 카드 많을 때 행 내 가로 스크롤 */
   overflow-y: hidden;
-  align-items: center;
+  align-items: stretch;       /* 슬롯이 컨테이너 높이를 꽉 채움 — 고정 높이 초과로 잘리는 현상 방지 */
   padding: var(--gap-xs);
   background: rgba(0,0,0,0.15);
   border: 1px solid var(--border-dim);
@@ -49,7 +49,7 @@
 /* Individual slot */
 .slot {
   width: var(--slot-w);
-  height: var(--slot-h);
+  height: 100%;               /* 컨테이너 높이에 맞춤 — 고정값 대신 동적 */
   background: var(--slot-empty);
   border: 1px dashed var(--border-dim);
   border-radius: var(--radius-sm);
