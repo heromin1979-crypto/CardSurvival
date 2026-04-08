@@ -22,13 +22,20 @@
   width: 100%;
 }
 
-/* Board fills main area */
+/* Board fills main area — flex chain: bc-main → board-container → board → rows */
 .bc-main #board-container {
   width: 100%;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .bc-main .board {
   width: 100%;
+  flex: 1;
+  min-height: 0;
 }
 
 /* Mode indicator */

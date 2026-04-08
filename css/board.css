@@ -1,18 +1,22 @@
-/* === 3-ROW BOARD === */
+/* === 3-ROW BOARD — flex-fill: 4 rows share viewport height equally === */
 .board {
   width: 100%;
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 0;
   padding: 0;
 }
 
-/* Row — each becomes a visual section */
+/* Row — flex: 1 so all rows split the available height */
 .board-row {
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: var(--gap-xs);
-  padding: var(--gap-md);
+  padding: 4px 8px;
   border-bottom: 1px solid var(--border-dim);
 }
 
@@ -30,8 +34,12 @@
 .board-row-slots {
   display: flex;
   gap: var(--gap-sm);
-  flex-wrap: wrap;
-  min-height: var(--slot-h);
+  flex-wrap: nowrap;          /* 줄 바꿈 없음 — 가로 스크롤로 처리 */
+  flex: 1;
+  min-height: var(--slot-h);  /* clamp 하한값이 최소 높이 보장 */
+  overflow-x: auto;           /* 카드 많을 때 행 내 가로 스크롤 */
+  overflow-y: hidden;
+  align-items: center;
   padding: var(--gap-xs);
   background: rgba(0,0,0,0.15);
   border: 1px solid var(--border-dim);
