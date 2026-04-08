@@ -9,14 +9,14 @@
   padding: 0;
 }
 
-/* Row — flex: 1 so all rows split the available height */
+/* Row — flex: 1 so all rows split the available height equally */
 .board-row {
   flex: 1;
   min-height: 0;
   display: flex;
   flex-direction: column;
   gap: var(--gap-xs);
-  padding: 4px 8px;
+  padding: var(--gap-md);
   border-bottom: 1px solid var(--border-dim);
 }
 

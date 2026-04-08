@@ -24,7 +24,7 @@
   overflow: hidden;
 }
 
-/* Left sidebar — compact padding for fullscreen fit */
+/* Left sidebar */
 .bc-sidebar {
   background: var(--bg-surface);
   border-right: 1px solid var(--border-dim);
@@ -32,19 +32,18 @@
   overflow-x: hidden;
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  padding: 6px;
+  gap: var(--gap-xs);
+  padding: var(--gap-sm);
   z-index: var(--z-hud);
 }
 
-/* Main area — no scroll; board uses flex-fill instead */
+/* Main area — overflow hidden (Scale 방식으로 스크롤 불필요) */
 .bc-main {
   overflow: hidden;
   background: var(--bg-base);
   display: flex;
   flex-direction: column;
   position: relative;
-  height: 100%;
 }
 
 .bc-main::before {
@@ -61,18 +60,18 @@
   z-index: 1;
 }
 
-/* Minimap block — compact height for fullscreen fit */
+/* Minimap block */
 .bc-minimap {
   background: rgba(0,0,0,0.4);
   border: 1px solid var(--border-dim);
   border-radius: var(--radius-sm);
-  height: 58px;
+  height: 90px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 3px;
-  font-size: 22px;
+  gap: 4px;
+  font-size: 28px;
   color: var(--text-dim);
   flex-shrink: 0;
   cursor: pointer;
