@@ -53,10 +53,10 @@ html, body {
    ═══════════════════════════════════════════════════════════ */
 @media (max-width: 1024px) {
   :root {
-    --card-w: 100px;
-    --card-h: 136px;
-    --slot-w: 108px;
-    --slot-h: 144px;
+    --card-w: 108px;
+    --card-h: 180px;
+    --slot-w: 116px;
+    --slot-h: 188px;
   }
 
   #screen-basecamp.active { grid-template-columns: 160px 1fr; }
@@ -75,10 +75,10 @@ html, body {
    ═══════════════════════════════════════════════════════════ */
 @media (max-width: 768px) {
   :root {
-    --card-w: 88px;
-    --card-h: 118px;
-    --slot-w: 94px;
-    --slot-h: 124px;
+    --card-w: 94px;
+    --card-h: 158px;
+    --slot-w: 100px;
+    --slot-h: 164px;
   }
 
   #screen-basecamp.active { grid-template-columns: 140px 1fr; }
@@ -97,10 +97,10 @@ html, body {
    ═══════════════════════════════════════════════════════════ */
 @media (max-width: 600px) {
   :root {
-    --card-w: 72px;
-    --card-h: 96px;
-    --slot-w: 76px;
-    --slot-h: 100px;
+    --card-w: 78px;
+    --card-h: 130px;
+    --slot-w: 82px;
+    --slot-h: 136px;
   }
 
   #screen-basecamp.active { grid-template-columns: 120px 1fr; }
@@ -160,10 +160,10 @@ html, body {
    ═══════════════════════════════════════════════════════════ */
 @media (max-width: 480px) {
   :root {
-    --card-w: 65px;
-    --card-h: 88px;
-    --slot-w: 69px;
-    --slot-h: 92px;
+    --card-w: 68px;
+    --card-h: 112px;
+    --slot-w: 72px;
+    --slot-h: 118px;
   }
 
   /* ── 베이스캠프: 세로 2단 레이아웃 ───────────────── */
@@ -393,10 +393,10 @@ html, body {
    ═══════════════════════════════════════════════════════════ */
 @media (max-width: 360px) {
   :root {
-    --card-w: 58px;
-    --card-h: 78px;
-    --slot-w: 62px;
-    --slot-h: 82px;
+    --card-w: 60px;
+    --card-h: 98px;
+    --slot-w: 64px;
+    --slot-h: 104px;
   }
 
   /* 2행 HUD 높이 유지하되 내용 압축 */
@@ -426,14 +426,74 @@ html, body {
 
 
 /* ═══════════════════════════════════════════════════════════
+   갤럭시 S26 세로 모드 (412px) — ≤480px 브레이크포인트가 커버
+   추가 미세 조정: 412px 기준 최적화
+   ═══════════════════════════════════════════════════════════ */
+@media (max-width: 412px) {
+  :root {
+    --card-w: 66px;
+    --card-h: 110px;
+    --slot-w: 70px;
+    --slot-h: 116px;
+  }
+
+  /* 장소 탭: 412px 화면에서 가로 스크롤 슬롯 */
+  .board-row.row-top .slot {
+    width: 84px !important;
+    min-width: 84px !important;
+    height: 112px;
+    min-height: 112px;
+  }
+  .board-row.row-top .location-card,
+  .board-row.row-top .card {
+    width: 81px;
+    height: 109px;
+  }
+
+  /* HUD 여백 최소화 */
+  .bc-sidebar { padding: 2px 6px; }
+  .bc-sidebar-btns .toolbar-btn { font-size: 9px; padding: 3px 5px; }
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   7. PC 광폭 해상도 (≥ 1440px) — 스팀 게임 대응
+   ═══════════════════════════════════════════════════════════ */
+@media (min-width: 1440px) {
+  :root {
+    --card-w: 136px;
+    --card-h: 226px;
+    --slot-w: 146px;
+    --slot-h: 236px;
+  }
+}
+
+/* ── 스팀 기준 Full HD (≥ 1920px) ── */
+@media (min-width: 1920px) {
+  :root {
+    --card-w:          160px;
+    --card-h:          266px;
+    --slot-w:          170px;
+    --slot-h:          276px;
+    --font-size-xs:    15px;
+    --font-size-sm:    16px;
+    --font-size-base:  18px;
+    --font-size-md:    21px;
+    --font-size-lg:    25px;
+    --font-size-xl:    34px;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════
    6. 가로 모드 폰 (height ≤ 500px + landscape)
    ═══════════════════════════════════════════════════════════ */
 @media (max-height: 500px) and (orientation: landscape) {
   :root {
-    --card-w: 62px;
-    --card-h: 82px;
-    --slot-w: 66px;
-    --slot-h: 86px;
+    --card-w: 64px;
+    --card-h: 104px;
+    --slot-w: 68px;
+    --slot-h: 110px;
   }
 
   #screen-basecamp.active {

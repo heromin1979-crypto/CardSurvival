@@ -36,6 +36,30 @@
   overflow: hidden;
 }
 
+/* 비네트 + 스캔라인 오버레이 */
+.combat-visual::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      to bottom,
+      rgba(0,0,0,0.58) 0%,
+      transparent 28%,
+      transparent 62%,
+      rgba(0,0,0,0.72) 100%
+    ),
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 3px,
+      rgba(0,0,0,0.05) 3px,
+      rgba(0,0,0,0.05) 4px
+    );
+  pointer-events: none;
+  z-index: 1;
+}
+
 /* 오른쪽 페이드 — 패널과 자연스러운 전환 */
 .combat-visual::after {
   content: '';
@@ -44,6 +68,21 @@
   width: 60px;
   background: linear-gradient(to right, transparent, rgba(8,5,2,0.95));
   pointer-events: none;
+  z-index: 1;
+}
+
+/* 야간 색조 오버레이 */
+.combat-night-tint {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at 50% 40%,
+    rgba(30,18,70,0.22) 0%,
+    rgba(10,5,40,0.48) 100%
+  );
+  mix-blend-mode: multiply;
+  pointer-events: none;
+  z-index: 2;
 }
 
 /* 적 스프라이트 영역 (상단 — 하단 정렬로 중앙선 쪽으로 밀기) */
@@ -53,6 +92,8 @@
   justify-content: center;
   gap: 24px;
   padding: 20px 20px 12px;
+  position: relative;
+  z-index: 3;
 }
 
 .cv-enemy-sprite {
@@ -66,12 +107,22 @@
 .cv-enemy-sprite:hover:not(.is-dead) {
   transform: scale(1.06) translateY(-6px);
 }
-.cv-enemy-sprite.is-target {
-  filter: drop-shadow(0 0 18px rgba(200,160,96,0.95));
+/* 타겟 선택 — 애니메이션은 animations.css의 targetGlowPulse 처리 */
+.cv-enemy-sprite.is-target:not(.entering) {
+  /* 정적 fallback (애니 없는 환경용) */
+  filter: drop-shadow(0 0 18px rgba(200,160,96,0.90));
 }
-.cv-enemy-sprite.is-dead {
-  opacity: 0.20;
-  filter: grayscale(1);
+
+/* 사망 최종 상태 (just-died 애니 완료 후 유지) */
+.cv-enemy-sprite.is-dead:not(.just-died) {
+  opacity: 0.18;
+  filter: grayscale(1) brightness(0.6);
+  transform: scale(0.88) translateY(14px);
+  cursor: default;
+  pointer-events: none;
+  transition: none;
+}
+.cv-enemy-sprite.just-died {
   cursor: default;
   pointer-events: none;
 }
@@ -104,16 +155,18 @@
   gap: 6px;
   padding: 12px 16px 20px 16px;
   position: relative;
+  z-index: 3;
 }
 .cv-player-img {
   height: 280px;
   width: auto;
   object-fit: contain;
   border-radius: 8px;
-  filter: drop-shadow(0 8px 24px rgba(0,0,0,0.88));
+  filter: drop-shadow(0 8px 24px rgba(0,0,0,0.88))
+          drop-shadow(0 0 16px rgba(200,160,96,0.18));
   flex-shrink: 0;
   background: transparent;
-  mix-blend-mode: luminosity;
+  mix-blend-mode: normal;
 }
 
 /* ── 비주얼 HP 오버레이 (적 스프라이트 하단) ─────────── */
@@ -141,12 +194,15 @@
   background: rgba(255,255,255,0.15);
   border-radius: 2px;
   overflow: hidden;
+  position: relative;
 }
 .cv-hp-bar-fill {
+  position: relative;
   height: 100%;
   background: var(--text-good);
   border-radius: 2px;
   transition: width 0.3s;
+  z-index: 1;
 }
 .cv-hp-bar-fill.low  { background: var(--text-warn); }
 .cv-hp-bar-fill.crit { background: var(--text-danger); }
@@ -175,7 +231,7 @@
   color: var(--text-primary);
   text-align: left;
 }
-.cv-player-info .cv-hp-bar-track { height: 6px; }
+.cv-player-info .cv-hp-bar-track { height: 6px; position: relative; }
 .cv-player-info .cv-hp-text {
   font-size: 10px;
   text-align: left;
@@ -708,6 +764,11 @@
   opacity: 0.3;
   cursor: not-allowed;
 }
+.combat-action-btn:active:not(:disabled) {
+  transform: scale(0.94);
+  filter: brightness(1.25);
+  transition: transform 0.06s, filter 0.06s;
+}
 
 .combat-log {
   max-height: 140px;
@@ -751,6 +812,86 @@
   border-color: var(--text-secondary);
   color: var(--text-secondary);
   background: rgba(255,255,255,0.04);
+}
+
+/* Guard button */
+.combat-action-btn.guard {
+  border-color: rgba(100,160,255,0.5);
+  color: #7ab4f8;
+}
+.combat-action-btn.guard:hover {
+  background: rgba(100,160,255,0.10);
+  border-color: #7ab4f8;
+}
+.combat-action-btn.guard.active {
+  background: rgba(100,160,255,0.18);
+  border-color: #7ab4f8;
+  box-shadow: 0 0 8px rgba(100,160,255,0.35);
+}
+
+/* Throwable button */
+.combat-action-btn.throwable {
+  border-color: rgba(255,140,40,0.5);
+  color: #f39c12;
+}
+.combat-action-btn.throwable:hover {
+  background: rgba(255,140,40,0.12);
+  border-color: #f39c12;
+}
+
+/* Companion buttons */
+.combat-action-btn.companion {
+  border-color: rgba(160,100,255,0.5);
+  color: #c084fc;
+}
+.combat-action-btn.companion:hover:not(:disabled) {
+  background: rgba(160,100,255,0.12);
+  border-color: #c084fc;
+}
+.combat-action-btn.companion:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* Night warning banner */
+.combat-night-warning {
+  flex-shrink: 0;
+  padding: 5px 12px;
+  background: rgba(30,20,60,0.80);
+  border-bottom: 1px solid rgba(100,80,200,0.35);
+  color: #a78bfa;
+  font-size: 9px;
+  letter-spacing: 0.5px;
+  text-align: center;
+}
+
+/* Per-enemy status badges row */
+.cv-status-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  margin-top: 2px;
+}
+
+/* Affinity (weakness/resistance) badge */
+.affinity-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  font-size: 8px;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-weight: 700;
+  pointer-events: none;
+  z-index: 2;
+}
+.affinity-badge.weakness {
+  background: rgba(220,50,50,0.80);
+  color: #ffd0d0;
+}
+.affinity-badge.resistance {
+  background: rgba(40,80,180,0.80);
+  color: #c0d8ff;
 }
 
 /* === COMBAT RESULT === */

@@ -58,15 +58,24 @@ const BLUEPRINTS = {
     output: [{ definitionId: 'barricade', qty: 1 }],
     requiredTools: [],
     requiredSkills: { building: 2 },
-    stages: [{
-      stageIndex: 0, label: '방어벽 설치', tpCost: 3,
-      requiredItems: [
-        { definitionId: 'wood', qty: 3 },
-        { definitionId: 'nail', qty: 5 },
-        { definitionId: 'wire', qty: 1 },
-      ],
-      consumeAt: 'start',
-    }],
+    stages: [
+      {
+        stageIndex: 0, label: '골격 세우기', tpCost: 2,
+        requiredItems: [
+          { definitionId: 'wood', qty: 3 },
+          { definitionId: 'nail', qty: 5 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '와이어 강화', tpCost: 2,
+        requiredItems: [
+          { definitionId: 'wire', qty: 2 },
+          { definitionId: 'rope', qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
   },
 
   alarm_trap: {
@@ -434,16 +443,26 @@ const BLUEPRINTS = {
     output: [{ definitionId: 'emergency_kit', qty: 1 }],
     requiredTools: ['workbench'],
     requiredSkills: { crafting: 3, medicine: 2 },
-    stages: [{
-      stageIndex: 0, label: '키트 패킹', tpCost: 3,
-      requiredItems: [
-        { definitionId: 'first_aid_kit', qty: 1 },
-        { definitionId: 'painkiller', qty: 2 },
-        { definitionId: 'antibiotics', qty: 1 },
-        { definitionId: 'antiseptic', qty: 1 },
-      ],
-      consumeAt: 'start',
-    }],
+    stages: [
+      {
+        stageIndex: 0, label: '기본 구성', tpCost: 2,
+        requiredItems: [
+          { definitionId: 'first_aid_kit', qty: 1 },
+          { definitionId: 'antiseptic', qty: 1 },
+          { definitionId: 'splint', qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '약품 추가', tpCost: 2,
+        requiredItems: [
+          { definitionId: 'painkiller', qty: 2 },
+          { definitionId: 'antibiotics', qty: 1 },
+          { definitionId: 'gauze', qty: 2 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
   },
 
   brew_herbal_tea: {
@@ -552,15 +571,24 @@ const BLUEPRINTS = {
     output: [{ definitionId: 'spear', qty: 1 }],
     requiredTools: [],
     requiredSkills: { weaponcraft: 2 },
-    stages: [{
-      stageIndex: 0, label: '창 제작', tpCost: 2,
-      requiredItems: [
-        { definitionId: 'wood', qty: 1 },
-        { definitionId: 'rope', qty: 1 },
-        { definitionId: 'sharp_blade', qty: 1 },
-      ],
-      consumeAt: 'start',
-    }],
+    stages: [
+      {
+        stageIndex: 0, label: '자루 다듬기', tpCost: 2,
+        requiredItems: [
+          { definitionId: 'wood', qty: 2 },
+          { definitionId: 'rope', qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '촉 장착', tpCost: 2,
+        requiredItems: [
+          { definitionId: 'sharp_blade', qty: 1 },
+          { definitionId: 'wire', qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
   },
 
   make_crossbow: {
@@ -711,15 +739,24 @@ const BLUEPRINTS = {
     output: [{ definitionId: 'helmet', qty: 1 }],
     requiredTools: ['pipe_wrench'],
     requiredSkills: { armorcraft: 2 },
-    stages: [{
-      stageIndex: 0, label: '헬멧 성형', tpCost: 3,
-      requiredItems: [
-        { definitionId: 'scrap_metal', qty: 2 },
-        { definitionId: 'cloth', qty: 1 },
-        { definitionId: 'leather', qty: 1 },
-      ],
-      consumeAt: 'start',
-    }],
+    stages: [
+      {
+        stageIndex: 0, label: '금속 성형', tpCost: 2,
+        requiredItems: [
+          { definitionId: 'scrap_metal', qty: 2 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '내장재 부착', tpCost: 2,
+        requiredItems: [
+          { definitionId: 'cloth', qty: 1 },
+          { definitionId: 'leather', qty: 1 },
+          { definitionId: 'duct_tape', qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
   },
 
   make_raincoat: {

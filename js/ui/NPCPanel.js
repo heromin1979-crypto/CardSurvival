@@ -7,6 +7,13 @@ import NPCSystem from '../systems/NPCSystem.js';
 import { NPC_ITEMS } from '../data/npcs.js';
 import I18n      from '../core/I18n.js';
 
+const EMOTION_ICONS = {
+  calm:    { icon: '😌', label: '안정' },
+  hopeful: { icon: '🌟', label: '희망' },
+  anxious: { icon: '😰', label: '불안' },
+  trauma:  { icon: '💔', label: '외상' },
+};
+
 const NPCPanel = {
   _panel:            null,
   _toggle:           null,
@@ -34,6 +41,10 @@ const NPCPanel = {
     EventBus.on('npcDismissed',   ({ npcId })            => this._removeCard(npcId));
     EventBus.on('npcTrustChanged',({ npcId })            => this._updateCard(npcId));
     EventBus.on('npcSpawned',     ()                     => this._refresh());
+    EventBus.on('npcEmotionSet',   ({ npcId })   => this._updateCard(npcId));
+    EventBus.on('npcDispatched',   ({ npcId })   => this._updateCard(npcId));
+    EventBus.on('npcForageReturn', ({ npcId })   => this._updateCard(npcId));
+    EventBus.on('groupStatsUpdated', ({ stats }) => this._updateGroupStats(stats));
 
     // Show panel when first NPC appears
     EventBus.on('npcPanelAdd', () => this._panel.classList.remove('hidden'));
@@ -130,19 +141,53 @@ const NPCPanel = {
     if (neglect >= 3) el.classList.add('neglect-warn');
     if (neglect >= 5) el.classList.add('neglect-crit');
 
+    // Dispatched state
+    const dispatched = state.dispatched ?? false;
+    if (dispatched) el.classList.add('dispatched');
+
     // Quest indicator
-    const hasQuest = (state.activeQuest != null);
+    const hasQuest   = (state.activeQuest != null);
     const questBadge = hasQuest ? `<div class="npc-mini-quest-badge">❗</div>` : '';
+
+    // Emotion badge
+    const emotion     = state.emotion ?? 'calm';
+    const emoData     = EMOTION_ICONS[emotion] ?? EMOTION_ICONS.calm;
+    const emotionBadge = `<div class="npc-emotion-badge emotion-${emotion}">${emoData.icon} ${emoData.label}</div>`;
 
     el.innerHTML = `
       ${questBadge}
       <div class="npc-mini-icon">${icon}</div>
       <div class="npc-mini-name">${name}</div>
       <div class="npc-mini-trust">${stars}</div>
+      ${emotionBadge}
       ${hpBar}
     `;
-    el.addEventListener('click', () => EventBus.emit('openNPCDialogue', { npcId }));
+    el.addEventListener('click', () => {
+      if (!dispatched) EventBus.emit('openNPCDialogue', { npcId });
+    });
     return el;
+  },
+
+  // ── W-9: Group Stats update ─────────────────────────────────────
+
+  _updateGroupStats(stats) {
+    const panel = document.getElementById('npc-panel-group-stats');
+    if (!panel) return;
+
+    const companions = window.__GAME_DATA__ ? (window.GameState?.companions ?? []) : [];
+    panel.style.display = companions.length > 0 ? 'block' : 'none';
+
+    const set = (id, valId, val) => {
+      const fill = document.getElementById(id);
+      const span = document.getElementById(valId);
+      if (fill) fill.style.width = `${val}%`;
+      if (span) span.textContent = val;
+    };
+
+    set('gs-morale',   'gs-morale-val',   stats.morale   ?? 50);
+    set('gs-cohesion', 'gs-cohesion-val', stats.cohesion ?? 50);
+    set('gs-food',     'gs-food-val',     stats.food     ?? 50);
+    set('gs-safety',   'gs-safety-val',   stats.safety   ?? 50);
   },
 
   // ── Empty states ────────────────────────────────────────────────

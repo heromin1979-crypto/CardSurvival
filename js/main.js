@@ -49,6 +49,9 @@ import EcologySystem        from './systems/EcologySystem.js';
 import MentalSystem         from './systems/MentalSystem.js';
 import NPCSystem            from './systems/NPCSystem.js';
 import NPCQuestSystem       from './systems/NPCQuestSystem.js';
+import NPCRelationSystem    from './systems/NPCRelationSystem.js';
+import NPCGroupSystem       from './systems/NPCGroupSystem.js';
+import NPCStorySystem       from './systems/NPCStorySystem.js';
 import OnboardingSystem     from './systems/OnboardingSystem.js';
 import SecretCombinationSystem from './systems/SecretCombinationSystem.js';
 import BodySystem           from './systems/BodySystem.js';
@@ -138,6 +141,12 @@ function init() {
   EcologySystem.init();
   window.__EcologySystem__ = EcologySystem;  // LandmarkModal·SeoulMapModal에서 참조
   NPCSystem.init();
+  NPCRelationSystem.init();
+  NPCGroupSystem.init();
+  NPCStorySystem.init();
+  window.__NPCRelationSystem__ = NPCRelationSystem;
+  window.__NPCGroupSystem__    = NPCGroupSystem;
+  window.__NPCStorySystem__    = NPCStorySystem;
   OnboardingSystem.init();
   window.__NPCSystem__ = NPCSystem;         // CardFactory에서 참조 (MentalSystem보다 먼저 — companions 초기화)
   MentalSystem.init();
@@ -315,17 +324,44 @@ function _initNotifications() {
   });
 }
 
+function _hideLoadingOverlay() {
+  const overlay = document.getElementById('loading-overlay');
+  if (overlay) overlay.remove();
+}
+
+function _showLoadingError(e) {
+  console.error('[Game] Init failed:', e);
+  const overlay = document.getElementById('loading-overlay');
+  if (!overlay) return;
+  const text = overlay.querySelector('#loading-text');
+  const btn  = overlay.querySelector('#loading-refresh-btn');
+  const spinner = overlay.querySelector('#loading-spinner');
+  if (text) text.textContent = '게임을 불러오지 못했습니다.';
+  if (spinner) spinner.style.display = 'none';
+  if (btn) btn.style.display = 'block';
+}
+
 // Run on DOM ready — 모바일은 deviceready 이후 init
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', async () => {
-    await initMobileAdapter();
-    await initPurchaseManager();
-    init();
+    try {
+      await initMobileAdapter();
+      await initPurchaseManager();
+      init();
+      _hideLoadingOverlay();
+    } catch (e) {
+      _showLoadingError(e);
+    }
   });
 } else {
   (async () => {
-    await initMobileAdapter();
-    await initPurchaseManager();
-    init();
+    try {
+      await initMobileAdapter();
+      await initPurchaseManager();
+      init();
+      _hideLoadingOverlay();
+    } catch (e) {
+      _showLoadingError(e);
+    }
   })();
 }

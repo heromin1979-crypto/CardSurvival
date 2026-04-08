@@ -274,6 +274,112 @@
   animation: currentNodePulse 2s ease infinite;
 }
 
+/* ══════════════════════════════════════════════════════════
+   전투 화면 v2 애니메이션
+══════════════════════════════════════════════════════════ */
+
+/* ── 피격 플래시 (v2 셀렉터 수정) ── */
+.cv-enemy-sprite.hit,
+.cv-player.hit {
+  animation: hitFlash 0.35s ease;
+}
+
+/* ── 타겟 선택 펄스 (호흡하는 금빛 광원) ── */
+@keyframes targetGlowPulse {
+  0%, 100% { filter: drop-shadow(0 0 12px rgba(200,160,96,0.55))
+                     drop-shadow(0 0  4px rgba(255,220,140,0.20)); }
+  50%       { filter: drop-shadow(0 0 28px rgba(220,180,110,1.00))
+                     drop-shadow(0 0 10px rgba(255,220,140,0.70)); }
+}
+
+.cv-enemy-sprite.is-target:not(.is-dead):not(.entering) {
+  animation: targetGlowPulse 1.8s ease-in-out infinite;
+  /* 기존 정적 filter 덮어쓰기 */
+}
+
+/* ── 적 등장 애니메이션 (전투 시작 시만 적용) ── */
+@keyframes enemyEntry {
+  0%   { opacity: 0; transform: translateY(32px) scale(0.86); filter: brightness(2); }
+  65%  { opacity: 1; filter: brightness(1.1); }
+  100% { opacity: 1; transform: translateY(0)    scale(1);    filter: brightness(1); }
+}
+
+.cv-enemy-sprite.entering {
+  animation: enemyEntry 0.50s cubic-bezier(0.34, 1.36, 0.64, 1) both;
+}
+.cv-enemy-sprite.entering:nth-child(1) { animation-delay: 0.00s; }
+.cv-enemy-sprite.entering:nth-child(2) { animation-delay: 0.12s; }
+.cv-enemy-sprite.entering:nth-child(3) { animation-delay: 0.24s; }
+
+/* ── 적 사망 애니메이션 ── */
+@keyframes enemyDeath {
+  0%   { opacity: 1;    filter: grayscale(0)   brightness(1);   transform: scale(1)    translateY(0);   }
+  30%  { opacity: 0.85; filter: grayscale(0.3) brightness(1.6); transform: scale(1.04) translateY(-5px); }
+  70%  { opacity: 0.40; filter: grayscale(0.8) brightness(0.8); transform: scale(0.95) translateY(8px);  }
+  100% { opacity: 0.18; filter: grayscale(1)   brightness(0.6); transform: scale(0.88) translateY(14px); }
+}
+
+.cv-enemy-sprite.just-died {
+  animation: enemyDeath 0.65s ease forwards;
+  pointer-events: none;
+}
+
+/* ── 화면 흔들기 (크리티컬 히트) ── */
+@keyframes screenShake {
+  0%,100% { transform: translate(0,   0);   }
+  15%     { transform: translate(-5px, 2px); }
+  30%     { transform: translate( 4px,-3px); }
+  50%     { transform: translate(-3px, 2px); }
+  70%     { transform: translate( 3px,-1px); }
+  85%     { transform: translate(-2px, 1px); }
+}
+
+.combat-visual.shake {
+  animation: screenShake 0.40s ease;
+}
+
+/* ── 플레이어 HP 위험 가장자리 맥박 ── */
+@keyframes hpCritEdge {
+  0%, 100% { box-shadow: inset 0 0  0px  0px rgba(220,40,40,0);    }
+  50%      { box-shadow: inset 0 0 80px 24px rgba(220,40,40,0.38); }
+}
+
+.combat-visual.hp-crit {
+  animation: hpCritEdge 1.4s ease-in-out infinite;
+}
+
+/* ── 전투 로그 새 항목 슬라이드인 ── */
+@keyframes logSlideIn {
+  from { opacity: 0; transform: translateX(-10px); }
+  to   { opacity: 1; transform: translateX(0);     }
+}
+
+.combat-log-entry:last-child {
+  animation: logSlideIn 0.22s ease both;
+}
+
+/* ── 라운드 번호 펄스 ── */
+@keyframes roundFlash {
+  0%   { color: #ffffff; text-shadow: 0 0 10px rgba(255,255,255,0.9); }
+  100% { color: var(--accent-primary); text-shadow: none; }
+}
+
+.cp-title.round-pulse {
+  animation: roundFlash 0.55s ease forwards;
+}
+
+/* ── HP 감소 잔상 (ghost bar) 전환 ── */
+.cv-hp-bar-ghost {
+  position: absolute;
+  top: 0; left: 0;
+  height: 100%;
+  background: rgba(200,100,60,0.55);
+  border-radius: 2px;
+  transition: width 0.65s ease 0.10s;
+  z-index: 0;
+  pointer-events: none;
+}
+
 /* ── 모션 감소 모드 ── */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -297,3 +403,4 @@
   animation: criticalStatPulse 0.9s ease infinite;
   border-radius: 4px;
 }
+

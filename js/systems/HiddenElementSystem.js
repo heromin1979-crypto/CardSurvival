@@ -45,6 +45,7 @@ const HiddenElementSystem = {
   _checkHiddenLocations(districtId) {
     const gs    = GameState;
     const flags = gs.flags;
+    if (!flags?.hiddenLocationsDiscovered) return;
 
     for (const [locId, loc] of Object.entries(HIDDEN_LOCATIONS)) {
       if (loc.district !== districtId) continue;
@@ -249,6 +250,7 @@ const HiddenElementSystem = {
   /** 일반 탐색 중 보스 스폰 체크 (확률 기반) */
   checkBossSpawn(districtId, dangerLevel) {
     const gs = GameState;
+    if (!gs.flags?.bossesKilled) return false;
 
     for (const [bossId, boss] of Object.entries(SECRET_ENEMIES)) {
       if (gs.flags.bossesKilled.includes(bossId)) continue;
@@ -276,6 +278,7 @@ const HiddenElementSystem = {
 
   _recordBossKills() {
     const gs = GameState;
+    if (!gs.flags?.bossesKilled) return;
     const enemies = gs.combat.enemies ?? [];
     for (const enemy of enemies) {
       if (enemy.isBoss && enemy.currentHp <= 0 && enemy.id) {
@@ -316,6 +319,7 @@ const HiddenElementSystem = {
 
   _checkSecretEvents() {
     const gs = GameState;
+    if (!gs.flags?.secretEventsTriggered) return;
 
     for (const event of SECRET_EVENTS) {
       if (gs.flags.secretEventsTriggered.includes(event.id)) continue;
@@ -482,7 +486,7 @@ const HiddenElementSystem = {
     // 히든 장소 공개
     if (effects.revealHiddenLocation) {
       const locId = effects.revealHiddenLocation;
-      if (!gs.flags.hiddenLocationsDiscovered.includes(locId)) {
+      if (!gs.flags?.hiddenLocationsDiscovered?.includes(locId)) {
         const loc = HIDDEN_LOCATIONS[locId];
         if (loc) this._discoverHiddenLocation(locId, loc);
       }
@@ -578,12 +582,12 @@ const HiddenElementSystem = {
 
     // 히든 장소 발견 필요
     if (cond.hiddenLocationId) {
-      if (!gs.flags.hiddenLocationsDiscovered.includes(cond.hiddenLocationId)) return false;
+      if (!gs.flags?.hiddenLocationsDiscovered?.includes(cond.hiddenLocationId)) return false;
     }
 
     // 보스 처치 필요
     if (cond.bossKillId) {
-      if (!gs.flags.bossesKilled.includes(cond.bossKillId)) return false;
+      if (!gs.flags?.bossesKilled?.includes(cond.bossKillId)) return false;
     }
 
     // 캐릭터 조건
@@ -640,43 +644,43 @@ const HiddenElementSystem = {
 
   /** 해금된 히든 레시피 목록 반환 */
   getUnlockedRecipes() {
-    return GameState.flags.hiddenRecipesUnlocked
+    return (GameState.flags?.hiddenRecipesUnlocked ?? [])
       .map(id => HIDDEN_RECIPES[id])
       .filter(Boolean);
   },
 
   /** 특정 레시피가 해금됐는지 확인 */
   isRecipeUnlocked(recipeId) {
-    return GameState.flags.hiddenRecipesUnlocked.includes(recipeId);
+    return GameState.flags?.hiddenRecipesUnlocked?.includes(recipeId) ?? false;
   },
 
   /** 발견한 히든 장소 목록 */
   getDiscoveredLocations() {
-    return GameState.flags.hiddenLocationsDiscovered
+    return (GameState.flags?.hiddenLocationsDiscovered ?? [])
       .map(id => HIDDEN_LOCATIONS[id])
       .filter(Boolean);
   },
 
   /** 처치한 보스 목록 */
   getKilledBosses() {
-    return GameState.flags.bossesKilled
+    return (GameState.flags?.bossesKilled ?? [])
       .map(id => SECRET_ENEMIES[id])
       .filter(Boolean);
   },
 
   /** 전체 진행률 (발견/전체) */
   getProgress() {
-    const flags = GameState.flags;
+    const flags = GameState.flags ?? {};
     const totalLoc    = Object.keys(HIDDEN_LOCATIONS).length;
     const totalBoss   = Object.keys(SECRET_ENEMIES).length;
     const totalEvent  = SECRET_EVENTS.length;
     const totalRecipe = Object.keys(HIDDEN_RECIPES).length;
 
     return {
-      locations: { found: flags.hiddenLocationsDiscovered.length, total: totalLoc },
-      bosses:    { killed: flags.bossesKilled.length, total: totalBoss },
-      events:    { triggered: flags.secretEventsTriggered.length, total: totalEvent },
-      recipes:   { unlocked: flags.hiddenRecipesUnlocked.length, total: totalRecipe },
+      locations: { found: (flags.hiddenLocationsDiscovered?.length ?? 0), total: totalLoc },
+      bosses:    { killed: (flags.bossesKilled?.length ?? 0), total: totalBoss },
+      events:    { triggered: (flags.secretEventsTriggered?.length ?? 0), total: totalEvent },
+      recipes:   { unlocked: (flags.hiddenRecipesUnlocked?.length ?? 0), total: totalRecipe },
     };
   },
 };

@@ -49,10 +49,10 @@
   --slot-hover:      rgba(200,160,80,0.15);
 
   /* Card dimensions */
-  --card-w:          110px;
-  --card-h:          150px;
-  --slot-w:          120px;
-  --slot-h:          160px;
+  --card-w:          120px;
+  --card-h:          200px;
+  --slot-w:          130px;
+  --slot-h:          210px;
 
   /* Spacing */
   --gap-xs:  4px;

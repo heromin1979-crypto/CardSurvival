@@ -5,7 +5,7 @@ import GameState from './GameState.js';
 // Valid transitions: from → [allowed targets]
 const TRANSITIONS = {
   main_menu:      ['char_create', 'basecamp', 'ending_gallery'],
-  char_create:    ['basecamp'],
+  char_create:    ['basecamp', 'main_menu'],
   basecamp:       ['explore', 'encounter', 'rest', 'pause', 'game_over', 'ending', 'main_menu'],
   explore:        ['basecamp', 'encounter', 'rest', 'pause', 'ending'],
   encounter:      ['combat', 'explore', 'basecamp'],

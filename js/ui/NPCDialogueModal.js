@@ -9,6 +9,13 @@ import NPCSystem       from '../systems/NPCSystem.js';
 import NPCQuestSystem  from '../systems/NPCQuestSystem.js';
 import { NPC_ITEMS }   from '../data/npcs.js';
 
+const EMOTION_LABELS = {
+  calm:    '😌 안정',
+  hopeful: '🌟 희망',
+  anxious: '😰 불안',
+  trauma:  '💔 외상',
+};
+
 const NPCDialogueModal = {
   _overlay: null,
   _box:     null,
@@ -18,6 +25,9 @@ const NPCDialogueModal = {
     this._box     = document.getElementById('modal-box');
 
     EventBus.on('openNPCDialogue', ({ npcId }) => this.show(npcId));
+
+    // W-3: Dilemma modal
+    EventBus.on('showDilemma', (opts) => this._showDilemma(opts));
   },
 
   show(npcId) {
@@ -137,6 +147,42 @@ const NPCDialogueModal = {
         </div>`;
     }
 
+    // W-2: Emotion state display
+    const emotion = npcState.emotion ?? 'calm';
+    const emotionLabel = EMOTION_LABELS[emotion] ?? EMOTION_LABELS.calm;
+    const emotionHtml = isCompanion
+      ? `<div class="npc-emotion-badge emotion-${emotion}">${emotionLabel}</div>`
+      : '';
+
+    // W-7: Personal story arc progress
+    const storySystem = window.__NPCStorySystem__;
+    const arcProgress = storySystem?.getArcProgress(npcId);
+    let arcHtml = '';
+    if (arcProgress && isCompanion) {
+      arcHtml = `
+        <div class="npc-arc-section">
+          <div class="npc-arc-title">📖 개인 서사</div>
+          ${arcProgress.completed
+            ? `<div class="npc-arc-complete">✨ ${arcProgress.arc.completionLine}</div>`
+            : `<div class="npc-arc-hint">${arcProgress.hint}</div>`
+          }
+        </div>`;
+    }
+
+    // W-6: Dispatch button (companions only)
+    let dispatchHtml = '';
+    if (isCompanion) {
+      const dispatched = npcState.dispatched ?? false;
+      const groupSys = window.__NPCGroupSystem__;
+      dispatchHtml = `
+        <div class="npc-heal-section" style="margin-top:8px">
+          <button class="npc-action-btn dispatch ${dispatched ? 'active disabled' : ''}"
+                  id="npc-dispatch-btn" ${dispatched ? 'disabled' : ''}>
+            ${dispatched ? '🎒 파견 중...' : '🎒 자원 수집 파견'}
+          </button>
+        </div>`;
+    }
+
     // Companion heal section (V-5)
     let healHtml = '';
     if (isCompanion) {
@@ -166,6 +212,7 @@ const NPCDialogueModal = {
           <div class="npc-name">${name}</div>
           <div class="npc-trust">${trustDots}</div>
           ${isCompanion ? `<div class="npc-companion-badge">${I18n.t('npc.companionBadge')}</div>` : ''}
+          ${emotionHtml}
         </div>
         <div class="npc-dialogue-body">
           <div class="npc-speech-bubble">
@@ -173,7 +220,9 @@ const NPCDialogueModal = {
             ${hint ? `<p class="npc-hint">${hint}</p>` : ''}
           </div>
           ${questHtml}
+          ${arcHtml}
           ${healHtml}
+          ${dispatchHtml}
           ${companionHtml}
           ${tradeHtml}
         </div>
@@ -217,6 +266,15 @@ const NPCDialogueModal = {
       });
     }
 
+    // W-6: Dispatch button
+    const dispatchBtn = document.getElementById('npc-dispatch-btn');
+    if (dispatchBtn) {
+      dispatchBtn.addEventListener('click', () => {
+        EventBus.emit('npcDispatchForage', { npcId });
+        this._close();
+      });
+    }
+
     // Heal companion button (V-5)
     const healBtn = document.getElementById('npc-heal-btn');
     if (healBtn) {
@@ -256,6 +314,44 @@ const NPCDialogueModal = {
     if (!this._overlay) return;
     this._overlay.classList.remove('open');
     GameState.ui.modalOpen = false;
+  },
+
+  // ── W-3: Dilemma Modal ─────────────────────────────────────────
+
+  _showDilemma({ dilemmaId, title, body, choices, onChoice }) {
+    // Create overlay
+    const existing = document.getElementById('dilemma-overlay');
+    if (existing) existing.remove();
+
+    const overlay = document.createElement('div');
+    overlay.id        = 'dilemma-overlay';
+    overlay.className = 'dilemma-overlay';
+
+    const choicesHtml = choices.map(c => `
+      <button class="dilemma-choice-btn" data-choice="${c.id}">
+        ${c.label}
+        ${c.effect?.memo ? `<div class="dilemma-choice-memo">${c.effect.memo}</div>` : ''}
+      </button>
+    `).join('');
+
+    overlay.innerHTML = `
+      <div class="dilemma-modal">
+        <div class="dilemma-title">⚠️ ${title}</div>
+        <div class="dilemma-body">${body}</div>
+        <div class="dilemma-choices">${choicesHtml}</div>
+      </div>
+    `;
+
+    document.getElementById('app')?.appendChild(overlay);
+
+    // Bind choice buttons (no close-on-bg-click — must choose)
+    overlay.querySelectorAll('.dilemma-choice-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const choiceId = btn.dataset.choice;
+        overlay.remove();
+        onChoice?.(choiceId);
+      });
+    });
   },
 };
 

@@ -2,6 +2,15 @@
 // 게임 밸런스 상수를 한 곳에서 관리. 시스템들은 이 파일의 값을 참조한다.
 
 const BALANCE = {
+  // ── 설계 목표 ────────────────────────────────────────
+  // 300일 시뮬레이션 기준 생존율 목표: 10~20%
+  // 현재 측정값(firefighter 100회 sim): 13.3% → 목표 범위 내
+  // 목표를 벗어날 경우 stats.decay 값 조정으로 재조율
+  design: {
+    survivalRateTargetMin: 0.10,
+    survivalRateTargetMax: 0.20,
+  },
+
   // ── 스탯 감소율 (/TP) ──────────────────────────────
   stats: {
     hydrationDecayPerTP:  1.5,   // (기존 2.0 → 1.5로 완화)
@@ -62,6 +71,24 @@ const BALANCE = {
     },
   },
 
+  // ── 제작 품질 (스택 불가 아이템에만 적용) ───────────────
+  quality: {
+    tiers: {
+      normal:     { label: '일반', mult: 1.00, notify: null },
+      good:       { label: '양호', mult: 1.15, notify: '꽤 잘 만들어졌다.' },
+      excellent:  { label: '우수', mult: 1.30, notify: '훌륭한 솜씨가 느껴진다!' },
+      masterwork: { label: '걸작', mult: 1.50, notify: '완벽한 걸작이 완성됐다!' },
+    },
+    // qualityScore 임계값 (랜덤 0~1 + 보너스)
+    thresholds: { masterwork: 1.15, excellent: 0.80, good: 0.45 },
+    skillBonusPerLevel:   0.08,  // 요구 레벨 초과 1레벨당
+    focusBonusSolo:       0.12,  // 큐 1개 (집중 제작)
+    focusPenaltyFull:     0.05,  // 큐 꽉 참
+    moraleBonusHigh:      0.08,  // 사기 높음
+    moralePenaltyLow:     0.10,  // 사기 낮음
+    moralePenaltyDespair: 0.20,  // 절망 상태
+  },
+
   // ── 전투 ────────────────────────────────────────────
   combat: {
     fleeChance:         0.6,
@@ -78,6 +105,19 @@ const BALANCE = {
     critBonusXp:        2,
     defenseXp:          1,
     combatLogMaxEntries: 50,
+    // ── 방어 ──
+    guardDamageReduction: 0.40,  // 방어 시 피해 40% 감소
+    guardCounterBonus:    0.25,  // 방어 후 반격 데미지 +25%
+    guardDuration:        1,     // 방어 지속 턴
+    // ── 야간 전투 ──
+    nightAccuracyPenalty: 0.15,  // 야간 전투 명중률 -15%
+    nightLitPenalty:      0.07,  // 광원 보유 시 야간 패널티 완화 (-7%만 적용)
+    // ── 약점/저항 ──
+    weaponWeaknessMult:   1.50,  // 약점 속성 데미지 ×1.5
+    weaponResistanceMult: 0.60,  // 저항 속성 데미지 ×0.6
+    // ── NPC 동행 액션 쿨다운 ──
+    companionAttackCooldown: 3,
+    companionHealCooldown:   4,
   },
 
   // ── 캠프파이어 ──────────────────────────────────────

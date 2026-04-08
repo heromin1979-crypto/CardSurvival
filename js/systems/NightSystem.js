@@ -22,6 +22,8 @@ const NightSystem = {
     if (!gs.flags.firstNightHintShown) {
       gs.flags.firstNightHintShown = true;
       EventBus.emit('notify', { message: I18n.t('night.firstNightHint'), type: 'info' });
+      // Trigger night watch proposal on first night
+      EventBus.emit('nightStarted');
     }
 
     const items = window.__GAME_DATA__?.items ?? {};

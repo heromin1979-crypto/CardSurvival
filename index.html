@@ -34,6 +34,7 @@
   <link rel="stylesheet" href="css/mobile.css">
   <link rel="stylesheet" href="css/cinematic.css">
   <link rel="stylesheet" href="css/npc-panel.css">
+  <link rel="stylesheet" href="css/npc-group.css">
 </head>
 <body>
 <div id="app">
@@ -157,9 +158,55 @@
         <div class="npc-panel-section-title">📍 현재 위치</div>
         <div id="npc-panel-location-list" class="npc-panel-list is-empty"></div>
       </div>
+      <!-- W-9: Group stats -->
+      <div id="npc-panel-group-stats" class="group-stats-panel" style="display:none">
+        <div class="group-stats-title">📊 그룹 상태</div>
+        <div class="group-stat-row">
+          <span class="group-stat-label">사기</span>
+          <div class="group-stat-bar"><div class="group-stat-fill morale" id="gs-morale" style="width:50%"></div></div>
+          <span class="group-stat-value" id="gs-morale-val">50</span>
+        </div>
+        <div class="group-stat-row">
+          <span class="group-stat-label">결속</span>
+          <div class="group-stat-bar"><div class="group-stat-fill cohesion" id="gs-cohesion" style="width:50%"></div></div>
+          <span class="group-stat-value" id="gs-cohesion-val">50</span>
+        </div>
+        <div class="group-stat-row">
+          <span class="group-stat-label">식량</span>
+          <div class="group-stat-bar"><div class="group-stat-fill food" id="gs-food" style="width:50%"></div></div>
+          <span class="group-stat-value" id="gs-food-val">50</span>
+        </div>
+        <div class="group-stat-row">
+          <span class="group-stat-label">안전</span>
+          <div class="group-stat-bar"><div class="group-stat-fill safety" id="gs-safety" style="width:50%"></div></div>
+          <span class="group-stat-value" id="gs-safety-val">50</span>
+        </div>
+      </div>
     </div>
   </div>
 
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!--  LOADING OVERLAY                          -->
+<!-- ═══════════════════════════════════════════ -->
+<div id="loading-overlay" style="
+  position:fixed;inset:0;z-index:9999;
+  background:#000;opacity:0.96;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  font-family:'JetBrains Mono',monospace;color:#c8a060;gap:16px;">
+  <div id="loading-spinner" style="
+    width:32px;height:32px;border:2px solid #333;
+    border-top-color:#c8a060;border-radius:50%;
+    animation:spin 0.8s linear infinite;"></div>
+  <p id="loading-text" style="font-size:13px;letter-spacing:0.05em;margin:0;">게임 로딩 중...</p>
+  <button id="loading-refresh-btn" onclick="location.reload()" style="
+    display:none;margin-top:8px;padding:6px 16px;
+    background:transparent;border:1px solid #c8a060;color:#c8a060;
+    font-family:inherit;font-size:12px;cursor:pointer;border-radius:2px;">
+    새로고침
+  </button>
+  <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
 </div>
 
 <!-- ES6 modules: no bundler needed -->

@@ -19,6 +19,8 @@ const ENEMIES = {
     aiPattern: 'normal',
     specialSkills: [],
     statusInflict: null,
+    weaknesses: ['fire', 'blade'],
+    resistances: [],
     description: '감염된 도시 생존자. 느리지만 위험하다.',
     stealthDifficulty: 0.5,
   },
@@ -40,6 +42,8 @@ const ENEMIES = {
     aiPattern: 'aggressive',
     specialSkills: [],
     statusInflict: { id: 'bleed', name: '출혈', duration: 3, effect: { hpLossPerRound: 3 } },
+    weaknesses: ['bullet', 'fire'],
+    resistances: [],
     description: '빠르고 공격적인 변이 좀비.',
     stealthDifficulty: 0.7,
   },
@@ -62,6 +66,8 @@ const ENEMIES = {
     aiPattern: 'defensive',
     specialSkills: [{ id: 'slam', name: '강타', damage: [30, 45], cooldown: 3, stunChance: 0.5 }],
     statusInflict: null,
+    weaknesses: ['fire', 'explosive'],
+    resistances: ['blunt', 'blade'],
     description: '방사선 노출로 거대화된 변이 좀비.',
     stealthDifficulty: 0.3,
   },
@@ -86,6 +92,8 @@ const ENEMIES = {
     aiPattern: 'aggressive',
     specialSkills: [],
     statusInflict: null,
+    weaknesses: ['blade'],
+    resistances: ['bullet'],
     description: '무장한 생존자. 협상 불가.',
     stealthDifficulty: 0.8,
   },
@@ -110,6 +118,8 @@ const ENEMIES = {
     aiPattern: 'aggressive',
     specialSkills: [{ id: 'aimed_shot', name: '정조준', damage: [25, 40], cooldown: 3, stunChance: 0.3 }],
     statusInflict: null,
+    weaknesses: [],
+    resistances: ['bullet', 'blade'],
     description: '전투 경험이 풍부한 정예 약탈자. 정조준 사격이 치명적이다.',
     stealthDifficulty: 0.85,
   },
@@ -135,6 +145,8 @@ const ENEMIES = {
     aiPattern: 'horde',
     specialSkills: [],
     statusInflict: null,
+    weaknesses: ['fire', 'explosive'],
+    resistances: [],
     description: '3~5마리가 함께 몰려오는 좀비 무리. 매 라운드 두 번 공격한다.',
     stealthDifficulty: 0.85,
   },
@@ -159,6 +171,8 @@ const ENEMIES = {
     specialSkills: [],
     statusInflict: { id: 'bleed', name: '출혈', duration: 2, effect: { hpLossPerRound: 4 } },
     onHitEffect: { infection: 8 },
+    weaknesses: ['blade', 'bullet'],
+    resistances: [],
     description: '광견병에 감염된 개. 빠르고 민첩하며 매 라운드 두 번 공격한다.',
     stealthDifficulty: 0.70,
   },
@@ -183,6 +197,8 @@ const ENEMIES = {
     aiPattern: 'normal',
     specialSkills: [],
     statusInflict: { id: 'acid_burn', name: '산성 화상', duration: 2, effect: { hpLossPerRound: 5, infection: 5 } },
+    weaknesses: ['fire', 'bullet'],
+    resistances: ['blade'],
     description: '산성 체액을 분사하는 특수 감염자. 명중 시 감염·방사선이 추가 상승한다.',
     stealthDifficulty: 0.6,
   },
@@ -250,10 +266,11 @@ function rollEnemy(dangerLevel) {
         currentHp: hp,
         maxHp:     hp,
         _skillCooldowns: {},
+        _statusEffects: [],
       };
     }
   }
-  return { ...ENEMIES['zombie_common'], currentHp: 30, maxHp: 30, _skillCooldowns: {} };
+  return { ...ENEMIES['zombie_common'], currentHp: 30, maxHp: 30, _skillCooldowns: {}, _statusEffects: [] };
 }
 
 /**

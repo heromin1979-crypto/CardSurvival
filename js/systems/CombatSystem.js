@@ -12,6 +12,14 @@ import BodySystem    from './BodySystem.js';
 import { rollEnemyGroup } from '../data/enemies.js';
 import BALANCE from '../data/gameBalance.js';
 import CharDialogue from '../data/charDialogues.js';
+import NightSystem from './NightSystem.js';
+import {
+  guardAction, consumeGuard,
+  throwableAction,
+  applyMultiTarget,
+  companionAttack, companionHeal,
+  tickCompanionCooldowns, tickEnemyStatusEffects,
+} from './CombatActions.js';
 
 const CombatSystem = {
   init() {
@@ -56,6 +64,7 @@ const CombatSystem = {
       playerStatus: [],
       enemyStatus:  [],
       _encounterData: data,
+      _isNew:       true,   // 첫 렌더링 진입 애니메이션 트리거용
     };
     EventBus.emit('combatStarted', {});
 
@@ -122,6 +131,20 @@ const CombatSystem = {
       case 'melee':
       case 'shoot':
         logEntry = this._attackAction(action, weaponInstanceId, target);
+        break;
+      case 'guard':
+        guardAction();
+        logEntry = I18n.t('combatSys.guardStart');
+        break;
+      case 'throwable':
+        logEntry = throwableAction(weaponInstanceId, this);
+        if (!gs.combat.active) return; // smoke bomb fled
+        break;
+      case 'companionAttack':
+        logEntry = companionAttack(this);
+        break;
+      case 'companionHeal':
+        logEntry = companionHeal(this);
         break;
       case 'stealth':
         logEntry = this._stealthAction();
@@ -242,6 +265,12 @@ const CombatSystem = {
     // 사기 구간별 명중률 보정
     const moraleTierAcc = StatSystem.getMoraleTier();
     accuracy = Math.max(0.1, Math.min(1, accuracy + (moraleTierAcc.accBonus ?? 0)));
+
+    // 야간 전투 명중률 패널티
+    if (NightSystem.isNight()) {
+      const hasLight = gs.getBoardCards().some(c => gs.getCardDef(c.instanceId)?.tags?.includes('light_source') && (c.durability ?? 100) > 0);
+      accuracy = Math.max(0.1, accuracy - (hasLight ? BALANCE.combat.nightLitPenalty : BALANCE.combat.nightAccuracyPenalty));
+    }
     const hit = Math.random() < accuracy;
     if (hit) {
       const effectiveCritChance = Math.min(1, critChance + (gs.player.critBonus ?? 0));
@@ -261,8 +290,34 @@ const CombatSystem = {
       // 사기 구간별 데미지 배율
       const moraleTier = StatSystem.getMoraleTier();
       damage = Math.floor(damage * (moraleTier.dmgMult ?? 1.0));
+
+      // 약점/저항 배율 + 방어 반격 보너스
+      if (weaponId && gs.cards[weaponId]) {
+        const wType = gs.getCardDef(weaponId)?.weaponType;
+        if (wType && enemy.weaknesses?.includes(wType)) {
+          damage = Math.floor(damage * BALANCE.combat.weaponWeaknessMult);
+          gs.combat.log.push(I18n.t('combatSys.weakness', { type: wType }));
+        } else if (wType && enemy.resistances?.includes(wType)) {
+          damage = Math.floor(damage * BALANCE.combat.weaponResistanceMult);
+          gs.combat.log.push(I18n.t('combatSys.resistance', { type: wType }));
+        }
+      }
+      if (gs.combat.playerGuard?.active) {
+        damage = Math.floor(damage * (1 + gs.combat.playerGuard.counterBonus));
+        gs.combat.playerGuard = null;
+      }
+
       const finalDmg = Math.max(1, damage - (enemy.defense ?? 0));
       enemy.currentHp = Math.max(0, enemy.currentHp - finalDmg);
+
+      // 다중 타겟 (창/산탄총)
+      if (weaponId && gs.cards[weaponId]) {
+        const mDef = gs.getCardDef(weaponId);
+        if (mDef?.multiTarget > 1) {
+          const extraLogs = applyMultiTarget(finalDmg, mDef, gs.combat.targetIndex, this);
+          for (const el of extraLogs) gs.combat.log.push(el);
+        }
+      }
       gs.combat.lastHit = { target: 'enemy', damage: finalDmg, isCrit, enemyIndex: gs.combat.targetIndex };
 
       // XP 획득
@@ -438,6 +493,11 @@ const CombatSystem = {
         damage = Math.max(1, Math.floor(damage * (1 - totalReduct)));
       }
 
+      // 방어(Guard) 중: 피해 감소
+      if (gs.combat.playerGuard?.active) {
+        damage = Math.max(1, Math.floor(damage * (1 - gs.combat.playerGuard.damageReduce)));
+      }
+
       // 도주 실패 시 1.5배 피해 (등을 보인 페널티)
       if (gs.combat._fleeFailed) {
         damage = Math.floor(damage * 1.5);
@@ -497,8 +557,7 @@ const CombatSystem = {
   // ── 상태이상 틱 ────────────────────────────────────────
 
   _tickStatusEffects() {
-    const gs     = GameState;
-    const target = this._getTarget();
+    const gs = GameState;
 
     gs.combat.playerStatus = gs.combat.playerStatus.filter(s => {
       if (s.effect.hpLossPerRound) {
@@ -510,8 +569,15 @@ const CombatSystem = {
       return s.duration > 0;
     });
 
+    // per-enemy 상태이상 틱 (AoE 투척 효과 포함)
+    for (const enemy of this.getAliveEnemies()) {
+      tickEnemyStatusEffects(enemy, msg => gs.combat.log.push(msg));
+    }
+
+    // 레거시 enemyStatus 틱 (단일 타겟용 하위호환)
+    const target = this._getTarget();
     if (target) {
-      gs.combat.enemyStatus = gs.combat.enemyStatus.filter(s => {
+      gs.combat.enemyStatus = (gs.combat.enemyStatus ?? []).filter(s => {
         if (s.effect.hpLossPerRound) {
           target.currentHp = Math.max(0, target.currentHp - s.effect.hpLossPerRound);
           gs.combat.log.push(I18n.t('combatSys.statusTickEnemy', { name: s.name, target: I18n.enemyName(target.id, target.name), dmg: s.effect.hpLossPerRound }));
@@ -520,6 +586,12 @@ const CombatSystem = {
         return s.duration > 0;
       });
     }
+
+    // 동행 쿨다운 틱
+    tickCompanionCooldowns();
+
+    // 방어 상태 만료
+    if (gs.combat.playerGuard?.active) consumeGuard();
   },
 
   // ── 적 사망 처리 (개별) ────────────────────────────────
@@ -714,6 +786,14 @@ const CombatSystem = {
       const def = GameState.getCardDef(c.instanceId);
       if (!def || def.type === 'location') return false;
       return def.tags?.includes('medical');
+    });
+  },
+
+  getAvailableThrowables() {
+    return GameState.getBoardCards().filter(c => {
+      const def = GameState.getCardDef(c.instanceId);
+      if (!def) return false;
+      return def.subtype === 'throwable' || def.tags?.includes('throwable');
     });
   },
 };

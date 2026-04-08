@@ -57,11 +57,19 @@ const HIDDEN_RECIPES = {
     requiredSkills: { weaponcraft: 5, crafting: 3 },
     stages: [
       {
-        stageIndex: 0, label: '화살 개조', tpCost: 2,
+        stageIndex: 0, label: '기폭 장치 제작', tpCost: 2,
         requiredItems: [
-          { definitionId: 'crossbow_bolt', qty: 3 },
           { definitionId: 'gunpowder', qty: 1 },
           { definitionId: 'wire', qty: 1 },
+          { definitionId: 'electronic_parts', qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '화살 장착', tpCost: 2,
+        requiredItems: [
+          { definitionId: 'crossbow_bolt', qty: 3 },
+          { definitionId: 'duct_tape', qty: 1 },
         ],
         consumeAt: 'start',
       },
@@ -405,11 +413,18 @@ const HIDDEN_RECIPES = {
     requiredSkills: { crafting: 4, medicine: 3 },
     stages: [
       {
-        stageIndex: 0, label: '조합', tpCost: 2,
+        stageIndex: 0, label: '재료 농축', tpCost: 2,
         requiredItems: [
           { definitionId: 'stamina_tonic', qty: 2 },
           { definitionId: 'alcohol_solution', qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '배합 및 정제', tpCost: 2,
+        requiredItems: [
           { definitionId: 'painkiller', qty: 1 },
+          { definitionId: 'gauze', qty: 1 },
         ],
         consumeAt: 'start',
       },
@@ -478,13 +493,28 @@ const HIDDEN_RECIPES = {
     requiredSkills: { cooking: 7 },
     stages: [
       {
-        stageIndex: 0, label: '요리', tpCost: 3,
+        stageIndex: 0, label: '재료 손질', tpCost: 2,
         requiredItems: [
-          { definitionId: 'canned_food', qty: 1 },
-          { definitionId: 'cooked_rice', qty: 1 },
-          { definitionId: 'dried_meat', qty: 1 },
           { definitionId: 'purified_water', qty: 1 },
+          { definitionId: 'dried_meat', qty: 1 },
+          { definitionId: 'salt', qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '조리', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'cooked_rice', qty: 1 },
+          { definitionId: 'canned_food', qty: 1 },
+          { definitionId: 'herb', qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 2, label: '영양 마무리', tpCost: 2,
+        requiredItems: [
           { definitionId: 'vitamins', qty: 1 },
+          { definitionId: 'energy_bar', qty: 1 },
         ],
         consumeAt: 'start',
       },
@@ -792,12 +822,20 @@ const HIDDEN_RECIPES = {
     requiredSkills: { weaponcraft: 4, crafting: 3 },
     stages: [
       {
-        stageIndex: 0, label: '지뢰 조립', tpCost: 3,
+        stageIndex: 0, label: '폭발체 조립', tpCost: 2,
         requiredItems: [
           { definitionId: 'gunpowder', qty: 2 },
-          { definitionId: 'scrap_metal', qty: 3 },
+          { definitionId: 'scrap_metal', qty: 2 },
+          { definitionId: 'rubber', qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '기폭 회로 연결', tpCost: 2,
+        requiredItems: [
           { definitionId: 'wire', qty: 2 },
           { definitionId: 'electronic_parts', qty: 1 },
+          { definitionId: 'scrap_metal', qty: 1 },
         ],
         consumeAt: 'start',
       },

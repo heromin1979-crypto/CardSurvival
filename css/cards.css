@@ -32,6 +32,24 @@
 .card[data-rarity="rare"]     { border-color: var(--rarity-rare);     box-shadow: 0 0 8px rgba(50,80,160,0.35); }
 .card[data-rarity="unique"]   { border-color: var(--rarity-unique);   box-shadow: 0 0 10px rgba(150,80,40,0.4); }
 
+/* Quality glow (rarity 글로우 위에 덧씌움) */
+.card[data-quality="good"]       { box-shadow: 0 0 8px rgba(50,180,80,0.40); }
+.card[data-quality="excellent"]  { box-shadow: 0 0 11px rgba(60,110,230,0.50); }
+.card[data-quality="masterwork"] { box-shadow: 0 0 16px rgba(210,165,20,0.60); }
+
+/* Quality badge */
+.card-quality-badge {
+  font-size: 9px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  flex-shrink: 0;
+}
+.quality-good      { background: #1e4028; color: #6ee089; }
+.quality-excellent { background: #142050; color: #7ab4f8; }
+.quality-masterwork { background: #3d2800; color: #f5c430; }
+
 /* Card header */
 .card-header {
   padding: 4px 6px 2px;
@@ -108,10 +126,11 @@
 
 .card-art {
   flex: 1;
+  min-height: 100px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 32px;
+  font-size: 40px;
   opacity: 0.7;
 }
 

@@ -1,6 +1,7 @@
 // === AUTO SAVE ===
 import EventBus  from '../core/EventBus.js';
 import GameState from '../core/GameState.js';
+import I18n      from '../core/I18n.js';
 import SaveManager from './SaveManager.js';
 
 const AutoSave = {
@@ -46,7 +47,10 @@ const AutoSave = {
         playerName: GameState.player.name,
         savedAt: new Date().toISOString(),
       }));
-    } catch(e) { console.warn('[AutoSave] Failed:', e); }
+    } catch(e) {
+      console.warn('[AutoSave] Failed:', e);
+      EventBus.emit('notify', { message: I18n.t('save.saveFailed'), type: 'danger' });
+    }
   },
 };
 
