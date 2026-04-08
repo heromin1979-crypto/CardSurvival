@@ -1,5 +1,16 @@
 # Card Survival: Ruined City — Project Guide
 
+## 기술 스택
+- 바닐라 JS (모듈), CSS 변수, Vite 번들러
+- 고정 해상도 1920×1080 (Scale 방식, `main.js`)
+- Capacitor (Android/iOS 빌드), Electron (PC 빌드)
+
+## 보드 레이아웃 규칙
+- 장소(top) / 바닥(middle): 10칸 flex, `flex: 1 1 0` on slots
+- 휴대(bottom): 20칸 `grid 10열×2행`, 기본 10칸 활성, 가방 장착 시 `extraSlots`만큼 추가 해금
+- 슬롯 수 고정: `ROW_CONFIG.slots` 사용 (GameState 배열 길이 참조 금지)
+- `--card-h: 155px` = 장소 행 참고값, 바닥/휴대는 flex로 결정
+
 ## Design System
 Always read DESIGN.md before making any visual or UI decisions.
 All font choices, colors, spacing, and aesthetic direction are defined there.

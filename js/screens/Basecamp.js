@@ -73,6 +73,8 @@ const Basecamp = {
     }
     // 날씨 표시 갱신
     WeatherSystem.renderHUD();
+    // 미니맵 SVG 미리보기 렌더링
+    SeoulMapModal.renderMinimap();
   },
 
   _buildLayout() {
@@ -80,8 +82,11 @@ const Basecamp = {
       <aside class="bc-sidebar">
         <!-- Minimap -->
         <div class="bc-minimap" data-action="open-seoul-map" title="${I18n.t('basecamp.viewMap')}">
-          <span>🗺</span>
-          <span class="bc-minimap-label">${I18n.t('basecamp.cityMap')}</span>
+          <div class="bc-minimap-header">
+            <span>🗺</span>
+            <span class="bc-minimap-label">${I18n.t('basecamp.cityMap')}</span>
+          </div>
+          <div class="bc-minimap-preview" id="minimap-preview"></div>
         </div>
 
         <!-- Day / Time / TP -->

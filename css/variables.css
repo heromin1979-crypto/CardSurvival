@@ -51,9 +51,9 @@
   /* Card dimensions — 1920×1080 설계 기준 (Scale 방식으로 전체 확대/축소) */
   /* 4행 레이아웃: slot-h는 board-row-slots의 flex:1 결과보다 작아야 오버플로 없음.
      안전값으로 충분히 작게 설정 — 행 간 텍스트 가시성 확보. */
-  --card-w:          115px;
-  --card-h:          155px;   /* 헤더(28px) + 이미지(127px) = 충분한 여유 */
-  --slot-w:          124px;
+  --card-w:          151px;
+  --card-h:          155px;   /* location-card(장소 행) 고정 높이 참고값 — 바닥/휴대 행은 flex로 결정 */
+  --slot-w:          161px;   /* (1720 - 24 - 8 - 2 - 9×8) / 10 = 161.4 → 10칸 정렬 */
   --slot-h:          155px;   /* 미사용 (slot height: 100%) — 참고용 */
 
   /* Spacing */
