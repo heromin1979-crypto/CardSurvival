@@ -1,7 +1,7 @@
 /* === CARD COMPONENT === */
 .card {
   width: var(--card-w);
-  height: var(--card-h);
+  height: 100%;               /* 슬롯 높이를 동적으로 채움 — 고정값 제거 */
   background: var(--bg-raised);
   border: 2px solid var(--rarity-common);
   border-radius: var(--radius-md);

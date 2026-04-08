@@ -101,17 +101,17 @@
   border-color: rgba(100,80,60,0.3);
 }
 
-/* Card within slot */
+/* Card within slot — 슬롯 높이를 100% 채움 (고정 높이로 위로 삐져나와 행 레이블에 가리는 현상 방지) */
 .slot .card {
   position: absolute;
-  top: 50%;
+  top: 0;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translateX(-50%);
+  height: 100%;
 }
 
-/* hover: 고정 3px 위로 — 퍼센트 기반은 overflow-y:hidden 경계를 벗어나 잘릴 수 있음 */
 .slot .card:hover {
-  transform: translate(-50%, calc(-50% - 3px));
+  transform: translateX(-50%) translateY(-3px);
 }
 
 /* Row section colors */
