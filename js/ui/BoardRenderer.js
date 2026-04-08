@@ -192,7 +192,11 @@ const BoardRenderer = {
 
         el.classList.remove('spawning');
         el.style.transition    = 'none';
-        el.style.transform     = `translate(${dx}px, ${dy}px)`;
+        // CSS가 translate(-50%, -50%)로 카드를 슬롯 중심에 배치하므로,
+        // inline transform이 이를 덮을 때 절반 크기만큼 보정해야 시각적 시작 위치가 정확하다.
+        const halfW = el.offsetWidth  / 2;
+        const halfH = el.offsetHeight / 2;
+        el.style.transform     = `translate(${dx - halfW}px, ${dy - halfH}px)`;
         el.style.pointerEvents = 'none'; // 이동 중 클릭 방지
 
         // layout flush: 브라우저가 시작 위치를 확정한 뒤 전환 시작

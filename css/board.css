@@ -109,8 +109,9 @@
   transform: translate(-50%, -50%);
 }
 
+/* hover: 고정 3px 위로 — 퍼센트 기반은 overflow-y:hidden 경계를 벗어나 잘릴 수 있음 */
 .slot .card:hover {
-  transform: translate(-50%, -55%);
+  transform: translate(-50%, calc(-50% - 3px));
 }
 
 /* Row section colors */
