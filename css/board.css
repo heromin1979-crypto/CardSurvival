@@ -13,6 +13,7 @@
 .board-row {
   flex: 1;
   min-height: 0;
+  overflow: hidden;           /* 자식이 행 경계를 벗어나지 않도록 */
   display: flex;
   flex-direction: column;
   gap: var(--gap-xs);
@@ -36,7 +37,7 @@
   gap: var(--gap-sm);
   flex-wrap: nowrap;          /* 줄 바꿈 없음 — 가로 스크롤로 처리 */
   flex: 1;
-  min-height: var(--slot-h);  /* clamp 하한값이 최소 높이 보장 */
+  min-height: 0;              /* flex:1이 높이를 결정 — min-height가 행 높이를 초과하지 않도록 */
   overflow-x: auto;           /* 카드 많을 때 행 내 가로 스크롤 */
   overflow-y: hidden;
   align-items: center;
