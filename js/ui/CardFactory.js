@@ -5,6 +5,7 @@ import StatSystem      from '../systems/StatSystem.js';
 import EventBus        from '../core/EventBus.js';
 import SystemRegistry  from '../core/SystemRegistry.js';
 import I18n      from '../core/I18n.js';
+import GameData  from '../data/GameData.js';
 
 // 위험도 색상
 const DANGER_COLORS = ['#449944', '#889933', '#cc8822', '#cc3333', '#881111'];
@@ -355,7 +356,7 @@ const CardFactory = {
 
     // ── 제작 진행 카드 ─────────────────────────────────────
     if (inst._crafting) {
-      const def = window.__GAME_DATA__.items[inst.definitionId];
+      const def = GameData.items[inst.definitionId];
       const el = document.createElement('div');
       el.dataset.instanceId   = instanceId;
       el.dataset.definitionId = inst.definitionId;
@@ -366,7 +367,7 @@ const CardFactory = {
       return el;
     }
 
-    const def  = window.__GAME_DATA__.items[inst.definitionId];
+    const def  = GameData.items[inst.definitionId];
     if (!def)  return null;
 
     const el = document.createElement('div');
@@ -522,7 +523,7 @@ const CardFactory = {
     }
 
     const districtId = def.id?.replace(/^lm_/, '');
-    const district   = window.__GAME_DATA__?.districts?.[districtId];
+    const district   = GameData?.districts?.[districtId];
     const danger     = district?.dangerLevel ?? 0;
     const color      = DANGER_COLORS[Math.min(danger, DANGER_COLORS.length - 1)];
     const dangerDots = '●'.repeat(danger) + '○'.repeat(Math.max(0, 3 - danger));
@@ -801,12 +802,12 @@ const CardFactory = {
     if (!inst) { el.remove(); return; }
 
     if (inst._crafting) {
-      const def = window.__GAME_DATA__.items[inst.definitionId];
+      const def = GameData.items[inst.definitionId];
       el.innerHTML = this._buildCraftingInner(inst, def ?? {});
       return;
     }
 
-    const def = window.__GAME_DATA__.items[inst.definitionId];
+    const def = GameData.items[inst.definitionId];
     if (!def) return;
 
     if (def.type === 'location') {

@@ -8,6 +8,7 @@ import GameState       from '../core/GameState.js';
 import SEASONAL_EVENTS from '../data/seasonalEvents.js';
 import { SEASON_EVENT_TO_ENV_CARD } from '../data/items_environment.js';
 import SystemRegistry  from '../core/SystemRegistry.js';
+import GameData from '../data/GameData.js';
 
 // ── 계절 정의 ──────────────────────────────────────────────────
 
@@ -272,7 +273,7 @@ const SeasonSystem = {
     // 음식/수분 카드에 오염도 추가
     if (effects.contaminateFood > 0) {
       for (const card of gs.getBoardCards()) {
-        const def = window.__GAME_DATA__?.items[card.definitionId];
+        const def = GameData?.items[card.definitionId];
         if (def?.type === 'consumable') {
           card.contamination = Math.min(100, (card.contamination ?? 0) + effects.contaminateFood);
         }
@@ -287,7 +288,7 @@ const SeasonSystem = {
     // 구조물 내구도 감소 (태풍 등)
     if (effects.structureDamage > 0) {
       for (const card of gs.getBoardCards()) {
-        const def = window.__GAME_DATA__?.items[card.definitionId];
+        const def = GameData?.items[card.definitionId];
         if (def?.subtype === '구조물') {
           card.durability = Math.max(10, (card.durability ?? 100) - effects.structureDamage);
         }
@@ -316,7 +317,7 @@ const SeasonSystem = {
     const envCardId = DIRECT_MAP[eventId] ?? SEASON_EVENT_TO_ENV_CARD[eventId];
     if (!envCardId) return;  // 매핑 없는 이벤트 (summer_start 등 단순 알림)
 
-    const envDef = window.__GAME_DATA__?.items[envCardId];
+    const envDef = GameData?.items[envCardId];
     if (!envDef) return;
 
     const duration = envDef.eventDuration ?? 72;

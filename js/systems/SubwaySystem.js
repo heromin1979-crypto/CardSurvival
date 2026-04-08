@@ -9,6 +9,7 @@ import StatSystem   from './StatSystem.js';
 import { SUBWAY_LINES, SEWER_ROUTES, STATION_LOOT } from '../data/subwayRoutes.js';
 import { DISTRICTS }   from '../data/districts.js';
 import { rollEnemyGroup } from '../data/enemies.js';
+import GameData           from '../data/GameData.js';
 
 // ── helpers ────────────────────────────────────────────────────
 
@@ -372,7 +373,7 @@ const SubwaySystem = {
     }
 
     const totalWeight = table.reduce((s, e) => s + (e.weight > 0 ? e.weight : 0), 0);
-    const items = window.__GAME_DATA__?.items ?? {};
+    const items = GameData?.items ?? {};
     const found = [];
 
     for (let i = 0; i < count; i++) {

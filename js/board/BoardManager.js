@@ -1,6 +1,7 @@
 // === BOARD MANAGER ===
 import EventBus  from '../core/EventBus.js';
 import GameState from '../core/GameState.js';
+import GameData  from '../data/GameData.js';
 
 // Manages the logical state of the 3-row card board
 const BoardManager = {
@@ -91,7 +92,7 @@ const BoardManager = {
   // primaryId를 지정하면 해당 카드 슬롯을 우선 채운다 (드롭 목적지 유지)
   consolidateSameType(definitionId, primaryId = null) {
     const gs    = GameState;
-    const items = window.__GAME_DATA__?.items ?? {};
+    const items = GameData?.items ?? {};
     const def   = items[definitionId];
     if (!def?.stackable) return false;
 

@@ -17,6 +17,7 @@ import BasecampSystem   from './BasecampSystem.js';
 import BALANCE          from '../data/gameBalance.js';
 import HiddenElementSystem from './HiddenElementSystem.js';
 import NightSystem         from './NightSystem.js';
+import GameData            from '../data/GameData.js';
 
 const ExploreSystem = {
 
@@ -76,7 +77,7 @@ const ExploreSystem = {
 
   _updateTopRowCards(districtId) {
     const gs    = GameState;
-    const items = window.__GAME_DATA__?.items ?? {};
+    const items = GameData?.items ?? {};
 
     // 기존 top row 위치·랜드마크 카드 제거
     for (let i = 0; i < gs.board.top.length; i++) {
@@ -383,13 +384,13 @@ const ExploreSystem = {
           if (SkillSystem.hasMastery('scavenging') && Math.random() < 0.05) {
             const rarePool = ['bandage', 'painkiller', 'antiseptic', 'rope', 'wire'];
             const rareId   = rarePool[Math.floor(Math.random() * rarePool.length)];
-            if (window.__GAME_DATA__?.items[rareId]) loot.push({ definitionId: rareId, quantity: 1 });
+            if (GameData?.items[rareId]) loot.push({ definitionId: rareId, quantity: 1 });
           }
         }
         // 계절 보너스 루팅
         const seasonalLoot = SeasonSystem.rollSeasonalLoot();
         for (const item of seasonalLoot) {
-          if (window.__GAME_DATA__?.items[item.definitionId]) {
+          if (GameData?.items[item.definitionId]) {
             loot.push({ definitionId: item.definitionId, quantity: item.quantity });
           }
         }
@@ -464,7 +465,7 @@ const ExploreSystem = {
 
       const placed = gs.placeCardInRow(inst.instanceId, 'middle');
       if (placed) {
-        const def = window.__GAME_DATA__?.items[entry.definitionId];
+        const def = GameData?.items[entry.definitionId];
         foundNames.push(`${def?.icon ?? ''} ${def?.name ?? entry.definitionId}`);
       } else {
         gs.removeCardInstance(inst.instanceId);
@@ -523,7 +524,7 @@ const ExploreSystem = {
 
   _updateTopRowForLandmark(districtId) {
     const gs    = GameState;
-    const items = window.__GAME_DATA__?.items ?? {};
+    const items = GameData?.items ?? {};
     const lmData = LANDMARK_DATA[districtId];
 
     // 기존 top row 위치 카드 모두 제거
@@ -654,7 +655,7 @@ const ExploreSystem = {
     const count      = minCount + Math.floor(Math.random() * (maxCount - minCount + 1));
     const totalWeight = table.reduce((s, e) => s + e.weight, 0);
     const results    = [];
-    const items      = window.__GAME_DATA__?.items ?? {};
+    const items      = GameData?.items ?? {};
 
     for (let i = 0; i < count; i++) {
       let rand = Math.random() * totalWeight;

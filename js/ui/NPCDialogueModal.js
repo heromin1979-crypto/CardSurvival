@@ -9,6 +9,7 @@ import I18n            from '../core/I18n.js';
 import NPCSystem       from '../systems/NPCSystem.js';
 import NPCQuestSystem  from '../systems/NPCQuestSystem.js';
 import { NPC_ITEMS }   from '../data/npcs.js';
+import GameData        from '../data/GameData.js';
 
 const EMOTION_LABELS = {
   calm:    '😌 안정',
@@ -98,8 +99,8 @@ const NPCDialogueModal = {
     const trades = NPCSystem.getAvailableTrades(npcId);
     if (trades.length > 0) {
       const tradeRows = trades.map((trade, idx) => {
-        const giveDef    = window.__GAME_DATA__.items[trade.give.id];
-        const receiveDef = window.__GAME_DATA__.items[trade.receive.id];
+        const giveDef    = GameData.items[trade.give.id];
+        const receiveDef = GameData.items[trade.receive.id];
         const giveName   = I18n.itemName(trade.give.id, giveDef?.name);
         const recvName   = I18n.itemName(trade.receive.id, receiveDef?.name);
         const haveQty    = GameState.countOnBoard(trade.give.id);
@@ -131,7 +132,7 @@ const NPCDialogueModal = {
       const stepDescs = activeQuest.steps.map(s => {
         if (s.type === 'collect') {
           const have = GameState.countOnBoard?.(s.itemId) ?? 0;
-          const itemDef = window.__GAME_DATA__?.items[s.itemId];
+          const itemDef = GameData?.items[s.itemId];
           const iname   = I18n.itemName(s.itemId, itemDef?.name);
           return `<div class="npc-quest-step ${have >= s.qty ? 'done' : ''}">${have >= s.qty ? '✅' : '⬜'} ${iname} ${have}/${s.qty} — <em>${s.hint}</em></div>`;
         }

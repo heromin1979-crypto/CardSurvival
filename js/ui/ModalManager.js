@@ -4,6 +4,7 @@ import GameState       from '../core/GameState.js';
 import I18n            from '../core/I18n.js';
 import EquipmentSystem from '../systems/EquipmentSystem.js';
 import CardFactory     from './CardFactory.js';
+import GameData        from '../data/GameData.js';
 
 const ModalManager = {
   _overlay: null,
@@ -65,7 +66,7 @@ const ModalManager = {
   showCardInspect(instanceId) {
     const inst = GameState.cards[instanceId];
     if (!inst) return;
-    const def  = window.__GAME_DATA__.items[inst.definitionId];
+    const def  = GameData.items[inst.definitionId];
     if (!def)  return;
 
     const stats = [];
@@ -98,7 +99,7 @@ const ModalManager = {
     let dismantleHtml = '';
     if (canDismantle) {
       const rows = def.dismantle.map(entry => {
-        const matDef  = window.__GAME_DATA__.items[entry.definitionId];
+        const matDef  = GameData.items[entry.definitionId];
         const matName = I18n.itemName(entry.definitionId, matDef?.name ?? entry.definitionId);
         const matIcon = matDef?.icon ?? '📦';
         const pct     = Math.round(entry.chance * 100);

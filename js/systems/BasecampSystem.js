@@ -10,6 +10,7 @@ import EventBus   from '../core/EventBus.js';
 import GameState  from '../core/GameState.js';
 import I18n       from '../core/I18n.js';
 import UPGRADES   from '../data/basecampUpgrades.js';
+import GameData   from '../data/GameData.js';
 
 // ── 3단계 건설 재료 ──────────────────────────────────────────────
 // 각 단계별 다양한 재료 요구 → 플레이어가 여러 종류를 수집해야 함
@@ -95,7 +96,7 @@ const BasecampSystem = {
     for (const req of stage.cost) {
       const have = GameState.countOnBoard(req.definitionId);
       if (have < req.qty) {
-        const def = window.__GAME_DATA__?.items[req.definitionId];
+        const def = GameData?.items[req.definitionId];
         return {
           ok: false,
           reason: I18n.t('bcSys.materialShort', {
@@ -205,7 +206,7 @@ const BasecampSystem = {
     for (const req of next.cost) {
       const have = GameState.countOnBoard(req.definitionId);
       if (have < req.qty) {
-        const def = window.__GAME_DATA__?.items[req.definitionId];
+        const def = GameData?.items[req.definitionId];
         return {
           ok: false,
           reason: I18n.t('bcSys.materialShort', {

@@ -10,6 +10,7 @@ import { SECRET_ENEMIES }    from '../data/secretEnemies.js';
 import SECRET_EVENTS         from '../data/secretEvents.js';
 import HIDDEN_RECIPES        from '../data/hiddenRecipes.js';
 import BLUEPRINTS            from '../data/blueprints.js';
+import GameData from '../data/GameData.js';
 
 const HiddenElementSystem = {
   init() {
@@ -160,7 +161,7 @@ const HiddenElementSystem = {
         const inst = gs.createCardInstance(reward.definitionId, { quantity: reward.qty ?? 1 });
         if (inst) {
           gs.placeCardInRow(inst.instanceId, 'middle');
-          const def = window.__GAME_DATA__?.items?.[reward.definitionId];
+          const def = GameData?.items?.[reward.definitionId];
           if (def) {
             EventBus.emit('notify', {
               message: I18n.t('hidden.reward', { icon: def.icon ?? '📦', name: I18n.itemName(def.id, def.name) }),
@@ -296,7 +297,7 @@ const HiddenElementSystem = {
               const inst = gs.createCardInstance(drop.definitionId, { quantity: drop.qty ?? 1 });
               if (inst) {
                 gs.placeCardInRow(inst.instanceId, 'middle');
-                const def = window.__GAME_DATA__?.items?.[drop.definitionId];
+                const def = GameData?.items?.[drop.definitionId];
                 EventBus.emit('notify', {
                   message: I18n.t('hidden.bossDrop', { icon: def?.icon ?? '📦', name: I18n.itemName(def?.id ?? drop.definitionId, def?.name ?? drop.definitionId) }),
                   type: 'good',
@@ -496,7 +497,7 @@ const HiddenElementSystem = {
     // 전투 트리거
     if (effects.combat) {
       const { enemyId, count } = effects.combat;
-      const enemyDef = window.__GAME_DATA__?.enemies?.[enemyId] ?? SECRET_ENEMIES[enemyId];
+      const enemyDef = GameData?.enemies?.[enemyId] ?? SECRET_ENEMIES[enemyId];
       if (enemyDef) {
         const enemies = Array.from({ length: count ?? 1 }, () => {
           const hp = enemyDef.hp.min + Math.floor(Math.random() * (enemyDef.hp.max - enemyDef.hp.min + 1));

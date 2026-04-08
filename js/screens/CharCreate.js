@@ -7,6 +7,7 @@ import { DISTRICTS, getAdjacentDistricts } from '../data/districts.js';
 import { CHARACTERS }  from '../data/characters.js';
 import { LEVEL_XP_TABLE } from '../data/skillDefs.js';
 import EquipmentSystem from '../systems/EquipmentSystem.js';
+import GameData        from '../data/GameData.js';
 
 const DANGER_COLORS = ['#336633', '#4a7a33', '#886622', '#882222', '#550000', '#330000'];
 
@@ -310,7 +311,7 @@ const CharCreate = {
     gs.location.districtsLooted  = [];
 
     // ── 상단 행: 현재 구 카드 + 인접 구 카드 배치 ────────────
-    const items = window.__GAME_DATA__?.items ?? {};
+    const items = GameData?.items ?? {};
 
     const currentDefId = `loc_${districtId}`;
     if (items[currentDefId]) {
@@ -319,7 +320,7 @@ const CharCreate = {
     }
 
     // 랜드마크 카드 → top[1] (현재 위치 바로 오른쪽)
-    const districts = window.__GAME_DATA__?.districts ?? {};
+    const districts = GameData?.districts ?? {};
     const lmDefId   = districts[districtId]?.landmark ?? `lm_${districtId}`;
     if (items[lmDefId]) {
       const lmInst = gs.createCardInstance(lmDefId);

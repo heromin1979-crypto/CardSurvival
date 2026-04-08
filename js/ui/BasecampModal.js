@@ -4,6 +4,7 @@ import EventBus      from '../core/EventBus.js';
 import GameState     from '../core/GameState.js';
 import I18n          from '../core/I18n.js';
 import BasecampSystem from '../systems/BasecampSystem.js';
+import GameData       from '../data/GameData.js';
 
 const BasecampModal = {
   _initialized: false,
@@ -77,7 +78,7 @@ const BasecampModal = {
     } else {
       const check    = BasecampSystem.canAdvanceBuild();
       const costHtml = nextStage.cost.map(req => {
-        const def  = window.__GAME_DATA__?.items[req.definitionId];
+        const def  = GameData?.items[req.definitionId];
         const have = GameState.countOnBoard(req.definitionId);
         const ok   = have >= req.qty;
         return `<div class="bc-upg-cost-row${ok ? ' ok' : ' missing'}">
@@ -176,7 +177,7 @@ const BasecampModal = {
 
   _buildNextSection(next) {
     const costHtml = next.cost.map(req => {
-      const def  = window.__GAME_DATA__?.items[req.definitionId];
+      const def  = GameData?.items[req.definitionId];
       const have = GameState.countOnBoard(req.definitionId);
       const ok   = have >= req.qty;
       return `<div class="bc-upg-cost-row${ok ? ' ok' : ' missing'}">

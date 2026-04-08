@@ -16,6 +16,7 @@ import BasecampModal  from '../ui/BasecampModal.js';
 import QuestSystem    from '../systems/QuestSystem.js';
 import SeasonSystem    from '../systems/SeasonSystem.js';
 import WeatherSystem   from '../systems/WeatherSystem.js';
+import GameData        from '../data/GameData.js';
 
 const Basecamp = {
   _el: null,
@@ -53,7 +54,7 @@ const Basecamp = {
     const districtEl = document.getElementById('bc-district-name');
     if (districtEl) {
       const distId = GameState.location.currentDistrict ?? 'mapo';
-      const node   = window.__GAME_DATA__?.nodes?.[distId];
+      const node   = GameData?.nodes?.[distId];
       districtEl.textContent = `📍 ${I18n.districtName(distId, node?.name ?? distId)}`;
     }
     CraftUI.init();
@@ -272,7 +273,7 @@ const Basecamp = {
 
   _showRaiderModal({ demandCardIds, demandCount, onSurrender, onRefuse }) {
     const gs    = GameState;
-    const items = window.__GAME_DATA__?.items ?? {};
+    const items = GameData?.items ?? {};
 
     // 요구 아이템 목록 생성
     const demandList = demandCardIds.map(id => {

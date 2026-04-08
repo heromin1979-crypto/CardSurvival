@@ -5,6 +5,7 @@ import TickEngine      from '../core/TickEngine.js';
 import ENDINGS         from '../data/endings.js';
 import SystemRegistry  from '../core/SystemRegistry.js';
 import { ENDING_TO_CINEMATIC } from '../data/cinematicScenes.js';
+import GameData from '../data/GameData.js';
 
 const STORAGE_KEY      = 'CARD_SURVIVAL_ENDINGS_v1';
 const STORAGE_META_KEY = 'CARD_SURVIVAL_ENDINGS_v1_meta';
@@ -37,7 +38,7 @@ const EndingSystem = {
 
     // Track craft completions
     EventBus.on('craftComplete', ({ blueprintId }) => {
-      const bp = window.__GAME_DATA__?.blueprints?.[blueprintId];
+      const bp = GameData?.blueprints?.[blueprintId];
       if (!bp) return;
       GameState.flags.totalCrafted = (GameState.flags.totalCrafted ?? 0) + 1;
       if (bp.category === 'structure') {

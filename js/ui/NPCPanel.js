@@ -6,6 +6,7 @@ import EventBus  from '../core/EventBus.js';
 import NPCSystem from '../systems/NPCSystem.js';
 import { NPC_ITEMS } from '../data/npcs.js';
 import I18n      from '../core/I18n.js';
+import GameData  from '../data/GameData.js';
 
 const EMOTION_ICONS = {
   calm:    { icon: '😌', label: '안정' },
@@ -174,7 +175,7 @@ const NPCPanel = {
     const panel = document.getElementById('npc-panel-group-stats');
     if (!panel) return;
 
-    const companions = window.__GAME_DATA__ ? (window.GameState?.companions ?? []) : [];
+    const companions = GameData ? (window.GameState?.companions ?? []) : [];
     panel.style.display = companions.length > 0 ? 'block' : 'none';
 
     const set = (id, valId, val) => {

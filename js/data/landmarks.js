@@ -1,3 +1,5 @@
+import GameData from './GameData.js';
+
 // === LANDMARK SUB-LOCATION DATA ===
 // 25개 구별 랜드마크 세부 장소 (4~6개씩)
 // lootTable: [{id, weight}] — weight 합산 기반 가중치 추첨
@@ -1555,11 +1557,11 @@ export const LANDMARK_DATA = {
 
 /**
  * 각 랜드마크 세부 장소(sublocation)에 대한 아이템 정의를 생성하여
- * window.__GAME_DATA__.items 에 등록한다.
- * main.js에서 window.__GAME_DATA__ 초기화 직후 호출해야 한다.
+ * GameData.items 에 등록한다.
+ * main.js에서 GameData 초기화 직후 호출해야 한다.
  */
 export function registerSubLocationItems() {
-  const items = window.__GAME_DATA__?.items;
+  const items = GameData?.items;
   if (!items) return;
 
   for (const [districtId, lmData] of Object.entries(LANDMARK_DATA)) {

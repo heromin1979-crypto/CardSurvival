@@ -1,5 +1,6 @@
 // === CENTRAL GAME STATE SINGLETON ===
-import EventBus from './EventBus.js';
+import EventBus  from './EventBus.js';
+import GameData  from '../data/GameData.js';
 
 const GameState = {
   // ── time ──────────────────────────────────────────────
@@ -247,7 +248,7 @@ const GameState = {
 
   // ── HELPERS ───────────────────────────────────────────
   createCardInstance(definitionId, overrides = {}) {
-    const { items } = window.__GAME_DATA__;
+    const { items } = GameData;
     const def = items[definitionId];
     if (!def) return null;
 
@@ -289,7 +290,7 @@ const GameState = {
   getCardDef(instanceId) {
     const inst = this.cards[instanceId];
     if (!inst) return null;
-    return window.__GAME_DATA__.items[inst.definitionId];
+    return GameData.items[inst.definitionId];
   },
 
   // find first empty slot in a row (returns index or -1)
@@ -300,7 +301,7 @@ const GameState = {
   // place a card instance in first available slot of a row
   // 일반 아이템은 top(장소) 행에 절대 배치하지 않음
   placeCardInRow(instanceId, preferredRow = null) {
-    const def = window.__GAME_DATA__?.items[this.cards[instanceId]?.definitionId];
+    const def = GameData?.items[this.cards[instanceId]?.definitionId];
     const isLocation = def?.type === 'location';
 
     // 장소 카드: top 우선, 일반 카드: middle/bottom만 허용
@@ -376,7 +377,7 @@ const GameState = {
 
   _updateEncumbrance() {
     const total = Object.values(this.cards).reduce((sum, c) => {
-      const def = window.__GAME_DATA__?.items[c.definitionId];
+      const def = GameData?.items[c.definitionId];
       return sum + ((def?.weight ?? 0) * (c.quantity ?? 1));
     }, 0);
     const enc = this.player.encumbrance;

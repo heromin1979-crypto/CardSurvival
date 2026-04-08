@@ -5,6 +5,7 @@
 import EventBus  from '../core/EventBus.js';
 import GameState from '../core/GameState.js';
 import { WEATHER_TO_ENV_CARD } from '../data/items_environment.js';
+import GameData from '../data/GameData.js';
 
 // ── 계절별 날씨 테이블 ─────────────────────────────────────────
 
@@ -98,7 +99,7 @@ const WeatherSystem = {
     // 비/장마: 보드의 식량 오염 미세 위험 (안전 지대에서는 차단)
     if (!inSafeZone && weather.contaminateRisk > 0 && Math.random() < weather.contaminateRisk) {
       for (const card of gs.getBoardCards()) {
-        const def = window.__GAME_DATA__?.items[card.definitionId];
+        const def = GameData?.items[card.definitionId];
         if (def?.type === 'consumable' && (def.subtype === 'food' || def.subtype === 'drink') && !card._weatherProtected) {
           card.contamination = Math.min(100, (card.contamination ?? 0) + 3);
         }

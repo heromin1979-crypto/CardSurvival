@@ -6,6 +6,7 @@
 import EventBus        from '../core/EventBus.js';
 import GameState       from '../core/GameState.js';
 import SettingsManager from '../core/SettingsManager.js';
+import GameData       from '../data/GameData.js';
 
 // ── 음계 주파수 ──────────────────────────────────────────────
 const NOTE = {
@@ -135,7 +136,7 @@ const BGMSystem = {
   _getCurrentDanger() {
     const distId = GameState.location?.currentDistrict;
     if (!distId) return 1;
-    const dist = window.__GAME_DATA__?.districts?.[distId];
+    const dist = GameData?.districts?.[distId];
     return dist?.dangerLevel ?? 1;
   },
 

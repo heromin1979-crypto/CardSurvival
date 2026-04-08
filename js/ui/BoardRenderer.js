@@ -5,6 +5,7 @@ import EventBus   from '../core/EventBus.js';
 import CardFactory from './CardFactory.js';
 import BoardManager from '../board/BoardManager.js';
 import I18n       from '../core/I18n.js';
+import GameData   from '../data/GameData.js';
 
 const ROW_CONFIG = [
   { key: 'top',         labelKey: 'board.location',     hintKey: 'board.locationHint' },
@@ -128,7 +129,7 @@ const BoardRenderer = {
     // ── Step 2: 레이블·장소 정보 갱신 ──
     this._updateFloorLabel();
     const curId   = GameState.location.currentNode ?? GameState.location.currentDistrict ?? 'mapo';
-    const curNode = window.__GAME_DATA__?.nodes?.[curId];
+    const curNode = GameData?.nodes?.[curId];
     if (curNode) this._updateLocationInfo(curId, curNode);
 
     // ── Step 3: 기존 카드 DOM 요소 수집 후 슬롯에서 분리 ──
@@ -240,7 +241,7 @@ const BoardRenderer = {
   },
 
   _updateFloorLabel() {
-    const nodes      = window.__GAME_DATA__?.nodes ?? {};
+    const nodes      = GameData?.nodes ?? {};
     const currentId  = GameState.location.currentNode ?? 'mapo';
     const nodeName   = nodes[currentId]?.name ?? currentId;
     const isBasecamp = GameState.ui.currentState === 'basecamp';
@@ -254,7 +255,7 @@ const BoardRenderer = {
     // 장소 카드 현재 위치 강조 갱신
     document.querySelectorAll('.location-card').forEach(el => {
       const defId = el.dataset.definitionId;
-      const def   = window.__GAME_DATA__?.items[defId];
+      const def   = GameData?.items[defId];
       const isNow = def?.nodeId === currentId;
       el.classList.toggle('is-current', isNow);
     });
