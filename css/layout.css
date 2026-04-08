@@ -1,0 +1,534 @@
+/* === MAIN LAYOUT === */
+#app {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* Screen container */
+.screen {
+  display: none;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  inset: 0;
+}
+.screen.active { display: flex; }
+
+/* === BASECAMP: 2-COLUMN SIDEBAR + MAIN === */
+#screen-basecamp.active {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  overflow: hidden;
+}
+
+/* Left sidebar */
+.bc-sidebar {
+  background: var(--bg-surface);
+  border-right: 1px solid var(--border-dim);
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+  padding: var(--gap-sm);
+  z-index: var(--z-hud);
+}
+
+/* Main scroll area */
+.bc-main {
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: var(--bg-base);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.bc-main::before {
+  content: '';
+  position: fixed;
+  inset: 0 0 0 200px; /* sidebar 너비 제외 */
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+
+.bc-main > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Minimap block */
+.bc-minimap {
+  background: rgba(0,0,0,0.4);
+  border: 1px solid var(--border-dim);
+  border-radius: var(--radius-sm);
+  height: 90px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 28px;
+  color: var(--text-dim);
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.bc-minimap:hover {
+  background: rgba(200,160,96,0.08);
+  border-color: var(--accent-dim);
+}
+
+.bc-minimap-label {
+  font-size: 8px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Time block */
+.bc-time-block {
+  background: rgba(0,0,0,0.2);
+  border: 1px solid var(--border-dim);
+  border-radius: var(--radius-sm);
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.bc-day-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.bc-day {
+  font-size: var(--font-size-md);
+  color: var(--accent-primary);
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.bc-clock {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+/* 야간 HUD 인디케이터 */
+.bc-night-indicator {
+  font-size: 11px;
+  margin-left: 4px;
+  transition: color 0.3s;
+}
+.bc-night-indicator.night-dark {
+  color: var(--text-danger);
+}
+.bc-night-indicator.night-lit {
+  color: var(--text-info);
+}
+
+/* 계절 + 날씨 행 */
+.bc-season-weather-row {
+  display: flex;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+/* 계절 배지 */
+.bc-season-badge {
+  font-size: var(--font-size-xs);
+  padding: 2px 7px;
+  border-radius: 10px;
+  text-align: center;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  flex: 1;
+  transition: background 0.5s, color 0.5s;
+}
+.bc-season-badge[data-season="spring"] { background: rgba(200,130,180,0.18); color: #e8a8d8; }
+.bc-season-badge[data-season="summer"] { background: rgba(220,160, 40,0.18); color: #f0c060; }
+.bc-season-badge[data-season="autumn"] { background: rgba(200, 90, 30,0.18); color: #e07040; }
+.bc-season-badge[data-season="winter"] { background: rgba( 80,160,220,0.18); color: #80c8f0; }
+
+/* 날씨 배지 */
+.bc-weather-badge {
+  font-size: var(--font-size-xs);
+  padding: 2px 7px;
+  border-radius: 10px;
+  text-align: center;
+  font-weight: 500;
+  flex: 1;
+  background: rgba(255,255,255,0.06);
+  color: var(--text-secondary);
+  transition: background 0.5s, color 0.5s;
+}
+.bc-weather-badge[data-weather="hot"]     { background: rgba(220,80,20,0.20); color: #f09060; }
+.bc-weather-badge[data-weather="storm"]   { background: rgba(80,80,160,0.20); color: #a0a0e8; }
+.bc-weather-badge[data-weather="monsoon"] { background: rgba(40,100,160,0.20); color: #70b0e0; }
+.bc-weather-badge[data-weather="blizzard"]{ background: rgba(160,200,240,0.20); color: #c0e0ff; }
+.bc-weather-badge[data-weather="snow"]    { background: rgba(180,220,255,0.15); color: #b0d8f8; }
+.bc-weather-badge[data-weather="rainy"]   { background: rgba(60,100,140,0.20); color: #80b0d0; }
+
+/* ── 온도 표시 ───────────────────────────────────────────── */
+.bc-temp-display {
+  font-size: var(--font-size-xs);
+  padding: 2px 8px;
+  margin-top: 3px;
+  border-radius: 10px;
+  text-align: center;
+  background: rgba(255,255,255,0.05);
+  color: var(--text-muted);
+  letter-spacing: 0.3px;
+  transition: color 0.4s, background 0.4s;
+}
+.bc-temp-display.temp-very-cold { color: #80c8f0; background: rgba( 80,160,220,0.18); }
+.bc-temp-display.temp-cold      { color: #a8d8f0; background: rgba(120,180,230,0.12); }
+.bc-temp-display.temp-normal    { color: var(--text-muted); }
+.bc-temp-display.temp-hot       { color: #f09060; background: rgba(220,100, 40,0.14); }
+.bc-temp-display.temp-extreme   { color: #ff6040; background: rgba(255, 60, 20,0.18); }
+
+/* ── 질병 상태 HUD ───────────────────────────────────────── */
+
+.bc-disease-status {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 4px 0;
+}
+
+.disease-badge {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  border: 1px solid transparent;
+  animation: diseasePulse 2s ease-in-out infinite;
+}
+
+.disease-badge.sev-low  { background: rgba(120,180,80,0.15);  border-color: rgba(120,180,80,0.30);  color: #90d060; }
+.disease-badge.sev-mid  { background: rgba(220,140,40,0.15);  border-color: rgba(220,140,40,0.35);  color: #e09040; }
+.disease-badge.sev-high { background: rgba(200,40,40,0.18);   border-color: rgba(200,40,40,0.40);   color: #e86060; animation: diseasePulseFast 1s ease-in-out infinite; }
+
+.disease-icon { font-size: var(--font-size-sm); }
+.disease-name { flex: 1; }
+
+.disease-progress {
+  width: 40px;
+  height: 4px;
+  background: rgba(255,255,255,0.10);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.disease-progress-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 1s linear;
+}
+.disease-progress-fill.sev-low  { background: #90d060; }
+.disease-progress-fill.sev-mid  { background: #e09040; }
+.disease-progress-fill.sev-high { background: #e86060; }
+
+@keyframes diseasePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.75; }
+}
+@keyframes diseasePulseFast {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+
+.bc-tp-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.bc-tp-label {
+  font-size: var(--font-size-xs);
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  min-width: 14px;
+}
+
+/* Character block */
+.bc-char-block {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  background: rgba(0,0,0,0.2);
+  border: 1px solid var(--border-dim);
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+
+.bc-avatar {
+  font-size: 26px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.bc-char-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.bc-char-name {
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+  font-weight: bold;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bc-char-sub {
+  font-size: var(--font-size-xs);
+  color: var(--text-dim);
+}
+
+.bc-char-hp {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+/* Noise block in sidebar */
+.bc-noise-block {
+  padding: 4px 0;
+  flex-shrink: 0;
+}
+
+.bc-noise-block .noise-track {
+  width: 100%;
+}
+
+/* Enc block in sidebar */
+.bc-enc-block {
+  font-size: var(--font-size-xs);
+  color: var(--text-dim);
+  padding: 2px 0;
+  flex-shrink: 0;
+}
+
+/* Quest/blueprint block */
+.bc-quests-block {
+  border: 1px solid var(--border-dim);
+  border-radius: var(--radius-sm);
+  padding: 6px 8px;
+  flex: 1;
+  min-height: 40px;
+}
+
+.bc-block-title {
+  font-size: var(--font-size-xs);
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+
+.bc-block-content {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+/* ── 퀘스트 패널 ── */
+.bc-quest-empty {
+  font-size: var(--font-size-xs);
+  color: var(--text-dim);
+  font-style: italic;
+}
+
+.bc-quest-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.bc-quest-item:last-child { border-bottom: none; }
+
+.bc-quest-title {
+  font-size: var(--font-size-xs);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.bc-quest-progress-bar {
+  height: 3px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.bc-quest-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #c8a060, #f0c040);
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+
+.bc-quest-meta {
+  font-size: var(--font-size-xs);
+  color: var(--text-dim);
+}
+
+/* Sidebar footer buttons */
+.bc-sidebar-btns {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+  padding-top: var(--gap-xs);
+  flex-shrink: 0;
+}
+
+.bc-sidebar-btns .toolbar-btn {
+  width: 100%;
+  text-align: left;
+  font-size: var(--font-size-xs);
+}
+
+/* 안전 가옥 건설 버튼 강조 (중반 전환점 유도) */
+.bc-sidebar-btns .btn-build-highlight {
+  border-color: var(--text-good, #5cb85c);
+  color: var(--text-good, #5cb85c);
+  animation: bc-build-pulse 2s ease-in-out infinite;
+}
+
+@keyframes bc-build-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.65; }
+}
+
+/* === LEGACY GAME LAYOUT (kept for other screens) === */
+.game-layout {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  grid-template-columns: 1fr 280px;
+  grid-template-areas:
+    "hud       hud"
+    "board     panel"
+    "toolbar   toolbar";
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.hud-area {
+  grid-area: hud;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-dim);
+  padding: 6px var(--gap-lg);
+  display: flex;
+  align-items: center;
+  gap: var(--gap-xl);
+  min-height: 52px;
+  z-index: var(--z-hud);
+}
+
+.board-area {
+  grid-area: board;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: var(--gap-md);
+  background: var(--bg-base);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--gap-md);
+}
+
+.panel-area {
+  grid-area: panel;
+  background: var(--bg-surface);
+  border-left: 1px solid var(--border-dim);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.toolbar-area {
+  grid-area: toolbar;
+  background: var(--bg-surface);
+  border-top: 1px solid var(--border-dim);
+  padding: var(--gap-sm) var(--gap-lg);
+  display: flex;
+  align-items: center;
+  gap: var(--gap-md);
+  min-height: 44px;
+}
+
+/* === MENU SCREENS === */
+.menu-screen {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-void);
+  gap: var(--gap-lg);
+}
+
+.menu-box {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-mid);
+  padding: var(--gap-xl);
+  min-width: 340px;
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-md);
+}
+
+.menu-title {
+  font-size: var(--font-size-xl);
+  color: var(--accent-primary);
+  text-align: center;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: var(--gap-sm);
+}
+
+.menu-subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  text-align: center;
+  margin-bottom: var(--gap-lg);
+}
+
+/* === EXPLORE SCREEN === */
+#screen-explore .game-layout {
+  grid-template-areas:
+    "hud       hud"
+    "map       panel"
+    "toolbar   toolbar";
+}
+
+/* === COMBAT SCREEN === */
+#screen-combat {
+  flex-direction: column;
+  background: var(--bg-void);
+}
+
+.combat-layout {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  height: 100%;
+}
+
+/* === SCROLLBAR === */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg-base); }
+::-webkit-scrollbar-thumb { background: var(--border-mid); border-radius: 2px; }

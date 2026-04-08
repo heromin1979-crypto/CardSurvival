@@ -1,0 +1,367 @@
+/* === HUD === */
+.hud-area {
+  flex-wrap: wrap;
+}
+
+.hud-time {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 110px;
+}
+
+.hud-day {
+  font-size: var(--font-size-md);
+  color: var(--accent-primary);
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.hud-time-detail {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+/* TP Clock */
+.tp-clock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 80px;
+}
+
+.tp-clock-label {
+  font-size: var(--font-size-xs);
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.tp-clock-track {
+  width: 60px;
+  height: 8px;
+  background: var(--bg-raised);
+  border: 1px solid var(--border-mid);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.tp-clock-fill {
+  height: 100%;
+  background: var(--accent-primary);
+  transition: width 0.5s linear;
+  border-radius: 4px;
+}
+
+.tp-clock-value {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+/* Stat bars */
+.stat-bars {
+  display: flex;
+  gap: var(--gap-sm);
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.stat-bar-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 70px;
+}
+
+.stat-bar-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.stat-bar-name {
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-dim);
+}
+
+.stat-bar-value {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+.stat-bar-track {
+  width: 70px;
+  height: 5px;
+  background: var(--bg-raised);
+  border-radius: 3px;
+  overflow: hidden;
+  border: 1px solid var(--border-dim);
+}
+
+.stat-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width var(--transition-mid);
+}
+
+/* Stat colors */
+.stat-bar-fill.hp           { background: var(--stat-hp); }
+.stat-bar-fill.stamina      { background: var(--stat-stamina); }
+.stat-bar-fill.hydration    { background: var(--stat-hydration); }
+.stat-bar-fill.nutrition    { background: var(--stat-nutrition); }
+.stat-bar-fill.temperature  { background: var(--stat-temperature); }
+.stat-bar-fill.morale       { background: var(--stat-morale); }
+.stat-bar-fill.radiation    { background: var(--stat-radiation); }
+.stat-bar-fill.infection    { background: var(--stat-infection); }
+.stat-bar-fill.fatigue      { background: var(--stat-fatigue); }
+
+/* Mental state bars */
+.stat-divider-label {
+  font-size: 8px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-top: 6px;
+  margin-bottom: 2px;
+  padding-top: 4px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+.stat-bar-fill.mental-fill.anxiety    { background: #c09040; }
+.stat-bar-fill.mental-fill.loneliness { background: #6088b0; }
+.stat-bar-fill.mental-fill.trauma     { background: #a05060; }
+
+/* Danger states */
+.stat-bar-fill.danger { animation: dangerPulse 0.8s ease infinite; }
+.stat-bar-fill.warn   { animation: dangerPulse 1.8s ease infinite; }
+
+/* Noise meter */
+.noise-meter {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 80px;
+}
+
+.noise-label {
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-dim);
+  display: flex;
+  justify-content: space-between;
+}
+
+.noise-track {
+  width: 80px;
+  height: 5px;
+  background: var(--bg-raised);
+  border-radius: 3px;
+  overflow: hidden;
+  border: 1px solid var(--border-dim);
+}
+
+.noise-fill {
+  height: 100%;
+  background: var(--text-warn);
+  border-radius: 3px;
+  transition: width var(--transition-mid);
+}
+
+.noise-fill.critical { background: var(--text-danger); animation: dangerPulse 0.6s ease infinite; }
+
+/* === TOOLBAR BUTTONS === */
+.toolbar-btn {
+  padding: 5px 14px;
+  min-height: 44px;
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius-sm);
+  background: var(--bg-raised);
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+  cursor: pointer;
+}
+
+.toolbar-btn:hover {
+  background: var(--bg-hover);
+  border-color: var(--accent-dim);
+  color: var(--accent-primary);
+}
+
+.toolbar-btn.active {
+  background: var(--accent-dim);
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+.toolbar-btn.danger {
+  border-color: #442222;
+  color: var(--text-danger);
+}
+
+.toolbar-btn.danger:hover {
+  background: rgba(200,50,50,0.15);
+  border-color: var(--text-danger);
+}
+
+/* Menu buttons */
+.menu-btn {
+  width: 100%;
+  padding: 10px 16px;
+  min-height: 44px;
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius-sm);
+  background: var(--bg-raised);
+  color: var(--text-primary);
+  font-size: var(--font-size-base);
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  transition: all var(--transition-fast);
+  cursor: pointer;
+}
+
+.menu-btn:hover {
+  background: var(--bg-hover);
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+  padding-left: 22px;
+}
+
+.menu-btn.primary {
+  border-color: var(--accent-dim);
+  color: var(--accent-primary);
+}
+
+/* === PANEL TABS === */
+.panel-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border-dim);
+}
+
+.panel-tab {
+  flex: 1;
+  padding: 8px 4px;
+  text-align: center;
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-secondary);
+  border-bottom: 2px solid transparent;
+  transition: all var(--transition-fast);
+  cursor: pointer;
+}
+
+.panel-tab:hover { color: var(--text-primary); }
+.panel-tab.active {
+  color: var(--accent-primary);
+  border-bottom-color: var(--accent-primary);
+}
+
+.panel-content {
+  flex: 1;
+  padding: var(--gap-md);
+  overflow-y: auto;
+  display: none;
+}
+.panel-content.active { display: block; }
+
+/* === LOCATION / MODE INDICATOR === */
+.hud-location {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  border-left: 2px solid var(--accent-dim);
+  padding-left: var(--gap-sm);
+}
+
+.hud-location-name {
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+}
+
+/* === INPUT FIELDS === */
+.text-input {
+  width: 100%;
+  padding: 8px 10px;
+  background: var(--bg-raised);
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-base);
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+
+.text-input:focus { border-color: var(--accent-primary); }
+
+.form-label {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Trait selection */
+.trait-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gap-sm);
+}
+
+.trait-btn {
+  padding: 8px;
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius-sm);
+  background: var(--bg-raised);
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  text-align: left;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.trait-btn:hover { border-color: var(--accent-dim); color: var(--text-primary); }
+.trait-btn.selected {
+  border-color: var(--accent-primary);
+  background: rgba(200,160,96,0.08);
+  color: var(--accent-primary);
+}
+
+.trait-btn-name { font-weight: bold; font-size: var(--font-size-xs); }
+.trait-btn-desc { font-size: 9px; color: var(--text-dim); }
+
+/* Separator */
+.divider {
+  border: none;
+  border-top: 1px solid var(--border-dim);
+  margin: var(--gap-sm) 0;
+}
+
+/* Small stat display */
+.mini-stat {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--font-size-xs);
+  padding: 2px 0;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-dim);
+}
+
+.mini-stat-val { color: var(--text-primary); }

@@ -1,0 +1,128 @@
+// === ENCOUNTER SCREEN ===
+import EventBus    from '../core/EventBus.js';
+import GameState   from '../core/GameState.js';
+import StateMachine from '../core/StateMachine.js';
+import I18n        from '../core/I18n.js';
+import { rollEnemyGroup } from '../data/enemies.js';
+import StatSystem  from '../systems/StatSystem.js';
+
+const Encounter = {
+  _el:     null,
+  _data:   null,
+
+  init() {
+    this._el = document.getElementById('screen-encounter');
+    EventBus.on('stateTransition', ({ to, data }) => {
+      if (to === 'encounter') {
+        this._data = data;
+        this._render();
+      }
+    });
+    EventBus.on('languageChanged', () => {
+      if (this._el?.classList.contains('active')) this._render();
+    });
+  },
+
+  _render() {
+    if (!this._el) return;
+    const d       = this._data ?? {};
+    const noise   = d.noiseLevel ?? GameState.noise?.level ?? 0;
+
+    // enemies 배열 — 없으면 현재 소음으로 새로 생성
+    const enemies = d.enemies?.length
+      ? d.enemies
+      : rollEnemyGroup(d.dangerLevel ?? 2, noise);
+
+    const count     = enemies.length;
+    const leader    = enemies[0];   // 대표 적 (가장 강한 놈)
+    const noiseTag  = noise < 30  ? `<span style="color:var(--text-good);">${I18n.t('encounter.lowNoise')}</span>`
+                    : noise < 65  ? `<span style="color:var(--text-warn);">${I18n.t('encounter.midNoise')}</span>`
+                    : `<span style="color:var(--text-danger);">${I18n.t('encounter.highNoise')}</span>`;
+
+    const iconsHtml = enemies.map((e, i) =>
+      `<span style="font-size:${count === 1 ? 64 : count === 2 ? 52 : 42}px;
+        filter:drop-shadow(0 2px 6px rgba(0,0,0,0.8));
+        ${i > 0 ? 'opacity:0.85;' : ''}">${e.icon ?? '👾'}</span>`
+    ).join('');
+
+    this._el.innerHTML = `
+      <div class="encounter-title">${I18n.t('encounter.title')}</div>
+      <div style="display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap;">
+        ${iconsHtml}
+      </div>
+      <div class="encounter-desc">
+        <strong>${I18n.t('encounter.appeared', { name: count > 1 ? I18n.t('encounter.appearedPlural', { leader: I18n.enemyName(leader.id, leader.name), rest: count - 1 }) : I18n.enemyName(leader.id, leader.name) })}</strong><br>
+        ${leader.description ?? I18n.t('encounter.defaultDesc')}<br><br>
+        ${noiseTag}<br>
+        ${d.noiseInflux ? `<span style="color:var(--text-danger);">${I18n.t('encounter.noiseInflux')}</span>` : ''}
+      </div>
+      <div class="encounter-choices">
+        <button class="toolbar-btn" id="enc-fight">${I18n.t('encounter.fight')}</button>
+        <button class="toolbar-btn" id="enc-stealth">${I18n.t('encounter.stealth')}</button>
+        <button class="toolbar-btn" id="enc-flee">${I18n.t('encounter.flee')}</button>
+        ${GameState.player.characterId === 'soldier' ? `<button class="toolbar-btn" id="enc-ambush" style="border-color:var(--text-warn)">⚡ 선제 제압</button>` : ''}
+      </div>
+    `;
+
+    const nodeId      = d.nodeId ?? null;
+    const dangerLevel = d.dangerLevel ?? 2;
+
+    // 전투 — 전체 enemies 배열 전달
+    this._el.querySelector('#enc-fight')?.addEventListener('click', () => {
+      StateMachine.transition('combat', { enemies, dangerLevel, nodeId });
+    });
+
+    // 은신 — 그룹 중 최고 stealthDifficulty 사용
+    this._el.querySelector('#enc-stealth')?.addEventListener('click', () => {
+      const maxDiff = Math.max(...enemies.map(e => e.stealthDifficulty ?? 0.5));
+      const success = Math.random() > maxDiff;
+      if (success) {
+        EventBus.emit('notify', { message: I18n.t('encounter.stealthOk'), type: 'good' });
+        StateMachine.transition('explore');
+      } else {
+        EventBus.emit('notify', { message: I18n.t('encounter.stealthFail'), type: 'danger' });
+        StateMachine.transition('combat', { enemies, dangerLevel, nodeId });
+      }
+    });
+
+    // 도주
+    this._el.querySelector('#enc-flee')?.addEventListener('click', () => {
+      const success = Math.random() < 0.65;
+      if (success) {
+        EventBus.emit('notify', { message: I18n.t('encounter.fleeOk'), type: 'good' });
+        GameState.modStat('fatigue', 10);
+        StateMachine.transition('explore');
+      } else {
+        EventBus.emit('notify', { message: I18n.t('encounter.fleeFail'), type: 'danger' });
+        StateMachine.transition('combat', { enemies, dangerLevel, nodeId });
+      }
+    });
+
+    // 군인 전용: 선제 제압 — 근접/비무장 스킬 합산으로 첫 타 확률 상승
+    this._el.querySelector('#enc-ambush')?.addEventListener('click', () => {
+      const melee    = GameState.player.skills?.melee ?? 0;
+      const unarmed  = GameState.player.skills?.unarmed ?? 0;
+      const combined = melee + unarmed;
+      // 스킬 합 8이면 70%, 최소 40%
+      const hitChance = Math.min(0.70, 0.40 + combined * 0.04);
+      const roll = Math.random();
+      if (roll < hitChance) {
+        const bonusDmg = 10 + Math.floor(combined * 1.5);
+        EventBus.emit('notify', {
+          message: `⚡ 선제 제압 성공! 적에게 ${bonusDmg} 추가 피해를 입히고 전투를 시작합니다.`,
+          type: 'good',
+        });
+        StateMachine.transition('combat', { enemies, dangerLevel, nodeId, ambushBonus: bonusDmg });
+      } else {
+        EventBus.emit('notify', {
+          message: '⚡ 선제 제압 실패! 적이 먼저 반응했습니다.',
+          type: 'danger',
+        });
+        StateMachine.transition('combat', { enemies, dangerLevel, nodeId, ambushFailed: true });
+      }
+      GameState.modStat('fatigue', 5);
+    });
+  },
+};
+
+export default Encounter;

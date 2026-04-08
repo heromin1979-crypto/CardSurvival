@@ -1,0 +1,223 @@
+/* === SETTINGS MODAL === */
+
+#settings-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-overlay, 950);
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(4px);
+  align-items: center;
+  justify-content: center;
+}
+#settings-modal.active {
+  display: flex;
+}
+
+.settings-box {
+  background: var(--bg-panel);
+  border: 1px solid var(--accent-dim);
+  border-radius: var(--radius-lg, 12px);
+  padding: 24px 28px;
+  width: 340px;
+  max-width: 92vw;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+}
+
+.settings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.settings-title {
+  font-size: var(--font-size-lg);
+  font-weight: bold;
+  color: var(--accent-primary);
+  letter-spacing: 1px;
+}
+
+.settings-close-btn {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  transition: color 0.15s, background 0.15s;
+}
+.settings-close-btn:hover {
+  color: var(--text-primary);
+  background: rgba(255,255,255,0.08);
+}
+
+/* ── 섹션 ── */
+.settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.settings-label {
+  font-size: var(--font-size-sm);
+  color: var(--text-dim);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border-dim);
+  padding-bottom: 4px;
+}
+
+/* ── 언어 토글 ── */
+.settings-lang-toggle {
+  display: flex;
+  gap: 8px;
+}
+
+.settings-lang-btn {
+  flex: 1;
+  padding: 10px 0;
+  font-size: var(--font-size-base);
+  font-weight: bold;
+  background: var(--bg-deep);
+  border: 1px solid var(--border-dim);
+  border-radius: var(--radius-md);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.settings-lang-btn:hover {
+  border-color: var(--accent-dim);
+  color: var(--text-secondary);
+}
+.settings-lang-btn.active {
+  border-color: var(--accent-primary);
+  background: rgba(200,160,96,0.12);
+  color: var(--accent-primary);
+}
+
+/* ── 사운드 ── */
+.settings-sound-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.settings-sound-label {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  min-width: 50px;
+}
+
+.settings-toggle-btn {
+  padding: 6px 16px;
+  font-size: var(--font-size-sm);
+  font-weight: bold;
+  border: 1px solid var(--border-dim);
+  border-radius: var(--radius-md);
+  background: var(--bg-deep);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-left: auto;
+}
+.settings-toggle-btn:hover {
+  border-color: var(--accent-dim);
+}
+.settings-toggle-btn.active {
+  border-color: #c04040;
+  background: rgba(192,64,64,0.15);
+  color: #ff6666;
+}
+
+/* ── 볼륨 슬라이더 ── */
+.settings-volume-slider {
+  flex: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  background: var(--bg-deep);
+  border: 1px solid var(--border-dim);
+  border-radius: 3px;
+  outline: none;
+  cursor: pointer;
+}
+.settings-volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  border: 2px solid var(--bg-panel);
+  cursor: pointer;
+  box-shadow: 0 0 4px rgba(200,160,96,0.4);
+}
+.settings-volume-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  border: 2px solid var(--bg-panel);
+  cursor: pointer;
+}
+.settings-volume-slider:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.settings-volume-val {
+  font-size: var(--font-size-sm);
+  color: var(--accent-primary);
+  min-width: 36px;
+  text-align: right;
+  font-weight: bold;
+}
+
+/* ── 닫기 버튼 ── */
+.settings-done-btn {
+  padding: 10px 0;
+  font-size: var(--font-size-base);
+  font-weight: bold;
+  background: var(--bg-deep);
+  border: 1px solid var(--border-dim);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.settings-done-btn:hover {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+/* ── 메인 메뉴 설정 버튼 ── */
+.mm-settings-row {
+  display: flex;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.mm-settings-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 20px;
+  background: rgba(20,16,12,0.7);
+  border: 1px solid rgba(200,160,96,0.2);
+  border-radius: var(--radius-md);
+  color: rgba(200,180,140,0.7);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  backdrop-filter: blur(4px);
+  transition: all 0.15s;
+}
+.mm-settings-btn:hover {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+.mm-settings-icon { font-size: 16px; }

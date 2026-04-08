@@ -1,0 +1,496 @@
+// === ITEM / CARD DEFINITIONS ===
+// Game items split across 3 sub-files:
+//   items_base.js   — 기초재료·가공재료·수분·식량 (41)
+//   items_combat.js — 근접무기·원거리/투척·의복/방어구 (25)
+//   items_misc.js   — 의료·도구·구조물·특수 (34)
+// Location cards remain here (31)
+// stackConfig.js overrides stackable/maxStack at runtime.
+
+import STACK_CONFIG      from './stackConfig.js';
+import ITEMS_BASE        from './items_base.js';
+import ITEMS_COMBAT      from './items_combat.js';
+import ITEMS_MISC        from './items_misc.js';
+import LEGENDARY_ITEMS   from './legendaryItems.js';
+import ITEMS_ENVIRONMENT from './items_environment.js';
+
+// ─── 장소 카드 (25개 구) ─────────────────────────────────────
+const ITEMS_LOCATION = {
+
+  loc_gangnam: {
+    id: 'loc_gangnam', name: '강남구', type: 'location', subtype: 'medical',
+    rarity: 'rare', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🏥', description: '의료 인프라가 집중된 지역. 삼성서울병원이 최대 물자 보고지만 좀비 밀도가 극히 높다.',
+    nodeId: 'gangnam', districtId: 'gangnam',
+    dangerLevel: 3, encounterChance: 0.35, travelCostTP: 2,
+    tags: ['location', 'medical'], requiresSlot: 'top', dismantle: [],
+  },
+  loc_gangdong: {
+    id: 'loc_gangdong', name: '강동구', type: 'location', subtype: 'urban',
+    rarity: 'uncommon', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🏘️', description: '외곽 주거지역. 약탈이 덜 된 아파트 단지에서 식량과 생필품을 찾을 수 있다.',
+    nodeId: 'gangdong', districtId: 'gangdong',
+    dangerLevel: 2, encounterChance: 0.15, travelCostTP: 2,
+    tags: ['location'], requiresSlot: 'top', dismantle: [],
+  },
+  loc_gangbuk: {
+    id: 'loc_gangbuk', name: '강북구', type: 'location', subtype: 'safe',
+    rarity: 'common', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '⛰️', description: '북한산 아래 주거지역. 산악 접근로 덕분에 비교적 안전하고 자연 자원이 있다.',
+    nodeId: 'gangbuk', districtId: 'gangbuk',
+    dangerLevel: 1, encounterChance: 0.05, travelCostTP: 2,
+    tags: ['location'], requiresSlot: 'top', dismantle: [],
+  },
+  loc_gangseo: {
+    id: 'loc_gangseo', name: '강서구', type: 'location', subtype: 'urban',
+    rarity: 'uncommon', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '✈️', description: '김포공항 인근 공항 복합 지역. 항공 물류 창고에서 공구와 장비 부품을 찾을 수 있다.',
+    nodeId: 'gangseo', districtId: 'gangseo',
+    dangerLevel: 2, encounterChance: 0.2, travelCostTP: 2,
+    tags: ['location'], requiresSlot: 'top', dismantle: [],
+  },
+  loc_gwanak: {
+    id: 'loc_gwanak', name: '관악구', type: 'location', subtype: 'urban',
+    rarity: 'common', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🎓', description: '서울대학교 캠퍼스. 연구소에 의약품 원료와 정수 장비가 남아있다.',
+    nodeId: 'gwanak', districtId: 'gwanak',
+    dangerLevel: 2, encounterChance: 0.15, travelCostTP: 2,
+    tags: ['location'], requiresSlot: 'top', dismantle: [],
+  },
+  loc_gwangjin: {
+    id: 'loc_gwangjin', name: '광진구', type: 'location', subtype: 'urban',
+    rarity: 'common', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🌉', description: '한강 인접 주거지역. 뚝섬과 어린이대공원 주변에 생활용품과 식량이 남아있다.',
+    nodeId: 'gwangjin', districtId: 'gwangjin',
+    dangerLevel: 2, encounterChance: 0.15, travelCostTP: 2,
+    tags: ['location'], requiresSlot: 'top', dismantle: [],
+  },
+  loc_guro: {
+    id: 'loc_guro', name: '구로구', type: 'location', subtype: 'industrial',
+    rarity: 'uncommon', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🏭', description: '구로디지털단지. 공장과 창고에 공구, 전자부품, 금속 재료가 풍부하다.',
+    nodeId: 'guro', districtId: 'guro',
+    dangerLevel: 2, encounterChance: 0.2, travelCostTP: 2,
+    tags: ['location'], requiresSlot: 'top', dismantle: [],
+  },
+  loc_geumcheon: {
+    id: 'loc_geumcheon', name: '금천구', type: 'location', subtype: 'industrial',
+    rarity: 'uncommon', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '⚙️', description: '중소 공장 밀집 지역. 방사선 오염이 약간 있지만 금속 재료와 공구가 넘친다.',
+    nodeId: 'geumcheon', districtId: 'geumcheon',
+    dangerLevel: 2, encounterChance: 0.2, travelCostTP: 2,
+    tags: ['location', 'radiation'], requiresSlot: 'top', dismantle: [],
+  },
+  loc_nowon: {
+    id: 'loc_nowon', name: '노원구', type: 'location', subtype: 'urban',
+    rarity: 'common', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🏙️', description: '대규모 아파트 단지. 약탈됐지만 숨겨진 창고에서 식량과 생필품을 찾을 수 있다.',
+    nodeId: 'nowon', districtId: 'nowon',
+    dangerLevel: 2, encounterChance: 0.1, travelCostTP: 2,
+    tags: ['location'], requiresSlot: 'top', dismantle: [],
+  },
+  loc_dobong: {
+    id: 'loc_dobong', name: '도봉구', type: 'location', subtype: 'safe',
+    rarity: 'common', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🌲', description: '도봉산 아래 조용한 외곽지역. 감염자가 적고 자연 자원을 수집할 수 있다.',
+    nodeId: 'dobong', districtId: 'dobong',
+    dangerLevel: 1, encounterChance: 0.0, travelCostTP: 3,
+    tags: ['location'], requiresSlot: 'top', dismantle: [],
+  },
+  loc_dongdaemun: {
+    id: 'loc_dongdaemun', name: '동대문구', type: 'location', subtype: 'urban',
+    rarity: 'common', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🧵', description: '동대문 의류시장이 있던 섬유 중심지. 천과 의류 재료가 풍부하고 식료품도 남아있다.',
+    nodeId: 'dongdaemun', districtId: 'dongdaemun',
+    dangerLevel: 2, encounterChance: 0.2, travelCostTP: 2,
+    tags: ['location'], requiresSlot: 'top', dismantle: [],
+  },
+  loc_dongjak: {
+    id: 'loc_dongjak', name: '동작구', type: 'location', subtype: 'urban',
+    rarity: 'common', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🌊', description: '한강 남안 주거지역. 국립현충원이 있어 약탈이 적었고 생필품이 남아있다.',
+    nodeId: 'dongjak', districtId: 'dongjak',
+    dangerLevel: 2, encounterChance: 0.15, travelCostTP: 2,
+    tags: ['location'], requiresSlot: 'top', dismantle: [],
+  },
+  loc_mapo: {
+    id: 'loc_mapo', name: '마포구', type: 'location', subtype: 'urban',
+    rarity: 'common', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🏙️', description: '홍대·합정·여의나루. 한때 젊음의 거리였던 홍대와 발전소 인근 합정이 혼재한다.',
+    nodeId: 'mapo', districtId: 'mapo',
+    dangerLevel: 2, encounterChance: 0.2, travelCostTP: 2,
+    tags: ['location', 'radiation'], requiresSlot: 'top', dismantle: [],
+  },
+  loc_seodaemun: {
+    id: 'loc_seodaemun', name: '서대문구', type: 'location', subtype: 'medical',
+    rarity: 'uncommon', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🏫', description: '연세대·세브란스병원. 의약품과 의료장비가 집중된 지역. 감염자 밀도 높음.',
+    nodeId: 'seodaemun', districtId: 'seodaemun',
+    dangerLevel: 3, encounterChance: 0.3, travelCostTP: 2,
+    tags: ['location', 'medical'], requiresSlot: 'top', dismantle: [],
+  },
+  loc_seocho: {
+    id: 'loc_seocho', name: '서초구', type: 'location', subtype: 'urban',
+    rarity: 'rare', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '⚖️', description: '법조타운·예술의전당. 고급 주거지였으나 현재는 감염자와 약탈자가 공존한다.',
+    nodeId: 'seocho', districtId: 'seocho',
+    dangerLevel: 3, encounterChance: 0.3, travelCostTP: 2,
+    tags: ['location'], requiresSlot: 'top', dismantle: [],
+  },
+  loc_seongdong: {
+    id: 'loc_seongdong', name: '성동구', type: 'location', subtype: 'industrial',
+    rarity: 'common', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🏭', description: '성수 공장지대. 금속 재료와 제작 도구가 풍부하나 방사선 오염이 있다.',
+    nodeId: 'seongdong', districtId: 'seongdong',
+    dangerLevel: 2, encounterChance: 0.2, travelCostTP: 2,
+    tags: ['location', 'radiation'], requiresSlot: 'top', dismantle: [],
+  },
+  loc_seongbuk: {
+    id: 'loc_seongbuk', name: '성북구', type: 'location', subtype: 'urban',
+    rarity: 'common', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🏛️', description: '고려대·성신여대 등 대학가. 학교 식당과 기숙사에 식량이 남아있다.',
+    nodeId: 'seongbuk', districtId: 'seongbuk',
+    dangerLevel: 2, encounterChance: 0.15, travelCostTP: 2,
+    tags: ['location'], requiresSlot: 'top', dismantle: [],
+  },
+  loc_songpa: {
+    id: 'loc_songpa', name: '송파구', type: 'location', subtype: 'urban',
+    rarity: 'rare', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🗼', description: '롯데타워·올림픽경기장. 최후 생존자 거점이 있었던 곳. 물자는 풍부하나 위험하다.',
+    nodeId: 'songpa', districtId: 'songpa',
+    dangerLevel: 3, encounterChance: 0.3, travelCostTP: 2,
+    tags: ['location'], requiresSlot: 'top', dismantle: [],
+  },
+  loc_yangcheon: {
+    id: 'loc_yangcheon', name: '양천구', type: 'location', subtype: 'safe',
+    rarity: 'common', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🏡', description: '목동 주거지역. 대규모 아파트 단지로 약탈이 많이 됐지만 구석에 식량이 남아있다.',
+    nodeId: 'yangcheon', districtId: 'yangcheon',
+    dangerLevel: 1, encounterChance: 0.05, travelCostTP: 2,
+    tags: ['location'], requiresSlot: 'top', dismantle: [],
+  },
+  loc_yeongdeungpo: {
+    id: 'loc_yeongdeungpo', name: '영등포구', type: 'location', subtype: 'urban',
+    rarity: 'rare', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '📡', description: '여의도·KBS방송국. 한강 섬. 방송 장비와 전자부품, 군용 물자가 있다.',
+    nodeId: 'yeongdeungpo', districtId: 'yeongdeungpo',
+    dangerLevel: 3, encounterChance: 0.35, travelCostTP: 3,
+    tags: ['location'], requiresSlot: 'top', dismantle: [],
+  },
+  loc_yongsan: {
+    id: 'loc_yongsan', name: '용산구', type: 'location', subtype: 'urban',
+    rarity: 'uncommon', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '💻', description: '전자상가·이태원·미군기지. 무기, 전자부품, 군용 장비가 집중된 전략 거점.',
+    nodeId: 'yongsan', districtId: 'yongsan',
+    dangerLevel: 3, encounterChance: 0.35, travelCostTP: 2,
+    tags: ['location'], requiresSlot: 'top', dismantle: [],
+  },
+  loc_eunpyeong: {
+    id: 'loc_eunpyeong', name: '은평구', type: 'location', subtype: 'safe',
+    rarity: 'common', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🌲', description: '북한산 인접 외곽 지역. 비교적 안전하지만 물자가 부족하다. 신장동 쪽에 구청 창고가 있다.',
+    nodeId: 'eunpyeong', districtId: 'eunpyeong',
+    dangerLevel: 1, encounterChance: 0.03, travelCostTP: 3,
+    tags: ['location'], requiresSlot: 'top', dismantle: [],
+  },
+  loc_jongno: {
+    id: 'loc_jongno', name: '종로구', type: 'location', subtype: 'warzone',
+    rarity: 'rare', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🏯', description: '서울의 심장. 광화문 정부청사와 경복궁. 군의 최후 방어선이 붕괴된 극위험 구역.',
+    nodeId: 'jongno', districtId: 'jongno',
+    dangerLevel: 4, encounterChance: 0.5, travelCostTP: 2,
+    tags: ['location', 'radiation', 'military'], requiresSlot: 'top', dismantle: [],
+  },
+  loc_junggoo: {
+    id: 'loc_junggoo', name: '중구', type: 'location', subtype: 'urban',
+    rarity: 'uncommon', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🏙️', description: '명동·남대문시장·서울시청. 과거 상업 중심지. 좀비 밀도 높지만 다양한 물자가 있다.',
+    nodeId: 'junggoo', districtId: 'junggoo',
+    dangerLevel: 3, encounterChance: 0.35, travelCostTP: 2,
+    tags: ['location'], requiresSlot: 'top', dismantle: [],
+  },
+  loc_jungrang: {
+    id: 'loc_jungrang', name: '중랑구', type: 'location', subtype: 'urban',
+    rarity: 'common', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🌿', description: '중랑천 인근 주거지역. 중랑공원에서 자연 자원을 수집할 수 있다.',
+    nodeId: 'jungrang', districtId: 'jungrang',
+    dangerLevel: 2, encounterChance: 0.13, travelCostTP: 2,
+    tags: ['location'], requiresSlot: 'top', dismantle: [],
+  },
+
+}; // END ITEMS_LOCATION (25개 구 카드)
+
+// ─── 랜드마크 카드 (25개 구 × 1) ──────────────────────────────
+// 각 구의 대표 랜드마크. 해당 구 진입 시 장소 행 마지막 슬롯에 자동 배치.
+// type:'location', subtype:'landmark', landmark:true
+const ITEMS_LANDMARK = {
+
+  lm_gangnam: {
+    id: 'lm_gangnam', name: '삼성서울병원', type: 'location', subtype: 'landmark',
+    rarity: 'rare', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0, landmark: true,
+    icon: '🏥', description: '강남구 최대 의료시설. 의약품·수술키트가 대량 비축되어 있으나 좀비 밀도가 극히 높다.',
+    landmarkBonus: '탐색 시 의료 아이템 발견 확률 +20%',
+    tags: ['location', 'landmark', 'medical'], requiresSlot: 'top', dismantle: [],
+  },
+  lm_gangdong: {
+    id: 'lm_gangdong', name: '올림픽공원', type: 'location', subtype: 'landmark',
+    rarity: 'uncommon', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0, landmark: true,
+    icon: '🏟️', description: '88서울올림픽 경기장. 광활한 공원에 생존자들이 임시 캠프를 세웠던 흔적이 남아있다.',
+    landmarkBonus: '방문 시 사기 +10',
+    tags: ['location', 'landmark'], requiresSlot: 'top', dismantle: [],
+  },
+  lm_gangbuk: {
+    id: 'lm_gangbuk', name: '북한산 국립공원', type: 'location', subtype: 'landmark',
+    rarity: 'uncommon', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0, landmark: true,
+    icon: '⛰️', description: '서울 북쪽을 지키는 산악 지대. 약초·목재 등 자연 자원이 풍부하다.',
+    landmarkBonus: '탐색 시 자연 자원 발견 +20%',
+    tags: ['location', 'landmark'], requiresSlot: 'top', dismantle: [],
+  },
+  lm_gangseo: {
+    id: 'lm_gangseo', name: '김포국제공항', type: 'location', subtype: 'landmark',
+    rarity: 'uncommon', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0, landmark: true,
+    icon: '✈️', description: '물류 창고와 격납고에 항공 공구·장비 부품이 가득하다. 약탈자들도 탐내는 장소.',
+    landmarkBonus: '탐색 시 공구·부품 발견 +20%',
+    tags: ['location', 'landmark'], requiresSlot: 'top', dismantle: [],
+  },
+  lm_gwanak: {
+    id: 'lm_gwanak', name: '서울대학교 연구소', type: 'location', subtype: 'landmark',
+    rarity: 'uncommon', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0, landmark: true,
+    icon: '🔬', description: '폐쇄된 의약품 연구실. 합성 의약품 원료와 정수 장비가 남아있다.',
+    landmarkBonus: '탐색 시 의약품 원료 발견 +15%',
+    tags: ['location', 'landmark', 'medical'], requiresSlot: 'top', dismantle: [],
+  },
+  lm_gwangjin: {
+    id: 'lm_gwangjin', name: '어린이대공원', type: 'location', subtype: 'landmark',
+    rarity: 'common', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0, landmark: true,
+    icon: '🎡', description: '뚝섬 유원지 일대. 식당가에 통조림과 생수가 아직 남아있다.',
+    landmarkBonus: '탐색 시 식량 발견 확률 +10%',
+    tags: ['location', 'landmark'], requiresSlot: 'top', dismantle: [],
+  },
+  lm_guro: {
+    id: 'lm_guro', name: '구로디지털단지', type: 'location', subtype: 'landmark',
+    rarity: 'uncommon', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0, landmark: true,
+    icon: '💻', description: 'IT 기업 건물과 전자 부품 창고. 전선·기판·배터리가 가득하다.',
+    landmarkBonus: '탐색 시 전자부품 발견 +20%',
+    tags: ['location', 'landmark'], requiresSlot: 'top', dismantle: [],
+  },
+  lm_geumcheon: {
+    id: 'lm_geumcheon', name: '시흥공단 기계창', type: 'location', subtype: 'landmark',
+    rarity: 'uncommon', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0, landmark: true,
+    icon: '⚙️', description: '중소 공장 밀집 지역의 폐공장. 고철과 공구가 가득하지만 방사선 오염 주의.',
+    landmarkBonus: '탐색 시 금속재료 발견 +25%',
+    tags: ['location', 'landmark', 'radiation'], requiresSlot: 'top', dismantle: [],
+  },
+  lm_nowon: {
+    id: 'lm_nowon', name: '태릉선수촌', type: 'location', subtype: 'landmark',
+    rarity: 'common', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0, landmark: true,
+    icon: '🏋️', description: '국가대표 훈련시설. 체육용품과 에너지 식품이 남아있다.',
+    landmarkBonus: '방문 시 피로 -10',
+    tags: ['location', 'landmark'], requiresSlot: 'top', dismantle: [],
+  },
+  lm_dobong: {
+    id: 'lm_dobong', name: '도봉산 등산로', type: 'location', subtype: 'landmark',
+    rarity: 'common', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0, landmark: true,
+    icon: '🌲', description: '울창한 도봉산 숲. 자연 엄폐물이 많아 이동 소음이 크게 줄어든다.',
+    landmarkBonus: '이 구역 소음 생성 -30%',
+    tags: ['location', 'landmark'], requiresSlot: 'top', dismantle: [],
+  },
+  lm_dongdaemun: {
+    id: 'lm_dongdaemun', name: '동대문 디자인 플라자', type: 'location', subtype: 'landmark',
+    rarity: 'uncommon', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0, landmark: true,
+    icon: '🎨', description: '거대한 DDP 건물과 인근 의류시장. 천·가죽·실이 대량으로 남아있다.',
+    landmarkBonus: '탐색 시 천·의류 발견 +25%',
+    tags: ['location', 'landmark'], requiresSlot: 'top', dismantle: [],
+  },
+  lm_dongjak: {
+    id: 'lm_dongjak', name: '국립현충원', type: 'location', subtype: 'landmark',
+    rarity: 'common', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0, landmark: true,
+    icon: '⛺', description: '국립묘지의 넓은 부지. 감염자들이 기피하는 조용한 구역.',
+    landmarkBonus: '이 구역 조우 확률 -10%p',
+    tags: ['location', 'landmark'], requiresSlot: 'top', dismantle: [],
+  },
+  lm_mapo: {
+    id: 'lm_mapo', name: '홍대 지하상가', type: 'location', subtype: 'landmark',
+    rarity: 'common', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0, landmark: true,
+    icon: '🎸', description: '홍대 클럽 거리 지하상가. 잡화·식료품·의류가 뒤섞여 있다.',
+    landmarkBonus: '방문 시 사기 +5',
+    tags: ['location', 'landmark'], requiresSlot: 'top', dismantle: [],
+  },
+  lm_seodaemun: {
+    id: 'lm_seodaemun', name: '세브란스병원', type: 'location', subtype: 'landmark',
+    rarity: 'rare', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0, landmark: true,
+    icon: '💉', description: '연세대학교 의료원. 수술실과 약품 창고가 있으나 내부 감염자 밀도가 높다.',
+    landmarkBonus: '탐색 시 의료 아이템 발견 +25%',
+    tags: ['location', 'landmark', 'medical'], requiresSlot: 'top', dismantle: [],
+  },
+  lm_seocho: {
+    id: 'lm_seocho', name: '예술의전당', type: 'location', subtype: 'landmark',
+    rarity: 'uncommon', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0, landmark: true,
+    icon: '🎭', description: '문화예술 복합시설. 생존자 기록과 메모가 많이 남아있고 사기 회복에 도움이 된다.',
+    landmarkBonus: '방문 시 사기 +10',
+    tags: ['location', 'landmark'], requiresSlot: 'top', dismantle: [],
+  },
+  lm_seongdong: {
+    id: 'lm_seongdong', name: '성수 공방거리', type: 'location', subtype: 'landmark',
+    rarity: 'uncommon', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0, landmark: true,
+    icon: '🔨', description: '수제화·가죽공방 밀집 지역. 가죽·실·접착제 등 제작 재료가 풍부하다.',
+    landmarkBonus: '탐색 시 제작 재료 발견 +20%',
+    tags: ['location', 'landmark'], requiresSlot: 'top', dismantle: [],
+  },
+  lm_seongbuk: {
+    id: 'lm_seongbuk', name: '고려대학교 캠퍼스', type: 'location', subtype: 'landmark',
+    rarity: 'uncommon', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0, landmark: true,
+    icon: '📚', description: '고려대 도서관·연구동. 학술 자료와 실험 장비가 남아있다.',
+    landmarkBonus: '탐색 시 아이템 발견 수 +1',
+    tags: ['location', 'landmark'], requiresSlot: 'top', dismantle: [],
+  },
+  lm_songpa: {
+    id: 'lm_songpa', name: '롯데월드타워', type: 'location', subtype: 'landmark',
+    rarity: 'rare', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0, landmark: true,
+    icon: '🗼', description: '서울 최고층 건물. 지하 쇼핑몰에 대량의 물자가 남아있으나 약탈자들의 거점이기도 하다.',
+    landmarkBonus: '탐색 시 희귀 아이템 발견 확률 +10%',
+    tags: ['location', 'landmark'], requiresSlot: 'top', dismantle: [],
+  },
+  lm_yangcheon: {
+    id: 'lm_yangcheon', name: '목동 종합운동장', type: 'location', subtype: 'landmark',
+    rarity: 'common', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0, landmark: true,
+    icon: '⚾', description: '목동야구장과 체육관. 안전한 휴식 공간으로 생존자들이 잠시 머물다 간 흔적이 있다.',
+    landmarkBonus: '방문 시 피로 -15',
+    tags: ['location', 'landmark'], requiresSlot: 'top', dismantle: [],
+  },
+  lm_yeongdeungpo: {
+    id: 'lm_yeongdeungpo', name: 'KBS 방송국', type: 'location', subtype: 'landmark',
+    rarity: 'rare', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0, landmark: true,
+    icon: '📡', description: '방송 송신탑과 스튜디오. 비상 발전기와 전자장비가 있으며 생존자 무선 신호를 잡을 수 있다.',
+    landmarkBonus: '무전 수신 가능 — 생존자 위치 단서 획득',
+    tags: ['location', 'landmark'], requiresSlot: 'top', dismantle: [],
+  },
+  lm_yongsan: {
+    id: 'lm_yongsan', name: '용산 전자상가', type: 'location', subtype: 'landmark',
+    rarity: 'rare', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0, landmark: true,
+    icon: '💾', description: '전자부품 전문 상가. 배터리·전선·통신장비가 대량으로 비축되어 있다.',
+    landmarkBonus: '탐색 시 전자부품 발견 +30%',
+    tags: ['location', 'landmark'], requiresSlot: 'top', dismantle: [],
+  },
+  lm_eunpyeong: {
+    id: 'lm_eunpyeong', name: '진관사', type: 'location', subtype: 'landmark',
+    rarity: 'common', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0, landmark: true,
+    icon: '🛕', description: '북한산 자락의 천년고찰. 승려들이 남긴 약초와 허브가 감염 저항에 도움이 된다.',
+    landmarkBonus: '방문 시 감염 -5',
+    tags: ['location', 'landmark'], requiresSlot: 'top', dismantle: [],
+  },
+  lm_jongno: {
+    id: 'lm_jongno', name: '경복궁', type: 'location', subtype: 'landmark',
+    rarity: 'legendary', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0, landmark: true,
+    icon: '🏯', description: '조선왕조의 정궁. 지하 유물 보관소에 귀한 물자가 있지만 군의 잔존 감염자들이 득실거린다.',
+    landmarkBonus: '탐색 시 희귀·전설급 아이템 발견 가능',
+    tags: ['location', 'landmark', 'military'], requiresSlot: 'top', dismantle: [],
+  },
+  lm_junggoo: {
+    id: 'lm_junggoo', name: '남대문시장', type: 'location', subtype: 'landmark',
+    rarity: 'uncommon', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0, landmark: true,
+    icon: '🛒', description: '과거 한국 최대 전통시장. 상인들이 숨겨둔 창고에 다양한 생필품이 남아있다.',
+    landmarkBonus: '탐색 시 식량·생필품 발견 +20%',
+    tags: ['location', 'landmark'], requiresSlot: 'top', dismantle: [],
+  },
+  lm_jungrang: {
+    id: 'lm_jungrang', name: '중랑천 습지', type: 'location', subtype: 'landmark',
+    rarity: 'common', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0, landmark: true,
+    icon: '🌿', description: '중랑천변 생태 습지. 오염됐지만 식물성 자원과 빗물을 수집할 수 있다.',
+    landmarkBonus: '탐색 시 수자원 발견 +15%',
+    tags: ['location', 'landmark'], requiresSlot: 'top', dismantle: [],
+  },
+
+  // ── 베이스캠프 랜드마크 카드 ──────────────────────────────────
+  basecamp_landmark: {
+    id: 'basecamp_landmark',
+    name: '베이스캠프',
+    type: 'location',
+    subtype: 'shelter',
+    rarity: 'unique',
+    weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0,
+    landmark: true,
+    icon: '🏕',
+    description: '직접 건설한 안전 거점. 비바람과 혹한·혹서를 차단하고, NPC가 합류할 수 있는 숙소 역할을 한다.',
+    landmarkBonus: '날씨 패널티 면역 · 식량 오염 차단 · 체온 ±완충 · 조우 -10%',
+    safeZone: true,          // 안전 지대 플래그
+    weatherProtection: true, // 날씨 체온 패널티 면역
+    contaminationShield: true, // 식량 오염 차단
+    npcShelter: true,        // NPC 합류 가능
+    tags: ['location', 'landmark', 'shelter', 'safe'],
+    requiresSlot: 'top',
+    dismantle: [],
+  },
+
+}; // END ITEMS_LANDMARK (25개 랜드마크 카드 + 베이스캠프)
+
+// ─── 전체 병합 ────────────────────────────────────────────────
+const ITEMS = {
+  ...ITEMS_BASE,
+  ...ITEMS_COMBAT,
+  ...ITEMS_MISC,
+  ...LEGENDARY_ITEMS,
+  ...ITEMS_LOCATION,
+  ...ITEMS_LANDMARK,
+  ...ITEMS_ENVIRONMENT,
+};
+
+// stackConfig.js 의 설정을 덮어씌워 적용
+for (const [id, cfg] of Object.entries(STACK_CONFIG)) {
+  if (ITEMS[id]) {
+    ITEMS[id].stackable = cfg.stackable;
+    ITEMS[id].maxStack  = cfg.maxStack;
+  }
+}
+
+export default ITEMS;

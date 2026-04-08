@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0d0d0d">
+  <title>Card Survival: Ruined City</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Geist:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <!-- CSS (order matters) -->
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/reset.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/cards.css">
+  <link rel="stylesheet" href="css/board.css">
+  <link rel="stylesheet" href="css/ui.css">
+  <link rel="stylesheet" href="css/modals.css">
+  <link rel="stylesheet" href="css/screens-menu.css">
+  <link rel="stylesheet" href="css/screens-combat.css">
+  <link rel="stylesheet" href="css/screens-game.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <link rel="stylesheet" href="css/equipment.css">
+  <link rel="stylesheet" href="css/skills.css">
+  <link rel="stylesheet" href="css/landmark.css">
+  <link rel="stylesheet" href="css/basecamp-modal.css">
+  <link rel="stylesheet" href="css/settings.css">
+  <link rel="stylesheet" href="css/mobile.css">
+  <link rel="stylesheet" href="css/cinematic.css">
+  <link rel="stylesheet" href="css/npc-panel.css">
+  <link rel="stylesheet" href="css/npc-group.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!--  MAIN MENU                                  -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div id="screen-main-menu" class="screen menu-screen active" role="main" aria-label="메인 메뉴">
+    <!-- Populated by MainMenu.js -->
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!--  CHARACTER CREATION                         -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div id="screen-char-create" class="screen menu-screen" role="main" aria-label="캐릭터 생성">
+    <!-- Populated by CharCreate.js -->
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!--  BASECAMP (main game screen)                -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div id="screen-basecamp" class="screen" role="main" aria-label="베이스캠프">
+    <!-- Layout built by Basecamp.js -->
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!--  EXPLORE                                    -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div id="screen-explore" class="screen" role="main" aria-label="탐색">
+    <!-- Populated by ExploreUI.js -->
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!--  ENCOUNTER                                  -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div id="screen-encounter" class="screen menu-screen" role="main" aria-label="조우">
+    <!-- Populated by Encounter.js -->
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!--  COMBAT                                     -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div id="screen-combat" class="screen" role="main" aria-label="전투">
+    <!-- Populated by CombatUI.js -->
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!--  COMBAT RESULT                              -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div id="screen-combat-result" class="screen menu-screen">
+    <!-- Populated by CombatResult.js -->
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!--  REST                                       -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div id="screen-rest" class="screen menu-screen">
+    <!-- Populated by Rest.js -->
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!--  GAME OVER                                  -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div id="screen-game-over" class="screen menu-screen" role="alert" aria-label="게임 오버">
+    <!-- Populated by GameOver.js -->
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!--  PAUSE                                      -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div id="screen-pause" class="screen menu-screen" style="position:fixed;z-index:500;">
+    <!-- Populated by Pause.js -->
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!--  ENDING                                     -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div id="screen-ending" class="screen menu-screen">
+    <!-- Populated by Ending.js -->
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!--  ENDING GALLERY                             -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div id="screen-ending-gallery" class="screen menu-screen">
+    <!-- Populated by EndingGallery.js -->
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!--  MODAL OVERLAY (shared)                     -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div id="modal-overlay" class="modal-overlay" role="dialog" aria-modal="true" aria-label="모달">
+    <div id="modal-box" class="modal-box">
+      <!-- Dynamic content -->
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!--  NOTIFICATION CONTAINER                     -->
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- ═══════════════════════════════════════════ -->
+  <!--  SETTINGS MODAL                            -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div id="settings-modal" role="dialog" aria-modal="true" aria-label="설정">
+    <!-- Populated by SettingsModal.js -->
+  </div>
+
+  <div id="notification-container" class="notification-container" role="log" aria-live="polite" aria-label="알림"></div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!--  NPC SIDE PANEL                             -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div id="npc-panel" class="npc-panel hidden" role="complementary" aria-label="NPC 패널">
+    <button id="npc-panel-toggle" class="npc-panel-toggle" title="NPC 패널 접기/펼치기">👥</button>
+    <div class="npc-panel-inner">
+      <div class="npc-panel-section">
+        <div class="npc-panel-section-title">🤝 동반자</div>
+        <div id="npc-panel-companions-list" class="npc-panel-list is-empty"></div>
+      </div>
+      <div class="npc-panel-section">
+        <div class="npc-panel-section-title">📍 현재 위치</div>
+        <div id="npc-panel-location-list" class="npc-panel-list is-empty"></div>
+      </div>
+      <!-- W-9: Group stats -->
+      <div id="npc-panel-group-stats" class="group-stats-panel" style="display:none">
+        <div class="group-stats-title">📊 그룹 상태</div>
+        <div class="group-stat-row">
+          <span class="group-stat-label">사기</span>
+          <div class="group-stat-bar"><div class="group-stat-fill morale" id="gs-morale" style="width:50%"></div></div>
+          <span class="group-stat-value" id="gs-morale-val">50</span>
+        </div>
+        <div class="group-stat-row">
+          <span class="group-stat-label">결속</span>
+          <div class="group-stat-bar"><div class="group-stat-fill cohesion" id="gs-cohesion" style="width:50%"></div></div>
+          <span class="group-stat-value" id="gs-cohesion-val">50</span>
+        </div>
+        <div class="group-stat-row">
+          <span class="group-stat-label">식량</span>
+          <div class="group-stat-bar"><div class="group-stat-fill food" id="gs-food" style="width:50%"></div></div>
+          <span class="group-stat-value" id="gs-food-val">50</span>
+        </div>
+        <div class="group-stat-row">
+          <span class="group-stat-label">안전</span>
+          <div class="group-stat-bar"><div class="group-stat-fill safety" id="gs-safety" style="width:50%"></div></div>
+          <span class="group-stat-value" id="gs-safety-val">50</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!--  LOADING OVERLAY                          -->
+<!-- ═══════════════════════════════════════════ -->
+<div id="loading-overlay" style="
+  position:fixed;inset:0;z-index:9999;
+  background:#000;opacity:0.96;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  font-family:'JetBrains Mono',monospace;color:#c8a060;gap:16px;">
+  <div id="loading-spinner" style="
+    width:32px;height:32px;border:2px solid #333;
+    border-top-color:#c8a060;border-radius:50%;
+    animation:spin 0.8s linear infinite;"></div>
+  <p id="loading-text" style="font-size:13px;letter-spacing:0.05em;margin:0;">게임 로딩 중...</p>
+  <button id="loading-refresh-btn" onclick="location.reload()" style="
+    display:none;margin-top:8px;padding:6px 16px;
+    background:transparent;border:1px solid #c8a060;color:#c8a060;
+    font-family:inherit;font-size:12px;cursor:pointer;border-radius:2px;">
+    새로고침
+  </button>
+  <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+</div>
+
+<!-- ES6 modules: no bundler needed -->
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

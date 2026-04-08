@@ -1,0 +1,43 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [master]
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: .
+          exclude_assets: >-
+            .gitignore,
+            .github,
+            .gstack,
+            .design-audit,
+            node_modules,
+            testdata,
+            dist,
+            dist-web,
+            android,
+            doc,
+            scripts,
+            design-audit-screenshots,
+            *.bat,
+            *.py,
+            *.mjs,
+            electron-*,
+            capacitor*,
+            vite*,
+            package*,
+            sim_*,
+            generate_*,
+            screen-*.png

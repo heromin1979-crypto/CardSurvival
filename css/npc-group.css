@@ -1,0 +1,293 @@
+/* === NPC GROUP SYSTEM UI === */
+/* W-2: 감정 상태 배지 */
+/* W-5: 야간 경비 배너 */
+/* W-6: 파견 버튼 + 상태 */
+/* W-8: 그룹 투표 모달 */
+/* W-9: 그룹 생존 통계 바 */
+
+/* ── Emotion Badge ──────────────────────────────────────────── */
+
+.npc-emotion-badge {
+  display: inline-block;
+  font-size: 0.65rem;
+  padding: 1px 5px;
+  border-radius: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  margin-top: 2px;
+}
+
+.emotion-calm    { background: rgba(100, 160, 255, 0.2); color: #80b4ff; }
+.emotion-hopeful { background: rgba(100, 220, 130, 0.2); color: #70dd90; }
+.emotion-anxious { background: rgba(255, 200, 80,  0.2); color: #ffc850; }
+.emotion-trauma  { background: rgba(200, 60,  60,  0.2); color: #e06060; }
+
+/* ── Dispatched NPC card overlay ────────────────────────────── */
+
+.npc-mini-card.dispatched {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.npc-mini-card.dispatched::after {
+  content: '파견중';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.55rem;
+  font-weight: 700;
+  color: #ffc850;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 6px;
+}
+
+/* ── Dispatch button in dialogue modal ──────────────────────── */
+
+.npc-action-btn.dispatch {
+  background: rgba(106, 150, 200, 0.15);
+  border-color: #6a96c8;
+  color: #6a96c8;
+}
+.npc-action-btn.dispatch:hover:not(.disabled) {
+  background: rgba(106, 150, 200, 0.3);
+}
+.npc-action-btn.dispatch.active {
+  background: rgba(255, 200, 80, 0.15);
+  border-color: #ffc850;
+  color: #ffc850;
+}
+
+/* ── Night Watch Banner ─────────────────────────────────────── */
+
+.night-watch-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(30, 30, 60, 0.8);
+  border: 1px solid #3a4a7a;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 0.78rem;
+  color: #b0c4ff;
+  margin-bottom: 8px;
+}
+
+.night-watch-banner .watch-icon {
+  font-size: 1.1rem;
+}
+
+.night-watch-banner .watch-name {
+  font-weight: 700;
+  color: #d0daff;
+}
+
+/* ── Group Stats Panel ──────────────────────────────────────── */
+
+.group-stats-panel {
+  background: var(--bg-surface, #1a1a2e);
+  border: 1px solid var(--border-mid, #3a3a5c);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-top: 12px;
+}
+
+.group-stats-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-secondary, #888);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.group-stat-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 5px;
+}
+
+.group-stat-label {
+  font-size: 0.68rem;
+  color: var(--text-secondary, #aaa);
+  width: 36px;
+  flex-shrink: 0;
+}
+
+.group-stat-bar {
+  flex: 1;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.group-stat-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+.group-stat-fill.morale  { background: #6a9de8; }
+.group-stat-fill.cohesion{ background: #9a6ad0; }
+.group-stat-fill.food    { background: #6ab870; }
+.group-stat-fill.safety  { background: #e8a840; }
+
+.group-stat-value {
+  font-size: 0.62rem;
+  color: var(--text-muted, #666);
+  width: 28px;
+  text-align: right;
+}
+
+/* ── Relations Chips ────────────────────────────────────────── */
+
+.npc-relations-section {
+  margin-top: 10px;
+}
+
+.relation-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-mid, #333);
+  border-radius: 12px;
+  padding: 3px 8px;
+  font-size: 0.65rem;
+  color: var(--text-secondary, #aaa);
+  margin: 2px;
+  cursor: default;
+}
+
+.relation-chip .rel-icon {
+  font-size: 0.85rem;
+}
+
+.relation-chip .rel-label {
+  font-weight: 600;
+  color: var(--text-primary, #ddd);
+}
+
+/* ── Dilemma Modal ──────────────────────────────────────────── */
+
+.dilemma-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 700;
+  padding: 16px;
+}
+
+.dilemma-modal {
+  background: #1a1a2e;
+  border: 1px solid #6a5acd;
+  border-radius: 12px;
+  padding: 20px 24px;
+  max-width: 420px;
+  width: 100%;
+  box-shadow: 0 0 40px rgba(106, 90, 205, 0.3);
+  animation: fadeIn 0.2s ease;
+}
+
+.dilemma-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #d0c4ff;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dilemma-body {
+  font-size: 0.85rem;
+  color: var(--text-primary, #ddd);
+  line-height: 1.6;
+  margin-bottom: 16px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 6px;
+  border-left: 3px solid #6a5acd;
+}
+
+.dilemma-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dilemma-choice-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-mid, #3a3a5c);
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: var(--text-primary, #ddd);
+  font-size: 0.85rem;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.dilemma-choice-btn:hover {
+  background: rgba(106, 90, 205, 0.15);
+  border-color: #6a5acd;
+  color: #fff;
+}
+
+.dilemma-choice-memo {
+  font-size: 0.7rem;
+  color: var(--text-muted, #666);
+  margin-top: 4px;
+  font-style: italic;
+}
+
+/* ── Personal Arc Progress ──────────────────────────────────── */
+
+.npc-arc-section {
+  margin-top: 10px;
+  padding: 8px 10px;
+  background: rgba(255, 220, 100, 0.05);
+  border: 1px solid rgba(255, 220, 100, 0.2);
+  border-radius: 6px;
+}
+
+.npc-arc-title {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #ffd060;
+  margin-bottom: 5px;
+}
+
+.npc-arc-hint {
+  font-size: 0.75rem;
+  color: var(--text-secondary, #aaa);
+  font-style: italic;
+}
+
+.npc-arc-complete {
+  font-size: 0.75rem;
+  color: #70dd90;
+  font-style: italic;
+}
+
+/* ── Group Vote Notification ────────────────────────────────── */
+
+.notification.group-vote {
+  background: rgba(106, 90, 205, 0.15);
+  border-left: 3px solid #6a5acd;
+  white-space: pre-line;
+  font-size: 0.8rem;
+}
+
+/* ── Mobile ────────────────────────────────────────────────── */
+
+@media (max-width: 600px) {
+  .dilemma-modal { padding: 14px 16px; }
+  .group-stats-panel { padding: 8px 10px; }
+}

@@ -1,0 +1,668 @@
+/* ============================================================
+   mobile.css — 반응형 모바일 레이아웃
+   로드 순서: 마지막 (모든 스타일 오버라이드)
+
+   Breakpoints:
+     ≤ 1024px  태블릿
+     ≤  768px  소형 태블릿 / 대형폰 가로
+     ≤  600px  폰
+     ≤  480px  폰 세로 — 사이드바 → 상단 HUD 바 전환
+     ≤  360px  초소형폰
+   height ≤ 500px + landscape  가로 모드 폰
+   hover:none + pointer:coarse  터치 디바이스
+   ============================================================ */
+
+/* ── 0. 전역 터치 기초 (항상 적용) ─────────────────────── */
+* {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: pan-x pan-y;
+}
+html, body {
+  -webkit-text-size-adjust: 100%;
+}
+
+/* 카드는 드래그용 — 기본 터치 스크롤 차단 */
+[data-instance-id] {
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* 드래그 고스트 */
+.dragging { opacity: 0.35 !important; }
+
+/* 슬롯 최소 터치 영역 */
+.slot { min-height: 60px; position: relative; }
+
+/* 버튼 최소 터치 영역 */
+.toolbar-btn,
+.modal-btn,
+.menu-btn,
+.eg-back-btn,
+.equip-modal-close,
+.lm-modal-close,
+.skill-close-btn,
+.bc-upg-close {
+  min-height: 36px;
+  min-width: 36px;
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   1. 태블릿 (≤ 1024px)
+   ═══════════════════════════════════════════════════════════ */
+@media (max-width: 1024px) {
+  :root {
+    --card-w: 108px;
+    --card-h: 180px;
+    --slot-w: 116px;
+    --slot-h: 188px;
+  }
+
+  #screen-basecamp.active { grid-template-columns: 160px 1fr; }
+  .bc-sidebar { width: 160px; }
+
+  .modal-box,
+  .skill-modal-box,
+  .equip-modal-box,
+  .landmark-modal-box,
+  .bc-upgrade-modal-box { max-width: 95vw; }
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   2. 소형 태블릿 / 대형폰 가로 (≤ 768px)
+   ═══════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  :root {
+    --card-w: 94px;
+    --card-h: 158px;
+    --slot-w: 100px;
+    --slot-h: 164px;
+  }
+
+  #screen-basecamp.active { grid-template-columns: 140px 1fr; }
+  .bc-sidebar { width: 140px; }
+
+  .toolbar-btn { min-height: 40px; }
+  .menu-btn    { min-height: 44px; }
+
+  /* 캐릭터 생성 지역 지도 */
+  .district-map-grid .dc-row { flex-wrap: wrap; justify-content: center; }
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   3. 폰 (≤ 600px) — 사이드바 압축
+   ═══════════════════════════════════════════════════════════ */
+@media (max-width: 600px) {
+  :root {
+    --card-w: 78px;
+    --card-h: 130px;
+    --slot-w: 82px;
+    --slot-h: 136px;
+  }
+
+  #screen-basecamp.active { grid-template-columns: 120px 1fr; }
+
+  .bc-sidebar {
+    width: 120px;
+    min-width: 120px;
+    padding: 6px 4px;
+    gap: 4px;
+  }
+  .bc-minimap       { padding: 8px 4px; }
+  .bc-minimap-label { display: none; }
+  .bc-day           { font-size: 13px; }
+  .bc-clock         { font-size: 10px; }
+  .bc-char-block    { gap: 6px; }
+  .bc-avatar        { font-size: 24px; }
+  .bc-char-name     { font-size: 11px; }
+  .bc-char-hp       { font-size: 10px; }
+
+  .bc-sidebar-btns  { flex-direction: column; gap: 4px; }
+  .toolbar-btn      { font-size: 10px; padding: 6px 4px; min-height: 32px; }
+
+  /* 카드 폰트 */
+  .card-name        { font-size: 8px; }
+  .card-art         { font-size: 22px; }
+  .card-type-badge  { font-size: 8px; }
+  .card-stat        { font-size: 8px; }
+  .lc-name          { font-size: 9px; }
+  .lc-meta          { font-size: 7px; }
+
+  /* 모달 */
+  .equip-modal-box,
+  .skill-modal-box,
+  .bc-upgrade-modal-box,
+  .landmark-modal-box {
+    max-width: 100vw;
+    max-height: 90vh;
+    border-radius: 8px 8px 0 0;
+  }
+
+  /* 엔딩 갤러리 */
+  .eg-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .eg-stat-row  { gap: 4px; }
+  .eg-stat-cell { padding: 6px 4px; }
+  .eg-stat-label { display: none; }
+
+  /* 알림 */
+  .notification { font-size: 12px; max-width: 85vw; }
+
+  /* 캐릭터 생성 */
+  .char-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   4. 폰 세로 (≤ 480px) — 사이드바 → 상단 2행 HUD 바 전환
+   ═══════════════════════════════════════════════════════════ */
+@media (max-width: 480px) {
+  :root {
+    --card-w: 68px;
+    --card-h: 112px;
+    --slot-w: 72px;
+    --slot-h: 118px;
+  }
+
+  /* ── 베이스캠프: 세로 2단 레이아웃 ───────────────── */
+  #screen-basecamp.active {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+    height: 100dvh;
+    overflow: hidden;
+    /* iOS 상태바(노치) 여백 */
+    padding-top: env(safe-area-inset-top);
+  }
+
+  /* ── 사이드바 → 2행 HUD 바 ──────────────────────── */
+  /*
+   * flex-wrap + CSS order 트릭으로 2행 구성
+   * 행 1 (order 1~9):  [시간] [캐릭터] [무게]
+   * ::before (order 10, width:100%) → 행 강제 줄바꿈
+   * 행 2 (order 11~):  [스탯바] [소음] [버튼]
+   */
+  .bc-sidebar {
+    width: 100%;
+    min-width: unset;
+    height: auto;
+    min-height: 80px;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-content: center;
+    align-items: center;
+    gap: 0;
+    padding: 3px 8px;
+    overflow: hidden;
+    border-right: none;
+    border-bottom: 2px solid var(--border-dim);
+    flex-shrink: 0;
+  }
+
+  /* 행 구분 (invisible 100%-width spacer) */
+  .bc-sidebar::before {
+    content: '';
+    flex: 0 0 100%;
+    height: 2px;
+    order: 10;
+    background: var(--border-dim);
+    margin: 1px 0;
+  }
+
+  /* 항목 기본 — 구분선 제거, order별 배치 */
+  .bc-sidebar > * {
+    flex-shrink: 0;
+    padding: 0 6px;
+    border-right: none;
+  }
+  .bc-sidebar > *:last-child { border-right: none; }
+
+  /* ── 숨길 요소 ────────────────────────────────── */
+  .bc-minimap,
+  .bc-quests-block,
+  #disease-status,
+  #outdoor-temp,
+  .bc-season-weather-row { display: none !important; }
+
+  /* ── 행 1 배치 (order 1~9) ───────────────────── */
+  .bc-time-block { order: 1; flex: 0 0 auto; align-self: center; }
+  .bc-char-block { order: 5; flex: 1 0 auto; align-self: center; min-width: 0; }
+  .bc-enc-block  { order: 9; flex: 0 0 auto; align-self: center; }
+
+  /* ── 행 2 배치 (order 11~) ───────────────────── */
+  .stat-bars       { order: 11; flex: 1 1 0; min-width: 0; align-self: center; }
+  .bc-noise-block  { order: 12; flex: 0 0 auto; align-self: center; }
+  .bc-sidebar-btns { order: 15; flex: 0 0 auto; align-self: center; max-width: 150px; overflow-x: auto; scrollbar-width: none; }
+  .bc-sidebar-btns::-webkit-scrollbar { display: none; }
+
+  /* ── 시간 블록 ───────────────────────────────── */
+  .bc-time-block {
+    flex-direction: column;
+    gap: 2px;
+    white-space: nowrap;
+  }
+  .bc-day-row     { flex-direction: row; gap: 4px; align-items: center; }
+  .bc-tp-row      { flex-direction: row; align-items: center; gap: 3px; }
+  .tp-clock-track { width: 40px !important; flex: none !important; }
+  .tp-clock-value { font-size: 10px; }
+  .bc-tp-label    { display: none; }
+  .bc-day         { font-size: 13px; font-weight: bold; }
+  .bc-clock       { font-size: 11px; color: var(--text-secondary); }
+
+  /* ── 캐릭터 블록 ─────────────────────────────── */
+  .bc-char-block {
+    flex-direction: row;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+  .bc-avatar    { font-size: 20px; flex-shrink: 0; }
+  .bc-char-name { font-size: 12px; font-weight: bold; }
+  .bc-char-sub  { font-size: 10px; color: var(--text-secondary); }
+  .bc-char-hp   { font-size: 10px; }
+  .bc-char-info { gap: 1px; min-width: 0; overflow: hidden; }
+
+  /* ── 스탯 바 → 가로 나열 ─────────────────────── */
+  .stat-bars {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 3px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding: 2px 0;
+  }
+  .stat-bars::-webkit-scrollbar { display: none; }
+  .stat-bar-group {
+    flex-direction: column;
+    align-items: center;
+    min-width: 36px;
+    gap: 1px;
+  }
+  .stat-bar-label { flex-direction: column; align-items: center; gap: 0; }
+  .stat-bar-name  { font-size: 8px; }
+  .stat-bar-value { font-size: 10px; font-weight: bold; }
+  .stat-bar-track { width: 32px; height: 5px; border-radius: 3px; }
+
+  /* ── 소음 ────────────────────────────────────── */
+  .bc-noise-block { min-width: 60px; }
+  .noise-label    { font-size: 9px; }
+  .noise-track    { width: 38px; }
+
+  /* ── 무게 ────────────────────────────────────── */
+  .bc-enc-block { font-size: 11px; white-space: nowrap; }
+
+  /* ── 액션 버튼 ───────────────────────────────── */
+  .bc-sidebar-btns {
+    flex-direction: row;
+    gap: 3px;
+    margin-top: 0;
+  }
+  .bc-sidebar-btns .toolbar-btn {
+    padding: 4px 6px;
+    font-size: 10px;
+    min-height: 30px;
+    min-width: 30px;
+    letter-spacing: 0;
+    white-space: nowrap;
+  }
+
+  /* ── 보드 메인 영역 ──────────────────────────── */
+  .bc-main {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    min-height: 0;
+  }
+
+  /* ── 장소 행 → 가로 스크롤 + 큰 탭 영역 ────── */
+  .board-row.row-top .board-row-slots {
+    overflow-x: auto;
+    overflow-y: hidden;
+    flex-wrap: nowrap;
+    scrollbar-width: none;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+    gap: 6px;
+  }
+  .board-row.row-top .board-row-slots::-webkit-scrollbar { display: none; }
+
+  /* 장소 슬롯 — 탭 영역 25% 확대 (69×92 → 86×116) */
+  .board-row.row-top .slot {
+    width: 86px !important;
+    min-width: 86px !important;
+    height: 116px;
+    min-height: 116px;
+  }
+  /* 장소 카드 */
+  .board-row.row-top .location-card,
+  .board-row.row-top .card {
+    width: 83px;
+    height: 113px;
+    cursor: pointer;
+  }
+  .board-row.row-top .lc-icon { font-size: 28px; }
+  .board-row.row-top .lc-name { font-size: 10px; }
+  .board-row.row-top .lc-meta { font-size: 8px; }
+
+  /* ── 카드 폰트 ───────────────────────────────── */
+  .card-icon       { font-size: 11px; width: 13px; height: 13px; }
+  .card-name       { font-size: 7px; }
+  .card-art        { font-size: 18px; }
+  .card-type-badge { font-size: 7px; }
+  .card-stat       { font-size: 7px; padding: 1px 2px; }
+  .lc-icon         { font-size: 22px; }
+  .lc-name         { font-size: 8px; }
+  .lc-meta         { font-size: 7px; }
+  .lm-badge        { font-size: 6px; padding: 1px 3px; }
+
+  /* ── 모달 → 바텀시트 ─────────────────────────── */
+  .modal-overlay { align-items: flex-end; }
+  .modal-box,
+  .skill-modal-box,
+  .equip-modal-box,
+  .landmark-modal-box,
+  .bc-upgrade-modal-box {
+    max-width: 100vw;
+    width: 100%;
+    max-height: 88dvh;
+    border-radius: 12px 12px 0 0;
+    margin: 0;
+  }
+
+  /* ── 기타 화면 ───────────────────────────────── */
+  .menu-title { font-size: 20px; }
+  .menu-btn   { padding: 10px 12px; font-size: 11px; }
+
+  /* 캐릭터 생성 */
+  .char-grid       { grid-template-columns: repeat(2, 1fr); gap: 6px; }
+  .char-card       { padding: 8px 4px; }
+  .char-portrait   { font-size: 22px; }
+  .char-base-stats { gap: 3px; }
+  .char-stat-badge { font-size: 9px; padding: 1px 4px; }
+
+  /* 전투 */
+  .combat-actions { flex-wrap: wrap; gap: 6px; }
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   5. 초소형폰 (≤ 360px)
+   ═══════════════════════════════════════════════════════════ */
+@media (max-width: 360px) {
+  :root {
+    --card-w: 60px;
+    --card-h: 98px;
+    --slot-w: 64px;
+    --slot-h: 104px;
+  }
+
+  /* 2행 HUD 높이 유지하되 내용 압축 */
+  .bc-sidebar { min-height: 74px; padding: 2px 5px; }
+  .bc-day         { font-size: 12px; }
+  .bc-char-name   { font-size: 11px; }
+  .bc-enc-block   { font-size: 10px; }
+  .bc-sidebar-btns { max-width: 120px; }
+  .bc-sidebar-btns .toolbar-btn { font-size: 9px; padding: 3px 4px; min-height: 28px; }
+  .stat-bar-group { min-width: 32px; }
+  .stat-bar-track { width: 28px; height: 4px; }
+  .stat-bar-value { font-size: 9px; }
+
+  /* 장소 슬롯 — 360px에서도 충분한 크기 유지 */
+  .board-row.row-top .slot {
+    width: 78px !important;
+    min-width: 78px !important;
+    height: 104px;
+    min-height: 104px;
+  }
+  .board-row.row-top .location-card,
+  .board-row.row-top .card {
+    width: 75px;
+    height: 101px;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   갤럭시 S26 세로 모드 (412px) — ≤480px 브레이크포인트가 커버
+   추가 미세 조정: 412px 기준 최적화
+   ═══════════════════════════════════════════════════════════ */
+@media (max-width: 412px) {
+  :root {
+    --card-w: 66px;
+    --card-h: 110px;
+    --slot-w: 70px;
+    --slot-h: 116px;
+  }
+
+  /* 장소 탭: 412px 화면에서 가로 스크롤 슬롯 */
+  .board-row.row-top .slot {
+    width: 84px !important;
+    min-width: 84px !important;
+    height: 112px;
+    min-height: 112px;
+  }
+  .board-row.row-top .location-card,
+  .board-row.row-top .card {
+    width: 81px;
+    height: 109px;
+  }
+
+  /* HUD 여백 최소화 */
+  .bc-sidebar { padding: 2px 6px; }
+  .bc-sidebar-btns .toolbar-btn { font-size: 9px; padding: 3px 5px; }
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   7. PC 광폭 해상도 (≥ 1440px) — 스팀 게임 대응
+   ═══════════════════════════════════════════════════════════ */
+@media (min-width: 1440px) {
+  :root {
+    --card-w: 136px;
+    --card-h: 226px;
+    --slot-w: 146px;
+    --slot-h: 236px;
+  }
+}
+
+/* ── 스팀 기준 Full HD (≥ 1920px) ── */
+@media (min-width: 1920px) {
+  :root {
+    --card-w:          160px;
+    --card-h:          266px;
+    --slot-w:          170px;
+    --slot-h:          276px;
+    --font-size-xs:    15px;
+    --font-size-sm:    16px;
+    --font-size-base:  18px;
+    --font-size-md:    21px;
+    --font-size-lg:    25px;
+    --font-size-xl:    34px;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   6. 가로 모드 폰 (height ≤ 500px + landscape)
+   ═══════════════════════════════════════════════════════════ */
+@media (max-height: 500px) and (orientation: landscape) {
+  :root {
+    --card-w: 64px;
+    --card-h: 104px;
+    --slot-w: 68px;
+    --slot-h: 110px;
+  }
+
+  #screen-basecamp.active {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+    height: 100dvh;
+    overflow: hidden;
+  }
+
+  .bc-sidebar {
+    width: 100%;
+    min-width: unset;
+    height: auto;
+    max-height: 44px;
+    flex-direction: row;
+    align-items: center;
+    gap: 0;
+    padding: 2px 8px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    border-right: none;
+    border-bottom: 1px solid var(--border-dim);
+    scrollbar-width: none;
+  }
+  .bc-sidebar::-webkit-scrollbar { display: none; }
+  .bc-sidebar > * {
+    flex-shrink: 0;
+    padding: 0 6px;
+    border-right: 1px solid var(--border-dim);
+  }
+  .bc-sidebar > *:last-child { border-right: none; }
+
+  .bc-minimap,
+  .bc-quests-block,
+  #disease-status,
+  #outdoor-temp,
+  .bc-season-weather-row { display: none !important; }
+
+  .bc-time-block  { flex-direction: row; align-items: center; gap: 4px; }
+  .bc-day-row     { flex-direction: row; gap: 4px; }
+  .bc-tp-row      { flex-direction: row; align-items: center; gap: 3px; }
+  .tp-clock-track { width: 32px !important; flex: none !important; }
+  .bc-tp-label    { display: none; }
+  .bc-day         { font-size: 10px; }
+  .bc-clock       { font-size: 9px; }
+
+  .bc-char-block  { flex-direction: row; align-items: center; gap: 3px; }
+  .bc-char-sub    { display: none; }
+  .bc-char-name   { font-size: 10px; }
+  .bc-char-hp     { font-size: 9px; }
+
+  .stat-bars {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 2px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .stat-bar-group { min-width: 30px; flex-direction: column; align-items: center; }
+  .stat-bar-track { width: 26px; height: 3px; }
+  .stat-bar-name  { font-size: 7px; }
+  .stat-bar-value { font-size: 8px; }
+
+  .bc-noise-block  { min-width: 60px; }
+  .noise-track     { width: 36px; }
+  .bc-enc-block    { font-size: 9px; }
+
+  .bc-sidebar-btns { flex-direction: row; gap: 3px; margin-top: 0; }
+  .bc-sidebar-btns .toolbar-btn {
+    padding: 2px 5px;
+    font-size: 8px;
+    min-height: 26px;
+    letter-spacing: 0;
+  }
+
+  .bc-main {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    min-height: 0;
+  }
+
+  .board-row.row-top .board-row-slots {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    scrollbar-width: none;
+  }
+  .board-row.row-top .board-row-slots::-webkit-scrollbar { display: none; }
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   7. 터치 디바이스 공통 (hover:none + pointer:coarse)
+   ═══════════════════════════════════════════════════════════ */
+@media (hover: none) and (pointer: coarse) {
+
+  /* hover 효과 비활성 */
+  .card:hover            { transform: none; box-shadow: none; }
+  .location-card:hover   { transform: none; box-shadow: none; }
+  .toolbar-btn:hover     { background: var(--bg-raised); color: var(--text-primary); }
+  .menu-btn:hover        { padding-left: var(--gap-md); }
+  .dc-node:hover         { transform: none; }
+  .char-card:hover       { border-color: var(--border-mid); }
+  .rest-option-card:hover { transform: none; box-shadow: none; }
+
+  /* 터치 피드백 */
+  .card:active            { transform: scale(0.94); opacity: 0.82; transition: transform 0.08s, opacity 0.08s; }
+  .toolbar-btn:active     { opacity: 0.6; }
+  .menu-btn:active        { opacity: 0.6; }
+  .dc-node:active         { opacity: 0.7; }
+  .char-card:active       { border-color: var(--accent-primary); }
+  .rest-option-card:active { transform: scale(0.97); }
+
+  /* 버튼 터치 영역 확대 */
+  .toolbar-btn { min-height: 40px; }
+  .menu-btn    { min-height: 44px; }
+
+  /* 장비 슬롯 */
+  .equip-slot { min-height: 66px; min-width: 66px; }
+
+  /* 스크롤바 전역 숨김 */
+  ::-webkit-scrollbar { display: none; }
+  * { scrollbar-width: none; }
+
+  /* 롱프레스 힌트 */
+  .ctx-hint {
+    display: block;
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.3);
+    text-align: center;
+    padding: 4px;
+  }
+}
+
+/* ── 퀵크래프트 프롬프트 반응형 ─────────────────────────── */
+@media (max-width: 600px) {
+  .quick-craft-panel {
+    width: 95vw;
+    max-height: 85vh;
+    padding: 12px;
+  }
+
+  .qc-title {
+    font-size: 13px;
+  }
+
+  .qc-recipe {
+    padding: 8px;
+  }
+
+  .qc-recipe-actions {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .qc-craft-btn,
+  .qc-detail-btn {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+@media (max-width: 360px) {
+  .quick-craft-panel {
+    padding: 8px;
+  }
+
+  .qc-recipes {
+    gap: 6px;
+  }
+}
+

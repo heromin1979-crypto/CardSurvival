@@ -1,0 +1,273 @@
+/* === SKILL MODAL === */
+
+#skill-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 8000;
+  align-items: center;
+  justify-content: center;
+}
+
+#skill-modal.open {
+  display: flex;
+}
+
+.skill-modal-box {
+  background: var(--bg-surface, #1a1510);
+  border: 1px solid rgba(200,160,96,0.35);
+  border-radius: 10px;
+  width: 480px;
+  max-width: 95vw;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.skill-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px 10px;
+  border-bottom: 1px solid rgba(200,160,96,0.15);
+}
+
+.skill-modal-title {
+  font-size: 15px;
+  font-weight: bold;
+  color: var(--accent-primary, #c8a060);
+  letter-spacing: 1px;
+}
+
+.skill-close-btn {
+  background: none;
+  border: none;
+  color: var(--text-dim, #888);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: color 0.15s, background 0.15s;
+}
+
+.skill-close-btn:hover {
+  color: var(--text-primary, #ddd);
+  background: rgba(255,255,255,0.06);
+}
+
+/* ── 탭 ──────────────────────────────── */
+
+.skill-tab-nav {
+  display: flex;
+  gap: 2px;
+  padding: 8px 14px 0;
+  border-bottom: 1px solid rgba(200,160,96,0.12);
+}
+
+.skill-tab-btn {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-dim, #888);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 14px 7px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  letter-spacing: 0.5px;
+}
+
+.skill-tab-btn:hover {
+  color: var(--text-primary, #ddd);
+}
+
+.skill-tab-btn.active {
+  color: var(--accent-primary, #c8a060);
+  border-bottom-color: var(--accent-primary, #c8a060);
+}
+
+/* ── 스킬 목록 ───────────────────────── */
+
+.skill-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.skill-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(200,160,96,0.15);
+  border-radius: 8px;
+  padding: 12px 14px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: border-color 0.2s;
+}
+
+.skill-card:hover {
+  border-color: rgba(200,160,96,0.3);
+}
+
+.skill-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.skill-icon {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.skill-name {
+  font-size: 13px;
+  font-weight: bold;
+  color: var(--text-primary, #ddd);
+  flex: 1;
+}
+
+/* 레벨 뱃지 */
+.skill-level-badge {
+  font-size: 11px;
+  font-weight: bold;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: rgba(100,100,100,0.3);
+  color: var(--text-dim, #888);
+  border: 1px solid rgba(100,100,100,0.3);
+}
+
+.skill-level-badge.mid {
+  background: rgba(60,100,180,0.25);
+  color: #80aaee;
+  border-color: rgba(60,100,180,0.4);
+}
+
+.skill-level-badge.high {
+  background: rgba(80,150,80,0.25);
+  color: #80dd80;
+  border-color: rgba(80,150,80,0.4);
+}
+
+.skill-level-badge.mastery {
+  background: rgba(200,160,40,0.25);
+  color: #f0c040;
+  border-color: rgba(200,160,40,0.5);
+  box-shadow: 0 0 6px rgba(200,160,40,0.3);
+}
+
+.skill-desc {
+  font-size: 11px;
+  color: var(--text-dim, #888);
+  line-height: 1.5;
+}
+
+/* XP 진행 바 */
+.skill-xp-bar-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.skill-xp-bar {
+  flex: 1;
+  height: 5px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.skill-xp-fill {
+  height: 100%;
+  background: rgba(100,100,100,0.7);
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+.skill-xp-fill.mid {
+  background: linear-gradient(90deg, #4060c0, #6090e0);
+}
+
+.skill-xp-fill.high {
+  background: linear-gradient(90deg, #40a040, #60d060);
+}
+
+.skill-xp-fill.mastery {
+  background: linear-gradient(90deg, #c08020, #f0c040);
+}
+
+.skill-xp-text {
+  font-size: 10px;
+  color: var(--text-dim, #888);
+  white-space: nowrap;
+  min-width: 80px;
+  text-align: right;
+}
+
+/* 보너스 태그 */
+.skill-bonus-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.skill-bonus-tag {
+  font-size: 10px;
+  padding: 2px 7px;
+  background: rgba(200,160,96,0.12);
+  border: 1px solid rgba(200,160,96,0.2);
+  border-radius: 4px;
+  color: var(--accent-primary, #c8a060);
+}
+
+.skill-bonus-zero {
+  font-size: 10px;
+  color: rgba(150,150,150,0.5);
+  font-style: italic;
+}
+
+.skill-xp-sources {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+}
+.skill-xp-sources-label {
+  font-size: 9px;
+  color: rgba(150,150,150,0.6);
+  white-space: nowrap;
+}
+.skill-xp-source-tag {
+  font-size: 9px;
+  padding: 1px 5px;
+  background: rgba(100,160,200,0.1);
+  border: 1px solid rgba(100,160,200,0.2);
+  border-radius: 3px;
+  color: rgba(130,180,220,0.85);
+}
+
+/* 마스터리 뱃지 */
+.skill-mastery-badge {
+  font-size: 11px;
+  padding: 5px 10px;
+  background: rgba(200,160,40,0.12);
+  border: 1px solid rgba(200,160,40,0.35);
+  border-radius: 6px;
+  color: #f0c040;
+  margin-top: 2px;
+}
+
+.skill-mastery-hint {
+  font-size: 10px;
+  color: rgba(200,160,96,0.5);
+  font-style: italic;
+  margin-top: 2px;
+}

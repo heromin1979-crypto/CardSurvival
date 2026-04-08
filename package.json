@@ -1,0 +1,92 @@
+{
+  "name": "card-survival-ruined-city",
+  "version": "1.0.0",
+  "description": "Card Survival: Ruined City — 카드 기반 서울 좀비 생존 게임",
+  "main": "electron-main.js",
+  "scripts": {
+    "start": "electron .",
+    "start:pc": "electron electron-main-pc.js",
+    "start:mobile": "electron electron-main-mobile.js",
+    "dev:web": "vite",
+    "build:web": "vite build",
+    "android": "npm run build:web && npx cap sync android && npx cap open android",
+    "android:sync": "npm run build:web && npx cap sync android",
+    "build": "electron-builder --win portable --x64",
+    "build:pc": "node scripts/build-variant.js pc",
+    "build:mobile": "node scripts/build-variant.js mobile",
+    "build:all": "npm run build:pc && npm run build:mobile",
+    "build:dir": "electron-builder --win dir --x64",
+    "postinstall": "node scripts/patch-proguard.js"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0",
+    "electron-reload": "^2.0.0-alpha.1",
+    "vite": "^8.0.5",
+    "vite-plugin-webfont-dl": "^3.12.0"
+  },
+  "build": {
+    "appId": "com.cardsurvival.ruinedcity",
+    "productName": "Card Survival Ruined City",
+    "copyright": "Copyright © 2026",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build-resources"
+    },
+    "files": [
+      "electron-main.js",
+      "electron-main-pc.js",
+      "electron-main-mobile.js",
+      "index.html",
+      "css/**/*",
+      "js/**/*",
+      "assets/**/*",
+      "!assets/icons/.gitkeep",
+      "!node_modules/.cache/**",
+      "!dist/**",
+      "!dist-web/**",
+      "!build-resources/**",
+      "!.gstack/**",
+      "!.design-audit/**",
+      "!design-audit-screenshots/**",
+      "!doc/**",
+      "!testdata/**",
+      "!*.py",
+      "!*.mjs",
+      "!*.txt",
+      "!*.md",
+      "!*.bat",
+      "!serve.js",
+      "!prompt_plan.md"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "sign": false,
+      "signingHashAlgorithms": null,
+      "signAndEditExecutable": false
+    },
+    "portable": {
+      "artifactName": "CardSurvival-RuinedCity.exe"
+    },
+    "asar": true,
+    "compression": "maximum"
+  },
+  "dependencies": {
+    "@capacitor-community/keep-awake": "^8.0.0",
+    "@capacitor/android": "^8.3.0",
+    "@capacitor/app": "^8.1.0",
+    "@capacitor/cli": "^8.3.0",
+    "@capacitor/core": "^8.3.0",
+    "@capacitor/haptics": "^8.0.2",
+    "@capacitor/splash-screen": "^8.0.1",
+    "@capacitor/status-bar": "^8.0.2",
+    "@revenuecat/purchases-capacitor": "^12.3.1"
+  }
+}

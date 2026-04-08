@@ -1,0 +1,93 @@
+/* === DESIGN TOKENS === */
+:root {
+  /* Background palette */
+  --bg-void:        #0a0a0a;
+  --bg-base:        #0d0d0d;
+  --bg-surface:     #141414;
+  --bg-raised:      #1a1a1a;
+  --bg-hover:       #222222;
+  --bg-overlay:     rgba(0,0,0,0.85);
+
+  /* Text */
+  --text-primary:   #d4c9a8;
+  --text-secondary: #8a8070;
+  --text-dim:       #555040;
+  --text-danger:    #e05050;
+  --text-warn:      #e0a030;
+  --text-good:      #60b060;
+  --text-info:      #5090c0;
+
+  /* Card rarity borders */
+  --rarity-common:   #555555;
+  --rarity-uncommon: #336633;
+  --rarity-rare:     #334488;
+  --rarity-unique:   #774422;
+
+  /* Stat colors */
+  --stat-hp:           #dd4444;
+  --stat-stamina:      #44aadd;
+  --stat-hydration:    #4488cc;
+  --stat-nutrition:    #66aa44;
+  --stat-temperature:  #cc8833;
+  --stat-morale:       #aa66cc;
+  --stat-radiation:    #99cc22;
+  --stat-infection:    #cc3333;
+  --stat-fatigue:      #888844;
+
+  /* UI accents */
+  --accent-primary:  #c8a060;
+  --accent-dim:      #6b5535;
+  --border-dim:      #2a2a2a;
+  --border-mid:      #3a3a3a;
+  --border-bright:   #555555;
+
+  /* Slot states */
+  --slot-empty:      #111111;
+  --slot-occupied:   #161616;
+  --slot-valid:      rgba(80,160,80,0.25);
+  --slot-invalid:    rgba(160,60,60,0.25);
+  --slot-hover:      rgba(200,160,80,0.15);
+
+  /* Card dimensions */
+  --card-w:          120px;
+  --card-h:          200px;
+  --slot-w:          130px;
+  --slot-h:          210px;
+
+  /* Spacing */
+  --gap-xs:  4px;
+  --gap-sm:  8px;
+  --gap-md:  12px;
+  --gap-lg:  20px;
+  --gap-xl:  32px;
+
+  /* Borders */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+
+  /* Font */
+  --font-mono: 'JetBrains Mono', 'Courier New', Courier, monospace;
+  --font-title: 'Geist', 'JetBrains Mono', monospace;
+  --font-size-xs:   14px;
+  --font-size-sm:   15px;
+  --font-size-base: 17px;
+  --font-size-md:   19px;
+  --font-size-lg:   22px;
+  --font-size-xl:   28px;
+
+  /* Z-index layers */
+  --z-board:   10;
+  --z-card:    20;
+  --z-drag:    100;
+  --z-hud:     200;
+  --z-panel:   300;
+  --z-modal:   900;
+  --z-overlay: 950;
+  --z-notify:  999;
+
+  /* Transitions */
+  --transition-fast: 120ms ease;
+  --transition-mid:  220ms ease;
+  --transition-slow: 400ms ease;
+}
