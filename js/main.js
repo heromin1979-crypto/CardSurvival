@@ -55,6 +55,7 @@ import BoardManager from './board/BoardManager.js';
 import DragDrop     from './board/DragDrop.js';
 import TouchDrag    from './board/TouchDrag.js';
 import SlotResolver from './board/SlotResolver.js';
+import KeyboardNav  from './board/KeyboardNav.js';
 
 // UI
 import Renderer      from './ui/Renderer.js';
@@ -145,6 +146,7 @@ function init() {
   BoardManager.init();
   DragDrop.init();
   TouchDrag.init();
+  KeyboardNav.init();
 
   // UI
   Renderer.init();

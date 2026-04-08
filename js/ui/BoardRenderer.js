@@ -93,12 +93,14 @@ const BoardRenderer = {
       slots.id = `row-${row.key}`;
 
       const rowSize = GameState.board[row.key]?.length ?? 8;
+      const rowLabel = I18n.t(row.labelKey);
       for (let i = 0; i < rowSize; i++) {
         const slot = document.createElement('div');
         slot.className = 'slot';
         slot.dataset.row  = row.key;
         slot.dataset.slot = i;
         slot.setAttribute('data-hint', I18n.t(row.hintKey));
+        slot.setAttribute('aria-label', `${rowLabel} ${i + 1}번 슬롯`);
         slots.appendChild(slot);
       }
 

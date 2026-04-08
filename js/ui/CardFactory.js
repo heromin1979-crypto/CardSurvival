@@ -383,9 +383,18 @@ const CardFactory = {
         el.className = 'card location-card sublocation-card spawning';
         el.draggable = false;
         el.style.cursor = 'pointer';
+        el.setAttribute('tabindex', '0');
+        el.setAttribute('role', 'button');
+        el.setAttribute('aria-label', `${def.name ?? ''} 세부 장소`);
         el.innerHTML = this._buildSubLocationInner(def);
         el.addEventListener('click', () => {
           EventBus.emit('sublocationRequest', { districtId: def.districtId, subLocationId: def.subLocationId });
+        });
+        el.addEventListener('keydown', e => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            EventBus.emit('sublocationRequest', { districtId: def.districtId, subLocationId: def.subLocationId });
+          }
         });
         el.addEventListener('animationend', () => el.classList.remove('spawning'), { once: true });
         return el;
@@ -398,6 +407,9 @@ const CardFactory = {
         el.className = `card location-card landmark-card spawning${isCurrent ? ' is-current-loc' : ''}`;
         el.draggable = false;
         el.style.cursor = 'pointer';
+        el.setAttribute('tabindex', '0');
+        el.setAttribute('role', 'button');
+        el.setAttribute('aria-label', `${def.name ?? ''} 랜드마크${isCurrent ? ' (현재 위치)' : ''}`);
         el.innerHTML = this._buildLandmarkInner(def, isCurrent);
 
         if (isCurrent) {
@@ -405,10 +417,22 @@ const CardFactory = {
           el.addEventListener('click', () => {
             if (districtId) EventBus.emit('landmarkRequest', { districtId });
           });
+          el.addEventListener('keydown', e => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              if (districtId) EventBus.emit('landmarkRequest', { districtId });
+            }
+          });
         } else {
           // 다른 구 랜드마크 → 해당 구로 이동 (travel card)
           el.addEventListener('click', () => {
             if (districtId) EventBus.emit('travelRequest', { nodeId: districtId });
+          });
+          el.addEventListener('keydown', e => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              if (districtId) EventBus.emit('travelRequest', { nodeId: districtId });
+            }
           });
         }
 
@@ -424,20 +448,39 @@ const CardFactory = {
 
       if (!isCurrent) {
         el.style.cursor = 'pointer';
+        el.setAttribute('tabindex', '0');
+        el.setAttribute('role', 'button');
+        el.setAttribute('aria-label', `${def.name ?? ''} 위치로 이동`);
         el.addEventListener('click', () => {
           EventBus.emit('travelRequest', { nodeId: def.nodeId });
+        });
+        el.addEventListener('keydown', e => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            EventBus.emit('travelRequest', { nodeId: def.nodeId });
+          }
         });
       } else {
         // 랜드마크 내부에서 현재 구 카드 클릭 → 귀환
         if (GameState.location.currentLandmark) {
           el.style.cursor = 'pointer';
           el.classList.add('landmark-return');
+          el.setAttribute('tabindex', '0');
+          el.setAttribute('role', 'button');
+          el.setAttribute('aria-label', `${def.name ?? ''} — 귀환`);
           el.addEventListener('click', () => {
             EventBus.emit('exitLandmarkRequest', {});
           });
+          el.addEventListener('keydown', e => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              EventBus.emit('exitLandmarkRequest', {});
+            }
+          });
         } else {
           el.style.cursor = 'default';
-          // title 제거 — 브라우저 네이티브 툴팁이 hover 시 시각적 노이즈 유발
+          el.setAttribute('role', 'img');
+          el.setAttribute('aria-label', `${def.name ?? ''} (현재 위치)`);
         }
       }
 
@@ -451,6 +494,8 @@ const CardFactory = {
       el.draggable = false;
       el.style.cursor = 'default';
       el.title = def.description ?? '';
+      el.setAttribute('role', 'img');
+      el.setAttribute('aria-label', `${I18n.itemName(inst.definitionId, def.name)} 환경 효과`);
       el.innerHTML = this._buildEnvironmentInner(inst, def);
       el.addEventListener('animationend', () => el.classList.remove('spawning'), { once: true });
       return el;
@@ -461,10 +506,19 @@ const CardFactory = {
       el.className = 'card npc-card spawning';
       el.draggable = false;
       el.style.cursor = 'pointer';
+      el.setAttribute('tabindex', '0');
+      el.setAttribute('role', 'button');
+      el.setAttribute('aria-label', `${I18n.itemName(inst.definitionId, def.name)} NPC — 대화`);
       el.innerHTML = this._buildNPCInner(inst, def);
       el.addEventListener('dblclick', e => {
         e.stopPropagation();
         EventBus.emit('openNPCDialogue', { npcId: inst.definitionId });
+      });
+      el.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          EventBus.emit('openNPCDialogue', { npcId: inst.definitionId });
+        }
       });
       el.addEventListener('animationend', () => el.classList.remove('spawning'), { once: true });
       return el;
@@ -474,6 +528,9 @@ const CardFactory = {
     el.title = def.description ?? '';  // 일반 카드만 설명 툴팁
     el.className = 'card spawning';
     el.draggable = true;
+    el.setAttribute('tabindex', '0');
+    el.setAttribute('role', 'button');
+    el.setAttribute('aria-label', `${I18n.itemName(inst.definitionId, def.name)} 카드`);
     if (inst._quality && inst._quality !== 'normal') {
       el.dataset.quality = inst._quality;
     }
@@ -499,6 +556,14 @@ const CardFactory = {
     el.addEventListener('contextmenu', e => {
       e.preventDefault();
       this._onRightClick(instanceId, def, e);
+    });
+
+    el.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        e.stopPropagation();
+        this._onDoubleClick(instanceId, def);
+      }
     });
 
     el.addEventListener('animationend', () => el.classList.remove('spawning'), { once: true });
