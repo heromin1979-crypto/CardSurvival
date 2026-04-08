@@ -9,6 +9,7 @@ import I18n                    from '../core/I18n.js';
 import SecretCombinationSystem from './SecretCombinationSystem.js';
 import NPCS, { NPC_ITEMS }    from '../data/npcs.js';
 import { NPC_CHEMISTRY }       from '../data/npcChemistry.js';
+import GameData from '../data/GameData.js';
 
 // ── NPC → Secret Combination Hint Mapping ─────────────────────
 // When trust reaches the threshold, the NPC reveals hints about specific combos.
@@ -45,7 +46,7 @@ const NPCSystem = {
   // ── Register NPC items in global item registry ─────────────────
 
   _registerNPCItems() {
-    const items = window.__GAME_DATA__?.items;
+    const items = GameData?.items;
     if (!items) return;
     for (const [id, def] of Object.entries(NPC_ITEMS)) {
       if (!items[id]) {
@@ -448,7 +449,7 @@ const NPCSystem = {
           if (!placed) {
             GameState.removeCardInstance(inst.instanceId);
           } else {
-            const itemDef = window.__GAME_DATA__.items[gift.itemId];
+            const itemDef = GameData.items[gift.itemId];
             EventBus.emit('notify', {
               message: I18n.t('npc.gift', {
                 npc: I18n.itemName(npcId, NPC_ITEMS[npcId]?.name),
@@ -596,8 +597,8 @@ const NPCSystem = {
       }
     }
 
-    const giveItemDef = window.__GAME_DATA__.items[trade.give.id];
-    const receiveItemDef = window.__GAME_DATA__.items[trade.receive.id];
+    const giveItemDef = GameData.items[trade.give.id];
+    const receiveItemDef = GameData.items[trade.receive.id];
     EventBus.emit('notify', {
       message: I18n.t('npc.tradeComplete', {
         gave: I18n.itemName(trade.give.id, giveItemDef?.name),
@@ -698,7 +699,7 @@ const NPCSystem = {
                       || GameState.placeCardInRow(inst.instanceId, 'bottom');
           if (placed) {
             const name     = I18n.itemName(npcId, NPC_ITEMS[npcId]?.name);
-            const itemDef  = window.__GAME_DATA__?.items[forage.id];
+            const itemDef  = GameData?.items[forage.id];
             const itemName = I18n.itemName(forage.id, itemDef?.name);
             EventBus.emit('notify', {
               message: `${name}이(가) ${itemName}을(를) 찾아왔다!`,

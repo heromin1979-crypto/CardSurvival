@@ -1,5 +1,6 @@
 // === CENTRAL GAME STATE SINGLETON ===
-import EventBus from './EventBus.js';
+import EventBus  from './EventBus.js';
+import GameData  from '../data/GameData.js';
 
 const GameState = {
   // ── time ──────────────────────────────────────────────
@@ -93,10 +94,11 @@ const GameState = {
   // ── board ─────────────────────────────────────────────
   // Each row: array of slot entries (null | instanceId)
   board: {
-    top:         [null, null, null, null, null, null, null, null], // 8칸: [현재구][랜드마크][인접구×6]
+    top:         [null, null, null, null, null, null, null, null, null, null], // 10칸
     environment: [null, null, null],  // 3칸: [날씨 카드][이벤트 카드1][이벤트 카드2]
-    middle:      [null, null, null, null, null, null, null, null],  // 8칸
-    bottom:      [null, null, null, null, null, null, null, null],  // 소지품 8칸 (가방으로 확장 가능)
+    middle:      [null, null, null, null, null, null, null, null, null, null], // 10칸
+    bottom:      [null,null,null,null,null,null,null,null,null,null,
+                  null,null,null,null,null,null,null,null,null,null],  // 소지품 20칸 (10열×2행 그리드)
   },
 
   // ── card instances ────────────────────────────────────
@@ -247,7 +249,7 @@ const GameState = {
 
   // ── HELPERS ───────────────────────────────────────────
   createCardInstance(definitionId, overrides = {}) {
-    const { items } = window.__GAME_DATA__;
+    const { items } = GameData;
     const def = items[definitionId];
     if (!def) return null;
 
@@ -289,7 +291,7 @@ const GameState = {
   getCardDef(instanceId) {
     const inst = this.cards[instanceId];
     if (!inst) return null;
-    return window.__GAME_DATA__.items[inst.definitionId];
+    return GameData.items[inst.definitionId];
   },
 
   // find first empty slot in a row (returns index or -1)
@@ -300,7 +302,7 @@ const GameState = {
   // place a card instance in first available slot of a row
   // 일반 아이템은 top(장소) 행에 절대 배치하지 않음
   placeCardInRow(instanceId, preferredRow = null) {
-    const def = window.__GAME_DATA__?.items[this.cards[instanceId]?.definitionId];
+    const def = GameData?.items[this.cards[instanceId]?.definitionId];
     const isLocation = def?.type === 'location';
 
     // 장소 카드: top 우선, 일반 카드: middle/bottom만 허용
@@ -376,7 +378,7 @@ const GameState = {
 
   _updateEncumbrance() {
     const total = Object.values(this.cards).reduce((sum, c) => {
-      const def = window.__GAME_DATA__?.items[c.definitionId];
+      const def = GameData?.items[c.definitionId];
       return sum + ((def?.weight ?? 0) * (c.quantity ?? 1));
     }, 0);
     const enc = this.player.encumbrance;
@@ -447,10 +449,10 @@ const GameState = {
     if (this.player.endurance == null) this.player.endurance = 60;
     // 구버전 세이브 호환: encumbrance weightPct 필드
     if (this.player.encumbrance.weightPct === undefined) this.player.encumbrance.weightPct = 0;
-    // 구버전 세이브 호환: top 행이 부족하면 7칸으로 확장
-    if (d.board?.top && d.board.top.length < 7) {
-      while (d.board.top.length < 7) d.board.top.push(null);
-    }
+    // 구버전 세이브 호환: top/middle 행 10칸으로 확장
+    if (d.board?.top    && d.board.top.length    < 10) while (d.board.top.length    < 10) d.board.top.push(null);
+    if (d.board?.middle && d.board.middle.length < 10) while (d.board.middle.length < 10) d.board.middle.push(null);
+    if (d.board?.bottom && d.board.bottom.length < 20) while (d.board.bottom.length < 20) d.board.bottom.push(null);
     // 구버전 세이브 호환: environment 행이 없으면 자동 생성
     if (!d.board.environment) d.board.environment = [null, null, null];
     while (d.board.environment.length < 3) d.board.environment.push(null);

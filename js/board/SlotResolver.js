@@ -7,6 +7,7 @@ import BoardManager            from './BoardManager.js';
 import NoiseSystem             from '../systems/NoiseSystem.js';
 import { findInteraction }     from '../data/interactions.js';
 import SecretCombinationSystem from '../systems/SecretCombinationSystem.js';
+import GameData                from '../data/GameData.js';
 
 const SlotResolver = {
 
@@ -135,7 +136,7 @@ const SlotResolver = {
 
     // 카드 변환 처리 (소모보다 먼저 — 소모될 카드는 변환하지 않음)
     if (result.transformSrc && !result.consumeSrc) {
-      const newDef = window.__GAME_DATA__?.items[result.transformSrc];
+      const newDef = GameData?.items[result.transformSrc];
       if (newDef) {
         srcInst.definitionId = result.transformSrc;
         if (newDef.defaultContamination !== undefined) srcInst.contamination = newDef.defaultContamination;
@@ -143,7 +144,7 @@ const SlotResolver = {
       }
     }
     if (result.transformTgt && !result.consumeTgt) {
-      const newDef = window.__GAME_DATA__?.items[result.transformTgt];
+      const newDef = GameData?.items[result.transformTgt];
       if (newDef) {
         tgtInst.definitionId = result.transformTgt;
         if (newDef.defaultContamination !== undefined) tgtInst.contamination = newDef.defaultContamination;

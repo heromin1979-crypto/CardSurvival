@@ -6,25 +6,13 @@
 
 ## Post-Launch (after first 50 active players)
 
-### T1: Full Test Suite (Vitest)
-**What:** Add Vitest as devDependency; write unit tests for GameState, EventBus, core systems.
-**Why:** 0% test coverage beyond smoke test is a long-term fragility risk. Ship first, then add coverage.
-**Pros:** Catch regressions fast; enables confident refactoring.
-**Cons:** Setup overhead ~2 hours; CI requires Node env.
-**Context:** Plan-stage decision: smoke test first, expand after playtest confirms the game is worth maintaining.
-**Effort:** M (human) → S (CC+gstack)
-**Priority:** P2
-**Depends on:** Smoke test passing; at least 1 playtest session.
+### T1: Full Test Suite (Vitest) ✅ DONE
+**What:** Vitest 설치 + 42개 단위 테스트 (commit 40130d7)
+**Status:** EventBus(9), SystemRegistry(4), GameData(9), GameState(10), TickEngine(10) — 42/42 통과.
 
-### T2: Module Bundler (Vite/Rollup)
-**What:** Introduce Vite to bundle 50+ ES modules into a single chunk.
-**Why:** 50+ HTTP round-trips on cold load; currently ~1-2s on fast connection, could be ~5s on mobile.
-**Pros:** Faster cold start; tree-shaking; smaller payload.
-**Cons:** Build step required; vanilla JS charm partially lost; yak-shaving before players exist.
-**Context:** Deferred from CEO plan. Revisit when load time becomes a real player complaint.
-**Effort:** M (human) → S (CC+gstack)
-**Priority:** P3
-**Depends on:** Real players and performance complaints.
+### T2: Module Bundler (Vite/Rollup) ✅ DONE
+**What:** vite.config.js 커밋 완료 (commit 2e6fb84)
+**Status:** Capacitor/Web 빌드는 Vite로 번들링. Electron PC 빌드는 네이티브 ES 모듈 유지.
 
 ### T3: Admin/Debug Mode
 **What:** Hidden `?debug=1` URL flag that exposes GameState inspector, TP skip buttons, stat editors.
@@ -48,41 +36,26 @@
 
 ## Performance (defer until player complaint)
 
-### T5: skipTP Async Chunking
-**What:** Break `TickEngine.skipTP(n)` into `setTimeout(0)` chunks to avoid UI freeze on large n.
-**Why:** At n=2160 (30-day skip), synchronous loop blocks main thread ~300ms.
-**Pros:** Smoother UX on long time-skips.
-**Cons:** Async chunking complicates caller code; negligible impact at current scale.
-**Context:** Eng review WARN. Acceptable at current scale. Revisit if players report freeze.
-**Effort:** S (human) → S (CC+gstack)
-**Priority:** P3
+### T5: skipTP Async Chunking ✅ DONE
+**What:** n ≤ 144 동기, n > 144 시 72 TP/frame 비동기 청킹 (commit 다음)
+**Status:** CHUNK_THRESHOLD=144, CHUNK_SIZE=72. 일반 게임플레이(1/10/72)·테스트 동기 유지.
 
 ---
 
 ## Accessibility (phase 2)
 
-### T6: Keyboard Navigation
-**What:** Full keyboard navigation for card actions (Tab, Enter, Arrow keys).
-**Why:** Accessibility requirement; also improves power-user UX.
-**Context:** Design review deferred item. Not blocking launch.
-**Effort:** M (human) → S (CC+gstack)
-**Priority:** P2
+### T6: Keyboard Navigation ✅ DONE
+**What:** 방향키 보드 탐색 + Enter/Space 카드 액션 (commit 2132449)
+**Status:** KeyboardNav.js 신규, CardFactory 키보드 핸들러, ModalManager 포커스 트랩, CardContextMenu Escape 닫기.
 
-### T7: Card ARIA Labels
-**What:** Add `aria-label` attributes to all interactive card elements.
-**Why:** Screen reader support.
-**Context:** Design review deferred item.
-**Effort:** S (human) → S (CC+gstack)
-**Priority:** P2
+### T7: Card ARIA Labels ✅ DONE
+**What:** 전체 카드 타입 aria-label/role/tabindex + 슬롯 aria-label (commit 2132449)
+**Status:** 일반/location/landmark/sublocation/NPC/environment 카드 모두 적용. focus-visible CSS 추가.
 
 ---
 
 ## Architecture (long-term)
 
-### T8: Window Globals → Full EventBus Refactor
-**What:** Eliminate 6 `window.*` globals (NPCSystem, MentalSystem, BodySystem, EcologySystem, NightSystem, __GAME_SYSTEMS__) by resolving circular import dependencies.
-**Why:** Breaks EventBus architecture contract; implicit coupling.
-**Cons:** Circular import root cause requires module restructuring; non-trivial refactor.
-**Context:** CEO plan ADR: late-binding is acceptable for phase 1. Fix via proper module boundaries when architecture settles.
-**Effort:** L (human) → M (CC+gstack)
-**Priority:** P2
+### T8: Window Globals → Full EventBus Refactor ✅ DONE
+**What:** Eliminate window globals → GameData ES 모듈 싱글턴 (commit 12f2b07)
+**Status:** window.__GAME_DATA__ 제거 완료 (35개 파일 마이그레이션). 시스템 전역(NPCSystem 등)은 이전 cherry-pick에서 SystemRegistry로 완료. window 전역 변수 0개 달성.

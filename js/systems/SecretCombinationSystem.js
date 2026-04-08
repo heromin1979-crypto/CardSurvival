@@ -7,6 +7,7 @@ import GameState           from '../core/GameState.js';
 import I18n                from '../core/I18n.js';
 import SkillSystem         from './SkillSystem.js';
 import SECRET_COMBINATIONS from '../data/secretCombinations.js';
+import GameData            from '../data/GameData.js';
 
 // interactions.js의 매칭 로직과 동일
 function _matchesCriteria(def, criteria) {
@@ -75,7 +76,7 @@ const SecretCombinationSystem = {
       if (combo.additionalReq) {
         for (const req of combo.additionalReq) {
           if (gs.countOnBoard(req.id) < req.qty) {
-            const def = window.__GAME_DATA__?.items[req.id];
+            const def = GameData?.items[req.id];
             return { found: true, combo, isNew: false, reason: `${I18n.itemName(req.id, def?.name)} ×${req.qty} 필요` };
           }
         }
@@ -120,7 +121,7 @@ const SecretCombinationSystem = {
     if (r.statChange) {
       for (const [stat, val] of Object.entries(r.statChange)) {
         if (stat === 'noise') {
-          const NoiseSystem = window.__GAME_DATA__?._noiseSystem;
+          const NoiseSystem = GameData?._noiseSystem;
           // 간단히 noise.level 직접 수정
           if (gs.noise) gs.noise.level = Math.min(100, (gs.noise.level ?? 0) + val);
         } else {
@@ -272,7 +273,7 @@ const SecretCombinationSystem = {
     this._ensureState();
     return {
       found: GameState.discoveries.foundCombinations.length,
-      total: window.__GAME_DATA__?.secretCombinations?.length ?? SECRET_COMBINATIONS.length,
+      total: GameData?.secretCombinations?.length ?? SECRET_COMBINATIONS.length,
     };
   },
 };

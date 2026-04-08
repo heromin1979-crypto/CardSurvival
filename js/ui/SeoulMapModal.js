@@ -1,6 +1,7 @@
 // === SEOUL MAP MODAL ===
 // 서울 25구 지역 지도 SVG 오버레이 모달 + 지하철/하수도 경로 표시
 import GameState       from '../core/GameState.js';
+import EventBus        from '../core/EventBus.js';
 import I18n            from '../core/I18n.js';
 import { DISTRICTS }   from '../data/districts.js';
 import SystemRegistry  from '../core/SystemRegistry.js';
@@ -74,6 +75,8 @@ const SeoulMapModal = {
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && this._overlay) this._close();
     });
+    // 위치 변경 시 미니맵 자동 갱신
+    EventBus.on('locationChanged', () => this.renderMinimap());
   },
 
   open() {
@@ -125,6 +128,23 @@ const SeoulMapModal = {
   _close() {
     this._overlay?.remove();
     this._overlay = null;
+  },
+
+  // ── 사이드바 미니맵 SVG 미리보기 ────────────────────────────────
+  renderMinimap() {
+    const el = document.getElementById('minimap-preview');
+    if (!el) return;
+
+    const gs          = GameState;
+    const currentId   = gs.location.currentDistrict ?? 'mapo';
+    const adjacentSet = new Set(DISTRICTS[currentId]?.adjacentDistricts ?? []);
+    const visitedSet  = new Set(gs.location.districtsVisited ?? []);
+
+    el.innerHTML = this._buildSVG(currentId, adjacentSet, visitedSet);
+
+    // 클릭은 부모 .bc-minimap[data-action]에게 위임
+    const svg = el.querySelector('svg');
+    if (svg) svg.style.pointerEvents = 'none';
   },
 
   // ── Subway legend (colored line indicators) ──────────────────

@@ -9,6 +9,7 @@ import SkillSystem     from './SkillSystem.js';
 import StatSystem      from './StatSystem.js';
 import BALANCE         from '../data/gameBalance.js';
 import NightSystem     from './NightSystem.js';
+import GameData from '../data/GameData.js';
 
 // 히든 레시피 포함 전체 레시피
 const BLUEPRINTS = { ...BLUEPRINTS_BASE, ...HIDDEN_RECIPES };
@@ -51,7 +52,7 @@ const CraftSystem = {
     for (const req of stage.requiredItems) {
       const count = gs.countOnBoard(req.definitionId);
       if (count < req.qty) {
-        const def = window.__GAME_DATA__.items[req.definitionId];
+        const def = GameData.items[req.definitionId];
         return { ok: false, reason: I18n.t('craftSys.itemShort', { name: I18n.itemName(req.definitionId, def?.name), have: count, need: req.qty }) };
       }
     }
@@ -61,7 +62,7 @@ const CraftSystem = {
       for (const toolId of bp.requiredTools) {
         const hasIt = gs.getBoardCards().some(c => c.definitionId === toolId);
         if (!hasIt) {
-          const def = window.__GAME_DATA__.items[toolId];
+          const def = GameData.items[toolId];
           return { ok: false, reason: I18n.t('craftSys.toolReq', { name: I18n.itemName(toolId, def?.name) }) };
         }
       }
@@ -224,7 +225,7 @@ const CraftSystem = {
 
   // ── 품질 계산 (스택 불가 아이템에만 적용) ─────────────────
   _calculateQuality(bp) {
-    const firstOutDef = window.__GAME_DATA__?.items[bp.output?.[0]?.definitionId];
+    const firstOutDef = GameData?.items[bp.output?.[0]?.definitionId];
     if (!firstOutDef || firstOutDef.stackable) return null;
 
     const craftSkillMap = {
@@ -310,7 +311,7 @@ const CraftSystem = {
       }
     } else {
       for (const out of bp.output) {
-        const outDef = window.__GAME_DATA__?.items[out.definitionId];
+        const outDef = GameData?.items[out.definitionId];
         const quality = (!outDef?.stackable) ? this._calculateQuality(bp) : null;
         const inst = GameState.createCardInstance(out.definitionId, {
           quantity: out.qty,

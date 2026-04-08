@@ -6,6 +6,7 @@ import GameState from '../core/GameState.js';
 import I18n      from '../core/I18n.js';
 import BALANCE   from '../data/gameBalance.js';
 import EventBus  from '../core/EventBus.js';
+import GameData from '../data/GameData.js';
 
 const NightSystem = {
 
@@ -26,7 +27,7 @@ const NightSystem = {
       EventBus.emit('nightStarted');
     }
 
-    const items = window.__GAME_DATA__?.items ?? {};
+    const items = GameData?.items ?? {};
     const drain = BALANCE.night.lightDrainPerTP;
 
     gs.getBoardCards().forEach(card => {
@@ -52,7 +53,7 @@ const NightSystem = {
 
   /** 보드 위에 'light' 태그가 있는 카드가 존재하는지 */
   hasLightSource() {
-    const items = window.__GAME_DATA__?.items ?? {};
+    const items = GameData?.items ?? {};
     return GameState.getBoardCards().some(c => {
       const def = items[c.definitionId];
       return def?.tags?.includes('light');

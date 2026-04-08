@@ -1,0 +1,13 @@
+{
+  "extraMetadata": {
+    "main": "electron-main-pc.js"
+  },
+  "productName": "Card Survival Ruined City",
+  "directories": {
+    "output": "dist/pc",
+    "buildResources": "build-resources"
+  },
+  "portable": {
+    "artifactName": "CardSurvival-RuinedCity-PC.exe"
+  }
+}

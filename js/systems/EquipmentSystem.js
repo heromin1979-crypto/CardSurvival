@@ -157,32 +157,22 @@ const EquipmentSystem = {
     if (!def) return;
     const extra = BAG_EXTRA_SLOTS[def.id] ?? def.bagSlots ?? 0;
     gs.player.extraSlots = extra;
-
-    // bottom 행 확장
-    const target = 8 + extra;
-    while (gs.board.bottom.length < target) gs.board.bottom.push(null);
+    // 배열 크기는 항상 20 고정 — 슬롯 잠금/해제는 BoardRenderer가 extraSlots로 판단
     EventBus.emit('boardReinit', {});
   },
 
   _removeBagEffect() {
     const gs = GameState;
-    const extra = gs.player.extraSlots ?? 0;
-    if (extra > 0) {
-      // 추가된 슬롯에서 아이템 제거 경고
-      const base = 8;
-      for (let i = base; i < gs.board.bottom.length; i++) {
-        const id = gs.board.bottom[i];
-        if (id) {
-          EventBus.emit('notify', {
-            message: I18n.t('equipSys.bagRemoveWarn'),
-            type: 'warn',
-          });
-          break;
-        }
+    // disabled 구간(10~)에 아이템이 있으면 경고
+    const activeEnd = 10 + (gs.player.extraSlots ?? 0);
+    for (let i = 10; i < activeEnd; i++) {
+      if (gs.board.bottom[i]) {
+        EventBus.emit('notify', { message: I18n.t('equipSys.bagRemoveWarn'), type: 'warn' });
+        break;
       }
-      gs.board.bottom = gs.board.bottom.slice(0, base);
     }
     gs.player.extraSlots = 0;
+    // 배열 크기는 변경하지 않음 — 슬롯만 disabled로 전환됨
     EventBus.emit('boardReinit', {});
   },
 

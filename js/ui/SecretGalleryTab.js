@@ -6,6 +6,7 @@ import GameState               from '../core/GameState.js';
 import I18n                    from '../core/I18n.js';
 import SecretCombinationSystem from '../systems/SecretCombinationSystem.js';
 import SECRET_COMBINATIONS     from '../data/secretCombinations.js';
+import GameData                from '../data/GameData.js';
 
 const SecretGalleryTab = {
   _overlay: null,
@@ -54,7 +55,7 @@ const SecretGalleryTab = {
     const hints = SecretCombinationSystem.getUnlockedHints();
     const found = GameState.discoveries?.foundCombinations ?? [];
     const hintIds = (GameState.discoveries?.unlockedHints ?? []);
-    const items = window.__GAME_DATA__?.items ?? {};
+    const items = GameData?.items ?? {};
 
     const pct = progress.total > 0 ? Math.round((progress.found / progress.total) * 100) : 0;
 

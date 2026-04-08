@@ -14,6 +14,7 @@ import { rollEnemyGroup } from '../data/enemies.js';
 import BALANCE from '../data/gameBalance.js';
 import CharDialogue from '../data/charDialogues.js';
 import NightSystem from './NightSystem.js';
+import GameData from '../data/GameData.js';
 import {
   guardAction, consumeGuard,
   throwableAction,
@@ -511,7 +512,7 @@ const CombatSystem = {
         const npcSys = SystemRegistry.get('NPCSystem');
         if (npcSys) {
           npcSys.damageCompanion(targetNpcId, damage);
-          const npcName = I18n.itemName(targetNpcId, window.__GAME_DATA__?.items?.[targetNpcId]?.name);
+          const npcName = I18n.itemName(targetNpcId, GameData?.items?.[targetNpcId]?.name);
           return I18n.t('npc.hitInstead', { name: npcName, dmg: damage });
         }
       }
@@ -721,7 +722,7 @@ const CombatSystem = {
 
   _applyStructureDamage(damagePercent) {
     const gs    = GameState;
-    const items = window.__GAME_DATA__?.items ?? {};
+    const items = GameData?.items ?? {};
     for (const card of gs.getBoardCards()) {
       const def = items[card.definitionId] ?? gs.getCardDef(card.instanceId);
       if (!def) continue;

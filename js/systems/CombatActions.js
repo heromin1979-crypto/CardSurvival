@@ -8,6 +8,7 @@ import I18n       from '../core/I18n.js';
 import StateMachine from '../core/StateMachine.js';
 import NoiseSystem from './NoiseSystem.js';
 import BALANCE    from '../data/gameBalance.js';
+import GameData from '../data/GameData.js';
 
 // ── 방어(Guard) 행동 ────────────────────────────────────────────
 
@@ -176,7 +177,7 @@ export function companionAttack(combatSystemRef) {
     const bonus = npcSys.getCompanionCombatBonus?.() ?? 1.0;
     const dmg   = Math.floor((8 + Math.floor(Math.random() * 10)) * bonus);
     target.currentHp = Math.max(0, target.currentHp - dmg);
-    const npcName = I18n.itemName(npcId, window.__GAME_DATA__?.items?.[npcId]?.name ?? npcId);
+    const npcName = I18n.itemName(npcId, GameData?.items?.[npcId]?.name ?? npcId);
     logs.push(I18n.t('combatSys.companionAtk', { name: npcName, enemy: I18n.enemyName(target.id, target.name), dmg }));
   }
 
@@ -202,7 +203,7 @@ export function companionHeal(combatSystemRef) {
   gs.combat[cooldownKey] = BALANCE.combat.companionHealCooldown;
 
   const npcId   = companions[0];
-  const npcName = I18n.itemName(npcId, window.__GAME_DATA__?.items?.[npcId]?.name ?? npcId);
+  const npcName = I18n.itemName(npcId, GameData?.items?.[npcId]?.name ?? npcId);
   return I18n.t('combatSys.companionHeal', { name: npcName, val: healed });
 }
 

@@ -1,3 +1,5 @@
+import GameData from './GameData.js';
+
 // === CARD INTERACTION RULES ===
 // 카드를 다른 카드 위에 드랍할 때 발생하는 상호작용 규칙 테이블.
 //
@@ -601,11 +603,11 @@ const INTERACTION_RULES = [
   { id: 'repair_structure_tape', source: { id: 'duct_tape' }, target: { type: 'structure' },
     hint: '덕테이프로 구조물 수리 (+25)',
     canApply(s, t) {
-      const max = window.__GAME_DATA__?.items[t.definitionId]?.defaultDurability ?? 100;
+      const max = GameData?.items[t.definitionId]?.defaultDurability ?? 100;
       return (t.durability ?? max) >= max ? { ok: false, reason: '이미 최대 내구도다.' } : { ok: true };
     },
     apply(s, t) {
-      const max = window.__GAME_DATA__?.items[t.definitionId]?.defaultDurability ?? 100;
+      const max = GameData?.items[t.definitionId]?.defaultDurability ?? 100;
       t.durability = Math.min(max, (t.durability ?? max) + 25);
       s.quantity = Math.max(0, (s.quantity ?? 1) - 1);
       return { message: '덕테이프로 구조물을 수리했다.', consumeSrc: s.quantity <= 0, consumeTgt: false };
@@ -614,11 +616,11 @@ const INTERACTION_RULES = [
   { id: 'repair_structure_tape_rev', source: { type: 'structure' }, target: { id: 'duct_tape' },
     hint: '덕테이프로 구조물 수리 (+25)',
     canApply(s) {
-      const max = window.__GAME_DATA__?.items[s.definitionId]?.defaultDurability ?? 100;
+      const max = GameData?.items[s.definitionId]?.defaultDurability ?? 100;
       return (s.durability ?? max) >= max ? { ok: false, reason: '이미 최대 내구도다.' } : { ok: true };
     },
     apply(s, t) {
-      const max = window.__GAME_DATA__?.items[s.definitionId]?.defaultDurability ?? 100;
+      const max = GameData?.items[s.definitionId]?.defaultDurability ?? 100;
       s.durability = Math.min(max, (s.durability ?? max) + 25);
       t.quantity = Math.max(0, (t.quantity ?? 1) - 1);
       return { message: '덕테이프로 구조물을 수리했다.', consumeSrc: false, consumeTgt: t.quantity <= 0 };

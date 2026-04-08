@@ -4,10 +4,14 @@ import GameState       from '../core/GameState.js';
 import I18n            from '../core/I18n.js';
 import EquipmentSystem from '../systems/EquipmentSystem.js';
 import CardFactory     from './CardFactory.js';
+import GameData        from '../data/GameData.js';
+
+const FOCUSABLE = 'button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
 const ModalManager = {
-  _overlay: null,
-  _box:     null,
+  _overlay:   null,
+  _box:       null,
+  _prevFocus: null,
 
   init() {
     this._overlay = document.getElementById('modal-overlay');
@@ -22,7 +26,20 @@ const ModalManager = {
 
     // Escape key
     document.addEventListener('keydown', e => {
-      if (e.key === 'Escape' && GameState.ui.modalOpen) this.close();
+      if (e.key === 'Escape' && GameState.ui.modalOpen) { this.close(); return; }
+
+      // 포커스 트랩: Tab 키를 모달 내부 focusable 요소 사이에서 순환
+      if (e.key === 'Tab' && GameState.ui.modalOpen) {
+        const focusable = [...this._box.querySelectorAll(FOCUSABLE)];
+        if (focusable.length === 0) return;
+        const first = focusable[0];
+        const last  = focusable[focusable.length - 1];
+        if (e.shiftKey) {
+          if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+        } else {
+          if (document.activeElement === last)  { e.preventDefault(); first.focus(); }
+        }
+      }
     });
 
     EventBus.on('openCardInspect', ({ instanceId }) => this.showCardInspect(instanceId));
@@ -30,18 +47,30 @@ const ModalManager = {
 
   open(html, title = '') {
     if (!this._overlay) return;
+    this._prevFocus = document.activeElement;
     this._box.innerHTML = `
       <div class="modal-title">${title}</div>
       <div class="modal-body">${html}</div>
     `;
     this._overlay.classList.add('open');
     GameState.ui.modalOpen = true;
+    // 첫 번째 focusable 요소로 포커스 이동
+    requestAnimationFrame(() => {
+      const first = this._box.querySelector(FOCUSABLE);
+      if (first) first.focus();
+      else { this._box.setAttribute('tabindex', '-1'); this._box.focus(); }
+    });
   },
 
   close() {
     if (!this._overlay) return;
     this._overlay.classList.remove('open');
     GameState.ui.modalOpen = false;
+    // 이전 포커스 복원
+    if (this._prevFocus?.focus) {
+      this._prevFocus.focus();
+      this._prevFocus = null;
+    }
   },
 
   confirm(message, onConfirm, onCancel = null) {
@@ -65,7 +94,7 @@ const ModalManager = {
   showCardInspect(instanceId) {
     const inst = GameState.cards[instanceId];
     if (!inst) return;
-    const def  = window.__GAME_DATA__.items[inst.definitionId];
+    const def  = GameData.items[inst.definitionId];
     if (!def)  return;
 
     const stats = [];
@@ -98,7 +127,7 @@ const ModalManager = {
     let dismantleHtml = '';
     if (canDismantle) {
       const rows = def.dismantle.map(entry => {
-        const matDef  = window.__GAME_DATA__.items[entry.definitionId];
+        const matDef  = GameData.items[entry.definitionId];
         const matName = I18n.itemName(entry.definitionId, matDef?.name ?? entry.definitionId);
         const matIcon = matDef?.icon ?? '📦';
         const pct     = Math.round(entry.chance * 100);

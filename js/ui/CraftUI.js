@@ -7,6 +7,7 @@ import HIDDEN_RECIPES  from '../data/hiddenRecipes.js';
 import { SKILL_DEFS }  from '../data/skillDefs.js';
 import SkillSystem     from '../systems/SkillSystem.js';
 import I18n            from '../core/I18n.js';
+import GameData        from '../data/GameData.js';
 
 // 전체 레시피 (히든 포함)
 const ALL_BLUEPRINTS = { ...BLUEPRINTS_BASE, ...HIDDEN_RECIPES };
@@ -76,7 +77,7 @@ const CraftUI = {
       const check      = CraftSystem.canStartBlueprint(bp.id);
 
       const reqs = (bp.stages?.[0]?.requiredItems ?? []).map(req => {
-        const def   = window.__GAME_DATA__.items[req.definitionId];
+        const def   = GameData.items[req.definitionId];
         const count = GameState.countOnBoard(req.definitionId);
         const met   = count >= req.qty;
         return `<div class="blueprint-req ${met ? 'met' : 'unmet'}">

@@ -6,6 +6,7 @@ import GameState       from '../core/GameState.js';
 import BLUEPRINTS_BASE from '../data/blueprints.js';
 import HIDDEN_RECIPES  from '../data/hiddenRecipes.js';
 import I18n            from '../core/I18n.js';
+import GameData        from '../data/GameData.js';
 
 const ALL_BPS = { ...BLUEPRINTS_BASE, ...HIDDEN_RECIPES };
 const HIDDEN_IDS = new Set(Object.keys(HIDDEN_RECIPES));
@@ -43,7 +44,7 @@ const CraftDiscovery = {
           blueprintName: I18n.blueprintName(bp.id, bp.name),
           category:      bp.category,
           outputPreview: bp.output.map(o => {
-            const def = window.__GAME_DATA__?.items[o.definitionId];
+            const def = GameData?.items[o.definitionId];
             return {
               definitionId: o.definitionId,
               name: I18n.itemName(o.definitionId, def?.name ?? o.definitionId),
@@ -94,7 +95,7 @@ const CraftDiscovery = {
     for (const req of stage.requiredItems) {
       const onBoard = gs.countOnBoard(req.definitionId);
       if (onBoard < req.qty) {
-        const def = window.__GAME_DATA__?.items[req.definitionId];
+        const def = GameData?.items[req.definitionId];
         missing.push({
           definitionId: req.definitionId,
           name: I18n.itemName(req.definitionId, def?.name ?? req.definitionId),

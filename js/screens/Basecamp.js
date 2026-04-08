@@ -16,6 +16,7 @@ import BasecampModal  from '../ui/BasecampModal.js';
 import QuestSystem    from '../systems/QuestSystem.js';
 import SeasonSystem    from '../systems/SeasonSystem.js';
 import WeatherSystem   from '../systems/WeatherSystem.js';
+import GameData        from '../data/GameData.js';
 
 const Basecamp = {
   _el: null,
@@ -53,7 +54,7 @@ const Basecamp = {
     const districtEl = document.getElementById('bc-district-name');
     if (districtEl) {
       const distId = GameState.location.currentDistrict ?? 'mapo';
-      const node   = window.__GAME_DATA__?.nodes?.[distId];
+      const node   = GameData?.nodes?.[distId];
       districtEl.textContent = `📍 ${I18n.districtName(distId, node?.name ?? distId)}`;
     }
     CraftUI.init();
@@ -72,6 +73,8 @@ const Basecamp = {
     }
     // 날씨 표시 갱신
     WeatherSystem.renderHUD();
+    // 미니맵 SVG 미리보기 렌더링
+    SeoulMapModal.renderMinimap();
   },
 
   _buildLayout() {
@@ -79,8 +82,11 @@ const Basecamp = {
       <aside class="bc-sidebar">
         <!-- Minimap -->
         <div class="bc-minimap" data-action="open-seoul-map" title="${I18n.t('basecamp.viewMap')}">
-          <span>🗺</span>
-          <span class="bc-minimap-label">${I18n.t('basecamp.cityMap')}</span>
+          <div class="bc-minimap-header">
+            <span>🗺</span>
+            <span class="bc-minimap-label">${I18n.t('basecamp.cityMap')}</span>
+          </div>
+          <div class="bc-minimap-preview" id="minimap-preview"></div>
         </div>
 
         <!-- Day / Time / TP -->
@@ -104,6 +110,8 @@ const Basecamp = {
           </div>
           <!-- 온도 표시 -->
           <div id="outdoor-temp" class="bc-temp-display temp-normal">🌡 --°C</div>
+          <!-- 날씨 위젯 (힌트·이벤트) -->
+          <div id="weather-widget" class="bc-weather-widget"></div>
         </div>
 
         <!-- Character (클릭 → 장비 창) -->
@@ -272,7 +280,7 @@ const Basecamp = {
 
   _showRaiderModal({ demandCardIds, demandCount, onSurrender, onRefuse }) {
     const gs    = GameState;
-    const items = window.__GAME_DATA__?.items ?? {};
+    const items = GameData?.items ?? {};
 
     // 요구 아이템 목록 생성
     const demandList = demandCardIds.map(id => {

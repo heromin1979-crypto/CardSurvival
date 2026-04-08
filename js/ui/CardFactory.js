@@ -5,6 +5,7 @@ import StatSystem      from '../systems/StatSystem.js';
 import EventBus        from '../core/EventBus.js';
 import SystemRegistry  from '../core/SystemRegistry.js';
 import I18n      from '../core/I18n.js';
+import GameData  from '../data/GameData.js';
 
 // 위험도 색상
 const DANGER_COLORS = ['#449944', '#889933', '#cc8822', '#cc3333', '#881111'];
@@ -355,7 +356,7 @@ const CardFactory = {
 
     // ── 제작 진행 카드 ─────────────────────────────────────
     if (inst._crafting) {
-      const def = window.__GAME_DATA__.items[inst.definitionId];
+      const def = GameData.items[inst.definitionId];
       const el = document.createElement('div');
       el.dataset.instanceId   = instanceId;
       el.dataset.definitionId = inst.definitionId;
@@ -366,7 +367,7 @@ const CardFactory = {
       return el;
     }
 
-    const def  = window.__GAME_DATA__.items[inst.definitionId];
+    const def  = GameData.items[inst.definitionId];
     if (!def)  return null;
 
     const el = document.createElement('div');
@@ -382,9 +383,18 @@ const CardFactory = {
         el.className = 'card location-card sublocation-card spawning';
         el.draggable = false;
         el.style.cursor = 'pointer';
+        el.setAttribute('tabindex', '0');
+        el.setAttribute('role', 'button');
+        el.setAttribute('aria-label', `${def.name ?? ''} 세부 장소`);
         el.innerHTML = this._buildSubLocationInner(def);
         el.addEventListener('click', () => {
           EventBus.emit('sublocationRequest', { districtId: def.districtId, subLocationId: def.subLocationId });
+        });
+        el.addEventListener('keydown', e => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            EventBus.emit('sublocationRequest', { districtId: def.districtId, subLocationId: def.subLocationId });
+          }
         });
         el.addEventListener('animationend', () => el.classList.remove('spawning'), { once: true });
         return el;
@@ -397,6 +407,9 @@ const CardFactory = {
         el.className = `card location-card landmark-card spawning${isCurrent ? ' is-current-loc' : ''}`;
         el.draggable = false;
         el.style.cursor = 'pointer';
+        el.setAttribute('tabindex', '0');
+        el.setAttribute('role', 'button');
+        el.setAttribute('aria-label', `${def.name ?? ''} 랜드마크${isCurrent ? ' (현재 위치)' : ''}`);
         el.innerHTML = this._buildLandmarkInner(def, isCurrent);
 
         if (isCurrent) {
@@ -404,10 +417,22 @@ const CardFactory = {
           el.addEventListener('click', () => {
             if (districtId) EventBus.emit('landmarkRequest', { districtId });
           });
+          el.addEventListener('keydown', e => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              if (districtId) EventBus.emit('landmarkRequest', { districtId });
+            }
+          });
         } else {
           // 다른 구 랜드마크 → 해당 구로 이동 (travel card)
           el.addEventListener('click', () => {
             if (districtId) EventBus.emit('travelRequest', { nodeId: districtId });
+          });
+          el.addEventListener('keydown', e => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              if (districtId) EventBus.emit('travelRequest', { nodeId: districtId });
+            }
           });
         }
 
@@ -423,20 +448,39 @@ const CardFactory = {
 
       if (!isCurrent) {
         el.style.cursor = 'pointer';
+        el.setAttribute('tabindex', '0');
+        el.setAttribute('role', 'button');
+        el.setAttribute('aria-label', `${def.name ?? ''} 위치로 이동`);
         el.addEventListener('click', () => {
           EventBus.emit('travelRequest', { nodeId: def.nodeId });
+        });
+        el.addEventListener('keydown', e => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            EventBus.emit('travelRequest', { nodeId: def.nodeId });
+          }
         });
       } else {
         // 랜드마크 내부에서 현재 구 카드 클릭 → 귀환
         if (GameState.location.currentLandmark) {
           el.style.cursor = 'pointer';
           el.classList.add('landmark-return');
+          el.setAttribute('tabindex', '0');
+          el.setAttribute('role', 'button');
+          el.setAttribute('aria-label', `${def.name ?? ''} — 귀환`);
           el.addEventListener('click', () => {
             EventBus.emit('exitLandmarkRequest', {});
           });
+          el.addEventListener('keydown', e => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              EventBus.emit('exitLandmarkRequest', {});
+            }
+          });
         } else {
           el.style.cursor = 'default';
-          // title 제거 — 브라우저 네이티브 툴팁이 hover 시 시각적 노이즈 유발
+          el.setAttribute('role', 'img');
+          el.setAttribute('aria-label', `${def.name ?? ''} (현재 위치)`);
         }
       }
 
@@ -450,6 +494,8 @@ const CardFactory = {
       el.draggable = false;
       el.style.cursor = 'default';
       el.title = def.description ?? '';
+      el.setAttribute('role', 'img');
+      el.setAttribute('aria-label', `${I18n.itemName(inst.definitionId, def.name)} 환경 효과`);
       el.innerHTML = this._buildEnvironmentInner(inst, def);
       el.addEventListener('animationend', () => el.classList.remove('spawning'), { once: true });
       return el;
@@ -460,10 +506,19 @@ const CardFactory = {
       el.className = 'card npc-card spawning';
       el.draggable = false;
       el.style.cursor = 'pointer';
+      el.setAttribute('tabindex', '0');
+      el.setAttribute('role', 'button');
+      el.setAttribute('aria-label', `${I18n.itemName(inst.definitionId, def.name)} NPC — 대화`);
       el.innerHTML = this._buildNPCInner(inst, def);
       el.addEventListener('dblclick', e => {
         e.stopPropagation();
         EventBus.emit('openNPCDialogue', { npcId: inst.definitionId });
+      });
+      el.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          EventBus.emit('openNPCDialogue', { npcId: inst.definitionId });
+        }
       });
       el.addEventListener('animationend', () => el.classList.remove('spawning'), { once: true });
       return el;
@@ -473,6 +528,9 @@ const CardFactory = {
     el.title = def.description ?? '';  // 일반 카드만 설명 툴팁
     el.className = 'card spawning';
     el.draggable = true;
+    el.setAttribute('tabindex', '0');
+    el.setAttribute('role', 'button');
+    el.setAttribute('aria-label', `${I18n.itemName(inst.definitionId, def.name)} 카드`);
     if (inst._quality && inst._quality !== 'normal') {
       el.dataset.quality = inst._quality;
     }
@@ -500,6 +558,14 @@ const CardFactory = {
       this._onRightClick(instanceId, def, e);
     });
 
+    el.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        e.stopPropagation();
+        this._onDoubleClick(instanceId, def);
+      }
+    });
+
     el.addEventListener('animationend', () => el.classList.remove('spawning'), { once: true });
     return el;
   },
@@ -522,7 +588,7 @@ const CardFactory = {
     }
 
     const districtId = def.id?.replace(/^lm_/, '');
-    const district   = window.__GAME_DATA__?.districts?.[districtId];
+    const district   = GameData?.districts?.[districtId];
     const danger     = district?.dangerLevel ?? 0;
     const color      = DANGER_COLORS[Math.min(danger, DANGER_COLORS.length - 1)];
     const dangerDots = '●'.repeat(danger) + '○'.repeat(Math.max(0, 3 - danger));
@@ -801,12 +867,12 @@ const CardFactory = {
     if (!inst) { el.remove(); return; }
 
     if (inst._crafting) {
-      const def = window.__GAME_DATA__.items[inst.definitionId];
+      const def = GameData.items[inst.definitionId];
       el.innerHTML = this._buildCraftingInner(inst, def ?? {});
       return;
     }
 
-    const def = window.__GAME_DATA__.items[inst.definitionId];
+    const def = GameData.items[inst.definitionId];
     if (!def) return;
 
     if (def.type === 'location') {

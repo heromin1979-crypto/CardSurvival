@@ -16,16 +16,7 @@ import I18n            from './core/I18n.js';
 import SystemRegistry  from './core/SystemRegistry.js';
 
 // Data
-import ITEMS      from './data/items.js';
-import BLUEPRINTS from './data/blueprints.js';
-import NODES, { DISTRICTS, SUB_LOCATIONS } from './data/nodes.js';
-import ENEMIES    from './data/enemies.js';
-import CHARACTERS from './data/characters.js';
 import { registerSubLocationItems } from './data/landmarks.js';
-import { SECRET_ENEMIES } from './data/secretEnemies.js';
-import { HIDDEN_LOCATIONS } from './data/hiddenLocations.js';
-import SECRET_EVENTS      from './data/secretEvents.js';
-import HIDDEN_RECIPES     from './data/hiddenRecipes.js';
 
 // Systems
 import EndingSystem         from './systems/EndingSystem.js';
@@ -64,6 +55,7 @@ import BoardManager from './board/BoardManager.js';
 import DragDrop     from './board/DragDrop.js';
 import TouchDrag    from './board/TouchDrag.js';
 import SlotResolver from './board/SlotResolver.js';
+import KeyboardNav  from './board/KeyboardNav.js';
 
 // UI
 import Renderer      from './ui/Renderer.js';
@@ -103,23 +95,6 @@ import SaveManager from './persistence/SaveManager.js';
 import AutoSave    from './persistence/AutoSave.js';
 
 // ── Bootstrap ────────────────────────────────────────────
-// 히든 레시피를 BLUEPRINTS에 병합
-const ALL_BLUEPRINTS = { ...BLUEPRINTS, ...HIDDEN_RECIPES };
-// 비밀 적을 ENEMIES에 병합
-const ALL_ENEMIES = { ...ENEMIES, ...SECRET_ENEMIES };
-
-window.__GAME_DATA__ = {
-  items: ITEMS,                // ITEMS already includes LEGENDARY_ITEMS via items.js
-  blueprints: ALL_BLUEPRINTS,
-  nodes: NODES,
-  districts: DISTRICTS,
-  subLocations: SUB_LOCATIONS,
-  enemies: ALL_ENEMIES,
-  characters: CHARACTERS,
-  hiddenLocations: HIDDEN_LOCATIONS,
-  secretEvents: SECRET_EVENTS,
-  hiddenRecipes: HIDDEN_RECIPES,
-};
 registerSubLocationItems();
 
 // HiddenElementSystem에서 StateMachine 접근용 → SystemRegistry로 등록
@@ -171,6 +146,7 @@ function init() {
   BoardManager.init();
   DragDrop.init();
   TouchDrag.init();
+  KeyboardNav.init();
 
   // UI
   Renderer.init();
@@ -208,6 +184,11 @@ function init() {
 
   // Notification system
   _initNotifications();
+
+  // Debug panel (?debug=1 일 때만 활성화)
+  if (new URLSearchParams(window.location.search).get('debug') === '1') {
+    import('./ui/DebugPanel.js').then(m => m.default.init());
+  }
 
   // Start on main menu
   Renderer.activateScreen('main_menu');

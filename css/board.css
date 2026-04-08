@@ -1,4 +1,4 @@
-/* === 3-ROW BOARD — flex-fill: 4 rows share viewport height equally === */
+/* === 4-ROW BOARD — flex-fill: 4 rows share viewport height equally === */
 .board {
   width: 100%;
   flex: 1;
@@ -34,12 +34,12 @@
 .board-row-slots {
   display: flex;
   gap: var(--gap-sm);
-  flex-wrap: nowrap;          /* 줄 바꿈 없음 — 가로 스크롤로 처리 */
+  flex-wrap: nowrap;
   flex: 1;
-  min-height: var(--slot-h);  /* clamp 하한값이 최소 높이 보장 */
-  overflow-x: auto;           /* 카드 많을 때 행 내 가로 스크롤 */
+  min-height: 0;
+  overflow-x: hidden;         /* 스크롤 없음 — 슬롯이 flex:1로 폭을 정확히 채움 */
   overflow-y: hidden;
-  align-items: center;
+  align-items: stretch;       /* 슬롯이 컨테이너 높이를 꽉 채움 — 고정 높이 초과로 잘리는 현상 방지 */
   padding: var(--gap-xs);
   background: rgba(0,0,0,0.15);
   border: 1px solid var(--border-dim);
@@ -49,7 +49,7 @@
 /* Individual slot */
 .slot {
   width: var(--slot-w);
-  height: var(--slot-h);
+  height: 100%;               /* 컨테이너 높이에 맞춤 — 고정값 대신 동적 */
   background: var(--slot-empty);
   border: 1px dashed var(--border-dim);
   border-radius: var(--radius-sm);
@@ -61,6 +61,13 @@
   flex-shrink: 0;
 }
 
+/* 장소·바닥 행: 10칸이 정확히 가로를 채우도록 flex:1 사용 (고정 slot-w 무시) */
+.board-row:not(.row-bottom) .slot {
+  flex: 1 1 0;
+  width: auto;
+  min-width: 0;
+}
+
 .slot:empty::after,
 .slot.empty-hint::after {
   content: attr(data-hint);
@@ -69,6 +76,22 @@
   text-align: center;
   pointer-events: none;
   padding: 4px;
+}
+
+/* Disabled slot — 가방 없이 잠긴 인벤토리 칸 */
+.slot.slot-disabled {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(255,255,255,0.04);
+  border-style: dashed;
+  pointer-events: none;
+  opacity: 0.35;
+}
+
+.slot.slot-disabled::after {
+  content: '🔒';
+  font-size: 14px;
+  opacity: 0.4;
+  pointer-events: none;
 }
 
 /* Drop target states */
@@ -101,16 +124,37 @@
   border-color: rgba(100,80,60,0.3);
 }
 
-/* Card within slot */
+/* Card within slot — 슬롯 높이를 100% 채움 (고정 높이로 위로 삐져나와 행 레이블에 가리는 현상 방지) */
 .slot .card {
   position: absolute;
-  top: 50%;
+  top: 0;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translateX(-50%);
+  height: 100%;
 }
 
 .slot .card:hover {
-  transform: translate(-50%, -55%);
+  transform: translateX(-50%) translateY(-3px);
+}
+
+/* ── 휴대 행: 2행 그리드 레이아웃 (5열×2행 = 10슬롯) ── */
+.board-row.row-bottom {
+  flex: 1.84;                     /* top/middle보다 약간 크게 — 2행 카드를 수용하면서 높이 균등 */
+}
+
+.board-row.row-bottom .board-row-slots {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);  /* 10열 고정 — 10슬롯×2행 = 20 */
+  grid-template-rows: 1fr 1fr;             /* 2행: 컨테이너 높이를 동등 분할 */
+  overflow-x: hidden;
+  overflow-y: hidden;
+  flex-wrap: unset;               /* flex-wrap 비활성 (grid 사용) */
+  align-items: unset;             /* grid 아이템은 기본 stretch */
+}
+
+.board-row.row-bottom .slot {
+  height: auto;                   /* grid 행 높이가 결정 */
+  width: auto;                    /* grid 열 너비가 결정 */
 }
 
 /* Row section colors */

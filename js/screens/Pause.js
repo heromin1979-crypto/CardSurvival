@@ -52,6 +52,7 @@ const Pause = {
         <button class="menu-btn" id="btn-save-pause">${t('pause.save')}</button>
         <button class="menu-btn" id="btn-pause-settings">⚙️ ${t('pause.settings')}</button>
         <button class="menu-btn danger" id="btn-quit">${t('pause.quit')}</button>
+        <button class="menu-btn danger" id="btn-exit-game">🚪 게임 종료</button>
       </div>
     `;
 
@@ -68,6 +69,10 @@ const Pause = {
     this._el.querySelector('#btn-quit')?.addEventListener('click', () => {
       TickEngine.setPaused(false);
       StateMachine.transition('main_menu');
+    });
+
+    this._el.querySelector('#btn-exit-game')?.addEventListener('click', () => {
+      window.close();
     });
   },
 };

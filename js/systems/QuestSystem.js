@@ -4,6 +4,7 @@ import EventBus  from '../core/EventBus.js';
 import GameState from '../core/GameState.js';
 import I18n      from '../core/I18n.js';
 import MAIN_QUESTS from '../data/mainQuests.js';
+import GameData   from '../data/GameData.js';
 
 // ── 계절 퀘스트 정의 ────────────────────────────────────────────────
 // trigger: 연결된 seasonalEvent id (해당 이벤트 발생 시 자동 시작)
@@ -174,7 +175,7 @@ const QuestSystem = {
   },
 
   _onCraft(blueprintId) {
-    const bp = window.__GAME_DATA__?.blueprints?.[blueprintId];
+    const bp = GameData?.blueprints?.[blueprintId];
     if (!bp) return;
     for (const q of GameState.quests.active) {
       const qDef = _getQuestDef(q.id);

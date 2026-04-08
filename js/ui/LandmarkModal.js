@@ -8,6 +8,7 @@ import TickEngine    from '../core/TickEngine.js';
 import StateMachine  from '../core/StateMachine.js';
 import { rollEnemyGroup } from '../data/enemies.js';
 import LANDMARK_DATA, { rollLoot } from '../data/landmarks.js';
+import GameData from '../data/GameData.js';
 
 const LandmarkModal = {
   _initialized:  false,
@@ -97,7 +98,7 @@ const LandmarkModal = {
       : `<span class="lm-visit-badge fresh">${I18n.t('landmark.fresh')}</span>`;
     const lootPreview = loc.lootTable.slice(0, 3)
       .map(e => {
-        const def = window.__GAME_DATA__?.items[e.id];
+        const def = GameData?.items[e.id];
         return def ? `<span title="${def.name}">${def.icon ?? '📦'}</span>` : '';
       }).join('');
 
@@ -172,7 +173,7 @@ const LandmarkModal = {
       TickEngine.skipTP(tpCost);
       this._isExploring = false;
       this.close();
-      const DISTRICTS   = window.__GAME_DATA__?.districts ?? {};
+      const DISTRICTS   = GameData?.districts ?? {};
       const dangerLevel = DISTRICTS[districtId]?.dangerLevel ?? 1;
       const noiseLevel  = gs.noise?.level ?? 0;
       const enemies     = rollEnemyGroup(dangerLevel, noiseLevel);
@@ -200,7 +201,7 @@ const LandmarkModal = {
     const count    = Math.max(0, Math.round(rawCount * lootMult));
     const defIds   = rollLoot(loc.lootTable, count);
 
-    const items    = window.__GAME_DATA__?.items ?? {};
+    const items    = GameData?.items ?? {};
     const found    = [];
     let   overflow = 0;
 

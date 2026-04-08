@@ -5,6 +5,7 @@ import EventBus       from '../core/EventBus.js';
 import GameState      from '../core/GameState.js';
 import DismantleSystem from '../systems/DismantleSystem.js';
 import I18n           from '../core/I18n.js';
+import GameData       from '../data/GameData.js';
 
 const LONG_PRESS_MS   = 3000;
 const MOVE_THRESHOLD  = 8;   // px — 이 이상 움직이면 드래그로 판정하여 취소
@@ -15,6 +16,7 @@ const CardContextMenu = {
   _startY:     0,
   _targetId:   null,   // instanceId
   _menuEl:     null,
+  _escHandler: null,
 
   init() {
     // 이벤트 위임: document에 한 번만 등록
@@ -119,7 +121,7 @@ const CardContextMenu = {
     } else {
       const preview = def.dismantle.map(d => {
         const pct = Math.round(d.chance * 100);
-        const dDef = window.__GAME_DATA__?.items[d.definitionId];
+        const dDef = GameData?.items[d.definitionId];
         return `${dDef?.icon ?? '?'}${I18n.itemName(d.definitionId, dDef?.name ?? d.definitionId)} ×${d.qty} (${pct}%)`;
       }).join('\n');
       btnDismantle.title = preview;
@@ -171,11 +173,23 @@ const CardContextMenu = {
 
     // 진동 피드백 (모바일)
     if (navigator.vibrate) navigator.vibrate(30);
+
+    // Escape 키로 닫기
+    this._escHandler = (e) => { if (e.key === 'Escape') this._close(); };
+    document.addEventListener('keydown', this._escHandler);
+
+    // 첫 번째 활성 버튼에 포커스
+    const firstBtn = menu.querySelector('button:not([disabled])');
+    if (firstBtn) firstBtn.focus();
   },
 
   // ── 메뉴 닫기 ─────────────────────────────────────────────
 
   _close() {
+    if (this._escHandler) {
+      document.removeEventListener('keydown', this._escHandler);
+      this._escHandler = null;
+    }
     if (this._menuEl) {
       this._menuEl.remove();
       this._menuEl = null;
@@ -191,7 +205,7 @@ const CardContextMenu = {
    * @returns {Array<{id, name}>}
    */
   _findCraftable(instanceId) {
-    const blueprints = window.__GAME_DATA__?.blueprints;
+    const blueprints = GameData?.blueprints;
     if (!blueprints) return [];
 
     const inst = GameState.cards[instanceId];

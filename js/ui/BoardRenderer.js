@@ -5,13 +5,17 @@ import EventBus   from '../core/EventBus.js';
 import CardFactory from './CardFactory.js';
 import BoardManager from '../board/BoardManager.js';
 import I18n       from '../core/I18n.js';
+import GameData   from '../data/GameData.js';
 
 const ROW_CONFIG = [
-  { key: 'top',         labelKey: 'board.location',     hintKey: 'board.locationHint' },
-  { key: 'environment', labelKey: 'board.environment',  hintKey: 'board.environmentHint' },
-  { key: 'middle',      labelKey: 'board.floor',        hintKey: 'board.floorHint' },
-  { key: 'bottom',      labelKey: 'board.inventory',    hintKey: 'board.inventoryHint' },
+  { key: 'top',    slots: 10, labelKey: 'board.location',  hintKey: 'board.locationHint' },
+  { key: 'middle', slots: 10, labelKey: 'board.floor',     hintKey: 'board.floorHint' },
+  { key: 'bottom', slots: 20, labelKey: 'board.inventory', hintKey: 'board.inventoryHint' },
+  // environment 행은 사이드바 위젯으로 이동 — 보드에서 제거
 ];
+
+// 가방 없이 기본 활성 슬롯 수 (1행 = 10칸)
+const BOTTOM_BASE_SLOTS = 10;
 
 const BoardRenderer = {
   _container: null,
@@ -91,13 +95,22 @@ const BoardRenderer = {
       slots.className = 'board-row-slots';
       slots.id = `row-${row.key}`;
 
-      const rowSize = GameState.board[row.key]?.length ?? 8;
+      const rowSize = row.slots;
+      const rowLabel = I18n.t(row.labelKey);
+      // 휴대 행: 기본 10칸 + 가방 extraSlots만큼 추가 활성, 나머지 disabled
+      const activeCount = row.key === 'bottom'
+        ? BOTTOM_BASE_SLOTS + (GameState.player.extraSlots ?? 0)
+        : rowSize;
       for (let i = 0; i < rowSize; i++) {
         const slot = document.createElement('div');
-        slot.className = 'slot';
+        const isDisabled = i >= activeCount;
+        slot.className = isDisabled ? 'slot slot-disabled' : 'slot';
         slot.dataset.row  = row.key;
         slot.dataset.slot = i;
-        slot.setAttribute('data-hint', I18n.t(row.hintKey));
+        if (!isDisabled) {
+          slot.setAttribute('data-hint', I18n.t(row.hintKey));
+        }
+        slot.setAttribute('aria-label', `${rowLabel} ${i + 1}번 슬롯${isDisabled ? ' (잠금)' : ''}`);
         slots.appendChild(slot);
       }
 
@@ -128,7 +141,7 @@ const BoardRenderer = {
     // ── Step 2: 레이블·장소 정보 갱신 ──
     this._updateFloorLabel();
     const curId   = GameState.location.currentNode ?? GameState.location.currentDistrict ?? 'mapo';
-    const curNode = window.__GAME_DATA__?.nodes?.[curId];
+    const curNode = GameData?.nodes?.[curId];
     if (curNode) this._updateLocationInfo(curId, curNode);
 
     // ── Step 3: 기존 카드 DOM 요소 수집 후 슬롯에서 분리 ──
@@ -189,8 +202,20 @@ const BoardRenderer = {
 
         el.classList.remove('spawning');
         el.style.transition    = 'none';
-        el.style.transform     = `translate(${dx}px, ${dy}px)`;
+
+        // 카드 CSS: top:0; left:50%; transform:translateX(-50%)
+        // inline transform이 CSS transform을 덮을 때 수평만 -halfW 보정 필요 (수직 보정 불필요)
+        const halfW = el.offsetWidth / 2;
+        el.style.transform     = `translate(${dx - halfW}px, ${dy}px)`;
         el.style.pointerEvents = 'none'; // 이동 중 클릭 방지
+
+        // 애니메이션 중 다른 슬롯/행에 가려지지 않도록 z-index 올림
+        const slotEl     = el.parentElement;
+        const rowSlotsEl = slotEl?.parentElement;
+        const rowEl      = rowSlotsEl?.parentElement;
+        if (slotEl)     { slotEl.style.zIndex = '999'; }
+        if (rowSlotsEl) { rowSlotsEl.style.zIndex = '999'; }
+        if (rowEl)      { rowEl.style.position = 'relative'; rowEl.style.zIndex = '999'; }
 
         // layout flush: 브라우저가 시작 위치를 확정한 뒤 전환 시작
         void el.getBoundingClientRect();
@@ -204,6 +229,9 @@ const BoardRenderer = {
           el.style.transition    = '';
           el.style.transform     = '';
           el.style.pointerEvents = '';
+          if (slotEl)     { slotEl.style.zIndex = ''; }
+          if (rowSlotsEl) { rowSlotsEl.style.zIndex = ''; }
+          if (rowEl)      { rowEl.style.position = ''; rowEl.style.zIndex = ''; }
         };
         const fallback = setTimeout(cleanup, Math.ceil(dur * 1000) + 100);
         el.addEventListener('transitionend', cleanup, { once: true });
@@ -240,7 +268,7 @@ const BoardRenderer = {
   },
 
   _updateFloorLabel() {
-    const nodes      = window.__GAME_DATA__?.nodes ?? {};
+    const nodes      = GameData?.nodes ?? {};
     const currentId  = GameState.location.currentNode ?? 'mapo';
     const nodeName   = nodes[currentId]?.name ?? currentId;
     const isBasecamp = GameState.ui.currentState === 'basecamp';
@@ -254,7 +282,7 @@ const BoardRenderer = {
     // 장소 카드 현재 위치 강조 갱신
     document.querySelectorAll('.location-card').forEach(el => {
       const defId = el.dataset.definitionId;
-      const def   = window.__GAME_DATA__?.items[defId];
+      const def   = GameData?.items[defId];
       const isNow = def?.nodeId === currentId;
       el.classList.toggle('is-current', isNow);
     });
