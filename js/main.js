@@ -185,6 +185,11 @@ function init() {
   // Notification system
   _initNotifications();
 
+  // Debug panel (?debug=1 일 때만 활성화)
+  if (new URLSearchParams(window.location.search).get('debug') === '1') {
+    import('./ui/DebugPanel.js').then(m => m.default.init());
+  }
+
   // Start on main menu
   Renderer.activateScreen('main_menu');
 
