@@ -8,10 +8,10 @@ import I18n       from '../core/I18n.js';
 import GameData   from '../data/GameData.js';
 
 const ROW_CONFIG = [
-  { key: 'top',         labelKey: 'board.location',     hintKey: 'board.locationHint' },
-  { key: 'environment', labelKey: 'board.environment',  hintKey: 'board.environmentHint' },
-  { key: 'middle',      labelKey: 'board.floor',        hintKey: 'board.floorHint' },
-  { key: 'bottom',      labelKey: 'board.inventory',    hintKey: 'board.inventoryHint' },
+  { key: 'top',    labelKey: 'board.location',  hintKey: 'board.locationHint' },
+  { key: 'middle', labelKey: 'board.floor',     hintKey: 'board.floorHint' },
+  { key: 'bottom', labelKey: 'board.inventory', hintKey: 'board.inventoryHint' },
+  // environment 행은 사이드바 위젯으로 이동 — 보드에서 제거
 ];
 
 const BoardRenderer = {

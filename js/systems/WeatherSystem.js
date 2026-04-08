@@ -117,6 +117,9 @@ const WeatherSystem = {
       // 시간대 변화에 따른 기온 갱신 (시간이 바뀔 때)
       this._updateTemperatureHUD(this.getOutdoorTemperature());
     }
+
+    // 사이드바 위젯 갱신
+    this._renderWeatherWidget(gs);
   },
 
   _initWeather(gs) {
@@ -273,6 +276,60 @@ const WeatherSystem = {
     }
     this._updateWeatherHUD(gs.weather);
     this._updateTemperatureHUD(this.getOutdoorTemperature());
+    this._renderWeatherWidget(gs);
+  },
+
+  // ── 사이드바 날씨 위젯 렌더링 ─────────────────────────────────
+  _renderWeatherWidget(gs) {
+    const el = document.getElementById('weather-widget');
+    if (!el) return;
+
+    // 날씨 카드 힌트 태그
+    const weatherInstId = gs.board?.environment?.[0];
+    const weatherInst   = weatherInstId ? gs.cards[weatherInstId] : null;
+    const weatherDef    = weatherInst ? GameData?.items?.[weatherInst.definitionId] : null;
+
+    const hintMap = {
+      water_source:  { icon: '💧', label: '물 수집 가능' },
+      heat:          { icon: '🔥', label: '고온 주의' },
+      cold:          { icon: '🧊', label: '저온 주의' },
+      contamination: { icon: '☢️', label: '오염 위험' },
+      danger:        { icon: '⚠️', label: '위험 날씨' },
+    };
+
+    const hints = weatherDef?.tags
+      ? weatherDef.tags
+          .filter(t => hintMap[t])
+          .map(t => `<span class="ww-hint ww-hint-${t}">${hintMap[t].icon} ${hintMap[t].label}</span>`)
+          .join('')
+      : '';
+
+    // 이벤트 카드 목록 (slot 1, 2)
+    let eventsHtml = '';
+    for (let i = 1; i <= 2; i++) {
+      const evtId   = gs.board?.environment?.[i];
+      const evtInst = evtId ? gs.cards[evtId] : null;
+      const evtDef  = evtInst ? GameData?.items?.[evtInst.definitionId] : null;
+      if (!evtDef) continue;
+      const pct = evtInst._envTpTotal > 0
+        ? Math.round((evtInst._envTpRemaining / evtInst._envTpTotal) * 100)
+        : 0;
+      const daysLeft = Math.max(1, Math.ceil((evtInst._envTpRemaining ?? 0) / 72));
+      const isDanger = evtDef.tags?.includes('danger');
+      eventsHtml += `
+        <div class="ww-event${isDanger ? ' ww-event-danger' : ''}">
+          <span class="ww-event-icon">${evtDef.icon ?? '⚡'}</span>
+          <span class="ww-event-name">${evtDef.name}</span>
+          <span class="ww-event-days">${daysLeft}일</span>
+          <div class="ww-event-bar">
+            <div class="ww-event-fill${isDanger ? ' danger' : ''}" style="width:${pct}%"></div>
+          </div>
+        </div>`;
+    }
+
+    el.innerHTML = hints || eventsHtml
+      ? `${hints ? `<div class="ww-hints">${hints}</div>` : ''}${eventsHtml}`
+      : '';
   },
 };
 

@@ -105,6 +105,8 @@ const Basecamp = {
           </div>
           <!-- 온도 표시 -->
           <div id="outdoor-temp" class="bc-temp-display temp-normal">🌡 --°C</div>
+          <!-- 날씨 위젯 (힌트·이벤트) -->
+          <div id="weather-widget" class="bc-weather-widget"></div>
         </div>
 
         <!-- Character (클릭 → 장비 창) -->

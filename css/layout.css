@@ -192,6 +192,62 @@
 .bc-temp-display.temp-hot       { color: #f09060; background: rgba(220,100, 40,0.14); }
 .bc-temp-display.temp-extreme   { color: #ff6040; background: rgba(255, 60, 20,0.18); }
 
+/* ── 날씨 위젯 (환경 행 대체) ────────────────────────────── */
+.bc-weather-widget {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.ww-hints {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+
+.ww-hint {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: rgba(255,255,255,0.06);
+  color: var(--text-secondary);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.ww-hint-water_source  { color: #70b8e8; border-color: rgba(80,160,220,0.25); }
+.ww-hint-heat          { color: #f09060; border-color: rgba(220,100,40,0.25); }
+.ww-hint-cold          { color: #90c8f0; border-color: rgba(100,180,240,0.25); }
+.ww-hint-contamination { color: var(--stat-radiation); border-color: rgba(150,200,30,0.25); }
+.ww-hint-danger        { color: var(--text-danger); border-color: rgba(200,60,60,0.25); }
+
+.ww-event {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 4px;
+  padding: 4px 6px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-rows: auto auto;
+  gap: 2px 4px;
+  align-items: center;
+}
+.ww-event.ww-event-danger {
+  border-color: rgba(200,60,60,0.3);
+  background: rgba(200,60,60,0.06);
+}
+.ww-event-icon { font-size: 14px; grid-row: 1 / 3; }
+.ww-event-name { font-size: 10px; font-weight: bold; color: var(--text-primary); }
+.ww-event-days { font-size: 9px; color: var(--text-dim); text-align: right; }
+.ww-event-bar  {
+  grid-column: 2 / 4;
+  height: 3px;
+  background: var(--border-dim);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.ww-event-fill         { height: 100%; background: var(--accent-primary); transition: width 0.3s; }
+.ww-event-fill.danger  { background: var(--text-danger); }
+
 /* ── 질병 상태 HUD ───────────────────────────────────────── */
 
 .bc-disease-status {
