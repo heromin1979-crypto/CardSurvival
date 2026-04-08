@@ -114,6 +114,27 @@
   transform: translateX(-50%) translateY(-3px);
 }
 
+/* ── 휴대 행: 2행 그리드 레이아웃 ── */
+.board-row.row-bottom {
+  flex: 2;                        /* 다른 행보다 2배 높이 — 2행 카드를 수용 */
+}
+
+.board-row.row-bottom .board-row-slots {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, var(--slot-w));
+  grid-template-rows: 1fr 1fr;   /* 정확히 2행 */
+  grid-auto-rows: 1fr;
+  overflow-x: hidden;
+  overflow-y: hidden;
+  flex-wrap: unset;               /* flex-wrap 비활성 (grid 사용) */
+  align-items: unset;             /* grid 아이템은 기본 stretch */
+}
+
+.board-row.row-bottom .slot {
+  height: auto;                   /* grid 셀이 높이 결정 */
+  width: var(--slot-w);
+}
+
 /* Row section colors */
 .row-top    { background: rgba(0,0,0,0.1); }
 .row-middle { background: var(--bg-base); }

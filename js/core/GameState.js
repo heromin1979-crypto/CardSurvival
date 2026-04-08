@@ -94,10 +94,10 @@ const GameState = {
   // ── board ─────────────────────────────────────────────
   // Each row: array of slot entries (null | instanceId)
   board: {
-    top:         [null, null, null, null, null, null, null, null], // 8칸: [현재구][랜드마크][인접구×6]
+    top:         [null, null, null, null, null, null, null, null, null], // 9칸
     environment: [null, null, null],  // 3칸: [날씨 카드][이벤트 카드1][이벤트 카드2]
-    middle:      [null, null, null, null, null, null, null, null],  // 8칸
-    bottom:      [null, null, null, null, null, null, null, null],  // 소지품 8칸 (가방으로 확장 가능)
+    middle:      [null, null, null, null, null, null, null, null, null], // 9칸
+    bottom:      [null, null, null, null, null, null, null, null],  // 소지품 8칸 (2행 그리드)
   },
 
   // ── card instances ────────────────────────────────────
@@ -448,10 +448,9 @@ const GameState = {
     if (this.player.endurance == null) this.player.endurance = 60;
     // 구버전 세이브 호환: encumbrance weightPct 필드
     if (this.player.encumbrance.weightPct === undefined) this.player.encumbrance.weightPct = 0;
-    // 구버전 세이브 호환: top 행이 부족하면 7칸으로 확장
-    if (d.board?.top && d.board.top.length < 7) {
-      while (d.board.top.length < 7) d.board.top.push(null);
-    }
+    // 구버전 세이브 호환: top/middle 행 9칸으로 확장
+    if (d.board?.top    && d.board.top.length    < 9) while (d.board.top.length    < 9) d.board.top.push(null);
+    if (d.board?.middle && d.board.middle.length < 9) while (d.board.middle.length < 9) d.board.middle.push(null);
     // 구버전 세이브 호환: environment 행이 없으면 자동 생성
     if (!d.board.environment) d.board.environment = [null, null, null];
     while (d.board.environment.length < 3) d.board.environment.push(null);
