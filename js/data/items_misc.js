@@ -1010,6 +1010,32 @@ const ITEMS_MISC = {
     icon: '🔋', description: '아직 충전이 남아있는 배터리.',
     tags: ['material', 'electronic'], dismantle: [],
   },
+
+  // ── 서울 지도 조각 (3파츠) ──────────────────────────────────
+  map_fragment_north: {
+    id: 'map_fragment_north', name: '서울 북부 지도 조각', type: 'misc', subtype: 'document',
+    rarity: 'rare', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🗺️', fragmentOf: 'north',
+    description: '은평·종로·노원·도봉 일대 손그림 지도. 낡았지만 주요 도로와 랜드마크가 표시돼 있다.',
+    tags: ['document', 'map'], dismantle: [],
+  },
+  map_fragment_center: {
+    id: 'map_fragment_center', name: '서울 중부 지도 조각', type: 'misc', subtype: 'document',
+    rarity: 'rare', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🗺️', fragmentOf: 'center',
+    description: '마포·용산·중구·성동 일대 인쇄 지도. 상인이 이동 경로를 형광펜으로 표시해뒀다.',
+    tags: ['document', 'map'], dismantle: [],
+  },
+  map_fragment_south: {
+    id: 'map_fragment_south', name: '서울 남부 지도 조각', type: 'misc', subtype: 'document',
+    rarity: 'rare', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🗺️', fragmentOf: 'south',
+    description: '강남·서초·송파·강동 일대 군용 지도. 군 보급창고 위치에 붉은 X 표시가 남아있다.',
+    tags: ['document', 'map'], dismantle: [],
+  },
 };
 
 export default ITEMS_MISC;

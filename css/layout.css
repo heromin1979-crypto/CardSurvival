@@ -97,6 +97,18 @@
   color: var(--text-dim);
   text-transform: uppercase;
   letter-spacing: 1px;
+  flex: 1;
+}
+
+.bc-map-fragment-badge {
+  font-size: 10px;
+  color: var(--accent-primary);
+  background: rgba(200,160,96,0.12);
+  border: 1px solid rgba(200,160,96,0.25);
+  border-radius: 3px;
+  padding: 1px 5px;
+  letter-spacing: 0.5px;
+  line-height: 1.4;
 }
 
 .bc-minimap-preview {

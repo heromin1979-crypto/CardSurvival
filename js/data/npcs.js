@@ -138,6 +138,16 @@ const NPCS = {
         ],
         reward: { trust: 2, items: [{ id: 'canned_food', qty: 5 }, { id: 'bandage', qty: 3 }], skillUnlock: null },
       },
+      {
+        id:           'old_quest_map_north',
+        triggerTrust: 4,
+        title:        '피난길 지도',
+        description:  '"자네가 날 도와줬으니 내 것을 줘야지. 이 강북 지도, 가져가게. 남쪽 지도는 탈영병한테 물어봐."',
+        steps: [
+          { type: 'day', minDay: 5, hint: '노인과 충분한 시간을 보내면 믿음이 생긴다.' },
+        ],
+        reward: { trust: 1, items: [{ id: 'map_fragment_north', qty: 1 }], skillUnlock: null },
+      },
     ],
     // V-5: 기념일
     specialDays: [
@@ -270,6 +280,16 @@ const NPCS = {
           { type: 'visit', locationId: 'yongsan', hint: '용산 방향에 군 관련 시설이 있을 것이다.' },
         ],
         reward: { trust: 2, items: [{ id: 'pistol_ammo', qty: 10 }, { id: 'combat_knife', qty: 1 }], skillUnlock: null },
+      },
+      {
+        id:           'soldier_quest_map_south',
+        triggerTrust: 4,
+        title:        '강남 군 보급창고',
+        description:  '"강남 보급창고에 군용 지도가 남아있을 거야. 거기 다녀오면 내 거 줄게. 노인한테도 지도가 있다던데."',
+        steps: [
+          { type: 'visit', locationId: 'gangnam', hint: '강남구를 탐색하면 군 보급창고 흔적을 찾을 수 있다.' },
+        ],
+        reward: { trust: 1, items: [{ id: 'map_fragment_south', qty: 1 }], skillUnlock: null },
       },
     ],
     specialDays: [
@@ -440,6 +460,9 @@ const NPCS = {
       { give: { id: 'cloth', qty: 4 },          receive: { id: 'bandage', qty: 5 },        trustRequired: 0 },
       { give: { id: 'water_bottle', qty: 2 },   receive: { id: 'canned_food', qty: 3 },    trustRequired: 0 },
       { give: { id: 'rope', qty: 3 },           receive: { id: 'duct_tape', qty: 2 },      trustRequired: 2 },
+      // 지도 조각: 신뢰 2 이상 + 식량 5개 → 중부 지도 조각
+      { give: { id: 'canned_food', qty: 5 },   receive: { id: 'map_fragment_center', qty: 1 }, trustRequired: 2,
+        oneTime: true, label: '서울 중부 지도 조각' },
     ],
     spontaneous: [
       { condition: 'always', line: '"좋은 물건 있으면 알려줘. 서울 어디서든 구해올 수 있어."' },
