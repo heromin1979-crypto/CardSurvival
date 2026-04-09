@@ -32,9 +32,7 @@ const SLOT_META = {
   backpack:    { i18nKey: 'equip.backpack',   icon: '🎒',  row: 4, col: 'right' },
   weapon_main: { i18nKey: 'equip.weaponMain', icon: '⚔️',  row: 5, col: 'left' },
   weapon_sub:  { i18nKey: 'equip.weaponSub',  icon: '🗡️',  row: 5, col: 'right' },
-  belt:        { i18nKey: 'equip.belt',       icon: '📎',  row: 6, col: 'left',  locked: true },
-  accessory:   { i18nKey: 'equip.accessory',  icon: '💎',  row: 6, col: 'right', locked: true },
-  boots:       { i18nKey: 'equip.boots',      icon: '👟',  row: 7 },
+  boots:       { i18nKey: 'equip.boots',      icon: '👟',  row: 6 },
 };
 
 /** Get localized label for a slot */
@@ -194,15 +192,14 @@ const EquipmentModal = {
   },
 
   _buildSlotGrid() {
-    // 7행 × 3열 [left, center, right]
+    // 6행 × 3열 [left, center, right]
     return [
       [null,          'head',       null       ],  // 행1
       ['face',        'CHAR',       'offhand'  ],  // 행2
       [null,          'body',       null       ],  // 행3
       ['hands',       'CHAR2',      'backpack' ],  // 행4 (CHAR2 = 실루엣 아랫부분)
       ['weapon_main', null,         'weapon_sub'], // 행5
-      ['belt',        'accessory',  null       ],  // 행6
-      [null,          'boots',      null       ],  // 행7
+      [null,          'boots',      null       ],  // 행6
     ];
   },
 
