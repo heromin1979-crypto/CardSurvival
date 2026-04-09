@@ -29,6 +29,9 @@ const Basecamp = {
     EventBus.on('questListChanged', () => {
       if (GameState.ui.currentState === 'basecamp') this._updateQuestPanel();
     });
+    EventBus.on('mapUnlocked', () => {
+      if (GameState.ui.currentState === 'basecamp') this._updateMapFragmentBadge();
+    });
     // 약탈자 협상 이벤트 리스너
     EventBus.on('raiderDemand', (data) => {
       if (GameState.ui.currentState === 'basecamp') this._showRaiderModal(data);
@@ -75,6 +78,8 @@ const Basecamp = {
     WeatherSystem.renderHUD();
     // 미니맵 SVG 미리보기 렌더링
     SeoulMapModal.renderMinimap();
+    // 지도 조각 진행률 배지 업데이트
+    this._updateMapFragmentBadge();
   },
 
   _buildLayout() {
@@ -85,6 +90,7 @@ const Basecamp = {
           <div class="bc-minimap-header">
             <span>🗺</span>
             <span class="bc-minimap-label">${I18n.t('basecamp.cityMap')}</span>
+            <span id="map-fragment-badge" class="bc-map-fragment-badge"></span>
           </div>
           <div class="bc-minimap-preview" id="minimap-preview"></div>
         </div>
@@ -319,6 +325,19 @@ const Basecamp = {
       overlay.remove();
       onRefuse();
     });
+  },
+
+  _updateMapFragmentBadge() {
+    const el = document.getElementById('map-fragment-badge');
+    if (!el) return;
+    const frags = GameState.flags.mapFragments ?? [];
+    if (GameState.flags.mapUnlocked) {
+      el.textContent = '✅';
+      el.title = '서울 전체 지도 해금 완료';
+    } else {
+      el.textContent = `${frags.length}/3`;
+      el.title = `지도 조각 ${frags.length}/3 수집됨`;
+    }
   },
 
   _updateSecretComboCount() {

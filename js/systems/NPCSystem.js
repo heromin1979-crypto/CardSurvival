@@ -558,7 +558,15 @@ const NPCSystem = {
     const state = GameState.npcs.states[npcId];
     const trust = state?.trust ?? 0;
 
-    return npcDef.trades.filter(t => trust >= t.trustRequired);
+    return npcDef.trades.filter(t => {
+      if (trust < t.trustRequired) return false;
+      // oneTime 거래: 이미 해당 조각을 가졌으면 목록에서 제거
+      if (t.oneTime && t.receive?.id?.startsWith('map_fragment_')) {
+        const part = t.receive.id.replace('map_fragment_', '');
+        if (GameState.flags.mapFragments?.includes(part)) return false;
+      }
+      return true;
+    });
   },
 
   /** Execute a trade by index */
@@ -608,8 +616,35 @@ const NPCSystem = {
       }),
       type: 'good',
     });
+    // 지도 조각 획득 추적
+    if (trade.receive.id?.startsWith('map_fragment_')) {
+      this._collectMapFragment(trade.receive.id);
+    }
     EventBus.emit('boardChanged', {});
     return true;
+  },
+
+  // ── 지도 조각 수집 ─────────────────────────────────────────────
+
+  _collectMapFragment(itemId) {
+    const part = itemId.replace('map_fragment_', '');
+    const frags = GameState.flags.mapFragments;
+    if (frags.includes(part)) return;
+    frags.push(part);
+    EventBus.emit('notify', {
+      message: `🗺️ 서울 지도 조각 획득! (${frags.length} / 3)`,
+      type: 'good',
+    });
+    if (frags.length >= 3 && !GameState.flags.mapUnlocked) {
+      GameState.flags.mapUnlocked = true;
+      setTimeout(() => {
+        EventBus.emit('notify', {
+          message: '🗺️ 서울 전체 지도가 해금되었습니다! 미니맵을 클릭해 확인하세요.',
+          type: 'good',
+        });
+        EventBus.emit('mapUnlocked', {});
+      }, 800);
+    }
   },
 
   // ── Public API: Companion Bonuses Query ────────────────────────

@@ -122,6 +122,10 @@ const NPCQuestSystem = {
           const placed = GameState.placeCardInRow(inst.instanceId, 'middle');
           if (!placed) GameState.placeCardInRow(inst.instanceId, 'bottom');
         }
+        // 지도 조각 획득 추적
+        if (item.id?.startsWith('map_fragment_')) {
+          this._collectMapFragment(item.id);
+        }
       }
       EventBus.emit('boardChanged', {});
     }
@@ -145,6 +149,29 @@ const NPCQuestSystem = {
     const next    = npcDef?.quests?.[doneIdx + 1];
     if (next && (state.trust ?? 0) >= next.triggerTrust) {
       setTimeout(() => this._checkQuestUnlock(npcId, state.trust), 500);
+    }
+  },
+
+  // ── 지도 조각 수집 ─────────────────────────────────────────────
+
+  _collectMapFragment(itemId) {
+    const part = itemId.replace('map_fragment_', '');
+    const frags = GameState.flags.mapFragments;
+    if (frags.includes(part)) return;
+    frags.push(part);
+    EventBus.emit('notify', {
+      message: `🗺️ 서울 지도 조각 획득! (${frags.length} / 3)`,
+      type: 'good',
+    });
+    if (frags.length >= 3 && !GameState.flags.mapUnlocked) {
+      GameState.flags.mapUnlocked = true;
+      setTimeout(() => {
+        EventBus.emit('notify', {
+          message: '🗺️ 서울 전체 지도가 해금되었습니다! 미니맵을 클릭해 확인하세요.',
+          type: 'good',
+        });
+        EventBus.emit('mapUnlocked', {});
+      }, 800);
     }
   },
 

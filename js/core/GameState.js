@@ -235,6 +235,9 @@ const GameState = {
     collapseCount:       0,    // 피로 붕괴 횟수 (2회째 → 사망)
     survivedSummer:      false, // Day 180 이후 생존 플래그 (여름 생존 엔딩)
     diseaseDeathId:      null,  // 질병 사망 시 질병 ID (엔딩 선택용)
+    // ── 서울 지도 조각 ────────────────────────────────
+    mapFragments:  [],     // 수집한 조각 ['north','center','south']
+    mapUnlocked:   false,  // 3개 완성 시 true → 전체 지도 해금
     // ── 숨겨진 요소 추적 ──────────────────────────────
     hiddenLocationsDiscovered: [],  // 발견한 히든 장소 ID 배열
     bossesKilled:              [],  // 처치한 보스 ID 배열
@@ -465,6 +468,9 @@ const GameState = {
     Object.assign(this.combat,   d.combat);
     Object.assign(this.ui,       d.ui);
     if (d.flags) Object.assign(this.flags, d.flags);
+    // 구버전 세이브 호환: 지도 조각 필드
+    if (!this.flags.mapFragments) this.flags.mapFragments = [];
+    if (this.flags.mapUnlocked === undefined) this.flags.mapUnlocked = false;
     if (d.combatRespawn) Object.assign(this.combatRespawn, d.combatRespawn);
     // 구버전 세이브 호환: 엔딩 추적 플래그 기본값 보장
     const ef = this.flags;

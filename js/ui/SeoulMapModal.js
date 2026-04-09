@@ -80,6 +80,16 @@ const SeoulMapModal = {
   },
 
   open() {
+    // 지도 조각 미해금 시 차단
+    if (!GameState.flags.mapUnlocked) {
+      const n = GameState.flags.mapFragments?.length ?? 0;
+      EventBus.emit('notify', {
+        message: `🗺️ 지도 조각 ${n}/3 수집 후 열 수 있습니다. NPC와 대화해 힌트를 얻으세요.`,
+        type: 'warn',
+      });
+      return;
+    }
+
     this._close();
 
     const gs          = GameState;
