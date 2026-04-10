@@ -79,10 +79,9 @@ const GameState = {
       head:        null,  // 헬멧 등
       body:        null,  // 방어구 (조끼/풀바디/의복)
       hands:       null,  // 장갑
-      offhand:     null,  // 방패
       face:        null,  // 방독면
       weapon_main: null,  // 주무기
-      weapon_sub:  null,  // 보조무기
+      weapon_sub:  null,  // 보조무기 또는 방패 (겸용 슬롯)
       backpack:    null,  // 가방 (인벤토리 확장)
       boots:       null,  // 신발
       belt:        null,  // 허리띠 (잠금 예비)
@@ -433,7 +432,7 @@ const GameState = {
     Object.assign(this.player,   d.player);
     // 구버전 세이브 호환: equipped 필드 자동 생성
     const equippedDefaults = {
-      head:null, body:null, hands:null, offhand:null,
+      head:null, body:null, hands:null,
       face:null, weapon_main:null, weapon_sub:null,
       backpack:null, boots:null, belt:null, accessory:null,
     };
@@ -442,6 +441,11 @@ const GameState = {
     } else {
       this.player.equipped = { ...equippedDefaults, ...this.player.equipped };
     }
+    // 구버전 세이브 호환: offhand 슬롯 → weapon_sub로 마이그레이션
+    if (this.player.equipped.offhand && !this.player.equipped.weapon_sub) {
+      this.player.equipped.weapon_sub = this.player.equipped.offhand;
+    }
+    delete this.player.equipped.offhand;
     if (this.player.extraSlots === undefined) this.player.extraSlots = 0;
     if (!this.player.gender) this.player.gender = 'M';
     // 구버전 세이브 호환: stamina 필드 자동 생성 + decayPerTP 누락 보정

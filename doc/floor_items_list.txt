@@ -1,0 +1,1262 @@
+================================================================================
+  카드 서바이벌 - 바닥 아이템 (lootTable) 전체 정리
+  생성일: 2026-03-21
+================================================================================
+
+
+================================================================================
+=== 구(District) 바닥 아이템 ===
+================================================================================
+
+[강남구] (gangnam) - 위험도 3
+  - first_aid_kit (구급키트) weight:30 qty:1-2
+  - bandage (붕대) weight:30 qty:2-5
+  - water_filter (정수 필터) weight:15 qty:1-2
+  - cloth (천) weight:15 qty:1-3
+  - pistol (권총) weight:5 qty:1-1
+  - broken_radio (고장난 라디오) weight:3 qty:1-1
+  - old_fire_extinguisher (소화기) weight:3 qty:1-1
+  - traffic_light (교통 신호등) weight:5 qty:1-1
+  - vending_machine (자판기 잔해) weight:4 qty:1-1
+  - telephone_booth (공중전화 부스) weight:4 qty:1-1
+  - antiseptic (소독약) weight:12 qty:1-2
+  - painkiller (진통제) weight:10 qty:1-3
+  - gauze (거즈) weight:8 qty:1-3
+
+[강동구] (gangdong) - 위험도 2
+  - water_bottle (정수 물병) weight:30 qty:1-2 [오염확률:10%]
+  - cloth (천) weight:25 qty:1-3
+  - bandage (붕대) weight:20 qty:1-2
+  - rope (로프) weight:15 qty:1-2
+  - broken_radio (고장난 라디오) weight:3 qty:1-1
+  - old_fire_extinguisher (소화기) weight:3 qty:1-1
+  - abandoned_fridge (버려진 냉장고) weight:5 qty:1-1
+  - broken_chair (부서진 의자) weight:5 qty:1-1
+  - broken_washing_machine (고장난 세탁기) weight:4 qty:1-1
+
+[강북구] (gangbuk) - 위험도 2
+  - contaminated_water (오염수) weight:25 qty:1-2 [오염확률:35%]
+  - cloth (천) weight:25 qty:1-3
+  - rope (로프) weight:25 qty:1-2
+  - bandage (붕대) weight:15 qty:1-2
+  - broken_radio (고장난 라디오) weight:3 qty:1-1
+  - old_fire_extinguisher (소화기) weight:3 qty:1-1
+  - street_vendor_cart (포장마차 잔해) weight:5 qty:1-1
+  - broken_lamp (부서진 가로등) weight:4 qty:1-1
+  - old_mailbox (낡은 우체통) weight:4 qty:1-1
+  - rusted_toolbox (녹슨 공구함) weight:4 qty:1-1
+  - tree_log (통나무) weight:20 qty:1-2
+  - herb (약초) weight:15 qty:1-3
+  - wood (목재) weight:15 qty:1-3
+
+[강서구] (gangseo) - 위험도 2
+  - scrap_metal (고철) weight:25 qty:2-4
+  - rope (로프) weight:20 qty:1-2
+  - duct_tape (덕테이프) weight:20 qty:1-2
+  - flashlight (손전등) weight:20 qty:1-2
+  - pistol_ammo (권총 탄약) weight:15 qty:2-5
+  - broken_radio (고장난 라디오) weight:3 qty:1-1
+  - old_fire_extinguisher (소화기) weight:3 qty:1-1
+  - wrecked_car (폐차) weight:5 qty:1-1
+  - subway_gate (지하철 개찰구) weight:4 qty:1-1
+  - wrecked_bus (버스 잔해) weight:4 qty:1-1
+
+[관악구] (gwanak) - 위험도 1
+  - water_filter (정수 필터) weight:25 qty:1-2
+  - bandage (붕대) weight:25 qty:2-4
+  - scrap_metal (고철) weight:20 qty:1-3
+  - cloth (천) weight:15 qty:1-3
+  - duct_tape (덕테이프) weight:15 qty:1-2
+  - broken_radio (고장난 라디오) weight:3 qty:1-1
+  - old_fire_extinguisher (소화기) weight:3 qty:1-1
+  - collapsed_shelf (무너진 선반) weight:5 qty:1-1
+  - broken_lamp (부서진 가로등) weight:4 qty:1-1
+  - old_generator (폐발전기) weight:4 qty:1-1
+  - herb (약초) weight:12 qty:1-3
+  - tree_log (통나무) weight:8 qty:1-1
+
+[광진구] (gwangjin) - 위험도 2
+  - water_bottle (정수 물병) weight:30 qty:1-2 [오염확률:10%]
+  - cloth (천) weight:25 qty:1-2
+  - rope (로프) weight:20 qty:1-2
+  - bandage (붕대) weight:15 qty:1-2
+  - broken_radio (고장난 라디오) weight:3 qty:1-1
+  - old_fire_extinguisher (소화기) weight:3 qty:1-1
+  - street_vendor_cart (포장마차 잔해) weight:4 qty:1-1
+  - broken_lamp (부서진 가로등) weight:4 qty:1-1
+  - old_mailbox (낡은 우체통) weight:4 qty:1-1
+  - rusted_toolbox (녹슨 공구함) weight:4 qty:1-1
+  - rainwater (빗물) weight:10 qty:1-2 [오염확률:15%]
+  - wood (목재) weight:8 qty:1-2
+
+[구로구] (guro) - 위험도 2
+  - scrap_metal (고철) weight:35 qty:2-5
+  - duct_tape (덕테이프) weight:20 qty:1-2
+  - rope (로프) weight:20 qty:1-3
+  - flashlight (손전등) weight:15 qty:1-1
+  - crowbar (쇠지렛대) weight:10 qty:1-1
+  - broken_radio (고장난 라디오) weight:3 qty:1-1
+  - old_fire_extinguisher (소화기) weight:3 qty:1-1
+  - old_generator (폐발전기) weight:5 qty:1-1
+  - broken_washing_machine (고장난 세탁기) weight:4 qty:1-1
+  - vending_machine (자판기 잔해) weight:4 qty:1-1
+  - collapsed_scaffold (무너진 비계) weight:5 qty:1-1
+  - old_ac_unit (에어컨 실외기) weight:4 qty:1-1
+  - electronic_parts (전자부품) weight:15 qty:1-3
+  - wire (철사) weight:10 qty:1-3
+  - nail (못) weight:10 qty:2-5
+
+[금천구] (geumcheon) - 위험도 2, 방사선:5
+  - scrap_metal (고철) weight:40 qty:2-6
+  - rope (로프) weight:20 qty:1-3
+  - duct_tape (덕테이프) weight:20 qty:1-2
+  - pipe_wrench (파이프렌치) weight:10 qty:1-1
+  - crowbar (쇠지렛대) weight:10 qty:1-1
+  - broken_radio (고장난 라디오) weight:3 qty:1-1
+  - old_fire_extinguisher (소화기) weight:3 qty:1-1
+  - old_generator (폐발전기) weight:5 qty:1-1
+  - broken_washing_machine (고장난 세탁기) weight:4 qty:1-1
+  - vending_machine (자판기 잔해) weight:4 qty:1-1
+  - collapsed_scaffold (무너진 비계) weight:5 qty:1-1
+  - old_ac_unit (에어컨 실외기) weight:4 qty:1-1
+  - electronic_parts (전자부품) weight:10 qty:1-2
+  - wire (철사) weight:10 qty:1-3
+  - nail (못) weight:10 qty:2-5
+
+[노원구] (nowon) - 위험도 1
+  - water_bottle (정수 물병) weight:30 qty:1-2
+  - cloth (천) weight:25 qty:1-3
+  - bandage (붕대) weight:20 qty:1-2
+  - energy_bar (에너지바) weight:15 qty:1-2
+  - broken_radio (고장난 라디오) weight:3 qty:1-1
+  - old_fire_extinguisher (소화기) weight:3 qty:1-1
+  - abandoned_fridge (버려진 냉장고) weight:5 qty:1-1
+  - broken_chair (부서진 의자) weight:5 qty:1-1
+  - broken_washing_machine (고장난 세탁기) weight:4 qty:1-1
+
+[도봉구] (dobong) - 위험도 1
+  - contaminated_water (오염수) weight:30 qty:1-2 [오염확률:30%]
+  - rope (로프) weight:25 qty:1-2
+  - cloth (천) weight:25 qty:1-2
+  - water_bottle (정수 물병) weight:15 qty:1-1 [오염확률:10%]
+  - broken_radio (고장난 라디오) weight:3 qty:1-1
+  - old_fire_extinguisher (소화기) weight:3 qty:1-1
+  - abandoned_fridge (버려진 냉장고) weight:4 qty:1-1
+  - broken_chair (부서진 의자) weight:4 qty:1-1
+  - tree_log (통나무) weight:25 qty:1-2
+  - herb (약초) weight:20 qty:1-3
+  - wood (목재) weight:15 qty:1-3
+  - whetstone (숫돌) weight:5 qty:1-1
+
+[동대문구] (dongdaemun) - 위험도 2
+  - cloth (천) weight:40 qty:2-5
+  - rope (로프) weight:20 qty:1-2
+  - duct_tape (덕테이프) weight:15 qty:1-2
+  - knife (칼) weight:15 qty:1-1
+  - broken_radio (고장난 라디오) weight:3 qty:1-1
+  - old_fire_extinguisher (소화기) weight:3 qty:1-1
+  - street_vendor_cart (포장마차 잔해) weight:4 qty:1-1
+  - broken_lamp (부서진 가로등) weight:4 qty:1-1
+  - old_mailbox (낡은 우체통) weight:4 qty:1-1
+  - rusted_toolbox (녹슨 공구함) weight:4 qty:1-1
+  - leather (가죽) weight:15 qty:1-3
+  - thread (실) weight:12 qty:2-5
+
+[동작구] (dongjak) - 위험도 1
+  - bandage (붕대) weight:30 qty:1-3
+  - water_bottle (정수 물병) weight:25 qty:1-2
+  - rope (로프) weight:20 qty:1-2
+  - cloth (천) weight:20 qty:1-2
+  - broken_radio (고장난 라디오) weight:3 qty:1-1
+  - old_fire_extinguisher (소화기) weight:3 qty:1-1
+  - street_vendor_cart (포장마차 잔해) weight:4 qty:1-1
+  - broken_lamp (부서진 가로등) weight:4 qty:1-1
+  - old_mailbox (낡은 우체통) weight:4 qty:1-1
+  - rusted_toolbox (녹슨 공구함) weight:4 qty:1-1
+  - rainwater (빗물) weight:10 qty:1-1 [오염확률:10%]
+  - wood (목재) weight:8 qty:1-2
+
+[마포구] (mapo) - 위험도 3, 방사선:3
+  - cloth (천) weight:25 qty:1-3
+  - scrap_metal (고철) weight:25 qty:1-3
+  - rope (로프) weight:15 qty:1-2
+  - bandage (붕대) weight:10 qty:1-2
+  - water_bottle (정수 물병) weight:10 qty:1-2 [오염확률:15%]
+  - broken_radio (고장난 라디오) weight:3 qty:1-1
+  - old_fire_extinguisher (소화기) weight:3 qty:1-1
+  - collapsed_shelf (무너진 선반) weight:5 qty:1-1
+  - broken_lamp (부서진 가로등) weight:4 qty:1-1
+  - old_generator (폐발전기) weight:4 qty:1-1
+
+[서대문구] (seodaemun) - 위험도 4
+  - first_aid_kit (구급키트) weight:25 qty:1-2
+  - bandage (붕대) weight:30 qty:2-5
+  - water_filter (정수 필터) weight:20 qty:1-2
+  - water_bottle (정수 물병) weight:15 qty:1-2 [오염확률:10%]
+  - cloth (천) weight:10 qty:1-3
+  - broken_radio (고장난 라디오) weight:3 qty:1-1
+  - old_fire_extinguisher (소화기) weight:3 qty:1-1
+  - collapsed_shelf (무너진 선반) weight:5 qty:1-1
+  - broken_lamp (부서진 가로등) weight:4 qty:1-1
+  - old_generator (폐발전기) weight:4 qty:1-1
+  - antiseptic (소독약) weight:15 qty:1-3
+  - antibiotics (항생제) weight:8 qty:1-1
+  - painkiller (진통제) weight:10 qty:1-2
+
+[서초구] (seocho) - 위험도 4
+  - first_aid_kit (구급키트) weight:25 qty:1-2
+  - bandage (붕대) weight:25 qty:1-3
+  - water_bottle (정수 물병) weight:20 qty:1-2
+  - knife (칼) weight:15 qty:1-1
+  - broken_radio (고장난 라디오) weight:3 qty:1-1
+  - old_fire_extinguisher (소화기) weight:3 qty:1-1
+  - wrecked_bus (버스 잔해) weight:4 qty:1-1
+  - traffic_light (교통 신호등) weight:5 qty:1-1
+  - vending_machine (자판기 잔해) weight:4 qty:1-1
+  - telephone_booth (공중전화 부스) weight:4 qty:1-1
+  - destroyed_kiosk (파괴된 매점) weight:5 qty:1-1
+
+[성동구] (seongdong) - 위험도 3, 방사선:5
+  - scrap_metal (고철) weight:40 qty:2-6
+  - rope (로프) weight:20 qty:1-3
+  - pipe_wrench (파이프렌치) weight:10 qty:1-1
+  - duct_tape (덕테이프) weight:15 qty:1-2
+  - crowbar (쇠지렛대) weight:10 qty:1-1
+  - cloth (천) weight:5 qty:1-2
+  - broken_radio (고장난 라디오) weight:3 qty:1-1
+  - old_fire_extinguisher (소화기) weight:3 qty:1-1
+  - old_generator (폐발전기) weight:5 qty:1-1
+  - broken_washing_machine (고장난 세탁기) weight:4 qty:1-1
+  - vending_machine (자판기 잔해) weight:4 qty:1-1
+  - collapsed_scaffold (무너진 비계) weight:5 qty:1-1
+  - old_ac_unit (에어컨 실외기) weight:4 qty:1-1
+  - electronic_parts (전자부품) weight:15 qty:1-3
+  - leather (가죽) weight:10 qty:1-2
+  - nail (못) weight:10 qty:2-5
+
+[성북구] (seongbuk) - 위험도 2
+  - water_bottle (정수 물병) weight:25 qty:1-2
+  - bandage (붕대) weight:25 qty:1-3
+  - cloth (천) weight:25 qty:1-3
+  - rope (로프) weight:20 qty:1-2
+  - broken_radio (고장난 라디오) weight:3 qty:1-1
+  - old_fire_extinguisher (소화기) weight:3 qty:1-1
+  - abandoned_fridge (버려진 냉장고) weight:5 qty:1-1
+  - broken_chair (부서진 의자) weight:5 qty:1-1
+  - broken_washing_machine (고장난 세탁기) weight:4 qty:1-1
+  - wood (목재) weight:10 qty:1-2
+  - tree_log (통나무) weight:5 qty:1-1
+
+[송파구] (songpa) - 위험도 5
+  - energy_bar (에너지바) weight:25 qty:1-3
+  - water_bottle (정수 물병) weight:20 qty:1-2
+  - cloth (천) weight:15 qty:1-3
+  - scrap_metal (고철) weight:10 qty:1-2
+  - flashlight (손전등) weight:10 qty:1-1
+  - broken_radio (고장난 라디오) weight:3 qty:1-1
+  - old_fire_extinguisher (소화기) weight:3 qty:1-1
+  - wrecked_car (폐차) weight:5 qty:1-1
+  - subway_gate (지하철 개찰구) weight:4 qty:1-1
+  - wrecked_bus (버스 잔해) weight:4 qty:1-1
+
+[양천구] (yangcheon) - 위험도 1
+  - water_bottle (정수 물병) weight:30 qty:1-2
+  - cloth (천) weight:25 qty:1-3
+  - bandage (붕대) weight:20 qty:1-2
+  - energy_bar (에너지바) weight:15 qty:1-2
+  - broken_radio (고장난 라디오) weight:3 qty:1-1
+  - old_fire_extinguisher (소화기) weight:3 qty:1-1
+  - abandoned_fridge (버려진 냉장고) weight:5 qty:1-1
+  - broken_chair (부서진 의자) weight:5 qty:1-1
+  - broken_washing_machine (고장난 세탁기) weight:4 qty:1-1
+
+[영등포구] (yeongdeungpo) - 위험도 4
+  - flashlight (손전등) weight:20 qty:1-2
+  - scrap_metal (고철) weight:15 qty:1-3
+  - pistol_ammo (권총 탄약) weight:20 qty:3-8
+  - bandage (붕대) weight:20 qty:1-3
+  - duct_tape (덕테이프) weight:15 qty:1-2
+  - first_aid_kit (구급키트) weight:10 qty:1-1
+  - shotgun_ammo (산탄 실탄) weight:3 qty:2-4
+  - broken_radio (고장난 라디오) weight:3 qty:1-1
+  - old_fire_extinguisher (소화기) weight:3 qty:1-1
+  - wrecked_car (폐차) weight:5 qty:1-1
+  - subway_gate (지하철 개찰구) weight:4 qty:1-1
+  - wrecked_bus (버스 잔해) weight:4 qty:1-1
+  - destroyed_kiosk (파괴된 매점) weight:5 qty:1-1
+  - collapsed_guard_post (무너진 초소) weight:4 qty:1-1
+
+[용산구] (yongsan) - 위험도 3
+  - flashlight (손전등) weight:20 qty:1-2
+  - scrap_metal (고철) weight:15 qty:1-3
+  - duct_tape (덕테이프) weight:15 qty:1-2
+  - pistol_ammo (권총 탄약) weight:15 qty:2-6
+  - pistol (권총) weight:10 qty:1-1
+  - water_filter (정수 필터) weight:10 qty:1-1
+  - knife (칼) weight:15 qty:1-1
+  - shotgun_ammo (산탄 실탄) weight:3 qty:2-4
+  - broken_radio (고장난 라디오) weight:3 qty:1-1
+  - old_fire_extinguisher (소화기) weight:3 qty:1-1
+  - collapsed_guard_post (무너진 초소) weight:6 qty:1-1
+  - wrecked_car (폐차) weight:5 qty:1-1
+  - subway_gate (지하철 개찰구) weight:4 qty:1-1
+  - wrecked_bus (버스 잔해) weight:4 qty:1-1
+  - electronic_parts (전자부품) weight:20 qty:2-5
+  - wire (철사) weight:10 qty:1-3
+
+[은평구] (eunpyeong) - 위험도 1
+  - bandage (붕대) weight:30 qty:1-3
+  - water_bottle (정수 물병) weight:25 qty:1-2
+  - flashlight (손전등) weight:20 qty:1-1
+  - rope (로프) weight:20 qty:1-2
+  - broken_radio (고장난 라디오) weight:3 qty:1-1
+  - old_fire_extinguisher (소화기) weight:3 qty:1-1
+  - street_vendor_cart (포장마차 잔해) weight:4 qty:1-1
+  - broken_lamp (부서진 가로등) weight:4 qty:1-1
+  - old_mailbox (낡은 우체통) weight:4 qty:1-1
+  - rusted_toolbox (녹슨 공구함) weight:4 qty:1-1
+  - tree_log (통나무) weight:15 qty:1-2
+  - herb (약초) weight:15 qty:1-3
+  - wood (목재) weight:10 qty:1-2
+
+[종로구] (jongno) - 위험도 5, 방사선:10
+  - pistol (권총) weight:15 qty:1-1
+  - pistol_ammo (권총 탄약) weight:20 qty:4-10
+  - first_aid_kit (구급키트) weight:20 qty:1-2
+  - bandage (붕대) weight:20 qty:2-5
+  - scrap_metal (고철) weight:15 qty:2-4
+  - energy_bar (에너지바) weight:10 qty:1-2
+  - broken_radio (고장난 라디오) weight:3 qty:1-1
+  - old_fire_extinguisher (소화기) weight:3 qty:1-1
+  - wrecked_bus (버스 잔해) weight:4 qty:1-1
+  - traffic_light (교통 신호등) weight:5 qty:1-1
+  - vending_machine (자판기 잔해) weight:4 qty:1-1
+  - telephone_booth (공중전화 부스) weight:4 qty:1-1
+  - destroyed_kiosk (파괴된 매점) weight:5 qty:1-1
+  - collapsed_guard_post (무너진 초소) weight:4 qty:1-1
+
+[중구] (junggoo) - 위험도 5
+  - cloth (천) weight:30 qty:2-5
+  - bandage (붕대) weight:25 qty:1-3
+  - water_bottle (정수 물병) weight:15 qty:1-2
+  - knife (칼) weight:15 qty:1-1
+  - broken_radio (고장난 라디오) weight:3 qty:1-1
+  - old_fire_extinguisher (소화기) weight:3 qty:1-1
+  - wrecked_bus (버스 잔해) weight:4 qty:1-1
+  - traffic_light (교통 신호등) weight:5 qty:1-1
+  - vending_machine (자판기 잔해) weight:4 qty:1-1
+  - telephone_booth (공중전화 부스) weight:4 qty:1-1
+  - destroyed_kiosk (파괴된 매점) weight:5 qty:1-1
+  - leather (가죽) weight:10 qty:1-2
+  - thread (실) weight:8 qty:1-3
+
+[중랑구] (jungrang) - 위험도 2
+  - contaminated_water (오염수) weight:30 qty:1-2 [오염확률:25%]
+  - cloth (천) weight:25 qty:1-3
+  - rope (로프) weight:15 qty:1-2
+  - bandage (붕대) weight:15 qty:1-2
+  - broken_radio (고장난 라디오) weight:3 qty:1-1
+  - old_fire_extinguisher (소화기) weight:3 qty:1-1
+  - street_vendor_cart (포장마차 잔해) weight:4 qty:1-1
+  - broken_lamp (부서진 가로등) weight:4 qty:1-1
+  - old_mailbox (낡은 우체통) weight:4 qty:1-1
+  - rusted_toolbox (녹슨 공구함) weight:4 qty:1-1
+  - herb (약초) weight:15 qty:1-3
+  - wood (목재) weight:10 qty:1-2
+  - rainwater (빗물) weight:10 qty:1-1 [오염확률:20%]
+
+
+================================================================================
+=== 랜드마크 세부장소 아이템 ===
+================================================================================
+
+------------------------------------------------------------------------------
+[경복궁] (lm_jongno) - 종로구
+------------------------------------------------------------------------------
+
+  [근정전] (jongno_geunjeongjeon) - lootCount:1-2
+    - bandage (붕대) weight:3
+    - wood (목재) weight:4
+    - rope (로프) weight:2
+    - painkiller (진통제) weight:1
+
+  [경회루] (jongno_gyeonghoeru) - lootCount:1-3
+    - contaminated_water (오염수) weight:3
+    - purified_water (정수된 물) weight:1
+    - rope (로프) weight:2
+    - wood (목재) weight:2
+
+  [지하 유물 보관소] (jongno_storage) - lootCount:1-2
+    - electronic_parts (전자부품) weight:2
+    - wire (철사) weight:3
+    - lockpick (자물쇠따개) weight:1
+    - flashlight (손전등) weight:2
+
+  [국립민속박물관] (jongno_folklore) - lootCount:1-2
+    - antiseptic (소독약) weight:2
+    - bandage (붕대) weight:3
+    - cloth (천) weight:3
+    - leather (가죽) weight:1
+
+  [광화문 광장] (jongno_gwanghwamun) - lootCount:2-3
+    - scrap_metal (고철) weight:4
+    - iron_pipe (철파이프) weight:2
+    - wood (목재) weight:3
+    - nail (못) weight:3
+
+------------------------------------------------------------------------------
+[남대문시장] (lm_junggoo) - 중구
+------------------------------------------------------------------------------
+
+  [식료품 구역] (junggu_food) - lootCount:2-3
+    - canned_food (통조림) weight:4
+    - dried_meat (건육) weight:3
+    - contaminated_water (오염수) weight:2
+    - bandage (붕대) weight:1
+
+  [의류 창고] (junggu_clothing) - lootCount:2-4
+    - cloth (천) weight:5
+    - leather (가죽) weight:2
+    - rope (로프) weight:2
+    - work_gloves (작업장갑) weight:1
+
+  [전자제품 코너] (junggu_electronics) - lootCount:1-3
+    - electronic_parts (전자부품) weight:4
+    - wire (철사) weight:3
+    - flashlight (손전등) weight:2
+    - plastic (플라스틱) weight:2
+
+  [지하 창고] (junggu_underground) - lootCount:2-3
+    - scrap_metal (고철) weight:3
+    - plastic (플라스틱) weight:3
+    - rope (로프) weight:2
+    - crowbar (쇠지렛대) weight:1
+
+  [지하철 연결 통로] (junggu_subway) - lootCount:1-2
+    - crowbar (쇠지렛대) weight:2
+    - flashlight (손전등) weight:3
+    - bandage (붕대) weight:2
+    - iron_pipe (철파이프) weight:2
+
+------------------------------------------------------------------------------
+[전쟁기념관] (lm_yongsan) - 용산구
+------------------------------------------------------------------------------
+
+  [야외 전시장] (yongsan_outdoor) - lootCount:2-3
+    - scrap_metal (고철) weight:5
+    - iron_pipe (철파이프) weight:2
+    - wire (철사) weight:2
+    - nail (못) weight:3
+
+  [전쟁역사관] (yongsan_history) - lootCount:1-3
+    - bandage (붕대) weight:4
+    - painkiller (진통제) weight:2
+    - antiseptic (소독약) weight:2
+    - cloth (천) weight:2
+
+  [무기 전시실] (yongsan_weapons) - lootCount:1-2
+    - knife (칼) weight:2
+    - baseball_bat (야구배트) weight:2
+    - iron_pipe (철파이프) weight:3
+    - crowbar (쇠지렛대) weight:1
+
+  [지하 벙커] (yongsan_bunker) - lootCount:2-3
+    - tactical_vest (전술조끼) weight:1
+    - first_aid_kit (구급키트) weight:2
+    - bandage (붕대) weight:3
+    - painkiller (진통제) weight:2
+    - canned_food (통조림) weight:2
+
+  [무기고] (yongsan_arsenal) - lootCount:1-2
+    - molotov_cocktail (화염병) weight:2
+    - machete (마체테) weight:2
+    - knife (칼) weight:3
+    - smoke_bomb (연막탄) weight:1
+
+------------------------------------------------------------------------------
+[성수 공장지대] (lm_seongdong) - 성동구
+------------------------------------------------------------------------------
+
+  [금속 가공 공장] (seongdong_metal) - lootCount:2-4
+    - scrap_metal (고철) weight:5
+    - nail (못) weight:4
+    - wire (철사) weight:3
+    - iron_pipe (철파이프) weight:2
+
+  [가죽 공방] (seongdong_leather) - lootCount:2-4
+    - leather (가죽) weight:5
+    - cloth (천) weight:3
+    - work_gloves (작업장갑) weight:2
+    - rope (로프) weight:2
+
+  [화학 저장소] (seongdong_chemical) - lootCount:1-3
+    - antiseptic (소독약) weight:3
+    - rad_blocker (방사선차단제) weight:1
+    - rubber (고무) weight:3
+    - plastic (플라스틱) weight:3
+
+  [창고 지구] (seongdong_warehouse) - lootCount:2-4
+    - wood (목재) weight:3
+    - rope (로프) weight:3
+    - plastic (플라스틱) weight:3
+    - scrap_metal (고철) weight:3
+
+  [작업장] (seongdong_workshop) - lootCount:1-3
+    - pipe_wrench (파이프렌치) weight:2
+    - nail (못) weight:4
+    - wire (철사) weight:3
+    - duct_tape (덕테이프) weight:2
+
+------------------------------------------------------------------------------
+[어린이대공원] (lm_gwangjin) - 광진구
+------------------------------------------------------------------------------
+
+  [동물원 구역] (gwangjin_zoo) - lootCount:1-3
+    - rope (로프) weight:4
+    - leather (가죽) weight:3
+    - bandage (붕대) weight:2
+    - knife (칼) weight:1
+
+  [식물원] (gwangjin_botanical) - lootCount:2-4
+    - vitamins (비타민) weight:5
+    - antiseptic (소독약) weight:2
+    - purified_water (정수된 물) weight:2
+    - antidote (해독제) weight:1
+
+  [공원 매점] (gwangjin_kiosk) - lootCount:1-3
+    - canned_food (통조림) weight:4
+    - painkiller (진통제) weight:2
+    - bandage (붕대) weight:2
+    - purified_water (정수된 물) weight:2
+
+  [놀이기구 구역] (gwangjin_rides) - lootCount:2-3
+    - scrap_metal (고철) weight:4
+    - plastic (플라스틱) weight:3
+    - wire (철사) weight:2
+    - rubber (고무) weight:2
+
+  [정문 광장] (gwangjin_gate) - lootCount:1-2
+    - baseball_bat (야구배트) weight:2
+    - flashlight (손전등) weight:2
+    - bandage (붕대) weight:3
+    - scrap_metal (고철) weight:2
+
+------------------------------------------------------------------------------
+[경희의료원] (lm_dongdaemun) - 동대문구
+------------------------------------------------------------------------------
+
+  [응급실] (dongdaemun_er) - lootCount:2-4
+    - bandage (붕대) weight:5
+    - first_aid_kit (구급키트) weight:2
+    - antiseptic (소독약) weight:3
+    - painkiller (진통제) weight:2
+
+  [약품 창고] (dongdaemun_pharmacy) - lootCount:2-3
+    - antibiotics (항생제) weight:3
+    - painkiller (진통제) weight:4
+    - rad_blocker (방사선차단제) weight:1
+    - antiseptic (소독약) weight:3
+
+  [수술실] (dongdaemun_or) - lootCount:1-2
+    - surgery_kit (수술키트) weight:1
+    - antiseptic (소독약) weight:3
+    - bandage (붕대) weight:3
+    - splint (부목) weight:2
+
+  [중환자실] (dongdaemun_icu) - lootCount:2-3
+    - stimulant (각성제) weight:2
+    - first_aid_kit (구급키트) weight:2
+    - antibiotics (항생제) weight:2
+    - bandage (붕대) weight:3
+
+  [의무기록실] (dongdaemun_records) - lootCount:1-2
+    - bandage (붕대) weight:3
+    - painkiller (진통제) weight:3
+    - antiseptic (소독약) weight:2
+    - flashlight (손전등) weight:1
+
+  [지하 창고] (dongdaemun_basement) - lootCount:1-3
+    - scrap_metal (고철) weight:3
+    - flashlight (손전등) weight:2
+    - wire (철사) weight:2
+    - rope (로프) weight:2
+
+------------------------------------------------------------------------------
+[용마랜드 폐유원지] (lm_jungrang) - 중랑구
+------------------------------------------------------------------------------
+
+  [관람차 주변] (jungnang_ferris) - lootCount:2-4
+    - scrap_metal (고철) weight:5
+    - wire (철사) weight:3
+    - rubber (고무) weight:2
+    - iron_pipe (철파이프) weight:2
+
+  [놀이기구 창고] (jungnang_ride_storage) - lootCount:2-3
+    - electronic_parts (전자부품) weight:3
+    - rubber (고무) weight:3
+    - scrap_metal (고철) weight:3
+    - plastic (플라스틱) weight:2
+
+  [구 관리실] (jungnang_control) - lootCount:1-3
+    - flashlight (손전등) weight:2
+    - wire (철사) weight:4
+    - electronic_parts (전자부품) weight:3
+    - plastic (플라스틱) weight:2
+
+  [지하 보일러실] (jungnang_boiler) - lootCount:2-3
+    - scrap_metal (고철) weight:4
+    - iron_pipe (철파이프) weight:3
+    - rubber (고무) weight:2
+    - wire (철사) weight:2
+
+  [매표소] (jungnang_ticket) - lootCount:1-2
+    - painkiller (진통제) weight:2
+    - bandage (붕대) weight:3
+    - flashlight (손전등) weight:2
+    - plastic (플라스틱) weight:2
+
+------------------------------------------------------------------------------
+[고려대학교] (lm_seongbuk) - 성북구
+------------------------------------------------------------------------------
+
+  [의과대학] (seongbuk_medschool) - lootCount:1-3
+    - first_aid_kit (구급키트) weight:2
+    - antiseptic (소독약) weight:3
+    - surgery_kit (수술키트) weight:1
+    - antibiotics (항생제) weight:2
+
+  [중앙도서관] (seongbuk_library) - lootCount:1-2
+    - painkiller (진통제) weight:2
+    - bandage (붕대) weight:3
+    - flashlight (손전등) weight:2
+    - cloth (천) weight:2
+
+  [화학과 실험실] (seongbuk_chemlab) - lootCount:1-3
+    - antiseptic (소독약) weight:3
+    - rad_blocker (방사선차단제) weight:2
+    - antidote (해독제) weight:2
+    - plastic (플라스틱) weight:2
+
+  [기숙사] (seongbuk_dorm) - lootCount:2-4
+    - canned_food (통조림) weight:3
+    - bandage (붕대) weight:2
+    - cloth (천) weight:3
+    - purified_water (정수된 물) weight:2
+
+  [도서관 지하 서고] (seongbuk_lib_basement) - lootCount:1-2
+    - electronic_parts (전자부품) weight:2
+    - flashlight (손전등) weight:3
+    - wire (철사) weight:2
+    - bandage (붕대) weight:2
+
+------------------------------------------------------------------------------
+[북한산성] (lm_gangbuk) - 강북구
+------------------------------------------------------------------------------
+
+  [성문] (gangbuk_gate) - lootCount:1-3
+    - scrap_metal (고철) weight:4
+    - iron_pipe (철파이프) weight:3
+    - nail (못) weight:3
+    - wood (목재) weight:2
+
+  [봉수대] (gangbuk_beacon) - lootCount:1-3
+    - wood (목재) weight:5
+    - rope (로프) weight:3
+    - flashlight (손전등) weight:1
+    - bandage (붕대) weight:1
+
+  [군사 막사 터] (gangbuk_barracks) - lootCount:1-2
+    - crowbar (쇠지렛대) weight:2
+    - knife (칼) weight:2
+    - bandage (붕대) weight:3
+    - canned_food (통조림) weight:2
+
+  [우물] (gangbuk_well) - lootCount:1-3
+    - contaminated_water (오염수) weight:3
+    - purified_water (정수된 물) weight:2
+    - vitamins (비타민) weight:2
+
+  [무기고 터] (gangbuk_arsenal) - lootCount:1-2
+    - machete (마체테) weight:1
+    - iron_pipe (철파이프) weight:3
+    - nail (못) weight:4
+    - scrap_metal (고철) weight:3
+
+------------------------------------------------------------------------------
+[도봉산 등산로] (lm_dobong) - 도봉구
+------------------------------------------------------------------------------
+
+  [등산 초입부] (dobong_entrance) - lootCount:2-4
+    - wood (목재) weight:5
+    - rope (로프) weight:3
+    - vitamins (비타민) weight:3
+    - bandage (붕대) weight:1
+
+  [산장] (dobong_lodge) - lootCount:1-3
+    - bandage (붕대) weight:3
+    - canned_food (통조림) weight:3
+    - flashlight (손전등) weight:2
+    - painkiller (진통제) weight:2
+
+  [정상 대피소] (dobong_shelter) - lootCount:1-2
+    - first_aid_kit (구급키트) weight:2
+    - painkiller (진통제) weight:3
+    - splint (부목) weight:2
+    - bandage (붕대) weight:3
+
+  [계곡] (dobong_valley) - lootCount:2-4
+    - purified_water (정수된 물) weight:4
+    - vitamins (비타민) weight:4
+    - contaminated_water (오염수) weight:1
+
+  [암벽 지대] (dobong_cliff) - lootCount:1-2
+    - rope (로프) weight:4
+    - leather (가죽) weight:2
+    - bandage (붕대) weight:2
+    - splint (부목) weight:1
+
+------------------------------------------------------------------------------
+[불암산 자연공원] (lm_nowon) - 노원구
+------------------------------------------------------------------------------
+
+  [자연 관찰로] (nowon_trail) - lootCount:2-4
+    - vitamins (비타민) weight:6
+    - wood (목재) weight:3
+    - rope (로프) weight:2
+
+  [약수터] (nowon_spring) - lootCount:2-4
+    - purified_water (정수된 물) weight:5
+    - contaminated_water (오염수) weight:1
+    - vitamins (비타민) weight:3
+
+  [숲 캠핑지] (nowon_campsite) - lootCount:2-3
+    - wood (목재) weight:4
+    - rope (로프) weight:3
+    - flashlight (손전등) weight:2
+    - bandage (붕대) weight:2
+
+  [야생동물 서식지] (nowon_wildlife) - lootCount:1-3
+    - leather (가죽) weight:4
+    - rope (로프) weight:2
+    - bandage (붕대) weight:2
+    - knife (칼) weight:1
+
+  [전망대] (nowon_observatory) - lootCount:1-2
+    - flashlight (손전등) weight:3
+    - bandage (붕대) weight:2
+    - rope (로프) weight:2
+    - wire (철사) weight:1
+
+------------------------------------------------------------------------------
+[진관사] (lm_eunpyeong) - 은평구
+------------------------------------------------------------------------------
+
+  [대웅전] (eunpyeong_main_hall) - lootCount:1-3
+    - cloth (천) weight:4
+    - bandage (붕대) weight:3
+    - rope (로프) weight:2
+    - lighter (라이터) weight:1
+
+  [사찰 창고] (eunpyeong_storage) - lootCount:2-4
+    - canned_food (통조림) weight:3
+    - purified_water (정수된 물) weight:3
+    - wood (목재) weight:3
+    - rope (로프) weight:2
+
+  [스님 거처] (eunpyeong_quarters) - lootCount:1-3
+    - bandage (붕대) weight:3
+    - painkiller (진통제) weight:2
+    - cloth (천) weight:3
+    - purified_water (정수된 물) weight:2
+
+  [공양 식당] (eunpyeong_dining) - lootCount:2-4
+    - canned_food (통조림) weight:4
+    - dried_meat (건육) weight:3
+    - purified_water (정수된 물) weight:3
+
+  [약초원] (eunpyeong_herb) - lootCount:2-5
+    - vitamins (비타민) weight:6
+    - antiseptic (소독약) weight:2
+    - antidote (해독제) weight:2
+    - painkiller (진통제) weight:1
+
+------------------------------------------------------------------------------
+[신촌 세브란스병원] (lm_seodaemun) - 서대문구
+------------------------------------------------------------------------------
+
+  [응급실] (seodaemun_er) - lootCount:2-4
+    - bandage (붕대) weight:5
+    - first_aid_kit (구급키트) weight:2
+    - antiseptic (소독약) weight:4
+    - painkiller (진통제) weight:2
+
+  [약품 창고] (seodaemun_pharmacy) - lootCount:2-3
+    - antibiotics (항생제) weight:3
+    - painkiller (진통제) weight:3
+    - stimulant (각성제) weight:2
+    - rad_blocker (방사선차단제) weight:1
+
+  [수술실] (seodaemun_or) - lootCount:1-3
+    - surgery_kit (수술키트) weight:2
+    - antiseptic (소독약) weight:4
+    - splint (부목) weight:2
+    - bandage (붕대) weight:3
+
+  [연구실] (seodaemun_lab) - lootCount:1-3
+    - rad_blocker (방사선차단제) weight:2
+    - antidote (해독제) weight:2
+    - antiseptic (소독약) weight:3
+    - antibiotics (항생제) weight:2
+
+  [영안실] (seodaemun_morgue) - lootCount:1-2
+    - bandage (붕대) weight:3
+    - antiseptic (소독약) weight:3
+    - antidote (해독제) weight:1
+    - splint (부목) weight:2
+
+  [지하 물자 창고] (seodaemun_basement) - lootCount:1-3
+    - scrap_metal (고철) weight:3
+    - flashlight (손전등) weight:2
+    - wire (철사) weight:2
+    - bandage (붕대) weight:2
+
+------------------------------------------------------------------------------
+[홍대 클럽가] (lm_mapo) - 마포구
+------------------------------------------------------------------------------
+
+  [클럽 내부] (mapo_club) - lootCount:1-3
+    - stimulant (각성제) weight:2
+    - painkiller (진통제) weight:3
+    - bandage (붕대) weight:2
+    - plastic (플라스틱) weight:2
+
+  [편의점] (mapo_convenience) - lootCount:2-4
+    - canned_food (통조림) weight:4
+    - painkiller (진통제) weight:3
+    - bandage (붕대) weight:3
+    - purified_water (정수된 물) weight:2
+
+  [지하 창고] (mapo_underground) - lootCount:2-3
+    - scrap_metal (고철) weight:3
+    - wire (철사) weight:3
+    - plastic (플라스틱) weight:3
+    - rope (로프) weight:2
+
+  [주차장] (mapo_parking) - lootCount:2-3
+    - scrap_metal (고철) weight:4
+    - iron_pipe (철파이프) weight:2
+    - crowbar (쇠지렛대) weight:2
+    - rubber (고무) weight:2
+
+  [카페 골목] (mapo_cafe) - lootCount:1-3
+    - canned_food (통조림) weight:3
+    - purified_water (정수된 물) weight:3
+    - bandage (붕대) weight:2
+    - painkiller (진통제) weight:1
+
+------------------------------------------------------------------------------
+[목동 경기장] (lm_yangcheon) - 양천구
+------------------------------------------------------------------------------
+
+  [관중석] (yangcheon_stands) - lootCount:1-3
+    - scrap_metal (고철) weight:4
+    - baseball_bat (야구배트) weight:1
+    - plastic (플라스틱) weight:3
+    - rope (로프) weight:2
+
+  [선수 라커룸] (yangcheon_locker) - lootCount:2-4
+    - bandage (붕대) weight:4
+    - painkiller (진통제) weight:3
+    - work_gloves (작업장갑) weight:2
+    - antiseptic (소독약) weight:2
+
+  [기계실] (yangcheon_mechanical) - lootCount:2-3
+    - scrap_metal (고철) weight:4
+    - wire (철사) weight:3
+    - electronic_parts (전자부품) weight:2
+    - rubber (고무) weight:2
+
+  [매점] (yangcheon_concession) - lootCount:1-3
+    - canned_food (통조림) weight:4
+    - painkiller (진통제) weight:2
+    - purified_water (정수된 물) weight:3
+    - bandage (붕대) weight:1
+
+  [주차장] (yangcheon_parking) - lootCount:1-3
+    - scrap_metal (고철) weight:4
+    - iron_pipe (철파이프) weight:3
+    - rubber (고무) weight:2
+    - wire (철사) weight:2
+
+------------------------------------------------------------------------------
+[김포공항] (lm_gangseo) - 강서구
+------------------------------------------------------------------------------
+
+  [출국장] (gangseo_departure) - lootCount:2-4
+    - canned_food (통조림) weight:3
+    - bandage (붕대) weight:3
+    - flashlight (손전등) weight:2
+    - painkiller (진통제) weight:2
+
+  [화물 터미널] (gangseo_cargo) - lootCount:2-4
+    - scrap_metal (고철) weight:3
+    - plastic (플라스틱) weight:3
+    - rubber (고무) weight:2
+    - rope (로프) weight:3
+
+  [격납고] (gangseo_hangar) - lootCount:2-4
+    - wire (철사) weight:3
+    - electronic_parts (전자부품) weight:3
+    - scrap_metal (고철) weight:4
+    - rubber (고무) weight:2
+
+  [면세점] (gangseo_dutyfree) - lootCount:2-3
+    - painkiller (진통제) weight:3
+    - stimulant (각성제) weight:2
+    - antiseptic (소독약) weight:3
+    - bandage (붕대) weight:2
+
+  [관제탑] (gangseo_tower) - lootCount:2-3
+    - electronic_parts (전자부품) weight:5
+    - wire (철사) weight:4
+    - flashlight (손전등) weight:2
+
+  [연료 저장소] (gangseo_fuel) - lootCount:1-2
+    - rubber (고무) weight:3
+    - plastic (플라스틱) weight:3
+    - molotov_cocktail (화염병) weight:2
+    - wire (철사) weight:2
+
+------------------------------------------------------------------------------
+[구로디지털단지] (lm_guro) - 구로구
+------------------------------------------------------------------------------
+
+  [IT 사무실] (guro_office) - lootCount:2-4
+    - electronic_parts (전자부품) weight:4
+    - wire (철사) weight:3
+    - plastic (플라스틱) weight:2
+    - flashlight (손전등) weight:1
+
+  [서버실] (guro_server) - lootCount:2-4
+    - electronic_parts (전자부품) weight:5
+    - wire (철사) weight:4
+    - flashlight (손전등) weight:2
+
+  [물류 창고] (guro_warehouse) - lootCount:2-4
+    - scrap_metal (고철) weight:3
+    - plastic (플라스틱) weight:4
+    - rope (로프) weight:2
+    - wire (철사) weight:2
+
+  [전자 부품 상점] (guro_parts_store) - lootCount:2-4
+    - electronic_parts (전자부품) weight:5
+    - wire (철사) weight:4
+    - nail (못) weight:2
+    - plastic (플라스틱) weight:2
+
+  [지하 주차장] (guro_parking) - lootCount:1-3
+    - scrap_metal (고철) weight:4
+    - crowbar (쇠지렛대) weight:2
+    - rubber (고무) weight:3
+    - iron_pipe (철파이프) weight:2
+
+------------------------------------------------------------------------------
+[독산동 공장지대] (lm_geumcheon) - 금천구
+------------------------------------------------------------------------------
+
+  [금속 공장] (geumcheon_metal) - lootCount:2-5
+    - scrap_metal (고철) weight:5
+    - nail (못) weight:4
+    - iron_pipe (철파이프) weight:3
+    - wire (철사) weight:2
+
+  [화학 공장] (geumcheon_chemical) - lootCount:1-3
+    - rubber (고무) weight:3
+    - plastic (플라스틱) weight:3
+    - antiseptic (소독약) weight:2
+    - rad_blocker (방사선차단제) weight:1
+
+  [창고 단지] (geumcheon_warehouse_complex) - lootCount:2-5
+    - scrap_metal (고철) weight:4
+    - wood (목재) weight:3
+    - rope (로프) weight:3
+    - plastic (플라스틱) weight:2
+
+  [폐기물 처리장] (geumcheon_waste) - lootCount:1-3
+    - rubber (고무) weight:4
+    - plastic (플라스틱) weight:3
+    - contaminated_water (오염수) weight:3
+    - scrap_metal (고철) weight:2
+
+  [발전소] (geumcheon_power) - lootCount:2-4
+    - wire (철사) weight:5
+    - electronic_parts (전자부품) weight:3
+    - scrap_metal (고철) weight:3
+    - rubber (고무) weight:2
+
+------------------------------------------------------------------------------
+[영등포 타임스퀘어] (lm_yeongdeungpo) - 영등포구
+------------------------------------------------------------------------------
+
+  [식품관] (yeongdeungpo_food) - lootCount:2-4
+    - canned_food (통조림) weight:5
+    - painkiller (진통제) weight:2
+    - bandage (붕대) weight:2
+    - purified_water (정수된 물) weight:2
+
+  [의류 매장] (yeongdeungpo_clothing) - lootCount:2-5
+    - cloth (천) weight:5
+    - leather (가죽) weight:2
+    - work_gloves (작업장갑) weight:2
+    - rope (로프) weight:2
+
+  [전자제품 매장] (yeongdeungpo_electronics) - lootCount:2-4
+    - electronic_parts (전자부품) weight:4
+    - wire (철사) weight:3
+    - flashlight (손전등) weight:2
+    - plastic (플라스틱) weight:2
+
+  [옥상 정원] (yeongdeungpo_rooftop) - lootCount:1-3
+    - vitamins (비타민) weight:3
+    - purified_water (정수된 물) weight:3
+    - rope (로프) weight:2
+    - wood (목재) weight:2
+
+  [지하 창고] (yeongdeungpo_storage) - lootCount:2-4
+    - scrap_metal (고철) weight:3
+    - rope (로프) weight:3
+    - plastic (플라스틱) weight:3
+    - duct_tape (덕테이프) weight:2
+
+  [주차 타워] (yeongdeungpo_parking_tower) - lootCount:2-3
+    - scrap_metal (고철) weight:4
+    - crowbar (쇠지렛대) weight:2
+    - iron_pipe (철파이프) weight:3
+    - rubber (고무) weight:2
+
+------------------------------------------------------------------------------
+[국립현충원] (lm_dongjak) - 동작구
+------------------------------------------------------------------------------
+
+  [현충탑] (dongjak_memorial) - lootCount:1-2
+    - bandage (붕대) weight:3
+    - painkiller (진통제) weight:2
+    - cloth (천) weight:2
+    - rope (로프) weight:1
+
+  [기념관] (dongjak_hall) - lootCount:1-3
+    - bandage (붕대) weight:4
+    - antiseptic (소독약) weight:2
+    - first_aid_kit (구급키트) weight:1
+    - painkiller (진통제) weight:2
+
+  [관리 창고] (dongjak_storage) - lootCount:2-4
+    - scrap_metal (고철) weight:3
+    - wood (목재) weight:4
+    - nail (못) weight:3
+    - pipe_wrench (파이프렌치) weight:1
+
+  [관리소] (dongjak_office) - lootCount:1-2
+    - pipe_wrench (파이프렌치) weight:2
+    - flashlight (손전등) weight:2
+    - bandage (붕대) weight:2
+    - painkiller (진통제) weight:2
+
+  [묘역 숲] (dongjak_forest) - lootCount:2-4
+    - vitamins (비타민) weight:4
+    - rope (로프) weight:3
+    - wood (목재) weight:4
+    - purified_water (정수된 물) weight:1
+
+------------------------------------------------------------------------------
+[서울대학교] (lm_gwanak) - 관악구
+------------------------------------------------------------------------------
+
+  [의과대학] (gwanak_medschool) - lootCount:1-3
+    - first_aid_kit (구급키트) weight:2
+    - antiseptic (소독약) weight:3
+    - surgery_kit (수술키트) weight:1
+    - antibiotics (항생제) weight:2
+
+  [화학과 실험실] (gwanak_chemlab) - lootCount:1-3
+    - rad_blocker (방사선차단제) weight:2
+    - antidote (해독제) weight:2
+    - antiseptic (소독약) weight:4
+    - plastic (플라스틱) weight:2
+
+  [공대 창고] (gwanak_eng_storage) - lootCount:2-4
+    - wire (철사) weight:4
+    - scrap_metal (고철) weight:3
+    - electronic_parts (전자부품) weight:3
+    - nail (못) weight:2
+
+  [기숙사] (gwanak_dorm) - lootCount:2-4
+    - canned_food (통조림) weight:4
+    - bandage (붕대) weight:3
+    - cloth (천) weight:3
+    - purified_water (정수된 물) weight:2
+
+  [도서관 지하 서고] (gwanak_lib_basement) - lootCount:1-2
+    - flashlight (손전등) weight:3
+    - electronic_parts (전자부품) weight:2
+    - bandage (붕대) weight:2
+    - painkiller (진통제) weight:2
+
+  [중앙도서관] (gwanak_main_lib) - lootCount:1-3
+    - painkiller (진통제) weight:3
+    - bandage (붕대) weight:3
+    - flashlight (손전등) weight:2
+    - antiseptic (소독약) weight:1
+
+------------------------------------------------------------------------------
+[예술의전당] (lm_seocho) - 서초구
+------------------------------------------------------------------------------
+
+  [오페라하우스] (seocho_opera) - lootCount:2-4
+    - cloth (천) weight:4
+    - leather (가죽) weight:2
+    - rope (로프) weight:3
+    - bandage (붕대) weight:1
+
+  [무대 뒷편] (seocho_backstage) - lootCount:2-4
+    - rope (로프) weight:4
+    - wood (목재) weight:3
+    - scrap_metal (고철) weight:3
+    - wire (철사) weight:2
+
+  [분장실] (seocho_dressing) - lootCount:1-3
+    - antiseptic (소독약) weight:3
+    - painkiller (진통제) weight:2
+    - cloth (천) weight:3
+    - bandage (붕대) weight:2
+
+  [미술관] (seocho_gallery) - lootCount:1-2
+    - flashlight (손전등) weight:2
+    - bandage (붕대) weight:2
+    - painkiller (진통제) weight:2
+    - cloth (천) weight:3
+
+  [지하 창고] (seocho_basement) - lootCount:2-4
+    - scrap_metal (고철) weight:4
+    - wire (철사) weight:3
+    - plastic (플라스틱) weight:3
+    - rope (로프) weight:2
+
+------------------------------------------------------------------------------
+[강남세브란스병원] (lm_gangnam) - 강남구
+------------------------------------------------------------------------------
+
+  [응급실] (gangnam_er) - lootCount:2-5
+    - bandage (붕대) weight:5
+    - first_aid_kit (구급키트) weight:3
+    - antiseptic (소독약) weight:4
+    - painkiller (진통제) weight:3
+
+  [약품 창고] (gangnam_pharmacy) - lootCount:2-4
+    - antibiotics (항생제) weight:4
+    - painkiller (진통제) weight:3
+    - stimulant (각성제) weight:2
+    - rad_blocker (방사선차단제) weight:2
+
+  [수술실] (gangnam_or) - lootCount:2-4
+    - surgery_kit (수술키트) weight:3
+    - antiseptic (소독약) weight:4
+    - splint (부목) weight:2
+    - bandage (붕대) weight:3
+
+  [연구실] (gangnam_lab) - lootCount:1-3
+    - antidote (해독제) weight:2
+    - rad_blocker (방사선차단제) weight:2
+    - antibiotics (항생제) weight:3
+    - antiseptic (소독약) weight:3
+
+  [영안실] (gangnam_morgue) - lootCount:1-3
+    - antiseptic (소독약) weight:4
+    - splint (부목) weight:2
+    - antidote (해독제) weight:2
+    - bandage (붕대) weight:3
+
+  [VIP 병실] (gangnam_vip) - lootCount:2-4
+    - first_aid_kit (구급키트) weight:3
+    - painkiller (진통제) weight:3
+    - stimulant (각성제) weight:2
+    - surgery_kit (수술키트) weight:1
+
+------------------------------------------------------------------------------
+[롯데월드타워] (lm_songpa) - 송파구
+------------------------------------------------------------------------------
+
+  [로비] (songpa_lobby) - lootCount:2-3
+    - bandage (붕대) weight:3
+    - flashlight (손전등) weight:2
+    - scrap_metal (고철) weight:3
+    - painkiller (진통제) weight:2
+
+  [쇼핑몰 지하] (songpa_mall_basement) - lootCount:2-5
+    - canned_food (통조림) weight:5
+    - painkiller (진통제) weight:3
+    - bandage (붕대) weight:3
+    - purified_water (정수된 물) weight:2
+
+  [호텔 객실] (songpa_hotel) - lootCount:2-4
+    - purified_water (정수된 물) weight:3
+    - bandage (붕대) weight:3
+    - stimulant (각성제) weight:2
+    - painkiller (진통제) weight:3
+
+  [전망대 (119F)] (songpa_observatory) - lootCount:1-3
+    - flashlight (손전등) weight:3
+    - electronic_parts (전자부품) weight:3
+    - wire (철사) weight:2
+    - painkiller (진통제) weight:2
+
+  [비상 계단] (songpa_stairs) - lootCount:1-3
+    - crowbar (쇠지렛대) weight:2
+    - rope (로프) weight:3
+    - scrap_metal (고철) weight:3
+    - bandage (붕대) weight:2
+
+  [발전기실 (지하)] (songpa_generator) - lootCount:2-4
+    - wire (철사) weight:5
+    - electronic_parts (전자부품) weight:4
+    - scrap_metal (고철) weight:3
+    - rubber (고무) weight:2
+
+------------------------------------------------------------------------------
+[암사동 선사유적지] (lm_gangdong) - 강동구
+------------------------------------------------------------------------------
+
+  [움집 복원지] (gangdong_pithouses) - lootCount:2-4
+    - wood (목재) weight:5
+    - rope (로프) weight:3
+    - cloth (천) weight:3
+    - vitamins (비타민) weight:2
+
+  [선사박물관] (gangdong_museum) - lootCount:1-3
+    - bandage (붕대) weight:3
+    - painkiller (진통제) weight:2
+    - flashlight (손전등) weight:2
+    - antiseptic (소독약) weight:1
+
+  [유물 창고] (gangdong_artifact_storage) - lootCount:1-3
+    - scrap_metal (고철) weight:3
+    - leather (가죽) weight:3
+    - wood (목재) weight:3
+    - wire (철사) weight:2
+
+  [한강 강변] (gangdong_riverside) - lootCount:2-4
+    - purified_water (정수된 물) weight:3
+    - contaminated_water (오염수) weight:3
+    - rope (로프) weight:2
+    - vitamins (비타민) weight:2
+
+  [고고학 발굴지] (gangdong_excavation) - lootCount:1-3
+    - leather (가죽) weight:3
+    - scrap_metal (고철) weight:3
+    - sharp_blade (날카로운 날) weight:2
+    - rope (로프) weight:2
+
+
+================================================================================
+=== END OF FILE ===
+================================================================================

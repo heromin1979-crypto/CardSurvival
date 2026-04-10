@@ -808,9 +808,11 @@ const CardFactory = {
         ${qualityBadge}${contamBadge}
       </div>
       <div class="card-body">
-        <span class="card-type-badge">${def.subtype ?? def.type}</span>
+        <div class="card-type-row">
+          <span class="card-type-badge">${def.subtype ?? def.type}</span>
+          ${statsHtml}
+        </div>
         ${artHtml}
-        ${statsHtml}
         ${durBar}
       </div>
       <div class="card-footer">

@@ -127,23 +127,42 @@
   overflow: hidden;
 }
 
+/* 타입 배지 + 효과 스탯을 한 줄에 나란히 표시 */
+.card-type-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  order: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
 .card-type-badge {
   font-size: 9px;
   color: var(--text-dim);
   text-transform: uppercase;
   letter-spacing: 1px;
-  order: 1;
   flex-shrink: 0;
+  white-space: nowrap;
 }
 
-/* 스탯·내구도를 이미지 앞(위)에 배치 — flex:1인 card-art 뒤에 오면 overflow:hidden에 잘림 */
-.card-stats    { order: 2; flex-shrink: 0; }
+/* 스탯: 타입 배지 오른쪽에 인라인 표시 */
+.card-stats {
+  display: flex;
+  gap: 3px;
+  flex-wrap: nowrap;
+  overflow: hidden;
+  flex-shrink: 1;
+  min-width: 0;
+}
+
 .card-durability { order: 3; flex-shrink: 0; }
 
 .card-art {
   flex: 1;
   min-height: 0;
-  order: 4;                   /* 이미지는 남은 공간을 채우며 맨 아래 */
+  order: 2;                   /* 이미지는 남은 공간을 채움 */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -176,9 +195,11 @@
 .card-stat {
   font-size: 9px;
   color: var(--text-secondary);
-  background: rgba(255,255,255,0.04);
+  background: rgba(255,255,255,0.06);
   padding: 1px 3px;
   border-radius: 2px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 /* Durability bar */
