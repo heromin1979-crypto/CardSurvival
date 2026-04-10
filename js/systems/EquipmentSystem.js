@@ -4,14 +4,19 @@ import GameState from '../core/GameState.js';
 import I18n      from '../core/I18n.js';
 
 // 슬롯별 장착 규칙 테이블
+// accepts: [{type, subtypes}] 배열을 쓰면 복수 타입 허용 (weapon_sub처럼 무기+방패 겸용 슬롯)
 const SLOT_RULES = {
   head:        { type: 'armor',  subtypes: ['head'] },
   body:        { type: 'armor',  subtypes: ['vest', 'fullbody', 'clothing'] },
   hands:       { type: 'armor',  subtypes: ['hands'] },
-  offhand:     { type: 'armor',  subtypes: ['offhand'] },
   face:        { type: 'tool',   subtypes: ['protection'], requiresOnWear: true },
   weapon_main: { type: 'weapon', subtypes: ['melee', 'firearm', 'ranged'] },
-  weapon_sub:  { type: 'weapon', subtypes: ['melee', 'firearm', 'ranged', 'throwable'] },
+  weapon_sub:  {
+    accepts: [
+      { type: 'weapon', subtypes: ['melee', 'firearm', 'ranged', 'throwable'] },
+      { type: 'armor',  subtypes: ['offhand'] },
+    ],
+  },
   backpack:    { type: 'tool',   subtypes: ['bag'] },
   boots:       { type: 'armor',  subtypes: ['boots'] },
   belt:        { locked: true },
@@ -43,11 +48,16 @@ const EquipmentSystem = {
     const def = GameState.getCardDef(instanceId);
     if (!def)  return { ok: false, reason: I18n.t('equipSys.noItemDef') };
 
-    if (def.type !== rule.type)
-      return { ok: false, reason: I18n.t('equipSys.typeReq', { type: rule.type }) };
-
-    if (!rule.subtypes.includes(def.subtype))
-      return { ok: false, reason: I18n.t('equipSys.wrongSlot') };
+    // accepts 배열이 있으면 다중 타입 허용 (weapon_sub 등)
+    if (rule.accepts) {
+      const ok = rule.accepts.some(a => a.type === def.type && a.subtypes.includes(def.subtype));
+      if (!ok) return { ok: false, reason: I18n.t('equipSys.wrongSlot') };
+    } else {
+      if (def.type !== rule.type)
+        return { ok: false, reason: I18n.t('equipSys.typeReq', { type: rule.type }) };
+      if (!rule.subtypes.includes(def.subtype))
+        return { ok: false, reason: I18n.t('equipSys.wrongSlot') };
+    }
 
     if (rule.requiresOnWear && !def.onWear)
       return { ok: false, reason: I18n.t('equipSys.noWearEffect') };
@@ -131,6 +141,9 @@ const EquipmentSystem = {
     return Object.entries(SLOT_RULES)
       .filter(([, rule]) => {
         if (rule.locked) return false;
+        if (rule.accepts) {
+          return rule.accepts.some(a => a.type === def.type && a.subtypes.includes(def.subtype));
+        }
         if (def.type !== rule.type) return false;
         if (!rule.subtypes.includes(def.subtype)) return false;
         if (rule.requiresOnWear && !def.onWear) return false;

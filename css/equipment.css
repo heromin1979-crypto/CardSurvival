@@ -109,20 +109,40 @@
 .equip-char-panel {
   flex: 1;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 12px;
-  gap: 8px;
 }
 
+/* 캐릭터(왼쪽) + 슬롯 그리드(오른쪽) 가로 배치 */
+.equip-char-layout {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+/* 캐릭터 실루엣: 아래로 내려 중간쯤 위치 */
+.equip-char-figure {
+  display: flex;
+  justify-content: center;
+  padding-top: 90px;
+  flex-shrink: 0;
+}
+
+/* 슬롯 그리드: 2열 */
 .equip-char-grid {
   display: grid;
-  grid-template-columns: 90px 80px 90px;
-  grid-template-rows: repeat(6, auto);
+  grid-template-columns: 90px 90px;
   gap: 6px;
   align-items: center;
   justify-items: center;
+}
+
+/* head / boots: 2열 전체 점유, 중앙 정렬 */
+.equip-grid-full {
+  grid-column: 1 / span 2;
+  display: flex;
+  justify-content: center;
 }
 
 /* ── 장비 슬롯 카드 ── */
@@ -183,15 +203,12 @@
   opacity: 0.5;
 }
 
-/* 캐릭터 실루엣 중앙 */
+/* 캐릭터 실루엣 */
 .equip-char-silhouette {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 60px;
-  width: 80px;
-  height: 108px;
+  font-size: 80px;
+  line-height: 1;
   pointer-events: none;
+  user-select: none;
 }
 
 /* ── 미니카드 (슬롯 내부) ── */

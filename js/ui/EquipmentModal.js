@@ -27,11 +27,10 @@ const SLOT_META = {
   head:        { i18nKey: 'equip.head',       icon: '⛑️',  row: 1 },
   face:        { i18nKey: 'equip.face',       icon: '😷',  row: 2, col: 'left' },
   body:        { i18nKey: 'equip.body',       icon: '🦺',  row: 3 },
-  offhand:     { i18nKey: 'equip.offhand',    icon: '🛡️',  row: 2, col: 'right' },
   hands:       { i18nKey: 'equip.hands',      icon: '🧤',  row: 4, col: 'left' },
   backpack:    { i18nKey: 'equip.backpack',   icon: '🎒',  row: 4, col: 'right' },
   weapon_main: { i18nKey: 'equip.weaponMain', icon: '⚔️',  row: 5, col: 'left' },
-  weapon_sub:  { i18nKey: 'equip.weaponSub',  icon: '🗡️',  row: 5, col: 'right' },
+  weapon_sub:  { i18nKey: 'equip.weaponSub',  icon: '🛡️⚔',  row: 5, col: 'right' },
   boots:       { i18nKey: 'equip.boots',      icon: '👟',  row: 6 },
 };
 
@@ -177,34 +176,25 @@ const EquipmentModal = {
   // ── 캐릭터 & 슬롯 패널 (중앙) ───────────────────────
 
   _renderCharPanel() {
-    // 그리드 배열: [row1-left, row1-center, row1-right] × 6행
-    const grid = this._buildSlotGrid();
-    const rowsHtml = grid.map(row =>
-      row.map(cell => cell === 'CHAR' ? this._charSilhouette() : (cell ? this._renderSlot(cell) : '<div></div>'))
-         .join('')
-    ).join('');
-
     return `
       <div class="equip-char-panel">
-        <div class="equip-char-grid">${rowsHtml}</div>
+        <div class="equip-char-layout">
+          <div class="equip-char-figure">
+            <div class="equip-char-silhouette">👤</div>
+          </div>
+          <div class="equip-char-grid">
+            <div class="equip-grid-full">${this._renderSlot('head')}</div>
+            ${this._renderSlot('face')}
+            ${this._renderSlot('body')}
+            ${this._renderSlot('hands')}
+            ${this._renderSlot('backpack')}
+            ${this._renderSlot('weapon_main')}
+            ${this._renderSlot('weapon_sub')}
+            <div class="equip-grid-full">${this._renderSlot('boots')}</div>
+          </div>
+        </div>
       </div>
     `;
-  },
-
-  _buildSlotGrid() {
-    // 6행 × 3열 [left, center, right]
-    return [
-      [null,          'head',       null       ],  // 행1
-      ['face',        'CHAR',       'offhand'  ],  // 행2
-      [null,          'body',       null       ],  // 행3
-      ['hands',       'CHAR2',      'backpack' ],  // 행4 (CHAR2 = 실루엣 아랫부분)
-      ['weapon_main', null,         'weapon_sub'], // 행5
-      [null,          'boots',      null       ],  // 행6
-    ];
-  },
-
-  _charSilhouette() {
-    return `<div class="equip-char-silhouette">👤</div>`;
   },
 
   _renderSlot(slotId) {
