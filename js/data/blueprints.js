@@ -10,18 +10,71 @@ const BLUEPRINTS = {
 
   campfire: {
     id: 'campfire', name: '캠프파이어', category: 'structure',
-    description: '온기와 요리를 제공한다. 소음 주의.',
+    description: '돌을 쌓고 장작을 얹어 피우는 화롯불. 불꽃(flame_token)으로 점화한다.',
     output: [{ definitionId: 'campfire', qty: 1 }],
     requiredTools: [],
-    // Tier 0 — 무요구
+    // Tier 0 — 무요구 (단, flame_token은 별도 획득 필요)
+    stages: [
+      {
+        stageIndex: 0, label: '화롯대 준비', tpCost: 2,
+        requiredItems: [
+          { definitionId: 'pebble',     qty: 3 },
+          { definitionId: 'wood_plank', qty: 2 },
+          { definitionId: 'kindling',   qty: 3 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '점화', tpCost: 1,
+        requiredItems: [
+          { definitionId: 'flame_token', qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+  },
+
+  campfire_temp: {
+    id: 'campfire_temp', name: '임시 화톳불', category: 'structure',
+    description: '긴급 상황에서 급조하는 화톳불. 3턴만 지속되며 비·눈에 바로 꺼진다.',
+    output: [{ definitionId: 'campfire_temp', qty: 1 }],
+    requiredTools: [],
     stages: [{
-      stageIndex: 0, label: '화롯대 설치', tpCost: 1,
+      stageIndex: 0, label: '긴급 점화', tpCost: 1,
       requiredItems: [
-        { definitionId: 'wood', qty: 2 },
-        { definitionId: 'lighter', qty: 1 },
+        { definitionId: 'kindling',      qty: 2 },
+        { definitionId: 'tinder_bundle', qty: 1 },
+        { definitionId: 'flame_token',   qty: 1 },
       ],
       consumeAt: 'start',
     }],
+  },
+
+  wind_stove: {
+    id: 'wind_stove', name: '방풍 화로', category: 'structure',
+    hidden: true, unlockConditions: { minDay: 10, minSkillLevel: { building: 2, crafting: 1 } },
+    description: '고철과 돌로 만든 방풍 화로. 날씨에 영향받지 않으며 연료 효율이 높다.',
+    output: [{ definitionId: 'wind_stove', qty: 1 }],
+    requiredTools: [],
+    requiredSkills: { building: 2, crafting: 1 },
+    stages: [
+      {
+        stageIndex: 0, label: '화로 제작', tpCost: 2,
+        requiredItems: [
+          { definitionId: 'scrap_metal', qty: 3 },
+          { definitionId: 'pebble',      qty: 4 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '초기 점화', tpCost: 1,
+        requiredItems: [
+          { definitionId: 'flame_token', qty: 1 },
+          { definitionId: 'kindling',    qty: 2 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
   },
 
   water_purifier: {
@@ -232,6 +285,152 @@ const BLUEPRINTS = {
   // ══════════════════════════════════════════════════════════════
   //  재료 가공 (Material Processing)
   // ══════════════════════════════════════════════════════════════
+
+  // ══════════════════════════════════════════════════════════════
+  //  불 획득 경로 (Fire Acquisition — 6 paths)
+  // ══════════════════════════════════════════════════════════════
+
+  make_fire_by_lighter: {
+    id: 'make_fire_by_lighter', name: '라이터로 불꽃 만들기', category: 'material',
+    description: '라이터를 사용해 불꽃을 만든다. 라이터 내구도 1 감소.',
+    output: [{ definitionId: 'flame_token', qty: 1 }],
+    requiredTools: ['lighter'],
+    stages: [{
+      stageIndex: 0, label: '라이터 점화', tpCost: 1,
+      requiredItems: [
+        { definitionId: 'tinder_bundle', qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  make_fire_by_matches: {
+    id: 'make_fire_by_matches', name: '성냥으로 불꽃 만들기', category: 'material',
+    description: '성냥개비 1개를 사용해 불꽃을 만든다. 비가 오면 사용 불가.',
+    output: [{ definitionId: 'flame_token', qty: 1 }],
+    requiredTools: [],
+    stages: [{
+      stageIndex: 0, label: '성냥 점화', tpCost: 1,
+      requiredItems: [
+        { definitionId: 'matches',       qty: 1 },
+        { definitionId: 'tinder_bundle', qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  make_fire_by_flint: {
+    id: 'make_fire_by_flint', name: '부싯돌로 불씨 만들기', category: 'material',
+    description: '부싯돌을 고철에 부딪혀 불씨를 만든다. 라이터 없이 가능한 안정적인 방법.',
+    output: [{ definitionId: 'fire_ember', qty: 1 }],
+    requiredTools: [],
+    stages: [{
+      stageIndex: 0, label: '부싯돌 타격', tpCost: 1,
+      requiredItems: [
+        { definitionId: 'firestone',  qty: 1 },
+        { definitionId: 'scrap_metal',qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  make_fire_by_friction: {
+    id: 'make_fire_by_friction', name: '마찰로 불씨 만들기', category: 'material',
+    description: '마른 나무 막대를 판자에 비벼 불씨를 만든다. 가장 원시적인 방법. 체력 소모가 크다.',
+    output: [{ definitionId: 'fire_ember', qty: 1 }],
+    requiredTools: [],
+    stages: [{
+      stageIndex: 0, label: '마찰 점화', tpCost: 2,
+      requiredItems: [
+        { definitionId: 'dry_wood_stick', qty: 2 },
+        { definitionId: 'wood_plank',     qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  make_ember_to_flame: {
+    id: 'make_ember_to_flame', name: '불씨를 불꽃으로 키우기', category: 'material',
+    description: '불씨에 불쏘시개를 올려 불꽃을 만든다. 부싯돌·마찰 방법과 함께 사용.',
+    output: [{ definitionId: 'flame_token', qty: 1 }],
+    requiredTools: [],
+    stages: [{
+      stageIndex: 0, label: '불씨 육성', tpCost: 1,
+      requiredItems: [
+        { definitionId: 'fire_ember',    qty: 1 },
+        { definitionId: 'tinder_bundle', qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  // ══════════════════════════════════════════════════════════════
+  //  불 원자재 가공 (Fire Material Processing — 5 recipes)
+  // ══════════════════════════════════════════════════════════════
+
+  make_kindling: {
+    id: 'make_kindling', name: '장작 패기', category: 'material',
+    description: '목재를 쪼개 장작을 만든다.',
+    output: [{ definitionId: 'kindling', qty: 4 }],
+    requiredTools: [],
+    stages: [{
+      stageIndex: 0, label: '장작 패기', tpCost: 1,
+      requiredItems: [{ definitionId: 'wood', qty: 1 }],
+      consumeAt: 'start',
+    }],
+  },
+
+  make_kindling_from_log: {
+    id: 'make_kindling_from_log', name: '통나무 쪼개기', category: 'material',
+    hidden: true, unlockConditions: { minDay: 3 },
+    description: '통나무를 쪼개 장작과 목재를 동시에 얻는다.',
+    output: [
+      { definitionId: 'kindling', qty: 6 },
+      { definitionId: 'wood',     qty: 1 },
+    ],
+    requiredTools: [],
+    stages: [{
+      stageIndex: 0, label: '통나무 분할', tpCost: 2,
+      requiredItems: [{ definitionId: 'tree_log', qty: 1 }],
+      consumeAt: 'start',
+    }],
+  },
+
+  make_wood_plank: {
+    id: 'make_wood_plank', name: '목재 판자 가공', category: 'material',
+    description: '목재를 다듬어 나무 판자를 만든다. 화롯대 제작에 필요.',
+    output: [{ definitionId: 'wood_plank', qty: 2 }],
+    requiredTools: [],
+    stages: [{
+      stageIndex: 0, label: '목재 다듬기', tpCost: 1,
+      requiredItems: [{ definitionId: 'wood', qty: 2 }],
+      consumeAt: 'start',
+    }],
+  },
+
+  make_tinder_from_leaves: {
+    id: 'make_tinder_from_leaves', name: '마른 잎 불쏘시개 만들기', category: 'material',
+    description: '마른 잎사귀를 모아 불쏘시개 뭉치를 만든다.',
+    output: [{ definitionId: 'tinder_bundle', qty: 2 }],
+    requiredTools: [],
+    stages: [{
+      stageIndex: 0, label: '잎 묶기', tpCost: 1,
+      requiredItems: [{ definitionId: 'dry_leaves', qty: 1 }],
+      consumeAt: 'start',
+    }],
+  },
+
+  make_tinder_from_grass: {
+    id: 'make_tinder_from_grass', name: '마른 풀 불쏘시개 만들기', category: 'material',
+    description: '마른 풀뭉치를 모아 불쏘시개를 만든다.',
+    output: [{ definitionId: 'tinder_bundle', qty: 2 }],
+    requiredTools: [],
+    stages: [{
+      stageIndex: 0, label: '풀 묶기', tpCost: 1,
+      requiredItems: [{ definitionId: 'dry_grass', qty: 1 }],
+      consumeAt: 'start',
+    }],
+  },
 
   make_charcoal: {
     id: 'make_charcoal', name: '숯 만들기', category: 'material',
@@ -1122,6 +1321,1478 @@ const BLUEPRINTS = {
         consumeAt: 'start',
       },
     ],
+  },
+
+  // ══════════════════════════════════════════════════════════════
+  //  Phase B: 도구 제작 구조물 블루프린트 (6 structures)
+  // ══════════════════════════════════════════════════════════════
+
+  build_field_forge: {
+    id: 'build_field_forge', name: '야전 대장간 건설', category: 'structure',
+    hidden: true, unlockConditions: { minDay: 15, minSkillLevel: { building: 3, crafting: 2 } },
+    description: '고철·돌·나무로 간이 대장간을 세운다. 금속 도구 제작의 시작점.',
+    output: [{ definitionId: 'field_forge', qty: 1 }],
+    requiredTools: ['workbench'],
+    requiredSkills: { building: 3, crafting: 2 },
+    stages: [
+      {
+        stageIndex: 0, label: '화로 기반 축조', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'pebble',     qty: 6 },
+          { definitionId: 'scrap_metal',qty: 4 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '작업대 결합', tpCost: 2,
+        requiredItems: [
+          { definitionId: 'wood_plank', qty: 3 },
+          { definitionId: 'nail',       qty: 8 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+  },
+
+  build_coal_furnace: {
+    id: 'build_coal_furnace', name: '석탄 용광로 건설', category: 'structure',
+    hidden: true, unlockConditions: { minDay: 25, minSkillLevel: { building: 4, crafting: 3 } },
+    description: '고온 제련용 석탄 용광로. 야전 대장간 보유 후 건설 가능.',
+    output: [{ definitionId: 'coal_furnace', qty: 1 }],
+    requiredTools: ['field_forge'],
+    requiredSkills: { building: 4, crafting: 3 },
+    stages: [
+      {
+        stageIndex: 0, label: '석조 기초 쌓기', tpCost: 4,
+        requiredItems: [
+          { definitionId: 'pebble',     qty: 10 },
+          { definitionId: 'scrap_metal',qty: 3 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '연통 설치', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'scrap_metal', qty: 4 },
+          { definitionId: 'wire',        qty: 2 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+  },
+
+  build_chemistry_bench: {
+    id: 'build_chemistry_bench', name: '화학 실험대 건설', category: 'structure',
+    hidden: true, unlockConditions: { minDay: 20, minSkillLevel: { crafting: 3, medicine: 2 } },
+    description: '약품 합성 및 화약 제조용 실험대. 의학 지식이 필요.',
+    output: [{ definitionId: 'chemistry_bench', qty: 1 }],
+    requiredTools: ['workbench'],
+    requiredSkills: { crafting: 3, medicine: 2 },
+    stages: [
+      {
+        stageIndex: 0, label: '실험대 골조 제작', tpCost: 2,
+        requiredItems: [
+          { definitionId: 'wood_plank',  qty: 3 },
+          { definitionId: 'scrap_metal', qty: 2 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '기구 배치', tpCost: 2,
+        requiredItems: [
+          { definitionId: 'glass_shard',    qty: 3 },
+          { definitionId: 'empty_bottle',   qty: 2 },
+          { definitionId: 'wire',           qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+  },
+
+  build_ammo_bench: {
+    id: 'build_ammo_bench', name: '탄약 제조대 건설', category: 'structure',
+    hidden: true, unlockConditions: { minDay: 30, minSkillLevel: { weaponcraft: 4, crafting: 3 } },
+    description: '탄약을 직접 조립하는 정밀 제조대. 야전 대장간 보유 시 대안 경로도 가능.',
+    output: [{ definitionId: 'ammo_bench', qty: 1 }],
+    requiredTools: [],
+    requiredSkills: { weaponcraft: 4, crafting: 3 },
+    stages: [
+      {
+        stageIndex: 0, label: '작업대 제작', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'wood_plank',    qty: 3 },
+          { definitionId: 'scrap_metal',   qty: 2 },
+          { definitionId: 'nail',          qty: 6 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '프레스 장착', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'refined_metal', qty: 2 },
+          { definitionId: 'spring',        qty: 2 },
+          { definitionId: 'wire',          qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+  },
+
+  build_carpentry_bench: {
+    id: 'build_carpentry_bench', name: '목공 작업대 건설', category: 'structure',
+    hidden: true, unlockConditions: { minDay: 10, minSkillLevel: { building: 2 } },
+    description: '나무를 정밀 가공하는 목공 작업대. 기본 작업대보다 더 나은 목제 도구 제작 가능.',
+    output: [{ definitionId: 'carpentry_bench', qty: 1 }],
+    requiredTools: [],
+    requiredSkills: { building: 2 },
+    stages: [{
+      stageIndex: 0, label: '작업대 조립', tpCost: 3,
+      requiredItems: [
+        { definitionId: 'wood',      qty: 4 },
+        { definitionId: 'wood_plank',qty: 2 },
+        { definitionId: 'nail',      qty: 8 },
+        { definitionId: 'scrap_metal',qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  build_tanning_rack: {
+    id: 'build_tanning_rack', name: '가죽 작업대 건설', category: 'structure',
+    hidden: true, unlockConditions: { minDay: 8, minSkillLevel: { crafting: 2 } },
+    description: '가죽을 처리하는 작업대. 동물 사냥 후 가죽 가공에 필수.',
+    output: [{ definitionId: 'tanning_rack', qty: 1 }],
+    requiredTools: [],
+    requiredSkills: { crafting: 2 },
+    stages: [{
+      stageIndex: 0, label: '건조대 설치', tpCost: 2,
+      requiredItems: [
+        { definitionId: 'wood',  qty: 3 },
+        { definitionId: 'rope',  qty: 2 },
+        { definitionId: 'nail',  qty: 4 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  // ══════════════════════════════════════════════════════════════
+  //  Phase B: 금속 제련 (coal_furnace 필요)
+  // ══════════════════════════════════════════════════════════════
+
+  smelt_refined_metal: {
+    id: 'smelt_refined_metal', name: '금속 제련', category: 'material',
+    hidden: true, unlockConditions: { minDay: 25, minSkillLevel: { crafting: 3 } },
+    description: '용광로에서 고철을 제련해 정제 금속판을 만든다.',
+    output: [{ definitionId: 'refined_metal', qty: 1 }],
+    requiredTools: ['coal_furnace'],
+    requiredSkills: { crafting: 3 },
+    stages: [{
+      stageIndex: 0, label: '고온 제련', tpCost: 3,
+      requiredItems: [
+        { definitionId: 'scrap_metal', qty: 3 },
+        { definitionId: 'charcoal',    qty: 2 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  smelt_steel_plate: {
+    id: 'smelt_steel_plate', name: '강철 제련', category: 'material',
+    hidden: true, unlockConditions: { minDay: 35, minSkillLevel: { crafting: 4 } },
+    description: '정제 금속을 고온 처리해 강철판을 만든다.',
+    output: [{ definitionId: 'steel_plate', qty: 1 }],
+    requiredTools: ['coal_furnace'],
+    requiredSkills: { crafting: 4 },
+    stages: [{
+      stageIndex: 0, label: '강철화 처리', tpCost: 4,
+      requiredItems: [
+        { definitionId: 'refined_metal', qty: 2 },
+        { definitionId: 'charcoal',      qty: 3 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  smelt_lead_ingot: {
+    id: 'smelt_lead_ingot', name: '납 추출', category: 'material',
+    hidden: true, unlockConditions: { minDay: 20, minSkillLevel: { crafting: 2 } },
+    description: '배터리에서 납을 추출한다. 탄환 제작에 사용.',
+    output: [{ definitionId: 'lead_ingot', qty: 3 }],
+    requiredTools: ['coal_furnace'],
+    requiredSkills: { crafting: 2 },
+    stages: [{
+      stageIndex: 0, label: '납 용융 추출', tpCost: 2,
+      requiredItems: [
+        { definitionId: 'battery', qty: 1 },
+        { definitionId: 'charcoal', qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  smelt_brass: {
+    id: 'smelt_brass', name: '황동 제련', category: 'material',
+    hidden: true, unlockConditions: { minDay: 25, minSkillLevel: { crafting: 3 } },
+    description: '구리선과 납을 합금해 황동을 만든다. 탄피 제작의 기초.',
+    output: [{ definitionId: 'brass_fragment', qty: 4 }],
+    requiredTools: ['coal_furnace'],
+    requiredSkills: { crafting: 3 },
+    stages: [{
+      stageIndex: 0, label: '합금 제련', tpCost: 3,
+      requiredItems: [
+        { definitionId: 'wire',       qty: 2 },
+        { definitionId: 'lead_ingot', qty: 1 },
+        { definitionId: 'charcoal',   qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  // ══════════════════════════════════════════════════════════════
+  //  Phase B: 야전 대장간 단조 (field_forge 필요)
+  // ══════════════════════════════════════════════════════════════
+
+  forge_ax_head: {
+    id: 'forge_ax_head', name: '도끼날 단조', category: 'material',
+    hidden: true, unlockConditions: { minDay: 20, minSkillLevel: { weaponcraft: 3 } },
+    description: '정제 금속판을 단조해 도끼날을 만든다.',
+    output: [{ definitionId: 'ax_head', qty: 1 }],
+    requiredTools: ['field_forge'],
+    requiredSkills: { weaponcraft: 3 },
+    stages: [{
+      stageIndex: 0, label: '날 단조', tpCost: 3,
+      requiredItems: [
+        { definitionId: 'refined_metal', qty: 1 },
+        { definitionId: 'charcoal',      qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  forge_shovel_head: {
+    id: 'forge_shovel_head', name: '삽 머리 단조', category: 'material',
+    hidden: true, unlockConditions: { minDay: 20, minSkillLevel: { crafting: 3 } },
+    description: '정제 금속판 2장을 단조해 삽 머리를 만든다.',
+    output: [{ definitionId: 'shovel_head', qty: 1 }],
+    requiredTools: ['field_forge'],
+    requiredSkills: { crafting: 3 },
+    stages: [{
+      stageIndex: 0, label: '삽 날 단조', tpCost: 3,
+      requiredItems: [
+        { definitionId: 'refined_metal', qty: 2 },
+        { definitionId: 'charcoal',      qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  forge_hammer_head: {
+    id: 'forge_hammer_head', name: '망치 머리 단조', category: 'material',
+    hidden: true, unlockConditions: { minDay: 20, minSkillLevel: { crafting: 3 } },
+    description: '정제 금속과 고철로 묵직한 망치 머리를 만든다.',
+    output: [{ definitionId: 'hammer_head', qty: 1 }],
+    requiredTools: ['field_forge'],
+    requiredSkills: { crafting: 3 },
+    stages: [{
+      stageIndex: 0, label: '망치 머리 단조', tpCost: 3,
+      requiredItems: [
+        { definitionId: 'refined_metal', qty: 1 },
+        { definitionId: 'scrap_metal',   qty: 2 },
+        { definitionId: 'charcoal',      qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  forge_fishing_hook: {
+    id: 'forge_fishing_hook', name: '낚싯바늘 제작', category: 'material',
+    hidden: true, unlockConditions: { minSkillLevel: { crafting: 2 } },
+    description: '철사를 구부려 낚싯바늘을 3개 만든다.',
+    output: [{ definitionId: 'fishing_hook', qty: 3 }],
+    requiredTools: ['field_forge'],
+    requiredSkills: { crafting: 2 },
+    stages: [{
+      stageIndex: 0, label: '바늘 성형', tpCost: 1,
+      requiredItems: [
+        { definitionId: 'wire', qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  forge_empty_cartridge: {
+    id: 'forge_empty_cartridge', name: '탄피 제작', category: 'material',
+    hidden: true, unlockConditions: { minDay: 25, minSkillLevel: { crafting: 3 } },
+    description: '황동 조각을 눌러 탄피를 만든다. 탄약 조립의 기초.',
+    output: [{ definitionId: 'empty_cartridge', qty: 6 }],
+    requiredTools: ['field_forge'],
+    requiredSkills: { crafting: 3 },
+    stages: [{
+      stageIndex: 0, label: '탄피 성형', tpCost: 2,
+      requiredItems: [
+        { definitionId: 'brass_fragment', qty: 2 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  forge_bolt_tip: {
+    id: 'forge_bolt_tip', name: '볼트 촉 제작', category: 'material',
+    hidden: true, unlockConditions: { minSkillLevel: { weaponcraft: 2 } },
+    description: '고철을 단조해 날카로운 볼트 촉을 5개 만든다.',
+    output: [{ definitionId: 'bolt_tip', qty: 5 }],
+    requiredTools: ['field_forge'],
+    requiredSkills: { weaponcraft: 2 },
+    stages: [{
+      stageIndex: 0, label: '촉 단조', tpCost: 2,
+      requiredItems: [
+        { definitionId: 'scrap_metal', qty: 1 },
+        { definitionId: 'charcoal',    qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  // ══════════════════════════════════════════════════════════════
+  //  Phase B: 도구 완성 조립 (carpentry_bench / field_forge)
+  // ══════════════════════════════════════════════════════════════
+
+  craft_axe: {
+    id: 'craft_axe', name: '도끼 제작', category: 'weapon',
+    hidden: true, unlockConditions: { minDay: 20, minSkillLevel: { weaponcraft: 3 } },
+    description: '도끼날과 나무 자루를 결합한 완성 도끼. 벌목 효율 2배, 전투 사용 가능.',
+    output: [{ definitionId: 'axe', qty: 1 }],
+    requiredTools: ['carpentry_bench'],
+    requiredSkills: { weaponcraft: 3 },
+    stages: [
+      {
+        stageIndex: 0, label: '자루 제작', tpCost: 2,
+        requiredItems: [
+          { definitionId: 'wood_plank',  qty: 2 },
+          { definitionId: 'kindling',    qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '날 결합', tpCost: 2,
+        requiredItems: [
+          { definitionId: 'ax_head', qty: 1 },
+          { definitionId: 'leather', qty: 1 },
+          { definitionId: 'wire',    qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+  },
+
+  craft_shovel: {
+    id: 'craft_shovel', name: '삽 제작', category: 'weapon',
+    hidden: true, unlockConditions: { minDay: 20, minSkillLevel: { crafting: 3 } },
+    description: '삽 머리와 나무 자루를 결합한 삽. 땅 파기·텃밭 조성 효율 증가.',
+    output: [{ definitionId: 'shovel', qty: 1 }],
+    requiredTools: ['carpentry_bench'],
+    requiredSkills: { crafting: 3 },
+    stages: [
+      {
+        stageIndex: 0, label: '자루 제작', tpCost: 2,
+        requiredItems: [
+          { definitionId: 'wood_plank', qty: 2 },
+          { definitionId: 'rope',       qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '삽 머리 결합', tpCost: 1,
+        requiredItems: [
+          { definitionId: 'shovel_head', qty: 1 },
+          { definitionId: 'nail',        qty: 2 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+  },
+
+  craft_hammer: {
+    id: 'craft_hammer', name: '망치 제작', category: 'weapon',
+    hidden: true, unlockConditions: { minDay: 20, minSkillLevel: { crafting: 3 } },
+    description: '망치 머리와 자루를 결합한 망치. 건축 TP 비용 감소, 전투 기절 효과.',
+    output: [{ definitionId: 'hammer', qty: 1 }],
+    requiredTools: ['carpentry_bench'],
+    requiredSkills: { crafting: 3 },
+    stages: [
+      {
+        stageIndex: 0, label: '자루 제작', tpCost: 1,
+        requiredItems: [
+          { definitionId: 'wood', qty: 1 },
+          { definitionId: 'rope', qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '머리 결합', tpCost: 1,
+        requiredItems: [
+          { definitionId: 'hammer_head', qty: 1 },
+          { definitionId: 'nail',        qty: 2 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+  },
+
+  craft_improved_fishing_rod: {
+    id: 'craft_improved_fishing_rod', name: '개선 낚싯대 제작', category: 'tool',
+    hidden: true, unlockConditions: { minSkillLevel: { crafting: 2 } },
+    description: '목공 작업대로 만든 튼튼한 낚싯대. 어획 확률 증가.',
+    output: [{ definitionId: 'fishing_rod', qty: 1 }],
+    requiredTools: ['carpentry_bench'],
+    requiredSkills: { crafting: 2 },
+    stages: [{
+      stageIndex: 0, label: '낚싯대 제작', tpCost: 2,
+      requiredItems: [
+        { definitionId: 'wood_plank',   qty: 2 },
+        { definitionId: 'fishing_hook', qty: 1 },
+        { definitionId: 'rope',         qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  craft_bolt_shaft: {
+    id: 'craft_bolt_shaft', name: '볼트 샤프트 제작', category: 'material',
+    hidden: true, unlockConditions: { minSkillLevel: { weaponcraft: 2 } },
+    description: '나무 막대를 다듬어 볼트 샤프트 5개를 만든다.',
+    output: [{ definitionId: 'bolt_shaft', qty: 5 }],
+    requiredTools: ['carpentry_bench'],
+    requiredSkills: { weaponcraft: 2 },
+    stages: [{
+      stageIndex: 0, label: '샤프트 성형', tpCost: 1,
+      requiredItems: [
+        { definitionId: 'dry_wood_stick', qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  craft_improved_crossbow_bolt: {
+    id: 'craft_improved_crossbow_bolt', name: '개선 석궁 볼트 제작', category: 'weapon',
+    hidden: true, unlockConditions: { minSkillLevel: { weaponcraft: 3 } },
+    description: '단조 촉을 달아 관통력을 높인 석궁 볼트 5개.',
+    output: [{ definitionId: 'improved_crossbow_bolt', qty: 5 }],
+    requiredTools: ['carpentry_bench'],
+    requiredSkills: { weaponcraft: 3 },
+    stages: [{
+      stageIndex: 0, label: '볼트 조립', tpCost: 2,
+      requiredItems: [
+        { definitionId: 'bolt_shaft', qty: 5 },
+        { definitionId: 'bolt_tip',   qty: 5 },
+        { definitionId: 'leather',    qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  // ══════════════════════════════════════════════════════════════
+  //  Phase B: 화학 합성 (chemistry_bench 필요)
+  // ══════════════════════════════════════════════════════════════
+
+  synthesize_black_powder: {
+    id: 'synthesize_black_powder', name: '흑색 화약 합성', category: 'material',
+    hidden: true, unlockConditions: { minDay: 25, minSkillLevel: { crafting: 3, medicine: 2 } },
+    description: '숯·초석·유황을 혼합해 흑색 화약을 합성한다. 탄약·폭발물의 원료.',
+    output: [{ definitionId: 'black_powder', qty: 5 }],
+    requiredTools: ['chemistry_bench'],
+    requiredSkills: { crafting: 3, medicine: 2 },
+    stages: [{
+      stageIndex: 0, label: '화약 혼합', tpCost: 3,
+      requiredItems: [
+        { definitionId: 'charcoal',  qty: 3 },
+        { definitionId: 'saltpeter', qty: 2 },
+        { definitionId: 'sulfur',    qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  synthesize_detonator_cap: {
+    id: 'synthesize_detonator_cap', name: '뇌관 합성', category: 'material',
+    hidden: true, unlockConditions: { minDay: 30, minSkillLevel: { crafting: 3, medicine: 2 } },
+    description: '황동과 화학약품으로 뇌관을 만든다. 탄약 조립의 핵심 부품.',
+    output: [{ definitionId: 'detonator_cap', qty: 6 }],
+    requiredTools: ['chemistry_bench'],
+    requiredSkills: { crafting: 3, medicine: 2 },
+    stages: [{
+      stageIndex: 0, label: '뇌관 합성', tpCost: 3,
+      requiredItems: [
+        { definitionId: 'brass_fragment', qty: 2 },
+        { definitionId: 'alcohol_solution', qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  synthesize_poison: {
+    id: 'synthesize_poison', name: '독 추출물 합성', category: 'material',
+    hidden: true, unlockConditions: { minDay: 20, minSkillLevel: { medicine: 3 } },
+    description: '약초에서 독성 성분을 추출한다. 무기 도포 또는 함정에 사용.',
+    output: [{ definitionId: 'antiseptic', qty: 2 }],
+    requiredTools: ['chemistry_bench'],
+    requiredSkills: { medicine: 3 },
+    stages: [{
+      stageIndex: 0, label: '독소 추출', tpCost: 3,
+      requiredItems: [
+        { definitionId: 'herb',             qty: 3 },
+        { definitionId: 'alcohol_solution', qty: 1 },
+        { definitionId: 'empty_bottle',     qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  // ══════════════════════════════════════════════════════════════
+  //  Phase B: 탄약 다단 제작 (ammo_bench 필요)
+  // ══════════════════════════════════════════════════════════════
+
+  craft_pistol_ammo: {
+    id: 'craft_pistol_ammo', name: '권총탄 제작 (9mm)', category: 'material',
+    hidden: true, unlockConditions: { minDay: 30, minSkillLevel: { weaponcraft: 3, crafting: 3 } },
+    description: '탄피에 납·화약·뇌관을 조립해 권총탄 6발을 만든다.',
+    output: [{ definitionId: 'pistol_ammo', qty: 6 }],
+    requiredTools: ['ammo_bench'],
+    requiredSkills: { weaponcraft: 3, crafting: 3 },
+    stages: [
+      {
+        stageIndex: 0, label: '탄두 성형', tpCost: 2,
+        requiredItems: [
+          { definitionId: 'lead_ingot',      qty: 2 },
+          { definitionId: 'empty_cartridge', qty: 6 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '장약 + 뇌관 조립', tpCost: 2,
+        requiredItems: [
+          { definitionId: 'black_powder',   qty: 2 },
+          { definitionId: 'detonator_cap',  qty: 6 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+  },
+
+  craft_shotgun_ammo: {
+    id: 'craft_shotgun_ammo', name: '산탄 제작 (12게이지)', category: 'material',
+    hidden: true, unlockConditions: { minDay: 30, minSkillLevel: { weaponcraft: 4, crafting: 3 } },
+    description: '알루미늄 케이스에 산탄·화약·뇌관을 조립해 산탄 4발을 만든다.',
+    output: [{ definitionId: 'shotgun_ammo', qty: 4 }],
+    requiredTools: ['ammo_bench'],
+    requiredSkills: { weaponcraft: 4, crafting: 3 },
+    stages: [
+      {
+        stageIndex: 0, label: '산탄 케이스 준비', tpCost: 2,
+        requiredItems: [
+          { definitionId: 'empty_can',   qty: 2 },
+          { definitionId: 'lead_ingot',  qty: 2 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '화약 + 뇌관 조립', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'black_powder',  qty: 3 },
+          { definitionId: 'detonator_cap', qty: 4 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+  },
+
+  craft_rifle_ammo: {
+    id: 'craft_rifle_ammo', name: '소총탄 제작 (5.56mm)', category: 'material',
+    hidden: true, unlockConditions: { minDay: 45, minSkillLevel: { weaponcraft: 5, crafting: 4 } },
+    description: '강철 코어와 고순도 화약으로 소총탄 6발을 제작한다. 고난도 제작.',
+    output: [{ definitionId: 'rifle_ammo', qty: 6 }],
+    requiredTools: ['ammo_bench'],
+    requiredSkills: { weaponcraft: 5, crafting: 4 },
+    stages: [
+      {
+        stageIndex: 0, label: '탄심 제작', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'steel_plate',     qty: 1 },
+          { definitionId: 'lead_ingot',      qty: 2 },
+          { definitionId: 'empty_cartridge', qty: 6 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '고압 장약 + 뇌관 조립', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'black_powder',   qty: 4 },
+          { definitionId: 'detonator_cap',  qty: 6 },
+          { definitionId: 'brass_fragment', qty: 2 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+  },
+
+  craft_improved_crossbow_bolt_ammo: {
+    id: 'craft_improved_crossbow_bolt_ammo', name: '개선 볼트 탄약 조립', category: 'weapon',
+    hidden: true, unlockConditions: { minSkillLevel: { weaponcraft: 3 } },
+    description: '탄약 제조대에서 볼트 촉을 정밀 연마해 개선 볼트 5발을 만든다.',
+    output: [{ definitionId: 'improved_crossbow_bolt', qty: 5 }],
+    requiredTools: ['ammo_bench'],
+    requiredSkills: { weaponcraft: 3 },
+    stages: [{
+      stageIndex: 0, label: '볼트 정밀 조립', tpCost: 2,
+      requiredItems: [
+        { definitionId: 'bolt_shaft', qty: 5 },
+        { definitionId: 'bolt_tip',   qty: 5 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // Phase C: 식생 확장 — 도구 제작 블루프린트 (18)
+  // ═══════════════════════════════════════════════════════════════════════
+
+  // ─── C-1: 기초 도구 (early game, Day 0) ────────────────────────────
+
+  make_stone_knife: {
+    id: 'make_stone_knife', name: '돌칼 제작', category: 'tool',
+    description: '부싯돌 두 개를 깨서 날카로운 돌칼을 만든다. 고기와 생선 손질의 첫걸음.',
+    output: [{ definitionId: 'stone_knife', qty: 1 }],
+    requiredTools: [],
+    requiredSkills: {},
+    stages: [{
+      stageIndex: 0, label: '돌 깎기', tpCost: 2,
+      requiredItems: [
+        { definitionId: 'firestone', qty: 2 },
+        { definitionId: 'pebble',    qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  make_mortar_pestle: {
+    id: 'make_mortar_pestle', name: '절구 제작', category: 'tool',
+    description: '자갈을 모아 절구와 절굿공이를 만든다. 도토리·약초·마늘 분쇄에 사용.',
+    output: [{ definitionId: 'mortar_pestle', qty: 1 }],
+    requiredTools: [],
+    requiredSkills: { building: 1 },
+    stages: [
+      {
+        stageIndex: 0, label: '돌 모으기', tpCost: 2,
+        requiredItems: [
+          { definitionId: 'pebble',   qty: 4 },
+          { definitionId: 'soil_bag', qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '형태 다듬기', tpCost: 2,
+        requiredItems: [
+          { definitionId: 'scrap_metal', qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+  },
+
+  make_trowel: {
+    id: 'make_trowel', name: '모종삽 제작', category: 'tool',
+    description: '고철 조각과 나무 자루로 소형 모종삽을 만든다. 텃밭 조성 필수 도구.',
+    output: [{ definitionId: 'trowel', qty: 1 }],
+    requiredTools: [],
+    requiredSkills: { building: 1 },
+    stages: [{
+      stageIndex: 0, label: '삽 제작', tpCost: 2,
+      requiredItems: [
+        { definitionId: 'scrap_metal', qty: 1 },
+        { definitionId: 'wood',        qty: 1 },
+        { definitionId: 'rope',        qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  make_fish_trap: {
+    id: 'make_fish_trap', name: '통발 제작', category: 'tool',
+    description: '철사와 나무로 통발을 만든다. 강변 지역에 놓으면 자동으로 날생선을 잡는다.',
+    output: [{ definitionId: 'fish_trap', qty: 1 }],
+    requiredTools: [],
+    requiredSkills: { crafting: 2 },
+    stages: [
+      {
+        stageIndex: 0, label: '틀 만들기', tpCost: 2,
+        requiredItems: [
+          { definitionId: 'wire', qty: 2 },
+          { definitionId: 'wood', qty: 2 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '그물 엮기', tpCost: 2,
+        requiredItems: [
+          { definitionId: 'rope',        qty: 1 },
+          { definitionId: 'fishing_hook',qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+  },
+
+  make_clay_pot: {
+    id: 'make_clay_pot', name: '토기 냄비 제작', category: 'tool',
+    description: '흙을 빚어 모닥불에 구운 토기 냄비. 조리솥 거치대에 올리면 스튜·발효식품을 만든다.',
+    output: [{ definitionId: 'clay_pot', qty: 1 }],
+    requiredTools: ['campfire'],
+    requiredSkills: { crafting: 1 },
+    stages: [
+      {
+        stageIndex: 0, label: '성형', tpCost: 2,
+        requiredItems: [
+          { definitionId: 'soil_bag', qty: 3 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '가마 굽기', tpCost: 3,
+        requiredItems: [],
+        consumeAt: 'start',
+      },
+    ],
+  },
+
+  make_sickle: {
+    id: 'make_sickle', name: '낫 제작', category: 'tool',
+    description: '고철을 구부려 만든 낫. 텃밭 수확 TP를 줄여주고 쐐기풀 채집에도 쓴다.',
+    output: [{ definitionId: 'sickle', qty: 1 }],
+    requiredTools: ['pipe_wrench'],
+    requiredSkills: { weaponcraft: 1 },
+    stages: [{
+      stageIndex: 0, label: '낫 제작', tpCost: 3,
+      requiredItems: [
+        { definitionId: 'scrap_metal', qty: 2 },
+        { definitionId: 'wood',        qty: 1 },
+        { definitionId: 'rope',        qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  // ─── C-2: 중급 도구 (field_forge 필요) ────────────────────────────
+
+  make_kitchen_knife: {
+    id: 'make_kitchen_knife', name: '부엌칼 단조', category: 'tool',
+    hidden: true, unlockConditions: { minSkillLevel: { weaponcraft: 2 } },
+    description: '야전 대장간에서 단조한 부엌칼. 돌칼보다 내구도가 4배 높다.',
+    output: [{ definitionId: 'kitchen_knife', qty: 1 }],
+    requiredTools: ['field_forge'],
+    requiredSkills: { weaponcraft: 2 },
+    stages: [
+      {
+        stageIndex: 0, label: '단조', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'scrap_metal', qty: 3 },
+          { definitionId: 'wood',        qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '날 다듬기', tpCost: 2,
+        requiredItems: [
+          { definitionId: 'rope', qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+  },
+
+  make_iron_pot: {
+    id: 'make_iron_pot', name: '무쇠솥 주조', category: 'tool',
+    hidden: true, unlockConditions: { minSkillLevel: { building: 2 } },
+    description: '야전 대장간에서 주조한 무쇠솥. 대용량 조리, 내구도가 매우 높다.',
+    output: [{ definitionId: 'iron_pot', qty: 1 }],
+    requiredTools: ['field_forge'],
+    requiredSkills: { building: 2 },
+    stages: [
+      {
+        stageIndex: 0, label: '주물 제작', tpCost: 4,
+        requiredItems: [
+          { definitionId: 'scrap_metal', qty: 5 },
+          { definitionId: 'nail',        qty: 4 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '마감', tpCost: 2,
+        requiredItems: [
+          { definitionId: 'refined_metal', qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+  },
+
+  // ─── C-3: 가공·보존 구조물 제작 ─────────────────────────────────────
+
+  build_drying_rack: {
+    id: 'build_drying_rack', name: '건조대 설치', category: 'structure',
+    description: '나무 기둥과 줄로 건조대를 만든다. 고기·생선·버섯 등 모든 식재료를 말릴 수 있다.',
+    output: [{ definitionId: 'drying_rack', qty: 1 }],
+    requiredTools: [],
+    requiredSkills: { building: 1 },
+    stages: [
+      {
+        stageIndex: 0, label: '기둥 세우기', tpCost: 2,
+        requiredItems: [
+          { definitionId: 'wood', qty: 4 },
+          { definitionId: 'nail', qty: 4 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '줄 연결', tpCost: 1,
+        requiredItems: [
+          { definitionId: 'rope', qty: 3 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+  },
+
+  build_cooking_pot_stand: {
+    id: 'build_cooking_pot_stand', name: '조리솥 거치대 설치', category: 'structure',
+    description: '캠프파이어 위에 올릴 수 있는 금속 거치대. clay_pot나 iron_pot을 올리면 스튜와 수프를 조리할 수 있다.',
+    output: [{ definitionId: 'cooking_pot_stand', qty: 1 }],
+    requiredTools: ['campfire'],
+    requiredSkills: { building: 2 },
+    stages: [
+      {
+        stageIndex: 0, label: '프레임 제작', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'scrap_metal', qty: 3 },
+          { definitionId: 'wire',        qty: 2 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '설치', tpCost: 1,
+        requiredItems: [
+          { definitionId: 'nail', qty: 4 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+  },
+
+  build_fermentation_pot: {
+    id: 'build_fermentation_pot', name: '발효통 제작', category: 'structure',
+    description: '흙을 빚어 구운 대형 발효통. 김치·발효주·발효죽을 숙성시킨다.',
+    output: [{ definitionId: 'fermentation_pot', qty: 1 }],
+    requiredTools: ['campfire'],
+    requiredSkills: { building: 2, cooking: 1 },
+    stages: [
+      {
+        stageIndex: 0, label: '성형', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'soil_bag', qty: 5 },
+          { definitionId: 'rope',     qty: 2 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '가마 굽기 및 소금 코팅', tpCost: 4,
+        requiredItems: [
+          { definitionId: 'salt', qty: 2 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+  },
+
+  build_root_cellar: {
+    id: 'build_root_cellar', name: '땅굴 저장고 건설', category: 'structure',
+    hidden: true, unlockConditions: { minDay: 20, minSkillLevel: { building: 3 } },
+    description: '삽으로 땅을 파서 만든 저장고. 낮은 온도로 식품 보존 기간을 2배 연장.',
+    output: [{ definitionId: 'root_cellar', qty: 1 }],
+    requiredTools: ['shovel'],
+    requiredSkills: { building: 3 },
+    stages: [
+      {
+        stageIndex: 0, label: '땅 파기', tpCost: 5,
+        requiredItems: [],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '골조 설치', tpCost: 4,
+        requiredItems: [
+          { definitionId: 'wood_plank', qty: 6 },
+          { definitionId: 'nail',       qty: 8 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 2, label: '마감', tpCost: 2,
+        requiredItems: [
+          { definitionId: 'rope', qty: 2 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+  },
+
+  build_bee_hive: {
+    id: 'build_bee_hive', name: '벌통 설치', category: 'structure',
+    hidden: true, unlockConditions: { minDay: 15, minSkillLevel: { building: 2 } },
+    description: '나무 판자로 만든 벌통. 꿀을 생산해 발효식품 제조와 의료에 활용.',
+    output: [{ definitionId: 'bee_hive', qty: 1 }],
+    requiredTools: [],
+    requiredSkills: { building: 2 },
+    stages: [
+      {
+        stageIndex: 0, label: '통 제작', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'wood_plank', qty: 4 },
+          { definitionId: 'rope',       qty: 2 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '설치 및 유인', tpCost: 2,
+        requiredItems: [
+          { definitionId: 'wild_berry', qty: 2 },
+          { definitionId: 'pine_cone',  qty: 2 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+  },
+
+  // ─── C-4: 텃밭 제작 (shovel + trowel 필요) ──────────────────────────
+
+  build_garden_bed_veggie: {
+    id: 'build_garden_bed_veggie', name: '채소 텃밭 조성', category: 'structure',
+    hidden: true, unlockConditions: { minDay: 10, minSkillLevel: { building: 2 } },
+    description: '채소 씨앗을 심은 텃밭. 5일 후 채소 수확 가능. 지속 가능한 식량 공급원.',
+    output: [{ definitionId: 'garden_bed_veggie', qty: 1 }],
+    requiredTools: ['shovel', 'trowel'],
+    requiredSkills: { building: 2 },
+    stages: [
+      {
+        stageIndex: 0, label: '밭 고르기', tpCost: 4,
+        requiredItems: [
+          { definitionId: 'wood_plank', qty: 3 },
+          { definitionId: 'soil_bag',   qty: 4 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '씨앗 심기', tpCost: 2,
+        requiredItems: [
+          { definitionId: 'vegetable_seed', qty: 2 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+  },
+
+  build_garden_bed_herb: {
+    id: 'build_garden_bed_herb', name: '약초 텃밭 조성', category: 'structure',
+    hidden: true, unlockConditions: { minDay: 10, minSkillLevel: { building: 2 } },
+    description: '약초 씨앗을 심은 텃밭. 의료 자급자족을 위한 지속적 약초 공급원.',
+    output: [{ definitionId: 'garden_bed_herb', qty: 1 }],
+    requiredTools: ['shovel', 'trowel'],
+    requiredSkills: { building: 2 },
+    stages: [
+      {
+        stageIndex: 0, label: '밭 고르기', tpCost: 4,
+        requiredItems: [
+          { definitionId: 'wood_plank', qty: 3 },
+          { definitionId: 'soil_bag',   qty: 3 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '씨앗 심기', tpCost: 2,
+        requiredItems: [
+          { definitionId: 'herb_seed', qty: 2 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+  },
+
+  build_garden_bed_grain: {
+    id: 'build_garden_bed_grain', name: '곡물 텃밭 조성', category: 'structure',
+    hidden: true, unlockConditions: { minDay: 15, minSkillLevel: { building: 3 } },
+    description: '곡물 씨앗을 심은 대형 텃밭. 7일 후 대량 수확. 식량 안보 핵심.',
+    output: [{ definitionId: 'garden_bed_grain', qty: 1 }],
+    requiredTools: ['shovel', 'trowel'],
+    requiredSkills: { building: 3 },
+    stages: [
+      {
+        stageIndex: 0, label: '넓은 밭 조성', tpCost: 5,
+        requiredItems: [
+          { definitionId: 'wood_plank', qty: 4 },
+          { definitionId: 'soil_bag',   qty: 5 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '비료 투입', tpCost: 2,
+        requiredItems: [
+          { definitionId: 'dry_leaves', qty: 3 },
+          { definitionId: 'wild_root',  qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 2, label: '파종', tpCost: 2,
+        requiredItems: [
+          { definitionId: 'grain_seed', qty: 3 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // Phase D: 식생 확장 — 조리·가공 레시피 블루프린트 (22)
+  // ═══════════════════════════════════════════════════════════════════════
+
+  // ─── D-1: 손질 레시피 (stone_knife / kitchen_knife) ─────────────────
+
+  process_meat: {
+    id: 'process_meat', name: '고기 손질', category: 'food',
+    description: '칼로 날고기를 얇게 썰어 스트립으로 만든다. 건조 및 조리 전 필수 처리.',
+    output: [{ definitionId: 'meat_strip', qty: 2 }],
+    requiredTools: ['stone_knife'],
+    requiredSkills: {},
+    stages: [{
+      stageIndex: 0, label: '손질', tpCost: 1,
+      requiredItems: [
+        { definitionId: 'raw_meat', qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  process_fish: {
+    id: 'process_fish', name: '생선 손질', category: 'food',
+    description: '칼로 날생선을 필레로 손질한다. 구이·건조의 전처리.',
+    output: [{ definitionId: 'fish_fillet', qty: 2 }],
+    requiredTools: ['stone_knife'],
+    requiredSkills: {},
+    stages: [{
+      stageIndex: 0, label: '손질', tpCost: 1,
+      requiredItems: [
+        { definitionId: 'raw_fish', qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  grind_acorn: {
+    id: 'grind_acorn', name: '도토리 빻기', category: 'food',
+    description: '절구로 도토리를 빻아 가루로 만든다. 도토리묵·죽의 핵심 재료.',
+    output: [{ definitionId: 'acorn_flour', qty: 1 }],
+    requiredTools: ['mortar_pestle'],
+    requiredSkills: {},
+    stages: [{
+      stageIndex: 0, label: '분쇄', tpCost: 2,
+      requiredItems: [
+        { definitionId: 'acorn', qty: 4 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  grind_herb: {
+    id: 'grind_herb', name: '약초 갈기', category: 'food',
+    description: '절구로 약초를 곱게 갈아 가루로 만든다. 일반 약초보다 효과가 강하다.',
+    output: [{ definitionId: 'herb_powder', qty: 1 }],
+    requiredTools: ['mortar_pestle'],
+    requiredSkills: { medicine: 1 },
+    stages: [{
+      stageIndex: 0, label: '분쇄', tpCost: 2,
+      requiredItems: [
+        { definitionId: 'herb', qty: 2 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  mince_garlic: {
+    id: 'mince_garlic', name: '마늘 빻기', category: 'food',
+    description: '절구로 야생 마늘을 빻아 페이스트로 만든다. 요리 풍미와 항균력 강화.',
+    output: [{ definitionId: 'garlic_paste', qty: 1 }],
+    requiredTools: ['mortar_pestle'],
+    requiredSkills: {},
+    stages: [{
+      stageIndex: 0, label: '분쇄', tpCost: 1,
+      requiredItems: [
+        { definitionId: 'wild_garlic', qty: 2 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  process_nettle: {
+    id: 'process_nettle', name: '쐐기풀 가공', category: 'food',
+    description: '쐐기풀을 익혀 독성을 제거하고 섬유를 추출한다. 로프 대용 가능.',
+    output: [{ definitionId: 'nettle_fiber', qty: 1 }],
+    requiredTools: ['campfire'],
+    requiredSkills: {},
+    stages: [{
+      stageIndex: 0, label: '찌기 및 섬유 추출', tpCost: 2,
+      requiredItems: [
+        { definitionId: 'nettle', qty: 3 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  // ─── D-2: 건조 레시피 (drying_rack) ─────────────────────────────────
+
+  dry_meat: {
+    id: 'dry_meat', name: '육포 만들기', category: 'food',
+    description: '건조대에서 고기 스트립을 소금에 절여 말린다.',
+    output: [{ definitionId: 'dried_meat', qty: 1 }],
+    requiredTools: ['drying_rack'],
+    requiredSkills: { cooking: 1 },
+    stages: [{
+      stageIndex: 0, label: '소금 절임 및 건조', tpCost: 3,
+      requiredItems: [
+        { definitionId: 'meat_strip', qty: 2 },
+        { definitionId: 'salt',       qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  dry_fish: {
+    id: 'dry_fish', name: '생선 말리기', category: 'food',
+    description: '건조대에서 생선 필레를 소금에 절여 말린다.',
+    output: [{ definitionId: 'dried_fish', qty: 1 }],
+    requiredTools: ['drying_rack'],
+    requiredSkills: { cooking: 1 },
+    stages: [{
+      stageIndex: 0, label: '소금 절임 및 건조', tpCost: 3,
+      requiredItems: [
+        { definitionId: 'fish_fillet', qty: 2 },
+        { definitionId: 'salt',        qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  dry_mushroom: {
+    id: 'dry_mushroom', name: '버섯 말리기', category: 'food',
+    description: '건조대에서 식용 버섯을 말린다. 장기 보존 가능하고 수프 재료로 훌륭하다.',
+    output: [{ definitionId: 'dried_mushroom', qty: 1 }],
+    requiredTools: ['drying_rack'],
+    requiredSkills: {},
+    stages: [{
+      stageIndex: 0, label: '건조', tpCost: 2,
+      requiredItems: [
+        { definitionId: 'mushroom_edible', qty: 2 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  dry_berry: {
+    id: 'dry_berry', name: '베리 말리기', category: 'food',
+    description: '건조대에서 야생 베리를 말린다. 달콤한 간식이 사기를 올려준다.',
+    output: [{ definitionId: 'dried_berry', qty: 1 }],
+    requiredTools: ['drying_rack'],
+    requiredSkills: {},
+    stages: [{
+      stageIndex: 0, label: '건조', tpCost: 2,
+      requiredItems: [
+        { definitionId: 'wild_berry', qty: 3 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  // ─── D-3: 간단 조리 (campfire, cooking 1) ────────────────────────────
+
+  grill_fish: {
+    id: 'grill_fish', name: '생선 굽기', category: 'food',
+    description: '모닥불에 소금 간을 해서 생선 필레를 굽는다.',
+    output: [{ definitionId: 'grilled_fish', qty: 1 }],
+    requiredTools: ['campfire'],
+    requiredSkills: { cooking: 1 },
+    stages: [{
+      stageIndex: 0, label: '굽기', tpCost: 1,
+      requiredItems: [
+        { definitionId: 'fish_fillet', qty: 1 },
+        { definitionId: 'salt',        qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  make_pine_needle_tea: {
+    id: 'make_pine_needle_tea', name: '솔잎차 끓이기', category: 'food',
+    description: '솔잎을 끓여 비타민 C가 풍부한 솔잎차를 만든다. 감염 저항에 효과적.',
+    output: [{ definitionId: 'pine_needle_tea', qty: 1 }],
+    requiredTools: ['campfire'],
+    requiredSkills: { cooking: 1 },
+    stages: [{
+      stageIndex: 0, label: '끓이기', tpCost: 1,
+      requiredItems: [
+        { definitionId: 'pine_needle', qty: 3 },
+        { definitionId: 'boiled_water', qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  make_dandelion_coffee: {
+    id: 'make_dandelion_coffee', name: '민들레 커피 끓이기', category: 'food',
+    description: '민들레 뿌리를 볶아 끓인 커피 대용 음료. 피로 회복과 사기 상승.',
+    output: [{ definitionId: 'dandelion_coffee', qty: 1 }],
+    requiredTools: ['campfire'],
+    requiredSkills: { cooking: 1 },
+    stages: [{
+      stageIndex: 0, label: '볶고 끓이기', tpCost: 2,
+      requiredItems: [
+        { definitionId: 'dandelion',   qty: 3 },
+        { definitionId: 'boiled_water', qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  make_wild_salad: {
+    id: 'make_wild_salad', name: '야생 샐러드 만들기', category: 'food',
+    description: '민들레·야생 베리·야생 마늘을 섞은 신선 샐러드. 조리 없이 빠르게 만든다.',
+    output: [{ definitionId: 'wild_salad', qty: 1 }],
+    requiredTools: ['stone_knife'],
+    requiredSkills: {},
+    stages: [{
+      stageIndex: 0, label: '재료 섞기', tpCost: 1,
+      requiredItems: [
+        { definitionId: 'dandelion',   qty: 1 },
+        { definitionId: 'wild_berry',  qty: 1 },
+        { definitionId: 'wild_garlic', qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  make_berry_jam: {
+    id: 'make_berry_jam', name: '베리잼 만들기', category: 'food',
+    description: '야생 베리를 모닥불에 졸여 잼으로 만든다. 장기 보존, 높은 사기 회복.',
+    output: [{ definitionId: 'berry_jam', qty: 1 }],
+    requiredTools: ['campfire'],
+    requiredSkills: { cooking: 1 },
+    stages: [{
+      stageIndex: 0, label: '졸이기', tpCost: 2,
+      requiredItems: [
+        { definitionId: 'wild_berry', qty: 4 },
+        { definitionId: 'salt',       qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  // ─── D-4: 솥 요리 (cooking_pot_stand + clay_pot + campfire, cooking 2) ─
+
+  make_mushroom_soup: {
+    id: 'make_mushroom_soup', name: '버섯 수프 끓이기', category: 'food',
+    description: '조리솥에 식용 버섯과 야생 마늘 페이스트를 넣어 끓인 수프.',
+    output: [{ definitionId: 'mushroom_soup', qty: 1 }],
+    requiredTools: ['cooking_pot_stand', 'campfire'],
+    requiredSkills: { cooking: 2 },
+    stages: [{
+      stageIndex: 0, label: '수프 끓이기', tpCost: 3,
+      requiredItems: [
+        { definitionId: 'mushroom_edible', qty: 2 },
+        { definitionId: 'garlic_paste',    qty: 1 },
+        { definitionId: 'boiled_water',    qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  make_nettle_stew: {
+    id: 'make_nettle_stew', name: '쐐기풀 스튜 끓이기', category: 'food',
+    description: '쐐기풀과 야생 뿌리를 오래 끓인 든든한 스튜.',
+    output: [{ definitionId: 'nettle_stew', qty: 1 }],
+    requiredTools: ['cooking_pot_stand', 'campfire'],
+    requiredSkills: { cooking: 2 },
+    stages: [{
+      stageIndex: 0, label: '스튜 끓이기', tpCost: 3,
+      requiredItems: [
+        { definitionId: 'nettle',       qty: 2 },
+        { definitionId: 'wild_root',    qty: 2 },
+        { definitionId: 'boiled_water', qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  make_acorn_jelly: {
+    id: 'make_acorn_jelly', name: '도토리묵 만들기', category: 'food',
+    description: '도토리 가루를 정수된 물에 개어 굳힌 전통 음식. 사기와 트라우마 회복.',
+    output: [{ definitionId: 'acorn_jelly', qty: 2 }],
+    requiredTools: ['cooking_pot_stand', 'campfire'],
+    requiredSkills: { cooking: 2 },
+    stages: [
+      {
+        stageIndex: 0, label: '반죽 끓이기', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'acorn_flour',    qty: 3 },
+          { definitionId: 'purified_water', qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '굳히기', tpCost: 2,
+        requiredItems: [],
+        consumeAt: 'complete',
+      },
+    ],
+  },
+
+  make_vegetable_stew: {
+    id: 'make_vegetable_stew', name: '야채 스튜 끓이기', category: 'food',
+    hidden: true, unlockConditions: { minSkillLevel: { cooking: 3 } },
+    description: '텃밭 채소와 야생 마늘 페이스트로 끓인 최고급 스튜. 모든 스탯 회복.',
+    output: [{ definitionId: 'vegetable_stew', qty: 1 }],
+    requiredTools: ['cooking_pot_stand', 'campfire'],
+    requiredSkills: { cooking: 3 },
+    stages: [{
+      stageIndex: 0, label: '스튜 끓이기', tpCost: 4,
+      requiredItems: [
+        { definitionId: 'vegetable',    qty: 3 },
+        { definitionId: 'garlic_paste', qty: 1 },
+        { definitionId: 'boiled_water', qty: 1 },
+        { definitionId: 'salt',         qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  // ─── D-5: 발효 레시피 (fermentation_pot, cooking 2+) ────────────────
+
+  ferment_kimchi: {
+    id: 'ferment_kimchi', name: '김치 담그기', category: 'food',
+    hidden: true, unlockConditions: { minSkillLevel: { cooking: 2 } },
+    description: '채소·야생 마늘·소금을 발효통에 담가 숙성시킨다. 감염 저항 최강의 발효식품.',
+    output: [{ definitionId: 'fermented_kimchi', qty: 2 }],
+    requiredTools: ['fermentation_pot'],
+    requiredSkills: { cooking: 2 },
+    stages: [
+      {
+        stageIndex: 0, label: '재료 절이기', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'vegetable',   qty: 3 },
+          { definitionId: 'wild_garlic', qty: 2 },
+          { definitionId: 'salt',        qty: 2 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '숙성 (3일)', tpCost: 6,
+        requiredItems: [],
+        consumeAt: 'complete',
+      },
+    ],
+  },
+
+  ferment_wine: {
+    id: 'ferment_wine', name: '베리 발효주 담그기', category: 'food',
+    hidden: true, unlockConditions: { minDay: 15, minSkillLevel: { cooking: 2 } },
+    description: '야생 베리를 발효통에서 숙성시킨 술. 트라우마와 피로 해소에 최고.',
+    output: [{ definitionId: 'berry_wine', qty: 1 }],
+    requiredTools: ['fermentation_pot'],
+    requiredSkills: { cooking: 2 },
+    stages: [
+      {
+        stageIndex: 0, label: '재료 담기', tpCost: 2,
+        requiredItems: [
+          { definitionId: 'wild_berry', qty: 5 },
+          { definitionId: 'grain',      qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '발효 (5일)', tpCost: 10,
+        requiredItems: [],
+        consumeAt: 'complete',
+      },
+    ],
+  },
+
+  ferment_grain: {
+    id: 'ferment_grain', name: '발효 곡물죽 담그기', category: 'food',
+    hidden: true, unlockConditions: { minSkillLevel: { cooking: 2 } },
+    description: '곡물을 발효시켜 영양 죽을 만든다. 스태미나 회복에 특화된 발효식품.',
+    output: [{ definitionId: 'fermented_grain', qty: 2 }],
+    requiredTools: ['fermentation_pot'],
+    requiredSkills: { cooking: 2 },
+    stages: [
+      {
+        stageIndex: 0, label: '재료 담기', tpCost: 2,
+        requiredItems: [
+          { definitionId: 'grain',        qty: 3 },
+          { definitionId: 'boiled_water', qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '발효 (2일)', tpCost: 4,
+        requiredItems: [],
+        consumeAt: 'complete',
+      },
+    ],
+  },
+
+  // ─── D-6: 텃밭 수확 (sickle 사용 시 TP 절감) ────────────────────────
+
+  harvest_vegetable: {
+    id: 'harvest_vegetable', name: '채소 수확', category: 'food',
+    description: '채소 텃밭에서 채소를 수확한다. 낫이 있으면 TP가 절약된다.',
+    output: [{ definitionId: 'vegetable', qty: 3 }],
+    requiredTools: ['garden_bed_veggie'],
+    requiredSkills: {},
+    stages: [{
+      stageIndex: 0, label: '수확', tpCost: 3,
+      requiredItems: [],
+      consumeAt: 'start',
+    }],
+  },
+
+  harvest_herb: {
+    id: 'harvest_herb', name: '약초 수확', category: 'food',
+    description: '약초 텃밭에서 약초를 수확한다.',
+    output: [{ definitionId: 'herb', qty: 2 }],
+    requiredTools: ['garden_bed_herb'],
+    requiredSkills: {},
+    stages: [{
+      stageIndex: 0, label: '수확', tpCost: 3,
+      requiredItems: [],
+      consumeAt: 'start',
+    }],
+  },
+
+  harvest_grain: {
+    id: 'harvest_grain', name: '곡물 수확', category: 'food',
+    description: '곡물 텃밭에서 곡물을 대량 수확한다.',
+    output: [{ definitionId: 'grain', qty: 5 }],
+    requiredTools: ['garden_bed_grain'],
+    requiredSkills: {},
+    stages: [{
+      stageIndex: 0, label: '수확', tpCost: 4,
+      requiredItems: [],
+      consumeAt: 'start',
+    }],
   },
 };
 

@@ -249,12 +249,14 @@ const ITEMS_MISC = {
 
   lighter: {
     id: 'lighter', name: '라이터', type: 'tool', subtype: 'utility',
-    rarity: 'common', weight: 0.05,
-    defaultDurability: 40, defaultContamination: 0,
-    icon: '🔥', description: '불을 붙이는 도구. 캠프파이어 없이도 일부 조리 가능.',
+    rarity: 'uncommon', weight: 0.05,
+    defaultDurability: 5, defaultContamination: 0,
+    icon: '🔥', description: '불꽃을 만드는 도구. 내구도 1 소모당 불꽃 1회 생성. 연료가 다 떨어지면 못 쓴다. 희귀해진 세상에서는 소중히 아껴야 한다.',
     tags: ['tool', 'fire', 'light'],
-    onUse: { fireStart: true },
-    dismantle: [],
+    onUse: { fireStart: true, durabilityPerUse: 1 },
+    dismantle: [
+      { definitionId: 'scrap_metal', qty: 1, chance: 0.5 },
+    ],
   },
 
   compass: {
@@ -295,13 +297,41 @@ const ITEMS_MISC = {
     id: 'campfire', name: '캠프파이어', type: 'structure', subtype: 'heat',
     rarity: 'uncommon', weight: 2.0,
     defaultDurability: 50, defaultContamination: 0,
-    icon: '🔥', description: '온도 회복, 요리, 정수에 사용. 소음 발생.',
+    icon: '🔥', description: '돌을 쌓고 장작을 얹어 피운 화롯불. 온도 회복·요리·숯 생산에 사용. 비·눈에 꺼질 수 있음.',
     tags: ['structure', 'heat', 'light'],
     onTick: { temperature: 2, noise: 3 },
     dismantleTP: 1,
     dismantle: [
-      { definitionId: 'scrap_metal', qty: 1, chance: 0.7 },
-      { definitionId: 'cloth', qty: 1, chance: 0.5 },
+      { definitionId: 'pebble', qty: 2, chance: 0.8 },
+      { definitionId: 'kindling', qty: 1, chance: 0.5 },
+      { definitionId: 'wood_bark', qty: 1, chance: 0.4 },
+    ],
+  },
+
+  campfire_temp: {
+    id: 'campfire_temp', name: '임시 화톳불', type: 'structure', subtype: 'heat',
+    rarity: 'common', weight: 0.5,
+    defaultDurability: 15, defaultContamination: 0,
+    icon: '🔥', description: '긴급 상황에서 급조한 화톳불. 3턴만 지속되며 비·눈에 바로 꺼진다. 요리 가능.',
+    tags: ['structure', 'heat', 'temp'],
+    onTick: { temperature: 1, noise: 2 },
+    dismantleTP: 0,
+    dismantle: [
+      { definitionId: 'kindling', qty: 1, chance: 0.4 },
+    ],
+  },
+
+  wind_stove: {
+    id: 'wind_stove', name: '방풍 화로', type: 'structure', subtype: 'heat',
+    rarity: 'uncommon', weight: 3.0,
+    defaultDurability: 80, defaultContamination: 0,
+    icon: '♨️', description: '고철과 돌로 만든 방풍 화로. 비·눈에도 꺼지지 않으며 연료 소모가 적다. 요리·숯 생산 가능.',
+    tags: ['structure', 'heat', 'crafted', 'weather_resistant'],
+    onTick: { temperature: 2, noise: 2 },
+    dismantleTP: 2,
+    dismantle: [
+      { definitionId: 'scrap_metal', qty: 2, chance: 0.8 },
+      { definitionId: 'pebble', qty: 3, chance: 0.7 },
     ],
   },
 
@@ -1035,6 +1065,356 @@ const ITEMS_MISC = {
     icon: '🗺️', fragmentOf: 'south',
     description: '강남·서초·송파·강동 일대 군용 지도. 군 보급창고 위치에 붉은 X 표시가 남아있다.',
     tags: ['document', 'map'], dismantle: [],
+  },
+
+  // ─── 도구 제작 전용 구조물 (Phase B) — 6종 ──────────────────
+
+  field_forge: {
+    id: 'field_forge', name: '야전 대장간', type: 'structure', subtype: 'craft',
+    rarity: 'rare', weight: 8.0,
+    defaultDurability: 120, defaultContamination: 0,
+    icon: '⚒️', description: '고철과 돌로 세운 간이 대장간. 금속 도구·도끼날·볼트 촉 등을 단조한다.',
+    tags: ['structure', 'crafted', 'forge'],
+    requiredForBlueprints: true,
+    dismantleTP: 3,
+    dismantle: [
+      { definitionId: 'scrap_metal', qty: 4, chance: 0.8 },
+      { definitionId: 'pebble',      qty: 3, chance: 0.7 },
+      { definitionId: 'wood_plank',  qty: 2, chance: 0.6 },
+    ],
+  },
+
+  coal_furnace: {
+    id: 'coal_furnace', name: '석탄 용광로', type: 'structure', subtype: 'craft',
+    rarity: 'rare', weight: 12.0,
+    defaultDurability: 150, defaultContamination: 0,
+    icon: '🏭', description: '돌과 진흙으로 쌓은 고온 용광로. 고철 → 정제 금속, 납·황동·강철 제련 가능.',
+    tags: ['structure', 'crafted', 'furnace'],
+    requiredForBlueprints: true,
+    dismantleTP: 4,
+    dismantle: [
+      { definitionId: 'pebble',     qty: 6, chance: 0.8 },
+      { definitionId: 'scrap_metal',qty: 3, chance: 0.7 },
+    ],
+  },
+
+  chemistry_bench: {
+    id: 'chemistry_bench', name: '화학 실험대', type: 'structure', subtype: 'craft',
+    rarity: 'rare', weight: 5.0,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🧪', description: '유리병·금속 받침대로 만든 화학 실험대. 흑색 화약·뇌관·독 추출물 합성 가능.',
+    tags: ['structure', 'crafted', 'chemistry'],
+    requiredForBlueprints: true,
+    dismantleTP: 3,
+    dismantle: [
+      { definitionId: 'glass_shard',    qty: 2, chance: 0.6 },
+      { definitionId: 'scrap_metal',    qty: 2, chance: 0.7 },
+      { definitionId: 'wood_plank',     qty: 2, chance: 0.7 },
+    ],
+  },
+
+  ammo_bench: {
+    id: 'ammo_bench', name: '탄약 제조대', type: 'structure', subtype: 'craft',
+    rarity: 'rare', weight: 6.0,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🔧', description: '탄피·화약·납을 조립해 탄약을 만드는 전문 제조대. 권총탄·산탄·소총탄 제작 가능.',
+    tags: ['structure', 'crafted', 'ammo'],
+    requiredForBlueprints: true,
+    dismantleTP: 3,
+    dismantle: [
+      { definitionId: 'refined_metal', qty: 2, chance: 0.7 },
+      { definitionId: 'wood_plank',    qty: 2, chance: 0.7 },
+      { definitionId: 'scrap_metal',   qty: 2, chance: 0.6 },
+    ],
+  },
+
+  carpentry_bench: {
+    id: 'carpentry_bench', name: '목공 작업대', type: 'structure', subtype: 'craft',
+    rarity: 'uncommon', weight: 6.0,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🪚', description: '나무를 정밀하게 가공하는 목공 작업대. 삽·낚싯대·볼트 샤프트·가구 제작 가능.',
+    tags: ['structure', 'crafted', 'carpentry'],
+    requiredForBlueprints: true,
+    dismantleTP: 2,
+    dismantle: [
+      { definitionId: 'wood',      qty: 4, chance: 0.8 },
+      { definitionId: 'nail',      qty: 5, chance: 0.6 },
+      { definitionId: 'scrap_metal',qty: 1, chance: 0.5 },
+    ],
+  },
+
+  tanning_rack: {
+    id: 'tanning_rack', name: '가죽 작업대', type: 'structure', subtype: 'craft',
+    rarity: 'uncommon', weight: 3.0,
+    defaultDurability: 80, defaultContamination: 0,
+    icon: '🟫', description: '사냥한 동물 가죽을 건조·가공하는 작업대. 건조 가죽·가죽 끈 생산 가능.',
+    tags: ['structure', 'crafted', 'tanning'],
+    requiredForBlueprints: true,
+    dismantleTP: 2,
+    dismantle: [
+      { definitionId: 'wood',  qty: 3, chance: 0.8 },
+      { definitionId: 'rope',  qty: 1, chance: 0.6 },
+      { definitionId: 'nail',  qty: 3, chance: 0.5 },
+    ],
+  },
+
+  // ─── 자연 환경 오브젝트 — 불 시스템 연계 (4) ─────────────
+
+  withered_tree: {
+    id: 'withered_tree', name: '말라비틀어진 나무', type: 'structure', subtype: 'natural',
+    rarity: 'common', weight: 5.0,
+    defaultDurability: 30, defaultContamination: 0,
+    icon: '🌵', description: '바짝 말라 죽은 나무. 부수면 마찰 점화에 쓰이는 마른 막대와 불쏘시개 재료를 얻는다.',
+    tags: ['structure', 'salvage', 'natural'],
+    dismantleTP: 1,
+    dismantle: [
+      { definitionId: 'dry_wood_stick', qty: 2, chance: 0.9 },
+      { definitionId: 'dry_leaves',     qty: 1, chance: 0.7 },
+      { definitionId: 'wood_bark',      qty: 1, chance: 0.6 },
+      { definitionId: 'kindling',       qty: 1, chance: 0.5 },
+    ],
+  },
+
+  weed_patch: {
+    id: 'weed_patch', name: '잡초밭', type: 'structure', subtype: 'natural',
+    rarity: 'common', weight: 0.5,
+    defaultDurability: 20, defaultContamination: 0,
+    icon: '🌾', description: '황폐한 땅에서 자란 잡초. 마른 풀을 채집해 불쏘시개로 활용한다.',
+    tags: ['structure', 'salvage', 'natural'],
+    dismantleTP: 1,
+    dismantle: [
+      { definitionId: 'dry_grass', qty: 2, chance: 0.9 },
+      { definitionId: 'herb',      qty: 1, chance: 0.4 },
+      { definitionId: 'dry_leaves',qty: 1, chance: 0.5 },
+    ],
+  },
+
+  gravel_pile: {
+    id: 'gravel_pile', name: '자갈 더미', type: 'structure', subtype: 'natural',
+    rarity: 'common', weight: 3.0,
+    defaultDurability: 40, defaultContamination: 0,
+    icon: '🪨', description: '도로가 파헤쳐진 자갈 더미. 부싯돌을 찾을 수 있다.',
+    tags: ['structure', 'salvage', 'natural'],
+    dismantleTP: 1,
+    dismantle: [
+      { definitionId: 'firestone',  qty: 1, chance: 0.6 },
+      { definitionId: 'pebble',     qty: 3, chance: 0.9 },
+      { definitionId: 'scrap_metal',qty: 1, chance: 0.2 },
+    ],
+  },
+
+  tree_env: {
+    id: 'tree_env', name: '나무 (가로수)', type: 'structure', subtype: 'natural',
+    rarity: 'common', weight: 10.0,
+    defaultDurability: 60, defaultContamination: 0,
+    icon: '🌳', description: '도시에 남은 가로수. 통나무와 나무껍질을 얻는다. 도끼가 있으면 효율이 높아진다.',
+    tags: ['structure', 'salvage', 'natural'],
+    dismantleTP: 2,
+    dismantle: [
+      { definitionId: 'tree_log',  qty: 1, chance: 0.9 },
+      { definitionId: 'wood_bark', qty: 1, chance: 0.7 },
+      { definitionId: 'wood',      qty: 1, chance: 0.6 },
+      { definitionId: 'dry_leaves',qty: 1, chance: 0.4 },
+      { definitionId: 'acorn',     qty: 2, chance: 0.3 },
+    ],
+  },
+
+  // ═══ Phase C: 식생 확장 — 채집 도구 (8, type: 'tool') ════════════════
+
+  stone_knife: {
+    id: 'stone_knife', name: '돌칼', type: 'tool', subtype: 'utility',
+    rarity: 'common', weight: 0.3,
+    defaultDurability: 15, defaultContamination: 0,
+    icon: '🔪', description: '부싯돌을 깨서 만든 원시 칼. 고기와 생선 손질에 사용. 내구도가 낮아 금방 닳는다.',
+    tags: ['tool', 'cutting'],
+    onUse: { durabilityPerUse: 1 },
+  },
+
+  kitchen_knife: {
+    id: 'kitchen_knife', name: '부엌칼', type: 'tool', subtype: 'utility',
+    rarity: 'uncommon', weight: 0.25,
+    defaultDurability: 60, defaultContamination: 0,
+    icon: '🔪', description: '단조한 부엌칼. 돌칼보다 훨씬 오래 쓸 수 있다. 고기·생선·채소 손질에 최적.',
+    tags: ['tool', 'cutting'],
+    onUse: { durabilityPerUse: 1 },
+  },
+
+  mortar_pestle: {
+    id: 'mortar_pestle', name: '절구', type: 'tool', subtype: 'utility',
+    rarity: 'uncommon', weight: 1.5,
+    defaultDurability: 50, defaultContamination: 0,
+    icon: '🪨', description: '돌을 깎아 만든 절구와 절굿공이. 도토리·약초·마늘을 빻아 가루나 페이스트로 만든다.',
+    tags: ['tool', 'processing'],
+    onUse: { durabilityPerUse: 1 },
+  },
+
+  clay_pot: {
+    id: 'clay_pot', name: '토기 냄비', type: 'tool', subtype: 'utility',
+    rarity: 'uncommon', weight: 1.2,
+    defaultDurability: 40, defaultContamination: 0,
+    icon: '🫙', description: '흙으로 빚어 불에 구운 토기 냄비. 조리솥 거치대에 올리면 스튜와 발효식품을 만들 수 있다.',
+    tags: ['tool', 'cooking'],
+    onUse: { durabilityPerUse: 1 },
+  },
+
+  iron_pot: {
+    id: 'iron_pot', name: '무쇠솥', type: 'tool', subtype: 'utility',
+    rarity: 'rare', weight: 3.0,
+    defaultDurability: 120, defaultContamination: 0,
+    icon: '🍳', description: '야전 대장간에서 만든 무쇠솥. 대용량 조리가 가능하고 내구도가 매우 높다.',
+    tags: ['tool', 'cooking'],
+    onUse: { durabilityPerUse: 1 },
+  },
+
+  fish_trap: {
+    id: 'fish_trap', name: '통발', type: 'tool', subtype: 'utility',
+    rarity: 'uncommon', weight: 0.8,
+    defaultDurability: 30, defaultContamination: 0,
+    icon: '🎣', description: '철사와 나무로 만든 통발. 강변 지역에 설치하면 자동으로 날생선을 잡는다.',
+    tags: ['tool', 'fishing'],
+    onUse: { durabilityPerUse: 1 },
+  },
+
+  trowel: {
+    id: 'trowel', name: '모종삽', type: 'tool', subtype: 'utility',
+    rarity: 'common', weight: 0.3,
+    defaultDurability: 40, defaultContamination: 0,
+    icon: '🌱', description: '씨앗을 심고 텃밭을 가꾸는 작은 삽. 텃밭 조성과 수확에 필수 도구.',
+    tags: ['tool', 'farming'],
+    onUse: { durabilityPerUse: 1 },
+  },
+
+  sickle: {
+    id: 'sickle', name: '낫', type: 'tool', subtype: 'utility',
+    rarity: 'uncommon', weight: 0.5,
+    defaultDurability: 50, defaultContamination: 0,
+    icon: '🌾', description: '고철로 만든 낫. 텃밭 수확 시 TP 소모를 줄여준다. 풀과 쐐기풀 채집에도 사용.',
+    tags: ['tool', 'farming', 'cutting'],
+    onUse: { durabilityPerUse: 1 },
+  },
+
+  // ═══ Phase C: 식생 확장 — 가공·보존 구조물 (8, type: 'structure') ════
+
+  drying_rack: {
+    id: 'drying_rack', name: '건조대', type: 'structure', subtype: 'food',
+    rarity: 'uncommon', weight: 3.0,
+    defaultDurability: 80, defaultContamination: 0,
+    icon: '🏗️', description: '나무 기둥과 줄로 만든 건조대. 고기·생선·버섯·베리를 소금에 절여 말린다. 장기 보존 식량 생산.',
+    tags: ['structure', 'crafted', 'food'],
+    requiredForBlueprints: true,
+    dismantleTP: 1,
+    dismantle: [
+      { definitionId: 'wood',  qty: 3, chance: 0.8 },
+      { definitionId: 'rope',  qty: 2, chance: 0.7 },
+      { definitionId: 'nail',  qty: 2, chance: 0.5 },
+    ],
+  },
+
+  cooking_pot_stand: {
+    id: 'cooking_pot_stand', name: '조리솥 거치대', type: 'structure', subtype: 'food',
+    rarity: 'uncommon', weight: 2.0,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🍳', description: '캠프파이어 위에 냄비를 올리는 금속 거치대. clay_pot 또는 iron_pot을 올리면 스튜·수프 조리 가능.',
+    tags: ['structure', 'crafted', 'food'],
+    requiredForBlueprints: true,
+    dismantleTP: 2,
+    dismantle: [
+      { definitionId: 'scrap_metal', qty: 2, chance: 0.8 },
+      { definitionId: 'wire',        qty: 1, chance: 0.6 },
+      { definitionId: 'nail',        qty: 3, chance: 0.5 },
+    ],
+  },
+
+  fermentation_pot: {
+    id: 'fermentation_pot', name: '발효통', type: 'structure', subtype: 'food',
+    rarity: 'rare', weight: 3.0,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🫙', description: '흙을 구워 만든 발효통. 채소·베리·곡물을 소금과 함께 담가 발효식품을 만든다. 숙성에 2~5일 소요.',
+    tags: ['structure', 'crafted', 'food'],
+    requiredForBlueprints: true,
+    dismantleTP: 2,
+    dismantle: [
+      { definitionId: 'pebble', qty: 3, chance: 0.6 },
+      { definitionId: 'rope',   qty: 1, chance: 0.5 },
+    ],
+  },
+
+  garden_bed_veggie: {
+    id: 'garden_bed_veggie', name: '채소 텃밭', type: 'structure', subtype: 'food',
+    rarity: 'rare', weight: 4.0,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🥬', description: '채소 씨앗을 심은 텃밭. 매 턴 조금씩 성장해 5일 후 채소를 수확할 수 있다.',
+    tags: ['structure', 'crafted', 'food', 'farm'],
+    onTick: { nutrition: 0.25 },
+    requiredForBlueprints: true,
+    dismantleTP: 3,
+    dismantle: [
+      { definitionId: 'wood_plank',    qty: 2, chance: 0.8 },
+      { definitionId: 'soil_bag',      qty: 2, chance: 0.7 },
+      { definitionId: 'vegetable_seed',qty: 1, chance: 0.4 },
+    ],
+  },
+
+  garden_bed_herb: {
+    id: 'garden_bed_herb', name: '약초 텃밭', type: 'structure', subtype: 'food',
+    rarity: 'rare', weight: 4.0,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🌿', description: '약초 씨앗을 심은 텃밭. 꾸준히 약초를 공급해준다. 의료 자급자족의 첫걸음.',
+    tags: ['structure', 'crafted', 'food', 'farm'],
+    onTick: { herb: 0.15 },
+    requiredForBlueprints: true,
+    dismantleTP: 3,
+    dismantle: [
+      { definitionId: 'wood_plank', qty: 2, chance: 0.8 },
+      { definitionId: 'soil_bag',   qty: 2, chance: 0.7 },
+      { definitionId: 'herb_seed',  qty: 1, chance: 0.4 },
+    ],
+  },
+
+  garden_bed_grain: {
+    id: 'garden_bed_grain', name: '곡물 텃밭', type: 'structure', subtype: 'food',
+    rarity: 'rare', weight: 4.0,
+    defaultDurability: 120, defaultContamination: 0,
+    icon: '🌾', description: '곡물 씨앗을 심은 대형 텃밭. 7일 후 대량의 곡물을 수확할 수 있다. 식량 안보의 핵심.',
+    tags: ['structure', 'crafted', 'food', 'farm'],
+    onTick: { nutrition: 0.2 },
+    requiredForBlueprints: true,
+    dismantleTP: 3,
+    dismantle: [
+      { definitionId: 'wood_plank',qty: 3, chance: 0.8 },
+      { definitionId: 'soil_bag',  qty: 3, chance: 0.7 },
+      { definitionId: 'grain_seed',qty: 1, chance: 0.4 },
+    ],
+  },
+
+  root_cellar: {
+    id: 'root_cellar', name: '땅굴 저장고', type: 'structure', subtype: 'storage',
+    rarity: 'rare', weight: 6.0,
+    defaultDurability: 200, defaultContamination: 0,
+    icon: '🏚️', description: '땅을 파서 만든 저장고. 낮은 온도를 유지해 식품 부패를 늦춘다. 보존 기간 2배 연장.',
+    tags: ['structure', 'crafted', 'storage'],
+    onTick: { food_decay: -0.5 },
+    requiredForBlueprints: false,
+    dismantleTP: 4,
+    dismantle: [
+      { definitionId: 'wood_plank', qty: 4, chance: 0.7 },
+      { definitionId: 'nail',       qty: 6, chance: 0.6 },
+      { definitionId: 'rope',       qty: 1, chance: 0.5 },
+    ],
+  },
+
+  bee_hive: {
+    id: 'bee_hive', name: '벌통', type: 'structure', subtype: 'food',
+    rarity: 'rare', weight: 2.0,
+    defaultDurability: 80, defaultContamination: 0,
+    icon: '🐝', description: '나무 판자로 만든 벌통. 매 턴 소량의 꿀을 생산한다. 발효식품 촉진재이자 의료 재료.',
+    tags: ['structure', 'crafted', 'food'],
+    onTick: { honey: 0.05 },
+    dismantleTP: 2,
+    dismantle: [
+      { definitionId: 'wood_plank', qty: 3, chance: 0.7 },
+      { definitionId: 'rope',       qty: 1, chance: 0.5 },
+    ],
   },
 };
 

@@ -11,6 +11,12 @@
 - 슬롯 수 고정: `ROW_CONFIG.slots` 사용 (GameState 배열 길이 참조 금지)
 - `--card-h: 155px` = 장소 행 참고값, 바닥/휴대는 flex로 결정
 
+## 장비 슬롯 구조 (EquipmentModal)
+- 활성 슬롯: head, face, body, hands, backpack, weapon_main, weapon_sub, boots
+- weapon_sub = offhand + weapon_sub 겸용 (offhand 슬롯 제거됨)
+- belt, accessory는 GameState에만 존재, UI에서는 표시 안 함
+- 서울 지도: `GameState.flags.mapFragments` 3개 수집 시 `mapUnlocked` 플래그 해금
+
 ## Design System
 Always read DESIGN.md before making any visual or UI decisions.
 All font choices, colors, spacing, and aesthetic direction are defined there.

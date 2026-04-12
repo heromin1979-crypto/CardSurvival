@@ -1794,7 +1794,7 @@ Feature 4 (심리) ──────────┼──→ Feature 6 (NPC)
 Feature 7 (신체) ──────────┘
 ```
 
-### 구현 상태 (2026-04-09 업데이트)
+### 구현 상태 (2026-04-12 업데이트)
 
 | Feature | 상태 | 신규 파일 | 주요 시스템 |
 |---------|------|----------|------------|
@@ -1803,7 +1803,7 @@ Feature 7 (신체) ──────────┘
 | 3. 동적 생태계 | ✅ 완료 | EcologySystem.js | 좀비이동/자원재생/오염, 맵 오버레이 |
 | 4. 심리 시스템 | ✅ 완료 | MentalSystem.js | 3축(불안/외로움/트라우마) + 캐릭터 특성 |
 | 5. 비밀 조합 | ✅ 완료 | secretCombinations.js, SecretCombinationSystem.js | 20종 + 힌트 3경로 + 갤러리 UI |
-| 6. NPC 시스템 | ✅ 완료 | npcs.js, NPCSystem.js, NPCDialogueModal.js | 8명 NPC + HP + 이탈 4조건 |
+| 6. NPC 시스템 | ✅ 완료 | npcs.js, NPCSystem.js, NPCDialogueModal.js, NPCQuestSystem.js | 8명 NPC + HP + 이탈 4조건 + 퀘스트 |
 | 7. 신체 시뮬 | ✅ 완료 | BodySystem.js | 6부위 + 다이어그램 UI + 치료 연결 |
 | 10. 지하철/하수도 | ✅ 완료 | subwayRoutes.js, SubwaySystem.js | 4노선 + 역탐색 + 맵 오버레이 |
 | + BGM | ✅ 완료 | BGMSystem.js | Web Audio 프로시저럴, 8개 분위기 |
@@ -1812,6 +1812,8 @@ Feature 7 (신체) ──────────┘
 | + 미니맵 | ✅ 완료 | — | SVG 미니맵 실시간 렌더링, 사이드바 날씨 위젯 |
 | + 인벤토리 | ✅ 완료 | — | 휴대 행 20칸(10×2), 가방 없이 10칸 잠금 처리 |
 | + 장비 UI | ✅ 완료 | — | 장비창 캐릭터+2열 그리드 레이아웃, offhand→weapon_sub 겸용 통합, 카드 스탯 인라인 배치 |
+| + 서울 지도 조각 | ✅ 완료 | SeoulMapModal.js | 지도 조각 3개 수집 → mapUnlocked 플래그 해금, NPC 퀘스트/거래 연동 |
+| + 문서화 | ✅ 완료 | doc/GAME_INTRO.md, doc/UI_DESIGN.md, doc/card_combinations.md | 게임 소개서, UI 설계 문서, 카드 조합 레퍼런스 |
 
 ---
 
