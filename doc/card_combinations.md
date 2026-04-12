@@ -393,4 +393,20 @@
 
 ---
 
+## 6. 특수 아이템 — 서울 지도 조각
+
+> 파일: `js/data/items_misc.js`
+> 3개를 모두 수집하면 서울 전체 지도가 해금됩니다 (`mapUnlocked = true`)
+
+| 아이템 | ID | 희귀도 | 무게 | 입수 방법 |
+|--------|-----|--------|------|-----------|
+| 서울 북부 지도 조각 🗺️ | `map_fragment_north` | rare | 0 | 늙은 생존자 퀘스트 (신뢰도 4, 5일 이상 동행) |
+| 서울 중부 지도 조각 🗺️ | `map_fragment_center` | rare | 0 | 행상인 거래 (통조림×5, 신뢰도 2, 1회 한정) |
+| 서울 남부 지도 조각 🗺️ | `map_fragment_south` | rare | 0 | 탈영 군인 퀘스트 (신뢰도 4, 강남 탐색) |
+
+**수집 진행 추적:** `GameState.flags.mapFragments` 배열에 `['north', 'center', 'south']` 순으로 기록됨
+**해금 조건:** 3개 수집 완료 → `mapFragments.length >= 3` → `mapUnlocked = true`
+
+---
+
 *총 85개 레시피 (기본 35 + 전설 24 + 비밀 26) + 해체 공식 80여 종*

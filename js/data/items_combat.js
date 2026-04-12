@@ -427,6 +427,92 @@ const ITEMS_COMBAT = {
       { definitionId: 'leather', qty: 1, chance: 0.6 },
     ],
   },
+
+  // ─── 신규 무기 / 도구 (Phase B) ─────────────────────────
+
+  axe: {
+    id: 'axe', name: '도끼', type: 'weapon', subtype: 'melee',
+    rarity: 'rare', weight: 1.5,
+    defaultDurability: 90, defaultContamination: 0,
+    icon: '🪓', description: '야전 대장간에서 제작한 도끼. 전투 무기이자 벌목 도구. 통나무 가공 효율 2배.',
+    tags: ['weapon', 'melee', 'tool', 'crafted'],
+    weaponType: 'blade',
+    combat: { damage: [22, 38], accuracy: 0.72, noiseOnUse: 6, durabilityLoss: 2, critChance: 0.20, critMultiplier: 2.2 },
+    onUse: { woodChopBonus: 2.0 },
+    dismantle: [
+      { definitionId: 'ax_head',      qty: 1, chance: 0.7 },
+      { definitionId: 'wood_plank',   qty: 1, chance: 0.8 },
+      { definitionId: 'leather',      qty: 1, chance: 0.5 },
+    ],
+  },
+
+  shovel: {
+    id: 'shovel', name: '삽', type: 'weapon', subtype: 'melee',
+    rarity: 'uncommon', weight: 1.8,
+    defaultDurability: 85, defaultContamination: 0,
+    icon: '⛏️', description: '삽 머리를 자루에 결합한 도구. 땅 파기·텃밭 조성·진흙 수집에 효율 증가.',
+    tags: ['weapon', 'melee', 'tool', 'crafted'],
+    weaponType: 'blunt',
+    combat: { damage: [14, 22], accuracy: 0.70, noiseOnUse: 5, durabilityLoss: 3, critChance: 0.08, critMultiplier: 1.5 },
+    onUse: { digBonus: 2.0 },
+    dismantle: [
+      { definitionId: 'shovel_head',  qty: 1, chance: 0.7 },
+      { definitionId: 'wood_plank',   qty: 1, chance: 0.8 },
+    ],
+  },
+
+  hammer: {
+    id: 'hammer', name: '망치', type: 'weapon', subtype: 'melee',
+    rarity: 'uncommon', weight: 1.2,
+    defaultDurability: 95, defaultContamination: 0,
+    icon: '🔨', description: '목공 작업대에서 만든 망치. 건축 TP 비용 -1 보너스. 전투 시 강한 기절 유발.',
+    tags: ['weapon', 'melee', 'tool', 'crafted'],
+    weaponType: 'blunt',
+    combat: {
+      damage: [16, 26], accuracy: 0.72, noiseOnUse: 7, durabilityLoss: 2, critChance: 0.15, critMultiplier: 1.8,
+      statusInflict: { id: 'stun', name: '기절', duration: 1, effect: { skipTurn: true }, chance: 0.20 },
+    },
+    onUse: { buildingBonus: -1 },
+    dismantle: [
+      { definitionId: 'hammer_head',  qty: 1, chance: 0.7 },
+      { definitionId: 'wood',         qty: 1, chance: 0.8 },
+    ],
+  },
+
+  improved_crossbow_bolt: {
+    id: 'improved_crossbow_bolt', name: '개선 석궁 볼트', type: 'consumable', subtype: 'ammo',
+    rarity: 'uncommon', weight: 0.06,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🎯', description: '단조 촉을 달아 관통력이 높아진 석궁 볼트. 기본 볼트보다 데미지 +5.',
+    tags: ['ammo', 'craftable'],
+    dismantle: [
+      { definitionId: 'bolt_tip', qty: 1, chance: 0.5 },
+    ],
+  },
+
+  rifle: {
+    id: 'rifle', name: '소총', type: 'weapon', subtype: 'firearm',
+    rarity: 'legendary', weight: 3.5,
+    defaultDurability: 90, defaultContamination: 0,
+    icon: '🔫', description: '고성능 반자동 소총. 원거리에서 강력한 피해. 소음이 매우 크며 탄약 직접 제작 필요.',
+    tags: ['weapon', 'firearm', 'loud'],
+    weaponType: 'bullet',
+    combat: { damage: [55, 80], accuracy: 0.78, noiseOnUse: 70, durabilityLoss: 1, requiresAmmo: 'rifle_ammo', critChance: 0.25, critMultiplier: 2.5 },
+    dismantle: [
+      { definitionId: 'steel_plate',  qty: 1, chance: 0.6 },
+      { definitionId: 'scrap_metal',  qty: 2, chance: 0.7 },
+      { definitionId: 'spring',       qty: 2, chance: 0.5 },
+    ],
+  },
+
+  rifle_ammo: {
+    id: 'rifle_ammo', name: '소총탄 (5.56mm)', type: 'consumable', subtype: 'ammo',
+    rarity: 'rare', weight: 0.06,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🔶', description: '탄약 제조대에서 직접 만드는 소총용 탄환. 매우 강력하지만 제작이 복잡하다.',
+    tags: ['ammo', 'craftable'],
+    dismantle: [],
+  },
 };
 
 export default ITEMS_COMBAT;

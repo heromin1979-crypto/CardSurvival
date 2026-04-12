@@ -294,6 +294,198 @@ const SECRET_COMBINATIONS = [
       consumeTgt: true,
     },
   },
+
+  // ═══ 불 시스템 비밀 조합 ══════════════════════════════════
+
+  {
+    id: 'sc_bark_rope',
+    name: '수피 임시 로프',
+    source: { id: 'wood_bark' },
+    target: { id: 'wood_bark' },
+    hint: '나무껍질끼리 꼬으면...',
+    discoveryMsg: '💡 수피 임시 로프! 로프 대용으로 사용 가능. 내구도가 낮다.',
+    xpReward: { skill: 'crafting', amount: 8 },
+    result: {
+      spawnItem: 'rope',
+      consumeSrc: true,
+      consumeTgt: true,
+    },
+  },
+
+  {
+    id: 'sc_pine_cone_fuel',
+    name: '솔방울 연료',
+    source: { id: 'pine_cone' },
+    target: { id: 'campfire' },
+    hint: '솔방울은 천연 연료...',
+    discoveryMsg: '💡 솔방울 투입! 캠프파이어 내구도 +5 회복.',
+    xpReward: { skill: 'crafting', amount: 6 },
+    result: {
+      consumeSrc: true,
+      consumeTgt: false,
+      targetDurabilityChange: +5,
+    },
+  },
+
+  {
+    id: 'sc_fuel_can_fire',
+    name: '연료통으로 불 키우기',
+    source: { id: 'fuel_can' },
+    target: { id: 'campfire' },
+    hint: '연료를 부으면 불이 더 활활...',
+    discoveryMsg: '⚠️ 연료 투입! 캠프파이어 내구도 +15, 소음 +10. 단, 폭발 위험!',
+    xpReward: { skill: 'crafting', amount: 12 },
+    result: {
+      consumeSrc: true,
+      consumeTgt: false,
+      targetDurabilityChange: +15,
+      statChange: { noise: +10 },
+    },
+  },
+
+  {
+    id: 'sc_dry_grass_kindling',
+    name: '마른 풀 긴급 불쏘시개',
+    source: { id: 'dry_grass' },
+    target: { id: 'fire_ember' },
+    hint: '불씨에 마른 풀을 얹으면...',
+    discoveryMsg: '💡 직접 점화! 불쏘시개 뭉치 없이도 불씨를 불꽃으로 키울 수 있다.',
+    xpReward: { skill: 'crafting', amount: 10 },
+    result: {
+      spawnItem: 'flame_token',
+      consumeSrc: true,
+      consumeTgt: true,
+    },
+  },
+
+  {
+    id: 'sc_wind_stove_campfire',
+    name: '방풍 화로 요리',
+    source: { id: 'contaminated_water' },
+    target: { id: 'wind_stove' },
+    hint: '방풍 화로도 물을 끓일 수 있지 않을까...',
+    discoveryMsg: '💡 방풍 화로에서 요리 가능! campfire와 동일하게 사용할 수 있다.',
+    xpReward: { skill: 'cooking', amount: 8 },
+    result: {
+      spawnItem: 'boiled_water',
+      consumeSrc: true,
+      consumeTgt: false,
+    },
+  },
+
+  // ═══ 식생 확장 비밀 조합 ══════════════════════════════════════════════
+
+  {
+    id: 'sc_wild_salad',
+    name: '야생 즉석 샐러드',
+    source: { id: 'wild_berry' },
+    target: { id: 'dandelion' },
+    hint: '베리와 민들레... 날것 그대로 먹을 수 있지 않을까?',
+    discoveryMsg: '💡 야생 샐러드 발견! 조리 없이 바로 만들 수 있는 영양식.',
+    xpReward: { skill: 'cooking', amount: 8 },
+    additionalReq: [{ id: 'wild_garlic', qty: 1 }],
+    result: {
+      spawnItem: 'wild_salad',
+      consumeSrc: true,
+      consumeTgt: true,
+      consumeExtra: true,
+    },
+  },
+
+  {
+    id: 'sc_natural_antibiotic',
+    name: '천연 항생 연고',
+    source: { id: 'wild_garlic' },
+    target: { id: 'herb' },
+    hint: '마늘의 항균 성분과 약초를 섞으면...',
+    discoveryMsg: '💡 천연 항생 연고! 소독제 2개를 만들 수 있다.',
+    xpReward: { skill: 'medicine', amount: 15 },
+    result: {
+      spawnItem: 'antiseptic',
+      spawnQty: 2,
+      consumeSrc: true,
+      consumeTgt: true,
+    },
+  },
+
+  {
+    id: 'sc_toxic_mushroom_extract',
+    name: '독버섯 독 추출',
+    source: { id: 'mushroom_toxic' },
+    target: { id: 'mortar_pestle' },
+    hint: '독버섯을 절구로 갈면 순수한 독을 추출할 수 있을 것 같다...',
+    discoveryMsg: '⚠️ 독 추출 성공! 무기에 독을 바르는 재료로 활용 가능.',
+    xpReward: { skill: 'medicine', amount: 12 },
+    requiredSkill: { medicine: 2 },
+    result: {
+      spawnItem: 'poison',
+      consumeSrc: true,
+      consumeTgt: false,
+    },
+  },
+
+  {
+    id: 'sc_honey_medicine',
+    name: '꿀 약초 연고',
+    source: { id: 'honey' },
+    target: { id: 'herb_powder' },
+    hint: '꿀의 항균력과 약초 가루를 섞으면 강력한 치료제가...',
+    discoveryMsg: '💡 꿀 약초 연고! 감염 -25, HP 회복. 일반 소독제보다 효과가 좋다.',
+    xpReward: { skill: 'medicine', amount: 18 },
+    requiredSkill: { medicine: 3 },
+    result: {
+      spawnItem: 'strong_painkiller',
+      consumeSrc: true,
+      consumeTgt: true,
+    },
+  },
+
+  {
+    id: 'sc_nettle_rope',
+    name: '쐐기풀 섬유 로프',
+    source: { id: 'nettle' },
+    target: { id: 'stone_knife' },
+    hint: '쐐기풀 섬유가 생각보다 질기다... 꼬아서 로프를 만들면?',
+    discoveryMsg: '💡 쐐기풀 로프! 일반 로프 대용으로 쓸 수 있다.',
+    xpReward: { skill: 'crafting', amount: 10 },
+    additionalReq: [{ id: 'nettle', qty: 2 }],
+    result: {
+      spawnItem: 'rope',
+      consumeSrc: true,
+      consumeTgt: false,
+      consumeExtra: true,
+    },
+  },
+
+  {
+    id: 'sc_bamboo_water',
+    name: '죽순 수분 추출',
+    source: { id: 'bamboo_shoot' },
+    target: { id: 'stone_knife' },
+    hint: '죽순을 자르면 안에 수분이 가득하다...',
+    discoveryMsg: '💡 죽순 수분! 오염되지 않은 깨끗한 물을 얻었다.',
+    xpReward: { skill: 'medicine', amount: 6 },
+    result: {
+      spawnItem: 'boiled_water',
+      consumeSrc: true,
+      consumeTgt: false,
+    },
+  },
+
+  {
+    id: 'sc_acorn_fire_starter',
+    name: '도토리 껍질 불쏘시개',
+    source: { id: 'acorn' },
+    target: { id: 'fire_ember' },
+    hint: '도토리 껍질은 잘 탄다...',
+    discoveryMsg: '💡 도토리 껍질 점화! 불씨를 불꽃으로 키울 수 있다.',
+    xpReward: { skill: 'crafting', amount: 6 },
+    result: {
+      spawnItem: 'flame_token',
+      consumeSrc: true,
+      consumeTgt: true,
+    },
+  },
 ];
 
 export default SECRET_COMBINATIONS;
