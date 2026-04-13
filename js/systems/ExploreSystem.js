@@ -433,7 +433,7 @@ const ExploreSystem = {
       gs.board.middle = Array(gs.board.middle.length).fill(null);
       this._updateTopRowForLandmark(landmarkId);
       const lmName = LANDMARK_DATA[landmarkId]?.name ?? landmarkId;
-      EventBus.emit('notify', { message: I18n.t('exploreSys.landmarkEnter', { name: lmName }), type: 'info' });
+      EventBus.emit('notify', { message: I18n.t('exploreSys.landmarkReturn', { name: lmName }), type: 'good' });
       EventBus.emit('boardChanged', {});
       return;
     }
