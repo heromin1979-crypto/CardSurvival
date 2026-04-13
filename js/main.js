@@ -49,6 +49,7 @@ import SecretCombinationSystem from './systems/SecretCombinationSystem.js';
 import BodySystem           from './systems/BodySystem.js';
 import SubwaySystem         from './systems/SubwaySystem.js';
 import NightSystem          from './systems/NightSystem.js';
+import FishingSystem        from './systems/FishingSystem.js';
 
 // Board
 import BoardManager from './board/BoardManager.js';
@@ -79,7 +80,7 @@ import CinematicScene     from './ui/CinematicScene.js';
 // Screens
 import MainMenu     from './screens/MainMenu.js';
 import CharCreate   from './screens/CharCreate.js';
-import Basecamp     from './screens/Basecamp.js';
+import Basecamp     from './screens/Main.js';
 import Explore      from './screens/Explore.js';
 import Encounter    from './screens/Encounter.js';
 import Combat       from './screens/Combat.js';
@@ -131,6 +132,7 @@ function init() {
   EncumbranceSystem.init();
   CraftSystem.init();
   CombatSystem.init();
+  FishingSystem.init();
   ExploreSystem.init();
   SkillSystem.init();
   BasecampSystem.init();

@@ -2794,6 +2794,89 @@ const BLUEPRINTS = {
       consumeAt: 'start',
     }],
   },
+
+  fishing_rod_basic: {
+    id: 'fishing_rod_basic', name: '기본 낚싯대', category: 'tool',
+    description: '나뭇가지와 천 조각으로 만든 낚싯대.',
+    output: [{ definitionId: 'fishing_rod_basic', qty: 1 }],
+    requiredTools: [],
+    stages: [{
+      stageIndex: 0, label: '낚싯대 제작', tpCost: 1,
+      requiredItems: [
+        { definitionId: 'wood', qty: 1 },
+        { definitionId: 'cloth', qty: 1 },
+        { definitionId: 'nail', qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  fishing_rod_improved: {
+    id: 'fishing_rod_improved', name: '개량 낚싯대', category: 'tool',
+    hidden: true, unlockConditions: { minSkillLevel: { crafting: 2, fishing: 3 } },
+    description: '철사와 낚싯바늘로 보강한 개량 낚싯대. 명중률 +15%.',
+    output: [{ definitionId: 'fishing_rod_improved', qty: 1 }],
+    requiredTools: [],
+    requiredSkills: { crafting: 2, fishing: 3 },
+    stages: [{
+      stageIndex: 0, label: '개량 낚싯대 제작', tpCost: 2,
+      requiredItems: [
+        { definitionId: 'wood', qty: 1 },
+        { definitionId: 'wire', qty: 1 },
+        { definitionId: 'scrap_metal', qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  bait_worm: {
+    id: 'bait_worm', name: '지렁이 미끼', category: 'tool',
+    description: '흙을 파서 지렁이를 잡아 미끼로 만든다. 낚시·통발에 사용.',
+    output: [{ definitionId: 'bait_worm', qty: 2 }],
+    requiredTools: [],
+    requiredSkills: {},
+    stages: [{
+      stageIndex: 0, label: '미끼 준비', tpCost: 1,
+      requiredItems: [
+        { definitionId: 'dry_grass', qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  bait_insect: {
+    id: 'bait_insect', name: '곤충 미끼', category: 'tool',
+    description: '풀밭에서 잡은 곤충으로 만든 미끼. 지렁이 미끼보다 효과가 좋다.',
+    output: [{ definitionId: 'bait_insect', qty: 2 }],
+    requiredTools: [],
+    requiredSkills: { fishing: 2 },
+    stages: [{
+      stageIndex: 0, label: '곤충 채집', tpCost: 1,
+      requiredItems: [
+        { definitionId: 'dry_grass', qty: 1 },
+        { definitionId: 'herb',      qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  fish_trap: {
+    id: 'fish_trap', name: '통발', category: 'structure',
+    hidden: true, unlockConditions: { minSkillLevel: { building: 1, fishing: 5 } },
+    description: '강물에 설치하는 통발. 8턴마다 자동으로 물고기를 수확한다.',
+    output: [{ definitionId: 'fish_trap', qty: 1 }],
+    requiredTools: [],
+    requiredSkills: { building: 1, fishing: 5 },
+    stages: [{
+      stageIndex: 0, label: '통발 제작', tpCost: 3,
+      requiredItems: [
+        { definitionId: 'rope', qty: 2 },
+        { definitionId: 'wire', qty: 2 },
+        { definitionId: 'wood', qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
 };
 
 export default BLUEPRINTS;

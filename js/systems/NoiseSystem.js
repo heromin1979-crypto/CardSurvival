@@ -76,7 +76,7 @@ const NoiseSystem = {
     // 타이머 만료
     cr.active = false;
 
-    if (cr.nodeId && gs.location.currentNode === cr.nodeId && gs.ui.currentState === 'basecamp') {
+    if (cr.nodeId && gs.location.currentNode === cr.nodeId && gs.ui.currentState === 'main') {
       // 같은 장소 → 조우 발생
       const nodeId  = cr.nodeId;
       const danger  = cr.dangerLevel;
@@ -84,7 +84,7 @@ const NoiseSystem = {
       EventBus.emit('notify', { message: I18n.t('noise.caughtUp'), type: 'danger' });
       setTimeout(() => {
         // 타이머 발화 시점에 여전히 같은 노드·basecamp인지 재검증
-        if (gs.location.currentNode !== nodeId || gs.ui.currentState !== 'basecamp') return;
+        if (gs.location.currentNode !== nodeId || gs.ui.currentState !== 'main') return;
         StateMachine.transition('encounter', {
           nodeId,
           enemies,
@@ -105,7 +105,7 @@ const NoiseSystem = {
     const day = gs.time.day;
     const rc = BALANCE.raidEvents;
     if (day < rc.startDay) return;
-    if (gs.combat.active || gs.ui.currentState !== 'basecamp') return;
+    if (gs.combat.active || gs.ui.currentState !== 'main') return;
 
     const chance = Math.min(rc.maxChance, rc.baseChancePerTP + (day - rc.startDay) * rc.dayScaling);
     if (Math.random() >= chance) return;
@@ -122,7 +122,7 @@ const NoiseSystem = {
 
     EventBus.emit('notify', { message: I18n.t('noise.raidAttack'), type: 'danger' });
     setTimeout(() => {
-      if (gs.ui.currentState !== 'basecamp') return;
+      if (gs.ui.currentState !== 'main') return;
       StateMachine.transition('encounter', {
         nodeId: gs.location.currentDistrict,
         enemies,
@@ -140,7 +140,7 @@ const NoiseSystem = {
     const day = gs.time.day;
     const hw  = BALANCE.hordeWaves;
     if (day < hw.startDay) return;
-    if (gs.combat.active || gs.ui.currentState !== 'basecamp') return;
+    if (gs.combat.active || gs.ui.currentState !== 'main') return;
     // 하루 첫 TP에서만 체크
     if (gs.time.tpInDay !== 0) return;
 
@@ -175,7 +175,7 @@ const NoiseSystem = {
     });
 
     setTimeout(() => {
-      if (gs.ui.currentState !== 'basecamp') return;
+      if (gs.ui.currentState !== 'main') return;
       StateMachine.transition('encounter', {
         nodeId:       gs.location.currentDistrict,
         enemies,
@@ -194,7 +194,7 @@ const NoiseSystem = {
     const day = gs.time.day;
     const re  = BALANCE.raiderEvents;
     if (day < re.startDay) return;
-    if (gs.combat.active || gs.ui.currentState !== 'basecamp') return;
+    if (gs.combat.active || gs.ui.currentState !== 'main') return;
 
     // 쿨다운 체크
     if (gs.flags.raiderCooldownTP && gs.flags.raiderCooldownTP > 0) {
@@ -290,7 +290,7 @@ const NoiseSystem = {
     }
 
     setTimeout(() => {
-      if (gs.ui.currentState !== 'basecamp') return;
+      if (gs.ui.currentState !== 'main') return;
       StateMachine.transition('encounter', {
         nodeId:      gs.location.currentDistrict,
         enemies,
@@ -315,7 +315,7 @@ const NoiseSystem = {
     EventBus.emit('notify', { message: I18n.t('noise.influx'), type: 'danger' });
 
     // Force an encounter if currently exploring or at basecamp
-    if (gs.ui.currentState === 'explore' || gs.ui.currentState === 'basecamp') {
+    if (gs.ui.currentState === 'explore' || gs.ui.currentState === 'main') {
       // Spawn a random encounter
       setTimeout(() => {
         EventBus.emit('stateTransition', {

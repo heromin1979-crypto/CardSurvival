@@ -4,6 +4,7 @@ import GameState       from '../core/GameState.js';
 import EquipmentSystem from '../systems/EquipmentSystem.js';
 import I18n            from '../core/I18n.js';
 import SystemRegistry  from '../core/SystemRegistry.js';
+import StatRenderer    from './StatRenderer.js';
 
 // ── 부상 타입 → 이모지 매핑 ────────────────────────────────────
 const INJURY_ICONS = {
@@ -104,19 +105,51 @@ const EquipmentModal = {
     box.innerHTML = `
       <div class="equip-modal-header">
         <span class="equip-modal-title">${I18n.t('equip.title')}</span>
+        <div class="equip-header-tabs">
+          <button class="equip-tab-btn active" data-tab="status">📊 캐릭터 상태</button>
+          <button class="equip-tab-btn" data-tab="equip">⚙️ 장비</button>
+        </div>
         <button class="equip-modal-close" id="equip-close-btn">${I18n.t('equip.close')}</button>
       </div>
-      <div class="equip-modal-body">
-        <div class="equip-left-col">
-          ${this._renderEffectsPanel()}
-          ${this._renderBodyDiagram()}
+      <div class="equip-modal-body" id="equip-modal-body" data-active-tab="status">
+        <!-- 캐릭터 상태 탭 (기본) -->
+        <div class="equip-tab-content" data-tab-content="status">
+          <div class="char-status-panel">
+            <div class="char-status-title">📊 캐릭터 전체 상태</div>
+            <div class="char-status-bars stat-bars">
+              ${StatRenderer.buildFullStatsHTML()}
+            </div>
+          </div>
         </div>
-        ${this._renderCharPanel()}
-        ${this._renderInvPanel()}
+        <!-- 장비 탭 -->
+        <div class="equip-tab-content equip-tab-3panel" data-tab-content="equip" style="display:none;">
+          <div class="equip-left-col">
+            ${this._renderEffectsPanel()}
+            ${this._renderBodyDiagram()}
+          </div>
+          ${this._renderCharPanel()}
+          ${this._renderInvPanel()}
+        </div>
       </div>
     `;
 
     box.querySelector('#equip-close-btn')?.addEventListener('click', () => this.close());
+
+    // 탭 전환
+    box.querySelectorAll('.equip-tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tab = btn.dataset.tab;
+        box.querySelectorAll('.equip-tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        box.querySelectorAll('.equip-tab-content').forEach(c => {
+          c.style.display = c.dataset.tabContent === tab ? '' : 'none';
+        });
+        if (tab === 'status') {
+          box.querySelector('.char-status-bars').innerHTML = StatRenderer.buildFullStatsHTML();
+        }
+      });
+    });
+
     this._bindSlotEvents(box);
     this._bindInvEvents(box);
     this._bindTabEvents(box);

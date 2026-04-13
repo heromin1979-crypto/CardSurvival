@@ -243,7 +243,7 @@ const BoardRenderer = {
     const bar = this._container?.querySelector('#location-info-bar');
     if (!bar) return;
 
-    const isBasecamp = GameState.ui.currentState === 'basecamp';
+    const isBasecamp = GameState.ui.currentState === 'main';
     if (isBasecamp) {
       bar.style.display = 'none';
       return;
@@ -271,7 +271,7 @@ const BoardRenderer = {
     const nodes      = GameData?.nodes ?? {};
     const currentId  = GameState.location.currentNode ?? 'mapo';
     const nodeName   = nodes[currentId]?.name ?? currentId;
-    const isBasecamp = GameState.ui.currentState === 'basecamp';
+    const isBasecamp = GameState.ui.currentState === 'main';
 
     // 바닥 행 레이블
     const middleLabel = this._container?.querySelector('.board-row.row-middle .board-row-label');

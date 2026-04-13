@@ -209,6 +209,24 @@
   color: var(--text-good);
 }
 
+/* 낚시 버튼 */
+.card-action-btn.fish-btn {
+  border-color: #1a4060;
+  color: #5bb8f5;
+}
+.card-action-btn.fish-btn:hover {
+  border-color: #5bb8f5;
+  background: rgba(91, 184, 245, 0.1);
+  color: #5bb8f5;
+}
+.card-action-btn.fish-btn.disabled,
+.card-action-btn.fish-btn:disabled {
+  border-color: #333;
+  color: var(--text-muted);
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 /* 분해 재료 미리보기 */
 .card-inspect-dismantle {
   margin-top: var(--gap-sm);
@@ -745,4 +763,60 @@
 .sg-badge-unknown {
   background: rgba(255,255,255,0.05);
   color: var(--text-dim);
+}
+
+
+/* ── 스토리 분기 선택 모달 ──────────────────────��──────── */
+.branch-choice-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.branch-choice-hint {
+  font-size: var(--font-size-sm);
+  color: var(--accent-secondary);
+  text-align: center;
+  margin: 0 0 4px;
+  letter-spacing: 1px;
+}
+.branch-choice-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.branch-choice-btn {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius-sm);
+  background: var(--bg-raised);
+  color: var(--text-primary);
+  cursor: pointer;
+  text-align: left;
+  transition: all var(--transition-fast);
+}
+.branch-choice-btn:hover,
+.branch-choice-btn:focus {
+  border-color: var(--accent-primary);
+  background: rgba(var(--accent-rgb, 255,200,80), 0.08);
+  outline: none;
+}
+.branch-choice-title {
+  font-family: var(--font-title);
+  font-size: var(--font-size-base);
+  color: var(--text-primary);
+  letter-spacing: 1px;
+}
+.branch-choice-desc {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+.branch-npc-badge {
+  font-size: 10px;
+  color: var(--accent-primary);
+  letter-spacing: 1px;
+  margin-top: 2px;
 }

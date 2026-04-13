@@ -383,7 +383,7 @@ const CharCreate = {
       EquipmentSystem.equip(bagInst.instanceId, 'backpack');
     }
 
-    StateMachine.transition('basecamp');
+    StateMachine.transition('main');
   },
 
   // ── 지역별 기본 시작 아이템 ────────────────────────────────

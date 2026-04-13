@@ -125,7 +125,7 @@ const MainMenu = {
         if (SaveManager.load(slot)) {
           GameState.ui.saveSlot = slot;
           GameState.ui.currentState = 'main_menu';
-          StateMachine.transition('basecamp');
+          StateMachine.transition('main');
         }
       });
     });

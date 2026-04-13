@@ -3,8 +3,9 @@
 import EventBus  from '../core/EventBus.js';
 import GameState from '../core/GameState.js';
 import I18n      from '../core/I18n.js';
-import MAIN_QUESTS from '../data/mainQuests.js';
+import MAIN_QUESTS from '../data/mainQuests/index.js';
 import GameData   from '../data/GameData.js';
+import NPCSystem  from './NPCSystem.js';
 
 // ── 계절 퀘스트 정의 ────────────────────────────────────────────────
 // trigger: 연결된 seasonalEvent id (해당 이벤트 발생 시 자동 시작)
@@ -121,8 +122,11 @@ const QuestSystem = {
 
     // 베이스캠프 진입 시 즉시 메인 퀘스트 트리거 체크 (Day 1 포함)
     EventBus.on('stateTransition', ({ to }) => {
-      if (to === 'basecamp') this._checkMainQuestTriggers();
+      if (to === 'main') this._checkMainQuestTriggers();
     });
+
+    // 분기 선택 완료 시 즉시 다음 퀘스트 트리거 체크
+    EventBus.on('branchChosen', () => this._checkMainQuestTriggers());
   },
 
   // ── 퀘스트 시작 ───────────────────────────────────────────────
@@ -277,6 +281,8 @@ const QuestSystem = {
       if (day < def.dayTrigger) continue;
       // 선행 퀘스트 조건
       if (def.prerequisite && !gs.quests.completed.includes(def.prerequisite)) continue;
+      // 분기 플래그 조건
+      if (def.requiresFlag && !gs.flags[def.requiresFlag]) continue;
 
       this.startQuest(def.id);
     }
@@ -388,6 +394,11 @@ const QuestSystem = {
     EventBus.emit('questCompleted', { questId: q.id, def: qDef });
     EventBus.emit('notify', { message: I18n.t('quest.completed', { icon: qDef.icon, title: compTitle }), type: 'good' });
     EventBus.emit('questListChanged', {});
+
+    // 분기 선택 이벤트 (완료 후 발화)
+    if (qDef.isBranchPoint && qDef.branchOptions) {
+      EventBus.emit('branchChoice', { options: qDef.branchOptions, questId: q.id });
+    }
   },
 
   // ── 공개 API ──────────────────────────────────────────────────

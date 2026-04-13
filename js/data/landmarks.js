@@ -6,6 +6,15 @@ import GameData from './GameData.js';
 
 export const LANDMARK_DATA = {
 
+  // ── 베이스캠프 (직접 건설한 안전 거점) ─────────────────────
+  basecamp: {
+    name: '베이스캠프',
+    desc: '직접 건설한 안전 거점. 업그레이드와 휴식이 가능하다.',
+    icon: '🏕',
+    isBasecampLandmark: true,   // 사이드바 버튼 교체 트리거 플래그
+    subLocations: [],            // 세부 장소 없음 — 사이드바에서 기능 제공
+  },
+
   // ── 종로구 — 경복궁 ──────────────────────────────────────
   jongno: {
     name: '경복궁',
@@ -34,13 +43,14 @@ export const LANDMARK_DATA = {
       },
       {
         id: 'jongno_storage', name: '지하 유물 보관소',
-        icon: '🗝️', desc: '박물관 지하 창고. 자물쇠가 걸려 있고 어둡다.',
+        icon: '🗝️', desc: '박물관 지하 창고. 자물쇠가 걸려 있고 어둡다. 방사선 오염 차단 용품 발견.',
         dangerMod: 0.20,
         lootTable: [
           { id: 'electronic_parts', weight: 2 }, { id: 'wire', weight: 3 },
           { id: 'lockpick', weight: 1 }, { id: 'flashlight', weight: 2 },
+          { id: 'rad_blocker', weight: 2 },
         ],
-        lootCount: [1, 2],
+        lootCount: [1, 3],
       },
       {
         id: 'jongno_folklore', name: '국립민속박물관',
@@ -54,13 +64,14 @@ export const LANDMARK_DATA = {
       },
       {
         id: 'jongno_gwanghwamun', name: '광화문 광장',
-        icon: '🏛️', desc: '넓은 광장. 노출된 지형으로 위험하지만 잔해에서 물자를 얻을 수 있다.',
+        icon: '🏛️', desc: '넓은 광장. 군 최후 방어선 잔해. 위험하지만 군용 물자가 흩어져 있다.',
         dangerMod: 0.25,
         lootTable: [
-          { id: 'scrap_metal', weight: 4 }, { id: 'iron_pipe', weight: 2 },
-          { id: 'wood', weight: 3 }, { id: 'nail', weight: 3 },
+          { id: 'scrap_metal', weight: 4 }, { id: 'iron_pipe', weight: 3 },
+          { id: 'nail', weight: 3 }, { id: 'pistol_ammo', weight: 3 },
+          { id: 'smoke_bomb', weight: 2 },
         ],
-        lootCount: [2, 3],
+        lootCount: [2, 4],
       },
     ],
   },
@@ -76,10 +87,10 @@ export const LANDMARK_DATA = {
         icon: '🥫', desc: '식품 가게들이 밀집한 구역. 상한 음식과 온전한 식량이 뒤섞여 있다.',
         dangerMod: 0.20,
         lootTable: [
-          { id: 'canned_food', weight: 4 }, { id: 'dried_meat', weight: 3 },
-          { id: 'contaminated_water', weight: 2 }, { id: 'bandage', weight: 1 },
+          { id: 'canned_food', weight: 5 }, { id: 'dried_meat', weight: 4 },
+          { id: 'purified_water', weight: 2 }, { id: 'painkiller', weight: 1 },
         ],
-        lootCount: [2, 3],
+        lootCount: [3, 5],
       },
       {
         id: 'junggu_clothing', name: '의류 창고',
@@ -116,10 +127,11 @@ export const LANDMARK_DATA = {
         icon: '🚇', desc: '시장 지하 지하철 연결 통로. 좀비 떼가 집결해 있다.',
         dangerMod: 0.40,
         lootTable: [
-          { id: 'crowbar', weight: 2 }, { id: 'flashlight', weight: 3 },
-          { id: 'bandage', weight: 2 }, { id: 'iron_pipe', weight: 2 },
+          { id: 'crowbar', weight: 3 }, { id: 'flashlight', weight: 3 },
+          { id: 'first_aid_kit', weight: 2 }, { id: 'iron_pipe', weight: 3 },
+          { id: 'bandage', weight: 2 },
         ],
-        lootCount: [1, 2],
+        lootCount: [2, 3],
       },
     ],
   },
@@ -165,21 +177,22 @@ export const LANDMARK_DATA = {
         icon: '🔒', desc: '비상용 군사 벙커. 보급품이 비축돼 있을 수 있다.',
         dangerMod: 0.30,
         lootTable: [
-          { id: 'tactical_vest', weight: 1 }, { id: 'first_aid_kit', weight: 2 },
+          { id: 'tactical_vest', weight: 2 }, { id: 'first_aid_kit', weight: 3 },
           { id: 'bandage', weight: 3 }, { id: 'painkiller', weight: 2 },
-          { id: 'canned_food', weight: 2 },
+          { id: 'canned_food', weight: 3 }, { id: 'pistol_ammo', weight: 2 },
         ],
-        lootCount: [2, 3],
+        lootCount: [2, 4],
       },
       {
         id: 'yongsan_arsenal', name: '무기고',
         icon: '💣', desc: '실제 무기가 보관된 구역. 극도로 위험하다.',
         dangerMod: 0.45,
         lootTable: [
-          { id: 'molotov_cocktail', weight: 2 }, { id: 'machete', weight: 2 },
-          { id: 'knife', weight: 3 }, { id: 'smoke_bomb', weight: 1 },
+          { id: 'molotov_cocktail', weight: 2 }, { id: 'machete', weight: 3 },
+          { id: 'knife', weight: 3 }, { id: 'smoke_bomb', weight: 2 },
+          { id: 'pistol_ammo', weight: 3 },
         ],
-        lootCount: [1, 2],
+        lootCount: [2, 3],
       },
     ],
   },
@@ -350,23 +363,24 @@ export const LANDMARK_DATA = {
       },
       {
         id: 'dongdaemun_records', name: '의무기록실',
-        icon: '📋', desc: '환자 기록 서류가 쌓인 조용한 구역.',
+        icon: '📋', desc: '환자 기록 서류가 쌓인 조용한 구역. 처방약 샘플이 남아있다.',
         dangerMod: 0.05,
         lootTable: [
-          { id: 'bandage', weight: 3 }, { id: 'painkiller', weight: 3 },
-          { id: 'antiseptic', weight: 2 }, { id: 'flashlight', weight: 1 },
+          { id: 'antibiotics', weight: 3 }, { id: 'painkiller', weight: 3 },
+          { id: 'stimulant', weight: 2 }, { id: 'antiseptic', weight: 2 },
         ],
-        lootCount: [1, 2],
+        lootCount: [1, 3],
       },
       {
         id: 'dongdaemun_basement', name: '지하 창고',
-        icon: '🗄️', desc: '병원 지하 물자 창고. 비의약품 자재도 있다.',
+        icon: '🗄️', desc: '병원 지하 물자 창고. 유지보수 공구와 의료 자재.',
         dangerMod: 0.20,
         lootTable: [
           { id: 'scrap_metal', weight: 3 }, { id: 'flashlight', weight: 2 },
-          { id: 'wire', weight: 2 }, { id: 'rope', weight: 2 },
+          { id: 'duct_tape', weight: 3 }, { id: 'pipe_wrench', weight: 2 },
+          { id: 'wire', weight: 2 },
         ],
-        lootCount: [1, 3],
+        lootCount: [2, 3],
       },
     ],
   },
@@ -481,10 +495,11 @@ export const LANDMARK_DATA = {
         icon: '🗃️', desc: '지하 서고. 어둡지만 물자가 있다.',
         dangerMod: 0.10,
         lootTable: [
-          { id: 'electronic_parts', weight: 2 }, { id: 'flashlight', weight: 3 },
+          { id: 'electronic_parts', weight: 2 }, { id: 'flashlight', weight: 4 },
           { id: 'wire', weight: 2 }, { id: 'bandage', weight: 2 },
+          { id: 'duct_tape', weight: 2 },
         ],
-        lootCount: [1, 2],
+        lootCount: [1, 3],
       },
     ],
   },
@@ -520,10 +535,11 @@ export const LANDMARK_DATA = {
         icon: '⛺', desc: '옛 군사 시설 터. 군용 물자가 남아 있을 수도.',
         dangerMod: 0.25,
         lootTable: [
-          { id: 'crowbar', weight: 2 }, { id: 'knife', weight: 2 },
-          { id: 'bandage', weight: 3 }, { id: 'canned_food', weight: 2 },
+          { id: 'crowbar', weight: 2 }, { id: 'knife', weight: 3 },
+          { id: 'bandage', weight: 3 }, { id: 'canned_food', weight: 4 },
+          { id: 'pistol_ammo', weight: 2 },
         ],
-        lootCount: [1, 2],
+        lootCount: [2, 3],
       },
       {
         id: 'gangbuk_well', name: '우물',
@@ -717,10 +733,10 @@ export const LANDMARK_DATA = {
         icon: '🌿', desc: '약용 식물을 재배하던 약초원. 의료 재료의 보고.',
         dangerMod: 0.05,
         lootTable: [
-          { id: 'vitamins', weight: 6 }, { id: 'antiseptic', weight: 2 },
-          { id: 'antidote', weight: 2 }, { id: 'painkiller', weight: 1 },
+          { id: 'vitamins', weight: 7 }, { id: 'antiseptic', weight: 3 },
+          { id: 'antidote', weight: 3 }, { id: 'painkiller', weight: 2 },
         ],
-        lootCount: [2, 5],
+        lootCount: [3, 5],
       },
     ],
   },
@@ -783,13 +799,14 @@ export const LANDMARK_DATA = {
       },
       {
         id: 'seodaemun_basement', name: '지하 물자 창고',
-        icon: '🗄️', desc: '병원 지하 종합 창고.',
+        icon: '🗄️', desc: '병원 지하 종합 창고. 의료 소모품과 유지보수 도구.',
         dangerMod: 0.20,
         lootTable: [
-          { id: 'scrap_metal', weight: 3 }, { id: 'flashlight', weight: 2 },
-          { id: 'wire', weight: 2 }, { id: 'bandage', weight: 2 },
+          { id: 'flashlight', weight: 3 }, { id: 'duct_tape', weight: 3 },
+          { id: 'wire', weight: 2 }, { id: 'bandage', weight: 3 },
+          { id: 'pipe_wrench', weight: 2 },
         ],
-        lootCount: [1, 3],
+        lootCount: [2, 3],
       },
     ],
   },
@@ -815,8 +832,9 @@ export const LANDMARK_DATA = {
         icon: '🏪', desc: '방치된 편의점. 식량과 의약품이 남아있다.',
         dangerMod: 0.20,
         lootTable: [
-          { id: 'canned_food', weight: 4 }, { id: 'painkiller', weight: 3 },
-          { id: 'bandage', weight: 3 }, { id: 'purified_water', weight: 2 },
+          { id: 'canned_food', weight: 5 }, { id: 'painkiller', weight: 3 },
+          { id: 'bandage', weight: 3 }, { id: 'purified_water', weight: 4 },
+          { id: 'dried_meat', weight: 2 },
         ],
         lootCount: [2, 4],
       },
@@ -876,6 +894,7 @@ export const LANDMARK_DATA = {
         lootTable: [
           { id: 'bandage', weight: 4 }, { id: 'painkiller', weight: 3 },
           { id: 'work_gloves', weight: 2 }, { id: 'antiseptic', weight: 2 },
+          { id: 'first_aid_kit', weight: 2 },
         ],
         lootCount: [2, 4],
       },
@@ -943,10 +962,11 @@ export const LANDMARK_DATA = {
         icon: '🛩️', desc: '항공기 정비 격납고. 금속 부품의 보고.',
         dangerMod: 0.35,
         lootTable: [
-          { id: 'wire', weight: 3 }, { id: 'electronic_parts', weight: 3 },
+          { id: 'wire', weight: 4 }, { id: 'electronic_parts', weight: 5 },
           { id: 'scrap_metal', weight: 4 }, { id: 'rubber', weight: 2 },
+          { id: 'duct_tape', weight: 3 },
         ],
-        lootCount: [2, 4],
+        lootCount: [2, 5],
       },
       {
         id: 'gangseo_dutyfree', name: '면세점',
@@ -954,9 +974,10 @@ export const LANDMARK_DATA = {
         dangerMod: 0.20,
         lootTable: [
           { id: 'painkiller', weight: 3 }, { id: 'stimulant', weight: 2 },
-          { id: 'antiseptic', weight: 3 }, { id: 'bandage', weight: 2 },
+          { id: 'antiseptic', weight: 3 }, { id: 'antibiotics', weight: 2 },
+          { id: 'vitamins', weight: 3 },
         ],
-        lootCount: [2, 3],
+        lootCount: [2, 4],
       },
       {
         id: 'gangseo_tower', name: '관제탑',
@@ -974,9 +995,9 @@ export const LANDMARK_DATA = {
         dangerMod: 0.45,
         lootTable: [
           { id: 'rubber', weight: 3 }, { id: 'plastic', weight: 3 },
-          { id: 'molotov_cocktail', weight: 2 }, { id: 'wire', weight: 2 },
+          { id: 'molotov_cocktail', weight: 4 }, { id: 'wire', weight: 2 },
         ],
-        lootCount: [1, 2],
+        lootCount: [2, 3],
       },
     ],
   },
@@ -1110,10 +1131,10 @@ export const LANDMARK_DATA = {
         icon: '🛒', desc: '대형 식품 코너. 통조림과 건조 식품이 많다.',
         dangerMod: 0.25,
         lootTable: [
-          { id: 'canned_food', weight: 5 }, { id: 'painkiller', weight: 2 },
-          { id: 'bandage', weight: 2 }, { id: 'purified_water', weight: 2 },
+          { id: 'canned_food', weight: 6 }, { id: 'dried_meat', weight: 3 },
+          { id: 'painkiller', weight: 2 }, { id: 'purified_water', weight: 3 },
         ],
-        lootCount: [2, 4],
+        lootCount: [3, 5],
       },
       {
         id: 'yeongdeungpo_clothing', name: '의류 매장',
@@ -1190,9 +1211,9 @@ export const LANDMARK_DATA = {
         dangerMod: 0.05,
         lootTable: [
           { id: 'bandage', weight: 4 }, { id: 'antiseptic', weight: 2 },
-          { id: 'first_aid_kit', weight: 1 }, { id: 'painkiller', weight: 2 },
+          { id: 'first_aid_kit', weight: 2 }, { id: 'painkiller', weight: 2 },
         ],
-        lootCount: [1, 3],
+        lootCount: [2, 3],
       },
       {
         id: 'dongjak_storage', name: '관리 창고',
@@ -1259,7 +1280,8 @@ export const LANDMARK_DATA = {
         dangerMod: 0.15,
         lootTable: [
           { id: 'wire', weight: 4 }, { id: 'scrap_metal', weight: 3 },
-          { id: 'electronic_parts', weight: 3 }, { id: 'nail', weight: 2 },
+          { id: 'electronic_parts', weight: 5 }, { id: 'nail', weight: 2 },
+          { id: 'duct_tape', weight: 2 },
         ],
         lootCount: [2, 4],
       },
@@ -1416,8 +1438,9 @@ export const LANDMARK_DATA = {
         icon: '⭐', desc: '고급 VIP 병동. 최상의 의약품과 용품.',
         dangerMod: 0.25,
         lootTable: [
-          { id: 'first_aid_kit', weight: 3 }, { id: 'painkiller', weight: 3 },
-          { id: 'stimulant', weight: 2 }, { id: 'surgery_kit', weight: 1 },
+          { id: 'first_aid_kit', weight: 4 }, { id: 'stimulant', weight: 3 },
+          { id: 'surgery_kit', weight: 2 }, { id: 'antibiotics', weight: 3 },
+          { id: 'rad_blocker', weight: 1 },
         ],
         lootCount: [2, 4],
       },
@@ -1445,10 +1468,11 @@ export const LANDMARK_DATA = {
         icon: '🛒', desc: '지하 식품관과 슈퍼마켓.',
         dangerMod: 0.25,
         lootTable: [
-          { id: 'canned_food', weight: 5 }, { id: 'painkiller', weight: 3 },
-          { id: 'bandage', weight: 3 }, { id: 'purified_water', weight: 2 },
+          { id: 'canned_food', weight: 6 }, { id: 'dried_meat', weight: 3 },
+          { id: 'painkiller', weight: 3 }, { id: 'bandage', weight: 3 },
+          { id: 'purified_water', weight: 3 },
         ],
-        lootCount: [2, 5],
+        lootCount: [3, 6],
       },
       {
         id: 'songpa_hotel', name: '호텔 객실',
@@ -1462,13 +1486,14 @@ export const LANDMARK_DATA = {
       },
       {
         id: 'songpa_observatory', name: '전망대 (119F)',
-        icon: '🔭', desc: '최고층 전망대. 전망은 탁월하나 적도 많다.',
+        icon: '🔭', desc: '최고층 전망대. 전망은 탁월하나 적도 많다. 생존자 잔류 물자 발견.',
         dangerMod: 0.40,
         lootTable: [
-          { id: 'flashlight', weight: 3 }, { id: 'electronic_parts', weight: 3 },
-          { id: 'wire', weight: 2 }, { id: 'painkiller', weight: 2 },
+          { id: 'tactical_vest', weight: 2 }, { id: 'first_aid_kit', weight: 3 },
+          { id: 'electronic_parts', weight: 3 }, { id: 'pistol_ammo', weight: 2 },
+          { id: 'stimulant', weight: 2 },
         ],
-        lootCount: [1, 3],
+        lootCount: [2, 4],
       },
       {
         id: 'songpa_stairs', name: '비상 계단',
@@ -1485,10 +1510,11 @@ export const LANDMARK_DATA = {
         icon: '⚡', desc: '비상 발전 시설. 전기 부품의 보고.',
         dangerMod: 0.35,
         lootTable: [
-          { id: 'wire', weight: 5 }, { id: 'electronic_parts', weight: 4 },
+          { id: 'wire', weight: 5 }, { id: 'electronic_parts', weight: 5 },
           { id: 'scrap_metal', weight: 3 }, { id: 'rubber', weight: 2 },
+          { id: 'duct_tape', weight: 2 },
         ],
-        lootCount: [2, 4],
+        lootCount: [3, 5],
       },
     ],
   },
@@ -1511,11 +1537,12 @@ export const LANDMARK_DATA = {
       },
       {
         id: 'gangdong_museum', name: '선사박물관',
-        icon: '🏛️', desc: '유적 박물관 건물. 응급 처치함이 남아있다.',
+        icon: '🏛️', desc: '유적 박물관 건물. 응급 처치함과 관리 물자가 남아있다.',
         dangerMod: 0.10,
         lootTable: [
-          { id: 'bandage', weight: 3 }, { id: 'painkiller', weight: 2 },
-          { id: 'flashlight', weight: 2 }, { id: 'antiseptic', weight: 1 },
+          { id: 'bandage', weight: 3 }, { id: 'first_aid_kit', weight: 2 },
+          { id: 'antiseptic', weight: 2 }, { id: 'flashlight', weight: 2 },
+          { id: 'painkiller', weight: 2 },
         ],
         lootCount: [1, 3],
       },
@@ -1545,7 +1572,46 @@ export const LANDMARK_DATA = {
         dangerMod: 0.20,
         lootTable: [
           { id: 'leather', weight: 3 }, { id: 'scrap_metal', weight: 3 },
-          { id: 'sharp_blade', weight: 2 }, { id: 'rope', weight: 2 },
+          { id: 'sharp_blade', weight: 3 }, { id: 'crowbar', weight: 2 },
+          { id: 'rope', weight: 2 },
+        ],
+        lootCount: [2, 3],
+      },
+    ],
+  },
+
+  // ── 한강 낚시터 (공용 — hasFishing 구역 전체 공유) ───────────
+  hangang: {
+    name: '한강',
+    desc: '서울을 가로지르는 한강. 오염된 강물이지만 물고기는 살아있다.',
+    icon: '🌊',
+    subLocations: [
+      {
+        id: 'hangang_fishing_spot', name: '낚시터',
+        icon: '🎣',
+        desc: '낚시꾼들이 즐겨 찾던 자리. 낚싯대로 물고기를 낚거나 통발을 설치할 수 있다.',
+        dangerMod: 0.05,
+        isFishing: true,
+        lootTable: [
+          { id: 'contaminated_water', weight: 4 },
+          { id: 'pebble',            weight: 3 },
+          { id: 'rope',              weight: 2 },
+          { id: 'bait_worm',         weight: 3 },
+        ],
+        lootCount: [1, 2],
+      },
+      {
+        id: 'hangang_riverside', name: '강변 산책로',
+        icon: '🌿',
+        desc: '강변을 따라 이어진 산책로. 잡초와 돌멩이, 버려진 물건이 있다.',
+        dangerMod: 0.08,
+        isFishing: true,
+        lootTable: [
+          { id: 'wild_garlic',       weight: 4 },
+          { id: 'dandelion',         weight: 3 },
+          { id: 'pebble',            weight: 4 },
+          { id: 'dry_grass',         weight: 3 },
+          { id: 'bait_insect',       weight: 2 },
         ],
         lootCount: [1, 3],
       },

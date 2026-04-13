@@ -74,10 +74,15 @@ const DismantleSystem = {
         const newInst = GameState.createCardInstance(entry.definitionId, { quantity: qty });
         if (newInst) {
           const placed = GameState.placeCardInRow(newInst.instanceId);
-          if (!placed) {
+          if (placed) {
+            gained.push(newInst.instanceId);
+          } else {
+            // 배치 실패 — pendingLoot 큐에 보관
+            GameState.removeCardInstanceSilent(newInst.instanceId);
+            if (!GameState.pendingLoot) GameState.pendingLoot = [];
+            GameState.pendingLoot.push({ definitionId: entry.definitionId, quantity: qty, contamination: 0 });
             EventBus.emit('notify', { message: I18n.t('dismantle.boardFull'), type: 'warn' });
           }
-          gained.push(newInst.instanceId);
         }
       }
     }
@@ -90,8 +95,14 @@ const DismantleSystem = {
     for (let i = 0; i < extraCount; i++) {
       const extraInst = GameState.createCardInstance('scrap_metal', { quantity: 1 });
       if (extraInst) {
-        GameState.placeCardInRow(extraInst.instanceId);
-        gained.push(extraInst.instanceId);
+        const placed = GameState.placeCardInRow(extraInst.instanceId);
+        if (placed) {
+          gained.push(extraInst.instanceId);
+        } else {
+          GameState.removeCardInstanceSilent(extraInst.instanceId);
+          if (!GameState.pendingLoot) GameState.pendingLoot = [];
+          GameState.pendingLoot.push({ definitionId: 'scrap_metal', quantity: 1, contamination: 0 });
+        }
       }
     }
 

@@ -5,15 +5,32 @@ import GameState   from '../core/GameState.js';
 import I18n        from '../core/I18n.js';
 import NightSystem from '../systems/NightSystem.js';
 
+// 사이드바에 표시할 필수 스탯 (4개)
 const STAT_CONFIG = [
   { key: 'hydration',   i18nKey: 'stat.hydration',   icon: '💧' },
   { key: 'nutrition',   i18nKey: 'stat.nutrition',   icon: '🥗' },
-  { key: 'stamina',     i18nKey: 'stat.stamina',     icon: '💪', isGood: true },  // 높을수록 좋음
+  { key: 'fatigue',     i18nKey: 'stat.fatigue',     icon: '😴' },
+];
+
+// 장비창 "캐릭터 상태" 탭에 표시할 전체 스탯
+const STAT_CONFIG_FULL = [
+  { key: 'hydration',   i18nKey: 'stat.hydration',   icon: '💧' },
+  { key: 'nutrition',   i18nKey: 'stat.nutrition',   icon: '🥗' },
+  { key: 'stamina',     i18nKey: 'stat.stamina',     icon: '💪', isGood: true },
   { key: 'temperature', i18nKey: 'stat.temperature', icon: '🌡' },
   { key: 'morale',      i18nKey: 'stat.morale',      icon: '😐' },
   { key: 'radiation',   i18nKey: 'stat.radiation',   icon: '☢' },
   { key: 'infection',   i18nKey: 'stat.infection',   icon: '🦠' },
   { key: 'fatigue',     i18nKey: 'stat.fatigue',     icon: '😴' },
+];
+
+// 위험 임계값 — 사이드바 캐릭터 블록에 경고 아이콘으로 표시
+const DANGER_THRESHOLDS = [
+  { key: 'radiation',   icon: '☢',  check: (s) => s.current > 30 },
+  { key: 'infection',   icon: '🦠', check: (s) => s.current > 25 },
+  { key: 'temperature', icon: '🌡', check: (s) => s.current < 20 || s.current > 80 },
+  { key: 'morale',      icon: '😟', check: (s) => s.current < 20 },
+  { key: 'stamina',     icon: '💪', check: (s) => s.current < 20, isGood: true },
 ];
 
 const StatRenderer = {
@@ -38,7 +55,7 @@ const StatRenderer = {
   },
 
   _buildDOM() {
-    // Build stat bars into hud-stat-bars (created by Basecamp layout)
+    // 사이드바: HP + 필수 3개만 표시
     const statsDiv = document.getElementById('hud-stat-bars');
     if (!statsDiv) return;
 
@@ -53,22 +70,6 @@ const StatRenderer = {
         </div>
       </div>
     `;
-    const mentalBarHTML = `
-      <div class="stat-divider-label">${I18n.t('mental.sectionLabel')}</div>
-      ${['anxiety','loneliness','trauma'].map(key => {
-        const icon = key === 'anxiety' ? '😟' : key === 'loneliness' ? '😔' : '💔';
-        return `
-        <div class="stat-bar-group ${key}" id="statbar-${key}">
-          <div class="stat-bar-label">
-            <span class="stat-bar-name">${icon} ${I18n.t('mental.' + key)}</span>
-            <span class="stat-bar-value" id="statval-${key}">0</span>
-          </div>
-          <div class="stat-bar-track">
-            <div class="stat-bar-fill mental-fill ${key}" id="statfill-${key}" style="width:0%"></div>
-          </div>
-        </div>`;
-      }).join('')}
-    `;
 
     statsDiv.innerHTML = hpBarHTML + STAT_CONFIG.map(s => `
       <div class="stat-bar-group ${s.key}" id="statbar-${s.key}">
@@ -80,7 +81,72 @@ const StatRenderer = {
           <div class="stat-bar-fill ${s.key}" id="statfill-${s.key}" style="width:0%"></div>
         </div>
       </div>
-    `).join('') + mentalBarHTML;
+    `).join('');
+  },
+
+  /** 장비창 "캐릭터 상태" 탭용 전체 스탯 HTML 반환 */
+  buildFullStatsHTML() {
+    const gs = GameState;
+    const barHtml = (cfg, current, max) => {
+      const pct = Math.max(0, Math.min(100, (current / max) * 100));
+      const isAccum = ['radiation','infection','fatigue'].includes(cfg.key);
+      let cls = '';
+      if (cfg.isGood)      { if (pct < 15) cls = 'danger'; else if (pct < 30) cls = 'warn'; }
+      else if (isAccum)    { if (pct > 70) cls = 'danger'; else if (pct > 40) cls = 'warn'; }
+      else                 { if (pct < 15) cls = 'danger'; else if (pct < 30) cls = 'warn'; }
+      return `
+        <div class="stat-bar-group ${cfg.key}">
+          <div class="stat-bar-label">
+            <span class="stat-bar-name">${cfg.icon} ${I18n.t(cfg.i18nKey)}</span>
+            <span class="stat-bar-value">${Math.round(current)}</span>
+          </div>
+          <div class="stat-bar-track">
+            <div class="stat-bar-fill ${cfg.key} ${cls}" style="width:${pct}%"></div>
+          </div>
+        </div>`;
+    };
+
+    const hp  = gs.player.hp;
+    const hpPct = Math.max(0, Math.min(100, (hp.current / hp.max) * 100));
+    const hpCls = hpPct < 25 ? 'danger' : hpPct < 50 ? 'warn' : '';
+
+    const hpHtml = `
+      <div class="stat-bar-group hp">
+        <div class="stat-bar-label">
+          <span class="stat-bar-name">❤️ HP</span>
+          <span class="stat-bar-value">${Math.round(hp.current)}/${hp.max}</span>
+        </div>
+        <div class="stat-bar-track">
+          <div class="stat-bar-fill hp ${hpCls}" style="width:${hpPct}%"></div>
+        </div>
+      </div>`;
+
+    const statHtml = STAT_CONFIG_FULL.map(s => {
+      const stat = gs.stats[s.key];
+      if (!stat) return '';
+      return barHtml(s, stat.current, stat.max);
+    }).join('');
+
+    const mental = gs.mental ?? {};
+    const mentalHtml = `
+      <div class="stat-divider-label">${I18n.t('mental.sectionLabel')}</div>
+      ${['anxiety','loneliness','trauma'].map(key => {
+        const icon = key === 'anxiety' ? '😟' : key === 'loneliness' ? '😔' : '💔';
+        const val  = Math.round(mental[key] ?? 0);
+        const cls  = val > 70 ? 'danger' : val > 40 ? 'warn' : '';
+        return `
+          <div class="stat-bar-group ${key}">
+            <div class="stat-bar-label">
+              <span class="stat-bar-name">${icon} ${I18n.t('mental.' + key)}</span>
+              <span class="stat-bar-value">${val}</span>
+            </div>
+            <div class="stat-bar-track">
+              <div class="stat-bar-fill mental-fill ${key} ${cls}" style="width:${val}%"></div>
+            </div>
+          </div>`;
+      }).join('')}`;
+
+    return hpHtml + statHtml + mentalHtml;
   },
 
   render() {
@@ -197,10 +263,22 @@ const StatRenderer = {
       const enc    = gs.player.encumbrance;
       const pctVal = Math.round((enc.weightPct ?? 0) * 100);
       encEl.textContent = `${enc.current.toFixed(1)}/${enc.max}kg (${pctVal}%)`;
-      // 과적 경고 색상
       encEl.style.color = enc.tier >= 4 ? 'var(--text-danger)'
                         : enc.tier >= 3 ? 'var(--text-warn)'
                         : '';
+    }
+
+    // 캐릭터 블록 위험 아이콘 (숨겨진 stat 경고)
+    const dangerEl = document.getElementById('bc-danger-icons');
+    if (dangerEl) {
+      const icons = DANGER_THRESHOLDS
+        .filter(d => {
+          const stat = gs.stats[d.key];
+          return stat && d.check(stat);
+        })
+        .map(d => `<span class="bc-danger-icon" title="${d.key}">${d.icon}</span>`)
+        .join('');
+      dangerEl.innerHTML = icons;
     }
   },
 

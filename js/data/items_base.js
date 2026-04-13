@@ -430,10 +430,11 @@ const ITEMS_BASE = {
   raw_meat: {
     id: 'raw_meat', name: '날고기', type: 'consumable', subtype: 'food',
     rarity: 'common', weight: 0.5,
-    defaultDurability: 60, defaultContamination: 30,
-    icon: '🥩', description: '야생에서 얻은 날고기. 그냥 먹으면 감염 위험이 높다. 불에 익혀 먹는 것을 권장.',
-    onConsume: { nutrition: 20, infection: 30 },
-    tags: ['edible', 'food', 'raw'],
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🥩', stackable: true, maxStack: 10,
+    description: '전투나 사냥 후 얻는 날고기. 반드시 구워 먹어야 한다. 날로 먹으면 감염 위험 높음.',
+    onConsume: { nutrition: 20, infection: 20 },
+    tags: ['food', 'meat', 'raw'],
     dismantle: [],
   },
 

@@ -88,7 +88,7 @@ const MentalSystem = {
 
     // 감소 요인
     if (danger <= 1) anxietyDelta -= 0.3;
-    const isBasecamp = gs.ui.currentState === 'basecamp';
+    const isBasecamp = gs.ui.currentState === 'main';
     if (isBasecamp) anxietyDelta -= 0.5;
     // 광원(캠프파이어·횃불·램프 등) 존재 시 감소
     if (NightSystem.hasLightSource()) anxietyDelta -= 0.2;

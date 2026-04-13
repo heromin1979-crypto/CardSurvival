@@ -555,6 +555,12 @@ const StatSystem = {
     if (eff.nutrition)    gs.modStat('nutrition',   eff.nutrition * healMult);
     if (eff.morale)       gs.modStat('morale',      eff.morale);
     if (eff.fatigue)      gs.modStat('fatigue',     eff.fatigue);
+    // 감염 감소 효과 (치료제 등 infection < 0)
+    if (eff.infection < 0) {
+      const reduction = Math.round(eff.infection * (isMedical ? healMult : 1.0));
+      gs.modStat('infection', reduction);
+    }
+    if (eff.radiation < 0) gs.modStat('radiation', eff.radiation);
     if (eff.hp) {
       // 의사 능력: 붕대 사용 시 bandageHpBonus 추가 회복
       const isBandage = def.tags?.includes('bandage') ?? false;

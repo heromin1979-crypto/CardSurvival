@@ -63,7 +63,7 @@ const OnboardingSystem = {
   init() {
     // 최초 베이스캠프 진입 시 — 보드 사용법 안내 (세션 최초 1회)
     const unsubFirst = EventBus.on('stateTransition', ({ to }) => {
-      if (to !== 'basecamp') return;
+      if (to !== 'main') return;
       if (GameState.time.day !== 1 || GameState.time.totalTP > 0) return;
       unsubFirst();
       _showBoardTooltip();

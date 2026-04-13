@@ -34,7 +34,7 @@ const SubwaySystem = {
   init() {
     // After combat, resume pending subway travel (if any).
     // Flow: CombatSystem emits combatEnd → this handler fires synchronously
-    // → _arriveAtStation / _continueTravel transitions to 'basecamp'
+    // → _arriveAtStation / _continueTravel transitions to 'main'
     // → CombatSystem's subsequent combat_result transition silently fails
     //   (basecamp → combat_result not allowed), intentionally skipping the
     //   result screen so subway travel resumes seamlessly.
@@ -272,7 +272,7 @@ const SubwaySystem = {
     EventBus.emit('subwayTravelComplete', { districtId });
 
     // Transition to basecamp (triggers top row card refresh)
-    StateMachine.transition('basecamp');
+    StateMachine.transition('main');
   },
 
   // ── Sewer route queries ──────────────────────────────────────

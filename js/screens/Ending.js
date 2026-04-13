@@ -4,6 +4,7 @@ import GameState    from '../core/GameState.js';
 import I18n         from '../core/I18n.js';
 import SaveManager  from '../persistence/SaveManager.js';
 import EndingSystem from '../systems/EndingSystem.js';
+import { getEndingImage } from '../data/endingImages.js';
 
 const CATEGORY_LABEL_KEYS = {
   death:     'ending.catDeath',
@@ -69,6 +70,27 @@ const Ending = {
     stats.className = 'ending-stats';
     stats.innerHTML = this._buildStatsHTML(gs);
     container.appendChild(stats);
+
+    // ── Character ending image ─────────────────────────────────
+    if (ending.category === 'character' && ending.characterId) {
+      const subCode  = gs.flags?.[ending.characterId + '_ending'] ?? null;
+      const imgData  = subCode ? getEndingImage(subCode) : null;
+      if (imgData) {
+        const imgWrap = document.createElement('div');
+        imgWrap.className = 'ending-img-wrap';
+
+        const img = document.createElement('img');
+        img.className = 'ending-img';
+        img.src = imgData.src;
+        img.alt = imgData.alt;
+        img.loading = 'eager';
+        // Graceful fallback: hide wrapper if image fails to load
+        img.onerror = () => { imgWrap.style.display = 'none'; };
+
+        imgWrap.appendChild(img);
+        container.appendChild(imgWrap);
+      }
+    }
 
     // ── Narrative ──────────────────────────────────────────────
     const narrative = document.createElement('div');

@@ -1,9 +1,10 @@
 // === ENDING GALLERY SCREEN ===
-import EventBus     from '../core/EventBus.js';
-import StateMachine from '../core/StateMachine.js';
-import I18n         from '../core/I18n.js';
-import ENDINGS      from '../data/endings.js';
-import EndingSystem from '../systems/EndingSystem.js';
+import EventBus       from '../core/EventBus.js';
+import StateMachine   from '../core/StateMachine.js';
+import I18n           from '../core/I18n.js';
+import ENDINGS        from '../data/endings.js';
+import EndingSystem   from '../systems/EndingSystem.js';
+import { getEndingImage } from '../data/endingImages.js';
 
 const CATEGORY_META = {
   death:     { labelKey: 'ending.catDeath',     color: '#c0392b', icon: '💀', bg: 'rgba(192,57,43,0.08)' },
@@ -186,10 +187,22 @@ const EndingGallery = {
       card.className = 'eg-card unlocked';
       card.style.cssText = `background:${ending.gradient ?? meta.bg};border-color:${meta.color}30`;
 
-      const preview    = ending.narrative?.[0] ?? '';
-      const dayBadge   = unlockDay != null ? `<div class="eg-card-day">${I18n.t('gallery.dayAchieved', { day: unlockDay })}</div>` : '';
+      const preview  = ending.narrative?.[0] ?? '';
+      const dayBadge = unlockDay != null ? `<div class="eg-card-day">${I18n.t('gallery.dayAchieved', { day: unlockDay })}</div>` : '';
+
+      // 캐릭터 엔딩이면 서브엔딩 이미지 썸네일 표시
+      let thumbHtml = '';
+      if (ending.category === 'character' && ending.characterId) {
+        const unlockMeta  = EndingSystem.getUnlockMeta();
+        const subEndCode  = unlockMeta[ending.id]?.subEnding ?? null;
+        const imgData     = subEndCode ? getEndingImage(subEndCode) : null;
+        if (imgData) {
+          thumbHtml = `<img class="eg-card-thumb" src="${imgData.src}" alt="${imgData.alt}" loading="lazy">`;
+        }
+      }
 
       card.innerHTML = `
+        ${thumbHtml}
         <div class="eg-card-badge" style="color:${meta.color};border-color:${meta.color}40;background:${meta.bg}">
           ${meta.icon} ${metaLabel}
         </div>
@@ -199,6 +212,12 @@ const EndingGallery = {
         ${dayBadge}
         <div class="eg-card-check" style="color:${meta.color}">✓</div>
       `;
+
+      // 캐릭터 엔딩 카드 클릭 시 라이트박스
+      if (ending.category === 'character') {
+        card.style.cursor = 'pointer';
+        card.addEventListener('click', () => this._openLightbox(ending, isUnlocked));
+      }
     } else {
       const isDeath = ending.category === 'death';
       card.className = 'eg-card locked';
@@ -221,6 +240,43 @@ const EndingGallery = {
     }
 
     return card;
+  },
+
+  _openLightbox(ending, isUnlocked) {
+    if (!isUnlocked) return;
+
+    const meta        = CATEGORY_META[ending.category] ?? { color: '#8e44ad', bg: 'rgba(142,68,173,0.08)', icon: '👤', labelKey: ending.category };
+    const unlockMeta  = EndingSystem.getUnlockMeta();
+    const subEndCode  = unlockMeta[ending.id]?.subEnding ?? null;
+    const imgData     = subEndCode ? getEndingImage(subEndCode) : null;
+    const preview     = ending.narrative ?? [];
+
+    const overlay = document.createElement('div');
+    overlay.className = 'eg-lightbox-overlay';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.setAttribute('aria-label', ending.title);
+
+    overlay.innerHTML = `
+      <div class="eg-lightbox">
+        <button class="eg-lightbox-close" aria-label="닫기">✕</button>
+        ${imgData ? `<img class="eg-lightbox-img" src="${imgData.src}" alt="${imgData.alt}">` : ''}
+        <div class="eg-lightbox-badge" style="color:${meta.color};border-color:${meta.color}40">
+          ${meta.icon} ${I18n.t(meta.labelKey)}
+        </div>
+        <div class="eg-lightbox-title">${ending.title}</div>
+        <div class="eg-lightbox-subtitle">${ending.subtitle}</div>
+        ${preview.length ? `<div class="eg-lightbox-narrative">${preview.map(l => `<p>${l}</p>`).join('')}</div>` : ''}
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    const close = () => overlay.remove();
+    overlay.querySelector('.eg-lightbox-close').addEventListener('click', close);
+    overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+    overlay.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+    overlay.focus?.();
   },
 };
 

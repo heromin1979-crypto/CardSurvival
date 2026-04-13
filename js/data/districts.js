@@ -1,4 +1,5 @@
 // === DISTRICTS — 서울 25개 구(區) 지역 시스템 ===
+import BALANCE from './gameBalance.js';
 // adjacentDistricts: 그리드 직교(상하좌우) 인접 구만 연결. 대각선 없음.
 // 한강 장벽: 강북↔강남 직접 이동 불가. 다리 2개만 크로스-리버 연결:
 //   서쪽 다리: mapo(강북, row2) ↔ yeongdeungpo(강남, row4)
@@ -19,6 +20,7 @@ const DISTRICTS = {
     description: '의료 인프라가 집중된 지역. 삼성서울병원이 최대 물자 보고지만 좀비 밀도가 극히 높다.',
     dangerLevel: 3, travelCostTP: 2, radiation: 0,
     encounterChance: 0.25, noiseGen: 7,
+    hasFishing: true, fishingQuality: 2,
     adjacentDistricts: ['seocho', 'songpa', 'dongjak'],
     landmark: 'lm_gangnam',
     lootTable: [
@@ -33,6 +35,10 @@ const DISTRICTS = {
       { definitionId: 'telephone_booth', weight: 5, minQty: 1, maxQty: 1 },
       { definitionId: 'collapsed_shelf', weight: 5, minQty: 1, maxQty: 1 },
       { definitionId: 'herb',          weight: 8,  minQty: 1, maxQty: 2 },
+      // 한강 수변 자원 — 강남구 hasFishing
+      { definitionId: 'rainwater',     weight: 8,  minQty: 1, maxQty: 2, contamChance: 0.10 },
+      { definitionId: 'nettle',        weight: 6,  minQty: 1, maxQty: 2 },
+      { definitionId: 'wild_root',     weight: 5,  minQty: 1, maxQty: 2 },
     ],
     special: 'samsung_hospital',
   },
@@ -43,6 +49,7 @@ const DISTRICTS = {
     description: '외곽 주거지역. 약탈이 덜 된 아파트 단지에서 생필품을 찾을 수 있다.',
     dangerLevel: 2, travelCostTP: 2, radiation: 0,
     encounterChance: 0.15, noiseGen: 5,
+    hasFishing: true, fishingQuality: 2,
     adjacentDistricts: ['songpa', 'geumcheon', 'gwangjin'],
     landmark: 'lm_gangdong',
     lootTable: [
@@ -58,6 +65,9 @@ const DISTRICTS = {
       { definitionId: 'broken_washing_machine', weight: 4, minQty: 1, maxQty: 1 },
       { definitionId: 'matches',       weight: 5,  minQty: 1, maxQty: 2 },
       { definitionId: 'dry_grass',     weight: 5,  minQty: 1, maxQty: 1 },
+      // 한강 수변 자원 — 강동구 hasFishing
+      { definitionId: 'rainwater',     weight: 8,  minQty: 1, maxQty: 2, contamChance: 0.10 },
+      { definitionId: 'nettle',        weight: 6,  minQty: 1, maxQty: 2 },
     ],
     special: null,
   },
@@ -168,6 +178,7 @@ const DISTRICTS = {
     description: '한강 인접 주거지역. 뚝섬과 어린이대공원 주변에 생활용품이 남아있다.',
     dangerLevel: 2, travelCostTP: 2, radiation: 0,
     encounterChance: 0.15, noiseGen: 4,
+    hasFishing: true, fishingQuality: 2,
     adjacentDistricts: ['seongdong', 'gangdong'],
     landmark: 'lm_gwangjin',
     lootTable: [
@@ -256,6 +267,8 @@ const DISTRICTS = {
       { definitionId: 'gravel_pile',   weight: 8,  minQty: 1, maxQty: 1 },
       { definitionId: 'soil_bag',      weight: 10, minQty: 1, maxQty: 3 },
       { definitionId: 'dandelion',     weight: 5,  minQty: 1, maxQty: 2 },
+      // 방사선 오염 잔류 — 금천구 radiation:5
+      { definitionId: 'contaminated_water', weight: 12, minQty: 1, maxQty: 2, contamChance: 0.50 },
     ],
     special: null,
   },
@@ -281,6 +294,14 @@ const DISTRICTS = {
       { definitionId: 'broken_washing_machine', weight: 4, minQty: 1, maxQty: 1 },
       { definitionId: 'matches',       weight: 5,  minQty: 1, maxQty: 2 },
       { definitionId: 'dry_grass',     weight: 5,  minQty: 1, maxQty: 1 },
+      // 불암산·수락산 인접 자연 자원
+      { definitionId: 'pine_nut',        weight: 12, minQty: 1, maxQty: 3 },
+      { definitionId: 'wild_strawberry', weight: 10, minQty: 1, maxQty: 3 },
+      { definitionId: 'acorn',           weight: 10, minQty: 1, maxQty: 4 },
+      { definitionId: 'chestnut',        weight: 9,  minQty: 1, maxQty: 3 },
+      { definitionId: 'wild_berry',      weight: 8,  minQty: 1, maxQty: 3 },
+      { definitionId: 'mushroom_edible', weight: 7,  minQty: 1, maxQty: 2 },
+      { definitionId: 'pine_needle',     weight: 6,  minQty: 1, maxQty: 2 },
     ],
     special: null,
   },
@@ -326,6 +347,11 @@ const DISTRICTS = {
       { definitionId: 'wild_root',       weight: 6,  minQty: 1, maxQty: 2 },
       { definitionId: 'herb_seed',       weight: 3,  minQty: 1, maxQty: 1 },
       { definitionId: 'vegetable_seed',  weight: 2,  minQty: 1, maxQty: 1 },
+      { definitionId: 'wild_strawberry', weight: 12, minQty: 1, maxQty: 3 },
+      { definitionId: 'chestnut',        weight: 10, minQty: 1, maxQty: 3 },
+      { definitionId: 'wild_grape',      weight: 8,  minQty: 1, maxQty: 2 },
+      { definitionId: 'pine_nut',        weight: 7,  minQty: 1, maxQty: 2 },
+      { definitionId: 'apple_wild',      weight: 6,  minQty: 1, maxQty: 2 },
     ],
     special: null,
   },
@@ -350,6 +376,10 @@ const DISTRICTS = {
       { definitionId: 'broken_lamp',   weight: 4,  minQty: 1, maxQty: 1 },
       { definitionId: 'old_mailbox',   weight: 4,  minQty: 1, maxQty: 1 },
       { definitionId: 'rusted_toolbox', weight: 4, minQty: 1, maxQty: 1 },
+      // 기초 생존 자원 — 동대문 의류시장 외곽 잔류
+      { definitionId: 'dry_grass',     weight: 5,  minQty: 1, maxQty: 2 },
+      { definitionId: 'dandelion',     weight: 5,  minQty: 1, maxQty: 2 },
+      { definitionId: 'matches',       weight: 4,  minQty: 1, maxQty: 2 },
     ],
     special: null,
   },
@@ -360,6 +390,7 @@ const DISTRICTS = {
     description: '한강 남안 주거지역. 국립현충원이 있어 약탈이 적었고 생필품이 남아있다.',
     dangerLevel: 1, travelCostTP: 2, radiation: 0,
     encounterChance: 0.10, noiseGen: 3,
+    hasFishing: true, fishingQuality: 2,
     adjacentDistricts: ['guro', 'gwanak', 'gangnam'],
     landmark: 'lm_dongjak',
     lootTable: [
@@ -397,6 +428,7 @@ const DISTRICTS = {
     description: '홍대·합정·여의나루. 한때 젊음의 거리였던 홍대와 발전소 인근 합정이 혼재한다.',
     dangerLevel: 3, travelCostTP: 2, radiation: 3,
     encounterChance: 0.25, noiseGen: 4,
+    hasFishing: true, fishingQuality: 2,
     adjacentDistricts: ['seodaemun', 'jongno', 'yeongdeungpo'],
     landmark: 'lm_mapo',
     lootTable: [
@@ -410,6 +442,10 @@ const DISTRICTS = {
       { definitionId: 'collapsed_shelf', weight: 5, minQty: 1, maxQty: 1 },
       { definitionId: 'broken_lamp',   weight: 4,  minQty: 1, maxQty: 1 },
       { definitionId: 'old_generator', weight: 4,  minQty: 1, maxQty: 1 },
+      // 한강 수변·발전소 오염 자원 — 마포구 hasFishing, radiation:3
+      { definitionId: 'rainwater',     weight: 10, minQty: 1, maxQty: 2, contamChance: 0.20 },
+      { definitionId: 'contaminated_water', weight: 8, minQty: 1, maxQty: 2, contamChance: 0.35 },
+      { definitionId: 'nettle',        weight: 6,  minQty: 1, maxQty: 2 },
     ],
     special: null,
   },
@@ -433,6 +469,10 @@ const DISTRICTS = {
       { definitionId: 'collapsed_shelf', weight: 5, minQty: 1, maxQty: 1 },
       { definitionId: 'broken_lamp',   weight: 4,  minQty: 1, maxQty: 1 },
       { definitionId: 'old_generator', weight: 4,  minQty: 1, maxQty: 1 },
+      // 북한산 인접 자연 자원 — 서대문구
+      { definitionId: 'tree_log',      weight: 8,  minQty: 1, maxQty: 1 },
+      { definitionId: 'pine_cone',     weight: 5,  minQty: 1, maxQty: 2 },
+      { definitionId: 'dandelion',     weight: 5,  minQty: 1, maxQty: 2 },
     ],
     special: 'severance',
   },
@@ -457,6 +497,11 @@ const DISTRICTS = {
       { definitionId: 'vending_machine', weight: 5, minQty: 1, maxQty: 1 },
       { definitionId: 'telephone_booth', weight: 5, minQty: 1, maxQty: 1 },
       { definitionId: 'destroyed_kiosk', weight: 5, minQty: 1, maxQty: 1 },
+      // 우면산 인접 자연 자원 — 서초구
+      { definitionId: 'herb',          weight: 8,  minQty: 1, maxQty: 2 },
+      { definitionId: 'tree_log',      weight: 6,  minQty: 1, maxQty: 1 },
+      { definitionId: 'wild_berry',    weight: 5,  minQty: 1, maxQty: 2 },
+      { definitionId: 'dry_grass',     weight: 5,  minQty: 1, maxQty: 2 },
     ],
     special: null,
   },
@@ -467,6 +512,7 @@ const DISTRICTS = {
     description: '성수 공장지대. 금속 재료와 제작 도구가 풍부하나 방사선 오염이 있다.',
     dangerLevel: 3, travelCostTP: 2, radiation: 5,
     encounterChance: 0.25, noiseGen: 4,
+    hasFishing: true, fishingQuality: 2,
     adjacentDistricts: ['dongdaemun', 'jungrang', 'gwangjin'],
     landmark: 'lm_seongdong',
     lootTable: [
@@ -488,6 +534,9 @@ const DISTRICTS = {
       { definitionId: 'sulfur',        weight: 8,  minQty: 1, maxQty: 2 },
       { definitionId: 'gravel_pile',   weight: 8,  minQty: 1, maxQty: 1 },
       { definitionId: 'soil_bag',      weight: 8,  minQty: 1, maxQty: 2 },
+      // 한강 수변·방사선 오염 자원 — 성동구 hasFishing, radiation:5
+      { definitionId: 'contaminated_water', weight: 12, minQty: 1, maxQty: 2, contamChance: 0.50 },
+      { definitionId: 'rainwater',     weight: 8,  minQty: 1, maxQty: 2, contamChance: 0.20 },
     ],
     special: null,
   },
@@ -519,6 +568,10 @@ const DISTRICTS = {
       { definitionId: 'dandelion',     weight: 8,  minQty: 1, maxQty: 2 },
       { definitionId: 'wild_garlic',   weight: 6,  minQty: 1, maxQty: 2 },
       { definitionId: 'herb_seed',     weight: 3,  minQty: 1, maxQty: 1 },
+      // 북한산 자락·대학 캠퍼스 자연 자원 확장 — 성북구
+      { definitionId: 'wild_berry',      weight: 6,  minQty: 1, maxQty: 2 },
+      { definitionId: 'mushroom_edible', weight: 5,  minQty: 1, maxQty: 2 },
+      { definitionId: 'acorn',           weight: 5,  minQty: 1, maxQty: 2 },
     ],
     special: null,
   },
@@ -529,6 +582,7 @@ const DISTRICTS = {
     description: '롯데월드타워 119층. 최후 생존자 거점이 함락된 후 변이체의 소굴이 되었다.',
     dangerLevel: 5, travelCostTP: 2, radiation: 0,
     encounterChance: 0.45, noiseGen: 8,
+    hasFishing: true, fishingQuality: 3,
     adjacentDistricts: ['gangnam', 'gangdong', 'gwanak'],
     landmark: 'lm_songpa',
     lootTable: [
@@ -542,6 +596,10 @@ const DISTRICTS = {
       { definitionId: 'wrecked_car',   weight: 5,  minQty: 1, maxQty: 1 },
       { definitionId: 'subway_gate',   weight: 4,  minQty: 1, maxQty: 1 },
       { definitionId: 'wrecked_bus',   weight: 4,  minQty: 1, maxQty: 1 },
+      // 한강 수변 자원 — 송파구 hasFishing
+      { definitionId: 'rainwater',     weight: 8,  minQty: 1, maxQty: 2, contamChance: 0.15 },
+      { definitionId: 'nettle',        weight: 6,  minQty: 1, maxQty: 2 },
+      { definitionId: 'wild_root',     weight: 5,  minQty: 1, maxQty: 2 },
     ],
     special: 'lotte_tower',
   },
@@ -566,6 +624,10 @@ const DISTRICTS = {
       { definitionId: 'broken_chair',  weight: 5,  minQty: 1, maxQty: 1 },
       { definitionId: 'broken_washing_machine', weight: 4, minQty: 1, maxQty: 1 },
       { definitionId: 'matches',       weight: 5,  minQty: 1, maxQty: 2 },
+      // 안양천 인접 자원 — 양천구
+      { definitionId: 'dry_grass',     weight: 5,  minQty: 1, maxQty: 2 },
+      { definitionId: 'wild_root',     weight: 5,  minQty: 1, maxQty: 2 },
+      { definitionId: 'dandelion',     weight: 5,  minQty: 1, maxQty: 2 },
     ],
     special: null,
   },
@@ -576,6 +638,7 @@ const DISTRICTS = {
     description: '여의도·KBS방송국. 약탈자 두목의 본거지. 방송 장비와 군용 물자가 있으나 극히 위험.',
     dangerLevel: 4, travelCostTP: 3, radiation: 0,
     encounterChance: 0.35, noiseGen: 7,
+    hasFishing: true, fishingQuality: 2,
     adjacentDistricts: ['gangseo', 'mapo'],
     landmark: 'lm_yeongdeungpo',
     lootTable: [
@@ -591,6 +654,9 @@ const DISTRICTS = {
       { definitionId: 'wrecked_bus',   weight: 4,  minQty: 1, maxQty: 1 },
       { definitionId: 'destroyed_kiosk', weight: 5, minQty: 1, maxQty: 1 },
       { definitionId: 'collapsed_guard_post', weight: 4, minQty: 1, maxQty: 1 },
+      // 한강 수변 자원 — 영등포구 hasFishing (여의도)
+      { definitionId: 'rainwater',     weight: 8,  minQty: 1, maxQty: 2, contamChance: 0.10 },
+      { definitionId: 'nettle',        weight: 6,  minQty: 1, maxQty: 2 },
     ],
     special: 'kbs',
   },
@@ -601,6 +667,7 @@ const DISTRICTS = {
     description: '전자상가·이태원·미군기지. 전자부품과 금속 재료가 집중된 전략 거점.',
     dangerLevel: 3, travelCostTP: 2, radiation: 0,
     encounterChance: 0.25, noiseGen: 6,
+    hasFishing: true, fishingQuality: 2,
     adjacentDistricts: ['jongno', 'junggoo'],
     landmark: 'lm_yongsan',
     lootTable: [
@@ -615,6 +682,9 @@ const DISTRICTS = {
       { definitionId: 'wrecked_car',   weight: 5,  minQty: 1, maxQty: 1 },
       { definitionId: 'subway_gate',   weight: 4,  minQty: 1, maxQty: 1 },
       { definitionId: 'wrecked_bus',   weight: 4,  minQty: 1, maxQty: 1 },
+      // 한강 수변 자원 — 용산구 hasFishing
+      { definitionId: 'rainwater',     weight: 8,  minQty: 1, maxQty: 2, contamChance: 0.10 },
+      { definitionId: 'nettle',        weight: 5,  minQty: 1, maxQty: 2 },
     ],
     special: 'us_base',
   },
@@ -657,6 +727,10 @@ const DISTRICTS = {
       { definitionId: 'dandelion',       weight: 8,  minQty: 1, maxQty: 3 },
       { definitionId: 'wild_root',       weight: 6,  minQty: 1, maxQty: 2 },
       { definitionId: 'herb_seed',       weight: 3,  minQty: 1, maxQty: 1 },
+      { definitionId: 'chestnut',        weight: 10, minQty: 1, maxQty: 3 },
+      { definitionId: 'apple_wild',      weight: 8,  minQty: 1, maxQty: 2 },
+      { definitionId: 'wild_strawberry', weight: 8,  minQty: 1, maxQty: 2 },
+      { definitionId: 'pine_nut',        weight: 6,  minQty: 1, maxQty: 2 },
     ],
     special: null,
   },
@@ -683,6 +757,9 @@ const DISTRICTS = {
       { definitionId: 'destroyed_kiosk', weight: 5, minQty: 1, maxQty: 1 },
       { definitionId: 'collapsed_guard_post', weight: 5, minQty: 1, maxQty: 1 },
       { definitionId: 'wrecked_car',   weight: 5,  minQty: 1, maxQty: 1 },
+      // 방사선 극심 오염 자원 — 종로구 radiation:10
+      { definitionId: 'contaminated_water', weight: 15, minQty: 1, maxQty: 3, contamChance: 0.80 },
+      { definitionId: 'sulfur',        weight: 8,  minQty: 1, maxQty: 2 },
     ],
     special: 'gwanghwamun',
   },
@@ -708,6 +785,9 @@ const DISTRICTS = {
       { definitionId: 'vending_machine', weight: 4, minQty: 1, maxQty: 1 },
       { definitionId: 'telephone_booth', weight: 4, minQty: 1, maxQty: 1 },
       { definitionId: 'destroyed_kiosk', weight: 5, minQty: 1, maxQty: 1 },
+      // 시장 잔류 기초 자원 — 중구 (남대문시장)
+      { definitionId: 'matches',       weight: 5,  minQty: 1, maxQty: 2 },
+      { definitionId: 'dry_grass',     weight: 4,  minQty: 1, maxQty: 1 },
     ],
     special: 'seoul_city_hall',
   },
@@ -765,7 +845,7 @@ function generateDistrictLoot(districtId) {
 
   const results = [];
   const totalWeight = district.lootTable.reduce((s, e) => s + e.weight, 0);
-  const count = 2 + Math.floor(Math.random() * 4); // 2~5개
+  const count = BALANCE.explore.lootCountMin + Math.floor(Math.random() * (BALANCE.explore.lootCountMax - BALANCE.explore.lootCountMin + 1)); // 1~3개
 
   for (let i = 0; i < count; i++) {
     let rand = Math.random() * totalWeight;

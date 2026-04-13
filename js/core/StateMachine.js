@@ -4,14 +4,14 @@ import GameState from './GameState.js';
 
 // Valid transitions: from → [allowed targets]
 const TRANSITIONS = {
-  main_menu:      ['char_create', 'basecamp', 'ending_gallery'],
-  char_create:    ['basecamp', 'main_menu'],
-  basecamp:       ['explore', 'encounter', 'rest', 'pause', 'game_over', 'ending', 'main_menu'],
-  explore:        ['basecamp', 'encounter', 'rest', 'pause', 'ending'],
-  encounter:      ['combat', 'explore', 'basecamp'],
+  main_menu:      ['char_create', 'main', 'ending_gallery'],
+  char_create:    ['main', 'main_menu'],
+  main:           ['explore', 'encounter', 'rest', 'pause', 'game_over', 'ending', 'main_menu'],
+  explore:        ['main', 'encounter', 'rest', 'pause', 'ending'],
+  encounter:      ['combat', 'explore', 'main'],
   combat:         ['combat_result', 'game_over', 'ending'],
-  combat_result:  ['basecamp', 'explore', 'ending'],
-  rest:           ['basecamp', 'ending'],
+  combat_result:  ['main', 'explore', 'ending'],
+  rest:           ['main', 'ending'],
   game_over:      ['main_menu'],
   ending:         ['main_menu', 'char_create'],
   ending_gallery: ['main_menu'],
@@ -56,7 +56,7 @@ const StateMachine = {
 
   unpause() {
     if (this.current !== 'pause') return;
-    const prev = this._previousState ?? 'basecamp';
+    const prev = this._previousState ?? 'main';
     GameState.ui.currentState = prev;
     EventBus.emit('stateTransition', { from: 'pause', to: prev, data: {} });
   },
