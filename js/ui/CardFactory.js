@@ -1046,7 +1046,9 @@ const CardFactory = {
     if (!def) return;
 
     if (def.type === 'location') {
-      if (def.landmark) {
+      if (def.sublocation) {
+        el.innerHTML = this._buildSubLocationInner(def);
+      } else if (def.landmark) {
         if (def.id === 'basecamp_landmark') {
           el.innerHTML = this._buildLandmarkInner(def, true);
           el.classList.add('is-current-loc');
