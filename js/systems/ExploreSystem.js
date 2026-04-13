@@ -424,16 +424,21 @@ const ExploreSystem = {
     const node = DISTRICTS[nodeId] ?? NODES[nodeId];
     if (!node) return;
 
-    // 랜드마크 안에서 전투 후 복귀: 저장된 바닥 카드 복원
+    // 랜드마크 안에서 전투/도망: 랜드마크 로비로 복귀 (퇴장 아님)
     if (gs.location.currentLandmark) {
-      const isBasecampLM = gs.location.currentLandmark === 'basecamp';
-      const floorKey     = isBasecampLM ? 'basecamp' : nodeId;
-      if (!gs.locationFloors) gs.locationFloors = {};
-      const saved    = gs.locationFloors[floorKey] ?? [];
-      const floorLen = gs.board.middle.length;
-      gs.board.middle = Array.from({ length: floorLen }, (_, i) => saved[i] ?? null);
+      const landmarkId = gs.location.currentLandmark;
+      // 서브로케이션 초기화 → 랜드마크 로비
+      gs.location.currentSubLocation = null;
+      // 바닥 비우기 (랜드마크 로비 상태)
+      gs.board.middle = Array(gs.board.middle.length).fill(null);
+      this._updateTopRowForLandmark(landmarkId);
+      const lmName = LANDMARK_DATA[landmarkId]?.name ?? landmarkId;
+      EventBus.emit('notify', { message: I18n.t('exploreSys.landmarkEnter', { name: lmName }), type: 'info' });
+      EventBus.emit('boardChanged', {});
+      return;
     }
 
+    // 일반 지역으로 복귀
     gs.location.currentLandmark    = null;
     gs.location.currentSubLocation = null;
     gs.location.currentNode = nodeId;
