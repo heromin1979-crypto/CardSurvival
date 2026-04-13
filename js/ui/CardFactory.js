@@ -42,6 +42,7 @@ const LANDMARK_IMAGES = {
   lm_junggoo:      'assets/images/landmarks/lm_junggoo.png',
   lm_jungrang:     'assets/images/landmarks/lm_jungrang.png',
   basecamp_landmark: 'assets/images/landmarks/basecamp.png',
+  lm_hangang:        'assets/images/landmarks/lm_hangang.png',
 };
 
 // 지역 카드 서브타입별 이미지 (assets/images/locations/)
@@ -100,6 +101,23 @@ const CARD_IMAGES = {
   hammer_head:      'assets/images/materials/hammer_head.png',
   herb_powder:      'assets/images/materials/herb_powder.png',
   herb_seed:        'assets/images/materials/herb_seed.png',
+  gravel_pile:      'assets/images/materials/gravel_pile.png',
+  kindling:         'assets/images/materials/kindling.png',
+  lead_ingot:       'assets/images/materials/lead_ingot.png',
+  matches:          'assets/images/materials/matches.png',
+  nettle:           'assets/images/materials/nettle.png',
+  nettle_fiber:     'assets/images/materials/nettle_fiber.png',
+  pebble:           'assets/images/materials/pebble.png',
+  refined_metal:    'assets/images/materials/refined_metal.png',
+  saltpeter:        'assets/images/materials/saltpeter.png',
+  shovel_head:      'assets/images/materials/shovel_head.png',
+  soil_bag:         'assets/images/materials/soil_bag.png',
+  steel_plate:      'assets/images/materials/steel_plate.png',
+  sulfur:           'assets/images/materials/sulfur.png',
+  tinder_bundle:    'assets/images/materials/tinder_bundle.png',
+  vegetable_seed:   'assets/images/materials/vegetable_seed.png',
+  wood_bark:        'assets/images/materials/wood_bark.png',
+  wood_plank:       'assets/images/materials/wood_plank.png',
 
   // 음식/음료
   boiled_water:          'assets/images/food/boiled_water.png',
@@ -267,6 +285,19 @@ const CARD_IMAGES = {
   hazmat_suit:           'assets/images/armor/hazmat_suit.png',
 
   // 도구
+  bait_insect:           'assets/images/tools/bait_insect.png',
+  bait_worm:             'assets/images/tools/bait_worm.png',
+  fishing_rod_basic:     'assets/images/tools/fishing_rod_basic.png',
+  fishing_rod_improved:  'assets/images/tools/fishing_rod_improved.png',
+  kitchen_knife:         'assets/images/tools/kitchen_knife.png',
+  mortar_pestle:         'assets/images/tools/mortar_pestle.png',
+  sickle:                'assets/images/tools/sickle.png',
+  stone_knife:           'assets/images/tools/stone_knife.png',
+  trowel:                'assets/images/tools/trowel.png',
+  fishing_hook_tool:     'assets/images/tools/fishing_hook.png',
+  map_fragment_center:   'assets/images/tools/map_fragment_center.png',
+  map_fragment_north:    'assets/images/tools/map_fragment_north.png',
+  map_fragment_south:    'assets/images/tools/map_fragment_south.png',
   flashlight:            'assets/images/tools/flashlight.png',
   compass:               'assets/images/tools/compass.png',
   fishing_rod:           'assets/images/tools/fishing_rod.png',
@@ -327,6 +358,25 @@ const CARD_IMAGES = {
   fuel_can:              'assets/images/bags/fuel_can.png',
 
   // 구조물
+  ammo_bench:            'assets/images/structures/ammo_bench.png',
+  campfire_temp:         'assets/images/structures/campfire_temp.png',
+  carpentry_bench:       'assets/images/structures/carpentry_bench.png',
+  chemistry_bench:       'assets/images/structures/chemistry_bench.png',
+  clay_pot:              'assets/images/structures/clay_pot.png',
+  coal_furnace:          'assets/images/structures/coal_furnace.png',
+  cooking_pot_stand:     'assets/images/structures/cooking_pot_stand.png',
+  drying_rack:           'assets/images/structures/drying_rack.png',
+  fermentation_pot:      'assets/images/structures/fermentation_pot.png',
+  field_forge:           'assets/images/structures/field_forge.png',
+  fish_trap:             'assets/images/structures/fish_trap.png',
+  garden_bed_grain:      'assets/images/structures/garden_bed_grain.png',
+  garden_bed_herb:       'assets/images/structures/garden_bed_herb.png',
+  garden_bed_veggie:     'assets/images/structures/garden_bed_veggie.png',
+  iron_pot:              'assets/images/structures/iron_pot.png',
+  root_cellar:           'assets/images/structures/root_cellar.png',
+  tanning_rack:          'assets/images/structures/tanning_rack.png',
+  wind_stove:            'assets/images/structures/wind_stove.png',
+  bee_hive:              'assets/images/structures/bee_hive.png',
   campfire:              'assets/images/structures/campfire.png',
   medical_station:       'assets/images/structures/medical_station.png',
   workbench:             'assets/images/structures/workbench.png',
@@ -385,6 +435,14 @@ const CARD_IMAGES = {
   ai_chip:               'assets/images/legendary/ai_chip.png',
   royal_jelly_medicine:  'assets/images/legendary/royal_jelly_medicine.png',
   zero_strain:           'assets/images/legendary/zero_strain.png',
+
+  // 환경 오브젝트
+  tree_env:              'assets/images/environment/tree_env.png',
+  weed_patch:            'assets/images/environment/weed_patch.png',
+  withered_tree:         'assets/images/environment/withered_tree.png',
+
+  // 상태 효과
+  stun:                  'assets/images/special/stun.png',
 
   // 환경 카드
   env_sunny:                   'assets/images/environment/env_sunny.png',

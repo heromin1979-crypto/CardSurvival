@@ -17,6 +17,7 @@ import QuestSystem    from '../systems/QuestSystem.js';
 import ExploreSystem  from '../systems/ExploreSystem.js';
 import SeasonSystem    from '../systems/SeasonSystem.js';
 import WeatherSystem   from '../systems/WeatherSystem.js';
+import SeoulMapModal   from '../ui/SeoulMapModal.js';
 import GameData        from '../data/GameData.js';
 
 const Basecamp = {
@@ -203,6 +204,17 @@ const Basecamp = {
           </div>
         </div>
       </div>
+
+      <!-- Quest modal -->
+      <div class="modal-overlay" id="quest-modal">
+        <div class="modal-box" style="max-width:440px;max-height:85vh;">
+          <div class="modal-title">📋 퀘스트</div>
+          <div id="bc-quest-info" style="flex:1;overflow-y:auto;padding:4px 0;"></div>
+          <div class="modal-actions">
+            <button class="modal-btn" id="btn-quest-close">닫기</button>
+          </div>
+        </div>
+      </div>
     `;
 
     this._bindEvents();
@@ -247,7 +259,8 @@ const Basecamp = {
           : '';
       section.innerHTML = `
         <div class="bc-toolbar-label">⚡ 행동</div>
-        <button class="toolbar-btn primary" id="btn-explore">${I18n.t('basecamp.explore') || '🔍 현재 구역 탐색'}</button>
+        <button class="toolbar-btn primary" id="btn-explore">🔍 탐색</button>
+        <button class="toolbar-btn" id="btn-quest">📋 퀘스트</button>
         <button class="toolbar-btn" id="btn-craft">${I18n.t('basecamp.craft')}</button>
         <button class="toolbar-btn" id="btn-skills">${I18n.t('basecamp.skills')}</button>
         <button class="toolbar-btn" id="btn-wait">${I18n.t('basecamp.wait')}</button>
@@ -255,6 +268,10 @@ const Basecamp = {
         ${buildSection}
       `;
       section.querySelector('#btn-explore')?.addEventListener('click', () => ExploreSystem.exploreCurrentDistrict());
+      section.querySelector('#btn-quest')?.addEventListener('click', () => {
+        this._updateQuestPanel();
+        document.getElementById('quest-modal')?.classList.add('open');
+      });
       section.querySelector('#btn-craft')?.addEventListener('click', () => {
         const modal = document.getElementById('craft-modal');
         modal?.classList.add('open');
@@ -284,6 +301,18 @@ const Basecamp = {
     this._el.querySelector('#craft-modal')?.addEventListener('click', (e) => {
       if (e.target === document.getElementById('craft-modal')) {
         this._closeCraftModal();
+      }
+    });
+
+    // Quest modal close (button)
+    this._el.querySelector('#btn-quest-close')?.addEventListener('click', () => {
+      document.getElementById('quest-modal')?.classList.remove('open');
+    });
+
+    // Quest modal close (overlay click)
+    this._el.querySelector('#quest-modal')?.addEventListener('click', (e) => {
+      if (e.target === document.getElementById('quest-modal')) {
+        document.getElementById('quest-modal')?.classList.remove('open');
       }
     });
 
