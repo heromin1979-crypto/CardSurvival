@@ -48,6 +48,7 @@ const EquipmentModal = {
   _overlay:        null,
   _selectedId:     null,
   _activeTab:      0,
+  _activeMainTab:  'status',   // 메인 탭 상태 유지 (status | equip)
   _slotMenuId:     null,
   _bodyDetailPart: null,   // 클릭된 신체 부위 키 (상세 팝업용)
 
@@ -106,14 +107,14 @@ const EquipmentModal = {
       <div class="equip-modal-header">
         <span class="equip-modal-title">${I18n.t('equip.title')}</span>
         <div class="equip-header-tabs">
-          <button class="equip-tab-btn active" data-tab="status">📊 캐릭터 상태</button>
-          <button class="equip-tab-btn" data-tab="equip">⚙️ 장비</button>
+          <button class="equip-tab-btn${this._activeMainTab === 'status' ? ' active' : ''}" data-tab="status">📊 캐릭터 상태</button>
+          <button class="equip-tab-btn${this._activeMainTab === 'equip' ? ' active' : ''}" data-tab="equip">⚙️ 장비</button>
         </div>
         <button class="equip-modal-close" id="equip-close-btn">${I18n.t('equip.close')}</button>
       </div>
-      <div class="equip-modal-body" id="equip-modal-body" data-active-tab="status">
+      <div class="equip-modal-body" id="equip-modal-body" data-active-tab="${this._activeMainTab}">
         <!-- 캐릭터 상태 탭 (기본) -->
-        <div class="equip-tab-content" data-tab-content="status">
+        <div class="equip-tab-content" data-tab-content="status" style="display:${this._activeMainTab === 'status' ? '' : 'none'}">
           <div class="char-status-panel">
             <div class="char-status-title">📊 캐릭터 전체 상태</div>
             <div class="char-status-bars stat-bars">
@@ -122,7 +123,7 @@ const EquipmentModal = {
           </div>
         </div>
         <!-- 장비 탭 -->
-        <div class="equip-tab-content equip-tab-3panel" data-tab-content="equip" style="display:none;">
+        <div class="equip-tab-content equip-tab-3panel" data-tab-content="equip" style="display:${this._activeMainTab === 'equip' ? '' : 'none'};">
           <div class="equip-left-col">
             ${this._renderEffectsPanel()}
             ${this._renderBodyDiagram()}
@@ -139,6 +140,7 @@ const EquipmentModal = {
     box.querySelectorAll('.equip-tab-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const tab = btn.dataset.tab;
+        this._activeMainTab = tab;
         box.querySelectorAll('.equip-tab-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         box.querySelectorAll('.equip-tab-content').forEach(c => {
