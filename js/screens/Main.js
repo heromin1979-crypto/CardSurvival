@@ -417,14 +417,15 @@ const Basecamp = {
     el.innerHTML = active.map(q => {
       const def     = q.def;
       const pct     = def ? Math.round((q.progress / def.objective.count) * 100) : 0;
-      const dayLeft = q.deadline - GameState.time.day;
+      const dayLeft   = q.deadline - GameState.time.day;
+      const deadlineTxt = q.deadline === Infinity ? '' : ` · ${I18n.t('basecamp.remainDays', { days: dayLeft })}`;
       return `
         <div class="bc-quest-item">
           <div class="bc-quest-title">${def?.icon ?? '📋'} ${def?.title ?? q.id}</div>
           <div class="bc-quest-progress-bar">
             <div class="bc-quest-fill" style="width:${pct}%"></div>
           </div>
-          <div class="bc-quest-meta">${q.progress}/${def?.objective.count ?? '?'} · ${I18n.t('basecamp.remainDays', { days: dayLeft })}</div>
+          <div class="bc-quest-meta">${q.progress}/${def?.objective.count ?? '?'}${deadlineTxt}</div>
         </div>
       `;
     }).join('');
