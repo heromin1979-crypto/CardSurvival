@@ -288,6 +288,46 @@ const GameState = {
       }
     }
     this._updateEncumbrance();
+    // 슬롯이 비었으므로 대기 루트 자동 배치 시도
+    this.flushPendingLoot();
+  },
+
+  // 대기 중인 루트를 빈 슬롯에 순서대로 배치
+  flushPendingLoot() {
+    if (!this.pendingLoot?.length) return;
+    const placed = [];
+    const remaining = [];
+    for (const entry of this.pendingLoot) {
+      const inst = this.createCardInstance(entry.definitionId, {
+        quantity:      entry.quantity,
+        contamination: entry.contamination ?? 0,
+      });
+      if (!inst) continue;
+      const result = this.placeCardInRow(inst.instanceId, 'middle');
+      if (result) {
+        placed.push(entry);
+      } else {
+        this.removeCardInstanceSilent(inst.instanceId);
+        remaining.push(entry);
+      }
+    }
+    this.pendingLoot = remaining;
+    if (placed.length > 0) {
+      const names = placed.map(e => {
+        const def = GameData?.items[e.definitionId];
+        return `${def?.icon ?? ''} ${def?.name ?? e.definitionId}`;
+      });
+      EventBus.emit('notify', { message: `📦 대기 아이템 배치: ${names.join(', ')}`, type: 'good' });
+    }
+  },
+
+  // removeCardInstance의 silent 버전 (pendingLoot flush 재귀 방지)
+  removeCardInstanceSilent(instanceId) {
+    delete this.cards[instanceId];
+    for (const row of ['top', 'environment', 'middle', 'bottom']) {
+      this.board[row] = this.board[row].map(v => v === instanceId ? null : v);
+    }
+    this._updateEncumbrance();
   },
 
   getCardDef(instanceId) {
@@ -412,6 +452,7 @@ const GameState = {
       season:          this.season,
       weather:         this.weather,
       locationFloors:  this.locationFloors,
+      pendingLoot:     this.pendingLoot ?? [],
       landmarkHistory:     this.landmarkHistory,
       subwayStationVisits: this.subwayStationVisits,
       basecamp:            this.basecamp,
@@ -513,6 +554,7 @@ const GameState = {
     if (d.weather) Object.assign(this.weather, d.weather);
     // locationFloors 복원 (구버전 세이브 호환)
     this.locationFloors  = d.locationFloors  ?? {};
+    this.pendingLoot     = d.pendingLoot     ?? [];
     // 랜드마크 탐색 이력 복원
     this.landmarkHistory     = d.landmarkHistory     ?? {};
     this.subwayStationVisits = d.subwayStationVisits ?? {};

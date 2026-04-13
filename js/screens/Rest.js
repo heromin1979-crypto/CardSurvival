@@ -69,7 +69,7 @@ const Rest = {
     });
 
     this._el.querySelector('#btn-skip-rest')?.addEventListener('click', () => {
-      StateMachine.transition('basecamp');
+      StateMachine.transition('main');
     });
   },
 
@@ -113,7 +113,7 @@ const Rest = {
     }
 
     EventBus.emit('notify', { message: I18n.t('rest.complete', { name: I18n.t('rest.' + opt.id) }), type: 'good' });
-    StateMachine.transition('basecamp');
+    StateMachine.transition('main');
   },
 };
 

@@ -59,7 +59,7 @@ html, body {
     --slot-h: 188px;
   }
 
-  #screen-basecamp.active { grid-template-columns: 160px 1fr; }
+  #screen-main.active { grid-template-columns: 160px 1fr; }
   .bc-sidebar { width: 160px; }
 
   .modal-box,
@@ -81,7 +81,7 @@ html, body {
     --slot-h: 164px;
   }
 
-  #screen-basecamp.active { grid-template-columns: 140px 1fr; }
+  #screen-main.active { grid-template-columns: 140px 1fr; }
   .bc-sidebar { width: 140px; }
 
   .toolbar-btn { min-height: 40px; }
@@ -103,7 +103,7 @@ html, body {
     --slot-h: 136px;
   }
 
-  #screen-basecamp.active { grid-template-columns: 120px 1fr; }
+  #screen-main.active { grid-template-columns: 120px 1fr; }
 
   .bc-sidebar {
     width: 120px;
@@ -167,7 +167,7 @@ html, body {
   }
 
   /* ── 베이스캠프: 세로 2단 레이아웃 ───────────────── */
-  #screen-basecamp.active {
+  #screen-main.active {
     grid-template-columns: 1fr;
     grid-template-rows: auto 1fr;
     height: 100dvh;
@@ -496,7 +496,7 @@ html, body {
     --slot-h: 110px;
   }
 
-  #screen-basecamp.active {
+  #screen-main.active {
     grid-template-columns: 1fr;
     grid-template-rows: auto 1fr;
     height: 100dvh;

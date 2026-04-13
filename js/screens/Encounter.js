@@ -78,7 +78,7 @@ const Encounter = {
       const success = Math.random() > maxDiff;
       if (success) {
         EventBus.emit('notify', { message: I18n.t('encounter.stealthOk'), type: 'good' });
-        StateMachine.transition('explore');
+        StateMachine.transition('main');
       } else {
         EventBus.emit('notify', { message: I18n.t('encounter.stealthFail'), type: 'danger' });
         StateMachine.transition('combat', { enemies, dangerLevel, nodeId });
@@ -91,7 +91,7 @@ const Encounter = {
       if (success) {
         EventBus.emit('notify', { message: I18n.t('encounter.fleeOk'), type: 'good' });
         GameState.modStat('fatigue', 10);
-        StateMachine.transition('explore');
+        StateMachine.transition('main');
       } else {
         EventBus.emit('notify', { message: I18n.t('encounter.fleeFail'), type: 'danger' });
         StateMachine.transition('combat', { enemies, dangerLevel, nodeId });

@@ -280,15 +280,15 @@ const BasecampSystem = {
         gs.player.hp.current + fx.hpRegenPerTP
       );
     }
-    if (fx.fatigueRegenBonus > 0 && gs.ui.currentState === 'basecamp') {
+    if (fx.fatigueRegenBonus > 0 && gs.ui.currentState === 'main') {
       gs.modStat('fatigue', -fx.fatigueRegenBonus);
     }
-    if (fx.moraleBonus > 0 && gs.ui.currentState === 'basecamp') {
+    if (fx.moraleBonus > 0 && gs.ui.currentState === 'main') {
       gs.modStat('morale', fx.moraleBonus);
     }
 
     // 체온 완충 (극한 기후에서 베이스캠프 내 체온 안정화)
-    if (fx.tempBufferPerTP > 0 && gs.ui.currentState === 'basecamp') {
+    if (fx.tempBufferPerTP > 0 && gs.ui.currentState === 'main') {
       const temp = gs.player.temperature ?? 37;
       if (temp < 36.5) {
         gs.modStat('temperature', Math.min(fx.tempBufferPerTP, 36.5 - temp));

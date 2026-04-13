@@ -18,7 +18,7 @@
 .screen.active { display: flex; }
 
 /* === BASECAMP: 2-COLUMN SIDEBAR + MAIN === */
-#screen-basecamp.active {
+#screen-main.active {
   display: grid;
   grid-template-columns: 200px 1fr;
   overflow: hidden;
@@ -493,6 +493,46 @@
   font-size: var(--font-size-xs);
 }
 
+/* 툴바 섹션 레이블 */
+.bc-toolbar-label {
+  font-size: 9px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  padding: 4px 0 2px;
+  border-top: 1px solid var(--border-dim);
+  margin-top: 2px;
+}
+.bc-toolbar-label:first-child { border-top: none; margin-top: 0; }
+
+.bc-toolbar-label--camp {
+  color: var(--accent-primary);
+  border-top-color: rgba(200,160,96,0.25);
+}
+
+.bc-toolbar-divider {
+  border-top: 1px solid var(--border-dim);
+  margin: 3px 0;
+}
+
+/* 탐색 버튼 강조 */
+.bc-sidebar-btns .toolbar-btn.primary {
+  border-color: rgba(200,160,96,0.6);
+  color: var(--accent-primary);
+  font-weight: 600;
+}
+.bc-sidebar-btns .toolbar-btn.primary:hover {
+  background: rgba(200,160,96,0.1);
+}
+
+/* 작은 버튼 (갤러리 등) */
+.bc-sidebar-btns .btn-sm {
+  font-size: 9px;
+  padding: 3px 6px;
+  opacity: 0.6;
+}
+.bc-sidebar-btns .btn-sm:hover { opacity: 1; }
+
 /* 안전 가옥 건설 버튼 강조 (중반 전환점 유도) */
 .bc-sidebar-btns .btn-build-highlight {
   border-color: var(--text-good, #5cb85c);
@@ -503,6 +543,22 @@
 @keyframes bc-build-pulse {
   0%, 100% { opacity: 1; }
   50%       { opacity: 0.65; }
+}
+
+/* 캐릭터 블록 위험 아이콘 */
+.bc-char-danger-icons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  margin-top: 3px;
+}
+.bc-danger-icon {
+  font-size: 10px;
+  animation: danger-pulse 1.4s ease-in-out infinite;
+}
+@keyframes danger-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
 }
 
 /* === LEGACY GAME LAYOUT (kept for other screens) === */

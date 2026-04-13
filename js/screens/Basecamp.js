@@ -14,6 +14,7 @@ import LandmarkModal   from '../ui/LandmarkModal.js';
 import SkillModal      from '../ui/SkillModal.js';
 import BasecampModal  from '../ui/BasecampModal.js';
 import QuestSystem    from '../systems/QuestSystem.js';
+import ExploreSystem  from '../systems/ExploreSystem.js';
 import SeasonSystem    from '../systems/SeasonSystem.js';
 import WeatherSystem   from '../systems/WeatherSystem.js';
 import GameData        from '../data/GameData.js';
@@ -22,22 +23,22 @@ const Basecamp = {
   _el: null,
 
   init() {
-    this._el = document.getElementById('screen-basecamp');
+    this._el = document.getElementById('screen-main');
     EventBus.on('stateTransition', ({ to }) => {
-      if (to === 'basecamp') this._onEnter();
+      if (to === 'main') this._onEnter();
     });
     EventBus.on('questListChanged', () => {
-      if (GameState.ui.currentState === 'basecamp') this._updateQuestPanel();
+      if (GameState.ui.currentState === 'main') this._updateQuestPanel();
     });
     EventBus.on('mapUnlocked', () => {
-      if (GameState.ui.currentState === 'basecamp') this._updateMapFragmentBadge();
+      if (GameState.ui.currentState === 'main') this._updateMapFragmentBadge();
     });
     // 약탈자 협상 이벤트 리스너
     EventBus.on('raiderDemand', (data) => {
-      if (GameState.ui.currentState === 'basecamp') this._showRaiderModal(data);
+      if (GameState.ui.currentState === 'main') this._showRaiderModal(data);
     });
     EventBus.on('languageChanged', () => {
-      if (GameState.ui.currentState === 'basecamp') {
+      if (GameState.ui.currentState === 'main') {
         this._buildLayout();
         this._onEnter();
       }
@@ -128,12 +129,14 @@ const Basecamp = {
             <div class="bc-char-sub" id="bc-district-name">📍 마포구</div>
             <div class="bc-char-hp"><span id="hud-hp">❤ 100/100</span></div>
           </div>
+          <!-- 위험 stat 경고 아이콘 (사이드바 축약 표시) -->
+          <div class="bc-char-danger-icons" id="bc-danger-icons"></div>
         </div>
 
         <!-- 질병 상태 표시 (DiseaseSystem이 채움) -->
         <div id="disease-status" class="bc-disease-status" style="display:none;"></div>
 
-        <!-- Stat bars (StatRenderer fills this) -->
+        <!-- Stat bars: 필수 4개만 (HP·수분·영양·피로) -->
         <div id="hud-stat-bars" class="stat-bars"></div>
 
         <!-- Noise -->
@@ -150,26 +153,24 @@ const Basecamp = {
         <!-- Encumbrance -->
         <div class="bc-enc-block">⚖ <span id="hud-enc">0/30kg</span></div>
 
-        <!-- Quest placeholder -->
-        <div class="bc-quests-block">
-          <div class="bc-block-title">${I18n.t('basecamp.questTitle')}</div>
-          <div class="bc-block-content" id="bc-quest-info">${I18n.t('basecamp.activeQuests', { count: 0 })}</div>
-        </div>
-
-        <!-- Action buttons -->
+        <!-- 행동 버튼 -->
         <div class="bc-sidebar-btns">
+          <div class="bc-toolbar-label">⚡ 행동</div>
+          <button class="toolbar-btn primary" id="btn-explore">${I18n.t('basecamp.explore') || '🔍 현재 구역 탐색'}</button>
           <button class="toolbar-btn" id="btn-craft">${I18n.t('basecamp.craft')}</button>
           <button class="toolbar-btn" id="btn-skills">${I18n.t('basecamp.skills')}</button>
-          ${GameState.basecamp.built
-            ? `<button class="toolbar-btn" id="btn-basecamp">${I18n.t('basecamp.fortify')}</button>`
-            : GameState.time.day >= 10
-              ? `<button class="toolbar-btn btn-build-highlight" id="btn-build-base">${I18n.t('basecamp.buildBase')}</button>`
-              : ''
-          }
           <button class="toolbar-btn" id="btn-wait">${I18n.t('basecamp.wait')}</button>
           <button class="toolbar-btn" id="btn-rest">${I18n.t('basecamp.rest')}</button>
+          ${GameState.basecamp.built ? `
+          <div class="bc-toolbar-label bc-toolbar-label--camp">🏕 베이스캠프</div>
+          <button class="toolbar-btn" id="btn-basecamp">${I18n.t('basecamp.fortify')}</button>
+          ` : GameState.time.day >= 10 ? `
+          <div class="bc-toolbar-label bc-toolbar-label--camp">🏕 베이스캠프</div>
+          <button class="toolbar-btn btn-build-highlight" id="btn-build-base">${I18n.t('basecamp.buildBase')}</button>
+          ` : ''}
+          <div class="bc-toolbar-divider"></div>
           <button class="toolbar-btn" id="btn-save">${I18n.t('basecamp.save')}</button>
-          <button class="toolbar-btn" id="btn-secret-gallery" title="${I18n.t('secret.galleryHint')}">${I18n.t('secret.galleryBtn')} <span id="secret-combo-count"></span></button>
+          <button class="toolbar-btn btn-sm" id="btn-secret-gallery" title="${I18n.t('secret.galleryHint')}">${I18n.t('secret.galleryBtn')} <span id="secret-combo-count"></span></button>
         </div>
       </aside>
 
@@ -253,6 +254,11 @@ const Basecamp = {
       if (e.target === document.getElementById('craft-modal')) {
         this._closeCraftModal();
       }
+    });
+
+    // 현재 구역 탐색 (화면 전환 없이 즉시 실행)
+    this._el.querySelector('#btn-explore')?.addEventListener('click', () => {
+      ExploreSystem.exploreCurrentDistrict();
     });
 
     // Wait 1 TP

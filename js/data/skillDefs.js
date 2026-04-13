@@ -184,6 +184,20 @@ export const SKILL_DEFS = {
     masteryDesc: '구조물 효과 +50%, 내구도 2배.',
     xpSources:   ['구조물 건설 완료 +10 XP'],
   },
+
+  fishing: {
+    id: 'fishing', name: '낚시', category: 'survival', icon: '🎣',
+    description: '강과 호수에서 물고기를 잡는 능력. 숙련될수록 더 많은 물고기를 잡는다.',
+    getBonuses(level) {
+      return {
+        catchChance:    0.30 + (level / 20) * 0.40,
+        rareFishChance: (level / 20) * 0.15,
+        catchQtyBonus:  Math.floor(level / 7),
+      };
+    },
+    masteryDesc: '희귀 물고기(메기·잉어왕) 15% 확률. 최대 3마리 동시 획득.',
+    xpSources:   ['낚시 시도마다 +3 XP', '희귀어 획득 +10 XP', '통발 자동 수확 +1 XP'],
+  },
 };
 
 // 스킬 기본값 (GameState 초기화 및 구버전 호환용)

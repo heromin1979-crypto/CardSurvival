@@ -18,7 +18,7 @@ const Pause = {
       if (e.key !== 'Escape') return;
       if (GameState.ui.currentState === 'pause') {
         this._unpause();
-      } else if (['basecamp','explore','rest'].includes(GameState.ui.currentState)) {
+      } else if (['main','explore','rest'].includes(GameState.ui.currentState)) {
         this._pause();
       }
     });

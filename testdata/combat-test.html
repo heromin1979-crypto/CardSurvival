@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>⚔ 전투 테스트 — Ruined City</title>
+
+  <!-- 메인 게임과 동일한 CSS -->
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/reset.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/cards.css">
+  <link rel="stylesheet" href="css/board.css">
+  <link rel="stylesheet" href="css/ui.css">
+  <link rel="stylesheet" href="css/modals.css">
+  <link rel="stylesheet" href="css/screens-menu.css">
+  <link rel="stylesheet" href="css/screens-combat.css">
+  <link rel="stylesheet" href="css/screens-game.css">
+  <link rel="stylesheet" href="css/animations.css">
+
+  <style>
+    /* ── 테스트 패널 ── */
+    #test-panel {
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      background: rgba(10, 8, 6, 0.94);
+      border: 1px solid rgba(200, 160, 96, 0.45);
+      border-radius: 10px;
+      padding: 14px 16px;
+      z-index: 9999;
+      min-width: 190px;
+      max-width: 210px;
+      backdrop-filter: blur(6px);
+    }
+
+    #test-panel h3 {
+      font-family: monospace;
+      font-size: 12px;
+      color: #c8a060;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    #test-panel hr {
+      border: none;
+      border-top: 1px solid rgba(200,160,96,0.2);
+      margin: 10px 0;
+    }
+
+    .tp-btn {
+      display: block;
+      width: 100%;
+      margin-top: 5px;
+      padding: 7px 10px;
+      background: rgba(200,160,96,0.08);
+      border: 1px solid rgba(200,160,96,0.25);
+      border-radius: 5px;
+      color: rgba(200,180,140,0.9);
+      cursor: pointer;
+      font-family: monospace;
+      font-size: 11px;
+      text-align: left;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .tp-btn:hover {
+      background: rgba(200,160,96,0.2);
+      border-color: rgba(200,160,96,0.5);
+    }
+    .tp-btn.enemy-btn { border-color: rgba(220,80,60,0.3); color: rgba(220,140,120,0.9); }
+    .tp-btn.enemy-btn:hover { background: rgba(220,80,60,0.15); border-color: rgba(220,80,60,0.6); }
+    .tp-btn.util-btn  { border-color: rgba(96,160,200,0.3); color: rgba(120,180,220,0.9); }
+    .tp-btn.util-btn:hover { background: rgba(96,160,200,0.12); border-color: rgba(96,160,200,0.6); }
+
+    #test-stat {
+      margin-top: 10px;
+      font-family: monospace;
+      font-size: 10px;
+      color: rgba(150,130,100,0.8);
+      line-height: 1.6;
+    }
+
+    /* ── 게임오버 미니 화면 ── */
+    #screen-game-over {
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      background: radial-gradient(ellipse at center, rgba(80,20,20,0.3), var(--bg-void));
+    }
+
+    /* ── 귀환 메시지 ── */
+    #screen-main-stub {
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+  <!-- 전투 화면 -->
+  <div id="screen-combat"        class="screen active" style="flex-direction:column;"></div>
+  <!-- 전투 결과 화면 -->
+  <div id="screen-combat-result" class="screen menu-screen"></div>
+  <!-- 게임오버 화면 -->
+  <div id="screen-game-over"     class="screen menu-screen"></div>
+  <!-- basecamp 귀환 stub -->
+  <div id="screen-main-stub" class="screen menu-screen"></div>
+  <!-- 알림 컨테이너 -->
+  <div id="notification-container" class="notification-container"></div>
+</div>
+
+<!-- 테스트 패널 -->
+<div id="test-panel">
+  <h3>⚔ 전투 테스트</h3>
+
+  <div style="font-family:monospace;font-size:10px;color:rgba(150,130,100,0.7);margin-bottom:6px;">적 선택 → 새 전투 시작</div>
+  <div id="enemy-btns"></div>
+
+  <hr>
+
+  <div style="font-family:monospace;font-size:10px;color:rgba(150,130,100,0.7);margin-bottom:4px;">아이템 추가</div>
+  <button class="tp-btn util-btn" id="btn-knife">🔪 칼</button>
+  <button class="tp-btn util-btn" id="btn-bat">⚾ 강화배트</button>
+  <button class="tp-btn util-btn" id="btn-gun">🔫 권총 + 탄약×8</button>
+  <button class="tp-btn util-btn" id="btn-bandage">🩹 붕대×3</button>
+  <button class="tp-btn util-btn" id="btn-fak">🏥 구급키트</button>
+
+  <hr>
+
+  <hr>
+
+  <div style="font-family:monospace;font-size:10px;color:rgba(150,130,100,0.7);margin-bottom:4px;">소음 레벨 테스트</div>
+  <button class="tp-btn" id="btn-noise-low"  style="border-color:rgba(80,200,80,0.4);color:rgba(120,200,120,0.9);">🔇 저소음 (1마리)</button>
+  <button class="tp-btn" id="btn-noise-mid"  style="border-color:rgba(220,160,60,0.4);color:rgba(220,180,80,0.9);">🔉 중소음 (2마리)</button>
+  <button class="tp-btn" id="btn-noise-high" style="border-color:rgba(220,80,60,0.4); color:rgba(220,120,100,0.9);">🔊 고소음 (3마리)</button>
+
+  <hr>
+
+  <button class="tp-btn" id="btn-refill">💉 HP 전부 회복</button>
+
+  <div id="test-stat">준비 중...</div>
+</div>
+
+<script type="module">
+// ══════════════════════════════════════════════════════
+//  전투 테스트 진입점
+// ══════════════════════════════════════════════════════
+
+// ── 데이터 임포트 ──────────────────────────────────
+import ITEMS      from './js/data/items.js';
+import BLUEPRINTS from './js/data/blueprints.js';
+import NODES      from './js/data/nodes.js';
+import { ENEMIES, rollEnemy } from './js/data/enemies.js';
+
+// ── 전역 게임 데이터 등록 (GameState가 사용) ────────
+window.__GAME_DATA__ = { items: ITEMS, blueprints: BLUEPRINTS, nodes: NODES, enemies: ENEMIES };
+
+// ── 시스템 임포트 ───────────────────────────────────
+import EventBus    from './js/core/EventBus.js';
+import GameState   from './js/core/GameState.js';
+import StateMachine from './js/core/StateMachine.js';
+import NoiseSystem from './js/systems/NoiseSystem.js';
+import CombatSystem from './js/systems/CombatSystem.js';
+import CombatUI    from './js/ui/CombatUI.js';
+import CombatResult from './js/screens/CombatResult.js';
+import ExploreSystem from './js/systems/ExploreSystem.js';
+
+// ── 화면 목록 ───────────────────────────────────────
+const SCREEN_IDS = {
+  combat:        'screen-combat',
+  combat_result: 'screen-combat-result',
+  game_over:     'screen-game-over',
+  basecamp:      'screen-main-stub',
+  explore:       'screen-main-stub',
+};
+
+// ── 화면 전환: stateTransition → .active 토글 ───────
+EventBus.on('stateTransition', ({ to, data }) => {
+  Object.values(SCREEN_IDS).forEach(id => {
+    document.getElementById(id)?.classList.remove('active');
+  });
+  const targetId = SCREEN_IDS[to];
+  if (targetId) document.getElementById(targetId)?.classList.add('active');
+
+  if (to === 'game_over') _renderGameOver();
+  if (to === 'main' || to === 'explore') _renderReturnStub();
+  updateStat();
+});
+
+// ── 알림 처리 ───────────────────────────────────────
+EventBus.on('notify', ({ message, type }) => {
+  const container = document.getElementById('notification-container');
+  if (!container) return;
+  const el = document.createElement('div');
+  el.style.cssText = `
+    background: rgba(20,16,12,0.95);
+    border: 1px solid rgba(200,160,96,${type === 'warn' ? 0.5 : 0.25});
+    border-radius: 6px; padding: 8px 14px; margin-bottom: 6px;
+    font-family: monospace; font-size: 12px;
+    color: ${type === 'warn' ? '#e67e22' : 'rgba(200,180,140,0.9)'};
+    animation: notifyIn 0.25s ease;
+  `;
+  el.textContent = message;
+  container.appendChild(el);
+  setTimeout(() => el.remove(), 2800);
+});
+
+// ── 시스템 초기화 ────────────────────────────────────
+GameState.player.name = '테스트 생존자';
+GameState.player.hp   = { current: 100, max: 100 };
+GameState.player.xp   = 0;
+GameState.ui.currentState = 'encounter'; // encounter → combat 전환 허용
+
+NoiseSystem.init?.();
+CombatSystem.init();
+CombatUI.init();
+CombatResult.init();
+
+// ── 보드에 아이템 추가 헬퍼 ─────────────────────────
+function addItem(defId, qty = 1) {
+  const inst = GameState.createCardInstance(defId, { quantity: qty });
+  if (inst) GameState.placeCardInRow(inst.instanceId, 'middle');
+  return inst;
+}
+
+// ── 플레이어/보드 초기화 ────────────────────────────
+function resetState() {
+  GameState.player.hp.current = 100;
+  GameState.player.xp = 0;
+  ['top','middle','bottom'].forEach(row => {
+    GameState.board[row] = GameState.board[row].map(() => null);
+  });
+  GameState.cards  = {};
+  GameState._nextId = 1;
+}
+
+// ── 전투 시작 ────────────────────────────────────────
+let _lastEnemyId = 'zombie_common';
+let _lastNoiseLevel = 0;
+
+function makeEnemy(def) {
+  const hp = def.hp.min + Math.floor(Math.random() * (def.hp.max - def.hp.min + 1));
+  return { ...def, currentHp: hp, maxHp: hp, _skillCooldowns: {} };
+}
+
+function startCombat(enemyId, noiseOverride = null) {
+  _lastEnemyId     = enemyId;
+  _lastNoiseLevel  = noiseOverride ?? 0;
+  const def = ENEMIES[enemyId];
+  if (!def) return;
+
+  resetState();
+  GameState.ui.currentState = 'encounter';
+  if (noiseOverride !== null) GameState.noise.level = noiseOverride;
+
+  // 단일 적 테스트 — enemies 배열로 전달
+  const enemies = [makeEnemy(def)];
+  StateMachine.transition('combat', { enemies, dangerLevel: 2, nodeId: 'convenience_store' });
+}
+
+function startNoiseCombat(noiseLevel) {
+  _lastNoiseLevel = noiseLevel;
+  resetState();
+  GameState.ui.currentState = 'encounter';
+  GameState.noise.level = noiseLevel;
+  // dangerLevel 2 + 소음 기반 그룹 자동 생성 (enemies 미전달 → rollEnemyGroup 사용)
+  StateMachine.transition('combat', { dangerLevel: 2, nodeId: 'convenience_store' });
+}
+
+// ── 게임오버 화면 ────────────────────────────────────
+function _renderGameOver() {
+  const el = document.getElementById('screen-game-over');
+  el.innerHTML = `
+    <div class="game-over-title">GAME OVER</div>
+    <div class="game-over-cause">전투에서 패배했습니다.</div>
+    <button class="toolbar-btn" id="go-restart">🔄 같은 적으로 재도전</button>
+  `;
+  document.getElementById('go-restart')?.addEventListener('click', () => startCombat(_lastEnemyId, _lastNoiseLevel || null));
+}
+
+// ── 기지 귀환 stub 화면 ──────────────────────────────
+function _renderReturnStub() {
+  const el = document.getElementById('screen-main-stub');
+  el.innerHTML = `
+    <div style="font-size:48px;">🏕</div>
+    <div style="font-size:20px;color:var(--accent-primary);letter-spacing:2px;">기지 귀환</div>
+    <div style="color:var(--text-secondary);font-size:13px;">테스트 모드: 실제 기지 화면 없음</div>
+    <button class="toolbar-btn" id="stub-restart">🔄 새 전투 시작</button>
+  `;
+  document.getElementById('stub-restart')?.addEventListener('click', () => startCombat(_lastEnemyId));
+}
+
+// ── 상태 표시 업데이트 ───────────────────────────────
+function updateStat() {
+  const gs = GameState;
+  const weapons  = CombatSystem.getAvailableWeapons();
+  const medicals = CombatSystem.getAvailableMedicals();
+  document.getElementById('test-stat').innerHTML =
+    `HP: ${gs.player.hp.current} / ${gs.player.hp.max}<br>` +
+    `XP: ${gs.player.xp} &nbsp; 소음: ${Math.round(gs.noise.level)}<br>` +
+    `카드: ${Object.keys(gs.cards).length}개` +
+    (weapons.length  ? ` · 무기 ${weapons.length}`  : '') +
+    (medicals.length ? ` · 의료 ${medicals.length}` : '');
+}
+
+// ── 적 버튼 생성 ─────────────────────────────────────
+const enemyBtnContainer = document.getElementById('enemy-btns');
+Object.values(ENEMIES).forEach(e => {
+  const btn = document.createElement('button');
+  btn.className = 'tp-btn enemy-btn';
+  btn.textContent = `${e.icon} ${e.name}`;
+  btn.addEventListener('click', () => startCombat(e.id));
+  enemyBtnContainer.appendChild(btn);
+});
+
+// ── 유틸 버튼 이벤트 ─────────────────────────────────
+document.getElementById('btn-knife').addEventListener('click', () => {
+  addItem('knife');
+  if (GameState.combat.active) CombatUI.render();
+  updateStat();
+});
+document.getElementById('btn-bat').addEventListener('click', () => {
+  addItem('reinforced_bat');
+  if (GameState.combat.active) CombatUI.render();
+  updateStat();
+});
+document.getElementById('btn-gun').addEventListener('click', () => {
+  addItem('pistol');
+  addItem('pistol_ammo', 8);
+  if (GameState.combat.active) CombatUI.render();
+  updateStat();
+});
+document.getElementById('btn-bandage').addEventListener('click', () => {
+  addItem('bandage', 3);
+  if (GameState.combat.active) CombatUI.render();
+  updateStat();
+});
+document.getElementById('btn-fak').addEventListener('click', () => {
+  addItem('first_aid_kit');
+  if (GameState.combat.active) CombatUI.render();
+  updateStat();
+});
+document.getElementById('btn-refill').addEventListener('click', () => {
+  GameState.player.hp.current = GameState.player.hp.max;
+  updateStat();
+  if (GameState.combat.active) CombatUI.render();
+});
+
+// ── 소음 테스트 버튼 ──────────────────────────────────
+document.getElementById('btn-noise-low') ?.addEventListener('click', () => startNoiseCombat(10));
+document.getElementById('btn-noise-mid') ?.addEventListener('click', () => startNoiseCombat(45));
+document.getElementById('btn-noise-high')?.addEventListener('click', () => startNoiseCombat(80));
+
+// ── 첫 전투 시작 (기본: 감염 좀비) ──────────────────
+startCombat('zombie_common');
+</script>
+</body>
+</html>

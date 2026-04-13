@@ -16,7 +16,7 @@ const Renderer = {
     const screenMap = {
       main_menu:      'screen-main-menu',
       char_create:    'screen-char-create',
-      basecamp:       'screen-basecamp',
+      main:           'screen-main',
       explore:        'screen-explore',
       encounter:      'screen-encounter',
       combat:         'screen-combat',
@@ -38,7 +38,7 @@ const Renderer = {
     }
 
     // Show/hide HUD (not on menu screens)
-    const showHud = ['basecamp', 'explore', 'combat', 'rest', 'encounter'].includes(state);
+    const showHud = ['main', 'explore', 'combat', 'rest', 'encounter'].includes(state);
     const hud = document.getElementById('global-hud');
     if (hud) hud.style.display = showHud ? 'flex' : 'none';
 

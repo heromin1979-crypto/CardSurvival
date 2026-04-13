@@ -114,7 +114,7 @@ const ExploreUI = {
 
     // 귀환 버튼
     this._screen.querySelector('#btn-return-base')?.addEventListener('click', () => {
-      StateMachine.transition('basecamp');
+      StateMachine.transition('main');
     });
   },
 

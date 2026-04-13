@@ -100,6 +100,7 @@ const BALANCE = {
     masteryCounterChance: 0.15,
     masteryCounterDmg:   5,
     ammoSaveChance:     0.20,
+    enemyDropChance:    0.80,  // (기존 0.60 → 0.80 상향)
     killXp:             5,
     hitXp:              2,
     critBonusXp:        2,
@@ -125,6 +126,12 @@ const BALANCE = {
     tempBoostPerTP:     2,
     fuelConsumePerTP:   0.5,   // 내구도 0.5/TP 소모
     noFuelTempBoost:    0,
+  },
+
+  // ── 탐색 루팅 ───────────────────────────────────────
+  explore: {
+    lootCountMin: 1,  // (기존 2~5 → 1~3으로 감소)
+    lootCountMax: 3,
   },
 
   // ── 조우 ────────────────────────────────────────────
@@ -197,6 +204,24 @@ const BALANCE = {
     darkNightmareBonus:   0.10,  // 어둠 수면 시 악몽 확률 +10%
     litSleepAnxietyDrop:  3,     // 광원 수면 시 불안 -3
     lightDrainPerTP:      0.5,   // 야간 광원 카드 내구도 감소 (/TP)
+  },
+
+  // ── 낚시 ──────────────────────────────────────────────
+  fishing: {
+    tpCostPerCast:        2,     // 낚시 1회 TP 비용
+    baseCatchChance:      0.30,  // 기본 어획 확률 (fishing Lv.0)
+    maxCatchChance:       0.70,  // 최대 어획 확률 (fishing Lv.20)
+    baitWormBonus:        0.10,  // 지렁이 미끼 어획률 보너스
+    baitInsectBonus:      0.05,  // 곤충 미끼 어획률 보너스
+    rodBasicBonus:        0.00,  // 기본 낚싯대 추가 보너스 없음
+    rodImprovedBonus:     0.15,  // 개량 낚싯대 어획률 보너스
+    rareFishChanceMax:    0.15,  // Lv.20 희귀어 확률
+    trapCheckIntervalTP:  8,     // 통발 자동 수확 주기 (TP)
+    trapBaseCatch:        0.40,  // 통발 기본 어획률
+    trapMaxCatch:         0.60,  // 통발 최대 어획률 (fishingQuality 3 기준)
+    xpPerCast:            3,     // 낚시 시도 XP
+    xpPerRareFish:        10,    // 희귀어 XP
+    xpPerTrapHarvest:     1,     // 통발 수확 XP
   },
 };
 

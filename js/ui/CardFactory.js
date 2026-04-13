@@ -81,6 +81,26 @@ const CARD_IMAGES = {
   gunpowder:        'assets/images/materials/gunpowder.png',
   thread:           'assets/images/materials/thread.png',
 
+  // 재료/중간 가공재 (신규)
+  ax_head:          'assets/images/materials/ax_head.png',
+  black_powder:     'assets/images/materials/black_powder.png',
+  bolt_shaft:       'assets/images/materials/bolt_shaft.png',
+  bolt_tip:         'assets/images/materials/bolt_tip.png',
+  brass_fragment:   'assets/images/materials/brass_fragment.png',
+  detonator_cap:    'assets/images/materials/detonator_cap.png',
+  dry_grass:        'assets/images/materials/dry_grass.png',
+  dry_leaves:       'assets/images/materials/dry_leaves.png',
+  dry_wood_stick:   'assets/images/materials/dry_wood_stick.png',
+  empty_cartridge:  'assets/images/materials/empty_cartridge.png',
+  fire_ember:       'assets/images/materials/fire_ember.png',
+  firestone:        'assets/images/materials/firestone.png',
+  fishing_hook:     'assets/images/materials/fishing_hook.png',
+  flame_token:      'assets/images/materials/flame_token.png',
+  grain_seed:       'assets/images/materials/grain_seed.png',
+  hammer_head:      'assets/images/materials/hammer_head.png',
+  herb_powder:      'assets/images/materials/herb_powder.png',
+  herb_seed:        'assets/images/materials/herb_seed.png',
+
   // 음식/음료
   boiled_water:          'assets/images/food/boiled_water.png',
   purified_water:        'assets/images/food/purified_water.png',
@@ -105,6 +125,52 @@ const CARD_IMAGES = {
   salt:                  'assets/images/food/salt.png',
   rice:                  'assets/images/food/rice.png',
   survivors_feast:       'assets/images/food/survivors_feast.png',
+
+  // 음식/채집물 (신규)
+  acorn:               'assets/images/food/acorn.png',
+  acorn_flour:         'assets/images/food/acorn_flour.png',
+  acorn_jelly:         'assets/images/food/acorn_jelly.png',
+  bamboo_shoot:        'assets/images/food/bamboo_shoot.png',
+  berry_jam:           'assets/images/food/berry_jam.png',
+  berry_wine:          'assets/images/food/berry_wine.png',
+  dandelion:           'assets/images/food/dandelion.png',
+  dandelion_coffee:    'assets/images/food/dandelion_coffee.png',
+  dried_berry:         'assets/images/food/dried_berry.png',
+  dried_fish:          'assets/images/food/dried_fish.png',
+  dried_mushroom:      'assets/images/food/dried_mushroom.png',
+  fermented_grain:     'assets/images/food/fermented_grain.png',
+  fermented_kimchi:    'assets/images/food/fermented_kimchi.png',
+  fish_fillet:         'assets/images/food/fish_fillet.png',
+  garlic_paste:        'assets/images/food/garlic_paste.png',
+  grain:               'assets/images/food/grain.png',
+  grilled_fish:        'assets/images/food/grilled_fish.png',
+  honey:               'assets/images/food/honey.png',
+  meat_strip:          'assets/images/food/meat_strip.png',
+  mushroom_edible:     'assets/images/food/mushroom_edible.png',
+  mushroom_soup:       'assets/images/food/mushroom_soup.png',
+  mushroom_toxic:      'assets/images/food/mushroom_toxic.png',
+  nettle_stew:         'assets/images/food/nettle_stew.png',
+  pine_cone:           'assets/images/food/pine_cone.png',
+  pine_needle:         'assets/images/food/pine_needle.png',
+  pine_needle_tea:     'assets/images/food/pine_needle_tea.png',
+  raw_fish:            'assets/images/food/raw_fish.png',
+  vegetable:           'assets/images/food/vegetable.png',
+  vegetable_stew:      'assets/images/food/vegetable_stew.png',
+  wild_berry:          'assets/images/food/wild_berry.png',
+  wild_garlic:         'assets/images/food/wild_garlic.png',
+  wild_root:           'assets/images/food/wild_root.png',
+  wild_salad:          'assets/images/food/wild_salad.png',
+  apple_wild:          'assets/images/food/apple_wild.png',
+  chestnut:            'assets/images/food/chestnut.png',
+  chestnut_roasted:    'assets/images/food/chestnut_roasted.png',
+  cooked_meat:         'assets/images/food/cooked_meat.png',
+  fish_cooked:         'assets/images/food/fish_cooked.png',
+  fish_large:          'assets/images/food/fish_large.png',
+  fish_medium:         'assets/images/food/fish_medium.png',
+  fish_small:          'assets/images/food/fish_small.png',
+  pine_nut:            'assets/images/food/pine_nut.png',
+  wild_grape:          'assets/images/food/wild_grape.png',
+  wild_strawberry:     'assets/images/food/wild_strawberry.png',
 
   // 의약품
   bandage:               'assets/images/medical/bandage.png',
@@ -401,6 +467,50 @@ const CardFactory = {
       }
 
       if (def.landmark) {
+        // 베이스캠프 랜드마크 카드: 항상 'basecamp' ID로 진입
+        if (def.id === 'basecamp_landmark') {
+          el.className = 'card location-card landmark-card spawning is-current-loc';
+          el.draggable = false;
+          el.style.cursor = 'pointer';
+          el.setAttribute('tabindex', '0');
+          el.setAttribute('role', 'button');
+          el.setAttribute('aria-label', '베이스캠프 진입');
+          el.innerHTML = this._buildLandmarkInner(def, true);
+          el.addEventListener('click', () => {
+            EventBus.emit('landmarkRequest', { districtId: 'basecamp' });
+          });
+          el.addEventListener('keydown', e => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              EventBus.emit('landmarkRequest', { districtId: 'basecamp' });
+            }
+          });
+          el.addEventListener('animationend', () => el.classList.remove('spawning'), { once: true });
+          return el;
+        }
+
+        // 한강 카드: 현재 구에 관계없이 항상 랜드마크 진입
+        if (def.isHangang) {
+          el.className = 'card location-card landmark-card spawning is-current-loc';
+          el.draggable = false;
+          el.style.cursor = 'pointer';
+          el.setAttribute('tabindex', '0');
+          el.setAttribute('role', 'button');
+          el.setAttribute('aria-label', `${def.name ?? ''} 랜드마크 진입`);
+          el.innerHTML = this._buildLandmarkInner(def, true);
+          el.addEventListener('click', () => {
+            EventBus.emit('landmarkRequest', { districtId: 'hangang' });
+          });
+          el.addEventListener('keydown', e => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              EventBus.emit('landmarkRequest', { districtId: 'hangang' });
+            }
+          });
+          el.addEventListener('animationend', () => el.classList.remove('spawning'), { once: true });
+          return el;
+        }
+
         const districtId = def.id?.replace(/^lm_/, '');
         const isCurrent  = GameState.location.currentDistrict === districtId;
 
@@ -879,11 +989,19 @@ const CardFactory = {
 
     if (def.type === 'location') {
       if (def.landmark) {
-        const districtId = def.id?.replace(/^lm_/, '');
-        const isCurrent  = GameState.location.currentDistrict === districtId;
-        el.innerHTML = this._buildLandmarkInner(def, isCurrent);
-        if (isCurrent) el.classList.add('is-current-loc');
-        else            el.classList.remove('is-current-loc');
+        if (def.id === 'basecamp_landmark') {
+          el.innerHTML = this._buildLandmarkInner(def, true);
+          el.classList.add('is-current-loc');
+        } else if (def.isHangang) {
+          el.innerHTML = this._buildLandmarkInner(def, true);
+          el.classList.add('is-current-loc');
+        } else {
+          const districtId = def.id?.replace(/^lm_/, '');
+          const isCurrent  = GameState.location.currentDistrict === districtId;
+          el.innerHTML = this._buildLandmarkInner(def, isCurrent);
+          if (isCurrent) el.classList.add('is-current-loc');
+          else            el.classList.remove('is-current-loc');
+        }
       } else {
         el.innerHTML = this._buildLocationInner(def);
       }

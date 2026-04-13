@@ -1,4 +1,5 @@
 import GameData from './GameData.js';
+import EventBus from '../core/EventBus.js';
 
 // === CARD INTERACTION RULES ===
 // 카드를 다른 카드 위에 드랍할 때 발생하는 상호작용 규칙 테이블.
@@ -1570,6 +1571,36 @@ const INTERACTION_RULES = [
         consumeSrc: false,
         consumeTgt: false,
         noise: 4,
+      };
+    },
+  },
+
+  // ── 미끼 → 통발 ───────────────────────────────────────────
+  {
+    id: 'bait_to_fish_trap',
+    source: { tag: 'bait' },
+    target: { id: 'fish_trap' },
+    hint: '통발에 미끼를 보충합니다 (3~4회)',
+    canApply(srcInst, tgtInst) {
+      if (!tgtInst._isInstalled) {
+        return { ok: false, reason: '통발이 설치되어 있지 않습니다. 한강 랜드마크에서 바닥에 내려놓아 설치하세요.' };
+      }
+      if ((tgtInst._baitCharges ?? 0) >= 8) {
+        return { ok: false, reason: '통발에 미끼가 가득 차 있습니다.' };
+      }
+      return { ok: true };
+    },
+    apply(srcInst, tgtInst, gs) {
+      // FishingSystem에 위임 (EventBus 통해 호출)
+      EventBus.emit('baitToTrap', {
+        baitInstId: srcInst.instanceId,
+        trapInstId: tgtInst.instanceId,
+      });
+      return {
+        message:    '미끼를 통발에 넣었습니다.',
+        consumeSrc: false,
+        consumeTgt: false,
+        noise:      0,
       };
     },
   },

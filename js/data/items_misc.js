@@ -1266,15 +1266,6 @@ const ITEMS_MISC = {
     onUse: { durabilityPerUse: 1 },
   },
 
-  fish_trap: {
-    id: 'fish_trap', name: '통발', type: 'tool', subtype: 'utility',
-    rarity: 'uncommon', weight: 0.8,
-    defaultDurability: 30, defaultContamination: 0,
-    icon: '🎣', description: '철사와 나무로 만든 통발. 강변 지역에 설치하면 자동으로 날생선을 잡는다.',
-    tags: ['tool', 'fishing'],
-    onUse: { durabilityPerUse: 1 },
-  },
-
   trowel: {
     id: 'trowel', name: '모종삽', type: 'tool', subtype: 'utility',
     rarity: 'common', weight: 0.3,
@@ -1415,6 +1406,227 @@ const ITEMS_MISC = {
       { definitionId: 'wood_plank', qty: 3, chance: 0.7 },
       { definitionId: 'rope',       qty: 1, chance: 0.5 },
     ],
+  },
+
+  // ─── 한강 랜드마크 카드 ───────────────────────────────────
+  lm_hangang: {
+    id: 'lm_hangang', name: '한강', type: 'location', subtype: 'landmark',
+    landmark: true, isHangang: true,
+    icon: '🌊', rarity: 'common', weight: 0, stackable: false,
+    description: '한강변 낚시터. 낚시와 통발 설치가 가능한 구역.',
+    tags: ['location', 'landmark', 'fishing'],
+    dismantle: [],
+  },
+
+  // ─── 낚시 장비 ────────────────────────────────────────────
+
+  fishing_rod_basic: {
+    id: 'fishing_rod_basic', name: '기본 낚싯대', type: 'tool', subtype: 'fishing',
+    rarity: 'common', weight: 1,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🎣', stackable: false,
+    description: '나뭇가지와 노끈으로 만든 간이 낚싯대.',
+    tags: ['tool', 'fishing'],
+    dismantle: [
+      { definitionId: 'wood',  qty: 1, chance: 0.8 },
+      { definitionId: 'cloth', qty: 1, chance: 0.6 },
+    ],
+  },
+
+  fishing_rod_improved: {
+    id: 'fishing_rod_improved', name: '개량 낚싯대', type: 'tool', subtype: 'fishing',
+    rarity: 'uncommon', weight: 1,
+    defaultDurability: 150, defaultContamination: 0,
+    icon: '🎣', stackable: false,
+    description: '철사와 낚싯바늘로 보강한 낚싯대. 명중률 +15%.',
+    tags: ['tool', 'fishing'],
+    dismantle: [
+      { definitionId: 'wood',       qty: 1, chance: 0.8 },
+      { definitionId: 'wire',       qty: 1, chance: 0.6 },
+      { definitionId: 'scrap_metal',qty: 1, chance: 0.5 },
+    ],
+  },
+
+  fish_trap: {
+    id: 'fish_trap', name: '통발', type: 'structure', subtype: 'fishing',
+    rarity: 'uncommon', weight: 2,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🪤', stackable: false, isStructure: true,
+    description: '강물에 설치하는 통발. 8턴마다 자동으로 물고기를 수확한다.',
+    tags: ['structure', 'fishing', 'crafted'],
+    dismantleTP: 2,
+    dismantle: [
+      { definitionId: 'rope', qty: 1, chance: 0.7 },
+      { definitionId: 'wire', qty: 1, chance: 0.6 },
+    ],
+  },
+
+  bait_worm: {
+    id: 'bait_worm', name: '지렁이 미끼', type: 'consumable', subtype: 'bait',
+    rarity: 'common', weight: 0,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🪱', stackable: true, maxStack: 10,
+    description: '땅을 파서 구한 지렁이. 낚시 확률 +10%.',
+    tags: ['bait', 'fishing'],
+    dismantle: [],
+  },
+
+  bait_insect: {
+    id: 'bait_insect', name: '곤충 미끼', type: 'consumable', subtype: 'bait',
+    rarity: 'common', weight: 0,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🦗', stackable: true, maxStack: 10,
+    description: '잡은 곤충. 낚시 확률 +5%.',
+    tags: ['bait', 'fishing'],
+    dismantle: [],
+  },
+
+  // ─── 생선 ────────────────────────────────────────────
+
+  fish_small: {
+    id: 'fish_small', name: '피라미/붕어', type: 'consumable', subtype: 'food',
+    rarity: 'common', weight: 1,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🐟', stackable: true, maxStack: 10,
+    nutrition: 15, infectionRisk: 0.15,
+    description: '날로 먹을 수 있지만 감염 위험. 구워 먹길 권장.',
+    onConsume: { nutrition: 15, infection: 8 },
+    tags: ['food', 'fish', 'raw'],
+    dismantle: [],
+  },
+
+  fish_medium: {
+    id: 'fish_medium', name: '잉어/숭어', type: 'consumable', subtype: 'food',
+    rarity: 'common', weight: 2,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🐟', stackable: true, maxStack: 5,
+    nutrition: 30,
+    description: '요리하면 영양가가 높아진다.',
+    onConsume: { nutrition: 30, infection: 5 },
+    tags: ['food', 'fish', 'raw'],
+    dismantle: [],
+  },
+
+  fish_large: {
+    id: 'fish_large', name: '메기/배스', type: 'consumable', subtype: 'food',
+    rarity: 'rare', weight: 3,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🐠', stackable: true, maxStack: 3,
+    nutrition: 55, isRare: true,
+    description: '희귀한 대형 어류. 반드시 조리 후 섭취.',
+    onConsume: { nutrition: 55, infection: 12 },
+    tags: ['food', 'fish', 'raw', 'rare'],
+    dismantle: [],
+  },
+
+  fish_cooked: {
+    id: 'fish_cooked', name: '구운 생선', type: 'consumable', subtype: 'food',
+    rarity: 'common', weight: 1,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🍣', stackable: true, maxStack: 10,
+    nutrition: 45,
+    description: '불에 구운 생선. 감염 위험 없음.',
+    onConsume: { nutrition: 45, morale: 3 },
+    tags: ['food', 'fish', 'cooked'],
+    dismantle: [],
+  },
+
+  cooked_meat: {
+    id: 'cooked_meat', name: '구운 고기', type: 'consumable', subtype: 'food',
+    rarity: 'common', weight: 1,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🍖', stackable: true, maxStack: 10,
+    nutrition: 40,
+    description: '불에 구운 고기. 안전하게 섭취 가능.',
+    onConsume: { nutrition: 40, morale: 5 },
+    tags: ['food', 'meat', 'cooked'],
+    dismantle: [],
+  },
+
+  // ─── 채집 식물 (신규) ────────────────────────────────────────
+
+  wild_strawberry: {
+    id: 'wild_strawberry', name: '산딸기', type: 'consumable', subtype: 'food',
+    rarity: 'common', weight: 0,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🍓', stackable: true, maxStack: 20,
+    nutrition: 8, morale: 2,
+    description: '숲에서 채집한 산딸기. 바로 먹을 수 있다.',
+    onConsume: { nutrition: 8, morale: 2 },
+    tags: ['food', 'plant', 'forage'],
+    dismantle: [],
+  },
+
+  wild_grape: {
+    id: 'wild_grape', name: '머루', type: 'consumable', subtype: 'food',
+    rarity: 'common', weight: 0,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🍇', stackable: true, maxStack: 20,
+    nutrition: 10,
+    description: '야생 머루. 단맛이 있어 사기가 약간 오른다.',
+    onConsume: { nutrition: 10, morale: 3 },
+    tags: ['food', 'plant', 'forage'],
+    dismantle: [],
+  },
+
+  chestnut: {
+    id: 'chestnut', name: '밤', type: 'consumable', subtype: 'food',
+    rarity: 'common', weight: 0,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🌰', stackable: true, maxStack: 20,
+    nutrition: 15,
+    description: '밤나무에서 채집한 밤. 구우면 영양이 오른다.',
+    onConsume: { nutrition: 15 },
+    tags: ['food', 'plant', 'forage'],
+    dismantle: [],
+  },
+
+  chestnut_roasted: {
+    id: 'chestnut_roasted', name: '군밤', type: 'consumable', subtype: 'food',
+    rarity: 'common', weight: 0,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🌰', stackable: true, maxStack: 20,
+    nutrition: 22,
+    description: '불에 구운 밤.',
+    onConsume: { nutrition: 22, morale: 2 },
+    tags: ['food', 'plant', 'cooked'],
+    dismantle: [],
+  },
+
+  apple_wild: {
+    id: 'apple_wild', name: '야생 사과', type: 'consumable', subtype: 'food',
+    rarity: 'common', weight: 1,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🍎', stackable: true, maxStack: 10,
+    nutrition: 12,
+    description: '산에서 자란 야생 사과. 조금 시다.',
+    onConsume: { nutrition: 12, morale: 1 },
+    tags: ['food', 'plant', 'forage'],
+    dismantle: [],
+  },
+
+  pine_nut: {
+    id: 'pine_nut', name: '잣', type: 'consumable', subtype: 'food',
+    rarity: 'common', weight: 0,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🌿', stackable: true, maxStack: 20,
+    nutrition: 10,
+    description: '잣나무에서 채집한 잣. 영양 밀도가 높다.',
+    onConsume: { nutrition: 10 },
+    tags: ['food', 'plant', 'forage'],
+    dismantle: [],
+  },
+
+  acorn_boiled: {
+    id: 'acorn_boiled', name: '도토리 묵 재료', type: 'consumable', subtype: 'food',
+    rarity: 'common', weight: 0,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🌰', stackable: true, maxStack: 20,
+    nutrition: 12,
+    description: '삶아서 떫은맛을 뺀 도토리.',
+    onConsume: { nutrition: 12 },
+    tags: ['food', 'plant', 'cooked'],
+    dismantle: [],
   },
 };
 

@@ -88,7 +88,7 @@ const WeatherSystem = {
     if (!gs.weather || !gs.weather.id) this._initWeather(gs);
 
     // 베이스캠프 완공 + 베이스캠프 화면: 날씨 패널티 면제 (안전 지대 효과)
-    const inSafeZone = gs.basecamp?.buildStage >= 3 && gs.ui?.currentState === 'basecamp';
+    const inSafeZone = gs.basecamp?.buildStage >= 3 && gs.ui?.currentState === 'main';
 
     // 체온에 날씨 영향 적용 (미세 조정 — 계절 효과와 별도)
     const weather = gs.weather;

@@ -34,7 +34,7 @@ const ExploreSystem = {
   init() {
     // 베이스캠프 화면에서 보드 위 위치 카드 클릭 시 이동
     EventBus.on('travelRequest', ({ nodeId }) => {
-      const screen = document.getElementById('screen-basecamp');
+      const screen = document.getElementById('screen-main');
       if (screen && screen.classList.contains('active')) {
         this.travelTo(nodeId);
       }
@@ -49,7 +49,7 @@ const ExploreSystem = {
 
     // 랜드마크 진입 요청
     EventBus.on('landmarkRequest', ({ districtId }) => {
-      const screen = document.getElementById('screen-basecamp');
+      const screen = document.getElementById('screen-main');
       if (screen && screen.classList.contains('active')) {
         this.enterLandmark(districtId);
       }
@@ -57,7 +57,7 @@ const ExploreSystem = {
 
     // 세부 장소 진입 요청
     EventBus.on('sublocationRequest', ({ districtId, subLocationId }) => {
-      const screen = document.getElementById('screen-basecamp');
+      const screen = document.getElementById('screen-main');
       if (screen && screen.classList.contains('active')) {
         this.enterSubLocation(districtId, subLocationId);
       }
@@ -65,7 +65,7 @@ const ExploreSystem = {
 
     // 랜드마크 퇴장 요청
     EventBus.on('exitLandmarkRequest', () => {
-      const screen = document.getElementById('screen-basecamp');
+      const screen = document.getElementById('screen-main');
       if (screen && screen.classList.contains('active')) {
         this.exitLandmark();
       }
@@ -107,9 +107,15 @@ const ExploreSystem = {
       if (lmInst) gs.board.top[1] = lmInst.instanceId;
     }
 
-    // 인접 구 카드 → top[2..7] (구 위치 카드 사용)
-    const adjacent = getAdjacentDistricts(districtId);
+    // 한강 랜드마크 카드 → top[2] (hasFishing 구역만)
     let slot = 2;
+    if (district?.hasFishing && items['lm_hangang']) {
+      const hInst = gs.createCardInstance('lm_hangang');
+      if (hInst) gs.board.top[slot++] = hInst.instanceId;
+    }
+
+    // 인접 구 카드 → top[slot..] (구 위치 카드 사용)
+    const adjacent = getAdjacentDistricts(districtId);
     for (const adj of adjacent) {
       if (slot >= gs.board.top.length) break;
       const useId = `loc_${adj.id}`;
@@ -132,9 +138,9 @@ const ExploreSystem = {
 
     const currentDistrictId = gs.location.currentDistrict;
 
-    // 같은 지역이면 탐색 화면으로 전환
+    // 같은 지역 카드 클릭 → 현재 구역 즉시 탐색
     if (districtId === currentDistrictId) {
-      if (gs.ui.currentState !== 'explore') StateMachine.transition('explore');
+      this.exploreCurrentDistrict();
       return;
     }
 
@@ -225,7 +231,7 @@ const ExploreSystem = {
     EventBus.emit('districtChanged', { districtId, district });
 
     // 이동 후 보드 화면(베이스캠프)으로 전환 — explore UI(인접지역 재선택 창) 대신 보드를 보여준다
-    StateMachine.transition('basecamp');
+    StateMachine.transition('main');
   },
 
   // ── 현재 지역 탐색 ────────────────────────────────────────
@@ -456,6 +462,7 @@ const ExploreSystem = {
     }
 
     const foundNames = [];
+    const queuedNames = [];
     for (const entry of loot) {
       const inst = gs.createCardInstance(entry.definitionId, {
         quantity:      entry.quantity,
@@ -468,7 +475,16 @@ const ExploreSystem = {
         const def = GameData?.items[entry.definitionId];
         foundNames.push(`${def?.icon ?? ''} ${def?.name ?? entry.definitionId}`);
       } else {
-        gs.removeCardInstance(inst.instanceId);
+        // 배치 실패 — pendingLoot 큐에 보관 (인스턴스 삭제 후 원시 데이터로 보관)
+        gs.removeCardInstanceSilent(inst.instanceId);
+        if (!gs.pendingLoot) gs.pendingLoot = [];
+        gs.pendingLoot.push({
+          definitionId:  entry.definitionId,
+          quantity:      entry.quantity,
+          contamination: entry.contamination ?? 0,
+        });
+        const def = GameData?.items[entry.definitionId];
+        queuedNames.push(`${def?.icon ?? ''} ${def?.name ?? entry.definitionId}`);
       }
     }
 
@@ -477,8 +493,15 @@ const ExploreSystem = {
       // 탐색 스킬 XP: 아이템 발견당 2 XP
       SkillSystem.gainXp('scavenging', foundNames.length * 2);
       EventBus.emit('notify', { message: I18n.t('exploreSys.found', { items: foundNames.join(', ') }), type: 'good' });
-    } else {
+    } else if (queuedNames.length === 0) {
       EventBus.emit('notify', { message: I18n.t('exploreSys.boardFull'), type: 'warn' });
+    }
+
+    if (queuedNames.length > 0) {
+      EventBus.emit('notify', {
+        message: `📦 바닥이 가득 찼습니다. ${queuedNames.join(', ')} 대기 중 — 공간이 생기면 자동 배치됩니다.`,
+        type: 'warn',
+      });
     }
   },
 
@@ -501,7 +524,8 @@ const ExploreSystem = {
   // ── 랜드마크 진입 ────────────────────────────────────────
 
   enterLandmark(districtId) {
-    if (!this._checkNight('explore')) return;
+    // 베이스캠프 진입은 야간에도 가능 (외출이 아닌 내부 이동)
+    if (districtId !== 'basecamp' && !this._checkNight('explore')) return;
 
     const gs = GameState;
     const lmData = LANDMARK_DATA[districtId];
@@ -679,16 +703,23 @@ const ExploreSystem = {
   // ── 랜드마크 퇴장 ────────────────────────────────────────
 
   exitLandmark() {
-    const gs         = GameState;
-    const districtId = gs.location.currentLandmark ?? gs.location.currentDistrict;
+    const gs              = GameState;
+    const landmarkId      = gs.location.currentLandmark;
+    // 베이스캠프는 별도 구(District)가 없으므로 현재 구로 복귀
+    const isBasecampLM    = landmarkId === 'basecamp';
+    const districtId      = isBasecampLM
+      ? gs.location.currentDistrict
+      : (landmarkId ?? gs.location.currentDistrict);
 
     // 세부 장소 바닥 저장 & 구 바닥 복원
     if (!gs.locationFloors) gs.locationFloors = {};
     const prevSub = gs.location.currentSubLocation;
     if (prevSub) {
-      gs.locationFloors[`sl:${districtId}:${prevSub}`] = [...gs.board.middle];
+      gs.locationFloors[`sl:${landmarkId}:${prevSub}`] = [...gs.board.middle];
     }
-    const districtFloor = gs.locationFloors[districtId] ?? [];
+    // 베이스캠프 진입 시 저장 키는 'basecamp', 구 이름이 아님
+    const floorKey    = isBasecampLM ? 'basecamp' : districtId;
+    const districtFloor = gs.locationFloors[floorKey] ?? [];
     const floorSize     = gs.board.middle.length;
     gs.board.middle = Array.from({ length: floorSize }, (_, i) => districtFloor[i] ?? null);
 
@@ -697,7 +728,8 @@ const ExploreSystem = {
     gs.location.currentNode        = districtId;
     this._updateTopRowCards(districtId);
     const district = DISTRICTS[districtId];
-    EventBus.emit('notify', { message: I18n.t('exploreSys.exitLandmark', { name: I18n.districtName(districtId, district?.name ?? districtId) }), type: 'info' });
+    const lmName   = isBasecampLM ? LANDMARK_DATA['basecamp']?.name : I18n.districtName(districtId, district?.name ?? districtId);
+    EventBus.emit('notify', { message: I18n.t('exploreSys.exitLandmark', { name: lmName }), type: 'info' });
     EventBus.emit('boardChanged', {});
   },
 

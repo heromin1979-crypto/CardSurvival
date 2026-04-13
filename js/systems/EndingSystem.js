@@ -156,9 +156,9 @@ const EndingSystem = {
     }
 
     const isFirst = !this.isUnlocked(endingId);
-    this.unlockEnding(endingId);
+    this.unlockEnding(endingId, gs);
 
-    const from = gs ? gs.ui.currentState : 'basecamp';
+    const from = gs ? gs.ui.currentState : 'main';
     if (gs) gs.ui.currentState = 'ending';
 
     const doTransition = () => {
@@ -189,18 +189,21 @@ const EndingSystem = {
     }
   },
 
-  unlockEnding(id) {
+  unlockEnding(id, gs) {
     const list = this.getUnlocked();
     if (!list.includes(id)) {
       list.push(id);
       try { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); } catch { /* ignore */ }
     }
-    // 달성일 메타 저장
+    // 달성일 메타 저장 (캐릭터 엔딩이면 서브엔딩 코드도 함께 기록)
     try {
-      const meta = this.getUnlockMeta();
+      const meta    = this.getUnlockMeta();
+      const gameState = gs ?? ((typeof GameState !== 'undefined') ? GameState : null);
       if (!meta[id]) {
-        const gs  = (typeof GameState !== 'undefined') ? GameState : null;
-        meta[id]  = { day: gs?.time?.day ?? 1 };
+        const ending    = ENDINGS[id];
+        const charId    = ending?.characterId;
+        const subEnding = charId ? (gameState?.flags?.[charId + '_ending'] ?? null) : null;
+        meta[id] = { day: gameState?.time?.day ?? 1, subEnding };
         localStorage.setItem(STORAGE_META_KEY, JSON.stringify(meta));
       }
     } catch { /* ignore */ }

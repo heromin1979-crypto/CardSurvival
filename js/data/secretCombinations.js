@@ -31,7 +31,7 @@ const SECRET_COMBINATIONS = [
     discoveryMsg: '💡 낚싯대를 만들었다! 한강 인접 구역에서 사용 가능.',
     xpReward: { skill: 'crafting', amount: 10 },
     result: {
-      spawnItem: 'fishing_rod',
+      spawnItem: 'fishing_rod_basic',
       consumeSrc: true,
       consumeTgt: true,
     },

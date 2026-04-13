@@ -86,7 +86,7 @@ const CombatResult = {
 
     this._el.querySelector('#res-continue')?.addEventListener('click', () => {
       ExploreSystem.arriveAfterCombat(returnNodeId);
-      StateMachine.transition('basecamp');
+      StateMachine.transition('main');
     });
   },
 

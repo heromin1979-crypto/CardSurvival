@@ -281,6 +281,8 @@ export const ENDINGS = {
     gradient: 'linear-gradient(160deg,#001a20 0%,#00252f 60%,#001018 100%)',
     condition: (gs) => {
       return gs.player.characterId === 'doctor'
+          && !(gs.flags.mainQuestComplete_doctor ?? false)
+          && !gs.quests.completed.includes('mq_doctor_01')
           && gs.time.day >= 180
           && (gs.flags.seodaemunVisited ?? false)
           && (gs.flags.infectionCured ?? false);
@@ -300,6 +302,8 @@ export const ENDINGS = {
     gradient: 'linear-gradient(160deg,#100a00 0%,#1a1200 60%,#0a0800 100%)',
     condition: (gs) => {
       return gs.player.characterId === 'soldier'
+          && !(gs.flags.mainQuestComplete_soldier ?? false)
+          && !gs.quests.completed.includes('mq_soldier_01')
           && gs.time.day >= 120
           && (gs.flags.yeongdeungpoVisited ?? false)
           && (gs.flags.totalKills ?? 0) >= 30;
@@ -319,6 +323,8 @@ export const ENDINGS = {
     gradient: 'linear-gradient(160deg,#1a0800 0%,#251000 60%,#140600 100%)',
     condition: (gs) => {
       return gs.player.characterId === 'firefighter'
+          && !(gs.flags.mainQuestComplete_firefighter ?? false)
+          && !gs.quests.completed.includes('mq_fire_01')
           && gs.time.day >= 180
           && gs.location.districtsVisited.includes('eunpyeong')
           && (gs.flags.structuresBuilt ?? 0) >= 3;
@@ -338,6 +344,8 @@ export const ENDINGS = {
     gradient: 'linear-gradient(160deg,#0a1000 0%,#121800 60%,#080c00 100%)',
     condition: (gs) => {
       return gs.player.characterId === 'homeless'
+          && !(gs.flags.mainQuestComplete_homeless ?? false)
+          && !gs.quests.completed.includes('mq_homeless_01')
           && gs.time.day >= 90
           && gs.location.districtsVisited.includes('songpa')
           && (gs.flags.totalItemsFound ?? 0) >= 50;
@@ -357,6 +365,8 @@ export const ENDINGS = {
     gradient: 'linear-gradient(160deg,#001a14 0%,#002a1e 60%,#001010 100%)',
     condition: (gs) => {
       return gs.player.characterId === 'pharmacist'
+          && !(gs.flags.mainQuestComplete_pharmacist ?? false)
+          && !gs.quests.completed.includes('mq_pharma_01')
           && gs.time.day >= 180
           && (gs.flags.totalMedicalCrafted ?? 0) >= 5;
     },
@@ -375,6 +385,8 @@ export const ENDINGS = {
     gradient: 'linear-gradient(160deg,#0a0a00 0%,#141400 60%,#080800 100%)',
     condition: (gs) => {
       return gs.player.characterId === 'engineer'
+          && !(gs.flags.mainQuestComplete_engineer ?? false)
+          && !gs.quests.completed.includes('mq_eng_01')
           && gs.time.day >= 150
           && (gs.flags.totalCrafted ?? 0) >= 15
           && gs.location.districtsVisited.includes('seongdong');

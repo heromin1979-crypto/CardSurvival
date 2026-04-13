@@ -627,7 +627,7 @@ const CombatSystem = {
     }
 
     for (const lootEntry of (enemy.lootTable ?? [])) {
-      if (Math.random() < 0.6) {
+      if (Math.random() < BALANCE.combat.enemyDropChance) {
         const qty  = lootEntry.minQty + Math.floor(Math.random() * (lootEntry.maxQty - lootEntry.minQty + 1));
         const inst = gs.createCardInstance(lootEntry.definitionId, { quantity: qty });
         if (inst) { gs.placeCardInRow(inst.instanceId, 'middle'); gs.combat.rewards.push(inst.instanceId); }

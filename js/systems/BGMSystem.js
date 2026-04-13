@@ -44,7 +44,7 @@ const BGMSystem = {
   _enabled: true,
   _bgmVolume: 0.15,
   _playing: false,
-  _currentMood: 'basecamp',
+  _currentMood: 'main',
   _intervalId: null,
   _stepIndex: 0,
   _activeSources: [],
@@ -80,7 +80,7 @@ const BGMSystem = {
     EventBus.on('stateTransition', ({ to }) => {
       if (to === 'combat' || to === 'encounter') this._setMood('combat');
       else if (to === 'main_menu') this._setMood('menu');
-      else if (to === 'basecamp') this._updateBasecampMood();
+      else if (to === 'main') this._updateBasecampMood();
       else if (to === 'game_over') this.stop();
     });
 
@@ -120,7 +120,7 @@ const BGMSystem = {
     const season = gs.season?.current ?? 'spring';
     const danger = this._getCurrentDanger();
 
-    let mood = 'basecamp';
+    let mood = 'main';
 
     // 위험 우선
     if (danger >= 4) mood = 'danger';

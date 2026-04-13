@@ -33,7 +33,7 @@ const NPCSystem = {
 
     // Listen for location/screen changes to sync panel
     EventBus.on('stateTransition', ({ to }) => {
-      if (to === 'basecamp') { this._checkSpawns(); this._syncNPCPanel(); }
+      if (to === 'main') { this._checkSpawns(); this._syncNPCPanel(); }
     });
 
     // District change → re-sync panel (location NPCs appear/disappear)
@@ -492,6 +492,45 @@ const NPCSystem = {
     if (!state || state.isCompanion) return false;
 
     return state.trust >= npcDef.companion.recruitTrust;
+  },
+
+  /** 스토리 분기로 NPC를 강제 영입 (신뢰도 무시) */
+  forceRecruit(npcId) {
+    this.ensureInitialized();
+    const npcDef = NPCS[npcId];
+    if (!npcDef) return false;
+
+    // 아직 state가 없으면 초기화
+    if (!GameState.npcs.states[npcId]) {
+      GameState.npcs.states[npcId] = {
+        spawned: true, dismissed: false, trust: 3,
+        isCompanion: false, hp: npcDef.maxHp ?? 50,
+        neglectDays: 0, companionSince: null,
+      };
+    }
+
+    const state = GameState.npcs.states[npcId];
+    if (state.isCompanion) return true;
+    state.isCompanion    = true;
+    state.companionSince = GameState.time?.day ?? 0;
+    state.neglectDays    = 0;
+
+    if (!GameState.companions.includes(npcId)) {
+      GameState.companions = [...GameState.companions, npcId];
+    }
+
+    const comp = npcDef.companion;
+    if (comp?.carryBonus > 0) {
+      GameState.player.encumbrance.max += comp.carryBonus;
+    }
+
+    EventBus.emit('notify', {
+      message: I18n.t('npc.recruited', { name: I18n.itemName(npcId, NPC_ITEMS[npcId]?.name) }),
+      type: 'good',
+    });
+    EventBus.emit('npcRecruited', { npcId });
+    this._checkChemistry(npcId);
+    return true;
   },
 
   recruit(npcId) {

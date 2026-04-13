@@ -5,13 +5,15 @@ import I18n            from '../core/I18n.js';
 import EquipmentSystem from '../systems/EquipmentSystem.js';
 import CardFactory     from './CardFactory.js';
 import GameData        from '../data/GameData.js';
+import NPCSystem       from '../systems/NPCSystem.js';
 
 const FOCUSABLE = 'button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
 const ModalManager = {
-  _overlay:   null,
-  _box:       null,
-  _prevFocus: null,
+  _overlay:         null,
+  _box:             null,
+  _prevFocus:       null,
+  _nonDismissible:  false,
 
   init() {
     this._overlay = document.getElementById('modal-overlay');
@@ -19,14 +21,18 @@ const ModalManager = {
 
     if (!this._overlay) return;
 
-    // Close on overlay click
+    // Close on overlay click (분기 선택 중에는 닫힘 방지)
     this._overlay.addEventListener('click', e => {
+      if (this._nonDismissible) return;
       if (e.target === this._overlay) this.close();
     });
 
     // Escape key
     document.addEventListener('keydown', e => {
-      if (e.key === 'Escape' && GameState.ui.modalOpen) { this.close(); return; }
+      if (e.key === 'Escape' && GameState.ui.modalOpen) {
+        if (this._nonDismissible) return;
+        this.close(); return;
+      }
 
       // 포커스 트랩: Tab 키를 모달 내부 focusable 요소 사이에서 순환
       if (e.key === 'Tab' && GameState.ui.modalOpen) {
@@ -43,6 +49,7 @@ const ModalManager = {
     });
 
     EventBus.on('openCardInspect', ({ instanceId }) => this.showCardInspect(instanceId));
+    EventBus.on('branchChoice',    ({ options, questId }) => this.showBranchChoice(options, questId));
   },
 
   open(html, title = '') {
@@ -64,6 +71,7 @@ const ModalManager = {
 
   close() {
     if (!this._overlay) return;
+    this._nonDismissible = false;
     this._overlay.classList.remove('open');
     GameState.ui.modalOpen = false;
     // 이전 포커스 복원
@@ -71,6 +79,53 @@ const ModalManager = {
       this._prevFocus.focus();
       this._prevFocus = null;
     }
+  },
+
+  /** 스토리 분기 선택 모달 — 닫기 불가 */
+  showBranchChoice(options, questId) {
+    if (!this._overlay) return;
+    this._nonDismissible = true;
+    this._prevFocus = document.activeElement;
+
+    const btns = options.map((opt, i) => {
+      const npcBadge = opt.recruitNpc
+        ? `<div class="branch-npc-badge">👤 동반자 합류</div>`
+        : '';
+      return `
+        <button class="branch-choice-btn" id="branch-opt-${i}">
+          <div class="branch-choice-title">${opt.label}</div>
+          <div class="branch-choice-desc">${opt.desc ?? ''}</div>
+          ${npcBadge}
+        </button>`;
+    }).join('');
+
+    this._box.innerHTML = `
+      <div class="modal-title">⚡ 선택의 갈림길</div>
+      <div class="modal-body branch-choice-body">
+        <p class="branch-choice-hint">이 선택은 이후 스토리를 결정합니다.</p>
+        <div class="branch-choice-options">${btns}</div>
+      </div>
+    `;
+    this._overlay.classList.add('open');
+    GameState.ui.modalOpen = true;
+
+    options.forEach((opt, i) => {
+      document.getElementById(`branch-opt-${i}`).onclick = () => {
+        // 플래그 설정
+        GameState.flags[opt.setsFlag] = true;
+        // NPC 강제 영입
+        if (opt.recruitNpc) {
+          NPCSystem.forceRecruit(opt.recruitNpc);
+        }
+        this.close();
+        EventBus.emit('branchChosen', { setsFlag: opt.setsFlag });
+      };
+    });
+
+    requestAnimationFrame(() => {
+      const first = this._box.querySelector('.branch-choice-btn');
+      if (first) first.focus();
+    });
   },
 
   confirm(message, onConfirm, onCancel = null) {
@@ -123,6 +178,28 @@ const ModalManager = {
     const equipSlots   = EquipmentSystem.getSlotsForDef(def);
     const canEquip     = equipSlots.length > 0;
 
+    // 낚싯대 여부
+    const isFishingRod = def.subtype === 'fishing' && def.id !== 'fish_trap';
+    let fishBtnHtml = '';
+    let fishBtnReason = '';
+    if (isFishingRod) {
+      const inHangang = GameState.location?.currentLandmark === 'hangang';
+      const hasBait   = [...(GameState.board?.bottom ?? []), ...(GameState.board?.middle ?? [])]
+        .some(id => {
+          if (!id) return false;
+          const d = GameData.items[GameState.cards[id]?.definitionId];
+          return d?.tags?.includes('bait');
+        });
+      const fishOk = inHangang && hasBait;
+      if (!inHangang)    fishBtnReason = '한강 랜드마크 안에서만 낚시할 수 있습니다.';
+      else if (!hasBait) fishBtnReason = '미끼(지렁이 또는 벌레)가 필요합니다.';
+      fishBtnHtml = `<button class="card-action-btn fish-btn${fishOk ? '' : ' disabled'}"
+        id="modal-fish-${instanceId}" ${fishOk ? '' : 'disabled'}
+        title="${fishBtnReason}">
+        🎣 낚시하기
+      </button>`;
+    }
+
     // 분해 재료 미리보기
     let dismantleHtml = '';
     if (canDismantle) {
@@ -143,7 +220,7 @@ const ModalManager = {
         </div>`;
     }
 
-    const hasActions = canConsume || canDismantle || canEquip;
+    const hasActions = canConsume || canDismantle || canEquip || isFishingRod;
 
     // 장착 슬롯 버튼 목록 (슬롯이 여럿이면 각각 버튼 생성)
     const slotLabels = {
@@ -178,6 +255,7 @@ const ModalManager = {
             ${canConsume    ? `<button class="card-action-btn" id="modal-consume-${instanceId}">${I18n.t('modal.use')}</button>` : ''}
             ${equipBtnsHtml}
             ${canDismantle  ? `<button class="card-action-btn dismantle" id="modal-dismantle-${instanceId}">${I18n.t('modal.dismantle')}</button>` : ''}
+            ${fishBtnHtml}
           </div>` : ''}
         </div>
       </div>
@@ -211,6 +289,13 @@ const ModalManager = {
         import('../systems/DismantleSystem.js').then(m => {
           m.default.dismantle(instanceId);
         });
+      });
+    }
+
+    if (isFishingRod) {
+      document.getElementById(`modal-fish-${instanceId}`)?.addEventListener('click', () => {
+        this.close();
+        EventBus.emit('fishAction', { rodInstanceId: instanceId });
       });
     }
   },

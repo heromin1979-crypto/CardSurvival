@@ -11,7 +11,7 @@ const AutoSave = {
   init() {
     // Auto-save on state transitions
     EventBus.on('stateTransition', ({ from, to }) => {
-      const saveTriggers = ['basecamp', 'explore', 'rest'];
+      const saveTriggers = ['main', 'explore', 'rest'];
       if (saveTriggers.includes(to) && GameState.player.isAlive) {
         this._trySave();
       }
