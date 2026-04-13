@@ -384,7 +384,7 @@ const GameState = {
             this._updateEncumbrance();
             const slot = this.board[row].indexOf(existingId);
             EventBus.emit('cardPlaced', { instanceId: existingId, row, slot });
-            return { row, slot };
+            return { row, slot, instanceId: existingId };
           }
         }
       }
