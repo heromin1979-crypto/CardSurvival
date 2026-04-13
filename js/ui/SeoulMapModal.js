@@ -145,6 +145,25 @@ const SeoulMapModal = {
     const el = document.getElementById('minimap-preview');
     if (!el) return;
 
+    const parent      = el.closest('.bc-minimap');
+    const mapUnlocked = GameState.flags.mapUnlocked;
+
+    // 잠금 상태: placeholder 표시
+    if (!mapUnlocked) {
+      const n = GameState.flags.mapFragments?.length ?? 0;
+      el.innerHTML = `
+        <div class="minimap-locked-placeholder">
+          <div class="minimap-lock-icon">🔒</div>
+          <div class="minimap-lock-frags">${n} / 3</div>
+          <div class="minimap-lock-hint">지도 조각 수집 필요</div>
+        </div>
+      `;
+      parent?.classList.add('bc-minimap--locked');
+      return;
+    }
+
+    parent?.classList.remove('bc-minimap--locked');
+
     const gs          = GameState;
     const currentId   = gs.location.currentDistrict ?? 'mapo';
     const adjacentSet = new Set(DISTRICTS[currentId]?.adjacentDistricts ?? []);
