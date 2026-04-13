@@ -106,8 +106,8 @@ const Basecamp = {
         <!-- Day / Time / TP -->
         <div class="bc-time-block">
           <div class="bc-day-row">
-            <span id="hud-day" class="bc-day">Day 1</span>
-            <span id="hud-time" class="bc-clock">06:00</span>
+            <span id="hud-day" class="bc-day">Day ${GameState.time.day}</span>
+            <span id="hud-time" class="bc-clock">${String(GameState.time.hour).padStart(2,'0')}:00</span>
             <span id="hud-night-indicator" class="bc-night-indicator"></span>
           </div>
           <div class="bc-tp-row">
