@@ -630,7 +630,13 @@ const CombatSystem = {
       if (Math.random() < BALANCE.combat.enemyDropChance) {
         const qty  = lootEntry.minQty + Math.floor(Math.random() * (lootEntry.maxQty - lootEntry.minQty + 1));
         const inst = gs.createCardInstance(lootEntry.definitionId, { quantity: qty });
-        if (inst) { gs.placeCardInRow(inst.instanceId, 'middle'); gs.combat.rewards.push(inst.instanceId); }
+        if (inst) {
+          const placed = gs.placeCardInRow(inst.instanceId, 'middle');
+          const actualId = placed?.instanceId ?? inst.instanceId;
+          if (gs.cards[actualId] && !gs.combat.rewards.includes(actualId)) {
+            gs.combat.rewards.push(actualId);
+          }
+        }
       }
     }
 
@@ -642,8 +648,11 @@ const CombatSystem = {
         const medId   = medPool[Math.floor(Math.random() * medPool.length)];
         const medInst = gs.createCardInstance(medId, { quantity: 1 });
         if (medInst) {
-          gs.placeCardInRow(medInst.instanceId, 'middle');
-          gs.combat.rewards.push(medInst.instanceId);
+          const placed = gs.placeCardInRow(medInst.instanceId, 'middle');
+          const actualId = placed?.instanceId ?? medInst.instanceId;
+          if (gs.cards[actualId] && !gs.combat.rewards.includes(actualId)) {
+            gs.combat.rewards.push(actualId);
+          }
           gs.combat.log.push(I18n.t('combatSys.doctorBonus'));
         }
       }
