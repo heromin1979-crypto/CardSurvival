@@ -625,6 +625,10 @@ const ExploreSystem = {
     if (!this._checkNight('explore')) return;
 
     const gs     = GameState;
+
+    // 이미 현재 위치한 세부 장소면 무시
+    if (gs.location.currentSubLocation === subLocationId) return;
+
     const lmData = LANDMARK_DATA[districtId];
     const sub    = lmData?.subLocations?.find(s => s.id === subLocationId);
     if (!sub) return;
