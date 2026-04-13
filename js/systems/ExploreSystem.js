@@ -424,17 +424,29 @@ const ExploreSystem = {
     const node = DISTRICTS[nodeId] ?? NODES[nodeId];
     if (!node) return;
 
-    // 랜드마크 안에서 전투/도망: 랜드마크 로비로 복귀 (퇴장 아님)
+    // 랜드마크 안에서 전투/도망
     if (gs.location.currentLandmark) {
-      const landmarkId = gs.location.currentLandmark;
-      // 서브로케이션 초기화 → 랜드마크 로비
-      gs.location.currentSubLocation = null;
-      // 바닥 비우기 (랜드마크 로비 상태)
-      gs.board.middle = Array(gs.board.middle.length).fill(null);
-      this._updateTopRowForLandmark(landmarkId);
-      const lmName = LANDMARK_DATA[landmarkId]?.name ?? landmarkId;
-      EventBus.emit('notify', { message: I18n.t('exploreSys.landmarkReturn', { name: lmName }), type: 'good' });
-      EventBus.emit('boardChanged', {});
+      const landmarkId   = gs.location.currentLandmark;
+      const subLocation  = gs.location.currentSubLocation;
+
+      if (subLocation) {
+        // 세부 장소에서 전투 → 세부 장소에 그대로 머무름
+        // currentSubLocation 유지, top row 그대로, middle에 전투 보상 유지
+        const lmName = LANDMARK_DATA[landmarkId]?.name ?? landmarkId;
+        EventBus.emit('notify', { message: I18n.t('exploreSys.landmarkReturn', { name: lmName }), type: 'good' });
+        EventBus.emit('boardChanged', {});
+      } else {
+        // 로비에서 전투 → 랜드마크 로비로 복귀
+        // 전투 보상이 없을 때만 바닥 초기화
+        const hasRewards = (gs.combat.rewards?.length ?? 0) > 0;
+        if (!hasRewards) {
+          gs.board.middle = Array(gs.board.middle.length).fill(null);
+        }
+        this._updateTopRowForLandmark(landmarkId);
+        const lmName = LANDMARK_DATA[landmarkId]?.name ?? landmarkId;
+        EventBus.emit('notify', { message: I18n.t('exploreSys.landmarkReturn', { name: lmName }), type: 'good' });
+        EventBus.emit('boardChanged', {});
+      }
       return;
     }
 
