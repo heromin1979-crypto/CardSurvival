@@ -412,6 +412,24 @@ const INTERACTION_RULES = [
     },
   },
 
+  // A7-b. 손도끼 + 목재 → 나무 판자 (목재 다듬기)
+  { id: 'axe_plank', source: { id: 'hand_axe' }, target: { id: 'wood' },
+    hint: '손도끼로 목재 다듬기 → 나무 판자',
+    canApply(s) { return (s.durability ?? 100) >= 5 ? { ok: true } : { ok: false, reason: '도끼 내구도가 너무 낮다.' }; },
+    apply(s, t) {
+      s.durability = Math.max(0, (s.durability ?? 100) - 5);
+      return { transformTgt: 'wood_plank', consumeSrc: false, consumeTgt: false, noise: 3, message: '손도끼로 목재를 다듬어 나무 판자를 만들었다.' };
+    },
+  },
+  { id: 'axe_plank_rev', source: { id: 'wood' }, target: { id: 'hand_axe' },
+    hint: '손도끼로 목재 다듬기 → 나무 판자',
+    canApply(s, t) { return (t.durability ?? 100) >= 5 ? { ok: true } : { ok: false, reason: '도끼 내구도가 너무 낮다.' }; },
+    apply(s, t) {
+      t.durability = Math.max(0, (t.durability ?? 100) - 5);
+      return { transformSrc: 'wood_plank', consumeSrc: false, consumeTgt: false, noise: 3, message: '손도끼로 목재를 다듬어 나무 판자를 만들었다.' };
+    },
+  },
+
   // A8. 파이프렌치 + 고철 → 못 ×5
   { id: 'forge_nails', source: { id: 'pipe_wrench' }, target: { id: 'scrap_metal' },
     hint: '렌치로 고철 가공 → 못',
@@ -848,10 +866,16 @@ const INTERACTION_RULES = [
     },
   },
 
-  // D22. 로프 + 무기 → 내구도 +10
+  // D22. 로프 + 자루형 근접 무기 → 내구도 +10 (손도끼·칼·총기류 제외)
+  // 로프로 자루를 묶어 보강하는 것이 자연스러운 무기만 허용
   { id: 'rope_bind', source: { id: 'rope' }, target: { type: 'weapon' },
     hint: '로프로 무기 보강 (+10)',
-    canApply(s, t) { return (t.durability ?? 100) >= 100 ? { ok: false, reason: '이미 최대 내구도다.' } : { ok: true }; },
+    canApply(s, t) {
+      const EXCLUDED = ['hand_axe', 'axe', 'knife', 'sharpened_knife', 'machete', 'stun_gun',
+                        'pistol', 'shotgun', 'rifle', 'crossbow', 'molotov_cocktail', 'nail_bomb', 'smoke_bomb'];
+      if (EXCLUDED.includes(t.definitionId)) return { ok: false, reason: '이 무기는 로프로 보강할 수 없다.' };
+      return (t.durability ?? 100) >= 100 ? { ok: false, reason: '이미 최대 내구도다.' } : { ok: true };
+    },
     apply(s, t) {
       t.durability = Math.min(100, (t.durability ?? 100) + 10);
       s.quantity = Math.max(0, (s.quantity ?? 1) - 1);
@@ -860,7 +884,12 @@ const INTERACTION_RULES = [
   },
   { id: 'rope_bind_rev', source: { type: 'weapon' }, target: { id: 'rope' },
     hint: '로프로 무기 보강 (+10)',
-    canApply(s) { return (s.durability ?? 100) >= 100 ? { ok: false, reason: '이미 최대 내구도다.' } : { ok: true }; },
+    canApply(s) {
+      const EXCLUDED = ['hand_axe', 'axe', 'knife', 'sharpened_knife', 'machete', 'stun_gun',
+                        'pistol', 'shotgun', 'rifle', 'crossbow', 'molotov_cocktail', 'nail_bomb', 'smoke_bomb'];
+      if (EXCLUDED.includes(s.definitionId)) return { ok: false, reason: '이 무기는 로프로 보강할 수 없다.' };
+      return (s.durability ?? 100) >= 100 ? { ok: false, reason: '이미 최대 내구도다.' } : { ok: true };
+    },
     apply(s, t) {
       s.durability = Math.min(100, (s.durability ?? 100) + 10);
       t.quantity = Math.max(0, (t.quantity ?? 1) - 1);
