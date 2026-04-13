@@ -1,8 +1,9 @@
 // === ENCOUNTER SCREEN ===
-import EventBus    from '../core/EventBus.js';
-import GameState   from '../core/GameState.js';
-import StateMachine from '../core/StateMachine.js';
-import I18n        from '../core/I18n.js';
+import EventBus      from '../core/EventBus.js';
+import GameState     from '../core/GameState.js';
+import StateMachine  from '../core/StateMachine.js';
+import I18n          from '../core/I18n.js';
+import ExploreSystem from '../systems/ExploreSystem.js';
 import { rollEnemyGroup } from '../data/enemies.js';
 import StatSystem  from '../systems/StatSystem.js';
 
@@ -91,6 +92,10 @@ const Encounter = {
       if (success) {
         EventBus.emit('notify', { message: I18n.t('encounter.fleeOk'), type: 'good' });
         GameState.modStat('fatigue', 10);
+        // 랜드마크 안에서 도망쳤으면 보드/위치 상태 복원
+        if (GameState.location?.currentLandmark) {
+          ExploreSystem.arriveAfterCombat(nodeId ?? GameState.location.currentNode ?? GameState.location.currentDistrict);
+        }
         StateMachine.transition('main');
       } else {
         EventBus.emit('notify', { message: I18n.t('encounter.fleeFail'), type: 'danger' });
