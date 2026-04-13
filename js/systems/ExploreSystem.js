@@ -583,9 +583,13 @@ const ExploreSystem = {
     }
 
     // 귀환 카드 (현재 구 카드) → top[0]
-    const returnDefId = `loc_${districtId}`;
-    if (items[returnDefId]) {
-      const inst = gs.createCardInstance(returnDefId);
+    // hangang 등 구 단위가 아닌 공용 랜드마크는 loc_${districtId}가 없으므로
+    // 현재 구 카드(loc_${currentDistrict})로 폴백
+    const returnDefId  = `loc_${districtId}`;
+    const fallbackId   = `loc_${gs.location.currentDistrict}`;
+    const resolvedId   = items[returnDefId] ? returnDefId : (items[fallbackId] ? fallbackId : null);
+    if (resolvedId) {
+      const inst = gs.createCardInstance(resolvedId);
       if (inst) gs.board.top[0] = inst.instanceId;
     }
 

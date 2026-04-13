@@ -481,6 +481,7 @@ const ITEMS_BASE = {
     rarity: 'common', weight: 0.3,
     defaultDurability: 100, defaultContamination: 0,
     icon: '🪨', description: '주먹 크기의 돌. 화로 제작의 기초 재료이며 투척 무기로도 쓸 수 있다.',
+    stackable: true, maxStack: 10,
     tags: ['material', 'natural'],
     dismantle: [],
   },
