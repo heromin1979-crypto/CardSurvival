@@ -287,6 +287,9 @@ const GameState = {
         }
       }
     }
+    // 빈 칸이 생기면 middle·bottom 자동 압축
+    this._compactRow('middle');
+    this._compactRow('bottom');
     this._updateEncumbrance();
     // 슬롯이 비었으므로 대기 루트 자동 배치 시도
     this.flushPendingLoot();
@@ -327,6 +330,8 @@ const GameState = {
     for (const row of ['top', 'environment', 'middle', 'bottom']) {
       this.board[row] = this.board[row].map(v => v === instanceId ? null : v);
     }
+    this._compactRow('middle');
+    this._compactRow('bottom');
     this._updateEncumbrance();
   },
 
@@ -341,16 +346,50 @@ const GameState = {
     return this.board[row].findIndex(v => v === null);
   },
 
+  // middle·bottom 행의 null을 뒤로 밀어 빈 칸 압축
+  _compactRow(row) {
+    const arr    = this.board[row];
+    const filled = arr.filter(v => v !== null);
+    this.board[row] = [...filled, ...Array(arr.length - filled.length).fill(null)];
+  },
+
   // place a card instance in first available slot of a row
   // 일반 아이템은 top(장소) 행에 절대 배치하지 않음
   placeCardInRow(instanceId, preferredRow = null) {
-    const def = GameData?.items[this.cards[instanceId]?.definitionId];
+    const inst = this.cards[instanceId];
+    const def  = GameData?.items[inst?.definitionId];
     const isLocation = def?.type === 'location';
 
     // 장소 카드: top 우선, 일반 카드: middle/bottom만 허용
     const rows = isLocation
       ? (preferredRow ? [preferredRow, ...['top','middle','bottom'].filter(r => r !== preferredRow)] : ['top', 'middle', 'bottom'])
       : (preferredRow === 'top' ? ['middle', 'bottom'] : (preferredRow ? [preferredRow, ...['middle','bottom'].filter(r => r !== preferredRow)] : ['middle', 'bottom']));
+
+    // 스택 아이템: 기존 스택에 먼저 합산
+    if (!isLocation && def?.stackable && inst) {
+      for (const row of rows) {
+        for (const existingId of this.board[row]) {
+          if (!existingId || existingId === instanceId) continue;
+          const existing = this.cards[existingId];
+          if (!existing || existing.definitionId !== inst.definitionId) continue;
+          const maxStack  = def.maxStack ?? 99;
+          const available = maxStack - (existing.quantity ?? 1);
+          if (available <= 0) continue;
+          const transfer  = Math.min(available, inst.quantity ?? 1);
+          existing.quantity = (existing.quantity ?? 1) + transfer;
+          inst.quantity     = (inst.quantity     ?? 1) - transfer;
+          if (inst.quantity <= 0) {
+            // 완전히 합산됨 — 새 인스턴스 제거
+            delete this.cards[instanceId];
+            this._updateEncumbrance();
+            const slot = this.board[row].indexOf(existingId);
+            EventBus.emit('cardPlaced', { instanceId: existingId, row, slot });
+            return { row, slot };
+          }
+        }
+      }
+      // 수량이 남았으면 아래 빈 슬롯 배치로 이어짐
+    }
 
     for (const row of rows) {
       const idx = this.findEmptySlot(row);
