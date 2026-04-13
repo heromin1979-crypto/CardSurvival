@@ -424,11 +424,20 @@ const ExploreSystem = {
     const node = DISTRICTS[nodeId] ?? NODES[nodeId];
     if (!node) return;
 
-    // 랜드마크/서브로케이션 컨텍스트 초기화 — 미초기화 시 district 카드에
-    // landmark-return 클래스가 붙어 hover transform이 오른쪽으로 튀는 버그 발생
+    // 랜드마크 안에서 전투 후 복귀: 저장된 바닥 카드 복원
+    if (gs.location.currentLandmark) {
+      const isBasecampLM = gs.location.currentLandmark === 'basecamp';
+      const floorKey     = isBasecampLM ? 'basecamp' : nodeId;
+      if (!gs.locationFloors) gs.locationFloors = {};
+      const saved    = gs.locationFloors[floorKey] ?? [];
+      const floorLen = gs.board.middle.length;
+      gs.board.middle = Array.from({ length: floorLen }, (_, i) => saved[i] ?? null);
+    }
+
     gs.location.currentLandmark    = null;
     gs.location.currentSubLocation = null;
     gs.location.currentNode = nodeId;
+    this._updateTopRowCards(nodeId);
     if (!gs.location.nodesVisited.includes(nodeId)) {
       gs.location.nodesVisited.push(nodeId);
     }
