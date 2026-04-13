@@ -277,6 +277,7 @@ const CARD_IMAGES = {
   sickle:                'assets/images/tools/sickle.png',
   stone_knife:           'assets/images/tools/stone_knife.png',
   trowel:                'assets/images/tools/trowel.png',
+  fishing_hook_tool:     'assets/images/tools/fishing_hook.png',
   map_fragment_center:   'assets/images/tools/map_fragment_center.png',
   map_fragment_north:    'assets/images/tools/map_fragment_north.png',
   map_fragment_south:    'assets/images/tools/map_fragment_south.png',
