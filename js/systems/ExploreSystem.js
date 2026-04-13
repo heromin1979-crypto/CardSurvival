@@ -745,9 +745,10 @@ const ExploreSystem = {
     const landmarkId      = gs.location.currentLandmark;
     // 베이스캠프는 별도 구(District)가 없으므로 현재 구로 복귀
     const isBasecampLM    = landmarkId === 'basecamp';
-    const districtId      = isBasecampLM
-      ? gs.location.currentDistrict
-      : (landmarkId ?? gs.location.currentDistrict);
+
+    // landmarkId가 실제 구(District)인지 확인 — 한강처럼 구가 아닌 공용 랜드마크는 현재 구로 폴백
+    const rawId      = isBasecampLM ? gs.location.currentDistrict : (landmarkId ?? gs.location.currentDistrict);
+    const districtId = DISTRICTS[rawId] ? rawId : gs.location.currentDistrict;
 
     // 세부 장소 바닥 저장 & 구 바닥 복원
     if (!gs.locationFloors) gs.locationFloors = {};
@@ -755,8 +756,8 @@ const ExploreSystem = {
     if (prevSub) {
       gs.locationFloors[`sl:${landmarkId}:${prevSub}`] = [...gs.board.middle];
     }
-    // 베이스캠프 진입 시 저장 키는 'basecamp', 구 이름이 아님
-    const floorKey    = isBasecampLM ? 'basecamp' : districtId;
+    // 바닥 저장 키는 landmarkId 기준 (진입 시와 동일한 키)
+    const floorKey      = isBasecampLM ? 'basecamp' : landmarkId;
     const districtFloor = gs.locationFloors[floorKey] ?? [];
     const floorSize     = gs.board.middle.length;
     gs.board.middle = Array.from({ length: floorSize }, (_, i) => districtFloor[i] ?? null);
