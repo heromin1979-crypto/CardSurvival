@@ -424,6 +424,10 @@ const ExploreSystem = {
     const node = DISTRICTS[nodeId] ?? NODES[nodeId];
     if (!node) return;
 
+    // 랜드마크/서브로케이션 컨텍스트 초기화 — 미초기화 시 district 카드에
+    // landmark-return 클래스가 붙어 hover transform이 오른쪽으로 튀는 버그 발생
+    gs.location.currentLandmark    = null;
+    gs.location.currentSubLocation = null;
     gs.location.currentNode = nodeId;
     if (!gs.location.nodesVisited.includes(nodeId)) {
       gs.location.nodesVisited.push(nodeId);
