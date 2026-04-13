@@ -565,6 +565,8 @@ const ExploreSystem = {
     }
     gs.location.currentLandmark    = districtId;
     gs.location.currentSubLocation = null;
+    // 귀환 구역 명시 저장 — exitLandmark에서 확실한 복귀 구역으로 사용
+    gs.location._lmReturnDistrict  = gs.location.currentDistrict;
 
     // 구 바닥 저장 → 랜드마크 로비는 빈 바닥
     if (!gs.locationFloors) gs.locationFloors = {};
@@ -746,9 +748,17 @@ const ExploreSystem = {
     // 베이스캠프는 별도 구(District)가 없으므로 현재 구로 복귀
     const isBasecampLM    = landmarkId === 'basecamp';
 
-    // landmarkId가 실제 구(District)인지 확인 — 한강처럼 구가 아닌 공용 랜드마크는 현재 구로 폴백
-    const rawId      = isBasecampLM ? gs.location.currentDistrict : (landmarkId ?? gs.location.currentDistrict);
+    // 진입 시 저장된 귀환 구역 우선 사용, 없으면 현재 구로 폴백
+    // (한강처럼 구가 아닌 공용 랜드마크는 landmarkId가 DISTRICTS에 없음)
+    const savedReturn = gs.location._lmReturnDistrict;
+    const rawId      = isBasecampLM
+      ? gs.location.currentDistrict
+      : (savedReturn ?? landmarkId ?? gs.location.currentDistrict);
     const districtId = DISTRICTS[rawId] ? rawId : gs.location.currentDistrict;
+    // 사용 후 임시 필드 제거
+    delete gs.location._lmReturnDistrict;
+
+    console.log('[ExploreSystem.exitLandmark]', { landmarkId, savedReturn, rawId, districtId });
 
     // 세부 장소 바닥 저장 & 구 바닥 복원
     if (!gs.locationFloors) gs.locationFloors = {};
@@ -766,6 +776,7 @@ const ExploreSystem = {
     gs.location.currentSubLocation = null;
     gs.location.currentNode        = districtId;
     this._updateTopRowCards(districtId);
+    console.log('[ExploreSystem.exitLandmark] board.top after update:', gs.board.top.filter(Boolean).length, 'cards');
     const district = DISTRICTS[districtId];
     const lmName   = isBasecampLM ? LANDMARK_DATA['basecamp']?.name : I18n.districtName(districtId, district?.name ?? districtId);
     EventBus.emit('notify', { message: I18n.t('exploreSys.exitLandmark', { name: lmName }), type: 'info' });
