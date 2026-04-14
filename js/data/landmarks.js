@@ -186,7 +186,7 @@ export const LANDMARK_DATA = {
       {
         id: 'yongsan_arsenal', name: '무기고',
         icon: '💣', desc: '실제 무기가 보관된 구역. 극도로 위험하다.',
-        dangerMod: 0.45,
+        dangerMod: 0.35,
         lootTable: [
           { id: 'molotov_cocktail', weight: 2 }, { id: 'machete', weight: 3 },
           { id: 'knife', weight: 3 }, { id: 'smoke_bomb', weight: 2 },
@@ -265,7 +265,7 @@ export const LANDMARK_DATA = {
       {
         id: 'gwangjin_zoo', name: '동물원 구역',
         icon: '🦁', desc: '탈출한 동물들이 배회하는 위험 구역.',
-        dangerMod: 0.35,
+        dangerMod: 0.25,
         lootTable: [
           { id: 'rope', weight: 4 }, { id: 'leather', weight: 3 },
           { id: 'bandage', weight: 2 }, { id: 'knife', weight: 1 },
@@ -354,7 +354,7 @@ export const LANDMARK_DATA = {
       {
         id: 'dongdaemun_icu', name: '중환자실',
         icon: '❤️', desc: '중환자 병동. 생존 물자가 가장 풍부하나 가장 위험하다.',
-        dangerMod: 0.35,
+        dangerMod: 0.25,
         lootTable: [
           { id: 'stimulant', weight: 2 }, { id: 'first_aid_kit', weight: 2 },
           { id: 'antibiotics', weight: 2 }, { id: 'bandage', weight: 3 },
@@ -424,7 +424,7 @@ export const LANDMARK_DATA = {
       {
         id: 'jungnang_boiler', name: '지하 보일러실',
         icon: '🔥', desc: '고온 위험 구역. 물자는 풍부하나 유독 가스 주의.',
-        dangerMod: 0.35,
+        dangerMod: 0.25,
         lootTable: [
           { id: 'scrap_metal', weight: 4 }, { id: 'iron_pipe', weight: 3 },
           { id: 'rubber', weight: 2 }, { id: 'wire', weight: 2 },
@@ -554,7 +554,7 @@ export const LANDMARK_DATA = {
       {
         id: 'gangbuk_arsenal', name: '무기고 터',
         icon: '⚔️', desc: '과거 무기 보관소 터. 녹슨 무기 잔해.',
-        dangerMod: 0.30,
+        dangerMod: 0.25,
         lootTable: [
           { id: 'machete', weight: 1 }, { id: 'iron_pipe', weight: 3 },
           { id: 'nail', weight: 4 }, { id: 'scrap_metal', weight: 3 },
@@ -613,7 +613,7 @@ export const LANDMARK_DATA = {
       {
         id: 'dobong_cliff', name: '암벽 지대',
         icon: '🧗', desc: '가파른 암벽 지역. 오르기 어렵지만 로프 등 장비가 있다.',
-        dangerMod: 0.35,
+        dangerMod: 0.20,
         lootTable: [
           { id: 'rope', weight: 4 }, { id: 'leather', weight: 2 },
           { id: 'bandage', weight: 2 }, { id: 'splint', weight: 1 },
@@ -973,7 +973,7 @@ export const LANDMARK_DATA = {
       {
         id: 'gangseo_hangar', name: '격납고',
         icon: '🛩️', desc: '항공기 정비 격납고. 금속 부품의 보고.',
-        dangerMod: 0.35,
+        dangerMod: 0.25,
         lootTable: [
           { id: 'wire', weight: 4 }, { id: 'electronic_parts', weight: 5 },
           { id: 'scrap_metal', weight: 4 }, { id: 'rubber', weight: 2 },
@@ -1005,7 +1005,7 @@ export const LANDMARK_DATA = {
       {
         id: 'gangseo_fuel', name: '연료 저장소',
         icon: '⛽', desc: '항공 연료 보관소. 화재 위험이 높지만 유용한 재료가.',
-        dangerMod: 0.45,
+        dangerMod: 0.25,
         lootTable: [
           { id: 'rubber', weight: 3 }, { id: 'plastic', weight: 3 },
           { id: 'molotov_cocktail', weight: 4 }, { id: 'wire', weight: 2 },
@@ -1064,7 +1064,7 @@ export const LANDMARK_DATA = {
       {
         id: 'guro_parking', name: '지하 주차장',
         icon: '🅿️', desc: '지하 주차장. 차량 잔해에서 금속을.',
-        dangerMod: 0.35,
+        dangerMod: 0.25,
         lootTable: [
           { id: 'scrap_metal', weight: 4 }, { id: 'crowbar', weight: 2 },
           { id: 'rubber', weight: 3 }, { id: 'iron_pipe', weight: 2 },
@@ -1093,7 +1093,7 @@ export const LANDMARK_DATA = {
       {
         id: 'geumcheon_chemical', name: '화학 공장',
         icon: '☣️', desc: '화학 물질 제조 공장. 방호 없이 진입 위험.',
-        dangerMod: 0.40,
+        dangerMod: 0.25,
         lootTable: [
           { id: 'rubber', weight: 3 }, { id: 'plastic', weight: 3 },
           { id: 'antiseptic', weight: 2 }, { id: 'rad_blocker', weight: 1 },
@@ -1113,7 +1113,7 @@ export const LANDMARK_DATA = {
       {
         id: 'geumcheon_waste', name: '폐기물 처리장',
         icon: '♻️', desc: '산업 폐기물 처리 시설. 위험하지만 재료가 있다.',
-        dangerMod: 0.40,
+        dangerMod: 0.25,
         lootTable: [
           { id: 'rubber', weight: 4 }, { id: 'plastic', weight: 3 },
           { id: 'contaminated_water', weight: 3 }, { id: 'scrap_metal', weight: 2 },
@@ -1123,7 +1123,7 @@ export const LANDMARK_DATA = {
       {
         id: 'geumcheon_power', name: '발전소',
         icon: '⚡', desc: '공장 전용 발전 시설. 전기 부품이 있다.',
-        dangerMod: 0.35,
+        dangerMod: 0.25,
         lootTable: [
           { id: 'wire', weight: 5 }, { id: 'electronic_parts', weight: 3 },
           { id: 'scrap_metal', weight: 3 }, { id: 'rubber', weight: 2 },
@@ -1280,7 +1280,7 @@ export const LANDMARK_DATA = {
       {
         id: 'gwanak_chemlab', name: '화학과 실험실',
         icon: '⚗️', desc: '화학 시약과 실험 장비가 남아있다.',
-        dangerMod: 0.25,
+        dangerMod: 0.20,
         lootTable: [
           { id: 'rad_blocker', weight: 2 }, { id: 'antidote', weight: 2 },
           { id: 'antiseptic', weight: 4 }, { id: 'plastic', weight: 2 },
