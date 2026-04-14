@@ -351,8 +351,8 @@ const HiddenElementSystem = {
     }
 
     // 시간대
-    if (cond.timeOfDay === 'night' && gs.time.hour >= 6 && gs.time.hour < 20) return false;
-    if (cond.timeOfDay === 'day' && (gs.time.hour < 6 || gs.time.hour >= 20)) return false;
+    if (cond.timeOfDay === 'night' && gs.time.hour >= 5) return false;
+    if (cond.timeOfDay === 'day'   && gs.time.hour < 5)  return false;
 
     // 필수 아이템
     if (cond.requiredItems?.length) {
