@@ -68,13 +68,27 @@ const Encounter = {
     const nodeId      = d.nodeId ?? null;
     const dangerLevel = d.dangerLevel ?? 2;
 
+    // 버튼 중복 실행 방지: 첫 클릭 이후 또는 이미 다른 상태면 무시
+    let _handled = false;
+    const guard = () => {
+      if (_handled) return false;
+      if (GameState.ui.currentState !== 'encounter') {
+        console.warn('[Encounter] guard: state is no longer "encounter", current:', GameState.ui.currentState);
+        return false;
+      }
+      _handled = true;
+      return true;
+    };
+
     // 전투 — 전체 enemies 배열 전달
     this._el.querySelector('#enc-fight')?.addEventListener('click', () => {
+      if (!guard()) return;
       StateMachine.transition('combat', { enemies, dangerLevel, nodeId });
     });
 
     // 은신 — 그룹 중 최고 stealthDifficulty 사용
     this._el.querySelector('#enc-stealth')?.addEventListener('click', () => {
+      if (!guard()) return;
       const maxDiff = Math.max(...enemies.map(e => e.stealthDifficulty ?? 0.5));
       const success = Math.random() > maxDiff;
       if (success) {
@@ -88,6 +102,7 @@ const Encounter = {
 
     // 도주
     this._el.querySelector('#enc-flee')?.addEventListener('click', () => {
+      if (!guard()) return;
       const success = Math.random() < 0.65;
       if (success) {
         EventBus.emit('notify', { message: I18n.t('encounter.fleeOk'), type: 'good' });
@@ -105,6 +120,7 @@ const Encounter = {
 
     // 군인 전용: 선제 제압 — 근접/비무장 스킬 레벨 합산으로 첫 타 확률 상승
     this._el.querySelector('#enc-ambush')?.addEventListener('click', () => {
+      if (!guard()) return;
       const melee    = GameState.player.skills?.melee?.level    ?? 0;
       const unarmed  = GameState.player.skills?.unarmed?.level  ?? 0;
       const combined = melee + unarmed;

@@ -33,7 +33,7 @@ const CombatSystem = {
   _setupCombat(data) {
     const gs          = GameState;
     const dangerLevel = data.dangerLevel ?? 2;
-    const noiseLevel  = gs.noise.level;
+    const noiseLevel  = gs.noise?.level ?? 0;
 
     // enemies 배열: 전달받거나 소음 기반으로 새로 생성
     const enemies = data.enemies?.length
