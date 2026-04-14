@@ -125,7 +125,7 @@ const BGMSystem = {
     // 위험 우선
     if (danger >= 4) mood = 'danger';
     // 야간
-    else if (hour >= 22 || hour < 5) mood = 'night';
+    else if (hour < 5) mood = 'night';
     // 계절
     else if (season === 'winter') mood = 'winter';
     else if (season === 'summer') mood = 'summer';

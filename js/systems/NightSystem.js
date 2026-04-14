@@ -44,11 +44,15 @@ const NightSystem = {
     });
   },
 
-  /** 현재 시각이 야간인지 판별 */
+  /** 현재 시각이 야간인지 판별 (startHour=0, endHour=5 → 00:00~04:59) */
   isNight() {
     const hour = GameState.time?.hour ?? 12;
     const { startHour, endHour } = BALANCE.night;
-    return hour >= startHour || hour < endHour;
+    // startHour < endHour: 자정을 넘기지 않는 단순 범위 (e.g. 0~5)
+    // startHour > endHour: 자정을 넘기는 범위 (e.g. 20~6)
+    return startHour < endHour
+      ? hour >= startHour && hour < endHour
+      : hour >= startHour || hour < endHour;
   },
 
   /** 보드 위에 'light' 태그가 있는 카드가 존재하는지 */

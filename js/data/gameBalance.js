@@ -196,8 +196,8 @@ const BALANCE = {
   },
   // ── 야간 ──────────────────────────────────────────
   night: {
-    startHour:            20,
-    endHour:              6,
+    startHour:            0,   // 자정(00:00)부터 야간
+    endHour:              5,   // 05:00에 야간 종료
     encounterMult:        2.0,
     travelCostMult:       1.5,
     darkSleepFatigueMult: 0.5,   // 어둠 수면 시 피로 회복 ×0.5
