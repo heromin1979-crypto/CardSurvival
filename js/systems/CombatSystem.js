@@ -67,8 +67,14 @@ const CombatSystem = {
       enemyStatus:  [],
       _encounterData: data,
       _isNew:       true,   // 첫 렌더링 진입 애니메이션 트리거용
+      _ambushFailed: data.ambushFailed === true,  // 선제 제압 실패 플래그
     };
     EventBus.emit('combatStarted', {});
+
+    // 선제 제압 실패: 첫 번째 플레이어 행동 전에 적이 선제 공격
+    if (data.ambushFailed) {
+      gs.combat.log.push('⚡ 적이 선제 반응! 첫 행동 전에 공격을 받습니다.');
+    }
 
     // death_horde 엔딩 조건 추적: 이 전투의 적 수 기록
     gs.flags.lastEnemyCount = enemies.length;
@@ -116,6 +122,13 @@ const CombatSystem = {
 
     gs.combat.round++;
     gs.combat.lastHit = null;
+
+    // 선제 제압 실패: 첫 행동 전 적 선제 공격
+    if (gs.combat._ambushFailed) {
+      gs.combat._ambushFailed = false;
+      if (gs.combat.active) this._allEnemiesAttack();
+      if (!gs.combat.active) return; // 즉사 처리
+    }
 
     // 기절 체크 — 이번 턴 행동 불가
     const stunIdx = gs.combat.playerStatus.findIndex(s => s.id === 'stun');

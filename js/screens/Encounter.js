@@ -103,14 +103,15 @@ const Encounter = {
       }
     });
 
-    // 군인 전용: 선제 제압 — 근접/비무장 스킬 합산으로 첫 타 확률 상승
+    // 군인 전용: 선제 제압 — 근접/비무장 스킬 레벨 합산으로 첫 타 확률 상승
     this._el.querySelector('#enc-ambush')?.addEventListener('click', () => {
-      const melee    = GameState.player.skills?.melee ?? 0;
-      const unarmed  = GameState.player.skills?.unarmed ?? 0;
+      const melee    = GameState.player.skills?.melee?.level    ?? 0;
+      const unarmed  = GameState.player.skills?.unarmed?.level  ?? 0;
       const combined = melee + unarmed;
       // 스킬 합 8이면 70%, 최소 40%
       const hitChance = Math.min(0.70, 0.40 + combined * 0.04);
       const roll = Math.random();
+      GameState.modStat('fatigue', 5);
       if (roll < hitChance) {
         const bonusDmg = 10 + Math.floor(combined * 1.5);
         EventBus.emit('notify', {
@@ -120,12 +121,11 @@ const Encounter = {
         StateMachine.transition('combat', { enemies, dangerLevel, nodeId, ambushBonus: bonusDmg });
       } else {
         EventBus.emit('notify', {
-          message: '⚡ 선제 제압 실패! 적이 먼저 반응했습니다.',
+          message: '⚡ 선제 제압 실패! 적이 먼저 반응했습니다. 전투로 돌입합니다.',
           type: 'danger',
         });
         StateMachine.transition('combat', { enemies, dangerLevel, nodeId, ambushFailed: true });
       }
-      GameState.modStat('fatigue', 5);
     });
   },
 };
