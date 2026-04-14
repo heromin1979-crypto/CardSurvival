@@ -677,7 +677,8 @@ const ExploreSystem = {
     NoiseSystem.addNoise(noiseBase * 0.8);
 
     // 조우 체크 (계절 encounterMult 포함)
-    const baseEncounter   = (district?.encounterChance ?? 0) + (sub.dangerMod ?? 0);
+    const landmarkReduct  = BALANCE.encounter.landmarkDangerReduct ?? 0.05;
+    const baseEncounter   = Math.max(0, (district?.encounterChance ?? 0) + (sub.dangerMod ?? 0) - landmarkReduct);
     const reduction       = gs.player.encounterRateReduct ?? 0;
     const subSeasonMod    = SeasonSystem.getModifiers();
     const finalChance     = baseEncounter * (subSeasonMod.encounterMult ?? 1.0) * NightSystem.getNightEncounterMult() * (1 - Math.min(0.80, reduction));
