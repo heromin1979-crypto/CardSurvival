@@ -1,13 +1,21 @@
-// === COMBAT UI (v3 — 비주얼 강화) ===
-import EventBus    from '../core/EventBus.js';
-import GameState   from '../core/GameState.js';
-import CombatSystem from '../systems/CombatSystem.js';
-import I18n        from '../core/I18n.js';
-import NightSystem from '../systems/NightSystem.js';
+// === COMBAT UI (v4 — 3패널 레이아웃) ===
+import EventBus      from '../core/EventBus.js';
+import GameState     from '../core/GameState.js';
+import CombatSystem  from '../systems/CombatSystem.js';
+import I18n          from '../core/I18n.js';
+import NightSystem   from '../systems/NightSystem.js';
+import { CHARACTERS } from '../data/characters.js';
+import { DISTRICTS }  from '../data/districts.js';
 
 const BATTLE_BG    = './assets/images/battle_bg.jpg';
 const PLAYER_IMG_M = './assets/images/player_M.jpg';
 const PLAYER_IMG_F = './assets/images/player_F.jpg';
+
+const DANGER_LABEL = ['안전', '보통', '경계', '위험', '극위험', '극위험'];
+const DANGER_COLOR = ['#449944', '#889933', '#cc8822', '#cc3333', '#881111', '#881111'];
+
+const WEAKNESS_LABEL = { fire:'🔥약점', blade:'🗡️약점', bullet:'🔫약점', blunt:'💥약점', explosive:'💣약점', electric:'⚡약점' };
+const RESIST_LABEL   = { fire:'🔥저항', blade:'🗡️저항', bullet:'🔫저항', blunt:'💥저항', explosive:'💣저항', electric:'⚡저항' };
 
 const CombatUI = {
   _screen:       null,
@@ -30,72 +38,77 @@ const CombatUI = {
     const combat = gs.combat;
     if (!combat.enemies?.length || !this._screen) return;
 
-    // ── 진입 여부 감지 (첫 렌더링) ──
-    const isEntry = combat._isNew === true;
+    const isEntry    = combat._isNew === true;
     if (isEntry) combat._isNew = false;
-
-    // ── 라운드 펄스 감지 ──
     const isNewRound = combat.round !== this._lastRound;
     this._lastRound  = combat.round;
 
-    // ── 플레이어 HP ──
-    const hpPct        = (gs.player.hp.current / gs.player.hp.max) * 100;
-    const hpClass      = hpPct < 25 ? 'crit' : hpPct < 50 ? 'low' : '';
-    const isHpCrit     = hpPct < 25;
-    const prevPHpPct   = this._prevPlayerHp ?? hpPct;
+    // ── 플레이어 스탯 ──────────────────────────────────────────
+    const hpPct      = (gs.player.hp.current / gs.player.hp.max) * 100;
+    const hpClass    = hpPct < 25 ? 'crit' : hpPct < 50 ? 'low' : '';
+    const isHpCrit   = hpPct < 25;
+    const prevPHpPct = this._prevPlayerHp ?? hpPct;
+    const stPct      = (gs.stats.stamina.current / gs.stats.stamina.max) * 100;
+    const infPct     = (gs.stats.infection.current / gs.stats.infection.max) * 100;
 
-    // ── 상태이상 배지 ──
+    // ── 캐릭터 정보 ───────────────────────────────────────────
+    const charDef   = CHARACTERS.find(c => c.id === gs.player.characterId) ?? {};
+    const playerImg = gs.player.gender === 'F' ? PLAYER_IMG_F : PLAYER_IMG_M;
+
+    // ── 장착 무기 ─────────────────────────────────────────────
+    const weaponId   = gs.player.equipped?.weapon_main ?? gs.player.equipped?.weapon_sub;
+    const weaponCard = weaponId ? gs.cards[weaponId] : null;
+    const weaponDef  = weaponCard ? gs.getCardDef(weaponId) : null;
+    const durPct     = weaponCard ? Math.round(weaponCard.durability ?? 100) : 0;
+    const armorId    = gs.player.equipped?.body;
+    const armorDef   = armorId ? gs.getCardDef(armorId) : null;
+
+    let ammoCount = null;
+    if (weaponDef?.combat?.requiresAmmo) {
+      const ammoInst = gs.getBoardCards().find(c => c.definitionId === weaponDef.combat.requiresAmmo);
+      ammoCount = ammoInst ? (ammoInst.quantity ?? 1) : 0;
+    }
+
+    // ── 상태이상 배지 ─────────────────────────────────────────
     const playerStatusHtml = combat.playerStatus.map(s =>
       `<span class="status-badge">${s.name}(${s.duration})</span>`
     ).join('');
 
-    // ── 장착 무기 타입 (약점 힌트) ──
-    const equippedWeaponId  = gs.player.equipped?.weapon_main ?? gs.player.equipped?.weapon_sub;
-    const equippedWeaponDef = equippedWeaponId ? gs.getCardDef(equippedWeaponId) : null;
-    const playerWeaponType  = equippedWeaponDef?.weaponType ?? null;
+    // ── 적 데이터 ─────────────────────────────────────────────
+    const enemyCount  = combat.enemies.length;
+    const aliveCount  = combat.enemies.filter(e => e.currentHp > 0).length;
+    const playerWeaponType = weaponDef?.weaponType ?? null;
+    const targetEnemy = combat.enemies[combat.targetIndex] ?? combat.enemies[0];
 
-    const WEAKNESS_LABEL = { fire:'🔥약점', blade:'🗡️약점', bullet:'🔫약점', blunt:'💥약점', explosive:'💣약점', electric:'⚡약점' };
-    const RESIST_LABEL   = { fire:'🔥저항', blade:'🗡️저항', bullet:'🔫저항', blunt:'💥저항', explosive:'💣저항', electric:'⚡저항' };
-
-    // ── 적 스프라이트 ──
-    const enemyCount    = combat.enemies.length;
-    const aliveCount    = combat.enemies.filter(e => e.currentHp > 0).length;
-
+    // ── 적 스프라이트 HTML (중앙 시각 패널) ───────────────────
     const enemySpritesHtml = combat.enemies.map((enemy, i) => {
-      const isDead    = enemy.currentHp <= 0;
-      const wasAlive  = enemy._wasAlive ?? !isDead;
-      const justDied  = wasAlive && isDead;
-      const isTarget  = i === combat.targetIndex && !isDead;
-      const eHpPct    = Math.max(0, (enemy.currentHp / enemy.maxHp) * 100);
-      const eHpClass  = eHpPct < 25 ? 'crit' : eHpPct < 50 ? 'low' : '';
-      const ghostPct  = Math.max(0, ((enemy._prevHp ?? enemy.currentHp) / enemy.maxHp) * 100);
+      const isDead   = enemy.currentHp <= 0;
+      const wasAlive = enemy._wasAlive ?? !isDead;
+      const justDied = wasAlive && isDead;
+      const isTarget = i === combat.targetIndex && !isDead;
+      const eHpPct   = Math.max(0, (enemy.currentHp / enemy.maxHp) * 100);
+      const eHpClass = eHpPct < 25 ? 'crit' : eHpPct < 50 ? 'low' : '';
+      const ghostPct = Math.max(0, ((enemy._prevHp ?? enemy.currentHp) / enemy.maxHp) * 100);
 
       const spriteHtml = enemy.image
         ? `<img class="cv-enemy-img" src="${enemy.image}" alt="${enemy.name}">`
         : `<div class="cv-enemy-icon">${enemy.icon ?? '👾'}</div>`;
 
-      // 상태이상 배지 (per-enemy)
       const perEnemyStatus = (enemy._statusEffects ?? []).map(s =>
         `<span class="status-badge enemy">${s.name}(${s.duration})</span>`
       ).join('');
 
-      // 약점/저항 힌트
       let affinityHint = '';
       if (playerWeaponType && !isDead) {
-        if (enemy.weaknesses?.includes(playerWeaponType)) {
+        if (enemy.weaknesses?.includes(playerWeaponType))
           affinityHint = `<span class="affinity-badge weakness">${WEAKNESS_LABEL[playerWeaponType] ?? '⬆약점'}</span>`;
-        } else if (enemy.resistances?.includes(playerWeaponType)) {
+        else if (enemy.resistances?.includes(playerWeaponType))
           affinityHint = `<span class="affinity-badge resistance">${RESIST_LABEL[playerWeaponType] ?? '⬇저항'}</span>`;
-        }
       }
 
-      // 클래스 조합
-      const spriteClass = [
-        'cv-enemy-sprite',
-        isTarget  ? 'is-target'  : '',
-        isDead    ? 'is-dead'    : '',
-        justDied  ? 'just-died'  : '',
-        isEntry   ? 'entering'   : '',
+      const spriteClass = ['cv-enemy-sprite',
+        isTarget ? 'is-target' : '', isDead ? 'is-dead' : '',
+        justDied ? 'just-died' : '', isEntry ? 'entering' : '',
       ].filter(Boolean).join(' ');
 
       return `
@@ -114,61 +127,15 @@ const CombatUI = {
         </div>`;
     }).join('');
 
-    // ── 무기 버튼 ──
-    const weapons    = CombatSystem.getAvailableWeapons();
-    const weaponBtns = weapons.map(w => {
-      const def     = gs.getCardDef(w.instanceId);
-      const critStr = def?.combat?.critChance
-        ? `<span class="btn-sub">${I18n.t('combat.crit', { pct: Math.round(def.combat.critChance * 100) })}</span>`
-        : '';
-      return `<button class="combat-action-btn" data-action="attack" data-weapon="${w.instanceId}">
-        ${def?.icon ?? '⚔'} ${I18n.itemName(def?.id ?? gs.cards[w.instanceId]?.definitionId, def?.name ?? I18n.t('combat.weapon'))} ${critStr}
-      </button>`;
-    }).join('');
+    // ── 환경 정보 ─────────────────────────────────────────────
+    const isNight   = NightSystem.isNight();
+    const noise     = gs.noise?.level ?? 0;
+    const distText  = noise < 30 ? '🎯 원거리' : noise < 60 ? '🎯 중거리' : '🎯 근거리';
+    const lightText = isNight ? '🌙 어둠' : '☀️ 보통';
+    const noiseText = noise < 35 ? '🔇 낮음' : noise < 65 ? '🔈 보통' : '🔊 높음';
+    const coverText = '🏠 부분';
 
-    // ── 투척 무기 버튼 ──
-    const throwables    = CombatSystem.getAvailableThrowables();
-    const throwableBtns = throwables.map(t => {
-      const def = gs.getCardDef(t.instanceId);
-      return `<button class="combat-action-btn throwable" data-action="throwable" data-weapon="${t.instanceId}">
-        ${def?.icon ?? '💣'} ${I18n.itemName(def?.id ?? gs.cards[t.instanceId]?.definitionId, def?.name ?? I18n.t('combat.throwable'))}
-      </button>`;
-    }).join('');
-
-    // ── 의료 버튼 ──
-    const medicals    = CombatSystem.getAvailableMedicals();
-    const medicalBtns = medicals.map(m => {
-      const def = gs.getCardDef(m.instanceId);
-      return `<button class="combat-action-btn medical" data-action="useItem" data-weapon="${m.instanceId}">
-        ${def?.icon ?? '💊'} ${I18n.itemName(def?.id ?? gs.cards[m.instanceId]?.definitionId, def?.name ?? I18n.t('combat.item'))}
-      </button>`;
-    }).join('');
-
-    // ── 방어 버튼 ──
-    const isGuarding = !!combat.playerGuard?.active;
-    const guardBtn = `<button class="combat-action-btn guard${isGuarding ? ' active' : ''}" data-action="guard">
-      🛡️ ${I18n.t('combat.guard')}${isGuarding ? ' ✓' : ''}
-    </button>`;
-
-    // ── 야간 경고 ──
-    const isNight = NightSystem.isNight();
-    const nightWarning = isNight
-      ? `<div class="combat-night-warning">🌙 ${I18n.t('combat.nightPenalty')}</div>`
-      : '';
-
-    // ── NPC 동행 버튼 ──
-    const companions = gs.companions ?? [];
-    const atkCd  = combat._companionAttackCooldown ?? 0;
-    const healCd = combat._companionHealCooldown   ?? 0;
-    const companionBtns = companions.length > 0 ? `
-      <button class="combat-action-btn companion" data-action="companionAttack" ${atkCd > 0 ? 'disabled' : ''}>
-        ⚔️ ${I18n.t('combat.companionAtk')}${atkCd > 0 ? ` (${atkCd})` : ''}
-      </button>
-      <button class="combat-action-btn companion" data-action="companionHeal" ${healCd > 0 ? 'disabled' : ''}>
-        💉 ${I18n.t('combat.companionHeal')}${healCd > 0 ? ` (${healCd})` : ''}
-      </button>` : '';
-
-    // ── 전투 로그 ──
+    // ── 전투 로그 ─────────────────────────────────────────────
     const LOG_CLS = [
       [I18n.t('combat.logCrit'),     'crit'],
       [I18n.t('combat.logAttack'),   'hit'],
@@ -178,89 +145,319 @@ const CombatUI = {
       [I18n.t('combat.logItem'),     'heal'],
       [I18n.t('combat.logStealth'),  'info'],  [I18n.t('combat.logFlee'), 'info'],
     ];
-    const getLogCls = l => (LOG_CLS.find(([prefix]) => l.startsWith(prefix)) ?? ['', 'info'])[1];
+    const getLogCls = l => (LOG_CLS.find(([p]) => l.startsWith(p)) ?? ['', 'info'])[1];
     const logHtml   = combat.log.slice(-10).map(l =>
       `<div class="combat-log-entry ${getLogCls(l)}">${l}</div>`
     ).join('');
+    const lastLog = combat.log.length > 0 ? combat.log[combat.log.length - 1] : '';
 
-    // ── 플레이어 ghost HP bar ──
-    const playerGhostPct = Math.max(0, Math.min(100, prevPHpPct));
+    // ── 공격 미리보기 ──────────────────────────────────────────
+    const preview = CombatSystem.previewAttack(weaponId ?? null);
 
-    // ── HTML 조립 ──
+    // ── 위치 / 시간 / 날씨 / 위험도 ──────────────────────────
+    const districtName = DISTRICTS[gs.location?.currentDistrict]?.name ?? (gs.location?.currentDistrict ?? '알 수 없음');
+    const gameHour     = String(gs.time?.hour ?? 0).padStart(2, '0');
+    const weatherIcon  = gs.weather?.icon ?? '🌤';
+    const weatherName  = gs.weather?.name ?? '';
+    const dangerLv     = combat.dangerLevel ?? 2;
+    const dangerText   = DANGER_LABEL[Math.min(dangerLv, 5)] ?? '위험';
+    const dangerColor  = DANGER_COLOR[Math.min(dangerLv, 5)] ?? '#cc3333';
+
+    // ── 아이템 / 투척물 / 동행 ────────────────────────────────
+    const medicals   = CombatSystem.getAvailableMedicals();
+    const throwables = CombatSystem.getAvailableThrowables();
+    const companions = gs.companions ?? [];
+    const atkCd      = combat._companionAttackCooldown ?? 0;
+    const healCd     = combat._companionHealCooldown   ?? 0;
+    const weapons    = CombatSystem.getAvailableWeapons();
+    const guardActive = !!combat.playerGuard?.active;
+
+    const medBtnsHtml = medicals.length > 0
+      ? medicals.map(m => {
+          const def  = gs.getCardDef(m.instanceId);
+          const heal = def?.use?.hp ?? '';
+          return `<button class="ac-item-btn" data-action="useItem" data-weapon="${m.instanceId}">
+            ${def?.icon ?? '💊'} ${I18n.itemName(def?.id ?? m.definitionId, def?.name ?? 'item')}${heal ? ` <em>+${heal}HP</em>` : ''}
+          </button>`;
+        }).join('')
+      : `<span class="ac-no-item">아이템 없음</span>`;
+
+    // ── 보조 버튼 행 ──────────────────────────────────────────
+    const extraWeaponBtns = weapons.slice(1).map(w => {
+      const def = gs.getCardDef(w.instanceId);
+      return `<button class="sec-btn" data-action="attack" data-weapon="${w.instanceId}">
+        ${def?.icon ?? '⚔'} ${I18n.itemName(def?.id ?? w.definitionId, def?.name ?? '')}
+      </button>`;
+    }).join('');
+
+    const throwBtns = throwables.map(t => {
+      const def = gs.getCardDef(t.instanceId);
+      return `<button class="sec-btn" data-action="throwable" data-weapon="${t.instanceId}">
+        ${def?.icon ?? '💣'} ${I18n.itemName(def?.id ?? t.definitionId, def?.name ?? '')}
+      </button>`;
+    }).join('');
+
+    const companionBtns = companions.length > 0 ? `
+      <button class="sec-btn companion" data-action="companionAttack" ${atkCd > 0 ? 'disabled' : ''}>
+        ⚔️ 동행 공격${atkCd > 0 ? ` (${atkCd})` : ''}
+      </button>
+      <button class="sec-btn companion" data-action="companionHeal" ${healCd > 0 ? 'disabled' : ''}>
+        💉 동행 치료${healCd > 0 ? ` (${healCd})` : ''}
+      </button>` : '';
+
+    // ── 적 패널 (우측) ────────────────────────────────────────
+    const tEnemy    = targetEnemy;
+    const tHpPct    = tEnemy ? Math.max(0, (tEnemy.currentHp / tEnemy.maxHp) * 100) : 0;
+    const tHpCls    = tHpPct < 25 ? 'crit' : tHpPct < 50 ? 'low' : '';
+    const tGhostPct = tEnemy ? Math.max(0, ((tEnemy._prevHp ?? tEnemy.currentHp) / tEnemy.maxHp) * 100) : 0;
+
+    const weaknessTags = (tEnemy?.weaknesses ?? []).map(w =>
+      `<span class="trait-tag weak">${WEAKNESS_LABEL[w] ?? w}</span>`).join('');
+    const resistTags = (tEnemy?.resistances ?? []).map(r =>
+      `<span class="trait-tag resist">${RESIST_LABEL[r] ?? r}</span>`).join('');
+    const skillTags = (tEnemy?.specialSkills ?? []).map(s =>
+      `<span class="trait-tag special">⚡${s.name}</span>`).join('');
+
+    const enemyListHtml = enemyCount > 1 ? `
+      <div class="cep-enemy-list">
+        ${combat.enemies.map((e, i) => {
+          const dead   = e.currentHp <= 0;
+          const active = i === combat.targetIndex;
+          const hp     = Math.max(0, Math.round((e.currentHp / e.maxHp) * 100));
+          return `<div class="cep-enemy-item ${active ? 'active' : ''} ${dead ? 'dead' : ''}" data-idx="${i}">
+            <span>${e.icon ?? '👾'}</span>
+            <span>${I18n.enemyName(e.id ?? e.definitionId, e.name)}</span>
+            <span>${dead ? '💀' : hp + '%'}</span>
+          </div>`;
+        }).join('')}
+      </div>` : '';
+
+    // ══════════════════════════════════════════════════════════
+    // HTML 조립
+    // ══════════════════════════════════════════════════════════
     this._screen.innerHTML = `
       <div class="combat-wrap">
 
-        <!-- ① 왼쪽: 시각 필드 -->
-        <div class="combat-visual${isHpCrit ? ' hp-crit' : ''}"
-             style="background-image:url('${BATTLE_BG}')">
-
-          <!-- 야간 색조 -->
-          ${isNight ? '<div class="combat-night-tint"></div>' : ''}
-
-          <!-- 적 스프라이트 -->
-          <div class="cv-enemies count-${enemyCount}">
-            ${enemySpritesHtml}
+        <!-- ① 상단 바 ────────────────────────────────────── -->
+        <header class="combat-top-bar">
+          <span class="ctb-brand">SURVIVAL: SEOUL</span>
+          <div class="ctb-center">
+            <span class="ctb-chip">📍 ${districtName}</span>
+            <span class="ctb-chip">⏱ ${gameHour}:00</span>
+            <span class="ctb-chip">${weatherIcon} ${weatherName}</span>
+            ${isNight ? '<span class="ctb-chip night">🌙 야간</span>' : ''}
           </div>
+          <div class="ctb-right">
+            <span class="ctb-chip${isNewRound ? ' pulse' : ''}">전투 턴 ${combat.round}</span>
+            <span class="ctb-chip danger-chip" style="color:${dangerColor};border-color:${dangerColor}55">위험: ${dangerText}</span>
+          </div>
+        </header>
 
-          <!-- 플레이어 -->
-          <div class="cv-player">
-            <img class="cv-player-img"
-                 src="${gs.player.gender === 'F' ? PLAYER_IMG_F : PLAYER_IMG_M}"
-                 alt="${gs.player.name}">
-            <div class="cv-player-info">
-              <div class="cv-hp-name">${gs.player.name}</div>
-              <div class="cv-hp-bar-track cv-player-hp-track">
-                <div class="cv-hp-bar-ghost cv-player-hp-ghost" style="width:${playerGhostPct.toFixed(1)}%"></div>
-                <div class="cv-hp-bar-fill ${hpClass}" style="width:${hpPct.toFixed(1)}%"></div>
+        <!-- ② 메인 3열 ──────────────────────────────────── -->
+        <div class="combat-main">
+
+          <!-- 좌: 플레이어 패널 ─────────────────────────── -->
+          <aside class="combat-player-panel">
+            <div class="cpp-portrait">
+              <img class="cpp-img" src="${playerImg}" alt="${gs.player.name ?? ''}">
+              <div class="cpp-name">${gs.player.name ?? '생존자'}</div>
+              <div class="cpp-job">${charDef.portrait ?? ''} ${charDef.title ?? ''}</div>
+            </div>
+
+            <div class="cpp-stats">
+              <div class="cpp-stat-row">
+                <span class="cpp-label">HP</span>
+                <div class="cpp-bar-wrap">
+                  <div class="cpp-bar-ghost" style="width:${prevPHpPct.toFixed(1)}%"></div>
+                  <div class="cpp-bar ${hpClass}" style="width:${hpPct.toFixed(1)}%"></div>
+                </div>
+                <span class="cpp-val ${hpClass}">${gs.player.hp.current}/${gs.player.hp.max}</span>
               </div>
-              <div class="cv-hp-text ${hpClass}">${gs.player.hp.current} / ${gs.player.hp.max}</div>
-              ${playerStatusHtml ? `<div class="cp-status-row" style="margin-top:3px;">${playerStatusHtml}</div>` : ''}
+              <div class="cpp-stat-row">
+                <span class="cpp-label">스태미나</span>
+                <div class="cpp-bar-wrap">
+                  <div class="cpp-bar stamina" style="width:${stPct.toFixed(1)}%"></div>
+                </div>
+                <span class="cpp-val">${Math.round(gs.stats.stamina.current)}</span>
+              </div>
+              <div class="cpp-stat-row">
+                <span class="cpp-label">감염</span>
+                <div class="cpp-bar-wrap">
+                  <div class="cpp-bar infection" style="width:${infPct.toFixed(1)}%"></div>
+                </div>
+                <span class="cpp-val">${Math.round(gs.stats.infection.current)}%</span>
+              </div>
+            </div>
+
+            <div class="cpp-equipment">
+              ${weaponDef ? `
+                <div class="cpp-equip-item">
+                  <span class="cpp-equip-icon">${weaponDef.icon ?? '⚔️'}</span>
+                  <div class="cpp-equip-info">
+                    <div class="cpp-equip-name">${I18n.itemName(weaponDef.id, weaponDef.name)}</div>
+                    <div class="cpp-dur-wrap"><div class="cpp-dur-bar" style="width:${durPct}%"></div></div>
+                    <div class="cpp-equip-sub">내구도 ${durPct}%${ammoCount !== null ? ` · 탄약 ${ammoCount}발` : ''}</div>
+                  </div>
+                </div>` : `<div class="cpp-equip-item"><span class="cpp-equip-icon">👊</span><div class="cpp-equip-name" style="font-size:10px;color:var(--text-secondary)">맨손</div></div>`}
+              ${armorDef ? `
+                <div class="cpp-equip-item">
+                  <span class="cpp-equip-icon">${armorDef.icon ?? '🛡️'}</span>
+                  <div class="cpp-equip-info">
+                    <div class="cpp-equip-name">${I18n.itemName(armorDef.id, armorDef.name)}</div>
+                  </div>
+                </div>` : ''}
+            </div>
+
+            ${playerStatusHtml ? `<div class="cpp-status">${playerStatusHtml}</div>` : ''}
+          </aside>
+
+          <!-- 중: 전투 장면 ──────────────────────────────── -->
+          <div class="combat-visual${isHpCrit ? ' hp-crit' : ''}"
+               style="background-image:url('${BATTLE_BG}')">
+            ${isNight ? '<div class="combat-night-tint"></div>' : ''}
+
+            <div class="cv-context-overlay">
+              <span>${distText}</span>
+              <span>${coverText}</span>
+              <span>${lightText}</span>
+              <span>${noiseText}</span>
+            </div>
+
+            <div class="cv-enemies count-${enemyCount}">
+              ${enemySpritesHtml}
+            </div>
+
+            <div class="cv-player">
+              <img class="cv-player-img" src="${playerImg}" alt="${gs.player.name ?? ''}">
+            </div>
+
+            ${lastLog ? `<div class="cv-log-overlay">${lastLog}</div>` : ''}
+          </div>
+
+          <!-- 우: 적 정보 패널 ───────────────────────────── -->
+          <aside class="combat-enemy-panel">
+            ${tEnemy ? `
+              <div class="cep-header">
+                <span class="cep-icon">${tEnemy.icon ?? '👾'}</span>
+                <div class="cep-title">
+                  <div class="cep-name">${I18n.enemyName(tEnemy.id ?? tEnemy.definitionId, tEnemy.name)}</div>
+                  <div class="cep-type">${tEnemy.type === 'zombie' ? '🧟 감염자' : '⚔️ 인간'}</div>
+                </div>
+                <span class="cep-danger-badge" style="color:${dangerColor}">▲ 위험</span>
+              </div>
+
+              <div class="cep-hp-section">
+                <div class="cep-hp-label">
+                  <span>HP</span>
+                  <span class="cep-hp-text ${tHpCls}">${Math.max(0, tEnemy.currentHp)} / ${tEnemy.maxHp}</span>
+                </div>
+                <div class="cv-hp-bar-track cep-hp-track">
+                  <div class="cv-hp-bar-ghost cep-ghost" style="width:${tGhostPct.toFixed(1)}%"></div>
+                  <div class="cv-hp-bar-fill ${tHpCls}" style="width:${tHpPct.toFixed(1)}%"></div>
+                </div>
+              </div>
+
+              <div class="cep-stats-grid">
+                <div class="cep-stat"><span>🛡 방어력</span><strong>${tEnemy.defense ?? 0}</strong></div>
+                <div class="cep-stat"><span>🦠 감염확률</span><strong>${Math.round((tEnemy.infectionChance ?? 0) * 100)}%</strong></div>
+                <div class="cep-stat"><span>⚔ 공격</span><strong>${tEnemy.attack?.damage?.[0] ?? 0}~${tEnemy.attack?.damage?.[1] ?? 0}</strong></div>
+                <div class="cep-stat"><span>🎯 명중</span><strong>${Math.round((tEnemy.attack?.accuracy ?? 0.7) * 100)}%</strong></div>
+              </div>
+
+              ${(weaknessTags || resistTags || skillTags) ? `
+                <div class="cep-traits">${weaknessTags}${resistTags}${skillTags}</div>` : ''}
+
+              ${enemyListHtml}
+            ` : ''}
+
+            <div class="cep-log">
+              <div class="cep-log-label">전투 기록 · <small>${I18n.t('combat.noiseEnemy', { noise: Math.round(noise), alive: aliveCount, total: enemyCount })}</small></div>
+              <div class="combat-log" id="combat-log">${logHtml}</div>
+            </div>
+          </aside>
+
+        </div><!-- .combat-main -->
+
+        <!-- ③ 하단: 액션 카드 바 ───────────────────────── -->
+        <footer class="combat-action-bar">
+
+          <!-- 공격 카드 -->
+          <div class="action-card primary" data-action="${weaponId ? 'attack' : 'unarmed'}" data-weapon="${weaponId ?? ''}">
+            <div class="ac-header">
+              <span class="ac-icon">${weaponDef?.icon ?? '👊'}</span>
+              <div class="ac-title-group">
+                <span class="ac-name">${weaponDef ? I18n.itemName(weaponDef.id, weaponDef.name) : '맨손'}</span>
+                <span class="ac-sub">ATTACK</span>
+              </div>
+            </div>
+            <div class="ac-preview">
+              <div class="ac-row"><span>예상 피해</span><strong>${preview.dmgMin}~${preview.dmgMax}</strong></div>
+              <div class="ac-row"><span>명중률</span><strong>${preview.accuracy}%</strong></div>
+              ${preview.critChance > 0 ? `<div class="ac-row"><span>치명타</span><strong>${preview.critChance}%</strong></div>` : ''}
+              ${preview.ammoLeft !== null ? `<div class="ac-row${preview.ammoLeft === 0 ? ' warn' : ''}"><span>탄약</span><strong>${preview.ammoLeft}발</strong></div>` : ''}
             </div>
           </div>
 
-        </div><!-- .combat-visual -->
-
-        <!-- ② 오른쪽: 전투 패널 -->
-        <div class="combat-panel">
-
-          <!-- 헤더 -->
-          <div class="cp-header">
-            <span class="cp-title${isNewRound ? ' round-pulse' : ''}">${I18n.t('combat.round', { round: combat.round })}</span>
-            <span class="cp-noise">${I18n.t('combat.noiseEnemy', { noise: Math.round(gs.noise.level), alive: aliveCount, total: enemyCount })}</span>
-          </div>
-
-          <!-- 야간 경고 -->
-          ${nightWarning}
-
-          <!-- 행동 -->
-          <div class="cp-section">
-            <div class="cp-section-label">${I18n.t('combat.actions')}</div>
-            <div class="cp-action-grid">
-              ${weaponBtns}
-              <button class="combat-action-btn" data-action="unarmed">${I18n.t('combat.unarmed')}</button>
-              ${guardBtn}
-              ${throwableBtns}
-              ${medicalBtns}
-              ${companionBtns}
-              <button class="combat-action-btn secondary" data-action="stealth">${I18n.t('combat.stealth')}</button>
-              <button class="combat-action-btn secondary" data-action="flee">${I18n.t('combat.flee')}</button>
+          <!-- 방어 카드 -->
+          <div class="action-card${guardActive ? ' active' : ''}" data-action="guard">
+            <div class="ac-header">
+              <span class="ac-icon">🛡️</span>
+              <div class="ac-title-group">
+                <span class="ac-name">방어${guardActive ? ' ✓' : ''}</span>
+                <span class="ac-sub">DEFEND</span>
+              </div>
+            </div>
+            <div class="ac-preview">
+              <div class="ac-row"><span>피해 감소</span><strong>-55%</strong></div>
+              <div class="ac-row"><span>반격 보너스</span><strong>+30%</strong></div>
+              ${guardActive ? '<div class="ac-row good"><span>상태</span><strong>방어 중</strong></div>' : ''}
             </div>
           </div>
 
-          <!-- 전투 기록 -->
-          <div class="cp-section cp-log-section">
-            <div class="cp-section-label">${I18n.t('combat.log')}</div>
-            <div class="combat-log" id="combat-log">${logHtml}</div>
+          <!-- 아이템 카드 -->
+          <div class="action-card items">
+            <div class="ac-header">
+              <span class="ac-icon">🎒</span>
+              <div class="ac-title-group">
+                <span class="ac-name">아이템 <small>(${medicals.length})</small></span>
+                <span class="ac-sub">USE ITEM</span>
+              </div>
+            </div>
+            <div class="ac-item-list">${medBtnsHtml}</div>
           </div>
 
-        </div><!-- .combat-panel -->
+          <!-- 도주 카드 -->
+          <div class="action-card flee" data-action="flee">
+            <div class="ac-header">
+              <span class="ac-icon">🏃</span>
+              <div class="ac-title-group">
+                <span class="ac-name">도주</span>
+                <span class="ac-sub">FLEE</span>
+              </div>
+            </div>
+            <div class="ac-preview">
+              <div class="ac-row"><span>성공률</span><strong>60%</strong></div>
+              <div class="ac-row warn"><span>실패 시</span><strong>피해 ×1.5</strong></div>
+            </div>
+          </div>
+
+        </footer>
+
+        <!-- ④ 보조 액션 행 ──────────────────────────────── -->
+        <div class="combat-sec-row">
+          ${extraWeaponBtns}
+          ${throwBtns}
+          ${companionBtns}
+          <button class="sec-btn" data-action="unarmed">👊 맨손</button>
+          <button class="sec-btn secondary" data-action="stealth">🤫 은신</button>
+        </div>
+
       </div><!-- .combat-wrap -->
     `;
 
-    // ── ghost bar 애니메이션 트리거 (rAF) ──
-    // 렌더 후 ghost bar를 현재 HP로 전환 → CSS transition이 부드럽게 줄임
+    // ── ghost bar 애니메이션 (rAF) ─────────────────────────────
     requestAnimationFrame(() => {
-      // 적 ghost bars
+      // 중앙 시각 패널 적 ghost bars
       this._screen.querySelectorAll('.cv-hp-bar-ghost[data-idx]').forEach(el => {
         const idx   = parseInt(el.dataset.idx, 10);
         const enemy = combat.enemies[idx];
@@ -270,24 +467,27 @@ const CombatUI = {
         enemy._prevHp = enemy.currentHp;
       });
 
-      // 플레이어 ghost bar
-      const pg = this._screen.querySelector('.cv-player-hp-ghost');
-      if (pg) {
-        pg.style.width = hpPct.toFixed(1) + '%';
+      // 우측 패널 타겟 ghost bar
+      const cepGhost = this._screen.querySelector('.cep-ghost');
+      if (cepGhost && tEnemy) {
+        cepGhost.style.width = (Math.max(0, (tEnemy.currentHp / tEnemy.maxHp) * 100)).toFixed(1) + '%';
+      }
+
+      // 좌측 패널 플레이어 ghost bar
+      const ppGhost = this._screen.querySelector('.cpp-bar-ghost');
+      if (ppGhost) {
+        ppGhost.style.width = hpPct.toFixed(1) + '%';
         this._prevPlayerHp = hpPct;
       }
 
-      // _wasAlive 갱신
-      for (const enemy of combat.enemies) {
-        enemy._wasAlive = enemy.currentHp > 0;
-      }
+      for (const enemy of combat.enemies) enemy._wasAlive = enemy.currentHp > 0;
     });
 
-    // ── 로그 스크롤 하단 고정 ──
+    // ── 로그 스크롤 ───────────────────────────────────────────
     const logEl = this._screen.querySelector('#combat-log');
     if (logEl) logEl.scrollTop = logEl.scrollHeight;
 
-    // ── 적 스프라이트 클릭 → 타겟 변경 ──
+    // ── 적 스프라이트 클릭 (타겟 변경) ───────────────────────
     this._screen.querySelectorAll('.cv-enemy-sprite:not(.is-dead)').forEach(el => {
       el.addEventListener('click', () => {
         const idx = parseInt(el.dataset.idx, 10);
@@ -295,20 +495,28 @@ const CombatUI = {
       });
     });
 
-    // ── 액션 버튼 ──
+    // ── 우측 패널 적 목록 클릭 ────────────────────────────────
+    this._screen.querySelectorAll('.cep-enemy-item:not(.dead)').forEach(el => {
+      el.addEventListener('click', () => {
+        const idx = parseInt(el.dataset.idx, 10);
+        if (!Number.isNaN(idx)) { CombatSystem.setTarget(idx); this.render(); }
+      });
+    });
+
+    // ── 액션 버튼 ────────────────────────────────────────────
     this._screen.querySelectorAll('[data-action]').forEach(btn => {
       btn.addEventListener('click', () => {
         const action   = btn.dataset.action;
-        const weaponId = btn.dataset.weapon ?? null;
+        const wId      = btn.dataset.weapon || null;
 
-        if (action === 'attack' && weaponId) {
-          CombatSystem.resolveAction('shoot', weaponId);
+        if (action === 'attack' && wId) {
+          CombatSystem.resolveAction('shoot', wId);
         } else if (action === 'unarmed') {
           CombatSystem.resolveAction('melee', null);
-        } else if (action === 'useItem' && weaponId) {
-          CombatSystem.resolveAction('useItem', weaponId);
-        } else if (action === 'throwable' && weaponId) {
-          CombatSystem.resolveAction('throwable', weaponId);
+        } else if (action === 'useItem' && wId) {
+          CombatSystem.resolveAction('useItem', wId);
+        } else if (action === 'throwable' && wId) {
+          CombatSystem.resolveAction('throwable', wId);
         } else {
           CombatSystem.resolveAction(action);
         }
@@ -335,13 +543,11 @@ const CombatUI = {
     }
     if (!targetEl) return;
 
-    // 피격 플래시
     targetEl.classList.remove('hit');
     void targetEl.offsetWidth;
     targetEl.classList.add('hit');
     setTimeout(() => targetEl.classList.remove('hit'), 350);
 
-    // 크리티컬 히트 → 화면 흔들기
     if (lastHit.isCrit) {
       const visual = this._screen.querySelector('.combat-visual');
       if (visual) {

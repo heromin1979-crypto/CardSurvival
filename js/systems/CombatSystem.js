@@ -807,6 +807,59 @@ const CombatSystem = {
       return def.subtype === 'throwable' || def.tags?.includes('throwable');
     });
   },
+
+  // ── 공격 미리보기 (UI 표시용 — 랜덤 없이 범위만 계산) ──────
+  previewAttack(weaponId = null) {
+    const gs    = GameState;
+    const enemy = gs.combat.enemies?.[gs.combat.targetIndex];
+    if (!enemy) return { dmgMin: 0, dmgMax: 0, accuracy: 70, critChance: 0, ammoLeft: null };
+
+    let dmgMin = 0, dmgMax = 0, accuracy = 0.70, critChance = 0, ammoLeft = null;
+
+    if (weaponId && gs.cards[weaponId]) {
+      const def = gs.getCardDef(weaponId);
+      if (def?.combat) {
+        const [dMin, dMax] = def.combat.damage;
+        const qualMult = BALANCE.quality.tiers[gs.cards[weaponId]?._quality]?.mult ?? 1.0;
+        dmgMin     = Math.max(1, Math.round(dMin * qualMult) - (enemy.defense ?? 0));
+        dmgMax     = Math.max(1, Math.round(dMax * qualMult) - (enemy.defense ?? 0));
+        accuracy   = def.combat.accuracy;
+        critChance = def.combat.critChance ?? 0;
+
+        if (def.combat.requiresAmmo) {
+          accuracy   = Math.min(1, accuracy + SkillSystem.getBonus('ranged', 'accBonus'));
+          critChance = Math.min(1, critChance + SkillSystem.getBonus('ranged', 'critBonus'));
+          const ammoInst = gs.getBoardCards().find(c => c.definitionId === def.combat.requiresAmmo);
+          ammoLeft = ammoInst ? (ammoInst.quantity ?? 1) : 0;
+        }
+      }
+    } else {
+      const [uMin, uMax] = BALANCE.combat.unarmedBaseDmg;
+      const mult = SkillSystem.getBonus('unarmed', 'dmgMult');
+      dmgMin = Math.max(1, Math.floor(uMin * mult) - (enemy.defense ?? 0));
+      dmgMax = Math.max(1, Math.floor(uMax * mult) - (enemy.defense ?? 0));
+      accuracy = 0.80;
+    }
+
+    if (NightSystem.isNight()) {
+      const hasLight = gs.getBoardCards().some(c =>
+        gs.getCardDef(c.instanceId)?.tags?.includes('light_source') && (c.durability ?? 100) > 0
+      );
+      accuracy = Math.max(0.10, accuracy -
+        (hasLight ? BALANCE.combat.nightLitPenalty : BALANCE.combat.nightAccuracyPenalty));
+    }
+
+    const moraleTier = StatSystem.getMoraleTier();
+    accuracy = Math.max(0.10, Math.min(1, accuracy + (moraleTier.accBonus ?? 0)));
+
+    return {
+      dmgMin,
+      dmgMax,
+      accuracy:   Math.round(accuracy * 100),
+      critChance: Math.round(Math.min(1, critChance + (gs.player.critBonus ?? 0)) * 100),
+      ammoLeft,
+    };
+  },
 };
 
 export default CombatSystem;

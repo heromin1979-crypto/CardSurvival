@@ -1,4 +1,4 @@
-/* === COMBAT SCREEN === */
+/* === COMBAT SCREEN v4 — 3패널 그리드 레이아웃 === */
 #screen-combat {
   padding: 0;
   overflow: hidden;
@@ -9,7 +9,7 @@
 }
 
 /* ══════════════════════════════════════════════════════════════
-   전투 화면 v2 — 좌: 시각 필드 / 우: 정보 패널
+   전투 화면 v4 — 상단바 / 3열 메인 / 하단 액션 / 보조 행
 ══════════════════════════════════════════════════════════════ */
 
 .combat-wrap {
@@ -17,11 +17,264 @@
   height: 100%;
   flex: 1;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   min-height: 0;
+  background: #060402;
 }
 
-/* ── 왼쪽: 시각 필드 ─────────────────────────────────── */
+/* ── ① 상단 바 ────────────────────────────────────────── */
+
+.combat-top-bar {
+  flex-shrink: 0;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  background: rgba(0,0,0,0.78);
+  border-bottom: 1px solid rgba(200,160,96,0.20);
+  backdrop-filter: blur(6px);
+  z-index: 10;
+}
+
+.ctb-brand {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--accent-primary);
+  letter-spacing: 2px;
+  opacity: 0.75;
+  flex-shrink: 0;
+}
+
+.ctb-center {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.ctb-right {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.ctb-chip {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-secondary);
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 4px;
+  padding: 2px 7px;
+}
+.ctb-chip.night {
+  color: #a78bfa;
+  border-color: rgba(167,139,250,0.35);
+  background: rgba(90,60,180,0.18);
+}
+.ctb-chip.danger-chip {
+  font-weight: 700;
+}
+.ctb-chip.pulse {
+  animation: ctbPulse 0.5s ease;
+}
+@keyframes ctbPulse {
+  0%   { transform: scale(1);    }
+  40%  { transform: scale(1.18); }
+  100% { transform: scale(1);    }
+}
+
+/* ── ② 메인 3열 ──────────────────────────────────────── */
+
+.combat-main {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: row;
+}
+
+/* ── 좌: 플레이어 패널 ───────────────────────────────── */
+
+.combat-player-panel {
+  width: 200px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  background: rgba(6,4,2,0.94);
+  border-right: 1px solid rgba(200,160,96,0.10);
+  overflow: hidden;
+}
+
+/* 초상화 */
+.cpp-portrait {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 10px 8px;
+  background: rgba(200,160,96,0.04);
+  border-bottom: 1px solid rgba(200,160,96,0.08);
+}
+
+.cpp-img {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2px solid rgba(200,160,96,0.35);
+  filter: drop-shadow(0 2px 8px rgba(0,0,0,0.70));
+  flex-shrink: 0;
+}
+
+.cpp-name {
+  font-size: 12px;
+  color: var(--text-primary);
+  font-weight: 700;
+  margin-top: 6px;
+  text-align: center;
+}
+
+.cpp-job {
+  font-size: 9px;
+  color: var(--text-dim);
+  text-align: center;
+  margin-top: 2px;
+}
+
+/* 스탯 바 영역 */
+.cpp-stats {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 10px 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+
+.cpp-stat-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.cpp-label {
+  font-size: 8px;
+  color: rgba(200,160,96,0.55);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  width: 38px;
+  flex-shrink: 0;
+}
+
+.cpp-bar-wrap {
+  flex: 1;
+  height: 6px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 3px;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ghost bar (링거 효과) — HP 전용 */
+.cpp-bar-ghost {
+  position: absolute;
+  top: 0; left: 0;
+  height: 100%;
+  background: rgba(220,80,80,0.45);
+  border-radius: 3px;
+  transition: width 0.8s ease 0.25s;
+  z-index: 0;
+}
+
+.cpp-bar {
+  position: absolute;
+  top: 0; left: 0;
+  height: 100%;
+  background: var(--text-good);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+  z-index: 1;
+}
+.cpp-bar.low      { background: var(--text-warn); }
+.cpp-bar.crit     { background: var(--text-danger); }
+.cpp-bar.stamina  { background: #5b8bde; }
+.cpp-bar.infection{ background: #9b59b6; }
+
+.cpp-val {
+  font-size: 9px;
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  width: 40px;
+  text-align: right;
+  flex-shrink: 0;
+}
+.cpp-val.low  { color: var(--text-warn); }
+.cpp-val.crit { color: var(--text-danger); }
+
+/* 장비 영역 */
+.cpp-equipment {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 10px;
+  overflow: hidden;
+}
+
+.cpp-equip-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 5px 6px;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+.cpp-equip-icon { font-size: 16px; flex-shrink: 0; line-height: 1; }
+
+.cpp-equip-info { flex: 1; min-width: 0; }
+
+.cpp-equip-name {
+  font-size: 10px;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cpp-dur-wrap {
+  width: 100%;
+  height: 3px;
+  background: rgba(255,255,255,0.10);
+  border-radius: 2px;
+  overflow: hidden;
+  margin: 3px 0 2px;
+}
+.cpp-dur-bar {
+  height: 100%;
+  background: #5b8bde;
+  border-radius: 2px;
+  transition: width 0.3s;
+}
+
+.cpp-equip-sub {
+  font-size: 8px;
+  color: var(--text-dim);
+}
+
+/* 상태이상 배지 */
+.cpp-status {
+  flex-shrink: 0;
+  padding: 4px 8px 6px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  border-top: 1px solid rgba(255,255,255,0.04);
+}
+
+/* ── 중: 전투 시각 패널 ──────────────────────────────── */
 
 .combat-visual {
   flex: 1;
@@ -60,15 +313,19 @@
   z-index: 1;
 }
 
-/* 오른쪽 페이드 — 패널과 자연스러운 전환 */
-.combat-visual::after {
+/* HP 위기 — 붉은 펄스 비네트 */
+.combat-visual.hp-crit::after {
   content: '';
   position: absolute;
-  top: 0; right: 0; bottom: 0;
-  width: 60px;
-  background: linear-gradient(to right, transparent, rgba(8,5,2,0.95));
+  inset: 0;
+  border: 0 solid rgba(200,30,30,0);
+  animation: hpCritVignette 1.6s ease-in-out infinite;
   pointer-events: none;
-  z-index: 1;
+  z-index: 4;
+}
+@keyframes hpCritVignette {
+  0%,100% { box-shadow: inset 0 0 0px rgba(200,30,30,0); }
+  50%      { box-shadow: inset 0 0 80px rgba(200,30,30,0.55); }
 }
 
 /* 야간 색조 오버레이 */
@@ -85,7 +342,47 @@
   z-index: 2;
 }
 
-/* 적 스프라이트 영역 (상단 — 하단 정렬로 중앙선 쪽으로 밀기) */
+/* 환경 정보 오버레이 (상단 좌측) */
+.cv-context-overlay {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.cv-context-overlay span {
+  font-size: 9px;
+  color: rgba(255,255,255,0.60);
+  background: rgba(0,0,0,0.48);
+  border-radius: 3px;
+  padding: 1px 5px;
+  font-family: var(--font-mono);
+}
+
+/* 마지막 로그 오버레이 (하단 중앙) */
+.cv-log-overlay {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  font-size: 12px;
+  color: #fff;
+  background: rgba(0,0,0,0.60);
+  border-radius: 4px;
+  padding: 4px 12px;
+  white-space: nowrap;
+  pointer-events: none;
+  animation: logOverlayFade 0.3s ease;
+}
+@keyframes logOverlayFade {
+  from { opacity: 0; transform: translateX(-50%) translateY(6px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* 적 스프라이트 영역 */
 .cv-enemies {
   display: flex;
   align-items: flex-end;
@@ -107,13 +404,9 @@
 .cv-enemy-sprite:hover:not(.is-dead) {
   transform: scale(1.06) translateY(-6px);
 }
-/* 타겟 선택 — 애니메이션은 animations.css의 targetGlowPulse 처리 */
 .cv-enemy-sprite.is-target:not(.entering) {
-  /* 정적 fallback (애니 없는 환경용) */
   filter: drop-shadow(0 0 18px rgba(200,160,96,0.90));
 }
-
-/* 사망 최종 상태 (just-died 애니 완료 후 유지) */
 .cv-enemy-sprite.is-dead:not(.just-died) {
   opacity: 0.18;
   filter: grayscale(1) brightness(0.6);
@@ -145,7 +438,7 @@
 .cv-enemies.count-3 .cv-enemy-img  { height: 155px; max-width: 140px; }
 .cv-enemies.count-3 .cv-enemy-icon { font-size: 80px; }
 
-/* 플레이어 스프라이트 (적 아래, 중앙 정렬) */
+/* 플레이어 스프라이트 */
 .cv-player {
   flex-shrink: 0;
   display: flex;
@@ -158,18 +451,17 @@
   z-index: 3;
 }
 .cv-player-img {
-  height: 280px;
+  height: 240px;
   width: auto;
   object-fit: contain;
   border-radius: 8px;
   filter: drop-shadow(0 8px 24px rgba(0,0,0,0.88))
           drop-shadow(0 0 16px rgba(200,160,96,0.18));
   flex-shrink: 0;
-  background: transparent;
   mix-blend-mode: normal;
 }
 
-/* ── 비주얼 HP 오버레이 (적 스프라이트 하단) ─────────── */
+/* 비주얼 HP 오버레이 (적 스프라이트 하단) */
 .cv-hp-overlay {
   width: 100%;
   background: rgba(0,0,0,0.72);
@@ -196,6 +488,16 @@
   overflow: hidden;
   position: relative;
 }
+/* ghost bar */
+.cv-hp-bar-ghost {
+  position: absolute;
+  top: 0; left: 0;
+  height: 100%;
+  background: rgba(220,80,80,0.50);
+  border-radius: 2px;
+  transition: width 0.8s ease 0.25s;
+  z-index: 0;
+}
 .cv-hp-bar-fill {
   position: relative;
   height: 100%;
@@ -215,530 +517,522 @@
 .cv-hp-text.low  { color: var(--text-warn); }
 .cv-hp-text.crit { color: var(--text-danger); }
 
-/* 플레이어 정보 박스 (cv-player 이미지 하단) */
-.cv-player-info {
-  width: 180px;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  background: rgba(0,0,0,0.72);
-  padding: 6px 10px;
-  border-radius: 6px;
-  text-align: center;
+/* 적 스프라이트 hit 플래시 */
+.cv-enemy-sprite.hit,
+.cv-player.hit {
+  animation: hitFlash 0.32s ease;
 }
-.cv-player-info .cv-hp-name {
-  font-size: 11px;
-  color: var(--text-primary);
-  text-align: left;
-}
-.cv-player-info .cv-hp-bar-track { height: 6px; position: relative; }
-.cv-player-info .cv-hp-text {
-  font-size: 10px;
-  text-align: left;
+@keyframes hitFlash {
+  0%   { filter: brightness(1) drop-shadow(0 0 0 rgba(255,80,80,0)); }
+  20%  { filter: brightness(2.2) drop-shadow(0 0 18px rgba(255,80,80,0.9)); }
+  100% { filter: brightness(1) drop-shadow(0 0 0 rgba(255,80,80,0)); }
 }
 
-/* ── 오른쪽: 전투 정보 패널 ──────────────────────────── */
-
-.combat-panel {
-  width: 265px;
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  background: rgba(8,5,2,0.96);
-  border-left: 1px solid rgba(200,160,96,0.12);
-  overflow: hidden;
+/* 적 스프라이트 entering 애니메이션 */
+.cv-enemy-sprite.entering {
+  animation: enemyEnter 0.5s ease both;
+}
+@keyframes enemyEnter {
+  from { opacity: 0; transform: translateY(-20px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-.cp-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 12px 8px;
-  background: rgba(200,160,96,0.07);
-  border-bottom: 1px solid rgba(200,160,96,0.12);
-  flex-shrink: 0;
-}
-.cp-title { font-size: 13px; color: var(--accent-primary); font-weight: bold; }
-.cp-noise { font-size: 10px; color: var(--text-muted); }
-
-.cp-section {
-  padding: 8px 12px;
-  border-bottom: 1px solid rgba(255,255,255,0.04);
-  flex-shrink: 0;
-}
-.cp-section-label {
-  font-size: 9px;
-  color: rgba(200,160,96,0.45);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-bottom: 5px;
-}
-
-/* 적 행 */
-.cp-enemy-row {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  padding: 4px 6px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background 0.1s;
-  margin-bottom: 3px;
-  border: 1px solid transparent;
-}
-.cp-enemy-row:last-child { margin-bottom: 0; }
-.cp-enemy-row:hover:not(.is-dead) { background: rgba(255,255,255,0.04); }
-.cp-enemy-row.is-target {
-  background: rgba(200,160,96,0.07);
-  border-color: rgba(200,160,96,0.25);
-}
-.cp-enemy-row.is-dead { opacity: 0.28; cursor: default; pointer-events: none; }
-.cp-enemy-icon { font-size: 18px; flex-shrink: 0; }
-.cp-enemy-detail { flex: 1; min-width: 0; }
-.cp-enemy-name {
-  font-size: 11px;
-  color: var(--text-primary);
-  margin-bottom: 3px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.cp-enemy-hp-track {
-  width: 100%;
-  height: 4px;
-  background: rgba(255,255,255,0.10);
-  border-radius: 2px;
-  overflow: hidden;
-  margin-bottom: 2px;
-}
-.cp-enemy-hp-fill {
-  height: 100%;
-  background: var(--text-good);
-  transition: width 0.2s;
-}
-.cp-enemy-hp-fill.low  { background: var(--text-warn); }
-.cp-enemy-hp-fill.crit { background: var(--text-danger); }
-.cp-enemy-hp-text {
-  font-size: 9px;
-  color: var(--text-dim);
+/* 데미지 팝업 */
+.dmg-popup {
+  position: absolute;
   font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 20px;
+  color: #ff6666;
+  pointer-events: none;
+  z-index: 20;
+  animation: dmgPopupAnim 0.8s ease forwards;
+}
+.dmg-popup.crit  { font-size: 28px; color: #f39c12; }
+.dmg-popup.heal  { font-size: 18px; color: #1abc9c; }
+.dmg-popup.miss  { font-size: 14px; color: #888; }
+.dmg-popup.guard { font-size: 16px; color: #7ab4f8; }
+@keyframes dmgPopupAnim {
+  0%   { opacity: 1; transform: translateY(0) scale(1); }
+  20%  { opacity: 1; transform: translateY(-18px) scale(1.15); }
+  100% { opacity: 0; transform: translateY(-50px) scale(0.9); }
 }
 
-/* 플레이어 섹션 */
-.cp-player-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 5px;
+/* 치명타 화면 흔들기 */
+.combat-visual.shake {
+  animation: visualShake 0.38s ease;
 }
-.cp-player-name { font-size: 12px; color: var(--text-primary); }
-.cp-player-hp-text {
-  font-size: 11px;
-  color: var(--text-good);
-  font-family: var(--font-mono);
+@keyframes visualShake {
+  0%,100% { transform: translateX(0); }
+  15%     { transform: translateX(-7px); }
+  30%     { transform: translateX(7px); }
+  45%     { transform: translateX(-5px); }
+  60%     { transform: translateX(5px); }
+  75%     { transform: translateX(-3px); }
+  90%     { transform: translateX(3px); }
 }
-.cp-player-hp-text.low  { color: var(--text-warn); }
-.cp-player-hp-text.crit { color: var(--text-danger); }
-.cp-hp-track {
-  width: 100%;
-  height: 6px;
-  background: rgba(255,255,255,0.10);
-  border-radius: 3px;
-  overflow: hidden;
-}
-.cp-hp-fill { height: 100%; background: var(--text-good); transition: width 0.2s; }
-.cp-hp-fill.low  { background: var(--text-warn); }
-.cp-hp-fill.crit { background: var(--text-danger); }
 
-.cp-status-row {
+/* 적 상태배지 */
+.cv-status-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 3px;
-  margin-top: 5px;
+  gap: 2px;
+  margin-top: 2px;
 }
 
-/* 행동 버튼 그리드 */
-.cp-action-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4px;
+/* ── 우: 적 정보 패널 ────────────────────────────────── */
+
+.combat-enemy-panel {
+  width: 260px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  background: rgba(6,4,2,0.95);
+  border-left: 1px solid rgba(200,160,96,0.10);
+  overflow: hidden;
 }
-.cp-action-grid .combat-action-btn {
-  padding: 6px 8px;
-  font-size: 10px;
-  letter-spacing: 0.2px;
+
+/* 적 헤더 */
+.cep-header {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px 8px;
+  background: rgba(200,160,96,0.05);
+  border-bottom: 1px solid rgba(200,160,96,0.10);
+}
+
+.cep-icon { font-size: 22px; flex-shrink: 0; }
+
+.cep-title { flex: 1; min-width: 0; }
+
+.cep-name {
+  font-size: 12px;
+  color: var(--text-primary);
+  font-weight: 700;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-/* 치명타 퍼센트 보조 텍스트 */
-.btn-sub {
-  font-size: 8px;
-  opacity: 0.55;
-  display: block;
+.cep-type {
+  font-size: 9px;
+  color: var(--text-dim);
   margin-top: 1px;
 }
 
-/* 로그 섹션 — 남은 공간 전부 */
-.cp-log-section {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  min-height: 60px;
-}
-.cp-log-section .cp-section-label {
+.cep-danger-badge {
+  font-size: 9px;
+  font-weight: 700;
   flex-shrink: 0;
-}
-.cp-log-section .combat-log {
-  flex: 1;
-  max-height: none;
-  border: none;
-  border-radius: 0;
-  padding: 0 0 8px;
-  background: transparent;
-  overflow-y: auto;
 }
 
-/* ── HUD 상단 바 ── */
-.combat-hud-bar {
+/* 적 HP 섹션 */
+.cep-hp-section {
   flex-shrink: 0;
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+
+.cep-hp-label {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 18px;
-  background: rgba(0, 0, 0, 0.60);
-  backdrop-filter: blur(6px);
-  border-bottom: 1px solid rgba(200, 160, 96, 0.25);
-  z-index: 2;
+  margin-bottom: 4px;
+  font-size: 9px;
+  color: rgba(200,160,96,0.50);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
 }
-.combat-hud-title {
+
+.cep-hp-text {
   font-family: var(--font-mono);
-  font-size: 13px;
-  color: var(--accent-primary);
-  letter-spacing: 1px;
+  font-size: 10px;
+  color: var(--text-good);
 }
-.combat-hud-info {
+.cep-hp-text.low  { color: var(--text-warn); }
+.cep-hp-text.crit { color: var(--text-danger); }
+
+.cep-hp-track {
+  height: 8px !important;
+}
+
+/* ghost bar for enemy panel (reuses cv-hp-bar-ghost/fill above) */
+.cep-ghost {
+  transition: width 0.8s ease 0.25s;
+}
+
+/* 적 스탯 그리드 */
+.cep-stats-grid {
+  flex-shrink: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  padding: 6px 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+
+.cep-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 5px 4px;
+}
+.cep-stat span {
+  font-size: 8px;
+  color: var(--text-dim);
+}
+.cep-stat strong {
+  font-size: 12px;
+  color: var(--text-primary);
   font-family: var(--font-mono);
+}
+
+/* 특성 태그 */
+.cep-traits {
+  flex-shrink: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  padding: 6px 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+
+.trait-tag {
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-weight: 600;
+}
+.trait-tag.weak    { background: rgba(220,50,50,0.25);  color: #ff9090; border: 1px solid rgba(220,50,50,0.40); }
+.trait-tag.resist  { background: rgba(40,80,200,0.25);  color: #90b8ff; border: 1px solid rgba(40,80,200,0.40); }
+.trait-tag.special { background: rgba(200,160,40,0.20); color: #e8c84a; border: 1px solid rgba(200,160,40,0.35); }
+
+/* 다중 적 목록 */
+.cep-enemy-list {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 5px 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  max-height: 90px;
+  overflow-y: auto;
+}
+
+.cep-enemy-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 10px;
+  color: var(--text-secondary);
+  border: 1px solid transparent;
+  transition: background 0.1s;
+}
+.cep-enemy-item:hover:not(.dead) { background: rgba(255,255,255,0.05); }
+.cep-enemy-item.active {
+  background: rgba(200,160,96,0.08);
+  border-color: rgba(200,160,96,0.25);
+  color: var(--text-primary);
+}
+.cep-enemy-item.dead { opacity: 0.30; cursor: default; pointer-events: none; }
+.cep-enemy-item span:last-child {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-dim);
+}
+
+/* 전투 로그 */
+.cep-log {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  padding: 6px 12px 8px;
+}
+
+.cep-log-label {
+  flex-shrink: 0;
+  font-size: 8px;
+  color: rgba(200,160,96,0.45);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 4px;
+}
+.cep-log-label small { font-size: 8px; color: var(--text-dim); text-transform: none; letter-spacing: 0; }
+
+/* ── ③ 하단 액션 카드 바 ─────────────────────────────── */
+
+.combat-action-bar {
+  flex-shrink: 0;
+  height: 130px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  padding: 6px 8px;
+  background: rgba(4,3,2,0.92);
+  border-top: 1px solid rgba(200,160,96,0.18);
+  backdrop-filter: blur(8px);
+}
+
+.action-card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 6px;
+  background: rgba(255,255,255,0.03);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, transform 0.08s;
+  overflow: hidden;
+  min-width: 0;
+  user-select: none;
+}
+.action-card:hover {
+  border-color: rgba(200,160,96,0.40);
+  background: rgba(200,160,96,0.06);
+}
+.action-card:active {
+  transform: scale(0.96);
+  transition: transform 0.06s;
+}
+.action-card.primary {
+  border-color: rgba(200,160,96,0.25);
+}
+.action-card.primary:hover {
+  border-color: rgba(200,160,96,0.65);
+  background: rgba(200,160,96,0.10);
+}
+.action-card.active {
+  border-color: rgba(100,160,255,0.55);
+  background: rgba(100,160,255,0.10);
+  box-shadow: inset 0 0 12px rgba(100,160,255,0.15);
+}
+.action-card.flee {
+  border-color: rgba(255,140,40,0.20);
+}
+.action-card.flee:hover {
+  border-color: rgba(255,140,40,0.55);
+  background: rgba(255,140,40,0.08);
+}
+.action-card.items { cursor: default; }
+.action-card.items:hover {
+  border-color: rgba(26,188,156,0.35);
+  background: rgba(26,188,156,0.05);
+}
+
+/* 액션 카드 헤더 */
+.ac-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px 3px;
+  background: rgba(0,0,0,0.25);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  flex-shrink: 0;
+}
+.ac-icon { font-size: 16px; flex-shrink: 0; }
+.ac-title-group { min-width: 0; }
+.ac-name {
   font-size: 11px;
+  color: var(--text-primary);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ac-name small { font-size: 9px; color: var(--text-dim); font-weight: normal; }
+.ac-sub {
+  font-size: 7px;
+  color: rgba(200,160,96,0.40);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-family: var(--font-mono);
+}
+
+/* 액션 카드 미리보기 */
+.ac-preview {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  padding: 4px 8px;
+}
+.ac-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 9px;
+}
+.ac-row span { color: var(--text-dim); }
+.ac-row strong { color: var(--text-secondary); font-family: var(--font-mono); }
+.ac-row.warn span,
+.ac-row.warn strong { color: var(--text-warn); }
+.ac-row.good span,
+.ac-row.good strong { color: var(--text-good); }
+
+/* 아이템 리스트 */
+.ac-item-list {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px 5px;
+  overflow-y: auto;
+}
+.ac-item-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 9px;
+  color: #1abc9c;
+  background: rgba(26,188,156,0.06);
+  border: 1px solid rgba(26,188,156,0.20);
+  border-radius: 3px;
+  padding: 3px 6px;
+  cursor: pointer;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: background 0.1s;
+}
+.ac-item-btn:hover {
+  background: rgba(26,188,156,0.14);
+  border-color: rgba(26,188,156,0.45);
+}
+.ac-item-btn em { color: var(--text-good); font-style: normal; }
+.ac-no-item {
+  font-size: 9px;
+  color: var(--text-dim);
+  padding: 6px 4px;
+  text-align: center;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── ④ 보조 액션 행 ──────────────────────────────────── */
+
+.combat-sec-row {
+  flex-shrink: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 4px 8px 6px;
+  background: rgba(3,2,1,0.90);
+  border-top: 1px solid rgba(255,255,255,0.05);
+  min-height: 0;
+}
+
+.sec-btn {
+  font-size: 9px;
+  color: var(--text-secondary);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 4px;
+  padding: 3px 9px;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  white-space: nowrap;
+  transition: background 0.1s, border-color 0.1s;
+}
+.sec-btn:hover:not(:disabled) {
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(200,160,96,0.35);
+  color: var(--text-primary);
+}
+.sec-btn:disabled {
+  opacity: 0.30;
+  cursor: not-allowed;
+}
+.sec-btn:active:not(:disabled) { transform: scale(0.94); transition: transform 0.06s; }
+
+.sec-btn.secondary { color: var(--text-dim); }
+.sec-btn.companion {
+  color: #c084fc;
+  border-color: rgba(160,100,255,0.30);
+}
+.sec-btn.companion:hover:not(:disabled) {
+  background: rgba(160,100,255,0.12);
+  border-color: #c084fc;
+}
+
+/* ── 공통: 전투 로그 ─────────────────────────────────── */
+
+.combat-log {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 10px;
   color: var(--text-secondary);
 }
 
-/* ── 전투 필드 (배경 이미지 영역) ── */
-.combat-field {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  overflow: hidden;
-}
+.combat-log-entry.hit   { color: var(--text-good); }
+.combat-log-entry.crit  { color: #f39c12; font-weight: 700; }
+.combat-log-entry.dmg   { color: var(--text-danger); }
+.combat-log-entry.bleed { color: #c0392b; }
+.combat-log-entry.warn  { color: #e67e22; }
+.combat-log-entry.heal  { color: #1abc9c; }
+.combat-log-entry.miss  { color: var(--text-dim); }
+.combat-log-entry.info  { color: var(--text-secondary); }
+.combat-log-entry.good  { color: var(--text-good); }
 
-/* 그라디언트 오버레이 (위/아래) */
-.combat-field-overlay {
-  position: absolute;
-  left: 0; right: 0;
-  height: 45%;
-  pointer-events: none;
-  z-index: 1;
-}
-.combat-field-overlay.top {
-  top: 0;
-  background: linear-gradient(to bottom,
-    rgba(0,0,0,0.70) 0%,
-    rgba(0,0,0,0.15) 70%,
-    transparent 100%
-  );
-}
-.combat-field-overlay.bottom {
-  bottom: 0;
-  background: linear-gradient(to top,
-    rgba(0,0,0,0.80) 0%,
-    rgba(0,0,0,0.20) 70%,
-    transparent 100%
-  );
-}
+/* ── 공통: 상태이상 배지 ─────────────────────────────── */
 
-/* ── 적/플레이어 영역 공통 ── */
-.combat-entity-zone {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  position: relative;
-  z-index: 2;
-  padding: 0 20px;
-}
-
-/* 적 영역 — 내용을 아래(중앙선)쪽으로 밀기 */
-.enemy-zone {
-  justify-content: flex-end;
-  padding-bottom: 12px;
-}
-
-/* 플레이어 영역 — 내용을 위(중앙선)쪽으로 밀기 */
-.player-zone {
-  justify-content: flex-start;
-  padding-top: 12px;
-}
-
-/* 엔티티 이모지 아이콘 */
-.combat-entity-icon {
-  line-height: 1;
-  filter: drop-shadow(0 4px 16px rgba(0,0,0,0.9));
-}
-.enemy-icon  { font-size: 96px; order: 2; margin-top: 8px; }
-.player-icon { font-size: 88px; order: 1; margin-bottom: 8px; }
-
-/* ── 플레이어 캐릭터 이미지 ── */
-.combat-player-img {
-  order: 1;
-  height: 200px;
-  width: auto;
-  object-fit: contain;
-  border-radius: 8px;
-  /* multiply는 어두운 배경에서 이미지를 검게 만드므로 normal 사용 */
-  mix-blend-mode: normal;
-  filter: drop-shadow(0 0 18px rgba(220,120,40,0.5))
-          drop-shadow(0 6px 24px rgba(0,0,0,0.9));
-  margin-bottom: 4px;
-  user-select: none;
-  pointer-events: none;
-}
-
-/* 스탯 카드 (이름 + HP 바) */
-.combat-entity-stat-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 5px;
-  background: rgba(0,0,0,0.55);
-  backdrop-filter: blur(4px);
-  border: 1px solid rgba(200,160,96,0.25);
-  border-radius: 8px;
-  padding: 8px 16px;
-  min-width: 180px;
-}
-.enemy-zone  .combat-entity-stat-card { order: 1; }
-.player-zone .combat-entity-stat-card { order: 2; }
-
-.combat-entity-hp-text {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  color: var(--text-dim);
-}
-
-/* 중앙 구분선 */
-.combat-center-divider {
-  flex-shrink: 0;
-  height: 1px;
-  background: linear-gradient(to right,
-    transparent 0%,
-    rgba(200,160,96,0.5) 30%,
-    rgba(200,160,96,0.8) 50%,
-    rgba(200,160,96,0.5) 70%,
-    transparent 100%
-  );
-  z-index: 2;
-}
-
-/* ── 하단 액션 패널 ── */
-.combat-bottom-panel {
-  flex-shrink: 0;
-  background: rgba(6,4,2,0.88);
-  backdrop-filter: blur(10px);
-  border-top: 1px solid rgba(200,160,96,0.2);
-  padding: 10px 14px 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  max-height: 220px;
-}
-
-/* ── 다중 적 그룹 ── */
-.enemy-group {
-  display: flex;
-  gap: 10px;
-  align-items: flex-end;
-  justify-content: center;
-}
-
-.enemy-group-hint {
-  font-size: 9px;
-  color: rgba(200,160,96,0.55);
-  letter-spacing: 0.5px;
-  margin-top: 4px;
-  text-align: center;
-}
-
-/* 개별 적 카드 */
-.enemy-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 5px;
-  cursor: pointer;
-  position: relative;
-  border-radius: 8px;
-  padding: 6px;
-  border: 2px solid transparent;
-  transition: border-color 0.2s ease, background 0.2s ease, opacity 0.3s ease;
-  user-select: none;
-}
-
-.enemy-card:hover:not(.is-dead) {
-  background: rgba(255,255,255,0.06);
-  border-color: rgba(200,160,96,0.35);
-}
-
-.enemy-card.is-target {
-  border-color: rgba(200,160,96,0.75);
-  background: rgba(200,160,96,0.08);
-  box-shadow: 0 0 18px rgba(200,160,96,0.35);
-}
-
-.enemy-card.is-dead {
-  opacity: 0.28;
-  filter: grayscale(0.9);
-  cursor: default;
-  pointer-events: none;
-}
-
-/* 적 카드 스프라이트 영역 */
-.enemy-card-sprite {
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-}
-
-/* 이미지 기반 적 (기본 크기 — count class로 override) */
-.enemy-card-img {
-  object-fit: contain;
-  height: 130px;
-  width: auto;
-  max-width: 120px;
-  border-radius: 6px;
-  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.85));
-  /* multiply는 어두운 배경에서 이미지를 검게 만드므로 normal 사용 */
-  mix-blend-mode: normal;
-  display: block;
-}
-
-/* 이모지 기반 적 */
-.enemy-card-icon {
-  font-size: 80px;
-  line-height: 1;
-  filter: drop-shadow(0 4px 14px rgba(0,0,0,0.9));
-}
-
-/* 카드 정보 패널 (이름 + HP) */
-.enemy-card-info {
-  background: rgba(0,0,0,0.60);
-  backdrop-filter: blur(4px);
-  border: 1px solid rgba(200,160,96,0.20);
-  border-radius: 6px;
-  padding: 5px 10px;
-  min-width: 100px;
-  text-align: center;
-}
-
-.enemy-card-name {
-  font-size: 11px;
-  color: var(--text-primary);
-  margin-bottom: 4px;
-  white-space: nowrap;
-}
-
-.enemy-card-hp-track {
-  width: 100%;
-  height: 5px;
-  background: rgba(255,255,255,0.12);
+.status-badge {
+  font-size: 8px;
+  padding: 1px 5px;
   border-radius: 3px;
-  overflow: hidden;
+  background: rgba(200,160,96,0.15);
+  color: var(--accent-primary);
+  border: 1px solid rgba(200,160,96,0.25);
+}
+.status-badge.enemy {
+  background: rgba(220,80,80,0.15);
+  color: #ff9090;
+  border-color: rgba(220,80,80,0.30);
 }
 
-.enemy-card-hp-fill {
-  height: 100%;
-  background: var(--text-good);
-  transition: width var(--transition-mid);
-}
-.enemy-card-hp-fill.low  { background: var(--text-warn); }
-.enemy-card-hp-fill.crit { background: var(--text-danger); }
+/* ── 공통: 친화도 배지 (약점/저항) ──────────────────── */
 
-.enemy-card-hp-text {
-  font-family: var(--font-mono);
+.affinity-badge {
+  position: absolute;
+  top: 4px; right: 4px;
+  font-size: 8px;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-weight: 700;
+  pointer-events: none;
+  z-index: 2;
+}
+.affinity-badge.weakness  { background: rgba(220,50,50,0.80);  color: #ffd0d0; }
+.affinity-badge.resistance{ background: rgba(40,80,180,0.80);  color: #c0d8ff; }
+
+/* ── 야간 경고 배너 ──────────────────────────────────── */
+
+.combat-night-warning {
+  flex-shrink: 0;
+  padding: 4px 12px;
+  background: rgba(30,20,60,0.82);
+  border-bottom: 1px solid rgba(100,80,200,0.35);
+  color: #a78bfa;
   font-size: 9px;
-  color: var(--text-dim);
-  margin-top: 3px;
-}
-
-/* ── 적 수에 따른 크기 조절 ── */
-.enemy-group.count-1 .enemy-card-img  { height: 155px; max-width: 150px; }
-.enemy-group.count-1 .enemy-card-icon { font-size: 96px; }
-.enemy-group.count-1 .enemy-card-info { min-width: 140px; }
-
-.enemy-group.count-2 .enemy-card-img  { height: 115px; max-width: 110px; }
-.enemy-group.count-2 .enemy-card-icon { font-size: 72px; }
-.enemy-group.count-2 .enemy-card-info { min-width: 110px; }
-
-.enemy-group.count-3 .enemy-card-img  { height: 88px;  max-width: 88px; }
-.enemy-group.count-3 .enemy-card-icon { font-size: 56px; }
-.enemy-group.count-3 .enemy-card-info { min-width: 90px; font-size: 10px; }
-
-/* 기존 arena/side (하위 호환용) */
-.combat-arena {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  gap: var(--gap-xl);
-  align-items: center;
-  flex: 1;
-}
-
-.combat-side {
-  display: flex;
-  flex-direction: column;
-  gap: var(--gap-sm);
-  align-items: center;
-  position: relative;
-}
-
-.combat-entity-name {
-  font-size: var(--font-size-md);
-  color: var(--text-primary);
+  letter-spacing: 0.5px;
   text-align: center;
 }
 
-.combat-hp-track {
-  width: 160px;
-  height: 8px;
-  background: var(--bg-raised);
-  border: 1px solid var(--border-mid);
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.combat-hp-fill {
-  height: 100%;
-  background: var(--text-good);
-  transition: width var(--transition-mid);
-}
-
-.combat-hp-fill.low  { background: var(--text-warn); }
-.combat-hp-fill.crit { background: var(--text-danger); }
-
-.combat-vs {
-  font-size: var(--font-size-xl);
-  color: var(--text-dim);
-  letter-spacing: 2px;
-}
-
-.combat-actions {
-  display: flex;
-  gap: var(--gap-sm);
-  flex-wrap: wrap;
-  justify-content: center;
-  margin-top: var(--gap-lg);
-}
+/* ── 호환용 기존 액션 버튼 ───────────────────────────── */
 
 .combat-action-btn {
   padding: 8px 20px;
@@ -753,146 +1047,30 @@
   cursor: pointer;
   transition: all var(--transition-fast);
 }
-
 .combat-action-btn:hover {
   border-color: var(--accent-primary);
   color: var(--accent-primary);
   background: rgba(200,160,96,0.08);
 }
-
-.combat-action-btn:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-}
+.combat-action-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 .combat-action-btn:active:not(:disabled) {
   transform: scale(0.94);
   filter: brightness(1.25);
   transition: transform 0.06s, filter 0.06s;
 }
-
-.combat-log {
-  max-height: 140px;
-  overflow-y: auto;
-  border: 1px solid var(--border-dim);
-  border-radius: var(--radius-sm);
-  padding: var(--gap-sm);
-  background: var(--bg-base);
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  font-size: var(--font-size-xs);
-  color: var(--text-secondary);
-  margin-top: var(--gap-md);
-}
-
-.combat-log-entry.hit   { color: var(--text-good); }
-.combat-log-entry.crit  { color: #f39c12; font-weight: 700; }
-.combat-log-entry.dmg   { color: var(--text-danger); }
-.combat-log-entry.bleed { color: #c0392b; }
-.combat-log-entry.warn  { color: #e67e22; }
-.combat-log-entry.heal  { color: #1abc9c; }
-.combat-log-entry.miss  { color: var(--text-dim); }
-.combat-log-entry.info  { color: var(--text-secondary); }
-.combat-log-entry.good  { color: var(--text-good); }
-
-/* Medical / secondary action buttons */
-.combat-action-btn.medical {
-  border-color: rgba(26,188,156,0.5);
-  color: #1abc9c;
-}
-.combat-action-btn.medical:hover {
-  background: rgba(26,188,156,0.15);
-  border-color: #1abc9c;
-}
-.combat-action-btn.secondary {
-  border-color: var(--border-dim);
-  color: var(--text-dim);
-}
-.combat-action-btn.secondary:hover {
-  border-color: var(--text-secondary);
-  color: var(--text-secondary);
-  background: rgba(255,255,255,0.04);
-}
-
-/* Guard button */
-.combat-action-btn.guard {
-  border-color: rgba(100,160,255,0.5);
-  color: #7ab4f8;
-}
-.combat-action-btn.guard:hover {
-  background: rgba(100,160,255,0.10);
-  border-color: #7ab4f8;
-}
-.combat-action-btn.guard.active {
-  background: rgba(100,160,255,0.18);
-  border-color: #7ab4f8;
-  box-shadow: 0 0 8px rgba(100,160,255,0.35);
-}
-
-/* Throwable button */
-.combat-action-btn.throwable {
-  border-color: rgba(255,140,40,0.5);
-  color: #f39c12;
-}
-.combat-action-btn.throwable:hover {
-  background: rgba(255,140,40,0.12);
-  border-color: #f39c12;
-}
-
-/* Companion buttons */
-.combat-action-btn.companion {
-  border-color: rgba(160,100,255,0.5);
-  color: #c084fc;
-}
-.combat-action-btn.companion:hover:not(:disabled) {
-  background: rgba(160,100,255,0.12);
-  border-color: #c084fc;
-}
-.combat-action-btn.companion:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
-}
-
-/* Night warning banner */
-.combat-night-warning {
-  flex-shrink: 0;
-  padding: 5px 12px;
-  background: rgba(30,20,60,0.80);
-  border-bottom: 1px solid rgba(100,80,200,0.35);
-  color: #a78bfa;
-  font-size: 9px;
-  letter-spacing: 0.5px;
-  text-align: center;
-}
-
-/* Per-enemy status badges row */
-.cv-status-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 2px;
-  margin-top: 2px;
-}
-
-/* Affinity (weakness/resistance) badge */
-.affinity-badge {
-  position: absolute;
-  top: 4px;
-  right: 4px;
-  font-size: 8px;
-  padding: 1px 4px;
-  border-radius: 3px;
-  font-weight: 700;
-  pointer-events: none;
-  z-index: 2;
-}
-.affinity-badge.weakness {
-  background: rgba(220,50,50,0.80);
-  color: #ffd0d0;
-}
-.affinity-badge.resistance {
-  background: rgba(40,80,180,0.80);
-  color: #c0d8ff;
-}
+.combat-action-btn.medical  { border-color: rgba(26,188,156,0.5);   color: #1abc9c; }
+.combat-action-btn.medical:hover  { background: rgba(26,188,156,0.15); border-color: #1abc9c; }
+.combat-action-btn.guard    { border-color: rgba(100,160,255,0.5);  color: #7ab4f8; }
+.combat-action-btn.guard:hover    { background: rgba(100,160,255,0.10); border-color: #7ab4f8; }
+.combat-action-btn.guard.active   { background: rgba(100,160,255,0.18); border-color: #7ab4f8; box-shadow: 0 0 8px rgba(100,160,255,0.35); }
+.combat-action-btn.throwable{ border-color: rgba(255,140,40,0.5);   color: #f39c12; }
+.combat-action-btn.throwable:hover{ background: rgba(255,140,40,0.12); border-color: #f39c12; }
+.combat-action-btn.companion{ border-color: rgba(160,100,255,0.5);  color: #c084fc; }
+.combat-action-btn.companion:hover:not(:disabled) { background: rgba(160,100,255,0.12); border-color: #c084fc; }
+.combat-action-btn.companion:disabled { opacity: 0.35; cursor: not-allowed; }
+.combat-action-btn.secondary { border-color: var(--border-dim); color: var(--text-dim); }
+.combat-action-btn.secondary:hover { border-color: var(--text-secondary); color: var(--text-secondary); background: rgba(255,255,255,0.04); }
+.btn-sub { font-size: 8px; opacity: 0.55; display: block; margin-top: 1px; }
 
 /* === COMBAT RESULT === */
 #screen-combat-result {
@@ -907,7 +1085,6 @@
   text-transform: uppercase;
   letter-spacing: 4px;
 }
-
 .result-title.victory { color: var(--text-good); }
 .result-title.defeat  { color: var(--text-danger); }
 .result-title.fled    { color: var(--text-warn); }
@@ -927,34 +1104,11 @@
   justify-content: center;
 }
 
-/* ── 전투 결과: XP 섹션 ── */
-.result-xp-section {
-  margin: 8px 0 4px;
-  width: 260px;
-}
+.result-xp-section { margin: 8px 0 4px; width: 260px; }
+.result-xp-label   { font-size: 11px; color: var(--text-secondary); margin-bottom: 5px; }
+.result-xp-track   { background: rgba(255,255,255,0.08); border: 1px solid var(--border-dim); border-radius: 6px; height: 10px; overflow: hidden; }
+.result-xp-fill    { background: linear-gradient(90deg, #f39c12, #e67e22); height: 100%; border-radius: 6px; transition: width 0.04s linear; }
 
-.result-xp-label {
-  font-size: 11px;
-  color: var(--text-secondary);
-  margin-bottom: 5px;
-}
-
-.result-xp-track {
-  background: rgba(255,255,255,0.08);
-  border: 1px solid var(--border-dim);
-  border-radius: 6px;
-  height: 10px;
-  overflow: hidden;
-}
-
-.result-xp-fill {
-  background: linear-gradient(90deg, #f39c12, #e67e22);
-  height: 100%;
-  border-radius: 6px;
-  transition: width 0.04s linear;
-}
-
-/* ── 전투 결과: 루팅 카드 그리드 ── */
 .result-loot-grid {
   display: flex;
   flex-wrap: wrap;
@@ -968,7 +1122,6 @@
   from { transform: scale(0.7) translateY(10px); opacity: 0; }
   to   { transform: scale(1)   translateY(0);    opacity: 1; }
 }
-
 .result-loot-card {
   background: var(--bg-raised);
   border: 1px solid var(--border-mid);
@@ -978,12 +1131,10 @@
   min-width: 68px;
   animation: resultLootCard 0.35s ease both;
 }
-
 .result-loot-card:nth-child(1) { animation-delay: 0.05s; }
 .result-loot-card:nth-child(2) { animation-delay: 0.12s; }
 .result-loot-card:nth-child(3) { animation-delay: 0.19s; }
 .result-loot-card:nth-child(4) { animation-delay: 0.26s; }
-
 .result-loot-icon { font-size: 24px; }
 .result-loot-name { font-size: 10px; color: var(--text-dim); margin-top: 3px; }
 .result-loot-qty  { font-size: 11px; color: var(--accent-primary); font-weight: 700; margin-top: 2px; }
@@ -994,6 +1145,8 @@
   align-items: center;
   justify-content: center;
   background: radial-gradient(ellipse at center, rgba(80,20,20,0.3) 0%, var(--bg-void) 60%);
+}
+
 /* === ENCOUNTER SCREEN === */
 #screen-encounter {
   flex-direction: column;
@@ -1023,5 +1176,3 @@
   flex-wrap: wrap;
   justify-content: center;
 }
-
-
