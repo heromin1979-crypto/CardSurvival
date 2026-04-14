@@ -1,3 +1,55 @@
+# 전투 화면 전면 리디자인 — 3열 레이아웃 + 정보 카드형 UI
+
+> 최종 업데이트: 2026-04-14
+> 상태: Phase 7 대기중
+
+## 목표
+현재 2열 레이아웃 → 3열(플레이어/씬/적) + 상단바 + 하단 액션카드 구조로 전면 교체
+
+## 페이즈 진행 현황
+
+- [x] Phase 1 — CSS 레이아웃 뼈대 재설계 (`screens-combat.css`)
+- [x] Phase 2 — 상단 상태 바 (위치/시간/날씨/턴/위험도)
+- [x] Phase 3 — 좌측 플레이어 패널 (HP/스태미나/감염/무기/방어구/버프)
+- [x] Phase 4 — 중앙 전투 장면 재구성 (실루엣 대치 + 맥락 오버레이)
+- [x] Phase 5 — 우측 적 정보 패널 (HP바/방어력/감염확률/특성)
+- [x] Phase 6 — 하단 액션 카드 바 (예상 피해/성공률 미리보기)
+- [ ] Phase 7 — Encounter 화면 연동 정리
+
+## 수정 파일
+- `css/screens-combat.css` — 전면 재작성 ✓
+- `js/ui/CombatUI.js` — 대규모 수정 ✓ (v4)
+- `js/systems/CombatSystem.js` — previewAttack() 추가 ✓
+- `js/screens/Encounter.js` — 스타일 정리 (Phase 7 대기)
+
+---
+
+# 야간 시간대 변경 — 자정(00:00)~05:00
+
+> 최종 업데이트: 2026-04-14
+> 상태: 완료
+
+## 결과 요약
+
+| 항목 | 이전 | 이후 |
+|------|------|------|
+| 야간 시작 | 20:00 | 00:00 (자정) |
+| 야간 종료 | 06:00 | 05:00 |
+| 이동 제한 시간 | 20:00~05:59 | 00:00~04:59 |
+| 게임 시간 표현 범위 | 06:00~23:00 고정 | 06:00~05:00 (24시간 순환) |
+
+## 수정 파일
+
+| 파일 | 변경 내용 |
+|------|----------|
+| `js/core/TickEngine.js` | 시간 공식 `(tp*24/72+6)%24` — 자정 이후 표현 가능 |
+| `js/data/gameBalance.js` | `startHour: 20→0`, `endHour: 6→5` |
+| `js/systems/NightSystem.js` | `isNight()` — startHour<endHour일 때 AND 조건 처리 추가 |
+| `js/systems/BGMSystem.js` | 야간 BGM 트리거 `hour>=22\|\|hour<5` → `hour<5` |
+| `js/systems/HiddenElementSystem.js` | timeOfDay 판별 기준 6/20 → 5/0 |
+
+---
+
 # 랜드마크 전투 밸런스 조정 — 구역 난이도 연동 위험도 정규화
 
 > 최종 업데이트: 2026-04-14
