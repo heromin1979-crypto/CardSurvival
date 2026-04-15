@@ -21,6 +21,22 @@ const CHARACTERS = {
   homeless:   { name: '노숙인 (최형식)',    hp: 65, defBonus:0.08, acc:0.58, dmg:[7,14],  hasWeapon:false },
 };
 
+// 신규 무기 (크래프팅 체인 확장)
+const NEW_WEAPONS = {
+  pipe_shotgun:   { name: '파이프 산탄총', dmg: [25, 40], acc: 0.65, crit: 0.08, critMult: 2.0 },
+  master_blade:   { name: '명검',         dmg: [30, 45], acc: 0.85, crit: 0.20, critMult: 2.0 },
+  katana:         { name: '카타나',       dmg: [40, 60], acc: 0.90, crit: 0.25, critMult: 2.5 },
+  master_wrench:  { name: '마스터 렌치',   dmg: [22, 35], acc: 0.85, crit: 0.15, critMult: 1.8 },
+};
+
+// 신규 방어구
+const NEW_ARMOR = {
+  plate_carrier:   { name: '플레이트 캐리어', defense: 18, dmgReduct: 0.18 },
+  composite_armor: { name: '복합 장갑',       defense: 35, dmgReduct: 0.35 },
+  powered_exosuit: { name: '엑소수트',        defense: 50, dmgReduct: 0.45 },
+  ballistic_weave: { name: '방탄직',          defense: 12, dmgReduct: 0.12 },
+};
+
 const NUM_SIMS = 10000;
 
 function rand(min, max) { return min + Math.floor(Math.random() * (max - min + 1)); }
@@ -285,6 +301,18 @@ for (const [eid, e] of Object.entries(ENEMIES)) {
   }
 }
 lines.push('');
+
+// ── 신규 장비 시뮬레이션 ──
+console.log('\n=== 신규 장비 전투 시뮬레이션 ===\n');
+for (const [wid, weapon] of Object.entries(NEW_WEAPONS)) {
+  let wins = 0;
+  for (let i = 0; i < NUM_SIMS; i++) {
+    const char = { ...CHARACTERS.soldier, dmg: weapon.dmg, acc: weapon.acc };
+    const result = simOneCombat(char, ENEMIES.zombie_brute);
+    if (result.survived) wins++;
+  }
+  console.log(`${weapon.name} vs 거대좀비: 승률 ${(wins/NUM_SIMS*100).toFixed(1)}%`);
+}
 
 const output = lines.join('\n');
 import { writeFileSync } from 'fs';
