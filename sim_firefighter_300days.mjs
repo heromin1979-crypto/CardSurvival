@@ -503,6 +503,16 @@ function createGameState(charId = 'firefighter') {
     alcohol_swab: 0, warm_clothes: 0,
     leather: 0, thread: 0, duct_tape: 0,
     herb: 0, rubber: 0,
+    // 크래프팅 체인 확장 재료
+    circuit_board: 0, copper_wire: 0, copper_coil: 0, microchip: 0,
+    circuit_module: 0, electric_motor: 0, power_cell: 0, generator_core: 0,
+    sand: 0, mortar_mix: 0, concrete_block: 0, brick: 0, alloy_ingot: 0,
+    wild_wheat: 0, flour: 0, bread_dough: 0, worm: 0, fishing_bait: 0,
+    woven_fabric: 0, reinforced_fabric: 0, dye: 0,
+    herb_powder: 0, crude_medicine: 0, purified_medicine: 0,
+    baked_bread: 0, sandwich: 0, meat_stew: 0, rice_wine: 0,
+    salted_meat: 0, smoked_meat: 0, preserved_ration: 0,
+    settled_water: 0, distilled_water: 0,
   };
   for (const [k, v] of Object.entries(cc.startInv)) startInv[k] = v;
 
@@ -532,6 +542,8 @@ function createGameState(charId = 'firefighter') {
     hasGarden:    false,  gardenDura:    0,
     hasCollector: false,  collectorDura: 0,
     hasWarmClothes: false,
+    hasReinforcedWall: false,
+    hasBrickFurnace: false,
 
     weather: null,
     weatherDaysLeft: 0,
@@ -1015,6 +1027,13 @@ const SIM_HIDDEN_RECIPES = [
   { id: 'recipe_hazmat_upgrade',   name: '방호복 강화',       reqBoss: null,                    reqLoc: 'hidden_gwanak',   minDay: 70 },
   { id: 'recipe_sniper_mod',       name: '저격총 개조',       reqBoss: 'boss_phantom_sniper',   reqLoc: null,              minDay: 120 },
   { id: 'recipe_healing_salve',    name: '치유 연고',         reqBoss: null,                    reqLoc: 'hidden_gangbuk',  minDay: 30 },
+  // 크래프팅 체인 확장 엔드게임
+  { id: 'recipe_katana',           name: '카타나',           reqBoss: null, reqLoc: null, minDay: 60 },
+  { id: 'recipe_powered_exosuit',  name: '엑소수트',         reqBoss: null, reqLoc: null, minDay: 80 },
+  { id: 'recipe_universal_cure',   name: '만병통치약',       reqBoss: null, reqLoc: null, minDay: 70 },
+  { id: 'recipe_portable_generator', name: '발전기',         reqBoss: null, reqLoc: null, minDay: 50 },
+  { id: 'recipe_electric_fence',   name: '전기 울타리',     reqBoss: null, reqLoc: null, minDay: 60 },
+  { id: 'recipe_night_vision',     name: '야시경',           reqBoss: null, reqLoc: null, minDay: 60 },
 ];
 
 function checkRecipeUnlocks(gs) {
@@ -1462,6 +1481,16 @@ function explore(gs, districtId) {
       else                 gs.inv.flashlight += (Math.random() < 0.3 ? 1 : 0);
     }
 
+    // ── 신규 크래프팅 체인 원재료 드롭 ──
+    // 전자부품: industrial/tech 구역 (metal >= 2)
+    if (d.metal >= 2 && Math.random() < 0.15) gs.inv.circuit_board++;
+    // 모래: 대부분 구역
+    if (Math.random() < 0.20) gs.inv.sand += rand(1, 2);
+    // 야생 밀: 자연/안전 구역 (food >= 1)
+    if (d.food >= 1 && Math.random() < 0.15) gs.inv.wild_wheat += rand(1, 2);
+    // 지렁이: 자연 구역
+    if (d.food >= 1 && Math.random() < 0.20) gs.inv.worm += rand(1, 2);
+
     if (season === 'autumn') {
       gs.inv.canned_food += rand(0, 2);
       gs.inv.energy_bar += rand(0, 1);
@@ -1562,8 +1591,8 @@ function tryCraftWarmClothes(gs) {
   gs.morale = clamp(gs.morale + 15, 0, gs.maxMorale);
   gs.totalStructuresCrafted++;
   gainSkillXp(gs, 'crafting', 10);
-  // 3단계 제작: 12 TP 소요
-  for (let i = 0; i < 12; i++) { advanceTP(gs); if (!gs.alive) return true; }
+  // 3단계 제작: 8 TP 소요 (12에서 하향)
+  for (let i = 0; i < 8; i++) { advanceTP(gs); if (!gs.alive) return true; }
   return true;
 }
 
@@ -1574,6 +1603,102 @@ function tryCraftCollector(gs) {
     gs.hasCollector = true; gs.collectorDura = 160;
     gs.totalStructuresCrafted++;
     for (let i = 0; i < 3; i++) { advanceTP(gs); if (!gs.alive) return true; }
+    return true;
+  }
+  return false;
+}
+
+// ── 전자부품 체인 ──
+function tryCraftElectronics(gs) {
+  // copper_wire: circuit_board -> copper_wire x3 (crafting 2)
+  if (gs.inv.circuit_board >= 1 && (gs.skills.crafting ?? 0) >= 2 && gs.inv.copper_wire < 6) {
+    gs.inv.circuit_board--;
+    gs.inv.copper_wire += 3;
+    gainSkillXp(gs, 'crafting', 5);
+    advanceTP(gs);
+    return true;
+  }
+  // circuit_module: microchip x2 + wire x2 + plastic x1 (crafting 6)
+  if (gs.inv.microchip >= 2 && gs.inv.wire >= 2 && (gs.skills.crafting ?? 0) >= 6) {
+    gs.inv.microchip -= 2; gs.inv.wire -= 2;
+    gs.inv.circuit_module++;
+    gainSkillXp(gs, 'crafting', 8);
+    for (let i = 0; i < 3; i++) { advanceTP(gs); if (!gs.alive) return true; }
+    return true;
+  }
+  return false;
+}
+
+// ── 석조/건축 체인 ──
+function tryCraftMasonry(gs) {
+  // mortar_mix: pebble x4 + sand x2 + boiled_water x1 (building 4)
+  if (gs.inv.sand >= 2 && (gs.skills.building ?? 0) >= 4 && gs.inv.mortar_mix < 4) {
+    gs.inv.sand -= 2;
+    gs.inv.mortar_mix += 2;
+    gainSkillXp(gs, 'building', 5);
+    for (let i = 0; i < 2; i++) { advanceTP(gs); if (!gs.alive) return true; }
+    return true;
+  }
+  // brick: mortar_mix x1 + charcoal x1 (building 5, campfire)
+  if (gs.inv.mortar_mix >= 1 && gs.hasCampfire && (gs.skills.building ?? 0) >= 5 && gs.inv.brick < 8) {
+    gs.inv.mortar_mix--;
+    gs.inv.brick += 2;
+    gainSkillXp(gs, 'building', 5);
+    for (let i = 0; i < 2; i++) { advanceTP(gs); if (!gs.alive) return true; }
+    return true;
+  }
+  // reinforced_wall: concrete_block x4 + steel_plate x2 + wire x3 (building 9)
+  if (gs.inv.concrete_block >= 4 && gs.inv.wire >= 3 && (gs.skills.building ?? 0) >= 9 && !gs.hasReinforcedWall) {
+    gs.inv.concrete_block -= 4; gs.inv.wire -= 3;
+    gs.hasReinforcedWall = true;
+    gs.morale = clamp(gs.morale + 15, 0, gs.maxMorale);
+    gainSkillXp(gs, 'building', 12);
+    for (let i = 0; i < 4; i++) { advanceTP(gs); if (!gs.alive) return true; }
+    return true;
+  }
+  return false;
+}
+
+// ── 요리 체인 ──
+function tryCraftFood(gs) {
+  // meat_stew: boiled_water + raw_meat + herb (cooking 3, campfire)
+  if (gs.hasCampfire && gs.inv.herb >= 2 && (gs.skills.cooking ?? 0) >= 3 && gs.inv.meat_stew < 3) {
+    gs.inv.herb -= 2;
+    gs.inv.meat_stew++;
+    gs.nutrition = clamp(gs.nutrition + 35, 0, gs.maxNutrition);
+    gs.hydration = clamp(gs.hydration + 10, 0, gs.maxHydration);
+    gs.morale = clamp(gs.morale + 10, 0, gs.maxMorale);
+    gainSkillXp(gs, 'cooking', 5);
+    for (let i = 0; i < 2; i++) { advanceTP(gs); if (!gs.alive) return true; }
+    return true;
+  }
+  // preserved_ration: smoked_meat x1 + plastic x1 (cooking 6)
+  if (gs.inv.smoked_meat >= 1 && (gs.skills.cooking ?? 0) >= 6) {
+    gs.inv.smoked_meat--;
+    gs.inv.preserved_ration++;
+    gainSkillXp(gs, 'cooking', 5);
+    advanceTP(gs);
+    return true;
+  }
+  return false;
+}
+
+// ── 의료 체인 ──
+function tryCraftMedicalAdvanced(gs) {
+  // herb_powder: herb x2 (medicine 3)
+  if (gs.inv.herb >= 2 && (gs.skills.medicine ?? 0) >= 3 && gs.inv.herb_powder < 4) {
+    gs.inv.herb -= 2;
+    gs.inv.herb_powder += 2;
+    gainSkillXp(gs, 'medicine', 3);
+    advanceTP(gs);
+    return true;
+  }
+  // crude_medicine: herb_powder x2 + water_bottle x1 (medicine 4)
+  if (gs.inv.herb_powder >= 2 && gs.inv.water_bottle >= 1 && (gs.skills.medicine ?? 0) >= 4 && gs.inv.crude_medicine < 3) {
+    gs.inv.herb_powder -= 2; gs.inv.water_bottle--;
+    gs.inv.crude_medicine++;
+    gainSkillXp(gs, 'medicine', 5);
+    for (let i = 0; i < 2; i++) { advanceTP(gs); if (!gs.alive) return true; }
     return true;
   }
   return false;
@@ -1598,6 +1723,26 @@ function consumeFood(gs) {
     gs.inv.rice--;
     gs.nutrition = clamp(gs.nutrition + 10, 0, gs.maxNutrition);
     gs.morale    = clamp(gs.morale + 1, 0, gs.maxMorale);
+    return true;
+  }
+  // 신규 음식
+  if (gs.inv.meat_stew > 0) {
+    gs.inv.meat_stew--;
+    gs.nutrition = clamp(gs.nutrition + 35, 0, gs.maxNutrition);
+    gs.hydration = clamp(gs.hydration + 10, 0, gs.maxHydration);
+    gs.morale = clamp(gs.morale + 10, 0, gs.maxMorale);
+    return true;
+  }
+  if (gs.inv.preserved_ration > 0) {
+    gs.inv.preserved_ration--;
+    gs.nutrition = clamp(gs.nutrition + 40, 0, gs.maxNutrition);
+    gs.morale = clamp(gs.morale + 5, 0, gs.maxMorale);
+    return true;
+  }
+  if (gs.inv.baked_bread > 0) {
+    gs.inv.baked_bread--;
+    gs.nutrition = clamp(gs.nutrition + 25, 0, gs.maxNutrition);
+    gs.morale = clamp(gs.morale + 5, 0, gs.maxMorale);
     return true;
   }
   return false;
@@ -1627,6 +1772,12 @@ function consumeWater(gs) {
     gs.hydration = clamp(gs.hydration + 60, 0, gs.maxHydration);
     gs.radiation = clamp(gs.radiation + 10, 0, 100);
     gs.infection = clamp(gs.infection + 15, 0, 100);
+    return true;
+  }
+  if (gs.inv.settled_water > 0) {
+    gs.inv.settled_water--;
+    gs.hydration = clamp(gs.hydration + 20, 0, gs.maxHydration);
+    gs.contamination = clamp((gs.contamination ?? 0) + 5, 0, 100);
     return true;
   }
   return false;
@@ -1709,6 +1860,18 @@ function consumeMedical(gs) {
     gs.hp = clamp(gs.hp + 15, 0, gs.maxHp);
     gs.morale = clamp(gs.morale + 10, 0, gs.maxMorale);
     gs.fatigue = clamp(gs.fatigue - 10, 0, 100);
+    return true;
+  }
+  if (gs.inv.crude_medicine > 0) {
+    gs.inv.crude_medicine--;
+    gs.hp = clamp(gs.hp + 15, 0, gs.maxHp);
+    gs.infection = clamp(gs.infection - 10, 0, 100);
+    return true;
+  }
+  if (gs.inv.purified_medicine > 0) {
+    gs.inv.purified_medicine--;
+    gs.hp = clamp(gs.hp + 30, 0, gs.maxHp);
+    gs.infection = clamp(gs.infection - 20, 0, 100);
     return true;
   }
   return false;
@@ -1854,6 +2017,11 @@ function aiTurn(gs) {
   if (gs.day >= 220 && !gs.hasWarmClothes) {
     if (tryCraftWarmClothes(gs)) return;
   }
+  // 신규 크래프팅 체인
+  if (gs.day >= 10) { tryCraftElectronics(gs); if (!gs.alive) return; }
+  if (gs.day >= 15) { tryCraftMasonry(gs); if (!gs.alive) return; }
+  if (gs.day >= 5)  { tryCraftFood(gs); if (!gs.alive) return; }
+  if (gs.day >= 8)  { tryCraftMedicalAdvanced(gs); if (!gs.alive) return; }
   tryRefuelCampfire(gs);
   if (gs.hasGarden && gs.gardenDura < 30 && gs.inv.wood < 2 && gs.stamina > 20) {
     scavengeWood(gs);

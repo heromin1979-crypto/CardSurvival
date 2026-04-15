@@ -142,6 +142,9 @@ function createGameState() {
       wood: 0, rope: 0, cloth: 0, scrap_metal: 0, nail: 0,
       first_aid_kit: 0, antibiotics: 0,
       knife: 0, crowbar: 0,
+      circuit_board: 0, sand: 0, wild_wheat: 0, worm: 0,
+      herb_powder: 0, crude_medicine: 0, meat_stew: 0,
+      preserved_ration: 0, mortar_mix: 0, brick: 0,
     },
 
     // 구조물
@@ -456,6 +459,12 @@ function explore(gs, districtId) {
     if (season === 'winter') gs.inv.wood += rand(0, 2);
     if (season === 'spring') gs.inv.bandage += (Math.random() < 0.25 ? 1 : 0);
 
+    // 신규 원재료
+    if (d.metal >= 2 && Math.random() < 0.15) gs.inv.circuit_board++;
+    if (Math.random() < 0.20) gs.inv.sand += rand(1, 2);
+    if (d.food >= 1 && Math.random() < 0.15) gs.inv.wild_wheat += rand(1, 2);
+    if (d.food >= 1 && Math.random() < 0.20) gs.inv.worm += rand(1, 2);
+
     // 탐색 성공 → 사기 회복
     gs.morale = clamp(gs.morale + 8, 0, gs.maxMorale);
 
@@ -542,6 +551,17 @@ function consumeFood(gs) {
     gs.morale    = clamp(gs.morale + 2, 0, gs.maxMorale);
     return true;
   }
+  if (gs.inv.meat_stew > 0) {
+    gs.inv.meat_stew--;
+    gs.nutrition = clamp(gs.nutrition + 35, 0, gs.maxNutrition);
+    gs.morale = clamp(gs.morale + 10, 0, gs.maxMorale);
+    return true;
+  }
+  if (gs.inv.preserved_ration > 0) {
+    gs.inv.preserved_ration--;
+    gs.nutrition = clamp(gs.nutrition + 40, 0, gs.maxNutrition);
+    return true;
+  }
   if (gs.inv.rice > 0) {
     gs.inv.rice--;
     gs.nutrition = clamp(gs.nutrition + 10, 0, gs.maxNutrition);
@@ -605,6 +625,12 @@ function consumeMedical(gs) {
   if (gs.infection > 30 && gs.inv.antiseptic > 0) {
     gs.inv.antiseptic--;
     gs.infection = clamp(gs.infection - 20, 0, 100);
+    return true;
+  }
+  if (gs.inv.crude_medicine > 0) {
+    gs.inv.crude_medicine--;
+    gs.hp = clamp(gs.hp + 15, 0, gs.maxHp);
+    gs.infection = clamp(gs.infection - 10, 0, 100);
     return true;
   }
   if (gs.fatigue > 70 && gs.inv.painkiller > 0) {
