@@ -3,6 +3,7 @@ import EventBus        from '../core/EventBus.js';
 import GameState       from '../core/GameState.js';
 import I18n            from '../core/I18n.js';
 import BLUEPRINTS_BASE from '../data/blueprints.js';
+import BLUEPRINTS_ADV  from '../data/blueprints_advanced.js';
 import HIDDEN_RECIPES  from '../data/hiddenRecipes.js';
 import { SKILL_DEFS }  from '../data/skillDefs.js';
 import SkillSystem     from './SkillSystem.js';
@@ -12,7 +13,7 @@ import NightSystem     from './NightSystem.js';
 import GameData from '../data/GameData.js';
 
 // 히든 레시피 포함 전체 레시피
-const BLUEPRINTS = { ...BLUEPRINTS_BASE, ...HIDDEN_RECIPES };
+const BLUEPRINTS = { ...BLUEPRINTS_BASE, ...BLUEPRINTS_ADV, ...HIDDEN_RECIPES };
 
 const CraftSystem = {
   init() {
@@ -30,6 +31,14 @@ const CraftSystem = {
 
     if (GameState.crafting.activeQueue.length >= GameState.crafting.maxQueueSize) {
       return { ok: false, reason: I18n.t('craftSys.queueFull') };
+    }
+
+    // 동일 블루프린트 중복 제작 방지
+    const alreadyInQueue = GameState.crafting.activeQueue.some(
+      entry => entry.blueprintId === blueprintId
+    );
+    if (alreadyInQueue) {
+      return { ok: false, reason: I18n.t('craftSys.alreadyInQueue', { name: bp.name }) };
     }
 
     // 스킬 레벨 게이팅

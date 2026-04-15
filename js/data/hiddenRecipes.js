@@ -1,4 +1,4 @@
-// === HIDDEN RECIPE DEFINITIONS (24 legendary recipes) ===
+// === HIDDEN RECIPE DEFINITIONS (46 legendary recipes) ===
 // hidden: true — 일반 제작 목록에 표시되지 않음
 // rarity: 'legendary' — 모든 히든 레시피는 전설 등급
 // unlockConditions: 발견 조건 (히든 장소, 보스 처치, 캐릭터 전용 등)
@@ -973,7 +973,7 @@ const HIDDEN_RECIPES = {
     requiredSkills: { scavenging: 3 },
     stages: [
       {
-        name: '재료 가공',
+        stageIndex: 0, label: '재료 가공',
         tpCost: 2,
         requiredItems: [
           { definitionId: 'scrap_metal', qty: 2 },
@@ -982,7 +982,7 @@ const HIDDEN_RECIPES = {
         consumeAt: 'start',
       },
       {
-        name: '덫 조립',
+        stageIndex: 1, label: '덫 조립',
         tpCost: 1,
         requiredItems: [
           { definitionId: 'rope', qty: 1 },
@@ -1012,7 +1012,7 @@ const HIDDEN_RECIPES = {
     requiredSkills: { cooking: 2, harvesting: 2 },
     stages: [
       {
-        name: '재료 준비',
+        stageIndex: 0, label: '재료 준비',
         tpCost: 1,
         requiredItems: [
           { definitionId: 'raw_meat', qty: 2 },
@@ -1021,7 +1021,7 @@ const HIDDEN_RECIPES = {
         consumeAt: 'start',
       },
       {
-        name: '건조 숙성',
+        stageIndex: 1, label: '건조 숙성',
         tpCost: 3,
         requiredItems: [],
         consumeAt: 'start',
@@ -1035,6 +1035,719 @@ const HIDDEN_RECIPES = {
       minCraftLevel: 0,
       requiredItems: [],
       customUnlock: '노숙인 캐릭터 + D5+ 도달',
+    },
+  },
+
+  // ══════════════════════════════════════════════════════════════
+  //  금속/건축 엔드게임 (Lv12+) — 6
+  // ══════════════════════════════════════════════════════════════
+
+  smelt_alloy_ingot: {
+    id: 'smelt_alloy_ingot', name: '합금 주괴 제련', category: 'material',
+    description: '벽돌 화로에서 금속을 배합하여 합금을 만든다.',
+    hidden: true,
+    rarity: 'legendary',
+    output: [{ definitionId: 'alloy_ingot', qty: 1 }],
+    requiredTools: ['brick_furnace'],
+    requiredSkills: { crafting: 12 },
+    stages: [
+      {
+        stageIndex: 0, label: '금속 배합', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'refined_metal', qty: 2 },
+          { definitionId: 'steel_plate', qty: 1 },
+          { definitionId: 'charcoal', qty: 3 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+    unlockConditions: {
+      hiddenLocationId: null,
+      bossKillId: null,
+      requiredCharacter: null,
+      minDay: 20,
+      minCraftLevel: 0,
+      requiredItems: [],
+      customUnlock: null,
+    },
+  },
+
+  forge_master_blade: {
+    id: 'forge_master_blade', name: '명검 단조', category: 'weapon',
+    description: '합금을 달구어 명검을 벼린다.',
+    hidden: true,
+    rarity: 'legendary',
+    output: [{ definitionId: 'master_blade', qty: 1 }],
+    requiredTools: ['field_forge'],
+    requiredSkills: { weaponcraft: 12 },
+    stages: [
+      {
+        stageIndex: 0, label: '합금 가열', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'alloy_ingot', qty: 1 },
+          { definitionId: 'charcoal', qty: 2 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+    unlockConditions: {
+      hiddenLocationId: null,
+      bossKillId: null,
+      requiredCharacter: null,
+      minDay: 25,
+      minCraftLevel: 0,
+      requiredItems: [],
+      customUnlock: null,
+    },
+  },
+
+  forge_katana: {
+    id: 'forge_katana', name: '카타나 제작', category: 'weapon',
+    description: '명검을 재단조하여 완벽한 도검을 완성한다.',
+    hidden: true,
+    rarity: 'legendary',
+    output: [{ definitionId: 'katana', qty: 1 }],
+    requiredTools: ['field_forge'],
+    requiredSkills: { weaponcraft: 15 },
+    stages: [
+      {
+        stageIndex: 0, label: '재단조', tpCost: 4,
+        requiredItems: [
+          { definitionId: 'master_blade', qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '손잡이 마감', tpCost: 2,
+        requiredItems: [
+          { definitionId: 'leather', qty: 1 },
+          { definitionId: 'thread', qty: 2 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+    unlockConditions: {
+      hiddenLocationId: null,
+      bossKillId: null,
+      requiredCharacter: null,
+      minDay: 30,
+      minCraftLevel: 0,
+      requiredItems: [],
+      customUnlock: '대장장이의 비전을 깨달아야 한다 (weaponcraft 15 달성)',
+    },
+  },
+
+  forge_alloy_armor_plate: {
+    id: 'forge_alloy_armor_plate', name: '합금 장갑판', category: 'armor',
+    description: '합금으로 최상급 장갑판을 단조한다.',
+    hidden: true,
+    rarity: 'legendary',
+    output: [{ definitionId: 'alloy_armor_plate', qty: 1 }],
+    requiredTools: ['field_forge'],
+    requiredSkills: { armorcraft: 12 },
+    stages: [
+      {
+        stageIndex: 0, label: '합금 단조', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'alloy_ingot', qty: 2 },
+          { definitionId: 'leather', qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+    unlockConditions: {
+      hiddenLocationId: null,
+      bossKillId: null,
+      requiredCharacter: null,
+      minDay: 25,
+      minCraftLevel: 0,
+      requiredItems: [],
+      customUnlock: null,
+    },
+  },
+
+  build_watchtower: {
+    id: 'build_watchtower', name: '감시탑 건설', category: 'structure',
+    description: '콘크리트와 목재로 높은 감시탑을 세운다.',
+    hidden: true,
+    rarity: 'legendary',
+    output: [{ definitionId: 'watchtower', qty: 1 }],
+    requiredTools: [],
+    requiredSkills: { building: 12, crafting: 5 },
+    stages: [
+      {
+        stageIndex: 0, label: '기초 시공', tpCost: 4,
+        requiredItems: [
+          { definitionId: 'concrete_block', qty: 6 },
+          { definitionId: 'wood_plank', qty: 8 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '탑 조립', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'rope', qty: 3 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+    unlockConditions: {
+      hiddenLocationId: null,
+      bossKillId: null,
+      requiredCharacter: null,
+      minDay: 20,
+      minCraftLevel: 0,
+      requiredItems: [],
+      customUnlock: null,
+    },
+  },
+
+  build_portable_generator: {
+    id: 'build_portable_generator', name: '발전기 건설', category: 'structure',
+    description: '발전기 코어에 연료 시스템을 연결하여 전력을 생산한다.',
+    hidden: true,
+    rarity: 'legendary',
+    output: [{ definitionId: 'portable_generator', qty: 1 }],
+    requiredTools: ['field_forge'],
+    requiredSkills: { building: 10, crafting: 8 },
+    stages: [
+      {
+        stageIndex: 0, label: '코어 장착', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'generator_core', qty: 1 },
+          { definitionId: 'fuel_can', qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '배선 연결', tpCost: 2,
+        requiredItems: [
+          { definitionId: 'rubber', qty: 2 },
+          { definitionId: 'wire', qty: 3 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+    unlockConditions: {
+      hiddenLocationId: null,
+      bossKillId: null,
+      requiredCharacter: null,
+      minDay: 25,
+      minCraftLevel: 0,
+      requiredItems: [],
+      customUnlock: null,
+    },
+  },
+
+  // ══════════════════════════════════════════════════════════════
+  //  의료 엔드게임 (Lv8-15) — 4
+  // ══════════════════════════════════════════════════════════════
+
+  synthesize_antibiotics: {
+    id: 'synthesize_antibiotics', name: '항생제 합성', category: 'medical',
+    description: '정제약을 합성하여 강력한 항생제를 만든다.',
+    hidden: true,
+    rarity: 'legendary',
+    output: [{ definitionId: 'synthetic_antibiotics', qty: 1 }],
+    requiredTools: ['workbench'],
+    requiredSkills: { medicine: 10 },
+    stages: [
+      {
+        stageIndex: 0, label: '약재 배합', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'purified_medicine', qty: 2 },
+          { definitionId: 'distilled_water', qty: 1 },
+          { definitionId: 'herb_powder', qty: 3 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+    unlockConditions: {
+      hiddenLocationId: null,
+      bossKillId: null,
+      requiredCharacter: null,
+      minDay: 20,
+      minCraftLevel: 0,
+      requiredItems: [],
+      customUnlock: null,
+    },
+  },
+
+  make_surgical_anesthetic: {
+    id: 'make_surgical_anesthetic', name: '수술용 마취제', category: 'medical',
+    description: '마취제를 정제하여 수술용 고순도 마취제를 만든다.',
+    hidden: true,
+    rarity: 'legendary',
+    output: [{ definitionId: 'surgical_anesthetic', qty: 1 }],
+    requiredTools: ['workbench'],
+    requiredSkills: { medicine: 8 },
+    stages: [
+      {
+        stageIndex: 0, label: '마취제 정제', tpCost: 2,
+        requiredItems: [
+          { definitionId: 'anesthetic', qty: 2 },
+          { definitionId: 'distilled_water', qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+    unlockConditions: {
+      hiddenLocationId: null,
+      bossKillId: null,
+      requiredCharacter: null,
+      minDay: 15,
+      minCraftLevel: 0,
+      requiredItems: [],
+      customUnlock: null,
+    },
+  },
+
+  build_surgery_station: {
+    id: 'build_surgery_station', name: '야전 수술대 건설', category: 'structure',
+    description: '이동식 수술 시설을 설치한다.',
+    hidden: true,
+    rarity: 'legendary',
+    output: [{ definitionId: 'field_surgery_station', qty: 1 }],
+    requiredTools: [],
+    requiredSkills: { medicine: 10, building: 6 },
+    stages: [
+      {
+        stageIndex: 0, label: '수술대 조립', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'sterile_kit', qty: 1 },
+          { definitionId: 'anesthetic', qty: 1 },
+          { definitionId: 'wood_plank', qty: 2 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+    unlockConditions: {
+      hiddenLocationId: null,
+      bossKillId: null,
+      requiredCharacter: null,
+      minDay: 20,
+      minCraftLevel: 0,
+      requiredItems: [],
+      customUnlock: null,
+    },
+  },
+
+  brew_universal_cure: {
+    id: 'brew_universal_cure', name: '만병통치약 조제', category: 'medical',
+    description: '전설적인 치료제를 합성한다.',
+    hidden: true,
+    rarity: 'legendary',
+    output: [{ definitionId: 'universal_cure', qty: 1 }],
+    requiredTools: ['workbench'],
+    requiredSkills: { medicine: 15 },
+    stages: [
+      {
+        stageIndex: 0, label: '핵심 약재 배합', tpCost: 4,
+        requiredItems: [
+          { definitionId: 'synthetic_antibiotics', qty: 2 },
+          { definitionId: 'purified_medicine', qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '정제 마무리', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'sterile_water', qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+    unlockConditions: {
+      hiddenLocationId: null,
+      bossKillId: null,
+      requiredCharacter: null,
+      minDay: 35,
+      minCraftLevel: 0,
+      requiredItems: [],
+      customUnlock: '의학의 정수에 도달해야 한다 (medicine 15 달성)',
+    },
+  },
+
+  // ══════════════════════════════════════════════════════════════
+  //  전자/에너지 엔드게임 (Lv10-15) — 5
+  // ══════════════════════════════════════════════════════════════
+
+  build_solar_panel: {
+    id: 'build_solar_panel', name: '태양광 패널 건설', category: 'structure',
+    description: '태양 에너지를 전기로 변환하는 패널을 조립한다.',
+    hidden: true,
+    rarity: 'legendary',
+    output: [{ definitionId: 'solar_panel', qty: 1 }],
+    requiredTools: ['workbench'],
+    requiredSkills: { crafting: 12, building: 8 },
+    stages: [
+      {
+        stageIndex: 0, label: '패널 조립', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'circuit_module', qty: 2 },
+          { definitionId: 'glass_shard', qty: 4 },
+          { definitionId: 'copper_wire', qty: 3 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+    unlockConditions: {
+      hiddenLocationId: null,
+      bossKillId: null,
+      requiredCharacter: null,
+      minDay: 20,
+      minCraftLevel: 0,
+      requiredItems: [],
+      customUnlock: null,
+    },
+  },
+
+  build_solar_charger: {
+    id: 'build_solar_charger', name: '태양광 충전기', category: 'structure',
+    description: '태양광으로 배터리를 충전하는 장치를 만든다.',
+    hidden: true,
+    rarity: 'legendary',
+    output: [{ definitionId: 'solar_charger', qty: 1 }],
+    requiredTools: [],
+    requiredSkills: { building: 12 },
+    stages: [
+      {
+        stageIndex: 0, label: '충전 회로 구성', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'solar_panel', qty: 1 },
+          { definitionId: 'battery', qty: 1 },
+          { definitionId: 'wire', qty: 2 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+    unlockConditions: {
+      hiddenLocationId: null,
+      bossKillId: null,
+      requiredCharacter: null,
+      minDay: 25,
+      minCraftLevel: 0,
+      requiredItems: [],
+      customUnlock: null,
+    },
+  },
+
+  make_powered_drill: {
+    id: 'make_powered_drill', name: '전동 드릴', category: 'tool',
+    description: '전력 구동 드릴을 조립한다.',
+    hidden: true,
+    rarity: 'legendary',
+    output: [{ definitionId: 'powered_drill', qty: 1 }],
+    requiredTools: ['workbench'],
+    requiredSkills: { crafting: 12 },
+    stages: [
+      {
+        stageIndex: 0, label: '드릴 조립', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'power_cell', qty: 1 },
+          { definitionId: 'steel_tool_head', qty: 1 },
+          { definitionId: 'rubber', qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+    unlockConditions: {
+      hiddenLocationId: null,
+      bossKillId: null,
+      requiredCharacter: null,
+      minDay: 20,
+      minCraftLevel: 0,
+      requiredItems: [],
+      customUnlock: null,
+    },
+  },
+
+  build_electric_fence: {
+    id: 'build_electric_fence', name: '전기 울타리', category: 'structure',
+    description: '전류가 흐르는 방어 울타리를 설치한다.',
+    hidden: true,
+    rarity: 'legendary',
+    output: [{ definitionId: 'electric_fence', qty: 1 }],
+    requiredTools: [],
+    requiredSkills: { building: 15, crafting: 10 },
+    stages: [
+      {
+        stageIndex: 0, label: '울타리 골조', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'iron_pipe', qty: 4 },
+          { definitionId: 'wire', qty: 5 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '전력 연결', tpCost: 2,
+        requiredItems: [
+          { definitionId: 'power_cell', qty: 2 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+    unlockConditions: {
+      hiddenLocationId: null,
+      bossKillId: null,
+      requiredCharacter: null,
+      minDay: 30,
+      minCraftLevel: 0,
+      requiredItems: [],
+      customUnlock: '전력 인프라가 완비되어야 한다',
+    },
+  },
+
+  build_water_recycler: {
+    id: 'build_water_recycler', name: '물 재활용기', category: 'structure',
+    description: '사용한 물을 정화하여 재사용하는 시스템을 구축한다.',
+    hidden: true,
+    rarity: 'legendary',
+    output: [{ definitionId: 'water_recycler', qty: 1 }],
+    requiredTools: [],
+    requiredSkills: { building: 12 },
+    stages: [
+      {
+        stageIndex: 0, label: '정화 시스템 구축', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'rain_collector_improved', qty: 1 },
+          { definitionId: 'water_purifier', qty: 1 },
+          { definitionId: 'pipe_assembly', qty: 2 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+    unlockConditions: {
+      hiddenLocationId: null,
+      bossKillId: null,
+      requiredCharacter: null,
+      minDay: 25,
+      minCraftLevel: 0,
+      requiredItems: [],
+      customUnlock: null,
+    },
+  },
+
+  // ══════════════════════════════════════════════════════════════
+  //  방어구/도구 엔드게임 (Lv10-15) — 5
+  // ══════════════════════════════════════════════════════════════
+
+  make_composite_armor: {
+    id: 'make_composite_armor', name: '복합 장갑 제작', category: 'armor',
+    description: '방탄 조끼에 장갑판과 전자 보강재를 결합한다.',
+    hidden: true,
+    rarity: 'legendary',
+    output: [{ definitionId: 'composite_armor', qty: 1 }],
+    requiredTools: ['workbench'],
+    requiredSkills: { armorcraft: 10 },
+    stages: [
+      {
+        stageIndex: 0, label: '장갑 결합', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'plate_carrier', qty: 1 },
+          { definitionId: 'armor_plate', qty: 1 },
+          { definitionId: 'circuit_module', qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+    unlockConditions: {
+      hiddenLocationId: null,
+      bossKillId: null,
+      requiredCharacter: null,
+      minDay: 20,
+      minCraftLevel: 0,
+      requiredItems: [],
+      customUnlock: null,
+    },
+  },
+
+  build_powered_exosuit: {
+    id: 'build_powered_exosuit', name: '엑소수트 제작', category: 'armor',
+    description: '전력 구동 외골격 장갑을 조립한다.',
+    hidden: true,
+    rarity: 'legendary',
+    output: [{ definitionId: 'powered_exosuit', qty: 1 }],
+    requiredTools: ['field_forge'],
+    requiredSkills: { armorcraft: 15, crafting: 12 },
+    stages: [
+      {
+        stageIndex: 0, label: '외골격 프레임', tpCost: 4,
+        requiredItems: [
+          { definitionId: 'composite_armor', qty: 1 },
+          { definitionId: 'electric_motor', qty: 2 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '전력 시스템 장착', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'power_cell', qty: 1 },
+          { definitionId: 'circuit_module', qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+    unlockConditions: {
+      hiddenLocationId: null,
+      bossKillId: null,
+      requiredCharacter: null,
+      minDay: 40,
+      minCraftLevel: 0,
+      requiredItems: [],
+      customUnlock: '공학의 극치에 도달해야 한다',
+    },
+  },
+
+  make_night_vision: {
+    id: 'make_night_vision', name: '야시경 제작', category: 'tool',
+    description: '어둠 속에서도 볼 수 있는 전자 고글을 만든다.',
+    hidden: true,
+    rarity: 'legendary',
+    output: [{ definitionId: 'night_vision_goggles', qty: 1 }],
+    requiredTools: ['workbench'],
+    requiredSkills: { crafting: 15 },
+    stages: [
+      {
+        stageIndex: 0, label: '광학 조립', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'circuit_module', qty: 1 },
+          { definitionId: 'glass_shard', qty: 2 },
+          { definitionId: 'power_cell', qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+    unlockConditions: {
+      hiddenLocationId: null,
+      bossKillId: null,
+      requiredCharacter: null,
+      minDay: 30,
+      minCraftLevel: 0,
+      requiredItems: [],
+      customUnlock: null,
+    },
+  },
+
+  make_electronic_lockpick: {
+    id: 'make_electronic_lockpick', name: '전자 락픽', category: 'tool',
+    description: '전자 잠금장치를 해제할 수 있는 도구를 만든다.',
+    hidden: true,
+    rarity: 'legendary',
+    output: [{ definitionId: 'electronic_lockpick', qty: 1 }],
+    requiredTools: ['workbench'],
+    requiredSkills: { crafting: 10 },
+    stages: [
+      {
+        stageIndex: 0, label: '전자 락픽 조립', tpCost: 2,
+        requiredItems: [
+          { definitionId: 'lockpick_set', qty: 1 },
+          { definitionId: 'circuit_module', qty: 1 },
+          { definitionId: 'wire', qty: 2 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+    unlockConditions: {
+      hiddenLocationId: null,
+      bossKillId: null,
+      requiredCharacter: null,
+      minDay: 20,
+      minCraftLevel: 0,
+      requiredItems: [],
+      customUnlock: null,
+    },
+  },
+
+  make_master_wrench: {
+    id: 'make_master_wrench', name: '마스터 렌치', category: 'tool',
+    description: '합금으로 최상급 렌치를 만든다.',
+    hidden: true,
+    rarity: 'legendary',
+    output: [{ definitionId: 'master_wrench', qty: 1 }],
+    requiredTools: ['field_forge'],
+    requiredSkills: { crafting: 12 },
+    stages: [
+      {
+        stageIndex: 0, label: '합금 렌치 단조', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'pipe_wrench_improved', qty: 1 },
+          { definitionId: 'alloy_ingot', qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+    unlockConditions: {
+      hiddenLocationId: null,
+      bossKillId: null,
+      requiredCharacter: null,
+      minDay: 25,
+      minCraftLevel: 0,
+      requiredItems: [],
+      customUnlock: null,
+    },
+  },
+
+  // ══════════════════════════════════════════════════════════════
+  //  낚시 엔드게임 (Lv12-15) — 2
+  // ══════════════════════════════════════════════════════════════
+
+  make_automated_fish_trap: {
+    id: 'make_automated_fish_trap', name: '자동 어획 장치', category: 'tool',
+    description: '통발에 자동화 시스템을 추가한다.',
+    hidden: true,
+    rarity: 'legendary',
+    output: [{ definitionId: 'automated_fish_trap', qty: 1 }],
+    requiredTools: ['workbench'],
+    requiredSkills: { fishing: 12 },
+    stages: [
+      {
+        stageIndex: 0, label: '자동화 장착', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'crab_trap', qty: 1 },
+          { definitionId: 'circuit_module', qty: 1 },
+          { definitionId: 'wire', qty: 2 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+    unlockConditions: {
+      hiddenLocationId: null,
+      bossKillId: null,
+      requiredCharacter: null,
+      minDay: 25,
+      minCraftLevel: 0,
+      requiredItems: [],
+      customUnlock: null,
+    },
+  },
+
+  make_master_lure: {
+    id: 'make_master_lure', name: '명인의 루어', category: 'tool',
+    description: '합금으로 전설적인 루어를 만든다.',
+    hidden: true,
+    rarity: 'legendary',
+    output: [{ definitionId: 'master_angler_lure', qty: 1 }],
+    requiredTools: ['field_forge'],
+    requiredSkills: { fishing: 15 },
+    stages: [
+      {
+        stageIndex: 0, label: '루어 단조', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'alloy_ingot', qty: 1 },
+          { definitionId: 'leather', qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+    unlockConditions: {
+      hiddenLocationId: null,
+      bossKillId: null,
+      requiredCharacter: null,
+      minDay: 30,
+      minCraftLevel: 0,
+      requiredItems: [],
+      customUnlock: '낚시의 달인만이 만들 수 있다',
     },
   },
 

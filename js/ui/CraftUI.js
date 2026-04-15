@@ -8,6 +8,7 @@ import { SKILL_DEFS }  from '../data/skillDefs.js';
 import SkillSystem     from '../systems/SkillSystem.js';
 import I18n            from '../core/I18n.js';
 import GameData        from '../data/GameData.js';
+import CraftTreeUI     from './CraftTreeUI.js';
 
 // 전체 레시피 (히든 포함)
 const ALL_BLUEPRINTS = { ...BLUEPRINTS_BASE, ...HIDDEN_RECIPES };
@@ -15,6 +16,7 @@ const ALL_BLUEPRINTS = { ...BLUEPRINTS_BASE, ...HIDDEN_RECIPES };
 const CraftUI = {
   _panel: null,
   _selectedBp: null,
+  _viewMode: 'list',
 
   _listenersRegistered: false,
 
@@ -27,6 +29,11 @@ const CraftUI = {
       EventBus.on('boardChanged', () => { if (GameState.ui.basecampMode === 'CRAFT') this.render(); });
       EventBus.on('cardPlaced',   () => { if (GameState.ui.basecampMode === 'CRAFT') this.render(); });
       EventBus.on('cardRemoved',  () => { if (GameState.ui.basecampMode === 'CRAFT') this.render(); });
+      EventBus.on('craftTreeSelectRecipe', ({ recipeId }) => {
+        this._viewMode = 'list';
+        this._selectedBp = recipeId;
+        this.render();
+      });
     }
     // Panel is set from Basecamp when opening the craft modal
     // Do not auto-render here; render() guard checks basecampMode
@@ -36,33 +43,57 @@ const CraftUI = {
     if (!this._panel) return;
     if (GameState.ui.basecampMode !== 'CRAFT') return;
 
-    this._panel.innerHTML = `
-      <div class="craft-panel">
-        <div style="font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">
-          ${I18n.t('craft.blueprints')}
-        </div>
-        ${this._renderBlueprintList()}
-        ${this._renderQueue()}
+    // View mode tabs
+    const tabHtml = `
+      <div class="craft-view-tabs">
+        <button class="craft-view-tab ${this._viewMode !== 'tree' ? 'active' : ''}" data-view="list">\uD83D\uDCCB \uB808\uC2DC\uD53C</button>
+        <button class="craft-view-tab ${this._viewMode === 'tree' ? 'active' : ''}" data-view="tree">\uD83C\uDF33 \uD14C\uD06C \uD2B8\uB9AC</button>
       </div>
     `;
 
-    // Attach click handlers
-    this._panel.querySelectorAll('.blueprint-item').forEach(el => {
-      el.addEventListener('click', () => {
-        this._selectedBp = el.dataset.bpId;
+    if (this._viewMode === 'tree') {
+      this._panel.innerHTML = tabHtml;
+      const treeContainer = document.createElement('div');
+      this._panel.appendChild(treeContainer);
+      CraftTreeUI.render(treeContainer);
+    } else {
+      this._panel.innerHTML = `
+        ${tabHtml}
+        <div class="craft-panel">
+          <div style="font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">
+            ${I18n.t('craft.blueprints')}
+          </div>
+          ${this._renderBlueprintList()}
+          ${this._renderQueue()}
+        </div>
+      `;
+
+      // Attach click handlers
+      this._panel.querySelectorAll('.blueprint-item').forEach(el => {
+        el.addEventListener('click', () => {
+          this._selectedBp = el.dataset.bpId;
+          this.render();
+        });
+      });
+
+      const startBtn = this._panel.querySelector('#craft-start-btn');
+      if (startBtn) {
+        startBtn.addEventListener('click', () => {
+          if (this._selectedBp) {
+            CraftSystem.startBlueprint(this._selectedBp);
+            this.render();
+          }
+        });
+      }
+    }
+
+    // Attach view tab handlers
+    this._panel.querySelectorAll('.craft-view-tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        this._viewMode = btn.dataset.view;
         this.render();
       });
     });
-
-    const startBtn = this._panel.querySelector('#craft-start-btn');
-    if (startBtn) {
-      startBtn.addEventListener('click', () => {
-        if (this._selectedBp) {
-          CraftSystem.startBlueprint(this._selectedBp);
-          this.render();
-        }
-      });
-    }
   },
 
   _renderBlueprintList() {
@@ -71,6 +102,12 @@ const CraftUI = {
       if (!bp.hidden) return true;
       return (GameState.flags.hiddenRecipesUnlocked ?? []).includes(bp.id);
     });
+
+    if (visibleBlueprints.length === 0) {
+      return `<div style="text-align:center;padding:20px;color:var(--text-dim);font-size:10px;">
+        스킬을 높여 새로운 레시피를 해금하세요
+      </div>`;
+    }
 
     return visibleBlueprints.map(bp => {
       const isSelected = this._selectedBp === bp.id;
@@ -92,6 +129,7 @@ const CraftUI = {
           <div class="blueprint-cost">${bp.stages.map(s => `${s.label} (${s.tpCost}TP)`).join(' → ')}</div>
           ${this._renderSkillReqs(bp)}
           ${isSelected ? `
+            ${this._renderOutputPreview(bp)}
             <div class="blueprint-req-list">${reqs}</div>
             ${check.ok
               ? `<button class="toolbar-btn" id="craft-start-btn" style="margin-top:6px;width:100%">${I18n.t('craft.startCraft')}</button>`
@@ -111,6 +149,58 @@ const CraftUI = {
       return `<span class="blueprint-skill-req ${met ? 'met' : 'unmet'}">${def?.icon ?? ''}${def?.name ?? skillId} Lv.${minLevel}</span>`;
     }).join('');
     return `<div class="blueprint-skill-reqs">${reqs}</div>`;
+  },
+
+  _renderOutputPreview(bp) {
+    const outputs = Array.isArray(bp.output) ? bp.output : [bp.output];
+    if (!outputs.length || !outputs[0]) return '';
+
+    const out = outputs[0];
+    const def = GameData.items[out.definitionId];
+    if (!def) return '';
+
+    let statsHtml = '';
+
+    // Weapon stats
+    if (def.combat) {
+      const c = def.combat;
+      statsHtml += `<div class="preview-stat">\u2694\uFE0F ${c.damage[0]}~${c.damage[1]}</div>`;
+      statsHtml += `<div class="preview-stat">\uD83C\uDFAF ${Math.round(c.accuracy * 100)}%</div>`;
+      if (c.critChance > 0) statsHtml += `<div class="preview-stat">\uD83D\uDCA5 ${Math.round(c.critChance * 100)}% \u00D7${c.critMultiplier}</div>`;
+    }
+
+    // Armor stats
+    if (def.armor) {
+      const a = def.armor;
+      statsHtml += `<div class="preview-stat">\uD83D\uDEE1\uFE0F ${a.defense}</div>`;
+      statsHtml += `<div class="preview-stat">\uD83D\uDD3D -${Math.round(a.damageReduction * 100)}%</div>`;
+      if (a.movePenalty > 0) statsHtml += `<div class="preview-stat">\uD83E\uDDBF -${Math.round(a.movePenalty * 100)}%</div>`;
+    }
+
+    // Consumable effects
+    if (def.onConsume) {
+      const oc = def.onConsume;
+      if (oc.hp) statsHtml += `<div class="preview-stat">\u2764\uFE0F +${oc.hp}</div>`;
+      if (oc.nutrition) statsHtml += `<div class="preview-stat">\uD83C\uDF56 +${oc.nutrition}</div>`;
+      if (oc.hydration) statsHtml += `<div class="preview-stat">\uD83D\uDCA7 +${oc.hydration}</div>`;
+      if (oc.morale) statsHtml += `<div class="preview-stat">${oc.morale > 0 ? '\uD83D\uDE0A' : '\uD83D\uDE1F'} ${oc.morale > 0 ? '+' : ''}${oc.morale}</div>`;
+      if (oc.infection) statsHtml += `<div class="preview-stat">\uD83E\uDDA0 ${oc.infection}</div>`;
+      if (oc.contamination) statsHtml += `<div class="preview-stat">\u2622\uFE0F ${oc.contamination}</div>`;
+    }
+
+    const qtyLabel = out.qty > 1 ? ` \u00D7${out.qty}` : '';
+
+    return `
+      <div class="blueprint-output-preview">
+        <div class="preview-header">
+          <span class="preview-icon">${def.icon ?? '\uD83D\uDCE6'}</span>
+          <span class="preview-name">${def.name}${qtyLabel}</span>
+          <span class="preview-rarity rarity-${def.rarity ?? 'common'}">${def.rarity ?? 'common'}</span>
+        </div>
+        <div class="preview-desc">${def.description ?? ''}</div>
+        ${statsHtml ? `<div class="preview-stats">${statsHtml}</div>` : ''}
+      </div>
+    `;
   },
 
   _renderQueue() {

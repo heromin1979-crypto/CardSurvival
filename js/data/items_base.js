@@ -1,5 +1,5 @@
-// === ITEMS: BASE (기초재료·가공재료·수분·식량) ===
-// 기초 재료 15 + 가공 재료 8 + 수분 8 + 식량 10 = 41 items
+// === ITEMS: BASE (기초재료·가공재료·수분·식량·건축·확장) ===
+// 기초 재료 15 + 가공 재료 8 + 수분 8 + 식량 10 + 불 13 + 금속 6 + 화학 3 + 도구 6 + 식생 31 + 건축확장 13 + 식량확장 11 + 수분확장 3 = 127 items
 
 const ITEMS_BASE = {
 
@@ -1091,6 +1091,271 @@ const ITEMS_BASE = {
     icon: '🍯', description: '벌통에서 채취한 꿀. 발효 촉진재로 쓰이거나 약초와 섞으면 치유 효과가 있다.',
     tags: ['material', 'natural', 'medical'],
     onUse: { nutrition: 15, morale: 8 },
+    dismantle: [],
+  },
+  // ═══ 건축·가공 재료 확장 (13) ══════════════════════════════════
+
+  sand: {
+    id: 'sand', name: '모래', type: 'material', subtype: 'natural',
+    rarity: 'common', weight: 0.8,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🏖️', description: '건축 재료로 사용되는 모래. 모르타르의 주재료.',
+    tags: ['material', 'natural'],
+    dismantle: [],
+  },
+
+  mortar_mix: {
+    id: 'mortar_mix', name: '모르타르', type: 'material', subtype: 'natural',
+    rarity: 'uncommon', weight: 1.0,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🧱', description: '자갈과 모래를 섞어 만든 결합재. 벽돌과 콘크리트의 기초.',
+    tags: ['material', 'natural', 'crafted'],
+    dismantle: [{ definitionId: 'sand', qty: 1, chance: 0.5 }],
+  },
+
+  concrete_block: {
+    id: 'concrete_block', name: '콘크리트 블록', type: 'material', subtype: 'natural',
+    rarity: 'uncommon', weight: 2.0,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🧱', description: '단단한 건축 블록. 방벽과 구조물의 기본 단위.',
+    tags: ['material', 'natural', 'crafted'],
+    dismantle: [{ definitionId: 'mortar_mix', qty: 1, chance: 0.4 }],
+  },
+
+  brick: {
+    id: 'brick', name: '벽돌', type: 'material', subtype: 'natural',
+    rarity: 'uncommon', weight: 1.5,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🧱', description: '구워낸 벽돌. 내화성이 뛰어나다.',
+    tags: ['material', 'natural', 'crafted'],
+    dismantle: [],
+  },
+
+  alloy_ingot: {
+    id: 'alloy_ingot', name: '합금 주괴', type: 'material', subtype: 'metal',
+    rarity: 'rare', weight: 1.2,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '⚙️', description: '정제 금속과 강철을 배합한 고급 합금. 최상급 장비의 재료.',
+    tags: ['material', 'metal', 'crafted'],
+    dismantle: [{ definitionId: 'refined_metal', qty: 1, chance: 0.7 }],
+  },
+
+  woven_fabric: {
+    id: 'woven_fabric', name: '직조 천', type: 'material', subtype: 'textile',
+    rarity: 'uncommon', weight: 0.3,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🧵', description: '실을 촘촘히 짠 천. 일반 천보다 튼튼하다.',
+    tags: ['material', 'textile', 'crafted'],
+    dismantle: [{ definitionId: 'thread', qty: 2, chance: 0.8 }],
+  },
+
+  reinforced_fabric: {
+    id: 'reinforced_fabric', name: '강화 천', type: 'material', subtype: 'textile',
+    rarity: 'uncommon', weight: 0.5,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🧵', description: '특수 처리한 강화 직물. 방탄복의 기초 소재.',
+    tags: ['material', 'textile', 'crafted'],
+    dismantle: [{ definitionId: 'woven_fabric', qty: 1, chance: 0.6 }],
+  },
+
+  dye: {
+    id: 'dye', name: '염료', type: 'material', subtype: 'misc',
+    rarity: 'common', weight: 0.2,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🎨', description: '천연 재료로 만든 염료. 위장 천 제작에 사용.',
+    tags: ['material', 'misc'],
+    dismantle: [],
+  },
+
+  wild_wheat: {
+    id: 'wild_wheat', name: '야생 밀', type: 'material', subtype: 'natural',
+    rarity: 'common', weight: 0.3,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🌾', description: '폐허에서 자란 야생 밀. 밀가루로 가공할 수 있다.',
+    tags: ['material', 'natural', 'food_raw'],
+    dismantle: [],
+  },
+
+  flour: {
+    id: 'flour', name: '밀가루', type: 'material', subtype: 'food_raw',
+    rarity: 'common', weight: 0.4,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🌾', description: '야생 밀을 빻아 만든 거친 밀가루.',
+    tags: ['material', 'food_raw', 'crafted'],
+    dismantle: [],
+  },
+
+  bread_dough: {
+    id: 'bread_dough', name: '빵 반죽', type: 'material', subtype: 'food_raw',
+    rarity: 'common', weight: 0.5,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🫓', description: '밀가루와 물로 만든 반죽. 구우면 빵이 된다.',
+    tags: ['material', 'food_raw', 'crafted'],
+    dismantle: [],
+  },
+
+  worm: {
+    id: 'worm', name: '지렁이', type: 'material', subtype: 'natural',
+    rarity: 'common', weight: 0.05,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🪱', description: '땅에서 파낸 지렁이. 낚시 미끼로 최적.',
+    tags: ['material', 'natural'],
+    dismantle: [],
+  },
+
+  fishing_bait: {
+    id: 'fishing_bait', name: '낚시 미끼', type: 'material', subtype: 'misc',
+    rarity: 'common', weight: 0.1,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🎣', description: '약초와 지렁이로 만든 미끼. 물고기 유인 효과가 뛰어나다.',
+    tags: ['material', 'misc', 'crafted'],
+    dismantle: [],
+  },
+
+  // ═══ 식량 확장 — 조리 식품 (11) ══════════════════════════════════
+
+  baked_bread: {
+    id: 'baked_bread', name: '구운 빵', type: 'consumable', subtype: 'food',
+    rarity: 'common', weight: 0.4,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🍞', description: '갓 구운 빵. 든든한 한 끼.',
+    onConsume: { nutrition: 25, morale: 5 },
+    tags: ['edible', 'food', 'cooked'],
+    dismantle: [],
+  },
+
+  sandwich: {
+    id: 'sandwich', name: '샌드위치', type: 'consumable', subtype: 'food',
+    rarity: 'uncommon', weight: 0.5,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🥪', description: '빵에 고기와 채소를 넣은 샌드위치. 영양 만점.',
+    onConsume: { nutrition: 40, morale: 10 },
+    tags: ['edible', 'food', 'cooked'],
+    dismantle: [],
+  },
+
+  rice_wine: {
+    id: 'rice_wine', name: '막걸리', type: 'consumable', subtype: 'food',
+    rarity: 'uncommon', weight: 0.6,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🍶', description: '발효된 쌀로 만든 막걸리. 따뜻한 기분이 든다.',
+    onConsume: { hydration: 15, nutrition: 10, morale: 15 },
+    tags: ['edible', 'food', 'fermented'],
+    dismantle: [],
+  },
+
+  vinegar: {
+    id: 'vinegar', name: '식초', type: 'consumable', subtype: 'food',
+    rarity: 'common', weight: 0.3,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🫗', description: '발효로 만든 식초. 음식 보존과 소독에 유용.',
+    onConsume: { nutrition: 0, morale: -5 },
+    tags: ['edible', 'food', 'fermented'],
+    dismantle: [],
+  },
+
+  pickled_food: {
+    id: 'pickled_food', name: '절임 음식', type: 'consumable', subtype: 'food',
+    rarity: 'uncommon', weight: 0.4,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🥒', description: '식초에 절인 음식. 오래 보관할 수 있다.',
+    onConsume: { nutrition: 20, morale: 5 },
+    tags: ['edible', 'food', 'preserved'],
+    dismantle: [],
+  },
+
+  meat_stew: {
+    id: 'meat_stew', name: '고기 스튜', type: 'consumable', subtype: 'food',
+    rarity: 'uncommon', weight: 0.7,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🍲', description: '고기와 약초를 푹 끓인 스튜. 온몸이 따뜻해진다.',
+    onConsume: { nutrition: 35, hydration: 10, morale: 10, hp: 5 },
+    tags: ['edible', 'food', 'cooked'],
+    dismantle: [],
+  },
+
+  bibimbap: {
+    id: 'bibimbap', name: '비빔밥', type: 'consumable', subtype: 'food',
+    rarity: 'rare', weight: 0.8,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🍚', description: '밥에 고기와 채소를 비빈 영양식.',
+    onConsume: { nutrition: 50, morale: 15, hp: 5 },
+    tags: ['edible', 'food', 'cooked'],
+    dismantle: [],
+  },
+
+  salted_meat: {
+    id: 'salted_meat', name: '소금에 절인 고기', type: 'consumable', subtype: 'food',
+    rarity: 'common', weight: 0.5,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🥩', description: '소금으로 절인 고기. 부패가 느리다.',
+    onConsume: { nutrition: 25 },
+    tags: ['edible', 'food', 'preserved'],
+    dismantle: [],
+  },
+
+  smoked_meat: {
+    id: 'smoked_meat', name: '훈제 고기', type: 'consumable', subtype: 'food',
+    rarity: 'uncommon', weight: 0.4,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🥓', description: '연기로 훈제한 고기. 풍미가 깊고 오래 보관된다.',
+    onConsume: { nutrition: 30, morale: 5 },
+    tags: ['edible', 'food', 'preserved'],
+    dismantle: [],
+  },
+
+  preserved_ration: {
+    id: 'preserved_ration', name: '보존 식량', type: 'consumable', subtype: 'food',
+    rarity: 'rare', weight: 0.6,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🥫', description: '완벽하게 보존 처리된 식량. 비상시를 위한 최고의 비축품.',
+    onConsume: { nutrition: 40, morale: 5 },
+    tags: ['edible', 'food', 'preserved'],
+    dismantle: [],
+  },
+
+  smoked_fish: {
+    id: 'smoked_fish', name: '훈제 생선', type: 'consumable', subtype: 'food',
+    rarity: 'uncommon', weight: 0.3,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🐟', description: '연기에 그을린 생선. 단백질이 풍부하다.',
+    onConsume: { nutrition: 25, morale: 5 },
+    tags: ['edible', 'food', 'preserved'],
+    dismantle: [],
+  },
+
+  // ═══ 수분 확장 (3) ═══════════════════════════════════════════════
+
+  settled_water: {
+    id: 'settled_water', name: '침전수', type: 'consumable', subtype: 'drink',
+    rarity: 'common', weight: 0.5,
+    defaultDurability: 100, defaultContamination: 10,
+    icon: '💧', description: '불순물을 가라앉힌 물. 끓이면 더 안전하다.',
+    onConsume: { hydration: 20, contamination: 10 },
+    leaveOnConsume: { definitionId: 'empty_bottle', qty: 1 },
+    tags: ['drinkable', 'contaminated'],
+    dismantle: [],
+  },
+
+  distilled_water: {
+    id: 'distilled_water', name: '증류수', type: 'consumable', subtype: 'drink',
+    rarity: 'uncommon', weight: 0.5,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '💧', description: '증류 과정을 거친 순수한 물.',
+    onConsume: { hydration: 30 },
+    leaveOnConsume: { definitionId: 'empty_bottle', qty: 1 },
+    tags: ['drinkable', 'clean'],
+    dismantle: [],
+  },
+
+  sterile_water: {
+    id: 'sterile_water', name: '멸균수', type: 'consumable', subtype: 'drink',
+    rarity: 'rare', weight: 0.5,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '💧', description: '완전히 멸균된 물. 의료 용도에 적합.',
+    onConsume: { hydration: 25 },
+    leaveOnConsume: { definitionId: 'empty_bottle', qty: 1 },
+    tags: ['drinkable', 'clean', 'medical'],
     dismantle: [],
   },
 };

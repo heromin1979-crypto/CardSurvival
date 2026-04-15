@@ -155,6 +155,52 @@
   border-radius: 2px;
 }
 
+/* ── 크래프팅 출력 미리보기 ── */
+.blueprint-output-preview {
+  margin: var(--gap-xs) 0;
+  padding: var(--gap-xs);
+  background: var(--bg-base);
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius-sm);
+}
+.preview-header {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-xs);
+  margin-bottom: 2px;
+}
+.preview-icon { font-size: 18px; }
+.preview-name { font-size: 11px; font-weight: 600; color: var(--text-primary); }
+.preview-rarity {
+  font-size: 8px;
+  padding: 1px 4px;
+  border-radius: 3px;
+  text-transform: uppercase;
+}
+.rarity-common { background: var(--bg-hover); color: var(--text-dim); }
+.rarity-uncommon { background: rgba(96, 176, 96, 0.2); color: var(--text-good); }
+.rarity-rare { background: rgba(80, 144, 192, 0.2); color: var(--text-info); }
+.rarity-legendary { background: rgba(200, 160, 96, 0.2); color: var(--accent-primary); }
+.preview-desc {
+  font-size: 9px;
+  color: var(--text-dim);
+  margin-bottom: 4px;
+  line-height: 1.3;
+}
+.preview-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.preview-stat {
+  font-size: 9px;
+  padding: 1px 5px;
+  background: var(--bg-hover);
+  border-radius: 3px;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
 /* === EXPLORE SCREEN === */
 #screen-explore .game-layout {
   grid-template-areas:
@@ -1613,4 +1659,105 @@
   letter-spacing: 1px;
   text-align: center;
   margin: 4px 0;
+}
+
+/* ── 크래프팅 뷰 탭 ── */
+.craft-view-tabs {
+  display: flex;
+  gap: 2px;
+  margin-bottom: var(--gap-xs);
+  border-bottom: 1px solid var(--border-dim);
+  padding-bottom: var(--gap-xs);
+}
+.craft-view-tab {
+  flex: 1;
+  padding: 4px 8px;
+  font-size: 10px;
+  background: transparent;
+  border: 1px solid var(--border-dim);
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  color: var(--text-dim);
+  cursor: pointer;
+}
+.craft-view-tab.active {
+  background: var(--bg-raised);
+  color: var(--text-primary);
+  border-bottom-color: var(--bg-raised);
+}
+
+/* ── 테크 트리 ── */
+.craft-tree { padding: var(--gap-xs); }
+.tree-tabs {
+  display: flex;
+  gap: 3px;
+  margin-bottom: var(--gap-sm);
+  overflow-x: auto;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+.tree-tabs::-webkit-scrollbar { display: none; }
+.tree-tab {
+  padding: 3px 8px;
+  font-size: 9px;
+  background: var(--bg-hover);
+  border: 1px solid var(--border-dim);
+  border-radius: var(--radius-sm);
+  color: var(--text-dim);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.tree-tab.active {
+  background: var(--accent-primary);
+  color: #fff;
+  border-color: var(--accent-primary);
+}
+.tree-content { }
+.tree-tier {
+  margin-bottom: var(--gap-sm);
+}
+.tier-label {
+  font-size: 8px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 3px;
+}
+.tier-nodes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.tree-node {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 10px;
+  border: 1px solid var(--border-dim);
+  cursor: default;
+}
+.tree-node--locked {
+  background: var(--bg-base);
+  color: var(--text-dim);
+  opacity: 0.5;
+}
+.tree-node--available {
+  background: var(--bg-raised);
+  color: var(--text-primary);
+  border-color: var(--accent-dim);
+}
+.tree-node--crafted {
+  background: rgba(40, 120, 40, 0.2);
+  color: var(--text-good);
+  border-color: var(--text-good);
+}
+.tree-node-icon { font-size: 14px; }
+.tree-node-name { font-size: 9px; }
+.tree-arrow {
+  color: var(--text-dim);
+  font-size: 10px;
+  margin-left: 2px;
 }

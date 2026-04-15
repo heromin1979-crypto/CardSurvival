@@ -244,6 +244,10 @@ const SecretCombinationSystem = {
       weaponcraft: { 3: ['sc_poison_blade'],                   4: ['sc_fire_arrow'] },
       crafting:    { 3: ['sc_torch', 'sc_oil_lamp'],           5: ['sc_water_trap'] },
       building:    { 3: ['sc_thorn_wire'],                     4: ['sc_signal_fire'] },
+      defense:     { 1: ['sc_defense_salve'], 4: ['sc_shield_mod'], 6: ['sc_guard_stance_kit'], 11: ['sc_fortress_mod'] },
+      unarmed:     { 2: ['sc_knuckle_wrap'],  4: ['sc_combat_gloves'], 7: ['sc_iron_gauntlet'] },
+      melee:       { 1: ['sc_sharpen_blade'], 3: ['sc_weapon_oil'], 5: ['sc_serrated_mod'], 7: ['sc_quench_blade'] },
+      ranged:      { 2: ['sc_ammo_mod'],      4: ['sc_weapon_scope'], 6: ['sc_suppressor'], 11: ['sc_extended_mag'] },
     };
 
     EventBus.on('skillLevelUp', ({ skillId, newLevel, skillName }) => {
