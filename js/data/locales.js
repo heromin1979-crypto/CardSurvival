@@ -511,6 +511,7 @@ export const ko = {
 
   // ── CraftSystem ─────────────────────────────────────────────
   'craftSys.queueFull':      '작업 큐가 가득 참',
+  'craftSys.alreadyInQueue': '이미 제작 대기열에 있습니다: {name}',
   'craftSys.skillReq':       '{skill} Lv.{min} 필요 (현재 Lv.{current})',
   'craftSys.itemShort':      '{name} 부족 ({have}/{need})',
   'craftSys.toolReq':        '도구 필요: {name}',
@@ -1322,6 +1323,7 @@ export const en = {
 
   // ── CraftSystem ─────────────────────────────────────────────
   'craftSys.queueFull':      'Queue is full',
+  'craftSys.alreadyInQueue': 'Already in craft queue: {name}',
   'craftSys.skillReq':       '{skill} Lv.{min} required (Current Lv.{current})',
   'craftSys.itemShort':      '{name} insufficient ({have}/{need})',
   'craftSys.toolReq':        'Tool required: {name}',

@@ -1,5 +1,5 @@
 // === ITEMS: COMBAT (근접무기·원거리/투척·의복/방어구) ===
-// 근접 무기 9 + 원거리/투척 9 + 의복/방어구 7 = 25 items
+// 근접 무기 9 + 원거리/투척 9 + 의복/방어구 7 + Phase B 도구무기 6 + 탄약 2 + 신규무기 5 + 신규방어구 8 + 전투강화 9 = 55+ items
 
 const ITEMS_COMBAT = {
 
@@ -512,6 +512,287 @@ const ITEMS_COMBAT = {
     icon: '🔶', description: '탄약 제조대에서 직접 만드는 소총용 탄환. 매우 강력하지만 제작이 복잡하다.',
     tags: ['ammo', 'craftable'],
     dismantle: [],
+  },
+
+  // ── 신규: 크래프팅 체인 확장 — 무기 ──────────────────────
+
+  pipe_shotgun: {
+    id: 'pipe_shotgun', name: '파이프 산탄총', type: 'weapon', subtype: 'ranged',
+    rarity: 'rare', weight: 2.5,
+    defaultDurability: 60, defaultContamination: 0,
+    icon: '🔫', description: '철파이프로 제작한 조잡한 산탄총. 근거리에서 파괴적.',
+    tags: ['weapon', 'ranged', 'crafted'],
+    weaponType: 'pierce',
+    combat: { damage: [25, 40], accuracy: 0.65, noiseOnUse: 35, durabilityLoss: 4, critChance: 0.08, critMultiplier: 2.0 },
+    dismantle: [
+      { definitionId: 'iron_pipe', qty: 1, chance: 0.7 },
+      { definitionId: 'scrap_metal', qty: 2, chance: 0.8 },
+      { definitionId: 'spring', qty: 1, chance: 0.5 },
+    ],
+  },
+
+  master_blade: {
+    id: 'master_blade', name: '명검', type: 'weapon', subtype: 'melee',
+    rarity: 'rare', weight: 1.8,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '⚔️', description: '합금으로 단조한 명검. 예리한 칼날이 적을 베어낸다.',
+    tags: ['weapon', 'melee', 'crafted'],
+    weaponType: 'sharp',
+    combat: { damage: [30, 45], accuracy: 0.85, noiseOnUse: 3, durabilityLoss: 2, critChance: 0.20, critMultiplier: 2.0 },
+    dismantle: [
+      { definitionId: 'refined_metal', qty: 2, chance: 0.7 },
+      { definitionId: 'leather', qty: 1, chance: 0.5 },
+    ],
+  },
+
+  katana: {
+    id: 'katana', name: '카타나', type: 'weapon', subtype: 'melee',
+    rarity: 'legendary', weight: 1.5,
+    defaultDurability: 120, defaultContamination: 0,
+    icon: '🗡️', description: '장인의 기술이 깃든 완벽한 도검. 베기의 극치.',
+    tags: ['weapon', 'melee', 'crafted'],
+    weaponType: 'sharp',
+    combat: { damage: [40, 60], accuracy: 0.90, noiseOnUse: 2, durabilityLoss: 1, critChance: 0.25, critMultiplier: 2.5 },
+    dismantle: [
+      { definitionId: 'refined_metal', qty: 3, chance: 0.8 },
+      { definitionId: 'leather', qty: 1, chance: 0.6 },
+    ],
+  },
+
+  pipe_wrench_improved: {
+    id: 'pipe_wrench_improved', name: '개량 파이프렌치', type: 'weapon', subtype: 'melee',
+    rarity: 'uncommon', weight: 1.8,
+    defaultDurability: 90, defaultContamination: 0,
+    icon: '🔧', description: '강철판으로 보강한 파이프렌치. 도구이자 무기.',
+    tags: ['weapon', 'melee', 'tool', 'crafted'],
+    weaponType: 'blunt',
+    combat: { damage: [15, 25], accuracy: 0.82, noiseOnUse: 5, durabilityLoss: 2, critChance: 0.12, critMultiplier: 1.5 },
+    dismantle: [
+      { definitionId: 'scrap_metal', qty: 2, chance: 0.8 },
+      { definitionId: 'steel_plate', qty: 1, chance: 0.5 },
+    ],
+  },
+
+  master_wrench: {
+    id: 'master_wrench', name: '마스터 렌치', type: 'weapon', subtype: 'melee',
+    rarity: 'rare', weight: 2.0,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🔧', description: '합금으로 제작한 최상급 렌치. 어떤 볼트도 풀 수 있다.',
+    tags: ['weapon', 'melee', 'tool', 'crafted'],
+    weaponType: 'blunt',
+    combat: { damage: [22, 35], accuracy: 0.85, noiseOnUse: 5, durabilityLoss: 2, critChance: 0.15, critMultiplier: 1.8 },
+    dismantle: [
+      { definitionId: 'refined_metal', qty: 2, chance: 0.7 },
+      { definitionId: 'leather', qty: 1, chance: 0.5 },
+    ],
+  },
+
+  // ── 신규: 크래프팅 체인 확장 — 방어구 ────────────────────
+
+  armor_plate: {
+    id: 'armor_plate', name: '강철 장갑판', type: 'armor', subtype: 'body',
+    rarity: 'rare', weight: 3.0,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🛡️', description: '강철판으로 만든 장갑. 무겁지만 강력한 방어력.',
+    tags: ['armor', 'body', 'crafted'],
+    armor: { defense: 20, damageReduction: 0.20, critReduction: 0.15, movePenalty: 0.10 },
+    dismantle: [
+      { definitionId: 'steel_plate', qty: 2, chance: 0.8 },
+      { definitionId: 'leather', qty: 1, chance: 0.6 },
+    ],
+  },
+
+  alloy_armor_plate: {
+    id: 'alloy_armor_plate', name: '합금 장갑판', type: 'armor', subtype: 'body',
+    rarity: 'legendary', weight: 2.5,
+    defaultDurability: 120, defaultContamination: 0,
+    icon: '🛡️', description: '합금으로 단조한 최상급 장갑판. 가볍고 단단하다.',
+    tags: ['armor', 'body', 'crafted'],
+    armor: { defense: 30, damageReduction: 0.30, critReduction: 0.25, movePenalty: 0.08 },
+    dismantle: [
+      { definitionId: 'refined_metal', qty: 3, chance: 0.7 },
+      { definitionId: 'leather', qty: 1, chance: 0.5 },
+    ],
+  },
+
+  plate_carrier: {
+    id: 'plate_carrier', name: '플레이트 캐리어', type: 'armor', subtype: 'body',
+    rarity: 'rare', weight: 2.8,
+    defaultDurability: 95, defaultContamination: 0,
+    icon: '🦺', description: '강화 천과 금속판을 조합한 방탄 조끼.',
+    tags: ['armor', 'body', 'crafted'],
+    armor: { defense: 18, damageReduction: 0.18, critReduction: 0.12, movePenalty: 0.08 },
+    dismantle: [
+      { definitionId: 'steel_plate', qty: 1, chance: 0.7 },
+      { definitionId: 'cloth', qty: 2, chance: 0.8 },
+      { definitionId: 'leather', qty: 1, chance: 0.6 },
+    ],
+  },
+
+  composite_armor: {
+    id: 'composite_armor', name: '복합 장갑', type: 'armor', subtype: 'body',
+    rarity: 'legendary', weight: 3.5,
+    defaultDurability: 130, defaultContamination: 0,
+    icon: '🦺', description: '세라믹과 금속의 복합 장갑. 현대 방어구의 정점.',
+    tags: ['armor', 'body', 'crafted'],
+    armor: { defense: 35, damageReduction: 0.35, critReduction: 0.30, movePenalty: 0.12 },
+    dismantle: [
+      { definitionId: 'refined_metal', qty: 3, chance: 0.7 },
+      { definitionId: 'steel_plate', qty: 2, chance: 0.6 },
+    ],
+  },
+
+  powered_exosuit: {
+    id: 'powered_exosuit', name: '파워 엑소수트', type: 'armor', subtype: 'body',
+    rarity: 'legendary', weight: 5.0,
+    defaultDurability: 150, defaultContamination: 0,
+    icon: '🤖', description: '전력 구동 외골격. 방어력과 기동성을 동시에 제공.',
+    tags: ['armor', 'body', 'crafted'],
+    armor: { defense: 50, damageReduction: 0.45, critReduction: 0.40, movePenalty: 0.00 },
+    dismantle: [
+      { definitionId: 'refined_metal', qty: 4, chance: 0.7 },
+      { definitionId: 'electronic_parts', qty: 3, chance: 0.6 },
+      { definitionId: 'wire', qty: 2, chance: 0.5 },
+    ],
+  },
+
+  ballistic_weave: {
+    id: 'ballistic_weave', name: '방탄직', type: 'armor', subtype: 'body',
+    rarity: 'rare', weight: 1.0,
+    defaultDurability: 80, defaultContamination: 0,
+    icon: '🧥', description: '특수 섬유로 짠 방탄 원단. 가볍고 유연하다.',
+    tags: ['armor', 'body', 'crafted'],
+    armor: { defense: 12, damageReduction: 0.12, critReduction: 0.08, movePenalty: 0.02 },
+    dismantle: [
+      { definitionId: 'cloth', qty: 3, chance: 0.8 },
+      { definitionId: 'thread', qty: 2, chance: 0.6 },
+    ],
+  },
+
+  camo_cloth: {
+    id: 'camo_cloth', name: '위장 천', type: 'armor', subtype: 'body',
+    rarity: 'uncommon', weight: 0.6,
+    defaultDurability: 60, defaultContamination: 0,
+    icon: '🫒', description: '염료로 물들인 위장용 천. 은신에 도움된다.',
+    tags: ['armor', 'body', 'crafted'],
+    armor: { defense: 3, damageReduction: 0.03, critReduction: 0.02, movePenalty: 0.00 },
+    dismantle: [
+      { definitionId: 'cloth', qty: 2, chance: 0.8 },
+    ],
+  },
+
+  ghillie_suit: {
+    id: 'ghillie_suit', name: '길리 수트', type: 'armor', subtype: 'body',
+    rarity: 'rare', weight: 1.5,
+    defaultDurability: 70, defaultContamination: 0,
+    icon: '🌿', description: '위장 천으로 만든 은신복. 적 탐지를 크게 줄인다.',
+    tags: ['armor', 'body', 'crafted'],
+    armor: { defense: 5, damageReduction: 0.05, critReduction: 0.03, movePenalty: 0.05 },
+    dismantle: [
+      { definitionId: 'cloth', qty: 3, chance: 0.7 },
+      { definitionId: 'rope', qty: 1, chance: 0.5 },
+    ],
+  },
+
+  // ── 신규: 크래프팅 체인 확장 — 전투 강화 아이템 ────────────
+
+  knuckle_wrap: {
+    id: 'knuckle_wrap', name: '너클 랩', type: 'consumable', subtype: 'enhancement',
+    rarity: 'common', weight: 0.1,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🥊', description: '주먹에 감는 천. 맨손 공격 시 데미지 증가.',
+    tags: ['enhancement', 'unarmed'],
+    dismantle: [
+      { definitionId: 'cloth_scrap', qty: 2, chance: 0.8 },
+    ],
+  },
+
+  combat_gloves: {
+    id: 'combat_gloves', name: '전투 장갑', type: 'consumable', subtype: 'enhancement',
+    rarity: 'uncommon', weight: 0.3,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🧤', description: '강화 천으로 만든 전투용 장갑.',
+    tags: ['enhancement', 'unarmed'],
+    dismantle: [
+      { definitionId: 'cloth', qty: 1, chance: 0.7 },
+      { definitionId: 'leather', qty: 1, chance: 0.5 },
+    ],
+  },
+
+  iron_gauntlet: {
+    id: 'iron_gauntlet', name: '철권 건틀릿', type: 'consumable', subtype: 'enhancement',
+    rarity: 'rare', weight: 0.8,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🤜', description: '금속으로 보강한 전투 장갑. 주먹이 흉기가 된다.',
+    tags: ['enhancement', 'unarmed'],
+    dismantle: [
+      { definitionId: 'scrap_metal', qty: 2, chance: 0.8 },
+      { definitionId: 'leather', qty: 1, chance: 0.6 },
+    ],
+  },
+
+  weapon_oil: {
+    id: 'weapon_oil', name: '검유', type: 'consumable', subtype: 'enhancement',
+    rarity: 'common', weight: 0.2,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🫙', description: '무기에 바르는 기름. 근접무기 성능 향상.',
+    tags: ['enhancement', 'melee'],
+    dismantle: [],
+  },
+
+  serrated_mod: {
+    id: 'serrated_mod', name: '톱니 개조 키트', type: 'consumable', subtype: 'enhancement',
+    rarity: 'uncommon', weight: 0.3,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🔪', description: '무기 날에 톱니를 추가하는 개조 부품.',
+    tags: ['enhancement', 'melee'],
+    dismantle: [
+      { definitionId: 'scrap_metal', qty: 1, chance: 0.7 },
+    ],
+  },
+
+  defense_salve: {
+    id: 'defense_salve', name: '방어 연고', type: 'consumable', subtype: 'enhancement',
+    rarity: 'common', weight: 0.2,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🧴', description: '피부에 바르는 보호 연고. 타격 흡수에 도움.',
+    tags: ['enhancement', 'defense'],
+    dismantle: [],
+  },
+
+  ammo_mod: {
+    id: 'ammo_mod', name: '탄약 개조 키트', type: 'consumable', subtype: 'enhancement',
+    rarity: 'uncommon', weight: 0.3,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🔫', description: '탄약을 개조하여 관통력을 높이는 키트.',
+    tags: ['enhancement', 'ranged'],
+    dismantle: [
+      { definitionId: 'scrap_metal', qty: 1, chance: 0.6 },
+    ],
+  },
+
+  weapon_scope: {
+    id: 'weapon_scope', name: '조준경', type: 'consumable', subtype: 'enhancement',
+    rarity: 'rare', weight: 0.4,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🔭', description: '원거리 무기에 장착하는 조준 보조 장치.',
+    tags: ['enhancement', 'ranged'],
+    dismantle: [
+      { definitionId: 'glass_shard', qty: 1, chance: 0.7 },
+      { definitionId: 'scrap_metal', qty: 1, chance: 0.6 },
+    ],
+  },
+
+  suppressor: {
+    id: 'suppressor', name: '소음기', type: 'consumable', subtype: 'enhancement',
+    rarity: 'rare', weight: 0.5,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🔇', description: '발사 시 소음을 줄이는 장치.',
+    tags: ['enhancement', 'ranged'],
+    dismantle: [
+      { definitionId: 'scrap_metal', qty: 2, chance: 0.7 },
+      { definitionId: 'rubber', qty: 1, chance: 0.5 },
+    ],
   },
 };
 

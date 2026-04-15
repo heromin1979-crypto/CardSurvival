@@ -468,6 +468,120 @@ const CARD_IMAGES = {
   env_event_spring_rain:       'assets/images/environment/env_event_spring_rain.png',
   env_event_warmth:            'assets/images/environment/env_event_warmth.png',
   env_event_zombie_migration:  'assets/images/environment/env_event_zombie_migration.png',
+
+  // ── 신규: 크래프팅 체인 확장 아이템 ──────────────────────────
+
+  // 전자부품/에너지 (items_tech)
+  circuit_board:         'assets/images/materials/circuit_board.png',
+  copper_wire:           'assets/images/materials/copper_wire.png',
+  copper_coil:           'assets/images/materials/copper_coil.png',
+  microchip:             'assets/images/materials/microchip.png',
+  circuit_module:        'assets/images/materials/circuit_module.png',
+  electric_motor:        'assets/images/materials/electric_motor.png',
+  power_cell:            'assets/images/materials/power_cell.png',
+  generator_core:        'assets/images/materials/generator_core.png',
+  radio_transmitter:     'assets/images/tools/radio_transmitter.png',
+  powered_drill:         'assets/images/tools/powered_drill.png',
+  portable_generator:    'assets/images/structures/portable_generator.png',
+  solar_panel:           'assets/images/structures/solar_panel.png',
+  electric_fence:        'assets/images/structures/electric_fence.png',
+  spotlight:             'assets/images/structures/spotlight.png',
+  solar_charger:         'assets/images/structures/solar_charger.png',
+
+  // 신규 재료
+  sand:                  'assets/images/materials/sand.png',
+  mortar_mix:            'assets/images/materials/mortar_mix.png',
+  concrete_block:        'assets/images/materials/concrete_block.png',
+  brick:                 'assets/images/materials/brick.png',
+  alloy_ingot:           'assets/images/materials/alloy_ingot.png',
+  woven_fabric:          'assets/images/materials/woven_fabric.png',
+  reinforced_fabric:     'assets/images/materials/reinforced_fabric.png',
+  dye:                   'assets/images/materials/dye.png',
+  wild_wheat:            'assets/images/materials/wild_wheat.png',
+  flour:                 'assets/images/materials/flour.png',
+  bread_dough:           'assets/images/materials/bread_dough.png',
+  worm:                  'assets/images/materials/worm.png',
+  fishing_bait:          'assets/images/materials/fishing_bait.png',
+
+  // 신규 음식
+  baked_bread:           'assets/images/food/baked_bread.png',
+  sandwich:              'assets/images/food/sandwich.png',
+  rice_wine:             'assets/images/food/rice_wine.png',
+  vinegar:               'assets/images/food/vinegar.png',
+  pickled_food:          'assets/images/food/pickled_food.png',
+  meat_stew:             'assets/images/food/meat_stew.png',
+  bibimbap:              'assets/images/food/bibimbap.png',
+  salted_meat:           'assets/images/food/salted_meat.png',
+  smoked_meat:           'assets/images/food/smoked_meat.png',
+  preserved_ration:      'assets/images/food/preserved_ration.png',
+  smoked_fish:           'assets/images/food/smoked_fish.png',
+
+  // 신규 물
+  settled_water:         'assets/images/food/settled_water.png',
+  distilled_water:       'assets/images/food/distilled_water.png',
+  sterile_water:         'assets/images/food/sterile_water.png',
+
+  // 신규 무기
+  pipe_shotgun:          'assets/images/weapons/pipe_shotgun.png',
+  master_blade:          'assets/images/weapons/master_blade.png',
+  katana:                'assets/images/weapons/katana.png',
+  pipe_wrench_improved:  'assets/images/weapons/pipe_wrench_improved.png',
+  master_wrench:         'assets/images/weapons/master_wrench.png',
+
+  // 신규 방어구
+  armor_plate:           'assets/images/armor/armor_plate.png',
+  alloy_armor_plate:     'assets/images/armor/alloy_armor_plate.png',
+  plate_carrier:         'assets/images/armor/plate_carrier.png',
+  composite_armor:       'assets/images/armor/composite_armor.png',
+  powered_exosuit:       'assets/images/armor/powered_exosuit.png',
+  ballistic_weave:       'assets/images/armor/ballistic_weave.png',
+  camo_cloth:            'assets/images/armor/camo_cloth.png',
+
+  // 전투 강화재
+  knuckle_wrap:          'assets/images/armor/knuckle_wrap.png',
+  combat_gloves:         'assets/images/armor/combat_gloves.png',
+  iron_gauntlet:         'assets/images/armor/iron_gauntlet.png',
+  weapon_oil:            'assets/images/tools/weapon_oil.png',
+  serrated_mod:          'assets/images/tools/serrated_mod.png',
+  defense_salve:         'assets/images/medical/defense_salve.png',
+  ammo_mod:              'assets/images/weapons/ammo_mod.png',
+  weapon_scope:          'assets/images/weapons/weapon_scope.png',
+  suppressor:            'assets/images/weapons/suppressor.png',
+
+  // 신규 의료
+  crude_medicine:        'assets/images/medical/crude_medicine.png',
+  purified_medicine:     'assets/images/medical/purified_medicine.png',
+  synthetic_antibiotics: 'assets/images/medical/synthetic_antibiotics.png',
+  universal_cure:        'assets/images/medical/universal_cure.png',
+  anesthetic:            'assets/images/medical/anesthetic.png',
+  surgical_anesthetic:   'assets/images/medical/surgical_anesthetic.png',
+  detox_potion:          'assets/images/medical/detox_potion.png',
+  rad_flush:             'assets/images/medical/rad_flush.png',
+
+  // 신규 도구
+  scalpel:               'assets/images/tools/scalpel.png',
+  steel_tool_head:       'assets/images/tools/steel_tool_head.png',
+  spotlight_flashlight:  'assets/images/tools/spotlight_flashlight.png',
+  night_vision_goggles:  'assets/images/tools/night_vision_goggles.png',
+  lockpick_set:          'assets/images/tools/lockpick_set.png',
+  electronic_lockpick:   'assets/images/tools/electronic_lockpick.png',
+  fishing_rod_advanced:  'assets/images/tools/fishing_rod_advanced.png',
+  automated_fish_trap:   'assets/images/tools/automated_fish_trap.png',
+  fishing_net:           'assets/images/tools/fishing_net.png',
+  crab_trap:             'assets/images/tools/crab_trap.png',
+  master_angler_lure:    'assets/images/tools/master_angler_lure.png',
+  sterile_kit:           'assets/images/tools/sterile_kit.png',
+
+  // 신규 구조물
+  pipe_assembly:         'assets/images/structures/pipe_assembly.png',
+  water_tower:           'assets/images/structures/water_tower.png',
+  plumbing_system:       'assets/images/structures/plumbing_system.png',
+  reinforced_wall:       'assets/images/structures/reinforced_wall.png',
+  watchtower:            'assets/images/structures/watchtower.png',
+  brick_furnace:         'assets/images/structures/brick_furnace.png',
+  rain_collector_improved: 'assets/images/structures/rain_collector_improved.png',
+  water_recycler:        'assets/images/structures/water_recycler.png',
+  field_surgery_station: 'assets/images/structures/field_surgery_station.png',
 };
 
 const CardFactory = {

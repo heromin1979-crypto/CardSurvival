@@ -137,6 +137,128 @@ const STACK_ROWS = [
   ['flashbang'               , true,  3 ],
   ['premium_ration'          , true,  3 ],
 
+  // ── 신규: 크래프팅 체인 확장 ─────────────────────────────────────
+
+  // — 기초·가공 원자재 (stackable) —
+  ['circuit_board'             , true, 10 ],
+  ['copper_wire'               , true, 10 ],
+  ['copper_coil'               , true, 10 ],
+  ['sand'                      , true, 10 ],
+  ['mortar_mix'                , true, 10 ],
+  ['concrete_block'            , true, 10 ],
+  ['brick'                     , true, 10 ],
+  ['alloy_ingot'               , true, 10 ],
+  ['woven_fabric'              , true, 10 ],
+  ['reinforced_fabric'         , true, 10 ],
+  ['dye'                       , true, 10 ],
+  ['herb_powder'               , true, 10 ],
+  ['wild_wheat'                , true, 10 ],
+  ['flour'                     , true, 10 ],
+  ['bread_dough'               , true, 10 ],
+  ['worm'                      , true, 10 ],
+  ['fishing_bait'              , true, 10 ],
+  ['microchip'                 , true, 10 ],
+
+  // — 식량 (stackable, maxStack 5) —
+  ['baked_bread'               , true,  5 ],
+  ['sandwich'                  , true,  5 ],
+  ['rice_wine'                 , true,  5 ],
+  ['vinegar'                   , true,  5 ],
+  ['pickled_food'              , true,  5 ],
+  ['meat_stew'                 , true,  5 ],
+  ['bibimbap'                  , true,  5 ],
+  ['salted_meat'               , true,  5 ],
+  ['smoked_meat'               , true,  5 ],
+  ['preserved_ration'          , true,  5 ],
+  ['smoked_fish'               , true,  5 ],
+
+  // — 수분 (stackable, maxStack 5) —
+  ['settled_water'             , true,  5 ],
+  ['distilled_water'           , true,  5 ],
+  ['sterile_water'             , true,  5 ],
+
+  // — 의료 소모품 (stackable, maxStack 5) —
+  ['crude_medicine'            , true,  5 ],
+  ['purified_medicine'         , true,  5 ],
+  ['anesthetic'                , true,  5 ],
+  ['detox_potion'              , true,  5 ],
+  ['rad_flush'                 , true,  5 ],
+
+  // — 강화 소모품 (stackable, maxStack 3) —
+  ['knuckle_wrap'              , true,  3 ],
+  ['combat_gloves'             , true,  3 ],
+  ['weapon_oil'                , true,  3 ],
+  ['serrated_mod'              , true,  3 ],
+  ['defense_salve'             , true,  3 ],
+  ['ammo_mod'                  , true,  3 ],
+
+  // — 테크 컴포넌트 (stackable, maxStack 5) —
+  ['circuit_module'            , true,  5 ],
+  ['electric_motor'            , true,  5 ],
+  ['power_cell'                , true,  5 ],
+  ['generator_core'            , true,  5 ],
+
+  // — 무기 (non-stackable) —
+  ['pipe_shotgun'              , false, 1 ],
+  ['master_blade'              , false, 1 ],
+  ['katana'                    , false, 1 ],
+  ['pipe_wrench_improved'      , false, 1 ],
+  ['master_wrench'             , false, 1 ],
+
+  // — 방어구 (non-stackable) —
+  ['armor_plate'               , false, 1 ],
+  ['alloy_armor_plate'         , false, 1 ],
+  ['plate_carrier'             , false, 1 ],
+  ['composite_armor'           , false, 1 ],
+  ['powered_exosuit'           , false, 1 ],
+  ['ballistic_weave'           , false, 1 ],
+  ['camo_cloth'                , false, 1 ],
+  ['ghillie_suit'              , false, 1 ],
+
+  // — 레전더리 의료 (non-stackable) —
+  ['synthetic_antibiotics'     , false, 1 ],
+  ['universal_cure'            , false, 1 ],
+  ['surgical_anesthetic'       , false, 1 ],
+
+  // — 도구 (non-stackable) —
+  ['scalpel'                   , false, 1 ],
+  ['steel_tool_head'           , false, 1 ],
+  ['spotlight_flashlight'      , false, 1 ],
+  ['night_vision_goggles'      , false, 1 ],
+  ['lockpick_set'              , false, 1 ],
+  ['electronic_lockpick'       , false, 1 ],
+  ['fishing_rod_advanced'      , false, 1 ],
+  ['automated_fish_trap'       , false, 1 ],
+  ['fishing_net'               , false, 1 ],
+  ['crab_trap'                 , false, 1 ],
+  ['master_angler_lure'        , false, 1 ],
+  ['sterile_kit'               , false, 1 ],
+  ['radio_transmitter'         , false, 1 ],
+  ['powered_drill'             , false, 1 ],
+
+  // — 구조물 (non-stackable) —
+  ['portable_generator'        , false, 1 ],
+  ['solar_panel'               , false, 1 ],
+  ['electric_fence'            , false, 1 ],
+  ['spotlight'                 , false, 1 ],
+  ['solar_charger'             , false, 1 ],
+  ['pipe_assembly'             , false, 1 ],
+  ['water_tower'               , false, 1 ],
+  ['plumbing_system'           , false, 1 ],
+  ['reinforced_wall'           , false, 1 ],
+  ['watchtower'                , false, 1 ],
+  ['brick_furnace'             , false, 1 ],
+  ['rain_collector_improved'   , false, 1 ],
+  ['water_recycler'            , false, 1 ],
+  ['field_surgery_station'     , false, 1 ],
+
+  // — 특수 (non-stackable) —
+  ['iron_gauntlet'             , false, 1 ],
+  ['weapon_scope'              , false, 1 ],
+  ['suppressor'                , false, 1 ],
+  ['poison'                    , false, 1 ],
+  ['guard_stance_kit'          , false, 1 ],
+
   // ── 베이스캠프 랜드마크 — 겹치기 불가 ──────────────────────────
   ['basecamp_landmark'       , false, 1 ],
 

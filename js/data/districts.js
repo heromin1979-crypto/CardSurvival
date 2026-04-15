@@ -39,6 +39,8 @@ const DISTRICTS = {
       { definitionId: 'rainwater',     weight: 8,  minQty: 1, maxQty: 2, contamChance: 0.10 },
       { definitionId: 'nettle',        weight: 6,  minQty: 1, maxQty: 2 },
       { definitionId: 'wild_root',     weight: 5,  minQty: 1, maxQty: 2 },
+      // 신규 원자재 — 한강 수변 모래
+      { definitionId: 'sand',          weight: 8,  minQty: 1, maxQty: 3 },
     ],
     special: 'samsung_hospital',
   },
@@ -68,6 +70,8 @@ const DISTRICTS = {
       // 한강 수변 자원 — 강동구 hasFishing
       { definitionId: 'rainwater',     weight: 8,  minQty: 1, maxQty: 2, contamChance: 0.10 },
       { definitionId: 'nettle',        weight: 6,  minQty: 1, maxQty: 2 },
+      // 신규 원자재 — 한강 수변 모래
+      { definitionId: 'sand',          weight: 8,  minQty: 1, maxQty: 3 },
     ],
     special: null,
   },
@@ -107,6 +111,9 @@ const DISTRICTS = {
       { definitionId: 'pine_needle',     weight: 8,  minQty: 2, maxQty: 4 },
       { definitionId: 'wild_garlic',     weight: 6,  minQty: 1, maxQty: 2 },
       { definitionId: 'dandelion',       weight: 7,  minQty: 1, maxQty: 2 },
+      // 신규 원자재 — 산악 자연 식생·토양
+      { definitionId: 'wild_wheat',      weight: 6,  minQty: 1, maxQty: 2 },
+      { definitionId: 'worm',            weight: 8,  minQty: 1, maxQty: 3 },
     ],
     special: null,
   },
@@ -130,6 +137,8 @@ const DISTRICTS = {
       { definitionId: 'wrecked_car',   weight: 5,  minQty: 1, maxQty: 1 },
       { definitionId: 'subway_gate',   weight: 4,  minQty: 1, maxQty: 1 },
       { definitionId: 'wrecked_bus',   weight: 4,  minQty: 1, maxQty: 1 },
+      // 신규 원자재 — 공항 물류 전자부품
+      { definitionId: 'circuit_board', weight: 5,  minQty: 1, maxQty: 1 },
     ],
     special: null,
   },
@@ -168,6 +177,9 @@ const DISTRICTS = {
       { definitionId: 'dandelion',       weight: 8,  minQty: 1, maxQty: 3 },
       { definitionId: 'wild_root',       weight: 6,  minQty: 1, maxQty: 2 },
       { definitionId: 'herb_seed',       weight: 3,  minQty: 1, maxQty: 1 },
+      // 신규 원자재 — 관악산 자연 식생·토양
+      { definitionId: 'wild_wheat',      weight: 6,  minQty: 1, maxQty: 2 },
+      { definitionId: 'worm',            weight: 8,  minQty: 1, maxQty: 3 },
     ],
     special: 'snu_lab',
   },
@@ -203,6 +215,9 @@ const DISTRICTS = {
       { definitionId: 'dandelion',     weight: 10, minQty: 1, maxQty: 3 },
       { definitionId: 'wild_root',     weight: 7,  minQty: 1, maxQty: 2 },
       { definitionId: 'wild_berry',    weight: 6,  minQty: 1, maxQty: 2 },
+      // 신규 원자재 — 강변 모래·토양
+      { definitionId: 'sand',          weight: 8,  minQty: 1, maxQty: 3 },
+      { definitionId: 'worm',          weight: 8,  minQty: 1, maxQty: 3 },
     ],
     special: null,
   },
@@ -235,6 +250,9 @@ const DISTRICTS = {
       { definitionId: 'gravel_pile',   weight: 8,  minQty: 1, maxQty: 1 },
       { definitionId: 'soil_bag',      weight: 8,  minQty: 1, maxQty: 2 },
       { definitionId: 'dandelion',     weight: 5,  minQty: 1, maxQty: 2 },
+      // 신규 원자재 — 공장 전자부품·건설 모래
+      { definitionId: 'circuit_board', weight: 5,  minQty: 1, maxQty: 1 },
+      { definitionId: 'sand',          weight: 8,  minQty: 1, maxQty: 3 },
     ],
     special: null,
   },
@@ -269,6 +287,8 @@ const DISTRICTS = {
       { definitionId: 'dandelion',     weight: 5,  minQty: 1, maxQty: 2 },
       // 방사선 오염 잔류 — 금천구 radiation:5
       { definitionId: 'contaminated_water', weight: 12, minQty: 1, maxQty: 2, contamChance: 0.50 },
+      // 신규 원자재 — 공장 전자부품
+      { definitionId: 'circuit_board', weight: 5,  minQty: 1, maxQty: 1 },
     ],
     special: null,
   },
@@ -302,6 +322,9 @@ const DISTRICTS = {
       { definitionId: 'wild_berry',      weight: 8,  minQty: 1, maxQty: 3 },
       { definitionId: 'mushroom_edible', weight: 7,  minQty: 1, maxQty: 2 },
       { definitionId: 'pine_needle',     weight: 6,  minQty: 1, maxQty: 2 },
+      // 신규 원자재 — 산간 자연 식생·토양
+      { definitionId: 'wild_wheat',      weight: 6,  minQty: 1, maxQty: 2 },
+      { definitionId: 'worm',            weight: 8,  minQty: 1, maxQty: 3 },
     ],
     special: null,
   },
@@ -352,6 +375,9 @@ const DISTRICTS = {
       { definitionId: 'wild_grape',      weight: 8,  minQty: 1, maxQty: 2 },
       { definitionId: 'pine_nut',        weight: 7,  minQty: 1, maxQty: 2 },
       { definitionId: 'apple_wild',      weight: 6,  minQty: 1, maxQty: 2 },
+      // 신규 원자재 — 도봉산 자연 식생·토양
+      { definitionId: 'wild_wheat',      weight: 6,  minQty: 1, maxQty: 2 },
+      { definitionId: 'worm',            weight: 8,  minQty: 1, maxQty: 3 },
     ],
     special: null,
   },
@@ -418,6 +444,9 @@ const DISTRICTS = {
       { definitionId: 'wild_garlic',   weight: 6,  minQty: 1, maxQty: 2 },
       { definitionId: 'nettle',        weight: 6,  minQty: 1, maxQty: 2 },
       { definitionId: 'vegetable_seed',weight: 2,  minQty: 1, maxQty: 1 },
+      // 신규 원자재 — 한강 수변 모래·공원 식생
+      { definitionId: 'sand',            weight: 8,  minQty: 1, maxQty: 3 },
+      { definitionId: 'wild_wheat',      weight: 6,  minQty: 1, maxQty: 2 },
     ],
     special: null,
   },
@@ -446,6 +475,8 @@ const DISTRICTS = {
       { definitionId: 'rainwater',     weight: 10, minQty: 1, maxQty: 2, contamChance: 0.20 },
       { definitionId: 'contaminated_water', weight: 8, minQty: 1, maxQty: 2, contamChance: 0.35 },
       { definitionId: 'nettle',        weight: 6,  minQty: 1, maxQty: 2 },
+      // 신규 원자재 — 한강 수변 모래
+      { definitionId: 'sand',          weight: 8,  minQty: 1, maxQty: 3 },
     ],
     special: null,
   },
@@ -537,6 +568,8 @@ const DISTRICTS = {
       // 한강 수변·방사선 오염 자원 — 성동구 hasFishing, radiation:5
       { definitionId: 'contaminated_water', weight: 12, minQty: 1, maxQty: 2, contamChance: 0.50 },
       { definitionId: 'rainwater',     weight: 8,  minQty: 1, maxQty: 2, contamChance: 0.20 },
+      // 신규 원자재 — 성수 공장 전자부품
+      { definitionId: 'circuit_board', weight: 5,  minQty: 1, maxQty: 1 },
     ],
     special: null,
   },
@@ -600,6 +633,8 @@ const DISTRICTS = {
       { definitionId: 'rainwater',     weight: 8,  minQty: 1, maxQty: 2, contamChance: 0.15 },
       { definitionId: 'nettle',        weight: 6,  minQty: 1, maxQty: 2 },
       { definitionId: 'wild_root',     weight: 5,  minQty: 1, maxQty: 2 },
+      // 신규 원자재 — 한강 수변 모래
+      { definitionId: 'sand',          weight: 8,  minQty: 1, maxQty: 3 },
     ],
     special: 'lotte_tower',
   },
@@ -657,6 +692,8 @@ const DISTRICTS = {
       // 한강 수변 자원 — 영등포구 hasFishing (여의도)
       { definitionId: 'rainwater',     weight: 8,  minQty: 1, maxQty: 2, contamChance: 0.10 },
       { definitionId: 'nettle',        weight: 6,  minQty: 1, maxQty: 2 },
+      // 신규 원자재 — 방송 장비 전자부품
+      { definitionId: 'circuit_board', weight: 5,  minQty: 1, maxQty: 1 },
     ],
     special: 'kbs',
   },
@@ -685,6 +722,8 @@ const DISTRICTS = {
       // 한강 수변 자원 — 용산구 hasFishing
       { definitionId: 'rainwater',     weight: 8,  minQty: 1, maxQty: 2, contamChance: 0.10 },
       { definitionId: 'nettle',        weight: 5,  minQty: 1, maxQty: 2 },
+      // 신규 원자재 — 전자상가 전자부품
+      { definitionId: 'circuit_board', weight: 5,  minQty: 1, maxQty: 1 },
     ],
     special: 'us_base',
   },
@@ -731,6 +770,9 @@ const DISTRICTS = {
       { definitionId: 'apple_wild',      weight: 8,  minQty: 1, maxQty: 2 },
       { definitionId: 'wild_strawberry', weight: 8,  minQty: 1, maxQty: 2 },
       { definitionId: 'pine_nut',        weight: 6,  minQty: 1, maxQty: 2 },
+      // 신규 원자재 — 북한산 자연 식생·토양
+      { definitionId: 'wild_wheat',      weight: 6,  minQty: 1, maxQty: 2 },
+      { definitionId: 'worm',            weight: 8,  minQty: 1, maxQty: 3 },
     ],
     special: null,
   },
@@ -824,6 +866,9 @@ const DISTRICTS = {
       { definitionId: 'dandelion',       weight: 10, minQty: 1, maxQty: 3 },
       { definitionId: 'wild_root',       weight: 8,  minQty: 1, maxQty: 2 },
       { definitionId: 'mushroom_edible', weight: 6,  minQty: 1, maxQty: 2 },
+      // 신규 원자재 — 중랑천 자연 식생·토양
+      { definitionId: 'wild_wheat',      weight: 6,  minQty: 1, maxQty: 2 },
+      { definitionId: 'worm',            weight: 8,  minQty: 1, maxQty: 3 },
     ],
     special: null,
   },

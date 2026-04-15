@@ -11,6 +11,15 @@
 - 슬롯 수 고정: `ROW_CONFIG.slots` 사용 (GameState 배열 길이 참조 금지)
 - `--card-h: 155px` = 장소 행 참고값, 바닥/휴대는 flex로 결정
 
+## 아이템/레시피 데이터 구조
+- 아이템: `items.js` 애그리게이터 → `items_base`, `items_combat`, `items_misc`, `items_tech`, `items_medical`, `items_tools`, `items_structures` (7개 파일)
+- 레시피: `CraftSystem.js`에서 `blueprints.js` + `blueprints_advanced.js` + `hiddenRecipes.js` 병합
+- 시크릿 조합: `secretCombinations.js` (별도 시스템)
+- 스택 설정: `stackConfig.js` (신규 아이템 추가 시 반드시 등록)
+- 탐색 루트: `districts.js` lootTable (신규 원재료 추가 시 등록)
+- 이미지 매핑: `CardFactory.js` CARD_IMAGES (신규 아이템 추가 시 등록)
+- 검증: `node --input-type=module js/data/validate.js`
+
 ## 장비 슬롯 구조 (EquipmentModal)
 - 활성 슬롯: head, face, body, hands, backpack, weapon_main, weapon_sub, boots
 - weapon_sub = offhand + weapon_sub 겸용 (offhand 슬롯 제거됨)
