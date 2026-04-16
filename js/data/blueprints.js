@@ -3200,6 +3200,277 @@ const BLUEPRINTS = {
     }],
   },
 
+  // ══════════════════════════════════════════════════════════════
+  //  장비 개조 (Upgrade) — 기계공 특성 & 범용
+  //  기존 무기·방어구·도구를 소비해 상위 버전으로 교체
+  // ══════════════════════════════════════════════════════════════
+
+  // ─── 무기 개조 (6) ─────────────────────────────────────────
+
+  upgrade_iron_pipe: {
+    id: 'upgrade_iron_pipe', name: '강화 철봉 개조', category: 'upgrade',
+    description: '기존 철파이프를 고철과 덕트테이프로 보강. 데미지 +20%, 내구도 +30%.',
+    output: [{ definitionId: 'iron_pipe_reinforced', qty: 1 }],
+    requiredTools: ['workbench'],
+    requiredSkills: { weaponcraft: 3, crafting: 2 },
+    stages: [{
+      stageIndex: 0, label: '개조 작업', tpCost: 3,
+      requiredItems: [
+        { definitionId: 'iron_pipe',   qty: 1 },
+        { definitionId: 'scrap_metal', qty: 2 },
+        { definitionId: 'duct_tape',   qty: 2 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  upgrade_knife: {
+    id: 'upgrade_knife', name: '연마된 칼 개조', category: 'upgrade',
+    description: '칼날을 숫돌로 세밀히 연마하고 손잡이를 재감싼다. 데미지 +15%, 치명타 +5%.',
+    output: [{ definitionId: 'sharpened_knife_plus', qty: 1 }],
+    requiredTools: ['workbench'],
+    requiredSkills: { weaponcraft: 3, crafting: 2 },
+    stages: [{
+      stageIndex: 0, label: '날 연마', tpCost: 3,
+      requiredItems: [
+        { definitionId: 'knife',        qty: 1 },
+        { definitionId: 'whetstone',    qty: 1 },
+        { definitionId: 'leather',      qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  upgrade_bat: {
+    id: 'upgrade_bat', name: '강화 배트 개조', category: 'upgrade',
+    description: '야구배트에 못과 철판을 박아 타격력 강화. 데미지 +25%, 내구도 +40%.',
+    output: [{ definitionId: 'reinforced_bat_plus', qty: 1 }],
+    requiredTools: ['workbench'],
+    requiredSkills: { weaponcraft: 3, crafting: 2 },
+    stages: [{
+      stageIndex: 0, label: '배트 보강', tpCost: 3,
+      requiredItems: [
+        { definitionId: 'baseball_bat', qty: 1 },
+        { definitionId: 'nail',         qty: 5 },
+        { definitionId: 'scrap_metal',  qty: 2 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  upgrade_machete: {
+    id: 'upgrade_machete', name: '출혈 마체테 개조', category: 'upgrade',
+    description: '마체테 날에 톱니를 새겨 출혈을 유발. 데미지 +20%, 출혈 확률 +10%.',
+    output: [{ definitionId: 'machete_plus', qty: 1 }],
+    requiredTools: ['workbench'],
+    requiredSkills: { weaponcraft: 4, crafting: 2 },
+    stages: [{
+      stageIndex: 0, label: '톱니 가공', tpCost: 3,
+      requiredItems: [
+        { definitionId: 'machete',     qty: 1 },
+        { definitionId: 'sharp_blade', qty: 1 },
+        { definitionId: 'whetstone',   qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  upgrade_spear: {
+    id: 'upgrade_spear', name: '관통 창 개조', category: 'upgrade',
+    description: '창촉을 강철로 교체하고 샤프트를 연장. 데미지 +25%, 관통 대상 2명 유지.',
+    output: [{ definitionId: 'spear_plus', qty: 1 }],
+    requiredTools: ['workbench'],
+    requiredSkills: { weaponcraft: 4, crafting: 2 },
+    stages: [{
+      stageIndex: 0, label: '창촉 교체', tpCost: 3,
+      requiredItems: [
+        { definitionId: 'spear',        qty: 1 },
+        { definitionId: 'sharp_blade',  qty: 1 },
+        { definitionId: 'scrap_metal',  qty: 2 },
+        { definitionId: 'rope',         qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  upgrade_crossbow: {
+    id: 'upgrade_crossbow', name: '정밀 석궁 개조', category: 'upgrade',
+    description: '조준 장치와 현을 교체해 명중률 향상. 데미지 +20%, 명중률 +10%.',
+    output: [{ definitionId: 'crossbow_plus', qty: 1 }],
+    requiredTools: ['workbench'],
+    requiredSkills: { weaponcraft: 4, crafting: 3 },
+    stages: [{
+      stageIndex: 0, label: '조준·현 교체', tpCost: 4,
+      requiredItems: [
+        { definitionId: 'crossbow', qty: 1 },
+        { definitionId: 'spring',   qty: 2 },
+        { definitionId: 'rope',     qty: 1 },
+        { definitionId: 'wood',     qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  // ─── 방어구 개조 (5) ───────────────────────────────────────
+
+  upgrade_vest: {
+    id: 'upgrade_vest', name: '강화 전술조끼 개조', category: 'upgrade',
+    description: '전술조끼에 추가 방탄 플레이트를 삽입. 방어력 +2, 내구도 +30%.',
+    output: [{ definitionId: 'tactical_vest_plus', qty: 1 }],
+    requiredTools: ['workbench'],
+    requiredSkills: { armorcraft: 3, crafting: 2 },
+    stages: [{
+      stageIndex: 0, label: '플레이트 삽입', tpCost: 3,
+      requiredItems: [
+        { definitionId: 'tactical_vest', qty: 1 },
+        { definitionId: 'scrap_metal',   qty: 2 },
+        { definitionId: 'leather',       qty: 2 },
+        { definitionId: 'thread',        qty: 2 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  upgrade_helmet: {
+    id: 'upgrade_helmet', name: '강화 헬멧 개조', category: 'upgrade',
+    description: '헬멧 안쪽에 충격 흡수 패드 추가. 방어력 +1, 치명타 저항 +15%.',
+    output: [{ definitionId: 'helmet_plus', qty: 1 }],
+    requiredTools: ['workbench'],
+    requiredSkills: { armorcraft: 3, crafting: 2 },
+    stages: [{
+      stageIndex: 0, label: '패드 장착', tpCost: 3,
+      requiredItems: [
+        { definitionId: 'helmet',      qty: 1 },
+        { definitionId: 'scrap_metal', qty: 1 },
+        { definitionId: 'cloth',       qty: 2 },
+        { definitionId: 'rubber',      qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  upgrade_boots: {
+    id: 'upgrade_boots', name: '경량 전투화 개조', category: 'upgrade',
+    description: '밑창을 경량 고무로 교체해 피로도 경감. 체력 소모 -10%.',
+    output: [{ definitionId: 'combat_boots_plus', qty: 1 }],
+    requiredTools: ['workbench'],
+    requiredSkills: { armorcraft: 3, crafting: 2 },
+    stages: [{
+      stageIndex: 0, label: '밑창 교체', tpCost: 3,
+      requiredItems: [
+        { definitionId: 'combat_boots', qty: 1 },
+        { definitionId: 'rubber',       qty: 2 },
+        { definitionId: 'leather',      qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  upgrade_gloves: {
+    id: 'upgrade_gloves', name: '정밀 작업장갑 개조', category: 'upgrade',
+    description: '손끝에 정밀 가공 패치를 덧대 작업 정확도 향상. 제작 성공률 +5%.',
+    output: [{ definitionId: 'work_gloves_plus', qty: 1 }],
+    requiredTools: ['workbench'],
+    requiredSkills: { armorcraft: 2, crafting: 3 },
+    stages: [{
+      stageIndex: 0, label: '패치 작업', tpCost: 2,
+      requiredItems: [
+        { definitionId: 'work_gloves', qty: 1 },
+        { definitionId: 'leather',     qty: 1 },
+        { definitionId: 'thread',      qty: 2 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  upgrade_raincoat: {
+    id: 'upgrade_raincoat', name: '방사선 우비 개조', category: 'upgrade',
+    description: '우비 내피에 납판을 덧대 방사선 차폐력 강화. 방사선 저항 +15%.',
+    output: [{ definitionId: 'raincoat_plus', qty: 1 }],
+    requiredTools: ['workbench'],
+    requiredSkills: { armorcraft: 3, crafting: 2 },
+    stages: [{
+      stageIndex: 0, label: '납판 내장', tpCost: 3,
+      requiredItems: [
+        { definitionId: 'raincoat',  qty: 1 },
+        { definitionId: 'rubber',    qty: 2 },
+        { definitionId: 'duct_tape', qty: 2 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  // ─── 도구 개조 (4) ─────────────────────────────────────────
+
+  upgrade_pipe_wrench: {
+    id: 'upgrade_pipe_wrench', name: '장인 파이프렌치 개조', category: 'upgrade',
+    description: '파이프렌치 그립과 톱니 정밀도 향상. 제작 속도 +20%.',
+    output: [{ definitionId: 'pipe_wrench_master', qty: 1 }],
+    requiredTools: ['workbench'],
+    requiredSkills: { crafting: 4 },
+    stages: [{
+      stageIndex: 0, label: '정밀 가공', tpCost: 3,
+      requiredItems: [
+        { definitionId: 'pipe_wrench', qty: 1 },
+        { definitionId: 'scrap_metal', qty: 2 },
+        { definitionId: 'leather',     qty: 1 },
+        { definitionId: 'spring',      qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  upgrade_flashlight: {
+    id: 'upgrade_flashlight', name: '장시간 손전등 개조', category: 'upgrade',
+    description: '배터리 용량을 2배로 교체. 사용 시간 +50%.',
+    output: [{ definitionId: 'flashlight_plus', qty: 1 }],
+    requiredTools: ['workbench'],
+    requiredSkills: { crafting: 3 },
+    stages: [{
+      stageIndex: 0, label: '배터리 교체', tpCost: 2,
+      requiredItems: [
+        { definitionId: 'flashlight',       qty: 1 },
+        { definitionId: 'electronic_parts', qty: 1 },
+        { definitionId: 'wire',             qty: 2 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  upgrade_compass: {
+    id: 'upgrade_compass', name: '고급 나침반 개조', category: 'upgrade',
+    description: '자기장 센서와 지도를 결합. 숨겨진 장소 2곳을 드러낸다.',
+    output: [{ definitionId: 'compass_advanced', qty: 1 }],
+    requiredTools: ['workbench'],
+    requiredSkills: { crafting: 4 },
+    stages: [{
+      stageIndex: 0, label: '센서 조정', tpCost: 3,
+      requiredItems: [
+        { definitionId: 'compass',          qty: 1 },
+        { definitionId: 'electronic_parts', qty: 1 },
+        { definitionId: 'map_fragment',     qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  upgrade_binoculars: {
+    id: 'upgrade_binoculars', name: '프로 쌍안경 개조', category: 'upgrade',
+    description: '렌즈를 정밀 연마하고 배율 보정. 조우 예측 +1회.',
+    output: [{ definitionId: 'binoculars_pro', qty: 1 }],
+    requiredTools: ['workbench'],
+    requiredSkills: { crafting: 4 },
+    stages: [{
+      stageIndex: 0, label: '렌즈 연마', tpCost: 3,
+      requiredItems: [
+        { definitionId: 'binoculars',  qty: 1 },
+        { definitionId: 'glass_shard', qty: 2 },
+        { definitionId: 'plastic',     qty: 2 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
 };
 
 export default BLUEPRINTS;

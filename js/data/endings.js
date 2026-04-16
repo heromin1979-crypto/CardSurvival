@@ -600,6 +600,9 @@ export const ENDINGS = {
       return gs.player.characterId === 'engineer'
           && (gs.flags.mainQuestComplete_engineer ?? false)
           && gs.flags.engineer_ending === 'b1_rebuild'
+          && gs.flags.power_station_cleared
+          && gs.flags.water_plant_restored
+          && gs.flags.comms_tower_active
           && gs.time.day >= 100;
     },
     narrative: [

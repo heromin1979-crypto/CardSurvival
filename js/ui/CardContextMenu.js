@@ -4,6 +4,7 @@
 import EventBus       from '../core/EventBus.js';
 import GameState      from '../core/GameState.js';
 import DismantleSystem from '../systems/DismantleSystem.js';
+import NPCSystem       from '../systems/NPCSystem.js';
 import I18n           from '../core/I18n.js';
 import GameData       from '../data/GameData.js';
 
@@ -132,6 +133,42 @@ const CardContextMenu = {
       });
     }
     menu.appendChild(btnDismantle);
+
+    // 🦴 간식 주기 (NPC 동반자 전용) — 건육/통조림 1개 소비, +5 bond (1일 1회)
+    // NOTE: NPC 카드는 일반적으로 사이드 패널에 존재하므로 이 분기는 보드 상에
+    // NPC 카드가 존재하는 특수 케이스(스토리/이벤트)에서만 노출된다.
+    // 보다 풍부한 UX(NPCDialogueModal 내 "간식 주기" 액션)는 추후 작업으로 미룸(TODO).
+    if (def.type === 'npc') {
+      const npcId = def.id ?? GameState.cards[instanceId]?.definitionId;
+      const state = GameState.npcs?.states?.[npcId];
+      const isCompanion = state?.isCompanion === true;
+      const today = GameState.time?.day ?? 0;
+      const alreadyTreated = (state?.lastTreatDay ?? -1) === today;
+      const hasTreat = GameState.getBoardCards().some(c =>
+        c.definitionId === 'dried_meat' || c.definitionId === 'canned_food');
+
+      const btnTreat = document.createElement('button');
+      const treatOk = isCompanion && !alreadyTreated && hasTreat;
+      btnTreat.className = `ctx-btn${treatOk ? '' : ' disabled'}`;
+      btnTreat.innerHTML = '🦴 간식 주기';
+      if (!isCompanion) {
+        btnTreat.disabled = true;
+        btnTreat.title = '동반자만 간식을 받을 수 있다.';
+      } else if (alreadyTreated) {
+        btnTreat.disabled = true;
+        btnTreat.title = '오늘은 이미 간식을 줬다.';
+      } else if (!hasTreat) {
+        btnTreat.disabled = true;
+        btnTreat.title = '건육이나 통조림이 필요하다.';
+      } else {
+        btnTreat.title = '건육/통조림 1개를 소비하고 유대감 +5';
+        btnTreat.addEventListener('click', () => {
+          this._close();
+          NPCSystem.giveTreat(npcId);
+        });
+      }
+      menu.appendChild(btnTreat);
+    }
 
     // 합성 가능 버튼
     const btnCraft = document.createElement('button');

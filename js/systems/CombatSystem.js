@@ -10,6 +10,7 @@ import EndingSystem from './EndingSystem.js';
 import SkillSystem  from './SkillSystem.js';
 import DiseaseSystem from './DiseaseSystem.js';
 import BodySystem    from './BodySystem.js';
+import NPCSystem     from './NPCSystem.js';
 import { rollEnemyGroup } from '../data/enemies.js';
 import BALANCE from '../data/gameBalance.js';
 import CharDialogue from '../data/charDialogues.js';
@@ -746,6 +747,8 @@ const CombatSystem = {
 
     // 캐릭터 전투 승리 대사
     CharDialogue.emit(gs.player.characterId, 'combat_win');
+    // 군견 유대감: 함께 싸워 이긴 동반자에게 +3 bond
+    NPCSystem.onCombatVictory();
     EventBus.emit('combatEnd', { outcome: 'victory', rewards: gs.combat.rewards });
     StateMachine.transition('combat_result', {
       outcome: 'victory',

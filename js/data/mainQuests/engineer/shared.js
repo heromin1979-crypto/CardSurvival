@@ -214,6 +214,19 @@ const ENGINEER_SHARED = {
       complete: '연구실 서랍에서 정밀 설계도 10장을 회수. 아버지 설계도와 결합하면 신규 제작 블루프린트가 해금될 것이다.',
     },
   },
+
+  mq_eng_side_06: {
+    id: 'mq_eng_side_06', title: '장비 개조 마스터',
+    desc: '기존 장비를 개조해 상위 버전으로 교체하라. 개조 작업 3개 완료.',
+    icon: '🛠️', characterId: 'engineer', dayTrigger: 50, prerequisite: 'mq_eng_side_01',
+    objective: { type: 'craft_item', category: 'upgrade', count: 3 },
+    reward: { morale: 15, items: [{ definitionId: 'spring', qty: 3 }, { definitionId: 'electronic_parts', qty: 2 }] },
+    failPenalty: { morale: -5 }, deadlineDays: 95,
+    narrative: {
+      start: '폐자재로 새 장비를 만드는 것도 좋지만, 쓰던 장비를 다듬는 것이 진짜 기술이다. 성수 공장 시절 아버지 말. "손때 묻은 건 버리지 말고, 고쳐 써라."',
+      complete: '개조 3건 완료. 손끝의 감각이 완전히 되살아났다. 어떤 장비든 한 단계 위로 끌어올릴 수 있다.',
+    },
+  },
 };
 
 export default ENGINEER_SHARED;

@@ -709,6 +709,224 @@ const ITEMS_MISC = {
     dismantle: [],
   },
 
+  // ─── 개조된 장비 (Upgraded Equipment) ──────────────────────────
+  // 기계공 특성 & 범용 — 기존 장비를 소비해 상위 버전으로 교체
+  // 무기 6 + 방어구 5 + 도구 4 = 15 items
+
+  // ── 무기 개조 (6) ──
+  iron_pipe_reinforced: {
+    id: 'iron_pipe_reinforced', name: '강화 철봉', type: 'weapon', subtype: 'melee',
+    rarity: 'uncommon', weight: 1.3,
+    defaultDurability: 104, defaultContamination: 0,
+    icon: '🔧', description: '보강된 철봉. 위력 +20%, 내구도 +30%.',
+    tags: ['weapon', 'melee', 'upgraded'],
+    weaponType: 'blunt',
+    combat: { damage: [14, 24], accuracy: 0.78, noiseOnUse: 5, durabilityLoss: 3, critChance: 0.10, critMultiplier: 1.5 },
+    dismantle: [
+      { definitionId: 'scrap_metal', qty: 2, chance: 0.8 },
+      { definitionId: 'duct_tape',   qty: 1, chance: 0.5 },
+    ],
+  },
+
+  sharpened_knife_plus: {
+    id: 'sharpened_knife_plus', name: '연마된 칼', type: 'weapon', subtype: 'melee',
+    rarity: 'uncommon', weight: 0.3,
+    defaultDurability: 85, defaultContamination: 0,
+    icon: '🗡️', description: '숫돌로 날을 세밀히 연마한 칼. 위력 +15%, 치명타 +5%.',
+    tags: ['weapon', 'melee', 'silent', 'upgraded'],
+    weaponType: 'blade',
+    combat: { damage: [16, 25], accuracy: 0.82, noiseOnUse: 1, durabilityLoss: 5, critChance: 0.30, critMultiplier: 1.8 },
+    dismantle: [
+      { definitionId: 'sharp_blade', qty: 1, chance: 0.8 },
+      { definitionId: 'leather',     qty: 1, chance: 0.5 },
+    ],
+  },
+
+  reinforced_bat_plus: {
+    id: 'reinforced_bat_plus', name: '정밀 강화 배트', type: 'weapon', subtype: 'melee',
+    rarity: 'uncommon', weight: 1.1,
+    defaultDurability: 84, defaultContamination: 0,
+    icon: '⚾', description: '못과 철판으로 보강한 배트. 위력 +25%, 내구도 +40%.',
+    tags: ['weapon', 'melee', 'upgraded'],
+    weaponType: 'blunt',
+    combat: { damage: [16, 28], accuracy: 0.75, noiseOnUse: 5, durabilityLoss: 2, critChance: 0.18, critMultiplier: 1.8 },
+    dismantle: [
+      { definitionId: 'wood',        qty: 1, chance: 0.8 },
+      { definitionId: 'scrap_metal', qty: 1, chance: 0.7 },
+      { definitionId: 'nail',        qty: 3, chance: 0.7 },
+    ],
+  },
+
+  machete_plus: {
+    id: 'machete_plus', name: '출혈 마체테', type: 'weapon', subtype: 'melee',
+    rarity: 'rare', weight: 0.7,
+    defaultDurability: 75, defaultContamination: 0,
+    icon: '🗡️', description: '톱니를 새긴 마체테. 위력 +20%, 출혈 확률 +10%.',
+    tags: ['weapon', 'melee', 'upgraded'],
+    weaponType: 'blade',
+    combat: {
+      damage: [22, 36], accuracy: 0.82, noiseOnUse: 4, durabilityLoss: 4, critChance: 0.22, critMultiplier: 1.9,
+      statusInflict: { id: 'bleed', name: '출혈', duration: 2, effect: { hpPerRound: -4 }, chance: 0.35 },
+    },
+    dismantle: [
+      { definitionId: 'sharp_blade', qty: 1, chance: 0.8 },
+      { definitionId: 'leather',     qty: 1, chance: 0.6 },
+    ],
+  },
+
+  spear_plus: {
+    id: 'spear_plus', name: '관통 창', type: 'weapon', subtype: 'melee',
+    rarity: 'rare', weight: 1.5,
+    defaultDurability: 80, defaultContamination: 0,
+    icon: '🏹', description: '강철 촉을 단 창. 위력 +25%, 최대 2명 관통 유지.',
+    tags: ['weapon', 'melee', 'upgraded'],
+    weaponType: 'blade',
+    multiTarget: 2,
+    combat: { damage: [25, 40], accuracy: 0.68, noiseOnUse: 3, durabilityLoss: 4, critChance: 0.20, critMultiplier: 2.5 },
+    dismantle: [
+      { definitionId: 'wood',        qty: 1, chance: 0.8 },
+      { definitionId: 'sharp_blade', qty: 1, chance: 0.7 },
+      { definitionId: 'scrap_metal', qty: 1, chance: 0.5 },
+    ],
+  },
+
+  crossbow_plus: {
+    id: 'crossbow_plus', name: '정밀 석궁', type: 'weapon', subtype: 'ranged',
+    rarity: 'rare', weight: 2.0,
+    defaultDurability: 75, defaultContamination: 0,
+    icon: '🏹', description: '조준 장치를 교체한 석궁. 위력 +20%, 명중률 +10%.',
+    tags: ['weapon', 'ranged', 'silent', 'upgraded'],
+    weaponType: 'bullet',
+    combat: { damage: [31, 48], accuracy: 0.82, noiseOnUse: 3, durabilityLoss: 2, requiresAmmo: 'crossbow_bolt', critChance: 0.25, critMultiplier: 2.2 },
+    dismantle: [
+      { definitionId: 'wood',   qty: 2, chance: 0.8 },
+      { definitionId: 'spring', qty: 1, chance: 0.7 },
+      { definitionId: 'rope',   qty: 1, chance: 0.7 },
+    ],
+  },
+
+  // ── 방어구 개조 (5) ──
+  tactical_vest_plus: {
+    id: 'tactical_vest_plus', name: '강화 전술조끼', type: 'armor', subtype: 'vest',
+    rarity: 'rare', weight: 2.3,
+    defaultDurability: 117, defaultContamination: 0,
+    icon: '🦺', description: '방탄 플레이트를 추가한 전술조끼. 방어력 +2, 내구도 +30%.',
+    tags: ['armor', 'vest', 'upgraded'],
+    onWear: { damageReduction: 0.35 },
+    dismantle: [
+      { definitionId: 'leather',     qty: 2, chance: 0.7 },
+      { definitionId: 'cloth',       qty: 1, chance: 0.8 },
+      { definitionId: 'scrap_metal', qty: 2, chance: 0.7 },
+    ],
+  },
+
+  helmet_plus: {
+    id: 'helmet_plus', name: '강화 헬멧', type: 'armor', subtype: 'head',
+    rarity: 'rare', weight: 1.1,
+    defaultDurability: 85, defaultContamination: 0,
+    icon: '⛑️', description: '충격 흡수 패드를 장착한 헬멧. 방어력 +1, 치명타 저항 +15%.',
+    tags: ['armor', 'head', 'upgraded'],
+    onWear: { critReduction: 0.45, damageReduction: 0.05 },
+    dismantle: [
+      { definitionId: 'scrap_metal', qty: 2, chance: 0.8 },
+      { definitionId: 'leather',     qty: 1, chance: 0.5 },
+      { definitionId: 'rubber',      qty: 1, chance: 0.5 },
+    ],
+  },
+
+  combat_boots_plus: {
+    id: 'combat_boots_plus', name: '경량 전투화', type: 'armor', subtype: 'boots',
+    rarity: 'rare', weight: 1.0,
+    defaultDurability: 95, defaultContamination: 0,
+    icon: '🪖', description: '경량 고무 밑창을 교체한 전투화. 체력 소모 -10%.',
+    tags: ['armor', 'boots', 'upgraded'],
+    onWear: { damageReduction: 0.05, critReduction: 0.10, fatigueMult: 0.90 },
+    dismantle: [
+      { definitionId: 'leather', qty: 2, chance: 0.8 },
+      { definitionId: 'rubber',  qty: 2, chance: 0.6 },
+    ],
+  },
+
+  work_gloves_plus: {
+    id: 'work_gloves_plus', name: '정밀 작업장갑', type: 'armor', subtype: 'hands',
+    rarity: 'uncommon', weight: 0.2,
+    defaultDurability: 65, defaultContamination: 0,
+    icon: '🧤', description: '정밀 가공 패치를 덧댄 작업장갑. 제작 성공률 +5%.',
+    tags: ['armor', 'hands', 'upgraded'],
+    onWear: { infectionMult: 0.80, craftSuccessBonus: 0.05 },
+    dismantle: [
+      { definitionId: 'leather',     qty: 1, chance: 0.7 },
+      { definitionId: 'cloth_scrap', qty: 2, chance: 0.8 },
+    ],
+  },
+
+  raincoat_plus: {
+    id: 'raincoat_plus', name: '방사선 차폐 우비', type: 'armor', subtype: 'clothing',
+    rarity: 'uncommon', weight: 0.7,
+    defaultDurability: 75, defaultContamination: 0,
+    icon: '🌧️', description: '납판을 내장한 우비. 방사선 저항 +15%.',
+    tags: ['armor', 'clothing', 'upgraded'],
+    onWear: { radiationMult: 0.55, contaminationMult: 0.75 },
+    dismantle: [
+      { definitionId: 'cloth',  qty: 2, chance: 0.7 },
+      { definitionId: 'rubber', qty: 2, chance: 0.6 },
+    ],
+  },
+
+  // ── 도구 개조 (4) ──
+  pipe_wrench_master: {
+    id: 'pipe_wrench_master', name: '장인 파이프렌치', type: 'tool', subtype: 'utility',
+    rarity: 'rare', weight: 1.0,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🔧', description: '정밀 가공된 파이프렌치. 제작 속도 +20%.',
+    tags: ['tool', 'upgraded'],
+    combat: { damage: [5, 10], accuracy: 0.78, noiseOnUse: 3, durabilityLoss: 2, critChance: 0.12, critMultiplier: 1.5 },
+    onUse: { craftSpeedBonus: 0.20 },
+    dismantle: [
+      { definitionId: 'scrap_metal', qty: 2, chance: 0.9 },
+      { definitionId: 'spring',      qty: 1, chance: 0.5 },
+    ],
+  },
+
+  flashlight_plus: {
+    id: 'flashlight_plus', name: '장시간 손전등', type: 'tool', subtype: 'utility',
+    rarity: 'uncommon', weight: 0.3,
+    defaultDurability: 120, defaultContamination: 0,
+    icon: '🔦', description: '대용량 배터리를 장착한 손전등. 발견 확률 +25%, 사용 시간 +50%.',
+    tags: ['tool', 'exploration', 'light', 'upgraded'],
+    onUse: { exploreBonus: 25 },
+    dismantle: [
+      { definitionId: 'electronic_parts', qty: 1, chance: 0.8 },
+      { definitionId: 'plastic',          qty: 1, chance: 0.8 },
+      { definitionId: 'wire',             qty: 1, chance: 0.6 },
+    ],
+  },
+
+  compass_advanced: {
+    id: 'compass_advanced', name: '고급 나침반', type: 'tool', subtype: 'navigation',
+    rarity: 'rare', weight: 0.2,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🧭', description: '자기장 센서가 결합된 나침반. 숨겨진 장소 2곳을 드러내고 조우 확률을 줄인다.',
+    tags: ['tool', 'navigation', 'upgraded'],
+    onUse: { encounterReduction: 0.15, revealHiddenLocations: 2 },
+    dismantle: [
+      { definitionId: 'electronic_parts', qty: 1, chance: 0.6 },
+    ],
+  },
+
+  binoculars_pro: {
+    id: 'binoculars_pro', name: '프로 쌍안경', type: 'tool', subtype: 'utility',
+    rarity: 'rare', weight: 0.4,
+    defaultDurability: 80, defaultContamination: 0,
+    icon: '🔭', description: '정밀 연마된 고배율 쌍안경. 조우 예측 +1회 추가.',
+    tags: ['tool', 'utility', 'scouting', 'upgraded'],
+    onUse: { scoutBonus: 2 },
+    dismantle: [
+      { definitionId: 'glass_shard', qty: 2, chance: 0.8 },
+      { definitionId: 'plastic',     qty: 1, chance: 0.8 },
+    ],
+  },
+
   // ─── 헬기 제작 전용 부품 (7) ──────────────────────────────────
   // 기계공 B3 경로 최종 엔딩 — 아버지의 R22 설계도
 

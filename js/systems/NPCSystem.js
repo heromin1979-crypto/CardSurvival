@@ -70,6 +70,8 @@ const NPCSystem = {
       if (state.hp          === undefined) state.hp          = NPCS[npcId]?.maxHp ?? 50;
       if (state.neglectDays === undefined) state.neglectDays = 0;
       if (state.companionSince === undefined) state.companionSince = null;
+      if (state.bond        === undefined) state.bond        = 0;
+      if (state.lastTreatDay === undefined) state.lastTreatDay = -1;
     }
   },
 
@@ -77,6 +79,7 @@ const NPCSystem = {
 
   _onTP() {
     this.ensureInitialized();
+    this._checkDayRollover();
     this._checkSpawns();
     this._applyCompanionEffects();
     this._checkCompanionDeparture();
@@ -85,6 +88,22 @@ const NPCSystem = {
     this._checkNeglect();
     this._checkSpecialDays();
     this._applyPendingChemistry();
+  },
+
+  /** Detects day change relative to last observation and grants +1 bond/day. */
+  _checkDayRollover() {
+    const day = GameState.time?.day ?? 0;
+    if (this._lastTrackedDay === undefined) {
+      this._lastTrackedDay = day;
+      return;
+    }
+    if (day > this._lastTrackedDay) {
+      const daysPassed = day - this._lastTrackedDay;
+      this._lastTrackedDay = day;
+      for (let i = 0; i < daysPassed; i++) {
+        this.onDayRollover();
+      }
+    }
   },
 
   // ── Spawn Logic ────────────────────────────────────────────────
@@ -117,6 +136,8 @@ const NPCSystem = {
       hp:              npcDef.maxHp ?? 50,
       neglectDays:     0,
       companionSince:  null,
+      bond:            0,
+      lastTreatDay:    -1,
     };
 
     EventBus.emit('notify', {
@@ -314,6 +335,169 @@ const NPCSystem = {
     EventBus.emit('npcPanelRemove', { npcId });
   },
 
+  // ── Public API: Bond (군견 유대감) ────────────────────────────
+
+  /**
+   * Clamp bond 0..100, emit 'bondChanged', return new bond level.
+   * Only applies to companions (state.isCompanion === true).
+   */
+  modBond(npcId, delta) {
+    this.ensureInitialized();
+    const state = GameState.npcs?.states?.[npcId];
+    if (!state || !state.isCompanion) return null;
+
+    const before = state.bond ?? 0;
+    const after  = Math.max(0, Math.min(100, before + delta));
+    if (after === before) return after;
+
+    // Immutability note: NPC state object is a GameState.npcs.states bucket,
+    // so we replace the field — consistent with existing trust/hp patterns.
+    state.bond = after;
+
+    const oldTier = this._tierFromBond(before);
+    const newTier = this._tierFromBond(after);
+
+    EventBus.emit('bondChanged', {
+      npcId,
+      oldBond: before,
+      newBond: after,
+      oldTier,
+      newTier,
+      delta,
+    });
+
+    // Tier-up notification — only when the bond tier advances
+    if (newTier !== oldTier && after > before) {
+      const name = I18n.itemName(npcId, NPC_ITEMS[npcId]?.name);
+      const tierLabel = this._tierLabel(newTier);
+      EventBus.emit('notify', {
+        message: `${name}와(과)의 유대감이 깊어졌다 — ${tierLabel} (${after}/100)`,
+        type: 'good',
+      });
+    }
+    EventBus.emit('npcPanelUpdate', { npcId });
+    return after;
+  },
+
+  /** Returns 'baseline' | 'friendly' | 'bonded' | 'kindred' for an NPC. */
+  getBondTier(npcId) {
+    this.ensureInitialized();
+    const state = GameState.npcs?.states?.[npcId];
+    if (!state) return 'baseline';
+    return this._tierFromBond(state.bond ?? 0);
+  },
+
+  /** Internal: map 0..100 bond to tier id */
+  _tierFromBond(bond) {
+    if (bond >= 91) return 'kindred';
+    if (bond >= 61) return 'bonded';
+    if (bond >= 31) return 'friendly';
+    return 'baseline';
+  },
+
+  /** Internal: Korean label for a tier id */
+  _tierLabel(tier) {
+    switch (tier) {
+      case 'kindred':  return '혈맹';
+      case 'bonded':   return '친밀';
+      case 'friendly': return '우호';
+      default:         return '경계';
+    }
+  },
+
+  /**
+   * Called from StatSystem on food consumption.
+   * Premium food (dried_meat / canned_food) grants +5; others grant +3.
+   * Applies to every companion that is present (in party).
+   */
+  onPlayerConsumedFood(defId) {
+    this.ensureInitialized();
+    const companions = GameState.companions ?? [];
+    if (companions.length === 0) return;
+    const isPremium = defId === 'dried_meat' || defId === 'canned_food';
+    const delta = isPremium ? 5 : 3;
+    for (const npcId of companions) {
+      this.modBond(npcId, delta);
+    }
+  },
+
+  /**
+   * Called from CombatSystem on victory.
+   * Every companion that participated (not foraging) gains +3 bond.
+   */
+  onCombatVictory() {
+    this.ensureInitialized();
+    const companions = GameState.companions ?? [];
+    if (companions.length === 0) return;
+    const foragingToday = GameState.npcs?._foragingToday ?? {};
+    for (const npcId of companions) {
+      if (foragingToday[npcId]) continue;
+      this.modBond(npcId, 3);
+    }
+  },
+
+  /**
+   * Called at day rollover: every companion gains +1 bond for surviving together.
+   */
+  onDayRollover() {
+    this.ensureInitialized();
+    const companions = GameState.companions ?? [];
+    if (companions.length === 0) return;
+    for (const npcId of companions) {
+      this.modBond(npcId, 1);
+    }
+  },
+
+  /**
+   * "Give Treat" — consumes 1 premium food from the board and grants +5 bond.
+   * Limited to 1 treat per day per companion.
+   * Returns true on success, false otherwise.
+   */
+  giveTreat(npcId) {
+    this.ensureInitialized();
+    const state = GameState.npcs?.states?.[npcId];
+    if (!state || !state.isCompanion) return false;
+
+    const today = GameState.time?.day ?? 0;
+    if ((state.lastTreatDay ?? -1) === today) {
+      EventBus.emit('notify', {
+        message: '오늘은 이미 간식을 줬습니다.',
+        type: 'warn',
+      });
+      return false;
+    }
+
+    // Find a premium food on the board
+    const treatIds = ['dried_meat', 'canned_food'];
+    const card = GameState.getBoardCards().find(c => treatIds.includes(c.definitionId));
+    if (!card) {
+      EventBus.emit('notify', {
+        message: '간식(건육/통조림)이 없습니다.',
+        type: 'warn',
+      });
+      return false;
+    }
+
+    // Consume one unit
+    const qty = card.quantity ?? 1;
+    if (qty > 1) {
+      card.quantity = qty - 1;
+      GameState._updateEncumbrance?.();
+    } else {
+      GameState.removeCardInstance(card.instanceId);
+    }
+
+    state.lastTreatDay = today;
+    const name = I18n.itemName(npcId, NPC_ITEMS[npcId]?.name);
+    EventBus.emit('notify', {
+      message: `🦴 ${name}에게 간식을 줬다.`,
+      type: 'good',
+    });
+    this.modBond(npcId, 5);
+    EventBus.emit('boardChanged', {});
+    return true;
+  },
+
   // ── Public API: Companion Damage ───────────────────────────────
 
   damageCompanion(npcId, damage) {
@@ -507,6 +691,7 @@ const NPCSystem = {
         spawned: true, dismissed: false, trust: 3,
         isCompanion: false, hp: npcDef.maxHp ?? 50,
         neglectDays: 0, companionSince: null,
+        bond: 0, lastTreatDay: -1,
       };
     }
 
@@ -515,6 +700,7 @@ const NPCSystem = {
     state.isCompanion    = true;
     state.companionSince = GameState.time?.day ?? 0;
     state.neglectDays    = 0;
+    if (state.bond === undefined) state.bond = 0;
 
     if (!GameState.companions.includes(npcId)) {
       GameState.companions = [...GameState.companions, npcId];
@@ -542,6 +728,7 @@ const NPCSystem = {
     state.isCompanion    = true;
     state.companionSince = GameState.time?.day ?? 0;
     state.neglectDays    = 0;
+    if (state.bond === undefined) state.bond = 0;
 
     if (!GameState.companions.includes(npcId)) {
       GameState.companions = [...GameState.companions, npcId];
@@ -689,17 +876,41 @@ const NPCSystem = {
 
   // ── Public API: Companion Bonuses Query ────────────────────────
 
-  /** Get total companion combat damage multiplier (탐색 중인 NPC 제외) */
+  /** Get total companion combat damage multiplier (탐색 중인 NPC 제외).
+   *  npc_dog 의 기여는 유대감(bond) 구간 배율로 직접 결정한다.
+   *    0-30  → 1.0x (경계)
+   *    31-60 → 1.2x (우호)
+   *    61-90 → 1.4x (친밀)
+   *    91-100→ 1.6x (혈맹)
+   */
   getCompanionCombatBonus() {
     this.ensureInitialized();
     let bonus = 0;
     const foragingToday = GameState.npcs?._foragingToday ?? {};
     for (const npcId of (GameState.companions ?? [])) {
       if (foragingToday[npcId]) continue;
+
+      if (npcId === 'npc_dog') {
+        // 군견은 전용 bond 구간 배율을 그대로 기여분으로 사용
+        bonus += (this.getBondMultiplier(npcId) - 1.0);
+        continue;
+      }
+
       const comp = NPCS[npcId]?.companion;
       if (comp?.combatDmg > 0) bonus += comp.combatDmg - 1.0;
     }
     return 1.0 + bonus;
+  },
+
+  /** Bond 구간 배율 (npc_dog 전용 설계, 다른 companion 에도 재사용 가능). */
+  getBondMultiplier(npcId) {
+    const tier = this.getBondTier(npcId);
+    switch (tier) {
+      case 'kindred':  return 1.6;
+      case 'bonded':   return 1.4;
+      case 'friendly': return 1.2;
+      default:         return 1.0;
+    }
   },
 
   /** NPC 정의 조회 (외부에서 companion 속성 확인용) */

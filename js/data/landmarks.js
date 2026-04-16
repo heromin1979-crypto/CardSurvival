@@ -1717,6 +1717,185 @@ export const LANDMARK_DATA = {
     ],
   },
 
+  // ── 발전기 재건 시스템 (engineer B1 "도시 재건" 엔딩) ──────────
+  // 정대한의 인프라 복구 3종 랜드마크. rescue_npc objective로 연결되며
+  // 모든 subLocation을 탐색·전투한 뒤 ExploreSystem.markLandmarkCleared() 호출로 완료된다.
+  //
+  // NOTE: 본격적인 웨이브 방어 시스템은 추후 과제. 현재는 고난이도 랜드마크로
+  // 표현하며 각 subLocation에 raider/zombie 혼재 dangerMod를 높게 부여해
+  // 다단계 전투감을 낸다. mq_eng_b1_power / b1_water / b1_comms가 이 랜드마크를
+  // 대상으로 rescue_npc 목표를 설정한다.
+
+  lm_power_station: {
+    name: '구로 발전소',
+    desc: '구로 화력 발전소. 붕괴 전 서울 서남부 전력 공급의 핵심 시설. 약탈자 무리와 냉각탑 내부의 좀비 군집이 점거 중이다.',
+    icon: '⚡',
+    districts: ['guro'],
+    dangerLevel: 6,
+    enemyCount: [6, 9],
+    enemyType: 'raider',
+    hasLeader: true,
+    subLocations: [
+      {
+        id: 'power_station_perimeter', name: '외부 방어선',
+        icon: '🛡️', desc: '발전소 외곽 철조망과 경비 초소. 약탈자 보초가 교대로 지키고 있다.',
+        dangerMod: 0.30,
+        lootTable: [
+          { id: 'scrap_metal', weight: 4 }, { id: 'iron_pipe', weight: 3 },
+          { id: 'pistol_ammo', weight: 3 }, { id: 'wire', weight: 3 },
+          { id: 'bandage', weight: 2 },
+        ],
+        lootCount: [2, 4],
+      },
+      {
+        id: 'power_station_cooling', name: '냉각탑',
+        icon: '🌀', desc: '거대한 냉각탑 내부. 습기와 이끼로 미끄럽고 좀비 군집이 벽을 타고 이동한다.',
+        dangerMod: 0.40,
+        lootTable: [
+          { id: 'contaminated_water', weight: 4 }, { id: 'rubber', weight: 3 },
+          { id: 'scrap_metal', weight: 3 }, { id: 'electronic_parts', weight: 2 },
+          { id: 'bandage', weight: 2 },
+        ],
+        lootCount: [2, 4],
+      },
+      {
+        id: 'power_station_control', name: '제어실',
+        icon: '🖥️', desc: '발전 제어반이 늘어선 중앙 관제실. 약탈자 리더가 배전 시스템을 장악하고 있다.',
+        dangerMod: 0.45,
+        lootTable: [
+          { id: 'electronic_parts', weight: 5 }, { id: 'wire', weight: 4 },
+          { id: 'circuit_board', weight: 2 }, { id: 'flashlight', weight: 2 },
+          { id: 'pistol_ammo', weight: 3 },
+        ],
+        lootCount: [2, 4],
+      },
+      {
+        id: 'power_station_generator', name: '발전실',
+        icon: '⚡', desc: '거대 발전 터빈이 멈춘 채 놓인 심장부. 재가동에 필요한 부품이 남아있다.',
+        dangerMod: 0.50,
+        lootTable: [
+          { id: 'electronic_parts', weight: 5 }, { id: 'wire', weight: 4 },
+          { id: 'scrap_metal', weight: 4 }, { id: 'rubber', weight: 3 },
+          { id: 'iron_pipe', weight: 3 },
+        ],
+        lootCount: [3, 5],
+      },
+    ],
+  },
+
+  lm_water_plant: {
+    name: '은평 정수장',
+    desc: '은평구 상수도 정수장. 펌프와 배관이 파손돼 수도 공급이 끊긴 상태. 비교적 약한 감염자들이 배회하지만 복구에는 정밀 작업이 필요하다.',
+    icon: '💧',
+    districts: ['eunpyeong'],
+    dangerLevel: 4,
+    enemyCount: [4, 6],
+    enemyType: 'zombie',
+    subLocations: [
+      {
+        id: 'water_plant_pump', name: '펌프실',
+        icon: '⚙️', desc: '지하 펌프실. 거대한 취수 펌프와 제어 밸브가 늘어서 있다. 수리 부품이 필요하다.',
+        dangerMod: 0.25,
+        lootTable: [
+          { id: 'scrap_metal', weight: 4 }, { id: 'iron_pipe', weight: 4 },
+          { id: 'rubber', weight: 3 }, { id: 'wire', weight: 3 },
+          { id: 'bandage', weight: 2 },
+        ],
+        lootCount: [2, 4],
+      },
+      {
+        id: 'water_plant_reservoir', name: '정수조',
+        icon: '🌊', desc: '대형 정수 탱크. 오염된 물이 고여있지만 필터와 배관 부품을 회수할 수 있다.',
+        dangerMod: 0.20,
+        lootTable: [
+          { id: 'contaminated_water', weight: 4 }, { id: 'water_filter', weight: 2 },
+          { id: 'cloth', weight: 3 }, { id: 'rubber', weight: 2 },
+          { id: 'purified_water', weight: 1 },
+        ],
+        lootCount: [2, 3],
+      },
+      {
+        id: 'water_plant_chemistry', name: '화학실',
+        icon: '🧪', desc: '정수용 약품 보관실. 염소 소독제와 활성탄 필터 원료가 남아있다.',
+        dangerMod: 0.25,
+        lootTable: [
+          { id: 'antiseptic', weight: 3 }, { id: 'purified_water', weight: 2 },
+          { id: 'charcoal', weight: 3 }, { id: 'water_filter', weight: 2 },
+          { id: 'glass_shard', weight: 2 },
+        ],
+        lootCount: [2, 3],
+      },
+      {
+        id: 'water_plant_admin', name: '관리실',
+        icon: '📋', desc: '정수장 관리동. 비상 공구와 작업자 보급품이 남아있다.',
+        dangerMod: 0.20,
+        lootTable: [
+          { id: 'flashlight', weight: 2 }, { id: 'bandage', weight: 3 },
+          { id: 'canned_food', weight: 3 }, { id: 'painkiller', weight: 2 },
+          { id: 'pipe_wrench', weight: 1 },
+        ],
+        lootCount: [1, 3],
+      },
+    ],
+  },
+
+  lm_comms_tower: {
+    name: 'N서울타워',
+    desc: '남산 N서울타워. 붕괴 전 서울 통신 백본의 중계 거점. 고층부는 감염자가 뒤엉켜 있고 계단부 일부가 무너졌다.',
+    icon: '📡',
+    districts: ['yongsan'],
+    dangerLevel: 5,
+    enemyCount: [5, 8],
+    enemyType: 'zombie',
+    hasLeader: true,
+    subLocations: [
+      {
+        id: 'comms_tower_stairs', name: '계단부',
+        icon: '🪜', desc: '타워 하단 계단실. 무너진 계단 사이로 감염자 무리가 올라온다.',
+        dangerMod: 0.30,
+        lootTable: [
+          { id: 'scrap_metal', weight: 3 }, { id: 'iron_pipe', weight: 3 },
+          { id: 'rope', weight: 3 }, { id: 'bandage', weight: 2 },
+          { id: 'nail', weight: 3 },
+        ],
+        lootCount: [2, 4],
+      },
+      {
+        id: 'comms_tower_observation', name: '전망대',
+        icon: '🔭', desc: '전망대 층. 깨진 유리창과 흩어진 관광객 유품. 시야가 확보되지만 좀비가 밀집해 있다.',
+        dangerMod: 0.35,
+        lootTable: [
+          { id: 'binoculars', weight: 2 }, { id: 'glass_shard', weight: 4 },
+          { id: 'canned_food', weight: 2 }, { id: 'compass', weight: 1 },
+          { id: 'cloth', weight: 3 },
+        ],
+        lootCount: [2, 4],
+      },
+      {
+        id: 'comms_tower_antenna', name: '안테나룸',
+        icon: '📡', desc: '통신 중계 장비실. 안테나 복구에 필요한 송신 모듈과 배선이 남아있다.',
+        dangerMod: 0.40,
+        lootTable: [
+          { id: 'electronic_parts', weight: 5 }, { id: 'wire', weight: 5 },
+          { id: 'circuit_board', weight: 3 }, { id: 'flashlight', weight: 2 },
+          { id: 'scrap_metal', weight: 3 },
+        ],
+        lootCount: [3, 5],
+      },
+      {
+        id: 'comms_tower_broadcast', name: '방송실',
+        icon: '🎙️', desc: '방송 송출실. 비상 방송 장비가 잠자고 있다. 감염자 중 과거 기술자 복장을 한 자가 있다.',
+        dangerMod: 0.35,
+        lootTable: [
+          { id: 'electronic_parts', weight: 4 }, { id: 'wire', weight: 3 },
+          { id: 'duct_tape', weight: 3 }, { id: 'first_aid_kit', weight: 2 },
+          { id: 'painkiller', weight: 2 },
+        ],
+        lootCount: [2, 4],
+      },
+    ],
+  },
+
   lm_raider_camp_large: {
     name: '대형 약탈자 요새',
     desc: '영등포의 폐쇄된 공장을 요새화한 약탈자 본거지. 보스와 중무장 부대가 주둔한다.',
