@@ -7,6 +7,7 @@ import EndingSystem from './EndingSystem.js';
 import SeasonSystem  from './SeasonSystem.js';
 import DiseaseSystem from './DiseaseSystem.js';
 import SkillSystem   from './SkillSystem.js';
+import NPCSystem     from './NPCSystem.js';
 import BALANCE       from '../data/gameBalance.js';
 import CharDialogue  from '../data/charDialogues.js';
 
@@ -595,6 +596,8 @@ const StatSystem = {
     if (isMedical) SkillSystem.gainXp('medicine', 3);
     // 스킬 XP: 음식 섭취 — 직접 제작한 음식 +2, 수집한 음식도 +1 (감별 경험)
     if (isFood) SkillSystem.gainXp('cooking', isCrafted ? 2 : 1);
+    // 군견 유대감: 식사를 함께한 동반자와 유대감 상승 (+3, 프리미엄 식품은 +5)
+    if (isFood) NPCSystem.onPlayerConsumedFood(def.id);
     // 스킬 XP: 물 정수/음용 — 요리 기초 (끓임 여부 관계없이 +1)
     if (def.subtype === 'water' || def.tags?.includes('water')) {
       SkillSystem.gainXp('cooking', 1);

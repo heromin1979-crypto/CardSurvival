@@ -453,6 +453,100 @@ const CINEMATIC_SCENES = {
     ],
     displayMs: 0,
   },
+
+  // ── 엔지니어(정대한) 아버지 회상 플래시백 (5개) ─────────────────
+  // category: 'flashback' — 특정 퀘스트 완료 시 1회성으로 재생
+  // gradient: 따뜻한 세피아/앰버 톤 (과거 회상 분위기)
+
+  flashback_young_dae: {
+    id: 'flashback_young_dae',
+    image: null,
+    gradient: 'linear-gradient(160deg,#2a1a0a 0%,#3d2612 50%,#1f1208 100%)',
+    title: '아버지의 공장 — 2006년',
+    subtitle: '8살의 정대한',
+    category: 'flashback',
+    characterId: 'engineer',
+    lines: [
+      '구로의 낡은 공장. 여름 오후의 기름 냄새가 코를 찔렀다.',
+      '연장 부딪히는 소리, 용접 불꽃, 아버지의 까맣게 그을린 손.',
+      '"대한아, 이거 만져봐라. 사람이 만든 거다."',
+      '구석 작업대 위, 기름 묻은 종이 한 장이 눈에 띄었다.',
+      '"아버지, 이건 뭐에요?" — "R22. 언젠가 너랑 같이 완성할 거다."',
+    ],
+    displayMs: 0,
+  },
+
+  flashback_father_blueprint: {
+    id: 'flashback_father_blueprint',
+    image: null,
+    gradient: 'linear-gradient(160deg,#2e1f0c 0%,#432d14 50%,#1f1408 100%)',
+    title: '20년 전 — 아버지의 꿈',
+    subtitle: '밤을 새운 설계도',
+    category: 'flashback',
+    characterId: 'engineer',
+    lines: [
+      '작업대 위 스탠드 불빛. 새벽 3시, 아버지는 아직 연필을 쥐고 있었다.',
+      '먹다 만 컵라면, 재떨이, 그리고 수백 번 고쳐 그린 R22 로터 설계도.',
+      '"아버지, 또 밤새요?" — 아버지는 웃기만 했다.',
+      '"대한아. 이게 완성되면, 우리 언젠가 하늘을 날 거야."',
+      '그날 나는 아버지의 꿈이 어떤 무게인지 처음 알았다.',
+    ],
+    displayMs: 0,
+  },
+
+  flashback_last_words: {
+    id: 'flashback_last_words',
+    image: null,
+    gradient: 'linear-gradient(160deg,#1f1408 0%,#2e1d0e 50%,#140a04 100%)',
+    title: '2020년 — 마지막 인사',
+    subtitle: '병실의 아버지',
+    category: 'flashback',
+    characterId: 'engineer',
+    lines: [
+      '창밖에는 첫눈이 내리고 있었다. 아버지의 손은 이미 차가웠다.',
+      '떨리는 손으로 아버지는 낡은 가죽 노트를 내 손에 쥐여줬다.',
+      '"대한아… 내가 못 완성한 걸, 네가…"',
+      '"괜찮아요 아버지. 제가 할게요." — 말이 목에 걸렸다.',
+      '그 노트가 20년 뒤, 폐허가 된 서울에서 나를 살릴 줄은 몰랐다.',
+    ],
+    displayMs: 0,
+  },
+
+  flashback_r22_hangar: {
+    id: 'flashback_r22_hangar',
+    image: null,
+    gradient: 'linear-gradient(160deg,#2a1d0d 0%,#3d2a14 50%,#1a1008 100%)',
+    title: '정비 기술자의 길',
+    subtitle: '27살, 김포 정비 공장',
+    category: 'flashback',
+    characterId: 'engineer',
+    lines: [
+      '김포공항 외곽의 격납고. 기름 묻은 작업복, 반짝이는 로터 블레이드.',
+      '수입 R22의 엔진을 분해하며 선배가 말했다. "너 손이 좋다. 누구한테 배운 거야?"',
+      '"아버지요. 공장 하시던." — 렌치를 쥔 손에 힘이 들어갔다.',
+      '볼트 하나, 케이블 한 가닥에도 아버지의 손길이 겹쳐 보였다.',
+      '기술은 대물림되는 것이었다. 피보다 진하게.',
+    ],
+    displayMs: 0,
+  },
+
+  flashback_graduation: {
+    id: 'flashback_graduation',
+    image: null,
+    gradient: 'linear-gradient(160deg,#2e220e 0%,#453018 50%,#1f1608 100%)',
+    title: '2013년 — 공대 졸업식',
+    subtitle: '아버지가 유일하게 참석한 자리',
+    category: 'flashback',
+    characterId: 'engineer',
+    lines: [
+      '3월의 햇살, 학사모, 꽃다발. 연단 아래에서 아버지가 어색하게 서 있었다.',
+      '평생 작업복만 입던 아버지가 낡은 양복을 꺼내 입었다.',
+      '사진을 찍을 때, 아버지는 카메라가 아닌 내 얼굴을 보고 있었다.',
+      '"자랑스럽다, 대한아." — 그 말이 전부였다. 하지만 전부였다.',
+      '아버지의 눈가에 무언가 반짝였다. 그걸 본 게 처음이자 마지막이었다.',
+    ],
+    displayMs: 0,
+  },
 };
 
 // ── 엔딩 ID → 시네마틱 장면 ID 매핑 ─────────────────────────────
@@ -510,6 +604,21 @@ export const ENDING_TO_CINEMATIC = {
   survived_summer:         'cin_milestone_summer',
   winter_survivor:         'cin_milestone_winter',
   four_seasons:            'cin_milestone_four_seasons',
+};
+
+// ── 퀘스트 완료 → 플래시백 매핑 ───────────────────────────────
+// 각 플래시백은 1회성 (flags._flashback_<id>_played로 중복 방지)
+// QuestSystem._completeQuest에서 참조
+export const QUEST_TO_FLASHBACK = {
+  mq_eng_09:    'flashback_young_dae',        // 성수동 공장 첫 방문
+  mq_eng_b3_1:  'flashback_father_blueprint', // 아버지의 마지막 설계도
+  mq_eng_07:    'flashback_last_words',       // 아버지의 메모
+  mq_eng_b3_3:  'flashback_r22_hangar',       // 로터 블레이드 확보
+  // 그래쥬에이션: engineer의 임의 최종 엔딩 퀘스트 (branch a/b)
+  mq_eng_end_a1: 'flashback_graduation',
+  mq_eng_end_a3: 'flashback_graduation',
+  mq_eng_end_b1: 'flashback_graduation',
+  mq_eng_end_b3: 'flashback_graduation',
 };
 
 export default CINEMATIC_SCENES;

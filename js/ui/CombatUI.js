@@ -602,16 +602,43 @@ const CombatUI = {
       const statusTag = foraging
         ? '<span style="color:var(--text-warn);font-size:10px;">🌿 탐색중</span>'
         : '<span style="color:var(--text-good);font-size:10px;">⚔ 전투 가능</span>';
+
+      // 유대감(bond) 표시: 군견뿐 아니라 bond 값이 존재하면 모든 동반자에게 렌더
+      const bond = state.bond ?? 0;
+      const tier = bond >= 91 ? 'kindred'
+                 : bond >= 61 ? 'bonded'
+                 : bond >= 31 ? 'friendly'
+                 : 'baseline';
+      const tierLabel = tier === 'kindred' ? '혈맹'
+                      : tier === 'bonded' ? '친밀'
+                      : tier === 'friendly' ? '우호'
+                      : '경계';
+      const tierColor = tier === 'kindred' ? '#f4c861'
+                      : tier === 'bonded' ? '#6dd36d'
+                      : tier === 'friendly' ? '#d9c54a'
+                      : '#888';
+      const showBond = npcId === 'npc_dog' || bond > 0;
+      const bondHtml = showBond ? `
+          <div class="cpp-bar-wrap" style="margin-top:3px;background:rgba(255,255,255,0.06);height:4px;border-radius:2px;overflow:hidden;">
+            <div style="width:${bond}%;height:100%;background:${tierColor};"></div>
+          </div>
+          <div style="font-size:10px;color:${tierColor};">유대 ${bond}/100 (${tierLabel})</div>` : '';
+
+      const tierBadge = showBond
+        ? `<span style="font-size:10px;color:${tierColor};margin-left:4px;">[${tierLabel}]</span>`
+        : '';
+
       return `
         <div class="cpp-companion-row" style="margin-top:8px;padding:6px;background:rgba(255,255,255,0.04);border-radius:4px;">
           <div style="display:flex;justify-content:space-between;align-items:center;">
-            <span style="font-size:12px;">${icon} <strong>${name}</strong></span>
+            <span style="font-size:12px;">${icon} <strong>${name}</strong>${tierBadge}</span>
             ${statusTag}
           </div>
           <div class="cpp-bar-wrap" style="margin-top:4px;">
             <div class="cpp-bar ${hpPct < 30 ? 'low' : ''}" style="width:${hpPct.toFixed(1)}%;"></div>
           </div>
           <div style="font-size:10px;color:var(--text-dim);">HP ${hp}/${maxHp}</div>
+          ${bondHtml}
         </div>`;
     }).join('');
     return `<div class="cpp-companions" style="margin-top:10px;border-top:1px solid var(--border-dim);padding-top:8px;">

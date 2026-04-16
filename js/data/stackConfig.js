@@ -228,6 +228,23 @@ const STACK_ROWS = [
   ['seafood_platter'           , true,  3 ],
   ['special_soup'              , true,  3 ],
 
+  // — 개조된 장비 (15 items, 내구도 있음 → 스택 불가) —
+  ['iron_pipe_reinforced'      , false, 1 ],
+  ['sharpened_knife_plus'      , false, 1 ],
+  ['reinforced_bat_plus'       , false, 1 ],
+  ['machete_plus'              , false, 1 ],
+  ['spear_plus'                , false, 1 ],
+  ['crossbow_plus'             , false, 1 ],
+  ['tactical_vest_plus'        , false, 1 ],
+  ['helmet_plus'               , false, 1 ],
+  ['combat_boots_plus'         , false, 1 ],
+  ['work_gloves_plus'          , false, 1 ],
+  ['raincoat_plus'             , false, 1 ],
+  ['pipe_wrench_master'        , false, 1 ],
+  ['flashlight_plus'           , false, 1 ],
+  ['compass_advanced'          , false, 1 ],
+  ['binoculars_pro'            , false, 1 ],
+
   // — 헬기 제작 전용 부품 (기계공 B3 엔딩) —
   ['aviation_alloy'            , true,  5 ],
   ['rotor_blade'               , false, 1 ],

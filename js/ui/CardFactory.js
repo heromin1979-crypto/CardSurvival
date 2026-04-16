@@ -288,6 +288,23 @@ const CARD_IMAGES = {
   seafood_platter:       'assets/images/food/grilled_fish.png',
   special_soup:          'assets/images/food/mushroom_soup.png',
 
+  // 개조된 장비 (15 items) — 기존 이미지 재사용
+  iron_pipe_reinforced:  'assets/images/weapons/iron_pipe.png',
+  sharpened_knife_plus:  'assets/images/weapons/sharpened_knife.png',
+  reinforced_bat_plus:   'assets/images/weapons/reinforced_bat.png',
+  machete_plus:          'assets/images/weapons/machete.png',
+  spear_plus:            'assets/images/weapons/spear.png',
+  crossbow_plus:         'assets/images/weapons/crossbow.png',
+  tactical_vest_plus:    'assets/images/armor/tactical_vest.png',
+  helmet_plus:           'assets/images/armor/helmet.png',
+  combat_boots_plus:     'assets/images/armor/combat_boots.png',
+  work_gloves_plus:      'assets/images/armor/work_gloves.png',
+  raincoat_plus:         'assets/images/armor/raincoat.png',
+  pipe_wrench_master:    'assets/images/tools/pipe_wrench.png',
+  flashlight_plus:       'assets/images/tools/flashlight.png',
+  compass_advanced:      'assets/images/tools/compass.png',
+  binoculars_pro:        'assets/images/tools/binoculars.png',
+
   // 헬기 제작 전용 부품 (기계공 B3 엔딩)
   aviation_alloy:        'assets/images/materials/refined_metal.png',
   rotor_blade:           'assets/images/materials/sharp_blade.png',

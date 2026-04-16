@@ -240,6 +240,7 @@ const CraftSystem = {
     const craftSkillMap = {
       structure: 'building', material: 'crafting', food: 'cooking',
       medical: 'crafting', weapon: 'weaponcraft', armor: 'armorcraft', tool: 'crafting',
+      upgrade: 'crafting',
     };
     const skillId = craftSkillMap[bp.category] ?? 'crafting';
     const playerLevel   = GameState.player.skills?.[skillId]?.level ?? 0;
@@ -276,6 +277,7 @@ const CraftSystem = {
     const craftSkillMap = {
       structure: 'building', material: 'crafting', food: 'cooking',
       medical: 'crafting', weapon: 'weaponcraft', armor: 'armorcraft', tool: 'crafting',
+      upgrade: 'crafting',
     };
     const relevantSkill = craftSkillMap[bp.category] ?? 'crafting';
     const skillReduction = SkillSystem.getBonus(relevantSkill, 'craftSuccessBonus') ?? 0;

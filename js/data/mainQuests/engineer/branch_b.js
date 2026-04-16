@@ -92,31 +92,94 @@ const ENGINEER_BRANCH_B = {
   },
 
   // ── B1 엔딩: 도시 인프라 복구 완성 ──────────────────────────
+  // 3개 랜드마크(발전소·정수장·N서울타워)를 병렬 탈환한 뒤
+  // 마지막에 mq_eng_end_b1에서 완성 시설을 제작한다.
+  //
+  // 병렬 구조: b1_power / b1_water / b1_comms 모두 prerequisite: mq_eng_b_15
+  // 서로 다른 dayTrigger(205/210/215)로 순차 해금되지만 완료 순서는 자유.
+  // mq_eng_end_b1은 requiresAllFlags로 세 완료 플래그를 모두 요구한다.
+  //
+  // NOTE: 본격 웨이브 방어 시스템은 추후 구현. 현재는 rescue_npc objective로
+  // 랜드마크 소탕을 추적하며, ExploreSystem.markLandmarkCleared()가 완료 훅이다.
 
-  mq_eng_b1_prep: {
-    id: 'mq_eng_b1_prep', title: '통신 시스템 복구',
-    desc: '전자부품 5개를 확보하라. 통신 안테나 복구에 필요하다.',
-    icon: '📡', characterId: 'engineer', dayTrigger: 205,
+  mq_eng_b1_power: {
+    id: 'mq_eng_b1_power', title: '구로 발전소 탈환',
+    desc: '구로 발전소를 탈환하라. 약탈자들을 몰아내고 발전 터빈을 재가동해 서울 서남부 전력을 복구한다.',
+    icon: '⚡', characterId: 'engineer', dayTrigger: 205,
     prerequisite: 'mq_eng_b_15', requiresFlag: 'eng_end_b1',
-    objective: { type: 'collect_item', definitionId: 'electronic_parts', count: 5 },
-    reward: { morale: 10 },
-    failPenalty: { morale: -5 }, deadlineDays: Infinity,
+    objective: { type: 'rescue_npc', landmarkId: 'lm_power_station', count: 1 },
+    reward: {
+      morale: 15,
+      items: [
+        { definitionId: 'electronic_parts', qty: 3 },
+        { definitionId: 'wire', qty: 4 },
+        { definitionId: 'flashlight', qty: 1 },
+      ],
+      flags: { power_station_cleared: true },
+    },
+    failPenalty: { morale: -10 }, deadlineDays: Infinity,
     narrative: {
-      start: '전기와 수도 다음은 통신이다. 은평구 통신 안테나를 복구하면 다른 구역과 연결된다.',
-      complete: '통신 안테나 부품 확보. 박영철: "이걸 올리면 서대문, 마포까지 신호가 닿아요."',
+      start: '구로 화력 발전소. 약탈자 무리가 점거하고 있다. 냉각탑에는 좀비 군집까지. 외부 방어선 돌파 → 냉각탑 정리 → 제어실 장악 → 발전실 재가동. 박영철: "전력만 다시 돌아가면 반경 10킬로가 살아납니다."',
+      complete: '발전소 탈환. 터빈이 낮게 돌기 시작했다. 제어반의 적색등이 하나씩 녹색으로 바뀐다. 구로 일대에 가로등이 깜빡이며 켜졌다. 박영철: "대한씨, 진짜 됐어요." 정대한은 계기판을 다시 한 번 확인했다.',
+    },
+  },
+
+  mq_eng_b1_water: {
+    id: 'mq_eng_b1_water', title: '은평 정수장 복구',
+    desc: '은평 정수장을 복구하라. 펌프·배관·약품 시스템을 수리해 상수도 공급을 재개한다.',
+    icon: '💧', characterId: 'engineer', dayTrigger: 210,
+    prerequisite: 'mq_eng_b_15', requiresFlag: 'eng_end_b1',
+    objective: { type: 'rescue_npc', landmarkId: 'lm_water_plant', count: 1 },
+    reward: {
+      morale: 12,
+      items: [
+        { definitionId: 'water_filter', qty: 2 },
+        { definitionId: 'purified_water', qty: 3 },
+        { definitionId: 'pipe_wrench', qty: 1 },
+      ],
+      flags: { water_plant_restored: true },
+    },
+    failPenalty: { morale: -8 }, deadlineDays: Infinity,
+    narrative: {
+      start: '은평 정수장. 펌프실 파이프가 파열됐고 정수조는 오염됐다. 감염자들이 배회하지만 숫자는 많지 않다. 펌프실 수리 → 정수조 청소 → 화학실 약품 보충 → 관리실 배수계 점검 순으로 진행.',
+      complete: '정수장 복구. 모터가 돌고 파이프가 진동한다. 수도꼭지를 여니 맑은 물이 쏟아졌다. 박영철: "마셔도 돼요?" 정대한은 필터를 다시 확인하고 고개를 끄덕였다. "끓이지 않아도 됩니다."',
+    },
+  },
+
+  mq_eng_b1_comms: {
+    id: 'mq_eng_b1_comms', title: 'N서울타워 통신 복구',
+    desc: '남산 N서울타워 안테나룸을 탈환하라. 송신 모듈을 복구해 서울 전역 통신망을 재가동한다.',
+    icon: '📡', characterId: 'engineer', dayTrigger: 215,
+    prerequisite: 'mq_eng_b_15', requiresFlag: 'eng_end_b1',
+    objective: { type: 'rescue_npc', landmarkId: 'lm_comms_tower', count: 1 },
+    reward: {
+      morale: 15,
+      items: [
+        { definitionId: 'electronic_parts', qty: 4 },
+        { definitionId: 'wire', qty: 3 },
+        { definitionId: 'binoculars', qty: 1 },
+      ],
+      flags: { comms_tower_active: true },
+    },
+    failPenalty: { morale: -10 }, deadlineDays: Infinity,
+    narrative: {
+      start: '남산 N서울타워. 통신 백본 중계 거점. 계단부가 무너졌고 고층은 감염자로 가득하다. 계단부 → 전망대 → 안테나룸 → 방송실 순으로 올라간다. 송신 모듈이 살아있으면 서울 전역이 다시 연결된다.',
+      complete: '안테나 복구 완료. 송신기 전원 ON. 무전기에서 오래된 라디오 노이즈가 들리기 시작했다. 박영철: "서대문, 마포, 심지어 강남까지 신호가 닿아요." 정대한은 전망대 창 너머로 불빛이 하나씩 켜지는 서울을 보았다.',
     },
   },
 
   mq_eng_end_b1: {
     id: 'mq_eng_end_b1', title: '도시 재건 완성',
-    desc: '구조물 4개를 제작하라. 서울 인프라 복구의 핵심 시설을 완성한다.',
+    desc: '전기·수도·통신 3대 인프라가 복구됐다. 마지막으로 구조물 4개를 제작해 서울 재건의 핵심 시설을 완성한다.',
     icon: '🏙️', characterId: 'engineer', dayTrigger: 230,
-    prerequisite: 'mq_eng_b1_prep', requiresFlag: 'eng_end_b1',
+    prerequisite: 'mq_eng_b1_comms',
+    requiresFlag: 'eng_end_b1',
+    requiresAllFlags: ['power_station_cleared', 'water_plant_restored', 'comms_tower_active'],
     objective: { type: 'craft_item', category: 'structure', count: 4 },
     reward: { morale: 20, items: [{ definitionId: 'rope_ladder', qty: 1 }, { definitionId: 'alarm_trap', qty: 1 }], flags: { mainQuestComplete_engineer: true, engineer_ending: 'b1_rebuild' } },
     failPenalty: { morale: -10 }, deadlineDays: Infinity,
     narrative: {
-      start: '마지막 시설. 전기, 수도, 통신. 세 가지가 돌아가면 서울이 다시 살아난다.',
+      start: '마지막 단계. 발전소, 정수장, 통신 타워 모두 살아났다. 이제 세 시스템을 연결할 변전 구조물과 중앙 관제 시설을 세운다. 구조물 4개 — 대용량 배전 패널, 수도 분기 허브, 통신 중계기, 중앙 관제대.',
       complete: '은평구 인프라 복구 완성. 로프 사다리와 경보 장치도 설치했다. 박영철: "불이 켜지고, 물이 나오고, 신호가 잡혀요." 정대한: "아버지가 만들려 했던 것과 다르지 않았어요."',
     },
   },

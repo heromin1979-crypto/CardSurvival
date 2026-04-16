@@ -6,6 +6,7 @@ import I18n      from '../core/I18n.js';
 import MAIN_QUESTS from '../data/mainQuests/index.js';
 import GameData   from '../data/GameData.js';
 import NPCSystem  from './NPCSystem.js';
+import { QUEST_TO_FLASHBACK } from '../data/cinematicScenes.js';
 
 // ── 계절 퀘스트 정의 ────────────────────────────────────────────────
 // trigger: 연결된 seasonalEvent id (해당 이벤트 발생 시 자동 시작)
@@ -344,6 +345,11 @@ const QuestSystem = {
       }
       // 분기 플래그 조건
       if (def.requiresFlag && !gs.flags[def.requiresFlag]) continue;
+      // 다중 플래그 AND 조건 (병렬 퀘스트 완료 후 합류 퀘스트용)
+      if (def.requiresAllFlags) {
+        const allMet = def.requiresAllFlags.every(flag => gs.flags[flag]);
+        if (!allMet) continue;
+      }
 
       this.startQuest(def.id);
     }
@@ -456,10 +462,29 @@ const QuestSystem = {
     EventBus.emit('notify', { message: I18n.t('quest.completed', { icon: qDef.icon, title: compTitle }), type: 'good' });
     EventBus.emit('questListChanged', {});
 
+    // 플래시백 트리거 (엔지니어 아버지 회상 — 각 1회성)
+    this._triggerFlashbackIfAny(q.id);
+
     // 분기 선택 이벤트 (완료 후 발화)
     if (qDef.isBranchPoint && qDef.branchOptions) {
       EventBus.emit('branchChoice', { options: qDef.branchOptions, questId: q.id });
     }
+  },
+
+  /** 퀘스트 완료 시 매핑된 플래시백을 1회 재생 */
+  _triggerFlashbackIfAny(questId) {
+    const sceneId = QUEST_TO_FLASHBACK[questId];
+    if (!sceneId) return;
+
+    const gs = GameState;
+    const flagKey = `_flashback_${sceneId}_played`;
+    if (gs.flags[flagKey]) return;
+
+    // 엔지니어 캐릭터 한정 (다른 캐릭터에서는 동일 questId가 없지만 안전망)
+    if (gs.player.characterId && gs.player.characterId !== 'engineer') return;
+
+    gs.flags = { ...gs.flags, [flagKey]: true };
+    EventBus.emit('showCinematic', { sceneId });
   },
 
   // ── 공개 API ──────────────────────────────────────────────────
