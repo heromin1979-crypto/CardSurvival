@@ -197,6 +197,85 @@ const SOLDIER_SHARED = {
     },
   },
 
+  // ── 사이드 퀘스트: 약탈자 소굴 구출 작전 ─────────────────────
+  // Q10 이후 해금. 도봉→종로→영등포 난이도로 이어지는 인질 구출 루트.
+
+  mq_soldier_side_01: {
+    id: 'mq_soldier_side_01',
+    title: '소규모 소굴 정리',
+    desc: '도봉구 인근의 소규모 약탈자 캠프를 소탕하고 인질을 구출하라.',
+    icon: '🏴',
+    characterId: 'soldier',
+    dayTrigger: 25,
+    prerequisite: 'mq_soldier_10',
+    objective: { type: 'rescue_npc', landmarkId: 'lm_raider_camp_small', count: 1 },
+    reward: {
+      morale: 12,
+      items: [
+        { definitionId: 'sharpened_knife', qty: 1 },
+        { definitionId: 'pistol_ammo',     qty: 3 },
+      ],
+    },
+    failPenalty: { morale: -5 },
+    deadlineDays: 20,
+    narrative: {
+      start: '도봉산 기슭에서 무전이 잡혔다. "도와주세요… 약탈자들이…" 소규모 캠프다. 셋, 넷 정도. 돌파 가능.',
+      complete: '캠프 소탕 완료. 결박된 민간인을 풀어주고 기지까지 호송했다. 약탈자들의 무기고에서 나이프와 탄환도 챙겼다. 시작일 뿐이다.',
+    },
+  },
+
+  mq_soldier_side_02: {
+    id: 'mq_soldier_side_02',
+    title: '중형 거점 침투',
+    desc: '광화문 인근 약탈자 중간 거점을 침투하여 리더를 제거하고 포로를 구출하라.',
+    icon: '⚠️',
+    characterId: 'soldier',
+    dayTrigger: 40,
+    prerequisite: 'mq_soldier_side_01',
+    objective: { type: 'rescue_npc', landmarkId: 'lm_raider_camp_medium', count: 1 },
+    reward: {
+      morale: 15,
+      items: [
+        { definitionId: 'pistol_ammo',   qty: 6 },
+        { definitionId: 'shotgun_ammo',  qty: 3 },
+        { definitionId: 'first_aid_kit', qty: 1 },
+      ],
+      recruitNpc: 'npc_rescued_civilian',
+    },
+    failPenalty: { morale: -8 },
+    deadlineDays: 25,
+    narrative: {
+      start: '광화문 폐건물에 중간 거점이 있다. 리더와 호위 대여섯. 정면 돌파는 자살이다. 측면 침투, 리더 제거, 포로 구출. 표준 특수전 절차.',
+      complete: '리더 사살, 호위 전멸. 포로 감금실에서 구출한 민간인 중 한 명이 기지에 합류하겠다고 한다. 탄약도 대량으로 확보. 다음은 영등포 요새다.',
+    },
+  },
+
+  mq_soldier_side_03: {
+    id: 'mq_soldier_side_03',
+    title: '요새 강습',
+    desc: '영등포 약탈자 요새를 강습하여 보스를 처치하고 모든 포로를 해방하라.',
+    icon: '💀',
+    characterId: 'soldier',
+    dayTrigger: 60,
+    prerequisite: 'mq_soldier_side_02',
+    objective: { type: 'rescue_npc', landmarkId: 'lm_raider_camp_large', count: 1 },
+    reward: {
+      morale: 20,
+      items: [
+        { definitionId: 'rifle',       qty: 1 },
+        { definitionId: 'rifle_ammo',  qty: 8 },
+        { definitionId: 'military_ration', qty: 3 },
+      ],
+      flags: { raider_fortress_cleared: true },
+    },
+    failPenalty: { morale: -12 },
+    deadlineDays: 30,
+    narrative: {
+      start: '영등포 폐공장이 요새화됐다. 보스와 중무장 부대 열 명 이상. 단독 강습은 무모하지만 수용동에 여러 명의 민간인이 갇혀 있다. 작전 개시.',
+      complete: '요새 함락. 보스 처치. 수용동의 민간인을 모두 해방시켰다. 보스 집무실에서 노획한 소총과 탄약, 군용 식량팩을 챙겼다. 서울 서부의 약탈자 세력은 붕괴했다.',
+    },
+  },
+
 };
 
 export default SOLDIER_SHARED;

@@ -209,6 +209,25 @@ const STACK_ROWS = [
   ['box_cutter'                , false, 1 ],
   ['broken_bottle'             , true,  3 ],
 
+  // — 셰프 전용 희귀 식재료 (stackable, maxStack 3~5) —
+  ['truffle'                   , true,  3 ],
+  ['korean_beef_premium'       , true,  3 ],
+  ['matsutake_mushroom'        , true,  5 ],
+  ['abalone'                   , true,  5 ],
+  ['king_crab'                 , true,  3 ],
+  ['ginseng_6years'            , true,  3 ],
+  ['wild_honey'                , true,  5 ],
+  ['caviar_local'              , true,  5 ],
+  ['wagyu_scrap'               , true,  5 ],
+  ['saffron_dried'             , true,  3 ],
+
+  // — 셰프 특별 요리 결과물 (stackable, maxStack 3) —
+  ['gourmet_steak'             , true,  3 ],
+  ['traditional_feast'         , true,  3 ],
+  ['truffle_risotto'           , true,  3 ],
+  ['seafood_platter'           , true,  3 ],
+  ['special_soup'              , true,  3 ],
+
   // — 헬기 제작 전용 부품 (기계공 B3 엔딩) —
   ['aviation_alloy'            , true,  5 ],
   ['rotor_blade'               , false, 1 ],

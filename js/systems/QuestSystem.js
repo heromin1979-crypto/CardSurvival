@@ -127,6 +127,60 @@ const QuestSystem = {
 
     // 분기 선택 완료 시 즉시 다음 퀘스트 트리거 체크
     EventBus.on('branchChosen', () => this._checkMainQuestTriggers());
+
+    // 적 처치 시 track_infected 체크 (감염자/보스 추적)
+    EventBus.on('enemyKilled',    ({ enemyId, enemyType }) => this._onEnemyKilled(enemyId, enemyType));
+    // NPC 치료 시 treat_npc 체크
+    EventBus.on('npcHealed',      ({ npcId }) => this._onNpcHealed(npcId));
+    // 랜드마크 노드 정리 시 rescue_npc 체크 (약탈자 소굴 소탕 등)
+    EventBus.on('landmarkCleared',({ landmarkId, rescuedNpcId }) => this._onLandmarkCleared(landmarkId, rescuedNpcId));
+  },
+
+  /** 감염자/특정 적 처치 추적 */
+  _onEnemyKilled(enemyId, enemyType) {
+    let changed = false;
+    for (const q of GameState.quests.active) {
+      const qDef = _getQuestDef(q.id);
+      if (!qDef || qDef.objective.type !== 'track_infected') continue;
+      const targetType = qDef.objective.enemyType;
+      const targetId   = qDef.objective.enemyId;
+      if (targetType && enemyType !== targetType) continue;
+      if (targetId && enemyId !== targetId) continue;
+      q.progress = Math.min(qDef.objective.count, q.progress + 1);
+      this._checkCompletion(q, qDef);
+      changed = true;
+    }
+    if (changed) EventBus.emit('questListChanged', {});
+  },
+
+  /** NPC 치료 진행도 */
+  _onNpcHealed(npcId) {
+    let changed = false;
+    for (const q of GameState.quests.active) {
+      const qDef = _getQuestDef(q.id);
+      if (!qDef || qDef.objective.type !== 'treat_npc') continue;
+      const targetNpc = qDef.objective.npcId;
+      if (targetNpc && npcId !== targetNpc) continue;
+      q.progress = Math.min(qDef.objective.count ?? 1, q.progress + 1);
+      this._checkCompletion(q, qDef);
+      changed = true;
+    }
+    if (changed) EventBus.emit('questListChanged', {});
+  },
+
+  /** 랜드마크 소탕/NPC 구출 진행도 */
+  _onLandmarkCleared(landmarkId, rescuedNpcId) {
+    let changed = false;
+    for (const q of GameState.quests.active) {
+      const qDef = _getQuestDef(q.id);
+      if (!qDef || qDef.objective.type !== 'rescue_npc') continue;
+      if (qDef.objective.landmarkId && landmarkId !== qDef.objective.landmarkId) continue;
+      if (qDef.objective.npcId && rescuedNpcId !== qDef.objective.npcId) continue;
+      q.progress = Math.min(qDef.objective.count ?? 1, q.progress + 1);
+      this._checkCompletion(q, qDef);
+      changed = true;
+    }
+    if (changed) EventBus.emit('questListChanged', {});
   },
 
   // ── 퀘스트 시작 ───────────────────────────────────────────────

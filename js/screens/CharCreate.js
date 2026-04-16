@@ -438,10 +438,10 @@ const CharCreate = {
         'rusted_toolbox', 'broken_lamp',
         'scrap_metal', 'rope', 'cloth', 'bandage', 'wood', 'canned_food',
       ],
-      // ── 목동 주거 (양천 — 노숙자 시작) ──
-      yangcheon: [
+      // ── 광진구 (동호대교 아래 — 노숙자 시작) ──
+      gwangjin: [
         'broken_chair', 'old_fire_extinguisher',
-        'cloth', 'canned_food', 'rope', 'scrap_metal', 'bandage', 'wood',
+        'cloth', 'rope', 'wood', 'empty_bottle', 'empty_can',
       ],
       // ── 중구 (남대문 — 셰프 시작) ──
       junggoo: [

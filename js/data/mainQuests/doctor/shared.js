@@ -147,6 +147,74 @@ const DOCTOR_SHARED = {
       complete: '상처를 소독했다. 비상용 각성제도 확보했다. 두 가지 제안이 기다리고 있다. 한소희의 메모와 강민준의 무전. 선택을 해야 한다.',
     },
   },
+
+  // ── 사이드 퀘스트 (선택, 메인 체인 비차단) ─────────────────────
+  // 모든 사이드 퀘스트는 mq_doctor_10 완료 후 활성화된다.
+
+  mq_doctor_side_01: {
+    id: 'mq_doctor_side_01', title: '감염 패턴 추적',
+    desc: '감염자 10마리를 처치하며 감염 진행 단계를 관찰하라.',
+    icon: '🧫', characterId: 'doctor', dayTrigger: 22, prerequisite: 'mq_doctor_10',
+    objective: { type: 'track_infected', enemyType: 'zombie', count: 10 },
+    reward: { morale: 10, items: [{ definitionId: 'herb', qty: 2 }, { definitionId: 'antiseptic', qty: 1 }] },
+    failPenalty: { morale: -5 }, deadlineDays: 40,
+    narrative: {
+      start: '이지수의 수첩에 적힌 메모: "감염 후기 단계의 근육 경직, 안구 혼탁도, 출혈 패턴을 기록할 것." 의사의 본능이다. 관찰하고, 기록하고, 이해해야 한다.',
+      complete: '10개 표본의 증상 진행도를 수첩에 정리했다. 초기 감염자는 빠르지만 후기 개체는 느려진다. 데이터가 쌓인다. 약초 시료와 소독약도 현장에서 확보했다.',
+    },
+  },
+
+  mq_doctor_side_02: {
+    id: 'mq_doctor_side_02', title: '환자 진료',
+    desc: '부상당한 생존자 3명을 치료하라. (붕대/구급키트 사용)',
+    icon: '🩺', characterId: 'doctor', dayTrigger: 25, prerequisite: 'mq_doctor_10',
+    objective: { type: 'treat_npc', count: 3 },
+    reward: { morale: 12, items: [{ definitionId: 'bandage', qty: 2 }, { definitionId: 'first_aid_kit', qty: 1 }] },
+    failPenalty: { morale: -5 }, deadlineDays: 45,
+    narrative: {
+      start: '소문이 퍼진다. "의사가 있다." 다친 생존자들이 제 발로 찾아온다. 히포크라테스 선서는 세상이 끝났다고 사라지지 않는다.',
+      complete: '세 명을 치료했다. 그들의 눈빛이 달라진다 — 경계에서 신뢰로. 한 명이 은밀하게 숨겨둔 구급키트를 꺼냈다. "이런 건 의사 선생님이 가져야 해요."',
+    },
+  },
+
+  mq_doctor_side_03: {
+    id: 'mq_doctor_side_03', title: '역학 조사',
+    desc: '서울역 중심부(중구)에 진입해 전염병 확산 경로를 지도화하라.',
+    icon: '🗺️', characterId: 'doctor', dayTrigger: 30, prerequisite: 'mq_doctor_10',
+    objective: { type: 'visit_district', districtId: 'junggoo', count: 1 },
+    reward: { morale: 15, items: [{ definitionId: 'antidote', qty: 1 }, { definitionId: 'herb', qty: 3 }] },
+    failPenalty: { morale: -8 }, deadlineDays: 50,
+    narrative: {
+      start: '감염은 어디서 시작됐을까. 서울역 — 하루 수십만이 지나던 교통의 심장. 그곳이 0번 환자의 동선과 겹칠 가능성이 가장 높다. 역학 조사가 필요하다.',
+      complete: '서울역 대합실에 쌓인 시신 분포를 스케치했다. 방사형 패턴 — 중심에서 바깥으로 퍼져나간 자국이 선명하다. 질병관리청 소속이 남긴 메모도 발견했다. 해독제 샘플과 약초도 챙겼다.',
+    },
+  },
+
+  mq_doctor_side_04: {
+    id: 'mq_doctor_side_04', title: '격리 거점 구축',
+    desc: '감염자 격리를 위한 의료 아이템 3개를 제작하라.',
+    icon: '⚗️', characterId: 'doctor', dayTrigger: 35, prerequisite: 'mq_doctor_10',
+    objective: { type: 'craft_item', category: 'medical', count: 3 },
+    reward: { morale: 10, items: [{ definitionId: 'antiseptic', qty: 2 }, { definitionId: 'bandage', qty: 3 }] },
+    failPenalty: { morale: -6 }, deadlineDays: 55,
+    narrative: {
+      start: '새로 들어오는 생존자는 반드시 격리한다. 잠복기 동안 증상이 나타나면… 결정을 내려야 한다. 격리실에 둘 소독약, 붕대, 진정제가 필요하다.',
+      complete: '격리 공간이 갖춰졌다. 벽에는 비닐이 붙었고, 선반엔 제작한 약품이 놓였다. 누구도 이곳에서 죽지 않기를 — 의사의 기도다.',
+    },
+  },
+
+  mq_doctor_side_05: {
+    id: 'mq_doctor_side_05', title: '특수 감염자 표본',
+    desc: '0번 환자(patient zero) 표본을 확보하라. 연구에 필수적이다.',
+    icon: '🧪', characterId: 'doctor', dayTrigger: 45, prerequisite: 'mq_doctor_side_01',
+    objective: { type: 'track_infected', enemyId: 'boss_patient_zero', count: 1 },
+    reward: { morale: 15, items: [{ definitionId: 'antidote', qty: 2 }, { definitionId: 'stimulant', qty: 1 }, { definitionId: 'first_aid_kit', qty: 1 }] },
+    failPenalty: { morale: -10 }, deadlineDays: 60,
+    narrative: {
+      start: '감염 패턴 기록을 보던 이지수의 손이 멈췄다. 모든 증상 진행이 한 지점으로 수렴한다 — 최초 변이체. 0번 환자. 그 조직 샘플만 있으면 역설계가 가능할지도 모른다.',
+      complete: '0번 환자의 심장 조직을 채취했다. 손이 떨린다. 이건 재앙의 시작점이자, 어쩌면 종결점이다. 해독제 원형과 각성제, 구급키트도 그 소굴에서 함께 거둬왔다.',
+    },
+  },
 };
 
 export default DOCTOR_SHARED;
