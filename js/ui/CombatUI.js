@@ -34,9 +34,32 @@ const CombatUI = {
   },
 
   render() {
+    try {
+      this._renderInternal();
+    } catch (err) {
+      console.error('[CombatUI] render 실패 — 원인:', err);
+      console.error('[CombatUI] 상태:', {
+        characterId: GameState.player?.characterId,
+        enemies: GameState.combat?.enemies?.map(e => e?.id) ?? 'undefined',
+        companions: GameState.companions,
+      });
+      // 최소한의 fallback 렌더 — 화면이 비지 않도록
+      if (this._screen) {
+        this._screen.innerHTML = `
+          <div style="padding:20px;color:#e66;text-align:center;">
+            <h2>전투 화면 렌더 오류</h2>
+            <p>콘솔에서 상세 원인을 확인해 주세요.</p>
+            <p>${String(err?.message ?? err)}</p>
+            <button class="toolbar-btn" onclick="location.reload()">페이지 새로고침</button>
+          </div>`;
+      }
+    }
+  },
+
+  _renderInternal() {
     const gs     = GameState;
     const combat = gs.combat;
-    if (!combat.enemies?.length || !this._screen) return;
+    if (!combat?.enemies?.length || !this._screen) return;
 
     const isEntry    = combat._isNew === true;
     if (isEntry) combat._isNew = false;
