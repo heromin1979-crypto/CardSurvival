@@ -2,7 +2,7 @@
 // 분기 조건: homeless_branch_b 플래그
 // 낙인 CEO → 생존 커뮤니티 수장. 두 번째 사업.
 // Q11~Q15: 롯데타워 거점 구축
-// Q15 분기점: 운영 방향 선택 → 3가지 엔딩
+// Q15 분기점: 운영 방향 선택 → 2가지 엔딩 (Settle / Ascension)
 
 const HOMELESS_BRANCH_B = {
 
@@ -66,10 +66,10 @@ const HOMELESS_BRANCH_B = {
 
   mq_homeless_b_15: {
     id: 'mq_homeless_b_15', title: '두 번째 회사',
-    desc: '180일 이상 생존하라. 타워 커뮤니티의 방향을 결정할 시간이다.',
+    desc: '100일 이상 생존하라. 타워 커뮤니티의 방향을 결정할 시간이다.',
     icon: '⚖️', characterId: 'homeless', dayTrigger: 185,
     prerequisite: 'mq_homeless_b_14', requiresFlag: 'homeless_branch_b',
-    objective: { type: 'survive_days', count: 180 },
+    objective: { type: 'survive_days', count: 100 },
     reward: { morale: 8, items: [{ definitionId: 'lighter', qty: 1 }, { definitionId: 'flashlight', qty: 1 }] },
     failPenalty: null, deadlineDays: Infinity,
     isBranchPoint: true,
@@ -80,19 +80,14 @@ const HOMELESS_BRANCH_B = {
         setsFlag: 'homeless_end_b1',
       },
       {
-        label: '소규모 신뢰 집단',
-        desc: '규모보다 신뢰다. 믿을 수 있는 소수와 함께 단단하게.',
-        setsFlag: 'homeless_end_b2',
-      },
-      {
         label: '서울 네트워크 허브',
         desc: '한곳에 머물지 않는다. 서울 전역의 생존자들을 연결하는 중개자가 된다.',
         setsFlag: 'homeless_end_b3',
       },
     ],
     narrative: {
-      start: '180일. 타워 커뮤니티 인원 40명. 외부 공급망 3개. 첫 번째 회사를 만들 때와 비슷한 느낌이다. 이제 어디로 갈 것인가.',
-      complete: '타워 창고에서 라이터와 손전등을 발견했다. 타워 사람들이 기다리고 있었다. "최 대표, 앞으로 어떻게 합니까?" 이번엔 대답이 준비됐다.',
+      start: '100일. 타워 커뮤니티 인원 40명. 외부 공급망 3개. 첫 번째 회사를 만들 때와 비슷한 느낌이다. 이제 어디로 갈 것인가.',
+      complete: '타워 창고에서 라이터와 손전등을 발견했다. 타워 사람들이 기다리고 있었다. "최 대표, 앞으로 어떻게 합니까?" 두 가지 길이 보인다.',
     },
   },
 
@@ -109,22 +104,6 @@ const HOMELESS_BRANCH_B = {
     narrative: {
       start: '첫 번째 회사. 부채 때문에 무너졌다. 이번엔 다르다. 부채도 없고, 경쟁자도 없고, 법인세도 없다. 타워 최종 확장을 시작한다.',
       complete: 'D+250. 롯데타워 자치 커뮤니티. 거주 인원 55명. 공급망 5개 구역 연결. 쇠지렛대와 로프 사다리, 건설 도구가 이것을 만들었다. 최형식은 창문으로 서울을 내려다봤다. "이번엔 무너지지 않는다."',
-    },
-  },
-
-  // ── B2 엔딩: 소규모 신뢰 집단 ─────────────────────────────
-
-  mq_homeless_end_b2: {
-    id: 'mq_homeless_end_b2', title: '진짜 동료',
-    desc: '강남구를 방문하라. 믿을 수 있는 소수와 함께 새로운 자리를 잡는다.',
-    icon: '🤝', characterId: 'homeless', dayTrigger: 205,
-    prerequisite: 'mq_homeless_b_15', requiresFlag: 'homeless_end_b2',
-    objective: { type: 'visit_district', districtId: 'gangnam', count: 1 },
-    reward: { morale: 18, items: [{ definitionId: 'herbal_tea', qty: 3 }, { definitionId: 'painkiller', qty: 2 }], flags: { mainQuestComplete_homeless: true, homeless_ending: 'b2_tribe' } },
-    failPenalty: { morale: -8 }, deadlineDays: Infinity,
-    narrative: {
-      start: '회사 다닐 때 직원이 120명이었다. 끝에는 아무도 없었다. 이번엔 처음부터 소수로 간다. 8명. 서로 얼굴을 안다. 강남에 자리를 잡는다.',
-      complete: 'D+250. 강남 소집단. 8명. 허브차와 진통제를 소집단에 나눠줬다. "규모는 작지만, 우리는 건강하다." 첫 번째 회사에서 120명이 있어도 외로웠다. 지금은 8명이지만 처음으로 혼자가 아니다.',
     },
   },
 

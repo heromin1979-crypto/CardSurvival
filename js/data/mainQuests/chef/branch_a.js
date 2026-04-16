@@ -1,6 +1,7 @@
-// === MAIN QUESTS: 윤재혁 (chef) — A경로: 강남 대형마트 식량 네트워크 ===
+// === MAIN QUESTS: 윤재혁 (chef) — A경로: 한강 이남 식량 루트 개척 ===
 // 분기 조건: chef_branch_a 플래그
-// Q11~Q20: 강남 진출 → 대형마트 식량 확보 → 다중 급식소 네트워크 구축
+// Q11~Q18: 강남 진출 → 대형마트 식량 확보 → 보급 루트 구축
+// Q19 분기점: A1(강남 대형마트 식량 네트워크) vs A2(가락시장 농장 연계)
 
 const CHEF_BRANCH_A = {
 
@@ -89,16 +90,16 @@ const CHEF_BRANCH_A = {
   },
 
   mq_chef_a_17: {
-    id: 'mq_chef_a_17', title: '허브 농장',
-    desc: '약초 6개를 수집하라. 급식소 옆에 허브 재배지를 만든다.',
+    id: 'mq_chef_a_17', title: '허브 채집 확장',
+    desc: '약초 6개를 수집하라. 조미와 약용 허브를 비축한다.',
     icon: '🌱', characterId: 'chef', dayTrigger: 200,
     prerequisite: 'mq_chef_a_16', requiresFlag: 'chef_branch_a',
     objective: { type: 'collect_item', definitionId: 'herb', count: 6 },
     reward: { morale: 10, items: [{ definitionId: 'herbal_tea', qty: 2 }] },
     failPenalty: { morale: -5 }, deadlineDays: 270,
     narrative: {
-      start: '약초를 매번 채집하러 돌아다닐 수 없다. 씨앗을 모아 급식소 옆에 심는다. 지속 가능한 식량 체계의 첫 걸음이다.',
-      complete: '허브 재배지 조성 완료. 허브차도 만들었다. 3개월 후면 자체 허브 공급이 가능하다.',
+      start: '조미료만으로는 부족하다. 향과 약효를 겸한 허브가 필요하다. 강남 일대 공원과 골목 화단을 뒤진다.',
+      complete: '허브 확보. 허브차도 만들었다. 급식에 향이 더해지면 맛이 완전히 달라진다.',
     },
   },
 
@@ -116,31 +117,97 @@ const CHEF_BRANCH_A = {
     },
   },
 
+  // ── A 서브 분기점 (Q19) ───────────────────────────────────────
+  // 강남 거점을 확보한 뒤 두 방향 중 하나로 확장
+
   mq_chef_a_19: {
-    id: 'mq_chef_a_19', title: '네트워크 완성',
-    desc: '구조물 2개를 추가 제작하라. 급식 네트워크 인프라를 완성한다.',
-    icon: '🏛️', characterId: 'chef', dayTrigger: 260,
+    id: 'mq_chef_a_19', title: '확장 방향 결정',
+    desc: '250일 이상 생존하라. 식량 루트 확장 방향을 결정해야 한다.',
+    icon: '⚖️', characterId: 'chef', dayTrigger: 260,
     prerequisite: 'mq_chef_a_18', requiresFlag: 'chef_branch_a',
-    objective: { type: 'craft_item', category: 'structure', count: 2 },
-    reward: { morale: 15, items: [{ definitionId: 'canned_food', qty: 2 }] },
-    failPenalty: { morale: -8 }, deadlineDays: 330,
+    objective: { type: 'survive_days', count: 250 },
+    reward: { morale: 10, items: [{ definitionId: 'canned_food', qty: 2 }] },
+    failPenalty: null, deadlineDays: Infinity,
+    isBranchPoint: true,
+    branchOptions: [
+      {
+        label: '강남 대형마트 식량 네트워크',
+        desc: '한강 남쪽 대형마트들을 잇는 대규모 보급 네트워크를 완성한다.',
+        setsFlag: 'chef_end_a1',
+      },
+      {
+        label: '가락시장 농장 연계',
+        desc: '가락시장 옥상 농장을 재가동해 자급 식량 기반을 만든다.',
+        setsFlag: 'chef_end_a2',
+      },
+    ],
     narrative: {
-      start: '남대문-강남 급식 네트워크. 보급로, 창고, 정수 시설, 허브 농장. 마지막으로 배식 시설을 완성한다.',
-      complete: '급식 네트워크 인프라 완성. 통조림도 추가 확보. 하루 50인분 급식이 가능해졌다. 셰프가 할 수 있는 일이다.',
+      start: '강남 거점이 안정됐다. 남대문-강남 축은 탄탄하다. 이제 다음 확장이다.',
+      complete: '두 가지 길이 보인다. 반포, 잠실, 서초 대형마트를 잇는 대규모 보급 네트워크. 또는 가락시장 옥상 농장을 되살려 직접 재배 기반을 구축하는 길. 셰프가 결정할 차례다.',
     },
   },
 
-  mq_chef_a_20: {
-    id: 'mq_chef_a_20', title: '서울 급식 네트워크',
-    desc: '365일을 생존하라. 급식 네트워크가 서울 생존자들의 식량 자급 체계로 자리잡는다.',
-    icon: '⭐', characterId: 'chef', dayTrigger: 300,
-    prerequisite: 'mq_chef_a_19', requiresFlag: 'chef_branch_a',
+  // ══════════════════════════════════════════════════════════════
+  //  A1 엔딩: 강남 대형마트 식량 네트워크 (Expansion 테마)
+  // ══════════════════════════════════════════════════════════════
+
+  mq_chef_a1_prep: {
+    id: 'mq_chef_a1_prep', title: '마트 네트워크 구축',
+    desc: '식량 10개를 수집하라. 반포·잠실·서초 마트 순회 보급망의 첫 수확이다.',
+    icon: '🚚', characterId: 'chef', dayTrigger: 280,
+    prerequisite: 'mq_chef_a_19', requiresFlag: 'chef_end_a1',
+    objective: { type: 'collect_item_type', itemType: 'food', count: 10 },
+    reward: { morale: 12, items: [{ definitionId: 'canned_food', qty: 2 }] },
+    failPenalty: { morale: -5 }, deadlineDays: Infinity,
+    narrative: {
+      start: '반포, 잠실, 서초, 논현. 강남 전역의 대형마트를 순회한다. 각 마트에 소규모 보급 거점을 만들면 한 곳이 털려도 다른 곳이 버틴다.',
+      complete: '4개 마트에서 식량 10개 확보. 순회 보급망의 첫 수확이다. 이제 주간 루틴으로 돌릴 수 있다.',
+    },
+  },
+
+  mq_chef_end_a1: {
+    id: 'mq_chef_end_a1', title: '서울 급식 네트워크',
+    desc: '365일을 생존하라. 강남 대형마트 네트워크가 서울 식량 자급 체계가 된다.',
+    icon: '⭐', characterId: 'chef', dayTrigger: 320,
+    prerequisite: 'mq_chef_a1_prep', requiresFlag: 'chef_end_a1',
     objective: { type: 'survive_days', count: 365 },
-    reward: { morale: 25, items: [{ definitionId: 'canned_food', qty: 3 }], flags: { mainQuestComplete_chef: true } },
+    reward: { morale: 25, items: [{ definitionId: 'canned_food', qty: 3 }], flags: { mainQuestComplete_chef: true, chef_ending: 'a1_network' } },
     failPenalty: null, deadlineDays: Infinity,
     narrative: {
-      start: '1년. 남대문에서 시작한 급식소가 서울 전역으로 퍼지고 있다. 윤재혁의 이름은 "남대문 셰프"로 불린다.',
-      complete: 'D+365. 남대문-강남 급식 네트워크. 하루 급식 인원 87명. 누적 급식 12,400끼. 윤재혁은 조리대 앞에 섰다. "음식은 생존이 아니라 희망입니다." 소피텔 호텔 주방보다 훨씬 보람찬 주방이다.',
+      start: '1년. 남대문-강남 축에서 시작한 급식 네트워크가 한강 이남 전역으로 퍼지고 있다. 윤재혁의 이름은 "남대문 셰프"로 불린다.',
+      complete: 'D+365. 4개 마트 + 2개 급식소 보급망. 하루 급식 인원 87명. 누적 급식 12,400끼. 윤재혁은 조리대 앞에 섰다. "음식은 생존이 아니라 희망입니다." 소피텔 호텔 주방보다 훨씬 보람찬 주방이다.',
+    },
+  },
+
+  // ══════════════════════════════════════════════════════════════
+  //  A2 엔딩: 가락시장 농장 연계 (Settle 테마)
+  // ══════════════════════════════════════════════════════════════
+
+  mq_chef_a2_prep: {
+    id: 'mq_chef_a2_prep', title: '가락시장 옥상 농장',
+    desc: '약초 씨앗 확보와 재배 기반. 약초 5개와 목재 4개를 수집하라.',
+    icon: '🌾', characterId: 'chef', dayTrigger: 280,
+    prerequisite: 'mq_chef_a_19', requiresFlag: 'chef_end_a2',
+    objective: { type: 'collect_item', definitionId: 'herb', count: 5 },
+    reward: { morale: 10, items: [{ definitionId: 'wood', qty: 3 }] },
+    failPenalty: { morale: -5 }, deadlineDays: Infinity,
+    narrative: {
+      start: '송파 가락시장. 붕괴 전 옥상 도시농장 프로젝트가 있었다. 토양은 아직 살아있을 것이다. 허브부터 시작해 점차 작물로 확장한다.',
+      complete: '허브 씨앗 5종 확보. 목재로 경작대도 만들 수 있다. 가락시장 옥상 밭의 뼈대가 잡힌다.',
+    },
+  },
+
+  mq_chef_end_a2: {
+    id: 'mq_chef_end_a2', title: '가락 자급 급식소',
+    desc: '365일을 생존하라. 남대문 급식소와 가락 농장이 자급 체계를 이룬다.',
+    icon: '🌾', characterId: 'chef', dayTrigger: 320,
+    prerequisite: 'mq_chef_a2_prep', requiresFlag: 'chef_end_a2',
+    objective: { type: 'survive_days', count: 365 },
+    reward: { morale: 25, items: [{ definitionId: 'herb', qty: 4 }, { definitionId: 'herbal_tea', qty: 3 }], flags: { mainQuestComplete_chef: true, chef_ending: 'a2_farm' } },
+    failPenalty: null, deadlineDays: Infinity,
+    narrative: {
+      start: '1년. 가락시장 옥상 농장이 돌아간다. 수확이 시작됐다. 외부 보급에만 의존하지 않는 최초의 급식소가 된다.',
+      complete: 'D+365. 남대문 급식소 + 가락 옥상 농장. 하루 급식 인원 62명. 허브와 잎채소는 전량 자급. 윤재혁은 옥상에 올라 밭을 바라봤다. "이 도시에서 처음으로 음식을 직접 길렀습니다." 이것이 정착이다.',
     },
   },
 };

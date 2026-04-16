@@ -1,7 +1,7 @@
 // === MAIN QUESTS: 박영철 (firefighter) — A경로: 가족 구출 ===
 // 분기 조건: fire_branch_a 플래그
 // Q11~Q15: 은평 가족 구출 및 대피소
-// Q15 분기점: 가족 이후 선택 → 3가지 엔딩
+// Q15 분기점: 가족 이후 선택 → 2가지 엔딩 (Settle / Ascension)
 
 const FIREFIGHTER_BRANCH_A = {
 
@@ -65,10 +65,10 @@ const FIREFIGHTER_BRANCH_A = {
 
   mq_fire_a_15: {
     id: 'mq_fire_a_15', title: '은평의 선택',
-    desc: '180일 이상 생존하라. 가족과 함께 다음을 결정한다.',
+    desc: '100일 이상 생존하라. 가족과 함께 다음을 결정한다.',
     icon: '⚖️', characterId: 'firefighter', dayTrigger: 185,
     prerequisite: 'mq_fire_a_14', requiresFlag: 'fire_branch_a',
-    objective: { type: 'survive_days', count: 180 },
+    objective: { type: 'survive_days', count: 100 },
     reward: { morale: 8, items: [{ definitionId: 'lighter', qty: 1 }, { definitionId: 'binoculars', qty: 1 }] },
     failPenalty: null, deadlineDays: Infinity,
     isBranchPoint: true,
@@ -79,19 +79,14 @@ const FIREFIGHTER_BRANCH_A = {
         setsFlag: 'fire_end_a1',
       },
       {
-        label: '가족과 함께 다른 곳으로',
-        desc: '은평을 떠나 더 안전한 곳으로 이동한다.',
-        setsFlag: 'fire_end_a2',
-      },
-      {
         label: '이재훈을 위한 추모',
         desc: '이재훈의 이름으로 대피소를 완성하고 추모한다.',
         setsFlag: 'fire_end_a3',
       },
     ],
     narrative: {
-      start: '180일. 가족과 함께했다. 이제 이 자리에서 무엇을 할지 결정해야 한다.',
-      complete: '은평 소방서 창고에서 라이터와 쌍안경을 발견했다. 아내가 말했다. "영철아, 어떻게 할 거야?" 세 가지 답이 머릿속을 맴돈다.',
+      start: '100일. 가족과 함께했다. 이제 이 자리에서 무엇을 할지 결정해야 한다.',
+      complete: '은평 소방서 창고에서 라이터와 쌍안경을 발견했다. 아내가 말했다. "영철아, 어떻게 할 거야?" 두 가지 답이 머릿속을 맴돈다.',
     },
   },
 
@@ -108,22 +103,6 @@ const FIREFIGHTER_BRANCH_A = {
     narrative: {
       start: '이웃들이 모여든다. 소방관의 손으로 만든 대피소라면 믿을 수 있다.',
       complete: 'D+100. 은평 대피소 완성. 생존자 25명. 대피소 의무실용 구급키트 2개도 확보했다. 가족이 옆에 있다. 이재훈. 우리는 살아있어.',
-    },
-  },
-
-  // ── A2 엔딩: 가족과 이사 ──────────────────────────────────────
-
-  mq_fire_end_a2: {
-    id: 'mq_fire_end_a2', title: '가족과 함께',
-    desc: '서대문구를 방문하라. 더 안전한 곳으로 이동 루트를 확인한다.',
-    icon: '🚶', characterId: 'firefighter', dayTrigger: 205,
-    prerequisite: 'mq_fire_a_15', requiresFlag: 'fire_end_a2',
-    objective: { type: 'visit_district', districtId: 'seodaemun', count: 1 },
-    reward: { morale: 18, items: [{ definitionId: 'canned_food', qty: 5 }], flags: { mainQuestComplete_firefighter: true, fire_ending: 'a2_family' } },
-    failPenalty: { morale: -8 }, deadlineDays: Infinity,
-    narrative: {
-      start: '아내가 말했다. "아이들을 위해서라면 어디든 갈 수 있어." 서대문을 경유해 더 안전한 서울 외곽으로.',
-      complete: 'D+100. 서대문을 지나 경기도 방향으로. 길에서 통조림 5개를 발견했다. 아이들 몫. 가족이 옆에 있다. 이재훈이 말했을 것이다. "잘 됐다, 형."',
     },
   },
 
