@@ -255,7 +255,17 @@ const StatRenderer = {
       noiseEl.style.width = Math.min(100, n.level) + '%';
       noiseEl.classList.toggle('critical', n.level >= n.influxThreshold);
     }
-    if (noiseVal) noiseVal.textContent = Math.round(gs.noise.level);
+    if (noiseVal) {
+      // 현재 TP당 소음 감소율 계산: base 1.0 + scaledBonus (threshold 기반) + basecamp 보너스
+      const baseDecay = 1.0;
+      let scaledBonus = 0;
+      const lvl = gs.noise.level;
+      if (lvl >= 90)      scaledBonus = 1.5;
+      else if (lvl >= 80) scaledBonus = 1.0;
+      else if (lvl >= 70) scaledBonus = 0.5;
+      const decayRate = (baseDecay + scaledBonus).toFixed(1);
+      noiseVal.textContent = `${Math.round(lvl)} (-${decayRate}/TP)`;
+    }
 
     // Encumbrance
     const encEl = document.getElementById('hud-enc');
