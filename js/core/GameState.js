@@ -550,6 +550,13 @@ const GameState = {
     Object.assign(this.noise,    d.noise);
     Object.assign(this.crafting, d.crafting);
     Object.assign(this.combat,   d.combat);
+    // 저장 파일에서 encounter/combat 상태로 복원 시 이후 화면 불일치 문제 방지:
+    // ui.currentState가 encounter/combat이면 'main'으로 강제 복원 (전투 데이터 없이는 화면 렌더 불가)
+    const savedState = d.ui?.currentState;
+    if (savedState === 'encounter' || savedState === 'combat' || savedState === 'combat_result') {
+      console.warn(`[GameState] 저장된 state "${savedState}"는 불완전. 'main'으로 복원.`);
+      d.ui = { ...d.ui, currentState: 'main' };
+    }
     Object.assign(this.ui,       d.ui);
     if (d.flags) Object.assign(this.flags, d.flags);
     // 구버전 세이브 호환: 지도 조각 필드

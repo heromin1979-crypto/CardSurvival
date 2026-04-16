@@ -51,6 +51,10 @@ const StateMachine = {
       this._previousState = from;
     }
     GameState.ui.currentState = to;
+    // 디버그 로그 — encounter/combat 관련 전환 추적 (게임 멈춤 진단용)
+    if (['encounter', 'combat', 'main'].includes(to) || ['encounter', 'combat'].includes(from)) {
+      console.log(`[SM] ${from} → ${to}`, new Error().stack?.split('\n').slice(2, 5).join('\n'));
+    }
     EventBus.emit('stateTransition', { from, to, data });
   },
 
