@@ -8,7 +8,18 @@ import StatRenderer  from './StatRenderer.js';
 const Renderer = {
   init() {
     EventBus.on('stateTransition', ({ to }) => this.activateScreen(to));
-    EventBus.on('loaded',          ()       => this.activateScreen(GameState.ui.currentState));
+    EventBus.on('loaded', () => {
+      // 저장 파일에 encounter/combat 상태가 남아있어도 불완전 UI 방지를 위해 main으로 강제
+      const st = GameState.ui.currentState;
+      const safe = (st === 'encounter' || st === 'combat' || st === 'combat_result')
+        ? 'main'
+        : st;
+      if (safe !== st) {
+        console.warn(`[Renderer] loaded: 불완전 state "${st}" → "${safe}"로 복구`);
+        GameState.ui.currentState = safe;
+      }
+      this.activateScreen(safe);
+    });
   },
 
   activateScreen(state) {
