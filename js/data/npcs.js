@@ -141,6 +141,21 @@ export const NPC_ITEMS = {
     icon: '👩‍⚕️', description: '타워 임시 진료소를 운영하는 33세 의사. 차분하고 현실적이다.',
     tags: ['npc'], dismantle: [],
   },
+  // ── 셰프 팀 NPC (Phase 4) ───────────────────────────────────────
+  npc_sous_chef: {
+    id: 'npc_sous_chef', name: '부주방장 박민호', type: 'npc',
+    rarity: 'rare', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🧑‍🍳', description: '명동 소피텔 호텔 부주방장. 윤재혁의 옛 동료. 29세. 칼솜씨와 리더십.',
+    tags: ['npc'], dismantle: [],
+  },
+  npc_kitchen_helper: {
+    id: 'npc_kitchen_helper', name: '주방 보조 김지은', type: 'npc',
+    rarity: 'uncommon', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '👩‍🍳', description: '요리사 꿈을 꿨던 22세 학생. 남대문시장에서 만난 열정 가득한 주방 보조.',
+    tags: ['npc'], dismantle: [],
+  },
 };
 
 // ── NPC Data Definitions ────────────────────────────────────────
@@ -288,6 +303,54 @@ const NPCS = {
           { type: 'collect', itemId: 'antibiotics', qty: 2, hint: '병원에서 찾을 수 있다.' },
         ],
         reward: { trust: 2, items: [{ id: 'first_aid_kit', qty: 2 }], skillUnlock: null },
+      },
+      {
+        id:           'nurse_quest_emergency',
+        triggerTrust: 3,
+        title:        '응급 환자 발생',
+        description:  '"동작구에서 부상자들이 몰려와. 응급 키트와 붕대가 대량으로 필요해."',
+        steps: [
+          { type: 'collect', itemId: 'bandage',       qty: 5, hint: '병원·약국에서 주로 발견됨.' },
+          { type: 'collect', itemId: 'first_aid_kit', qty: 2, hint: '경찰서·병원 구급함.' },
+          { type: 'visit',   districtId: 'dongjak',    hint: '동작구 삼성병원 응급실 방문.' },
+        ],
+        reward: { trust: 1, items: [{ id: 'antibiotics', qty: 2 }, { id: 'antiseptic', qty: 3 }], skillUnlock: { skillId: 'medicine', value: 0.2 } },
+      },
+      {
+        id:           'nurse_quest_credentials',
+        triggerTrust: 3,
+        title:        '간호사 자격증 복원',
+        description:  '"세브란스 인사 기록실에 내 자격증 사본이 있어. 함께 가서 찾아줬으면 해."',
+        steps: [
+          { type: 'visit',   districtId: 'seodaemun',   hint: '세브란스병원은 서대문구에 있다.' },
+          { type: 'collect', itemId: 'map_fragment',    qty: 1, hint: '기록실 캐비닛에서 발견된 문서.' },
+          { type: 'craft',   category: 'medical',       qty: 2, hint: '자격증 복원 후 의료품 2개 제작.' },
+        ],
+        reward: { trust: 1, items: [{ id: 'surgery_kit', qty: 1 }], skillUnlock: { skillId: 'medicine', value: 0.3 } },
+      },
+      {
+        id:           'nurse_quest_team',
+        triggerTrust: 4,
+        title:        '의료팀 구성',
+        description:  '"혼자서는 한계가 있어. 다른 생존자 중에 도울 만한 사람이 있다면 함께 해야 해."',
+        steps: [
+          { type: 'recruit', qty: 1, hint: '아무 NPC 동반자 한 명을 영입한다.' },
+          { type: 'survive', days: 30, hint: '팀과 함께 30일을 버틴다.' },
+          { type: 'craft',   category: 'medical', qty: 5, hint: '의료품 5개 제작.' },
+        ],
+        reward: { trust: 2, items: [{ id: 'first_aid_kit', qty: 3 }, { id: 'antibiotics', qty: 3 }] },
+      },
+      {
+        id:           'nurse_quest_clinic',
+        triggerTrust: 5,
+        title:        '대규모 진료소 개설',
+        description:  '"이제 우리는 진짜 진료소를 열 수 있어. 설비와 환자, 그리고 시간만 있으면."',
+        steps: [
+          { type: 'craft',   category: 'structure', qty: 3, hint: '의료 구조물 3개 (medical_station 등).' },
+          { type: 'treat',   qty: 10,                hint: 'NPC 총 10회 치료.' },
+          { type: 'survive', days: 60,               hint: '진료소 안정화 60일.' },
+        ],
+        reward: { trust: 3, items: [{ id: 'first_aid_kit', qty: 5 }], flag: 'nurse_clinic_open' },
       },
     ],
     specialDays: [
@@ -1194,6 +1257,138 @@ const NPCS = {
     ],
     specialDays: [
       { day: 10, message: '👩‍⚕️ 최지윤: "당신 같은 사람이 있어서 진료소가 돌아가요."', effect: { morale: 12 } },
+    ],
+  },
+
+  // ══════════════════════════════════════════════════════════════
+  //  셰프 팀 NPC (Phase 4) — 셰프 캐릭터 전용 동료
+  // ══════════════════════════════════════════════════════════════
+
+  npc_sous_chef: {
+    id: 'npc_sous_chef',
+    personality: 'confident',
+    maxHp: 70,
+    spawnDistrict: 'junggoo',
+    spawnDay: 35,
+    dialogues: {
+      greet:  ['npc.sous_chef.greet0', 'npc.sous_chef.greet1', 'npc.sous_chef.greet2'],
+      hint:   ['npc.sous_chef.hint0', 'npc.sous_chef.hint1', 'npc.sous_chef.hint2'],
+      reject: 'npc.sous_chef.reject',
+    },
+    trustGainPerTalk: 1,
+    companion: {
+      canRecruit:   true,
+      recruitTrust: 3,
+      combatDmg:    1.1,
+      carryBonus:   4,
+      healBonus:    1.0,
+      craftBonus:   0,
+      moralBonus:   0.15,
+      lonelinessReduction: 0.20,
+      noiseAdd:     0,
+      foodCostPerDay: 0.5,
+      skillBonus:   { cooking: 0.3, melee: 0.15 },
+    },
+    gifts: [
+      { trust: 1, itemId: 'wild_honey', qty: 1 },
+      { trust: 3, itemId: 'wagyu_scrap', qty: 2 },
+    ],
+    trades: null,
+    forageItems: [
+      { id: 'herb',        chance: 0.40, qty: 2 },
+      { id: 'wild_berry',  chance: 0.30, qty: 2 },
+      { id: 'wild_honey',  chance: 0.10, qty: 1 },
+    ],
+    spontaneous: [
+      { condition: 'always',        line: '🧑‍🍳 "재혁이, 오늘 메뉴는 뭐야?"' },
+      { condition: 'low_nutrition', line: '🧑‍🍳 "배고프면 손이 떨려. 뭐라도 먹자."' },
+    ],
+    trustEvents: [
+      {
+        trust: 5,
+        id:      'sous_chef_mastery',
+        message: '🧑‍🍳 부주방장이 호텔 레시피 북을 건넸다. 요리 품질 +10% 영구 적용.',
+        effect:  { skillTeach: { skillId: 'cooking', value: 0.15 } },
+      },
+    ],
+    quests: [
+      {
+        id:           'sous_chef_reunion',
+        triggerTrust: 2,
+        title:        '소피텔 동료 재회',
+        description:  '"호텔 주방에 두고 온 레시피 북이 있어. 같이 가서 찾자."',
+        steps: [
+          { type: 'visit',   districtId: 'junggoo',         hint: '소피텔 호텔이 있는 중구로.' },
+          { type: 'collect', itemId: 'canned_food', qty: 5, hint: '호텔 식자재 창고.' },
+        ],
+        reward: { trust: 2, items: [{ id: 'truffle', qty: 1 }, { id: 'saffron_dried', qty: 1 }] },
+      },
+    ],
+    specialDays: [
+      { day: 15, message: '🧑‍🍳 박민호: "재혁이, 우리 팀이 서울 최고의 주방이 될 거야."', effect: { morale: 10 } },
+    ],
+  },
+
+  npc_kitchen_helper: {
+    id: 'npc_kitchen_helper',
+    personality: 'enthusiastic',
+    maxHp: 55,
+    spawnDistrict: 'junggoo',
+    spawnDay: 25,
+    dialogues: {
+      greet:  ['npc.kitchen_helper.greet0', 'npc.kitchen_helper.greet1', 'npc.kitchen_helper.greet2'],
+      hint:   ['npc.kitchen_helper.hint0', 'npc.kitchen_helper.hint1'],
+      reject: 'npc.kitchen_helper.reject',
+    },
+    trustGainPerTalk: 1,
+    companion: {
+      canRecruit:   true,
+      recruitTrust: 2,
+      combatDmg:    1.0,
+      carryBonus:   3,
+      healBonus:    1.0,
+      craftBonus:   0,
+      moralBonus:   0.10,
+      lonelinessReduction: 0.25,
+      noiseAdd:     0,
+      foodCostPerDay: 0.4,
+      skillBonus:   { cooking: 0.15 },
+    },
+    gifts: [
+      { trust: 1, itemId: 'wild_berry', qty: 3 },
+      { trust: 3, itemId: 'herb', qty: 5 },
+    ],
+    trades: null,
+    forageItems: [
+      { id: 'herb',        chance: 0.50, qty: 1 },
+      { id: 'wild_berry',  chance: 0.40, qty: 2 },
+    ],
+    spontaneous: [
+      { condition: 'always',        line: '👩‍🍳 "셰프님, 오늘도 배워갑니다!"' },
+      { condition: 'low_morale',    line: '👩‍🍳 "힘내세요! 요리는 사랑이에요."' },
+    ],
+    trustEvents: [
+      {
+        trust: 5,
+        id:      'helper_apprentice',
+        message: '👩‍🍳 주방 보조가 성장해 정식 요리사가 됐다. 요리 성공률 +15% 영구.',
+        effect:  { skillTeach: { skillId: 'cooking', value: 0.10 } },
+      },
+    ],
+    quests: [
+      {
+        id:           'helper_first_recipe',
+        triggerTrust: 2,
+        title:        '첫 레시피',
+        description:  '"저한테 한식 요리 가르쳐주세요! 집에서 뭐라도 해먹고 싶어요."',
+        steps: [
+          { type: 'craft',   category: 'food', qty: 3, hint: '한식 요리 3개 제작 (김치찌개·된장찌개·비빔밥 등).' },
+        ],
+        reward: { trust: 2, items: [{ id: 'herb', qty: 8 }] },
+      },
+    ],
+    specialDays: [
+      { day: 7,  message: '👩‍🍳 김지은이 생일. 셰프가 케이크를 구워줬다.', effect: { morale: 15 } },
     ],
   },
 

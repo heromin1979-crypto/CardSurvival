@@ -215,6 +215,23 @@ const DOCTOR_SHARED = {
       complete: '0번 환자의 심장 조직을 채취했다. 손이 떨린다. 이건 재앙의 시작점이자, 어쩌면 종결점이다. 해독제 원형과 각성제, 구급키트도 그 소굴에서 함께 거둬왔다.',
     },
   },
+
+  mq_doctor_side_06: {
+    id: 'mq_doctor_side_06', title: '야전병원 확장',
+    desc: '의료 구조물 3개를 세워 본격적인 야전병원을 구축하라.',
+    icon: '🏥', characterId: 'doctor', dayTrigger: 50, prerequisite: 'mq_doctor_side_04',
+    objective: { type: 'craft_item', category: 'structure', count: 3 },
+    reward: { morale: 20, items: [
+      { definitionId: 'reinforced_bandage', qty: 3 },
+      { definitionId: 'vitamin_complex', qty: 3 },
+      { definitionId: 'iv_saline', qty: 1 },
+    ], flags: { doctor_field_hospital: true } },
+    failPenalty: { morale: -8 }, deadlineDays: 85,
+    narrative: {
+      start: '격리 거점이 갖춰졌으니 이제 확장이다. 수술대, 격리 병동, 약품 보관장. 세 가지만 있어도 중환자실 수준의 진료가 가능하다. 이지수는 청사진을 그리기 시작했다.',
+      complete: '야전병원이 완성됐다. 수술대 위에 무영등이 켜지고, 격리 병동 문이 닫혔다. 약품 보관장에 의약품이 정리됐다. "이제 제대로 된 병원이다." 이지수는 처음으로 의사 가운을 다시 걸쳤다.',
+    },
+  },
 };
 
 export default DOCTOR_SHARED;

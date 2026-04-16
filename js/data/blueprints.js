@@ -3471,6 +3471,540 @@ const BLUEPRINTS = {
     }],
   },
 
+  // ══════════════════════════════════════════════════════════════
+  //  확장 의료 블루프린트 (10) — Phase 4
+  // ══════════════════════════════════════════════════════════════
+
+  craft_reinforced_bandage: {
+    id: 'craft_reinforced_bandage', name: '강화 붕대 제작', category: 'medical',
+    description: '일반 붕대를 알코올로 소독하여 강화.',
+    output: [{ definitionId: 'reinforced_bandage', qty: 1 }],
+    requiredTools: ['medical_station'], requiredSkills: { medicine: 2 },
+    stages: [{ stageIndex: 0, label: '소독·강화', tpCost: 2,
+      requiredItems: [
+        { definitionId: 'bandage',          qty: 2 },
+        { definitionId: 'alcohol_solution', qty: 1 },
+      ], consumeAt: 'start',
+    }],
+  },
+  craft_field_antidote: {
+    id: 'craft_field_antidote', name: '야전 해독제 제작', category: 'medical',
+    description: '약초와 활성탄으로 응급 해독제.',
+    output: [{ definitionId: 'field_antidote', qty: 1 }],
+    requiredTools: ['medical_station'], requiredSkills: { medicine: 3 },
+    stages: [{ stageIndex: 0, label: '조제', tpCost: 2,
+      requiredItems: [
+        { definitionId: 'herb',     qty: 3 },
+        { definitionId: 'charcoal', qty: 1 },
+      ], consumeAt: 'start',
+    }],
+  },
+  craft_vitamin_complex: {
+    id: 'craft_vitamin_complex', name: '비타민 복합제 제작', category: 'medical',
+    description: '약초를 농축해 비타민 복합제로.',
+    output: [{ definitionId: 'vitamin_complex', qty: 2 }],
+    requiredTools: ['medical_station'], requiredSkills: { medicine: 2 },
+    stages: [{ stageIndex: 0, label: '농축', tpCost: 2,
+      requiredItems: [
+        { definitionId: 'herb',       qty: 4 },
+        { definitionId: 'wild_berry', qty: 2 },
+      ], consumeAt: 'start',
+    }],
+  },
+  craft_iv_saline: {
+    id: 'craft_iv_saline', name: '생리식염수 IV 제작', category: 'medical',
+    description: '정수·소금으로 수액 제작.',
+    output: [{ definitionId: 'iv_saline', qty: 1 }],
+    requiredTools: ['medical_station'], requiredSkills: { medicine: 3 },
+    stages: [{ stageIndex: 0, label: '조제', tpCost: 2,
+      requiredItems: [
+        { definitionId: 'purified_water', qty: 2 },
+        { definitionId: 'salt',            qty: 2 },
+        { definitionId: 'plastic',         qty: 1 },
+      ], consumeAt: 'start',
+    }],
+  },
+  craft_stabilizer_shot: {
+    id: 'craft_stabilizer_shot', name: '안정제 주사 제작', category: 'medical',
+    description: '진통·지혈 성분 복합 주사.',
+    output: [{ definitionId: 'stabilizer_shot', qty: 1 }],
+    requiredTools: ['medical_station'], requiredSkills: { medicine: 4 },
+    stages: [{ stageIndex: 0, label: '조제', tpCost: 2,
+      requiredItems: [
+        { definitionId: 'painkiller',       qty: 1 },
+        { definitionId: 'alcohol_solution', qty: 1 },
+        { definitionId: 'bandage',          qty: 1 },
+      ], consumeAt: 'start',
+    }],
+  },
+  craft_infection_serum: {
+    id: 'craft_infection_serum', name: '감염 혈청 제작', category: 'medical',
+    description: '항바이러스 농축 혈청.',
+    output: [{ definitionId: 'infection_serum', qty: 1 }],
+    requiredTools: ['medical_station'], requiredSkills: { medicine: 5 },
+    stages: [{ stageIndex: 0, label: '혈청 조제', tpCost: 3,
+      requiredItems: [
+        { definitionId: 'antibiotics', qty: 2 },
+        { definitionId: 'herb',         qty: 4 },
+      ], consumeAt: 'start',
+    }],
+  },
+  craft_rad_blocker_plus: {
+    id: 'craft_rad_blocker_plus', name: '강화 방사선 차단제', category: 'medical',
+    description: '납 분말 + 활성탄 복합 차단제.',
+    output: [{ definitionId: 'rad_blocker_plus', qty: 1 }],
+    requiredTools: ['medical_station'], requiredSkills: { medicine: 4 },
+    stages: [{ stageIndex: 0, label: '조제', tpCost: 3,
+      requiredItems: [
+        { definitionId: 'rad_blocker',    qty: 1 },
+        { definitionId: 'charcoal',       qty: 3 },
+        { definitionId: 'scrap_metal',    qty: 1 },
+      ], consumeAt: 'start',
+    }],
+  },
+  craft_painkiller_field: {
+    id: 'craft_painkiller_field', name: '야전 진통제 제작', category: 'medical',
+    description: '고농도 진통제.',
+    output: [{ definitionId: 'painkiller_field', qty: 1 }],
+    requiredTools: ['medical_station'], requiredSkills: { medicine: 3 },
+    stages: [{ stageIndex: 0, label: '조제', tpCost: 2,
+      requiredItems: [
+        { definitionId: 'painkiller',       qty: 2 },
+        { definitionId: 'alcohol_solution', qty: 1 },
+      ], consumeAt: 'start',
+    }],
+  },
+  craft_adrenaline_shot: {
+    id: 'craft_adrenaline_shot', name: '아드레날린 주사 제작', category: 'medical',
+    description: '응급 각성 주사.',
+    output: [{ definitionId: 'adrenaline_shot', qty: 1 }],
+    requiredTools: ['medical_station'], requiredSkills: { medicine: 5 },
+    stages: [{ stageIndex: 0, label: '조제', tpCost: 3,
+      requiredItems: [
+        { definitionId: 'stimulant', qty: 2 },
+        { definitionId: 'herb',      qty: 3 },
+      ], consumeAt: 'start',
+    }],
+  },
+  craft_herbal_tonic: {
+    id: 'craft_herbal_tonic', name: '약초 강장제 제작', category: 'medical',
+    description: '약초를 끓여 만든 강장제.',
+    output: [{ definitionId: 'herbal_tonic', qty: 1 }],
+    requiredTools: ['medical_station'], requiredSkills: { medicine: 2 },
+    stages: [{ stageIndex: 0, label: '끓이기', tpCost: 2,
+      requiredItems: [
+        { definitionId: 'herb',            qty: 4 },
+        { definitionId: 'purified_water',  qty: 1 },
+      ], consumeAt: 'start',
+    }],
+  },
+
+  // ══════════════════════════════════════════════════════════════
+  //  야전 병원 구조물 블루프린트 (10) — Phase 4
+  // ══════════════════════════════════════════════════════════════
+
+  build_medical_bed: {
+    id: 'build_medical_bed', name: '의료 침대 제작', category: 'structure',
+    description: '야전 의료용 침대.',
+    output: [{ definitionId: 'medical_bed', qty: 1 }],
+    requiredTools: ['workbench'], requiredSkills: { building: 3, crafting: 2 },
+    stages: [
+      { stageIndex: 0, label: '골격 제작', tpCost: 3,
+        requiredItems: [{ definitionId: 'scrap_metal', qty: 4 }, { definitionId: 'wood_plank', qty: 3 }],
+        consumeAt: 'start',
+      },
+      { stageIndex: 1, label: '매트 설치', tpCost: 2,
+        requiredItems: [{ definitionId: 'cloth', qty: 5 }, { definitionId: 'cloth_scrap', qty: 5 }],
+        consumeAt: 'start',
+      },
+    ],
+  },
+  build_surgical_table: {
+    id: 'build_surgical_table', name: '수술대 제작', category: 'structure',
+    description: '정밀 수술용 작업대.',
+    output: [{ definitionId: 'surgical_table', qty: 1 }],
+    requiredTools: ['workbench'], requiredSkills: { building: 5, crafting: 3 },
+    stages: [{ stageIndex: 0, label: '조립', tpCost: 4,
+      requiredItems: [
+        { definitionId: 'scrap_metal',      qty: 6 },
+        { definitionId: 'electronic_parts', qty: 2 },
+      ], consumeAt: 'start',
+    }],
+  },
+  build_isolation_ward: {
+    id: 'build_isolation_ward', name: '격리 병동 제작', category: 'structure',
+    description: '감염자 격리 시설.',
+    output: [{ definitionId: 'isolation_ward', qty: 1 }],
+    requiredTools: ['workbench'], requiredSkills: { building: 5, medicine: 2 },
+    stages: [{ stageIndex: 0, label: '격리 시설 설치', tpCost: 5,
+      requiredItems: [
+        { definitionId: 'scrap_metal', qty: 5 },
+        { definitionId: 'plastic',     qty: 5 },
+        { definitionId: 'duct_tape',   qty: 3 },
+      ], consumeAt: 'start',
+    }],
+  },
+  build_medical_cabinet: {
+    id: 'build_medical_cabinet', name: '약품 보관장 제작', category: 'structure',
+    description: '의료품 저장용 캐비닛.',
+    output: [{ definitionId: 'medical_cabinet', qty: 1 }],
+    requiredTools: ['workbench'], requiredSkills: { building: 3, crafting: 2 },
+    stages: [{ stageIndex: 0, label: '조립', tpCost: 3,
+      requiredItems: [
+        { definitionId: 'wood_plank',  qty: 4 },
+        { definitionId: 'scrap_metal', qty: 2 },
+        { definitionId: 'nail',        qty: 10 },
+      ], consumeAt: 'start',
+    }],
+  },
+  build_water_purifier: {
+    id: 'build_water_purifier', name: '정수 시설 제작', category: 'structure',
+    description: '자동 정수 시설.',
+    output: [{ definitionId: 'water_purifier', qty: 1 }],
+    requiredTools: ['workbench'], requiredSkills: { building: 4, crafting: 3 },
+    stages: [{ stageIndex: 0, label: '설비 조립', tpCost: 4,
+      requiredItems: [
+        { definitionId: 'scrap_metal',      qty: 4 },
+        { definitionId: 'charcoal_filter',  qty: 2 },
+        { definitionId: 'empty_bottle',     qty: 3 },
+      ], consumeAt: 'start',
+    }],
+  },
+  build_blood_bank: {
+    id: 'build_blood_bank', name: '혈액 은행 제작', category: 'structure',
+    description: 'IV 혈액 저장·관리.',
+    output: [{ definitionId: 'blood_bank', qty: 1 }],
+    requiredTools: ['workbench'], requiredSkills: { building: 5, medicine: 3 },
+    stages: [{ stageIndex: 0, label: '냉장·보관 시설', tpCost: 4,
+      requiredItems: [
+        { definitionId: 'scrap_metal',      qty: 4 },
+        { definitionId: 'electronic_parts', qty: 3 },
+        { definitionId: 'empty_bottle',     qty: 5 },
+      ], consumeAt: 'start',
+    }],
+  },
+  build_quarantine_station: {
+    id: 'build_quarantine_station', name: '방역 스테이션 제작', category: 'structure',
+    description: '주변 감염 저항 부여 시설.',
+    output: [{ definitionId: 'quarantine_station', qty: 1 }],
+    requiredTools: ['workbench'], requiredSkills: { building: 4, medicine: 2 },
+    stages: [{ stageIndex: 0, label: '설치', tpCost: 4,
+      requiredItems: [
+        { definitionId: 'scrap_metal',      qty: 3 },
+        { definitionId: 'alcohol_solution', qty: 3 },
+        { definitionId: 'plastic',          qty: 3 },
+      ], consumeAt: 'start',
+    }],
+  },
+  build_xray_station: {
+    id: 'build_xray_station', name: 'X-ray 스테이션 제작', category: 'structure',
+    description: '고급 X-ray 진단 시설.',
+    output: [{ definitionId: 'xray_station', qty: 1 }],
+    requiredTools: ['workbench'], requiredSkills: { building: 6, medicine: 4 },
+    stages: [{ stageIndex: 0, label: '정밀 조립', tpCost: 5,
+      requiredItems: [
+        { definitionId: 'scrap_metal',      qty: 5 },
+        { definitionId: 'electronic_parts', qty: 5 },
+        { definitionId: 'glass_shard',      qty: 3 },
+      ], consumeAt: 'start',
+    }],
+  },
+  build_incubator: {
+    id: 'build_incubator', name: '인큐베이터 제작', category: 'structure',
+    description: '샘플·신생아 보존 시설.',
+    output: [{ definitionId: 'incubator', qty: 1 }],
+    requiredTools: ['workbench'], requiredSkills: { building: 5, medicine: 3 },
+    stages: [{ stageIndex: 0, label: '조립', tpCost: 4,
+      requiredItems: [
+        { definitionId: 'scrap_metal',      qty: 3 },
+        { definitionId: 'electronic_parts', qty: 3 },
+        { definitionId: 'glass_shard',      qty: 4 },
+      ], consumeAt: 'start',
+    }],
+  },
+  build_analysis_lab: {
+    id: 'build_analysis_lab', name: '분석실 제작', category: 'structure',
+    description: '고급 연구·분석 실험실.',
+    output: [{ definitionId: 'analysis_lab', qty: 1 }],
+    requiredTools: ['workbench'], requiredSkills: { building: 7, medicine: 5, crafting: 4 },
+    stages: [{ stageIndex: 0, label: '실험실 구축', tpCost: 5,
+      requiredItems: [
+        { definitionId: 'scrap_metal',      qty: 6 },
+        { definitionId: 'electronic_parts', qty: 6 },
+        { definitionId: 'glass_shard',      qty: 6 },
+      ], consumeAt: 'start',
+    }],
+  },
+
+  // ══════════════════════════════════════════════════════════════
+  //  확장 요리 블루프린트 (20) — Phase 4
+  //  한식 5 + 양식 5 + 디저트 5 + 특수 5
+  // ══════════════════════════════════════════════════════════════
+
+  // — 한식 (5) —
+  cook_kimchi_stew: {
+    id: 'cook_kimchi_stew', name: '김치찌개 조리', category: 'food',
+    description: '김치와 돼지고기, 물로 끓이는 얼큰한 찌개.',
+    output: [{ definitionId: 'kimchi_stew', qty: 1 }],
+    requiredTools: ['campfire'], requiredSkills: { cooking: 2 }, skillOverride: 'cooking',
+    stages: [{ stageIndex: 0, label: '끓이기', tpCost: 2,
+      requiredItems: [
+        { definitionId: 'raw_meat', qty: 1 },
+        { definitionId: 'purified_water', qty: 1 },
+        { definitionId: 'salt', qty: 1 },
+      ], consumeAt: 'start',
+    }],
+  },
+  cook_soybean_stew: {
+    id: 'cook_soybean_stew', name: '된장찌개 조리', category: 'food',
+    description: '발효 된장과 채소로 끓이는 구수한 찌개.',
+    output: [{ definitionId: 'soybean_stew', qty: 1 }],
+    requiredTools: ['campfire'], requiredSkills: { cooking: 2 }, skillOverride: 'cooking',
+    stages: [{ stageIndex: 0, label: '끓이기', tpCost: 2,
+      requiredItems: [
+        { definitionId: 'herb', qty: 2 },
+        { definitionId: 'purified_water', qty: 1 },
+        { definitionId: 'salt', qty: 1 },
+      ], consumeAt: 'start',
+    }],
+  },
+  cook_galbi_jjim: {
+    id: 'cook_galbi_jjim', name: '갈비찜 조리', category: 'food',
+    description: '갈비를 오래 조리해 만드는 고급 한식.',
+    output: [{ definitionId: 'galbi_jjim', qty: 1 }],
+    requiredTools: ['workbench'], requiredSkills: { cooking: 4 }, skillOverride: 'cooking',
+    stages: [{ stageIndex: 0, label: '오랜 조리', tpCost: 4,
+      requiredItems: [
+        { definitionId: 'raw_meat', qty: 3 },
+        { definitionId: 'wild_honey', qty: 1 },
+        { definitionId: 'salt', qty: 2 },
+      ], consumeAt: 'start',
+    }],
+  },
+  cook_bibimbap_chef: {
+    id: 'cook_bibimbap_chef', name: '비빔밥 조리 (셰프)', category: 'food',
+    description: '밥과 채소, 고기를 비벼 균형 잡힌 한 끼.',
+    output: [{ definitionId: 'bibimbap', qty: 1 }],
+    requiredTools: ['campfire'], requiredSkills: { cooking: 2 }, skillOverride: 'cooking',
+    stages: [{ stageIndex: 0, label: '볶기와 비빔', tpCost: 2,
+      requiredItems: [
+        { definitionId: 'rice', qty: 1 },
+        { definitionId: 'raw_meat', qty: 1 },
+        { definitionId: 'herb', qty: 2 },
+      ], consumeAt: 'start',
+    }],
+  },
+  cook_cold_noodles: {
+    id: 'cook_cold_noodles', name: '냉면 조리', category: 'food',
+    description: '차갑게 식힌 국수. 더위에 좋다.',
+    output: [{ definitionId: 'cold_noodles', qty: 1 }],
+    requiredTools: ['campfire'], requiredSkills: { cooking: 3 }, skillOverride: 'cooking',
+    stages: [{ stageIndex: 0, label: '삶기와 냉각', tpCost: 2,
+      requiredItems: [
+        { definitionId: 'instant_noodles', qty: 1 },
+        { definitionId: 'purified_water', qty: 2 },
+        { definitionId: 'salt', qty: 1 },
+      ], consumeAt: 'start',
+    }],
+  },
+
+  // — 양식 (5) —
+  cook_tomato_pasta: {
+    id: 'cook_tomato_pasta', name: '토마토 파스타 조리', category: 'food',
+    description: '토마토 소스로 볶은 파스타.',
+    output: [{ definitionId: 'tomato_pasta', qty: 1 }],
+    requiredTools: ['campfire'], requiredSkills: { cooking: 3 }, skillOverride: 'cooking',
+    stages: [{ stageIndex: 0, label: '삶기와 볶기', tpCost: 2,
+      requiredItems: [
+        { definitionId: 'instant_noodles', qty: 1 },
+        { definitionId: 'wild_berry', qty: 2 },
+        { definitionId: 'salt', qty: 1 },
+      ], consumeAt: 'start',
+    }],
+  },
+  cook_grilled_steak: {
+    id: 'cook_grilled_steak', name: '구운 스테이크', category: 'food',
+    description: '고기를 직화로 구워 내는 스테이크.',
+    output: [{ definitionId: 'grilled_steak', qty: 1 }],
+    requiredTools: ['campfire'], requiredSkills: { cooking: 3 }, skillOverride: 'cooking',
+    stages: [{ stageIndex: 0, label: '직화 굽기', tpCost: 2,
+      requiredItems: [
+        { definitionId: 'raw_meat', qty: 2 },
+        { definitionId: 'salt', qty: 1 },
+      ], consumeAt: 'start',
+    }],
+  },
+  cook_cream_soup: {
+    id: 'cook_cream_soup', name: '크림 수프 조리', category: 'food',
+    description: '진한 크림으로 만든 따뜻한 수프.',
+    output: [{ definitionId: 'cream_soup', qty: 1 }],
+    requiredTools: ['campfire'], requiredSkills: { cooking: 2 }, skillOverride: 'cooking',
+    stages: [{ stageIndex: 0, label: '끓이기', tpCost: 2,
+      requiredItems: [
+        { definitionId: 'purified_water', qty: 2 },
+        { definitionId: 'herb', qty: 2 },
+        { definitionId: 'salt', qty: 1 },
+      ], consumeAt: 'start',
+    }],
+  },
+  cook_garden_salad: {
+    id: 'cook_garden_salad', name: '정원 샐러드', category: 'food',
+    description: '신선한 채소로 만든 가벼운 식사.',
+    output: [{ definitionId: 'garden_salad', qty: 1 }],
+    requiredTools: [], requiredSkills: { cooking: 1 }, skillOverride: 'cooking',
+    stages: [{ stageIndex: 0, label: '손질과 버무리기', tpCost: 1,
+      requiredItems: [
+        { definitionId: 'herb', qty: 3 },
+        { definitionId: 'wild_berry', qty: 2 },
+        { definitionId: 'salt', qty: 1 },
+      ], consumeAt: 'start',
+    }],
+  },
+  cook_mushroom_risotto: {
+    id: 'cook_mushroom_risotto', name: '버섯 리조토 조리', category: 'food',
+    description: '쌀과 버섯으로 만든 크리미한 요리.',
+    output: [{ definitionId: 'mushroom_risotto', qty: 1 }],
+    requiredTools: ['campfire'], requiredSkills: { cooking: 3 }, skillOverride: 'cooking',
+    stages: [{ stageIndex: 0, label: '조리', tpCost: 3,
+      requiredItems: [
+        { definitionId: 'rice', qty: 1 },
+        { definitionId: 'matsutake_mushroom', qty: 1 },
+        { definitionId: 'purified_water', qty: 1 },
+      ], consumeAt: 'start',
+    }],
+  },
+
+  // — 디저트 (5) —
+  cook_hard_bread: {
+    id: 'cook_hard_bread', name: '단단한 빵 굽기', category: 'food',
+    description: '오래 보관되는 단단한 빵.',
+    output: [{ definitionId: 'hard_bread', qty: 2 }],
+    requiredTools: ['campfire'], requiredSkills: { cooking: 2 }, skillOverride: 'cooking',
+    stages: [{ stageIndex: 0, label: '반죽과 굽기', tpCost: 3,
+      requiredItems: [
+        { definitionId: 'rice', qty: 2 },
+        { definitionId: 'salt', qty: 1 },
+      ], consumeAt: 'start',
+    }],
+  },
+  cook_honey_cookies: {
+    id: 'cook_honey_cookies', name: '꿀 쿠키 굽기', category: 'food',
+    description: '꿀을 넣어 달콤하게 구운 쿠키.',
+    output: [{ definitionId: 'honey_cookies', qty: 3 }],
+    requiredTools: ['campfire'], requiredSkills: { cooking: 3 }, skillOverride: 'cooking',
+    stages: [{ stageIndex: 0, label: '굽기', tpCost: 2,
+      requiredItems: [
+        { definitionId: 'wild_honey', qty: 1 },
+        { definitionId: 'rice', qty: 1 },
+      ], consumeAt: 'start',
+    }],
+  },
+  cook_sponge_cake: {
+    id: 'cook_sponge_cake', name: '스펀지 케이크', category: 'food',
+    description: '푹신한 케이크. 사기가 크게 오른다.',
+    output: [{ definitionId: 'sponge_cake', qty: 1 }],
+    requiredTools: ['workbench'], requiredSkills: { cooking: 5 }, skillOverride: 'cooking',
+    stages: [{ stageIndex: 0, label: '오븐 굽기', tpCost: 3,
+      requiredItems: [
+        { definitionId: 'wild_honey', qty: 2 },
+        { definitionId: 'rice', qty: 2 },
+        { definitionId: 'salt', qty: 1 },
+      ], consumeAt: 'start',
+    }],
+  },
+  cook_pudding: {
+    id: 'cook_pudding', name: '푸딩 조리', category: 'food',
+    description: '부드럽고 달콤한 푸딩.',
+    output: [{ definitionId: 'pudding', qty: 2 }],
+    requiredTools: ['campfire'], requiredSkills: { cooking: 3 }, skillOverride: 'cooking',
+    stages: [{ stageIndex: 0, label: '중탕·냉각', tpCost: 2,
+      requiredItems: [
+        { definitionId: 'wild_honey', qty: 1 },
+        { definitionId: 'purified_water', qty: 1 },
+      ], consumeAt: 'start',
+    }],
+  },
+  cook_dark_chocolate: {
+    id: 'cook_dark_chocolate', name: '다크 초콜릿', category: 'food',
+    description: '쓴맛이 강한 고급 초콜릿. 피로 회복.',
+    output: [{ definitionId: 'dark_chocolate', qty: 3 }],
+    requiredTools: ['workbench'], requiredSkills: { cooking: 4 }, skillOverride: 'cooking',
+    stages: [{ stageIndex: 0, label: '템퍼링', tpCost: 3,
+      requiredItems: [
+        { definitionId: 'wild_honey', qty: 2 },
+        { definitionId: 'charcoal', qty: 1 },
+      ], consumeAt: 'start',
+    }],
+  },
+
+  // — 특수 (5) —
+  cook_recovery_stew: {
+    id: 'cook_recovery_stew', name: '보양식 조리', category: 'food',
+    description: '인삼과 고기로 끓이는 몸보신 탕.',
+    output: [{ definitionId: 'recovery_stew', qty: 1 }],
+    requiredTools: ['campfire'], requiredSkills: { cooking: 4 }, skillOverride: 'cooking',
+    stages: [{ stageIndex: 0, label: '장시간 조리', tpCost: 4,
+      requiredItems: [
+        { definitionId: 'ginseng_6years', qty: 1 },
+        { definitionId: 'raw_meat', qty: 2 },
+        { definitionId: 'purified_water', qty: 2 },
+      ], consumeAt: 'start',
+    }],
+  },
+  cook_hangover_soup: {
+    id: 'cook_hangover_soup', name: '해장국 조리', category: 'food',
+    description: '속을 풀어주는 뜨끈한 국물.',
+    output: [{ definitionId: 'hangover_soup', qty: 1 }],
+    requiredTools: ['campfire'], requiredSkills: { cooking: 3 }, skillOverride: 'cooking',
+    stages: [{ stageIndex: 0, label: '끓이기', tpCost: 2,
+      requiredItems: [
+        { definitionId: 'raw_meat', qty: 1 },
+        { definitionId: 'herb', qty: 2 },
+        { definitionId: 'purified_water', qty: 2 },
+      ], consumeAt: 'start',
+    }],
+  },
+  cook_fish_cake_stew: {
+    id: 'cook_fish_cake_stew', name: '어묵탕 조리', category: 'food',
+    description: '생선 살을 반죽해 끓이는 따끈한 탕.',
+    output: [{ definitionId: 'fish_cake_stew', qty: 1 }],
+    requiredTools: ['campfire'], requiredSkills: { cooking: 3 }, skillOverride: 'cooking',
+    stages: [{ stageIndex: 0, label: '반죽·끓이기', tpCost: 3,
+      requiredItems: [
+        { definitionId: 'raw_fish', qty: 2 },
+        { definitionId: 'salt', qty: 1 },
+        { definitionId: 'purified_water', qty: 2 },
+      ], consumeAt: 'start',
+    }],
+  },
+  cook_hot_pot: {
+    id: 'cook_hot_pot', name: '전골 조리', category: 'food',
+    description: '고기·채소·해물을 한 냄비에. 동료와 나눠 먹는다.',
+    output: [{ definitionId: 'hot_pot', qty: 1 }],
+    requiredTools: ['workbench'], requiredSkills: { cooking: 5 }, skillOverride: 'cooking',
+    stages: [{ stageIndex: 0, label: '전골 끓이기', tpCost: 4,
+      requiredItems: [
+        { definitionId: 'raw_meat', qty: 2 },
+        { definitionId: 'herb', qty: 3 },
+        { definitionId: 'purified_water', qty: 2 },
+        { definitionId: 'salt', qty: 1 },
+      ], consumeAt: 'start',
+    }],
+  },
+  cook_rice_porridge: {
+    id: 'cook_rice_porridge', name: '죽 조리', category: 'food',
+    description: '소화가 잘되는 부드러운 죽. 환자에게 좋다.',
+    output: [{ definitionId: 'rice_porridge', qty: 2 }],
+    requiredTools: ['campfire'], requiredSkills: { cooking: 2 }, skillOverride: 'cooking',
+    stages: [{ stageIndex: 0, label: '끓이기', tpCost: 2,
+      requiredItems: [
+        { definitionId: 'rice', qty: 1 },
+        { definitionId: 'purified_water', qty: 2 },
+        { definitionId: 'salt', qty: 1 },
+      ], consumeAt: 'start',
+    }],
+  },
+
 };
 
 export default BLUEPRINTS;
