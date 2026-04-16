@@ -13,6 +13,12 @@ const Encounter = {
 
   init() {
     this._el = document.getElementById('screen-encounter');
+    // 게임 시작 시 screen-encounter DOM을 완전 초기화 (브라우저가 이전 세션 내용을 캐시할 가능성 차단)
+    if (this._el) {
+      this._el.innerHTML = '';
+      this._el.classList.remove('active');
+      console.log('[Encounter] init: DOM 초기화 완료');
+    }
     EventBus.on('stateTransition', ({ to, data }) => {
       if (to === 'encounter') {
         this._data = data;
@@ -20,6 +26,7 @@ const Encounter = {
       } else if (this._el) {
         // 조우 화면 종료 시 DOM 내용을 비워 잔존 이벤트 리스너 제거
         this._el.innerHTML = '';
+        this._el.classList.remove('active');
         this._data = null;
       }
     });
@@ -79,7 +86,12 @@ const Encounter = {
       if (_handled) return false;
       if (GameState.ui.currentState !== 'encounter') {
         console.warn('[Encounter] guard: state is no longer "encounter", current:', GameState.ui.currentState);
-        // 잔존 DOM 정리 (화면이 encounter처럼 보이는 것을 막음) + 현재 state 화면으로 복구 시도
+        console.warn('[Encounter] 호출 스택:', new Error().stack);
+        console.warn('[Encounter] screen-encounter 상태:', {
+          hasActiveClass: self._el?.classList.contains('active'),
+          innerHTMLLength: self._el?.innerHTML?.length ?? 0,
+          buttonsFound: self._el?.querySelectorAll('button').length ?? 0,
+        });
         if (self._el) {
           self._el.innerHTML = '';
           self._el.classList.remove('active');
