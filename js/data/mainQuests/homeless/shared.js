@@ -146,6 +146,74 @@ const HOMELESS_SHARED = {
       complete: '진통제와 붕대까지 갖췄다. 선택의 시간이 왔다. 이지수 의사와 합류할 것인가, 내 방식대로 롯데타워를 만들 것인가.',
     },
   },
+
+  // ── 롯데타워 도착 이후 사이드 퀘스트 ─────────────────────────────────
+  // NPC 상호작용 기반 선택형 퀘스트. 본 스토리 분기(A/B)와 병행 진행 가능.
+
+  mq_homeless_side_01: {
+    id: 'mq_homeless_side_01', title: '타워 경비대와 친해지기',
+    desc: '타워 경비대장 김정호를 두 번 치료해 신뢰를 쌓아라.',
+    icon: '🛡️', characterId: 'homeless', dayTrigger: 35, prerequisite: 'mq_homeless_10',
+    objective: { type: 'treat_npc', npcId: 'npc_tower_security', count: 2 },
+    reward: { morale: 12, items: [{ definitionId: 'bandage', qty: 3 }, { definitionId: 'combat_knife', qty: 1 }] },
+    failPenalty: { morale: -3 }, deadlineDays: 30,
+    narrative: {
+      start: '타워 경비대장 김정호. 40대, 입이 무거운 사람이다. 외곽 순찰에서 자주 다쳐 돌아온다. 그를 돌봐주면 타워 안에서 자리가 생긴다.',
+      complete: '김정호가 고개를 끄덕였다. "형식 씨, 이제 같은 편이지." 경비대가 내 뒤를 봐준다.',
+    },
+  },
+
+  mq_homeless_side_02: {
+    id: 'mq_homeless_side_02', title: '상인과의 거래',
+    desc: '재료 10개를 모아 떠돌이 상인 이해진과의 거래 물량을 준비하라.',
+    icon: '🎒', characterId: 'homeless', dayTrigger: 40, prerequisite: 'mq_homeless_side_01',
+    objective: { type: 'collect_item_type', itemType: 'material', count: 10 },
+    reward: { morale: 10, items: [{ definitionId: 'canned_food', qty: 3 }, { definitionId: 'rope', qty: 2 }] },
+    failPenalty: { morale: -3 }, deadlineDays: 28,
+    narrative: {
+      start: '이해진이라는 상인이 타워 1층에 좌판을 깔았다. "형씨, 재료만 충분히 모아오면 좋은 물건 내드릴게." 거리에서 배운 눈썰미를 쓸 때다.',
+      complete: '재료 10개를 모아 이해진 앞에 내려놓았다. "형씨, 사업가 출신답네." 그가 통조림과 로프를 내밀었다.',
+    },
+  },
+
+  mq_homeless_side_03: {
+    id: 'mq_homeless_side_03', title: '주방 도우미',
+    desc: '음식 5개를 조리해 주방장 박수미의 저녁 배식을 도와라.',
+    icon: '👩‍🍳', characterId: 'homeless', dayTrigger: 45, prerequisite: 'mq_homeless_side_02',
+    objective: { type: 'craft_item', category: 'food', count: 5 },
+    reward: { morale: 15, items: [{ definitionId: 'canned_food', qty: 4 }, { definitionId: 'wild_herb', qty: 3 }] },
+    failPenalty: { morale: -3 }, deadlineDays: 25,
+    narrative: {
+      start: '박수미 주방장이 저녁 배식 인원을 늘리려 한다. 다리 아래서 깡통째 데워먹던 시절과는 다르다. 제대로 된 요리를 몇 개 만들어 보여주자.',
+      complete: '배식 줄이 길어졌다. "형식 씨, 다음엔 같이 메뉴 정하자." 박수미가 웃었다. 타워 안에 냄새가 돌았다.',
+    },
+  },
+
+  mq_homeless_side_04: {
+    id: 'mq_homeless_side_04', title: '타워 정비 지원',
+    desc: '재료 아이템 8개를 제작해 정비공 한지성의 타워 복구 작업을 도와라.',
+    icon: '🔧', characterId: 'homeless', dayTrigger: 50, prerequisite: 'mq_homeless_side_03',
+    objective: { type: 'craft_item', category: 'material', count: 8 },
+    reward: { morale: 12, items: [{ definitionId: 'scrap_metal', qty: 4 }, { definitionId: 'wire', qty: 3 }, { definitionId: 'duct_tape', qty: 2 }] },
+    failPenalty: { morale: -5 }, deadlineDays: 22,
+    narrative: {
+      start: '정비공 한지성이 타워 하층부를 되살리려 한다. 건설회사 대표 시절 익혔던 자재 감각이 되살아난다. 그에게 필요한 건 중간 가공 재료들이다.',
+      complete: '한지성이 완성된 재료들을 받아들고 눈이 빛났다. "형식 씨, 이거 혼자서는 못 만들었어요." 타워 층계에 불이 들어왔다.',
+    },
+  },
+
+  mq_homeless_side_05: {
+    id: 'mq_homeless_side_05', title: '진료소 협력',
+    desc: '타워 진료소 환자 3명을 치료해 의사 최지윤을 도와라.',
+    icon: '👩‍⚕️', characterId: 'homeless', dayTrigger: 55, prerequisite: 'mq_homeless_side_04',
+    objective: { type: 'treat_npc', count: 3 },
+    reward: { morale: 15, items: [{ definitionId: 'first_aid_kit', qty: 1 }, { definitionId: 'painkiller', qty: 3 }, { definitionId: 'bandage', qty: 4 }] },
+    failPenalty: { morale: -5 }, deadlineDays: 20,
+    narrative: {
+      start: '최지윤 의사 혼자서는 환자가 너무 많다. 다리 아래에서 사람 돌보던 감각은 남아 있다. 손이라도 보태야 한다.',
+      complete: '진료소 한쪽 침상이 비었다. "형식 씨, 보조 아니라 동료예요." 최지윤이 처음으로 편하게 웃었다. 타워 안에 진짜 공동체가 섰다.',
+    },
+  },
 };
 
 export default HOMELESS_SHARED;

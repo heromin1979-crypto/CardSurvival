@@ -800,6 +800,19 @@ const ExploreSystem = {
     EventBus.emit('boardChanged', {});
   },
 
+  // ── 랜드마크 소탕/인질 구출 훅 ───────────────────────────
+  // 약탈자 소굴 등 rescue_npc 목표 랜드마크를 정리했을 때 호출.
+  // QuestSystem._onLandmarkCleared가 이를 수신해 rescue_npc 퀘스트 진행도를 갱신한다.
+  //
+  // TODO: 현재는 수동 호출용 훅이다. 소굴(lm_raider_camp_*)의
+  // 모든 subLocation이 탐색되고 모든 적이 처치된 시점을 자동으로 감지해
+  // 이 메서드를 호출하는 로직이 필요하다. 자동화 전까지는 이벤트/시나리오
+  // 스크립트에서 직접 호출해야 한다.
+  markLandmarkCleared(landmarkId, rescuedNpcId = null) {
+    if (!landmarkId) return;
+    EventBus.emit('landmarkCleared', { landmarkId, rescuedNpcId });
+  },
+
   // 레거시 stub
   confirmLoot() {},
   discardLoot()  {},

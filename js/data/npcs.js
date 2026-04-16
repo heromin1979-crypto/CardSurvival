@@ -105,6 +105,42 @@ export const NPC_ITEMS = {
     icon: '🔧', description: '성수동 금속 가공 공장 기술 이사. 무엇이든 만들고 고친다.',
     tags: ['npc'], dismantle: [],
   },
+  // ── 롯데타워 NPC (최형식 Branch B) ─────────────────────────────────
+  npc_tower_security: {
+    id: 'npc_tower_security', name: '경비대장 김정호', type: 'npc',
+    rarity: 'rare', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🛡️', description: '전직 타워 경비 책임자. 40대. 냉정하지만 공정하다.',
+    tags: ['npc'], dismantle: [],
+  },
+  npc_tower_merchant: {
+    id: 'npc_tower_merchant', name: '떠돌이 상인 이해진', type: 'npc',
+    rarity: 'rare', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🎒', description: '잠실 일대를 돌며 물자를 교환하는 35세 상인.',
+    tags: ['npc'], dismantle: [],
+  },
+  npc_tower_cook: {
+    id: 'npc_tower_cook', name: '주방장 박수미', type: 'npc',
+    rarity: 'rare', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '👩‍🍳', description: '롯데타워 레스토랑 출신 주방장. 50대. 남은 재료로도 맛을 낸다.',
+    tags: ['npc'], dismantle: [],
+  },
+  npc_tower_engineer: {
+    id: 'npc_tower_engineer', name: '정비공 한지성', type: 'npc',
+    rarity: 'rare', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🔧', description: '타워 설비 정비공. 28세. 끊긴 전력과 배관을 되살리려 한다.',
+    tags: ['npc'], dismantle: [],
+  },
+  npc_tower_doctor: {
+    id: 'npc_tower_doctor', name: '의사 최지윤', type: 'npc',
+    rarity: 'rare', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '👩‍⚕️', description: '타워 임시 진료소를 운영하는 33세 의사. 차분하고 현실적이다.',
+    tags: ['npc'], dismantle: [],
+  },
 };
 
 // ── NPC Data Definitions ────────────────────────────────────────
@@ -830,6 +866,335 @@ const NPCS = {
     trustEvents: [],
     quests: [],
     specialDays: [{ day: 7, message: '🔧 정대한: "같이 만들면 시간이 절반이에요."', effect: { morale: 10 } }],
+  },
+
+  // ── 롯데타워 NPC 데이터 (최형식 Branch B 도착 이후) ──────────────────
+  npc_tower_security: {
+    id: 'npc_tower_security',
+    personality: 'brave',
+    maxHp: 75,
+    spawnDistrict: 'songpa',
+    spawnDay: 30,
+    dialogues: {
+      greet:  ['npc.tower_security.greet0', 'npc.tower_security.greet1', 'npc.tower_security.greet2'],
+      hint:   ['npc.tower_security.hint0',  'npc.tower_security.hint1',  'npc.tower_security.hint2'],
+      reject: 'npc.tower_security.reject',
+    },
+    trustGainPerTalk: 1,
+    companion: {
+      canRecruit:   true,
+      recruitTrust: 3,
+      combatDmg:    1.15,        // +15% combat damage
+      combatDmgReduce: 0.12,
+      carryBonus:   2,
+      healBonus:    0,
+      craftBonus:   0,
+      moralBonus:   0.1,
+      lonelinessReduction: 0.15,
+      noiseAdd:     1,
+      foodCostPerDay: 0.5,
+      skillBonus:   { melee: 0.2 },
+    },
+    gifts: [
+      { trust: 2, itemId: 'combat_knife', qty: 1 },
+      { trust: 4, itemId: 'pistol_ammo',  qty: 6 },
+    ],
+    trades: null,
+    forageItems: [
+      { id: 'pistol_ammo', chance: 0.3, qty: 1 },
+      { id: 'bandage',     chance: 0.25, qty: 1 },
+    ],
+    spontaneous: [
+      { condition: 'low_hp', line: '김정호: "뒤는 내가 맡지. 물러서."' },
+      { condition: 'always', line: '김정호: "타워는 내가 지킨다. 안심해."' },
+    ],
+    trustEvents: [
+      {
+        trust: 5,
+        id:      'tower_security_trust_5',
+        message: '🛡️ 김정호 대장이 경계 요령을 전수해줬다. 전투 피해 +5% 영구 적용.',
+        effect:  { skillTeach: { skillId: 'tower_guard', value: 0.05 } },
+      },
+    ],
+    quests: [
+      {
+        id:           'tower_security_patrol',
+        triggerTrust: 2,
+        title:        '외곽 순찰',
+        description:  '"타워 외곽에 이상한 흔적이 있어. 같이 순찰 돌지."',
+        steps: [
+          { type: 'visit', locationId: 'songpa', hint: '송파 주변을 순찰하라.' },
+        ],
+        reward: { trust: 2, items: [{ id: 'combat_knife', qty: 1 }], skillUnlock: null },
+      },
+    ],
+    specialDays: [
+      { day: 14, message: '🛡️ "2주를 버텼군. 믿을 만한 사람이야."', effect: { morale: 10 } },
+    ],
+  },
+
+  npc_tower_merchant: {
+    id: 'npc_tower_merchant',
+    personality: 'neutral',
+    maxHp: 50,
+    spawnDistrict: 'songpa',
+    spawnDay: 25,
+    dialogues: {
+      greet:  ['npc.tower_merchant.greet0', 'npc.tower_merchant.greet1', 'npc.tower_merchant.greet2'],
+      hint:   ['npc.tower_merchant.hint0',  'npc.tower_merchant.hint1',  'npc.tower_merchant.hint2'],
+      reject: 'npc.tower_merchant.reject',
+    },
+    trustGainPerTalk: 1,
+    companion: {
+      canRecruit:   true,
+      recruitTrust: 2,
+      combatDmg:    0,
+      combatDmgReduce: 0,
+      carryBonus:   5,           // +5kg carry
+      healBonus:    0,
+      craftBonus:   0,
+      moralBonus:   0.05,
+      lonelinessReduction: 0.15,
+      noiseAdd:     0,
+      foodCostPerDay: 0.35,
+      skillBonus:   { scavenging: 0.15 },
+    },
+    gifts: [
+      { trust: 2, itemId: 'canned_food', qty: 2 },
+      { trust: 4, itemId: 'rope',        qty: 2 },
+    ],
+    trades: [
+      { give: { id: 'scrap_metal',   qty: 4 }, receive: { id: 'canned_food', qty: 2 }, trustRequired: 0 },
+      { give: { id: 'cloth',         qty: 5 }, receive: { id: 'bandage',     qty: 4 }, trustRequired: 0 },
+      { give: { id: 'canned_food',   qty: 3 }, receive: { id: 'rope',        qty: 2 }, trustRequired: 1 },
+      { give: { id: 'wire',          qty: 3 }, receive: { id: 'duct_tape',   qty: 1 }, trustRequired: 1 },
+      { give: { id: 'water_bottle',  qty: 2 }, receive: { id: 'painkiller',  qty: 2 }, trustRequired: 2 },
+      { give: { id: 'charcoal',      qty: 3 }, receive: { id: 'lighter',     qty: 1 }, trustRequired: 2 },
+      { give: { id: 'scrap_metal',   qty: 6 }, receive: { id: 'pistol_ammo', qty: 4 }, trustRequired: 3 },
+    ],
+    forageItems: [
+      { id: 'cloth',        chance: 0.35, qty: 1 },
+      { id: 'canned_food',  chance: 0.2,  qty: 1 },
+    ],
+    spontaneous: [
+      { condition: 'always', line: '이해진: "좋은 거래는 양쪽 다 웃어야지."' },
+    ],
+    trustEvents: [
+      {
+        trust: 5,
+        id:      'tower_merchant_trust_5',
+        message: '🎒 이해진이 거래 요령을 전수해줬다. 교환 효율 +10% 영구 적용.',
+        effect:  { skillTeach: { skillId: 'barter_mastery', value: 0.1 } },
+      },
+    ],
+    quests: [
+      {
+        id:           'tower_merchant_supply',
+        triggerTrust: 2,
+        title:        '타워 보급 루트',
+        description:  '"타워 사람들한테 돌릴 물자가 부족해. 재료 좀 모아다 줄 수 있어?"',
+        steps: [
+          { type: 'collect', itemId: 'scrap_metal', qty: 5, hint: '송파 근처 폐차장에서 모을 수 있다.' },
+        ],
+        reward: { trust: 2, items: [{ id: 'canned_food', qty: 4 }], skillUnlock: null },
+      },
+    ],
+    specialDays: [
+      { day: 10, message: '🎒 이해진: "형씨, 당신이랑 거래하는 게 제일 속 편해."', effect: { morale: 8 } },
+    ],
+  },
+
+  npc_tower_cook: {
+    id: 'npc_tower_cook',
+    personality: 'caring',
+    maxHp: 45,
+    spawnDistrict: 'songpa',
+    spawnDay: 35,
+    dialogues: {
+      greet:  ['npc.tower_cook.greet0', 'npc.tower_cook.greet1', 'npc.tower_cook.greet2'],
+      hint:   ['npc.tower_cook.hint0',  'npc.tower_cook.hint1',  'npc.tower_cook.hint2'],
+      reject: 'npc.tower_cook.reject',
+    },
+    trustGainPerTalk: 1,
+    companion: {
+      canRecruit:   true,
+      recruitTrust: 2,
+      combatDmg:    0,
+      combatDmgReduce: 0,
+      carryBonus:   1,
+      healBonus:    0.1,
+      craftBonus:   0.1,
+      moralBonus:   0.2,
+      lonelinessReduction: 0.25,
+      noiseAdd:     0,
+      foodCostPerDay: 0.25,       // eats less — professional
+      skillBonus:   { cooking: 0.3 },
+    },
+    gifts: [
+      { trust: 2, itemId: 'canned_food', qty: 2 },
+      { trust: 4, itemId: 'wild_herb',   qty: 3 },
+    ],
+    trades: null,
+    forageItems: [
+      { id: 'wild_herb',   chance: 0.4, qty: 2 },
+      { id: 'wild_berry',  chance: 0.3, qty: 2 },
+    ],
+    spontaneous: [
+      { condition: 'low_nutrition', line: '박수미: "잠깐 쉬어, 따뜻한 거 만들어줄게."' },
+      { condition: 'always',        line: '박수미: "재료만 있으면 뭐든 요리가 돼."' },
+    ],
+    trustEvents: [
+      {
+        trust: 5,
+        id:      'tower_cook_trust_5',
+        message: '👩‍🍳 박수미가 요리 비법을 전수해줬다. 음식 영양 효율 +10% 영구 적용.',
+        effect:  { skillTeach: { skillId: 'master_cook', value: 0.1 } },
+      },
+    ],
+    quests: [
+      {
+        id:           'tower_cook_ingredients',
+        triggerTrust: 2,
+        title:        '주방 재료 수집',
+        description:  '"타워 사람들 밥을 해먹이려면 재료가 필요해. 야생 허브 좀 구해줄래?"',
+        steps: [
+          { type: 'collect', itemId: 'wild_herb', qty: 6, hint: '한강변에서 자주 발견된다.' },
+        ],
+        reward: { trust: 2, items: [{ id: 'canned_food', qty: 4 }], skillUnlock: null },
+      },
+    ],
+    specialDays: [
+      { day: 10, message: '👩‍🍳 박수미가 따뜻한 국을 끓여줬다. "당신도 좀 쉬어요."', effect: { morale: 15 } },
+    ],
+  },
+
+  npc_tower_engineer: {
+    id: 'npc_tower_engineer',
+    personality: 'inventive',
+    maxHp: 50,
+    spawnDistrict: 'songpa',
+    spawnDay: 40,
+    dialogues: {
+      greet:  ['npc.tower_engineer.greet0', 'npc.tower_engineer.greet1', 'npc.tower_engineer.greet2'],
+      hint:   ['npc.tower_engineer.hint0',  'npc.tower_engineer.hint1',  'npc.tower_engineer.hint2'],
+      reject: 'npc.tower_engineer.reject',
+    },
+    trustGainPerTalk: 1,
+    companion: {
+      canRecruit:   true,
+      recruitTrust: 2,
+      combatDmg:    0,
+      combatDmgReduce: 0,
+      carryBonus:   3,
+      healBonus:    0,
+      craftBonus:   1.25,
+      moralBonus:   0.08,
+      lonelinessReduction: 0.15,
+      noiseAdd:     2,
+      foodCostPerDay: 0.4,
+      skillBonus:   { crafting: 0.3, building: 0.2 },
+    },
+    gifts: [
+      { trust: 2, itemId: 'wire',         qty: 3 },
+      { trust: 4, itemId: 'scrap_metal',  qty: 4 },
+    ],
+    trades: null,
+    forageItems: [
+      { id: 'scrap_metal', chance: 0.4, qty: 2 },
+      { id: 'wire',        chance: 0.3, qty: 1 },
+    ],
+    spontaneous: [
+      { condition: 'always', line: '한지성: "이 구조, 제가 더 튼튼하게 만들 수 있어요."' },
+    ],
+    trustEvents: [
+      {
+        trust: 5,
+        id:      'tower_engineer_trust_5',
+        message: '🔧 한지성이 정비 노하우를 전수해줬다. 제작 성공률 영구 향상.',
+        effect:  { skillTeach: { skillId: 'tower_repair', value: 0.1 } },
+      },
+    ],
+    quests: [
+      {
+        id:           'tower_engineer_power',
+        triggerTrust: 2,
+        title:        '타워 전력 복구',
+        description:  '"타워 하층부 발전기를 되살리려면 부품이 필요해요. 고철이랑 전선 모아다 주실래요?"',
+        steps: [
+          { type: 'collect', itemId: 'scrap_metal', qty: 6, hint: '송파 일대 폐차장.' },
+          { type: 'collect', itemId: 'wire',        qty: 4, hint: '건물 내부 배선.' },
+        ],
+        reward: { trust: 2, items: [{ id: 'duct_tape', qty: 2 }], skillUnlock: { skillId: 'tower_repair', value: 0.05 } },
+      },
+    ],
+    specialDays: [
+      { day: 10, message: '🔧 한지성: "같이 작업하니 속도가 확 빨라졌어요."', effect: { morale: 10 } },
+    ],
+  },
+
+  npc_tower_doctor: {
+    id: 'npc_tower_doctor',
+    personality: 'caring',
+    maxHp: 48,
+    spawnDistrict: 'songpa',
+    spawnDay: 30,
+    dialogues: {
+      greet:  ['npc.tower_doctor.greet0', 'npc.tower_doctor.greet1', 'npc.tower_doctor.greet2'],
+      hint:   ['npc.tower_doctor.hint0',  'npc.tower_doctor.hint1',  'npc.tower_doctor.hint2'],
+      reject: 'npc.tower_doctor.reject',
+    },
+    trustGainPerTalk: 1,
+    companion: {
+      canRecruit:   true,
+      recruitTrust: 2,
+      combatDmg:    0,
+      combatDmgReduce: 0,
+      carryBonus:   1,
+      healBonus:    1.4,          // +40% heal effectiveness
+      craftBonus:   0,
+      moralBonus:   0.15,
+      lonelinessReduction: 0.2,
+      noiseAdd:     0,
+      foodCostPerDay: 0.35,
+      skillBonus:   { medicine: 0.3 },
+    },
+    gifts: [
+      { trust: 2, itemId: 'bandage',      qty: 3 },
+      { trust: 4, itemId: 'first_aid_kit', qty: 1 },
+    ],
+    trades: null,
+    forageItems: [
+      { id: 'bandage',    chance: 0.35, qty: 1 },
+      { id: 'antiseptic', chance: 0.25, qty: 1 },
+    ],
+    spontaneous: [
+      { condition: 'low_hp', line: '최지윤: "가만히. 상처 먼저 보게요."' },
+      { condition: 'always', line: '최지윤: "다치기 전에 쉬는 게 최고의 치료예요."' },
+    ],
+    trustEvents: [
+      {
+        trust: 5,
+        id:      'tower_doctor_trust_5',
+        message: '👩‍⚕️ 최지윤이 응급 프로토콜을 전수해줬다. 회복 아이템 효율 +10% 영구 적용.',
+        effect:  { skillTeach: { skillId: 'tower_triage', value: 0.1 } },
+      },
+    ],
+    quests: [
+      {
+        id:           'tower_doctor_clinic',
+        triggerTrust: 2,
+        title:        '진료소 보급',
+        description:  '"타워 진료소 재고가 비어가요. 의료품 좀 구해다 주실래요?"',
+        steps: [
+          { type: 'collect', itemId: 'bandage',     qty: 5, hint: '약국이나 병원.' },
+          { type: 'collect', itemId: 'painkiller',  qty: 3, hint: '약국 캐비닛.' },
+        ],
+        reward: { trust: 2, items: [{ id: 'first_aid_kit', qty: 1 }], skillUnlock: null },
+      },
+    ],
+    specialDays: [
+      { day: 10, message: '👩‍⚕️ 최지윤: "당신 같은 사람이 있어서 진료소가 돌아가요."', effect: { morale: 12 } },
+    ],
   },
 
 };

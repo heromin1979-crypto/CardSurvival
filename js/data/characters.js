@@ -230,7 +230,7 @@ export const CHARACTERS = [
       cooking:     3,  // 야전 요리
     },
     specialtySkills: ['scavenging', 'harvesting', 'cooking'],
-    homeDist: 'yangcheon',
+    homeDist: 'gwangjin',  // 동호대교 인근 — 스토리 일치
   },
 
   {

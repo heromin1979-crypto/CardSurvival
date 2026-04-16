@@ -269,6 +269,25 @@ const CARD_IMAGES = {
   box_cutter:            'assets/images/weapons/knife.png',
   broken_bottle:         'assets/images/materials/glass_shard.png',
 
+  // 셰프 전용 희귀 식재료 (윤재혁)
+  truffle:               'assets/images/food/dried_mushroom.png',
+  korean_beef_premium:   'assets/images/food/raw_meat.png',
+  matsutake_mushroom:    'assets/images/food/mushroom_edible.png',
+  abalone:               'assets/images/food/raw_fish.png',
+  king_crab:             'assets/images/food/raw_fish.png',
+  ginseng_6years:        'assets/images/food/wild_root.png',
+  wild_honey:            'assets/images/food/honey.png',
+  caviar_local:          'assets/images/food/canned_food.png',
+  wagyu_scrap:           'assets/images/food/raw_meat.png',
+  saffron_dried:         'assets/images/food/wild_garlic.png',
+
+  // 셰프 특별 요리 결과물
+  gourmet_steak:         'assets/images/food/cooked_meat.png',
+  traditional_feast:     'assets/images/food/survivors_feast.png',
+  truffle_risotto:       'assets/images/food/cooked_rice.png',
+  seafood_platter:       'assets/images/food/grilled_fish.png',
+  special_soup:          'assets/images/food/mushroom_soup.png',
+
   // 헬기 제작 전용 부품 (기계공 B3 엔딩)
   aviation_alloy:        'assets/images/materials/refined_metal.png',
   rotor_blade:           'assets/images/materials/sharp_blade.png',

@@ -538,6 +538,177 @@ const ITEMS_MISC = {
     dismantle: [{ definitionId: 'glass_shard', qty: 2, chance: 0.6 }],
   },
 
+  // ─── 셰프 전용 희귀 식재료 (10) ──────────────────────────────────
+  // 윤재혁 셰프 전용 고급 요리 재료 — 특별 레시피·팀 사기 부스트용
+
+  truffle: {
+    id: 'truffle', name: '송로버섯', type: 'consumable', subtype: 'food',
+    rarity: 'epic', weight: 0.1,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🍄', stackable: true, maxStack: 3,
+    description: '암시장에서 흘러나온 서양 송로버섯. 셰프가 다루면 최상의 풍미를 낸다.',
+    onConsume: { nutrition: 20, morale: 15 },
+    tags: ['food', 'rare_ingredient'],
+    dismantle: [],
+  },
+
+  korean_beef_premium: {
+    id: 'korean_beef_premium', name: '한우 특등급', type: 'consumable', subtype: 'food',
+    rarity: 'epic', weight: 0.3,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🥩', stackable: true, maxStack: 3,
+    description: '폐점한 한우 전문점 냉동고에서 구한 특등급 한우. 감염 위험 있음.',
+    onConsume: { nutrition: 55, morale: 12, infection: 6 },
+    tags: ['food', 'rare_ingredient', 'meat', 'raw'],
+    dismantle: [],
+  },
+
+  matsutake_mushroom: {
+    id: 'matsutake_mushroom', name: '송이버섯', type: 'consumable', subtype: 'food',
+    rarity: 'rare', weight: 0.1,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🍄', stackable: true, maxStack: 5,
+    description: '은평 외곽 소나무 군락에서 채집한 송이버섯. 강한 향과 약리 효과.',
+    onConsume: { nutrition: 15, morale: 10 },
+    tags: ['food', 'rare_ingredient', 'mushroom'],
+    dismantle: [],
+  },
+
+  abalone: {
+    id: 'abalone', name: '전복', type: 'consumable', subtype: 'food',
+    rarity: 'rare', weight: 0.2,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🐚', stackable: true, maxStack: 5,
+    description: '호텔 수족관에서 살려 가져온 살아있는 전복. 죽으면 상한다.',
+    onConsume: { nutrition: 25, morale: 8, infection: 4 },
+    tags: ['food', 'rare_ingredient', 'seafood', 'raw'],
+    dismantle: [],
+  },
+
+  king_crab: {
+    id: 'king_crab', name: '킹크랩', type: 'consumable', subtype: 'food',
+    rarity: 'epic', weight: 0.3,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🦀', stackable: true, maxStack: 3,
+    description: '수산시장 냉장고 깊숙이 남아있던 러시아산 킹크랩. 팀 사기 대폭 상승.',
+    onConsume: { nutrition: 40, morale: 18, infection: 5 },
+    tags: ['food', 'rare_ingredient', 'seafood', 'raw'],
+    dismantle: [],
+  },
+
+  ginseng_6years: {
+    id: 'ginseng_6years', name: '6년근 인삼', type: 'consumable', subtype: 'food',
+    rarity: 'epic', weight: 0.1,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🌱', stackable: true, maxStack: 3,
+    description: '금산 직송 6년근 인삼. 약용 효능이 뛰어나 절망 회복에도 쓰인다.',
+    onConsume: { nutrition: 10, morale: 12, fatigue: -15 },
+    tags: ['food', 'rare_ingredient', 'herb'],
+    dismantle: [],
+  },
+
+  wild_honey: {
+    id: 'wild_honey', name: '야생 꿀', type: 'consumable', subtype: 'food',
+    rarity: 'rare', weight: 0.2,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🍯', stackable: true, maxStack: 5,
+    description: '북한산 자락 양봉장이 버려진 자리에서 수확한 야생 꿀. 방부 효과도 있다.',
+    onConsume: { nutrition: 20, morale: 8 },
+    tags: ['food', 'rare_ingredient'],
+    dismantle: [],
+  },
+
+  caviar_local: {
+    id: 'caviar_local', name: '대체 캐비어', type: 'consumable', subtype: 'food',
+    rarity: 'rare', weight: 0.1,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🥚', stackable: true, maxStack: 5,
+    description: '한강 철갑상어 양식장에서 급히 염장해 가져온 대체 캐비어. 짠맛이 강하다.',
+    onConsume: { nutrition: 15, morale: 10 },
+    tags: ['food', 'rare_ingredient', 'seafood'],
+    dismantle: [],
+  },
+
+  wagyu_scrap: {
+    id: 'wagyu_scrap', name: '와규 스크랩', type: 'consumable', subtype: 'food',
+    rarity: 'rare', weight: 0.2,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🥩', stackable: true, maxStack: 5,
+    description: '일식당 냉장고에서 구한 와규 자투리. 작지만 제대로 구우면 풍미가 뛰어나다.',
+    onConsume: { nutrition: 30, morale: 10, infection: 5 },
+    tags: ['food', 'rare_ingredient', 'meat', 'raw'],
+    dismantle: [],
+  },
+
+  saffron_dried: {
+    id: 'saffron_dried', name: '건조 사프란', type: 'consumable', subtype: 'food',
+    rarity: 'epic', weight: 0.1,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🌸', stackable: true, maxStack: 3,
+    description: '호텔 향신료 창고에서 회수한 건조 사프란. 한 꼬집으로 요리의 격을 높인다.',
+    onConsume: { nutrition: 5, morale: 8 },
+    tags: ['food', 'rare_ingredient', 'spice'],
+    dismantle: [],
+  },
+
+  // ─── 셰프 특별 요리 결과물 (5) ──────────────────────────────────
+
+  gourmet_steak: {
+    id: 'gourmet_steak', name: '고메 스테이크', type: 'consumable', subtype: 'food',
+    rarity: 'epic', weight: 0.4,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🥩', stackable: true, maxStack: 3,
+    description: '와규 스크랩을 소금과 허브로 밑간해 완벽한 미디엄으로 구운 스테이크. 사기 대폭 상승.',
+    onConsume: { nutrition: 60, morale: 30, hp: 10 },
+    tags: ['edible', 'food', 'cooked', 'gourmet'],
+    dismantle: [],
+  },
+
+  traditional_feast: {
+    id: 'traditional_feast', name: '한상차림', type: 'consumable', subtype: 'food',
+    rarity: 'epic', weight: 0.8,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🍱', stackable: true, maxStack: 3,
+    description: '야생 꿀, 인삼, 쌀, 허브를 조화시킨 전통 한상차림. 동료들의 사기를 한껏 끌어올린다.',
+    onConsume: { nutrition: 70, morale: 25, hp: 10, fatigue: -10 },
+    tags: ['edible', 'food', 'cooked', 'gourmet', 'companion_boost'],
+    companionMoraleBoost: 20,
+    dismantle: [],
+  },
+
+  truffle_risotto: {
+    id: 'truffle_risotto', name: '송로 리조또', type: 'consumable', subtype: 'food',
+    rarity: 'epic', weight: 0.5,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🍚', stackable: true, maxStack: 3,
+    description: '송로버섯을 듬뿍 넣고 끓인 리조또. 섭취 후 일정 시간 감염 저항이 상승한다.',
+    onConsume: { nutrition: 50, morale: 18, infectionResistBuff: { amount: 0.1, duration: 3 } },
+    tags: ['edible', 'food', 'cooked', 'gourmet'],
+    dismantle: [],
+  },
+
+  seafood_platter: {
+    id: 'seafood_platter', name: '해산물 플래터', type: 'consumable', subtype: 'food',
+    rarity: 'epic', weight: 0.6,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🍤', stackable: true, maxStack: 3,
+    description: '전복·킹크랩·사프란을 조합한 호화 플래터. HP 회복 폭이 크다.',
+    onConsume: { nutrition: 55, morale: 20, hp: 40 },
+    tags: ['edible', 'food', 'cooked', 'gourmet'],
+    dismantle: [],
+  },
+
+  special_soup: {
+    id: 'special_soup', name: '원기 회복탕', type: 'consumable', subtype: 'food',
+    rarity: 'epic', weight: 0.5,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🍲', stackable: true, maxStack: 3,
+    description: '송이·인삼·정수된 물로 푹 고아낸 약선탕. 깊은 절망도 씻어낸다.',
+    onConsume: { nutrition: 40, morale: 35, hp: 15, cureDespair: true },
+    tags: ['edible', 'food', 'cooked', 'gourmet', 'despair_cure'],
+    dismantle: [],
+  },
+
   // ─── 헬기 제작 전용 부품 (7) ──────────────────────────────────
   // 기계공 B3 경로 최종 엔딩 — 아버지의 R22 설계도
 

@@ -974,8 +974,11 @@ const NPCSystem = {
     state.hp = Math.min(maxHp, before + amount);
     const actualHeal = state.hp - before;
 
-    // 실제 치료가 이뤄졌으면 의료 스킬 XP 부여
-    if (actualHeal > 0) SkillSystem.gainXp('medicine', 4);
+    // 실제 치료가 이뤄졌으면 의료 스킬 XP 부여 + 퀘스트 이벤트
+    if (actualHeal > 0) {
+      SkillSystem.gainXp('medicine', 4);
+      EventBus.emit('npcHealed', { npcId });
+    }
 
     const name = I18n.itemName(npcId, NPC_ITEMS[npcId]?.name);
     EventBus.emit('notify', {

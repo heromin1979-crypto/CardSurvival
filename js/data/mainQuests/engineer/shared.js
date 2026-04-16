@@ -146,6 +146,74 @@ const ENGINEER_SHARED = {
       complete: '고철을 확보했다. 공장 작업대에서 파이프렌치도 찾았다. 성수 공장이 눈앞이다. 선택해야 한다. 아버지의 설계도로 탈출할 것인가, 박영철과 함께 이 도시를 고칠 것인가.',
     },
   },
+
+  // ── 선택적 중반 퀘스트 (분기 선택 후 Q11 이전 또는 병렬 진행) ─────
+  // prerequisite: mq_eng_10 완료 후 언제든 받을 수 있는 서브 미션
+
+  mq_eng_side_01: {
+    id: 'mq_eng_side_01', title: '장비 개조 도전',
+    desc: '무기 한 자루와 고철 3개로 개조 작업을 시도하라. 무기 제작 1개 완료.',
+    icon: '🔧', characterId: 'engineer', dayTrigger: 25, prerequisite: 'mq_eng_10',
+    objective: { type: 'craft_item', category: 'weapon', count: 1 },
+    reward: { morale: 8, items: [{ definitionId: 'whetstone', qty: 1 }, { definitionId: 'duct_tape', qty: 3 }] },
+    failPenalty: { morale: -3 }, deadlineDays: 60,
+    narrative: {
+      start: '폐자재가 쌓였다. 단순히 고철로 두기엔 아깝다. 기존 무기를 업그레이드하거나 새 무기로 가공할 수 있다.',
+      complete: '개조 완료. 기계공의 감각이 되살아난다. 성수 공장 시절엔 매일 하던 일.',
+    },
+  },
+
+  mq_eng_side_02: {
+    id: 'mq_eng_side_02', title: '전자상가 위험 탐사',
+    desc: '용산 전자상가 깊숙한 곳을 탐사하라. 전자부품 5개 + 와이어 3개.',
+    icon: '🔦', characterId: 'engineer', dayTrigger: 30, prerequisite: 'mq_eng_10',
+    objective: { type: 'collect_item', definitionId: 'electronic_parts', count: 5 },
+    reward: { morale: 10, items: [{ definitionId: 'wire', qty: 3 }, { definitionId: 'battery', qty: 2 }] },
+    failPenalty: { morale: -5 }, deadlineDays: 70,
+    narrative: {
+      start: '용산 전자상가 3~5층은 아직 손이 닿지 않았다. 감염자가 많지만 희귀 부품이 잠들어 있을 것이다.',
+      complete: '전자상가 상층 탐사 완료. 희귀 반도체와 고압 배터리를 확보했다. 이건 일반 부품 수십 개 값어치.',
+    },
+  },
+
+  mq_eng_side_03: {
+    id: 'mq_eng_side_03', title: '폐공장 탐험',
+    desc: '성수동 외곽 폐공장을 탐사하라. 성동구 방문 + 도구 2개 제작.',
+    icon: '🏭', characterId: 'engineer', dayTrigger: 35, prerequisite: 'mq_eng_10',
+    objective: { type: 'visit_district', districtId: 'seongdong', count: 1 },
+    reward: { morale: 8, items: [{ definitionId: 'refined_metal', qty: 3 }, { definitionId: 'spring', qty: 4 }] },
+    failPenalty: { morale: -3 }, deadlineDays: 75,
+    narrative: {
+      start: '아버지 공장 옆 폐공장. 예전에 같이 작업하던 곳. 희귀 부품이 남아 있을 것이다.',
+      complete: '폐공장 창고 문을 열었다. 20년 전 아버지가 다듬어 놓은 합금 잉곳과 스프링 세트. 귀중한 유산.',
+    },
+  },
+
+  mq_eng_side_04: {
+    id: 'mq_eng_side_04', title: '군수공장 잠입',
+    desc: '군수공장 위치 정보를 확보하라. 방사선 주의 지역. 종로구 방문.',
+    icon: '🎯', characterId: 'engineer', dayTrigger: 40, prerequisite: 'mq_eng_10',
+    objective: { type: 'visit_district', districtId: 'jongno', count: 1 },
+    reward: { morale: 12, items: [{ definitionId: 'gunpowder', qty: 3 }, { definitionId: 'electronic_parts', qty: 3 }] },
+    failPenalty: { morale: -5 }, deadlineDays: 85,
+    narrative: {
+      start: '정부청사 인근에 방치된 군수공장. 방사선 낙진이 있지만 무기·탄약 제조 부품이 대량 보관돼 있다.',
+      complete: '화약과 전자 격발 장치를 확보했다. 이걸로 정식 수제 화기 제작이 가능해진다.',
+    },
+  },
+
+  mq_eng_side_05: {
+    id: 'mq_eng_side_05', title: '연구소 기계 분석',
+    desc: '서울대 연구소에서 도면 분석 자료를 확보하라. 관악구 방문 + 구조물 1개 제작.',
+    icon: '📚', characterId: 'engineer', dayTrigger: 45, prerequisite: 'mq_eng_side_02',
+    objective: { type: 'visit_district', districtId: 'gwanak', count: 1 },
+    reward: { morale: 15, items: [{ definitionId: 'electronic_parts', qty: 4 }, { definitionId: 'wire', qty: 5 }] },
+    failPenalty: { morale: -5 }, deadlineDays: 90,
+    narrative: {
+      start: '서울대 공과대학 연구실. 전기공학·기계공학 도면이 남아 있다. 고급 장비 제작에 필수 지식.',
+      complete: '연구실 서랍에서 정밀 설계도 10장을 회수. 아버지 설계도와 결합하면 신규 제작 블루프린트가 해금될 것이다.',
+    },
+  },
 };
 
 export default ENGINEER_SHARED;

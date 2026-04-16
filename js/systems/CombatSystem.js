@@ -649,8 +649,12 @@ const CombatSystem = {
 
     // 숨겨진 요소 추적: 킬 카운터 갱신
     gs.flags.totalKills = (gs.flags.totalKills ?? 0) + 1;
-    // 생태계: 좀비 밀도 감소
-    EventBus.emit('enemyKilled', { districtId: gs.location.currentDistrict });
+    // 생태계: 좀비 밀도 감소 + 퀘스트 추적(enemyId/enemyType 전달)
+    EventBus.emit('enemyKilled', {
+      districtId: gs.location.currentDistrict,
+      enemyId: enemy.id,
+      enemyType: enemy.type,
+    });
 
     // 처치 시 사용 무기 스킬 XP
     const weapMain = gs.player.equipped?.weapon_main;

@@ -1630,6 +1630,150 @@ export const LANDMARK_DATA = {
       },
     ],
   },
+
+  // ── 약탈자 소굴 (구출 작전 랜드마크) ─────────────────────────
+  // 소굴은 rescue_npc 목표 퀘스트로 연결되며, landmarkCleared 이벤트로 완료된다.
+  // LANDMARK_DATA는 원래 district-id로 키잉되지만 소굴은 별도 id(lm_raider_camp_*)로
+  // 등록하여 퀘스트 objective.landmarkId와 직접 매칭된다.
+
+  lm_raider_camp_small: {
+    name: '소규모 약탈자 캠프',
+    desc: '도봉산 기슭에 자리 잡은 약탈자 임시 캠프. 인질로 잡힌 민간인이 숨겨져 있다.',
+    icon: '🏴',
+    districts: ['dobong'],
+    dangerLevel: 3,
+    enemyCount: [3, 4],
+    enemyType: 'raider',
+    rescueNpcId: 'npc_rescued_civilian',
+    subLocations: [
+      {
+        id: 'raider_small_search', name: '캠프 수색',
+        icon: '🔦', desc: '천막과 야전 보급함이 흩어진 캠프 중심부. 식량과 잡화가 남아있다.',
+        dangerMod: 0.25,
+        lootTable: [
+          { id: 'canned_food', weight: 4 }, { id: 'sharpened_knife', weight: 2 },
+          { id: 'bandage', weight: 3 }, { id: 'scrap_metal', weight: 3 },
+          { id: 'pistol_ammo', weight: 2 }, { id: 'rope', weight: 2 },
+        ],
+        lootCount: [2, 4],
+      },
+      {
+        id: 'raider_small_hostage', name: '인질 수용실',
+        icon: '⛓️', desc: '천막 한쪽에 결박된 민간인이 갇혀 있다. 경비를 제거해야 접근할 수 있다.',
+        dangerMod: 0.30,
+        lootTable: [
+          { id: 'bandage', weight: 3 }, { id: 'painkiller', weight: 2 },
+          { id: 'canned_food', weight: 2 }, { id: 'cloth', weight: 2 },
+        ],
+        lootCount: [1, 3],
+      },
+    ],
+  },
+
+  lm_raider_camp_medium: {
+    name: '중형 약탈자 거점',
+    desc: '광화문 인근의 폐건물을 개조한 약탈자 중간 거점. 리더와 호위대가 주둔한다.',
+    icon: '⚠️',
+    districts: ['jongno'],
+    dangerLevel: 5,
+    enemyCount: [5, 7],
+    enemyType: 'raider',
+    hasLeader: true,
+    rescueNpcId: 'npc_rescued_civilian',
+    subLocations: [
+      {
+        id: 'raider_medium_perimeter', name: '외곽 경계선',
+        icon: '🛡️', desc: '철조망과 바리케이드로 둘러싼 외곽. 보초가 지키고 있다.',
+        dangerMod: 0.30,
+        lootTable: [
+          { id: 'scrap_metal', weight: 4 }, { id: 'iron_pipe', weight: 3 },
+          { id: 'pistol_ammo', weight: 3 }, { id: 'rope', weight: 2 },
+          { id: 'bandage', weight: 2 },
+        ],
+        lootCount: [2, 4],
+      },
+      {
+        id: 'raider_medium_armory', name: '무기고',
+        icon: '🗡️', desc: '약탈한 무기와 탄약이 쌓인 방. 리더의 호위가 배치되어 있다.',
+        dangerMod: 0.40,
+        lootTable: [
+          { id: 'pistol_ammo', weight: 5 }, { id: 'shotgun_ammo', weight: 3 },
+          { id: 'sharpened_knife', weight: 2 }, { id: 'smoke_bomb', weight: 2 },
+          { id: 'scrap_metal', weight: 3 },
+        ],
+        lootCount: [2, 4],
+      },
+      {
+        id: 'raider_medium_prison', name: '포로 감금실',
+        icon: '⛓️', desc: '지하 포로 감금실. 구출 대상 민간인이 쇠사슬에 묶여 있다.',
+        dangerMod: 0.35,
+        lootTable: [
+          { id: 'bandage', weight: 4 }, { id: 'painkiller', weight: 3 },
+          { id: 'first_aid_kit', weight: 2 }, { id: 'canned_food', weight: 2 },
+          { id: 'cloth', weight: 2 },
+        ],
+        lootCount: [1, 3],
+      },
+    ],
+  },
+
+  lm_raider_camp_large: {
+    name: '대형 약탈자 요새',
+    desc: '영등포의 폐쇄된 공장을 요새화한 약탈자 본거지. 보스와 중무장 부대가 주둔한다.',
+    icon: '💀',
+    districts: ['yeongdeungpo'],
+    dangerLevel: 7,
+    enemyCount: [8, 12],
+    enemyType: 'raider',
+    hasBoss: true,
+    rescueNpcId: 'npc_rescued_civilian',
+    subLocations: [
+      {
+        id: 'raider_large_gate', name: '정문 방어 시설',
+        icon: '🚧', desc: '콘크리트 장벽과 기관총좌가 놓인 정문. 가장 경비가 삼엄하다.',
+        dangerMod: 0.40,
+        lootTable: [
+          { id: 'scrap_metal', weight: 4 }, { id: 'pistol_ammo', weight: 4 },
+          { id: 'rifle_ammo', weight: 3 }, { id: 'iron_pipe', weight: 3 },
+          { id: 'smoke_bomb', weight: 2 },
+        ],
+        lootCount: [3, 5],
+      },
+      {
+        id: 'raider_large_barracks', name: '중앙 병영',
+        icon: '🏚️', desc: '약탈자들이 생활하는 공간. 침상과 개인 사물함에 물자가 숨겨져 있다.',
+        dangerMod: 0.45,
+        lootTable: [
+          { id: 'military_ration', weight: 3 }, { id: 'canned_food', weight: 4 },
+          { id: 'bandage', weight: 3 }, { id: 'pistol_ammo', weight: 3 },
+          { id: 'gas_mask', weight: 2 },
+        ],
+        lootCount: [2, 4],
+      },
+      {
+        id: 'raider_large_vault', name: '보스 집무실',
+        icon: '👑', desc: '요새의 심장부. 약탈로 모은 희귀 물자와 보스가 기다리고 있다.',
+        dangerMod: 0.50,
+        lootTable: [
+          { id: 'rifle_ammo', weight: 4 }, { id: 'shotgun_ammo', weight: 4 },
+          { id: 'first_aid_kit', weight: 3 }, { id: 'military_ration', weight: 2 },
+          { id: 'sharpened_knife', weight: 2 },
+        ],
+        lootCount: [2, 4],
+      },
+      {
+        id: 'raider_large_holding', name: '포로 수용동',
+        icon: '⛓️', desc: '여러 민간인이 갇혀 있는 수용동. 구출 시 일부는 생존자로 합류할 수 있다.',
+        dangerMod: 0.40,
+        lootTable: [
+          { id: 'bandage', weight: 4 }, { id: 'painkiller', weight: 3 },
+          { id: 'first_aid_kit', weight: 2 }, { id: 'canned_food', weight: 3 },
+          { id: 'cloth', weight: 3 },
+        ],
+        lootCount: [2, 4],
+      },
+    ],
+  },
 };
 
 // ── 유틸리티 ────────────────────────────────────────────────

@@ -3100,6 +3100,106 @@ const BLUEPRINTS = {
     }],
   },
 
+  // ══════════════════════════════════════════════════════════════
+  //  셰프 전용 특별 요리 (윤재혁) — 희귀 식재료 기반 고급 요리
+  // ══════════════════════════════════════════════════════════════
+
+  gourmet_steak: {
+    id: 'gourmet_steak', name: '고메 스테이크', category: 'food',
+    hidden: true, unlockConditions: { minSkillLevel: { cooking: 3 } },
+    description: '와규 스크랩을 소금과 허브로 밑간하여 굽는 셰프의 시그니처 스테이크. 사기 +30.',
+    output: [{ definitionId: 'gourmet_steak', qty: 1 }],
+    requiredTools: ['workbench'],
+    requiredSkills: { cooking: 3 },
+    skillOverride: 'cooking',
+    stages: [{
+      stageIndex: 0, label: '굽기·플레이팅', tpCost: 3,
+      requiredItems: [
+        { definitionId: 'wagyu_scrap', qty: 1 },
+        { definitionId: 'salt',        qty: 1 },
+        { definitionId: 'herb',        qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  traditional_feast: {
+    id: 'traditional_feast', name: '한상차림', category: 'food',
+    hidden: true, unlockConditions: { minSkillLevel: { cooking: 3 } },
+    description: '야생 꿀·6년근 인삼·쌀·허브로 차려낸 전통 한상. 함께 먹는 동료의 사기까지 올린다.',
+    output: [{ definitionId: 'traditional_feast', qty: 1 }],
+    requiredTools: ['workbench'],
+    requiredSkills: { cooking: 3 },
+    skillOverride: 'cooking',
+    stages: [{
+      stageIndex: 0, label: '한상 차리기', tpCost: 4,
+      requiredItems: [
+        { definitionId: 'wild_honey',     qty: 1 },
+        { definitionId: 'ginseng_6years', qty: 1 },
+        { definitionId: 'rice',           qty: 2 },
+        { definitionId: 'herb',           qty: 2 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  truffle_risotto: {
+    id: 'truffle_risotto', name: '송로 리조또', category: 'food',
+    hidden: true, unlockConditions: { minSkillLevel: { cooking: 3 } },
+    description: '송로버섯을 얇게 저며 끓인 리조또. 섭취 후 일정 시간 감염 저항이 상승한다.',
+    output: [{ definitionId: 'truffle_risotto', qty: 1 }],
+    requiredTools: ['workbench'],
+    requiredSkills: { cooking: 3 },
+    skillOverride: 'cooking',
+    stages: [{
+      stageIndex: 0, label: '리조또 조리', tpCost: 3,
+      requiredItems: [
+        { definitionId: 'truffle',        qty: 1 },
+        { definitionId: 'rice',           qty: 2 },
+        { definitionId: 'purified_water', qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  seafood_platter: {
+    id: 'seafood_platter', name: '해산물 플래터', category: 'food',
+    hidden: true, unlockConditions: { minSkillLevel: { cooking: 3 } },
+    description: '전복·킹크랩·사프란을 조화롭게 배합한 호화 플래터. HP 회복폭이 크다.',
+    output: [{ definitionId: 'seafood_platter', qty: 1 }],
+    requiredTools: ['workbench'],
+    requiredSkills: { cooking: 3 },
+    skillOverride: 'cooking',
+    stages: [{
+      stageIndex: 0, label: '손질·조리·플레이팅', tpCost: 4,
+      requiredItems: [
+        { definitionId: 'abalone',       qty: 1 },
+        { definitionId: 'king_crab',     qty: 1 },
+        { definitionId: 'saffron_dried', qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  special_soup: {
+    id: 'special_soup', name: '원기 회복탕', category: 'food',
+    hidden: true, unlockConditions: { minSkillLevel: { cooking: 3 } },
+    description: '송이·6년근 인삼·정수된 물로 푹 고아낸 약선탕. 깊은 절망마저 씻어낸다.',
+    output: [{ definitionId: 'special_soup', qty: 1 }],
+    requiredTools: ['workbench'],
+    requiredSkills: { cooking: 3 },
+    skillOverride: 'cooking',
+    stages: [{
+      stageIndex: 0, label: '약선 고기', tpCost: 4,
+      requiredItems: [
+        { definitionId: 'matsutake_mushroom', qty: 1 },
+        { definitionId: 'ginseng_6years',    qty: 1 },
+        { definitionId: 'purified_water',    qty: 2 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
 };
 
 export default BLUEPRINTS;
