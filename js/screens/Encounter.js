@@ -100,10 +100,11 @@ const Encounter = {
       }
     });
 
-    // 도주
+    // 도주 (노숙인 거리 감각 fleeBonus 적용)
     this._el.querySelector('#enc-flee')?.addEventListener('click', () => {
       if (!guard()) return;
-      const success = Math.random() < 0.65;
+      const fleeBonus = GameState.player.fleeBonus ?? 0;
+      const success = Math.random() < (0.65 + fleeBonus);
       if (success) {
         EventBus.emit('notify', { message: I18n.t('encounter.fleeOk'), type: 'good' });
         GameState.modStat('fatigue', 10);

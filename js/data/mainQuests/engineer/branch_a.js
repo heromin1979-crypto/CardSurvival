@@ -97,49 +97,91 @@ const ENGINEER_BRANCH_A = {
 
   // ── A1 엔딩: 서울 완전 탈출 ─────────────────────────────────
 
-  mq_eng_end_a1: {
-    id: 'mq_eng_end_a1', title: '서울 탈출 완성',
-    desc: '구조물 2개를 제작하라. 탈출 전 마지막 보강 작업이다.',
-    icon: '🚗', characterId: 'engineer', dayTrigger: 205,
+  mq_eng_a1_prep: {
+    id: 'mq_eng_a1_prep', title: '탈출 보강 작업',
+    desc: '차량 최종 보강. 구조물 2개를 제작하고 식량 8개를 비축하라.',
+    icon: '🔧', characterId: 'engineer', dayTrigger: 205,
     prerequisite: 'mq_eng_a_15', requiresFlag: 'eng_end_a1',
     objective: { type: 'craft_item', category: 'structure', count: 2 },
+    reward: { morale: 10 },
+    failPenalty: { morale: -5 }, deadlineDays: Infinity,
+    narrative: {
+      start: '차량 외장 보강. 서울 외곽까지 버텨야 한다. 방벽용 구조물을 차체에 부착한다.',
+      complete: '차체 보강 완료. 이제 식량을 싣고 출발한다.',
+    },
+  },
+
+  mq_eng_end_a1: {
+    id: 'mq_eng_end_a1', title: '서울 탈출',
+    desc: '탈출 식량 8개를 비축하고 출발하라.',
+    icon: '🚗', characterId: 'engineer', dayTrigger: 230,
+    prerequisite: 'mq_eng_a1_prep', requiresFlag: 'eng_end_a1',
+    objective: { type: 'collect_item_type', itemType: 'food', count: 8 },
     reward: { morale: 20, items: [{ definitionId: 'battle_ration', qty: 3 }], flags: { mainQuestComplete_engineer: true, engineer_ending: 'a1_escape' } },
     failPenalty: { morale: -10 }, deadlineDays: Infinity,
     narrative: {
-      start: '탈출 전 마지막 보강. 차량이 서울 외곽까지 버텨야 한다.',
-      complete: 'D+100. 시동이 걸린다. 구로 국도. 수원 방향. 차 안에 전투 식량 3팩을 실었다. "아버지의 설계도로 만든 차가 서울을 빠져나간다." 그렇게 적었다.',
+      start: '차량 준비 완료. 탈출 식량만 남았다. 서울 밖에서 며칠을 버텨야 할지 모른다.',
+      complete: '시동이 걸린다. 구로 국도. 수원 방향. 차 안에 전투 식량을 실었다. "아버지의 설계도로 만든 차가 서울을 빠져나간다." 그렇게 적었다.',
     },
   },
 
   // ── A2 엔딩: 차량 테스트 후 귀환 ─────────────────────────────
 
-  mq_eng_end_a2: {
-    id: 'mq_eng_end_a2', title: '차량 테스트 엔딩',
-    desc: '성동구를 방문하라. 성수 공장으로 돌아가 차량 성능을 검증한다.',
-    icon: '🔬', characterId: 'engineer', dayTrigger: 205,
+  mq_eng_a2_prep: {
+    id: 'mq_eng_a2_prep', title: '시험 주행 준비',
+    desc: '로프 3개와 전자부품 2개를 확보하라. 차량 계기판 정비에 필요하다.',
+    icon: '📊', characterId: 'engineer', dayTrigger: 205,
     prerequisite: 'mq_eng_a_15', requiresFlag: 'eng_end_a2',
+    objective: { type: 'collect_item', definitionId: 'rope', count: 3 },
+    reward: { morale: 8 },
+    failPenalty: { morale: -5 }, deadlineDays: Infinity,
+    narrative: {
+      start: '시험 주행 전 계기판과 조향 시스템 최종 점검. 로프가 더 필요하다.',
+      complete: '정비 완료. 이제 성수 공장으로 돌아가 시험 주행을 한다.',
+    },
+  },
+
+  mq_eng_end_a2: {
+    id: 'mq_eng_end_a2', title: '성수 시험 주행',
+    desc: '성동구를 방문하라. 성수 공장에서 차량 성능을 최종 검증한다.',
+    icon: '🔬', characterId: 'engineer', dayTrigger: 230,
+    prerequisite: 'mq_eng_a2_prep', requiresFlag: 'eng_end_a2',
     objective: { type: 'visit_district', districtId: 'seongdong', count: 1 },
     reward: { morale: 18, items: [{ definitionId: 'pipe_wrench', qty: 1 }, { definitionId: 'whetstone', qty: 1 }], flags: { mainQuestComplete_engineer: true, engineer_ending: 'a2_test' } },
     failPenalty: { morale: -8 }, deadlineDays: Infinity,
     narrative: {
-      start: '탈출 전에 검증이 필요하다. 성수 공장으로 돌아가 차량 성능을 테스트한다.',
-      complete: 'D+100. 성수 공장에서 차량 테스트 완료. 주행 거리 확인. 아버지 설계 서랍에 파이프렌치와 숫돌이 남아있었다. 정비 도구다. 탈출 준비는 언제든 가능하다.',
+      start: '아버지가 일하던 성수 공장. 시험 주행의 출발점이자 도착점.',
+      complete: '성수 공장 앞 도로. 시동. 출발. 500미터. 1킬로미터. 돌아왔다. 아버지 서랍에서 파이프렌치와 숫돌을 꺼냈다. "탈출 준비는 됐다. 언제든."',
     },
   },
 
   // ── A3 엔딩: 탈출 포기, 거점 구축 ────────────────────────────
 
-  mq_eng_end_a3: {
-    id: 'mq_eng_end_a3', title: '거점 엔딩',
-    desc: '식량 10개를 비축하라. 탈출 대신 이 도시에 남아 기여한다.',
-    icon: '🏠', characterId: 'engineer', dayTrigger: 205,
+  mq_eng_a3_prep: {
+    id: 'mq_eng_a3_prep', title: '거점 인프라 구축',
+    desc: '구로 공장을 거점으로 만들어라. 구조물 3개를 제작하라.',
+    icon: '🏗️', characterId: 'engineer', dayTrigger: 205,
     prerequisite: 'mq_eng_a_15', requiresFlag: 'eng_end_a3',
+    objective: { type: 'craft_item', category: 'structure', count: 3 },
+    reward: { morale: 10 },
+    failPenalty: { morale: -5 }, deadlineDays: Infinity,
+    narrative: {
+      start: '탈출하지 않기로 했다. 대신 이 공장을 서울의 기계 거점으로 만든다.',
+      complete: '작업장, 정비소, 방벽. 구로 거점의 뼈대가 완성됐다.',
+    },
+  },
+
+  mq_eng_end_a3: {
+    id: 'mq_eng_end_a3', title: '구로 거점 완성',
+    desc: '식량 10개를 비축하라. 거점 운영에 필요한 물자를 확보한다.',
+    icon: '🏠', characterId: 'engineer', dayTrigger: 230,
+    prerequisite: 'mq_eng_a3_prep', requiresFlag: 'eng_end_a3',
     objective: { type: 'collect_item_type', itemType: 'food', count: 10 },
     reward: { morale: 15, items: [{ definitionId: 'rope_ladder', qty: 1 }, { definitionId: 'flashlight', qty: 1 }], flags: { mainQuestComplete_engineer: true, engineer_ending: 'a3_base' } },
     failPenalty: { morale: -5 }, deadlineDays: Infinity,
     narrative: {
-      start: '탈출하지 않기로 했다. 차량 기술이 이 도시에서 더 필요하다. 거점을 만든다.',
-      complete: 'D+100. 구로 공장 거점. 차량 수리와 물자 운반 담당. 창고에서 로프 사다리와 손전등을 찾았다. 거점 이동에 쓸 도구다. 아버지의 설계도가 서울 재건에 쓰인다.',
+      start: '거점 운영에 식량이 필수다. 정비 인력을 먹여야 한다.',
+      complete: '구로 공장 거점. 차량 수리와 물자 운반의 중심. 로프 사다리와 손전등이 정비됐다. 아버지의 설계도가 서울 재건에 쓰이고 있다.',
     },
   },
 };

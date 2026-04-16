@@ -1,12 +1,12 @@
 // === CHARACTER DEFINITIONS ===
-// 6명의 고유 직업 캐릭터. 각자 배경 스토리·능력·시작 지역을 가진다.
+// 6명의 고유 직업 캐릭터. 각자 배경 스토리·능력·시작 지역·특화 스킬을 가진다.
 
 export const CHARACTERS = [
   {
     id: 'doctor',
     name: '이지수',
     gender: 'F',
-    maxHp: 95,      // (90 → 95 버프)
+    maxHp: 105,     // (90 → 95 → 105 버프)
     strength: 58,   // 체력(힘) (55 → 58 버프)
     endurance: 72,  // 인내심 (70 → 72 버프, stamina ≈ 84)
     maxCarryWeight: 32, // (30 → 32 버프)
@@ -44,15 +44,20 @@ export const CHARACTERS = [
         id: 'medical_supply',
         name: '의료 물자',
         icon: '🎒',
-        desc: '붕대, 소독약 추가 지급',
-        effect: { startingItems: ['bandage', 'antiseptic'] },
+        desc: '붕대, 소독약, 돌칼 추가 지급',
+        effect: { startingItems: ['bandage', 'antiseptic', 'stone_knife'] },
       },
     ],
     startingSkills: {
       medicine:   4,  // 의사 — 의료 숙련도 최상
       scavenging: 2,  // 약품·의료재료 탐색 경험
+      defense:    1,  // 기본 방어 능력
+      crafting:   1,  // 기본 제작 능력
     },
+    specialtySkills: ['medicine', 'scavenging'],
     homeDist: 'dongjak',
+    startingStructures: ['medical_station'],
+    startingCompanion: 'npc_nurse',
   },
 
   {
@@ -99,6 +104,13 @@ export const CHARACTERS = [
         desc: '나이프 + 알코올 솜 + 붕대 지급',
         effect: { startingItems: ['knife', 'alcohol_swab', 'alcohol_swab', 'bandage'] },
       },
+      {
+        id: 'comrade_bond',
+        name: '전우의 유대',
+        icon: '🐕',
+        desc: '강아지 동반 시 사기 감소 -20%',
+        effect: { companionMoraleDecayReduct: 0.20 },
+      },
     ],
     startingSkills: {
       melee:   4,  // 군인 — 근접무기 전문
@@ -106,7 +118,9 @@ export const CHARACTERS = [
       defense: 3,  // 방어 전술
       unarmed: 3,  // 격투 훈련
     },
+    specialtySkills: ['melee', 'ranged', 'defense', 'unarmed'],
     homeDist: 'dobong',
+    startingCompanion: 'npc_dog',
   },
 
   {
@@ -160,6 +174,7 @@ export const CHARACTERS = [
       building:   3,  // 구조물 지식, 현장 경험
       scavenging: 2,  // 구조 현장 탐색 경험
     },
+    specialtySkills: ['unarmed', 'building'],
     homeDist: 'eunpyeong',
   },
 
@@ -167,7 +182,7 @@ export const CHARACTERS = [
     id: 'homeless',
     name: '최형식',
     gender: 'M',
-    maxHp: 65,
+    maxHp: 75,      // (65 → 75 버프)
     strength: 50,   // 체력(힘) — 거리 생활로 단련
     endurance: 40,  // 인내심 — 야생 생존형, 지속력은 보통 (→ stamina ≈ 40)
     maxCarryWeight: 32,
@@ -198,8 +213,8 @@ export const CHARACTERS = [
         id: 'street_sense',
         name: '거리 감각',
         icon: '🌆',
-        desc: '소음 -20%, 조우 확률 -5%',
-        effect: { noiseReduct: 0.2, encounterRateReduct: 0.05 },
+        desc: '소음 -20%, 조우 확률 -5%, 도주 성공률 +15%',
+        effect: { noiseReduct: 0.2, encounterRateReduct: 0.05, fleeBonus: 0.15 },
       },
       {
         id: 'bare_start',
@@ -214,61 +229,63 @@ export const CHARACTERS = [
       harvesting:  3,  // 자원 채취 (거리 생활)
       cooking:     3,  // 야전 요리
     },
+    specialtySkills: ['scavenging', 'harvesting', 'cooking'],
     homeDist: 'yangcheon',
   },
 
   {
-    id: 'pharmacist',
-    name: '한소희',
-    gender: 'F',
-    maxHp: 80,
-    strength: 50,   // 체력(힘) — 약사: 신체적으로 약함
-    endurance: 60,  // 인내심 — 집중력은 있지만 신체 지속력 낮음 (→ stamina ≈ 60)
-    maxCarryWeight: 28,
-    title: '약사',
-    portrait: '💊',
-    story: `한소희(31세)는 홍대 입구 골목 작은 약국의 원장이었다.
-2026년 1월 14일, 이상한 증상의 환자들이 오기 시작했다. 발열, 이상 행동, 희번뜩이는 눈.
-소희는 알아차렸다. 사흘 뒤 세상이 무너지기 전에, 그녀는 약국 창고를 비워 배낭을 쌓았다.
-홍대에서 도망쳐 삼성병원으로 피신했다. 도망치면서도 그녀는 관찰했다. 감염자들의 패턴. 증상의 진행 순서.
-언젠가 이 데이터가 쓸모가 있을 것이다.`,
-    goal: '5종 이상의 의료 재료를 수집해 실험적 항바이러스 합성을 완성하고 감염 차단 방법을 증명한다.',
+    id: 'chef',
+    name: '윤재혁',
+    gender: 'M',
+    maxHp: 95,
+    strength: 65,   // 체력(힘) — 셰프: 주방 체력
+    endurance: 65,  // 인내심 — 장시간 조리 경험 (→ stamina ≈ 85)
+    maxCarryWeight: 35,
+    title: '호텔 셰프',
+    portrait: '🍳',
+    story: `윤재혁(33세)은 명동 소피텔 호텔의 수석 셰프였다.
+2026년 1월 16일, 호텔 뷔페에서 이상한 손님이 나타났다. 식기를 깨물고 직원을 공격했다.
+재혁은 주방 칼을 집어 들고 지하 식품 저장고로 피신했다. 이틀 뒤 밖에 나왔을 때, 호텔은 텅 비어 있었다.
+남대문시장으로 이동했다. 그곳에 아직 쓸 만한 식재료가 있을 것이다.
+사람들이 굶고 있었다. 재혁은 알고 있었다. 음식은 단순한 생존이 아니라, 희망이라는 것을.`,
+    goal: '남대문시장에서 식재료를 확보하고 생존자 급식소를 운영해, 서울 생존자들의 식량 자급 체계를 구축한다.',
     abilities: [
       {
-        id: 'pharmaceutical_expert',
-        name: '약제 전문',
-        icon: '🧪',
-        desc: '의료 아이템 효과 +40%, 감염 회복 속도 +30%',
-        effect: { healBonus: 1.4, infectionRecovery: 1.3 },
+        id: 'gourmet_sense',
+        name: '미식 감각',
+        icon: '👨‍🍳',
+        desc: '요리 아이템 효과 +60%',
+        effect: { cookingEffectBonus: 1.6 },
       },
       {
-        id: 'ingredient_analysis',
-        name: '성분 분석',
+        id: 'ingredient_eye',
+        name: '식재료 감별',
         icon: '🔍',
-        desc: '의료 아이템 분해 시 재료 획득 +25%',
-        effect: { dismantleBonus: 0.25 },
+        desc: '독성 음식 섭취 전 경고',
+        effect: { toxinDetect: true },
       },
       {
-        id: 'efficient_dosing',
-        name: '절약 투약',
-        icon: '💉',
-        desc: '소모성 의료 아이템 용량 +1회',
-        effect: { medicalUsesBonus: 1 },
+        id: 'warm_meal',
+        name: '따뜻한 한 끼',
+        icon: '🍲',
+        desc: '요리 완료 시 동료 사기 +10',
+        effect: { companionMoraleOnCook: 10 },
       },
       {
-        id: 'pharmacy_stock',
-        name: '약국 재고',
-        icon: '🎒',
-        desc: '소독약, 진통제 추가 지급',
-        effect: { startingItems: ['antiseptic', 'painkiller'] },
+        id: 'knife_mastery',
+        name: '칼 다루기',
+        icon: '🔪',
+        desc: '나이프/칼 무기 데미지 +25%',
+        effect: { knifeDmgBonus: 1.25 },
       },
     ],
     startingSkills: {
-      medicine:  3,  // 약사 — 의약품 지식
-      crafting:  3,  // 조제·제조 능력
-      cooking:   2,  // 약재 조합 기초
+      cooking:     4,  // 셰프 — 요리 전문
+      harvesting:  3,  // 식재료 감별·채취
+      melee:       2,  // 주방 칼 다루기
     },
-    homeDist: 'gwanak',
+    specialtySkills: ['cooking', 'harvesting', 'melee'],
+    homeDist: 'junggoo',
   },
 
   {
@@ -323,7 +340,8 @@ export const CHARACTERS = [
       weaponcraft: 3,  // 금속 가공 → 무기 제작
       armorcraft:  2,  // 기초 방어구 제작
     },
-    homeDist: 'nowon',
+    specialtySkills: ['crafting', 'building', 'weaponcraft', 'armorcraft'],
+    homeDist: 'yongsan',
   },
 ];
 

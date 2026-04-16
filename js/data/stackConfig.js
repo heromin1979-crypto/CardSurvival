@@ -71,9 +71,11 @@ const STACK_ROWS = [
   ['surgery_kit'             , true,  2 ],
   ['antidote'                , true,  5 ],
   ['stimulant'               , true,  5 ],
+  ['practice_bandage'        , true,  5 ],
 
   // ── 근접 무기 (내구도 있음 → 스택 불가) ────────────────────────
   ['iron_pipe'               , false, 1 ],
+  ['wooden_sword'            , false, 1 ],
   ['knife'                   , false, 1 ],
   ['sharpened_knife'         , false, 1 ],
   ['crowbar'                 , false, 1 ],
@@ -120,6 +122,8 @@ const STACK_ROWS = [
   ['storage_box'             , false, 1 ],
 
   // ── 의복/방어구 (내구도 있음 → 스택 불가) ───────────────────────
+  ['cloth_guard'             , false, 1 ],
+  ['training_shield'         , false, 1 ],
   ['raincoat'                , false, 1 ],
   ['warm_clothes'            , false, 1 ],
   ['tactical_vest'           , false, 1 ],
@@ -197,6 +201,15 @@ const STACK_ROWS = [
   ['electric_motor'            , true,  5 ],
   ['power_cell'                , true,  5 ],
   ['generator_core'            , true,  5 ],
+
+  // — 헬기 제작 전용 부품 (기계공 B3 엔딩) —
+  ['aviation_alloy'            , true,  5 ],
+  ['rotor_blade'               , false, 1 ],
+  ['piston_engine'             , false, 1 ],
+  ['avionics_module'           , false, 1 ],
+  ['tail_rotor_assembly'       , false, 1 ],
+  ['fuselage_frame'            , false, 1 ],
+  ['avgas_drum'                , false, 1 ],
 
   // — 무기 (non-stackable) —
   ['pipe_shotgun'              , false, 1 ],

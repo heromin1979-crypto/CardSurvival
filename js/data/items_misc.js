@@ -429,6 +429,129 @@ const ITEMS_MISC = {
     tags: ['enhancement', 'defense'],
     dismantle: [{ definitionId: 'leather', qty: 1, chance: 0.5 }],
   },
+
+  // ─── 훈련용 아이템 (4) ──────────────────────────────────────
+
+  practice_bandage: {
+    id: 'practice_bandage', name: '연습용 붕대', type: 'consumable', subtype: 'medical',
+    rarity: 'common', weight: 0.1,
+    defaultDurability: 1, defaultContamination: 0,
+    icon: '🩹', description: '약초와 천으로 만든 간이 붕대. 의료 훈련용.',
+    tags: ['medical', 'training'],
+    onUse: { heal: 3 },
+    dismantle: [],
+  },
+
+  wooden_sword: {
+    id: 'wooden_sword', name: '목검', type: 'weapon', subtype: 'melee',
+    rarity: 'common', weight: 0.8,
+    defaultDurability: 30, defaultContamination: 0,
+    icon: '🗡️', description: '나무로 깎은 훈련용 칼. 위력은 약하지만 연습에 좋다.',
+    tags: ['weapon', 'melee', 'training'],
+    damage: [2, 5],
+    dismantle: [{ definitionId: 'wood_plank', qty: 1, chance: 0.6 }],
+  },
+
+  cloth_guard: {
+    id: 'cloth_guard', name: '천 호구', type: 'armor', subtype: 'body',
+    rarity: 'common', weight: 0.5,
+    defaultDurability: 25, defaultContamination: 0,
+    icon: '🥋', description: '천으로 겹쳐 만든 간이 보호구. 훈련용.',
+    tags: ['armor', 'training'],
+    defense: 2,
+    dismantle: [{ definitionId: 'cloth', qty: 1, chance: 0.5 }],
+  },
+
+  training_shield: {
+    id: 'training_shield', name: '훈련용 방패', type: 'armor', subtype: 'offhand',
+    rarity: 'common', weight: 1.2,
+    defaultDurability: 30, defaultContamination: 0,
+    icon: '🛡️', description: '나무 판자와 고철로 만든 간이 방패. 건설 훈련용.',
+    tags: ['armor', 'shield', 'training'],
+    defense: 3,
+    dismantle: [
+      { definitionId: 'wood_plank', qty: 1, chance: 0.5 },
+      { definitionId: 'scrap_metal', qty: 1, chance: 0.3 },
+    ],
+  },
+
+  // ─── 헬기 제작 전용 부품 (7) ──────────────────────────────────
+  // 기계공 B3 경로 최종 엔딩 — 아버지의 R22 설계도
+
+  aviation_alloy: {
+    id: 'aviation_alloy', name: '항공용 합금', type: 'material', subtype: 'metal',
+    rarity: 'rare', weight: 0.8,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🛩️', description: '고철을 용융·단조해 만든 경량 고강도 합금. 로터 블레이드와 동체 프레임에 쓰인다.',
+    tags: ['material', 'metal', 'aviation'],
+    dismantle: [{ definitionId: 'scrap_metal', qty: 2, chance: 0.6 }],
+  },
+
+  rotor_blade: {
+    id: 'rotor_blade', name: '로터 블레이드', type: 'material', subtype: 'aviation_part',
+    rarity: 'rare', weight: 3.0,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🌀', description: '항공용 합금으로 정밀 가공한 주회전익. 대칭 정밀도 0.5mm 이내. 2개 한 쌍.',
+    tags: ['material', 'aviation', 'rotor'],
+    dismantle: [{ definitionId: 'aviation_alloy', qty: 1, chance: 0.4 }],
+  },
+
+  piston_engine: {
+    id: 'piston_engine', name: '피스톤 엔진', type: 'material', subtype: 'aviation_part',
+    rarity: 'epic', weight: 12.0,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '⚙️', description: '라이커밍 O-320 방식 4기통 피스톤 엔진. 가솔린 연소식. 헬기 동력원.',
+    tags: ['material', 'aviation', 'engine'],
+    dismantle: [
+      { definitionId: 'scrap_metal', qty: 3, chance: 0.5 },
+      { definitionId: 'electronic_parts', qty: 2, chance: 0.5 },
+    ],
+  },
+
+  avionics_module: {
+    id: 'avionics_module', name: '항공 전자 모듈', type: 'material', subtype: 'aviation_part',
+    rarity: 'rare', weight: 1.5,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '📟', description: '점화·계기·자세 제어 통합 회로. ECU + 고도계 + 나침반.',
+    tags: ['material', 'aviation', 'electronic'],
+    dismantle: [
+      { definitionId: 'electronic_parts', qty: 2, chance: 0.6 },
+      { definitionId: 'wire', qty: 1, chance: 0.5 },
+    ],
+  },
+
+  tail_rotor_assembly: {
+    id: 'tail_rotor_assembly', name: '꼬리 로터 조립체', type: 'material', subtype: 'aviation_part',
+    rarity: 'rare', weight: 2.5,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🪛', description: '꼬리 로터 + 드라이브 샤프트. 안티 토크 장치. 없으면 기체가 회전한다.',
+    tags: ['material', 'aviation', 'rotor'],
+    dismantle: [
+      { definitionId: 'scrap_metal', qty: 2, chance: 0.5 },
+      { definitionId: 'rubber', qty: 1, chance: 0.5 },
+    ],
+  },
+
+  fuselage_frame: {
+    id: 'fuselage_frame', name: '동체 프레임', type: 'material', subtype: 'aviation_part',
+    rarity: 'epic', weight: 8.0,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🛸', description: '조종석+엔진 베드+꼬리 빔 통합 프레임. R22 소형 헬기 규격.',
+    tags: ['material', 'aviation', 'structure'],
+    dismantle: [
+      { definitionId: 'aviation_alloy', qty: 2, chance: 0.4 },
+      { definitionId: 'scrap_metal', qty: 2, chance: 0.5 },
+    ],
+  },
+
+  avgas_drum: {
+    id: 'avgas_drum', name: '항공 가솔린 드럼', type: 'special', subtype: 'resource',
+    rarity: 'epic', weight: 20.0,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🛢️', description: '100LL 항공용 가솔린. 일반 자동차 연료통 5개로 정제 가능. 납 첨가 고옥탄가.',
+    tags: ['special', 'fuel', 'aviation'],
+    dismantle: [],
+  },
 };
 
 export default ITEMS_MISC;

@@ -2818,6 +2818,288 @@ const BLUEPRINTS = {
     }],
   },
 
+  // ══════════════════════════════════════════════════════════════
+  //  훈련용 아이템 (Training Items) — skillOverride로 특정 스킬 XP 부여
+  // ══════════════════════════════════════════════════════════════
+
+  practice_bandage: {
+    id: 'practice_bandage', name: '연습용 붕대', category: 'medical',
+    description: '약초와 천으로 만든 간이 붕대. 의료 스킬 훈련에 좋다.',
+    output: [{ definitionId: 'practice_bandage', qty: 1 }],
+    requiredTools: [],
+    requiredSkills: { medicine: 1 },
+    skillOverride: 'medicine',
+    stages: [{
+      stageIndex: 0, label: '붕대 감기 연습', tpCost: 1,
+      requiredItems: [
+        { definitionId: 'herb',  qty: 1 },
+        { definitionId: 'cloth', qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  wooden_sword: {
+    id: 'wooden_sword', name: '목검', category: 'weapon',
+    description: '나무와 끈으로 만든 훈련용 칼. 무기 제작 스킬 훈련에 좋다.',
+    output: [{ definitionId: 'wooden_sword', qty: 1 }],
+    requiredTools: [],
+    requiredSkills: { crafting: 1 },
+    skillOverride: 'weaponcraft',
+    stages: [{
+      stageIndex: 0, label: '나무 깎기', tpCost: 2,
+      requiredItems: [
+        { definitionId: 'wood_plank', qty: 2 },
+        { definitionId: 'rope',       qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  cloth_guard: {
+    id: 'cloth_guard', name: '천 호구', category: 'armor',
+    description: '천과 끈으로 만든 간이 보호구. 방어구 제작 스킬 훈련에 좋다.',
+    output: [{ definitionId: 'cloth_guard', qty: 1 }],
+    requiredTools: [],
+    requiredSkills: { crafting: 1 },
+    skillOverride: 'armorcraft',
+    stages: [{
+      stageIndex: 0, label: '천 겹치기', tpCost: 2,
+      requiredItems: [
+        { definitionId: 'cloth', qty: 2 },
+        { definitionId: 'rope',  qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  training_shield: {
+    id: 'training_shield', name: '훈련용 방패', category: 'armor',
+    description: '나무와 고철로 만든 간이 방패. 방어/건설 스킬 훈련에 좋다.',
+    output: [{ definitionId: 'training_shield', qty: 1 }],
+    requiredTools: [],
+    requiredSkills: { building: 1 },
+    skillOverride: 'building',
+    stages: [{
+      stageIndex: 0, label: '판자 조립', tpCost: 2,
+      requiredItems: [
+        { definitionId: 'wood_plank',  qty: 2 },
+        { definitionId: 'scrap_metal', qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  // ══════════════════════════════════════════════════════════════
+  //  방사선차단제 제작
+  // ══════════════════════════════════════════════════════════════
+
+  rad_blocker_craft: {
+    id: 'rad_blocker_craft', name: '방사선차단제 조제', category: 'medical',
+    description: '숯과 약초, 알코올로 조제하는 방사선 차단 약제.',
+    output: [{ definitionId: 'rad_blocker', qty: 1 }],
+    requiredTools: ['medical_station'],
+    requiredSkills: { medicine: 3, crafting: 2 },
+    stages: [{
+      stageIndex: 0, label: '약제 조합', tpCost: 3,
+      requiredItems: [
+        { definitionId: 'charcoal',          qty: 2 },
+        { definitionId: 'herb',              qty: 3 },
+        { definitionId: 'alcohol_solution',  qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  // ══════════════════════════════════════════════════════════════
+  //  헬기 제작 부품 (기계공 B3 엔딩 전용) — 고난이도 크래프팅
+  // ══════════════════════════════════════════════════════════════
+
+  craft_aviation_alloy: {
+    id: 'craft_aviation_alloy', name: '항공용 합금 단조', category: 'material',
+    description: '고철을 용광로에서 용융·합금화해 경량 고강도 항공용 합금을 만든다.',
+    output: [{ definitionId: 'aviation_alloy', qty: 1 }],
+    requiredTools: ['workbench'],
+    requiredSkills: { crafting: 5, weaponcraft: 3 },
+    stages: [{
+      stageIndex: 0, label: '용융·단조', tpCost: 4,
+      requiredItems: [
+        { definitionId: 'scrap_metal', qty: 5 },
+        { definitionId: 'charcoal',    qty: 2 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  craft_rotor_blade: {
+    id: 'craft_rotor_blade', name: '로터 블레이드 가공', category: 'material',
+    description: '항공용 합금을 선반 가공해 대칭 정밀도 0.5mm의 주회전익을 깎는다. 한 쌍(2개) 생산.',
+    output: [{ definitionId: 'rotor_blade', qty: 2 }],
+    requiredTools: ['workbench'],
+    requiredSkills: { crafting: 7, weaponcraft: 5 },
+    stages: [
+      {
+        stageIndex: 0, label: '선반 거친 가공', tpCost: 4,
+        requiredItems: [
+          { definitionId: 'aviation_alloy', qty: 3 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '정밀 균형 조정', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'sharp_blade', qty: 1 },
+          { definitionId: 'duct_tape',   qty: 2 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+  },
+
+  craft_piston_engine: {
+    id: 'craft_piston_engine', name: '피스톤 엔진 조립', category: 'material',
+    description: '4기통 가솔린 피스톤 엔진. 실린더 블록 + 크랭크샤프트 + 연료 분사 시스템.',
+    output: [{ definitionId: 'piston_engine', qty: 1 }],
+    requiredTools: ['workbench'],
+    requiredSkills: { crafting: 8, weaponcraft: 5, building: 3 },
+    stages: [
+      {
+        stageIndex: 0, label: '실린더 블록', tpCost: 5,
+        requiredItems: [
+          { definitionId: 'aviation_alloy', qty: 2 },
+          { definitionId: 'scrap_metal',    qty: 4 },
+          { definitionId: 'spring',         qty: 4 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '연료 분사 시스템', tpCost: 4,
+        requiredItems: [
+          { definitionId: 'electronic_parts', qty: 3 },
+          { definitionId: 'rubber',           qty: 2 },
+          { definitionId: 'wire',             qty: 3 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 2, label: '크랭크샤프트 조립', tpCost: 4,
+        requiredItems: [
+          { definitionId: 'aviation_alloy', qty: 1 },
+          { definitionId: 'duct_tape',      qty: 3 },
+          { definitionId: 'rubber',         qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+  },
+
+  craft_avionics_module: {
+    id: 'craft_avionics_module', name: '항공 전자 모듈', category: 'material',
+    description: '점화·계기·자세 제어 통합 회로. ECU + 고도계 + 인공 수평의.',
+    output: [{ definitionId: 'avionics_module', qty: 1 }],
+    requiredTools: ['workbench'],
+    requiredSkills: { crafting: 6, building: 3 },
+    stages: [
+      {
+        stageIndex: 0, label: '제어 회로 기판', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'electronic_parts', qty: 4 },
+          { definitionId: 'wire',             qty: 3 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '센서 통합', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'electronic_parts', qty: 2 },
+          { definitionId: 'glass_shard',      qty: 2 },
+          { definitionId: 'duct_tape',        qty: 2 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+  },
+
+  craft_tail_rotor_assembly: {
+    id: 'craft_tail_rotor_assembly', name: '꼬리 로터 조립체', category: 'material',
+    description: '안티 토크 장치. 꼬리 블레이드 + 드라이브 샤프트. 없으면 기체가 회전한다.',
+    output: [{ definitionId: 'tail_rotor_assembly', qty: 1 }],
+    requiredTools: ['workbench'],
+    requiredSkills: { crafting: 6, weaponcraft: 4 },
+    stages: [
+      {
+        stageIndex: 0, label: '꼬리 블레이드', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'aviation_alloy', qty: 2 },
+          { definitionId: 'sharp_blade',    qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '드라이브 샤프트', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'scrap_metal', qty: 3 },
+          { definitionId: 'rubber',      qty: 2 },
+          { definitionId: 'spring',      qty: 2 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+  },
+
+  craft_fuselage_frame: {
+    id: 'craft_fuselage_frame', name: '동체 프레임 조립', category: 'material',
+    description: 'R22 소형 헬기 규격 동체. 조종석 + 엔진 베드 + 꼬리 빔 통합 프레임.',
+    output: [{ definitionId: 'fuselage_frame', qty: 1 }],
+    requiredTools: ['workbench'],
+    requiredSkills: { crafting: 7, building: 5, armorcraft: 3 },
+    stages: [
+      {
+        stageIndex: 0, label: '조종석 셸', tpCost: 5,
+        requiredItems: [
+          { definitionId: 'aviation_alloy', qty: 4 },
+          { definitionId: 'glass_shard',    qty: 5 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '엔진 베드·리벳 고정', tpCost: 4,
+        requiredItems: [
+          { definitionId: 'aviation_alloy', qty: 3 },
+          { definitionId: 'nail',           qty: 20 },
+          { definitionId: 'duct_tape',      qty: 5 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 2, label: '꼬리 빔 결합', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'aviation_alloy', qty: 2 },
+          { definitionId: 'rope',           qty: 3 },
+          { definitionId: 'rubber',         qty: 3 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+  },
+
+  refine_avgas: {
+    id: 'refine_avgas', name: '항공 가솔린 정제', category: 'material',
+    description: '자동차 연료통 5개를 증류·첨가제 혼합해 100LL 항공 가솔린으로 정제한다.',
+    output: [{ definitionId: 'avgas_drum', qty: 1 }],
+    requiredTools: ['workbench'],
+    requiredSkills: { crafting: 5, cooking: 3 },
+    stages: [{
+      stageIndex: 0, label: '증류·정제', tpCost: 5,
+      requiredItems: [
+        { definitionId: 'fuel_can',          qty: 5 },
+        { definitionId: 'alcohol_solution',  qty: 2 },
+        { definitionId: 'charcoal_filter',   qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
 };
 
 export default BLUEPRINTS;

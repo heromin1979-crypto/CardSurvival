@@ -286,7 +286,7 @@ function _initNotifications() {
     soldier:    '박민준',
     firefighter:'김영철',
     homeless:   '최형식',
-    pharmacist: '오소희',
+    chef:       '윤재혁',
     engineer:   '김대한',
   };
 

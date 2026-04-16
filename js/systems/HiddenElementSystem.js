@@ -269,8 +269,9 @@ const HiddenElementSystem = {
       if (cond.minKills && (gs.flags.totalKills ?? 0) < cond.minKills) continue;
       if (cond.hiddenLocationId) continue; // 히든 장소 전용 보스는 여기서 스폰하지 않음
 
-      // 스폰 확률: 기본 3%
-      if (Math.random() < 0.03) {
+      // 스폰 확률: 개별 spawnChance 또는 기본 3%
+      const chance = cond.spawnChance ?? 0.03;
+      if (Math.random() < chance) {
         this._spawnBoss(bossId);
         return true;
       }

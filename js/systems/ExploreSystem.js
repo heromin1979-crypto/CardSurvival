@@ -154,6 +154,18 @@ const ExploreSystem = {
 
     if (!this._checkNight('travel')) return;
 
+    // ── 방사선 경고 ────────────────────────────────────────
+    if (district.radiation > 0) {
+      if (!gs.flags._radWarningDismissed) gs.flags._radWarningDismissed = {};
+      if (!gs.flags._radWarningDismissed[districtId]) {
+        gs.flags._radWarningDismissed[districtId] = true;
+        EventBus.emit('notify', {
+          message: `☢️ ${I18n.districtName(districtId, district.name)}은(는) 방사선 오염 지역입니다! 방사선차단제 준비를 권장합니다.`,
+          type: 'danger',
+        });
+      }
+    }
+
     // ── 이동 제한 체크 ──────────────────────────────────────
     const enc = gs.player.encumbrance;
     const weightPct = enc.weightPct ?? 0;
@@ -522,6 +534,10 @@ const ExploreSystem = {
       gs.flags.totalItemsFound = (gs.flags.totalItemsFound ?? 0) + foundNames.length;
       // 탐색 스킬 XP: 아이템 발견당 2 XP
       SkillSystem.gainXp('scavenging', foundNames.length * 2);
+      // 자연 재료(약초·나무·돌 등) 발견 시 채취 스킬 XP 보너스
+      const harvestTypes = ['herb', 'wood', 'wild_root', 'wild_berry', 'mushroom_edible', 'bamboo_shoot', 'pine_cone', 'wood_bark', 'pebble', 'firestone', 'cloth_scrap', 'raw_meat', 'raw_fish'];
+      const harvestCount = loot.filter(e => harvestTypes.includes(e.definitionId)).length;
+      if (harvestCount > 0) SkillSystem.gainXp('harvesting', harvestCount);
       EventBus.emit('notify', { message: I18n.t('exploreSys.found', { items: foundNames.join(', ') }), type: 'good' });
     } else if (queuedNames.length === 0) {
       EventBus.emit('notify', { message: I18n.t('exploreSys.boardFull'), type: 'warn' });

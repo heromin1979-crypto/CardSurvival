@@ -7,10 +7,10 @@ export const SKILL_CATEGORIES = {
   crafting: { label: '제작',  icon: '🔨', color: '#7060c0' },
 };
 
-// 누적 XP 테이블: LEVEL_XP_TABLE[n] = Lv n 도달에 필요한 총 XP
+// 누적 XP 테이블: LEVEL_XP_TABLE[n] = Lv n 도달에 필요한 총 XP (× 0.65 가속)
 export const LEVEL_XP_TABLE = [
-  0, 10, 35, 80, 150, 250, 390, 575, 815, 1120, 1500,
-  1970, 2540, 3220, 4020, 4950, 6020, 7240, 8620, 10170, 11900,
+  0, 7, 23, 52, 98, 163, 254, 374, 530, 728, 975,
+  1281, 1651, 2093, 2613, 3218, 3913, 4706, 5603, 6611, 7735,
 ];
 
 export function getLevelFromXp(xp) {

@@ -2660,24 +2660,24 @@ export const SECRET_EVENTS = [
     ],
   },
 
-  // 29. event_pharmacist_patient_records
+  // 29. event_chef_supply_cache
   {
-    id: 'event_pharmacist_patient_records',
-    name: '환자 기록',
-    icon: '📊',
-    description: '홍대 약국에서 감염 초기 환자들의 기록을 발견했다. 항바이러스 연구에 핵심 데이터다.',
+    id: 'event_chef_supply_cache',
+    name: '호텔 식자재 창고',
+    icon: '📦',
+    description: '명동 소피텔 호텔의 지하 식자재 창고를 발견했다. 아직 쓸 만한 재료가 남아 있다.',
     category: 'character',
     triggerConditions: {
       dayRange: [35, 80],
       timeOfDay: null,
       requiredItems: [],
-      requiredCharacter: 'pharmacist',
+      requiredCharacter: 'chef',
       weather: null,
       season: null,
       minKills: 0,
-      district: 'mapo',
+      district: 'junggoo',
       probability: 1.0,
-      requiredFlags: ['pharmacy_records_recovered'],
+      requiredFlags: ['chef_hotel_visited'],
       minHp: 0,
       maxNoise: 100,
       minItemsFound: 0,
@@ -2686,19 +2686,19 @@ export const SECRET_EVENTS = [
     },
     choices: [
       {
-        id: 'analyze_records',
-        text: '데이터를 정리하여 연구에 활용한다',
+        id: 'salvage_supplies',
+        text: '식자재를 정리하여 비축한다',
         conditions: null,
         outcomes: [
           {
             weight: 100,
-            text: '환자 47명의 감염 진행 데이터. 이것이면 항바이러스 합성의 핵심 변수를 특정할 수 있다.',
+            text: '보존 상태가 좋은 식자재들. 급식소 운영에 큰 도움이 될 것이다.',
             effects: {
               morale: 20,
               items: [
-                { id: 'antibiotics', qty: 1 },
+                { id: 'canned_food', qty: 2 },
               ],
-              flags: { patient_data_analyzed: true },
+              flags: { chef_supply_cache_found: true },
             },
           },
         ],
@@ -3012,20 +3012,20 @@ export const SECRET_EVENTS = [
   },
 
   {
-    id: 'event_pharmacist_drugstore',
-    name: '홍대 약국',
-    icon: '💊',
-    description: '내 약국. 사흘 전 조짐을 알아챘던 곳.',
+    id: 'event_chef_hotel_kitchen',
+    name: '명동 호텔 주방',
+    icon: '🍳',
+    description: '내 주방. 마지막으로 요리했던 곳.',
     category: 'character',
     triggerConditions: {
       dayRange: [1, 999],
       timeOfDay: null,
       requiredItems: [],
-      requiredCharacter: 'pharmacist',
+      requiredCharacter: 'chef',
       weather: null,
       season: null,
       minKills: 0,
-      district: 'mapo',
+      district: 'junggoo',
       probability: 1.0,
       requiredFlags: [],
       minHp: 0,
@@ -3036,17 +3036,17 @@ export const SECRET_EVENTS = [
     },
     choices: [
       {
-        id: 'check_samples',
-        text: '관찰 노트를 확인한다',
+        id: 'check_kitchen',
+        text: '주방을 뒤져본다',
         conditions: null,
         outcomes: [
           {
             weight: 100,
-            text: '증상 관찰 노트가 남아 있었다. 감염 초기 패턴 데이터. 이것은 쓸모 있을 것이다.',
+            text: '호텔 주방에 아직 쓸 만한 조리 도구와 양념이 남아 있었다. 셰프의 감각이 되살아난다.',
             effects: {
-              items: [{ id: 'antiseptic', qty: 1 }],
+              items: [{ id: 'salt', qty: 2 }],
               morale: 12,
-              flags: { pharmacist_notes_found: true },
+              flags: { chef_hotel_visited: true },
             },
           },
         ],
@@ -3099,6 +3099,102 @@ export const SECRET_EVENTS = [
               combat: { enemyId: 'zombie_worker', count: 2 },
               flags: { engineer_factory_salvaged: true },
             },
+          },
+        ],
+      },
+    ],
+  },
+
+  // ── 의사 전용: 감염된 생존자 치료 이벤트 ──────────────────
+  {
+    id: 'evt_doctor_patient',
+    name: '감염된 생존자',
+    icon: '🩹',
+    description: '탐색 중 감염된 생존자를 발견했다. 고열에 시달리며 도움을 구하고 있다.',
+    category: 'character',
+    triggerConditions: {
+      dayRange: [3, 999],
+      timeOfDay: null,
+      requiredItems: [],
+      requiredCharacter: 'doctor',
+      weather: null,
+      season: null,
+      minKills: 0,
+      district: null,
+      probability: 0.12,
+      requiredFlags: [],
+      minHp: 0,
+      maxNoise: 100,
+      minItemsFound: 0,
+      chainId: null,
+      chainStep: 0,
+    },
+    choices: [
+      {
+        id: 'treat_survivor',
+        text: '치료를 시도한다',
+        conditions: null,
+        outcomes: [
+          {
+            weight: 75,
+            text: '치료에 성공했다. 생존자가 감사하며 가진 물자를 나눠줬다.',
+            effects: {
+              morale: 15,
+              items: [
+                { id: 'bandage', qty: 2 },
+                { id: 'herb', qty: 2 },
+              ],
+              flags: { doctor_patient_treated: true },
+            },
+          },
+          {
+            weight: 25,
+            text: '치료를 시도했지만 상태가 너무 심각했다. 감염 위험에 노출됐다.',
+            effects: {
+              infection: 10,
+              morale: -5,
+            },
+          },
+        ],
+      },
+      {
+        id: 'use_supplies',
+        text: '의료 물자를 사용해 본격 치료한다',
+        conditions: { requiredItems: ['first_aid_kit'] },
+        outcomes: [
+          {
+            weight: 90,
+            text: '구급상자를 활용해 완벽히 치료했다. 생존자가 큰 보답을 했다.',
+            effects: {
+              morale: 20,
+              items: [
+                { id: 'bandage', qty: 2 },
+                { id: 'first_aid_kit', qty: 1 },
+                { id: 'herb', qty: 2 },
+              ],
+              removeItems: [{ id: 'first_aid_kit', qty: 1 }],
+              flags: { doctor_patient_treated: true },
+            },
+          },
+          {
+            weight: 10,
+            text: '최선을 다했지만 이미 늦었다. 물자만 소모됐다.',
+            effects: {
+              morale: -3,
+              removeItems: [{ id: 'first_aid_kit', qty: 1 }],
+            },
+          },
+        ],
+      },
+      {
+        id: 'ignore_survivor',
+        text: '지나친다',
+        conditions: null,
+        outcomes: [
+          {
+            weight: 100,
+            text: '생존자를 두고 떠났다. 마음이 무겁다.',
+            effects: { morale: -10 },
           },
         ],
       },

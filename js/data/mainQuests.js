@@ -1,14 +1,14 @@
-// === MAIN QUEST DEFINITIONS (58 quests) ===
-// 6 캐릭터별 메인 퀘스트 체인. Day 1~100 스토리라인.
-// doctor: 8, soldier/firefighter/homeless/pharmacist/engineer: 각 10
+// === MAIN QUEST DEFINITIONS (67 quests) ===
+// 6 캐릭터별 메인 퀘스트 체인. Day 1~365 스토리라인.
+// doctor: 11 (05b 분기 포함), soldier: 10, firefighter: 12, homeless: 10, chef: 10, engineer: 12
 // objective types: collect_item, craft_item, survive_days, visit_district, collect_item_type
 // deadlineDays: Infinity(∞) = 기한 없음
 
 const MAIN_QUESTS = {
 
   // ══════════════════════════════════════════════════════════════════
-  // 이지수 (doctor) — 8 퀘스트
-  // 루트: gangnam → seodaemun → yeongdeungpo
+  // 이지수 (doctor) — 11 퀘스트 (05b 분기 포함)
+  // 루트: gangnam → seodaemun(or gangnam 분기) → yeongdeungpo → 야전병원 → 백신
   // ══════════════════════════════════════════════════════════════════
 
   mq_doctor_01: {
@@ -109,6 +109,7 @@ const MAIN_QUESTS = {
     characterId: 'doctor',
     dayTrigger: 35,
     prerequisite: 'mq_doctor_05',
+    alternativePrerequisites: ['mq_doctor_05', 'mq_doctor_05b'],
     objective: { type: 'collect_item', definitionId: 'first_aid_kit', count: 2 },
     reward: { morale: 10 },
     failPenalty: { morale: -5 },
@@ -139,19 +140,76 @@ const MAIN_QUESTS = {
 
   mq_doctor_08: {
     id: 'mq_doctor_08',
-    title: '100일의 기록',
-    desc: '100일을 생존하라. 치료의 증거를 완성한다.',
+    title: '365일의 기록',
+    desc: '365일을 생존하라. 치료의 증거를 완성한다.',
     icon: '📖',
     characterId: 'doctor',
     dayTrigger: 70,
     prerequisite: 'mq_doctor_07',
-    objective: { type: 'survive_days', count: 100 },
+    objective: { type: 'survive_days', count: 365 },
     reward: { morale: 25, flags: { mainQuestComplete_doctor: true } },
     failPenalty: null,
     deadlineDays: Infinity,
     narrative: {
       start: '방송이 나갔다. 이제 할 수 있는 것은 기다리는 것. 그리고 계속 살아남는 것.',
-      complete: '100일. 무전에서 첫 번째 응답이 들렸다. "프로토콜을 받았습니다. 효과가 있습니다." 메모지에 적었다. "D+100. 치료법 확인."',
+      complete: '365일. 무전에서 첫 번째 응답이 들렸다. "프로토콜을 받았습니다. 효과가 있습니다." 메모지에 적었다. "D+365. 치료법 확인."',
+    },
+  },
+
+  // ── 분기 퀘스트: 삼성병원 대안 루트 ──────────────────────────────
+  mq_doctor_05b: {
+    id: 'mq_doctor_05b',
+    title: '강남 삼성병원 재탐색',
+    desc: '세브란스 대신 삼성병원 지하 연구실에서 데이터를 확보할 수도 있다.',
+    icon: '🔬',
+    characterId: 'doctor',
+    dayTrigger: null,
+    prerequisite: 'mq_doctor_04',
+    objective: { type: 'visit_district', districtId: 'gangnam', count: 1 },
+    reward: { morale: 10, items: [{ definitionId: 'antiseptic', qty: 3 }] },
+    failPenalty: null,
+    deadlineDays: null,
+    narrative: {
+      start: '세브란스까지 가는 건 위험하다. 삼성병원 지하에도 연구 데이터가 있을 수 있다. 더 안전한 경로를 택할 수 있다.',
+      complete: '삼성병원 지하에서 부분적인 연구 데이터를 확보했다. 완전하진 않지만, 치료에 도움이 될 것이다.',
+    },
+  },
+
+  // ── 확장 퀘스트: 야전 병원 설립 ─────────────────────────────────
+  mq_doctor_09: {
+    id: 'mq_doctor_09',
+    title: '야전 병원 설립',
+    desc: '생존자들을 치료할 수 있는 야전 병원을 세워라.',
+    icon: '🏥',
+    characterId: 'doctor',
+    dayTrigger: null,
+    prerequisite: 'mq_doctor_06',
+    objective: { type: 'build_structure', structureId: 'medical_station', count: 1 },
+    reward: { morale: 15, items: [{ definitionId: 'first_aid_kit', qty: 2 }] },
+    failPenalty: null,
+    deadlineDays: null,
+    narrative: {
+      start: '의료 데이터를 분석한 결과, 이동식 치료소가 필요하다. 세브란스에서 가져온 장비로 야전 병원을 세울 수 있다.',
+      complete: '야전 병원이 완성됐다. 이제 감염자들을 체계적으로 치료할 수 있다.',
+    },
+  },
+
+  // ── 확장 퀘스트: 백신 프로토타입 ────────────────────────────────
+  mq_doctor_10: {
+    id: 'mq_doctor_10',
+    title: '백신 프로토타입',
+    desc: '수집한 의료 데이터로 백신 시제품을 만들어라.',
+    icon: '💉',
+    characterId: 'doctor',
+    dayTrigger: null,
+    prerequisite: 'mq_doctor_09',
+    objective: { type: 'collect_item', itemId: 'purified_medicine', count: 3 },
+    reward: { morale: 20, items: [{ definitionId: 'synthetic_antibiotics', qty: 1 }] },
+    failPenalty: null,
+    deadlineDays: null,
+    narrative: {
+      start: '야전 병원에서 감염 패턴을 분석할 수 있게 됐다. 정제약 3개를 모아 백신 시제품을 만들어야 한다.',
+      complete: '백신 시제품이 완성됐다! 아직 대량 생산은 불가능하지만, 치료의 희망이 보인다.',
     },
   },
 
@@ -164,18 +222,18 @@ const MAIN_QUESTS = {
   mq_soldier_01: {
     id: 'mq_soldier_01',
     title: '용산 기지 생존',
-    desc: '용산 미군기지의 무기고에서 버티고 있다. 나이프를 확보하라.',
+    desc: '용산 미군기지의 무기고에서 버티고 있다. 돌칼을 제작하라.',
     icon: '🔪',
     characterId: 'soldier',
     dayTrigger: 1,
     prerequisite: null,
-    objective: { type: 'collect_item', definitionId: 'knife', count: 1 },
+    objective: { type: 'craft_item', definitionId: 'stone_knife', count: 1 },
     reward: { morale: 5 },
     failPenalty: { morale: -5 },
     deadlineDays: 10,
     narrative: {
-      start: '용산 미군기지의 무기고에서 버티고 있다. 무기를 확보하고 나가야 한다.',
-      complete: '나이프를 확보했다. 이제 밖으로 나갈 준비가 됐다.',
+      start: '용산 미군기지의 무기고에서 버티고 있다. 무기를 만들어 나가야 한다.',
+      complete: '돌칼을 만들었다. 이제 밖으로 나갈 준비가 됐다.',
     },
   },
 
@@ -200,17 +258,17 @@ const MAIN_QUESTS = {
   mq_soldier_02b: {
     id: 'mq_soldier_02b',
     title: '무전기 복원',
-    desc: '기지의 무전기가 고장났다. 전자 부품 2개로 통신을 복원하라.',
+    desc: '기지의 무전기가 고장났다. 천 5개로 안테나를 보수하라.',
     icon: '📡',
     characterId: 'soldier',
     dayTrigger: 5,
     prerequisite: 'mq_soldier_02',
-    objective: { type: 'collect_item', definitionId: 'electronic_parts', count: 2 },
+    objective: { type: 'collect_item', definitionId: 'cloth', count: 5 },
     reward: { morale: 5 },
     failPenalty: { morale: -5 },
     deadlineDays: 20,
     narrative: {
-      start: '기지 무전기의 회로가 나갔다. 전자 부품이 있으면 고칠 수 있다. 용산 전자상가라면...',
+      start: '기지 무전기의 안테나가 망가졌다. 천으로 보수할 수 있다. 주변에서 찾아보자.',
       complete: '무전기에서 잡음이 들린다. "...KBS... 방송 중..." 그리고 또 하나. "광화문... 정부청사... 최종 명령..."',
     },
   },
@@ -326,18 +384,18 @@ const MAIN_QUESTS = {
   mq_soldier_06: {
     id: 'mq_soldier_06',
     title: '서울 집결 좌표',
-    desc: '100일을 생존하라. 방송이 닿는 곳을 기다린다.',
+    desc: '365일을 생존하라. 방송이 닿는 곳을 기다린다.',
     icon: '📖',
     characterId: 'soldier',
     dayTrigger: 65,
     prerequisite: 'mq_soldier_05c',
-    objective: { type: 'survive_days', count: 100 },
+    objective: { type: 'survive_days', count: 365 },
     reward: { morale: 25, flags: { mainQuestComplete_soldier: true } },
     failPenalty: null,
     deadlineDays: Infinity,
     narrative: {
       start: '방송이 나갔다. 좌표와 함께. 이제 기다린다. 누군가 응답할 때까지.',
-      complete: '100일. 무전에서 신호가 들린다. 경기도 수원에서 첫 번째 응답. "KBS 수신했습니다. 이동 중입니다."',
+      complete: '365일. 무전에서 신호가 들린다. 경기도 수원에서 첫 번째 응답. "KBS 수신했습니다. 이동 중입니다."',
     },
   },
 
@@ -509,21 +567,57 @@ const MAIN_QUESTS = {
     },
   },
 
+  mq_fire_05d: {
+    id: 'mq_fire_05d',
+    title: '은평 대피소 방어전',
+    desc: '대피소를 방어할 추가 구조물이 필요하다. 구조물 3개를 제작하라.',
+    icon: '🛡️',
+    characterId: 'firefighter',
+    dayTrigger: 60,
+    prerequisite: 'mq_fire_05c',
+    objective: { type: 'craft_item', category: 'structure', count: 3 },
+    reward: { morale: 15 },
+    failPenalty: { morale: -5 },
+    deadlineDays: 100,
+    narrative: {
+      start: '감염자 군집이 은평 쪽으로 이동하고 있다. 대피소 방어를 강화해야 한다.',
+      complete: '삼중 방벽이 완성됐다. 이 정도면 군집도 막을 수 있다.',
+    },
+  },
+
+  mq_fire_05e: {
+    id: 'mq_fire_05e',
+    title: '용산 생존자 구출',
+    desc: '용산구에 고립된 생존자가 있다. 용산구를 방문하라.',
+    icon: '🚑',
+    characterId: 'firefighter',
+    dayTrigger: 70,
+    prerequisite: 'mq_fire_05d',
+    objective: { type: 'visit_district', districtId: 'yongsan', count: 1 },
+    reward: { morale: 15 },
+    failPenalty: { morale: -5 },
+    deadlineDays: 120,
+    narrative: {
+      start: '무전에서 구조 요청. "여기는 용산... 3명이 고립..." 소방관의 본능이 움직인다.',
+      complete: '생존자 3명을 구출했다. 은평 대피소로 데려온다. 이제 15명이다.',
+    },
+  },
+
   mq_fire_06: {
     id: 'mq_fire_06',
     title: '은평의 수호자',
-    desc: '100일을 생존하라. 가족과 함께.',
+    desc: '365일을 생존하라. 가족과 함께.',
     icon: '📖',
     characterId: 'firefighter',
-    dayTrigger: 65,
-    prerequisite: 'mq_fire_05c',
-    objective: { type: 'survive_days', count: 100 },
+    dayTrigger: 80,
+    prerequisite: 'mq_fire_05e',
+    objective: { type: 'survive_days', count: 365 },
     reward: { morale: 25, flags: { mainQuestComplete_firefighter: true } },
     failPenalty: null,
     deadlineDays: Infinity,
     narrative: {
       start: '가족과 함께 버틴다. 하루하루가 선물이다.',
-      complete: '100일. 가족과 함께 버텼다. 이 곳이 새로운 집이다.',
+      complete: '365일. 가족과 함께 버텼다. 이 곳이 새로운 집이다.',
     },
   },
 
@@ -685,7 +779,7 @@ const MAIN_QUESTS = {
     characterId: 'homeless',
     dayTrigger: 45,
     prerequisite: 'mq_homeless_05b',
-    objective: { type: 'collect_item', definitionId: 'canned_food', count: 5 },
+    objective: { type: 'collect_item_type', itemType: 'food', count: 5 },
     reward: { morale: 20, flags: { past_reconciled: true } },
     failPenalty: { morale: -10 },
     deadlineDays: 80,
@@ -698,204 +792,204 @@ const MAIN_QUESTS = {
   mq_homeless_06: {
     id: 'mq_homeless_06',
     title: '새 집',
-    desc: '100일을 생존하라. 처음으로 집이 생겼다.',
+    desc: '365일을 생존하라. 처음으로 집이 생겼다.',
     icon: '📖',
     characterId: 'homeless',
     dayTrigger: 50,
     prerequisite: 'mq_homeless_05c',
-    objective: { type: 'survive_days', count: 100 },
+    objective: { type: 'survive_days', count: 365 },
     reward: { morale: 25, flags: { mainQuestComplete_homeless: true } },
     failPenalty: null,
     deadlineDays: Infinity,
     narrative: {
       start: '타워가 집이 됐다. 처음으로 집이 생겼다. 이제 지킨다.',
-      complete: '100일. 롯데타워가 새 집이 됐다. 처음으로 집이 생겼다.',
+      complete: '365일. 롯데타워가 새 집이 됐다. 처음으로 집이 생겼다.',
     },
   },
 
   // ══════════════════════════════════════════════════════════════════
-  // 한소희 (pharmacist) — 10 퀘스트
-  // 루트: gangnam → mapo → gwanak
-  // 체인: 01→02→02b→02c→03→04→05→05b→05c→06
+  // 윤재혁 (chef) — 10 퀘스트
+  // 루트: junggoo → gangnam → yongsan
+  // 체인: 01→02→03→04→05→06→07→08→09→10
   // ══════════════════════════════════════════════════════════════════
 
-  mq_pharma_01: {
-    id: 'mq_pharma_01',
-    title: '약국 재고',
-    desc: '삼성병원에 피신했다. 붕대 3개를 수집하라.',
-    icon: '💊',
-    characterId: 'pharmacist',
+  mq_chef_01: {
+    id: 'mq_chef_01',
+    title: '남대문 식재료',
+    desc: '남대문시장에서 식재료를 확보하라. 식량 3개를 수집하라.',
+    icon: '🛒',
+    characterId: 'chef',
     dayTrigger: 1,
     prerequisite: null,
-    objective: { type: 'collect_item', definitionId: 'bandage', count: 3 },
+    objective: { type: 'collect_item_type', itemType: 'food', count: 3 },
     reward: { morale: 5 },
     failPenalty: { morale: -5 },
     deadlineDays: 10,
     narrative: {
-      start: '삼성병원에 피신했다. 약국 재고가 바닥나기 전에 재료를 모아야 한다.',
-      complete: '붕대를 확보했다. 이것으로 기본 치료는 가능하다.',
+      start: '명동 소피텔 호텔에서 탈출했다. 남대문시장에 아직 쓸 만한 식재료가 있을 것이다.',
+      complete: '식재료를 확보했다. 셰프의 본능이 되살아난다.',
     },
   },
 
-  mq_pharma_02: {
-    id: 'mq_pharma_02',
-    title: '임시 실험실',
-    desc: '약품 합성을 위한 공간이 필요하다. 구조물을 제작하라.',
-    icon: '🧪',
-    characterId: 'pharmacist',
+  mq_chef_02: {
+    id: 'mq_chef_02',
+    title: '조리대 설치',
+    desc: '요리를 하려면 조리 공간이 필요하다. 구조물을 제작하라.',
+    icon: '🏗️',
+    characterId: 'chef',
     dayTrigger: 3,
-    prerequisite: 'mq_pharma_01',
+    prerequisite: 'mq_chef_01',
     objective: { type: 'craft_item', category: 'structure', count: 1 },
-    reward: { morale: 5, items: [{ definitionId: 'bandage', qty: 2 }] },
+    reward: { morale: 5, items: [{ definitionId: 'salt', qty: 2 }] },
     failPenalty: { morale: -5 },
     deadlineDays: 15,
     narrative: {
-      start: '약품 합성에는 안정된 공간이 필요하다. 구조물을 세운다.',
-      complete: '임시 실험대가 완성됐다. 조악하지만, 작업할 수 있다.',
+      start: '시장 한쪽에 임시 조리대를 세운다. 불과 냄비, 그리고 셰프의 손.',
+      complete: '조리대가 완성됐다. 조악하지만, 요리할 수 있다.',
     },
   },
 
-  mq_pharma_02b: {
-    id: 'mq_pharma_02b',
-    title: '감염 관찰 일지',
-    desc: '감염 패턴을 관찰하려면 붕대 5개가 필요하다. 환자 접촉 시 사용할 보호 장비다.',
-    icon: '📋',
-    characterId: 'pharmacist',
+  mq_chef_03: {
+    id: 'mq_chef_03',
+    title: '안전한 식수',
+    desc: '요리에 깨끗한 물이 필수다. 깨끗한 물 3개를 확보하라.',
+    icon: '💧',
+    characterId: 'chef',
     dayTrigger: 5,
-    prerequisite: 'mq_pharma_02',
-    objective: { type: 'collect_item', definitionId: 'bandage', count: 5 },
+    prerequisite: 'mq_chef_02',
+    objective: { type: 'collect_item', definitionId: 'clean_water', count: 3 },
     reward: { morale: 5 },
     failPenalty: { morale: -5 },
     deadlineDays: 20,
     narrative: {
-      start: '감염 초기 환자들의 패턴이 다르다. 눈 떨림, 체온 변화, 행동 변이... 관찰하려면 보호 장비가 필요하다.',
-      complete: '관찰 일지 3페이지. 감염 48시간 후 세포 변이 패턴이 달라진다. 이 발견이 열쇠가 될지도.',
+      start: '오염된 물로는 요리할 수 없다. 깨끗한 물을 찾아야 한다.',
+      complete: '깨끗한 물을 확보했다. 이제 제대로 된 요리를 할 수 있다.',
     },
   },
 
-  mq_pharma_02c: {
-    id: 'mq_pharma_02c',
-    title: '홍대 약국의 기록',
-    desc: '원래 약국이 있던 마포구로 가서 초기 관찰 기록을 회수하라.',
-    icon: '📍',
-    characterId: 'pharmacist',
-    dayTrigger: 8,
-    prerequisite: 'mq_pharma_02b',
-    objective: { type: 'visit_district', districtId: 'mapo', count: 1 },
-    reward: { morale: 10, flags: { pharmacy_records_recovered: true } },
-    failPenalty: { morale: -5 },
-    deadlineDays: 30,
-    narrative: {
-      start: '삼성병원으로 도망치기 전, 약국에 기록을 남겨두었다. 1월 14일부터의 환자 데이터. 돌아가서 회수해야 한다.',
-      complete: '약국은 약탈당했지만 카운터 아래 숨겨둔 노트는 무사했다. 3일치 관찰 데이터. 이것이면 패턴을 증명할 수 있다.',
-    },
-  },
-
-  mq_pharma_03: {
-    id: 'mq_pharma_03',
-    title: '의료 재료 수집',
-    desc: '항바이러스 합성에 구급상자의 시약이 필수다. 3개를 모아라.',
-    icon: '🩹',
-    characterId: 'pharmacist',
+  mq_chef_04: {
+    id: 'mq_chef_04',
+    title: '식재료 대량 비축',
+    desc: '급식소를 열려면 식량이 많이 필요하다. 식량 8개를 비축하라.',
+    icon: '🍖',
+    characterId: 'chef',
     dayTrigger: 10,
-    prerequisite: 'mq_pharma_02c',
-    objective: { type: 'collect_item', definitionId: 'first_aid_kit', count: 3 },
+    prerequisite: 'mq_chef_03',
+    objective: { type: 'collect_item_type', itemType: 'food', count: 8 },
     reward: { morale: 10 },
     failPenalty: { morale: -5 },
     deadlineDays: 35,
     narrative: {
-      start: '항바이러스 합성에 의료 키트의 시약이 필수다. 3개가 필요하다.',
-      complete: '시약을 확보했다. 이제 연구소의 장비가 필요하다.',
+      start: '사람들이 모여들고 있다. 굶주린 얼굴들. 많은 식량이 필요하다.',
+      complete: '식재료가 넉넉히 모였다. 급식소를 열 수 있다.',
     },
   },
 
-  mq_pharma_04: {
-    id: 'mq_pharma_04',
-    title: '서울대 연구소',
-    desc: '관악구에 도달하라. 서울대학교 연구소에 합성 장비가 있다.',
-    icon: '🎓',
-    characterId: 'pharmacist',
+  mq_chef_05: {
+    id: 'mq_chef_05',
+    title: '생존자 급식소',
+    desc: '급식소를 운영하려면 구조물이 더 필요하다. 구조물 2개를 제작하라.',
+    icon: '🍲',
+    characterId: 'chef',
     dayTrigger: 25,
-    prerequisite: 'mq_pharma_03',
-    objective: { type: 'visit_district', districtId: 'gwanak', count: 1 },
-    reward: { morale: 15 },
-    failPenalty: { morale: -10 },
+    prerequisite: 'mq_chef_04',
+    objective: { type: 'craft_item', category: 'structure', count: 2 },
+    reward: { morale: 15, flags: { chef_canteen_open: true } },
+    failPenalty: { morale: -5 },
     deadlineDays: 55,
     narrative: {
-      start: '서울대학교 연구소. 정수 장비와 의약품 원료가 남아있을 것이다.',
-      complete: '연구소에 필요한 장비가 있었다. 합성 작업을 시작할 수 있다.',
+      start: '조리대만으로는 부족하다. 테이블, 지붕, 저장 공간. 급식소를 세운다.',
+      complete: '급식소가 열렸다. 첫 번째 줄이 섰다. "한 그릇 더 있어요."',
     },
   },
 
-  mq_pharma_05: {
-    id: 'mq_pharma_05',
-    title: '항바이러스 합성',
-    desc: '의료 아이템 3개를 제작하라. 합성의 마지막 단계.',
-    icon: '⚗️',
-    characterId: 'pharmacist',
-    dayTrigger: 40,
-    prerequisite: 'mq_pharma_04',
-    objective: { type: 'craft_item', category: 'medical', count: 3 },
-    reward: { morale: 15 },
+  mq_chef_06: {
+    id: 'mq_chef_06',
+    title: '식량 자급 루트',
+    desc: '강남구를 방문해 식량 수급 루트를 개척하라.',
+    icon: '🗺️',
+    characterId: 'chef',
+    dayTrigger: 35,
+    prerequisite: 'mq_chef_05',
+    objective: { type: 'visit_district', districtId: 'gangnam', count: 1 },
+    reward: { morale: 10 },
     failPenalty: { morale: -5 },
-    deadlineDays: 75,
+    deadlineDays: 65,
     narrative: {
-      start: '5종의 재료. 정확한 온도, 정확한 비율. 시작한다.',
-      complete: '시험지가 파랗게 변했다. 양성. 항바이러스 합성체 완성.',
+      start: '남대문시장의 식재료는 바닥나고 있다. 강남 지역에 대형 마트가 있을 것이다.',
+      complete: '강남 대형 마트에서 수급 루트를 확보했다. 정기적으로 식재료를 가져올 수 있다.',
     },
   },
 
-  mq_pharma_05b: {
-    id: 'mq_pharma_05b',
-    title: '임상 시험',
-    desc: '합성체의 효과를 검증하려면 추가 의료 아이템 5개가 필요하다.',
-    icon: '🔬',
-    characterId: 'pharmacist',
+  mq_chef_07: {
+    id: 'mq_chef_07',
+    title: '옛 호텔 동료',
+    desc: '용산구를 방문해 소피텔 호텔의 옛 동료를 수색하라.',
+    icon: '👨‍🍳',
+    characterId: 'chef',
     dayTrigger: 45,
-    prerequisite: 'mq_pharma_05',
-    objective: { type: 'collect_item_type', itemType: 'medical', count: 5 },
-    reward: { morale: 10, items: [{ definitionId: 'antibiotics', qty: 1 }] },
+    prerequisite: 'mq_chef_06',
+    objective: { type: 'visit_district', districtId: 'yongsan', count: 1 },
+    reward: { morale: 15 },
     failPenalty: { morale: -5 },
     deadlineDays: 80,
     narrative: {
-      start: '합성체가 시험관에서는 작동한다. 하지만 실제 효과를 증명하려면 더 많은 시약이 필요하다.',
-      complete: '3차 임상 완료. 감염 진행 속도가 68% 감소. 효과가 있다. 이제 이걸 알려야 한다.',
+      start: '소피텔 호텔의 동료 셰프가 용산 쪽으로 피신했다는 소문이 있다. 찾아야 한다.',
+      complete: '동료를 찾았다. 함께라면 급식소를 더 크게 운영할 수 있다.',
     },
   },
 
-  mq_pharma_05c: {
-    id: 'mq_pharma_05c',
-    title: '처방전 배포',
-    desc: '합성법을 기록하여 다른 생존자에게 전달하라. 구조물 2개를 제작하라.',
-    icon: '📄',
-    characterId: 'pharmacist',
+  mq_chef_08: {
+    id: 'mq_chef_08',
+    title: '급식소 확장',
+    desc: '더 많은 생존자를 위해 급식소를 확장하라. 구조물 3개를 제작하라.',
+    icon: '🏘️',
+    characterId: 'chef',
     dayTrigger: 55,
-    prerequisite: 'mq_pharma_05b',
-    objective: { type: 'craft_item', category: 'structure', count: 2 },
-    reward: { morale: 15, flags: { antiviral_distributed: true } },
+    prerequisite: 'mq_chef_07',
+    objective: { type: 'craft_item', category: 'structure', count: 3 },
+    reward: { morale: 15 },
     failPenalty: { morale: -5 },
-    deadlineDays: 90,
+    deadlineDays: 100,
     narrative: {
-      start: '합성법을 메모지에 적었다. 하지만 전달하려면 안전한 거점이 필요하다. 배포 거점을 세우자.',
-      complete: '처방전 20부를 필사했다. 거점에 "무료 항바이러스 처방" 안내를 붙였다. 누군가 찾아올 것이다.',
+      start: '급식소에 사람이 너무 많다. 확장해야 한다. 더 큰 조리 공간, 더 많은 테이블.',
+      complete: '급식소가 확장됐다. 이제 50명 이상을 먹일 수 있다.',
     },
   },
 
-  mq_pharma_06: {
-    id: 'mq_pharma_06',
-    title: '치료의 증명',
-    desc: '100일을 생존하라. 합성체의 효과를 증명한다.',
+  mq_chef_09: {
+    id: 'mq_chef_09',
+    title: '식량 저장고',
+    desc: '겨울을 대비해 식량을 대량 비축하라. 식량 15개를 확보하라.',
+    icon: '📦',
+    characterId: 'chef',
+    dayTrigger: 70,
+    prerequisite: 'mq_chef_08',
+    objective: { type: 'collect_item_type', itemType: 'food', count: 15 },
+    reward: { morale: 20, flags: { chef_storage_complete: true } },
+    failPenalty: { morale: -10 },
+    deadlineDays: 150,
+    narrative: {
+      start: '겨울이 온다. 식량 저장고를 가득 채워야 한다. 15개 이상의 식량이 필요하다.',
+      complete: '저장고가 가득 찼다. 이 겨울을 넘길 수 있다.',
+    },
+  },
+
+  mq_chef_10: {
+    id: 'mq_chef_10',
+    title: '새로운 시작',
+    desc: '365일을 생존하라. 서울의 식량 자급 체계를 증명한다.',
     icon: '📖',
-    characterId: 'pharmacist',
-    dayTrigger: 60,
-    prerequisite: 'mq_pharma_05c',
-    objective: { type: 'survive_days', count: 100 },
-    reward: { morale: 25, flags: { mainQuestComplete_pharmacist: true } },
+    characterId: 'chef',
+    dayTrigger: 80,
+    prerequisite: 'mq_chef_09',
+    objective: { type: 'survive_days', count: 365 },
+    reward: { morale: 25, flags: { mainQuestComplete_chef: true } },
     failPenalty: null,
     deadlineDays: Infinity,
     narrative: {
-      start: '합성체가 완성됐다. 이제 효과를 증명해야 한다. 살아남으면서.',
-      complete: '100일. 항바이러스 합성체. 임시 처방이지만, 처방이었다.',
+      start: '급식소는 이제 서울 최대의 식량 거점이다. 이대로 계속 살아남는다.',
+      complete: '365일. 남대문 급식소는 서울의 희망이 됐다. 칼이 아닌 국자로 세상을 바꿨다.',
     },
   },
 
@@ -1067,21 +1161,57 @@ const MAIN_QUESTS = {
     },
   },
 
-  mq_eng_06: {
-    id: 'mq_eng_06',
-    title: '탈출 기계',
-    desc: '100일을 생존하라. 이동수단을 완성한다.',
-    icon: '📖',
+  mq_eng_05d: {
+    id: 'mq_eng_05d',
+    title: '함정 설치',
+    desc: '공장 주변에 감염자 방어 함정을 설치하라. 고철 5개를 수집하라.',
+    icon: '⚠️',
     characterId: 'engineer',
     dayTrigger: 60,
     prerequisite: 'mq_eng_05c',
-    objective: { type: 'survive_days', count: 100 },
+    objective: { type: 'collect_item', definitionId: 'scrap_metal', count: 5 },
+    reward: { morale: 10 },
+    failPenalty: { morale: -5 },
+    deadlineDays: 100,
+    narrative: {
+      start: '시운전 중 감염자 무리와 마주쳤다. 공장 주변에 함정을 설치해야 안전하다.',
+      complete: '가시 함정 5개 설치 완료. 이제 공장은 안전하다.',
+    },
+  },
+
+  mq_eng_05e: {
+    id: 'mq_eng_05e',
+    title: '발전기 수리',
+    desc: '공장 발전기를 완전히 수리하라. 전자 부품 5개를 확보하라.',
+    icon: '🔋',
+    characterId: 'engineer',
+    dayTrigger: 70,
+    prerequisite: 'mq_eng_05d',
+    objective: { type: 'collect_item', definitionId: 'electronic_parts', count: 5 },
+    reward: { morale: 15, flags: { generator_repaired: true } },
+    failPenalty: { morale: -5 },
+    deadlineDays: 130,
+    narrative: {
+      start: '발전기를 완전히 수리하면 공장의 모든 장비를 가동할 수 있다. 전자 부품이 더 필요하다.',
+      complete: '발전기가 완전히 복구됐다. 전력이 안정적으로 공급된다. 이제 뭐든 만들 수 있다.',
+    },
+  },
+
+  mq_eng_06: {
+    id: 'mq_eng_06',
+    title: '탈출 기계',
+    desc: '365일을 생존하라. 이동수단을 완성한다.',
+    icon: '📖',
+    characterId: 'engineer',
+    dayTrigger: 80,
+    prerequisite: 'mq_eng_05e',
+    objective: { type: 'survive_days', count: 365 },
     reward: { morale: 25, flags: { mainQuestComplete_engineer: true } },
     failPenalty: null,
     deadlineDays: Infinity,
     narrative: {
-      start: '조향 장치까지 완성됐다. 이제 조립만 남았다. 100일을 버텨야 한다.',
-      complete: '100일. 이동수단이 완성됐다. 서울 외곽으로 달린다.',
+      start: '조향 장치까지 완성됐다. 이제 조립만 남았다. 365일을 버텨야 한다.',
+      complete: '365일. 이동수단이 완성됐다. 서울 외곽으로 달린다.',
     },
   },
 

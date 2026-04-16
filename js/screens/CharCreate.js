@@ -179,6 +179,12 @@ const CharCreate = {
     gs.player.encounterRateReduct     = 0;
     gs.player.bandageHpBonus          = 0;
     gs.player.craftSuccessBonus       = 0;
+    gs.player.fleeBonus               = 0;
+    gs.player.cookingEffectBonus      = 1.0;
+    gs.player.toxinDetect             = false;
+    gs.player.companionMoraleOnCook   = 0;
+    gs.player.knifeDmgBonus           = 0;
+    gs.player.companionMoraleDecayReduct = 0;
 
     // ── 캐릭터 능력 효과 적용 ────────────────────────────────
     const extraStartItems = [];
@@ -202,6 +208,12 @@ const CharCreate = {
       if (e.infectionRate)           gs.stats.infection.rateMultiplier = e.infectionRate;
       if (e.infectionRecovery)       gs.stats.infection.recoveryMult = e.infectionRecovery;
       if (e.craftSuccessBonus)       gs.player.craftSuccessBonus = e.craftSuccessBonus;
+      if (e.fleeBonus)               gs.player.fleeBonus = e.fleeBonus;
+      if (e.cookingEffectBonus)      gs.player.cookingEffectBonus = e.cookingEffectBonus;
+      if (e.toxinDetect)             gs.player.toxinDetect = e.toxinDetect;
+      if (e.companionMoraleOnCook)   gs.player.companionMoraleOnCook = e.companionMoraleOnCook;
+      if (e.knifeDmgBonus)           gs.player.knifeDmgBonus = e.knifeDmgBonus;
+      if (e.companionMoraleDecayReduct) gs.player.companionMoraleDecayReduct = e.companionMoraleDecayReduct;
       if (e.startingItems)           extraStartItems.push(...e.startingItems);
     }
 
@@ -282,7 +294,7 @@ const CharCreate = {
       soldier:     { morale: 65, flags: { gwanghwamun_retreat: true } },
       firefighter: { fatigue: 20, morale: 60, flags: { jaehoon_infected: true } },
       homeless:    { morale: 80, flags: { bridge_dweller: true } },
-      pharmacist:  { infection: 3, morale: 70, flags: { hongdae_pharmacy_owner: true } },
+      chef:        { morale: 75, flags: { myeongdong_hotel_chef: true } },
       engineer:    { morale: 72, flags: { seongsu_factory_owner: true } },
     };
 
@@ -376,6 +388,20 @@ const CharCreate = {
       if (inst) gs.placeCardInRow(inst.instanceId, 'middle');
     }
 
+    // ── 캐릭터 전용 시작 구조물 ─────────────────────────────
+    if (char.startingStructures) {
+      for (const structId of char.startingStructures) {
+        const inst = gs.createCardInstance(structId);
+        if (inst) gs.placeCardInRow(inst.instanceId, 'middle');
+      }
+    }
+
+    // ── 캐릭터 전용 시작 동반자 ─────────────────────────────
+    if (char.startingCompanion) {
+      const compInst = gs.createCardInstance(char.startingCompanion);
+      if (compInst) gs.placeCardInRow(compInst.instanceId, 'middle');
+    }
+
     // ── 작은 가방 지급 및 자동 장착 ─────────────────────────
     const bagInst = gs.createCardInstance('small_bag');
     if (bagInst) {
@@ -417,13 +443,13 @@ const CharCreate = {
         'broken_chair', 'old_fire_extinguisher',
         'cloth', 'canned_food', 'rope', 'scrap_metal', 'bandage', 'wood',
       ],
-      // ── 대학가 (관악 — 약사 시작) ──
-      gwanak: [
+      // ── 중구 (남대문 — 셰프 시작) ──
+      junggoo: [
         'collapsed_shelf', 'broken_lamp',
         'cloth', 'canned_food', 'rope', 'bandage', 'scrap_metal', 'wood',
       ],
-      // ── 아파트 단지 (노원 — 엔지니어 시작) ──
-      nowon: [
+      // ── 용산구 (전자상가 — 엔지니어 시작) ──
+      yongsan: [
         'old_generator', 'rusted_toolbox',
         'scrap_metal', 'cloth', 'wire', 'rope', 'canned_food', 'bandage',
       ],

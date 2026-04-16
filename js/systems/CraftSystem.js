@@ -341,15 +341,41 @@ const CraftSystem = {
     EventBus.emit('craftComplete', { blueprintId: bp.id, outputInstanceIds: outputIds });
     EventBus.emit('notify', { message: I18n.t('craftSys.complete', { name: I18n.blueprintName(bp.id, bp.name) }), type: 'good' });
 
-    // 제작 스킬 XP: BALANCE 기반
-    const craftSkillId = craftSkillMap[bp.category] ?? 'crafting';
+    // 제작 스킬 XP: BALANCE 기반 (skillOverride로 훈련 레시피 지원)
+    const craftSkillId = bp.skillOverride ?? craftSkillMap[bp.category] ?? 'crafting';
     const craftXp      = BALANCE.crafting.xpBase[craftSkillId] ?? 5;
-    SkillSystem.gainXp(craftSkillId, craftXp * (bp.stages?.length ?? 1));
-    // 요리 제작 시 flags에 crafted=true 표시를 위한 output 태깅
-    if (craftSkillId === 'cooking') {
-      for (const id of outputIds) {
-        if (GameState.cards[id]) GameState.cards[id]._crafted = true;
-      }
+    const stageCount   = bp.stages?.length ?? 1;
+    SkillSystem.gainXp(craftSkillId, craftXp * stageCount);
+
+    // 보조 스킬 XP — 카테고리별 관련 스킬 소량 부여 (연관 이해도)
+    // 기초 crafting은 모든 전문 제작의 기반이므로 항상 +1
+    if (craftSkillId !== 'crafting') {
+      SkillSystem.gainXp('crafting', stageCount);
+    }
+    // 구조물 제작 → building + armorcraft(내구성 이해)
+    if (bp.category === 'structure' && craftSkillId !== 'armorcraft') {
+      SkillSystem.gainXp('armorcraft', stageCount);
+    }
+    // 무기 제작 → weaponcraft + melee(무기 감각)
+    if (bp.category === 'weapon') {
+      SkillSystem.gainXp('melee', stageCount);
+    }
+    // 방어구 제작 → armorcraft + defense(방어 감각)
+    if (bp.category === 'armor') {
+      SkillSystem.gainXp('defense', stageCount);
+    }
+    // 음식 제작 → cooking + harvesting(재료 가공 이해)
+    if (bp.category === 'food' && craftSkillId !== 'harvesting') {
+      SkillSystem.gainXp('harvesting', stageCount);
+    }
+    // 의료 제작 → medicine + cooking(조제·조합 이해)
+    if (bp.category === 'medical' && craftSkillId !== 'cooking') {
+      SkillSystem.gainXp('cooking', Math.ceil(stageCount / 2));
+    }
+
+    // 제작 아이템에 _crafted 플래그 태깅 (요리 + 무기 등)
+    for (const id of outputIds) {
+      if (GameState.cards[id]) GameState.cards[id]._crafted = true;
     }
   },
 

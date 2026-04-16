@@ -299,6 +299,17 @@ const CombatSystem = {
       }
 
       damage = Math.floor(damage * (gs.player.combatDmgBonus ?? 1.0));
+      // 기계공 자작 무기 보너스 (+15%)
+      if (gs.player.characterId === 'engineer' && weaponId && gs.cards[weaponId]?._crafted) {
+        damage = Math.floor(damage * 1.15);
+      }
+      // 셰프 나이프/칼 무기 보너스
+      if (gs.player.knifeDmgBonus && weaponId) {
+        const wDef = gs.getCardDef(weaponId);
+        if (wDef?.tags?.includes('blade') || wDef?.tags?.includes('knife') || wDef?.subtype === 'knife') {
+          damage = Math.floor(damage * gs.player.knifeDmgBonus);
+        }
+      }
       // NPC 동행 전투 보너스
       const npcCombatMult = SystemRegistry.get('NPCSystem')?.getCompanionCombatBonus?.() ?? 1.0;
       damage = Math.floor(damage * npcCombatMult);
@@ -399,7 +410,8 @@ const CombatSystem = {
   _fleeAction() {
     const gs      = GameState;
     const data    = gs.combat._encounterData ?? {};
-    const success = Math.random() < 0.6;
+    const fleeBonus = gs.player.fleeBonus ?? 0;
+    const success = Math.random() < (BALANCE.combat.fleeChance + fleeBonus);
     NoiseSystem.addNoise(10);
     if (success) {
       gs.combat.active  = false;
@@ -511,6 +523,23 @@ const CombatSystem = {
       // 방어(Guard) 중: 피해 감소
       if (gs.combat.playerGuard?.active) {
         damage = Math.max(1, Math.floor(damage * (1 - gs.combat.playerGuard.damageReduce)));
+      }
+
+      // 간호사 동반자: 피해 감소 + 도발
+      const npcSysRef = SystemRegistry.get('NPCSystem');
+      const nurseActive = (gs.companions ?? []).includes('npc_nurse');
+      if (nurseActive) {
+        const nurseDef = npcSysRef?.getNpcDef?.('npc_nurse');
+        const dmgReduce = nurseDef?.companion?.combatDmgReduce ?? 0;
+        if (dmgReduce > 0) {
+          damage = Math.max(1, Math.floor(damage * (1 - dmgReduce)));
+        }
+        const tauntChance = nurseDef?.companion?.tauntChance ?? 0;
+        if (tauntChance > 0 && Math.random() < tauntChance) {
+          npcSysRef.damageCompanion('npc_nurse', damage);
+          const npcName = I18n.itemName('npc_nurse', GameData?.items?.npc_nurse?.name);
+          return I18n.t('npc.hitInstead', { name: npcName, dmg: damage });
+        }
       }
 
       // 도주 실패 시 1.5배 피해 (등을 보인 페널티)

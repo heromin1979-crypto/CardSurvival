@@ -359,23 +359,23 @@ export const ENDINGS = {
     ],
   },
 
-  char_pharmacist: {
-    id: 'char_pharmacist', category: 'character', characterId: 'pharmacist',
-    title: '한소희: 합성 완료',      subtitle: '항바이러스 합성 성공',
-    gradient: 'linear-gradient(160deg,#001a14 0%,#002a1e 60%,#001010 100%)',
+  char_chef: {
+    id: 'char_chef', category: 'character', characterId: 'chef',
+    title: '윤재혁: 희망의 한 끼',      subtitle: '급식소 운영 성공',
+    gradient: 'linear-gradient(160deg,#1a0a00 0%,#2a1400 60%,#100800 100%)',
     condition: (gs) => {
-      return gs.player.characterId === 'pharmacist'
-          && !(gs.flags.mainQuestComplete_pharmacist ?? false)
-          && !gs.quests.completed.includes('mq_pharma_01')
-          && gs.time.day >= 180
-          && (gs.flags.totalMedicalCrafted ?? 0) >= 5;
+      return gs.player.characterId === 'chef'
+          && !(gs.flags.mainQuestComplete_chef ?? false)
+          && !gs.quests.completed.includes('mq_chef_01')
+          && gs.time.day >= 150
+          && (gs.flags.totalFoodCrafted ?? 0) >= 20;
     },
     narrative: [
-      '5종의 재료. 정확한 온도, 정확한 비율.',
-      '한소희의 손은 떨리지 않았다. 이미 수십 번 연습했으니까.',
-      '시험지가 파랗게 변했다. 양성.',
-      '항바이러스 합성체. 임시 처방이지만, 처방이었다.',
-      '작은 약국에서 시작해서. 여기까지.',
+      '남대문시장의 한쪽 골목. 임시 조리대 위에 냄비가 올려져 있다.',
+      '윤재혁의 손은 멈추지 않았다. 호텔 주방에서처럼.',
+      '줄이 길어졌다. 굶주린 사람들.',
+      '"한 그릇 더 있어요." 재혁이 말했다.',
+      '따뜻한 한 끼. 그것이 희망의 시작이었다.',
     ],
   },
 
@@ -404,14 +404,14 @@ export const ENDINGS = {
 
   mq_doctor: {
     id: 'mq_doctor', category: 'character', characterId: 'doctor',
-    title: '이지수: 100일의 기록',   subtitle: '치료 프로토콜 송출 성공',
+    title: '이지수: 365일의 기록',   subtitle: '치료 프로토콜 송출 성공',
     gradient: 'linear-gradient(160deg,#001a20 0%,#003040 60%,#001018 100%)',
     condition: (gs) => {
       return gs.player.characterId === 'doctor'
           && (gs.flags.mainQuestComplete_doctor ?? false);
     },
     narrative: [
-      '100일. 무전에서 첫 번째 응답이 들렸다.',
+      '365일. 무전에서 첫 번째 응답이 들렸다.',
       '"프로토콜을 받았습니다. 효과가 있습니다."',
       '이지수는 메모지에 적었다. "D+100. 치료법 확인."',
       '삼성병원 약품 창고에서 시작해, KBS 마이크 앞까지.',
@@ -428,7 +428,7 @@ export const ENDINGS = {
           && (gs.flags.mainQuestComplete_soldier ?? false);
     },
     narrative: [
-      '100일. 무전에서 신호가 들린다.',
+      '365일. 무전에서 신호가 들린다.',
       '경기도 수원에서 첫 번째 응답. "KBS 수신했습니다. 이동 중입니다."',
       '강민준은 마이크를 다시 잡았다.',
       '"여기는 서울 KBS. 반복합니다. 서울 집결 좌표를 전송합니다."',
@@ -438,14 +438,14 @@ export const ENDINGS = {
 
   mq_firefighter: {
     id: 'mq_firefighter', category: 'character', characterId: 'firefighter',
-    title: '박영철: 은평의 수호자',   subtitle: '가족과 함께 100일 생존',
+    title: '박영철: 은평의 수호자',   subtitle: '가족과 함께 365일 생존',
     gradient: 'linear-gradient(160deg,#1a0800 0%,#301000 60%,#140600 100%)',
     condition: (gs) => {
       return gs.player.characterId === 'firefighter'
           && (gs.flags.mainQuestComplete_firefighter ?? false);
     },
     narrative: [
-      '100일. 가족과 함께 버텼다.',
+      '365일. 가족과 함께 버텼다.',
       '아내가 아침을 차렸다. 아이들이 뛰어다녔다.',
       '방벽 위에서 은평구를 내려다봤다. 조용했다.',
       '이 곳이 새로운 집이다.',
@@ -462,7 +462,7 @@ export const ENDINGS = {
           && (gs.flags.mainQuestComplete_homeless ?? false);
     },
     narrative: [
-      '100일. 롯데타워 42층.',
+      '365일. 롯데타워 42층.',
       '창밖으로 서울이 보였다. 다리 아래에서 올려다보던 그 도시.',
       '처음으로 집이 생겼다.',
       '최형식은 커피를 한 모금 마셨다. 인스턴트지만, 따뜻했다.',
@@ -470,20 +470,38 @@ export const ENDINGS = {
     ],
   },
 
-  mq_pharmacist: {
-    id: 'mq_pharmacist', category: 'character', characterId: 'pharmacist',
-    title: '한소희: 치료의 증명',     subtitle: '항바이러스 합성 완료',
-    gradient: 'linear-gradient(160deg,#001a14 0%,#003020 60%,#001010 100%)',
+  mq_chef: {
+    id: 'mq_chef', category: 'character', characterId: 'chef',
+    title: '윤재혁: 새로운 시작',     subtitle: '365일 생존 · 식량 자급 체계 구축',
+    gradient: 'linear-gradient(160deg,#1a0a00 0%,#2a1800 60%,#100800 100%)',
     condition: (gs) => {
-      return gs.player.characterId === 'pharmacist'
-          && (gs.flags.mainQuestComplete_pharmacist ?? false);
+      return gs.player.characterId === 'chef'
+          && (gs.flags.mainQuestComplete_chef ?? false);
     },
     narrative: [
-      '100일. 항바이러스 합성체.',
-      '임시 처방이지만, 처방이었다.',
-      '작은 약국에서 시작해 서울대 연구소까지.',
-      '한소희는 시험관을 빛에 비춰봤다. 파란색.',
-      '이것이 시작이다. 끝이 아니라.',
+      '365일. 남대문 급식소는 이제 서울 최대의 식량 거점이다.',
+      '매일 아침 줄이 선다. 따뜻한 국물 한 그릇.',
+      '윤재혁은 앞치마를 다시 매었다. 호텔 주방에서처럼.',
+      '식재료 저장고가 가득 찼다. 겨울을 넘길 수 있다.',
+      '이것이 셰프의 방식이다. 칼이 아닌 국자로 세상을 바꾸는.',
+    ],
+  },
+
+  mq_engineer_heli: {
+    id: 'mq_engineer_heli', category: 'character', characterId: 'engineer',
+    title: '정대한: 하늘로',          subtitle: '아버지의 설계도 · 헬기 탈출',
+    gradient: 'linear-gradient(160deg,#000a14 0%,#001e32 60%,#000810 100%)',
+    condition: (gs) => {
+      return gs.player.characterId === 'engineer'
+          && (gs.flags.mainQuestComplete_engineer ?? false)
+          && gs.flags.engineer_ending === 'b3_heli_escape';
+    },
+    narrative: [
+      '이륙. 로터가 굉음을 낸다. 동체가 흔들리며 상승.',
+      '10미터. 30미터. 100미터. 서울이 발 밑에 펼쳐진다.',
+      '아버지가 평생 보지 못했던 각도. 20년 전 서랍에 넣은 설계도가 하늘을 난다.',
+      '박영철이 지상에서 손을 흔든다. 점점 작아진다.',
+      '한강을 넘었다. 남쪽으로. 아버지, 이제 하늘로 갑니다.',
     ],
   },
 
@@ -493,10 +511,11 @@ export const ENDINGS = {
     gradient: 'linear-gradient(160deg,#0a0a00 0%,#181800 60%,#080800 100%)',
     condition: (gs) => {
       return gs.player.characterId === 'engineer'
-          && (gs.flags.mainQuestComplete_engineer ?? false);
+          && (gs.flags.mainQuestComplete_engineer ?? false)
+          && gs.flags.engineer_ending !== 'b3_heli_escape';
     },
     narrative: [
-      '100일. 이동수단이 완성됐다.',
+      '365일. 이동수단이 완성됐다.',
       '고철과 로프로 만든 간이 이동수단. 공학적으로는 조잡했다.',
       '하지만 달렸다. 서울의 도로를 따라, 달렸다.',
       '한강 다리를 건넜다. 경사면을 오르며.',

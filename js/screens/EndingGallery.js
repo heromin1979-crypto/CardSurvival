@@ -26,7 +26,7 @@ const LOCKED_HINT_KEYS = {
   char_soldier:           'gallery.hint.char_soldier',
   char_firefighter:       'gallery.hint.char_firefighter',
   char_homeless:          'gallery.hint.char_homeless',
-  char_pharmacist:        'gallery.hint.char_pharmacist',
+  char_chef:              'gallery.hint.char_chef',
   char_engineer:          'gallery.hint.char_engineer',
 };
 
