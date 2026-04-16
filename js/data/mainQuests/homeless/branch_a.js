@@ -1,7 +1,7 @@
 // === MAIN QUESTS: 최형식 (homeless) — A경로: 이지수 협력 ===
 // 분기 조건: homeless_branch_a 플래그
 // Q11~Q15: 이지수 의사와 의료+커뮤니티 거점 구축
-// Q15 분기점: 커뮤니티 방향 선택 → 3가지 엔딩
+// Q15 분기점: 이지수와 떠나기 → 1가지 엔딩 (Escape)
 
 const HOMELESS_BRANCH_A = {
 
@@ -65,24 +65,14 @@ const HOMELESS_BRANCH_A = {
 
   mq_homeless_a_15: {
     id: 'mq_homeless_a_15', title: '커뮤니티 분기점',
-    desc: '180일 이상 생존하라. 커뮤니티의 방향을 결정할 시간이다.',
+    desc: '100일 이상 생존하라. 커뮤니티의 방향을 결정할 시간이다.',
     icon: '⚖️', characterId: 'homeless', dayTrigger: 185,
     prerequisite: 'mq_homeless_a_14', requiresFlag: 'homeless_branch_a',
-    objective: { type: 'survive_days', count: 180 },
+    objective: { type: 'survive_days', count: 100 },
     reward: { morale: 8, items: [{ definitionId: 'first_aid_kit', qty: 1 }] },
     failPenalty: null, deadlineDays: Infinity,
     isBranchPoint: true,
     branchOptions: [
-      {
-        label: '의료+커뮤니티 허브 완성',
-        desc: '이지수와 함께 강남 최대 의료 커뮤니티를 만든다.',
-        setsFlag: 'homeless_end_a1',
-      },
-      {
-        label: '소규모 가족 공동체',
-        desc: '크게 키우는 것보다 믿을 수 있는 소수와 함께한다.',
-        setsFlag: 'homeless_end_a2',
-      },
       {
         label: '이지수와 함께 떠나기',
         desc: '더 좋은 곳을 찾아 함께 이동한다.',
@@ -90,40 +80,8 @@ const HOMELESS_BRANCH_A = {
       },
     ],
     narrative: {
-      start: '180일. 이지수와 최형식의 거점에 38명이 모였다. 이제 방향을 정해야 한다.',
-      complete: '이지수가 구급키트를 건네며 말했다. "최 대표님, 앞으로 어떻게 할 건가요?" 오래 생각했다.',
-    },
-  },
-
-  // ── A1 엔딩: 의료+커뮤니티 허브 완성 ─────────────────────────
-
-  mq_homeless_end_a1: {
-    id: 'mq_homeless_end_a1', title: '커뮤니티 허브 완성',
-    desc: '구조물 3개를 더 제작하라. 강남 의료 커뮤니티 허브를 완성한다.',
-    icon: '🏛️', characterId: 'homeless', dayTrigger: 205,
-    prerequisite: 'mq_homeless_a_15', requiresFlag: 'homeless_end_a1',
-    objective: { type: 'craft_item', category: 'structure', count: 3 },
-    reward: { morale: 20, items: [{ definitionId: 'crowbar', qty: 1 }], flags: { mainQuestComplete_homeless: true, homeless_ending: 'a1_hub' } },
-    failPenalty: { morale: -10 }, deadlineDays: Infinity,
-    narrative: {
-      start: '허브 구조를 완성한다. 치료소, 식량 창고, 거주 구역. 세 공간이 하나의 커뮤니티가 된다.',
-      complete: 'D+100. 강남 의료 커뮤니티 허브. 거주 인원 52명. 치료 환자 하루 12명. 건설 마무리 때 쓴 쇠지렛대가 남았다. 이 도구가 커뮤니티를 만들었다. 최형식: "처음으로 집이 생겼습니다."',
-    },
-  },
-
-  // ── A2 엔딩: 소규모 가족 공동체 ─────────────────────────────
-
-  mq_homeless_end_a2: {
-    id: 'mq_homeless_end_a2', title: '소공동체 완성',
-    desc: '송파구를 방문하라. 믿을 수 있는 소수와 함께하는 공동체를 만든다.',
-    icon: '👨‍👩‍👧‍👦', characterId: 'homeless', dayTrigger: 205,
-    prerequisite: 'mq_homeless_a_15', requiresFlag: 'homeless_end_a2',
-    objective: { type: 'visit_district', districtId: 'songpa', count: 1 },
-    reward: { morale: 18, items: [{ definitionId: 'herbal_tea', qty: 3 }, { definitionId: 'painkiller', qty: 2 }], flags: { mainQuestComplete_homeless: true, homeless_ending: 'a2_family' } },
-    failPenalty: { morale: -8 }, deadlineDays: Infinity,
-    narrative: {
-      start: '소수로 이동한다. 이지수와 8명. 송파에 작은 자리를 잡는다.',
-      complete: 'D+100. 롯데타워 근처 작은 건물. 9명. 이지수가 허브차와 진통제를 나눠줬다. "소집단에서 건강이 제일이에요." 최형식: "이게 오히려 좋다." 처음으로 가족 같은 느낌이 들었다.',
+      start: '100일. 이지수와 최형식의 거점에 38명이 모였다. 이제 방향을 정해야 한다.',
+      complete: '이지수가 구급키트를 건네며 말했다. "최 대표님, 여기를 떠나 더 좋은 곳을 찾아볼까요?" 오래 생각했다.',
     },
   },
 

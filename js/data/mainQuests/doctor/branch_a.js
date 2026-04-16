@@ -1,7 +1,7 @@
 // === MAIN QUESTS: 이지수 (doctor) — A경로: 한소희 협력 ===
 // 분기 조건: doctor_branch_a 플래그
 // Q11~Q15: 서울대 공동 연구
-// Q15 분기점: 연구 결과 선택 → 3가지 엔딩
+// Q15 분기점: 연구 결과 선택 → 2가지 엔딩 (Ascension: a1 백신 / Escape: a3 데이터 배포)
 
 const DOCTOR_BRANCH_A = {
 
@@ -79,11 +79,6 @@ const DOCTOR_BRANCH_A = {
         setsFlag: 'doctor_end_a1',
       },
       {
-        label: '치료제 완성에 집중',
-        desc: '확실한 것에 집중한다. 지금 당장 사람들을 살린다.',
-        setsFlag: 'doctor_end_a2',
-      },
-      {
         label: '연구 데이터를 배포',
         desc: '완성하지 못해도 지식을 나눈다. 다음 사람이 완성할 것이다.',
         setsFlag: 'doctor_end_a3',
@@ -108,22 +103,6 @@ const DOCTOR_BRANCH_A = {
     narrative: {
       start: '모든 것을 쏟아붓는다. 한소희와 이지수, 48시간 연속 작업.',
       complete: 'D+100. 백신 프로토타입 32세트 완성. 정밀 수술 도구 세트와 항생제도 연구실 비축분에서 나왔다. 한소희: "됐어요. 진짜 됐어요." 이제 서울에 나눠줄 일만 남았다.',
-    },
-  },
-
-  // ── A2 엔딩: 치료제 완성 ─────────────────────────────────────
-
-  mq_doctor_end_a2: {
-    id: 'mq_doctor_end_a2', title: '치료제 배포',
-    desc: '강남구로 귀환하라. 치료제를 들고 삼성병원으로 돌아간다.',
-    icon: '🏥', characterId: 'doctor', dayTrigger: 205,
-    prerequisite: 'mq_doctor_a_15', requiresFlag: 'doctor_end_a2',
-    objective: { type: 'visit_district', districtId: 'gangnam', count: 1 },
-    reward: { morale: 18, items: [{ definitionId: 'first_aid_kit', qty: 2 }], flags: { mainQuestComplete_doctor: true, doctor_ending: 'a2_treatment' } },
-    failPenalty: { morale: -8 }, deadlineDays: Infinity,
-    narrative: {
-      start: '백신은 아니지만 치료제다. 당장 사람들을 살릴 수 있다.',
-      complete: 'D+100. 삼성병원으로 귀환. 치료제 20세트와 구급키트 2개를 가지고. 한소희: "완벽하진 않지만, 지금 이 사람들에게는 충분해요." 맞는 말이었다.',
     },
   },
 

@@ -1,4 +1,4 @@
-// === CHARACTER ENDING IMAGES (36 endings) ===
+// === CHARACTER ENDING IMAGES (30 endings) ===
 // src: 실제 이미지 경로 (assets/endings/{code}.png)
 // prompt: 나노 바나나 생성 프롬프트 (한국어 포스트아포칼립스 웹툰 스타일)
 // alt: 화면 낭독기용 대체 텍스트
@@ -89,28 +89,10 @@ export const ENDING_IMAGES = {
     prompt: '한국 포스트아포칼립스 웹툰 스타일, 소방관이 불광동 아파트 빨간 현관문 앞에서 아내와 포옹하는 장면, 따뜻한 앰버빛 복도, 두 사람의 눈물과 안도, 낡은 소방복과 일상복의 대비, 오렌지와 따뜻한 빨간빛 팔레트, 감동적인 순간, 고해상도',
   },
 
-  a2_family: {
-    src: 'assets/endings/firefighter_a2_family.png',
-    alt: '박영철 가족이 촛불 아래 첫 식사를 함께 하고 있다',
-    prompt: '한국 포스트아포칼립스 웹툰 스타일, 소방관 가족이 낡은 식탁에 모여 촛불 아래 첫 식사, 아내와 두 아이, 평화롭고 따뜻한 분위기, 단순한 음식이지만 행복한 얼굴들, 앰버 오렌지와 따뜻한 노란빛 팔레트, 고해상도',
-  },
-
   a3_memorial: {
     src: 'assets/endings/firefighter_a3_memorial.png',
     alt: '박영철이 소방서 앞 이재훈 추모패 앞에 서 있다',
     prompt: '한국 포스트아포칼립스 웹툰 스타일, 소방관이 폐허가 된 소방서 앞에 세운 추모비 앞에 서 있다, "이재훈 소방관을 기억하며"라 새긴 나무 비, 앞에 소방 헬멧과 꽃, 석양빛, 슬프지만 경건하고 따뜻한 분위기, 앰버와 어두운 오렌지 팔레트, 고해상도',
-  },
-
-  b1_megashelter: {
-    src: 'assets/endings/firefighter_b1_megashelter.png',
-    alt: '구로 공장이 대형 대피소로 완성되어 80명의 생존자들이 모여 있다',
-    prompt: '한국 포스트아포칼립스 웹툰 스타일, 구로 공장이 대형 대피소로 완성, 소방관과 기계공이 완성된 시설을 함께 바라보고 있다, 내부에 80명의 생존자들, 발전기 조명이 환하게 켜진 공장 내부, 앰버 오렌지와 산업적 회색 팔레트, 성취감, 고해상도',
-  },
-
-  b2_fortress: {
-    src: 'assets/endings/firefighter_b2_fortress.png',
-    alt: '박영철이 구로-영등포 방어선을 점검하고 있다',
-    prompt: '한국 포스트아포칼립스 웹툰 스타일, 구로와 영등포 사이에 세워진 방어 요새, 소방관이 바리케이드와 망루를 점검하고 있다, 저녁 하늘, 군사적이고 단단한 분위기, 올리브그린과 앰버 오렌지 팔레트, 넓은 앵글, 고해상도',
   },
 
   b3_escape: {
@@ -120,18 +102,6 @@ export const ENDING_IMAGES = {
   },
 
   // ── 노숙자 최형식 (homeless) — 어스 브라운, 도시 야경 ─────────────
-
-  a1_hub: {
-    src: 'assets/endings/homeless_a1_hub.png',
-    alt: '최형식과 이지수가 롯데타워 야경 앞에서 지도를 펼치고 있다',
-    prompt: '한국 포스트아포칼립스 웹툰 스타일, 중년 남성과 여성 의사가 롯데타워 야경을 배경으로 지도를 펼치고 있다, 타워의 불빛이 반짝이는 밤, 따뜻한 실내 조명, 두 사람의 협력, 어스 브라운과 골든 야경 팔레트, 고해상도',
-  },
-
-  a2_family: {
-    src: 'assets/endings/homeless_a2_family.png',
-    alt: '최형식이 강남에서 작은 가족 공동체와 식사하고 있다',
-    prompt: '한국 포스트아포칼립스 웹툰 스타일, 중년 남성이 강남 건물 안에서 작은 가족 공동체와 촛불 아래 식사하고 있다, 처음 웃는 남성의 얼굴, 신뢰하는 눈빛들, 어스 브라운과 따뜻한 황금빛 팔레트, 고해상도',
-  },
 
   a3_journey: {
     src: 'assets/endings/homeless_a3_journey.png',
@@ -143,12 +113,6 @@ export const ENDING_IMAGES = {
     src: 'assets/endings/homeless_b1_kingdom.png',
     alt: '최형식이 롯데타워 고층에서 서울을 내려다보고 있다',
     prompt: '한국 포스트아포칼립스 웹툰 스타일, 중년 남성이 롯데타워 고층 창가에 서서 서울 야경을 내려다보고 있다, 당당하고 권위있는 뒷모습, 아래에 47명의 생존자들의 불빛, 어스 브라운과 도시 야경 팔레트, 영웅적인 분위기, 고해상도',
-  },
-
-  b2_tribe: {
-    src: 'assets/endings/homeless_b2_tribe.png',
-    alt: '최형식과 6명이 강남에서 원형으로 앉아 신뢰의 눈빛을 나누고 있다',
-    prompt: '한국 포스트아포칼립스 웹툰 스타일, 강남의 작은 방에서 6명이 원형으로 앉아 손을 잡거나 눈빛을 나누고 있다, 촛불의 따뜻한 빛, 친밀하고 신뢰하는 분위기, 어스 브라운과 따뜻한 촛불빛 팔레트, 작지만 진짜인 공동체, 고해상도',
   },
 
   b3_wanderer: {
@@ -234,11 +198,25 @@ export const ENDING_IMAGES = {
   },
 };
 
+// ── 엔딩 코드 별칭 (신규 플래그 값 → 기존 이미지 키) ─────────────────
+// 퀘스트 재구성으로 chef_ending / engineer_ending 값이 바뀌었지만
+// 기존 이미지 에셋을 재사용하기 위해 매핑을 유지한다.
+const ENDING_IMAGE_ALIASES = {
+  // chef — Expansion / Settle / Ascension
+  'a1_network':   'a1_vaccine',       // 강남 대형마트 네트워크 → 급식소 배식
+  'a2_farm':      'a2_distribute',    // 가락 자급 급식소 → 보급
+  'b1_ascension': 'b1_production',    // 용산 미식 복원 → 주방
+  // engineer — 기존 값 유지되므로 매핑 불필요 (a1_escape, a3_base, b1_rebuild, b3_heli_escape→b3_late_escape)
+  'b3_heli_escape': 'b3_late_escape',
+};
+
 /**
  * 캐릭터 ID + 서브엔딩 코드로 이미지 데이터를 반환한다.
  * @param {string} subEndingCode - e.g. 'a1_rescue', 'b2_rally'
  * @returns {{ src, alt, prompt } | null}
  */
 export function getEndingImage(subEndingCode) {
-  return ENDING_IMAGES[subEndingCode] ?? null;
+  if (!subEndingCode) return null;
+  const resolved = ENDING_IMAGE_ALIASES[subEndingCode] ?? subEndingCode;
+  return ENDING_IMAGES[resolved] ?? null;
 }

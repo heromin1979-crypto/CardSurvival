@@ -1,7 +1,7 @@
 // === MAIN QUESTS: 강민준 (soldier) — B경로: KBS 단독 방송 ===
 // 분기 조건: soldier_branch_b 플래그
 // Q11~Q15: 여의도 KBS 방송 임무
-// Q15 분기점: 방송 이후 선택 → 3가지 엔딩
+// Q15 분기점: 방송 이후 선택 → 2가지 엔딩 (Ascension: b1 전국망 / Escape: b3 수원 이동)
 
 const SOLDIER_BRANCH_B = {
 
@@ -65,10 +65,10 @@ const SOLDIER_BRANCH_B = {
 
   mq_soldier_b_15: {
     id: 'mq_soldier_b_15', title: '약 2개월 생존',
-    desc: '160일 이상 생존하라. 살아있는 것 자체가 임무다.',
-    icon: '⏱️', characterId: 'soldier', dayTrigger: 185,
+    desc: '100일 이상 생존하라. 살아있는 것 자체가 임무다.',
+    icon: '⏱️', characterId: 'soldier', dayTrigger: 95,
     prerequisite: 'mq_soldier_b_14', requiresFlag: 'soldier_branch_b',
-    objective: { type: 'survive_days', count: 160 },
+    objective: { type: 'survive_days', count: 100 },
     reward: { morale: 10, items: [{ definitionId: 'radio', qty: 1 }] },
     failPenalty: null, deadlineDays: Infinity,
     isBranchPoint: true,
@@ -77,11 +77,6 @@ const SOLDIER_BRANCH_B = {
         label: '전국 통신망 구축',
         desc: 'KBS를 거점으로 전국 생존자 통신망을 완성한다.',
         setsFlag: 'soldier_end_b1',
-      },
-      {
-        label: '서울-수원 집결',
-        desc: '방송으로 서울과 수원의 생존자들을 한 곳에 모은다.',
-        setsFlag: 'soldier_end_b2',
       },
       {
         label: '방송 후 수원 이동',
@@ -108,22 +103,6 @@ const SOLDIER_BRANCH_B = {
     narrative: {
       start: '수원, 인천, 부산에서 신호가 잡혔다. 증폭기만 더 있으면 전국망이 완성된다.',
       complete: 'D+90. 전국 통신망 가동. 서울-수원-인천-부산. "여기는 KBS 서울. 전국 생존자 여러분, 응답해주십시오." 응답이 쏟아졌다. 박상현, 임무 완수다.',
-    },
-  },
-
-  // ── B2 엔딩: 서울-수원 집결 ──────────────────────────────────
-
-  mq_soldier_end_b2: {
-    id: 'mq_soldier_end_b2', title: '서울 집결 완성',
-    desc: '영등포구를 방문하라. 수원 방향 생존자들의 집결을 유도한다.',
-    icon: '🏙️', characterId: 'soldier', dayTrigger: 205,
-    prerequisite: 'mq_soldier_b_15', requiresFlag: 'soldier_end_b2',
-    objective: { type: 'visit_district', districtId: 'yeongdeungpo', count: 1 },
-    reward: { morale: 18, items: [{ definitionId: 'compass', qty: 1 }, { definitionId: 'binoculars', qty: 1 }], flags: { mainQuestComplete_soldier: true, soldier_ending: 'b2_rally' } },
-    failPenalty: { morale: -8 }, deadlineDays: Infinity,
-    narrative: {
-      start: '여의도에서 영등포. 수원 방향 집결지를 직접 확인한다. 방송 좌표와 실제 루트가 맞아야 한다.',
-      complete: 'D+90. 영등포 집결지 완성. 나침반과 쌍안경으로 루트를 최종 확인했다. 무전에서 신호가 들린다. "KBS 수신했습니다. 수원에서 이동 중입니다. 37명." 박상현, 들었냐.',
     },
   },
 

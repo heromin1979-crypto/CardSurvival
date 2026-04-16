@@ -1,7 +1,7 @@
 // === MAIN QUESTS: 정대한 (engineer) — B경로: 박영철과 도시 재건 ===
 // 분기 조건: eng_branch_b 플래그
 // Q11~Q15: 박영철 소방관과 인프라 복구
-// Q15 분기점: 재건 방향 선택 → 3가지 엔딩
+// Q15 분기점: 재건 방향 선택 → 2가지 엔딩 (b1 도시 재건 / b3 헬기 탈출)
 
 const ENGINEER_BRANCH_B = {
 
@@ -65,10 +65,10 @@ const ENGINEER_BRANCH_B = {
 
   mq_eng_b_15: {
     id: 'mq_eng_b_15', title: '재건 방향 결정',
-    desc: '180일 이상 생존하라. 도시 재건의 방향을 결정해야 한다.',
-    icon: '⚖️', characterId: 'engineer', dayTrigger: 185,
+    desc: '100일 이상 생존하라. 도시 재건의 방향을 결정해야 한다.',
+    icon: '⚖️', characterId: 'engineer', dayTrigger: 95,
     prerequisite: 'mq_eng_b_14', requiresFlag: 'eng_branch_b',
-    objective: { type: 'survive_days', count: 180 },
+    objective: { type: 'survive_days', count: 100 },
     reward: { morale: 8, items: [{ definitionId: 'pipe_wrench', qty: 1 }] },
     failPenalty: null, deadlineDays: Infinity,
     isBranchPoint: true,
@@ -79,19 +79,14 @@ const ENGINEER_BRANCH_B = {
         setsFlag: 'eng_end_b1',
       },
       {
-        label: '발전기 거점 완성',
-        desc: '대규모 복구보다 확실한 발전기 거점에 집중한다.',
-        setsFlag: 'eng_end_b2',
-      },
-      {
-        label: '재건 포기, 탈출',
-        desc: '결국 도시를 고칠 수 없다는 것을 깨닫고 탈출을 선택한다.',
+        label: '재건 포기, 헬기로 탈출',
+        desc: '결국 도시를 고칠 수 없다는 것을 깨닫고, 아버지의 R22 설계도로 헬기를 제작해 탈출한다.',
         setsFlag: 'eng_end_b3',
       },
     ],
     narrative: {
       start: '180일. 전기와 수도가 복구됐다. 박영철: "대한씨, 앞으로 어디까지 할 건가요?" 정대한은 지도를 봤다.',
-      complete: '공구함에서 파이프렌치를 꺼냈다. 방향을 정해야 한다. 더 큰 도시 복구인가, 확실한 거점 완성인가, 아니면 탈출인가.',
+      complete: '공구함에서 파이프렌치를 꺼냈다. 방향을 정해야 한다. 서울 전체 인프라 복구까지 밀어붙일 것인가, 아니면 아버지의 마지막 설계도를 꺼내 하늘로 탈출할 것인가.',
     },
   },
 
@@ -122,36 +117,6 @@ const ENGINEER_BRANCH_B = {
     narrative: {
       start: '마지막 시설. 전기, 수도, 통신. 세 가지가 돌아가면 서울이 다시 살아난다.',
       complete: '은평구 인프라 복구 완성. 로프 사다리와 경보 장치도 설치했다. 박영철: "불이 켜지고, 물이 나오고, 신호가 잡혀요." 정대한: "아버지가 만들려 했던 것과 다르지 않았어요."',
-    },
-  },
-
-  // ── B2 엔딩: 발전기 거점 완성 ─────────────────────────────
-
-  mq_eng_b2_prep: {
-    id: 'mq_eng_b2_prep', title: '서대문 발전기 자재',
-    desc: '고철 5개를 확보하라. 서대문 거점 발전기에 필요하다.',
-    icon: '🔩', characterId: 'engineer', dayTrigger: 205,
-    prerequisite: 'mq_eng_b_15', requiresFlag: 'eng_end_b2',
-    objective: { type: 'collect_item', definitionId: 'scrap_metal', count: 5 },
-    reward: { morale: 8 },
-    failPenalty: { morale: -5 }, deadlineDays: Infinity,
-    narrative: {
-      start: '서대문에 두 번째 발전기 거점을 세운다. 은평 거점의 복제판이다.',
-      complete: '자재 확보 완료. 서대문으로 이동해 발전기를 설치한다.',
-    },
-  },
-
-  mq_eng_end_b2: {
-    id: 'mq_eng_end_b2', title: '발전기 거점 확장',
-    desc: '서대문구를 방문하라. 두 번째 발전기 거점을 완성한다.',
-    icon: '🔋', characterId: 'engineer', dayTrigger: 230,
-    prerequisite: 'mq_eng_b2_prep', requiresFlag: 'eng_end_b2',
-    objective: { type: 'visit_district', districtId: 'seodaemun', count: 1 },
-    reward: { morale: 18, items: [{ definitionId: 'flashlight', qty: 3 }], flags: { mainQuestComplete_engineer: true, engineer_ending: 'b2_generator' } },
-    failPenalty: { morale: -8 }, deadlineDays: Infinity,
-    narrative: {
-      start: '두 번째 거점. 은평과 서대문, 두 곳에서 전력을 공급한다.',
-      complete: '서대문 발전기 거점 완성. 손전등 3개를 운영 인원에게 지급했다. 박영철: "서울 북쪽의 전력 허브가 됐습니다." 정대한: "시작은 작았지만, 이게 더 확실했어요."',
     },
   },
 

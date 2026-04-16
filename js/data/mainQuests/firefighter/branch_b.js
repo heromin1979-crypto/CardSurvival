@@ -1,7 +1,7 @@
 // === MAIN QUESTS: 박영철 (firefighter) — B경로: 정대한과 대형 대피소 ===
 // 분기 조건: fire_branch_b 플래그
 // Q11~Q15: 구로 공장 대피소 건설
-// Q15 분기점: 대피소 완성 방향 선택 → 3가지 엔딩
+// Q15 분기점: 정대한과 탈출 → 1가지 엔딩 (Escape)
 
 const FIREFIGHTER_BRANCH_B = {
 
@@ -65,24 +65,14 @@ const FIREFIGHTER_BRANCH_B = {
 
   mq_fire_b_15: {
     id: 'mq_fire_b_15', title: '대피소 방향 결정',
-    desc: '180일 이상 생존하라. 대형 대피소의 운영 방향을 결정한다.',
+    desc: '100일 이상 생존하라. 대형 대피소의 운영 방향을 결정한다.',
     icon: '⚖️', characterId: 'firefighter', dayTrigger: 185,
     prerequisite: 'mq_fire_b_14', requiresFlag: 'fire_branch_b',
-    objective: { type: 'survive_days', count: 180 },
+    objective: { type: 'survive_days', count: 100 },
     reward: { morale: 8, items: [{ definitionId: 'stamina_tonic', qty: 1 }] },
     failPenalty: null, deadlineDays: Infinity,
     isBranchPoint: true,
     branchOptions: [
-      {
-        label: '대형 대피소 완성',
-        desc: '구로 공장을 서울 최대 대피소로 완성한다.',
-        setsFlag: 'fire_end_b1',
-      },
-      {
-        label: '소규모 방어 거점',
-        desc: '규모보다 방어력을 높인다. 작지만 철저한 거점.',
-        setsFlag: 'fire_end_b2',
-      },
       {
         label: '정대한과 탈출',
         desc: '대피소를 생존자들에게 맡기고 함께 더 안전한 곳으로.',
@@ -90,40 +80,8 @@ const FIREFIGHTER_BRANCH_B = {
       },
     ],
     narrative: {
-      start: '180일. 정대한과 함께 공장이 대피소로 변했다.',
-      complete: '정대한이 강장제를 건넸다. "박 소방관, 이제 어떻게 할 건가요? 더 크게 키울 수도 있고, 지킬 수도 있고, 아니면..." 세 가지 길이 보인다.',
-    },
-  },
-
-  // ── B1 엔딩: 대형 대피소 완성 ────────────────────────────────
-
-  mq_fire_end_b1: {
-    id: 'mq_fire_end_b1', title: '대형 대피소 완성',
-    desc: '구조물 4개를 제작하라. 구로 공장을 서울 최대 대피소로 완성한다.',
-    icon: '🏛️', characterId: 'firefighter', dayTrigger: 205,
-    prerequisite: 'mq_fire_b_15', requiresFlag: 'fire_end_b1',
-    objective: { type: 'craft_item', category: 'structure', count: 4 },
-    reward: { morale: 22, items: [{ definitionId: 'first_aid_kit', qty: 2 }], flags: { mainQuestComplete_firefighter: true, fire_ending: 'b1_megashelter' } },
-    failPenalty: { morale: -10 }, deadlineDays: Infinity,
-    narrative: {
-      start: '구로 공장 대피소 최종 단계. 소방관의 안전 기준 + 기계공의 설계 능력.',
-      complete: 'D+100. 구로 대형 대피소 공식 완성. 수용 인원 80명. 의무실에 구급키트 2개도 확보했다. 정대한: "이재훈 소방관이 알았으면 기뻐했을 거예요." 박영철의 눈이 붉어졌다.',
-    },
-  },
-
-  // ── B2 엔딩: 소규모 방어 거점 ────────────────────────────────
-
-  mq_fire_end_b2: {
-    id: 'mq_fire_end_b2', title: '방어 거점 완성',
-    desc: '영등포구를 방문하라. 외곽 위협을 확인하고 방어 체계를 완성한다.',
-    icon: '🏰', characterId: 'firefighter', dayTrigger: 205,
-    prerequisite: 'mq_fire_b_15', requiresFlag: 'fire_end_b2',
-    objective: { type: 'visit_district', districtId: 'yeongdeungpo', count: 1 },
-    reward: { morale: 18, items: [{ definitionId: 'spike_trap', qty: 1 }, { definitionId: 'alarm_trap', qty: 1 }], flags: { mainQuestComplete_firefighter: true, fire_ending: 'b2_fortress' } },
-    failPenalty: { morale: -8 }, deadlineDays: Infinity,
-    narrative: {
-      start: '영등포에서 위협이 온다. 확인하고 방어선을 짠다. 소방관의 눈으로 보면 위험 구역이 보인다.',
-      complete: 'D+100. 구로-영등포 방어선 완성. 정찰 중 가시 트랩과 경보 장치도 설치했다. 소규모지만 철저하다. 정대한: "기계공과 소방관이 만들면 이래야죠."',
+      start: '100일. 정대한과 함께 공장이 대피소로 변했다.',
+      complete: '정대한이 강장제를 건넸다. "박 소방관, 여기는 생존자들에게 맡기고, 우리는 더 안전한 곳으로 갑시다." 함께 떠날 길이 보인다.',
     },
   },
 

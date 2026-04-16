@@ -1,7 +1,7 @@
 // === MAIN QUESTS: 정대한 (engineer) — A경로: 아버지 설계도로 탈출 ===
 // 분기 조건: eng_branch_a 플래그
 // Q11~Q15: 구로 공장에서 탈출 차량 완성
-// Q15 분기점: 탈출 방향 선택 → 3가지 엔딩
+// Q15 분기점: 탈출 방향 선택 → 2가지 엔딩 (a1 탈출 / a3 거점 구축)
 
 const ENGINEER_BRANCH_A = {
 
@@ -65,10 +65,10 @@ const ENGINEER_BRANCH_A = {
 
   mq_eng_a_15: {
     id: 'mq_eng_a_15', title: '탈출 방향 결정',
-    desc: '180일 이상 생존하라. 탈출 차량이 완성에 가까워졌다.',
-    icon: '⚖️', characterId: 'engineer', dayTrigger: 185,
+    desc: '100일 이상 생존하라. 탈출 차량이 완성에 가까워졌다.',
+    icon: '⚖️', characterId: 'engineer', dayTrigger: 95,
     prerequisite: 'mq_eng_a_14', requiresFlag: 'eng_branch_a',
-    objective: { type: 'survive_days', count: 180 },
+    objective: { type: 'survive_days', count: 100 },
     reward: { morale: 8, items: [{ definitionId: 'binoculars', qty: 1 }] },
     failPenalty: null, deadlineDays: Infinity,
     isBranchPoint: true,
@@ -77,11 +77,6 @@ const ENGINEER_BRANCH_A = {
         label: '서울 완전 탈출',
         desc: '차량을 완성해 서울을 빠져나간다. 아버지의 설계도로 만든 차가 달린다.',
         setsFlag: 'eng_end_a1',
-      },
-      {
-        label: '차량 테스트 후 귀환',
-        desc: '탈출보다 차량 성능을 검증하고 돌아온다.',
-        setsFlag: 'eng_end_a2',
       },
       {
         label: '탈출 포기, 거점 구축',
@@ -122,36 +117,6 @@ const ENGINEER_BRANCH_A = {
     narrative: {
       start: '차량 준비 완료. 탈출 식량만 남았다. 서울 밖에서 며칠을 버텨야 할지 모른다.',
       complete: '시동이 걸린다. 구로 국도. 수원 방향. 차 안에 전투 식량을 실었다. "아버지의 설계도로 만든 차가 서울을 빠져나간다." 그렇게 적었다.',
-    },
-  },
-
-  // ── A2 엔딩: 차량 테스트 후 귀환 ─────────────────────────────
-
-  mq_eng_a2_prep: {
-    id: 'mq_eng_a2_prep', title: '시험 주행 준비',
-    desc: '로프 3개와 전자부품 2개를 확보하라. 차량 계기판 정비에 필요하다.',
-    icon: '📊', characterId: 'engineer', dayTrigger: 205,
-    prerequisite: 'mq_eng_a_15', requiresFlag: 'eng_end_a2',
-    objective: { type: 'collect_item', definitionId: 'rope', count: 3 },
-    reward: { morale: 8 },
-    failPenalty: { morale: -5 }, deadlineDays: Infinity,
-    narrative: {
-      start: '시험 주행 전 계기판과 조향 시스템 최종 점검. 로프가 더 필요하다.',
-      complete: '정비 완료. 이제 성수 공장으로 돌아가 시험 주행을 한다.',
-    },
-  },
-
-  mq_eng_end_a2: {
-    id: 'mq_eng_end_a2', title: '성수 시험 주행',
-    desc: '성동구를 방문하라. 성수 공장에서 차량 성능을 최종 검증한다.',
-    icon: '🔬', characterId: 'engineer', dayTrigger: 230,
-    prerequisite: 'mq_eng_a2_prep', requiresFlag: 'eng_end_a2',
-    objective: { type: 'visit_district', districtId: 'seongdong', count: 1 },
-    reward: { morale: 18, items: [{ definitionId: 'pipe_wrench', qty: 1 }, { definitionId: 'whetstone', qty: 1 }], flags: { mainQuestComplete_engineer: true, engineer_ending: 'a2_test' } },
-    failPenalty: { morale: -8 }, deadlineDays: Infinity,
-    narrative: {
-      start: '아버지가 일하던 성수 공장. 시험 주행의 출발점이자 도착점.',
-      complete: '성수 공장 앞 도로. 시동. 출발. 500미터. 1킬로미터. 돌아왔다. 아버지 서랍에서 파이프렌치와 숫돌을 꺼냈다. "탈출 준비는 됐다. 언제든."',
     },
   },
 

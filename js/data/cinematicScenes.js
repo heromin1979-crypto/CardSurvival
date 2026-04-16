@@ -403,9 +403,9 @@ const CINEMATIC_SCENES = {
     image: `${IMG}ending_survival.webp`,
     gradient: 'linear-gradient(160deg,#0a0a20 0%,#10102a 60%,#080818 100%)',
     title: '1년을 살아내다',
-    subtitle: 'Day 365 달성',
+    subtitle: 'Day 100 달성',
     lines: [
-      '365일. 사계절이 돌았다.',
+      '100일. 한 계절이 돌았다.',
       '폭염과 혹한을 모두 넘겼다.',
       '이 도시는 아직 끝나지 않았다.',
     ],
@@ -485,8 +485,16 @@ export const ENDING_TO_CINEMATIC = {
   mq_soldier:       'cin_ending_broadcast',
   mq_firefighter:   'cin_char_firefighter',
   mq_homeless:      'cin_char_homeless',
-  mq_chef:          'cin_char_chef',
-  mq_engineer:      'cin_char_engineer',
+
+  // 셰프 3개 엔딩 (각 테마: Expansion / Settle / Ascension)
+  mq_chef_network:   'cin_char_chef',
+  mq_chef_farm:      'cin_char_chef',
+  mq_chef_ascension: 'cin_char_chef',
+
+  // 엔지니어 3개 엔딩 + 헬기 (b3는 별도 mq_engineer_heli)
+  mq_engineer_escape:  'cin_char_engineer',
+  mq_engineer_base:    'cin_char_engineer',
+  mq_engineer_rebuild: 'cin_char_engineer',
 
   // 탈출 엔딩 (공통 탈출 이미지 공유, 치료제는 별도)
   escape_river:      'cin_escape',

@@ -164,7 +164,7 @@ export const ENDINGS = {
     gradient: 'linear-gradient(160deg,#0a0a20 0%,#10102a 60%,#080818 100%)',
     condition: (gs) => gs.time.day >= 365,
     narrative: [
-      '365일이 지났다. 서울이 무너진 그 날부터.',
+      '100일이 지났다. 서울이 무너진 그 날부터.',
       '사계절이 돌았다. 폭염과 혹한을 모두 넘겼다.',
       '혼자가 아니었다면 더 좋았을까. 아니면 혼자였기에 살아남은 것일까.',
       '내년도 살 것이다. 그것만큼은 확신할 수 있었다.',
@@ -404,14 +404,15 @@ export const ENDINGS = {
 
   mq_doctor: {
     id: 'mq_doctor', category: 'character', characterId: 'doctor',
-    title: '이지수: 365일의 기록',   subtitle: '치료 프로토콜 송출 성공',
+    title: '이지수: 100일의 기록',   subtitle: '치료 프로토콜 송출 성공',
     gradient: 'linear-gradient(160deg,#001a20 0%,#003040 60%,#001018 100%)',
     condition: (gs) => {
       return gs.player.characterId === 'doctor'
-          && (gs.flags.mainQuestComplete_doctor ?? false);
+          && (gs.flags.mainQuestComplete_doctor ?? false)
+          && gs.time.day >= 100;
     },
     narrative: [
-      '365일. 무전에서 첫 번째 응답이 들렸다.',
+      '100일. 무전에서 첫 번째 응답이 들렸다.',
       '"프로토콜을 받았습니다. 효과가 있습니다."',
       '이지수는 메모지에 적었다. "D+100. 치료법 확인."',
       '삼성병원 약품 창고에서 시작해, KBS 마이크 앞까지.',
@@ -425,10 +426,11 @@ export const ENDINGS = {
     gradient: 'linear-gradient(160deg,#100a00 0%,#201800 60%,#0a0800 100%)',
     condition: (gs) => {
       return gs.player.characterId === 'soldier'
-          && (gs.flags.mainQuestComplete_soldier ?? false);
+          && (gs.flags.mainQuestComplete_soldier ?? false)
+          && gs.time.day >= 100;
     },
     narrative: [
-      '365일. 무전에서 신호가 들린다.',
+      '100일. 무전에서 신호가 들린다.',
       '경기도 수원에서 첫 번째 응답. "KBS 수신했습니다. 이동 중입니다."',
       '강민준은 마이크를 다시 잡았다.',
       '"여기는 서울 KBS. 반복합니다. 서울 집결 좌표를 전송합니다."',
@@ -438,14 +440,15 @@ export const ENDINGS = {
 
   mq_firefighter: {
     id: 'mq_firefighter', category: 'character', characterId: 'firefighter',
-    title: '박영철: 은평의 수호자',   subtitle: '가족과 함께 365일 생존',
+    title: '박영철: 은평의 수호자',   subtitle: '가족과 함께 100일 생존',
     gradient: 'linear-gradient(160deg,#1a0800 0%,#301000 60%,#140600 100%)',
     condition: (gs) => {
       return gs.player.characterId === 'firefighter'
-          && (gs.flags.mainQuestComplete_firefighter ?? false);
+          && (gs.flags.mainQuestComplete_firefighter ?? false)
+          && gs.time.day >= 100;
     },
     narrative: [
-      '365일. 가족과 함께 버텼다.',
+      '100일. 가족과 함께 버텼다.',
       '아내가 아침을 차렸다. 아이들이 뛰어다녔다.',
       '방벽 위에서 은평구를 내려다봤다. 조용했다.',
       '이 곳이 새로운 집이다.',
@@ -459,10 +462,11 @@ export const ENDINGS = {
     gradient: 'linear-gradient(160deg,#0a1000 0%,#141c00 60%,#080c00 100%)',
     condition: (gs) => {
       return gs.player.characterId === 'homeless'
-          && (gs.flags.mainQuestComplete_homeless ?? false);
+          && (gs.flags.mainQuestComplete_homeless ?? false)
+          && gs.time.day >= 100;
     },
     narrative: [
-      '365일. 롯데타워 42층.',
+      '100일. 롯데타워 42층.',
       '창밖으로 서울이 보였다. 다리 아래에서 올려다보던 그 도시.',
       '처음으로 집이 생겼다.',
       '최형식은 커피를 한 모금 마셨다. 인스턴트지만, 따뜻했다.',
@@ -470,20 +474,62 @@ export const ENDINGS = {
     ],
   },
 
-  mq_chef: {
-    id: 'mq_chef', category: 'character', characterId: 'chef',
-    title: '윤재혁: 새로운 시작',     subtitle: '365일 생존 · 식량 자급 체계 구축',
+  // ── 윤재혁 (chef) 3개 엔딩: Expansion / Settle / Ascension ──
+
+  mq_chef_network: {
+    id: 'mq_chef_network', category: 'character', characterId: 'chef',
+    title: '윤재혁: 한강 이남 식량 네트워크',  subtitle: '강남 대형마트 보급망 완성',
     gradient: 'linear-gradient(160deg,#1a0a00 0%,#2a1800 60%,#100800 100%)',
     condition: (gs) => {
       return gs.player.characterId === 'chef'
-          && (gs.flags.mainQuestComplete_chef ?? false);
+          && (gs.flags.mainQuestComplete_chef ?? false)
+          && gs.flags.chef_ending === 'a1_network'
+          && gs.time.day >= 100;
     },
     narrative: [
-      '365일. 남대문 급식소는 이제 서울 최대의 식량 거점이다.',
-      '매일 아침 줄이 선다. 따뜻한 국물 한 그릇.',
-      '윤재혁은 앞치마를 다시 매었다. 호텔 주방에서처럼.',
-      '식재료 저장고가 가득 찼다. 겨울을 넘길 수 있다.',
-      '이것이 셰프의 방식이다. 칼이 아닌 국자로 세상을 바꾸는.',
+      '남대문에서 시작한 급식소가 강남·잠실·반포로 뻗어나갔다.',
+      '매일 순회 보급 트럭이 4개 마트를 돈다. 하루 87명분.',
+      '윤재혁은 지도 위에 붉은 선으로 보급 루트를 그렸다.',
+      '"한 사람의 주방이 도시의 식탁이 됐다."',
+      '종말 이후 가장 큰 식량 네트워크. 셰프가 만들었다.',
+    ],
+  },
+
+  mq_chef_farm: {
+    id: 'mq_chef_farm', category: 'character', characterId: 'chef',
+    title: '윤재혁: 가락 자급 급식소',    subtitle: '옥상 농장 + 남대문 정착',
+    gradient: 'linear-gradient(160deg,#0a1400 0%,#142800 60%,#081000 100%)',
+    condition: (gs) => {
+      return gs.player.characterId === 'chef'
+          && (gs.flags.mainQuestComplete_chef ?? false)
+          && gs.flags.chef_ending === 'a2_farm'
+          && gs.time.day >= 100;
+    },
+    narrative: [
+      '가락시장 옥상. 허브와 잎채소가 바람에 흔들린다.',
+      '폐허가 된 도시에서 처음으로, 음식을 직접 길렀다.',
+      '남대문 급식소는 외부 보급에 의지하지 않는다.',
+      '윤재혁은 흙 묻은 손을 앞치마에 닦았다.',
+      '"정착이란 이런 것이다. 심고, 기다리고, 수확하는 일."',
+    ],
+  },
+
+  mq_chef_ascension: {
+    id: 'mq_chef_ascension', category: 'character', characterId: 'chef',
+    title: '윤재혁: 용산 미식 복원',       subtitle: '종말 이후 다시 태어난 요리',
+    gradient: 'linear-gradient(160deg,#200a00 0%,#331000 60%,#140800 100%)',
+    condition: (gs) => {
+      return gs.player.characterId === 'chef'
+          && (gs.flags.mainQuestComplete_chef ?? false)
+          && gs.flags.chef_ending === 'b1_ascension'
+          && gs.time.day >= 100;
+    },
+    narrative: [
+      '용산의 작은 식당. 저녁마다 풀코스가 나간다.',
+      '수프. 메인. 허브차. 소피텔 동료 박민호가 옆에서 플레이팅을 맞춘다.',
+      '"요리가 사치가 아니라 존엄이라는 걸, 여기서 증명했다."',
+      '윤재혁은 마지막 접시에 허브 소금을 뿌렸다.',
+      '종말 속에서도 미식은 되살아난다. 셰프의 정점이다.',
     ],
   },
 
@@ -494,7 +540,8 @@ export const ENDINGS = {
     condition: (gs) => {
       return gs.player.characterId === 'engineer'
           && (gs.flags.mainQuestComplete_engineer ?? false)
-          && gs.flags.engineer_ending === 'b3_heli_escape';
+          && gs.flags.engineer_ending === 'b3_heli_escape'
+          && gs.time.day >= 100;
     },
     narrative: [
       '이륙. 로터가 굉음을 낸다. 동체가 흔들리며 상승.',
@@ -505,21 +552,62 @@ export const ENDINGS = {
     ],
   },
 
-  mq_engineer: {
-    id: 'mq_engineer', category: 'character', characterId: 'engineer',
-    title: '정대한: 탈출 기계',       subtitle: '이동수단 완성 · 서울 탈출',
+  // ── 정대한 (engineer) 나머지 3개 엔딩 (b3 헬기는 위 mq_engineer_heli) ──
+
+  mq_engineer_escape: {
+    id: 'mq_engineer_escape', category: 'character', characterId: 'engineer',
+    title: '정대한: 탈출 차량',       subtitle: '아버지 설계도로 서울 탈출',
     gradient: 'linear-gradient(160deg,#0a0a00 0%,#181800 60%,#080800 100%)',
     condition: (gs) => {
       return gs.player.characterId === 'engineer'
           && (gs.flags.mainQuestComplete_engineer ?? false)
-          && gs.flags.engineer_ending !== 'b3_heli_escape';
+          && gs.flags.engineer_ending === 'a1_escape'
+          && gs.time.day >= 100;
     },
     narrative: [
-      '365일. 이동수단이 완성됐다.',
-      '고철과 로프로 만든 간이 이동수단. 공학적으로는 조잡했다.',
-      '하지만 달렸다. 서울의 도로를 따라, 달렸다.',
+      '구로 국도. 시동이 걸렸다. 전기 모터가 부드럽게 돈다.',
+      '아버지의 20년 전 설계도가 실물이 되어 달리고 있다.',
       '한강 다리를 건넜다. 경사면을 오르며.',
       '처음으로 서울 외곽을 봤다. 하늘이 달랐다.',
+      '"아버지, 설계도대로 됐어요. 이제 남쪽으로 갑니다."',
+    ],
+  },
+
+  mq_engineer_base: {
+    id: 'mq_engineer_base', category: 'character', characterId: 'engineer',
+    title: '정대한: 구로 기술 거점',   subtitle: '차량 기술로 서울에 남다',
+    gradient: 'linear-gradient(160deg,#100a00 0%,#1c1400 60%,#0a0600 100%)',
+    condition: (gs) => {
+      return gs.player.characterId === 'engineer'
+          && (gs.flags.mainQuestComplete_engineer ?? false)
+          && gs.flags.engineer_ending === 'a3_base'
+          && gs.time.day >= 100;
+    },
+    narrative: [
+      '구로 공장. 작업장, 정비소, 방벽이 섰다.',
+      '탈출 차량은 보급 차량이 됐다. 물자를 운반한다.',
+      '"아버지 설계도는 여기서 서울을 살리는 데 쓰입니다."',
+      '정대한은 공구함을 닫았다. 떠나지 않기로 했다.',
+      '재건의 중심. 엔지니어가 지키는 거점.',
+    ],
+  },
+
+  mq_engineer_rebuild: {
+    id: 'mq_engineer_rebuild', category: 'character', characterId: 'engineer',
+    title: '정대한: 도시 인프라 복구',  subtitle: '전기·수도·통신 복원',
+    gradient: 'linear-gradient(160deg,#000a14 0%,#001828 60%,#000810 100%)',
+    condition: (gs) => {
+      return gs.player.characterId === 'engineer'
+          && (gs.flags.mainQuestComplete_engineer ?? false)
+          && gs.flags.engineer_ending === 'b1_rebuild'
+          && gs.time.day >= 100;
+    },
+    narrative: [
+      '은평구 밤. 가로등이 하나씩 켜지기 시작했다.',
+      '전기, 수도, 통신. 세 가지가 돌아간다.',
+      '박영철이 옆에서 옅게 웃었다. "대한씨, 도시가 살아나요."',
+      '정대한은 안테나 아래에서 서울 지도를 펼쳤다.',
+      '"아버지가 만들려 했던 것과 다르지 않았어요." 엔지니어의 재건.',
     ],
   },
 

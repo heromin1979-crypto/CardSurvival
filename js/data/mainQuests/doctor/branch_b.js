@@ -1,7 +1,7 @@
 // === MAIN QUESTS: 이지수 (doctor) — B경로: 강민준 군의관 합류 ===
 // 분기 조건: doctor_branch_b 플래그
 // Q11~Q15: 군 의료팀 활동
-// Q15 분기점: 군 상황 선택 → 3가지 엔딩
+// Q15: 군 의료본부 설립 엔딩으로 직결 (Settle)
 
 const DOCTOR_BRANCH_B = {
 
@@ -65,33 +65,15 @@ const DOCTOR_BRANCH_B = {
 
   mq_doctor_b_15: {
     id: 'mq_doctor_b_15', title: '군 상황 평가',
-    desc: '180일 이상 생존하라. 군 상황이 변하고 있다.',
-    icon: '⚖️', characterId: 'doctor', dayTrigger: 185,
+    desc: '100일 이상 생존하라. 군 상황이 변하고 있다.',
+    icon: '⚖️', characterId: 'doctor', dayTrigger: 95,
     prerequisite: 'mq_doctor_b_14', requiresFlag: 'doctor_branch_b',
-    objective: { type: 'survive_days', count: 180 },
-    reward: { morale: 8, items: [{ definitionId: 'stimulant', qty: 1 }] },
+    objective: { type: 'survive_days', count: 100 },
+    reward: { morale: 8, items: [{ definitionId: 'stimulant', qty: 1 }], flags: { doctor_end_b1: true } },
     failPenalty: null, deadlineDays: Infinity,
-    isBranchPoint: true,
-    branchOptions: [
-      {
-        label: '군 의료본부 설립',
-        desc: '용산을 서울의 의료 사령부로 만든다.',
-        setsFlag: 'doctor_end_b1',
-      },
-      {
-        label: '최전선 야전병원 운영',
-        desc: '싸우는 곳에 의사가 있어야 한다.',
-        setsFlag: 'doctor_end_b2',
-      },
-      {
-        label: '민간 의료 허브로 귀환',
-        desc: '군이 무너지기 전에 민간으로 돌아간다.',
-        setsFlag: 'doctor_end_b3',
-      },
-    ],
     narrative: {
       start: '180일이 지났다. 강민준과의 협력이 자리를 잡았다.',
-      complete: '강민준이 각성제를 건넸다. "박사님, 선택을 해야 합니다. 군 내부 상황이 복잡해지고 있어요."',
+      complete: '강민준이 각성제를 건넸다. "박사님, 결론은 분명합니다. 용산을 서울의 의료 사령부로 만들어야 해요."',
     },
   },
 
@@ -111,37 +93,6 @@ const DOCTOR_BRANCH_B = {
     },
   },
 
-  // ── B2 엔딩: 최전선 야전병원 ─────────────────────────────────
-
-  mq_doctor_end_b2: {
-    id: 'mq_doctor_end_b2', title: '전선 의료대',
-    desc: '영등포구에 도달하라. 최전선에 의료대를 배치한다.',
-    icon: '🚨', characterId: 'doctor', dayTrigger: 205,
-    prerequisite: 'mq_doctor_b_15', requiresFlag: 'doctor_end_b2',
-    objective: { type: 'visit_district', districtId: 'yeongdeungpo', count: 1 },
-    reward: { morale: 18, items: [{ definitionId: 'first_aid_kit', qty: 2 }], flags: { mainQuestComplete_doctor: true, doctor_ending: 'b2_frontline' } },
-    failPenalty: { morale: -8 }, deadlineDays: Infinity,
-    narrative: {
-      start: '여의도 전선. 감염자 밀도가 가장 높지만, 그래서 의사가 가장 필요한 곳이다.',
-      complete: 'D+100. 여의도 야전병원. 하루 25명을 처치한다. 전선 의료대 배치 전 구급키트 2개를 보급받았다. 위험하지만, 이지수는 여기가 자신의 자리라는 걸 알았다.',
-    },
-  },
-
-  // ── B3 엔딩: 민간 귀환 ──────────────────────────────────────
-
-  mq_doctor_end_b3: {
-    id: 'mq_doctor_end_b3', title: '민간 귀환',
-    desc: '강남구로 귀환하라. 민간 의료 허브로 돌아간다.',
-    icon: '🏠', characterId: 'doctor', dayTrigger: 205,
-    prerequisite: 'mq_doctor_b_15', requiresFlag: 'doctor_end_b3',
-    objective: { type: 'visit_district', districtId: 'gangnam', count: 1 },
-    reward: { morale: 15, items: [{ definitionId: 'antibiotics', qty: 1 }, { definitionId: 'herbal_tea', qty: 3 }], flags: { mainQuestComplete_doctor: true, doctor_ending: 'b3_civilian' } },
-    failPenalty: { morale: -5 }, deadlineDays: Infinity,
-    narrative: {
-      start: '군은 이지수의 자리가 아니었다. 민간인을 치료하는 것이 본래 사명이다.',
-      complete: 'D+100. 삼성병원으로 귀환. 강민준은 무전을 건넸다. "필요하면 연락하세요." 항생제와 허브차도 챙겨줬다. 이지수는 병원 문을 열었다. 기다리던 사람들이 있었다.',
-    },
-  },
 };
 
 export default DOCTOR_BRANCH_B;
