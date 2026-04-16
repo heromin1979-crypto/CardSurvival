@@ -74,10 +74,19 @@ const Encounter = {
 
     // 버튼 중복 실행 방지: 첫 클릭 이후 또는 이미 다른 상태면 무시
     let _handled = false;
+    const self = this;
     const guard = () => {
       if (_handled) return false;
       if (GameState.ui.currentState !== 'encounter') {
         console.warn('[Encounter] guard: state is no longer "encounter", current:', GameState.ui.currentState);
+        // 잔존 DOM 정리 (화면이 encounter처럼 보이는 것을 막음) + 현재 state 화면으로 복구 시도
+        if (self._el) {
+          self._el.innerHTML = '';
+          self._el.classList.remove('active');
+        }
+        const currentScreenId = 'screen-' + GameState.ui.currentState.replace(/_/g, '-');
+        const currentScreen = document.getElementById(currentScreenId);
+        if (currentScreen) currentScreen.classList.add('active');
         return false;
       }
       _handled = true;
