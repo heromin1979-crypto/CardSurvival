@@ -322,6 +322,119 @@ Q10 분기 ┬ A: 한소희 협력 → Q15 분기 ┬ A1: 백신 완성
 
 ---
 
+---
+
+# 대규모 밸런스 업데이트 — 365일 생존 + 약사→셰프 교체 + 스킬/NPC/퀘스트 개편
+
+> 최종 업데이트: 2026-04-16
+> 상태: 완료
+
+## 목표
+캐릭터별 시뮬레이션에서 드러난 불균형 해소 — 의사 생존율 4%, 기계공 퀘스트 완료율 6.7%, 약사-의사 역할 중복, 스킬 성장 정체.
+
+## 결과 요약
+
+| 영역 | 변경 내용 |
+|------|----------|
+| 생존 목표 | 100일 → **365일** (6캐릭터) |
+| 캐릭터 교체 | 약사(한소희) → **셰프(윤재혁)** — 호텔 셰프, homeDist: junggoo |
+| 캐릭터 버프 | 노숙인 HP 65→75, 군인 강아지 동반, 기계공 시작지 seongdong→yongsan |
+| 노숙인 능력 | street_sense에 `fleeBonus: 0.15` (도주 확률 +15%) |
+| 스킬 XP | LEVEL_XP_TABLE 전체 × 0.65 (35% 가속) |
+| 특화 스킬 | 6캐릭터 specialtySkills 정의 — 해당 스킬 1.5배 XP |
+| 훈련 레시피 | 4종 추가 (practice_bandage/wooden_sword/cloth_guard/training_shield) + skillOverride 시스템 |
+| NPC 시스템 | 강아지 탐색/전투 분리 (foragingToday 플래그), 간호사 combatDmgReduce 0.10 + tauntChance 0.15 |
+| 전투 보너스 | 기계공 자작 무기 +15%, 셰프 knifeDmgBonus ×1.25, 도주 fleeBonus 적용 |
+| 네메시스 | 소방관 nemesis spawnChance 0.08 (기본 0.03 대비 상향), boss_chef_nemesis 신설 (식칼 난도질/끓는 기름 스킬) |
+| 방사선 | ExploreSystem 방사선 경고 다이얼로그 + rad_blocker 제작 레시피 |
+
+## 셰프 캐릭터 구현
+
+| 항목 | 값 |
+|------|-----|
+| ID / 이름 | `chef` / 윤재혁(33) |
+| HP/STR/END/무게 | 95 / 65 / 65 / 35kg |
+| 시작 지역 | `junggoo` (중구 남대문시장) |
+| 능력 | 미식감각(요리효과+60%), 식재료감별(독성경고), 따뜻한한끼(동료사기+10), 칼다루기(나이프+25%) |
+| 시작 스킬 | cooking 4, harvesting 3, melee 2 |
+
+## 퀘스트 모듈 신설
+
+`js/data/mainQuests/chef/` 폴더 생성 — 30 퀘스트 (분기 포함):
+- `shared.js`: 공통 10퀘스트 (mq_chef_01~10) — 호텔 탈출→남대문 급식소
+- `branch_a.js`: 강남 식량 네트워크 (mq_chef_a_11~20)
+- `branch_b.js`: 용산 동료 셰프 합류 (mq_chef_b_11~20)
+- `index.js`: 애그리게이터
+
+## 기계공 B3 엔딩 — 헬기 제작 9단계 (히든급 진엔딩)
+
+아버지의 R22 설계도 + 7종 신규 부품 + 항공 가솔린 정제:
+
+| # | 퀘스트 | Day | 목표 |
+|---|--------|-----|------|
+| 1 | 아버지의 마지막 설계도 | D205 | 성동구 방문 |
+| 2 | 항공용 합금 단조 | D215 | aviation_alloy x8 |
+| 3 | 로터 블레이드 | D230 | rotor_blade x4 |
+| 4 | 피스톤 엔진 조립 | D245 | piston_engine x1 |
+| 5 | 꼬리 로터 + 항공 전자 | D260 | avionics_module x1 |
+| 6 | 동체 프레임 | D275 | fuselage_frame x1 |
+| 7 | 최종 조립 | D290 | 구조물 x3 |
+| 8 | 항공 가솔린 정제 | D305 | avgas_drum x2 |
+| 9 | 호버링 테스트 | D315 | 전자부품 x4 |
+| 10 | 하늘로 탈출 | D325 | 식량 x10 |
+
+**신규 아이템 7종**: aviation_alloy, rotor_blade, piston_engine, avionics_module, tail_rotor_assembly, fuselage_frame, avgas_drum
+**신규 블루프린트 7종**: 각 부품별 제작 레시피 (최대 crafting Lv8, weaponcraft Lv5, building Lv5 요구)
+
+## 스킬 XP 경로 다양화
+
+기초 제작 반복 외 플레이 스타일별 레벨업 지원:
+
+| 스킬 | 추가된 XP 경로 |
+|------|---------------|
+| weaponcraft | 무기 분해 +2, 무기 제작 시 보조 +1 (crafting/melee 동반) |
+| armorcraft | 방어구 분해 +2, 방어구 제작 시 defense 동반, 구조물 제작 시 +1 |
+| building | 구조물 분해 +2, 구조물 제작 보조 |
+| medicine | 의료 아이템 분해 +2, NPC 치료 +4 |
+| cooking | 수집한 음식 섭취 +1, 물 음용 +1, 의료 제작 보조 +0.5/단계 |
+| harvesting | 자연 재료 탐색 발견 +1, 음식 제작 보조 |
+| crafting | 모든 전문 제작 시 자동 보조 XP |
+
+## 수정 파일
+
+### 신규 생성
+- `js/data/mainQuests/chef/` (4 파일: shared/branch_a/branch_b/index)
+- 헬기 부품 7종 + 블루프린트 7종 추가 (items_misc.js, blueprints.js)
+
+### 수정
+- `js/data/characters.js` — 스탯/능력/특화스킬/셰프 교체
+- `js/data/mainQuests.js` — 365일 + 셰프 퀘스트 + 군인/소방관/노숙인/기계공 퀘스트 수정
+- `js/data/mainQuests/index.js` — pharmacist → chef
+- `js/data/mainQuests/engineer/branch_b.js` — B3 헬기 제작 9단계
+- `js/data/skillDefs.js` — XP 테이블 × 0.65
+- `js/systems/SkillSystem.js` — 특화 스킬 1.5배
+- `js/systems/CraftSystem.js` — skillOverride + 보조 스킬 XP + _crafted 태깅
+- `js/systems/NPCSystem.js` — 강아지 탐색/전투 분리, getNpcDef API, healCompanion XP
+- `js/systems/CombatSystem.js` — fleeBonus + 간호사 taunt/dmgReduce + 자작무기 보너스
+- `js/systems/DismantleSystem.js` — 분해 타입별 스킬 XP 분기
+- `js/systems/ExploreSystem.js` — 방사선 경고 + 자연재료 harvesting XP
+- `js/systems/StatSystem.js` — 음식/물 섭취 XP 확대
+- `js/systems/HiddenElementSystem.js` — boss spawnChance 지원
+- `js/screens/Encounter.js` + `js/screens/CharCreate.js` — fleeBonus 적용 및 chef 초기화
+- `js/data/secretEnemies.js` — boss_chef_nemesis (식칼/끓는 기름), firefighter spawnChance
+- `js/data/endings.js` — char_chef + mq_chef + mq_engineer_heli 신규 엔딩
+- `js/data/secretEvents.js` — 셰프 이벤트 2종 (호텔 주방, 식자재 창고)
+- `js/data/npcs.js` — 간호사 combatDmgReduce/tauntChance
+- `js/data/stackConfig.js` — 헬기 부품 + 훈련 아이템 등록
+- `js/ui/CardFactory.js` — 헬기 부품 + 훈련 아이템 이미지 매핑
+- `js/data/locales.js` + `js/data/endingImages.js` + `js/data/hiddenLocations.js` + `js/data/hiddenRecipes.js` + `js/data/charDialogues.js` + `js/data/cinematicScenes.js` + `js/data/legendaryItems.js` + `js/main.js` + `js/screens/EndingGallery.js` + `js/core/PurchaseManager.js` + `js/systems/MentalSystem.js` — pharmacist → chef 참조 전면 교체
+
+## 검증
+- `node --input-type=module js/data/validate.js` 통과 (기존 sc_rain_shower/sc_snow_compress 에러 외 없음)
+- 셰프 퀘스트 30개, 기계공 퀘스트 32개 정상 로드 확인
+
+---
+
 ## 이전 계획 아카이브
 
 이전 계획(카드 서바이벌 시스템 확장 세부 기획서 — 2026-03-20)은

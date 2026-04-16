@@ -3,7 +3,7 @@
 
 const BALANCE = {
   // ── 설계 목표 ────────────────────────────────────────
-  // 300일 시뮬레이션 기준 생존율 목표: 10~20%
+  // 365일 시뮬레이션 기준 생존율 목표: 10~20%
   // 현재 측정값(firefighter 100회 sim): 13.3% → 목표 범위 내
   // 목표를 벗어날 경우 stats.decay 값 조정으로 재조율
   design: {
@@ -141,7 +141,7 @@ const BALANCE = {
     respawnNoiseThreshold:  35,
     earlyGameGraceDays:     3,     // 초반 N일간 조우 확률 감소 적용
     earlyGameEncounterMult: 0.45,  // 초반 조우 확률 배율 (45%로 감소)
-    landmarkDangerReduct:   0.05,  // 랜드마크 서브 장소 기본 위험도 감소
+    landmarkDangerReduct:   0.10,  // 랜드마크 서브 장소 기본 위험도 감소
   },
 
   // ── 질병 노출 카운터 ───────────────────────────────

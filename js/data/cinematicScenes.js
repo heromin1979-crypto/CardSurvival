@@ -296,15 +296,15 @@ const CINEMATIC_SCENES = {
     displayMs: 0,
   },
 
-  cin_char_pharmacist: {
-    id: 'cin_char_pharmacist',
-    image: `${IMG}char_pharmacist_final.webp`,
-    gradient: 'linear-gradient(160deg,#001a14 0%,#003020 60%,#001010 100%)',
-    title: '한소희: 합성 완료',
-    subtitle: '항바이러스 합성 성공',
+  cin_char_chef: {
+    id: 'cin_char_chef',
+    image: `${IMG}char_chef_final.webp`,
+    gradient: 'linear-gradient(160deg,#1a0a00 0%,#302000 60%,#100800 100%)',
+    title: '윤재혁: 첫 급식 완료',
+    subtitle: '생존자 급식소 개소',
     lines: [
-      '시험지가 파랗게 변했다.',
-      '항바이러스 합성체. 임시 처방이지만, 처방이었다.',
+      '따뜻한 김이 올라왔다.',
+      '남은 식재료로 만든 국밥. 완벽하진 않지만, 한 끼였다.',
       '이것이 시작이다. 끝이 아니라.',
     ],
     displayMs: 0,
@@ -477,7 +477,7 @@ export const ENDING_TO_CINEMATIC = {
   char_soldier:     'cin_char_soldier',
   char_firefighter: 'cin_char_firefighter',
   char_homeless:    'cin_char_homeless',
-  char_pharmacist:  'cin_char_pharmacist',
+  char_chef:        'cin_char_chef',
   char_engineer:    'cin_char_engineer',
 
   // 메인 퀘스트 엔딩 (soldier만 방송 장면 구분)
@@ -485,7 +485,7 @@ export const ENDING_TO_CINEMATIC = {
   mq_soldier:       'cin_ending_broadcast',
   mq_firefighter:   'cin_char_firefighter',
   mq_homeless:      'cin_char_homeless',
-  mq_pharmacist:    'cin_char_pharmacist',
+  mq_chef:          'cin_char_chef',
   mq_engineer:      'cin_char_engineer',
 
   // 탈출 엔딩 (공통 탈출 이미지 공유, 치료제는 별도)

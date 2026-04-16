@@ -7,6 +7,7 @@ import EventBus                from '../core/EventBus.js';
 import GameState               from '../core/GameState.js';
 import I18n                    from '../core/I18n.js';
 import SecretCombinationSystem from './SecretCombinationSystem.js';
+import SkillSystem             from './SkillSystem.js';
 import NPCS, { NPC_ITEMS }    from '../data/npcs.js';
 import { NPC_CHEMISTRY }       from '../data/npcChemistry.js';
 import GameData from '../data/GameData.js';
@@ -688,15 +689,22 @@ const NPCSystem = {
 
   // ── Public API: Companion Bonuses Query ────────────────────────
 
-  /** Get total companion combat damage multiplier */
+  /** Get total companion combat damage multiplier (탐색 중인 NPC 제외) */
   getCompanionCombatBonus() {
     this.ensureInitialized();
     let bonus = 0;
+    const foragingToday = GameState.npcs?._foragingToday ?? {};
     for (const npcId of (GameState.companions ?? [])) {
+      if (foragingToday[npcId]) continue;
       const comp = NPCS[npcId]?.companion;
       if (comp?.combatDmg > 0) bonus += comp.combatDmg - 1.0;
     }
     return 1.0 + bonus;
+  },
+
+  /** NPC 정의 조회 (외부에서 companion 속성 확인용) */
+  getNpcDef(npcId) {
+    return NPCS[npcId] ?? null;
   },
 
   /** Get total companion heal bonus */
@@ -754,12 +762,16 @@ const NPCSystem = {
   // V-2: 능동적 NPC 행동
   // ══════════════════════════════════════════════════════════════
 
-  /** 동반자 자율 수집 (1일 1회) */
+  /** 동반자 자율 수집 (1일 1회) — 탐색 성공 NPC는 당일 전투 보너스 제외 */
   _checkForage() {
     const companions = GameState.companions ?? [];
     if (companions.length === 0) return;
     const totalTP = GameState.time?.totalTP ?? 0;
     if (totalTP % 96 !== 0) return;
+
+    // 매일 시작 시 탐색 플래그 초기화
+    if (!GameState.npcs) GameState.npcs = {};
+    GameState.npcs._foragingToday = {};
 
     for (const npcId of companions) {
       const npcDef = NPCS[npcId];
@@ -772,6 +784,7 @@ const NPCSystem = {
           const placed = GameState.placeCardInRow(inst.instanceId, 'middle')
                       || GameState.placeCardInRow(inst.instanceId, 'bottom');
           if (placed) {
+            GameState.npcs._foragingToday[npcId] = true;
             const name     = I18n.itemName(npcId, NPC_ITEMS[npcId]?.name);
             const itemDef  = GameData?.items[forage.id];
             const itemName = I18n.itemName(forage.id, itemDef?.name);
@@ -959,6 +972,10 @@ const NPCSystem = {
     const maxHp = npcDef.maxHp ?? 50;
     const before = state.hp ?? maxHp;
     state.hp = Math.min(maxHp, before + amount);
+    const actualHeal = state.hp - before;
+
+    // 실제 치료가 이뤄졌으면 의료 스킬 XP 부여
+    if (actualHeal > 0) SkillSystem.gainXp('medicine', 4);
 
     const name = I18n.itemName(npcId, NPC_ITEMS[npcId]?.name);
     EventBus.emit('notify', {

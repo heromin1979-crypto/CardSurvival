@@ -220,8 +220,10 @@ const CARD_IMAGES = {
   vaccine:               'assets/images/medical/vaccine.png',
   alcohol_swab:          'assets/images/medical/alcohol_swab.png',
   stimulant:             'assets/images/medical/stimulant.png',
+  practice_bandage:      'assets/images/medical/bandage.png',
 
   // 무기
+  wooden_sword:          'assets/images/weapons/knife.png',
   knife:                 'assets/images/weapons/knife.png',
   sharpened_knife:       'assets/images/weapons/sharpened_knife.png',
   machete:               'assets/images/weapons/machete.png',
@@ -260,7 +262,18 @@ const CARD_IMAGES = {
   spike_trap:            'assets/images/weapons/spike_trap.png',
   alarm_trap:            'assets/images/weapons/alarm_trap.png',
 
+  // 헬기 제작 전용 부품 (기계공 B3 엔딩)
+  aviation_alloy:        'assets/images/materials/refined_metal.png',
+  rotor_blade:           'assets/images/materials/sharp_blade.png',
+  piston_engine:         'assets/images/debris/rusted_toolbox.png',
+  avionics_module:       'assets/images/materials/electronic_parts.png',
+  tail_rotor_assembly:   'assets/images/materials/spring.png',
+  fuselage_frame:        'assets/images/materials/scrap_metal.png',
+  avgas_drum:            'assets/images/bags/fuel_can.png',
+
   // 방어구
+  cloth_guard:           'assets/images/armor/tactical_vest.png',
+  training_shield:       'assets/images/armor/makeshift_shield.png',
   helmet:                'assets/images/armor/helmet.png',
   combat_boots:          'assets/images/armor/combat_boots.png',
   hiking_boots:          'assets/images/armor/hiking_boots.png',

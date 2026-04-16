@@ -9,6 +9,7 @@ import StateMachine  from '../core/StateMachine.js';
 import { rollEnemyGroup } from '../data/enemies.js';
 import LANDMARK_DATA, { rollLoot } from '../data/landmarks.js';
 import GameData from '../data/GameData.js';
+import BALANCE  from '../data/gameBalance.js';
 
 const LandmarkModal = {
   _initialized:  false,
@@ -160,21 +161,23 @@ const LandmarkModal = {
     this._isExploring = true;
     const tpCost = 1;
 
-    // 조우 체크 (dangerMod + 생태계 좀비 밀도 배율)
-    const baseEncounter = 0.10;
+    // 조우 체크 (구별 encounterChance + dangerMod + 생태계 좀비 밀도 배율)
+    const DISTRICTS     = GameData?.districts ?? {};
+    const districtData  = DISTRICTS[districtId];
+    const baseEncounter = districtData?.encounterChance ?? 0.10;
     let ecoEncMult = 1.0;
     try {
       const EcologySystem = SystemRegistry.get('EcologySystem');
       if (EcologySystem && districtId) ecoEncMult = EcologySystem.getEncounterMult(districtId);
     } catch (_) { /* 무시 */ }
-    const encounterChance = Math.min(0.90, (baseEncounter + loc.dangerMod) * ecoEncMult);
+    const landmarkReduct  = BALANCE.encounter?.landmarkDangerReduct ?? 0.10;
+    const encounterChance = Math.min(0.90, Math.max(0, (baseEncounter + loc.dangerMod - landmarkReduct)) * ecoEncMult);
     if (Math.random() < encounterChance) {
       EventBus.emit('notify', { message: I18n.t('landmark.encounter', { name: loc.name }), type: 'danger' });
       TickEngine.skipTP(tpCost);
       this._isExploring = false;
       this.close();
-      const DISTRICTS   = GameData?.districts ?? {};
-      const dangerLevel = DISTRICTS[districtId]?.dangerLevel ?? 1;
+      const dangerLevel = districtData?.dangerLevel ?? 1;
       const noiseLevel  = gs.noise?.level ?? 0;
       const enemies     = rollEnemyGroup(dangerLevel, noiseLevel);
       StateMachine.transition('encounter', {

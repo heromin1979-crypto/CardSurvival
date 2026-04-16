@@ -279,8 +279,15 @@ const QuestSystem = {
       if (gs.quests.active.find(q => q.id === def.id)) continue;
       // 날짜 조건
       if (day < def.dayTrigger) continue;
-      // 선행 퀘스트 조건
-      if (def.prerequisite && !gs.quests.completed.includes(def.prerequisite)) continue;
+      // 선행 퀘스트 조건 (alternativePrerequisites: OR 분기 지원)
+      if (def.alternativePrerequisites) {
+        const anyMet = def.alternativePrerequisites.some(
+          preId => gs.quests.completed.includes(preId),
+        );
+        if (!anyMet) continue;
+      } else if (def.prerequisite && !gs.quests.completed.includes(def.prerequisite)) {
+        continue;
+      }
       // 분기 플래그 조건
       if (def.requiresFlag && !gs.flags[def.requiresFlag]) continue;
 

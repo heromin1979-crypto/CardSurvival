@@ -890,7 +890,7 @@ const HIDDEN_RECIPES = {
 
   enhanced_antiviral: {
     id: 'enhanced_antiviral', name: '강화 항바이러스', category: 'medical',
-    description: '한소희(약사) 전용. 변이 조제법을 활용한 강화 항바이러스제.',
+    description: '윤재혁(셰프) 전용. 변이 조제법을 활용한 강화 항바이러스제.',
     hidden: true,
     rarity: 'legendary',
     output: [{ definitionId: 'completed_antiviral', qty: 1 }],
@@ -916,8 +916,8 @@ const HIDDEN_RECIPES = {
     ],
     unlockConditions: {
       hiddenLocationId: null,
-      bossKillId: 'boss_pharmacist_nemesis',
-      requiredCharacter: 'pharmacist',
+      bossKillId: 'boss_chef_nemesis',
+      requiredCharacter: 'chef',
       minDay: 0,
       minCraftLevel: 0,
       requiredItems: [],
@@ -927,7 +927,7 @@ const HIDDEN_RECIPES = {
 
   immunity_serum: {
     id: 'immunity_serum', name: '면역 혈청', category: 'medical',
-    description: '한소희(약사) 전용. 제로 스트레인에서 추출한 면역 혈청. 영구 감염 면역.',
+    description: '윤재혁(셰프) 전용. 제로 스트레인에서 추출한 면역 혈청. 영구 감염 면역.',
     hidden: true,
     rarity: 'legendary',
     output: [{ definitionId: 'immunity_serum', qty: 1 }],
@@ -953,7 +953,7 @@ const HIDDEN_RECIPES = {
     unlockConditions: {
       hiddenLocationId: null,
       bossKillId: 'boss_patient_zero',
-      requiredCharacter: 'pharmacist',
+      requiredCharacter: 'chef',
       minDay: 0,
       minCraftLevel: 0,
       requiredItems: [],

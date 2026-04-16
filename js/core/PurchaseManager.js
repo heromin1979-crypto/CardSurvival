@@ -10,7 +10,7 @@
  *   char_doctor       — 의사 이지수 ₩2,900
  *   char_soldier      — 군인 강민준 ₩2,900
  *   char_homeless     — 노숙인 최형식 ₩2,900
- *   char_pharmacist   — 약사 한소희 ₩2,900
+ *   char_chef          — 셰프 윤재혁 ₩2,900
  *   char_engineer     — 엔지니어 정대한 ₩2,900
  *   char_all_pack     — 전체 팩 ₩9,900
  */
@@ -22,7 +22,7 @@ export const PRODUCTS = {
   char_doctor:      { id: 'char_doctor',     charId: 'doctor',     name: '의사 이지수',    price: '₩2,900' },
   char_soldier:     { id: 'char_soldier',    charId: 'soldier',    name: '군인 강민준',    price: '₩2,900' },
   char_homeless:    { id: 'char_homeless',   charId: 'homeless',   name: '노숙인 최형식',  price: '₩2,900' },
-  char_pharmacist:  { id: 'char_pharmacist', charId: 'pharmacist', name: '약사 한소희',    price: '₩2,900' },
+  char_chef:        { id: 'char_chef',       charId: 'chef',       name: '셰프 윤재혁',    price: '₩2,900' },
   char_engineer:    { id: 'char_engineer',   charId: 'engineer',   name: '엔지니어 정대한', price: '₩2,900' },
   char_all_pack:    { id: 'char_all_pack',   charId: null,         name: '전체 캐릭터 팩', price: '₩9,900' },
 };

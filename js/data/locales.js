@@ -177,7 +177,7 @@ export const ko = {
   'gallery.hint.char_soldier':            '강민준의 목표를 달성하면 공개됩니다.',
   'gallery.hint.char_firefighter':        '박영철의 목표를 달성하면 공개됩니다.',
   'gallery.hint.char_homeless':           '최형식의 목표를 달성하면 공개됩니다.',
-  'gallery.hint.char_pharmacist':         '한소희의 목표를 달성하면 공개됩니다.',
+  'gallery.hint.char_chef':               '윤재혁의 목표를 달성하면 공개됩니다.',
   'gallery.hint.char_engineer':           '정대한의 목표를 달성하면 공개됩니다.',
 
   // ── CardContextMenu ─────────────────────────────────────────
@@ -989,7 +989,7 @@ export const en = {
   'gallery.hint.char_soldier':            "Complete Min-jun's goal to unlock.",
   'gallery.hint.char_firefighter':        "Complete Young-chul's goal to unlock.",
   'gallery.hint.char_homeless':           "Complete Hyung-sik's goal to unlock.",
-  'gallery.hint.char_pharmacist':         "Complete So-hee's goal to unlock.",
+  'gallery.hint.char_chef':               "Complete Jae-hyuk's goal to unlock.",
   'gallery.hint.char_engineer':           "Complete Dae-han's goal to unlock.",
 
   // ── CardContextMenu ─────────────────────────────────────────
@@ -1682,7 +1682,7 @@ export const en = {
   '_character.soldier':     'Min-jun Kang',
   '_character.firefighter': 'Young-chul Park',
   '_character.homeless':    'Hyung-sik Choi',
-  '_character.pharmacist':  'So-hee Han',
+  '_character.chef':        'Jae-hyuk Yoon',
   '_character.engineer':    'Dae-han Jung',
 
   // ── Enemies (Bosses) ────────────────────────────────────────
@@ -1701,7 +1701,7 @@ export const en = {
   '_enemy.boss_soldier_nemesis':    'Deserter Comrade',
   '_enemy.boss_firefighter_nemesis':'Infected Jae-hoon',
   '_enemy.boss_homeless_nemesis':   'Loan Shark',
-  '_enemy.boss_pharmacist_nemesis': 'Mutant Pharmacist',
+  '_enemy.boss_chef_nemesis':       'Mutant Chef',
   '_enemy.boss_doctor_nemesis':     'Infected Fellow Doctor',
   '_enemy.boss_engineer_rival':     'Mad Mechanic',
 

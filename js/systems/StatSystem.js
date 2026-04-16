@@ -588,10 +588,14 @@ const StatSystem = {
     // 아이템 사용 → 질병 치료 체크
     DiseaseSystem.onConsume(def, gs);
 
-    // 스킬 XP: 의료 아이템 사용
+    // 스킬 XP: 의료 아이템 사용 (붕대/진통제/항생제/구급상자 등 모두)
     if (isMedical) SkillSystem.gainXp('medicine', 3);
-    // 스킬 XP: 제작한 음식 섭취
-    if (isFood && isCrafted) SkillSystem.gainXp('cooking', 2);
+    // 스킬 XP: 음식 섭취 — 직접 제작한 음식 +2, 수집한 음식도 +1 (감별 경험)
+    if (isFood) SkillSystem.gainXp('cooking', isCrafted ? 2 : 1);
+    // 스킬 XP: 물 정수/음용 — 요리 기초 (끓임 여부 관계없이 +1)
+    if (def.subtype === 'water' || def.tags?.includes('water')) {
+      SkillSystem.gainXp('cooking', 1);
+    }
 
     // 캐릭터 반응 대사
     const charId = gs.player.characterId;

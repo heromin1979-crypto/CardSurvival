@@ -87,8 +87,25 @@ const DismantleSystem = {
       }
     }
 
-    // 자원채취 스킬 XP (실제로 재료를 얻었을 때만)
-    if (gained.length > 0) SkillSystem.gainXp('harvesting', 3);
+    // ── 스킬 XP 분기 (실제로 재료를 얻었을 때만) ─────────────────
+    // 분해 대상의 타입에 따라 적절한 제작 스킬 XP도 부여
+    if (gained.length > 0) {
+      SkillSystem.gainXp('harvesting', 3);
+
+      const itemTags = def.tags ?? [];
+      const itemType = def.type;
+      if (itemType === 'weapon' || itemTags.includes('weapon')) {
+        SkillSystem.gainXp('weaponcraft', 2);  // 무기 분해 → 무기제작 이해
+      } else if (itemType === 'armor' || itemTags.includes('armor')) {
+        SkillSystem.gainXp('armorcraft', 2);   // 방어구 분해 → 방어구제작 이해
+      } else if (itemType === 'structure' || itemTags.includes('structure')) {
+        SkillSystem.gainXp('building', 2);     // 구조물 분해 → 건설 이해
+      } else if (itemTags.includes('medical') || itemType === 'consumable' && def.subtype === 'medical') {
+        SkillSystem.gainXp('medicine', 2);     // 의료 아이템 분해 → 의료 이해
+      } else {
+        SkillSystem.gainXp('crafting', 1);     // 그 외 → 기초 제작 이해
+      }
+    }
 
     // dismantleExtraItem 보너스: 추가 고철 획득
     const extraCount = GameState.player.dismantleExtraItem ?? 0;

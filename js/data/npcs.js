@@ -216,6 +216,8 @@ const NPCS = {
       noiseAdd:     0,
       foodCostPerDay: 0.4,
       skillBonus:   { medicine: 0.3 },
+      combatDmgReduce: 0.10,   // 적 피해 10% 감소
+      tauntChance:     0.15,   // 15% 확률로 적 공격을 대신 받음
     },
     gifts: [
       { trust: 1, itemId: 'bandage', qty: 3 },

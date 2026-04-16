@@ -4,6 +4,7 @@ import EventBus  from '../core/EventBus.js';
 import GameState from '../core/GameState.js';
 import { SKILL_DEFS, LEVEL_XP_TABLE, getLevelFromXp, DEFAULT_SKILLS } from '../data/skillDefs.js';
 import NPCS      from '../data/npcs.js';
+import { CHARACTERS } from '../data/characters.js';
 
 const SkillSystem = {
 
@@ -25,8 +26,11 @@ const SkillSystem = {
 
     // 동행 NPC 스킬 보너스 적용 (XP 배율)
     const npcMult   = 1 + this.getNpcSkillBonus(skillId);
+    // 직업별 특화 스킬 50% 추가 XP
+    const charDef   = CHARACTERS.find(c => c.id === gs.player.characterId);
+    const specMult  = charDef?.specialtySkills?.includes(skillId) ? 1.5 : 1.0;
     const prevLevel = skill.level;
-    skill.xp       += Math.round(amount * npcMult);
+    skill.xp       += Math.round(amount * npcMult * specMult);
 
     const newLevel = getLevelFromXp(skill.xp);
     if (newLevel > prevLevel) {

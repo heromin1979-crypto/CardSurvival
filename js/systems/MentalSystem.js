@@ -18,7 +18,7 @@ const MENTAL_TRAITS = {
   engineer:    { anxietyResist: 0.9,  traumaRecovery: 0.8, lonelinessBase: 0.7, ability: 'problem_solving' },
   firefighter: { anxietyResist: 0.6,  traumaRecovery: 0.9, lonelinessBase: 0.9, ability: 'courage' },
   homeless:    { anxietyResist: 0.7,  traumaRecovery: 0.6, lonelinessBase: 0.5, ability: 'solitude' },
-  pharmacist:  { anxietyResist: 0.9,  traumaRecovery: 1.2, lonelinessBase: 1.1, ability: 'calm_mind' },
+  chef:        { anxietyResist: 0.85, traumaRecovery: 1.0, lonelinessBase: 0.8, ability: 'comfort_food' },
 };
 
 // ── 불안 효과 티어 ────────────────────────────────────────────
