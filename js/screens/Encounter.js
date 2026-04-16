@@ -17,6 +17,10 @@ const Encounter = {
       if (to === 'encounter') {
         this._data = data;
         this._render();
+      } else if (this._el) {
+        // 조우 화면 종료 시 DOM 내용을 비워 잔존 이벤트 리스너 제거
+        this._el.innerHTML = '';
+        this._data = null;
       }
     });
     EventBus.on('languageChanged', () => {
