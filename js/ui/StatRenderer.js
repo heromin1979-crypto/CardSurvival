@@ -152,6 +152,10 @@ const StatRenderer = {
   render() {
     const gs = GameState;
 
+    // 최종 방어선: state와 화면 동기화 체크
+    // encounter/combat 화면이 .active인데 state가 일치하지 않으면 강제 정리
+    this._syncScreenState(gs);
+
     // Update stat bars
     for (const s of STAT_CONFIG) {
       const stat = gs.stats[s.key];
@@ -303,6 +307,37 @@ const StatRenderer = {
     }
     const val = document.getElementById('tp-clock-val');
     if (val) val.textContent = `TP ${Math.floor(gs.time.totalTP)}`;
+  },
+
+  /**
+   * 화면-state 동기화 감시.
+   * encounter/combat 스크린이 활성 상태인데 state가 일치하지 않으면 강제로 정리.
+   * 원인: 저장 복원 시 잔존 DOM, 캐시된 구버전 JS 등.
+   */
+  _syncScreenState(gs) {
+    const st = gs.ui?.currentState;
+    if (!st) return;
+    // encounter 화면 검증
+    const encEl = document.getElementById('screen-encounter');
+    if (encEl?.classList.contains('active') && st !== 'encounter') {
+      console.warn(`[StatRenderer] 불일치 감지: screen-encounter active but state=${st} — 정리 중`);
+      encEl.classList.remove('active');
+      encEl.innerHTML = '';
+      // 현재 state에 맞는 화면 활성화
+      const mapping = { main:'screen-main', explore:'screen-explore', rest:'screen-rest', main_menu:'screen-main-menu' };
+      const target = document.getElementById(mapping[st] ?? 'screen-main');
+      if (target) target.classList.add('active');
+    }
+    // combat 화면 검증
+    const combatEl = document.getElementById('screen-combat');
+    if (combatEl?.classList.contains('active') && st !== 'combat') {
+      console.warn(`[StatRenderer] 불일치 감지: screen-combat active but state=${st} — 정리 중`);
+      combatEl.classList.remove('active');
+      combatEl.innerHTML = '';
+      const mapping = { main:'screen-main', explore:'screen-explore', rest:'screen-rest', main_menu:'screen-main-menu' };
+      const target = document.getElementById(mapping[st] ?? 'screen-main');
+      if (target) target.classList.add('active');
+    }
   },
 
   _formatHour(h) {
