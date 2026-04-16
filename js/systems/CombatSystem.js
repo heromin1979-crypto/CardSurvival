@@ -27,7 +27,24 @@ import {
 const CombatSystem = {
   init() {
     EventBus.on('stateTransition', ({ to, data }) => {
-      if (to === 'combat') this._setupCombat(data);
+      if (to === 'combat') {
+        try {
+          this._setupCombat(data);
+        } catch (err) {
+          console.error('[CombatSystem] _setupCombat 실패:', err);
+          console.error('[CombatSystem] data:', data);
+          // 최소한의 combat 객체 생성 — render 에러 방지
+          GameState.combat = {
+            active: true, enemies: data?.enemies ?? [], targetIndex: 0,
+            playerAction: null, log: ['⚠️ 전투 초기화 오류: ' + (err?.message ?? err)],
+            outcome: null, rewards: [], nodeId: data?.nodeId ?? null,
+            dangerLevel: data?.dangerLevel ?? 2, round: 0, xpGained: 0,
+            lastHit: null, playerStatus: [], enemyStatus: [],
+            _encounterData: data ?? {}, _isNew: true, _ambushFailed: false,
+          };
+          EventBus.emit('combatStarted', {});
+        }
+      }
     });
   },
 
