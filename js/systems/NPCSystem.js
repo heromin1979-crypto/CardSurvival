@@ -338,6 +338,34 @@ const NPCSystem = {
   // ── Public API: Bond (군견 유대감) ────────────────────────────
 
   /**
+   * NPC 개별 사기 조정 (0..100). 팀 리더십 시스템용 (셰프 부주방장·주방보조 등).
+   * @returns 새 사기 수치 또는 null
+   */
+  modNpcMorale(npcId, delta) {
+    this.ensureInitialized();
+    const state = GameState.npcs?.states?.[npcId];
+    if (!state || !state.isCompanion) return null;
+    const before = state.morale ?? 70;
+    const after  = Math.max(0, Math.min(100, before + delta));
+    if (after === before) return after;
+    state.morale = after;
+    EventBus.emit('npcMoraleChanged', { npcId, oldMorale: before, newMorale: after, delta });
+    return after;
+  },
+
+  /** 모든 동반자 평균 사기 — 요리 품질 보너스 계산용 */
+  getTeamAverageMorale() {
+    this.ensureInitialized();
+    const companions = GameState.companions ?? [];
+    if (companions.length === 0) return 70;
+    let sum = 0;
+    for (const id of companions) {
+      sum += GameState.npcs.states[id]?.morale ?? 70;
+    }
+    return sum / companions.length;
+  },
+
+  /**
    * Clamp bond 0..100, emit 'bondChanged', return new bond level.
    * Only applies to companions (state.isCompanion === true).
    */

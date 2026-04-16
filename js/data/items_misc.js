@@ -927,6 +927,387 @@ const ITEMS_MISC = {
     ],
   },
 
+  // ─── 확장 의료 (10) — Phase 4 ──────────────────────────────────
+
+  reinforced_bandage: {
+    id: 'reinforced_bandage', name: '강화 붕대', type: 'consumable', subtype: 'medical',
+    rarity: 'uncommon', weight: 0.1, defaultDurability: 1, defaultContamination: 0,
+    icon: '🩹', description: '알코올 소독과 압박 봉합으로 강화된 붕대. HP +20.',
+    tags: ['medical', 'advanced'],
+    onUse: { heal: 20 }, onConsume: { heal: 20 }, dismantle: [],
+  },
+  field_antidote: {
+    id: 'field_antidote', name: '야전 해독제', type: 'consumable', subtype: 'medical',
+    rarity: 'uncommon', weight: 0.15, defaultDurability: 1, defaultContamination: 0,
+    icon: '💊', description: '응급 해독제. 감염 -20, 오염 제거.',
+    tags: ['medical', 'advanced'],
+    onUse: { infection: -20 }, onConsume: { infection: -20 }, dismantle: [],
+  },
+  vitamin_complex: {
+    id: 'vitamin_complex', name: '비타민 복합제', type: 'consumable', subtype: 'medical',
+    rarity: 'common', weight: 0.05, defaultDurability: 1, defaultContamination: 0,
+    icon: '💊', description: '종합 비타민. 스태미나 +30, 피로 -15.',
+    tags: ['medical'],
+    onUse: { stamina: 30, fatigue: -15 }, onConsume: { stamina: 30, fatigue: -15 }, dismantle: [],
+  },
+  iv_saline: {
+    id: 'iv_saline', name: '생리식염수 IV', type: 'consumable', subtype: 'medical',
+    rarity: 'uncommon', weight: 0.3, defaultDurability: 1, defaultContamination: 0,
+    icon: '💉', description: '수분·전해질 보충. 수분 +50, HP +15.',
+    tags: ['medical', 'advanced'],
+    onUse: { hydration: 50, heal: 15 }, onConsume: { hydration: 50, heal: 15 }, dismantle: [],
+  },
+  stabilizer_shot: {
+    id: 'stabilizer_shot', name: '안정제 주사', type: 'consumable', subtype: 'medical',
+    rarity: 'uncommon', weight: 0.1, defaultDurability: 1, defaultContamination: 0,
+    icon: '💉', description: '출혈 정지 + HP +10. 응급 환자용.',
+    tags: ['medical', 'advanced'],
+    onUse: { heal: 10 }, onConsume: { heal: 10 }, dismantle: [],
+  },
+  infection_serum: {
+    id: 'infection_serum', name: '감염 혈청', type: 'consumable', subtype: 'medical',
+    rarity: 'rare', weight: 0.2, defaultDurability: 1, defaultContamination: 0,
+    icon: '🧪', description: '항체를 강화한 혈청. 감염 -30.',
+    tags: ['medical', 'advanced'],
+    onUse: { infection: -30 }, onConsume: { infection: -30 }, dismantle: [],
+  },
+  rad_blocker_plus: {
+    id: 'rad_blocker_plus', name: '강화 방사선 차단제', type: 'consumable', subtype: 'medical',
+    rarity: 'rare', weight: 0.15, defaultDurability: 1, defaultContamination: 0,
+    icon: '☢️', description: '활성탄·납 복합 차단제. 방사선 -40.',
+    tags: ['medical', 'advanced'],
+    onUse: { radiation: -40 }, onConsume: { radiation: -40 }, dismantle: [],
+  },
+  painkiller_field: {
+    id: 'painkiller_field', name: '야전 진통제', type: 'consumable', subtype: 'medical',
+    rarity: 'uncommon', weight: 0.05, defaultDurability: 1, defaultContamination: 0,
+    icon: '💊', description: '강력한 진통제. 사기 +15, 피로 -10.',
+    tags: ['medical'],
+    onUse: { morale: 15, fatigue: -10 }, onConsume: { morale: 15, fatigue: -10 }, dismantle: [],
+  },
+  adrenaline_shot: {
+    id: 'adrenaline_shot', name: '아드레날린 주사', type: 'consumable', subtype: 'medical',
+    rarity: 'rare', weight: 0.1, defaultDurability: 1, defaultContamination: 0,
+    icon: '💉', description: '즉각적인 스태미나 +100. 효과 짧음.',
+    tags: ['medical', 'stimulant'],
+    onUse: { stamina: 100 }, onConsume: { stamina: 100 }, dismantle: [],
+  },
+  herbal_tonic: {
+    id: 'herbal_tonic', name: '약초 강장제', type: 'consumable', subtype: 'medical',
+    rarity: 'uncommon', weight: 0.1, defaultDurability: 1, defaultContamination: 0,
+    icon: '🌿', description: '천연 약초 강장제. HP +15.',
+    tags: ['medical', 'regen'],
+    onUse: { heal: 15 }, onConsume: { heal: 15 }, dismantle: [],
+  },
+
+  // ─── 야전 병원 구조물 (10) — Phase 4 ────────────────────────────
+
+  medical_bed: {
+    id: 'medical_bed', name: '의료 침대', type: 'structure', subtype: 'medical_structure',
+    rarity: 'uncommon', weight: 0, defaultDurability: 100, defaultContamination: 0,
+    icon: '🛏️', description: '야전 의료용 침대. 휴식 회복 속도 +50%.',
+    tags: ['structure', 'medical'],
+    effect: { restHealMult: 1.5 },
+    dismantle: [{ definitionId: 'scrap_metal', qty: 2, chance: 0.8 }, { definitionId: 'cloth', qty: 3, chance: 0.7 }],
+  },
+  surgical_table: {
+    id: 'surgical_table', name: '수술대', type: 'structure', subtype: 'medical_structure',
+    rarity: 'rare', weight: 0, defaultDurability: 120, defaultContamination: 0,
+    icon: '🔬', description: '정밀 수술 가능. 고급 의료 제작에 필요.',
+    tags: ['structure', 'medical', 'advanced'],
+    craftingTool: true,
+    dismantle: [{ definitionId: 'scrap_metal', qty: 4, chance: 0.8 }],
+  },
+  isolation_ward: {
+    id: 'isolation_ward', name: '격리 병동', type: 'structure', subtype: 'medical_structure',
+    rarity: 'rare', weight: 0, defaultDurability: 120, defaultContamination: 0,
+    icon: '🏥', description: '감염 확산 차단 격리 시설.',
+    tags: ['structure', 'medical', 'isolation'],
+    effect: { infectionSpreadBlock: true },
+    dismantle: [{ definitionId: 'scrap_metal', qty: 3, chance: 0.8 }, { definitionId: 'cloth', qty: 5, chance: 0.6 }],
+  },
+  medical_cabinet: {
+    id: 'medical_cabinet', name: '약품 보관장', type: 'structure', subtype: 'medical_structure',
+    rarity: 'uncommon', weight: 0, defaultDurability: 100, defaultContamination: 0,
+    icon: '🗄️', description: '의료품 20개 저장.',
+    tags: ['structure', 'medical', 'storage'],
+    storageCapacity: 20,
+    dismantle: [{ definitionId: 'wood_plank', qty: 3, chance: 0.8 }, { definitionId: 'scrap_metal', qty: 2, chance: 0.6 }],
+  },
+  water_purifier: {
+    id: 'water_purifier', name: '정수 시설', type: 'structure', subtype: 'medical_structure',
+    rarity: 'uncommon', weight: 0, defaultDurability: 100, defaultContamination: 0,
+    icon: '💧', description: 'TP당 정수된 물 1개 자동 생산.',
+    tags: ['structure', 'medical', 'generator'],
+    effect: { waterPerTP: 1 },
+    dismantle: [{ definitionId: 'scrap_metal', qty: 3, chance: 0.7 }, { definitionId: 'charcoal_filter', qty: 1, chance: 0.5 }],
+  },
+  blood_bank: {
+    id: 'blood_bank', name: '혈액 은행', type: 'structure', subtype: 'medical_structure',
+    rarity: 'rare', weight: 0, defaultDurability: 100, defaultContamination: 0,
+    icon: '🩸', description: 'IV용 혈액 저장·사용.',
+    tags: ['structure', 'medical', 'advanced'],
+    dismantle: [{ definitionId: 'electronic_parts', qty: 2, chance: 0.6 }, { definitionId: 'scrap_metal', qty: 2, chance: 0.7 }],
+  },
+  quarantine_station: {
+    id: 'quarantine_station', name: '방역 스테이션', type: 'structure', subtype: 'medical_structure',
+    rarity: 'rare', weight: 0, defaultDurability: 100, defaultContamination: 0,
+    icon: '🚿', description: '주변 감염 저항 +20%.',
+    tags: ['structure', 'medical'],
+    effect: { infectionResist: 0.20 },
+    dismantle: [{ definitionId: 'scrap_metal', qty: 3, chance: 0.7 }],
+  },
+  xray_station: {
+    id: 'xray_station', name: 'X-ray 스테이션', type: 'structure', subtype: 'medical_structure',
+    rarity: 'epic', weight: 0, defaultDurability: 120, defaultContamination: 0,
+    icon: '📷', description: '숨겨진 질병 탐지.',
+    tags: ['structure', 'medical', 'advanced'],
+    effect: { detectHiddenDisease: true },
+    dismantle: [{ definitionId: 'electronic_parts', qty: 4, chance: 0.6 }],
+  },
+  incubator: {
+    id: 'incubator', name: '인큐베이터', type: 'structure', subtype: 'medical_structure',
+    rarity: 'rare', weight: 0, defaultDurability: 100, defaultContamination: 0,
+    icon: '🍼', description: '섬세한 샘플 보존.',
+    tags: ['structure', 'medical'],
+    dismantle: [{ definitionId: 'electronic_parts', qty: 2, chance: 0.6 }, { definitionId: 'glass_shard', qty: 3, chance: 0.7 }],
+  },
+  analysis_lab: {
+    id: 'analysis_lab', name: '분석실', type: 'structure', subtype: 'medical_structure',
+    rarity: 'epic', weight: 0, defaultDurability: 120, defaultContamination: 0,
+    icon: '🧪', description: '고급 연구 시설. 히든 의료 레시피 해금.',
+    tags: ['structure', 'medical', 'research'],
+    craftingTool: true,
+    dismantle: [{ definitionId: 'electronic_parts', qty: 5, chance: 0.6 }, { definitionId: 'glass_shard', qty: 5, chance: 0.5 }],
+  },
+
+  // ─── 확장 요리 (20) — Phase 4 ──────────────────────────────────
+  // 셰프 전용 및 범용 요리 확장 — 한식/양식/디저트/특수
+
+  // — 한식 (5) —
+  kimchi_stew: {
+    id: 'kimchi_stew', name: '김치찌개', type: 'consumable', subtype: 'food',
+    rarity: 'common', weight: 0.4,
+    defaultDurability: 1, defaultContamination: 0,
+    icon: '🍲', description: '돼지고기와 김치를 넣고 푹 끓인 전통 찌개. 온몸이 얼큰하게 풀린다.',
+    tags: ['food', 'korean', 'hot'],
+    onUse: { nutrition: 30, warmth: 10 },
+    onConsume: { nutrition: 30, warmth: 10 },
+    dismantle: [],
+  },
+
+  soybean_stew: {
+    id: 'soybean_stew', name: '된장찌개', type: 'consumable', subtype: 'food',
+    rarity: 'common', weight: 0.4,
+    defaultDurability: 1, defaultContamination: 0,
+    icon: '🥘', description: '발효 된장과 채소로 끓인 구수한 찌개. 속이 든든해진다.',
+    tags: ['food', 'korean', 'hot'],
+    onUse: { nutrition: 28, warmth: 8 },
+    onConsume: { nutrition: 28, warmth: 8 },
+    dismantle: [],
+  },
+
+  galbi_jjim: {
+    id: 'galbi_jjim', name: '갈비찜', type: 'consumable', subtype: 'food',
+    rarity: 'uncommon', weight: 0.6,
+    defaultDurability: 1, defaultContamination: 0,
+    icon: '🍖', description: '간장 양념에 푹 조린 갈비찜. 풍성한 육즙이 사기를 북돋운다.',
+    tags: ['food', 'korean', 'hearty'],
+    onUse: { nutrition: 40, morale: 10 },
+    onConsume: { nutrition: 40, morale: 10 },
+    dismantle: [],
+  },
+
+  bibimbap_chef: {
+    id: 'bibimbap_chef', name: '셰프 비빔밥', type: 'consumable', subtype: 'food',
+    rarity: 'uncommon', weight: 0.5,
+    defaultDurability: 1, defaultContamination: 0,
+    icon: '🍚', description: '밥 위에 나물과 고기를 색색이 올린 균형 잡힌 한 그릇.',
+    tags: ['food', 'korean', 'balanced'],
+    onUse: { nutrition: 35, hydration: 5, morale: 5 },
+    onConsume: { nutrition: 35, hydration: 5, morale: 5 },
+    dismantle: [],
+  },
+
+  cold_noodles: {
+    id: 'cold_noodles', name: '냉면', type: 'consumable', subtype: 'food',
+    rarity: 'common', weight: 0.5,
+    defaultDurability: 1, defaultContamination: 0,
+    icon: '🍜', description: '차가운 육수에 말아낸 메밀 면. 더위를 식혀주는 시원한 한 그릇.',
+    tags: ['food', 'korean', 'cold'],
+    onUse: { hydration: 20, nutrition: 25 },
+    onConsume: { hydration: 20, nutrition: 25 },
+    dismantle: [],
+  },
+
+  // — 양식 (5) —
+  tomato_pasta: {
+    id: 'tomato_pasta', name: '토마토 파스타', type: 'consumable', subtype: 'food',
+    rarity: 'common', weight: 0.4,
+    defaultDurability: 1, defaultContamination: 0,
+    icon: '🍝', description: '새콤한 토마토 소스에 버무린 파스타. 한 접시로 속이 든든해진다.',
+    tags: ['food', 'western', 'pasta'],
+    onUse: { nutrition: 30, morale: 5 },
+    onConsume: { nutrition: 30, morale: 5 },
+    dismantle: [],
+  },
+
+  grilled_steak: {
+    id: 'grilled_steak', name: '구운 스테이크', type: 'consumable', subtype: 'food',
+    rarity: 'uncommon', weight: 0.5,
+    defaultDurability: 1, defaultContamination: 0,
+    icon: '🥩', description: '두툼한 고기를 미디엄으로 구워낸 스테이크. 단백질이 가득하다.',
+    tags: ['food', 'western', 'hearty'],
+    onUse: { nutrition: 45 },
+    onConsume: { nutrition: 45 },
+    dismantle: [],
+  },
+
+  cream_soup: {
+    id: 'cream_soup', name: '크림 수프', type: 'consumable', subtype: 'food',
+    rarity: 'common', weight: 0.4,
+    defaultDurability: 1, defaultContamination: 0,
+    icon: '🥣', description: '부드럽고 따뜻한 크림 베이스 수프. 얼어붙은 몸을 녹여준다.',
+    tags: ['food', 'western', 'hot'],
+    onUse: { warmth: 15, nutrition: 22 },
+    onConsume: { warmth: 15, nutrition: 22 },
+    dismantle: [],
+  },
+
+  garden_salad: {
+    id: 'garden_salad', name: '정원 샐러드', type: 'consumable', subtype: 'food',
+    rarity: 'common', weight: 0.3,
+    defaultDurability: 1, defaultContamination: 0,
+    icon: '🥗', description: '채집한 신선한 채소와 허브를 버무린 샐러드. 가볍고 상쾌하다.',
+    tags: ['food', 'western', 'fresh'],
+    onUse: { nutrition: 18, hydration: 10 },
+    onConsume: { nutrition: 18, hydration: 10 },
+    dismantle: [],
+  },
+
+  mushroom_risotto: {
+    id: 'mushroom_risotto', name: '버섯 리조토', type: 'consumable', subtype: 'food',
+    rarity: 'uncommon', weight: 0.5,
+    defaultDurability: 1, defaultContamination: 0,
+    icon: '🍛', description: '버섯 육수에 쌀을 천천히 볶아낸 리조토. 깊고 진한 풍미가 퍼진다.',
+    tags: ['food', 'western', 'rice'],
+    onUse: { nutrition: 35 },
+    onConsume: { nutrition: 35 },
+    dismantle: [],
+  },
+
+  // — 디저트 (5) —
+  hard_bread: {
+    id: 'hard_bread', name: '단단한 빵', type: 'consumable', subtype: 'food',
+    rarity: 'common', weight: 0.2,
+    defaultDurability: 1, defaultContamination: 0,
+    icon: '🍞', description: '오래 보관 가능한 단단한 빵. 비상 식량으로 제격이다.',
+    tags: ['food', 'dessert', 'preserved'],
+    onUse: { nutrition: 25 },
+    onConsume: { nutrition: 25 },
+    dismantle: [],
+  },
+
+  honey_cookies: {
+    id: 'honey_cookies', name: '꿀 쿠키', type: 'consumable', subtype: 'food',
+    rarity: 'common', weight: 0.1,
+    defaultDurability: 1, defaultContamination: 0,
+    icon: '🍪', description: '꿀과 밀가루로 구운 바삭한 쿠키. 한입 베어 물면 사기가 올라간다.',
+    tags: ['food', 'dessert', 'sweet'],
+    onUse: { morale: 15, nutrition: 15 },
+    onConsume: { morale: 15, nutrition: 15 },
+    dismantle: [],
+  },
+
+  sponge_cake: {
+    id: 'sponge_cake', name: '스펀지 케이크', type: 'consumable', subtype: 'food',
+    rarity: 'uncommon', weight: 0.3,
+    defaultDurability: 1, defaultContamination: 0,
+    icon: '🎂', description: '폭신하게 구운 스펀지 케이크. 잊고 있던 평화로운 시절을 떠올리게 한다.',
+    tags: ['food', 'dessert', 'sweet'],
+    onUse: { morale: 25, nutrition: 20 },
+    onConsume: { morale: 25, nutrition: 20 },
+    dismantle: [],
+  },
+
+  pudding: {
+    id: 'pudding', name: '푸딩', type: 'consumable', subtype: 'food',
+    rarity: 'common', weight: 0.2,
+    defaultDurability: 1, defaultContamination: 0,
+    icon: '🍮', description: '촉촉하고 달콤한 푸딩. 차갑게 먹으면 더 맛있다.',
+    tags: ['food', 'dessert', 'sweet'],
+    onUse: { morale: 12, hydration: 15 },
+    onConsume: { morale: 12, hydration: 15 },
+    dismantle: [],
+  },
+
+  dark_chocolate: {
+    id: 'dark_chocolate', name: '다크 초콜릿', type: 'consumable', subtype: 'food',
+    rarity: 'uncommon', weight: 0.1,
+    defaultDurability: 1, defaultContamination: 0,
+    icon: '🍫', description: '쌉싸름한 카카오 풍미의 다크 초콜릿. 피로가 사르르 녹는다.',
+    tags: ['food', 'dessert', 'sweet', 'stimulant'],
+    onUse: { morale: 20, fatigue: -10 },
+    onConsume: { morale: 20, fatigue: -10 },
+    dismantle: [],
+  },
+
+  // — 특수 (5) —
+  recovery_stew: {
+    id: 'recovery_stew', name: '보양식', type: 'consumable', subtype: 'food',
+    rarity: 'rare', weight: 0.6,
+    defaultDurability: 1, defaultContamination: 0,
+    icon: '🍲', description: '약초와 귀한 재료를 푹 고아 만든 보양식. 체력과 면역을 동시에 끌어올린다.',
+    tags: ['food', 'special', 'medicinal'],
+    onUse: { hp: 30, infectionResist: 0.10, infectionResistDuration: 20 },
+    onConsume: { hp: 30, infectionResist: 0.10, infectionResistDuration: 20 },
+    dismantle: [],
+  },
+
+  hangover_soup: {
+    id: 'hangover_soup', name: '해장국', type: 'consumable', subtype: 'food',
+    rarity: 'uncommon', weight: 0.5,
+    defaultDurability: 1, defaultContamination: 0,
+    icon: '🍜', description: '시원한 국물이 속을 풀어주는 해장국. 메스꺼움을 가라앉힌다.',
+    tags: ['food', 'korean', 'special', 'remedy'],
+    onUse: { hydration: 30, morale: 10, removeStatus: ['nausea'] },
+    onConsume: { hydration: 30, morale: 10, removeStatus: ['nausea'] },
+    dismantle: [],
+  },
+
+  fish_cake_stew: {
+    id: 'fish_cake_stew', name: '어묵탕', type: 'consumable', subtype: 'food',
+    rarity: 'common', weight: 0.5,
+    defaultDurability: 1, defaultContamination: 0,
+    icon: '🥘', description: '뜨끈한 국물에 어묵을 푹 끓여낸 한 그릇. 추운 날 먹으면 최고다.',
+    tags: ['food', 'korean', 'hot'],
+    onUse: { nutrition: 30, warmth: 12 },
+    onConsume: { nutrition: 30, warmth: 12 },
+    dismantle: [],
+  },
+
+  hot_pot: {
+    id: 'hot_pot', name: '전골', type: 'consumable', subtype: 'food',
+    rarity: 'rare', weight: 0.8,
+    defaultDurability: 1, defaultContamination: 0,
+    icon: '🍲', description: '고기·채소·버섯을 한데 끓인 푸짐한 전골. 동료와 나누어 먹기 좋다.',
+    tags: ['food', 'korean', 'hearty', 'shareable', 'companion_food'],
+    onUse: { nutrition: 45, morale: 15 },
+    onConsume: { nutrition: 45, morale: 15 },
+    dismantle: [],
+  },
+
+  rice_porridge: {
+    id: 'rice_porridge', name: '죽', type: 'consumable', subtype: 'food',
+    rarity: 'common', weight: 0.4,
+    defaultDurability: 1, defaultContamination: 0,
+    icon: '🥣', description: '쌀을 오래 끓여 부드럽게 풀어낸 죽. 아픈 이가 먹기에 적합하다.',
+    tags: ['food', 'korean', 'soft', 'sick_food'],
+    onUse: { nutrition: 25, fatigue: -15 },
+    onConsume: { nutrition: 25, fatigue: -15 },
+    dismantle: [],
+  },
+
   // ─── 헬기 제작 전용 부품 (7) ──────────────────────────────────
   // 기계공 B3 경로 최종 엔딩 — 아버지의 R22 설계도
 

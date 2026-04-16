@@ -8,6 +8,7 @@ import HIDDEN_RECIPES  from '../data/hiddenRecipes.js';
 import { SKILL_DEFS }  from '../data/skillDefs.js';
 import SkillSystem     from './SkillSystem.js';
 import StatSystem      from './StatSystem.js';
+import SystemRegistry  from '../core/SystemRegistry.js';
 import BALANCE         from '../data/gameBalance.js';
 import NightSystem     from './NightSystem.js';
 import GameData from '../data/GameData.js';
@@ -259,6 +260,14 @@ const CraftSystem = {
     if      (moraleTier.craftFailMult < 1.0)  score += Q.moraleBonusHigh;
     else if (moraleTier.craftFailMult >= 2.0) score -= Q.moralePenaltyDespair;
     else if (moraleTier.craftFailMult > 1.0)  score -= Q.moralePenaltyLow;
+
+    // 셰프 팀 리더십: 요리(food) 카테고리 제작 시 동료 평균 사기 보너스
+    if (bp.category === 'food' && GameState.player.characterId === 'chef') {
+      const npcSys = SystemRegistry.get('NPCSystem');
+      const avgMorale = npcSys?.getTeamAverageMorale?.() ?? 70;
+      if      (avgMorale > 85) score += 0.20;
+      else if (avgMorale > 70) score += 0.10;
+    }
 
     const t = Q.thresholds;
     if (score >= t.masterwork) return 'masterwork';

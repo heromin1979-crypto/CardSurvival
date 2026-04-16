@@ -213,6 +213,19 @@ const CHEF_SHARED = {
       complete: '식량 군벌이 쓰러졌다. 그의 창고를 열자 킹크랩과 인삼, 송로버섯이 쏟아졌다. 이제 이 재료는 굶주린 사람들의 접시로 간다. 요리는 최후의 정의다.',
     },
   },
+
+  mq_chef_side_06: {
+    id: 'mq_chef_side_06', title: '주방 팀 구성',
+    desc: '요리 10가지를 제작해 팀 동료들의 신뢰와 사기를 쌓아라.',
+    icon: '🧑‍🍳', characterId: 'chef', dayTrigger: 50, prerequisite: 'mq_chef_side_04',
+    objective: { type: 'craft_item', category: 'food', count: 10 },
+    reward: { morale: 15, items: [{ definitionId: 'wagyu_scrap', qty: 2 }, { definitionId: 'wild_honey', qty: 2 }], flags: { chef_team_assembled: true } },
+    failPenalty: { morale: -5 }, deadlineDays: 85,
+    narrative: {
+      start: '팀이 있다면 혼자보다 10배 많은 사람을 먹일 수 있다. 부주방장 박민호와 주방 보조 김지은. 두 사람의 신뢰를 얻으려면 요리로 증명해야 한다.',
+      complete: '10가지 요리. 팀은 윤재혁의 실력을 인정했다. 박민호: "이 정도면 주방장이야. 소피텔에서도 이보다 못 했어." 김지은: "저도 언젠가 셰프님처럼!" 이제 팀이 생겼다.',
+    },
+  },
 };
 
 export default CHEF_SHARED;
