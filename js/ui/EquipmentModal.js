@@ -121,6 +121,10 @@ const EquipmentModal = {
               ${StatRenderer.buildFullStatsHTML()}
             </div>
           </div>
+          <div class="char-abilities-panel" style="margin-top:16px;">
+            <div class="char-status-title">⚡ 활성 특수 능력</div>
+            <div class="char-abilities-list">${this._renderActiveAbilities()}</div>
+          </div>
         </div>
         <!-- 장비 탭 -->
         <div class="equip-tab-content equip-tab-3panel" data-tab-content="equip" style="display:${this._activeMainTab === 'equip' ? '' : 'none'};">
@@ -187,6 +191,56 @@ const EquipmentModal = {
         ${rows.length === 0 ? `<div style="font-size:10px;color:var(--text-dim);text-align:center;margin-top:12px;">${I18n.t('equip.noEquip')}</div>` : ''}
       </div>
     `;
+  },
+
+  /** 캐릭터 특수 능력 활성 상태 렌더링 (거리감각/전투보너스 등) */
+  _renderActiveAbilities() {
+    const p = GameState.player;
+    const rows = [];
+    if ((p.fleeBonus ?? 0) > 0) {
+      rows.push({ icon: '🌆', label: '거리 감각', value: `도주 +${Math.round(p.fleeBonus*100)}%, 소음 -20%, 조우 -5%` });
+    }
+    if ((p.exploreBonus ?? 0) > 0) {
+      rows.push({ icon: '👁️', label: '생존 본능', value: `탐색 아이템 +${p.exploreBonus}` });
+    }
+    if ((p.combatDmgBonus ?? 1.0) > 1.0) {
+      rows.push({ icon: '⚔️', label: '전투 훈련', value: `데미지 +${Math.round((p.combatDmgBonus-1)*100)}%` });
+    }
+    if ((p.critBonus ?? 0) > 0) {
+      rows.push({ icon: '🎯', label: '치명 타격', value: `크리티컬 +${Math.round(p.critBonus*100)}%` });
+    }
+    if ((p.healBonus ?? 0) > 1.0) {
+      rows.push({ icon: '💉', label: '치료 특화', value: `치료 효과 ×${p.healBonus.toFixed(2)}` });
+    }
+    if ((p.craftSuccessBonus ?? 0) > 0) {
+      rows.push({ icon: '⚙️', label: '공학적 직관', value: `제작 성공률 +${Math.round(p.craftSuccessBonus*100)}%` });
+    }
+    if ((p.knifeDmgBonus ?? 0) > 0) {
+      rows.push({ icon: '🔪', label: '칼 다루기', value: `나이프 데미지 ×${p.knifeDmgBonus.toFixed(2)}` });
+    }
+    if ((p.cookingEffectBonus ?? 1.0) > 1.0) {
+      rows.push({ icon: '🍳', label: '미식 감각', value: `요리 효과 ×${p.cookingEffectBonus.toFixed(2)}` });
+    }
+    if (p.toxinDetect) {
+      rows.push({ icon: '🔍', label: '식재료 감별', value: '독성 음식 섭취 전 경고' });
+    }
+    if ((p.dismantleExtraItem ?? 0) > 0) {
+      rows.push({ icon: '🔩', label: '분해 전문가', value: `재료 +${p.dismantleExtraItem}개 추가` });
+    }
+    if ((p.structureDurabilityBonus ?? 1.0) > 1.0) {
+      rows.push({ icon: '🏗️', label: '구조물 강화', value: `내구도 +${Math.round((p.structureDurabilityBonus-1)*100)}%` });
+    }
+    if ((p.noiseReduct ?? 0) > 0 && !p.fleeBonus) {
+      rows.push({ icon: '🏃', label: '전술 이동', value: `소음 -${Math.round(p.noiseReduct*100)}%` });
+    }
+    if (rows.length === 0) {
+      return '<div style="color:var(--text-dim);padding:8px;text-align:center;">활성 특수 능력 없음</div>';
+    }
+    return rows.map(r => `
+      <div class="ability-row" style="display:flex;justify-content:space-between;padding:6px 8px;border-bottom:1px solid var(--border-dim);">
+        <span>${r.icon} <strong>${r.label}</strong></span>
+        <span style="color:var(--text-good);">${r.value}</span>
+      </div>`).join('');
   },
 
   _getEffects() {

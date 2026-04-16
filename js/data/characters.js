@@ -118,7 +118,7 @@ export const CHARACTERS = [
       defense: 3,  // 방어 전술
       unarmed: 3,  // 격투 훈련
     },
-    specialtySkills: ['melee', 'ranged', 'defense', 'unarmed'],
+    specialtySkills: ['melee', 'ranged'],
     homeDist: 'dobong',
     startingCompanion: 'npc_dog',
   },
@@ -217,11 +217,11 @@ export const CHARACTERS = [
         effect: { noiseReduct: 0.2, encounterRateReduct: 0.05, fleeBonus: 0.15 },
       },
       {
-        id: 'bare_start',
-        name: '맨손 시작',
-        icon: '✊',
-        desc: '추가 지급 아이템 없음. 없어도 살아남는 법을 안다.',
-        effect: {},
+        id: 'street_tools',
+        name: '거리의 도구',
+        icon: '🧰',
+        desc: '양철통·낡은 담요·신문지·박스커터 지급. 2년 노숙 생활의 살림살이.',
+        effect: { startingItems: ['battered_can', 'old_blanket', 'newspaper_bundle', 'box_cutter'] },
       },
     ],
     startingSkills: {
@@ -340,7 +340,7 @@ export const CHARACTERS = [
       weaponcraft: 3,  // 금속 가공 → 무기 제작
       armorcraft:  2,  // 기초 방어구 제작
     },
-    specialtySkills: ['crafting', 'building', 'weaponcraft', 'armorcraft'],
+    specialtySkills: ['crafting', 'building'],
     homeDist: 'yongsan',
   },
 ];

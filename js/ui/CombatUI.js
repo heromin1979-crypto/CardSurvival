@@ -309,6 +309,7 @@ const CombatUI = {
             </div>
 
             ${playerStatusHtml ? `<div class="cpp-status">${playerStatusHtml}</div>` : ''}
+            ${this._renderCompanionsPanel(gs)}
           </aside>
 
           <!-- 중: 전투 장면 ──────────────────────────────── -->
@@ -577,6 +578,46 @@ const CombatUI = {
     popup.textContent = `-${lastHit.damage}`;
     side.appendChild(popup);
     setTimeout(() => popup.remove(), 900);
+  },
+
+  /** 동반자(NPC) 전투 상태 패널 — 플레이어 패널 하단에 표시 */
+  _renderCompanionsPanel(gs) {
+    const companions = gs.companions ?? [];
+    if (companions.length === 0) return '';
+    const foragingToday = gs.npcs?._foragingToday ?? {};
+    const rows = companions.map(npcId => {
+      const state = gs.npcs?.states?.[npcId];
+      if (!state) return '';
+      const iconMap = {
+        npc_dog: '🐕', npc_nurse: '👩‍⚕️', npc_soldier_deserter: '🪖',
+        npc_child: '👧', npc_mechanic: '🔧', npc_trader: '🧳',
+        npc_student: '📖', npc_old_survivor: '👴',
+      };
+      const icon = iconMap[npcId] ?? '👤';
+      const name = I18n.itemName(npcId, state.name ?? npcId);
+      const hp = state.hp ?? 50;
+      const maxHp = state.maxHp ?? 50;
+      const hpPct = Math.max(0, (hp / maxHp) * 100);
+      const foraging = foragingToday[npcId];
+      const statusTag = foraging
+        ? '<span style="color:var(--text-warn);font-size:10px;">🌿 탐색중</span>'
+        : '<span style="color:var(--text-good);font-size:10px;">⚔ 전투 가능</span>';
+      return `
+        <div class="cpp-companion-row" style="margin-top:8px;padding:6px;background:rgba(255,255,255,0.04);border-radius:4px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:12px;">${icon} <strong>${name}</strong></span>
+            ${statusTag}
+          </div>
+          <div class="cpp-bar-wrap" style="margin-top:4px;">
+            <div class="cpp-bar ${hpPct < 30 ? 'low' : ''}" style="width:${hpPct.toFixed(1)}%;"></div>
+          </div>
+          <div style="font-size:10px;color:var(--text-dim);">HP ${hp}/${maxHp}</div>
+        </div>`;
+    }).join('');
+    return `<div class="cpp-companions" style="margin-top:10px;border-top:1px solid var(--border-dim);padding-top:8px;">
+      <div style="font-size:11px;color:var(--text-secondary);margin-bottom:4px;">👥 동반자</div>
+      ${rows}
+    </div>`;
   },
 };
 

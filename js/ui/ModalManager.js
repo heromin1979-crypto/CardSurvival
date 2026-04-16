@@ -91,11 +91,15 @@ const ModalManager = {
       const npcBadge = opt.recruitNpc
         ? `<div class="branch-npc-badge">👤 동반자 합류</div>`
         : '';
+      const warnBadge = opt.warning
+        ? `<div class="branch-warning-badge" style="color:var(--text-warn);margin-top:6px;font-size:0.85em;">⚠️ ${opt.warning}</div>`
+        : '';
       return `
         <button class="branch-choice-btn" id="branch-opt-${i}">
           <div class="branch-choice-title">${opt.label}</div>
           <div class="branch-choice-desc">${opt.desc ?? ''}</div>
           ${npcBadge}
+          ${warnBadge}
         </button>`;
     }).join('');
 

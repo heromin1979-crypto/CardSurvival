@@ -58,7 +58,7 @@ const BALANCE = {
 
   // ── 제작 ────────────────────────────────────────────
   crafting: {
-    maxQueueSize:       3,
+    maxQueueSize:       5,
     baseFailureChance:  0.12,   // 기본 실패 확률 12%
     minFailureChance:   0.02,   // 스킬 최대 시 최소 실패률 2%
     failureRefundRate:  0.5,    // 실패 시 재료 50% 반환

@@ -82,6 +82,7 @@ const ENGINEER_BRANCH_B = {
         label: '재건 포기, 헬기로 탈출',
         desc: '결국 도시를 고칠 수 없다는 것을 깨닫고, 아버지의 R22 설계도로 헬기를 제작해 탈출한다.',
         setsFlag: 'eng_end_b3',
+        warning: '9단계 제작 체인 + 7종 신규 부품 + 항공 가솔린 정제. 추가 100일 이상의 플레이가 필요합니다.',
       },
     ],
     narrative: {
