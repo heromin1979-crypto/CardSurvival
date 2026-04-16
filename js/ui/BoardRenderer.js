@@ -56,8 +56,13 @@ const BoardRenderer = {
         if (this._container) { this._buildDOM(); this.render(); }
       });
       // 게임 로드 시점은 경합 이벤트가 없으므로 직접 render
+      // 단, 메인 메뉴 → 불러오기 경로에서는 board-container가 아직 DOM에 없을 수 있음
       EventBus.on('loaded', () => {
         this._container = document.getElementById('board-container');
+        if (!this._container) {
+          console.warn('[BoardRenderer] loaded: board-container가 아직 존재하지 않음. Basecamp 진입 시 reinit()으로 재초기화 예정.');
+          return;
+        }
         this._buildDOM();
         this.render();
       });
@@ -78,6 +83,10 @@ const BoardRenderer = {
   },
 
   _buildDOM() {
+    if (!this._container) {
+      console.warn('[BoardRenderer] _buildDOM: container가 null입니다. 건너뜁니다.');
+      return;
+    }
     this._container.innerHTML = '';
     const board = document.createElement('div');
     board.className = 'board';
