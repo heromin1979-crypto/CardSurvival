@@ -316,12 +316,14 @@ const NoiseSystem = {
 
     // Force an encounter if currently exploring or at basecamp
     if (gs.ui.currentState === 'explore' || gs.ui.currentState === 'main') {
-      // Spawn a random encounter
+      // Spawn a random encounter — StateMachine.transition을 사용해야 state가 정상 갱신됨
+      // (EventBus.emit 직접 호출 시 화면만 encounter로 바뀌고 state는 그대로 → 전투 버튼 guard에 막힘)
       setTimeout(() => {
-        EventBus.emit('stateTransition', {
-          from: gs.ui.currentState,
-          to: 'encounter',
-          data: { forced: true, noiseInflux: true },
+        // 타이머 발화 시점에 여전히 main/explore 상태인지 재검증
+        if (gs.ui.currentState !== 'main' && gs.ui.currentState !== 'explore') return;
+        StateMachine.transition('encounter', {
+          forced: true,
+          noiseInflux: true,
         });
       }, 1500);
     }
