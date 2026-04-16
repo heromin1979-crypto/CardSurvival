@@ -99,10 +99,11 @@ export const SKILL_DEFS = {
       return {
         healMult:           1.0 + (level / 20) * 0.50,  // 1.0 → 1.5
         infectionCureBonus: (level / 20) * 0.20,          // 0 → +20%
-        poisonImmune:       level >= 20,
+        poisonResist:       level >= 15 ? 0.5 : 0,       // Lv15 오염 피해 50% 감소
+        poisonImmune:       level >= 20,                  // Lv20 완전 면역
       };
     },
-    masteryDesc: '오염 피해 면역. 의료 아이템 효과 +50%.',
+    masteryDesc: 'Lv15 오염 피해 -50% · Lv20 오염 피해 면역 · 의료 아이템 효과 +50%.',
     xpSources:   ['의료 아이템 사용 +3 XP'],
   },
 

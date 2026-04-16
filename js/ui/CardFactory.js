@@ -262,6 +262,13 @@ const CARD_IMAGES = {
   spike_trap:            'assets/images/weapons/spike_trap.png',
   alarm_trap:            'assets/images/weapons/alarm_trap.png',
 
+  // 노숙자 전용 아이템
+  battered_can:          'assets/images/materials/empty_can.png',
+  old_blanket:           'assets/images/materials/cloth.png',
+  newspaper_bundle:      'assets/images/materials/cloth_scrap.png',
+  box_cutter:            'assets/images/weapons/knife.png',
+  broken_bottle:         'assets/images/materials/glass_shard.png',
+
   // 헬기 제작 전용 부품 (기계공 B3 엔딩)
   aviation_alloy:        'assets/images/materials/refined_metal.png',
   rotor_blade:           'assets/images/materials/sharp_blade.png',

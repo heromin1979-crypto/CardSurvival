@@ -475,6 +475,69 @@ const ITEMS_MISC = {
     ],
   },
 
+  // ─── 노숙자 전용 아이템 (5) ──────────────────────────────────
+  // 최형식 시작 지급 아이템 + 거리 생활 특수 장비·무기
+
+  battered_can: {
+    id: 'battered_can', name: '찌그러진 양철통', type: 'tool', subtype: 'container',
+    rarity: 'common', weight: 0.3,
+    defaultDurability: 60, defaultContamination: 0,
+    icon: '🥫', description: '노숙 생활로 찌그러진 양철통. 물을 2회분 저장할 수 있다.',
+    tags: ['tool', 'container', 'homeless'],
+    waterCapacity: 2,
+    dismantle: [{ definitionId: 'scrap_metal', qty: 1, chance: 0.8 }],
+  },
+
+  old_blanket: {
+    id: 'old_blanket', name: '낡은 담요', type: 'armor', subtype: 'body',
+    rarity: 'common', weight: 0.8,
+    defaultDurability: 40, defaultContamination: 0,
+    icon: '🧣', description: '거리에서 오래 쓴 담요. 야간 체온 유지 및 수면 피로 회복 +20%.',
+    tags: ['armor', 'homeless', 'blanket'],
+    defense: 1,
+    warmthBonus: 5,
+    sleepFatigueMult: 1.2,
+    dismantle: [
+      { definitionId: 'cloth', qty: 2, chance: 0.7 },
+      { definitionId: 'cloth_scrap', qty: 3, chance: 0.5 },
+    ],
+  },
+
+  newspaper_bundle: {
+    id: 'newspaper_bundle', name: '신문지 뭉치', type: 'consumable', subtype: 'fuel',
+    rarity: 'common', weight: 0.4,
+    defaultDurability: 1, defaultContamination: 0,
+    icon: '📰', description: '쌓아둔 신문지. 캠프파이어 불쏘시개 3회분으로 사용 가능.',
+    tags: ['fuel', 'homeless', 'kindling'],
+    kindlingUses: 3,
+    dismantle: [],
+  },
+
+  box_cutter: {
+    id: 'box_cutter', name: '박스커터', type: 'weapon', subtype: 'knife',
+    rarity: 'common', weight: 0.15,
+    defaultDurability: 15, defaultContamination: 0,
+    icon: '🔪', description: '거리에서 흔히 보는 박스커터. 위력은 약하지만 가볍고 소음이 적다.',
+    tags: ['weapon', 'knife', 'blade', 'homeless'],
+    damage: [2, 4],
+    noiseMult: 0.7,
+    dismantle: [
+      { definitionId: 'sharp_blade', qty: 1, chance: 0.4 },
+      { definitionId: 'plastic', qty: 1, chance: 0.5 },
+    ],
+  },
+
+  broken_bottle: {
+    id: 'broken_bottle', name: '깨진 유리병', type: 'weapon', subtype: 'knife',
+    rarity: 'common', weight: 0.2,
+    defaultDurability: 3, defaultContamination: 0,
+    icon: '🍾', description: '깨진 유리병. 1~2번 찌르면 부서진다. 출혈 유발.',
+    tags: ['weapon', 'blade', 'homeless', 'disposable'],
+    damage: [3, 6],
+    bleedChance: 0.25,
+    dismantle: [{ definitionId: 'glass_shard', qty: 2, chance: 0.6 }],
+  },
+
   // ─── 헬기 제작 전용 부품 (7) ──────────────────────────────────
   // 기계공 B3 경로 최종 엔딩 — 아버지의 R22 설계도
 

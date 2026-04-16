@@ -570,19 +570,22 @@ const StatSystem = {
       EventBus.emit('statChanged', { stat: 'hp', oldVal: gs.player.hp.current - healed, newVal: gs.player.hp.current });
     }
 
-    // contamination effects
+    // contamination effects (medicine 스킬 Lv15+ poisonResist, Lv20 poisonImmune 적용)
     const contam = eff.contamination === 'inherit' ? inst.contamination : (eff.contamination ?? 0);
     if (contam > 0) {
       const armor    = this.getArmorEffects();
-      const radGain  = Math.round((eff.radiation  ?? Math.floor(contam / 10)) * armor.radiationMult);
-      const infGain  = Math.round((eff.infection  ?? Math.floor(contam / 8))  * armor.contaminationMult);
+      const poisonImmune = SkillSystem.getBonus('medicine', 'poisonImmune');
+      const poisonResist = SkillSystem.getBonus('medicine', 'poisonResist') ?? 0;
+      const medMult = poisonImmune ? 0 : (1 - poisonResist);
+      const radGain  = Math.round((eff.radiation  ?? Math.floor(contam / 10)) * armor.radiationMult * medMult);
+      const infGain  = Math.round((eff.infection  ?? Math.floor(contam / 8))  * armor.contaminationMult * medMult);
       gs.modStat('radiation', radGain);
       gs.modStat('infection', infGain);
-      if (contam > 50) {
+      if (contam > 50 && !poisonImmune) {
         EventBus.emit('notify', { message: I18n.t('statSys.contamConsumed'), type: 'danger' });
       }
-      // 오염 음식/물 → 질병 발병 체크
-      DiseaseSystem.checkContaminatedConsume(def, inst.contamination, gs);
+      // 오염 음식/물 → 질병 발병 체크 (면역 시 건너뜀)
+      if (!poisonImmune) DiseaseSystem.checkContaminatedConsume(def, inst.contamination, gs);
     }
 
     // 아이템 사용 → 질병 치료 체크

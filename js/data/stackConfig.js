@@ -202,6 +202,13 @@ const STACK_ROWS = [
   ['power_cell'                , true,  5 ],
   ['generator_core'            , true,  5 ],
 
+  // — 노숙자 전용 아이템 —
+  ['battered_can'              , false, 1 ],
+  ['old_blanket'               , false, 1 ],
+  ['newspaper_bundle'          , true,  5 ],
+  ['box_cutter'                , false, 1 ],
+  ['broken_bottle'             , true,  3 ],
+
   // — 헬기 제작 전용 부품 (기계공 B3 엔딩) —
   ['aviation_alloy'            , true,  5 ],
   ['rotor_blade'               , false, 1 ],
