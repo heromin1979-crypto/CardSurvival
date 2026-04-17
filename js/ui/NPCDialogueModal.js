@@ -36,8 +36,20 @@ const NPCDialogueModal = {
     if (!this._overlay || !this._box) return;
 
     const npcDef  = NPCSystem.getNPCDef(npcId);
-    const npcState = NPCSystem.getNPCState(npcId);
-    if (!npcDef || !npcState) return;
+    let npcState = NPCSystem.getNPCState(npcId);
+    // NPC가 스폰되지 않은 상태에서 패널에 표시될 경우 → 즉시 초기화
+    if (!npcDef) return;
+    if (!npcState) {
+      NPCSystem.ensureInitialized();
+      if (!GameState.npcs.states[npcId]) {
+        GameState.npcs.states[npcId] = {
+          spawned: true, dismissed: false, trust: 0,
+          isCompanion: false, hp: npcDef.maxHp ?? 50,
+          neglectDays: 0, companionSince: null, bond: 0, lastTreatDay: -1,
+        };
+      }
+      npcState = GameState.npcs.states[npcId];
+    }
 
     const itemDef = NPC_ITEMS[npcId];
     const name    = I18n.itemName(npcId, itemDef?.name ?? npcId);

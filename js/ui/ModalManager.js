@@ -225,7 +225,36 @@ const ModalManager = {
         </div>`;
     }
 
-    const hasActions = canConsume || canDismantle || canEquip || isFishingRod;
+    // 의료 구조물 수리 버튼
+    const isMedicalStructure = def.type === 'structure' && def.subtype === 'medical' && def.repairRecipe;
+    let repairBtnHtml = '';
+    let repairBtnReason = '';
+    if (isMedicalStructure) {
+      const boardCards = GameState.getBoardCards();
+      const materialStatus = def.repairRecipe.map(req => {
+        const have = boardCards
+          .filter(c => c.definitionId === req.definitionId)
+          .reduce((sum, c) => sum + (c.quantity ?? 1), 0);
+        return { ...req, have, enough: have >= req.qty };
+      });
+      const needsRepair = (inst.durability ?? 0) < (def.defaultDurability ?? 100);
+      const canRepair = needsRepair && materialStatus.every(m => m.enough);
+      if (!needsRepair) repairBtnReason = '내구도가 최대입니다.';
+      else if (!materialStatus.every(m => m.enough)) {
+        const missing = materialStatus.filter(m => !m.enough).map(m => {
+          const mDef = GameData.items[m.definitionId];
+          return `${mDef?.name ?? m.definitionId}(${m.have}/${m.qty})`;
+        });
+        repairBtnReason = `재료 부족: ${missing.join(', ')}`;
+      }
+      repairBtnHtml = `<button class="card-action-btn${canRepair ? '' : ' disabled'}"
+        id="modal-repair-${instanceId}" ${canRepair ? '' : 'disabled'}
+        title="${repairBtnReason}">
+        🔧 수리 (+${def.repairAmount ?? 0})
+      </button>`;
+    }
+
+    const hasActions = canConsume || canDismantle || canEquip || isFishingRod || isMedicalStructure;
 
     // 장착 슬롯 버튼 목록 (슬롯이 여럿이면 각각 버튼 생성)
     const slotLabels = {
@@ -259,6 +288,7 @@ const ModalManager = {
           <div class="card-inspect-actions">
             ${canConsume    ? `<button class="card-action-btn" id="modal-consume-${instanceId}">${I18n.t('modal.use')}</button>` : ''}
             ${equipBtnsHtml}
+            ${repairBtnHtml}
             ${canDismantle  ? `<button class="card-action-btn dismantle" id="modal-dismantle-${instanceId}">${I18n.t('modal.dismantle')}</button>` : ''}
             ${fishBtnHtml}
           </div>` : ''}
@@ -286,6 +316,32 @@ const ModalManager = {
           if (ok) EventBus.emit('boardChanged', {});
         });
       }
+    }
+
+    if (isMedicalStructure) {
+      document.getElementById(`modal-repair-${instanceId}`)?.addEventListener('click', () => {
+        // 재료 소모
+        for (const req of def.repairRecipe) {
+          let remaining = req.qty;
+          for (const card of GameState.getBoardCards()) {
+            if (remaining <= 0) break;
+            if (card.definitionId !== req.definitionId) continue;
+            const qty = card.quantity ?? 1;
+            if (qty <= remaining) {
+              remaining -= qty;
+              GameState.removeCardInstance(card.instanceId);
+            } else {
+              card.quantity = qty - remaining;
+              remaining = 0;
+            }
+          }
+        }
+        const maxDur = def.defaultDurability ?? 100;
+        inst.durability = Math.min(maxDur, (inst.durability ?? 0) + (def.repairAmount ?? 0));
+        EventBus.emit('notify', { message: `🔧 ${def.name} 수리 완료 (+${def.repairAmount})`, type: 'good' });
+        EventBus.emit('boardChanged', {});
+        this.close();
+      });
     }
 
     if (canDismantle) {
