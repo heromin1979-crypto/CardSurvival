@@ -13,8 +13,9 @@ const NPCQuestSystem = {
     EventBus.on('npcTrustChanged', ({ npcId, newTrust }) => {
       this._checkQuestUnlock(npcId, newTrust);
     });
-    EventBus.on('boardChanged', () => this._checkAllProgress());
-    EventBus.on('tpAdvance',   () => this._checkAllProgress());
+    EventBus.on('boardChanged',    () => this._checkAllProgress());
+    EventBus.on('tpAdvance',       () => this._checkAllProgress());
+    EventBus.on('npcWoundHealed',  () => this._checkAllProgress());
   },
 
   // ── Quest unlock on trust change ───────────────────────────────
@@ -75,6 +76,10 @@ const NPCQuestSystem = {
       }
       if (step.type === 'day') {
         if ((GameState.time?.day ?? 0) < step.minDay) return false;
+      }
+      if (step.type === 'treat_npc') {
+        const targetState = GameState.npcs?.states?.[step.npcId];
+        if (!targetState || (targetState.woundLevel ?? 0) > 0) return false;
       }
     }
     return true;

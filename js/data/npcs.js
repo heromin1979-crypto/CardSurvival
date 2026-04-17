@@ -20,6 +20,13 @@ export const NPC_ITEMS = {
     icon: '👩‍⚕️', description: '전직 응급실 간호사. 치료 능력이 뛰어나다.',
     tags: ['npc'], dismantle: [],
   },
+  npc_wounded_soldier: {
+    id: 'npc_wounded_soldier', name: '부상당한 군인', type: 'npc',
+    rarity: 'rare', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🩹', description: '심하게 다친 군인. 치료가 급하다. 완치하면 든든한 동료가 될 것이다.',
+    tags: ['npc'], dismantle: [],
+  },
   npc_soldier_deserter: {
     id: 'npc_soldier_deserter', name: '탈영병', type: 'npc',
     rarity: 'rare', weight: 0, stackable: false, maxStack: 1,
@@ -247,8 +254,8 @@ const NPCS = {
     id: 'npc_nurse',
     personality: 'brave',
     maxHp: 100,
-    spawnDistrict: 'seocho',
-    spawnDay: 15,
+    spawnDistrict: 'dongjak',
+    spawnDay: 1,
     dialogues: {
       greet:  ['npc.nurse.greet0', 'npc.nurse.greet1', 'npc.nurse.greet2'],
       hint:   ['npc.nurse.hint0', 'npc.nurse.hint1', 'npc.nurse.hint2'],
@@ -294,15 +301,14 @@ const NPCS = {
     ],
     quests: [
       {
-        id:           'nurse_quest_supplies',
-        triggerTrust: 2,
-        title:        '의약품 확보',
-        description:  '"부상자들에게 나눠줄 진통제와 항생제가 필요해. 구해올 수 있어?"',
+        id:           'nurse_quest_wounded_soldier',
+        triggerTrust: 0,
+        title:        '부상당한 군인 치료',
+        description:  '"저기 쓰러진 군인 봤지? 붕대와 소독약으로 응급처치를 해야 해. 도와줘!"',
         steps: [
-          { type: 'collect', itemId: 'painkiller',  qty: 3, hint: '약국이나 병원에서 찾을 수 있다.' },
-          { type: 'collect', itemId: 'antibiotics', qty: 2, hint: '병원에서 찾을 수 있다.' },
+          { type: 'treat_npc', npcId: 'npc_wounded_soldier', hint: '붕대와 소독약을 사용해 부상 군인을 치료한다.' },
         ],
-        reward: { trust: 2, items: [{ id: 'first_aid_kit', qty: 2 }], skillUnlock: null },
+        reward: { trust: 2, items: [{ id: 'first_aid_kit', qty: 1 }], skillUnlock: null },
       },
       {
         id:           'nurse_quest_emergency',
@@ -357,6 +363,54 @@ const NPCS = {
       { day: 7,  message: '👩‍⚕️ "같이 있으니 안심이야." 간호사가 처음으로 웃었다.', effect: { morale: 10 } },
       { day: 30, message: '👩‍⚕️ 한 달을 버텼다. 간호사가 몰래 약을 챙겨줬다.', effect: { trust: 1 } },
     ],
+  },
+
+  npc_wounded_soldier: {
+    id: 'npc_wounded_soldier',
+    personality: 'stoic',
+    maxHp: 100,
+    spawnDistrict: 'dongjak',
+    spawnDay: 1,
+    dialogues: {
+      greet:  ['npc.wounded_soldier.greet0', 'npc.wounded_soldier.greet1'],
+      hint:   ['npc.wounded_soldier.hint0'],
+      reject: 'npc.wounded_soldier.reject',
+    },
+    trustGainPerTalk: 0,
+    // 부상 상태: woundLevel 3→0 치료 필요, 0이 되면 군인 NPC로 변환
+    woundLevel: 3,
+    woundHealItem: 'bandage',   // 치료에 필요한 아이템
+    woundHealQty: 2,            // 1단계당 필요 수량
+    companion: {
+      canRecruit:   false,      // 치료 완료 전에는 동료 불가
+      recruitTrust: 3,
+      combatDmg:    1.3,
+      carryBonus:   3,
+      healBonus:    0,
+      craftBonus:   0,
+      moralBonus:   0.10,
+      lonelinessReduction: 0.20,
+      noiseAdd:     2,
+      foodCostPerDay: 0.5,
+      skillBonus:   { melee: 0.2, defense: 0.15 },
+      combatDmgReduce: 0.15,
+      tauntChance:     0.20,
+    },
+    gifts: [
+      { trust: 2, itemId: 'pistol_ammo', qty: 3 },
+      { trust: 4, itemId: 'knife', qty: 1 },
+    ],
+    trades: null,
+    forageItems: [
+      { id: 'scrap_metal', chance: 0.3, qty: 2 },
+      { id: 'bandage',     chance: 0.2, qty: 1 },
+    ],
+    spontaneous: [
+      { condition: 'always', line: '"으... 괜찮아. 이 정도는 견딜 수 있어."' },
+    ],
+    trustEvents: [],
+    quests: [],
+    specialDays: [],
   },
 
   npc_soldier_deserter: {

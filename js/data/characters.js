@@ -58,6 +58,7 @@ export const CHARACTERS = [
     homeDist: 'dongjak',
     startingStructures: ['medical_station'],
     startingCompanion: 'npc_nurse',
+    startingNPCs: ['npc_wounded_soldier'],
   },
 
   {

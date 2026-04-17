@@ -8,6 +8,7 @@ import { CHARACTERS }  from '../data/characters.js';
 import { LEVEL_XP_TABLE } from '../data/skillDefs.js';
 import EquipmentSystem from '../systems/EquipmentSystem.js';
 import GameData        from '../data/GameData.js';
+import NPCS            from '../data/npcs.js';
 
 const DANGER_COLORS = ['#336633', '#4a7a33', '#886622', '#882222', '#550000', '#330000'];
 
@@ -405,6 +406,22 @@ const CharCreate = {
             gs.placeCardInRow(structInst.instanceId, 'middle');
           }
         }
+      }
+    }
+
+    // ── 캐릭터 전용 시작 NPC (보드 카드로 배치) ────────────
+    if (char.startingNPCs) {
+      if (!gs.npcs) gs.npcs = { states: {} };
+      for (const npcId of char.startingNPCs) {
+        const npcInst = gs.createCardInstance(npcId);
+        if (npcInst) gs.placeCardInRow(npcInst.instanceId, 'middle');
+        const nDef = NPCS[npcId];
+        gs.npcs.states[npcId] = {
+          spawned: true, dismissed: false, trust: 0,
+          isCompanion: false, hp: nDef?.maxHp ?? 50,
+          neglectDays: 0, companionSince: null, bond: 0, lastTreatDay: -1,
+          woundLevel: nDef?.woundLevel ?? 0,
+        };
       }
     }
 
