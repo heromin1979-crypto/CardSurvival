@@ -452,7 +452,6 @@ const CharCreate = {
     const floorItems = {
       // ── 한강변 주거 (동작 — 의사 시작) ──
       dongjak: [
-        'broken_chair', 'old_fire_extinguisher',
         'scrap_metal', 'cloth', 'cloth', 'canned_food', 'bandage', 'rope',
       ],
       // ── 산악 외곽 (도봉 — 군인 시작) ──
