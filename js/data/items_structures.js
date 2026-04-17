@@ -119,11 +119,7 @@ const ITEMS_STRUCTURES = {
       { definitionId: 'cloth', qty: 1 },
     ],
     repairAmount: 25,
-    dismantleTP: 3,
-    dismantle: [
-      { definitionId: 'bandage', qty: 3, chance: 0.7 },
-      { definitionId: 'wood', qty: 2, chance: 0.7 },
-    ],
+    dismantle: [],
   },
 
   medical_clinic: {
@@ -138,12 +134,7 @@ const ITEMS_STRUCTURES = {
       { definitionId: 'antiseptic', qty: 1 },
     ],
     repairAmount: 30,
-    dismantleTP: 3,
-    dismantle: [
-      { definitionId: 'bandage', qty: 4, chance: 0.7 },
-      { definitionId: 'wood', qty: 3, chance: 0.7 },
-      { definitionId: 'antiseptic', qty: 1, chance: 0.5 },
-    ],
+    dismantle: [],
   },
 
   medical_ward: {
@@ -158,12 +149,7 @@ const ITEMS_STRUCTURES = {
       { definitionId: 'first_aid_kit', qty: 1 },
     ],
     repairAmount: 35,
-    dismantleTP: 4,
-    dismantle: [
-      { definitionId: 'bandage', qty: 5, chance: 0.7 },
-      { definitionId: 'wood_plank', qty: 3, chance: 0.7 },
-      { definitionId: 'first_aid_kit', qty: 1, chance: 0.4 },
-    ],
+    dismantle: [],
   },
 
   workbench: {
@@ -990,12 +976,7 @@ const ITEMS_STRUCTURES = {
       { definitionId: 'bandage', qty: 2 },
     ],
     repairAmount: 45,
-    dismantleTP: 3,
-    dismantle: [
-      { definitionId: 'scrap_metal', qty: 2, chance: 0.7 },
-      { definitionId: 'cloth', qty: 2, chance: 0.6 },
-      { definitionId: 'antiseptic', qty: 1, chance: 0.5 },
-    ],
+    dismantle: [],
   },
 
   field_hospital: {
@@ -1011,13 +992,7 @@ const ITEMS_STRUCTURES = {
       { definitionId: 'bandage', qty: 3 },
     ],
     repairAmount: 60,
-    dismantleTP: 5,
-    dismantle: [
-      { definitionId: 'scrap_metal', qty: 5, chance: 0.8 },
-      { definitionId: 'wood_plank', qty: 3, chance: 0.7 },
-      { definitionId: 'cloth', qty: 4, chance: 0.6 },
-      { definitionId: 'antiseptic', qty: 1, chance: 0.5 },
-    ],
+    dismantle: [],
   },
 };
 
