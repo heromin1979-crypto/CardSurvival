@@ -617,8 +617,9 @@ const StatSystem = {
     const isFood     = def.subtype === 'food' || def.subtype === 'drink';
     const traitMult  = isMedical ? (TraitSystem.getTraitEffect('medic', 'healMultiplier') ?? 1.0) : 1.0;
     const medSkill   = isMedical ? SkillSystem.getBonus('medicine', 'healMult') : 1.0;
+    const compHeal   = isMedical ? NPCSystem.getCompanionHealBonus() : 1.0;
     const cookSkill  = isFood    ? SkillSystem.getBonus('cooking',  'foodEffectMult') : 1.0;
-    const healMult   = traitMult * (isMedical ? medSkill : (isFood ? cookSkill : 1.0));
+    const healMult   = traitMult * compHeal * (isMedical ? medSkill : (isFood ? cookSkill : 1.0));
 
     if (eff.hydration)    gs.modStat('hydration',  eff.hydration * healMult);
     if (eff.nutrition)    gs.modStat('nutrition',   eff.nutrition * healMult);
