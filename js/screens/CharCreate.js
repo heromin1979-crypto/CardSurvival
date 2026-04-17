@@ -409,12 +409,10 @@ const CharCreate = {
       }
     }
 
-    // ── 캐릭터 전용 시작 NPC (보드 카드로 배치) ────────────
+    // ── 캐릭터 전용 시작 NPC (패널에만 표시, 보드 카드 없음) ──
     if (char.startingNPCs) {
       if (!gs.npcs) gs.npcs = { states: {} };
       for (const npcId of char.startingNPCs) {
-        const npcInst = gs.createCardInstance(npcId);
-        if (npcInst) gs.placeCardInRow(npcInst.instanceId, 'middle');
         const nDef = NPCS[npcId];
         gs.npcs.states[npcId] = {
           spawned: true, dismissed: false, trust: 0,

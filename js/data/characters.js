@@ -44,7 +44,7 @@ export const CHARACTERS = [
         name: '의료 물자',
         icon: '🎒',
         desc: '붕대, 소독약, 메스 추가 지급',
-        effect: { startingItems: ['bandage', 'antiseptic', 'scalpel'] },
+        effect: { startingItems: ['bandage', 'antiseptic', 'combat_scalpel'] },
       },
     ],
     startingSkills: {

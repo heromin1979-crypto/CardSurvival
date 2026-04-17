@@ -224,7 +224,7 @@ const CARD_IMAGES = {
 
   // 무기
   wooden_sword:          'assets/images/weapons/knife.png',
-  scalpel:               'assets/images/weapons/knife.png',
+  combat_scalpel:        'assets/images/weapons/knife.png',
   knife:                 'assets/images/weapons/knife.png',
   sharpened_knife:       'assets/images/weapons/sharpened_knife.png',
   machete:               'assets/images/weapons/machete.png',
