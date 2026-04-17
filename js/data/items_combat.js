@@ -16,6 +16,17 @@ const ITEMS_COMBAT = {
     dismantle: [{ definitionId: 'scrap_metal', qty: 2, chance: 0.9 }],
   },
 
+  scalpel: {
+    id: 'scalpel', name: '메스', type: 'weapon', subtype: 'melee',
+    rarity: 'uncommon', weight: 0.1,
+    defaultDurability: 40, defaultContamination: 0,
+    icon: '🔪', description: '외과용 메스. 전투용으론 약하지만 정밀한 절개로 크리티컬 확률이 높다.',
+    tags: ['weapon', 'melee', 'silent', 'medical'],
+    weaponType: 'blade',
+    combat: { damage: [8, 14], accuracy: 0.85, noiseOnUse: 0, durabilityLoss: 3, critChance: 0.30, critMultiplier: 2.0 },
+    dismantle: [{ definitionId: 'sharp_blade', qty: 1, chance: 0.5 }],
+  },
+
   knife: {
     id: 'knife', name: '칼', type: 'weapon', subtype: 'melee',
     rarity: 'common', weight: 0.3,
