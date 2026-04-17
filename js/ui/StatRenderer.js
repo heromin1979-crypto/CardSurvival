@@ -10,6 +10,7 @@ import NightSystem from '../systems/NightSystem.js';
 const STAT_CONFIG = [
   { key: 'hydration',   i18nKey: 'stat.hydration',   icon: '💧' },
   { key: 'nutrition',   i18nKey: 'stat.nutrition',   icon: '🥗' },
+  { key: 'stamina',     i18nKey: 'stat.stamina',     icon: '💪', isGood: true },
   { key: 'fatigue',     i18nKey: 'stat.fatigue',     icon: '😴' },
 ];
 
