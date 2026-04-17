@@ -246,7 +246,7 @@ const NPCS = {
   npc_nurse: {
     id: 'npc_nurse',
     personality: 'brave',
-    maxHp: 45,
+    maxHp: 100,
     spawnDistrict: 'seocho',
     spawnDay: 15,
     dialogues: {

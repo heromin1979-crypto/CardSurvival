@@ -247,11 +247,18 @@ const ModalManager = {
         });
         repairBtnReason = `재료 부족: ${missing.join(', ')}`;
       }
-      repairBtnHtml = `<button class="card-action-btn${canRepair ? '' : ' disabled'}"
-        id="modal-repair-${instanceId}" ${canRepair ? '' : 'disabled'}
-        title="${repairBtnReason}">
-        🔧 수리 (+${def.repairAmount ?? 0})
-      </button>`;
+      const matListHtml = materialStatus.map(m => {
+        const mDef = GameData.items[m.definitionId];
+        const cls = m.enough ? '' : 'style="color:var(--text-danger,#c44)"';
+        return `<span ${cls}>${mDef?.icon ?? '📦'}${mDef?.name ?? m.definitionId} ${m.have}/${m.qty}</span>`;
+      }).join(' ');
+      repairBtnHtml = `
+        <div style="font-size:10px;color:var(--text-secondary);margin-bottom:4px;">수리 재료: ${matListHtml}</div>
+        <button class="card-action-btn${canRepair ? '' : ' disabled'}"
+          id="modal-repair-${instanceId}" ${canRepair ? '' : 'disabled'}
+          title="${repairBtnReason}">
+          🔧 수리 (+${def.repairAmount ?? 0})
+        </button>`;
     }
 
     const hasActions = canConsume || canDismantle || canEquip || isFishingRod || isMedicalStructure;

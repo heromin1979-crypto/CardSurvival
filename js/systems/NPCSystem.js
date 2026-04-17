@@ -172,6 +172,16 @@ const NPCSystem = {
 
   // ── Companion Effects (per TP) ─────────────────────────────────
 
+  /**
+   * 친밀도(trust) 기반 동행 능력 배율: trust 0→1.0, trust 5→1.3 (최대 30% 상향)
+   * 식량 소모에는 적용하지 않음
+   */
+  _getTrustMult(npcId) {
+    const state = GameState.npcs?.states?.[npcId];
+    const trust = state?.trust ?? 0;
+    return 1.0 + (trust / 5) * 0.3;  // 0→1.0, 1→1.06, 2→1.12, 3→1.18, 4→1.24, 5→1.30
+  },
+
   _applyCompanionEffects() {
     const companions = GameState.companions;
     if (!companions || companions.length === 0) return;
@@ -180,15 +190,16 @@ const NPCSystem = {
       const npcDef = NPCS[npcId];
       if (!npcDef?.companion) continue;
       const comp = npcDef.companion;
+      const trustMult = this._getTrustMult(npcId);
 
-      // Food cost (nutrition drain)
+      // Food cost (nutrition drain) — 친밀도와 무관하게 고정
       if (comp.foodCostPerDay > 0) {
         GameState.modStat('nutrition', -comp.foodCostPerDay);
       }
 
-      // Morale bonus
+      // Morale bonus (친밀도 스케일링)
       if (comp.moralBonus > 0) {
-        GameState.modStat('morale', comp.moralBonus);
+        GameState.modStat('morale', comp.moralBonus * trustMult);
       }
 
       // Noise addition
@@ -582,20 +593,8 @@ const NPCSystem = {
     const state = GameState.npcs.states[npcId];
     if (!state || !state.spawned) return;
 
-    const oldTrust    = state.trust;
-    state.trust       = Math.min(5, state.trust + npcDef.trustGainPerTalk);
-    state.neglectDays = 0;  // V-5: Reset neglect counter on interaction
-
-    EventBus.emit('npcTrustChanged', { npcId, oldTrust, newTrust: state.trust });
-
-    // Check for secret combination hints at new trust level
-    this._checkHintGifts(npcId, oldTrust, state.trust);
-
-    // Check for gift at new trust level
-    this._checkGifts(npcId, oldTrust, state.trust);
-
-    // Check for trust milestone events (e.g., npc_dog special bonuses)
-    this._checkTrustEvents(npcId, oldTrust, state.trust);
+    // 대화로는 친밀도가 증가하지 않음 — 의뢰 완료로만 증가
+    state.neglectDays = 0;  // 방치 카운터만 리셋
   },
 
   _checkTrustEvents(npcId, oldTrust, newTrust) {
@@ -767,11 +766,19 @@ const NPCSystem = {
       GameState.player.encumbrance.max += comp.carryBonus;
     }
 
+    // 보드에서 NPC 카드 제거
+    const boardCard = GameState.getBoardCards().find(c => c.definitionId === npcId);
+    if (boardCard) {
+      GameState.removeCardInstance(boardCard.instanceId);
+      EventBus.emit('cardRemoved', { instanceId: boardCard.instanceId });
+    }
+
     EventBus.emit('notify', {
       message: I18n.t('npc.recruited', { name: I18n.itemName(npcId, NPC_ITEMS[npcId]?.name) }),
       type: 'good',
     });
     EventBus.emit('npcRecruited', { npcId });
+    EventBus.emit('boardChanged', {});
 
     // V-6: Check chemistry with existing companions
     this._checkChemistry(npcId);
@@ -784,7 +791,7 @@ const NPCSystem = {
     if (!state || !state.isCompanion) return false;
 
     state.isCompanion    = false;
-    state.dismissed      = true;
+    state.dismissed      = false;  // dismissed=false로 유지 → 바닥 카드로 복귀
     state.companionSince = null;
     state.neglectDays    = 0;
     GameState.companions = GameState.companions.filter(id => id !== npcId);
@@ -794,12 +801,25 @@ const NPCSystem = {
       GameState.player.encumbrance.max = Math.max(10, GameState.player.encumbrance.max - comp.carryBonus);
     }
 
+    // 바닥에 NPC 카드 재생성
+    const npcInst = GameState.createCardInstance(npcId);
+    if (npcInst) {
+      const placed = GameState.placeCardInRow(npcInst.instanceId, 'middle');
+      if (!placed) {
+        // 빈칸 없으면 pendingLoot에 추가
+        GameState.pendingLoot = [...(GameState.pendingLoot ?? []), { definitionId: npcId, quantity: 1, contamination: 0 }];
+        GameState.removeCardInstanceSilent(npcInst.instanceId);
+        EventBus.emit('notify', { message: '바닥 공간 부족 — 빈칸이 생기면 NPC 카드가 배치됩니다.', type: 'warn' });
+      }
+    }
+
     EventBus.emit('notify', {
       message: I18n.t('npc.dismissed', { name: I18n.itemName(npcId, NPC_ITEMS[npcId]?.name) }),
       type: 'info',
     });
     EventBus.emit('npcDismissed',   { npcId });
     EventBus.emit('npcPanelRemove', { npcId });
+    EventBus.emit('boardChanged', {});
     return true;
   },
 
@@ -946,24 +966,28 @@ const NPCSystem = {
     return NPCS[npcId] ?? null;
   },
 
-  /** Get total companion heal bonus */
+  /** Get total companion heal bonus (친밀도 스케일링 적용) */
   getCompanionHealBonus() {
     this.ensureInitialized();
     let bonus = 0;
     for (const npcId of (GameState.companions ?? [])) {
       const comp = NPCS[npcId]?.companion;
-      if (comp?.healBonus > 0) bonus += comp.healBonus - 1.0;
+      if (comp?.healBonus > 0) {
+        bonus += (comp.healBonus - 1.0) * this._getTrustMult(npcId);
+      }
     }
     return 1.0 + bonus;
   },
 
-  /** Get total companion craft bonus */
+  /** Get total companion craft bonus (친밀도 스케일링 적용) */
   getCompanionCraftBonus() {
     this.ensureInitialized();
     let bonus = 0;
     for (const npcId of (GameState.companions ?? [])) {
       const comp = NPCS[npcId]?.companion;
-      if (comp?.craftBonus > 0) bonus += comp.craftBonus - 1.0;
+      if (comp?.craftBonus > 0) {
+        bonus += (comp.craftBonus - 1.0) * this._getTrustMult(npcId);
+      }
     }
     return 1.0 + bonus;
   },
