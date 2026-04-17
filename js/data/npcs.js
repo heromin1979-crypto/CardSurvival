@@ -224,7 +224,7 @@ const NPCS = {
     quests: [
       {
         id:           'old_quest_grandson',
-        triggerTrust: 3,
+        triggerTrust: 0,
         title:        '손자의 소식',
         description:  '"내 손자가 노원구 어딘가에 있다고 했어. 소식 좀 알아봐줄 수 있어?"',
         steps: [
@@ -464,7 +464,7 @@ const NPCS = {
     quests: [
       {
         id:           'soldier_quest_base',
-        triggerTrust: 3,
+        triggerTrust: 0,
         title:        '구 부대 복귀 시도',
         description:  '"한 번만 부대 방향으로 가보고 싶어. 남아있는 무기라도 회수하게."',
         steps: [
@@ -538,7 +538,7 @@ const NPCS = {
     quests: [
       {
         id:           'child_quest_toy',
-        triggerTrust: 2,
+        triggerTrust: 0,
         title:        '잃어버린 인형',
         description:  '"저기 버려진 가게에 제 인형이 있어요. 찾아줄 수 있어요?"',
         steps: [
@@ -602,7 +602,7 @@ const NPCS = {
     quests: [
       {
         id:           'mechanic_quest_parts',
-        triggerTrust: 2,
+        triggerTrust: 0,
         title:        '발전기 수리',
         description:  '"부품만 있으면 발전기를 고칠 수 있어. 고철 좀 모아다 줄 수 있어?"',
         steps: [
@@ -661,7 +661,7 @@ const NPCS = {
     quests: [
       {
         id:           'trader_quest_route',
-        triggerTrust: 3,
+        triggerTrust: 0,
         title:        '거래 루트 개척',
         description:  '"안전한 루트를 개척해야 해. 이 물자들을 목적지까지 운반해줄 수 있어?"',
         steps: [
@@ -726,7 +726,7 @@ const NPCS = {
     quests: [
       {
         id:           'student_quest_research',
-        triggerTrust: 2,
+        triggerTrust: 0,
         title:        '감염 데이터 수집',
         description:  '"감염 패턴을 연구하려면 샘플이 필요해. 의료 시설에서 자료 좀 구해줄 수 있어?"',
         steps: [
@@ -802,7 +802,7 @@ const NPCS = {
     quests: [
       {
         id:           'dog_quest_owner',
-        triggerTrust: 3,
+        triggerTrust: 0,
         title:        '옛 주인의 흔적',
         description:  '개가 어딘가를 애타게 바라본다. 무언가를 찾고 있는 것 같다.',
         steps: [
@@ -1036,7 +1036,7 @@ const NPCS = {
     quests: [
       {
         id:           'tower_security_patrol',
-        triggerTrust: 2,
+        triggerTrust: 0,
         title:        '외곽 순찰',
         description:  '"타워 외곽에 이상한 흔적이 있어. 같이 순찰 돌지."',
         steps: [
@@ -1107,7 +1107,7 @@ const NPCS = {
     quests: [
       {
         id:           'tower_merchant_supply',
-        triggerTrust: 2,
+        triggerTrust: 0,
         title:        '타워 보급 루트',
         description:  '"타워 사람들한테 돌릴 물자가 부족해. 재료 좀 모아다 줄 수 있어?"',
         steps: [
@@ -1171,7 +1171,7 @@ const NPCS = {
     quests: [
       {
         id:           'tower_cook_ingredients',
-        triggerTrust: 2,
+        triggerTrust: 0,
         title:        '주방 재료 수집',
         description:  '"타워 사람들 밥을 해먹이려면 재료가 필요해. 야생 허브 좀 구해줄래?"',
         steps: [
@@ -1234,7 +1234,7 @@ const NPCS = {
     quests: [
       {
         id:           'tower_engineer_power',
-        triggerTrust: 2,
+        triggerTrust: 0,
         title:        '타워 전력 복구',
         description:  '"타워 하층부 발전기를 되살리려면 부품이 필요해요. 고철이랑 전선 모아다 주실래요?"',
         steps: [
@@ -1299,7 +1299,7 @@ const NPCS = {
     quests: [
       {
         id:           'tower_doctor_clinic',
-        triggerTrust: 2,
+        triggerTrust: 0,
         title:        '진료소 보급',
         description:  '"타워 진료소 재고가 비어가요. 의료품 좀 구해다 주실래요?"',
         steps: [
@@ -1368,7 +1368,7 @@ const NPCS = {
     quests: [
       {
         id:           'sous_chef_reunion',
-        triggerTrust: 2,
+        triggerTrust: 0,
         title:        '소피텔 동료 재회',
         description:  '"호텔 주방에 두고 온 레시피 북이 있어. 같이 가서 찾자."',
         steps: [
@@ -1432,7 +1432,7 @@ const NPCS = {
     quests: [
       {
         id:           'helper_first_recipe',
-        triggerTrust: 2,
+        triggerTrust: 0,
         title:        '첫 레시피',
         description:  '"저한테 한식 요리 가르쳐주세요! 집에서 뭐라도 해먹고 싶어요."',
         steps: [
