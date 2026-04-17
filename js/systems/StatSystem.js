@@ -134,7 +134,7 @@ const StatSystem = {
       }
     }
 
-    // ── 보드 카드 구조물 효과 (바리케이드 등) ──
+    // ── 보드 카드 구조물 효과 (바리케이드, 의무거점 등) ──
     for (const card of gs.getBoardCards()) {
       const def  = gs.getCardDef(card.instanceId);
       const tick = def?.onTick;
@@ -154,9 +154,35 @@ const StatSystem = {
         gs.modStat('infection', tick.infection);
       }
 
+      // 사기 증가 (medical_ward, field_hospital 등)
+      if (tick.morale && tick.morale > 0) {
+        gs.modStat('morale', tick.morale);
+      }
+
+      // 피로 감소 (field_hospital)
+      if (tick.fatigue && tick.fatigue < 0) {
+        gs.modStat('fatigue', tick.fatigue);
+      }
+
       // 조우 확률 감소 (barricade)
       if (tick.encounterReduction && tick.encounterReduction > 0) {
         encounterReduction += tick.encounterReduction;
+      }
+
+      // 의료 구조물 내구도 감소
+      if (def.subtype === 'medical' && def.type === 'structure') {
+        const inst = gs.cards[card.instanceId];
+        if (inst && (inst.durability ?? 0) > 0) {
+          inst.durability = Math.max(0, inst.durability - BALANCE.medicalStation.durabilityDecayPerTP);
+          if (inst.durability <= 0) {
+            gs.removeCardInstance(card.instanceId);
+            EventBus.emit('cardRemoved', { instanceId: card.instanceId });
+            EventBus.emit('notify', {
+              message: `⚠️ ${def.name ?? '의료 구조물'}이(가) 노후화로 붕괴했습니다!`,
+              type: 'danger',
+            });
+          }
+        }
       }
     }
 

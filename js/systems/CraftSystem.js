@@ -335,37 +335,18 @@ const CraftSystem = {
       for (const out of bp.output) {
         const outDef = GameData?.items[out.definitionId];
 
-        // 의료 구조물(subtype:'medical' && type:'structure') → 현재 구역에 자동 설치
-        if (outDef?.type === 'structure' && outDef?.subtype === 'medical') {
-          const curDist = GameState.location.currentDistrict;
-          const existing = GameState.location.installedStructures[curDist];
-          if (existing?.id) {
-            const existDef = GameData?.items[existing.id];
-            EventBus.emit('notify', {
-              message: `기존 ${existDef?.name ?? '구조물'}을(를) 교체합니다.`,
-              type: 'warn',
-            });
-          }
-          const dur = outDef.defaultDurability ?? 100;
-          GameState.location.installedStructures[curDist] = {
-            id: out.definitionId,
-            durability: dur,
-            maxDurability: dur,
-          };
-          EventBus.emit('notify', {
-            message: `${outDef.icon ?? '⛺'} ${outDef.name}이(가) 현재 구역에 설치되었습니다.`,
-            type: 'good',
-          });
-          continue;
-        }
-
         const quality = (!outDef?.stackable) ? this._calculateQuality(bp) : null;
         const inst = GameState.createCardInstance(out.definitionId, {
           quantity: out.qty,
           ...(quality ? { _quality: quality } : {}),
         });
         if (inst) {
-          GameState.placeCardInRow(inst.instanceId, outputRow);
+          // 의료 구조물 → middle row 가장 왼쪽(slot 0)에 배치
+          if (outDef?.type === 'structure' && outDef?.subtype === 'medical') {
+            this._placeAtLeftmost(inst.instanceId, 'middle');
+          } else {
+            GameState.placeCardInRow(inst.instanceId, outputRow);
+          }
           outputIds.push(inst.instanceId);
           // 품질 알림 (일반 제외)
           if (quality && quality !== 'normal') {
@@ -415,6 +396,23 @@ const CraftSystem = {
     for (const id of outputIds) {
       if (GameState.cards[id]) GameState.cards[id]._crafted = true;
     }
+  },
+
+  /** 카드를 row의 가장 왼쪽(slot 0)에 배치, 기존 카드는 오른쪽으로 밀림 */
+  _placeAtLeftmost(instanceId, row) {
+    GameState._compactRow(row);
+    const board = GameState.board[row];
+    const lastNull = board.lastIndexOf(null);
+    if (lastNull === -1) {
+      // 꽉 참 → 일반 배치 시도
+      GameState.placeCardInRow(instanceId, row);
+      return;
+    }
+    for (let i = lastNull; i > 0; i--) {
+      board[i] = board[i - 1];
+    }
+    board[0] = instanceId;
+    EventBus.emit('cardPlaced', { instanceId, row, slot: 0 });
   },
 
   getQueueProgress(entry) {

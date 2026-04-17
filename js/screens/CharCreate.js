@@ -389,12 +389,22 @@ const CharCreate = {
       if (inst) gs.placeCardInRow(inst.instanceId, 'middle');
     }
 
-    // ── 캐릭터 전용 시작 구조물 → 홈 구역에 고정 설치 ──────
+    // ── 캐릭터 전용 시작 구조물 → middle row 가장 왼쪽에 카드 배치 ──
     if (char.startingStructures) {
       for (const structId of char.startingStructures) {
-        const sDef = GameData?.items?.[structId];
-        const dur = sDef?.defaultDurability ?? 100;
-        gs.location.installedStructures[districtId] = { id: structId, durability: dur, maxDurability: dur };
+        const structInst = gs.createCardInstance(structId);
+        if (structInst) {
+          // 가장 왼쪽(slot 0)에 배치
+          gs._compactRow('middle');
+          const midRow = gs.board.middle;
+          const lastNull = midRow.lastIndexOf(null);
+          if (lastNull !== -1) {
+            for (let i = lastNull; i > 0; i--) { midRow[i] = midRow[i - 1]; }
+            midRow[0] = structInst.instanceId;
+          } else {
+            gs.placeCardInRow(structInst.instanceId, 'middle');
+          }
+        }
       }
     }
 
