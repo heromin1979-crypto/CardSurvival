@@ -297,38 +297,18 @@ const StatRenderer = {
       dangerEl.innerHTML = icons;
     }
 
-    // 구역 고정 구조물 효과 표시
+    // 구역 고정 구조물 효과 표시 (installedStructures 전용, 보드 카드 의료 구조물은 제외)
     this._renderInstalledStructure(gs);
   },
 
   _renderInstalledStructure(gs) {
     let el = document.getElementById('hud-installed-structure');
-
-    // 우선 보드 카드에서 의료 구조물 탐색
-    const medCard = gs.getBoardCards().find(c => {
-      const d = gs.getCardDef(c.instanceId);
-      return d?.type === 'structure' && d?.subtype === 'medical';
-    });
-    // 보드 카드가 없으면 installedStructures 폴백
     const installed = gs.location.installedStructures?.[gs.location.currentDistrict];
-
-    if (!medCard && !installed?.id) {
+    if (!installed?.id) {
       if (el) el.style.display = 'none';
       return;
     }
-
-    let def, dur, maxDur, clickInstanceId;
-    if (medCard) {
-      def = gs.getCardDef(medCard.instanceId);
-      dur = Math.max(0, medCard.durability ?? 0);
-      maxDur = def?.defaultDurability ?? 100;
-      clickInstanceId = medCard.instanceId;
-    } else {
-      def = GameData.items?.[installed.id];
-      dur = Math.max(0, installed.durability);
-      maxDur = installed.maxDurability || 100;
-      clickInstanceId = null;
-    }
+    const def = GameData.items?.[installed.id];
     if (!def) {
       if (el) el.style.display = 'none';
       return;
@@ -343,7 +323,8 @@ const StatRenderer = {
     if (tick.fatigue)   parts.push(`피로${tick.fatigue}`);
     const effectText = parts.length > 0 ? ` (${parts.join(', ')})` : '';
 
-    // 내구도 바 생성
+    const dur = Math.max(0, installed.durability);
+    const maxDur = installed.maxDurability || 100;
     const durPct = Math.min(100, (dur / maxDur) * 100);
     const durBarHtml = `<div class="struct-dur-track" style="height:4px;background:rgba(255,255,255,0.1);border-radius:2px;margin-top:2px;">
       <div style="width:${durPct}%;height:100%;background:${durPct < 20 ? 'var(--text-danger,#c44)' : durPct < 50 ? 'var(--text-warn,#ca3)' : 'var(--text-good,#4a8)'};border-radius:2px;transition:width 0.3s;"></div>
@@ -361,13 +342,8 @@ const StatRenderer = {
     el.style.display = '';
     el.style.cursor = 'pointer';
 
-    // 클릭 → 카드 검사 모달 (보드 카드) 또는 구조물 수리 모달 (설치형)
     el.onclick = () => {
-      if (clickInstanceId) {
-        EventBus.emit('openCardInspect', { instanceId: clickInstanceId });
-      } else {
-        EventBus.emit('openStructureRepair', { districtId: gs.location.currentDistrict });
-      }
+      EventBus.emit('openStructureRepair', { districtId: gs.location.currentDistrict });
     };
   },
 
