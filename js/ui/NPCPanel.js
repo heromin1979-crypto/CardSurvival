@@ -64,6 +64,10 @@ const NPCPanel = {
       this._renderCard(npcId, section);
     }
     this._updateEmptyStates();
+    // NPC가 있으면 패널 표시
+    if (visibles.length > 0 && this._panel) {
+      this._panel.classList.remove('hidden');
+    }
   },
 
   // ── Add / Remove / Update ───────────────────────────────────────
@@ -77,6 +81,8 @@ const NPCPanel = {
     if (!container) return;
     this._renderCard(npcId, section, container);
     this._updateEmptyStates();
+    // 패널이 숨겨져 있으면 표시
+    if (this._panel) this._panel.classList.remove('hidden');
   },
 
   _removeCard(npcId) {
@@ -98,6 +104,7 @@ const NPCPanel = {
     this._removeCard(npcId);
     this._addCard(npcId, 'companion');
     this._panel.classList.remove('collapsed');
+    this._panel.classList.remove('hidden');
   },
 
   // ── Build card elements ─────────────────────────────────────────
