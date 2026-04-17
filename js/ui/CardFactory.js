@@ -894,10 +894,14 @@ const CardFactory = {
       el.setAttribute('role', 'button');
       el.setAttribute('aria-label', `${I18n.itemName(inst.definitionId, def.name)} NPC — 대화`);
       el.innerHTML = this._buildNPCInner(inst, def);
-      el.addEventListener('dblclick', e => {
+      const openDialogue = e => {
         e.stopPropagation();
+        e.preventDefault();
         EventBus.emit('openNPCDialogue', { npcId: inst.definitionId });
-      });
+      };
+      el.addEventListener('click', openDialogue);
+      el.addEventListener('dblclick', openDialogue);
+      el.addEventListener('contextmenu', openDialogue);
       el.addEventListener('keydown', e => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
