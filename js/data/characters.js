@@ -43,8 +43,8 @@ export const CHARACTERS = [
         id: 'medical_supply',
         name: '의료 물자',
         icon: '🎒',
-        desc: '붕대, 소독약, 메스 추가 지급',
-        effect: { startingItems: ['bandage', 'antiseptic', 'combat_scalpel'] },
+        desc: '붕대 6개, 소독약, 메스 추가 지급',
+        effect: { startingItems: ['bandage', 'bandage', 'bandage', 'bandage', 'bandage', 'bandage', 'antiseptic', 'combat_scalpel'] },
       },
     ],
     startingSkills: {
