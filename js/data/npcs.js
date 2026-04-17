@@ -230,11 +230,11 @@ const NPCS = {
         steps: [
           { type: 'visit', locationId: 'nowon', hint: '노원구를 탐색하면 단서를 찾을 수 있다.' },
         ],
-        reward: { trust: 2, items: [{ id: 'canned_food', qty: 5 }, { id: 'bandage', qty: 3 }], skillUnlock: null },
+        reward: { trust: 3, items: [{ id: 'canned_food', qty: 5 }, { id: 'bandage', qty: 3 }], skillUnlock: null },
       },
       {
         id:           'old_quest_map_north',
-        triggerTrust: 4,
+        triggerTrust: 3,
         title:        '피난길 지도',
         description:  '"자네가 날 도와줬으니 내 것을 줘야지. 이 강북 지도, 가져가게. 남쪽 지도는 탈영병한테 물어봐."',
         steps: [
@@ -312,7 +312,7 @@ const NPCS = {
       },
       {
         id:           'nurse_quest_emergency',
-        triggerTrust: 3,
+        triggerTrust: 2,
         title:        '응급 환자 발생',
         description:  '"동작구에서 부상자들이 몰려와. 응급 키트와 붕대가 대량으로 필요해."',
         steps: [
@@ -470,11 +470,11 @@ const NPCS = {
         steps: [
           { type: 'visit', locationId: 'yongsan', hint: '용산 방향에 군 관련 시설이 있을 것이다.' },
         ],
-        reward: { trust: 2, items: [{ id: 'pistol_ammo', qty: 10 }, { id: 'combat_knife', qty: 1 }], skillUnlock: null },
+        reward: { trust: 3, items: [{ id: 'pistol_ammo', qty: 10 }, { id: 'combat_knife', qty: 1 }], skillUnlock: null },
       },
       {
         id:           'soldier_quest_map_south',
-        triggerTrust: 4,
+        triggerTrust: 3,
         title:        '강남 군 보급창고',
         description:  '"강남 보급창고에 군용 지도가 남아있을 거야. 거기 다녀오면 내 거 줄게. 노인한테도 지도가 있다던데."',
         steps: [
@@ -1044,6 +1044,17 @@ const NPCS = {
         ],
         reward: { trust: 2, items: [{ id: 'combat_knife', qty: 1 }], skillUnlock: null },
       },
+      {
+        id:           'tower_security_barricade',
+        triggerTrust: 2,
+        title:        '방어선 강화',
+        description:  '"바리케이드를 보강해야 해. 고철과 못을 구해와."',
+        steps: [
+          { type: 'collect', itemId: 'scrap_metal', qty: 3, hint: '해체 가능한 구조물에서 획득.' },
+          { type: 'collect', itemId: 'nail', qty: 5, hint: '공구함이나 건물 잔해에서 획득.' },
+        ],
+        reward: { trust: 1, items: [{ id: 'bandage', qty: 3 }], skillUnlock: null },
+      },
     ],
     specialDays: [
       { day: 14, message: '🛡️ "2주를 버텼군. 믿을 만한 사람이야."', effect: { morale: 10 } },
@@ -1376,6 +1387,17 @@ const NPCS = {
           { type: 'collect', itemId: 'canned_food', qty: 5, hint: '호텔 식자재 창고.' },
         ],
         reward: { trust: 2, items: [{ id: 'truffle', qty: 1 }, { id: 'saffron_dried', qty: 1 }] },
+      },
+      {
+        id:           'sous_chef_special_dish',
+        triggerTrust: 2,
+        title:        '특별한 한 끼',
+        description:  '"재료만 있으면 끝내주는 걸 만들어줄게. 소금과 허브를 구해와."',
+        steps: [
+          { type: 'collect', itemId: 'salt', qty: 2, hint: '주방이나 식당에서 소금을 찾는다.' },
+          { type: 'collect', itemId: 'herb', qty: 2, hint: '약초 텃밭이나 자연에서 채집.' },
+        ],
+        reward: { trust: 1, items: [{ id: 'cooked_rice', qty: 3 }] },
       },
     ],
     specialDays: [

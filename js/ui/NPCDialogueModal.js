@@ -366,8 +366,11 @@ const NPCDialogueModal = {
             remaining = 0;
           }
         }
-        // 부상 단계 감소
+        // 부상 단계 감소 + trust 증가
         state.woundLevel = Math.max(0, (state.woundLevel ?? 0) - 1);
+        const oldTrust = state.trust ?? 0;
+        state.trust = Math.min(5, oldTrust + 1);
+        EventBus.emit('npcTrustChanged', { npcId, oldTrust, newTrust: state.trust });
         EventBus.emit('boardChanged', {});
         if (state.woundLevel <= 0) {
           // 완치 → 동료 가능 상태로 변경
