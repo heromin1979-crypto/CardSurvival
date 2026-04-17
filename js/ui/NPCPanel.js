@@ -1,6 +1,6 @@
 // === NPC PANEL ===
-// Side panel showing companions (permanent) and location NPCs (transient).
-// NPCs no longer occupy board.middle slots — they live exclusively here.
+// Side panel showing recruited companions only.
+// Non-companion NPCs appear as board cards on the middle row.
 
 import EventBus  from '../core/EventBus.js';
 import NPCSystem from '../systems/NPCSystem.js';
@@ -60,12 +60,14 @@ const NPCPanel = {
 
     const visibles = NPCSystem.getVisibleNPCs();
     for (const { npcId, state } of visibles) {
-      const section = state.isCompanion ? 'companion' : 'location';
-      this._renderCard(npcId, section);
+      // 미영입 NPC는 보드 카드로 표시되므로 패널에는 동반자만
+      if (!state.isCompanion) continue;
+      this._renderCard(npcId, 'companion');
     }
     this._updateEmptyStates();
-    // NPC가 있으면 패널 표시
-    if (visibles.length > 0 && this._panel) {
+    // 동반자가 있으면 패널 표시
+    const hasCompanions = visibles.some(v => v.state.isCompanion);
+    if (hasCompanions && this._panel) {
       this._panel.classList.remove('hidden');
     }
   },

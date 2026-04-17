@@ -127,7 +127,7 @@ const NPCSystem = {
   },
 
   _spawnNPC(npcId, npcDef) {
-    // Initialize NPC state — no board card, NPC lives in the side panel
+    // Initialize NPC state + board card on middle row
     GameState.npcs.states[npcId] = {
       spawned:         true,
       dismissed:       false,
@@ -140,12 +140,15 @@ const NPCSystem = {
       lastTreatDay:    -1,
     };
 
+    // 바닥에 NPC 카드 배치
+    const npcInst = GameState.createCardInstance(npcId);
+    if (npcInst) GameState.placeCardInRow(npcInst.instanceId, 'middle');
+
     EventBus.emit('notify', {
       message: I18n.t('npc.spawned', { name: I18n.itemName(npcId, NPC_ITEMS[npcId]?.name) }),
       type: 'info',
     });
-    EventBus.emit('npcSpawned',   { npcId });
-    EventBus.emit('npcPanelAdd',  { npcId, section: 'location' });
+    EventBus.emit('npcSpawned', { npcId });
   },
 
   // ── Sync NPC panel when entering district ──────────────────────
@@ -159,13 +162,23 @@ const NPCSystem = {
       const npcDef = NPCS[npcId];
       if (!npcDef) continue;
 
-      const isHere = state.isCompanion || npcDef.spawnDistrict === district;
-
-      if (isHere) {
-        const section = state.isCompanion ? 'companion' : 'location';
-        EventBus.emit('npcPanelAdd', { npcId, section });
+      if (state.isCompanion) {
+        // 동반자는 패널에 표시
+        EventBus.emit('npcPanelAdd', { npcId, section: 'companion' });
+      } else if (npcDef.spawnDistrict === district) {
+        // 미영입 NPC가 현재 지역에 있으면 보드 카드 보장
+        const existing = GameState.getBoardCards().find(c => c.definitionId === npcId);
+        if (!existing) {
+          const npcInst = GameState.createCardInstance(npcId);
+          if (npcInst) GameState.placeCardInRow(npcInst.instanceId, 'middle');
+        }
       } else {
-        EventBus.emit('npcPanelRemove', { npcId });
+        // 다른 지역의 미영입 NPC는 보드에서 제거
+        const existing = GameState.getBoardCards().find(c => c.definitionId === npcId);
+        if (existing) {
+          GameState.removeCardInstance(existing.instanceId);
+          EventBus.emit('cardRemoved', { instanceId: existing.instanceId });
+        }
       }
     }
   },
