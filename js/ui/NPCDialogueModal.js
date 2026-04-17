@@ -218,6 +218,34 @@ const NPCDialogueModal = {
       }
     }
 
+    // 부상 군인 치료 섹션
+    let woundHealHtml = '';
+    const woundLevel = npcState.woundLevel ?? 0;
+    const npcDefFull = NPCSystem.getNPCDef(npcId);
+    if (woundLevel > 0 && npcDefFull?.woundHealItem) {
+      const healItemId = npcDefFull.woundHealItem;
+      const healQty    = npcDefFull.woundHealQty ?? 2;
+      const healItemDef = GameData.items[healItemId];
+      const haveHealItem = GameState.countOnBoard?.(healItemId) ?? 0;
+      const canWoundHeal = haveHealItem >= healQty;
+      woundHealHtml = `
+        <div class="npc-heal-section">
+          <div class="npc-section-title">🩹 부상 단계: ${woundLevel}/3</div>
+          <div style="font-size:11px;color:var(--text-secondary);margin:4px 0;">
+            치료 재료: ${healItemDef?.icon ?? '📦'} ${healItemDef?.name ?? healItemId} ×${healQty} (보유: ${haveHealItem})
+          </div>
+          <button class="npc-action-btn heal ${canWoundHeal ? '' : 'disabled'}"
+                  id="npc-wound-heal-btn" ${canWoundHeal ? '' : 'disabled'}>
+            🩹 부상 치료 (${woundLevel}단계 → ${woundLevel - 1}단계)
+          </button>
+        </div>`;
+    } else if (woundLevel === 0 && npcDefFull?.woundHealItem && !isCompanion) {
+      woundHealHtml = `
+        <div class="npc-heal-section">
+          <div style="font-size:11px;color:var(--text-good);margin:4px 0;">✅ 부상이 완치되었습니다. 이제 친밀도를 쌓을 수 있습니다.</div>
+        </div>`;
+    }
+
     // Build full modal
     const html = `
       <div class="npc-dialogue">
@@ -233,6 +261,7 @@ const NPCDialogueModal = {
             <p class="npc-greeting">"${greeting}"</p>
             ${hint ? `<p class="npc-hint">${hint}</p>` : ''}
           </div>
+          ${woundHealHtml}
           ${questHtml}
           ${arcHtml}
           ${healHtml}
@@ -310,6 +339,46 @@ const NPCDialogueModal = {
         }
         NPCSystem.healCompanion(npcId, healAmt);
         EventBus.emit('boardChanged', {});
+        this.show(npcId);
+      });
+    }
+
+    // Wound heal button (부상 군인 치료)
+    const woundHealBtn = document.getElementById('npc-wound-heal-btn');
+    if (woundHealBtn) {
+      woundHealBtn.addEventListener('click', () => {
+        const state = NPCSystem.getNPCState(npcId);
+        const npcDef = NPCSystem.getNPCDef(npcId);
+        if (!state || !npcDef) return;
+        const healItemId = npcDef.woundHealItem;
+        const healQty    = npcDef.woundHealQty ?? 2;
+        // 재료 소모
+        let remaining = healQty;
+        for (const card of (GameState.getBoardCards?.() ?? [])) {
+          if (remaining <= 0) break;
+          if (card.definitionId !== healItemId) continue;
+          const qty = card.quantity ?? 1;
+          if (qty <= remaining) {
+            remaining -= qty;
+            GameState.removeCardInstance(card.instanceId);
+          } else {
+            card.quantity = qty - remaining;
+            remaining = 0;
+          }
+        }
+        // 부상 단계 감소
+        state.woundLevel = Math.max(0, (state.woundLevel ?? 0) - 1);
+        EventBus.emit('boardChanged', {});
+        if (state.woundLevel <= 0) {
+          // 완치 → 동료 가능 상태로 변경
+          const comp = npcDef.companion;
+          if (comp) comp.canRecruit = true;
+          EventBus.emit('notify', { message: `🩹 ${I18n.itemName(npcId, NPC_ITEMS[npcId]?.name)}의 부상이 완치되었습니다!`, type: 'good' });
+          // 간호사 퀘스트 진행 체크
+          EventBus.emit('npcWoundHealed', { npcId });
+        } else {
+          EventBus.emit('notify', { message: `🩹 부상 치료 (${state.woundLevel + 1}단계 → ${state.woundLevel}단계)`, type: 'info' });
+        }
         this.show(npcId);
       });
     }
