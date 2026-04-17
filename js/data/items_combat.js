@@ -16,8 +16,8 @@ const ITEMS_COMBAT = {
     dismantle: [{ definitionId: 'scrap_metal', qty: 2, chance: 0.9 }],
   },
 
-  scalpel: {
-    id: 'scalpel', name: '메스', type: 'weapon', subtype: 'melee',
+  combat_scalpel: {
+    id: 'combat_scalpel', name: '메스', type: 'weapon', subtype: 'melee',
     rarity: 'uncommon', weight: 0.1,
     defaultDurability: 40, defaultContamination: 0,
     icon: '🔪', description: '외과용 메스. 전투용으론 약하지만 정밀한 절개로 크리티컬 확률이 높다.',

@@ -76,7 +76,7 @@ const STACK_ROWS = [
   // ── 근접 무기 (내구도 있음 → 스택 불가) ────────────────────────
   ['iron_pipe'               , false, 1 ],
   ['wooden_sword'            , false, 1 ],
-  ['scalpel'                 , false, 1 ],
+  ['combat_scalpel'          , false, 1 ],
   ['knife'                   , false, 1 ],
   ['sharpened_knife'         , false, 1 ],
   ['crowbar'                 , false, 1 ],
