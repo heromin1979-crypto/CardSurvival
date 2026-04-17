@@ -2,6 +2,7 @@
 // Updates HUD stat bars and TP clock
 import EventBus    from '../core/EventBus.js';
 import GameState   from '../core/GameState.js';
+import GameData    from '../data/GameData.js';
 import I18n        from '../core/I18n.js';
 import NightSystem from '../systems/NightSystem.js';
 
@@ -294,6 +295,59 @@ const StatRenderer = {
         .join('');
       dangerEl.innerHTML = icons;
     }
+
+    // 구역 고정 구조물 효과 표시
+    this._renderInstalledStructure(gs);
+  },
+
+  _renderInstalledStructure(gs) {
+    let el = document.getElementById('hud-installed-structure');
+    const installed = gs.location.installedStructures?.[gs.location.currentDistrict];
+    if (!installed?.id) {
+      if (el) el.style.display = 'none';
+      return;
+    }
+    const def = GameData.items?.[installed.id];
+    if (!def) {
+      if (el) el.style.display = 'none';
+      return;
+    }
+
+    // 효과 텍스트 생성
+    const tick = def.onTick ?? {};
+    const parts = [];
+    if (tick.hp)        parts.push(`HP+${tick.hp}`);
+    if (tick.infection) parts.push(`감염${tick.infection}`);
+    if (tick.morale)    parts.push(`사기+${tick.morale}`);
+    if (tick.fatigue)   parts.push(`피로${tick.fatigue}`);
+    const effectText = parts.length > 0 ? ` (${parts.join(', ')})` : '';
+
+    // 내구도 바 생성
+    const dur = Math.max(0, installed.durability);
+    const maxDur = installed.maxDurability || 100;
+    const durPct = Math.min(100, (dur / maxDur) * 100);
+    const durCls = durPct < 20 ? 'danger' : durPct < 50 ? 'warn' : '';
+    const durBarHtml = `<div class="struct-dur-track" style="height:4px;background:rgba(255,255,255,0.1);border-radius:2px;margin-top:2px;">
+      <div class="struct-dur-fill ${durCls}" style="width:${durPct}%;height:100%;background:${durPct < 20 ? 'var(--text-danger,#c44)' : durPct < 50 ? 'var(--text-warn,#ca3)' : 'var(--text-good,#4a8)'};border-radius:2px;transition:width 0.3s;"></div>
+    </div>`;
+
+    if (!el) {
+      // 위험 아이콘 영역 아래에 동적 생성
+      const dangerEl = document.getElementById('bc-danger-icons');
+      if (!dangerEl?.parentElement) return;
+      el = document.createElement('div');
+      el.id = 'hud-installed-structure';
+      el.style.cssText = 'font-size:10px; color:var(--text-good, #4a8); padding:2px 6px; text-align:center; cursor:pointer;';
+      dangerEl.parentElement.insertBefore(el, dangerEl.nextSibling);
+    }
+    el.innerHTML = `${def.icon ?? '⛺'} ${def.name}${effectText} <span style="opacity:0.7">${Math.round(dur)}/${maxDur}</span>${durBarHtml}`;
+    el.style.display = '';
+    el.style.cursor = 'pointer';
+
+    // 클릭 → 수리 모달
+    el.onclick = () => {
+      EventBus.emit('openStructureRepair', { districtId: gs.location.currentDistrict });
+    };
   },
 
   _updateTPClock() {

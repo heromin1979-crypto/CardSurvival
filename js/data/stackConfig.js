@@ -361,6 +361,11 @@ const STACK_ROWS = [
   ['poison'                    , false, 1 ],
   ['guard_stance_kit'          , false, 1 ],
 
+  // ── 의료 구조물 티어 (구역 설치형) ─────────────────────────────
+  ['medical_clinic'          , false, 1 ],
+  ['medical_ward'            , false, 1 ],
+  ['field_hospital'          , false, 1 ],
+
   // ── 베이스캠프 랜드마크 — 겹치기 불가 ──────────────────────────
   ['basecamp_landmark'       , false, 1 ],
 

@@ -115,6 +115,7 @@ const GameState = {
     districtsLooted:    [],      // 루팅 완료한 구 목록 (재방문 시 희귀 리스폰)
     currentLandmark:    null,    // 랜드마크 내부 진입 시 districtId (null = 랜드마크 밖)
     currentSubLocation: null,    // 현재 세부 장소 ID (null = 랜드마크 로비 또는 밖)
+    installedStructures: {},     // { districtId: { id, durability, maxDurability } } — 구역 고정 구조물
   },
 
   // ── 위치별 바닥 아이템 저장 ──────────────────────────
@@ -635,6 +636,16 @@ const GameState = {
     // 구버전 세이브 호환: 랜드마크 진입 상태 필드
     if (this.location.currentLandmark    === undefined) this.location.currentLandmark    = null;
     if (this.location.currentSubLocation === undefined) this.location.currentSubLocation = null;
+    // 구버전 세이브 호환: 구역 고정 구조물 필드
+    if (!this.location.installedStructures) this.location.installedStructures = {};
+    // 구버전 마이그레이션: 문자열 형태 → 객체 형태 { id, durability, maxDurability }
+    for (const [distId, val] of Object.entries(this.location.installedStructures)) {
+      if (typeof val === 'string') {
+        const sDef = GameData?.items?.[val];
+        const dur = sDef?.defaultDurability ?? 100;
+        this.location.installedStructures[distId] = { id: val, durability: dur, maxDurability: dur };
+      }
+    }
     // 구버전 세이브 호환: skills 필드 자동 생성
     const allSkillIds = ['unarmed','melee','ranged','defense','scavenging','medicine','cooking','harvesting','crafting','weaponcraft','armorcraft','building'];
     if (!this.player.skills) {

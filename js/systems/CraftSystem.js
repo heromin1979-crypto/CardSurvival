@@ -66,12 +66,14 @@ const CraftSystem = {
         return { ok: false, reason: I18n.t('craftSys.itemShort', { name: I18n.itemName(req.definitionId, def?.name), have: count, need: req.qty }) };
       }
     }
-    // check required tools
+    // check required tools (보드 카드 + 구역 설치 구조물 모두 확인)
     const bp = BLUEPRINTS[bpId];
     if (bp?.requiredTools?.length) {
       for (const toolId of bp.requiredTools) {
-        const hasIt = gs.getBoardCards().some(c => c.definitionId === toolId);
-        if (!hasIt) {
+        const onBoard = gs.getBoardCards().some(c => c.definitionId === toolId);
+        const installed = gs.location.installedStructures?.[gs.location.currentDistrict];
+        const isInstalled = installed?.id === toolId;
+        if (!onBoard && !isInstalled) {
           const def = GameData.items[toolId];
           return { ok: false, reason: I18n.t('craftSys.toolReq', { name: I18n.itemName(toolId, def?.name) }) };
         }
@@ -332,6 +334,31 @@ const CraftSystem = {
     } else {
       for (const out of bp.output) {
         const outDef = GameData?.items[out.definitionId];
+
+        // 의료 구조물(subtype:'medical' && type:'structure') → 현재 구역에 자동 설치
+        if (outDef?.type === 'structure' && outDef?.subtype === 'medical') {
+          const curDist = GameState.location.currentDistrict;
+          const existing = GameState.location.installedStructures[curDist];
+          if (existing?.id) {
+            const existDef = GameData?.items[existing.id];
+            EventBus.emit('notify', {
+              message: `기존 ${existDef?.name ?? '구조물'}을(를) 교체합니다.`,
+              type: 'warn',
+            });
+          }
+          const dur = outDef.defaultDurability ?? 100;
+          GameState.location.installedStructures[curDist] = {
+            id: out.definitionId,
+            durability: dur,
+            maxDurability: dur,
+          };
+          EventBus.emit('notify', {
+            message: `${outDef.icon ?? '⛺'} ${outDef.name}이(가) 현재 구역에 설치되었습니다.`,
+            type: 'good',
+          });
+          continue;
+        }
+
         const quality = (!outDef?.stackable) ? this._calculateQuality(bp) : null;
         const inst = GameState.createCardInstance(out.definitionId, {
           quantity: out.qty,

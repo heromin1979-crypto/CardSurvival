@@ -114,10 +114,55 @@ const ITEMS_STRUCTURES = {
     icon: '⛺', description: 'TP당 HP를 자동 회복. 감염 저항 강화.',
     tags: ['structure', 'medical', 'crafted'],
     onTick: { hp: 3, infection: -1 },
+    repairRecipe: [
+      { definitionId: 'bandage', qty: 1 },
+      { definitionId: 'cloth', qty: 1 },
+    ],
+    repairAmount: 25,
     dismantleTP: 3,
     dismantle: [
       { definitionId: 'bandage', qty: 3, chance: 0.7 },
       { definitionId: 'wood', qty: 2, chance: 0.7 },
+    ],
+  },
+
+  medical_clinic: {
+    id: 'medical_clinic', name: '야전 의원', type: 'structure', subtype: 'medical',
+    rarity: 'rare', weight: 4.0,
+    defaultDurability: 130, defaultContamination: 0,
+    icon: '🏥', description: 'TP당 HP 5 회복, 감염 -2. 의무 거점의 상위 시설.',
+    tags: ['structure', 'medical', 'crafted'],
+    onTick: { hp: 5, infection: -2 },
+    repairRecipe: [
+      { definitionId: 'bandage', qty: 2 },
+      { definitionId: 'antiseptic', qty: 1 },
+    ],
+    repairAmount: 30,
+    dismantleTP: 3,
+    dismantle: [
+      { definitionId: 'bandage', qty: 4, chance: 0.7 },
+      { definitionId: 'wood', qty: 3, chance: 0.7 },
+      { definitionId: 'antiseptic', qty: 1, chance: 0.5 },
+    ],
+  },
+
+  medical_ward: {
+    id: 'medical_ward', name: '의료 병동', type: 'structure', subtype: 'medical',
+    rarity: 'rare', weight: 5.0,
+    defaultDurability: 170, defaultContamination: 0,
+    icon: '🏥', description: 'TP당 HP 7 회복, 감염 -3, 사기 +1. 본격적인 의료 시설.',
+    tags: ['structure', 'medical', 'crafted'],
+    onTick: { hp: 7, infection: -3, morale: 1 },
+    repairRecipe: [
+      { definitionId: 'bandage', qty: 2 },
+      { definitionId: 'first_aid_kit', qty: 1 },
+    ],
+    repairAmount: 35,
+    dismantleTP: 4,
+    dismantle: [
+      { definitionId: 'bandage', qty: 5, chance: 0.7 },
+      { definitionId: 'wood_plank', qty: 3, chance: 0.7 },
+      { definitionId: 'first_aid_kit', qty: 1, chance: 0.4 },
     ],
   },
 
@@ -936,14 +981,41 @@ const ITEMS_STRUCTURES = {
   field_surgery_station: {
     id: 'field_surgery_station', name: '야전 수술대', type: 'structure', subtype: 'medical',
     rarity: 'rare', weight: 0,
-    defaultDurability: 150, defaultContamination: 0,
-    icon: '🏥', description: '마취제와 수술 도구가 갖춰진 이동식 수술 시설.',
+    defaultDurability: 220, defaultContamination: 0,
+    icon: '🏥', description: '마취제와 수술 도구가 갖춰진 이동식 수술 시설. TP당 HP 10, 감염 -4, 사기 +2.',
     tags: ['structure', 'medical', 'crafted'],
-    onTick: { hp: 5, infection: -2 },
+    onTick: { hp: 10, infection: -4, morale: 2 },
+    repairRecipe: [
+      { definitionId: 'surgery_kit', qty: 1 },
+      { definitionId: 'bandage', qty: 2 },
+    ],
+    repairAmount: 45,
     dismantleTP: 3,
     dismantle: [
       { definitionId: 'scrap_metal', qty: 2, chance: 0.7 },
       { definitionId: 'cloth', qty: 2, chance: 0.6 },
+      { definitionId: 'antiseptic', qty: 1, chance: 0.5 },
+    ],
+  },
+
+  field_hospital: {
+    id: 'field_hospital', name: '야전 병원', type: 'structure', subtype: 'medical',
+    rarity: 'legendary', weight: 0,
+    defaultDurability: 300, defaultContamination: 0,
+    icon: '🏥', description: '최상급 야전 의료 시설. TP당 HP 15, 감염 -5, 피로 -1, 사기 +3.',
+    tags: ['structure', 'medical', 'crafted'],
+    onTick: { hp: 15, infection: -5, fatigue: -1, morale: 3 },
+    repairRecipe: [
+      { definitionId: 'surgery_kit', qty: 1 },
+      { definitionId: 'antibiotics', qty: 1 },
+      { definitionId: 'bandage', qty: 3 },
+    ],
+    repairAmount: 60,
+    dismantleTP: 5,
+    dismantle: [
+      { definitionId: 'scrap_metal', qty: 5, chance: 0.8 },
+      { definitionId: 'wood_plank', qty: 3, chance: 0.7 },
+      { definitionId: 'cloth', qty: 4, chance: 0.6 },
       { definitionId: 'antiseptic', qty: 1, chance: 0.5 },
     ],
   },

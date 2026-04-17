@@ -238,6 +238,88 @@ const BLUEPRINTS = {
     ],
   },
 
+  medical_clinic: {
+    id: 'medical_clinic', name: '야전 의원', category: 'structure',
+    hidden: true, unlockConditions: { minSkillLevel: { building: 5, medicine: 4 } },
+    description: '의무 거점보다 상위 의료 시설. HP 5, 감염 -2.',
+    output: [{ definitionId: 'medical_clinic', qty: 1 }],
+    requiredTools: ['workbench'],
+    requiredSkills: { building: 5, medicine: 4 },
+    stages: [
+      {
+        stageIndex: 0, label: '시설 골조 설치', tpCost: 4,
+        requiredItems: [
+          { definitionId: 'wood', qty: 3 },
+          { definitionId: 'cloth', qty: 3 },
+          { definitionId: 'scrap_metal', qty: 2 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '의료 장비 배치', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'antiseptic', qty: 2 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+  },
+
+  medical_ward: {
+    id: 'medical_ward', name: '의료 병동', category: 'structure',
+    hidden: true, unlockConditions: { minSkillLevel: { building: 7, medicine: 6 } },
+    description: '본격적인 의료 시설. HP 7, 감염 -3, 사기 +1.',
+    output: [{ definitionId: 'medical_ward', qty: 1 }],
+    requiredTools: ['workbench'],
+    requiredSkills: { building: 7, medicine: 6 },
+    stages: [
+      {
+        stageIndex: 0, label: '병동 골조 건설', tpCost: 5,
+        requiredItems: [
+          { definitionId: 'wood_plank', qty: 3 },
+          { definitionId: 'cloth', qty: 4 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '의료 장비 설치', tpCost: 4,
+        requiredItems: [
+          { definitionId: 'first_aid_kit', qty: 2 },
+          { definitionId: 'antibiotics', qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+  },
+
+  field_hospital: {
+    id: 'field_hospital', name: '야전 병원', category: 'structure',
+    hidden: true, unlockConditions: { minSkillLevel: { building: 10, medicine: 12 } },
+    description: '최상급 야전 의료 시설. HP 15, 감염 -5, 피로 -1, 사기 +3.',
+    output: [{ definitionId: 'field_hospital', qty: 1 }],
+    requiredTools: ['workbench'],
+    requiredSkills: { building: 10, medicine: 12 },
+    stages: [
+      {
+        stageIndex: 0, label: '병원 골조 건설', tpCost: 6,
+        requiredItems: [
+          { definitionId: 'wood_plank', qty: 5 },
+          { definitionId: 'scrap_metal', qty: 5 },
+          { definitionId: 'cloth', qty: 5 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '수술실 설비', tpCost: 6,
+        requiredItems: [
+          { definitionId: 'surgery_kit', qty: 2 },
+          { definitionId: 'antibiotics', qty: 2 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+  },
+
   garden: {
     id: 'garden', name: '텃밭', category: 'structure',
     hidden: true, unlockConditions: { minDay: 20, minSkillLevel: { building: 2 } },
@@ -397,7 +479,7 @@ const BLUEPRINTS = {
   },
 
   make_wood_plank: {
-    id: 'make_wood_plank', name: '목재 판자 가공', category: 'material',
+    id: 'make_wood_plank', name: '나무 판자 가공', category: 'material',
     description: '목재를 다듬어 나무 판자를 만든다. 화롯대 제작에 필요.',
     output: [{ definitionId: 'wood_plank', qty: 2 }],
     requiredTools: [],

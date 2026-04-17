@@ -117,6 +117,7 @@ const NPCPanel = {
     const el = document.createElement('div');
     el.id        = `npc-mini-${npcId}`;
     el.className = `npc-mini-card ${section}`;
+    el.style.cursor = 'pointer';
 
     if (!def || !state) return el;
 
@@ -163,9 +164,13 @@ const NPCPanel = {
       ${emotionBadge}
       ${hpBar}
     `;
-    el.addEventListener('click', () => {
-      if (!dispatched) EventBus.emit('openNPCDialogue', { npcId });
-    });
+    const openDialogue = (e) => {
+      if (e) { e.stopPropagation(); e.preventDefault(); }
+      EventBus.emit('openNPCDialogue', { npcId });
+    };
+    el.addEventListener('click', openDialogue);
+    el.addEventListener('dblclick', openDialogue);
+    el.addEventListener('contextmenu', openDialogue);
     return el;
   },
 

@@ -684,6 +684,9 @@ const CARD_IMAGES = {
   rain_collector_improved: 'assets/images/structures/rain_collector_improved.png',
   water_recycler:        'assets/images/structures/water_recycler.png',
   field_surgery_station: 'assets/images/structures/field_surgery_station.png',
+  medical_clinic:        'assets/images/structures/medical_station.png',
+  medical_ward:          'assets/images/structures/medical_station.png',
+  field_hospital:        'assets/images/structures/medical_station.png',
 };
 
 const CardFactory = {

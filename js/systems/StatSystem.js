@@ -10,6 +10,7 @@ import SkillSystem   from './SkillSystem.js';
 import NPCSystem     from './NPCSystem.js';
 import BALANCE       from '../data/gameBalance.js';
 import CharDialogue  from '../data/charDialogues.js';
+import GameData      from '../data/GameData.js';
 
 const StatSystem = {
   init() {
@@ -93,6 +94,47 @@ const StatSystem = {
     const gs = GameState;
     let encounterReduction = 0;
 
+    // ── 구역 고정 구조물 효과 (현재 구역에 설치된 구조물) ──
+    const currentDistrict = gs.location.currentDistrict;
+    const installed = gs.location.installedStructures?.[currentDistrict];
+    if (installed?.id) {
+      const { items } = GameData;
+      const installedDef = items?.[installed.id];
+      const tick = installedDef?.onTick;
+      if (tick) {
+        if (tick.hp && tick.hp > 0) {
+          const healed = Math.min(tick.hp, gs.player.hp.max - gs.player.hp.current);
+          if (healed > 0) {
+            gs.player.hp.current += healed;
+            EventBus.emit('statChanged', { stat: 'hp', oldVal: gs.player.hp.current - healed, newVal: gs.player.hp.current });
+          }
+        }
+        if (tick.infection && tick.infection < 0) {
+          gs.modStat('infection', tick.infection);
+        }
+        if (tick.morale && tick.morale > 0) {
+          gs.modStat('morale', tick.morale);
+        }
+        if (tick.fatigue && tick.fatigue < 0) {
+          gs.modStat('fatigue', tick.fatigue);
+        }
+        if (tick.encounterReduction && tick.encounterReduction > 0) {
+          encounterReduction += tick.encounterReduction;
+        }
+      }
+
+      // 내구도 감소 (현재 구역에 있을 때만)
+      installed.durability -= BALANCE.medicalStation.durabilityDecayPerTP;
+      if (installed.durability <= 0) {
+        delete gs.location.installedStructures[currentDistrict];
+        EventBus.emit('notify', {
+          message: `⚠️ ${installedDef?.name ?? '구조물'}이(가) 노후화로 붕괴했습니다!`,
+          type: 'danger',
+        });
+      }
+    }
+
+    // ── 보드 카드 구조물 효과 (바리케이드 등) ──
     for (const card of gs.getBoardCards()) {
       const def  = gs.getCardDef(card.instanceId);
       const tick = def?.onTick;

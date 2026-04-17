@@ -316,11 +316,12 @@ const CharCreate = {
     gs.weather = { id: 'sunny', name: '맑음', icon: '☀️', tempMod: 0, tpRemaining: 72, tempJitter: 0 };
 
     // ── 위치: 선택한 구로 설정 ───────────────────────────────
-    gs.location.currentDistrict  = districtId;
-    gs.location.currentNode      = districtId;
-    gs.location.nodesVisited     = [districtId];
-    gs.location.districtsVisited = [districtId];
-    gs.location.districtsLooted  = [];
+    gs.location.currentDistrict    = districtId;
+    gs.location.currentNode        = districtId;
+    gs.location.nodesVisited       = [districtId];
+    gs.location.districtsVisited   = [districtId];
+    gs.location.districtsLooted    = [];
+    gs.location.installedStructures = {};
 
     // ── 상단 행: 현재 구 카드 + 인접 구 카드 배치 ────────────
     const items = GameData?.items ?? {};
@@ -388,11 +389,12 @@ const CharCreate = {
       if (inst) gs.placeCardInRow(inst.instanceId, 'middle');
     }
 
-    // ── 캐릭터 전용 시작 구조물 ─────────────────────────────
+    // ── 캐릭터 전용 시작 구조물 → 홈 구역에 고정 설치 ──────
     if (char.startingStructures) {
       for (const structId of char.startingStructures) {
-        const inst = gs.createCardInstance(structId);
-        if (inst) gs.placeCardInRow(inst.instanceId, 'middle');
+        const sDef = GameData?.items?.[structId];
+        const dur = sDef?.defaultDurability ?? 100;
+        gs.location.installedStructures[districtId] = { id: structId, durability: dur, maxDurability: dur };
       }
     }
 

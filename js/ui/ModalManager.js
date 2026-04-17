@@ -50,6 +50,7 @@ const ModalManager = {
 
     EventBus.on('openCardInspect', ({ instanceId }) => this.showCardInspect(instanceId));
     EventBus.on('branchChoice',    ({ options, questId }) => this.showBranchChoice(options, questId));
+    EventBus.on('openStructureRepair', ({ districtId }) => this.showStructureRepair(districtId));
   },
 
   open(html, title = '') {
@@ -302,6 +303,138 @@ const ModalManager = {
         EventBus.emit('fishAction', { rodInstanceId: instanceId });
       });
     }
+  },
+
+  showStructureRepair(districtId) {
+    const installed = GameState.location.installedStructures?.[districtId];
+    if (!installed?.id) return;
+
+    const def = GameData.items[installed.id];
+    if (!def) return;
+
+    const dur = Math.max(0, installed.durability);
+    const maxDur = installed.maxDurability || 100;
+    const durPct = Math.min(100, (dur / maxDur) * 100);
+    const durCls = durPct < 20 ? 'danger' : durPct < 50 ? 'warn' : '';
+
+    // 효과 텍스트
+    const tick = def.onTick ?? {};
+    const effects = [];
+    if (tick.hp)        effects.push(`HP+${tick.hp}/TP`);
+    if (tick.infection) effects.push(`감염${tick.infection}/TP`);
+    if (tick.morale)    effects.push(`사기+${tick.morale}/TP`);
+    if (tick.fatigue)   effects.push(`피로${tick.fatigue}/TP`);
+    const effectText = effects.join(', ');
+
+    // 수리 재료 확인
+    const repairRecipe = def.repairRecipe ?? [];
+    const repairAmount = def.repairAmount ?? 0;
+    const boardCards = GameState.getBoardCards();
+    const materialStatus = repairRecipe.map(req => {
+      const matDef = GameData.items[req.definitionId];
+      const have = boardCards
+        .filter(c => c.definitionId === req.definitionId)
+        .reduce((sum, c) => sum + (c.quantity ?? 1), 0);
+      return {
+        id: req.definitionId,
+        name: matDef?.name ?? req.definitionId,
+        icon: matDef?.icon ?? '📦',
+        need: req.qty,
+        have,
+        enough: have >= req.qty,
+      };
+    });
+    const canRepair = repairRecipe.length > 0 && materialStatus.every(m => m.enough) && dur < maxDur;
+    const needsRepair = dur < maxDur;
+
+    const materialsHtml = repairRecipe.length > 0
+      ? materialStatus.map(m => {
+          const cls = m.enough ? '' : 'style="color:var(--text-danger,#c44)"';
+          return `<span ${cls}>${m.icon} ${m.name} ×${m.need} (보유: ${m.have})</span>`;
+        }).join(', ')
+      : '수리 불가';
+
+    // 분해 재료 미리보기
+    const dismantleItems = def.dismantle ?? [];
+    const dismantleHtml = dismantleItems.length > 0
+      ? dismantleItems.map(entry => {
+          const matDef = GameData.items[entry.definitionId];
+          return `${matDef?.icon ?? '📦'} ${matDef?.name ?? entry.definitionId} ×${entry.qty} (${Math.round(entry.chance * 100)}%)`;
+        }).join(', ')
+      : '';
+
+    const html = `
+      <div class="card-inspect">
+        <div class="card-inspect-art">${def.icon ?? '⛺'}</div>
+        <div class="card-inspect-info">
+          <div class="card-inspect-name">${def.name}</div>
+          <div style="margin:8px 0;">
+            <div style="font-size:11px;color:var(--text-secondary);margin-bottom:4px;">내구도: ${Math.round(dur)}/${maxDur}</div>
+            <div style="height:8px;background:rgba(255,255,255,0.1);border-radius:4px;overflow:hidden;">
+              <div class="${durCls}" style="width:${durPct}%;height:100%;background:${durPct < 20 ? 'var(--text-danger,#c44)' : durPct < 50 ? 'var(--text-warn,#ca3)' : 'var(--text-good,#4a8)'};border-radius:4px;transition:width 0.3s;"></div>
+            </div>
+          </div>
+          <div style="font-size:11px;color:var(--text-secondary);margin-bottom:8px;">효과: ${effectText || '없음'}</div>
+          <hr style="border-color:rgba(255,255,255,0.1);margin:8px 0;">
+          ${needsRepair ? `<div style="font-size:11px;margin-bottom:8px;">수리 재료: ${materialsHtml} → +${repairAmount} 내구도</div>` : '<div style="font-size:11px;color:var(--text-good);margin-bottom:8px;">내구도가 최대입니다.</div>'}
+          ${dismantleHtml ? `<div style="font-size:10px;color:var(--text-dim);margin-bottom:8px;">분해 시: ${dismantleHtml}</div>` : ''}
+          <div class="card-inspect-actions">
+            <button class="card-action-btn${canRepair ? '' : ' disabled'}" id="modal-struct-repair" ${canRepair ? '' : 'disabled'}>🔧 수리</button>
+            <button class="card-action-btn dismantle" id="modal-struct-dismantle">분해</button>
+            <button class="card-action-btn" id="modal-struct-close">${I18n.t('modal.cancel')}</button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    this.open(html, '구조물 관리');
+
+    // 수리 버튼
+    document.getElementById('modal-struct-repair')?.addEventListener('click', () => {
+      // 재료 소모
+      for (const req of repairRecipe) {
+        let remaining = req.qty;
+        for (const card of GameState.getBoardCards()) {
+          if (remaining <= 0) break;
+          if (card.definitionId !== req.definitionId) continue;
+          const qty = card.quantity ?? 1;
+          if (qty <= remaining) {
+            remaining -= qty;
+            GameState.removeCardInstance(card.instanceId);
+          } else {
+            card.quantity = qty - remaining;
+            remaining = 0;
+          }
+        }
+      }
+      // 내구도 회복
+      installed.durability = Math.min(maxDur, dur + repairAmount);
+      EventBus.emit('notify', { message: `🔧 ${def.name} 수리 완료 (+${repairAmount})`, type: 'good' });
+      EventBus.emit('boardChanged', {});
+      this.close();
+    });
+
+    // 분해 버튼
+    document.getElementById('modal-struct-dismantle')?.addEventListener('click', () => {
+      this.close();
+      this.confirm(`${def.name}을(를) 분해하시겠습니까?`, () => {
+        // 확률적 재료 반환
+        for (const entry of dismantleItems) {
+          if (Math.random() < entry.chance) {
+            const inst = GameState.createCardInstance(entry.definitionId, { quantity: entry.qty });
+            if (inst) GameState.placeCardInRow(inst.instanceId, 'middle');
+          }
+        }
+        delete GameState.location.installedStructures[districtId];
+        EventBus.emit('notify', { message: `${def.name} 분해 완료`, type: 'info' });
+        EventBus.emit('boardChanged', {});
+      });
+    });
+
+    // 닫기 버튼
+    document.getElementById('modal-struct-close')?.addEventListener('click', () => {
+      this.close();
+    });
   },
 };
 
