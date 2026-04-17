@@ -207,6 +207,11 @@ const BALANCE = {
     lightDrainPerTP:      0.5,   // 야간 광원 카드 내구도 감소 (/TP)
   },
 
+  // ── 의료 구조물 내구도 ──────────────────────────────────
+  medicalStation: {
+    durabilityDecayPerTP: 0.093,  // 100 내구도 기준 ~15일(1080TP)
+  },
+
   // ── 낚시 ──────────────────────────────────────────────
   fishing: {
     tpCostPerCast:        2,     // 낚시 1회 TP 비용
