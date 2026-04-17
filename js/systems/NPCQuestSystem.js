@@ -16,6 +16,9 @@ const NPCQuestSystem = {
     EventBus.on('boardChanged',    () => this._checkAllProgress());
     EventBus.on('tpAdvance',       () => this._checkAllProgress());
     EventBus.on('npcWoundHealed',  () => this._checkAllProgress());
+    // NPC 스폰 시 trust 0 퀘스트 즉시 활성화
+    EventBus.on('npcSpawned',  ({ npcId }) => this._checkQuestUnlock(npcId, 0));
+    EventBus.on('loaded',      () => this._unlockAllTrust0Quests());
   },
 
   // ── Quest unlock on trust change ───────────────────────────────
@@ -42,6 +45,15 @@ const NPCQuestSystem = {
         type: 'good',
       });
       EventBus.emit('npcPanelUpdate', { npcId });
+    }
+  },
+
+  /** 게임 로드 시 모든 스폰된 NPC의 trust 0 퀘스트를 즉시 활성화 */
+  _unlockAllTrust0Quests() {
+    if (!GameState.npcs?.states) return;
+    for (const [npcId, state] of Object.entries(GameState.npcs.states)) {
+      if (!state.spawned || state.dismissed) continue;
+      this._checkQuestUnlock(npcId, state.trust ?? 0);
     }
   },
 

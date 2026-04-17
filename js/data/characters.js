@@ -12,11 +12,10 @@ export const CHARACTERS = [
     maxCarryWeight: 32, // (30 → 32 버프)
     title: '응급의학과 전문의',
     portrait: '🩺',
-    story: `2026년 1월 17일, 강남 삼성서울병원 응급실. 이지수 전문의(38세)는 11시간째 수술 중이었다.
-갑자기 복도에서 비명이 들렸다. ICU 환자 하나가 갑자기 일어나 간호사를 물어뜯었다.
-이지수는 약품 창고에 자신을 가두고 3일을 버텼다. 밖에 나왔을 때, 병원은 지옥이 되어 있었다.
-그녀의 배낭에는 훔쳐둔 약품들과 직접 손으로 적은 메모가 있었다.
-"신촌 세브란스. 바이러스 연구팀. 연락 두절 D+3."`,
+    story: `2026년 1월 17일, 동작구 보라매병원 응급실. 이지수 전문의(38세)는 밤새 밀려드는 환자를 치료하고 있었다.
+새벽, 병원 밖에서 폭발음이 울렸다. 통신이 끊기고, 전기가 나갔다. 응급실은 순식간에 아수라장이 됐다.
+대부분의 의료진은 도망쳤지만, 이지수는 남았다. 간호사 한 명과 중상을 입은 군인 한 명이 남아있었다.
+"살릴 수 있는 사람은 살린다." 그녀는 마지막 남은 약품을 챙기고 응급 거점을 차렸다.`,
     goal: '신촌 세브란스병원 연구소에서 감염 패턴 데이터를 확보하고, 생존자들을 위한 치료 프로토콜을 수립한다.',
     abilities: [
       {
@@ -57,8 +56,7 @@ export const CHARACTERS = [
     specialtySkills: ['medicine', 'scavenging'],
     homeDist: 'dongjak',
     startingStructures: ['medical_station'],
-    startingCompanion: 'npc_nurse',
-    startingNPCs: ['npc_wounded_soldier'],
+    startingNPCs: ['npc_wounded_soldier', 'npc_nurse'],
   },
 
   {
