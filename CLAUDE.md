@@ -26,6 +26,12 @@
 - belt, accessory는 GameState에만 존재, UI에서는 표시 안 함
 - 서울 지도: `GameState.flags.mapFragments` 3개 수집 시 `mapUnlocked` 플래그 해금
 
+## NPC 시스템
+- trust는 퀘스트 완료로만 증가 (대화 불가), 첫 퀘스트 triggerTrust: 0
+- 영입 시 보드 카드 제거, 해제 시 카드 재생성 (NPCSystem recruit/dismiss)
+- 동반자 능력: trust 기반 스케일링 ×1.0~×1.3 (식량 소모 제외)
+- 부상 NPC: woundLevel 치료 후 canRecruit 해금 (NPCDialogueModal)
+
 ## Design System
 Always read DESIGN.md before making any visual or UI decisions.
 All font choices, colors, spacing, and aesthetic direction are defined there.

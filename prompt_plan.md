@@ -791,6 +791,67 @@ setTimeout(() => {
 
 ---
 
+---
+
+# 의무 거점 내구도 + 5티어 의료 구조물 + NPC 동행 시스템
+
+> 최종 업데이트: 2026-04-18
+> 상태: 완료
+
+## 결과 요약
+
+### 의료 구조물 5티어
+
+| Tier | ID | 이름 | onTick | 내구도 |
+|------|------|------|--------|--------|
+| 1 | medical_station | 의무 거점 | hp:3, inf:-1 | 100 |
+| 2 | medical_clinic | 야전 의원 | hp:5, inf:-2 | 130 |
+| 3 | medical_ward | 의료 병동 | hp:7, inf:-3, morale:+1 | 170 |
+| 4 | field_surgery_station | 야전 수술대 | hp:10, inf:-4, morale:+2 | 220 |
+| 5 | field_hospital | 야전 병원 | hp:15, inf:-5, fatigue:-1, morale:+3 | 300 |
+
+- 내구도 감소 0.093/TP (~15일 수명), 0 도달 시 카드 제거
+- 분해 불가, 수리 가능 (카드 검사 모달에서 재료 소모)
+- 바닥(middle) 가장 왼쪽에 배치
+
+### NPC 동행 시스템 개편
+
+- 대화로 trust 증가 안 함 → 퀘스트 완료로만 증가
+- 모든 NPC 첫 퀘스트 triggerTrust: 0 (만나자마자 의뢰 가능)
+- 친밀도 기반 능력 스케일링: trust 0→×1.0, trust 5→×1.3 (식량 소모 제외)
+- 영입 시 보드 카드 제거, 해제 시 카드 재생성
+- 동반자 치료 보너스(healBonus) 의료 아이템에 적용
+
+### 이지수 시작 시나리오
+
+- 보라매병원 응급실 컨셉
+- 바닥: 의무 거점 + 부상 군인 NPC + 간호사 NPC
+- 간호사 첫 퀘스트: 부상 군인 치료 → 완료 시 간호사 동료 가능
+- 부상 군인: 3단계 치료(붕대×2/단계) → 완치 후 동료 가능
+- 메스(scalpel) 무기 추가: dmg[8-14], 크리 30%, 소음 0
+
+## 수정 파일
+
+| 파일 | 변경 |
+|------|------|
+| `js/core/GameState.js` | installedStructures 객체화 + 마이그레이션 |
+| `js/data/items_structures.js` | 5티어 의료 구조물 + repairRecipe |
+| `js/data/blueprints.js` | 3개 블루프린트 + 이름 수정 |
+| `js/data/gameBalance.js` | medicalStation 상수 |
+| `js/data/npcs.js` | 부상 군인 NPC + trust 체인 조정 |
+| `js/data/characters.js` | 이지수 시나리오 변경 |
+| `js/data/items_combat.js` | 메스 무기 |
+| `js/systems/StatSystem.js` | 내구도 감소 + 동반자 healBonus |
+| `js/systems/CraftSystem.js` | 의료 구조물 왼쪽 배치 |
+| `js/systems/NPCSystem.js` | 영입/해제 카드 연동 + trust 스케일링 |
+| `js/systems/NPCQuestSystem.js` | treat_npc 타입 + trust 0 활성화 |
+| `js/ui/ModalManager.js` | 수리 버튼 + 재료 표시 |
+| `js/ui/StatRenderer.js` | 스태미나 바 사이드바 |
+| `js/ui/NPCPanel.js` | hidden 해제 + 클릭 이벤트 |
+| `js/ui/NPCDialogueModal.js` | 부상 치료 UI + 방어 로직 |
+
+---
+
 ## 이전 계획 아카이브
 
 이전 계획(카드 서바이벌 시스템 확장 세부 기획서 — 2026-03-20)은
