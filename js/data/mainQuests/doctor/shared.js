@@ -4,28 +4,28 @@
 const DOCTOR_SHARED = {
 
   mq_doctor_01: {
-    id: 'mq_doctor_01', title: '삼성병원 생존자',
-    desc: '약품 창고에서 탈출했다. 식량 3개를 확보하라.',
-    icon: '🏥', characterId: 'doctor', dayTrigger: 1, prerequisite: null,
-    objective: { type: 'collect_item_type', itemType: 'food', count: 3 },
-    reward: { morale: 5, items: [{ definitionId: 'bandage', qty: 1 }] },
-    failPenalty: { morale: -5 }, deadlineDays: 10,
+    id: 'mq_doctor_01', title: '응급실의 첫 환자',
+    desc: '응급실에 쓰러진 박상훈 하사를 완치시켜라. (붕대로 치료)',
+    icon: '🩹', characterId: 'doctor', dayTrigger: 1, prerequisite: null,
+    objective: { type: 'treat_npc', npcId: 'npc_wounded_soldier', count: 1 },
+    reward: { morale: 8, items: [{ definitionId: 'bandage', qty: 2 }, { definitionId: 'antiseptic', qty: 1 }] },
+    failPenalty: { morale: -10 }, deadlineDays: 5,
     narrative: {
-      start: '강남 삼성서울병원 응급실. 이지수 전문의(38세)는 약품 창고에서 3일을 버텼다. 밖에 나왔을 때 병원은 지옥이 되어 있었다. 먼저 식량을 확보해야 한다.',
-      complete: '식량을 확보했다. 약품 창고에서 나오면서 붕대도 챙겼다. 여기서 오래 있으면 안 된다.',
+      start: '동작구 보라매병원 응급실. 이지수 전문의(38세)는 약품 창고에서 3일을 버텼다. 문을 열자 바닥에 박상훈 하사가 쓰러져 있다 — 현충원 경비소대 소속. 의사의 첫 환자다. 붕대를 하사 카드에 드래그해 치료하라.',
+      complete: '박상훈 하사가 눈을 떴다. "선생님, 감사합니다... 신촌에서 군 무전이 잡힌 적이 있습니다. 강민준 군의관이 의사를 찾는다고 했습니다." 히포크라테스 선서가 세상이 끝났다고 사라지지 않는다. 의사의 역할이 시작됐다.',
     },
   },
 
   mq_doctor_02: {
-    id: 'mq_doctor_02', title: '처치실 방벽',
-    desc: '처치실을 임시 거점으로 만들어라. 구조물을 제작하라.',
-    icon: '🏗️', characterId: 'doctor', dayTrigger: 2, prerequisite: 'mq_doctor_01',
-    objective: { type: 'craft_item', category: 'structure', count: 1 },
-    reward: { morale: 5, items: [{ definitionId: 'bandage', qty: 2 }] },
-    failPenalty: { morale: -5 }, deadlineDays: 12,
+    id: 'mq_doctor_02', title: '간호사와의 공조',
+    desc: '간호사의 의뢰 "응급 환자 발생"을 완료하라. (붕대 5개 + 구급키트 2개 + 동작구 방문)',
+    icon: '👩‍⚕️', characterId: 'doctor', dayTrigger: 2, prerequisite: 'mq_doctor_01',
+    objective: { type: 'npc_quest_complete', npcId: 'npc_nurse', questId: 'nurse_quest_emergency', count: 1 },
+    reward: { morale: 10, items: [{ definitionId: 'bandage', qty: 2 }, { definitionId: 'first_aid_kit', qty: 1 }] },
+    failPenalty: { morale: -5 }, deadlineDays: 14,
     narrative: {
-      start: '매일 밤 잠을 설친다. 처치실 문을 막아야 한다.',
-      complete: '바리케이드가 세워졌다. 오늘 밤은 안전하다.',
+      start: '박상훈 하사를 살리는 걸 본 간호사의 눈빛이 바뀌었다. "동작구 쪽에서 부상자들이 계속 몰려와요. 혼자선 감당이 안 돼요 — 함께 해주실 수 있죠?" 의사 혼자가 아니다. 진료소가 꾸려지기 시작한다.',
+      complete: '붕대와 구급키트를 간호사에게 건네고 동작구 현장을 함께 돌았다. "이제 우린 팀이에요, 선생님." 간호사가 의료팀 일원이 됐다. 항생제와 소독약, 그리고 의학 지식(+20%) 교환.',
     },
   },
 
@@ -56,15 +56,15 @@ const DOCTOR_SHARED = {
   },
 
   mq_doctor_05: {
-    id: 'mq_doctor_05', title: '임시 의무실',
-    desc: '의료 아이템 3개를 수집하라.',
-    icon: '⚕️', characterId: 'doctor', dayTrigger: 8, prerequisite: 'mq_doctor_04',
-    objective: { type: 'collect_item_type', itemType: 'medical', count: 3 },
-    reward: { morale: 8, items: [{ definitionId: 'first_aid_kit', qty: 1 }] },
+    id: 'mq_doctor_05', title: '첫 외래 환자',
+    desc: '응급실 잔류 환자 1명을 치료하라. (부상 NPC 드래그 치료)',
+    icon: '🩺', characterId: 'doctor', dayTrigger: 8, prerequisite: 'mq_doctor_04',
+    objective: { type: 'treat_npc', count: 1 },
+    reward: { morale: 10, items: [{ definitionId: 'first_aid_kit', qty: 1 }, { definitionId: 'antibiotics', qty: 1 }] },
     failPenalty: { morale: -3 }, deadlineDays: 18,
     narrative: {
-      start: '소문이 퍼졌다. "4층에 의사가 있다." 생존자들이 찾아오기 시작했다.',
-      complete: '의무실이 갖춰졌다. 생존자 중 한 명이 구급키트를 가져왔다. "의사 선생님이 제일 필요한 거 아닌가요?"',
+      start: '소문이 퍼졌다. "4층에 의사가 있다." 복도에 쓰러진 첫 외래 환자가 찾아왔다. 붕대와 소독약으로 치료해야 한다.',
+      complete: '환자가 눈을 뜨고 의사의 손을 잡는다. "선생님… 감사합니다." 그가 남긴 구급키트와 항생제. 보라매 "의사가 있는 곳"이라는 소문이 바깥으로 퍼진다.',
     },
   },
 
@@ -89,8 +89,8 @@ const DOCTOR_SHARED = {
     reward: { morale: 8, items: [{ definitionId: 'bandage', qty: 1 }, { definitionId: 'antiseptic', qty: 1 }] },
     failPenalty: { morale: -5 }, deadlineDays: 23,
     narrative: {
-      start: '약초와 남은 약품을 혼합한다.',
-      complete: '첫 번째 임시 치료약 완성. 제작 과정에서 쓰고 남은 소독약과 붕대도 챙겼다. 세브란스에 가야 한다.',
+      start: '보라매 약품 창고가 바닥을 드러냈다. 남은 약초와 잔여 약품을 혼합해 임시 치료약을 만든다.',
+      complete: '첫 번째 임시 치료약 완성. 하지만 원료가 3일 안에 고갈될 것이다 — 세브란스 병원 본관 약품고가 유일한 희망이다.',
     },
   },
 
@@ -149,7 +149,33 @@ const DOCTOR_SHARED = {
   },
 
   // ── 사이드 퀘스트 (선택, 메인 체인 비차단) ─────────────────────
-  // 모든 사이드 퀘스트는 mq_doctor_10 완료 후 활성화된다.
+  // 대부분 mq_doctor_10 완료 후 활성화되지만, 초반 능력 체감용은 mq_doctor_01 직후 활성화.
+
+  mq_doctor_side_soldier: {
+    id: 'mq_doctor_side_soldier', title: '박상훈 하사와 현충원',
+    desc: '회복한 박상훈 하사와 함께 동작구 국립현충원을 방문해 소대원의 흔적을 찾아라.',
+    icon: '🎖️', characterId: 'doctor', dayTrigger: 7, prerequisite: 'mq_doctor_01',
+    objective: { type: 'visit_district', districtId: 'dongjak', count: 1 },
+    reward: { morale: 12, items: [{ definitionId: 'first_aid_kit', qty: 1 }, { definitionId: 'stimulant', qty: 1 }], flags: { minjun_radio_received: true } },
+    failPenalty: { morale: -5 }, deadlineDays: 14,
+    narrative: {
+      start: '박상훈 하사가 처치실 문 앞에 서 있다. "선생님, 현충원에 가야 합니다. 소대원들 인식표를… 유가족에게 돌려줘야 해요." 이지수는 진료 가방을 챙겼다.',
+      complete: '현충원 경비초소에서 소대 인식표 5개를 수습했다. 그때 라디오 노이즈 사이로 군 무전이 잡힌다. "강민준 군의관… 의사를 찾습니다. 좌표 송신 중…" 박상훈 하사가 눈물을 삼킨다. "저분이 소대장님 동기입니다." 강민준의 위치가 일기장에 적혔다.',
+    },
+  },
+
+  mq_doctor_side_early: {
+    id: 'mq_doctor_side_early', title: '임상 지식 — 감염 추적',
+    desc: '감염 수치 5 이상인 상태로 3일 연속 버티며 증상 진행을 관찰하라.',
+    icon: '🛡️', characterId: 'doctor', dayTrigger: 3, prerequisite: 'mq_doctor_01',
+    objective: { type: 'survive_infection', minInfection: 5, count: 3 },
+    reward: { morale: 10, items: [{ definitionId: 'antiseptic', qty: 2 }, { definitionId: 'herb', qty: 2 }] },
+    failPenalty: { morale: -3 }, deadlineDays: 30,
+    narrative: {
+      start: '이지수의 수첩에 적힌 메모: "임상 지식은 이론이 아닌 관찰이다. 내 몸의 감염 수치를 낮게 유지하면서 초기 증상을 3일간 기록할 것." 감염 -35% 특성을 체감으로 확인할 시간이다.',
+      complete: '3일간의 관찰 기록이 완성됐다. 보통 사람이라면 벌써 중증으로 번졌을 감염 수치가 여전히 낮게 유지됐다. "임상 지식 — 내 몸이 곧 표본이다." 이지수는 스스로의 저항력을 수치로 확인했다.',
+    },
+  },
 
   mq_doctor_side_01: {
     id: 'mq_doctor_side_01', title: '감염 패턴 추적',

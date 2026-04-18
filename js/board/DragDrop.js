@@ -262,11 +262,15 @@ const DragDrop = {
     if (npcState.woundLevel <= 0) {
       // 완치
       npcState.healed = true;
-      npcState.trust = Math.max(npcState.trust ?? 0, 1);
+      const prevTrust = npcState.trust ?? 0;
+      npcState.trust = Math.max(prevTrust, 1);
       const comp = npcDef.companion;
       if (comp) comp.canRecruit = true;
       EventBus.emit('notify', { message: '🩹 부상이 완치되었습니다! 이제 동료로 영입할 수 있습니다.', type: 'good' });
       EventBus.emit('npcWoundHealed', { npcId: tgtInst.definitionId });
+      if (npcState.trust > prevTrust) {
+        EventBus.emit('npcTrustChanged', { npcId: tgtInst.definitionId, oldTrust: prevTrust, newTrust: npcState.trust });
+      }
     } else {
       EventBus.emit('notify', { message: `🩹 부상 치료 (${oldWound}단계 → ${npcState.woundLevel}단계)`, type: 'info' });
     }

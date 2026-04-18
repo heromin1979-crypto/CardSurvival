@@ -455,7 +455,13 @@ const GameState = {
   modStat(stat, delta) {
     const s = this.stats[stat];
     if (!s) return;
-    this.setStat(stat, s.current + delta);
+    // 감염 증가분에 한해 rateMultiplier 적용 (의사 -35% 등)
+    let d = delta;
+    if (stat === 'infection' && d > 0) {
+      const mult = s.rateMultiplier ?? 1.0;
+      d = d * mult;
+    }
+    this.setStat(stat, s.current + d);
   },
 
   _updateEncumbrance() {

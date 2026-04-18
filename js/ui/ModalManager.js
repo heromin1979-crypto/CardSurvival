@@ -51,6 +51,7 @@ const ModalManager = {
     EventBus.on('openCardInspect', ({ instanceId }) => this.showCardInspect(instanceId));
     EventBus.on('branchChoice',    ({ options, questId }) => this.showBranchChoice(options, questId));
     EventBus.on('openStructureRepair', ({ districtId }) => this.showStructureRepair(districtId));
+    EventBus.on('openingScene',    (config) => this.showOpeningScene(config));
   },
 
   open(html, title = '') {
@@ -80,6 +81,51 @@ const ModalManager = {
       this._prevFocus.focus();
       this._prevFocus = null;
     }
+  },
+
+  /** 오프닝 씬 모달 — 내레이션 + 2선택 (콜백 기반, 닫기 불가) */
+  showOpeningScene(config) {
+    if (!this._overlay) return;
+    const { title = '⚡ 선택의 순간', narration = '', choices = [], onChoose } = config;
+
+    this._nonDismissible = true;
+    this._prevFocus = document.activeElement;
+
+    const btns = choices.map((opt, i) => {
+      const warnBadge = opt.warning
+        ? `<div class="branch-warning-badge" style="color:var(--text-warn);margin-top:6px;font-size:0.85em;">⚠️ ${opt.warning}</div>`
+        : '';
+      return `
+        <button class="branch-choice-btn" id="opening-opt-${i}">
+          <div class="branch-choice-title">${opt.label}</div>
+          <div class="branch-choice-desc">${opt.desc ?? ''}</div>
+          ${warnBadge}
+        </button>`;
+    }).join('');
+
+    this._box.innerHTML = `
+      <div class="modal-title">${title}</div>
+      <div class="modal-body branch-choice-body">
+        <p class="branch-choice-hint" style="white-space:pre-line;line-height:1.6;">${narration}</p>
+        <div class="branch-choice-options">${btns}</div>
+      </div>
+    `;
+    this._overlay.classList.add('open');
+    GameState.ui.modalOpen = true;
+
+    choices.forEach((opt, i) => {
+      const btn = document.getElementById(`opening-opt-${i}`);
+      if (!btn) return;
+      btn.onclick = () => {
+        this.close();
+        if (typeof onChoose === 'function') onChoose(opt.value ?? i);
+      };
+    });
+
+    requestAnimationFrame(() => {
+      const first = this._box.querySelector('.branch-choice-btn');
+      if (first) first.focus();
+    });
   },
 
   /** 스토리 분기 선택 모달 — 닫기 불가 */

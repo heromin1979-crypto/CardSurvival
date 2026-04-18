@@ -1202,6 +1202,74 @@ export const LANDMARK_DATA = {
     ],
   },
 
+  // ── 동작구 — 보라매병원 (이지수 시작 공간) ────────────────
+  // 초반 지역 랜드마크. dangerMod 0.05~0.15로 낮게 설정.
+  // districts 배열 필드로 동작구에 소속 — district.landmarks 배열과 연동.
+  lm_boramae_hospital: {
+    name: '보라매병원',
+    desc: '서울시립 보라매병원. 응급실·수술실·약품 창고가 남아있고 감염 위험은 비교적 낮다.',
+    icon: '🏥',
+    districts: ['dongjak'],
+    subLocations: [
+      {
+        id: 'boramae_emergency', name: '응급실',
+        icon: '🚑', desc: '이지수가 마지막까지 지킨 응급실. 깨진 유리와 흩어진 처치 도구 — 초기 응급 약품의 기본.',
+        dangerMod: 0.05,
+        lootTable: [
+          { id: 'bandage',      weight: 6 }, { id: 'cloth',        weight: 3 },
+          { id: 'alcohol_swab', weight: 4 }, { id: 'painkiller',   weight: 3 },
+          { id: 'antiseptic',   weight: 3 }, { id: 'splint',       weight: 1 },
+        ],
+        lootCount: [2, 3],
+      },
+      {
+        id: 'boramae_surgery', name: '수술실',
+        icon: '🔪', desc: '무영등이 꺼진 수술실. 외과 전용 도구 — 메스와 수술키트가 잠겨 있다.',
+        dangerMod: 0.10,
+        lootTable: [
+          { id: 'scalpel',        weight: 3 }, { id: 'surgery_kit',   weight: 2 },
+          { id: 'combat_scalpel', weight: 1 }, { id: 'antiseptic',    weight: 3 },
+          { id: 'first_aid_kit',  weight: 2 }, { id: 'antibiotics',   weight: 1 },
+          { id: 'cloth',          weight: 2 }, { id: 'rope',          weight: 1 },
+        ],
+        lootCount: [1, 3],
+      },
+      {
+        id: 'boramae_pharmacy', name: '약품 창고',
+        icon: '💊', desc: '의약품 전용 창고. 처방약이 선반에 분류돼 있다 — 항생제·각성제·해독제가 공존한다.',
+        dangerMod: 0.12,
+        lootTable: [
+          { id: 'antibiotics', weight: 4 }, { id: 'painkiller', weight: 4 },
+          { id: 'vitamins',    weight: 3 }, { id: 'stimulant',  weight: 2 },
+          { id: 'antidote',    weight: 1 }, { id: 'antiseptic', weight: 2 },
+        ],
+        lootCount: [2, 3],
+      },
+      {
+        id: 'boramae_morgue', name: '영안실',
+        icon: '⚰️', desc: '지하 영안실. 오염된 공기, 방치된 시신 — 위험하지만 정맥주사와 강화 붕대가 남아있는 유일한 공간.',
+        dangerMod: 0.18,
+        lootTable: [
+          { id: 'iv_saline',          weight: 2 }, { id: 'reinforced_bandage', weight: 2 },
+          { id: 'antidote',           weight: 2 }, { id: 'contaminated_water', weight: 4 },
+          { id: 'tattered_rags',      weight: 4 }, { id: 'cloth',              weight: 2 },
+        ],
+        lootCount: [1, 2],
+      },
+      {
+        id: 'boramae_rooftop', name: '옥상 약초정원',
+        icon: '🌿', desc: '헬리포트 옆 방치된 병원 약초정원. 삼백초·질경이가 자라고 있다 — 의사만이 알아볼 수 있는 천연 약재.',
+        dangerMod: 0.08,
+        lootTable: [
+          { id: 'herb',          weight: 6 }, { id: 'herbal_tea',   weight: 2 },
+          { id: 'withered_tree', weight: 3 }, { id: 'cloth',        weight: 2 },
+          { id: 'rope',          weight: 2 }, { id: 'wire',         weight: 1 },
+        ],
+        lootCount: [1, 3],
+      },
+    ],
+  },
+
   // ── 동작구 — 국립현충원 ──────────────────────────────────
   dongjak: {
     name: '국립현충원',

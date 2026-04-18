@@ -28,6 +28,7 @@ const LANDMARK_IMAGES = {
   lm_dobong:       'assets/images/landmarks/lm_dobong.png',
   lm_dongdaemun:   'assets/images/landmarks/lm_dongdaemun.png',
   lm_dongjak:      'assets/images/landmarks/lm_dongjak.png',
+  lm_boramae_hospital: 'assets/images/landmarks/lm_boramae_hospital.png',
   lm_mapo:         'assets/images/landmarks/lm_mapo.png',
   lm_seodaemun:    'assets/images/landmarks/lm_seodaemun.png',
   lm_seocho:       'assets/images/landmarks/lm_seocho.png',
@@ -790,7 +791,7 @@ const CardFactory = {
           return el;
         }
 
-        const districtId = def.id?.replace(/^lm_/, '');
+        const districtId = def.districtId ?? def.id?.replace(/^lm_/, '');
         const isCurrent  = GameState.location.currentDistrict === districtId;
 
         el.className = `card location-card landmark-card spawning${isCurrent ? ' is-current-loc' : ''}`;
@@ -982,7 +983,7 @@ const CardFactory = {
       `;
     }
 
-    const districtId = def.id?.replace(/^lm_/, '');
+    const districtId = def.districtId ?? def.id?.replace(/^lm_/, '');
     const district   = GameData?.districts?.[districtId];
     const danger     = district?.dangerLevel ?? 0;
     const color      = DANGER_COLORS[Math.min(danger, DANGER_COLORS.length - 1)];
@@ -1303,7 +1304,7 @@ const CardFactory = {
           el.innerHTML = this._buildLandmarkInner(def, true);
           el.classList.add('is-current-loc');
         } else {
-          const districtId = def.id?.replace(/^lm_/, '');
+          const districtId = def.districtId ?? def.id?.replace(/^lm_/, '');
           const isCurrent  = GameState.location.currentDistrict === districtId;
           el.innerHTML = this._buildLandmarkInner(def, isCurrent);
           if (isCurrent) el.classList.add('is-current-loc');

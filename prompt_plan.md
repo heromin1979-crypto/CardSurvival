@@ -1,3 +1,120 @@
+# 이지수(doctor) 초반 몰입감 강화 — 응급실 오프닝 + NPC 크로스오버 + 감염 저항 체감
+
+> 최종 업데이트: 2026-04-19
+> 상태: 완료 (Phase 1 + Phase 2)
+
+## 목표
+의사 이지수 캐릭터의 초반 1~5일 경험을 강화.
+① "3일 창고 생존 → 응급실" 오프닝 시나리오, ② Q1~Q6 "수집 6연속" 단조로움 해소,
+③ 보라매병원 서브로케이션 개별화, ④ 감염 저항 -35% 능력 체감 유도.
+
+## Phase 1 — 오프닝 시나리오 + NPC 서사 강화
+
+### 응급실 오프닝 (이지수 전용 시작 시퀀스)
+- `CharCreate._doctorEmergencyOpening()` — 베이스캠프 대신 응급실 서브로케이션에서 시작
+- `ModalManager.showOpeningScene()` — 2지선다 (치료 vs 탈출) 오프닝 모달
+- `ExploreSystem.enterLandmark('dongjak')` + 직접 `currentSubLocation` 설정 (TP/encounter/loot 우회)
+- 탈출 선택 시 `abandoned_soldier` 플래그, morale -10
+
+### 부상 군인 NPC 서사 구체화
+- 이름: "부상당한 군인" → **박상훈 하사** (25세, 국립현충원 경비소대)
+- backstory + 소대원 상실 대사 추가
+- trustEvent `soldier_wounded_healed` — 강민준 군의관 Q10 분기 복선
+- specialDay 7 — 현충원 귀환 개인 퀘스트 훅
+
+### Q1 교체
+- 기존 "식량 3개 수집" → **"응급실의 첫 환자"** (박상훈 하사 치료, treat_npc)
+- 의사 본분과 직결된 첫 목표 — 의사 정체성 즉시 각인
+
+## Phase 2 — NPC 크로스오버 + 공간 개별화 + 능력 체감
+
+### Q2 간호사 크로스오버
+- 기존 "처치실 방벽(구조물 제작)" → **"간호사와의 공조"**
+- 신규 objective 타입 `npc_quest_complete` — `npc_nurse` / `nurse_quest_emergency` 완료 추적
+- `NPCQuestSystem`: `npcQuestCompleted` 이벤트 emit
+- `QuestSystem.startQuest`: 타깃 NPC 퀘스트가 이미 완료된 경우 소급 적용
+- 효과: NPC 퀘스트 ↔ 메인 퀘스트 교차 → "진료소 운영 게임" 각인
+
+### 보라매병원 서브로케이션 개별화
+| Sub | 특화 | 주요 아이템 |
+|------|------|------------|
+| 응급실 | 기본 응급 | bandage, antiseptic, splint |
+| 수술실 | 외과 도구 | scalpel, surgery_kit, combat_scalpel |
+| 약품 창고 | 처방약 | antibiotics, stimulant, antidote |
+| 영안실 (danger 0.15→0.18) | 고위험 희귀품 | iv_saline, reinforced_bandage |
+| 옥상 **약초정원** (개명) | 병원 정원 약초 | herb, herbal_tea |
+
+### 감염 저항 HUD 배지
+- `GameState.modStat` — `infection.rateMultiplier` 실제 적용 (기존 정의만 있고 미사용)
+- `StatRenderer._renderPassiveBadges` — 🛡️ 감염 저항 -35% + 티어(안정/경계/위험/치명)
+- `ui.css` — 배지 스타일 + `badgePulse` 애니메이션
+
+### survive_infection objective + 초반 사이드 퀘스트
+- 신규 타입 `survive_infection` — 감염 ≥ minInfection 상태 N일 연속 유지
+- `mq_doctor_side_early` — Day 3 활성화, 감염 ≥5로 3일 연속 (능력 체감 강제)
+
+## 수정 파일
+
+| 파일 | 변경 |
+|------|------|
+| `js/screens/CharCreate.js` | `_doctorEmergencyOpening` 메서드 추가 |
+| `js/ui/ModalManager.js` | `openingScene` 이벤트 + `showOpeningScene` |
+| `js/data/npcs.js` | 박상훈 하사 이름/백스토리/trustEvent |
+| `js/data/mainQuests/doctor/shared.js` | Q1 교체, Q2 교체, `mq_doctor_side_early` 추가 |
+| `js/systems/NPCQuestSystem.js` | `npcQuestCompleted` 이벤트 발행 |
+| `js/systems/QuestSystem.js` | `npc_quest_complete` / `survive_infection` objective + 핸들러 |
+| `js/data/landmarks.js` | 보라매병원 5개 서브로케이션 개별화 |
+| `js/core/GameState.js` | `modStat` 감염 `rateMultiplier` 적용 |
+| `js/ui/StatRenderer.js` | 패시브 배지 렌더링 |
+| `css/ui.css` | 배지 스타일 |
+
+---
+
+# 부상 NPC 드래그 치료 UX + 몬스터 드랍 조정
+
+> 최종 업데이트: 2026-04-19
+> 상태: 완료
+
+## 목표
+의무 거점 시스템 후속 — 부상 NPC 치료 UX를 드래그 기반 + HP 게이지로 직관화,
+좀비/개 드랍을 세계관에 맞게 재정비.
+
+## 주요 변경
+
+### 부상 군인 NPC 치료 개선
+- 붕대 필요 수량: 단계당 2개 → **1개** (붕대 1개 = HP 1/3 회복)
+- 완치 후 영입 trust: 3 → **1** (즉시 영입 가능)
+- 드래그 치료 UX: 붕대 카드를 부상 NPC에 드롭하여 치료
+- HP 게이지 시각화 (woundLevel 3→0 기준 0/33/66/100%)
+
+### 몬스터 드랍 재조정
+- **신규 아이템**: `tattered_rags` (거적대기) — textile material, weight 0.3
+- 좀비: cloth/raw_meat 제거 → tattered_rags 주 드랍
+- 광견(dog): raw_meat → tattered_rags (개 시체에서 고기 부적절 수정)
+- 변이 좀비·폭주 좀비·방사능 좀비 lootTable 동기화
+
+### 트러스트 0 퀘스트 활성화 fix
+- 시작 NPC(간호사 등)의 첫 퀘스트 `triggerTrust: 0`일 때 조건 체크 오류 수정
+- 만나자마자 첫 퀘스트 수주 가능하도록 NPCQuestSystem 조건 보정
+
+## 수정 파일
+
+| 파일 | 변경 |
+|------|------|
+| `js/data/enemies.js` | 좀비/개/변이/폭주/방사능 좀비 lootTable 교체 |
+| `js/data/items_base.js` | tattered_rags 아이템 추가 |
+| `js/data/stackConfig.js` | tattered_rags 등록 |
+| `js/data/npcs.js` | 부상 군인 woundHealQty 2→1, recruitTrust 3→1 |
+| `js/board/DragDrop.js` | 붕대 → 부상 NPC 드롭 치료 로직 |
+| `js/board/TouchDrag.js` | 모바일 터치 드래그 치료 지원 |
+| `js/ui/CardFactory.js` | 부상 NPC HP 게이지 렌더링 |
+| `js/ui/NPCDialogueModal.js` | HP 게이지 표시 |
+| `js/screens/CharCreate.js` | 이지수 시작 아이템 조정 |
+| `css/cards.css` | HP 게이지 스타일 |
+| `css/animations.css` | 치료 애니메이션 |
+
+---
+
 # 전투 화면 전면 리디자인 — 3열 레이아웃 + 정보 카드형 UI
 
 > 최종 업데이트: 2026-04-14

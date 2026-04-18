@@ -12,6 +12,7 @@ import { QUEST_TO_FLASHBACK } from '../data/cinematicScenes.js';
 // trigger: 연결된 seasonalEvent id (해당 이벤트 발생 시 자동 시작)
 // objective: { type, target, count }
 //   type: 'collect_item' | 'craft_item' | 'kill_enemies' | 'survive_days' | 'equip_slot'
+//       | 'survive_infection' | 'npc_quest_complete' | 'treat_npc' | 'track_infected' | 'rescue_npc' | 'visit_district'
 // reward: { morale?, hp? }
 const QUEST_DEFS = {
   spring_water: {
@@ -135,6 +136,8 @@ const QuestSystem = {
     EventBus.on('npcHealed',      ({ npcId }) => this._onNpcHealed(npcId));
     // 랜드마크 노드 정리 시 rescue_npc 체크 (약탈자 소굴 소탕 등)
     EventBus.on('landmarkCleared',({ landmarkId, rescuedNpcId }) => this._onLandmarkCleared(landmarkId, rescuedNpcId));
+    // NPC 퀘스트 완료 시 npc_quest_complete 체크 (메인 퀘스트 크로스오버)
+    EventBus.on('npcQuestCompleted', ({ npcId, questId }) => this._onNpcQuestCompleted(npcId, questId));
   },
 
   /** 감염자/특정 적 처치 추적 */
@@ -162,6 +165,23 @@ const QuestSystem = {
       if (!qDef || qDef.objective.type !== 'treat_npc') continue;
       const targetNpc = qDef.objective.npcId;
       if (targetNpc && npcId !== targetNpc) continue;
+      q.progress = Math.min(qDef.objective.count ?? 1, q.progress + 1);
+      this._checkCompletion(q, qDef);
+      changed = true;
+    }
+    if (changed) EventBus.emit('questListChanged', {});
+  },
+
+  /** NPC 퀘스트 완료 → 메인 퀘스트 크로스오버 진행도 */
+  _onNpcQuestCompleted(npcId, questId) {
+    let changed = false;
+    for (const q of GameState.quests.active) {
+      const qDef = _getQuestDef(q.id);
+      if (!qDef || qDef.objective.type !== 'npc_quest_complete') continue;
+      const targetNpc  = qDef.objective.npcId;
+      const targetQuest = qDef.objective.questId;
+      if (targetNpc && npcId !== targetNpc) continue;
+      if (targetQuest && questId !== targetQuest) continue;
       q.progress = Math.min(qDef.objective.count ?? 1, q.progress + 1);
       this._checkCompletion(q, qDef);
       changed = true;
@@ -208,6 +228,15 @@ const QuestSystem = {
     // 메인 퀘스트 내러티브 알림
     if (def.narrative?.start) {
       EventBus.emit('notify', { message: `📖 ${def.narrative.start}`, type: 'story' });
+    }
+
+    // 크로스오버 퀘스트 소급 적용: 타깃 NPC 퀘스트가 이미 완료됐다면 즉시 진행도 반영
+    if (def.objective?.type === 'npc_quest_complete' && def.objective.questId) {
+      const flagKey = `npcQuest_done_${def.objective.questId}`;
+      if (gs.flags?.[flagKey]) {
+        entry.progress = def.objective.count ?? 1;
+        this._checkCompletion(entry, def);
+      }
     }
 
     EventBus.emit('questStarted', { questId, def });
@@ -286,6 +315,12 @@ const QuestSystem = {
     // ① 메인 퀘스트 자동 시작 체크
     this._checkMainQuestTriggers();
 
+    // ①.1 이지수 전용: 탈출 선택 후과 (Day 5)
+    this._checkDoctorAftermath(gs, day);
+
+    // ①.2 이지수 전용: 보라매 약품 고갈 (Day 10)
+    this._checkBoramaeDepletion(gs, day);
+
     for (let i = gs.quests.active.length - 1; i >= 0; i--) {
       const q    = gs.quests.active[i];
       const qDef = _getQuestDef(q.id);
@@ -312,9 +347,69 @@ const QuestSystem = {
         this._checkCompletion(q, qDef);
         changed = true;
       }
+
+      // survive_infection 타입 — 감염 수치 ≥ minInfection 상태로 count일 연속 버티기
+      if (qDef.objective.type === 'survive_infection') {
+        const minInf = qDef.objective.minInfection ?? 5;
+        const curInf = gs.stats.infection?.current ?? 0;
+        if (curInf >= minInf) {
+          if (q.streakStartDay == null) q.streakStartDay = day;
+          q.progress = Math.min(qDef.objective.count, day - q.streakStartDay);
+          this._checkCompletion(q, qDef);
+        } else {
+          // 연속성 깨짐 → 리셋
+          q.streakStartDay = null;
+          q.progress = 0;
+        }
+        changed = true;
+      }
     }
 
     if (changed) EventBus.emit('questListChanged', {});
+  },
+
+  // ── 이지수 전용 이벤트 ───────────────────────────────────────
+
+  /**
+   * 박상훈 하사를 버리고 탈출한 경우 Day 5에 한 번만 사망 일지 이벤트 발생.
+   * morale 감소, trauma 누적, 간호사 trust -1 (초기 신뢰 페널티).
+   */
+  _checkDoctorAftermath(gs, day) {
+    if (gs.player.characterId !== 'doctor') return;
+    if (!gs.flags.abandoned_soldier) return;
+    if (gs.flags.abandoned_soldier_aftermath_done) return;
+    if (day < 5) return;
+
+    gs.flags.abandoned_soldier_aftermath_done = true;
+    gs.modStat('morale', -15);
+    if (gs.mental) gs.mental.trauma = Math.min(100, (gs.mental.trauma ?? 0) + 10);
+
+    // 간호사 trust 페널티 (시작 신뢰 감소)
+    const nurseState = gs.npcs?.states?.npc_nurse;
+    if (nurseState && (nurseState.trust ?? 0) > 0) {
+      nurseState.trust = Math.max(0, (nurseState.trust ?? 0) - 1);
+    }
+
+    EventBus.emit('notify', {
+      message: '📖 보라매 응급실 옆 복도에서 메모가 발견됐다. "박상훈, 사망 추정. 의사가 문을 열어주지 않았다고…" 간호사가 말을 잃었다. (사기 -15, 트라우마 +10, 간호사 신뢰 -1)',
+      type: 'story',
+    });
+  },
+
+  /**
+   * Day 10에 보라매병원 약품이 바닥을 드러낸다 (이지수 전용).
+   * 이후 보라매 서브로케이션 lootCount가 영구 -1 되고, 세브란스(신촌) 원정의 당위성이 부각된다.
+   */
+  _checkBoramaeDepletion(gs, day) {
+    if (gs.player.characterId !== 'doctor') return;
+    if (gs.flags.boramae_depleted) return;
+    if (day < 10) return;
+
+    gs.flags.boramae_depleted = true;
+    EventBus.emit('notify', {
+      message: '📦 보라매 약품 창고가 바닥을 드러냈다. "선생님… 이제 남은 건 뜯지도 못한 앰풀 몇 개뿐이에요." 이후 보라매 수색량이 줄고, 신촌 세브란스 원정이 더욱 시급해졌다.',
+      type: 'story',
+    });
   },
 
   // ── 메인 퀘스트 자동 시작 ─────────────────────────────────────
