@@ -374,6 +374,7 @@ const NPCDialogueModal = {
         EventBus.emit('boardChanged', {});
         if (state.woundLevel <= 0) {
           // 완치 → 동료 가능 상태로 변경
+          state.healed = true;
           const comp = npcDef.companion;
           if (comp) comp.canRecruit = true;
           EventBus.emit('notify', { message: `🩹 ${I18n.itemName(npcId, NPC_ITEMS[npcId]?.name)}의 부상이 완치되었습니다!`, type: 'good' });

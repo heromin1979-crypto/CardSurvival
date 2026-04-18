@@ -892,7 +892,9 @@ const CardFactory = {
 
     // ── NPC 카드 ─────────────────────────────────────────────────
     if (def.type === 'npc') {
-      el.className = 'card npc-card spawning';
+      const npcSt = SystemRegistry.get('NPCSystem')?.getNPCState?.(inst.definitionId);
+      const wl = npcSt?.woundLevel ?? 0;
+      el.className = `card npc-card spawning${wl > 0 ? ' npc-wounded' : ''}`;
       el.draggable = false;
       el.style.cursor = 'pointer';
       el.setAttribute('tabindex', '0');
@@ -1106,17 +1108,37 @@ const CardFactory = {
     const npcState = SystemRegistry.get('NPCSystem')?.getNPCState?.(inst.definitionId);
     const isCompanion = npcState?.isCompanion ?? false;
     const trust = npcState?.trust ?? 0;
-    const trustStars = '★'.repeat(trust) + '☆'.repeat(Math.max(0, 5 - trust));
 
-    // NPC HP bar (for companions)
+    // NPC definition
     const npcDef = SystemRegistry.get('NPCSystem')?.getNPCDef?.(inst.definitionId);
-    const maxHp = npcDef?.maxHp ?? 50;
-    const currentHp = npcState?.hp ?? maxHp;
-    const hpPct = Math.round((currentHp / maxHp) * 100);
-    const hpCls = hpPct > 60 ? 'hp-good' : hpPct > 30 ? 'hp-warn' : 'hp-crit';
-    const hpBar = isCompanion
-      ? `<div class="npc-card-hp"><div class="npc-hp-bar ${hpCls}" style="width:${hpPct}%"></div><span class="npc-hp-text">${currentHp}/${maxHp}</span></div>`
+    const woundLevel = npcState?.woundLevel ?? 0;
+    const isWounded = woundLevel > 0;
+    const isWoundedType = npcDef?.woundHealItem != null;
+
+    // 부상 NPC: 완치 전에는 trust 비표시, 완치 후 표시
+    const showTrust = !isWoundedType || woundLevel === 0;
+    const trustStars = showTrust
+      ? '★'.repeat(trust) + '☆'.repeat(Math.max(0, 5 - trust))
       : '';
+
+    // 부상 NPC 이름 오버라이드: 완치 시 "군인"
+    const displayName = (isWoundedType && npcState?.healed)
+      ? '군인'
+      : I18n.itemName(def.id, def.name);
+
+    // NPC HP bar (for companions OR wounded NPCs)
+    const maxHp = npcDef?.maxHp ?? 50;
+    let hpBar = '';
+    if (isWounded) {
+      // 부상 NPC: woundLevel 기반 HP 계산
+      const woundHpPct = Math.round(((3 - woundLevel) / 3) * 100);
+      hpBar = `<div class="npc-card-hp"><div class="npc-hp-bar hp-crit hp-wound-pulse" style="width:${woundHpPct}%"></div><span class="npc-hp-text">${woundHpPct}%</span></div>`;
+    } else if (isCompanion) {
+      const currentHp = npcState?.hp ?? maxHp;
+      const hpPct = Math.round((currentHp / maxHp) * 100);
+      const hpCls = hpPct > 60 ? 'hp-good' : hpPct > 30 ? 'hp-warn' : 'hp-crit';
+      hpBar = `<div class="npc-card-hp"><div class="npc-hp-bar ${hpCls}" style="width:${hpPct}%"></div><span class="npc-hp-text">${currentHp}/${maxHp}</span></div>`;
+    }
 
     return `
       <div class="npc-card-header">
@@ -1124,8 +1146,8 @@ const CardFactory = {
         ${isCompanion ? `<span class="npc-companion-tag">${I18n.t('npc.companionBadge')}</span>` : ''}
       </div>
       <div class="npc-card-icon">${def.icon ?? '👤'}</div>
-      <div class="npc-card-name">${I18n.itemName(def.id, def.name)}</div>
-      <div class="npc-card-trust">${trustStars}</div>
+      <div class="npc-card-name">${displayName}</div>
+      ${showTrust ? `<div class="npc-card-trust">${trustStars}</div>` : ''}
       ${hpBar}
       <div class="npc-card-hint">${I18n.t('npc.clickHint')}</div>
     `;

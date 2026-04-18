@@ -3,8 +3,10 @@
 // HTML5 DragDrop API는 모바일에서 미지원 → PointerEvent로 구현.
 // 마우스 이벤트는 제외 (HTML5 DnD가 처리).
 import SlotResolver    from './SlotResolver.js';
+import BoardManager    from './BoardManager.js';
 import GameState       from '../core/GameState.js';
 import EventBus        from '../core/EventBus.js';
+import SystemRegistry  from '../core/SystemRegistry.js';
 import CraftDiscovery  from '../systems/CraftDiscovery.js';
 import QuickCraftPrompt from '../ui/QuickCraftPrompt.js';
 
@@ -157,6 +159,12 @@ const TouchDrag = {
       const existingId = GameState.board[row]?.[slotIdx];
 
       if (existingId && existingId !== this._draggingId) {
+        // 부상 NPC 치료 (붕대 → 부상 NPC)
+        if (this._tryWoundHeal(this._draggingId, existingId)) {
+          EventBus.emit('boardChanged', {});
+          this._draggingId = null;
+          return;
+        }
         const interacted = SlotResolver.resolveInteraction(this._draggingId, existingId);
         if (!interacted) {
           const secreted = SlotResolver.resolveSecretCombo(this._draggingId, existingId);
@@ -193,6 +201,57 @@ const TouchDrag = {
     }
 
     this._draggingId = null;
+  },
+
+  // ── 부상 NPC 치료 헬퍼 ─────────────────────────────────────
+
+  _isWoundHealDrag(sourceId, targetId) {
+    const srcInst = GameState.cards[sourceId];
+    const tgtInst = GameState.cards[targetId];
+    if (!srcInst || !tgtInst) return false;
+    const tgtDef = GameState.getCardDef(targetId);
+    if (tgtDef?.type !== 'npc') return false;
+    const NPCSystem = SystemRegistry.get('NPCSystem');
+    const npcDef = NPCSystem?.getNPCDef?.(tgtInst.definitionId);
+    const npcState = NPCSystem?.getNPCState?.(tgtInst.definitionId);
+    if (!npcDef?.woundHealItem || !npcState || (npcState.woundLevel ?? 0) <= 0) return false;
+    return srcInst.definitionId === npcDef.woundHealItem;
+  },
+
+  _tryWoundHeal(sourceId, targetId) {
+    if (!this._isWoundHealDrag(sourceId, targetId)) return false;
+    const srcInst = GameState.cards[sourceId];
+    const tgtInst = GameState.cards[targetId];
+    const NPCSystem = SystemRegistry.get('NPCSystem');
+    const npcDef = NPCSystem.getNPCDef(tgtInst.definitionId);
+    const npcState = NPCSystem.getNPCState(tgtInst.definitionId);
+    const healQty = npcDef.woundHealQty ?? 1;
+    const srcQty = srcInst.quantity ?? 1;
+    if (srcQty < healQty) {
+      EventBus.emit('notify', { message: `붕대가 부족합니다 (필요: ${healQty}개)`, type: 'warn' });
+      return true;
+    }
+    // 붕대 소모
+    if (srcQty <= healQty) {
+      BoardManager.removeCard(sourceId);
+    } else {
+      srcInst.quantity = srcQty - healQty;
+    }
+    // 부상 단계 감소
+    const oldWound = npcState.woundLevel;
+    npcState.woundLevel = Math.max(0, oldWound - 1);
+    if (npcState.woundLevel <= 0) {
+      npcState.healed = true;
+      npcState.trust = Math.max(npcState.trust ?? 0, 1);
+      const comp = npcDef.companion;
+      if (comp) comp.canRecruit = true;
+      EventBus.emit('notify', { message: '🩹 부상이 완치되었습니다! 이제 동료로 영입할 수 있습니다.', type: 'good' });
+      EventBus.emit('npcWoundHealed', { npcId: tgtInst.definitionId });
+    } else {
+      EventBus.emit('notify', { message: `🩹 부상 치료 (${oldWound}단계 → ${npcState.woundLevel}단계)`, type: 'info' });
+    }
+    EventBus.emit('boardChanged', {});
+    return true;
   },
 };
 
