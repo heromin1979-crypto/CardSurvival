@@ -662,6 +662,11 @@ const CARD_IMAGES = {
   surgical_anesthetic:   'assets/images/medical/surgical_anesthetic.png',
   detox_potion:          'assets/images/medical/detox_potion.png',
   rad_flush:             'assets/images/medical/rad_flush.png',
+  herbal_extract:        'assets/images/medical/herbal_extract.png',
+  concentrated_serum:    'assets/images/medical/concentrated_serum.png',
+  broad_antibiotic:      'assets/images/medical/broad_antibiotic.png',
+  infected_blood_sample: 'assets/images/medical/infected_blood_sample.png',
+  plague_vaccine:        'assets/images/medical/plague_vaccine.png',
 
   // 신규 도구
   scalpel:               'assets/images/tools/scalpel.png',

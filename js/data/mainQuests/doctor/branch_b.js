@@ -22,44 +22,44 @@ const DOCTOR_BRANCH_B = {
   },
 
   mq_doctor_b_12: {
-    id: 'mq_doctor_b_12', title: '야전 의무실',
-    desc: '붕대 6개를 확보하라. 부상자들의 치료가 급하다.',
-    icon: '🩹', characterId: 'doctor', dayTrigger: 95,
+    id: 'mq_doctor_b_12', title: '야전 의무실 — 부상자 치료',
+    desc: '용산 기지의 부상 군인 3명을 드래그 치료로 살려라.',
+    icon: '🩺', characterId: 'doctor', dayTrigger: 95,
     prerequisite: 'mq_doctor_b_11', requiresFlag: 'doctor_branch_b',
-    objective: { type: 'collect_item', definitionId: 'bandage', count: 6 },
-    reward: { morale: 12, items: [{ definitionId: 'first_aid_kit', qty: 1 }] },
+    objective: { type: 'treat_npc', count: 3 },
+    reward: { morale: 12, items: [{ definitionId: 'first_aid_kit', qty: 1 }, { definitionId: 'bandage', qty: 3 }] },
     failPenalty: { morale: -5 }, deadlineDays: 150,
     narrative: {
-      start: '군 의무대 물자가 이미 소진됐다. 이지수의 의료 지식과 강민준의 군 네트워크가 결합되어야 한다.',
-      complete: '붕대를 조달했다. 수색 중 구급키트도 발견했다. 부상자 5명 처치 완료. 강민준: "역시 전문의가 다르군요."',
+      start: '강민준이 의무대로 이지수를 안내했다. 군복의 부상자 세 명 — 파편상, 관통상, 감염 의심. 이지수의 손이 다시 의사가 된다. 붕대와 소독약으로 드래그 치료하라.',
+      complete: '세 명 모두 생존. 강민준: "군의관 혼자였다면 한 명도 못 살렸을 겁니다. 역시 민간 전문의입니다." 군 의무대가 진짜 의료팀으로 재편된다.',
     },
   },
 
   mq_doctor_b_13: {
-    id: 'mq_doctor_b_13', title: '군 보급로',
-    desc: '구조물 2개를 제작하라. 기지를 의무실로 개조한다.',
+    id: 'mq_doctor_b_13', title: '군 의무실 구축',
+    desc: '구조물 2개를 제작하라. 의료 스테이션 / 격리 병동을 우선한다.',
     icon: '🏥', characterId: 'doctor', dayTrigger: 125,
     prerequisite: 'mq_doctor_b_12', requiresFlag: 'doctor_branch_b',
     objective: { type: 'craft_item', category: 'structure', count: 2 },
-    reward: { morale: 10, items: [{ definitionId: 'military_ration', qty: 2 }] },
+    reward: { morale: 10, items: [{ definitionId: 'military_ration', qty: 2 }, { definitionId: 'antiseptic', qty: 2 }] },
     failPenalty: { morale: -5 }, deadlineDays: 185,
     narrative: {
-      start: '강민준이 보급로를 열었다. 군 창고에서 의료 물자를 가져올 수 있게 됐다.',
-      complete: '야전 의무실 완성. 군 보급로 개척 중 군용 식량도 챙겼다. 강민준: "이제 의사도 있고 시설도 있다. 사람들이 몰려올 것입니다."',
+      start: '강민준이 보급로를 열었다. 이지수는 청사진을 펼쳤다 — 의료 스테이션과 격리 병동. 군 기지가 제대로 된 의무실로 탈바꿈한다. (권장: medical_station / medical_ward)',
+      complete: '의료 스테이션에서 소독 솜이 자동 생산되고, 격리 병동에서 감염 의심자가 분리된다. 강민준: "이제 의사도 있고 시설도 있다. 사람들이 몰려올 것입니다."',
     },
   },
 
   mq_doctor_b_14: {
-    id: 'mq_doctor_b_14', title: '합동 순찰',
-    desc: '의료 아이템 5개를 수집하라. 부상자 이송을 위한 물자다.',
-    icon: '🚑', characterId: 'doctor', dayTrigger: 155,
+    id: 'mq_doctor_b_14', title: '야전 조제',
+    desc: '의료 아이템 4개를 직접 제작하라. 부상자 이송용 물자다.',
+    icon: '⚗️', characterId: 'doctor', dayTrigger: 155,
     prerequisite: 'mq_doctor_b_13', requiresFlag: 'doctor_branch_b',
-    objective: { type: 'collect_item_type', itemType: 'medical', count: 5 },
-    reward: { morale: 10, items: [{ definitionId: 'painkiller', qty: 2 }, { definitionId: 'alcohol_swab', qty: 2 }] },
+    objective: { type: 'craft_item', category: 'medical', count: 4 },
+    reward: { morale: 12, items: [{ definitionId: 'painkiller', qty: 2 }, { definitionId: 'alcohol_swab', qty: 2 }, { definitionId: 'first_aid_kit', qty: 1 }] },
     failPenalty: { morale: -5 }, deadlineDays: 225,
     narrative: {
-      start: '강민준의 전술 지원 + 이지수의 의료 판단. 합동 순찰로 생존자를 찾아 치료한다.',
-      complete: '순찰 중 생존자 11명 발견, 9명 치료 완료. 진통제와 소독 솜도 부상자 처치에 썼고, 여분을 챙겼다. 강민준: "이 조합이 맞는 것 같습니다."',
+      start: '강민준의 전술 지원 + 이지수의 의료 판단. 군이 가져온 원료로 이지수가 직접 약품을 조제해야 한다. 수집이 아닌 제작 — 의사의 정체성이다.',
+      complete: '야전 의무실 조제대에서 의료 아이템 4종이 완성됐다. 부상자 이송 물자가 보충됐다. 강민준: "민간 전문의의 손이 다르군요. 이 조합이 맞는 것 같습니다."',
     },
   },
 
@@ -81,15 +81,15 @@ const DOCTOR_BRANCH_B = {
 
   mq_doctor_end_b1: {
     id: 'mq_doctor_end_b1', title: '군 의료본부 완성',
-    desc: '구조물 3개를 더 제작하라. 공식 의료본부 구조를 갖춘다.',
+    desc: '구조물 3개를 더 제작하라. 야전병원 / 수술대 / 약품 보관장을 권장한다.',
     icon: '🏛️', characterId: 'doctor', dayTrigger: 205,
     prerequisite: 'mq_doctor_b_15', requiresFlag: 'doctor_end_b1',
     objective: { type: 'craft_item', category: 'structure', count: 3 },
-    reward: { morale: 22, items: [{ definitionId: 'surgery_kit', qty: 1 }], flags: { mainQuestComplete_doctor: true, doctor_ending: 'b1_military_hub' } },
+    reward: { morale: 22, items: [{ definitionId: 'surgery_kit', qty: 1 }, { definitionId: 'iv_saline', qty: 2 }], flags: { mainQuestComplete_doctor: true, doctor_ending: 'b1_military_hub' } },
     failPenalty: { morale: -10 }, deadlineDays: Infinity,
     narrative: {
-      start: '군 의료본부. 민간 전문의와 군 의무병이 함께하는 새로운 형태.',
-      complete: 'D+100. 용산 군 의료본부 공식 출범. 하루 치료 환자 15명. 강민준이 수술 도구 세트를 지급했다. "이제 여기서 어떤 수술도 할 수 있어요." 이지수: "맞아요."',
+      start: '군 의료본부. 민간 전문의와 군 의무병이 함께하는 새로운 형태. 야전병원과 수술대, 약품 보관장 — 이 세 가지가 있어야 중환자실 수준의 진료가 가능하다.',
+      complete: 'D+100. 용산 군 의료본부 공식 출범. 야전병원 3개 구조물이 가동된다. 하루 치료 환자 15명. 강민준이 수술 도구 세트와 수액을 지급했다. "이제 여기서 어떤 수술도 할 수 있어요." 이지수: "맞아요."',
     },
   },
 

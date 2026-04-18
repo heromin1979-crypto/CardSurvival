@@ -29,8 +29,8 @@ export const CHARACTERS = [
         id: 'clinical_knowledge',
         name: '임상 지식',
         icon: '🔬',
-        desc: '감염 진행 속도 -35%',
-        effect: { infectionRate: 0.65 },
+        desc: '감염 진행 속도 -25%',
+        effect: { infectionRate: 0.75 },
       },
       {
         id: 'emergency_care',
@@ -43,8 +43,8 @@ export const CHARACTERS = [
         id: 'medical_supply',
         name: '의료 물자',
         icon: '🎒',
-        desc: '붕대 6개, 소독약, 메스 추가 지급',
-        effect: { startingItems: ['bandage', 'bandage', 'bandage', 'bandage', 'bandage', 'bandage', 'antiseptic', 'combat_scalpel'] },
+        desc: '붕대 4개, 소독약, 메스, 통조림 2개, 에너지바 2개 추가 지급',
+        effect: { startingItems: ['bandage', 'bandage', 'bandage', 'bandage', 'antiseptic', 'combat_scalpel', 'canned_food', 'canned_food', 'energy_bar', 'energy_bar'] },
       },
     ],
     startingSkills: {

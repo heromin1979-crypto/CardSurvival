@@ -9,7 +9,7 @@ const DOCTOR_SHARED = {
     icon: '🩹', characterId: 'doctor', dayTrigger: 1, prerequisite: null,
     objective: { type: 'treat_npc', npcId: 'npc_wounded_soldier', count: 1 },
     reward: { morale: 8, items: [{ definitionId: 'bandage', qty: 2 }, { definitionId: 'antiseptic', qty: 1 }] },
-    failPenalty: { morale: -10 }, deadlineDays: 5,
+    failPenalty: { morale: -10 }, deadlineDays: 3,
     narrative: {
       start: '동작구 보라매병원 응급실. 이지수 전문의(38세)는 약품 창고에서 3일을 버텼다. 문을 열자 바닥에 박상훈 하사가 쓰러져 있다 — 현충원 경비소대 소속. 의사의 첫 환자다. 붕대를 하사 카드에 드래그해 치료하라.',
       complete: '박상훈 하사가 눈을 떴다. "선생님, 감사합니다... 신촌에서 군 무전이 잡힌 적이 있습니다. 강민준 군의관이 의사를 찾는다고 했습니다." 히포크라테스 선서가 세상이 끝났다고 사라지지 않는다. 의사의 역할이 시작됐다.',
@@ -22,7 +22,7 @@ const DOCTOR_SHARED = {
     icon: '👩‍⚕️', characterId: 'doctor', dayTrigger: 2, prerequisite: 'mq_doctor_01',
     objective: { type: 'npc_quest_complete', npcId: 'npc_nurse', questId: 'nurse_quest_emergency', count: 1 },
     reward: { morale: 10, items: [{ definitionId: 'bandage', qty: 2 }, { definitionId: 'first_aid_kit', qty: 1 }] },
-    failPenalty: { morale: -5 }, deadlineDays: 14,
+    failPenalty: { morale: -5 }, deadlineDays: 7,
     narrative: {
       start: '박상훈 하사를 살리는 걸 본 간호사의 눈빛이 바뀌었다. "동작구 쪽에서 부상자들이 계속 몰려와요. 혼자선 감당이 안 돼요 — 함께 해주실 수 있죠?" 의사 혼자가 아니다. 진료소가 꾸려지기 시작한다.',
       complete: '붕대와 구급키트를 간호사에게 건네고 동작구 현장을 함께 돌았다. "이제 우린 팀이에요, 선생님." 간호사가 의료팀 일원이 됐다. 항생제와 소독약, 그리고 의학 지식(+20%) 교환.',
@@ -30,15 +30,15 @@ const DOCTOR_SHARED = {
   },
 
   mq_doctor_03: {
-    id: 'mq_doctor_03', title: '응급 처치 준비',
-    desc: '붕대 3개를 확보하라.',
-    icon: '🩹', characterId: 'doctor', dayTrigger: 4, prerequisite: 'mq_doctor_02',
-    objective: { type: 'collect_item', definitionId: 'bandage', count: 3 },
-    reward: { morale: 5, items: [{ definitionId: 'antiseptic', qty: 1 }] },
-    failPenalty: { morale: -3 }, deadlineDays: 14,
+    id: 'mq_doctor_03', title: '보라매의 환자들',
+    desc: '보라매병원 잔류 환자 2명을 드래그 치료로 살려라.',
+    icon: '🩺', characterId: 'doctor', dayTrigger: 4, prerequisite: 'mq_doctor_02',
+    objective: { type: 'treat_npc', count: 2 },
+    reward: { morale: 8, items: [{ definitionId: 'antiseptic', qty: 1 }, { definitionId: 'first_aid_kit', qty: 1 }] },
+    failPenalty: { morale: -3 }, deadlineDays: 8,
     narrative: {
-      start: '의사로서 최소한의 준비는 해야 한다. 붕대, 소독약. 아무리 세상이 끝나도 다친 사람은 생기게 마련이다.',
-      complete: '응급 처치 키트를 꾸렸다. 붕대와 소독약 세트가 갖춰졌다.',
+      start: '응급실 바닥에 쓰러진 환자들 — 일부는 아직 숨이 붙어 있다. 붕대와 약품으로 두 명만이라도 살려야 한다. 의사의 손에 선택이 달렸다.',
+      complete: '두 생존자가 눈을 떴다. 한 명은 간호사에게 인계했고, 한 명은 진료소 보조로 남았다. "선생님이 있어서 다행이에요." 보라매에 의사가 있다는 소문이 복도를 넘었다.',
     },
   },
 
@@ -70,9 +70,9 @@ const DOCTOR_SHARED = {
 
   mq_doctor_06: {
     id: 'mq_doctor_06', title: '약초 채취',
-    desc: '병원 정원에 약초가 있다. 약초 2개를 수집하라.',
+    desc: '병원 정원에 약초가 있다. 약초 3개를 수집하라.',
     icon: '🌿', characterId: 'doctor', dayTrigger: 10, prerequisite: 'mq_doctor_05',
-    objective: { type: 'collect_item', definitionId: 'herb', count: 2 },
+    objective: { type: 'collect_item', definitionId: 'herb', count: 3 },
     reward: { morale: 5, items: [{ definitionId: 'herbal_tea', qty: 2 }] },
     failPenalty: { morale: -3 }, deadlineDays: 20,
     narrative: {
@@ -95,15 +95,15 @@ const DOCTOR_SHARED = {
   },
 
   mq_doctor_08: {
-    id: 'mq_doctor_08', title: '원정 의료 물자',
-    desc: '세브란스까지의 여정에 의료 물자 5개가 필요하다.',
-    icon: '🎒', characterId: 'doctor', dayTrigger: 15, prerequisite: 'mq_doctor_07',
-    objective: { type: 'collect_item_type', itemType: 'medical', count: 5 },
-    reward: { morale: 8, items: [{ definitionId: 'painkiller', qty: 2 }] },
-    failPenalty: { morale: -5 }, deadlineDays: 30,
+    id: 'mq_doctor_08', title: '원정 의료 물자 제작',
+    desc: '세브란스 원정을 위해 의료 아이템 3개를 직접 제작하라.',
+    icon: '⚗️', characterId: 'doctor', dayTrigger: 15, prerequisite: 'mq_doctor_07',
+    objective: { type: 'craft_item', category: 'medical', count: 3 },
+    reward: { morale: 10, items: [{ definitionId: 'painkiller', qty: 2 }, { definitionId: 'first_aid_kit', qty: 1 }] },
+    failPenalty: { morale: -5 }, deadlineDays: 15,
     narrative: {
-      start: '신촌 세브란스까지. 강남에서 마포를 거쳐야 한다.',
-      complete: '의료 배낭이 가득 찼다. 진통제도 여분으로 챙겼다. 이제 출발할 수 있다.',
+      start: '신촌 세브란스까지 — 강남에서 마포까지 버틸 의료 배낭을 직접 꾸려야 한다. 수집이 아니라 제작이다. 의사의 손으로 만든 약만이 믿을 수 있다.',
+      complete: '손수 제작한 의료 아이템 3종이 배낭에 정리됐다. 진통제와 구급키트도 여분으로 챙겼다. 이제 출발할 수 있다.',
     },
   },
 
@@ -113,7 +113,7 @@ const DOCTOR_SHARED = {
     icon: '🗺️', characterId: 'doctor', dayTrigger: 18, prerequisite: 'mq_doctor_08',
     objective: { type: 'visit_district', districtId: 'mapo', count: 1 },
     reward: { morale: 10, items: [{ definitionId: 'antiseptic', qty: 1 }, { definitionId: 'antidote', qty: 1 }] },
-    failPenalty: { morale: -5 }, deadlineDays: 35,
+    failPenalty: { morale: -5 }, deadlineDays: 20,
     narrative: {
       start: '마포구 홍대 입구. 약국들이 있는 곳이다.',
       complete: '홍대 약국 뒷창고에서 소독약, 해독제, 그리고 메모 한 장 발견. "약사 한소희. 서울대 연구소로 갑니다." 용산 방향에서 무전도 잡혔다 — 군의관 강민준 하사. "의사를 찾습니다."',
@@ -126,7 +126,7 @@ const DOCTOR_SHARED = {
     icon: '🧴', characterId: 'doctor', dayTrigger: 21, prerequisite: 'mq_doctor_09',
     objective: { type: 'collect_item', definitionId: 'antiseptic', count: 2 },
     reward: { morale: 8, items: [{ definitionId: 'stimulant', qty: 1 }] },
-    failPenalty: { morale: -3 }, deadlineDays: 38,
+    failPenalty: { morale: -3 }, deadlineDays: 22,
     isBranchPoint: true,
     branchOptions: [
       {
@@ -170,9 +170,9 @@ const DOCTOR_SHARED = {
     icon: '🛡️', characterId: 'doctor', dayTrigger: 3, prerequisite: 'mq_doctor_01',
     objective: { type: 'survive_infection', minInfection: 5, count: 3 },
     reward: { morale: 10, items: [{ definitionId: 'antiseptic', qty: 2 }, { definitionId: 'herb', qty: 2 }] },
-    failPenalty: { morale: -3 }, deadlineDays: 30,
+    failPenalty: { morale: -3 }, deadlineDays: 15,
     narrative: {
-      start: '이지수의 수첩에 적힌 메모: "임상 지식은 이론이 아닌 관찰이다. 내 몸의 감염 수치를 낮게 유지하면서 초기 증상을 3일간 기록할 것." 감염 -35% 특성을 체감으로 확인할 시간이다.',
+      start: '이지수의 수첩에 적힌 메모: "임상 지식은 이론이 아닌 관찰이다. 내 몸의 감염 수치를 낮게 유지하면서 초기 증상을 3일간 기록할 것." 감염 -25% 특성을 체감으로 확인할 시간이다.',
       complete: '3일간의 관찰 기록이 완성됐다. 보통 사람이라면 벌써 중증으로 번졌을 감염 수치가 여전히 낮게 유지됐다. "임상 지식 — 내 몸이 곧 표본이다." 이지수는 스스로의 저항력을 수치로 확인했다.',
     },
   },
@@ -256,6 +256,24 @@ const DOCTOR_SHARED = {
     narrative: {
       start: '격리 거점이 갖춰졌으니 이제 확장이다. 수술대, 격리 병동, 약품 보관장. 세 가지만 있어도 중환자실 수준의 진료가 가능하다. 이지수는 청사진을 그리기 시작했다.',
       complete: '야전병원이 완성됐다. 수술대 위에 무영등이 켜지고, 격리 병동 문이 닫혔다. 약품 보관장에 의약품이 정리됐다. "이제 제대로 된 병원이다." 이지수는 처음으로 의사 가운을 다시 걸쳤다.',
+    },
+  },
+
+  // ── Sprint 5: 시크릿 엔딩 — 역병 백신 합성 ─────────────────
+
+  mq_doctor_side_end: {
+    id: 'mq_doctor_side_end', title: '역병의 종결 — 백신 합성',
+    desc: '0번 환자 혈액 표본으로 역병 백신을 직접 합성하라.',
+    icon: '💠', characterId: 'doctor', dayTrigger: 55, prerequisite: 'mq_doctor_side_05',
+    objective: { type: 'craft_item', definitionId: 'plague_vaccine', count: 1 },
+    reward: { morale: 35, items: [
+      { definitionId: 'universal_cure', qty: 1 },
+      { definitionId: 'surgery_kit',    qty: 1 },
+    ], flags: { doctor_vaccine_synthesized: true, doctor_secret_ending_unlocked: true } },
+    failPenalty: { morale: -15 }, deadlineDays: 90,
+    narrative: {
+      start: '0번 환자의 심장 조직 샘플. 현미경 너머로 항원 구조가 드러난다 — 인간이 만든 바이러스가 아니다. 그러나 의사의 손이 닿는 한, 만들지 못할 백신도 없다. 광범위 항생제와 농축 혈청, 그리고 감염 혈액 표본. 합성의 마지막 단계다.',
+      complete: '첫 번째 역병 백신. 유리병 속 은은한 빛. 이지수는 자신의 팔에 주사했다. 손끝의 떨림이 멈췄다. "이제 끝낼 수 있다." 서울의 어느 의사가 인류를 구했다 — 기록되지 않을 수도 있는, 그러나 진실한 승리.',
     },
   },
 };

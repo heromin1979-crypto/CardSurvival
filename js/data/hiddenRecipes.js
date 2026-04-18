@@ -1332,6 +1332,50 @@ const HIDDEN_RECIPES = {
     },
   },
 
+  synth_plague_vaccine: {
+    id: 'synth_plague_vaccine', name: '역병 백신 합성', category: 'medical',
+    description: '0번 환자 혈액 표본에서 항원을 추출해 광범위 항생제와 결합한다. 의사만이 완성할 수 있는 전설적 백신.',
+    hidden: true,
+    rarity: 'legendary',
+    output: [{ definitionId: 'plague_vaccine', qty: 1 }],
+    requiredTools: ['workbench'],
+    requiredSkills: { medicine: 12 },
+    stages: [
+      {
+        stageIndex: 0, label: '항원 추출', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'infected_blood_sample', qty: 1 },
+          { definitionId: 'alcohol_solution',      qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '항체 합성', tpCost: 4,
+        requiredItems: [
+          { definitionId: 'broad_antibiotic',   qty: 1 },
+          { definitionId: 'concentrated_serum', qty: 2 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 2, label: '안정화', tpCost: 2,
+        requiredItems: [
+          { definitionId: 'purified_water', qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+    unlockConditions: {
+      hiddenLocationId: null,
+      bossKillId: 'boss_patient_zero',
+      requiredCharacter: 'doctor',
+      minDay: 40,
+      minCraftLevel: 0,
+      requiredItems: [],
+      customUnlock: '0번 환자를 처치하고 혈액 표본을 확보해야 한다 (의사 전용)',
+    },
+  },
+
   brew_universal_cure: {
     id: 'brew_universal_cure', name: '만병통치약 조제', category: 'medical',
     description: '전설적인 치료제를 합성한다.',
