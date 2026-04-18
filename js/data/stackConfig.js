@@ -31,6 +31,7 @@ const STACK_ROWS = [
   ['sharp_blade'             , true,  5 ],
   ['charcoal'                , true, 10 ],
   ['charcoal_filter'         , true,  5 ],
+  ['tattered_rags'           , true, 10 ],
   ['cloth_scrap'             , true, 20 ],
   ['gauze'                   , true, 15 ],
   ['alcohol_solution'        , true,  5 ],

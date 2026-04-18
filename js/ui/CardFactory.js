@@ -58,6 +58,7 @@ const LOCATION_IMAGES = {
 const CARD_IMAGES = {
   scrap_metal:      'assets/images/materials/scrap_metal.png',
   cloth:            'assets/images/materials/cloth.png',
+  tattered_rags:    'assets/images/materials/cloth.png',
   rope:             'assets/images/materials/rope.png',
   duct_tape:        'assets/images/materials/duct_tape.png',
   wood:             'assets/images/materials/wood.png',

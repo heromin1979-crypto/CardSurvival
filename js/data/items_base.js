@@ -23,6 +23,15 @@ const ITEMS_BASE = {
     dismantle: [{ definitionId: 'cloth_scrap', qty: 2, chance: 1.0 }],
   },
 
+  tattered_rags: {
+    id: 'tattered_rags', name: '거적대기', type: 'material', subtype: 'textile',
+    rarity: 'common', weight: 0.3,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🥻', description: '좀비에게서 벗겨낸 너덜너덜한 옷. 분해하면 천을 얻을 수 있다.',
+    tags: ['material', 'textile'],
+    dismantle: [{ definitionId: 'cloth', qty: 2, chance: 0.8 }],
+  },
+
   rope: {
     id: 'rope', name: '로프', type: 'material', subtype: 'textile',
     rarity: 'common', weight: 0.4,

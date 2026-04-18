@@ -12,9 +12,8 @@ const ENEMIES = {
     defense: 0,
     xp: 10,
     lootTable: [
-      { definitionId: 'cloth',    weight: 40, minQty: 1, maxQty: 3 },
-      { definitionId: 'bandage',  weight: 20, minQty: 1, maxQty: 2 },
-      { definitionId: 'raw_meat', weight: 25, minQty: 1, maxQty: 2 },
+      { definitionId: 'tattered_rags', weight: 50, minQty: 1, maxQty: 2 },
+      { definitionId: 'bandage',       weight: 20, minQty: 1, maxQty: 2 },
     ],
     infectionChance: 0.20,
     aiPattern: 'normal',
@@ -37,7 +36,7 @@ const ENEMIES = {
     defense: 0,
     xp: 18,
     lootTable: [
-      { definitionId: 'raw_meat', weight: 25, minQty: 1, maxQty: 1 },
+      { definitionId: 'tattered_rags', weight: 40, minQty: 1, maxQty: 1 },
     ],
     infectionChance: 0.30,
     aiPattern: 'aggressive',
@@ -60,9 +59,9 @@ const ENEMIES = {
     defense: 3,
     xp: 40,
     lootTable: [
-      { definitionId: 'scrap_metal', weight: 30, minQty: 2, maxQty: 5 },
-      { definitionId: 'first_aid_kit', weight: 8, minQty: 1, maxQty: 1 },
-      { definitionId: 'raw_meat', weight: 25, minQty: 1, maxQty: 3 },
+      { definitionId: 'scrap_metal',    weight: 30, minQty: 2, maxQty: 5 },
+      { definitionId: 'first_aid_kit',  weight: 8,  minQty: 1, maxQty: 1 },
+      { definitionId: 'tattered_rags',  weight: 25, minQty: 1, maxQty: 2 },
     ],
     infectionChance: 0.40,
     aiPattern: 'defensive',
@@ -139,10 +138,9 @@ const ENEMIES = {
     xp: 35,
     attacksPerRound: 2,   // 매 라운드 2회 공격 (무리 패턴)
     lootTable: [
-      { definitionId: 'cloth',    weight: 40, minQty: 2, maxQty: 5 },
-      { definitionId: 'scrap_metal', weight: 20, minQty: 1, maxQty: 3 },
-      { definitionId: 'bandage',  weight: 15, minQty: 1, maxQty: 3 },
-      { definitionId: 'raw_meat', weight: 25, minQty: 1, maxQty: 3 },
+      { definitionId: 'tattered_rags', weight: 45, minQty: 2, maxQty: 4 },
+      { definitionId: 'scrap_metal',   weight: 20, minQty: 1, maxQty: 3 },
+      { definitionId: 'bandage',       weight: 15, minQty: 1, maxQty: 3 },
     ],
     infectionChance: 0.30,
     aiPattern: 'horde',
@@ -195,7 +193,7 @@ const ENEMIES = {
     onHitEffect: { infection: 15, radiation: 8 },  // 명중 시 추가 디버프
     lootTable: [
       { definitionId: 'contaminated_water', weight: 30, minQty: 1, maxQty: 1 },
-      { definitionId: 'cloth',              weight: 20, minQty: 1, maxQty: 1 },
+      { definitionId: 'tattered_rags',      weight: 20, minQty: 1, maxQty: 1 },
     ],
     infectionChance: 0.45,
     aiPattern: 'normal',
