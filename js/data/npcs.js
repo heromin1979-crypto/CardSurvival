@@ -380,10 +380,10 @@ const NPCS = {
     // 부상 상태: woundLevel 3→0 치료 필요, 0이 되면 군인 NPC로 변환
     woundLevel: 3,
     woundHealItem: 'bandage',   // 치료에 필요한 아이템
-    woundHealQty: 2,            // 1단계당 필요 수량
+    woundHealQty: 1,            // 1단계당 필요 수량 (붕대 1개 = 1/3 HP)
     companion: {
       canRecruit:   false,      // 치료 완료 전에는 동료 불가
-      recruitTrust: 3,
+      recruitTrust: 1,          // 완치 후 즉시 영입 가능
       combatDmg:    1.3,
       carryBonus:   3,
       healBonus:    0,

@@ -1,8 +1,9 @@
 // === DRAG & DROP ===
-import SlotResolver   from './SlotResolver.js';
-import BoardManager   from './BoardManager.js';
-import GameState      from '../core/GameState.js';
-import EventBus       from '../core/EventBus.js';
+import SlotResolver    from './SlotResolver.js';
+import BoardManager    from './BoardManager.js';
+import GameState       from '../core/GameState.js';
+import EventBus        from '../core/EventBus.js';
+import SystemRegistry  from '../core/SystemRegistry.js';
 import { findInteraction } from '../data/interactions.js';
 import CraftDiscovery  from '../systems/CraftDiscovery.js';
 import QuickCraftPrompt from '../ui/QuickCraftPrompt.js';
@@ -73,6 +74,14 @@ const DragDrop = {
     const existingId  = GameState.board[row]?.[slotIdx];
 
     if (existingId && existingId !== this._draggingId) {
+      // 부상 NPC 치료 힌트 (붕대 → 부상 NPC)
+      if (this._isWoundHealDrag(this._draggingId, existingId)) {
+        slot.classList.add('can-interact');
+        this._showInteractionTip(slot, '🩹 부상 치료');
+        e.dataTransfer.dropEffect = 'move';
+        return;
+      }
+
       const srcDef = GameState.getCardDef(this._draggingId);
       const tgtDef = GameState.getCardDef(existingId);
       const rule   = findInteraction(srcDef, tgtDef);
@@ -141,6 +150,13 @@ const DragDrop = {
     const existingId = GameState.board[row]?.[slotIdx];
 
     if (existingId && existingId !== this._draggingId) {
+      // 0. 부상 NPC 치료 (붕대 → 부상 NPC)
+      if (this._tryWoundHeal(this._draggingId, existingId)) {
+        this._hideInteractionTip();
+        slot.classList.remove('drag-over-valid', 'drag-over-invalid', 'drag-over-hover', 'can-interact');
+        EventBus.emit('boardChanged', {});
+        return;
+      }
       // 1. 상호작용 우선 시도
       const interacted = SlotResolver.resolveInteraction(this._draggingId, existingId);
       if (!interacted) {
@@ -204,6 +220,58 @@ const DragDrop = {
     document.querySelectorAll('.slot').forEach(s => {
       s.classList.remove('drag-over-valid', 'drag-over-invalid', 'drag-over-hover', 'can-interact');
     });
+  },
+
+  // ── 부상 NPC 치료 헬퍼 ─────────────────────────────────────
+
+  _isWoundHealDrag(sourceId, targetId) {
+    const srcInst = GameState.cards[sourceId];
+    const tgtInst = GameState.cards[targetId];
+    if (!srcInst || !tgtInst) return false;
+    const tgtDef = GameState.getCardDef(targetId);
+    if (tgtDef?.type !== 'npc') return false;
+    const NPCSystem = SystemRegistry.get('NPCSystem');
+    const npcDef = NPCSystem?.getNPCDef?.(tgtInst.definitionId);
+    const npcState = NPCSystem?.getNPCState?.(tgtInst.definitionId);
+    if (!npcDef?.woundHealItem || !npcState || (npcState.woundLevel ?? 0) <= 0) return false;
+    return srcInst.definitionId === npcDef.woundHealItem;
+  },
+
+  _tryWoundHeal(sourceId, targetId) {
+    if (!this._isWoundHealDrag(sourceId, targetId)) return false;
+    const srcInst = GameState.cards[sourceId];
+    const tgtInst = GameState.cards[targetId];
+    const NPCSystem = SystemRegistry.get('NPCSystem');
+    const npcDef = NPCSystem.getNPCDef(tgtInst.definitionId);
+    const npcState = NPCSystem.getNPCState(tgtInst.definitionId);
+    const healQty = npcDef.woundHealQty ?? 1;
+    const srcQty = srcInst.quantity ?? 1;
+    if (srcQty < healQty) {
+      EventBus.emit('notify', { message: `붕대가 부족합니다 (필요: ${healQty}개)`, type: 'warn' });
+      return true;
+    }
+    // 붕대 소모
+    if (srcQty <= healQty) {
+      BoardManager.removeCard(sourceId);
+    } else {
+      srcInst.quantity = srcQty - healQty;
+    }
+    // 부상 단계 감소
+    const oldWound = npcState.woundLevel;
+    npcState.woundLevel = Math.max(0, oldWound - 1);
+    if (npcState.woundLevel <= 0) {
+      // 완치
+      npcState.healed = true;
+      npcState.trust = Math.max(npcState.trust ?? 0, 1);
+      const comp = npcDef.companion;
+      if (comp) comp.canRecruit = true;
+      EventBus.emit('notify', { message: '🩹 부상이 완치되었습니다! 이제 동료로 영입할 수 있습니다.', type: 'good' });
+      EventBus.emit('npcWoundHealed', { npcId: tgtInst.definitionId });
+    } else {
+      EventBus.emit('notify', { message: `🩹 부상 치료 (${oldWound}단계 → ${npcState.woundLevel}단계)`, type: 'info' });
+    }
+    EventBus.emit('boardChanged', {});
+    return true;
   },
 };
 
