@@ -1267,6 +1267,17 @@ export const LANDMARK_DATA = {
         ],
         lootCount: [1, 3],
       },
+      {
+        id: 'boramae_cafeteria', name: '병원 식당',
+        icon: '🍱', desc: '직원·환자용 구내식당. 급식 카트와 저장고에 통조림·쌀·라면이 남아있다 — 의사라면 위생적으로 확보할 수 있다.',
+        dangerMod: 0.10,
+        lootTable: [
+          { id: 'canned_food',     weight: 30 }, { id: 'rice',            weight: 25 },
+          { id: 'instant_noodles', weight: 20 }, { id: 'water_bottle',    weight: 15 },
+          { id: 'cooked_noodles',  weight: 10 },
+        ],
+        lootCount: [2, 3],
+      },
     ],
   },
 
