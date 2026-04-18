@@ -73,6 +73,10 @@ const STACK_ROWS = [
   ['antidote'                , true,  5 ],
   ['stimulant'               , true,  5 ],
   ['practice_bandage'        , true,  5 ],
+  ['herbal_extract'          , true,  8 ],
+  ['concentrated_serum'      , true,  5 ],
+  ['broad_antibiotic'        , true,  3 ],
+  ['infected_blood_sample'   , true,  3 ],
 
   // ── 근접 무기 (내구도 있음 → 스택 불가) ────────────────────────
   ['iron_pipe'               , false, 1 ],
@@ -323,6 +327,7 @@ const STACK_ROWS = [
   ['synthetic_antibiotics'     , false, 1 ],
   ['universal_cure'            , false, 1 ],
   ['surgical_anesthetic'       , false, 1 ],
+  ['plague_vaccine'            , false, 1 ],
 
   // — 도구 (non-stackable) —
   ['scalpel'                   , false, 1 ],

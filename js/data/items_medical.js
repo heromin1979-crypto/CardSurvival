@@ -264,6 +264,62 @@ const ITEMS_MEDICAL = {
     tags: ['medical', 'radiation'],
     dismantle: [],
   },
+
+  // ─── 의료 체인 — 의사 특화 (Sprint 4, 4종) ─────────────────
+
+  herbal_extract: {
+    id: 'herbal_extract', name: '약초 추출액', type: 'consumable', subtype: 'medical',
+    rarity: 'common', weight: 0.15,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🧃', description: '약초를 달여 농축한 기초 추출액. 단독 복용해도 경미한 항균 효과.',
+    onConsume: { hp: 8, infection: -5 },
+    tags: ['medical', 'herbal', 'crafted'],
+    dismantle: [{ definitionId: 'herb', qty: 1, chance: 0.6 }],
+  },
+
+  concentrated_serum: {
+    id: 'concentrated_serum', name: '농축 혈청', type: 'consumable', subtype: 'medical',
+    rarity: 'uncommon', weight: 0.2,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🧬', description: '추출액을 정제·농축한 혈청. 의사의 손을 거쳐야만 만들어진다.',
+    onConsume: { hp: 25, infection: -20 },
+    tags: ['medical', 'serum', 'crafted'],
+    dismantle: [{ definitionId: 'herbal_extract', qty: 1, chance: 0.5 }],
+  },
+
+  broad_antibiotic: {
+    id: 'broad_antibiotic', name: '광범위 항생제', type: 'consumable', subtype: 'medical',
+    rarity: 'rare', weight: 0.1,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '💉', description: '혈청과 항생제를 결합한 광범위 항생제. 다양한 감염원에 유효.',
+    onConsume: { hp: 25, infection: -55 },
+    tags: ['medical', 'antibiotic', 'crafted'],
+    dismantle: [
+      { definitionId: 'concentrated_serum', qty: 1, chance: 0.4 },
+      { definitionId: 'antibiotics',        qty: 1, chance: 0.4 },
+    ],
+  },
+
+  infected_blood_sample: {
+    id: 'infected_blood_sample', name: '감염 혈액 표본', type: 'material', subtype: 'medical',
+    rarity: 'rare', weight: 0.1,
+    defaultDurability: 100, defaultContamination: 30,
+    icon: '🩸', description: '감염자에게서 채취한 혈액 표본. 백신·치료제 합성의 핵심 원료.',
+    tags: ['medical', 'sample', 'research'],
+    dismantle: [],
+  },
+
+  // ─── Sprint 5: 엔드게임 백신 ───────────────────────────────
+
+  plague_vaccine: {
+    id: 'plague_vaccine', name: '역병 백신', type: 'consumable', subtype: 'medical',
+    rarity: 'legendary', weight: 0.1, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '💠', description: '0번 환자 표본에서 추출한 항원과 광범위 항생제로 합성한 백신. 감염 진행을 완전히 차단한다.',
+    onConsume: { hp: 30, infection: -100, morale: 40 },
+    tags: ['medical', 'vaccine', 'legendary', 'crafted'],
+    dismantle: [],
+  },
 };
 
 export default ITEMS_MEDICAL;

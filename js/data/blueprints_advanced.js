@@ -670,6 +670,59 @@ const BLUEPRINTS_ADVANCED = {
     }],
   },
 
+  // ── Sprint 4: 의사 특화 의료 체인 (herb → extract → serum → broad_antibiotic) ──
+
+  brew_herbal_extract: {
+    id: 'brew_herbal_extract', name: '약초 추출액 제조', category: 'medical',
+    hidden: true, unlockConditions: { minSkillLevel: { medicine: 2 } },
+    description: '약초를 달여 기초 추출액을 만든다. 의사의 손길이 필요한 첫 단계.',
+    output: [{ definitionId: 'herbal_extract', qty: 2 }],
+    requiredTools: ['campfire'],
+    requiredSkills: { medicine: 2 },
+    stages: [{
+      stageIndex: 0, label: '달이기', tpCost: 1,
+      requiredItems: [
+        { definitionId: 'herb',         qty: 2 },
+        { definitionId: 'boiled_water', qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  concentrate_serum: {
+    id: 'concentrate_serum', name: '농축 혈청 정제', category: 'medical',
+    hidden: true, unlockConditions: { minSkillLevel: { medicine: 4 } },
+    description: '약초 추출액을 정제·농축해 혈청으로 만든다. 의사만의 공정.',
+    output: [{ definitionId: 'concentrated_serum', qty: 1 }],
+    requiredTools: ['workbench'],
+    requiredSkills: { medicine: 4 },
+    stages: [{
+      stageIndex: 0, label: '정제 농축', tpCost: 2,
+      requiredItems: [
+        { definitionId: 'herbal_extract',    qty: 2 },
+        { definitionId: 'alcohol_solution',  qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  synth_broad_antibiotic: {
+    id: 'synth_broad_antibiotic', name: '광범위 항생제 합성', category: 'medical',
+    hidden: true, unlockConditions: { minSkillLevel: { medicine: 6 } },
+    description: '농축 혈청과 항생제를 결합해 다양한 감염원에 유효한 광범위 항생제를 합성한다.',
+    output: [{ definitionId: 'broad_antibiotic', qty: 1 }],
+    requiredTools: ['workbench'],
+    requiredSkills: { medicine: 6 },
+    stages: [{
+      stageIndex: 0, label: '합성', tpCost: 3,
+      requiredItems: [
+        { definitionId: 'concentrated_serum', qty: 1 },
+        { definitionId: 'antibiotics',        qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
   make_sterile_kit: {
     id: 'make_sterile_kit', name: '멸균 키트 제작', category: 'medical',
     hidden: true, unlockConditions: { minSkillLevel: { medicine: 6 } },
