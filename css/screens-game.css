@@ -277,8 +277,6 @@
 .route-card-name { color: var(--text-primary); }
 .route-card-meta { color: var(--text-dim); font-size: 9px; }
 
-}
-
 .game-over-title {
   font-size: 48px;
   color: var(--text-danger);

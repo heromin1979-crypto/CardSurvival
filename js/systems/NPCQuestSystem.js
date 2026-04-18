@@ -159,6 +159,8 @@ const NPCQuestSystem = {
       type: 'good',
     });
     EventBus.emit('npcPanelUpdate', { npcId });
+    // 메인 퀘스트 npc_quest_complete 목표 연동
+    EventBus.emit('npcQuestCompleted', { npcId, questId: quest.id });
 
     // Check if next quest in chain unlocks
     const npcDef  = NPCS[npcId];

@@ -21,10 +21,10 @@ export const NPC_ITEMS = {
     tags: ['npc'], dismantle: [],
   },
   npc_wounded_soldier: {
-    id: 'npc_wounded_soldier', name: '부상당한 군인', type: 'npc',
+    id: 'npc_wounded_soldier', name: '박상훈 하사', type: 'npc',
     rarity: 'rare', weight: 0, stackable: false, maxStack: 1,
     defaultDurability: 100, defaultContamination: 0,
-    icon: '🩹', description: '심하게 다친 군인. 치료가 급하다. 완치하면 든든한 동료가 될 것이다.',
+    icon: '🩹', description: '국립현충원 경비소대 소속 하사(25세). 감염자 무리에 포위돼 소대원을 잃고 보라매병원으로 도주, 응급실에서 쓰러졌다. 완치하면 든든한 전우가 된다.',
     tags: ['npc'], dismantle: [],
   },
   npc_soldier_deserter: {
@@ -163,6 +163,29 @@ export const NPC_ITEMS = {
     icon: '👩‍🍳', description: '요리사 꿈을 꿨던 22세 학생. 남대문시장에서 만난 열정 가득한 주방 보조.',
     tags: ['npc'], dismantle: [],
   },
+
+  // ── 보라매 응급실 잔류 환자 (Day 2~7 이지수 전용 이벤트) ────────
+  npc_er_patient_child: {
+    id: 'npc_er_patient_child', name: '응급실 소년', type: 'npc',
+    rarity: 'uncommon', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🧒', description: '보라매 응급실 침대에 남겨진 겁에 질린 초등학생. 다리에 깊은 열상.',
+    tags: ['npc'], dismantle: [],
+  },
+  npc_er_patient_elder: {
+    id: 'npc_er_patient_elder', name: '응급실 노인', type: 'npc',
+    rarity: 'uncommon', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '👴', description: '응급실 구석에서 신음하는 고령 환자. 탈수와 감염 위험이 높다.',
+    tags: ['npc'], dismantle: [],
+  },
+  npc_er_patient_civilian: {
+    id: 'npc_er_patient_civilian', name: '응급실 시민', type: 'npc',
+    rarity: 'uncommon', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🤕', description: '대피 직전 응급실에 들이닥친 젊은 시민. 복부 자상으로 움직이지 못한다.',
+    tags: ['npc'], dismantle: [],
+  },
 };
 
 // ── NPC Data Definitions ────────────────────────────────────────
@@ -289,6 +312,7 @@ const NPCS = {
     spontaneous: [
       { condition: 'low_hp',        line: '"상처 보여줘. 내가 처치해줄게."' },
       { condition: 'low_nutrition', line: '"영양 상태가 안 좋아. 뭔가 찾아야 해."' },
+      { condition: 'doctor_low_infection', line: '"선생님… 감염 수치가 놀랄 만큼 낮아요. 임상 지식이 단순한 이론이 아니었네요."' },
       { condition: 'always',        line: '"감염 조심해. 요즘 바이러스 변종이 심해."' },
     ],
     trustEvents: [
@@ -377,6 +401,7 @@ const NPCS = {
       reject: 'npc.wounded_soldier.reject',
     },
     trustGainPerTalk: 0,
+    backstory: '국립현충원 경비소대 소속. 감염자 무리에 포위돼 소대원을 잃고 혼자 보라매병원으로 도주했다.',
     // 부상 상태: woundLevel 3→0 치료 필요, 0이 되면 군인 NPC로 변환
     woundLevel: 3,
     woundHealItem: 'bandage',   // 치료에 필요한 아이템
@@ -406,11 +431,21 @@ const NPCS = {
       { id: 'bandage',     chance: 0.2, qty: 1 },
     ],
     spontaneous: [
-      { condition: 'always', line: '"으... 괜찮아. 이 정도는 견딜 수 있어."' },
+      { condition: 'always', line: '"으... 소대원들이 다 죽었어... 나만 살아남았다."' },
+      { condition: 'low_hp',  line: '"선생님... 붕대 좀 더 줘요. 상처가 벌어졌습니다."' },
     ],
-    trustEvents: [],
+    trustEvents: [
+      {
+        trust: 1,
+        id:      'soldier_wounded_healed',
+        message: '🪖 박상훈 하사가 눈을 떴다. "신촌에서 군 무전이 잡힌 적이 있습니다. 강민준 군의관… 의사를 찾고 있다고 했습니다." — 완치 시 1회 발화.',
+        effect:  {},
+      },
+    ],
     quests: [],
-    specialDays: [],
+    specialDays: [
+      { day: 7, message: '🪖 박상훈이 조용히 말한다. "소대원 장례를 치르고 싶습니다. 현충원에 가야 합니다."', effect: { trust: 0 } },
+    ],
   },
 
   npc_soldier_deserter: {
@@ -1466,6 +1501,113 @@ const NPCS = {
     specialDays: [
       { day: 7,  message: '👩‍🍳 김지은이 생일. 셰프가 케이크를 구워줬다.', effect: { morale: 15 } },
     ],
+  },
+
+  // ── 보라매 응급실 잔류 환자 (이지수 전용, Day 2~7 사이 서브로케이션 진입 시 랜덤 스폰) ──
+  // spawnDay: 999 → 자동 스폰 비활성화, ExploreSystem이 직접 호출
+  npc_er_patient_child: {
+    id: 'npc_er_patient_child',
+    personality: 'timid',
+    maxHp: 40,
+    spawnDistrict: 'dongjak',
+    spawnDay: 999,
+    dialogues: {
+      greet:  ['npc.er_patient_child.greet0'],
+      hint:   ['npc.er_patient_child.hint0'],
+      reject: 'npc.er_patient_child.reject',
+    },
+    trustGainPerTalk: 0,
+    backstory: '대피 중 부모와 헤어진 11세 소년. 보라매 응급실 침대에서 이지수를 기다렸다.',
+    woundLevel: 2,
+    woundHealItem: 'bandage',
+    woundHealQty: 1,
+    companion: null,
+    gifts: [],
+    trades: null,
+    forageItems: [],
+    spontaneous: [
+      { condition: 'always', line: '"누나… 엄마 봤어요? 엄마가 여기서 기다리래요…"' },
+    ],
+    trustEvents: [
+      {
+        trust: 1,
+        id:      'er_patient_child_healed',
+        message: '🧒 소년이 눈물을 닦는다. "누나 주머니에 있던 거예요. 엄마가 나눠 먹으랬어요." — 사기 +10, 에너지 바 획득.',
+        effect: { giveItems: [{ id: 'energy_bar', qty: 1 }], morale: 10 },
+      },
+    ],
+    quests: [],
+    specialDays: [],
+  },
+
+  npc_er_patient_elder: {
+    id: 'npc_er_patient_elder',
+    personality: 'stoic',
+    maxHp: 35,
+    spawnDistrict: 'dongjak',
+    spawnDay: 999,
+    dialogues: {
+      greet:  ['npc.er_patient_elder.greet0'],
+      hint:   ['npc.er_patient_elder.hint0'],
+      reject: 'npc.er_patient_elder.reject',
+    },
+    trustGainPerTalk: 0,
+    backstory: '보라매 단골 환자였던 72세 노인. 당뇨 합병증으로 거동이 힘들다.',
+    woundLevel: 2,
+    woundHealItem: 'bandage',
+    woundHealQty: 1,
+    companion: null,
+    gifts: [],
+    trades: null,
+    forageItems: [],
+    spontaneous: [
+      { condition: 'always', line: '"선생님… 평생 저를 돌봐주셨던 교수님 따님이시죠? 여기 제 혈압약…"' },
+    ],
+    trustEvents: [
+      {
+        trust: 1,
+        id:      'er_patient_elder_healed',
+        message: '👴 노인이 침대 밑 서랍을 가리킨다. "교수님 유품이에요. 젊은 의사한테 물려주고 싶었다고…" — 항생제 2개 획득.',
+        effect: { giveItems: [{ id: 'antibiotics', qty: 2 }], morale: 6 },
+      },
+    ],
+    quests: [],
+    specialDays: [],
+  },
+
+  npc_er_patient_civilian: {
+    id: 'npc_er_patient_civilian',
+    personality: 'brave',
+    maxHp: 55,
+    spawnDistrict: 'dongjak',
+    spawnDay: 999,
+    dialogues: {
+      greet:  ['npc.er_patient_civilian.greet0'],
+      hint:   ['npc.er_patient_civilian.hint0'],
+      reject: 'npc.er_patient_civilian.reject',
+    },
+    trustGainPerTalk: 0,
+    backstory: '대피 직전 응급실에 밀려든 28세 직장인. 복부 자상으로 의식이 흐려져 있다.',
+    woundLevel: 2,
+    woundHealItem: 'bandage',
+    woundHealQty: 1,
+    companion: null,
+    gifts: [],
+    trades: null,
+    forageItems: [],
+    spontaneous: [
+      { condition: 'always', line: '"선생님… 제 가방… 약국 열쇠가 있어요. 길 건너 약국… 부탁해요."' },
+    ],
+    trustEvents: [
+      {
+        trust: 1,
+        id:      'er_patient_civilian_healed',
+        message: '🤕 시민이 가방을 열어 종이쪽지를 건넨다. "이거… 제 약품 창고 약도예요. 알코올 소독액도 가져가세요." — 알코올 소독액 1개 + 지도 조각 획득.',
+        effect: { giveItems: [{ id: 'alcohol_solution', qty: 1 }, { id: 'map_fragment', qty: 1 }], morale: 8 },
+      },
+    ],
+    quests: [],
+    specialDays: [],
   },
 
 };

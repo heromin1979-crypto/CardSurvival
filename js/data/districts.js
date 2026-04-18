@@ -413,12 +413,12 @@ const DISTRICTS = {
   // ── 동작구 ──────────────────────────────────────────────────────
   dongjak: {
     id: 'dongjak', name: '동작구', icon: '🌊',
-    description: '한강 남안 주거지역. 국립현충원이 있어 약탈이 적었고 생필품이 남아있다.',
+    description: '한강 남안 주거지역. 보라매병원과 국립현충원이 공존하는 비교적 안전한 구.',
     dangerLevel: 1, travelCostTP: 2, radiation: 0,
     encounterChance: 0.02, noiseGen: 3,
     hasFishing: true, fishingQuality: 2,
     adjacentDistricts: ['guro', 'gwanak', 'gangnam'],
-    landmark: 'lm_dongjak',
+    landmarks: ['lm_boramae_hospital', 'lm_dongjak'],
     lootTable: [
       { definitionId: 'cloth',         weight: 25, minQty: 1, maxQty: 3 },
       { definitionId: 'water_bottle',  weight: 20, minQty: 1, maxQty: 2 },

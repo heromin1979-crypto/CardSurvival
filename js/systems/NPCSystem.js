@@ -42,6 +42,14 @@ const NPCSystem = {
 
     // Track combat events for departure condition (b) — excessive combat
     EventBus.on('combatEnd', () => this._onCombatEnd());
+
+    // 신뢰도 변경 시 trustEvents(giveItems 등) + 선물 체크 (치료·퀘스트 완료·관계 시스템 공통)
+    EventBus.on('npcTrustChanged', ({ npcId, oldTrust, newTrust }) => {
+      if (typeof oldTrust !== 'number' || typeof newTrust !== 'number') return;
+      if (newTrust <= oldTrust) return;
+      this._checkTrustEvents(npcId, oldTrust, newTrust);
+      this._checkGifts(npcId, oldTrust, newTrust);
+    });
   },
 
   // ── Register NPC items in global item registry ─────────────────
@@ -138,6 +146,7 @@ const NPCSystem = {
       companionSince:  null,
       bond:            0,
       lastTreatDay:    -1,
+      woundLevel:      npcDef.woundLevel ?? 0,
     };
 
     // 바닥에 NPC 카드 배치
@@ -1010,6 +1019,20 @@ const NPCSystem = {
     return NPCS[npcId] ?? null;
   },
 
+  /**
+   * 스폰 조건(spawnDay/spawnDistrict)을 무시하고 즉시 NPC를 스폰한다.
+   * 이벤트 트리거 전용. 이미 스폰됐거나 정의가 없으면 false.
+   */
+  forceSpawn(npcId) {
+    this.ensureInitialized();
+    const npcDef = NPCS[npcId];
+    if (!npcDef) return false;
+    const state = GameState.npcs.states[npcId];
+    if (state?.spawned || state?.dismissed) return false;
+    this._spawnNPC(npcId, npcDef);
+    return true;
+  },
+
   /** Get NPC state by id */
   getNPCState(npcId) {
     this.ensureInitialized();
@@ -1093,12 +1116,17 @@ const NPCSystem = {
     const hpRatio    = (gs.player?.hp?.current ?? 100) / (gs.player?.hp?.max ?? 100);
     const nutrition  = gs.stats?.nutrition?.current ?? 100;
     const isRaining  = gs.weather?.currentWeather === 'rain';
+    const infection  = gs.stats?.infection?.current ?? 0;
+    const infMult    = gs.stats?.infection?.rateMultiplier ?? 1.0;
+    const isDoctor   = gs.player?.characterId === 'doctor';
 
     let line = null;
     for (const entry of npcDef.spontaneous) {
       if (entry.condition === 'low_hp'        && hpRatio < 0.3)  { line = entry.line; break; }
       if (entry.condition === 'low_nutrition' && nutrition < 20)  { line = entry.line; break; }
       if (entry.condition === 'rain'          && isRaining)       { line = entry.line; break; }
+      if (entry.condition === 'doctor_low_infection'
+          && isDoctor && infMult < 1.0 && infection >= 5 && infection < 30) { line = entry.line; break; }
       if (entry.condition === 'always')                           { line = entry.line; break; }
     }
     if (!line) return;

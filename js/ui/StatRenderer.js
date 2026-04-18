@@ -83,7 +83,9 @@ const StatRenderer = {
           <div class="stat-bar-fill ${s.key}" id="statfill-${s.key}" style="width:0%"></div>
         </div>
       </div>
-    `).join('');
+    `).join('') + `
+      <div id="hud-passive-badges" class="hud-passive-badges" style="display:none;"></div>
+    `;
   },
 
   /** 장비창 "캐릭터 상태" 탭용 전체 스탯 HTML 반환 */
@@ -299,6 +301,48 @@ const StatRenderer = {
 
     // 구역 고정 구조물 효과 표시 (installedStructures 전용, 보드 카드 의료 구조물은 제외)
     this._renderInstalledStructure(gs);
+
+    // 패시브 능력 배지 (감염 저항 등)
+    this._renderPassiveBadges(gs);
+  },
+
+  /**
+   * 사이드바 HUD에 패시브 능력 배지 렌더링.
+   * - 감염 rateMultiplier < 1.0 일 때 "🛡️ 감염 저항 -XX% · 티어" 형태로 표시
+   * - 현재 감염 수치에 따라 티어(정상/경계/위험/치명) 색상 변화
+   */
+  _renderPassiveBadges(gs) {
+    const el = document.getElementById('hud-passive-badges');
+    if (!el) return;
+
+    const infStat = gs.stats.infection;
+    const mult    = infStat?.rateMultiplier ?? 1.0;
+    const badges  = [];
+
+    if (mult < 1.0) {
+      const reducePct = Math.round((1.0 - mult) * 100);
+      const cur = infStat.current ?? 0;
+      let tier, tierCls;
+      if      (cur >= 70) { tier = '치명'; tierCls = 'danger'; }
+      else if (cur >= 40) { tier = '위험'; tierCls = 'warn';   }
+      else if (cur >= 15) { tier = '경계'; tierCls = 'caution';}
+      else                { tier = '안정'; tierCls = 'safe';   }
+      badges.push(
+        `<div class="hud-badge infection-resist ${tierCls}" title="임상 지식: 감염 진행 속도 ${reducePct}% 감소">` +
+          `<span class="badge-icon">🛡️</span>` +
+          `<span class="badge-text">감염 저항 -${reducePct}%</span>` +
+          `<span class="badge-tier">${tier}</span>` +
+        `</div>`
+      );
+    }
+
+    if (badges.length === 0) {
+      el.style.display = 'none';
+      el.innerHTML = '';
+    } else {
+      el.style.display = '';
+      el.innerHTML = badges.join('');
+    }
   },
 
   _renderInstalledStructure(gs) {

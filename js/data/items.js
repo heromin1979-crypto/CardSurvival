@@ -353,6 +353,15 @@ const ITEMS_LANDMARK = {
     landmarkBonus: '이 구역 조우 확률 -10%p',
     tags: ['location', 'landmark'], requiresSlot: 'top', dismantle: [],
   },
+  lm_boramae_hospital: {
+    id: 'lm_boramae_hospital', name: '보라매병원', type: 'location', subtype: 'landmark',
+    rarity: 'common', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0, landmark: true,
+    districtId: 'dongjak',   // id에서 district를 유도할 수 없는 경우 명시
+    icon: '🏥', description: '서울시립 보라매병원. 의약품과 의료 장비가 남아있지만 감염 위험이 있다.',
+    landmarkBonus: '탐색 시 의료 아이템 발견 +15%',
+    tags: ['location', 'landmark'], requiresSlot: 'top', dismantle: [],
+  },
   lm_mapo: {
     id: 'lm_mapo', name: '홍대 지하상가', type: 'location', subtype: 'landmark',
     rarity: 'common', weight: 0, stackable: false, maxStack: 1,

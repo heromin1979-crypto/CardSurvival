@@ -7,6 +7,7 @@ import { DISTRICTS, getAdjacentDistricts } from '../data/districts.js';
 import { CHARACTERS }  from '../data/characters.js';
 import { LEVEL_XP_TABLE } from '../data/skillDefs.js';
 import EquipmentSystem from '../systems/EquipmentSystem.js';
+import ExploreSystem   from '../systems/ExploreSystem.js';
 import GameData        from '../data/GameData.js';
 import NPCS            from '../data/npcs.js';
 
@@ -291,7 +292,7 @@ const CharCreate = {
 
     // ── 캐릭터별 시작 조건 및 스토리 플래그 ────────────────────
     const charStartConditions = {
-      doctor:      { infection: 5, morale: 75, flags: { samsung_hospital_survivor: true } },
+      doctor:      { infection: 5, morale: 75, flags: { boramae_survivor: true } },
       soldier:     { morale: 65, flags: { gwanghwamun_retreat: true } },
       firefighter: { fatigue: 20, morale: 60, flags: { jaehoon_infected: true } },
       homeless:    { morale: 80, flags: { bridge_dweller: true } },
@@ -439,7 +440,96 @@ const CharCreate = {
       EquipmentSystem.equip(bagInst.instanceId, 'backpack');
     }
 
+    // ── 의사 전용 오프닝: 보라매병원 응급실 씬 ───────────────
+    // 선행 배치된 NPC/구조물 중 박상훈 하사만 응급실로 이동, 나머지는 동작구 바닥에 보관
+    if (char.id === 'doctor') {
+      this._doctorEmergencyOpening();
+      return;
+    }
+
     StateMachine.transition('main');
+  },
+
+  // ── 의사 오프닝 씬: 응급실 진입 + 선택 모달 ────────────────
+  _doctorEmergencyOpening() {
+    const gs = GameState;
+
+    // 1) 박상훈 하사를 middle에서 잠시 분리 (응급실에 다시 배치 예정)
+    let soldierInstId = null;
+    for (let i = 0; i < gs.board.middle.length; i++) {
+      const instId = gs.board.middle[i];
+      if (!instId) continue;
+      const inst = gs.cards[instId];
+      if (inst?.definitionId === 'npc_wounded_soldier') {
+        soldierInstId = instId;
+        gs.board.middle[i] = null;
+        break;
+      }
+    }
+
+    // 2) 보라매병원 진입 — enterLandmark가 middle을 동작구 바닥에 저장
+    //    (간호사 + medical_station + 시작 아이템들이 동작구 바닥에 보관됨)
+    ExploreSystem.enterLandmark('dongjak');
+
+    // 3) 응급실 서브로케이션 직접 세팅 (enterSubLocation의 TP/조우/루팅 부작용 회피)
+    gs.location.currentSubLocation = 'boramae_emergency';
+    gs.location.currentNode        = 'boramae_emergency';
+    if (!gs.location.subLocationsLooted) gs.location.subLocationsLooted = [];
+    const subKey = 'dongjak:boramae_emergency';
+    if (!gs.location.subLocationsLooted.includes(subKey)) {
+      gs.location.subLocationsLooted.push(subKey);
+    }
+
+    // 4) 박상훈 하사를 응급실 middle에 재배치
+    if (soldierInstId) {
+      gs.placeCardInRow(soldierInstId, 'middle');
+    }
+
+    // 5) 메인 보드 진입
+    StateMachine.transition('main');
+    EventBus.emit('boardChanged', {});
+
+    // 6) 오프닝 씬 모달 표시 (다음 프레임에)
+    requestAnimationFrame(() => {
+      EventBus.emit('openingScene', {
+        title: '🏥 보라매병원 응급실',
+        narration:
+          '약품 창고에서 3일을 버텼다.\n' +
+          '문을 열자 응급실 바닥엔 박상훈 하사가 쓰러져 있다 — 현충원 경비소대 소속.\n' +
+          '신음 소리가 가냘프다. 시간이 얼마 없다.',
+        choices: [
+          {
+            label: '🩹 박상훈 하사를 치료한다',
+            desc: '응급실에 머물러 붕대로 상처를 치료한다. 의사의 본분이다.',
+            value: 'treat',
+          },
+          {
+            label: '🏃 즉시 병원을 탈출한다',
+            desc: '군인을 두고 바로 동작구 거점으로 이동한다.',
+            warning: '사기 -10, 박상훈 하사는 응급실에 남겨진다.',
+            value: 'escape',
+          },
+        ],
+        onChoose: (choice) => {
+          if (choice === 'escape') {
+            gs.flags.abandoned_soldier = true;
+            gs.stats.morale.current = Math.max(0, gs.stats.morale.current - 10);
+            EventBus.emit('notify', {
+              message: '박상훈 하사를 응급실에 두고 병원을 빠져나왔다.',
+              type: 'warn',
+            });
+            // 응급실 탈출 → 동작구 베이스캠프로
+            ExploreSystem.exitLandmark();
+          } else {
+            // 치료 선택: 응급실에 머무름. 플레이어가 붕대를 박상훈에게 드래그하여 치료
+            EventBus.emit('notify', {
+              message: '붕대를 박상훈 하사 카드에 드래그해 치료하세요. 완치 시 퀘스트가 완료됩니다.',
+              type: 'info',
+            });
+          }
+        },
+      });
+    });
   },
 
   // ── 지역별 기본 시작 아이템 ────────────────────────────────

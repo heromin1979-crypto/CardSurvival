@@ -1,6 +1,32 @@
 // === ENEMY DEFINITIONS ===
 
 const ENEMIES = {
+  // 잠복 환자 좀비 — 병원 야간 진입 시 등장. 낮은 스탯, 기습 성격.
+  zombie_patient_dormant: {
+    id: 'zombie_patient_dormant',
+    name: '잠복 환자 좀비',
+    icon: '🛌',
+    image: './assets/images/zombie.png',
+    type: 'zombie',
+    hp: { min: 18, max: 30 },
+    attack: { damage: [10, 16], accuracy: 0.65, noiseOnAttack: 3 },
+    defense: 0,
+    xp: 14,
+    lootTable: [
+      { definitionId: 'bandage',      weight: 40, minQty: 1, maxQty: 2 },
+      { definitionId: 'tattered_rags', weight: 40, minQty: 1, maxQty: 1 },
+      { definitionId: 'painkiller',    weight: 15, minQty: 1, maxQty: 1 },
+    ],
+    infectionChance: 0.25,
+    aiPattern: 'aggressive',
+    specialSkills: [],
+    statusInflict: null,
+    weaknesses: ['blade', 'fire'],
+    resistances: [],
+    description: '수술대와 응급실 침대에서 잠들어 있던 환자가 변이한 좀비. 약하지만 기습한다.',
+    stealthDifficulty: 0.3,
+  },
+
   zombie_common: {
     id: 'zombie_common',
     name: '감염 좀비',

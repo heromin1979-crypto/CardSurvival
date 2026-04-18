@@ -6,7 +6,7 @@ import StateMachine from '../core/StateMachine.js';
 import TickEngine  from '../core/TickEngine.js';
 import { NODES, DISTRICTS, generateRouteCards } from '../data/nodes.js';
 import { getAdjacentDistricts } from '../data/districts.js';
-import { rollEnemyGroup } from '../data/enemies.js';
+import { rollEnemyGroup, ENEMIES } from '../data/enemies.js';
 import { LANDMARK_DATA } from '../data/landmarks.js';
 import NoiseSystem   from './NoiseSystem.js';
 import TraitSystem   from './TraitSystem.js';
@@ -18,6 +18,7 @@ import BALANCE          from '../data/gameBalance.js';
 import HiddenElementSystem from './HiddenElementSystem.js';
 import NightSystem         from './NightSystem.js';
 import GameData            from '../data/GameData.js';
+import SystemRegistry      from '../core/SystemRegistry.js';
 
 const ExploreSystem = {
 
@@ -99,17 +100,23 @@ const ExploreSystem = {
       if (inst) gs.board.top[0] = inst.instanceId;
     }
 
-    // 랜드마크 카드 → top[1] (현재 위치 바로 오른쪽)
+    // 랜드마크 카드 → top[1..] (복수 지원: district.landmarks 배열 우선, 없으면 landmark 단일)
     const district = DISTRICTS[districtId];
-    const lmDefId  = district?.landmark;
-    if (lmDefId && items[lmDefId]) {
-      const lmInst = gs.createCardInstance(lmDefId);
-      if (lmInst) gs.board.top[1] = lmInst.instanceId;
+    const lmIds = Array.isArray(district?.landmarks)
+      ? district.landmarks
+      : (district?.landmark ? [district.landmark] : []);
+
+    let slot = 1;
+    for (const lmDefId of lmIds) {
+      if (slot >= gs.board.top.length) break;
+      if (lmDefId && items[lmDefId]) {
+        const lmInst = gs.createCardInstance(lmDefId);
+        if (lmInst) gs.board.top[slot++] = lmInst.instanceId;
+      }
     }
 
-    // 한강 랜드마크 카드 → top[2] (hasFishing 구역만)
-    let slot = 2;
-    if (district?.hasFishing && items['lm_hangang']) {
+    // 한강 랜드마크 카드 (hasFishing 구역만)
+    if (district?.hasFishing && items['lm_hangang'] && slot < gs.board.top.length) {
       const hInst = gs.createCardInstance('lm_hangang');
       if (hInst) gs.board.top[slot++] = hInst.instanceId;
     }
@@ -692,6 +699,30 @@ const ExploreSystem = {
     const noiseBase = district?.noiseGen ?? 3;
     NoiseSystem.addNoise(noiseBase * 0.8);
 
+    // 병원 야간 특화 이벤트 — 보라매 응급실/수술실 야간 진입 시 20% 확률로 잠복 환자 좀비 조우
+    if (NightSystem.isNight()
+        && gs.location.currentLandmark === 'lm_boramae_hospital'
+        && (subLocationId === 'boramae_emergency' || subLocationId === 'boramae_surgery')
+        && Math.random() < 0.20) {
+      const patientDef = ENEMIES?.zombie_patient_dormant;
+      if (patientDef) {
+        const hp = patientDef.hp.min + Math.floor(Math.random() * (patientDef.hp.max - patientDef.hp.min + 1));
+        const patientInst = { ...patientDef, currentHp: hp, maxHp: hp, _skillCooldowns: {}, _statusEffects: [] };
+        EventBus.emit('notify', {
+          message: '🛌 어둠 속 침대에서 신음이 들린다 — 환자복을 입은 감염자가 갑자기 일어선다.',
+          type: 'danger',
+        });
+        StateMachine.transition('encounter', {
+          nodeId:      districtId,
+          enemies:     [patientInst],
+          enemy:       patientInst,
+          dangerLevel: 1,
+          noiseLevel:  gs.noise.level,
+        });
+        return;
+      }
+    }
+
     // 조우 체크 (계절 encounterMult 포함)
     const landmarkReduct  = BALANCE.encounter.landmarkDangerReduct ?? 0.05;
     const baseEncounter   = Math.max(0, (district?.encounterChance ?? 0) + (sub.dangerMod ?? 0) - landmarkReduct);
@@ -727,13 +758,55 @@ const ExploreSystem = {
     // 세부장소 탐색 완료 XP
     SkillSystem.gainXp('scavenging', 3);
     EventBus.emit('notify', { message: I18n.t('exploreSys.subComplete', { name: sub.name }), type: 'info' });
+
+    // 보라매 응급실 잔류 환자 이벤트 (이지수 전용, Day 2~7)
+    this._tryBoramaePatientSpawn(gs);
+
     EventBus.emit('boardChanged', {});
+  },
+
+  /**
+   * 이지수가 Day 2~7 사이 보라매병원 서브로케이션 진입 시
+   * 35% 확률로 부상 환자 NPC를 바닥에 스폰한다. 붕대로 드래그 치료 시 보상.
+   */
+  _tryBoramaePatientSpawn(gs) {
+    if (gs.player?.characterId !== 'doctor') return;
+    if (gs.location?.currentLandmark !== 'lm_boramae_hospital') return;
+    const day = gs.time?.day ?? 1;
+    if (day < 2 || day > 7) return;
+
+    // 이미 현재 서브로케이션에서 이벤트가 발생했으면 스킵
+    if (!gs.flags.boramaePatientsSpawned) gs.flags.boramaePatientsSpawned = [];
+    const alreadySpawned = gs.flags.boramaePatientsSpawned;
+
+    const pool = ['npc_er_patient_child', 'npc_er_patient_elder', 'npc_er_patient_civilian']
+      .filter(id => !alreadySpawned.includes(id));
+    if (pool.length === 0) return;
+
+    // 35% 확률
+    if (Math.random() >= 0.35) return;
+
+    const npcId = pool[Math.floor(Math.random() * pool.length)];
+    const NPCSystem = SystemRegistry.get('NPCSystem');
+    if (!NPCSystem?.forceSpawn) return;
+    if (!NPCSystem.forceSpawn(npcId)) return;
+
+    alreadySpawned.push(npcId);
+    EventBus.emit('notify', {
+      message: '🩹 응급실 침대에서 신음 소리가 들린다. 잔류 환자가 남아 있었다 — 붕대로 치료해라.',
+      type: 'story',
+    });
   },
 
   _generateSubLocationLoot(sub) {
     const table      = sub.lootTable ?? [];
     const [minCount, maxCount] = sub.lootCount ?? [1, 3];
-    const count      = minCount + Math.floor(Math.random() * (maxCount - minCount + 1));
+    let count        = minCount + Math.floor(Math.random() * (maxCount - minCount + 1));
+
+    // 보라매 약품 고갈 이벤트 — 이지수 Day 10 이후 보라매 서브로케이션 lootCount 영구 -1
+    if (GameState.flags?.boramae_depleted && typeof sub.id === 'string' && sub.id.startsWith('boramae_')) {
+      count = Math.max(0, count - 1);
+    }
     const totalWeight = table.reduce((s, e) => s + e.weight, 0);
     const results    = [];
     const items      = GameData?.items ?? {};
