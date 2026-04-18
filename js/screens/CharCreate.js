@@ -422,6 +422,7 @@ const CharCreate = {
           neglectDays: 0, companionSince: null, bond: 0, lastTreatDay: -1,
           woundLevel: nDef?.woundLevel ?? 0,
         };
+        EventBus.emit('npcSpawned', { npcId });
       }
     }
 
