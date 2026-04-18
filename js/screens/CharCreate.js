@@ -292,7 +292,7 @@ const CharCreate = {
 
     // ── 캐릭터별 시작 조건 및 스토리 플래그 ────────────────────
     const charStartConditions = {
-      doctor:      { infection: 5, morale: 75, flags: { boramae_survivor: true } },
+      doctor:      { infection: 10, morale: 75, flags: { boramae_survivor: true } },
       soldier:     { morale: 65, flags: { gwanghwamun_retreat: true } },
       firefighter: { fatigue: 20, morale: 60, flags: { jaehoon_infected: true } },
       homeless:    { morale: 80, flags: { bridge_dweller: true } },
