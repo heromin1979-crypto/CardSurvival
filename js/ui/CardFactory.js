@@ -1255,6 +1255,7 @@ const CardFactory = {
 
     const consumed   = ce.completedTp + (ce.tpTotal - ce.tpRemaining);
     const overallPct = ce.totalTpAll > 0 ? (consumed / ce.totalTpAll * 100) : 0;
+    const totalRemaining = Math.max(0, ce.totalTpAll - consumed);
 
     const stageInfo = ce.totalStages > 1
       ? `${ce.stageIndex + 1}/${ce.totalStages} — ${ce.stageLabel}`
@@ -1269,12 +1270,13 @@ const CardFactory = {
         <span class="card-type-badge">${I18n.t('card.crafting')}</span>
         <div class="card-art">${def?.icon ?? '📦'}</div>
         <div class="crafting-stage-label">${stageInfo}</div>
+        <div class="craft-progress-percent">${Math.round(overallPct)}%</div>
         <div class="craft-progress-track">
           <div class="craft-progress-fill" style="width:${overallPct.toFixed(1)}%"></div>
         </div>
       </div>
       <div class="card-footer">
-        <span class="crafting-tp-label">${I18n.t('card.tpRemaining', { tp: ce.tpRemaining })}</span>
+        <span class="crafting-tp-label">${I18n.t('card.tpRemaining', { tp: totalRemaining })}</span>
       </div>
     `;
   },

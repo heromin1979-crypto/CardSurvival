@@ -123,6 +123,15 @@ const CraftSystem = {
       }
     }
 
+    // ── 1-TP 기초 제작: 큐/카드 생성 생략하고 즉시 생산 ─────────
+    // (단일 스테이지 + 총 TP === 1인 경우)
+    const totalTpAll = bp.stages.reduce((sum, s) => sum + s.tpCost, 0);
+    if (bp.stages.length === 1 && totalTpAll === 1) {
+      EventBus.emit('craftStarted', { blueprintId });
+      this._produceOutput(bp, { craftCardId: null });
+      return true;
+    }
+
     const entry = {
       blueprintId,
       stageIndex:   0,
@@ -135,7 +144,6 @@ const CraftSystem = {
     // 바닥(middle) 행에 제작 진행 카드 생성
     const outputDefId = bp.output?.[0]?.definitionId;
     if (outputDefId) {
-      const totalTpAll = bp.stages.reduce((sum, s) => sum + s.tpCost, 0);
       const craftInst = GameState.createCardInstance(outputDefId, {
         _crafting: true,
         _craftEntry: {
