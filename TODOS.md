@@ -54,6 +54,25 @@
 
 ---
 
+## UX (deferred)
+
+### T9: 다중 랜드마크 구 — 랜드마크 선택 UI 가이드라인
+**What:** 한 구에 랜드마크가 2개 이상인 경우(현재 동작구: 보라매병원/국립현충원) 플레이어가 어느 랜드마크로 진입할지 명확히 선택할 수 있는 일관된 UX 가이드라인 정립.
+**Why:** 현재는 top row에 각 랜드마크 카드가 나란히 노출되고 개별 클릭 진입이 가능한 구조로 기능적으로는 동작함. 다만 향후 다른 구에도 복수 랜드마크가 추가되면 슬롯 압박(인접 구 카드와 경합)과 시각적 혼란이 예상됨.
+**Context:**
+- `districts.dongjak.landmarks = ['lm_boramae_hospital', 'lm_dongjak']` (배열 형식)
+- `LANDMARK_DATA`는 단수 구는 `'guro'`, 복수 구는 `'lm_*'` 키로 분기 — 네이밍 규칙은 이미 확립됨
+- `ExploreSystem._updateTopRowCards`와 `CharCreate` 초기 배치 모두 `landmarks` 배열을 지원하도록 정리됨 (2026-04-19)
+- 버그 이력: 의사(이지수) 오프닝에서 `enterLandmark('dongjak')`이 null을 반환해 응급실 진입이 실패했던 케이스 — `enterLandmark('lm_boramae_hospital')`로 수정
+**Options to consider:**
+1. **모달 진입**: 구 랜드마크 카드 클릭 시 "보라매병원 / 국립현충원" 선택 모달 (인접 구 슬롯 경합 해소)
+2. **탭/토글**: 구 진입 중 top row에 랜드마크 토글 버튼 추가
+3. **현상 유지**: 카드 개별 노출 — 동작구만 특별 케이스로 허용
+**Effort:** S (human) → S (CC)
+**Priority:** P3 (플레이어 피드백 발생 시)
+
+---
+
 ## Architecture (long-term)
 
 ### T8: Window Globals → Full EventBus Refactor ✅ DONE

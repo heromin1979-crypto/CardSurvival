@@ -49,10 +49,12 @@ const ExploreSystem = {
     });
 
     // 랜드마크 진입 요청
-    EventBus.on('landmarkRequest', ({ districtId }) => {
+    // 이벤트 payload의 'districtId' 필드는 레거시 이름이며 실제로는 landmarkKey
+    // (예: 'lm_boramae_hospital', 'basecamp', 'hangang', 단수 구는 구 ID)를 담는다.
+    EventBus.on('landmarkRequest', ({ districtId: landmarkKey }) => {
       const screen = document.getElementById('screen-main');
       if (screen && screen.classList.contains('active')) {
-        this.enterLandmark(districtId);
+        this.enterLandmark(landmarkKey);
       }
     });
 
@@ -575,36 +577,42 @@ const ExploreSystem = {
   },
 
   // ── 랜드마크 진입 ────────────────────────────────────────
+  // landmarkKey: LANDMARK_DATA 조회 키.
+  //   - 단수 구: 'guro' 같은 districtId (구 단위 키 엔트리)
+  //   - 복수 구: 'lm_boramae_hospital' 같은 랜드마크 ID (lm_ 접두사 엔트리)
+  //   - 공용:    'basecamp', 'hangang', 'lm_raider_camp_small' 등
+  // getLandmarkData가 lm_ 접두사 폴백을 처리하므로 두 형태 모두 허용된다.
 
-  enterLandmark(districtId) {
+  enterLandmark(landmarkKey) {
     // 베이스캠프 진입은 야간에도 가능 (외출이 아닌 내부 이동)
-    if (districtId !== 'basecamp' && !this._checkNight('explore')) return;
+    if (landmarkKey !== 'basecamp' && !this._checkNight('explore')) return;
 
     const gs = GameState;
-    const lmData = getLandmarkData(districtId);
+    const lmData = getLandmarkData(landmarkKey);
     if (!lmData) {
       EventBus.emit('notify', { message: I18n.t('exploreSys.landmarkNotFound'), type: 'warn' });
       return;
     }
-    gs.location.currentLandmark    = districtId;
+    gs.location.currentLandmark    = landmarkKey;
     gs.location.currentSubLocation = null;
     // 귀환 구역 명시 저장 — exitLandmark에서 확실한 복귀 구역으로 사용
     gs.location._lmReturnDistrict  = gs.location.currentDistrict;
 
     // 구 바닥 저장 → 랜드마크 로비는 빈 바닥
+    // 키는 landmarkKey 기준 (exitLandmark의 복원 키와 일치)
     if (!gs.locationFloors) gs.locationFloors = {};
-    gs.locationFloors[districtId] = [...gs.board.middle];
+    gs.locationFloors[landmarkKey] = [...gs.board.middle];
     gs.board.middle = Array(gs.board.middle.length).fill(null);
 
-    this._updateTopRowForLandmark(districtId);
+    this._updateTopRowForLandmark(landmarkKey);
     EventBus.emit('notify', { message: I18n.t('exploreSys.landmarkEnter', { name: lmData.name }), type: 'info' });
     EventBus.emit('boardChanged', {});
   },
 
-  _updateTopRowForLandmark(districtId) {
+  _updateTopRowForLandmark(landmarkKey) {
     const gs    = GameState;
     const items = GameData?.items ?? {};
-    const lmData = getLandmarkData(districtId);
+    const lmData = getLandmarkData(landmarkKey);
 
     // 기존 top row 위치 카드 모두 제거
     for (let i = 0; i < gs.board.top.length; i++) {
@@ -620,9 +628,9 @@ const ExploreSystem = {
     }
 
     // 귀환 카드 (현재 구 카드) → top[0]
-    // hangang 등 구 단위가 아닌 공용 랜드마크는 loc_${districtId}가 없으므로
-    // 현재 구 카드(loc_${currentDistrict})로 폴백
-    const returnDefId  = `loc_${districtId}`;
+    // landmarkKey가 lm_xxx/공용키인 경우 loc_${landmarkKey}는 없으므로
+    // 현재 구 카드(loc_${currentDistrict})로 폴백한다.
+    const returnDefId  = `loc_${landmarkKey}`;
     const fallbackId   = `loc_${gs.location.currentDistrict}`;
     const resolvedId   = items[returnDefId] ? returnDefId : (items[fallbackId] ? fallbackId : null);
     if (resolvedId) {
