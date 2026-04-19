@@ -248,6 +248,7 @@ const TouchDrag = {
       if (comp) comp.canRecruit = true;
       EventBus.emit('notify', { message: '🩹 부상이 완치되었습니다! 이제 동료로 영입할 수 있습니다.', type: 'good' });
       EventBus.emit('npcWoundHealed', { npcId: tgtInst.definitionId });
+      EventBus.emit('npcHealed',      { npcId: tgtInst.definitionId });
       if (npcState.trust > prevTrust) {
         EventBus.emit('npcTrustChanged', { npcId: tgtInst.definitionId, oldTrust: prevTrust, newTrust: npcState.trust });
       }
