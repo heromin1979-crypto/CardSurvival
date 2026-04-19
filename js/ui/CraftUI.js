@@ -13,10 +13,25 @@ import CraftTreeUI     from './CraftTreeUI.js';
 // 전체 레시피 (히든 포함)
 const ALL_BLUEPRINTS = { ...BLUEPRINTS_BASE, ...HIDDEN_RECIPES };
 
+// 카테고리 탭 정의 (표시 순서대로)
+const CATEGORY_TABS = [
+  { key: 'all',        icon: '📋', labelKey: 'craft.tab.all' },
+  { key: 'weapon',     icon: '⚔️', labelKey: 'craft.tab.weapon' },
+  { key: 'armor',      icon: '🛡️', labelKey: 'craft.tab.armor' },
+  { key: 'tool',       icon: '🔧', labelKey: 'craft.tab.tool' },
+  { key: 'structure',  icon: '🏠', labelKey: 'craft.tab.structure' },
+  { key: 'food',       icon: '🍲', labelKey: 'craft.tab.food' },
+  { key: 'medical',    icon: '🩹', labelKey: 'craft.tab.medical' },
+  { key: 'material',   icon: '📦', labelKey: 'craft.tab.material' },
+  { key: 'upgrade',    icon: '⬆️', labelKey: 'craft.tab.upgrade' },
+  { key: 'consumable', icon: '🧪', labelKey: 'craft.tab.consumable' },
+];
+
 const CraftUI = {
   _panel: null,
   _selectedBp: null,
   _viewMode: 'list',
+  _categoryFilter: 'all',
 
   _listenersRegistered: false,
 
@@ -57,8 +72,21 @@ const CraftUI = {
       this._panel.appendChild(treeContainer);
       CraftTreeUI.render(treeContainer);
     } else {
+      const categoryTabHtml = `
+        <div class="craft-category-tabs">
+          ${CATEGORY_TABS.map(tab => `
+            <button class="craft-category-tab ${this._categoryFilter === tab.key ? 'active' : ''}"
+                    data-category="${tab.key}"
+                    title="${I18n.t(tab.labelKey)}">
+              ${tab.icon}<span class="cat-label">${I18n.t(tab.labelKey)}</span>
+            </button>
+          `).join('')}
+        </div>
+      `;
+
       this._panel.innerHTML = `
         ${tabHtml}
+        ${categoryTabHtml}
         <div class="craft-panel">
           <div style="font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">
             ${I18n.t('craft.blueprints')}
@@ -72,6 +100,15 @@ const CraftUI = {
       this._panel.querySelectorAll('.blueprint-item').forEach(el => {
         el.addEventListener('click', () => {
           this._selectedBp = el.dataset.bpId;
+          this.render();
+        });
+      });
+
+      // Category tab handlers
+      this._panel.querySelectorAll('.craft-category-tab').forEach(btn => {
+        btn.addEventListener('click', () => {
+          this._categoryFilter = btn.dataset.category;
+          this._selectedBp = null;
           this.render();
         });
       });
@@ -110,13 +147,20 @@ const CraftUI = {
       return true;
     });
 
-    if (visibleBlueprints.length === 0) {
+    const filteredBlueprints = this._categoryFilter === 'all'
+      ? visibleBlueprints
+      : visibleBlueprints.filter(bp => bp.category === this._categoryFilter);
+
+    if (filteredBlueprints.length === 0) {
+      const msg = this._categoryFilter === 'all'
+        ? '스킬을 높여 새로운 레시피를 해금하세요'
+        : '이 카테고리에 해금된 레시피가 없습니다';
       return `<div style="text-align:center;padding:20px;color:var(--text-dim);font-size:10px;">
-        스킬을 높여 새로운 레시피를 해금하세요
+        ${msg}
       </div>`;
     }
 
-    return visibleBlueprints.map(bp => {
+    return filteredBlueprints.map(bp => {
       const isSelected = this._selectedBp === bp.id;
       const check      = CraftSystem.canStartBlueprint(bp.id);
 

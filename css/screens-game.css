@@ -671,7 +671,7 @@
   border-radius: var(--radius-lg);
   display: flex;
   flex-direction: column;
-  max-width: 460px;
+  max-width: 720px;
   width: calc(100vw - 24px);
   box-shadow: 0 12px 48px rgba(0,0,0,0.8);
   overflow: hidden;
@@ -681,14 +681,14 @@
   display: flex;
   align-items: center;
   gap: var(--gap-sm);
-  padding: 10px 14px;
+  padding: 14px 18px;
   border-bottom: 1px solid var(--border-dim);
   background: rgba(0,0,0,0.3);
   flex-wrap: wrap;
 }
 
 .seoul-map-title {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-md);
   color: var(--text-primary);
   font-weight: bold;
   letter-spacing: 1px;
@@ -698,13 +698,13 @@
 .seoul-map-legend {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px;
   flex: 1;
   justify-content: flex-end;
 }
 
 .sm-leg {
-  font-size: 9px;
+  font-size: 12px;
   letter-spacing: 0.5px;
   white-space: nowrap;
 }
@@ -719,9 +719,9 @@
   border: 1px solid var(--border-dim);
   color: var(--text-dim);
   border-radius: var(--radius-sm);
-  width: 24px; height: 24px;
+  width: 32px; height: 32px;
   cursor: pointer;
-  font-size: 12px;
+  font-size: 16px;
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
   transition: border-color 0.15s, color 0.15s;
@@ -732,13 +732,14 @@
 }
 
 .seoul-map-body {
-  padding: 12px;
+  padding: 16px;
   overflow: auto;
   display: flex;
   justify-content: center;
 }
 
 .seoul-map-svg {
+  width: 100%;
   max-width: 100%;
   height: auto;
 }
@@ -1681,6 +1682,41 @@
   background: var(--bg-raised);
   color: var(--text-primary);
   border-bottom-color: var(--bg-raised);
+}
+
+/* ── 크래프팅 카테고리 탭 ── */
+.craft-category-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  margin-bottom: var(--gap-xs);
+  padding-bottom: var(--gap-xs);
+  border-bottom: 1px solid var(--border-dim);
+}
+.craft-category-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px 6px;
+  font-size: 10px;
+  background: transparent;
+  border: 1px solid var(--border-dim);
+  border-radius: var(--radius-sm);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s, border-color 0.1s;
+}
+.craft-category-tab:hover {
+  border-color: var(--accent-dim);
+  color: var(--text-primary);
+}
+.craft-category-tab.active {
+  background: var(--bg-raised);
+  color: var(--text-primary);
+  border-color: var(--accent-primary);
+}
+.craft-category-tab .cat-label {
+  font-weight: 500;
 }
 
 /* ── 테크 트리 ── */
