@@ -44,13 +44,13 @@ const DOCTOR_SHARED = {
 
   mq_doctor_04: {
     id: 'mq_doctor_04', title: '환자 수액',
-    desc: '탈수 환자가 발생했다. 깨끗한 물 3개를 확보하라.',
+    desc: '탈수 환자가 발생했다. 깨끗한 음용수 3개를 확보하라. (정수 물병 / 끓인 물 / 멸균수 등)',
     icon: '💧', characterId: 'doctor', dayTrigger: 6, prerequisite: 'mq_doctor_03',
-    objective: { type: 'collect_item', definitionId: 'clean_water', count: 3 },
+    objective: { type: 'collect_item_type', itemType: 'clean', count: 3 },
     reward: { morale: 5, items: [{ definitionId: 'painkiller', qty: 1 }] },
     failPenalty: { morale: -3 }, deadlineDays: 16,
     narrative: {
-      start: '병원 복도에서 탈수 상태의 생존자를 발견했다. 깨끗한 물이 필요하다.',
+      start: '병원 복도에서 탈수 상태의 생존자를 발견했다. 깨끗한 음용수가 필요하다. 카페테리아 물병이든, 빗물을 모아 끓인 것이든 상관없다.',
       complete: '수분을 공급했다. 환자가 눈을 떴다. 고맙다는 말을 하며 진통제를 내밀었다.',
     },
   },
@@ -121,11 +121,11 @@ const DOCTOR_SHARED = {
   },
 
   mq_doctor_10: {
-    id: 'mq_doctor_10', title: '야전 소독',
-    desc: '이동 중 상처가 났다. 소독약 2개를 확보하라.',
+    id: 'mq_doctor_10', title: '자기 처방',
+    desc: '이동 중 상처가 났다. 의료 아이템 1개를 직접 제작해 스스로를 치료하라.',
     icon: '🧴', characterId: 'doctor', dayTrigger: 21, prerequisite: 'mq_doctor_09',
-    objective: { type: 'collect_item', definitionId: 'antiseptic', count: 2 },
-    reward: { morale: 8, items: [{ definitionId: 'stimulant', qty: 1 }] },
+    objective: { type: 'craft_item', category: 'medical', count: 1 },
+    reward: { morale: 8, items: [{ definitionId: 'antiseptic', qty: 1 }, { definitionId: 'stimulant', qty: 1 }] },
     failPenalty: { morale: -3 }, deadlineDays: 22,
     isBranchPoint: true,
     branchOptions: [
@@ -143,8 +143,8 @@ const DOCTOR_SHARED = {
       },
     ],
     narrative: {
-      start: '유리 파편에 손을 베었다. 의사가 감염으로 쓰러지면 안 된다.',
-      complete: '상처를 소독했다. 비상용 각성제도 확보했다. 두 가지 제안이 기다리고 있다. 한소희의 메모와 강민준의 무전. 선택을 해야 한다.',
+      start: '유리 파편에 손을 베었다. 의사가 감염으로 쓰러지면 안 된다. 다른 이의 약을 빌릴 수 없다 — 내 손으로 처방해야 한다. 이 한 개의 약이 앞으로의 정체성을 증명한다.',
+      complete: '자기 처방으로 상처를 다스렸다. 비상용 각성제와 소독약이 추가로 확보됐다. 이제 두 갈래 길 앞에 섰다. 한소희의 메모와 강민준의 무전. 의사의 손이 어디로 향할지 선택해야 한다.',
     },
   },
 
