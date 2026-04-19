@@ -668,6 +668,13 @@ const QuestSystem = {
       EventBus.emit('notify', { message: `📖 ${completeNarrative}`, type: 'story' });
     }
 
+    // 동반자 에필로그 대사 (P6) — bonusGranted 여부로 분기
+    if (qDef.companionEpilogue) {
+      const key = bonusGranted ? 'success' : 'default';
+      const line = qDef.companionEpilogue[key] ?? qDef.companionEpilogue.default;
+      if (line) EventBus.emit('notify', { message: `🗨️ ${line}`, type: 'story' });
+    }
+
     const compTitle = qDef.titleKey ? I18n.t(qDef.titleKey) : qDef.title;
     EventBus.emit('questCompleted', { questId: q.id, def: qDef, bonusGranted });
     EventBus.emit('notify', { message: I18n.t('quest.completed', { icon: qDef.icon, title: compTitle }), type: 'good' });
