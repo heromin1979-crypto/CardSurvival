@@ -159,19 +159,24 @@ const SECRET_COMBINATIONS = [
     },
   },
 
-  // ═══ 환경 활용 (Feature 1 연동) ═══════════════════════
+  // ═══ 젖은 천 활용 (날씨 트리거) ══════════════════════
+  // 드래그로 발견되지 않고, 카드 액션(inspect)에서 triggerById로 실행.
+  // sc_rain_shower: 비/장마 날씨에서 젖은 천으로 몸을 씻는다 → 감염 -5, 사기 +5
+  // sc_snow_compress: 눈 날씨에서 젖은 천을 환부에 댄다 → 체온 -3
 
   {
     id: 'sc_rain_shower',
     name: '빗물 샤워',
-    source: { id: 'cloth' },
-    target: { id: 'env_rainy' },
-    hint: '비 속에서 천으로 몸을 씻으면...',
+    source: { id: 'wet_cloth' },
+    target: null,                          // triggerById 전용 (드래그 매칭 X)
+    triggerOnly: true,
+    hint: '젖은 천으로 몸을 씻으면...',
     discoveryMsg: '💡 빗물 샤워! 감염 -5, 사기 +5.',
     xpReward: { skill: 'medicine', amount: 5 },
     cooldown: 72,
     result: {
       statChange: { infection: -5, morale: +5 },
+      transformSrc: 'cloth',               // 사용 후 마른 천으로 복귀
       consumeSrc: false,
       consumeTgt: false,
     },
@@ -179,14 +184,16 @@ const SECRET_COMBINATIONS = [
   {
     id: 'sc_snow_compress',
     name: '눈 냉찜질',
-    source: { id: 'cloth' },
-    target: { id: 'env_snow' },
-    hint: '눈을 천에 싸서 환부에 대면...',
+    source: { id: 'wet_cloth' },
+    target: null,                          // triggerById 전용
+    triggerOnly: true,
+    hint: '젖은 천을 환부에 대면...',
     discoveryMsg: '💡 눈 냉찜질! 체온 -3, 통증 완화.',
     xpReward: { skill: 'medicine', amount: 5 },
     cooldown: 72,
     result: {
       statChange: { temperature: -3 },
+      transformSrc: 'cloth',
       consumeSrc: false,
       consumeTgt: false,
     },

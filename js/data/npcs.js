@@ -342,7 +342,7 @@ const NPCS = {
         steps: [
           { type: 'collect', itemId: 'bandage',       qty: 5, hint: '병원·약국에서 주로 발견됨.' },
           { type: 'collect', itemId: 'first_aid_kit', qty: 2, hint: '경찰서·병원 구급함.' },
-          { type: 'visit',   districtId: 'dongjak',    hint: '동작구 삼성병원 응급실 방문.' },
+          { type: 'visit',   districtId: 'dongjak',    hint: '동작구 보라매병원 응급실 방문.' },
         ],
         reward: { trust: 1, items: [{ id: 'antibiotics', qty: 2 }, { id: 'antiseptic', qty: 3 }], skillUnlock: { skillId: 'medicine', value: 0.2 } },
       },

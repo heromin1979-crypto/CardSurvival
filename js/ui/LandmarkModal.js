@@ -7,7 +7,7 @@ import SystemRegistry  from '../core/SystemRegistry.js';
 import TickEngine    from '../core/TickEngine.js';
 import StateMachine  from '../core/StateMachine.js';
 import { rollEnemyGroup } from '../data/enemies.js';
-import LANDMARK_DATA, { rollLoot } from '../data/landmarks.js';
+import LANDMARK_DATA, { rollLoot, getLandmarkData } from '../data/landmarks.js';
 import GameData from '../data/GameData.js';
 import BALANCE  from '../data/gameBalance.js';
 
@@ -59,7 +59,7 @@ const LandmarkModal = {
     const box = this._overlay?.querySelector('.landmark-modal-box');
     if (!box) return;
 
-    const data = LANDMARK_DATA[this._districtId];
+    const data = getLandmarkData(this._districtId);
     if (!data) {
       box.innerHTML = `<div style="color:var(--text-dim);padding:24px;">${I18n.t('landmark.noData')}</div>`;
       return;

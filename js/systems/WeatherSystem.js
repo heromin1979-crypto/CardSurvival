@@ -109,6 +109,9 @@ const WeatherSystem = {
     // 환경 카드 TP 틱
     this._tickEnvironmentCards(gs);
 
+    // 젖은 천 자연 건조 (48TP)
+    this._tickWetCloth(gs);
+
     // TP 카운트다운 → 날씨 변경
     gs.weather.tpRemaining--;
     if (gs.weather.tpRemaining <= 0) {
@@ -129,8 +132,8 @@ const WeatherSystem = {
     Object.assign(gs.weather, w);
     gs.weather.tpRemaining = this._rollDuration();
     gs.weather.tempJitter  = parseFloat((Math.random() * 4 - 2).toFixed(1));
-    // 환경 보드 행이 있으면 카드 동기화
-    if (gs.board?.environment) this._syncEnvironmentCard(gs);
+    // 구버전 세이브 호환: slot 0 orphan 정리
+    this._cleanupWeatherSlot(gs);
   },
 
   _changeWeather(gs) {
@@ -147,7 +150,6 @@ const WeatherSystem = {
       EventBus.emit('notify', { message: `🌤 날씨 변화: ${w.icon} ${w.name}`, type: 'info' });
     }
 
-    this._syncEnvironmentCard(gs);
     EventBus.emit('weatherChanged', { weather: gs.weather });
     this._updateWeatherHUD(gs.weather);
     this._updateTemperatureHUD(this.getOutdoorTemperature());
@@ -216,41 +218,38 @@ const WeatherSystem = {
     el.className = cls;
   },
 
-  // ── 환경 카드 동기화 ─────────────────────────────────────────
+  // ── 환경 카드 slot 0 정리 ────────────────────────────────────
+  // 날씨는 HUD·위젯으로만 표시. 보드 slot 0에 카드를 두지 않는다.
+  // 구버전 세이브에 남아 있던 slot 0 카드를 제거.
 
-  _syncEnvironmentCard(gs) {
-    const envCardId = WEATHER_TO_ENV_CARD[gs.weather.id];
-    if (!envCardId) return;
-
-    // environment 행 slot 0 = 날씨 카드
-    const envRow = gs.board.environment;
-    const oldId  = envRow[0];
-
-    // 기존 날씨 카드 제거
+  _cleanupWeatherSlot(gs) {
+    const envRow = gs.board?.environment;
+    if (!envRow) return;
+    const oldId = envRow[0];
     if (oldId && gs.cards[oldId]) {
       delete gs.cards[oldId];
-      envRow[0] = null;
     }
-
-    // 새 날씨 카드 생성·배치
-    const inst = gs.createCardInstance(envCardId, {
-      _envTpRemaining: gs.weather.tpRemaining,
-      _envTpTotal:     gs.weather.tpRemaining,
-    });
-    if (inst) {
-      envRow[0] = inst.instanceId;
-      EventBus.emit('boardChanged', {});
-    }
+    if (envRow[0] != null) envRow[0] = null;
   },
 
-  // environment 카드의 남은 시간을 매 TP 갱신
-  _tickEnvironmentCards(gs) {
-    // 날씨 카드(slot 0) — tpRemaining 동기화
-    const weatherInstId = gs.board.environment[0];
-    if (weatherInstId && gs.cards[weatherInstId]) {
-      gs.cards[weatherInstId]._envTpRemaining = gs.weather.tpRemaining;
+  // 젖은 천: 48TP 후 자동으로 마른 천으로 복귀
+  _tickWetCloth(gs) {
+    let changed = false;
+    for (const card of gs.getBoardCards?.() ?? []) {
+      if (card.definitionId !== 'wet_cloth') continue;
+      if (card._wetTpRemaining == null) card._wetTpRemaining = 48;
+      card._wetTpRemaining--;
+      if (card._wetTpRemaining <= 0) {
+        card.definitionId = 'cloth';
+        delete card._wetTpRemaining;
+        changed = true;
+      }
     }
+    if (changed) EventBus.emit('boardChanged', {});
+  },
 
+  // environment 카드의 남은 시간을 매 TP 갱신 (slot 1, 2 계절 이벤트 전용)
+  _tickEnvironmentCards(gs) {
     // 이벤트 카드(slot 1, 2) — duration 카운트다운
     for (let i = 1; i <= 2; i++) {
       const evtId = gs.board.environment[i];
@@ -270,10 +269,8 @@ const WeatherSystem = {
   renderHUD() {
     const gs = GameState;
     if (!gs.weather) this._initWeather(gs);
-    // 환경 카드가 아직 없으면 동기화 (게임 시작·로드 시)
-    if (gs.board?.environment && !gs.board.environment[0]) {
-      this._syncEnvironmentCard(gs);
-    }
+    // 구버전 세이브 호환: 보드 slot 0 orphan 정리
+    this._cleanupWeatherSlot(gs);
     this._updateWeatherHUD(gs.weather);
     this._updateTemperatureHUD(this.getOutdoorTemperature());
     this._renderWeatherWidget(gs);
@@ -284,10 +281,9 @@ const WeatherSystem = {
     const el = document.getElementById('weather-widget');
     if (!el) return;
 
-    // 날씨 카드 힌트 태그
-    const weatherInstId = gs.board?.environment?.[0];
-    const weatherInst   = weatherInstId ? gs.cards[weatherInstId] : null;
-    const weatherDef    = weatherInst ? GameData?.items?.[weatherInst.definitionId] : null;
+    // 날씨 정의는 WEATHER_TO_ENV_CARD 매핑으로 조회 (slot 0 카드 사용 중단)
+    const envCardId = WEATHER_TO_ENV_CARD[gs.weather?.id];
+    const weatherDef = envCardId ? GameData?.items?.[envCardId] : null;
 
     const hintMap = {
       water_source:  { icon: '💧', label: '물 수집 가능' },

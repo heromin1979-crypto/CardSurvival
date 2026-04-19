@@ -8,6 +8,10 @@ import SystemRegistry  from '../core/SystemRegistry.js';
 import { SUBWAY_LINES, SEWER_ROUTES } from '../data/subwayRoutes.js';
 import SubwaySystem from '../systems/SubwaySystem.js';
 
+// [TEMP] 테스트용 미니맵 강제 오픈 플래그.
+// 정식 빌드 전 이 값을 false로 되돌리면 지도 조각 3개 수집 방식으로 복귀됨.
+const DEV_FORCE_MAP_UNLOCK = true;
+
 const DANGER_COLORS = ['#336633', '#4a7a33', '#886622', '#aa3333', '#771111', '#440000'];
 
 // 한강을 건너는 다리 2개:
@@ -80,8 +84,8 @@ const SeoulMapModal = {
   },
 
   open() {
-    // 지도 조각 미해금 시 차단
-    if (!GameState.flags.mapUnlocked) {
+    // 지도 조각 미해금 시 차단 (DEV_FORCE_MAP_UNLOCK이 true면 우회)
+    if (!GameState.flags.mapUnlocked && !DEV_FORCE_MAP_UNLOCK) {
       const n = GameState.flags.mapFragments?.length ?? 0;
       EventBus.emit('notify', {
         message: `🗺️ 지도 조각 ${n}/3 수집 후 열 수 있습니다. NPC와 대화해 힌트를 얻으세요.`,
@@ -146,7 +150,7 @@ const SeoulMapModal = {
     if (!el) return;
 
     const parent      = el.closest('.bc-minimap');
-    const mapUnlocked = GameState.flags.mapUnlocked;
+    const mapUnlocked = GameState.flags.mapUnlocked || DEV_FORCE_MAP_UNLOCK;
 
     // 잠금 상태: placeholder 표시
     if (!mapUnlocked) {

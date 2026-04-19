@@ -693,26 +693,28 @@ const StatSystem = {
     } else if (def.stackable && qty > 1) {
       inst.quantity = qty - 1;
       gs._updateEncumbrance();
+      this._spawnLeaveOnConsume(gs, def.leaveOnConsume);
       EventBus.emit('boardChanged', {});
     } else {
       const leave = def.leaveOnConsume;
       gs.removeCardInstance(instanceId);
       EventBus.emit('cardRemoved', { instanceId });
-
-      // 소비 후 남는 용기 (빈병, 빈캔 등) 보드에 배치
-      if (leave) {
-        const leftover = gs.createCardInstance(leave.definitionId, { quantity: leave.qty ?? 1 });
-        if (leftover) {
-          const placed = gs.placeCardInRow(leftover.instanceId);
-          if (!placed) {
-            gs.removeCardInstance(leftover.instanceId);
-            EventBus.emit('notify', { message: I18n.t('statSys.boardFullLeftover'), type: 'warn' });
-          }
-        }
-        EventBus.emit('boardChanged', {});
-      }
+      this._spawnLeaveOnConsume(gs, leave);
+      EventBus.emit('boardChanged', {});
     }
     return true;
+  },
+
+  // 소비 후 남는 용기(빈병/빈캔 등) 보드에 배치. placeCardInRow가 기존 스택과 자동 병합.
+  _spawnLeaveOnConsume(gs, leave) {
+    if (!leave) return;
+    const leftover = gs.createCardInstance(leave.definitionId, { quantity: leave.qty ?? 1 });
+    if (!leftover) return;
+    const placed = gs.placeCardInRow(leftover.instanceId);
+    if (!placed) {
+      gs.removeCardInstance(leftover.instanceId);
+      EventBus.emit('notify', { message: I18n.t('statSys.boardFullLeftover'), type: 'warn' });
+    }
   },
 };
 

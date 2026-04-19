@@ -83,7 +83,8 @@ const NPCQuestSystem = {
         if (qty < step.qty) return false;
       }
       if (step.type === 'visit') {
-        const visited = GameState.flags?.[`visited_${step.locationId}`] ?? false;
+        const targetId = step.districtId ?? step.locationId;
+        const visited  = GameState.location?.districtsVisited?.includes(targetId) ?? false;
         if (!visited) return false;
       }
       if (step.type === 'day') {

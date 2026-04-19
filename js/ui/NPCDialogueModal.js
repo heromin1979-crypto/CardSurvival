@@ -149,8 +149,11 @@ const NPCDialogueModal = {
           return `<div class="npc-quest-step ${have >= s.qty ? 'done' : ''}">${have >= s.qty ? '✅' : '⬜'} ${iname} ${have}/${s.qty} — <em>${s.hint}</em></div>`;
         }
         if (s.type === 'visit') {
-          const visited = GameState.flags?.[`visited_${s.locationId}`] ?? false;
-          return `<div class="npc-quest-step ${visited ? 'done' : ''}">${visited ? '✅' : '⬜'} ${s.locationId} 방문 — <em>${s.hint}</em></div>`;
+          const targetId   = s.districtId ?? s.locationId;
+          const visited    = GameState.location?.districtsVisited?.includes(targetId) ?? false;
+          const districtDef = GameData?.districts?.[targetId];
+          const label       = I18n.districtName(targetId, districtDef?.name ?? targetId);
+          return `<div class="npc-quest-step ${visited ? 'done' : ''}">${visited ? '✅' : '⬜'} ${label} 방문 — <em>${s.hint}</em></div>`;
         }
         return '';
       }).join('');

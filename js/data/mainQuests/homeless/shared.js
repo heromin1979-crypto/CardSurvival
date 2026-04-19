@@ -5,13 +5,15 @@ const HOMELESS_SHARED = {
 
   mq_homeless_01: {
     id: 'mq_homeless_01', title: '다리 아래 생존',
-    desc: '세상이 끝나는 날에도 다리 아래에 있었다. 식량 3개를 수집하라.',
+    desc: '세상이 끝나는 날에도 다리 아래에 있었다. 식량 3개를 수집하라. (5일 내 완료 시 보너스)',
     icon: '🌉', characterId: 'homeless', dayTrigger: 1, prerequisite: null,
     objective: { type: 'collect_item_type', itemType: 'food', count: 3 },
     reward: { morale: 5, items: [{ definitionId: 'cloth', qty: 2 }] },
+    bonusCondition: { type: 'completeWithinDays', days: 5 },
+    bonusReward: { morale: 5, items: [{ definitionId: 'canned_food', qty: 1 }] },
     failPenalty: { morale: -5 }, deadlineDays: 10,
     narrative: {
-      start: '최형식(52세). 한때 중견 건설회사 대표. 지금은 동호대교 아래. 세상이 끝나는 날 밤에도 여기에 있었다. 겁이 나지 않았다. 이미 한 번 다 잃었으니까.',
+      start: '최형식(52세). 한때 중견 건설회사 대표. 지금은 동호대교 아래. 세상이 끝나는 날 밤에도 여기에 있었다. 겁이 나지 않았다. 이미 한 번 다 잃었으니까. (거리의 감각: 5일 안에 끝내면 통조림이 하나 생긴다.)',
       complete: '식량을 찾았다. 다리 기둥 옆에 버려진 천 두 조각도 챙겼다. 없어도 사는 법을 알지만, 있으면 좋다.',
     },
   },
@@ -161,6 +163,9 @@ const HOMELESS_SHARED = {
       start: '타워 경비대장 김정호. 40대, 입이 무거운 사람이다. 외곽 순찰에서 자주 다쳐 돌아온다. 그를 돌봐주면 타워 안에서 자리가 생긴다.',
       complete: '김정호가 고개를 끄덕였다. "형식 씨, 이제 같은 편이지." 경비대가 내 뒤를 봐준다.',
     },
+    companionEpilogue: {
+      default: '김정호: "이 정도면 됐어. 다친 데는 이제 괜찮으니 걱정 마라."',
+    },
   },
 
   mq_homeless_side_02: {
@@ -174,18 +179,39 @@ const HOMELESS_SHARED = {
       start: '이해진이라는 상인이 타워 1층에 좌판을 깔았다. "형씨, 재료만 충분히 모아오면 좋은 물건 내드릴게." 거리에서 배운 눈썰미를 쓸 때다.',
       complete: '재료 10개를 모아 이해진 앞에 내려놓았다. "형씨, 사업가 출신답네." 그가 통조림과 로프를 내밀었다.',
     },
+    companionEpilogue: {
+      default: '이해진: "형씨, 다음에도 괜찮은 물건 보이면 내가 먼저 연락하지."',
+    },
   },
 
   mq_homeless_side_03: {
     id: 'mq_homeless_side_03', title: '주방 도우미',
-    desc: '음식 5개를 조리해 주방장 박수미의 저녁 배식을 도와라.',
+    desc: '음식 5개를 조리해 주방장 박수미의 저녁 배식을 도와라. (오늘의 메뉴와 일치하면 보너스)',
     icon: '👩‍🍳', characterId: 'homeless', dayTrigger: 45, prerequisite: 'mq_homeless_side_02',
     objective: { type: 'craft_item', category: 'food', count: 5 },
     reward: { morale: 15, items: [{ definitionId: 'canned_food', qty: 4 }, { definitionId: 'wild_herb', qty: 3 }] },
+    prescriptionOptions: {
+      '밥류 배식':     'cooked_rice',
+      '생선 구이':     'grilled_fish',
+      '야채 샐러드':   'wild_salad',
+      '베리 잼':       'berry_jam',
+    },
+    prescriptionLabels: {
+      cooked_rice:   '🍚 밥류 배식',
+      grilled_fish:  '🐟 생선 구이',
+      wild_salad:    '🥗 야채 샐러드',
+      berry_jam:     '🍓 베리 잼',
+    },
+    bonusCondition: { type: 'prescriptionMatch' },
+    bonusReward: { morale: 6, items: [{ definitionId: 'canned_food', qty: 2 }] },
     failPenalty: { morale: -3 }, deadlineDays: 25,
     narrative: {
-      start: '박수미 주방장이 저녁 배식 인원을 늘리려 한다. 다리 아래서 깡통째 데워먹던 시절과는 다르다. 제대로 된 요리를 몇 개 만들어 보여주자.',
+      start: '박수미 주방장이 저녁 배식 인원을 늘리려 한다. "오늘은 특별히 한 메뉴에 집중하자"며 오늘의 메뉴를 귀띔했다. 거리에서 깡통째 데워먹던 시절과는 다르다.',
       complete: '배식 줄이 길어졌다. "형식 씨, 다음엔 같이 메뉴 정하자." 박수미가 웃었다. 타워 안에 냄새가 돌았다.',
+    },
+    companionEpilogue: {
+      default:  '박수미: "형식 씨, 손이 빨라졌네. 내일도 같이 하자."',
+      success:  '박수미: "오늘의 메뉴 그대로 뽑아왔네 — 입 맛이 맞는 사람이 있으니 든든하다."',
     },
   },
 
@@ -200,6 +226,9 @@ const HOMELESS_SHARED = {
       start: '정비공 한지성이 타워 하층부를 되살리려 한다. 건설회사 대표 시절 익혔던 자재 감각이 되살아난다. 그에게 필요한 건 중간 가공 재료들이다.',
       complete: '한지성이 완성된 재료들을 받아들고 눈이 빛났다. "형식 씨, 이거 혼자서는 못 만들었어요." 타워 층계에 불이 들어왔다.',
     },
+    companionEpilogue: {
+      default: '한지성: "형식 씨, 손이 여기까지 살아있는 거 보면 아직 대표라고 해도 되겠는데요."',
+    },
   },
 
   mq_homeless_side_05: {
@@ -212,6 +241,9 @@ const HOMELESS_SHARED = {
     narrative: {
       start: '최지윤 의사 혼자서는 환자가 너무 많다. 다리 아래에서 사람 돌보던 감각은 남아 있다. 손이라도 보태야 한다.',
       complete: '진료소 한쪽 침상이 비었다. "형식 씨, 보조 아니라 동료예요." 최지윤이 처음으로 편하게 웃었다. 타워 안에 진짜 공동체가 섰다.',
+    },
+    companionEpilogue: {
+      default: '최지윤: "형식 씨 덕에 오늘은 침상 하나는 비웠어요. 내일 또 부탁해요."',
     },
   },
 };

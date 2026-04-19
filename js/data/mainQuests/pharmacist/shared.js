@@ -5,13 +5,15 @@ const PHARMACIST_SHARED = {
 
   mq_pharma_01: {
     id: 'mq_pharma_01', title: '약국 재고',
-    desc: '삼성병원에 피신했다. 붕대 3개를 수집하라.',
+    desc: '삼성병원에 피신했다. 붕대 3개를 수집하라. (5일 내 완료 시 보너스)',
     icon: '💊', characterId: 'pharmacist', dayTrigger: 1, prerequisite: null,
     objective: { type: 'collect_item', definitionId: 'bandage', count: 3 },
     reward: { morale: 5, items: [{ definitionId: 'antiseptic', qty: 1 }] },
+    bonusCondition: { type: 'completeWithinDays', days: 5 },
+    bonusReward: { morale: 5, items: [{ definitionId: 'bandage', qty: 2 }] },
     failPenalty: { morale: -5 }, deadlineDays: 10,
     narrative: {
-      start: '한소희(31세). 홍대 입구 골목 작은 약국 원장. 이미 사흘 전부터 알아차렸다. 발열, 이상 행동, 희번뜩이는 눈. 삼성병원으로 피신했다.',
+      start: '한소희(31세). 홍대 입구 골목 작은 약국 원장. 이미 사흘 전부터 알아차렸다. 발열, 이상 행동, 희번뜩이는 눈. 삼성병원으로 피신했다. (약사의 감각: 5일 안에 재고를 확보하면 붕대 두 개가 덤으로 남는다.)',
       complete: '붕대와 소독약을 확보했다. 약국 원장이 제일 먼저 챙기는 것. 이것으로 기본 치료는 가능하다.',
     },
   },
@@ -83,14 +85,32 @@ const PHARMACIST_SHARED = {
 
   mq_pharma_07: {
     id: 'mq_pharma_07', title: '1차 합성 시도',
-    desc: '의료 아이템 1개를 제작하라. 첫 번째 합성 시도다.',
+    desc: '의료 아이템 1개를 제작하라. 관찰 일지가 제안하는 표적 약물이 있다. (일치 시 보너스)',
     icon: '⚗️', characterId: 'pharmacist', dayTrigger: 13, prerequisite: 'mq_pharma_06',
     objective: { type: 'craft_item', category: 'medical', count: 1 },
     reward: { morale: 8, items: [{ definitionId: 'stamina_tonic', qty: 1 }] },
+    prescriptionOptions: {
+      '항바이러스 (허브차 루트)':     'herbal_tea',
+      '광범위 소독 (antiseptic)':    'antiseptic',
+      '즉효 진통 (painkiller_field)': 'painkiller_field',
+      '항생 경로 (reinforced_bandage)': 'reinforced_bandage',
+    },
+    prescriptionLabels: {
+      herbal_tea:           '🌿 허브차 (항바이러스)',
+      antiseptic:           '🧪 소독약 (광범위)',
+      painkiller_field:     '💉 야전 진통제',
+      reinforced_bandage:   '🩹 강화 붕대',
+    },
+    bonusCondition: { type: 'prescriptionMatch' },
+    bonusReward: { morale: 6, items: [{ definitionId: 'antibiotics', qty: 1 }] },
     failPenalty: { morale: -5 }, deadlineDays: 23,
     narrative: {
-      start: '관찰 일지 3페이지. 감염 48시간 후 세포 변이 패턴이 달라진다. 이 발견을 기반으로 첫 합성을 시도한다.',
+      start: '관찰 일지 3페이지. 감염 48시간 후 세포 변이 패턴이 달라진다. 오늘의 표적 약물이 지정됐다 — 일지의 방향과 맞추면 항생제까지 얻을 수 있다.',
       complete: '1차 합성 결과 불완전. 하지만 방향은 맞다. 합성 과정에서 체력 회복 강장제를 만들었다. 더 정제해야 한다.',
+    },
+    companionEpilogue: {
+      default: '한소희: "합성이 통했어요. 첫 페이지의 가설이 틀린 방향은 아니었네요."',
+      success: '한소희: "일지의 표적 그대로 합성했어요 — 이 루트가 본 흐름이 되겠어요."',
     },
   },
 

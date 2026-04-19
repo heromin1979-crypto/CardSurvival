@@ -1,18 +1,29 @@
 // === MAIN QUESTS: 이지수 (doctor) — 공통 1~10 ===
-// Q10 완료 시 분기 선택: A(한소희 협력) vs B(강민준 합류)
+// Q10 완료 시 분기 선택:
+//   A (한소희 협력)  — 서울대 연구소, 합성 전문가
+//   B (강민준 합류)  — 용산 군 의료본부
+//   C (독자 연구)    — 보라매 고수, side_01~side_end 체인으로 백신 합성 엔딩
 
 const DOCTOR_SHARED = {
 
   mq_doctor_01: {
     id: 'mq_doctor_01', title: '응급실의 첫 환자',
-    desc: '응급실에 쓰러진 박상훈 하사를 완치시켜라. (붕대로 치료)',
+    desc: '응급실에 쓰러진 박상훈 하사를 완치시켜라. (붕대로 치료) ⭐ 5 TP 이내 완료 시 골든 타임 보너스.',
     icon: '🩹', characterId: 'doctor', dayTrigger: 1, prerequisite: null,
     objective: { type: 'treat_npc', npcId: 'npc_wounded_soldier', count: 1 },
     reward: { morale: 8, items: [{ definitionId: 'bandage', qty: 2 }, { definitionId: 'antiseptic', qty: 1 }] },
+    bonusCondition: { type: 'completeWithinTp', count: 5 },
+    bonusReward: {
+      label: '골든 타임 치료 — 박상훈 하사 상태 우수. 전술 무전 조기 확보.',
+      morale: 5,
+      items: [{ definitionId: 'antibiotics', qty: 1 }, { definitionId: 'painkiller', qty: 1 }],
+      flags: { doctor_golden_start: true, minjun_radio_received: true },
+    },
     failPenalty: { morale: -10 }, deadlineDays: 3,
     narrative: {
-      start: '동작구 보라매병원 응급실. 이지수 전문의(38세)는 약품 창고에서 3일을 버텼다. 문을 열자 바닥에 박상훈 하사가 쓰러져 있다 — 현충원 경비소대 소속. 의사의 첫 환자다. 붕대를 하사 카드에 드래그해 치료하라.',
-      complete: '박상훈 하사가 눈을 떴다. "선생님, 감사합니다... 신촌에서 군 무전이 잡힌 적이 있습니다. 강민준 군의관이 의사를 찾는다고 했습니다." 히포크라테스 선서가 세상이 끝났다고 사라지지 않는다. 의사의 역할이 시작됐다.',
+      start: '동작구 보라매병원 응급실. 이지수 전문의(38세)는 약품 창고에서 3일을 버텼다. 문을 열자 바닥에 박상훈 하사가 쓰러져 있다 — 현충원 경비소대 소속. 의사의 첫 환자다. 붕대를 하사 카드에 드래그해 치료하라. ⏱ 5 TP 이내에 처치를 마치면 하사의 의식이 또렷할 때 무전 정보를 얻을 수 있다.',
+      complete: '박상훈 하사가 눈을 떴다. "선생님, 감사합니다..." 출혈이 멎었지만 의식이 흐릿하다. 히포크라테스 선서가 세상이 끝났다고 사라지지 않는다. 의사의 역할이 시작됐다.',
+      completeBonus: '박상훈 하사가 또렷한 눈으로 일어났다. "선생님… 골든 타임이었습니다. 정말 감사합니다. 신촌에서 군 무전이 잡혔습니다 — 강민준 군의관이 의사를 찾고 있습니다. 좌표를 지금 드리겠습니다." 하사의 손이 무전 수첩을 건넸다. 감염 위험도 낮춘 항생제까지 건네받았다. 이지수의 손은 3일간의 어둠을 뚫고도 정확했다.',
     },
   },
 
@@ -44,13 +55,13 @@ const DOCTOR_SHARED = {
 
   mq_doctor_04: {
     id: 'mq_doctor_04', title: '환자 수액',
-    desc: '탈수 환자가 발생했다. 깨끗한 물 3개를 확보하라.',
+    desc: '탈수 환자가 발생했다. 깨끗한 음용수 3개를 확보하라. (정수 물병 / 끓인 물 / 멸균수 등)',
     icon: '💧', characterId: 'doctor', dayTrigger: 6, prerequisite: 'mq_doctor_03',
-    objective: { type: 'collect_item', definitionId: 'clean_water', count: 3 },
+    objective: { type: 'collect_item_type', itemType: 'clean', count: 3 },
     reward: { morale: 5, items: [{ definitionId: 'painkiller', qty: 1 }] },
     failPenalty: { morale: -3 }, deadlineDays: 16,
     narrative: {
-      start: '병원 복도에서 탈수 상태의 생존자를 발견했다. 깨끗한 물이 필요하다.',
+      start: '병원 복도에서 탈수 상태의 생존자를 발견했다. 깨끗한 음용수가 필요하다. 카페테리아 물병이든, 빗물을 모아 끓인 것이든 상관없다.',
       complete: '수분을 공급했다. 환자가 눈을 떴다. 고맙다는 말을 하며 진통제를 내밀었다.',
     },
   },
@@ -65,6 +76,9 @@ const DOCTOR_SHARED = {
     narrative: {
       start: '소문이 퍼졌다. "4층에 의사가 있다." 복도에 쓰러진 첫 외래 환자가 찾아왔다. 붕대와 소독약으로 치료해야 한다.',
       complete: '환자가 눈을 뜨고 의사의 손을 잡는다. "선생님… 감사합니다." 그가 남긴 구급키트와 항생제. 보라매 "의사가 있는 곳"이라는 소문이 바깥으로 퍼진다.',
+    },
+    companionEpilogue: {
+      default: '박상훈 하사: "선생님, 저 같은 사람이 또 오는 겁니다. 제가 경비 서 드릴게요 — 이 응급실은 제가 지킵니다."',
     },
   },
 
@@ -83,27 +97,71 @@ const DOCTOR_SHARED = {
 
   mq_doctor_07: {
     id: 'mq_doctor_07', title: '첫 번째 치료약',
-    desc: '의료 아이템을 1개 제작하라.',
+    desc: '의료 아이템을 1개 제작하라. 📋 진료 요청과 일치하는 약품 제작 시 골든 타임 보너스.',
     icon: '💊', characterId: 'doctor', dayTrigger: 13, prerequisite: 'mq_doctor_06',
     objective: { type: 'craft_item', category: 'medical', count: 1 },
     reward: { morale: 8, items: [{ definitionId: 'bandage', qty: 1 }, { definitionId: 'antiseptic', qty: 1 }] },
+    prescriptionOptions: {
+      fever:     'antibiotics',
+      bleeding:  'bandage',
+      infection: 'antiseptic',
+    },
+    prescriptionLabels: {
+      fever:     '고열 (항생제 필요)',
+      bleeding:  '출혈 (붕대 필요)',
+      infection: '상처 감염 (소독약 필요)',
+    },
+    bonusCondition: { type: 'prescriptionMatch' },
+    bonusReward: {
+      label: '정확한 처방 — 환자 증상 진정.',
+      morale: 5,
+      items: [{ definitionId: 'herb', qty: 2 }, { definitionId: 'antiseptic', qty: 1 }],
+      flags: { doctor_prescription_07_success: true },
+    },
     failPenalty: { morale: -5 }, deadlineDays: 23,
     narrative: {
-      start: '보라매 약품 창고가 바닥을 드러냈다. 남은 약초와 잔여 약품을 혼합해 임시 치료약을 만든다.',
+      start: '보라매 약품 창고가 바닥을 드러냈다. 남은 약초와 잔여 약품을 혼합해 임시 치료약을 만든다. 간호사가 진료 요청서를 건넸다 — 증상과 약품이 일치하면 환자가 빠르게 안정된다.',
       complete: '첫 번째 임시 치료약 완성. 하지만 원료가 3일 안에 고갈될 것이다 — 세브란스 병원 본관 약품고가 유일한 희망이다.',
+      completeBonus: '증상에 정확히 맞춘 약품이었다. 환자의 호흡이 곧 안정됐고, 간호사의 눈빛에 경의가 스쳤다. "선생님, 진료 감각이 살아 있습니다." 약초와 소독약 여분을 감사 인사와 함께 받았다. 세브란스 원정이 한 걸음 가까워졌다.',
+    },
+    companionEpilogue: {
+      default: '간호사: "선생님, 아무거나 만드신 건 아니시겠죠… 다음엔 환자 증상부터 보실 수 있을 거예요. 제가 진료 요청서 더 가져올게요."',
+      success: '간호사: "역시 선생님이세요. 이 비율, 기록해 두겠습니다 — 내일 똑같은 증상 오면 제가 먼저 준비해 놓을 수 있으니까요."',
     },
   },
 
   mq_doctor_08: {
     id: 'mq_doctor_08', title: '원정 의료 물자 제작',
-    desc: '세브란스 원정을 위해 의료 아이템 3개를 직접 제작하라.',
+    desc: '세브란스 원정을 위해 의료 아이템 3개를 직접 제작하라. 📋 진료 요청과 일치하는 약품 포함 시 골든 타임 보너스.',
     icon: '⚗️', characterId: 'doctor', dayTrigger: 15, prerequisite: 'mq_doctor_07',
     objective: { type: 'craft_item', category: 'medical', count: 3 },
     reward: { morale: 10, items: [{ definitionId: 'painkiller', qty: 2 }, { definitionId: 'first_aid_kit', qty: 1 }] },
+    prescriptionOptions: {
+      severe_wound: 'first_aid_kit',
+      poisoning:    'antidote',
+      acute_pain:   'painkiller',
+    },
+    prescriptionLabels: {
+      severe_wound: '중상 환자 (구급키트 필요)',
+      poisoning:    '독성 노출 (해독제 필요)',
+      acute_pain:   '급성 통증 (진통제 필요)',
+    },
+    bonusCondition: { type: 'prescriptionMatch' },
+    bonusReward: {
+      label: '원정 진료 대응 — 군 의무대 수준 배낭.',
+      morale: 8,
+      items: [{ definitionId: 'antibiotics', qty: 1 }, { definitionId: 'stimulant', qty: 1 }],
+      flags: { doctor_prescription_08_success: true },
+    },
     failPenalty: { morale: -5 }, deadlineDays: 15,
     narrative: {
-      start: '신촌 세브란스까지 — 강남에서 마포까지 버틸 의료 배낭을 직접 꾸려야 한다. 수집이 아니라 제작이다. 의사의 손으로 만든 약만이 믿을 수 있다.',
+      start: '신촌 세브란스까지 — 강남에서 마포까지 버틸 의료 배낭을 직접 꾸려야 한다. 수집이 아니라 제작이다. 간호사가 진료 요청서를 들고 왔다 — 이번엔 중상 환자용 대응 약품. 증상에 맞는 특수 약품이 1개라도 포함되면 원정 배낭이 한 단계 격상된다.',
       complete: '손수 제작한 의료 아이템 3종이 배낭에 정리됐다. 진통제와 구급키트도 여분으로 챙겼다. 이제 출발할 수 있다.',
+      completeBonus: '증상에 맞춘 특수 약품이 배낭 최상단에 들어갔다. 강민준 군의관이 무전을 다시 보낸다 — "민간 전문의가 그런 판단을 한다면 우리도 받아들일 준비가 됐습니다." 항생제와 각성제까지 보너스로 확보됐다.',
+    },
+    companionEpilogue: {
+      default: '박상훈 하사: "선생님, 배낭 무게 감당 되십니까? 제가 선봉에 설게요 — 적어도 소독약 상자는 제가 들고 갑니다."',
+      success: '박상훈 하사: "민간 전문의의 판단이 군의관 무전까지 움직이는군요. 선생님 뒤로 경계 서겠습니다. 강민준 군의관께 선생님 쪽이 본진이라 전달해도 되겠습니까?"',
     },
   },
 
@@ -121,11 +179,11 @@ const DOCTOR_SHARED = {
   },
 
   mq_doctor_10: {
-    id: 'mq_doctor_10', title: '야전 소독',
-    desc: '이동 중 상처가 났다. 소독약 2개를 확보하라.',
+    id: 'mq_doctor_10', title: '자기 처방',
+    desc: '이동 중 상처가 났다. 의료 아이템 1개를 직접 제작해 스스로를 치료하라.',
     icon: '🧴', characterId: 'doctor', dayTrigger: 21, prerequisite: 'mq_doctor_09',
-    objective: { type: 'collect_item', definitionId: 'antiseptic', count: 2 },
-    reward: { morale: 8, items: [{ definitionId: 'stimulant', qty: 1 }] },
+    objective: { type: 'craft_item', category: 'medical', count: 1 },
+    reward: { morale: 8, items: [{ definitionId: 'antiseptic', qty: 1 }, { definitionId: 'stimulant', qty: 1 }] },
     failPenalty: { morale: -3 }, deadlineDays: 22,
     isBranchPoint: true,
     branchOptions: [
@@ -141,10 +199,16 @@ const DOCTOR_SHARED = {
         setsFlag: 'doctor_branch_b',
         recruitNpc: 'npc_minjun',
       },
+      {
+        label: '독자 연구 (시크릿)',
+        desc: '보라매에 남아 단독 역학 연구를 시작한다. 협력자 없이, 그러나 0번 환자 표본까지 밀어붙여 역병 백신을 합성한다. (사이드 체인 side_01 → side_end)',
+        setsFlag: 'doctor_branch_c',
+        warning: '고난이도 — 협력자 없이 40일 이상 단독 생존해야 하며, 0번 환자(보스)와 대면해야 한다.',
+      },
     ],
     narrative: {
-      start: '유리 파편에 손을 베었다. 의사가 감염으로 쓰러지면 안 된다.',
-      complete: '상처를 소독했다. 비상용 각성제도 확보했다. 두 가지 제안이 기다리고 있다. 한소희의 메모와 강민준의 무전. 선택을 해야 한다.',
+      start: '유리 파편에 손을 베었다. 의사가 감염으로 쓰러지면 안 된다. 다른 이의 약을 빌릴 수 없다 — 내 손으로 처방해야 한다. 이 한 개의 약이 앞으로의 정체성을 증명한다.',
+      complete: '자기 처방으로 상처를 다스렸다. 비상용 각성제와 소독약이 추가로 확보됐다. 이제 두 갈래 길 앞에 섰다. 한소희의 메모와 강민준의 무전. 의사의 손이 어디로 향할지 선택해야 한다.',
     },
   },
 
@@ -174,6 +238,19 @@ const DOCTOR_SHARED = {
     narrative: {
       start: '이지수의 수첩에 적힌 메모: "임상 지식은 이론이 아닌 관찰이다. 내 몸의 감염 수치를 낮게 유지하면서 초기 증상을 3일간 기록할 것." 감염 -25% 특성을 체감으로 확인할 시간이다.',
       complete: '3일간의 관찰 기록이 완성됐다. 보통 사람이라면 벌써 중증으로 번졌을 감염 수치가 여전히 낮게 유지됐다. "임상 지식 — 내 몸이 곧 표본이다." 이지수는 스스로의 저항력을 수치로 확인했다.',
+    },
+  },
+
+  mq_doctor_side_hygiene: {
+    id: 'mq_doctor_side_hygiene', title: '날씨는 약이다 — 현장 위생',
+    desc: '빗물 샤워 또는 눈 압박(젖은 천 카드 액션)을 1회 수행하라. 의사의 자기 위생은 곧 환자의 안전이다.',
+    icon: '🌧️', characterId: 'doctor', dayTrigger: 5, prerequisite: 'mq_doctor_01',
+    objective: { type: 'trigger_combo', comboIds: ['sc_rain_shower', 'sc_snow_compress'], count: 1 },
+    reward: { morale: 10, items: [{ definitionId: 'antiseptic', qty: 2 }, { definitionId: 'herb', qty: 2 }] },
+    failPenalty: { morale: -3 }, deadlineDays: 35,
+    narrative: {
+      start: '이지수의 수첩: "보급이 끊긴 현장에서 의사의 무기는 장비가 아니라 습관이다. 비가 오면 젖은 천으로 몸을 씻고, 눈이 오면 그 냉기로 상처를 눌러라. 날씨는 약이다." 젖은 천을 카드 액션으로 사용해 빗물 샤워를 시도해 볼 것.',
+      complete: '처음으로 빗속에서 몸을 씻었다. 감염 수치가 떨어지고 사기가 돌아왔다 — 의사의 손길이 자신에게 먼저 닿는다. 이제 환자 앞에서도 당당히 장갑을 낄 수 있다. 약초와 소독약도 수첩 사이에서 발견됐다.',
     },
   },
 
@@ -263,13 +340,18 @@ const DOCTOR_SHARED = {
 
   mq_doctor_side_end: {
     id: 'mq_doctor_side_end', title: '역병의 종결 — 백신 합성',
-    desc: '0번 환자 혈액 표본으로 역병 백신을 직접 합성하라.',
+    desc: '0번 환자 혈액 표본으로 역병 백신을 직접 합성하라. (C루트 공식 엔딩 / A·B루트에서는 시크릿 부가 엔딩)',
     icon: '💠', characterId: 'doctor', dayTrigger: 55, prerequisite: 'mq_doctor_side_05',
     objective: { type: 'craft_item', definitionId: 'plague_vaccine', count: 1 },
     reward: { morale: 35, items: [
       { definitionId: 'universal_cure', qty: 1 },
       { definitionId: 'surgery_kit',    qty: 1 },
-    ], flags: { doctor_vaccine_synthesized: true, doctor_secret_ending_unlocked: true } },
+    ], flags: {
+      doctor_vaccine_synthesized:    true,
+      doctor_secret_ending_unlocked: true,
+      mainQuestComplete_doctor:      true,
+      doctor_ending:                 'c_vaccine',
+    } },
     failPenalty: { morale: -15 }, deadlineDays: 90,
     narrative: {
       start: '0번 환자의 심장 조직 샘플. 현미경 너머로 항원 구조가 드러난다 — 인간이 만든 바이러스가 아니다. 그러나 의사의 손이 닿는 한, 만들지 못할 백신도 없다. 광범위 항생제와 농축 혈청, 그리고 감염 혈액 표본. 합성의 마지막 단계다.',

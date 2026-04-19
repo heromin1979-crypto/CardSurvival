@@ -59,6 +59,7 @@ const LOCATION_IMAGES = {
 const CARD_IMAGES = {
   scrap_metal:      'assets/images/materials/scrap_metal.png',
   cloth:            'assets/images/materials/cloth.png',
+  wet_cloth:        'assets/images/materials/cloth.png',
   tattered_rags:    'assets/images/materials/cloth.png',
   rope:             'assets/images/materials/rope.png',
   duct_tape:        'assets/images/materials/duct_tape.png',
@@ -478,6 +479,7 @@ const CARD_IMAGES = {
   garden_bed_herb:       'assets/images/structures/garden_bed_herb.png',
   garden_bed_veggie:     'assets/images/structures/garden_bed_veggie.png',
   iron_pot:              'assets/images/structures/iron_pot.png',
+  iron_pot_water:        'assets/images/structures/iron_pot.png',
   root_cellar:           'assets/images/structures/root_cellar.png',
   tanning_rack:          'assets/images/structures/tanning_rack.png',
   wind_stove:            'assets/images/structures/wind_stove.png',
@@ -798,6 +800,9 @@ const CardFactory = {
 
         const districtId = def.districtId ?? def.id?.replace(/^lm_/, '');
         const isCurrent  = GameState.location.currentDistrict === districtId;
+        // 랜드마크 진입 키는 아이템 id 우선 (동일 구 내 복수 랜드마크 구분).
+        // ExploreSystem/LandmarkModal의 getLandmarkData가 lm_ 접두사 폴백 처리.
+        const landmarkKey = def.id ?? districtId;
 
         el.className = `card location-card landmark-card spawning${isCurrent ? ' is-current-loc' : ''}`;
         el.draggable = false;
@@ -810,12 +815,12 @@ const CardFactory = {
         if (isCurrent) {
           // 현재 구 랜드마크 → 랜드마크 진입
           el.addEventListener('click', () => {
-            if (districtId) EventBus.emit('landmarkRequest', { districtId });
+            if (landmarkKey) EventBus.emit('landmarkRequest', { districtId: landmarkKey });
           });
           el.addEventListener('keydown', e => {
             if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault();
-              if (districtId) EventBus.emit('landmarkRequest', { districtId });
+              if (landmarkKey) EventBus.emit('landmarkRequest', { districtId: landmarkKey });
             }
           });
         } else {

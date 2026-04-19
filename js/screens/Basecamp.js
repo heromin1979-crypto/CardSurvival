@@ -13,6 +13,7 @@ import EquipmentModal  from '../ui/EquipmentModal.js';
 import LandmarkModal   from '../ui/LandmarkModal.js';
 import SkillModal      from '../ui/SkillModal.js';
 import BasecampModal  from '../ui/BasecampModal.js';
+import DoctorPatientModal from '../ui/DoctorPatientModal.js';
 import QuestSystem    from '../systems/QuestSystem.js';
 import ExploreSystem  from '../systems/ExploreSystem.js';
 import SeasonSystem    from '../systems/SeasonSystem.js';
@@ -67,6 +68,7 @@ const Basecamp = {
     LandmarkModal.init();
     SkillModal.init();
     BasecampModal.init();
+    DoctorPatientModal.init();
     this._updateQuestPanel();
     this._updateSecretComboCount();
     // 계절 배지 초기화
@@ -199,6 +201,11 @@ const Basecamp = {
       <!-- Basecamp upgrade modal -->
       <div class="modal-overlay" id="basecamp-upgrade-modal">
         <div class="bc-upgrade-modal-box"></div>
+      </div>
+
+      <!-- Doctor patient log modal -->
+      <div class="modal-overlay" id="doctor-patient-modal">
+        <div class="doctor-patient-modal-box"></div>
       </div>
 
       <!-- Craft modal -->

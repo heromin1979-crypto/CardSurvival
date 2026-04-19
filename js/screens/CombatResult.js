@@ -5,7 +5,7 @@ import StateMachine    from '../core/StateMachine.js';
 import I18n            from '../core/I18n.js';
 import ExploreSystem   from '../systems/ExploreSystem.js';
 import { NODES }       from '../data/nodes.js';
-import { LANDMARK_DATA } from '../data/landmarks.js';
+import { getLandmarkData } from '../data/landmarks.js';
 
 const CombatResult = {
   _el:        null,
@@ -31,7 +31,7 @@ const CombatResult = {
     // ── 복귀 장소 결정 (전투 발생 노드, 없으면 기지) ──
     const returnNodeId   = data.nodeId ?? GameState.location.currentDistrict ?? 'mapo';
     const landmarkId     = GameState.location.currentLandmark;
-    const landmarkName   = landmarkId ? (LANDMARK_DATA[landmarkId]?.name ?? landmarkId) : null;
+    const landmarkName   = landmarkId ? (getLandmarkData(landmarkId)?.name ?? landmarkId) : null;
     const rawLabel       = NODES[returnNodeId]?.name ?? I18n.t('combatResult.return');
     const btnLabel       = landmarkName ?? I18n.districtName(returnNodeId, rawLabel);
 

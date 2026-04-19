@@ -97,10 +97,17 @@ const CraftUI = {
   },
 
   _renderBlueprintList() {
-    // 히든 레시피는 해금된 것만 표시
+    const unlockedHidden = GameState.flags.hiddenRecipesUnlocked ?? [];
     const visibleBlueprints = Object.values(ALL_BLUEPRINTS).filter(bp => {
-      if (!bp.hidden) return true;
-      return (GameState.flags.hiddenRecipesUnlocked ?? []).includes(bp.id);
+      // 히든 레시피: 해금된 것만 표시
+      if (bp.hidden) return unlockedHidden.includes(bp.id);
+      // 일반 레시피: 요구 스킬을 모두 달성해야 표시
+      if (bp.requiredSkills) {
+        for (const [skillId, minLevel] of Object.entries(bp.requiredSkills)) {
+          if (SkillSystem.getLevel(skillId) < minLevel) return false;
+        }
+      }
+      return true;
     });
 
     if (visibleBlueprints.length === 0) {

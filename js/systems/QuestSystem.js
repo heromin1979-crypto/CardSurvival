@@ -11,8 +11,9 @@ import { QUEST_TO_FLASHBACK } from '../data/cinematicScenes.js';
 // ── 계절 퀘스트 정의 ────────────────────────────────────────────────
 // trigger: 연결된 seasonalEvent id (해당 이벤트 발생 시 자동 시작)
 // objective: { type, target, count }
-//   type: 'collect_item' | 'craft_item' | 'kill_enemies' | 'survive_days' | 'equip_slot'
+//   type: 'collect_item' | 'collect_item_type' | 'craft_item' | 'kill_enemies' | 'survive_days' | 'equip_slot'
 //       | 'survive_infection' | 'npc_quest_complete' | 'treat_npc' | 'track_infected' | 'rescue_npc' | 'visit_district'
+//       | 'trigger_combo' (comboId 또는 comboIds 배열)
 // reward: { morale?, hp? }
 const QUEST_DEFS = {
   spring_water: {
@@ -138,6 +139,25 @@ const QuestSystem = {
     EventBus.on('landmarkCleared',({ landmarkId, rescuedNpcId }) => this._onLandmarkCleared(landmarkId, rescuedNpcId));
     // NPC 퀘스트 완료 시 npc_quest_complete 체크 (메인 퀘스트 크로스오버)
     EventBus.on('npcQuestCompleted', ({ npcId, questId }) => this._onNpcQuestCompleted(npcId, questId));
+    // 시크릿 조합 적용 시 trigger_combo 체크
+    EventBus.on('comboApplied', ({ comboId }) => this._onComboApplied(comboId));
+  },
+
+  /** 시크릿 조합 적용 추적 — trigger_combo 타입 퀘스트 진행도 증가 */
+  _onComboApplied(comboId) {
+    if (!comboId) return;
+    let changed = false;
+    for (const q of GameState.quests.active) {
+      const qDef = _getQuestDef(q.id);
+      if (!qDef || qDef.objective.type !== 'trigger_combo') continue;
+      const obj = qDef.objective;
+      const allow = Array.isArray(obj.comboIds) ? obj.comboIds : [obj.comboId];
+      if (!allow.includes(comboId)) continue;
+      q.progress = Math.min(obj.count ?? 1, q.progress + 1);
+      this._checkCompletion(q, qDef);
+      changed = true;
+    }
+    if (changed) EventBus.emit('questListChanged', {});
   },
 
   /** 감염자/특정 적 처치 추적 */
@@ -159,6 +179,9 @@ const QuestSystem = {
 
   /** NPC 치료 진행도 */
   _onNpcHealed(npcId) {
+    // 의사 전용: 누적 환자 카운터 (엔딩 사기 보너스 + 마일스톤 알림)
+    this._recordDoctorPatient(npcId);
+
     let changed = false;
     for (const q of GameState.quests.active) {
       const qDef = _getQuestDef(q.id);
@@ -170,6 +193,43 @@ const QuestSystem = {
       changed = true;
     }
     if (changed) EventBus.emit('questListChanged', {});
+  },
+
+  /**
+   * 의사 플레이어 전용: NPC 치료 시마다 누적 카운터 증가.
+   * 5명/10명/25명 마일스톤에서 내러티브 알림.
+   * 최종 누적값은 엔딩 퀘스트 완료 시 사기 보너스로 환산 (getPatientMoraleBonus).
+   */
+  _recordDoctorPatient(npcId) {
+    const gs = GameState;
+    if (gs.player.characterId !== 'doctor') return;
+    if (!gs.flags) gs.flags = {};
+
+    const prev = gs.flags.doctor_patients_treated ?? 0;
+    const next = prev + 1;
+    gs.flags.doctor_patients_treated = next;
+
+    // 중복 치료 방지 리스트 (같은 npcId의 반복 치료는 카운트하되 고유 목록만 유지)
+    const roster = Array.isArray(gs.flags.doctor_patient_roster) ? gs.flags.doctor_patient_roster : [];
+    if (npcId && !roster.includes(npcId)) {
+      gs.flags.doctor_patient_roster = [...roster, npcId];
+    }
+
+    const milestones = {
+      5:  '📖 다섯 번째 환자의 눈을 덮었다. 수첩 첫 페이지가 이름으로 채워졌다.',
+      10: '📖 열 명. 의사의 손이 기억을 넘는 무게를 얹기 시작한다.',
+      25: '📖 스물다섯 명. 보라매에 "의사가 있다"는 소문이 외곽까지 퍼졌다.',
+      50: '📖 쉰 명. 이지수의 수첩은 단순한 기록이 아니라 이 도시의 생존 지도다.',
+    };
+    if (milestones[next]) {
+      EventBus.emit('notify', { message: milestones[next], type: 'story' });
+    }
+  },
+
+  /** 엔딩 완료 시 누적 환자 수를 사기 보너스로 환산 (0.5 / 명, 상한 50) */
+  getPatientMoraleBonus() {
+    const count = GameState.flags?.doctor_patients_treated ?? 0;
+    return Math.min(50, Math.floor(count * 0.5));
   },
 
   /** NPC 퀘스트 완료 → 메인 퀘스트 크로스오버 진행도 */
@@ -221,13 +281,36 @@ const QuestSystem = {
       id:         questId,
       progress:   0,
       startDay:   gs.time.day,
+      startTp:    gs.time.totalTP ?? 0,
       deadline:   deadlineDays === Infinity ? Infinity : gs.time.day + deadlineDays,
     };
+    // 처방전 시스템: def.prescriptionOptions = { symptomKey: definitionId } 맵이면
+    // 시작 시 랜덤 증상 1개 선택 후 entry에 보관. _onCraft에서 매칭 체크.
+    if (def.prescriptionOptions && typeof def.prescriptionOptions === 'object') {
+      const keys = Object.keys(def.prescriptionOptions);
+      if (keys.length > 0) {
+        const picked = keys[Math.floor(Math.random() * keys.length)];
+        entry.prescription = picked;
+        entry.prescriptionMatched = false;
+      }
+    }
+
     gs.quests.active.push(entry);
 
     // 메인 퀘스트 내러티브 알림
     if (def.narrative?.start) {
       EventBus.emit('notify', { message: `📖 ${def.narrative.start}`, type: 'story' });
+    }
+
+    // 처방전 증상 알림 (플레이어가 어떤 약품을 제작해야 하는지 안내)
+    if (entry.prescription && def.prescriptionLabels) {
+      const label = def.prescriptionLabels[entry.prescription];
+      if (label) {
+        EventBus.emit('notify', {
+          message: `📋 진료 요청 — ${label} (일치하는 약품 제작 시 골든 타임 보너스)`,
+          type: 'info',
+        });
+      }
     }
 
     // 크로스오버 퀘스트 소급 적용: 타깃 NPC 퀘스트가 이미 완료됐다면 즉시 진행도 반영
@@ -265,9 +348,23 @@ const QuestSystem = {
   _onCraft(blueprintId) {
     const bp = GameData?.blueprints?.[blueprintId];
     if (!bp) return;
+    const outDefId = Array.isArray(bp.output) ? bp.output[0]?.definitionId : null;
     for (const q of GameState.quests.active) {
       const qDef = _getQuestDef(q.id);
       if (!qDef) continue;
+
+      // 처방전 매칭: 이 퀘스트에 증상이 배정되어 있고 output이 일치하면 flag 세팅
+      if (q.prescription && qDef.prescriptionOptions && outDefId) {
+        const required = qDef.prescriptionOptions[q.prescription];
+        if (outDefId === required && !q.prescriptionMatched) {
+          q.prescriptionMatched = true;
+          EventBus.emit('notify', {
+            message: '⭐ 처방전 일치 — 증상과 약품이 맞았다. 완료 시 추가 보상.',
+            type: 'good',
+          });
+        }
+      }
+
       if (qDef.objective.type === 'craft_item') {
         if (!qDef.objective.category || bp.category === qDef.objective.category) {
           q.progress = Math.min(qDef.objective.count, q.progress + 1);
@@ -545,15 +642,41 @@ const QuestSystem = {
       for (const [key, val] of Object.entries(r.flags)) {
         gs.flags[key] = val;
       }
+
+      // 의사 엔딩 도달 시: 누적 환자 수 → 사기 보너스 (P5)
+      if (r.flags.mainQuestComplete_doctor && gs.player.characterId === 'doctor') {
+        const bonus = this.getPatientMoraleBonus();
+        const count = gs.flags.doctor_patients_treated ?? 0;
+        if (bonus > 0) {
+          gs.modStat('morale', bonus);
+          EventBus.emit('notify', {
+            message: `📖 엔딩 기록 — 누적 환자 ${count}명. 의사의 길이 사기 +${bonus} 로 환산됐다.`,
+            type: 'good',
+          });
+        }
+      }
     }
 
+    // 보너스 조건 체크 (골든 타임 등) — 통과 시 bonusReward 추가 지급
+    const bonusGranted = this._applyBonusIfMet(q, qDef);
+
     // 메인 퀘스트 내러티브 완료 알림
-    if (qDef.narrative?.complete) {
-      EventBus.emit('notify', { message: `📖 ${qDef.narrative.complete}`, type: 'story' });
+    const completeNarrative = bonusGranted && qDef.narrative?.completeBonus
+      ? qDef.narrative.completeBonus
+      : qDef.narrative?.complete;
+    if (completeNarrative) {
+      EventBus.emit('notify', { message: `📖 ${completeNarrative}`, type: 'story' });
+    }
+
+    // 동반자 에필로그 대사 (P6) — bonusGranted 여부로 분기
+    if (qDef.companionEpilogue) {
+      const key = bonusGranted ? 'success' : 'default';
+      const line = qDef.companionEpilogue[key] ?? qDef.companionEpilogue.default;
+      if (line) EventBus.emit('notify', { message: `🗨️ ${line}`, type: 'story' });
     }
 
     const compTitle = qDef.titleKey ? I18n.t(qDef.titleKey) : qDef.title;
-    EventBus.emit('questCompleted', { questId: q.id, def: qDef });
+    EventBus.emit('questCompleted', { questId: q.id, def: qDef, bonusGranted });
     EventBus.emit('notify', { message: I18n.t('quest.completed', { icon: qDef.icon, title: compTitle }), type: 'good' });
     EventBus.emit('questListChanged', {});
 
@@ -564,6 +687,54 @@ const QuestSystem = {
     if (qDef.isBranchPoint && qDef.branchOptions) {
       EventBus.emit('branchChoice', { options: qDef.branchOptions, questId: q.id });
     }
+  },
+
+  /**
+   * 보너스 조건 평가 + bonusReward 지급.
+   * 지원 조건:
+   *   { type: 'completeWithinTp', count: N }  — 퀘스트 시작 후 N TP 이내 완료
+   *   { type: 'completeWithinDays', count: N } — 퀘스트 시작 후 N일 이내 완료
+   *   { type: 'prescriptionMatch' }            — 처방전 증상-약품 매칭 성공
+   */
+  _applyBonusIfMet(q, qDef) {
+    const cond = qDef.bonusCondition;
+    const bonus = qDef.bonusReward;
+    if (!cond || !bonus) return false;
+
+    const gs = GameState;
+    let met = false;
+    if (cond.type === 'completeWithinTp') {
+      const elapsed = (gs.time.totalTP ?? 0) - (q.startTp ?? 0);
+      met = elapsed <= (cond.count ?? 0);
+    } else if (cond.type === 'completeWithinDays') {
+      const elapsed = gs.time.day - q.startDay;
+      met = elapsed <= (cond.count ?? 0);
+    } else if (cond.type === 'prescriptionMatch') {
+      met = q.prescriptionMatched === true;
+    }
+    if (!met) return false;
+
+    if (bonus.morale) gs.modStat('morale', bonus.morale);
+    if (bonus.hp)     gs.player.hp.current = Math.min(gs.player.hp.max, gs.player.hp.current + bonus.hp);
+    if (bonus.items) {
+      for (const item of bonus.items) {
+        for (let n = 0; n < (item.qty ?? 1); n++) {
+          const instId = gs.createCardInstance(item.definitionId);
+          if (instId) gs.placeCardInRow(instId);
+        }
+      }
+    }
+    if (bonus.flags) {
+      for (const [key, val] of Object.entries(bonus.flags)) {
+        gs.flags[key] = val;
+      }
+    }
+
+    EventBus.emit('notify', {
+      message: `⭐ 골든 타임 달성! ${bonus.label ?? '추가 보상 획득.'}`,
+      type: 'good',
+    });
+    return true;
   },
 
   /** 퀘스트 완료 시 매핑된 플래시백을 1회 재생 */

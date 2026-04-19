@@ -65,15 +65,15 @@ const DOCTOR_BRANCH_B = {
 
   mq_doctor_b_15: {
     id: 'mq_doctor_b_15', title: '군 상황 평가',
-    desc: '100일 이상 생존하라. 군 상황이 변하고 있다.',
-    icon: '⚖️', characterId: 'doctor', dayTrigger: 95,
+    desc: 'Q14B 완료 후 30일 이상 추가 생존하라. 군 상황이 변하고 있다.',
+    icon: '⚖️', characterId: 'doctor', dayTrigger: 175,
     prerequisite: 'mq_doctor_b_14', requiresFlag: 'doctor_branch_b',
-    objective: { type: 'survive_days', count: 100 },
+    objective: { type: 'survive_days', count: 30 },
     reward: { morale: 8, items: [{ definitionId: 'stimulant', qty: 1 }], flags: { doctor_end_b1: true } },
     failPenalty: null, deadlineDays: Infinity,
     narrative: {
-      start: '180일이 지났다. 강민준과의 협력이 자리를 잡았다.',
-      complete: '강민준이 각성제를 건넸다. "박사님, 결론은 분명합니다. 용산을 서울의 의료 사령부로 만들어야 해요."',
+      start: '180일이 지났다. 강민준과의 협력이 자리를 잡았다. 한 달만 더 지켜보자 — 병상 회전율, 보급선 안정성, 외곽 감염 압력. 이 세 지표가 맞아떨어지면 군 의료본부 설립을 공식화할 수 있다.',
+      complete: '한 달간의 운영 데이터가 완성됐다. 강민준이 각성제를 건넸다. "박사님, 결론은 분명합니다. 용산을 서울의 의료 사령부로 만들어야 해요."',
     },
   },
 

@@ -1282,7 +1282,7 @@ export const LANDMARK_DATA = {
   },
 
   // ── 동작구 — 국립현충원 ──────────────────────────────────
-  dongjak: {
+  lm_dongjak: {
     name: '국립현충원',
     desc: '국가 유공자 묘역. 조용하고 넓은 숲이 있으며 관리 시설이 있다.',
     icon: '🎖️',
@@ -2035,6 +2035,20 @@ export const LANDMARK_DATA = {
 };
 
 // ── 유틸리티 ────────────────────────────────────────────────
+
+/**
+ * LANDMARK_DATA 조회 헬퍼.
+ * 키로 먼저 시도, 없으면 `lm_` 접두사를 제거한 키로 폴백.
+ * 예) `lm_gangnam` → `gangnam`로 자동 폴백 (district-keyed 엔트리 호환)
+ * @param {string} key - 랜드마크 아이템 ID 또는 LANDMARK_DATA 키
+ * @returns {object|null} 랜드마크 데이터 또는 null
+ */
+export function getLandmarkData(key) {
+  if (!key) return null;
+  if (LANDMARK_DATA[key]) return LANDMARK_DATA[key];
+  const stripped = key.replace(/^lm_/, '');
+  return LANDMARK_DATA[stripped] ?? null;
+}
 
 /**
  * 각 랜드마크 세부 장소(sublocation)에 대한 아이템 정의를 생성하여

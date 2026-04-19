@@ -11,6 +11,8 @@ const STACK_ROWS = [
   // ── 기초 재료 ─────────────────────────────────────────────────
   ['scrap_metal'             , true,  8 ],
   ['cloth'                   , true, 10 ],
+  ['wet_cloth'               , false, 1 ],
+  ['iron_pot_water'          , false, 1 ],
   ['rope'                    , true,  5 ],
   ['duct_tape'               , true,  3 ],
   ['wood'                    , true,  8 ],

@@ -1,3 +1,74 @@
+# 재미강화 프레임워크 통합 — 처방전·골든타임·환자 기록장 + 스택 부산물 버그
+
+> 최종 업데이트: 2026-04-19
+> 상태: 완료
+
+## 목표
+의사(doctor) 재미강화 P5~P7 마무리 + 동일 프레임워크를 homeless/pharmacist/chef
+3개 캐릭터에 이식. 스택 아이템 소비 시 부산물 누락 버그 수정.
+
+## P5~P7: 의사 재미강화 마무리
+- **P5 — 환자 누적 기록 + 엔딩 사기 보너스** (commit `408c47a`)
+  - `GameState.flags.doctor_patients_treated` 카운터 + `doctor_patient_roster`
+  - `QuestSystem.getPatientMoraleBonus()` — 엔딩 시 마일스톤 보너스 반영
+- **P6 — 동반자 에필로그 대사** (commit `acaccd9`) — Q05/Q07/Q08 완료 시 NPC 대사
+- **P7 — 환자 기록장 모달 UI** (commit `0ff4b72`)
+  - 신규 `js/ui/DoctorPatientModal.js` + `css/doctor-modal.css`
+  - 의사 전용 툴바 버튼 (Main/Basecamp 양쪽) + `isAvailable()` 가드
+  - 마일스톤 4단계 (5/10/25/50) 진행률 바 + 환자 NPC 로스터
+
+## 크로스 캐릭터 프레임워크 이식
+의사 P1~P7에서 확립된 3가지 재미강화 패턴을 다른 캐릭터 메인퀘스트에 적용.
+
+| 캐릭터 | 골든타임 보너스 | 처방전 시스템 | 동반자 에필로그 | 커밋 |
+|--------|----------------|--------------|---------------|------|
+| 최형식 (homeless) | Q01 (5일, canned_food+1) | side_03 배식 이벤트 (밥/생선/샐러드/잼) | side_01/02/04/05 NPC 대사 | `d2b9cdd` |
+| 한소희 (pharmacist) | Q01 (5일, bandage+2) | Q07 1차 합성 (허브차/소독약/진통제/붕대) | Q07 한소희 대사 | `66dede5` |
+| 윤재혁 (chef) | Q01 (5일, salt+2) | Q06 첫 한 끼 (밥/생선/샐러드/라면) | Q06/side_06 대사 | `86e8f63` |
+
+### 프레임워크 구성 요소 (재사용 스키마)
+- `bonusCondition: { type: 'completeWithinDays', days }` — 골든타임 추가 보상
+- `prescriptionOptions` / `prescriptionLabels` — 시작 시 4지선다 처방전
+- `bonusCondition: { type: 'prescriptionMatch' }` — 관찰 일지 표적 일치 보너스
+- `companionEpilogue: { default, success }` — 완료 시 NPC 대사 분기
+
+## 🐛 스택 부산물 누락 버그 수정 (commit `6aa455a`)
+
+### 증상
+`sterile_water` 2스택에서 1개 사용 시 `empty_bottle`이 보드에 생성되지 않음.
+`canned_food` 등 스택 가능 소비 아이템 전체가 동일 증상.
+
+### 원인
+`js/systems/StatSystem.js:693` — `stackable && qty > 1` 분기가 `quantity--`만
+수행하고 `def.leaveOnConsume` 스폰 로직을 건너뜀. 스택이 마지막 1개로 줄어들어야만
+부산물이 생성됨.
+
+### 수정
+- `_spawnLeaveOnConsume(gs, leave)` 헬퍼 추출
+- 스택 감소 / 마지막 1개 제거 두 분기 모두에서 헬퍼 호출
+- 보드가 가득 차면 인스턴스 제거 + `statSys.boardFullLeftover` 알림
+
+## 수정 파일 (9)
+
+| 파일 | 변경 |
+|------|------|
+| `js/systems/StatSystem.js` | `_spawnLeaveOnConsume` 헬퍼 + 스택 분기 호출 |
+| `js/ui/DoctorPatientModal.js` | 신규 — 환자 기록장 모달 |
+| `css/doctor-modal.css` | 신규 — 환자 모달 스타일 |
+| `index.html` | doctor-modal.css 링크 |
+| `js/screens/Main.js` | DoctorPatientModal init + 툴바 버튼 |
+| `js/screens/Basecamp.js` | DoctorPatientModal init + 툴바 버튼 |
+| `js/data/mainQuests/homeless/shared.js` | Q01 골든타임 + side_03 처방전 + 4개 side NPC 에필로그 |
+| `js/data/mainQuests/pharmacist/shared.js` | Q01 골든타임 + Q07 처방전/에필로그 |
+| `js/data/mainQuests/chef/shared.js` | Q01 골든타임 + Q06 처방전/에필로그 + side_06 에필로그 |
+
+## 검증
+- `validate.js` 통과 (기존 255 경고만 잔존, 0 에러)
+- 스택 버그: 사용자 재현 시나리오 — `sterile_water` 2개 보유 상태에서 1개 사용 시
+  `empty_bottle` 카드가 보드에 자동 스택
+
+---
+
 # 이지수(doctor) 초반 몰입감 강화 — 응급실 오프닝 + NPC 크로스오버 + 감염 저항 체감
 
 > 최종 업데이트: 2026-04-19
