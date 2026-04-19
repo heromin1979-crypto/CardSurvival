@@ -334,17 +334,24 @@ const CharCreate = {
       if (inst) gs.board.top[0] = inst.instanceId;
     }
 
-    // 랜드마크 카드 → top[1] (현재 위치 바로 오른쪽)
+    // 랜드마크 카드 → top[1..] (복수 지원: district.landmarks 배열 우선, 없으면 landmark 단일)
+    // 동작구처럼 한 구에 2개 이상의 랜드마크가 있으면 모두 노출한다.
     const districts = GameData?.districts ?? {};
-    const lmDefId   = districts[districtId]?.landmark ?? `lm_${districtId}`;
-    if (items[lmDefId]) {
-      const lmInst = gs.createCardInstance(lmDefId);
-      if (lmInst) gs.board.top[1] = lmInst.instanceId;
+    const district  = districts[districtId];
+    const lmDefIds  = Array.isArray(district?.landmarks)
+      ? district.landmarks
+      : (district?.landmark ? [district.landmark] : [`lm_${districtId}`]);
+    let topSlot = 1;
+    for (const lmDefId of lmDefIds) {
+      if (topSlot >= gs.board.top.length) break;
+      if (lmDefId && items[lmDefId]) {
+        const lmInst = gs.createCardInstance(lmDefId);
+        if (lmInst) gs.board.top[topSlot++] = lmInst.instanceId;
+      }
     }
 
-    // 인접 구 카드 → top[2..7] (구 위치 카드 사용)
+    // 인접 구 카드 → 남은 슬롯 (구 위치 카드 사용)
     const adjacent = getAdjacentDistricts(districtId);
-    let topSlot = 2;
     for (const adj of adjacent) {
       if (topSlot >= gs.board.top.length) break;
       const useId = `loc_${adj.id}`;
@@ -469,13 +476,14 @@ const CharCreate = {
 
     // 2) 보라매병원 진입 — enterLandmark가 middle을 동작구 바닥에 저장
     //    (간호사 + medical_station + 시작 아이템들이 동작구 바닥에 보관됨)
-    ExploreSystem.enterLandmark('dongjak');
+    //    동작구는 보라매병원/현충원 2개 랜드마크를 가지므로 반드시 랜드마크 ID로 진입.
+    ExploreSystem.enterLandmark('lm_boramae_hospital');
 
     // 3) 응급실 서브로케이션 직접 세팅 (enterSubLocation의 TP/조우/루팅 부작용 회피)
     gs.location.currentSubLocation = 'boramae_emergency';
     gs.location.currentNode        = 'boramae_emergency';
     if (!gs.location.subLocationsLooted) gs.location.subLocationsLooted = [];
-    const subKey = 'dongjak:boramae_emergency';
+    const subKey = 'lm_boramae_hospital:boramae_emergency';
     if (!gs.location.subLocationsLooted.includes(subKey)) {
       gs.location.subLocationsLooted.push(subKey);
     }
