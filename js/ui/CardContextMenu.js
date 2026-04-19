@@ -104,35 +104,49 @@ const CardContextMenu = {
     title.textContent = I18n.itemName(def.id ?? GameState.cards[instanceId]?.definitionId, def.name);
     menu.appendChild(title);
 
-    // 분해 버튼
-    const tpCost = def.dismantleTP ?? 0;
-    const tpLabel = tpCost > 0 ? ` (${tpCost}TP)` : '';
-    const remainTP = 72 - GameState.time.tpInDay;
-    const tpInsufficient = tpCost > 0 && remainTP < tpCost;
+    // 분해 버튼 — 스택(quantity>1)이면 "1개 분해 / 전부 분해" 2버튼
+    const tpPerUnit = def.dismantleTP ?? 0;
+    const remainTP  = 72 - GameState.time.tpInDay;
+    const stackQty  = GameState.cards[instanceId]?.quantity ?? 1;
+    const preview   = canDismantle
+      ? def.dismantle.map(d => {
+          const pct  = Math.round(d.chance * 100);
+          const dDef = GameData?.items[d.definitionId];
+          return `${dDef?.icon ?? '?'}${I18n.itemName(d.definitionId, dDef?.name ?? d.definitionId)} ×${d.qty} (${pct}%)`;
+        }).join('\n')
+      : '';
 
-    const btnDismantle = document.createElement('button');
-    btnDismantle.className = `ctx-btn${canDismantle && !tpInsufficient ? '' : ' disabled'}`;
-    btnDismantle.innerHTML = `${I18n.t('cardMenu.dismantle')}${tpLabel}`;
-    if (!canDismantle) {
-      btnDismantle.disabled = true;
-      btnDismantle.title = I18n.t('cardMenu.cantDismantle');
-    } else if (tpInsufficient) {
-      btnDismantle.disabled = true;
-      btnDismantle.title = I18n.t('cardMenu.tpShort', { need: tpCost, remain: remainTP });
+    const makeDismantleBtn = (labelKey, labelParams, count) => {
+      const btn   = document.createElement('button');
+      const cost  = tpPerUnit * count;
+      const label = I18n.t(labelKey, labelParams);
+      const tpTag = cost > 0 ? ` (${cost}TP)` : '';
+      const tpLow = cost > 0 && remainTP < cost;
+      btn.className = `ctx-btn${canDismantle && !tpLow ? '' : ' disabled'}`;
+      btn.innerHTML = `${label}${tpTag}`;
+      if (!canDismantle) {
+        btn.disabled = true;
+        btn.title = I18n.t('cardMenu.cantDismantle');
+      } else if (tpLow) {
+        btn.disabled = true;
+        btn.title = I18n.t('cardMenu.tpShort', { need: cost, remain: remainTP });
+      } else {
+        btn.title = preview;
+        btn.addEventListener('click', () => {
+          this._close();
+          DismantleSystem.dismantle(instanceId, count);
+          EventBus.emit('boardChanged', {});
+        });
+      }
+      return btn;
+    };
+
+    if (stackQty > 1) {
+      menu.appendChild(makeDismantleBtn('cardMenu.dismantleOne', {}, 1));
+      menu.appendChild(makeDismantleBtn('cardMenu.dismantleAll', { count: stackQty }, stackQty));
     } else {
-      const preview = def.dismantle.map(d => {
-        const pct = Math.round(d.chance * 100);
-        const dDef = GameData?.items[d.definitionId];
-        return `${dDef?.icon ?? '?'}${I18n.itemName(d.definitionId, dDef?.name ?? d.definitionId)} ×${d.qty} (${pct}%)`;
-      }).join('\n');
-      btnDismantle.title = preview;
-      btnDismantle.addEventListener('click', () => {
-        this._close();
-        DismantleSystem.dismantle(instanceId);
-        EventBus.emit('boardChanged', {});
-      });
+      menu.appendChild(makeDismantleBtn('cardMenu.dismantle', {}, 1));
     }
-    menu.appendChild(btnDismantle);
 
     // 🦴 간식 주기 (NPC 동반자 전용) — 건육/통조림 1개 소비, +5 bond (1일 1회)
     // NOTE: NPC 카드는 일반적으로 사이드 패널에 존재하므로 이 분기는 보드 상에

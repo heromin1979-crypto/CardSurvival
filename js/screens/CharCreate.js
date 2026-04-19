@@ -461,8 +461,9 @@ const CharCreate = {
   _doctorEmergencyOpening() {
     const gs = GameState;
 
-    // 1) 박상훈 하사를 middle에서 잠시 분리 (응급실에 다시 배치 예정)
+    // 1) 박상훈 하사 + 의무 거점을 middle에서 잠시 분리 (응급실에 다시 배치 예정)
     let soldierInstId = null;
+    let medicalStationInstId = null;
     for (let i = 0; i < gs.board.middle.length; i++) {
       const instId = gs.board.middle[i];
       if (!instId) continue;
@@ -470,12 +471,14 @@ const CharCreate = {
       if (inst?.definitionId === 'npc_wounded_soldier') {
         soldierInstId = instId;
         gs.board.middle[i] = null;
-        break;
+      } else if (inst?.definitionId === 'medical_station') {
+        medicalStationInstId = instId;
+        gs.board.middle[i] = null;
       }
     }
 
     // 2) 보라매병원 진입 — enterLandmark가 middle을 동작구 바닥에 저장
-    //    (간호사 + medical_station + 시작 아이템들이 동작구 바닥에 보관됨)
+    //    (간호사 + 시작 아이템들이 동작구 바닥에 보관됨)
     //    동작구는 보라매병원/현충원 2개 랜드마크를 가지므로 반드시 랜드마크 ID로 진입.
     ExploreSystem.enterLandmark('lm_boramae_hospital');
 
@@ -488,7 +491,10 @@ const CharCreate = {
       gs.location.subLocationsLooted.push(subKey);
     }
 
-    // 4) 박상훈 하사를 응급실 middle에 재배치
+    // 4) 박상훈 하사 + 의무 거점을 응급실 middle에 재배치
+    if (medicalStationInstId) {
+      gs.placeCardInRow(medicalStationInstId, 'middle');
+    }
     if (soldierInstId) {
       gs.placeCardInRow(soldierInstId, 'middle');
     }

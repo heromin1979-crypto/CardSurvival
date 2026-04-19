@@ -383,6 +383,7 @@ const NPCDialogueModal = {
           EventBus.emit('notify', { message: `🩹 ${I18n.itemName(npcId, NPC_ITEMS[npcId]?.name)}의 부상이 완치되었습니다!`, type: 'good' });
           // 간호사 퀘스트 진행 체크
           EventBus.emit('npcWoundHealed', { npcId });
+          EventBus.emit('npcHealed',      { npcId });
         } else {
           EventBus.emit('notify', { message: `🩹 부상 치료 (${state.woundLevel + 1}단계 → ${state.woundLevel}단계)`, type: 'info' });
         }

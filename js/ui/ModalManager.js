@@ -226,6 +226,7 @@ const ModalManager = {
 
     const canConsume   = def.type === 'consumable' && def.onConsume;
     const canDismantle = Array.isArray(def.dismantle) && def.dismantle.length > 0;
+    const stackQty     = inst.quantity ?? 1;
     const equipSlots   = EquipmentSystem.getSlotsForDef(def);
     const canEquip     = equipSlots.length > 0;
 
@@ -352,7 +353,12 @@ const ModalManager = {
             ${canConsume    ? `<button class="card-action-btn" id="modal-consume-${instanceId}">${I18n.t('modal.use')}</button>` : ''}
             ${equipBtnsHtml}
             ${repairBtnHtml}
-            ${canDismantle  ? `<button class="card-action-btn dismantle" id="modal-dismantle-${instanceId}">${I18n.t('modal.dismantle')}</button>` : ''}
+            ${canDismantle && stackQty > 1
+              ? `<button class="card-action-btn dismantle" id="modal-dismantle-one-${instanceId}">${I18n.t('cardMenu.dismantleOne')}</button>
+                 <button class="card-action-btn dismantle" id="modal-dismantle-all-${instanceId}">${I18n.t('cardMenu.dismantleAll', { count: stackQty })}</button>`
+              : canDismantle
+                ? `<button class="card-action-btn dismantle" id="modal-dismantle-${instanceId}">${I18n.t('modal.dismantle')}</button>`
+                : ''}
             ${fishBtnHtml}
             ${weatherBtnsHtml}
           </div>` : ''}
@@ -409,12 +415,20 @@ const ModalManager = {
     }
 
     if (canDismantle) {
-      document.getElementById(`modal-dismantle-${instanceId}`)?.addEventListener('click', () => {
-        this.close();
-        import('../systems/DismantleSystem.js').then(m => {
-          m.default.dismantle(instanceId);
+      const bindDismantle = (elId, count) => {
+        document.getElementById(elId)?.addEventListener('click', () => {
+          this.close();
+          import('../systems/DismantleSystem.js').then(m => {
+            m.default.dismantle(instanceId, count);
+          });
         });
-      });
+      };
+      if (stackQty > 1) {
+        bindDismantle(`modal-dismantle-one-${instanceId}`, 1);
+        bindDismantle(`modal-dismantle-all-${instanceId}`, stackQty);
+      } else {
+        bindDismantle(`modal-dismantle-${instanceId}`, 1);
+      }
     }
 
     if (isFishingRod) {

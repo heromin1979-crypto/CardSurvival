@@ -182,6 +182,8 @@ export const ko = {
 
   // ── CardContextMenu ─────────────────────────────────────────
   'cardMenu.dismantle':     '🔨 분해',
+  'cardMenu.dismantleOne':  '🔨 1개 분해',
+  'cardMenu.dismantleAll':  '🔨 전부 분해 ({count}개)',
   'cardMenu.cantDismantle': '이 아이템은 분해할 수 없습니다',
   'cardMenu.tpShort':       'TP 부족 (필요: {need}, 남음: {remain})',
   'cardMenu.craftable':     '⚗️ 합성 가능 ({count}종)',
@@ -211,6 +213,16 @@ export const ko = {
   'craft.tpRemaining': '{tp} TP 남음',
   'craft.ready':       '제작 가능',
   'craft.missing':     '개 부족',
+  'craft.tab.all':        '전체',
+  'craft.tab.weapon':     '무기',
+  'craft.tab.armor':      '방어구',
+  'craft.tab.tool':       '도구',
+  'craft.tab.structure':  '구조물',
+  'craft.tab.food':       '요리',
+  'craft.tab.medical':    '의료',
+  'craft.tab.material':   '재료',
+  'craft.tab.upgrade':    '강화',
+  'craft.tab.consumable': '소비재',
 
   // ── QuickCraft ─────────────────────────────────────────────
   'quickCraft.title':       '제작 가능한 레시피 발견!',
@@ -998,6 +1010,8 @@ export const en = {
 
   // ── CardContextMenu ─────────────────────────────────────────
   'cardMenu.dismantle':     '🔨 Dismantle',
+  'cardMenu.dismantleOne':  '🔨 Dismantle 1',
+  'cardMenu.dismantleAll':  '🔨 Dismantle All ({count})',
   'cardMenu.cantDismantle': 'This item cannot be dismantled',
   'cardMenu.tpShort':       'TP insufficient (Need: {need}, Have: {remain})',
   'cardMenu.craftable':     '⚗️ Craftable ({count} recipes)',
@@ -1027,6 +1041,16 @@ export const en = {
   'craft.tpRemaining': '{tp} TP left',
   'craft.ready':       'Ready',
   'craft.missing':     'missing',
+  'craft.tab.all':        'All',
+  'craft.tab.weapon':     'Weapon',
+  'craft.tab.armor':      'Armor',
+  'craft.tab.tool':       'Tool',
+  'craft.tab.structure':  'Structure',
+  'craft.tab.food':       'Food',
+  'craft.tab.medical':    'Medical',
+  'craft.tab.material':   'Material',
+  'craft.tab.upgrade':    'Upgrade',
+  'craft.tab.consumable': 'Consumable',
 
   // ── QuickCraft ─────────────────────────────────────────────
   'quickCraft.title':       'Recipe discovered!',
