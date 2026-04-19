@@ -1,0 +1,250 @@
+/* === DOCTOR PATIENT LOG MODAL === */
+
+#doctor-patient-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 8000;
+  align-items: center;
+  justify-content: center;
+}
+
+#doctor-patient-modal.open {
+  display: flex;
+}
+
+.doctor-patient-modal-box {
+  background: var(--bg-surface, #1a1510);
+  border: 1px solid rgba(200,160,96,0.35);
+  border-radius: 10px;
+  width: 520px;
+  max-width: 95vw;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.dp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px 10px;
+  border-bottom: 1px solid rgba(200,160,96,0.15);
+}
+
+.dp-title {
+  font-size: 15px;
+  font-weight: bold;
+  color: var(--accent-primary, #c8a060);
+  letter-spacing: 1px;
+}
+
+.dp-close-btn {
+  background: none;
+  border: none;
+  color: var(--text-dim, #888);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: color 0.15s, background 0.15s;
+}
+
+.dp-close-btn:hover {
+  color: var(--text-primary, #ddd);
+  background: rgba(255,255,255,0.06);
+}
+
+/* ── 요약 ──────────────────────────────── */
+
+.dp-summary {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  padding: 18px;
+  border-bottom: 1px solid rgba(200,160,96,0.1);
+}
+
+.dp-summary-count {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 100px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: rgba(200,160,96,0.08);
+  border: 1px solid rgba(200,160,96,0.25);
+}
+
+.dp-count-num {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--accent-primary, #c8a060);
+  line-height: 1;
+}
+
+.dp-count-unit {
+  font-size: 11px;
+  color: var(--text-secondary, #aaa);
+  margin-top: 4px;
+  letter-spacing: 0.5px;
+}
+
+.dp-summary-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.dp-meta-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--text-secondary, #aaa);
+}
+
+.dp-meta-row span:last-child {
+  color: var(--text-primary, #ddd);
+  font-weight: 600;
+}
+
+/* ── 진행 바 ──────────────────────────────── */
+
+.dp-progress-wrap {
+  padding: 10px 18px;
+  border-bottom: 1px solid rgba(200,160,96,0.1);
+}
+
+.dp-progress-label {
+  font-size: 11px;
+  color: var(--text-secondary, #aaa);
+  margin-bottom: 6px;
+}
+
+.dp-progress-track {
+  height: 6px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.dp-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #c8a060, #e8c080);
+  border-radius: 3px;
+  transition: width 0.3s;
+}
+
+/* ── 마일스톤 배지 ──────────────────────────────── */
+
+.dp-badges-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  padding: 12px 18px;
+  border-bottom: 1px solid rgba(200,160,96,0.1);
+}
+
+.dp-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 6px;
+  border-radius: 8px;
+  border: 1px solid rgba(200,160,96,0.2);
+  text-align: center;
+}
+
+.dp-badge.earned {
+  background: rgba(200,160,96,0.08);
+  border-color: rgba(200,160,96,0.5);
+}
+
+.dp-badge.locked {
+  opacity: 0.45;
+  background: rgba(255,255,255,0.02);
+}
+
+.dp-badge-icon {
+  font-size: 22px;
+}
+
+.dp-badge-label {
+  font-size: 11px;
+  color: var(--text-primary, #ddd);
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+.dp-badge-count {
+  font-size: 10px;
+  color: var(--text-dim, #888);
+  margin-top: 2px;
+}
+
+.dp-badge-hint {
+  font-size: 9px;
+  color: var(--accent-primary, #c8a060);
+  margin-top: 4px;
+  line-height: 1.3;
+}
+
+/* ── 명단 ──────────────────────────────── */
+
+.dp-roster-section {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 18px 18px;
+}
+
+.dp-roster-title {
+  font-size: 12px;
+  color: var(--accent-primary, #c8a060);
+  font-weight: 600;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+
+.dp-roster-empty {
+  font-size: 11px;
+  color: var(--text-dim, #888);
+  line-height: 1.5;
+  padding: 12px;
+  border: 1px dashed rgba(200,160,96,0.2);
+  border-radius: 6px;
+  text-align: center;
+}
+
+.dp-roster-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dp-roster-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  border-radius: 5px;
+  background: rgba(255,255,255,0.03);
+  font-size: 12px;
+}
+
+.dp-roster-idx {
+  font-family: monospace;
+  color: var(--text-dim, #888);
+  min-width: 20px;
+}
+
+.dp-roster-icon {
+  font-size: 14px;
+}
+
+.dp-roster-name {
+  color: var(--text-primary, #ddd);
+  flex: 1;
+}
