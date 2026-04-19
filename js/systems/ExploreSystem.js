@@ -7,7 +7,7 @@ import TickEngine  from '../core/TickEngine.js';
 import { NODES, DISTRICTS, generateRouteCards } from '../data/nodes.js';
 import { getAdjacentDistricts } from '../data/districts.js';
 import { rollEnemyGroup, ENEMIES } from '../data/enemies.js';
-import { LANDMARK_DATA } from '../data/landmarks.js';
+import { LANDMARK_DATA, getLandmarkData } from '../data/landmarks.js';
 import NoiseSystem   from './NoiseSystem.js';
 import TraitSystem   from './TraitSystem.js';
 import StatSystem    from './StatSystem.js';
@@ -451,7 +451,7 @@ const ExploreSystem = {
       if (subLocation) {
         // 세부 장소에서 전투 → 세부 장소에 그대로 머무름
         // currentSubLocation 유지, top row 그대로, middle에 전투 보상 유지
-        const lmName = LANDMARK_DATA[landmarkId]?.name ?? landmarkId;
+        const lmName = getLandmarkData(landmarkId)?.name ?? landmarkId;
         EventBus.emit('notify', { message: I18n.t('exploreSys.landmarkReturn', { name: lmName }), type: 'good' });
         EventBus.emit('boardChanged', {});
       } else {
@@ -462,7 +462,7 @@ const ExploreSystem = {
           gs.board.middle = Array(gs.board.middle.length).fill(null);
         }
         this._updateTopRowForLandmark(landmarkId);
-        const lmName = LANDMARK_DATA[landmarkId]?.name ?? landmarkId;
+        const lmName = getLandmarkData(landmarkId)?.name ?? landmarkId;
         EventBus.emit('notify', { message: I18n.t('exploreSys.landmarkReturn', { name: lmName }), type: 'good' });
         EventBus.emit('boardChanged', {});
       }
@@ -581,7 +581,7 @@ const ExploreSystem = {
     if (districtId !== 'basecamp' && !this._checkNight('explore')) return;
 
     const gs = GameState;
-    const lmData = LANDMARK_DATA[districtId];
+    const lmData = getLandmarkData(districtId);
     if (!lmData) {
       EventBus.emit('notify', { message: I18n.t('exploreSys.landmarkNotFound'), type: 'warn' });
       return;
@@ -604,7 +604,7 @@ const ExploreSystem = {
   _updateTopRowForLandmark(districtId) {
     const gs    = GameState;
     const items = GameData?.items ?? {};
-    const lmData = LANDMARK_DATA[districtId];
+    const lmData = getLandmarkData(districtId);
 
     // 기존 top row 위치 카드 모두 제거
     for (let i = 0; i < gs.board.top.length; i++) {
@@ -654,7 +654,7 @@ const ExploreSystem = {
     // 이미 현재 위치한 세부 장소면 무시
     if (gs.location.currentSubLocation === subLocationId) return;
 
-    const lmData = LANDMARK_DATA[districtId];
+    const lmData = getLandmarkData(districtId);
     const sub    = lmData?.subLocations?.find(s => s.id === subLocationId);
     if (!sub) return;
 
@@ -694,8 +694,10 @@ const ExploreSystem = {
     // 1 TP 소비
     TickEngine.skipTP(1, `${sub.name} 탐색`);
 
-    // 소음 생성
-    const district  = DISTRICTS[districtId];
+    // 소음 생성 — districtId 파라미터는 랜드마크 키일 수 있으므로
+    // 실제 구 레벨 스탯(소음/조우/위험도/방사선)은 플레이어의 currentDistrict 기준으로 조회
+    const actualDistrictId = gs.location.currentDistrict;
+    const district  = DISTRICTS[actualDistrictId];
     const noiseBase = district?.noiseGen ?? 3;
     NoiseSystem.addNoise(noiseBase * 0.8);
 

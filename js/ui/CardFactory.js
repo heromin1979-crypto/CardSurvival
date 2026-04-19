@@ -800,6 +800,9 @@ const CardFactory = {
 
         const districtId = def.districtId ?? def.id?.replace(/^lm_/, '');
         const isCurrent  = GameState.location.currentDistrict === districtId;
+        // 랜드마크 진입 키는 아이템 id 우선 (동일 구 내 복수 랜드마크 구분).
+        // ExploreSystem/LandmarkModal의 getLandmarkData가 lm_ 접두사 폴백 처리.
+        const landmarkKey = def.id ?? districtId;
 
         el.className = `card location-card landmark-card spawning${isCurrent ? ' is-current-loc' : ''}`;
         el.draggable = false;
@@ -812,12 +815,12 @@ const CardFactory = {
         if (isCurrent) {
           // 현재 구 랜드마크 → 랜드마크 진입
           el.addEventListener('click', () => {
-            if (districtId) EventBus.emit('landmarkRequest', { districtId });
+            if (landmarkKey) EventBus.emit('landmarkRequest', { districtId: landmarkKey });
           });
           el.addEventListener('keydown', e => {
             if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault();
-              if (districtId) EventBus.emit('landmarkRequest', { districtId });
+              if (landmarkKey) EventBus.emit('landmarkRequest', { districtId: landmarkKey });
             }
           });
         } else {
