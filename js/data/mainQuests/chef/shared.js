@@ -5,13 +5,15 @@ const CHEF_SHARED = {
 
   mq_chef_01: {
     id: 'mq_chef_01', title: '식재료 확보',
-    desc: '남대문시장으로 피신했다. 식량 3개를 수집하라.',
+    desc: '남대문시장으로 피신했다. 식량 3개를 수집하라. (5일 내 완료 시 보너스)',
     icon: '🍳', characterId: 'chef', dayTrigger: 1, prerequisite: null,
     objective: { type: 'collect_item_type', itemType: 'food', count: 3 },
     reward: { morale: 5, items: [{ definitionId: 'canned_food', qty: 1 }] },
+    bonusCondition: { type: 'completeWithinDays', days: 5 },
+    bonusReward: { morale: 5, items: [{ definitionId: 'salt', qty: 2 }] },
     failPenalty: { morale: -5 }, deadlineDays: 10,
     narrative: {
-      start: '윤재혁(33세). 명동 소피텔 호텔 수석 셰프. 호텔 뷔페에서 손님이 직원을 공격했다. 주방 칼을 쥐고 지하 저장고로 피신. 이틀 후 남대문시장으로 이동했다. 식재료가 있을 것이다.',
+      start: '윤재혁(33세). 명동 소피텔 호텔 수석 셰프. 호텔 뷔페에서 손님이 직원을 공격했다. 주방 칼을 쥐고 지하 저장고로 피신. 이틀 후 남대문시장으로 이동했다. (셰프의 후각: 5일 안에 수급하면 소금 꾸러미까지 챙길 수 있다.)',
       complete: '시장 골목에서 식재료를 찾았다. 통조림도 하나 챙겼다. 일단 오늘은 먹을 수 있다.',
     },
   },
@@ -70,14 +72,32 @@ const CHEF_SHARED = {
 
   mq_chef_06: {
     id: 'mq_chef_06', title: '첫 번째 급식',
-    desc: '음식 아이템 1개를 제작하라. 생존자들에게 따뜻한 한 끼를 제공한다.',
+    desc: '음식 아이템 1개를 제작하라. 손님이 은근히 기대한 메뉴가 있다. (일치 시 보너스)',
     icon: '🍲', characterId: 'chef', dayTrigger: 10, prerequisite: 'mq_chef_05',
     objective: { type: 'craft_item', category: 'food', count: 1 },
-    reward: { morale: 10, items: [{ definitionId: 'clean_water', qty: 1 }] },
+    reward: { morale: 10, items: [{ definitionId: 'boiled_water', qty: 1 }] },
+    prescriptionOptions: {
+      '따뜻한 밥 한 끼':   'cooked_rice',
+      '허브 구이 생선':    'grilled_fish',
+      '야채 한 접시':      'wild_salad',
+      '든든한 국수':       'cooked_noodles',
+    },
+    prescriptionLabels: {
+      cooked_rice:    '🍚 밥 한 끼',
+      grilled_fish:   '🐟 구이 생선',
+      wild_salad:     '🥗 야채 한 접시',
+      cooked_noodles: '🍜 든든한 국수',
+    },
+    bonusCondition: { type: 'prescriptionMatch' },
+    bonusReward: { morale: 8, items: [{ definitionId: 'canned_food', qty: 1 }] },
     failPenalty: { morale: -3 }, deadlineDays: 20,
     narrative: {
-      start: '재료가 갖춰졌다. 처음으로 제대로 된 요리를 만든다. 시장 광장에 냄새가 퍼지면 사람들이 올 것이다.',
+      start: '재료가 갖춰졌다. 시장 광장에 도착한 생존자 중 한 명이 중얼거린다 — "혹시…" 오늘의 한 끼 메뉴가 정해졌다. 셰프의 귀가 기억한다.',
       complete: '첫 급식 완료. 시장 골목에서 세 명이 찾아왔다. 눈물을 흘리며 먹었다. "따뜻한 밥이 이렇게 좋은 거였어요." 요리는 생존이 아니라 희망이다.',
+    },
+    companionEpilogue: {
+      default: '단골: "셰프님, 오늘도 맛있었어요. 내일 또 오겠습니다."',
+      success: '단골: "제가 먹고 싶던 바로 그 메뉴 — 어떻게 아셨어요?" 셰프가 어깨를 으쓱했다.',
     },
   },
 
@@ -224,6 +244,9 @@ const CHEF_SHARED = {
     narrative: {
       start: '팀이 있다면 혼자보다 10배 많은 사람을 먹일 수 있다. 부주방장 박민호와 주방 보조 김지은. 두 사람의 신뢰를 얻으려면 요리로 증명해야 한다.',
       complete: '10가지 요리. 팀은 윤재혁의 실력을 인정했다. 박민호: "이 정도면 주방장이야. 소피텔에서도 이보다 못 했어." 김지은: "저도 언젠가 셰프님처럼!" 이제 팀이 생겼다.',
+    },
+    companionEpilogue: {
+      default: '박민호: "형, 이제부터는 둘이 아니라 팀이야. 내일 아침 메뉴부터 같이 짜자." 김지은이 뒤에서 고개를 끄덕였다.',
     },
   },
 };
