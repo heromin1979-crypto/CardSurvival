@@ -5,14 +5,22 @@ const DOCTOR_SHARED = {
 
   mq_doctor_01: {
     id: 'mq_doctor_01', title: '응급실의 첫 환자',
-    desc: '응급실에 쓰러진 박상훈 하사를 완치시켜라. (붕대로 치료)',
+    desc: '응급실에 쓰러진 박상훈 하사를 완치시켜라. (붕대로 치료) ⭐ 5 TP 이내 완료 시 골든 타임 보너스.',
     icon: '🩹', characterId: 'doctor', dayTrigger: 1, prerequisite: null,
     objective: { type: 'treat_npc', npcId: 'npc_wounded_soldier', count: 1 },
     reward: { morale: 8, items: [{ definitionId: 'bandage', qty: 2 }, { definitionId: 'antiseptic', qty: 1 }] },
+    bonusCondition: { type: 'completeWithinTp', count: 5 },
+    bonusReward: {
+      label: '골든 타임 치료 — 박상훈 하사 상태 우수. 전술 무전 조기 확보.',
+      morale: 5,
+      items: [{ definitionId: 'antibiotics', qty: 1 }, { definitionId: 'painkiller', qty: 1 }],
+      flags: { doctor_golden_start: true, minjun_radio_received: true },
+    },
     failPenalty: { morale: -10 }, deadlineDays: 3,
     narrative: {
-      start: '동작구 보라매병원 응급실. 이지수 전문의(38세)는 약품 창고에서 3일을 버텼다. 문을 열자 바닥에 박상훈 하사가 쓰러져 있다 — 현충원 경비소대 소속. 의사의 첫 환자다. 붕대를 하사 카드에 드래그해 치료하라.',
-      complete: '박상훈 하사가 눈을 떴다. "선생님, 감사합니다... 신촌에서 군 무전이 잡힌 적이 있습니다. 강민준 군의관이 의사를 찾는다고 했습니다." 히포크라테스 선서가 세상이 끝났다고 사라지지 않는다. 의사의 역할이 시작됐다.',
+      start: '동작구 보라매병원 응급실. 이지수 전문의(38세)는 약품 창고에서 3일을 버텼다. 문을 열자 바닥에 박상훈 하사가 쓰러져 있다 — 현충원 경비소대 소속. 의사의 첫 환자다. 붕대를 하사 카드에 드래그해 치료하라. ⏱ 5 TP 이내에 처치를 마치면 하사의 의식이 또렷할 때 무전 정보를 얻을 수 있다.',
+      complete: '박상훈 하사가 눈을 떴다. "선생님, 감사합니다..." 출혈이 멎었지만 의식이 흐릿하다. 히포크라테스 선서가 세상이 끝났다고 사라지지 않는다. 의사의 역할이 시작됐다.',
+      completeBonus: '박상훈 하사가 또렷한 눈으로 일어났다. "선생님… 골든 타임이었습니다. 정말 감사합니다. 신촌에서 군 무전이 잡혔습니다 — 강민준 군의관이 의사를 찾고 있습니다. 좌표를 지금 드리겠습니다." 하사의 손이 무전 수첩을 건넸다. 감염 위험도 낮춘 항생제까지 건네받았다. 이지수의 손은 3일간의 어둠을 뚫고도 정확했다.',
     },
   },
 

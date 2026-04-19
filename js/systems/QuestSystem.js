@@ -221,6 +221,7 @@ const QuestSystem = {
       id:         questId,
       progress:   0,
       startDay:   gs.time.day,
+      startTp:    gs.time.totalTP ?? 0,
       deadline:   deadlineDays === Infinity ? Infinity : gs.time.day + deadlineDays,
     };
     gs.quests.active.push(entry);
@@ -547,13 +548,19 @@ const QuestSystem = {
       }
     }
 
+    // 보너스 조건 체크 (골든 타임 등) — 통과 시 bonusReward 추가 지급
+    const bonusGranted = this._applyBonusIfMet(q, qDef);
+
     // 메인 퀘스트 내러티브 완료 알림
-    if (qDef.narrative?.complete) {
-      EventBus.emit('notify', { message: `📖 ${qDef.narrative.complete}`, type: 'story' });
+    const completeNarrative = bonusGranted && qDef.narrative?.completeBonus
+      ? qDef.narrative.completeBonus
+      : qDef.narrative?.complete;
+    if (completeNarrative) {
+      EventBus.emit('notify', { message: `📖 ${completeNarrative}`, type: 'story' });
     }
 
     const compTitle = qDef.titleKey ? I18n.t(qDef.titleKey) : qDef.title;
-    EventBus.emit('questCompleted', { questId: q.id, def: qDef });
+    EventBus.emit('questCompleted', { questId: q.id, def: qDef, bonusGranted });
     EventBus.emit('notify', { message: I18n.t('quest.completed', { icon: qDef.icon, title: compTitle }), type: 'good' });
     EventBus.emit('questListChanged', {});
 
@@ -564,6 +571,51 @@ const QuestSystem = {
     if (qDef.isBranchPoint && qDef.branchOptions) {
       EventBus.emit('branchChoice', { options: qDef.branchOptions, questId: q.id });
     }
+  },
+
+  /**
+   * 보너스 조건 평가 + bonusReward 지급.
+   * 지원 조건:
+   *   { type: 'completeWithinTp', count: N }  — 퀘스트 시작 후 N TP 이내 완료
+   *   { type: 'completeWithinDays', count: N } — 퀘스트 시작 후 N일 이내 완료
+   */
+  _applyBonusIfMet(q, qDef) {
+    const cond = qDef.bonusCondition;
+    const bonus = qDef.bonusReward;
+    if (!cond || !bonus) return false;
+
+    const gs = GameState;
+    let met = false;
+    if (cond.type === 'completeWithinTp') {
+      const elapsed = (gs.time.totalTP ?? 0) - (q.startTp ?? 0);
+      met = elapsed <= (cond.count ?? 0);
+    } else if (cond.type === 'completeWithinDays') {
+      const elapsed = gs.time.day - q.startDay;
+      met = elapsed <= (cond.count ?? 0);
+    }
+    if (!met) return false;
+
+    if (bonus.morale) gs.modStat('morale', bonus.morale);
+    if (bonus.hp)     gs.player.hp.current = Math.min(gs.player.hp.max, gs.player.hp.current + bonus.hp);
+    if (bonus.items) {
+      for (const item of bonus.items) {
+        for (let n = 0; n < (item.qty ?? 1); n++) {
+          const instId = gs.createCardInstance(item.definitionId);
+          if (instId) gs.placeCardInRow(instId);
+        }
+      }
+    }
+    if (bonus.flags) {
+      for (const [key, val] of Object.entries(bonus.flags)) {
+        gs.flags[key] = val;
+      }
+    }
+
+    EventBus.emit('notify', {
+      message: `⭐ 골든 타임 달성! ${bonus.label ?? '추가 보상 획득.'}`,
+      type: 'good',
+    });
+    return true;
   },
 
   /** 퀘스트 완료 시 매핑된 플래시백을 1회 재생 */
