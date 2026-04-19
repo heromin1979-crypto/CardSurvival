@@ -91,27 +91,63 @@ const DOCTOR_SHARED = {
 
   mq_doctor_07: {
     id: 'mq_doctor_07', title: '첫 번째 치료약',
-    desc: '의료 아이템을 1개 제작하라.',
+    desc: '의료 아이템을 1개 제작하라. 📋 진료 요청과 일치하는 약품 제작 시 골든 타임 보너스.',
     icon: '💊', characterId: 'doctor', dayTrigger: 13, prerequisite: 'mq_doctor_06',
     objective: { type: 'craft_item', category: 'medical', count: 1 },
     reward: { morale: 8, items: [{ definitionId: 'bandage', qty: 1 }, { definitionId: 'antiseptic', qty: 1 }] },
+    prescriptionOptions: {
+      fever:     'antibiotics',
+      bleeding:  'bandage',
+      infection: 'antiseptic',
+    },
+    prescriptionLabels: {
+      fever:     '고열 (항생제 필요)',
+      bleeding:  '출혈 (붕대 필요)',
+      infection: '상처 감염 (소독약 필요)',
+    },
+    bonusCondition: { type: 'prescriptionMatch' },
+    bonusReward: {
+      label: '정확한 처방 — 환자 증상 진정.',
+      morale: 5,
+      items: [{ definitionId: 'herb', qty: 2 }, { definitionId: 'antiseptic', qty: 1 }],
+      flags: { doctor_prescription_07_success: true },
+    },
     failPenalty: { morale: -5 }, deadlineDays: 23,
     narrative: {
-      start: '보라매 약품 창고가 바닥을 드러냈다. 남은 약초와 잔여 약품을 혼합해 임시 치료약을 만든다.',
+      start: '보라매 약품 창고가 바닥을 드러냈다. 남은 약초와 잔여 약품을 혼합해 임시 치료약을 만든다. 간호사가 진료 요청서를 건넸다 — 증상과 약품이 일치하면 환자가 빠르게 안정된다.',
       complete: '첫 번째 임시 치료약 완성. 하지만 원료가 3일 안에 고갈될 것이다 — 세브란스 병원 본관 약품고가 유일한 희망이다.',
+      completeBonus: '증상에 정확히 맞춘 약품이었다. 환자의 호흡이 곧 안정됐고, 간호사의 눈빛에 경의가 스쳤다. "선생님, 진료 감각이 살아 있습니다." 약초와 소독약 여분을 감사 인사와 함께 받았다. 세브란스 원정이 한 걸음 가까워졌다.',
     },
   },
 
   mq_doctor_08: {
     id: 'mq_doctor_08', title: '원정 의료 물자 제작',
-    desc: '세브란스 원정을 위해 의료 아이템 3개를 직접 제작하라.',
+    desc: '세브란스 원정을 위해 의료 아이템 3개를 직접 제작하라. 📋 진료 요청과 일치하는 약품 포함 시 골든 타임 보너스.',
     icon: '⚗️', characterId: 'doctor', dayTrigger: 15, prerequisite: 'mq_doctor_07',
     objective: { type: 'craft_item', category: 'medical', count: 3 },
     reward: { morale: 10, items: [{ definitionId: 'painkiller', qty: 2 }, { definitionId: 'first_aid_kit', qty: 1 }] },
+    prescriptionOptions: {
+      severe_wound: 'first_aid_kit',
+      poisoning:    'antidote',
+      acute_pain:   'painkiller',
+    },
+    prescriptionLabels: {
+      severe_wound: '중상 환자 (구급키트 필요)',
+      poisoning:    '독성 노출 (해독제 필요)',
+      acute_pain:   '급성 통증 (진통제 필요)',
+    },
+    bonusCondition: { type: 'prescriptionMatch' },
+    bonusReward: {
+      label: '원정 진료 대응 — 군 의무대 수준 배낭.',
+      morale: 8,
+      items: [{ definitionId: 'antibiotics', qty: 1 }, { definitionId: 'stimulant', qty: 1 }],
+      flags: { doctor_prescription_08_success: true },
+    },
     failPenalty: { morale: -5 }, deadlineDays: 15,
     narrative: {
-      start: '신촌 세브란스까지 — 강남에서 마포까지 버틸 의료 배낭을 직접 꾸려야 한다. 수집이 아니라 제작이다. 의사의 손으로 만든 약만이 믿을 수 있다.',
+      start: '신촌 세브란스까지 — 강남에서 마포까지 버틸 의료 배낭을 직접 꾸려야 한다. 수집이 아니라 제작이다. 간호사가 진료 요청서를 들고 왔다 — 이번엔 중상 환자용 대응 약품. 증상에 맞는 특수 약품이 1개라도 포함되면 원정 배낭이 한 단계 격상된다.',
       complete: '손수 제작한 의료 아이템 3종이 배낭에 정리됐다. 진통제와 구급키트도 여분으로 챙겼다. 이제 출발할 수 있다.',
+      completeBonus: '증상에 맞춘 특수 약품이 배낭 최상단에 들어갔다. 강민준 군의관이 무전을 다시 보낸다 — "민간 전문의가 그런 판단을 한다면 우리도 받아들일 준비가 됐습니다." 항생제와 각성제까지 보너스로 확보됐다.',
     },
   },
 

@@ -224,11 +224,33 @@ const QuestSystem = {
       startTp:    gs.time.totalTP ?? 0,
       deadline:   deadlineDays === Infinity ? Infinity : gs.time.day + deadlineDays,
     };
+    // 처방전 시스템: def.prescriptionOptions = { symptomKey: definitionId } 맵이면
+    // 시작 시 랜덤 증상 1개 선택 후 entry에 보관. _onCraft에서 매칭 체크.
+    if (def.prescriptionOptions && typeof def.prescriptionOptions === 'object') {
+      const keys = Object.keys(def.prescriptionOptions);
+      if (keys.length > 0) {
+        const picked = keys[Math.floor(Math.random() * keys.length)];
+        entry.prescription = picked;
+        entry.prescriptionMatched = false;
+      }
+    }
+
     gs.quests.active.push(entry);
 
     // 메인 퀘스트 내러티브 알림
     if (def.narrative?.start) {
       EventBus.emit('notify', { message: `📖 ${def.narrative.start}`, type: 'story' });
+    }
+
+    // 처방전 증상 알림 (플레이어가 어떤 약품을 제작해야 하는지 안내)
+    if (entry.prescription && def.prescriptionLabels) {
+      const label = def.prescriptionLabels[entry.prescription];
+      if (label) {
+        EventBus.emit('notify', {
+          message: `📋 진료 요청 — ${label} (일치하는 약품 제작 시 골든 타임 보너스)`,
+          type: 'info',
+        });
+      }
     }
 
     // 크로스오버 퀘스트 소급 적용: 타깃 NPC 퀘스트가 이미 완료됐다면 즉시 진행도 반영
@@ -266,9 +288,23 @@ const QuestSystem = {
   _onCraft(blueprintId) {
     const bp = GameData?.blueprints?.[blueprintId];
     if (!bp) return;
+    const outDefId = Array.isArray(bp.output) ? bp.output[0]?.definitionId : null;
     for (const q of GameState.quests.active) {
       const qDef = _getQuestDef(q.id);
       if (!qDef) continue;
+
+      // 처방전 매칭: 이 퀘스트에 증상이 배정되어 있고 output이 일치하면 flag 세팅
+      if (q.prescription && qDef.prescriptionOptions && outDefId) {
+        const required = qDef.prescriptionOptions[q.prescription];
+        if (outDefId === required && !q.prescriptionMatched) {
+          q.prescriptionMatched = true;
+          EventBus.emit('notify', {
+            message: '⭐ 처방전 일치 — 증상과 약품이 맞았다. 완료 시 추가 보상.',
+            type: 'good',
+          });
+        }
+      }
+
       if (qDef.objective.type === 'craft_item') {
         if (!qDef.objective.category || bp.category === qDef.objective.category) {
           q.progress = Math.min(qDef.objective.count, q.progress + 1);
@@ -578,6 +614,7 @@ const QuestSystem = {
    * 지원 조건:
    *   { type: 'completeWithinTp', count: N }  — 퀘스트 시작 후 N TP 이내 완료
    *   { type: 'completeWithinDays', count: N } — 퀘스트 시작 후 N일 이내 완료
+   *   { type: 'prescriptionMatch' }            — 처방전 증상-약품 매칭 성공
    */
   _applyBonusIfMet(q, qDef) {
     const cond = qDef.bonusCondition;
@@ -592,6 +629,8 @@ const QuestSystem = {
     } else if (cond.type === 'completeWithinDays') {
       const elapsed = gs.time.day - q.startDay;
       met = elapsed <= (cond.count ?? 0);
+    } else if (cond.type === 'prescriptionMatch') {
+      met = q.prescriptionMatched === true;
     }
     if (!met) return false;
 
