@@ -179,6 +179,9 @@ const SecretCombinationSystem = {
       tgtInst.definitionId = r.transformTgt;
     }
 
+    // 퀘스트 trigger_combo 타입 추적 — 최초 발견이 아니어도 매 적용마다 발화
+    EventBus.emit('comboApplied', { comboId: combo.id });
+
     return {
       message: combo.discoveryMsg,
       consumeSrc: r.consumeSrc ?? false,

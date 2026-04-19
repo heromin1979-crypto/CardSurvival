@@ -221,6 +221,19 @@ const DOCTOR_SHARED = {
     },
   },
 
+  mq_doctor_side_hygiene: {
+    id: 'mq_doctor_side_hygiene', title: '날씨는 약이다 — 현장 위생',
+    desc: '빗물 샤워 또는 눈 압박(젖은 천 카드 액션)을 1회 수행하라. 의사의 자기 위생은 곧 환자의 안전이다.',
+    icon: '🌧️', characterId: 'doctor', dayTrigger: 5, prerequisite: 'mq_doctor_01',
+    objective: { type: 'trigger_combo', comboIds: ['sc_rain_shower', 'sc_snow_compress'], count: 1 },
+    reward: { morale: 10, items: [{ definitionId: 'antiseptic', qty: 2 }, { definitionId: 'herb', qty: 2 }] },
+    failPenalty: { morale: -3 }, deadlineDays: 35,
+    narrative: {
+      start: '이지수의 수첩: "보급이 끊긴 현장에서 의사의 무기는 장비가 아니라 습관이다. 비가 오면 젖은 천으로 몸을 씻고, 눈이 오면 그 냉기로 상처를 눌러라. 날씨는 약이다." 젖은 천을 카드 액션으로 사용해 빗물 샤워를 시도해 볼 것.',
+      complete: '처음으로 빗속에서 몸을 씻었다. 감염 수치가 떨어지고 사기가 돌아왔다 — 의사의 손길이 자신에게 먼저 닿는다. 이제 환자 앞에서도 당당히 장갑을 낄 수 있다. 약초와 소독약도 수첩 사이에서 발견됐다.',
+    },
+  },
+
   mq_doctor_side_01: {
     id: 'mq_doctor_side_01', title: '감염 패턴 추적',
     desc: '감염자 10마리를 처치하며 감염 진행 단계를 관찰하라.',

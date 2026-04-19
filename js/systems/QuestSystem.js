@@ -11,8 +11,9 @@ import { QUEST_TO_FLASHBACK } from '../data/cinematicScenes.js';
 // ── 계절 퀘스트 정의 ────────────────────────────────────────────────
 // trigger: 연결된 seasonalEvent id (해당 이벤트 발생 시 자동 시작)
 // objective: { type, target, count }
-//   type: 'collect_item' | 'craft_item' | 'kill_enemies' | 'survive_days' | 'equip_slot'
+//   type: 'collect_item' | 'collect_item_type' | 'craft_item' | 'kill_enemies' | 'survive_days' | 'equip_slot'
 //       | 'survive_infection' | 'npc_quest_complete' | 'treat_npc' | 'track_infected' | 'rescue_npc' | 'visit_district'
+//       | 'trigger_combo' (comboId 또는 comboIds 배열)
 // reward: { morale?, hp? }
 const QUEST_DEFS = {
   spring_water: {
@@ -138,6 +139,25 @@ const QuestSystem = {
     EventBus.on('landmarkCleared',({ landmarkId, rescuedNpcId }) => this._onLandmarkCleared(landmarkId, rescuedNpcId));
     // NPC 퀘스트 완료 시 npc_quest_complete 체크 (메인 퀘스트 크로스오버)
     EventBus.on('npcQuestCompleted', ({ npcId, questId }) => this._onNpcQuestCompleted(npcId, questId));
+    // 시크릿 조합 적용 시 trigger_combo 체크
+    EventBus.on('comboApplied', ({ comboId }) => this._onComboApplied(comboId));
+  },
+
+  /** 시크릿 조합 적용 추적 — trigger_combo 타입 퀘스트 진행도 증가 */
+  _onComboApplied(comboId) {
+    if (!comboId) return;
+    let changed = false;
+    for (const q of GameState.quests.active) {
+      const qDef = _getQuestDef(q.id);
+      if (!qDef || qDef.objective.type !== 'trigger_combo') continue;
+      const obj = qDef.objective;
+      const allow = Array.isArray(obj.comboIds) ? obj.comboIds : [obj.comboId];
+      if (!allow.includes(comboId)) continue;
+      q.progress = Math.min(obj.count ?? 1, q.progress + 1);
+      this._checkCompletion(q, qDef);
+      changed = true;
+    }
+    if (changed) EventBus.emit('questListChanged', {});
   },
 
   /** 감염자/특정 적 처치 추적 */
