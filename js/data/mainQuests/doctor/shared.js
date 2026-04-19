@@ -1,5 +1,8 @@
 // === MAIN QUESTS: 이지수 (doctor) — 공통 1~10 ===
-// Q10 완료 시 분기 선택: A(한소희 협력) vs B(강민준 합류)
+// Q10 완료 시 분기 선택:
+//   A (한소희 협력)  — 서울대 연구소, 합성 전문가
+//   B (강민준 합류)  — 용산 군 의료본부
+//   C (독자 연구)    — 보라매 고수, side_01~side_end 체인으로 백신 합성 엔딩
 
 const DOCTOR_SHARED = {
 
@@ -185,6 +188,12 @@ const DOCTOR_SHARED = {
         setsFlag: 'doctor_branch_b',
         recruitNpc: 'npc_minjun',
       },
+      {
+        label: '독자 연구 (시크릿)',
+        desc: '보라매에 남아 단독 역학 연구를 시작한다. 협력자 없이, 그러나 0번 환자 표본까지 밀어붙여 역병 백신을 합성한다. (사이드 체인 side_01 → side_end)',
+        setsFlag: 'doctor_branch_c',
+        warning: '고난이도 — 협력자 없이 40일 이상 단독 생존해야 하며, 0번 환자(보스)와 대면해야 한다.',
+      },
     ],
     narrative: {
       start: '유리 파편에 손을 베었다. 의사가 감염으로 쓰러지면 안 된다. 다른 이의 약을 빌릴 수 없다 — 내 손으로 처방해야 한다. 이 한 개의 약이 앞으로의 정체성을 증명한다.',
@@ -320,13 +329,18 @@ const DOCTOR_SHARED = {
 
   mq_doctor_side_end: {
     id: 'mq_doctor_side_end', title: '역병의 종결 — 백신 합성',
-    desc: '0번 환자 혈액 표본으로 역병 백신을 직접 합성하라.',
+    desc: '0번 환자 혈액 표본으로 역병 백신을 직접 합성하라. (C루트 공식 엔딩 / A·B루트에서는 시크릿 부가 엔딩)',
     icon: '💠', characterId: 'doctor', dayTrigger: 55, prerequisite: 'mq_doctor_side_05',
     objective: { type: 'craft_item', definitionId: 'plague_vaccine', count: 1 },
     reward: { morale: 35, items: [
       { definitionId: 'universal_cure', qty: 1 },
       { definitionId: 'surgery_kit',    qty: 1 },
-    ], flags: { doctor_vaccine_synthesized: true, doctor_secret_ending_unlocked: true } },
+    ], flags: {
+      doctor_vaccine_synthesized:    true,
+      doctor_secret_ending_unlocked: true,
+      mainQuestComplete_doctor:      true,
+      doctor_ending:                 'c_vaccine',
+    } },
     failPenalty: { morale: -15 }, deadlineDays: 90,
     narrative: {
       start: '0번 환자의 심장 조직 샘플. 현미경 너머로 항원 구조가 드러난다 — 인간이 만든 바이러스가 아니다. 그러나 의사의 손이 닿는 한, 만들지 못할 백신도 없다. 광범위 항생제와 농축 혈청, 그리고 감염 혈액 표본. 합성의 마지막 단계다.',
