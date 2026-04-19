@@ -16,7 +16,7 @@ const BLUEPRINTS = {
     // Tier 0 — 무요구 (단, flame_token은 별도 획득 필요)
     stages: [
       {
-        stageIndex: 0, label: '화롯대 준비', tpCost: 2,
+        stageIndex: 0, label: '화롯대 준비', tpCost: 3,
         requiredItems: [
           { definitionId: 'pebble',     qty: 3 },
           { definitionId: 'wood_plank', qty: 2 },
@@ -59,7 +59,7 @@ const BLUEPRINTS = {
     requiredSkills: { building: 2, crafting: 1 },
     stages: [
       {
-        stageIndex: 0, label: '화로 제작', tpCost: 2,
+        stageIndex: 0, label: '화로 제작', tpCost: 3,
         requiredItems: [
           { definitionId: 'scrap_metal', qty: 3 },
           { definitionId: 'pebble',      qty: 4 },
@@ -86,7 +86,7 @@ const BLUEPRINTS = {
     requiredSkills: { building: 3, crafting: 2 },
     stages: [
       {
-        stageIndex: 0, label: '골조 제작', tpCost: 4,
+        stageIndex: 0, label: '골조 제작', tpCost: 6,
         requiredItems: [
           { definitionId: 'scrap_metal', qty: 3 },
           { definitionId: 'rope', qty: 1 },
@@ -94,7 +94,7 @@ const BLUEPRINTS = {
         consumeAt: 'start',
       },
       {
-        stageIndex: 1, label: '필터 장착', tpCost: 2,
+        stageIndex: 1, label: '필터 장착', tpCost: 3,
         requiredItems: [
           { definitionId: 'water_filter', qty: 1 },
           { definitionId: 'duct_tape', qty: 1 },
@@ -113,7 +113,7 @@ const BLUEPRINTS = {
     requiredSkills: { building: 2 },
     stages: [
       {
-        stageIndex: 0, label: '골격 세우기', tpCost: 2,
+        stageIndex: 0, label: '골격 세우기', tpCost: 3,
         requiredItems: [
           { definitionId: 'wood', qty: 3 },
           { definitionId: 'nail', qty: 5 },
@@ -121,7 +121,7 @@ const BLUEPRINTS = {
         consumeAt: 'start',
       },
       {
-        stageIndex: 1, label: '와이어 강화', tpCost: 2,
+        stageIndex: 1, label: '와이어 강화', tpCost: 3,
         requiredItems: [
           { definitionId: 'wire', qty: 2 },
           { definitionId: 'rope', qty: 1 },
@@ -139,7 +139,7 @@ const BLUEPRINTS = {
     requiredTools: [],
     requiredSkills: { building: 2, crafting: 1 },
     stages: [{
-      stageIndex: 0, label: '트랩 조립', tpCost: 2,
+      stageIndex: 0, label: '트랩 조립', tpCost: 3,
       requiredItems: [
         { definitionId: 'electronic_parts', qty: 1 },
         { definitionId: 'wire', qty: 1 },
@@ -157,7 +157,7 @@ const BLUEPRINTS = {
     requiredTools: ['pipe_wrench'],
     requiredSkills: { building: 3, weaponcraft: 1 },
     stages: [{
-      stageIndex: 0, label: '트랩 제작', tpCost: 3,
+      stageIndex: 0, label: '트랩 제작', tpCost: 5,
       requiredItems: [
         { definitionId: 'iron_pipe', qty: 1 },
         { definitionId: 'nail', qty: 10 },
@@ -176,7 +176,7 @@ const BLUEPRINTS = {
     requiredSkills: { building: 3, crafting: 2 },
     stages: [
       {
-        stageIndex: 0, label: '골조 제작', tpCost: 3,
+        stageIndex: 0, label: '골조 제작', tpCost: 5,
         requiredItems: [
           { definitionId: 'wood', qty: 5 },
           { definitionId: 'scrap_metal', qty: 3 },
@@ -184,7 +184,7 @@ const BLUEPRINTS = {
         consumeAt: 'start',
       },
       {
-        stageIndex: 1, label: '마무리 조립', tpCost: 2,
+        stageIndex: 1, label: '마무리 조립', tpCost: 3,
         requiredItems: [
           { definitionId: 'rope', qty: 1 },
           { definitionId: 'nail', qty: 5 },
@@ -202,7 +202,7 @@ const BLUEPRINTS = {
     requiredTools: [],
     requiredSkills: { building: 1 },
     stages: [{
-      stageIndex: 0, label: '상자 제작', tpCost: 2,
+      stageIndex: 0, label: '상자 제작', tpCost: 3,
       requiredItems: [
         { definitionId: 'wood', qty: 3 },
         { definitionId: 'nail', qty: 5 },
@@ -220,7 +220,7 @@ const BLUEPRINTS = {
     requiredSkills: { building: 4, medicine: 2 },
     stages: [
       {
-        stageIndex: 0, label: '거점 설치', tpCost: 3,
+        stageIndex: 0, label: '거점 설치', tpCost: 5,
         requiredItems: [
           { definitionId: 'wood', qty: 2 },
           { definitionId: 'cloth', qty: 2 },
@@ -228,7 +228,7 @@ const BLUEPRINTS = {
         consumeAt: 'start',
       },
       {
-        stageIndex: 1, label: '의료 장비 배치', tpCost: 2,
+        stageIndex: 1, label: '의료 장비 배치', tpCost: 3,
         requiredItems: [
           { definitionId: 'bandage', qty: 5 },
           { definitionId: 'first_aid_kit', qty: 1 },
@@ -247,7 +247,7 @@ const BLUEPRINTS = {
     requiredSkills: { building: 5, medicine: 4 },
     stages: [
       {
-        stageIndex: 0, label: '시설 골조 설치', tpCost: 4,
+        stageIndex: 0, label: '시설 골조 설치', tpCost: 6,
         requiredItems: [
           { definitionId: 'wood', qty: 3 },
           { definitionId: 'cloth', qty: 3 },
@@ -256,7 +256,7 @@ const BLUEPRINTS = {
         consumeAt: 'start',
       },
       {
-        stageIndex: 1, label: '의료 장비 배치', tpCost: 3,
+        stageIndex: 1, label: '의료 장비 배치', tpCost: 5,
         requiredItems: [
           { definitionId: 'antiseptic', qty: 2 },
         ],
@@ -274,7 +274,7 @@ const BLUEPRINTS = {
     requiredSkills: { building: 7, medicine: 6 },
     stages: [
       {
-        stageIndex: 0, label: '병동 골조 건설', tpCost: 5,
+        stageIndex: 0, label: '병동 골조 건설', tpCost: 8,
         requiredItems: [
           { definitionId: 'wood_plank', qty: 3 },
           { definitionId: 'cloth', qty: 4 },
@@ -282,7 +282,7 @@ const BLUEPRINTS = {
         consumeAt: 'start',
       },
       {
-        stageIndex: 1, label: '의료 장비 설치', tpCost: 4,
+        stageIndex: 1, label: '의료 장비 설치', tpCost: 6,
         requiredItems: [
           { definitionId: 'first_aid_kit', qty: 2 },
           { definitionId: 'antibiotics', qty: 1 },
@@ -301,7 +301,7 @@ const BLUEPRINTS = {
     requiredSkills: { building: 10, medicine: 12 },
     stages: [
       {
-        stageIndex: 0, label: '병원 골조 건설', tpCost: 6,
+        stageIndex: 0, label: '병원 골조 건설', tpCost: 9,
         requiredItems: [
           { definitionId: 'wood_plank', qty: 5 },
           { definitionId: 'scrap_metal', qty: 5 },
@@ -310,7 +310,7 @@ const BLUEPRINTS = {
         consumeAt: 'start',
       },
       {
-        stageIndex: 1, label: '수술실 설비', tpCost: 6,
+        stageIndex: 1, label: '수술실 설비', tpCost: 9,
         requiredItems: [
           { definitionId: 'surgery_kit', qty: 2 },
           { definitionId: 'antibiotics', qty: 2 },
@@ -329,7 +329,7 @@ const BLUEPRINTS = {
     requiredSkills: { building: 2 },
     stages: [
       {
-        stageIndex: 0, label: '밭 고르기', tpCost: 3,
+        stageIndex: 0, label: '밭 고르기', tpCost: 5,
         requiredItems: [
           { definitionId: 'wood', qty: 3 },
           { definitionId: 'rope', qty: 1 },
@@ -337,7 +337,7 @@ const BLUEPRINTS = {
         consumeAt: 'start',
       },
       {
-        stageIndex: 1, label: '씨앗 심기', tpCost: 2,
+        stageIndex: 1, label: '씨앗 심기', tpCost: 3,
         requiredItems: [
           { definitionId: 'cloth', qty: 2 },
         ],
@@ -354,7 +354,7 @@ const BLUEPRINTS = {
     requiredTools: [],
     requiredSkills: { building: 1 },
     stages: [{
-      stageIndex: 0, label: '수집기 설치', tpCost: 3,
+      stageIndex: 0, label: '수집기 설치', tpCost: 5,
       requiredItems: [
         { definitionId: 'empty_bottle', qty: 2 },
         { definitionId: 'cloth', qty: 1 },
@@ -422,7 +422,7 @@ const BLUEPRINTS = {
     output: [{ definitionId: 'fire_ember', qty: 1 }],
     requiredTools: [],
     stages: [{
-      stageIndex: 0, label: '마찰 점화', tpCost: 2,
+      stageIndex: 0, label: '마찰 점화', tpCost: 3,
       requiredItems: [
         { definitionId: 'dry_wood_stick', qty: 2 },
         { definitionId: 'wood_plank',     qty: 1 },
@@ -472,7 +472,7 @@ const BLUEPRINTS = {
     ],
     requiredTools: [],
     stages: [{
-      stageIndex: 0, label: '통나무 분할', tpCost: 2,
+      stageIndex: 0, label: '통나무 분할', tpCost: 3,
       requiredItems: [{ definitionId: 'tree_log', qty: 1 }],
       consumeAt: 'start',
     }],
@@ -522,7 +522,7 @@ const BLUEPRINTS = {
     requiredTools: ['campfire'],
     // Tier 0 — 무요구
     stages: [{
-      stageIndex: 0, label: '목재 소각', tpCost: 2,
+      stageIndex: 0, label: '목재 소각', tpCost: 3,
       requiredItems: [{ definitionId: 'wood', qty: 2 }],
       consumeAt: 'start',
     }],
@@ -580,7 +580,7 @@ const BLUEPRINTS = {
     requiredTools: ['pipe_wrench'],
     requiredSkills: { weaponcraft: 2 },
     stages: [{
-      stageIndex: 0, label: '날 연마', tpCost: 2,
+      stageIndex: 0, label: '날 연마', tpCost: 3,
       requiredItems: [{ definitionId: 'scrap_metal', qty: 2 }],
       consumeAt: 'start',
     }],
@@ -594,7 +594,7 @@ const BLUEPRINTS = {
     requiredTools: ['campfire'],
     requiredSkills: { crafting: 2 },
     stages: [{
-      stageIndex: 0, label: '파이프 주조', tpCost: 2,
+      stageIndex: 0, label: '파이프 주조', tpCost: 3,
       requiredItems: [{ definitionId: 'scrap_metal', qty: 2 }],
       consumeAt: 'start',
     }],
@@ -608,7 +608,7 @@ const BLUEPRINTS = {
     requiredTools: ['campfire'],
     requiredSkills: { crafting: 2 },
     stages: [{
-      stageIndex: 0, label: '증류', tpCost: 2,
+      stageIndex: 0, label: '증류', tpCost: 3,
       requiredItems: [{ definitionId: 'alcohol_drink', qty: 2 }],
       consumeAt: 'start',
     }],
@@ -673,7 +673,7 @@ const BLUEPRINTS = {
     requiredTools: ['campfire'],
     requiredSkills: { cooking: 2 },
     stages: [{
-      stageIndex: 0, label: '취사', tpCost: 2,
+      stageIndex: 0, label: '취사', tpCost: 3,
       requiredItems: [
         { definitionId: 'rice', qty: 1 },
         { definitionId: 'boiled_water', qty: 1 },
@@ -707,7 +707,7 @@ const BLUEPRINTS = {
     requiredTools: [],
     requiredSkills: { crafting: 2, medicine: 1 },
     stages: [{
-      stageIndex: 0, label: '키트 조립', tpCost: 2,
+      stageIndex: 0, label: '키트 조립', tpCost: 3,
       requiredItems: [
         { definitionId: 'bandage', qty: 2 },
         { definitionId: 'antiseptic', qty: 1 },
@@ -726,7 +726,7 @@ const BLUEPRINTS = {
     requiredSkills: { crafting: 3, medicine: 2 },
     stages: [
       {
-        stageIndex: 0, label: '기본 구성', tpCost: 2,
+        stageIndex: 0, label: '기본 구성', tpCost: 3,
         requiredItems: [
           { definitionId: 'first_aid_kit', qty: 1 },
           { definitionId: 'antiseptic', qty: 1 },
@@ -735,7 +735,7 @@ const BLUEPRINTS = {
         consumeAt: 'start',
       },
       {
-        stageIndex: 1, label: '약품 추가', tpCost: 2,
+        stageIndex: 1, label: '약품 추가', tpCost: 3,
         requiredItems: [
           { definitionId: 'painkiller', qty: 2 },
           { definitionId: 'antibiotics', qty: 1 },
@@ -771,7 +771,7 @@ const BLUEPRINTS = {
     requiredTools: [],
     requiredSkills: { crafting: 3, medicine: 1 },
     stages: [{
-      stageIndex: 0, label: '성분 농축', tpCost: 2,
+      stageIndex: 0, label: '성분 농축', tpCost: 3,
       requiredItems: [
         { definitionId: 'herbal_tea',       qty: 2 },
         { definitionId: 'alcohol_solution', qty: 1 },
@@ -789,7 +789,7 @@ const BLUEPRINTS = {
     requiredTools: ['workbench'],
     requiredSkills: { cooking: 3, crafting: 3 },
     stages: [{
-      stageIndex: 0, label: '식량 압축 포장', tpCost: 3,
+      stageIndex: 0, label: '식량 압축 포장', tpCost: 5,
       requiredItems: [
         { definitionId: 'stamina_tonic', qty: 1 },
         { definitionId: 'energy_bar',    qty: 2 },
@@ -812,7 +812,7 @@ const BLUEPRINTS = {
     requiredSkills: { weaponcraft: 2 },
     stages: [
       {
-        stageIndex: 0, label: '못 박기', tpCost: 2,
+        stageIndex: 0, label: '못 박기', tpCost: 3,
         requiredItems: [
           { definitionId: 'baseball_bat', qty: 1 },
           { definitionId: 'scrap_metal', qty: 2 },
@@ -835,7 +835,7 @@ const BLUEPRINTS = {
     requiredTools: ['pipe_wrench'],
     requiredSkills: { weaponcraft: 3 },
     stages: [{
-      stageIndex: 0, label: '못 박기', tpCost: 2,
+      stageIndex: 0, label: '못 박기', tpCost: 3,
       requiredItems: [
         { definitionId: 'iron_pipe', qty: 1 },
         { definitionId: 'nail', qty: 5 },
@@ -854,7 +854,7 @@ const BLUEPRINTS = {
     requiredSkills: { weaponcraft: 2 },
     stages: [
       {
-        stageIndex: 0, label: '자루 다듬기', tpCost: 2,
+        stageIndex: 0, label: '자루 다듬기', tpCost: 3,
         requiredItems: [
           { definitionId: 'wood', qty: 2 },
           { definitionId: 'rope', qty: 1 },
@@ -862,7 +862,7 @@ const BLUEPRINTS = {
         consumeAt: 'start',
       },
       {
-        stageIndex: 1, label: '촉 장착', tpCost: 2,
+        stageIndex: 1, label: '촉 장착', tpCost: 3,
         requiredItems: [
           { definitionId: 'sharp_blade', qty: 1 },
           { definitionId: 'wire', qty: 1 },
@@ -881,7 +881,7 @@ const BLUEPRINTS = {
     requiredSkills: { weaponcraft: 4, crafting: 2 },
     stages: [
       {
-        stageIndex: 0, label: '활대 제작', tpCost: 3,
+        stageIndex: 0, label: '활대 제작', tpCost: 5,
         requiredItems: [
           { definitionId: 'wood', qty: 2 },
           { definitionId: 'rope', qty: 2 },
@@ -889,7 +889,7 @@ const BLUEPRINTS = {
         consumeAt: 'start',
       },
       {
-        stageIndex: 1, label: '발사 기구 조립', tpCost: 2,
+        stageIndex: 1, label: '발사 기구 조립', tpCost: 3,
         requiredItems: [
           { definitionId: 'spring', qty: 1 },
           { definitionId: 'scrap_metal', qty: 1 },
@@ -942,7 +942,7 @@ const BLUEPRINTS = {
     requiredTools: [],
     requiredSkills: { weaponcraft: 3 },
     stages: [{
-      stageIndex: 0, label: '폭탄 조립', tpCost: 2,
+      stageIndex: 0, label: '폭탄 조립', tpCost: 3,
       requiredItems: [
         { definitionId: 'empty_can', qty: 1 },
         { definitionId: 'nail', qty: 10 },
@@ -960,7 +960,7 @@ const BLUEPRINTS = {
     requiredTools: [],
     requiredSkills: { weaponcraft: 2, crafting: 1 },
     stages: [{
-      stageIndex: 0, label: '연막탄 조립', tpCost: 2,
+      stageIndex: 0, label: '연막탄 조립', tpCost: 3,
       requiredItems: [
         { definitionId: 'electronic_parts', qty: 1 },
         { definitionId: 'empty_can', qty: 1 },
@@ -984,7 +984,7 @@ const BLUEPRINTS = {
     stages: [
       {
         // 가죽을 두껍게 재단해 단열층을 만든다
-        stageIndex: 0, label: '단열 내피 재단', tpCost: 2,
+        stageIndex: 0, label: '단열 내피 재단', tpCost: 3,
         requiredItems: [
           { definitionId: 'leather', qty: 3 },
           { definitionId: 'cloth', qty: 4 },
@@ -993,7 +993,7 @@ const BLUEPRINTS = {
       },
       {
         // 실로 겹겹이 봉제, 로프를 충전재로 활용
-        stageIndex: 1, label: '충전재 봉제', tpCost: 3,
+        stageIndex: 1, label: '충전재 봉제', tpCost: 5,
         requiredItems: [
           { definitionId: 'thread', qty: 5 },
           { definitionId: 'cloth', qty: 2 },
@@ -1003,7 +1003,7 @@ const BLUEPRINTS = {
       },
       {
         // 외피 방수 처리 및 마감
-        stageIndex: 2, label: '외피 방수 마감', tpCost: 3,
+        stageIndex: 2, label: '외피 방수 마감', tpCost: 5,
         requiredItems: [
           { definitionId: 'leather', qty: 1 },
           { definitionId: 'duct_tape', qty: 2 },
@@ -1022,14 +1022,14 @@ const BLUEPRINTS = {
     requiredSkills: { armorcraft: 2 },
     stages: [
       {
-        stageIndex: 0, label: '금속 성형', tpCost: 2,
+        stageIndex: 0, label: '금속 성형', tpCost: 3,
         requiredItems: [
           { definitionId: 'scrap_metal', qty: 2 },
         ],
         consumeAt: 'start',
       },
       {
-        stageIndex: 1, label: '내장재 부착', tpCost: 2,
+        stageIndex: 1, label: '내장재 부착', tpCost: 3,
         requiredItems: [
           { definitionId: 'cloth', qty: 1 },
           { definitionId: 'leather', qty: 1 },
@@ -1048,7 +1048,7 @@ const BLUEPRINTS = {
     requiredTools: [],
     requiredSkills: { armorcraft: 2 },
     stages: [{
-      stageIndex: 0, label: '우비 봉제', tpCost: 2,
+      stageIndex: 0, label: '우비 봉제', tpCost: 3,
       requiredItems: [
         { definitionId: 'cloth', qty: 3 },
         { definitionId: 'rubber', qty: 1 },
@@ -1067,7 +1067,7 @@ const BLUEPRINTS = {
     requiredSkills: { armorcraft: 4 },
     stages: [
       {
-        stageIndex: 0, label: '소재 재단', tpCost: 3,
+        stageIndex: 0, label: '소재 재단', tpCost: 5,
         requiredItems: [
           { definitionId: 'leather', qty: 2 },
           { definitionId: 'cloth', qty: 2 },
@@ -1075,7 +1075,7 @@ const BLUEPRINTS = {
         consumeAt: 'start',
       },
       {
-        stageIndex: 1, label: '판금 삽입 및 마무리', tpCost: 2,
+        stageIndex: 1, label: '판금 삽입 및 마무리', tpCost: 3,
         requiredItems: [
           { definitionId: 'scrap_metal', qty: 3 },
           { definitionId: 'duct_tape', qty: 1 },
@@ -1094,7 +1094,7 @@ const BLUEPRINTS = {
     requiredSkills: { armorcraft: 5, crafting: 3 },
     stages: [
       {
-        stageIndex: 0, label: '방호 기초 제작', tpCost: 3,
+        stageIndex: 0, label: '방호 기초 제작', tpCost: 5,
         requiredItems: [
           { definitionId: 'raincoat', qty: 1 },
           { definitionId: 'rubber', qty: 2 },
@@ -1102,7 +1102,7 @@ const BLUEPRINTS = {
         consumeAt: 'start',
       },
       {
-        stageIndex: 1, label: '밀폐 처리', tpCost: 2,
+        stageIndex: 1, label: '밀폐 처리', tpCost: 3,
         requiredItems: [
           { definitionId: 'duct_tape', qty: 2 },
           { definitionId: 'gas_mask_filter', qty: 1 },
@@ -1124,7 +1124,7 @@ const BLUEPRINTS = {
     requiredTools: [],
     requiredSkills: { crafting: 1 },
     stages: [{
-      stageIndex: 0, label: '사다리 제작', tpCost: 2,
+      stageIndex: 0, label: '사다리 제작', tpCost: 3,
       requiredItems: [
         { definitionId: 'rope', qty: 2 },
         { definitionId: 'wood', qty: 3 },
@@ -1160,7 +1160,7 @@ const BLUEPRINTS = {
     requiredTools: [],
     requiredSkills: { crafting: 2 },
     stages: [{
-      stageIndex: 0, label: '배낭 제작', tpCost: 3,
+      stageIndex: 0, label: '배낭 제작', tpCost: 5,
       requiredItems: [
         { definitionId: 'cloth', qty: 3 },
         { definitionId: 'leather', qty: 1 },
@@ -1178,7 +1178,7 @@ const BLUEPRINTS = {
     requiredTools: [],
     requiredSkills: { crafting: 3 },
     stages: [{
-      stageIndex: 0, label: '더플백 제작', tpCost: 4,
+      stageIndex: 0, label: '더플백 제작', tpCost: 6,
       requiredItems: [
         { definitionId: 'cloth', qty: 4 },
         { definitionId: 'rope', qty: 2 },
@@ -1197,7 +1197,7 @@ const BLUEPRINTS = {
     requiredSkills: { armorcraft: 3 },
     stages: [
       {
-        stageIndex: 0, label: '판금 성형', tpCost: 3,
+        stageIndex: 0, label: '판금 성형', tpCost: 5,
         requiredItems: [
           { definitionId: 'scrap_metal', qty: 4 },
           { definitionId: 'leather', qty: 1 },
@@ -1227,7 +1227,7 @@ const BLUEPRINTS = {
     requiredSkills: { cooking: 2 },
     stages: [
       {
-        stageIndex: 0, label: '조합 & 포장', tpCost: 4,
+        stageIndex: 0, label: '조합 & 포장', tpCost: 6,
         requiredItems: [
           { definitionId: 'cooked_rice', qty: 1 },
           { definitionId: 'dried_meat', qty: 1 },
@@ -1250,7 +1250,7 @@ const BLUEPRINTS = {
     requiredSkills: { crafting: 1 },
     stages: [
       {
-        stageIndex: 0, label: '성형 & 마감', tpCost: 2,
+        stageIndex: 0, label: '성형 & 마감', tpCost: 3,
         requiredItems: [
           { definitionId: 'sharp_blade', qty: 1 },
           { definitionId: 'wire', qty: 1 },
@@ -1271,7 +1271,7 @@ const BLUEPRINTS = {
     requiredSkills: { crafting: 2 },
     stages: [
       {
-        stageIndex: 0, label: '회로 조립 & 케이싱', tpCost: 2,
+        stageIndex: 0, label: '회로 조립 & 케이싱', tpCost: 3,
         requiredItems: [
           { definitionId: 'electronic_parts', qty: 1 },
           { definitionId: 'plastic', qty: 1 },
@@ -1294,7 +1294,7 @@ const BLUEPRINTS = {
     requiredSkills: { cooking: 1 },
     stages: [
       {
-        stageIndex: 0, label: '혼합 & 숙성', tpCost: 2,
+        stageIndex: 0, label: '혼합 & 숙성', tpCost: 3,
         requiredItems: [
           { definitionId: 'alcohol_solution', qty: 1 },
           { definitionId: 'herb', qty: 1 },
@@ -1316,7 +1316,7 @@ const BLUEPRINTS = {
     requiredSkills: { weaponcraft: 3 },
     stages: [
       {
-        stageIndex: 0, label: '날 성형', tpCost: 3,
+        stageIndex: 0, label: '날 성형', tpCost: 5,
         requiredItems: [
           { definitionId: 'scrap_metal', qty: 2 },
           { definitionId: 'sharp_blade', qty: 1 },
@@ -1324,7 +1324,7 @@ const BLUEPRINTS = {
         consumeAt: 'start',
       },
       {
-        stageIndex: 1, label: '손잡이 결합', tpCost: 2,
+        stageIndex: 1, label: '손잡이 결합', tpCost: 3,
         requiredItems: [
           { definitionId: 'wood', qty: 1 },
           { definitionId: 'rope', qty: 1 },
@@ -1345,7 +1345,7 @@ const BLUEPRINTS = {
     requiredSkills: { weaponcraft: 3 },
     stages: [
       {
-        stageIndex: 0, label: '날 연마', tpCost: 4,
+        stageIndex: 0, label: '날 연마', tpCost: 6,
         requiredItems: [
           { definitionId: 'scrap_metal', qty: 3 },
           { definitionId: 'sharp_blade', qty: 1 },
@@ -1353,7 +1353,7 @@ const BLUEPRINTS = {
         consumeAt: 'start',
       },
       {
-        stageIndex: 1, label: '손잡이 감기', tpCost: 2,
+        stageIndex: 1, label: '손잡이 감기', tpCost: 3,
         requiredItems: [
           { definitionId: 'leather', qty: 1 },
           { definitionId: 'duct_tape', qty: 1 },
@@ -1376,7 +1376,7 @@ const BLUEPRINTS = {
     requiredSkills: { building: 3, crafting: 2 },
     stages: [
       {
-        stageIndex: 0, label: '화로 기반 축조', tpCost: 3,
+        stageIndex: 0, label: '화로 기반 축조', tpCost: 5,
         requiredItems: [
           { definitionId: 'pebble',     qty: 6 },
           { definitionId: 'scrap_metal',qty: 4 },
@@ -1384,7 +1384,7 @@ const BLUEPRINTS = {
         consumeAt: 'start',
       },
       {
-        stageIndex: 1, label: '작업대 결합', tpCost: 2,
+        stageIndex: 1, label: '작업대 결합', tpCost: 3,
         requiredItems: [
           { definitionId: 'wood_plank', qty: 3 },
           { definitionId: 'nail',       qty: 8 },
@@ -1403,7 +1403,7 @@ const BLUEPRINTS = {
     requiredSkills: { building: 4, crafting: 3 },
     stages: [
       {
-        stageIndex: 0, label: '석조 기초 쌓기', tpCost: 4,
+        stageIndex: 0, label: '석조 기초 쌓기', tpCost: 6,
         requiredItems: [
           { definitionId: 'pebble',     qty: 10 },
           { definitionId: 'scrap_metal',qty: 3 },
@@ -1411,7 +1411,7 @@ const BLUEPRINTS = {
         consumeAt: 'start',
       },
       {
-        stageIndex: 1, label: '연통 설치', tpCost: 3,
+        stageIndex: 1, label: '연통 설치', tpCost: 5,
         requiredItems: [
           { definitionId: 'scrap_metal', qty: 4 },
           { definitionId: 'wire',        qty: 2 },
@@ -1430,7 +1430,7 @@ const BLUEPRINTS = {
     requiredSkills: { crafting: 3, medicine: 2 },
     stages: [
       {
-        stageIndex: 0, label: '실험대 골조 제작', tpCost: 2,
+        stageIndex: 0, label: '실험대 골조 제작', tpCost: 3,
         requiredItems: [
           { definitionId: 'wood_plank',  qty: 3 },
           { definitionId: 'scrap_metal', qty: 2 },
@@ -1438,7 +1438,7 @@ const BLUEPRINTS = {
         consumeAt: 'start',
       },
       {
-        stageIndex: 1, label: '기구 배치', tpCost: 2,
+        stageIndex: 1, label: '기구 배치', tpCost: 3,
         requiredItems: [
           { definitionId: 'glass_shard',    qty: 3 },
           { definitionId: 'empty_bottle',   qty: 2 },
@@ -1458,7 +1458,7 @@ const BLUEPRINTS = {
     requiredSkills: { weaponcraft: 4, crafting: 3 },
     stages: [
       {
-        stageIndex: 0, label: '작업대 제작', tpCost: 3,
+        stageIndex: 0, label: '작업대 제작', tpCost: 5,
         requiredItems: [
           { definitionId: 'wood_plank',    qty: 3 },
           { definitionId: 'scrap_metal',   qty: 2 },
@@ -1467,7 +1467,7 @@ const BLUEPRINTS = {
         consumeAt: 'start',
       },
       {
-        stageIndex: 1, label: '프레스 장착', tpCost: 3,
+        stageIndex: 1, label: '프레스 장착', tpCost: 5,
         requiredItems: [
           { definitionId: 'refined_metal', qty: 2 },
           { definitionId: 'spring',        qty: 2 },
@@ -1486,7 +1486,7 @@ const BLUEPRINTS = {
     requiredTools: [],
     requiredSkills: { building: 2 },
     stages: [{
-      stageIndex: 0, label: '작업대 조립', tpCost: 3,
+      stageIndex: 0, label: '작업대 조립', tpCost: 5,
       requiredItems: [
         { definitionId: 'wood',      qty: 4 },
         { definitionId: 'wood_plank',qty: 2 },
@@ -1505,7 +1505,7 @@ const BLUEPRINTS = {
     requiredTools: [],
     requiredSkills: { crafting: 2 },
     stages: [{
-      stageIndex: 0, label: '건조대 설치', tpCost: 2,
+      stageIndex: 0, label: '건조대 설치', tpCost: 3,
       requiredItems: [
         { definitionId: 'wood',  qty: 3 },
         { definitionId: 'rope',  qty: 2 },
@@ -1527,7 +1527,7 @@ const BLUEPRINTS = {
     requiredTools: ['coal_furnace'],
     requiredSkills: { crafting: 3 },
     stages: [{
-      stageIndex: 0, label: '고온 제련', tpCost: 3,
+      stageIndex: 0, label: '고온 제련', tpCost: 5,
       requiredItems: [
         { definitionId: 'scrap_metal', qty: 3 },
         { definitionId: 'charcoal',    qty: 2 },
@@ -1544,7 +1544,7 @@ const BLUEPRINTS = {
     requiredTools: ['coal_furnace'],
     requiredSkills: { crafting: 4 },
     stages: [{
-      stageIndex: 0, label: '강철화 처리', tpCost: 4,
+      stageIndex: 0, label: '강철화 처리', tpCost: 6,
       requiredItems: [
         { definitionId: 'refined_metal', qty: 2 },
         { definitionId: 'charcoal',      qty: 3 },
@@ -1561,7 +1561,7 @@ const BLUEPRINTS = {
     requiredTools: ['coal_furnace'],
     requiredSkills: { crafting: 2 },
     stages: [{
-      stageIndex: 0, label: '납 용융 추출', tpCost: 2,
+      stageIndex: 0, label: '납 용융 추출', tpCost: 3,
       requiredItems: [
         { definitionId: 'battery', qty: 1 },
         { definitionId: 'charcoal', qty: 1 },
@@ -1578,7 +1578,7 @@ const BLUEPRINTS = {
     requiredTools: ['coal_furnace'],
     requiredSkills: { crafting: 3 },
     stages: [{
-      stageIndex: 0, label: '합금 제련', tpCost: 3,
+      stageIndex: 0, label: '합금 제련', tpCost: 5,
       requiredItems: [
         { definitionId: 'wire',       qty: 2 },
         { definitionId: 'lead_ingot', qty: 1 },
@@ -1600,7 +1600,7 @@ const BLUEPRINTS = {
     requiredTools: ['field_forge'],
     requiredSkills: { weaponcraft: 3 },
     stages: [{
-      stageIndex: 0, label: '날 단조', tpCost: 3,
+      stageIndex: 0, label: '날 단조', tpCost: 5,
       requiredItems: [
         { definitionId: 'refined_metal', qty: 1 },
         { definitionId: 'charcoal',      qty: 1 },
@@ -1617,7 +1617,7 @@ const BLUEPRINTS = {
     requiredTools: ['field_forge'],
     requiredSkills: { crafting: 3 },
     stages: [{
-      stageIndex: 0, label: '삽 날 단조', tpCost: 3,
+      stageIndex: 0, label: '삽 날 단조', tpCost: 5,
       requiredItems: [
         { definitionId: 'refined_metal', qty: 2 },
         { definitionId: 'charcoal',      qty: 1 },
@@ -1634,7 +1634,7 @@ const BLUEPRINTS = {
     requiredTools: ['field_forge'],
     requiredSkills: { crafting: 3 },
     stages: [{
-      stageIndex: 0, label: '망치 머리 단조', tpCost: 3,
+      stageIndex: 0, label: '망치 머리 단조', tpCost: 5,
       requiredItems: [
         { definitionId: 'refined_metal', qty: 1 },
         { definitionId: 'scrap_metal',   qty: 2 },
@@ -1668,7 +1668,7 @@ const BLUEPRINTS = {
     requiredTools: ['field_forge'],
     requiredSkills: { crafting: 3 },
     stages: [{
-      stageIndex: 0, label: '탄피 성형', tpCost: 2,
+      stageIndex: 0, label: '탄피 성형', tpCost: 3,
       requiredItems: [
         { definitionId: 'brass_fragment', qty: 2 },
       ],
@@ -1684,7 +1684,7 @@ const BLUEPRINTS = {
     requiredTools: ['field_forge'],
     requiredSkills: { weaponcraft: 2 },
     stages: [{
-      stageIndex: 0, label: '촉 단조', tpCost: 2,
+      stageIndex: 0, label: '촉 단조', tpCost: 3,
       requiredItems: [
         { definitionId: 'scrap_metal', qty: 1 },
         { definitionId: 'charcoal',    qty: 1 },
@@ -1706,7 +1706,7 @@ const BLUEPRINTS = {
     requiredSkills: { weaponcraft: 3 },
     stages: [
       {
-        stageIndex: 0, label: '자루 제작', tpCost: 2,
+        stageIndex: 0, label: '자루 제작', tpCost: 3,
         requiredItems: [
           { definitionId: 'wood_plank',  qty: 2 },
           { definitionId: 'kindling',    qty: 1 },
@@ -1714,7 +1714,7 @@ const BLUEPRINTS = {
         consumeAt: 'start',
       },
       {
-        stageIndex: 1, label: '날 결합', tpCost: 2,
+        stageIndex: 1, label: '날 결합', tpCost: 3,
         requiredItems: [
           { definitionId: 'ax_head', qty: 1 },
           { definitionId: 'leather', qty: 1 },
@@ -1734,7 +1734,7 @@ const BLUEPRINTS = {
     requiredSkills: { crafting: 3 },
     stages: [
       {
-        stageIndex: 0, label: '자루 제작', tpCost: 2,
+        stageIndex: 0, label: '자루 제작', tpCost: 3,
         requiredItems: [
           { definitionId: 'wood_plank', qty: 2 },
           { definitionId: 'rope',       qty: 1 },
@@ -1787,7 +1787,7 @@ const BLUEPRINTS = {
     requiredTools: ['carpentry_bench'],
     requiredSkills: { crafting: 2 },
     stages: [{
-      stageIndex: 0, label: '낚싯대 제작', tpCost: 2,
+      stageIndex: 0, label: '낚싯대 제작', tpCost: 3,
       requiredItems: [
         { definitionId: 'wood_plank',   qty: 2 },
         { definitionId: 'fishing_hook', qty: 1 },
@@ -1821,7 +1821,7 @@ const BLUEPRINTS = {
     requiredTools: ['carpentry_bench'],
     requiredSkills: { weaponcraft: 3 },
     stages: [{
-      stageIndex: 0, label: '볼트 조립', tpCost: 2,
+      stageIndex: 0, label: '볼트 조립', tpCost: 3,
       requiredItems: [
         { definitionId: 'bolt_shaft', qty: 5 },
         { definitionId: 'bolt_tip',   qty: 5 },
@@ -1843,7 +1843,7 @@ const BLUEPRINTS = {
     requiredTools: ['chemistry_bench'],
     requiredSkills: { crafting: 3, medicine: 2 },
     stages: [{
-      stageIndex: 0, label: '화약 혼합', tpCost: 3,
+      stageIndex: 0, label: '화약 혼합', tpCost: 5,
       requiredItems: [
         { definitionId: 'charcoal',  qty: 3 },
         { definitionId: 'saltpeter', qty: 2 },
@@ -1861,7 +1861,7 @@ const BLUEPRINTS = {
     requiredTools: ['chemistry_bench'],
     requiredSkills: { crafting: 3, medicine: 2 },
     stages: [{
-      stageIndex: 0, label: '뇌관 합성', tpCost: 3,
+      stageIndex: 0, label: '뇌관 합성', tpCost: 5,
       requiredItems: [
         { definitionId: 'brass_fragment', qty: 2 },
         { definitionId: 'alcohol_solution', qty: 1 },
@@ -1878,7 +1878,7 @@ const BLUEPRINTS = {
     requiredTools: ['chemistry_bench'],
     requiredSkills: { medicine: 3 },
     stages: [{
-      stageIndex: 0, label: '독소 추출', tpCost: 3,
+      stageIndex: 0, label: '독소 추출', tpCost: 5,
       requiredItems: [
         { definitionId: 'herb',             qty: 3 },
         { definitionId: 'alcohol_solution', qty: 1 },
@@ -1901,7 +1901,7 @@ const BLUEPRINTS = {
     requiredSkills: { weaponcraft: 3, crafting: 3 },
     stages: [
       {
-        stageIndex: 0, label: '탄두 성형', tpCost: 2,
+        stageIndex: 0, label: '탄두 성형', tpCost: 3,
         requiredItems: [
           { definitionId: 'lead_ingot',      qty: 2 },
           { definitionId: 'empty_cartridge', qty: 6 },
@@ -1909,7 +1909,7 @@ const BLUEPRINTS = {
         consumeAt: 'start',
       },
       {
-        stageIndex: 1, label: '장약 + 뇌관 조립', tpCost: 2,
+        stageIndex: 1, label: '장약 + 뇌관 조립', tpCost: 3,
         requiredItems: [
           { definitionId: 'black_powder',   qty: 2 },
           { definitionId: 'detonator_cap',  qty: 6 },
@@ -1928,7 +1928,7 @@ const BLUEPRINTS = {
     requiredSkills: { weaponcraft: 4, crafting: 3 },
     stages: [
       {
-        stageIndex: 0, label: '산탄 케이스 준비', tpCost: 2,
+        stageIndex: 0, label: '산탄 케이스 준비', tpCost: 3,
         requiredItems: [
           { definitionId: 'empty_can',   qty: 2 },
           { definitionId: 'lead_ingot',  qty: 2 },
@@ -1936,7 +1936,7 @@ const BLUEPRINTS = {
         consumeAt: 'start',
       },
       {
-        stageIndex: 1, label: '화약 + 뇌관 조립', tpCost: 3,
+        stageIndex: 1, label: '화약 + 뇌관 조립', tpCost: 5,
         requiredItems: [
           { definitionId: 'black_powder',  qty: 3 },
           { definitionId: 'detonator_cap', qty: 4 },
@@ -1955,7 +1955,7 @@ const BLUEPRINTS = {
     requiredSkills: { weaponcraft: 5, crafting: 4 },
     stages: [
       {
-        stageIndex: 0, label: '탄심 제작', tpCost: 3,
+        stageIndex: 0, label: '탄심 제작', tpCost: 5,
         requiredItems: [
           { definitionId: 'steel_plate',     qty: 1 },
           { definitionId: 'lead_ingot',      qty: 2 },
@@ -1964,7 +1964,7 @@ const BLUEPRINTS = {
         consumeAt: 'start',
       },
       {
-        stageIndex: 1, label: '고압 장약 + 뇌관 조립', tpCost: 3,
+        stageIndex: 1, label: '고압 장약 + 뇌관 조립', tpCost: 5,
         requiredItems: [
           { definitionId: 'black_powder',   qty: 4 },
           { definitionId: 'detonator_cap',  qty: 6 },
@@ -1983,7 +1983,7 @@ const BLUEPRINTS = {
     requiredTools: ['ammo_bench'],
     requiredSkills: { weaponcraft: 3 },
     stages: [{
-      stageIndex: 0, label: '볼트 정밀 조립', tpCost: 2,
+      stageIndex: 0, label: '볼트 정밀 조립', tpCost: 3,
       requiredItems: [
         { definitionId: 'bolt_shaft', qty: 5 },
         { definitionId: 'bolt_tip',   qty: 5 },
@@ -2005,7 +2005,7 @@ const BLUEPRINTS = {
     requiredTools: [],
     requiredSkills: {},
     stages: [{
-      stageIndex: 0, label: '돌 깎기', tpCost: 2,
+      stageIndex: 0, label: '돌 깎기', tpCost: 3,
       requiredItems: [
         { definitionId: 'firestone', qty: 2 },
         { definitionId: 'pebble',    qty: 1 },
@@ -2022,7 +2022,7 @@ const BLUEPRINTS = {
     requiredSkills: { building: 1 },
     stages: [
       {
-        stageIndex: 0, label: '돌 모으기', tpCost: 2,
+        stageIndex: 0, label: '돌 모으기', tpCost: 3,
         requiredItems: [
           { definitionId: 'pebble',   qty: 4 },
           { definitionId: 'soil_bag', qty: 1 },
@@ -2030,7 +2030,7 @@ const BLUEPRINTS = {
         consumeAt: 'start',
       },
       {
-        stageIndex: 1, label: '형태 다듬기', tpCost: 2,
+        stageIndex: 1, label: '형태 다듬기', tpCost: 3,
         requiredItems: [
           { definitionId: 'scrap_metal', qty: 1 },
         ],
@@ -2046,7 +2046,7 @@ const BLUEPRINTS = {
     requiredTools: [],
     requiredSkills: { building: 1 },
     stages: [{
-      stageIndex: 0, label: '삽 제작', tpCost: 2,
+      stageIndex: 0, label: '삽 제작', tpCost: 3,
       requiredItems: [
         { definitionId: 'scrap_metal', qty: 1 },
         { definitionId: 'wood',        qty: 1 },
@@ -2064,7 +2064,7 @@ const BLUEPRINTS = {
     requiredSkills: { crafting: 2 },
     stages: [
       {
-        stageIndex: 0, label: '틀 만들기', tpCost: 2,
+        stageIndex: 0, label: '틀 만들기', tpCost: 3,
         requiredItems: [
           { definitionId: 'wire', qty: 2 },
           { definitionId: 'wood', qty: 2 },
@@ -2072,7 +2072,7 @@ const BLUEPRINTS = {
         consumeAt: 'start',
       },
       {
-        stageIndex: 1, label: '그물 엮기', tpCost: 2,
+        stageIndex: 1, label: '그물 엮기', tpCost: 3,
         requiredItems: [
           { definitionId: 'rope',        qty: 1 },
           { definitionId: 'fishing_hook',qty: 1 },
@@ -2090,14 +2090,14 @@ const BLUEPRINTS = {
     requiredSkills: { crafting: 1 },
     stages: [
       {
-        stageIndex: 0, label: '성형', tpCost: 2,
+        stageIndex: 0, label: '성형', tpCost: 3,
         requiredItems: [
           { definitionId: 'soil_bag', qty: 3 },
         ],
         consumeAt: 'start',
       },
       {
-        stageIndex: 1, label: '가마 굽기', tpCost: 3,
+        stageIndex: 1, label: '가마 굽기', tpCost: 5,
         requiredItems: [],
         consumeAt: 'start',
       },
@@ -2111,7 +2111,7 @@ const BLUEPRINTS = {
     requiredTools: ['pipe_wrench'],
     requiredSkills: { weaponcraft: 1 },
     stages: [{
-      stageIndex: 0, label: '낫 제작', tpCost: 3,
+      stageIndex: 0, label: '낫 제작', tpCost: 5,
       requiredItems: [
         { definitionId: 'scrap_metal', qty: 2 },
         { definitionId: 'wood',        qty: 1 },
@@ -2132,7 +2132,7 @@ const BLUEPRINTS = {
     requiredSkills: { weaponcraft: 2 },
     stages: [
       {
-        stageIndex: 0, label: '단조', tpCost: 3,
+        stageIndex: 0, label: '단조', tpCost: 5,
         requiredItems: [
           { definitionId: 'scrap_metal', qty: 3 },
           { definitionId: 'wood',        qty: 1 },
@@ -2140,7 +2140,7 @@ const BLUEPRINTS = {
         consumeAt: 'start',
       },
       {
-        stageIndex: 1, label: '날 다듬기', tpCost: 2,
+        stageIndex: 1, label: '날 다듬기', tpCost: 3,
         requiredItems: [
           { definitionId: 'rope', qty: 1 },
         ],
@@ -2158,7 +2158,7 @@ const BLUEPRINTS = {
     requiredSkills: { building: 2 },
     stages: [
       {
-        stageIndex: 0, label: '주물 제작', tpCost: 4,
+        stageIndex: 0, label: '주물 제작', tpCost: 6,
         requiredItems: [
           { definitionId: 'scrap_metal', qty: 5 },
           { definitionId: 'nail',        qty: 4 },
@@ -2166,7 +2166,7 @@ const BLUEPRINTS = {
         consumeAt: 'start',
       },
       {
-        stageIndex: 1, label: '마감', tpCost: 2,
+        stageIndex: 1, label: '마감', tpCost: 3,
         requiredItems: [
           { definitionId: 'refined_metal', qty: 1 },
         ],
@@ -2185,7 +2185,7 @@ const BLUEPRINTS = {
     requiredSkills: { building: 1 },
     stages: [
       {
-        stageIndex: 0, label: '기둥 세우기', tpCost: 2,
+        stageIndex: 0, label: '기둥 세우기', tpCost: 3,
         requiredItems: [
           { definitionId: 'wood', qty: 4 },
           { definitionId: 'nail', qty: 4 },
@@ -2210,7 +2210,7 @@ const BLUEPRINTS = {
     requiredSkills: { building: 2 },
     stages: [
       {
-        stageIndex: 0, label: '프레임 제작', tpCost: 3,
+        stageIndex: 0, label: '프레임 제작', tpCost: 5,
         requiredItems: [
           { definitionId: 'scrap_metal', qty: 3 },
           { definitionId: 'wire',        qty: 2 },
@@ -2235,7 +2235,7 @@ const BLUEPRINTS = {
     requiredSkills: { building: 2, cooking: 1 },
     stages: [
       {
-        stageIndex: 0, label: '성형', tpCost: 3,
+        stageIndex: 0, label: '성형', tpCost: 5,
         requiredItems: [
           { definitionId: 'soil_bag', qty: 5 },
           { definitionId: 'rope',     qty: 2 },
@@ -2243,7 +2243,7 @@ const BLUEPRINTS = {
         consumeAt: 'start',
       },
       {
-        stageIndex: 1, label: '가마 굽기 및 소금 코팅', tpCost: 4,
+        stageIndex: 1, label: '가마 굽기 및 소금 코팅', tpCost: 6,
         requiredItems: [
           { definitionId: 'salt', qty: 2 },
         ],
@@ -2261,12 +2261,12 @@ const BLUEPRINTS = {
     requiredSkills: { building: 3 },
     stages: [
       {
-        stageIndex: 0, label: '땅 파기', tpCost: 5,
+        stageIndex: 0, label: '땅 파기', tpCost: 8,
         requiredItems: [],
         consumeAt: 'start',
       },
       {
-        stageIndex: 1, label: '골조 설치', tpCost: 4,
+        stageIndex: 1, label: '골조 설치', tpCost: 6,
         requiredItems: [
           { definitionId: 'wood_plank', qty: 6 },
           { definitionId: 'nail',       qty: 8 },
@@ -2274,7 +2274,7 @@ const BLUEPRINTS = {
         consumeAt: 'start',
       },
       {
-        stageIndex: 2, label: '마감', tpCost: 2,
+        stageIndex: 2, label: '마감', tpCost: 3,
         requiredItems: [
           { definitionId: 'rope', qty: 2 },
         ],
@@ -2292,7 +2292,7 @@ const BLUEPRINTS = {
     requiredSkills: { building: 2 },
     stages: [
       {
-        stageIndex: 0, label: '통 제작', tpCost: 3,
+        stageIndex: 0, label: '통 제작', tpCost: 5,
         requiredItems: [
           { definitionId: 'wood_plank', qty: 4 },
           { definitionId: 'rope',       qty: 2 },
@@ -2300,7 +2300,7 @@ const BLUEPRINTS = {
         consumeAt: 'start',
       },
       {
-        stageIndex: 1, label: '설치 및 유인', tpCost: 2,
+        stageIndex: 1, label: '설치 및 유인', tpCost: 3,
         requiredItems: [
           { definitionId: 'wild_berry', qty: 2 },
           { definitionId: 'pine_cone',  qty: 2 },
@@ -2321,7 +2321,7 @@ const BLUEPRINTS = {
     requiredSkills: { building: 2 },
     stages: [
       {
-        stageIndex: 0, label: '밭 고르기', tpCost: 4,
+        stageIndex: 0, label: '밭 고르기', tpCost: 6,
         requiredItems: [
           { definitionId: 'wood_plank', qty: 3 },
           { definitionId: 'soil_bag',   qty: 4 },
@@ -2329,7 +2329,7 @@ const BLUEPRINTS = {
         consumeAt: 'start',
       },
       {
-        stageIndex: 1, label: '씨앗 심기', tpCost: 2,
+        stageIndex: 1, label: '씨앗 심기', tpCost: 3,
         requiredItems: [
           { definitionId: 'vegetable_seed', qty: 2 },
         ],
@@ -2347,7 +2347,7 @@ const BLUEPRINTS = {
     requiredSkills: { building: 2 },
     stages: [
       {
-        stageIndex: 0, label: '밭 고르기', tpCost: 4,
+        stageIndex: 0, label: '밭 고르기', tpCost: 6,
         requiredItems: [
           { definitionId: 'wood_plank', qty: 3 },
           { definitionId: 'soil_bag',   qty: 3 },
@@ -2355,7 +2355,7 @@ const BLUEPRINTS = {
         consumeAt: 'start',
       },
       {
-        stageIndex: 1, label: '씨앗 심기', tpCost: 2,
+        stageIndex: 1, label: '씨앗 심기', tpCost: 3,
         requiredItems: [
           { definitionId: 'herb_seed', qty: 2 },
         ],
@@ -2373,7 +2373,7 @@ const BLUEPRINTS = {
     requiredSkills: { building: 3 },
     stages: [
       {
-        stageIndex: 0, label: '넓은 밭 조성', tpCost: 5,
+        stageIndex: 0, label: '넓은 밭 조성', tpCost: 8,
         requiredItems: [
           { definitionId: 'wood_plank', qty: 4 },
           { definitionId: 'soil_bag',   qty: 5 },
@@ -2381,7 +2381,7 @@ const BLUEPRINTS = {
         consumeAt: 'start',
       },
       {
-        stageIndex: 1, label: '비료 투입', tpCost: 2,
+        stageIndex: 1, label: '비료 투입', tpCost: 3,
         requiredItems: [
           { definitionId: 'dry_leaves', qty: 3 },
           { definitionId: 'wild_root',  qty: 1 },
@@ -2389,7 +2389,7 @@ const BLUEPRINTS = {
         consumeAt: 'start',
       },
       {
-        stageIndex: 2, label: '파종', tpCost: 2,
+        stageIndex: 2, label: '파종', tpCost: 3,
         requiredItems: [
           { definitionId: 'grain_seed', qty: 3 },
         ],
@@ -2441,7 +2441,7 @@ const BLUEPRINTS = {
     requiredTools: ['mortar_pestle'],
     requiredSkills: {},
     stages: [{
-      stageIndex: 0, label: '분쇄', tpCost: 2,
+      stageIndex: 0, label: '분쇄', tpCost: 3,
       requiredItems: [
         { definitionId: 'acorn', qty: 4 },
       ],
@@ -2456,7 +2456,7 @@ const BLUEPRINTS = {
     requiredTools: ['mortar_pestle'],
     requiredSkills: { medicine: 1 },
     stages: [{
-      stageIndex: 0, label: '분쇄', tpCost: 2,
+      stageIndex: 0, label: '분쇄', tpCost: 3,
       requiredItems: [
         { definitionId: 'herb', qty: 2 },
       ],
@@ -2486,7 +2486,7 @@ const BLUEPRINTS = {
     requiredTools: ['campfire'],
     requiredSkills: {},
     stages: [{
-      stageIndex: 0, label: '찌기 및 섬유 추출', tpCost: 2,
+      stageIndex: 0, label: '찌기 및 섬유 추출', tpCost: 3,
       requiredItems: [
         { definitionId: 'nettle', qty: 3 },
       ],
@@ -2503,7 +2503,7 @@ const BLUEPRINTS = {
     requiredTools: ['drying_rack'],
     requiredSkills: { cooking: 1 },
     stages: [{
-      stageIndex: 0, label: '소금 절임 및 건조', tpCost: 3,
+      stageIndex: 0, label: '소금 절임 및 건조', tpCost: 5,
       requiredItems: [
         { definitionId: 'meat_strip', qty: 2 },
         { definitionId: 'salt',       qty: 1 },
@@ -2519,7 +2519,7 @@ const BLUEPRINTS = {
     requiredTools: ['drying_rack'],
     requiredSkills: { cooking: 1 },
     stages: [{
-      stageIndex: 0, label: '소금 절임 및 건조', tpCost: 3,
+      stageIndex: 0, label: '소금 절임 및 건조', tpCost: 5,
       requiredItems: [
         { definitionId: 'fish_fillet', qty: 2 },
         { definitionId: 'salt',        qty: 1 },
@@ -2535,7 +2535,7 @@ const BLUEPRINTS = {
     requiredTools: ['drying_rack'],
     requiredSkills: {},
     stages: [{
-      stageIndex: 0, label: '건조', tpCost: 2,
+      stageIndex: 0, label: '건조', tpCost: 3,
       requiredItems: [
         { definitionId: 'mushroom_edible', qty: 2 },
       ],
@@ -2550,7 +2550,7 @@ const BLUEPRINTS = {
     requiredTools: ['drying_rack'],
     requiredSkills: {},
     stages: [{
-      stageIndex: 0, label: '건조', tpCost: 2,
+      stageIndex: 0, label: '건조', tpCost: 3,
       requiredItems: [
         { definitionId: 'wild_berry', qty: 3 },
       ],
@@ -2599,7 +2599,7 @@ const BLUEPRINTS = {
     requiredTools: ['campfire'],
     requiredSkills: { cooking: 1 },
     stages: [{
-      stageIndex: 0, label: '볶고 끓이기', tpCost: 2,
+      stageIndex: 0, label: '볶고 끓이기', tpCost: 3,
       requiredItems: [
         { definitionId: 'dandelion',   qty: 3 },
         { definitionId: 'boiled_water', qty: 1 },
@@ -2632,7 +2632,7 @@ const BLUEPRINTS = {
     requiredTools: ['campfire'],
     requiredSkills: { cooking: 1 },
     stages: [{
-      stageIndex: 0, label: '졸이기', tpCost: 2,
+      stageIndex: 0, label: '졸이기', tpCost: 3,
       requiredItems: [
         { definitionId: 'wild_berry', qty: 4 },
         { definitionId: 'salt',       qty: 1 },
@@ -2650,7 +2650,7 @@ const BLUEPRINTS = {
     requiredTools: ['cooking_pot_stand', 'campfire'],
     requiredSkills: { cooking: 2 },
     stages: [{
-      stageIndex: 0, label: '수프 끓이기', tpCost: 3,
+      stageIndex: 0, label: '수프 끓이기', tpCost: 5,
       requiredItems: [
         { definitionId: 'mushroom_edible', qty: 2 },
         { definitionId: 'garlic_paste',    qty: 1 },
@@ -2667,7 +2667,7 @@ const BLUEPRINTS = {
     requiredTools: ['cooking_pot_stand', 'campfire'],
     requiredSkills: { cooking: 2 },
     stages: [{
-      stageIndex: 0, label: '스튜 끓이기', tpCost: 3,
+      stageIndex: 0, label: '스튜 끓이기', tpCost: 5,
       requiredItems: [
         { definitionId: 'nettle',       qty: 2 },
         { definitionId: 'wild_root',    qty: 2 },
@@ -2685,7 +2685,7 @@ const BLUEPRINTS = {
     requiredSkills: { cooking: 2 },
     stages: [
       {
-        stageIndex: 0, label: '반죽 끓이기', tpCost: 3,
+        stageIndex: 0, label: '반죽 끓이기', tpCost: 5,
         requiredItems: [
           { definitionId: 'acorn_flour',    qty: 3 },
           { definitionId: 'purified_water', qty: 1 },
@@ -2693,7 +2693,7 @@ const BLUEPRINTS = {
         consumeAt: 'start',
       },
       {
-        stageIndex: 1, label: '굳히기', tpCost: 2,
+        stageIndex: 1, label: '굳히기', tpCost: 3,
         requiredItems: [],
         consumeAt: 'complete',
       },
@@ -2708,7 +2708,7 @@ const BLUEPRINTS = {
     requiredTools: ['cooking_pot_stand', 'campfire'],
     requiredSkills: { cooking: 3 },
     stages: [{
-      stageIndex: 0, label: '스튜 끓이기', tpCost: 4,
+      stageIndex: 0, label: '스튜 끓이기', tpCost: 6,
       requiredItems: [
         { definitionId: 'vegetable',    qty: 3 },
         { definitionId: 'garlic_paste', qty: 1 },
@@ -2730,7 +2730,7 @@ const BLUEPRINTS = {
     requiredSkills: { cooking: 2 },
     stages: [
       {
-        stageIndex: 0, label: '재료 절이기', tpCost: 3,
+        stageIndex: 0, label: '재료 절이기', tpCost: 5,
         requiredItems: [
           { definitionId: 'vegetable',   qty: 3 },
           { definitionId: 'wild_garlic', qty: 2 },
@@ -2739,7 +2739,7 @@ const BLUEPRINTS = {
         consumeAt: 'start',
       },
       {
-        stageIndex: 1, label: '숙성 (3일)', tpCost: 6,
+        stageIndex: 1, label: '숙성 (3일)', tpCost: 9,
         requiredItems: [],
         consumeAt: 'complete',
       },
@@ -2755,7 +2755,7 @@ const BLUEPRINTS = {
     requiredSkills: { cooking: 2 },
     stages: [
       {
-        stageIndex: 0, label: '재료 담기', tpCost: 2,
+        stageIndex: 0, label: '재료 담기', tpCost: 3,
         requiredItems: [
           { definitionId: 'wild_berry', qty: 5 },
           { definitionId: 'grain',      qty: 1 },
@@ -2763,7 +2763,7 @@ const BLUEPRINTS = {
         consumeAt: 'start',
       },
       {
-        stageIndex: 1, label: '발효 (5일)', tpCost: 10,
+        stageIndex: 1, label: '발효 (5일)', tpCost: 15,
         requiredItems: [],
         consumeAt: 'complete',
       },
@@ -2779,7 +2779,7 @@ const BLUEPRINTS = {
     requiredSkills: { cooking: 2 },
     stages: [
       {
-        stageIndex: 0, label: '재료 담기', tpCost: 2,
+        stageIndex: 0, label: '재료 담기', tpCost: 3,
         requiredItems: [
           { definitionId: 'grain',        qty: 3 },
           { definitionId: 'boiled_water', qty: 1 },
@@ -2787,7 +2787,7 @@ const BLUEPRINTS = {
         consumeAt: 'start',
       },
       {
-        stageIndex: 1, label: '발효 (2일)', tpCost: 4,
+        stageIndex: 1, label: '발효 (2일)', tpCost: 6,
         requiredItems: [],
         consumeAt: 'complete',
       },
@@ -2803,7 +2803,7 @@ const BLUEPRINTS = {
     requiredTools: ['garden_bed_veggie'],
     requiredSkills: {},
     stages: [{
-      stageIndex: 0, label: '수확', tpCost: 3,
+      stageIndex: 0, label: '수확', tpCost: 5,
       requiredItems: [],
       consumeAt: 'start',
     }],
@@ -2816,7 +2816,7 @@ const BLUEPRINTS = {
     requiredTools: ['garden_bed_herb'],
     requiredSkills: {},
     stages: [{
-      stageIndex: 0, label: '수확', tpCost: 3,
+      stageIndex: 0, label: '수확', tpCost: 5,
       requiredItems: [],
       consumeAt: 'start',
     }],
@@ -2829,7 +2829,7 @@ const BLUEPRINTS = {
     requiredTools: ['garden_bed_grain'],
     requiredSkills: {},
     stages: [{
-      stageIndex: 0, label: '수확', tpCost: 4,
+      stageIndex: 0, label: '수확', tpCost: 6,
       requiredItems: [],
       consumeAt: 'start',
     }],
@@ -2859,7 +2859,7 @@ const BLUEPRINTS = {
     requiredTools: [],
     requiredSkills: { crafting: 2, fishing: 3 },
     stages: [{
-      stageIndex: 0, label: '개량 낚싯대 제작', tpCost: 2,
+      stageIndex: 0, label: '개량 낚싯대 제작', tpCost: 3,
       requiredItems: [
         { definitionId: 'wood', qty: 1 },
         { definitionId: 'wire', qty: 1 },
@@ -2929,7 +2929,7 @@ const BLUEPRINTS = {
     requiredSkills: { crafting: 1 },
     skillOverride: 'weaponcraft',
     stages: [{
-      stageIndex: 0, label: '나무 깎기', tpCost: 2,
+      stageIndex: 0, label: '나무 깎기', tpCost: 3,
       requiredItems: [
         { definitionId: 'wood_plank', qty: 2 },
         { definitionId: 'rope',       qty: 1 },
@@ -2946,7 +2946,7 @@ const BLUEPRINTS = {
     requiredSkills: { crafting: 1 },
     skillOverride: 'armorcraft',
     stages: [{
-      stageIndex: 0, label: '천 겹치기', tpCost: 2,
+      stageIndex: 0, label: '천 겹치기', tpCost: 3,
       requiredItems: [
         { definitionId: 'cloth', qty: 2 },
         { definitionId: 'rope',  qty: 1 },
@@ -2963,7 +2963,7 @@ const BLUEPRINTS = {
     requiredSkills: { building: 1 },
     skillOverride: 'building',
     stages: [{
-      stageIndex: 0, label: '판자 조립', tpCost: 2,
+      stageIndex: 0, label: '판자 조립', tpCost: 3,
       requiredItems: [
         { definitionId: 'wood_plank',  qty: 2 },
         { definitionId: 'scrap_metal', qty: 1 },
@@ -2983,7 +2983,7 @@ const BLUEPRINTS = {
     requiredTools: ['medical_station'],
     requiredSkills: { medicine: 3, crafting: 2 },
     stages: [{
-      stageIndex: 0, label: '약제 조합', tpCost: 3,
+      stageIndex: 0, label: '약제 조합', tpCost: 5,
       requiredItems: [
         { definitionId: 'charcoal',          qty: 2 },
         { definitionId: 'herb',              qty: 3 },
@@ -3004,7 +3004,7 @@ const BLUEPRINTS = {
     requiredTools: ['workbench'],
     requiredSkills: { crafting: 5, weaponcraft: 3 },
     stages: [{
-      stageIndex: 0, label: '용융·단조', tpCost: 4,
+      stageIndex: 0, label: '용융·단조', tpCost: 6,
       requiredItems: [
         { definitionId: 'scrap_metal', qty: 5 },
         { definitionId: 'charcoal',    qty: 2 },
@@ -3021,14 +3021,14 @@ const BLUEPRINTS = {
     requiredSkills: { crafting: 7, weaponcraft: 5 },
     stages: [
       {
-        stageIndex: 0, label: '선반 거친 가공', tpCost: 4,
+        stageIndex: 0, label: '선반 거친 가공', tpCost: 6,
         requiredItems: [
           { definitionId: 'aviation_alloy', qty: 3 },
         ],
         consumeAt: 'start',
       },
       {
-        stageIndex: 1, label: '정밀 균형 조정', tpCost: 3,
+        stageIndex: 1, label: '정밀 균형 조정', tpCost: 5,
         requiredItems: [
           { definitionId: 'sharp_blade', qty: 1 },
           { definitionId: 'duct_tape',   qty: 2 },
@@ -3046,7 +3046,7 @@ const BLUEPRINTS = {
     requiredSkills: { crafting: 8, weaponcraft: 5, building: 3 },
     stages: [
       {
-        stageIndex: 0, label: '실린더 블록', tpCost: 5,
+        stageIndex: 0, label: '실린더 블록', tpCost: 8,
         requiredItems: [
           { definitionId: 'aviation_alloy', qty: 2 },
           { definitionId: 'scrap_metal',    qty: 4 },
@@ -3055,7 +3055,7 @@ const BLUEPRINTS = {
         consumeAt: 'start',
       },
       {
-        stageIndex: 1, label: '연료 분사 시스템', tpCost: 4,
+        stageIndex: 1, label: '연료 분사 시스템', tpCost: 6,
         requiredItems: [
           { definitionId: 'electronic_parts', qty: 3 },
           { definitionId: 'rubber',           qty: 2 },
@@ -3064,7 +3064,7 @@ const BLUEPRINTS = {
         consumeAt: 'start',
       },
       {
-        stageIndex: 2, label: '크랭크샤프트 조립', tpCost: 4,
+        stageIndex: 2, label: '크랭크샤프트 조립', tpCost: 6,
         requiredItems: [
           { definitionId: 'aviation_alloy', qty: 1 },
           { definitionId: 'duct_tape',      qty: 3 },
@@ -3083,7 +3083,7 @@ const BLUEPRINTS = {
     requiredSkills: { crafting: 6, building: 3 },
     stages: [
       {
-        stageIndex: 0, label: '제어 회로 기판', tpCost: 3,
+        stageIndex: 0, label: '제어 회로 기판', tpCost: 5,
         requiredItems: [
           { definitionId: 'electronic_parts', qty: 4 },
           { definitionId: 'wire',             qty: 3 },
@@ -3091,7 +3091,7 @@ const BLUEPRINTS = {
         consumeAt: 'start',
       },
       {
-        stageIndex: 1, label: '센서 통합', tpCost: 3,
+        stageIndex: 1, label: '센서 통합', tpCost: 5,
         requiredItems: [
           { definitionId: 'electronic_parts', qty: 2 },
           { definitionId: 'glass_shard',      qty: 2 },
@@ -3110,7 +3110,7 @@ const BLUEPRINTS = {
     requiredSkills: { crafting: 6, weaponcraft: 4 },
     stages: [
       {
-        stageIndex: 0, label: '꼬리 블레이드', tpCost: 3,
+        stageIndex: 0, label: '꼬리 블레이드', tpCost: 5,
         requiredItems: [
           { definitionId: 'aviation_alloy', qty: 2 },
           { definitionId: 'sharp_blade',    qty: 1 },
@@ -3118,7 +3118,7 @@ const BLUEPRINTS = {
         consumeAt: 'start',
       },
       {
-        stageIndex: 1, label: '드라이브 샤프트', tpCost: 3,
+        stageIndex: 1, label: '드라이브 샤프트', tpCost: 5,
         requiredItems: [
           { definitionId: 'scrap_metal', qty: 3 },
           { definitionId: 'rubber',      qty: 2 },
@@ -3137,7 +3137,7 @@ const BLUEPRINTS = {
     requiredSkills: { crafting: 7, building: 5, armorcraft: 3 },
     stages: [
       {
-        stageIndex: 0, label: '조종석 셸', tpCost: 5,
+        stageIndex: 0, label: '조종석 셸', tpCost: 8,
         requiredItems: [
           { definitionId: 'aviation_alloy', qty: 4 },
           { definitionId: 'glass_shard',    qty: 5 },
@@ -3145,7 +3145,7 @@ const BLUEPRINTS = {
         consumeAt: 'start',
       },
       {
-        stageIndex: 1, label: '엔진 베드·리벳 고정', tpCost: 4,
+        stageIndex: 1, label: '엔진 베드·리벳 고정', tpCost: 6,
         requiredItems: [
           { definitionId: 'aviation_alloy', qty: 3 },
           { definitionId: 'nail',           qty: 20 },
@@ -3154,7 +3154,7 @@ const BLUEPRINTS = {
         consumeAt: 'start',
       },
       {
-        stageIndex: 2, label: '꼬리 빔 결합', tpCost: 3,
+        stageIndex: 2, label: '꼬리 빔 결합', tpCost: 5,
         requiredItems: [
           { definitionId: 'aviation_alloy', qty: 2 },
           { definitionId: 'rope',           qty: 3 },
@@ -3172,7 +3172,7 @@ const BLUEPRINTS = {
     requiredTools: ['workbench'],
     requiredSkills: { crafting: 5, cooking: 3 },
     stages: [{
-      stageIndex: 0, label: '증류·정제', tpCost: 5,
+      stageIndex: 0, label: '증류·정제', tpCost: 8,
       requiredItems: [
         { definitionId: 'fuel_can',          qty: 5 },
         { definitionId: 'alcohol_solution',  qty: 2 },
@@ -3195,7 +3195,7 @@ const BLUEPRINTS = {
     requiredSkills: { cooking: 3 },
     skillOverride: 'cooking',
     stages: [{
-      stageIndex: 0, label: '굽기·플레이팅', tpCost: 3,
+      stageIndex: 0, label: '굽기·플레이팅', tpCost: 5,
       requiredItems: [
         { definitionId: 'wagyu_scrap', qty: 1 },
         { definitionId: 'salt',        qty: 1 },
@@ -3214,7 +3214,7 @@ const BLUEPRINTS = {
     requiredSkills: { cooking: 3 },
     skillOverride: 'cooking',
     stages: [{
-      stageIndex: 0, label: '한상 차리기', tpCost: 4,
+      stageIndex: 0, label: '한상 차리기', tpCost: 6,
       requiredItems: [
         { definitionId: 'wild_honey',     qty: 1 },
         { definitionId: 'ginseng_6years', qty: 1 },
@@ -3234,7 +3234,7 @@ const BLUEPRINTS = {
     requiredSkills: { cooking: 3 },
     skillOverride: 'cooking',
     stages: [{
-      stageIndex: 0, label: '리조또 조리', tpCost: 3,
+      stageIndex: 0, label: '리조또 조리', tpCost: 5,
       requiredItems: [
         { definitionId: 'truffle',        qty: 1 },
         { definitionId: 'rice',           qty: 2 },
@@ -3253,7 +3253,7 @@ const BLUEPRINTS = {
     requiredSkills: { cooking: 3 },
     skillOverride: 'cooking',
     stages: [{
-      stageIndex: 0, label: '손질·조리·플레이팅', tpCost: 4,
+      stageIndex: 0, label: '손질·조리·플레이팅', tpCost: 6,
       requiredItems: [
         { definitionId: 'abalone',       qty: 1 },
         { definitionId: 'king_crab',     qty: 1 },
@@ -3272,7 +3272,7 @@ const BLUEPRINTS = {
     requiredSkills: { cooking: 3 },
     skillOverride: 'cooking',
     stages: [{
-      stageIndex: 0, label: '약선 고기', tpCost: 4,
+      stageIndex: 0, label: '약선 고기', tpCost: 6,
       requiredItems: [
         { definitionId: 'matsutake_mushroom', qty: 1 },
         { definitionId: 'ginseng_6years',    qty: 1 },
@@ -3296,7 +3296,7 @@ const BLUEPRINTS = {
     requiredTools: ['workbench'],
     requiredSkills: { weaponcraft: 3, crafting: 2 },
     stages: [{
-      stageIndex: 0, label: '개조 작업', tpCost: 3,
+      stageIndex: 0, label: '개조 작업', tpCost: 5,
       requiredItems: [
         { definitionId: 'iron_pipe',   qty: 1 },
         { definitionId: 'scrap_metal', qty: 2 },
@@ -3313,7 +3313,7 @@ const BLUEPRINTS = {
     requiredTools: ['workbench'],
     requiredSkills: { weaponcraft: 3, crafting: 2 },
     stages: [{
-      stageIndex: 0, label: '날 연마', tpCost: 3,
+      stageIndex: 0, label: '날 연마', tpCost: 5,
       requiredItems: [
         { definitionId: 'knife',        qty: 1 },
         { definitionId: 'whetstone',    qty: 1 },
@@ -3330,7 +3330,7 @@ const BLUEPRINTS = {
     requiredTools: ['workbench'],
     requiredSkills: { weaponcraft: 3, crafting: 2 },
     stages: [{
-      stageIndex: 0, label: '배트 보강', tpCost: 3,
+      stageIndex: 0, label: '배트 보강', tpCost: 5,
       requiredItems: [
         { definitionId: 'baseball_bat', qty: 1 },
         { definitionId: 'nail',         qty: 5 },
@@ -3347,7 +3347,7 @@ const BLUEPRINTS = {
     requiredTools: ['workbench'],
     requiredSkills: { weaponcraft: 4, crafting: 2 },
     stages: [{
-      stageIndex: 0, label: '톱니 가공', tpCost: 3,
+      stageIndex: 0, label: '톱니 가공', tpCost: 5,
       requiredItems: [
         { definitionId: 'machete',     qty: 1 },
         { definitionId: 'sharp_blade', qty: 1 },
@@ -3364,7 +3364,7 @@ const BLUEPRINTS = {
     requiredTools: ['workbench'],
     requiredSkills: { weaponcraft: 4, crafting: 2 },
     stages: [{
-      stageIndex: 0, label: '창촉 교체', tpCost: 3,
+      stageIndex: 0, label: '창촉 교체', tpCost: 5,
       requiredItems: [
         { definitionId: 'spear',        qty: 1 },
         { definitionId: 'sharp_blade',  qty: 1 },
@@ -3382,7 +3382,7 @@ const BLUEPRINTS = {
     requiredTools: ['workbench'],
     requiredSkills: { weaponcraft: 4, crafting: 3 },
     stages: [{
-      stageIndex: 0, label: '조준·현 교체', tpCost: 4,
+      stageIndex: 0, label: '조준·현 교체', tpCost: 6,
       requiredItems: [
         { definitionId: 'crossbow', qty: 1 },
         { definitionId: 'spring',   qty: 2 },
@@ -3402,7 +3402,7 @@ const BLUEPRINTS = {
     requiredTools: ['workbench'],
     requiredSkills: { armorcraft: 3, crafting: 2 },
     stages: [{
-      stageIndex: 0, label: '플레이트 삽입', tpCost: 3,
+      stageIndex: 0, label: '플레이트 삽입', tpCost: 5,
       requiredItems: [
         { definitionId: 'tactical_vest', qty: 1 },
         { definitionId: 'scrap_metal',   qty: 2 },
@@ -3420,7 +3420,7 @@ const BLUEPRINTS = {
     requiredTools: ['workbench'],
     requiredSkills: { armorcraft: 3, crafting: 2 },
     stages: [{
-      stageIndex: 0, label: '패드 장착', tpCost: 3,
+      stageIndex: 0, label: '패드 장착', tpCost: 5,
       requiredItems: [
         { definitionId: 'helmet',      qty: 1 },
         { definitionId: 'scrap_metal', qty: 1 },
@@ -3438,7 +3438,7 @@ const BLUEPRINTS = {
     requiredTools: ['workbench'],
     requiredSkills: { armorcraft: 3, crafting: 2 },
     stages: [{
-      stageIndex: 0, label: '밑창 교체', tpCost: 3,
+      stageIndex: 0, label: '밑창 교체', tpCost: 5,
       requiredItems: [
         { definitionId: 'combat_boots', qty: 1 },
         { definitionId: 'rubber',       qty: 2 },
@@ -3455,7 +3455,7 @@ const BLUEPRINTS = {
     requiredTools: ['workbench'],
     requiredSkills: { armorcraft: 2, crafting: 3 },
     stages: [{
-      stageIndex: 0, label: '패치 작업', tpCost: 2,
+      stageIndex: 0, label: '패치 작업', tpCost: 3,
       requiredItems: [
         { definitionId: 'work_gloves', qty: 1 },
         { definitionId: 'leather',     qty: 1 },
@@ -3472,7 +3472,7 @@ const BLUEPRINTS = {
     requiredTools: ['workbench'],
     requiredSkills: { armorcraft: 3, crafting: 2 },
     stages: [{
-      stageIndex: 0, label: '납판 내장', tpCost: 3,
+      stageIndex: 0, label: '납판 내장', tpCost: 5,
       requiredItems: [
         { definitionId: 'raincoat',  qty: 1 },
         { definitionId: 'rubber',    qty: 2 },
@@ -3491,7 +3491,7 @@ const BLUEPRINTS = {
     requiredTools: ['workbench'],
     requiredSkills: { crafting: 4 },
     stages: [{
-      stageIndex: 0, label: '정밀 가공', tpCost: 3,
+      stageIndex: 0, label: '정밀 가공', tpCost: 5,
       requiredItems: [
         { definitionId: 'pipe_wrench', qty: 1 },
         { definitionId: 'scrap_metal', qty: 2 },
@@ -3509,7 +3509,7 @@ const BLUEPRINTS = {
     requiredTools: ['workbench'],
     requiredSkills: { crafting: 3 },
     stages: [{
-      stageIndex: 0, label: '배터리 교체', tpCost: 2,
+      stageIndex: 0, label: '배터리 교체', tpCost: 3,
       requiredItems: [
         { definitionId: 'flashlight',       qty: 1 },
         { definitionId: 'electronic_parts', qty: 1 },
@@ -3526,7 +3526,7 @@ const BLUEPRINTS = {
     requiredTools: ['workbench'],
     requiredSkills: { crafting: 4 },
     stages: [{
-      stageIndex: 0, label: '센서 조정', tpCost: 3,
+      stageIndex: 0, label: '센서 조정', tpCost: 5,
       requiredItems: [
         { definitionId: 'compass',          qty: 1 },
         { definitionId: 'electronic_parts', qty: 1 },
@@ -3543,7 +3543,7 @@ const BLUEPRINTS = {
     requiredTools: ['workbench'],
     requiredSkills: { crafting: 4 },
     stages: [{
-      stageIndex: 0, label: '렌즈 연마', tpCost: 3,
+      stageIndex: 0, label: '렌즈 연마', tpCost: 5,
       requiredItems: [
         { definitionId: 'binoculars',  qty: 1 },
         { definitionId: 'glass_shard', qty: 2 },
@@ -3562,7 +3562,7 @@ const BLUEPRINTS = {
     description: '일반 붕대를 알코올로 소독하여 강화.',
     output: [{ definitionId: 'reinforced_bandage', qty: 1 }],
     requiredTools: ['medical_station'], requiredSkills: { medicine: 2 },
-    stages: [{ stageIndex: 0, label: '소독·강화', tpCost: 2,
+    stages: [{ stageIndex: 0, label: '소독·강화', tpCost: 3,
       requiredItems: [
         { definitionId: 'bandage',          qty: 2 },
         { definitionId: 'alcohol_solution', qty: 1 },
@@ -3574,7 +3574,7 @@ const BLUEPRINTS = {
     description: '약초와 활성탄으로 응급 해독제.',
     output: [{ definitionId: 'field_antidote', qty: 1 }],
     requiredTools: ['medical_station'], requiredSkills: { medicine: 3 },
-    stages: [{ stageIndex: 0, label: '조제', tpCost: 2,
+    stages: [{ stageIndex: 0, label: '조제', tpCost: 3,
       requiredItems: [
         { definitionId: 'herb',     qty: 3 },
         { definitionId: 'charcoal', qty: 1 },
@@ -3586,7 +3586,7 @@ const BLUEPRINTS = {
     description: '약초를 농축해 비타민 복합제로.',
     output: [{ definitionId: 'vitamin_complex', qty: 2 }],
     requiredTools: ['medical_station'], requiredSkills: { medicine: 2 },
-    stages: [{ stageIndex: 0, label: '농축', tpCost: 2,
+    stages: [{ stageIndex: 0, label: '농축', tpCost: 3,
       requiredItems: [
         { definitionId: 'herb',       qty: 4 },
         { definitionId: 'wild_berry', qty: 2 },
@@ -3598,7 +3598,7 @@ const BLUEPRINTS = {
     description: '정수·소금으로 수액 제작.',
     output: [{ definitionId: 'iv_saline', qty: 1 }],
     requiredTools: ['medical_station'], requiredSkills: { medicine: 3 },
-    stages: [{ stageIndex: 0, label: '조제', tpCost: 2,
+    stages: [{ stageIndex: 0, label: '조제', tpCost: 3,
       requiredItems: [
         { definitionId: 'purified_water', qty: 2 },
         { definitionId: 'salt',            qty: 2 },
@@ -3611,7 +3611,7 @@ const BLUEPRINTS = {
     description: '진통·지혈 성분 복합 주사.',
     output: [{ definitionId: 'stabilizer_shot', qty: 1 }],
     requiredTools: ['medical_station'], requiredSkills: { medicine: 4 },
-    stages: [{ stageIndex: 0, label: '조제', tpCost: 2,
+    stages: [{ stageIndex: 0, label: '조제', tpCost: 3,
       requiredItems: [
         { definitionId: 'painkiller',       qty: 1 },
         { definitionId: 'alcohol_solution', qty: 1 },
@@ -3624,7 +3624,7 @@ const BLUEPRINTS = {
     description: '항바이러스 농축 혈청.',
     output: [{ definitionId: 'infection_serum', qty: 1 }],
     requiredTools: ['medical_station'], requiredSkills: { medicine: 5 },
-    stages: [{ stageIndex: 0, label: '혈청 조제', tpCost: 3,
+    stages: [{ stageIndex: 0, label: '혈청 조제', tpCost: 5,
       requiredItems: [
         { definitionId: 'antibiotics', qty: 2 },
         { definitionId: 'herb',         qty: 4 },
@@ -3636,7 +3636,7 @@ const BLUEPRINTS = {
     description: '납 분말 + 활성탄 복합 차단제.',
     output: [{ definitionId: 'rad_blocker_plus', qty: 1 }],
     requiredTools: ['medical_station'], requiredSkills: { medicine: 4 },
-    stages: [{ stageIndex: 0, label: '조제', tpCost: 3,
+    stages: [{ stageIndex: 0, label: '조제', tpCost: 5,
       requiredItems: [
         { definitionId: 'rad_blocker',    qty: 1 },
         { definitionId: 'charcoal',       qty: 3 },
@@ -3649,7 +3649,7 @@ const BLUEPRINTS = {
     description: '고농도 진통제.',
     output: [{ definitionId: 'painkiller_field', qty: 1 }],
     requiredTools: ['medical_station'], requiredSkills: { medicine: 3 },
-    stages: [{ stageIndex: 0, label: '조제', tpCost: 2,
+    stages: [{ stageIndex: 0, label: '조제', tpCost: 3,
       requiredItems: [
         { definitionId: 'painkiller',       qty: 2 },
         { definitionId: 'alcohol_solution', qty: 1 },
@@ -3661,7 +3661,7 @@ const BLUEPRINTS = {
     description: '응급 각성 주사.',
     output: [{ definitionId: 'adrenaline_shot', qty: 1 }],
     requiredTools: ['medical_station'], requiredSkills: { medicine: 5 },
-    stages: [{ stageIndex: 0, label: '조제', tpCost: 3,
+    stages: [{ stageIndex: 0, label: '조제', tpCost: 5,
       requiredItems: [
         { definitionId: 'stimulant', qty: 2 },
         { definitionId: 'herb',      qty: 3 },
@@ -3673,7 +3673,7 @@ const BLUEPRINTS = {
     description: '약초를 끓여 만든 강장제.',
     output: [{ definitionId: 'herbal_tonic', qty: 1 }],
     requiredTools: ['medical_station'], requiredSkills: { medicine: 2 },
-    stages: [{ stageIndex: 0, label: '끓이기', tpCost: 2,
+    stages: [{ stageIndex: 0, label: '끓이기', tpCost: 3,
       requiredItems: [
         { definitionId: 'herb',            qty: 4 },
         { definitionId: 'purified_water',  qty: 1 },
@@ -3691,11 +3691,11 @@ const BLUEPRINTS = {
     output: [{ definitionId: 'medical_bed', qty: 1 }],
     requiredTools: ['workbench'], requiredSkills: { building: 3, crafting: 2 },
     stages: [
-      { stageIndex: 0, label: '골격 제작', tpCost: 3,
+      { stageIndex: 0, label: '골격 제작', tpCost: 5,
         requiredItems: [{ definitionId: 'scrap_metal', qty: 4 }, { definitionId: 'wood_plank', qty: 3 }],
         consumeAt: 'start',
       },
-      { stageIndex: 1, label: '매트 설치', tpCost: 2,
+      { stageIndex: 1, label: '매트 설치', tpCost: 3,
         requiredItems: [{ definitionId: 'cloth', qty: 5 }, { definitionId: 'cloth_scrap', qty: 5 }],
         consumeAt: 'start',
       },
@@ -3706,7 +3706,7 @@ const BLUEPRINTS = {
     description: '정밀 수술용 작업대.',
     output: [{ definitionId: 'surgical_table', qty: 1 }],
     requiredTools: ['workbench'], requiredSkills: { building: 5, crafting: 3 },
-    stages: [{ stageIndex: 0, label: '조립', tpCost: 4,
+    stages: [{ stageIndex: 0, label: '조립', tpCost: 6,
       requiredItems: [
         { definitionId: 'scrap_metal',      qty: 6 },
         { definitionId: 'electronic_parts', qty: 2 },
@@ -3718,7 +3718,7 @@ const BLUEPRINTS = {
     description: '감염자 격리 시설.',
     output: [{ definitionId: 'isolation_ward', qty: 1 }],
     requiredTools: ['workbench'], requiredSkills: { building: 5, medicine: 2 },
-    stages: [{ stageIndex: 0, label: '격리 시설 설치', tpCost: 5,
+    stages: [{ stageIndex: 0, label: '격리 시설 설치', tpCost: 8,
       requiredItems: [
         { definitionId: 'scrap_metal', qty: 5 },
         { definitionId: 'plastic',     qty: 5 },
@@ -3731,7 +3731,7 @@ const BLUEPRINTS = {
     description: '의료품 저장용 캐비닛.',
     output: [{ definitionId: 'medical_cabinet', qty: 1 }],
     requiredTools: ['workbench'], requiredSkills: { building: 3, crafting: 2 },
-    stages: [{ stageIndex: 0, label: '조립', tpCost: 3,
+    stages: [{ stageIndex: 0, label: '조립', tpCost: 5,
       requiredItems: [
         { definitionId: 'wood_plank',  qty: 4 },
         { definitionId: 'scrap_metal', qty: 2 },
@@ -3744,7 +3744,7 @@ const BLUEPRINTS = {
     description: '자동 정수 시설.',
     output: [{ definitionId: 'water_purifier', qty: 1 }],
     requiredTools: ['workbench'], requiredSkills: { building: 4, crafting: 3 },
-    stages: [{ stageIndex: 0, label: '설비 조립', tpCost: 4,
+    stages: [{ stageIndex: 0, label: '설비 조립', tpCost: 6,
       requiredItems: [
         { definitionId: 'scrap_metal',      qty: 4 },
         { definitionId: 'charcoal_filter',  qty: 2 },
@@ -3757,7 +3757,7 @@ const BLUEPRINTS = {
     description: 'IV 혈액 저장·관리.',
     output: [{ definitionId: 'blood_bank', qty: 1 }],
     requiredTools: ['workbench'], requiredSkills: { building: 5, medicine: 3 },
-    stages: [{ stageIndex: 0, label: '냉장·보관 시설', tpCost: 4,
+    stages: [{ stageIndex: 0, label: '냉장·보관 시설', tpCost: 6,
       requiredItems: [
         { definitionId: 'scrap_metal',      qty: 4 },
         { definitionId: 'electronic_parts', qty: 3 },
@@ -3770,7 +3770,7 @@ const BLUEPRINTS = {
     description: '주변 감염 저항 부여 시설.',
     output: [{ definitionId: 'quarantine_station', qty: 1 }],
     requiredTools: ['workbench'], requiredSkills: { building: 4, medicine: 2 },
-    stages: [{ stageIndex: 0, label: '설치', tpCost: 4,
+    stages: [{ stageIndex: 0, label: '설치', tpCost: 6,
       requiredItems: [
         { definitionId: 'scrap_metal',      qty: 3 },
         { definitionId: 'alcohol_solution', qty: 3 },
@@ -3783,7 +3783,7 @@ const BLUEPRINTS = {
     description: '고급 X-ray 진단 시설.',
     output: [{ definitionId: 'xray_station', qty: 1 }],
     requiredTools: ['workbench'], requiredSkills: { building: 6, medicine: 4 },
-    stages: [{ stageIndex: 0, label: '정밀 조립', tpCost: 5,
+    stages: [{ stageIndex: 0, label: '정밀 조립', tpCost: 8,
       requiredItems: [
         { definitionId: 'scrap_metal',      qty: 5 },
         { definitionId: 'electronic_parts', qty: 5 },
@@ -3796,7 +3796,7 @@ const BLUEPRINTS = {
     description: '샘플·신생아 보존 시설.',
     output: [{ definitionId: 'incubator', qty: 1 }],
     requiredTools: ['workbench'], requiredSkills: { building: 5, medicine: 3 },
-    stages: [{ stageIndex: 0, label: '조립', tpCost: 4,
+    stages: [{ stageIndex: 0, label: '조립', tpCost: 6,
       requiredItems: [
         { definitionId: 'scrap_metal',      qty: 3 },
         { definitionId: 'electronic_parts', qty: 3 },
@@ -3809,7 +3809,7 @@ const BLUEPRINTS = {
     description: '고급 연구·분석 실험실.',
     output: [{ definitionId: 'analysis_lab', qty: 1 }],
     requiredTools: ['workbench'], requiredSkills: { building: 7, medicine: 5, crafting: 4 },
-    stages: [{ stageIndex: 0, label: '실험실 구축', tpCost: 5,
+    stages: [{ stageIndex: 0, label: '실험실 구축', tpCost: 8,
       requiredItems: [
         { definitionId: 'scrap_metal',      qty: 6 },
         { definitionId: 'electronic_parts', qty: 6 },
@@ -3829,7 +3829,7 @@ const BLUEPRINTS = {
     description: '김치와 돼지고기, 물로 끓이는 얼큰한 찌개.',
     output: [{ definitionId: 'kimchi_stew', qty: 1 }],
     requiredTools: ['campfire'], requiredSkills: { cooking: 2 }, skillOverride: 'cooking',
-    stages: [{ stageIndex: 0, label: '끓이기', tpCost: 2,
+    stages: [{ stageIndex: 0, label: '끓이기', tpCost: 3,
       requiredItems: [
         { definitionId: 'raw_meat', qty: 1 },
         { definitionId: 'purified_water', qty: 1 },
@@ -3842,7 +3842,7 @@ const BLUEPRINTS = {
     description: '발효 된장과 채소로 끓이는 구수한 찌개.',
     output: [{ definitionId: 'soybean_stew', qty: 1 }],
     requiredTools: ['campfire'], requiredSkills: { cooking: 2 }, skillOverride: 'cooking',
-    stages: [{ stageIndex: 0, label: '끓이기', tpCost: 2,
+    stages: [{ stageIndex: 0, label: '끓이기', tpCost: 3,
       requiredItems: [
         { definitionId: 'herb', qty: 2 },
         { definitionId: 'purified_water', qty: 1 },
@@ -3855,7 +3855,7 @@ const BLUEPRINTS = {
     description: '갈비를 오래 조리해 만드는 고급 한식.',
     output: [{ definitionId: 'galbi_jjim', qty: 1 }],
     requiredTools: ['workbench'], requiredSkills: { cooking: 4 }, skillOverride: 'cooking',
-    stages: [{ stageIndex: 0, label: '오랜 조리', tpCost: 4,
+    stages: [{ stageIndex: 0, label: '오랜 조리', tpCost: 6,
       requiredItems: [
         { definitionId: 'raw_meat', qty: 3 },
         { definitionId: 'wild_honey', qty: 1 },
@@ -3868,7 +3868,7 @@ const BLUEPRINTS = {
     description: '밥과 채소, 고기를 비벼 균형 잡힌 한 끼.',
     output: [{ definitionId: 'bibimbap', qty: 1 }],
     requiredTools: ['campfire'], requiredSkills: { cooking: 2 }, skillOverride: 'cooking',
-    stages: [{ stageIndex: 0, label: '볶기와 비빔', tpCost: 2,
+    stages: [{ stageIndex: 0, label: '볶기와 비빔', tpCost: 3,
       requiredItems: [
         { definitionId: 'rice', qty: 1 },
         { definitionId: 'raw_meat', qty: 1 },
@@ -3881,7 +3881,7 @@ const BLUEPRINTS = {
     description: '차갑게 식힌 국수. 더위에 좋다.',
     output: [{ definitionId: 'cold_noodles', qty: 1 }],
     requiredTools: ['campfire'], requiredSkills: { cooking: 3 }, skillOverride: 'cooking',
-    stages: [{ stageIndex: 0, label: '삶기와 냉각', tpCost: 2,
+    stages: [{ stageIndex: 0, label: '삶기와 냉각', tpCost: 3,
       requiredItems: [
         { definitionId: 'instant_noodles', qty: 1 },
         { definitionId: 'purified_water', qty: 2 },
@@ -3896,7 +3896,7 @@ const BLUEPRINTS = {
     description: '토마토 소스로 볶은 파스타.',
     output: [{ definitionId: 'tomato_pasta', qty: 1 }],
     requiredTools: ['campfire'], requiredSkills: { cooking: 3 }, skillOverride: 'cooking',
-    stages: [{ stageIndex: 0, label: '삶기와 볶기', tpCost: 2,
+    stages: [{ stageIndex: 0, label: '삶기와 볶기', tpCost: 3,
       requiredItems: [
         { definitionId: 'instant_noodles', qty: 1 },
         { definitionId: 'wild_berry', qty: 2 },
@@ -3909,7 +3909,7 @@ const BLUEPRINTS = {
     description: '고기를 직화로 구워 내는 스테이크.',
     output: [{ definitionId: 'grilled_steak', qty: 1 }],
     requiredTools: ['campfire'], requiredSkills: { cooking: 3 }, skillOverride: 'cooking',
-    stages: [{ stageIndex: 0, label: '직화 굽기', tpCost: 2,
+    stages: [{ stageIndex: 0, label: '직화 굽기', tpCost: 3,
       requiredItems: [
         { definitionId: 'raw_meat', qty: 2 },
         { definitionId: 'salt', qty: 1 },
@@ -3921,7 +3921,7 @@ const BLUEPRINTS = {
     description: '진한 크림으로 만든 따뜻한 수프.',
     output: [{ definitionId: 'cream_soup', qty: 1 }],
     requiredTools: ['campfire'], requiredSkills: { cooking: 2 }, skillOverride: 'cooking',
-    stages: [{ stageIndex: 0, label: '끓이기', tpCost: 2,
+    stages: [{ stageIndex: 0, label: '끓이기', tpCost: 3,
       requiredItems: [
         { definitionId: 'purified_water', qty: 2 },
         { definitionId: 'herb', qty: 2 },
@@ -3947,7 +3947,7 @@ const BLUEPRINTS = {
     description: '쌀과 버섯으로 만든 크리미한 요리.',
     output: [{ definitionId: 'mushroom_risotto', qty: 1 }],
     requiredTools: ['campfire'], requiredSkills: { cooking: 3 }, skillOverride: 'cooking',
-    stages: [{ stageIndex: 0, label: '조리', tpCost: 3,
+    stages: [{ stageIndex: 0, label: '조리', tpCost: 5,
       requiredItems: [
         { definitionId: 'rice', qty: 1 },
         { definitionId: 'matsutake_mushroom', qty: 1 },
@@ -3962,7 +3962,7 @@ const BLUEPRINTS = {
     description: '오래 보관되는 단단한 빵.',
     output: [{ definitionId: 'hard_bread', qty: 2 }],
     requiredTools: ['campfire'], requiredSkills: { cooking: 2 }, skillOverride: 'cooking',
-    stages: [{ stageIndex: 0, label: '반죽과 굽기', tpCost: 3,
+    stages: [{ stageIndex: 0, label: '반죽과 굽기', tpCost: 5,
       requiredItems: [
         { definitionId: 'rice', qty: 2 },
         { definitionId: 'salt', qty: 1 },
@@ -3974,7 +3974,7 @@ const BLUEPRINTS = {
     description: '꿀을 넣어 달콤하게 구운 쿠키.',
     output: [{ definitionId: 'honey_cookies', qty: 3 }],
     requiredTools: ['campfire'], requiredSkills: { cooking: 3 }, skillOverride: 'cooking',
-    stages: [{ stageIndex: 0, label: '굽기', tpCost: 2,
+    stages: [{ stageIndex: 0, label: '굽기', tpCost: 3,
       requiredItems: [
         { definitionId: 'wild_honey', qty: 1 },
         { definitionId: 'rice', qty: 1 },
@@ -3986,7 +3986,7 @@ const BLUEPRINTS = {
     description: '푹신한 케이크. 사기가 크게 오른다.',
     output: [{ definitionId: 'sponge_cake', qty: 1 }],
     requiredTools: ['workbench'], requiredSkills: { cooking: 5 }, skillOverride: 'cooking',
-    stages: [{ stageIndex: 0, label: '오븐 굽기', tpCost: 3,
+    stages: [{ stageIndex: 0, label: '오븐 굽기', tpCost: 5,
       requiredItems: [
         { definitionId: 'wild_honey', qty: 2 },
         { definitionId: 'rice', qty: 2 },
@@ -3999,7 +3999,7 @@ const BLUEPRINTS = {
     description: '부드럽고 달콤한 푸딩.',
     output: [{ definitionId: 'pudding', qty: 2 }],
     requiredTools: ['campfire'], requiredSkills: { cooking: 3 }, skillOverride: 'cooking',
-    stages: [{ stageIndex: 0, label: '중탕·냉각', tpCost: 2,
+    stages: [{ stageIndex: 0, label: '중탕·냉각', tpCost: 3,
       requiredItems: [
         { definitionId: 'wild_honey', qty: 1 },
         { definitionId: 'purified_water', qty: 1 },
@@ -4011,7 +4011,7 @@ const BLUEPRINTS = {
     description: '쓴맛이 강한 고급 초콜릿. 피로 회복.',
     output: [{ definitionId: 'dark_chocolate', qty: 3 }],
     requiredTools: ['workbench'], requiredSkills: { cooking: 4 }, skillOverride: 'cooking',
-    stages: [{ stageIndex: 0, label: '템퍼링', tpCost: 3,
+    stages: [{ stageIndex: 0, label: '템퍼링', tpCost: 5,
       requiredItems: [
         { definitionId: 'wild_honey', qty: 2 },
         { definitionId: 'charcoal', qty: 1 },
@@ -4025,7 +4025,7 @@ const BLUEPRINTS = {
     description: '인삼과 고기로 끓이는 몸보신 탕.',
     output: [{ definitionId: 'recovery_stew', qty: 1 }],
     requiredTools: ['campfire'], requiredSkills: { cooking: 4 }, skillOverride: 'cooking',
-    stages: [{ stageIndex: 0, label: '장시간 조리', tpCost: 4,
+    stages: [{ stageIndex: 0, label: '장시간 조리', tpCost: 6,
       requiredItems: [
         { definitionId: 'ginseng_6years', qty: 1 },
         { definitionId: 'raw_meat', qty: 2 },
@@ -4038,7 +4038,7 @@ const BLUEPRINTS = {
     description: '속을 풀어주는 뜨끈한 국물.',
     output: [{ definitionId: 'hangover_soup', qty: 1 }],
     requiredTools: ['campfire'], requiredSkills: { cooking: 3 }, skillOverride: 'cooking',
-    stages: [{ stageIndex: 0, label: '끓이기', tpCost: 2,
+    stages: [{ stageIndex: 0, label: '끓이기', tpCost: 3,
       requiredItems: [
         { definitionId: 'raw_meat', qty: 1 },
         { definitionId: 'herb', qty: 2 },
@@ -4051,7 +4051,7 @@ const BLUEPRINTS = {
     description: '생선 살을 반죽해 끓이는 따끈한 탕.',
     output: [{ definitionId: 'fish_cake_stew', qty: 1 }],
     requiredTools: ['campfire'], requiredSkills: { cooking: 3 }, skillOverride: 'cooking',
-    stages: [{ stageIndex: 0, label: '반죽·끓이기', tpCost: 3,
+    stages: [{ stageIndex: 0, label: '반죽·끓이기', tpCost: 5,
       requiredItems: [
         { definitionId: 'raw_fish', qty: 2 },
         { definitionId: 'salt', qty: 1 },
@@ -4064,7 +4064,7 @@ const BLUEPRINTS = {
     description: '고기·채소·해물을 한 냄비에. 동료와 나눠 먹는다.',
     output: [{ definitionId: 'hot_pot', qty: 1 }],
     requiredTools: ['workbench'], requiredSkills: { cooking: 5 }, skillOverride: 'cooking',
-    stages: [{ stageIndex: 0, label: '전골 끓이기', tpCost: 4,
+    stages: [{ stageIndex: 0, label: '전골 끓이기', tpCost: 6,
       requiredItems: [
         { definitionId: 'raw_meat', qty: 2 },
         { definitionId: 'herb', qty: 3 },
@@ -4078,7 +4078,7 @@ const BLUEPRINTS = {
     description: '소화가 잘되는 부드러운 죽. 환자에게 좋다.',
     output: [{ definitionId: 'rice_porridge', qty: 2 }],
     requiredTools: ['campfire'], requiredSkills: { cooking: 2 }, skillOverride: 'cooking',
-    stages: [{ stageIndex: 0, label: '끓이기', tpCost: 2,
+    stages: [{ stageIndex: 0, label: '끓이기', tpCost: 3,
       requiredItems: [
         { definitionId: 'rice', qty: 1 },
         { definitionId: 'purified_water', qty: 2 },
