@@ -307,7 +307,17 @@ const ModalManager = {
         </button>`;
     }
 
-    const hasActions = canConsume || canDismantle || canEquip || isFishingRod || isMedicalStructure;
+    // 날씨 기반 액션 (빗물/눈 수집, 천 적시기, 젖은 천 효과)
+    const weatherActions = this._getWeatherActions(inst, def);
+    const weatherBtnsHtml = weatherActions.map(a =>
+      `<button class="card-action-btn${a.disabled ? ' disabled' : ''}"
+        id="modal-weather-${instanceId}-${a.id}" ${a.disabled ? 'disabled' : ''}
+        title="${a.reason ?? ''}">
+        ${a.icon} ${a.label}
+      </button>`
+    ).join('');
+
+    const hasActions = canConsume || canDismantle || canEquip || isFishingRod || isMedicalStructure || weatherActions.length > 0;
 
     // 장착 슬롯 버튼 목록 (슬롯이 여럿이면 각각 버튼 생성)
     const slotLabels = {
@@ -344,6 +354,7 @@ const ModalManager = {
             ${repairBtnHtml}
             ${canDismantle  ? `<button class="card-action-btn dismantle" id="modal-dismantle-${instanceId}">${I18n.t('modal.dismantle')}</button>` : ''}
             ${fishBtnHtml}
+            ${weatherBtnsHtml}
           </div>` : ''}
         </div>
       </div>
@@ -412,6 +423,143 @@ const ModalManager = {
         EventBus.emit('fishAction', { rodInstanceId: instanceId });
       });
     }
+
+    for (const action of weatherActions) {
+      if (action.disabled) continue;
+      document.getElementById(`modal-weather-${instanceId}-${action.id}`)?.addEventListener('click', () => {
+        this.close();
+        action.run();
+      });
+    }
+  },
+
+  // ── 날씨 기반 카드 액션 ─────────────────────────────────────
+  // 빗물·눈 수집, 천 적시기, 젖은 천 활용을 카드 인스펙트에서 실행.
+
+  _getWeatherActions(inst, def) {
+    const actions   = [];
+    const weatherId = GameState.weather?.id ?? null;
+
+    const RAIN_IDS  = ['rainy', 'monsoon'];
+    const SNOW_IDS  = ['snow', 'blizzard'];
+    const WET_IDS   = [...RAIN_IDS, ...SNOW_IDS];
+    const ACID_IDS  = ['acid_rain'];
+    const isRain    = RAIN_IDS.includes(weatherId);
+    const isSnow    = SNOW_IDS.includes(weatherId);
+    const isWet     = WET_IDS.includes(weatherId);
+    const isAcid    = ACID_IDS.includes(weatherId);
+
+    // ── 수집 계열 ────────────────────────────────────────────
+    if (def.id === 'empty_bottle') {
+      if (isAcid) {
+        actions.push({
+          id: 'collect_acid', icon: '☢️', label: '산성비 수집 (위험)',
+          disabled: true, reason: '산성비는 병에 담을 수 없다.',
+        });
+      } else if (isRain || isSnow) {
+        const contamination = weatherId === 'monsoon' ? 40 : weatherId === 'snow' || weatherId === 'blizzard' ? 15 : 30;
+        const label = isSnow ? '눈 녹여 수집' : '빗물 수집';
+        actions.push({
+          id: 'collect_bottle', icon: '💧', label: `${label} → 오염수`,
+          run: () => {
+            inst.definitionId  = 'contaminated_water';
+            inst.contamination = contamination;
+            EventBus.emit('notify', { message: `빈 병에 ${isSnow ? '눈물' : '빗물'}을 받았다.`, type: 'info' });
+            EventBus.emit('boardChanged', {});
+          },
+        });
+      } else {
+        actions.push({
+          id: 'collect_none', icon: '💧', label: '물 수집',
+          disabled: true, reason: '비·눈이 내릴 때만 수집할 수 있다.',
+        });
+      }
+    }
+
+    if (def.id === 'iron_pot') {
+      if (isAcid) {
+        actions.push({
+          id: 'collect_pot_acid', icon: '☢️', label: '산성비 수집 (위험)',
+          disabled: true, reason: '산성비는 받을 수 없다.',
+        });
+      } else if (isRain || isSnow) {
+        const contamination = weatherId === 'monsoon' ? 40 : weatherId === 'snow' || weatherId === 'blizzard' ? 15 : 30;
+        const label = isSnow ? '눈 녹여 받기' : '빗물 받기';
+        actions.push({
+          id: 'collect_pot', icon: '🥣', label: `${label} → 물이 찬 솥`,
+          run: () => {
+            inst.definitionId  = 'iron_pot_water';
+            inst.contamination = contamination;
+            EventBus.emit('notify', { message: `무쇠솥을 가득 채웠다. 모닥불에 올려 끓이자.`, type: 'good' });
+            EventBus.emit('boardChanged', {});
+          },
+        });
+      } else {
+        actions.push({
+          id: 'collect_pot_none', icon: '🥣', label: '물 받기',
+          disabled: true, reason: '비·눈이 내릴 때만 받을 수 있다.',
+        });
+      }
+    }
+
+    // ── 천 적시기 ────────────────────────────────────────────
+    if (def.id === 'cloth') {
+      if (isWet) {
+        actions.push({
+          id: 'wet_cloth', icon: '💦', label: '천 적시기 → 젖은 천',
+          run: () => {
+            inst.definitionId     = 'wet_cloth';
+            inst.contamination    = 0;
+            inst._wetTpRemaining  = 48;
+            EventBus.emit('notify', { message: '천을 적셨다. 48TP 안에 써야 한다.', type: 'info' });
+            EventBus.emit('boardChanged', {});
+          },
+        });
+      } else {
+        actions.push({
+          id: 'wet_cloth_none', icon: '💦', label: '천 적시기',
+          disabled: true, reason: '비·눈이 내릴 때만 적실 수 있다.',
+        });
+      }
+    }
+
+    // ── 젖은 천 효과 ─────────────────────────────────────────
+    if (def.id === 'wet_cloth') {
+      const cooldownLeft = (comboId) => {
+        const last = GameState.discoveries?.lastCooldowns?.[comboId] ?? 0;
+        const combo = (GameData?.secretCombinations ?? []).find(c => c.id === comboId);
+        const cd    = combo?.cooldown ?? 0;
+        const diff  = cd - ((GameState.time?.totalTP ?? 0) - last);
+        return diff > 0 ? diff : 0;
+      };
+
+      const showerCd = cooldownLeft('sc_rain_shower');
+      const compressCd = cooldownLeft('sc_snow_compress');
+
+      actions.push({
+        id: 'use_shower', icon: '🚿', label: `빗물 샤워 (감염 −5, 사기 +5)${showerCd ? ` [${showerCd}TP]` : ''}`,
+        disabled: showerCd > 0, reason: showerCd > 0 ? `쿨다운 ${showerCd}TP` : '',
+        run: () => {
+          import('../systems/SecretCombinationSystem.js').then(m => {
+            const res = m.default.triggerById('sc_rain_shower', inst);
+            if (!res.ok) EventBus.emit('notify', { message: res.reason, type: 'warn' });
+          });
+        },
+      });
+
+      actions.push({
+        id: 'use_compress', icon: '🧊', label: `눈 냉찜질 (체온 −3)${compressCd ? ` [${compressCd}TP]` : ''}`,
+        disabled: compressCd > 0, reason: compressCd > 0 ? `쿨다운 ${compressCd}TP` : '',
+        run: () => {
+          import('../systems/SecretCombinationSystem.js').then(m => {
+            const res = m.default.triggerById('sc_snow_compress', inst);
+            if (!res.ok) EventBus.emit('notify', { message: res.reason, type: 'warn' });
+          });
+        },
+      });
+    }
+
+    return actions;
   },
 
   showStructureRepair(districtId) {

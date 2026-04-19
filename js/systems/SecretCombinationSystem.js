@@ -45,6 +45,7 @@ const SecretCombinationSystem = {
     const gs = GameState;
 
     for (const combo of SECRET_COMBINATIONS) {
+      if (combo.triggerOnly) continue;      // 카드 액션 전용 조합은 드래그 매칭 제외
       // 양방향 매칭 (src→target 또는 target→src)
       const matchForward  = _matchesCriteria(srcDef, combo.source) && _matchesCriteria(tgtDef, combo.target);
       const matchReverse  = _matchesCriteria(srcDef, combo.target) && _matchesCriteria(tgtDef, combo.source);
@@ -170,11 +171,56 @@ const SecretCombinationSystem = {
       EventBus.emit('secretEventTriggered', { eventId: r.triggerEvent });
     }
 
+    // 원본/대상 카드 변환 (wet_cloth → cloth 등)
+    if (r.transformSrc && srcInst && !r.consumeSrc) {
+      srcInst.definitionId = r.transformSrc;
+    }
+    if (r.transformTgt && tgtInst && !r.consumeTgt) {
+      tgtInst.definitionId = r.transformTgt;
+    }
+
     return {
       message: combo.discoveryMsg,
       consumeSrc: r.consumeSrc ?? false,
       consumeTgt: r.consumeTgt ?? false,
     };
+  },
+
+  /**
+   * triggerOnly 조합을 카드 액션 UX에서 직접 실행.
+   * 드래그 매칭을 우회하고 쿨다운/발견/적용만 처리한다.
+   * @param {string} comboId - SECRET_COMBINATIONS의 id
+   * @param {object} srcInst - 소스 카드 인스턴스 (필수)
+   * @returns {{ ok: boolean, reason?: string, message?: string }}
+   */
+  triggerById(comboId, srcInst) {
+    this._ensureState();
+    const gs = GameState;
+    const combo = SECRET_COMBINATIONS.find(c => c.id === comboId);
+    if (!combo) return { ok: false, reason: '알 수 없는 조합이다.' };
+
+    // 스킬 요구
+    if (combo.requiredSkill) {
+      for (const [skill, level] of Object.entries(combo.requiredSkill)) {
+        if ((gs.player.skills?.[skill]?.level ?? 0) < level) {
+          return { ok: false, reason: `${skill} Lv.${level} 필요` };
+        }
+      }
+    }
+
+    // 쿨다운
+    if (combo.cooldown) {
+      const lastUsed = gs.discoveries.lastCooldowns[combo.id] ?? 0;
+      const remaining = combo.cooldown - (gs.time.totalTP - lastUsed);
+      if (remaining > 0) return { ok: false, reason: `쿨다운 ${remaining}TP 남음` };
+    }
+
+    const result = this.applyCombination(combo, srcInst, null);
+    if (result.consumeSrc && srcInst) {
+      gs.removeCardInstance(srcInst.instanceId);
+    }
+    EventBus.emit('boardChanged', {});
+    return { ok: true, message: result.message };
   },
 
   // ── Hint System ─────────────────────────────────────────────

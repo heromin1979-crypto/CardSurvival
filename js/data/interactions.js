@@ -1431,152 +1431,86 @@ const INTERACTION_RULES = [
   },
 
   // ════════════════════════════════════════════════════════
-  // 환경 카드 인터랙션 (날씨 카드와 아이템 조합)
+  // 날씨 연동 인터랙션 (HUD 날씨 + 아이템 조합)
   // ════════════════════════════════════════════════════════
 
-  // ── E1. 빈 병 + 비 카드 → 빗물(오염된 물) ─────────────
+  // ── W1. 물이 찬 무쇠솥 + 캠프파이어 → 끓인 물 ×2 ───────
   {
-    id: 'rain_collect_bottle',
-    source: { id: 'empty_bottle' },
-    target: { id: 'env_rainy' },
-    hint: '빗물 수집 → 오염된 물',
-    canApply(srcInst) { return { ok: true }; },
-    apply(srcInst) {
-      return {
-        message: '빈 병에 빗물을 받았다. 정수가 필요하다.',
-        transformSrc: 'contaminated_water',
-        consumeSrc: false, consumeTgt: false, noise: 0,
-      };
-    },
-  },
-  // ── E1r. 비 카드 + 빈 병 (역방향) ──────────────────────
-  {
-    id: 'rain_collect_bottle_rev',
-    source: { id: 'env_rainy' },
-    target: { id: 'empty_bottle' },
-    hint: '빗물 수집 → 오염된 물',
-    canApply(srcInst) { return { ok: true }; },
-    apply(srcInst) {
-      return {
-        message: '빈 병에 빗물을 받았다. 정수가 필요하다.',
-        transformTgt: 'contaminated_water',
-        consumeSrc: false, consumeTgt: false, noise: 0,
-      };
-    },
-  },
-
-  // ── E2. 빈 병 + 장마 카드 → 빗물(더 높은 오염) ────────
-  {
-    id: 'monsoon_collect_bottle',
-    source: { id: 'empty_bottle' },
-    target: { id: 'env_monsoon' },
-    hint: '장마 빗물 수집 → 고오염 물',
-    canApply(srcInst) { return { ok: true }; },
-    apply(srcInst, tgtInst, gs) {
-      srcInst.definitionId = 'contaminated_water';
-      srcInst.contamination = 40;
-      return {
-        message: '장마 빗물을 받았다. 오염도가 높다!',
-        consumeSrc: false, consumeTgt: false, noise: 0,
-      };
-    },
-  },
-
-  // ── E3. 빈 병 + 눈 카드 → 저오염 물 ──────────────────
-  {
-    id: 'snow_collect_bottle',
-    source: { id: 'empty_bottle' },
-    target: { id: 'env_snow' },
-    hint: '눈 녹여 물 확보',
-    canApply(srcInst) { return { ok: true }; },
-    apply(srcInst) {
-      srcInst.definitionId = 'contaminated_water';
-      srcInst.contamination = 15;
-      return {
-        message: '눈을 녹여 물을 만들었다. 약간 오염됨.',
-        consumeSrc: false, consumeTgt: false, noise: 0,
-      };
-    },
-  },
-  // ── E3r. 눈 카드 + 빈 병 (역방향) ──────────────────────
-  {
-    id: 'snow_collect_bottle_rev',
-    source: { id: 'env_snow' },
-    target: { id: 'empty_bottle' },
-    hint: '눈 녹여 물 확보',
-    canApply(srcInst) { return { ok: true }; },
-    apply(srcInst, tgtInst) {
-      tgtInst.definitionId = 'contaminated_water';
-      tgtInst.contamination = 15;
-      return {
-        message: '눈을 녹여 물을 만들었다. 약간 오염됨.',
-        consumeSrc: false, consumeTgt: false, noise: 0,
-      };
-    },
-  },
-
-  // ── E4. 캠프파이어 + 폭설 → 연료 소모 경고 ─────────────
-  {
-    id: 'blizzard_campfire_warning',
-    source: { id: 'campfire' },
-    target: { id: 'env_blizzard' },
-    hint: '눈보라 속 모닥불 — 연료 소모 증가',
-    canApply() { return { ok: true }; },
-    apply() {
-      return {
-        message: '눈보라가 불길을 약하게 한다. 연료를 더 넣어야 한다.',
-        consumeSrc: false, consumeTgt: false, noise: 0,
-      };
-    },
-  },
-
-  // ── E5. 음식 + 산성비 → 오염 경고 ──────────────────────
-  {
-    id: 'acid_rain_food_warn',
-    source: { tag: 'edible' },
-    target: { id: 'env_acid_rain' },
-    hint: '⚠️ 산성비에 노출된 음식!',
-    canApply() { return { ok: true }; },
-    apply(srcInst) {
-      srcInst.contamination = Math.min(100, (srcInst.contamination ?? 0) + 25);
-      return {
-        message: '산성비가 음식을 오염시켰다! 오염 +25.',
-        consumeSrc: false, consumeTgt: false, noise: 0,
-      };
-    },
-  },
-
-  // ── E6. 캠프파이어 + 비 → 빗물 끓이기 (깨끗한 물) ──────
-  {
-    id: 'rain_boil_campfire',
-    source: { id: 'env_rainy' },
+    id: 'boil_iron_pot_water',
+    source: { id: 'iron_pot_water' },
     target: { id: 'campfire' },
-    hint: '빗물을 끓여 깨끗한 물 1개 생산',
+    hint: '무쇠솥 물 끓이기 → 끓인 물 2장 (솥 회수)',
     canApply(srcInst, tgtInst) {
       if ((tgtInst.durability ?? 100) < 10) return { ok: false, reason: '모닥불 연료가 부족하다.' };
       return { ok: true };
     },
     apply(srcInst, tgtInst, gs) {
       tgtInst.durability = Math.max(0, (tgtInst.durability ?? 100) - 10);
-      const water = gs.createCardInstance('purified_water');
-      if (water) {
-        // 빈 슬롯에 배치
-        const row = gs.board.middle;
-        const emptySlot = row.indexOf(null);
-        if (emptySlot !== -1) {
-          row[emptySlot] = water.instanceId;
-        } else {
-          const row2 = gs.board.bottom;
-          const emptySlot2 = row2.indexOf(null);
-          if (emptySlot2 !== -1) row2[emptySlot2] = water.instanceId;
-        }
+      srcInst.definitionId = 'iron_pot';
+      srcInst.contamination = 0;
+      srcInst.durability = Math.max(0, Math.min(100, srcInst.durability ?? 100));
+      for (let i = 0; i < 2; i++) {
+        const inst = gs.createCardInstance('boiled_water');
+        if (!inst) continue;
+        const placed = gs.placeCardInRow?.(inst.instanceId, 'middle');
+        if (!placed) gs.placeCardInRow?.(inst.instanceId, 'bottom');
       }
       return {
-        message: '빗물을 끓여 깨끗한 물을 만들었다!',
+        message: '무쇠솥의 물을 끓여 끓인 물 2장을 얻었다. 솥이 비었다.',
         consumeSrc: false, consumeTgt: false, noise: 1,
       };
     },
   },
+  // ── W1r. 캠프파이어 + 물이 찬 무쇠솥 (역방향) ──────────
+  {
+    id: 'boil_iron_pot_water_rev',
+    source: { id: 'campfire' },
+    target: { id: 'iron_pot_water' },
+    hint: '무쇠솥 물 끓이기 → 끓인 물 2장 (솥 회수)',
+    canApply(srcInst, tgtInst) {
+      if ((srcInst.durability ?? 100) < 10) return { ok: false, reason: '모닥불 연료가 부족하다.' };
+      return { ok: true };
+    },
+    apply(srcInst, tgtInst, gs) {
+      srcInst.durability = Math.max(0, (srcInst.durability ?? 100) - 10);
+      tgtInst.definitionId = 'iron_pot';
+      tgtInst.contamination = 0;
+      tgtInst.durability = Math.max(0, Math.min(100, tgtInst.durability ?? 100));
+      for (let i = 0; i < 2; i++) {
+        const inst = gs.createCardInstance('boiled_water');
+        if (!inst) continue;
+        const placed = gs.placeCardInRow?.(inst.instanceId, 'middle');
+        if (!placed) gs.placeCardInRow?.(inst.instanceId, 'bottom');
+      }
+      return {
+        message: '무쇠솥의 물을 끓여 끓인 물 2장을 얻었다. 솥이 비었다.',
+        consumeSrc: false, consumeTgt: false, noise: 1,
+      };
+    },
+  },
+
+  // ── W2. 젖은 천 + 캠프파이어 → 빠른 건조 ───────────────
+  {
+    id: 'dry_wet_cloth_campfire',
+    source: { id: 'wet_cloth' },
+    target: { id: 'campfire' },
+    hint: '젖은 천 빠른 건조 → 천',
+    canApply(srcInst, tgtInst) {
+      if ((tgtInst.durability ?? 100) < 2) return { ok: false, reason: '모닥불 불씨가 너무 약하다.' };
+      return { ok: true };
+    },
+    apply(srcInst, tgtInst) {
+      tgtInst.durability = Math.max(0, (tgtInst.durability ?? 100) - 2);
+      return {
+        message: '젖은 천을 모닥불에 말렸다.',
+        transformSrc: 'cloth',
+        consumeSrc: false, consumeTgt: false, noise: 0,
+      };
+    },
+  },
+
+  // 블리자드·산성비 패널티는 WeatherSystem._onTP에서 자동 적용 (passive).
+  // 보드에 날씨 카드가 없으므로 드래그 인터랙션은 불필요.
 
   // ── 10. 파이프렌치 → 근접무기 강화 ─────────────────────
   {

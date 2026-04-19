@@ -23,6 +23,16 @@ const ITEMS_BASE = {
     dismantle: [{ definitionId: 'cloth_scrap', qty: 2, chance: 1.0 }],
   },
 
+  // 비·눈 속에서 천을 적시면 얻는 상태 아이템. TP 경과 시 자동으로 cloth로 환원.
+  wet_cloth: {
+    id: 'wet_cloth', name: '젖은 천', type: 'material', subtype: 'textile',
+    rarity: 'common', weight: 0.3,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '💧', description: '비·눈에 적신 천. 체온을 빼앗거나 상처 세척에 쓴다. 시간이 지나면 마른다.',
+    tags: ['material', 'textile', 'wet'],
+    dismantle: [{ definitionId: 'cloth_scrap', qty: 2, chance: 1.0 }],
+  },
+
   tattered_rags: {
     id: 'tattered_rags', name: '거적대기', type: 'material', subtype: 'textile',
     rarity: 'common', weight: 0.3,
@@ -276,6 +286,18 @@ const ITEMS_BASE = {
     onConsume: { hydration: 40, contamination: 20, radiation: 5 },
     leaveOnConsume: { definitionId: 'empty_bottle', qty: 1 },
     tags: ['drinkable', 'contaminated'],
+    dismantle: [],
+  },
+
+  // 무쇠솥에 빗물/눈을 받은 상태. 끓이면 boiled_water 2장, 마시면 오염수와 동일 + 솥이 비워짐.
+  iron_pot_water: {
+    id: 'iron_pot_water', name: '물이 찬 무쇠솥', type: 'consumable', subtype: 'drink',
+    rarity: 'rare', weight: 3.5,
+    defaultDurability: 120, defaultContamination: 30,
+    icon: '🥣', description: '무쇠솥에 빗물·눈녹인 물이 가득 찼다. 모닥불에 올리면 대량의 끓인 물이 된다.',
+    onConsume: { hydration: 40, contamination: 20, radiation: 5 },
+    leaveOnConsume: { definitionId: 'iron_pot', qty: 1 },
+    tags: ['drinkable', 'contaminated', 'pot'],
     dismantle: [],
   },
 

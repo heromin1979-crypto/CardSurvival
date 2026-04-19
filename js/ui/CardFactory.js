@@ -59,6 +59,7 @@ const LOCATION_IMAGES = {
 const CARD_IMAGES = {
   scrap_metal:      'assets/images/materials/scrap_metal.png',
   cloth:            'assets/images/materials/cloth.png',
+  wet_cloth:        'assets/images/materials/cloth.png',
   tattered_rags:    'assets/images/materials/cloth.png',
   rope:             'assets/images/materials/rope.png',
   duct_tape:        'assets/images/materials/duct_tape.png',
@@ -478,6 +479,7 @@ const CARD_IMAGES = {
   garden_bed_herb:       'assets/images/structures/garden_bed_herb.png',
   garden_bed_veggie:     'assets/images/structures/garden_bed_veggie.png',
   iron_pot:              'assets/images/structures/iron_pot.png',
+  iron_pot_water:        'assets/images/structures/iron_pot.png',
   root_cellar:           'assets/images/structures/root_cellar.png',
   tanning_rack:          'assets/images/structures/tanning_rack.png',
   wind_stove:            'assets/images/structures/wind_stove.png',
