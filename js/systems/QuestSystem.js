@@ -179,6 +179,9 @@ const QuestSystem = {
 
   /** NPC 치료 진행도 */
   _onNpcHealed(npcId) {
+    // 의사 전용: 누적 환자 카운터 (엔딩 사기 보너스 + 마일스톤 알림)
+    this._recordDoctorPatient(npcId);
+
     let changed = false;
     for (const q of GameState.quests.active) {
       const qDef = _getQuestDef(q.id);
@@ -190,6 +193,43 @@ const QuestSystem = {
       changed = true;
     }
     if (changed) EventBus.emit('questListChanged', {});
+  },
+
+  /**
+   * 의사 플레이어 전용: NPC 치료 시마다 누적 카운터 증가.
+   * 5명/10명/25명 마일스톤에서 내러티브 알림.
+   * 최종 누적값은 엔딩 퀘스트 완료 시 사기 보너스로 환산 (getPatientMoraleBonus).
+   */
+  _recordDoctorPatient(npcId) {
+    const gs = GameState;
+    if (gs.player.characterId !== 'doctor') return;
+    if (!gs.flags) gs.flags = {};
+
+    const prev = gs.flags.doctor_patients_treated ?? 0;
+    const next = prev + 1;
+    gs.flags.doctor_patients_treated = next;
+
+    // 중복 치료 방지 리스트 (같은 npcId의 반복 치료는 카운트하되 고유 목록만 유지)
+    const roster = Array.isArray(gs.flags.doctor_patient_roster) ? gs.flags.doctor_patient_roster : [];
+    if (npcId && !roster.includes(npcId)) {
+      gs.flags.doctor_patient_roster = [...roster, npcId];
+    }
+
+    const milestones = {
+      5:  '📖 다섯 번째 환자의 눈을 덮었다. 수첩 첫 페이지가 이름으로 채워졌다.',
+      10: '📖 열 명. 의사의 손이 기억을 넘는 무게를 얹기 시작한다.',
+      25: '📖 스물다섯 명. 보라매에 "의사가 있다"는 소문이 외곽까지 퍼졌다.',
+      50: '📖 쉰 명. 이지수의 수첩은 단순한 기록이 아니라 이 도시의 생존 지도다.',
+    };
+    if (milestones[next]) {
+      EventBus.emit('notify', { message: milestones[next], type: 'story' });
+    }
+  },
+
+  /** 엔딩 완료 시 누적 환자 수를 사기 보너스로 환산 (0.5 / 명, 상한 50) */
+  getPatientMoraleBonus() {
+    const count = GameState.flags?.doctor_patients_treated ?? 0;
+    return Math.min(50, Math.floor(count * 0.5));
   },
 
   /** NPC 퀘스트 완료 → 메인 퀘스트 크로스오버 진행도 */
@@ -601,6 +641,19 @@ const QuestSystem = {
     if (r.flags) {
       for (const [key, val] of Object.entries(r.flags)) {
         gs.flags[key] = val;
+      }
+
+      // 의사 엔딩 도달 시: 누적 환자 수 → 사기 보너스 (P5)
+      if (r.flags.mainQuestComplete_doctor && gs.player.characterId === 'doctor') {
+        const bonus = this.getPatientMoraleBonus();
+        const count = gs.flags.doctor_patients_treated ?? 0;
+        if (bonus > 0) {
+          gs.modStat('morale', bonus);
+          EventBus.emit('notify', {
+            message: `📖 엔딩 기록 — 누적 환자 ${count}명. 의사의 길이 사기 +${bonus} 로 환산됐다.`,
+            type: 'good',
+          });
+        }
       }
     }
 
