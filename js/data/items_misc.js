@@ -436,9 +436,9 @@ const ITEMS_MISC = {
     id: 'practice_bandage', name: '연습용 붕대', type: 'consumable', subtype: 'medical',
     rarity: 'common', weight: 0.1,
     defaultDurability: 1, defaultContamination: 0,
-    icon: '🩹', description: '약초와 천으로 만든 간이 붕대. 의료 훈련용.',
+    icon: '🩹', description: '약초와 천 조각으로 만든 간이 붕대. 의료 훈련용.',
     tags: ['medical', 'training'],
-    onUse: { heal: 3 },
+    onConsume: { hp: 8, infection: -2 },
     dismantle: [],
   },
 

@@ -43,8 +43,8 @@ export const CHARACTERS = [
         id: 'medical_supply',
         name: '의료 물자',
         icon: '🎒',
-        desc: '붕대 4개, 소독약, 메스, 통조림 2개, 에너지바 2개 추가 지급',
-        effect: { startingItems: ['bandage', 'bandage', 'bandage', 'bandage', 'antiseptic', 'combat_scalpel', 'canned_food', 'canned_food', 'energy_bar', 'energy_bar'] },
+        desc: '붕대 4개, 소독약, 청진기, 메스, 통조림 2개, 에너지바 2개 추가 지급',
+        effect: { startingItems: ['bandage', 'bandage', 'bandage', 'bandage', 'antiseptic', 'stethoscope', 'combat_scalpel', 'canned_food', 'canned_food', 'energy_bar', 'energy_bar'] },
       },
     ],
     startingSkills: {

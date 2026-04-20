@@ -19,11 +19,16 @@ const DiseaseSystem = {
 
   init() {
     // onTP()는 StatSystem.onTP()에서 직접 호출됨 — tpAdvance 중복 구독 없음
-    // 세이브 로드 시 카운터 리셋
+    // 세이브 로드 시 카운터 리셋 + 구버전 세이브 필드 보정
     EventBus.on('saveLoaded', () => {
       _coldExposureTicks = 0;
       _heatExposureTicks = 0;
       _highInfectTicks   = 0;
+      const diseases = GameState.player?.diseases ?? [];
+      for (const d of diseases) {
+        if (d.incubationTp == null) d.incubationTp = 0;
+        if (d.discovered   == null) d.discovered   = true;
+      }
     });
   },
 
@@ -153,6 +158,23 @@ const DiseaseSystem = {
   // StatSystem.consumeCard() 후 호출됨
 
   onConsume(def, gs) {
+    // 진단 도구 — 질병 유무와 무관하게 동작
+    if (def.diagnose) {
+      const targets = def.diagnose === 'all' ? null : def.diagnose;
+      const revealed = this.diagnoseByFilter(gs, targets);
+      if (revealed.length > 0) {
+        EventBus.emit('notify', {
+          message: `🔬 진단 결과: ${revealed.join(', ')}`,
+          type: 'warn',
+        });
+      } else {
+        EventBus.emit('notify', {
+          message: '🔬 진단 완료 — 해당 증상에서는 별다른 이상 없음.',
+          type: 'info',
+        });
+      }
+    }
+
     if (!gs.player.diseases || gs.player.diseases.length === 0) return;
 
     const tags   = def.tags ?? [];
@@ -216,6 +238,30 @@ const DiseaseSystem = {
     for (const disease of gs.player.diseases) {
       const def = DISEASES[disease.id];
       if (!def) { toRemove.push(disease.id); continue; }
+
+      // 잠복기 중: 증상·진행 보류, 잠복 카운트만 감소
+      if ((disease.incubationTp ?? 0) > 0) {
+        disease.incubationTp--;
+        if (disease.incubationTp === 0) {
+          EventBus.emit('diseaseContracted', { diseaseId: disease.id });
+          EventBus.emit('notify', {
+            message: '🩺 몸이 이상하다... 증상이 나타나기 시작한다. 진단이 필요하다.',
+            type: 'warn',
+          });
+          // 최초 1회: 진단 도구 사용법 상세 안내
+          if (!gs.flags.diseaseIncubationGuideShown) {
+            gs.flags.diseaseIncubationGuideShown = true;
+            setTimeout(() => {
+              EventBus.emit('notify', {
+                message: '💡 진단 도구(체온계·청진기·진단 키트)를 사용해 정확한 병명을 확인하세요. 미진단 상태에서는 HUD에 "???"로 표시됩니다.',
+                type: 'info',
+              });
+            }, 400);
+          }
+          EventBus.emit('diseaseChanged', { diseases: gs.player.diseases });
+        }
+        continue;
+      }
 
       disease.tpElapsed++;
 
@@ -323,8 +369,22 @@ const DiseaseSystem = {
     const days       = minDays + Math.floor(Math.random() * (maxDays - minDays + 1));
     const tpDuration = days * 72;
     const fatalTp    = def.fatalDays ? def.fatalDays * 72 : null;
+    const incubationTp = def.incubationTp ?? 0;
 
-    gs.player.diseases.push({ id: diseaseId, tpElapsed: 0, tpDuration, fatalTp });
+    gs.player.diseases.push({
+      id: diseaseId,
+      tpElapsed: 0,
+      tpDuration,
+      fatalTp,
+      incubationTp,
+      discovered: incubationTp === 0,
+    });
+
+    // 잠복기가 있는 질병은 알림·가이드를 발현 시점까지 보류
+    if (incubationTp > 0) {
+      EventBus.emit('diseaseChanged', { diseases: gs.player.diseases });
+      return;
+    }
 
     EventBus.emit('diseaseContracted', { diseaseId });
     EventBus.emit('notify', {
@@ -401,7 +461,8 @@ const DiseaseSystem = {
     const container = document.getElementById('disease-status');
     if (!container) return;
 
-    const diseases = gs.player.diseases ?? [];
+    // 잠복 중 질병은 HUD에 노출하지 않음 (플레이어는 모르는 상태)
+    const diseases = (gs.player.diseases ?? []).filter(d => (d.incubationTp ?? 0) === 0);
     if (diseases.length === 0) {
       container.innerHTML = '';
       container.style.display = 'none';
@@ -413,22 +474,52 @@ const DiseaseSystem = {
       const def = DISEASES[d.id];
       if (!def) return '';
 
+      const discovered = d.discovered !== false;
       const pct      = Math.min(100, Math.round((d.tpElapsed / (d.fatalTp ?? d.tpDuration)) * 100));
-      const sevClass = def.severity >= 3 ? 'sev-high' : def.severity >= 2 ? 'sev-mid' : 'sev-low';
+      const sevClass = discovered
+        ? (def.severity >= 3 ? 'sev-high' : def.severity >= 2 ? 'sev-mid' : 'sev-low')
+        : 'sev-unknown';
+
+      const icon = discovered ? def.icon : '❓';
+      const name = discovered ? def.name : '???';
+      const desc = discovered ? def.description : '알 수 없는 증상. 진단 도구가 필요하다.';
 
       let progressBar = '';
-      if (def.fatal && d.fatalTp) {
-        // 치명 진행도 표시
+      if (discovered && def.fatal && d.fatalTp) {
         progressBar = `<div class="disease-progress"><div class="disease-progress-fill ${sevClass}" style="width:${pct}%"></div></div>`;
       }
 
       return `
-        <div class="disease-badge ${sevClass}" title="${def.description}">
-          <span class="disease-icon">${def.icon}</span>
-          <span class="disease-name">${def.name}</span>
+        <div class="disease-badge ${sevClass}" title="${desc}">
+          <span class="disease-icon">${icon}</span>
+          <span class="disease-name">${name}</span>
           ${progressBar}
         </div>`;
     }).join('');
+  },
+
+  // ── 진단 API ──────────────────────────────────────────────────
+  // 진단 도구 아이템이 호출. 잠복 종료 후 미발견 질병을 공개.
+
+  diagnoseAll(gs = GameState) {
+    return this.diagnoseByFilter(gs, null);
+  },
+
+  diagnoseByFilter(gs = GameState, filterIds = null) {
+    const diseases = gs.player?.diseases ?? [];
+    const revealed = [];
+    for (const d of diseases) {
+      if (d.discovered !== false) continue;
+      if ((d.incubationTp ?? 0) > 0) continue;
+      if (filterIds && !filterIds.includes(d.id)) continue;
+      d.discovered = true;
+      const def = DISEASES[d.id];
+      if (def) revealed.push(def.name);
+    }
+    if (revealed.length > 0) {
+      EventBus.emit('diseaseChanged', { diseases: gs.player.diseases });
+    }
+    return revealed;
   },
 
   // ── 공개 조회 API ─────────────────────────────────────────────

@@ -699,6 +699,110 @@ const BLUEPRINTS = {
     }],
   },
 
+  make_thermometer: {
+    id: 'make_thermometer', name: '체온계 제작', category: 'medical',
+    hidden: true, unlockConditions: { minSkillLevel: { medicine: 1 } },
+    description: '유리조각과 금속으로 간이 체온계를 만든다.',
+    output: [{ definitionId: 'thermometer', qty: 1 }],
+    requiredTools: [],
+    requiredSkills: { medicine: 1 },
+    stages: [{
+      stageIndex: 0, label: '조립', tpCost: 1,
+      requiredItems: [
+        { definitionId: 'glass_shard', qty: 1 },
+        { definitionId: 'scrap_metal', qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  make_stethoscope: {
+    id: 'make_stethoscope', name: '청진기 제작', category: 'medical',
+    hidden: true, unlockConditions: { minSkillLevel: { medicine: 3 } },
+    description: '고무관과 금속으로 간이 청진기를 만든다.',
+    output: [{ definitionId: 'stethoscope', qty: 1 }],
+    requiredTools: [],
+    requiredSkills: { medicine: 3 },
+    stages: [{
+      stageIndex: 0, label: '조립', tpCost: 2,
+      requiredItems: [
+        { definitionId: 'rubber',      qty: 1 },
+        { definitionId: 'scrap_metal', qty: 2 },
+        { definitionId: 'wire',        qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  make_diagnostic_kit: {
+    id: 'make_diagnostic_kit', name: '진단 키트 제작', category: 'medical',
+    hidden: true, unlockConditions: { minSkillLevel: { medicine: 5 } },
+    description: '체온계·청진기·소독약을 하나로 묶은 종합 진단 키트.',
+    output: [{ definitionId: 'diagnostic_kit', qty: 1 }],
+    requiredTools: ['workbench'],
+    requiredSkills: { medicine: 5 },
+    stages: [{
+      stageIndex: 0, label: '키트 조립', tpCost: 3,
+      requiredItems: [
+        { definitionId: 'thermometer', qty: 1 },
+        { definitionId: 'stethoscope', qty: 1 },
+        { definitionId: 'antiseptic',  qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  make_sling: {
+    id: 'make_sling', name: '삼각건 제작', category: 'medical',
+    hidden: true, unlockConditions: { minSkillLevel: { medicine: 2 } },
+    description: '천 조각과 로프로 팔 골절용 삼각건을 만든다.',
+    output: [{ definitionId: 'sling', qty: 1 }],
+    requiredTools: [],
+    requiredSkills: { medicine: 2 },
+    stages: [{
+      stageIndex: 0, label: '재봉', tpCost: 2,
+      requiredItems: [
+        { definitionId: 'cloth_scrap', qty: 3 },
+        { definitionId: 'rope',        qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  make_head_bandage: {
+    id: 'make_head_bandage', name: '두부 압박붕대 제작', category: 'medical',
+    hidden: true, unlockConditions: { minSkillLevel: { medicine: 2 } },
+    description: '거즈와 붕대로 두부 전용 압박붕대를 만든다.',
+    output: [{ definitionId: 'head_bandage', qty: 1 }],
+    requiredTools: [],
+    requiredSkills: { medicine: 2 },
+    stages: [{
+      stageIndex: 0, label: '재봉', tpCost: 2,
+      requiredItems: [
+        { definitionId: 'bandage', qty: 1 },
+        { definitionId: 'gauze',   qty: 2 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  make_tourniquet: {
+    id: 'make_tourniquet', name: '지혈대 제작', category: 'medical',
+    hidden: true, unlockConditions: { minSkillLevel: { medicine: 4 } },
+    description: '로프와 천으로 동맥 출혈을 막는 지혈대를 만든다.',
+    output: [{ definitionId: 'tourniquet', qty: 1 }],
+    requiredTools: [],
+    requiredSkills: { medicine: 4 },
+    stages: [{
+      stageIndex: 0, label: '조립', tpCost: 2,
+      requiredItems: [
+        { definitionId: 'rope',        qty: 1 },
+        { definitionId: 'cloth_scrap', qty: 2 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
   make_first_aid_kit: {
     id: 'make_first_aid_kit', name: '구급키트 제작', category: 'medical',
     hidden: true, unlockConditions: { minSkillLevel: { crafting: 2, medicine: 1 } },
@@ -2906,7 +3010,7 @@ const BLUEPRINTS = {
 
   practice_bandage: {
     id: 'practice_bandage', name: '연습용 붕대', category: 'medical',
-    description: '약초와 천으로 만든 간이 붕대. 의료 스킬 훈련에 좋다.',
+    description: '약초와 천 조각으로 만든 간이 붕대. 의료 스킬 훈련에 좋다.',
     output: [{ definitionId: 'practice_bandage', qty: 1 }],
     requiredTools: [],
     requiredSkills: { medicine: 1 },
@@ -2914,8 +3018,8 @@ const BLUEPRINTS = {
     stages: [{
       stageIndex: 0, label: '붕대 감기 연습', tpCost: 1,
       requiredItems: [
-        { definitionId: 'herb',  qty: 1 },
-        { definitionId: 'cloth', qty: 1 },
+        { definitionId: 'cloth_scrap', qty: 1 },
+        { definitionId: 'herb',        qty: 1 },
       ],
       consumeAt: 'start',
     }],

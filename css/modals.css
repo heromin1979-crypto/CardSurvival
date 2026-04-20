@@ -820,3 +820,151 @@
   letter-spacing: 1px;
   margin-top: 2px;
 }
+
+/* === BODY STATUS MODAL === */
+.stat-bar-group.clickable { cursor: pointer; transition: background 0.15s; }
+.stat-bar-group.clickable:hover { background: rgba(255,255,255,0.04); border-radius: var(--radius-sm); }
+
+#body-status-modal .body-status-modal-box {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius-lg);
+  padding: var(--gap-lg);
+  width: 92%;
+  max-width: 620px;
+  max-height: 86vh;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-md);
+  transform: scale(0.96);
+  transition: transform var(--transition-mid);
+  overflow: hidden;
+}
+#body-status-modal.open .body-status-modal-box { transform: scale(1); }
+
+.body-status-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-dim);
+  padding-bottom: var(--gap-sm);
+}
+.body-status-title { font-size: var(--font-size-lg); color: var(--accent-primary); letter-spacing: 1px; font-weight: 600; }
+.body-status-close {
+  background: var(--bg-surface-alt, rgba(255,255,255,0.06));
+  border: 1px solid var(--border-mid);
+  color: var(--text-primary);
+  padding: 4px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+}
+.body-status-close:hover { background: rgba(255,255,255,0.10); }
+
+.body-status-body { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: var(--gap-md); padding-right: 4px; }
+
+.body-status-section h4 {
+  font-size: var(--font-size-base);
+  color: var(--accent-primary);
+  margin: 0 0 8px 0;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border-dim);
+  letter-spacing: 1px;
+}
+
+.body-hp-bar {
+  position: relative;
+  height: 22px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 11px;
+  overflow: hidden;
+  border: 1px solid var(--border-dim);
+}
+.body-hp-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #6c3, #9e3);
+  transition: width 0.3s;
+}
+.body-hp-fill.warn   { background: linear-gradient(90deg, #e09040, #e0b040); }
+.body-hp-fill.danger { background: linear-gradient(90deg, #c0404a, #e05050); animation: diseasePulseFast 1s ease-in-out infinite; }
+.body-hp-text {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: var(--font-size-sm); font-weight: 600; color: var(--text-primary);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+
+.body-parts-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.body-part-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border-dim);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+}
+.body-part-card.injured { border-color: rgba(200,80,80,0.40); background: rgba(200,60,60,0.07); }
+.body-part-card.drop-ok {
+  border-color: rgba(90,200,120,0.85);
+  background: rgba(90,200,120,0.18);
+  box-shadow: 0 0 12px rgba(90,200,120,0.35);
+}
+.body-part-card.drop-bad {
+  border-color: rgba(220,80,80,0.85);
+  background: rgba(220,80,80,0.12);
+}
+.body-part-head { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+.body-part-icon { font-size: 15px; }
+.body-part-name { flex: 1; font-weight: 600; color: var(--text-primary); font-size: var(--font-size-sm); }
+.body-part-hp { font-size: 11px; color: var(--text-secondary); }
+.body-part-track { height: 4px; background: rgba(255,255,255,0.08); border-radius: 2px; overflow: hidden; margin-bottom: 6px; }
+.body-part-fill { height: 100%; background: #6c3; transition: width 0.3s; }
+.body-part-fill.warn   { background: #e09040; }
+.body-part-fill.danger { background: #c0404a; }
+.body-part-none { font-size: 11px; color: var(--text-dim, #6a6a6a); font-style: italic; }
+.body-part-injuries { display: flex; flex-direction: column; gap: 3px; }
+.body-part-injury {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 11px; padding: 3px 6px; border-radius: 3px;
+  background: rgba(200,60,60,0.12);
+  color: #e08080;
+}
+.body-part-injury.sev-2 { background: rgba(220,140,40,0.15); color: #e09040; }
+.body-part-injury.sev-1 { background: rgba(120,180,80,0.12); color: #a0c070; }
+.body-part-sev { letter-spacing: 1px; }
+
+.body-diseases { display: flex; flex-direction: column; gap: 6px; }
+.body-disease-row {
+  display: flex; gap: 10px; padding: 8px 10px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border-dim);
+  border-radius: var(--radius-sm);
+}
+.body-disease-row.sev-high    { border-color: rgba(200,40,40,0.40);   background: rgba(200,40,40,0.10); }
+.body-disease-row.sev-mid     { border-color: rgba(220,140,40,0.35);  background: rgba(220,140,40,0.08); }
+.body-disease-row.sev-low     { border-color: rgba(120,180,80,0.30);  background: rgba(120,180,80,0.06); }
+.body-disease-row.sev-unknown { border-color: rgba(120,120,160,0.35); background: rgba(120,120,160,0.08); font-style: italic; }
+.body-disease-icon { font-size: 22px; flex-shrink: 0; }
+.body-disease-info { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+.body-disease-name { font-weight: 600; color: var(--text-primary); font-size: var(--font-size-sm); }
+.body-disease-desc { font-size: 11px; color: var(--text-secondary); line-height: 1.35; }
+.body-disease-bar { height: 3px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; margin-top: 3px; }
+.body-disease-fill { height: 100%; transition: width 0.3s; }
+.body-disease-fill.sev-high { background: #e86060; }
+.body-disease-fill.sev-mid  { background: #e09040; }
+.body-disease-fill.sev-low  { background: #90d060; }
+
+.body-empty { font-size: 12px; color: var(--text-dim, #6a6a6a); padding: 6px 10px; font-style: italic; }
+
+.body-npcs { display: flex; flex-direction: column; gap: 6px; }
+.body-npc-row {
+  display: flex; gap: 10px; padding: 8px 10px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border-dim);
+  border-radius: var(--radius-sm);
+}
+.body-npc-row.unknown { border-color: rgba(120,120,160,0.35); background: rgba(120,120,160,0.08); }
+.body-npc-row.known   { border-color: rgba(200,80,80,0.35);  background: rgba(200,60,60,0.08); }
+.body-npc-icon { font-size: 20px; }
+.body-npc-info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.body-npc-name { font-weight: 600; color: var(--text-primary); font-size: var(--font-size-sm); }
+.body-npc-status { font-size: 11px; color: var(--text-secondary); }
+.body-npc-hint { font-size: 10px; color: var(--text-dim, #7a7a8a); font-style: italic; }

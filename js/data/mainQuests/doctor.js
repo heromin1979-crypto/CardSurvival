@@ -52,12 +52,12 @@ const DOCTOR_QUESTS = {
     dayTrigger: 4,
     prerequisite: 'mq_doctor_02',
     objective: { type: 'collect_item', definitionId: 'bandage', count: 3 },
-    reward: { morale: 5 },
+    reward: { morale: 5, items: [{ definitionId: 'sling', qty: 1 }] },
     failPenalty: { morale: -3 },
     deadlineDays: 14,
     narrative: {
       start: '의사로서 최소한의 준비는 해야 한다. 붕대, 소독약. 아무리 세상이 끝나도 다친 사람은 생기게 마련이다.',
-      complete: '응급 처치 키트를 꾸렸다. 외상 전문의로서 이 정도는 기본이다.',
+      complete: '응급 처치 키트를 꾸렸다. 간호사가 구석에서 삼각건을 꺼내 건네줬다. "팔 부러지면 꼭 써. 레시피도 알려줄게."',
     },
   },
 

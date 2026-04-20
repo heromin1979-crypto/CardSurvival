@@ -222,6 +222,12 @@ const CARD_IMAGES = {
   immunity_serum:        'assets/images/medical/immunity_serum.png',
   vaccine:               'assets/images/medical/vaccine.png',
   alcohol_swab:          'assets/images/medical/alcohol_swab.png',
+  thermometer:           'assets/images/medical/vitamins.png',
+  stethoscope:           'assets/images/medical/first_aid_kit.png',
+  diagnostic_kit:        'assets/images/medical/surgical_grade_kit.png',
+  sling:                 'assets/images/medical/splint.png',
+  head_bandage:          'assets/images/medical/bandage.png',
+  tourniquet:            'assets/images/medical/bandage.png',
   stimulant:             'assets/images/medical/stimulant.png',
   practice_bandage:      'assets/images/medical/bandage.png',
 
@@ -1132,18 +1138,21 @@ const CardFactory = {
       ? '★'.repeat(trust) + '☆'.repeat(Math.max(0, 5 - trust))
       : '';
 
-    // 부상 NPC 이름 오버라이드: 완치 시 "군인"
-    const displayName = (isWoundedType && npcState?.healed)
-      ? '군인'
-      : I18n.itemName(def.id, def.name);
+    const displayName = I18n.itemName(def.id, def.name);
 
     // NPC HP bar (for companions OR wounded NPCs)
     const maxHp = npcDef?.maxHp ?? 50;
+    const woundKnown = npcState?.woundDiscovered === true;
     let hpBar = '';
     if (isWounded) {
-      // 부상 NPC: woundLevel 기반 HP 계산
-      const woundHpPct = Math.round(((3 - woundLevel) / 3) * 100);
-      hpBar = `<div class="npc-card-hp"><div class="npc-hp-bar hp-crit hp-wound-pulse" style="width:${woundHpPct}%"></div><span class="npc-hp-text">${woundHpPct}%</span></div>`;
+      if (woundKnown) {
+        // 진단 완료 — 부상 단계 공개
+        const woundHpPct = Math.round(((3 - woundLevel) / 3) * 100);
+        hpBar = `<div class="npc-card-hp"><div class="npc-hp-bar hp-crit hp-wound-pulse" style="width:${woundHpPct}%"></div><span class="npc-hp-text">${woundHpPct}%</span></div>`;
+      } else {
+        // 미진단 — 정확한 상태 은폐
+        hpBar = `<div class="npc-card-hp"><div class="npc-hp-bar hp-crit hp-wound-pulse" style="width:50%;opacity:0.4"></div><span class="npc-hp-text">???</span></div>`;
+      }
     } else if (isCompanion) {
       const currentHp = npcState?.hp ?? maxHp;
       const hpPct = Math.round((currentHp / maxHp) * 100);
