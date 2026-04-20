@@ -8,6 +8,10 @@
 //   moralePerTP          : TP당 사기 변화 (음수 = 감소)
 //   hpPerTP              : TP당 HP 변화 (음수 = 감소)
 // treatmentTags: 아이템의 tags[]에 해당 태그가 있으면 치료
+//
+// incubationTp: 잠복기 TP (8 TP ≈ 1일). 잠복 중에는 증상·HUD 숨김.
+//   잠복 종료 시 증상 시작 — 이름은 진단 도구로만 확인 가능 ('???' 표시).
+//   0 또는 미설정 = 즉시 발현 (전투 부상 계열).
 
 export const DISEASES = {
 
@@ -19,6 +23,7 @@ export const DISEASES = {
     icon:      '🤧',
     severity:  1,   // 1=경증, 2=중증, 3=위중
     description: '체온 저하 시 발생. 피로와 사기 저하. 방치 시 독감으로 악화.',
+    incubationTp: 16,   // ~2일 잠복
     durationDays: [3, 5],
     symptoms: {
       fatiguePerTP:    0.4,   // 피로 누적 +0.4/TP (↑0.3)
@@ -39,6 +44,7 @@ export const DISEASES = {
     icon:      '🤒',
     severity:  2,
     description: '고열과 전신 쇠약. 수분 소모 급증, HP 감소. 방치 7일 시 사망.',
+    incubationTp: 24,   // ~3일 잠복
     durationDays: [5, 8],
     symptoms: {
       hydrationDecayExtra: 2.0,   // 수분 추가 -2.0/TP (↑1.5)
@@ -61,6 +67,7 @@ export const DISEASES = {
     icon:      '🤢',
     severity:  2,
     description: '오염된 음식 섭취. 심한 탈수와 영양 감소. 방치 6일 시 사망.',
+    incubationTp: 16,   // ~2일 잠복
     durationDays: [4, 7],
     symptoms: {
       hydrationDecayExtra: 3.0,   // 수분 추가 -3.0/TP (↑2.5)
@@ -82,6 +89,7 @@ export const DISEASES = {
     icon:      '☠️',
     severity:  3,
     description: '오염된 물 섭취. 극도의 탈수. 방치 4일 시 사망. 즉각 치료 필요!',
+    incubationTp: 8,    // ~1일 잠복 (급성)
     durationDays: [3, 5],
     symptoms: {
       hydrationDecayExtra: 6.0,   // 수분 추가 -6.0/TP (↑5.0)
@@ -103,6 +111,7 @@ export const DISEASES = {
     icon:      '🥶',
     severity:  2,
     description: '장시간 저체온. 피로 급증, HP 감소. 체온 45 이상 회복 시 완치.',
+    incubationTp: 4,    // 체온성은 잠복 짧음
     durationDays: [1, 14],
     symptoms: {
       fatiguePerTP: 1.2,     // (↑1.0)
@@ -125,6 +134,7 @@ export const DISEASES = {
     icon:      '🌡️',
     severity:  2,
     description: '과도한 체온 상승. 수분·HP 감소. 체온 60 이하로 내리면 완치.',
+    incubationTp: 4,    // 체온성은 잠복 짧음
     durationDays: [1, 5],
     symptoms: {
       hydrationDecayExtra: 3.0,   // (↑2.5)
@@ -147,6 +157,7 @@ export const DISEASES = {
     icon:      '🦠',
     severity:  3,
     description: '감염 악화로 혈류 감염. HP 급감. 3일 방치 시 사망. 즉각 항생제 필요!',
+    incubationTp: 12,   // ~1.5일 잠복
     durationDays: [2, 4],
     symptoms: {
       hpPerTP:      -3.5,   // HP -3.5/TP (↑3.0)
@@ -168,6 +179,7 @@ export const DISEASES = {
     icon:      '☢️',
     severity:  2,
     description: '방사선 과다 피폭. HP 감소, 영양 손실 (구토). 방사선 차단제 필요.',
+    incubationTp: 32,   // ~4일 장기 잠복
     durationDays: [5, 10],
     symptoms: {
       hpPerTP:             -1.5,   // (↑1.0)

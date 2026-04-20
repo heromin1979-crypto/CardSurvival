@@ -8,7 +8,9 @@ import GameState       from '../core/GameState.js';
 import EventBus        from '../core/EventBus.js';
 import SystemRegistry  from '../core/SystemRegistry.js';
 import CraftDiscovery  from '../systems/CraftDiscovery.js';
+import SkillSystem     from '../systems/SkillSystem.js';
 import QuickCraftPrompt from '../ui/QuickCraftPrompt.js';
+import BodyStatusModal  from '../ui/BodyStatusModal.js';
 
 // 롱프레스 임계값 (ms) — 이 시간 이상 누르면 드래그 시작
 const LONG_PRESS_MS = 180;
@@ -152,6 +154,15 @@ const TouchDrag = {
       s.classList.remove('drag-over-valid', 'drag-over-invalid', 'can-interact');
     });
 
+    // BodyStatusModal 부위 카드 드롭 처리 (터치)
+    const partCard = elemBelow?.closest('[data-body-part]');
+    if (partCard) {
+      BodyStatusModal.tryTreatPart(partCard.dataset.bodyPart, this._draggingId);
+      EventBus.emit('boardChanged', {});
+      this._draggingId = null;
+      return;
+    }
+
     const slot = elemBelow?.closest('.slot');
     if (slot) {
       const row     = slot.dataset.row;
@@ -159,6 +170,12 @@ const TouchDrag = {
       const existingId = GameState.board[row]?.[slotIdx];
 
       if (existingId && existingId !== this._draggingId) {
+        // 부상 NPC 진단 (진단 도구 → 미진단 부상 NPC)
+        if (this._tryNPCDiagnose(this._draggingId, existingId)) {
+          EventBus.emit('boardChanged', {});
+          this._draggingId = null;
+          return;
+        }
         // 부상 NPC 치료 (붕대 → 부상 NPC)
         if (this._tryWoundHeal(this._draggingId, existingId)) {
           EventBus.emit('boardChanged', {});
@@ -203,6 +220,41 @@ const TouchDrag = {
     this._draggingId = null;
   },
 
+  // ── 부상 NPC 진단 헬퍼 ─────────────────────────────────────
+
+  _isNPCDiagnoseDrag(sourceId, targetId) {
+    const srcInst = GameState.cards[sourceId];
+    const tgtInst = GameState.cards[targetId];
+    if (!srcInst || !tgtInst) return false;
+    const srcDef = GameState.getCardDef(sourceId);
+    const tgtDef = GameState.getCardDef(targetId);
+    if (tgtDef?.type !== 'npc') return false;
+    if (!srcDef?.diagnose) return false;
+    const NPCSystem = SystemRegistry.get('NPCSystem');
+    const npcState = NPCSystem?.getNPCState?.(tgtInst.definitionId);
+    if (!npcState || (npcState.woundLevel ?? 0) <= 0) return false;
+    return npcState.woundDiscovered !== true;
+  },
+
+  _tryNPCDiagnose(sourceId, targetId) {
+    if (!this._isNPCDiagnoseDrag(sourceId, targetId)) return false;
+    const srcInst = GameState.cards[sourceId];
+    const tgtInst = GameState.cards[targetId];
+    const NPCSystem = SystemRegistry.get('NPCSystem');
+    if (!NPCSystem) return false;
+
+    const ok = NPCSystem.diagnoseNPC(tgtInst.definitionId);
+    if (!ok) return false;
+
+    const srcQty = srcInst.quantity ?? 1;
+    if (srcQty <= 1) {
+      BoardManager.removeCard(sourceId);
+    } else {
+      srcInst.quantity = srcQty - 1;
+    }
+    return true;
+  },
+
   // ── 부상 NPC 치료 헬퍼 ─────────────────────────────────────
 
   _isWoundHealDrag(sourceId, targetId) {
@@ -240,6 +292,7 @@ const TouchDrag = {
     // 부상 단계 감소
     const oldWound = npcState.woundLevel;
     npcState.woundLevel = Math.max(0, oldWound - 1);
+    SkillSystem.gainXp('medicine', 3);
     if (npcState.woundLevel <= 0) {
       npcState.healed = true;
       const prevTrust = npcState.trust ?? 0;

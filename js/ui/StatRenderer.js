@@ -1,10 +1,11 @@
 // === STAT RENDERER ===
 // Updates HUD stat bars and TP clock
-import EventBus    from '../core/EventBus.js';
-import GameState   from '../core/GameState.js';
-import GameData    from '../data/GameData.js';
-import I18n        from '../core/I18n.js';
-import NightSystem from '../systems/NightSystem.js';
+import EventBus        from '../core/EventBus.js';
+import GameState       from '../core/GameState.js';
+import GameData        from '../data/GameData.js';
+import I18n            from '../core/I18n.js';
+import NightSystem     from '../systems/NightSystem.js';
+import BodyStatusModal from './BodyStatusModal.js';
 
 // 사이드바에 표시할 필수 스탯 (4개)
 const STAT_CONFIG = [
@@ -62,7 +63,7 @@ const StatRenderer = {
     if (!statsDiv) return;
 
     const hpBarHTML = `
-      <div class="stat-bar-group hp" id="statbar-hp">
+      <div class="stat-bar-group hp clickable" id="statbar-hp" title="신체 상태 보기">
         <div class="stat-bar-label">
           <span class="stat-bar-name">❤️ HP</span>
           <span class="stat-bar-value" id="statval-hp">--</span>
@@ -86,6 +87,10 @@ const StatRenderer = {
     `).join('') + `
       <div id="hud-passive-badges" class="hud-passive-badges" style="display:none;"></div>
     `;
+
+    // HP 막대 클릭 → 신체 상태 모달 진입
+    const hpBar = statsDiv.querySelector('#statbar-hp');
+    hpBar?.addEventListener('click', () => BodyStatusModal.open());
   },
 
   /** 장비창 "캐릭터 상태" 탭용 전체 스탯 HTML 반환 */

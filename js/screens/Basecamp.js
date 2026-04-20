@@ -10,6 +10,7 @@ import BoardRenderer  from '../ui/BoardRenderer.js';
 import StatRenderer   from '../ui/StatRenderer.js';
 import SaveManager    from '../persistence/SaveManager.js';
 import EquipmentModal  from '../ui/EquipmentModal.js';
+import BodyStatusModal from '../ui/BodyStatusModal.js';
 import LandmarkModal   from '../ui/LandmarkModal.js';
 import SkillModal      from '../ui/SkillModal.js';
 import BasecampModal  from '../ui/BasecampModal.js';
@@ -65,6 +66,7 @@ const Basecamp = {
     }
     CraftUI.init();
     EquipmentModal.init();
+    BodyStatusModal.init();
     LandmarkModal.init();
     SkillModal.init();
     BasecampModal.init();
@@ -186,6 +188,11 @@ const Basecamp = {
       <!-- Equipment modal -->
       <div class="modal-overlay" id="equip-modal">
         <div class="equip-modal-box"></div>
+      </div>
+
+      <!-- Body status modal -->
+      <div class="modal-overlay" id="body-status-modal">
+        <div class="body-status-modal-box"></div>
       </div>
 
       <!-- Landmark modal -->

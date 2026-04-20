@@ -66,6 +66,7 @@ const BALANCE = {
       building:    10,
       weaponcraft: 8,
       armorcraft:  8,
+      medicine:    6,
       cooking:     5,
       crafting:    5,
     },

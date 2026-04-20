@@ -8,6 +8,7 @@ import GameState       from '../core/GameState.js';
 import I18n            from '../core/I18n.js';
 import NPCSystem       from '../systems/NPCSystem.js';
 import NPCQuestSystem  from '../systems/NPCQuestSystem.js';
+import SkillSystem     from '../systems/SkillSystem.js';
 import { NPC_ITEMS }   from '../data/npcs.js';
 import GameData        from '../data/GameData.js';
 
@@ -373,6 +374,7 @@ const NPCDialogueModal = {
         state.woundLevel = Math.max(0, (state.woundLevel ?? 0) - 1);
         const oldTrust = state.trust ?? 0;
         state.trust = Math.min(5, oldTrust + 1);
+        SkillSystem.gainXp('medicine', 3);
         EventBus.emit('npcTrustChanged', { npcId, oldTrust, newTrust: state.trust });
         EventBus.emit('boardChanged', {});
         if (state.woundLevel <= 0) {

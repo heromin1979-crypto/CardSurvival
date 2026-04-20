@@ -2,9 +2,10 @@
 // 신체 부위별 부상 시뮬레이션: 6개 부위, 부상 타입/심각도/자연 치유
 // 매 TP마다 부상 치유 진행, 전투 피격 시 부위 판정 + 부상 추가
 
-import EventBus  from '../core/EventBus.js';
-import GameState from '../core/GameState.js';
-import I18n      from '../core/I18n.js';
+import EventBus    from '../core/EventBus.js';
+import GameState   from '../core/GameState.js';
+import I18n        from '../core/I18n.js';
+import SkillSystem from './SkillSystem.js';
 
 // ── 부위별 피격 확률 테이블 (무기 타입별) ──────────────────────
 const HIT_TABLES = {
@@ -204,7 +205,7 @@ const BodySystem = {
     }
   },
 
-  // ── 의사 전용: 특정 부상 치료 ──────────────────────────────────
+  // ── medicine 스킬 게이트: 특정 부상 치료 ─────────────────────
 
   treatInjury(bodyPart, injuryIndex) {
     this.ensureInitialized();
@@ -214,10 +215,7 @@ const BodySystem = {
     const injury = part.injuries[injuryIndex];
     if (!injury) return false;
 
-    // 의사 + 의료 스킬 요구
-    const isDoctor = GameState.player.characterId === 'doctor';
-    if (!isDoctor) return false;
-
+    // medicine 스킬 게이트 (severity 3 → Lv.5, 나머지 → Lv.3)
     const medicineLv = GameState.player.skills?.medicine?.level ?? 0;
     const requiredLv = injury.severity >= 3 ? 5 : 3;
     if (medicineLv < requiredLv) return false;
@@ -256,12 +254,95 @@ const BodySystem = {
     // HP 20 회복
     part.hp = Math.min(100, part.hp + 20);
 
+    SkillSystem.gainXp('medicine', oldSeverity * 3);
+
     EventBus.emit('notify', {
       message: I18n.t('body.treated', { part: partName, type: typeName, from: oldSeverity, to: newSeverity }),
       type: 'good',
     });
+    EventBus.emit('bodyInjury', { partKey: bodyPart });
     EventBus.emit('boardChanged', {});
     return true;
+  },
+
+  // ── Phase 2: 의료 아이템 드래그 처치 ──────────────────────────
+
+  /**
+   * BodyStatusModal 부위 카드에 의료 아이템을 드롭 시 호출.
+   * 해당 부위의 매칭 부상을 치료하고 아이템 1개를 소비한다.
+   * @returns { ok: boolean, message: string, consumed: boolean }
+   */
+  treatInjuryWithItem(bodyPartKey, itemInstanceId, itemDef) {
+    this.ensureInitialized();
+    const rule = itemDef?.treatPart;
+    if (!rule) return { ok: false, message: '이 아이템으로는 부위를 치료할 수 없습니다.', consumed: false };
+
+    const part = GameState.body?.[bodyPartKey];
+    if (!part) return { ok: false, message: '부위가 없습니다.', consumed: false };
+
+    if (!rule.parts.includes(bodyPartKey)) {
+      return { ok: false, message: `${itemDef.name}은(는) ${I18n.t(`body.${bodyPartKey}`)}에 쓸 수 없습니다.`, consumed: false };
+    }
+
+    const medicineLv = GameState.player.skills?.medicine?.level ?? 0;
+    const requiredLv = rule.skillLevel ?? 1;
+    if (medicineLv < requiredLv) {
+      return { ok: false, message: `의료 Lv.${requiredLv} 필요 (현재 ${medicineLv})`, consumed: false };
+    }
+
+    const severityMin = rule.severityMin ?? 1;
+    const idx = part.injuries.findIndex(inj =>
+      rule.injuryTypes.includes(inj.type) && Math.ceil(inj.severity) >= severityMin,
+    );
+    if (idx < 0) {
+      return { ok: false, message: `처치할 ${rule.injuryTypes.map(t => I18n.t(`body.injury.${t}`)).join('·')} 부상이 없습니다.`, consumed: false };
+    }
+
+    const itemInst = GameState.cards?.[itemInstanceId];
+    if (!itemInst) return { ok: false, message: '아이템을 찾을 수 없습니다.', consumed: false };
+
+    const injury      = part.injuries[idx];
+    const oldSeverity = Math.ceil(injury.severity);
+    const severityDec = rule.severityDec ?? 1;
+    const newSeverity = Math.max(0, oldSeverity - severityDec);
+
+    if (newSeverity <= 0) {
+      part.injuries = part.injuries.filter((_, i) => i !== idx);
+    } else {
+      part.injuries = part.injuries.map((inj, i) => {
+        if (i !== idx) return inj;
+        const newTpTotal = Math.round((INJURY_HEAL_TP[inj.type] ?? 48) * newSeverity);
+        return { ...inj, severity: newSeverity, tpRemaining: Math.min(inj.tpRemaining, newTpTotal), tpTotal: newTpTotal };
+      });
+    }
+
+    part.hp = Math.min(100, part.hp + (rule.hpHeal ?? 0));
+
+    if (rule.penalty) {
+      if (rule.penalty.fatigue) GameState.modStat?.('fatigue', rule.penalty.fatigue);
+      if (rule.penalty.morale)  GameState.modStat?.('morale',  rule.penalty.morale);
+    }
+
+    // 아이템 1개 소비
+    const qty = itemInst.quantity ?? 1;
+    if (qty <= 1) {
+      GameState.removeCardInstance(itemInstanceId);
+    } else {
+      itemInst.quantity = qty - 1;
+    }
+
+    SkillSystem.gainXp('medicine', oldSeverity * 3);
+
+    const partName = I18n.t(`body.${bodyPartKey}`);
+    const typeName = I18n.t(`body.injury.${injury.type}`);
+    const message  = newSeverity <= 0
+      ? `🩹 ${partName} ${typeName} 완치`
+      : `🩹 ${partName} ${typeName} ${oldSeverity} → ${newSeverity}`;
+
+    EventBus.emit('notify', { message, type: 'good' });
+    EventBus.emit('bodyInjury', { partKey: bodyPartKey });
+    EventBus.emit('boardChanged', {});
+    return { ok: true, message, consumed: true };
   },
 
   // ── 비의사: 랜덤 경상 치료 ──────────────────────────────────
@@ -331,12 +412,11 @@ const BodySystem = {
 
     part.hp = Math.min(100, part.hp + amount);
 
-    // 의사 캐릭터: severity 3 치료 가능
-    const isDoctor = GameState.player.characterId === 'doctor';
+    // medicine Lv.5 이상이면 severity 3 부상도 치유
     const hasMedicine = (GameState.player.skills?.medicine?.level ?? 0) >= 5;
 
     part.injuries = part.injuries.reduce((kept, injury) => {
-      if (injury.severity >= 3 && !(isDoctor && hasMedicine)) {
+      if (injury.severity >= 3 && !hasMedicine) {
         return [...kept, injury];
       }
       const newTp = injury.tpRemaining - Math.round(amount * 0.5);

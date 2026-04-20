@@ -127,6 +127,49 @@ const ITEMS_MEDICAL = {
     dismantle: [],
   },
 
+  // ─── 진단 도구 (3) ──────────────────────────────────────────
+  // diagnose 필드: DiseaseSystem이 consume 시 해당 질병 ID만 공개.
+  //   'all' = 전 질병 / 배열 = 지정 질병만.
+
+  thermometer: {
+    id: 'thermometer', name: '체온계', type: 'consumable', subtype: 'medical',
+    rarity: 'common', weight: 0.05,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🌡️', description: '체온을 측정해 감기·독감·저체온증·열사병을 진단한다.',
+    onConsume: { morale: 2 },
+    diagnose: ['common_cold', 'influenza', 'hypothermia', 'heatstroke'],
+    tags: ['medical', 'diagnostic'],
+    dismantle: [{ definitionId: 'glass_shard', qty: 1, chance: 0.5 }],
+  },
+
+  stethoscope: {
+    id: 'stethoscope', name: '청진기', type: 'consumable', subtype: 'medical',
+    rarity: 'uncommon', weight: 0.15,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🩺', description: '심장·호흡음을 들어 독감·이질·콜레라·패혈증을 진단한다.',
+    onConsume: { morale: 3 },
+    diagnose: ['influenza', 'dysentery', 'cholera', 'sepsis'],
+    tags: ['medical', 'diagnostic'],
+    dismantle: [
+      { definitionId: 'rubber', qty: 1, chance: 0.5 },
+      { definitionId: 'scrap_metal', qty: 1, chance: 0.4 },
+    ],
+  },
+
+  diagnostic_kit: {
+    id: 'diagnostic_kit', name: '진단 키트', type: 'consumable', subtype: 'medical',
+    rarity: 'rare', weight: 0.3,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🔬', description: '종합 진단 키트. 모든 잠복 질병을 정확히 식별한다.',
+    onConsume: { morale: 5 },
+    diagnose: 'all',
+    tags: ['medical', 'diagnostic'],
+    dismantle: [
+      { definitionId: 'thermometer', qty: 1, chance: 0.5 },
+      { definitionId: 'stethoscope', qty: 1, chance: 0.4 },
+    ],
+  },
+
   // ─── 의료 음료·식량 (medical 태그) (3) ─────────────────────
 
   herbal_tea: {
@@ -307,6 +350,78 @@ const ITEMS_MEDICAL = {
     icon: '🩸', description: '감염자에게서 채취한 혈액 표본. 백신·치료제 합성의 핵심 원료.',
     tags: ['medical', 'sample', 'research'],
     dismantle: [],
+  },
+
+  // ─── Phase 2: 부위별 처치 도구 (3) ─────────────────────────
+  // treatPart: BodyStatusModal 부위 카드에 드롭 시 적용되는 처치 정의.
+  //   parts        : 대상 부위 키 배열
+  //   injuryTypes  : 대상 부상 타입 배열
+  //   severityMin  : 해당 단계 이상만 처치 가능 (없으면 1)
+  //   severityDec  : 감소할 심각도 (기본 1)
+  //   hpHeal       : 부위 HP 회복
+  //   penalty      : { fatigue, morale } — 부작용 (즉시 적용)
+  //   skillLevel   : medicine 최소 레벨
+
+  sling: {
+    id: 'sling', name: '삼각건', type: 'consumable', subtype: 'medical',
+    rarity: 'uncommon', weight: 0.2,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🤕', description: '팔 골절 전용 지지대. 팔을 고정해 골절 심각도를 2단계 낮춘다.',
+    onConsume: { morale: 3 },
+    treatPart: {
+      parts: ['leftArm', 'rightArm'],
+      injuryTypes: ['fracture'],
+      severityDec: 2,
+      hpHeal: 25,
+      skillLevel: 2,
+    },
+    tags: ['medical', 'healing', 'splint'],
+    dismantle: [
+      { definitionId: 'cloth_scrap', qty: 2, chance: 0.8 },
+      { definitionId: 'rope',        qty: 1, chance: 0.5 },
+    ],
+  },
+
+  head_bandage: {
+    id: 'head_bandage', name: '두부 압박붕대', type: 'consumable', subtype: 'medical',
+    rarity: 'uncommon', weight: 0.1,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🩻', description: '머리 열상·뇌진탕 전용 압박 붕대. 두피 출혈을 막고 충격을 완화한다.',
+    onConsume: { hp: 8, morale: 3 },
+    treatPart: {
+      parts: ['head'],
+      injuryTypes: ['laceration', 'concussion'],
+      severityDec: 2,
+      hpHeal: 20,
+      skillLevel: 2,
+    },
+    tags: ['medical', 'healing', 'bandage'],
+    dismantle: [
+      { definitionId: 'bandage', qty: 1, chance: 0.7 },
+      { definitionId: 'gauze',   qty: 2, chance: 0.7 },
+    ],
+  },
+
+  tourniquet: {
+    id: 'tourniquet', name: '지혈대', type: 'consumable', subtype: 'medical',
+    rarity: 'rare', weight: 0.15,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🩸', description: '팔·다리 치명적 출혈(Lv.3)을 즉시 멈춘다. 부작용으로 피로 +30, 사기 -10.',
+    onConsume: { morale: -10, fatigue: 30 },
+    treatPart: {
+      parts: ['leftArm', 'rightArm', 'leftLeg', 'rightLeg'],
+      injuryTypes: ['bleeding'],
+      severityMin: 3,
+      severityDec: 3,
+      hpHeal: 10,
+      skillLevel: 4,
+      penalty: { fatigue: 30, morale: -10 },
+    },
+    tags: ['medical', 'emergency'],
+    dismantle: [
+      { definitionId: 'rope',        qty: 1, chance: 0.6 },
+      { definitionId: 'cloth_scrap', qty: 2, chance: 0.6 },
+    ],
   },
 
   // ─── Sprint 5: 엔드게임 백신 ───────────────────────────────

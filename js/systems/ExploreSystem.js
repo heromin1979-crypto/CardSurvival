@@ -771,6 +771,8 @@ const ExploreSystem = {
 
     // 보라매 응급실 잔류 환자 이벤트 (이지수 전용, Day 2~7)
     this._tryBoramaePatientSpawn(gs);
+    // 마포 원정 부상 시민 이벤트 (이지수 전용, Day 15+)
+    this._tryMapoCivilianSpawn(gs);
 
     EventBus.emit('boardChanged', {});
   },
@@ -804,6 +806,37 @@ const ExploreSystem = {
     alreadySpawned.push(npcId);
     EventBus.emit('notify', {
       message: '🩹 응급실 침대에서 신음 소리가 들린다. 잔류 환자가 남아 있었다 — 붕대로 치료해라.',
+      type: 'story',
+    });
+  },
+
+  /**
+   * 이지수가 Day 15+ 마포구 서브로케이션 진입 시
+   * 30% 확률로 부상 시민 NPC를 바닥에 스폰한다. 부위별 치료 아이템(sling/head_bandage/tourniquet)으로 치료 시 보상.
+   */
+  _tryMapoCivilianSpawn(gs) {
+    if (gs.player?.characterId !== 'doctor') return;
+    if (gs.location?.currentDistrict !== 'mapo') return;
+    const day = gs.time?.day ?? 1;
+    if (day < 15) return;
+
+    if (!gs.flags.mapoCiviliansSpawned) gs.flags.mapoCiviliansSpawned = [];
+    const alreadySpawned = gs.flags.mapoCiviliansSpawned;
+
+    const pool = ['npc_civilian_wounded_01', 'npc_civilian_wounded_02', 'npc_civilian_wounded_03']
+      .filter(id => !alreadySpawned.includes(id));
+    if (pool.length === 0) return;
+
+    if (Math.random() >= 0.30) return;
+
+    const npcId = pool[Math.floor(Math.random() * pool.length)];
+    const NPCSystem = SystemRegistry.get('NPCSystem');
+    if (!NPCSystem?.forceSpawn) return;
+    if (!NPCSystem.forceSpawn(npcId)) return;
+
+    alreadySpawned.push(npcId);
+    EventBus.emit('notify', {
+      message: '🩹 골목에 누군가 쓰러져 있다. 부위별 치료 아이템이 필요해 보인다.',
       type: 'story',
     });
   },

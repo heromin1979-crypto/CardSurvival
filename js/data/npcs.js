@@ -186,6 +186,29 @@ export const NPC_ITEMS = {
     icon: '🤕', description: '대피 직전 응급실에 들이닥친 젊은 시민. 복부 자상으로 움직이지 못한다.',
     tags: ['npc'], dismantle: [],
   },
+
+  // ── 마포 원정 부상 시민 (mq_doctor_09 경로 이벤트) ────────────
+  npc_civilian_wounded_01: {
+    id: 'npc_civilian_wounded_01', name: '부상 상인', type: 'npc',
+    rarity: 'uncommon', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🩹', description: '홍대 지하상가 입구에 쓰러진 40대 잡화상. 팔이 부자연스럽게 꺾였다.',
+    tags: ['npc'], dismantle: [],
+  },
+  npc_civilian_wounded_02: {
+    id: 'npc_civilian_wounded_02', name: '부상 학생', type: 'npc',
+    rarity: 'uncommon', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🧑‍🎓', description: '홍대 거리에서 감염자를 피해 도망치다 넘어진 대학생. 머리에서 피가 흐른다.',
+    tags: ['npc'], dismantle: [],
+  },
+  npc_civilian_wounded_03: {
+    id: 'npc_civilian_wounded_03', name: '부상 행인', type: 'npc',
+    rarity: 'uncommon', weight: 0, stackable: false, maxStack: 1,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🧕', description: '약국 뒷골목에서 지혈 없이 쓰러져 있던 중년 행인. 허벅지 깊은 열상.',
+    tags: ['npc'], dismantle: [],
+  },
 };
 
 // ── NPC Data Definitions ────────────────────────────────────────
@@ -281,7 +304,7 @@ const NPCS = {
     spawnDay: 1,
     dialogues: {
       greet:  ['npc.nurse.greet0', 'npc.nurse.greet1', 'npc.nurse.greet2'],
-      hint:   ['npc.nurse.hint0', 'npc.nurse.hint1', 'npc.nurse.hint2'],
+      hint:   ['npc.nurse.hint0', 'npc.nurse.hint1', 'npc.nurse.hint2', 'npc.nurse.hint3'],
       reject: 'npc.nurse.reject',
     },
     trustGainPerTalk: 1,
@@ -1604,6 +1627,112 @@ const NPCS = {
         id:      'er_patient_civilian_healed',
         message: '🤕 시민이 가방을 열어 종이쪽지를 건넨다. "이거… 제 약품 창고 약도예요. 알코올 소독액도 가져가세요." — 알코올 소독액 1개 + 지도 조각 획득.',
         effect: { giveItems: [{ id: 'alcohol_solution', qty: 1 }, { id: 'map_fragment', qty: 1 }], morale: 8 },
+      },
+    ],
+    quests: [],
+    specialDays: [],
+  },
+
+  // ── 마포 원정 부상 시민 (Day 18+ 홍대 경유 이벤트) ──────────
+  npc_civilian_wounded_01: {
+    id: 'npc_civilian_wounded_01',
+    personality: 'stoic',
+    maxHp: 50,
+    spawnDistrict: 'mapo',
+    spawnDay: 999,
+    dialogues: {
+      greet:  ['npc.civilian_wounded_01.greet0'],
+      hint:   ['npc.civilian_wounded_01.hint0'],
+      reject: 'npc.civilian_wounded_01.reject',
+    },
+    trustGainPerTalk: 0,
+    backstory: '지하상가에서 물자를 지키다 감염자에게 팔이 꺾인 40대 잡화상.',
+    woundLevel: 2,
+    woundHealItem: 'sling',
+    woundHealQty: 1,
+    companion: null,
+    gifts: [],
+    trades: null,
+    forageItems: [],
+    spontaneous: [
+      { condition: 'always', line: '"팔이… 움직이질 않아요. 선생님, 부목 같은 거라도…"' },
+    ],
+    trustEvents: [
+      {
+        trust: 1,
+        id:      'civilian_wounded_01_healed',
+        message: '🩹 상인이 숨을 고른다. "지하상가 안쪽에 잔해가 쌓여 있어요. 쓸만한 천이 아직 남아있을 거예요." — 붕대 2개 + 지도 조각 획득.',
+        effect: { giveItems: [{ id: 'bandage', qty: 2 }, { id: 'map_fragment', qty: 1 }], morale: 6 },
+      },
+    ],
+    quests: [],
+    specialDays: [],
+  },
+
+  npc_civilian_wounded_02: {
+    id: 'npc_civilian_wounded_02',
+    personality: 'timid',
+    maxHp: 45,
+    spawnDistrict: 'mapo',
+    spawnDay: 999,
+    dialogues: {
+      greet:  ['npc.civilian_wounded_02.greet0'],
+      hint:   ['npc.civilian_wounded_02.hint0'],
+      reject: 'npc.civilian_wounded_02.reject',
+    },
+    trustGainPerTalk: 0,
+    backstory: '홍대 거리에서 감염자 무리를 피해 도망치다 계단에 머리를 부딪힌 22세 학생.',
+    woundLevel: 2,
+    woundHealItem: 'head_bandage',
+    woundHealQty: 1,
+    companion: null,
+    gifts: [],
+    trades: null,
+    forageItems: [],
+    spontaneous: [
+      { condition: 'always', line: '"머리가… 너무 어지러워요. 피가 멈추질 않아요."' },
+    ],
+    trustEvents: [
+      {
+        trust: 1,
+        id:      'civilian_wounded_02_healed',
+        message: '🧑‍🎓 학생이 정신을 차린다. "고시원에 남은 학우들이 있어요. 이거라도 드세요." — 에너지 바 2개 + 깨끗한 물 2개 획득.',
+        effect: { giveItems: [{ id: 'energy_bar', qty: 2 }, { id: 'clean_water', qty: 2 }], morale: 7 },
+      },
+    ],
+    quests: [],
+    specialDays: [],
+  },
+
+  npc_civilian_wounded_03: {
+    id: 'npc_civilian_wounded_03',
+    personality: 'stoic',
+    maxHp: 55,
+    spawnDistrict: 'mapo',
+    spawnDay: 999,
+    dialogues: {
+      greet:  ['npc.civilian_wounded_03.greet0'],
+      hint:   ['npc.civilian_wounded_03.hint0'],
+      reject: 'npc.civilian_wounded_03.reject',
+    },
+    trustGainPerTalk: 0,
+    backstory: '약국 뒷골목에서 허벅지에 깊은 열상을 입고 쓰러진 50대 행인. 출혈이 멈추지 않는다.',
+    woundLevel: 3,
+    woundHealItem: 'tourniquet',
+    woundHealQty: 1,
+    companion: null,
+    gifts: [],
+    trades: null,
+    forageItems: [],
+    spontaneous: [
+      { condition: 'always', line: '"지혈… 지혈만 해주세요. 이렇게는 못 갑니다…"' },
+    ],
+    trustEvents: [
+      {
+        trust: 1,
+        id:      'civilian_wounded_03_healed',
+        message: '🧕 행인이 주머니에서 작은 꾸러미를 꺼낸다. "약국 뒷창고 열쇠예요. 거기 남은 게 있을 거예요." — 항생제 2개 + 소독약 1개 획득.',
+        effect: { giveItems: [{ id: 'antibiotics', qty: 2 }, { id: 'antiseptic', qty: 1 }], morale: 10 },
       },
     ],
     quests: [],

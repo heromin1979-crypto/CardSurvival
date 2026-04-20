@@ -1,15 +1,18 @@
 // === ONBOARDING SYSTEM ===
 // Day 1 신규 플레이어를 위한 단계별 힌트. 각 힌트는 1회만 표시됨.
-import EventBus  from '../core/EventBus.js';
-import GameState from '../core/GameState.js';
+import EventBus        from '../core/EventBus.js';
+import GameState       from '../core/GameState.js';
+import BodyStatusModal from '../ui/BodyStatusModal.js';
 
 const STORAGE_KEY = 'cs_onboarding_seen';
 
 const HINTS = {
-  pickup:    '바닥의 카드를 드래그하거나 클릭해 인벤토리로 가져오세요.',
-  tp:        'TP(시간 포인트)는 행동할 때마다 소모됩니다. 하루에 72 TP로 활동하세요.',
-  move:      '인접 구역 카드를 클릭하면 이동할 수 있어요. 이동하면 새 아이템을 탐색합니다.',
-  hydration: '💧 수분이 감소하고 있어요. 음료 카드를 클릭해 섭취하세요.',
+  pickup:     '바닥의 카드를 드래그하거나 클릭해 인벤토리로 가져오세요.',
+  tp:         'TP(시간 포인트)는 행동할 때마다 소모됩니다. 하루에 72 TP로 활동하세요.',
+  move:       '인접 구역 카드를 클릭하면 이동할 수 있어요. 이동하면 새 아이템을 탐색합니다.',
+  hydration:  '💧 수분이 감소하고 있어요. 음료 카드를 클릭해 섭취하세요.',
+  bodyStatus: '부상이 생겼어요. HP 막대를 눌러 부위별 상태를 확인하고, 해당 부위에 치료 아이템을 드래그할 수 있어요.',
+  firstCraft: '첫 의료품 제작 완료. 부위별 상태 창을 열어 치료 대상과 효과를 확인해보세요.',
 };
 
 function _showBoardTooltip() {
@@ -101,6 +104,24 @@ const OnboardingSystem = {
         _markShown('hydration');
         _show(HINTS.hydration);
       }
+    });
+
+    // 최초 부위 부상 발생 시 — BodyStatusModal 안내 (Beat 2)
+    EventBus.on('bodyInjury', () => {
+      if (_shown('body_status')) return;
+      _markShown('body_status');
+      _show(HINTS.bodyStatus);
+    });
+
+    // mq_doctor_07 완료 시 — BodyStatusModal 딥링크 (Beat 5)
+    EventBus.on('questCompleted', ({ questId }) => {
+      if (questId !== 'mq_doctor_07') return;
+      if (_shown('mq_doctor_07_modal')) return;
+      _markShown('mq_doctor_07_modal');
+      setTimeout(() => {
+        _show(HINTS.firstCraft);
+        BodyStatusModal.open();
+      }, 800);
     });
   },
 };

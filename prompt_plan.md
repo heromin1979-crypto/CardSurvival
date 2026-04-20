@@ -1,3 +1,123 @@
+# 의료 확장 플랜 — 진단 + 부위별 처치
+
+> 최종 업데이트: 2026-04-20
+> 상태: 완료 (S1·S2·S3·S4·S5·S6)
+
+## 목표
+BodySystem(6부위×4부상×3중증도)과 DiseaseSystem을 전면 활용해 의료 행위의
+깊이를 확장. 잠복기 기반 진단 + 부위별 처치 아이템 + BodyStatusModal UI를
+추가하고, 의료 XP 공급을 표준화한다.
+
+## 확정 범위
+
+### Phase 1 — 진단 (Diagnosis) 🩺
+- DiseaseSystem 잠복기 도입: `incubationTp`, `discovered` 필드
+- 진단 도구 3종 (재사용 가능, 내구도):
+  - `thermometer` 🌡️  — 발열성 질병 잠복 노출 (craft Lv.2)
+  - `stethoscope` 🩺 — 호흡/심장 이상 + 체강 부상 노출 (medicine Lv.2)
+  - `diagnostic_kit` 💠 — 전체 질병·부상 상세 공개 (medicine Lv.4)
+- 잠복 중 질병은 HUD에 "???" 표기 → 진단 시 공개
+- NPC 진단: 부상 NPC의 `woundLevel` 진단 전 은폐
+
+### Phase 2 — 부위별 처치 (3종 축소) 🦴
+- `sling` (삼각건) — 팔 골절 전용
+- `head_bandage` (두부 압박붕대) — 머리 열상·뇌진탕
+- `tourniquet` (지혈대) — 팔·다리 severity 3 출혈 즉시 0 (부작용: 48TP 페널티)
+- 기존 `splint` 변경 없음
+- BodyStatusModal 신규 UI (상단 HP 표시 클릭 진입)
+- 드래그-드롭 확장: 의료 아이템 → 부위 카드
+- `treatInjury`를 doctor 전용 → medicine 스킬 게이트로 전환
+
+### Phase 3 — 의료 XP 표준화 🎚️
+1. `craftSkillMap.medical`: `'crafting'` → `'medicine'`
+2. `gameBalance.xpBase.medicine`: 6 명시
+3. 부상 NPC 치료 3곳에 `gainXp('medicine', 3)` 추가
+4. 진단 행위: +2/+4/+6 (도구별)
+5. 부위별 처치: severity × 3 XP
+
+## 진행 순서
+
+| 세션 | 범위 |
+|------|------|
+| **S1** ✅ | Phase 3 전체 + Phase 1 데이터 (잠복기 필드, 도구 3종) |
+| **S2** ✅ | Phase 1 BodyStatusModal + 진단 드래그 흐름 (NPC `woundDiscovered` + 진단 도구 드래그 → NPCSystem.diagnoseNPC) |
+| **S3** ✅ | Phase 2 완료 — sling/head_bandage/tourniquet + `treatPart` 정의 + `BodySystem.treatInjuryWithItem` + DragDrop/TouchDrag 부위 드롭 + `treatInjury` doctor 게이트 제거 (medicine Lv.3/5 전환) |
+| **S4** ✅ | Beat 1+2 — 의사 시작템 `stethoscope` 추가 + `npc.nurse.greet0` 진단 힌트 문구 + OnboardingSystem `bodyInjury` 이벤트 → HP 부위별 상태 모달 안내 (1회) |
+| **S5** ✅ | Beat 3+4 — `mq_doctor_03` 보상 `sling ×1` + 간호사 레시피 대화(`npc.nurse.hint3`) + DiseaseSystem 잠복 첫 발병 진단 도구 안내(`flags.diseaseIncubationGuideShown`) |
+| **S6** ✅ | Beat 5+6 — `mq_doctor_07` 완료 시 BodyStatusModal 딥링크 + 마포 원정 `npc_civilian_wounded_01/02/03` 정의 + ExploreSystem `_tryMapoCivilianSpawn` (sling/head_bandage/tourniquet 치료 타겟) |
+
+검증: `node --input-type=module js/data/validate.js` + 브라우저 1사이클 테스트
+
+## 트레이드오프
+- 세이브 호환성: 기존 세이브 로드 시 `incubationTp=0, discovered=true`로 마이그레이션
+- 아이템 인플레이션 6종 (진단 3 + 부위별 3) — UI에서 드래그 시 유효 대상 하이라이트로 완화
+- 진단 도구 내구도 — `defaultDurability` 기반 사용 횟수 관리 (소모되지 않는 도구)
+
+---
+
+# 랜드마크 키 체계 정비 + NPC 방문 퀘스트 리팩터 + 레시피 스킬 게이팅
+
+> 최종 업데이트: 2026-04-19
+> 상태: 완료 (commit `4d786b5`)
+
+## 목표
+동일 구(district) 안에 복수 랜드마크가 공존할 수 있도록 키 체계를 정비하고,
+NPC 퀘스트의 방문 체크를 정식 방문 기록(`districtsVisited`)에 맞춘다.
+요구 스킬 미달 레시피는 목록에서 숨겨 혼란을 줄인다.
+
+## 1. 랜드마크 키 체계
+- `LANDMARK_DATA.dongjak` → `LANDMARK_DATA.lm_dongjak`로 정규화
+- `getLandmarkData(key)` 헬퍼 신규 — 원키 우선, 실패 시 `lm_` 접두사 제거 폴백
+- 소비자 전체 리팩터: `CombatResult`, `ExploreSystem`, `LandmarkModal`,
+  `CardFactory`에서 `LANDMARK_DATA[id]` 직접 참조 → `getLandmarkData(id)`
+- `CardFactory`: 랜드마크 카드의 진입 키에 `def.id` 우선 사용
+  (동일 구 복수 랜드마크 구분 가능)
+- `ExploreSystem._enterSubLocation`: 세부 장소 탐색 시 소음 기준을
+  전달받은 lm 키가 아니라 `gs.location.currentDistrict`로 재조회
+
+## 2. NPC 방문 퀘스트 체크
+- `NPCQuestSystem._isStepDone` visit 스텝: `flags.visited_${locationId}` 기반
+  체크 → `location.districtsVisited.includes(targetId)` 기반으로 변경
+- `step.districtId` 우선, 없으면 `step.locationId` 폴백
+- `NPCDialogueModal` 렌더: `I18n.districtName()`으로 한글 구명 표시
+
+## 3. 레시피 스킬 게이팅 (CraftUI)
+- 히든 레시피 외에도 `requiredSkills`를 가진 일반 레시피가 요구 스킬 레벨에
+  도달하지 못하면 목록에서 숨김
+- 구현: `SkillSystem.getLevel(skillId) < minLevel` 필터
+
+## 4. 텍스트 수정
+- `npcs.js` 간호사 퀘스트 힌트: "삼성병원" → "보라매병원"
+
+## 5. 자산 스크립트 (신규)
+- `assets/images/download_expansion.js` — Node.js에서 실행하는 92종 이미지
+  다운로드 스크립트 (크래프팅 체인 확장용)
+- `assets/images/download_expansion_browser.js` — Genspark 웹사이트 콘솔에서
+  실행하는 브라우저 버전
+
+## 수정 파일 (10)
+
+| 파일 | 변경 |
+|------|------|
+| `js/data/landmarks.js` | `getLandmarkData` 헬퍼 + `lm_dongjak` 정규화 |
+| `js/screens/CombatResult.js` | `getLandmarkData` 리팩터 |
+| `js/systems/ExploreSystem.js` | `getLandmarkData` 리팩터 + 소음 기준 수정 |
+| `js/ui/LandmarkModal.js` | `getLandmarkData` 리팩터 |
+| `js/ui/CardFactory.js` | 랜드마크 진입 키 `def.id` 우선 |
+| `js/systems/NPCQuestSystem.js` | visit 스텝 `districtsVisited` 기반 |
+| `js/ui/NPCDialogueModal.js` | visit 스텝 한글 구명 표시 |
+| `js/ui/CraftUI.js` | `requiredSkills` 미달 레시피 숨김 |
+| `js/data/npcs.js` | 간호사 퀘스트 힌트 병원명 수정 |
+| `assets/images/download_expansion*.js` | 신규 (2종) |
+
+## 검증
+- 기존 `visited_X` 플래그는 더 이상 세팅되지 않아도 `districtsVisited`
+  배열이 TickEngine의 입구 진입 시점에 이미 갱신 중이므로 호환됨
+- `getLandmarkData`는 `null`-safe — 기존 `LANDMARK_DATA[id]?.name` 패턴과
+  동일하게 옵셔널 체이닝 유지
+
+---
+
 # 재미강화 프레임워크 통합 — 처방전·골든타임·환자 기록장 + 스택 부산물 버그
 
 > 최종 업데이트: 2026-04-19

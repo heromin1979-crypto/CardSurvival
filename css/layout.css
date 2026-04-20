@@ -343,9 +343,10 @@
   animation: diseasePulse 2s ease-in-out infinite;
 }
 
-.disease-badge.sev-low  { background: rgba(120,180,80,0.15);  border-color: rgba(120,180,80,0.30);  color: #90d060; }
-.disease-badge.sev-mid  { background: rgba(220,140,40,0.15);  border-color: rgba(220,140,40,0.35);  color: #e09040; }
-.disease-badge.sev-high { background: rgba(200,40,40,0.18);   border-color: rgba(200,40,40,0.40);   color: #e86060; animation: diseasePulseFast 1s ease-in-out infinite; }
+.disease-badge.sev-low     { background: rgba(120,180,80,0.15);  border-color: rgba(120,180,80,0.30);  color: #90d060; }
+.disease-badge.sev-mid     { background: rgba(220,140,40,0.15);  border-color: rgba(220,140,40,0.35);  color: #e09040; }
+.disease-badge.sev-high    { background: rgba(200,40,40,0.18);   border-color: rgba(200,40,40,0.40);   color: #e86060; animation: diseasePulseFast 1s ease-in-out infinite; }
+.disease-badge.sev-unknown { background: rgba(120,120,160,0.15); border-color: rgba(120,120,160,0.35); color: #a0a0c0; font-style: italic; }
 
 .disease-icon { font-size: var(--font-size-sm); }
 .disease-name { flex: 1; }

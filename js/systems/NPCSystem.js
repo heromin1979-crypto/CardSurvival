@@ -80,6 +80,8 @@ const NPCSystem = {
       if (state.companionSince === undefined) state.companionSince = null;
       if (state.bond        === undefined) state.bond        = 0;
       if (state.lastTreatDay === undefined) state.lastTreatDay = -1;
+      // 기존 세이브 호환: woundDiscovered 필드가 없으면 true (이미 진행 중인 게임은 진단 면제)
+      if (state.woundDiscovered === undefined) state.woundDiscovered = true;
     }
   },
 
@@ -147,6 +149,7 @@ const NPCSystem = {
       bond:            0,
       lastTreatDay:    -1,
       woundLevel:      npcDef.woundLevel ?? 0,
+      woundDiscovered: (npcDef.woundLevel ?? 0) === 0,
     };
 
     // 바닥에 NPC 카드 배치
@@ -741,6 +744,8 @@ const NPCSystem = {
         isCompanion: false, hp: npcDef.maxHp ?? 50,
         neglectDays: 0, companionSince: null,
         bond: 0, lastTreatDay: -1,
+        woundLevel: npcDef.woundLevel ?? 0,
+        woundDiscovered: (npcDef.woundLevel ?? 0) === 0,
       };
     }
 
@@ -1262,6 +1267,37 @@ const NPCSystem = {
     }
 
     GameState.flags.pendingChemistry = remaining;
+  },
+
+  // ── Public: NPC 부상 진단 (Phase 1) ────────────────────────────
+
+  /**
+   * 진단 아이템(체온계·청진기·진단키트)을 부상 NPC에게 사용.
+   * 성공 시 state.woundDiscovered = true 로 설정, 카드 재렌더 + 의료 XP +2.
+   * 이미 진단됐거나 부상이 없으면 false.
+   */
+  diagnoseNPC(npcId) {
+    this.ensureInitialized();
+    const state  = GameState.npcs?.states?.[npcId];
+    const npcDef = NPCS[npcId];
+    if (!state || !npcDef) return false;
+    const woundLevel = state.woundLevel ?? 0;
+    if (woundLevel <= 0) return false;
+    if (state.woundDiscovered === true) return false;
+
+    state.woundDiscovered = true;
+
+    SkillSystem.gainXp('medicine', 2);
+
+    const name = I18n.itemName(npcId, NPC_ITEMS[npcId]?.name);
+    const levelLabel = ['', '경상', '중상', '중태'][woundLevel] ?? '';
+    EventBus.emit('notify', {
+      message: `🩺 ${name} 진단 — ${levelLabel} (Lv.${woundLevel})`,
+      type: 'good',
+    });
+    EventBus.emit('npcDiagnosed', { npcId, woundLevel });
+    EventBus.emit('boardChanged', {});
+    return true;
   },
 
   // ── Public: companion heal (V-5) ──────────────────────────────

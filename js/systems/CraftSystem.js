@@ -250,7 +250,7 @@ const CraftSystem = {
 
     const craftSkillMap = {
       structure: 'building', material: 'crafting', food: 'cooking',
-      medical: 'crafting', weapon: 'weaponcraft', armor: 'armorcraft', tool: 'crafting',
+      medical: 'medicine', weapon: 'weaponcraft', armor: 'armorcraft', tool: 'crafting',
       upgrade: 'crafting',
     };
     const skillId = craftSkillMap[bp.category] ?? 'crafting';
@@ -295,7 +295,7 @@ const CraftSystem = {
     // ── 제작 실패 판정 ──────────────────────────────────
     const craftSkillMap = {
       structure: 'building', material: 'crafting', food: 'cooking',
-      medical: 'crafting', weapon: 'weaponcraft', armor: 'armorcraft', tool: 'crafting',
+      medical: 'medicine', weapon: 'weaponcraft', armor: 'armorcraft', tool: 'crafting',
       upgrade: 'crafting',
     };
     const relevantSkill = craftSkillMap[bp.category] ?? 'crafting';
