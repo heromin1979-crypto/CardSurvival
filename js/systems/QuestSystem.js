@@ -7,6 +7,7 @@ import MAIN_QUESTS from '../data/mainQuests/index.js';
 import GameData   from '../data/GameData.js';
 import BALANCE    from '../data/gameBalance.js';
 import NPCSystem  from './NPCSystem.js';
+import { getLandmarkData } from '../data/landmarks.js';
 import { QUEST_TO_FLASHBACK } from '../data/cinematicScenes.js';
 
 // ── 계절 퀘스트 정의 ────────────────────────────────────────────────
@@ -507,13 +508,25 @@ const QuestSystem = {
   /**
    * Day 10에 보라매병원 약품이 바닥을 드러낸다 (이지수 전용).
    * 이후 보라매 서브로케이션 lootCount가 영구 -1 되고, 세브란스(신촌) 원정의 당위성이 부각된다.
+   *
+   * W3-2 Phase B — flags.boramae_depleted 대신 subLocationStock 직접 감소.
+   * boramae_depleted 플래그는 "이미 발동됨" 1회성 가드로만 유지.
    */
   _checkBoramaeDepletion(gs, day) {
     if (gs.player.characterId !== 'doctor') return;
     if (gs.flags.boramae_depleted) return;
     if (day < 10) return;
 
-    gs.flags.boramae_depleted = true;
+    // 보라매병원 서브로케이션 전체 재고 -1 (없으면 baseStock으로 lazy-init 후 감소)
+    const lmData = getLandmarkData('lm_boramae_hospital');
+    const subs   = lmData?.subLocations ?? [];
+    for (const sub of subs) {
+      const baseStock = sub.lootCount?.[1] ?? 0;
+      if (baseStock > 0) gs.initSubLocationStock(sub.id, baseStock);
+      gs.decaySubLocationStock(sub.id, day, 1);
+    }
+
+    gs.flags.boramae_depleted = true;  // 1회성 가드
     EventBus.emit('notify', {
       message: '📦 보라매 약품 창고가 바닥을 드러냈다. "선생님… 이제 남은 건 뜯지도 못한 앰풀 몇 개뿐이에요." 이후 보라매 수색량이 줄고, 신촌 세브란스 원정이 더욱 시급해졌다.',
       type: 'story',

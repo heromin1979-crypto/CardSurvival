@@ -40,7 +40,7 @@
 |---|-------|---------|------|
 | W3-1 (#3b) | 환자 기여 타입 선택권 UI | ContributionChoiceModal 신규, 환자 스키마 altContributions, PatientIntakeSystem._pendingChoices/chooseContribution | 🚧 작업 중 (미커밋) |
 | W3-1b (#5) | 의사 특권 — 습격 패배 완화 | gameBalance.doctorPrivilege, HospitalSiegeSystem._applyDefeat (사망자 -1, 사기 ×0.75) | 🚧 작업 중 (미커밋) |
-| W3-2 (#7) | 서브로케이션 루팅 고갈 구현+UI | GameState, ExploreSystem, LandmarkModal | 🚧 Phase A 완료 (스키마/헬퍼/테스트 25/25) |
+| W3-2 (#7) | 서브로케이션 루팅 고갈 구현+UI | GameState, ExploreSystem, LandmarkModal | 🚧 Phase A/B 완료 (219/219) |
 | W3-3 (#5) | 의사 전용 대피 미니게임 | HospitalSiegeSystem, Encounter.js | ⏳ 대기 |
 
 ### W3-2 상세 계획 (#7 서브로케이션 루팅 고갈)
@@ -49,8 +49,8 @@
 
 | Phase | 범위 | 파일 | 상태 |
 |------|------|------|------|
-| **A** | GameState 스키마·헬퍼·세이브 호환·테스트 | GameState.js, gameBalance.js, GameState_subLocationStock.test.js | ✅ 완료 |
-| B | ExploreSystem 통합 (lazy-init + consume + ratio 적용, `flags.boramae_depleted` 하드코드 대체) | ExploreSystem.js, ExploreSystem.test.js | ⏳ 대기 |
+| **A** | GameState 스키마·헬퍼·세이브 호환·테스트 | GameState.js, gameBalance.js, GameState_subLocationStock.test.js | ✅ 완료 (25/25) |
+| **B** | ExploreSystem 통합 + QuestSystem 보라매 하드코드 대체 | ExploreSystem.js, QuestSystem.js, ExploreSystem_subLocationStock.test.js | ✅ 완료 (9/9) |
 | C | 일자 경과 자동 감소 리스너 (TickEngine `newDay` 또는 신규 리스너 → `decayAllSubLocationStocks`) | TickEngine.js 또는 신규, 테스트 | ⏳ 대기 |
 | D | LandmarkModal UI 재고 배지 (🪙 X/Y, 색상, 고갈 disable) | LandmarkModal.js, CSS | ⏳ 대기 |
 
@@ -59,7 +59,7 @@
 - 일자 감소 정책: **건너뛴 day 수와 무관하게 1회당 1만 감소** (lastDecayDay 중복 차감 방지)
 - 감소량 상수: `BALANCE.explore.stockDecayPerDay = 1`
 - 초기 baseStock: sub-loc `lootCount[1]` (max) 기준 lazy-init (Phase B에서 연결)
-- `flags.boramae_depleted` 스텁: Phase B에서 대체 예정 (하위 호환 보존)
+- `flags.boramae_depleted` 스텁: **Phase B에서 대체 완료** — 플래그는 1회성 가드로만 유지, 실제 감소는 `subLocationStock`으로 이관
 
 **Phase A 검증 증거**:
 - 신규 테스트 25/25 통과 (GameState_subLocationStock.test.js)

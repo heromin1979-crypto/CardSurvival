@@ -685,6 +685,10 @@ const ExploreSystem = {
     const subKey       = `${districtId}:${subLocationId}`;
     const isFirstLoot  = !gs.location.subLocationsLooted.includes(subKey);
 
+    // W3-2 Phase B — 재고 lazy-init (sub.lootCount[1] = max를 baseStock으로)
+    const baseStock = sub.lootCount?.[1] ?? 0;
+    if (baseStock > 0) gs.initSubLocationStock(subLocationId, baseStock);
+
     // 과적 체크
     const enc = gs.player.encumbrance;
     if ((enc.weightPct ?? 0) >= 2.0) {
@@ -761,6 +765,8 @@ const ExploreSystem = {
       const loot = this._generateSubLocationLoot(sub);
       this._placeLoot(loot);
       gs.location.subLocationsLooted.push(subKey);
+      // W3-2 Phase B — 실제 루팅 수만큼 재고 차감 (stockRatio는 _generateSubLocationLoot가 이미 반영)
+      if (loot.length > 0) gs.consumeSubLocationStock(subLocationId, loot.length);
     } else {
       EventBus.emit('notify', { message: I18n.t('exploreSys.alreadySearched', { name: sub.name }), type: 'info' });
     }
@@ -846,10 +852,10 @@ const ExploreSystem = {
     const [minCount, maxCount] = sub.lootCount ?? [1, 3];
     let count        = minCount + Math.floor(Math.random() * (maxCount - minCount + 1));
 
-    // 보라매 약품 고갈 이벤트 — 이지수 Day 10 이후 보라매 서브로케이션 lootCount 영구 -1
-    if (GameState.flags?.boramae_depleted && typeof sub.id === 'string' && sub.id.startsWith('boramae_')) {
-      count = Math.max(0, count - 1);
-    }
+    // W3-2 Phase B — subLocationStock 재고 비율 반영 (보라매 하드코드 대체)
+    // 재고 미초기화 = 1.0 (풀스톡), 고갈 시 0
+    const stockRatio = GameState.getSubLocationStockRatio?.(sub.id) ?? 1.0;
+    count = Math.max(0, Math.round(count * stockRatio));
     const totalWeight = table.reduce((s, e) => s + e.weight, 0);
     const results    = [];
     const items      = GameData?.items ?? {};
