@@ -15,6 +15,8 @@ import LandmarkModal   from '../ui/LandmarkModal.js';
 import SkillModal      from '../ui/SkillModal.js';
 import BasecampModal  from '../ui/BasecampModal.js';
 import DoctorPatientModal from '../ui/DoctorPatientModal.js';
+import EmergencyRoomModal      from '../ui/EmergencyRoomModal.js';
+import ContributionChoiceModal from '../ui/ContributionChoiceModal.js';
 import QuestSystem    from '../systems/QuestSystem.js';
 import ExploreSystem  from '../systems/ExploreSystem.js';
 import SeasonSystem    from '../systems/SeasonSystem.js';
@@ -75,6 +77,8 @@ const Basecamp = {
     SkillModal.init();
     BasecampModal.init();
     DoctorPatientModal.init();
+    EmergencyRoomModal.init();
+    ContributionChoiceModal.init();
     this._updateQuestPanel();
     this._updateSecretComboCount();
     // 계절 배지 초기화
@@ -208,6 +212,16 @@ const Basecamp = {
         <div class="doctor-patient-modal-box"></div>
       </div>
 
+      <!-- Emergency Room modal -->
+      <div class="modal-overlay" id="emergency-room-modal">
+        <div class="er-modal-box"></div>
+      </div>
+
+      <!-- W3-1: Contribution Choice modal -->
+      <div class="modal-overlay" id="contribution-choice-modal">
+        <div class="er-modal-box"></div>
+      </div>
+
       <!-- Craft modal -->
       <div class="modal-overlay" id="craft-modal">
         <div class="modal-box" style="max-width:420px;max-height:85vh;">
@@ -247,17 +261,22 @@ const Basecamp = {
       const bcDoctorLogBtn = DoctorPatientModal.isAvailable()
         ? `<button class="toolbar-btn" id="btn-bc-doctor-log">📖 환자 기록</button>`
         : '';
+      const bcErBtn = EmergencyRoomModal.isAvailable()
+        ? `<button class="toolbar-btn" id="btn-bc-er">🏥 응급실</button>`
+        : '';
       section.innerHTML = `
         <div class="bc-toolbar-label">🏕 베이스캠프</div>
         <button class="toolbar-btn primary" id="btn-bc-manage">🔧 거점 관리</button>
         <button class="toolbar-btn" id="btn-bc-craft">제작</button>
         <button class="toolbar-btn" id="btn-bc-skills">숙련도</button>
         ${bcDoctorLogBtn}
+        ${bcErBtn}
         <button class="toolbar-btn" id="btn-bc-rest">휴식</button>
         <button class="toolbar-btn" id="btn-bc-exit">나가기</button>
       `;
       section.querySelector('#btn-bc-manage')?.addEventListener('click', () => BasecampModal.open());
       section.querySelector('#btn-bc-doctor-log')?.addEventListener('click', () => DoctorPatientModal.open());
+      section.querySelector('#btn-bc-er')?.addEventListener('click', () => EmergencyRoomModal.open());
       section.querySelector('#btn-bc-craft')?.addEventListener('click', () => {
         const modal = document.getElementById('craft-modal');
         modal?.classList.add('open');
@@ -279,6 +298,9 @@ const Basecamp = {
       const doctorLogBtn = DoctorPatientModal.isAvailable()
         ? `<button class="toolbar-btn" id="btn-doctor-log">📖 환자 기록</button>`
         : '';
+      const erBtn = EmergencyRoomModal.isAvailable()
+        ? `<button class="toolbar-btn" id="btn-er">🏥 응급실</button>`
+        : '';
       section.innerHTML = `
         <div class="bc-toolbar-label">⚡ 행동</div>
         <button class="toolbar-btn primary" id="btn-explore">🔍 탐색</button>
@@ -286,6 +308,7 @@ const Basecamp = {
         <button class="toolbar-btn" id="btn-craft">${I18n.t('basecamp.craft')}</button>
         <button class="toolbar-btn" id="btn-skills">${I18n.t('basecamp.skills')}</button>
         ${doctorLogBtn}
+        ${erBtn}
         <button class="toolbar-btn" id="btn-wait">${I18n.t('basecamp.wait')}</button>
         <button class="toolbar-btn" id="btn-rest">${I18n.t('basecamp.rest')}</button>
         ${buildSection}
@@ -304,6 +327,7 @@ const Basecamp = {
       });
       section.querySelector('#btn-skills')?.addEventListener('click', () => SkillModal.open());
       section.querySelector('#btn-doctor-log')?.addEventListener('click', () => DoctorPatientModal.open());
+      section.querySelector('#btn-er')?.addEventListener('click', () => EmergencyRoomModal.open());
       section.querySelector('#btn-wait')?.addEventListener('click', () => TickEngine.skipTP(1, I18n.t('basecamp.waiting')));
       section.querySelector('#btn-rest')?.addEventListener('click', () => StateMachine.transition('rest'));
       section.querySelector('#btn-build-base')?.addEventListener('click', () => BasecampModal.open());

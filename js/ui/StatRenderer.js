@@ -442,7 +442,18 @@ const StatRenderer = {
 
   _formatHour(h) {
     const hh = Math.floor(h) % 24;
-    return `${String(hh).padStart(2,'0')}:00`;
+    return `${this._timeOfDayIcon(hh)} ${String(hh).padStart(2,'0')}:00`;
+  },
+
+  // W1-3: 시간대 아이콘 (시간 감각 구체화)
+  _timeOfDayIcon(hh) {
+    if (hh < 6)  return '🌙';    // 새벽 (0~5시)
+    if (hh < 9)  return '🌅';    // 동틀녘 (6~8시)
+    if (hh < 12) return '☀️';   // 오전 (9~11시)
+    if (hh < 15) return '🌞';    // 정오 (12~14시)
+    if (hh < 18) return '🌤️';  // 오후 (15~17시)
+    if (hh < 21) return '🌆';    // 저녁 (18~20시)
+    return '🌙';                 // 밤 (21~23시)
   },
 };
 

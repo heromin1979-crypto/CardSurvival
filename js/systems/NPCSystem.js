@@ -1124,19 +1124,31 @@ const NPCSystem = {
     const infection  = gs.stats?.infection?.current ?? 0;
     const infMult    = gs.stats?.infection?.rateMultiplier ?? 1.0;
     const isDoctor   = gs.player?.characterId === 'doctor';
+    const morale     = gs.stats?.morale?.current ?? 100;
+    const day        = gs.time?.day ?? 0;
 
-    let line = null;
+    let matched = null;
     for (const entry of npcDef.spontaneous) {
-      if (entry.condition === 'low_hp'        && hpRatio < 0.3)  { line = entry.line; break; }
-      if (entry.condition === 'low_nutrition' && nutrition < 20)  { line = entry.line; break; }
-      if (entry.condition === 'rain'          && isRaining)       { line = entry.line; break; }
+      if (entry.condition === 'low_hp'        && hpRatio < 0.3)  { matched = entry; break; }
+      if (entry.condition === 'low_nutrition' && nutrition < 20)  { matched = entry; break; }
+      if (entry.condition === 'rain'          && isRaining)       { matched = entry; break; }
       if (entry.condition === 'doctor_low_infection'
-          && isDoctor && infMult < 1.0 && infection >= 5 && infection < 30) { line = entry.line; break; }
-      if (entry.condition === 'always')                           { line = entry.line; break; }
+          && isDoctor && infMult < 1.0 && infection >= 5 && infection < 30) { matched = entry; break; }
+      if (entry.condition === 'low_morale_late'
+          && morale < 30 && day >= 30) { matched = entry; break; }
+      if (entry.condition === 'always')                           { matched = entry; break; }
     }
-    if (!line) return;
+    if (!matched) return;
 
-    EventBus.emit('charDialogue', { characterId: npcId, line });
+    EventBus.emit('charDialogue', { characterId: npcId, line: matched.line });
+
+    if (typeof matched.moraleRestore === 'number' && matched.moraleRestore !== 0) {
+      gs.modStat?.('morale', matched.moraleRestore);
+      EventBus.emit('notify', {
+        message: `동료와 대화로 사기가 회복됐다 (+${matched.moraleRestore})`,
+        type: 'good',
+      });
+    }
   },
 
   // ══════════════════════════════════════════════════════════════

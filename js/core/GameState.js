@@ -130,6 +130,13 @@ const GameState = {
   // { [districtId]: visitCount } — 역별 탐색 횟수
   subwayStationVisits: {},
 
+  // ── 서브로케이션 재고 (W3-2 Phase A) ──────────────
+  // { [subLocId]: { stock, baseStock, lastDecayDay } }
+  // stock        = 남은 루팅 잠재력 (0~baseStock, 정수)
+  // baseStock    = 초기값 (lootCount[1] = max 기준, lazy-init)
+  // lastDecayDay = 마지막 -1/일 감소 적용 day (같은 day 중복 차감 방지)
+  subLocationStock: {},
+
   // ── 베이스캠프 거점 ────────────────────────────────
   basecamp: {
     built:      false, // 안전 가옥 건설 여부 (Day 7+ 이후 건설 가능)
@@ -248,7 +255,15 @@ const GameState = {
     stealthKills:              0,   // 무소음 무기 크리킬 카운터
     diseaseCured:              0,   // 질병 치료 카운터
     meleeKills:                0,   // 근접무기 킬 카운터
+    // ── 보라매병원 습격 스케줄 ────────────────────────
+    nextSiegeDay:              null, // 다음 습격 예정일 (null = 초기화 대기)
+    siegeCount:                0,    // 누적 습격 횟수
   },
+
+  // ── 런타임 랜드마크 오버라이드 ────────────────────────
+  // { [landmarkId]: { [subLocationId]: { dangerModDelta: number } } }
+  // HospitalSiegeSystem 등이 누적 위험도 증가를 런타임에 반영할 때 사용.
+  landmarkOverrides: {},
 
   // ── HELPERS ───────────────────────────────────────────
   createCardInstance(definitionId, overrides = {}) {
@@ -464,6 +479,84 @@ const GameState = {
     this.setStat(stat, s.current + d);
   },
 
+  // ── 서브로케이션 재고 헬퍼 (W3-2 Phase A) ──────────────
+  // 최초 진입 시 호출 — baseStock 지정 (lootCount[1] = max 권장)
+  // 이미 초기화된 경우 no-op.
+  initSubLocationStock(subLocId, baseStock) {
+    if (!subLocId || baseStock == null || baseStock < 0) return;
+    if (this.subLocationStock[subLocId]) return;
+    this.subLocationStock = {
+      ...this.subLocationStock,
+      [subLocId]: {
+        stock:        baseStock,
+        baseStock:    baseStock,
+        lastDecayDay: null,
+      },
+    };
+  },
+
+  // 방문/소비 시 차감 (min 0). 미초기화 sub-loc은 no-op.
+  consumeSubLocationStock(subLocId, amount = 1) {
+    const entry = this.subLocationStock?.[subLocId];
+    if (!entry) return;
+    const next = Math.max(0, (entry.stock ?? 0) - Math.max(0, amount));
+    this.subLocationStock = {
+      ...this.subLocationStock,
+      [subLocId]: { ...entry, stock: next },
+    };
+  },
+
+  // 현재 재고 비율 조회 (UI/로직용). 미초기화 = 1.0, baseStock 0 = 1.0.
+  getSubLocationStockRatio(subLocId) {
+    const entry = this.subLocationStock?.[subLocId];
+    if (!entry) return 1.0;
+    if (!entry.baseStock || entry.baseStock <= 0) return 1.0;
+    return Math.max(0, Math.min(1, entry.stock / entry.baseStock));
+  },
+
+  // 일자 경과 자동 감소 — 같은 day 중복 호출 방지.
+  // 건너뛴 day 수와 무관하게 1회 호출당 decayAmount만 차감 (정책 채택안).
+  decaySubLocationStock(subLocId, currentDay, decayAmount = 1) {
+    const entry = this.subLocationStock?.[subLocId];
+    if (!entry) return;
+    if (entry.lastDecayDay === currentDay) return;
+    const next = Math.max(0, (entry.stock ?? 0) - Math.max(0, decayAmount));
+    this.subLocationStock = {
+      ...this.subLocationStock,
+      [subLocId]: { ...entry, stock: next, lastDecayDay: currentDay },
+    };
+  },
+
+  // 초기화된 모든 sub-loc 일괄 감소 (TickEngine day rollover에서 호출 예정).
+  decayAllSubLocationStocks(currentDay, decayAmount = 1) {
+    const next = { ...this.subLocationStock };
+    for (const id of Object.keys(next)) {
+      const entry = next[id];
+      if (!entry || entry.lastDecayDay === currentDay) continue;
+      const stock = Math.max(0, (entry.stock ?? 0) - Math.max(0, decayAmount));
+      next[id] = { ...entry, stock, lastDecayDay: currentDay };
+    }
+    this.subLocationStock = next;
+  },
+
+  // 런타임 dangerMod 오버라이드 조회 — 없으면 0
+  getLandmarkDangerModDelta(landmarkId, subLocationId) {
+    const lm = this.landmarkOverrides?.[landmarkId];
+    if (!lm) return 0;
+    const sub = lm[subLocationId];
+    return sub?.dangerModDelta ?? 0;
+  },
+
+  addLandmarkDangerMod(landmarkId, subLocationId, delta) {
+    const overrides = { ...(this.landmarkOverrides ?? {}) };
+    const lmEntry = { ...(overrides[landmarkId] ?? {}) };
+    const subEntry = { ...(lmEntry[subLocationId] ?? {}) };
+    subEntry.dangerModDelta = (subEntry.dangerModDelta ?? 0) + delta;
+    lmEntry[subLocationId] = subEntry;
+    overrides[landmarkId] = lmEntry;
+    this.landmarkOverrides = overrides;
+  },
+
   _updateEncumbrance() {
     const total = Object.values(this.cards).reduce((sum, c) => {
       const def = GameData?.items[c.definitionId];
@@ -501,6 +594,7 @@ const GameState = {
       pendingLoot:     this.pendingLoot ?? [],
       landmarkHistory:     this.landmarkHistory,
       subwayStationVisits: this.subwayStationVisits,
+      subLocationStock:    this.subLocationStock ?? {},
       basecamp:            this.basecamp,
       quests:          this.quests,
       ecology:         this.ecology ?? null,
@@ -509,6 +603,8 @@ const GameState = {
       npcs:            this.npcs ?? null,
       companions:      this.companions ?? null,
       body:            this.body ?? null,
+      landmarkOverrides: this.landmarkOverrides ?? {},
+      hospital:          this.hospital ?? null,
     });
   },
 
@@ -611,6 +707,8 @@ const GameState = {
     // 랜드마크 탐색 이력 복원
     this.landmarkHistory     = d.landmarkHistory     ?? {};
     this.subwayStationVisits = d.subwayStationVisits ?? {};
+    // 서브로케이션 재고 복원 (W3-2 Phase A — 구버전 세이브 호환)
+    this.subLocationStock    = d.subLocationStock    ?? {};
     // 베이스캠프 복원 (구버전 세이브 마이그레이션)
     if (d.basecamp) {
       Object.assign(this.basecamp, d.basecamp);
@@ -632,6 +730,9 @@ const GameState = {
     if (d.companions) this.companions = d.companions;
     // 신체 부위 부상 시스템 복원 (구버전 세이브 호환: BodySystem.ensureInitialized()가 처리)
     if (d.body) this.body = d.body;
+    // 런타임 랜드마크 오버라이드 (HospitalSiegeSystem 등에서 누적)
+    this.landmarkOverrides = d.landmarkOverrides ?? {};
+    if (d.hospital) this.hospital = d.hospital;
     // diseases 필드 복원 (구버전 세이브 호환)
     if (!this.player.diseases) this.player.diseases = [];
     // 구버전 세이브 호환: 필드 없으면 기본값

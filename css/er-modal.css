@@ -1,0 +1,248 @@
+/* === EMERGENCY ROOM MODAL === */
+
+#emergency-room-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 8000;
+  align-items: center;
+  justify-content: center;
+}
+
+#emergency-room-modal.open {
+  display: flex;
+}
+
+.er-modal-box {
+  background: var(--bg-surface, #1a1510);
+  border: 1px solid rgba(200,160,96,0.35);
+  border-radius: 10px;
+  width: 640px;
+  max-width: 95vw;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.er-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px 10px;
+  border-bottom: 1px solid rgba(200,160,96,0.15);
+}
+
+.er-title {
+  font-size: 15px;
+  font-weight: bold;
+  color: var(--accent-primary, #c8a060);
+  letter-spacing: 1px;
+}
+
+.er-close-btn {
+  background: none;
+  border: none;
+  color: var(--text-dim, #888);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: color 0.15s, background 0.15s;
+}
+
+.er-close-btn:hover {
+  color: var(--text-primary, #ddd);
+  background: rgba(255,255,255,0.06);
+}
+
+/* ── Hero: 다음 습격 D-day + 방어력 ───────── */
+
+.er-hero {
+  display: flex;
+  gap: 12px;
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(200,160,96,0.1);
+}
+
+.er-hero-card {
+  flex: 1;
+  padding: 12px;
+  border-radius: 8px;
+  background: rgba(200,160,96,0.06);
+  border: 1px solid rgba(200,160,96,0.22);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.er-hero-card.danger {
+  background: rgba(200,80,60,0.08);
+  border-color: rgba(220,100,80,0.35);
+}
+
+.er-hero-num {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--accent-primary, #c8a060);
+  line-height: 1;
+}
+
+.er-hero-card.danger .er-hero-num {
+  color: #e8806a;
+}
+
+.er-hero-label {
+  font-size: 11px;
+  color: var(--text-secondary, #aaa);
+  margin-top: 4px;
+  letter-spacing: 0.5px;
+}
+
+/* ── 탭 ─────────────────────────────────── */
+
+.er-tabs {
+  display: flex;
+  gap: 2px;
+  padding: 0 14px;
+  border-bottom: 1px solid rgba(200,160,96,0.15);
+  background: rgba(0,0,0,0.15);
+}
+
+.er-tab {
+  padding: 9px 14px;
+  background: none;
+  border: none;
+  color: var(--text-dim, #888);
+  font-size: 12px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.er-tab:hover {
+  color: var(--text-primary, #ddd);
+}
+
+.er-tab.active {
+  color: var(--accent-primary, #c8a060);
+  border-bottom-color: var(--accent-primary, #c8a060);
+  font-weight: 600;
+}
+
+/* ── 탭 본문 ────────────────────────────── */
+
+.er-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 18px 18px;
+}
+
+.er-empty {
+  font-size: 11px;
+  color: var(--text-dim, #888);
+  line-height: 1.5;
+  padding: 18px;
+  border: 1px dashed rgba(200,160,96,0.2);
+  border-radius: 6px;
+  text-align: center;
+}
+
+.er-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.03);
+  margin-bottom: 4px;
+  font-size: 12px;
+}
+
+.er-row-icon {
+  font-size: 16px;
+}
+
+.er-row-name {
+  flex: 1;
+  color: var(--text-primary, #ddd);
+  font-weight: 500;
+}
+
+.er-row-meta {
+  font-size: 10px;
+  color: var(--text-dim, #888);
+  margin-right: 8px;
+}
+
+.er-row-btn {
+  padding: 4px 10px;
+  border-radius: 4px;
+  background: rgba(200,160,96,0.15);
+  border: 1px solid rgba(200,160,96,0.4);
+  color: var(--accent-primary, #c8a060);
+  font-size: 10px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.er-row-btn:hover:not(:disabled) {
+  background: rgba(200,160,96,0.3);
+}
+
+.er-row-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.er-row-btn.danger {
+  background: rgba(200,80,60,0.12);
+  border-color: rgba(220,100,80,0.4);
+  color: #e8806a;
+}
+
+.er-row-btn.danger:hover:not(:disabled) {
+  background: rgba(200,80,60,0.25);
+}
+
+/* ── 환자 HP 바 ──────────────────────────── */
+
+.er-hp-track {
+  width: 60px;
+  height: 4px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.er-hp-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #6aa84f, #a8d57a);
+  transition: width 0.3s;
+}
+
+.er-hp-fill.low {
+  background: linear-gradient(90deg, #b04040, #d86060);
+}
+
+/* ── 배지 (상태) ──────────────────────────── */
+
+.er-badge {
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  background: rgba(200,160,96,0.1);
+  color: var(--accent-primary, #c8a060);
+  letter-spacing: 0.5px;
+}
+
+.er-badge.deployed {
+  background: rgba(90,140,200,0.14);
+  color: #8ab4e8;
+}
+
+.er-badge.retired {
+  background: rgba(140,140,140,0.14);
+  color: #aaa;
+}

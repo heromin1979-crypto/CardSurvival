@@ -18,6 +18,7 @@ async function validate() {
   const hidden = (await import('./hiddenRecipes.js')).default;
   const secret = (await import('./secretCombinations.js')).default;
   const stack = (await import('./stackConfig.js')).default;
+  const patientPool = (await import('./patientPool.js')).default;
 
   const allBlueprints = { ...bp, ...bpAdv, ...hidden };
   const allItemIds = new Set(Object.keys(items));
@@ -133,11 +134,107 @@ async function validate() {
     console.log('\u2705 No material dead-ends');
   }
 
+  // 7. PATIENT_POOL 스키마 검증 (응급실 허브)
+  console.log('\n=== PATIENT_POOL CHECK ===');
+  const AGE_BRACKETS  = new Set(['child', 'youth', 'adult', 'middle', 'elder']);
+  const CONTRIB_TYPES = new Set(['sponsor', 'guard', 'dispatch', 'recruit']);
+  const FRAGMENT_STAGES = ['wound3to2', 'wound2to1', 'wound1to0'];
+  const REQUIRED_FIELDS = ['id', 'name', 'age', 'gender', 'ageBracket', 'woundLevel', 'hiddenBackground', 'contributionOnCure'];
+
+  let patientCount = 0;
+  let herbSeedTotal = 0;
+  for (const [pid, p] of Object.entries(patientPool)) {
+    patientCount++;
+
+    // 필수 필드
+    for (const f of REQUIRED_FIELDS) {
+      if (p[f] === undefined || p[f] === null) {
+        console.log(`\u274C [patient/${pid}] missing field "${f}"`); errors++;
+      }
+    }
+    if (typeof p.age !== 'number') {
+      console.log(`\u274C [patient/${pid}] age must be number`); errors++;
+    }
+    // ageBracket enum
+    if (!AGE_BRACKETS.has(p.ageBracket)) {
+      console.log(`\u274C [patient/${pid}] invalid ageBracket "${p.ageBracket}"`); errors++;
+    }
+    // woundLevel 범위
+    if (typeof p.woundLevel !== 'number' || p.woundLevel < 1 || p.woundLevel > 3) {
+      console.log(`\u274C [patient/${pid}] woundLevel must be 1~3, got ${p.woundLevel}`); errors++;
+    }
+    // storyFragments 3단계 × 3~5줄
+    const frags = p.hiddenBackground?.storyFragments ?? [];
+    const fragStages = frags.map(f => f.stage);
+    for (const stage of FRAGMENT_STAGES) {
+      const frag = frags.find(f => f.stage === stage);
+      if (!frag) {
+        console.log(`\u274C [patient/${pid}] missing storyFragment stage "${stage}"`); errors++;
+        continue;
+      }
+      if (!Array.isArray(frag.lines) || frag.lines.length < 3 || frag.lines.length > 5) {
+        console.log(`\u274C [patient/${pid}] storyFragment "${stage}" lines length ${frag.lines?.length} (expect 3~5)`); errors++;
+      }
+    }
+    // contributionOnCure.type enum + itemId 참조
+    const c = p.contributionOnCure;
+    if (!c || !CONTRIB_TYPES.has(c.type)) {
+      console.log(`\u274C [patient/${pid}] invalid contributionOnCure.type "${c?.type}"`); errors++;
+    } else {
+      const checkItems = (arr, where) => {
+        for (const it of (arr ?? [])) {
+          if (!allItemIds.has(it.id)) {
+            console.log(`\u274C [patient/${pid}] ${where} itemId "${it.id}" not in items`); errors++;
+          }
+          if (it.id === 'herb_seed') herbSeedTotal += (it.qty ?? 0);
+        }
+      };
+      // immediate는 모든 타입 공통
+      checkItems(c.immediate, `${c.type}.immediate`);
+
+      if (c.type === 'sponsor') {
+        checkItems(c.recurring?.items,   'sponsor.recurring.items');
+      }
+      if (c.type === 'dispatch') {
+        const d = c.dispatch;
+        if (!d) {
+          console.log(`\u274C [patient/${pid}] dispatch type requires dispatch block`); errors++;
+        } else {
+          if (typeof d.targetDistrict !== 'string') {
+            console.log(`\u274C [patient/${pid}] dispatch.targetDistrict must be string`); errors++;
+          }
+          if (typeof d.intervalDays !== 'number' || d.intervalDays <= 0) {
+            console.log(`\u274C [patient/${pid}] dispatch.intervalDays must be >0 number`); errors++;
+          }
+          if (typeof d.maxRuns !== 'number' || d.maxRuns <= 0) {
+            console.log(`\u274C [patient/${pid}] dispatch.maxRuns must be >0 number`); errors++;
+          }
+          checkItems(d.yield, 'dispatch.yield');
+        }
+      }
+      if (c.type === 'guard') {
+        const g = c.guard;
+        if (!g) {
+          console.log(`\u274C [patient/${pid}] guard type requires guard block`); errors++;
+        } else {
+          for (const f of ['combatDmg', 'safetyAdd', 'foodCostPerDay']) {
+            if (typeof g[f] !== 'number') {
+              console.log(`\u274C [patient/${pid}] guard.${f} must be number`); errors++;
+            }
+          }
+        }
+      }
+    }
+  }
+  console.log(`  총 페르소나: ${patientCount}`);
+  console.log(`  herb_seed 공급 누적 (immediate + 회당 recurring qty): ${herbSeedTotal}`);
+
   // Summary
   console.log(`\n=== SUMMARY ===`);
   console.log(`Total items: ${allItemIds.size}`);
   console.log(`Total blueprints: ${Object.keys(allBlueprints).length}`);
   console.log(`Total secret combos: ${secret.length}`);
+  console.log(`Total patients: ${patientCount}`);
   console.log(`Errors: ${errors}`);
   console.log(`Warnings: ${warnings}`);
   console.log(errors === 0 ? '\u2705 ALL CLEAR' : '\u274C FIX ERRORS ABOVE');

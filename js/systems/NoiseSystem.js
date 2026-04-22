@@ -153,6 +153,14 @@ const NoiseSystem = {
 
     if (day < gs.flags.nextHordeDay) return;
 
+    // W1-2: 최근 병원 습격 직후면 겹치지 않도록 하루 미룸
+    const minGap = BALANCE.hospitalSiege?.minGapWithHordeDays ?? 0;
+    const lastSiege = gs.flags.lastSiegeDay;
+    if (minGap > 0 && lastSiege != null && (day - lastSiege) < minGap) {
+      gs.flags.nextHordeDay = lastSiege + minGap;
+      return;
+    }
+
     // 습격 발동
     const waveNum    = (gs.flags.hordeWaveCount ?? 0) + 1;
     const enemyCount = Math.min(hw.maxEnemies, hw.baseEnemies + (waveNum - 1) * hw.enemiesPerWave);
