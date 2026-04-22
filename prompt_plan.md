@@ -40,7 +40,7 @@
 |---|-------|---------|------|
 | W3-1 (#3b) | 환자 기여 타입 선택권 UI | ContributionChoiceModal 신규, 환자 스키마 altContributions, PatientIntakeSystem._pendingChoices/chooseContribution | 🚧 작업 중 (미커밋) |
 | W3-1b (#5) | 의사 특권 — 습격 패배 완화 | gameBalance.doctorPrivilege, HospitalSiegeSystem._applyDefeat (사망자 -1, 사기 ×0.75) | 🚧 작업 중 (미커밋) |
-| W3-2 (#7) | 서브로케이션 루팅 고갈 구현+UI | GameState, ExploreSystem, LandmarkModal | 🚧 Phase A/B/C 완료 (226/226) |
+| W3-2 (#7) | 서브로케이션 루팅 고갈 구현+UI | GameState, ExploreSystem, LandmarkModal | ✅ 완료 (236/236) |
 | W3-3 (#5) | 의사 전용 대피 미니게임 | HospitalSiegeSystem, Encounter.js | ⏳ 대기 |
 
 ### W3-2 상세 계획 (#7 서브로케이션 루팅 고갈)
@@ -52,7 +52,7 @@
 | **A** | GameState 스키마·헬퍼·세이브 호환·테스트 | GameState.js, gameBalance.js, GameState_subLocationStock.test.js | ✅ 완료 (25/25) |
 | **B** | ExploreSystem 통합 + QuestSystem 보라매 하드코드 대체 | ExploreSystem.js, QuestSystem.js, ExploreSystem_subLocationStock.test.js | ✅ 완료 (9/9) |
 | **C** | ExploreSystem tpAdvance 리스너 + 자동 일자 감소 | ExploreSystem.js, ExploreSystem_dayDecay.test.js | ✅ 완료 (7/7) |
-| D | LandmarkModal UI 재고 배지 (🪙 X/Y, 색상, 고갈 disable) | LandmarkModal.js, CSS | ⏳ 대기 |
+| **D** | LandmarkModal UI 재고 배지 (🪙 X/Y, 색상, 고갈 click 차단) | LandmarkModal.js, landmark.css, LandmarkModal_stockBadge.test.js | ✅ 완료 (10/10) |
 
 **Phase A 채택된 설계 결정**:
 - 스키마: `subLocationStock: { [subLocId]: { stock, baseStock, lastDecayDay } }`
