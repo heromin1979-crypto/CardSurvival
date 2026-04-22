@@ -97,14 +97,20 @@ const LandmarkModal = {
     const visitBadge  = visitCount > 0
       ? `<span class="lm-visit-badge">${I18n.t('landmark.visitBadge', { count: visitCount, pct: lootPct })}</span>`
       : `<span class="lm-visit-badge fresh">${I18n.t('landmark.fresh')}</span>`;
+    const stockInfo   = this._getStockBadgeInfo(loc.id);
+    const stockBadge  = stockInfo.shown
+      ? `<span class="lm-stock-badge ${stockInfo.cls}">🪙 ${stockInfo.stock}/${stockInfo.baseStock}${stockInfo.depleted ? ' · 고갈' : ''}</span>`
+      : '';
     const lootPreview = loc.lootTable.slice(0, 3)
       .map(e => {
         const def = GameData?.items[e.id];
         return def ? `<span title="${def.name}">${def.icon ?? '📦'}</span>` : '';
       }).join('');
 
+    const cardCls = `lm-subloc-card${visitCount > 0 ? ' visited' : ''}${stockInfo.depleted ? ' depleted' : ''}`;
+
     return `
-      <div class="lm-subloc-card${visitCount > 0 ? ' visited' : ''}" data-subloc-id="${loc.id}">
+      <div class="${cardCls}" data-subloc-id="${loc.id}"${stockInfo.depleted ? ' data-depleted="1"' : ''}>
         <div class="lm-subloc-icon">${loc.icon}</div>
         <div class="lm-subloc-info">
           <div class="lm-subloc-name">${loc.name}</div>
@@ -113,10 +119,30 @@ const LandmarkModal = {
             <span class="lm-danger-badge ${dangerCls}">${I18n.t('landmark.danger', { pct: dangerPct })}</span>
             <span class="lm-loot-preview">${lootPreview}</span>
           </div>
-          <div class="lm-visit-row">${visitBadge}</div>
+          <div class="lm-visit-row">${visitBadge}${stockBadge}</div>
         </div>
       </div>
     `;
+  },
+
+  // W3-2 Phase D — 서브로케이션 재고 배지 정보 계산 (순수 헬퍼, 테스트 용이)
+  // 반환: { shown, stock, baseStock, ratio, cls, depleted }
+  //   shown = false → 재고 미초기화 (배지 숨김)
+  //   cls   = 'full' (>70%) | 'mid' (30~70%) | 'low' (<30%) | 'depleted' (0)
+  _getStockBadgeInfo(subLocId) {
+    const entry = GameState.subLocationStock?.[subLocId];
+    if (!entry || !entry.baseStock || entry.baseStock <= 0) {
+      return { shown: false, stock: 0, baseStock: 0, ratio: 1.0, cls: 'full', depleted: false };
+    }
+    const stock = entry.stock ?? 0;
+    const baseStock = entry.baseStock;
+    const ratio = Math.max(0, Math.min(1, stock / baseStock));
+    let cls;
+    if (stock <= 0)       cls = 'depleted';
+    else if (ratio < 0.30) cls = 'low';
+    else if (ratio < 0.70) cls = 'mid';
+    else                   cls = 'full';
+    return { shown: true, stock, baseStock, ratio, cls, depleted: stock <= 0 };
   },
 
   // 방문 횟수 + 구역 자원 레벨에 따른 루팅 배율
@@ -144,6 +170,14 @@ const LandmarkModal = {
     box.querySelectorAll('.lm-subloc-card').forEach(el => {
       el.addEventListener('click', () => {
         if (this._isExploring) return;  // 중복 클릭 방어
+        // W3-2 Phase D — 고갈된 sub-loc 클릭 차단
+        if (el.dataset.depleted === '1') {
+          EventBus.emit('notify', {
+            message: '🪙 이 장소는 루팅 자원이 완전히 고갈되었다 — 더 이상 얻을 것이 없다.',
+            type: 'warn',
+          });
+          return;
+        }
         const locId = el.dataset.sublocId;
         const loc   = data.subLocations.find(l => l.id === locId);
         if (loc) this._explore(loc);

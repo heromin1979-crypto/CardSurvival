@@ -208,6 +208,55 @@
   filter: grayscale(0.4);
 }
 
+/* ── W3-2 Phase D · 서브로케이션 재고 배지 ── */
+.lm-stock-badge {
+  display: inline-block;
+  margin-left: 6px;
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  border: 1px solid transparent;
+}
+
+.lm-stock-badge.full {
+  background: rgba(80,160,80,0.15);
+  color: var(--text-good, #70b870);
+  border-color: rgba(80,160,80,0.25);
+}
+
+.lm-stock-badge.mid {
+  background: rgba(180,140,40,0.15);
+  color: var(--text-warn, #c8a060);
+  border-color: rgba(180,140,40,0.25);
+}
+
+.lm-stock-badge.low {
+  background: rgba(180,60,60,0.15);
+  color: var(--text-danger, #d06868);
+  border-color: rgba(180,60,60,0.25);
+}
+
+.lm-stock-badge.depleted {
+  background: rgba(120,120,120,0.15);
+  color: var(--text-dim, #888);
+  border-color: rgba(120,120,120,0.3);
+}
+
+.lm-subloc-card.depleted {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.lm-subloc-card.depleted:hover {
+  border-color: var(--border-dim);
+  background: var(--bg-raised);
+  transform: none;
+}
+
+.lm-subloc-card.depleted .lm-subloc-icon {
+  filter: grayscale(0.9);
+}
+
 /* ── 푸터 ── */
 .lm-modal-footer {
   padding: 10px 16px;
