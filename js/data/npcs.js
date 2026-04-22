@@ -2,6 +2,10 @@
 // 8 NPCs: spawn conditions, dialogues by trust level, companion stats, trade offers.
 // Trust: 0-5 (0 = stranger, 5 = devoted). Each interaction can raise/lower trust.
 // NPC item defs are registered in window.__GAME_DATA__.items by NPCSystem.
+//
+// NOTE: 응급실 허브 환자 페르소나는 `patientPool.js`에서 import해
+//       이 파일 최하단에서 `...PATIENT_POOL` 로 spread 병합한다 (옵션 A 정적 등록).
+import PATIENT_POOL, { PATIENT_ITEMS } from './patientPool.js';
 
 // ── NPC Card Item Definitions (type: 'npc') ─────────────────────
 // Registered at boot so CardFactory can render them.
@@ -209,6 +213,10 @@ export const NPC_ITEMS = {
     icon: '🧕', description: '약국 뒷골목에서 지혈 없이 쓰러져 있던 중년 행인. 허벅지 깊은 열상.',
     tags: ['npc'], dismantle: [],
   },
+
+  // ── 응급실 허브 환자 페르소나 (patientPool.js의 PATIENT_ITEMS) ────
+  // 카드 렌더용 item 정의. 행동/시나리오는 NPCS에서 관리.
+  ...PATIENT_ITEMS,
 };
 
 // ── NPC Data Definitions ────────────────────────────────────────
@@ -336,6 +344,9 @@ const NPCS = {
       { condition: 'low_hp',        line: '"상처 보여줘. 내가 처치해줄게."' },
       { condition: 'low_nutrition', line: '"영양 상태가 안 좋아. 뭔가 찾아야 해."' },
       { condition: 'doctor_low_infection', line: '"선생님… 감염 수치가 놀랄 만큼 낮아요. 임상 지식이 단순한 이론이 아니었네요."' },
+      { condition: 'low_morale_late',
+        line: '"선생님, 잠깐 앉아요. …오늘 살린 사람이 있잖아요. 그거면 돼요. 내일도 그럴 거고요."',
+        moraleRestore: 4 },
       { condition: 'always',        line: '"감염 조심해. 요즘 바이러스 변종이 심해."' },
     ],
     trustEvents: [
@@ -454,8 +465,11 @@ const NPCS = {
       { id: 'bandage',     chance: 0.2, qty: 1 },
     ],
     spontaneous: [
-      { condition: 'always', line: '"으... 소대원들이 다 죽었어... 나만 살아남았다."' },
       { condition: 'low_hp',  line: '"선생님... 붕대 좀 더 줘요. 상처가 벌어졌습니다."' },
+      { condition: 'low_morale_late',
+        line: '"선생님… 소대장이 말했었죠. \'무너지기 전에 한 호흡만 더.\' 지금이 그 한 호흡입니다."',
+        moraleRestore: 3 },
+      { condition: 'always', line: '"으... 소대원들이 다 죽었어... 나만 살아남았다."' },
     ],
     trustEvents: [
       {
@@ -1739,6 +1753,9 @@ const NPCS = {
     specialDays: [],
   },
 
+  // ── 응급실 허브 환자 페르소나 (patientPool.js) ────────────────
+  // 옵션 A: 정적 spread 병합. PatientIntakeSystem.forceSpawn()에서 사용.
+  ...PATIENT_POOL,
 };
 
 export default NPCS;

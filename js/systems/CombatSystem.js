@@ -447,6 +447,16 @@ const CombatSystem = {
       }
 
       EventBus.emit('combatEnd', { outcome: 'fled' });
+      // 보라매병원 습격 도주 — 패배로 간주, HospitalSiegeSystem이 후처리
+      if (data.isSiege) {
+        EventBus.emit('siegeResolved', {
+          outcome:       'defeat',
+          casualties:    0,
+          defenseRating: 0,
+          threat:        0,
+          siegeId:       data.siegeId ?? null,
+        });
+      }
       StateMachine.transition('combat_result', { outcome: 'fled', nodeId: gs.combat.nodeId });
     } else {
       // 도주 실패: 모든 적이 강화 공격 (1.5배 데미지)
@@ -767,6 +777,16 @@ const CombatSystem = {
     // 군견 유대감: 함께 싸워 이긴 동반자에게 +3 bond
     NPCSystem.onCombatVictory();
     EventBus.emit('combatEnd', { outcome: 'victory', rewards: gs.combat.rewards });
+    // 보라매병원 습격 — HospitalSiegeSystem이 후처리하도록 siegeResolved 발행
+    if (data.isSiege) {
+      EventBus.emit('siegeResolved', {
+        outcome:       'victory',
+        casualties:    0,
+        defenseRating: 0,
+        threat:        0,
+        siegeId:       data.siegeId ?? null,
+      });
+    }
     StateMachine.transition('combat_result', {
       outcome: 'victory',
       rewards: gs.combat.rewards,
@@ -789,6 +809,16 @@ const CombatSystem = {
     gs.player.isAlive      = false;
     gs.player.deathCause   = I18n.t('combatSys.deathCause');
     EventBus.emit('combatEnd', { outcome: 'defeat' });
+    // 보라매병원 습격 패배 — HospitalSiegeSystem이 구조물/환자/dangerMod 후처리
+    if (data.isSiege) {
+      EventBus.emit('siegeResolved', {
+        outcome:       'defeat',
+        casualties:    0,
+        defenseRating: 0,
+        threat:        0,
+        siegeId:       data.siegeId ?? null,
+      });
+    }
     // EndingSystem 경유: death_combat 또는 death_horde 엔딩 결정
     EndingSystem.triggerDeathEnding(I18n.t('combatSys.deathCause'), gs);
   },

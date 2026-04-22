@@ -5,6 +5,7 @@ import GameState from '../core/GameState.js';
 import I18n      from '../core/I18n.js';
 import MAIN_QUESTS from '../data/mainQuests/index.js';
 import GameData   from '../data/GameData.js';
+import BALANCE    from '../data/gameBalance.js';
 import NPCSystem  from './NPCSystem.js';
 import { QUEST_TO_FLASHBACK } from '../data/cinematicScenes.js';
 
@@ -223,6 +224,16 @@ const QuestSystem = {
     };
     if (milestones[next]) {
       EventBus.emit('notify', { message: milestones[next], type: 'story' });
+
+      // W1-1: 마일스톤 달성 시 즉시 사기 보너스 지급
+      const moraleBonus = BALANCE.patientIntake?.moraleMilestones?.[next];
+      if (moraleBonus) {
+        GameState.modStat('morale', moraleBonus);
+        EventBus.emit('notify', {
+          message: `✨ 사기 +${moraleBonus} (환자 ${next}명 치료 마일스톤)`,
+          type: 'success',
+        });
+      }
     }
   },
 

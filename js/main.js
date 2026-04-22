@@ -40,6 +40,10 @@ import BGMSystem            from './systems/BGMSystem.js';
 import EcologySystem        from './systems/EcologySystem.js';
 import MentalSystem         from './systems/MentalSystem.js';
 import NPCSystem            from './systems/NPCSystem.js';
+import PatientIntakeSystem  from './systems/PatientIntakeSystem.js';
+import DispatchSystem       from './systems/DispatchSystem.js';
+import GuardSystem          from './systems/GuardSystem.js';
+import HospitalSiegeSystem  from './systems/HospitalSiegeSystem.js';
 import NPCQuestSystem       from './systems/NPCQuestSystem.js';
 import NPCRelationSystem    from './systems/NPCRelationSystem.js';
 import NPCGroupSystem       from './systems/NPCGroupSystem.js';
@@ -71,6 +75,7 @@ import CardContextMenu  from './ui/CardContextMenu.js';
 import SeoulMapModal    from './ui/SeoulMapModal.js';
 import EquipmentModal   from './ui/EquipmentModal.js';
 import LandmarkModal       from './ui/LandmarkModal.js';
+import PatientBoardBridge  from './ui/PatientBoardBridge.js';
 import SettingsModal       from './ui/SettingsModal.js';
 import NPCDialogueModal   from './ui/NPCDialogueModal.js';
 import NPCPanel           from './ui/NPCPanel.js';
@@ -125,6 +130,17 @@ function init() {
   SystemRegistry.register('NPCStorySystem', NPCStorySystem);
   OnboardingSystem.init();
   SystemRegistry.register('NPCSystem', NPCSystem);
+  DispatchSystem.init();
+  GuardSystem.init();
+  SystemRegistry.register('DispatchSystem', DispatchSystem);
+  SystemRegistry.register('GuardSystem', GuardSystem);
+  PatientIntakeSystem.init();
+  SystemRegistry.register('PatientIntakeSystem', PatientIntakeSystem);
+  PatientBoardBridge.init();
+  // HospitalSiegeSystem은 GuardSystem + PatientIntakeSystem 이후에 init
+  // (siegeResolved 구독 순서 보장 + patientDied 연쇄)
+  HospitalSiegeSystem.init();
+  SystemRegistry.register('HospitalSiegeSystem', HospitalSiegeSystem);
   MentalSystem.init();
   BodySystem.init();
   SystemRegistry.register('BodySystem', BodySystem);

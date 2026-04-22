@@ -183,6 +183,49 @@ const BALANCE = {
     defeatMorale:     -20,
   },
 
+  // ── 보라매병원 습격 (Hospital Siege) ──────────────
+  // 응급실 거점(보라매병원)을 노리는 약탈자·감염자 습격.
+  // GuardSystem이 상주 수비대로 자동 시뮬하거나, 플레이어 현장 시 CombatSystem 경로.
+  hospitalSiege: {
+    startDay:         10,     // 10일차부터 (er_unlocked 플래그 필요)
+    intervalDays:     6,      // 평균 6일 간격
+    intervalVariance: 1,      // ±1일 랜덤 (즉 5~7일)
+    baseEnemies:      2,      // 첫 습격 2명
+    enemiesPerWave:   0.5,    // 습격마다 +0.5 (반올림)
+    maxEnemies:       7,
+    baseDangerLevel:  2,
+    dangerScaling:    0.3,    // 습격마다 +0.3
+    structureDamage:  25,     // 패배 시 구조물 피해 25%
+    dangerModDelta:   0.05,   // 패배 시 서브로케이션 dangerMod +0.05
+    casualtiesMin:    1,
+    casualtiesMax:    2,
+    victoryMorale:    10,
+    defeatMorale:     -12,    // W1-1: 기존 -15 완화
+    victoryItems: [
+      { id: 'pistol_ammo', qty: 3 },
+    ],
+    // 연승 streak 보너스 (누적 방어 성공 시 추가 사기)
+    streakBonus: {
+      at2: 5,      // 2연승 시 +5 추가
+      at5: 15,     // 5연승 시 +15 추가 (2연승 누적 위)
+    },
+    // W1-2: hordeWave와 최소 간격 — 겹치면 뒤쪽 이벤트를 밀어냄
+    minGapWithHordeDays: 3,
+  },
+
+  // ── 환자 유입 (Patient Intake) ──────────────────
+  patientIntake: {
+    moraleDeath:   -2,     // W1-1: 기존 -3 완화 (환자 사망)
+    moraleDepart:  -1,     // W1-1: 기존 -2 완화 (환자 이탈)
+    // 의사 마일스톤 사기 보너스 (누적 치료 수 도달 시 one-shot)
+    moraleMilestones: {
+      5:  5,
+      10: 10,
+      25: 15,
+      50: 20,
+    },
+  },
+
   // ── 약탈자 NPC 이벤트 ─────────────────────────────
   raiderEvents: {
     startDay:         40,

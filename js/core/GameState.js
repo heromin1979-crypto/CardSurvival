@@ -248,7 +248,15 @@ const GameState = {
     stealthKills:              0,   // 무소음 무기 크리킬 카운터
     diseaseCured:              0,   // 질병 치료 카운터
     meleeKills:                0,   // 근접무기 킬 카운터
+    // ── 보라매병원 습격 스케줄 ────────────────────────
+    nextSiegeDay:              null, // 다음 습격 예정일 (null = 초기화 대기)
+    siegeCount:                0,    // 누적 습격 횟수
   },
+
+  // ── 런타임 랜드마크 오버라이드 ────────────────────────
+  // { [landmarkId]: { [subLocationId]: { dangerModDelta: number } } }
+  // HospitalSiegeSystem 등이 누적 위험도 증가를 런타임에 반영할 때 사용.
+  landmarkOverrides: {},
 
   // ── HELPERS ───────────────────────────────────────────
   createCardInstance(definitionId, overrides = {}) {
@@ -464,6 +472,24 @@ const GameState = {
     this.setStat(stat, s.current + d);
   },
 
+  // 런타임 dangerMod 오버라이드 조회 — 없으면 0
+  getLandmarkDangerModDelta(landmarkId, subLocationId) {
+    const lm = this.landmarkOverrides?.[landmarkId];
+    if (!lm) return 0;
+    const sub = lm[subLocationId];
+    return sub?.dangerModDelta ?? 0;
+  },
+
+  addLandmarkDangerMod(landmarkId, subLocationId, delta) {
+    const overrides = { ...(this.landmarkOverrides ?? {}) };
+    const lmEntry = { ...(overrides[landmarkId] ?? {}) };
+    const subEntry = { ...(lmEntry[subLocationId] ?? {}) };
+    subEntry.dangerModDelta = (subEntry.dangerModDelta ?? 0) + delta;
+    lmEntry[subLocationId] = subEntry;
+    overrides[landmarkId] = lmEntry;
+    this.landmarkOverrides = overrides;
+  },
+
   _updateEncumbrance() {
     const total = Object.values(this.cards).reduce((sum, c) => {
       const def = GameData?.items[c.definitionId];
@@ -509,6 +535,8 @@ const GameState = {
       npcs:            this.npcs ?? null,
       companions:      this.companions ?? null,
       body:            this.body ?? null,
+      landmarkOverrides: this.landmarkOverrides ?? {},
+      hospital:          this.hospital ?? null,
     });
   },
 
@@ -632,6 +660,9 @@ const GameState = {
     if (d.companions) this.companions = d.companions;
     // 신체 부위 부상 시스템 복원 (구버전 세이브 호환: BodySystem.ensureInitialized()가 처리)
     if (d.body) this.body = d.body;
+    // 런타임 랜드마크 오버라이드 (HospitalSiegeSystem 등에서 누적)
+    this.landmarkOverrides = d.landmarkOverrides ?? {};
+    if (d.hospital) this.hospital = d.hospital;
     // diseases 필드 복원 (구버전 세이브 호환)
     if (!this.player.diseases) this.player.diseases = [];
     // 구버전 세이브 호환: 필드 없으면 기본값
