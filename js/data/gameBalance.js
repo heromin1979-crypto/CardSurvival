@@ -228,6 +228,23 @@ const BALANCE = {
       casualtiesReduce:       1,     // 사망자 min/max 각각 -1 (최소 0)
       defeatMoraleMultiplier: 0.75,  // 사기 손실 25% 경감
     },
+    // W3-3 의사 전용 대피 미니게임 (siege encounter 4번째 옵션)
+    // 점수 = baseScore + stage1 가중치 + stage2 가중치 + medicine×skillMult + trustedNpc×trustMult
+    // score >= threshold → 'partial_victory', else → 'defeat'
+    doctorEvacuation: {
+      baseScore: 0,
+      threshold: 20,
+      stageWeights: {
+        stage1: { A: 8, B: 6 },  // A=약품 우선 / B=부상자 우선
+        stage2: { C: 5, D: 8 },  // C=복도(빠름·노출) / D=계단(느림·은폐)
+      },
+      skillMult: 2,   // medicine skill level × 2
+      trustMult: 3,   // 신뢰 NPC 수 × 3
+      // partial_victory 효과 (구조물 피해·사기·위험도 감경)
+      partialVictoryMorale:          5,     // +5 (성공적 대피 감사)
+      partialVictoryStructureMult:   0.5,   // 구조물 피해 기본 × 0.5
+      partialVictoryDangerMult:      0.5,   // landmark danger 기본 × 0.5
+    },
   },
 
   // ── 환자 유입 (Patient Intake) ──────────────────

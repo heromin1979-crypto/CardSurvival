@@ -4,6 +4,7 @@ import GameState     from '../core/GameState.js';
 import StateMachine  from '../core/StateMachine.js';
 import I18n          from '../core/I18n.js';
 import ExploreSystem from '../systems/ExploreSystem.js';
+import HospitalSiegeSystem from '../systems/HospitalSiegeSystem.js';
 import { rollEnemyGroup } from '../data/enemies.js';
 import StatSystem  from '../systems/StatSystem.js';
 
@@ -73,6 +74,9 @@ const Encounter = {
         <button class="toolbar-btn" id="enc-stealth">${I18n.t('encounter.stealth')}</button>
         <button class="toolbar-btn" id="enc-flee">${I18n.t('encounter.flee')}</button>
         ${GameState.player.characterId === 'soldier' ? `<button class="toolbar-btn" id="enc-ambush" style="border-color:var(--text-warn)">⚡ 선제 제압</button>` : ''}
+        ${(GameState.player.characterId === 'doctor' && d.isSiege === true)
+          ? `<button class="toolbar-btn" id="enc-evacuate" style="border-color:var(--text-good)">🏥 환자 대피 지휘</button>`
+          : ''}
       </div>
     `;
 
@@ -144,6 +148,13 @@ const Encounter = {
       }
     });
 
+    // W3-3 의사 전용: 환자 대피 지휘 — 2단계 체인 선택 (분류 + 대피로)
+    this._el.querySelector('#enc-evacuate')?.addEventListener('click', () => {
+      if (!guard()) return;
+      const siegeId = d.siegeId ?? null;
+      this._renderEvacuationStage1({ enemies, dangerLevel, nodeId, siegeId });
+    });
+
     // 군인 전용: 선제 제압 — 근접/비무장 스킬 레벨 합산으로 첫 타 확률 상승
     this._el.querySelector('#enc-ambush')?.addEventListener('click', () => {
       if (!guard()) return;
@@ -169,6 +180,88 @@ const Encounter = {
         StateMachine.transition('combat', { enemies, dangerLevel, nodeId, ambushFailed: true });
       }
     });
+  },
+
+  // ── W3-3 의사 대피 2단계 체인 ──────────────────────────
+  // Stage 1: 분류 — 약품 우선(A) vs 부상자 우선(B)
+  _renderEvacuationStage1(ctx) {
+    if (!this._el) return;
+    this._el.innerHTML = `
+      <div class="encounter-title">🏥 환자 대피 지휘 · 1/2</div>
+      <div class="encounter-desc">
+        <strong>무엇을 먼저 챙깁니까?</strong><br>
+        약탈자들이 로비로 진입 중이다. 시간은 제한적이다.
+      </div>
+      <div class="encounter-choices">
+        <button class="toolbar-btn" id="evac-a">💊 약품 캐비닛 확보 (A)</button>
+        <button class="toolbar-btn" id="evac-b">🩼 부상자 부축 (B)</button>
+      </div>
+    `;
+    let _s1Handled = false;
+    const pick = (choice1) => {
+      if (_s1Handled) return;
+      _s1Handled = true;
+      this._renderEvacuationStage2({ ...ctx, choice1 });
+    };
+    this._el.querySelector('#evac-a')?.addEventListener('click', () => pick('A'));
+    this._el.querySelector('#evac-b')?.addEventListener('click', () => pick('B'));
+  },
+
+  // Stage 2: 대피로 — 복도(C) vs 계단(D)
+  _renderEvacuationStage2(ctx) {
+    if (!this._el) return;
+    const choice1Label = ctx.choice1 === 'A' ? '💊 약품 캐비닛' : '🩼 부상자 부축';
+    this._el.innerHTML = `
+      <div class="encounter-title">🏥 환자 대피 지휘 · 2/2</div>
+      <div class="encounter-desc">
+        <strong>대피로를 선택합니다.</strong><br>
+        1단계 선택: ${choice1Label}
+      </div>
+      <div class="encounter-choices">
+        <button class="toolbar-btn" id="evac-c">🚪 복도 (빠름 / 노출)</button>
+        <button class="toolbar-btn" id="evac-d">🪜 계단 (느림 / 은폐)</button>
+      </div>
+    `;
+    let _s2Handled = false;
+    const pick = (choice2) => {
+      if (_s2Handled) return;
+      _s2Handled = true;
+      this._resolveEvacuation({ ...ctx, choice2 });
+    };
+    this._el.querySelector('#evac-c')?.addEventListener('click', () => pick('C'));
+    this._el.querySelector('#evac-d')?.addEventListener('click', () => pick('D'));
+  },
+
+  // 점수 계산 → siegeResolved 발행 → 메인 복귀
+  _resolveEvacuation(ctx) {
+    const medicineLevel    = GameState.player?.skills?.medicine?.level ?? 0;
+    const trustedNpcCount  = HospitalSiegeSystem._countTrustedNpcs();
+    const score   = HospitalSiegeSystem.calculateEvacuationScore({
+      choice1: ctx.choice1,
+      choice2: ctx.choice2,
+      medicineLevel,
+      trustedNpcCount,
+    });
+    const outcome = HospitalSiegeSystem.getEvacuationOutcome(score);
+
+    EventBus.emit('siegeResolved', {
+      outcome,
+      casualties:    0,
+      defenseRating: 0,
+      threat:        0,
+      siegeId:       ctx.siegeId ?? null,
+    });
+
+    const detailMsg = outcome === 'partial_victory'
+      ? `✅ 대피 성공 — 환자들을 안전하게 빼냈다. (점수 ${score})`
+      : `❌ 대피 실패 — 출구를 찾지 못했다. 약탈자들이 응급실을 휩쓸었다. (점수 ${score})`;
+    EventBus.emit('notify', { message: detailMsg, type: outcome === 'partial_victory' ? 'good' : 'danger' });
+
+    // 현장 복귀 (combat 안 거치므로 직접 main 전환)
+    if (GameState.location?.currentLandmark) {
+      ExploreSystem.arriveAfterCombat(ctx.nodeId ?? GameState.location.currentNode ?? GameState.location.currentDistrict);
+    }
+    StateMachine.transition('main');
   },
 };
 

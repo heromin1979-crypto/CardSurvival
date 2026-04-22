@@ -1,7 +1,7 @@
 # 의사(이지수) 플레이 경험 개선 계획 — 8개 개선안
 
-> 최종 업데이트: 2026-04-22
-> 상태: **Wave 3 진행 중 (W3-1 작업 중)**
+> 최종 업데이트: 2026-04-23
+> 상태: **Wave 3 전체 완료 — 대기 중 태스크 없음**
 > 선행 완료: HospitalSiegeSystem Phase 4 + EmergencyRoomModal UI + 페르소나 5→13 확장 (160/160 테스트 통과)
 
 ## 배경
@@ -41,7 +41,7 @@
 | W3-1 (#3b) | 환자 기여 타입 선택권 UI | ContributionChoiceModal 신규, 환자 스키마 altContributions, PatientIntakeSystem._pendingChoices/chooseContribution | 🚧 작업 중 (미커밋) |
 | W3-1b (#5) | 의사 특권 — 습격 패배 완화 | gameBalance.doctorPrivilege, HospitalSiegeSystem._applyDefeat (사망자 -1, 사기 ×0.75) | 🚧 작업 중 (미커밋) |
 | W3-2 (#7) | 서브로케이션 루팅 고갈 구현+UI | GameState, ExploreSystem, LandmarkModal | ✅ 완료 (236/236) |
-| W3-3 (#5) | 의사 전용 대피 미니게임 | HospitalSiegeSystem, Encounter.js | ⏳ 대기 |
+| W3-3 (#5) | 의사 전용 대피 미니게임 (2-stage 선택 체인) | HospitalSiegeSystem, Encounter.js, gameBalance.js | ✅ 완료 (20/20) |
 
 ### W3-2 상세 계획 (#7 서브로케이션 루팅 고갈)
 

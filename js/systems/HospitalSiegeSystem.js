@@ -210,6 +210,8 @@ const HospitalSiegeSystem = {
 
     if (outcome === 'victory') {
       this._applyVictory(b);
+    } else if (outcome === 'partial_victory') {
+      this._applyPartialVictory(b);
     } else if (outcome === 'defeat') {
       this._applyDefeat(b);
     }
@@ -243,6 +245,31 @@ const HospitalSiegeSystem = {
     GameState.modStat('morale', moraleGain);
 
     EventBus.emit('hospitalRewards', { items: gained, morale: moraleGain, streak });
+  },
+
+  // W3-3 — 의사 대피 성공 outcome: 환자 사망 0, 사기 +5, 구조물/danger 감경
+  _applyPartialVictory(b) {
+    GameState.flags.siegeWinStreak = 0;  // 완전 승리가 아니므로 streak 리셋
+
+    const ev = b.doctorEvacuation ?? {};
+    const structDamage = (b.structureDamage ?? 0) * (ev.partialVictoryStructureMult ?? 0.5);
+    const dangerDelta  = (b.dangerModDelta  ?? 0) * (ev.partialVictoryDangerMult    ?? 0.5);
+    const moraleGain   = ev.partialVictoryMorale ?? 5;
+
+    // 환자 사망 없음 (skip casualties)
+    // 구조물 피해 (감경)
+    if (structDamage > 0) {
+      EventBus.emit('structureDamage', { damagePercent: structDamage });
+    }
+    // 사기 상승
+    GameState.modStat('morale', moraleGain);
+
+    EventBus.emit('hospitalDamaged', {
+      structureDamage:     structDamage,
+      landmarkDangerDelta: dangerDelta,
+      isTutorial:          false,
+      partialVictory:      true,
+    });
   },
 
   _applyDefeat(b) {
@@ -311,6 +338,42 @@ const HospitalSiegeSystem = {
       picked.push(pool.splice(idx, 1)[0]);
     }
     return picked;
+  },
+
+  // ── W3-3 의사 전용 대피 미니게임 ──────────────────────
+  // 순수 계산 함수 — 테스트 용이.
+  //
+  // score = baseScore + stage1 선택 가중치 + stage2 선택 가중치
+  //       + medicineLevel × skillMult + trustedNpcCount × trustMult
+  calculateEvacuationScore({ choice1, choice2, medicineLevel = 0, trustedNpcCount = 0 } = {}) {
+    const cfg = BALANCE.hospitalSiege?.doctorEvacuation;
+    if (!cfg) return 0;
+    const w1 = cfg.stageWeights?.stage1?.[choice1] ?? 0;
+    const w2 = cfg.stageWeights?.stage2?.[choice2] ?? 0;
+    const skillBonus = Math.max(0, medicineLevel) * (cfg.skillMult ?? 0);
+    const trustBonus = Math.max(0, trustedNpcCount) * (cfg.trustMult ?? 0);
+    return (cfg.baseScore ?? 0) + w1 + w2 + skillBonus + trustBonus;
+  },
+
+  // score ≥ threshold → 'partial_victory', else → 'defeat'
+  getEvacuationOutcome(score) {
+    const cfg = BALANCE.hospitalSiege?.doctorEvacuation;
+    const threshold = cfg?.threshold ?? Infinity;
+    return score >= threshold ? 'partial_victory' : 'defeat';
+  },
+
+  // 신뢰 NPC 수 조회 — 영입된 동료 중 trust ≥ 1인 수
+  // (NPCSystem 구조에 의존. _trust는 object { [npcId]: number }에 가까움)
+  _countTrustedNpcs() {
+    const npcs = GameState.npcs;
+    if (!npcs) return 0;
+    const trust = npcs.trust ?? {};
+    const recruited = npcs.recruited ?? [];
+    let count = 0;
+    for (const npcId of recruited) {
+      if ((trust[npcId] ?? 0) >= 1) count++;
+    }
+    return count;
   },
 
   // ── moraleBonus 일일 합산 ─────────────────────────
