@@ -32,6 +32,12 @@ function resetWorld() {
 }
 
 function firstDispatchPersona() {
+  // altContributions가 없는(선택 UI로 지연되지 않는) dispatch 페르소나 우선
+  for (const [id, def] of Object.entries(PATIENT_POOL)) {
+    if (def.contributionOnCure?.type === 'dispatch'
+        && !Array.isArray(def.altContributions)) return id;
+  }
+  // fallback
   for (const [id, def] of Object.entries(PATIENT_POOL)) {
     if (def.contributionOnCure?.type === 'dispatch') return id;
   }

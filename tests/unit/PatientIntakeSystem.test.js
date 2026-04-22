@@ -333,6 +333,55 @@ describe('PatientIntakeSystem — 증분 3: patientLeft (48TP 이탈)', () => {
   });
 });
 
+describe('PatientIntakeSystem — W3-1: 기여 타입 선택권', () => {
+  it('altContributions 있는 환자 cure 시 contributionChoiceNeeded 이벤트 발행 + rescue 지연', () => {
+    GameState.time.day = 10;
+    PatientIntakeSystem.init();
+    // 직접 주입 — rollPersona 의존 제거
+    PatientIntakeSystem._admitted = ['patient_lee_junho_16'];
+    GameState.npcs.states['patient_lee_junho_16'] = { woundLevel: 0 };
+
+    const spy = vi.fn();
+    EventBus.on('contributionChoiceNeeded', spy);
+
+    EventBus.emit('npcHealed', { npcId: 'patient_lee_junho_16' });
+
+    expect(spy).toHaveBeenCalledOnce();
+    const payload = spy.mock.calls[0][0];
+    expect(payload.npcId).toBe('patient_lee_junho_16');
+    expect(payload.options.length).toBeGreaterThanOrEqual(2);
+    // rescue 지연 확인
+    expect(PatientIntakeSystem.getRescuedInfo('patient_lee_junho_16')).toBeNull();
+  });
+
+  it('chooseContribution(npcId, 1)로 대안 선택 시 해당 타입으로 확정', () => {
+    GameState.time.day = 10;
+    PatientIntakeSystem.init();
+    PatientIntakeSystem._admitted = ['patient_lee_junho_16'];
+    GameState.npcs.states['patient_lee_junho_16'] = { woundLevel: 0 };
+
+    EventBus.emit('npcHealed', { npcId: 'patient_lee_junho_16' });
+    const ok = PatientIntakeSystem.chooseContribution('patient_lee_junho_16', 1);
+
+    expect(ok).toBe(true);
+    const info = PatientIntakeSystem.getRescuedInfo('patient_lee_junho_16');
+    expect(info?.type).toBe('sponsor');   // alt는 sponsor 대체
+  });
+
+  it('chooseContribution(npcId, 0)은 primary로 확정', () => {
+    GameState.time.day = 10;
+    PatientIntakeSystem.init();
+    PatientIntakeSystem._admitted = ['patient_lee_junho_16'];
+    GameState.npcs.states['patient_lee_junho_16'] = { woundLevel: 0 };
+
+    EventBus.emit('npcHealed', { npcId: 'patient_lee_junho_16' });
+    PatientIntakeSystem.chooseContribution('patient_lee_junho_16', 0);
+
+    const info = PatientIntakeSystem.getRescuedInfo('patient_lee_junho_16');
+    expect(info?.type).toBe('dispatch');   // primary
+  });
+});
+
 describe('PatientIntakeSystem — W2-3: 기여 타입 가중치 롤', () => {
   it('초반(Day < 10) 가중치는 sponsor/guard 우세', () => {
     const w = PatientIntakeSystem._getTypeWeights(5);

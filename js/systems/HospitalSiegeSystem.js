@@ -254,13 +254,20 @@ const HospitalSiegeSystem = {
     const skipCasualties = isTutorial && tut.skipCasualties;
     const skipStructure  = isTutorial && tut.skipStructureDmg;
     const skipDanger     = isTutorial && tut.skipDangerMod;
-    const moraleMult     = isTutorial ? (tut.moraleMultiplier ?? 1) : 1;
+    const tutoMoraleMult = isTutorial ? (tut.moraleMultiplier ?? 1) : 1;
 
-    // 1) 환자 무작위 사망 1~2명
+    // 의사 특권 — defeat 완화 (튜토리얼과 곱연산 누적)
+    const isDoctor = GameState.player?.characterId === 'doctor';
+    const dp = b.doctorPrivilege;
+    const doctorPrivilegeApplied = isDoctor && dp != null;
+    const docMoraleMult = doctorPrivilegeApplied ? (dp.defeatMoraleMultiplier ?? 1) : 1;
+    const moraleMult    = tutoMoraleMult * docMoraleMult;
+
+    // 1) 환자 무작위 사망 1~2명 (의사면 casualtiesReduce만큼 감소)
     if (!skipCasualties) {
       const intake = SystemRegistry.get('PatientIntakeSystem');
       const admitted = intake?._admitted ?? [];
-      const casualtiesWanted = this._rollCasualties(b);
+      const casualtiesWanted = this._rollCasualties(b, doctorPrivilegeApplied ? (dp.casualtiesReduce ?? 0) : 0);
       const victims = this._sampleRandom(admitted, casualtiesWanted);
       for (const npcId of victims) {
         EventBus.emit('patientDied', { npcId });
@@ -279,19 +286,20 @@ const HospitalSiegeSystem = {
       }
     }
 
-    // 4) 사기 하락 (튜토리얼은 절반)
+    // 4) 사기 하락 (튜토리얼은 절반, 의사는 ×0.75 추가 경감)
     GameState.modStat('morale', Math.round(b.defeatMorale * moraleMult));
 
     EventBus.emit('hospitalDamaged', {
       structureDamage:     skipStructure ? 0 : b.structureDamage,
       landmarkDangerDelta: skipDanger    ? 0 : b.dangerModDelta,
       isTutorial,
+      doctorPrivilegeApplied,
     });
   },
 
-  _rollCasualties(b) {
-    const min = b.casualtiesMin ?? 1;
-    const max = b.casualtiesMax ?? 2;
+  _rollCasualties(b, reduce = 0) {
+    const min = Math.max(0, (b.casualtiesMin ?? 1) - reduce);
+    const max = Math.max(0, (b.casualtiesMax ?? 2) - reduce);
     return min + Math.floor(Math.random() * (max - min + 1));
   },
 

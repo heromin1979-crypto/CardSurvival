@@ -65,6 +65,20 @@ const ADULTS = {
         ],
       },
     },
+
+    // W3-1: 대안 기여 — 플레이어가 선택할 수 있는 빌드 경로
+    altContributions: [
+      {
+        label: '보라매 온실 관리 (sponsor 대체)',
+        type: 'sponsor',
+        immediate: [{ id: 'herb_seed', qty: 1 }],
+        recurring: {
+          items: [{ id: 'herb', qty: 2 }, { id: 'herb_seed', qty: 1 }],
+          intervalDays: 4,
+          maxCount:     5,
+        },
+      },
+    ],
   },
 
   // ── 윤태현 (27·남) — 경찰 준비생, guard 샘플 ────────────────────

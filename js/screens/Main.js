@@ -15,7 +15,8 @@ import LandmarkModal   from '../ui/LandmarkModal.js';
 import SkillModal      from '../ui/SkillModal.js';
 import BasecampModal  from '../ui/BasecampModal.js';
 import DoctorPatientModal from '../ui/DoctorPatientModal.js';
-import EmergencyRoomModal from '../ui/EmergencyRoomModal.js';
+import EmergencyRoomModal      from '../ui/EmergencyRoomModal.js';
+import ContributionChoiceModal from '../ui/ContributionChoiceModal.js';
 import QuestSystem    from '../systems/QuestSystem.js';
 import ExploreSystem  from '../systems/ExploreSystem.js';
 import SeasonSystem    from '../systems/SeasonSystem.js';
@@ -77,6 +78,7 @@ const Basecamp = {
     BasecampModal.init();
     DoctorPatientModal.init();
     EmergencyRoomModal.init();
+    ContributionChoiceModal.init();
     this._updateQuestPanel();
     this._updateSecretComboCount();
     // 계절 배지 초기화
@@ -212,6 +214,11 @@ const Basecamp = {
 
       <!-- Emergency Room modal -->
       <div class="modal-overlay" id="emergency-room-modal">
+        <div class="er-modal-box"></div>
+      </div>
+
+      <!-- W3-1: Contribution Choice modal -->
+      <div class="modal-overlay" id="contribution-choice-modal">
         <div class="er-modal-box"></div>
       </div>
 

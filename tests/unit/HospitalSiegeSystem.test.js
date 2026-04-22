@@ -394,3 +394,85 @@ describe('HospitalSiegeSystem — W1-2 hordeWave 중첩 완화', () => {
     expect(GameState.flags.nextHordeDay).toBe(40);
   });
 });
+
+describe('HospitalSiegeSystem — 의사 특권 B (Defeat 완화)', () => {
+  it('doctor: 환자 사망자 수가 casualtiesReduce만큼 감소 (min 0)', () => {
+    GameState.player = { ...(GameState.player ?? {}), characterId: 'doctor' };
+    HospitalSiegeSystem.init();
+    PatientIntakeSystem._admitted = ['p1', 'p2', 'p3', 'p4'];
+
+    const spy = vi.fn();
+    EventBus.on('patientDied', spy);
+
+    EventBus.emit('siegeResolved', {
+      outcome: 'defeat', casualties: 0, defenseRating: 0, threat: 100,
+    });
+
+    const b = BALANCE.hospitalSiege;
+    const reduce = b.doctorPrivilege.casualtiesReduce;
+    const minExp = Math.max(0, b.casualtiesMin - reduce);
+    const maxExp = Math.max(0, b.casualtiesMax - reduce);
+    expect(spy.mock.calls.length).toBeGreaterThanOrEqual(minExp);
+    expect(spy.mock.calls.length).toBeLessThanOrEqual(maxExp);
+  });
+
+  it('doctor: defeatMorale이 defeatMoraleMultiplier만큼 경감', () => {
+    GameState.player = { ...(GameState.player ?? {}), characterId: 'doctor' };
+    HospitalSiegeSystem.init();
+    const before = GameState.stats.morale.current;
+
+    EventBus.emit('siegeResolved', {
+      outcome: 'defeat', casualties: 0, defenseRating: 0, threat: 100,
+    });
+
+    const b = BALANCE.hospitalSiege;
+    const expected = before + Math.round(b.defeatMorale * b.doctorPrivilege.defeatMoraleMultiplier);
+    expect(GameState.stats.morale.current).toBe(expected);
+  });
+
+  it('doctor: hospitalDamaged 페이로드에 doctorPrivilegeApplied: true', () => {
+    GameState.player = { ...(GameState.player ?? {}), characterId: 'doctor' };
+    HospitalSiegeSystem.init();
+    const spy = vi.fn();
+    EventBus.on('hospitalDamaged', spy);
+
+    EventBus.emit('siegeResolved', {
+      outcome: 'defeat', casualties: 0, defenseRating: 0, threat: 100,
+    });
+
+    expect(spy).toHaveBeenCalled();
+    expect(spy.mock.calls[0][0].doctorPrivilegeApplied).toBe(true);
+  });
+
+  it('비의사: doctorPrivilege 미적용 (morale은 원래 defeatMorale)', () => {
+    GameState.player = { ...(GameState.player ?? {}), characterId: 'firefighter' };
+    HospitalSiegeSystem.init();
+    const before = GameState.stats.morale.current;
+    const spy = vi.fn();
+    EventBus.on('hospitalDamaged', spy);
+
+    EventBus.emit('siegeResolved', {
+      outcome: 'defeat', casualties: 0, defenseRating: 0, threat: 100,
+    });
+
+    const b = BALANCE.hospitalSiege;
+    expect(GameState.stats.morale.current).toBe(before + b.defeatMorale);
+    expect(spy.mock.calls[0][0].doctorPrivilegeApplied).toBeFalsy();
+  });
+
+  it('doctor + 튜토리얼: moraleMultiplier(0.5) × doctorPrivilege(0.75) 곱연산', () => {
+    GameState.player = { ...(GameState.player ?? {}), characterId: 'doctor' };
+    GameState.flags.lastSiegeWasTutorial = true;
+    HospitalSiegeSystem.init();
+    const before = GameState.stats.morale.current;
+
+    EventBus.emit('siegeResolved', {
+      outcome: 'defeat', casualties: 0, defenseRating: 0, threat: 100,
+    });
+
+    const b = BALANCE.hospitalSiege;
+    const mult = b.tutorial.moraleMultiplier * b.doctorPrivilege.defeatMoraleMultiplier;
+    const expected = before + Math.round(b.defeatMorale * mult);
+    expect(GameState.stats.morale.current).toBe(expected);
+  });
+});

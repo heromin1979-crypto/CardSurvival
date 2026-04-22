@@ -47,6 +47,7 @@ const PatientIntakeSystem = {
   _admitted:        [],
   _patientMeta:     {},            // { [npcId]: { admissionTP, hp } }
   _rescued:         {},            // { [npcId]: { curedDay, type, recurring: {items, intervalDays, maxCount, nextDay, remaining} } }
+  _pendingChoices:  {},            // W3-1: { [npcId]: { primary, alts, def } }
   _admittedToday:   0,
   _currentDay:      -Infinity,
   _initialized:     false,
@@ -57,11 +58,12 @@ const PatientIntakeSystem = {
   init() {
     this._unsubscribeAll();
 
-    this._lastIntakeDay = -Infinity;
-    this._admitted      = [];
-    this._patientMeta   = {};
-    this._rescued       = {};
-    this._admittedToday = 0;
+    this._lastIntakeDay   = -Infinity;
+    this._admitted        = [];
+    this._patientMeta     = {};
+    this._rescued         = {};
+    this._pendingChoices  = {};
+    this._admittedToday   = 0;
     this._currentDay    = GameState.time?.day ?? -Infinity;
     this._initialized   = true;
 
@@ -128,8 +130,44 @@ const PatientIntakeSystem = {
     if (!this._admitted.includes(npcId)) return;  // 비환자 NPC 무시
 
     const def = PATIENT_POOL[npcId];
-    const contribution = def?.contributionOnCure;
+    const primary = def?.contributionOnCure;
+    const alts = Array.isArray(def?.altContributions) ? def.altContributions : [];
 
+    // W3-1: 대안이 있으면 선택 대기 상태로 전환
+    if (alts.length > 0) {
+      this._pendingChoices = {
+        ...this._pendingChoices,
+        [npcId]: { primary, alts, def },
+      };
+      EventBus.emit('contributionChoiceNeeded', {
+        npcId,
+        options: [primary, ...alts],
+      });
+      return;   // 선택이 끝날 때까지 rescue 지연
+    }
+
+    this._applyContribution(npcId, primary);
+  },
+
+  // W3-1: 선택된 기여 타입으로 cure 확정 (0 = primary, 1+ = alt 인덱스)
+  chooseContribution(npcId, optionIndex = 0) {
+    const pending = this._pendingChoices?.[npcId];
+    if (!pending) return false;
+    const chosen = optionIndex === 0 ? pending.primary : pending.alts[optionIndex - 1];
+    if (!chosen) return false;
+
+    const { [npcId]: _drop, ...rest } = this._pendingChoices;
+    this._pendingChoices = rest;
+
+    this._applyContribution(npcId, chosen);
+    return true;
+  },
+
+  getPendingChoice(npcId) {
+    return this._pendingChoices?.[npcId] ?? null;
+  },
+
+  _applyContribution(npcId, contribution) {
     // 로스터 이동: _admitted → _rescued
     this._admitted = this._admitted.filter(id => id !== npcId);
     const { [npcId]: _meta, ...restMeta } = this._patientMeta;
@@ -390,11 +428,12 @@ const PatientIntakeSystem = {
 
   _reset() {
     this._unsubscribeAll();
-    this._lastIntakeDay = -Infinity;
-    this._admitted      = [];
-    this._patientMeta   = {};
-    this._rescued       = {};
-    this._admittedToday = 0;
+    this._lastIntakeDay   = -Infinity;
+    this._admitted        = [];
+    this._patientMeta     = {};
+    this._rescued         = {};
+    this._pendingChoices  = {};
+    this._admittedToday   = 0;
     this._currentDay    = -Infinity;
     this._initialized   = false;
   },

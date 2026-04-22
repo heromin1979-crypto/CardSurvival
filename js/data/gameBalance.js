@@ -133,6 +133,8 @@ const BALANCE = {
   explore: {
     lootCountMin: 1,  // (기존 2~5 → 1~3으로 감소)
     lootCountMax: 3,
+    // W3-2 Phase A — 서브로케이션 재고 고갈
+    stockDecayPerDay: 1,  // 일자 경과 시 subLocationStock 자동 감소량 (같은 day 중복 차감 방지)
   },
 
   // ── 조우 ────────────────────────────────────────────
@@ -219,6 +221,12 @@ const BALANCE = {
       skipDangerMod:     true, // 패배해도 서브로케이션 dangerMod 증가 없음
       skipCasualties:    true, // 패배해도 환자 사망 없음
       moraleMultiplier:  0.5,  // 사기 손실 절반
+    },
+    // 의사 특권 — player.characterId === 'doctor'일 때 defeat 완화
+    // (튜토리얼 moraleMultiplier와 곱연산 누적)
+    doctorPrivilege: {
+      casualtiesReduce:       1,     // 사망자 min/max 각각 -1 (최소 0)
+      defeatMoraleMultiplier: 0.75,  // 사기 손실 25% 경감
     },
   },
 
