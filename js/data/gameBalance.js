@@ -211,6 +211,15 @@ const BALANCE = {
     },
     // W1-2: hordeWave와 최소 간격 — 겹치면 뒤쪽 이벤트를 밀어냄
     minGapWithHordeDays: 3,
+    // W2-2: 튜토리얼 습격 — 첫 습격은 학습용으로 가벼움 (siegeCount === 0 분기)
+    tutorialWarningDay: 7,    // Day 7에 예고 notify 발행
+    tutorial: {
+      numEnemies:        1,    // 최소 적
+      skipStructureDmg:  true, // 패배해도 구조물 피해 없음
+      skipDangerMod:     true, // 패배해도 서브로케이션 dangerMod 증가 없음
+      skipCasualties:    true, // 패배해도 환자 사망 없음
+      moraleMultiplier:  0.5,  // 사기 손실 절반
+    },
   },
 
   // ── 환자 유입 (Patient Intake) ──────────────────

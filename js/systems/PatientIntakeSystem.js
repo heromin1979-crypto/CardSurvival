@@ -211,9 +211,18 @@ const PatientIntakeSystem = {
     const totalTP = GameState.time?.totalTP ?? 0;
     const snapshot = [...this._admitted];
 
+    // W2-1: 의사 부재 + 간호사 상주 → 타이머 동결 (간호사 자동 대행)
+    const nurseAttending = this._isNurseAttending();
+
     for (const npcId of snapshot) {
       const meta = this._patientMeta[npcId];
       if (!meta) continue;
+
+      if (nurseAttending) {
+        // 타이머 리셋 — 간호사가 환자를 유지하는 동안 TP 경과를 무효화
+        meta.admissionTP = totalTP;
+        continue;
+      }
 
       const elapsed    = totalTP - meta.admissionTP;
       const npcState   = GameState.npcs?.states?.[npcId];
@@ -233,6 +242,16 @@ const PatientIntakeSystem = {
         this._departPatient(npcId);
       }
     }
+  },
+
+  // W2-1: 간호사 자동 대행 조건 — 의사 부재 + npc_nurse 상주 + 동반자 아님
+  _isNurseAttending() {
+    if (this._isAtHospital()) return false;   // 의사 있으면 대행 불필요
+    const nurseState = GameState.npcs?.states?.['npc_nurse'];
+    if (!nurseState) return false;
+    const companions = GameState.companions ?? [];
+    if (companions.includes('npc_nurse')) return false;   // 원정 동행 중이면 불가
+    return true;
   },
 
   _killPatient(npcId) {
@@ -278,7 +297,19 @@ const PatientIntakeSystem = {
 
     if (this._admittedToday >= this._getDayCap(day)) return false;
 
+    // W2-1: 위치 체크 — 응급실 허브(보라매)에서만 환자 유입
+    if (!this._isAtHospital()) return false;
+
     return true;
+  },
+
+  _isAtHospital() {
+    const loc = GameState.location ?? {};
+    // dongjak landmark (보라매병원) 또는 boramae_* 서브로케이션
+    if (loc.currentLandmark === 'dongjak') return true;
+    if (typeof loc.currentSubLocation === 'string'
+        && loc.currentSubLocation.startsWith('boramae_')) return true;
+    return false;
   },
 
   _getCooldownDays(characterId) {
@@ -301,13 +332,45 @@ const PatientIntakeSystem = {
   },
 
   // ── 가중치 롤 ──────────────────────────────────────
+  // W2-3: 기여 타입별 가중치 — day 구간 + 거점 상태에 따라 확률 조정
+  //   초반(Day 3-9): 수비/후원 편향 (방어선 확보)
+  //   중반(Day 10-29): 균형
+  //   후반(Day 30+): 파견/영입 편향 (확장)
 
   _rollPersona(characterId) {
-    const poolIds = Object.keys(PATIENT_POOL).filter(id => !this._admitted.includes(id));
+    const poolIds = Object.keys(PATIENT_POOL).filter(id => !this._admitted.includes(id)
+                                                        && !this._rescued[id]);
     if (poolIds.length === 0) return null;
 
-    const idx = Math.floor(Math.random() * poolIds.length);
-    return poolIds[idx];
+    const day = GameState.time?.day ?? 0;
+    const weights = this._getTypeWeights(day);
+
+    const totals = [];
+    let sum = 0;
+    for (const id of poolIds) {
+      const type = PATIENT_POOL[id]?.contributionOnCure?.type ?? 'sponsor';
+      const w = weights[type] ?? 1;
+      sum += w;
+      totals.push({ id, cumulative: sum });
+    }
+    if (sum <= 0) return poolIds[Math.floor(Math.random() * poolIds.length)];
+
+    const roll = Math.random() * sum;
+    for (const { id, cumulative } of totals) {
+      if (roll < cumulative) return id;
+    }
+    return totals[totals.length - 1].id;
+  },
+
+  _getTypeWeights(day) {
+    // 후원/수비/파견/영입 기본 가중치
+    if (day < 10) {
+      return { sponsor: 3, guard: 3, dispatch: 1, recruit: 1 };
+    }
+    if (day < 30) {
+      return { sponsor: 2, guard: 2, dispatch: 2, recruit: 2 };
+    }
+    return { sponsor: 1, guard: 1, dispatch: 3, recruit: 2 };
   },
 
   // ── 테스트 유틸 ────────────────────────────────────

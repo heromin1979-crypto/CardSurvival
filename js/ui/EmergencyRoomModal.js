@@ -57,6 +57,9 @@ const EmergencyRoomModal = {
 
   open() {
     if (!this._el) return;
+    // Pull-First: 모달 진입 시 유입 시도 (조건 미충족이면 조용히 무시)
+    const intake = SystemRegistry.get('PatientIntakeSystem');
+    intake?.tryIntake?.();
     this._el.classList.add('open');
     this.render();
   },

@@ -72,11 +72,28 @@ const HospitalSiegeSystem = {
     // er_unlocked 필요
     if (!GameState.flags?.er_unlocked) return;
 
+    // W2-2: Day 7 튜토리얼 습격 예고
+    this._checkTutorialWarning(day);
+
     // moraleBonus 일일 합산
     this._tickMoraleBonus();
 
     // 스케줄 체크
     this._checkSchedule(day);
+  },
+
+  // W2-2: Day 7 예고 (한 번만)
+  _checkTutorialWarning(day) {
+    const warnDay = BALANCE.hospitalSiege?.tutorialWarningDay;
+    if (!warnDay || day !== warnDay) return;
+    if (GameState.flags.siegeTutorialWarned) return;
+    GameState.flags.siegeTutorialWarned = true;
+
+    EventBus.emit('notify', {
+      message: '⚠️ 병원 밖에서 발소리가 들린다. 사흘 내로 약탈자들이 응급실을 찾아올 것 같다. — 환자를 치료해 수비대를 확보하라.',
+      type: 'warning',
+      persistent: true,
+    });
   },
 
   // ── 스케줄 체크 ───────────────────────────────────
@@ -127,16 +144,17 @@ const HospitalSiegeSystem = {
   _triggerSiege(day) {
     const b = BALANCE.hospitalSiege;
     const count = GameState.flags.siegeCount ?? 0;
-    const numEnemies = Math.min(
-      b.maxEnemies,
-      Math.round(b.baseEnemies + count * b.enemiesPerWave),
-    );
+    const isTutorial = count === 0 && b.tutorial != null;
+    const numEnemies = isTutorial
+      ? (b.tutorial.numEnemies ?? 1)
+      : Math.min(b.maxEnemies, Math.round(b.baseEnemies + count * b.enemiesPerWave));
     const danger = Math.min(4, Math.floor(b.baseDangerLevel + count * b.dangerScaling));
     const siegeId = `siege_${day}_${count + 1}`;
     const playerPresent = this.isPlayerAtHospital();
 
     GameState.flags.siegeCount = count + 1;
     GameState.flags.lastSiegeDay = day;
+    GameState.flags.lastSiegeWasTutorial = isTutorial;
     this._activeSiegeId = siegeId;
 
     // W1-2: hordeWave가 minGap 내로 예정되어 있으면 밀어냄 (중첩 방지)
@@ -148,7 +166,15 @@ const HospitalSiegeSystem = {
       siegeId,
       scheduledDay: day,
       playerPresent,
+      isTutorial,
     });
+
+    if (isTutorial) {
+      EventBus.emit('notify', {
+        message: '🛡️ 첫 습격 — 약탈자 1명이 응급실 앞에 나타났다. (튜토리얼: 피해 없이 방어선을 시험하라)',
+        type: 'warning',
+      });
+    }
 
     // 플레이어 현장 → CombatSystem 경로로 전환
     if (playerPresent) {
@@ -222,29 +248,44 @@ const HospitalSiegeSystem = {
   _applyDefeat(b) {
     GameState.flags.siegeWinStreak = 0;
 
+    // W2-2: 튜토리얼 시에지는 영구 피해를 생략
+    const tut = b.tutorial;
+    const isTutorial = !!GameState.flags.lastSiegeWasTutorial && tut != null;
+    const skipCasualties = isTutorial && tut.skipCasualties;
+    const skipStructure  = isTutorial && tut.skipStructureDmg;
+    const skipDanger     = isTutorial && tut.skipDangerMod;
+    const moraleMult     = isTutorial ? (tut.moraleMultiplier ?? 1) : 1;
+
     // 1) 환자 무작위 사망 1~2명
-    const intake = SystemRegistry.get('PatientIntakeSystem');
-    const admitted = intake?._admitted ?? [];
-    const casualtiesWanted = this._rollCasualties(b);
-    const victims = this._sampleRandom(admitted, casualtiesWanted);
-    for (const npcId of victims) {
-      EventBus.emit('patientDied', { npcId });
+    if (!skipCasualties) {
+      const intake = SystemRegistry.get('PatientIntakeSystem');
+      const admitted = intake?._admitted ?? [];
+      const casualtiesWanted = this._rollCasualties(b);
+      const victims = this._sampleRandom(admitted, casualtiesWanted);
+      for (const npcId of victims) {
+        EventBus.emit('patientDied', { npcId });
+      }
     }
 
     // 2) 구조물 피해
-    EventBus.emit('structureDamage', { damagePercent: b.structureDamage });
-
-    // 3) 서브로케이션 dangerMod 누적 증가
-    for (const subId of BORAMAE_SUB_LOCATIONS) {
-      GameState.addLandmarkDangerMod(BORAMAE_LANDMARK_ID, subId, b.dangerModDelta);
+    if (!skipStructure) {
+      EventBus.emit('structureDamage', { damagePercent: b.structureDamage });
     }
 
-    // 4) 사기 하락
-    GameState.modStat('morale', b.defeatMorale);
+    // 3) 서브로케이션 dangerMod 누적 증가
+    if (!skipDanger) {
+      for (const subId of BORAMAE_SUB_LOCATIONS) {
+        GameState.addLandmarkDangerMod(BORAMAE_LANDMARK_ID, subId, b.dangerModDelta);
+      }
+    }
+
+    // 4) 사기 하락 (튜토리얼은 절반)
+    GameState.modStat('morale', Math.round(b.defeatMorale * moraleMult));
 
     EventBus.emit('hospitalDamaged', {
-      structureDamage:     b.structureDamage,
-      landmarkDangerDelta: b.dangerModDelta,
+      structureDamage:     skipStructure ? 0 : b.structureDamage,
+      landmarkDangerDelta: skipDanger    ? 0 : b.dangerModDelta,
+      isTutorial,
     });
   },
 

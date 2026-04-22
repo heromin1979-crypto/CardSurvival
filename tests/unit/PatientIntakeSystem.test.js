@@ -22,6 +22,8 @@ function resetWorld() {
   GameState.player      = { ...(GameState.player ?? {}), characterId: 'doctor' };
   GameState.stats       = { morale: { current: 70, max: 100 } };
   GameState.cards = {};
+  // W2-1: 테스트 기본값은 응급실 허브 (보라매병원)에 있다고 가정
+  GameState.location    = { currentLandmark: 'dongjak', currentSubLocation: null };
   SystemRegistry.register('NPCSystem', NPCSystem);
   PatientIntakeSystem._reset?.();
 }
@@ -328,5 +330,85 @@ describe('PatientIntakeSystem — 증분 3: patientLeft (48TP 이탈)', () => {
 
     expect(diedSpy).toHaveBeenCalledOnce();
     expect(leftSpy).not.toHaveBeenCalled();
+  });
+});
+
+describe('PatientIntakeSystem — W2-3: 기여 타입 가중치 롤', () => {
+  it('초반(Day < 10) 가중치는 sponsor/guard 우세', () => {
+    const w = PatientIntakeSystem._getTypeWeights(5);
+    expect(w.sponsor).toBeGreaterThan(w.dispatch);
+    expect(w.guard).toBeGreaterThan(w.recruit);
+  });
+
+  it('후반(Day >= 30) 가중치는 dispatch 우세', () => {
+    const w = PatientIntakeSystem._getTypeWeights(40);
+    expect(w.dispatch).toBeGreaterThan(w.sponsor);
+    expect(w.dispatch).toBeGreaterThan(w.guard);
+  });
+
+  it('rollPersona 결과는 PATIENT_POOL 안에 있고 admitted/rescued 중복 안 됨', () => {
+    GameState.time.day = 10;
+    PatientIntakeSystem.init();
+    const id = PatientIntakeSystem._rollPersona('doctor');
+    expect(id).toBeTruthy();
+  });
+});
+
+describe('PatientIntakeSystem — W2-1: 위치 체크 + 간호사 자동 대행', () => {
+  it('보라매병원이 아니면 tryIntake 실패', () => {
+    GameState.location.currentLandmark = 'yongsan';
+    GameState.location.currentSubLocation = null;
+    PatientIntakeSystem.init();
+    expect(PatientIntakeSystem.tryIntake()).toBe(false);
+  });
+
+  it('boramae_ 서브로케이션이면 tryIntake 성공', () => {
+    GameState.location.currentLandmark = null;
+    GameState.location.currentSubLocation = 'boramae_emergency';
+    PatientIntakeSystem.init();
+    expect(PatientIntakeSystem.tryIntake()).toBe(true);
+  });
+
+  it('의사 부재 + 간호사 상주 시 타이머 동결 (admissionTP가 현재TP로 리셋)', () => {
+    GameState.time.totalTP = 0;
+    PatientIntakeSystem.init();
+    PatientIntakeSystem.tryIntake();
+    const [npcId] = PatientIntakeSystem.getActivePatients();
+
+    // 의사는 원정 나감 (보라매 아님) + 간호사 상주
+    GameState.location.currentLandmark = 'yongsan';
+    GameState.location.currentSubLocation = null;
+    GameState.npcs.states['npc_nurse'] = { woundLevel: 0 };
+
+    // 48TP 경과하지만 간호사가 타이머 동결 → patientLeft 발행되지 않음
+    const leftSpy = vi.fn();
+    EventBus.on('patientLeft', leftSpy);
+
+    GameState.time.totalTP = 48;
+    EventBus.emit('tpAdvance', {});
+
+    expect(leftSpy).not.toHaveBeenCalled();
+    expect(PatientIntakeSystem.getPatientMeta(npcId).admissionTP).toBe(48);
+  });
+
+  it('간호사가 동반자로 원정 동행 중이면 동결 안 됨', () => {
+    GameState.time.totalTP = 0;
+    PatientIntakeSystem.init();
+    PatientIntakeSystem.tryIntake();
+    const [npcId] = PatientIntakeSystem.getActivePatients();
+    GameState.npcs.states[npcId].woundLevel = 1;   // 이탈 경로로 유도
+
+    GameState.location.currentLandmark = 'yongsan';
+    GameState.location.currentSubLocation = null;
+    GameState.npcs.states['npc_nurse'] = { woundLevel: 0 };
+    GameState.companions = ['npc_nurse'];
+
+    const leftSpy = vi.fn();
+    EventBus.on('patientLeft', leftSpy);
+
+    GameState.time.totalTP = 48;
+    EventBus.emit('tpAdvance', {});
+
+    expect(leftSpy).toHaveBeenCalledOnce();
   });
 });

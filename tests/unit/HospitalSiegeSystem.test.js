@@ -80,7 +80,7 @@ describe('HospitalSiegeSystem — 초기화 및 스케줄링', () => {
 });
 
 describe('HospitalSiegeSystem — siegeTriggered 발행', () => {
-  it('예정일 도달 시 siegeTriggered 발행 (첫 습격: baseEnemies)', () => {
+  it('예정일 도달 시 siegeTriggered 발행 (첫 습격: 튜토리얼 numEnemies)', () => {
     HospitalSiegeSystem.init();
     // 강제 트리거: nextSiegeDay = 10, siegeCount = 0
     GameState.flags.nextSiegeDay = 10;
@@ -92,7 +92,9 @@ describe('HospitalSiegeSystem — siegeTriggered 발행', () => {
 
     expect(spy).toHaveBeenCalledTimes(1);
     const payload = spy.mock.calls[0][0];
-    expect(payload.numEnemies).toBe(BALANCE.hospitalSiege.baseEnemies);
+    // W2-2: 첫 습격은 튜토리얼이므로 tutorial.numEnemies (기본 1)
+    expect(payload.numEnemies).toBe(BALANCE.hospitalSiege.tutorial.numEnemies);
+    expect(payload.isTutorial).toBe(true);
     expect(typeof payload.siegeId).toBe('string');
     expect(payload.scheduledDay).toBe(10);
   });
@@ -309,6 +311,61 @@ describe('HospitalSiegeSystem — W1-1 연승 보너스 (streakBonus)', () => {
     EventBus.emit('siegeResolved', { outcome: 'defeat', casualties: 0, defenseRating: 0, threat: 100 });
 
     expect(GameState.flags.siegeWinStreak).toBe(0);
+  });
+});
+
+describe('HospitalSiegeSystem — W2-2 튜토리얼 습격 + Day7 예고', () => {
+  it('Day 7 도달 시 siegeTutorialWarned 플래그 + notify 발행', () => {
+    HospitalSiegeSystem.init();
+    const spy = vi.fn();
+    EventBus.on('notify', spy);
+
+    advanceToDay(BALANCE.hospitalSiege.tutorialWarningDay, 0);
+
+    expect(GameState.flags.siegeTutorialWarned).toBe(true);
+    expect(spy).toHaveBeenCalled();
+  });
+
+  it('Day 7 예고는 한 번만 발행', () => {
+    HospitalSiegeSystem.init();
+    const spy = vi.fn();
+    EventBus.on('notify', spy);
+
+    advanceToDay(7, 0);
+    advanceToDay(8, 0);   // 다음 날
+
+    // Day 7 예고 notify만 카운트 (다른 notify가 섞일 수 있으므로 호출 전체가 아니라 플래그만 검증)
+    expect(GameState.flags.siegeTutorialWarned).toBe(true);
+  });
+
+  it('튜토리얼 패배: 환자 사망 없음 + 구조물 피해 없음 + dangerMod 증가 없음', () => {
+    HospitalSiegeSystem.init();
+    GameState.flags.lastSiegeWasTutorial = true;
+    PatientIntakeSystem._admitted = ['a', 'b'];
+
+    const diedSpy = vi.fn();
+    const dmgSpy = vi.fn();
+    EventBus.on('patientDied', diedSpy);
+    EventBus.on('structureDamage', dmgSpy);
+
+    EventBus.emit('siegeResolved', { outcome: 'defeat', casualties: 0, defenseRating: 0, threat: 100 });
+
+    expect(diedSpy).not.toHaveBeenCalled();
+    expect(dmgSpy).not.toHaveBeenCalled();
+    const delta = GameState.getLandmarkDangerModDelta('lm_boramae_hospital', 'boramae_emergency');
+    expect(delta).toBe(0);
+  });
+
+  it('튜토리얼 패배 사기 손실은 moraleMultiplier 적용', () => {
+    HospitalSiegeSystem.init();
+    GameState.flags.lastSiegeWasTutorial = true;
+    const before = GameState.stats.morale.current;
+
+    EventBus.emit('siegeResolved', { outcome: 'defeat', casualties: 0, defenseRating: 0, threat: 100 });
+
+    const b = BALANCE.hospitalSiege;
+    const expected = before + Math.round(b.defeatMorale * b.tutorial.moraleMultiplier);
+    expect(GameState.stats.morale.current).toBe(expected);
   });
 });
 
