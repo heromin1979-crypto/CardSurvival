@@ -21,6 +21,8 @@ import GameData            from '../data/GameData.js';
 import SystemRegistry      from '../core/SystemRegistry.js';
 
 const ExploreSystem = {
+  // W3-2 Phase C — 일자 경과 재고 감소 추적 (tpAdvance 시 day 변경 감지)
+  _currentDayForDecay: -Infinity,
 
   /** 야간+광원 없음이면 알림 후 false 반환 */
   _checkNight(action) {
@@ -73,6 +75,20 @@ const ExploreSystem = {
         this.exitLandmark();
       }
     });
+
+    // W3-2 Phase C — 일자 변경 감지 → 서브로케이션 재고 감소
+    this._currentDayForDecay = GameState.time?.day ?? -Infinity;
+    EventBus.on('tpAdvance', () => this._checkDayDecay());
+  },
+
+  // W3-2 Phase C — day 전환 시 한 번만 decayAllSubLocationStocks 호출
+  // (decayAllSubLocationStocks 자체도 lastDecayDay로 중복 차감 방지하므로 이중 안전)
+  _checkDayDecay() {
+    const day = GameState.time?.day ?? 0;
+    if (day === this._currentDayForDecay) return;
+    this._currentDayForDecay = day;
+    const amount = BALANCE.explore?.stockDecayPerDay ?? 1;
+    GameState.decayAllSubLocationStocks(day, amount);
   },
 
   // ── top row 위치 카드 갱신 ─────────────────────────────────
