@@ -581,9 +581,152 @@ const CombatSystem = {
     }
   },
 
-  // Phase 1 stub — Phase 2에서 stance 기반 자율 공격/힐/스킬 구현 예정
-  _runCompanionTurn(_npcId) {
-    // no-op (기존 manual 명령 동작 유지)
+  // ── Combat Overhaul Phase 2 · 동료 자율 행동 ──────
+  // stance: 'attack'(기본) | 'heal' | 'support' | 'hold' | 'manual'
+  // state 위치: GameState.npcs.states[npcId].stance
+  // 'manual'은 자동 행동 skip — 기존 companionAttack/Heal 명령 플로우 유지
+
+  _getCompanionStance(npcId) {
+    const st = GameState.npcs?.states?.[npcId];
+    return st?.stance ?? 'attack';
+  },
+
+  _runCompanionTurn(npcId) {
+    const gs = GameState;
+    const st = gs.npcs?.states?.[npcId];
+    if (!st || (st.hp ?? 0) <= 0) return;
+    if (!gs.combat?.active) return;
+
+    // 쿨다운 틱 (턴 시작 시점)
+    this._tickCompanionSkillCooldowns(npcId);
+
+    const stance = this._getCompanionStance(npcId);
+    switch (stance) {
+      case 'manual': return;                        // 자동 행동 skip
+      case 'hold':    return this._companionHold(npcId);
+      case 'heal':    return this._companionAutoHeal(npcId);
+      case 'support': return this._companionAutoSupport(npcId);
+      case 'attack':
+      default:        return this._companionAutoAttack(npcId);
+    }
+  },
+
+  // 가장 낮은 HP의 살아있는 적 공격
+  _companionAutoAttack(npcId) {
+    const gs = GameState;
+    const enemies = gs.combat?.enemies ?? [];
+    const alive = enemies
+      .map((e, idx) => ({ e, idx }))
+      .filter(x => (x.e?.currentHp ?? 0) > 0);
+    if (alive.length === 0) return;
+    alive.sort((a, b) => (a.e.currentHp ?? 0) - (b.e.currentHp ?? 0));
+    const target = alive[0].e;
+
+    const cfg = BALANCE.combat.companionAuto;
+    const [dMin, dMax] = cfg.attackDamage;
+    const npcSys = SystemRegistry.get('NPCSystem');
+    const bonus  = npcSys?.getCompanionCombatBonus?.() ?? 1.0;
+
+    if (Math.random() > cfg.attackAccuracy) {
+      gs.combat.log.push(I18n.t
+        ? I18n.t('combatSys.companionAtkMiss', { name: this._npcLabel(npcId) })
+        : `${this._npcLabel(npcId)} 공격 빗나감`);
+      return;
+    }
+
+    const raw = dMin + Math.floor(Math.random() * (dMax - dMin + 1));
+    const dmg = Math.floor(raw * bonus);
+    target.currentHp = Math.max(0, (target.currentHp ?? 0) - dmg);
+
+    gs.combat.log.push(I18n.t
+      ? I18n.t('combatSys.companionAtk', { name: this._npcLabel(npcId), enemy: I18n.enemyName?.(target.id, target.name) ?? target.name, dmg })
+      : `${this._npcLabel(npcId)}→${target.name}: ${dmg} 피해`);
+    EventBus.emit('companionAction', { npcId, action: 'attack', targetIdx: alive[0].idx, damage: dmg });
+  },
+
+  // 이번 턴 받는 피해 감소 버프 (1턴)
+  _companionHold(npcId) {
+    const gs = GameState;
+    const st = gs.npcs?.states?.[npcId];
+    if (!st) return;
+    const reduct = BALANCE.combat.companionAuto.holdDamageReduct;
+    st.combatBuffs = st.combatBuffs ?? {};
+    st.combatBuffs.holdReduct = { value: reduct, duration: 1 };
+    gs.combat.log.push(`🛡️ ${this._npcLabel(npcId)} 방어 자세 (피해 -${Math.round(reduct * 100)}%)`);
+    EventBus.emit('companionAction', { npcId, action: 'hold' });
+  },
+
+  // 플레이어 HP < 70% 이면 힐, 아니면 attack 폴백
+  _companionAutoHeal(npcId) {
+    const gs = GameState;
+    const p = gs.player;
+    const hpRatio = (p?.hp?.current ?? 0) / (p?.hp?.max ?? 1);
+    const cfg = BALANCE.combat.companionAuto;
+    if (hpRatio >= cfg.healThreshold) {
+      // 힐 필요 없음 → 공격 폴백
+      return this._companionAutoAttack(npcId);
+    }
+    const [min, max] = cfg.healAmount;
+    const amt = min + Math.floor(Math.random() * (max - min + 1));
+    p.hp.current = Math.min(p.hp.max, (p.hp.current ?? 0) + amt);
+    gs.combat.log.push(`💉 ${this._npcLabel(npcId)} 응급 처치 (+${amt} HP)`);
+    EventBus.emit('companionAction', { npcId, action: 'heal', amount: amt });
+  },
+
+  // 클래스 스킬 쿨다운 0이면 사용, 아니면 attack 폴백
+  _companionAutoSupport(npcId) {
+    const skill = BALANCE.combat.companionAuto.classSkills?.[npcId];
+    if (!skill) return this._companionAutoAttack(npcId);
+    const st = GameState.npcs?.states?.[npcId];
+    if (!st) return;
+    st.skillCooldowns = st.skillCooldowns ?? {};
+    const cd = st.skillCooldowns[skill.id] ?? 0;
+    if (cd > 0) return this._companionAutoAttack(npcId);
+
+    this._applyCompanionSkill(npcId, skill);
+    st.skillCooldowns[skill.id] = skill.cooldown;
+  },
+
+  _applyCompanionSkill(npcId, skill) {
+    const gs = GameState;
+    const label = this._npcLabel(npcId);
+
+    if (skill.id === 'nurse_triage') {
+      // 모든 아군 +healAmount
+      const p = gs.player;
+      if (p.hp) p.hp.current = Math.min(p.hp.max, (p.hp.current ?? 0) + skill.healAmount);
+      for (const id of (gs.companions ?? [])) {
+        const s = gs.npcs?.states?.[id];
+        if (!s || (s.hp ?? 0) <= 0) continue;
+        s.hp = Math.min(s.maxHp ?? 50, s.hp + skill.healAmount);
+      }
+      gs.combat.log.push(`⚕️ ${label} 응급 분류 (모두 +${skill.healAmount} HP)`);
+    }
+    else if (skill.id === 'soldier_suppress') {
+      gs.combat._suppressMult = skill.atkMult;
+      gs.combat._suppressRemaining = skill.duration;
+      gs.combat.log.push(`🎯 ${label} 제압 사격 (${skill.duration}턴 · 적 공격력 ×${skill.atkMult})`);
+    }
+    else if (skill.id === 'doctor_diagnose') {
+      gs.combat._diagnoseResistBonus = skill.resistBonus;
+      gs.combat._diagnoseRemaining   = skill.duration;
+      gs.combat.log.push(`🔬 ${label} 상태 진단 (${skill.duration}턴 · 아군 상태이상 저항 +${Math.round(skill.resistBonus * 100)}%)`);
+    }
+
+    EventBus.emit('companionAction', { npcId, action: 'skill', skillId: skill.id });
+  },
+
+  _tickCompanionSkillCooldowns(npcId) {
+    const st = GameState.npcs?.states?.[npcId];
+    if (!st?.skillCooldowns) return;
+    for (const id of Object.keys(st.skillCooldowns)) {
+      if (st.skillCooldowns[id] > 0) st.skillCooldowns[id]--;
+    }
+  },
+
+  // NPC 라벨 — ui·log 공용
+  _npcLabel(npcId) {
+    return (npcId ?? '').replace(/^npc_/, '');
   },
 
   /** 큐 엔트리 기반 단일 적 턴 실행. 기존 `_runEnemyAI` 로직 재사용. */

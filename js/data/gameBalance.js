@@ -120,6 +120,38 @@ const BALANCE = {
     // ── NPC 동행 액션 쿨다운 ──
     companionAttackCooldown: 3,
     companionHealCooldown:   4,
+    // ── Combat Overhaul Phase 2 — 동료 자율 행동 ──────
+    // stance: 'attack' | 'heal' | 'support' | 'hold' | 'manual'
+    companionAuto: {
+      attackDamage:      [8, 17],    // 기존 companionAttack과 동일 범위
+      attackAccuracy:    0.80,
+      healAmount:        [10, 18],   // heal stance 회복량
+      healThreshold:     0.70,       // 플레이어 HP < 70% 이면 auto_heal 트리거
+      holdDamageReduct:  0.30,       // hold stance: 피해 30% 경감 (1턴)
+      // 클래스별 스킬 (support stance 자동 발동 대상)
+      classSkills: {
+        npc_nurse: {
+          id:         'nurse_triage',
+          name:       '응급 분류',
+          cooldown:   5,
+          healAmount: 12,       // 모든 아군 +12 HP
+        },
+        npc_soldier: {
+          id:         'soldier_suppress',
+          name:       '제압 사격',
+          cooldown:   4,
+          atkMult:    0.70,     // 모든 적 공격력 × 0.7
+          duration:   2,        // 지속 턴 수
+        },
+        npc_doctor: {
+          id:         'doctor_diagnose',
+          name:       '상태 진단',
+          cooldown:   4,
+          resistBonus: 0.50,    // 모든 아군 상태이상 저항 +50%
+          duration:   3,
+        },
+      },
+    },
   },
 
   // ── 캠프파이어 ──────────────────────────────────────

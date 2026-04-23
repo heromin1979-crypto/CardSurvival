@@ -160,6 +160,52 @@
 .init-slot.enemy .init-hp-fill     { background: var(--text-danger, #d06868); }
 .init-slot.companion .init-hp-fill { background: var(--text-warn, #c8a060); }
 
+/* ── Phase 2 · 동료 stance 셀렉터 ─────────────────── */
+
+.cpp-stance-row .stance-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  font-size: 12px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--border-dim, #444);
+  border-radius: 3px;
+  color: var(--text-primary, #eee);
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s;
+}
+
+.cpp-stance-row .stance-btn:hover {
+  background: rgba(200, 160, 96, 0.2);
+  border-color: var(--text-warn, #c8a060);
+}
+
+.cpp-stance-row .stance-btn.active {
+  background: rgba(112, 184, 112, 0.25);
+  border-color: var(--text-good, #70b870);
+  box-shadow: 0 0 4px rgba(112, 184, 112, 0.4);
+}
+
+.cpp-stance-row .skill-cd-badge {
+  margin-left: 6px;
+  padding: 1px 6px;
+  font-size: 9px;
+  border-radius: 8px;
+  background: rgba(120, 120, 120, 0.2);
+  color: var(--text-dim, #888);
+  border: 1px solid var(--border-dim, #444);
+}
+
+.cpp-stance-row .skill-cd-badge.ready {
+  background: rgba(200, 160, 96, 0.2);
+  color: var(--text-warn, #c8a060);
+  border-color: var(--text-warn, #c8a060);
+  box-shadow: 0 0 4px rgba(200, 160, 96, 0.3);
+}
+
 /* ── ② 메인 3열 ──────────────────────────────────────── */
 
 .combat-main {
