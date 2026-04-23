@@ -203,6 +203,9 @@ function init() {
   // Notification system
   _initNotifications();
 
+  // 이슈 #7 — 사망 위험 중앙 경고 (스탯 임계 + HP 20% 미만)
+  _initCriticalWarning();
+
   // Debug panel (?debug=1 일 때만 활성화)
   if (new URLSearchParams(window.location.search).get('debug') === '1') {
     import('./ui/DebugPanel.js').then(m => m.default.init());
@@ -318,6 +321,48 @@ function _initNotifications() {
       el.style.animation = 'fadeOut 0.3s ease forwards';
       setTimeout(() => el.remove(), 350);
     }, 8000);
+  });
+}
+
+// ── 이슈 #7 · 사망 위험 중앙 경고 배너 ─────────────
+// 스탯 임계 도달 (statCritical) 또는 HP < 20% 시 큰 배너 알림.
+// 3.5초 후 자동 사라짐. 동일 원인 중복 트리거 4초 쿨다운.
+const CRITICAL_MSG = {
+  hydration: { icon: '💧', text: '수분 고갈 임박! 물을 마셔라.' },
+  nutrition: { icon: '🍖', text: '영양실조 임박! 음식이 필요하다.' },
+  radiation: { icon: '☢',  text: '방사선 과다 피폭! 차폐 구역으로 대피하라.' },
+  infection: { icon: '🦠', text: '감염 수치 위험! 항생제를 써라.' },
+  fatigue:   { icon: '😵', text: '피로 누적 임계! 곧 쓰러진다.' },
+  hp_low:    { icon: '❤️', text: 'HP 위험! 치료하지 않으면 사망한다.' },
+};
+
+function _initCriticalWarning() {
+  const banner = document.getElementById('critical-warning-banner');
+  if (!banner) return;
+  const lastShown = {};          // { [key]: timestamp }
+  const COOLDOWN_MS = 4000;
+
+  const show = (key) => {
+    const msg = CRITICAL_MSG[key];
+    if (!msg) return;
+    const now = Date.now();
+    if (lastShown[key] && now - lastShown[key] < COOLDOWN_MS) return;
+    lastShown[key] = now;
+
+    banner.innerHTML = `
+      <div class="crit-warn-icon">${msg.icon}</div>
+      <div class="crit-warn-text">${msg.text}</div>`;
+    banner.classList.remove('show');
+    void banner.offsetWidth;
+    banner.classList.add('show');
+    setTimeout(() => banner.classList.remove('show'), 3500);
+  };
+
+  EventBus.on('statCritical', ({ stat }) => { if (stat) show(stat); });
+  EventBus.on('playerHit', () => {
+    const p = GameState.player;
+    const pct = (p?.hp?.current ?? 0) / (p?.hp?.max ?? 1);
+    if (pct > 0 && pct < 0.20) show('hp_low');
   });
 }
 

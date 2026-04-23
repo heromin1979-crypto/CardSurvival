@@ -231,3 +231,31 @@
     font-size: 0.55rem;
   }
 }
+
+/* 이슈 #1 — 파견 NPC 귀환 D-day 배지 */
+.npc-mini-dispatch {
+  margin-top: 4px;
+  padding: 2px 4px;
+  background: rgba(200, 160, 96, 0.12);
+  border: 1px solid rgba(200, 160, 96, 0.3);
+  border-radius: 3px;
+  text-align: center;
+}
+.npc-mini-dispatch-label {
+  font-size: 0.55rem;
+  color: var(--text-warn, #c8a060);
+  font-weight: bold;
+}
+.npc-mini-dispatch-bar {
+  margin-top: 2px;
+  height: 3px;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 1px;
+  overflow: hidden;
+}
+.npc-mini-dispatch-fill {
+  height: 100%;
+  background: var(--text-warn, #c8a060);
+  transition: width 0.3s ease;
+}
+
