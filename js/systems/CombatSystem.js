@@ -12,6 +12,7 @@ import DiseaseSystem from './DiseaseSystem.js';
 import BodySystem    from './BodySystem.js';
 import NPCSystem     from './NPCSystem.js';
 import { rollEnemyGroup } from '../data/enemies.js';
+import { NPC_ITEMS } from '../data/npcs.js';
 import BALANCE from '../data/gameBalance.js';
 import CharDialogue from '../data/charDialogues.js';
 import NightSystem from './NightSystem.js';
@@ -729,9 +730,12 @@ const CombatSystem = {
     }
   },
 
-  // NPC 라벨 — ui·log 공용
+  // NPC 라벨 — ui·log 공용 (한글 name 우선, 없으면 id 축약)
   _npcLabel(npcId) {
-    return (npcId ?? '').replace(/^npc_/, '');
+    if (!npcId) return '';
+    const npcItem = NPC_ITEMS?.[npcId];
+    if (npcItem?.name) return I18n.itemName ? I18n.itemName(npcId, npcItem.name) : npcItem.name;
+    return npcId.replace(/^npc_/, '');
   },
 
   // ── Combat Overhaul Phase 3 · 적 의도 예고 + aiPattern ──

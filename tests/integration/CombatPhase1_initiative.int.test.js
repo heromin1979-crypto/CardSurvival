@@ -90,7 +90,8 @@ describe('_renderInitiativeBar — 순수 HTML 반환', () => {
     };
     const html = CombatUI._renderInitiativeBar(combat, GameState);
     expect(html).toMatch(/class="init-slot companion active"/);
-    expect(html).toContain('nurs');    // id 축약 라벨 (4자 슬라이스)
+    // 이슈 #8 수정 후: NPC_ITEMS의 한글 이름 "간호사" (I18n.itemName 통해)
+    expect(html).toContain('간호사');
     // 15/50 = 30%
     expect(html).toMatch(/width:30%/);
     GameState.npcs = prevNpcs;

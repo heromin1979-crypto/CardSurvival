@@ -28,9 +28,20 @@ const DragDrop = {
     document.addEventListener('drop',      e => this._onDrop(e));
   },
 
+  // 이슈 #3 헬퍼 — NPC 카드 여부 판별
+  _isNPCCard(instanceId) {
+    return GameState.getCardDef?.(instanceId)?.type === 'npc';
+  },
+
   _onDragStart(e) {
     const card = e.target.closest('[data-instance-id]');
     if (!card) return;
+
+    // 이슈 #3 — NPC 카드는 드래그 불가 (바닥칸 고정)
+    if (this._isNPCCard(card.dataset.instanceId)) {
+      e.preventDefault();
+      return;
+    }
 
     this._draggingId = card.dataset.instanceId;
     card.classList.add('dragging');
@@ -187,6 +198,9 @@ const DragDrop = {
     const existingId = GameState.board[row]?.[slotIdx];
 
     if (existingId && existingId !== this._draggingId) {
+      // 이슈 #3 — NPC 타겟이면 진단/치료 이외의 swap 모두 차단
+      //   (진단/치료는 바로 아래 분기에서 처리됨)
+      const tgtIsNPC = this._isNPCCard(existingId);
       // 0-a. 부상 NPC 진단 (진단 도구 → 미진단 부상 NPC)
       if (this._tryNPCDiagnose(this._draggingId, existingId)) {
         this._hideInteractionTip();
@@ -199,6 +213,12 @@ const DragDrop = {
         this._hideInteractionTip();
         slot.classList.remove('drag-over-valid', 'drag-over-invalid', 'drag-over-hover', 'can-interact');
         EventBus.emit('boardChanged', {});
+        return;
+      }
+      // 이슈 #3 — NPC 타겟: 진단/치료에 해당 안 되면 swap 차단 (NPC는 이동 불가)
+      if (tgtIsNPC) {
+        this._hideInteractionTip();
+        slot.classList.remove('drag-over-valid', 'drag-over-invalid', 'drag-over-hover', 'can-interact');
         return;
       }
       // 1. 상호작용 우선 시도
