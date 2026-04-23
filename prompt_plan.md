@@ -1,92 +1,93 @@
-# 의사(이지수) 플레이 경험 개선 계획 — 8개 개선안
+# Combat System Overhaul — Tier 1 + 2
 
-> 최종 업데이트: 2026-04-23
-> 상태: **Wave 3 전체 완료 + 통합 테스트 스위트 (27) 추가 완료**
-> 선행 완료: HospitalSiegeSystem Phase 4 + EmergencyRoomModal UI + 페르소나 5→13 확장 (160/160 테스트 통과)
+> 시작일: 2026-04-23
+> 상태: **Phase 1 완료 · Phase 2 대기**
+> 선행 완료: Wave 3 전체 (8개 이슈 해소) · 통합 테스트 스위트 27 (→ `prompt_plan.old3.md` 아카이브)
 
 ## 배경
 
-의사 캐릭터 Day 1~30 시뮬레이션 결과, 8개 주요 문제점 식별:
-1. Day 10 첫 습격 필패 디자인 (guard 페르소나 확보 확률 ~15%)
-2. 원정-환자 허브 이중 손실 (세브란스 원정 5일 간 사기 -10+ 누적)
-3. 환자 기여 타입 무작위 (전략 빌드 불가)
-4. 사기 이코노미 단방향 (패널티 빈발, 회복 빈약)
-5. 의사 전투 약자인데 현장 분기만 존재
-6. Day 10/Day 30 이벤트 중첩
-7. 루팅 -1/일 영구 감소 비가시 (실제로는 미구현)
-8. 시간(TP 72) 감각 추상적
+사용자 피드백: "NPC는 전투에서 그냥 맞아 주는 역활로만 사용되는데 전투 시스템을 보여지는 부분과 실질적인 부분 개선이 필요."
 
-## 실행 계획 — 3 Wave
+조사 결과 4가지 구조 문제:
+- **P1**: NPC 독립 턴 부재 (수동 명령 + 쿨다운 의존)
+- **P2**: 적이 NPC 직접 타겟 안 함 (20% 무작위 가로채기)
+- **P3**: `aiPattern` 메타데이터만 존재, 코드 미구현
+- **P4**: 턴 가시성 부재 (누구 차례인지 표시 없음)
 
-### Wave 1 — 상수·플래그 조정 ✅ 완료 (commit b7fd2fc)
+## 전체 계획 — 7 Phase
 
-| # | 태스크 | 수정 대상 | 상태 |
-|---|-------|---------|------|
-| W1-1 (#4) | 사기 리밸런스 | PatientIntakeSystem, HospitalSiegeSystem, gameBalance.js | ✅ |
-| W1-2 (#5) | Day10↔30 중첩 완화 | HospitalSiegeSystem._checkSchedule | ✅ |
-| W1-3 (#8) | 시간대 HUD 아이콘 | NightSystem / Main.js 렌더 루프 | ✅ |
+| Phase | 범위 | 줄 수 | 상태 |
+|------|------|-------|------|
+| **1** | 턴 큐 인프라 (Q1 initiative HUD + 큐 순환) | ~350 | ✅ (26건 테스트 · 309/309) |
+| 2 | 동료 스탠스 + 독립 행동 (Q2 + M2 일부) | ~500 | ⏳ |
+| 3 | 적 의도 예고 + AI 타겟 분기 (Q3 + M1) | ~300 | ⏳ |
+| 4 | 동료 애니메이션 (Q4) · **Tier 1 완료점** | ~250 | ⏳ |
+| 5 | Speed 기반 initiative (M3) | ~150 | ⏳ |
+| 6 | Front/Back 포지션 (M5) | ~500 | ⏳ |
+| 7 | Action Points (M4) · **Tier 2 완료점** | ~700 | ⏳ |
+| 합계 | | ~2750 | |
 
-### Wave 2 — 시스템 수정·퀘스트 추가 ✅ 완료 (commit e13fd7a)
+## 확정된 설계 답안 (Open Question 추천안 채택)
 
-| # | 태스크 | 수정 대상 | 상태 |
-|---|-------|---------|------|
-| W2-1 (#2) | 간호사 자동 대행 + tryIntake 위치 체크 | PatientIntakeSystem, npcs.js | ✅ |
-| W2-2 (#1) | 튜토리얼 습격 + Day7 예고 | mq_doctor_shared, HospitalSiegeSystem | ✅ |
-| W2-3 (#3a) | 환자 롤 기여 타입 가중치 | PatientIntakeSystem._rollPersona | ✅ |
+1. Phase 4(Tier 1) 완료 시 체감 검증 후 Phase 5~7 Go/No-Go 재평가
+2. AP 기본값: **2 AP/턴** (P7)
+3. 행 전환 비용: **1 AP** (P6+P7)
+4. 동료 사망 처리: **기절** (incapacitated, 전투 종료 후 HP 20% 복귀)
+5. 적 의도 예고: **100% 결정론** (Into the Breach 방식)
+6. Speed 동점: **플레이어 > 동료 > 적** 타이브레이커
+7. 작업 브랜치: **master + 작은 커밋 회귀 0 보장** (feature 브랜치 오버헤드 회피)
+8. **TDD 필수** — 각 Phase 종료 조건에 "회귀 0" + 신규 테스트
 
-### Wave 3 — 신규 모달·미니게임 🚧 진행 중
+## Phase 1 — 턴 큐 인프라 상세
 
-| # | 태스크 | 수정 대상 | 상태 |
-|---|-------|---------|------|
-| W3-1 (#3b) | 환자 기여 타입 선택권 UI | ContributionChoiceModal 신규, 환자 스키마 altContributions, PatientIntakeSystem._pendingChoices/chooseContribution | 🚧 작업 중 (미커밋) |
-| W3-1b (#5) | 의사 특권 — 습격 패배 완화 | gameBalance.doctorPrivilege, HospitalSiegeSystem._applyDefeat (사망자 -1, 사기 ×0.75) | 🚧 작업 중 (미커밋) |
-| W3-2 (#7) | 서브로케이션 루팅 고갈 구현+UI | GameState, ExploreSystem, LandmarkModal | ✅ 완료 (236/236) |
-| W3-3 (#5) | 의사 전용 대피 미니게임 (2-stage 선택 체인) | HospitalSiegeSystem, Encounter.js, gameBalance.js | ✅ 완료 (20/20) |
+### 목표
+"플레이어 액션 → 모든 적 연쇄 공격" → "큐에 순서대로 한 엔티티씩 1 턴 소비".
 
-### W3-2 상세 계획 (#7 서브로케이션 루팅 고갈)
+### 변경 지점
 
-4단계로 분리 — 점진 배포:
+**GameState.combat 확장**:
+```js
+turnQueue: [],      // [{type: 'player'|'companion'|'enemy', id, dead}]
+activeIdx: 0,       // 활성 엔티티 인덱스
+roundNumber: 1,     // 큐 한 바퀴 = 1 라운드
+```
 
-| Phase | 범위 | 파일 | 상태 |
-|------|------|------|------|
-| **A** | GameState 스키마·헬퍼·세이브 호환·테스트 | GameState.js, gameBalance.js, GameState_subLocationStock.test.js | ✅ 완료 (25/25) |
-| **B** | ExploreSystem 통합 + QuestSystem 보라매 하드코드 대체 | ExploreSystem.js, QuestSystem.js, ExploreSystem_subLocationStock.test.js | ✅ 완료 (9/9) |
-| **C** | ExploreSystem tpAdvance 리스너 + 자동 일자 감소 | ExploreSystem.js, ExploreSystem_dayDecay.test.js | ✅ 완료 (7/7) |
-| **D** | LandmarkModal UI 재고 배지 (🪙 X/Y, 색상, 고갈 click 차단) | LandmarkModal.js, landmark.css, LandmarkModal_stockBadge.test.js | ✅ 완료 (10/10) |
+**CombatSystem 신규 메서드**:
+- `_buildTurnQueue()` — 전투 시작 시 구성 (player → companions → enemies)
+- `_advanceTurn()` — 다음 엔티티로 진행, 죽은 건 skip
+- `_removeFromQueue(type, id)` — 사망 처리
+- `_runCurrentTurn()` — 활성 엔티티 종류 분기 (Phase 1에서는 enemy만 실제 동작, companion은 stub)
 
-**Phase A 채택된 설계 결정**:
-- 스키마: `subLocationStock: { [subLocId]: { stock, baseStock, lastDecayDay } }`
-- 일자 감소 정책: **건너뛴 day 수와 무관하게 1회당 1만 감소** (lastDecayDay 중복 차감 방지)
-- 감소량 상수: `BALANCE.explore.stockDecayPerDay = 1`
-- 초기 baseStock: sub-loc `lootCount[1]` (max) 기준 lazy-init (Phase B에서 연결)
-- `flags.boramae_depleted` 스텁: **Phase B에서 대체 완료** — 플래그는 1회성 가드로만 유지, 실제 감소는 `subLocationStock`으로 이관
+**기존 메서드 변경**:
+- 전투 시작 훅에서 `_buildTurnQueue` 호출
+- 플레이어 행동 종료 후 `_advanceTurn` → `_runCurrentTurn` 루프
+- `_allEnemiesAttack` 데드코드 제거 (Phase 1 완료 시)
 
-**Phase A 검증 증거**:
-- 신규 테스트 25/25 통과 (GameState_subLocationStock.test.js)
-- 전체 테스트 210/210 통과 (회귀 없음)
-- `node --input-type=module js/data/validate.js` → ✅ ALL CLEAR (Errors: 0)
+**CombatUI 추가**:
+- 상단 **initiative bar** — 큐 순서대로 초상화 배치 + 활성 강조 + HP mini-bar
+- 죽은 엔티티: 회색 + 라인 스루
 
-## Wave별 검증
+**세이브 호환**:
+- `deserialize`에서 `turnQueue` 부재 시 전투 비활성 상태로 복원 (전투 중 저장 시나리오는 원래 지원 안 됨)
 
-- 각 Wave 완료 시 `node --input-type=module js/data/validate.js` ALL CLEAR
-- 각 Wave 완료 시 `npx vitest run` 전체 통과
-- 각 Wave 종료마다 `feat:` 커밋
+### Phase 1 수용 기준 (Acceptance Criteria) — 완료
 
-## Wave 3 통합 테스트 스위트 (사후 추가)
+- [x] 전투 시작 시 큐가 올바르게 구성 (플레이어 + 동료 0~2 + 적 1~N) ✅
+- [x] 플레이어 액션 → AI 턴 처리기 → 적 각자 개별 턴 → 다시 플레이어 순환 ✅
+- [x] 엔티티 사망 시 큐에서 skip, HP 0 companion은 큐 구성에서 제외 ✅
+- [x] 모든 적 사망 → 승리 판정, 플레이어 사망 → 패배 판정 (기존 로직 유지) ✅
+- [x] CombatUI에 initiative bar 표시 ✅
+- [x] 기존 회귀 0 (283 → 309, 26 신규 모두 추가) ✅
+- [x] 신규 테스트 26건 (turn queue unit 15 + integration 11) ≥ 15 목표 ✅
 
-unit 테스트가 함수 단위를, 통합 테스트가 시스템 간 연결부(EventBus 전파·SystemRegistry 조회·DOM 이벤트 체인)를 커버한다.
+### Phase 1 구현 증거
+- `CombatSystem._buildTurnQueue / _advanceTurn / _currentEntry / _isEntryAlive / _processAiTurns / _runCompanionTurn (stub) / _runSingleEnemyTurn`
+- `_setupCombat` 에 turnQueue/activeIdx/roundNumber 필드 초기화
+- `_allEnemiesAttack` → `_processAiTurns` alias (하위 호환)
+- `CombatUI._renderInitiativeBar` + `initiative-bar` CSS 블록 (screens-combat.css)
 
-| # | 파일 | 환경 | 케이스 수 | 대상 |
-|---|------|------|----------|------|
-| I1 | `Wave3_subLocationStock.int.test.js` | node | 8 | tpAdvance → day decay 자동 트리거 + QuestSystem 보라매 depletion end-to-end |
-| I2 | `Wave3_patientChoice.int.test.js` | node | 9 | npcHealed → contributionChoiceNeeded → chooseContribution → DispatchSystem/GuardSystem 등록 |
-| I3 | `Wave3_doctorEvacuation.int.test.js` | happy-dom | 10 | Encounter 버튼 클릭 → 2-stage 체인 → siegeResolved → HospitalSiegeSystem 반응 |
+## 아카이브
 
-합계 27 통합 케이스. 전체 283/283 통과.
-
-**새 의존성**: `happy-dom@^20.9.0` (devDependency) — I3 DOM 시뮬용.
-
-## 이전 계획
-
-→ `prompt_plan.old2.md` (HospitalSiegeSystem Phase 4 기록)
+→ `prompt_plan.old3.md` (Wave 3 완료 + 통합 테스트 스위트)
+→ `prompt_plan.old2.md` (HospitalSiegeSystem Phase 4)
 → `prompt_plan.old.md` (Wave 1 이전 전체 기획)

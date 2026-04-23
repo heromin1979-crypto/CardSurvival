@@ -85,6 +85,81 @@
   100% { transform: scale(1);    }
 }
 
+/* ── ①-b Initiative 바 (Phase 1) ───────────────────── */
+
+.initiative-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 14px;
+  background: rgba(0, 0, 0, 0.4);
+  border-bottom: 1px solid var(--border-dim, #333);
+  font-size: 11px;
+}
+
+.init-round-label {
+  flex-shrink: 0;
+  font-weight: bold;
+  color: var(--text-dim, #888);
+  letter-spacing: 0.5px;
+}
+
+.init-slots {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  flex: 1;
+}
+
+.init-slot {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border: 1px solid var(--border-dim, #333);
+  border-radius: 4px;
+  background: rgba(20, 20, 20, 0.6);
+  flex-shrink: 0;
+  min-width: 70px;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.init-slot.active {
+  border-color: var(--text-warn, #c8a060);
+  background: rgba(200, 160, 96, 0.15);
+  box-shadow: 0 0 8px rgba(200, 160, 96, 0.35);
+}
+
+.init-slot.player.active { border-color: var(--text-good, #70b870); background: rgba(112, 184, 112, 0.18); box-shadow: 0 0 8px rgba(112, 184, 112, 0.4); }
+.init-slot.enemy.active  { border-color: var(--text-danger, #d06868); background: rgba(208, 104, 104, 0.18); box-shadow: 0 0 8px rgba(208, 104, 104, 0.4); }
+
+.init-slot.dead {
+  opacity: 0.3;
+  text-decoration: line-through;
+  filter: grayscale(1);
+}
+
+.init-icon  { font-size: 14px; }
+.init-label { font-size: 10px; color: var(--text-primary); }
+
+.init-hp-bar {
+  flex: 1;
+  min-width: 24px;
+  height: 3px;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 1px;
+  overflow: hidden;
+}
+
+.init-hp-fill {
+  height: 100%;
+  background: var(--text-good, #70b870);
+  transition: width 0.3s;
+}
+
+.init-slot.enemy .init-hp-fill     { background: var(--text-danger, #d06868); }
+.init-slot.companion .init-hp-fill { background: var(--text-warn, #c8a060); }
+
 /* ── ② 메인 3열 ──────────────────────────────────────── */
 
 .combat-main {
