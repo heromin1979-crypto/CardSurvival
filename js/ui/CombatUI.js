@@ -6,6 +6,7 @@ import I18n          from '../core/I18n.js';
 import NightSystem   from '../systems/NightSystem.js';
 import { CHARACTERS } from '../data/characters.js';
 import { DISTRICTS }  from '../data/districts.js';
+import BALANCE        from '../data/gameBalance.js';
 
 const BATTLE_BG    = './assets/images/battle_bg.jpg';
 const PLAYER_IMG_M = './assets/images/player_M.jpg';
@@ -586,6 +587,21 @@ const CombatUI = {
       });
     });
 
+    // ── Phase 2 · 동료 stance 버튼 클릭 ──────────────────────
+    this._screen.querySelectorAll('.stance-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const npcId = btn.dataset.npcId;
+        const stance = btn.dataset.stance;
+        if (!npcId || !stance) return;
+        const st = GameState.npcs?.states?.[npcId];
+        if (st) {
+          st.stance = stance;
+          this.render();
+        }
+      });
+    });
+
     // ── 우측 패널 적 목록 클릭 ────────────────────────────────
     this._screen.querySelectorAll('.cep-enemy-item:not(.dead)').forEach(el => {
       el.addEventListener('click', () => {
@@ -670,6 +686,39 @@ const CombatUI = {
     setTimeout(() => popup.remove(), 900);
   },
 
+  // Phase 2 — 동료 stance 셀렉터 + 클래스 스킬 쿨다운 배지
+  _renderStanceSelector(npcId, state) {
+    const stances = [
+      { key: 'attack',  icon: '🗡', label: '공격' },
+      { key: 'heal',    icon: '💉', label: '치료' },
+      { key: 'support', icon: '⚙',  label: '지원' },
+      { key: 'hold',    icon: '🛡', label: '방어' },
+      { key: 'manual',  icon: '✋', label: '대기' },
+    ];
+    const active = state?.stance ?? 'attack';
+
+    const btnHtml = stances.map(s => {
+      const sel = s.key === active ? ' active' : '';
+      return `<button class="stance-btn${sel}" data-stance="${s.key}" data-npc-id="${npcId}" title="${s.label}">${s.icon}</button>`;
+    }).join('');
+
+    // 클래스 스킬 쿨다운 배지
+    const skill = BALANCE.combat?.companionAuto?.classSkills?.[npcId];
+    let skillHtml = '';
+    if (skill) {
+      const cd = state?.skillCooldowns?.[skill.id] ?? 0;
+      const ready = cd === 0;
+      skillHtml = `<span class="skill-cd-badge${ready ? ' ready' : ''}" title="${skill.name}">
+          ${ready ? '✨' : `⏳${cd}`} ${skill.name}
+        </span>`;
+    }
+
+    return `<div class="cpp-stance-row" style="margin-top:5px;display:flex;gap:3px;align-items:center;flex-wrap:wrap;">
+      ${btnHtml}
+      ${skillHtml}
+    </div>`;
+  },
+
   /** 동반자(NPC) 전투 상태 패널 — 플레이어 패널 하단에 표시 */
   _renderCompanionsPanel(gs) {
     const companions = gs.companions ?? [];
@@ -718,6 +767,9 @@ const CombatUI = {
         ? `<span style="font-size:10px;color:${tierColor};margin-left:4px;">[${tierLabel}]</span>`
         : '';
 
+      // Phase 2 — stance selector
+      const stanceHtml = CombatUI._renderStanceSelector(npcId, state);
+
       return `
         <div class="cpp-companion-row" style="margin-top:8px;padding:6px;background:rgba(255,255,255,0.04);border-radius:4px;">
           <div style="display:flex;justify-content:space-between;align-items:center;">
@@ -729,6 +781,7 @@ const CombatUI = {
           </div>
           <div style="font-size:10px;color:var(--text-dim);">HP ${hp}/${maxHp}</div>
           ${bondHtml}
+          ${stanceHtml}
         </div>`;
     }).join('');
     return `<div class="cpp-companions" style="margin-top:10px;border-top:1px solid var(--border-dim);padding-top:8px;">
