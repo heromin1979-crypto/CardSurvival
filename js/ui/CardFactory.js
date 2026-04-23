@@ -223,7 +223,7 @@ const CARD_IMAGES = {
   vaccine:               'assets/images/medical/vaccine.png',
   alcohol_swab:          'assets/images/medical/alcohol_swab.png',
   thermometer:           'assets/images/medical/vitamins.png',
-  stethoscope:           'assets/images/medical/first_aid_kit.png',
+  // 이슈 #4 — stethoscope 전용 이미지 부재. 매핑 제거 (CARD_IMAGES[id] 없으면 이미지 없이 렌더)
   diagnostic_kit:        'assets/images/medical/surgical_grade_kit.png',
   sling:                 'assets/images/medical/splint.png',
   head_bandage:          'assets/images/medical/bandage.png',

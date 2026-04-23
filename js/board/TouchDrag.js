@@ -54,7 +54,17 @@ const TouchDrag = {
     }, LONG_PRESS_MS);
   },
 
+  // 이슈 #3 헬퍼 — NPC 카드 여부 판별
+  _isNPCCard(instanceId) {
+    return GameState.getCardDef?.(instanceId)?.type === 'npc';
+  },
+
   _startDrag(card, e) {
+    // 이슈 #3 — NPC 카드는 드래그 불가
+    if (this._isNPCCard(card.dataset.instanceId)) {
+      this._pendingCard = null;
+      return;
+    }
     this._draggingId = card.dataset.instanceId;
     const rect = card.getBoundingClientRect();
     this._offsetX = e.clientX - rect.left;
@@ -170,6 +180,7 @@ const TouchDrag = {
       const existingId = GameState.board[row]?.[slotIdx];
 
       if (existingId && existingId !== this._draggingId) {
+        const tgtIsNPC = this._isNPCCard(existingId);
         // 부상 NPC 진단 (진단 도구 → 미진단 부상 NPC)
         if (this._tryNPCDiagnose(this._draggingId, existingId)) {
           EventBus.emit('boardChanged', {});
@@ -179,6 +190,11 @@ const TouchDrag = {
         // 부상 NPC 치료 (붕대 → 부상 NPC)
         if (this._tryWoundHeal(this._draggingId, existingId)) {
           EventBus.emit('boardChanged', {});
+          this._draggingId = null;
+          return;
+        }
+        // 이슈 #3 — NPC 타겟: 진단/치료 아니면 swap 차단
+        if (tgtIsNPC) {
           this._draggingId = null;
           return;
         }

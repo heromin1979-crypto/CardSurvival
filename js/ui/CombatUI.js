@@ -7,6 +7,7 @@ import NightSystem   from '../systems/NightSystem.js';
 import { CHARACTERS } from '../data/characters.js';
 import { DISTRICTS }  from '../data/districts.js';
 import BALANCE        from '../data/gameBalance.js';
+import { NPC_ITEMS }  from '../data/npcs.js';
 
 const BATTLE_BG    = './assets/images/battle_bg.jpg';
 const PLAYER_IMG_M = './assets/images/player_M.jpg';
@@ -152,7 +153,13 @@ const CombatUI = {
           hpPct = Math.max(0, Math.min(100, ((st.hp ?? 0) / (st.maxHp ?? 50)) * 100));
           dead  = (st.hp ?? 0) <= 0;
         }
-        label = (entry.id ?? '').replace(/^npc_/, '').slice(0, 4);
+        // 이슈 #8 — NPC 한글 이름 (I18n.itemName 통해 NPC_ITEMS name 조회)
+        const npcItem = NPC_ITEMS?.[entry.id];
+        const fullName = I18n.itemName
+          ? I18n.itemName(entry.id, npcItem?.name ?? entry.id)
+          : (npcItem?.name ?? entry.id);
+        // 한글 3자/영어 4자 축약
+        label = fullName.slice(0, 4);
       }
 
       const cls = ['init-slot', entry.type];

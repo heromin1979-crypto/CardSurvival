@@ -74,7 +74,7 @@ const CombatResult = {
     this._el.innerHTML = `
       <div class="result-title ${outcome}">${title}</div>
       <div class="result-summary">
-        HP: ${gs.player.hp.current} / ${gs.player.hp.max}
+        HP: ${Math.round(gs.player.hp.current)} / ${gs.player.hp.max}
         &nbsp;·&nbsp; ${I18n.t('combatResult.totalXp')}: ${playerXp}
       </div>
       ${xpHtml}
