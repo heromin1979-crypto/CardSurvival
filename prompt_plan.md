@@ -1,7 +1,7 @@
 # 의사(이지수) 플레이 경험 개선 계획 — 8개 개선안
 
 > 최종 업데이트: 2026-04-23
-> 상태: **Wave 3 전체 완료 — 대기 중 태스크 없음**
+> 상태: **Wave 3 전체 완료 + 통합 테스트 스위트 (27) 추가 완료**
 > 선행 완료: HospitalSiegeSystem Phase 4 + EmergencyRoomModal UI + 페르소나 5→13 확장 (160/160 테스트 통과)
 
 ## 배경
@@ -71,6 +71,20 @@
 - 각 Wave 완료 시 `node --input-type=module js/data/validate.js` ALL CLEAR
 - 각 Wave 완료 시 `npx vitest run` 전체 통과
 - 각 Wave 종료마다 `feat:` 커밋
+
+## Wave 3 통합 테스트 스위트 (사후 추가)
+
+unit 테스트가 함수 단위를, 통합 테스트가 시스템 간 연결부(EventBus 전파·SystemRegistry 조회·DOM 이벤트 체인)를 커버한다.
+
+| # | 파일 | 환경 | 케이스 수 | 대상 |
+|---|------|------|----------|------|
+| I1 | `Wave3_subLocationStock.int.test.js` | node | 8 | tpAdvance → day decay 자동 트리거 + QuestSystem 보라매 depletion end-to-end |
+| I2 | `Wave3_patientChoice.int.test.js` | node | 9 | npcHealed → contributionChoiceNeeded → chooseContribution → DispatchSystem/GuardSystem 등록 |
+| I3 | `Wave3_doctorEvacuation.int.test.js` | happy-dom | 10 | Encounter 버튼 클릭 → 2-stage 체인 → siegeResolved → HospitalSiegeSystem 반응 |
+
+합계 27 통합 케이스. 전체 283/283 통과.
+
+**새 의존성**: `happy-dom@^20.9.0` (devDependency) — I3 DOM 시뮬용.
 
 ## 이전 계획
 
