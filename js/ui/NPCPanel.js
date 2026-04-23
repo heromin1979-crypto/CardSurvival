@@ -2,11 +2,13 @@
 // Side panel showing recruited companions only.
 // Non-companion NPCs appear as board cards on the middle row.
 
-import EventBus  from '../core/EventBus.js';
-import NPCSystem from '../systems/NPCSystem.js';
-import { NPC_ITEMS } from '../data/npcs.js';
-import I18n      from '../core/I18n.js';
-import GameData  from '../data/GameData.js';
+import EventBus       from '../core/EventBus.js';
+import GameState      from '../core/GameState.js';
+import SystemRegistry from '../core/SystemRegistry.js';
+import NPCSystem      from '../systems/NPCSystem.js';
+import { NPC_ITEMS }  from '../data/npcs.js';
+import I18n           from '../core/I18n.js';
+import GameData       from '../data/GameData.js';
 
 const EMOTION_ICONS = {
   calm:    { icon: '😌', label: '안정' },
@@ -156,6 +158,26 @@ const NPCPanel = {
     const dispatched = state.dispatched ?? false;
     if (dispatched) el.classList.add('dispatched');
 
+    // 이슈 #1 — 파견 중인 NPC: 귀환 D-day 배지 + 진행 게이지
+    let dispatchBadge = '';
+    const dispatchSys = SystemRegistry.get('DispatchSystem');
+    const assignment = dispatchSys?.getAssignment?.(npcId);
+    if (assignment?.status === 'deployed' && assignment.returnDay != null) {
+      const today = GameState.time?.day ?? 0;
+      const deployedDay = assignment.deployedDay ?? (assignment.returnDay - 5);
+      const totalDays = Math.max(1, assignment.returnDay - deployedDay);
+      const passed = Math.max(0, today - deployedDay);
+      const progressPct = Math.min(100, (passed / totalDays) * 100);
+      const dDay = Math.max(0, assignment.returnDay - today);
+      const dLabel = dDay === 0 ? '오늘 귀환' : `D-${dDay}`;
+      el.classList.add('dispatched');
+      dispatchBadge = `
+        <div class="npc-mini-dispatch" title="${assignment.targetDistrict ? `→ ${assignment.targetDistrict}` : '파견 중'}">
+          <span class="npc-mini-dispatch-label">🎒 ${dLabel}</span>
+          <div class="npc-mini-dispatch-bar"><div class="npc-mini-dispatch-fill" style="width:${progressPct.toFixed(0)}%"></div></div>
+        </div>`;
+    }
+
     // Quest indicator
     const hasQuest   = (state.activeQuest != null);
     const questBadge = hasQuest ? `<div class="npc-mini-quest-badge">❗</div>` : '';
@@ -172,6 +194,7 @@ const NPCPanel = {
       <div class="npc-mini-trust">${stars}</div>
       ${emotionBadge}
       ${hpBar}
+      ${dispatchBadge}
     `;
     const openDialogue = (e) => {
       if (e) { e.stopPropagation(); e.preventDefault(); }

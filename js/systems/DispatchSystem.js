@@ -84,9 +84,11 @@ const DispatchSystem = {
 
     entry.assignment = {
       ...entry.assignment,
-      status:     'deployed',
-      deployedTo: dispatch.targetDistrict,
+      status:       'deployed',
+      deployedTo:   dispatch.targetDistrict,
+      deployedDay:  day,            // 이슈 #1 — UI 진행률 계산용
       returnDay,
+      targetDistrict: dispatch.targetDistrict,  // UI 표시용
     };
 
     EventBus.emit('dispatchDeployed', {

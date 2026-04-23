@@ -968,3 +968,46 @@
 .body-npc-name { font-weight: 600; color: var(--text-primary); font-size: var(--font-size-sm); }
 .body-npc-status { font-size: 11px; color: var(--text-secondary); }
 .body-npc-hint { font-size: 10px; color: var(--text-dim, #7a7a8a); font-style: italic; }
+
+/* 이슈 #7 — 사망 위험 중앙 경고 배너 */
+.critical-warning-banner {
+  position: fixed;
+  top: 30%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.85);
+  z-index: 9999;
+  padding: 28px 48px;
+  background: linear-gradient(135deg, rgba(180, 30, 30, 0.92), rgba(140, 20, 20, 0.96));
+  border: 3px solid rgba(255, 120, 120, 0.9);
+  border-radius: 10px;
+  box-shadow: 0 0 40px rgba(255, 80, 80, 0.6), inset 0 0 20px rgba(0, 0, 0, 0.4);
+  text-align: center;
+  pointer-events: none;
+  opacity: 0;
+  transition: none;
+  display: none;
+}
+.critical-warning-banner.show {
+  display: block;
+  animation: critWarnBannerIn 0.35s ease forwards, critWarnPulse 0.8s ease-in-out 0.35s infinite alternate;
+}
+.critical-warning-banner .crit-warn-icon {
+  font-size: 48px;
+  margin-bottom: 8px;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.7));
+}
+.critical-warning-banner .crit-warn-text {
+  font-size: 22px;
+  font-weight: bold;
+  color: #fff5f5;
+  letter-spacing: 0.5px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+}
+@keyframes critWarnBannerIn {
+  from { opacity: 0; transform: translate(-50%, -60%) scale(0.7); }
+  to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+@keyframes critWarnPulse {
+  from { box-shadow: 0 0 40px rgba(255, 80, 80, 0.6), inset 0 0 20px rgba(0, 0, 0, 0.4); }
+  to   { box-shadow: 0 0 60px rgba(255, 120, 120, 0.9), inset 0 0 20px rgba(0, 0, 0, 0.4); }
+}

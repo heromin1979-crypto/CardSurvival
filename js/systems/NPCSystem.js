@@ -128,6 +128,8 @@ const NPCSystem = {
 
       // Already spawned or dismissed — skip
       if (state?.spawned || state?.dismissed) continue;
+      // 이슈 #5 — 영입된 동료는 재스폰 금지 (state 망가져도 안전)
+      if ((GameState.companions ?? []).includes(npcId)) continue;
 
       // Check spawn conditions
       if (day >= npcDef.spawnDay && district === npcDef.spawnDistrict) {
@@ -178,6 +180,9 @@ const NPCSystem = {
         // 동반자는 패널에 표시
         EventBus.emit('npcPanelAdd', { npcId, section: 'companion' });
       } else if (npcDef.spawnDistrict === district) {
+        // 이슈 #5 — companions 배열에 들어있으면(어떤 경로로든 영입된 NPC)
+        //           바닥 카드를 재생성하지 않음 (state.isCompanion이 false여도 보호)
+        if ((GameState.companions ?? []).includes(npcId)) continue;
         // 미영입 NPC가 현재 지역에 있으면 보드 카드 보장
         const existing = GameState.getBoardCards().find(c => c.definitionId === npcId);
         if (!existing) {
