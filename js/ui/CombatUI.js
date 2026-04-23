@@ -39,6 +39,75 @@ const CombatUI = {
         this.render();
       }
     });
+    // Phase 4 — 동료 행동 이벤트 → 애니메이션
+    EventBus.on('companionAction', (data) => this._triggerCompanionAnimation(data));
+    EventBus.on('enemyAttackCompanion', (data) => this._triggerEnemyAttackCompanion(data));
+  },
+
+  // ── Combat Overhaul Phase 4 · 동료 애니메이션 ──────────
+
+  /**
+   * 동료 카드 glow + 대상에 데미지/힐 플로팅 텍스트.
+   * data: { npcId, action: 'attack'|'heal'|'hold'|'skill', targetIdx?, damage?, amount?, skillId? }
+   */
+  _triggerCompanionAnimation(data) {
+    if (!this._screen || !data?.npcId) return;
+    const card = this._screen.querySelector(`[data-companion-id="${data.npcId}"]`);
+    if (!card) return;
+
+    // glow 클래스 (action별 색상)
+    const glowCls = `companion-glow-${data.action}`;
+    card.classList.remove(glowCls);
+    void card.offsetWidth;   // reflow to restart animation
+    card.classList.add(glowCls);
+    setTimeout(() => card.classList.remove(glowCls), 600);
+
+    if (data.action === 'attack' && data.targetIdx != null) {
+      this._spawnFloatText(
+        this._screen.querySelector(`.cv-enemy-sprite[data-idx="${data.targetIdx}"]`),
+        `-${data.damage}`,
+        'dmg',
+      );
+    } else if (data.action === 'heal') {
+      this._spawnFloatText(this._screen.querySelector('.cv-player'), `+${data.amount}`, 'heal');
+    } else if (data.action === 'skill') {
+      // 배경 플래시 (visual element)
+      const visual = this._screen.querySelector('.combat-visual');
+      if (visual) {
+        visual.classList.remove('skill-flash');
+        void visual.offsetWidth;
+        visual.classList.add('skill-flash');
+        setTimeout(() => visual.classList.remove('skill-flash'), 500);
+      }
+    }
+  },
+
+  /**
+   * 적이 동료 공격 시 동료 카드에 hit flash + 데미지 플로팅.
+   * data: { enemyId, npcId, damage }
+   */
+  _triggerEnemyAttackCompanion(data) {
+    if (!this._screen || !data?.npcId) return;
+    const card = this._screen.querySelector(`[data-companion-id="${data.npcId}"]`);
+    if (!card) return;
+    card.classList.remove('companion-hit');
+    void card.offsetWidth;
+    card.classList.add('companion-hit');
+    setTimeout(() => card.classList.remove('companion-hit'), 350);
+    this._spawnFloatText(card, `-${data.damage}`, 'dmg');
+  },
+
+  // 헬퍼: 타겟 엘리먼트 위에 짧은 플로팅 텍스트 생성
+  _spawnFloatText(anchor, text, variant = 'dmg') {
+    if (!anchor) return;
+    const popup = document.createElement('div');
+    popup.className = `dmg-popup ${variant === 'heal' ? 'heal' : ''}`;
+    popup.textContent = text;
+    // 앵커에 append (position:relative 가정)
+    const prevPos = getComputedStyle(anchor).position;
+    if (prevPos === 'static') anchor.style.position = 'relative';
+    anchor.appendChild(popup);
+    setTimeout(() => popup.remove(), 900);
   },
 
   /**
@@ -783,7 +852,7 @@ const CombatUI = {
       const stanceHtml = CombatUI._renderStanceSelector(npcId, state);
 
       return `
-        <div class="cpp-companion-row" style="margin-top:8px;padding:6px;background:rgba(255,255,255,0.04);border-radius:4px;">
+        <div class="cpp-companion-row" data-companion-id="${npcId}" style="margin-top:8px;padding:6px;background:rgba(255,255,255,0.04);border-radius:4px;position:relative;">
           <div style="display:flex;justify-content:space-between;align-items:center;">
             <span style="font-size:12px;">${icon} <strong>${name}</strong>${tierBadge}</span>
             ${statusTag}
