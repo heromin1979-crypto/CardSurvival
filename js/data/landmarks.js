@@ -128,7 +128,7 @@ export const LANDMARK_DATA = {
         dangerMod: 0.40,
         lootTable: [
           { id: 'crowbar', weight: 3 }, { id: 'flashlight', weight: 3 },
-          { id: 'first_aid_kit', weight: 2 }, { id: 'iron_pipe', weight: 3 },
+          { id: 'iron_pipe', weight: 3 }, { id: 'scrap_metal', weight: 2 },
           { id: 'bandage', weight: 2 },
         ],
         lootCount: [2, 3],
@@ -526,7 +526,7 @@ export const LANDMARK_DATA = {
         dangerMod: 0.10,
         lootTable: [
           { id: 'wood', weight: 5 }, { id: 'rope', weight: 3 },
-          { id: 'flashlight', weight: 1 }, { id: 'bandage', weight: 1 },
+          { id: 'flashlight', weight: 1 }, { id: 'herb', weight: 2 },
         ],
         lootCount: [1, 3],
       },
@@ -688,7 +688,7 @@ export const LANDMARK_DATA = {
         dangerMod: 0.10,
         lootTable: [
           { id: 'rope', weight: 4 }, { id: 'scrap_metal', weight: 3 },
-          { id: 'bandage', weight: 2 }, { id: 'wood', weight: 2 },
+          { id: 'bandage', weight: 2 },
         ],
         lootCount: [1, 3],
       },
@@ -706,7 +706,7 @@ export const LANDMARK_DATA = {
         icon: '🏯', desc: '사찰 중심 법당. 조용하고 상대적으로 안전하다.',
         dangerMod: 0.05,
         lootTable: [
-          { id: 'cloth', weight: 4 }, { id: 'bandage', weight: 3 },
+          { id: 'cloth', weight: 4 }, { id: 'herb', weight: 3 },
           { id: 'rope', weight: 2 }, { id: 'lighter', weight: 1 },
         ],
         lootCount: [1, 3],
@@ -1175,7 +1175,7 @@ export const LANDMARK_DATA = {
         dangerMod: 0.05,
         lootTable: [
           { id: 'vitamins', weight: 3 }, { id: 'purified_water', weight: 3 },
-          { id: 'rope', weight: 2 }, { id: 'wood', weight: 2 },
+          { id: 'herb', weight: 2 }, { id: 'herbal_tea', weight: 2 },
         ],
         lootCount: [1, 3],
       },
@@ -1230,7 +1230,7 @@ export const LANDMARK_DATA = {
           { id: 'scalpel',        weight: 3 }, { id: 'surgery_kit',   weight: 2 },
           { id: 'combat_scalpel', weight: 1 }, { id: 'antiseptic',    weight: 3 },
           { id: 'first_aid_kit',  weight: 2 }, { id: 'antibiotics',   weight: 1 },
-          { id: 'cloth',          weight: 2 }, { id: 'rope',          weight: 1 },
+          { id: 'cloth',          weight: 2 },
         ],
         lootCount: [1, 3],
       },
@@ -1252,7 +1252,7 @@ export const LANDMARK_DATA = {
         lootTable: [
           { id: 'iv_saline',          weight: 2 }, { id: 'reinforced_bandage', weight: 2 },
           { id: 'antidote',           weight: 2 }, { id: 'contaminated_water', weight: 4 },
-          { id: 'tattered_rags',      weight: 4 }, { id: 'cloth',              weight: 2 },
+          { id: 'tattered_rags',      weight: 4 },
         ],
         lootCount: [1, 2],
       },
@@ -1263,7 +1263,6 @@ export const LANDMARK_DATA = {
         lootTable: [
           { id: 'herb',          weight: 6 }, { id: 'herbal_tea',   weight: 2 },
           { id: 'withered_tree', weight: 3 }, { id: 'cloth',        weight: 2 },
-          { id: 'rope',          weight: 2 }, { id: 'wire',         weight: 1 },
         ],
         lootCount: [1, 3],
       },
@@ -1551,7 +1550,7 @@ export const LANDMARK_DATA = {
         dangerMod: 0.30,
         lootTable: [
           { id: 'bandage', weight: 3 }, { id: 'flashlight', weight: 2 },
-          { id: 'scrap_metal', weight: 3 }, { id: 'painkiller', weight: 2 },
+          { id: 'scrap_metal', weight: 3 }, { id: 'cloth', weight: 2 },
         ],
         lootCount: [2, 3],
       },
@@ -1572,7 +1571,7 @@ export const LANDMARK_DATA = {
         dangerMod: 0.20,
         lootTable: [
           { id: 'purified_water', weight: 3 }, { id: 'bandage', weight: 3 },
-          { id: 'stimulant', weight: 2 }, { id: 'painkiller', weight: 3 },
+          { id: 'cloth', weight: 2 }, { id: 'painkiller', weight: 3 },
         ],
         lootCount: [2, 4],
       },
