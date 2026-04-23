@@ -17,6 +17,13 @@ const DANGER_COLOR = ['#449944', '#889933', '#cc8822', '#cc3333', '#881111', '#8
 const WEAKNESS_LABEL = { fire:'🔥약점', blade:'🗡️약점', bullet:'🔫약점', blunt:'💥약점', explosive:'💣약점', electric:'⚡약점' };
 const RESIST_LABEL   = { fire:'🔥저항', blade:'🗡️저항', bullet:'🔫저항', blunt:'💥저항', explosive:'💣저항', electric:'⚡저항' };
 
+// Combat Overhaul Phase 1 — 턴 큐 HUD 아이콘/라벨 매핑
+const INIT_TYPE_ICONS = {
+  player:    '👤',
+  companion: '🤝',
+  enemy:     '👹',
+};
+
 const CombatUI = {
   _screen:       null,
   _lastRound:    -1,
@@ -31,6 +38,63 @@ const CombatUI = {
         this.render();
       }
     });
+  },
+
+  /**
+   * Combat Overhaul Phase 1 — 턴 순서 HUD 바.
+   * 순수 문자열 반환 (testable). turnQueue 없을 경우 빈 문자열.
+   */
+  _renderInitiativeBar(combat, gs) {
+    const queue = combat?.turnQueue;
+    if (!Array.isArray(queue) || queue.length === 0) return '';
+    const activeIdx = combat.activeIdx ?? 0;
+
+    const slots = queue.map((entry, i) => {
+      const isActive = i === activeIdx;
+      let icon  = INIT_TYPE_ICONS[entry.type] ?? '·';
+      let label = '—';
+      let hpPct = 100;
+      let dead = false;
+
+      if (entry.type === 'player') {
+        label = (gs.player?.name ?? '생존자').slice(0, 4);
+        hpPct = Math.max(0, Math.min(100, ((gs.player?.hp?.current ?? 0) / (gs.player?.hp?.max ?? 1)) * 100));
+        dead = (gs.player?.hp?.current ?? 0) <= 0;
+      } else if (entry.type === 'enemy') {
+        const e = combat.enemies?.[entry.enemyIdx];
+        if (e) {
+          icon  = e.icon ?? icon;
+          label = (e.name ?? 'Enemy').slice(0, 4);
+          hpPct = Math.max(0, Math.min(100, ((e.currentHp ?? 0) / (e.maxHp ?? 1)) * 100));
+          dead  = (e.currentHp ?? 0) <= 0;
+        }
+      } else if (entry.type === 'companion') {
+        const st = gs.npcs?.states?.[entry.id];
+        if (st) {
+          hpPct = Math.max(0, Math.min(100, ((st.hp ?? 0) / (st.maxHp ?? 50)) * 100));
+          dead  = (st.hp ?? 0) <= 0;
+        }
+        // npcs.js 이름은 대형 dep이므로 id 축약만 사용 (Phase 2에서 정식 이름 매핑)
+        label = (entry.id ?? '').replace(/^npc_/, '').slice(0, 4);
+      }
+
+      const cls = ['init-slot', entry.type];
+      if (isActive) cls.push('active');
+      if (dead)     cls.push('dead');
+
+      return `
+        <div class="${cls.join(' ')}" data-init-idx="${i}" data-init-type="${entry.type}">
+          <span class="init-icon">${icon}</span>
+          <span class="init-label">${label}</span>
+          <div class="init-hp-bar"><div class="init-hp-fill" style="width:${hpPct.toFixed(0)}%"></div></div>
+        </div>`;
+    }).join('');
+
+    return `
+      <div class="initiative-bar" data-round="${combat.roundNumber ?? 1}">
+        <span class="init-round-label">Round ${combat.roundNumber ?? 1}</span>
+        <div class="init-slots">${slots}</div>
+      </div>`;
   },
 
   render() {
@@ -275,6 +339,9 @@ const CombatUI = {
             <span class="ctb-chip danger-chip" style="color:${dangerColor};border-color:${dangerColor}55">위험: ${dangerText}</span>
           </div>
         </header>
+
+        <!-- ①-b Initiative 바 (Phase 1) ──────────────────── -->
+        ${CombatUI._renderInitiativeBar(combat, gs)}
 
         <!-- ② 메인 3열 ──────────────────────────────────── -->
         <div class="combat-main">

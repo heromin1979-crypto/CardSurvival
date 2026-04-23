@@ -83,10 +83,22 @@ const CombatSystem = {
       lastHit:      null,
       playerStatus: [],
       enemyStatus:  [],
+      // Phase 1: 턴 큐 필드
+      turnQueue:    [],
+      activeIdx:    0,
+      roundNumber:  1,
       _encounterData: data,
       _isNew:       true,   // 첫 렌더링 진입 애니메이션 트리거용
       _ambushFailed: data.ambushFailed === true,  // 선제 제압 실패 플래그
     };
+    // 전투 시작 시 큐 구성 (player → 살아있는 companions → enemies)
+    const companions = (GameState.companions ?? []).filter(id => {
+      const st = GameState.npcs?.states?.[id];
+      return st?.isCompanion && (st.hp ?? 0) > 0;
+    });
+    gs.combat.turnQueue = this._buildTurnQueue(gs.combat, companions);
+    gs.combat.activeIdx = 0;   // 항상 플레이어부터
+
     EventBus.emit('combatStarted', {});
 
     // 선제 제압 실패: 첫 번째 플레이어 행동 전에 적이 선제 공격
@@ -96,6 +108,66 @@ const CombatSystem = {
 
     // death_horde 엔딩 조건 추적: 이 전투의 적 수 기록
     gs.flags.lastEnemyCount = enemies.length;
+  },
+
+  // ── Combat Overhaul Phase 1 · 턴 큐 ─────────────────────
+  // 큐 구조: [{type:'player'|'companion'|'enemy', id?, enemyIdx?, order}]
+  // activeIdx: 큐 내 현재 턴 위치
+  // roundNumber: 큐 한 바퀴 = 1 라운드 (랩어라운드 시 증가)
+
+  _buildTurnQueue(combat, companions = []) {
+    const queue = [];
+    let order = 0;
+    queue.push({ type: 'player', order: order++ });
+    for (const id of companions) {
+      queue.push({ type: 'companion', id, order: order++ });
+    }
+    const enemies = combat.enemies ?? [];
+    for (let i = 0; i < enemies.length; i++) {
+      queue.push({ type: 'enemy', enemyIdx: i, order: order++ });
+    }
+    return queue;
+  },
+
+  _currentEntry(combat) {
+    const q = combat?.turnQueue;
+    if (!q || q.length === 0) return null;
+    return q[combat.activeIdx] ?? null;
+  },
+
+  _isEntryAlive(entry, combat, npcStates) {
+    if (!entry) return false;
+    if (entry.type === 'player') {
+      return (GameState.player?.hp?.current ?? 0) > 0;
+    }
+    if (entry.type === 'enemy') {
+      const e = combat?.enemies?.[entry.enemyIdx];
+      return !!e && (e.currentHp ?? 0) > 0;
+    }
+    if (entry.type === 'companion') {
+      const st = npcStates?.[entry.id];
+      return !!st && (st.hp ?? 0) > 0;
+    }
+    return false;
+  },
+
+  _advanceTurn(combat, npcStates) {
+    const q = combat?.turnQueue;
+    if (!q || q.length === 0) return;
+    const n = q.length;
+    const startIdx = combat.activeIdx;
+    for (let step = 1; step <= n; step++) {
+      const next = (startIdx + step) % n;
+      if (next === 0 || (next < startIdx)) {
+        // 큐 한 바퀴 돌았음을 감지 (첫 번째 랩어라운드 시점만 roundNumber 증가)
+        if (next <= startIdx) combat.roundNumber = (combat.roundNumber ?? 1) + 1;
+      }
+      combat.activeIdx = next;
+      const entry = q[next];
+      if (this._isEntryAlive(entry, combat, npcStates)) return;
+    }
+    // 모두 죽어 한 바퀴 돌아도 못 찾음 — activeIdx는 startIdx로 복귀해 무한루프 방지
+    combat.activeIdx = startIdx;
   },
 
   // ── 타겟 헬퍼 ──────────────────────────────────────────
@@ -469,17 +541,63 @@ const CombatSystem = {
 
   // ── 적 행동 ────────────────────────────────────────────
 
-  /** 살아있는 모든 적이 순서대로 플레이어를 공격 */
+  /**
+   * Phase 1 호환 엔트리포인트. 과거 "모든 적 일괄 공격" 의미론을
+   * 턴 큐 기반 `_processAiTurns`로 위임한다. 외부 call site 변경 없음.
+   */
   _allEnemiesAttack() {
-    const gs    = GameState;
-    const alive = this.getAliveEnemies();
-    for (const enemy of alive) {
-      if (!gs.combat.active || gs.player.hp.current <= 0) break;
-      const logs = this._runEnemyAI(enemy);
-      for (const log of logs) {
-        gs.combat.log.push(log);
+    this._processAiTurns();
+  },
+
+  /**
+   * Phase 1: 턴 큐 순서대로 AI 엔티티(동료/적) 턴을 플레이어 차례 전까지 실행.
+   *   - activeIdx를 advance → entry type 분기 → 실행 → 승/패 판정 루프
+   *   - 동료 턴은 Phase 1에서 stub (Phase 2에서 stance 기반 자율 행동 구현)
+   *   - 최대 iter 제한(큐 길이×2)으로 무한루프 방지
+   */
+  _processAiTurns() {
+    const gs = GameState;
+    const combat = gs.combat;
+    if (!combat?.active || !combat.turnQueue?.length) return;
+
+    const npcStates = gs.npcs?.states ?? {};
+    const maxIter = combat.turnQueue.length * 2 + 2;
+    let iter = 0;
+
+    while (combat.active && iter++ < maxIter) {
+      this._advanceTurn(combat, npcStates);
+      const entry = this._currentEntry(combat);
+      if (!entry) return;
+      if (entry.type === 'player') return;   // 플레이어 차례로 복귀
+
+      if (entry.type === 'companion') {
+        this._runCompanionTurn(entry.id);
+      } else if (entry.type === 'enemy') {
+        this._runSingleEnemyTurn(entry.enemyIdx);
         if (gs.player.hp.current <= 0) { this._resolveDefeat(); return; }
       }
+
+      if (this._allEnemiesDead()) { this._resolveVictory(); return; }
+    }
+  },
+
+  // Phase 1 stub — Phase 2에서 stance 기반 자율 공격/힐/스킬 구현 예정
+  _runCompanionTurn(_npcId) {
+    // no-op (기존 manual 명령 동작 유지)
+  },
+
+  /** 큐 엔트리 기반 단일 적 턴 실행. 기존 `_runEnemyAI` 로직 재사용. */
+  _runSingleEnemyTurn(enemyIdx) {
+    const gs = GameState;
+    const enemy = gs.combat.enemies?.[enemyIdx];
+    if (!enemy || enemy.currentHp <= 0) return;
+    const logs = this._runEnemyAI(enemy);
+    for (const log of logs) {
+      gs.combat.log.push(log);
+      if (gs.player.hp.current <= 0) return;  // 상위 루프에서 defeat 판정
+    }
+    if (gs.combat.log.length > BALANCE.combat.combatLogMaxEntries) {
+      gs.combat.log.splice(0, gs.combat.log.length - BALANCE.combat.combatLogMaxEntries);
     }
   },
 
