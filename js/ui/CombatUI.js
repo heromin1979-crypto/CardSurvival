@@ -57,6 +57,9 @@ const CombatUI = {
       let hpPct = 100;
       let dead = false;
 
+      let intentIcon = '';
+      let intentLabel = '';
+
       if (entry.type === 'player') {
         label = (gs.player?.name ?? '생존자').slice(0, 4);
         hpPct = Math.max(0, Math.min(100, ((gs.player?.hp?.current ?? 0) / (gs.player?.hp?.max ?? 1)) * 100));
@@ -68,6 +71,11 @@ const CombatUI = {
           label = (e.name ?? 'Enemy').slice(0, 4);
           hpPct = Math.max(0, Math.min(100, ((e.currentHp ?? 0) / (e.maxHp ?? 1)) * 100));
           dead  = (e.currentHp ?? 0) <= 0;
+          // Phase 3 — 의도 아이콘
+          if (!dead && e._nextIntent) {
+            intentIcon = e._nextIntent.iconEmoji ?? '';
+            intentLabel = e._nextIntent.label ?? '';
+          }
         }
       } else if (entry.type === 'companion') {
         const st = gs.npcs?.states?.[entry.id];
@@ -75,7 +83,6 @@ const CombatUI = {
           hpPct = Math.max(0, Math.min(100, ((st.hp ?? 0) / (st.maxHp ?? 50)) * 100));
           dead  = (st.hp ?? 0) <= 0;
         }
-        // npcs.js 이름은 대형 dep이므로 id 축약만 사용 (Phase 2에서 정식 이름 매핑)
         label = (entry.id ?? '').replace(/^npc_/, '').slice(0, 4);
       }
 
@@ -83,11 +90,16 @@ const CombatUI = {
       if (isActive) cls.push('active');
       if (dead)     cls.push('dead');
 
+      const intentHtml = intentIcon
+        ? `<span class="init-intent" title="${intentLabel}">${intentIcon}</span>`
+        : '';
+
       return `
         <div class="${cls.join(' ')}" data-init-idx="${i}" data-init-type="${entry.type}">
           <span class="init-icon">${icon}</span>
           <span class="init-label">${label}</span>
           <div class="init-hp-bar"><div class="init-hp-fill" style="width:${hpPct.toFixed(0)}%"></div></div>
+          ${intentHtml}
         </div>`;
     }).join('');
 

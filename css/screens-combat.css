@@ -160,6 +160,18 @@
 .init-slot.enemy .init-hp-fill     { background: var(--text-danger, #d06868); }
 .init-slot.companion .init-hp-fill { background: var(--text-warn, #c8a060); }
 
+/* Phase 3 — 의도 아이콘 (enemy 슬롯 전용) */
+.init-intent {
+  font-size: 11px;
+  margin-left: 4px;
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: rgba(208, 104, 104, 0.2);
+  border: 1px solid rgba(208, 104, 104, 0.35);
+  color: var(--text-danger, #d06868);
+  cursor: help;
+}
+
 /* ── Phase 2 · 동료 stance 셀렉터 ─────────────────── */
 
 .cpp-stance-row .stance-btn {

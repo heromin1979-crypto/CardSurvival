@@ -99,6 +99,11 @@ const CombatSystem = {
     gs.combat.turnQueue = this._buildTurnQueue(gs.combat, companions);
     gs.combat.activeIdx = 0;   // 항상 플레이어부터
 
+    // Phase 3 — 전투 시작 시 모든 적의 초기 의도 결정 (Into the Breach 방식 가시성)
+    for (const e of gs.combat.enemies) {
+      e._nextIntent = this._decideNextIntent(e, gs.combat, gs);
+    }
+
     EventBus.emit('combatStarted', {});
 
     // 선제 제압 실패: 첫 번째 플레이어 행동 전에 적이 선제 공격
@@ -729,19 +734,187 @@ const CombatSystem = {
     return (npcId ?? '').replace(/^npc_/, '');
   },
 
-  /** 큐 엔트리 기반 단일 적 턴 실행. 기존 `_runEnemyAI` 로직 재사용. */
+  // ── Combat Overhaul Phase 3 · 적 의도 예고 + aiPattern ──
+  // Into the Breach 방식: 적의 다음 턴 행동을 결정적으로 미리 결정/표시.
+  // `enemy._nextIntent = { action, targetType, targetId?, iconEmoji, label }`
+  //
+  // aiPattern 분기 (5종):
+  //   aggressive → HP 최저 타겟 (플레이어+동료 중)
+  //   defensive  → 원거리 무기 들고있는 플레이어 우선
+  //   horde      → 무작위 타겟
+  //   normal     → 플레이어 고정
+  //   sniper     → 힐러 클래스 동료 우선, 없으면 플레이어
+  //   predator   → bleed/infection/burn 상태이상 타겟 우선
+
+  _getEligibleTargets(combat, gs) {
+    const targets = [];
+    if ((gs?.player?.hp?.current ?? 0) > 0) {
+      const weapon = gs.player.equipped?.weapon_main ?? gs.player.equipped?.weapon_sub;
+      const wDef = weapon ? gs.getCardDef?.(weapon) : null;
+      const isRanged = !!wDef?.combat?.requiresAmmo;
+      const statusEffects = combat?.playerStatus ?? [];
+      targets.push({
+        type: 'player',
+        hp: gs.player.hp.current,
+        maxHp: gs.player.hp.max,
+        isRanged,
+        statusEffects,
+      });
+    }
+    const companions = gs?.companions ?? [];
+    for (const id of companions) {
+      const st = gs.npcs?.states?.[id];
+      if (!st || (st.hp ?? 0) <= 0) continue;
+      targets.push({
+        type: 'companion',
+        id,
+        hp: st.hp,
+        maxHp: st.maxHp ?? 50,
+        isHealer: id === 'npc_nurse' || id === 'npc_doctor',
+        statusEffects: st.statusEffects ?? [],
+      });
+    }
+    return targets;
+  },
+
+  _pickTargetByPattern(pattern, targets, enemy) {
+    if (!targets || targets.length === 0) return null;
+    const hasStatus = t => (t.statusEffects ?? []).some(s =>
+      s.id === 'bleed' || s.id === 'infection' || s.id === 'burn' || s.id === 'acid_burn'
+    );
+
+    switch (pattern) {
+      case 'aggressive': {
+        // HP 최저 (ratio 기준으로 fair)
+        const sorted = [...targets].sort((a, b) =>
+          (a.hp / (a.maxHp || 1)) - (b.hp / (b.maxHp || 1))
+        );
+        return sorted[0];
+      }
+      case 'defensive': {
+        // 원거리 무기 들고있는 플레이어 우선
+        const ranged = targets.find(t => t.type === 'player' && t.isRanged);
+        if (ranged) return ranged;
+        return targets.find(t => t.type === 'player') ?? targets[0];
+      }
+      case 'horde': {
+        return targets[Math.floor(Math.random() * targets.length)];
+      }
+      case 'sniper': {
+        // 힐러 클래스 동료 우선, 없으면 플레이어, 아니면 첫 번째
+        const healer = targets.find(t => t.type === 'companion' && t.isHealer);
+        if (healer) return healer;
+        return targets.find(t => t.type === 'player') ?? targets[0];
+      }
+      case 'predator': {
+        // 상태이상 있는 대상 우선 (약한 먹잇감)
+        const wounded = targets.find(hasStatus);
+        if (wounded) return wounded;
+        return targets.find(t => t.type === 'player') ?? targets[0];
+      }
+      case 'normal':
+      default: {
+        // 플레이어 고정
+        return targets.find(t => t.type === 'player') ?? targets[0];
+      }
+    }
+  },
+
+  _decideNextIntent(enemy, combat, gs) {
+    if (!enemy || (enemy.currentHp ?? 0) <= 0) return null;
+    const targets = this._getEligibleTargets(combat, gs);
+    const pattern = enemy.aiPattern ?? 'normal';
+    const target = this._pickTargetByPattern(pattern, targets, enemy);
+    if (!target) return null;
+
+    // 스킬 사용 가능 여부 (쿨다운 0인 특수 스킬)
+    const readySkill = (enemy.specialSkills ?? []).find(s =>
+      (enemy._skillCooldowns?.[s.id] ?? 0) === 0
+    );
+    const willUseSkill = !!readySkill;
+
+    const iconEmoji = willUseSkill ? '💢' : '🗡';
+    const tgtName = target.type === 'player' ? '플레이어' : this._npcLabel(target.id);
+    const label = willUseSkill
+      ? `${tgtName}에 ${readySkill.name ?? '스킬'} 사용`
+      : `${tgtName} 공격`;
+
+    return {
+      action: willUseSkill ? 'skill' : 'attack',
+      targetType: target.type,
+      targetId: target.id ?? null,
+      skillId: willUseSkill ? readySkill.id : null,
+      iconEmoji,
+      label,
+      pattern,
+    };
+  },
+
+  /**
+   * 큐 엔트리 기반 단일 적 턴 실행. Phase 3 — intent 기반 타겟 라우팅.
+   *   - enemy._nextIntent.targetType === 'companion' → 해당 동료 공격 (NPCSystem.damageCompanion)
+   *   - 그 외 → 기존 _runEnemyAI (플레이어 타겟)
+   *   - 턴 종료 후 다음 intent 재결정
+   */
   _runSingleEnemyTurn(enemyIdx) {
     const gs = GameState;
     const enemy = gs.combat.enemies?.[enemyIdx];
     if (!enemy || enemy.currentHp <= 0) return;
-    const logs = this._runEnemyAI(enemy);
-    for (const log of logs) {
-      gs.combat.log.push(log);
-      if (gs.player.hp.current <= 0) return;  // 상위 루프에서 defeat 판정
+
+    const intent = enemy._nextIntent;
+    if (intent?.targetType === 'companion' && intent.targetId) {
+      this._enemyAttackCompanion(enemy, intent.targetId);
+    } else {
+      // 기본 플레이어 타겟 (기존 로직 유지)
+      const logs = this._runEnemyAI(enemy);
+      for (const log of logs) {
+        gs.combat.log.push(log);
+        if (gs.player.hp.current <= 0) return;
+      }
     }
     if (gs.combat.log.length > BALANCE.combat.combatLogMaxEntries) {
       gs.combat.log.splice(0, gs.combat.log.length - BALANCE.combat.combatLogMaxEntries);
     }
+
+    // 다음 턴 intent 재결정 (죽었을 수도 있으므로 null 허용)
+    enemy._nextIntent = this._decideNextIntent(enemy, gs.combat, gs) ?? null;
+  },
+
+  /**
+   * Phase 3 — 적이 동료를 명시적으로 공격.
+   * 공격 로직은 _enemyAttack과 동일 구조이되, 최종 데미지를 NPCSystem.damageCompanion으로 라우팅.
+   * 간결성을 위해 기본 attack 데미지만 사용 (스킬은 플레이어 전용 유지).
+   */
+  _enemyAttackCompanion(enemy, npcId) {
+    const gs = GameState;
+    const npcSys = SystemRegistry.get('NPCSystem');
+    if (!npcSys?.damageCompanion) return;
+    const st = gs.npcs?.states?.[npcId];
+    if (!st || (st.hp ?? 0) <= 0) return;
+
+    const [dMin, dMax] = enemy.attack?.damage ?? [3, 6];
+    let damage = dMin + Math.floor(Math.random() * (dMax - dMin + 1));
+    const hit = Math.random() < (enemy.attack?.accuracy ?? 0.7);
+    if (!hit) {
+      gs.combat.log.push(`${enemy.name ?? '적'} → ${this._npcLabel(npcId)}: 빗나감`);
+      return;
+    }
+
+    // hold stance 피해 경감
+    const holdReduct = st.combatBuffs?.holdReduct;
+    if (holdReduct && (holdReduct.duration ?? 0) > 0) {
+      damage = Math.max(1, Math.floor(damage * (1 - (holdReduct.value ?? 0))));
+    }
+
+    // suppress 버프 (companion skill: soldier_suppress)
+    if ((gs.combat._suppressRemaining ?? 0) > 0) {
+      damage = Math.max(1, Math.floor(damage * (gs.combat._suppressMult ?? 1)));
+    }
+
+    npcSys.damageCompanion(npcId, damage);
+    gs.combat.log.push(`${enemy.name ?? '적'} → ${this._npcLabel(npcId)}: ${damage} 피해`);
+    gs.combat.lastHit = { target: 'companion', damage, npcId, isCrit: false };
+    EventBus.emit('enemyAttackCompanion', { enemyId: enemy.id, npcId, damage });
   },
 
   _runEnemyAI(enemy) {
