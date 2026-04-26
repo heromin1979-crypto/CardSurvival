@@ -1,4 +1,4 @@
-# Card Survival: Ruined City — Project Guide
+# Card Survival: Rㄴㅇㅊ뉴오ㅓ츈어츙천유차어늋ㅍ유차ㅓ유ㅓuined City — Project Guide
 
 ## 기술 스택
 - 바닐라 JS (모듈), CSS 변수, Vite 번들러
