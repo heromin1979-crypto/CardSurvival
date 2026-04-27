@@ -17,14 +17,16 @@ const CraftDiscovery = {
    * 두 카드 definitionId로 가능한 레시피 목록을 반환.
    * @param {string} srcDefId - 드래그 중인 카드의 definitionId
    * @param {string} tgtDefId - 대상 카드의 definitionId
-   * @returns {Array<{ blueprintId, blueprintName, outputPreview, missingItems, canStartNow }>}
+   * @param {{ includeLocked?: boolean }} [opts] - includeLocked: 잠긴 hidden 레시피도 포함 (모호 힌트 용도)
+   * @returns {Array<{ blueprintId, blueprintName, outputPreview, missingItems, canStartNow, isLocked }>}
    */
-  findRecipes(srcDefId, tgtDefId) {
+  findRecipes(srcDefId, tgtDefId, opts = {}) {
+    const includeLocked = opts.includeLocked === true;
     const matches = [];
 
     for (const bp of Object.values(ALL_BPS)) {
-      // 히든 레시피 중 해금 안 된 것은 제외
-      if (HIDDEN_IDS.has(bp.id) && !this._isUnlocked(bp.id)) continue;
+      const locked = HIDDEN_IDS.has(bp.id) && !this._isUnlocked(bp.id);
+      if (locked && !includeLocked) continue;
 
       // 모든 스테이지의 requiredItems를 평탄화
       const allRequired = bp.stages.flatMap(s =>
@@ -55,6 +57,7 @@ const CraftDiscovery = {
           missingItems: missing,
           canStartNow:  canStart,
           totalTP:      bp.stages.reduce((sum, s) => sum + s.tpCost, 0),
+          isLocked:     locked,
         });
       }
     }
@@ -65,20 +68,23 @@ const CraftDiscovery = {
 
   /**
    * 드래그 중 힌트: 첫 번째 매칭 레시피의 출력 이름만 빠르게 반환.
-   * @returns {{ hint: string, canStart: boolean } | null}
+   * 잠긴 hidden 레시피는 결과물 대신 모호 힌트로 노출 (Sub-spec 2B).
+   * @returns {{ hint: string, canStart: boolean, count: number } | null}
    */
   getQuickHint(srcDefId, tgtDefId) {
-    const recipes = this.findRecipes(srcDefId, tgtDefId);
+    const recipes = this.findRecipes(srcDefId, tgtDefId, { includeLocked: true });
     if (recipes.length === 0) return null;
 
     const first = recipes[0];
-    const outputName = first.outputPreview.map(o => `${o.icon} ${o.name}`).join(', ');
+    const head = first.isLocked
+      ? I18n.t('craft.vagueHint')
+      : first.outputPreview.map(o => `${o.icon} ${o.name}`).join(', ');
     const suffix = first.canStartNow
       ? ` (${I18n.t('craft.ready')})`
       : ` (${first.missingItems.length} ${I18n.t('craft.missing')})`;
 
     return {
-      hint: `✨ ${outputName}${suffix}`,
+      hint: `✨ ${head}${suffix}`,
       canStart: first.canStartNow,
       count: recipes.length,
     };
