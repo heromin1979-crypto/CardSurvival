@@ -674,6 +674,9 @@ export const ko = {
   'hidden.recipeUnlockByAttempt': '✨ 새 조합 발견: {name}!',
   'trap.triggered':               '🪤 덫에 잡혔다: {name}!',
   'trap.missed':                  '🪤 {name}의 미끼만 사라졌다.',
+  'card.actionSlaughter':         '도살 가능 (날 필요)',
+  'card.actionButcher':           '분해 가능 (날 필요)',
+  'card.actionTrapBait':          '미끼 필요: {tags}',
 
   // ── SlotResolver ────────────────────────────────────────────
   'slot.unknownCard':       '알 수 없는 카드',
@@ -1507,6 +1510,9 @@ export const en = {
   'hidden.recipeUnlockByAttempt': '✨ New combination discovered: {name}!',
   'trap.triggered':               '🪤 Trap caught a {name}!',
   'trap.missed':                  '🪤 {name} took the bait and escaped.',
+  'card.actionSlaughter':         'Slaughter (blade required)',
+  'card.actionButcher':           'Butcher (blade required)',
+  'card.actionTrapBait':          'Bait needed: {tags}',
 
   // ── SlotResolver ────────────────────────────────────────────
   'slot.unknownCard':        'Unknown card',
