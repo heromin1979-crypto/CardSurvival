@@ -36,6 +36,7 @@ import BasecampSystem       from './systems/BasecampSystem.js';
 import QuestSystem          from './systems/QuestSystem.js';
 import SoundSystem          from './systems/SoundSystem.js';
 import HiddenElementSystem  from './systems/HiddenElementSystem.js';
+import TrapSystem           from './systems/TrapSystem.js';
 import BGMSystem            from './systems/BGMSystem.js';
 import EcologySystem        from './systems/EcologySystem.js';
 import MentalSystem         from './systems/MentalSystem.js';
@@ -157,6 +158,7 @@ function init() {
   SoundSystem.init();
   BGMSystem.init();
   HiddenElementSystem.init();
+  TrapSystem.init();
   SubwaySystem.init();
   NightSystem.init();
 

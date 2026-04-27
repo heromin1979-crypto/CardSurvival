@@ -519,6 +519,62 @@ const ITEMS_BASE = {
     dismantle: [],
   },
 
+  // ─── 산 동물 (덫에서 산출, 도살 필요) ──────────────────────
+
+  live_rat: {
+    id: 'live_rat', name: '산 쥐', type: 'consumable', subtype: 'live_animal',
+    rarity: 'common', weight: 0.3,
+    defaultDurability: 100, defaultContamination: 20,
+    icon: '🐀', description: '덫에 산 채로 잡힌 쥐. 도살하면 시체가 된다.',
+    tags: ['organic', 'live', 'small'],
+    dismantle: [],
+  },
+
+  live_pigeon: {
+    id: 'live_pigeon', name: '산 비둘기', type: 'consumable', subtype: 'live_animal',
+    rarity: 'common', weight: 0.2,
+    defaultDurability: 100, defaultContamination: 10,
+    icon: '🕊️', description: '올가미에 잡힌 비둘기. 도살하면 시체가 된다.',
+    tags: ['organic', 'live', 'small'],
+    dismantle: [],
+  },
+
+  live_stray_animal: {
+    id: 'live_stray_animal', name: '산 떠돌이 동물', type: 'consumable', subtype: 'live_animal',
+    rarity: 'uncommon', weight: 8.0,
+    defaultDurability: 100, defaultContamination: 25,
+    icon: '🐕', description: '함정에 빠진 떠돌이 개·고양이. 도살하면 시체가 된다.',
+    tags: ['organic', 'live', 'large'],
+    dismantle: [],
+  },
+
+  rat_carcass: {
+    id: 'rat_carcass', name: '쥐 시체', type: 'consumable', subtype: 'carcass',
+    rarity: 'common', weight: 0.3,
+    defaultDurability: 100, defaultContamination: 30,
+    icon: '🩸', description: '도살한 쥐. 분해하면 고기와 뼈를 얻는다.',
+    tags: ['organic', 'carcass'],
+    dismantle: [],
+  },
+
+  pigeon_carcass: {
+    id: 'pigeon_carcass', name: '비둘기 시체', type: 'consumable', subtype: 'carcass',
+    rarity: 'common', weight: 0.2,
+    defaultDurability: 100, defaultContamination: 15,
+    icon: '🩸', description: '도살한 비둘기. 분해하면 고기와 가벼운 뼈를 얻는다.',
+    tags: ['organic', 'carcass'],
+    dismantle: [],
+  },
+
+  stray_animal_carcass: {
+    id: 'stray_animal_carcass', name: '떠돌이 동물 시체', type: 'consumable', subtype: 'carcass',
+    rarity: 'uncommon', weight: 7.0,
+    defaultDurability: 100, defaultContamination: 35,
+    icon: '🩸', description: '도살한 떠돌이 동물. 분해하면 고기·생가죽·뼈를 풍부하게 얻는다.',
+    tags: ['organic', 'carcass'],
+    dismantle: [],
+  },
+
   // ─── 불 시스템 재료 (13) ──────────────────────────────────
 
   dry_wood_stick: {

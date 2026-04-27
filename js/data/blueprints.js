@@ -1331,6 +1331,142 @@ const BLUEPRINTS = {
   //  도구 (Tools)
   // ══════════════════════════════════════════════════════════════
 
+  // ── 트랩 (3) ──────────────────────────────────────────────
+
+  craft_rat_trap: {
+    id: 'craft_rat_trap', name: '쥐덫 제작', category: 'tool',
+    description: '고철·철사·스프링으로 쥐덫을 만든다.',
+    output: [{ definitionId: 'rat_trap', qty: 1 }],
+    requiredTools: [],
+    requiredSkills: { crafting: 2 },
+    stages: [{
+      stageIndex: 0, label: '쥐덫 조립', tpCost: 2,
+      requiredItems: [
+        { definitionId: 'scrap_metal', qty: 2 },
+        { definitionId: 'wire', qty: 2 },
+        { definitionId: 'spring', qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  craft_pigeon_snare: {
+    id: 'craft_pigeon_snare', name: '비둘기 올가미 제작', category: 'tool',
+    description: '로프와 나무로 새를 잡는 올가미를 만든다.',
+    output: [{ definitionId: 'pigeon_snare', qty: 1 }],
+    requiredTools: [],
+    requiredSkills: { crafting: 1 },
+    stages: [{
+      stageIndex: 0, label: '올가미 매듭', tpCost: 1,
+      requiredItems: [
+        { definitionId: 'rope', qty: 2 },
+        { definitionId: 'wood', qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  craft_alley_pit_trap: {
+    id: 'craft_alley_pit_trap', name: '골목 함정 제작', category: 'tool',
+    description: '골목에 큰 동물용 함정을 설치한다.',
+    output: [{ definitionId: 'alley_pit_trap', qty: 1 }],
+    requiredTools: [],
+    requiredSkills: { crafting: 3, building: 2 },
+    stages: [{
+      stageIndex: 0, label: '함정 설치', tpCost: 4,
+      requiredItems: [
+        { definitionId: 'wood', qty: 4 },
+        { definitionId: 'rope', qty: 3 },
+        { definitionId: 'nail', qty: 4 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  // ── 도살·분해 (6) ─────────────────────────────────────────
+
+  slaughter_rat: {
+    id: 'slaughter_rat', name: '쥐 도살', category: 'tool',
+    description: '산 쥐를 도살해 시체를 얻는다. 날카로운 날 필요.',
+    output: [{ definitionId: 'rat_carcass', qty: 1 }],
+    requiredTools: ['sharp_blade'],
+    stages: [{
+      stageIndex: 0, label: '도살', tpCost: 1,
+      requiredItems: [{ definitionId: 'live_rat', qty: 1 }],
+      consumeAt: 'start',
+    }],
+  },
+
+  slaughter_pigeon: {
+    id: 'slaughter_pigeon', name: '비둘기 도살', category: 'tool',
+    description: '산 비둘기를 도살해 시체를 얻는다.',
+    output: [{ definitionId: 'pigeon_carcass', qty: 1 }],
+    requiredTools: ['sharp_blade'],
+    stages: [{
+      stageIndex: 0, label: '도살', tpCost: 1,
+      requiredItems: [{ definitionId: 'live_pigeon', qty: 1 }],
+      consumeAt: 'start',
+    }],
+  },
+
+  slaughter_stray_animal: {
+    id: 'slaughter_stray_animal', name: '떠돌이 동물 도살', category: 'tool',
+    description: '큰 떠돌이 동물을 도살해 시체를 얻는다.',
+    output: [{ definitionId: 'stray_animal_carcass', qty: 1 }],
+    requiredTools: ['sharp_blade'],
+    stages: [{
+      stageIndex: 0, label: '도살', tpCost: 2,
+      requiredItems: [{ definitionId: 'live_stray_animal', qty: 1 }],
+      consumeAt: 'start',
+    }],
+  },
+
+  butcher_rat_carcass: {
+    id: 'butcher_rat_carcass', name: '쥐 시체 분해', category: 'tool',
+    description: '쥐 시체를 분해해 고기·뼈를 얻는다.',
+    output: [
+      { definitionId: 'raw_meat', qty: 1 },
+      { definitionId: 'bone', qty: 1 },
+    ],
+    requiredTools: ['sharp_blade'],
+    stages: [{
+      stageIndex: 0, label: '분해', tpCost: 1,
+      requiredItems: [{ definitionId: 'rat_carcass', qty: 1 }],
+      consumeAt: 'start',
+    }],
+  },
+
+  butcher_pigeon_carcass: {
+    id: 'butcher_pigeon_carcass', name: '비둘기 시체 분해', category: 'tool',
+    description: '비둘기 시체를 분해해 고기를 얻는다.',
+    output: [
+      { definitionId: 'raw_meat', qty: 1 },
+      { definitionId: 'bone', qty: 1 },
+    ],
+    requiredTools: ['sharp_blade'],
+    stages: [{
+      stageIndex: 0, label: '분해', tpCost: 1,
+      requiredItems: [{ definitionId: 'pigeon_carcass', qty: 1 }],
+      consumeAt: 'start',
+    }],
+  },
+
+  butcher_stray_carcass: {
+    id: 'butcher_stray_carcass', name: '떠돌이 동물 시체 분해', category: 'tool',
+    description: '큰 떠돌이 동물 시체를 분해해 고기·생가죽·뼈를 풍부하게 얻는다.',
+    output: [
+      { definitionId: 'raw_meat', qty: 3 },
+      { definitionId: 'hide', qty: 2 },
+      { definitionId: 'bone', qty: 2 },
+    ],
+    requiredTools: ['sharp_blade'],
+    stages: [{
+      stageIndex: 0, label: '분해', tpCost: 2,
+      requiredItems: [{ definitionId: 'stray_animal_carcass', qty: 1 }],
+      consumeAt: 'start',
+    }],
+  },
+
   make_rope_ladder: {
     id: 'make_rope_ladder', name: '로프사다리 제작', category: 'tool',
     hidden: true, unlockConditions: { minSkillLevel: { crafting: 1 } },
