@@ -558,6 +558,60 @@ const BLUEPRINTS = {
     }],
   },
 
+  craft_thread: {
+    id: 'craft_thread', name: '실 잣기', category: 'material',
+    description: '천 조각을 풀어 실을 잣는다.',
+    output: [{ definitionId: 'thread', qty: 1 }],
+    requiredTools: [],
+    requiredSkills: { armorcraft: 1 },
+    stages: [{
+      stageIndex: 0, label: '실 잣기', tpCost: 1,
+      requiredItems: [{ definitionId: 'cloth_scrap', qty: 2 }],
+      consumeAt: 'start',
+    }],
+  },
+
+  craft_cloth_from_thread: {
+    id: 'craft_cloth_from_thread', name: '천 직조', category: 'material',
+    description: '실 여러 가닥을 엮어 천 한 장을 만든다.',
+    output: [{ definitionId: 'cloth', qty: 1 }],
+    requiredTools: [],
+    requiredSkills: { armorcraft: 2 },
+    stages: [{
+      stageIndex: 0, label: '직조', tpCost: 2,
+      requiredItems: [{ definitionId: 'thread', qty: 3 }],
+      consumeAt: 'start',
+    }],
+  },
+
+  craft_large_cloth: {
+    id: 'craft_large_cloth', name: '큰 천 직조', category: 'material',
+    description: '천을 잇대어 큰 천을 만든다. 담요·침낭·대형 의류 재료.',
+    output: [{ definitionId: 'large_cloth', qty: 1 }],
+    requiredTools: [],
+    requiredSkills: { armorcraft: 4 },
+    stages: [{
+      stageIndex: 0, label: '큰 천 직조', tpCost: 3,
+      requiredItems: [
+        { definitionId: 'cloth', qty: 2 },
+        { definitionId: 'thread', qty: 2 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  dismantle_large_cloth: {
+    id: 'dismantle_large_cloth', name: '큰 천 분해', category: 'material',
+    description: '큰 천을 풀어 천 두 장을 회수한다.',
+    output: [{ definitionId: 'cloth', qty: 2 }],
+    requiredTools: [],
+    stages: [{
+      stageIndex: 0, label: '분해', tpCost: 1,
+      requiredItems: [{ definitionId: 'large_cloth', qty: 1 }],
+      consumeAt: 'start',
+    }],
+  },
+
   make_gauze: {
     id: 'make_gauze', name: '거즈 제작', category: 'material',
     hidden: true, unlockConditions: { minSkillLevel: { crafting: 1 } },
@@ -1111,6 +1165,47 @@ const BLUEPRINTS = {
         requiredItems: [
           { definitionId: 'leather', qty: 1 },
           { definitionId: 'duct_tape', qty: 2 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+  },
+
+  craft_blanket: {
+    id: 'craft_blanket', name: '담요 제작', category: 'armor',
+    description: '큰 천을 누벼 담요를 만든다. 체온 유지에 도움.',
+    output: [{ definitionId: 'blanket', qty: 1 }],
+    requiredTools: [],
+    requiredSkills: { armorcraft: 3 },
+    stages: [{
+      stageIndex: 0, label: '담요 봉제', tpCost: 2,
+      requiredItems: [
+        { definitionId: 'large_cloth', qty: 1 },
+        { definitionId: 'thread', qty: 2 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  craft_sleeping_bag: {
+    id: 'craft_sleeping_bag', name: '침낭 제작', category: 'armor',
+    description: '큰 천과 가죽으로 야외 숙면용 침낭을 만든다.',
+    output: [{ definitionId: 'sleeping_bag', qty: 1 }],
+    requiredTools: ['pipe_wrench'],
+    requiredSkills: { armorcraft: 5 },
+    stages: [
+      {
+        stageIndex: 0, label: '겉천 누비기', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'large_cloth', qty: 2 },
+          { definitionId: 'thread', qty: 3 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '내피·바닥 부착', tpCost: 2,
+        requiredItems: [
+          { definitionId: 'leather', qty: 1 },
         ],
         consumeAt: 'start',
       },

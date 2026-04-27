@@ -254,6 +254,38 @@ const ITEMS_BASE = {
     dismantle: [],
   },
 
+  large_cloth: {
+    id: 'large_cloth', name: '큰 천', type: 'material', subtype: 'textile',
+    rarity: 'uncommon', weight: 0.4,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🪢', description: '담요·침구·대형 의류 제작 재료.',
+    tags: ['material', 'textile', 'crafted'],
+    dismantle: [{ definitionId: 'cloth', qty: 2, chance: 1.0 }],
+  },
+
+  blanket: {
+    id: 'blanket', name: '담요', type: 'consumable', subtype: 'comfort',
+    rarity: 'uncommon', weight: 0.6,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🛌', description: '체온 유지에 도움. 사용하면 체온과 사기가 회복된다.',
+    onConsume: { temperature: 0.5, fatigue: -10, morale: 5 },
+    tags: ['consumable', 'comfort', 'crafted'],
+    dismantle: [{ definitionId: 'large_cloth', qty: 1, chance: 1.0 }],
+  },
+
+  sleeping_bag: {
+    id: 'sleeping_bag', name: '침낭', type: 'consumable', subtype: 'comfort',
+    rarity: 'rare', weight: 1.2,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🛏️', description: '야외 숙면용 침낭. 피로와 체온을 크게 회복한다.',
+    onConsume: { temperature: 1.0, fatigue: -25, morale: 10 },
+    tags: ['consumable', 'comfort', 'crafted'],
+    dismantle: [
+      { definitionId: 'large_cloth', qty: 1, chance: 0.8 },
+      { definitionId: 'leather', qty: 1, chance: 0.5 },
+    ],
+  },
+
   // ─── 수분 (8) ─────────────────────────────────────────────
 
   water_bottle: {

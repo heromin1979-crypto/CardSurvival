@@ -39,6 +39,9 @@ const STACK_ROWS = [
   ['alcohol_solution'        , true,  5 ],
   ['gunpowder'               , true,  5 ],
   ['thread'                  , true, 20 ],
+  ['large_cloth'             , true,  5 ],
+  ['blanket'                 , true,  3 ],
+  ['sleeping_bag'            , true,  2 ],
 
   // ── 수분 ──────────────────────────────────────────────────────
   ['water_bottle'            , true,  5 ],

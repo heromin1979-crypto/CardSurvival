@@ -84,6 +84,9 @@ const CARD_IMAGES = {
   alcohol_solution: 'assets/images/materials/alcohol_solution.png',
   gunpowder:        'assets/images/materials/gunpowder.png',
   thread:           'assets/images/materials/thread.png',
+  large_cloth:      'assets/images/materials/cloth.png',
+  blanket:          'assets/images/materials/cloth.png',
+  sleeping_bag:     'assets/images/materials/cloth.png',
 
   // 재료/중간 가공재 (신규)
   ax_head:          'assets/images/materials/ax_head.png',
