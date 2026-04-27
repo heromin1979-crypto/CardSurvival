@@ -549,7 +549,8 @@ const HiddenElementSystem = {
   },
 
   // ── 시도 기반 unlock — Sub-spec 2A ─────────────────────────
-  // CraftDiscovery.findRecipes가 카드 조합 매칭 시 호출.
+  // DragDrop._onDrop / TouchDrag._onPointerUp가 실제 drop commit 시점에 호출.
+  // (hover/getQuickHint는 호출 안 함 — 마우스만 올려도 unlock되면 design 정신과 어긋남)
   // hidden 레시피의 첫 stage 재료에 src/tgt가 모두 포함되면 즉시 unlock.
   unlockByAttempt(srcDefId, tgtDefId) {
     const result = { unlocked: [], skipped: [] };
