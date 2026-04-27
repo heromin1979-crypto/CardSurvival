@@ -669,7 +669,8 @@ export const ko = {
   'hidden.bossKill':      '🏆 보스 처치: {name}!',
   'hidden.bossDrop':      '✨ {icon} {name} 획득!',
   'hidden.secretEvent':   '{icon} {name}',
-  'hidden.recipeUnlock':  '📜 새로운 레시피 해금: {name}!',
+  'hidden.recipeUnlock':          '📜 새로운 레시피 해금: {name}!',
+  'hidden.recipeUnlockByAttempt': '✨ 새 조합 발견: {name}!',
 
   // ── SlotResolver ────────────────────────────────────────────
   'slot.unknownCard':       '알 수 없는 카드',
@@ -1498,7 +1499,8 @@ export const en = {
   'hidden.bossKill':      '🏆 Boss defeated: {name}!',
   'hidden.bossDrop':      '✨ {icon} {name} obtained!',
   'hidden.secretEvent':   '{icon} {name}',
-  'hidden.recipeUnlock':  '📜 New recipe unlocked: {name}!',
+  'hidden.recipeUnlock':          '📜 New recipe unlocked: {name}!',
+  'hidden.recipeUnlockByAttempt': '✨ New combination discovered: {name}!',
 
   // ── SlotResolver ────────────────────────────────────────────
   'slot.unknownCard':        'Unknown card',

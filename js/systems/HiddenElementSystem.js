@@ -585,7 +585,7 @@ const HiddenElementSystem = {
         source: 'attempt',
       });
       EventBus.emit('notify', {
-        message: `✨ 새 조합 발견: ${bp.name}`,
+        message: I18n.t('hidden.recipeUnlockByAttempt', { name: I18n.blueprintName(bp.id, bp.name) }),
         type: 'good',
       });
       if (typeof window !== 'undefined' && window.__DEV_DISCOVERY__) {
