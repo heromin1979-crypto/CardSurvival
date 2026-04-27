@@ -578,8 +578,13 @@ const HiddenElementSystem = {
       gs.flags.hiddenRecipesUnlocked.push(bp.id);
       result.unlocked.push(bp.id);
       EventBus.emit('recipeUnlocked', {
-        blueprintId: bp.id,
+        recipeId: bp.id,
+        recipe: bp,
         source: 'attempt',
+      });
+      EventBus.emit('notify', {
+        message: `✨ 새 조합 발견: ${bp.name}`,
+        type: 'good',
       });
     }
 

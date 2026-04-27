@@ -23,6 +23,7 @@ vi.mock('../js/data/hiddenRecipes.js', () => ({
   default: {
     test_recipe_a: {
       id: 'test_recipe_a',
+      name: '테스트 레시피 A',
       hidden: true,
       stages: [{
         stageIndex: 0,
@@ -35,6 +36,7 @@ vi.mock('../js/data/hiddenRecipes.js', () => ({
     },
     test_recipe_b: {
       id: 'test_recipe_b',
+      name: '테스트 레시피 B',
       hidden: true,
       stages: [{
         stageIndex: 0,
@@ -43,6 +45,54 @@ vi.mock('../js/data/hiddenRecipes.js', () => ({
         ],
       }],
       output: [{ definitionId: 'test_output_b', qty: 1 }],
+    },
+    non_hidden_recipe: {
+      id: 'non_hidden_recipe',
+      name: '공개 레시피',
+      hidden: false,
+      stages: [{
+        stageIndex: 0,
+        requiredItems: [
+          { definitionId: 'wood', qty: 1 },
+          { definitionId: 'scrap_metal', qty: 1 },
+        ],
+      }],
+      output: [{ definitionId: 'non_hidden_output', qty: 1 }],
+    },
+    multi_stage_recipe: {
+      id: 'multi_stage_recipe',
+      name: '다단계 레시피',
+      hidden: true,
+      stages: [
+        {
+          stageIndex: 0,
+          requiredItems: [
+            { definitionId: 'cloth', qty: 1 },
+          ],
+        },
+        {
+          stageIndex: 1,
+          requiredItems: [
+            { definitionId: 'rope', qty: 1 },
+            { definitionId: 'leather', qty: 1 },
+          ],
+        },
+      ],
+      output: [{ definitionId: 'multi_output', qty: 1 }],
+    },
+    empty_stages_recipe: {
+      id: 'empty_stages_recipe',
+      name: '빈 stages',
+      hidden: true,
+      stages: [],
+      output: [{ definitionId: 'broken_output', qty: 1 }],
+    },
+    empty_required_recipe: {
+      id: 'empty_required_recipe',
+      name: '빈 requiredItems',
+      hidden: true,
+      stages: [{ stageIndex: 0, requiredItems: [] }],
+      output: [{ definitionId: 'broken_output_2', qty: 1 }],
     },
   },
 }));
@@ -71,10 +121,14 @@ describe('HiddenElementSystem.unlockByAttempt', () => {
     expect(result.unlocked).toEqual(['test_recipe_a']);
     expect(result.skipped).toEqual([]);
     expect(GameState.flags.hiddenRecipesUnlocked).toContain('test_recipe_a');
-    expect(EventBus.emit).toHaveBeenCalledWith('recipeUnlocked', {
-      blueprintId: 'test_recipe_a',
+    expect(EventBus.emit).toHaveBeenCalledWith('recipeUnlocked', expect.objectContaining({
+      recipeId: 'test_recipe_a',
       source: 'attempt',
-    });
+    }));
+    expect(EventBus.emit).toHaveBeenCalledWith('notify', expect.objectContaining({
+      message: expect.stringContaining('새 조합 발견'),
+      type: 'good',
+    }));
   });
 
   it('이미 unlock된 레시피는 skipped로 분류, emit 안 함', () => {
@@ -105,5 +159,27 @@ describe('HiddenElementSystem.unlockByAttempt', () => {
     expect(() => HiddenElementSystem.unlockByAttempt(null, 'wood')).not.toThrow();
     expect(() => HiddenElementSystem.unlockByAttempt(undefined, undefined)).not.toThrow();
     expect(GameState.flags.hiddenRecipesUnlocked).toEqual([]);
+  });
+
+  it('hidden:false 레시피는 같은 재료 조합이어도 unlock 안 함', () => {
+    const result = HiddenElementSystem.unlockByAttempt('wood', 'scrap_metal');
+
+    // hidden:true인 test_recipe_a는 unlock되지만, hidden:false는 무시
+    expect(result.unlocked).toEqual(['test_recipe_a']);
+    expect(GameState.flags.hiddenRecipesUnlocked).not.toContain('non_hidden_recipe');
+  });
+
+  it('multi-stage 레시피의 stage 1+ 재료로는 unlock 안 함 (stage 0만 검사)', () => {
+    // stage 1 재료(rope, leather)로 시도 — multi_stage_recipe는 unlock되어선 안 됨
+    const result = HiddenElementSystem.unlockByAttempt('rope', 'leather');
+
+    expect(result.unlocked).not.toContain('multi_stage_recipe');
+    expect(GameState.flags.hiddenRecipesUnlocked).not.toContain('multi_stage_recipe');
+  });
+
+  it('stages 배열이 비어있거나 requiredItems가 비어있는 hidden 레시피는 throw 없이 무시', () => {
+    expect(() => HiddenElementSystem.unlockByAttempt('wood', 'scrap_metal')).not.toThrow();
+    expect(GameState.flags.hiddenRecipesUnlocked).not.toContain('empty_stages_recipe');
+    expect(GameState.flags.hiddenRecipesUnlocked).not.toContain('empty_required_recipe');
   });
 });
