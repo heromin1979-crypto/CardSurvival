@@ -548,6 +548,44 @@ const HiddenElementSystem = {
     EventBus.emit('boardChanged', {});
   },
 
+  // ── 시도 기반 unlock — Sub-spec 2A ─────────────────────────
+  // CraftDiscovery.findRecipes가 카드 조합 매칭 시 호출.
+  // hidden 레시피의 첫 stage 재료에 src/tgt가 모두 포함되면 즉시 unlock.
+  unlockByAttempt(srcDefId, tgtDefId) {
+    const result = { unlocked: [], skipped: [] };
+    if (!srcDefId || !tgtDefId) return result;
+
+    const gs = GameState;
+    if (!gs.flags) return result;
+    if (!gs.flags.hiddenRecipesUnlocked) gs.flags.hiddenRecipesUnlocked = [];
+
+    for (const bp of Object.values(HIDDEN_RECIPES)) {
+      if (!bp.hidden) continue;
+
+      const firstStage = bp.stages?.[0];
+      if (!firstStage?.requiredItems?.length) continue;
+
+      const reqIds = firstStage.requiredItems.map(r => r.definitionId);
+      const srcIn = reqIds.includes(srcDefId);
+      const tgtIn = reqIds.includes(tgtDefId);
+      if (!srcIn || !tgtIn) continue;
+
+      if (gs.flags.hiddenRecipesUnlocked.includes(bp.id)) {
+        result.skipped.push(bp.id);
+        continue;
+      }
+
+      gs.flags.hiddenRecipesUnlocked.push(bp.id);
+      result.unlocked.push(bp.id);
+      EventBus.emit('recipeUnlocked', {
+        blueprintId: bp.id,
+        source: 'attempt',
+      });
+    }
+
+    return result;
+  },
+
   // ── 히든 레시피 해금 체크 ──────────────────────────────────
 
   _checkRecipeUnlocks() {
