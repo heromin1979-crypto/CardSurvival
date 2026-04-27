@@ -1273,6 +1273,11 @@ const CardFactory = {
       actionHint = baitTags ? I18n.t('card.actionTrapBait', { tags: baitTags }) : '';
     }
 
+    // 카테고리 캡 라벨 (CST 신규 subtype에는 깔끔한 짧은 레이블)
+    const SUBTYPE_CAPS = { live_animal: 'LIVE', carcass: 'CARCASS', trap: 'TRAP' };
+    const typeBadgeText = SUBTYPE_CAPS[def.subtype] ?? (def.subtype ?? def.type);
+    const typeBadgeClass = SUBTYPE_CAPS[def.subtype] ? 'card-type-badge cap' : 'card-type-badge';
+
     const actionHintHtml = actionHint
       ? `<span class="card-action-hint">${actionHint}</span>` : '';
 
@@ -1284,7 +1289,7 @@ const CardFactory = {
       </div>
       <div class="card-body">
         <div class="card-type-row">
-          <span class="card-type-badge">${def.subtype ?? def.type}</span>
+          <span class="${typeBadgeClass}">${typeBadgeText}</span>
           ${statsHtml}
         </div>
         ${artHtml}
