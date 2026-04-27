@@ -558,6 +558,76 @@ const BLUEPRINTS = {
     }],
   },
 
+  craft_thread: {
+    id: 'craft_thread', name: '실 잣기', category: 'material',
+    description: '천 조각을 풀어 실을 잣는다.',
+    output: [{ definitionId: 'thread', qty: 1 }],
+    requiredTools: [],
+    requiredSkills: { armorcraft: 1 },
+    stages: [{
+      stageIndex: 0, label: '실 잣기', tpCost: 1,
+      requiredItems: [{ definitionId: 'cloth_scrap', qty: 2 }],
+      consumeAt: 'start',
+    }],
+  },
+
+  craft_cloth_from_thread: {
+    id: 'craft_cloth_from_thread', name: '천 직조', category: 'material',
+    description: '실 여러 가닥을 엮어 천 한 장을 만든다.',
+    output: [{ definitionId: 'cloth', qty: 1 }],
+    requiredTools: [],
+    requiredSkills: { armorcraft: 2 },
+    stages: [{
+      stageIndex: 0, label: '직조', tpCost: 2,
+      requiredItems: [{ definitionId: 'thread', qty: 3 }],
+      consumeAt: 'start',
+    }],
+  },
+
+  craft_large_cloth: {
+    id: 'craft_large_cloth', name: '큰 천 직조', category: 'material',
+    description: '천을 잇대어 큰 천을 만든다. 담요·침낭·대형 의류 재료.',
+    output: [{ definitionId: 'large_cloth', qty: 1 }],
+    requiredTools: [],
+    requiredSkills: { armorcraft: 4 },
+    stages: [{
+      stageIndex: 0, label: '큰 천 직조', tpCost: 3,
+      requiredItems: [
+        { definitionId: 'cloth', qty: 2 },
+        { definitionId: 'thread', qty: 2 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  dismantle_large_cloth: {
+    id: 'dismantle_large_cloth', name: '큰 천 분해', category: 'material',
+    description: '큰 천을 풀어 천 두 장을 회수한다.',
+    output: [{ definitionId: 'cloth', qty: 2 }],
+    requiredTools: [],
+    stages: [{
+      stageIndex: 0, label: '분해', tpCost: 1,
+      requiredItems: [{ definitionId: 'large_cloth', qty: 1 }],
+      consumeAt: 'start',
+    }],
+  },
+
+  tan_hide: {
+    id: 'tan_hide', name: '무두질', category: 'material',
+    description: '생가죽을 소금으로 무두질해 가죽을 얻는다.',
+    output: [{ definitionId: 'leather', qty: 1 }],
+    requiredTools: [],
+    requiredSkills: { crafting: 2 },
+    stages: [{
+      stageIndex: 0, label: '무두질', tpCost: 2,
+      requiredItems: [
+        { definitionId: 'hide', qty: 1 },
+        { definitionId: 'salt', qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
   make_gauze: {
     id: 'make_gauze', name: '거즈 제작', category: 'material',
     hidden: true, unlockConditions: { minSkillLevel: { crafting: 1 } },
@@ -1117,6 +1187,47 @@ const BLUEPRINTS = {
     ],
   },
 
+  craft_blanket: {
+    id: 'craft_blanket', name: '담요 제작', category: 'armor',
+    description: '큰 천을 누벼 담요를 만든다. 체온 유지에 도움.',
+    output: [{ definitionId: 'blanket', qty: 1 }],
+    requiredTools: [],
+    requiredSkills: { armorcraft: 3 },
+    stages: [{
+      stageIndex: 0, label: '담요 봉제', tpCost: 2,
+      requiredItems: [
+        { definitionId: 'large_cloth', qty: 1 },
+        { definitionId: 'thread', qty: 2 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  craft_sleeping_bag: {
+    id: 'craft_sleeping_bag', name: '침낭 제작', category: 'armor',
+    description: '큰 천과 가죽으로 야외 숙면용 침낭을 만든다.',
+    output: [{ definitionId: 'sleeping_bag', qty: 1 }],
+    requiredTools: ['pipe_wrench'],
+    requiredSkills: { armorcraft: 5 },
+    stages: [
+      {
+        stageIndex: 0, label: '겉천 누비기', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'large_cloth', qty: 2 },
+          { definitionId: 'thread', qty: 3 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '내피·바닥 부착', tpCost: 2,
+        requiredItems: [
+          { definitionId: 'leather', qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+  },
+
   make_helmet: {
     id: 'make_helmet', name: '헬멧 제작', category: 'armor',
     hidden: true, unlockConditions: { minSkillLevel: { armorcraft: 2 } },
@@ -1219,6 +1330,142 @@ const BLUEPRINTS = {
   // ══════════════════════════════════════════════════════════════
   //  도구 (Tools)
   // ══════════════════════════════════════════════════════════════
+
+  // ── 트랩 (3) ──────────────────────────────────────────────
+
+  craft_rat_trap: {
+    id: 'craft_rat_trap', name: '쥐덫 제작', category: 'tool',
+    description: '고철·철사·스프링으로 쥐덫을 만든다.',
+    output: [{ definitionId: 'rat_trap', qty: 1 }],
+    requiredTools: [],
+    requiredSkills: { crafting: 2 },
+    stages: [{
+      stageIndex: 0, label: '쥐덫 조립', tpCost: 2,
+      requiredItems: [
+        { definitionId: 'scrap_metal', qty: 2 },
+        { definitionId: 'wire', qty: 2 },
+        { definitionId: 'spring', qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  craft_pigeon_snare: {
+    id: 'craft_pigeon_snare', name: '비둘기 올가미 제작', category: 'tool',
+    description: '로프와 나무로 새를 잡는 올가미를 만든다.',
+    output: [{ definitionId: 'pigeon_snare', qty: 1 }],
+    requiredTools: [],
+    requiredSkills: { crafting: 1 },
+    stages: [{
+      stageIndex: 0, label: '올가미 매듭', tpCost: 1,
+      requiredItems: [
+        { definitionId: 'rope', qty: 2 },
+        { definitionId: 'wood', qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  craft_alley_pit_trap: {
+    id: 'craft_alley_pit_trap', name: '골목 함정 제작', category: 'tool',
+    description: '골목에 큰 동물용 함정을 설치한다.',
+    output: [{ definitionId: 'alley_pit_trap', qty: 1 }],
+    requiredTools: [],
+    requiredSkills: { crafting: 3, building: 2 },
+    stages: [{
+      stageIndex: 0, label: '함정 설치', tpCost: 4,
+      requiredItems: [
+        { definitionId: 'wood', qty: 4 },
+        { definitionId: 'rope', qty: 3 },
+        { definitionId: 'nail', qty: 4 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  // ── 도살·분해 (6) ─────────────────────────────────────────
+
+  slaughter_rat: {
+    id: 'slaughter_rat', name: '쥐 도살', category: 'tool',
+    description: '산 쥐를 도살해 시체를 얻는다. 날카로운 날 필요.',
+    output: [{ definitionId: 'rat_carcass', qty: 1 }],
+    requiredTools: ['sharp_blade'],
+    stages: [{
+      stageIndex: 0, label: '도살', tpCost: 1,
+      requiredItems: [{ definitionId: 'live_rat', qty: 1 }],
+      consumeAt: 'start',
+    }],
+  },
+
+  slaughter_pigeon: {
+    id: 'slaughter_pigeon', name: '비둘기 도살', category: 'tool',
+    description: '산 비둘기를 도살해 시체를 얻는다.',
+    output: [{ definitionId: 'pigeon_carcass', qty: 1 }],
+    requiredTools: ['sharp_blade'],
+    stages: [{
+      stageIndex: 0, label: '도살', tpCost: 1,
+      requiredItems: [{ definitionId: 'live_pigeon', qty: 1 }],
+      consumeAt: 'start',
+    }],
+  },
+
+  slaughter_stray_animal: {
+    id: 'slaughter_stray_animal', name: '떠돌이 동물 도살', category: 'tool',
+    description: '큰 떠돌이 동물을 도살해 시체를 얻는다.',
+    output: [{ definitionId: 'stray_animal_carcass', qty: 1 }],
+    requiredTools: ['sharp_blade'],
+    stages: [{
+      stageIndex: 0, label: '도살', tpCost: 2,
+      requiredItems: [{ definitionId: 'live_stray_animal', qty: 1 }],
+      consumeAt: 'start',
+    }],
+  },
+
+  butcher_rat_carcass: {
+    id: 'butcher_rat_carcass', name: '쥐 시체 분해', category: 'tool',
+    description: '쥐 시체를 분해해 고기·뼈를 얻는다.',
+    output: [
+      { definitionId: 'raw_meat', qty: 1 },
+      { definitionId: 'bone', qty: 1 },
+    ],
+    requiredTools: ['sharp_blade'],
+    stages: [{
+      stageIndex: 0, label: '분해', tpCost: 1,
+      requiredItems: [{ definitionId: 'rat_carcass', qty: 1 }],
+      consumeAt: 'start',
+    }],
+  },
+
+  butcher_pigeon_carcass: {
+    id: 'butcher_pigeon_carcass', name: '비둘기 시체 분해', category: 'tool',
+    description: '비둘기 시체를 분해해 고기를 얻는다.',
+    output: [
+      { definitionId: 'raw_meat', qty: 1 },
+      { definitionId: 'bone', qty: 1 },
+    ],
+    requiredTools: ['sharp_blade'],
+    stages: [{
+      stageIndex: 0, label: '분해', tpCost: 1,
+      requiredItems: [{ definitionId: 'pigeon_carcass', qty: 1 }],
+      consumeAt: 'start',
+    }],
+  },
+
+  butcher_stray_carcass: {
+    id: 'butcher_stray_carcass', name: '떠돌이 동물 시체 분해', category: 'tool',
+    description: '큰 떠돌이 동물 시체를 분해해 고기·생가죽·뼈를 풍부하게 얻는다.',
+    output: [
+      { definitionId: 'raw_meat', qty: 3 },
+      { definitionId: 'hide', qty: 2 },
+      { definitionId: 'bone', qty: 2 },
+    ],
+    requiredTools: ['sharp_blade'],
+    stages: [{
+      stageIndex: 0, label: '분해', tpCost: 2,
+      requiredItems: [{ definitionId: 'stray_animal_carcass', qty: 1 }],
+      consumeAt: 'start',
+    }],
+  },
 
   make_rope_ladder: {
     id: 'make_rope_ladder', name: '로프사다리 제작', category: 'tool',

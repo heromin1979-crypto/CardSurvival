@@ -10,6 +10,7 @@ export default defineConfig({
       'testdata/craft-discovery-*.test.mjs',
       'testdata/drop-handler-*.test.mjs',
       'testdata/discovery-*.test.mjs',
+      'testdata/trap-*.test.mjs',
     ],
   },
 });

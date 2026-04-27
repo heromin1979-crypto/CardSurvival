@@ -118,8 +118,26 @@ const ITEMS_BASE = {
     id: 'leather', name: '가죽', type: 'material', subtype: 'natural',
     rarity: 'uncommon', weight: 0.5,
     defaultDurability: 100, defaultContamination: 0,
-    icon: '🟫', description: '방어구·방패 제작에 사용되는 두꺼운 가죽.',
+    icon: '🟫', description: '방어구·방패 제작에 사용되는 두꺼운 가죽. 생가죽을 무두질해 얻는다.',
     tags: ['material'],
+    dismantle: [],
+  },
+
+  hide: {
+    id: 'hide', name: '생가죽', type: 'material', subtype: 'natural',
+    rarity: 'uncommon', weight: 0.4,
+    defaultDurability: 100, defaultContamination: 30,
+    icon: '🐾', description: '동물에게서 벗겨낸 생가죽. 무두질하면 가죽이 된다.',
+    tags: ['material', 'organic'],
+    dismantle: [],
+  },
+
+  bone: {
+    id: 'bone', name: '뼈', type: 'material', subtype: 'natural',
+    rarity: 'common', weight: 0.2,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🦴', description: '도구·바늘·국물 재료로 쓸 수 있다.',
+    tags: ['material', 'organic'],
     dismantle: [],
   },
 
@@ -252,6 +270,38 @@ const ITEMS_BASE = {
     icon: '🪡', description: '의복·그물 제작에 사용하는 가는 실.',
     tags: ['material', 'textile'],
     dismantle: [],
+  },
+
+  large_cloth: {
+    id: 'large_cloth', name: '큰 천', type: 'material', subtype: 'textile',
+    rarity: 'uncommon', weight: 0.4,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🪢', description: '담요·침구·대형 의류 제작 재료.',
+    tags: ['material', 'textile', 'crafted'],
+    dismantle: [{ definitionId: 'cloth', qty: 2, chance: 1.0 }],
+  },
+
+  blanket: {
+    id: 'blanket', name: '담요', type: 'consumable', subtype: 'comfort',
+    rarity: 'uncommon', weight: 0.6,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🛌', description: '체온 유지에 도움. 사용하면 체온과 사기가 회복된다.',
+    onConsume: { temperature: 0.5, fatigue: -10, morale: 5 },
+    tags: ['consumable', 'comfort', 'crafted'],
+    dismantle: [{ definitionId: 'large_cloth', qty: 1, chance: 1.0 }],
+  },
+
+  sleeping_bag: {
+    id: 'sleeping_bag', name: '침낭', type: 'consumable', subtype: 'comfort',
+    rarity: 'rare', weight: 1.2,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🛏️', description: '야외 숙면용 침낭. 피로와 체온을 크게 회복한다.',
+    onConsume: { temperature: 1.0, fatigue: -25, morale: 10 },
+    tags: ['consumable', 'comfort', 'crafted'],
+    dismantle: [
+      { definitionId: 'large_cloth', qty: 1, chance: 0.8 },
+      { definitionId: 'leather', qty: 1, chance: 0.5 },
+    ],
   },
 
   // ─── 수분 (8) ─────────────────────────────────────────────
@@ -466,6 +516,62 @@ const ITEMS_BASE = {
     description: '전투나 사냥 후 얻는 날고기. 반드시 구워 먹어야 한다. 날로 먹으면 감염 위험 높음.',
     onConsume: { nutrition: 20, infection: 20 },
     tags: ['food', 'meat', 'raw'],
+    dismantle: [],
+  },
+
+  // ─── 산 동물 (덫에서 산출, 도살 필요) ──────────────────────
+
+  live_rat: {
+    id: 'live_rat', name: '산 쥐', type: 'consumable', subtype: 'live_animal',
+    rarity: 'common', weight: 0.3,
+    defaultDurability: 100, defaultContamination: 20,
+    icon: '🐀', description: '덫에 산 채로 잡힌 쥐. 도살하면 시체가 된다.',
+    tags: ['organic', 'live', 'small'],
+    dismantle: [],
+  },
+
+  live_pigeon: {
+    id: 'live_pigeon', name: '산 비둘기', type: 'consumable', subtype: 'live_animal',
+    rarity: 'common', weight: 0.2,
+    defaultDurability: 100, defaultContamination: 10,
+    icon: '🕊️', description: '올가미에 잡힌 비둘기. 도살하면 시체가 된다.',
+    tags: ['organic', 'live', 'small'],
+    dismantle: [],
+  },
+
+  live_stray_animal: {
+    id: 'live_stray_animal', name: '산 떠돌이 동물', type: 'consumable', subtype: 'live_animal',
+    rarity: 'uncommon', weight: 8.0,
+    defaultDurability: 100, defaultContamination: 25,
+    icon: '🐕', description: '함정에 빠진 떠돌이 개·고양이. 도살하면 시체가 된다.',
+    tags: ['organic', 'live', 'large'],
+    dismantle: [],
+  },
+
+  rat_carcass: {
+    id: 'rat_carcass', name: '쥐 시체', type: 'consumable', subtype: 'carcass',
+    rarity: 'common', weight: 0.3,
+    defaultDurability: 100, defaultContamination: 30,
+    icon: '🩸', description: '도살한 쥐. 분해하면 고기와 뼈를 얻는다.',
+    tags: ['organic', 'carcass'],
+    dismantle: [],
+  },
+
+  pigeon_carcass: {
+    id: 'pigeon_carcass', name: '비둘기 시체', type: 'consumable', subtype: 'carcass',
+    rarity: 'common', weight: 0.2,
+    defaultDurability: 100, defaultContamination: 15,
+    icon: '🩸', description: '도살한 비둘기. 분해하면 고기와 가벼운 뼈를 얻는다.',
+    tags: ['organic', 'carcass'],
+    dismantle: [],
+  },
+
+  stray_animal_carcass: {
+    id: 'stray_animal_carcass', name: '떠돌이 동물 시체', type: 'consumable', subtype: 'carcass',
+    rarity: 'uncommon', weight: 7.0,
+    defaultDurability: 100, defaultContamination: 35,
+    icon: '🩸', description: '도살한 떠돌이 동물. 분해하면 고기·생가죽·뼈를 풍부하게 얻는다.',
+    tags: ['organic', 'carcass'],
     dismantle: [],
   },
 

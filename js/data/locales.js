@@ -672,6 +672,8 @@ export const ko = {
   'hidden.secretEvent':   '{icon} {name}',
   'hidden.recipeUnlock':          '📜 새로운 레시피 해금: {name}!',
   'hidden.recipeUnlockByAttempt': '✨ 새 조합 발견: {name}!',
+  'trap.triggered':               '🪤 덫에 잡혔다: {name}!',
+  'trap.missed':                  '🪤 {name}의 미끼만 사라졌다.',
 
   // ── SlotResolver ────────────────────────────────────────────
   'slot.unknownCard':       '알 수 없는 카드',
@@ -1503,6 +1505,8 @@ export const en = {
   'hidden.secretEvent':   '{icon} {name}',
   'hidden.recipeUnlock':          '📜 New recipe unlocked: {name}!',
   'hidden.recipeUnlockByAttempt': '✨ New combination discovered: {name}!',
+  'trap.triggered':               '🪤 Trap caught a {name}!',
+  'trap.missed':                  '🪤 {name} took the bait and escaped.',
 
   // ── SlotResolver ────────────────────────────────────────────
   'slot.unknownCard':        'Unknown card',
