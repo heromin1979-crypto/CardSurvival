@@ -67,13 +67,28 @@ const TrapSystem = {
     const data = def.trapData;
     const bait = this._findBait(row, data.baitTags ?? []);
     if (!bait) {
-      // bait 없으면 진행도 유지 (감소 없음 — 다음 TP에 다시 시도)
+      // bait 없으면 진행도 유지 + state 변화 publish (UI에서 hasBait=false 표시)
+      EventBus.emit('trapStateChange', {
+        trapId: inst.instanceId,
+        progress: this._progress[inst.instanceId] ?? 0,
+        tpToTrigger: data.tpToTrigger,
+        hasBait: false,
+      });
       return;
     }
 
     // 진행도 누적
     this._progress[inst.instanceId] = (this._progress[inst.instanceId] ?? 0) + 1;
-    if (this._progress[inst.instanceId] < data.tpToTrigger) return;
+
+    if (this._progress[inst.instanceId] < data.tpToTrigger) {
+      EventBus.emit('trapStateChange', {
+        trapId: inst.instanceId,
+        progress: this._progress[inst.instanceId],
+        tpToTrigger: data.tpToTrigger,
+        hasBait: true,
+      });
+      return;
+    }
 
     // 발동: bait 1개 소모, successRate 굴림
     this._progress[inst.instanceId] = 0;
@@ -88,6 +103,19 @@ const TrapSystem = {
         type: 'info',
       });
     }
+
+    // 발동 후 진행도 0 publish
+    EventBus.emit('trapStateChange', {
+      trapId: inst.instanceId,
+      progress: 0,
+      tpToTrigger: data.tpToTrigger,
+      hasBait: false,  // bait 소모됨
+    });
+  },
+
+  /** 트랩 인스턴스의 현재 진행도와 tpToTrigger 반환 (UI 렌더용) */
+  getProgress(instanceId) {
+    return this._progress[instanceId] ?? 0;
   },
 
   /** bait 1개 소모: 수량 감소 또는 카드 제거 */
