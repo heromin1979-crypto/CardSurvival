@@ -118,8 +118,26 @@ const ITEMS_BASE = {
     id: 'leather', name: '가죽', type: 'material', subtype: 'natural',
     rarity: 'uncommon', weight: 0.5,
     defaultDurability: 100, defaultContamination: 0,
-    icon: '🟫', description: '방어구·방패 제작에 사용되는 두꺼운 가죽.',
+    icon: '🟫', description: '방어구·방패 제작에 사용되는 두꺼운 가죽. 생가죽을 무두질해 얻는다.',
     tags: ['material'],
+    dismantle: [],
+  },
+
+  hide: {
+    id: 'hide', name: '생가죽', type: 'material', subtype: 'natural',
+    rarity: 'uncommon', weight: 0.4,
+    defaultDurability: 100, defaultContamination: 30,
+    icon: '🐾', description: '동물에게서 벗겨낸 생가죽. 무두질하면 가죽이 된다.',
+    tags: ['material', 'organic'],
+    dismantle: [],
+  },
+
+  bone: {
+    id: 'bone', name: '뼈', type: 'material', subtype: 'natural',
+    rarity: 'common', weight: 0.2,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🦴', description: '도구·바늘·국물 재료로 쓸 수 있다.',
+    tags: ['material', 'organic'],
     dismantle: [],
   },
 

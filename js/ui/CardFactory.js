@@ -70,6 +70,8 @@ const CARD_IMAGES = {
   glass_shard:      'assets/images/materials/glass_shard.png',
   rubber:           'assets/images/materials/rubber.png',
   leather:          'assets/images/materials/leather.png',
+  hide:             'assets/images/materials/leather.png',
+  bone:             'assets/images/materials/leather.png',
   empty_bottle:     'assets/images/materials/empty_bottle.png',
   empty_can:        'assets/images/materials/empty_can.png',
   electronic_parts: 'assets/images/materials/electronic_parts.png',

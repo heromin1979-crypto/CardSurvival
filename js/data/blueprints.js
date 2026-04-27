@@ -612,6 +612,22 @@ const BLUEPRINTS = {
     }],
   },
 
+  tan_hide: {
+    id: 'tan_hide', name: '무두질', category: 'material',
+    description: '생가죽을 소금으로 무두질해 가죽을 얻는다.',
+    output: [{ definitionId: 'leather', qty: 1 }],
+    requiredTools: [],
+    requiredSkills: { crafting: 2 },
+    stages: [{
+      stageIndex: 0, label: '무두질', tpCost: 2,
+      requiredItems: [
+        { definitionId: 'hide', qty: 1 },
+        { definitionId: 'salt', qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
   make_gauze: {
     id: 'make_gauze', name: '거즈 제작', category: 'material',
     hidden: true, unlockConditions: { minSkillLevel: { crafting: 1 } },

@@ -22,6 +22,8 @@ const STACK_ROWS = [
   ['glass_shard'             , true, 10 ],
   ['rubber'                  , true,  5 ],
   ['leather'                 , true,  5 ],
+  ['hide'                    , true,  5 ],
+  ['bone'                    , true, 10 ],
   ['empty_bottle'            , true, 10 ],
   ['empty_can'               , true, 15 ],
   ['electronic_parts'        , true, 10 ],
