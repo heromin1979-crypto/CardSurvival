@@ -960,6 +960,9 @@ const CardFactory = {
     if (inst._quality && inst._quality !== 'normal') {
       el.dataset.quality = inst._quality;
     }
+    if (def.subtype) {
+      el.dataset.subtype = def.subtype;
+    }
     el.innerHTML = this._buildInner(inst, def);
 
     // 이미지 로드 실패 시 이모지 폴백
@@ -1250,11 +1253,30 @@ const CardFactory = {
       ? `<div class="card-art card-art--img"><img class="card-img" src="${imgSrc}" alt="${def.name ?? ''}"></div>`
       : `<div class="card-art">${def.icon ?? '📦'}</div>`;
 
+    // CST 통합 — 신규 subtype 시각 신호
+    let subtypeBadge = '';
+    let actionHint = '';
+    if (def.subtype === 'live_animal') {
+      subtypeBadge = `<span class="card-live-marker" aria-hidden="true">❤</span>`;
+      actionHint = I18n.t('card.actionSlaughter');
+    } else if (def.subtype === 'carcass') {
+      subtypeBadge = `<span class="card-carcass-marker" aria-hidden="true">🩸</span>`;
+      actionHint = I18n.t('card.actionButcher');
+    } else if (def.subtype === 'trap') {
+      // 트랩 진행도 슬롯 — 트랙 H가 채움
+      subtypeBadge = `<span class="card-trap-slot" data-trap-progress="0"></span>`;
+      const baitTags = def.trapData?.baitTags?.join(', ') ?? '';
+      actionHint = baitTags ? I18n.t('card.actionTrapBait', { tags: baitTags }) : '';
+    }
+
+    const actionHintHtml = actionHint
+      ? `<span class="card-action-hint">${actionHint}</span>` : '';
+
     return `
       <div class="card-header">
         <span class="card-icon">${def.icon ?? '📦'}</span>
         <span class="card-name">${I18n.itemName(def.id ?? inst.definitionId, def.name)}${nameRemainder ? ' ' : ''}${nameRemainder}</span>
-        ${qualityBadge}${contamBadge}
+        ${qualityBadge}${contamBadge}${subtypeBadge}
       </div>
       <div class="card-body">
         <div class="card-type-row">
@@ -1267,6 +1289,7 @@ const CardFactory = {
       <div class="card-footer">
         ${weightBadge}
         ${stackBadge}
+        ${actionHintHtml}
       </div>
     `;
   },

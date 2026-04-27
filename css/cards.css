@@ -268,6 +268,79 @@
 .card[data-type="material"]   .card-header { background: rgba(80,80,80,0.08); }
 .card[data-type="structure"]  .card-header { background: rgba(60,80,100,0.08); }
 
+/* ── CST integration: 신규 subtype 시각 신호 ── */
+
+/* live_animal: 좌상단 박동 마커 */
+.card[data-subtype="live_animal"] .card-live-marker {
+  position: absolute;
+  top: 3px;
+  left: 4px;
+  font-size: 11px;
+  color: rgba(220,80,80,0.9);
+  animation: card-heartbeat 1.5s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes card-heartbeat {
+  0%, 100% { transform: scale(1); opacity: 0.9; }
+  20%      { transform: scale(1.18); opacity: 1; }
+  40%      { transform: scale(1); opacity: 0.85; }
+}
+
+/* carcass: 미세 핏빛 오버레이 + 우상단 핏방울 마커 */
+.card[data-subtype="carcass"] .card-body {
+  position: relative;
+}
+.card[data-subtype="carcass"] .card-body::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(120,30,30,0.04);
+  pointer-events: none;
+  border-radius: inherit;
+}
+.card[data-subtype="carcass"] .card-carcass-marker {
+  position: absolute;
+  top: 3px;
+  left: 4px;
+  font-size: 11px;
+  pointer-events: none;
+}
+
+/* trap: 우상단 진행도 슬롯 (트랙 H가 채움) */
+.card[data-subtype="trap"] .card-trap-slot {
+  position: absolute;
+  top: 3px;
+  left: 4px;
+  font-size: 9px;
+  min-width: 22px;
+  height: 14px;
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: rgba(80,80,80,0.4);
+  color: var(--text-dim);
+  font-weight: bold;
+  pointer-events: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.card[data-subtype="trap"] .card-trap-slot::before {
+  content: '⏱';
+  font-size: 8px;
+  margin-right: 2px;
+}
+
+/* 액션 힌트 푸터 */
+.card-action-hint {
+  font-size: 9px;
+  color: var(--text-secondary);
+  font-style: italic;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 70%;
+}
+
 /* ── 장소 카드 (상단 행 전용) ── */
 .location-card {
   width: var(--card-w);
