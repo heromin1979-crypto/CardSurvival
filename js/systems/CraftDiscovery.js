@@ -7,6 +7,7 @@ import BLUEPRINTS_BASE from '../data/blueprints.js';
 import HIDDEN_RECIPES  from '../data/hiddenRecipes.js';
 import I18n            from '../core/I18n.js';
 import GameData        from '../data/GameData.js';
+import HiddenElementSystem from './HiddenElementSystem.js';
 
 const ALL_BPS = { ...BLUEPRINTS_BASE, ...HIDDEN_RECIPES };
 const HIDDEN_IDS = new Set(Object.keys(HIDDEN_RECIPES));
@@ -20,6 +21,10 @@ const CraftDiscovery = {
    * @returns {Array<{ blueprintId, blueprintName, outputPreview, missingItems, canStartNow }>}
    */
   findRecipes(srcDefId, tgtDefId) {
+    // Sub-spec 2A: 시도 기반 unlock — 매칭 검사 전에 hidden 잠금 해제
+    // 방금 unlock된 레시피도 같은 호출 안에서 visible해짐
+    HiddenElementSystem.unlockByAttempt(srcDefId, tgtDefId);
+
     const matches = [];
 
     for (const bp of Object.values(ALL_BPS)) {
