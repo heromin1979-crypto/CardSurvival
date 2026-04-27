@@ -548,6 +548,54 @@ const HiddenElementSystem = {
     EventBus.emit('boardChanged', {});
   },
 
+  // ── 시도 기반 unlock — Sub-spec 2A ─────────────────────────
+  // DragDrop._onDrop / TouchDrag._onPointerUp가 실제 drop commit 시점에 호출.
+  // (hover/getQuickHint는 호출 안 함 — 마우스만 올려도 unlock되면 design 정신과 어긋남)
+  // hidden 레시피의 첫 stage 재료에 src/tgt가 모두 포함되면 즉시 unlock.
+  // dev metric: window.__DEV_DISCOVERY__ = true 설정 시 콘솔에 unlock 이벤트 로그 (Phase 2A 측정 1차 hook).
+  unlockByAttempt(srcDefId, tgtDefId) {
+    const result = { unlocked: [], skipped: [] };
+    if (!srcDefId || !tgtDefId) return result;
+
+    const gs = GameState;
+    if (!gs.flags) return result;
+    if (!gs.flags.hiddenRecipesUnlocked) gs.flags.hiddenRecipesUnlocked = [];
+
+    for (const bp of Object.values(HIDDEN_RECIPES)) {
+      if (!bp.hidden) continue;
+
+      const firstStage = bp.stages?.[0];
+      if (!firstStage?.requiredItems?.length) continue;
+
+      const reqIds = firstStage.requiredItems.map(r => r.definitionId);
+      const srcIn = reqIds.includes(srcDefId);
+      const tgtIn = reqIds.includes(tgtDefId);
+      if (!srcIn || !tgtIn) continue;
+
+      if (gs.flags.hiddenRecipesUnlocked.includes(bp.id)) {
+        result.skipped.push(bp.id);
+        continue;
+      }
+
+      gs.flags.hiddenRecipesUnlocked.push(bp.id);
+      result.unlocked.push(bp.id);
+      EventBus.emit('recipeUnlocked', {
+        recipeId: bp.id,
+        recipe: bp,
+        source: 'attempt',
+      });
+      EventBus.emit('notify', {
+        message: `✨ 새 조합 발견: ${bp.name}`,
+        type: 'good',
+      });
+      if (typeof window !== 'undefined' && window.__DEV_DISCOVERY__) {
+        console.log(`[Discovery] day=${gs.time?.day} src=${srcDefId} tgt=${tgtDefId} unlocked=${bp.id}`);
+      }
+    }
+
+    return result;
+  },
+
   // ── 히든 레시피 해금 체크 ──────────────────────────────────
 
   _checkRecipeUnlocks() {
