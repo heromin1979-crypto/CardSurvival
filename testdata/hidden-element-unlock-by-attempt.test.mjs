@@ -103,7 +103,15 @@ vi.mock('../js/data/secretEnemies.js', () => ({ SECRET_ENEMIES: {} }));
 vi.mock('../js/data/secretEvents.js', () => ({ default: {} }));
 vi.mock('../js/data/GameData.js', () => ({ default: { items: {} } }));
 vi.mock('../js/core/SystemRegistry.js', () => ({ default: { register: vi.fn() } }));
-vi.mock('../js/core/I18n.js', () => ({ default: { t: (k) => k } }));
+vi.mock('../js/core/I18n.js', () => ({
+  default: {
+    t: (k, params) => {
+      if (k === 'hidden.recipeUnlockByAttempt') return `✨ 새 조합 발견: ${params?.name ?? ''}!`;
+      return k;
+    },
+    blueprintName: (_id, name) => name,
+  },
+}));
 
 import HiddenElementSystem from '../js/systems/HiddenElementSystem.js';
 import GameState from '../js/core/GameState.js';
