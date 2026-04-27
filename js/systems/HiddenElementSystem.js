@@ -552,6 +552,7 @@ const HiddenElementSystem = {
   // DragDrop._onDrop / TouchDrag._onPointerUp가 실제 drop commit 시점에 호출.
   // (hover/getQuickHint는 호출 안 함 — 마우스만 올려도 unlock되면 design 정신과 어긋남)
   // hidden 레시피의 첫 stage 재료에 src/tgt가 모두 포함되면 즉시 unlock.
+  // dev metric: window.__DEV_DISCOVERY__ = true 설정 시 콘솔에 unlock 이벤트 로그 (Phase 2A 측정 1차 hook).
   unlockByAttempt(srcDefId, tgtDefId) {
     const result = { unlocked: [], skipped: [] };
     if (!srcDefId || !tgtDefId) return result;
@@ -587,6 +588,9 @@ const HiddenElementSystem = {
         message: `✨ 새 조합 발견: ${bp.name}`,
         type: 'good',
       });
+      if (typeof window !== 'undefined' && window.__DEV_DISCOVERY__) {
+        console.log(`[Discovery] day=${gs.time?.day} src=${srcDefId} tgt=${tgtDefId} unlocked=${bp.id}`);
+      }
     }
 
     return result;
