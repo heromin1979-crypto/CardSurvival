@@ -8,6 +8,7 @@ import GameState       from '../core/GameState.js';
 import EventBus        from '../core/EventBus.js';
 import SystemRegistry  from '../core/SystemRegistry.js';
 import CraftDiscovery  from '../systems/CraftDiscovery.js';
+import HiddenElementSystem from '../systems/HiddenElementSystem.js';
 import SkillSystem     from '../systems/SkillSystem.js';
 import QuickCraftPrompt from '../ui/QuickCraftPrompt.js';
 import BodyStatusModal  from '../ui/BodyStatusModal.js';
@@ -197,6 +198,13 @@ const TouchDrag = {
         if (tgtIsNPC) {
           this._draggingId = null;
           return;
+        }
+        // Sub-spec 2A: 카드 to 카드 drop = "시도" — hidden 레시피 잠금 해제 트리거
+        // hover(getQuickHint)는 영향 없음. 실제 commit된 drop만 unlock으로 간주.
+        const srcDefForUnlock = GameState.getCardDef(this._draggingId);
+        const tgtDefForUnlock = GameState.getCardDef(existingId);
+        if (srcDefForUnlock && tgtDefForUnlock) {
+          HiddenElementSystem.unlockByAttempt(srcDefForUnlock.id, tgtDefForUnlock.id);
         }
         const interacted = SlotResolver.resolveInteraction(this._draggingId, existingId);
         if (!interacted) {
