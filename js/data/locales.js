@@ -1785,6 +1785,24 @@ export const en = {
   '_blueprint.make_nail_bomb':       'Nail Bomb',
   '_blueprint.make_smoke_bomb':      'Smoke Bomb',
 
+  // ── CST integration (cloth chain + carcass + trap) ─────────
+  '_blueprint.craft_thread':              'Spin Thread',
+  '_blueprint.craft_cloth_from_thread':   'Weave Cloth',
+  '_blueprint.craft_large_cloth':         'Weave Large Cloth',
+  '_blueprint.dismantle_large_cloth':     'Unravel Large Cloth',
+  '_blueprint.craft_blanket':             'Sew Blanket',
+  '_blueprint.craft_sleeping_bag':        'Sew Sleeping Bag',
+  '_blueprint.tan_hide':                  'Tan Hide',
+  '_blueprint.craft_rat_trap':            'Craft Rat Trap',
+  '_blueprint.craft_pigeon_snare':        'Craft Pigeon Snare',
+  '_blueprint.craft_alley_pit_trap':      'Build Alley Pit Trap',
+  '_blueprint.slaughter_rat':             'Slaughter Rat',
+  '_blueprint.slaughter_pigeon':          'Slaughter Pigeon',
+  '_blueprint.slaughter_stray_animal':    'Slaughter Stray Animal',
+  '_blueprint.butcher_rat_carcass':       'Butcher Rat Carcass',
+  '_blueprint.butcher_pigeon_carcass':    'Butcher Pigeon Carcass',
+  '_blueprint.butcher_stray_carcass':     'Butcher Stray Carcass',
+
   // ── Location cards (loc_*) ──────────────────────────────────
   '_item.loc_gangnam':       'Gangnam-gu',
   '_item.loc_gangdong':      'Gangdong-gu',
@@ -1873,6 +1891,22 @@ export const en = {
   '_item.npc_trader':            'Wandering Trader',
   '_item.npc_student':           'Student',
   '_item.npc_dog':               'Stray Dog',
+
+  // ── CST integration items (cloth chain + carcass + trap) ───
+  '_item.large_cloth':           'Large Cloth',
+  '_item.blanket':               'Blanket',
+  '_item.sleeping_bag':          'Sleeping Bag',
+  '_item.hide':                  'Raw Hide',
+  '_item.bone':                  'Bone',
+  '_item.rat_trap':              'Rat Trap',
+  '_item.pigeon_snare':          'Pigeon Snare',
+  '_item.alley_pit_trap':        'Alley Pit Trap',
+  '_item.live_rat':              'Live Rat',
+  '_item.live_pigeon':           'Live Pigeon',
+  '_item.live_stray_animal':     'Live Stray Animal',
+  '_item.rat_carcass':           'Rat Carcass',
+  '_item.pigeon_carcass':        'Pigeon Carcass',
+  '_item.stray_animal_carcass':  'Stray Animal Carcass',
 
   // ── NPC System ─────────────────────────────────────────────
   'npc.badge':           'NPC',
