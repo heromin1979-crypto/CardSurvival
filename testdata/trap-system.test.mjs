@@ -183,4 +183,66 @@ describe('TrapSystem', () => {
 
     expect(TrapSystem._progress.t1).toBeUndefined();
   });
+
+  // 트랙 H — UI 시각화 지원
+  describe('트랙 H — getProgress + trapStateChange', () => {
+    it('getProgress는 진행도 0 또는 누적값 반환', () => {
+      expect(TrapSystem.getProgress('unknown')).toBe(0);
+
+      TrapSystem._progress.t1 = 5;
+      expect(TrapSystem.getProgress('t1')).toBe(5);
+    });
+
+    it('bait 있으면 trapStateChange emit (hasBait: true + progress)', () => {
+      const trap = { instanceId: 't1', definitionId: 'rat_trap', quantity: 1 };
+      const bait = { instanceId: 'b1', definitionId: 'rice', quantity: 5 };
+      setupBoard({ trap, bait });
+
+      TrapSystem._onTP();
+
+      const stateCall = ebMock.emit.mock.calls.find(c => c[0] === 'trapStateChange');
+      expect(stateCall).toBeDefined();
+      expect(stateCall[1]).toEqual(expect.objectContaining({
+        trapId: 't1',
+        progress: 1,
+        tpToTrigger: 3,
+        hasBait: true,
+      }));
+    });
+
+    it('bait 없어도 trapStateChange emit (hasBait: false)', () => {
+      const trap = { instanceId: 't1', definitionId: 'rat_trap', quantity: 1 };
+      setupBoard({ trap, bait: null });
+
+      TrapSystem._onTP();
+
+      const stateCall = ebMock.emit.mock.calls.find(c => c[0] === 'trapStateChange');
+      expect(stateCall).toBeDefined();
+      expect(stateCall[1]).toEqual(expect.objectContaining({
+        trapId: 't1',
+        progress: 0,
+        hasBait: false,
+      }));
+    });
+
+    it('발동 후 trapStateChange는 progress: 0 + hasBait: false', () => {
+      const trap = { instanceId: 't1', definitionId: 'rat_trap', quantity: 1 };
+      const bait = { instanceId: 'b1', definitionId: 'rice', quantity: 5 };
+      setupBoard({ trap, bait });
+
+      // tpToTrigger=3, successRate=1.0 → 3번째에 발동
+      TrapSystem._onTP();
+      TrapSystem._onTP();
+      ebMock.emit.mockClear();
+      TrapSystem._onTP();
+
+      const finalState = ebMock.emit.mock.calls.find(c => c[0] === 'trapStateChange');
+      expect(finalState).toBeDefined();
+      expect(finalState[1]).toEqual(expect.objectContaining({
+        trapId: 't1',
+        progress: 0,
+        hasBait: false,
+      }));
+    });
+  });
 });
