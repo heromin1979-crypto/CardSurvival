@@ -9,6 +9,7 @@ export default defineConfig({
       'testdata/hidden-element-*.test.mjs',
       'testdata/craft-discovery-*.test.mjs',
       'testdata/drop-handler-*.test.mjs',
+      'testdata/discovery-*.test.mjs',
     ],
   },
 });
