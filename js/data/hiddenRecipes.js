@@ -1061,15 +1061,6 @@ const HIDDEN_RECIPES = {
         consumeAt: 'start',
       },
     ],
-    unlockConditions: {
-      hiddenLocationId: null,
-      bossKillId: null,
-      requiredCharacter: null,
-      minDay: 20,
-      minCraftLevel: 0,
-      requiredItems: [],
-      customUnlock: null,
-    },
   },
 
   forge_master_blade: {
@@ -1090,15 +1081,6 @@ const HIDDEN_RECIPES = {
         consumeAt: 'start',
       },
     ],
-    unlockConditions: {
-      hiddenLocationId: null,
-      bossKillId: null,
-      requiredCharacter: null,
-      minDay: 25,
-      minCraftLevel: 0,
-      requiredItems: [],
-      customUnlock: null,
-    },
   },
 
   forge_katana: {
@@ -1126,15 +1108,6 @@ const HIDDEN_RECIPES = {
         consumeAt: 'start',
       },
     ],
-    unlockConditions: {
-      hiddenLocationId: null,
-      bossKillId: null,
-      requiredCharacter: null,
-      minDay: 30,
-      minCraftLevel: 0,
-      requiredItems: [],
-      customUnlock: '대장장이의 비전을 깨달아야 한다 (weaponcraft 15 달성)',
-    },
   },
 
   forge_alloy_armor_plate: {
@@ -1155,15 +1128,6 @@ const HIDDEN_RECIPES = {
         consumeAt: 'start',
       },
     ],
-    unlockConditions: {
-      hiddenLocationId: null,
-      bossKillId: null,
-      requiredCharacter: null,
-      minDay: 25,
-      minCraftLevel: 0,
-      requiredItems: [],
-      customUnlock: null,
-    },
   },
 
   build_watchtower: {
@@ -1191,15 +1155,6 @@ const HIDDEN_RECIPES = {
         consumeAt: 'start',
       },
     ],
-    unlockConditions: {
-      hiddenLocationId: null,
-      bossKillId: null,
-      requiredCharacter: null,
-      minDay: 20,
-      minCraftLevel: 0,
-      requiredItems: [],
-      customUnlock: null,
-    },
   },
 
   build_portable_generator: {
@@ -1228,15 +1183,6 @@ const HIDDEN_RECIPES = {
         consumeAt: 'start',
       },
     ],
-    unlockConditions: {
-      hiddenLocationId: null,
-      bossKillId: null,
-      requiredCharacter: null,
-      minDay: 25,
-      minCraftLevel: 0,
-      requiredItems: [],
-      customUnlock: null,
-    },
   },
 
   // ══════════════════════════════════════════════════════════════
@@ -1262,15 +1208,6 @@ const HIDDEN_RECIPES = {
         consumeAt: 'start',
       },
     ],
-    unlockConditions: {
-      hiddenLocationId: null,
-      bossKillId: null,
-      requiredCharacter: null,
-      minDay: 20,
-      minCraftLevel: 0,
-      requiredItems: [],
-      customUnlock: null,
-    },
   },
 
   make_surgical_anesthetic: {
@@ -1291,15 +1228,6 @@ const HIDDEN_RECIPES = {
         consumeAt: 'start',
       },
     ],
-    unlockConditions: {
-      hiddenLocationId: null,
-      bossKillId: null,
-      requiredCharacter: null,
-      minDay: 15,
-      minCraftLevel: 0,
-      requiredItems: [],
-      customUnlock: null,
-    },
   },
 
   build_surgery_station: {
@@ -1321,15 +1249,6 @@ const HIDDEN_RECIPES = {
         consumeAt: 'start',
       },
     ],
-    unlockConditions: {
-      hiddenLocationId: null,
-      bossKillId: null,
-      requiredCharacter: null,
-      minDay: 20,
-      minCraftLevel: 0,
-      requiredItems: [],
-      customUnlock: null,
-    },
   },
 
   synth_plague_vaccine: {
@@ -1401,15 +1320,6 @@ const HIDDEN_RECIPES = {
         consumeAt: 'start',
       },
     ],
-    unlockConditions: {
-      hiddenLocationId: null,
-      bossKillId: null,
-      requiredCharacter: null,
-      minDay: 35,
-      minCraftLevel: 0,
-      requiredItems: [],
-      customUnlock: '의학의 정수에 도달해야 한다 (medicine 15 달성)',
-    },
   },
 
   // ══════════════════════════════════════════════════════════════
@@ -1435,15 +1345,6 @@ const HIDDEN_RECIPES = {
         consumeAt: 'start',
       },
     ],
-    unlockConditions: {
-      hiddenLocationId: null,
-      bossKillId: null,
-      requiredCharacter: null,
-      minDay: 20,
-      minCraftLevel: 0,
-      requiredItems: [],
-      customUnlock: null,
-    },
   },
 
   build_solar_charger: {
@@ -1465,15 +1366,6 @@ const HIDDEN_RECIPES = {
         consumeAt: 'start',
       },
     ],
-    unlockConditions: {
-      hiddenLocationId: null,
-      bossKillId: null,
-      requiredCharacter: null,
-      minDay: 25,
-      minCraftLevel: 0,
-      requiredItems: [],
-      customUnlock: null,
-    },
   },
 
   make_powered_drill: {
@@ -1495,15 +1387,6 @@ const HIDDEN_RECIPES = {
         consumeAt: 'start',
       },
     ],
-    unlockConditions: {
-      hiddenLocationId: null,
-      bossKillId: null,
-      requiredCharacter: null,
-      minDay: 20,
-      minCraftLevel: 0,
-      requiredItems: [],
-      customUnlock: null,
-    },
   },
 
   build_electric_fence: {
@@ -1531,15 +1414,6 @@ const HIDDEN_RECIPES = {
         consumeAt: 'start',
       },
     ],
-    unlockConditions: {
-      hiddenLocationId: null,
-      bossKillId: null,
-      requiredCharacter: null,
-      minDay: 30,
-      minCraftLevel: 0,
-      requiredItems: [],
-      customUnlock: '전력 인프라가 완비되어야 한다',
-    },
   },
 
   build_water_recycler: {
@@ -1561,15 +1435,6 @@ const HIDDEN_RECIPES = {
         consumeAt: 'start',
       },
     ],
-    unlockConditions: {
-      hiddenLocationId: null,
-      bossKillId: null,
-      requiredCharacter: null,
-      minDay: 25,
-      minCraftLevel: 0,
-      requiredItems: [],
-      customUnlock: null,
-    },
   },
 
   // ══════════════════════════════════════════════════════════════
@@ -1595,15 +1460,6 @@ const HIDDEN_RECIPES = {
         consumeAt: 'start',
       },
     ],
-    unlockConditions: {
-      hiddenLocationId: null,
-      bossKillId: null,
-      requiredCharacter: null,
-      minDay: 20,
-      minCraftLevel: 0,
-      requiredItems: [],
-      customUnlock: null,
-    },
   },
 
   build_powered_exosuit: {
@@ -1632,15 +1488,6 @@ const HIDDEN_RECIPES = {
         consumeAt: 'start',
       },
     ],
-    unlockConditions: {
-      hiddenLocationId: null,
-      bossKillId: null,
-      requiredCharacter: null,
-      minDay: 40,
-      minCraftLevel: 0,
-      requiredItems: [],
-      customUnlock: '공학의 극치에 도달해야 한다',
-    },
   },
 
   make_night_vision: {
@@ -1662,15 +1509,6 @@ const HIDDEN_RECIPES = {
         consumeAt: 'start',
       },
     ],
-    unlockConditions: {
-      hiddenLocationId: null,
-      bossKillId: null,
-      requiredCharacter: null,
-      minDay: 30,
-      minCraftLevel: 0,
-      requiredItems: [],
-      customUnlock: null,
-    },
   },
 
   make_electronic_lockpick: {
@@ -1692,15 +1530,6 @@ const HIDDEN_RECIPES = {
         consumeAt: 'start',
       },
     ],
-    unlockConditions: {
-      hiddenLocationId: null,
-      bossKillId: null,
-      requiredCharacter: null,
-      minDay: 20,
-      minCraftLevel: 0,
-      requiredItems: [],
-      customUnlock: null,
-    },
   },
 
   make_master_wrench: {
@@ -1721,15 +1550,6 @@ const HIDDEN_RECIPES = {
         consumeAt: 'start',
       },
     ],
-    unlockConditions: {
-      hiddenLocationId: null,
-      bossKillId: null,
-      requiredCharacter: null,
-      minDay: 25,
-      minCraftLevel: 0,
-      requiredItems: [],
-      customUnlock: null,
-    },
   },
 
   // ══════════════════════════════════════════════════════════════
@@ -1755,15 +1575,6 @@ const HIDDEN_RECIPES = {
         consumeAt: 'start',
       },
     ],
-    unlockConditions: {
-      hiddenLocationId: null,
-      bossKillId: null,
-      requiredCharacter: null,
-      minDay: 25,
-      minCraftLevel: 0,
-      requiredItems: [],
-      customUnlock: null,
-    },
   },
 
   make_master_lure: {
@@ -1784,15 +1595,6 @@ const HIDDEN_RECIPES = {
         consumeAt: 'start',
       },
     ],
-    unlockConditions: {
-      hiddenLocationId: null,
-      bossKillId: null,
-      requiredCharacter: null,
-      minDay: 30,
-      minCraftLevel: 0,
-      requiredItems: [],
-      customUnlock: '낚시의 달인만이 만들 수 있다',
-    },
   },
 
 };
