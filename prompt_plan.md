@@ -3,11 +3,11 @@
 > 시작일: 2026-04-27
 > 상태: **🎯 계획 확정 · Sub-spec 1 진입 대기**
 > 선행: Discovery Phase 2 (2A/2B/2C) + Phase 1 Track A 머지 완료 (master `d80e739` 이후)
-> 이전 계획: `prompt_plan.old4.md` (Combat System Overhaul, Phase 5-7 재평가 대기)
+> 이전 계획: `docs/archive/prompt_plan.old4.md` (Combat System Overhaul, Phase 5-7 재평가 대기)
 
 ## 배경
 
-`CRAFT_DIVERSITY_ANALYSIS.md` 작성 중 발견: 데이터 다양성은 CST를 능가(scrap_metal 70 vs 코코넛 8-10)하나, 일부 chain은 약하거나 출처가 불명확. CST의 검증된 3가지 패턴을 한국 폐허 도시 setting에 적응:
+`docs/CRAFT_DIVERSITY_ANALYSIS.md` 작성 중 발견: 데이터 다양성은 CST를 능가(scrap_metal 70 vs 코코넛 8-10)하나, 일부 chain은 약하거나 출처가 불명확. CST의 검증된 3가지 패턴을 한국 폐허 도시 setting에 적응:
 
 1. **Cloth Chain 단계화** — `cloth_scrap → thread → cloth → large_cloth` 명확화
 2. **Carcass 멀티 분해** — 적 처치 시 다양한 자원 산출, leather 출처 확정
