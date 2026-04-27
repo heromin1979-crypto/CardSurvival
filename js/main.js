@@ -159,6 +159,7 @@ function init() {
   BGMSystem.init();
   HiddenElementSystem.init();
   TrapSystem.init();
+  SystemRegistry.register('TrapSystem', TrapSystem);
   SubwaySystem.init();
   NightSystem.init();
 

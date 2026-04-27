@@ -306,13 +306,13 @@
   pointer-events: none;
 }
 
-/* trap: 우상단 진행도 슬롯 (트랙 H가 채움) */
+/* trap: 좌상단 진행도 슬롯 (트랙 H — TrapSystem이 채움) */
 .card[data-subtype="trap"] .card-trap-slot {
   position: absolute;
   top: 3px;
   left: 4px;
   font-size: 9px;
-  min-width: 22px;
+  min-width: 28px;
   height: 14px;
   padding: 1px 4px;
   border-radius: 3px;
@@ -328,6 +328,16 @@
   content: '⏱';
   font-size: 8px;
   margin-right: 2px;
+}
+/* 트랩 70%+ — trigger 임박 시 강조 + 펄스 */
+.card[data-subtype="trap"] .card-trap-slot.near-trigger {
+  background: rgba(200,160,96,0.35);
+  color: var(--accent-primary, #c8a060);
+  animation: card-trap-pulse 1.2s ease-in-out infinite;
+}
+@keyframes card-trap-pulse {
+  0%, 100% { opacity: 0.85; }
+  50%      { opacity: 1.0; }
 }
 
 /* 액션 힌트 푸터 */

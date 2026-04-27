@@ -1263,8 +1263,12 @@ const CardFactory = {
       subtypeBadge = `<span class="card-carcass-marker" aria-hidden="true">🩸</span>`;
       actionHint = I18n.t('card.actionButcher');
     } else if (def.subtype === 'trap') {
-      // 트랩 진행도 슬롯 — 트랙 H가 채움
-      subtypeBadge = `<span class="card-trap-slot" data-trap-progress="0"></span>`;
+      // 트랩 진행도 슬롯 (트랙 H — TrapSystem이 채움)
+      const TrapSystem = SystemRegistry.get('TrapSystem');
+      const progress = TrapSystem?.getProgress(inst.instanceId) ?? 0;
+      const tpTotal = def.trapData?.tpToTrigger ?? 0;
+      const progressClass = (tpTotal > 0 && progress >= tpTotal * 0.7) ? ' near-trigger' : '';
+      subtypeBadge = `<span class="card-trap-slot${progressClass}" data-trap-progress="${progress}">${progress}/${tpTotal}</span>`;
       const baitTags = def.trapData?.baitTags?.join(', ') ?? '';
       actionHint = baitTags ? I18n.t('card.actionTrapBait', { tags: baitTags }) : '';
     }
@@ -1381,5 +1385,10 @@ const CardFactory = {
     }
   },
 };
+
+// CST 통합 — 트랩 진행도 변화 시 해당 카드만 리렌더 (트랙 H)
+EventBus.on('trapStateChange', ({ trapId }) => {
+  if (trapId) CardFactory.update(trapId);
+});
 
 export default CardFactory;
