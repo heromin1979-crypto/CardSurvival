@@ -1,93 +1,357 @@
-# Combat System Overhaul — Tier 1 + 2
+# CST 패턴 도입 — Trap + Cloth Chain + Carcass 분해
 
-> 시작일: 2026-04-23
-> 상태: **🎯 Tier 1 완료 (Phase 1~4) · Phase 5~7 재평가 대기**
-> 선행 완료: Wave 3 전체 (8개 이슈 해소) · 통합 테스트 스위트 27 (→ `prompt_plan.old3.md` 아카이브)
+> 시작일: 2026-04-27
+> 상태: **🎯 계획 확정 · Sub-spec 1 진입 대기**
+> 선행: Discovery Phase 2 (2A/2B/2C) + Phase 1 Track A 머지 완료 (master `d80e739` 이후)
+> 이전 계획: `prompt_plan.old4.md` (Combat System Overhaul, Phase 5-7 재평가 대기)
 
 ## 배경
 
-사용자 피드백: "NPC는 전투에서 그냥 맞아 주는 역활로만 사용되는데 전투 시스템을 보여지는 부분과 실질적인 부분 개선이 필요."
+`CRAFT_DIVERSITY_ANALYSIS.md` 작성 중 발견: 데이터 다양성은 CST를 능가(scrap_metal 70 vs 코코넛 8-10)하나, 일부 chain은 약하거나 출처가 불명확. CST의 검증된 3가지 패턴을 한국 폐허 도시 setting에 적응:
 
-조사 결과 4가지 구조 문제:
-- **P1**: NPC 독립 턴 부재 (수동 명령 + 쿨다운 의존)
-- **P2**: 적이 NPC 직접 타겟 안 함 (20% 무작위 가로채기)
-- **P3**: `aiPattern` 메타데이터만 존재, 코드 미구현
-- **P4**: 턴 가시성 부재 (누구 차례인지 표시 없음)
+1. **Cloth Chain 단계화** — `cloth_scrap → thread → cloth → large_cloth` 명확화
+2. **Carcass 멀티 분해** — 적 처치 시 다양한 자원 산출, leather 출처 확정
+3. **Trap 시스템** — 도시 적응형 (쥐/비둘기/떠돌이 동물) live-capture 도입
 
-## 전체 계획 — 7 Phase
+## 확정된 설계 결정 (사용자 합의)
 
-| Phase | 범위 | 줄 수 | 상태 |
-|------|------|-------|------|
-| **1** | 턴 큐 인프라 (Q1 initiative HUD + 큐 순환) | ~350 | ✅ (26건 테스트 · 309/309) |
-| 2 | 동료 스탠스 + 독립 행동 (Q2 + M2 일부) | ~500 | ✅ (23건 테스트 · 332/332) |
-| 3 | 적 의도 예고 + AI 타겟 분기 (Q3 + M1) | ~300 | ✅ (30건 테스트 · 362/362) |
-| 4 | 동료 애니메이션 (Q4) · **Tier 1 완료점** | ~250 | ✅ (12건 테스트 · 374/374) |
-| 5 | Speed 기반 initiative (M3) | ~150 | ⏳ |
-| 6 | Front/Back 포지션 (M5) | ~500 | ⏳ |
-| 7 | Action Points (M4) · **Tier 2 완료점** | ~700 | ⏳ |
-| 합계 | | ~2750 | |
+| 결정 | 선택 |
+|------|------|
+| Sub-spec 1 스킬 | `armorcraft` 재활용 (tailoring 신설 X) |
+| Sub-spec 1 large_cloth 결과물 | blanket / sleeping_bag / winter_coat 3개 |
+| Sub-spec 2 carcass 접근 | 대안 B — human_corpse 카드 없이 enemy.lootTable 직접 확장 |
+| Sub-spec 2 무두질 재료 | salt (alcohol_solution X) |
+| Sub-spec 3 trap 동작 | Option II — bait 필요 |
+| Sub-spec 3 카테고리 | 기존 `tool` 카테고리 안에 포함 (신규 `trap` 카테고리 X) |
+| Sub-spec 3 시스템 | 신규 `js/systems/TrapSystem.js` 생성 (TickEngine 직접 통합 X) |
 
-## 확정된 설계 답안 (Open Question 추천안 채택)
+## 진행 순서
 
-1. Phase 4(Tier 1) 완료 시 체감 검증 후 Phase 5~7 Go/No-Go 재평가
-2. AP 기본값: **2 AP/턴** (P7)
-3. 행 전환 비용: **1 AP** (P6+P7)
-4. 동료 사망 처리: **기절** (incapacitated, 전투 종료 후 HP 20% 복귀)
-5. 적 의도 예고: **100% 결정론** (Into the Breach 방식)
-6. Speed 동점: **플레이어 > 동료 > 적** 타이브레이커
-7. 작업 브랜치: **master + 작은 커밋 회귀 0 보장** (feature 브랜치 오버헤드 회피)
-8. **TDD 필수** — 각 Phase 종료 조건에 "회귀 0" + 신규 테스트
+순차 PR 머지: **Sub-spec 1 → Sub-spec 2 → Sub-spec 3**.
 
-## Phase 1 — 턴 큐 인프라 상세
+| Sub-spec | 복잡도 | CC 시간 | LoC | 영향 파일 |
+|----------|--------|---------|-----|-----------|
+| 1. Cloth Chain | LOW | 1-2h | ~150 | 5 |
+| 2. Carcass 분해 | LOW-MED | 2-3h | ~120 | 4-5 |
+| 3. Trap System | MED-HIGH | 4-8h | ~400 | 8-10 |
+| **합계** | **MEDIUM** | **7-13h** | **~670** | **17-20** |
+
+---
+
+## Sub-spec 1: Progressive Cloth Chain
 
 ### 목표
-"플레이어 액션 → 모든 적 연쇄 공격" → "큐에 순서대로 한 엔티티씩 1 턴 소비".
+`cloth_scrap → thread → cloth → large_cloth` 계단 명확화. `armorcraft` 스킬 게이팅.
 
 ### 변경 지점
 
-**GameState.combat 확장**:
+**A. 신규 아이템 4개** (`js/data/items_base.js`):
+
 ```js
-turnQueue: [],      // [{type: 'player'|'companion'|'enemy', id, dead}]
-activeIdx: 0,       // 활성 엔티티 인덱스
-roundNumber: 1,     // 큐 한 바퀴 = 1 라운드
+large_cloth: {
+  id: 'large_cloth', name: '큰 천', type: 'material', subtype: 'textile',
+  rarity: 'uncommon', weight: 0.4,
+  defaultDurability: 100, defaultContamination: 0,
+  icon: '🧶', description: '담요·침구·대형 의류 제작 재료.',
+  tags: ['material', 'textile', 'crafted'],
+  dismantle: [{ definitionId: 'cloth', qty: 2, chance: 1.0 }],
+},
+blanket: { /* 체온 회복 아이템 */ },
+sleeping_bag: { /* 휴식 보너스 구조물 */ },
+winter_coat: { /* 방한 의류 — 장비 슬롯 body */ },
 ```
 
-**CombatSystem 신규 메서드**:
-- `_buildTurnQueue()` — 전투 시작 시 구성 (player → companions → enemies)
-- `_advanceTurn()` — 다음 엔티티로 진행, 죽은 건 skip
-- `_removeFromQueue(type, id)` — 사망 처리
-- `_runCurrentTurn()` — 활성 엔티티 종류 분기 (Phase 1에서는 enemy만 실제 동작, companion은 stub)
+**B. 신규 레시피 7개** (`js/data/blueprints.js`, 모두 hidden=false 공개):
 
-**기존 메서드 변경**:
-- 전투 시작 훅에서 `_buildTurnQueue` 호출
-- 플레이어 행동 종료 후 `_advanceTurn` → `_runCurrentTurn` 루프
-- `_allEnemiesAttack` 데드코드 제거 (Phase 1 완료 시)
+| ID | 입력 | 출력 | requiredSkills |
+|----|------|------|----------------|
+| `craft_thread` | cloth_scrap × 2 | thread × 1 | armorcraft: 1 |
+| `craft_cloth_from_thread` | thread × 3 | cloth × 1 | armorcraft: 2 |
+| `craft_large_cloth` | cloth × 2 + thread × 2 | large_cloth × 1 | armorcraft: 4 |
+| `dismantle_large_cloth` | large_cloth × 1 | cloth × 2 | (없음) |
+| `craft_blanket` | large_cloth × 1 + thread × 2 | blanket × 1 | armorcraft: 3 |
+| `craft_sleeping_bag` | large_cloth × 2 + thread × 3 + leather × 1 | sleeping_bag × 1 | armorcraft: 5 |
+| `craft_winter_coat` | large_cloth × 2 + leather × 1 | winter_coat × 1 | armorcraft: 5 |
 
-**CombatUI 추가**:
-- 상단 **initiative bar** — 큐 순서대로 초상화 배치 + 활성 강조 + HP mini-bar
-- 죽은 엔티티: 회색 + 라인 스루
+> 주의: `craft_cloth`라는 ID가 기존에 있는지 확인 필요. 충돌 시 `craft_cloth_from_thread`로 disambiguate.
 
-**세이브 호환**:
-- `deserialize`에서 `turnQueue` 부재 시 전투 비활성 상태로 복원 (전투 중 저장 시나리오는 원래 지원 안 됨)
+**C. 등록 누락 방지** (CLAUDE.md 7장 규칙):
+- `js/data/stackConfig.js` — large_cloth, blanket, sleeping_bag, winter_coat 4개 추가
+- `js/data/CardFactory.js` CARD_IMAGES — 4개 매핑 (이모지 fallback 가능)
+- `js/data/districts.js` lootTable — 변경 없음 (raw 재료 신규 없음)
 
-### Phase 1 수용 기준 (Acceptance Criteria) — 완료
+### Acceptance Criteria
 
-- [x] 전투 시작 시 큐가 올바르게 구성 (플레이어 + 동료 0~2 + 적 1~N) ✅
-- [x] 플레이어 액션 → AI 턴 처리기 → 적 각자 개별 턴 → 다시 플레이어 순환 ✅
-- [x] 엔티티 사망 시 큐에서 skip, HP 0 companion은 큐 구성에서 제외 ✅
-- [x] 모든 적 사망 → 승리 판정, 플레이어 사망 → 패배 판정 (기존 로직 유지) ✅
-- [x] CombatUI에 initiative bar 표시 ✅
-- [x] 기존 회귀 0 (283 → 309, 26 신규 모두 추가) ✅
-- [x] 신규 테스트 26건 (turn queue unit 15 + integration 11) ≥ 15 목표 ✅
+- [ ] `node --input-type=module js/data/validate.js` → ALL CLEAR
+- [ ] 회귀: 403/403 통과 (master 기준)
+- [ ] 신규 craft 레시피 7개 데이터 검증 단위 테스트 (1-2건)
+- [ ] cloth_scrap 분기율 +1 (thread 추가)
+- [ ] thread 분기율 +2 (cloth/large_cloth 결과물)
+- [ ] cloth 분기율 +2 (large_cloth/dismantle)
+- [ ] large_cloth 분기율 ≥3 (blanket/sleeping_bag/winter_coat)
 
-### Phase 1 구현 증거
-- `CombatSystem._buildTurnQueue / _advanceTurn / _currentEntry / _isEntryAlive / _processAiTurns / _runCompanionTurn (stub) / _runSingleEnemyTurn`
-- `_setupCombat` 에 turnQueue/activeIdx/roundNumber 필드 초기화
-- `_allEnemiesAttack` → `_processAiTurns` alias (하위 호환)
-- `CombatUI._renderInitiativeBar` + `initiative-bar` CSS 블록 (screens-combat.css)
+### 영향 파일 (5)
+1. `js/data/items_base.js` — 신규 아이템 4개
+2. `js/data/blueprints.js` — 신규 레시피 7개
+3. `js/data/stackConfig.js` — 4개 등록
+4. `js/data/CardFactory.js` — 이미지 4개 매핑
+5. `testdata/cloth-chain.test.mjs` (신규) — chain 동작 단위 테스트
 
-## 아카이브
+---
 
-→ `prompt_plan.old3.md` (Wave 3 완료 + 통합 테스트 스위트)
-→ `prompt_plan.old2.md` (HospitalSiegeSystem Phase 4)
-→ `prompt_plan.old.md` (Wave 1 이전 전체 기획)
+## Sub-spec 2: Carcass 멀티 분해
+
+### 목표
+적 처치 lootTable 확장 + leather 출처 확정 (`tan_hide` 레시피).
+
+### 변경 지점
+
+**A. 신규 아이템 2개** (`js/data/items_base.js`):
+
+```js
+hide: {
+  id: 'hide', name: '생가죽', type: 'material', subtype: 'natural',
+  rarity: 'uncommon', weight: 0.4,
+  defaultDurability: 100, defaultContamination: 30,
+  icon: '🐾', description: '무두질하면 가죽이 된다.',
+  tags: ['material', 'organic'],
+  dismantle: [],
+},
+bone: {
+  id: 'bone', name: '뼈', type: 'material', subtype: 'natural',
+  rarity: 'common', weight: 0.2,
+  defaultDurability: 100, defaultContamination: 0,
+  icon: '🦴', description: '도구·바늘·국물 재료.',
+  tags: ['material', 'organic'],
+  dismantle: [],
+},
+```
+
+**B. 신규 레시피 1개 — leather 출처 확정** (`js/data/blueprints.js`):
+
+| ID | 입력 | 출력 | requiredSkills |
+|----|------|------|----------------|
+| `tan_hide` | hide × 1 + salt × 1 | leather × 1 | crafting: 2 |
+
+> hidden=false (공개). 사용자 결정: 무두질에 salt 사용 (alcohol_solution 대신).
+
+**C. 기존 enemy lootTable 확장** (`js/data/enemies.js`):
+
+> 위치 확인 필요. CombatSystem.js:1141의 `enemy.lootTable` 참조 — 데이터 위치는 enemies.js 또는 enemies_*.js 시리즈 추정.
+
+- **인간형 적** (zombie/raider 등) lootTable에 추가:
+  - `cloth_scrap × 1-3` (chance 0.5) — 의류 약탈 컨셉
+  - `leather × 0-1` (chance 0.2) — 가죽 옷 입은 적 한정
+  - `bone × 0-1` (chance 0.3)
+- **동물형 적** (zombie_dog 등 — 있다면) lootTable에 추가:
+  - `hide × 1` (chance 0.7)
+  - `bone × 1-2` (chance 0.6)
+  - `raw_meat × 1-2` (chance 0.8) — 기존 유지
+
+> 정확한 적 ID/카테고리는 데이터 탐색 후 결정.
+
+**D. 등록**:
+- stackConfig.js — hide, bone 추가
+- CardFactory.js — 2개 이미지 매핑
+- districts.js — 변경 없음
+
+### Acceptance Criteria
+- [ ] `validate.js` ALL CLEAR
+- [ ] 회귀: 0
+- [ ] 적 처치 시 lootTable 다중 산출 동작 통합 테스트 (인간형 + 동물형 각 1건)
+- [ ] hide 분기율 ≥ 1 (`tan_hide`)
+- [ ] leather 출처 명시 — 더 이상 미정의 자원 아님
+- [ ] bone 분기율 ≥ 1 (Sub-spec 3에서 도구 레시피로 확장 예정)
+
+### 영향 파일 (5)
+1. `js/data/items_base.js` — 신규 아이템 2개
+2. `js/data/blueprints.js` — `tan_hide` 1개
+3. `js/data/enemies.js` — lootTable 확장
+4. `js/data/stackConfig.js` — 2개 등록
+5. `js/data/CardFactory.js` — 2개 매핑
+6. `testdata/carcass-loot.test.mjs` (신규)
+
+---
+
+## Sub-spec 3: Trap System (도시 적응형)
+
+### 목표
+정적 trap 카드 → bait 드롭 → 일정 TP 후 산 동물 산출 → 도살 → carcass → 분해 chain. **bait 필요(Option II)**, **tool 카테고리** 안에 포함, **신규 TrapSystem.js** 생성.
+
+### 변경 지점
+
+**A. 신규 trap 도구 3개** (`js/data/items_tools.js`):
+
+```js
+rat_trap: {
+  id: 'rat_trap', name: '쥐덫', type: 'tool', subtype: 'trap',
+  rarity: 'common', weight: 0.5,
+  defaultDurability: 100, defaultContamination: 0,
+  icon: '🪤', description: '쥐를 산 채로 잡는 덫. bait 필요.',
+  tags: ['tool', 'trap', 'small'],
+  trapData: {
+    targetCard: 'live_rat',
+    baitTags: ['food', 'grain'],   // rice, wild_berry 등 허용
+    tpToTrigger: 8,                 // 8 TP 경과 후 발동
+    successRate: 0.65,
+    consumesBait: true,
+  },
+  dismantle: [
+    { definitionId: 'scrap_metal', qty: 1, chance: 0.8 },
+    { definitionId: 'wire', qty: 1, chance: 0.5 },
+  ],
+},
+pigeon_snare: {
+  id: 'pigeon_snare', name: '비둘기 올가미', type: 'tool', subtype: 'trap',
+  rarity: 'common', weight: 0.3,
+  trapData: { targetCard: 'live_pigeon', baitTags: ['food', 'grain'], tpToTrigger: 6, successRate: 0.55, consumesBait: true },
+  /* ... */
+},
+alley_pit_trap: {
+  id: 'alley_pit_trap', name: '골목 함정', type: 'tool', subtype: 'trap',
+  rarity: 'uncommon', weight: 2.0,
+  trapData: { targetCard: 'live_stray_animal', baitTags: ['food', 'meat'], tpToTrigger: 12, successRate: 0.45, consumesBait: true },
+  /* ... */
+},
+```
+
+> 기존 `tool` 카테고리 + 새 `subtype: 'trap'` 분류. `trapData` 필드는 신규.
+
+**B. 신규 동물(산 채로) 카드 3개** (`js/data/items_misc.js`):
+- `live_rat` — 산 채로 잡힌 쥐, weight 0.3, slaughter 도구 필요
+- `live_pigeon` — 산 채로 잡힌 비둘기, weight 0.2
+- `live_stray_animal` — 떠돌이 동물 (개/고양이), weight 8
+
+**C. 신규 carcass 카드 3개** (`js/data/items_misc.js`):
+- `rat_carcass` / `pigeon_carcass` / `stray_animal_carcass`
+
+**D. 신규 trap 제작 레시피 3개** (`js/data/blueprints.js`):
+
+| ID | 입력 | 출력 | requiredSkills |
+|----|------|------|----------------|
+| `craft_rat_trap` | scrap_metal × 2 + wire × 2 + spring × 1 | rat_trap × 1 | crafting: 2 |
+| `craft_pigeon_snare` | rope × 2 + wood × 1 | pigeon_snare × 1 | crafting: 1 |
+| `craft_alley_pit_trap` | wood × 4 + rope × 3 + nail × 4 | alley_pit_trap × 1 | crafting: 3, building: 2 |
+
+**E. 신규 도살 레시피 3개** (`js/data/blueprints.js`, 도구 `sharp_blade` 또는 `knife` 필요):
+
+| ID | 입력 | 출력 |
+|----|------|------|
+| `slaughter_rat` | live_rat × 1 | rat_carcass × 1 |
+| `slaughter_pigeon` | live_pigeon × 1 | pigeon_carcass × 1 |
+| `slaughter_stray_animal` | live_stray_animal × 1 | stray_animal_carcass × 1 |
+
+**F. 신규 분해 레시피 3개** (`js/data/blueprints.js`):
+
+| ID | 입력 | 출력 |
+|----|------|------|
+| `butcher_rat_carcass` | rat_carcass × 1 | raw_meat × 1, bone × 1, hide × 1 (chance 0.3) |
+| `butcher_pigeon_carcass` | pigeon_carcass × 1 | raw_meat × 1, bone × 1 (chance 0.5) |
+| `butcher_stray_carcass` | stray_animal_carcass × 1 | raw_meat × 3, hide × 2, bone × 2 |
+
+> 다중 output은 기존 blueprints의 `output` 배열 패턴 따름.
+
+**G. 신규 시스템: `js/systems/TrapSystem.js`**:
+
+핵심 메서드:
+- `init()` — `EventBus.on('tpAdvance', ...)` 청취
+- `_processActiveTraps()` — 매 TP마다 환경 행의 trap 카드 순회, 각 trap 옆에 bait 카드 있는지 확인
+- `_tryTrigger(trapInst, baitInst)` — trap의 `tpToTrigger` 카운트 증가, 도달 시 `successRate` 굴려 `targetCard` 생성 + bait 소모 + trap 내구도 감소(또는 일회용)
+- `_findAdjacentBait(trapInst)` — environment 행에서 같은 슬롯 또는 인접 슬롯의 bait 검색
+- `_state` — trap별 진행도 추적 (instance 데이터 또는 별도 GameState 슬롯)
+
+EventBus 신규 emit:
+- `trapTriggered` — `{ trapId, targetId, location }`
+- `trapMissed` — `{ trapId }` (성공률 실패)
+
+**H. SystemRegistry 통합** (`js/core/SystemRegistry.js` 또는 game init):
+- `TrapSystem.init()` 호출 추가 — 기존 `HiddenElementSystem.init()` / `EcologySystem.init()` 패턴 따름
+
+**I. CraftUI 영향 없음**: `tool` 카테고리 안에 포함되므로 기존 `craft.tab.tool` 그대로 사용. 별도 탭 추가 안 함.
+
+**J. 등록**:
+- stackConfig.js — 9개 (도구 3 + 산 동물 3 + carcass 3)
+- CardFactory.js — 9개 매핑
+- districts.js — 변경 없음 (trap은 craft만)
+- locales.js — 한국어/영어 이름 토큰 (선택, items_*.js name 필드로 충분할 수도)
+
+### Acceptance Criteria
+- [ ] `validate.js` ALL CLEAR
+- [ ] 회귀: 0
+- [ ] Trap 설치 + bait → tpToTrigger 후 산 동물 산출 단위 테스트
+- [ ] Bait 부족 시 trap 작동 안 함 검증
+- [ ] 도살 → carcass → 분해 chain 통합 테스트
+- [ ] TrapSystem 신규 단위 테스트 5건 이상
+- [ ] CraftUI tool 탭에 신규 trap 레시피 노출 시각 확인
+
+### 영향 파일 (10)
+1. `js/data/items_tools.js` — trap 도구 3개
+2. `js/data/items_misc.js` — 산 동물 + carcass 6개
+3. `js/data/blueprints.js` — 신규 레시피 9개 (craft 3 + 도살 3 + 분해 3)
+4. `js/systems/TrapSystem.js` (신규) — ~100-150 LoC
+5. `js/core/SystemRegistry.js` 또는 main init — 1-2줄
+6. `js/data/stackConfig.js` — 9개 등록
+7. `js/data/CardFactory.js` — 9개 이미지
+8. `js/data/locales.js` — trap 관련 토큰 (선택)
+9. `testdata/trap-system.test.mjs` (신규) — 단위/통합 테스트
+10. `testdata/trap-craft-chain.test.mjs` (신규) — end-to-end
+
+---
+
+## 의존성 그래프
+
+```
+Sub-spec 1 (Cloth Chain) ─── 독립
+
+Sub-spec 2 (Carcass) ─────── leather 출처 확정 (Sub-spec 1과 약한 연결: leather가 sleeping_bag/winter_coat 입력)
+                          ─── hide 신설로 cloth chain과 연결 (tan_hide → leather → cloth 결과물)
+
+Sub-spec 3 (Trap) ────────── live_animal/carcass 패턴 = Sub-spec 2 carcass 패턴 재사용
+                          ─── 분해 craft 패턴 확장 (Sub-spec 2의 tan_hide 패턴 따름)
+```
+
+권장: **순차 진행**. Sub-spec 1 머지 후 본인 플레이 분기율 체감 검증 → Sub-spec 2 진입.
+
+---
+
+## Risks
+
+| Risk | 등급 | 완화 |
+|------|------|------|
+| `armorcraft` 재활용이 tailoring 본질 흐림 | LOW | 향후 tailoring 분리 별도 spec |
+| 인간 적 lootTable 확장 — 톤 불일치 우려 | LOW-MED | 의류 약탈 컨셉으로 정당화, hide 미포함 |
+| Sub-spec 3 TrapSystem 신규 시스템 → init 통합 회귀 | MED | 기존 HiddenElementSystem/EcologySystem 패턴 참조 |
+| 신규 아이템 등록 누락 (stackConfig/CardFactory) | LOW | validate.js + 체크리스트 |
+| Bait 메커니즘 — 식량 소모로 게임 어려움 증가 | LOW-MED | tpToTrigger/successRate 밸런스 조정으로 해결 |
+| trap 환경 행 점유 — 한정 슬롯 압박 | MED | 환경 행 슬롯 수 (3개) 한계 → bait + trap 동시 배치 시 보드 공간 검토 필요 |
+
+---
+
+## 진행 순서 체크리스트
+
+- [ ] Sub-spec 1 진입 (Cloth Chain)
+  - [ ] 신규 아이템 4개 + 레시피 7개 데이터 추가
+  - [ ] stackConfig + CardFactory 등록
+  - [ ] 단위 테스트
+  - [ ] validate.js + 회귀
+  - [ ] PR + 머지
+  - [ ] 본인 플레이 분기율 체감 검증
+- [ ] Sub-spec 2 진입 (Carcass)
+  - [ ] hide/bone 아이템 + tan_hide 레시피
+  - [ ] enemy.lootTable 확장
+  - [ ] 단위/통합 테스트
+  - [ ] PR + 머지
+- [ ] Sub-spec 3 진입 (Trap)
+  - [ ] trap 도구 + 산 동물 + carcass 9 아이템
+  - [ ] craft/도살/분해 9 레시피
+  - [ ] TrapSystem.js 신규 + SystemRegistry 통합
+  - [ ] 테스트 다수
+  - [ ] CraftUI tool 탭 시각 확인
+  - [ ] PR + 머지
+
+## 측정 검증 (memory Assignment 연계)
+
+각 Sub-spec 머지 후 사용자 본인 플레이로:
+- 분기율 체감 카운트 (Sub-spec 1)
+- 적 처치 시 산출 자원 다양성 카운트 (Sub-spec 2)
+- 발견 모먼트 카운트 (Sub-spec 3 — trap 첫 성공 시 ✨ 알림)
