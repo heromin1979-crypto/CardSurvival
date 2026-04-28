@@ -1,0 +1,340 @@
+/* === 캐릭터 선택 화면 v2 (트랙 I-2) ============================
+ * 좌-중-우 3분할 + 하단 6 카드 레이아웃
+ * 가상 이미지 정렬 (docs/VISUAL_TARGET_GAP_ANALYSIS.md)
+ * 1920×1080 고정 해상도 기준
+ * ============================================================ */
+
+#screen-char-create {
+  background-image:
+    linear-gradient(rgba(10, 12, 18, 0.78), rgba(10, 12, 18, 0.85)),
+    url('../assets/images/menu/charcreate_bg.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.charcreate-v2 {
+  display: grid;
+  grid-template-rows: 60px 1fr 200px 60px;
+  height: 100vh;
+  width: 100%;
+  padding: 16px 32px;
+  gap: 12px;
+  box-sizing: border-box;
+}
+
+/* ── 헤더 ─────────────────────────────────────────────────── */
+.charcreate-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.charcreate-title {
+  font-family: var(--font-title, 'Geist', sans-serif);
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  color: var(--text-primary);
+}
+
+.charcreate-subtitle {
+  font-size: 11px;
+  color: var(--text-dim);
+  letter-spacing: 3px;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+}
+
+/* ── 메인 영역 (좌-중-우 3분할) ──────────────────────────── */
+.charcreate-main {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+  min-height: 0;
+}
+
+.char-pane {
+  position: relative;
+  background: rgba(15, 20, 28, 0.6);
+  border: 1px solid var(--border-dim, rgba(120, 90, 50, 0.18));
+  border-radius: 6px;
+  padding: 16px;
+  overflow: auto;
+}
+
+/* 좌측: 풀-바디 일러스트 */
+.char-pane-left {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, rgba(15,20,28,0.4) 0%, rgba(15,20,28,0.7) 100%);
+  border: 1px solid var(--accent-dim, rgba(200, 160, 96, 0.25));
+}
+
+.char-portrait-full {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.6));
+}
+
+.char-portrait-fallback {
+  font-size: 96px;
+  opacity: 0.5;
+  text-align: center;
+}
+
+/* 중앙: 정보 + 게이지 */
+.char-pane-center,
+.char-pane-right {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.char-name-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 2px;
+}
+
+.char-name-ko {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--accent-primary, #c8a060);
+}
+
+.char-name-en {
+  font-size: 11px;
+  color: var(--text-dim);
+  letter-spacing: 2px;
+}
+
+.char-title {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.char-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--accent-primary, #c8a060);
+  border-bottom: 1px solid var(--accent-dim, rgba(200, 160, 96, 0.25));
+  padding-bottom: 3px;
+  margin-top: 6px;
+}
+
+.char-section-title.strength { color: var(--text-good, #6cb86c); }
+.char-section-title.weakness { color: var(--text-warn, #d8804b); }
+
+.char-info-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--text-secondary);
+  padding: 2px 0;
+}
+
+.char-info-row span:first-child {
+  color: var(--text-dim);
+  font-weight: 500;
+}
+
+/* 능력치 게이지 */
+.char-gauges {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.char-gauge-row {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  align-items: center;
+  gap: 8px;
+}
+
+.char-gauge-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.char-gauge-track {
+  position: relative;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.char-gauge-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 250ms ease-out;
+}
+
+.char-gauge-fill--mental   { background: linear-gradient(90deg, #4d7eb0, #7eaad4); }
+.char-gauge-fill--stamina  { background: linear-gradient(90deg, #6cb86c, #9cd89c); }
+.char-gauge-fill--medicine { background: linear-gradient(90deg, #c8c8c8, #ffffff); }
+.char-gauge-fill--combat   { background: linear-gradient(90deg, #c84040, #d8804b); }
+.char-gauge-fill--crafting { background: linear-gradient(90deg, #d89040, #e8b060); }
+
+/* 우측: 강점 / 약점 / 목표 / 출발지 */
+.char-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.char-list li {
+  font-size: 12px;
+  color: var(--text-secondary);
+  padding: 2px 0 2px 12px;
+  position: relative;
+}
+
+.char-list li::before {
+  content: '·';
+  position: absolute;
+  left: 4px;
+  color: var(--text-dim);
+}
+
+.strength-list li::before { color: var(--text-good, #6cb86c); content: '+'; }
+.weakness-list li::before { color: var(--text-warn, #d8804b); content: '−'; }
+
+.char-goal-text {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-style: italic;
+  line-height: 1.5;
+  padding: 4px 0;
+}
+
+.char-startloc {
+  font-size: 12px;
+  color: var(--text-secondary);
+  padding: 4px 0;
+}
+
+/* ── 하단 6 카드 ──────────────────────────────────────────── */
+.charcreate-cards {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 10px;
+  align-items: stretch;
+}
+
+.char-card-v2 {
+  position: relative;
+  background: rgba(20, 26, 34, 0.85);
+  border: 1px solid var(--border-dim, rgba(120, 90, 50, 0.18));
+  border-radius: 6px;
+  padding: 8px;
+  cursor: pointer;
+  transition: transform 150ms ease-out, border-color 150ms ease-out;
+  display: grid;
+  grid-template-columns: 60px 1fr;
+  gap: 8px;
+  align-items: center;
+  overflow: hidden;
+}
+
+.char-card-v2:hover {
+  border-color: var(--accent-primary, #c8a060);
+  transform: translateY(-2px);
+}
+
+.char-card-v2.selected {
+  border-color: var(--accent-primary, #c8a060);
+  border-width: 2px;
+  background: rgba(40, 32, 18, 0.85);
+  transform: scale(1.03);
+  box-shadow: 0 0 16px rgba(200, 160, 96, 0.25);
+}
+
+.char-card-v2-num {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-dim);
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+}
+
+.char-card-v2-portrait {
+  width: 60px;
+  height: 60px;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.char-card-v2-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.char-card-v2-img-fallback {
+  font-size: 32px;
+}
+
+.char-card-v2-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.char-card-v2-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.char-card-v2-label {
+  font-size: 9px;
+  color: var(--accent-primary, #c8a060);
+  letter-spacing: 1.5px;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+}
+
+/* ── 푸터 ────────────────────────────────────────────────── */
+.charcreate-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.charcreate-warn {
+  font-size: 10px;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+}
+
+.charcreate-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.charcreate-actions .menu-btn {
+  min-width: 120px;
+  padding: 8px 18px;
+}

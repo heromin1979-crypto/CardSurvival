@@ -4,7 +4,7 @@ import GameState       from '../core/GameState.js';
 import StateMachine    from '../core/StateMachine.js';
 import I18n            from '../core/I18n.js';
 import { DISTRICTS, getAdjacentDistricts } from '../data/districts.js';
-import { CHARACTERS }  from '../data/characters.js';
+import { CHARACTERS, CHAR_GAUGE_KEYS, getCharacterGauges }  from '../data/characters.js';
 import { LEVEL_XP_TABLE } from '../data/skillDefs.js';
 import EquipmentSystem from '../systems/EquipmentSystem.js';
 import ExploreSystem   from '../systems/ExploreSystem.js';
@@ -34,41 +34,42 @@ const CharCreate = {
   _render() {
     if (!this._el) return;
 
-    const charGridHtml = this._buildCharGrid();
-    const charDetail   = this._buildCharDetail();
+    // 첫 진입 시 1번 캐릭터 자동 선택 (가상 이미지 정렬)
+    if (!this._selectedChar) {
+      this._selectedChar = CHARACTERS[0];
+      this._selectedDistrict = this._selectedChar.homeDist;
+    }
+
+    const charCardsHtml = this._buildCharGrid();
+    const detailHtml    = this._buildCharDetail();
 
     this._el.innerHTML = `
-      <div class="charcreate-layout">
-        <div class="charcreate-scroll">
+      <div class="charcreate-v2">
+        <header class="charcreate-header">
+          <div class="charcreate-title">${I18n.t('charCreate.title')}</div>
+          <div class="charcreate-subtitle">SEOUL SURVIVAL · 2026</div>
+        </header>
 
-          <div class="menu-title" style="text-align:center; margin-bottom:4px;">${I18n.t('charCreate.title')}</div>
-
-          <!-- 캐릭터 선택 -->
-          <div class="form-group">
-            <label class="form-label">${I18n.t('charCreate.jobSelect')}</label>
-            <div class="char-grid">${charGridHtml}</div>
-          </div>
-
-          <!-- 캐릭터 상세 패널 -->
-          <div class="char-detail ${this._selectedChar ? 'visible' : ''}" id="char-detail-panel">
-            ${charDetail}
-          </div>
-
-          <hr class="divider">
-
-          <div style="font-size:10px; color:var(--text-dim); text-align:center;">
-            ${I18n.t('charCreate.hardcoreWarning')}
-          </div>
-
-          <button class="menu-btn primary" id="btn-start">${I18n.t('charCreate.start')}</button>
-          <button class="menu-btn" id="btn-back-menu">${I18n.t('charCreate.back')}</button>
-
+        <div class="charcreate-main">
+          ${detailHtml}
         </div>
+
+        <div class="charcreate-cards">
+          ${charCardsHtml}
+        </div>
+
+        <footer class="charcreate-footer">
+          <div class="charcreate-warn">${I18n.t('charCreate.hardcoreWarning')}</div>
+          <div class="charcreate-actions">
+            <button class="menu-btn" id="btn-back-menu">${I18n.t('charCreate.back')}</button>
+            <button class="menu-btn primary" id="btn-start">${I18n.t('charCreate.start')}</button>
+          </div>
+        </footer>
       </div>
     `;
 
     // 캐릭터 카드 클릭
-    this._el.querySelectorAll('.char-card').forEach(card => {
+    this._el.querySelectorAll('.char-card-v2').forEach(card => {
       card.addEventListener('click', () => {
         const charId = card.dataset.charId;
         this._selectedChar = CHARACTERS.find(c => c.id === charId) ?? null;
@@ -97,45 +98,84 @@ const CharCreate = {
   // ── 캐릭터 그리드 ───────────────────────────────────────
 
   _buildCharGrid() {
-    return CHARACTERS.map(c => `
-      <div class="char-card ${this._selectedChar?.id === c.id ? 'selected' : ''}" data-char-id="${c.id}">
-        <div class="char-card-name">${I18n.characterName(c.id, c.name)}</div>
-        <div class="char-card-title">${c.title}</div>
-      </div>
-    `).join('');
+    return CHARACTERS.map((c, idx) => {
+      const isSelected = this._selectedChar?.id === c.id;
+      const portrait = c.portraitSmall
+        ? `<img class="char-card-v2-img" src="${c.portraitSmall}" alt="${c.name}" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'char-card-v2-img-fallback',textContent:'${c.portrait ?? '👤'}'}))">`
+        : `<div class="char-card-v2-img-fallback">${c.portrait ?? '👤'}</div>`;
+      return `
+        <div class="char-card-v2 ${isSelected ? 'selected' : ''}" data-char-id="${c.id}">
+          <div class="char-card-v2-num">${idx + 1}</div>
+          <div class="char-card-v2-portrait">${portrait}</div>
+          <div class="char-card-v2-info">
+            <div class="char-card-v2-name">${I18n.characterName(c.id, c.name)}</div>
+            <div class="char-card-v2-label">[${c.englishLabel ?? ''}]</div>
+          </div>
+        </div>
+      `;
+    }).join('');
   },
 
-  // ── 캐릭터 상세 패널 ────────────────────────────────────
+  // ── 캐릭터 상세 (좌-중-우 3분할) ─────────────────────────
 
   _buildCharDetail() {
     const c = this._selectedChar;
     if (!c) return '';
 
-    const abilitiesHtml = c.abilities.map(a => `
-      <li>
-        <span><span class="ability-name">${a.name}</span>— ${a.desc}</span>
-      </li>
-    `).join('');
-
-    return `
-      <div class="char-detail-header">
-        <div>
-          <div class="char-detail-name">${I18n.characterName(c.id, c.name)}</div>
-          <div class="char-detail-title">${c.title}</div>
-          <div class="char-base-stats">
-            <span class="char-stat-badge hp">HP ${c.maxHp}</span>
-            <span class="char-stat-badge str">${I18n.t('charCreate.strength')} ${c.strength}</span>
-            <span class="char-stat-badge end">${I18n.t('charCreate.endurance')} ${c.endurance}</span>
-            <span class="char-stat-badge sta">${I18n.t('charCreate.stamina')} ${Math.round(c.strength * c.endurance / 50)}</span>
-            <span class="char-stat-badge wt">${c.maxCarryWeight}kg</span>
-          </div>
+    const gauges     = getCharacterGauges(c);
+    const gaugesHtml = CHAR_GAUGE_KEYS.map(k => `
+      <div class="char-gauge-row">
+        <span class="char-gauge-label">${k.label}</span>
+        <div class="char-gauge-track">
+          <div class="char-gauge-fill char-gauge-fill--${k.id}" style="width:${gauges[k.id]}%"></div>
         </div>
       </div>
-      <div class="char-story">${c.story}</div>
-      <ul class="char-ability-list">${abilitiesHtml}</ul>
-      <div class="char-goal">${c.goal}</div>
-      <div class="char-start-location" style="margin-top:6px; padding:4px 8px; background:var(--bg-card); border-radius:4px; font-size:11px; color:var(--text-secondary);">
-        ${I18n.t('charCreate.startLoc')}: ${DISTRICTS[c.homeDist]?.icon ?? ''} ${I18n.districtName(c.homeDist, DISTRICTS[c.homeDist]?.name ?? c.homeDist)} — ${DISTRICTS[c.homeDist]?.description ?? ''}
+    `).join('');
+
+    const strengthsHtml = (c.strengths ?? []).map(s => `<li>${s}</li>`).join('');
+    const weaknessesHtml = (c.weaknesses ?? []).map(w => `<li>${w}</li>`).join('');
+
+    const portraitFull = c.portraitFull
+      ? `<img class="char-portrait-full" src="${c.portraitFull}" alt="${c.name}" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'char-portrait-fallback',textContent:'${c.portrait ?? '👤'}'}))">`
+      : `<div class="char-portrait-fallback">${c.portrait ?? '👤'}</div>`;
+
+    const districtInfo = DISTRICTS[c.homeDist];
+
+    return `
+      <!-- 좌측: 풀-바디 일러스트 -->
+      <div class="char-pane char-pane-left">
+        ${portraitFull}
+      </div>
+
+      <!-- 중앙: 개인 정보 + 능력치 게이지 -->
+      <div class="char-pane char-pane-center">
+        <div class="char-name-row">
+          <span class="char-name-ko">${I18n.characterName(c.id, c.name)}</span>
+          <span class="char-name-en">[${c.englishLabel ?? ''}]</span>
+        </div>
+        <div class="char-title">${c.title}</div>
+
+        <div class="char-section-title">개인 정보</div>
+        <div class="char-info-row"><span>나이</span><span>${c.age ?? '?'}세</span></div>
+        <div class="char-info-row"><span>배경</span><span>${c.title}</span></div>
+
+        <div class="char-section-title">능력치</div>
+        <div class="char-gauges">${gaugesHtml}</div>
+      </div>
+
+      <!-- 우측: 강점 / 약점 / 개인 목표 / 출발지 -->
+      <div class="char-pane char-pane-right">
+        <div class="char-section-title strength">강점</div>
+        <ul class="char-list strength-list">${strengthsHtml}</ul>
+
+        <div class="char-section-title weakness">약점</div>
+        <ul class="char-list weakness-list">${weaknessesHtml}</ul>
+
+        <div class="char-section-title">개인 목표</div>
+        <div class="char-goal-text">${c.goal ?? ''}</div>
+
+        <div class="char-section-title">출발지</div>
+        <div class="char-startloc">${districtInfo?.icon ?? '📍'} ${I18n.districtName(c.homeDist, districtInfo?.name ?? c.homeDist)}</div>
       </div>
     `;
   },
