@@ -104,13 +104,28 @@ const CharCreate = {
       const portrait = c.portraitSmall
         ? `<img class="char-card-v2-img" src="${c.portraitSmall}" alt="${c.name}" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'char-card-v2-img-fallback',textContent:'${c.portrait ?? '👤'}'}))">`
         : `<div class="char-card-v2-img-fallback">${c.portrait ?? '👤'}</div>`;
+
+      // 미니 게이지 3종 (전투/의료/제작) — 카드 간 비교 용이
+      const gauges = getCharacterGauges(c);
+      const miniGaugeHtml = ['combat', 'medicine', 'crafting'].map(k => `
+        <div class="char-card-v2-mini-gauge">
+          <div class="char-card-v2-mini-fill char-card-v2-mini-fill--${k}" style="width:${gauges[k]}%"></div>
+        </div>
+      `).join('');
+
+      // 활성 카드만 한글 카테고리 캡 (가상 이미지 정렬)
+      const activeCap = isSelected
+        ? `<div class="char-card-v2-active-cap">[${c.koreanLabel ?? c.englishLabel ?? ''}]</div>` : '';
+
       return `
         <div class="char-card-v2 ${isSelected ? 'selected' : ''}" data-char-id="${c.id}">
+          ${activeCap}
           <div class="char-card-v2-num">${idx + 1}</div>
           <div class="char-card-v2-portrait">${portrait}</div>
           <div class="char-card-v2-info">
             <div class="char-card-v2-name">${I18n.characterName(c.id, c.name)}</div>
-            <div class="char-card-v2-label">[${c.englishLabel ?? ''}]</div>
+            <div class="char-card-v2-label">${c.koreanLabel ?? c.englishLabel ?? ''}</div>
+            <div class="char-card-v2-mini-gauges">${miniGaugeHtml}</div>
           </div>
         </div>
       `;
@@ -138,40 +153,56 @@ const CharCreate = {
     const districtInfo = DISTRICTS[c.homeDist];
 
     return `
-      <!-- 좌측: 풀-바디 일러스트 -->
+      <!-- 좌측: 풀-바디 일러스트 + 좌상단 정보 오버레이 -->
       <div class="char-pane char-pane-left">
-        ${portraitFull}
-      </div>
-
-      <!-- 중앙: 개인 정보 + 능력치 게이지 -->
-      <div class="char-pane char-pane-center">
-        <div class="char-name-row">
-          <span class="char-name-ko">${I18n.characterName(c.id, c.name)}</span>
-          <span class="char-name-en">[${c.englishLabel ?? ''}]</span>
+        <div class="char-portrait-wrap">
+          ${portraitFull}
         </div>
-        <div class="char-title">${c.title}</div>
-
-        <div class="char-section-title">개인 정보</div>
-        <div class="char-info-row"><span>나이</span><span>${c.age ?? '?'}세</span></div>
-        <div class="char-info-row"><span>배경</span><span>${c.title}</span></div>
-
-        <div class="char-section-title">능력치</div>
-        <div class="char-gauges">${gaugesHtml}</div>
+        <div class="char-portrait-overlay">
+          <div class="char-overlay-name">${I18n.characterName(c.id, c.name)}</div>
+          <div class="char-overlay-title">${c.title}</div>
+          <div class="char-overlay-cap">[${c.koreanLabel ?? c.englishLabel ?? ''}]</div>
+        </div>
       </div>
 
-      <!-- 우측: 강점 / 약점 / 개인 목표 / 출발지 -->
+      <!-- 중앙: 개인 정보 + 능력치 게이지 (박스 분리) -->
+      <div class="char-pane char-pane-center">
+        <section class="char-box">
+          <div class="char-box-title">개인 정보</div>
+          <div class="char-box-body">
+            <div class="char-info-row"><span>나이</span><span>${c.age ?? '?'}</span></div>
+            <div class="char-info-row"><span>배경</span><span>${c.title}</span></div>
+          </div>
+        </section>
+
+        <section class="char-box">
+          <div class="char-box-title">능력치</div>
+          <div class="char-box-body char-gauges">${gaugesHtml}</div>
+        </section>
+      </div>
+
+      <!-- 우측: 강점 / 약점 / 개인 목표 / 출발지 (박스 분리) -->
       <div class="char-pane char-pane-right">
-        <div class="char-section-title strength">강점</div>
-        <ul class="char-list strength-list">${strengthsHtml}</ul>
+        <div class="char-pane-row">
+          <section class="char-box char-box--strength">
+            <div class="char-box-title strength">강점</div>
+            <ul class="char-list strength-list">${strengthsHtml}</ul>
+          </section>
+          <section class="char-box char-box--weakness">
+            <div class="char-box-title weakness">약점</div>
+            <ul class="char-list weakness-list">${weaknessesHtml}</ul>
+          </section>
+        </div>
 
-        <div class="char-section-title weakness">약점</div>
-        <ul class="char-list weakness-list">${weaknessesHtml}</ul>
+        <section class="char-box">
+          <div class="char-box-title">개인 목표</div>
+          <div class="char-box-body char-goal-text">${c.goal ?? ''}</div>
+        </section>
 
-        <div class="char-section-title">개인 목표</div>
-        <div class="char-goal-text">${c.goal ?? ''}</div>
-
-        <div class="char-section-title">출발지</div>
-        <div class="char-startloc">${districtInfo?.icon ?? '📍'} ${I18n.districtName(c.homeDist, districtInfo?.name ?? c.homeDist)}</div>
+        <section class="char-box">
+          <div class="char-box-title">출발지</div>
+          <div class="char-box-body char-startloc">${districtInfo?.icon ?? '📍'} ${I18n.districtName(c.homeDist, districtInfo?.name ?? c.homeDist)}</div>
+        </section>
       </div>
     `;
   },
