@@ -14,11 +14,14 @@ const SaveManager = {
 
       // Save meta
       const meta = {
-        day:        GameState.time.day,
-        totalTP:    Math.floor(GameState.time.totalTP),
-        playerName: GameState.player.name,
-        isDead:     !GameState.player.isAlive,
-        savedAt:    new Date().toISOString(),
+        day:         GameState.time.day,
+        hour:        GameState.time.hour,
+        totalTP:     Math.floor(GameState.time.totalTP),
+        playerName:  GameState.player.name,
+        characterId: GameState.player.characterId,
+        district:    GameState.location?.currentDistrict ?? null,
+        isDead:      !GameState.player.isAlive,
+        savedAt:     new Date().toISOString(),
       };
       localStorage.setItem(`${META_KEY}${slot}_meta`, JSON.stringify(meta));
 

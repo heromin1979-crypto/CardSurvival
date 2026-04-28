@@ -86,6 +86,7 @@ import CinematicScene     from './ui/CinematicScene.js';
 
 // Screens
 import MainMenu     from './screens/MainMenu.js';
+import SlotSelect   from './screens/SlotSelect.js';
 import CharCreate   from './screens/CharCreate.js';
 import Basecamp     from './screens/Main.js';
 import Explore      from './screens/Explore.js';
@@ -192,6 +193,7 @@ function init() {
 
   // Screens
   MainMenu.init();
+  SlotSelect.init();
   CharCreate.init();
   Basecamp.init();
   Explore.init();

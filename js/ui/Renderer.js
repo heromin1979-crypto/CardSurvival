@@ -26,6 +26,7 @@ const Renderer = {
     // Map state name → screen element id
     const screenMap = {
       main_menu:      'screen-main-menu',
+      slot_select:    'screen-slot-select',
       char_create:    'screen-char-create',
       main:           'screen-main',
       explore:        'screen-explore',

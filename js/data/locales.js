@@ -18,6 +18,23 @@ export const ko = {
   'menu.deadTooltip':   '사망한 캐릭터는 이어할 수 없습니다',
   'menu.gallery':       '엔딩 컬렉션',
   'menu.settings':      '설정',
+  'menu.noSavesHint':   '저장된 게임이 없습니다',
+
+  // ── Slot Select ─────────────────────────────────────────────
+  'slotSelect.titleNew':         '새 게임',
+  'slotSelect.titleContinue':    '이어하기',
+  'slotSelect.btnLoad':          '불러오기',
+  'slotSelect.btnStart':         '시작',
+  'slotSelect.btnDelete':        '삭제',
+  'slotSelect.btnBack':          '뒤로',
+  'slotSelect.empty':            '빈 슬롯',
+  'slotSelect.dayLabel':         '{n}일차',
+  'slotSelect.timeLabel':        '시간',
+  'slotSelect.charLabel':        '캐릭터',
+  'slotSelect.locationUnknown':  '미상',
+  'slotSelect.confirmOverwrite': '이 슬롯에 저장된 게임이 있습니다. 덮어쓰시겠습니까?',
+  'slotSelect.cannotLoadDead':   '사망한 캐릭터는 이어할 수 없습니다',
+  'slotSelect.selectFirst':      '슬롯을 먼저 선택하세요',
 
   // ── Time ────────────────────────────────────────────────────
   'time.justNow':  '방금 전',
@@ -854,6 +871,23 @@ export const en = {
   'menu.deadTooltip':   'Cannot continue with a dead character',
   'menu.gallery':       'Ending Collection',
   'menu.settings':      'Settings',
+  'menu.noSavesHint':   'No saved games',
+
+  // ── Slot Select ─────────────────────────────────────────────
+  'slotSelect.titleNew':         'New Game',
+  'slotSelect.titleContinue':    'Continue',
+  'slotSelect.btnLoad':          'Load',
+  'slotSelect.btnStart':         'Start',
+  'slotSelect.btnDelete':        'Delete',
+  'slotSelect.btnBack':          'Back',
+  'slotSelect.empty':            'Empty Slot',
+  'slotSelect.dayLabel':         'Day {n}',
+  'slotSelect.timeLabel':        'Time',
+  'slotSelect.charLabel':        'Character',
+  'slotSelect.locationUnknown':  'Unknown',
+  'slotSelect.confirmOverwrite': 'A saved game exists in this slot. Overwrite?',
+  'slotSelect.cannotLoadDead':   'Cannot continue with a dead character',
+  'slotSelect.selectFirst':      'Select a slot first',
 
   // ── Time ────────────────────────────────────────────────────
   'time.justNow':  'Just now',

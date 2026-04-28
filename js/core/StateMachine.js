@@ -4,8 +4,9 @@ import GameState from './GameState.js';
 
 // Valid transitions: from → [allowed targets]
 const TRANSITIONS = {
-  main_menu:      ['char_create', 'main', 'ending_gallery'],
-  char_create:    ['main', 'main_menu'],
+  main_menu:      ['slot_select', 'ending_gallery'],
+  slot_select:    ['main_menu', 'char_create', 'main'],
+  char_create:    ['main', 'main_menu', 'slot_select'],
   main:           ['explore', 'encounter', 'rest', 'pause', 'game_over', 'ending', 'main_menu'],
   explore:        ['main', 'encounter', 'rest', 'pause', 'ending'],
   encounter:      ['combat', 'explore', 'main'],
@@ -15,7 +16,7 @@ const TRANSITIONS = {
   game_over:      ['main_menu'],
   ending:         ['main_menu', 'char_create'],
   ending_gallery: ['main_menu'],
-  pause:          ['*'],  // any prev state
+  pause:          ['*'],
 };
 
 const StateMachine = {
