@@ -17,12 +17,19 @@
 }
 .screen.active { display: flex; }
 
-/* === BASECAMP: 2-COLUMN SIDEBAR + MAIN === */
+/* === BASECAMP: HEADER + 2-COLUMN (트랙 C) === */
 #screen-main.active {
   display: grid;
   grid-template-columns: 200px 1fr;
+  grid-template-rows: 56px 1fr;
+  grid-template-areas:
+    "header header"
+    "sidebar main";
   overflow: hidden;
 }
+#game-header { grid-area: header; }
+.bc-sidebar  { grid-area: sidebar; }
+.bc-main     { grid-area: main; }
 
 /* Left sidebar */
 .bc-sidebar {
