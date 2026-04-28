@@ -2,22 +2,8 @@
 
 /* === MAIN MENU === */
 #screen-main-menu {
-  background:
-    linear-gradient(to bottom,
-      rgba(0,0,0,0.25) 0%,
-      rgba(0,0,0,0.45) 55%,
-      rgba(0,0,0,0.78) 100%
-    ),
-    url('../assets/images/bg-main-menu.png') center center / cover no-repeat;
+  background: url('../assets/images/bg-main-menu.png') center center / cover no-repeat;
   position: relative;
-}
-
-#screen-main-menu::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(ellipse at 50% 110%, rgba(200,120,40,0.10) 0%, transparent 65%);
-  pointer-events: none;
 }
 
 /* 박힌 부제(상단 ~30%)를 가리지 않도록 4-버튼 묶음을 화면 중하단(약 60% 라인)에 배치 */
@@ -40,37 +26,48 @@
   z-index: 2;
 }
 
-/* === 노란/주황 그라데이션 알약 버튼 === */
+/* === 황금/갈색 알약 버튼 === */
+/* 평상시: 차분한 황금-갈색(샘플 이미지 톤) — 호버/선택 시 밝은 황금/주황으로 강조 */
 .menu-pill-btn {
-  width: 280px;
-  height: 56px;
+  width: 320px;
+  height: 64px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0 18px;
-  border: 1px solid rgba(80, 50, 20, 0.85);
-  border-radius: 10px;
+  padding: 0 22px;
+  border: 1px solid rgba(60, 38, 14, 0.9);
+  border-radius: 12px;
   background:
     linear-gradient(to bottom,
-      #e6b466 0%,
-      #d49a48 45%,
-      #b67a30 100%);
-  color: #2a1a08;
-  font-family: inherit;
-  font-size: 17px;
+      #b88a48 0%,
+      #936630 55%,
+      #6e4818 100%);
+  color: #1A1410;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 22px;
   font-weight: 700;
-  letter-spacing: 1px;
+  letter-spacing: 0.04em;
   cursor: pointer;
   box-shadow:
-    inset 0 1px 0 rgba(255, 220, 160, 0.55),
-    inset 0 -1px 0 rgba(80, 40, 0, 0.4),
-    0 4px 10px rgba(0, 0, 0, 0.55);
-  text-shadow: 0 1px 0 rgba(255, 220, 170, 0.35);
-  transition: filter 0.15s ease, transform 0.05s ease;
+    inset 0 1px 0 rgba(230, 195, 140, 0.45),
+    inset 0 -1px 0 rgba(50, 25, 0, 0.5),
+    0 4px 12px rgba(0, 0, 0, 0.65);
+  text-shadow: 0 1px 0 rgba(240, 210, 160, 0.35);
+  transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.05s ease;
 }
 
-.menu-pill-btn:hover:not(:disabled) {
-  filter: brightness(1.08);
+.menu-pill-btn:hover:not(:disabled),
+.menu-pill-btn:focus-visible:not(:disabled) {
+  background:
+    linear-gradient(to bottom,
+      #f0c272 0%,
+      #d8a04a 45%,
+      #b07020 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 230, 180, 0.65),
+    inset 0 -1px 0 rgba(80, 40, 0, 0.45),
+    0 6px 18px rgba(220, 160, 70, 0.35);
+  outline: none;
 }
 
 .menu-pill-btn:active:not(:disabled) {
@@ -80,17 +77,19 @@
 
 .menu-pill-btn:disabled,
 .menu-pill-btn.is-disabled {
-  filter: grayscale(0.6) brightness(0.7);
+  filter: grayscale(0.7) brightness(0.55);
   cursor: not-allowed;
   opacity: 0.7;
 }
 
 .menu-pill-btn.slim {
-  width: 160px;
-  height: 48px;
-  font-size: 15px;
+  width: 180px;
+  height: 54px;
+  font-size: 18px;
+  letter-spacing: 1.5px;
 }
 
+/* 슬롯 선택 화면의 primary(시작/불러오기) — 항상 밝은 톤 유지 */
 .menu-pill-btn.primary {
   background:
     linear-gradient(to bottom,
