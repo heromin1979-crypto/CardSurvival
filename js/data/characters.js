@@ -6,12 +6,19 @@ export const CHARACTERS = [
     id: 'doctor',
     name: '이지수',
     gender: 'F',
+    age: 38,
     maxHp: 105,     // (90 → 95 → 105 버프)
     strength: 58,   // 체력(힘) (55 → 58 버프)
     endurance: 72,  // 인내심 (70 → 72 버프, stamina ≈ 84)
     maxCarryWeight: 32, // (30 → 32 버프)
     title: '응급의학과 전문의',
+    englishLabel: 'MEDICAL',
     portrait: '🩺',
+    portraitFull:  'assets/images/characters/lee_jisoo_full.png',
+    portraitSmall: 'assets/images/characters/lee_jisoo_portrait.png',
+    // I-2 트랙 — 캐릭터선택 강점/약점 (가상 이미지 정렬)
+    strengths: ['전문 의료 지식', '냉철한 판단력', '의약품 소지'],
+    weaknesses: ['비전투 성향', '체력 한계', '과거의 트라우마'],
     story: `2026년 1월 17일, 동작구 보라매병원 응급실. 이지수 전문의(38세)는 밤새 밀려드는 환자를 치료하고 있었다.
 새벽, 병원 밖에서 폭발음이 울렸다. 통신이 끊기고, 전기가 나갔다. 응급실은 순식간에 아수라장이 됐다.
 대부분의 의료진은 도망쳤지만, 이지수는 남았다. 간호사 한 명과 중상을 입은 군인 한 명이 남아있었다.
@@ -63,12 +70,18 @@ export const CHARACTERS = [
     id: 'soldier',
     name: '강민준',
     gender: 'M',
+    age: 29,
     maxHp: 110,     // (130 → 110 너프)
     strength: 75,   // 체력(힘) — 군인 (90 → 75 너프)
     endurance: 75,  // 인내심 (90 → 75 너프, stamina ≈ 113)
     maxCarryWeight: 42, // (50 → 42 너프)
     title: '특수전 부사관',
+    englishLabel: 'COMBAT',
     portrait: '⚔️',
+    portraitFull:  'assets/images/characters/kang_minjun_full.png',
+    portraitSmall: 'assets/images/characters/kang_minjun_portrait.png',
+    strengths: ['전투 훈련', '전술적 판단', '높은 운반력'],
+    weaknesses: ['의료 지식 부족', '동료 상실 트라우마', '제작 미숙'],
     story: `2026년 1월 16일, 종로 광화문정부청사. 강민준 하사(29세)는 비상사태 격상 직전 VIP 경호 임무를 받았다.
 청사에서 불과 200미터 거리에서, 팀원 4명이 차례로 쓰러졌다.
 광화문에서 후퇴해 용산 미군기지로 철수했다. 무전기는 잡음뿐이었지만, 끊기지 않는 음성이 하나 있었다.
@@ -126,12 +139,18 @@ export const CHARACTERS = [
     id: 'firefighter',
     name: '박영철',
     gender: 'M',
+    age: 44,
     maxHp: 120,
     strength: 80,   // 체력(힘) — 소방관: 높은 신체 능력
     endurance: 85,  // 인내심 — 현장 임무 단련 (→ stamina ≈ 136)
     maxCarryWeight: 45,
     title: '소방관',
+    englishLabel: 'RESCUE',
     portrait: '🔥',
+    portraitFull:  'assets/images/characters/park_youngchul_full.png',
+    portraitSmall: 'assets/images/characters/park_youngchul_portrait.png',
+    strengths: ['뛰어난 체력', '구조 기술', '도구 숙련'],
+    weaknesses: ['총기 미숙', '가족 걱정 (사기)', '의료 한계'],
     story: `2026년 1월 16일 새벽 3시. 용산에서 대형 화재 신고가 들어왔다.
 박영철 소방위(44세)는 10년 경력의 구조대원으로 먼저 진입했다.
 그런데 화재가 아니었다. 건물 안에 불길은 없었고 쓰러진 사람들만 있었다.
@@ -181,12 +200,18 @@ export const CHARACTERS = [
     id: 'homeless',
     name: '최형식',
     gender: 'M',
+    age: 52,
     maxHp: 75,      // (65 → 75 버프)
     strength: 50,   // 체력(힘) — 거리 생활로 단련
     endurance: 40,  // 인내심 — 야생 생존형, 지속력은 보통 (→ stamina ≈ 40)
     maxCarryWeight: 32,
     title: '전직 사업가 · 노숙인',
+    englishLabel: 'SURVIVAL',
     portrait: '🏕️',
+    portraitFull:  'assets/images/characters/choi_hyungsik_full.png',
+    portraitSmall: 'assets/images/characters/choi_hyungsik_portrait.png',
+    strengths: ['생존 본능', '거리 감각', '절약형 신체'],
+    weaknesses: ['낮은 HP', '저질 체력', '사회적 신뢰도 낮음'],
     story: `최형식(52세)은 한때 중견 건설회사 대표였다. 2023년 보증 실패로 모든 것을 잃었다.
 동호대교 아래에서 2년을 살았다. 아무것도 없이 버티는 법을 배웠다.
 2026년 1월, 세상이 끝나는 날 밤에도 그는 다리 아래에 있었다. 강남 쪽으로 이동해 삼성병원 근처에서 버텼다.
@@ -236,12 +261,18 @@ export const CHARACTERS = [
     id: 'chef',
     name: '윤재혁',
     gender: 'M',
+    age: 33,
     maxHp: 95,
     strength: 65,   // 체력(힘) — 셰프: 주방 체력
     endurance: 65,  // 인내심 — 장시간 조리 경험 (→ stamina ≈ 85)
     maxCarryWeight: 35,
     title: '호텔 셰프',
+    englishLabel: 'COOK',
     portrait: '🍳',
+    portraitFull:  'assets/images/characters/yoon_jaehyuk_full.png',
+    portraitSmall: 'assets/images/characters/yoon_jaehyuk_portrait.png',
+    strengths: ['미식 감각', '식재료 감별', '칼 다루기'],
+    weaknesses: ['전투 경험 부족', '낯선 환경 약함', '제작 한계'],
     story: `윤재혁(33세)은 명동 소피텔 호텔의 수석 셰프였다.
 2026년 1월 16일, 호텔 뷔페에서 이상한 손님이 나타났다. 식기를 깨물고 직원을 공격했다.
 재혁은 주방 칼을 집어 들고 지하 식품 저장고로 피신했다. 이틀 뒤 밖에 나왔을 때, 호텔은 텅 비어 있었다.
@@ -291,12 +322,18 @@ export const CHARACTERS = [
     id: 'engineer',
     name: '정대한',
     gender: 'M',
+    age: 35,
     maxHp: 110,
     strength: 75,   // 체력(힘) — 엔지니어: 공장 육체 노동으로 단련
     endurance: 75,  // 인내심 — 균형 잡힌 지속력 (→ stamina ≈ 113)
     maxCarryWeight: 38,
     title: '기계공학자',
+    englishLabel: 'ENGINEER',
     portrait: '🔧',
+    portraitFull:  'assets/images/characters/jeong_daehan_full.png',
+    portraitSmall: 'assets/images/characters/jeong_daehan_portrait.png',
+    strengths: ['공학적 직관', '분해 전문가', '구조물 강화'],
+    weaknesses: ['전투 미숙', '의료 지식 한계', '독자적 성향'],
     story: `정대한(35세)은 성수동 소규모 금속 가공 공장의 기술 이사였다.
 세상이 무너진 날, 성수동에서 용산 전자상가로 이동해 부품을 확보했다.
 머릿속으로 계산했다. 경유 120리터. 1일 최소 가동 시 15일치.
@@ -343,5 +380,33 @@ export const CHARACTERS = [
     homeDist: 'yongsan',
   },
 ];
+
+// I-2 트랙 — 캐릭터선택 화면 능력치 5종 게이지 (가상 이미지 정렬)
+// GameState 1:1 매핑 (사용자 결정 2026-04-28):
+//   정신건강 → mental 시스템
+//   스테미나 → stamina (endurance × 1.5 근사)
+//   의료스킬 → skills.medicine
+//   전투스킬 → skills.melee + ranged + unarmed 합
+//   제작스킬 → skills.crafting + weaponcraft + armorcraft + building 합
+export const CHAR_GAUGE_KEYS = [
+  { id: 'mental',   label: '정신건강', labelEn: 'MENTAL'   },
+  { id: 'stamina',  label: '스테미나', labelEn: 'STAMINA'  },
+  { id: 'medicine', label: '의료스킬', labelEn: 'MEDICAL'  },
+  { id: 'combat',   label: '전투스킬', labelEn: 'COMBAT'   },
+  { id: 'crafting', label: '제작스킬', labelEn: 'CRAFT'    },
+];
+
+/** 캐릭터의 5종 게이지 값 계산 (0-100 정규화, 클램프) */
+export function getCharacterGauges(character) {
+  const skills = character.startingSkills ?? {};
+  const clamp = v => Math.max(0, Math.min(100, Math.round(v)));
+  return {
+    mental:   100, // 시작 시점 기본값 (실제 게임에서는 mental 시스템이 변동)
+    stamina:  clamp((character.endurance ?? 0) * 1.5),
+    medicine: clamp((skills.medicine ?? 0) * 20),
+    combat:   clamp(((skills.melee ?? 0) + (skills.ranged ?? 0) + (skills.unarmed ?? 0)) * 10),
+    crafting: clamp(((skills.crafting ?? 0) + (skills.weaponcraft ?? 0) + (skills.armorcraft ?? 0) + (skills.building ?? 0)) * 8),
+  };
+}
 
 export default CHARACTERS;
