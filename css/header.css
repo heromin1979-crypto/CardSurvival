@@ -1,0 +1,102 @@
+/* === GAME HEADER (트랙 C) ====================================
+ * 메인 보드 상단 거대 헤더. Day | HH:MM | Temp 중앙 표시.
+ * AD_GUIDE_UI_REVAMP.md 트랙 C 명세
+ * ============================================================ */
+
+.game-header {
+  background: linear-gradient(180deg, rgba(15, 20, 28, 0.95) 0%, rgba(10, 14, 20, 0.85) 100%);
+  border-bottom: 1px solid var(--border-dim, rgba(120, 90, 50, 0.18));
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  z-index: var(--z-hud, 50);
+}
+
+.game-header__inner {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+/* 좌측 슬롯 (옵션 — 향후 메뉴 토글 등) */
+.game-header__inner::before {
+  content: '';
+  grid-column: 1;
+}
+
+/* 중앙: Day | Time | Temp 거대 표시 */
+.game-header__center {
+  grid-column: 2;
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  font-family: var(--font-title, 'Geist', sans-serif);
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  white-space: nowrap;
+}
+
+.game-header__center.day .game-header__time { color: var(--accent-primary, #c8a060); }
+.game-header__center.night .game-header__time { color: var(--text-info, #7eaad4); }
+
+.game-header__day {
+  color: var(--text-primary);
+}
+
+.game-header__time {
+  color: var(--accent-primary, #c8a060);
+  font-variant-numeric: tabular-nums;
+  min-width: 80px;
+  text-align: center;
+}
+
+.game-header__temp {
+  font-variant-numeric: tabular-nums;
+}
+.game-header__temp--cold   { color: var(--text-info, #7eaad4); }
+.game-header__temp--hot    { color: var(--text-warn, #d8804b); }
+.game-header__temp--normal { color: var(--text-primary); }
+
+.game-header__sep {
+  color: var(--text-dim);
+  font-weight: 300;
+  font-size: 24px;
+}
+
+/* 우측: 계절 + 날씨 아이콘 */
+.game-header__right {
+  grid-column: 3;
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 22px;
+}
+
+.game-header__season,
+.game-header__weather {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-dim, rgba(120, 90, 50, 0.18));
+  cursor: default;
+  transition: background 200ms ease;
+}
+
+.game-header__season:hover,
+.game-header__weather:hover {
+  background: rgba(200, 160, 96, 0.12);
+}
+
+/* 모바일 대응 — 1920×1080 미만 (자체 mobile.css가 추가 처리) */
+@media (max-width: 1280px) {
+  .game-header__center { font-size: 22px; gap: 10px; }
+  .game-header__sep    { font-size: 18px; }
+}
