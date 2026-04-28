@@ -5,6 +5,7 @@ import StateMachine    from '../core/StateMachine.js';
 import I18n            from '../core/I18n.js';
 import { DISTRICTS, getAdjacentDistricts } from '../data/districts.js';
 import { CHARACTERS, CHAR_GAUGE_KEYS, getCharacterGauges }  from '../data/characters.js';
+import Gauge          from '../ui/components/Gauge.js';
 import { LEVEL_XP_TABLE } from '../data/skillDefs.js';
 import EquipmentSystem from '../systems/EquipmentSystem.js';
 import ExploreSystem   from '../systems/ExploreSystem.js';
@@ -123,14 +124,9 @@ const CharCreate = {
     if (!c) return '';
 
     const gauges     = getCharacterGauges(c);
-    const gaugesHtml = CHAR_GAUGE_KEYS.map(k => `
-      <div class="char-gauge-row">
-        <span class="char-gauge-label">${k.label}</span>
-        <div class="char-gauge-track">
-          <div class="char-gauge-fill char-gauge-fill--${k.id}" style="width:${gauges[k.id]}%"></div>
-        </div>
-      </div>
-    `).join('');
+    const gaugesHtml = CHAR_GAUGE_KEYS.map(k =>
+      Gauge.html({ label: k.label, value: gauges[k.id], color: k.id, size: 'md' })
+    ).join('');
 
     const strengthsHtml = (c.strengths ?? []).map(s => `<li>${s}</li>`).join('');
     const weaknessesHtml = (c.weaknesses ?? []).map(w => `<li>${w}</li>`).join('');

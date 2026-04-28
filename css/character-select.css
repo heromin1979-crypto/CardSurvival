@@ -144,7 +144,7 @@
   font-weight: 500;
 }
 
-/* 능력치 게이지 */
+/* 능력치 게이지 — 공용 Gauge 컴포넌트 사용 (ui.css의 .gauge-* 클래스) */
 .char-gauges {
   display: flex;
   flex-direction: column;
@@ -152,38 +152,10 @@
   margin-top: 4px;
 }
 
-.char-gauge-row {
-  display: grid;
+/* 캐릭터선택 게이지 라벨 폭 고정 (정렬) */
+.char-gauges .gauge-row {
   grid-template-columns: 80px 1fr;
-  align-items: center;
-  gap: 8px;
 }
-
-.char-gauge-label {
-  font-size: 11px;
-  color: var(--text-secondary);
-  font-weight: 500;
-}
-
-.char-gauge-track {
-  position: relative;
-  height: 8px;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.char-gauge-fill {
-  height: 100%;
-  border-radius: 4px;
-  transition: width 250ms ease-out;
-}
-
-.char-gauge-fill--mental   { background: linear-gradient(90deg, #4d7eb0, #7eaad4); }
-.char-gauge-fill--stamina  { background: linear-gradient(90deg, #6cb86c, #9cd89c); }
-.char-gauge-fill--medicine { background: linear-gradient(90deg, #c8c8c8, #ffffff); }
-.char-gauge-fill--combat   { background: linear-gradient(90deg, #c84040, #d8804b); }
-.char-gauge-fill--crafting { background: linear-gradient(90deg, #d89040, #e8b060); }
 
 /* 우측: 강점 / 약점 / 목표 / 출발지 */
 .char-list {

@@ -37,6 +37,7 @@ import QuestSystem          from './systems/QuestSystem.js';
 import SoundSystem          from './systems/SoundSystem.js';
 import HiddenElementSystem  from './systems/HiddenElementSystem.js';
 import TrapSystem           from './systems/TrapSystem.js';
+import HeaderBar            from './ui/HeaderBar.js';
 import BGMSystem            from './systems/BGMSystem.js';
 import EcologySystem        from './systems/EcologySystem.js';
 import MentalSystem         from './systems/MentalSystem.js';
@@ -160,6 +161,9 @@ function init() {
   HiddenElementSystem.init();
   TrapSystem.init();
   SystemRegistry.register('TrapSystem', TrapSystem);
+
+  // 트랙 C — 거대 헤더 (Day | Time | Temp)
+  HeaderBar.init();
   SubwaySystem.init();
   NightSystem.init();
 

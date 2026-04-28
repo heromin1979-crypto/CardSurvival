@@ -409,3 +409,78 @@
 }
 
 .mini-stat-val { color: var(--text-primary); }
+
+/* === GAUGE COMPONENT (트랙 D, 공용) ============================
+ * js/ui/components/Gauge.js 와 페어
+ * 사이드바 HUD / 캐릭터선택 / 동료 패널 재사용
+ * ============================================================ */
+
+.gauge-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.gauge-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.gauge-track {
+  position: relative;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  overflow: hidden;
+  height: 8px;
+}
+.gauge-track--sm { height: 4px; }
+.gauge-track--md { height: 8px; }
+.gauge-track--lg { height: 12px; }
+
+.gauge-fill {
+  height: 100%;
+  border-radius: inherit;
+  transition: width 250ms ease-out;
+  background: var(--text-secondary);
+}
+
+.gauge-value {
+  font-size: 10px;
+  color: var(--text-dim);
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  white-space: nowrap;
+  min-width: 36px;
+  text-align: right;
+}
+
+/* 색상 변형 — 스탯 토큰 + CST 통합 매핑 */
+.gauge-fill--hp          { background: linear-gradient(90deg, var(--stat-hp, #c84040), #e86060); }
+.gauge-fill--hydration   { background: linear-gradient(90deg, var(--stat-hydration, #4d7eb0), #7eaad4); }
+.gauge-fill--nutrition   { background: linear-gradient(90deg, var(--stat-nutrition, #b07e4d), #d49a5a); }
+.gauge-fill--fatigue     { background: linear-gradient(90deg, var(--stat-fatigue, #8060c0), #a080d0); }
+.gauge-fill--morale      { background: linear-gradient(90deg, var(--stat-morale, #c8a060), #e8c080); }
+.gauge-fill--temperature { background: linear-gradient(90deg, #5090c0, #80b0d0); }
+
+/* 캐릭터선택 5종 */
+.gauge-fill--mental      { background: linear-gradient(90deg, #4d7eb0, #7eaad4); }
+.gauge-fill--stamina     { background: linear-gradient(90deg, #6cb86c, #9cd89c); }
+.gauge-fill--medicine    { background: linear-gradient(90deg, #c8c8c8, #ffffff); }
+.gauge-fill--combat      { background: linear-gradient(90deg, #c84040, #d8804b); }
+.gauge-fill--crafting    { background: linear-gradient(90deg, #d89040, #e8b060); }
+
+/* 사이드바 콕핏 */
+.gauge-fill--noise       { background: linear-gradient(90deg, #c84040, #d8804b); }
+.gauge-fill--weight      { background: linear-gradient(90deg, #6080a0, #80a0c0); }
+.gauge-fill--quest       { background: linear-gradient(90deg, #6cb86c, #9cd89c); }
+
+/* 위험 상태 펄스 (≥70% 또는 외부에서 .gauge-fill--danger 추가) */
+.gauge-fill--danger {
+  animation: gauge-pulse 1.2s ease-in-out infinite;
+}
+@keyframes gauge-pulse {
+  0%, 100% { opacity: 0.85; }
+  50%      { opacity: 1.0; }
+}
