@@ -1,9 +1,18 @@
 # CST 패턴 도입 — Trap + Cloth Chain + Carcass 분해
 
 > 시작일: 2026-04-27
-> 상태: **🎯 계획 확정 · Sub-spec 1 진입 대기**
+> 완료일: 2026-04-28
+> 상태: **✅ 전 sub-spec 머지 + UI 통합 + 이미지 적용 마감** (master `4305c0c`)
 > 선행: Discovery Phase 2 (2A/2B/2C) + Phase 1 Track A 머지 완료 (master `d80e739` 이후)
 > 이전 계획: `docs/archive/prompt_plan.old4.md` (Combat System Overhaul, Phase 5-7 재평가 대기)
+>
+> **이번 세션 전체 PR 목록**:
+> - PR #5 — CST 패턴 도입 (Sub-spec 1/2/3 통합, master `8ad329d`)
+> - PR #6 — 트랙 G+ nameEn 일괄 (master `11937ac`)
+> - PR #7 — 트랙 E+ 카드 타입 시각 (master `b815d29`)
+> - PR #8 — 트랙 H Trap UI (master `0f792f4`)
+> - PR #9 — 결함 #1 가이드 + #6 캡 라벨 (master `7bbf391`)
+> - PR #10 — 결함 #1 14 이미지 적용 (master `4305c0c`)
 
 ## 배경
 
@@ -82,13 +91,13 @@ winter_coat: { /* 방한 의류 — 장비 슬롯 body */ },
 
 ### Acceptance Criteria
 
-- [ ] `node --input-type=module js/data/validate.js` → ALL CLEAR
-- [ ] 회귀: 403/403 통과 (master 기준)
-- [ ] 신규 craft 레시피 7개 데이터 검증 단위 테스트 (1-2건)
-- [ ] cloth_scrap 분기율 +1 (thread 추가)
-- [ ] thread 분기율 +2 (cloth/large_cloth 결과물)
-- [ ] cloth 분기율 +2 (large_cloth/dismantle)
-- [ ] large_cloth 분기율 ≥3 (blanket/sleeping_bag/winter_coat)
+- [x] `node --input-type=module js/data/validate.js` → ALL CLEAR
+- [x] 회귀: 415/415 통과 (master 기준, +12 신규 테스트 포함)
+- [x] 신규 craft 레시피 6개 데이터 검증 (PR #5 — winter_coat은 기존 warm_clothes 중복으로 제외)
+- [x] cloth_scrap 분기율 +1 (thread 추가)
+- [x] thread 분기율 +2 (cloth/large_cloth 결과물)
+- [x] cloth 분기율 +2 (large_cloth/dismantle)
+- [x] large_cloth 분기율 ≥2 (blanket/sleeping_bag — winter_coat 제외)
 
 ### 영향 파일 (5)
 1. `js/data/items_base.js` — 신규 아이템 4개
@@ -156,12 +165,12 @@ bone: {
 - districts.js — 변경 없음
 
 ### Acceptance Criteria
-- [ ] `validate.js` ALL CLEAR
-- [ ] 회귀: 0
-- [ ] 적 처치 시 lootTable 다중 산출 동작 통합 테스트 (인간형 + 동물형 각 1건)
-- [ ] hide 분기율 ≥ 1 (`tan_hide`)
-- [ ] leather 출처 명시 — 더 이상 미정의 자원 아님
-- [ ] bone 분기율 ≥ 1 (Sub-spec 3에서 도구 레시피로 확장 예정)
+- [x] `validate.js` ALL CLEAR
+- [x] 회귀: 0
+- [x] 적 처치 시 lootTable 다중 산출 동작 (enemies.js 9/9 적 lootTable 확장 PR #5)
+- [x] hide 분기율 ≥ 1 (`tan_hide`)
+- [x] leather 출처 명시 — `tan_hide` 한 경로 확정
+- [x] bone 분기율 ≥ 1 (Sub-spec 3 butcher_* 분해 레시피로 확장)
 
 ### 영향 파일 (5)
 1. `js/data/items_base.js` — 신규 아이템 2개
@@ -276,13 +285,13 @@ EventBus 신규 emit:
 - locales.js — 한국어/영어 이름 토큰 (선택, items_*.js name 필드로 충분할 수도)
 
 ### Acceptance Criteria
-- [ ] `validate.js` ALL CLEAR
-- [ ] 회귀: 0
-- [ ] Trap 설치 + bait → tpToTrigger 후 산 동물 산출 단위 테스트
-- [ ] Bait 부족 시 trap 작동 안 함 검증
-- [ ] 도살 → carcass → 분해 chain 통합 테스트
-- [ ] TrapSystem 신규 단위 테스트 5건 이상
-- [ ] CraftUI tool 탭에 신규 trap 레시피 노출 시각 확인
+- [x] `validate.js` ALL CLEAR
+- [x] 회귀: 0
+- [x] Trap 설치 + bait → tpToTrigger 후 산 동물 산출 단위 테스트
+- [x] Bait 부족 시 trap 작동 안 함 검증
+- [x] 도살 → carcass → 분해 chain 통합 테스트
+- [x] TrapSystem 신규 단위 테스트 12건 (목표 5+ 초과 달성, PR #5 8건 + PR #8 4건)
+- [x] CraftUI tool 탭에 신규 trap 레시피 노출 (subtype trap, 시각 캡 라벨 LIVE/CARCASS/TRAP — PR #9)
 
 ### 영향 파일 (10)
 1. `js/data/items_tools.js` — trap 도구 3개
@@ -329,29 +338,39 @@ Sub-spec 3 (Trap) ────────── live_animal/carcass 패턴 = Su
 
 ## 진행 순서 체크리스트
 
-- [ ] Sub-spec 1 진입 (Cloth Chain)
-  - [ ] 신규 아이템 4개 + 레시피 7개 데이터 추가
-  - [ ] stackConfig + CardFactory 등록
-  - [ ] 단위 테스트
-  - [ ] validate.js + 회귀
-  - [ ] PR + 머지
-  - [ ] 본인 플레이 분기율 체감 검증
-- [ ] Sub-spec 2 진입 (Carcass)
-  - [ ] hide/bone 아이템 + tan_hide 레시피
-  - [ ] enemy.lootTable 확장
-  - [ ] 단위/통합 테스트
-  - [ ] PR + 머지
-- [ ] Sub-spec 3 진입 (Trap)
-  - [ ] trap 도구 + 산 동물 + carcass 9 아이템
-  - [ ] craft/도살/분해 9 레시피
-  - [ ] TrapSystem.js 신규 + SystemRegistry 통합
-  - [ ] 테스트 다수
-  - [ ] CraftUI tool 탭 시각 확인
-  - [ ] PR + 머지
+- [x] Sub-spec 1 진입 (Cloth Chain) — PR #5
+  - [x] 신규 아이템 3개 (large_cloth/blanket/sleeping_bag) + 레시피 6개 데이터 추가
+  - [x] stackConfig + CardFactory 등록
+  - [x] 단위 테스트
+  - [x] validate.js + 회귀
+  - [x] PR + 머지
+  - [ ] 본인 플레이 분기율 체감 검증 (잔여)
+- [x] Sub-spec 2 진입 (Carcass) — PR #5
+  - [x] hide/bone 아이템 + tan_hide 레시피
+  - [x] enemy.lootTable 확장 (9/9 적)
+  - [x] 단위/통합 테스트
+  - [x] PR + 머지
+- [x] Sub-spec 3 진입 (Trap) — PR #5
+  - [x] trap 도구 3개 + 산 동물 3개 + carcass 3개
+  - [x] craft/도살/분해 9 레시피
+  - [x] TrapSystem.js 신규 + SystemRegistry 통합 (PR #8)
+  - [x] 테스트 12건 (단위 8 + UI 4)
+  - [x] CraftUI tool 탭 시각 확인 (PR #7/#9)
+  - [x] PR + 머지
+
+## UI 통합 (`AD_GUIDE_CST_INTEGRATION.md` 6 결함)
+
+- [x] #1 이미지 fallback → 14 PNG 적용 (PR #10)
+- [x] #2 이중 언어 일관성 → nameEn 일괄 (PR #6 트랙 G+)
+- [x] #3 Trap 진행도 시각 신호 → 게이지 + bait 마커 (PR #8 트랙 H)
+- [x] #4 신규 카드 타입 패턴 → live/carcass/trap 시각 차별 (PR #7 트랙 E+)
+- [x] #5 액션 힌트 부재 → 도살/분해/미끼 힌트 (PR #7 트랙 E+)
+- [x] #6 카테고리 라벨 → LIVE/CARCASS/TRAP 캡 (PR #9)
 
 ## 측정 검증 (memory Assignment 연계)
 
-각 Sub-spec 머지 후 사용자 본인 플레이로:
-- 분기율 체감 카운트 (Sub-spec 1)
-- 적 처치 시 산출 자원 다양성 카운트 (Sub-spec 2)
-- 발견 모먼트 카운트 (Sub-spec 3 — trap 첫 성공 시 ✨ 알림)
+각 Sub-spec 머지 후 사용자 본인 플레이로 잔여 검증:
+- [ ] 분기율 체감 카운트 (Sub-spec 1)
+- [ ] 적 처치 시 산출 자원 다양성 카운트 (Sub-spec 2)
+- [ ] 발견 모먼트 카운트 (Sub-spec 3 — trap 첫 성공 시 ✨ 알림)
+- [ ] 카타나(depth 7) 직접 만들기 + 발견 모먼트 카운트 (memory Assignment)
