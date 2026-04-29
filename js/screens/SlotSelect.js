@@ -38,10 +38,6 @@ const SlotSelect = {
     const titleKey = this._mode === 'new' ? 'slotSelect.titleNew' : 'slotSelect.titleContinue';
     const slotsHtml = Array.from({ length: SLOT_COUNT }, (_, i) => this._buildSlotCard(i)).join('');
 
-    const primaryLabel = this._mode === 'new'
-      ? t('slotSelect.btnStart')
-      : t('slotSelect.btnLoad');
-
     this._el.innerHTML = `
       <div class="slot-select-frame">
         <header class="slot-select-header">
@@ -51,14 +47,14 @@ const SlotSelect = {
         <div class="slot-select-grid">${slotsHtml}</div>
 
         <footer class="slot-select-footer">
-          <button class="menu-pill-btn slim" id="ss-btn-back">
-            <span class="menu-pill-label">${t('slotSelect.btnBack')}</span>
+          <button class="slot-img-btn slot-img-btn--back" id="ss-btn-back">
+            <span class="visually-hidden">${t('slotSelect.btnBack')}</span>
           </button>
-          <button class="menu-pill-btn slim" id="ss-btn-delete">
-            <span class="menu-pill-label">${t('slotSelect.btnDelete')}</span>
+          <button class="slot-img-btn slot-img-btn--delete" id="ss-btn-delete">
+            <span class="visually-hidden">${t('slotSelect.btnDelete')}</span>
           </button>
-          <button class="menu-pill-btn slim primary" id="ss-btn-primary">
-            <span class="menu-pill-label">${primaryLabel}</span>
+          <button class="slot-img-btn slot-img-btn--load" id="ss-btn-primary">
+            <span class="visually-hidden">${t('slotSelect.btnLoad')}</span>
           </button>
         </footer>
       </div>

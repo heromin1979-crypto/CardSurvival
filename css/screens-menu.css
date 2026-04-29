@@ -381,9 +381,40 @@
 .slot-select-footer {
   display: flex;
   justify-content: center;
-  gap: 16px;
+  gap: 24px;
   margin-top: 8px;
 }
+
+/* slot select — image buttons */
+.slot-img-btn {
+  width: 280px;
+  height: 91px;
+  position: relative;
+  overflow: hidden;
+  background: no-repeat center / 100% 100%;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.slot-img-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: no-repeat center / 100% 100%;
+  opacity: 0;
+  transition: opacity 0.18s ease;
+}
+.slot-img-btn:hover:not(:disabled)::after { opacity: 1; }
+
+.slot-img-btn--back  { background-image: url('../assets/images/menu/btn-back-idle.png'); }
+.slot-img-btn--back::after  { background-image: url('../assets/images/menu/btn-back-active.png'); }
+
+.slot-img-btn--delete { background-image: url('../assets/images/menu/btn-delete-idle.png'); }
+.slot-img-btn--delete::after { background-image: url('../assets/images/menu/btn-delete-active.png'); }
+
+.slot-img-btn--load  { background-image: url('../assets/images/menu/btn-load-idle.png'); }
+.slot-img-btn--load::after  { background-image: url('../assets/images/menu/btn-load-active.png'); }
 
 /* === CHAR CREATE === */
 #screen-char-create {
