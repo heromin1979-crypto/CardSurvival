@@ -380,9 +380,20 @@
 
 .slot-select-footer {
   display: flex;
+  align-items: center;
   justify-content: center;
+  margin-top: 28px;
+  position: relative;
+}
+
+.slot-footer-center {
+  display: flex;
   gap: 24px;
-  margin-top: 8px;
+}
+
+.slot-img-btn--back {
+  position: absolute;
+  right: 0;
 }
 
 /* slot select — image buttons */
