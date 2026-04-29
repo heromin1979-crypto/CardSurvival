@@ -68,15 +68,9 @@ const SlotSelect = {
     if (!meta) {
       return `
         <div class="slot-card empty ${isSelected ? 'selected' : ''}" data-slot="${slot}">
-          <div class="slot-card-thumb empty">
+          <div class="slot-card-empty-content">
             <span class="slot-card-empty-icon">+</span>
-          </div>
-          <div class="slot-card-body">
-            <div class="slot-card-day">${t('slotSelect.empty')}</div>
-            <div class="slot-card-loc">—</div>
-            <div class="slot-card-meta">
-              <div class="slot-card-meta-row">${t('menu.slot')} ${slot + 1}</div>
-            </div>
+            <span class="slot-card-empty-label">${t('menu.slot')} ${slot + 1}</span>
           </div>
         </div>
       `;
@@ -84,38 +78,35 @@ const SlotSelect = {
 
     const isDead = !!meta.isDead;
     const char   = CHARACTERS.find(c => c.id === meta.characterId);
-    const thumb  = char?.portraitFull
-      ? `<img class="slot-card-thumb-img" src="${char.portraitFull}" alt="" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'slot-card-thumb-fallback',textContent:'👤'}))">`
-      : `<div class="slot-card-thumb-fallback">👤</div>`;
+    const charName = char ? I18n.characterName(char.id, char.name) : (meta.playerName ?? '—');
 
     const districtInfo = DISTRICTS[meta.district];
     const districtLabel = districtInfo
       ? I18n.districtName(meta.district, districtInfo.name)
       : t('slotSelect.locationUnknown');
 
-    const charName  = meta.playerName ?? '—';
-    const charLabelText = char ? I18n.characterName(char.id, char.name) : charName;
-    const dayText   = I18n.t('slotSelect.dayLabel', { n: meta.day ?? 1 });
-    const hourText  = `${String(meta.hour ?? 0).padStart(2, '0')}:00`;
+    const lmSrc = meta.district ? `assets/images/landmarks/lm_${meta.district}.png` : null;
+    const thumbHtml = lmSrc
+      ? `<img class="slot-card-lm-img" src="${lmSrc}" alt="" onerror="this.style.display='none'">`
+      : `<div class="slot-card-lm-fallback">${districtInfo?.icon ?? '📍'}</div>`;
 
-    const deadFlag  = isDead ? `<span class="slot-card-dead-flag">${t('menu.dead')}</span>` : '';
+    const dayText = I18n.t('slotSelect.dayLabel', { n: meta.day ?? 1 });
+
+    const savedAt = meta.savedAt ? new Date(meta.savedAt) : null;
+    const timeStr = savedAt
+      ? `${savedAt.getFullYear()}.${String(savedAt.getMonth() + 1).padStart(2, '0')}.${String(savedAt.getDate()).padStart(2, '0')} ${String(savedAt.getHours()).padStart(2, '0')}:${String(savedAt.getMinutes()).padStart(2, '0')}`
+      : '—';
+
+    const deadFlag = isDead ? `<span class="slot-card-dead-flag">${t('menu.dead')}</span>` : '';
 
     return `
       <div class="slot-card occupied ${isSelected ? 'selected' : ''} ${isDead ? 'is-dead' : ''}" data-slot="${slot}">
-        <div class="slot-card-thumb">${thumb}</div>
-        <div class="slot-card-body">
-          <div class="slot-card-day">${dayText}${deadFlag}</div>
-          <div class="slot-card-loc">${districtInfo?.icon ?? '📍'} ${districtLabel}</div>
-          <div class="slot-card-meta">
-            <div class="slot-card-meta-row">
-              <span class="slot-card-meta-key">${t('slotSelect.charLabel')}</span>
-              <span class="slot-card-meta-val">${charLabelText}</span>
-            </div>
-            <div class="slot-card-meta-row">
-              <span class="slot-card-meta-key">${t('slotSelect.timeLabel')}</span>
-              <span class="slot-card-meta-val">${hourText}</span>
-            </div>
-          </div>
+        <div class="slot-card-lm">${thumbHtml}</div>
+        <div class="slot-card-info">
+          <div class="slot-info-day">${dayText}${deadFlag}</div>
+          <div class="slot-info-loc">${districtInfo?.icon ?? '📍'} ${districtLabel}</div>
+          <div class="slot-info-char">${charName}</div>
+          <div class="slot-info-time">${timeStr}</div>
         </div>
       </div>
     `;
