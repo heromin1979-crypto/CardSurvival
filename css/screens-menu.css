@@ -251,10 +251,9 @@
 }
 
 .slot-card.selected {
-  border-color: #e6b466;
-  box-shadow:
-    0 0 0 2px rgba(230, 180, 102, 0.5),
-    0 6px 22px rgba(180, 130, 60, 0.4);
+  background: url('../assets/images/slot-selected.png') center / 100% 100% no-repeat;
+  border-color: transparent;
+  box-shadow: none;
 }
 
 .slot-card.empty {
