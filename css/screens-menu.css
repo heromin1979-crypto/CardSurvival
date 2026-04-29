@@ -181,8 +181,7 @@
 
 /* === SLOT SELECT === */
 #screen-slot-select {
-  background:
-    radial-gradient(ellipse at 50% 40%, #2a1a0c 0%, #14100a 60%, #0a0805 100%);
+  background: url('../assets/images/bg-slot-select.jpg') center center / cover no-repeat;
   position: relative;
   flex-direction: column;
   justify-content: center;
