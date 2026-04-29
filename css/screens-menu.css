@@ -11,7 +11,7 @@
   flex-direction: column;
   align-items: center;
   gap: 3px;
-  margin-top: 530px;
+  margin-top: 430px;
   z-index: 1;
 }
 
@@ -21,8 +21,8 @@
    background-size: 100% 100% — 그래픽 캔버스 여백 차이 보정 */
 .menu-img-btn {
   position: relative;
-  width: 455px;
-  height: 98px;
+  width: 445px;
+  height: 96px;
   padding: 0;
   border: none;
   background-color: transparent;
