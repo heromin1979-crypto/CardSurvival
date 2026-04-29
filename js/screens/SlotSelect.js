@@ -35,26 +35,23 @@ const SlotSelect = {
     if (!this._el) return;
     const t = k => I18n.t(k);
 
-    const titleKey = this._mode === 'new' ? 'slotSelect.titleNew' : 'slotSelect.titleContinue';
     const slotsHtml = Array.from({ length: SLOT_COUNT }, (_, i) => this._buildSlotCard(i)).join('');
 
     this._el.innerHTML = `
       <div class="slot-select-frame">
-        <header class="slot-select-header">
-          <div class="slot-select-title">${t(titleKey)}</div>
-        </header>
-
         <div class="slot-select-grid">${slotsHtml}</div>
 
         <footer class="slot-select-footer">
+          <div class="slot-footer-center">
+            <button class="slot-img-btn slot-img-btn--delete" id="ss-btn-delete">
+              <span class="visually-hidden">${t('slotSelect.btnDelete')}</span>
+            </button>
+            <button class="slot-img-btn slot-img-btn--load" id="ss-btn-primary">
+              <span class="visually-hidden">${t('slotSelect.btnLoad')}</span>
+            </button>
+          </div>
           <button class="slot-img-btn slot-img-btn--back" id="ss-btn-back">
             <span class="visually-hidden">${t('slotSelect.btnBack')}</span>
-          </button>
-          <button class="slot-img-btn slot-img-btn--delete" id="ss-btn-delete">
-            <span class="visually-hidden">${t('slotSelect.btnDelete')}</span>
-          </button>
-          <button class="slot-img-btn slot-img-btn--load" id="ss-btn-primary">
-            <span class="visually-hidden">${t('slotSelect.btnLoad')}</span>
           </button>
         </footer>
       </div>
