@@ -46,9 +46,6 @@ const SlotSelect = {
             <button class="slot-img-btn slot-img-btn--load" id="ss-btn-primary">
               <span class="visually-hidden">${t('slotSelect.btnLoad')}</span>
             </button>
-            <button class="slot-img-btn slot-img-btn--delete" id="ss-btn-delete">
-              <span class="visually-hidden">${t('slotSelect.btnDelete')}</span>
-            </button>
           </div>
           <button class="slot-img-btn slot-img-btn--back" id="ss-btn-back">
             <span class="visually-hidden">${t('slotSelect.btnBack')}</span>
@@ -101,6 +98,7 @@ const SlotSelect = {
 
     return `
       <div class="slot-card occupied ${isSelected ? 'selected' : ''} ${isDead ? 'is-dead' : ''}" data-slot="${slot}">
+        <button class="slot-card-delete-btn" data-delete-slot="${slot}" title="${t('slotSelect.btnDelete')}">✕</button>
         <div class="slot-card-lm">${thumbHtml}</div>
         <div class="slot-card-info">
           <div class="slot-info-day">${dayText}${deadFlag}</div>
@@ -121,12 +119,16 @@ const SlotSelect = {
       });
     });
 
-    document.getElementById('ss-btn-back')?.addEventListener('click', () => {
-      StateMachine.transition('main_menu');
+    this._el.querySelectorAll('.slot-card-delete-btn').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const slot = parseInt(btn.dataset.deleteSlot, 10);
+        this._handleDelete(slot);
+      });
     });
 
-    document.getElementById('ss-btn-delete')?.addEventListener('click', () => {
-      this._handleDelete();
+    document.getElementById('ss-btn-back')?.addEventListener('click', () => {
+      StateMachine.transition('main_menu');
     });
 
     document.getElementById('ss-btn-primary')?.addEventListener('click', () => {
@@ -134,22 +136,14 @@ const SlotSelect = {
     });
   },
 
-  _handleDelete() {
+  _handleDelete(slot) {
     const t = k => I18n.t(k);
-    const slot = this._selectedSlot;
-    if (slot === null) {
-      EventBus.emit('notify', { message: t('slotSelect.selectFirst'), type: 'warn' });
-      return;
-    }
     const meta = SaveManager.getMeta(slot);
-    if (!meta) {
-      EventBus.emit('notify', { message: t('slotSelect.selectFirst'), type: 'warn' });
-      return;
-    }
+    if (!meta) return;
     const msg = I18n.t('menu.deleteConfirm', { slot: `${t('menu.slot')} ${slot + 1}` });
     if (confirm(msg)) {
       SaveManager.deleteSave(slot);
-      this._selectedSlot = null;
+      if (this._selectedSlot === slot) this._selectedSlot = null;
       this._render();
     }
   },
