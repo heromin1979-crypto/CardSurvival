@@ -43,11 +43,11 @@ const SlotSelect = {
 
         <footer class="slot-select-footer">
           <div class="slot-footer-center">
-            <button class="slot-img-btn slot-img-btn--delete" id="ss-btn-delete">
-              <span class="visually-hidden">${t('slotSelect.btnDelete')}</span>
-            </button>
             <button class="slot-img-btn slot-img-btn--load" id="ss-btn-primary">
               <span class="visually-hidden">${t('slotSelect.btnLoad')}</span>
+            </button>
+            <button class="slot-img-btn slot-img-btn--delete" id="ss-btn-delete">
+              <span class="visually-hidden">${t('slotSelect.btnDelete')}</span>
             </button>
           </div>
           <button class="slot-img-btn slot-img-btn--back" id="ss-btn-back">
