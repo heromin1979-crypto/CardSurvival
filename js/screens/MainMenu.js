@@ -32,18 +32,18 @@ const MainMenu = {
 
     this._el.innerHTML = `
       <div class="main-menu-stack">
-        <button class="menu-pill-btn" id="mm-btn-new">
-          <span class="menu-pill-label">${t('menu.newGame')}</span>
+        <button class="menu-img-btn menu-img-btn--new-game" id="mm-btn-new" aria-label="${t('menu.newGame')}">
+          <span class="visually-hidden">${t('menu.newGame')}</span>
         </button>
-        <button class="menu-pill-btn ${hasAnySave ? '' : 'is-disabled'}"
-                id="mm-btn-continue" ${continueAttrs}>
-          <span class="menu-pill-label">${t('menu.continue')}</span>
+        <button class="menu-img-btn menu-img-btn--continue ${hasAnySave ? '' : 'is-disabled'}"
+                id="mm-btn-continue" aria-label="${t('menu.continue')}" ${continueAttrs}>
+          <span class="visually-hidden">${t('menu.continue')}</span>
         </button>
-        <button class="menu-pill-btn" id="mm-btn-gallery">
-          <span class="menu-pill-label">${t('menu.gallery')}</span>
+        <button class="menu-img-btn menu-img-btn--gallery" id="mm-btn-gallery" aria-label="${t('menu.gallery')}">
+          <span class="visually-hidden">${t('menu.gallery')}</span>
         </button>
-        <button class="menu-pill-btn" id="mm-btn-settings">
-          <span class="menu-pill-label">${t('menu.settings')}</span>
+        <button class="menu-img-btn menu-img-btn--settings" id="mm-btn-settings" aria-label="${t('menu.settings')}">
+          <span class="visually-hidden">${t('menu.settings')}</span>
         </button>
       </div>
 
