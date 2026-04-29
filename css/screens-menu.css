@@ -6,21 +6,23 @@
   position: relative;
 }
 
-/* 박힌 부제(상단 ~30%)를 가리지 않도록 4-버튼 묶음을 화면 중하단(약 60% 라인)에 배치 */
 .main-menu-stack {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 3px;
-  margin-top: 320px;
+  margin-top: 530px;
   z-index: 1;
 }
 
-/* === 메인 메뉴 이미지 버튼 (텍스트 박힌 PNG, 다크↔노랑 상태 전환) === */
-/* background-size: 100% 100% — 캔버스 안 그래픽 영역 차이로 인한 시각 사이즈 불일치 강제 정렬 */
+/* === 메인 메뉴 이미지 버튼 ===
+   idle 이미지는 background-image, active 이미지는 ::after 가상 요소에 미리 로드.
+   hover 시 ::after opacity 0→1 전환으로 깜빡임 없이 부드럽게 교체된다.
+   background-size: 100% 100% — 그래픽 캔버스 여백 차이 보정 */
 .menu-img-btn {
-  width: 360px;
-  height: 152px;
+  position: relative;
+  width: 520px;
+  height: 112px;
   padding: 0;
   border: none;
   background-color: transparent;
@@ -30,6 +32,24 @@
   cursor: pointer;
   filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.6));
   transition: transform 0.08s ease, filter 0.15s ease;
+  overflow: hidden;
+}
+
+/* active 이미지를 위에 겹쳐 preload — 평상시 opacity: 0 */
+.menu-img-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  opacity: 0;
+  transition: opacity 0.18s ease;
+}
+
+.menu-img-btn:hover:not(:disabled)::after,
+.menu-img-btn:focus-visible:not(:disabled)::after {
+  opacity: 1;
 }
 
 .menu-img-btn:hover:not(:disabled),
@@ -48,28 +68,17 @@
   filter: grayscale(0.5) brightness(0.55) drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
 }
 
-/* 버튼별 다크(평상시) / 노랑(호버·포커스) 이미지 매핑 */
-.menu-img-btn--new-game  { background-image: url('../assets/images/menu/btn-new-game-idle.png'); }
-.menu-img-btn--continue  { background-image: url('../assets/images/menu/btn-continue-idle.png'); }
-.menu-img-btn--gallery   { background-image: url('../assets/images/menu/btn-gallery-idle.png'); }
-.menu-img-btn--settings  { background-image: url('../assets/images/menu/btn-settings-idle.png'); }
+/* idle 이미지 (background-image) */
+.menu-img-btn--new-game { background-image: url('../assets/images/menu/btn-new-game-idle.png'); }
+.menu-img-btn--continue { background-image: url('../assets/images/menu/btn-continue-idle.png'); }
+.menu-img-btn--gallery  { background-image: url('../assets/images/menu/btn-gallery-idle.png'); }
+.menu-img-btn--settings { background-image: url('../assets/images/menu/btn-settings-idle.png'); }
 
-.menu-img-btn--new-game:hover:not(:disabled),
-.menu-img-btn--new-game:focus-visible:not(:disabled) {
-  background-image: url('../assets/images/menu/btn-new-game-active.png');
-}
-.menu-img-btn--continue:hover:not(:disabled),
-.menu-img-btn--continue:focus-visible:not(:disabled) {
-  background-image: url('../assets/images/menu/btn-continue-active.png');
-}
-.menu-img-btn--gallery:hover:not(:disabled),
-.menu-img-btn--gallery:focus-visible:not(:disabled) {
-  background-image: url('../assets/images/menu/btn-gallery-active.png');
-}
-.menu-img-btn--settings:hover:not(:disabled),
-.menu-img-btn--settings:focus-visible:not(:disabled) {
-  background-image: url('../assets/images/menu/btn-settings-active.png');
-}
+/* active 이미지 (::after background-image — 항상 로드됨) */
+.menu-img-btn--new-game::after { background-image: url('../assets/images/menu/btn-new-game-active.png'); }
+.menu-img-btn--continue::after { background-image: url('../assets/images/menu/btn-continue-active.png'); }
+.menu-img-btn--gallery::after  { background-image: url('../assets/images/menu/btn-gallery-active.png'); }
+.menu-img-btn--settings::after { background-image: url('../assets/images/menu/btn-settings-active.png'); }
 
 /* 스크린리더용으로만 노출, 시각적으로는 숨김 (이미지에 텍스트가 박혀있음) */
 .visually-hidden {
