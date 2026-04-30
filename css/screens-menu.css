@@ -199,7 +199,7 @@
   display: flex;
   flex-direction: column;
   gap: 28px;
-  margin-top: 100px;
+  margin-top: 150px;
 }
 
 .slot-select-header {
@@ -312,6 +312,20 @@
 
 .slot-card.empty:hover {
   filter: brightness(1.1);
+}
+
+/* 빈 슬롯 — 선택(active) 상태 */
+.slot-card.empty.selected {
+  border-color: rgba(210, 165, 75, 0.85);
+  box-shadow:
+    0 0 14px rgba(200, 158, 70, 0.30),
+    0 2px 8px rgba(0, 0, 0, 0.55);
+  filter: brightness(1.18);
+}
+
+.slot-card.empty.selected .slot-card-empty-icon,
+.slot-card.empty.selected .slot-card-empty-label {
+  color: rgba(220, 175, 90, 0.85);
 }
 
 /* 사망 슬롯 */
@@ -477,8 +491,8 @@
 .slot-img-btn--load  { background-image: url('../assets/images/menu/btn-load-idle.png'); }
 .slot-img-btn--load::after  { background-image: url('../assets/images/menu/btn-load-active.png'); }
 
-.slot-img-btn--newgame       { background-image: url('../assets/images/menu/btn-newgame-idle.jpg'); }
-.slot-img-btn--newgame::after { background-image: url('../assets/images/menu/btn-newgame-active.jpg'); }
+.slot-img-btn--newgame       { background-image: url('../assets/images/menu/btn-newgame-idle.png'); }
+.slot-img-btn--newgame::after { background-image: url('../assets/images/menu/btn-newgame-active.png'); }
 
 /* 새게임 모드 — 점유 슬롯은 클릭 선택 불가 (cursor 표시로 구분) */
 #screen-slot-select[data-mode="new"] .slot-card.occupied {
