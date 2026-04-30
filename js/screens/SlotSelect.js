@@ -82,9 +82,6 @@ const SlotSelect = {
     }
 
     const isDead = !!meta.isDead;
-    // 새게임 모드에서는 점유 슬롯을 잠금 처리
-    const isLocked = isNew;
-
     const char   = CHARACTERS.find(c => c.id === meta.characterId);
     const charName = char ? I18n.characterName(char.id, char.name) : (meta.playerName ?? '—');
 
@@ -106,14 +103,11 @@ const SlotSelect = {
       : '—';
 
     const deadFlag = isDead ? `<span class="slot-card-dead-flag">${t('menu.dead')}</span>` : '';
-    const deleteBtn = isLocked
-      ? ''
-      : `<button class="slot-card-delete-btn" data-delete-slot="${slot}" title="${t('slotSelect.btnDelete')}">✕</button>`;
 
     return `
-      <div class="slot-card occupied ${isSelected ? 'selected' : ''} ${isDead ? 'is-dead' : ''} ${isLocked ? 'locked' : ''}"
-           data-slot="${slot}" ${isLocked ? 'aria-disabled="true"' : ''}>
-        ${deleteBtn}
+      <div class="slot-card occupied ${isSelected ? 'selected' : ''} ${isDead ? 'is-dead' : ''}"
+           data-slot="${slot}">
+        <button class="slot-card-delete-btn" data-delete-slot="${slot}" title="${t('slotSelect.btnDelete')}">✕</button>
         <div class="slot-card-lm">${thumbHtml}</div>
         <div class="slot-card-info">
           <div class="slot-info-day">${dayText}${deadFlag}</div>
@@ -127,11 +121,10 @@ const SlotSelect = {
 
   _bindEvents() {
     this._el.querySelectorAll('.slot-card').forEach(card => {
-      // 새게임 모드에서 잠긴 슬롯(점유)은 클릭 무시
-      if (card.classList.contains('locked')) return;
-
       card.addEventListener('click', () => {
         const slot = parseInt(card.dataset.slot, 10);
+        // 새게임 모드에서 점유 슬롯은 선택 불가 (X 버튼으로 삭제만 가능)
+        if (this._mode === 'new' && card.classList.contains('occupied')) return;
         this._selectedSlot = slot;
         this._render();
       });
