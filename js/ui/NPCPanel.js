@@ -187,15 +187,66 @@ const NPCPanel = {
     const emoData     = EMOTION_ICONS[emotion] ?? EMOTION_ICONS.calm;
     const emotionBadge = `<div class="npc-emotion-badge emotion-${emotion}">${emoData.icon} ${emoData.label}</div>`;
 
-    el.innerHTML = `
-      ${questBadge}
-      <div class="npc-mini-icon">${icon}</div>
-      <div class="npc-mini-name">${name}</div>
-      <div class="npc-mini-trust">${stars}</div>
-      ${emotionBadge}
-      ${hpBar}
-      ${dispatchBadge}
-    `;
+    if (section === 'companion') {
+      // Enhanced companion card
+      const companionDef = npcDef?.companion ?? {};
+      const tags = [];
+      if ((companionDef.combatDmg ?? 0) > 0)     tags.push('⚔전투');
+      if ((companionDef.craftBonus ?? 0) > 0)     tags.push('🔨제작');
+      if ((companionDef.healBonus ?? 0) > 0)      tags.push('💊치료');
+      if ((companionDef.carryBonus ?? 0) > 0)     tags.push('🎒휴대');
+      if ((companionDef.moralBonus ?? 0) > 0.05)  tags.push('😊사기');
+
+      const woundLevel     = state.woundLevel     ?? 0;
+      const infectionLevel = state.infectionLevel ?? 0;
+      let statusCls, statusLabel;
+      if (infectionLevel >= 1)  { statusCls = 'infect'; statusLabel = '감염'; }
+      else if (woundLevel >= 3) { statusCls = 'wound';  statusLabel = '부상'; }
+      else if (woundLevel >= 1) { statusCls = 'stable'; statusLabel = '안정'; }
+      else                      { statusCls = 'ok';     statusLabel = '양호'; }
+
+      const tagsHtml = tags.map(t => `<span class="companion-ability-tag">${t}</span>`).join('');
+
+      // trust 달성 스킬 배지 — trustEvents 중 조건 충족한 skillTeach 표시
+      const unlockedSkill = (npcDef?.trustEvents ?? [])
+        .filter(e => (state.trust ?? 0) >= e.trust && e.effect?.skillTeach)
+        .map(e => e.effect.skillTeach.skillId)
+        .at(-1) ?? null;
+      const skillBadge = unlockedSkill
+        ? `<div class="companion-skill-badge">✦ ${unlockedSkill.replace(/_/g, ' ')}</div>`
+        : '';
+
+      el.innerHTML = `
+        ${questBadge}
+        <div class="companion-portrait">${icon}</div>
+        <div class="npc-mini-name">${name}</div>
+        <div class="npc-mini-trust">${stars}</div>
+        <div class="companion-hp-row">
+          <span class="companion-hp-label">HP</span>
+          <div class="companion-hp-track">
+            <div class="companion-hp-fill ${hpCls}" style="width:${hpPct}%"></div>
+          </div>
+        </div>
+        <div class="companion-status-row">
+          <span class="companion-status-badge ${statusCls}">${statusLabel}</span>
+        </div>
+        ${tagsHtml.length ? `<div class="companion-ability-tags">${tagsHtml}</div>` : ''}
+        ${skillBadge}
+        ${emotionBadge}
+        ${dispatchBadge}
+      `;
+    } else {
+      el.innerHTML = `
+        ${questBadge}
+        <div class="npc-mini-icon">${icon}</div>
+        <div class="npc-mini-name">${name}</div>
+        <div class="npc-mini-trust">${stars}</div>
+        ${emotionBadge}
+        ${hpBar}
+        ${dispatchBadge}
+      `;
+    }
+
     const openDialogue = (e) => {
       if (e) { e.stopPropagation(); e.preventDefault(); }
       EventBus.emit('openNPCDialogue', { npcId });

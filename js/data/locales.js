@@ -1947,6 +1947,7 @@ export const en = {
   '_item.rat_carcass':           'Rat Carcass',
   '_item.pigeon_carcass':        'Pigeon Carcass',
   '_item.stray_animal_carcass':  'Stray Animal Carcass',
+  '_item.box_cutter':            'Cutter Knife',
 
   // ── NPC System ─────────────────────────────────────────────
   'npc.badge':           'NPC',

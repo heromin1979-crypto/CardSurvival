@@ -62,16 +62,15 @@
 /* Stat bars */
 .stat-bars {
   display: flex;
-  gap: var(--gap-sm);
-  flex-wrap: wrap;
-  flex: 1;
+  flex-direction: column;
+  gap: 5px;
 }
 
 .stat-bar-group {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  min-width: 70px;
+  width: 100%;
 }
 
 .stat-bar-label {
@@ -93,10 +92,10 @@
 }
 
 .stat-bar-track {
-  width: 70px;
-  height: 5px;
+  width: 100%;
+  height: 4px;
   background: var(--bg-raised);
-  border-radius: 3px;
+  border-radius: 2px;
   overflow: hidden;
   border: 1px solid var(--border-dim);
 }
@@ -180,6 +179,41 @@
 /* Danger states */
 .stat-bar-fill.danger { animation: dangerPulse 0.8s ease infinite; }
 .stat-bar-fill.warn   { animation: dangerPulse 1.8s ease infinite; }
+
+/* 사이드바 섹션 구분 레이블 */
+.bc-section-label {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text-dim);
+  padding: 4px 0 2px;
+  border-top: 1px solid var(--border-dim);
+  margin-top: 2px;
+}
+.bc-disease-status + .bc-section-label { border-top: none; margin-top: 0; }
+
+/* 무게 게이지 */
+.bc-enc-track {
+  width: 100%;
+  height: 4px;
+  background: var(--bg-raised);
+  border-radius: 2px;
+  overflow: hidden;
+  border: 1px solid var(--border-dim);
+  margin-top: 3px;
+}
+.bc-enc-fill {
+  height: 100%;
+  background: var(--accent-primary);
+  border-radius: 2px;
+  transition: width var(--transition-mid);
+}
+.bc-enc-fill.warn   { background: var(--text-warn); }
+.bc-enc-fill.danger { background: var(--text-danger); animation: dangerPulse 0.8s ease infinite; }
+
+/* 노이즈 트랙 풀폭 */
+.bc-noise-block .noise-track { width: 100%; }
 
 /* Noise meter */
 .noise-meter {

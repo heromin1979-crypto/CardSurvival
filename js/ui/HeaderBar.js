@@ -44,6 +44,12 @@ const HeaderBar = {
     const isNight = hour >= 20 || hour < 6;
     const dayClass = isNight ? 'night' : 'day';
 
+    const timeOfDay = hour >= 5 && hour < 7  ? 'dawn'
+                    : hour >= 7 && hour < 17  ? 'day'
+                    : hour >= 17 && hour < 20 ? 'dusk'
+                    : 'night';
+    document.getElementById('screen-main')?.setAttribute('data-time-of-day', timeOfDay);
+
     const seasonId = gs.season?.current ?? 'spring';
     const seasonIcons = { spring: '🌸', summer: '☀️', autumn: '🍂', winter: '❄️' };
     const seasonLabels = { spring: '봄', summer: '여름', autumn: '가을', winter: '겨울' };

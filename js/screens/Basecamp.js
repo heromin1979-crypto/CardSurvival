@@ -142,9 +142,11 @@ const Basecamp = {
         <div id="disease-status" class="bc-disease-status" style="display:none;"></div>
 
         <!-- Stat bars: 필수 4개만 (HP·수분·영양·피로) -->
+        <div class="bc-section-label">상태</div>
         <div id="hud-stat-bars" class="stat-bars"></div>
 
         <!-- Noise -->
+        <div class="bc-section-label">소음</div>
         <div class="bc-noise-block">
           <div class="noise-label">
             <span>${I18n.t('basecamp.noise')}</span>
@@ -156,7 +158,13 @@ const Basecamp = {
         </div>
 
         <!-- Encumbrance -->
-        <div class="bc-enc-block">⚖ <span id="hud-enc">0/30kg</span></div>
+        <div class="bc-section-label">무게</div>
+        <div class="bc-enc-block">
+          <span id="hud-enc">0/30kg</span>
+          <div class="bc-enc-track">
+            <div class="bc-enc-fill" id="hud-enc-fill" style="width:0%"></div>
+          </div>
+        </div>
 
         <!-- 행동 버튼 -->
         <div class="bc-sidebar-btns">

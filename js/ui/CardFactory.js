@@ -1273,10 +1273,18 @@ const CardFactory = {
       actionHint = baitTags ? I18n.t('card.actionTrapBait', { tags: baitTags }) : '';
     }
 
-    // 카테고리 캡 라벨 (CST 신규 subtype에는 깔끔한 짧은 레이블)
-    const SUBTYPE_CAPS = { live_animal: 'LIVE', carcass: 'CARCASS', trap: 'TRAP' };
-    const typeBadgeText = SUBTYPE_CAPS[def.subtype] ?? (def.subtype ?? def.type);
-    const typeBadgeClass = SUBTYPE_CAPS[def.subtype] ? 'card-type-badge cap' : 'card-type-badge';
+    // 카테고리 캡 라벨 (Track B+E)
+    const CATEGORY_CAPS = {
+      melee: 'MELEE', firearm: 'FIREARM', ranged: 'RANGED', throwable: 'THROW',
+      shield: 'SHIELD', armor: 'ARMOR', bag: 'BAG',
+      food: 'FOOD', drink: 'DRINK', medical: 'MEDICAL',
+      live_animal: 'LIVE', carcass: 'CARCASS', trap: 'TRAP',
+      weapon: 'WEAPON', consumable: 'ITEM', tool: 'TOOL',
+      material: 'MATL', equipment: 'EQUIP', structure: 'BUILD',
+    };
+    const catKey = def.subtype ?? def.type ?? '';
+    const typeBadgeText = CATEGORY_CAPS[catKey] ?? catKey.slice(0, 6).toUpperCase();
+    const typeBadgeClass = 'card-type-badge cap';
 
     const actionHintHtml = actionHint
       ? `<span class="card-action-hint">${actionHint}</span>` : '';
@@ -1289,7 +1297,7 @@ const CardFactory = {
       </div>
       <div class="card-body">
         <div class="card-type-row">
-          <span class="${typeBadgeClass}">${typeBadgeText}</span>
+          <span class="${typeBadgeClass}" data-cat="${catKey}">${typeBadgeText}</span>
           ${statsHtml}
         </div>
         ${artHtml}

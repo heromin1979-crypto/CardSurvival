@@ -289,6 +289,11 @@ const StatRenderer = {
       encEl.style.color = enc.tier >= 4 ? 'var(--text-danger)'
                         : enc.tier >= 3 ? 'var(--text-warn)'
                         : '';
+      const encFill = document.getElementById('hud-enc-fill');
+      if (encFill) {
+        encFill.style.width = `${Math.min(100, pctVal)}%`;
+        encFill.className = `bc-enc-fill${enc.tier >= 4 ? ' danger' : enc.tier >= 3 ? ' warn' : ''}`;
+      }
     }
 
     // 캐릭터 블록 위험 아이콘 (숨겨진 stat 경고)
