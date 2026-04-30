@@ -373,7 +373,8 @@
 }
 
 .slot-info-day {
-  font-size: 24px;
+  font-family: var(--font-mono);
+  font-size: 28px;
   font-weight: 700;
   color: #f0d8a8;
   letter-spacing: 0.5px;
@@ -384,7 +385,8 @@
 }
 
 .slot-info-loc {
-  font-size: 17px;
+  font-family: var(--font-mono);
+  font-size: 21px;
   color: rgba(225, 205, 165, 0.92);
   letter-spacing: 0.3px;
   white-space: nowrap;
@@ -394,7 +396,8 @@
 }
 
 .slot-info-char {
-  font-size: 17px;
+  font-family: var(--font-mono);
+  font-size: 21px;
   color: rgba(205, 185, 145, 0.88);
   white-space: nowrap;
   overflow: hidden;
@@ -403,14 +406,16 @@
 }
 
 .slot-info-time {
-  font-size: 15px;
+  font-family: var(--font-mono);
+  font-size: 19px;
   color: rgba(170, 150, 110, 0.72);
   margin-top: auto;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
 }
 
 .slot-card-dead-flag {
-  font-size: 15px;
+  font-family: var(--font-mono);
+  font-size: 19px;
   font-weight: 700;
   color: #ff8888;
   background: rgba(160, 40, 40, 0.35);
