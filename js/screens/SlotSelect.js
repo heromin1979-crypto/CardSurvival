@@ -35,7 +35,14 @@ const SlotSelect = {
     if (!this._el) return;
     const t = k => I18n.t(k);
 
+    // 모드를 data 속성으로 표시 — CSS에서 배경 이미지 전환에 사용
+    this._el.dataset.mode = this._mode;
+
+    const isNew = this._mode === 'new';
     const slotsHtml = Array.from({ length: SLOT_COUNT }, (_, i) => this._buildSlotCard(i)).join('');
+
+    const primaryBtnClass = isNew ? 'slot-img-btn--newgame' : 'slot-img-btn--load';
+    const primaryBtnLabel = isNew ? t('menu.newGame') : t('slotSelect.btnLoad');
 
     this._el.innerHTML = `
       <div class="slot-select-frame">
@@ -43,8 +50,8 @@ const SlotSelect = {
 
         <footer class="slot-select-footer">
           <div class="slot-footer-center">
-            <button class="slot-img-btn slot-img-btn--load" id="ss-btn-primary">
-              <span class="visually-hidden">${t('slotSelect.btnLoad')}</span>
+            <button class="slot-img-btn ${primaryBtnClass}" id="ss-btn-primary">
+              <span class="visually-hidden">${primaryBtnLabel}</span>
             </button>
           </div>
           <button class="slot-img-btn slot-img-btn--back" id="ss-btn-back">
@@ -61,6 +68,7 @@ const SlotSelect = {
     const t    = k => I18n.t(k);
     const meta = SaveManager.getMeta(slot);
     const isSelected = this._selectedSlot === slot;
+    const isNew = this._mode === 'new';
 
     if (!meta) {
       return `
@@ -74,6 +82,9 @@ const SlotSelect = {
     }
 
     const isDead = !!meta.isDead;
+    // 새게임 모드에서는 점유 슬롯을 잠금 처리
+    const isLocked = isNew;
+
     const char   = CHARACTERS.find(c => c.id === meta.characterId);
     const charName = char ? I18n.characterName(char.id, char.name) : (meta.playerName ?? '—');
 
@@ -95,10 +106,14 @@ const SlotSelect = {
       : '—';
 
     const deadFlag = isDead ? `<span class="slot-card-dead-flag">${t('menu.dead')}</span>` : '';
+    const deleteBtn = isLocked
+      ? ''
+      : `<button class="slot-card-delete-btn" data-delete-slot="${slot}" title="${t('slotSelect.btnDelete')}">✕</button>`;
 
     return `
-      <div class="slot-card occupied ${isSelected ? 'selected' : ''} ${isDead ? 'is-dead' : ''}" data-slot="${slot}">
-        <button class="slot-card-delete-btn" data-delete-slot="${slot}" title="${t('slotSelect.btnDelete')}">✕</button>
+      <div class="slot-card occupied ${isSelected ? 'selected' : ''} ${isDead ? 'is-dead' : ''} ${isLocked ? 'locked' : ''}"
+           data-slot="${slot}" ${isLocked ? 'aria-disabled="true"' : ''}>
+        ${deleteBtn}
         <div class="slot-card-lm">${thumbHtml}</div>
         <div class="slot-card-info">
           <div class="slot-info-day">${dayText}${deadFlag}</div>
@@ -112,6 +127,9 @@ const SlotSelect = {
 
   _bindEvents() {
     this._el.querySelectorAll('.slot-card').forEach(card => {
+      // 새게임 모드에서 잠긴 슬롯(점유)은 클릭 무시
+      if (card.classList.contains('locked')) return;
+
       card.addEventListener('click', () => {
         const slot = parseInt(card.dataset.slot, 10);
         this._selectedSlot = slot;
@@ -159,7 +177,7 @@ const SlotSelect = {
     const meta = SaveManager.getMeta(slot);
 
     if (this._mode === 'new') {
-      if (meta && !confirm(t('slotSelect.confirmOverwrite'))) return;
+      // 새게임 모드: 빈 슬롯만 선택 가능하므로 meta는 항상 null
       GameState.ui.saveSlot = slot;
       StateMachine.transition('char_create');
       return;
