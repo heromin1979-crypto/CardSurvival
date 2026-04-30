@@ -188,6 +188,11 @@
   align-items: center;
 }
 
+/* 새게임 모드 — 배경 교체 */
+#screen-slot-select[data-mode="new"] {
+  background-image: url('../assets/images/menu/bg-new-game.jpg');
+}
+
 .slot-select-frame {
   width: 1500px;
   max-width: calc(100% - 80px);
@@ -470,6 +475,30 @@
 
 .slot-img-btn--load  { background-image: url('../assets/images/menu/btn-load-idle.png'); }
 .slot-img-btn--load::after  { background-image: url('../assets/images/menu/btn-load-active.png'); }
+
+.slot-img-btn--newgame       { background-image: url('../assets/images/menu/btn-newgame-idle.jpg'); }
+.slot-img-btn--newgame::after { background-image: url('../assets/images/menu/btn-newgame-active.jpg'); }
+
+/* 새게임 모드 — 점유 슬롯 잠금 */
+.slot-card.occupied.locked {
+  cursor: not-allowed;
+  opacity: 0.4;
+  filter: saturate(0.3) brightness(0.7);
+}
+.slot-card.occupied.locked .slot-card-delete-btn {
+  display: none;
+}
+.slot-card.occupied.locked::after {
+  content: '🔒';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  background: rgba(0, 0, 0, 0.25);
+  pointer-events: none;
+}
 
 /* === CHAR CREATE === */
 #screen-char-create {
