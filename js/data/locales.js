@@ -1598,6 +1598,9 @@ export const en = {
   '_item.rainwater':          'Rainwater',
   '_item.boiled_water':       'Boiled Water',
   '_item.purified_water':     'Purified Water',
+  '_item.mountain_water':     'Mountain Water',
+  '_item.stream_spring':      'Mountain Stream',
+  '_item.dry_stream':         'Dry Stream',
   '_item.sports_drink':       'Sports Drink',
   '_item.alcohol_drink':      'Alcohol',
   '_item.coffee':             'Coffee',
@@ -1947,6 +1950,7 @@ export const en = {
   '_item.rat_carcass':           'Rat Carcass',
   '_item.pigeon_carcass':        'Pigeon Carcass',
   '_item.stray_animal_carcass':  'Stray Animal Carcass',
+  '_item.box_cutter':            'Cutter Knife',
 
   // ── NPC System ─────────────────────────────────────────────
   'npc.badge':           'NPC',

@@ -13,7 +13,7 @@ const BALANCE = {
 
   // ── 스탯 감소율 (/TP) ──────────────────────────────
   stats: {
-    hydrationDecayPerTP:  1.5,   // (기존 2.0 → 1.5로 완화)
+    hydrationDecayPerTP:  1.0,   // (기존 2.0 → 1.5 → 1.0으로 완화)
     nutritionDecayPerTP:  0.5,
     moraleDecayPerTP:     0.2,
     fatigueGainPerTP:     0.8,

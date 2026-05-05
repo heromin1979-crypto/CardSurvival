@@ -373,6 +373,17 @@ const ITEMS_BASE = {
     dismantle: [],
   },
 
+  mountain_water: {
+    id: 'mountain_water', name: '산물', type: 'consumable', subtype: 'drink',
+    rarity: 'uncommon', weight: 0.5,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🏔️', description: '산속 개울에서 직접 담은 맑은 물. 도시의 오염이 닿지 않은 청정수.',
+    onConsume: { hydration: 75 },
+    leaveOnConsume: { definitionId: 'empty_bottle', qty: 1 },
+    tags: ['drinkable', 'clean', 'mountain'],
+    dismantle: [],
+  },
+
   sports_drink: {
     id: 'sports_drink', name: '스포츠음료', type: 'consumable', subtype: 'drink',
     rarity: 'uncommon', weight: 0.5,

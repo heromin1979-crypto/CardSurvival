@@ -51,6 +51,7 @@ const STACK_ROWS = [
   ['rainwater'               , true,  5 ],
   ['boiled_water'            , true,  5 ],
   ['purified_water'          , true,  5 ],
+  ['mountain_water'          , true,  5 ],
   ['sports_drink'            , true,  5 ],
   ['alcohol_drink'           , true,  5 ],
   ['coffee'                  , true,  8 ],
@@ -424,6 +425,10 @@ const STACK_ROWS = [
   ['loc_jongno'        , false, 1 ],
   ['loc_junggoo'       , false, 1 ],
   ['loc_jungrang'      , false, 1 ],
+
+  // ── 환경 오브젝트 ──────────────────────────────────────────────
+  ['stream_spring'           , true,  10],
+  ['dry_stream'              , false, 1 ],
 ];
 
 const STACK_CONFIG = Object.fromEntries(

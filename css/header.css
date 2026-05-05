@@ -20,10 +20,23 @@
   height: 100%;
 }
 
-/* 좌측 슬롯 (옵션 — 향후 메뉴 토글 등) */
+/* 좌측 슬롯 */
 .game-header__inner::before {
   content: '';
   grid-column: 1;
+}
+
+.game-header__left {
+  grid-column: 1;
+  justify-self: start;
+  padding-left: 16px;
+}
+
+.game-header__location {
+  font-family: var(--font-ui, 'Geist', sans-serif);
+  font-size: 14px;
+  color: var(--text-secondary);
+  letter-spacing: 0.5px;
 }
 
 /* 중앙: Day | Time | Temp 거대 표시 */

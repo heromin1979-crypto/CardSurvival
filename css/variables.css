@@ -86,7 +86,7 @@
   --z-panel:   300;
   --z-modal:   900;
   --z-overlay: 950;
-  --z-notify:  999;
+  --z-notify:  9000;
 
   /* Transitions */
   --transition-fast: 120ms ease;

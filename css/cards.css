@@ -15,6 +15,39 @@
   flex-shrink: 0;
 }
 
+/* 코너 브래킷 — 산업적 장식, 호버 시 강조 */
+.card::before,
+.card::after {
+  content: '';
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0.45;
+  transition: opacity var(--transition-fast);
+}
+.card::before {
+  top: 4px; left: 4px;
+  border-top: 1px solid var(--accent-dim);
+  border-left: 1px solid var(--accent-dim);
+}
+.card::after {
+  bottom: 4px; right: 4px;
+  border-bottom: 1px solid var(--accent-dim);
+  border-right: 1px solid var(--accent-dim);
+}
+.card:hover::before,
+.card:hover::after { opacity: 0.85; }
+
+/* 희귀도별 브래킷 색상 — --rarity-* 토큰 rgb 직접 대응 */
+.card[data-rarity="uncommon"]::before,
+.card[data-rarity="uncommon"]::after { border-color: rgba(51,102,51,0.7); }   /* #336633 */
+.card[data-rarity="rare"]::before,
+.card[data-rarity="rare"]::after     { border-color: rgba(51,68,136,0.7); }   /* #334488 */
+.card[data-rarity="unique"]::before,
+.card[data-rarity="unique"]::after   { border-color: rgba(119,68,34,0.8); }   /* #774422 */
+
 .card:hover {
   transform: translateY(-3px);
   box-shadow: 0 6px 18px rgba(0,0,0,0.6);
@@ -147,14 +180,63 @@
   white-space: nowrap;
 }
 
-/* CST 통합 — 캡 라벨 (LIVE / CARCASS / TRAP 등 짧은 카테고리) */
+/* 카테고리 캡 배지 */
 .card-type-badge.cap {
-  background: var(--accent-dim, rgba(120,90,50,0.4));
-  color: var(--bg-base, #0d0d0d);
-  padding: 1px 6px;
-  border-radius: 8px;
-  font-weight: bold;
+  padding: 1px 5px;
+  border-radius: 2px;
+  font-weight: 700;
+  font-size: 8px;
   letter-spacing: 1.5px;
+  background: rgba(255,255,255,0.07);
+  color: var(--text-secondary);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+/* 카테고리별 색상 */
+.card-type-badge.cap[data-cat="melee"],
+.card-type-badge.cap[data-cat="firearm"],
+.card-type-badge.cap[data-cat="ranged"],
+.card-type-badge.cap[data-cat="weapon"] {
+  background: rgba(200,60,60,0.18);
+  color: var(--text-danger);
+  border-color: rgba(200,60,60,0.25);
+}
+.card-type-badge.cap[data-cat="throwable"],
+.card-type-badge.cap[data-cat="trap"] {
+  background: rgba(224,160,48,0.18);
+  color: var(--text-warn);
+  border-color: rgba(224,160,48,0.25);
+}
+.card-type-badge.cap[data-cat="medical"] {
+  background: rgba(80,180,80,0.16);
+  color: var(--text-good);
+  border-color: rgba(80,180,80,0.22);
+}
+.card-type-badge.cap[data-cat="food"],
+.card-type-badge.cap[data-cat="drink"],
+.card-type-badge.cap[data-cat="consumable"] {
+  background: rgba(100,170,60,0.16);
+  color: var(--stat-nutrition);
+  border-color: rgba(100,170,60,0.22);
+}
+.card-type-badge.cap[data-cat="tool"] {
+  background: rgba(80,144,192,0.16);
+  color: var(--text-info);
+  border-color: rgba(80,144,192,0.22);
+}
+.card-type-badge.cap[data-cat="armor"],
+.card-type-badge.cap[data-cat="shield"],
+.card-type-badge.cap[data-cat="bag"],
+.card-type-badge.cap[data-cat="equipment"] {
+  background: rgba(200,160,96,0.16);
+  color: var(--accent-primary);
+  border-color: rgba(200,160,96,0.22);
+}
+.card-type-badge.cap[data-cat="live_animal"],
+.card-type-badge.cap[data-cat="carcass"] {
+  background: rgba(100,170,60,0.16);
+  color: var(--stat-nutrition);
+  border-color: rgba(100,170,60,0.22);
 }
 
 /* 스탯: 타입 배지 오른쪽에 인라인 표시 */
