@@ -8,6 +8,7 @@
 import EventBus  from '../core/EventBus.js';
 import GameState from '../core/GameState.js';
 import I18n      from '../core/I18n.js';
+import { DISTRICTS } from '../data/districts.js';
 
 const HeaderBar = {
   _el: null,
@@ -60,8 +61,17 @@ const HeaderBar = {
     const weatherIcons = { sunny: '☀️', cloudy: '☁️', rain: '🌧', snow: '🌨', storm: '⛈', heatwave: '🥵', coldwave: '🥶' };
     const weatherIcon = weatherIcons[weatherId] ?? '☀️';
 
+    const districtId = gs.location?.currentDistrict;
+    const districtDef = districtId ? DISTRICTS[districtId] : null;
+    const districtName = districtId
+      ? I18n.districtName(districtId, districtDef?.name ?? districtId)
+      : '';
+
     this._el.innerHTML = `
       <div class="game-header__inner">
+        <div class="game-header__left">
+          <span class="game-header__location">${districtName}</span>
+        </div>
         <div class="game-header__center ${dayClass}">
           <span class="game-header__day">Day ${day}</span>
           <span class="game-header__sep">|</span>

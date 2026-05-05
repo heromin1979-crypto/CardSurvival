@@ -10,7 +10,7 @@ const ITEMS_MISC = {
   small_bag: {
     id: 'small_bag', name: '작은 가방', type: 'tool', subtype: 'bag',
     rarity: 'common', weight: 0.3,
-    defaultDurability: 80, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '👜', description: '소형 가방. 장착 시 인벤토리 3칸 확장.',
     tags: ['tool', 'bag'],
     bagSlots: 3,
@@ -23,7 +23,7 @@ const ITEMS_MISC = {
   messenger_bag: {
     id: 'messenger_bag', name: '메신저백', type: 'tool', subtype: 'bag',
     rarity: 'common', weight: 0.5,
-    defaultDurability: 75, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '💼', description: '어깨에 메는 가방. 장착 시 인벤토리 4칸 확장.',
     tags: ['tool', 'bag'],
     bagSlots: 4,
@@ -36,7 +36,7 @@ const ITEMS_MISC = {
   backpack: {
     id: 'backpack', name: '배낭', type: 'tool', subtype: 'bag',
     rarity: 'uncommon', weight: 1.0,
-    defaultDurability: 90, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🎒', description: '든든한 배낭. 장착 시 인벤토리 5칸 확장.',
     tags: ['tool', 'bag', 'crafted'],
     bagSlots: 5,
@@ -50,7 +50,7 @@ const ITEMS_MISC = {
   duffel_bag: {
     id: 'duffel_bag', name: '더플백', type: 'tool', subtype: 'bag',
     rarity: 'uncommon', weight: 1.5,
-    defaultDurability: 85, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🧳', description: '대형 더플백. 장착 시 인벤토리 6칸 확장.',
     tags: ['tool', 'bag', 'crafted'],
     bagSlots: 6,
@@ -163,7 +163,7 @@ const ITEMS_MISC = {
   sling: {
     id: 'sling', name: '슬링', type: 'weapon', subtype: 'ranged',
     rarity: 'common', weight: 0.3, stackable: false, maxStack: 1,
-    defaultDurability: 50, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🪢', description: '천과 로프로 만든 원시 투석기.',
     combat: { damage: [3, 8], accuracy: 0.55, noiseOnAttack: 2 },
     tags: ['ranged', 'weapon'],
@@ -180,7 +180,7 @@ const ITEMS_MISC = {
   makeshift_shield: {
     id: 'makeshift_shield', name: '임시 방패', type: 'weapon', subtype: 'shield',
     rarity: 'common', weight: 3.0, stackable: false, maxStack: 1,
-    defaultDurability: 60, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🛡️', description: '나무와 고철로 만든 임시 방패.',
     combat: { damage: [0, 0], accuracy: 0, defense: 12, noiseOnAttack: 2 },
     tags: ['shield', 'defense'],
@@ -445,7 +445,7 @@ const ITEMS_MISC = {
   wooden_sword: {
     id: 'wooden_sword', name: '목검', type: 'weapon', subtype: 'melee',
     rarity: 'common', weight: 0.8,
-    defaultDurability: 30, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🗡️', description: '나무로 깎은 훈련용 칼. 위력은 약하지만 연습에 좋다.',
     tags: ['weapon', 'melee', 'training'],
     damage: [2, 5],
@@ -455,7 +455,7 @@ const ITEMS_MISC = {
   cloth_guard: {
     id: 'cloth_guard', name: '천 호구', type: 'armor', subtype: 'body',
     rarity: 'common', weight: 0.5,
-    defaultDurability: 25, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🥋', description: '천으로 겹쳐 만든 간이 보호구. 훈련용.',
     tags: ['armor', 'training'],
     defense: 2,
@@ -465,7 +465,7 @@ const ITEMS_MISC = {
   training_shield: {
     id: 'training_shield', name: '훈련용 방패', type: 'armor', subtype: 'offhand',
     rarity: 'common', weight: 1.2,
-    defaultDurability: 30, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🛡️', description: '나무 판자와 고철로 만든 간이 방패. 건설 훈련용.',
     tags: ['armor', 'shield', 'training'],
     defense: 3,
@@ -481,7 +481,7 @@ const ITEMS_MISC = {
   battered_can: {
     id: 'battered_can', name: '찌그러진 양철통', type: 'tool', subtype: 'container',
     rarity: 'common', weight: 0.3,
-    defaultDurability: 60, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🥫', description: '노숙 생활로 찌그러진 양철통. 물을 2회분 저장할 수 있다.',
     tags: ['tool', 'container', 'homeless'],
     waterCapacity: 2,
@@ -491,7 +491,7 @@ const ITEMS_MISC = {
   old_blanket: {
     id: 'old_blanket', name: '낡은 담요', type: 'armor', subtype: 'body',
     rarity: 'common', weight: 0.8,
-    defaultDurability: 40, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🧣', description: '거리에서 오래 쓴 담요. 야간 체온 유지 및 수면 피로 회복 +20%.',
     tags: ['armor', 'homeless', 'blanket'],
     defense: 1,
@@ -514,13 +514,13 @@ const ITEMS_MISC = {
   },
 
   box_cutter: {
-    id: 'box_cutter', name: '박스커터', type: 'weapon', subtype: 'knife',
+    id: 'box_cutter', name: '커터칼', type: 'weapon', subtype: 'melee',
     rarity: 'common', weight: 0.15,
-    defaultDurability: 15, defaultContamination: 0,
-    icon: '🔪', description: '거리에서 흔히 보는 박스커터. 위력은 약하지만 가볍고 소음이 적다.',
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🔪', description: '흔히 볼 수 있는 커터칼. 위력은 약하지만 가볍고 소음이 적다.',
     tags: ['weapon', 'knife', 'blade', 'homeless'],
-    damage: [2, 4],
-    noiseMult: 0.7,
+    weaponType: 'blade',
+    combat: { damage: [6, 10], accuracy: 0.70, noiseOnUse: 1, durabilityLoss: 8, critChance: 0.15, critMultiplier: 1.5 },
     dismantle: [
       { definitionId: 'sharp_blade', qty: 1, chance: 0.4 },
       { definitionId: 'plastic', qty: 1, chance: 0.5 },
@@ -530,7 +530,7 @@ const ITEMS_MISC = {
   broken_bottle: {
     id: 'broken_bottle', name: '깨진 유리병', type: 'weapon', subtype: 'knife',
     rarity: 'common', weight: 0.2,
-    defaultDurability: 3, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🍾', description: '깨진 유리병. 1~2번 찌르면 부서진다. 출혈 유발.',
     tags: ['weapon', 'blade', 'homeless', 'disposable'],
     damage: [3, 6],
@@ -731,7 +731,7 @@ const ITEMS_MISC = {
   sharpened_knife_plus: {
     id: 'sharpened_knife_plus', name: '연마된 칼', type: 'weapon', subtype: 'melee',
     rarity: 'uncommon', weight: 0.3,
-    defaultDurability: 85, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🗡️', description: '숫돌로 날을 세밀히 연마한 칼. 위력 +15%, 치명타 +5%.',
     tags: ['weapon', 'melee', 'silent', 'upgraded'],
     weaponType: 'blade',
@@ -745,7 +745,7 @@ const ITEMS_MISC = {
   reinforced_bat_plus: {
     id: 'reinforced_bat_plus', name: '정밀 강화 배트', type: 'weapon', subtype: 'melee',
     rarity: 'uncommon', weight: 1.1,
-    defaultDurability: 84, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '⚾', description: '못과 철판으로 보강한 배트. 위력 +25%, 내구도 +40%.',
     tags: ['weapon', 'melee', 'upgraded'],
     weaponType: 'blunt',
@@ -760,7 +760,7 @@ const ITEMS_MISC = {
   machete_plus: {
     id: 'machete_plus', name: '출혈 마체테', type: 'weapon', subtype: 'melee',
     rarity: 'rare', weight: 0.7,
-    defaultDurability: 75, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🗡️', description: '톱니를 새긴 마체테. 위력 +20%, 출혈 확률 +10%.',
     tags: ['weapon', 'melee', 'upgraded'],
     weaponType: 'blade',
@@ -777,7 +777,7 @@ const ITEMS_MISC = {
   spear_plus: {
     id: 'spear_plus', name: '관통 창', type: 'weapon', subtype: 'melee',
     rarity: 'rare', weight: 1.5,
-    defaultDurability: 80, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🏹', description: '강철 촉을 단 창. 위력 +25%, 최대 2명 관통 유지.',
     tags: ['weapon', 'melee', 'upgraded'],
     weaponType: 'blade',
@@ -793,7 +793,7 @@ const ITEMS_MISC = {
   crossbow_plus: {
     id: 'crossbow_plus', name: '정밀 석궁', type: 'weapon', subtype: 'ranged',
     rarity: 'rare', weight: 2.0,
-    defaultDurability: 75, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🏹', description: '조준 장치를 교체한 석궁. 위력 +20%, 명중률 +10%.',
     tags: ['weapon', 'ranged', 'silent', 'upgraded'],
     weaponType: 'bullet',
@@ -823,7 +823,7 @@ const ITEMS_MISC = {
   helmet_plus: {
     id: 'helmet_plus', name: '강화 헬멧', type: 'armor', subtype: 'head',
     rarity: 'rare', weight: 1.1,
-    defaultDurability: 85, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '⛑️', description: '충격 흡수 패드를 장착한 헬멧. 방어력 +1, 치명타 저항 +15%.',
     tags: ['armor', 'head', 'upgraded'],
     onWear: { critReduction: 0.45, damageReduction: 0.05 },
@@ -837,7 +837,7 @@ const ITEMS_MISC = {
   combat_boots_plus: {
     id: 'combat_boots_plus', name: '경량 전투화', type: 'armor', subtype: 'boots',
     rarity: 'rare', weight: 1.0,
-    defaultDurability: 95, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🪖', description: '경량 고무 밑창을 교체한 전투화. 체력 소모 -10%.',
     tags: ['armor', 'boots', 'upgraded'],
     onWear: { damageReduction: 0.05, critReduction: 0.10, fatigueMult: 0.90 },
@@ -850,7 +850,7 @@ const ITEMS_MISC = {
   work_gloves_plus: {
     id: 'work_gloves_plus', name: '정밀 작업장갑', type: 'armor', subtype: 'hands',
     rarity: 'uncommon', weight: 0.2,
-    defaultDurability: 65, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🧤', description: '정밀 가공 패치를 덧댄 작업장갑. 제작 성공률 +5%.',
     tags: ['armor', 'hands', 'upgraded'],
     onWear: { infectionMult: 0.80, craftSuccessBonus: 0.05 },
@@ -863,7 +863,7 @@ const ITEMS_MISC = {
   raincoat_plus: {
     id: 'raincoat_plus', name: '방사선 차폐 우비', type: 'armor', subtype: 'clothing',
     rarity: 'uncommon', weight: 0.7,
-    defaultDurability: 75, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🌧️', description: '납판을 내장한 우비. 방사선 저항 +15%.',
     tags: ['armor', 'clothing', 'upgraded'],
     onWear: { radiationMult: 0.55, contaminationMult: 0.75 },
@@ -917,7 +917,7 @@ const ITEMS_MISC = {
   binoculars_pro: {
     id: 'binoculars_pro', name: '프로 쌍안경', type: 'tool', subtype: 'utility',
     rarity: 'rare', weight: 0.4,
-    defaultDurability: 80, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🔭', description: '정밀 연마된 고배율 쌍안경. 조우 예측 +1회 추가.',
     tags: ['tool', 'utility', 'scouting', 'upgraded'],
     onUse: { scoutBonus: 2 },
@@ -1383,6 +1383,26 @@ const ITEMS_MISC = {
     defaultDurability: 100, defaultContamination: 0,
     icon: '🛢️', description: '100LL 항공용 가솔린. 일반 자동차 연료통 5개로 정제 가능. 납 첨가 고옥탄가.',
     tags: ['special', 'fuel', 'aviation'],
+    dismantle: [],
+  },
+
+  // ─── 환경 오브젝트 ──────────────────────────────────────────
+
+  stream_spring: {
+    id: 'stream_spring', name: '산개울', type: 'environment', subtype: 'water_source',
+    rarity: 'uncommon', weight: 0,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🏞️', description: '산에서 흘러내리는 개울. 빈 용기로 물을 담을 수 있다. 물이 고갈되면 비가 내릴 때 다시 차오른다.',
+    tags: ['water_source', 'environment'],
+    dismantle: [],
+  },
+
+  dry_stream: {
+    id: 'dry_stream', name: '메마른 개울', type: 'environment', subtype: 'water_source',
+    rarity: 'uncommon', weight: 0,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🏜️', description: '물이 말라버린 개울. 비가 내리면 다시 차오른다.',
+    tags: ['water_source', 'environment', 'dry'],
     dismantle: [],
   },
 };

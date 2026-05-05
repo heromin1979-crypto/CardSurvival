@@ -153,6 +153,21 @@ const WeatherSystem = {
     EventBus.emit('weatherChanged', { weather: gs.weather });
     this._updateWeatherHUD(gs.weather);
     this._updateTemperatureHUD(this.getOutdoorTemperature());
+    if (['rain', 'storm', 'monsoon'].includes(w.id) && !['rain', 'storm', 'monsoon'].includes(prev)) {
+      this._refillDryStreams(gs);
+    }
+  },
+
+  _refillDryStreams(gs) {
+    const dryStreams = GameState.getBoardCards()
+      .filter(c => c.definitionId === 'dry_stream');
+    if (dryStreams.length === 0) return;
+    for (const card of dryStreams) {
+      card.definitionId = 'stream_spring';
+      card.quantity = 10;
+    }
+    EventBus.emit('notify', { message: '비가 내려 개울이 다시 차올랐다.', type: 'info' });
+    EventBus.emit('boardUpdate');
   },
 
   _rollWeather(season) {

@@ -41,6 +41,7 @@ const DISTRICTS = {
       { definitionId: 'wild_root',     weight: 5,  minQty: 1, maxQty: 2 },
       // 신규 원자재 — 한강 수변 모래
       { definitionId: 'sand',          weight: 8,  minQty: 1, maxQty: 3 },
+      { definitionId: 'pebble',        weight: 15, minQty: 1, maxQty: 2 },
     ],
     special: 'samsung_hospital',
   },
@@ -72,6 +73,7 @@ const DISTRICTS = {
       { definitionId: 'nettle',        weight: 6,  minQty: 1, maxQty: 2 },
       // 신규 원자재 — 한강 수변 모래
       { definitionId: 'sand',          weight: 8,  minQty: 1, maxQty: 3 },
+      { definitionId: 'pebble',        weight: 15, minQty: 1, maxQty: 2 },
     ],
     special: null,
   },
@@ -114,6 +116,8 @@ const DISTRICTS = {
       // 신규 원자재 — 산악 자연 식생·토양
       { definitionId: 'wild_wheat',      weight: 6,  minQty: 1, maxQty: 2 },
       { definitionId: 'worm',            weight: 8,  minQty: 1, maxQty: 3 },
+      // 북한산 개울
+      { definitionId: 'stream_spring',   weight: 15, minQty: 1, maxQty: 1 },
     ],
     special: null,
   },
@@ -180,6 +184,8 @@ const DISTRICTS = {
       // 신규 원자재 — 관악산 자연 식생·토양
       { definitionId: 'wild_wheat',      weight: 6,  minQty: 1, maxQty: 2 },
       { definitionId: 'worm',            weight: 8,  minQty: 1, maxQty: 3 },
+      // 관악산 개울
+      { definitionId: 'stream_spring',   weight: 12, minQty: 1, maxQty: 1 },
     ],
     special: 'snu_lab',
   },
@@ -325,6 +331,8 @@ const DISTRICTS = {
       // 신규 원자재 — 산간 자연 식생·토양
       { definitionId: 'wild_wheat',      weight: 6,  minQty: 1, maxQty: 2 },
       { definitionId: 'worm',            weight: 8,  minQty: 1, maxQty: 3 },
+      // 수락산 개울
+      { definitionId: 'stream_spring',   weight: 12, minQty: 1, maxQty: 1 },
     ],
     special: null,
   },
@@ -378,6 +386,8 @@ const DISTRICTS = {
       // 신규 원자재 — 도봉산 자연 식생·토양
       { definitionId: 'wild_wheat',      weight: 6,  minQty: 1, maxQty: 2 },
       { definitionId: 'worm',            weight: 8,  minQty: 1, maxQty: 3 },
+      // 도봉산 개울
+      { definitionId: 'stream_spring',   weight: 15, minQty: 1, maxQty: 1 },
     ],
     special: null,
   },

@@ -295,6 +295,52 @@ const INTERACTION_RULES = [
     },
   },
 
+  // ── T17. 빈병 + 산개울 → 산물 ────────────────────────────
+  {
+    id: 'fill_bottle_stream',
+    source: { id: 'empty_bottle' },
+    target: { id: 'stream_spring' },
+    hint: '개울에서 물을 담을 수 있다.',
+    canApply(srcInst, tgtInst) {
+      if ((tgtInst.quantity ?? 1) <= 0) return { ok: false, reason: '개울이 말라있다.' };
+      return { ok: true };
+    },
+    apply(srcInst, tgtInst) {
+      tgtInst.quantity = (tgtInst.quantity ?? 1) - 1;
+      const transformTgt = tgtInst.quantity <= 0 ? 'dry_stream' : undefined;
+      return {
+        message: '개울에서 맑은 물을 담았다.',
+        transformSrc: 'mountain_water',
+        consumeSrc: false, consumeTgt: false,
+        transformTgt,
+        xpReward: { skill: 'survival', amount: 2 },
+      };
+    },
+  },
+
+  // ── T18. 산개울 + 빈병 (역방향) ──────────────────────────
+  {
+    id: 'fill_bottle_stream_rev',
+    source: { id: 'stream_spring' },
+    target: { id: 'empty_bottle' },
+    hint: '개울에서 물을 담을 수 있다.',
+    canApply(srcInst, tgtInst) {
+      if ((srcInst.quantity ?? 1) <= 0) return { ok: false, reason: '개울이 말라있다.' };
+      return { ok: true };
+    },
+    apply(srcInst, tgtInst) {
+      srcInst.quantity = (srcInst.quantity ?? 1) - 1;
+      const transformSrc = srcInst.quantity <= 0 ? 'dry_stream' : undefined;
+      return {
+        message: '개울에서 맑은 물을 담았다.',
+        transformTgt: 'mountain_water',
+        consumeSrc: false, consumeTgt: false,
+        transformSrc,
+        xpReward: { skill: 'survival', amount: 2 },
+      };
+    },
+  },
+
   // ════════════════════════════════════════════════════════
   // 확장 상호작용 규칙 (43종 × 양방향)
   // id 매칭 → type/tag 매칭 순서로 배치
