@@ -358,8 +358,17 @@ const GameState = {
   },
 
   // find first empty slot in a row (returns index or -1)
+  // bottom 행은 가방 활성 범위(10 + extraSlots)까지만 사용 — 잠긴 슬롯에 카드가 박히는 것 방지
   findEmptySlot(row) {
-    return this.board[row].findIndex(v => v === null);
+    const arr = this.board[row];
+    if (row === 'bottom') {
+      const activeEnd = 10 + (this.player?.extraSlots ?? 0);
+      for (let i = 0; i < activeEnd; i++) {
+        if (arr[i] === null) return i;
+      }
+      return -1;
+    }
+    return arr.findIndex(v => v === null);
   },
 
   // middle·bottom 행의 null을 뒤로 밀어 빈 칸 압축
@@ -371,10 +380,28 @@ const GameState = {
 
   // place a card instance in first available slot of a row
   // 일반 아이템은 top(장소) 행에 절대 배치하지 않음
+  // NPC 카드는 middle만 허용(bottom 폴백 금지) — 빈칸 없으면 pendingLoot 보관
   placeCardInRow(instanceId, preferredRow = null) {
     const inst = this.cards[instanceId];
     const def  = GameData?.items[inst?.definitionId];
     const isLocation = def?.type === 'location';
+    const isNPC      = def?.type === 'npc';
+
+    if (isNPC) {
+      const idx = this.findEmptySlot('middle');
+      if (idx !== -1) {
+        this.board.middle[idx] = instanceId;
+        EventBus.emit('cardPlaced', { instanceId, row: 'middle', slot: idx });
+        return { row: 'middle', slot: idx };
+      }
+      this.pendingLoot = [...(this.pendingLoot ?? []), {
+        definitionId: inst.definitionId,
+        quantity:     1,
+        contamination: 0,
+      }];
+      this.removeCardInstanceSilent(instanceId);
+      return null;
+    }
 
     // 장소 카드: top 우선, 일반 카드: middle/bottom만 허용
     const rows = isLocation

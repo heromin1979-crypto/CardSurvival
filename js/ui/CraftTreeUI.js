@@ -128,11 +128,44 @@ const CraftTreeUI = {
       };
     });
 
-    // Attach node click handlers — switch to recipe view
-    this._panel.querySelectorAll('.tree-node[data-recipe]').forEach(el => {
+    // Attach node click handlers — 상태별 분기
+    //  locked: 필요 스킬 안내 (레시피 뷰 점프 차단)
+    //  raw (원자재): 획득 경로 안내
+    //  final (최종 산출물): 체인 끝 안내
+    //  available/crafted + recipe: 레시피 뷰로 이동
+    this._panel.querySelectorAll('.tree-node').forEach(el => {
       el.onclick = (e) => {
         e.stopPropagation();
-        const recipeId = el.dataset.recipe;
+        const nodeId   = el.dataset.nodeId;
+        const recipeId = el.dataset.recipe || null;
+        const status   = el.dataset.status;
+        const lockMsg  = el.dataset.lockReq || '';
+        const def      = GameData.items[nodeId];
+        const name     = I18n.itemName?.(nodeId, def?.name) ?? def?.name ?? nodeId;
+
+        if (status === 'locked') {
+          EventBus.emit('notify', {
+            message: `🔒 ${name} — ${lockMsg || '스킬 레벨이 부족합니다.'}`,
+            type: 'warn',
+          });
+          return;
+        }
+
+        if (!recipeId) {
+          if (el.dataset.role === 'final') {
+            EventBus.emit('notify', {
+              message: `⭐ ${name} — 이 체인의 최종 산출물입니다.`,
+              type: 'info',
+            });
+          } else {
+            EventBus.emit('notify', {
+              message: `📦 ${name} — 탐색·채집으로 획득하는 원자재입니다.`,
+              type: 'info',
+            });
+          }
+          return;
+        }
+
         EventBus.emit('craftTreeSelectRecipe', { recipeId });
       };
     });
@@ -206,18 +239,32 @@ const CraftTreeUI = {
     const arrowHtml = hasChildren ? '<span class="tree-arrow">\u2192</span>' : '';
 
     let tooltip = def?.description ?? '';
+    let lockReq = '';
     if (status === 'locked' && node.recipe) {
       const bp = GameData.blueprints?.[node.recipe];
       if (bp?.requiredSkills) {
         const reqs = Object.entries(bp.requiredSkills).map(([s, l]) => `${s} Lv${l}`).join(', ');
-        tooltip = `🔒 필요: ${reqs}`;
+        lockReq = `필요: ${reqs}`;
+        tooltip = `🔒 ${lockReq}`;
       }
+    } else if (!node.recipe) {
+      tooltip = hasChildren
+        ? `${tooltip}\n📦 탐색·채집으로 획득하는 원자재`
+        : `${tooltip}\n⭐ 체인의 최종 산출물`;
     }
+
+    const role = !node.recipe
+      ? (hasChildren ? 'raw' : 'final')
+      : 'recipe';
 
     return `
       <div class="tree-node tree-node--${status}"
-           title="${tooltip}"
-           ${node.recipe ? `data-recipe="${node.recipe}" style="cursor:pointer"` : ''}>
+           data-node-id="${node.id}"
+           data-status="${status}"
+           data-role="${role}"
+           ${node.recipe ? `data-recipe="${node.recipe}"` : ''}
+           ${lockReq ? `data-lock-req="${lockReq}"` : ''}
+           title="${tooltip}">
         <span class="tree-node-icon">${icon}</span>
         <span class="tree-node-name">${name}</span>
         ${arrowHtml}

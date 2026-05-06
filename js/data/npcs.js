@@ -1547,6 +1547,7 @@ const NPCS = {
     personality: 'timid',
     maxHp: 40,
     spawnDistrict: 'dongjak',
+    spawnLandmark: 'lm_boramae_hospital',
     spawnDay: 999,
     dialogues: {
       greet:  ['npc.er_patient_child.greet0'],
@@ -1582,6 +1583,7 @@ const NPCS = {
     personality: 'stoic',
     maxHp: 35,
     spawnDistrict: 'dongjak',
+    spawnLandmark: 'lm_boramae_hospital',
     spawnDay: 999,
     dialogues: {
       greet:  ['npc.er_patient_elder.greet0'],
@@ -1617,6 +1619,7 @@ const NPCS = {
     personality: 'brave',
     maxHp: 55,
     spawnDistrict: 'dongjak',
+    spawnLandmark: 'lm_boramae_hospital',
     spawnDay: 999,
     dialogues: {
       greet:  ['npc.er_patient_civilian.greet0'],
