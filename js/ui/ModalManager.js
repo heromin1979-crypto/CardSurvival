@@ -272,6 +272,29 @@ const ModalManager = {
         </div>`;
     }
 
+    // 덕테이프 수리 가능 카드 (무기/도구/방어구) — interactions.js 룰과 동일 동작
+    const TAPE_REPAIR = { weapon: 25, tool: 20, armor: 20 };
+    const tapeRepairAmount = TAPE_REPAIR[def.type] ?? 0;
+    const isTapeRepairable = tapeRepairAmount > 0
+      && def.defaultDurability !== undefined
+      && (inst.durability ?? def.defaultDurability) < (def.defaultDurability ?? 100);
+    const tapeCount = isTapeRepairable
+      ? GameState.getBoardCards()
+          .filter(c => c.definitionId === 'duct_tape')
+          .reduce((sum, c) => sum + (c.quantity ?? 1), 0)
+      : 0;
+    let tapeRepairBtnHtml = '';
+    if (isTapeRepairable) {
+      const canTapeRepair = tapeCount >= 1;
+      const tapeReason = canTapeRepair ? '' : '덕테이프가 필요합니다.';
+      tapeRepairBtnHtml = `
+        <button class="card-action-btn${canTapeRepair ? '' : ' disabled'}"
+          id="modal-tape-repair-${instanceId}" ${canTapeRepair ? '' : 'disabled'}
+          title="${tapeReason}">
+          🔧 덕테이프로 수리 (+${tapeRepairAmount}, 보유 ${tapeCount})
+        </button>`;
+    }
+
     // 의료 구조물 수리 버튼
     const isMedicalStructure = def.type === 'structure' && def.subtype === 'medical' && def.repairRecipe;
     let repairBtnHtml = '';
@@ -318,7 +341,7 @@ const ModalManager = {
       </button>`
     ).join('');
 
-    const hasActions = canConsume || canDismantle || canEquip || isFishingRod || isMedicalStructure || weatherActions.length > 0;
+    const hasActions = canConsume || canDismantle || canEquip || isFishingRod || isMedicalStructure || isTapeRepairable || weatherActions.length > 0;
 
     // 장착 슬롯 버튼 목록 (슬롯이 여럿이면 각각 버튼 생성)
     const slotLabels = {
@@ -352,6 +375,7 @@ const ModalManager = {
           <div class="card-inspect-actions">
             ${canConsume    ? `<button class="card-action-btn" id="modal-consume-${instanceId}">${I18n.t('modal.use')}</button>` : ''}
             ${equipBtnsHtml}
+            ${tapeRepairBtnHtml}
             ${repairBtnHtml}
             ${canDismantle && stackQty > 1
               ? `<button class="card-action-btn dismantle" id="modal-dismantle-one-${instanceId}">${I18n.t('cardMenu.dismantleOne')}</button>
@@ -386,6 +410,36 @@ const ModalManager = {
           if (ok) EventBus.emit('boardChanged', {});
         });
       }
+    }
+
+    if (isTapeRepairable) {
+      document.getElementById(`modal-tape-repair-${instanceId}`)?.addEventListener('click', () => {
+        // 보드에서 덕테이프 1개 차감
+        let consumed = false;
+        for (const card of GameState.getBoardCards()) {
+          if (card.definitionId !== 'duct_tape') continue;
+          const qty = card.quantity ?? 1;
+          if (qty > 1) {
+            card.quantity = qty - 1;
+          } else {
+            GameState.removeCardInstance(card.instanceId);
+          }
+          consumed = true;
+          break;
+        }
+        if (!consumed) {
+          EventBus.emit('notify', { message: '덕테이프가 없습니다.', type: 'warn' });
+          return;
+        }
+        const maxDur = def.defaultDurability ?? 100;
+        inst.durability = Math.min(maxDur, (inst.durability ?? maxDur) + tapeRepairAmount);
+        EventBus.emit('notify', {
+          message: `🔧 ${I18n.itemName(def.id, def.name)} 수리 (+${tapeRepairAmount} 내구도)`,
+          type: 'good',
+        });
+        EventBus.emit('boardChanged', {});
+        this.close();
+      });
     }
 
     if (isMedicalStructure) {

@@ -1144,9 +1144,19 @@ const CombatSystem = {
         const inst = gs.createCardInstance(lootEntry.definitionId, { quantity: qty });
         if (inst) {
           const placed = gs.placeCardInRow(inst.instanceId, 'middle');
-          const actualId = placed?.instanceId ?? inst.instanceId;
-          if (gs.cards[actualId] && !gs.combat.rewards.includes(actualId)) {
-            gs.combat.rewards.push(actualId);
+          if (placed) {
+            const actualId = placed.instanceId ?? inst.instanceId;
+            if (gs.cards[actualId] && !gs.combat.rewards.includes(actualId)) {
+              gs.combat.rewards.push(actualId);
+            }
+          } else {
+            // 바닥/가방 모두 차면 pendingLoot에 보관
+            gs.pendingLoot = [...(gs.pendingLoot ?? []), {
+              definitionId:  lootEntry.definitionId,
+              quantity:      qty,
+              contamination: 0,
+            }];
+            gs.removeCardInstanceSilent(inst.instanceId);
           }
         }
       }
@@ -1161,9 +1171,18 @@ const CombatSystem = {
         const medInst = gs.createCardInstance(medId, { quantity: 1 });
         if (medInst) {
           const placed = gs.placeCardInRow(medInst.instanceId, 'middle');
-          const actualId = placed?.instanceId ?? medInst.instanceId;
-          if (gs.cards[actualId] && !gs.combat.rewards.includes(actualId)) {
-            gs.combat.rewards.push(actualId);
+          if (placed) {
+            const actualId = placed.instanceId ?? medInst.instanceId;
+            if (gs.cards[actualId] && !gs.combat.rewards.includes(actualId)) {
+              gs.combat.rewards.push(actualId);
+            }
+          } else {
+            gs.pendingLoot = [...(gs.pendingLoot ?? []), {
+              definitionId:  medId,
+              quantity:      1,
+              contamination: 0,
+            }];
+            gs.removeCardInstanceSilent(medInst.instanceId);
           }
           gs.combat.log.push(I18n.t('combatSys.doctorBonus'));
         }

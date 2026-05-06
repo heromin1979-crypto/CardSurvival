@@ -88,10 +88,12 @@ const CraftUI = {
         ${tabHtml}
         ${categoryTabHtml}
         <div class="craft-panel">
-          <div style="font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">
+          <div style="font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">
             ${I18n.t('craft.blueprints')}
           </div>
-          ${this._renderBlueprintList()}
+          <div class="blueprint-list">
+            ${this._renderBlueprintList()}
+          </div>
           ${this._renderQueue()}
         </div>
       `;

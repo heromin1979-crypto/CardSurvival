@@ -65,11 +65,12 @@ function _show(msg) {
 const OnboardingSystem = {
   init() {
     // 최초 베이스캠프 진입 시 — 보드 사용법 안내 (세션 최초 1회)
+    // 시작 NPC/동료 카드 spawn 애니메이션과 겹치지 않도록 짧게 지연
     const unsubFirst = EventBus.on('stateTransition', ({ to }) => {
       if (to !== 'main') return;
       if (GameState.time.day !== 1 || GameState.time.totalTP > 0) return;
       unsubFirst();
-      _showBoardTooltip();
+      setTimeout(() => _showBoardTooltip(), 1500);
     });
 
     // 첫 번째 아이템 획득 시

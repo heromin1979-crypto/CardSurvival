@@ -123,8 +123,8 @@ const BALANCE = {
     // ── Combat Overhaul Phase 2 — 동료 자율 행동 ──────
     // stance: 'attack' | 'heal' | 'support' | 'hold' | 'manual'
     companionAuto: {
-      attackDamage:      [8, 17],    // 기존 companionAttack과 동일 범위
-      attackAccuracy:    0.80,
+      attackDamage:      [4, 10],    // 동반자 자율 공격 — 무기 든 NPC는 combatDmg 보너스로 차별화
+      attackAccuracy:    0.65,
       healAmount:        [10, 18],   // heal stance 회복량
       healThreshold:     0.70,       // 플레이어 HP < 70% 이면 auto_heal 트리거
       holdDamageReduct:  0.30,       // hold stance: 피해 30% 경감 (1턴)

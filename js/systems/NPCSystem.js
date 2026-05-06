@@ -154,9 +154,17 @@ const NPCSystem = {
       woundDiscovered: (npcDef.woundLevel ?? 0) === 0,
     };
 
-    // 바닥에 NPC 카드 배치
+    // 바닥에 NPC 카드 배치 (만차면 pendingLoot 보관 — placeCardInRow가 처리)
     const npcInst = GameState.createCardInstance(npcId);
-    if (npcInst) GameState.placeCardInRow(npcInst.instanceId, 'middle');
+    if (npcInst) {
+      const placed = GameState.placeCardInRow(npcInst.instanceId, 'middle');
+      if (!placed) {
+        EventBus.emit('notify', {
+          message: '바닥 공간 부족 — 빈칸이 생기면 NPC 카드가 등장합니다.',
+          type: 'warn',
+        });
+      }
+    }
 
     EventBus.emit('notify', {
       message: I18n.t('npc.spawned', { name: I18n.itemName(npcId, NPC_ITEMS[npcId]?.name) }),
@@ -170,16 +178,21 @@ const NPCSystem = {
   _syncNPCPanel() {
     this.ensureInitialized();
     const district = GameState.location?.currentDistrict;
+    const landmark = GameState.location?.currentLandmark;
 
     for (const [npcId, state] of Object.entries(GameState.npcs.states)) {
       if (!state.spawned || state.dismissed) continue;
       const npcDef = NPCS[npcId];
       if (!npcDef) continue;
 
+      // spawnLandmark가 지정된 NPC는 해당 랜드마크 안에서만 표시 (예: 응급실 잔류 환자)
+      const landmarkOk = !npcDef.spawnLandmark || npcDef.spawnLandmark === landmark;
+      const districtOk = npcDef.spawnDistrict === district;
+
       if (state.isCompanion) {
         // 동반자는 패널에 표시
         EventBus.emit('npcPanelAdd', { npcId, section: 'companion' });
-      } else if (npcDef.spawnDistrict === district) {
+      } else if (districtOk && landmarkOk) {
         // 이슈 #5 — companions 배열에 들어있으면(어떤 경로로든 영입된 NPC)
         //           바닥 카드를 재생성하지 않음 (state.isCompanion이 false여도 보호)
         if ((GameState.companions ?? []).includes(npcId)) continue;
@@ -190,7 +203,7 @@ const NPCSystem = {
           if (npcInst) GameState.placeCardInRow(npcInst.instanceId, 'middle');
         }
       } else {
-        // 다른 지역의 미영입 NPC는 보드에서 제거
+        // 다른 지역(또는 다른 랜드마크)의 미영입 NPC는 보드에서 제거
         const existing = GameState.getBoardCards().find(c => c.definitionId === npcId);
         if (existing) {
           GameState.removeCardInstance(existing.instanceId);
