@@ -101,14 +101,14 @@ const QuestPanel = {
   },
 
   _activeQuests() {
-    const ids = GameState.activeQuests ?? [];
-    return ids.map(id => MAIN_QUESTS[id]).filter(Boolean);
+    const entries = GameState.quests?.active ?? [];
+    return entries.map(e => ({ ...MAIN_QUESTS[e.id], _entry: e })).filter(q => q.id);
   },
 
   _upcomingQuests() {
     const character = GameState.player?.characterId;
-    const completed = new Set(GameState.completedQuests ?? []);
-    const active    = new Set(GameState.activeQuests ?? []);
+    const completed = new Set(GameState.quests?.completed ?? []);
+    const active    = new Set((GameState.quests?.active ?? []).map(e => e.id));
     const today     = GameState.time?.day ?? 1;
     return Object.values(MAIN_QUESTS)
       .filter(q => q.characterId === character)
@@ -120,8 +120,8 @@ const QuestPanel = {
 
   _lockedFutureQuests() {
     const character = GameState.player?.characterId;
-    const completed = new Set(GameState.completedQuests ?? []);
-    const active    = new Set(GameState.activeQuests ?? []);
+    const completed = new Set(GameState.quests?.completed ?? []);
+    const active    = new Set((GameState.quests?.active ?? []).map(e => e.id));
     return Object.values(MAIN_QUESTS)
       .filter(q => q.characterId === character)
       .filter(q => !completed.has(q.id) && !active.has(q.id))
@@ -129,10 +129,10 @@ const QuestPanel = {
       .slice(0, 5);
   },
 
-  // questStartedDay 미구현 시 today 기준 폴백 — Task 2.3에서 정식 추적 추가 예정
+  // 활성 entry의 startDay를 1차 source로 사용 — _activeQuests가 _entry로 첨부함
   _daysLeft(q) {
     if (q.deadlineDays == null || q.deadlineDays === Infinity) return null;
-    const startedDay = GameState.questStartedDay?.[q.id] ?? GameState.time?.day ?? 1;
+    const startedDay = q._entry?.startDay ?? GameState.time?.day ?? 1;
     const elapsed = (GameState.time?.day ?? 1) - startedDay;
     return Math.max(0, q.deadlineDays - elapsed);
   },
