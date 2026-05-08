@@ -761,6 +761,19 @@
   50%       { opacity: 0.55; }
 }
 
+/* 활성 메인 퀘스트의 locationHint 핀 — 마우스 오버 시 SVG <title>로 퀘스트 제목 표시 */
+.sm-quest-pin {
+  pointer-events: auto;
+  cursor: help;
+  animation: smPinBob 2.4s ease-in-out infinite;
+  transform-origin: center;
+  transform-box: fill-box;
+}
+@keyframes smPinBob {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-1.5px); }
+}
+
 /* 탐색 화면 HUD 지도 버튼 */
 .explore-map-btn {
   background: transparent;

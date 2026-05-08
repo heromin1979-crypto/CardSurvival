@@ -7,6 +7,7 @@ import { DISTRICTS }   from '../data/districts.js';
 import SystemRegistry  from '../core/SystemRegistry.js';
 import { SUBWAY_LINES, SEWER_ROUTES } from '../data/subwayRoutes.js';
 import SubwaySystem from '../systems/SubwaySystem.js';
+import MAIN_QUESTS  from '../data/mainQuests/index.js';
 
 // [TEMP] 테스트용 미니맵 강제 오픈 플래그.
 // 정식 빌드 전 이 값을 false로 되돌리면 지도 조각 3개 수집 방식으로 복귀됨.
@@ -81,6 +82,14 @@ const SeoulMapModal = {
     });
     // 위치 변경 시 미니맵 자동 갱신
     EventBus.on('locationChanged', () => this.renderMinimap());
+
+    // 활성 퀘스트의 locationHint 핀이 미니맵/풀맵에 즉시 반영되도록 리프레시
+    const refresh = () => {
+      this.renderMinimap();
+      if (this._overlay) this._refreshOpenModal();
+    };
+    EventBus.on('mainQuestActivated', refresh);
+    EventBus.on('mainQuestCompleted', refresh);
   },
 
   open() {
@@ -142,6 +151,39 @@ const SeoulMapModal = {
   _close() {
     this._overlay?.remove();
     this._overlay = null;
+  },
+
+  // SVG <title> 텍스트는 XML이므로 특수 문자를 이스케이프해야 한다
+  _escapeXml(s) {
+    return String(s).replace(/[&<>"']/g, ch => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;',
+    }[ch]));
+  },
+
+  // ── 활성 메인 퀘스트의 locationHint를 districtId 기준으로 집계 ───
+  _collectQuestPins() {
+    const pins = new Map(); // districtId → { titles: string[] }
+    const activeIds = (GameState.quests?.active ?? []).map(e => e.id);
+    for (const id of activeIds) {
+      const q = MAIN_QUESTS[id];
+      const did = q?.locationHint?.districtId;
+      if (!did) continue;
+      if (!pins.has(did)) pins.set(did, { titles: [] });
+      pins.get(did).titles.push(q.title ?? id);
+    }
+    return pins;
+  },
+
+  // ── 모달이 열린 상태에서 SVG만 다시 그려 핀을 갱신 ──────────────
+  _refreshOpenModal() {
+    if (!this._overlay) return;
+    const body = this._overlay.querySelector('.seoul-map-body');
+    if (!body) return;
+    const gs          = GameState;
+    const currentId   = gs.location.currentDistrict ?? 'mapo';
+    const adjacentSet = new Set(DISTRICTS[currentId]?.adjacentDistricts ?? []);
+    const visitedSet  = new Set(gs.location.districtsVisited ?? []);
+    body.innerHTML = this._buildSVG(currentId, adjacentSet, visitedSet);
   },
 
   // ── 사이드바 미니맵 SVG 미리보기 ────────────────────────────────
@@ -332,6 +374,9 @@ const SeoulMapModal = {
     // ── 하수도 경로 오버레이 ──────────────────────────────────
     const sewerLines = this._buildSewerLineSVG(visitedSet);
 
+    // ── 활성 퀘스트 locationHint 핀 ───────────────────────────
+    const questPins = this._collectQuestPins();
+
     // ── 지역 노드 ──────────────────────────────────────────────
     const nodes = Object.entries(POSITIONS).map(([id, [row, col]]) => {
       const d = DISTRICTS[id];
@@ -402,6 +447,19 @@ const SeoulMapModal = {
              text-anchor="middle" font-size="8" fill="#c8a060">${I18n.t('map.currentBadge')}</text>`
         : '';
 
+      // 활성 메인 퀘스트의 locationHint가 이 구역을 가리키면 우상단 핀 표시
+      const pinInfo = questPins.get(id);
+      const questPin = pinInfo
+        ? `<g class="sm-quest-pin">
+             <title>${this._escapeXml(pinInfo.titles.join('\n'))}</title>
+             <circle cx="${(x + CW - 9).toFixed(1)}" cy="${(y + 9).toFixed(1)}" r="8"
+                     fill="rgba(0,0,0,0.55)" stroke="#ffcc55" stroke-width="1"/>
+             <text x="${(x + CW - 9).toFixed(1)}" y="${(y + 13).toFixed(1)}"
+                   text-anchor="middle" font-size="11"
+                   font-family="'Segoe UI Emoji','Apple Color Emoji','Noto Color Emoji',sans-serif">📌</text>
+           </g>`
+        : '';
+
       const pulseRing = isCurrent ? `
         <rect x="${x - 4}" y="${y - 4}" width="${CW + 8}" height="${CH + 8}" rx="9"
               fill="none" stroke="#c8a060" stroke-width="2" class="sm-pulse-ring"/>` : '';
@@ -423,6 +481,7 @@ const SeoulMapModal = {
           ${dangerBars}
           ${radTag}
           ${ecoOverlay}
+          ${questPin}
         </g>`;
     }).join('\n');
 
