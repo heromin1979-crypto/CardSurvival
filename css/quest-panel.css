@@ -1,0 +1,105 @@
+.quest-panel {
+  padding: 8px;
+  background: var(--surface-elevated, rgba(20,22,26,0.6));
+  border: 1px solid var(--border-subtle, rgba(255,255,255,0.08));
+  border-radius: 6px;
+  font-family: var(--font-ui, 'Noto Sans KR'), sans-serif;
+  font-size: 12px;
+  color: var(--text-primary, #e8e8e8);
+  margin: 8px 0;
+}
+.quest-panel-title {
+  margin: 0 0 6px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.quest-active {
+  padding: 6px;
+  border-left: 2px solid var(--accent-warm, #e5c55a);
+  margin-bottom: 8px;
+  background: rgba(255,255,255,0.02);
+  border-radius: 0 4px 4px 0;
+}
+.quest-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  font-weight: 500;
+}
+.quest-deadline {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--accent-warm, #e5c55a);
+  padding: 1px 5px;
+  border: 1px solid currentColor;
+  border-radius: 3px;
+}
+.quest-deadline.urgent { color: var(--accent-danger,  #d04a4a); font-weight: 700; }
+.quest-deadline.warn   { color: var(--accent-warning, #e08a3a); }
+.quest-desc {
+  font-size: 11px;
+  opacity: 0.85;
+  margin: 4px 0;
+  line-height: 1.4;
+}
+.quest-subobjectives {
+  list-style: none;
+  padding: 0;
+  margin: 4px 0;
+  font-size: 11px;
+}
+.quest-subobjectives li { padding: 2px 0; }
+.quest-subobjectives li.done {
+  opacity: 0.55;
+  text-decoration: line-through;
+}
+.quest-hint {
+  opacity: 0.6;
+  font-size: 10px;
+  margin-left: 4px;
+}
+.quest-location {
+  font-size: 10px;
+  opacity: 0.7;
+  margin-top: 4px;
+}
+.quest-empty {
+  opacity: 0.5;
+  font-size: 11px;
+  padding: 4px 0;
+}
+
+.quest-panel-next h4 {
+  font-size: 11px;
+  opacity: 0.7;
+  margin: 8px 0 4px;
+  font-weight: 500;
+}
+.quest-next-row {
+  font-size: 11px;
+  padding: 2px 4px;
+  opacity: 0.85;
+}
+.quest-trigger {
+  opacity: 0.6;
+  font-size: 10px;
+  margin-left: 4px;
+}
+
+.quest-panel-locked {
+  margin-top: 8px;
+  border-top: 1px dashed var(--border-subtle, rgba(255,255,255,0.08));
+  padding-top: 6px;
+}
+.quest-panel-locked summary {
+  font-size: 11px;
+  opacity: 0.6;
+  cursor: pointer;
+  user-select: none;
+}
+.quest-panel-locked summary:hover { opacity: 0.8; }
+.quest-locked-row {
+  font-size: 11px;
+  opacity: 0.4;
+  padding: 2px 4px;
+}
