@@ -583,7 +583,7 @@ const DOCTOR_SHARED = {
         id: 'so_dsh_03',
         text: '빗물 샤워 또는 눈 압박 콤보 1회 실행',
         textEn: 'Trigger the rain shower or snow compress combo once',
-        hint: '카드 액션 콤보 sc_rain_shower / sc_snow_compress',
+        hint: '젖은 천을 본인 카드에 사용해 빗물 샤워 또는 눈 압박 콤보 발동',
       },
     ],
     actionHint: '비 또는 눈이 오는 날 젖은 천을 본인에게 사용해 위생 콤보 1회 발동.',
