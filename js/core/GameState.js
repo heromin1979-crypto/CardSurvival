@@ -152,6 +152,13 @@ const GameState = {
     completed: [],    // [id, ...]
   },
 
+  // subObjective 완료 플래그: { [questId]: { [subId]: true } }
+  // QuestSystem._reevaluateSubObjectives()가 갱신, 완료 알림 1회성 가드.
+  subObjectiveProgress: {},
+
+  // QuestSystem._progress의 외부 참조용 미러 (DailyFocus 등). null = 아직 한 번도 갱신 안 됨.
+  questProgress: null,
+
   // ── noise ─────────────────────────────────────────────
   noise: {
     level:          0,

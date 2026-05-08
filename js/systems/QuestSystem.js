@@ -103,6 +103,20 @@ function _getQuestDef(questId) {
 
 // ── 시스템 ────────────────────────────────────────────────────────
 const QuestSystem = {
+  // subObjective 진행도 누적 — 이벤트로 갱신, _matchSubObjective의 비교 대상.
+  // GameState에 직접 쓰지 않는 이유: 매 이벤트마다 GameState 직렬화 비용 회피 + 시스템 외부에서 임의 수정 차단.
+  _progress: {
+    collected:              {},
+    collectedByTypeOrTag:   {},
+    craftedRecipes:         [],
+    craftedCategoryCounts:  {},
+    visitedDistricts:       new Set(),
+    usedItemCounts:         {},
+    treatedNpcs:            new Set(),
+    treatedNpcCount:        0,
+    builtStructures:        new Set(),
+  },
+
   init() {
     // 계절 이벤트 발생 시 연결된 퀘스트 자동 시작
     EventBus.on('seasonalEvent', ({ eventId }) => this._onSeasonalEvent(eventId));
@@ -143,6 +157,149 @@ const QuestSystem = {
     EventBus.on('npcQuestCompleted', ({ npcId, questId }) => this._onNpcQuestCompleted(npcId, questId));
     // 시크릿 조합 적용 시 trigger_combo 체크
     EventBus.on('comboApplied', ({ comboId }) => this._onComboApplied(comboId));
+
+    // subObjective 진행도 집계 이벤트 구독 (Task 1.1)
+    this._subscribeProgressEvents();
+  },
+
+  // ── subObjective 자동 체크 ────────────────────────────────────
+
+  /**
+   * subObjective의 match 조건을 진행도 state와 비교해 완료 여부 판정.
+   * 순수 함수 — this/외부 상태 의존 없음 (테스트 용이성).
+   *
+   * match.type:
+   *  - collect_item       { definitionId, count? }
+   *  - collect_item_type  { itemType, count? }       — itemType은 top-level type 또는 tag
+   *  - craft_item         { definitionId? | category?, count? }
+   *  - visit_district     { districtId }
+   *  - use_item           { definitionId, count? }
+   *  - treat_npc          { npcId? | count? }
+   *  - build_structure    { structureId }
+   */
+  _matchSubObjective(so, state = {}) {
+    const m = so?.match;
+    if (!m) return false;
+    switch (m.type) {
+      case 'collect_item': {
+        const have = state.collected?.[m.definitionId] ?? 0;
+        return have >= (m.count ?? 1);
+      }
+      case 'collect_item_type': {
+        const have = state.collectedByTypeOrTag?.[m.itemType] ?? 0;
+        return have >= (m.count ?? 1);
+      }
+      case 'craft_item': {
+        if (m.definitionId) {
+          return (state.craftedRecipes ?? []).includes(m.definitionId);
+        }
+        if (m.category) {
+          const have = state.craftedCategoryCounts?.[m.category] ?? 0;
+          return have >= (m.count ?? 1);
+        }
+        return false;
+      }
+      case 'visit_district':
+        return (state.visitedDistricts ?? new Set()).has(m.districtId);
+      case 'use_item': {
+        const have = state.usedItemCounts?.[m.definitionId] ?? 0;
+        return have >= (m.count ?? 1);
+      }
+      case 'treat_npc': {
+        if (m.npcId) {
+          return (state.treatedNpcs ?? new Set()).has(m.npcId);
+        }
+        return (state.treatedNpcCount ?? 0) >= (m.count ?? 1);
+      }
+      case 'build_structure':
+        return (state.builtStructures ?? new Set()).has(m.structureId);
+      default:
+        return false;
+    }
+  },
+
+  /**
+   * 게임 이벤트를 받아 _progress 누적 + 활성 퀘스트의 subObjective 재평가.
+   * 누락된 emit 사이트는 fail-soft (해당 매처는 자동 틱하지 않음).
+   */
+  _subscribeProgressEvents() {
+    EventBus.on('itemCollected', ({ definitionId, itemType, tags = [], qty = 1 } = {}) => {
+      if (definitionId) {
+        this._progress.collected[definitionId] = (this._progress.collected[definitionId] ?? 0) + qty;
+      }
+      if (itemType) {
+        this._progress.collectedByTypeOrTag[itemType] = (this._progress.collectedByTypeOrTag[itemType] ?? 0) + qty;
+      }
+      for (const tag of tags) {
+        this._progress.collectedByTypeOrTag[tag] = (this._progress.collectedByTypeOrTag[tag] ?? 0) + qty;
+      }
+      this._reevaluateSubObjectives();
+    });
+    EventBus.on('itemCrafted', ({ recipeId, category, qty = 1 } = {}) => {
+      if (recipeId && !this._progress.craftedRecipes.includes(recipeId)) {
+        this._progress.craftedRecipes.push(recipeId);
+      }
+      if (category) {
+        this._progress.craftedCategoryCounts[category] = (this._progress.craftedCategoryCounts[category] ?? 0) + qty;
+      }
+      this._reevaluateSubObjectives();
+    });
+    EventBus.on('districtVisited', ({ districtId } = {}) => {
+      if (districtId) this._progress.visitedDistricts.add(districtId);
+      this._reevaluateSubObjectives();
+    });
+    EventBus.on('itemUsed', ({ definitionId, qty = 1 } = {}) => {
+      if (definitionId) {
+        this._progress.usedItemCounts[definitionId] = (this._progress.usedItemCounts[definitionId] ?? 0) + qty;
+      }
+      this._reevaluateSubObjectives();
+    });
+    EventBus.on('npcHealed', ({ npcId } = {}) => {
+      if (npcId) this._progress.treatedNpcs.add(npcId);
+      this._progress.treatedNpcCount += 1;
+      this._reevaluateSubObjectives();
+    });
+    EventBus.on('structureBuilt', ({ structureId } = {}) => {
+      if (structureId) this._progress.builtStructures.add(structureId);
+      this._reevaluateSubObjectives();
+    });
+  },
+
+  /**
+   * 활성 메인 퀘스트의 subObjective를 재평가 → 완료 전이 시 1회만 이벤트 발화.
+   * GameState.subObjectiveProgress: { [questId]: { [subId]: true } } — 완료 플래그 영속화.
+   * GameState.questProgress: 외부 시스템(DailyFocus 등) 참조용 진행도 미러.
+   */
+  _reevaluateSubObjectives() {
+    const gs = GameState;
+    if (!gs.subObjectiveProgress) gs.subObjectiveProgress = {};
+
+    for (const q of (gs.quests?.active ?? [])) {
+      const def = MAIN_QUESTS[q.id];
+      if (!def?.subObjectives) continue;
+      if (!gs.subObjectiveProgress[q.id]) gs.subObjectiveProgress[q.id] = {};
+
+      for (const so of def.subObjectives) {
+        const wasComplete = gs.subObjectiveProgress[q.id][so.id] === true;
+        const nowComplete = this._matchSubObjective(so, this._progress);
+        if (nowComplete && !wasComplete) {
+          gs.subObjectiveProgress[q.id][so.id] = true;
+          EventBus.emit('subObjectiveCompleted', { questId: q.id, subObjectiveId: so.id, text: so.text });
+        }
+      }
+    }
+
+    gs.questProgress = {
+      collected:              { ...this._progress.collected },
+      collectedByTypeOrTag:   { ...this._progress.collectedByTypeOrTag },
+      craftedRecipes:         [...this._progress.craftedRecipes],
+      craftedCategoryCounts:  { ...this._progress.craftedCategoryCounts },
+      visitedDistricts:       new Set(this._progress.visitedDistricts),
+      usedItemCounts:         { ...this._progress.usedItemCounts },
+      treatedNpcs:            new Set(this._progress.treatedNpcs),
+      treatedNpcCount:        this._progress.treatedNpcCount,
+      builtStructures:        new Set(this._progress.builtStructures),
+    };
   },
 
   /** 시크릿 조합 적용 추적 — trigger_combo 타입 퀘스트 진행도 증가 */
