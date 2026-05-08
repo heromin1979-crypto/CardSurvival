@@ -68,6 +68,34 @@ const DOCTOR_SHARED = {
       start: '박상훈 하사를 살리는 걸 본 간호사의 눈빛이 바뀌었다. "동작구 쪽에서 부상자들이 계속 몰려와요. 혼자선 감당이 안 돼요 — 함께 해주실 수 있죠?" 의사 혼자가 아니다. 진료소가 꾸려지기 시작한다.',
       complete: '붕대와 구급키트를 간호사에게 건네고 동작구 현장을 함께 돌았다. "이제 우린 팀이에요, 선생님." 간호사가 의료팀 일원이 됐다. 항생제와 소독약, 그리고 의학 지식(+20%) 교환.',
     },
+    locationHint: {
+      districtId: 'dongjak',
+      landmarkId: 'lm_boramae_hospital',
+      note: '보라매병원에서 간호사 의뢰 수령 → 동작구 현장 동행',
+      noteEn: 'Take the nurse\'s request at Boramae Hospital, then accompany her into Dongjak',
+    },
+    subObjectives: [
+      {
+        id: 'so_d02_01',
+        text: '붕대 5개 마련',
+        textEn: 'Stock 5 bandages',
+        match: { type: 'collect_item', definitionId: 'bandage', count: 5 },
+      },
+      {
+        id: 'so_d02_02',
+        text: '구급키트 2개 마련',
+        textEn: 'Stock 2 first aid kits',
+        match: { type: 'collect_item', definitionId: 'first_aid_kit', count: 2 },
+      },
+      {
+        id: 'so_d02_03',
+        text: '간호사와 동작구 현장 동행',
+        textEn: 'Visit Dongjak with the nurse',
+        match: { type: 'visit_district', districtId: 'dongjak' },
+      },
+    ],
+    actionHint: '응급실에서 보급품을 모아 동작구로 출동. 간호사 의뢰서를 카드로 확인할 것.',
+    actionHintEn: 'Stock supplies at the ER then move out into Dongjak with the nurse\'s request card.',
   },
 
   mq_doctor_03: {
@@ -81,6 +109,28 @@ const DOCTOR_SHARED = {
       start: '응급실 바닥에 쓰러진 환자들 — 일부는 아직 숨이 붙어 있다. 붕대와 약품으로 두 명만이라도 살려야 한다. 의사의 손에 선택이 달렸다.',
       complete: '두 생존자가 눈을 떴다. 한 명은 간호사에게 인계했고, 한 명은 진료소 보조로 남았다. "선생님이 있어서 다행이에요." 보라매에 의사가 있다는 소문이 복도를 넘었다.',
     },
+    locationHint: {
+      districtId: 'dongjak',
+      landmarkId: 'lm_boramae_hospital',
+      note: '보라매병원 응급실 — 쓰러진 환자 카드 위',
+      noteEn: 'Boramae Hospital ER — on collapsed patient cards',
+    },
+    subObjectives: [
+      {
+        id: 'so_d03_01',
+        text: '붕대·소독약 등 처치 도구 준비',
+        textEn: 'Ready bandages and antiseptic for triage',
+        hint: '인벤토리 또는 응급실 보관함 확인',
+      },
+      {
+        id: 'so_d03_02',
+        text: '응급실 잔류 환자 2명 치료',
+        textEn: 'Treat 2 remaining ER patients',
+        match: { type: 'treat_npc', count: 2 },
+      },
+    ],
+    actionHint: '치료 카드를 환자 NPC 카드에 드래그. 두 명 완치까지 이어서 진행.',
+    actionHintEn: 'Drag treatment cards onto patient NPCs. Continue until 2 are stabilised.',
   },
 
   mq_doctor_04: {
@@ -94,6 +144,34 @@ const DOCTOR_SHARED = {
       start: '병원 복도에서 탈수 상태의 생존자를 발견했다. 깨끗한 음용수가 필요하다. 카페테리아 물병이든, 빗물을 모아 끓인 것이든 상관없다.',
       complete: '수분을 공급했다. 환자가 눈을 떴다. 고맙다는 말을 하며 진통제를 내밀었다.',
     },
+    locationHint: {
+      districtId: 'dongjak',
+      landmarkId: 'lm_boramae_hospital',
+      note: '보라매병원 카페테리아·옥상 빗물받이를 우선 탐색',
+      noteEn: 'Search the Boramae cafeteria and rooftop rain catchers first',
+    },
+    subObjectives: [
+      {
+        id: 'so_d04_01',
+        text: '카페테리아·자판기에서 물병 회수',
+        textEn: 'Recover bottles from cafeteria and vending machines',
+        hint: '병원 내부 탐색 카드',
+      },
+      {
+        id: 'so_d04_02',
+        text: '빗물·시냇물 정수 또는 끓이기',
+        textEn: 'Purify or boil rainwater / stream water',
+        hint: '비가 올 때 빈 물병 액션',
+      },
+      {
+        id: 'so_d04_03',
+        text: '깨끗한 음용수 3개 확보',
+        textEn: 'Stockpile 3 clean drinking waters',
+        match: { type: 'collect_item_type', itemType: 'clean', count: 3 },
+      },
+    ],
+    actionHint: '정수·끓인 물·멸균수 어떤 것이든 clean 분류 3개를 모으면 인정된다.',
+    actionHintEn: 'Any 3 items tagged "clean" (purified, boiled, or sterile water) will satisfy the goal.',
   },
 
   mq_doctor_05: {
@@ -110,6 +188,28 @@ const DOCTOR_SHARED = {
     companionEpilogue: {
       default: '박상훈 하사: "선생님, 저 같은 사람이 또 오는 겁니다. 제가 경비 서 드릴게요 — 이 응급실은 제가 지킵니다."',
     },
+    locationHint: {
+      districtId: 'dongjak',
+      landmarkId: 'lm_boramae_hospital',
+      note: '보라매병원 응급실 — 외래로 들어온 부상 NPC 카드',
+      noteEn: 'Boramae Hospital ER — newly arriving outpatient NPC card',
+    },
+    subObjectives: [
+      {
+        id: 'so_d05_01',
+        text: '외래 환자 NPC 카드 확인',
+        textEn: 'Identify the new outpatient NPC',
+        hint: '응급실 행에 새로 등장한 카드',
+      },
+      {
+        id: 'so_d05_02',
+        text: '붕대·소독약으로 처치 1회 완료',
+        textEn: 'Complete one full treatment',
+        match: { type: 'treat_npc', count: 1 },
+      },
+    ],
+    actionHint: '새로 들어온 외래 환자 카드에 치료 아이템을 드래그해 완치까지 처치.',
+    actionHintEn: 'Drag medical items onto the new outpatient card until they are fully stabilised.',
   },
 
   mq_doctor_06: {
@@ -123,6 +223,28 @@ const DOCTOR_SHARED = {
       start: '병원 약품이 바닥나기 시작했다. 천연 약재를 활용할 수밖에 없다.',
       complete: '삼백초와 질경이. 항균 효과가 있다. 끓여서 허브차로 만들었다.',
     },
+    locationHint: {
+      districtId: 'dongjak',
+      landmarkId: 'lm_boramae_hospital',
+      note: '보라매병원 정원·울타리 주변 자연 채집',
+      noteEn: 'Forage around the Boramae Hospital garden and fence line',
+    },
+    subObjectives: [
+      {
+        id: 'so_d06_01',
+        text: '병원 정원 탐색',
+        textEn: 'Scout the hospital garden',
+        hint: '동작구 보라매 외곽 카드',
+      },
+      {
+        id: 'so_d06_02',
+        text: '약초 3개 채집',
+        textEn: 'Forage 3 herbs',
+        match: { type: 'collect_item', definitionId: 'herb', count: 3 },
+      },
+    ],
+    actionHint: '병원 정원·울타리 카드에서 약초 채집 액션을 반복해 3개 확보.',
+    actionHintEn: 'Use the foraging action on the garden tiles until 3 herbs are stocked.',
   },
 
   mq_doctor_07: {
@@ -158,6 +280,34 @@ const DOCTOR_SHARED = {
       default: '간호사: "선생님, 아무거나 만드신 건 아니시겠죠… 다음엔 환자 증상부터 보실 수 있을 거예요. 제가 진료 요청서 더 가져올게요."',
       success: '간호사: "역시 선생님이세요. 이 비율, 기록해 두겠습니다 — 내일 똑같은 증상 오면 제가 먼저 준비해 놓을 수 있으니까요."',
     },
+    locationHint: {
+      districtId: 'dongjak',
+      landmarkId: 'lm_boramae_hospital',
+      note: '보라매병원 약품 창고 — 제작대 카드 사용',
+      noteEn: 'Boramae Hospital pharmacy — use the crafting bench card',
+    },
+    subObjectives: [
+      {
+        id: 'so_d07_01',
+        text: '약초·천 등 의료 제작 재료 확보',
+        textEn: 'Gather herbs, cloth, or other medical components',
+        hint: '레시피 재료를 인벤토리에서 확인',
+      },
+      {
+        id: 'so_d07_02',
+        text: '의료 카테고리 아이템 1개 제작',
+        textEn: 'Craft 1 medical-category item',
+        match: { type: 'craft_item', category: 'medical', count: 1 },
+      },
+      {
+        id: 'so_d07_03',
+        text: '진료 요청 증상에 맞춘 약 만들기 (보너스)',
+        textEn: 'Match the prescription request for the golden-time bonus',
+        hint: '간호사 진료 요청서의 증상 → 약품 매칭 확인',
+      },
+    ],
+    actionHint: '간호사가 건넨 진료 요청서를 펼치고 증상에 맞는 의료 아이템 1개를 제작.',
+    actionHintEn: 'Open the nurse\'s prescription card and craft a medical item that matches the symptom.',
   },
 
   mq_doctor_08: {
@@ -193,6 +343,34 @@ const DOCTOR_SHARED = {
       default: '박상훈 하사: "선생님, 배낭 무게 감당 되십니까? 제가 선봉에 설게요 — 적어도 소독약 상자는 제가 들고 갑니다."',
       success: '박상훈 하사: "민간 전문의의 판단이 군의관 무전까지 움직이는군요. 선생님 뒤로 경계 서겠습니다. 강민준 군의관께 선생님 쪽이 본진이라 전달해도 되겠습니까?"',
     },
+    locationHint: {
+      districtId: 'dongjak',
+      landmarkId: 'lm_boramae_hospital',
+      note: '보라매 약품 창고에서 원정 배낭 3종 제작',
+      noteEn: 'Craft 3 expedition supplies at the Boramae pharmacy',
+    },
+    subObjectives: [
+      {
+        id: 'so_d08_01',
+        text: '추가 재료(약초·천·잔여 약품) 보강',
+        textEn: 'Top up materials — herbs, cloth, residual medicines',
+        hint: '제작 3회분 재료 확보',
+      },
+      {
+        id: 'so_d08_02',
+        text: '의료 카테고리 아이템 3개 제작',
+        textEn: 'Craft 3 medical-category items',
+        match: { type: 'craft_item', category: 'medical', count: 3 },
+      },
+      {
+        id: 'so_d08_03',
+        text: '중상·독성·급통 진료 요청 1건 이상 매칭 (보너스)',
+        textEn: 'Match at least one prescription (severe wound / poisoning / acute pain) for bonus',
+        hint: '진료 요청서 카드의 증상 → 특수 약품 1종 포함',
+      },
+    ],
+    actionHint: '제작대를 3회 사용해 의료 아이템을 채워 넣고, 가능한 한 진료 요청에 맞는 특수 약품 1종을 포함.',
+    actionHintEn: 'Run the crafting bench 3 times for medical items; include one specialty match if possible.',
   },
 
   mq_doctor_09: {
@@ -206,6 +384,27 @@ const DOCTOR_SHARED = {
       start: '마포구 홍대 입구. 약국들이 있는 곳이다.',
       complete: '홍대 약국 뒷창고에서 소독약, 해독제, 그리고 메모 한 장 발견. "약사 한소희. 서울대 연구소로 갑니다." 용산 방향에서 무전도 잡혔다 — 군의관 강민준 하사. "의사를 찾습니다."',
     },
+    locationHint: {
+      districtId: 'mapo',
+      note: '마포구 홍대 — 약국 뒷창고 라인 우선 탐색',
+      noteEn: 'Mapo — sweep the Hongdae pharmacy back rooms first',
+    },
+    subObjectives: [
+      {
+        id: 'so_d09_01',
+        text: '동작구→마포구 이동 동선 확보',
+        textEn: 'Plot a route from Dongjak into Mapo',
+        hint: '지구 이동 카드 사용',
+      },
+      {
+        id: 'so_d09_02',
+        text: '마포구 진입',
+        textEn: 'Enter Mapo district',
+        match: { type: 'visit_district', districtId: 'mapo' },
+      },
+    ],
+    actionHint: '의료 배낭을 챙긴 뒤 마포구로 이동. 홍대 약국 라인을 우선 탐색.',
+    actionHintEn: 'Grab the expedition pack, move to Mapo, and sweep the Hongdae pharmacy line first.',
   },
 
   mq_doctor_10: {
@@ -240,6 +439,33 @@ const DOCTOR_SHARED = {
       start: '유리 파편에 손을 베었다. 의사가 감염으로 쓰러지면 안 된다. 다른 이의 약을 빌릴 수 없다 — 내 손으로 처방해야 한다. 이 한 개의 약이 앞으로의 정체성을 증명한다.',
       complete: '자기 처방으로 상처를 다스렸다. 비상용 각성제와 소독약이 추가로 확보됐다. 이제 두 갈래 길 앞에 섰다. 한소희의 메모와 강민준의 무전. 의사의 손이 어디로 향할지 선택해야 한다.',
     },
+    locationHint: {
+      districtId: 'mapo',
+      note: '현재 위치(마포 인근) — 휴대 제작대로 즉석 처방',
+      noteEn: 'On the move (around Mapo) — craft on the portable bench',
+    },
+    subObjectives: [
+      {
+        id: 'so_d10_01',
+        text: '자기 상처 응급 처치 재료 확인',
+        textEn: 'Check materials for self-treatment',
+        hint: '약초·천·증류수 등',
+      },
+      {
+        id: 'so_d10_02',
+        text: '의료 카테고리 아이템 1개 직접 제작',
+        textEn: 'Personally craft 1 medical-category item',
+        match: { type: 'craft_item', category: 'medical', count: 1 },
+      },
+      {
+        id: 'so_d10_03',
+        text: '제작한 약으로 자기 처방 (분기 선택 직전)',
+        textEn: 'Self-administer the crafted medicine before choosing a branch',
+        hint: '완성된 약을 본인 카드에 사용',
+      },
+    ],
+    actionHint: '이동 중에도 제작대를 열어 약 1개를 직접 만들고, 본인에게 사용한 뒤 분기 선택지로 진행.',
+    actionHintEn: 'Open the bench mid-route, craft a single medicine, self-apply it, then proceed to the branching choice.',
   },
 
   // ── 사이드 퀘스트 (선택, 메인 체인 비차단) ─────────────────────
@@ -256,6 +482,34 @@ const DOCTOR_SHARED = {
       start: '박상훈 하사가 처치실 문 앞에 서 있다. "선생님, 현충원에 가야 합니다. 소대원들 인식표를… 유가족에게 돌려줘야 해요." 이지수는 진료 가방을 챙겼다.',
       complete: '현충원 경비초소에서 소대 인식표 5개를 수습했다. 그때 라디오 노이즈 사이로 군 무전이 잡힌다. "강민준 군의관… 의사를 찾습니다. 좌표 송신 중…" 박상훈 하사가 눈물을 삼킨다. "저분이 소대장님 동기입니다." 강민준의 위치가 일기장에 적혔다.',
     },
+    locationHint: {
+      districtId: 'dongjak',
+      landmarkId: 'lm_dongjak',
+      note: '동작구 국립현충원 경비초소 라인',
+      noteEn: 'Dongjak — Seoul National Cemetery guard post line',
+    },
+    subObjectives: [
+      {
+        id: 'so_dss_01',
+        text: '박상훈 하사 동행 준비 (진료 가방·구급키트)',
+        textEn: 'Pack the medical bag and first aid kit before leaving with Sgt. Park',
+        hint: '동행 NPC가 따라오는지 확인',
+      },
+      {
+        id: 'so_dss_02',
+        text: '동작구 국립현충원 진입',
+        textEn: 'Enter Dongjak — Seoul National Cemetery',
+        match: { type: 'visit_district', districtId: 'dongjak' },
+      },
+      {
+        id: 'so_dss_03',
+        text: '소대 인식표 흔적 수습 후 무전 청취',
+        textEn: 'Recover squad dog tags and listen for the radio call',
+        hint: '서사 진행 — 자동 갱신',
+      },
+    ],
+    actionHint: '박상훈 하사를 데리고 동작구 현충원으로 이동, 경비초소 카드를 따라가며 무전을 들을 것.',
+    actionHintEn: 'Travel to Seoul National Cemetery in Dongjak with Sgt. Park; follow the guard post cards for the radio cue.',
   },
 
   mq_doctor_side_early: {
@@ -269,6 +523,32 @@ const DOCTOR_SHARED = {
       start: '이지수의 수첩에 적힌 메모: "임상 지식은 이론이 아닌 관찰이다. 내 몸의 감염 수치를 낮게 유지하면서 초기 증상을 3일간 기록할 것." 감염 -25% 특성을 체감으로 확인할 시간이다.',
       complete: '3일간의 관찰 기록이 완성됐다. 보통 사람이라면 벌써 중증으로 번졌을 감염 수치가 여전히 낮게 유지됐다. "임상 지식 — 내 몸이 곧 표본이다." 이지수는 스스로의 저항력을 수치로 확인했다.',
     },
+    locationHint: {
+      note: '거점 어디서나 — 본인 상태창 감염 수치 추적',
+      noteEn: 'Anywhere — track your own infection meter on the status panel',
+    },
+    subObjectives: [
+      {
+        id: 'so_dse_01',
+        text: '본인 감염 수치 5 이상 유지',
+        textEn: 'Keep your own infection level at 5 or higher',
+        hint: '소독약을 너무 빨리 쓰지 말 것',
+      },
+      {
+        id: 'so_dse_02',
+        text: '3일 연속 증상 진행 관찰',
+        textEn: 'Observe symptom progression for 3 consecutive days',
+        hint: '하루가 지나도 의사 특성으로 안정 유지',
+      },
+      {
+        id: 'so_dse_03',
+        text: '수첩에 임상 기록 정리',
+        textEn: 'Write up clinical notes in the journal',
+        hint: '서사 진행 — 자동 갱신',
+      },
+    ],
+    actionHint: '감염 수치를 일부러 5 이상으로 두고 3일을 버티며, 의사 특성의 -25% 저항을 체감으로 확인.',
+    actionHintEn: 'Hold your infection at 5+ for three days to feel the doctor\'s -25% resistance trait in action.',
   },
 
   mq_doctor_side_hygiene: {
@@ -282,6 +562,32 @@ const DOCTOR_SHARED = {
       start: '이지수의 수첩: "보급이 끊긴 현장에서 의사의 무기는 장비가 아니라 습관이다. 비가 오면 젖은 천으로 몸을 씻고, 눈이 오면 그 냉기로 상처를 눌러라. 날씨는 약이다." 젖은 천을 카드 액션으로 사용해 빗물 샤워를 시도해 볼 것.',
       complete: '처음으로 빗속에서 몸을 씻었다. 감염 수치가 떨어지고 사기가 돌아왔다 — 의사의 손길이 자신에게 먼저 닿는다. 이제 환자 앞에서도 당당히 장갑을 낄 수 있다. 약초와 소독약도 수첩 사이에서 발견됐다.',
     },
+    locationHint: {
+      note: '비 또는 눈이 오는 날 — 야외 또는 옥상 카드',
+      noteEn: 'On a rainy or snowy day — outdoor or rooftop tile',
+    },
+    subObjectives: [
+      {
+        id: 'so_dsh_01',
+        text: '젖은 천 카드 또는 빗물 받침 준비',
+        textEn: 'Have a wet cloth or rain catcher ready',
+        hint: '인벤토리·제작 카드 확인',
+      },
+      {
+        id: 'so_dsh_02',
+        text: '비 또는 눈 날씨 대기',
+        textEn: 'Wait for rain or snow weather',
+        hint: '날씨 변화는 자동 — TP 진행으로 유도',
+      },
+      {
+        id: 'so_dsh_03',
+        text: '빗물 샤워 또는 눈 압박 콤보 1회 실행',
+        textEn: 'Trigger the rain shower or snow compress combo once',
+        hint: '카드 액션 콤보 sc_rain_shower / sc_snow_compress',
+      },
+    ],
+    actionHint: '비 또는 눈이 오는 날 젖은 천을 본인에게 사용해 위생 콤보 1회 발동.',
+    actionHintEn: 'On a rainy or snowy day, use a wet cloth on yourself to trigger the hygiene combo once.',
   },
 
   mq_doctor_side_01: {
