@@ -263,6 +263,67 @@ const QuestSystem = {
       if (structureId) this._progress.builtStructures.add(structureId);
       this._reevaluateSubObjectives();
     });
+
+    // ── 브리지: 기존 정통 이벤트 → 매처 입력 정규화 ──
+    // 외부 시스템(CraftSystem/ExploreSystem/SubwaySystem/GameState)을 수정하지 않고
+    // QuestSystem 내부에서 페이로드 형태만 변환해 _progress에 누적한다.
+
+    // craftComplete({blueprintId}) → itemCrafted({recipeId, category}) + structureBuilt
+    EventBus.on('craftComplete', ({ blueprintId } = {}) => {
+      const bp = GameData?.blueprints?.[blueprintId];
+      if (!bp) return;
+      const category = bp.category ?? null;
+      const outputs  = Array.isArray(bp.output) ? bp.output : (bp.output ? [bp.output] : []);
+      const recipeId = outputs[0]?.definitionId ?? bp.id ?? blueprintId;
+      const qty      = outputs[0]?.qty ?? 1;
+
+      if (recipeId && !this._progress.craftedRecipes.includes(recipeId)) {
+        this._progress.craftedRecipes.push(recipeId);
+      }
+      if (category) {
+        this._progress.craftedCategoryCounts[category] =
+          (this._progress.craftedCategoryCounts[category] ?? 0) + qty;
+      }
+      if (category === 'structure' && recipeId) {
+        this._progress.builtStructures.add(recipeId);
+      }
+      this._reevaluateSubObjectives();
+    });
+
+    // districtChanged({districtId}) → districtVisited
+    // 주의: 위에서 `districtVisited` 직접 구독이 이미 있으므로, 외부 시스템이 둘 다 emit해도 Set 멱등으로 안전.
+    EventBus.on('districtChanged', ({ districtId } = {}) => {
+      if (districtId) this._progress.visitedDistricts.add(districtId);
+      this._reevaluateSubObjectives();
+    });
+
+    // cardPlaced({instanceId}) → itemCollected
+    // 기존 _onItemGained가 collect_item / collect_item_type 보드 카운트로 이미 사용 중인 이벤트.
+    // 매처 입력은 누적 카운터이므로 NPC/location은 제외하고 정의의 type/tags를 정규화한다.
+    EventBus.on('cardPlaced', ({ instanceId } = {}) => {
+      const def = GameState.getCardDef?.(instanceId);
+      if (!def) return;
+      if (def.type === 'npc' || def.type === 'location' || def.type === 'environment') return;
+
+      if (def.id) {
+        this._progress.collected[def.id] = (this._progress.collected[def.id] ?? 0) + 1;
+      }
+      const itemType = def.type ?? def.subtype;
+      if (itemType) {
+        this._progress.collectedByTypeOrTag[itemType] =
+          (this._progress.collectedByTypeOrTag[itemType] ?? 0) + 1;
+      }
+      if (def.subtype && def.subtype !== itemType) {
+        this._progress.collectedByTypeOrTag[def.subtype] =
+          (this._progress.collectedByTypeOrTag[def.subtype] ?? 0) + 1;
+      }
+      const tags = Array.isArray(def.tags) ? def.tags : [];
+      for (const tag of tags) {
+        this._progress.collectedByTypeOrTag[tag] =
+          (this._progress.collectedByTypeOrTag[tag] ?? 0) + 1;
+      }
+      this._reevaluateSubObjectives();
+    });
   },
 
   /**
