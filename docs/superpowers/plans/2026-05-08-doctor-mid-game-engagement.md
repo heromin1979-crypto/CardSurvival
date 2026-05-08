@@ -12,6 +12,26 @@
 
 ---
 
+## REVISION 2026-05-08 (실행 직전 발견 사항 반영)
+
+Task 0.1 시작 시 구현자 subagent가 발견한 사실로 스코프 재조정:
+
+1. **활성 의사 퀘스트 위치는 `js/data/mainQuests/doctor/{shared,branch_a,branch_b}.js`**. `mainQuests.js` 본문은 레거시·미사용. 본 계획의 quest ID/내용 예시는 `shared.js` 기준으로 재작성됨.
+2. **사이드 퀘스트 인프라는 이미 존재.** `mq_doctor_side_*` 형식 (side_soldier/side_early/side_hygiene 등 9개)이 같은 mainQuests 포맷에 day-trigger로 등록됨. → **Phase 3 (SidequestSystem 신설) DEFERRED.** 신규 시스템 대신 기존 사이드 퀘스트를 QuestPanel에 표시하는 것으로 대응.
+3. **`clean_water`, `rainwater_collector` 아이템 ID는 코드에 없음.** 실제 퀘스트의 collect_item_type='clean'은 `itemType: 'clean'` 카테고리 매칭이며, water-collection은 정수 물병/끓인 물 등 기존 아이템이 사용됨. subObjectives의 match 필드는 실제 존재하는 ID·타입만 사용.
+4. **Phase 2 (DailyFocusSystem) 축소.** QuestPanel이 메인+사이드를 모두 표시하면 별도 추천 위젯의 가치가 줄어듦. 단순화: "TodayHint" 1줄 (가장 임박한 데드라인 + 위급 환자/자원 1건) — 별도 위젯 없이 QuestPanel 헤더 영역에 통합.
+
+**축소된 페이즈 (~5일):**
+- Phase 0 (1일): 데이터 스키마 + validate (실제 13개 퀘스트 = main 10 + 초반 side 3)
+- Phase 1 (2일): QuestPanel 3계층 UI (main + 기존 side 통합 표시)
+- Phase 2 (1일): TodayHint (QuestPanel 헤더 통합)
+- ~~Phase 3~~ DEFERRED
+- Phase 4 (1일): 폴리시 + 검증
+
+원안의 Task 0.1, 0.3, 0.4와 Phase 2/3은 아래 ※ 표시로 갱신 또는 폐기 처리.
+
+---
+
 ## File Structure
 
 | 경로 | 분류 | 책임 |
@@ -39,73 +59,83 @@
 
 목표: 데이터 구조만 확정. 게임 동작 변화 0. validate 통과.
 
-## Task 0.1: 의사 메인퀘 1개에 신규 필드 추가 (스키마 검증)
+## Task 0.1 ※갱신: 의사 메인퀘 1개(mq_doctor_01)에 신규 필드 추가 (스키마 검증)
+
+활성 의사 퀘스트는 `js/data/mainQuests/doctor/shared.js`에 정의되어 있음. 첫 퀘스트는 박상훈 하사 치료(`mq_doctor_01`).
 
 **Files:**
-- Modify: `js/data/mainQuests.js` 또는 `js/data/mainQuests/doctor.js` (현재 어느 파일에 mq_doctor_03이 있는지 확인 후)
+- Modify: `js/data/mainQuests/doctor/shared.js`
 
-- [ ] **Step 1: mq_doctor_03 위치 확인**
+- [ ] **Step 1: mq_doctor_01 객체에 신규 필드 3개 추가**
 
-```bash
-grep -rn "mq_doctor_03" js/data/mainQuests*
-```
-
-Expected: 정확한 파일 경로 식별 (`mainQuests.js` 또는 `mainQuests/doctor.js` 또는 `mainQuests/doctor/shared.js`).
-
-- [ ] **Step 2: mq_doctor_03 객체에 신규 필드 3개 추가**
-
-기존 객체에 다음을 **유지하면서** 필드 추가 (다른 필드 손대지 말 것):
+`shared.js:9~28` 의 mq_doctor_01에 다음을 추가. 기존 필드(`id`, `title`, `desc`, `icon`, `characterId`, `dayTrigger`, `prerequisite`, `objective`, `reward`, `bonusCondition`, `bonusReward`, `failPenalty`, `deadlineDays`, `narrative`)는 **모두 유지**:
 
 ```js
-mq_doctor_03: {
-  // ... 기존 id/title/desc/icon/characterId/dayTrigger/prerequisite/objective/reward/failPenalty/deadlineDays/narrative 모두 유지 ...
-
-  locationHint: {
-    districtId: 'gangnam',
-    landmarkId: 'samsung_hospital',
-    note: '응급실 정수기 또는 빗물 받기',
-    noteEn: 'Use ER water purifier or rainwater collector',
-  },
-
-  subObjectives: [
-    {
-      id: 'so_water_01',
-      text: '응급실 정수기에서 물 받기',
-      textEn: 'Get water from ER purifier',
-      hint: 'water_purifier 카드 사용',
-      match: { type: 'use_item', itemId: 'water_purifier' },
-    },
-    {
-      id: 'so_water_02',
-      text: '빗물받이 구조물 제작',
-      textEn: 'Craft a rainwater collector',
-      hint: 'rainwater_collector 레시피',
-      match: { type: 'craft_item', definitionId: 'rainwater_collector' },
-    },
-    {
-      id: 'so_water_03',
-      text: '깨끗한 물 5개 인벤토리에 보관',
-      textEn: 'Stock 5 clean water in inventory',
-      hint: '오염도 0 상태',
-      match: { type: 'collect_item', definitionId: 'clean_water', count: 5 },
-    },
-  ],
-
-  actionHint: '강남(현재 구역) 응급실 정수기를 활용하거나, 비 오는 날 빗물받이를 세워라.',
-  actionHintEn: 'Use the ER purifier in Gangnam, or set up a rainwater collector on a rainy day.',
+locationHint: {
+  districtId: 'dongjak',
+  landmarkId: 'boramae_hospital',
+  note: '보라매병원 응급실 — 박상훈 하사 카드 위',
+  noteEn: 'Boramae Hospital ER — on Sgt. Park\'s card',
 },
+
+subObjectives: [
+  {
+    id: 'so_d01_01',
+    text: '응급실에서 박상훈 하사 카드 찾기',
+    textEn: 'Find Sgt. Park\'s card in the ER',
+    hint: '바닥에 쓰러진 NPC 카드',
+  },
+  {
+    id: 'so_d01_02',
+    text: '붕대 카드를 박상훈에게 드래그',
+    textEn: 'Drag bandage onto Sgt. Park',
+    hint: 'bandage 사용',
+    match: { type: 'use_item', itemId: 'bandage' },
+  },
+  {
+    id: 'so_d01_03',
+    text: '치료 완료 (5 TP 안에 끝나면 골든 타임)',
+    textEn: 'Complete treatment (within 5 TP for golden time)',
+    hint: 'objective treat_npc 1회',
+    match: { type: 'treat_npc', npcId: 'npc_wounded_soldier', count: 1 },
+  },
+],
+
+actionHint: '응급실 바닥의 박상훈 하사 카드에 붕대를 드래그해 치료. 5 TP 안에 끝내면 무전 정보 보너스.',
+actionHintEn: 'Drag bandage onto Sgt. Park\'s card. Finish within 5 TP for radio intel bonus.',
 ```
 
-- [ ] **Step 3: 게임 부팅 확인 (런타임 영향 없음 검증)**
+> **subObjectives의 match 타입 주의:**
+> - `type: 'use_item'`은 매칭 함수(Phase 1 Task 1.1)에서 정의됨. 카드 액션 사용을 추적.
+> - `type: 'treat_npc'`은 신규 매칭 타입. Phase 1 Task 1.1에서 함께 추가 필요 — 매칭 키는 `treatedNpcs` Set + `npcId` 일치 또는 단순 카운터.
+> - 매칭 함수가 아직 없는 단계에서는 그냥 데이터만 추가. 자동 체크는 Phase 1에서 구현.
 
-Run: `npm run dev:web` (또는 기존 dev 명령어)
-Expected: 콘솔 에러 0, 의사 새 게임 → Day 1 정상 진입
+- [ ] **Step 2: 아이템 ID 검증**
+
+```bash
+grep -rn "id: 'bandage'\|bandage:" js/data/items*.js
+grep -rn "npc_wounded_soldier" js/data/npcs.js js/data/charDialogues.js
+```
+
+Expected:
+- `bandage` — 의약품 아이템으로 존재해야 함
+- `npc_wounded_soldier` — NPC ID로 존재해야 함
+
+둘 다 존재하면 진행. 없으면 NEEDS_CONTEXT 보고.
+
+- [ ] **Step 3: 부팅 검증**
+
+```bash
+node --input-type=module -e "import('./js/data/mainQuests/doctor/shared.js').then(m => { const q = m.default.mq_doctor_01; console.log('subObjectives:', q.subObjectives?.length, 'locationHint:', !!q.locationHint, 'actionHint:', !!q.actionHint); }).catch(e => { console.error(e); process.exit(1); })"
+```
+
+Expected: `subObjectives: 3 locationHint: true actionHint: true`
 
 - [ ] **Step 4: 커밋**
 
 ```bash
-git add js/data/mainQuests*
-git commit -m "feat(quest): add subObjectives/locationHint/actionHint to mq_doctor_03"
+git add js/data/mainQuests/doctor/shared.js
+git commit -m "feat(quest): add subObjectives/locationHint/actionHint to mq_doctor_01"
 ```
 
 ---
@@ -254,28 +284,39 @@ git commit -m "feat(validate): add main quest subObjective/locationHint schema c
 
 ---
 
-## Task 0.3: 의사 메인퀘 11개 모두에 신규 필드 채우기
+## Task 0.3 ※갱신: 의사 메인퀘 9개 + 초반 사이드 3개에 신규 필드 채우기
 
 **Files:**
-- Modify: `js/data/mainQuests.js` 또는 `mainQuests/doctor*` (Task 0.1 결과 경로)
+- Modify: `js/data/mainQuests/doctor/shared.js`
 
-대상 ID: `mq_doctor_01`, `mq_doctor_02`, `mq_doctor_03` (이미 완료), `mq_doctor_04`, `mq_doctor_05`, `mq_doctor_05b`, `mq_doctor_06`, `mq_doctor_07`, `mq_doctor_08`, `mq_doctor_09`, `mq_doctor_10`.
+대상 ID (실제 활성 퀘스트):
+- 메인 9개: `mq_doctor_01` (Task 0.1 완료), `mq_doctor_02`, `mq_doctor_03`, `mq_doctor_04`, `mq_doctor_05`, `mq_doctor_06`, `mq_doctor_07`, `mq_doctor_08`, `mq_doctor_09`, `mq_doctor_10`
+- 초반 사이드 3개: `mq_doctor_side_soldier`, `mq_doctor_side_early`, `mq_doctor_side_hygiene`
+- 후반 사이드(`side_01~06`, `side_end`)는 Day 22+ 트리거이므로 본 작업 외 (사용자 통증 영역 밖). 단, 본 패턴이 검증되면 후속 추가 가능.
 
-각 퀘스트에 다음 형식 적용:
+**실제 objective와 매칭하는 subObjectives 가이드:**
 
-| 퀘스트 | locationHint.districtId | subObjectives 핵심 단계 |
-|--------|--------------------------|-------------------------|
-| mq_doctor_01 (식량 3) | `gangnam` (samsung_hospital) | 응급실 자판기 / 카페테리아 / 식료품 카드 회수 |
-| mq_doctor_02 (구조물 1) | `gangnam` | 재료 수집 → 바리케이드/방어벽/저장고 중 1개 제작 |
-| mq_doctor_03 (물 5) | (완료) | (완료) |
-| mq_doctor_04 (의료품 5) | `gangnam` | 응급실 약장 / 약국 카드 / 빈 약병+허브 정제 |
-| mq_doctor_05 (서대문 방문) | `seodaemun` (severance) | 지하철 경로 확보 / 의약품 휴대 / 서대문 도착 |
-| mq_doctor_05b (강남 분기) | `gangnam` | 삼성병원 지하 진입 / 데이터 회수 |
-| mq_doctor_06 (구급상자 2) | (현재 구역) | 의약품·천·소독제 조합 / 구급상자 레시피 |
-| mq_doctor_07 (영등포 KBS) | `yeongdeungpo` (kbs) | 한강 통과 / 영등포 진입 / KBS 송출실 도달 |
-| mq_doctor_08 (100일) | (모든 구역) | 100일 생존 (서술형, match 없음) |
-| mq_doctor_09 (야전병원 건설) | (현재 거점) | 의료대 카드 1개 건설 (`medical_station`) |
-| mq_doctor_10 (백신) | (현재 거점) | 정제약 3개 보유 (`purified_medicine`) |
+| 퀘스트 | dayTrigger | objective | locationHint.districtId | subObjectives 가이드 |
+|--------|------------|-----------|--------------------------|---------------------|
+| mq_doctor_01 | 1 | treat_npc npc_wounded_soldier | dongjak (boramae) | (Task 0.1 완료) |
+| mq_doctor_02 | 2 | npc_quest_complete (간호사 의뢰) | dongjak (boramae) | 붕대 5 + 구급키트 2 + 동작구 방문 |
+| mq_doctor_03 | 4 | treat_npc count 2 | dongjak (boramae) | 응급실 NPC 카드 2명에게 붕대 사용 |
+| mq_doctor_04 | 6 | collect_item_type 'clean' count 3 | dongjak (boramae) | 정수 물병 / 끓인 물 / 멸균수 — 깨끗한 음용수 3종 |
+| mq_doctor_05 | 8 | treat_npc count 1 | dongjak (boramae) | 응급실 또는 인근 외래 환자 1명 치료 |
+| mq_doctor_06 | 10 | collect_item herb count 3 | dongjak (boramae 정원) | 약초 3개 채집 (병원 정원 카드) |
+| mq_doctor_07 | 13 | craft_item category medical | dongjak | 약초 + 천 + 알코올 → 의료 아이템 1개 제작. prescriptionOptions 일치 시 보너스 |
+| mq_doctor_08 | 15 | craft_item category medical count 3 | dongjak | 의료 아이템 3개 제작 (원정 배낭). prescriptionOptions 일치 1개 이상 보너스 |
+| mq_doctor_09 | 18 | visit_district mapo | mapo (홍대) | 마포구 진입 (지하철/도보 경로) |
+| mq_doctor_10 | 21 | craft_item category medical | (현재 위치) | 자기 처방용 의료 아이템 1개 제작. 분기 선택 트리거 |
+| mq_doctor_side_soldier | 7 | visit_district dongjak | dongjak (현충원) | 박상훈과 현충원 방문 |
+| mq_doctor_side_early | 3 | survive_infection minInfection 5 count 3 | (현재 위치) | 감염 5+ 상태 3일 유지 (서술형, match 없음) |
+| mq_doctor_side_hygiene | 5 | trigger_combo sc_rain_shower/sc_snow_compress | (날씨 의존) | 빗물 샤워 또는 눈 압박 콤보 1회 |
+
+> **match 필드 작성 원칙:**
+> - objective.type을 그대로 따라가는 subObjective 1개는 항상 포함 (자동 체크용)
+> - 추가 단계는 서술형 `match` 없는 entry로 작성 (UI 표시만)
+> - 존재 확인된 아이템 ID만 사용: `bandage`, `first_aid_kit`, `antiseptic`, `antibiotics`, `painkiller`, `herb`, `bandage`, `antidote`, `stimulant` 등 — 데이터 작성자가 각 아이템 존재 여부 직접 확인 (`grep`)
+> - 존재하지 않는 ID는 절대 만들지 말 것 — match 자체를 생략하고 서술형으로 두기
 
 - [ ] **Step 1: mq_doctor_01 ~ mq_doctor_10까지 11개 퀘스트에 동일 패턴으로 필드 추가**
 
@@ -309,7 +350,15 @@ git commit -m "feat(quest): expand all 11 doctor main quests with subObjectives/
 
 ---
 
-## Task 0.4: sidequests.js 스캐폴드 + 검증
+## Task 0.4 ※DEFERRED: sidequests.js 스캐폴드 + 검증
+
+이 태스크는 **Phase 3 deferral과 함께 보류**. 사이드 퀘스트는 이미 mainQuests 포맷에 `mq_doctor_side_*` ID로 존재하므로 별도 데이터 파일 신설은 불필요. Phase 4 검증 후 event-trigger 사이드가 실제로 부족하다고 판단되면 후속 작업으로 도입.
+
+**원본 내용 (참고용, 실행 보류):**
+
+(이하 원본 단계는 변경 없이 유지하되 실행하지 말 것)
+
+## Task 0.4 (원본, deferred): sidequests.js 스캐폴드 + 검증
 
 **Files:**
 - Create: `js/data/sidequests.js`
@@ -1705,7 +1754,13 @@ git commit -m "feat(persist): serialize subObjectiveProgress/dailyFocus/questPro
 
 ---
 
-# Phase 3 — SidequestSystem + 사이드 퀘스트 5~7개 (~2일)
+# Phase 3 ※DEFERRED — SidequestSystem + 사이드 퀘스트 5~7개
+
+**전체 페이즈 보류.** 활성 사이드 퀘스트(`mq_doctor_side_*`) 9개가 이미 mainQuests 포맷에 day-trigger로 등록됨. Phase 1의 QuestPanel이 이를 기존 메인퀘와 동일 메커니즘으로 표시하므로 별도 SidequestSystem 신설 가치가 부족하다고 판단. event-trigger 기반 사이드는 Phase 4 검증 후 진짜 필요하면 후속 작업으로 평가.
+
+(이하 원본 태스크는 참고용, 실행 보류)
+
+# Phase 3 (원본, deferred) — SidequestSystem + 사이드 퀘스트 5~7개 (~2일)
 
 ## Task 3.1: SidequestSystem 핵심 (TDD)
 
