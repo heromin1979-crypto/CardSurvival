@@ -103,6 +103,24 @@ function _getQuestDef(questId) {
 
 // ── 시스템 ────────────────────────────────────────────────────────
 const QuestSystem = {
+  // subObjective 진행도 누적 — 이벤트로 갱신, _matchSubObjective의 비교 대상.
+  // GameState에 직접 쓰지 않는 이유: 매 이벤트마다 GameState 직렬화 비용 회피 + 시스템 외부에서 임의 수정 차단.
+  _progress: {
+    collected:              {},
+    collectedByTypeOrTag:   {},
+    craftedRecipes:         [],
+    craftedCategoryCounts:  {},
+    visitedDistricts:       new Set(),
+    usedItemCounts:         {},
+    treatedNpcs:            new Set(),
+    treatedNpcCount:        0,
+    builtStructures:        new Set(),
+  },
+
+  // 메인 퀘스트별 데드라인 경고 토스트 발화 이력 — 단계별 1회만 알림
+  _warnedDeadlines: {},
+  _lastDeadlineCheckDay: -1,
+
   init() {
     // 계절 이벤트 발생 시 연결된 퀘스트 자동 시작
     EventBus.on('seasonalEvent', ({ eventId }) => this._onSeasonalEvent(eventId));
@@ -143,6 +161,210 @@ const QuestSystem = {
     EventBus.on('npcQuestCompleted', ({ npcId, questId }) => this._onNpcQuestCompleted(npcId, questId));
     // 시크릿 조합 적용 시 trigger_combo 체크
     EventBus.on('comboApplied', ({ comboId }) => this._onComboApplied(comboId));
+
+    // subObjective 진행도 집계 이벤트 구독 (Task 1.1)
+    this._subscribeProgressEvents();
+  },
+
+  // ── subObjective 자동 체크 ────────────────────────────────────
+
+  /**
+   * subObjective의 match 조건을 진행도 state와 비교해 완료 여부 판정.
+   * 순수 함수 — this/외부 상태 의존 없음 (테스트 용이성).
+   *
+   * match.type:
+   *  - collect_item       { definitionId, count? }
+   *  - collect_item_type  { itemType, count? }       — itemType은 top-level type 또는 tag
+   *  - craft_item         { definitionId? | category?, count? }
+   *  - visit_district     { districtId }
+   *  - use_item           { definitionId, count? }
+   *  - treat_npc          { npcId? | count? }
+   *  - build_structure    { structureId }
+   */
+  _matchSubObjective(so, state = {}) {
+    const m = so?.match;
+    if (!m) return false;
+    switch (m.type) {
+      case 'collect_item': {
+        const have = state.collected?.[m.definitionId] ?? 0;
+        return have >= (m.count ?? 1);
+      }
+      case 'collect_item_type': {
+        const have = state.collectedByTypeOrTag?.[m.itemType] ?? 0;
+        return have >= (m.count ?? 1);
+      }
+      case 'craft_item': {
+        if (m.definitionId) {
+          return (state.craftedRecipes ?? []).includes(m.definitionId);
+        }
+        if (m.category) {
+          const have = state.craftedCategoryCounts?.[m.category] ?? 0;
+          return have >= (m.count ?? 1);
+        }
+        return false;
+      }
+      case 'visit_district':
+        return (state.visitedDistricts ?? new Set()).has(m.districtId);
+      case 'use_item': {
+        const have = state.usedItemCounts?.[m.definitionId] ?? 0;
+        return have >= (m.count ?? 1);
+      }
+      case 'treat_npc': {
+        if (m.npcId) {
+          return (state.treatedNpcs ?? new Set()).has(m.npcId);
+        }
+        return (state.treatedNpcCount ?? 0) >= (m.count ?? 1);
+      }
+      case 'build_structure':
+        return (state.builtStructures ?? new Set()).has(m.structureId);
+      default:
+        return false;
+    }
+  },
+
+  /**
+   * 게임 이벤트를 받아 _progress 누적 + 활성 퀘스트의 subObjective 재평가.
+   * 누락된 emit 사이트는 fail-soft (해당 매처는 자동 틱하지 않음).
+   */
+  _subscribeProgressEvents() {
+    EventBus.on('itemCollected', ({ definitionId, itemType, tags = [], qty = 1 } = {}) => {
+      if (definitionId) {
+        this._progress.collected[definitionId] = (this._progress.collected[definitionId] ?? 0) + qty;
+      }
+      if (itemType) {
+        this._progress.collectedByTypeOrTag[itemType] = (this._progress.collectedByTypeOrTag[itemType] ?? 0) + qty;
+      }
+      for (const tag of tags) {
+        this._progress.collectedByTypeOrTag[tag] = (this._progress.collectedByTypeOrTag[tag] ?? 0) + qty;
+      }
+      this._reevaluateSubObjectives();
+    });
+    EventBus.on('itemCrafted', ({ recipeId, category, qty = 1 } = {}) => {
+      if (recipeId && !this._progress.craftedRecipes.includes(recipeId)) {
+        this._progress.craftedRecipes.push(recipeId);
+      }
+      if (category) {
+        this._progress.craftedCategoryCounts[category] = (this._progress.craftedCategoryCounts[category] ?? 0) + qty;
+      }
+      this._reevaluateSubObjectives();
+    });
+    EventBus.on('districtVisited', ({ districtId } = {}) => {
+      if (districtId) this._progress.visitedDistricts.add(districtId);
+      this._reevaluateSubObjectives();
+    });
+    EventBus.on('itemUsed', ({ definitionId, qty = 1 } = {}) => {
+      if (definitionId) {
+        this._progress.usedItemCounts[definitionId] = (this._progress.usedItemCounts[definitionId] ?? 0) + qty;
+      }
+      this._reevaluateSubObjectives();
+    });
+    EventBus.on('npcHealed', ({ npcId } = {}) => {
+      if (npcId) this._progress.treatedNpcs.add(npcId);
+      this._progress.treatedNpcCount += 1;
+      this._reevaluateSubObjectives();
+    });
+    EventBus.on('structureBuilt', ({ structureId } = {}) => {
+      if (structureId) this._progress.builtStructures.add(structureId);
+      this._reevaluateSubObjectives();
+    });
+
+    // ── 브리지: 기존 정통 이벤트 → 매처 입력 정규화 ──
+    // 외부 시스템(CraftSystem/ExploreSystem/SubwaySystem/GameState)을 수정하지 않고
+    // QuestSystem 내부에서 페이로드 형태만 변환해 _progress에 누적한다.
+
+    // craftComplete({blueprintId}) → itemCrafted({recipeId, category}) + structureBuilt
+    EventBus.on('craftComplete', ({ blueprintId } = {}) => {
+      const bp = GameData?.blueprints?.[blueprintId];
+      if (!bp) return;
+      const category = bp.category ?? null;
+      const outputs  = Array.isArray(bp.output) ? bp.output : (bp.output ? [bp.output] : []);
+      const recipeId = outputs[0]?.definitionId ?? bp.id ?? blueprintId;
+      const qty      = outputs[0]?.qty ?? 1;
+
+      if (recipeId && !this._progress.craftedRecipes.includes(recipeId)) {
+        this._progress.craftedRecipes.push(recipeId);
+      }
+      if (category) {
+        this._progress.craftedCategoryCounts[category] =
+          (this._progress.craftedCategoryCounts[category] ?? 0) + qty;
+      }
+      if (category === 'structure' && recipeId) {
+        this._progress.builtStructures.add(recipeId);
+      }
+      this._reevaluateSubObjectives();
+    });
+
+    // districtChanged({districtId}) → districtVisited
+    // 주의: 위에서 `districtVisited` 직접 구독이 이미 있으므로, 외부 시스템이 둘 다 emit해도 Set 멱등으로 안전.
+    EventBus.on('districtChanged', ({ districtId } = {}) => {
+      if (districtId) this._progress.visitedDistricts.add(districtId);
+      this._reevaluateSubObjectives();
+    });
+
+    // cardPlaced({instanceId}) → itemCollected
+    // 기존 _onItemGained가 collect_item / collect_item_type 보드 카운트로 이미 사용 중인 이벤트.
+    // 매처 입력은 누적 카운터이므로 NPC/location은 제외하고 정의의 type/tags를 정규화한다.
+    EventBus.on('cardPlaced', ({ instanceId } = {}) => {
+      const def = GameState.getCardDef?.(instanceId);
+      if (!def) return;
+      if (def.type === 'npc' || def.type === 'location' || def.type === 'environment') return;
+
+      if (def.id) {
+        this._progress.collected[def.id] = (this._progress.collected[def.id] ?? 0) + 1;
+      }
+      const itemType = def.type ?? def.subtype;
+      if (itemType) {
+        this._progress.collectedByTypeOrTag[itemType] =
+          (this._progress.collectedByTypeOrTag[itemType] ?? 0) + 1;
+      }
+      if (def.subtype && def.subtype !== itemType) {
+        this._progress.collectedByTypeOrTag[def.subtype] =
+          (this._progress.collectedByTypeOrTag[def.subtype] ?? 0) + 1;
+      }
+      const tags = Array.isArray(def.tags) ? def.tags : [];
+      for (const tag of tags) {
+        this._progress.collectedByTypeOrTag[tag] =
+          (this._progress.collectedByTypeOrTag[tag] ?? 0) + 1;
+      }
+      this._reevaluateSubObjectives();
+    });
+  },
+
+  /**
+   * 활성 메인 퀘스트의 subObjective를 재평가 → 완료 전이 시 1회만 이벤트 발화.
+   * GameState.subObjectiveProgress: { [questId]: { [subId]: true } } — 완료 플래그 영속화.
+   * GameState.questProgress: 외부 시스템(DailyFocus 등) 참조용 진행도 미러.
+   */
+  _reevaluateSubObjectives() {
+    const gs = GameState;
+    if (!gs.subObjectiveProgress) gs.subObjectiveProgress = {};
+
+    for (const q of (gs.quests?.active ?? [])) {
+      const def = MAIN_QUESTS[q.id];
+      if (!def?.subObjectives) continue;
+      if (!gs.subObjectiveProgress[q.id]) gs.subObjectiveProgress[q.id] = {};
+
+      for (const so of def.subObjectives) {
+        const wasComplete = gs.subObjectiveProgress[q.id][so.id] === true;
+        const nowComplete = this._matchSubObjective(so, this._progress);
+        if (nowComplete && !wasComplete) {
+          gs.subObjectiveProgress[q.id][so.id] = true;
+          EventBus.emit('subObjectiveCompleted', { questId: q.id, subObjectiveId: so.id, text: so.text });
+        }
+      }
+    }
+
+    gs.questProgress = {
+      collected:              { ...this._progress.collected },
+      collectedByTypeOrTag:   { ...this._progress.collectedByTypeOrTag },
+      craftedRecipes:         [...this._progress.craftedRecipes],
+      craftedCategoryCounts:  { ...this._progress.craftedCategoryCounts },
+      visitedDistricts:       new Set(this._progress.visitedDistricts),
+      usedItemCounts:         { ...this._progress.usedItemCounts },
+      treatedNpcs:            new Set(this._progress.treatedNpcs),
+      treatedNpcCount:        this._progress.treatedNpcCount,
+      builtStructures:        new Set(this._progress.builtStructures),
+    };
   },
 
   /** 시크릿 조합 적용 추적 — trigger_combo 타입 퀘스트 진행도 증가 */
@@ -424,6 +646,12 @@ const QuestSystem = {
     // ① 메인 퀘스트 자동 시작 체크
     this._checkMainQuestTriggers();
 
+    // ①.0 메인 퀘스트 데드라인 임박 경고 — day 진입 시 1회만 검사
+    if (day !== this._lastDeadlineCheckDay) {
+      this._lastDeadlineCheckDay = day;
+      this._checkDeadlinesForToast(day);
+    }
+
     // ①.1 이지수 전용: 탈출 선택 후과 (Day 5)
     this._checkDoctorAftermath(gs, day);
 
@@ -438,6 +666,7 @@ const QuestSystem = {
       // 기한 초과 → 실패 처리
       if (q.deadline !== Infinity && day > q.deadline) {
         gs.quests.active.splice(i, 1);
+        delete this._warnedDeadlines[q.id];
 
         // 실패 패널티 적용
         const fp = qDef.failPenalty;
@@ -475,6 +704,37 @@ const QuestSystem = {
     }
 
     if (changed) EventBus.emit('questListChanged', {});
+  },
+
+  // 메인 퀘스트 데드라인 D-2/D-1/D-0 토스트 — 단계별 1회만, 새 day 진입 시 호출.
+  _checkDeadlinesForToast(today) {
+    for (const entry of (GameState.quests?.active ?? [])) {
+      const def = MAIN_QUESTS[entry.id];
+      if (!def) continue;
+      if (def.deadlineDays == null || def.deadlineDays === Infinity) continue;
+      if (entry.deadline == null || entry.deadline === Infinity) continue;
+
+      const left = entry.deadline - today;
+      if (left > 2 || left < 0) continue;
+
+      if (!this._warnedDeadlines[entry.id]) this._warnedDeadlines[entry.id] = {};
+      const wd = this._warnedDeadlines[entry.id];
+      const title = def.titleKey ? I18n.t(def.titleKey) : def.title;
+
+      if (left === 0 && !wd.d0) {
+        wd.d0 = true;
+        EventBus.emit('notify', { message: `⚠ ${title} — 데드라인 오늘`, type: 'warn' });
+        EventBus.emit('deadlineApproaching', { questId: entry.id, daysLeft: 0 });
+      } else if (left === 1 && !wd.d1) {
+        wd.d1 = true;
+        EventBus.emit('notify', { message: `⚠ ${title} — D-1`, type: 'warn' });
+        EventBus.emit('deadlineApproaching', { questId: entry.id, daysLeft: 1 });
+      } else if (left === 2 && !wd.d2) {
+        wd.d2 = true;
+        EventBus.emit('notify', { message: `⚠ ${title} — D-2`, type: 'warn' });
+        EventBus.emit('deadlineApproaching', { questId: entry.id, daysLeft: 2 });
+      }
+    }
   },
 
   // ── 이지수 전용 이벤트 ───────────────────────────────────────
@@ -645,6 +905,7 @@ const QuestSystem = {
 
     gs.quests.active.splice(idx, 1);
     gs.quests.completed.push(q.id);
+    delete this._warnedDeadlines[q.id];
 
     // 보상 지급
     const r = qDef.reward;

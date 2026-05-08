@@ -22,6 +22,7 @@ import ExploreSystem  from '../systems/ExploreSystem.js';
 import SeasonSystem    from '../systems/SeasonSystem.js';
 import WeatherSystem   from '../systems/WeatherSystem.js';
 import SeoulMapModal   from '../ui/SeoulMapModal.js';
+import QuestPanel      from '../ui/QuestPanel.js';
 import GameData        from '../data/GameData.js';
 
 const Basecamp = {
@@ -96,6 +97,9 @@ const Basecamp = {
     this._updateMapFragmentBadge();
     // 사이드바 버튼 초기화 (랜드마크 상태 반영)
     this._updateSidebarButtons();
+    // 퀘스트 사이드 패널 마운트 — _buildLayout이 DOM을 재생성하므로 진입마다 다시 마운트
+    const questMount = document.getElementById('quest-panel-mount');
+    if (questMount) QuestPanel.mount(questMount);
   },
 
   _buildLayout() {
@@ -167,6 +171,9 @@ const Basecamp = {
 
         <!-- Encumbrance -->
         <div class="bc-enc-block">⚖ <span id="hud-enc">0/30kg</span></div>
+
+        <!-- Quest Panel mount -->
+        <div id="quest-panel-mount"></div>
 
         <!-- 행동 버튼 (동적 교체) -->
         <div class="bc-sidebar-btns">
