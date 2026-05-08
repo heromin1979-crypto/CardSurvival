@@ -229,6 +229,30 @@ async function validate() {
   console.log(`  총 페르소나: ${patientCount}`);
   console.log(`  herb_seed 공급 누적 (immediate + 회당 recurring qty): ${herbSeedTotal}`);
 
+  // 8. \uBA54\uC778 \uD018\uC2A4\uD2B8 \uC2A4\uD0A4\uB9C8 \uAC80\uC99D (subObjectives, locationHint)
+  console.log('\n=== MAIN QUEST SCHEMA CHECK ===');
+  const MAIN_QUESTS = (await import('./mainQuests/index.js')).default;
+  const districtsMod = await import('./districts.js');
+  const knownDistricts = new Set(Object.keys(districtsMod.DISTRICTS ?? {}));
+
+  let knownLandmarks = null;
+  try {
+    const landmarksMod = await import('./landmarks.js');
+    const lmData = landmarksMod.default ?? landmarksMod.LANDMARK_DATA;
+    if (lmData) knownLandmarks = new Set(Object.keys(lmData));
+  } catch { /* landmarks.js \uBBF8\uC874\uC7AC/\uD3EC\uB9F7 \uBCC0\uACBD \uC2DC ID \uAC80\uC99D\uC740 \uAC74\uB108\uB700 */ }
+
+  let mqChecked = 0;
+  for (const [id, q] of Object.entries(MAIN_QUESTS)) {
+    const r = validateMainQuestSchema({ ...q, id }, { knownDistricts, knownLandmarks });
+    for (const e of r.errors) {
+      console.log(`\u274C [main quest] ${e}`);
+      errors++;
+    }
+    mqChecked++;
+  }
+  console.log(`  \uAC80\uC0AC\uD55C \uD018\uC2A4\uD2B8: ${mqChecked}`);
+
   // Summary
   console.log(`\n=== SUMMARY ===`);
   console.log(`Total items: ${allItemIds.size}`);
@@ -238,6 +262,42 @@ async function validate() {
   console.log(`Errors: ${errors}`);
   console.log(`Warnings: ${warnings}`);
   console.log(errors === 0 ? '\u2705 ALL CLEAR' : '\u274C FIX ERRORS ABOVE');
+}
+
+// === MAIN QUEST SCHEMA VALIDATOR (export) ===
+// subObjectives: id/text \uD544\uC218, id \uC911\uBCF5 \uAE08\uC9C0
+// locationHint: districtId/landmarkId\uAC00 ctx\uC5D0 \uC8FC\uC5B4\uC9C4 Set\uC5D0 \uC874\uC7AC\uD558\uB294\uC9C0 \uD655\uC778 (Set \uBBF8\uC8FC\uC785 \uC2DC \uAC80\uC99D \uC0DD\uB7B5)
+export function validateMainQuestSchema(quest, ctx = {}) {
+  const errors = [];
+  const { knownDistricts = null, knownLandmarks = null } = ctx;
+
+  if (quest.subObjectives !== undefined) {
+    if (!Array.isArray(quest.subObjectives)) {
+      errors.push(`${quest.id}: subObjectives must be array`);
+    } else {
+      const seenIds = new Set();
+      quest.subObjectives.forEach((so, i) => {
+        if (!so.id) errors.push(`${quest.id}: subObjectives[${i}].id missing`);
+        if (!so.text) errors.push(`${quest.id}: subObjectives[${i}].text missing`);
+        if (so.id && seenIds.has(so.id)) {
+          errors.push(`${quest.id}: subObjectives[${i}] duplicate id "${so.id}"`);
+        }
+        if (so.id) seenIds.add(so.id);
+      });
+    }
+  }
+
+  if (quest.locationHint) {
+    const lh = quest.locationHint;
+    if (knownDistricts && lh.districtId && !knownDistricts.has(lh.districtId)) {
+      errors.push(`${quest.id}: locationHint.districtId "${lh.districtId}" unknown`);
+    }
+    if (knownLandmarks && lh.landmarkId && !knownLandmarks.has(lh.landmarkId)) {
+      errors.push(`${quest.id}: locationHint.landmarkId "${lh.landmarkId}" unknown`);
+    }
+  }
+
+  return { ok: errors.length === 0, errors };
 }
 
 validate().catch(e => console.error('Validation failed:', e));
