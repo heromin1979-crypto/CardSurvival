@@ -117,6 +117,10 @@ const QuestSystem = {
     builtStructures:        new Set(),
   },
 
+  // 메인 퀘스트별 데드라인 경고 토스트 발화 이력 — 단계별 1회만 알림
+  _warnedDeadlines: {},
+  _lastDeadlineCheckDay: -1,
+
   init() {
     // 계절 이벤트 발생 시 연결된 퀘스트 자동 시작
     EventBus.on('seasonalEvent', ({ eventId }) => this._onSeasonalEvent(eventId));
@@ -642,6 +646,12 @@ const QuestSystem = {
     // ① 메인 퀘스트 자동 시작 체크
     this._checkMainQuestTriggers();
 
+    // ①.0 메인 퀘스트 데드라인 임박 경고 — day 진입 시 1회만 검사
+    if (day !== this._lastDeadlineCheckDay) {
+      this._lastDeadlineCheckDay = day;
+      this._checkDeadlinesForToast(day);
+    }
+
     // ①.1 이지수 전용: 탈출 선택 후과 (Day 5)
     this._checkDoctorAftermath(gs, day);
 
@@ -656,6 +666,7 @@ const QuestSystem = {
       // 기한 초과 → 실패 처리
       if (q.deadline !== Infinity && day > q.deadline) {
         gs.quests.active.splice(i, 1);
+        delete this._warnedDeadlines[q.id];
 
         // 실패 패널티 적용
         const fp = qDef.failPenalty;
@@ -693,6 +704,37 @@ const QuestSystem = {
     }
 
     if (changed) EventBus.emit('questListChanged', {});
+  },
+
+  // 메인 퀘스트 데드라인 D-2/D-1/D-0 토스트 — 단계별 1회만, 새 day 진입 시 호출.
+  _checkDeadlinesForToast(today) {
+    for (const entry of (GameState.quests?.active ?? [])) {
+      const def = MAIN_QUESTS[entry.id];
+      if (!def) continue;
+      if (def.deadlineDays == null || def.deadlineDays === Infinity) continue;
+      if (entry.deadline == null || entry.deadline === Infinity) continue;
+
+      const left = entry.deadline - today;
+      if (left > 2 || left < 0) continue;
+
+      if (!this._warnedDeadlines[entry.id]) this._warnedDeadlines[entry.id] = {};
+      const wd = this._warnedDeadlines[entry.id];
+      const title = def.titleKey ? I18n.t(def.titleKey) : def.title;
+
+      if (left === 0 && !wd.d0) {
+        wd.d0 = true;
+        EventBus.emit('notify', { message: `⚠ ${title} — 데드라인 오늘`, type: 'warn' });
+        EventBus.emit('deadlineApproaching', { questId: entry.id, daysLeft: 0 });
+      } else if (left === 1 && !wd.d1) {
+        wd.d1 = true;
+        EventBus.emit('notify', { message: `⚠ ${title} — D-1`, type: 'warn' });
+        EventBus.emit('deadlineApproaching', { questId: entry.id, daysLeft: 1 });
+      } else if (left === 2 && !wd.d2) {
+        wd.d2 = true;
+        EventBus.emit('notify', { message: `⚠ ${title} — D-2`, type: 'warn' });
+        EventBus.emit('deadlineApproaching', { questId: entry.id, daysLeft: 2 });
+      }
+    }
   },
 
   // ── 이지수 전용 이벤트 ───────────────────────────────────────
@@ -863,6 +905,7 @@ const QuestSystem = {
 
     gs.quests.active.splice(idx, 1);
     gs.quests.completed.push(q.id);
+    delete this._warnedDeadlines[q.id];
 
     // 보상 지급
     const r = qDef.reward;
