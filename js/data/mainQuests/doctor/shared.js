@@ -25,6 +25,36 @@ const DOCTOR_SHARED = {
       complete: '박상훈 하사가 눈을 떴다. "선생님, 감사합니다..." 출혈이 멎었지만 의식이 흐릿하다. 히포크라테스 선서가 세상이 끝났다고 사라지지 않는다. 의사의 역할이 시작됐다.',
       completeBonus: '박상훈 하사가 또렷한 눈으로 일어났다. "선생님… 골든 타임이었습니다. 정말 감사합니다. 신촌에서 군 무전이 잡혔습니다 — 강민준 군의관이 의사를 찾고 있습니다. 좌표를 지금 드리겠습니다." 하사의 손이 무전 수첩을 건넸다. 감염 위험도 낮춘 항생제까지 건네받았다. 이지수의 손은 3일간의 어둠을 뚫고도 정확했다.',
     },
+    locationHint: {
+      districtId: 'dongjak',
+      landmarkId: 'boramae_hospital',
+      note: '보라매병원 응급실 — 박상훈 하사 카드 위',
+      noteEn: 'Boramae Hospital ER — on Sgt. Park\'s card',
+    },
+    subObjectives: [
+      {
+        id: 'so_d01_01',
+        text: '응급실에서 박상훈 하사 카드 찾기',
+        textEn: 'Find Sgt. Park\'s card in the ER',
+        hint: '바닥에 쓰러진 NPC 카드',
+      },
+      {
+        id: 'so_d01_02',
+        text: '붕대 카드를 박상훈에게 드래그',
+        textEn: 'Drag bandage onto Sgt. Park',
+        hint: 'bandage 사용',
+        match: { type: 'use_item', itemId: 'bandage' },
+      },
+      {
+        id: 'so_d01_03',
+        text: '치료 완료 (5 TP 안에 끝나면 골든 타임)',
+        textEn: 'Complete treatment (within 5 TP for golden time)',
+        hint: 'objective treat_npc 1회',
+        match: { type: 'treat_npc', npcId: 'npc_wounded_soldier', count: 1 },
+      },
+    ],
+    actionHint: '응급실 바닥의 박상훈 하사 카드에 붕대를 드래그해 치료. 5 TP 안에 끝내면 무전 정보 보너스.',
+    actionHintEn: 'Drag bandage onto Sgt. Park\'s card. Finish within 5 TP for radio intel bonus.',
   },
 
   mq_doctor_02: {
