@@ -2,6 +2,9 @@
 import EventBus  from '../core/EventBus.js';
 import GameState from '../core/GameState.js';
 import I18n      from '../core/I18n.js';
+import { lookupBagExtraSlots } from '../data/bagSlots.js';
+
+const BOTTOM_PAGE1_SIZE = 20;
 
 // 슬롯별 장착 규칙 테이블
 // accepts: [{type, subtypes}] 배열을 쓰면 복수 타입 허용 (weapon_sub처럼 무기+방패 겸용 슬롯)
@@ -21,15 +24,6 @@ const SLOT_RULES = {
   boots:       { type: 'armor',  subtypes: ['boots'] },
   belt:        { locked: true },
   accessory:   { locked: true },
-};
-
-// 가방 아이템 → 추가 슬롯 수 매핑
-const BAG_EXTRA_SLOTS = {
-  small_bag:    3,
-  backpack:     5,
-  military_bag: 7,
-  messenger_bag:4,
-  duffel_bag:   6,
 };
 
 const EquipmentSystem = {
@@ -113,6 +107,21 @@ const EquipmentSystem = {
     const instanceId = gs.player.equipped[slotId];
     if (!instanceId) return false;
 
+    // 가방 해제 사전 검사 (B-1): page1 빈칸이 [가방 본체 1칸 + page2 카드 수]를 수용 가능해야 함
+    if (slotId === 'backpack') {
+      const extra = gs.player.extraSlots ?? 0;
+      if (extra > 0) {
+        const page1Free = gs.board.bottom.slice(0, BOTTOM_PAGE1_SIZE)
+          .filter(v => v === null).length;
+        const page2Cards = gs.board.bottom.slice(BOTTOM_PAGE1_SIZE, BOTTOM_PAGE1_SIZE + extra)
+          .filter(v => v !== null).length;
+        if (page1Free < page2Cards + 1) {
+          EventBus.emit('notify', { message: I18n.t('equipSys.bagRemoveBlocked'), type: 'warn' });
+          return false;
+        }
+      }
+    }
+
     if (gs.cards[instanceId]) {
       const placed = gs.placeCardInRow(instanceId);
       if (!placed) {
@@ -165,28 +174,78 @@ const EquipmentSystem = {
   // ── 가방 효과 ─────────────────────────────────────────
 
   _applyBagEffect(instanceId) {
-    const gs  = GameState;
-    const def = gs.getCardDef(instanceId);
+    const gs    = GameState;
+    const def   = gs.getCardDef(instanceId);
     if (!def) return;
-    const extra = BAG_EXTRA_SLOTS[def.id] ?? def.bagSlots ?? 0;
+    const extra = lookupBagExtraSlots(def);
+    const oldExtra = gs.player.extraSlots ?? 0;
     gs.player.extraSlots = extra;
-    // 배열 크기는 항상 20 고정 — 슬롯 잠금/해제는 BoardRenderer가 extraSlots로 판단
+    // bottom 배열을 page1(20) + page2(extra) 길이로 맞춤
+    const targetLen = BOTTOM_PAGE1_SIZE + extra;
+    if (gs.board.bottom.length < targetLen) {
+      while (gs.board.bottom.length < targetLen) gs.board.bottom.push(null);
+    } else if (gs.board.bottom.length > targetLen) {
+      // 가방 교체로 page2 축소: 잘려나갈 카드는 page1 빈자리로 회수
+      const trimmed = gs.board.bottom.slice(targetLen).filter(v => v !== null);
+      gs.board.bottom = gs.board.bottom.slice(0, targetLen);
+      for (const id of trimmed) {
+        const idx = gs.findEmptySlot('bottom');
+        if (idx !== -1) gs.board.bottom[idx] = id;
+        else if (gs.cards[id]) {
+          gs.pendingLoot = [...(gs.pendingLoot ?? []), {
+            definitionId: gs.cards[id].definitionId,
+            quantity:     gs.cards[id].quantity ?? 1,
+            contamination: gs.cards[id].contamination ?? 0,
+          }];
+        }
+      }
+    }
+    if (oldExtra > 0 && extra === 0) gs.ui.bottomPage = 0;
     EventBus.emit('boardReinit', {});
   },
 
+  // B-1: page2 카드를 page1 빈칸이 충분하면 자동 이주, 부족하면 토스트로 차단
+  // 반환값: { ok: boolean }
   _removeBagEffect() {
     const gs = GameState;
-    // disabled 구간(10~)에 아이템이 있으면 경고
-    const activeEnd = 10 + (gs.player.extraSlots ?? 0);
-    for (let i = 10; i < activeEnd; i++) {
-      if (gs.board.bottom[i]) {
-        EventBus.emit('notify', { message: I18n.t('equipSys.bagRemoveWarn'), type: 'warn' });
-        break;
-      }
+    const extra = gs.player.extraSlots ?? 0;
+    if (extra === 0) {
+      // page2 자체가 없음 — 그대로 진행
+      gs.ui.bottomPage = 0;
+      EventBus.emit('boardReinit', {});
+      return { ok: true };
     }
+    const page1 = gs.board.bottom.slice(0, BOTTOM_PAGE1_SIZE);
+    const page2 = gs.board.bottom.slice(BOTTOM_PAGE1_SIZE, BOTTOM_PAGE1_SIZE + extra);
+    const page2Cards = page2.filter(v => v !== null);
+    const page1Free  = page1.filter(v => v === null).length;
+
+    if (page2Cards.length === 0) {
+      gs.board.bottom = page1;
+      gs.player.extraSlots = 0;
+      gs.ui.bottomPage = 0;
+      EventBus.emit('boardReinit', {});
+      return { ok: true };
+    }
+
+    if (page1Free < page2Cards.length) {
+      EventBus.emit('notify', { message: I18n.t('equipSys.bagRemoveBlocked'), type: 'warn' });
+      return { ok: false };
+    }
+
+    // 자동 이주 — page2 카드를 page1 빈자리에 순서대로 배치
+    const newPage1 = [...page1];
+    for (const id of page2Cards) {
+      const idx = newPage1.indexOf(null);
+      if (idx === -1) break; // 위 검사로 도달 불가
+      newPage1[idx] = id;
+    }
+    gs.board.bottom = newPage1;
     gs.player.extraSlots = 0;
-    // 배열 크기는 변경하지 않음 — 슬롯만 disabled로 전환됨
+    gs.ui.bottomPage = 0;
+    EventBus.emit('notify', { message: I18n.t('equipSys.bagRemoveMigrated'), type: 'good' });
     EventBus.emit('boardReinit', {});
+    return { ok: true };
   },
 
   getSlotRules() { return SLOT_RULES; },

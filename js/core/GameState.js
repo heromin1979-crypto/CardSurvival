@@ -1,6 +1,11 @@
 // === CENTRAL GAME STATE SINGLETON ===
 import EventBus  from './EventBus.js';
 import GameData  from '../data/GameData.js';
+import { lookupBagExtraSlots } from '../data/bagSlots.js';
+
+// 페이지 단위 행 정의 — 압축·해금 트리거가 참조
+const MIDDLE_PAGE_SIZE = 10;
+const BOTTOM_PAGE1_SIZE = 20;
 
 const GameState = {
   // ── time ──────────────────────────────────────────────
@@ -87,17 +92,21 @@ const GameState = {
       belt:        null,  // 허리띠 (잠금 예비)
       accessory:   null,  // 액세서리 (잠금 예비)
     },
-    extraSlots:  0,       // 가방 장착으로 추가된 인벤토리 슬롯 수
+    extraSlots:  0,       // 가방 장착으로 추가된 휴대 page2 슬롯 수 (0 = page2 미해금)
+    middlePage3Unlocked: false,  // 1페이지 만차 → 2페이지 오버플로우 시 영속 해금
   },
 
   // ── board ─────────────────────────────────────────────
   // Each row: array of slot entries (null | instanceId)
+  // middle: page1(0~9) + page2(10~19) 항상, page3(20~29)은 middlePage3Unlocked 시
+  // bottom: page1(0~19) + page2(20~20+extraSlots-1, 가방 장착 시)
   board: {
     top:         [null, null, null, null, null, null, null, null, null, null], // 10칸
-    environment: [null, null, null],  // 3칸: [날씨 카드][이벤트 카드1][이벤트 카드2]
-    middle:      [null, null, null, null, null, null, null, null, null, null], // 10칸
+    environment: [null, null, null],  // 3칸
+    middle:      [null,null,null,null,null,null,null,null,null,null,
+                  null,null,null,null,null,null,null,null,null,null],  // 바닥 20칸 (page1 10 + page2 10)
     bottom:      [null,null,null,null,null,null,null,null,null,null,
-                  null,null,null,null,null,null,null,null,null,null],  // 소지품 20칸 (10열×2행 그리드)
+                  null,null,null,null,null,null,null,null,null,null],  // 휴대 page1 20칸
   },
 
   // ── card instances ────────────────────────────────────
@@ -204,6 +213,8 @@ const GameState = {
     saveSlot:      0,            // 현재 사용 중인 세이브 슬롯
     modalOpen:     false,
     notifications: [],
+    bottomPage:    0,            // 휴대 행 현재 페이지 (0 또는 1)
+    middlePage:    0,            // 바닥 행 현재 페이지 (0~2)
   },
 
   // ── pending loot (탐색 후 플레이어 확인 전까지 보관) ───
@@ -364,25 +375,77 @@ const GameState = {
     return GameData.items[inst.definitionId];
   },
 
+  // 페이지 단위 행의 페이지 경계 배열을 반환 — _compactRowPaged·렌더링 공통
+  // 각 항목 = { start, size }
+  _getPageRanges(row) {
+    if (row === 'middle') {
+      const total = this.board.middle?.length ?? 20;
+      const ranges = [];
+      for (let start = 0; start < total; start += MIDDLE_PAGE_SIZE) {
+        ranges.push({ start, size: MIDDLE_PAGE_SIZE });
+      }
+      return ranges;
+    }
+    if (row === 'bottom') {
+      const extra = this.player?.extraSlots ?? 0;
+      const ranges = [{ start: 0, size: BOTTOM_PAGE1_SIZE }];
+      if (extra > 0) ranges.push({ start: BOTTOM_PAGE1_SIZE, size: extra });
+      return ranges;
+    }
+    return null;
+  },
+
   // find first empty slot in a row (returns index or -1)
-  // bottom 행은 가방 활성 범위(10 + extraSlots)까지만 사용 — 잠긴 슬롯에 카드가 박히는 것 방지
+  // 페이지 단위 행은 page1 → page2 → page3 순으로 빈 슬롯 탐색.
+  // bottom: page1(20) → page2(extraSlots). middle: 활성 페이지 모두 순차.
   findEmptySlot(row) {
     const arr = this.board[row];
-    if (row === 'bottom') {
-      const activeEnd = 10 + (this.player?.extraSlots ?? 0);
-      for (let i = 0; i < activeEnd; i++) {
-        if (arr[i] === null) return i;
+    const pages = this._getPageRanges(row);
+    if (pages) {
+      for (const { start, size } of pages) {
+        for (let i = start; i < start + size; i++) {
+          if (arr[i] === null) return i;
+        }
       }
       return -1;
     }
     return arr.findIndex(v => v === null);
   },
 
-  // middle·bottom 행의 null을 뒤로 밀어 빈 칸 압축
+  // middle·bottom 행의 null을 뒤로 밀어 빈 칸 압축 — 페이지 경계 보존
+  // 페이지 1의 빈 칸이 페이지 2 카드를 끌어오지 않는다.
   _compactRow(row) {
-    const arr    = this.board[row];
+    const arr   = this.board[row];
+    const pages = this._getPageRanges(row);
+    if (pages) {
+      const next = [...arr];
+      for (const { start, size } of pages) {
+        const slice  = arr.slice(start, start + size);
+        const filled = slice.filter(v => v !== null);
+        const padded = [...filled, ...Array(size - filled.length).fill(null)];
+        for (let i = 0; i < size; i++) next[start + i] = padded[i];
+      }
+      this.board[row] = next;
+      return;
+    }
     const filled = arr.filter(v => v !== null);
     this.board[row] = [...filled, ...Array(arr.length - filled.length).fill(null)];
+  },
+
+  // 1페이지 만차 상태에서 카드가 페이지 2(슬롯 10~19)에 떨어지면 영속 해금.
+  // 이미 해금되어 있거나 다른 페이지·다른 행이면 no-op.
+  _maybeUnlockMiddlePage3(row, slot) {
+    if (row !== 'middle') return;
+    if (this.player?.middlePage3Unlocked) return;
+    if (slot < MIDDLE_PAGE_SIZE || slot >= MIDDLE_PAGE_SIZE * 2) return;
+    const page1Full = this.board.middle.slice(0, MIDDLE_PAGE_SIZE).every(v => v !== null);
+    if (!page1Full) return;
+    this.player.middlePage3Unlocked = true;
+    this.board.middle = [
+      ...this.board.middle,
+      ...Array(MIDDLE_PAGE_SIZE).fill(null),
+    ];
+    EventBus.emit('middlePage3Unlocked', {});
   },
 
   // place a card instance in first available slot of a row
@@ -398,6 +461,7 @@ const GameState = {
       const idx = this.findEmptySlot('middle');
       if (idx !== -1) {
         this.board.middle[idx] = instanceId;
+        this._maybeUnlockMiddlePage3('middle', idx);
         EventBus.emit('cardPlaced', { instanceId, row: 'middle', slot: idx });
         return { row: 'middle', slot: idx };
       }
@@ -445,6 +509,7 @@ const GameState = {
       const idx = this.findEmptySlot(row);
       if (idx !== -1) {
         this.board[row][idx] = instanceId;
+        this._maybeUnlockMiddlePage3(row, idx);
         EventBus.emit('cardPlaced', { instanceId, row, slot: idx });
         return { row, slot: idx };
       }
@@ -619,7 +684,12 @@ const GameState = {
       noise:    this.noise,
       crafting: this.crafting,
       combat:   this.combat,
-      ui:            { currentState: this.ui.currentState, basecampMode: this.ui.basecampMode },
+      ui:            {
+        currentState: this.ui.currentState,
+        basecampMode: this.ui.basecampMode,
+        bottomPage:   this.ui.bottomPage ?? 0,
+        middlePage:   this.ui.middlePage ?? 0,
+      },
       flags:           this.flags,
       combatRespawn:   this.combatRespawn,
       season:          this.season,
@@ -664,6 +734,7 @@ const GameState = {
     }
     delete this.player.equipped.offhand;
     if (this.player.extraSlots === undefined) this.player.extraSlots = 0;
+    if (this.player.middlePage3Unlocked === undefined) this.player.middlePage3Unlocked = false;
     if (!this.player.gender) this.player.gender = 'M';
     // 구버전 세이브 호환: stamina 필드 자동 생성 + decayPerTP 누락 보정
     if (!this.stats.stamina) this.stats.stamina = { current: 100, max: 100, decayPerTP: 0 };
@@ -673,10 +744,87 @@ const GameState = {
     if (this.player.endurance == null) this.player.endurance = 60;
     // 구버전 세이브 호환: encumbrance weightPct 필드
     if (this.player.encumbrance.weightPct === undefined) this.player.encumbrance.weightPct = 0;
-    // 구버전 세이브 호환: top/middle 행 10칸으로 확장
-    if (d.board?.top    && d.board.top.length    < 10) while (d.board.top.length    < 10) d.board.top.push(null);
-    if (d.board?.middle && d.board.middle.length < 10) while (d.board.middle.length < 10) d.board.middle.push(null);
-    if (d.board?.bottom && d.board.bottom.length < 20) while (d.board.bottom.length < 20) d.board.bottom.push(null);
+    // 구버전 세이브 호환: top 행 10칸으로 확장
+    if (d.board?.top && d.board.top.length < 10) while (d.board.top.length < 10) d.board.top.push(null);
+    // 페이지 단위 마이그레이션: middle 길이 10 → 20 (+ page3 해금 시 30)
+    if (d.board?.middle) {
+      const mLen = d.board.middle.length;
+      if (this.player.middlePage3Unlocked) {
+        while (d.board.middle.length < 30) d.board.middle.push(null);
+      } else if (mLen >= 30) {
+        // 길이 30이지만 플래그 누락 — 길이를 신뢰해 해금 상태로 복원
+        this.player.middlePage3Unlocked = true;
+      } else {
+        while (d.board.middle.length < 20) d.board.middle.push(null);
+      }
+    }
+    // 페이지 단위 마이그레이션: bottom
+    // 구포맷: length === 20 (page1=0~9, page2=10~10+oldExtra-1, 나머지 잠금)
+    // 신포맷: length === 20 + extraSlots (page1=0~19, page2=20~)
+    if (d.board?.bottom) {
+      const equippedBagId = this.player.equipped?.backpack;
+      const bagDefId = equippedBagId
+        ? (this.cards?.[equippedBagId]?.definitionId ?? d.cards?.[equippedBagId]?.definitionId)
+        : null;
+      const bagDef   = bagDefId ? GameData?.items?.[bagDefId] : null;
+      const newExtra = lookupBagExtraSlots(bagDef);
+      const oldArr   = d.board.bottom.slice();
+      const newLen   = BOTTOM_PAGE1_SIZE + newExtra;
+      const newArr   = Array(newLen).fill(null);
+      const isOldFormat = oldArr.length === 20 && (this.player.extraSlots ?? 0) <= 10;
+      const orphans = [];
+
+      if (isOldFormat) {
+        const oldExtra = this.player.extraSlots ?? 0;
+        // page1 앞쪽: 구 0~9 → 신 0~9
+        for (let i = 0; i < 10; i++) newArr[i] = oldArr[i] ?? null;
+        // page2: 구 10~10+oldExtra-1 → 신 20~20+min(oldExtra,newExtra)-1
+        const carry = Math.min(oldExtra, newExtra);
+        for (let i = 0; i < carry; i++) {
+          newArr[BOTTOM_PAGE1_SIZE + i] = oldArr[10 + i] ?? null;
+        }
+        // 신 page2가 더 작으면 초과 카드는 orphan
+        for (let i = carry; i < oldExtra; i++) {
+          if (oldArr[10 + i] != null) orphans.push(oldArr[10 + i]);
+        }
+        // 구 잠긴 슬롯(10+oldExtra ~ 19) 카드도 orphan
+        for (let i = 10 + oldExtra; i < 20; i++) {
+          if (oldArr[i] != null) orphans.push(oldArr[i]);
+        }
+      } else {
+        // 신포맷: page1 그대로 복사, page2는 newExtra 길이까지만
+        for (let i = 0; i < 20 && i < oldArr.length; i++) newArr[i] = oldArr[i] ?? null;
+        const oldExtraNew = Math.max(0, oldArr.length - 20);
+        const carry = Math.min(oldExtraNew, newExtra);
+        for (let i = 0; i < carry; i++) {
+          newArr[BOTTOM_PAGE1_SIZE + i] = oldArr[20 + i] ?? null;
+        }
+        for (let i = carry; i < oldExtraNew; i++) {
+          if (oldArr[20 + i] != null) orphans.push(oldArr[20 + i]);
+        }
+      }
+
+      // orphan 회수: 신 page1의 빈자리(10~19 우선, 그 다음 0~9)
+      let cursor = 10;
+      for (const id of orphans) {
+        while (cursor < 20 && newArr[cursor] != null) cursor++;
+        if (cursor >= 20) {
+          cursor = 0;
+          while (cursor < 10 && newArr[cursor] != null) cursor++;
+        }
+        if (cursor < 20) newArr[cursor++] = id;
+        else if (this.cards?.[id]) {
+          this.pendingLoot = [...(this.pendingLoot ?? []), {
+            definitionId: this.cards[id].definitionId,
+            quantity:     this.cards[id].quantity ?? 1,
+            contamination: this.cards[id].contamination ?? 0,
+          }];
+        }
+      }
+
+      d.board.bottom = newArr;
+      this.player.extraSlots = newExtra;
+    }
     // 구버전 세이브 호환: environment 행이 없으면 자동 생성
     if (!d.board.environment) d.board.environment = [null, null, null];
     while (d.board.environment.length < 3) d.board.environment.push(null);
@@ -695,6 +843,13 @@ const GameState = {
       d.ui = { ...d.ui, currentState: 'main' };
     }
     Object.assign(this.ui,       d.ui);
+    if (this.ui.bottomPage == null) this.ui.bottomPage = 0;
+    if (this.ui.middlePage == null) this.ui.middlePage = 0;
+    // 페이지 인덱스 클램프: 가방 해제·page3 미해금 등으로 범위 밖이면 0
+    const maxBottomPage = (this.player.extraSlots ?? 0) > 0 ? 1 : 0;
+    const maxMiddlePage = this.player.middlePage3Unlocked ? 2 : 1;
+    if (this.ui.bottomPage > maxBottomPage) this.ui.bottomPage = 0;
+    if (this.ui.middlePage > maxMiddlePage) this.ui.middlePage = 0;
     if (d.flags) Object.assign(this.flags, d.flags);
     // 구버전 세이브 호환: 지도 조각 필드
     if (!this.flags.mapFragments) this.flags.mapFragments = [];
