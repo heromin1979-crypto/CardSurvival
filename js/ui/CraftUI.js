@@ -9,11 +9,13 @@ import SkillSystem     from '../systems/SkillSystem.js';
 import I18n            from '../core/I18n.js';
 import GameData        from '../data/GameData.js';
 import CraftTreeUI     from './CraftTreeUI.js';
+import SecretCombinationSystem from '../systems/SecretCombinationSystem.js';
+import SECRET_COMBINATIONS     from '../data/secretCombinations.js';
 
 // 전체 레시피 (히든 포함)
 const ALL_BLUEPRINTS = { ...BLUEPRINTS_BASE, ...HIDDEN_RECIPES };
 
-// 카테고리 탭 정의 (표시 순서대로)
+// 카테고리 탭 정의 (표시 순서대로) — 'secret'은 발견된 비밀 조합 갤러리
 const CATEGORY_TABS = [
   { key: 'all',        icon: '📋', labelKey: 'craft.tab.all' },
   { key: 'weapon',     icon: '⚔️', labelKey: 'craft.tab.weapon' },
@@ -25,6 +27,7 @@ const CATEGORY_TABS = [
   { key: 'material',   icon: '📦', labelKey: 'craft.tab.material' },
   { key: 'upgrade',    icon: '⬆️', labelKey: 'craft.tab.upgrade' },
   { key: 'consumable', icon: '🧪', labelKey: 'craft.tab.consumable' },
+  { key: 'secret',     icon: '🔮', labelKey: 'craft.tab.secret' },
 ];
 
 const CraftUI = {
@@ -136,6 +139,9 @@ const CraftUI = {
   },
 
   _renderBlueprintList() {
+    if (this._categoryFilter === 'secret') {
+      return this._renderSecretList();
+    }
     const unlockedHidden = GameState.flags.hiddenRecipesUnlocked ?? [];
     const visibleBlueprints = Object.values(ALL_BLUEPRINTS).filter(bp => {
       // 히든 레시피: 해금된 것만 표시
@@ -192,6 +198,67 @@ const CraftUI = {
         </div>
       `;
     }).join('');
+  },
+
+  _renderSecretList() {
+    const progress = SecretCombinationSystem.getProgress();
+    const hints   = SecretCombinationSystem.getUnlockedHints();
+    const found   = GameState.discoveries?.foundCombinations ?? [];
+    const hintIds = GameState.discoveries?.unlockedHints ?? [];
+    const items   = GameData?.items ?? {};
+    const pct     = progress.total > 0 ? Math.round((progress.found / progress.total) * 100) : 0;
+
+    const header = `
+      <div class="sg-progress" style="margin-bottom:8px;">
+        <span>${I18n.t('secret.progress', { found: progress.found, total: progress.total })}</span>
+        <div class="sg-progress-bar">
+          <div class="sg-progress-fill" style="width:${pct}%"></div>
+        </div>
+      </div>`;
+
+    const cards = SECRET_COMBINATIONS.map(combo => {
+      const isFound = found.includes(combo.id);
+      const hasHint = hintIds.includes(combo.id);
+      if (isFound) {
+        const srcDef = items[combo.source?.id];
+        const tgtDef = items[combo.target?.id];
+        const resultDef = combo.result?.spawnItem ? items[combo.result.spawnItem] : null;
+        const icon = resultDef?.icon ?? '?';
+        const srcName = srcDef ? I18n.itemName(srcDef.id, srcDef.name) : (combo.source?.tag ?? '?');
+        const tgtName = tgtDef ? I18n.itemName(tgtDef.id, tgtDef.name) : (combo.target?.tag ?? '?');
+        return `
+          <div class="sg-combo-card sg-found">
+            <div class="sg-combo-icon">${icon}</div>
+            <div class="sg-combo-info">
+              <div class="sg-combo-name">${combo.name}</div>
+              <div class="sg-combo-recipe">${srcName} + ${tgtName}</div>
+            </div>
+            <div class="sg-combo-badge sg-badge-found">${I18n.t('secret.discovered')}</div>
+          </div>`;
+      }
+      if (hasHint) {
+        const hintEntry = hints.find(h => h.id === combo.id);
+        return `
+          <div class="sg-combo-card sg-hint">
+            <div class="sg-combo-icon">?</div>
+            <div class="sg-combo-info">
+              <div class="sg-combo-name">???</div>
+              <div class="sg-combo-hint">${hintEntry?.hint ?? combo.hint}</div>
+            </div>
+            <div class="sg-combo-badge sg-badge-hint">${I18n.t('secret.hintOnly')}</div>
+          </div>`;
+      }
+      return `
+        <div class="sg-combo-card sg-unknown">
+          <div class="sg-combo-icon">?</div>
+          <div class="sg-combo-info">
+            <div class="sg-combo-name">???</div>
+          </div>
+          <div class="sg-combo-badge sg-badge-unknown">${I18n.t('secret.unknown')}</div>
+        </div>`;
+    }).join('');
+
+    return header + `<div class="sg-combo-list">${cards}</div>`;
   },
 
   _renderSkillReqs(bp) {
