@@ -680,7 +680,7 @@
   display: flex;
   flex-direction: column;
   max-width: 720px;
-  width: calc(100vw - 24px);
+  width: calc(100% - 24px);
   box-shadow: 0 12px 48px rgba(0,0,0,0.8);
   overflow: hidden;
 }
@@ -1001,7 +1001,7 @@
 }
 
 .ending-container {
-  min-height: 100vh;
+  min-height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;

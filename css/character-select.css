@@ -17,7 +17,7 @@
   display: grid;
   grid-template-columns: 0.85fr 1.6fr;
   grid-template-rows: 64px 1fr 84px;
-  height: 100vh;
+  height: 100%;
   width: 100%;
   padding: 16px 32px;
   gap: 14px;
