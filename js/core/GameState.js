@@ -412,23 +412,27 @@ const GameState = {
     return arr.findIndex(v => v === null);
   },
 
-  // middle·bottom 행의 null을 뒤로 밀어 빈 칸 압축 — 페이지 경계 보존
-  // 페이지 1의 빈 칸이 페이지 2 카드를 끌어오지 않는다.
+  // middle·bottom 행의 null + 유효하지 않은 참조(cards[]에 없는 board 항목)를 뒤로 밀어
+  // 빈 칸 압축. 페이지 경계 보존 — 페이지 1의 빈 칸이 페이지 2 카드를 끌어오지 않는다.
+  // orphan 필터링: instanceId 문자열이 아니거나 cards[]에 매핑이 없는 항목은
+  // 시각적으로 빈 슬롯이지만 findEmptySlot이 건너뛰는 invisible occupant가 되므로
+  // 압축 시 함께 제거한다.
   _compactRow(row) {
     const arr   = this.board[row];
+    const isValid = (v) => typeof v === 'string' && this.cards[v] != null;
     const pages = this._getPageRanges(row);
     if (pages) {
       const next = [...arr];
       for (const { start, size } of pages) {
         const slice  = arr.slice(start, start + size);
-        const filled = slice.filter(v => v !== null);
+        const filled = slice.filter(isValid);
         const padded = [...filled, ...Array(size - filled.length).fill(null)];
         for (let i = 0; i < size; i++) next[start + i] = padded[i];
       }
       this.board[row] = next;
       return;
     }
-    const filled = arr.filter(v => v !== null);
+    const filled = arr.filter(isValid);
     this.board[row] = [...filled, ...Array(arr.length - filled.length).fill(null)];
   },
 
