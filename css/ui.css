@@ -498,12 +498,14 @@
 .gauge-fill--morale      { background: linear-gradient(90deg, var(--stat-morale, #c8a060), #e8c080); }
 .gauge-fill--temperature { background: linear-gradient(90deg, #5090c0, #80b0d0); }
 
-/* 캐릭터선택 5종 */
-.gauge-fill--mental      { background: linear-gradient(90deg, #4d7eb0, #7eaad4); }
-.gauge-fill--stamina     { background: linear-gradient(90deg, #6cb86c, #9cd89c); }
-.gauge-fill--medicine    { background: linear-gradient(90deg, #c8c8c8, #ffffff); }
-.gauge-fill--combat      { background: linear-gradient(90deg, #c84040, #d8804b); }
-.gauge-fill--crafting    { background: linear-gradient(90deg, #d89040, #e8b060); }
+/* 캐릭터선택 5종 — AD 결정 2026-05-09: 앰버 단톤 통일 (목표 이미지 정렬) */
+.gauge-fill--mental,
+.gauge-fill--stamina,
+.gauge-fill--medicine,
+.gauge-fill--combat,
+.gauge-fill--crafting {
+  background: linear-gradient(90deg, var(--accent-dim, #6b5535), var(--accent-primary, #c8a060));
+}
 
 /* 사이드바 콕핏 */
 .gauge-fill--noise       { background: linear-gradient(90deg, #c84040, #d8804b); }
