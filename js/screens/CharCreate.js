@@ -7,7 +7,6 @@ import { DISTRICTS, getAdjacentDistricts } from '../data/districts.js';
 import { CHARACTERS, CHAR_GAUGE_KEYS, getCharacterGauges }  from '../data/characters.js';
 import Gauge          from '../ui/components/Gauge.js';
 import { LEVEL_XP_TABLE } from '../data/skillDefs.js';
-import EquipmentSystem from '../systems/EquipmentSystem.js';
 import ExploreSystem   from '../systems/ExploreSystem.js';
 import GameData        from '../data/GameData.js';
 import NPCS            from '../data/npcs.js';
@@ -507,13 +506,6 @@ const CharCreate = {
     if (char.startingCompanion) {
       const compInst = gs.createCardInstance(char.startingCompanion);
       if (compInst) gs.placeCardInRow(compInst.instanceId, 'middle');
-    }
-
-    // ── 작은 가방 지급 및 자동 장착 ─────────────────────────
-    const bagInst = gs.createCardInstance('small_bag');
-    if (bagInst) {
-      // 보드에 놓지 않고 바로 backpack 슬롯에 장착
-      EquipmentSystem.equip(bagInst.instanceId, 'backpack');
     }
 
     // ── 의사 전용 오프닝: 보라매병원 응급실 씬 ───────────────
