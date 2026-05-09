@@ -31,13 +31,17 @@
   gap: 6px;
 }
 
-.board-row-slots-wrap {
+/* 행 헤더: 라벨 + 페이저(있을 때) 가로 배치 — 슬롯 그리드와 분리되어 슬롯 폭에 영향 없음 */
+.board-row-header {
   display: flex;
   flex-direction: row;
-  gap: var(--gap-xs);
-  flex: 1;
-  min-height: 0;
-  align-items: stretch;
+  align-items: center;
+  gap: 12px;
+  flex: 0 0 auto;
+}
+
+.board-row-header .board-row-label {
+  flex: 0 0 auto;
 }
 
 .board-row-slots {
@@ -55,16 +59,14 @@
   border-radius: var(--radius-sm);
 }
 
-/* ── 행 페이저 (휴대/바닥 우측 세로 도트 + 좌우 화살표) ── */
+/* ── 행 페이저 (행 헤더에 가로 배치, 라벨 옆) ── */
 .board-row-pager {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 4px 6px;
+  gap: 8px;
+  padding: 2px 8px;
   flex: 0 0 auto;
-  min-width: 28px;
   background: rgba(0,0,0,0.12);
   border: 1px solid var(--border-dim);
   border-radius: var(--radius-sm);
@@ -72,7 +74,7 @@
 
 .pager-dots {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 6px;
   align-items: center;
 }
@@ -126,9 +128,6 @@
   opacity: 0.25;
   cursor: not-allowed;
 }
-/* 세로 페이저 — 위쪽 화살표는 회전, 아래쪽도 회전 */
-.pager-prev { transform: rotate(90deg); }
-.pager-next { transform: rotate(90deg); }
 
 /* 드래그 hover 페이지 전환 시 강조 */
 .pager-dot.drag-hover-pending {
@@ -368,9 +367,10 @@
 }
 
 /* ── 카드 입장 micro-animation ────────────────── */
+/* .slot .card는 left:50% + transform:translateX(-50%)로 중앙정렬됨 — 입장 애니메이션도 그 보정을 유지해야 절반 너비만큼 옆으로 튀지 않음 */
 @keyframes cardEntrance {
-  from { opacity: 0; transform: translateY(5px) scale(0.97); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
+  from { opacity: 0; transform: translateX(-50%) translateY(5px) scale(0.97); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
 }
 
 .card.entering {

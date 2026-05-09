@@ -106,13 +106,21 @@ const BoardRenderer = {
       rowEl.className = `board-row row-${row.key}`;
       rowEl.dataset.row = row.key;
 
+      // 행 헤더: 라벨 + 페이저(있을 때) 가로 배치 — 슬롯 그리드 폭에 영향 없음
+      const header = document.createElement('div');
+      header.className = 'board-row-header';
+
       const label = document.createElement('div');
       label.className = 'board-row-label';
       label.textContent = I18n.t(row.labelKey);
+      header.appendChild(label);
 
-      // 슬롯 + 페이저를 감싸는 wrapper (페이저는 슬롯 그리드 우측에 위치)
-      const wrap = document.createElement('div');
-      wrap.className = 'board-row-slots-wrap';
+      if (row.paged) {
+        const pages = GameState._getPageRanges(row.key) ?? [];
+        if (pages.length >= 2) {
+          header.appendChild(this._buildPager(row.key, pages));
+        }
+      }
 
       const slots = document.createElement('div');
       slots.className = 'board-row-slots';
@@ -124,18 +132,8 @@ const BoardRenderer = {
         this._buildPlainSlots(slots, row);
       }
 
-      wrap.appendChild(slots);
-
-      // 페이지가 1개뿐인 paged 행도 페이저 자리는 비워두지 않고, 2 이상일 때만 표시
-      if (row.paged) {
-        const pages = GameState._getPageRanges(row.key) ?? [];
-        if (pages.length >= 2) {
-          wrap.appendChild(this._buildPager(row.key, pages));
-        }
-      }
-
-      rowEl.appendChild(label);
-      rowEl.appendChild(wrap);
+      rowEl.appendChild(header);
+      rowEl.appendChild(slots);
       board.appendChild(rowEl);
     }
 
@@ -250,7 +248,8 @@ const BoardRenderer = {
     const clamped = Math.max(0, Math.min(pages.length - 1, newPage));
     if (clamped === this._currentPage(rowKey)) return;
     this._setCurrentPage(rowKey, clamped);
-    this._buildDOM();
+    // 슬롯 인덱스·페이저 상태만 갱신 — 다른 행은 건드리지 않아 깜빡임 방지
+    this._refreshPagedRow(rowKey);
     this.render();
   },
 
@@ -262,7 +261,50 @@ const BoardRenderer = {
     if (targetPage < 0) return;
     if (targetPage === this._currentPage(rowKey)) return;
     this._setCurrentPage(rowKey, targetPage);
-    if (this._container) this._buildDOM();
+    if (this._container) this._refreshPagedRow(rowKey);
+  },
+
+  // 한 행의 슬롯 dataset.slot과 페이저 상태만 갱신 (DOM 파괴 없음)
+  _refreshPagedRow(rowKey) {
+    const slotsEl = document.getElementById(`row-${rowKey}`);
+    if (!slotsEl) return;
+    const row = ROW_CONFIG.find(r => r.key === rowKey);
+    if (!row?.paged) return;
+
+    const pages = GameState._getPageRanges(rowKey) ?? [];
+    const curPage = Math.min(this._currentPage(rowKey), Math.max(0, pages.length - 1));
+    const range = pages[curPage] ?? { start: 0, size: 0 };
+    const rowLabel = I18n.t(row.labelKey);
+    const slotEls = slotsEl.querySelectorAll('.slot');
+
+    slotEls.forEach((slotEl, i) => {
+      if (i < range.size) {
+        slotEl.classList.remove('slot-empty-bg');
+        slotEl.classList.add('slot');
+        slotEl.dataset.row  = rowKey;
+        slotEl.dataset.slot = String(range.start + i);
+        slotEl.setAttribute('data-hint', I18n.t(row.hintKey));
+        slotEl.setAttribute('aria-label', `${rowLabel} ${curPage + 1}페이지 ${i + 1}번 슬롯`);
+        slotEl.removeAttribute('aria-hidden');
+      } else {
+        slotEl.className = 'slot slot-empty-bg';
+        delete slotEl.dataset.slot;
+        slotEl.removeAttribute('data-hint');
+        slotEl.removeAttribute('aria-label');
+        slotEl.setAttribute('aria-hidden', 'true');
+      }
+    });
+
+    // 페이저 갱신 — 행 헤더에서 기존 페이저 제거 후 다시 빌드
+    const rowEl = slotsEl.closest('.board-row');
+    const header = rowEl?.querySelector('.board-row-header');
+    if (header) {
+      const oldPager = header.querySelector('.board-row-pager');
+      if (oldPager) oldPager.remove();
+      if (pages.length >= 2) {
+        header.appendChild(this._buildPager(rowKey, pages));
+      }
+    }
   },
 
   render() {
