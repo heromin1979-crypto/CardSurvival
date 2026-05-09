@@ -523,6 +523,7 @@ const CharCreate = {
     const gs = GameState;
 
     // 1) 박상훈 하사 + 의무 거점을 middle에서 잠시 분리 (응급실에 다시 배치 예정)
+    //    빈 자리를 즉시 압축해야 enterLandmark가 동작구 바닥에 구멍 없는 상태로 저장한다.
     let soldierInstId = null;
     let medicalStationInstId = null;
     for (let i = 0; i < gs.board.middle.length; i++) {
@@ -537,6 +538,7 @@ const CharCreate = {
         gs.board.middle[i] = null;
       }
     }
+    gs._compactRow('middle');
 
     // 2) 보라매병원 진입 — enterLandmark가 middle을 동작구 바닥에 저장
     //    (간호사 + 시작 아이템들이 동작구 바닥에 보관됨)

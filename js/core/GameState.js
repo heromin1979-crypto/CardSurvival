@@ -831,6 +831,10 @@ const GameState = {
     Object.assign(this.board,    d.board);
     this.cards   = d.cards;
     this._nextId = d._nextId;
+    // 구버전 세이브 호환: middle/bottom에 흩어진 빈 슬롯이 남아 있을 수 있어
+    // 페이지 단위로 한 번 압축해 가운데 구멍을 정리한다 (consolidate/오프닝 버그 자가 치유).
+    this._compactRow('middle');
+    this._compactRow('bottom');
     Object.assign(this.location, d.location);
     Object.assign(this.noise,    d.noise);
     Object.assign(this.crafting, d.crafting);

@@ -692,6 +692,8 @@ const ExploreSystem = {
     const savedFloor = gs.locationFloors[slKey] ?? [];
     const floorSize = gs.board.middle.length;
     gs.board.middle = Array.from({ length: floorSize }, (_, i) => savedFloor[i] ?? null);
+    // 저장된 바닥에 비-카드 슬롯이 흩어져 있을 수 있어 페이지 단위 압축으로 정렬
+    gs._compactRow('middle');
 
     gs.location.currentSubLocation = subLocationId;
     gs.location.currentNode        = subLocationId;
@@ -926,6 +928,8 @@ const ExploreSystem = {
     const districtFloor = gs.locationFloors[floorKey] ?? [];
     const floorSize     = gs.board.middle.length;
     gs.board.middle = Array.from({ length: floorSize }, (_, i) => districtFloor[i] ?? null);
+    // 저장된 바닥에 비-카드 슬롯이 흩어져 있을 수 있어 페이지 단위 압축으로 정렬
+    gs._compactRow('middle');
 
     gs.location.currentLandmark    = null;
     gs.location.currentSubLocation = null;
