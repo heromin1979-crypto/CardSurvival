@@ -42,21 +42,28 @@ const CharCreate = {
     }
 
     const charCardsHtml = this._buildCharGrid();
-    const detailHtml    = this._buildCharDetail();
+    const leftPaneHtml  = this._buildLeftPane();
+    const infoAreaHtml  = this._buildInfoArea();
 
     this._el.innerHTML = `
       <div class="charcreate-v2">
         <header class="charcreate-header">
           <div class="charcreate-title">${I18n.t('charCreate.title')}</div>
-          <div class="charcreate-subtitle">SEOUL SURVIVAL · 2026</div>
+          <div class="charcreate-subtitle">
+            <div class="charcreate-subtitle-ko">서울 서바이벌</div>
+            <div class="charcreate-subtitle-en">SEOUL SURVIVAL · 2026</div>
+          </div>
         </header>
 
-        <div class="charcreate-main">
-          ${detailHtml}
-        </div>
+        ${leftPaneHtml}
 
-        <div class="charcreate-cards">
-          ${charCardsHtml}
+        <div class="charcreate-right">
+          <div class="charcreate-info-area">
+            ${infoAreaHtml}
+          </div>
+          <div class="charcreate-cards">
+            ${charCardsHtml}
+          </div>
         </div>
 
         <footer class="charcreate-footer">
@@ -132,28 +139,17 @@ const CharCreate = {
     }).join('');
   },
 
-  // ── 캐릭터 상세 (좌-중-우 3분할) ─────────────────────────
+  // ── 좌측: 풀-바디 일러스트 + 좌상단 오버레이 ─────────────
 
-  _buildCharDetail() {
+  _buildLeftPane() {
     const c = this._selectedChar;
-    if (!c) return '';
-
-    const gauges     = getCharacterGauges(c);
-    const gaugesHtml = CHAR_GAUGE_KEYS.map(k =>
-      Gauge.html({ label: k.label, value: gauges[k.id], color: k.id, size: 'md' })
-    ).join('');
-
-    const strengthsHtml = (c.strengths ?? []).map(s => `<li>${s}</li>`).join('');
-    const weaknessesHtml = (c.weaknesses ?? []).map(w => `<li>${w}</li>`).join('');
+    if (!c) return '<div class="char-pane char-pane-left"></div>';
 
     const portraitFull = c.portraitFull
       ? `<img class="char-portrait-full" src="${c.portraitFull}" alt="${c.name}" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'char-portrait-fallback',textContent:'${c.portrait ?? '👤'}'}))">`
       : `<div class="char-portrait-fallback">${c.portrait ?? '👤'}</div>`;
 
-    const districtInfo = DISTRICTS[c.homeDist];
-
     return `
-      <!-- 좌측: 풀-바디 일러스트 + 좌상단 정보 오버레이 -->
       <div class="char-pane char-pane-left">
         <div class="char-portrait-wrap">
           ${portraitFull}
@@ -164,8 +160,26 @@ const CharCreate = {
           <div class="char-overlay-cap">[${c.koreanLabel ?? c.englishLabel ?? ''}]</div>
         </div>
       </div>
+    `;
+  },
 
-      <!-- 중앙: 개인 정보 + 능력치 게이지 (박스 분리) -->
+  // ── 우측 상단 정보 영역 (좌: 개인정보+능력치 / 우: 강점·약점·목표·출발지) ──
+
+  _buildInfoArea() {
+    const c = this._selectedChar;
+    if (!c) return '';
+
+    const gauges     = getCharacterGauges(c);
+    const gaugesHtml = CHAR_GAUGE_KEYS.map(k =>
+      Gauge.html({ label: k.label, value: gauges[k.id], color: k.id, size: 'md' })
+    ).join('');
+
+    const strengthsHtml  = (c.strengths  ?? []).map(s => `<li>${s}</li>`).join('');
+    const weaknessesHtml = (c.weaknesses ?? []).map(w => `<li>${w}</li>`).join('');
+
+    const districtInfo = DISTRICTS[c.homeDist];
+
+    return `
       <div class="char-pane char-pane-center">
         <section class="char-box">
           <div class="char-box-title">개인 정보</div>
@@ -181,7 +195,6 @@ const CharCreate = {
         </section>
       </div>
 
-      <!-- 우측: 강점 / 약점 / 개인 목표 / 출발지 (박스 분리) -->
       <div class="char-pane char-pane-right">
         <div class="char-pane-row">
           <section class="char-box char-box--strength">
