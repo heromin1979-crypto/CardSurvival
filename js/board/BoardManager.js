@@ -28,11 +28,13 @@ const BoardManager = {
   },
 
   // Remove a card from its current slot
+  // 슬롯을 비운 뒤 페이지 단위 압축까지 수행해 가운데 구멍을 남기지 않는다.
   removeCard(instanceId) {
     for (const row of this.ROWS) {
       const idx = GameState.board[row].indexOf(instanceId);
       if (idx !== -1) {
         GameState.board[row][idx] = null;
+        GameState._compactRow(row);
         EventBus.emit('cardRemoved', { instanceId });
         return { row, slot: idx };
       }
@@ -41,6 +43,8 @@ const BoardManager = {
   },
 
   // Move a card from one slot to another
+  // 행 간 이동(from.row !== toRow)으로 src 위치가 null이 되면 src 행을 압축한다.
+  // 같은 행 내 이동은 사용자의 위치 조정 의도를 보존하기 위해 압축하지 않는다.
   moveCard(instanceId, toRow, toSlot) {
     const from = this.findCard(instanceId);
     if (!from) return false;
@@ -56,6 +60,7 @@ const BoardManager = {
     } else {
       GameState.board[from.row][from.slot] = null;
       GameState.board[toRow][toSlot]       = instanceId;
+      if (from.row !== toRow) GameState._compactRow(from.row);
       EventBus.emit('cardMoved', { instanceId, fromRow: from.row, toRow });
     }
     return true;
