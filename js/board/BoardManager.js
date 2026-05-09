@@ -135,16 +135,35 @@ const BoardManager = {
       }
     }
 
-    for (const entry of toRemove) {
-      gs.board[entry.row][entry.slot] = null;
-      delete gs.cards[entry.id];
-    }
+    this._clearSlotsAndCompact(toRemove);
 
     if (toRemove.length > 0) {
       gs._updateEncumbrance();
       EventBus.emit('boardChanged', {});
     }
     return toRemove.length > 0;
+  },
+
+  // 슬롯을 비우고 카드 인스턴스를 제거한 뒤, 영향받은 행을 한 번씩 압축한다.
+  // 반복 압축으로 인해 entry.slot 인덱스가 흔들리는 것을 막기 위해
+  // (1) 모든 nullify + delete를 먼저 수행하고
+  // (2) 영향받은 row만 마지막에 한 번씩 _compactRow를 호출한다.
+  // entries: [{ row, slot, id, ... }]
+  _clearSlotsAndCompact(entries) {
+    if (!entries?.length) return;
+    const gs = GameState;
+    for (const { row, slot, id } of entries) {
+      if (gs.board[row]?.[slot] === id) {
+        gs.board[row][slot] = null;
+      } else {
+        // 인덱스가 이미 바뀌었을 수도 있으므로 id로 재탐색
+        const idx = gs.board[row]?.indexOf(id) ?? -1;
+        if (idx !== -1) gs.board[row][idx] = null;
+      }
+      delete gs.cards[id];
+    }
+    const affectedRows = new Set(entries.map(e => e.row));
+    for (const row of affectedRows) gs._compactRow(row);
   },
 };
 

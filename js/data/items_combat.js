@@ -8,7 +8,7 @@ const ITEMS_COMBAT = {
   iron_pipe: {
     id: 'iron_pipe', name: '철파이프', type: 'weapon', subtype: 'melee',
     rarity: 'common', weight: 1.0,
-    defaultDurability: 80, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🔩', description: '단순하지만 효과적인 둔기. 가공하면 더 강력해진다.',
     tags: ['weapon', 'melee'],
     weaponType: 'blunt',
@@ -19,7 +19,7 @@ const ITEMS_COMBAT = {
   combat_scalpel: {
     id: 'combat_scalpel', name: '메스', type: 'weapon', subtype: 'melee',
     rarity: 'uncommon', weight: 0.1,
-    defaultDurability: 40, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🔪', description: '외과용 메스. 전투용으론 약하지만 정밀한 절개로 크리티컬 확률이 높다.',
     tags: ['weapon', 'melee', 'silent', 'medical'],
     weaponType: 'blade',
@@ -30,7 +30,7 @@ const ITEMS_COMBAT = {
   knife: {
     id: 'knife', name: '칼', type: 'weapon', subtype: 'melee',
     rarity: 'common', weight: 0.3,
-    defaultDurability: 70, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🔪', description: '소음 없이 적을 처치. 고철로 날을 갈면 더 강해진다.',
     tags: ['weapon', 'melee', 'silent'],
     weaponType: 'blade',
@@ -41,7 +41,7 @@ const ITEMS_COMBAT = {
   sharpened_knife: {
     id: 'sharpened_knife', name: '날카로운 칼', type: 'weapon', subtype: 'melee',
     rarity: 'uncommon', weight: 0.3,
-    defaultDurability: 80, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🗡️', description: '고철로 날을 갈아 강화된 칼. 더 깊은 상처를 입힌다.',
     tags: ['weapon', 'melee', 'silent', 'crafted'],
     weaponType: 'blade',
@@ -55,7 +55,7 @@ const ITEMS_COMBAT = {
   crowbar: {
     id: 'crowbar', name: '쇠지렛대', type: 'weapon', subtype: 'melee',
     rarity: 'common', weight: 1.2,
-    defaultDurability: 90, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🏒', description: '튼튼한 둔기. 문 개방에도 활용.',
     tags: ['weapon', 'melee'],
     weaponType: 'blunt',
@@ -66,7 +66,7 @@ const ITEMS_COMBAT = {
   baseball_bat: {
     id: 'baseball_bat', name: '야구배트', type: 'weapon', subtype: 'melee',
     rarity: 'common', weight: 0.9,
-    defaultDurability: 60, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🪃', description: '타격 무기. 업그레이드 가능.',
     tags: ['weapon', 'melee'],
     weaponType: 'blunt',
@@ -77,7 +77,7 @@ const ITEMS_COMBAT = {
   reinforced_bat: {
     id: 'reinforced_bat', name: '강화 배트', type: 'weapon', subtype: 'melee',
     rarity: 'uncommon', weight: 1.1,
-    defaultDurability: 90, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '⚾', description: '못이 박힌 배트. 피해량이 크게 증가.',
     tags: ['weapon', 'melee', 'crafted'],
     weaponType: 'blunt',
@@ -92,7 +92,7 @@ const ITEMS_COMBAT = {
   spiked_pipe: {
     id: 'spiked_pipe', name: '가시파이프', type: 'weapon', subtype: 'melee',
     rarity: 'uncommon', weight: 1.3,
-    defaultDurability: 85, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '⚙️', description: '못이 박힌 철파이프. 출혈을 유발한다.',
     tags: ['weapon', 'melee', 'crafted'],
     weaponType: 'blunt',
@@ -110,7 +110,7 @@ const ITEMS_COMBAT = {
   machete: {
     id: 'machete', name: '마체테', type: 'weapon', subtype: 'melee',
     rarity: 'uncommon', weight: 0.7,
-    defaultDurability: 75, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🗡️', description: '정글 도검. 빠른 연속 공격에 특화.',
     tags: ['weapon', 'melee'],
     weaponType: 'blade',
@@ -124,7 +124,7 @@ const ITEMS_COMBAT = {
   spear: {
     id: 'spear', name: '창', type: 'weapon', subtype: 'melee',
     rarity: 'uncommon', weight: 1.5,
-    defaultDurability: 70, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🏹', description: '장거리 근접 무기. 관통 공격으로 최대 2명 적에게 피해.',
     tags: ['weapon', 'melee', 'crafted'],
     weaponType: 'blade',
@@ -140,7 +140,7 @@ const ITEMS_COMBAT = {
   stun_gun: {
     id: 'stun_gun', name: '전기충격기', type: 'weapon', subtype: 'melee',
     rarity: 'rare', weight: 0.5,
-    defaultDurability: 60, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '⚡', description: '고압 전류로 기절 유발. 조용하고 치명적.',
     tags: ['weapon', 'melee', 'silent'],
     weaponType: 'electric',
@@ -158,7 +158,7 @@ const ITEMS_COMBAT = {
   hand_axe: {
     id: 'hand_axe', name: '손도끼', type: 'weapon', subtype: 'melee',
     rarity: 'uncommon', weight: 0.8,
-    defaultDurability: 75, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🪓', description: '나무를 베고 적을 공격하는 다용도 도구. 통나무 가공에 필수.',
     tags: ['weapon', 'melee', 'tool'],
     weaponType: 'blade',
@@ -174,7 +174,7 @@ const ITEMS_COMBAT = {
   pistol: {
     id: 'pistol', name: '권총', type: 'weapon', subtype: 'firearm',
     rarity: 'rare', weight: 0.8,
-    defaultDurability: 85, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🔫', description: '원거리 무기. 소음이 크다.',
     tags: ['weapon', 'firearm', 'loud'],
     weaponType: 'bullet',
@@ -188,7 +188,7 @@ const ITEMS_COMBAT = {
   shotgun: {
     id: 'shotgun', name: '산탄총', type: 'weapon', subtype: 'firearm',
     rarity: 'rare', weight: 2.5,
-    defaultDurability: 80, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🪃', description: '강력한 원거리 화기. 산탄으로 최대 2명 동시 피해.',
     tags: ['weapon', 'firearm', 'loud'],
     weaponType: 'bullet',
@@ -203,7 +203,7 @@ const ITEMS_COMBAT = {
   crossbow: {
     id: 'crossbow', name: '석궁', type: 'weapon', subtype: 'ranged',
     rarity: 'uncommon', weight: 2.0,
-    defaultDurability: 70, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🏹', description: '소음 없는 원거리 무기. 화살을 재사용 가능.',
     tags: ['weapon', 'ranged', 'silent', 'crafted'],
     weaponType: 'bullet',
@@ -286,7 +286,7 @@ const ITEMS_COMBAT = {
   raincoat: {
     id: 'raincoat', name: '우비', type: 'armor', subtype: 'clothing',
     rarity: 'common', weight: 0.5,
-    defaultDurability: 70, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🌧️', description: '비와 오염을 막는다. 방사선 오염 감소.',
     tags: ['armor', 'clothing', 'crafted'],
     onWear: { radiationMult: 0.70, contaminationMult: 0.80 },
@@ -299,7 +299,7 @@ const ITEMS_COMBAT = {
   tactical_vest: {
     id: 'tactical_vest', name: '전술조끼', type: 'armor', subtype: 'vest',
     rarity: 'rare', weight: 2.0,
-    defaultDurability: 90, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🦺', description: '방탄 소재. 전투 피해를 크게 감소.',
     tags: ['armor', 'vest', 'crafted'],
     onWear: { damageReduction: 0.25 },
@@ -313,7 +313,7 @@ const ITEMS_COMBAT = {
   helmet: {
     id: 'helmet', name: '헬멧', type: 'armor', subtype: 'head',
     rarity: 'uncommon', weight: 1.0,
-    defaultDurability: 80, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '⛑️', description: '머리를 보호. 크리티컬 피해 감소.',
     tags: ['armor', 'head', 'crafted'],
     onWear: { critReduction: 0.30 },
@@ -326,7 +326,7 @@ const ITEMS_COMBAT = {
   work_gloves: {
     id: 'work_gloves', name: '작업장갑', type: 'armor', subtype: 'hands',
     rarity: 'common', weight: 0.2,
-    defaultDurability: 60, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🧤', description: '손을 보호. 오염 접촉 시 감염 감소.',
     tags: ['armor', 'hands'],
     onWear: { infectionMult: 0.80 },
@@ -361,7 +361,7 @@ const ITEMS_COMBAT = {
   warm_clothes: {
     id: 'warm_clothes', name: '방한복', type: 'armor', subtype: 'clothing',
     rarity: 'rare', weight: 1.5,
-    defaultDurability: 85, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🧥', description: '두꺼운 가죽과 천으로 겹겹이 만든 방한복. 혹한에서 체온 하락 속도를 크게 줄인다.',
     tags: ['armor', 'clothing', 'crafted'],
     onWear: { coldResistMult: 0.5, hypothermiaChanceMult: 0.3 },
@@ -375,7 +375,7 @@ const ITEMS_COMBAT = {
   hazmat_suit: {
     id: 'hazmat_suit', name: '방호복', type: 'armor', subtype: 'fullbody',
     rarity: 'rare', weight: 4.0,
-    defaultDurability: 80, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🧑‍🚀', description: '방사선·오염 완전 차단. 무겁지만 생존에 필수.',
     tags: ['armor', 'fullbody', 'crafted'],
     onWear: { radiationMult: 0.20, contaminationMult: 0.30 },
@@ -390,7 +390,7 @@ const ITEMS_COMBAT = {
   running_shoes: {
     id: 'running_shoes', name: '러닝화', type: 'armor', subtype: 'boots',
     rarity: 'common', weight: 0.4,
-    defaultDurability: 70, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '👟', description: '가볍고 빠른 운동화. 이동 시 피로 소모를 줄인다.',
     tags: ['armor', 'boots'],
     onWear: { fatigueMult: 0.85 },
@@ -403,7 +403,7 @@ const ITEMS_COMBAT = {
   hiking_boots: {
     id: 'hiking_boots', name: '등산화', type: 'armor', subtype: 'boots',
     rarity: 'uncommon', weight: 0.8,
-    defaultDurability: 85, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🥾', description: '험한 지형에서 발을 보호. 감염 저항 소폭 향상.',
     tags: ['armor', 'boots', 'crafted'],
     onWear: { infectionMult: 0.85, fatigueMult: 0.90 },
@@ -416,7 +416,7 @@ const ITEMS_COMBAT = {
   combat_boots: {
     id: 'combat_boots', name: '전투화', type: 'armor', subtype: 'boots',
     rarity: 'uncommon', weight: 1.2,
-    defaultDurability: 95, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🪖', description: '군용 전투화. 피해 감소와 치명타 방어 효과.',
     tags: ['armor', 'boots'],
     onWear: { damageReduction: 0.05, critReduction: 0.10 },
@@ -429,7 +429,7 @@ const ITEMS_COMBAT = {
   hazmat_boots: {
     id: 'hazmat_boots', name: '방호화', type: 'armor', subtype: 'boots',
     rarity: 'rare', weight: 1.5,
-    defaultDurability: 80, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🦺', description: '방사선 차단 부츠. 핵오염 지역 탐색 시 필수.',
     tags: ['armor', 'boots', 'crafted'],
     onWear: { radiationMult: 0.55, contaminationMult: 0.65 },
@@ -444,7 +444,7 @@ const ITEMS_COMBAT = {
   axe: {
     id: 'axe', name: '도끼', type: 'weapon', subtype: 'melee',
     rarity: 'rare', weight: 1.5,
-    defaultDurability: 90, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🪓', description: '야전 대장간에서 제작한 도끼. 전투 무기이자 벌목 도구. 통나무 가공 효율 2배.',
     tags: ['weapon', 'melee', 'tool', 'crafted'],
     weaponType: 'blade',
@@ -460,7 +460,7 @@ const ITEMS_COMBAT = {
   shovel: {
     id: 'shovel', name: '삽', type: 'weapon', subtype: 'melee',
     rarity: 'uncommon', weight: 1.8,
-    defaultDurability: 85, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '⛏️', description: '삽 머리를 자루에 결합한 도구. 땅 파기·텃밭 조성·진흙 수집에 효율 증가.',
     tags: ['weapon', 'melee', 'tool', 'crafted'],
     weaponType: 'blunt',
@@ -475,7 +475,7 @@ const ITEMS_COMBAT = {
   hammer: {
     id: 'hammer', name: '망치', type: 'weapon', subtype: 'melee',
     rarity: 'uncommon', weight: 1.2,
-    defaultDurability: 95, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🔨', description: '목공 작업대에서 만든 망치. 건축 TP 비용 -1 보너스. 전투 시 강한 기절 유발.',
     tags: ['weapon', 'melee', 'tool', 'crafted'],
     weaponType: 'blunt',
@@ -504,7 +504,7 @@ const ITEMS_COMBAT = {
   rifle: {
     id: 'rifle', name: '소총', type: 'weapon', subtype: 'firearm',
     rarity: 'legendary', weight: 3.5,
-    defaultDurability: 90, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🔫', description: '고성능 반자동 소총. 원거리에서 강력한 피해. 소음이 매우 크며 탄약 직접 제작 필요.',
     tags: ['weapon', 'firearm', 'loud'],
     weaponType: 'bullet',
@@ -530,7 +530,7 @@ const ITEMS_COMBAT = {
   pipe_shotgun: {
     id: 'pipe_shotgun', name: '파이프 산탄총', type: 'weapon', subtype: 'ranged',
     rarity: 'rare', weight: 2.5,
-    defaultDurability: 60, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🔫', description: '철파이프로 제작한 조잡한 산탄총. 근거리에서 파괴적.',
     tags: ['weapon', 'ranged', 'crafted'],
     weaponType: 'pierce',
@@ -573,7 +573,7 @@ const ITEMS_COMBAT = {
   pipe_wrench_improved: {
     id: 'pipe_wrench_improved', name: '개량 파이프렌치', type: 'weapon', subtype: 'melee',
     rarity: 'uncommon', weight: 1.8,
-    defaultDurability: 90, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🔧', description: '강철판으로 보강한 파이프렌치. 도구이자 무기.',
     tags: ['weapon', 'melee', 'tool', 'crafted'],
     weaponType: 'blunt',
@@ -629,7 +629,7 @@ const ITEMS_COMBAT = {
   plate_carrier: {
     id: 'plate_carrier', name: '플레이트 캐리어', type: 'armor', subtype: 'body',
     rarity: 'rare', weight: 2.8,
-    defaultDurability: 95, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🦺', description: '강화 천과 금속판을 조합한 방탄 조끼.',
     tags: ['armor', 'body', 'crafted'],
     armor: { defense: 18, damageReduction: 0.18, critReduction: 0.12, movePenalty: 0.08 },
@@ -670,7 +670,7 @@ const ITEMS_COMBAT = {
   ballistic_weave: {
     id: 'ballistic_weave', name: '방탄직', type: 'armor', subtype: 'body',
     rarity: 'rare', weight: 1.0,
-    defaultDurability: 80, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🧥', description: '특수 섬유로 짠 방탄 원단. 가볍고 유연하다.',
     tags: ['armor', 'body', 'crafted'],
     armor: { defense: 12, damageReduction: 0.12, critReduction: 0.08, movePenalty: 0.02 },
@@ -683,7 +683,7 @@ const ITEMS_COMBAT = {
   camo_cloth: {
     id: 'camo_cloth', name: '위장 천', type: 'armor', subtype: 'body',
     rarity: 'uncommon', weight: 0.6,
-    defaultDurability: 60, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🫒', description: '염료로 물들인 위장용 천. 은신에 도움된다.',
     tags: ['armor', 'body', 'crafted'],
     armor: { defense: 3, damageReduction: 0.03, critReduction: 0.02, movePenalty: 0.00 },
@@ -695,7 +695,7 @@ const ITEMS_COMBAT = {
   ghillie_suit: {
     id: 'ghillie_suit', name: '길리 수트', type: 'armor', subtype: 'body',
     rarity: 'rare', weight: 1.5,
-    defaultDurability: 70, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🌿', description: '위장 천으로 만든 은신복. 적 탐지를 크게 줄인다.',
     tags: ['armor', 'body', 'crafted'],
     armor: { defense: 5, damageReduction: 0.05, critReduction: 0.03, movePenalty: 0.05 },

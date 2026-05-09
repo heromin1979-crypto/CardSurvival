@@ -1,22 +1,17 @@
 .quest-panel {
-  padding: 8px;
+  padding: 10px;
   background: var(--surface-elevated, rgba(20,22,26,0.6));
   border: 1px solid var(--border-subtle, rgba(255,255,255,0.08));
   border-radius: 6px;
   font-family: var(--font-ui, 'Noto Sans KR'), sans-serif;
-  font-size: 12px;
+  font-size: 17px;
   color: var(--text-primary, #e8e8e8);
   margin: 8px 0;
 }
-.quest-panel-title {
-  margin: 0 0 6px;
-  font-size: 13px;
-  font-weight: 600;
-}
 .quest-active {
-  padding: 6px;
+  padding: 8px 10px;
   border-left: 2px solid var(--accent-warm, #e5c55a);
-  margin-bottom: 8px;
+  margin-bottom: 10px;
   background: rgba(255,255,255,0.02);
   border-radius: 0 4px 4px 0;
 }
@@ -25,43 +20,44 @@
   gap: 6px;
   align-items: center;
   font-weight: 500;
+  font-size: 17px;
 }
 .quest-deadline {
   margin-left: auto;
-  font-size: 11px;
+  font-size: 16px;
   color: var(--accent-warm, #e5c55a);
-  padding: 1px 5px;
+  padding: 1px 6px;
   border: 1px solid currentColor;
   border-radius: 3px;
 }
 .quest-deadline.urgent { color: var(--accent-danger,  #d04a4a); font-weight: 700; }
 .quest-deadline.warn   { color: var(--accent-warning, #e08a3a); }
 .quest-desc {
-  font-size: 11px;
+  font-size: 16px;
   opacity: 0.85;
-  margin: 4px 0;
-  line-height: 1.4;
+  margin: 6px 0;
+  line-height: 1.5;
 }
 .quest-subobjectives {
   list-style: none;
   padding: 0;
-  margin: 4px 0;
-  font-size: 11px;
+  margin: 6px 0;
+  font-size: 16px;
 }
-.quest-subobjectives li { padding: 2px 0; }
+.quest-subobjectives li { padding: 3px 0; line-height: 1.5; }
 .quest-subobjectives li.done {
   opacity: 0.55;
   text-decoration: line-through;
 }
 .quest-hint {
-  opacity: 0.6;
-  font-size: 10px;
+  opacity: 0.65;
+  font-size: 15px;
   margin-left: 4px;
 }
 .quest-location {
-  font-size: 10px;
-  opacity: 0.7;
-  margin-top: 4px;
+  font-size: 15px;
+  opacity: 0.75;
+  margin-top: 6px;
 }
 .quest-location.on-target {
   opacity: 1;
@@ -71,7 +67,7 @@
   display: inline-block;
   margin-left: 6px;
   padding: 1px 6px;
-  font-size: 9px;
+  font-size: 14px;
   background: var(--text-good);
   color: var(--bg-base);
   border-radius: 3px;
@@ -84,65 +80,98 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  margin: 6px 0 4px;
+  margin: 8px 0 6px;
 }
 .quest-progress-bar {
   flex: 1;
-  height: 4px;
+  height: 6px;
   background: rgba(255,255,255,0.08);
-  border-radius: 2px;
+  border-radius: 3px;
   overflow: hidden;
 }
 .quest-progress-fill {
   height: 100%;
   background: var(--accent-primary);
-  border-radius: 2px;
+  border-radius: 3px;
   transition: width 0.3s ease;
 }
 .quest-progress-text {
-  font-size: 10px;
+  font-size: 15px;
   color: var(--text-secondary);
   font-variant-numeric: tabular-nums;
-  min-width: 28px;
+  min-width: 38px;
   text-align: right;
 }
 .quest-empty {
-  opacity: 0.5;
-  font-size: 11px;
-  padding: 4px 0;
+  opacity: 0.6;
+  font-size: 16px;
+  padding: 6px 0;
 }
 
 .quest-panel-next h4 {
-  font-size: 11px;
-  opacity: 0.7;
-  margin: 8px 0 4px;
+  font-size: 16px;
+  opacity: 0.75;
+  margin: 10px 0 6px;
   font-weight: 500;
 }
 .quest-next-row {
-  font-size: 11px;
-  padding: 2px 4px;
+  font-size: 16px;
+  padding: 6px 4px;
+  opacity: 0.9;
+}
+.quest-next-head {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.quest-next-desc {
+  font-size: 15px;
   opacity: 0.85;
+  margin-top: 4px;
+  margin-left: 18px;
+  line-height: 1.5;
+}
+.quest-next-loc {
+  font-size: 14px;
+  opacity: 0.7;
+  margin-top: 3px;
+  margin-left: 18px;
 }
 .quest-trigger {
-  opacity: 0.6;
-  font-size: 10px;
+  opacity: 0.65;
+  font-size: 15px;
   margin-left: 4px;
 }
 
 .quest-panel-locked {
-  margin-top: 8px;
+  margin-top: 10px;
   border-top: 1px dashed var(--border-subtle, rgba(255,255,255,0.08));
-  padding-top: 6px;
+  padding-top: 8px;
 }
 .quest-panel-locked summary {
-  font-size: 11px;
-  opacity: 0.6;
+  font-size: 16px;
+  opacity: 0.7;
   cursor: pointer;
   user-select: none;
+  padding: 2px 0;
 }
-.quest-panel-locked summary:hover { opacity: 0.8; }
+.quest-panel-locked summary:hover { opacity: 0.9; }
+.quest-locked-hint {
+  opacity: 0.65;
+  font-size: 15px;
+  font-weight: 400;
+}
 .quest-locked-row {
-  font-size: 11px;
-  opacity: 0.4;
-  padding: 2px 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  opacity: 0.6;
+  padding: 4px 4px;
+}
+.quest-locked-reason {
+  font-size: 15px;
+  opacity: 0.8;
+  white-space: nowrap;
 }
