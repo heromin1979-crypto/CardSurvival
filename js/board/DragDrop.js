@@ -10,12 +10,16 @@ import HiddenElementSystem from '../systems/HiddenElementSystem.js';
 import SkillSystem     from '../systems/SkillSystem.js';
 import QuickCraftPrompt from '../ui/QuickCraftPrompt.js';
 import BodyStatusModal  from '../ui/BodyStatusModal.js';
+import BoardRenderer    from '../ui/BoardRenderer.js';
+
+const PAGER_HOVER_MS = 400;
 
 const DragDrop = {
   _draggingId:  null,
   _ghostEl:     null,
   _tipEl:       null,
   _initialized: false,
+  _pagerHover:  null,   // { dotEl, rowKey, page, timerId }
 
   init() {
     if (this._initialized) return;
@@ -68,13 +72,49 @@ const DragDrop = {
 
     if (this._ghostEl) { this._ghostEl.remove(); this._ghostEl = null; }
 
+    this._cancelPagerHover();
     this._hideInteractionTip();
     this._clearSlotHighlights();
     this._draggingId = null;
   },
 
+  _handlePagerHover(dotEl) {
+    const rowKey = dotEl.dataset.row;
+    const page   = parseInt(dotEl.dataset.page, 10);
+    if (!rowKey || Number.isNaN(page)) return;
+
+    // 이미 같은 도트를 추적 중이면 유지
+    if (this._pagerHover && this._pagerHover.dotEl === dotEl) return;
+
+    this._cancelPagerHover();
+    dotEl.classList.add('drag-hover-pending');
+    const timerId = setTimeout(() => {
+      dotEl.classList.remove('drag-hover-pending');
+      BoardRenderer._switchPage(rowKey, page);
+      this._pagerHover = null;
+    }, PAGER_HOVER_MS);
+    this._pagerHover = { dotEl, rowKey, page, timerId };
+  },
+
+  _cancelPagerHover() {
+    if (!this._pagerHover) return;
+    clearTimeout(this._pagerHover.timerId);
+    this._pagerHover.dotEl?.classList.remove('drag-hover-pending');
+    this._pagerHover = null;
+  },
+
   _onDragOver(e) {
     e.preventDefault();
+
+    // 페이저 도트 호버 — 400ms 정지하면 해당 페이지로 전환
+    if (this._draggingId) {
+      const dot = e.target.closest?.('.pager-dot');
+      if (dot) {
+        this._handlePagerHover(dot);
+        return;
+      }
+      this._cancelPagerHover();
+    }
 
     // BodyStatusModal 부위 카드 드롭 타겟 하이라이트
     const partCard = e.target.closest('[data-body-part]');
@@ -175,11 +215,17 @@ const DragDrop = {
     if (partCard) {
       partCard.classList.remove('drop-ok', 'drop-bad');
     }
+    // 페이저 도트를 벗어나면 호버 타이머 취소
+    const dot = e.target.closest?.('.pager-dot');
+    if (dot && this._pagerHover?.dotEl === dot) {
+      this._cancelPagerHover();
+    }
     // 다른 슬롯으로 이동 중이면 tip 유지 (다음 dragover가 처리)
   },
 
   _onDrop(e) {
     e.preventDefault();
+    this._cancelPagerHover();
 
     // BodyStatusModal 부위 카드 드롭 처리
     const partCard = e.target.closest('[data-body-part]');

@@ -632,6 +632,11 @@ export const ko = {
   'equipSys.boardFullSwap':   '보드가 꽉 차 기존 장착품을 놓을 수 없습니다.',
   'equipSys.boardFullUnequip':'보드가 꽉 차 아이템을 놓을 수 없습니다.',
   'equipSys.bagRemoveWarn':   '가방 해제: 추가 슬롯 아이템이 분실될 수 있습니다.',
+  'equipSys.bagRemoveBlocked':'휴대 1페이지에 자리가 부족합니다. 비우고 다시 시도하세요.',
+  'equipSys.bagRemoveMigrated':'가방 해제: 2페이지 아이템이 1페이지로 이동되었습니다.',
+  'board.pagerPrev':          '이전 페이지',
+  'board.pagerNext':           '다음 페이지',
+  'board.pagerLabel':         '{row} {n}페이지',
 
   // ── BasecampSystem ──────────────────────────────────────────
   'bcSys.maxLevel':       '최고 레벨 달성',
@@ -1485,6 +1490,11 @@ export const en = {
   'equipSys.boardFullSwap':   'Board full. Cannot place existing equipment.',
   'equipSys.boardFullUnequip':'Board full. Cannot place item.',
   'equipSys.bagRemoveWarn':   'Removing bag: Extra slot items may be lost.',
+  'equipSys.bagRemoveBlocked':'Carry Page 1 is full. Free up space and try again.',
+  'equipSys.bagRemoveMigrated':'Bag removed: Page 2 items moved to Page 1.',
+  'board.pagerPrev':          'Previous page',
+  'board.pagerNext':          'Next page',
+  'board.pagerLabel':         '{row} Page {n}',
 
   // ── BasecampSystem ──────────────────────────────────────────
   'bcSys.maxLevel':       'Maximum level reached',

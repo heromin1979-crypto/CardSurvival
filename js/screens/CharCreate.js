@@ -326,11 +326,12 @@ const CharCreate = {
     }
 
     // ── 보드·카드 초기화 ─────────────────────────────────────
+    // top: 10칸 / middle: 20칸 (page1+page2 항상) / bottom: 20칸 (page1, 가방 장착 시 page2 추가)
     gs.board = {
-      top:         [null, null, null, null, null, null, null, null],
+      top:         Array(10).fill(null),
       environment: [null, null, null],
-      middle:      [null, null, null, null, null, null, null, null],
-      bottom:      [null, null, null, null, null, null, null, null],
+      middle:      Array(20).fill(null),
+      bottom:      Array(20).fill(null),
     };
     gs.cards   = {};
     gs._nextId = 1;
@@ -344,6 +345,9 @@ const CharCreate = {
       backpack:null, belt:null, accessory:null,
     };
     gs.player.extraSlots = 0;
+    gs.player.middlePage3Unlocked = false;
+    gs.ui.bottomPage = 0;
+    gs.ui.middlePage = 0;
     gs.flags = {
       tutorialSeen: false, firstBlood: false,
       totalKills: 0, totalItemsFound: 0, totalCrafted: 0,

@@ -31,6 +31,15 @@
   gap: 6px;
 }
 
+.board-row-slots-wrap {
+  display: flex;
+  flex-direction: row;
+  gap: var(--gap-xs);
+  flex: 1;
+  min-height: 0;
+  align-items: stretch;
+}
+
 .board-row-slots {
   display: flex;
   gap: var(--gap-sm);
@@ -44,6 +53,87 @@
   background: rgba(0,0,0,0.15);
   border: 1px solid var(--border-dim);
   border-radius: var(--radius-sm);
+}
+
+/* ── 행 페이저 (휴대/바닥 우측 세로 도트 + 좌우 화살표) ── */
+.board-row-pager {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 4px 6px;
+  flex: 0 0 auto;
+  min-width: 28px;
+  background: rgba(0,0,0,0.12);
+  border: 1px solid var(--border-dim);
+  border-radius: var(--radius-sm);
+}
+
+.pager-dots {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+}
+
+.pager-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: transparent;
+  border: 1px solid var(--border-dim);
+  cursor: pointer;
+  padding: 0;
+  transition: background var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
+}
+.pager-dot:hover {
+  border-color: var(--accent-primary);
+  transform: scale(1.15);
+}
+.pager-dot.occupied {
+  background: var(--text-secondary);
+  border-color: var(--text-secondary);
+}
+.pager-dot.current {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 6px rgba(var(--accent-primary-rgb, 200,160,96), 0.5);
+}
+
+.pager-arrow {
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--border-dim);
+  border-radius: 3px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
+}
+.pager-arrow:hover:not(:disabled) {
+  background: rgba(255,255,255,0.06);
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+.pager-arrow:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+}
+/* 세로 페이저 — 위쪽 화살표는 회전, 아래쪽도 회전 */
+.pager-prev { transform: rotate(90deg); }
+.pager-next { transform: rotate(90deg); }
+
+/* 드래그 hover 페이지 전환 시 강조 */
+.pager-dot.drag-hover-pending {
+  border-color: var(--text-good);
+  box-shadow: 0 0 8px var(--text-good);
 }
 
 /* Individual slot */
@@ -93,6 +183,16 @@
   opacity: 0.4;
   pointer-events: none;
 }
+
+/* 페이지 그리드 채움용 시각 비활성 셀 (휴대 page2가 작을 때 우측 빈 영역) */
+.slot.slot-empty-bg {
+  background: rgba(0, 0, 0, 0.06);
+  border: 1px dashed rgba(255,255,255,0.03);
+  border-radius: var(--radius-sm);
+  pointer-events: none;
+  opacity: 0.18;
+}
+.slot.slot-empty-bg::after { content: ''; }
 
 /* Drop target states */
 .slot.drag-over-valid {

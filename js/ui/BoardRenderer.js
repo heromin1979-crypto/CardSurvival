@@ -7,15 +7,17 @@ import BoardManager from '../board/BoardManager.js';
 import I18n       from '../core/I18n.js';
 import GameData   from '../data/GameData.js';
 
+// row.slots = 페이지화되지 않은 행의 슬롯 수 / paged: true는 GameState._getPageRanges로 결정
 const ROW_CONFIG = [
-  { key: 'top',    slots: 10, labelKey: 'board.location',  hintKey: 'board.locationHint' },
-  { key: 'middle', slots: 10, labelKey: 'board.floor',     hintKey: 'board.floorHint' },
-  { key: 'bottom', slots: 20, labelKey: 'board.inventory', hintKey: 'board.inventoryHint' },
-  // environment 행은 사이드바 위젯으로 이동 — 보드에서 제거
+  { key: 'top',    slots: 10, labelKey: 'board.location',  hintKey: 'board.locationHint', paged: false },
+  { key: 'middle',            labelKey: 'board.floor',     hintKey: 'board.floorHint',    paged: true },
+  { key: 'bottom',            labelKey: 'board.inventory', hintKey: 'board.inventoryHint', paged: true },
 ];
 
-// 가방 없이 기본 활성 슬롯 수 (1행 = 10칸)
-const BOTTOM_BASE_SLOTS = 10;
+const MIDDLE_PAGE_SIZE  = 10;
+const BOTTOM_PAGE1_SIZE = 20;
+// 휴대 행 표시 그리드는 항상 10×2 = 20셀(페이지 2가 작아도 빈 셀로 채움)
+const BOTTOM_DISPLAY_CELLS = 20;
 
 const BoardRenderer = {
   _container: null,
@@ -39,7 +41,11 @@ const BoardRenderer = {
     // init() 시점에는 DOM에 없을 수 있다.
     if (!this._listenersRegistered) {
       this._listenersRegistered = true;
-      EventBus.on('cardPlaced',    () => this.scheduleRender());
+      // cardPlaced: 시스템 배치 자동 페이지 전환 후 렌더
+      EventBus.on('cardPlaced', ({ row, slot }) => {
+        this._autoSwitchPage(row, slot);
+        this.scheduleRender();
+      });
       EventBus.on('cardMoved',     () => this.scheduleRender());
       EventBus.on('cardRemoved',   () => this.scheduleRender());
       EventBus.on('boardChanged',  () => this.scheduleRender());
@@ -50,6 +56,10 @@ const BoardRenderer = {
         this.scheduleRender();
       });
       EventBus.on('boardReinit', () => {
+        if (this._container) { this._buildDOM(); this.scheduleRender(); }
+      });
+      // 바닥 page3 해금: 페이저 다시 빌드
+      EventBus.on('middlePage3Unlocked', () => {
         if (this._container) { this._buildDOM(); this.scheduleRender(); }
       });
       EventBus.on('languageChanged', () => {
@@ -100,31 +110,32 @@ const BoardRenderer = {
       label.className = 'board-row-label';
       label.textContent = I18n.t(row.labelKey);
 
+      // 슬롯 + 페이저를 감싸는 wrapper (페이저는 슬롯 그리드 우측에 위치)
+      const wrap = document.createElement('div');
+      wrap.className = 'board-row-slots-wrap';
+
       const slots = document.createElement('div');
       slots.className = 'board-row-slots';
       slots.id = `row-${row.key}`;
 
-      const rowSize = row.slots;
-      const rowLabel = I18n.t(row.labelKey);
-      // 휴대 행: 기본 10칸 + 가방 extraSlots만큼 추가 활성, 나머지 disabled
-      const activeCount = row.key === 'bottom'
-        ? BOTTOM_BASE_SLOTS + (GameState.player.extraSlots ?? 0)
-        : rowSize;
-      for (let i = 0; i < rowSize; i++) {
-        const slot = document.createElement('div');
-        const isDisabled = i >= activeCount;
-        slot.className = isDisabled ? 'slot slot-disabled' : 'slot';
-        slot.dataset.row  = row.key;
-        slot.dataset.slot = i;
-        if (!isDisabled) {
-          slot.setAttribute('data-hint', I18n.t(row.hintKey));
+      if (row.paged) {
+        this._buildPagedSlots(slots, row);
+      } else {
+        this._buildPlainSlots(slots, row);
+      }
+
+      wrap.appendChild(slots);
+
+      // 페이지가 1개뿐인 paged 행도 페이저 자리는 비워두지 않고, 2 이상일 때만 표시
+      if (row.paged) {
+        const pages = GameState._getPageRanges(row.key) ?? [];
+        if (pages.length >= 2) {
+          wrap.appendChild(this._buildPager(row.key, pages));
         }
-        slot.setAttribute('aria-label', `${rowLabel} ${i + 1}번 슬롯${isDisabled ? ' (잠금)' : ''}`);
-        slots.appendChild(slot);
       }
 
       rowEl.appendChild(label);
-      rowEl.appendChild(slots);
+      rowEl.appendChild(wrap);
       board.appendChild(rowEl);
     }
 
@@ -136,6 +147,122 @@ const BoardRenderer = {
     locInfo.className = 'location-info-bar';
     locInfo.style.display = 'none';
     this._container.appendChild(locInfo);
+  },
+
+  _buildPlainSlots(slotsEl, row) {
+    const rowLabel = I18n.t(row.labelKey);
+    for (let i = 0; i < row.slots; i++) {
+      const slot = document.createElement('div');
+      slot.className = 'slot';
+      slot.dataset.row  = row.key;
+      slot.dataset.slot = i;
+      slot.setAttribute('data-hint', I18n.t(row.hintKey));
+      slot.setAttribute('aria-label', `${rowLabel} ${i + 1}번 슬롯`);
+      slotsEl.appendChild(slot);
+    }
+  },
+
+  _buildPagedSlots(slotsEl, row) {
+    const pages = GameState._getPageRanges(row.key) ?? [];
+    const curPage = Math.min(this._currentPage(row.key), Math.max(0, pages.length - 1));
+    const range = pages[curPage] ?? { start: 0, size: 0 };
+    const rowLabel = I18n.t(row.labelKey);
+
+    // 휴대 행은 항상 10×2 그리드(20셀) 표시 — 페이지 2가 작으면 빈 셀로 채움
+    const displayCells = row.key === 'bottom' ? BOTTOM_DISPLAY_CELLS : range.size;
+
+    for (let i = 0; i < displayCells; i++) {
+      const slot = document.createElement('div');
+      if (i < range.size) {
+        slot.className = 'slot';
+        slot.dataset.row  = row.key;
+        slot.dataset.slot = range.start + i;
+        slot.setAttribute('data-hint', I18n.t(row.hintKey));
+        slot.setAttribute('aria-label', `${rowLabel} ${curPage + 1}페이지 ${i + 1}번 슬롯`);
+      } else {
+        // 표시 그리드를 채우는 시각 비활성 셀 — drop 대상 아님
+        slot.className = 'slot slot-empty-bg';
+        slot.setAttribute('aria-hidden', 'true');
+      }
+      slotsEl.appendChild(slot);
+    }
+  },
+
+  _buildPager(rowKey, pages) {
+    const curPage = Math.min(this._currentPage(rowKey), pages.length - 1);
+    const wrap = document.createElement('div');
+    wrap.className = `board-row-pager pager-${rowKey}`;
+    wrap.dataset.row = rowKey;
+
+    const prev = document.createElement('button');
+    prev.className = 'pager-arrow pager-prev';
+    prev.type = 'button';
+    prev.textContent = '‹';
+    prev.disabled = curPage <= 0;
+    prev.setAttribute('aria-label', I18n.t('board.pagerPrev'));
+    prev.addEventListener('click', (e) => { e.stopPropagation(); this._switchPage(rowKey, curPage - 1); });
+
+    const dots = document.createElement('div');
+    dots.className = 'pager-dots';
+    pages.forEach((page, i) => {
+      const dot = document.createElement('button');
+      dot.className = 'pager-dot';
+      dot.type = 'button';
+      dot.dataset.page = i;
+      dot.dataset.row  = rowKey;
+      if (i === curPage) dot.classList.add('current');
+      const hasCard = (GameState.board[rowKey] ?? [])
+        .slice(page.start, page.start + page.size)
+        .some(v => v !== null);
+      if (hasCard) dot.classList.add('occupied');
+      const labelRow = I18n.t(rowKey === 'bottom' ? 'board.inventory' : 'board.floor');
+      dot.setAttribute('aria-label', I18n.t('board.pagerLabel', { row: labelRow, n: i + 1 }));
+      dot.addEventListener('click', (e) => { e.stopPropagation(); this._switchPage(rowKey, i); });
+      dots.appendChild(dot);
+    });
+
+    const next = document.createElement('button');
+    next.className = 'pager-arrow pager-next';
+    next.type = 'button';
+    next.textContent = '›';
+    next.disabled = curPage >= pages.length - 1;
+    next.setAttribute('aria-label', I18n.t('board.pagerNext'));
+    next.addEventListener('click', (e) => { e.stopPropagation(); this._switchPage(rowKey, curPage + 1); });
+
+    wrap.append(prev, dots, next);
+    return wrap;
+  },
+
+  _currentPage(rowKey) {
+    if (rowKey === 'bottom') return GameState.ui.bottomPage ?? 0;
+    if (rowKey === 'middle') return GameState.ui.middlePage ?? 0;
+    return 0;
+  },
+
+  _setCurrentPage(rowKey, page) {
+    if (rowKey === 'bottom') GameState.ui.bottomPage = page;
+    else if (rowKey === 'middle') GameState.ui.middlePage = page;
+  },
+
+  _switchPage(rowKey, newPage) {
+    const pages = GameState._getPageRanges(rowKey) ?? [];
+    if (pages.length === 0) return;
+    const clamped = Math.max(0, Math.min(pages.length - 1, newPage));
+    if (clamped === this._currentPage(rowKey)) return;
+    this._setCurrentPage(rowKey, clamped);
+    this._buildDOM();
+    this.render();
+  },
+
+  // 카드가 현재 페이지 외부에 배치되면 해당 페이지로 자동 전환
+  _autoSwitchPage(rowKey, slot) {
+    if (rowKey !== 'middle' && rowKey !== 'bottom') return;
+    const pages = GameState._getPageRanges(rowKey) ?? [];
+    const targetPage = pages.findIndex(p => slot >= p.start && slot < p.start + p.size);
+    if (targetPage < 0) return;
+    if (targetPage === this._currentPage(rowKey)) return;
+    this._setCurrentPage(rowKey, targetPage);
+    if (this._container) this._buildDOM();
   },
 
   render() {
@@ -162,24 +289,25 @@ const BoardRenderer = {
     });
 
     // ── Step 4: 보드 상태에 따라 올바른 슬롯에 카드 배치 ──
+    // 페이지화된 행은 dataset.slot이 배열 인덱스와 일치(forEach 인덱스와 다름)
     for (const row of ROW_CONFIG) {
       const slotsEl = document.getElementById(`row-${row.key}`);
       if (!slotsEl) continue;
 
-      const slotEls = slotsEl.querySelectorAll('.slot');
-      const rowData  = GameState.board[row.key];
+      const slotEls = slotsEl.querySelectorAll('.slot:not(.slot-empty-bg)');
+      const rowData = GameState.board[row.key];
 
-      slotEls.forEach((slotEl, idx) => {
-        const instanceId = rowData[idx] ?? null;
+      slotEls.forEach((slotEl) => {
+        const arrayIdx = parseInt(slotEl.dataset.slot, 10);
+        if (Number.isNaN(arrayIdx)) return;
+        const instanceId = rowData[arrayIdx] ?? null;
         if (!instanceId || !GameState.cards[instanceId]) return;
 
         const existing = detached[instanceId];
         if (existing) {
-          // 기존 요소 재사용 (이동): 내용만 갱신
           slotEl.appendChild(existing);
           CardFactory.update(instanceId);
         } else {
-          // 새로 생성 (신규 카드)
           const cardEl = CardFactory.build(instanceId);
           if (cardEl) {
             cardEl.classList.add('entering');
