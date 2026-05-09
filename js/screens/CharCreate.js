@@ -112,27 +112,12 @@ const CharCreate = {
         ? `<img class="char-card-v2-img" src="${c.portraitSmall}" alt="${c.name}" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'char-card-v2-img-fallback',textContent:'${c.portrait ?? '👤'}'}))">`
         : `<div class="char-card-v2-img-fallback">${c.portrait ?? '👤'}</div>`;
 
-      // 미니 게이지 3종 (전투/의료/제작) — 카드 간 비교 용이
-      const gauges = getCharacterGauges(c);
-      const miniGaugeHtml = ['combat', 'medicine', 'crafting'].map(k => `
-        <div class="char-card-v2-mini-gauge">
-          <div class="char-card-v2-mini-fill char-card-v2-mini-fill--${k}" style="width:${gauges[k]}%"></div>
-        </div>
-      `).join('');
-
-      // 활성 카드만 한글 카테고리 캡 (가상 이미지 정렬)
-      const activeCap = isSelected
-        ? `<div class="char-card-v2-active-cap">[${c.koreanLabel ?? c.englishLabel ?? ''}]</div>` : '';
-
       return `
         <div class="char-card-v2 ${isSelected ? 'selected' : ''}" data-char-id="${c.id}">
-          ${activeCap}
           <div class="char-card-v2-num">${idx + 1}</div>
           <div class="char-card-v2-portrait">${portrait}</div>
           <div class="char-card-v2-info">
             <div class="char-card-v2-name">${I18n.characterName(c.id, c.name)}</div>
-            <div class="char-card-v2-label">${c.koreanLabel ?? c.englishLabel ?? ''}</div>
-            <div class="char-card-v2-mini-gauges">${miniGaugeHtml}</div>
           </div>
         </div>
       `;

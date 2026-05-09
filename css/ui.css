@@ -302,6 +302,9 @@
   letter-spacing: 2px;
   transition: all var(--transition-fast);
   cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .menu-btn:hover {
