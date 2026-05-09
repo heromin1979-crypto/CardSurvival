@@ -4,7 +4,6 @@ import GameState       from '../core/GameState.js';
 import StateMachine    from '../core/StateMachine.js';
 import I18n            from '../core/I18n.js';
 import TickEngine      from '../core/TickEngine.js';
-import SystemRegistry  from '../core/SystemRegistry.js';
 import CraftUI        from '../ui/CraftUI.js';
 import BoardRenderer  from '../ui/BoardRenderer.js';
 import StatRenderer   from '../ui/StatRenderer.js';
@@ -17,7 +16,6 @@ import BasecampModal  from '../ui/BasecampModal.js';
 import DoctorPatientModal from '../ui/DoctorPatientModal.js';
 import EmergencyRoomModal      from '../ui/EmergencyRoomModal.js';
 import ContributionChoiceModal from '../ui/ContributionChoiceModal.js';
-import QuestSystem    from '../systems/QuestSystem.js';
 import ExploreSystem  from '../systems/ExploreSystem.js';
 import SeasonSystem    from '../systems/SeasonSystem.js';
 import WeatherSystem   from '../systems/WeatherSystem.js';
@@ -34,7 +32,7 @@ const Basecamp = {
       if (to === 'main') this._onEnter();
     });
     EventBus.on('questListChanged', () => {
-      if (GameState.ui.currentState === 'main') this._updateQuestPanel();
+      if (GameState.ui.currentState === 'main') this._refreshQuestModal();
     });
     EventBus.on('mapUnlocked', () => {
       if (GameState.ui.currentState === 'main') this._updateMapFragmentBadge();
@@ -80,8 +78,6 @@ const Basecamp = {
     DoctorPatientModal.init();
     EmergencyRoomModal.init();
     ContributionChoiceModal.init();
-    this._updateQuestPanel();
-    this._updateSecretComboCount();
     // 계절 배지 초기화
     const seasonInfo = SeasonSystem.getSeasonInfo();
     const seasonBadge = document.getElementById('season-badge');
@@ -97,9 +93,6 @@ const Basecamp = {
     this._updateMapFragmentBadge();
     // 사이드바 버튼 초기화 (랜드마크 상태 반영)
     this._updateSidebarButtons();
-    // 퀘스트 사이드 패널 마운트 — _buildLayout이 DOM을 재생성하므로 진입마다 다시 마운트
-    const questMount = document.getElementById('quest-panel-mount');
-    if (questMount) QuestPanel.mount(questMount);
   },
 
   _buildLayout() {
@@ -172,15 +165,11 @@ const Basecamp = {
         <!-- Encumbrance -->
         <div class="bc-enc-block">⚖ <span id="hud-enc">0/30kg</span></div>
 
-        <!-- Quest Panel mount -->
-        <div id="quest-panel-mount"></div>
-
         <!-- 행동 버튼 (동적 교체) -->
         <div class="bc-sidebar-btns">
           <div id="bc-action-section"></div>
           <div class="bc-toolbar-divider"></div>
           <button class="toolbar-btn" id="btn-save">${I18n.t('basecamp.save')}</button>
-          <button class="toolbar-btn btn-sm" id="btn-secret-gallery" title="${I18n.t('secret.galleryHint')}">${I18n.t('secret.galleryBtn')} <span id="secret-combo-count"></span></button>
         </div>
       </aside>
 
@@ -242,9 +231,9 @@ const Basecamp = {
 
       <!-- Quest modal -->
       <div class="modal-overlay" id="quest-modal">
-        <div class="modal-box" style="max-width:440px;max-height:85vh;">
+        <div class="modal-box" style="max-width:520px;max-height:85vh;">
           <div class="modal-title">📋 퀘스트</div>
-          <div id="bc-quest-info" style="flex:1;overflow-y:auto;padding:4px 0;"></div>
+          <div id="quest-modal-mount" style="flex:1;overflow-y:auto;padding:4px 0;"></div>
           <div class="modal-actions">
             <button class="modal-btn" id="btn-quest-close">닫기</button>
           </div>
@@ -265,9 +254,6 @@ const Basecamp = {
 
     if (inBasecamp) {
       // ── 베이스캠프 전용 버튼 ──
-      const bcDoctorLogBtn = DoctorPatientModal.isAvailable()
-        ? `<button class="toolbar-btn" id="btn-bc-doctor-log">📖 환자 기록</button>`
-        : '';
       const bcErBtn = EmergencyRoomModal.isAvailable()
         ? `<button class="toolbar-btn" id="btn-bc-er">🏥 응급실</button>`
         : '';
@@ -276,13 +262,11 @@ const Basecamp = {
         <button class="toolbar-btn primary" id="btn-bc-manage">🔧 거점 관리</button>
         <button class="toolbar-btn" id="btn-bc-craft">제작</button>
         <button class="toolbar-btn" id="btn-bc-skills">숙련도</button>
-        ${bcDoctorLogBtn}
         ${bcErBtn}
         <button class="toolbar-btn" id="btn-bc-rest">휴식</button>
         <button class="toolbar-btn" id="btn-bc-exit">나가기</button>
       `;
       section.querySelector('#btn-bc-manage')?.addEventListener('click', () => BasecampModal.open());
-      section.querySelector('#btn-bc-doctor-log')?.addEventListener('click', () => DoctorPatientModal.open());
       section.querySelector('#btn-bc-er')?.addEventListener('click', () => EmergencyRoomModal.open());
       section.querySelector('#btn-bc-craft')?.addEventListener('click', () => {
         const modal = document.getElementById('craft-modal');
@@ -302,9 +286,6 @@ const Basecamp = {
           ? `<div class="bc-toolbar-label bc-toolbar-label--camp">🏕 안전 가옥</div>
              <button class="toolbar-btn btn-build-highlight" id="btn-build-base">${I18n.t('basecamp.buildBase')}</button>`
           : '';
-      const doctorLogBtn = DoctorPatientModal.isAvailable()
-        ? `<button class="toolbar-btn" id="btn-doctor-log">📖 환자 기록</button>`
-        : '';
       const erBtn = EmergencyRoomModal.isAvailable()
         ? `<button class="toolbar-btn" id="btn-er">🏥 응급실</button>`
         : '';
@@ -314,7 +295,6 @@ const Basecamp = {
         <button class="toolbar-btn" id="btn-quest">📋 퀘스트</button>
         <button class="toolbar-btn" id="btn-craft">${I18n.t('basecamp.craft')}</button>
         <button class="toolbar-btn" id="btn-skills">${I18n.t('basecamp.skills')}</button>
-        ${doctorLogBtn}
         ${erBtn}
         <button class="toolbar-btn" id="btn-wait">${I18n.t('basecamp.wait')}</button>
         <button class="toolbar-btn" id="btn-rest">${I18n.t('basecamp.rest')}</button>
@@ -322,7 +302,7 @@ const Basecamp = {
       `;
       section.querySelector('#btn-explore')?.addEventListener('click', () => ExploreSystem.exploreCurrentDistrict());
       section.querySelector('#btn-quest')?.addEventListener('click', () => {
-        this._updateQuestPanel();
+        this._refreshQuestModal();
         document.getElementById('quest-modal')?.classList.add('open');
       });
       section.querySelector('#btn-craft')?.addEventListener('click', () => {
@@ -333,7 +313,6 @@ const Basecamp = {
         CraftUI.render();
       });
       section.querySelector('#btn-skills')?.addEventListener('click', () => SkillModal.open());
-      section.querySelector('#btn-doctor-log')?.addEventListener('click', () => DoctorPatientModal.open());
       section.querySelector('#btn-er')?.addEventListener('click', () => EmergencyRoomModal.open());
       section.querySelector('#btn-wait')?.addEventListener('click', () => TickEngine.skipTP(1, I18n.t('basecamp.waiting')));
       section.querySelector('#btn-rest')?.addEventListener('click', () => StateMachine.transition('rest'));
@@ -374,11 +353,6 @@ const Basecamp = {
     // Save
     this._el.querySelector('#btn-save')?.addEventListener('click', () => {
       SaveManager.save(GameState.ui.saveSlot ?? 0);
-    });
-
-    // Secret Gallery
-    this._el.querySelector('#btn-secret-gallery')?.addEventListener('click', () => {
-      EventBus.emit('openSecretGallery');
     });
   },
 
@@ -446,44 +420,11 @@ const Basecamp = {
     }
   },
 
-  _updateSecretComboCount() {
-    const el = document.getElementById('secret-combo-count');
+  // 퀘스트 모달 마운트 갱신 — 모달 안 #quest-modal-mount에 QuestPanel을 매번 새로 마운트
+  _refreshQuestModal() {
+    const el = document.getElementById('quest-modal-mount');
     if (!el) return;
-    try {
-      const SecretCombinationSystem = SystemRegistry.get('SecretCombinationSystem');
-      if (SecretCombinationSystem) {
-        const { found, total } = SecretCombinationSystem.getStats();
-        el.textContent = `(${found}/${total})`;
-        el.style.opacity = found > 0 ? '1' : '0.5';
-      }
-    } catch (_) { /* SecretCombinationSystem 미로드 */ }
-  },
-
-  _updateQuestPanel() {
-    const el = document.getElementById('bc-quest-info');
-    if (!el) return;
-
-    const active = QuestSystem.getActiveQuests();
-    if (active.length === 0) {
-      el.innerHTML = `<span class="bc-quest-empty">${I18n.t('basecamp.activeQuests', { count: 0 })}</span>`;
-      return;
-    }
-
-    el.innerHTML = active.map(q => {
-      const def     = q.def;
-      const pct     = def ? Math.round((q.progress / def.objective.count) * 100) : 0;
-      const dayLeft   = q.deadline - GameState.time.day;
-      const deadlineTxt = q.deadline === Infinity ? '' : ` · ${I18n.t('basecamp.remainDays', { days: dayLeft })}`;
-      return `
-        <div class="bc-quest-item">
-          <div class="bc-quest-title">${def?.icon ?? '📋'} ${def?.title ?? q.id}</div>
-          <div class="bc-quest-progress-bar">
-            <div class="bc-quest-fill" style="width:${pct}%"></div>
-          </div>
-          <div class="bc-quest-meta">${q.progress}/${def?.objective.count ?? '?'}${deadlineTxt}</div>
-        </div>
-      `;
-    }).join('');
+    QuestPanel.mount(el);
   },
 };
 

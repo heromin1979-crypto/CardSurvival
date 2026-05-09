@@ -4,7 +4,6 @@ import GameState       from '../core/GameState.js';
 import StateMachine    from '../core/StateMachine.js';
 import I18n            from '../core/I18n.js';
 import TickEngine      from '../core/TickEngine.js';
-import SystemRegistry  from '../core/SystemRegistry.js';
 import CraftUI        from '../ui/CraftUI.js';
 import BoardRenderer  from '../ui/BoardRenderer.js';
 import StatRenderer   from '../ui/StatRenderer.js';
@@ -15,11 +14,11 @@ import LandmarkModal   from '../ui/LandmarkModal.js';
 import SkillModal      from '../ui/SkillModal.js';
 import BasecampModal  from '../ui/BasecampModal.js';
 import DoctorPatientModal from '../ui/DoctorPatientModal.js';
-import QuestSystem    from '../systems/QuestSystem.js';
 import ExploreSystem  from '../systems/ExploreSystem.js';
 import SeasonSystem    from '../systems/SeasonSystem.js';
 import WeatherSystem   from '../systems/WeatherSystem.js';
 import SeoulMapModal   from '../ui/SeoulMapModal.js';
+import QuestPanel      from '../ui/QuestPanel.js';
 import GameData        from '../data/GameData.js';
 
 const Basecamp = {
@@ -31,7 +30,7 @@ const Basecamp = {
       if (to === 'main') this._onEnter();
     });
     EventBus.on('questListChanged', () => {
-      if (GameState.ui.currentState === 'main') this._updateQuestPanel();
+      if (GameState.ui.currentState === 'main') this._refreshQuestModal();
     });
     EventBus.on('mapUnlocked', () => {
       if (GameState.ui.currentState === 'main') this._updateMapFragmentBadge();
@@ -71,8 +70,6 @@ const Basecamp = {
     SkillModal.init();
     BasecampModal.init();
     DoctorPatientModal.init();
-    this._updateQuestPanel();
-    this._updateSecretComboCount();
     // 계절 배지 초기화
     const seasonInfo = SeasonSystem.getSeasonInfo();
     const seasonBadge = document.getElementById('season-badge');
@@ -184,7 +181,6 @@ const Basecamp = {
           ` : ''}
           <div class="bc-toolbar-divider"></div>
           <button class="toolbar-btn" id="btn-save">${I18n.t('basecamp.save')}</button>
-          <button class="toolbar-btn btn-sm" id="btn-secret-gallery" title="${I18n.t('secret.galleryHint')}">${I18n.t('secret.galleryBtn')} <span id="secret-combo-count"></span></button>
         </div>
       </aside>
 
@@ -236,9 +232,9 @@ const Basecamp = {
 
       <!-- Quest modal -->
       <div class="modal-overlay" id="quest-modal">
-        <div class="modal-box" style="max-width:440px;max-height:85vh;">
+        <div class="modal-box" style="max-width:520px;max-height:85vh;">
           <div class="modal-title">📋 퀘스트</div>
-          <div id="bc-quest-info" style="flex:1;overflow-y:auto;padding:4px 0;"></div>
+          <div id="quest-modal-mount" style="flex:1;overflow-y:auto;padding:4px 0;"></div>
           <div class="modal-actions">
             <button class="modal-btn" id="btn-quest-close">닫기</button>
           </div>
@@ -311,14 +307,9 @@ const Basecamp = {
       SaveManager.save(GameState.ui.saveSlot ?? 0);
     });
 
-    // Secret Gallery
-    this._el.querySelector('#btn-secret-gallery')?.addEventListener('click', () => {
-      EventBus.emit('openSecretGallery');
-    });
-
     // Quest modal open
     this._el.querySelector('#btn-quest')?.addEventListener('click', () => {
-      this._updateQuestPanel();
+      this._refreshQuestModal();
       document.getElementById('quest-modal')?.classList.add('open');
     });
 
@@ -399,43 +390,11 @@ const Basecamp = {
     }
   },
 
-  _updateSecretComboCount() {
-    const el = document.getElementById('secret-combo-count');
+  // 퀘스트 모달 마운트 갱신 — 모달 안 #quest-modal-mount에 QuestPanel을 매번 새로 마운트
+  _refreshQuestModal() {
+    const el = document.getElementById('quest-modal-mount');
     if (!el) return;
-    try {
-      const SecretCombinationSystem = SystemRegistry.get('SecretCombinationSystem');
-      if (SecretCombinationSystem) {
-        const { found, total } = SecretCombinationSystem.getStats();
-        el.textContent = `(${found}/${total})`;
-        el.style.opacity = found > 0 ? '1' : '0.5';
-      }
-    } catch (_) { /* SecretCombinationSystem 미로드 */ }
-  },
-
-  _updateQuestPanel() {
-    const el = document.getElementById('bc-quest-info');
-    if (!el) return;
-
-    const active = QuestSystem.getActiveQuests();
-    if (active.length === 0) {
-      el.innerHTML = `<span class="bc-quest-empty">${I18n.t('basecamp.activeQuests', { count: 0 })}</span>`;
-      return;
-    }
-
-    el.innerHTML = active.map(q => {
-      const def     = q.def;
-      const pct     = def ? Math.round((q.progress / def.objective.count) * 100) : 0;
-      const dayLeft = q.deadline - GameState.time.day;
-      return `
-        <div class="bc-quest-item">
-          <div class="bc-quest-title">${def?.icon ?? '📋'} ${def?.title ?? q.id}</div>
-          <div class="bc-quest-progress-bar">
-            <div class="bc-quest-fill" style="width:${pct}%"></div>
-          </div>
-          <div class="bc-quest-meta">${q.progress}/${def?.objective.count ?? '?'} · ${I18n.t('basecamp.remainDays', { days: dayLeft })}</div>
-        </div>
-      `;
-    }).join('');
+    QuestPanel.mount(el);
   },
 };
 

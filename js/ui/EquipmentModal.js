@@ -212,6 +212,11 @@ const EquipmentModal = {
     if ((p.healBonus ?? 0) > 1.0) {
       rows.push({ icon: '💉', label: '치료 특화', value: `치료 효과 ×${p.healBonus.toFixed(2)}` });
     }
+    const infMult = GameState.stats?.infection?.rateMultiplier ?? 1.0;
+    if (infMult < 1.0) {
+      const reducePct = Math.round((1.0 - infMult) * 100);
+      rows.push({ icon: '🛡️', label: '감염 저항', value: `감염 진행 -${reducePct}%` });
+    }
     if ((p.craftSuccessBonus ?? 0) > 0) {
       rows.push({ icon: '⚙️', label: '공학적 직관', value: `제작 성공률 +${Math.round(p.craftSuccessBonus*100)}%` });
     }

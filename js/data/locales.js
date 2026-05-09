@@ -241,6 +241,7 @@ export const ko = {
   'craft.tab.material':   '재료',
   'craft.tab.upgrade':    '강화',
   'craft.tab.consumable': '소비재',
+  'craft.tab.secret':     '비밀',
 
   // ── QuickCraft ─────────────────────────────────────────────
   'quickCraft.title':       '제작 가능한 레시피 발견!',
@@ -1099,6 +1100,7 @@ export const en = {
   'craft.tab.material':   'Material',
   'craft.tab.upgrade':    'Upgrade',
   'craft.tab.consumable': 'Consumable',
+  'craft.tab.secret':     'Secret',
 
   // ── QuickCraft ─────────────────────────────────────────────
   'quickCraft.title':       'Recipe discovered!',

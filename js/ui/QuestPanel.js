@@ -62,6 +62,13 @@ const QuestPanel = {
     const progress = GameState.subObjectiveProgress?.[q.id] ?? {};
     const left = this._daysLeft(q);
     const dlClass = left == null ? '' : left <= 1 ? 'urgent' : left <= 3 ? 'warn' : '';
+    const doneCount = sos.filter(so => progress[so.id]).length;
+    const totalCount = sos.length;
+    const pct = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0;
+    const curDistrict = GameState.location?.currentDistrict ?? '';
+    const targetDist  = q.locationHint?.districtId ?? '';
+    const onTarget    = targetDist && curDistrict === targetDist;
+
     return `
       <div class="quest-active" data-quest-id="${this._escape(q.id)}">
         <div class="quest-row">
@@ -70,6 +77,11 @@ const QuestPanel = {
           ${left != null ? `<span class="quest-deadline ${dlClass}">D-${left}</span>` : ''}
         </div>
         <div class="quest-desc">${this._escape(q.actionHint ?? q.desc ?? '')}</div>
+        ${totalCount > 0 ? `
+          <div class="quest-progress">
+            <div class="quest-progress-bar"><div class="quest-progress-fill" style="width:${pct}%"></div></div>
+            <span class="quest-progress-text">${doneCount}/${totalCount}</span>
+          </div>` : ''}
         ${sos.length > 0 ? `
           <ul class="quest-subobjectives">
             ${sos.map(so => `
@@ -81,7 +93,10 @@ const QuestPanel = {
           </ul>
         ` : ''}
         ${q.locationHint ? `
-          <div class="quest-location">📍 ${this._escape(q.locationHint.note ?? q.locationHint.districtId ?? '')}</div>
+          <div class="quest-location ${onTarget ? 'on-target' : ''}">
+            📍 ${this._escape(q.locationHint.note ?? q.locationHint.districtId ?? '')}
+            ${onTarget ? '<span class="quest-location-tag">현 위치</span>' : ''}
+          </div>
         ` : ''}
       </div>
     `;

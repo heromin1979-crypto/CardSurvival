@@ -63,6 +63,49 @@
   opacity: 0.7;
   margin-top: 4px;
 }
+.quest-location.on-target {
+  opacity: 1;
+  color: var(--text-good);
+}
+.quest-location-tag {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 6px;
+  font-size: 9px;
+  background: var(--text-good);
+  color: var(--bg-base);
+  border-radius: 3px;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+}
+
+/* Subobjective progress gauge */
+.quest-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 6px 0 4px;
+}
+.quest-progress-bar {
+  flex: 1;
+  height: 4px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.quest-progress-fill {
+  height: 100%;
+  background: var(--accent-primary);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+.quest-progress-text {
+  font-size: 10px;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+  min-width: 28px;
+  text-align: right;
+}
 .quest-empty {
   opacity: 0.5;
   font-size: 11px;
