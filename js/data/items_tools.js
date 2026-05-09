@@ -9,7 +9,7 @@ const ITEMS_TOOLS = {
   flashlight: {
     id: 'flashlight', name: '손전등', type: 'tool', subtype: 'utility',
     rarity: 'common', weight: 0.3,
-    defaultDurability: 80, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🔦', description: '어두운 공간 탐색 시 발견 확률 +20%.',
     tags: ['tool', 'exploration', 'light'],
     onUse: { exploreBonus: 20 },
@@ -22,7 +22,7 @@ const ITEMS_TOOLS = {
   water_filter: {
     id: 'water_filter', name: '정수 필터', type: 'tool', subtype: 'crafting',
     rarity: 'uncommon', weight: 0.2,
-    defaultDurability: 60, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🔩', description: '정수기 제작에 사용. 오염수를 정화.',
     tags: ['tool', 'craftable'],
     dismantle: [
@@ -34,7 +34,7 @@ const ITEMS_TOOLS = {
   pipe_wrench: {
     id: 'pipe_wrench', name: '파이프렌치', type: 'tool', subtype: 'utility',
     rarity: 'common', weight: 1.0,
-    defaultDurability: 80, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🔧', description: '수리·제작 도구. 강화 무기 제작에 필요.',
     tags: ['tool'],
     combat: { damage: [4, 8], accuracy: 0.75, noiseOnUse: 3, durabilityLoss: 2, critChance: 0.10, critMultiplier: 1.5 },
@@ -44,7 +44,7 @@ const ITEMS_TOOLS = {
   lockpick: {
     id: 'lockpick', name: '자물쇠따개', type: 'tool', subtype: 'utility',
     rarity: 'uncommon', weight: 0.05,
-    defaultDurability: 50, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🗝️', description: '잠긴 문을 개방. 탐색 가능 장소 확대.',
     tags: ['tool', 'utility'],
     onUse: { unlockBonus: 1 },
@@ -54,7 +54,7 @@ const ITEMS_TOOLS = {
   gas_mask: {
     id: 'gas_mask', name: '방독면', type: 'tool', subtype: 'protection',
     rarity: 'rare', weight: 0.8,
-    defaultDurability: 80, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '😷', description: '유독 가스·오염 공기 차단. 필터 교체 필요.',
     tags: ['tool', 'protection'],
     onWear: { radiationMult: 0.50, infectionMult: 0.60 },
@@ -67,7 +67,7 @@ const ITEMS_TOOLS = {
   binoculars: {
     id: 'binoculars', name: '쌍안경', type: 'tool', subtype: 'utility',
     rarity: 'uncommon', weight: 0.4,
-    defaultDurability: 70, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🔭', description: '먼 거리 정찰. 위험도를 미리 파악 가능.',
     tags: ['tool', 'utility', 'scouting'],
     onUse: { scoutBonus: 1 },
@@ -80,7 +80,7 @@ const ITEMS_TOOLS = {
   radio: {
     id: 'radio', name: '무전기', type: 'tool', subtype: 'communication',
     rarity: 'rare', weight: 0.5,
-    defaultDurability: 70, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '📻', description: '생존자 주파수 감지. 특수 이벤트 발생 가능.',
     tags: ['tool', 'communication'],
     onUse: { survivorSignal: true },
@@ -93,7 +93,7 @@ const ITEMS_TOOLS = {
   lighter: {
     id: 'lighter', name: '라이터', type: 'tool', subtype: 'utility',
     rarity: 'uncommon', weight: 0.05,
-    defaultDurability: 5, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🔥', description: '불꽃을 만드는 도구. 내구도 1 소모당 불꽃 1회 생성. 연료가 다 떨어지면 못 쓴다. 희귀해진 세상에서는 소중히 아껴야 한다.',
     tags: ['tool', 'fire', 'light'],
     onUse: { fireStart: true, durabilityPerUse: 1 },
@@ -115,7 +115,7 @@ const ITEMS_TOOLS = {
   whetstone: {
     id: 'whetstone', name: '숫돌', type: 'tool', subtype: 'utility',
     rarity: 'uncommon', weight: 0.5,
-    defaultDurability: 80, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🪨', description: '무기의 날을 세운다. 근접무기 데미지 강화에 사용.',
     tags: ['tool', 'utility'],
     dismantle: [],
@@ -124,7 +124,7 @@ const ITEMS_TOOLS = {
   rope_ladder: {
     id: 'rope_ladder', name: '로프사다리', type: 'tool', subtype: 'utility',
     rarity: 'uncommon', weight: 1.0,
-    defaultDurability: 80, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🪜', description: '고층 진입 및 탈출용 사다리. 특수 탐색 가능.',
     tags: ['tool', 'utility', 'crafted'],
     onUse: { highGroundAccess: true },
@@ -139,14 +139,14 @@ const ITEMS_TOOLS = {
   fishing_rod: {
     id: 'fishing_rod', name: '낚싯대', type: 'tool', subtype: 'tool',
     rarity: 'uncommon', weight: 1.5, stackable: false, maxStack: 1,
-    defaultDurability: 80, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🎣', description: '즉석 낚싯대. 한강 인접 구역에서 물고기를 잡을 수 있다.',
     tags: ['tool'], dismantle: [{ definitionId: 'rope', qty: 1, chance: 0.5 }],
   },
   torch: {
     id: 'torch', name: '횃불', type: 'tool', subtype: 'tool',
     rarity: 'common', weight: 0.8, stackable: false, maxStack: 1,
-    defaultDurability: 50, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🔥', description: '나무와 천으로 만든 횃불. 어두운 곳에서 시야를 확보한다.',
     tags: ['tool', 'light'], dismantle: [],
   },
@@ -160,7 +160,7 @@ const ITEMS_TOOLS = {
   oil_lamp: {
     id: 'oil_lamp', name: '기름 램프', type: 'tool', subtype: 'tool',
     rarity: 'common', weight: 0.5, stackable: false, maxStack: 1,
-    defaultDurability: 60, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🏮', description: '깡통과 천으로 만든 조명. 야간 탐색 효율 증가.',
     tags: ['tool', 'light'], dismantle: [{ definitionId: 'empty_can', qty: 1, chance: 0.6 }],
   },
@@ -170,7 +170,7 @@ const ITEMS_TOOLS = {
   stone_knife: {
     id: 'stone_knife', name: '돌칼', type: 'tool', subtype: 'utility',
     rarity: 'common', weight: 0.3,
-    defaultDurability: 15, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🔪', description: '부싯돌을 깨서 만든 원시 칼. 고기와 생선 손질에 사용. 내구도가 낮아 금방 닳는다.',
     tags: ['tool', 'cutting'],
     onUse: { durabilityPerUse: 1 },
@@ -179,7 +179,7 @@ const ITEMS_TOOLS = {
   kitchen_knife: {
     id: 'kitchen_knife', name: '부엌칼', type: 'tool', subtype: 'utility',
     rarity: 'uncommon', weight: 0.25,
-    defaultDurability: 60, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🔪', description: '단조한 부엌칼. 돌칼보다 훨씬 오래 쓸 수 있다. 고기·생선·채소 손질에 최적.',
     tags: ['tool', 'cutting'],
     onUse: { durabilityPerUse: 1 },
@@ -188,7 +188,7 @@ const ITEMS_TOOLS = {
   mortar_pestle: {
     id: 'mortar_pestle', name: '절구', type: 'tool', subtype: 'utility',
     rarity: 'uncommon', weight: 1.5,
-    defaultDurability: 50, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🪨', description: '돌을 깎아 만든 절구와 절굿공이. 도토리·약초·마늘을 빻아 가루나 페이스트로 만든다.',
     tags: ['tool', 'processing'],
     onUse: { durabilityPerUse: 1 },
@@ -197,7 +197,7 @@ const ITEMS_TOOLS = {
   clay_pot: {
     id: 'clay_pot', name: '토기 냄비', type: 'tool', subtype: 'utility',
     rarity: 'uncommon', weight: 1.2,
-    defaultDurability: 40, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🫙', description: '흙으로 빚어 불에 구운 토기 냄비. 조리솥 거치대에 올리면 스튜와 발효식품을 만들 수 있다.',
     tags: ['tool', 'cooking'],
     onUse: { durabilityPerUse: 1 },
@@ -215,7 +215,7 @@ const ITEMS_TOOLS = {
   trowel: {
     id: 'trowel', name: '모종삽', type: 'tool', subtype: 'utility',
     rarity: 'common', weight: 0.3,
-    defaultDurability: 40, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🌱', description: '씨앗을 심고 텃밭을 가꾸는 작은 삽. 텃밭 조성과 수확에 필수 도구.',
     tags: ['tool', 'farming'],
     onUse: { durabilityPerUse: 1 },
@@ -224,7 +224,7 @@ const ITEMS_TOOLS = {
   sickle: {
     id: 'sickle', name: '낫', type: 'tool', subtype: 'utility',
     rarity: 'uncommon', weight: 0.5,
-    defaultDurability: 50, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🌾', description: '고철로 만든 낫. 텃밭 수확 시 TP 소모를 줄여준다. 풀과 쐐기풀 채집에도 사용.',
     tags: ['tool', 'farming', 'cutting'],
     onUse: { durabilityPerUse: 1 },
@@ -288,7 +288,7 @@ const ITEMS_TOOLS = {
   fishing_net: {
     id: 'fishing_net', name: '투망', type: 'tool', subtype: 'fishing',
     rarity: 'uncommon', weight: 0.8,
-    defaultDurability: 60, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🕸️', description: '실과 로프로 엮은 그물. 물고기를 한 번에 잡을 수 있다.',
     tags: ['tool', 'fishing', 'crafted'],
     dismantle: [
@@ -300,7 +300,7 @@ const ITEMS_TOOLS = {
   crab_trap: {
     id: 'crab_trap', name: '게 통발', type: 'tool', subtype: 'fishing',
     rarity: 'uncommon', weight: 1.5,
-    defaultDurability: 80, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🦀', description: '파이프와 그물로 만든 통발. 갑각류 포획에 특화.',
     tags: ['tool', 'fishing', 'crafted'],
     dismantle: [
@@ -324,7 +324,7 @@ const ITEMS_TOOLS = {
   sterile_kit: {
     id: 'sterile_kit', name: '멸균 키트', type: 'tool', subtype: 'medical',
     rarity: 'uncommon', weight: 0.4,
-    defaultDurability: 80, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🧰', description: '메스와 소독 도구가 갖춰진 의료 키트.',
     tags: ['tool', 'medical'],
     dismantle: [
@@ -338,7 +338,7 @@ const ITEMS_TOOLS = {
   scalpel: {
     id: 'scalpel', name: '수술용 메스', type: 'tool', subtype: 'utility',
     rarity: 'uncommon', weight: 0.1,
-    defaultDurability: 60, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🔪', description: '날카로운 수술용 칼. 정밀한 절개가 가능하다.',
     tags: ['tool', 'medical', 'cutting'],
     dismantle: [
@@ -373,7 +373,7 @@ const ITEMS_TOOLS = {
   night_vision_goggles: {
     id: 'night_vision_goggles', name: '야시경', type: 'tool', subtype: 'utility',
     rarity: 'legendary', weight: 0.6,
-    defaultDurability: 80, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '👓', description: '야간에도 선명한 시야를 제공하는 전자 고글.',
     tags: ['tool', 'exploration', 'light'],
     onUse: { exploreBonus: 50, nightVision: true },
@@ -387,7 +387,7 @@ const ITEMS_TOOLS = {
   lockpick_set: {
     id: 'lockpick_set', name: '자물쇠 따기 세트', type: 'tool', subtype: 'utility',
     rarity: 'uncommon', weight: 0.3,
-    defaultDurability: 80, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🔑', description: '여러 종류의 자물쇠를 딸 수 있는 도구 모음.',
     tags: ['tool', 'utility'],
     onUse: { unlockBonus: 2 },
@@ -400,7 +400,7 @@ const ITEMS_TOOLS = {
   electronic_lockpick: {
     id: 'electronic_lockpick', name: '전자 락픽', type: 'tool', subtype: 'utility',
     rarity: 'rare', weight: 0.4,
-    defaultDurability: 60, defaultContamination: 0,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🔐', description: '전자 잠금장치를 해제할 수 있는 첨단 도구.',
     tags: ['tool', 'utility'],
     onUse: { unlockBonus: 3, electronicUnlock: true },

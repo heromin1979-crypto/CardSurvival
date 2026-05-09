@@ -27,7 +27,7 @@ function _findInBoard(defId) {
   const rows = [...(gs.board?.middle ?? []), ...(gs.board?.bottom ?? [])];
   for (const instId of rows) {
     if (!instId) continue;
-    const inst = gs.cardInstances?.[instId];
+    const inst = gs.cards?.[instId];
     if (inst?.definitionId === defId) return { instId, inst };
   }
   return null;
@@ -39,7 +39,7 @@ function _findBaitInBoard() {
   const rows = [...(gs.board?.bottom ?? []), ...(gs.board?.middle ?? [])];
   for (const instId of rows) {
     if (!instId) continue;
-    const inst = gs.cardInstances?.[instId];
+    const inst = gs.cards?.[instId];
     if (!inst) continue;
     const def = GameData?.items?.[inst.definitionId];
     if (def?.tags?.includes('bait')) return { instId, inst, def };
@@ -53,7 +53,7 @@ function _getRodId() {
   for (const row of [gs.board?.bottom ?? [], gs.board?.middle ?? []]) {
     for (const instId of row) {
       if (!instId) continue;
-      const inst = gs.cardInstances?.[instId];
+      const inst = gs.cards?.[instId];
       const def  = GameData?.items?.[inst?.definitionId];
       if (def?.subtype === 'fishing' && def.id !== 'fish_trap') return def.id;
     }
@@ -66,7 +66,7 @@ function _findInstalledTrap() {
   const gs = GameState;
   for (const instId of gs.board?.middle ?? []) {
     if (!instId) continue;
-    const inst = gs.cardInstances?.[instId];
+    const inst = gs.cards?.[instId];
     if (inst?.definitionId === 'fish_trap' && inst._isInstalled) return { instId, inst };
   }
   return null;
@@ -105,13 +105,9 @@ const FishingSystem = {
     let baitBonus = baitEntry.def.id === 'bait_worm' ? B.baitWormBonus : B.baitInsectBonus;
     const { instId, inst } = baitEntry;
     if ((inst.quantity ?? 1) > 1) {
-      gs.cardInstances[instId] = { ...inst, quantity: inst.quantity - 1 };
+      inst.quantity = inst.quantity - 1;
     } else {
-      delete gs.cardInstances[instId];
-      const mIdx = gs.board.middle.indexOf(instId);
-      if (mIdx !== -1) gs.board.middle[mIdx] = null;
-      const bIdx = gs.board.bottom.indexOf(instId);
-      if (bIdx !== -1) gs.board.bottom[bIdx] = null;
+      gs.removeCardInstance(instId);
     }
 
     // 어획 확률 계산
@@ -175,7 +171,7 @@ const FishingSystem = {
    */
   onTrapPlaced(instanceId) {
     const gs   = GameState;
-    const inst = gs.cardInstances?.[instanceId];
+    const inst = gs.cards?.[instanceId];
     if (!inst || inst.definitionId !== 'fish_trap') return;
     if (inst._isInstalled) return; // 이미 설치됨
 
@@ -184,7 +180,8 @@ const FishingSystem = {
       return;
     }
 
-    gs.cardInstances[instanceId] = { ...inst, _isInstalled: true, _baitCharges: 0 };
+    inst._isInstalled = true;
+    inst._baitCharges = 0;
     EventBus.emit('notify', { message: '🪤 통발이 설치되었습니다. 미끼(지렁이/벌레)를 통발에 놓으세요.', type: 'info' });
     EventBus.emit('refreshCard', { instanceId });
   },
@@ -195,8 +192,8 @@ const FishingSystem = {
    */
   addBaitToTrap(trapInstId, baitInstId) {
     const gs        = GameState;
-    const trapInst  = gs.cardInstances?.[trapInstId];
-    const baitInst  = gs.cardInstances?.[baitInstId];
+    const trapInst  = gs.cards?.[trapInstId];
+    const baitInst  = gs.cards?.[baitInstId];
     if (!trapInst || !baitInst) return;
     if (!trapInst._isInstalled) {
       EventBus.emit('notify', { message: '통발이 설치되어 있지 않습니다.', type: 'warning' });
@@ -207,17 +204,13 @@ const FishingSystem = {
     const addedCharges = baitDef?.id === 'bait_worm' ? 4 : 3;
     const newCharges   = (trapInst._baitCharges ?? 0) + addedCharges;
 
-    gs.cardInstances[trapInstId] = { ...trapInst, _baitCharges: newCharges };
+    trapInst._baitCharges = newCharges;
 
     // 미끼 소비 (1개 차감)
     if ((baitInst.quantity ?? 1) > 1) {
-      gs.cardInstances[baitInstId] = { ...baitInst, quantity: baitInst.quantity - 1 };
+      baitInst.quantity = baitInst.quantity - 1;
     } else {
-      delete gs.cardInstances[baitInstId];
-      const mIdx = gs.board.middle.indexOf(baitInstId);
-      if (mIdx !== -1) gs.board.middle[mIdx] = null;
-      const bIdx = gs.board.bottom.indexOf(baitInstId);
-      if (bIdx !== -1) gs.board.bottom[bIdx] = null;
+      gs.removeCardInstance(baitInstId);
     }
 
     EventBus.emit('notify', { message: `🪱 미끼를 통발에 넣었습니다. 남은 사용 횟수: ${newCharges}회`, type: 'info' });
@@ -241,7 +234,7 @@ const FishingSystem = {
       const lastWarnTP = inst._noMikeWarnTP ?? -999;
       if ((GameState.time?.totalTP ?? 0) - lastWarnTP > B.trapCheckIntervalTP * 3) {
         EventBus.emit('notify', { message: '🪤 통발의 미끼가 없습니다. 미끼를 보충하세요.', type: 'warning' });
-        gs.cardInstances[instId] = { ...inst, _noMikeWarnTP: GameState.time?.totalTP ?? 0 };
+        inst._noMikeWarnTP = GameState.time?.totalTP ?? 0;
       }
       return;
     }
@@ -264,7 +257,7 @@ const FishingSystem = {
 
     // 미끼 소진 (수확 시도마다 1회 차감)
     const newCharges = charges - 1;
-    gs.cardInstances[instId] = { ...inst, _baitCharges: newCharges };
+    inst._baitCharges = newCharges;
 
     if (newCharges <= 0) {
       EventBus.emit('notify', { message: '🪤 통발 미끼가 모두 소진되었습니다. 다시 미끼를 보충하세요.', type: 'warning' });

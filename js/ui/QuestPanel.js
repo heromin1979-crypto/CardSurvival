@@ -4,7 +4,6 @@
 
 import EventBus   from '../core/EventBus.js';
 import GameState  from '../core/GameState.js';
-import I18n       from '../core/I18n.js';
 import MAIN_QUESTS from '../data/mainQuests/index.js';
 
 const QuestPanel = {
@@ -32,24 +31,22 @@ const QuestPanel = {
 
     this._root.innerHTML = `
       <div class="quest-panel">
-        <h3 class="quest-panel-title">🎯 ${this._t('quest.panelTitle', '퀘스트')}</h3>
-
         <div class="quest-panel-active">
           ${active.length === 0
-            ? `<div class="quest-empty">${this._t('quest.noneActive', '활성 퀘스트 없음')}</div>`
+            ? `<div class="quest-empty">활성 퀘스트가 없습니다</div>`
             : active.map(q => this._renderActive(q)).join('')}
         </div>
 
         ${next.length > 0 ? `
           <div class="quest-panel-next">
-            <h4>${this._t('quest.next', '다음')}</h4>
+            <h4>다음에 열릴 퀘스트</h4>
             ${next.map(q => this._renderNext(q)).join('')}
           </div>
         ` : ''}
 
         ${locked.length > 0 ? `
           <details class="quest-panel-locked">
-            <summary>${this._t('quest.locked', '잠긴 미래')} (${locked.length})</summary>
+            <summary>아직 잠긴 퀘스트 (${locked.length}) <span class="quest-locked-hint">— 이전 퀘스트를 끝내면 열립니다</span></summary>
             ${locked.map(q => this._renderLocked(q)).join('')}
           </details>
         ` : ''}
@@ -64,10 +61,12 @@ const QuestPanel = {
     const dlClass = left == null ? '' : left <= 1 ? 'urgent' : left <= 3 ? 'warn' : '';
     const doneCount = sos.filter(so => progress[so.id]).length;
     const totalCount = sos.length;
-    const pct = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0;
+    const subPct = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0;
     const curDistrict = GameState.location?.currentDistrict ?? '';
     const targetDist  = q.locationHint?.districtId ?? '';
     const onTarget    = targetDist && curDistrict === targetDist;
+
+    const objBar = totalCount === 0 ? this._objectiveProgress(q) : null;
 
     return `
       <div class="quest-active" data-quest-id="${this._escape(q.id)}">
@@ -79,9 +78,15 @@ const QuestPanel = {
         <div class="quest-desc">${this._escape(q.actionHint ?? q.desc ?? '')}</div>
         ${totalCount > 0 ? `
           <div class="quest-progress">
-            <div class="quest-progress-bar"><div class="quest-progress-fill" style="width:${pct}%"></div></div>
+            <div class="quest-progress-bar"><div class="quest-progress-fill" style="width:${subPct}%"></div></div>
             <span class="quest-progress-text">${doneCount}/${totalCount}</span>
           </div>` : ''}
+        ${objBar ? `
+          <div class="quest-progress">
+            <div class="quest-progress-bar"><div class="quest-progress-fill" style="width:${objBar.pct}%"></div></div>
+            <span class="quest-progress-text">${objBar.cur}/${objBar.total}</span>
+          </div>
+        ` : ''}
         ${sos.length > 0 ? `
           <ul class="quest-subobjectives">
             ${sos.map(so => `
@@ -103,16 +108,46 @@ const QuestPanel = {
   },
 
   _renderNext(q) {
+    const desc = q.desc || q.actionHint || q.narrative?.start || '';
+    const loc  = q.locationHint?.note || q.locationHint?.districtId || '';
+    const dl   = (q.deadlineDays != null && q.deadlineDays !== Infinity)
+      ? `마감 ${q.deadlineDays}일`
+      : '';
     return `
       <div class="quest-next-row">
-        <span>${q.icon ?? '·'}</span> ${this._escape(q.title)}
-        ${q.dayTrigger != null ? ` <span class="quest-trigger">Day ${q.dayTrigger}</span>` : ''}
+        <div class="quest-next-head">
+          <span>${q.icon ?? '·'}</span> ${this._escape(q.title)}
+          ${q.dayTrigger != null ? ` <span class="quest-trigger">Day ${q.dayTrigger} 시작</span>` : ''}
+          ${dl ? ` <span class="quest-trigger">${dl}</span>` : ''}
+        </div>
+        ${desc ? `<div class="quest-next-desc">${this._escape(desc)}</div>` : ''}
+        ${loc ? `<div class="quest-next-loc">📍 ${this._escape(loc)}</div>` : ''}
       </div>
     `;
   },
 
   _renderLocked(q) {
-    return `<div class="quest-locked-row">${q.icon ?? '·'} ${this._escape(q.title)}</div>`;
+    const prereq = q.prerequisite ? MAIN_QUESTS[q.prerequisite] : null;
+    const reason = prereq
+      ? `'${prereq.title}' 완료 후 해금`
+      : (q.dayTrigger != null ? `Day ${q.dayTrigger} 도달 후 해금` : '조건 미달');
+    return `
+      <div class="quest-locked-row">
+        <span>${q.icon ?? '·'} ${this._escape(q.title)}</span>
+        <span class="quest-locked-reason">🔒 ${this._escape(reason)}</span>
+      </div>
+    `;
+  },
+
+  /**
+   * 활성 퀘스트의 top-level objective 진행도. subObjectives 미사용 퀘스트용.
+   * QuestSystem이 q._entry.progress를 objective.count까지 누적한다.
+   */
+  _objectiveProgress(q) {
+    const total = q.objective?.count;
+    if (!total || total <= 0) return null;
+    const cur = Math.min(total, q._entry?.progress ?? 0);
+    return { cur, total, pct: Math.round((cur / total) * 100) };
   },
 
   _activeQuests() {
@@ -150,10 +185,6 @@ const QuestPanel = {
     const startedDay = q._entry?.startDay ?? GameState.time?.day ?? 1;
     const elapsed = (GameState.time?.day ?? 1) - startedDay;
     return Math.max(0, q.deadlineDays - elapsed);
-  },
-
-  _t(key, fallback) {
-    try { return I18n.t(key) || fallback; } catch { return fallback; }
   },
 
   _escape(s) {
