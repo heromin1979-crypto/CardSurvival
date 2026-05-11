@@ -2,7 +2,7 @@
 
 > 시작일: 2026-05-10 (페르소나 회의 산출물 — 7 페르소나 합동 학습 후)
 > 트랙: M3 (이슈 #2 6직업 비대칭 / 이슈 #3 후반 이벤트 폭주 측정)
-> 상태: **시나리오 한도연 R8-1 핵심 2직업 진입 완료(homeless `street_solace` + engineer `workshop_focus` + 신규 자원 2종). PR13 머지 진입 대기. R11-1 chef 격차 임계 깨짐 단정 — PR14 chef 강화 트랙 의무 신규.**
+> 상태: **PR13 머지 + baseline v9 측정 + 협의서 v4 §14 보강 완료. R8-1 부분 완화(절망 -28). R11-1 미발동(정의 2 +0.50d 임계 경계). R13-1 신규 등록(Tier-2 ability sim AI 미구현). PR15 진입 대기 (시스템 백승호 측정 도구 정합화).**
 > 이전 계획: `docs/archive/prompt_plan.old5.md` (CST 패턴, 2026-04-28 마감)
 > 회의 산출물 인덱스: `docs/persona-meeting-2026-05-10/README.md`
 
@@ -154,25 +154,41 @@ M3는 시뮬 v2 인프라(PR1~PR4) → Player AI 5단계(PR5/PR5.5/PR6/PR7) → 
 - [x] **R11-1 임계 깨짐 단정** — homeless+engineer 합산 정의 1 +0.37d / 정의 2 +0.42d → chef 격차 +0.5d 임계 깨짐 단언. **PR14 chef 정체성 강화 트랙 진입 의무 등록**
 - [x] PR13 patch diff 사양 — characters.js +23/-4 + items_misc.js +24/-3 + stackConfig.js +5 + CardFactory.js +2 = 총 ~60 라인
 
-### M3 #17 (PR13 머지 + baseline v9 — **다음 진입 트리거**)
+### M3 #17 (PR13 머지 + baseline v9 마감)
 
-- [ ] **PR13** — 시스템 백승호 위임. SCN_QUEST_homeless_tier2.md + SCN_QUEST_engineer_tier2.md §8 patch diff 그대로 적용 (characters.js + items_misc.js + stackConfig.js + CardFactory.js 4곳 등록 룰 충족)
-- [ ] validate.js Errors 0 + 4곳 등록 룰 충족 검증
-- [ ] baseline v9 측정 (`BAL_SIM_baseline_v9_report.md` + `result.json`) — `OUTPUT_FILE` / `buildTag` v8 → v9. PR13 + (기존 PR11/PR12/T1) 합산 효과
-- [ ] probe — homeless·engineer day 1~5 morale<30 도달율 (v8 99·100/100 → v9 목표 감소) + 절망 사망 추이 (R10-1 405 → v9 목표 감소)
-- [ ] R11-1 정의 1·2 격차 측정 — chef 격차 +0.5d 미만 추가 좁힘 단정 확인
+- [x] **PR13** — 시스템 백승호. 4 파일 +52/-2 라인 (characters.js + items_misc.js + stackConfig.js + CardFactory.js). 4곳 등록 룰 충족
+- [x] sketch_notebook dismantle paper 미정의 → `[]` 보수 처리 (후속 PR 검토)
+- [x] validate.js Errors 0 / Warnings 252 / ALL CLEAR
+- [x] `tools/sim/v2/run_baseline.mjs` — v8 → v9 (`sim-baseline-v9-pr13`)
+- [x] baseline v9 측정 (`BAL_SIM_baseline_v9_result.json` + `BAL_SIM_baseline_v9_report.md` 288줄, 밸런스 권지나) — fingerprint `len316-h242a5b5f` v3~v9 7연속 유지, 700 runs / 11.3초, bootstrapErrors 0/700
+- [x] K1 7직업 0% (10회 연속) / K3 engineer 4.4→4.9 (+0.5d 단독 향상) / homeless 4.2→4.2 (Δ 0) / chef·doctor·soldier·firefighter·pharmacist 변화 0
+- [x] K5 절망 -28 (405→377), 아사 +25 (263→288), 사망원인 1위 절망 유지
+- [x] probe — morale<30 도달율 homeless 99→98 / engineer 100→100 / 절망 사망 homeless -22 단독·engineer -6 / chef 격차 정의 1 +0.60d·정의 2 +0.50d
+- [x] **R8-1 부분 완화 단정** — 절망 -28, homeless 단독 -22. 완전 해소 미달
+- [x] **R11-1 미발동** — 정의 2 +0.50d 임계 경계 도달, 액션 트리거 미충족. 모니터링 유지
+- [x] **R13-1 신규 위험 등록** — Tier-2 ability `moraleRecoveryBonus`·`moraleOnCraft`·`moraleOnDismantle`·`sketchNotebookBonus` sim AI 미구현. SCN_QUEST 추정-실측 격차 일차 원인
+- [x] 협의서 v4 §14 보강 회의록 — R8-1 부분 완화·R11-1 미발동·R13-1 등록·다음 단계 갱신
 
-### M3 #18 (PR14 chef 정체성 강화 트랙 — R11-1 액션 트리거 발동)
+### M3 #18 (PR15 sim AI ability 가산 분기 구현 — **다음 진입 트리거**, 시스템 백승호)
 
-- [ ] PR14 결정 협의 (PD/Balance + 시나리오 한도연) — chef 전용 Tier-2 abilities 또는 chef startInv·신규 자원 분배. chef K3 향상 또는 정체성 차별화 강화
-- [ ] R11-1 액션 트리거 발동 의무 — baseline v9 측정에서 chef 격차 +0.5d 미만 단정 시 즉시 진입
+- [ ] **PR15** — `tools/sim/v2/playerAI.mjs` ability 가산 분기 구현. R13-1 해소
+- [ ] enumerate 대상: `moraleRecoveryBonus`, `lowMoraleRecoveryFatigueBonus`, `moraleOnCraft`, `moraleOnDismantle`, `sketchNotebookBonus`, 기타 ability bonus 필드 (chef·pharmacist abilities 인용)
+- [ ] BALANCE 미관여 + fingerprint 유지 검증
+- [ ] sanity 200 runs — homeless·engineer K3 추가 향상 측정 (SCN_QUEST 추정 정합)
+- [ ] baseline v10 측정 (`BAL_SIM_baseline_v10_result.json` + `report.md`) — `OUTPUT_FILE` / `buildTag` v9 → v10
+- [ ] R11-1 액션 트리거 단정 — homeless K3 추가 향상이 chef 격차 추가 좁힘 시 발동
 
-### M3 #19 (M3 #10 나머지 3직업 Tier-2)
+### M3 #19 (PR14 chef 정체성 강화 트랙 — R11-1 발동 시 조건부)
+
+- [ ] PR14 결정 협의 (PD/Balance + 시나리오 한도연) — chef 전용 Tier-2 abilities 또는 chef startInv·신규 자원 분배
+- [ ] 진입 트리거: baseline v10에서 chef 격차 정의 2 +0.5d 미만 추가 좁힘 단정
+
+### M3 #20 (M3 #10 나머지 3직업 Tier-2 — R13-1 해소 후)
 
 - [ ] `SCN_QUEST_firefighter_tier2.md`
 - [ ] `SCN_QUEST_soldier_tier2.md`
 - [ ] `SCN_QUEST_pharmacist_tier2.md`
-- [ ] baseline v9 측정 D+0 진입 (PR13 + R11-1 단정 입력)
+- [ ] 진입 트리거: PR15 머지 + baseline v10 측정 D+0 (R13-1 해소 후 추정 신뢰도 확보 필요)
 
 ### M3 #15 (AD UI 변경 권고 2건 — 분리 트랙, 독립)
 
@@ -254,10 +270,11 @@ M3 #14a (PR11 옵션 2 + baseline v7) ─── 마감
 M3 #14b (PR12 + interactions.js T1 시뮬 모사 + baseline v8) ─── 마감
 M3 #15 (AD UI 변경 권고 2건) ─── 분리 트랙 (AD 오은별, 독립)
 M3 #16 (M3 #10 시나리오 — homeless·engineer Tier-2) ─── 마감
-M3 #17 (PR13 머지 + baseline v9) ─── 진입 대기 (시스템 백승호 — 다음 트리거)
-M3 #18 (PR14 chef 정체성 강화 — R11-1 액션) ─── baseline v9에서 격차 +0.5d 미만 단정 시
-M3 #19 (M3 #10 나머지 3직업 Tier-2) ─── baseline v9 측정 D+0 진입
-M3 (조건부 17의 후속) cook_intuition / PR11 추가 재조정 ─── baseline v9/v10 결과 의존
+M3 #17 (PR13 머지 + baseline v9) ─── 마감
+M3 #18 (PR15 sim AI ability 가산 분기 + baseline v10) ─── 진입 대기 (시스템 백승호 — 다음 트리거)
+M3 #19 (PR14 chef 강화 — R11-1 액션) ─── baseline v10 격차 추가 좁힘 시 조건부
+M3 #20 (M3 #10 나머지 3직업 Tier-2) ─── baseline v10 D+0 진입 (R13-1 해소 후)
+M3 (조건부 후속) cook_intuition / PR11 추가 재조정 ─── baseline v10/v11 결과 의존
 ```
 
 ---

@@ -147,7 +147,13 @@
 - **R11-1 임계 깨짐 단정** — homeless+engineer 합산 chef 격차 정의 1 +0.37d / 정의 2 +0.42d → +0.5d 임계 깨짐 단언. **PR14 chef 정체성 강화 트랙 진입 의무** 신규 등록.
 - PR13 patch diff 추정 — characters.js +23/-4 + items_misc.js +24/-3 + stackConfig.js +5 + CardFactory.js +2 = 총 ~60 라인.
 
-**다음 트리거:** 시스템 백승호 — PR13 머지 (SCN_QUEST_*tier2.md §8 patch diff 그대로 적용, 4곳 등록 룰 충족) + validate.js + baseline v9 측정. v9에서 R11-1 액션 트리거 발동 단정 시 PR14 chef 강화 트랙 즉시 진입.
+**M3 #17 (PR13 머지 + baseline v9 마감):**
+- **PR13 patch diff** — 4 파일 +52/-2 라인 (시스템 백승호). characters.js homeless·engineer 갱신 + items_misc.js newspaper_bundle·worn_photo·sketch_notebook + stackConfig.js + CardFactory.js. 4곳 등록 룰 충족. sketch_notebook dismantle paper 미정의로 `[]` 보수 처리.
+- [`BAL_SIM_baseline_v9_report.md`](./BAL_SIM_baseline_v9_report.md) — **baseline v9 정식 측정 (밸런스 권지나, 288줄).** K1 0% **10회 연속** / fingerprint `len316-h242a5b5f` v3~v9 7연속 유지 / **engineer K3 4.4→4.9 (+0.5d 단독 향상)** / homeless K3 4.2→4.2 (Δ 0) / **K5 절망 -28 (homeless 단독 -22)** R8-1 부분 완화 / chef 격차 정의 2 +0.50d 임계 경계 도달.
+- `BAL_SIM_baseline_v9_result.json` — buildTag `sim-baseline-v9-pr13`.
+- **협의서 v4 §14 추가 보강 회의록** — R8-1 부분 완화 단정·R11-1 미발동 단정(액션 트리거 미충족, 모니터링 유지)·**R13-1 신규 위험 등록**(Tier-2 ability sim AI 미구현, SCN_QUEST 추정-실측 격차 일차 원인)·다음 단계 갱신(PR15 1순위 선행 조건).
+
+**다음 트리거 (협의서 v4 §14.5):** **PR15 — `tools/sim/v2/playerAI.mjs` ability 가산 분기 구현 (시스템 백승호)**. `moraleRecoveryBonus`·`moraleOnCraft`·`moraleOnDismantle`·`sketchNotebookBonus`·기타 ability bonus 필드 enumerate. R13-1 해소 + 측정 도구 정합화. baseline v10 측정 → R11-1 발동 단정 → M3 #18/#19/#20 진입.
 
 ---
 

@@ -337,6 +337,8 @@ const CARD_IMAGES = {
   old_blanket:           'assets/images/materials/cloth.png',
   newspaper_bundle:      'assets/images/materials/cloth_scrap.png',
   box_cutter:            'assets/images/weapons/knife.png',
+  worn_photo:            'assets/images/materials/cloth_scrap.png',
+  sketch_notebook:       'assets/images/materials/cloth_scrap.png',
   broken_bottle:         'assets/images/materials/glass_shard.png',
 
   // 셰프 전용 희귀 식재료 (윤재혁)
