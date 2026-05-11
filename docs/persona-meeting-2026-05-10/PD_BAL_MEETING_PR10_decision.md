@@ -127,6 +127,7 @@ cooked_noodles onConsume = nutrition 35 + hydration 20 = 55
 - **양 페르소나 합의 도출.**
 - 영향 파일: `tools/sim/v2/playerAI.mjs` (1 함수 변경, 산식 1~5줄)
 - **머지 선행 조건:** 안건 2 게임 본체 검증 결과 도착. 게임 본체 nutrition 우선 확인 → PR10 머지. 게임 본체에도 결함 + 보강 방향 합의 → PR10 머지(단 게임 본체 PR을 별도 트랙으로 동시 진행).
+- **2026-05-11 충족 단언:** `SYS_VERIFY_cooking_autopick.md` (시스템 백승호, 440줄) 도착. **시나리오 γ 신규 단정** — 게임 본체에 자동 추천 알고리즘 *부재*. 시뮬 보강은 "본체 정합화"가 아닌 *이상적 player 행동 대리 추정 모델*. 머지 선행 조건 충족. 본문 갱신 사항은 §12 보강 회의록 참조.
 - 검증 절차: validate.js Errors 0 (시뮬 로직만 변경이라 영향 0 예상), `node tools/sim/v2/run_baseline.mjs` 7.5초 실행 시간 변동 0, fingerprint `len316-h242a5b5f` 유지 (BALANCE 미변경)
 - PR11(옵션 A) 진입 트리거: baseline v6 측정에서 K1 < 5% 유지
 
@@ -460,4 +461,134 @@ chef는 PR9 변형 C-a에서 yongsan 이동 비용(TP 2 + grace 1일)으로 fish
 
 ---
 
-*문서 끝. `SYS_VERIFY_cooking_autopick.md` 도착 시 본 문서 §2.5 PR10 머지 방향 확정 + §3.5 시나리오 α/β 단정.*
+*문서 끝. `SYS_VERIFY_cooking_autopick.md` 도착 시 본 문서 §2.5 PR10 머지 방향 확정 + §3.5 시나리오 α/β 단정. — 2026-05-11 충족. 갱신 사항은 §12 보강 회의록.*
+
+---
+
+## 12. 보강 회의록 (2026-05-11, PR10 구현 직후)
+
+> 참여: PD 김재훈 + 밸런스 권지나. 입력: `SYS_VERIFY_cooking_autopick.md` (시스템 백승호) + `AD_VERIFY_cooking_ui.md` (AD 오은별) + baseline v6 측정 결과 (`BAL_SIM_baseline_v6_result.json`, fingerprint `len316-h242a5b5f` 유지).
+
+### 12.1 시나리오 γ 신규 단정 — α/β 양분 폐기
+
+본 협의서 §3.2가 정의한 α (본체 nutrition 우선) / β (본체도 결함) 양분은 **사실 조건이 성립하지 않음**. 시스템 백승호 검증(`SYS_VERIFY_cooking_autopick.md` §2~§5)으로 게임 본체에 cooking 자동 추천 알고리즘 자체가 부재함을 단정. player가 `CraftUI._selectedBp`(line 105~125) 클릭 또는 `QuickCraftPrompt` 버튼(line 62~70)으로 명시적 선택. priority/order/weight 필드 3 데이터 파일 0 매칭.
+
+**시나리오 γ 단정 결과:**
+- 시뮬 `actCook`(`tools/sim/v2/playerAI.mjs:172-201`)은 본체와 1:1 정합 PR이 아닌 **이상적 player 행동 대리 추정 모델**
+- baseline v6 K1·K3 값은 *시뮬 player가 needs-aware로 행동했을 때의 100일 생존율 추정*으로 해석. 본체 실제 player 행동 K1과의 매핑은 별도 텔레메트리 트랙(M4+) 필요
+- PR10은 시뮬 단일 트랙으로 머지. 본체 PR 분리 트랙 불요
+
+### 12.2 §10.6 GameState 경로 정정
+
+본 협의서 §10.6은 `GameState.player.nutrition`으로 표기했으나 PR10 구현 과정에서 실제 GameState 구조가 `GameState.stats.nutrition.current` / `GameState.stats.nutrition.max`임이 확인됨. 시스템 백승호 PR10 코드는 실측 기반 정정 사용. **본 협의서 §10.6은 정정 사용 권고** (본문 수정 안 함, 기록 보존).
+
+### 12.3 §9.5 KPI 재정의 — cook_noodles blueprint 잠금 반영
+
+baseline v6 측정 결과(`tmp/probe_v6_cookout.mjs` 5직업 boil/nut 비율):
+
+| 직업 | cookingLv | v5 boil/nut | v6 boil/nut | nut% v5→v6 |
+|------|-----------|-------------|-------------|------------|
+| doctor | 0 | 100/0 | 100/0 | 0% → 0% |
+| soldier | 0 | 138/0 | 138/0 | 0% → 0% |
+| firefighter | 0 | 200/0 | 200/0 | 0% → 0% |
+| **homeless** | **3** | 200/14 | **200/109** | **6.5% → 35.3%** |
+| engineer | 0 | 200/0 | 200/0 | 0% → 0% |
+
+**부분 달성.** homeless(cooking lv 3) nutritionFood +95건. 그러나 cooking lv 0 4직업(doctor·soldier·firefighter·engineer)은 변화 0 — `cook_noodles` blueprint가 `requiredSkills.cooking: 1` 잠금이라 시스템적으로 boiled_water만 가능 (`SYS_VERIFY_cooking_autopick.md` §3.3 단정).
+
+**§9.5 KPI 재정의:**
+- 기존: "5직업 ≥50% nutritionFood" — **산식 변경만으로 도달 불가** 단정
+- 정정: **"cooking lv ≥1 직업 ≥50% nutritionFood"** (chef·pharmacist·homeless 3 직업 적용)
+- 신규 KPI: "cooking lv 0 4직업 nutritionFood 산출 경로 — interactions.js T1 시뮬 모사 보강 트랙으로 분리 (M4+ 또는 M3 #14 신규)"
+
+PR10 산식 영역의 책임 경계 밖. cooking lv 0 직업의 cooked_noodles 산출은 game 본체에서 `interactions.js` T1 변환 규칙으로 처리되지만 시뮬은 이를 모사하지 않음 (`tools/sim/v2/playerAI.mjs`에 T1 모사 부재).
+
+### 12.4 AD 오은별 UI 검증 결과 반영
+
+`AD_VERIFY_cooking_ui.md` (420줄) §5 종합 판단:
+
+| 검증 항목 | 결과 | UI 변경 권고 |
+|----------|------|------------|
+| 1. interactions.js hover hint 영양/수분 수치 노출 | **부족** (cooking 8건 모두 이름만) | (高) hint에 영양/수분 수치 합성 |
+| 2. CraftUI._renderOutputPreview 비교 부하 | **일부 부족** (동시 비교 UI 부재 + DESIGN.md `--stat-*` 토큰 미적용) | (中) 산출물 동시 비교 모드 추가 |
+| 3. 사이드바 hydration·nutrition 게이지 안내 | **충분** (3단 임계 + critical-alert) | 변경 불요 |
+
+**UI 변경 권고 2건은 PR10 머지 차단 아님.** needs-aware 산식과 사이드바 게이지 임계 경고(`StatRenderer.js:181~198`)가 정합 — 시뮬-UI-player 행동 3자 정합 가능. UI 권고 2건은 별도 트랙(AD 오은별 영역) 진입 권고. 단순 가중치·nutrition-floor는 UI 안내 모델과 불일치라 needs-aware 채택 강화 근거.
+
+### 12.5 PR10 산식 채택 단정 — needs-aware
+
+시스템 백승호 PR10 구현 (`tools/sim/v2/playerAI.mjs:172-201`):
+```js
+const needsNutrition = nutCur < nutMax * 0.5;
+const benefit = needsNutrition ? (n * 3 + h) : (n + h * 1.5);
+```
+
+**검증 결과:**
+- validate.js Errors 0 / Warnings 254 / ALL CLEAR (게임 본체 미관여)
+- baseline v6 (700 runs / 7.9s) — fingerprint `len316-h242a5b5f` 유지. BALANCE 미변경 단정 확정
+- 결정성 100% (두 번째 재실행 K3/K5/fingerprint 동일)
+- chef·pharmacist 회귀 0 (cooked_noodles 산출 비율 유지)
+- bootstrapErrors 0/700
+
+### 12.6 K3 변화 — PR10 직접 효과 단정
+
+| 직업 | v5 K3 | v6 K3 | Δv5→v6 | 원인 |
+|------|-------|-------|--------|------|
+| doctor | 4.00 | 4.00 | 0 | cooking lv 0 → boiled_water 잠금 유지 |
+| soldier | 3.00 | 3.00 | 0 | 동일 |
+| firefighter | 3.00 | 3.00 | 0 | 동일 |
+| **homeless** | **3.20** | **4.10** | **+0.90** | **cooking lv 3 → cooked_noodles 35.3% 산출** |
+| chef | 5.20 | 5.20 | 0 | 회귀 검증 통과 |
+| engineer | 3.10 | 3.10 | 0 | cooking lv 0 잠금 유지 |
+| pharmacist | 4.10 | 4.10 | 0 | 회귀 검증 통과 |
+
+**핵심 단정:**
+- PR10 직접 효과는 **homeless 단독 측정 가능** (+0.90d). cooking lv 3 직업이 `cook_noodles` blueprint(`requiredSkills.cooking: 1`) 통과 + needs-aware 산식 정합 결과
+- cooking lv 0 4직업(doctor·soldier·firefighter·engineer)은 산식 변경 무효과 — blueprint 잠금이 일차 제약
+- K1 7직업 모두 0% 유지 (변화 0). homeless K3 +0.90d는 day 4까지 연장 효과로 day 100 도달 미보장
+
+**§12.3 정정 KPI 기준 통과 여부:**
+- "cooking lv ≥1 직업 ≥50% nutritionFood": chef 100% / pharmacist 100% / homeless 35.3% — **2/3 달성, homeless 미달**
+- homeless 35.3% 미달은 cooking lv 3 직업의 needs-aware 분기 발동 시간 부족(day 3~4 사망 회차 비율 87% 잔존). 추가 향상은 R9-1 폴백(PR11) 필요
+
+### 12.7 K5 변화 단정
+
+```
+v5 → v6
+아사    532 → 510 (-22) — homeless·pharmacist nutrition 보강 효과
+절망    142 → 167 (+25) — 사망일 연장 부산물 (homeless·engineer·doctor 회차)
+탈수    14  → 14  (0)  — 변화 없음
+극도피로 12  → 9   (-3) — homeless 생존 day 4 도달로 절망 사망 우선 발생
+```
+
+**K5 절망 +25 위험 등록 (R10-1 신규):** 사망일 연장이 morale 침식으로 절망 사망 증가에 기여. R8-1(homeless·engineer actBoostMorale 0%)과 결합 시 R8-1 트랙 진입(M3 #10 시나리오 한도연) 우선순위 상향.
+
+### 12.8 §11 다음 단계 갱신
+
+기존 §11 표에 신규 항목 추가:
+
+| 순위 (갱신) | 작업 | 담당 | 트리거 시점 |
+|------|------|------|-----------|
+| **2.5 신규** | PR10 머지 — needs-aware 산식 (`playerAI.mjs:172-201`). PR body에 시나리오 γ 단정 + "본체 정합화 아닌 추정 모델" 4개 항 명시 | 시스템 백승호 (구현 완료, 머지 대기) | 본 보강 회의록 채택 직후 |
+| **4 갱신** | baseline v6 정식 보고서 작성 — `BAL_SIM_baseline_v6_report.md` (§12.6 K3·§12.7 K5 단정 인용 + R10-1 등록) | 밸런스 권지나 | 본 보강 회의록 채택 직후 |
+| **신규 (M3 #14 후보)** | interactions.js T1 시뮬 모사 보강 — cooking lv 0 4직업이 cook_noodles 산출 경로 (게임 본체에서는 T1 변환으로 처리) 시뮬 추가 | 시스템 백승호 | baseline v6 보고 + PR11 결정 후 |
+| **신규 (AD 트랙)** | interactions.js hint 영양/수분 수치 합성 + CraftUI 산출물 동시 비교 모드 | AD 오은별 | UI 권고 2건 분리 트랙 진입 결정 시 |
+| **신규 (R10-1)** | morale 침식 / 절망 사망 +25 위험 — R8-1 트랙(M3 #10) 우선순위 상향 | 시나리오 한도연 | baseline v6 보고 D+0 |
+
+### 12.9 결정 종합 — 보강
+
+| 안건 | 보강 결정 |
+|------|---------|
+| §2.5 PR10 머지 선행 조건 | **충족** (시스템 백승호 검증 도착) |
+| §3.2 시나리오 α/β | **폐기** — 시나리오 γ 신규 단정 |
+| §9.5 KPI "5직업 ≥50%" | **재정의** — "cooking lv ≥1 직업 ≥50%". cooking lv 0 4직업은 interactions.js T1 시뮬 모사 트랙으로 별도 분리 |
+| §10.6 GameState 경로 | **정정** — `player.nutrition` → `stats.nutrition`. PR10 코드는 실측 기반 정정 사용 |
+| AD UI 권고 2건 | **분리 트랙** — PR10 머지 차단 아님. AD 오은별 영역 |
+| R10-1 (신규) 절망 사망 +25 | **R8-1 트랙(M3 #10) 우선순위 상향** |
+
+본 보강은 본 협의서의 결정 권한 안에서 처리. 별도 협의서 v4 발행 불요.
+
+---
+
+*보강 회의록 끝. baseline v6 정식 보고서 도착 시 본 §12.6·§12.7 인용 정합 확인 의무.*
+

@@ -113,7 +113,17 @@
 **M3 #11 (협의서 v3 작성 마감):**
 - [`PD_BAL_MEETING_PR10_decision.md`](./PD_BAL_MEETING_PR10_decision.md) — **PD/Balance 협의서 v3.** PR10 결정. **옵션 C 단독 채택** — `tools/sim/v2/playerAI.mjs:185` `actCook` benefit 산식 nutrition 차별 가중치 도입. **게임 본체 cooking 자동 추천 검증(`SYS_VERIFY_cooking_autopick.md`)을 PR10 머지 *선행 조건*으로 분리** (시스템 백승호 + AD 오은별). R9-1 폴백 우선순위 PR11 옵션 2(25구 확대) → PR12 옵션 1(`baseCatchChance` 0.30 → 0.50). R9-2(chef PR9 효과 0) 변경 보류(chef 격차 보호 유리 결과). R8-1은 baseline v6 측정 D+0 시나리오 한도연 진입.
 
-**다음 트리거:** 시스템 백승호 + AD 오은별 — `SYS_VERIFY_cooking_autopick.md` 게임 본체 cooking 자동 추천 검증 (CraftSystem.js 알고리즘 grep + cooking minigame UI player 자유도 확인).
+**M3 #12 (게임 본체 cooking 자동 추천 검증):**
+- [`SYS_VERIFY_cooking_autopick.md`](./SYS_VERIFY_cooking_autopick.md) — **시스템 검증 보고 (백승호).** 협의서 v3 §3.5 위임. **시나리오 γ 신규 단정 — 게임 본체에는 cooking 자동 추천 알고리즘이 *부재*.** `CraftSystem.startBlueprint(blueprintId):85`는 외부에서 명시 id를 받고, 모든 호출처(`CraftUI._selectedBp` line 105~125, `QuickCraftPrompt` line 62~70)가 player 클릭으로만 결정. priority/order/weight 필드 3 데이터 파일 0 매칭. **PR10 시뮬 단일 PR 머지 가능** — 단 시뮬 보강은 "본체 정합화"가 아닌 *이상적 player 행동 대리 추정 모델*이라는 단정을 PR body에 명시 의무. needs-aware 산식 권고. AD 오은별 UI 검증 트랙 잔여 의문 3건 위임 (hover hint UX 부하 / `_renderOutputPreview:274~324` 산출물 비교 부하 / 사이드바 hydration·nutrition 게이지 안내 충분성).
+
+**M3 #12 (게임 본체 검증 + PR10 + baseline v6 — 마감, PR10 git 머지만 대기):**
+- [`AD_VERIFY_cooking_ui.md`](./AD_VERIFY_cooking_ui.md) — **AD 검증 보고 (오은별, 420줄).** 협의서 v3 §9.2 AD 영역 위임 + SYS_VERIFY §7 잔여 의문 3건. **항목 1 hover hint 부족 (cooking 8건 모두 이름만)** / **항목 2 OutputPreview 일부 부족** (수치는 있으나 동시 비교 UI 부재 + DESIGN.md `--stat-*` 토큰 미적용) / **항목 3 사이드바 게이지 충분** (3단 임계 + critical-alert). UI 변경 권고 2건은 PR10 머지 차단 아님. **needs-aware 산식 권고 강화** — `StatRenderer.js:181~198` 임계 경고와 정합.
+- **PR10 옵션 C 코드 구현 (`tools/sim/v2/playerAI.mjs:172-201`)** — `actCook` benefit 산식을 needs-aware 분기로 변경 (`needsNutrition = nutCur < nutMax * 0.5 ? n*3+h : n+h*1.5`). validate.js Errors 0, fingerprint `len316-h242a5b5f` 유지. **git 머지 대기**.
+- [`BAL_SIM_baseline_v6_report.md`](./BAL_SIM_baseline_v6_report.md) — **baseline v6 정식 측정 (PR10 후, 밸런스 권지나, 327줄).** K1 7직업 0% **8회 연속** → 협의서 v3 PR11 폴백 트리거 충족. **homeless K3 3.20 → 4.10 (+0.9d) 단독 측정** (PR10 직접 효과). cooking lv 0 4직업(doctor·soldier·firefighter·engineer) 변화 0 — `cook_noodles` blueprint `requiredSkills.cooking: 1` 잠금. chef·pharmacist 회귀 0. **R10-1 신규 등록** — 절망 사망 +25(사망일 연장 부산물). R8-1 트랙(M3 #10) 우선순위 상향 권고.
+- `BAL_SIM_baseline_v6_result.json` — baseline v6 raw 데이터 (buildTag `sim-baseline-v6-pr10`, fingerprint v3·v4·v5와 동일).
+- **협의서 v3 §12 보강 회의록 추가** — 시나리오 γ 신규 단정 (α/β 양분 폐기) / §9.5 KPI 재정의 (5직업 → cooking lv ≥1 직업) / §10.6 GameState 경로 정정 (`player.nutrition` → `stats.nutrition`) / R10-1 등록 / §11 다음 단계 갱신.
+
+**다음 트리거:** PR10 git 머지 (시스템 백승호가 별도 commit). 이어서 PD/Balance 협의 — PR11 옵션 결정 (1차 옵션 2 25구 lootTable raw food 확대 vs 2차 옵션 1 `fishing.baseCatchChance` 상향). 협의서 v4 발행 여부 검토.
 
 ---
 
