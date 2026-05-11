@@ -399,4 +399,130 @@ baseline v6에서 PR10 needs-aware 산식 효과는 homeless 1직업만 측정 �
 
 ---
 
-*문서 끝. baseline v7 측정 결과 도착 시 본 §9.5 KPI 비교 + R8-1 원인 단정 + R10-1 추이 단정 + PR12 진입 여부 결정.*
+*문서 끝. baseline v7 측정 결과 도착 시 본 §9.5 KPI 비교 + R8-1 원인 단정 + R10-1 추이 단정 + PR12 진입 여부 결정. — 2026-05-11 충족. 갱신 사항은 §12 보강 회의록.*
+
+---
+
+## 12. 보강 회의록 (2026-05-11, PR11 구현 + baseline v7 1·2차 측정 직후)
+
+> 참여: PD 김재훈 + 밸런스 권지나. 입력: PR11 옵션 2 구현 결과 (시스템 백승호) + baseline v7 1차 측정 + 가중치 재조정 + baseline v7 2차 측정.
+
+### 12.1 PR11 가중치 사양 결함 단정 (1차 측정)
+
+본 협의서 §3.1 가중치 사양 (일반 1.0 / 위험 0.5 / dobong 0.5)이 실제 `js/data/districts.js` 기존 entry 가중치 척도(`weight: 5`, `weight: 6`, `weight: 8`, `weight: 15` 등 정수 5~15)와 1~2자리수 차이.
+
+**baseline v7 1차 측정 결과** (가중치 1.0/0.5 적용):
+- K1: 7직업 모두 0.00% (v6 대비 변화 0)
+- K3: 모든 직업 mean·median 변화 0
+- K5: 아사 510 (v6 대비 0) / 절망 169 (+2) / 탈수 14 (0) / 극도 피로 9 (0)
+- probe actExplore: vegetable 산출 0~4개/300 탐색 (weight 1.0이 기존 entry 5~15 대비 1/5~1/15 척도)
+
+**단정:** 가중치 1.0/0.5는 `generateDistrictLoot()` weighted random에서 선택 확률 1~3% 수준이라 PR11 의도(7직업 nutrition 보강)와 측정 가능 효과 사이의 격차 발생. 사양 결함.
+
+### 12.2 가중치 척도 재조정 (PD/Balance 합의)
+
+| 항목 | 1차 사양 | 정정 사양 |
+|------|---------|---------|
+| 일반 구역 (dangerLevel ≤ 2) | 1.0 | **8** |
+| 위험 구역 (dangerLevel ≥ 3) | 0.5 | **4** |
+| dobong 강제 | 0.5 | **4** |
+| 기존 entry 가중치 변경 | 0 | **0** (PR8 entry 유지) |
+
+**근거:**
+- 기존 entry 가중치 척도(5~15)와 1/2~1/4 수준 정합
+- raw food 선택률 약 20~30% 추정 (1차 1~3% 대비 10배)
+- chef·pharmacist·homeless K3 +1d 이상 향상 추정 (1차 변화 0 대비 측정 가능 효과 확보)
+
+**PD 김재훈:**
+> 1차 측정에서 사양 결함 노출. 협의서 v4 §3.1을 정정하지 않으면 PR11 의도 자체가 무의미. 다만 PD 1 PR 1 트랙 원칙에 따라 PR11을 롤백·재머지하기보다는 본 보강 회의록으로 사양 정정 단정 + districts.js 가중치 일괄 변경 + 재측정으로 처리. PR11 PR 자체는 유지.
+
+**밸런스 권지나:**
+> 8/4 척도는 기존 entry와 정합. 가중치 5~15 척도가 game balance 측면에서 합리적이라면 raw food도 동일 척도라야 자연 분포. 합의.
+
+### 12.3 baseline v7 2차 측정 결과 (가중치 8/4 적용 후)
+
+```
+fingerprint: len316-h242a5b5f 유지 (BALANCE 미변경 확정)
+bootstrapErrors: 0/700
+실행 시간: 7~8초
+```
+
+| KPI | v6 | v7 1차 (1.0/0.5) | v7 2차 (8/4) | Δ (1차→2차) | 협의서 §9.5 목표 |
+|-----|----|----|---|---|---|
+| K1 (전 직업) | 0% | 0% | **0%** | 0 | ≥ 5% |
+| K3 doctor | 4.0 | 4.0 | 4.0 | 0 | +1d (5.0) |
+| K3 soldier | 3.0 | 3.0 | 3.0 | 0 | +0.5~1d |
+| K3 firefighter | 3.0 | 3.0 | 3.0 | 0 | +0.5~1d |
+| K3 homeless | 4.1 | 4.1 | **4.1** | 0 | 5.0~6.5 |
+| K3 chef | 5.2 | 5.2 | **5.2** | 0 | 5.5~7.0 |
+| K3 engineer | 3.1 | 3.1 | 3.1 | 0 | +0.5~1d |
+| K3 pharmacist | 4.1 | 4.1 | **4.1** | 0 | 5.0~6.5 |
+| K5 아사 | 532 | 510 | **506** | **-4** | ↓ |
+| K5 절망 | 142 | 169 | **173** | **+4** | ≤ +50 |
+| K5 탈수 | 14 | 14 | 12 | -2 | ↓ |
+| K5 극도 피로 | 12 | 9 | 9 | 0 | ≤ 10 |
+
+**핵심 단정:**
+- K1·K3 7직업 모두 v6 대비 변화 0. PR11 가중치 8/4로 raw food 선택률은 향상됐으나 K1·K3에 측정 가능 효과 0
+- K5 미세 변화 (아사 -4, 절망 +4, 탈수 -2)는 측정 noise 수준
+- fingerprint 유지로 BALANCE 미변경 정합
+
+### 12.4 PR11 효과 0 원인 단정 — 더 본질적 결함 노출
+
+가중치 척도 정합화에도 효과 0인 사실은 PR11 옵션 2의 *설계 자체*가 K1·K3 향상에 부적합함을 단정한다. 원인 후보:
+
+| 원인 | 단정 근거 | 검증 방법 |
+|------|----------|----------|
+| 1. cooking lv 0 4직업 actCook 잠금 | `cook_noodles` `requiredSkills.cooking: 1` 잠금 유지 — raw food 산출 향상해도 actCook 가공 불가 | probe actCook input — vegetable·herb 사용 회수 |
+| 2. actEat 우선순위 — raw food 후순위 | actEat AI가 raw food보다 cooked·canned 우선 섭취 가능성 | probe actEat input — raw food 직접 섭취 회수 |
+| 3. cooking lv ≥1 직업도 cooked_noodles 충분 | chef·pharmacist는 이미 v6에서 cooked_noodles 100% 산출 — 추가 raw 입력은 중복 | v6 cooked_noodles 산출 데이터 인용 |
+| 4. raw food 영양 회복량 < 일일 decay | vegetable nutrition +12 / herb +5 추정 — 일일 decay 36 대비 작음 | items.js 인용 |
+
+**PD 김재훈:**
+> PR11 옵션 2 설계 결함 후보 4건 중 (1)·(3)이 본질적 — *cooking lv 0 직업은 raw food를 가공 못 하고, cooking lv ≥1 직업은 이미 충분*. 즉 PR11은 양극단 직업 모두에 효과 0인 구조. 이는 협의서 v3 §12.3 KPI 재정의 ("cooking lv ≥1 직업 ≥50%")가 이미 cooking lv 0 4직업 변화 0을 예측한 결과와 정합.
+>
+> **핵심 결론:** PR11 옵션 2 대신 폴백 트랙 — **PR12 (`fishing.baseCatchChance` 상향) + M3 #14 (interactions.js T1 시뮬 모사) 병행 진입**이 K1·K3 향상의 본질적 경로. PR11 자체는 측정 도구 정합화(actExplore raw food 분포 균등) 및 미래 cooking 입력 다양화를 위한 *기반 PR*로 머지 유지.
+
+**밸런스 권지나:**
+> 동의. R8-1 원인 2 단정 (1차 측정 probe 2 — homeless·engineer day 2 morale 12~13 급락)도 PR11 후 변화 0 유지. M3 #10 시나리오 한도연 트랙 우선순위 상향 단정도 변화 없음.
+>
+> PR11은 머지 유지 + PR12·M3 #14 즉시 병행 진입에 합의.
+
+### 12.5 폴백 트리거 충족 단언
+
+협의서 v4 §10.1: "baseline v7 측정에서 K1 모든 직업 < 5%" → PR12 진입 트리거 충족.
+협의서 v3 §12.3 KPI: "cooking lv 0 4직업 K3 변화 0" → M3 #14 진입 트리거 충족.
+
+**PR12 + M3 #14 동시 진입 결정.** PR11 1 PR 1 트랙 원칙 위배 아님 — PR12는 `gameBalance.js` 단일 상수, M3 #14는 시뮬 로직. 트랙 영역 분리.
+
+### 12.6 §11 다음 단계 갱신
+
+기존 §11 표 폐기 + 신규 우선순위:
+
+| 순위 (갱신) | 작업 | 담당 | 트리거 시점 |
+|------|------|------|-----------|
+| **1** | PR12 = `fishing.baseCatchChance` 0.30 → 0.50 — `js/data/gameBalance.js:328` 단일 상수 PR | 밸런스 권지나 | 본 보강 회의록 채택 직후 |
+| **2** | M3 #14b = `tools/sim/v2/playerAI.mjs` interactions.js T1 변환 모사 — cooking lv 0 4직업 cooked_noodles 산출 경로 | 시스템 백승호 | 본 보강 회의록 채택 직후 (PR12와 병행) |
+| **3** | baseline v8 측정 (`BAL_SIM_baseline_v8_report.md`) — PR12 + M3 #14 합산 효과 측정 | 밸런스 권지나 | PR12 + M3 #14 머지 D+1 |
+| **4** | M3 #10 5직업 Tier-2 abilities — homeless·engineer morale 회복 자원 분배 (R8-1 원인 2 단정 입력) | 시나리오 한도연 | baseline v8 측정 D+0 |
+| 5 | (조건부) cook_intuition 단축 단일 상수 PR | 밸런스 권지나 | v8/v9에서 chef 격차 +2.5d 초과 시 |
+| 6 | (조건부) PR11 가중치 추가 재조정 — v8에서도 raw food 활용 효과 0 시 actEat AI raw food 우선 분기 추가 (시뮬 로직 PR) | 시스템 백승호 | baseline v8 측정 후 분석 시 |
+| 7 | M3 #15 AD UI 변경 권고 2건 | AD 오은별 | 독립 |
+
+### 12.7 결정 종합 — 보강
+
+| 안건 | 보강 결정 |
+|------|---------|
+| §3.1 가중치 사양 | **정정** — 일반 1.0 → 8 / 위험 0.5 → 4. districts.js 일괄 갱신 완료 |
+| PR11 머지 유지 | **유지** — 측정 도구 정합화 기반 PR로 의의 (actExplore raw food 분포 균등) |
+| PR12 + M3 #14 동시 진입 | **결정** — K1·K3 향상 본질적 경로. 1 PR 1 트랙 원칙 위배 아님 (트랙 영역 분리) |
+| M3 #10 진입 시점 | **baseline v8 D+0** (v7 D+0에서 v8 D+0으로 1단계 지연 — PR12+M3 #14 합산 측정 후) |
+| R8-1 원인 | **2 단정 유지** — homeless·engineer day 2 morale 12~13 급락, 회복 자원 부재 |
+| R10-1 추이 | **안전** — v6 167 → v7 173 (+6), +50 트리거 미충족 |
+
+본 보강은 본 협의서의 결정 권한 안에서 처리. 별도 협의서 v5 발행 불요.
+
+---
+
+*보강 회의록 끝. baseline v8 측정 결과 도착 시 본 §12.3 표 v8 컬럼 추가 + PR12·M3 #14 합산 효과 단정.*
+
