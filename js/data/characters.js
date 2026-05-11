@@ -125,6 +125,16 @@ export const CHARACTERS = [
         desc: '강아지 동반 시 사기 감소 -20%',
         effect: { companionMoraleDecayReduct: 0.20 },
       },
+      {
+        id: 'comrade_memorial',
+        name: '전우의 기억',
+        icon: '🎖️',
+        desc: '전우의 군번줄로 사기 회복 +30%. 시작 시 군번줄 지급.',
+        effect: {
+          moraleRecoveryBonus: 1.3,
+          startingItems: ['dog_tag'],
+        },
+      },
     ],
     startingSkills: {
       melee:   4,  // 군인 — 근접무기 전문
@@ -188,6 +198,16 @@ export const CHARACTERS = [
         icon: '🎒',
         desc: '로프 추가 지급',
         effect: { startingItems: ['rope', 'hand_axe', 'instant_noodles', 'instant_noodles', 'contaminated_water', 'contaminated_water'] },
+      },
+      {
+        id: 'rescue_resolve',
+        name: '구조의 결의',
+        icon: '🚒',
+        desc: '가족·동료의 기억으로 사기 회복 +30%. 시작 시 가족 사진 지급.',
+        effect: {
+          moraleRecoveryBonus: 1.3,
+          startingItems: ['family_photo'],
+        },
       },
     ],
     startingSkills: {
@@ -334,6 +354,17 @@ export const CHARACTERS = [
         desc: '명동·남대문 골목 익숙함. 시작 후 7일간 조우 확률 50% 감소',
         effect: { encounterMultDays: { days: 7, mult: 0.5 } },
       },
+      {
+        id: 'pantry_mastery',
+        name: '식자재 보존술',
+        icon: '🥫',
+        desc: '보존식·식재료 섭취 시 사기 회복 +40%. 사기 30 미만 회복 시 피로 -3 추가. 시작 시 셰프 노트·혼합 향신료 지급.',
+        effect: {
+          moraleRecoveryBonus: 1.4,
+          lowMoraleRecoveryFatigueBonus: -3,
+          startingItems: ['chef_journal', 'spice_blend', 'spice_blend'],
+        },
+      },
     ],
     startingSkills: {
       cooking:     4,  // 셰프 — 요리 전문
@@ -470,6 +501,16 @@ export const CHARACTERS = [
         icon: '🩹',
         desc: '의료 아이템 사용 효과 향상 (붕대 사용 시 HP +3 추가 회복)',
         effect: { bandageHpBonus: 3 },
+      },
+      {
+        id: 'compounding_focus',
+        name: '조제 몰입',
+        icon: '🧪',
+        desc: '조제·제작 행위 1회당 사기 +3 회복. 조제 노트 소비 시 사기·피로 동시 회복. 시작 시 조제 노트 지급.',
+        effect: {
+          moraleOnCraft: 3,
+          startingItems: ['pharmacy_notes'],
+        },
       },
     ],
     startingSkills: {

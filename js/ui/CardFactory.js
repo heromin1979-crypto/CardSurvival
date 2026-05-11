@@ -341,6 +341,13 @@ const CARD_IMAGES = {
   sketch_notebook:       'assets/images/materials/cloth_scrap.png',
   broken_bottle:         'assets/images/materials/glass_shard.png',
 
+  // 4직업 Tier-2 keepsake + 셰프 보존식 (PR14·PR16)
+  chef_journal:          'assets/images/materials/cloth_scrap.png',
+  spice_blend:           'assets/images/food/dried_mushroom.png',
+  family_photo:          'assets/images/materials/cloth_scrap.png',
+  dog_tag:               'assets/images/materials/cloth_scrap.png',
+  pharmacy_notes:        'assets/images/materials/cloth_scrap.png',
+
   // 셰프 전용 희귀 식재료 (윤재혁)
   truffle:               'assets/images/food/dried_mushroom.png',
   korean_beef_premium:   'assets/images/food/raw_meat.png',
