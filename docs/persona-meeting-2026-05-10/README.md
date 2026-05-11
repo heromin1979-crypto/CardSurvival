@@ -170,7 +170,13 @@
 - 합산 2178줄 / patch diff ~116 라인. PR15 enumerate 범위(`moraleRecoveryBonus`·`moraleOnCraft`·`lowMoraleRecoveryFatigueBonus`) 한정. 신규 effect 필드 0.
 - 공통 위험: `subtype: keepsake` 5직업 동시 사용(homeless·engineer·firefighter·soldier·pharmacist) / `pharmacy_notes` dismantle paper 정의 부재 (sketch_notebook 패턴 정합).
 
-**다음 트리거 (협의서 v5 §11 §2순위):** **시스템 백승호 — PR14(chef) + PR16(나머지 3직업, 또는 PR14에 통합) 머지** — 4 SCN_QUEST §8 patch diff 적용. validate.js + fingerprint + baseline v11 직업별 분리 측정.
+**M3 #21 (PR14·PR16 머지 + baseline v11 마감):**
+- **PR14·PR16 통합 머지** (시스템 백승호) — characters.js +41 + items_misc.js +54 (5종 자원) + stackConfig.js +13 + CardFactory.js +7 + run_baseline.mjs v10→v11. **합산 +117/-2 라인**. pharmacy_notes dismantle `[]` 보수 처리.
+- [`BAL_SIM_baseline_v11_report.md`](./BAL_SIM_baseline_v11_report.md) — **baseline v11 정식 측정 (밸런스 권지나, 426줄).** K1 0% **12회 연속** / fingerprint v3~v11 9연속 유지 / **chef K3 5.20→5.40 (+0.20d)** / **soldier 4.50→5.00 (+0.50d, 보수 초과)** / pharmacist 4.10→4.30 (+0.20d) / firefighter 5.00 유지 (사인 전이만) / **K5 절망 303→161 (-142, -47%)** / 누적 v8→v11 절망 -244 (**60.2% 회수**).
+- `BAL_SIM_baseline_v11_result.json` — buildTag `sim-baseline-v11-pr14`.
+- **협의서 v5 §12 추가 보강 회의록** — **R11-1 정의 2 해소 단언** (+0.560d ≥ +0.5d) · **R8-1 완전 해소 단정** (절망 161 < 200) · **R14-1·R14-2·R14-3 신규 등록** · **PR14.1 옵션 C 채택** (chef effect 상향) · **PR16.1 채택** (soldier effect 하향).
+
+**다음 트리거 (협의서 v5 §12.7 §1순위):** **시스템 백승호 — PR14.1 + PR16.1 머지** — `pantry_mastery.moraleRecoveryBonus 1.4 → 1.6` + `chef_journal.onConsume.morale 10 → 13` + `comrade_memorial.moraleRecoveryBonus 1.3 → 1.2`. characters.js + items_misc.js ~6 라인. validate.js + fingerprint + baseline v12 측정. 1차 KPI 충족 단정 시 **R11-1 완전 해소 단언**.
 
 ---
 
