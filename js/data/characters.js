@@ -52,7 +52,7 @@ export const CHARACTERS = [
         name: '의료 물자',
         icon: '🎒',
         desc: '붕대 4개, 소독약, 청진기, 메스, 통조림 2개, 에너지바 2개 추가 지급',
-        effect: { startingItems: ['bandage', 'bandage', 'bandage', 'bandage', 'antiseptic', 'stethoscope', 'combat_scalpel', 'canned_food', 'canned_food', 'energy_bar', 'energy_bar'] },
+        effect: { startingItems: ['bandage', 'bandage', 'bandage', 'bandage', 'antiseptic', 'stethoscope', 'combat_scalpel', 'canned_food', 'canned_food', 'energy_bar', 'energy_bar', 'instant_noodles', 'contaminated_water'] },
       },
     ],
     startingSkills: {
@@ -116,7 +116,7 @@ export const CHARACTERS = [
         name: '전술 장비',
         icon: '🎒',
         desc: '나이프 + 알코올 솜 + 붕대 지급',
-        effect: { startingItems: ['knife', 'alcohol_swab', 'alcohol_swab', 'bandage'] },
+        effect: { startingItems: ['knife', 'alcohol_swab', 'alcohol_swab', 'bandage', 'instant_noodles', 'instant_noodles', 'contaminated_water'] },
       },
       {
         id: 'comrade_bond',
@@ -187,7 +187,7 @@ export const CHARACTERS = [
         name: '구조 키트',
         icon: '🎒',
         desc: '로프 추가 지급',
-        effect: { startingItems: ['rope', 'hand_axe'] },
+        effect: { startingItems: ['rope', 'hand_axe', 'instant_noodles', 'instant_noodles', 'contaminated_water', 'contaminated_water'] },
       },
     ],
     startingSkills: {
@@ -249,7 +249,7 @@ export const CHARACTERS = [
         name: '거리의 도구',
         icon: '🧰',
         desc: '양철통·낡은 담요·신문지·박스커터 지급. 2년 노숙 생활의 살림살이.',
-        effect: { startingItems: ['battered_can', 'old_blanket', 'newspaper_bundle', 'box_cutter'] },
+        effect: { startingItems: ['battered_can', 'old_blanket', 'newspaper_bundle', 'box_cutter', 'instant_noodles', 'instant_noodles', 'contaminated_water', 'contaminated_water'] },
       },
     ],
     startingSkills: {
@@ -313,7 +313,7 @@ export const CHARACTERS = [
         desc: '나이프/칼 무기 데미지 +25%, 시작 시 주방 칼·식재료 지급',
         effect: {
           knifeDmgBonus: 1.25,
-          startingItems: ['knife', 'canned_food', 'canned_food', 'preserved_ration'],
+          startingItems: ['knife', 'canned_food', 'canned_food', 'preserved_ration', 'instant_noodles', 'instant_noodles', 'contaminated_water'],
         },
       },
       {
@@ -383,7 +383,7 @@ export const CHARACTERS = [
         name: '공장 자재',
         icon: '🎒',
         desc: '고철, 전선 추가 지급',
-        effect: { startingItems: ['scrap_metal', 'wire'] },
+        effect: { startingItems: ['scrap_metal', 'wire', 'instant_noodles', 'instant_noodles', 'contaminated_water', 'contaminated_water'] },
       },
     ],
     startingSkills: {
@@ -425,7 +425,7 @@ export const CHARACTERS = [
         name: '약품 키트',
         icon: '💊',
         desc: '진통제·소독약 2개·붕대 추가 지급',
-        effect: { startingItems: ['painkiller', 'antiseptic', 'antiseptic', 'bandage'] },
+        effect: { startingItems: ['painkiller', 'antiseptic', 'antiseptic', 'bandage', 'instant_noodles', 'instant_noodles', 'contaminated_water'] },
       },
       {
         id: 'compounding',

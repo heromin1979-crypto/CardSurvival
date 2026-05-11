@@ -39,6 +39,7 @@ const DISTRICTS = {
       { definitionId: 'rainwater',     weight: 8,  minQty: 1, maxQty: 2, contamChance: 0.10 },
       { definitionId: 'nettle',        weight: 6,  minQty: 1, maxQty: 2 },
       { definitionId: 'wild_root',     weight: 5,  minQty: 1, maxQty: 2 },
+      { definitionId: 'wild_berry',    weight: 6,  minQty: 1, maxQty: 2 },
       // 신규 원자재 — 한강 수변 모래
       { definitionId: 'sand',          weight: 8,  minQty: 1, maxQty: 3 },
       { definitionId: 'pebble',        weight: 15, minQty: 1, maxQty: 2 },
@@ -220,7 +221,7 @@ const DISTRICTS = {
       { definitionId: 'nettle',        weight: 10, minQty: 1, maxQty: 2 },
       { definitionId: 'dandelion',     weight: 10, minQty: 1, maxQty: 3 },
       { definitionId: 'wild_root',     weight: 7,  minQty: 1, maxQty: 2 },
-      { definitionId: 'wild_berry',    weight: 6,  minQty: 1, maxQty: 2 },
+      { definitionId: 'wild_berry',    weight: 12, minQty: 1, maxQty: 2 },
       // 신규 원자재 — 강변 모래·토양
       { definitionId: 'sand',          weight: 8,  minQty: 1, maxQty: 3 },
       { definitionId: 'worm',          weight: 8,  minQty: 1, maxQty: 3 },
@@ -453,6 +454,7 @@ const DISTRICTS = {
       { definitionId: 'wild_root',     weight: 8,  minQty: 1, maxQty: 2 },
       { definitionId: 'wild_garlic',   weight: 6,  minQty: 1, maxQty: 2 },
       { definitionId: 'nettle',        weight: 6,  minQty: 1, maxQty: 2 },
+      { definitionId: 'herb',          weight: 6,  minQty: 1, maxQty: 2 },
       { definitionId: 'vegetable_seed',weight: 2,  minQty: 1, maxQty: 1 },
       // 신규 원자재 — 한강 수변 모래·공원 식생
       { definitionId: 'sand',            weight: 8,  minQty: 1, maxQty: 3 },
@@ -732,6 +734,7 @@ const DISTRICTS = {
       // 한강 수변 자원 — 용산구 hasFishing
       { definitionId: 'rainwater',     weight: 8,  minQty: 1, maxQty: 2, contamChance: 0.10 },
       { definitionId: 'nettle',        weight: 5,  minQty: 1, maxQty: 2 },
+      { definitionId: 'herb',          weight: 6,  minQty: 1, maxQty: 2 },
       // 신규 원자재 — 전자상가 전자부품
       { definitionId: 'circuit_board', weight: 5,  minQty: 1, maxQty: 1 },
     ],
@@ -748,7 +751,7 @@ const DISTRICTS = {
     landmark: 'lm_eunpyeong',
     lootTable: [
       { definitionId: 'tree_log',      weight: 20, minQty: 1, maxQty: 2 },
-      { definitionId: 'herb',          weight: 20, minQty: 1, maxQty: 3 },
+      { definitionId: 'herb',          weight: 28, minQty: 1, maxQty: 3 },
       { definitionId: 'wood',          weight: 15, minQty: 1, maxQty: 2 },
       { definitionId: 'cloth',         weight: 15, minQty: 1, maxQty: 2 },
       { definitionId: 'water_bottle',  weight: 10, minQty: 1, maxQty: 2 },
@@ -840,6 +843,8 @@ const DISTRICTS = {
       // 시장 잔류 기초 자원 — 중구 (남대문시장)
       { definitionId: 'matches',       weight: 5,  minQty: 1, maxQty: 2 },
       { definitionId: 'dry_grass',     weight: 4,  minQty: 1, maxQty: 1 },
+      { definitionId: 'herb',          weight: 8,  minQty: 1, maxQty: 2 },
+      { definitionId: 'wild_berry',    weight: 6,  minQty: 1, maxQty: 2 },
     ],
     special: 'seoul_city_hall',
   },
