@@ -169,8 +169,13 @@ function _hasMeaningfulInputs(bp) {
   return false;
 }
 
+// needs-aware: 본체 cooking에는 자동 추천이 없음 (SYS_VERIFY_cooking_autopick §5.2 시나리오 γ).
+// 시뮬 actCook은 "이상적 player가 결핍 자원을 우선 보충한다"는 행동 모델의 추정치이며 본체와의 1:1 정합이 아님.
 function actCook(simInv) {
   const cookingLv = GameState.player?.skills?.cooking?.level ?? GameState.player?.skills?.cooking ?? 0;
+  const nutCur = GameState.stats?.nutrition?.current ?? 100;
+  const nutMax = GameState.stats?.nutrition?.max ?? 100;
+  const needsNutrition = nutCur < nutMax * 0.5;
   let best = null;
   let bestN = -1;
   for (const bp of FOOD_BLUEPRINTS) {
@@ -182,7 +187,9 @@ function actCook(simInv) {
     if (!outId) continue;
     // 산출물이 onConsume.nutrition 또는 onConsume.hydration을 주는 경우만 — 가공재 derive(예: vegetable, rice)는 식사 효과 없음으로 제외.
     const onC = ITEMS[outId]?.onConsume;
-    const benefit = (onC?.nutrition ?? 0) + (onC?.hydration ?? 0);
+    const n = onC?.nutrition ?? 0;
+    const h = onC?.hydration ?? 0;
+    const benefit = needsNutrition ? (n * 3 + h) : (n + h * 1.5);
     if (benefit <= 0) continue;
     if (benefit > bestN) { bestN = benefit; best = bp; }
   }
