@@ -2,7 +2,7 @@
 
 > 시작일: 2026-05-10 (페르소나 회의 산출물 — 7 페르소나 합동 학습 후)
 > 트랙: M3 (이슈 #2 6직업 비대칭 / 이슈 #3 후반 이벤트 폭주 측정)
-> 상태: **PR9 머지 + baseline v5 측정 완료. PR10/협의서 v3 진입 대기.**
+> 상태: **PR9 머지 + baseline v5 측정 + 협의서 v3 작성 완료. 게임 본체 검증 → PR10 → baseline v6 진입 대기.**
 > 이전 계획: `docs/archive/prompt_plan.old5.md` (CST 패턴, 2026-04-28 마감)
 > 회의 산출물 인덱스: `docs/persona-meeting-2026-05-10/README.md`
 
@@ -90,20 +90,34 @@ M3는 시뮬 v2 인프라(PR1~PR4) → Player AI 5단계(PR5/PR5.5/PR6/PR7) → 
 - [ ] `SCN_QUEST_pharmacist_tier2.md`
 - [ ] R8-1 보강과 동시 진행 — `homeless`·`engineer` morale 회복 자원·이벤트 신규
 
-### M3 #11 (협의서 v3 + PR10 + actCook 산식 — **다음 진입 트리거**)
+### M3 #11 (협의서 v3 작성 마감, `docs/persona-meeting-2026-05-10/PD_BAL_MEETING_PR10_decision.md`)
 
-- [ ] PD/Balance 협의서 v3 작성 — PR10 옵션 결정 + actCook 모순 후속 처리 (PD 김재훈 + 밸런스 권지나)
-- [ ] 협의서 v3 안건 1: PR10 진입 옵션 결정 — A(25구 lootTable 확대) vs B(startInv 추가 보강) vs C(actCook 시뮬 로직 보강)
-- [ ] 협의서 v3 안건 2: actCook 모순 가설 B 후속 — 시뮬 로직 PR 우선 vs 게임 본체 cooking 자동 추천 검증 우선
-- [ ] 협의서 v3 안건 3: R9-1 폴백 우선순위 — fishing 강화(`fishing.baseCatchChance` 상향) vs nutrition 추가 경로
-- [ ] 협의서 v3 안건 4: R9-2 검토 — chef 격차 보호 유리 변경 보류 vs chef yongsan 이동 동기 부여
-- [ ] PR10 머지 (협의서 v3 결정 직후, 시스템 백승호 또는 밸런스 권지나)
-- [ ] baseline v6 측정 (PR10 머지 D+1, 밸런스 권지나) — `OUTPUT_FILE` / `buildTag` v5 → v6
-- [ ] (선택) actCook 시뮬 로직 보강 PR — `playerAI.mjs:185` benefit 가중치 분리 (nutrition × 1.5 등)
+- [x] PD/Balance 협의서 v3 작성 — PR10 옵션 결정 + actCook 모순 후속 처리 (PD 김재훈 + 밸런스 권지나)
+- [x] 협의서 v3 안건 1: PR10 = **옵션 C 단독 채택** — `playerAI.mjs:185` benefit 산식 nutrition 차별 가중치 도입. PR11(옵션 A 25구 확대)은 baseline v6 측정 후 조건부
+- [x] 협의서 v3 안건 2: **게임 본체 cooking 자동 추천 검증 우선** — 시스템 백승호 + AD 오은별 위임. PR10 머지 *선행 조건*으로 분리
+- [x] 협의서 v3 안건 3: R9-1 폴백 우선순위 — PR11 옵션 2(25구 확대) → PR12 옵션 1(`baseCatchChance` 0.30 → 0.50). 옵션 3(fish 영양 상향) 최후순위
+- [x] 협의서 v3 안건 4: R9-2 (chef PR9 효과 0) — **변경 보류** (chef 격차 보호 유리 결과)
+- [x] R8-1 트랙 진입 시점 — baseline v6 측정 D+0 시나리오 한도연 진입. v6에서 morale 시계열 probe 신규 추가
+
+### M3 #12 (게임 본체 검증 + PR10 + baseline v6 — **다음 진입 트리거**)
+
+- [ ] 게임 본체 cooking 자동 추천 검증 — `SYS_VERIFY_cooking_autopick.md` 신규 작성 (시스템 백승호 + AD 오은별)
+- [ ] 검증 항목 (시스템): `js/systems/CraftSystem.js` 자동 추천 알고리즘 존재 여부, cooking blueprint 우선순위 산식, baseline v5 5직업 startInv 입력으로 게임 본체 추천 산출물 트레이스
+- [ ] 검증 항목 (AD): cooking minigame UI player 산출물 선택 자유도, hydration/nutrition 게이지 노출 여부
+- [ ] 시나리오 α/β 단정 (α: 본체 nutrition 우선 → 시뮬 정합화 PR / β: 본체도 결함 → 시뮬 PR + 게임 본체 PR 2 트랙)
+- [ ] PR10 옵션 C 머지 — `tools/sim/v2/playerAI.mjs:172-195` `actCook` benefit 산식 nutrition 차별 가중치 (산식 형태는 검증 결과 따라, 시스템 백승호)
+- [ ] validate.js Errors 0 + fingerprint `len316-h242a5b5f` 유지 검증
+- [ ] baseline v6 측정 (`BAL_SIM_baseline_v6_report.md` + `result.json`) — `OUTPUT_FILE` / `buildTag` v5 → v6, actCook 산출물 boil/nut 분리 표 신규, R8-1 morale 시계열 probe 추가
+
+### M3 #13 (baseline v6 결과 분기 — 조건부)
+
+- [ ] PR11 옵션 2 — 25구 lootTable raw food 확대 (`js/data/districts.js`). `generateDistrictLoot()` scavenging skill 반영 검증 필수. 진입 트리거: v6 K1 < 5%
+- [ ] (조건부) PR12 — `fishing.baseCatchChance` 0.30 → 0.50 (`js/data/gameBalance.js:328`). 진입 트리거: PR11 머지 후 baseline v7 측정에서 K1 < 5% 유지
+- [ ] (조건부) cook_intuition `days = 7 → 5` 단일 상수 PR. 진입 트리거: v6에서 chef 격차 +2.5d 초과 (협의서 v2 §6.2)
 
 ---
 
-## KPI 진행 (협의서 v1 §5.5 + v2 §7 갱신)
+## KPI 진행 (협의서 v1 §5.5 + v2 §7 + v3 §9.5 갱신)
 
 | KPI | v3 | v4 | v5 | v6 목표 | 트리거 |
 |-----|----|----|----|---------|--------|
@@ -144,8 +158,10 @@ M3 #6 (baseline v4) ─── 마감
 M3 #7 (PR9 결정) ─── 마감
 M3 #8 (PR9 시스템) ─── 마감
 M3 #9 (baseline v5) ─── 마감 (R8-1 probe만 v6 이연)
-M3 #10 (Tier-2 5직업) ─── 독립 (시나리오 한도연)
-M3 #11 (협의서 v3 + PR10 + actCook 산식) ─── 진입 대기 (PD 김재훈 + 밸런스 권지나)
+M3 #10 (Tier-2 5직업) ─── baseline v6 측정 D+0 진입 (시나리오 한도연)
+M3 #11 (협의서 v3 작성) ─── 마감
+M3 #12 (게임 본체 검증 + PR10 + baseline v6) ─── 진입 대기 (시스템 백승호 + AD 오은별)
+M3 #13 (PR11/PR12/cook_intuition 단축 — 조건부) ─── M3 #12 결과 의존
 ```
 
 ---

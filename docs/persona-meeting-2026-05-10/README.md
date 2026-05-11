@@ -110,7 +110,10 @@
 | `actCook` 발동 (chef) | 0 | 100/100 | 100/100 | ≥ 1/day | ✅ (5직업은 가설 B 단정 — 산출물 boiled_water) |
 | `actFish` (4 hasFishing) | 0 | 0 | 52~63/100 | ≥ 1/day | ✅ PR9 옵션 C-a 효과 |
 
-**다음 트리거:** PD/Balance 협의서 v3 작성 — PR10 진입 옵션 결정 (A 25구 확대 vs B startInv 추가 vs C actCook 시뮬 로직 보강) + actCook 모순 가설 B 후속 처리 + R9-1/R9-2 폴백 우선순위 + R8-1 트랙 진입 시점.
+**M3 #11 (협의서 v3 작성 마감):**
+- [`PD_BAL_MEETING_PR10_decision.md`](./PD_BAL_MEETING_PR10_decision.md) — **PD/Balance 협의서 v3.** PR10 결정. **옵션 C 단독 채택** — `tools/sim/v2/playerAI.mjs:185` `actCook` benefit 산식 nutrition 차별 가중치 도입. **게임 본체 cooking 자동 추천 검증(`SYS_VERIFY_cooking_autopick.md`)을 PR10 머지 *선행 조건*으로 분리** (시스템 백승호 + AD 오은별). R9-1 폴백 우선순위 PR11 옵션 2(25구 확대) → PR12 옵션 1(`baseCatchChance` 0.30 → 0.50). R9-2(chef PR9 효과 0) 변경 보류(chef 격차 보호 유리 결과). R8-1은 baseline v6 측정 D+0 시나리오 한도연 진입.
+
+**다음 트리거:** 시스템 백승호 + AD 오은별 — `SYS_VERIFY_cooking_autopick.md` 게임 본체 cooking 자동 추천 검증 (CraftSystem.js 알고리즘 grep + cooking minigame UI player 자유도 확인).
 
 ---
 
