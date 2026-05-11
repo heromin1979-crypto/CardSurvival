@@ -2,7 +2,7 @@
 
 > 시작일: 2026-05-10 (페르소나 회의 산출물 — 7 페르소나 합동 학습 후)
 > 트랙: M3 (이슈 #2 6직업 비대칭 / 이슈 #3 후반 이벤트 폭주 측정)
-> 상태: **PR9 머지 + baseline v5 측정 + 협의서 v3 작성 완료. 게임 본체 검증 → PR10 → baseline v6 진입 대기.**
+> 상태: **PR10 코드 변경 + baseline v6 측정 + 협의서 v3 §12 보강 완료. PR10 git 머지 대기 → PR11 결정 협의 진입 대기.**
 > 이전 계획: `docs/archive/prompt_plan.old5.md` (CST 패턴, 2026-04-28 마감)
 > 회의 산출물 인덱스: `docs/persona-meeting-2026-05-10/README.md`
 
@@ -101,51 +101,72 @@ M3는 시뮬 v2 인프라(PR1~PR4) → Player AI 5단계(PR5/PR5.5/PR6/PR7) → 
 
 ### M3 #12 (게임 본체 검증 + PR10 + baseline v6 — **다음 진입 트리거**)
 
-- [ ] 게임 본체 cooking 자동 추천 검증 — `SYS_VERIFY_cooking_autopick.md` 신규 작성 (시스템 백승호 + AD 오은별)
-- [ ] 검증 항목 (시스템): `js/systems/CraftSystem.js` 자동 추천 알고리즘 존재 여부, cooking blueprint 우선순위 산식, baseline v5 5직업 startInv 입력으로 게임 본체 추천 산출물 트레이스
-- [ ] 검증 항목 (AD): cooking minigame UI player 산출물 선택 자유도, hydration/nutrition 게이지 노출 여부
-- [ ] 시나리오 α/β 단정 (α: 본체 nutrition 우선 → 시뮬 정합화 PR / β: 본체도 결함 → 시뮬 PR + 게임 본체 PR 2 트랙)
-- [ ] PR10 옵션 C 머지 — `tools/sim/v2/playerAI.mjs:172-195` `actCook` benefit 산식 nutrition 차별 가중치 (산식 형태는 검증 결과 따라, 시스템 백승호)
-- [ ] validate.js Errors 0 + fingerprint `len316-h242a5b5f` 유지 검증
-- [ ] baseline v6 측정 (`BAL_SIM_baseline_v6_report.md` + `result.json`) — `OUTPUT_FILE` / `buildTag` v5 → v6, actCook 산출물 boil/nut 분리 표 신규, R8-1 morale 시계열 probe 추가
+- [x] 게임 본체 cooking 자동 추천 검증 — `SYS_VERIFY_cooking_autopick.md` 작성 완료 (시스템 백승호, 440줄)
+- [x] 검증 항목 (시스템): `CraftSystem.startBlueprint:85` 외부 id 수용 / 호출처 3건 모두 player 클릭 / priority·order·weight 필드 3 데이터 파일 0 매칭 / `findInteraction:1619~1624` `Array.find` 첫 매칭
+- [x] 시나리오 단정 — **γ 신규 정의** (α/β 둘 다 아님). 게임 본체에 자동 추천 알고리즘 *부재*, player 명시적 선택. PR10 시뮬 단일 PR 머지 가능
+- [x] 검증 항목 (AD): `AD_VERIFY_cooking_ui.md` 작성 완료 (AD 오은별, 420줄). hover hint 부족 / OutputPreview 일부 부족 / 사이드바 게이지 충분. UI 변경 권고 2건 (PR10 머지 차단 아님). needs-aware 산식 권고 강화 — UI 임계 경고와 정합
+- [x] PR10 옵션 C 코드 구현 — `tools/sim/v2/playerAI.mjs:172-201` `actCook` benefit 산식 **needs-aware 분기** (`needsNutrition = nutCur < nutMax * 0.5`). GameState.stats.nutrition 참조 추가. **git 머지 대기** (별도 commit)
+- [x] validate.js Errors 0 / Warnings 254 / ALL CLEAR + fingerprint `len316-h242a5b5f` 유지 (BALANCE 미변경 단정)
+- [x] baseline v6 측정 (`BAL_SIM_baseline_v6_result.json`) — 700 runs / 7.9s / bootstrapErrors 0. `OUTPUT_FILE` / `buildTag` v5 → v6 (2줄만 변경)
+- [x] baseline v6 정식 보고서 (`BAL_SIM_baseline_v6_report.md`, 327줄, 밸런스 권지나) — K1 8회 연속 0% / homeless K3 +0.9d 단독 / cooking lv 0 4직업 변화 0 단정 / cookOut 분리 표 신규 / R10-1 신규 등록
+- [x] 협의서 v3 §12 보강 회의록 추가 — 시나리오 γ 단정 / KPI 재정의 ("5직업 ≥50%" → "cooking lv ≥1 직업 ≥50%") / `GameState` 경로 정정 (`stats.nutrition`) / R10-1 등록 / §11 다음 단계 갱신
 
-### M3 #13 (baseline v6 결과 분기 — 조건부)
+### M3 #13 (baseline v6 결과 분기 — **다음 진입 트리거**)
 
-- [ ] PR11 옵션 2 — 25구 lootTable raw food 확대 (`js/data/districts.js`). `generateDistrictLoot()` scavenging skill 반영 검증 필수. 진입 트리거: v6 K1 < 5%
-- [ ] (조건부) PR12 — `fishing.baseCatchChance` 0.30 → 0.50 (`js/data/gameBalance.js:328`). 진입 트리거: PR11 머지 후 baseline v7 측정에서 K1 < 5% 유지
-- [ ] (조건부) cook_intuition `days = 7 → 5` 단일 상수 PR. 진입 트리거: v6에서 chef 격차 +2.5d 초과 (협의서 v2 §6.2)
+- [ ] PR11 옵션 결정 협의 — 밸런스 권지나 권고: 1차 옵션 2(25구 lootTable raw food 확대), 2차 옵션 1(`fishing.baseCatchChance` 0.30→0.50). 결정은 PD/Balance 협의로 위임. 협의서 v4 발행 여부 검토
+- [ ] PR11 머지 (협의 결정 후) — 옵션 2 시 `js/data/districts.js` 25구 lootTable. `generateDistrictLoot()` scavenging skill 반영 검증 필수
+- [ ] baseline v7 측정 (PR11 머지 D+1) — `OUTPUT_FILE` / `buildTag` v6 → v7
+- [ ] (조건부) PR12 — `fishing.baseCatchChance` 0.30 → 0.50 (`js/data/gameBalance.js:328`). 진입 트리거: v7 K1 < 5% 유지
+- [ ] (조건부) cook_intuition `days = 7 → 5` 단일 상수 PR. 진입 트리거: v6/v7에서 chef 격차 +2.5d 초과 (협의서 v2 §6.2 / v6 측정 chef +1.94d 유지로 트리거 미충족)
+
+### M3 #14 (interactions.js T1 시뮬 모사 보강 — 협의서 v3 §12.3 분리 트랙)
+
+- [ ] `tools/sim/v2/playerAI.mjs` 또는 등가 — `interactions.js` T1 변환 규칙(예: `instant_noodles` + `boiled_water` → `cooked_noodles`) 시뮬 모사 추가. cooking lv 0 4직업(doctor·soldier·firefighter·engineer)이 cooked_noodles 산출 경로 확보
+- [ ] 검증: baseline v8 측정 시 cooking lv 0 4직업 nutritionFood ≥ 50% 달성 여부 측정
+- [ ] 시스템 백승호 위임 — T1 변환 데이터 read-only 인용으로 시뮬 결정성 영향 단정 필요
+
+### M3 #15 (AD UI 변경 권고 2건 — 분리 트랙)
+
+- [ ] (高 권고) `interactions.js` cooking 8 hint 또는 `_showInteractionTip`에 영양/수분 수치 합성 — `js/ui/HoverTooltip.js` 또는 등가
+- [ ] (中 권고) `CraftUI._renderOutputPreview:274~324` 산출물 동시 비교 모드 추가 + DESIGN.md `--stat-nutrition`/`--stat-hydration` 토큰 적용
+- [ ] AD 오은별 위임. PR10 머지 차단 아님 — 후속 트랙
 
 ---
 
-## KPI 진행 (협의서 v1 §5.5 + v2 §7 + v3 §9.5 갱신)
+## KPI 진행 (협의서 v1 §5.5 + v2 §7 + v3 §9.5 + v3 §12.3 정정 갱신)
 
-| KPI | v3 | v4 | v5 | v6 목표 | 트리거 |
-|-----|----|----|----|---------|--------|
-| K1 (전 직업) | 0% | 0% | **0%** | ≥ 5% | < 5% 7회 연속 → **PR10 폴백 트리거 충족** |
-| K1 (chef) | 0% | 0% | 0% | ≥ 5% | 우선 측정 |
-| K3 chef 격차 (5직업 평균) | +1.5d | +2.2d | **+1.94d** | +1.0~+2.0d 사수 | > +2.5d → grace 단축 |
-| K3 chef 격차 (6직업 평균) | +1.33d | +1.87d | **+1.80d** | +1.0~+2.0d | 정의 일치 필요 |
-| K5 chef 탈수 | 20 | 12 | 12 | ↓ 유지 | ✅ contaminated_water 효과 |
-| K5 chef 극도 피로 | 1 | 6 | **12** | ≤ 10 | ⚠️ v5 초과 — 생존 길어진 부작용 |
-| `actCook` 발동 (chef) | 0 | 100/100 | 100/100 | ≥ 1/day | ✅ |
-| `actCook` 발동 (5직업) | 0 | 100/100 | 100/100 | nutrition 효과 확보 | ⚠️ 가설 B 단정 — 산출물 100% boiled_water |
-| `actFish` (4 hasFishing) | 0 | 0 | **52~63/100** | ≥ 1/day | ✅ PR9 옵션 C-a 효과 |
-| `actBoostMorale` (homeless·engineer) | 0 | 0 | 0 | > 0 | R8-1 별도 트랙 (M3 #10) |
-| 사망 — 아사 합계 | 555 | 569 | 532 | ↓ | v5 -37 |
-| 사망 — 절망 합계 | 110 | 113 | 142 | ↓ | v5 +29 (homeless·engineer 미해소) |
+| KPI | v3 | v4 | v5 | v6 | v7 목표 | 트리거 |
+|-----|----|----|----|----|---------|--------|
+| K1 (전 직업) | 0% | 0% | 0% | **0%** | ≥ 5% | < 5% **8회 연속** → **PR11 폴백 트리거 충족** |
+| K1 (chef) | 0% | 0% | 0% | 0% | ≥ 5% | 우선 측정 |
+| K3 chef 격차 (5직업 평균) | +1.5d | +2.2d | +1.94d | **+1.94d** | +1.0~+2.0d 사수 | > +2.5d → grace 단축 (미충족 유지) |
+| K3 chef 격차 (6직업 평균) | +1.33d | +1.87d | +1.80d | **+1.80d** | +1.0~+2.0d | 정의 일치 |
+| **K3 homeless** | 3.00 | 3.00 | 3.20 | **4.10 (+0.9d)** | 유지 또는 향상 | ✅ PR10 직접 효과 |
+| K5 chef 탈수 | 20 | 12 | 12 | 12 | ↓ 유지 | ✅ contaminated_water 효과 |
+| K5 chef 극도 피로 | 1 | 6 | 12 | 12 | ≤ 10 | ⚠️ 초과 유지 |
+| `actCook` 발동 (chef) | 0 | 100/100 | 100/100 | 100/100 | ≥ 1/day | ✅ |
+| `actCook` cookOut nutFood (chef·pharmacist) | 0 | - | 100% | **100% 회귀 0** | 유지 | ✅ |
+| `actCook` cookOut nutFood (homeless lv3) | 0 | 0 | 6.5% | **35.3%** | ≥ 50% | ⚠️ 부분 달성 (사망일 연장 PR11 필요) |
+| `actCook` cookOut nutFood (lv 0 4직업) | 0 | 0 | 0% | **0%** | ≥ 50% (정정 KPI 면제) | ⚠️ `cook_noodles` blueprint 잠금 — M3 #14 분리 트랙 |
+| `actFish` (4 hasFishing) | 0 | 0 | 52~63/100 | **52~63/100** | ≥ 1/day | ✅ |
+| `actBoostMorale` (homeless·engineer) | 0 | 0 | 0 | 0 | > 0 | R8-1 + R10-1 결합 — M3 #10 우선순위 ↑ |
+| 사망 — 아사 합계 | 555 | 569 | 532 | **510 (-22)** | ↓ | v6 추가 -22 (homeless nutrition 회복) |
+| 사망 — 절망 합계 | 110 | 113 | 142 | **167 (+25)** | ↓ | ⚠️ R10-1 신규 — 사망일 연장 부산물 |
+| 사망 — 극도 피로 합계 | 1 | 6 | 12 | **9 (-3)** | ≤ 10 | ✅ v6 감소 |
 
 ---
 
 ## Risks
 
-| Risk | 등급 | 완화 |
-|------|------|------|
-| R9-1 PR9 옵션 C-a K1 효과 부족 (4 hasFishing 직업 K1 0% 유지) | HIGH | PR10에서 fishing 효과 강화(`fishing.baseCatchChance` 상향) 또는 nutrition 회복 추가 경로 |
-| R9-2 chef PR9 효과 0 (junggoo hasFishing 미보유, 이동 없음) | LOW-MED | 격차 보호 유리이므로 변경 보류가 합리. chef yongsan 이동 동기 부여는 별도 검토 |
-| actCook 산식 결함 — 5직업 cooking lv 0~1 산출물 100% boiled_water | HIGH | `playerAI.mjs:185` benefit 가중치 분리 PR (nutrition × 1.5 등) 또는 게임 본체 cooking 자동 추천 검증 (시스템 백승호 + AD 오은별) |
-| baseline v6에서도 K1 < 5% 유지 시 폴백 부담 | MED | PR10 옵션 결정 시 PR11 폴백 명시 — 시작 인벤토리 직접 fishing_rod 부여 또는 25 구 lootTable 전수 보강 |
-| chef 격차 +2.5d 초과 시 grace 단축이 chef 정체성 훼손 | LOW-MED | 단축 PR 머지 전 Director 재검수 의무 |
-| R8-1 별도 트랙 분리로 R7-2 마감 지연 | LOW | 5직업 Tier-2 abilities 트랙과 동시 진행 (M3 #10) |
+| Risk | 등급 | v6 상태 |
+|------|------|---------|
+| R9-1 PR9 옵션 C-a K1 효과 부족 (4 hasFishing 직업 K1 0% 유지) | HIGH | ⚠️ **v6에서도 변화 0** (PR10은 산식만, fishing 보강 아님). PR11 옵션 2(25구 확대) 진입 트리거 |
+| R9-2 chef PR9 효과 0 (junggoo hasFishing 미보유, 이동 없음) | LOW-MED | ✅ v6에서도 0 — 변경 보류 유지 (chef 격차 +1.94d 보호 정합) |
+| actCook 산식 결함 — 5직업 cooking lv 0~3 산출물 boiled_water 우선 | HIGH | ⚠️ **부분 해소** — needs-aware 산식으로 cooking lv ≥1 직업 정합. cooking lv 0 4직업은 `cook_noodles` blueprint 잠금이 시스템 한계 → M3 #14 (T1 시뮬 모사) 분리 트랙 |
+| **R10-1 (신규) 절망 사망 +25** | MED | ⚠️ **v6 신규** — 사망일 연장(homeless +0.9d) 부산물. R8-1 (homeless·engineer actBoostMorale 0%) 결합 시 K1 향상 PR마다 절망 사망 가속 위험 → M3 #10 우선순위 ↑ |
+| baseline v7에서도 K1 < 5% 유지 시 폴백 부담 | MED | PR11 옵션 결정 시 PR12 폴백 명시 — `fishing.baseCatchChance` 상향 단일 상수 PR |
+| chef 격차 +2.5d 초과 시 grace 단축이 chef 정체성 훼손 | LOW-MED | ✅ v6 +1.94d/+1.80d 유지 — 트리거 미충족 |
+| R8-1 별도 트랙 분리로 R7-2 마감 지연 | LOW → MED | R10-1 결합으로 우선순위 상향. baseline v7 측정 D+0 시나리오 한도연 진입 권고 |
 
 ---
 
@@ -158,10 +179,12 @@ M3 #6 (baseline v4) ─── 마감
 M3 #7 (PR9 결정) ─── 마감
 M3 #8 (PR9 시스템) ─── 마감
 M3 #9 (baseline v5) ─── 마감 (R8-1 probe만 v6 이연)
-M3 #10 (Tier-2 5직업) ─── baseline v6 측정 D+0 진입 (시나리오 한도연)
+M3 #10 (Tier-2 5직업) ─── baseline v7 측정 D+0 진입 (시나리오 한도연, R10-1 결합으로 우선순위 ↑)
 M3 #11 (협의서 v3 작성) ─── 마감
-M3 #12 (게임 본체 검증 + PR10 + baseline v6) ─── 진입 대기 (시스템 백승호 + AD 오은별)
-M3 #13 (PR11/PR12/cook_intuition 단축 — 조건부) ─── M3 #12 결과 의존
+M3 #12 (게임 본체 검증 + PR10 + baseline v6) ─── 마감 (PR10 git 머지만 대기)
+M3 #13 (PR11 협의 + 머지 + baseline v7) ─── 진입 대기 (PD/Balance 협의)
+M3 #14 (interactions.js T1 시뮬 모사) ─── 분리 트랙 (시스템 백승호, M3 #13 의존 아님)
+M3 #15 (AD UI 변경 권고 2건) ─── 분리 트랙 (AD 오은별, M3 #13 의존 아님)
 ```
 
 ---
