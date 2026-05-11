@@ -342,7 +342,10 @@ const ExploreSystem = {
     const earlyMult = gs.time.day <= BALANCE.encounter.earlyGameGraceDays
       ? BALANCE.encounter.earlyGameEncounterMult
       : 1.0;
-    const encounterChance = district.encounterChance * (seasonMod.encounterMult ?? 1.0) * NightSystem.getNightEncounterMult() * earlyMult * (1 - Math.min(BALANCE.encounter.reductionCap, baseReduction));
+    const charGraceMult = (gs.player.encounterMultDaysEnd && gs.time.day <= gs.player.encounterMultDaysEnd)
+      ? (gs.player.encounterMultDuringGrace ?? 1.0)
+      : 1.0;
+    const encounterChance = district.encounterChance * (seasonMod.encounterMult ?? 1.0) * NightSystem.getNightEncounterMult() * earlyMult * charGraceMult * (1 - Math.min(BALANCE.encounter.reductionCap, baseReduction));
     if (encounterChance > 0 && Math.random() < encounterChance) {
       const noiseLevel = gs.noise.level;
       const enemies    = rollEnemyGroup(district.dangerLevel, noiseLevel);
@@ -793,12 +796,36 @@ const ExploreSystem = {
     SkillSystem.gainXp('scavenging', 3);
     EventBus.emit('notify', { message: I18n.t('exploreSys.subComplete', { name: sub.name }), type: 'info' });
 
+    // 캐릭터당 1회 한정 자동 보상 (한강 낚시터 진입 시 fishing_rod_basic 등)
+    this._grantFirstEnterReward(sub, subKey);
+
     // 보라매 응급실 잔류 환자 이벤트 (이지수 전용, Day 2~7)
     this._tryBoramaePatientSpawn(gs);
     // 마포 원정 부상 시민 이벤트 (이지수 전용, Day 15+)
     this._tryMapoCivilianSpawn(gs);
 
     EventBus.emit('boardChanged', {});
+  },
+
+  /**
+   * sublocation.firstEnterReward 처리 — 캐릭터당 1회 한정 자동 지급.
+   * gs.flags.firstEnterRewardsClaimed 배열에 claim 키를 기록해 재진입 시 차단.
+   * claimKey 명시 시 여러 sublocation이 동일 키로 묶여 합산 1회 지급 (예: 한강 낚시터/강변).
+   * 보상 entry는 _placeLoot에 위임 (board 만차 시 pendingLoot 큐 폴백 동일).
+   */
+  _grantFirstEnterReward(sub, subKey) {
+    const reward = sub?.firstEnterReward;
+    const items  = reward?.items;
+    if (!items?.length) return;
+
+    const gs = GameState;
+    if (!gs.flags.firstEnterRewardsClaimed) gs.flags.firstEnterRewardsClaimed = [];
+    const claimKey = reward.claimKey ?? subKey;
+    if (gs.flags.firstEnterRewardsClaimed.includes(claimKey)) return;
+
+    const loot = items.map(it => ({ definitionId: it.id, quantity: it.qty ?? 1 }));
+    this._placeLoot(loot);
+    gs.flags.firstEnterRewardsClaimed.push(claimKey);
   },
 
   /**

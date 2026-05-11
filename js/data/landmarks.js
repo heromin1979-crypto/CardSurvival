@@ -1,4 +1,6 @@
-import GameData from './GameData.js';
+// GameData는 본 모듈 init 시점에 import하지 않는다.
+// (cycle: landmarks → GameData → items → locationCardFactory → ...)
+// registerSubLocationItems()는 호출자(main.js)가 items 사전을 주입한다.
 
 // === LANDMARK SUB-LOCATION DATA ===
 // 25개 구별 랜드마크 세부 장소 (4~6개씩)
@@ -1683,6 +1685,9 @@ export const LANDMARK_DATA = {
         desc: '낚시꾼들이 즐겨 찾던 자리. 낚싯대로 물고기를 낚거나 통발을 설치할 수 있다.',
         dangerMod: 0.05,
         isFishing: true,
+        // 한강 낚시터 / 강변 첫 진입 시 캐릭터당 1회 낚싯대 지급 — 낚시 메커닉 진입 동기.
+        // claimKey 공유로 두 sublocation 합산 1회만 지급 (협의서 §7.2: 어느 쪽이든 첫 진입 1회).
+        firstEnterReward: { claimKey: 'hangang_rod', items: [{ id: 'fishing_rod_basic', qty: 1 }] },
         lootTable: [
           { id: 'contaminated_water', weight: 4 },
           { id: 'pebble',            weight: 3 },
@@ -1697,6 +1702,7 @@ export const LANDMARK_DATA = {
         desc: '강변을 따라 이어진 산책로. 잡초와 돌멩이, 버려진 물건이 있다.',
         dangerMod: 0.08,
         isFishing: true,
+        firstEnterReward: { claimKey: 'hangang_rod', items: [{ id: 'fishing_rod_basic', qty: 1 }] },
         lootTable: [
           { id: 'wild_garlic',       weight: 4 },
           { id: 'dandelion',         weight: 3 },
@@ -2051,11 +2057,11 @@ export function getLandmarkData(key) {
 
 /**
  * 각 랜드마크 세부 장소(sublocation)에 대한 아이템 정의를 생성하여
- * GameData.items 에 등록한다.
- * main.js에서 GameData 초기화 직후 호출해야 한다.
+ * 호출자가 넘긴 items 사전에 등록한다.
+ * main.js에서 GameData 초기화 직후 `registerSubLocationItems(GameData.items)`로 호출한다.
+ * GameData를 본 모듈 상단에서 import하지 않으므로 순환 의존이 발생하지 않는다.
  */
-export function registerSubLocationItems() {
-  const items = GameData?.items;
+export function registerSubLocationItems(items) {
   if (!items) return;
 
   for (const [districtId, lmData] of Object.entries(LANDMARK_DATA)) {

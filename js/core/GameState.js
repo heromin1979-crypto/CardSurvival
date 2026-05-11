@@ -276,6 +276,9 @@ const GameState = {
     // ── 보라매병원 습격 스케줄 ────────────────────────
     nextSiegeDay:              null, // 다음 습격 예정일 (null = 초기화 대기)
     siegeCount:                0,    // 누적 습격 횟수
+    // ── sublocation 1회 한정 자동 보상 수령 이력 ──────
+    // 'districtId:subLocationId' 키 배열. ExploreSystem._grantFirstEnterReward 참조.
+    firstEnterRewardsClaimed:  [],
   },
 
   // ── 런타임 랜드마크 오버라이드 ────────────────────────

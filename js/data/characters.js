@@ -52,7 +52,7 @@ export const CHARACTERS = [
         name: '의료 물자',
         icon: '🎒',
         desc: '붕대 4개, 소독약, 청진기, 메스, 통조림 2개, 에너지바 2개 추가 지급',
-        effect: { startingItems: ['bandage', 'bandage', 'bandage', 'bandage', 'antiseptic', 'stethoscope', 'combat_scalpel', 'canned_food', 'canned_food', 'energy_bar', 'energy_bar'] },
+        effect: { startingItems: ['bandage', 'bandage', 'bandage', 'bandage', 'antiseptic', 'stethoscope', 'combat_scalpel', 'canned_food', 'canned_food', 'energy_bar', 'energy_bar', 'instant_noodles', 'contaminated_water'] },
       },
     ],
     startingSkills: {
@@ -116,7 +116,7 @@ export const CHARACTERS = [
         name: '전술 장비',
         icon: '🎒',
         desc: '나이프 + 알코올 솜 + 붕대 지급',
-        effect: { startingItems: ['knife', 'alcohol_swab', 'alcohol_swab', 'bandage'] },
+        effect: { startingItems: ['knife', 'alcohol_swab', 'alcohol_swab', 'bandage', 'instant_noodles', 'instant_noodles', 'contaminated_water'] },
       },
       {
         id: 'comrade_bond',
@@ -187,7 +187,7 @@ export const CHARACTERS = [
         name: '구조 키트',
         icon: '🎒',
         desc: '로프 추가 지급',
-        effect: { startingItems: ['rope', 'hand_axe'] },
+        effect: { startingItems: ['rope', 'hand_axe', 'instant_noodles', 'instant_noodles', 'contaminated_water', 'contaminated_water'] },
       },
     ],
     startingSkills: {
@@ -249,7 +249,7 @@ export const CHARACTERS = [
         name: '거리의 도구',
         icon: '🧰',
         desc: '양철통·낡은 담요·신문지·박스커터 지급. 2년 노숙 생활의 살림살이.',
-        effect: { startingItems: ['battered_can', 'old_blanket', 'newspaper_bundle', 'box_cutter'] },
+        effect: { startingItems: ['battered_can', 'old_blanket', 'newspaper_bundle', 'box_cutter', 'instant_noodles', 'instant_noodles', 'contaminated_water', 'contaminated_water'] },
       },
     ],
     startingSkills: {
@@ -310,8 +310,18 @@ export const CHARACTERS = [
         id: 'knife_mastery',
         name: '칼 다루기',
         icon: '🔪',
-        desc: '나이프/칼 무기 데미지 +25%',
-        effect: { knifeDmgBonus: 1.25 },
+        desc: '나이프/칼 무기 데미지 +25%, 시작 시 주방 칼·식재료 지급',
+        effect: {
+          knifeDmgBonus: 1.25,
+          startingItems: ['knife', 'canned_food', 'canned_food', 'preserved_ration', 'instant_noodles', 'instant_noodles', 'contaminated_water'],
+        },
+      },
+      {
+        id: 'cook_intuition',
+        name: '셰프의 직감',
+        icon: '🍜',
+        desc: '명동·남대문 골목 익숙함. 시작 후 7일간 조우 확률 50% 감소',
+        effect: { encounterMultDays: { days: 7, mult: 0.5 } },
       },
     ],
     startingSkills: {
@@ -373,7 +383,7 @@ export const CHARACTERS = [
         name: '공장 자재',
         icon: '🎒',
         desc: '고철, 전선 추가 지급',
-        effect: { startingItems: ['scrap_metal', 'wire'] },
+        effect: { startingItems: ['scrap_metal', 'wire', 'instant_noodles', 'instant_noodles', 'contaminated_water', 'contaminated_water'] },
       },
     ],
     startingSkills: {
@@ -384,6 +394,69 @@ export const CHARACTERS = [
     },
     specialtySkills: ['crafting', 'building'],
     homeDist: 'yongsan',
+  },
+
+  {
+    id: 'pharmacist',
+    name: '한소희',
+    gender: 'F',
+    age: 31,
+    maxHp: 80,
+    strength: 50,   // 체력(힘) — 약사: 사무·조제 위주
+    endurance: 50,  // 인내심 — 약국 원장 (→ stamina = 50 × 50 / 50 = 50)
+    maxCarryWeight: 32,
+    title: '약국 원장',
+    englishLabel: 'PHARMA',
+    koreanLabel: '연구형',
+    portrait: '💊',
+    portraitFull:  'assets/images/characters/han_sohui_full.png',
+    portraitSmall: 'assets/images/characters/han_sohui_portrait.png',
+    strengths: ['약품 조제', '천연물 지식', '독성 감별'],
+    weaknesses: ['전투 미숙', '체력 한계', '근접 약함'],
+    story: `한소희(31세)는 홍대 입구 골목의 작은 약국 원장이었다.
+2026년 1월 14일부터 카운터 아래 노트에 이상 증상을 기록하기 시작했다. 발열, 이상 행동, 희번뜩이는 눈.
+사흘 뒤 도시 전체가 무너졌다. 약국 약품을 챙겨 강남구 삼성병원으로 피신했다.
+대학원 시절 천연물 화학 수업이 떠올랐다. 교수의 말이 기억났다. "가장 강한 항바이러스 성분은 식물에 있다."
+합성 약품이 없다면 천연에서 찾는다. 약사가 할 수 있는 일이다.`,
+    goal: '삼성병원과 홍대 약국을 거점으로 항바이러스제를 합성하고, 이지수 의사 또는 정대한 엔지니어와의 공동 연구로 대량 생산 체계를 구축한다.',
+    abilities: [
+      {
+        id: 'pharma_kit',
+        name: '약품 키트',
+        icon: '💊',
+        desc: '진통제·소독약 2개·붕대 추가 지급',
+        effect: { startingItems: ['painkiller', 'antiseptic', 'antiseptic', 'bandage', 'instant_noodles', 'instant_noodles', 'contaminated_water'] },
+      },
+      {
+        id: 'compounding',
+        name: '조제 숙련',
+        icon: '🧪',
+        desc: '의약품 제작 성공률 +20%',
+        effect: { craftSuccessBonus: 0.20 },
+      },
+      {
+        id: 'natural_remedy',
+        name: '천연물 지식',
+        icon: '🌿',
+        desc: '독성 음식 섭취 전 경고',
+        effect: { toxinDetect: true },
+      },
+      {
+        id: 'medicine_efficacy',
+        name: '약효 숙지',
+        icon: '🩹',
+        desc: '의료 아이템 사용 효과 향상 (붕대 사용 시 HP +3 추가 회복)',
+        effect: { bandageHpBonus: 3 },
+      },
+    ],
+    startingSkills: {
+      medicine:   3,  // 약사 — 의약품 다루기
+      crafting:   3,  // 조제·합성
+      scavenging: 2,  // 약품 탐색
+      cooking:    1,  // 천연물 활용 기초
+    },
+    specialtySkills: ['medicine', 'crafting'],
+    homeDist: 'gangnam',  // mq_pharma_01 narrative — 삼성병원 피신
   },
 ];
 

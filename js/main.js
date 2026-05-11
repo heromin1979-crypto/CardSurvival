@@ -16,6 +16,7 @@ import I18n            from './core/I18n.js';
 import SystemRegistry  from './core/SystemRegistry.js';
 
 // Data
+import GameData from './data/GameData.js';
 import { registerSubLocationItems } from './data/landmarks.js';
 
 // Systems
@@ -104,7 +105,7 @@ import SaveManager from './persistence/SaveManager.js';
 import AutoSave    from './persistence/AutoSave.js';
 
 // ── Bootstrap ────────────────────────────────────────────
-registerSubLocationItems();
+registerSubLocationItems(GameData.items);
 
 // HiddenElementSystem에서 StateMachine 접근용 → SystemRegistry로 등록
 SystemRegistry.register('StateMachine', StateMachine);

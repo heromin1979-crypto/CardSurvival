@@ -57,9 +57,11 @@ const StatSystem = {
       // accumulators increase via systems (NoiseSystem, ContaminationSystem, etc.)
     }
 
-    // Fatigue natural increase (사기 구간별 가속)
+    // Fatigue natural increase (BALANCE 단일 진리 + 직업 보정 + 사기 구간 가속)
+    // (이전: gs.stats.fatigue.decayPerTP 직접 — CharCreate가 0.8로 박은 dead store + 직업 보정 fatigueDecay와 불투명한 곱연산)
     const moraleTier = this.getMoraleTier();
-    gs.modStat('fatigue', gs.stats.fatigue.decayPerTP * (moraleTier.fatigueGainMult ?? 1.0));
+    const fatigueMult = (gs.player.fatigueDecayMult ?? 1.0);
+    gs.modStat('fatigue', BALANCE.stats.fatigueGainPerTP * fatigueMult * (moraleTier.fatigueGainMult ?? 1.0));
 
     // 스태미나 자연 회복 / 과적 소모
     this._updateStamina();

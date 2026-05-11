@@ -24,6 +24,59 @@ const BODY_PARTS = [
   { key: 'rightLeg', gridArea: 'bp-rleg'  },
 ];
 
+// ── 활성 능력 표시 룰 ──────────────────────────────────────────
+// 신규 ability 추가 시 본 배열에 항목 1개를 추가한다.
+// CharCreate가 player 필드를 세팅 → test(p, gs)가 truthy면 render(p, gs)를 우측 값으로 표시.
+// 표시 순서는 배열 순서를 따른다.
+const ABILITY_DISPLAY_RULES = [
+  { id: 'fleeBonus', icon: '🌆', label: '거리 감각',
+    test: p => (p.fleeBonus ?? 0) > 0,
+    render: p => `도주 +${Math.round(p.fleeBonus * 100)}%, 소음 -20%, 조우 -5%` },
+  { id: 'exploreBonus', icon: '👁️', label: '생존 본능',
+    test: p => (p.exploreBonus ?? 0) > 0,
+    render: p => `탐색 아이템 +${p.exploreBonus}` },
+  { id: 'combatDmgBonus', icon: '⚔️', label: '전투 훈련',
+    test: p => (p.combatDmgBonus ?? 1.0) > 1.0,
+    render: p => `데미지 +${Math.round((p.combatDmgBonus - 1) * 100)}%` },
+  { id: 'critBonus', icon: '🎯', label: '치명 타격',
+    test: p => (p.critBonus ?? 0) > 0,
+    render: p => `크리티컬 +${Math.round(p.critBonus * 100)}%` },
+  { id: 'healBonus', icon: '💉', label: '치료 특화',
+    test: p => (p.healBonus ?? 0) > 1.0,
+    render: p => `치료 효과 ×${p.healBonus.toFixed(2)}` },
+  { id: 'infectionResist', icon: '🛡️', label: '감염 저항',
+    test: (p, gs) => (gs.stats?.infection?.rateMultiplier ?? 1.0) < 1.0,
+    render: (p, gs) => `감염 진행 -${Math.round((1.0 - gs.stats.infection.rateMultiplier) * 100)}%` },
+  { id: 'craftSuccessBonus', icon: '⚙️', label: '공학적 직관',
+    test: p => (p.craftSuccessBonus ?? 0) > 0,
+    render: p => `제작 성공률 +${Math.round(p.craftSuccessBonus * 100)}%` },
+  { id: 'knifeDmgBonus', icon: '🔪', label: '칼 다루기',
+    test: p => (p.knifeDmgBonus ?? 0) > 0,
+    render: p => `나이프 데미지 ×${p.knifeDmgBonus.toFixed(2)}` },
+  { id: 'cookingEffectBonus', icon: '🍳', label: '미식 감각',
+    test: p => (p.cookingEffectBonus ?? 1.0) > 1.0,
+    render: p => `요리 효과 ×${p.cookingEffectBonus.toFixed(2)}` },
+  { id: 'toxinDetect', icon: '🔍', label: '식재료 감별',
+    test: p => !!p.toxinDetect,
+    render: () => '독성 음식 섭취 전 경고' },
+  { id: 'encounterGrace', icon: '🍜', label: '셰프의 직감',
+    test: (p, gs) => p.encounterMultDaysEnd && (gs.time?.day ?? 1) <= p.encounterMultDaysEnd,
+    render: (p, gs) => {
+      const remain = p.encounterMultDaysEnd - (gs.time?.day ?? 1) + 1;
+      const reduce = Math.round((1 - (p.encounterMultDuringGrace ?? 1.0)) * 100);
+      return `조우 -${reduce}% (${remain}일 남음)`;
+    } },
+  { id: 'dismantleExtraItem', icon: '🔩', label: '분해 전문가',
+    test: p => (p.dismantleExtraItem ?? 0) > 0,
+    render: p => `재료 +${p.dismantleExtraItem}개 추가` },
+  { id: 'structureDurabilityBonus', icon: '🏗️', label: '구조물 강화',
+    test: p => (p.structureDurabilityBonus ?? 1.0) > 1.0,
+    render: p => `내구도 +${Math.round((p.structureDurabilityBonus - 1) * 100)}%` },
+  { id: 'noiseReductOnly', icon: '🏃', label: '전술 이동',
+    test: p => (p.noiseReduct ?? 0) > 0 && !p.fleeBonus,
+    render: p => `소음 -${Math.round(p.noiseReduct * 100)}%` },
+];
+
 const SLOT_META = {
   head:        { i18nKey: 'equip.head',       icon: '⛑️',  row: 1 },
   face:        { i18nKey: 'equip.face',       icon: '😷',  row: 2, col: 'left' },
@@ -193,51 +246,12 @@ const EquipmentModal = {
     `;
   },
 
-  /** 캐릭터 특수 능력 활성 상태 렌더링 (거리감각/전투보너스 등) */
+  /** 캐릭터 특수 능력 활성 상태 렌더링. 표시 룰은 ABILITY_DISPLAY_RULES. */
   _renderActiveAbilities() {
     const p = GameState.player;
-    const rows = [];
-    if ((p.fleeBonus ?? 0) > 0) {
-      rows.push({ icon: '🌆', label: '거리 감각', value: `도주 +${Math.round(p.fleeBonus*100)}%, 소음 -20%, 조우 -5%` });
-    }
-    if ((p.exploreBonus ?? 0) > 0) {
-      rows.push({ icon: '👁️', label: '생존 본능', value: `탐색 아이템 +${p.exploreBonus}` });
-    }
-    if ((p.combatDmgBonus ?? 1.0) > 1.0) {
-      rows.push({ icon: '⚔️', label: '전투 훈련', value: `데미지 +${Math.round((p.combatDmgBonus-1)*100)}%` });
-    }
-    if ((p.critBonus ?? 0) > 0) {
-      rows.push({ icon: '🎯', label: '치명 타격', value: `크리티컬 +${Math.round(p.critBonus*100)}%` });
-    }
-    if ((p.healBonus ?? 0) > 1.0) {
-      rows.push({ icon: '💉', label: '치료 특화', value: `치료 효과 ×${p.healBonus.toFixed(2)}` });
-    }
-    const infMult = GameState.stats?.infection?.rateMultiplier ?? 1.0;
-    if (infMult < 1.0) {
-      const reducePct = Math.round((1.0 - infMult) * 100);
-      rows.push({ icon: '🛡️', label: '감염 저항', value: `감염 진행 -${reducePct}%` });
-    }
-    if ((p.craftSuccessBonus ?? 0) > 0) {
-      rows.push({ icon: '⚙️', label: '공학적 직관', value: `제작 성공률 +${Math.round(p.craftSuccessBonus*100)}%` });
-    }
-    if ((p.knifeDmgBonus ?? 0) > 0) {
-      rows.push({ icon: '🔪', label: '칼 다루기', value: `나이프 데미지 ×${p.knifeDmgBonus.toFixed(2)}` });
-    }
-    if ((p.cookingEffectBonus ?? 1.0) > 1.0) {
-      rows.push({ icon: '🍳', label: '미식 감각', value: `요리 효과 ×${p.cookingEffectBonus.toFixed(2)}` });
-    }
-    if (p.toxinDetect) {
-      rows.push({ icon: '🔍', label: '식재료 감별', value: '독성 음식 섭취 전 경고' });
-    }
-    if ((p.dismantleExtraItem ?? 0) > 0) {
-      rows.push({ icon: '🔩', label: '분해 전문가', value: `재료 +${p.dismantleExtraItem}개 추가` });
-    }
-    if ((p.structureDurabilityBonus ?? 1.0) > 1.0) {
-      rows.push({ icon: '🏗️', label: '구조물 강화', value: `내구도 +${Math.round((p.structureDurabilityBonus-1)*100)}%` });
-    }
-    if ((p.noiseReduct ?? 0) > 0 && !p.fleeBonus) {
-      rows.push({ icon: '🏃', label: '전술 이동', value: `소음 -${Math.round(p.noiseReduct*100)}%` });
-    }
+    const rows = ABILITY_DISPLAY_RULES
+      .filter(rule => rule.test(p, GameState))
+      .map(rule => ({ icon: rule.icon, label: rule.label, value: rule.render(p, GameState) }));
     if (rows.length === 0) {
       return '<div style="color:var(--text-dim);padding:8px;text-align:center;">활성 특수 능력 없음</div>';
     }
