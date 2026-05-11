@@ -624,6 +624,119 @@ baseline v8 보고서 §1.3:
 
 ---
 
-*추가 보강 회의록 끝. M3 #10 시나리오 한도연 산출물(SCN_QUEST_homeless_tier2.md + SCN_QUEST_engineer_tier2.md) 도착 시 PR13 사양 + baseline v9 측정 트리거 충족 단언.*
+*추가 보강 회의록 끝. M3 #10 시나리오 한도연 산출물(SCN_QUEST_homeless_tier2.md + SCN_QUEST_engineer_tier2.md) 도착 시 PR13 사양 + baseline v9 측정 트리거 충족 단언. — 2026-05-12 충족. 갱신 사항은 §14 보강.*
+
+---
+
+## 14. 추가 보강 회의록 (2026-05-12, PR13 머지 + baseline v9 측정 직후)
+
+> 참여: PD 김재훈 + 밸런스 권지나. 입력: PR13 머지(시스템 백승호) 4 파일 +52/-2 라인 + `BAL_SIM_baseline_v9_result.json` + `BAL_SIM_baseline_v9_report.md` (밸런스 권지나, 288줄).
+
+### 14.1 baseline v9 측정 결과 단정 (v9 보고서 §3~§5)
+
+- fingerprint `len316-h242a5b5f` v3~v9 7연속 유지, bootstrapErrors 0/700, 11.3초
+- **K1 7직업 0%, 10회 연속 0%** (PR5 → PR13)
+- K3 v8 → v9:
+  - **engineer 4.4 → 4.9 (+0.5d)** ★ Tier-2 단독 측정 가능
+  - **homeless 4.2 → 4.2 (Δ 0)** ★ 추정-실측 격차 단정 (R13-1 원인)
+  - 다른 5직업 변화 0
+- K5 v8 → v9:
+  - **절망 405 → 377 (-28)** ★ R8-1 부분 완화
+  - 아사 263 → 288 (+25, homeless·engineer 사망원인 전환)
+  - 탈수 13 동일 / 극도 피로 19 → 22
+- probe 단정:
+  - morale<30 도달율: homeless 99→98/100 (-1), engineer 100/100 (0). seed 0·1 homeless day 3 56.8 회복 관측
+  - 절망 사망 직업별: **homeless 46 → 24 (-22)** ★ R8-1 큰 완화 / engineer 77 → 71 (-6) 미세 완화
+  - chef 격차 정의 1 +0.77d → **+0.60d** (Δ -0.17d 자연 축소) / 정의 2 +0.60d → **+0.50d** (Δ -0.10d, 임계 경계 도달)
+
+### 14.2 R13-1 신규 위험 등록 — Tier-2 ability sim AI 미구현
+
+**시스템 백승호 1차 단정 (v9 보고서 §6.2 + agent 보고):**
+- SCN_QUEST_homeless_tier2.md / engineer_tier2.md §3 ability effect:
+  - homeless `street_solace`: `moraleRecoveryBonus: 1.5`, `lowMoraleRecoveryFatigueBonus: -5`
+  - engineer `workshop_focus`: `moraleOnCraft: 5`, `moraleOnDismantle: 5`, `sketchNotebookBonus: true`
+- 시뮬 측 `tools/sim/v2/playerAI.mjs`의 `applyOnConsume` 함수는 기본 `onConsume.morale`만 적용. **ability bonus 가산 분기 미구현 — 무작용 단정**
+
+**격차 원인 단정:**
+- SCN_QUEST 추정 K3: homeless +1.0~1.5d / engineer +0.9~1.4d
+- 실측 K3: homeless 0d / engineer +0.5d
+- **homeless 단독: ability 효과 무작용 + worn_photo 1회 소비 → day 3+ 자원 소진. ability 미구현 영향이 일차 원인**
+- **engineer +0.5d 향상: 신규 startInv (scrap_metal 1→2, wire 1→2) + sketch_notebook 1회 소비. ability 가산이 미작용이라 효과 절반**
+
+**R13-1 의의:**
+- 향후 모든 ability bonus 사양 PR이 동일 패턴 위험 (SCN_QUEST 추정-실측 격차)
+- M3 #10 나머지 3직업(firefighter·soldier·pharmacist) Tier-2 진입 시 추정-실측 격차 재발 가능성
+- **PR15 (시스템 백승호) — `playerAI.mjs` ability 가산 분기 구현 우선 의무 단정**
+
+**PD 김재훈:**
+> R13-1은 시뮬 *측정 도구*의 한계 위험 (v8에서 단정한 fingerprint drift 측정 한계와 같은 카테고리). 측정 도구 정합성이 결정 신뢰성의 전제이므로, R13-1 해소 PR15가 M3 #10 나머지 3직업 트랙 진입의 *선행 조건*.
+>
+> M3 #10 1순위 트랙(homeless·engineer)에서 추정-실측 격차가 발견된 이상, 같은 격차를 가진 채 5직업 사양 결정은 추정 신뢰도 0. PR15 머지 + baseline v10 재측정(PR13 효과 재단정)으로 ability 가산 분기 정합 검증 후 나머지 3직업 진입.
+
+**밸런스 권지나:**
+> 동의. R13-1 해소는 시뮬 로직 PR이라 BALANCE 미관여 + fingerprint 무영향 예상 + 분량 작음(~50~100줄 추정). PR15 머지 D+1에 baseline v10 측정으로 ability 효과 재단정.
+>
+> homeless K3가 v10에서 5.0+ 도달하면 SCN_QUEST 추정 정합 — Tier-2 사양 결정 신뢰도 확보. 도달 못하면 추가 보완 검토.
+
+### 14.3 R8-1 부분 완화 단정
+
+baseline v9 §5.3 단정:
+- homeless 절망 사망 46 → 24 (-22, 47.8% 감소)
+- engineer 절망 사망 77 → 71 (-6, 7.8% 감소)
+- 합산 절망 -28 (6.9% 감소)
+
+**의의:**
+- homeless 단독 -22로 R8-1 큰 완화 — `worn_photo` morale +12 + `newspaper_bundle` morale +3 갱신 + startingItems 추가 효과
+- engineer 미세 완화 -6 — `sketch_notebook` morale +10 + scrap_metal·wire 추가, 단 ability 가산 미작용으로 효과 제한
+- **사망원인 1위는 절망 유지** (377 > 288) — R8-1 완전 해소 아님. R13-1 해소 + 자원 추가 분배 + ability 분기 정합 후 완전 해소 추정
+
+**R8-1 트랙 상태:** ⚠️ 부분 완화 → 완료 미달성. M3 #10 나머지 3직업 진입 + PR15 머지 후 baseline v10/v11에서 추가 단정.
+
+### 14.4 R11-1 미발동 단정
+
+baseline v9 §4.1:
+- 정의 1 (6직업 평균): chef 5.20 / others6 4.60 → 격차 **+0.60d** (v8 +0.77d → Δ -0.17d 자연 축소)
+- 정의 2 (cooking lv 0 5직업): chef 5.20 / others5 4.70 → 격차 **+0.50d** (v8 +0.60d → Δ -0.10d, 임계 경계 도달)
+
+**R11-1 액션 트리거 (협의서 v4 §13.2):**
+- (1) chef K3 < 5.0 — chef K3 5.20 > 5.0 ✅ 안전
+- (2) 정의 1 격차 +0.5d 미만 — +0.60d > +0.5d ✅ 안전
+- (3) 정의 2 격차 +0.5d 미만 — **+0.50d 임계 경계 도달** ⚠️ 경계 안전 (트리거 미발동, 단 다음 PR에서 추가 좁힘 시 깨짐 위험)
+
+**결정:** R11-1 액션 트리거 미발동. 모니터링 모드 유지. **PR15 + baseline v10에서 homeless·engineer K3 추가 향상(ability 가산 정합)이 chef 격차 추가 좁힘 시 R11-1 발동 단정.**
+
+**PD 김재훈:**
+> 정의 2 +0.50d 임계 경계는 시각적 경고. PR15 머지로 homeless K3가 4.2 → 5.0+로 향상되면 정의 2 격차가 +0.5d 미만으로 깨짐. **PR15 머지 시 R11-1 액션 트리거 발동 의무 사전 등록** — chef 정체성 강화 트랙(M3 #18) 동시 진입 트리거.
+
+### 14.5 §13.7 다음 단계 갱신
+
+| 순위 (갱신) | 작업 | 담당 | 트리거 시점 |
+|------|------|------|-----------|
+| **1** | PR15 — `tools/sim/v2/playerAI.mjs` ability 가산 분기 구현 (`moraleRecoveryBonus`·`moraleOnCraft`·`moraleOnDismantle`·`sketchNotebookBonus`·기타 bonus 필드 enumerate). 측정 도구 정합화 PR. R13-1 해소 | 시스템 백승호 | 본 보강 회의록 채택 직후 |
+| **2** | baseline v10 측정 — PR15 효과 단정. homeless·engineer K3 추가 향상 측정 + R11-1 발동 여부 단정 | 밸런스 권지나 | PR15 머지 D+1 |
+| **3** | (조건부 v10 기반) M3 #18 PR14 chef 정체성 강화 트랙 — R11-1 액션 트리거 발동 시 진입. chef 전용 Tier-2 ability 또는 chef startInv·신규 자원 분배 | 시나리오 한도연 + PD/Balance 협의 | v10 측정 D+0 (R11-1 발동 시) |
+| 4 | M3 #19 — M3 #10 나머지 3직업 Tier-2 (firefighter·soldier·pharmacist). R13-1 해소 후 추정 신뢰도 확보 필요 | 시나리오 한도연 | baseline v10 측정 D+0 (R11-1 발동 여부 입력) |
+| 5 | sketch_notebook dismantle paper 정의 — 보수 처리 `[]` 정리 | 시스템 백승호 | 독립 (필요 시 PR16) |
+| 6 | M3 #15 AD UI 변경 권고 2건 | AD 오은별 | 독립 |
+| 7 | (M4+) drift.mjs leaf 값 hash 컬럼 추가 | 시스템 백승호 | M4 진입 시 |
+
+### 14.6 결정 종합 — 보강
+
+| 안건 | 결정 |
+|------|------|
+| R13-1 (Tier-2 ability sim AI 미구현) | **신규 등록**. PR15 머지로 해소 의무. M3 #10 나머지 3직업 진입의 선행 조건 |
+| R8-1 (절망 +232 폭증) | ⚠️ **부분 완화** (절망 -28, homeless 단독 -22). 완전 해소는 PR15 + 추가 분배 필요 |
+| R11-1 (chef 격차 임계) | **미발동** (정의 2 +0.50d 임계 경계). 모니터링 유지. PR15 머지 시 발동 사전 등록 |
+| R10-1 (절망 폭증) | ⚠️ **-28 부분 완화** — homeless 단독 효과. engineer·다른 직업 추가 보완 필요 |
+| R9-1·R9-2 | 변화 없음 |
+| 추정-실측 격차 | R13-1 원인 단정. PR15로 ability 가산 분기 정합화 |
+| §13.7 다음 단계 | 갱신 — PR15 1순위 (선행 조건), baseline v10 2순위, M3 #18·#19 PR15 머지 후 |
+
+본 보강은 본 협의서의 결정 권한 안에서 처리. baseline v10 측정 결과 도착 시 §14.5 표 갱신 + R11-1 발동 여부 단정.
+
+---
+
+*추가 보강 회의록 끝. baseline v10 측정 결과 도착 시 본 §14.4 R11-1 발동 단정 + §14.2 R13-1 해소 검증 + M3 #18·#19 진입 트리거 결정.*
+
 
 
