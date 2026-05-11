@@ -2,7 +2,7 @@
 
 > 시작일: 2026-05-10 (페르소나 회의 산출물 — 7 페르소나 합동 학습 후)
 > 트랙: M3 (이슈 #2 6직업 비대칭 / 이슈 #3 후반 이벤트 폭주 측정)
-> 상태: **PR14 결정 협의서 v5 발행 완료 (A+B 패키지 채택). 시나리오 한도연 4 SCN_QUEST(chef + firefighter·soldier·pharmacist) 동시 작성 대기. PR14 머지 + baseline v11 측정 → R11-1 해소 단정 트랙.**
+> 상태: **시나리오 한도연 4 SCN_QUEST 동시 작성 완료(chef 715 + firefighter 472 + soldier 488 + pharmacist 503 = 2178줄). chef R11-1 해소 단정 가능(정의 1 +1.07~+1.57d). 시스템 백승호 PR14·PR16 머지 진입 대기.**
 > 이전 계획: `docs/archive/prompt_plan.old5.md` (CST 패턴, 2026-04-28 마감)
 > 회의 산출물 인덱스: `docs/persona-meeting-2026-05-10/README.md`
 
@@ -199,14 +199,31 @@ M3는 시뮬 v2 인프라(PR1~PR4) → Player AI 5단계(PR5/PR5.5/PR6/PR7) → 
 - [x] 안건 5 M3 #20 동시 진행 — 4 SCN_QUEST(chef·firefighter·soldier·pharmacist) 단일 트랙. R15-1 우회(craft 발동 빈도 보수화)
 - [x] §10 위험과 완화 5건 + §11 다음 단계 9건
 
-### M3 #20 (4 SCN_QUEST 동시 작성 — **다음 진입 트리거**, 시나리오 한도연)
+### M3 #20 (4 SCN_QUEST 동시 작성 마감)
 
-- [ ] `SCN_QUEST_chef_tier2.md` — chef 전용 신규 Tier-2 ability(1개) + chef 전용 신규 자원(1~2개). 협의서 v5 §2~§5 가드레일 준수
-- [ ] (병행) `SCN_QUEST_firefighter_tier2.md` — firefighter Tier-2 ability + 자원. craft 발동 빈도 보수화(R15-1 우회)
-- [ ] (병행) `SCN_QUEST_soldier_tier2.md` — soldier 동일 패턴
-- [ ] (병행) `SCN_QUEST_pharmacist_tier2.md` — pharmacist 동일 패턴
-- [ ] 4 SCN_QUEST §8 patch diff 사양 — characters.js + items_misc.js + stackConfig.js + CardFactory.js 4곳 등록 룰 충족
-- [ ] 6 게이트 검수 (DIR_GATE_chef_start_environment.md 패턴) — 4직업 각 검수
+- [x] `SCN_QUEST_chef_tier2.md` (715줄) — Tier-2 ability `pantry_mastery` (식자재 보존술 🥫, moraleRecoveryBonus 1.4 / lowMoraleRecoveryFatigueBonus -3). 신규 자원 `chef_journal` (셰프 노트 📔, morale +10·fatigue -2·durability 3) + `spice_blend` (혼합 향신료 🧂, morale +6·nutrition +5·durability 1). startingItems 7→10
+- [x] `SCN_QUEST_firefighter_tier2.md` (472줄) — Tier-2 ability `rescue_resolve` (구조의 결의, moraleRecoveryBonus 1.3). 신규 자원 `family_photo` (가족 사진, morale +10·fatigue -3·keepsake). startingItems 6→7
+- [x] `SCN_QUEST_soldier_tier2.md` (488줄) — Tier-2 ability `comrade_memorial` (전우의 기억, moraleRecoveryBonus 1.3). 신규 자원 `dog_tag` (군번줄, morale +10·fatigue -3·keepsake). startingItems 7→8
+- [x] `SCN_QUEST_pharmacist_tier2.md` (503줄) — Tier-2 ability `compounding_focus` (조제 몰입, moraleOnCraft 3). 신규 자원 `pharmacy_notes` (조제 노트, morale +8·fatigue -3·durability 3·dismantle paper). startingItems 7→8
+- [x] 4 SCN_QUEST §8 patch diff 합산 ~116 라인 (chef 41 + firefighter·soldier·pharmacist 각 ~25)
+- [x] 6 게이트 검수 — 각 직업 ability + 자원 모두 통과 (chef pantry_mastery 5/6 통과 + 1/6 모니터링 3차 KPI)
+- [x] **R11-1 해소 단정 가능** — chef 1차 KPI 격차 정의 1 +1.07~+1.57d, 2차 정의 2 +0.96~+1.46d, 3차 chef K3 5.7~6.2 (안전)
+- [x] PR15 enumerate 범위 준수 — `moraleRecoveryBonus`·`moraleOnCraft`·`lowMoraleRecoveryFatigueBonus` 3 필드 한정. 신규 effect 필드 도입 0
+- [x] 공통 위험 단정 — `subtype: keepsake` 5직업 동시 사용 (homeless·engineer·firefighter·soldier·pharmacist) / `pharmacy_notes` dismantle paper 정의 부재 (sketch_notebook 패턴 정합)
+
+### M3 #21 (PR14·PR16 머지 + baseline v11 — **다음 진입 트리거**, 시스템 백승호)
+
+- [ ] PR14 머지 (chef) — `SCN_QUEST_chef_tier2.md §8` patch diff 적용 (~41 라인)
+- [ ] PR16 머지 (firefighter·soldier·pharmacist) — 3 SCN_QUEST §8 patch diff 합산 (~75 라인) — 또는 PR14에 통합 (시스템 결정)
+- [ ] 4곳 등록 룰 충족 검증 (characters.js + items_misc.js + stackConfig.js + CardFactory.js)
+- [ ] `subtype: keepsake` 5직업 동시 사용 처리 — 시스템 등록 결정 (worn_photo·family_photo·dog_tag·chef_journal·pharmacy_notes)
+- [ ] `pharmacy_notes` dismantle paper 정의 — sketch_notebook 패턴 정합 (현 `[]` 보수 처리)
+- [ ] validate.js Errors 0 + fingerprint `len316-h242a5b5f` 유지 검증
+- [ ] `tools/sim/v2/run_baseline.mjs` v10 → v11
+- [ ] baseline v11 측정 (`BAL_SIM_baseline_v11_report.md` + `result.json`, 밸런스 권지나) — **직업별 분리 측정 의무** (chef vs 6직업 절대값 단정)
+- [ ] 1차/2차/3차 KPI 단정 + R11-1 해소 단정 (협의서 v5 §5.5)
+- [ ] (조건부) cook_intuition 단축 — chef K3 > 6.5 시
+- [ ] (조건부) PR14.1 재조정 — chef 격차 정의 1 < +1.0d 시
 
 ### M3 #21 (PR14 + PR16 머지 + baseline v11 측정 — M3 #20 후행)
 
@@ -308,8 +325,8 @@ M3 #16 (M3 #10 시나리오 — homeless·engineer Tier-2) ─── 마감
 M3 #17 (PR13 머지 + baseline v9) ─── 마감
 M3 #18 (PR15 sim AI ability 가산 분기 + baseline v10) ─── 마감
 M3 #19 (PR14 결정 협의서 v5 발행) ─── 마감
-M3 #20 (4 SCN_QUEST 동시 작성 — chef·firefighter·soldier·pharmacist) ─── 진입 대기 (시나리오 한도연 — 다음 트리거)
-M3 #21 (PR14·PR16 머지 + baseline v11) ─── M3 #20 후행 (시스템 백승호 + 밸런스 권지나)
+M3 #20 (4 SCN_QUEST 동시 작성) ─── 마감
+M3 #21 (PR14·PR16 머지 + baseline v11) ─── 진입 대기 (시스템 백승호 — 다음 트리거)
 M3 #22 (PR16·PR17 R15-1·R13-1 완전 해소) ─── 조건부 후순위
 M3 (조건부) cook_intuition 단축 / PR14.1 재조정 ─── baseline v11 결과 의존
 ```
