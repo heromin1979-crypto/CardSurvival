@@ -7,6 +7,7 @@ import FIREFIGHTER_QUESTS from './firefighter/index.js';
 import HOMELESS_QUESTS    from './homeless/index.js';
 import CHEF_QUESTS        from './chef/index.js';
 import ENGINEER_QUESTS    from './engineer/index.js';
+import PHARMACIST_QUESTS  from './pharmacist/index.js';
 import GLOBAL_QUESTS      from './global.js';
 
 const MAIN_QUESTS = {
@@ -16,6 +17,7 @@ const MAIN_QUESTS = {
   ...HOMELESS_QUESTS,
   ...CHEF_QUESTS,
   ...ENGINEER_QUESTS,
+  ...PHARMACIST_QUESTS,
   ...GLOBAL_QUESTS,
 };
 

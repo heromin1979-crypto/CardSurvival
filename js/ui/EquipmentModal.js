@@ -229,6 +229,12 @@ const EquipmentModal = {
     if (p.toxinDetect) {
       rows.push({ icon: '🔍', label: '식재료 감별', value: '독성 음식 섭취 전 경고' });
     }
+    // cook_intuition — chef 전용 시작 7일 grace
+    if (p.encounterMultDaysEnd && (GameState.time?.day ?? 1) <= p.encounterMultDaysEnd) {
+      const remainDays = p.encounterMultDaysEnd - (GameState.time?.day ?? 1) + 1;
+      const reducePct = Math.round((1 - (p.encounterMultDuringGrace ?? 1.0)) * 100);
+      rows.push({ icon: '🍜', label: '셰프의 직감', value: `조우 -${reducePct}% (${remainDays}일 남음)` });
+    }
     if ((p.dismantleExtraItem ?? 0) > 0) {
       rows.push({ icon: '🔩', label: '분해 전문가', value: `재료 +${p.dismantleExtraItem}개 추가` });
     }

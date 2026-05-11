@@ -342,7 +342,10 @@ const ExploreSystem = {
     const earlyMult = gs.time.day <= BALANCE.encounter.earlyGameGraceDays
       ? BALANCE.encounter.earlyGameEncounterMult
       : 1.0;
-    const encounterChance = district.encounterChance * (seasonMod.encounterMult ?? 1.0) * NightSystem.getNightEncounterMult() * earlyMult * (1 - Math.min(BALANCE.encounter.reductionCap, baseReduction));
+    const charGraceMult = (gs.player.encounterMultDaysEnd && gs.time.day <= gs.player.encounterMultDaysEnd)
+      ? (gs.player.encounterMultDuringGrace ?? 1.0)
+      : 1.0;
+    const encounterChance = district.encounterChance * (seasonMod.encounterMult ?? 1.0) * NightSystem.getNightEncounterMult() * earlyMult * charGraceMult * (1 - Math.min(BALANCE.encounter.reductionCap, baseReduction));
     if (encounterChance > 0 && Math.random() < encounterChance) {
       const noiseLevel = gs.noise.level;
       const enemies    = rollEnemyGroup(district.dangerLevel, noiseLevel);

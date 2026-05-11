@@ -257,7 +257,7 @@ const CharCreate = {
     for (const ability of char.abilities) {
       const e = ability.effect;
       if (e.healBonus)               gs.player.healBonus = e.healBonus;
-      if (e.fatigueDecay !== undefined) gs.stats.fatigue.decayPerTP = 0.8 * (1 + e.fatigueDecay);
+      if (e.fatigueDecay !== undefined) gs.player.fatigueDecayMult = 1 + e.fatigueDecay;
       if (e.noiseReduct)             gs.player.noiseReduct = e.noiseReduct;
       if (e.exploreBonus)            gs.player.exploreBonus = e.exploreBonus;
       if (e.combatDmgBonus)          gs.player.combatDmgBonus = e.combatDmgBonus;
@@ -281,6 +281,10 @@ const CharCreate = {
       if (e.knifeDmgBonus)           gs.player.knifeDmgBonus = e.knifeDmgBonus;
       if (e.companionMoraleDecayReduct) gs.player.companionMoraleDecayReduct = e.companionMoraleDecayReduct;
       if (e.startingItems)           extraStartItems.push(...e.startingItems);
+      if (e.encounterMultDays) {
+        gs.player.encounterMultDaysEnd  = (gs.time?.day ?? 1) + e.encounterMultDays.days - 1;
+        gs.player.encounterMultDuringGrace = e.encounterMultDays.mult;
+      }
     }
 
     // HP 현재값을 최대값에 맞춤
@@ -293,9 +297,8 @@ const CharCreate = {
     gs.time.hour     = 6;
 
     // ── 스탯 리셋 ────────────────────────────────────────────
-    gs.stats.hydration.decayPerTP   = 2.0;
-    gs.stats.nutrition.decayPerTP   = 0.5;
-    gs.stats.fatigue.decayPerTP     = 0.8;
+    // stats.{hydration|nutrition|morale}.decayPerTP은 StatSystem.onTP()가 BALANCE.stats로 매 TP 오버라이드
+    // (이전 하드코딩 2.0/0.5/0.8은 dead store. 본 라인 제거됨 — fatigue도 BALANCE 일관화로 dead.)
     gs.stats.hydration.current      = 200;
     gs.stats.nutrition.current      = 80;
     gs.stats.temperature.current    = 50;
@@ -307,7 +310,7 @@ const CharCreate = {
     // ── 능력 효과 재적용 (스탯 리셋 후) ─────────────────────
     for (const ability of char.abilities) {
       const e = ability.effect;
-      if (e.fatigueDecay !== undefined) gs.stats.fatigue.decayPerTP = 0.8 * (1 + e.fatigueDecay);
+      if (e.fatigueDecay !== undefined) gs.player.fatigueDecayMult = 1 + e.fatigueDecay;
       if (e.hydrationDecay)  gs.stats.hydration.decayPerTP *= e.hydrationDecay;
       if (e.nutritionDecay)  gs.stats.nutrition.decayPerTP *= e.nutritionDecay;
     }
