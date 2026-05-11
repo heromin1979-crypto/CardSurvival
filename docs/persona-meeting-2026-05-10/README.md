@@ -140,7 +140,14 @@
 - `BAL_SIM_baseline_v8_result.json` — buildTag `sim-baseline-v8-pr12-t1`.
 - **협의서 v4 §13 추가 보강 회의록** — R11-1 신규 위험(chef 격차 +0.60d 하한 +1.0d 미달) / PR12 단독 효과 0 단정 (pharmacist 4.1→4.1) / fingerprint drift 측정 한계 단정 / **M3 #10 진입 단언** (R10-1 +232 = 기준 4.6배 초과).
 
-**다음 트리거 (협의서 v4 §13.7):** **M3 #10 시나리오 한도연 진입** — homeless·engineer Tier-2 abilities 우선(R8-1 핵심). `SCN_QUEST_homeless_tier2.md` + `SCN_QUEST_engineer_tier2.md` 작성. morale 회복 자원 분배 결정 → PR13 머지 → baseline v9 측정 → 나머지 3직업 Tier-2.
+**M3 #16 (시나리오 한도연 R8-1 핵심 2직업 진입 마감):**
+- [`SCN_QUEST_homeless_tier2.md`](./SCN_QUEST_homeless_tier2.md) — **homeless Tier-2 결정 (533줄).** ability `street_solace` (거리의 위안, 🕯️). `moraleRecoveryBonus 1.5` + `lowMoraleRecoveryFatigueBonus -5`. 신규 자원 `worn_photo` (낡은 사진, 📷, onConsume morale+12·fatigue-3, subtype keepsake). `newspaper_bundle` morale+3 기존 갱신. startingItems 8→10.
+- [`SCN_QUEST_engineer_tier2.md`](./SCN_QUEST_engineer_tier2.md) — **engineer Tier-2 결정 (546줄).** ability `workshop_focus` (작업 몰입, 🔧). `moraleOnCraft 5` + `moraleOnDismantle 5` + `sketchNotebookBonus true`. 신규 자원 `sketch_notebook` (설계도 노트, 📓, onConsume morale+10·fatigue-5·defaultDurability 3·dismantle paper). startingItems 6→9.
+- 6 게이트 검수 — homeless 5/6 통과+1 모니터링 / engineer 5/6 통과+1 모니터링 / worn_photo·sketch_notebook 6/6 전수 통과.
+- **R11-1 임계 깨짐 단정** — homeless+engineer 합산 chef 격차 정의 1 +0.37d / 정의 2 +0.42d → +0.5d 임계 깨짐 단언. **PR14 chef 정체성 강화 트랙 진입 의무** 신규 등록.
+- PR13 patch diff 추정 — characters.js +23/-4 + items_misc.js +24/-3 + stackConfig.js +5 + CardFactory.js +2 = 총 ~60 라인.
+
+**다음 트리거:** 시스템 백승호 — PR13 머지 (SCN_QUEST_*tier2.md §8 patch diff 그대로 적용, 4곳 등록 룰 충족) + validate.js + baseline v9 측정. v9에서 R11-1 액션 트리거 발동 단정 시 PR14 chef 강화 트랙 즉시 진입.
 
 ---
 
