@@ -535,6 +535,60 @@ const ITEMS_MISC = {
     dismantle: [],
   },
 
+  // 셰프 전용 keepsake + 보존식 (PR14 — chef pantry_mastery ability 트리거 자원)
+  chef_journal: {
+    id: 'chef_journal', name: '셰프 노트', type: 'consumable', subtype: 'keepsake',
+    rarity: 'common', weight: 0.10,
+    defaultDurability: 3, defaultContamination: 0,
+    icon: '📔', description: '명동 소피텔 호텔 수석 셰프의 손때 묻은 표준식단표. 보존식 배합 비율과 식재료 검수 기록이 빼곡하다. 손때 묻은 페이지를 넘기는 동안에는 굶주린 사람들의 얼굴이 잠시 멀어진다.',
+    tags: ['consumable', 'keepsake', 'chef'],
+    onConsume: { morale: 10, fatigue: -2 },
+    dismantle: [],
+  },
+
+  spice_blend: {
+    id: 'spice_blend', name: '혼합 향신료', type: 'consumable', subtype: 'food',
+    rarity: 'common', weight: 0.05,
+    defaultDurability: 1, defaultContamination: 0,
+    icon: '🧂', description: '호텔 주방 향신료 캐비닛에서 챙긴 혼합 향신료. 미식 감각으로 직접 조합한 보존용 배합이다. 한 줌이면 굶주린 입맛도 잠시 일깨운다.',
+    tags: ['consumable', 'food', 'preserved', 'chef'],
+    onConsume: { morale: 6, nutrition: 5 },
+    dismantle: [],
+  },
+
+  // 소방관 전용 keepsake (PR16 — firefighter rescue_resolve ability 트리거 자원)
+  family_photo: {
+    id: 'family_photo', name: '가족 사진', type: 'consumable', subtype: 'keepsake',
+    rarity: 'common', weight: 0.05,
+    defaultDurability: 1, defaultContamination: 0,
+    icon: '👨‍👩‍👧‍👦', description: '은평구 불광동 아내와 두 아이의 사진. 진입 전 항상 점퍼 안주머니에 챙겨 넣던 것. 손에 쥐면 다시 진입할 힘이 난다.',
+    tags: ['consumable', 'keepsake', 'firefighter'],
+    onConsume: { morale: 10, fatigue: -3 },
+    dismantle: [],
+  },
+
+  // 군인 전용 keepsake (PR16 — soldier comrade_memorial ability 트리거 자원)
+  dog_tag: {
+    id: 'dog_tag', name: '군번줄', type: 'consumable', subtype: 'keepsake',
+    rarity: 'common', weight: 0.02,
+    defaultDurability: 1, defaultContamination: 0,
+    icon: '🎖️', description: '광화문에서 쓰러진 팀원 네 명의 군번줄. 목에 걸고 있으면 무게보다 무거운 것이 있다. 그래도 임무는 남아 있다.',
+    tags: ['consumable', 'keepsake', 'soldier'],
+    onConsume: { morale: 10, fatigue: -3 },
+    dismantle: [],
+  },
+
+  // 약사 전용 keepsake (PR16 — pharmacist compounding_focus ability 트리거 자원)
+  pharmacy_notes: {
+    id: 'pharmacy_notes', name: '조제 노트', type: 'consumable', subtype: 'keepsake',
+    rarity: 'common', weight: 0.10,
+    defaultDurability: 3, defaultContamination: 0,
+    icon: '📔', description: '홍대 약국 카운터 아래에 두던 조제 노트. 1월 14일부터의 이상 증상 기록과 대학원 시절 천연물 화학 메모가 빼곡하다. 펼쳐 보면 잠시 차분해진다.',
+    tags: ['consumable', 'keepsake', 'pharmacist'],
+    onConsume: { morale: 8, fatigue: -3 },
+    dismantle: [],
+  },
+
   box_cutter: {
     id: 'box_cutter', name: '커터칼', type: 'weapon', subtype: 'melee',
     rarity: 'common', weight: 0.15,

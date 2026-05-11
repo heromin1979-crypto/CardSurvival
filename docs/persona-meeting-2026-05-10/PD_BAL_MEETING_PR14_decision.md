@@ -362,4 +362,161 @@ baseline v10에서 사인 전이(절망 -74, 아사 +62)는 의도된 패턴(mor
 
 ---
 
-*문서 끝. SCN_QUEST_chef_tier2.md 도착 시 본 §9.1 가드레일 + §9.2 patch diff 적용 + §9.5 KPI 단정. baseline v11 측정 결과 도착 시 본 §10 위험 완화 발동 여부 단정 + R11-1 해소 단언.*
+*문서 끝. SCN_QUEST_chef_tier2.md 도착 시 본 §9.1 가드레일 + §9.2 patch diff 적용 + §9.5 KPI 단정. baseline v11 측정 결과 도착 시 본 §10 위험 완화 발동 여부 단정 + R11-1 해소 단언. — 2026-05-12 충족. 갱신 사항은 §12 보강.*
+
+---
+
+## 12. 보강 회의록 (2026-05-12, PR14·PR16 머지 + baseline v11 측정 직후)
+
+> 참여: PD 김재훈 + 밸런스 권지나. 입력: 시나리오 한도연 4 SCN_QUEST(2178줄) + 시스템 백승호 PR14·PR16 머지(4 파일 +117/-2 라인) + `BAL_SIM_baseline_v11_result.json` + `BAL_SIM_baseline_v11_report.md` (밸런스 권지나, 426줄).
+
+### 12.1 baseline v11 측정 결과 단정 (v11 보고서 §3~§5)
+
+- fingerprint `len316-h242a5b5f` v3~v11 9연속 유지, bootstrapErrors 0/700, 10.9초, 결정성 100%
+- **K1 7직업 0%, 12회 연속 0%** (PR5 → PR14·PR16)
+- K3 v10 → v11:
+  - **chef 5.20 → 5.40 (+0.20d)** ★ PR14 효과 (pantry_mastery + chef_journal + spice_blend)
+  - **soldier 4.50 → 5.00 (+0.50d)** ★ PR16 효과 (보수 추정 +0.1~0.3d 초과)
+  - **pharmacist 4.10 → 4.30 (+0.20d)** ★ PR16 효과 (compounding_focus + pharmacy_notes)
+  - **firefighter 5.00 → 5.00 (Δ 0d)** — 사인 전이만 (절망 -11 → 아사 +14)
+  - doctor 4.90 / homeless 4.30 / engineer 5.00 — 변화 0 (회귀 0)
+- K5 v10 → v11:
+  - **절망 303 → 161 (-142, -47%)** ★ R8-1·R10-1 큰 추가 완화
+  - 아사 350 → 467 (+117), 탈수 13 → 33 (+20), 극도 피로 34 → 39 (+5)
+- 누적 R10-1 해소: v8 405 → v11 161 (-244, **60.2% 회수**)
+
+### 12.2 R11-1 정의 2 해소 단언
+
+baseline v11 §4.1:
+- 정의 1 (vs 6직업 평균): chef 5.40 / others6 4.75 → 격차 **+0.650d** (v10 +0.567d → Δ +0.083d 회복)
+- 정의 2 (vs cooking lv 0 5직업): chef 5.40 / others5 4.84 → 격차 **+0.560d** (v10 +0.46d → Δ +0.060d 회복)
+
+**KPI 단정:**
+- 1차 KPI 격차 정의 1 ≥ +1.0d: ❌ **미달** (+0.650d, SCN_QUEST 추정 +1.07~1.57d 대비 격하). **R14-1 신규**
+- 2차 KPI 격차 정의 2 ≥ +0.5d: ✅ **R11-1 정의 2 해소 단언** (+0.560d)
+- 3차 KPI chef K3 ≤ 6.5: ✅ **안전** (5.40, cook_intuition 단축 회피)
+
+**PD 김재훈:**
+> R11-1 정의 2 해소는 명백한 단언 — 협의서 v4 §14.4 사전 등록 + 본 협의서 §5.5 2차 KPI 충족. PR15 머지 시 R11-1 발동 → PR14·PR16 머지 시 R11-1 해소까지 5단계 절차 정착 (협의 → 사양 → 머지 → 측정 → 보강).
+>
+> 1차 KPI 미달은 R14-1로 분리 등록. 정의 1 +0.650d는 v10 +0.567d 대비 +0.083d만 회복 — chef effect가 SCN_QUEST 추정보다 약하게 작용. 원인은 §12.3에서 R14-1 단정으로 처리.
+
+### 12.3 R14-1 신규 등록 — chef 1차 KPI 미달 + PR14.1 재조정 트리거
+
+**측정 사실:**
+- SCN_QUEST_chef_tier2.md §9 추정: 격차 정의 1 +1.07~+1.57d (가이드 5/6 통과)
+- 실측: +0.650d (추정 대비 -0.42~-0.92d 격차)
+
+**원인 단정 (시스템 백승호 1차 단정 인용):**
+- pantry_mastery `moraleRecoveryBonus: 1.4` — PR15 ability 가산 패턴(homeless 1.5)보다 낮은 값. chef 효과 약화
+- chef_journal `onConsume.morale: 10` — 단발성 소비 (durability 3 → 3회 사용)
+- spice_blend `onConsume.morale: 6 / nutrition: 5` — 2개 stack, 미세 효과
+- 합산 효과가 chef K3 +0.20d만 발현. PR15 ability 패턴(homeless +0.1d) 정합이지만 R11-1 1차 KPI +1.0d 회복은 미충족
+
+**R14-1 액션:** **PR14.1 재조정 트리거 발동 단언.**
+
+권고 옵션 (시스템 백승호 1차 단정):
+- 옵션 A: `pantry_mastery.moraleRecoveryBonus 1.4 → 1.6` 상향 (homeless 1.5 초과, chef 정체성 정합)
+- 옵션 B: `chef_journal.onConsume.morale 10 → 13` 상향 (homeless worn_photo 12 초과)
+- 옵션 C: 두 옵션 병행 — 안전한 1차 KPI 충족 보장
+
+**PD 김재훈:**
+> 옵션 A 단독은 effect 값 범위 가드레일(협의서 §3.3 ×1.2~×1.8) 내. 옵션 B 단독은 chef_journal durability 3 → 5 상향과 결합 가능. 옵션 C는 양쪽 조정으로 안전 마진 확보.
+>
+> **권고: 옵션 A 단독 채택** — 단일 상수 변경 (1 PR 1 트랙 정합). baseline v12에서 1차 KPI 충족 검증. 미달 시 옵션 B 또는 C 후속.
+
+**밸런스 권지나:**
+> 옵션 A 추정: pantry_mastery `moraleRecoveryBonus 1.6` 적용 시 chef K3 5.40 → 5.55~5.65 추정. 격차 정의 1 v11 +0.650d → v12 +0.85~+0.95d 추정 — 여전히 +1.0d 미달 가능. **옵션 C(병행) 권고** — 1차 KPI 안전 충족.
+>
+> chef K3 6.5 초과 위험: 옵션 C 적용 시 chef K3 5.65~5.85 추정. 안전 범위 유지. 3차 KPI 충족 단정.
+
+**결정:** **PR14.1 = 옵션 C 채택** — `pantry_mastery.moraleRecoveryBonus 1.4 → 1.6` + `chef_journal.onConsume.morale 10 → 13`. 시나리오 한도연 SCN_QUEST_chef_tier2.md §8 재조정 후 시스템 백승호 PR14.1 머지.
+
+### 12.4 R14-2 신규 등록 — soldier K3 보수 추정 초과
+
+**측정 사실:**
+- SCN_QUEST_soldier_tier2.md §1.4 추정: K3 +0.1~0.3d (R15-1 우회 보수화)
+- 실측: K3 +0.50d (가이드 +0.3d 초과 +0.20d)
+
+**원인 단정:**
+- comrade_memorial `moraleRecoveryBonus: 1.3` + dog_tag morale +10 합산 효과가 SCN_QUEST 추정보다 강하게 발현
+- 사인 전이 (절망 → 아사) 발생으로 K3 자연 증가
+
+**R14-2 액션:** PR16.1 soldier 재조정 트리거. chef 격차 정의 1 추가 좁힘 회피 (+0.567d → +0.650d 회복 중인데 soldier 추가 향상이 chef 격차 추가 좁힘 위험).
+
+권고:
+- `comrade_memorial.moraleRecoveryBonus 1.3 → 1.2` 하향 (PR16.1 단일 상수)
+
+**결정:** **PR16.1 채택** — soldier comrade_memorial 하향. PR14.1과 동시 진행 가능 (1 PR 1 트랙 영역 분리).
+
+### 12.5 R14-3 신규 등록 — firefighter 사인 전이만 (R15-1 우회 실패)
+
+**측정 사실:**
+- SCN_QUEST_firefighter_tier2.md §1.4 추정: K3 +0.1~0.3d
+- 실측: K3 Δ 0d (절망 -11 → 아사 +14 사인 전이만)
+
+**원인 단정:**
+- rescue_resolve `moraleRecoveryBonus: 1.3` 적용으로 절망 사망 회피
+- 그러나 사망일 연장 미발생 — 사망 시점이 day 5 안에서 아사로 즉시 사인 전환
+- R15-1 우회 보수화 실패 패턴 — craft 발동 빈도 부족 + family_photo 단발성
+
+**R14-3 액션:** firefighter SCN_QUEST 재검토 트리거.
+
+권고:
+- 옵션 1: family_photo durability 1 → 3 상향 (다회 소비로 효과 연장)
+- 옵션 2: rescue_resolve effect 추가 (예: `craftSuccessBonus` 같은 신규 분기 — 단 PR15 enumerate 범위 밖이라 시스템 후속 보강 필요)
+- 옵션 3: 보수 추정 자체를 firefighter Δ 0d 패턴으로 받아들임 (사인 전이가 K1 향상에 미치는 영향 단정)
+
+**PD 김재훈:**
+> 옵션 1이 가장 작은 변경 + 1 PR 1 트랙 정합. 단 family_photo durability 1 → 3은 자원 가치 변화. soldier dog_tag·homeless worn_photo durability 1 패턴과 일관성 깨짐 → keepsake 자원 durability 1 통일 유지가 직업 정체성 측면 합리. **옵션 3 권고** — firefighter K3 Δ 0 패턴 수용. v12 측정에서 firefighter 사인 전이 패턴 재검토.
+
+**결정:** **옵션 3 채택** — firefighter 재조정 보류. baseline v12 측정 후 PR16.2 검토 트리거. R15-1 우회 실패 패턴은 firefighter 한정 단정.
+
+### 12.6 R8-1·R10-1 큰 추가 완화 — 누적 60.2% 회수
+
+| 측정 | v8 | v9 | v10 | v11 | 누적 Δ |
+|------|----|----|----|----|-------|
+| 절망 사망 | 405 | 377 | 303 | **161** | **-244 (60.2% 회수)** |
+
+**의의:**
+- R10-1 절망 폭증(v7 → v8 +232) 대비 v11에서 -244 회수 → **R10-1 단계적 해소 단정**
+- R8-1 morale 회복 자원 부재 — homeless·engineer·firefighter·soldier·chef 5직업 Tier-2 ability + 5종 신규 자원 + PR15 ability 가산 분기로 대응. 사인 전이로 사망 원인은 아사·탈수로 이동했으나 절망 사망 자체는 큰 감소
+- **사망원인 1위는 아사 467로 절망 161의 2.9배** — R8-1 완전 해소 단정 가능 (절망 사망 < 200 기준)
+
+**밸런스 권지나:**
+> R8-1 완전 해소 단정. R10-1도 단계적 해소. **단 K1 = 0% 12회 연속이라 사망일 연장이 day 100 도달로 이어지지 않음.** K1 향상은 R15-1 완전 해소(craft 발동 빈도 보강 PR16) + 자원 분배 추가 PR이 본질적 경로.
+>
+> baseline v12 PR14.1·PR16.1 머지 후에도 K1 0% 유지 시 PR16 craft 빈도 보강(R15-1 해소) 진입 권고.
+
+### 12.7 §11 다음 단계 갱신
+
+| 순위 (갱신) | 작업 | 담당 | 트리거 시점 |
+|------|------|------|-----------|
+| **1** | PR14.1 머지 — `pantry_mastery.moraleRecoveryBonus 1.4 → 1.6` + `chef_journal.onConsume.morale 10 → 13`. characters.js + items_misc.js 2 파일 ~5라인. PR16.1과 동시 진행 가능 | 시나리오 한도연 (SCN_QUEST 재조정) + 시스템 백승호 (머지) | 본 보강 회의록 채택 직후 |
+| **2** | PR16.1 머지 — `comrade_memorial.moraleRecoveryBonus 1.3 → 1.2`. characters.js 1 파일 ~1라인 | 시스템 백승호 | PR14.1과 동시 |
+| **3** | baseline v12 측정 — PR14.1 + PR16.1 합산 효과. **직업별 분리 측정 의무** | 밸런스 권지나 | PR14.1·PR16.1 머지 D+1 |
+| 4 | 1차 KPI 충족 단정 — chef 격차 정의 1 ≥ +1.0d. R11-1 완전 해소 단언 | 밸런스 권지나 + PD | baseline v12 보고 D+0 |
+| 5 | (조건부 R14-3) firefighter 재조정 검토 — 사인 전이 패턴 v12 재측정 | 시나리오 한도연 | baseline v12 측정 후 |
+| 6 | (조건부) PR16 craft 발동 빈도 보강 — R15-1 완전 해소. K1 향상 본질적 경로 | 시스템 백승호 | baseline v12에서 K1 = 0% 13회 연속 시 |
+| 7 | (조건부) PR17 dismantle sim 모사 — R13-1 완전 해소 | 시스템 백승호 | PR16 머지 후 |
+| 8 | sketch_notebook + pharmacy_notes paper 정의 — 보수 처리 `[]` 정리 | 시스템 백승호 | 독립 |
+| 9 | M3 #15 AD UI 변경 권고 2건 | AD 오은별 | 독립 |
+| 10 | (M4+) drift.mjs leaf 값 hash 컬럼 추가 | 시스템 백승호 | M4 진입 시 |
+
+### 12.8 결정 종합 — 보강
+
+| 안건 | 결정 |
+|------|------|
+| R11-1 정의 2 해소 | ✅ **단언** (+0.560d ≥ +0.5d). 협의서 v4 §14.4 사전 등록 충족 |
+| R14-1 (chef 1차 KPI 미달) | **PR14.1 옵션 C 채택** — pantry_mastery 1.4→1.6 + chef_journal 10→13 |
+| R14-2 (soldier 보수 초과) | **PR16.1 채택** — comrade_memorial 1.3→1.2 하향 |
+| R14-3 (firefighter 사인 전이만) | **옵션 3 수용** — 재조정 보류. v12 측정 후 PR16.2 검토 |
+| R8-1·R10-1 큰 추가 완화 | ✅ **R8-1 완전 해소 단정** (절망 161 < 200) + R10-1 단계적 해소 (60.2% 회수) |
+| 다음 단계 갱신 | PR14.1 + PR16.1 동시 → baseline v12 → 1차 KPI 단언 |
+
+본 보강은 본 협의서의 결정 권한 안에서 처리. baseline v12 측정 결과 도착 시 §12.7 표 갱신 + 1차 KPI 충족 단언 (R11-1 완전 해소).
+
+---
+
+*보강 회의록 끝. PR14.1·PR16.1 머지 후 baseline v12 측정 결과 도착 시 본 §12.3 R14-1 해소 단정 + §12.4 R14-2 해소 단정 + 1차 KPI 충족 단언 (R11-1 완전 해소).*
+
