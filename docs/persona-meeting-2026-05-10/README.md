@@ -153,7 +153,13 @@
 - `BAL_SIM_baseline_v9_result.json` — buildTag `sim-baseline-v9-pr13`.
 - **협의서 v4 §14 추가 보강 회의록** — R8-1 부분 완화 단정·R11-1 미발동 단정(액션 트리거 미충족, 모니터링 유지)·**R13-1 신규 위험 등록**(Tier-2 ability sim AI 미구현, SCN_QUEST 추정-실측 격차 일차 원인)·다음 단계 갱신(PR15 1순위 선행 조건).
 
-**다음 트리거 (협의서 v4 §14.5):** **PR15 — `tools/sim/v2/playerAI.mjs` ability 가산 분기 구현 (시스템 백승호)**. `moraleRecoveryBonus`·`moraleOnCraft`·`moraleOnDismantle`·`sketchNotebookBonus`·기타 ability bonus 필드 enumerate. R13-1 해소 + 측정 도구 정합화. baseline v10 측정 → R11-1 발동 단정 → M3 #18/#19/#20 진입.
+**M3 #18 (PR15 + baseline v10 마감):**
+- **PR15 구현** — `tools/sim/v2/playerAI.mjs` +30/-3 + `gameStateReset.mjs` +6/-1 (시스템 백승호). ability bonus 4필드(`moraleRecoveryBonus`·`lowMoraleRecoveryFatigueBonus`·`moraleOnCraft`·`sketchNotebookBonus`) 가산 분기 구현. `moraleOnDismantle` skip (sim에 dismantle 행동 없음).
+- [`BAL_SIM_baseline_v10_report.md`](./BAL_SIM_baseline_v10_report.md) — **baseline v10 정식 측정 (밸런스 권지나, 305줄).** K1 0% **11회 연속** / fingerprint `len316-h242a5b5f` v3~v10 8연속 유지 / homeless K3 4.2→4.3 (+0.1d) / engineer K3 4.9→5.0 (+0.1d) / **K5 절망 377→303 (-74)** R8-1 큰 추가 완화 (v8→v10 누적 -102, 44.0% 회수) / **K5 아사 288→350 (+62)** 사인 전이 → **사망원인 1위 재역전 (아사 > 절망)** / morale<30 도달율 day 2 99·100% → 0% 대폭 감소.
+- `BAL_SIM_baseline_v10_result.json` — buildTag `sim-baseline-v10-pr15`.
+- **협의서 v4 §15 추가 보강 회의록** — **R11-1 액션 트리거 (3) 발동 단언** (chef 격차 정의 2 +0.46d < +0.5d) · R8-1 큰 추가 완화 단정 · **R13-1 부분 해소** (4/5필드, dismantle skip) · **R15-1 신규 등록** (SCN_QUEST 추정-실측 잔존 격차 -0.9~-1.4d, 원인: playerAI craft 발동 빈도 day 1회 < SCN_QUEST 가정 4~6회/day) · 다음 단계 갱신.
+
+**다음 트리거 (협의서 v4 §15.5):** **M3 #19 PR14 chef 정체성 강화 트랙 진입 의무 — 협의서 v5 신규 발행 (`PD_BAL_MEETING_PR14_decision.md`).** chef 전용 Tier-2 ability 또는 신규 자원 결정. **기능적 차별화 목적** (chef K3 향상보다 격차 정의 1 +1.0d 회복 우선). PD/Balance + 시나리오 한도연 협의 + 시스템 백승호 머지 + baseline v11 측정.
 
 ---
 

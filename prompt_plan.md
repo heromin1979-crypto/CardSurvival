@@ -2,7 +2,7 @@
 
 > 시작일: 2026-05-10 (페르소나 회의 산출물 — 7 페르소나 합동 학습 후)
 > 트랙: M3 (이슈 #2 6직업 비대칭 / 이슈 #3 후반 이벤트 폭주 측정)
-> 상태: **PR13 머지 + baseline v9 측정 + 협의서 v4 §14 보강 완료. R8-1 부분 완화(절망 -28). R11-1 미발동(정의 2 +0.50d 임계 경계). R13-1 신규 등록(Tier-2 ability sim AI 미구현). PR15 진입 대기 (시스템 백승호 측정 도구 정합화).**
+> 상태: **PR15 머지 + baseline v10 + 협의서 v4 §15 보강 완료. R11-1 (3) 발동 단언(정의 2 +0.46d). R8-1 큰 추가 완화(절망 v8→v10 -102, 44% 회수). R13-1 부분 해소(4/5필드) + R15-1 신규(SCN_QUEST 잔존 격차). M3 #19 PR14 chef 정체성 강화 트랙 진입 의무 + 협의서 v5 신규 발행 대기.**
 > 이전 계획: `docs/archive/prompt_plan.old5.md` (CST 패턴, 2026-04-28 마감)
 > 회의 산출물 인덱스: `docs/persona-meeting-2026-05-10/README.md`
 
@@ -169,26 +169,39 @@ M3는 시뮬 v2 인프라(PR1~PR4) → Player AI 5단계(PR5/PR5.5/PR6/PR7) → 
 - [x] **R13-1 신규 위험 등록** — Tier-2 ability `moraleRecoveryBonus`·`moraleOnCraft`·`moraleOnDismantle`·`sketchNotebookBonus` sim AI 미구현. SCN_QUEST 추정-실측 격차 일차 원인
 - [x] 협의서 v4 §14 보강 회의록 — R8-1 부분 완화·R11-1 미발동·R13-1 등록·다음 단계 갱신
 
-### M3 #18 (PR15 sim AI ability 가산 분기 구현 — **다음 진입 트리거**, 시스템 백승호)
+### M3 #18 (PR15 sim AI ability 가산 분기 + baseline v10 마감)
 
-- [ ] **PR15** — `tools/sim/v2/playerAI.mjs` ability 가산 분기 구현. R13-1 해소
-- [ ] enumerate 대상: `moraleRecoveryBonus`, `lowMoraleRecoveryFatigueBonus`, `moraleOnCraft`, `moraleOnDismantle`, `sketchNotebookBonus`, 기타 ability bonus 필드 (chef·pharmacist abilities 인용)
-- [ ] BALANCE 미관여 + fingerprint 유지 검증
-- [ ] sanity 200 runs — homeless·engineer K3 추가 향상 측정 (SCN_QUEST 추정 정합)
-- [ ] baseline v10 측정 (`BAL_SIM_baseline_v10_result.json` + `report.md`) — `OUTPUT_FILE` / `buildTag` v9 → v10
-- [ ] R11-1 액션 트리거 단정 — homeless K3 추가 향상이 chef 격차 추가 좁힘 시 발동
+- [x] **PR15 구현** — `tools/sim/v2/playerAI.mjs` +30/-3 + `gameStateReset.mjs` +6/-1. ability bonus 4필드 가산 분기:
+  - homeless: `moraleRecoveryBonus` (×1.5), `lowMoraleRecoveryFatigueBonus` (-5)
+  - engineer: `moraleOnCraft` (+5), `sketchNotebookBonus` (×1.5)
+  - skip 1필드: `moraleOnDismantle` (sim에 dismantle 행동 없음)
+- [x] validate.js Errors 0 / Warnings 252 / ALL CLEAR
+- [x] fingerprint `len316-h242a5b5f` v3~v10 8연속 유지 / bootstrapErrors 0/700 / 10.6초 / 결정성 100%
+- [x] `tools/sim/v2/run_baseline.mjs` v9 → v10 (`sim-baseline-v10-pr15`)
+- [x] baseline v10 측정 (`BAL_SIM_baseline_v10_result.json` + `BAL_SIM_baseline_v10_report.md` 305줄, 밸런스 권지나)
+- [x] K1 7직업 0% (11회 연속) / K3 homeless 4.2→4.3 (+0.1d) / engineer 4.9→5.0 (+0.1d) / chef·pharmacist·doctor·soldier·firefighter 변화 0 (회귀 0)
+- [x] K5 절망 377→303 (-74, v8→v10 누적 -102 / 44.0% 회수) / 아사 288→350 (+62, 사인 전이) / 극도피로 22→34 / 탈수 13 유지
+- [x] probe — ability 가산 발동 단정 (homeless worn_photo 99/100, engineer sketch_notebook 100/100), morale<30 도달율 day 2 99·100→0%, chef 격차 정의 1 +0.567 / 정의 2 +0.46
+- [x] **R11-1 액션 트리거 (3) 발동 단언** — 정의 2 +0.50d → +0.46d (+0.5d 미만)
+- [x] **R8-1 큰 추가 완화 단정** — 절망 -74 (사인 전이 절망→아사, 사망원인 1위 재역전)
+- [x] **R13-1 부분 해소 단정** — 4필드 구현 / dismantle skip
+- [x] **R15-1 신규 등록** — SCN_QUEST 추정-실측 잔존 격차 (-0.9~-1.4d). playerAI craft 발동 빈도 day 1회 < SCN_QUEST 가정 4~6회/day + dismantle skip 원인
+- [x] 협의서 v4 §15 추가 보강 회의록 — R11-1 발동·R8-1 완화·R13-1 부분 해소·R15-1 신규·다음 단계 갱신
 
-### M3 #19 (PR14 chef 정체성 강화 트랙 — R11-1 발동 시 조건부)
+### M3 #19 (PR14 chef 정체성 강화 — **다음 진입 트리거**, 협의서 v5 발행)
 
-- [ ] PR14 결정 협의 (PD/Balance + 시나리오 한도연) — chef 전용 Tier-2 abilities 또는 chef startInv·신규 자원 분배
-- [ ] 진입 트리거: baseline v10에서 chef 격차 정의 2 +0.5d 미만 추가 좁힘 단정
+- [ ] PR14 결정 협의 — PD/Balance + 시나리오 한도연. 협의서 v5 신규 발행 (`PD_BAL_MEETING_PR14_decision.md`)
+- [ ] PR14 사양 방향: chef 전용 Tier-2 ability 또는 신규 자원 — **기능적 차별화 목적** (chef K3 향상보다 격차 정의 1 +1.0d 회복 우선)
+- [ ] chef 정체성 강화: knife_mastery + cook_intuition 기존 ability 외 추가 보강
+- [ ] PR14 머지 (시스템 백승호) + validate.js + baseline v11 측정 (밸런스 권지나)
 
-### M3 #20 (M3 #10 나머지 3직업 Tier-2 — R13-1 해소 후)
+### M3 #20 (M3 #10 나머지 3직업 Tier-2 — PR14 머지 후 또는 동시)
 
 - [ ] `SCN_QUEST_firefighter_tier2.md`
 - [ ] `SCN_QUEST_soldier_tier2.md`
 - [ ] `SCN_QUEST_pharmacist_tier2.md`
-- [ ] 진입 트리거: PR15 머지 + baseline v10 측정 D+0 (R13-1 해소 후 추정 신뢰도 확보 필요)
+- [ ] SCN_QUEST 작성 시 craft 발동 빈도 가정 보수화(day 시작 1회) — R15-1 우회 (시나리오 한도연 권고)
+- [ ] 진입 트리거: PR14 머지 D+0 또는 PR14와 동시
 
 ### M3 #15 (AD UI 변경 권고 2건 — 분리 트랙, 독립)
 
@@ -271,10 +284,11 @@ M3 #14b (PR12 + interactions.js T1 시뮬 모사 + baseline v8) ─── 마감
 M3 #15 (AD UI 변경 권고 2건) ─── 분리 트랙 (AD 오은별, 독립)
 M3 #16 (M3 #10 시나리오 — homeless·engineer Tier-2) ─── 마감
 M3 #17 (PR13 머지 + baseline v9) ─── 마감
-M3 #18 (PR15 sim AI ability 가산 분기 + baseline v10) ─── 진입 대기 (시스템 백승호 — 다음 트리거)
-M3 #19 (PR14 chef 강화 — R11-1 액션) ─── baseline v10 격차 추가 좁힘 시 조건부
-M3 #20 (M3 #10 나머지 3직업 Tier-2) ─── baseline v10 D+0 진입 (R13-1 해소 후)
-M3 (조건부 후속) cook_intuition / PR11 추가 재조정 ─── baseline v10/v11 결과 의존
+M3 #18 (PR15 sim AI ability 가산 분기 + baseline v10) ─── 마감
+M3 #19 (PR14 chef 정체성 강화 — 협의서 v5 신규 발행) ─── 진입 대기 (PD/Balance + 시나리오 한도연 — 다음 트리거, R11-1 액션 트리거 발동 단언)
+M3 #20 (M3 #10 나머지 3직업 Tier-2) ─── PR14 머지 D+0 또는 동시
+M3 (후순위) PR16 craft 발동 빈도 + PR17 dismantle sim 모사 ─── R15-1·R13-1 완전 해소 트랙
+M3 (조건부 후속) cook_intuition / PR11 추가 재조정 ─── baseline v11/v12 결과 의존
 ```
 
 ---
