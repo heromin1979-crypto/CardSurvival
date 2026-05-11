@@ -90,6 +90,12 @@ export function resetGameStateForRun({ characterId }) {
       GameState.player.encounterMultDaysEnd     = 1 + e.encounterMultDays.days - 1;
       GameState.player.encounterMultDuringGrace = e.encounterMultDays.mult;
     }
+    // PR15: Tier-2 ability bonus 필드 노출 (R13-1 해소). playerAI.mjs가 GameState.player에서 직접 참조.
+    if (e.moraleRecoveryBonus)            GameState.player.moraleRecoveryBonus = e.moraleRecoveryBonus;
+    if (e.lowMoraleRecoveryFatigueBonus)  GameState.player.lowMoraleRecoveryFatigueBonus = e.lowMoraleRecoveryFatigueBonus;
+    if (e.moraleOnCraft)                  GameState.player.moraleOnCraft = e.moraleOnCraft;
+    if (e.moraleOnDismantle)              GameState.player.moraleOnDismantle = e.moraleOnDismantle;
+    if (e.sketchNotebookBonus)            GameState.player.sketchNotebookBonus = e.sketchNotebookBonus;
   }
 
   return GameState;

@@ -27,16 +27,50 @@ import BALANCE from '../../../js/data/gameBalance.js';
 const SLEEP_FATIGUE_AFTER = 10;
 const HP_REGEN_FROM_SLEEP = 10;
 
-// PR6: items.js의 onConsume에서 직접 derive — 시뮬 회복량 = game 실측
+// PR15: Tier-2 ability bonus 가산. onConsume 적용 시 player.moraleRecoveryBonus·sketchNotebookBonus·
+// lowMoraleRecoveryFatigueBonus를 가산해 R13-1(추정-실측 격차) 해소. RNG 무사용 — 결정성 100%.
+function _applyAbilityBonusesToConsume(itemId, deltas) {
+  const p = GameState.player;
+  const moraleMult = p?.moraleRecoveryBonus ?? 1;
+  const sketchOn   = p?.sketchNotebookBonus && itemId === 'sketch_notebook';
+  const lowFatBonus= p?.lowMoraleRecoveryFatigueBonus ?? 0;
+  const moraleCur  = GameState.stats?.morale?.current ?? 100;
+  const out = { ...deltas };
+  if (out.morale && moraleMult !== 1) {
+    out.morale = out.morale * moraleMult;
+  }
+  if (sketchOn) {
+    if (out.morale)  out.morale  = out.morale * 1.5;
+    if (out.fatigue) out.fatigue = out.fatigue * 1.5;
+  }
+  // 낮은 morale 회복 트리거 (homeless street_solace 사양 §3.3): 회복 직전 morale<30이고 morale 회복량>0일 때 fatigue 추가 감소.
+  if (lowFatBonus && (out.morale ?? 0) > 0 && moraleCur < 30) {
+    out.fatigue = (out.fatigue ?? 0) + lowFatBonus;
+  }
+  return out;
+}
+
+// PR6: items.js의 onConsume에서 직접 derive — 시뮬 회복량 = game 실측.
+// PR15: ability bonus 가산 분기 추가 (R13-1 해소).
 function applyOnConsume(itemId) {
   const def = ITEMS[itemId];
   if (!def?.onConsume) return false;
-  for (const [stat, delta] of Object.entries(def.onConsume)) {
+  const deltas = _applyAbilityBonusesToConsume(itemId, def.onConsume);
+  for (const [stat, delta] of Object.entries(deltas)) {
     const s = GameState.stats[stat];
     if (!s) continue;
     s.current = Math.max(0, Math.min(s.max, s.current + delta));
   }
   return true;
+}
+
+// PR15: engineer workshop_focus moraleOnCraft 가산 (craft 행위 1회당). dismantle은 시뮬 미모사로 skip.
+function _grantCraftMorale() {
+  const bonus = GameState.player?.moraleOnCraft ?? 0;
+  if (bonus <= 0) return;
+  const s = GameState.stats?.morale;
+  if (!s) return;
+  s.current = Math.max(0, Math.min(s.max, s.current + bonus));
 }
 
 const FOOD_IDS = new Set([
@@ -202,6 +236,7 @@ function actT1Convert(simInv) {
   if (!best) return null;
   if (!dec(simInv, best.input, 1)) return null;
   simInv[best.output] = (simInv[best.output] ?? 0) + 1;
+  _grantCraftMorale();
   return `t1Convert:${best.id}->${best.output}`;
 }
 
@@ -234,6 +269,7 @@ function actCook(simInv) {
   for (const o of best.output ?? []) {
     simInv[o.definitionId] = (simInv[o.definitionId] ?? 0) + o.qty;
   }
+  _grantCraftMorale();
   return `cook:${best.id}->${best.output[0].definitionId}`;
 }
 
