@@ -30,6 +30,8 @@ const STACK_ROWS = [
   ['spring'                  , true,  8 ],
   ['tree_log'                , true,  3 ],
   ['herb'                    , true, 10 ],
+  ['wild_berry'              , true, 10 ],
+  ['vegetable'               , true, 10 ],
 
   // ── 가공 재료 ─────────────────────────────────────────────────
   ['sharp_blade'             , true,  5 ],

@@ -126,7 +126,14 @@
 **M3 #13 (협의서 v4 작성 마감):**
 - [`PD_BAL_MEETING_PR11_decision.md`](./PD_BAL_MEETING_PR11_decision.md) — **PD/Balance 협의서 v4.** PR11 결정. **옵션 2 단독 채택** — `js/data/districts.js` 25구 lootTable에 `herb`·`wild_berry`·`vegetable` 3종 raw food 가중치 추가(일반 1.0 / 위험 dangerLevel ≥ 3 0.5 / dobong 0.5). 옵션 1(`fishing.baseCatchChance` 0.30→0.50)은 PR12 폴백, 옵션 3(fish 영양 상향) 최후순위. `generateDistrictLoot():902-927` scavenging 미반영 단정 유지 — 7직업 균등 분포. M3 #14b(interactions.js T1 시뮬 모사)는 PR11 머지 + baseline v7 측정 후 분리 트랙. R10-1 + R8-1 결합으로 M3 #10 시나리오 한도연 트랙 우선순위 상향 — baseline v7 측정 D+0 진입 의무 + R8-1 morale 시계열 probe 신규.
 
-**다음 트리거:** 시스템 백승호 — PR11 옵션 2 구현 (`js/data/districts.js` 25구 lootTable). vegetable 정의 확인 + dangerLevel 분류 + validate.js + fingerprint 회귀 + baseline v7 측정.
+**M3 #14a (PR11 옵션 2 구현 + baseline v7 측정 마감):**
+- `js/data/districts.js` 25구 lootTable 75 entry 추가 (vegetable 25 + herb 25 + wild_berry 25). vegetable 기존 정의(`items_base.js:1195-1203`), stackConfig.js 신규 등록(4곳 룰 충족).
+- baseline v7 1차 측정(가중치 1.0/0.5) → 사양 결함 노출(K1·K3 변화 0). **협의서 v4 §12 보강 회의록 추가 — 가중치 재조정 1.0/0.5 → 8/4 합의.**
+- baseline v7 2차 측정(가중치 8/4) — fingerprint `len316-h242a5b5f` 유지, **K1·K3 변화 0 (1차와 동일)**. **PR11 옵션 2 *설계 자체 결함* 단정** — cooking lv 0 4직업 actCook 잠금 + cooking lv ≥1 직업 cooked_noodles 이미 충분으로 양극단 효과 0.
+- probe 3종: actExplore 분포 / **R8-1 원인 2 단정** (homeless·engineer day 2 morale 12~13 급락, 회복 자원 부재) / R10-1 절망 +6 (v6 167 → v7 173, +50 트리거 미충족 안전).
+- `BAL_SIM_baseline_v7_result.json` raw 데이터 — buildTag `sim-baseline-v7-pr11`, fingerprint v3·v4·v5·v6와 동일.
+
+**다음 트리거 (협의서 v4 §12.6):** **PR12 + M3 #14b 동시 진입** — 트랙 영역 분리 (PR12 = `gameBalance.js:328` `fishing.baseCatchChance` 0.30→0.50 단일 상수 / M3 #14b = `tools/sim/v2/playerAI.mjs` interactions.js T1 변환 모사). baseline v8 합산 측정 후 M3 #10 시나리오 한도연 진입.
 
 ---
 
