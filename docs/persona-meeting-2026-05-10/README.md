@@ -162,7 +162,15 @@
 **M3 #19 (PR14 결정 협의서 v5 발행 마감):**
 - [`PD_BAL_MEETING_PR14_decision.md`](./PD_BAL_MEETING_PR14_decision.md) — **PD/Balance 협의서 v5.** PR14 결정. **A+B 패키지 채택** — chef 전용 신규 Tier-2 ability(1개) + chef 전용 신규 자원(1~2개). 데이터 PR 1트랙. ability 가드레일 6건 + effect 값 범위 ×1.2~×1.8(또는 +3~+10) + chef 외 직업 변경 0 한정. **KPI 3분리** — 1차 격차 정의 1 +1.0d 회복(직접 목표), 2차 정의 2 +0.5d 회복(R11-1 해소), 3차 chef K3 ≤ 6.5(모니터링). M3 #20 동시 진행 결정 — 4 SCN_QUEST(chef·firefighter·soldier·pharmacist) 단일 트랙 작성. R15-1 우회(craft 발동 빈도 day 시작 1회 보수화).
 
-**다음 트리거 (협의서 v5 §11 §1순위):** **M3 #20 시나리오 한도연 4 SCN_QUEST 동시 작성** — `SCN_QUEST_chef_tier2.md` + `SCN_QUEST_firefighter_tier2.md` + `SCN_QUEST_soldier_tier2.md` + `SCN_QUEST_pharmacist_tier2.md`. 각 §8 patch diff 사양으로 시스템 백승호 PR14 머지 → baseline v11 측정 → R11-1 해소 단정.
+**M3 #20 (4 SCN_QUEST 동시 작성 마감):**
+- [`SCN_QUEST_chef_tier2.md`](./SCN_QUEST_chef_tier2.md) (715줄) — Tier-2 ability `pantry_mastery` (식자재 보존술 🥫). 신규 자원 `chef_journal` (셰프 노트 📔) + `spice_blend` (혼합 향신료 🧂). startingItems 7→10. **R11-1 해소 단정 가능** — 격차 정의 1 +1.07~+1.57d / 정의 2 +0.96~+1.46d / chef K3 5.7~6.2 (안전).
+- [`SCN_QUEST_firefighter_tier2.md`](./SCN_QUEST_firefighter_tier2.md) (472줄) — `rescue_resolve` (구조의 결의) + `family_photo` (가족 사진). startingItems 6→7. K3 +0.1~0.3d (R15-1 우회 보수화).
+- [`SCN_QUEST_soldier_tier2.md`](./SCN_QUEST_soldier_tier2.md) (488줄) — `comrade_memorial` (전우의 기억) + `dog_tag` (군번줄). startingItems 7→8. K3 +0.1~0.3d.
+- [`SCN_QUEST_pharmacist_tier2.md`](./SCN_QUEST_pharmacist_tier2.md) (503줄) — `compounding_focus` (조제 몰입) + `pharmacy_notes` (조제 노트). startingItems 7→8. K3 +0.1~0.3d.
+- 합산 2178줄 / patch diff ~116 라인. PR15 enumerate 범위(`moraleRecoveryBonus`·`moraleOnCraft`·`lowMoraleRecoveryFatigueBonus`) 한정. 신규 effect 필드 0.
+- 공통 위험: `subtype: keepsake` 5직업 동시 사용(homeless·engineer·firefighter·soldier·pharmacist) / `pharmacy_notes` dismantle paper 정의 부재 (sketch_notebook 패턴 정합).
+
+**다음 트리거 (협의서 v5 §11 §2순위):** **시스템 백승호 — PR14(chef) + PR16(나머지 3직업, 또는 PR14에 통합) 머지** — 4 SCN_QUEST §8 patch diff 적용. validate.js + fingerprint + baseline v11 직업별 분리 측정.
 
 ---
 
