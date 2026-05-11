@@ -239,6 +239,10 @@ const STACK_ROWS = [
   ['newspaper_bundle'          , true,  5 ],
   ['box_cutter'                , false, 1 ],
   ['broken_bottle'             , true,  3 ],
+  ['worn_photo'                , false, 1 ],
+
+  // — 엔지니어 전용 아이템 —
+  ['sketch_notebook'           , false, 1 ],
 
   // — 셰프 전용 희귀 식재료 (stackable, maxStack 3~5) —
   ['truffle'                   , true,  3 ],

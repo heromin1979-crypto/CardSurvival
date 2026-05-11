@@ -507,9 +507,31 @@ const ITEMS_MISC = {
     id: 'newspaper_bundle', name: '신문지 뭉치', type: 'consumable', subtype: 'fuel',
     rarity: 'common', weight: 0.4,
     defaultDurability: 1, defaultContamination: 0,
-    icon: '📰', description: '쌓아둔 신문지. 캠프파이어 불쏘시개 3회분으로 사용 가능.',
+    icon: '📰', description: '쌓아둔 신문지. 캠프파이어 불쏘시개 3회분 + 잠자리 위에 깔면 잠시 위안.',
     tags: ['fuel', 'homeless', 'kindling'],
     kindlingUses: 3,
+    onConsume: { morale: 3, fatigue: -2 },
+    dismantle: [],
+  },
+
+  // 추억·정서 회복형 keepsake (homeless·engineer Tier-2 ability 트리거 자원)
+  worn_photo: {
+    id: 'worn_photo', name: '낡은 사진', type: 'consumable', subtype: 'keepsake',
+    rarity: 'common', weight: 0.05,
+    defaultDurability: 1, defaultContamination: 0,
+    icon: '📷', description: '동호대교 아래에서 2년을 버틴 사진. 잃어버린 가족의 얼굴이 흐려졌다. 그래도 손에 쥐면 잠시 숨이 트인다.',
+    tags: ['consumable', 'keepsake', 'homeless'],
+    onConsume: { morale: 12, fatigue: -3 },
+    dismantle: [],
+  },
+
+  sketch_notebook: {
+    id: 'sketch_notebook', name: '설계도 노트', type: 'consumable', subtype: 'keepsake',
+    rarity: 'common', weight: 0.15,
+    defaultDurability: 3, defaultContamination: 0,
+    icon: '📓', description: '성수동 공장에서 가져온 설계도 노트. 연료 없는 탈것 스케치가 빼곡하다. 손을 움직이는 동안에는 두려움이 잠시 멀어진다.',
+    tags: ['consumable', 'keepsake', 'engineer'],
+    onConsume: { morale: 10, fatigue: -5 },
     dismantle: [],
   },
 
