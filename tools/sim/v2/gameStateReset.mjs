@@ -62,6 +62,16 @@ export function resetGameStateForRun({ characterId }) {
   GameState.location.currentDistrict = cc.startDistrict;
   GameState.location.currentNode     = cc.startDistrict;
 
+  // PR7: startingSkills를 GameState.player.skills.{id}.level에 주입.
+  // (이전: 시뮬은 initial snapshot의 level:0 그대로 사용 → 직업별 cooking·harvesting 보너스 무효화 → AI 요리 차단)
+  for (const [skillId, level] of Object.entries(cc.skills ?? {})) {
+    if (GameState.player.skills?.[skillId]) {
+      GameState.player.skills[skillId].level = level;
+    } else if (GameState.player.skills) {
+      GameState.player.skills[skillId] = { level, xp: 0 };
+    }
+  }
+
   GameState.time.day      = 1;
   GameState.time.tpInDay  = 0;
   GameState.time.totalTP  = 0;
