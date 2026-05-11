@@ -123,7 +123,10 @@
 - `BAL_SIM_baseline_v6_result.json` — baseline v6 raw 데이터 (buildTag `sim-baseline-v6-pr10`, fingerprint v3·v4·v5와 동일).
 - **협의서 v3 §12 보강 회의록 추가** — 시나리오 γ 신규 단정 (α/β 양분 폐기) / §9.5 KPI 재정의 (5직업 → cooking lv ≥1 직업) / §10.6 GameState 경로 정정 (`player.nutrition` → `stats.nutrition`) / R10-1 등록 / §11 다음 단계 갱신.
 
-**다음 트리거:** PR10 git 머지 (시스템 백승호가 별도 commit). 이어서 PD/Balance 협의 — PR11 옵션 결정 (1차 옵션 2 25구 lootTable raw food 확대 vs 2차 옵션 1 `fishing.baseCatchChance` 상향). 협의서 v4 발행 여부 검토.
+**M3 #13 (협의서 v4 작성 마감):**
+- [`PD_BAL_MEETING_PR11_decision.md`](./PD_BAL_MEETING_PR11_decision.md) — **PD/Balance 협의서 v4.** PR11 결정. **옵션 2 단독 채택** — `js/data/districts.js` 25구 lootTable에 `herb`·`wild_berry`·`vegetable` 3종 raw food 가중치 추가(일반 1.0 / 위험 dangerLevel ≥ 3 0.5 / dobong 0.5). 옵션 1(`fishing.baseCatchChance` 0.30→0.50)은 PR12 폴백, 옵션 3(fish 영양 상향) 최후순위. `generateDistrictLoot():902-927` scavenging 미반영 단정 유지 — 7직업 균등 분포. M3 #14b(interactions.js T1 시뮬 모사)는 PR11 머지 + baseline v7 측정 후 분리 트랙. R10-1 + R8-1 결합으로 M3 #10 시나리오 한도연 트랙 우선순위 상향 — baseline v7 측정 D+0 진입 의무 + R8-1 morale 시계열 probe 신규.
+
+**다음 트리거:** 시스템 백승호 — PR11 옵션 2 구현 (`js/data/districts.js` 25구 lootTable). vegetable 정의 확인 + dangerLevel 분류 + validate.js + fingerprint 회귀 + baseline v7 측정.
 
 ---
 
