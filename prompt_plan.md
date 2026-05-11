@@ -2,7 +2,7 @@
 
 > 시작일: 2026-05-10 (페르소나 회의 산출물 — 7 페르소나 합동 학습 후)
 > 트랙: M3 (이슈 #2 6직업 비대칭 / 이슈 #3 후반 이벤트 폭주 측정)
-> 상태: **PR15 머지 + baseline v10 + 협의서 v4 §15 보강 완료. R11-1 (3) 발동 단언(정의 2 +0.46d). R8-1 큰 추가 완화(절망 v8→v10 -102, 44% 회수). R13-1 부분 해소(4/5필드) + R15-1 신규(SCN_QUEST 잔존 격차). M3 #19 PR14 chef 정체성 강화 트랙 진입 의무 + 협의서 v5 신규 발행 대기.**
+> 상태: **PR14 결정 협의서 v5 발행 완료 (A+B 패키지 채택). 시나리오 한도연 4 SCN_QUEST(chef + firefighter·soldier·pharmacist) 동시 작성 대기. PR14 머지 + baseline v11 측정 → R11-1 해소 단정 트랙.**
 > 이전 계획: `docs/archive/prompt_plan.old5.md` (CST 패턴, 2026-04-28 마감)
 > 회의 산출물 인덱스: `docs/persona-meeting-2026-05-10/README.md`
 
@@ -188,20 +188,42 @@ M3는 시뮬 v2 인프라(PR1~PR4) → Player AI 5단계(PR5/PR5.5/PR6/PR7) → 
 - [x] **R15-1 신규 등록** — SCN_QUEST 추정-실측 잔존 격차 (-0.9~-1.4d). playerAI craft 발동 빈도 day 1회 < SCN_QUEST 가정 4~6회/day + dismantle skip 원인
 - [x] 협의서 v4 §15 추가 보강 회의록 — R11-1 발동·R8-1 완화·R13-1 부분 해소·R15-1 신규·다음 단계 갱신
 
-### M3 #19 (PR14 chef 정체성 강화 — **다음 진입 트리거**, 협의서 v5 발행)
+### M3 #19 (PR14 결정 협의서 v5 발행 마감)
 
-- [ ] PR14 결정 협의 — PD/Balance + 시나리오 한도연. 협의서 v5 신규 발행 (`PD_BAL_MEETING_PR14_decision.md`)
-- [ ] PR14 사양 방향: chef 전용 Tier-2 ability 또는 신규 자원 — **기능적 차별화 목적** (chef K3 향상보다 격차 정의 1 +1.0d 회복 우선)
-- [ ] chef 정체성 강화: knife_mastery + cook_intuition 기존 ability 외 추가 보강
-- [ ] PR14 머지 (시스템 백승호) + validate.js + baseline v11 측정 (밸런스 권지나)
+- [x] PD/Balance 협의서 v5 작성 — `PD_BAL_MEETING_PR14_decision.md` (PR14 chef 정체성 강화 결정)
+- [x] **안건 1 PR14 = A+B 패키지 채택** — chef 전용 신규 Tier-2 ability + chef 전용 신규 자원(1~2개). 데이터 PR 1트랙
+- [x] 안건 2 ability 사양 가드레일 6건 — 개수 1개 / effect 방향 요리 강화 / sim 호환 PR15 enumerate 필드 우선 / chef 정체성 정합 / K3 추정 +0.2~0.5d / 6 게이트 검수
+- [x] 안건 2 effect 값 범위 — ×1.2~×1.8 또는 +3~+10 (PR15 ability 패턴 정합)
+- [x] 안건 3 신규 자원 가드레일 — 1~2개 chef 전용 한정 / 4곳 등록 룰 충족 / chef 외 직업 변경 0 / K3 추정 +0.5~1.0d
+- [x] **안건 4 KPI 우선순위 3분리** — 1차 격차 정의 1 +1.0d 회복(직접 목표), 2차 정의 2 +0.5d 회복(R11-1 해소), 3차 chef K3 ≤ 6.5(모니터링)
+- [x] 안건 5 M3 #20 동시 진행 — 4 SCN_QUEST(chef·firefighter·soldier·pharmacist) 단일 트랙. R15-1 우회(craft 발동 빈도 보수화)
+- [x] §10 위험과 완화 5건 + §11 다음 단계 9건
 
-### M3 #20 (M3 #10 나머지 3직업 Tier-2 — PR14 머지 후 또는 동시)
+### M3 #20 (4 SCN_QUEST 동시 작성 — **다음 진입 트리거**, 시나리오 한도연)
 
-- [ ] `SCN_QUEST_firefighter_tier2.md`
-- [ ] `SCN_QUEST_soldier_tier2.md`
-- [ ] `SCN_QUEST_pharmacist_tier2.md`
-- [ ] SCN_QUEST 작성 시 craft 발동 빈도 가정 보수화(day 시작 1회) — R15-1 우회 (시나리오 한도연 권고)
-- [ ] 진입 트리거: PR14 머지 D+0 또는 PR14와 동시
+- [ ] `SCN_QUEST_chef_tier2.md` — chef 전용 신규 Tier-2 ability(1개) + chef 전용 신규 자원(1~2개). 협의서 v5 §2~§5 가드레일 준수
+- [ ] (병행) `SCN_QUEST_firefighter_tier2.md` — firefighter Tier-2 ability + 자원. craft 발동 빈도 보수화(R15-1 우회)
+- [ ] (병행) `SCN_QUEST_soldier_tier2.md` — soldier 동일 패턴
+- [ ] (병행) `SCN_QUEST_pharmacist_tier2.md` — pharmacist 동일 패턴
+- [ ] 4 SCN_QUEST §8 patch diff 사양 — characters.js + items_misc.js + stackConfig.js + CardFactory.js 4곳 등록 룰 충족
+- [ ] 6 게이트 검수 (DIR_GATE_chef_start_environment.md 패턴) — 4직업 각 검수
+
+### M3 #21 (PR14 + PR16 머지 + baseline v11 측정 — M3 #20 후행)
+
+- [ ] PR14 머지 (chef) 또는 PR14+PR16 분리 (시스템 백승호) — SCN_QUEST §8 patch diff 그대로 적용
+- [ ] validate.js Errors 0 + fingerprint `len316-h242a5b5f` 유지 검증
+- [ ] `tools/sim/v2/run_baseline.mjs` v10 → v11
+- [ ] baseline v11 측정 (`BAL_SIM_baseline_v11_result.json` + `report.md`) — **직업별 분리 측정 의무** (chef vs 6직업 절대값 단정)
+- [ ] 1차/2차/3차 KPI 단정 + R11-1 해소 단정 (협의서 v5 §5.5)
+- [ ] (조건부) cook_intuition 단축 — chef K3 > 6.5 시
+- [ ] (조건부) PR14.1 재조정 — chef 격차 정의 1 < +1.0d 시
+- [ ] (조건부) PR16 craft 발동 빈도 보강 — R15-1 우회 실패 시
+
+### M3 #22 (조건부 후속 — R15-1 / R13-1 완전 해소)
+
+- [ ] PR16 craft 발동 빈도 보강 — playerAI `actCook`을 morale<30 시점 추가 발동 또는 actInteractCraft 빈도 증가 (R15-1 해소)
+- [ ] PR17 dismantle sim 모사 — playerAI dismantle 행동 추가 (R13-1 완전 해소)
+- [ ] sketch_notebook dismantle paper 정의 정리 (보수 처리 `[]` 해소)
 
 ### M3 #15 (AD UI 변경 권고 2건 — 분리 트랙, 독립)
 
@@ -285,10 +307,11 @@ M3 #15 (AD UI 변경 권고 2건) ─── 분리 트랙 (AD 오은별, 독립)
 M3 #16 (M3 #10 시나리오 — homeless·engineer Tier-2) ─── 마감
 M3 #17 (PR13 머지 + baseline v9) ─── 마감
 M3 #18 (PR15 sim AI ability 가산 분기 + baseline v10) ─── 마감
-M3 #19 (PR14 chef 정체성 강화 — 협의서 v5 신규 발행) ─── 진입 대기 (PD/Balance + 시나리오 한도연 — 다음 트리거, R11-1 액션 트리거 발동 단언)
-M3 #20 (M3 #10 나머지 3직업 Tier-2) ─── PR14 머지 D+0 또는 동시
-M3 (후순위) PR16 craft 발동 빈도 + PR17 dismantle sim 모사 ─── R15-1·R13-1 완전 해소 트랙
-M3 (조건부 후속) cook_intuition / PR11 추가 재조정 ─── baseline v11/v12 결과 의존
+M3 #19 (PR14 결정 협의서 v5 발행) ─── 마감
+M3 #20 (4 SCN_QUEST 동시 작성 — chef·firefighter·soldier·pharmacist) ─── 진입 대기 (시나리오 한도연 — 다음 트리거)
+M3 #21 (PR14·PR16 머지 + baseline v11) ─── M3 #20 후행 (시스템 백승호 + 밸런스 권지나)
+M3 #22 (PR16·PR17 R15-1·R13-1 완전 해소) ─── 조건부 후순위
+M3 (조건부) cook_intuition 단축 / PR14.1 재조정 ─── baseline v11 결과 의존
 ```
 
 ---

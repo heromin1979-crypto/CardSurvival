@@ -159,7 +159,10 @@
 - `BAL_SIM_baseline_v10_result.json` — buildTag `sim-baseline-v10-pr15`.
 - **협의서 v4 §15 추가 보강 회의록** — **R11-1 액션 트리거 (3) 발동 단언** (chef 격차 정의 2 +0.46d < +0.5d) · R8-1 큰 추가 완화 단정 · **R13-1 부분 해소** (4/5필드, dismantle skip) · **R15-1 신규 등록** (SCN_QUEST 추정-실측 잔존 격차 -0.9~-1.4d, 원인: playerAI craft 발동 빈도 day 1회 < SCN_QUEST 가정 4~6회/day) · 다음 단계 갱신.
 
-**다음 트리거 (협의서 v4 §15.5):** **M3 #19 PR14 chef 정체성 강화 트랙 진입 의무 — 협의서 v5 신규 발행 (`PD_BAL_MEETING_PR14_decision.md`).** chef 전용 Tier-2 ability 또는 신규 자원 결정. **기능적 차별화 목적** (chef K3 향상보다 격차 정의 1 +1.0d 회복 우선). PD/Balance + 시나리오 한도연 협의 + 시스템 백승호 머지 + baseline v11 측정.
+**M3 #19 (PR14 결정 협의서 v5 발행 마감):**
+- [`PD_BAL_MEETING_PR14_decision.md`](./PD_BAL_MEETING_PR14_decision.md) — **PD/Balance 협의서 v5.** PR14 결정. **A+B 패키지 채택** — chef 전용 신규 Tier-2 ability(1개) + chef 전용 신규 자원(1~2개). 데이터 PR 1트랙. ability 가드레일 6건 + effect 값 범위 ×1.2~×1.8(또는 +3~+10) + chef 외 직업 변경 0 한정. **KPI 3분리** — 1차 격차 정의 1 +1.0d 회복(직접 목표), 2차 정의 2 +0.5d 회복(R11-1 해소), 3차 chef K3 ≤ 6.5(모니터링). M3 #20 동시 진행 결정 — 4 SCN_QUEST(chef·firefighter·soldier·pharmacist) 단일 트랙 작성. R15-1 우회(craft 발동 빈도 day 시작 1회 보수화).
+
+**다음 트리거 (협의서 v5 §11 §1순위):** **M3 #20 시나리오 한도연 4 SCN_QUEST 동시 작성** — `SCN_QUEST_chef_tier2.md` + `SCN_QUEST_firefighter_tier2.md` + `SCN_QUEST_soldier_tier2.md` + `SCN_QUEST_pharmacist_tier2.md`. 각 §8 patch diff 사양으로 시스템 백승호 PR14 머지 → baseline v11 측정 → R11-1 해소 단정.
 
 ---
 
