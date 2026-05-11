@@ -79,6 +79,33 @@
 - 팩토리 마이그레이션 PR (시스템)
 - `BAL_TUNING_*.md` (baseline 결과 기반)
 
+### M3 — 진행 (PR7 → PR8 → PR9)
+
+**M3 #1~#4 (PR7 트랙, master `0b167ac` + `584326e`):**
+- [`BAL_SIM_baseline_v3_report.md`](./BAL_SIM_baseline_v3_report.md) — **baseline v3 700회 측정.** PR5+PR5.5+PR6 누적 효과 측정. K1 전 직업 0% / K3 chef 4.5d / chef 격차 +1.5d / 사망 원인 아사 569·절망 110·탈수 20. R7-1/-2 신규 (cooking·fishing·morale AI 부재).
+- `BAL_SIM_baseline_v3_result.json` — baseline v3 raw 데이터 (700 runs).
+- [`BAL_TUNING_chef_grace.md`](./BAL_TUNING_chef_grace.md) — **chef cook_intuition 튜닝 결정.** `days=7, mult=0.5` 합의. baseline v3 chef +1.5d 격차를 보호 가능 수준으로 검증.
+- [`DIR_VERIFY_chef_grace_v2.md`](./DIR_VERIFY_chef_grace_v2.md) — **Director 검수 v2.** chef grace 코드 정합 + 6 게이트 재검증 통과.
+- [`SYS_PR7_cooking_fishing_morale_ai.md`](./SYS_PR7_cooking_fishing_morale_ai.md) — **PR7 머지 보고.** `actCook` / `actFish` / `actBoostMorale` 3 AI 도입 + `gameStateReset` skill 주입 P1 보정. baseline v3 K1=0% 원인 분석 — 자원 게이팅 (raw cooking 입력 부재 + fishing_rod 부재). PR8 권고 옵션 A/B/C 신규 등록.
+
+**M3 #5~#7 (PR8 / PR9 트랙):**
+- [`PD_BAL_MEETING_PR8_decision.md`](./PD_BAL_MEETING_PR8_decision.md) — **PD/Balance 협의서 v1.** PR8 결정. **옵션 A(시작 7구 lootTable raw food 가중치 추가, dobong 제외) + 옵션 B(7직업 startInv에 instant_noodles + contaminated_water 균등 보강) 병행 단일 PR.** 옵션 C는 baseline v4 결과로 폴백 판정.
+- **PR8 머지 (master `d42514f`)** — `js/data/characters.js` 7직업 startingItems + `js/data/districts.js` 6 시작 구 lootTable. validate.js Errors 0. 신규 아이템 0건.
+- [`BAL_SIM_baseline_v4_report.md`](./BAL_SIM_baseline_v4_report.md) — **baseline v4 정식 측정 (PR8 후, 밸런스 권지나).** K1 7직업 0% (6회 연속) / **chef K3 5.2 격차 +2.2d** (협의서 §5.5 +1.0~+2.0d 0.2d 초과) / `actCook` 7직업 100/100 발동 측정 (PR8 효과 입증) / **R8-1 신규** — `homeless`·`engineer` `actBoostMorale` 0% 발견. 협의서 §6.1 PR9 트리거(K1<5%) 명백 충족 단정.
+- `BAL_SIM_baseline_v4_result.json` — baseline v4 raw 데이터 (700 runs, fingerprint v3와 동일).
+- [`PD_BAL_MEETING_PR9_decision.md`](./PD_BAL_MEETING_PR9_decision.md) — **PD/Balance 협의서 v2.** PR9 결정. **변형 C-a 채택 — hangang sublocation 진입 시 `fishing_rod_basic` 1회 자동 지급 (per character per run).** chef +2.2d 격차는 `cook_intuition` 단축 보류(모니터링 모드, §6.2 +2.5d 0.3d 여유). R8-1은 별도 트랙(시나리오 한도연 5직업 Tier-2)으로 분리. 협의서 v1 §2.3의 "chef 1직업 도달" 가정을 hasFishing 매트릭스 재검증으로 정정 (4직업이 자체 hasFishing 보유).
+
+**M3 진행 상태:**
+
+| KPI | baseline v3 | baseline v4 | 협의서 §5.5 목표 | 충족 |
+|-----|-------------|-------------|------------------|------|
+| K1 (전 직업) | 0% | 0% | ≥ 5% | ❌ → PR9 트리거 |
+| K3 chef 격차 (5직업 평균 기준) | +1.5d | +2.2d | +1.0~+2.0d | ⚠️ 0.2d 초과 |
+| K5 chef 탈수 | 20 | 12 | ↓ | ✅ |
+| `actCook` 발동 | 0 | 100/100 (chef) | ≥ 1/day | ✅ |
+
+**다음 트리거:** PR9 시스템 백승호 위임 4건 (`landmarks.js` 보상 필드 / `ExploreSystem.js` 진입 후크 / GameState 1회 한정 플래그 / 시뮬 v2 actFish 트리거 보강).
+
 ---
 
 ## M0 적용 결과 (2026-05-10 승인 후 즉시)
