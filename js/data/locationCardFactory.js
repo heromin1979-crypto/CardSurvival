@@ -8,17 +8,14 @@
 
 import { DISTRICTS } from './districts.js';
 import { LOCATION_CARD_META, LANDMARK_CARD_META } from './locationCardMeta.js';
+import LANDMARK_DATA from './landmarks.js';
 
-// 이벤트 전용 랜드마크 — landmarks.js LANDMARK_DATA에서 메타 추출.
-// 순환 의존 회피를 위해 정적 메타 보유. landmarks.js 본문 변경 시 본 표 갱신 필요.
-const EVENT_LANDMARK_META = {
-  lm_raider_camp_small:  { name: '소규모 약탈자 캠프', icon: '🏴', desc: '도봉산 기슭에 자리 잡은 약탈자 임시 캠프. 인질로 잡힌 민간인이 숨겨져 있다.' },
-  lm_raider_camp_medium: { name: '중규모 약탈자 캠프', icon: '🏴', desc: '약탈자 무리의 중간 규모 거점. 다수 인질 보유.' },
-  lm_raider_camp_large:  { name: '대규모 약탈자 캠프', icon: '🏴', desc: '약탈자 본거지. 약탈자 두목과 인질 다수.' },
-  lm_power_station:      { name: '구로 발전소',         icon: '⚡', desc: '구로 화력 발전소. 붕괴 전 서울 서남부 전력 공급의 핵심 시설.' },
-  lm_water_plant:        { name: '은평 정수장',         icon: '💧', desc: '은평구 상수도 정수장. 펌프와 배관이 파손돼 수도 공급이 끊긴 상태.' },
-  lm_comms_tower:        { name: '통신 중계탑',         icon: '📡', desc: '서울 통신 중계탑. 비상 방송망 복구의 핵심 시설.' },
-};
+// 이벤트 전용 랜드마크 ID. landmarks.js LANDMARK_DATA에서 name·icon·desc를 derive.
+// landmarks.js의 GameData import 제거로 순환 의존 해소 — 단일 진리.
+const EVENT_LANDMARK_IDS = [
+  'lm_raider_camp_small', 'lm_raider_camp_medium', 'lm_raider_camp_large',
+  'lm_power_station', 'lm_water_plant', 'lm_comms_tower',
+];
 
 function buildEventLandmarkCard(landmarkId, meta) {
   return {
@@ -44,8 +41,10 @@ function buildEventLandmarkCard(landmarkId, meta) {
 
 export function buildAllEventLandmarkCards() {
   const out = {};
-  for (const [id, meta] of Object.entries(EVENT_LANDMARK_META)) {
-    out[id] = buildEventLandmarkCard(id, meta);
+  for (const id of EVENT_LANDMARK_IDS) {
+    const data = LANDMARK_DATA[id];
+    if (!data) throw new Error(`[locationCardFactory] event landmark missing in landmarks.js: ${id}`);
+    out[id] = buildEventLandmarkCard(id, { name: data.name, icon: data.icon, desc: data.desc });
   }
   return out;
 }

@@ -1,4 +1,4 @@
-# 글로서리 (Lore Glossary) — v0.1 시드
+# 글로서리 (Lore Glossary) — v0.5
 
 > 작성: 설정 이수정 / 2026-05-10
 > 목적: Card Survival: Ruined City의 모든 고유 명칭·어휘의 단일 진리. 신규 텍스트는 본 글로서리 등록 후에만 사용.
@@ -70,17 +70,17 @@
 
 | 코드 ID | 한국어 이름 | 영문 표기 | 나이 | 직함 | 출처 |
 |---------|-------------|-----------|------|------|------|
-| firefighter | 박영철 | Park Yeong-cheol | 44 | 소방관 (10년 경력 구조대원) | `characters.js:144` |
-| soldier | 강민준 | Kang Min-jun | 29 | 특수전 부사관 | `characters.js:74` |
-| doctor | 이지수 | Lee Ji-su | — | 의사 | `characters.js` |
-| pharmacist | 한소희 | Han So-hui | 31 | 약국 원장 (홍대 입구) | `characters.js:391` |
-| homeless | 최형식 | Choi Hyeong-sik | — | 노숙인 | `characters.js` |
-| engineer | 정대한 | Jeong Dae-han | 35 | 기계공학자 | `characters.js:328` |
-| chef | 윤재혁 | Yoon Jae-hyeok | 33 | 호텔 셰프 | `characters.js:266` |
+| firefighter | 박영철 | Park Yeong-cheol | 44 | 소방관 | `characters.js` |
+| soldier | 강민준 | Kang Min-jun | 29 | 특수전 부사관 | `characters.js` |
+| doctor | 이지수 | Lee Ji-su | 38 | 응급의학과 전문의 | `characters.js` |
+| pharmacist | 한소희 | Han So-hui | 31 | 약국 원장 (홍대 입구) | `characters.js` |
+| homeless | 최형식 | Choi Hyeong-sik | 52 | 전직 사업가 · 노숙인 | `characters.js` |
+| engineer | 정대한 | Jeong Dae-han | 35 | 기계공학자 | `characters.js` |
+| chef | 윤재혁 | Yoon Jae-hyeok | 33 | 호텔 셰프 | `characters.js` |
 
 → 본문에서 인물 호칭은 한국어 이름 단독 또는 "직함 ○○○" 형식. 영문 표기는 코드 식별자·UI 라벨 외 사용 금지.
 
-→ 나이·직함이 미기재된 인물(firefighter, soldier, doctor, pharmacist, homeless)은 후속 `characters.js` 검수 시 등록.
+→ 라인 번호는 갱신 비용이 크고 stale 위험이 있어 출처는 파일명만 표기. 단일 진리는 `characters.js`.
 
 ---
 
@@ -92,20 +92,20 @@
 
 | id | 한국어 이름 | 서술 어휘 | 출처 |
 |----|-------------|----------|------|
-| gourmet_sense | 미식 감각 | 요리 아이템 효과 | `characters.js:288` |
-| ingredient_eye | 식재료 감별 | 독성 음식 감지 | `characters.js:296` |
-| warm_meal | 따뜻한 한 끼 | 동료 사기 | `characters.js:303` |
-| knife_mastery | 칼 다루기 | 주방 칼·식재료 | `characters.js:310` |
-| **cook_intuition** | **셰프의 직감** | **명동·남대문 골목 익숙함, 시작 7일 조우 확률 50% 감소** | `characters.js:317` |
+| gourmet_sense | 미식 감각 | 요리 아이템 효과 | `characters.js` |
+| ingredient_eye | 식재료 감별 | 독성 음식 감지 | `characters.js` |
+| warm_meal | 따뜻한 한 끼 | 동료 사기 | `characters.js` |
+| knife_mastery | 칼 다루기 | 주방 칼·식재료 | `characters.js` |
+| **cook_intuition** | **셰프의 직감** | **명동·남대문 골목 익숙함, 시작 7일 조우 확률 50% 감소** | `characters.js` |
 
 ### pharmacist (4 abilities)
 
 | id | 한국어 이름 | 서술 어휘 | 출처 |
 |----|-------------|----------|------|
-| pharma_kit | 약품 키트 | 진통제·소독약·붕대 | `characters.js:402` |
-| compounding | 조제 숙련 | 의약품 제작 성공률 | `characters.js:409` |
-| natural_remedy | 천연물 지식 | 독성 음식 감지 | `characters.js:416` |
-| medicine_efficacy | 약효 숙지 | 의료 아이템 사용 효과·붕대 HP 보너스 | `characters.js:423` |
+| pharma_kit | 약품 키트 | 진통제·소독약·붕대 | `characters.js` |
+| compounding | 조제 숙련 | 의약품 제작 성공률 | `characters.js` |
+| natural_remedy | 천연물 지식 | 독성 음식 감지 | `characters.js` |
+| medicine_efficacy | 약효 숙지 | 의료 아이템 사용 효과·붕대 HP 보너스 | `characters.js` |
 
 ### 어휘 검수 결과
 
@@ -182,6 +182,7 @@
 | 2026-05-10 | v0.2 | §3.5 7직업 정식 캐릭터 이름 등록 (`characters.js` 단일 진리). 시뮬 v2 검토 L1 보완. |
 | 2026-05-11 | v0.3 | §3.5 한소희(약사) 나이 31·직함 등록 + 박영철·강민준 나이·직함 보완 (P0 hotfix v2 머지 후). |
 | 2026-05-11 | v0.4 | §3.6 신설 — chef·pharmacist abilities 어휘 정식 등록. cook_intuition "셰프의 직감" 검수 통과. |
+| 2026-05-11 | v0.5 | §3.5 doctor 이지수 나이 38·응급의학과 전문의, homeless 최형식 나이 52·전직 사업가 · 노숙인 보완. 라인 번호 stale 위험으로 출처 컬럼은 파일명만 유지. |
 
 ---
 

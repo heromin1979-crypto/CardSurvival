@@ -1,4 +1,6 @@
-import GameData from './GameData.js';
+// GameData는 본 모듈 init 시점에 import하지 않는다.
+// (cycle: landmarks → GameData → items → locationCardFactory → ...)
+// registerSubLocationItems()는 호출자(main.js)가 items 사전을 주입한다.
 
 // === LANDMARK SUB-LOCATION DATA ===
 // 25개 구별 랜드마크 세부 장소 (4~6개씩)
@@ -2051,11 +2053,11 @@ export function getLandmarkData(key) {
 
 /**
  * 각 랜드마크 세부 장소(sublocation)에 대한 아이템 정의를 생성하여
- * GameData.items 에 등록한다.
- * main.js에서 GameData 초기화 직후 호출해야 한다.
+ * 호출자가 넘긴 items 사전에 등록한다.
+ * main.js에서 GameData 초기화 직후 `registerSubLocationItems(GameData.items)`로 호출한다.
+ * GameData를 본 모듈 상단에서 import하지 않으므로 순환 의존이 발생하지 않는다.
  */
-export function registerSubLocationItems() {
-  const items = GameData?.items;
+export function registerSubLocationItems(items) {
   if (!items) return;
 
   for (const [districtId, lmData] of Object.entries(LANDMARK_DATA)) {
