@@ -169,6 +169,42 @@ function _hasMeaningfulInputs(bp) {
   return false;
 }
 
+// M3 #14b: 본체 interactions.js T1 카드 변환 규칙 read-only 인용.
+// blueprint requiredSkills 잠금을 우회하는 본체 경로 (예: cooking lv 0 직업이
+// `instant_noodles + campfire` 카드 드롭으로 `cooked_noodles` 생성).
+// 시뮬은 campfire 카드 인스턴스를 모델링하지 않으므로 actCook 패턴과 동일하게
+// requiredTools(campfire) 체크 생략. 입력 카드 보유 + 출력 onConsume benefit > 0만 검증.
+// 결정성: RNG 무사용. 단순 입력 차감·출력 가산.
+const T1_TRANSFORMS = [
+  { id: 'cook_noodles_t1',      input: 'instant_noodles',    output: 'cooked_noodles' },
+  { id: 'cook_rice_t3',         input: 'rice',               output: 'cooked_rice'    },
+  { id: 'boil_contaminated_t5', input: 'contaminated_water', output: 'boiled_water'   },
+  { id: 'boil_rainwater_t7',    input: 'rainwater',          output: 'boiled_water'   },
+];
+
+// T1 변환 시도. actCook 산출이 없을 때 폴백으로 호출.
+// 기준: needs-aware와 동일한 benefit 비교 — 입력 차감 후 출력의 onConsume 영양·수분 합산.
+function actT1Convert(simInv) {
+  const nutCur = GameState.stats?.nutrition?.current ?? 100;
+  const nutMax = GameState.stats?.nutrition?.max ?? 100;
+  const needsNutrition = nutCur < nutMax * 0.5;
+  let best = null;
+  let bestN = -1;
+  for (const rule of T1_TRANSFORMS) {
+    if ((simInv[rule.input] ?? 0) < 1) continue;
+    const onC = ITEMS[rule.output]?.onConsume;
+    const n = onC?.nutrition ?? 0;
+    const h = onC?.hydration ?? 0;
+    const benefit = needsNutrition ? (n * 3 + h) : (n + h * 1.5);
+    if (benefit <= 0) continue;
+    if (benefit > bestN) { bestN = benefit; best = rule; }
+  }
+  if (!best) return null;
+  if (!dec(simInv, best.input, 1)) return null;
+  simInv[best.output] = (simInv[best.output] ?? 0) + 1;
+  return `t1Convert:${best.id}->${best.output}`;
+}
+
 // needs-aware: 본체 cooking에는 자동 추천이 없음 (SYS_VERIFY_cooking_autopick §5.2 시나리오 γ).
 // 시뮬 actCook은 "이상적 player가 결핍 자원을 우선 보충한다"는 행동 모델의 추정치이며 본체와의 1:1 정합이 아님.
 function actCook(simInv) {
@@ -263,6 +299,15 @@ export function runDayAI(simInv) {
   // PR7: 식사 전에 요리 시도 — 영양가 큰 가공식 우선 산출
   const c = actCook(simInv);
   if (c) actions.push(c);
+  // M3 #14b: 본체 interactions.js T1 변환 경로 모사 — cooking lv 0 직업 한정.
+  // 본체에서 cooking lv 0 직업은 cook_noodles 등 requiredSkills.cooking ≥ 1 blueprint 잠금이지만
+  // 카드 드롭 변환(T1: instant_noodles+campfire → cooked_noodles)으로 cooked_noodles 산출 가능.
+  // cooking lv ≥1 직업은 blueprint 경로(actCook)로 충분 — T1 적용 시 회차당 1건 추가 산출되어 회귀 발생.
+  const cookingLvForT1 = GameState.player?.skills?.cooking?.level ?? GameState.player?.skills?.cooking ?? 0;
+  if (cookingLvForT1 === 0) {
+    const t1 = actT1Convert(simInv);
+    if (t1) actions.push(t1);
+  }
   if (GameState.stats.nutrition.current < 30) {
     const a = actEat(simInv);
     if (a) actions.push(a);
