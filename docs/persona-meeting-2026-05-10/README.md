@@ -79,7 +79,7 @@
 - 팩토리 마이그레이션 PR (시스템)
 - `BAL_TUNING_*.md` (baseline 결과 기반)
 
-### M3 — 진행 (PR7 → PR8 → PR9)
+### M3 — 진행 (PR7 → PR8 → PR9 → baseline v5)
 
 **M3 #1~#4 (PR7 트랙, master `0b167ac` + `584326e`):**
 - [`BAL_SIM_baseline_v3_report.md`](./BAL_SIM_baseline_v3_report.md) — **baseline v3 700회 측정.** PR5+PR5.5+PR6 누적 효과 측정. K1 전 직업 0% / K3 chef 4.5d / chef 격차 +1.5d / 사망 원인 아사 569·절망 110·탈수 20. R7-1/-2 신규 (cooking·fishing·morale AI 부재).
@@ -95,16 +95,22 @@
 - `BAL_SIM_baseline_v4_result.json` — baseline v4 raw 데이터 (700 runs, fingerprint v3와 동일).
 - [`PD_BAL_MEETING_PR9_decision.md`](./PD_BAL_MEETING_PR9_decision.md) — **PD/Balance 협의서 v2.** PR9 결정. **변형 C-a 채택 — hangang sublocation 진입 시 `fishing_rod_basic` 1회 자동 지급 (per character per run).** chef +2.2d 격차는 `cook_intuition` 단축 보류(모니터링 모드, §6.2 +2.5d 0.3d 여유). R8-1은 별도 트랙(시나리오 한도연 5직업 Tier-2)으로 분리. 협의서 v1 §2.3의 "chef 1직업 도달" 가정을 hasFishing 매트릭스 재검증으로 정정 (4직업이 자체 hasFishing 보유).
 
+**M3 #8~#9 (PR9 시스템 + baseline v5 측정):**
+- **PR9 시스템 머지 (master `5bdc261`)** — 협의서 v2 변형 C-a 그대로 구현. `landmarks.js` `firstEnterReward` 신규 필드 + `ExploreSystem._grantFirstEnterReward` 메서드 신설(`enterSubLocation` 시그니처 보존) + `GameState.flags.firstEnterRewardsClaimed` 배열 + `playerAI.mjs:228-235` 시뮬 측 옵션 a 자동 지급(RNG 무사용). validate.js Errors 0. 시뮬 sanity 200 runs — 4 hasFishing 직업 200/200 rod 지급, 어획 누적 101마리(v4 = 0/700).
+- [`BAL_SIM_baseline_v5_report.md`](./BAL_SIM_baseline_v5_report.md) — **baseline v5 정식 측정 (PR9 후, 밸런스 권지나).** K1 7직업 0% (**7회 연속** → 협의서 v2 §6.1 PR10 폴백 트리거 충족). **`actFish` 4 hasFishing 직업 52~63/100 발동, 어획 누적 315/700 (v4=0) — PR9 효과 가시화.** chef 격차 +1.94d (5직업) / +1.80d (6직업) — `cook_intuition` grace 단축 보류 유지. **`actCook` 모순 가설 B 단정 — cooking lv 0~1 5직업 산출물 100% boiled_water (nutrition 0). 산식 결함은 `playerAI.mjs:185` benefit 가중치 분리 후보.** 신규 위험 R9-1 (PR9 K1 효과 부족), R9-2 (chef PR9 효과 0) 등록. R8-1 morale 시계열 probe는 v6 측정 시 추가로 이연.
+- `BAL_SIM_baseline_v5_result.json` — baseline v5 raw 데이터 (700 runs, fingerprint v3·v4와 동일).
+
 **M3 진행 상태:**
 
-| KPI | baseline v3 | baseline v4 | 협의서 §5.5 목표 | 충족 |
-|-----|-------------|-------------|------------------|------|
-| K1 (전 직업) | 0% | 0% | ≥ 5% | ❌ → PR9 트리거 |
-| K3 chef 격차 (5직업 평균 기준) | +1.5d | +2.2d | +1.0~+2.0d | ⚠️ 0.2d 초과 |
-| K5 chef 탈수 | 20 | 12 | ↓ | ✅ |
-| `actCook` 발동 | 0 | 100/100 (chef) | ≥ 1/day | ✅ |
+| KPI | v3 | v4 | v5 | 협의서 §5.5 목표 | 충족 |
+|-----|----|----|----|------------------|------|
+| K1 (전 직업) | 0% | 0% | 0% | ≥ 5% | ❌ 7회 연속 → **PR10 폴백 트리거 충족** |
+| K3 chef 격차 (5직업 평균 기준) | +1.5d | +2.2d | +1.94d | +1.0~+2.0d | ✅ 범위 내 |
+| K5 chef 탈수 | 20 | 12 | 12 | ↓ | ✅ |
+| `actCook` 발동 (chef) | 0 | 100/100 | 100/100 | ≥ 1/day | ✅ (5직업은 가설 B 단정 — 산출물 boiled_water) |
+| `actFish` (4 hasFishing) | 0 | 0 | 52~63/100 | ≥ 1/day | ✅ PR9 옵션 C-a 효과 |
 
-**다음 트리거:** PR9 시스템 백승호 위임 4건 (`landmarks.js` 보상 필드 / `ExploreSystem.js` 진입 후크 / GameState 1회 한정 플래그 / 시뮬 v2 actFish 트리거 보강).
+**다음 트리거:** PD/Balance 협의서 v3 작성 — PR10 진입 옵션 결정 (A 25구 확대 vs B startInv 추가 vs C actCook 시뮬 로직 보강) + actCook 모순 가설 B 후속 처리 + R9-1/R9-2 폴백 우선순위 + R8-1 트랙 진입 시점.
 
 ---
 

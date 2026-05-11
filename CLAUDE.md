@@ -33,6 +33,7 @@
 - `WeatherSystem._refillDryStreams()`: non-rainy→rainy 전환 시에만 호출 (연속 폭풍 중복 방지)
 - `--z-notify: 9000`: 알림은 모달(8000) 위, 사망 배너(9999) 아래 유지
 - `hydrationDecayPerTP: 1.0` — TP당 갈증 소모량 (gameBalance.js)
+- Sublocation 1회 한정 보상: `landmarks.js`의 `firstEnterReward`(claimKey + items) → `ExploreSystem._grantFirstEnterReward`가 `GameState.flags.firstEnterRewardsClaimed`로 중복 차단
 
 ## 5. 디자인 시스템
 
