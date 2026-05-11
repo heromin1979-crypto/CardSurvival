@@ -2,7 +2,7 @@
 
 > 시작일: 2026-05-10 (페르소나 회의 산출물 — 7 페르소나 합동 학습 후)
 > 트랙: M3 (이슈 #2 6직업 비대칭 / 이슈 #3 후반 이벤트 폭주 측정)
-> 상태: **PR11 옵션 2 구현 + baseline v7 1·2차 측정 + 협의서 v4 §12 보강 완료. PR11 *설계 자체 결함* 단정 (K1·K3 변화 0). PR12 + M3 #14b 동시 진입 대기.**
+> 상태: **PR12 + M3 #14b 머지 + baseline v8 측정 + 협의서 v4 §13 보강 완료. R10-1 폭증 4.6배(절망 +232)로 M3 #10 진입 트리거 충족. 시나리오 한도연 R8-1 핵심 2직업 진입 대기.**
 > 이전 계획: `docs/archive/prompt_plan.old5.md` (CST 패턴, 2026-04-28 마감)
 > 회의 산출물 인덱스: `docs/persona-meeting-2026-05-10/README.md`
 
@@ -133,13 +133,24 @@ M3는 시뮬 v2 인프라(PR1~PR4) → Player AI 5단계(PR5/PR5.5/PR6/PR7) → 
 - [x] probe 3종 — actExplore 분포 / R8-1 morale 시계열 (원인 2 단정) / R10-1 절망 추이 (+50 미만 안전)
 - [x] 협의서 v4 §12 보강 회의록 추가 — 사양 정정 + PR11 설계 결함 단정 + PR12·M3 #14b 동시 진입 결정
 
-### M3 #14b (PR12 + interactions.js T1 시뮬 모사 — **다음 진입 트리거**, 병행)
+### M3 #14b (PR12 + interactions.js T1 시뮬 모사 — 마감, master 미머지)
 
-- [ ] **PR12** — `js/data/gameBalance.js:328` `fishing.baseCatchChance` 0.30 → 0.50 단일 상수 PR (밸런스 권지나). 4 hasFishing 직업 fishing 1회 영양 기댓값 3 → 5 (+2/회)
-- [ ] **M3 #14b** — `tools/sim/v2/playerAI.mjs` 또는 등가에 `interactions.js` T1 변환 모사 추가 (시스템 백승호). cooking lv 0 4직업 cooked_noodles 산출 경로 확보
-- [ ] 두 PR 동시 진입 — 트랙 영역 분리(`gameBalance.js` 단일 상수 vs 시뮬 로직). 1 PR 1 트랙 원칙 위배 아님
-- [ ] validate.js Errors 0 + fingerprint 검증 (PR12는 BALANCE leaf 변경이라 fingerprint 변동 예상 — 신규 fingerprint 단정 의무)
-- [ ] baseline v8 측정 (`BAL_SIM_baseline_v8_report.md` + `result.json`) — `OUTPUT_FILE` / `buildTag` v7 → v8. PR12 + M3 #14b 합산 효과 측정
+- [x] **PR12** — `js/data/gameBalance.js:328` `fishing.baseCatchChance` 0.30 → 0.50 (밸런스 권지나). 1회 어획 기댓값 3 → 5 (+66%)
+- [x] **M3 #14b** — `tools/sim/v2/playerAI.mjs:172-310` T1_TRANSFORMS 4 규칙 + `actT1Convert` + `runDayAI` 폴백 호출 (시스템 백승호, +44줄). cooking lv 0 한정 발동
+- [x] sanity 200 runs — cooking lv 0 4직업 actT1Convert 발동 ≥ 1/회차 / cooked_noodles 산출 ≥ 200건 / 결정성 100% / chef·pharmacist·homeless 회귀 0
+- [x] validate.js Errors 0 / Warnings 252 / ALL CLEAR
+- [x] baseline v8 측정 (`BAL_SIM_baseline_v8_result.json` + `BAL_SIM_baseline_v8_report.md` 281줄, 밸런스 권지나) — fingerprint `len316-h242a5b5f` 유지, K1 0% 9회 연속, **cooking lv 0 4직업 K3 +0.9~2.0d 향상** (doctor 4.0→4.9 / soldier 3.0→4.5 / firefighter 3.0→5.0 / engineer 3.1→4.4), **R10-1 폭증 +232** (절망 173→405, 사망원인 1위 역전)
+- [x] 협의서 v4 §13 추가 보강 회의록 — **R11-1 신규 위험** (chef 격차 +0.60d 하한 +1.0d 미달) / **PR12 단독 효과 0 단정** (pharmacist 4.1→4.1) / **fingerprint drift 측정 한계 단정** (leaf 값 변경 무추적) / **M3 #10 진입 단언** (R10-1 4.6배 초과)
+
+### M3 #16 (M3 #10 진입 + 조건부 PR13 — **다음 진입 트리거**)
+
+- [ ] M3 #10 시나리오 한도연 트랙 진입 — homeless·engineer Tier-2 abilities 우선(R8-1 핵심): `SCN_QUEST_homeless_tier2.md` + `SCN_QUEST_engineer_tier2.md` 2건 작성. morale 회복 자원 분배 결정
+- [ ] (조건부) PR13 머지 — 시나리오 결정 후 homeless·engineer startInv 또는 신규 morale 회복 아이템 추가 (시스템 백승호)
+- [ ] baseline v9 측정 — PR13 + (기존 PR11/PR12/T1) 합산 효과
+- [ ] M3 #10 나머지 3직업 Tier-2 abilities (firefighter·soldier·pharmacist) — baseline v9 측정 D+0
+- [ ] (조건부) chef 정체성 강화 트랙 — R11-1 chef 격차 +0.5d 미만 추가 좁힘 시
+- [ ] (조건부) PR12 단독 효과 분리 측정(v9 롤백) — 후순위
+- [ ] (M4+) `tools/sim/v2/drift.mjs` leaf 값 hash 컬럼 추가 — fingerprint drift 측정 한계 해소 (시스템 백승호)
 
 ### M3 #15 (AD UI 변경 권고 2건 — 분리 트랙, 독립)
 
@@ -147,11 +158,11 @@ M3는 시뮬 v2 인프라(PR1~PR4) → Player AI 5단계(PR5/PR5.5/PR6/PR7) → 
 - [ ] (中 권고) `CraftUI._renderOutputPreview:274~324` 산출물 동시 비교 모드 추가 + DESIGN.md `--stat-nutrition`/`--stat-hydration` 토큰 적용
 - [ ] AD 오은별 위임. 본 트랙과 의존 0
 
-### M3 #16 (조건부 — v8 분기)
+### M3 #17 (조건부 — v9 분기)
 
-- [ ] M3 #10 5직업 Tier-2 abilities 진입 (시나리오 한도연) — baseline v8 측정 D+0 (v7 → v8 1단계 지연, 협의서 v4 §12.6)
-- [ ] (조건부) cook_intuition `days = 7 → 5` 단일 상수 PR. 진입 트리거: baseline v8/v9에서 chef 격차 +2.5d 초과
-- [ ] (조건부) PR11 가중치 추가 재조정 또는 actEat AI raw food 우선 분기 추가. 진입 트리거: v8에서도 raw food 활용 효과 0 시
+- [ ] (조건부) cook_intuition `days = 7 → 5` 단일 상수 PR. 진입 트리거: baseline v9/v10에서 chef 격차 +2.5d 초과 (v8 +0.60d로 미충족)
+- [ ] (조건부) PR11 가중치 추가 재조정 또는 actEat AI raw food 우선 분기 추가. 진입 트리거: v9에서도 raw food 활용 효과 0 유지 시
+- [ ] (조건부) R11-1 chef 정체성 강화 — chef 전용 Tier-2 abilities. 진입 트리거: chef K3 < 5.0 또는 격차 +0.5d 미만
 
 ### M3 #14 (interactions.js T1 시뮬 모사 보강 — 협의서 v3 §12.3 분리 트랙)
 
@@ -217,10 +228,11 @@ M3 #10 (Tier-2 5직업) ─── baseline v7 측정 D+0 진입 (시나리오 �
 M3 #11 (협의서 v3 작성) ─── 마감
 M3 #12 (PR10 + baseline v6 + 협의서 v3 §12 보강) ─── 마감
 M3 #13 (협의서 v4 작성) ─── 마감
-M3 #14a (PR11 옵션 2 + baseline v7) ─── 마감 (가중치 8/4 정정 + 설계 결함 단정)
-M3 #14b (PR12 + interactions.js T1 시뮬 모사) ─── 진입 대기 (밸런스 권지나 + 시스템 백승호 — 다음 트리거)
+M3 #14a (PR11 옵션 2 + baseline v7) ─── 마감
+M3 #14b (PR12 + interactions.js T1 시뮬 모사 + baseline v8) ─── 마감
 M3 #15 (AD UI 변경 권고 2건) ─── 분리 트랙 (AD 오은별, 독립)
-M3 #16 (M3 #10 진입 + 조건부 PR) ─── baseline v8 결과 의존
+M3 #16 (M3 #10 진입 + PR13 + baseline v9) ─── 진입 대기 (시나리오 한도연 — 다음 트리거)
+M3 #17 (조건부 cook_intuition / PR11 추가 재조정 / R11-1 chef 강화) ─── baseline v9/v10 결과 의존
 ```
 
 ---

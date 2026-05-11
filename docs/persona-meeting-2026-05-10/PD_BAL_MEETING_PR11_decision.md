@@ -524,5 +524,106 @@ bootstrapErrors: 0/700
 
 ---
 
-*보강 회의록 끝. baseline v8 측정 결과 도착 시 본 §12.3 표 v8 컬럼 추가 + PR12·M3 #14 합산 효과 단정.*
+*보강 회의록 끝. baseline v8 측정 결과 도착 시 본 §12.3 표 v8 컬럼 추가 + PR12·M3 #14 합산 효과 단정. — 2026-05-11 충족. 갱신 사항은 §13 보강.*
+
+---
+
+## 13. 추가 보강 회의록 (2026-05-11, PR12 + M3 #14b 머지 + baseline v8 측정 직후)
+
+> 참여: PD 김재훈 + 밸런스 권지나. 입력: PR12 (`gameBalance.js:328` `fishing.baseCatchChance` 0.30→0.50) + M3 #14b (`playerAI.mjs` T1_TRANSFORMS + actT1Convert) 동시 머지 + `BAL_SIM_baseline_v8_result.json` 측정 + `BAL_SIM_baseline_v8_report.md` (밸런스 권지나, 281줄).
+
+### 13.1 baseline v8 측정 결과 단정 (v8 보고서 §3~§5 인용)
+
+- **K1 7직업 0.00%, 9회 연속 0%** (PR5 → PR12+T1). 협의서 §10.1 폴백 트리거(K1<5%) 9회 연속 충족
+- **K3 cooking lv 0 4직업 큰 향상** (T1 모사 효과):
+  - doctor 4.0 → **4.9** (+0.9d, T1+PR12)
+  - soldier 3.0 → **4.5** (+1.5d, T1 단독)
+  - firefighter 3.0 → **5.0** (+2.0d, T1 단독, 최대 향상)
+  - engineer 3.1 → **4.4** (+1.3d, T1+PR12)
+- K3 chef·pharmacist 변화 0 (5.20·4.10 동일) — T1 진입 차단(lv 4·lv 1) 의도된 결과
+- K3 homeless 4.1 → 4.2 (+0.1d 미세) — lv 3에서 T1 진입 차단, PR12 효과만
+- **K5 사망원인 1위 역전**: 아사 506 → 263 (-243) / **절망 173 → 405 (+232)** / 탈수 12→13 / 극도 피로 9→19
+
+### 13.2 R11-1 신규 위험 등록 — chef 격차 하한 깨짐
+
+baseline v8 chef 격차 측정 (보고서 §4.1):
+- 정의 1 (6직업 평균): chef 5.20 / others6 평균 4.43 → 격차 **+0.77d** (v7 +1.80d → Δ -1.03d)
+- 정의 2 (5직업 cooking lv 0): chef 5.20 / others5 평균 4.60 → 격차 **+0.60d** (v7 +1.94d → Δ -1.34d)
+
+협의서 v2 §5.5 KPI **+1.0~+2.0d 사수** 하한 깨짐 — **R11-1 신규**.
+
+**PD 김재훈:**
+> chef 격차 보호는 chef 직업 정체성(요리 특화) 시각화의 양적 지표. 하한 +1.0d 깨짐은 chef 정체성 약화 신호. 다만 원인은 chef K3 하향(=5.20 유지)이 아닌 *cooking lv 0 4직업 K3 향상*(T1 모사 효과)이라 chef 직접 변경 불필요. T1 모사 진입을 cooking lv 0 한정으로 둔 결정이 정합 — chef는 T1 진입 차단(lv 4)으로 보호됨.
+>
+> 단정: 격차 하한 깨짐은 *상대 격차*이지 chef 절대값 후퇴 아님. M3 #10 진입 시 homeless·engineer K3 추가 향상이 chef 격차를 추가 좁힐 위험 → chef 정체성 강화 트랙 후속 검토 필요. 단 본 협의 영역 외.
+
+**밸런스 권지나:**
+> 격차 하한 깨짐을 R11-1로 등록하되 *액션 트리거*는 chef K3 절대값이 5.0 미만 후퇴 또는 격차 +0.5d 미만 추가 좁힘 시점에 발동. 본 측정값 +0.60d는 모니터링 모드 유지 — 협의서 v2 §6.2 +2.5d 상한 트리거와 대칭으로 **하한 +0.5d 트리거 신규 등록**.
+
+### 13.3 PR12 단독 효과 0 단정 — 분리 측정 후순위
+
+baseline v8 §4.3:
+- pharmacist (hasFishing true + cooking lv 1 → T1 진입 차단): v7 4.10 → v8 4.10 (Δ 0)
+- pharmacist는 PR12 영향 영역 + T1 미적용 영역 — **PR12 단독 K3 효과 0 단정**
+
+`actFish` 발동 자체는 향상 (baseCatchChance 0.30→0.50으로 1회당 어획 기댓값 3→5, +66%)이지만 K3 mean에 측정 가능 효과 0.
+
+**결정:** PR12 단독 효과 분리 측정(v9 롤백)은 후순위. M3 #10 시나리오 한도연 트랙이 K1 5% 달성의 본질적 경로.
+
+### 13.4 R10-1 폭증 4.6배 초과 단정 — M3 #10 진입 트리거 충족
+
+협의서 v3 §12.7 기준: "R10-1 +50 미만"
+실측: v6 +25 → v7 +6 → v8 **+232** (기준 4.6배 초과)
+
+사망원인 1위 역전 (절망 405 > 아사 263)은 사망일 연장(T1 모사 효과)이 morale 침식 시간 확보로 직결되는 R8-1 + R10-1 결합 폭증 단정.
+
+**M3 #10 시나리오 한도연 트랙 즉시 진입 결정.** R8-1 원인 2(회복 자원 부재) 단정 + R10-1 폭증 4.6배 동시 충족.
+
+### 13.5 T1 모사 효과 단정 (보고서 §6.1·§6.2)
+
+`tools/sim/v2/playerAI.mjs` T1_TRANSFORMS 4 규칙 중:
+- `cook_noodles_t1` (`instant_noodles → cooked_noodles`) 주력 발동 — cooking lv 0 4직업 startInv `instant_noodles` 2개가 cooked_noodles로 변환
+- `cook_rice_transform`·`boil_rainwater` 발동 0건 (입력 부재)
+- `boil_contaminated` 일부 발동 (contaminated_water 변환)
+
+**soldier 단독 효과 +1.50d (hasFishing false + cookingLv 0 + PR12 미적용)** = T1 순효과 단정.
+
+### 13.6 fingerprint drift 측정 한계 — M4+ 도구 트랙 권고
+
+baseline v8 보고서 §1.3:
+- PR12 `gameBalance.js:328` `fishing.baseCatchChance` leaf 값 0.30 → 0.50
+- fingerprint `len316-h242a5b5f` **유지** (v3~v8 6연속 동일)
+- 단정: `tools/sim/v2/drift.mjs`가 BALANCE leaf 트리 *구조*(키 경로 hash)만 추적, *값 변경 무추적*
+
+**도구 한계 등록:** leaf 값 회귀 검증을 fingerprint 단독으로 보장 못함. M4+ 트랙에서 leaf 값 hash 컬럼 추가 권고.
+
+### 13.7 §12.6 다음 단계 갱신
+
+| 순위 (갱신) | 작업 | 담당 | 트리거 시점 |
+|------|------|------|-----------|
+| **1** | M3 #10 시나리오 한도연 진입 — homeless·engineer morale 회복 자원 분배 (`SCN_QUEST_homeless_tier2.md` + `SCN_QUEST_engineer_tier2.md`) R8-1 핵심 우선 | 시나리오 한도연 | 본 보강 회의록 채택 직후 |
+| **2** | (조건부) PR13 머지 — 시나리오 결정 후 homeless·engineer startInv 또는 신규 morale 회복 아이템 추가 | 시스템 백승호 | 시나리오 한도연 산출물 도착 후 |
+| 3 | baseline v9 측정 — PR13 + (기존 PR11/PR12/T1) 합산 효과 | 밸런스 권지나 | PR13 머지 D+1 |
+| 4 | M3 #10 나머지 3직업 Tier-2 abilities (firefighter·soldier·pharmacist) | 시나리오 한도연 | baseline v9 측정 D+0 |
+| 5 | (조건부) chef 정체성 강화 트랙 — R11-1 chef 격차 +0.5d 미만 추가 좁힘 시 | 시나리오 한도연 또는 별도 chef 트랙 | baseline v9/v10에서 chef 격차 +0.5d 미만 시 |
+| 6 | (조건부) PR12 단독 효과 분리 측정(v9 롤백) | 밸런스 권지나 | 후순위 — M3 #10 머지 후 자원 여유 시 |
+| 7 | M3 #15 AD UI 변경 권고 2건 | AD 오은별 | 독립 |
+| 8 | (M4+) drift.mjs leaf 값 hash 컬럼 추가 | 시스템 백승호 | M4 진입 시 |
+
+### 13.8 결정 종합 — 보강
+
+| 안건 | 결정 |
+|------|------|
+| R11-1 (chef 격차 하한 깨짐) | **신규 등록**. 모니터링 모드. 트리거: chef K3 < 5.0 또는 격차 +0.5d 미만 추가 좁힘 |
+| R10-1 (절망 +232) | **M3 #10 진입 트리거 충족** (4.6배 초과). 시나리오 한도연 즉시 진입 |
+| PR12 단독 효과 0 | 분리 측정 v9 후순위 — M3 #10 우선 |
+| T1 모사 효과 | cooking lv 0 4직업 K3 +0.9~2.0d 향상 단정 (의도된 효과) |
+| fingerprint drift 한계 | 도구 한계 등록 (M4+ 트랙) |
+
+본 보강은 본 협의서의 결정 권한 안에서 처리. baseline v9 측정 결과 도착 시 본 §13.7 표 갱신.
+
+---
+
+*추가 보강 회의록 끝. M3 #10 시나리오 한도연 산출물(SCN_QUEST_homeless_tier2.md + SCN_QUEST_engineer_tier2.md) 도착 시 PR13 사양 + baseline v9 측정 트리거 충족 단언.*
+
 
