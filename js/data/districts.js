@@ -43,6 +43,8 @@ const DISTRICTS = {
       // 신규 원자재 — 한강 수변 모래
       { definitionId: 'sand',          weight: 8,  minQty: 1, maxQty: 3 },
       { definitionId: 'pebble',        weight: 15, minQty: 1, maxQty: 2 },
+      // PR11 raw food 보강 — 위험 구역 dl=3 가중치 0.5
+      { definitionId: 'vegetable',     weight: 4  , minQty: 1, maxQty: 2, contamChance: 0 },
     ],
     special: 'samsung_hospital',
   },
@@ -75,6 +77,10 @@ const DISTRICTS = {
       // 신규 원자재 — 한강 수변 모래
       { definitionId: 'sand',          weight: 8,  minQty: 1, maxQty: 3 },
       { definitionId: 'pebble',        weight: 15, minQty: 1, maxQty: 2 },
+      // PR11 raw food 보강 — 일반 구역 dl<=2 가중치 1.0
+      { definitionId: 'herb',          weight: 8  , minQty: 1, maxQty: 2, contamChance: 0 },
+      { definitionId: 'wild_berry',    weight: 8  , minQty: 1, maxQty: 2, contamChance: 0 },
+      { definitionId: 'vegetable',     weight: 8  , minQty: 1, maxQty: 2, contamChance: 0 },
     ],
     special: null,
   },
@@ -119,6 +125,8 @@ const DISTRICTS = {
       { definitionId: 'worm',            weight: 8,  minQty: 1, maxQty: 3 },
       // 북한산 개울
       { definitionId: 'stream_spring',   weight: 15, minQty: 1, maxQty: 1 },
+      // PR11 raw food 보강 — 일반 구역 dl<=2 가중치 1.0
+      { definitionId: 'vegetable',     weight: 8  , minQty: 1, maxQty: 2, contamChance: 0 },
     ],
     special: null,
   },
@@ -144,6 +152,10 @@ const DISTRICTS = {
       { definitionId: 'wrecked_bus',   weight: 4,  minQty: 1, maxQty: 1 },
       // 신규 원자재 — 공항 물류 전자부품
       { definitionId: 'circuit_board', weight: 5,  minQty: 1, maxQty: 1 },
+      // PR11 raw food 보강 — 일반 구역 dl<=2 가중치 1.0
+      { definitionId: 'herb',          weight: 8  , minQty: 1, maxQty: 2, contamChance: 0 },
+      { definitionId: 'wild_berry',    weight: 8  , minQty: 1, maxQty: 2, contamChance: 0 },
+      { definitionId: 'vegetable',     weight: 8  , minQty: 1, maxQty: 2, contamChance: 0 },
     ],
     special: null,
   },
@@ -187,6 +199,8 @@ const DISTRICTS = {
       { definitionId: 'worm',            weight: 8,  minQty: 1, maxQty: 3 },
       // 관악산 개울
       { definitionId: 'stream_spring',   weight: 12, minQty: 1, maxQty: 1 },
+      // PR11 raw food 보강 — 일반 구역 dl<=2 가중치 1.0
+      { definitionId: 'vegetable',     weight: 8  , minQty: 1, maxQty: 2, contamChance: 0 },
     ],
     special: 'snu_lab',
   },
@@ -225,6 +239,9 @@ const DISTRICTS = {
       // 신규 원자재 — 강변 모래·토양
       { definitionId: 'sand',          weight: 8,  minQty: 1, maxQty: 3 },
       { definitionId: 'worm',          weight: 8,  minQty: 1, maxQty: 3 },
+      // PR11 raw food 보강 — 일반 구역 dl<=2 가중치 1.0
+      { definitionId: 'herb',          weight: 8  , minQty: 1, maxQty: 2, contamChance: 0 },
+      { definitionId: 'vegetable',     weight: 8  , minQty: 1, maxQty: 2, contamChance: 0 },
     ],
     special: null,
   },
@@ -260,6 +277,10 @@ const DISTRICTS = {
       // 신규 원자재 — 공장 전자부품·건설 모래
       { definitionId: 'circuit_board', weight: 5,  minQty: 1, maxQty: 1 },
       { definitionId: 'sand',          weight: 8,  minQty: 1, maxQty: 3 },
+      // PR11 raw food 보강 — 일반 구역 dl<=2 가중치 1.0
+      { definitionId: 'herb',          weight: 8  , minQty: 1, maxQty: 2, contamChance: 0 },
+      { definitionId: 'wild_berry',    weight: 8  , minQty: 1, maxQty: 2, contamChance: 0 },
+      { definitionId: 'vegetable',     weight: 8  , minQty: 1, maxQty: 2, contamChance: 0 },
     ],
     special: null,
   },
@@ -296,6 +317,10 @@ const DISTRICTS = {
       { definitionId: 'contaminated_water', weight: 12, minQty: 1, maxQty: 2, contamChance: 0.50 },
       // 신규 원자재 — 공장 전자부품
       { definitionId: 'circuit_board', weight: 5,  minQty: 1, maxQty: 1 },
+      // PR11 raw food 보강 — 일반 구역 dl<=2 가중치 1.0
+      { definitionId: 'herb',          weight: 8  , minQty: 1, maxQty: 2, contamChance: 0 },
+      { definitionId: 'wild_berry',    weight: 8  , minQty: 1, maxQty: 2, contamChance: 0 },
+      { definitionId: 'vegetable',     weight: 8  , minQty: 1, maxQty: 2, contamChance: 0 },
     ],
     special: null,
   },
@@ -334,6 +359,9 @@ const DISTRICTS = {
       { definitionId: 'worm',            weight: 8,  minQty: 1, maxQty: 3 },
       // 수락산 개울
       { definitionId: 'stream_spring',   weight: 12, minQty: 1, maxQty: 1 },
+      // PR11 raw food 보강 — 일반 구역 dl<=2 가중치 1.0
+      { definitionId: 'herb',          weight: 8  , minQty: 1, maxQty: 2, contamChance: 0 },
+      { definitionId: 'vegetable',     weight: 8  , minQty: 1, maxQty: 2, contamChance: 0 },
     ],
     special: null,
   },
@@ -389,6 +417,8 @@ const DISTRICTS = {
       { definitionId: 'worm',            weight: 8,  minQty: 1, maxQty: 3 },
       // 도봉산 개울
       { definitionId: 'stream_spring',   weight: 15, minQty: 1, maxQty: 1 },
+      // PR11 raw food 보강 — dobong 위험 구역 강제 가중치 0.5 (협의서 v4 §3.1 dobong 정합)
+      { definitionId: 'vegetable',     weight: 4  , minQty: 1, maxQty: 2, contamChance: 0 },
     ],
     special: null,
   },
@@ -417,6 +447,10 @@ const DISTRICTS = {
       { definitionId: 'dry_grass',     weight: 5,  minQty: 1, maxQty: 2 },
       { definitionId: 'dandelion',     weight: 5,  minQty: 1, maxQty: 2 },
       { definitionId: 'matches',       weight: 4,  minQty: 1, maxQty: 2 },
+      // PR11 raw food 보강 — 일반 구역 dl<=2 가중치 1.0
+      { definitionId: 'herb',          weight: 8  , minQty: 1, maxQty: 2, contamChance: 0 },
+      { definitionId: 'wild_berry',    weight: 8  , minQty: 1, maxQty: 2, contamChance: 0 },
+      { definitionId: 'vegetable',     weight: 8  , minQty: 1, maxQty: 2, contamChance: 0 },
     ],
     special: null,
   },
@@ -459,6 +493,9 @@ const DISTRICTS = {
       // 신규 원자재 — 한강 수변 모래·공원 식생
       { definitionId: 'sand',            weight: 8,  minQty: 1, maxQty: 3 },
       { definitionId: 'wild_wheat',      weight: 6,  minQty: 1, maxQty: 2 },
+      // PR11 raw food 보강 — 일반 구역 dl<=2 가중치 1.0
+      { definitionId: 'wild_berry',    weight: 8  , minQty: 1, maxQty: 2, contamChance: 0 },
+      { definitionId: 'vegetable',     weight: 8  , minQty: 1, maxQty: 2, contamChance: 0 },
     ],
     special: null,
   },
@@ -489,6 +526,10 @@ const DISTRICTS = {
       { definitionId: 'nettle',        weight: 6,  minQty: 1, maxQty: 2 },
       // 신규 원자재 — 한강 수변 모래
       { definitionId: 'sand',          weight: 8,  minQty: 1, maxQty: 3 },
+      // PR11 raw food 보강 — 위험 구역 dl=3 가중치 0.5
+      { definitionId: 'herb',          weight: 4  , minQty: 1, maxQty: 2, contamChance: 0 },
+      { definitionId: 'wild_berry',    weight: 4  , minQty: 1, maxQty: 2, contamChance: 0 },
+      { definitionId: 'vegetable',     weight: 4  , minQty: 1, maxQty: 2, contamChance: 0 },
     ],
     special: null,
   },
@@ -516,6 +557,9 @@ const DISTRICTS = {
       { definitionId: 'tree_log',      weight: 8,  minQty: 1, maxQty: 1 },
       { definitionId: 'pine_cone',     weight: 5,  minQty: 1, maxQty: 2 },
       { definitionId: 'dandelion',     weight: 5,  minQty: 1, maxQty: 2 },
+      // PR11 raw food 보강 — 위험 구역 dl=4 가중치 0.5
+      { definitionId: 'wild_berry',    weight: 4  , minQty: 1, maxQty: 2, contamChance: 0 },
+      { definitionId: 'vegetable',     weight: 4  , minQty: 1, maxQty: 2, contamChance: 0 },
     ],
     special: 'severance',
   },
@@ -545,6 +589,8 @@ const DISTRICTS = {
       { definitionId: 'tree_log',      weight: 6,  minQty: 1, maxQty: 1 },
       { definitionId: 'wild_berry',    weight: 5,  minQty: 1, maxQty: 2 },
       { definitionId: 'dry_grass',     weight: 5,  minQty: 1, maxQty: 2 },
+      // PR11 raw food 보강 — 위험 구역 dl=4 가중치 0.5
+      { definitionId: 'vegetable',     weight: 4  , minQty: 1, maxQty: 2, contamChance: 0 },
     ],
     special: null,
   },
@@ -582,6 +628,10 @@ const DISTRICTS = {
       { definitionId: 'rainwater',     weight: 8,  minQty: 1, maxQty: 2, contamChance: 0.20 },
       // 신규 원자재 — 성수 공장 전자부품
       { definitionId: 'circuit_board', weight: 5,  minQty: 1, maxQty: 1 },
+      // PR11 raw food 보강 — 위험 구역 dl=3 가중치 0.5
+      { definitionId: 'herb',          weight: 4  , minQty: 1, maxQty: 2, contamChance: 0 },
+      { definitionId: 'wild_berry',    weight: 4  , minQty: 1, maxQty: 2, contamChance: 0 },
+      { definitionId: 'vegetable',     weight: 4  , minQty: 1, maxQty: 2, contamChance: 0 },
     ],
     special: null,
   },
@@ -617,6 +667,9 @@ const DISTRICTS = {
       { definitionId: 'wild_berry',      weight: 6,  minQty: 1, maxQty: 2 },
       { definitionId: 'mushroom_edible', weight: 5,  minQty: 1, maxQty: 2 },
       { definitionId: 'acorn',           weight: 5,  minQty: 1, maxQty: 2 },
+      // PR11 raw food 보강 — 일반 구역 dl<=2 가중치 1.0
+      { definitionId: 'herb',          weight: 8  , minQty: 1, maxQty: 2, contamChance: 0 },
+      { definitionId: 'vegetable',     weight: 8  , minQty: 1, maxQty: 2, contamChance: 0 },
     ],
     special: null,
   },
@@ -647,6 +700,10 @@ const DISTRICTS = {
       { definitionId: 'wild_root',     weight: 5,  minQty: 1, maxQty: 2 },
       // 신규 원자재 — 한강 수변 모래
       { definitionId: 'sand',          weight: 8,  minQty: 1, maxQty: 3 },
+      // PR11 raw food 보강 — 위험 구역 dl=5 가중치 0.5
+      { definitionId: 'herb',          weight: 4  , minQty: 1, maxQty: 2, contamChance: 0 },
+      { definitionId: 'wild_berry',    weight: 4  , minQty: 1, maxQty: 2, contamChance: 0 },
+      { definitionId: 'vegetable',     weight: 4  , minQty: 1, maxQty: 2, contamChance: 0 },
     ],
     special: 'lotte_tower',
   },
@@ -675,6 +732,10 @@ const DISTRICTS = {
       { definitionId: 'dry_grass',     weight: 5,  minQty: 1, maxQty: 2 },
       { definitionId: 'wild_root',     weight: 5,  minQty: 1, maxQty: 2 },
       { definitionId: 'dandelion',     weight: 5,  minQty: 1, maxQty: 2 },
+      // PR11 raw food 보강 — 일반 구역 dl<=2 가중치 1.0
+      { definitionId: 'herb',          weight: 8  , minQty: 1, maxQty: 2, contamChance: 0 },
+      { definitionId: 'wild_berry',    weight: 8  , minQty: 1, maxQty: 2, contamChance: 0 },
+      { definitionId: 'vegetable',     weight: 8  , minQty: 1, maxQty: 2, contamChance: 0 },
     ],
     special: null,
   },
@@ -706,6 +767,10 @@ const DISTRICTS = {
       { definitionId: 'nettle',        weight: 6,  minQty: 1, maxQty: 2 },
       // 신규 원자재 — 방송 장비 전자부품
       { definitionId: 'circuit_board', weight: 5,  minQty: 1, maxQty: 1 },
+      // PR11 raw food 보강 — 위험 구역 dl=4 가중치 0.5
+      { definitionId: 'herb',          weight: 4  , minQty: 1, maxQty: 2, contamChance: 0 },
+      { definitionId: 'wild_berry',    weight: 4  , minQty: 1, maxQty: 2, contamChance: 0 },
+      { definitionId: 'vegetable',     weight: 4  , minQty: 1, maxQty: 2, contamChance: 0 },
     ],
     special: 'kbs',
   },
@@ -737,6 +802,9 @@ const DISTRICTS = {
       { definitionId: 'herb',          weight: 6,  minQty: 1, maxQty: 2 },
       // 신규 원자재 — 전자상가 전자부품
       { definitionId: 'circuit_board', weight: 5,  minQty: 1, maxQty: 1 },
+      // PR11 raw food 보강 — 위험 구역 dl=3 가중치 0.5
+      { definitionId: 'wild_berry',    weight: 4  , minQty: 1, maxQty: 2, contamChance: 0 },
+      { definitionId: 'vegetable',     weight: 4  , minQty: 1, maxQty: 2, contamChance: 0 },
     ],
     special: 'us_base',
   },
@@ -786,6 +854,8 @@ const DISTRICTS = {
       // 신규 원자재 — 북한산 자연 식생·토양
       { definitionId: 'wild_wheat',      weight: 6,  minQty: 1, maxQty: 2 },
       { definitionId: 'worm',            weight: 8,  minQty: 1, maxQty: 3 },
+      // PR11 raw food 보강 — 일반 구역 dl<=2 가중치 1.0
+      { definitionId: 'vegetable',     weight: 8  , minQty: 1, maxQty: 2, contamChance: 0 },
     ],
     special: null,
   },
@@ -815,6 +885,10 @@ const DISTRICTS = {
       // 방사선 극심 오염 자원 — 종로구 radiation:10
       { definitionId: 'contaminated_water', weight: 15, minQty: 1, maxQty: 3, contamChance: 0.80 },
       { definitionId: 'sulfur',        weight: 8,  minQty: 1, maxQty: 2 },
+      // PR11 raw food 보강 — 위험 구역 dl=5 가중치 0.5
+      { definitionId: 'herb',          weight: 4  , minQty: 1, maxQty: 2, contamChance: 0 },
+      { definitionId: 'wild_berry',    weight: 4  , minQty: 1, maxQty: 2, contamChance: 0 },
+      { definitionId: 'vegetable',     weight: 4  , minQty: 1, maxQty: 2, contamChance: 0 },
     ],
     special: 'gwanghwamun',
   },
@@ -845,6 +919,8 @@ const DISTRICTS = {
       { definitionId: 'dry_grass',     weight: 4,  minQty: 1, maxQty: 1 },
       { definitionId: 'herb',          weight: 8,  minQty: 1, maxQty: 2 },
       { definitionId: 'wild_berry',    weight: 6,  minQty: 1, maxQty: 2 },
+      // PR11 raw food 보강 — 위험 구역 dl=5 가중치 0.5
+      { definitionId: 'vegetable',     weight: 4  , minQty: 1, maxQty: 2, contamChance: 0 },
     ],
     special: 'seoul_city_hall',
   },
@@ -884,6 +960,9 @@ const DISTRICTS = {
       // 신규 원자재 — 중랑천 자연 식생·토양
       { definitionId: 'wild_wheat',      weight: 6,  minQty: 1, maxQty: 2 },
       { definitionId: 'worm',            weight: 8,  minQty: 1, maxQty: 3 },
+      // PR11 raw food 보강 — 일반 구역 dl<=2 가중치 1.0
+      { definitionId: 'wild_berry',    weight: 8  , minQty: 1, maxQty: 2, contamChance: 0 },
+      { definitionId: 'vegetable',     weight: 8  , minQty: 1, maxQty: 2, contamChance: 0 },
     ],
     special: null,
   },
