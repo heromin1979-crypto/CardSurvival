@@ -133,7 +133,14 @@
 - probe 3종: actExplore 분포 / **R8-1 원인 2 단정** (homeless·engineer day 2 morale 12~13 급락, 회복 자원 부재) / R10-1 절망 +6 (v6 167 → v7 173, +50 트리거 미충족 안전).
 - `BAL_SIM_baseline_v7_result.json` raw 데이터 — buildTag `sim-baseline-v7-pr11`, fingerprint v3·v4·v5·v6와 동일.
 
-**다음 트리거 (협의서 v4 §12.6):** **PR12 + M3 #14b 동시 진입** — 트랙 영역 분리 (PR12 = `gameBalance.js:328` `fishing.baseCatchChance` 0.30→0.50 단일 상수 / M3 #14b = `tools/sim/v2/playerAI.mjs` interactions.js T1 변환 모사). baseline v8 합산 측정 후 M3 #10 시나리오 한도연 진입.
+**M3 #14b (PR12 + interactions.js T1 시뮬 모사 + baseline v8 마감):**
+- **PR12** — `js/data/gameBalance.js:328` `fishing.baseCatchChance` 0.30 → 0.50. 1회 어획 기댓값 3 → 5 (+66%).
+- **M3 #14b** — `tools/sim/v2/playerAI.mjs:172-310` T1_TRANSFORMS 4 규칙 + `actT1Convert` + `runDayAI` 폴백 호출 (+44줄, cooking lv 0 한정 발동). sanity 200 runs — cooking lv 0 4직업 actT1Convert 발동 ≥ 1/회차, chef·pharmacist·homeless 회귀 0.
+- [`BAL_SIM_baseline_v8_report.md`](./BAL_SIM_baseline_v8_report.md) — **baseline v8 정식 측정 (밸런스 권지나, 281줄).** K1 0% **9회 연속**. **cooking lv 0 4직업 K3 +0.9~2.0d 큰 향상** (T1 모사 효과 가시화: doctor 4.0→4.9 / soldier 3.0→4.5 / firefighter 3.0→5.0 / engineer 3.1→4.4). **K5 사망원인 1위 역전** — 아사 506→263 / **절망 173→405 (+232)**. fingerprint `len316-h242a5b5f` 유지 (PR12 leaf 값 변경에도 무영향 — drift 측정 한계 단정).
+- `BAL_SIM_baseline_v8_result.json` — buildTag `sim-baseline-v8-pr12-t1`.
+- **협의서 v4 §13 추가 보강 회의록** — R11-1 신규 위험(chef 격차 +0.60d 하한 +1.0d 미달) / PR12 단독 효과 0 단정 (pharmacist 4.1→4.1) / fingerprint drift 측정 한계 단정 / **M3 #10 진입 단언** (R10-1 +232 = 기준 4.6배 초과).
+
+**다음 트리거 (협의서 v4 §13.7):** **M3 #10 시나리오 한도연 진입** — homeless·engineer Tier-2 abilities 우선(R8-1 핵심). `SCN_QUEST_homeless_tier2.md` + `SCN_QUEST_engineer_tier2.md` 작성. morale 회복 자원 분배 결정 → PR13 머지 → baseline v9 측정 → 나머지 3직업 Tier-2.
 
 ---
 
