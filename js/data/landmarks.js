@@ -1685,6 +1685,9 @@ export const LANDMARK_DATA = {
         desc: '낚시꾼들이 즐겨 찾던 자리. 낚싯대로 물고기를 낚거나 통발을 설치할 수 있다.',
         dangerMod: 0.05,
         isFishing: true,
+        // 한강 낚시터 / 강변 첫 진입 시 캐릭터당 1회 낚싯대 지급 — 낚시 메커닉 진입 동기.
+        // claimKey 공유로 두 sublocation 합산 1회만 지급 (협의서 §7.2: 어느 쪽이든 첫 진입 1회).
+        firstEnterReward: { claimKey: 'hangang_rod', items: [{ id: 'fishing_rod_basic', qty: 1 }] },
         lootTable: [
           { id: 'contaminated_water', weight: 4 },
           { id: 'pebble',            weight: 3 },
@@ -1699,6 +1702,7 @@ export const LANDMARK_DATA = {
         desc: '강변을 따라 이어진 산책로. 잡초와 돌멩이, 버려진 물건이 있다.',
         dangerMod: 0.08,
         isFishing: true,
+        firstEnterReward: { claimKey: 'hangang_rod', items: [{ id: 'fishing_rod_basic', qty: 1 }] },
         lootTable: [
           { id: 'wild_garlic',       weight: 4 },
           { id: 'dandelion',         weight: 3 },

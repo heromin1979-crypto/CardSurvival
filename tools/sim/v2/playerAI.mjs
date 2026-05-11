@@ -225,6 +225,14 @@ function actFish(simInv) {
   for (const id of ROD_IDS) {
     if ((simInv[id] ?? 0) > 0) { rodId = id; break; }
   }
+  // PR9 옵션 C-a 시뮬 모방: hangang sublocation 진입 보상을 모델링하지 않으므로
+  // hasFishing 구역 도달 + rod 미보유 시 1회 한정 fishing_rod_basic 자동 지급.
+  // (게임 본체: ExploreSystem._grantFirstEnterReward + landmarks.js firstEnterReward)
+  if (!rodId && !simInv.__hangangRodGranted) {
+    simInv.fishing_rod_basic = (simInv.fishing_rod_basic ?? 0) + 1;
+    simInv.__hangangRodGranted = true;
+    rodId = 'fishing_rod_basic';
+  }
   if (!rodId) return null;
   const fishingLv = GameState.player?.skills?.fishing?.level ?? GameState.player?.skills?.fishing ?? 0;
   const B = BALANCE.fishing;
