@@ -10,7 +10,7 @@ import { balanceFingerprint, getBalanceDriftReport } from './drift.mjs';
 
 const RUNS_PER_CHARACTER = 100;
 const SEED_BASE = 0;
-const OUTPUT_FILE = 'docs/persona-meeting-2026-05-10/BAL_SIM_baseline_v11_result.json';
+const OUTPUT_FILE = 'docs/persona-meeting-2026-05-10/BAL_SIM_baseline_v12_result.json';
 
 const characters = listCharacterIds();
 
@@ -38,7 +38,7 @@ const fp = balanceFingerprint();
 
 const out = {
   schemaVersion: 2,
-  buildTag: 'sim-baseline-v11-pr14',
+  buildTag: 'sim-baseline-v12-pr14-1',
   phase: 'complete',
   balanceFingerprint: fp,
   characters,

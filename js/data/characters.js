@@ -131,7 +131,7 @@ export const CHARACTERS = [
         icon: '🎖️',
         desc: '전우의 군번줄로 사기 회복 +30%. 시작 시 군번줄 지급.',
         effect: {
-          moraleRecoveryBonus: 1.3,
+          moraleRecoveryBonus: 1.2,
           startingItems: ['dog_tag'],
         },
       },
@@ -360,7 +360,7 @@ export const CHARACTERS = [
         icon: '🥫',
         desc: '보존식·식재료 섭취 시 사기 회복 +40%. 사기 30 미만 회복 시 피로 -3 추가. 시작 시 셰프 노트·혼합 향신료 지급.',
         effect: {
-          moraleRecoveryBonus: 1.4,
+          moraleRecoveryBonus: 1.6,
           lowMoraleRecoveryFatigueBonus: -3,
           startingItems: ['chef_journal', 'spice_blend', 'spice_blend'],
         },
