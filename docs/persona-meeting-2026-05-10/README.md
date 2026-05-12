@@ -198,7 +198,20 @@
 - **시뮬 R11-1 완전 해소 단정 가능** (§15 안에서).
 - PR17 patch diff ~33라인 (characters +2 / items_misc +22 / stackConfig +4 / CardFactory +4 / **playerAI +2** ★ 5곳째).
 
-**다음 트리거 (협의서 v5 §14.7 §2순위, §15 트랙 정체성 안에서):** **시스템 백승호 — PR17 머지**. SCN_QUEST_chef_supply §8 patch diff(~33라인) 적용 + **5곳 등록 룰** 충족 검증 (actEat candidates 등록 의무 신규) + baseline v14 측정 → **시뮬 R11-1 완전 해소** 단언 시도. 미달 시 트랙 D (PR16 롤백) 폴백.
+**M3 #24b (PR17 + baseline v14 마감 — ★ 시뮬 R11-1 완전 해소 단언 ★):**
+- **PR17 머지** (시스템 백승호) — characters +2 + items_misc +22 + stackConfig +4 + CardFactory +4 + **playerAI +2** ★ 5곳째 + run_baseline 갱신. **합산 ~34 라인**. 5곳 등록 룰 첫 적용.
+- [`BAL_SIM_baseline_v14_report.md`](./BAL_SIM_baseline_v14_report.md) — **baseline v14 정식 측정 (밸런스 권지나, 492줄).** K1 0% **15회 연속** / fingerprint v3~v14 12연속 유지 / **chef K3 5.38→6.10 (+0.72d) ★** / 6직업 회귀 0 / chef 사망일 day 5~6 → day 7+ 이동 (-32 / +34) / chef 아사 0건 (완전 해소).
+- `BAL_SIM_baseline_v14_result.json` — buildTag `sim-baseline-v14-pr17`.
+- **★ 시뮬 R11-1 완전 해소 단언 ★** (§15 안에서):
+  - 1차 시뮬 KPI 정의 1 ≥ +1.0d: ✅ **+1.2917d** (1.29배)
+  - 2차 시뮬 KPI 정의 2 ≥ +0.5d: ✅ **+1.2660d** (2.53배, v13 미해소 → v14 완전 해소)
+  - 3차 시뮬 KPI chef K3 ≤ 6.5: ✅ **6.10** (마진 0.4d 안전)
+  - 트랙 B 성공 단언 — 트랙 D/C 폴백 불필요.
+- 5곳 등록 룰 검증: chef_meal_kit·hearty_stew **100/100 runs 완전 소비**. actEat candidates 등록이 시뮬 K3 효과 발현의 필요·충분 조건 단언.
+- 회귀 0: PR13·PR14·PR15·PR16 효과 완전 보존, 6직업 K3 변화 0.
+- **협의서 v5 §16 추가 보강 회의록** — 시뮬 R11-1 완전 해소 단언·트랙 B 성공·5곳 등록 룰 표준 운영 단정·M3 마감 검토 트리거 충족 단언.
+
+**다음 트리거 (협의서 v5 §16.6 §1순위):** **PD 김재훈 — `PD_MILESTONE_M3_close.md` 작성**. M3 전체 산출물 종합 + R 해소 상태 + M4 이월 사항 + 트랙 정체성 단언 종결. M3 종결 선언은 사용자(프로젝트 책임자) 승인 영역. 잔존 5건(R13-1·R14-2·R14-3·spice_blend·M4 텔레메트리)은 M3 마감 후 분리 트랙.
 
 ---
 

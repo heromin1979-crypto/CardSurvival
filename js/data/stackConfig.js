@@ -248,6 +248,10 @@ const STACK_ROWS = [
   ['chef_journal'              , false, 1 ],
   ['spice_blend'               , true,  3 ],
 
+  // — 셰프 전용 high-nutrition 자원 (PR17 트랙 B) —
+  ['chef_meal_kit'             , true,  2 ],
+  ['hearty_stew'               , false, 1 ],
+
   // — 소방관 전용 keepsake (PR16 rescue_resolve) —
   ['family_photo'              , false, 1 ],
 
