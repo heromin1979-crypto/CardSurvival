@@ -190,7 +190,15 @@
 
 **트랙 정체성 단정 (협의서 v5 §15, 2026-05-12):** **본 M3 트랙은 "시뮬 정합 게임 데이터 작성" 트랙으로 단정.** baseline KPI(K1·K3·K5·chef 격차)는 *시뮬 K1 마지노선*. 게임 본체 K1과의 매핑은 M4+ 텔레메트리 트랙으로 분리. 모든 R/KPI 단언은 시뮬 도구 안에서 해석.
 
-**다음 트리거 (협의서 v5 §14.7 §1순위, §15 트랙 정체성 안에서 해석):** **시나리오 한도연 — `SCN_QUEST_chef_supply.md`**. chef 전용 high-nutrition 자원 사양 결정 (nutrition +30~+50 / hydration +20~+40 / durability 1~2 / chef 한정). §14.6 가드레일 준수 + 6 게이트 검수. 시스템 백승호 PR17 머지 → baseline v14 측정 → **시뮬 R11-1 완전 해소** 단언 시도.
+**M3 #24a (SCN_QUEST_chef_supply.md 작성 마감):**
+- [`SCN_QUEST_chef_supply.md`](./SCN_QUEST_chef_supply.md) — **시나리오 한도연 (810줄).** chef 전용 자원 2종 결정. **`chef_meal_kit`** (셰프의 도시락, nutrition+45·hydration+20·morale+3·fatigue-3·durability 2). **`hearty_stew`** (든든한 스튜, nutrition+35·hydration+30·morale+5·durability 1). chef startingItems 10→12. 협의서 v5 §14.6 가드레일 전수 준수.
+- **신규 발견 — 5곳 등록 룰 확장 단정** — 시뮬 정합 트랙(§15)에서 `tools/sim/v2/playerAI.mjs:130~133 actEat candidates` 배열 등록이 필수. 4곳(items + stackConfig + CardFactory + characters) + actEat = **5곳 등록 룰**. 미등록 시 시뮬 K3 효과 0.
+- 6 게이트 검수: chef_meal_kit 5/6 통과(3차 KPI 6.35 모니터링) / hearty_stew 6/6 통과.
+- 시뮬 KPI 추정 (세 시나리오 모두 충족): 격차 정의 1 +1.18~+1.53d / 정의 2 +1.08~+1.43d / chef K3 6.0~6.35.
+- **시뮬 R11-1 완전 해소 단정 가능** (§15 안에서).
+- PR17 patch diff ~33라인 (characters +2 / items_misc +22 / stackConfig +4 / CardFactory +4 / **playerAI +2** ★ 5곳째).
+
+**다음 트리거 (협의서 v5 §14.7 §2순위, §15 트랙 정체성 안에서):** **시스템 백승호 — PR17 머지**. SCN_QUEST_chef_supply §8 patch diff(~33라인) 적용 + **5곳 등록 룰** 충족 검증 (actEat candidates 등록 의무 신규) + baseline v14 측정 → **시뮬 R11-1 완전 해소** 단언 시도. 미달 시 트랙 D (PR16 롤백) 폴백.
 
 ---
 
