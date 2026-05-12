@@ -182,7 +182,13 @@
 - `BAL_SIM_baseline_v12_result.json` — buildTag `sim-baseline-v12-pr14-1`.
 - **협의서 v5 §13 추가 보강 회의록** — **구조적 한계 단정** (chef 사망일 day 5~6 집중, morale 회복은 day 100 도달의 필요 조건이지 충분 조건이 아님) · **R15-1 진입 전제 단정** (craft 발동 빈도 보강이 chef K3 효과 발현의 본질) · **트랙 A 채택** (PR16 craft 발동 빈도 보강 = R11-1 완전 해소 본질 경로).
 
-**다음 트리거 (협의서 v5 §13.6 §1순위):** **시스템 백승호 — PR16 craft 발동 빈도 보강 (트랙 A)**. `tools/sim/v2/playerAI.mjs` morale<30 시점 추가 발동 또는 actInteractCraft 빈도 증가. R15-1 완전 해소 + chef K3 효과 발현 + 1차 KPI 충족 본질 경로. baseline v13 측정 → R11-1 완전 해소 단언 시도. 미달 시 트랙 B (chef high-nutrition 자원) 또는 트랙 C (M3 마감 + M4 이월) 결정.
+**M3 #23 (PR16 craft 빈도 보강 + baseline v13 마감 — 트랙 A 실패 단언):**
+- **PR16 머지** (시스템 백승호) — `tools/sim/v2/playerAI.mjs` +20라인 (`runDayAI` nutrition<50 OR morale<30 임계 추가 craft) + run_baseline.mjs v12→v13.
+- [`BAL_SIM_baseline_v13_report.md`](./BAL_SIM_baseline_v13_report.md) — **baseline v13 정식 측정 (밸런스 권지나, 367줄).** K1 0% **14회 연속** / fingerprint v3~v13 11연속 유지 / **homeless K3 4.30→4.70 (+0.40d) ★ PR16 최대 효과** / chef +0.02d 미미 / **트랙 A 실패 단언** (chef day 1~2 임계 미도달, day 5~6 입력 자원 소진) / **R11-1 정의 2 후퇴** (v12 +0.546d → v13 +0.480d, homeless 향상이 5직업 평균 끌어올림) / **R15-1 완전 해소 단정** (craft +0.4~0.7 fires/day).
+- `BAL_SIM_baseline_v13_result.json` — buildTag `sim-baseline-v13-pr16`.
+- **협의서 v5 §14 추가 보강 회의록** — **트랙 B 채택** (chef high-nutrition 자원 추가) · chef 자원 사양 가드레일(nutrition +30~+50 / hydration +20~+40 / durability 1~2 / chef 정체성) · 트랙 D (PR16 롤백) / 트랙 C (M3 마감) 폴백 명시.
+
+**다음 트리거 (협의서 v5 §14.7 §1순위):** **시나리오 한도연 — `SCN_QUEST_chef_supply.md` (또는 SCN_QUEST_chef_tier2.md §보강)**. chef 전용 high-nutrition 자원 사양 결정 (nutrition +30~+50 / hydration +20~+40 / durability 1~2 / chef 한정). § 14.6 가드레일 준수 + 6 게이트 검수. 시스템 백승호 PR17 머지 → baseline v14 측정 → R11-1 완전 해소 단언 시도.
 
 ---
 

@@ -631,6 +631,129 @@ baseline v11 §4.1:
 
 ---
 
-*보강 회의록 끝. PR16 머지 + baseline v13 측정 결과 도착 시 본 §13.5 트랙 A 효과 단정 + R11-1 완전 해소 단언 시도. 미달 시 트랙 B 또는 트랙 C 결정.*
+*보강 회의록 끝. PR16 머지 + baseline v13 측정 결과 도착 시 본 §13.5 트랙 A 효과 단정 + R11-1 완전 해소 단언 시도. 미달 시 트랙 B 또는 트랙 C 결정. — 2026-05-12 충족. 갱신 사항은 §14 보강.*
+
+---
+
+## 14. 추가 보강 회의록 (2026-05-12, PR16 머지 + baseline v13 측정 직후 + 트랙 B 채택)
+
+> 참여: PD 김재훈 + 밸런스 권지나. 입력: PR16 머지(시스템 백승호 — playerAI craft 빈도 보강 +20라인) + `BAL_SIM_baseline_v13_result.json` + `BAL_SIM_baseline_v13_report.md` (밸런스 권지나, 367줄).
+
+### 14.1 baseline v13 측정 결과 단정
+
+- fingerprint `len316-h242a5b5f` v3~v13 11연속 유지, bootstrapErrors 0/700, 11.4초, 결정성 100%
+- **K1 7직업 0%, 14회 연속 0%**
+- K3 v12 → v13:
+  - **homeless 4.30 → 4.70 (+0.40d)** ★ PR16 최대 효과
+  - chef 5.38 → 5.40 (+0.02d 미미)
+  - 다른 5직업 변화 0 (회귀 0)
+- K5 v12 → v13: 아사 461→415 (-46) / 절망 165→188 (+23) / 탈수 33→38 (+5) / 극도 피로 41→59 (+18)
+- chef 격차 정의 1 v12 +0.6350d → v13 **+0.5833d** (Δ -0.0517d, **homeless 향상으로 격차 좁힘**)
+- chef 격차 정의 2 v12 +0.5460d → v13 **+0.4800d** (Δ -0.0660d, **R11-1 정의 2 후퇴**)
+
+### 14.2 트랙 A 실패 단언
+
+**원인 단정 (시스템 백승호 1차 단정):**
+- chef는 day 1~2 morale·nutrition 충분으로 PR16 추가 발동 임계(morale<30 OR nutrition<50) 미도달
+- day 5~6 임계 도달 시 입력 자원(spice_blend·pantry_basic·herb) 이미 소진 → actCook null
+- chef craft 빈도 0.372 fires/day로 7직업 최저
+- chef K5 탈수+아사 73% — nutrition·hydration 결핍이 사망 본질
+
+**트랙 A 실패 단언:** craft 빈도 보강만으로는 chef 1차 KPI 충족 불가능. R15-1 완전 해소는 달성됐으나 R11-1 완전 해소의 *충분 조건이 아님*.
+
+### 14.3 R11-1 정의 2 후퇴 단정
+
+**원인 단정:**
+- homeless K3 +0.40d 향상이 cooking lv 0 5직업 평균을 4.832 → 4.92로 끌어올림
+- chef K3 +0.02d 미미한 상승만 → 정의 2 격차 (chef - others5) 자연 축소
+- **chef 향상이 아닌 비교군 향상이 격차 좁힘 패턴** — PR16 트랙 A의 부작용
+
+**의의:**
+- 협의서 v5 §12 R11-1 정의 2 해소 단언(v11 +0.560d)이 v13에서 미해소로 후퇴 — 보존 가치 단정
+- PR16 유지 vs 롤백 결정 분기점
+
+### 14.4 R15-1 완전 해소 단정
+
+**측정 사실 (시스템 백승호 1차 단정):**
+- cooking lv 0 4직업 craft 발동 빈도 향상 — doctor 0.616 / soldier 1.010 / firefighter 0.800 / engineer 1.144 (+0.4~0.7 fires/day)
+- homeless 0.855 (+0.555). day 1회 → day ~1회 패턴 정합
+
+**R15-1 완전 해소 단정.** 단 R11-1 완전 해소·1차 KPI 충족과는 독립 — R15-1과 R11-1 분리 단정.
+
+### 14.5 트랙 B 채택 — chef high-nutrition 자원 추가
+
+**3 트랙 비교 매트릭스 (v13 보고서 §10.4 인용):**
+
+| 트랙 | 사양 | 분량 | R11-1 완전 해소 | 정의 2 보존 |
+|------|------|------|----------------|------------|
+| B | chef high-nutrition 자원 추가 | ~50라인 | 가능성 중 | ❌ (PR16 유지) |
+| C | M3 마감 + M4 이월 | 0라인 | 포기 | ❌ |
+| D | PR16 롤백 | ~5라인 | 포기 | ✅ (+0.546d) |
+
+**PD 김재훈:**
+> 트랙 B가 적극적 R11-1 완전 해소 시도. PR16 유지로 정의 2 후퇴 수용하지만, chef 신규 자원으로 chef 절대값 향상 → 정의 2 자연 회복 가능. 단 R11-1 완전 해소 실패 시 트랙 D 폴백 또는 트랙 C 최종 결정.
+>
+> **트랙 B 채택.** chef nutrition·hydration 회복 추가 자원으로 사망일 day 6+ 이동 시도. baseline v14 후 1차 KPI 충족 단언 시도.
+
+**밸런스 권지나:**
+> 트랙 B 채택 동의. chef high-nutrition 자원 사양:
+> - nutrition·hydration 직접 보강 (chef 사망 사유 73% 탈수+아사 대응)
+> - durability 1~2 (1~2회 소비, day 5~6 임계 시점 보유 보장)
+> - chef 정체성 정합 (요리 전문가 어휘)
+> - K3 추정 +0.5~1.0d (사망일 day 5~6 → day 6~7 이동)
+>
+> chef K3 6.5 초과 위험 모니터링 — 협의서 v5 §3.3 effect 값 범위 가드레일 준수.
+
+### 14.6 chef 신규 자원 사양 가드레일 (시나리오 한도연 위임)
+
+| 가드레일 | 결정값 |
+|---------|--------|
+| 자원 수 | 1~2개 chef 전용 |
+| 효과 방향 | nutrition·hydration 직접 보강 (chef 탈수+아사 73% 대응) |
+| nutrition 범위 | +30~+50 (boiled_water 65·cooked_noodles 35 패턴 대비 강화) |
+| hydration 범위 | +20~+40 (탈수 회복 동시) |
+| durability | 1~2 (1~2회 소비, day 5~6 임계 보유 보장) |
+| morale 효과 | +0~+5 (PR14·PR16 chef 자원의 morale 효과 누적 회피) |
+| chef 정체성 | 요리 전문가 어휘 (예: chef_meal_kit·premium_ration·hearty_stew) |
+| 4곳 등록 룰 | items_misc.js + stackConfig + CardFactory + chef startingItems |
+| K3 추정 향상 | +0.5~1.0d (사망일 day 5~6 → day 6+ 이동) |
+| chef K3 상한 | ≤ 6.5 (협의서 §3.3 3차 KPI 안전) |
+| 6 게이트 검수 | 직업 정체성·생존 균형·플레이 유지·서사 결합·도구 호환·측정 가능성 |
+
+신규 SCN_QUEST 또는 SCN_QUEST_chef_tier2.md §보강 — 시나리오 한도연 결정 영역.
+
+### 14.7 §13.6 다음 단계 갱신
+
+| 순위 (갱신) | 작업 | 담당 | 트리거 시점 |
+|------|------|------|-----------|
+| **1** | SCN_QUEST_chef_supply.md (또는 SCN_QUEST_chef_tier2.md §보강) — chef high-nutrition 자원 사양 결정 + §8 patch diff 후보. §14.6 가드레일 준수 | 시나리오 한도연 | 본 보강 회의록 채택 직후 |
+| **2** | PR17 머지 — chef 전용 high-nutrition 자원 추가. characters.js + items_misc.js + stackConfig.js + CardFactory.js 4곳 등록 룰 충족 | 시스템 백승호 | SCN_QUEST 도착 후 |
+| **3** | baseline v14 측정 — PR17 효과 단정. chef 사망일 분포 + K3 + 1차 KPI 충족 여부 | 밸런스 권지나 | PR17 머지 D+1 |
+| **4** | 1차 KPI 충족 단정 (≥ +1.0d) → R11-1 완전 해소 단언 / 미달 시 트랙 D (PR16 롤백) 또는 트랙 C (M3 마감) 결정 | PD/Balance 협의 | baseline v14 보고 D+0 |
+| 5 | (조건부 트랙 D) PR16 롤백 — R11-1 정의 2 해소 보존. ~5라인 | 시스템 백승호 | 트랙 B 실패 시 |
+| 6 | (조건부 트랙 C) M3 마감 — R11-1 정의 2 후퇴 수용, M4 이월 | PD 김재훈 | 트랙 B·D 모두 실패 시 |
+| 7 | PR17 추가 작업 — soldier 추가 조정 또는 firefighter 재검토. 우선순위 후순위 | 시나리오 한도연 + 시스템 백승호 | baseline v14 후 |
+| 8 | PR18 dismantle sim 모사 — R13-1 완전 해소 | 시스템 백승호 | PR17 머지 후 |
+| 9 | sketch_notebook + pharmacy_notes paper 정의 정리 | 시스템 백승호 | 독립 |
+| 10 | M3 #15 AD UI 변경 권고 2건 | AD 오은별 | 독립 |
+| 11 | (M4+) drift.mjs leaf 값 hash 컬럼 추가 | 시스템 백승호 | M4 진입 시 |
+
+### 14.8 결정 종합 — 보강
+
+| 안건 | 결정 |
+|------|------|
+| 트랙 A 실패 단언 | **확정** — chef day 1~2 임계 미도달 / day 5~6 입력 자원 소진 |
+| R11-1 정의 2 후퇴 | **확정** — v12 +0.546d → v13 +0.480d (homeless 향상 부작용) |
+| R15-1 완전 해소 | **단정** — craft 빈도 향상 0.4~0.7 fires/day (cooking lv 0 4직업) |
+| R11-1 완전 해소 전략 | **트랙 B 채택** — chef high-nutrition 자원 추가 (PR17). 미달 시 트랙 D/C |
+| chef 자원 사양 가드레일 | nutrition +30~+50 / hydration +20~+40 / durability 1~2 / 4곳 등록 룰 / chef 한정 |
+| 다음 단계 | 시나리오 한도연 SCN_QUEST 작성 → 시스템 백승호 PR17 → baseline v14 |
+
+본 보강은 본 협의서의 결정 권한 안에서 처리. baseline v14 측정 결과 도착 시 §14.7 표 갱신 + 1차 KPI 충족 단언 시도 + 트랙 D/C 폴백 결정.
+
+---
+
+*보강 회의록 끝. SCN_QUEST_chef_supply.md (또는 SCN_QUEST_chef_tier2.md §보강) 도착 시 §14.6 가드레일 적용 검증 + PR17 머지 트리거 충족 단언. baseline v14 측정 결과 도착 시 R11-1 완전 해소 단언 시도.*
+
 
 
