@@ -542,7 +542,7 @@ const ITEMS_MISC = {
     defaultDurability: 3, defaultContamination: 0,
     icon: '📔', description: '명동 소피텔 호텔 수석 셰프의 손때 묻은 표준식단표. 보존식 배합 비율과 식재료 검수 기록이 빼곡하다. 손때 묻은 페이지를 넘기는 동안에는 굶주린 사람들의 얼굴이 잠시 멀어진다.',
     tags: ['consumable', 'keepsake', 'chef'],
-    onConsume: { morale: 10, fatigue: -2 },
+    onConsume: { morale: 13, fatigue: -2 },
     dismantle: [],
   },
 

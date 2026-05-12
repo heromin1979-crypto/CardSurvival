@@ -176,7 +176,13 @@
 - `BAL_SIM_baseline_v11_result.json` — buildTag `sim-baseline-v11-pr14`.
 - **협의서 v5 §12 추가 보강 회의록** — **R11-1 정의 2 해소 단언** (+0.560d ≥ +0.5d) · **R8-1 완전 해소 단정** (절망 161 < 200) · **R14-1·R14-2·R14-3 신규 등록** · **PR14.1 옵션 C 채택** (chef effect 상향) · **PR16.1 채택** (soldier effect 하향).
 
-**다음 트리거 (협의서 v5 §12.7 §1순위):** **시스템 백승호 — PR14.1 + PR16.1 머지** — `pantry_mastery.moraleRecoveryBonus 1.4 → 1.6` + `chef_journal.onConsume.morale 10 → 13` + `comrade_memorial.moraleRecoveryBonus 1.3 → 1.2`. characters.js + items_misc.js ~6 라인. validate.js + fingerprint + baseline v12 측정. 1차 KPI 충족 단정 시 **R11-1 완전 해소 단언**.
+**M3 #22 (PR14.1+PR16.1 + baseline v12 마감):**
+- **PR14.1+PR16.1 머지** (시스템 백승호) — characters.js 2건(pantry_mastery 1.4→1.6 / comrade_memorial 1.3→1.2) + items_misc.js 1건(chef_journal morale 10→13) + run_baseline.mjs 2건. **총 5 라인**.
+- [`BAL_SIM_baseline_v12_report.md`](./BAL_SIM_baseline_v12_report.md) — **baseline v12 정식 측정 (밸런스 권지나, 338줄).** K1 0% **13회 연속** / fingerprint v3~v12 10연속 유지 / chef K3 5.40→5.38 (+0.02d 미미) / soldier 5.00→4.96 (-0.04d 미미) / 다른 5직업 회귀 0 / K5 미세 변동만. **R14-1·R14-2 미해소 단언** + **R11-1 완전 해소 불가능 단정**.
+- `BAL_SIM_baseline_v12_result.json` — buildTag `sim-baseline-v12-pr14-1`.
+- **협의서 v5 §13 추가 보강 회의록** — **구조적 한계 단정** (chef 사망일 day 5~6 집중, morale 회복은 day 100 도달의 필요 조건이지 충분 조건이 아님) · **R15-1 진입 전제 단정** (craft 발동 빈도 보강이 chef K3 효과 발현의 본질) · **트랙 A 채택** (PR16 craft 발동 빈도 보강 = R11-1 완전 해소 본질 경로).
+
+**다음 트리거 (협의서 v5 §13.6 §1순위):** **시스템 백승호 — PR16 craft 발동 빈도 보강 (트랙 A)**. `tools/sim/v2/playerAI.mjs` morale<30 시점 추가 발동 또는 actInteractCraft 빈도 증가. R15-1 완전 해소 + chef K3 효과 발현 + 1차 KPI 충족 본질 경로. baseline v13 측정 → R11-1 완전 해소 단언 시도. 미달 시 트랙 B (chef high-nutrition 자원) 또는 트랙 C (M3 마감 + M4 이월) 결정.
 
 ---
 
