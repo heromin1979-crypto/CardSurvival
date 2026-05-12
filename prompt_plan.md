@@ -2,7 +2,8 @@
 
 > 시작일: 2026-05-10 (페르소나 회의 산출물 — 7 페르소나 합동 학습 후)
 > 트랙: M3 (이슈 #2 6직업 비대칭 / 이슈 #3 후반 이벤트 폭주 측정)
-> 상태: **PR16 머지 + baseline v13 + 협의서 v5 §14 보강 완료. 트랙 A 실패 단언(chef day 1~2 임계 미도달). R15-1 완전 해소 단정(craft 빈도 +0.4~0.7 fires/day). R11-1 정의 2 후퇴(v12 +0.546d → v13 +0.480d). homeless K3 +0.40d 최대 효과. 트랙 B 채택 — chef high-nutrition 자원 추가(PR17). 시나리오 한도연 SCN_QUEST_chef_supply.md 진입 대기.**
+> 상태: **PR16 머지 + baseline v13 + 협의서 v5 §14 보강 + §15 트랙 정체성 단정 완료. 트랙 B 채택(chef high-nutrition 자원). 시나리오 한도연 SCN_QUEST_chef_supply.md 진입 대기.**
+> 트랙 정체성 단정 (협의서 v5 §15, 2026-05-12): **"시뮬 정합 게임 데이터 작성" 트랙.** baseline KPI는 *시뮬 K1·K3·K5 마지노선*. 게임 본체 K1과의 매핑은 M4+ 텔레메트리 트랙으로 분리. 본 M3 트랙 모든 R/KPI 단언은 시뮬 도구 안에서 해석.
 > 이전 계획: `docs/archive/prompt_plan.old5.md` (CST 패턴, 2026-04-28 마감)
 > 회의 산출물 인덱스: `docs/persona-meeting-2026-05-10/README.md`
 
