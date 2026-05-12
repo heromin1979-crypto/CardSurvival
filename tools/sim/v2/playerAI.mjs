@@ -127,7 +127,8 @@ function actDrinkWater(inv) {
 }
 
 function actEat(inv) {
-  const candidates = ['preserved_ration', 'canned_food', 'meat_stew', 'sandwich', 'baked_bread',
+  const candidates = ['hearty_stew', 'chef_meal_kit',
+                      'preserved_ration', 'canned_food', 'meat_stew', 'sandwich', 'baked_bread',
                       'cooked_rice', 'cooked_noodles', 'fish_cooked', 'cooked_meat',
                       'dried_meat', 'salted_meat', 'smoked_meat', 'energy_bar',
                       'fish_large', 'fish_medium', 'fish_small', 'herb'];

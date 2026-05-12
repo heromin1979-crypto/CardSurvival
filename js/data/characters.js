@@ -358,11 +358,11 @@ export const CHARACTERS = [
         id: 'pantry_mastery',
         name: '식자재 보존술',
         icon: '🥫',
-        desc: '보존식·식재료 섭취 시 사기 회복 +40%. 사기 30 미만 회복 시 피로 -3 추가. 시작 시 셰프 노트·혼합 향신료 지급.',
+        desc: '보존식·식재료 섭취 시 사기 회복 +60%. 사기 30 미만 회복 시 피로 -3 추가. 시작 시 셰프 노트·혼합 향신료·셰프의 도시락·든든한 스튜 지급.',
         effect: {
           moraleRecoveryBonus: 1.6,
           lowMoraleRecoveryFatigueBonus: -3,
-          startingItems: ['chef_journal', 'spice_blend', 'spice_blend'],
+          startingItems: ['chef_journal', 'spice_blend', 'spice_blend', 'chef_meal_kit', 'hearty_stew'],
         },
       },
     ],

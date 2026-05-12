@@ -556,6 +556,28 @@ const ITEMS_MISC = {
     dismantle: [],
   },
 
+  // 셰프 전용 high-nutrition 자원 (PR17 트랙 B — chef nutrition·hydration 직접 보강)
+
+  chef_meal_kit: {
+    id: 'chef_meal_kit', name: '셰프의 도시락', type: 'consumable', subtype: 'food',
+    rarity: 'uncommon', weight: 0.45,
+    defaultDurability: 2, defaultContamination: 0,
+    icon: '🍱', description: '명동 소피텔 호텔 주방에서 직접 챙겨 나온 한 끼. 단정하게 칸막이로 나눈 보존식·곡류·반찬 조합으로 한 끼의 영양 균형을 맞췄다. 셰프의 손으로 차린 끼니는 굶주린 위장과 무뎌진 갈증을 함께 다독인다.',
+    tags: ['consumable', 'food', 'preserved', 'chef'],
+    onConsume: { nutrition: 45, hydration: 20, morale: 3, fatigue: -3 },
+    dismantle: [],
+  },
+
+  hearty_stew: {
+    id: 'hearty_stew', name: '든든한 스튜', type: 'consumable', subtype: 'food',
+    rarity: 'uncommon', weight: 0.50,
+    defaultDurability: 1, defaultContamination: 0,
+    icon: '🍲', description: '보존식과 향신료를 함께 끓여낸 따뜻한 스튜. 호텔 주방 시절 셰프가 폐관일 야식으로 끓이던 비법대로 졸였다. 진한 국물이 위장과 목구멍을 한꺼번에 적시고, 한 그릇이면 잠시나마 따뜻함이 돌아온다.',
+    tags: ['consumable', 'food', 'hot', 'cooked', 'chef'],
+    onConsume: { nutrition: 35, hydration: 30, morale: 5 },
+    dismantle: [],
+  },
+
   // 소방관 전용 keepsake (PR16 — firefighter rescue_resolve ability 트리거 자원)
   family_photo: {
     id: 'family_photo', name: '가족 사진', type: 'consumable', subtype: 'keepsake',

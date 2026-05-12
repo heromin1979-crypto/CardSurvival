@@ -348,6 +348,10 @@ const CARD_IMAGES = {
   dog_tag:               'assets/images/materials/cloth_scrap.png',
   pharmacy_notes:        'assets/images/materials/cloth_scrap.png',
 
+  // 셰프 전용 high-nutrition 자원 (PR17 트랙 B)
+  chef_meal_kit:         'assets/images/food/canned_food.png',
+  hearty_stew:           'assets/images/food/cooked_noodles.png',
+
   // 셰프 전용 희귀 식재료 (윤재혁)
   truffle:               'assets/images/food/dried_mushroom.png',
   korean_beef_premium:   'assets/images/food/raw_meat.png',
