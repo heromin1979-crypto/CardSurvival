@@ -2,9 +2,9 @@
 
 > 시작일: 2026-05-10 (페르소나 회의 산출물 — 7 페르소나 합동 학습 후)
 > 트랙: M3 (이슈 #2 6직업 비대칭 / 이슈 #3 후반 이벤트 폭주 측정)
-> 상태: **시나리오 한도연 SCN_QUEST_chef_supply.md 작성 완료(810줄). chef 전용 자원 2종(chef_meal_kit + hearty_stew) 결정. 시뮬 KPI 추정 충족(시뮬 R11-1 완전 해소 단정 가능). 시스템 백승호 PR17 머지 진입 대기.**
+> 상태: **★ PR17 머지 + baseline v14 + 협의서 v5 §16 보강 완료. 시뮬 R11-1 완전 해소 단언 (트랙 B 성공). chef K3 +0.72d (5.38→6.10), 격차 정의 1 +1.29d / 정의 2 +1.27d. 5곳 등록 룰 첫 적용 단언. M3 마감 검토 트리거 충족.** PD 김재훈 M3 마감 보고서 진입 대기.
 > 트랙 정체성 단정 (협의서 v5 §15, 2026-05-12): **"시뮬 정합 게임 데이터 작성" 트랙.** baseline KPI는 *시뮬 K1·K3·K5 마지노선*. 게임 본체 K1과의 매핑은 M4+ 텔레메트리 트랙으로 분리.
-> 신규 등록 룰 (SCN_QUEST_chef_supply §5.1): **시뮬 정합 트랙 = 5곳 등록 룰** (4곳 + `tools/sim/v2/playerAI.mjs:130~133 actEat candidates` 추가). 미등록 시 시뮬 K3 효과 0.
+> 시뮬 정합 5곳 등록 룰 (§16.3 표준 운영 단정): items_misc + stackConfig + CardFactory + characters startingItems + **playerAI.mjs actEat candidates** (5곳째).
 > 이전 계획: `docs/archive/prompt_plan.old5.md` (CST 패턴, 2026-04-28 마감)
 > 회의 산출물 인덱스: `docs/persona-meeting-2026-05-10/README.md`
 
@@ -279,18 +279,38 @@ M3는 시뮬 v2 인프라(PR1~PR4) → Player AI 5단계(PR5/PR5.5/PR6/PR7) → 
 - [x] §11.5 잔존 결함 — spice_blend actEat candidates 미등록 (본 PR 영역 외, 후속 권고)
 - [x] **시뮬 R11-1 완전 해소 단정 가능** (§15 트랙 정체성 안에서)
 
-### M3 #24b (PR17 머지 + baseline v14 — **다음 진입 트리거**, 시스템 백승호)
+### M3 #24b (PR17 머지 + baseline v14 마감 — ★ 시뮬 R11-1 완전 해소 단언 ★)
 
-- [ ] PR17 머지 — `SCN_QUEST_chef_supply §8` patch diff 적용 (~33라인). 시스템 백승호
-- [ ] 5곳 등록 룰 충족 검증 — items_misc + stackConfig + CardFactory + characters startingItems + **playerAI.mjs actEat candidates** (시뮬 정합 트랙 신규 룰)
-- [ ] validate.js Errors 0 + fingerprint `len316-h242a5b5f` 유지 검증
-- [ ] `tools/sim/v2/run_baseline.mjs` v13 → v14 (sim-baseline-v14-pr17)
-- [ ] baseline v14 측정 (`BAL_SIM_baseline_v14_result.json` + `report.md`, 밸런스 권지나) — 직업별 분리 측정
-- [ ] **시뮬 R11-1 완전 해소 단언 시도** — 격차 정의 1 ≥ +1.0d (1차 시뮬 KPI) + 정의 2 ≥ +0.5d (2차 시뮬 KPI 회복) + chef K3 ≤ 6.5 (3차 시뮬 KPI 안전)
-- [ ] chef 사망일 day 5~6 → day 6+ 이동 단정 (구조적 한계 해소 단정)
-- [ ] 회귀 검증 — PR15 ability 가산 + PR13 cooking lv ≥ 1 + PR16 craft 빈도 보강 회귀 0
-- [ ] (조건부 트랙 D 폴백) 시뮬 KPI 미달 시 PR16 롤백 결정
-- [ ] (조건부 6.5 초과) cook_intuition 단축 트리거 즉시 발동 (협의서 v2 §6.2)
+- [x] PR17 머지 — characters.js +2 + items_misc.js +22 + stackConfig.js +4 + CardFactory.js +4 + **playerAI.mjs +2** + run_baseline.mjs +2/-2. **합산 ~34 라인** (SCN_QUEST 추정 ~33 정합)
+- [x] **5곳 등록 룰 첫 적용 검증** — items_misc + stackConfig + CardFactory + characters startingItems + **playerAI.mjs actEat candidates** (5곳째 신규)
+- [x] validate.js Errors 0 / Warnings 252 / ALL CLEAR (v13 동일)
+- [x] fingerprint `len316-h242a5b5f` v3~v14 12연속 유지 / bootstrapErrors 0/700 / 11.5초 / 결정성 100%
+- [x] baseline v14 측정 (`BAL_SIM_baseline_v14_result.json` + `BAL_SIM_baseline_v14_report.md` 492줄, 밸런스 권지나)
+- [x] K1 0% (15회 연속) / **K3 chef 5.38→6.10 (+0.72d) ★** / 6직업 회귀 0
+- [x] K5 아사 415→373 (-42, chef 아사 완전 해소) / 절망 188→224 (+36, chef 사망 연장 trade-off) / 탈수 -2 / 극도피로 +8
+- [x] chef 사망일 day 5~6: 92→60 (-32) / day 7+: 6→40 (+34) ★ day 6+ 이동 단정
+- [x] **시뮬 R11-1 완전 해소 단언** (§15 안에서):
+  - 1차 시뮬 KPI 격차 정의 1 ≥ +1.0d: ✅ **+1.2917d** (1.29배)
+  - 2차 시뮬 KPI 격차 정의 2 ≥ +0.5d: ✅ **+1.2660d** (2.53배, v13 미해소 → v14 완전 해소)
+  - 3차 시뮬 KPI chef K3 ≤ 6.5: ✅ **6.10** (마진 0.4d 안전)
+- [x] 트랙 B 성공 단언 — 트랙 D/C 폴백 불필요
+- [x] 5곳 등록 룰 검증 — chef_meal_kit·hearty_stew 100/100 runs 완전 소비. actEat candidates 등록이 시뮬 K3 효과 발현의 필요·충분 조건 단언
+- [x] 회귀 검증 — PR13·PR14·PR15·PR16 효과 완전 보존, 6직업 K3 변화 0
+- [x] 협의서 v5 §16 추가 보강 회의록 — 시뮬 R11-1 완전 해소 단언·트랙 B 성공·5곳 등록 룰 표준 운영 단정·M3 마감 검토 트리거 충족
+
+### M3 #25 (M3 마감 보고서 — **다음 진입 트리거**, PD 김재훈)
+
+- [ ] `PD_MILESTONE_M3_close.md` 작성 — M3 전체 산출물 종합 + R 해소 상태 + M4 이월 사항 + 트랙 정체성 단언 종결
+- [ ] M3 종결 선언 (사용자 승인)
+- [ ] (조건부) M4+ 텔레메트리 트랙 진입 — 협의서 v6 신규 발행
+
+### M3 #26 (조건부 후순위 잔존)
+
+- [ ] PR18 R13-1 dismantle sim 모사 (시스템 백승호, M3 마감 후 또는 M4 이월)
+- [ ] spice_blend actEat candidates 잔존 결함 정리 (1~2 라인 패치)
+- [ ] PR16.2 R14-2 soldier 재조정 (R11-1 해소 후 후순위)
+- [ ] M3 #15 AD UI 변경 권고 2건 (AD 오은별, 독립)
+- [ ] (M4+) drift.mjs leaf 값 hash 컬럼 추가
 
 ### M3 #25 (조건부 폴백 — baseline v14 미달 시)
 
@@ -416,8 +436,10 @@ M3 #20 (4 SCN_QUEST 동시 작성) ─── 마감
 M3 #21 (PR14·PR16 머지 + baseline v11) ─── 마감 (R11-1 정의 2 해소 단언, R8-1 완전 해소)
 M3 #22 (PR14.1 + PR16.1 + baseline v12) ─── 마감 (R14-1·R14-2 미해소 단언, 구조적 한계 단정)
 M3 #23 (PR16 craft 발동 빈도 + baseline v13) ─── 마감 (트랙 A 실패, R15-1 완전 해소, R11-1 정의 2 후퇴)
-M3 #24a (SCN_QUEST_chef_supply 작성) ─── 마감 (810줄, 시뮬 KPI 충족 단정 가능)
-M3 #24b (PR17 머지 + baseline v14) ─── 진입 대기 (시스템 백승호 — 다음 트리거, 5곳 등록 룰)
+M3 #24a (SCN_QUEST_chef_supply 작성) ─── 마감
+M3 #24b (PR17 + baseline v14) ─── 마감 ★ 시뮬 R11-1 완전 해소 단언, 트랙 B 성공
+M3 #25 (M3 마감 보고서) ─── 진입 대기 (PD 김재훈 — 다음 트리거)
+M3 #26 (조건부 후순위 잔존)
 M3 #25 (조건부 트랙 D/C — baseline v14 미달 시 폴백)
 M3 #26 (조건부 PR18 R13-1 + 잔존)
 M3 (조건부) cook_intuition 단축 / PR14.1 재조정 ─── baseline v11 결과 의존
