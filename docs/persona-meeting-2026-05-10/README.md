@@ -188,7 +188,9 @@
 - `BAL_SIM_baseline_v13_result.json` — buildTag `sim-baseline-v13-pr16`.
 - **협의서 v5 §14 추가 보강 회의록** — **트랙 B 채택** (chef high-nutrition 자원 추가) · chef 자원 사양 가드레일(nutrition +30~+50 / hydration +20~+40 / durability 1~2 / chef 정체성) · 트랙 D (PR16 롤백) / 트랙 C (M3 마감) 폴백 명시.
 
-**다음 트리거 (협의서 v5 §14.7 §1순위):** **시나리오 한도연 — `SCN_QUEST_chef_supply.md` (또는 SCN_QUEST_chef_tier2.md §보강)**. chef 전용 high-nutrition 자원 사양 결정 (nutrition +30~+50 / hydration +20~+40 / durability 1~2 / chef 한정). § 14.6 가드레일 준수 + 6 게이트 검수. 시스템 백승호 PR17 머지 → baseline v14 측정 → R11-1 완전 해소 단언 시도.
+**트랙 정체성 단정 (협의서 v5 §15, 2026-05-12):** **본 M3 트랙은 "시뮬 정합 게임 데이터 작성" 트랙으로 단정.** baseline KPI(K1·K3·K5·chef 격차)는 *시뮬 K1 마지노선*. 게임 본체 K1과의 매핑은 M4+ 텔레메트리 트랙으로 분리. 모든 R/KPI 단언은 시뮬 도구 안에서 해석.
+
+**다음 트리거 (협의서 v5 §14.7 §1순위, §15 트랙 정체성 안에서 해석):** **시나리오 한도연 — `SCN_QUEST_chef_supply.md`**. chef 전용 high-nutrition 자원 사양 결정 (nutrition +30~+50 / hydration +20~+40 / durability 1~2 / chef 한정). §14.6 가드레일 준수 + 6 게이트 검수. 시스템 백승호 PR17 머지 → baseline v14 측정 → **시뮬 R11-1 완전 해소** 단언 시도.
 
 ---
 
