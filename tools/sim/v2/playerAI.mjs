@@ -11,11 +11,17 @@
 //   6. 이동: 음식+물 < 2 + day>3 → 가장 안전한 인접 구
 //   7. 탐색: 매일 3회 (자원 채집)
 //   8. 낚시: hasFishing 구 + 낚싯대 보유 → 어획 시도 1회 (PR7)
+//   9. PR16: 위기 시점 추가 craft — nutrition < 50 또는 morale < 30 → actCook 추가 1회 +
+//      cooking lv 0 폴백 actT1Convert 추가 1회. R15-1 craft 발동 빈도 부족 해소.
 //
 // PR7 단순화:
 //   - 요리의 requiredTools(campfire 등) 체크 생략 — simInv는 board card 인스턴스가 없으므로 구조물 모델링 불가.
 //     음식 회복량 활성화가 목표이며, "도구 필요"는 시뮬 외 게임 측 모델링 영역.
 //   - 낚시 결정성: runner.mjs가 Math.random을 seeded RNG로 monkey-patch 하므로 본 모듈은 Math.random 직접 사용.
+//
+// PR16 결정성:
+//   - 추가 craft 발동 조건은 GameState 결정 값(nutrition·morale 임계)만 사용. RNG 무사용.
+//   - actCook·actT1Convert 모두 입력 차감 후 산출이라 무한 펌프 자연 차단 (입력 소진되면 null 반환).
 
 import GameState from '../../../js/core/GameState.js';
 import { DISTRICTS, generateDistrictLoot, getAdjacentDistricts } from '../../../js/data/districts.js';
@@ -366,6 +372,22 @@ export function runDayAI(simInv) {
   // PR7: 낚시 — 한강 인접 구에서 낚싯대 보유 시
   const f = actFish(simInv);
   if (f) actions.push(f);
+
+  // PR16: 탐색 후 위기 시점 추가 craft — R15-1 완전 해소. nutrition<50 또는 morale<30 결정 임계.
+  // 탐색으로 입력 자원이 보충된 직후 시점에 추가 발동 → chef·pharmacist·homeless cook 산출물 +1, cooking lv 0
+  // 4직업 T1 변환 +1. 무한 펌프는 입력 차감 후 산출 패턴으로 자연 차단.
+  const nutCur2 = GameState.stats?.nutrition?.current ?? 100;
+  const nutMax2 = GameState.stats?.nutrition?.max ?? 100;
+  const moraleCur2 = GameState.stats?.morale?.current ?? 100;
+  if (nutCur2 < nutMax2 * 0.5 || moraleCur2 < 30) {
+    const c2 = actCook(simInv);
+    if (c2) actions.push(c2);
+    const cookingLv2 = GameState.player?.skills?.cooking?.level ?? GameState.player?.skills?.cooking ?? 0;
+    if (cookingLv2 === 0) {
+      const t1b = actT1Convert(simInv);
+      if (t1b) actions.push(t1b);
+    }
+  }
 
   return actions;
 }
