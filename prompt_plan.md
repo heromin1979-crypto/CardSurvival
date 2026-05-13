@@ -6,7 +6,9 @@
 > 트랙 정체성 단정 (협의서 v5 §15, 2026-05-12): **"시뮬 정합 게임 데이터 작성" 트랙.** baseline KPI는 *시뮬 K1·K3·K5 마지노선*. 게임 본체 K1과의 매핑은 M4+ 텔레메트리 트랙으로 분리.
 > 시뮬 정합 5곳 등록 룰 (§16.3 표준 운영 단정): items_misc + stackConfig + CardFactory + characters startingItems + **playerAI.mjs actEat candidates** (5곳째).
 > 이전 계획: `docs/archive/prompt_plan.old5.md` (CST 패턴, 2026-04-28 마감)
-> 회의 산출물 인덱스: `docs/persona-meeting-2026-05-10/README.md`
+> 회의 산출물 인덱스: `docs/milestones/2026-05-10-persona-meeting/README.md`
+> 시뮬레이션 데이터: `simulation-data/` (baselines/{plans,reports,raw} + tuning)
+> 마스터 문서 인덱스: `docs/README.md`
 
 ## 배경
 
@@ -92,7 +94,7 @@ M3는 시뮬 v2 인프라(PR1~PR4) → Player AI 5단계(PR5/PR5.5/PR6/PR7) → 
 - [ ] `SCN_QUEST_pharmacist_tier2.md`
 - [ ] R8-1 보강과 동시 진행 — `homeless`·`engineer` morale 회복 자원·이벤트 신규
 
-### M3 #11 (협의서 v3 작성 마감, `docs/persona-meeting-2026-05-10/PD_BAL_MEETING_PR10_decision.md`)
+### M3 #11 (협의서 v3 작성 마감, `docs/milestones/2026-05-10-persona-meeting/00-decisions/PD_BAL_MEETING_PR10_decision.md`)
 
 - [x] PD/Balance 협의서 v3 작성 — PR10 옵션 결정 + actCook 모순 후속 처리 (PD 김재훈 + 밸런스 권지나)
 - [x] 협의서 v3 안건 1: PR10 = **옵션 C 단독 채택** — `playerAI.mjs:185` benefit 산식 nutrition 차별 가중치 도입. PR11(옵션 A 25구 확대)은 baseline v6 측정 후 조건부
@@ -113,7 +115,7 @@ M3는 시뮬 v2 인프라(PR1~PR4) → Player AI 5단계(PR5/PR5.5/PR6/PR7) → 
 - [x] baseline v6 정식 보고서 (`BAL_SIM_baseline_v6_report.md`, 327줄, 밸런스 권지나) — K1 8회 연속 0% / homeless K3 +0.9d 단독 / cooking lv 0 4직업 변화 0 단정 / cookOut 분리 표 신규 / R10-1 신규 등록
 - [x] 협의서 v3 §12 보강 회의록 추가 — 시나리오 γ 단정 / KPI 재정의 ("5직업 ≥50%" → "cooking lv ≥1 직업 ≥50%") / `GameState` 경로 정정 (`stats.nutrition`) / R10-1 등록 / §11 다음 단계 갱신
 
-### M3 #13 (협의서 v4 작성 마감, `docs/persona-meeting-2026-05-10/PD_BAL_MEETING_PR11_decision.md`)
+### M3 #13 (협의서 v4 작성 마감, `docs/milestones/2026-05-10-persona-meeting/00-decisions/PD_BAL_MEETING_PR11_decision.md`)
 
 - [x] PD/Balance 협의서 v4 작성 — PR11 옵션 결정 + lootTable 사양 + scavenging 재검증 + M3 #14 시점 + R10-1·R8-1 결합 (PD 김재훈 + 밸런스 권지나)
 - [x] 협의서 v4 안건 1: **PR11 = 옵션 2 단독 채택** — `js/data/districts.js` 25구 lootTable raw food 가중치 추가. 옵션 1은 PR12 폴백, 옵션 3은 최후순위. M3 #14는 PR11 머지 + baseline v7 후 분리 트랙
@@ -485,4 +487,4 @@ M3 (조건부) cook_intuition 단축 / PR14.1 재조정 ─── baseline v11 �
 
 ---
 
-*문서 끝. 회의 재개 시 본 문서와 `docs/persona-meeting-2026-05-10/README.md` 우선 갱신.*
+*문서 끝. 회의 재개 시 본 문서와 `docs/milestones/2026-05-10-persona-meeting/README.md` 우선 갱신.*
