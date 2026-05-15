@@ -92,4 +92,28 @@
   --transition-fast: 120ms ease;
   --transition-mid:  220ms ease;
   --transition-slow: 400ms ease;
+
+  /* ─── 메시지 타입 컬러 시스템 (PATCH v2 - 2026.05) ─── */
+  --msg-dialogue:    #c8a060;  /* 💬 NPC 대사 */
+  --msg-quest:       #60b060;  /* ✅ 퀘스트/긍정 */
+  --msg-system:      #44aadd;  /* ⚔️ 전투/시스템 액션 */
+  --msg-status:      #cc8833;  /* 🩹 상태 변화 */
+  --msg-danger:      #e05050;  /* ⚠️ 경고/위험 */
+  --msg-info:        #5090c0;  /* 📍 위치/정보 */
+
+  /* ─── 메시지 패널 사이즈 ─── */
+  --notif-panel-w:   300px;
+  --log-panel-w:     320px;
+  --log-panel-h:     380px;
+
+  /* ─── 메시지 카드 내부 그리드 ─── */
+  --msg-icon-col:    22px;
+  --msg-accent-bar:  4px;
+
+  /* ─── 메시지 전용 폰트 사이즈 ─── */
+  --msg-label:       12px;
+  --msg-speaker:     14px;
+  --msg-title:       17px;
+  --msg-body:        15px;
+  --msg-reward:      14px;
 }

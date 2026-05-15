@@ -258,9 +258,6 @@ const STACK_ROWS = [
   // — 군인 전용 keepsake (PR16 comrade_memorial) —
   ['dog_tag'                   , false, 1 ],
 
-  // — 약사 전용 keepsake (PR16 compounding_focus) —
-  ['pharmacy_notes'            , false, 1 ],
-
   // — 셰프 전용 희귀 식재료 (stackable, maxStack 3~5) —
   ['truffle'                   , true,  3 ],
   ['korean_beef_premium'       , true,  3 ],

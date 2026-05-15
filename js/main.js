@@ -230,107 +230,173 @@ function init() {
   console.log('[Game] Ready.');
 }
 
+// 알림/로그 시스템 (CSS PATCH v2 마크업 사용)
+// legacy `notify` 이벤트 — { message, type } — 그대로 수신하고
+// type을 새 data-type으로 매핑한다. 기존 호출부 변경 없음.
 function _initNotifications() {
   const container = document.getElementById('notification-container');
-  if (!container) return;
+  const logEl     = document.getElementById('message-log');
+  if (!container || !logEl) return;
 
-  const _log = [];
+  const CHAR_NAMES = {
+    doctor:      '이지수',
+    soldier:     '강민준',
+    firefighter: '박영철',
+    homeless:    '최형식',
+    chef:        '윤재혁',
+    engineer:    '정대한',
+  };
 
-  EventBus.on('notify', ({ message, type = 'info' }) => {
-    // Record in log
-    const now = new Date();
-    const timeStr = now.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    _log.push({ message, type, time: timeStr });
+  const TYPE_MAP = {
+    info:    { notif: 'location',       log: 'system', icon: '📍', label: '정보',      speaker: '시스템' },
+    good:    { notif: 'quest-complete', log: 'quest',  icon: '✅', label: '성공',      speaker: '퀘스트' },
+    success: { notif: 'quest-complete', log: 'quest',  icon: '✅', label: '성공',      speaker: '퀘스트' },
+    SUCCESS: { notif: 'quest-complete', log: 'quest',  icon: '✅', label: '성공',      speaker: '퀘스트' },
+    warn:    { notif: 'status',         log: 'status', icon: '⚠️', label: '주의',      speaker: '상태'   },
+    warning: { notif: 'status',         log: 'status', icon: '⚠️', label: '주의',      speaker: '상태'   },
+    danger:  { notif: 'danger',         log: 'danger', icon: '🛑', label: '위험',      speaker: '경고'   },
+    error:   { notif: 'danger',         log: 'danger', icon: '🛑', label: '오류',      speaker: '오류'   },
+    ERROR:   { notif: 'danger',         log: 'danger', icon: '🛑', label: '오류',      speaker: '오류'   },
+    npc_quest_complete: { notif: 'quest-complete', log: 'quest', icon: '✨', label: '퀘스트 완료', speaker: '퀘스트' },
+  };
 
-    // Show toast
-    const el = document.createElement('div');
-    el.className = `notification ${type}`;
-    el.textContent = message;
-    container.appendChild(el);
+  const MAX_LOG     = 200;
+  const TOAST_LIFE  = 6800;  // ui.css .is-ephemeral: slideOutRight 6s 이후 0.4s — 총 6.4s + 여유
+  const _log        = [];
+  let   logFilter   = 'all';
+  let   isLogOpen   = false;
+  let   unreadCount = 0;
 
-    // Auto-remove after 6.5s
-    setTimeout(() => {
-      el.addEventListener('animationend', () => el.remove(), { once: true });
-      el.style.animation = 'fadeOut 0.3s ease forwards';
-      setTimeout(() => el.remove(), 350);
-    }, 6500);
-  });
+  const _now = () => new Date().toLocaleTimeString('ko-KR',
+    { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
-  // Log button
+  const _esc = (s) => String(s).replace(/[&<>"']/g,
+    c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  const _mapping = (type) => TYPE_MAP[type] ?? TYPE_MAP.info;
+
+  // ── 로그 버튼 (📋) ────────────────────────────────────
   const logBtn = document.createElement('button');
   logBtn.id = 'notif-log-btn';
   logBtn.className = 'notif-log-btn';
-  logBtn.title = '알림 기록';
+  logBtn.title = '메시지 로그';
+  logBtn.type = 'button';
   logBtn.textContent = '📋';
-  document.getElementById('notification-container').insertAdjacentElement('beforebegin', logBtn);
+  document.body.appendChild(logBtn);
 
-  // Log panel
-  const panel = document.createElement('div');
-  panel.id = 'notif-log-panel';
-  panel.className = 'notif-log-panel';
-  panel.innerHTML = `
-    <div class="notif-log-header">
-      <span class="notif-log-title">알림 기록</span>
-      <button class="notif-log-close" id="notif-log-close">✕</button>
-    </div>
-    <div class="notif-log-list" id="notif-log-list"></div>
-    <button class="notif-log-clear" id="notif-log-clear">기록 지우기</button>
-  `;
-  document.getElementById('app').appendChild(panel);
-
-  logBtn.addEventListener('click', () => {
-    const list = document.getElementById('notif-log-list');
-    list.innerHTML = _log.length === 0
-      ? '<div class="notif-log-empty">알림 기록이 없습니다.</div>'
-      : [..._log].reverse().map(e =>
-          `<div class="notif-log-entry ${e.type}">
-            <span class="notif-log-time">${e.time}</span>
-            <span class="notif-log-msg">${e.message}</span>
-          </div>`
-        ).join('');
-    panel.classList.toggle('open');
-  });
-
-  document.getElementById('notif-log-close').addEventListener('click', () => {
-    panel.classList.remove('open');
-  });
-
-  // 패널 외부 클릭 시 자동 닫기 (카드 상호작용 차단 방지)
-  document.addEventListener('click', (e) => {
-    if (panel.classList.contains('open') &&
-        !panel.contains(e.target) &&
-        e.target !== logBtn) {
-      panel.classList.remove('open');
+  const _renderBtnBadge = () => {
+    if (unreadCount > 0 && !isLogOpen) {
+      logBtn.textContent = `📋 ${unreadCount > 99 ? '99+' : unreadCount}`;
+      logBtn.classList.add('has-unread');
+    } else {
+      logBtn.textContent = '📋';
+      logBtn.classList.remove('has-unread');
     }
-  }, true);
-
-  document.getElementById('notif-log-clear').addEventListener('click', () => {
-    _log.length = 0;
-    document.getElementById('notif-log-list').innerHTML = '<div class="notif-log-empty">알림 기록이 없습니다.</div>';
-  });
-
-  // 캐릭터 대사 알림
-  const CHAR_NAMES = {
-    doctor:     '이지수',
-    soldier:    '박민준',
-    firefighter:'김영철',
-    homeless:   '최형식',
-    chef:       '윤재혁',
-    engineer:   '김대한',
   };
 
-  EventBus.on('charDialogue', ({ characterId, line }) => {
-    const name = CHAR_NAMES[characterId] ?? characterId;
-    const el = document.createElement('div');
-    el.className = 'notification char-dialogue';
-    el.innerHTML = `<span class="char-dialogue-name">${name}</span><span class="char-dialogue-line">${line}</span>`;
-    container.appendChild(el);
+  // ── 로그 본문 렌더 ────────────────────────────────────
+  const logBody = logEl.querySelector('.log-body');
 
-    setTimeout(() => {
-      el.addEventListener('animationend', () => el.remove(), { once: true });
-      el.style.animation = 'fadeOut 0.3s ease forwards';
-      setTimeout(() => el.remove(), 350);
-    }, 8000);
+  const _renderLog = () => {
+    const items = (logFilter === 'all')
+      ? _log
+      : _log.filter(e => {
+          if (logFilter === 'dialogue') return !!e.speakerName;
+          return _mapping(e.type).log === logFilter;
+        });
+
+    if (items.length === 0) {
+      logBody.innerHTML = `<div class="log-time-header">기록 없음</div>`;
+      return;
+    }
+
+    logBody.innerHTML = [...items].reverse().map(e => {
+      const m        = _mapping(e.type);
+      const dataType = e.speakerName ? 'dialogue' : m.log;
+      const speaker  = e.speakerName ?? m.speaker;
+      const icon     = e.speakerName ? '💬' : m.icon;
+      return `<div class="log-entry" data-type="${dataType}" role="listitem">
+        <div class="log-icon">${icon}</div>
+        <div class="log-speaker">${_esc(speaker)}</div>
+        <div class="log-time">${_esc(e.time)}</div>
+        <div class="log-body-text">${_esc(e.message)}</div>
+      </div>`;
+    }).join('');
+  };
+
+  // ── 토스트(자동소멸 카드) ─────────────────────────────
+  const _toast = (entry) => {
+    const m = _mapping(entry.type);
+    const card = document.createElement('div');
+    card.className = 'notif-card is-ephemeral';
+    card.dataset.type = entry.speakerName ? 'quest-active' : m.notif;
+
+    const labelTxt = entry.speakerName
+      ? `💬 ${_esc(entry.speakerName)}`
+      : `${m.icon} ${_esc(m.label)}`;
+    card.innerHTML = `
+      <div class="notif-label">${labelTxt}</div>
+      <div class="notif-body">${_esc(entry.message)}</div>
+    `;
+    container.appendChild(card);
+
+    setTimeout(() => card.remove(), TOAST_LIFE);
+  };
+
+  // ── 기록 + 토스트 ─────────────────────────────────────
+  const _record = (entry) => {
+    _log.push(entry);
+    if (_log.length > MAX_LOG) _log.shift();
+
+    if (isLogOpen) {
+      _renderLog();
+    } else {
+      unreadCount += 1;
+      _renderBtnBadge();
+    }
+    _toast(entry);
+  };
+
+  // ── 로그 열기/닫기 ────────────────────────────────────
+  const _openLog = () => {
+    isLogOpen = true;
+    unreadCount = 0;
+    logEl.classList.remove('hidden');
+    document.body.classList.add('is-log-open');
+    _renderLog();
+    _renderBtnBadge();
+  };
+
+  const _closeLog = () => {
+    isLogOpen = false;
+    logEl.classList.add('hidden');
+    document.body.classList.remove('is-log-open');
+    _renderBtnBadge();
+  };
+
+  logBtn.addEventListener('click', () => (isLogOpen ? _closeLog() : _openLog()));
+  logEl.querySelector('.log-close-btn').addEventListener('click', _closeLog);
+
+  // ── 필터 칩 ───────────────────────────────────────────
+  const chips = Array.from(logEl.querySelectorAll('.log-filter-chip'));
+  chips.forEach(chip => {
+    chip.addEventListener('click', () => {
+      chips.forEach(c => c.classList.toggle('is-active', c === chip));
+      logFilter = chip.dataset.filter;
+      if (logFilter === 'all') logBody.removeAttribute('data-filter');
+      else logBody.dataset.filter = logFilter;
+      _renderLog();
+    });
+  });
+
+  // ── 이벤트 구독 ──────────────────────────────────────
+  EventBus.on('notify', ({ message, type = 'info' }) => {
+    _record({ message, type, time: _now() });
+  });
+
+  EventBus.on('charDialogue', ({ characterId, line }) => {
+    const speakerName = CHAR_NAMES[characterId] ?? characterId;
+    _record({ message: line, type: 'info', time: _now(), characterId, speakerName });
   });
 }
 

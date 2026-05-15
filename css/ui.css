@@ -523,3 +523,412 @@
   0%, 100% { opacity: 0.85; }
   50%      { opacity: 1.0; }
 }
+
+/* ============================================================
+ * 메시지 UI 개선 패치 v2 (2026.05)
+ * §A 사이드 알림 / §B 메시지 로그 / §C 좁은 화면 대응
+ * ============================================================ */
+
+/* §A. 사이드 알림 패널 */
+
+#notification-container {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  width: var(--notif-panel-w);
+  max-height: 45vh;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+  z-index: var(--z-notify);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent-dim) transparent;
+}
+
+.notif-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--gap-sm) var(--gap-md);
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--accent-dim);
+  margin-bottom: var(--gap-xs);
+}
+
+.notif-section-header .view-all {
+  font-size: var(--msg-label);
+  color: var(--accent-primary);
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+.notif-section-header .view-all:hover {
+  color: var(--text-primary);
+}
+
+.notif-card {
+  position: relative;
+  background: var(--bg-raised);
+  border: 1px solid var(--accent-dim);
+  border-left: var(--msg-accent-bar) solid var(--msg-info);
+  border-radius: var(--radius-md);
+  padding: var(--gap-md);
+  animation: slideInRight 280ms ease;
+  transition: transform var(--transition-fast),
+              border-color var(--transition-fast);
+}
+
+.notif-card:hover {
+  transform: translateX(-2px);
+  border-color: var(--accent-primary);
+}
+
+.notif-card[data-type="quest-active"]   { border-left-color: var(--msg-dialogue); }
+.notif-card[data-type="quest-complete"] { border-left-color: var(--msg-quest); }
+.notif-card[data-type="location"]       { border-left-color: var(--msg-info); }
+.notif-card[data-type="danger"]         { border-left-color: var(--msg-danger); }
+.notif-card[data-type="status"]         { border-left-color: var(--msg-status); }
+
+.notif-label {
+  font-size: var(--msg-label);
+  color: var(--text-dim);
+  margin-bottom: var(--gap-xs);
+  letter-spacing: 0.02em;
+}
+
+.notif-title {
+  font-size: var(--msg-title);
+  font-weight: 600;
+  color: var(--accent-primary);
+  line-height: 1.3;
+  margin-bottom: var(--gap-sm);
+}
+
+.notif-card[data-type="quest-complete"] .notif-title { color: var(--msg-quest); }
+.notif-card[data-type="location"]       .notif-title { color: var(--msg-info); }
+.notif-card[data-type="danger"]         .notif-title { color: var(--msg-danger); }
+
+.notif-divider {
+  height: 1px;
+  background: var(--accent-dim);
+  margin: var(--gap-sm) 0;
+  opacity: 0.5;
+}
+
+.notif-body {
+  font-size: var(--msg-body);
+  color: var(--text-primary);
+  line-height: 1.45;
+  margin-bottom: var(--gap-sm);
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+.notif-reward {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-xs);
+  font-size: var(--msg-reward);
+  color: var(--msg-quest);
+  margin-top: var(--gap-sm);
+}
+
+.notif-penalty {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-xs);
+  font-size: var(--msg-reward);
+  color: var(--msg-danger);
+  margin-top: var(--gap-xs);
+}
+
+.notif-older-toggle {
+  text-align: center;
+  padding: var(--gap-sm);
+  font-size: var(--msg-label);
+  color: var(--text-dim);
+  cursor: pointer;
+  border-top: 1px dashed var(--accent-dim);
+  transition: color var(--transition-fast);
+}
+
+.notif-older-toggle:hover {
+  color: var(--accent-primary);
+}
+
+.notif-card.is-ephemeral {
+  animation: slideInRight 280ms ease,
+             slideOutRight 400ms ease 6s forwards;
+}
+
+@keyframes slideOutRight {
+  to {
+    opacity: 0;
+    transform: translateX(120%);
+  }
+}
+
+/* §B. 메시지 로그창 */
+
+#message-log {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  width: var(--log-panel-w);
+  height: var(--log-panel-h);
+  background: var(--bg-surface);
+  border: 1px solid var(--accent-dim);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  z-index: var(--z-panel);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+}
+
+.log-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--gap-sm) var(--gap-md);
+  background: var(--bg-raised);
+  border-bottom: 1px solid var(--accent-dim);
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+}
+
+.log-header-title {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-xs);
+  font-weight: 600;
+}
+
+.log-search-btn,
+.log-close-btn {
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 2px 6px;
+  transition: color var(--transition-fast);
+}
+
+.log-search-btn:hover,
+.log-close-btn:hover {
+  color: var(--accent-primary);
+}
+
+.log-filters {
+  display: flex;
+  gap: var(--gap-xs);
+  padding: var(--gap-sm) var(--gap-md);
+  border-bottom: 1px solid var(--accent-dim);
+  flex-wrap: wrap;
+}
+
+.log-filter-chip {
+  font-size: var(--msg-label);
+  padding: 3px var(--gap-sm);
+  border-radius: 999px;
+  border: 1px solid var(--accent-dim);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.log-filter-chip:hover {
+  border-color: var(--accent-primary);
+  color: var(--text-primary);
+}
+
+.log-filter-chip.is-active {
+  background: var(--accent-primary);
+  color: var(--bg-void);
+  border-color: var(--accent-primary);
+  font-weight: 600;
+}
+
+.log-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--gap-sm) 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent-dim) transparent;
+}
+
+.log-time-header {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-sm);
+  padding: var(--gap-md) var(--gap-md) var(--gap-sm);
+  font-size: var(--msg-label);
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.log-time-header::before,
+.log-time-header::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--accent-dim);
+  opacity: 0.4;
+}
+
+.log-entry {
+  display: grid;
+  grid-template-columns: var(--msg-icon-col) 1fr auto;
+  grid-template-areas:
+    "icon header time"
+    "icon body   body";
+  gap: var(--gap-xs) var(--gap-sm);
+  padding: var(--gap-sm) var(--gap-md);
+  border-left: var(--msg-accent-bar) solid var(--msg-info);
+  margin: var(--gap-xs) var(--gap-sm);
+  background: var(--bg-raised);
+  border-radius: var(--radius-sm);
+  transition: background var(--transition-fast);
+}
+
+.log-entry:hover {
+  background: var(--bg-hover);
+}
+
+.log-entry[data-type="dialogue"] { border-left-color: var(--msg-dialogue); }
+.log-entry[data-type="quest"]    { border-left-color: var(--msg-quest); }
+.log-entry[data-type="system"]   { border-left-color: var(--msg-system); }
+.log-entry[data-type="status"]   { border-left-color: var(--msg-status); }
+.log-entry[data-type="danger"]   { border-left-color: var(--msg-danger); }
+
+.log-icon {
+  grid-area: icon;
+  font-size: 16px;
+  line-height: 1.2;
+  align-self: flex-start;
+  margin-top: 2px;
+}
+
+.log-speaker {
+  grid-area: header;
+  font-size: var(--msg-speaker);
+  font-weight: 600;
+  color: var(--accent-primary);
+  align-self: center;
+}
+
+.log-entry[data-type="quest"]  .log-speaker { color: var(--msg-quest); }
+.log-entry[data-type="system"] .log-speaker { color: var(--msg-system); }
+.log-entry[data-type="status"] .log-speaker { color: var(--msg-status); }
+.log-entry[data-type="danger"] .log-speaker { color: var(--msg-danger); }
+
+.log-time {
+  grid-area: time;
+  font-size: var(--msg-label);
+  color: var(--text-dim);
+  align-self: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.log-body-text {
+  grid-area: body;
+  font-size: var(--msg-body);
+  color: var(--text-primary);
+  line-height: 1.45;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+.log-reward {
+  margin-top: var(--gap-xs);
+  font-size: var(--msg-reward);
+  color: var(--msg-quest);
+}
+
+.log-new-msg-fab {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px var(--gap-md);
+  background: var(--accent-primary);
+  color: var(--bg-void);
+  font-size: var(--msg-label);
+  font-weight: 600;
+  border: none;
+  border-radius: 999px;
+  box-shadow: 0 2px 12px rgba(200, 160, 96, 0.4);
+  cursor: pointer;
+  animation: fabSlideUp 220ms ease;
+  z-index: 10;
+}
+
+.log-new-msg-fab.hidden {
+  display: none;
+}
+
+@keyframes fabSlideUp {
+  from { opacity: 0; transform: translate(-50%, 10px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
+}
+
+.log-body[data-filter="dialogue"] .log-entry:not([data-type="dialogue"]) { display: none; }
+.log-body[data-filter="quest"]    .log-entry:not([data-type="quest"])    { display: none; }
+.log-body[data-filter="system"]   .log-entry:not([data-type="system"])   { display: none; }
+.log-body[data-filter="combat"]   .log-entry:not([data-type="combat"])   { display: none; }
+.log-body[data-filter="status"]   .log-entry:not([data-type="status"])   { display: none; }
+
+@keyframes msgArrive {
+  0%   { background: var(--bg-raised); }
+  20%  { background: rgba(200, 160, 96, 0.18); }
+  100% { background: var(--bg-raised); }
+}
+
+.log-entry.is-new {
+  animation: msgArrive 1.2s ease-out;
+}
+
+/* §B-ext. 로그 토글 버튼 통합 */
+
+#message-log.hidden {
+  display: none;
+}
+
+.notif-log-btn.has-unread {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+  opacity: 1;
+  font-weight: 600;
+  min-width: 32px;
+  width: auto;
+  padding: 0 6px;
+}
+
+body.is-log-open .notif-log-btn {
+  display: none;
+}
+
+/* §C. 좁은 화면 대응 */
+
+@media (max-width: 1280px) {
+  :root {
+    --notif-panel-w: 260px;
+    --log-panel-w:   280px;
+    --log-panel-h:   320px;
+  }
+}
+
+@media (max-width: 900px) {
+  #notification-container,
+  #message-log {
+    transform: translateX(100%);
+    transition: transform var(--transition-mid);
+  }
+
+  #notification-container.is-open,
+  #message-log.is-open {
+    transform: translateX(0);
+  }
+}

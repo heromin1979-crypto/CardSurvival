@@ -375,8 +375,8 @@ export function runDayAI(simInv) {
   if (f) actions.push(f);
 
   // PR16: 탐색 후 위기 시점 추가 craft — R15-1 완전 해소. nutrition<50 또는 morale<30 결정 임계.
-  // 탐색으로 입력 자원이 보충된 직후 시점에 추가 발동 → chef·pharmacist·homeless cook 산출물 +1, cooking lv 0
-  // 4직업 T1 변환 +1. 무한 펌프는 입력 차감 후 산출 패턴으로 자연 차단.
+  // 탐색으로 입력 자원이 보충된 직후 시점에 추가 발동 → chef·homeless cook 산출물 +1, cooking lv 0
+  // T1 변환 +1. 무한 펌프는 입력 차감 후 산출 패턴으로 자연 차단.
   const nutCur2 = GameState.stats?.nutrition?.current ?? 100;
   const nutMax2 = GameState.stats?.nutrition?.max ?? 100;
   const moraleCur2 = GameState.stats?.morale?.current ?? 100;

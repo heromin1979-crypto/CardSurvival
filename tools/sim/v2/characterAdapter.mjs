@@ -16,7 +16,6 @@ const SIM_COMBAT_DEFAULTS = {
   soldier:     { combatDmgWeapon: [14, 28], combatDmgUnarmed: [8, 14], combatAcc: 0.82, fleeBase: 0.35 },
   firefighter: { combatDmgWeapon: [12, 25], combatDmgUnarmed: [6, 12], combatAcc: 0.78, fleeBase: 0.50 },
   homeless:    { combatDmgWeapon: [7, 14],  combatDmgUnarmed: [4, 8],  combatAcc: 0.58, fleeBase: 0.70 },
-  pharmacist:  { combatDmgWeapon: [8, 16],  combatDmgUnarmed: [3, 7],  combatAcc: 0.65, fleeBase: 0.65 },
   engineer:    { combatDmgWeapon: [9, 18],  combatDmgUnarmed: [4, 9],  combatAcc: 0.70, fleeBase: 0.55 },
   chef:        { combatDmgWeapon: [9, 18],  combatDmgUnarmed: [4, 8],  combatAcc: 0.62, fleeBase: 0.62 },
 };
