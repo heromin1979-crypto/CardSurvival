@@ -74,7 +74,7 @@ const ModalManager = {
   close() {
     if (!this._overlay) return;
     this._nonDismissible = false;
-    this._overlay.classList.remove('open');
+    this._overlay.classList.remove('open', 'is-opening');
     GameState.ui.modalOpen = false;
     // 이전 포커스 복원
     if (this._prevFocus?.focus) {
@@ -83,34 +83,91 @@ const ModalManager = {
     }
   },
 
-  /** 오프닝 씬 모달 — 내레이션 + 2선택 (콜백 기반, 닫기 불가) */
+  /** 오프닝 씬 모달 — 시안 디자인 (브레드크럼/히어로/요약/선택지 카드/패널티) */
   showOpeningScene(config) {
     if (!this._overlay) return;
-    const { title = '⚡ 선택의 순간', narration = '', choices = [], onChoose } = config;
+    const {
+      title = '⚡ 선택의 순간',
+      narration = '',
+      choices = [],
+      breadcrumb,
+      iconBig,
+      summary,
+      globalPenalty,
+      onChoose,
+    } = config;
 
     this._nonDismissible = true;
     this._prevFocus = document.activeElement;
 
-    const btns = choices.map((opt, i) => {
-      const warnBadge = opt.warning
-        ? `<div class="branch-warning-badge" style="color:var(--text-warn);margin-top:6px;font-size:0.85em;">⚠️ ${opt.warning}</div>`
+    const choiceCards = choices.map((opt, i) => {
+      const tagHtml = opt.tag
+        ? `<span class="opening-choice-tag">${opt.tag}</span>`
+        : '';
+      const warnHtml = opt.warning
+        ? `<div class="opening-choice-desc" style="color:var(--text-warn);margin-top:4px;">⚠️ ${opt.warning}</div>`
+        : '';
+      const previewHtml = (Array.isArray(opt.preview) && opt.preview.length)
+        ? `<div class="opening-choice-arrow">→</div>
+           <div class="choice-preview-panel">
+             <div class="preview-title">결과 미리보기</div>
+             ${opt.preview.map(p => `<div class="preview-row"><span class="preview-icon">${p.icon ?? '·'}</span>${p.text}</div>`).join('')}
+           </div>`
         : '';
       return `
-        <button class="branch-choice-btn" id="opening-opt-${i}">
-          <div class="branch-choice-title">${opt.label}</div>
-          <div class="branch-choice-desc">${opt.desc ?? ''}</div>
-          ${warnBadge}
+        <button class="opening-choice-card" id="opening-opt-${i}" data-variant="${opt.variant ?? ''}" type="button">
+          <div class="opening-choice-icon">${opt.icon ?? '•'}</div>
+          <div class="opening-choice-main">
+            <div class="opening-choice-header">
+              <span class="opening-choice-title">${opt.label}</span>
+              ${tagHtml}
+            </div>
+            <div class="opening-choice-desc">${opt.desc ?? ''}</div>
+            ${warnHtml}
+          </div>
+          ${previewHtml}
         </button>`;
     }).join('');
 
+    const breadcrumbHtml = breadcrumb
+      ? `<div class="opening-scene-header">
+           <div class="opening-scene-breadcrumb">📍 ${breadcrumb}</div>
+           <button class="opening-scene-close-btn" disabled aria-hidden="true" tabindex="-1">✕</button>
+         </div>`
+      : '';
+
+    const heroHtml = iconBig
+      ? `<div class="opening-scene-hero">
+           <div class="opening-scene-icon-big">${iconBig}</div>
+           <div class="opening-scene-title-big">${title}</div>
+         </div>`
+      : `<div class="modal-title">${title}</div>`;
+
+    const summaryHtml = (Array.isArray(summary) && summary.length)
+      ? `<div class="opening-scene-section">
+           <div class="opening-scene-section-title">📋 상황 요약</div>
+           <div class="opening-scene-summary">
+             ${summary.map(s => `<span class="summary-chip"><span class="summary-chip-icon">${s.icon ?? '•'}</span>${s.label}</span>`).join('')}
+           </div>
+         </div>`
+      : '';
+
+    const penaltyHtml = globalPenalty
+      ? `<div class="opening-penalty-box">⚠️ ${globalPenalty}</div>`
+      : '';
+
     this._box.innerHTML = `
-      <div class="modal-title">${title}</div>
-      <div class="modal-body branch-choice-body">
-        <p class="branch-choice-hint" style="white-space:pre-line;line-height:1.6;">${narration}</p>
-        <div class="branch-choice-options">${btns}</div>
+      ${breadcrumbHtml}
+      ${heroHtml}
+      <p class="opening-scene-narration">${narration}</p>
+      ${summaryHtml}
+      <div class="opening-scene-section">
+        <div class="opening-scene-section-title">선택지</div>
+        <div class="opening-scene-choices">${choiceCards}</div>
       </div>
+      ${penaltyHtml}
     `;
-    this._overlay.classList.add('open');
+    this._overlay.classList.add('open', 'is-opening');
     GameState.ui.modalOpen = true;
 
     choices.forEach((opt, i) => {
@@ -123,7 +180,7 @@ const ModalManager = {
     });
 
     requestAnimationFrame(() => {
-      const first = this._box.querySelector('.branch-choice-btn');
+      const first = this._box.querySelector('.opening-choice-card');
       if (first) first.focus();
     });
   },

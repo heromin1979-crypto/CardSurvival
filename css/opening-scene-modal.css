@@ -1,0 +1,263 @@
+/* ============================================================
+ * 오프닝 씬 이벤트 모달 (의사 시작 — 박상훈 첫 만남 등)
+ * .modal-overlay.is-opening modifier를 사용해 공유 .modal-box를 확장
+ * ModalManager.showOpeningScene 전용
+ * ============================================================ */
+
+.modal-overlay.is-opening .modal-box {
+  max-width: 880px;
+  width: 92%;
+  max-height: 90vh;
+  padding: var(--gap-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-md);
+}
+
+.opening-scene-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: var(--gap-sm);
+  border-bottom: 1px solid var(--accent-dim);
+}
+
+.opening-scene-breadcrumb {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  letter-spacing: 0.02em;
+}
+
+.opening-scene-close-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+.opening-scene-close-btn[disabled] {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.opening-scene-hero {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-lg);
+  padding: var(--gap-sm) 0;
+}
+
+.opening-scene-icon-big {
+  font-size: 56px;
+  line-height: 1;
+  flex: 0 0 auto;
+}
+
+.opening-scene-title-big {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--accent-primary);
+  line-height: 1.2;
+  font-family: var(--font-title);
+}
+
+.opening-scene-narration {
+  font-size: var(--font-size-base);
+  color: var(--text-primary);
+  line-height: 1.65;
+  white-space: pre-line;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+  margin: 0;
+}
+
+.opening-scene-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+}
+
+.opening-scene-section-title {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+.opening-scene-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap-sm);
+}
+
+.summary-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  background: var(--bg-raised);
+  border: 1px solid var(--accent-dim);
+  border-radius: 999px;
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+}
+
+.summary-chip-icon {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.opening-scene-choices {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-md);
+}
+
+.opening-choice-card {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: center;
+  gap: var(--gap-md);
+  padding: var(--gap-lg);
+  background: var(--bg-raised);
+  border: 1px solid var(--accent-dim);
+  border-left-width: 4px;
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  text-align: left;
+  color: var(--text-primary);
+  font-family: inherit;
+  transition: border-color var(--transition-fast),
+              background var(--transition-fast),
+              transform var(--transition-fast);
+}
+
+.opening-choice-card:hover,
+.opening-choice-card:focus-visible {
+  border-color: var(--accent-primary);
+  background: var(--bg-hover);
+  transform: translateY(-1px);
+  outline: none;
+}
+
+.opening-choice-card[data-variant="treat"]  { border-left-color: var(--msg-quest); }
+.opening-choice-card[data-variant="escape"] { border-left-color: var(--text-warn); }
+
+.opening-choice-icon {
+  font-size: 36px;
+  line-height: 1;
+  align-self: center;
+}
+
+.opening-choice-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+  min-width: 0;
+}
+
+.opening-choice-header {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-sm);
+  flex-wrap: wrap;
+}
+
+.opening-choice-title {
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.opening-choice-tag {
+  font-size: var(--msg-label);
+  padding: 2px 10px;
+  background: var(--bg-hover);
+  border: 1px solid var(--accent-dim);
+  border-radius: 999px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.opening-choice-desc {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  line-height: 1.5;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+.opening-choice-arrow {
+  font-size: 22px;
+  color: var(--text-dim);
+  align-self: center;
+}
+
+.choice-preview-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 180px;
+  padding: var(--gap-sm) var(--gap-md);
+  background: var(--bg-surface);
+  border: 1px dashed var(--accent-dim);
+  border-radius: var(--radius-md);
+}
+
+.preview-title {
+  font-size: var(--msg-label);
+  color: var(--text-dim);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+.preview-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+  line-height: 1.4;
+}
+
+.preview-icon {
+  font-size: 13px;
+  line-height: 1;
+}
+
+.opening-penalty-box {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-sm);
+  padding: var(--gap-sm) var(--gap-md);
+  background: rgba(224, 80, 80, 0.10);
+  border: 1px solid var(--msg-danger);
+  border-radius: var(--radius-md);
+  color: var(--text-danger);
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+  margin-top: var(--gap-xs);
+}
+
+@media (max-width: 1280px) {
+  .modal-overlay.is-opening .modal-box {
+    max-width: 760px;
+    padding: var(--gap-lg);
+  }
+  .opening-scene-title-big { font-size: 26px; }
+  .opening-scene-icon-big  { font-size: 44px; }
+  .opening-choice-card {
+    grid-template-columns: auto 1fr;
+    grid-template-areas:
+      "icon main"
+      "preview preview";
+    row-gap: var(--gap-sm);
+  }
+  .opening-choice-icon    { grid-area: icon; }
+  .opening-choice-main    { grid-area: main; }
+  .opening-choice-arrow   { display: none; }
+  .choice-preview-panel   { grid-area: preview; min-width: 0; }
+}
