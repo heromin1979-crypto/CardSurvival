@@ -572,24 +572,47 @@ const CharCreate = {
     // 6) 오프닝 씬 모달 표시 (다음 프레임에)
     requestAnimationFrame(() => {
       EventBus.emit('openingScene', {
-        title: '🏥 보라매병원 응급실',
+        breadcrumb: '동작구 보라매병원 › 응급실',
+        iconBig: '🏥',
+        title: '보라매병원 응급실',
         narration:
           '약품 창고에서 3일을 버텼다.\n' +
           '문을 열자 응급실 바닥엔 박상훈 하사가 쓰러져 있다 — 현충원 경비소대 소속.\n' +
           '신음 소리가 가냘프다. 시간이 얼마 없다.',
+        summary: [
+          { icon: '⏰', label: '시간 압박' },
+          { icon: '🩹', label: '부상자: 박상훈 하사' },
+          { icon: '📍', label: '현재 위치: 보라매병원 응급실' },
+        ],
         choices: [
           {
-            label: '🩹 박상훈 하사를 치료한다',
+            label: '박상훈 하사를 치료한다',
             desc: '응급실에 머물러 붕대로 상처를 치료한다. 의사의 본분이다.',
+            icon: '🩺',
+            tag: '응급실에 머물기',
+            variant: 'treat',
             value: 'treat',
+            preview: [
+              { icon: '🩹', text: '박상훈 하사 생존' },
+              { icon: '🤝', text: '의사의 본부 관계 +' },
+              { icon: '⏳', text: '시간 소모 큼' },
+            ],
           },
           {
-            label: '🏃 즉시 병원을 탈출한다',
+            label: '즉시 병원을 탈출한다',
             desc: '군인을 두고 바로 동작구 거점으로 이동한다.',
-            warning: '사기 -10, 박상훈 하사는 응급실에 남겨진다.',
+            icon: '🏃',
+            tag: '빠른 이동',
+            variant: 'escape',
             value: 'escape',
+            preview: [
+              { icon: '⏰', text: '시간 절약' },
+              { icon: '⚡', text: '이동 속도 +' },
+              { icon: '⚠️', text: '박상훈 하사 사망' },
+            ],
           },
         ],
+        globalPenalty: '선택 시 패널티: 사기 -10, 박상훈 하사는 응급실에 남겨진다.',
         onChoose: (choice) => {
           if (choice === 'escape') {
             gs.flags.abandoned_soldier = true;
