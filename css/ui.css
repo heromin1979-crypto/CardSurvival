@@ -870,27 +870,23 @@
 .log-entry[data-type="status"]   { border-left-color: var(--msg-status); }
 .log-entry[data-type="danger"]   { border-left-color: var(--msg-danger); }
 
-.log-entry-time {
+.log-entry-category {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 1px;
+  align-items: center;
+  justify-content: center;
   font-size: var(--msg-label);
+  font-weight: 600;
+  letter-spacing: 0.02em;
   color: var(--text-dim);
-  font-variant-numeric: tabular-nums;
-  padding-top: 1px;
+  padding-top: 2px;
+  white-space: nowrap;
 }
 
-.log-entry-time-period {
-  font-size: var(--msg-label);
-  color: var(--text-dim);
-}
-
-.log-entry-time-clock {
-  font-size: var(--msg-label);
-  color: var(--text-dim);
-  letter-spacing: -0.01em;
-}
+.log-entry[data-type="dialogue"] .log-entry-category { color: var(--msg-dialogue); }
+.log-entry[data-type="quest"]    .log-entry-category { color: var(--msg-quest); }
+.log-entry[data-type="system"]   .log-entry-category { color: var(--msg-system); }
+.log-entry[data-type="status"]   .log-entry-category { color: var(--msg-status); }
+.log-entry[data-type="danger"]   .log-entry-category { color: var(--msg-danger); }
 
 .log-entry-content {
   display: flex;
@@ -1002,9 +998,9 @@ body.is-log-open .notif-log-btn {
 
 @media (max-width: 1280px) {
   :root {
-    --notif-panel-w: 260px;
-    --log-panel-w:   280px;
-    --log-panel-h:   320px;
+    --notif-panel-w: 320px;
+    --log-panel-w:   400px;
+    --log-panel-h:   400px;
   }
 }
 

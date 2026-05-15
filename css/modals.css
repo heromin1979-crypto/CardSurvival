@@ -264,17 +264,8 @@
 }
 
 /* === NOTIFICATIONS === */
-.notification-container {
-  position: fixed;
-  bottom: 60px;
-  right: var(--gap-lg);
-  z-index: var(--z-notify);
-  display: flex;
-  flex-direction: column-reverse;
-  gap: var(--gap-sm);
-  max-width: 280px;
-  pointer-events: none;
-}
+/* .notification-container 규칙은 v2 패치 #notification-container ID selector(ui.css §A)로 대체됨.
+   레거시 .notification 클래스 스타일은 char-dialogue 호환 위해 잠시 유지. */
 
 .notification {
   background: var(--bg-surface);

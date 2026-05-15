@@ -301,6 +301,16 @@ function _initNotifications() {
     return null;
   };
 
+  // 로그 entry 좌측 카테고리 라벨 (필터 칩과 동일 어휘)
+  const CATEGORY_LABEL = {
+    dialogue: '대사',
+    quest:    '퀘스트',
+    system:   '시스템',
+    status:   '상태',
+    danger:   '위험',
+    combat:   '전투',
+  };
+
   // ── 로그 버튼 (📋) ────────────────────────────────────
   const logBtn = document.createElement('button');
   logBtn.id = 'notif-log-btn';
@@ -341,12 +351,9 @@ function _initNotifications() {
       const dataType = e.speakerName ? 'dialogue' : m.log;
       const speaker  = e.speakerName ?? m.speaker;
       const icon     = e.speakerName ? '💬' : m.icon;
-      const t        = _splitTime(e.ts);
+      const category = CATEGORY_LABEL[dataType] ?? '기타';
       return `<div class="log-entry" data-type="${dataType}" role="listitem">
-        <div class="log-entry-time">
-          <div class="log-entry-time-period">${t.period}</div>
-          <div class="log-entry-time-clock">${t.clock}</div>
-        </div>
+        <div class="log-entry-category">${category}</div>
         <div class="log-entry-content">
           <div class="log-entry-speaker">
             <span class="log-entry-speaker-icon">${icon}</span>${_esc(speaker)}
