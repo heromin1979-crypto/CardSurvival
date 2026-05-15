@@ -93,27 +93,32 @@
   --transition-mid:  220ms ease;
   --transition-slow: 400ms ease;
 
-  /* ─── 메시지 타입 컬러 시스템 (PATCH v2 - 2026.05) ─── */
-  --msg-dialogue:    #c8a060;  /* 💬 NPC 대사 */
-  --msg-quest:       #60b060;  /* ✅ 퀘스트/긍정 */
-  --msg-system:      #44aadd;  /* ⚔️ 전투/시스템 액션 */
-  --msg-status:      #cc8833;  /* 🩹 상태 변화 */
-  --msg-danger:      #e05050;  /* ⚠️ 경고/위험 */
-  --msg-info:        #5090c0;  /* 📍 위치/정보 */
+  /* ─── 메시지 타입 컬러 시스템 (시안 v2 정렬 — 2026.05) ─── */
+  --msg-dialogue:    #4A90E2;  /* 💬 NPC 대사 화자 (Primary) */
+  --msg-quest:       #4CAF50;  /* ✅ 퀘스트 완료/긍정 (Success) */
+  --msg-quest-new:   #F5C542;  /* 📋 새 퀘스트/진행 중 (노랑) */
+  --msg-system:      #9AA0A6;  /* ⚙️ 시스템 정보 */
+  --msg-status:      #4DA3FF;  /* 🩹 주의 (파랑) */
+  --msg-danger:      #FF4D4D;  /* ⚠️ 위험 (빨강) */
+  --msg-info:        #A0A0A0;  /* 📍 일반/위치 (회색) */
+  --msg-tip:         #6BCB77;  /* 💡 팁 (녹색) */
 
   /* ─── 메시지 패널 사이즈 ─── */
-  --notif-panel-w:   300px;
+  --notif-panel-w:   320px;
+  --notif-card-h:    72px;
   --log-panel-w:     320px;
   --log-panel-h:     380px;
+  --log-time-col:    64px;
 
   /* ─── 메시지 카드 내부 그리드 ─── */
-  --msg-icon-col:    22px;
-  --msg-accent-bar:  4px;
+  --msg-icon-col:    24px;
+  --msg-accent-bar:  6px;
 
-  /* ─── 메시지 전용 폰트 사이즈 ─── */
-  --msg-label:       12px;
+  /* ─── 메시지 전용 폰트 사이즈 (시안 정렬) ─── */
+  --msg-label:       11px;
   --msg-speaker:     14px;
-  --msg-title:       17px;
-  --msg-body:        15px;
-  --msg-reward:      14px;
+  --msg-title:       14px;
+  --msg-body:        13px;
+  --msg-reward:      13px;
+  --msg-header:      14px;
 }

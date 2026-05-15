@@ -267,13 +267,39 @@ function _initNotifications() {
   let   isLogOpen   = false;
   let   unreadCount = 0;
 
-  const _now = () => new Date().toLocaleTimeString('ko-KR',
-    { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-
   const _esc = (s) => String(s).replace(/[&<>"']/g,
     c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
   const _mapping = (type) => TYPE_MAP[type] ?? TYPE_MAP.info;
+
+  const _pad = (n) => String(n).padStart(2, '0');
+
+  const _splitTime = (ts) => {
+    const d = new Date(ts);
+    const h = d.getHours();
+    const period = h < 12 ? '오전' : '오후';
+    const h12 = h % 12 === 0 ? 12 : h % 12;
+    return { period, clock: `${_pad(h12)}:${_pad(d.getMinutes())}:${_pad(d.getSeconds())}` };
+  };
+
+  const _relTime = (ts) => {
+    const min = Math.floor((Date.now() - ts) / 60000);
+    if (min < 1) return '방금';
+    if (min < 60) return `${min}분 전`;
+    const h = Math.floor(min / 60);
+    if (h < 24) return `${h}시간 전`;
+    return `${Math.floor(h / 24)}일 전`;
+  };
+
+  // tag 칩: 위험/주의/퀘스트만 노출
+  const _tagFor = (entry) => {
+    const m = _mapping(entry.type);
+    if (m.notif === 'danger')         return { tag: 'danger', label: '위험' };
+    if (m.notif === 'status')         return { tag: 'status', label: '주의' };
+    if (m.notif === 'quest-complete' && !entry.speakerName)
+                                      return { tag: 'quest',  label: '퀘스트' };
+    return null;
+  };
 
   // ── 로그 버튼 (📋) ────────────────────────────────────
   const logBtn = document.createElement('button');
@@ -315,28 +341,43 @@ function _initNotifications() {
       const dataType = e.speakerName ? 'dialogue' : m.log;
       const speaker  = e.speakerName ?? m.speaker;
       const icon     = e.speakerName ? '💬' : m.icon;
+      const t        = _splitTime(e.ts);
       return `<div class="log-entry" data-type="${dataType}" role="listitem">
-        <div class="log-icon">${icon}</div>
-        <div class="log-speaker">${_esc(speaker)}</div>
-        <div class="log-time">${_esc(e.time)}</div>
-        <div class="log-body-text">${_esc(e.message)}</div>
+        <div class="log-entry-time">
+          <div class="log-entry-time-period">${t.period}</div>
+          <div class="log-entry-time-clock">${t.clock}</div>
+        </div>
+        <div class="log-entry-content">
+          <div class="log-entry-speaker">
+            <span class="log-entry-speaker-icon">${icon}</span>${_esc(speaker)}
+          </div>
+          <div class="log-entry-message">${_esc(e.message)}</div>
+        </div>
       </div>`;
     }).join('');
   };
 
-  // ── 토스트(자동소멸 카드) ─────────────────────────────
+  // ── 토스트(자동소멸 카드) — 시안 v2: 아이콘 / 제목+상대시간 / 본문 / 태그 ─
   const _toast = (entry) => {
     const m = _mapping(entry.type);
     const card = document.createElement('div');
     card.className = 'notif-card is-ephemeral';
     card.dataset.type = entry.speakerName ? 'quest-active' : m.notif;
 
-    const labelTxt = entry.speakerName
-      ? `💬 ${_esc(entry.speakerName)}`
-      : `${m.icon} ${_esc(m.label)}`;
+    const icon  = entry.speakerName ? '💬' : m.icon;
+    const title = entry.speakerName ?? m.label;
+    const tag   = _tagFor(entry);
+
     card.innerHTML = `
-      <div class="notif-label">${labelTxt}</div>
-      <div class="notif-body">${_esc(entry.message)}</div>
+      <div class="notif-card-icon">${icon}</div>
+      <div class="notif-card-main">
+        <div class="notif-card-header">
+          <span class="notif-card-title">${_esc(title)}</span>
+          <span class="notif-card-time">${_relTime(entry.ts)}</span>
+        </div>
+        <div class="notif-card-body">${_esc(entry.message)}</div>
+      </div>
+      ${tag ? `<span class="notif-card-tag" data-tag="${tag.tag}">${tag.label}</span>` : ''}
     `;
     container.appendChild(card);
 
@@ -345,6 +386,7 @@ function _initNotifications() {
 
   // ── 기록 + 토스트 ─────────────────────────────────────
   const _record = (entry) => {
+    if (!entry.ts) entry.ts = Date.now();
     _log.push(entry);
     if (_log.length > MAX_LOG) _log.shift();
 
@@ -391,12 +433,12 @@ function _initNotifications() {
 
   // ── 이벤트 구독 ──────────────────────────────────────
   EventBus.on('notify', ({ message, type = 'info' }) => {
-    _record({ message, type, time: _now() });
+    _record({ message, type, ts: Date.now() });
   });
 
   EventBus.on('charDialogue', ({ characterId, line }) => {
     const speakerName = CHAR_NAMES[characterId] ?? characterId;
-    _record({ message: line, type: 'info', time: _now(), characterId, speakerName });
+    _record({ message: line, type: 'info', ts: Date.now(), characterId, speakerName });
   });
 }
 
