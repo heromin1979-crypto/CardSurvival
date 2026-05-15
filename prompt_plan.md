@@ -340,13 +340,32 @@ M3는 시뮬 v2 인프라(PR1~PR4) → Player AI 5단계(PR5/PR5.5/PR6/PR7) → 
 ### M4 #2 (본체 텔레메트리 수집 채널 신규 — 시스템 백승호, 마감 2026-05-29)
 
 > 진입: 2026-05-22 (휴지 1주 후). 협의서 v6 §7.1 인용.
+> **사전 설계: `docs/plans/M4_TELEMETRY_SYSTEM_DESIGN.md` (2026-05-16 시스템 백승호 작성, 휴지 기간 산출물)**
 
-- [ ] `js/systems/TelemetrySystem.js` 신규 (~300줄 추정) — `EventBus.on('*', telemetryCollector)` 글로벌 후크
-- [ ] 수집 채널: `death`/`dayEnd`/`skillLevelUp`/`itemConsumed`/`npcRecruit`/`questComplete`/`craftSuccess` 7종
-- [ ] 저장: localStorage 또는 IndexedDB (~1MB 한도). 익명 userId 로컬 UUID, 외부 송신 없음
-- [ ] 사용자 export — 게임 종료 또는 메뉴에서 JSON 다운로드 (자발 제출)
-- [ ] `js/main.js` `Game.start()`에 `TelemetrySystem.init()` 등록
-- [ ] 검증 — `node --check js/systems/TelemetrySystem.js` OK / 헤드리스 1회 플레이 후 export JSON 확인
+- [x] 사전 설계 작성 — 채널 매핑 정정 + EventBus 와일드카드 미지원 대응 + 파일 구조 (~380줄 재추정) + 저장/export/익명 전략 + 4 단계 작업 분할 + 위험 5건
+- [x] 협의서 v6 §7.1 채널 명세 정정 — `death`→`playerDied` 신설 / `dayEnd` 신설 / `itemConsumed` 신설 / `npcRecruit`→`npcRecruited` / `questComplete`→`questCompleted` / `craftSuccess`→`craftComplete` 명칭 정정
+- [ ] **단계 A** (소요 1일) — 신규 emit 3건 collateral
+  - [ ] `EventBus.js` Known channels 주석 갱신
+  - [ ] `TickEngine.js:27` `dayEnd` emit (gs.time.day++ 직후)
+  - [ ] `StatSystem.js:411` + `CombatSystem.js:1266` + `DiseaseSystem.js:432` `playerDied` emit 3 사이트 (cause 분기)
+  - [ ] `itemConsumed` 사이트 확정 + emit (BoardActions/ConsumeSystem 확인)
+- [ ] **단계 B** (소요 2일) — `js/systems/TelemetrySystem.js` 신규 (~380줄)
+  - [ ] 모듈 골격: SCHEMA_VERSION / STORAGE_KEY_PREFIX / SESSION_KEY / USER_ID_KEY / MAX_EVENTS_PER_SESSION 5000 / FLUSH_INTERVAL_MS 30s
+  - [ ] init() — userId 로드/신규, sessionId 발급, 7 채널 EventBus.on 명시 구독, 30s flush 타이머, beforeunload flush
+  - [ ] 7 채널 핸들러: `_onPlayerDied`/`_onDayEnd`/`_onSkillLevelUp`/`_onItemConsumed`/`_onNpcRecruited`/`_onQuestCompleted`/`_onCraftComplete`
+  - [ ] `_push(entry)` — envelope wrap `{ ts, sessionId, channel, payload }`
+  - [ ] `_flush()` — localStorage + QuotaExceededError 가드 (IndexedDB 폴백은 M4 #2 안착 후)
+  - [ ] `exportSessionJSON()` / `exportAllSessionsJSON()` / `clearSession()` / `clearAll()`
+  - [ ] `_genUuid()` (crypto.randomUUID + 폴백) / `_genSessionId()` (`YYYYMMDD-HHMMSS-rand4`)
+- [ ] **단계 C** (소요 1일) — 진입점 + Export UI
+  - [ ] `js/main.js` `Game.start()` 또는 등가에 `TelemetrySystem.init()` 등록 (AutoSave 패턴)
+  - [ ] `MainMenu.js` 또는 `Pause.js`에 export 버튼 추가 (UI 위치 미결정 — M4 진입 시 결정)
+  - [ ] (선택) `ModalManager.js` 사망 시 export 제안 모달
+- [ ] **단계 D** (소요 1일) — 검증
+  - [ ] `node --check js/systems/TelemetrySystem.js` OK
+  - [ ] `validate.js` Errors 0 ALL CLEAR (데이터 무변경)
+  - [ ] 헤드리스 1회 플레이 — 1일 진행 후 dayEnd 1건 / 강제 사망 후 playerDied 1건 / export JSON 형식 확인
+  - [ ] localStorage 키 패턴 검증 (`CARD_SURVIVAL_TELE_v1_*`)
 
 ### M4 #3 (drift.mjs leaf hash 컬럼 추가 — 시스템 백승호, 마감 2026-06-01)
 
