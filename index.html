@@ -161,6 +161,24 @@
 
   <div id="notification-container" class="notification-container" role="log" aria-live="polite" aria-label="알림"></div>
 
+  <!-- 메시지 로그 (PATCH v2) — 📋 버튼으로 토글, JS에서 .hidden 제거 -->
+  <div id="message-log" class="hidden" role="log" aria-label="메시지 로그">
+    <div class="log-header">
+      <div class="log-header-title">📋 메시지 로그</div>
+      <button class="log-close-btn" type="button" aria-label="닫기">✕</button>
+    </div>
+    <div class="log-filters" role="tablist" aria-label="메시지 필터">
+      <button class="log-filter-chip is-active" type="button" data-filter="all">전체</button>
+      <button class="log-filter-chip" type="button" data-filter="dialogue">💬 대사</button>
+      <button class="log-filter-chip" type="button" data-filter="quest">✅ 퀘스트</button>
+      <button class="log-filter-chip" type="button" data-filter="system">📍 시스템</button>
+      <button class="log-filter-chip" type="button" data-filter="status">🩹 상태</button>
+      <button class="log-filter-chip" type="button" data-filter="danger">⚠️ 위험</button>
+    </div>
+    <div class="log-body" role="list"></div>
+    <button class="log-new-msg-fab hidden" type="button">📬 새 메시지</button>
+  </div>
+
   <!-- 이슈 #7 — 사망 위험 중앙 경고 배너 -->
   <div id="critical-warning-banner" class="critical-warning-banner" role="alert" aria-live="assertive"></div>
 

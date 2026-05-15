@@ -3,8 +3,8 @@
 .npc-panel {
   position: fixed;
   right: 0;
-  top: 50%;
-  transform: translateY(-50%);
+  top: 80px;
+  bottom: auto;
   z-index: 200;
   display: flex;
   flex-direction: row;
@@ -353,5 +353,26 @@
   height: 100%;
   background: var(--text-warn, #c8a060);
   transition: width 0.3s ease;
+}
+
+/* ============================================================
+ * 메시지 로그/알림 패널 충돌 회피 (PATCH v2 - 2026.05)
+ * body 상태 클래스로 NPC 패널 위치 조정
+ * ============================================================ */
+
+body.is-log-open #npc-panel {
+  bottom: calc(var(--log-panel-h) + 32px);
+  top: auto;
+  transition: bottom var(--transition-mid),
+              top var(--transition-mid);
+}
+
+body.is-notif-open #npc-panel {
+  top: calc(45vh + 48px);
+}
+
+body.is-log-open.is-notif-open #npc-panel {
+  top: calc(45vh + 48px);
+  bottom: calc(var(--log-panel-h) + 32px);
 }
 
