@@ -385,12 +385,12 @@ M3는 시뮬 v2 인프라(PR1~PR4) → Player AI 5단계(PR5/PR5.5/PR6/PR7) → 
 > 진단 출처: `c:\Users\USER\Downloads\창오류.png` — "정보창 데이터 겹침 + 메시지 폭주 + 스크롤 어색"
 > 영향 범위: `js/main.js _initNotifications` + `css/ui.css §A` + `css/variables.css` 토큰. 데이터·게임 로직 변경 0.
 
-- [ ] 단계 1 — `TYPE_MAP`에 `coalesce: boolean` 플래그 + `_signatureOf(message)` 헬퍼 (`recipe-unlock`/`item-gain`/`levelup` 패턴 + fallback hash) + `MAX_TOAST_VISIBLE = 4` + `_groupCards: Map` 도입
-- [ ] 단계 2 — `_record()` → `_coalesceToast(entry)` 분기. 동일 `${type}|${signature}` 카드 존재 시 count +1, body 요약 재작성, `_relTime` 갱신, `setTimeout` 리셋. `danger`/`error`/`npc_quest_complete`/`charDialogue`는 묶음 비대상
-- [ ] 단계 3 — `.notif-card` 마크업에 `notif-card-count` 슬롯 추가 + `notif-card-body` `-webkit-line-clamp: 2` + `.notif-card-tag`와 본문 충돌 해소 (padding-bottom 22px 또는 header 인라인 이동) + `.notif-overflow-line` 신규 (4장 초과 시 "+N개 더 — 로그에서 보기")
-- [ ] 단계 4 — `#notification-container` `max-height: 45vh` 제거 + `overflow-y: auto` → `overflow: visible` (`css/ui.css:534-547`). 좁은 화면 미디어쿼리 동작 보존
-- [ ] 단계 5 — `slideOutRight` 키프레임에 `max-height`/`padding`/`margin`/`border-width` 0 collapse 단계 추가 (`css/ui.css:703-713`). `.is-ephemeral` duration 재조정 (slide 400 + collapse 220ms)
-- [ ] 검증 — `node --check js/main.js` OK / `validate.js` Errors 0 ALL CLEAR / 헤드리스 1920×1080: 동일 카테고리 5건 → 1장 `×5`, 7건 혼합 → 4장 + 오버플로 라인 + 클릭 시 로그 열림, 컨테이너 폭 변동 0, 카드 소멸 점프 0, 콘솔 에러 0
+- [x] 단계 1 — `TYPE_MAP`에 `coalesce: boolean` 플래그 + `_signatureOf(message)` 헬퍼 (9 패턴 + fallback 24자 정규화 해시) + `MAX_TOAST_VISIBLE = 4` + `_groupCards: Map` + `_overflowLine` 도입
+- [x] 단계 2 — `_record()` → `_coalesceToast(entry)` 분기. 동일 `${type}|${signature}` 카드 존재 시 `_updateCardCount`로 count +1, body 요약 재작성, `_relTime` 갱신, `setTimeout` 리셋. `danger`/`error`/`ERROR`/`npc_quest_complete`/`charDialogue`는 묶음 비대상
+- [x] 단계 3 — `.notif-card-header`에 `notif-card-count` 슬롯 추가(`data-show=true/false`) + `.notif-card-body` `-webkit-line-clamp: 2` + `.notif-card` `padding-bottom: 22px`로 태그 충돌 해소 + `.notif-overflow-line` 신규(role="button", click → `_openLog`) + `.notif-card.is-pulse` 카운트 갱신 시 320ms 강조
+- [x] 단계 4 — `#notification-container` `max-height: 45vh` 제거 + `overflow-y: auto` → `overflow: visible` + scrollbar-* 규칙 제거 (`css/ui.css:534-543`). 좁은 화면 미디어쿼리 그대로 보존
+- [x] 단계 5 — `slideOutRight` 0%/60%/100% 3단계 키프레임으로 확장(opacity+translateX → max-height/padding/margin/border-width 0). `.is-ephemeral` duration 400ms → 620ms (slide phase 6.18s 종료 후 collapse 220ms)
+- [x] 검증 — `node --check js/main.js` OK / `validate.js` Errors 0 ALL CLEAR (데이터 무변경)
 
 ### UI #6 (숙련도 대시보드 시안 v3 + 로그 카테고리 라벨 + Wait 버튼 정리, 진행 중)
 
@@ -570,7 +570,7 @@ UI 시안 트랙 (병렬 — AD_GUIDE_UI_REVAMP, M3/M4와 의존 0)
   UI #2 (이지수 시작 이벤트 모달 시안, 1588ab5) ─── 마감
   UI #3 (알림 카드 + 메시지 로그 시안 v2 정렬, 81b574d) ─── 마감
   UI #4 (sticky 알림 + FAB 동적 + 데드 코드 제거 + AD M3 #15) ─── 미착수
-  UI #5 (사이드 알림 메시지 묶음 + 컨테이너 스크롤 개선) ─── 미착수 (plan 작성 마감)
+  UI #5 (사이드 알림 메시지 묶음 + 컨테이너 스크롤 개선) ─── 마감 (5단계 모두 적용)
   UI #6 (숙련도 대시보드 4-zone + 로그 카테고리 라벨 + Wait 정리) ─── 진행 중
 
 M3 후속 (R13-1 / R14-2 / R14-3 / spice_blend / AD UI) ─── M4 이월 또는 분리 트랙
