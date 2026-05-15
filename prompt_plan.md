@@ -9,6 +9,7 @@
 > 회의 산출물 인덱스: `docs/milestones/2026-05-10-persona-meeting/README.md`
 > 시뮬레이션 데이터: `simulation-data/` (baselines/{plans,reports,raw} + tuning)
 > 마스터 문서 인덱스: `docs/README.md`
+> 병렬 트랙: **UI 시안 트랙** (AD_GUIDE_UI_REVAMP, 본 문서 하단). 2026-05-15 진입, M3/M4 시뮬 트랙과 의존 0.
 
 ## 배경
 
@@ -328,6 +329,90 @@ M3는 시뮬 v2 인프라(PR1~PR4) → Player AI 5단계(PR5/PR5.5/PR6/PR7) → 
 - [ ] M3 §11 종결 단언을 M4 출발점으로 인용
 - [ ] M4 마일스톤 일정·산출물·페르소나 분담 정의
 
+---
+
+## UI 시안 트랙 (병렬 — AD_GUIDE_UI_REVAMP)
+
+> 시작일: 2026-05-15 (M3 종결 이후 2026-05-13 ~). M3/M4 시뮬·밸런스 트랙과 분리된 **병렬 트랙**.
+> 디렉션: `C:\Users\USER\.claude\Instructions\briefs\AD_GUIDE_UI_REVAMP.md` (AD 오은별 위임).
+> 영향 범위: UI/CSS/마크업/JS 렌더링 훅 — **데이터·게임 로직 변경 0** 단정.
+> 디자인 기준: `DESIGN.md` + `css/variables.css` 토큰.
+
+### UI #1 (CSS PATCH v2 적용 + 알림·메시지 로그 마이그레이션, master `3a73cb2`)
+
+- [x] `css-patch-v2.zip` 3개 패치 적용 — 메시지 UI 가독성 개선
+- [x] `css/variables.css` — `--msg-*` 컬러 6종 + `--notif-panel-w`·`--log-panel-h` 등 메시지 UI 전용 토큰 24개 (:root 끝 append)
+- [x] `css/ui.css` — §A 사이드 알림 패널 + §B 메시지 로그창 + §C 좁은 화면 대응 (+389 라인) + 로그 토글 버튼 통합 규칙
+- [x] `css/npc-panel.css` — `.npc-panel` `top:50%`/`translateY` 제거 → `top:80px`, `body.is-log-open`/`is-notif-open` 충돌 회피 규칙 append
+- [x] `index.html` — `#message-log` 마크업(헤더 + 필터칩 6종 + 본문 + FAB) 추가
+- [x] `js/main.js _initNotifications()` 전면 재작성 — legacy notify type → `data-type` 매핑, `.notif-card.is-ephemeral` CSS 자동 슬라이드아웃 6.8s, 📋 버튼 로그 토글 + 미확인 카운트 배지, 필터칩 6종 활성화, 인메모리 ring buffer 200개
+- [x] 부수 — `CHAR_NAMES` NPC 이름 오타 3건 정정 (박민준→강민준 soldier / 김영철→박영철 firefighter / 김대한→정대한 engineer)
+- [x] 호환성 보존 — 기존 `EventBus.emit('notify', { message, type })` 호출부 300+개 그대로 유지 (핸들러에서 매핑만 확장)
+- [x] 검증 — `node --check js/main.js` OK / validate.js Errors 0 ALL CLEAR / HTML 마크업 훅 DOM 존재 확인
+- [ ] 의도적 미적용 (후속 PR): `body.is-notif-open` 자동 토글, FAB 동적 표시(Discord식 스크롤 추적), 레거시 `.notification`·`.notif-log-panel` CSS 잔존 데드 코드 제거
+
+### UI #2 (이지수 시작 이벤트 모달 시안 적용, master `1588ab5`)
+
+- [x] 박상훈 첫 만남 시나리오 트리거 시 좁은 사이드바형(BEFORE) → 가로 ~880px 카드 레이아웃(AFTER) 업그레이드
+- [x] 신규 — `css/opening-scene-modal.css` (263줄): `.modal-overlay.is-opening` modifier 기반. 브레드크럼·히어로(아이콘+제목)·내레이션·상황 요약 칩·선택지 카드 그리드·결과 미리보기 패널·패널티 박스. 1280px 이하 column 레이아웃 자동 전환
+- [x] `index.html` — CSS link 1줄 추가 (modals.css 뒤)
+- [x] `js/ui/ModalManager.js` — `showOpeningScene()` 마크업 시안 구조로 교체. 새 config 필드 5종 지원 (`breadcrumb` / `iconBig` / `summary[]` / `choices[].tag/icon/variant/preview` / `globalPenalty`) — 모두 옵션이라 기존 호출자 호환. `close()`에서 `.is-opening` modifier 제거 (다른 모달 재사용 시 폭 누수 차단)
+- [x] `js/screens/CharCreate.js _doctorEmergencyOpening()` — `openingScene` config를 시안 데이터로 채움 (브레드크럼·빌딩 아이콘·상황 요약 칩 3종·선택지 태그/아이콘/결과 미리보기·글로벌 패널티). 기존 `choices[1].warning`은 `globalPenalty`로 이전(중복 제거)
+- [x] 로직 보존 단정 — `onChoose` 콜백(사기 -10, abandoned_soldier 플래그, exitLandmark) 변경 0
+- [x] 검증 — `node --check js/ui/ModalManager.js && node --check js/screens/CharCreate.js` OK / 헤드리스 브라우저(1920×1080) 의사 시작 시 모달 자동 표시 DOM 확인 / "박상훈 치료" 클릭 → 모달 닫힘 + `is-opening` 제거 + 후속 토스트 정상 발동 / 콘솔 에러 0건
+
+### UI #3 (알림 카드 + 메시지 로그 시안 v2 정렬, master `81b574d`)
+
+- [x] 사이드 알림 패널·메시지 로그창 첨부 시안 2종에 정확히 맞춰 재구성
+- [x] 사이드 알림 — 192px 폭, 좌측 아이콘 + 우상단 상대시간 + 우하단 상태 태그 칩, 5종 컬러 시스템 (퀘스트 노랑 / 위험 / 주의 / 팁 / 일반)
+- [x] 메시지 로그 — 좌측 64px 시간 컬럼("오후" + "01:35:18" 두 줄), 우측 화자(Bold + 컬러 분기) + 본문 위계, 헤더 36px 고정
+- [x] `css/variables.css` — `--msg-*` 컬러 시안 값 일괄 업데이트(dialogue #4A90E2 / quest #4CAF50 / system #9AA0A6 / status #4DA3FF / danger #FF4D4D / info #A0A0A0). 신규 토큰 `--msg-quest-new` #F5C542 + `--msg-tip` #6BCB77. 폰트 위계 시안 정렬(label 12→11, title 17→14, body 15→13, header 14 추가). 사이즈 토큰 `--notif-card-h` 72px, `--log-time-col` 64px, `--msg-icon-col` 22→24, `--msg-accent-bar` 4→6
+- [x] `css/ui.css` — `.notif-card` `display:grid` 아이콘+메인 컬럼 구조. `.notif-card-icon`/`.notif-card-main`/`.notif-card-header(title+time)`/`.notif-card-tag` absolute 우하단 data-tag별 컬러. `.log-header` height 36px / `.log-entry` grid 64px 시간 컬럼 + 1fr 메시지 영역. `.log-entry-time`(period + clock 두 줄 11px tabular-nums) + `.log-entry-content`(speaker + message + meta)
+- [x] `js/main.js _initNotifications()` — `entry.ts: Date.now()` 저장, `_splitTime(ts)` 오전/오후 + HH:MM:SS 분리, `_relTime(ts)` 방금/N분 전/N시간 전/N일 전, `_tagFor(entry)` danger→"위험"/status→"주의"/quest-complete→"퀘스트". `_toast`/`_renderLog` 마크업 시안 구조로 재작성
+- [x] 호환성 보존 — `EventBus.emit('notify', { message, type })` 호출부 300+개 그대로 유지
+- [x] 검증 — `node --check js/main.js` OK / 헤드리스 브라우저(1920×1080) 6종 알림 카드(charDialogue + 5 type) 정상 렌더, 컬러 시스템 분기 확인 / 상대시간 "방금" 표시, 위험·주의·퀘스트 태그 칩 확인 / 로그 좌측 시간 컬럼(오후/01:35:18) + 화자 컬러 분기 확인 / 헤더 정확 36px / 콘솔 에러 0건
+
+### UI #4 (다음 진입 — 후속 PR 후보, 미착수)
+
+- [ ] `body.is-notif-open` 자동 토글 (sticky 알림 도입 시 활성화)
+- [ ] FAB 동적 표시 — Discord식 스크롤 추적 패턴 별도 구현
+- [ ] 레거시 `.notification`·`.notif-log-panel` CSS 데드 코드 제거
+- [ ] (AD UI 변경 권고 2건, M3 #15 이월) `interactions.js` cooking 8 hint / `CraftUI._renderOutputPreview` 산출물 동시 비교 모드 + `--stat-nutrition`/`--stat-hydration` 토큰
+
+### UI #5 (사이드 알림 메시지 묶음 + 컨테이너 스크롤 개선, 미착수)
+
+> 상세 plan: `docs/plans/UI5_NOTIF_COALESCE_PLAN.md` (2026-05-15, AD 오은별 진단)
+> 진단 출처: `c:\Users\USER\Downloads\창오류.png` — "정보창 데이터 겹침 + 메시지 폭주 + 스크롤 어색"
+> 영향 범위: `js/main.js _initNotifications` + `css/ui.css §A` + `css/variables.css` 토큰. 데이터·게임 로직 변경 0.
+
+- [ ] 단계 1 — `TYPE_MAP`에 `coalesce: boolean` 플래그 + `_signatureOf(message)` 헬퍼 (`recipe-unlock`/`item-gain`/`levelup` 패턴 + fallback hash) + `MAX_TOAST_VISIBLE = 4` + `_groupCards: Map` 도입
+- [ ] 단계 2 — `_record()` → `_coalesceToast(entry)` 분기. 동일 `${type}|${signature}` 카드 존재 시 count +1, body 요약 재작성, `_relTime` 갱신, `setTimeout` 리셋. `danger`/`error`/`npc_quest_complete`/`charDialogue`는 묶음 비대상
+- [ ] 단계 3 — `.notif-card` 마크업에 `notif-card-count` 슬롯 추가 + `notif-card-body` `-webkit-line-clamp: 2` + `.notif-card-tag`와 본문 충돌 해소 (padding-bottom 22px 또는 header 인라인 이동) + `.notif-overflow-line` 신규 (4장 초과 시 "+N개 더 — 로그에서 보기")
+- [ ] 단계 4 — `#notification-container` `max-height: 45vh` 제거 + `overflow-y: auto` → `overflow: visible` (`css/ui.css:534-547`). 좁은 화면 미디어쿼리 동작 보존
+- [ ] 단계 5 — `slideOutRight` 키프레임에 `max-height`/`padding`/`margin`/`border-width` 0 collapse 단계 추가 (`css/ui.css:703-713`). `.is-ephemeral` duration 재조정 (slide 400 + collapse 220ms)
+- [ ] 검증 — `node --check js/main.js` OK / `validate.js` Errors 0 ALL CLEAR / 헤드리스 1920×1080: 동일 카테고리 5건 → 1장 `×5`, 7건 혼합 → 4장 + 오버플로 라인 + 클릭 시 로그 열림, 컨테이너 폭 변동 0, 카드 소멸 점프 0, 콘솔 에러 0
+
+### UI #6 (숙련도 대시보드 시안 v3 + 로그 카테고리 라벨 + Wait 버튼 정리, 진행 중)
+
+> 시안 출처: AD 오은별 — 1280×720 4-zone 대시보드 시안
+> 영향 범위: `js/ui/SkillModal.js` 전면 재작성 + `css/skills.css` 4-zone 스타일 / `js/main.js` 로그 마크업 + `css/ui.css` log-entry / `js/screens/Main.js` Wait 버튼 제거
+> 데이터 변경 0 / 검증: `node --check` OK / `validate.js` Errors 0 ALL CLEAR
+
+- [x] §A 숙련도 모달 4-zone 재구성 — `SkillModal.js` 1280×720 grid (Zone1 헤더 56 / Zone2 필터 40 / Zone3 3열 그리드 1fr / Zone4 상태 56). `_zone1~_zone4` 분리 메서드 + `_bindEvents` 일괄 바인딩
+- [x] §A 정렬 4종 (`level`/`name`/`xp`/`category`) + 검색 + `hideLocked`/`hideZero` 필터 + 카테고리 탭(combat/survival/crafting) 단일 활성화. 상태 매핑 `data-state="active|zero|locked"` 3종
+- [x] §A `_summarizeBonus(def, bonuses, level)` — `BONUS_PRIORITY` 13키 우선순위로 카드 우측 `+X%` 1줄 요약. 배율(`Mult`) 키는 `(v-1)*100`, 비율 키는 `v*100` 환산
+- [x] §A `css/skills.css` 전면 재작성 +596 / -57 — Zone1~4 + `.skill-tab-btn` + `.skill-card[data-state=...]` + 3열 그리드 + custom scrollbar
+- [x] §A `css/variables.css` — `--skill-modal-w/h` `--skill-zone-*-h` `--skill-card-h` `--locked-gray` 9 토큰 신설
+- [x] §A `css/modals.css` — 레거시 `.notification-container` 블록(v2 패치 `#notification-container` ID로 대체됨) 코멘트 정리
+- [x] §B 메시지 로그 좌측 컬럼을 시간(`오후`+`01:35:18`) → **카테고리 라벨**(`대사`/`퀘스트`/`시스템`/`상태`/`위험`/`전투`)로 교체. `js/main.js _initNotifications` `CATEGORY_LABEL` 매핑 + `_renderLog` 마크업
+- [x] §B `css/ui.css` `.log-entry-time` → `.log-entry-category` (가로 가운데 정렬, label 폰트, 카테고리별 컬러 분기 5종). 좁은 화면 토큰 `--notif-panel-w 320→380` `--log-panel-w 320→480` `--log-panel-h 380→460` 상향. `--log-time-col 64→56`
+- [x] §C `js/screens/Main.js` Basecamp 툴바에서 `#btn-wait` 버튼 + `TickEngine.skipTP(1)` 핸들러 제거 (1-TP 대기는 `rest` 버튼으로 통합). `locales.js` `basecamp.wait`/`basecamp.waiting` 키는 잔류(다른 호출자 없음 / 별도 정리)
+- [x] 검증 — `node --check js/ui/SkillModal.js && node --check js/main.js && node --check js/screens/Main.js` OK / `validate.js` Errors 0 ALL CLEAR (데이터 무변경)
+- [ ] 후속 — i18n locales.js `basecamp.wait`/`basecamp.waiting` 키 정리 (별도 PR)
+- [ ] 후속 — `js/screens/Basecamp.js` 레거시 파일(미참조) 처리 (별도 PR)
+
+---
+
 ### M3 후속 (M4 이월 또는 분리 트랙)
 
 - [ ] PR18 R13-1 dismantle sim 모사 (시스템 백승호)
@@ -479,6 +564,15 @@ M3 #24b (PR17 + baseline v14) ─── 마감 ★ 시뮬 R11-1 완전 해소 �
 M3 #25 (PD M3 마감 보고서 작성) ─── 마감
 M3 #26 (★ M3 종결 선언 ★) ─── 마감 (2026-05-12 사용자 결정)
 M4 #1 (M4 텔레메트리 트랙 협의서 v6) ─── 진입 대기 (다음 마일스톤)
+
+UI 시안 트랙 (병렬 — AD_GUIDE_UI_REVAMP, M3/M4와 의존 0)
+  UI #1 (CSS PATCH v2 + 알림·로그 마이그레이션, 3a73cb2) ─── 마감
+  UI #2 (이지수 시작 이벤트 모달 시안, 1588ab5) ─── 마감
+  UI #3 (알림 카드 + 메시지 로그 시안 v2 정렬, 81b574d) ─── 마감
+  UI #4 (sticky 알림 + FAB 동적 + 데드 코드 제거 + AD M3 #15) ─── 미착수
+  UI #5 (사이드 알림 메시지 묶음 + 컨테이너 스크롤 개선) ─── 미착수 (plan 작성 마감)
+  UI #6 (숙련도 대시보드 4-zone + 로그 카테고리 라벨 + Wait 정리) ─── 진행 중
+
 M3 후속 (R13-1 / R14-2 / R14-3 / spice_blend / AD UI) ─── M4 이월 또는 분리 트랙
 M3 #25 (조건부 트랙 D/C — baseline v14 미달 시 폴백)
 M3 #26 (조건부 PR18 R13-1 + 잔존)
