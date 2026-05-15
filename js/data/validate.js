@@ -257,7 +257,7 @@ async function validate() {
   // \uC9C1\uC5C5\uBCC4 \uD3F4\uB354 index.js\uC758 quest \uD0A4\uAC00 mainQuests/index.js \uBCD1\uD569 \uACB0\uACFC\uC5D0 \uBAA8\uB450 \uD3EC\uD568\uB418\uB294\uC9C0 \uD655\uC778.
   // \uB204\uB77D \uC2DC \uD574\uB2F9 \uC9C1\uC5C5 \uBA54\uC778 \uD018\uC2A4\uD2B8\uAC00 \uAC8C\uC784 \uB7F0\uD0C0\uC784\uC5D0 \uB3C4\uB2EC\uD558\uC9C0 \uC54A\uB294 P0 \uACB0\uD568.
   console.log('\n=== JOB QUEST INDEX REGISTRATION CHECK ===');
-  const JOBS = ['doctor', 'soldier', 'firefighter', 'homeless', 'chef', 'engineer', 'pharmacist'];
+  const JOBS = ['doctor', 'soldier', 'firefighter', 'homeless', 'chef', 'engineer'];
   const mainQuestKeys = new Set(Object.keys(MAIN_QUESTS));
   for (const job of JOBS) {
     try {

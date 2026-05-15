@@ -346,7 +346,6 @@ const CARD_IMAGES = {
   spice_blend:           'assets/images/food/dried_mushroom.png',
   family_photo:          'assets/images/materials/cloth_scrap.png',
   dog_tag:               'assets/images/materials/cloth_scrap.png',
-  pharmacy_notes:        'assets/images/materials/cloth_scrap.png',
 
   // 셰프 전용 high-nutrition 자원 (PR17 트랙 B)
   chef_meal_kit:         'assets/images/food/canned_food.png',

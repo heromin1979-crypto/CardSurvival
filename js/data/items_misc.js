@@ -600,17 +600,6 @@ const ITEMS_MISC = {
     dismantle: [],
   },
 
-  // 약사 전용 keepsake (PR16 — pharmacist compounding_focus ability 트리거 자원)
-  pharmacy_notes: {
-    id: 'pharmacy_notes', name: '조제 노트', type: 'consumable', subtype: 'keepsake',
-    rarity: 'common', weight: 0.10,
-    defaultDurability: 3, defaultContamination: 0,
-    icon: '📔', description: '홍대 약국 카운터 아래에 두던 조제 노트. 1월 14일부터의 이상 증상 기록과 대학원 시절 천연물 화학 메모가 빼곡하다. 펼쳐 보면 잠시 차분해진다.',
-    tags: ['consumable', 'keepsake', 'pharmacist'],
-    onConsume: { morale: 8, fatigue: -3 },
-    dismantle: [],
-  },
-
   box_cutter: {
     id: 'box_cutter', name: '커터칼', type: 'weapon', subtype: 'melee',
     rarity: 'common', weight: 0.15,

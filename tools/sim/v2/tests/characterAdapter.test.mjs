@@ -1,11 +1,11 @@
 // === characterAdapter.test.mjs ===
-// 7직업 모두에 대해 buildCharacterConfig가 characters.js의 진리값과 일치하는지 검증.
+// 6직업 모두에 대해 buildCharacterConfig가 characters.js의 진리값과 일치하는지 검증.
 // stamina 공식 = strength × endurance / 50 (CharCreate.js:227 정식)
 
 import CHARACTERS from '../../../../js/data/characters.js';
 import { buildCharacterConfig, listCharacterIds } from '../characterAdapter.mjs';
 
-const EXPECTED_IDS = ['doctor', 'soldier', 'firefighter', 'homeless', 'chef', 'engineer', 'pharmacist'];
+const EXPECTED_IDS = ['doctor', 'soldier', 'firefighter', 'homeless', 'chef', 'engineer'];
 
 let pass = 0, fail = 0;
 
@@ -14,9 +14,9 @@ function check(name, cond, detail = '') {
   else      { fail += 1; console.error(`❌ ${name}${detail ? ' — ' + detail : ''}`); }
 }
 
-// 1. 7직업 모두 존재
+// 1. 6직업 모두 존재
 const ids = listCharacterIds();
-check('listCharacterIds returns 7 entries', ids.length === 7, `got ${ids.length}`);
+check('listCharacterIds returns 6 entries', ids.length === 6, `got ${ids.length}`);
 for (const id of EXPECTED_IDS) {
   check(`includes "${id}"`, ids.includes(id));
 }
