@@ -322,20 +322,63 @@ M3는 시뮬 v2 인프라(PR1~PR4) → Player AI 5단계(PR5/PR5.5/PR6/PR7) → 
 - [x] **M4 텔레메트리 트랙 진입 결정** — 협의서 v6 신규 발행 트리거
 - [x] 트랙 정체성 단정 종결 (§15) — "시뮬 정합 게임 데이터 작성" 트랙 본질 달성 마감
 
-### M4 #1 (협의서 v6 신규 발행 — 초안 작성 마감, 사용자 결정 대기)
+### M4 #1 (협의서 v6 신규 발행 — ★ 사용자 결정 채택 마감 ★)
 
-- [x] 협의서 v6 초안 작성 — `docs/milestones/2026-05-15-m4-telemetry/00-decisions/PD_TELE_MEETING_v6_draft.md` (PD 김재훈 초안)
-- [x] M3 §11 종결 단언을 M4 출발점으로 §1.1·§10에 인용
+- [x] 협의서 v6 초안 작성 — `docs/milestones/2026-05-15-m4-telemetry/00-decisions/PD_TELE_MEETING_v6_draft.md` (PD 김재훈)
+- [x] M3 §11 종결 단언을 M4 출발점으로 §1.1·§11에 인용
 - [x] M4 트랙 정체성 후보 4개(A~D) + PD 권고(A) 명시
-- [x] 신규 페르소나 영역 후보 4개(α~δ) + PD 권고(β 시스템 백승호 확장) 명시
-- [x] M4 KPI 후보 5개 + PD 권고(최소 3 KPI: 본체 K1 / 격차 / drift hash)
+- [x] 신규 페르소나 영역 후보 4개(α~δ) + PD 권고(β 시스템 백승호 확장)
+- [x] M4 KPI 후보 5개 + PD 권고(최소 3 KPI: 본체 K1 / K_sim_drift / drift hash)
 - [x] 측정 인프라 후보 4개(i~iv) + PD 권고(i 로컬 이벤트 로그)
 - [x] M4 일정 후보 3개(P/Q/R) + PD 권고(Q 1주 휴지 후 진입, 2026-05-22)
 - [x] M3 잔존 5건 처리 후보 (R13-1·R14-2·R14-3·spice_blend·M3 #15)
-- [x] M4 산출물 후보 5건 (M4 #1 텔레메트리 채널 ~ M4 #5 spice_blend 마이크로 PR)
-- [ ] **[DECIDE_USER]** 안건 1~5 사용자 결정 — 5개 결정점 표식
-- [ ] v6.draft → `PD_TELE_MEETING_v6_decision.md` 승격 (사용자 승인 후)
-- [ ] `prompt_plan.md` M4 §의 M4 #2~ 신규 트랙 등록 (v6 결정 채택 후)
+- [x] M4 산출물 후보 5건 (M4 #2 텔레메트리 채널 ~ M4 #5 마감 보고서, M4 #5b 병렬)
+- [x] **★ 사용자 채택 (2026-05-15) ★** — PD 권고 5건 전건 채택 (A / β / 3 KPI / i / Q)
+- [x] v6.draft → `PD_TELE_MEETING_v6_decision.md` 승격 (v6.draft는 작업 과정 추적용 보존)
+- [x] 본 prompt_plan.md M4 #2~#5 신규 트랙 등록
+
+### M4 #2 (본체 텔레메트리 수집 채널 신규 — 시스템 백승호, 마감 2026-05-29)
+
+> 진입: 2026-05-22 (휴지 1주 후). 협의서 v6 §7.1 인용.
+
+- [ ] `js/systems/TelemetrySystem.js` 신규 (~300줄 추정) — `EventBus.on('*', telemetryCollector)` 글로벌 후크
+- [ ] 수집 채널: `death`/`dayEnd`/`skillLevelUp`/`itemConsumed`/`npcRecruit`/`questComplete`/`craftSuccess` 7종
+- [ ] 저장: localStorage 또는 IndexedDB (~1MB 한도). 익명 userId 로컬 UUID, 외부 송신 없음
+- [ ] 사용자 export — 게임 종료 또는 메뉴에서 JSON 다운로드 (자발 제출)
+- [ ] `js/main.js` `Game.start()`에 `TelemetrySystem.init()` 등록
+- [ ] 검증 — `node --check js/systems/TelemetrySystem.js` OK / 헤드리스 1회 플레이 후 export JSON 확인
+
+### M4 #3 (drift.mjs leaf hash 컬럼 추가 — 시스템 백승호, 마감 2026-06-01)
+
+> 협의서 v4 §13.6 단정 동반. 협의서 v6 §7.2 인용.
+
+- [ ] `tools/sim/v2/drift.mjs` 확장 — leaf 값 hash 컬럼 신규 (현재 fingerprint는 KEY 기반, leaf 값 변경 미탐지)
+- [ ] 마지노선 — M3 v3~v14 fingerprint 12연속 유지 + M4 baseline 무회귀
+- [ ] 회귀 검증 — v3~v14 재실행으로 hash 컬럼 추가 후 fingerprint 무회귀 단언
+
+### M4 #4 (본체 K1 측정 1회차 — 시스템 백승호 + 사용자, 마감 2026-06-10)
+
+> 협의서 v6 §7.3 인용. 베타 1회차 자체 플레이.
+
+- [ ] 베타 1회차 — 6직업 각각 100일 생존 시도 (사망 시 K1=0, 도달 시 K1=1)
+- [ ] M4 #2 텔레메트리 수집으로 자동 측정 — death 이벤트 + dayEnd 누적
+- [ ] 직업별 K1 추정치 산출 (1회차 측정 + 후속 N회차 누적 계획)
+- [ ] 시뮬 K1 (M3 v14 baseline) 직업별 절대값과 비교 → K_sim_drift 산출 입력
+
+### M4 #5 (격차 단정 + M4 마감 보고서 — PD 김재훈 + 시스템 백승호, 마감 2026-06-22)
+
+> 협의서 v6 §7.4 인용.
+
+- [ ] `BAL_REPORT_M4_K_sim_drift.md` 신규 — 직업별 K_sim_drift 측정값 + 마지노선 ≤ 10%p 충족 여부
+- [ ] `PD_MILESTONE_M4_close.md` 신규 — M4 마감 보고서 (M3 close 패턴 준용)
+- [ ] (조건부) 격차 > 10%p 직업 발견 시 후속 트랙 분리 (시뮬 보강 vs 본체 보강) — 협의서 v7 신규 발행 트리거
+
+### M4 #5b (병렬 — spice_blend 마이크로 PR, 시스템 백승호, M4 진행 중)
+
+> 협의서 v6 §6.3 잔존 5건 중 spice_blend 항목.
+
+- [ ] `js/data/items_misc.js` 또는 `tools/sim/v2/playerAI.mjs` — spice_blend actEat candidates 잔존 결함 정리 (1~2 라인 패치)
+- [ ] validate.js Errors 0 회귀 검증
 
 ---
 
@@ -571,7 +614,12 @@ M3 #24a (SCN_QUEST_chef_supply 작성) ─── 마감
 M3 #24b (PR17 + baseline v14) ─── 마감 ★ 시뮬 R11-1 완전 해소 단언, 트랙 B 성공
 M3 #25 (PD M3 마감 보고서 작성) ─── 마감
 M3 #26 (★ M3 종결 선언 ★) ─── 마감 (2026-05-12 사용자 결정)
-M4 #1 (M4 텔레메트리 트랙 협의서 v6) ─── 초안 작성 마감, 사용자 결정 대기 (PD 권고 A/β/3KPI/i/Q)
+M4 #1 (협의서 v6 발행) ─── ★ 마감 ★ (2026-05-15 사용자 채택: A / β / 3 KPI / i / Q)
+M4 #2 (텔레메트리 수집 채널 TelemetrySystem.js) ─── 진입 2026-05-22, 마감 2026-05-29 (시스템 백승호)
+M4 #3 (drift.mjs leaf hash 컬럼) ─── 마감 2026-06-01 (시스템 백승호)
+M4 #4 (본체 K1 측정 1회차) ─── 마감 2026-06-10 (시스템 백승호 + 사용자)
+M4 #5 (K_sim_drift 단정 + M4 마감 보고서) ─── 마감 2026-06-22 (PD 김재훈 + 시스템 백승호)
+M4 #5b (spice_blend 마이크로 PR, 병렬) ─── M4 진행 중 (시스템 백승호)
 
 UI 시안 트랙 (병렬 — AD_GUIDE_UI_REVAMP, M3/M4와 의존 0)
   UI #1 (CSS PATCH v2 + 알림·로그 마이그레이션, 3a73cb2) ─── 마감
