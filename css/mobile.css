@@ -147,9 +147,6 @@ html, body {
   .eg-stat-cell { padding: 6px 4px; }
   .eg-stat-label { display: none; }
 
-  /* 알림 */
-  .notification { font-size: 12px; max-width: 85vw; }
-
   /* 캐릭터 생성 */
   .char-grid { grid-template-columns: repeat(3, 1fr); }
 }

@@ -372,12 +372,12 @@ M3는 시뮬 v2 인프라(PR1~PR4) → Player AI 5단계(PR5/PR5.5/PR6/PR7) → 
 - [x] 호환성 보존 — `EventBus.emit('notify', { message, type })` 호출부 300+개 그대로 유지
 - [x] 검증 — `node --check js/main.js` OK / 헤드리스 브라우저(1920×1080) 6종 알림 카드(charDialogue + 5 type) 정상 렌더, 컬러 시스템 분기 확인 / 상대시간 "방금" 표시, 위험·주의·퀘스트 태그 칩 확인 / 로그 좌측 시간 컬럼(오후/01:35:18) + 화자 컬러 분기 확인 / 헤더 정확 36px / 콘솔 에러 0건
 
-### UI #4 (다음 진입 — 후속 PR 후보, 미착수)
+### UI #4 (후속 PR 후보 — 부분 마감)
 
-- [ ] `body.is-notif-open` 자동 토글 (sticky 알림 도입 시 활성화)
-- [ ] FAB 동적 표시 — Discord식 스크롤 추적 패턴 별도 구현
-- [ ] 레거시 `.notification`·`.notif-log-panel` CSS 데드 코드 제거
-- [ ] (AD UI 변경 권고 2건, M3 #15 이월) `interactions.js` cooking 8 hint / `CraftUI._renderOutputPreview` 산출물 동시 비교 모드 + `--stat-nutrition`/`--stat-hydration` 토큰
+- [ ] `body.is-notif-open` 자동 토글 (sticky 알림 도입 시 활성화) — 보류: sticky 알림 카드 도입 선행 작업 필요. `css/npc-panel.css:370,374` 규칙은 보존.
+- [ ] FAB 동적 표시 — Discord식 스크롤 추적 패턴 별도 구현 — 보류: `#message-log .log-body` 스크롤 추적 설계 + 시안 검증 필요. 현재 `📋` 버튼은 항상 표시 + unread 배지로 충분 가시화.
+- [x] 레거시 `.notification`·`.notif-log-panel` CSS 데드 코드 제거 — `css/modals.css` (notification + char-dialogue 47줄 / notif-log-panel 110줄 / fadeOut 키프레임) + `css/mobile.css:151` (.notification 모바일 오버라이드) + `css/npc-group.css` (.notification.group-vote 8줄). `slideInRight` 키프레임은 `.notif-card`에서 활용 중이라 보존
+- [ ] (AD UI 변경 권고 2건, M3 #15 이월) `interactions.js` cooking 8 hint / `CraftUI._renderOutputPreview` 산출물 동시 비교 모드 + `--stat-nutrition`/`--stat-hydration` 토큰 — AD 오은별 위임, 본 트랙 의존 0, 별도 PR 진입
 
 ### UI #5 (사이드 알림 메시지 묶음 + 컨테이너 스크롤 개선, 미착수)
 
@@ -569,7 +569,7 @@ UI 시안 트랙 (병렬 — AD_GUIDE_UI_REVAMP, M3/M4와 의존 0)
   UI #1 (CSS PATCH v2 + 알림·로그 마이그레이션, 3a73cb2) ─── 마감
   UI #2 (이지수 시작 이벤트 모달 시안, 1588ab5) ─── 마감
   UI #3 (알림 카드 + 메시지 로그 시안 v2 정렬, 81b574d) ─── 마감
-  UI #4 (sticky 알림 + FAB 동적 + 데드 코드 제거 + AD M3 #15) ─── 미착수
+  UI #4 (sticky 알림 + FAB 동적 + 데드 코드 제거 + AD M3 #15) ─── 부분 마감 (데드 코드 제거만 완료, 나머지 후속 PR)
   UI #5 (사이드 알림 메시지 묶음 + 컨테이너 스크롤 개선) ─── 마감 (5단계 모두 적용)
   UI #6 (숙련도 대시보드 4-zone + 로그 카테고리 라벨 + Wait 정리) ─── 진행 중
 
