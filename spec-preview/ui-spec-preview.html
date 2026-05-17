@@ -1,0 +1,2067 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>Card Survival: Ruined City — UI Spec Preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Noto+Sans+KR:wght@400;500;700;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   DESIGN TOKENS  (09_components.md 9.12)
+   ============================================================ */
+:root{
+  --bg-void:#08090B;--bg-surface-0:#121316;--bg-surface-1:#1A1C20;
+  --bg-surface-2:#23262C;--bg-paper:#2A2620;--bg-paper-dark:#1C1814;
+  --border-soft:#2C2F35;--border-hard:#3A3E46;
+  --border-amber:#C9893A;--border-amber-glow:#F5B860;
+  --text-primary:#E8E6E1;--text-secondary:#A8A39A;--text-muted:#6E6A63;
+  --text-inverse:#0E0F11;--text-amber:#E8B662;
+  --text-danger:#D85949;--text-success:#6FAA58;--text-info:#5C9DD8;
+  --accent-100:#F5D38A;--accent-300:#E8B662;--accent-500:#C9893A;--accent-700:#8A5A22;
+  --stat-hp:#C84A3D;--stat-stamina:#D8C84A;--stat-thirst:#4A8FD8;
+  --stat-hunger:#C97A3A;--stat-infection:#A04ECC;--stat-noise:#D85949;
+  --stat-bar-bg:#1C1E22;
+  --r-sm:4px;--r-md:6px;--r-lg:10px;--r-xl:16px;
+  --shadow-panel:0 8px 24px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.04);
+  --shadow-card:0 4px 12px rgba(0,0,0,.6);
+  --shadow-modal:0 24px 64px rgba(0,0,0,.7);
+  --shadow-amber:0 0 16px rgba(232,182,98,.35);
+  --font-display:'Oswald',sans-serif;
+  --font-body:'Noto Sans KR',sans-serif;
+  --font-mono:'JetBrains Mono',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg-void);
+  color:var(--text-primary);font-family:var(--font-body);
+  letter-spacing:-0.01em;text-shadow:0 1px 2px rgba(0,0,0,.6)}
+
+/* Preview navigation */
+.preview-nav{position:fixed;top:0;left:0;right:0;z-index:9999;
+  display:flex;gap:4px;padding:8px;background:#0E0F11;
+  border-bottom:1px solid #2C2F35;flex-wrap:wrap;
+  font-family:var(--font-body)}
+.preview-nav button{padding:6px 12px;background:#1A1C20;
+  border:1px solid #3A3E46;border-radius:3px;color:#A8A39A;
+  font-family:inherit;font-size:12px;cursor:pointer;
+  transition:all 120ms;text-shadow:none}
+.preview-nav button:hover{background:#23262C;color:#E8E6E1}
+.preview-nav button.active{background:linear-gradient(180deg,#C9893A,#8A5A22);
+  border-color:#E8B662;color:#1A1410;font-weight:700}
+
+/* Screen wrapper & scaling */
+.stage{position:fixed;top:42px;left:0;right:0;bottom:0;overflow:hidden;
+  background:#000}
+.stage-inner{position:absolute;width:1920px;height:1080px;
+  top:50%;left:50%;transform-origin:center center;
+  transform:translate(-50%,-50%) scale(var(--scale,1))}
+.screen{position:absolute;inset:0;display:none;overflow:hidden}
+.screen.active{display:block}
+
+/* Vignette overlay */
+.vignette{position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse at 50% 60%,transparent 30%,rgba(0,0,0,.75) 100%)}
+
+/* Concrete grain texture (CSS-generated noise) */
+.grain{position:absolute;inset:0;pointer-events:none;opacity:.15;
+  background-image:
+    radial-gradient(circle at 25% 25%,rgba(255,255,255,.04) 1px,transparent 1px),
+    radial-gradient(circle at 75% 75%,rgba(255,255,255,.03) 1px,transparent 1px),
+    radial-gradient(circle at 50% 50%,rgba(0,0,0,.2) 2px,transparent 2px);
+  background-size:6px 6px,8px 8px,12px 12px}
+
+/* Eyebrow label */
+.eyebrow{font-family:var(--font-display);font-size:13px;font-weight:700;
+  letter-spacing:.15em;color:var(--text-secondary);text-transform:uppercase}
+
+/* ============================================================
+   COMPONENTS
+   ============================================================ */
+.btn-primary{display:inline-flex;align-items:center;justify-content:center;
+  height:56px;padding:0 24px;font-family:var(--font-body);font-size:18px;
+  font-weight:700;color:#1A1410;
+  background:linear-gradient(180deg,#C9893A 0%,#8A5A22 100%);
+  border:1px solid #E8B662;border-radius:6px;cursor:pointer;
+  text-shadow:0 1px 0 rgba(255,255,255,.2);
+  box-shadow:0 4px 0 #5C3A14,0 8px 16px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.25);
+  transition:all 120ms ease-out}
+.btn-primary:hover{box-shadow:0 6px 0 #5C3A14,0 12px 20px rgba(0,0,0,.6),0 0 24px rgba(232,182,98,.5);
+  transform:scale(1.02)}
+.btn-primary:active{transform:translateY(2px);box-shadow:0 2px 0 #5C3A14}
+.btn-primary.xl{height:64px;font-size:22px}
+.btn-primary.sm{height:40px;font-size:14px;padding:0 16px}
+.btn-primary.disabled{opacity:.4;cursor:not-allowed}
+
+.btn-secondary{display:inline-flex;align-items:center;justify-content:center;
+  height:56px;padding:0 24px;font-family:var(--font-body);font-size:18px;
+  font-weight:500;color:var(--text-primary);
+  background:linear-gradient(180deg,#2A2C32 0%,#1A1C20 100%);
+  border:1px solid #4A4E56;border-radius:6px;cursor:pointer;
+  box-shadow:0 4px 12px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.05);
+  transition:all 120ms ease-out}
+.btn-secondary:hover{border-color:#E8B662;box-shadow:0 0 12px rgba(232,182,98,.3)}
+
+.chip{display:inline-flex;align-items:center;height:24px;padding:0 10px;
+  border-radius:4px;font-size:12px;font-weight:500;line-height:1}
+.chip.amber{background:#3A2E1E;border:1px solid #E8B662;color:#E8B662}
+.chip.danger{background:#3A1A18;border:1px solid #D85949;color:#D85949}
+.chip.success{background:#1E3A24;border:1px solid #6FAA58;color:#6FAA58}
+.chip.info{background:#1A2A3A;border:1px solid #5C9DD8;color:#5C9DD8}
+.chip.neutral{background:#23262C;border:1px solid #4A4E56;color:#A8A39A}
+
+.bar{height:12px;border-radius:4px;background:var(--stat-bar-bg);
+  border:1px solid var(--border-hard);overflow:hidden;position:relative}
+.bar-fill{height:100%;border-radius:3px;
+  background:linear-gradient(90deg,var(--fd,#8A5A22) 0%,var(--fl,#E8B662) 100%);
+  transition:width 400ms ease-out}
+.bar-fill.hp{--fl:#C84A3D;--fd:#8A2A24}
+.bar-fill.hunger{--fl:#C97A3A;--fd:#7A4A20}
+.bar-fill.thirst{--fl:#4A8FD8;--fd:#2A5A8A}
+.bar-fill.amber{--fl:#E8B662;--fd:#C9893A}
+.bar-fill.success{--fl:#6FAA58;--fd:#3A6A2A}
+.bar-fill.danger{--fl:#D85949;--fd:#8A2A24}
+.bar-fill.infect{--fl:#A04ECC;--fd:#5A2A7A}
+
+.panel{background:rgba(14,15,17,.92);
+  border:1px solid var(--border-hard);border-radius:8px;
+  box-shadow:var(--shadow-panel)}
+
+.card-frame{background:linear-gradient(180deg,#1A1C20 0%,#121316 100%);
+  border:1px solid var(--border-hard);border-radius:6px;
+  box-shadow:var(--shadow-card);position:relative;overflow:hidden}
+.card-frame.paper{background:linear-gradient(180deg,#2A2620 0%,#1C1814 100%)}
+.card-frame.selected{border:2px solid #E8B662;
+  box-shadow:0 0 16px rgba(232,182,98,.4),0 4px 12px rgba(0,0,0,.6)}
+.card-frame.equipped{border:2px solid #6FAA58;
+  box-shadow:0 0 12px rgba(111,170,88,.4)}
+
+/* Rarity outlines */
+.rarity-uncommon{border-color:#6FAA58!important;box-shadow:0 0 8px rgba(111,170,88,.4)}
+.rarity-rare{border-color:#5C9DD8!important;box-shadow:0 0 10px rgba(92,157,216,.5)}
+.rarity-epic{border-color:#A04ECC!important;box-shadow:0 0 12px rgba(160,78,204,.6)}
+.rarity-legendary{border-color:#E8B662!important;box-shadow:0 0 14px rgba(232,182,98,.7)}
+
+/* ============================================================
+   SCREEN 01 — MAIN MENU (REFINED)
+   ============================================================ */
+.screen-01{background:#04030a}
+
+/* Atmospheric sky + sun glow (석양) */
+.s01-sky{position:absolute;inset:0;background:
+  radial-gradient(ellipse 50% 28% at 50% 30%,rgba(255,170,90,.5) 0%,rgba(232,138,80,.18) 38%,transparent 68%),
+  radial-gradient(ellipse 95% 16% at 50% 46%,rgba(180,90,50,.4) 0%,transparent 72%),
+  linear-gradient(180deg,#1c1820 0%,#28202a 14%,#3a2624 28%,#5a3624 44%,#4a2818 56%,#28181a 70%,#120e0c 88%,#04030a 100%)}
+
+/* Distant skyline silhouette (롯데월드타워 + 빌딩) */
+.s01-skyline{position:absolute;left:0;right:0;bottom:40%;height:16%;
+  background:linear-gradient(180deg,#0c0908 0%,#040206 100%);
+  clip-path:polygon(0 100%,0 65%,
+    3% 50%,5% 68%,8% 38%,11% 58%,14% 32%,17% 52%,20% 22%,23% 47%,
+    26% 18%,30% 43%,34% 12%,38% 32%,42% 5%,46% 22%,50% 0,54% 18%,
+    58% 8%,62% 28%,66% 16%,70% 38%,74% 22%,78% 45%,82% 28%,86% 50%,
+    90% 35%,94% 55%,98% 42%,100% 58%,100% 100%);
+  filter:blur(.4px);opacity:.94}
+
+/* Bridge cables silhouette (한강대교) */
+.s01-bridge{position:absolute;left:5%;right:5%;bottom:38.5%;height:2.4%;
+  background:repeating-linear-gradient(90deg,transparent 0,transparent 2.4%,
+    #04030a 2.4%,#04030a 2.55%,transparent 2.55%,transparent 4.8%,
+    #04030a 4.8%,#04030a 4.95%);
+  border-bottom:2px solid #04030a}
+
+/* River reflection */
+.s01-river{position:absolute;left:0;right:0;bottom:35%;height:4%;
+  background:linear-gradient(180deg,rgba(180,90,50,.18) 0%,rgba(60,30,18,.4) 100%);
+  filter:blur(1.5px)}
+
+/* Foreground rubble */
+.s01-rubble{position:absolute;left:0;right:0;bottom:0;height:38%;
+  background:linear-gradient(180deg,transparent 0%,rgba(8,6,10,.55) 22%,rgba(4,3,6,.94) 65%,#020104 100%)}
+.s01-rubble::before{content:"";position:absolute;left:0;right:0;bottom:0;height:55%;
+  background:#06050a;
+  clip-path:polygon(0 100%,
+    2% 60%,5% 80%,8% 50%,12% 75%,16% 45%,20% 70%,24% 40%,28% 65%,
+    32% 35%,36% 70%,40% 45%,44% 75%,48% 40%,52% 70%,56% 45%,60% 75%,
+    64% 50%,68% 80%,72% 50%,76% 75%,80% 45%,84% 70%,88% 50%,92% 75%,
+    96% 55%,100% 70%,100% 100%)}
+.s01-rubble::after{content:"";position:absolute;inset:0;
+  background:repeating-linear-gradient(95deg,
+    rgba(60,45,30,0) 0,rgba(60,45,30,0) 30px,
+    rgba(40,28,18,.18) 30px,rgba(40,28,18,.18) 50px,
+    rgba(20,14,10,.3) 50px,rgba(20,14,10,.3) 70px)}
+
+/* Legacy bg-city kept for screen 02 reuse */
+.s01-bg-city{position:absolute;inset:0;background:
+  linear-gradient(180deg,transparent 30%,rgba(0,0,0,.6) 100%),
+  linear-gradient(90deg,#1F1A18 0%,#2A2018 30%,#3A2A1A 50%,#2A1F18 70%,#1A1614 100%);
+  opacity:.95}
+.s01-bg-city::before{content:"";position:absolute;left:0;right:0;bottom:0;height:50%;
+  background:
+    linear-gradient(180deg,transparent 0%,rgba(20,16,14,.6) 50%,rgba(10,8,6,.95) 100%),
+    repeating-linear-gradient(90deg,
+      #161210 0,#161210 48px,#1C1814 48px,#1C1814 56px,#0E0A08 56px,#0E0A08 64px,
+      #1A1612 64px,#1A1612 96px,#0E0A08 96px,#0E0A08 104px,#181410 104px,#181410 144px,
+      #0E0A08 144px,#0E0A08 152px,#1F1A16 152px,#1F1A16 200px);
+  clip-path:polygon(0 60%,5% 30%,8% 50%,12% 25%,16% 45%,20% 20%,25% 50%,30% 35%,
+    35% 15%,40% 45%,45% 30%,50% 10%,55% 35%,60% 25%,65% 45%,70% 30%,75% 50%,80% 25%,
+    85% 40%,90% 30%,95% 45%,100% 35%,100% 100%,0 100%)}
+
+/* Paper frame with soft inner shadow */
+.s01-paper-frame{position:absolute;inset:0;pointer-events:none;
+  background:
+    linear-gradient(180deg,rgba(42,38,32,.55) 0%,transparent 6%,transparent 94%,rgba(28,24,20,.6) 100%),
+    linear-gradient(90deg,rgba(42,38,32,.55) 0%,transparent 4%,transparent 96%,rgba(28,24,20,.6) 100%);
+  mix-blend-mode:multiply}
+.s01-paper-frame::before{content:"";position:absolute;inset:24px;
+  border:1px solid rgba(232,182,98,.1);
+  box-shadow:inset 0 0 80px rgba(0,0,0,.6)}
+
+/* News clips with masking tape */
+.s01-newsclip{position:absolute;background:#0E0F11;overflow:visible;
+  box-shadow:0 10px 28px rgba(0,0,0,.75),0 4px 8px rgba(0,0,0,.5);
+  border:1px solid rgba(60,55,50,.6)}
+.s01-newsclip::before{content:"";position:absolute;inset:0;
+  background:linear-gradient(135deg,#2a2218 0%,#0E1218 50%,#1A1612 100%);
+  filter:sepia(.5) contrast(1.15)}
+.s01-newsclip::after{content:"";position:absolute;left:50%;top:-10px;
+  transform:translateX(-50%) rotate(-3deg);
+  width:74px;height:20px;background:rgba(232,200,140,.7);
+  box-shadow:0 2px 4px rgba(0,0,0,.6)}
+.s01-newsclip-1{left:64px;top:280px;width:336px;height:240px;transform:rotate(-3deg)}
+.s01-newsclip-2{left:1480px;top:230px;width:180px;height:230px;transform:rotate(4deg)}
+.s01-newsclip-3{left:1520px;top:520px;width:160px;height:130px;transform:rotate(-5deg)}
+.s01-newsclip-label{position:absolute;left:10px;top:10px;color:#E8B662;
+  font-family:var(--font-display);font-size:14px;font-weight:700;
+  letter-spacing:.1em;z-index:2;text-shadow:0 1px 2px rgba(0,0,0,.9)}
+.s01-newsclip-text{position:absolute;left:10px;right:10px;bottom:10px;
+  color:#E8E6E1;font-size:11px;line-height:1.45;z-index:2;
+  text-shadow:0 1px 2px rgba(0,0,0,.9)}
+
+/* Stamps */
+.s01-stamp{position:absolute;font-family:var(--font-display);font-weight:700;
+  pointer-events:none;text-transform:uppercase;letter-spacing:.18em;
+  text-shadow:none;line-height:1.5}
+.s01-stamp-doc{right:80px;top:48px;font-size:13px;color:#A8A39A;opacity:.55;
+  transform:rotate(8deg);border:1px solid rgba(168,163,154,.5);padding:10px 16px}
+.s01-stamp-civil{left:88px;top:48px;font-size:11px;color:#A8A39A;opacity:.45;
+  transform:rotate(-4deg)}
+.s01-stamp-g2{position:absolute;right:140px;top:560px;width:88px;height:88px;
+  border-radius:50%;border:3px double #C84A3D;color:#C84A3D;opacity:.6;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-display);font-size:32px;font-weight:700;
+  transform:rotate(-14deg);letter-spacing:0;line-height:1}
+.s01-stamp-confid{position:absolute;left:60px;top:920px;color:#C84A3D;opacity:.32;
+  font-size:36px;font-weight:700;font-family:var(--font-display);
+  transform:rotate(-18deg);letter-spacing:.18em;
+  border:4px solid currentColor;padding:4px 14px;text-shadow:none;line-height:1}
+
+/* Title - distressed amber with multi-layer glow */
+.s01-title{position:absolute;left:0;right:0;top:188px;text-align:center;z-index:4}
+.s01-title h1{font-family:var(--font-display);font-weight:700;font-size:104px;
+  line-height:1;letter-spacing:.01em;color:#F5D38A;
+  text-shadow:
+    0 2px 0 rgba(40,18,8,.7),
+    0 4px 2px rgba(80,30,15,.55),
+    0 8px 14px rgba(0,0,0,.85),
+    0 0 36px rgba(232,138,80,.5),
+    0 0 90px rgba(232,138,80,.22)}
+.s01-title-rule{display:block;width:420px;height:2px;margin:18px auto 0;
+  background:linear-gradient(90deg,transparent,rgba(232,182,98,.7) 30%,rgba(232,182,98,.7) 70%,transparent)}
+.s01-title .sub{display:inline-block;margin-top:24px;padding:10px 28px;
+  border:1px solid rgba(232,182,98,.4);font-size:20px;font-weight:500;color:#F5D38A;
+  background:rgba(14,15,17,.6);letter-spacing:.04em;
+  text-shadow:0 1px 2px rgba(0,0,0,.85)}
+
+/* Menu */
+.s01-menu{position:absolute;left:780px;top:486px;width:360px;
+  display:flex;flex-direction:column;gap:14px;z-index:4}
+.s01-menu .btn-primary{height:64px;font-size:22px;width:100%;letter-spacing:.04em}
+
+/* Subway sign collage element (left) */
+.s01-subway-sign{position:absolute;left:90px;top:660px;width:160px;height:200px;
+  background:linear-gradient(180deg,#241c14 0%,#15100a 100%);
+  border:3px solid #5C3A14;
+  transform:rotate(-6deg);box-shadow:0 10px 28px rgba(0,0,0,.75);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:12px;text-align:center;z-index:3}
+.s01-subway-sign .icon{font-size:42px;color:#E8B662;margin-bottom:6px;
+  text-shadow:0 0 12px rgba(232,182,98,.4)}
+.s01-subway-sign .text{color:#E8B662;font-family:var(--font-body);
+  font-weight:700;font-size:17px;line-height:1.3;letter-spacing:.04em;
+  text-shadow:0 1px 2px rgba(0,0,0,.8)}
+
+/* Police line strip (right diagonal) */
+.s01-police-line{position:absolute;left:1480px;top:760px;width:340px;height:32px;
+  transform:rotate(-12deg);
+  background:repeating-linear-gradient(90deg,
+    #E8B662 0,#E8B662 56px,#1A1410 56px,#1A1410 92px);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-display);font-weight:700;color:#1A1410;
+  font-size:14px;letter-spacing:.3em;
+  box-shadow:0 4px 12px rgba(0,0,0,.65);z-index:3}
+
+/* Caution tape - rotated single piece */
+.s01-tape{position:absolute;left:-5%;right:-5%;bottom:48px;height:46px;
+  background:repeating-linear-gradient(-10deg,
+    #E8B662 0,#E8B662 64px,#1A1410 64px,#1A1410 100px);
+  transform:rotate(-3deg);
+  box-shadow:0 8px 24px rgba(0,0,0,.75),inset 0 0 16px rgba(0,0,0,.35);z-index:5}
+.s01-tape-text{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);
+  text-align:center;font-family:var(--font-display);font-weight:700;color:#1A1410;
+  font-size:22px;letter-spacing:.4em;text-shadow:none}
+
+.s01-footer{position:absolute;left:32px;right:32px;bottom:18px;
+  display:flex;justify-content:space-between;
+  font-size:12px;color:#6E6A63;z-index:6}
+
+/* ============================================================
+   SCREEN 02 — CONTINUE / SAVE
+   ============================================================ */
+.screen-02{
+  background:
+    radial-gradient(ellipse at 50% 50%,#2A2620 0%,#1C1814 60%,#0A0806 100%);
+}
+.s02-paper-tex{position:absolute;inset:0;pointer-events:none;
+  background:
+    repeating-linear-gradient(135deg,transparent 0,transparent 4px,rgba(232,182,98,.02) 4px,rgba(232,182,98,.02) 5px),
+    repeating-linear-gradient(45deg,transparent 0,transparent 6px,rgba(0,0,0,.05) 6px,rgba(0,0,0,.05) 7px);
+  opacity:.6}
+.s02-stamp{position:absolute;font-family:var(--font-display);font-weight:700;
+  color:#A8A39A;opacity:.15;letter-spacing:.2em;pointer-events:none;text-shadow:none}
+.s02-stamp-1{right:40px;top:24px;font-size:14px;transform:rotate(6deg)}
+.s02-tape-bottom{position:absolute;right:0;bottom:0;width:60%;height:48px;
+  background:repeating-linear-gradient(-12deg,
+    #E8B662 0,#E8B662 60px,#1A1410 60px,#1A1410 100px);
+  opacity:.7;transform:rotate(-3deg) translateY(16px) translateX(40px);
+  font-family:var(--font-display);color:#1A1410;font-weight:700;
+  display:flex;align-items:center;justify-content:center}
+.s02-header-patch{position:absolute;left:800px;top:60px;width:320px;height:80px;
+  background:linear-gradient(180deg,#2A2620 0%,#1C1814 100%);
+  border:2px solid #4A4239;border-radius:4px;
+  box-shadow:0 8px 24px rgba(0,0,0,.7),inset 0 0 0 4px #1C1814;
+  display:flex;align-items:center;justify-content:center;
+  font-size:36px;font-weight:700;color:#E8E6E1}
+.s02-slot{position:absolute;left:232px;width:1456px;height:144px;
+  background:linear-gradient(180deg,#2A2620 0%,#1C1814 100%);
+  border:1px solid #3A3E46;border-radius:6px;padding:16px;
+  box-shadow:0 6px 16px rgba(0,0,0,.55);
+  display:flex;gap:24px;align-items:center;cursor:pointer;
+  transition:all 200ms}
+.s02-slot.selected{border:2px solid #E8B662;
+  background:linear-gradient(180deg,#3A2E1E 0%,#2A1E10 100%);
+  box-shadow:0 8px 24px rgba(0,0,0,.7),0 0 24px rgba(232,182,98,.35)}
+.s02-slot:hover:not(.selected){border-color:#6E6A63;box-shadow:0 8px 20px rgba(0,0,0,.65)}
+.s02-thumb{width:200px;height:112px;background:linear-gradient(135deg,#3A2A1E,#1A1410);
+  border:1px solid #3A3E46;border-radius:4px;flex-shrink:0;position:relative;overflow:hidden}
+.s02-thumb::before{content:"";position:absolute;inset:0;
+  background:linear-gradient(180deg,transparent 50%,rgba(0,0,0,.5) 100%)}
+.s02-thumb-1::after{content:"";position:absolute;left:8px;right:8px;bottom:30%;height:35%;
+  background:linear-gradient(180deg,#5A3F25 0%,#1F1612 100%);
+  clip-path:polygon(0 100%,8% 60%,16% 80%,24% 50%,32% 70%,40% 40%,48% 65%,56% 35%,
+    64% 60%,72% 30%,80% 55%,88% 25%,100% 50%,100% 100%)}
+.s02-slot-meta1{width:280px;flex-shrink:0}
+.s02-day{font-family:var(--font-mono);font-size:56px;font-weight:700;
+  color:#E8B662;line-height:1}
+.s02-loc{font-size:24px;font-weight:700;color:#E8E6E1;margin-top:4px}
+.s02-slot-meta2{width:360px;flex-shrink:0;display:flex;flex-direction:column;gap:6px;
+  font-size:14px}
+.s02-slot-meta2 .row{display:flex;gap:8px}
+.s02-slot-meta2 .lab{color:#A8A39A;width:120px}
+.s02-slot-meta2 .val{color:#E8E6E1}
+.s02-slot-stat{width:256px;flex-shrink:0;display:flex;flex-direction:column;gap:8px}
+.s02-slot-stat .row{display:flex;align-items:center;gap:8px;font-size:12px}
+.s02-slot-stat .row .icon{width:14px;text-align:center}
+.s02-slot-stat .bar{flex:1;height:8px}
+.s02-actions{position:absolute;left:0;right:0;top:956px;height:56px}
+
+/* ============================================================
+   SCREEN 03 — ENDING GALLERY
+   ============================================================ */
+.screen-03{
+  background:radial-gradient(ellipse at 50% 30%,#2A2620 0%,#1C1814 50%,#0A0806 100%);
+}
+.s03-back{position:absolute;left:32px;top:32px;width:120px;height:56px;
+  display:flex;align-items:center;justify-content:center;gap:8px}
+.s03-title{position:absolute;left:0;right:0;top:40px;text-align:center;
+  font-size:40px;font-weight:700;color:#E8E6E1}
+.s03-progress{position:absolute;right:32px;top:48px;font-size:18px;color:#A8A39A}
+.s03-progress .num{color:#E8B662;font-family:var(--font-mono);font-weight:700}
+.s03-tabs{position:absolute;left:96px;top:124px;display:flex;gap:48px;height:56px;
+  align-items:flex-end;border-bottom:1px solid #3A3E46;width:1728px}
+.s03-tab{font-size:22px;font-weight:500;color:#A8A39A;cursor:pointer;
+  padding-bottom:12px;transition:all 120ms;position:relative}
+.s03-tab.active{color:#F5D38A}
+.s03-tab.active::after{content:"";position:absolute;left:0;right:0;bottom:-2px;
+  height:4px;background:#E8B662;box-shadow:0 0 12px rgba(232,182,98,.4)}
+.s03-tab:hover:not(.active){color:#E8E6E1}
+.s03-grid{position:absolute;left:96px;top:200px;display:grid;
+  grid-template-columns:repeat(3,560px);gap:32px}
+.s03-end{width:560px;height:220px;display:flex;
+  background:linear-gradient(180deg,#2A2620 0%,#1C1814 100%);
+  border:1px solid #3A3E46;border-radius:6px;overflow:hidden;cursor:pointer;
+  transition:all 200ms}
+.s03-end.selected{border:2px solid #E8B662;
+  box-shadow:0 0 24px rgba(232,182,98,.45),0 8px 24px rgba(0,0,0,.7)}
+.s03-end-thumb{width:220px;height:220px;flex-shrink:0;
+  background:linear-gradient(135deg,#3A2A1E 0%,#1A1410 100%);
+  border-right:1px solid #3A3E46;position:relative;overflow:hidden}
+.s03-end-thumb.t1{background:linear-gradient(180deg,#3A2A1E 0%,#5A3F25 50%,#1A1410 100%)}
+.s03-end-thumb.t2{background:linear-gradient(180deg,#1A2A3A 0%,#2A3F5A 50%,#0A1A2A 100%)}
+.s03-end-thumb.t3{background:linear-gradient(180deg,#3A1A18 0%,#5A2A24 50%,#1A0A08 100%)}
+.s03-end-thumb.t4{background:linear-gradient(180deg,#1A3A24 0%,#2A5A3F 50%,#0A1A14 100%)}
+.s03-end-thumb.t5{background:linear-gradient(180deg,#2A2A3A 0%,#3A3F5A 50%,#1A1A24 100%)}
+.s03-end-thumb.locked{background:#0E0F11}
+.s03-end-thumb .lock{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  font-size:64px;color:#6E6A63}
+.s03-end-info{padding:16px;flex:1;display:flex;flex-direction:column;gap:6px}
+.s03-end-name{font-size:22px;font-weight:700;color:#E8E6E1}
+.s03-end-name .br{color:#E8B662}
+.s03-end-cat{font-size:16px;color:#A8A39A}
+.s03-end-cat.danger{color:#D85949}
+.s03-end-quote{font-size:14px;color:#A8A39A;font-style:italic;
+  margin-top:8px;line-height:1.4}
+.s03-end-action{margin-top:auto;align-self:flex-start}
+.s03-end-action .btn-secondary{height:40px;font-size:14px;padding:0 16px}
+.s03-foot{position:absolute;right:32px;bottom:32px;display:flex;gap:16px}
+
+/* ============================================================
+   SCREEN 04 — CHARACTER SELECT
+   ============================================================ */
+.screen-04{
+  background:
+    linear-gradient(180deg,rgba(8,12,18,.85) 0%,rgba(20,24,32,.7) 100%),
+    radial-gradient(ellipse at 70% 40%,#2A3540 0%,#0E1218 70%);
+}
+.s04-bg-snow{position:absolute;inset:0;pointer-events:none;
+  background:
+    radial-gradient(circle at 20% 30%,rgba(255,255,255,.04) 1px,transparent 1px),
+    radial-gradient(circle at 60% 70%,rgba(255,255,255,.03) 1px,transparent 1px),
+    radial-gradient(circle at 80% 20%,rgba(255,255,255,.04) 1px,transparent 1px);
+  background-size:50px 50px,80px 80px,120px 120px;opacity:.6;
+  filter:blur(.5px)}
+.s04-header{position:absolute;left:64px;right:64px;top:48px;
+  display:flex;justify-content:space-between;align-items:flex-end}
+.s04-title{font-size:44px;font-weight:700;color:#E8E6E1}
+.s04-sub{font-size:20px;font-weight:400;color:#A8A39A}
+.s04-charcard{position:absolute;left:64px;top:132px;width:480px;height:720px;
+  background:linear-gradient(180deg,#1A1C20 0%,#0E0F11 100%);
+  border:1px solid #3A3E46;border-radius:8px;
+  box-shadow:inset 0 0 0 1px rgba(232,182,98,.15),0 12px 32px rgba(0,0,0,.6);
+  overflow:hidden}
+.s04-charcard-name{position:absolute;left:32px;top:32px;
+  font-family:var(--font-display);font-size:56px;font-weight:700;
+  color:#E8E6E1;line-height:1;z-index:3}
+.s04-charcard-job{position:absolute;left:32px;top:108px;font-size:18px;
+  color:#A8A39A;z-index:3}
+.s04-charcard-type{position:absolute;left:32px;top:148px;z-index:3}
+.s04-charcard-type .chip{height:28px;padding:6px 12px;font-size:14px}
+.s04-charcard-img{position:absolute;left:0;right:0;top:192px;bottom:0;
+  background-image:url('assets/spec-preview/lee_jisoo_full.png');
+  background-position:center bottom;background-size:cover;
+  background-repeat:no-repeat}
+.s04-charcard-img::before{content:"";position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(14,15,17,.6) 0%,transparent 30%,transparent 70%,rgba(14,15,17,.4) 100%)}
+.s04-info{position:absolute;left:576px;top:132px;width:1280px;height:720px;
+  background:rgba(20,22,26,.85);backdrop-filter:blur(8px);
+  border:1px solid #3A3E46;border-radius:8px;padding:32px}
+.s04-info-grid{display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  grid-template-rows:auto 1fr;gap:24px;height:100%}
+.s04-section{display:flex;flex-direction:column}
+.s04-section h3{font-size:32px;font-weight:700;color:#E8E6E1;
+  border-bottom:1px solid #3A3E46;padding-bottom:12px;margin-bottom:16px}
+.s04-section.s-strength h3{color:#6FAA58}
+.s04-section.s-weak h3{color:#D85949}
+.s04-section .row{display:flex;gap:12px;align-items:center;font-size:18px;
+  color:#E8E6E1;margin-bottom:12px}
+.s04-section .row .lab{color:#A8A39A;font-size:16px;width:60px;flex-shrink:0}
+.s04-section .row .val{font-family:var(--font-mono);font-size:18px}
+.s04-section ul{list-style:none}
+.s04-section ul li{font-size:16px;color:#E8E6E1;margin-bottom:8px;
+  padding-left:16px;position:relative}
+.s04-section ul li::before{content:"•";position:absolute;left:0;color:#6E6A63}
+.s04-info-personal{grid-column:1/2;grid-row:1/3}
+.s04-info-strength{grid-column:2/3;grid-row:1/2}
+.s04-info-weak{grid-column:3/4;grid-row:1/2}
+.s04-info-stats{grid-column:1/2;grid-row:2/3}
+.s04-info-goal{grid-column:2/4;grid-row:2/3}
+.s04-stat-row{display:flex;align-items:center;gap:16px;margin-bottom:14px;font-size:16px}
+.s04-stat-row .lab{width:90px;color:#A8A39A;flex-shrink:0}
+.s04-stat-row .bar{flex:1;height:14px}
+.s04-info-goal .sub{margin-top:24px}
+.s04-slots{position:absolute;left:64px;top:880px;display:flex;gap:16px}
+.s04-slot{width:156px;height:156px;background:#1A1C20;
+  border:1px solid #3A3E46;border-radius:6px;position:relative;
+  cursor:pointer;transition:all 200ms;overflow:hidden}
+.s04-slot.selected{border:2px solid #E8B662;
+  box-shadow:0 0 16px rgba(232,182,98,.5);transform:scale(1.05)}
+.s04-slot:hover:not(.selected){border-color:#6E6A63}
+.s04-slot-idx{position:absolute;left:8px;top:4px;
+  font-family:var(--font-display);font-size:24px;font-weight:500;
+  color:#A8A39A;z-index:2}
+.s04-slot-portrait{position:absolute;left:0;right:0;top:0;height:100px;
+  background-position:center top;background-size:cover}
+.s04-slot-portrait::after{content:"";position:absolute;inset:0;
+  background:linear-gradient(180deg,transparent 60%,rgba(14,15,17,.9) 100%)}
+.s04-slot-name{position:absolute;left:0;right:0;bottom:18px;text-align:center;
+  font-size:14px;font-weight:700;color:#E8E6E1}
+.s04-slot-type{position:absolute;left:0;right:0;bottom:4px;text-align:center;
+  font-size:12px;color:#A8A39A}
+.s04-slot-stat{position:absolute;left:8px;right:8px;bottom:6px;
+  display:none;flex-direction:column;gap:1px;align-items:flex-start;
+  font-size:9px;color:#A8A39A}
+.s04-slot.selected .s04-slot-name{bottom:32px}
+.s04-slot.selected .s04-slot-type{bottom:18px}
+.s04-slot-tag{position:absolute;left:32px;top:8px;height:18px;padding:0 6px;
+  background:#3A2E1E;border:1px solid #E8B662;border-radius:3px;
+  font-size:10px;color:#E8B662;display:none;align-items:center;line-height:1}
+.s04-slot.selected .s04-slot-tag{display:flex}
+.s04-actions{position:absolute;right:64px;top:932px;display:flex;gap:8px}
+
+/* ============================================================
+   SCREEN 05 — MAIN PLAY
+   ============================================================ */
+.screen-05{
+  background:
+    radial-gradient(ellipse at 50% 50%,#1A1C20 0%,#0A0C10 100%);
+}
+.screen-05::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background:
+    linear-gradient(180deg,rgba(20,22,26,.4) 0%,transparent 30%,transparent 70%,rgba(10,12,14,.6) 100%),
+    repeating-linear-gradient(90deg,
+      rgba(60,55,50,.04) 0,rgba(60,55,50,.04) 1px,transparent 1px,transparent 60px);
+  opacity:.7}
+.s05-side{position:absolute;left:24px;top:24px;width:280px;height:1032px;
+  background:rgba(14,15,17,.92);border:1px solid #3A3E46;border-radius:8px;
+  padding:16px;display:flex;flex-direction:column;gap:12px}
+.s05-side .sect{padding-bottom:12px;border-bottom:1px solid #2C2F35}
+.s05-side .sect:last-child{border-bottom:none}
+.s05-side h4{font-family:var(--font-display);font-size:13px;font-weight:700;
+  letter-spacing:.15em;color:#A8A39A;margin-bottom:8px}
+.s05-map{height:160px;background:linear-gradient(135deg,#1A1F2A 0%,#0A0E14 100%);
+  border:1px solid #2C2F35;border-radius:4px;position:relative;overflow:hidden}
+.s05-map::before{content:"";position:absolute;inset:0;
+  background:
+    linear-gradient(45deg,#E8B662 0,#E8B662 1px,transparent 1px,transparent 30px),
+    linear-gradient(-45deg,#E8B662 0,#E8B662 1px,transparent 1px,transparent 30px);
+  opacity:.15}
+.s05-map-marker{position:absolute;width:8px;height:8px;border-radius:50%;
+  box-shadow:0 0 8px currentColor}
+.s05-map .me{left:30%;top:40%;background:#E8B662;color:#E8B662;
+  animation:pulse 1.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.4);opacity:.6}}
+.s05-map .danger{left:55%;top:25%;background:#D85949;color:#D85949;width:6px;height:6px}
+.s05-map .res{left:70%;top:60%;background:#6FAA58;color:#6FAA58;width:6px;height:6px}
+.s05-map .land{left:25%;top:70%;background:#5C9DD8;color:#5C9DD8;width:6px;height:6px}
+.s05-day-line{font-family:var(--font-display);font-weight:700;font-size:22px;
+  color:#E8E6E1;margin-bottom:4px}
+.s05-day-line .small{font-size:14px;color:#A8A39A;font-family:var(--font-body);font-weight:400}
+.s05-time{font-family:var(--font-mono);font-size:28px;font-weight:700;color:#E8B662}
+.s05-time .small{font-size:14px;color:#A8A39A;font-family:var(--font-body);font-weight:400}
+.s05-temp{font-size:14px;color:#A8A39A;margin-top:4px}
+.s05-temp .val{color:#E8E6E1}
+.s05-stat-row{display:flex;align-items:center;gap:6px;margin-bottom:6px;font-size:12px}
+.s05-stat-row .icon{width:14px;text-align:center}
+.s05-stat-row .lab{width:48px;color:#A8A39A;font-size:11px}
+.s05-stat-row .bar{flex:1;height:8px}
+.s05-stat-row .val{width:48px;text-align:right;font-family:var(--font-mono);font-size:11px;color:#E8E6E1}
+.s05-noise-bar{height:12px;border-radius:3px;
+  background:linear-gradient(90deg,#6FAA58 0%,#D8C84A 50%,#D85949 100%);
+  position:relative;border:1px solid #2C2F35}
+.s05-noise-marker{position:absolute;top:-6px;width:0;height:0;
+  border-left:5px solid transparent;border-right:5px solid transparent;
+  border-top:8px solid #E8E6E1;transform:translateX(-5px)}
+.s05-noise-text{display:flex;justify-content:space-between;margin-top:4px;font-size:11px}
+.s05-quest{display:flex;gap:6px;font-size:12px;color:#E8E6E1;margin-bottom:4px}
+.s05-quest .check{color:#6FAA58;font-weight:700}
+.s05-quest.done{color:#A8A39A;text-decoration:line-through}
+.s05-quest.done .check{color:#6FAA58}
+
+.s05-main{position:absolute;left:320px;top:24px;width:1304px;height:1032px}
+.s05-topbar{position:absolute;left:412px;top:0;width:480px;height:56px;
+  background:linear-gradient(180deg,#2A2620 0%,#1C1814 100%);
+  border:1px solid #4A4239;border-radius:4px;
+  display:flex;align-items:center;justify-content:center;gap:24px;
+  font-family:var(--font-display);font-size:24px;font-weight:700;color:#E8E6E1;
+  box-shadow:0 4px 12px rgba(0,0,0,.7)}
+.s05-topbar .day{color:#E8B662}
+.s05-topbar .time{color:#E8B662;font-family:var(--font-mono)}
+.s05-topbar .sep{color:#4A4239}
+
+.s05-section{position:absolute;left:0}
+.s05-section .head{display:flex;align-items:baseline;gap:12px;margin-bottom:16px}
+.s05-section .head h2{font-size:24px;font-weight:700;color:#E8E6E1}
+.s05-section .head .eyebrow{color:#A8A39A}
+.s05-locations{top:96px;left:0;width:1304px}
+.s05-loc-grid{display:flex;gap:24px}
+.s05-loc-card{width:176px;height:240px;flex-shrink:0;
+  background:linear-gradient(180deg,#1A1C20 0%,#121316 100%);
+  border:1px solid #3A3E46;border-radius:6px;
+  box-shadow:0 4px 12px rgba(0,0,0,.6);position:relative;overflow:hidden;
+  cursor:pointer;transition:all 200ms}
+.s05-loc-card.selected{border:2px solid #E8B662;
+  box-shadow:0 0 16px rgba(232,182,98,.4),0 4px 12px rgba(0,0,0,.6)}
+.s05-loc-card:hover{transform:translateY(-2px);border-color:#E8B662}
+.s05-loc-icon{position:absolute;left:8px;top:8px;width:24px;height:24px;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(0,0,0,.4);border-radius:3px;font-size:14px}
+.s05-loc-action{position:absolute;right:8px;top:8px;width:24px;height:24px;
+  display:flex;align-items:center;justify-content:center;color:#A8A39A;font-size:14px}
+.s05-loc-img{position:absolute;left:8px;right:8px;top:40px;height:100px;
+  background:linear-gradient(135deg,#3A3F4A 0%,#1A1F2A 100%);border-radius:3px;
+  border:1px solid rgba(232,182,98,.2)}
+.s05-loc-img.t1{background:linear-gradient(135deg,#5A4A3A 0%,#2A1A12 100%)}
+.s05-loc-img.t2{background:linear-gradient(135deg,#3A4A5A 0%,#1A2A3A 100%)}
+.s05-loc-img.t3{background:linear-gradient(135deg,#4A3A2A 0%,#2A1F18 100%)}
+.s05-loc-img.t4{background:linear-gradient(135deg,#5A4030 0%,#2A1812 100%)}
+.s05-loc-img.t5{background:linear-gradient(135deg,#3A3030 0%,#1A1014 100%)}
+.s05-loc-name{position:absolute;left:8px;right:8px;top:148px;
+  font-size:14px;font-weight:700;color:#E8E6E1;line-height:1.2}
+.s05-loc-desc{position:absolute;left:8px;right:8px;top:174px;
+  font-size:11px;color:#A8A39A;line-height:1.3}
+.s05-loc-req{position:absolute;left:8px;right:8px;bottom:8px;
+  font-family:var(--font-mono);font-size:11px;color:#E8B662}
+.s05-loc-empty{width:176px;height:240px;flex-shrink:0;
+  background:rgba(255,255,255,.02);border:1px dashed #2C2F35;border-radius:6px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-display);font-size:48px;font-weight:500;color:#3A3E46}
+
+.s05-ground{top:412px;left:0;width:1304px}
+.s05-ground-grid{display:flex;gap:16px;flex-wrap:nowrap}
+.s05-item-card{width:136px;height:192px;flex-shrink:0;
+  background:linear-gradient(180deg,#1A1C20 0%,#121316 100%);
+  border:1px solid #3A3E46;border-radius:6px;
+  box-shadow:0 4px 12px rgba(0,0,0,.6);position:relative;
+  cursor:pointer;transition:all 200ms;overflow:hidden}
+.s05-item-card:hover{transform:translateY(-2px);border-color:#E8B662}
+.s05-item-icon{position:absolute;left:50%;top:16px;transform:translateX(-50%);
+  width:80px;height:80px;background:rgba(255,255,255,.04);
+  border-radius:6px;display:flex;align-items:center;justify-content:center;
+  font-size:48px}
+.s05-item-name{position:absolute;left:8px;right:8px;top:108px;
+  font-size:14px;font-weight:700;color:#E8E6E1;text-align:center}
+.s05-item-en{position:absolute;left:8px;right:8px;top:132px;
+  font-size:11px;color:#A8A39A;text-align:center}
+.s05-item-meta{position:absolute;left:8px;right:8px;bottom:8px;
+  font-family:var(--font-mono);font-size:11px;color:#E8B662;display:flex;
+  justify-content:space-between}
+
+.s05-carry{top:696px;left:0;width:1304px}
+.s05-carry-grid{display:flex;gap:16px}
+.s05-carry-card{width:136px;height:240px;flex-shrink:0;
+  background:linear-gradient(180deg,#1A1C20 0%,#121316 100%);
+  border:1px solid #3A3E46;border-radius:6px;
+  box-shadow:0 4px 12px rgba(0,0,0,.6);position:relative;
+  cursor:pointer;transition:all 200ms;overflow:hidden}
+.s05-carry-card.selected{border:2px solid #E8B662;
+  box-shadow:0 0 16px rgba(232,182,98,.4),0 4px 12px rgba(0,0,0,.6)}
+.s05-carry-card.equipped{border:2px solid #6FAA58;
+  box-shadow:0 0 12px rgba(111,170,88,.4)}
+.s05-carry-card .rar{position:absolute;left:8px;top:8px;width:8px;height:8px;
+  transform:rotate(45deg);background:#6FAA58}
+.s05-carry-icon{position:absolute;left:50%;top:16px;transform:translateX(-50%);
+  width:80px;height:80px;background:rgba(255,255,255,.04);
+  border-radius:6px;display:flex;align-items:center;justify-content:center;
+  font-size:48px}
+.s05-carry-name{position:absolute;left:8px;right:8px;top:108px;
+  font-size:14px;font-weight:700;color:#E8E6E1;text-align:center}
+.s05-carry-en{position:absolute;left:8px;right:8px;top:132px;
+  font-size:11px;color:#A8A39A;text-align:center}
+.s05-carry-stats{position:absolute;left:8px;right:8px;top:160px;
+  display:flex;flex-direction:column;gap:3px;font-size:10px;color:#A8A39A}
+.s05-carry-stats .row{display:flex;justify-content:space-between}
+.s05-carry-stats .v{color:#E8E6E1;font-family:var(--font-mono)}
+.s05-equipped-chip{position:absolute;left:8px;right:8px;top:108px;
+  background:#1E3A24;border:1px solid #6FAA58;border-radius:3px;
+  font-size:11px;color:#6FAA58;text-align:center;padding:2px 0;
+  font-weight:700}
+.s05-carry-card.equipped .s05-carry-name{top:130px}
+.s05-carry-card.equipped .s05-carry-en{top:152px}
+.s05-carry-card.equipped .s05-carry-stats{top:178px}
+
+.s05-companion{position:absolute;left:1640px;top:24px;width:256px;height:1032px;
+  background:rgba(14,15,17,.92);border:1px solid #3A3E46;border-radius:8px;
+  overflow:hidden}
+.s05-comp-header{height:56px;display:flex;align-items:center;justify-content:center;
+  font-size:32px;font-weight:700;color:#E8E6E1;
+  border-bottom:1px solid #3A3E46}
+.s05-comp-portrait{height:240px;
+  background-image:url('assets/spec-preview/lee_jisoo_full.png');
+  background-position:center 10%;background-size:180% auto;
+  border-bottom:1px solid #3A3E46;position:relative}
+.s05-comp-portrait::after{content:"";position:absolute;inset:0;
+  background:linear-gradient(180deg,transparent 50%,rgba(14,15,17,.7) 100%)}
+.s05-comp-info{padding:16px;display:flex;flex-direction:column;gap:8px}
+.s05-comp-name{font-size:18px;font-weight:700;color:#E8E6E1}
+.s05-comp-name .en{font-size:14px;color:#A8A39A;font-weight:400;margin-left:6px}
+.s05-comp-age{font-size:14px;color:#A8A39A}
+.s05-comp-hp{margin-top:8px}
+.s05-comp-hp .lab{display:flex;justify-content:space-between;font-size:12px;color:#A8A39A;
+  margin-bottom:4px}
+.s05-comp-hp .lab .v{color:#E8E6E1;font-family:var(--font-mono)}
+.s05-comp-status{font-size:14px;color:#6FAA58}
+.s05-comp-equip-h{font-size:14px;color:#A8A39A;margin-top:8px}
+.s05-comp-eq-list{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.s05-comp-eq{display:flex;gap:8px;align-items:center;padding:6px;
+  background:rgba(255,255,255,.02);border:1px solid #2C2F35;border-radius:4px}
+.s05-comp-eq .icon{width:48px;height:48px;background:rgba(255,255,255,.04);
+  border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:24px}
+.s05-comp-eq .nm{flex:1;font-size:12px;color:#E8E6E1}
+.s05-comp-eq .qty{font-size:12px;color:#A8A39A}
+.s05-comp-skill-h{font-size:14px;color:#A8A39A;margin-top:16px}
+.s05-comp-skill{display:flex;gap:8px;margin-top:8px;align-items:center;
+  padding:8px;background:rgba(232,182,98,.05);border:1px solid #3A2E1E;
+  border-radius:4px}
+.s05-comp-skill .icon{width:48px;height:48px;background:#1A1410;
+  border:1px solid #E8B662;border-radius:4px;
+  display:flex;align-items:center;justify-content:center;font-size:24px}
+.s05-comp-skill .nm{flex:1;font-size:13px;color:#E8B662}
+.s05-comp-skill .cd{font-size:11px;color:#A8A39A}
+
+/* ============================================================
+   SCREEN 06 — COMBAT
+   ============================================================ */
+.screen-06{
+  background:radial-gradient(ellipse at 50% 50%,#181420 0%,#08080C 100%);
+}
+.s06-topbar{position:absolute;left:0;right:0;top:0;height:56px;
+  background:#0E0F11;border-bottom:1px solid #3A3E46;
+  display:flex;align-items:center;padding:0 32px;gap:32px;font-size:14px}
+.s06-topbar .group{display:flex;gap:8px;align-items:baseline}
+.s06-topbar .lab{color:#A8A39A;font-size:14px}
+.s06-topbar .val{color:#E8E6E1;font-size:16px}
+.s06-topbar .val.amber{color:#E8B662;font-family:var(--font-mono)}
+.s06-topbar .val.danger{color:#D85949;font-weight:700}
+.s06-title{font-family:var(--font-display);font-size:26px;font-weight:700;color:#E8E6E1}
+.s06-title .city{color:#E8B662;margin-left:8px}
+
+.s06-player{position:absolute;left:24px;top:88px;width:256px;height:480px;
+  background:linear-gradient(180deg,#1A1C20 0%,#121316 100%);
+  border:1px solid #3A3E46;border-radius:8px;padding:16px}
+.s06-portrait{display:flex;gap:12px;align-items:flex-start;margin-bottom:16px}
+.s06-portrait .img{width:80px;height:80px;background:rgba(255,255,255,.04);
+  border:1px solid #3A3E46;border-radius:6px;flex-shrink:0;
+  background-image:url('assets/spec-preview/lee_jisoo_full.png');
+  background-size:200% auto;background-position:center 5%}
+.s06-portrait .info{flex:1}
+.s06-portrait .nm{font-size:18px;font-weight:700;color:#E8E6E1;margin-bottom:4px}
+.s06-portrait .ag{font-size:14px;color:#A8A39A;margin-bottom:8px}
+.s06-portrait .hp-line{display:flex;justify-content:space-between;font-size:11px;color:#A8A39A;margin-bottom:2px}
+.s06-portrait .hp-line .v{color:#E8E6E1;font-family:var(--font-mono)}
+.s06-portrait .bar{height:6px;width:100%}
+.s06-bars{display:flex;flex-direction:column;gap:10px;margin-top:16px}
+.s06-bar-row .lab{display:flex;justify-content:space-between;font-size:12px;color:#A8A39A;margin-bottom:4px}
+.s06-bar-row .lab .v{color:#E8E6E1;font-family:var(--font-mono)}
+.s06-weapon{margin-top:16px;padding-top:12px;border-top:1px solid #2C2F35}
+.s06-weapon-h{font-size:13px;color:#A8A39A;margin-bottom:8px}
+.s06-weapon-row{display:flex;gap:8px;align-items:center}
+.s06-weapon .icon{width:60px;height:60px;background:rgba(255,255,255,.04);
+  border:1px solid #E8B662;border-radius:4px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:24px}
+.s06-weapon .info{flex:1;font-size:12px}
+.s06-weapon .nm{color:#E8E6E1;font-weight:700;margin-bottom:4px}
+.s06-weapon .ammo{color:#E8B662;font-family:var(--font-mono);margin-top:4px}
+.s06-armor{margin-top:12px;font-size:13px;color:#E8E6E1}
+.s06-armor .lab{color:#A8A39A}
+.s06-buffs{margin-top:12px;padding-top:8px;border-top:1px solid #2C2F35}
+.s06-buff{display:flex;gap:6px;font-size:12px;margin-bottom:4px}
+.s06-buff.up{color:#6FAA58}
+.s06-buff.dn{color:#D85949}
+
+.s06-center{position:absolute;left:296px;top:88px;width:864px;height:580px;
+  background:linear-gradient(180deg,rgba(14,15,17,.7) 0%,rgba(8,10,12,.85) 100%);
+  border:1px solid #3A3E46;border-radius:8px;overflow:hidden}
+.s06-center-h{height:56px;display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-display);font-size:28px;font-weight:700;color:#E8E6E1;
+  border-bottom:1px solid #3A3E46;background:rgba(0,0,0,.3)}
+.s06-center-body{display:flex;height:524px;padding:16px}
+.s06-center-meta{width:200px;display:flex;flex-direction:column;gap:12px;padding:8px}
+.s06-meta-row{display:flex;flex-direction:column;gap:2px}
+.s06-meta-row .lab{font-size:14px;color:#A8A39A}
+.s06-meta-row .val{font-size:16px;color:#E8E6E1}
+.s06-scene{flex:1;position:relative;
+  background:radial-gradient(ellipse at 50% 70%,#3A2A1E 0%,#0E0A08 70%);
+  border:1px solid #3A3E46;border-radius:6px;overflow:hidden}
+.s06-scene::before{content:"";position:absolute;inset:0;
+  background:
+    linear-gradient(180deg,transparent 60%,rgba(0,0,0,.6) 100%),
+    repeating-linear-gradient(90deg,
+      rgba(60,40,30,.3) 0px,rgba(60,40,30,.3) 100px,
+      rgba(40,30,20,.4) 100px,rgba(40,30,20,.4) 200px,
+      rgba(80,60,40,.2) 200px,rgba(80,60,40,.2) 280px)}
+.s06-scene-fig{position:absolute;left:50%;bottom:8%;transform:translateX(-50%);
+  width:140px;height:280px;
+  background:linear-gradient(180deg,#1A1612 0%,#0A0806 100%);
+  clip-path:polygon(40% 0,60% 0,65% 15%,55% 30%,55% 50%,70% 70%,65% 100%,
+    35% 100%,30% 70%,45% 50%,45% 30%,35% 15%);
+  filter:drop-shadow(0 0 16px rgba(216,89,73,.3))}
+.s06-scene-mark{position:absolute;left:50%;bottom:6%;transform:translateX(-50%);
+  font-size:20px;color:#E8B662;text-shadow:0 0 8px rgba(232,182,98,.6)}
+.s06-distance{position:absolute;left:50%;bottom:5%;transform:translate(-50%,40px);
+  display:flex;flex-direction:column;align-items:center;gap:4px}
+.s06-distance .bar{width:200px;height:4px}
+.s06-center-action{width:200px;padding:8px;display:flex;flex-direction:column;gap:8px}
+.s06-action-hint{display:flex;flex-direction:column;gap:4px;
+  padding:8px;background:rgba(232,182,98,.08);border:1px solid #3A2E1E;border-radius:4px}
+.s06-action-hint .lab{font-size:11px;color:#A8A39A}
+.s06-action-hint .val{font-size:14px;color:#E8B662;font-weight:700}
+
+.s06-enemy{position:absolute;left:1176px;top:88px;width:256px;height:480px;
+  background:linear-gradient(180deg,#1A1C20 0%,#121316 100%);
+  border:1px solid #3A3E46;border-radius:8px;padding:16px}
+.s06-enemy .badge{display:inline-block;padding:4px 12px;
+  background:#3A1A18;border:1px solid #D85949;border-radius:3px;
+  font-size:11px;font-weight:700;color:#D85949;letter-spacing:.1em;margin-bottom:8px}
+.s06-enemy .name{font-size:22px;font-weight:700;color:#E8E6E1;margin-bottom:4px}
+.s06-enemy .danger{font-size:14px;color:#D85949;margin-bottom:12px}
+.s06-enemy .danger .v{font-weight:700}
+.s06-enemy-portrait{width:100%;height:140px;
+  background:radial-gradient(ellipse at 50% 60%,#3A1A18 0%,#0A0606 80%);
+  border:1px solid #3A3E46;border-radius:6px;margin-bottom:12px;position:relative;
+  overflow:hidden}
+.s06-enemy-portrait::before{content:"";position:absolute;left:50%;bottom:8px;
+  transform:translateX(-50%);width:60px;height:120px;
+  background:linear-gradient(180deg,#0A0606 0%,#1A0E0C 100%);
+  clip-path:polygon(40% 0,60% 0,65% 15%,55% 30%,55% 50%,70% 70%,65% 100%,
+    35% 100%,30% 70%,45% 50%,45% 30%,35% 15%);
+  filter:drop-shadow(0 0 8px rgba(216,89,73,.5))}
+.s06-enemy-hp{margin-bottom:12px}
+.s06-enemy-hp .lab{display:flex;justify-content:space-between;font-size:12px;
+  color:#A8A39A;margin-bottom:4px}
+.s06-enemy-hp .lab .v{color:#E8E6E1;font-family:var(--font-mono)}
+.s06-enemy .stats{display:flex;flex-direction:column;gap:8px}
+.s06-enemy .stats .row{display:flex;justify-content:space-between;font-size:13px}
+.s06-enemy .stats .row .lab{color:#A8A39A}
+.s06-enemy .stats .row .v{color:#E8E6E1}
+
+.s06-act-title{position:absolute;left:0;right:0;top:880px;text-align:center;
+  font-size:24px;font-weight:700;color:#E8B662}
+.s06-actions-row{position:absolute;left:320px;top:920px;display:flex;gap:16px}
+.s06-act{width:216px;height:152px;
+  background:linear-gradient(180deg,#C9893A 0%,#8A5A22 100%);
+  border:2px solid #E8B662;border-radius:6px;
+  box-shadow:0 6px 16px rgba(0,0,0,.6),0 0 16px rgba(232,182,98,.25);
+  cursor:pointer;transition:all 120ms;position:relative;color:#1A1410;padding:12px}
+.s06-act:hover{transform:scale(1.04);box-shadow:0 8px 20px rgba(0,0,0,.7),0 0 24px rgba(232,182,98,.5)}
+.s06-act .icon{position:absolute;left:50%;top:12px;transform:translateX(-50%);
+  width:40px;height:40px;display:flex;align-items:center;justify-content:center;
+  font-size:32px}
+.s06-act .nm{position:absolute;left:0;right:0;top:60px;text-align:center;
+  font-size:22px;font-weight:700;color:#1A1410;text-shadow:0 1px 0 rgba(255,255,255,.2)}
+.s06-act .en{position:absolute;left:0;right:0;top:88px;text-align:center;
+  font-family:var(--font-display);font-size:12px;font-weight:700;
+  color:rgba(26,20,16,.6);letter-spacing:.15em}
+.s06-act .effects{position:absolute;left:8px;right:8px;top:108px;
+  display:flex;flex-direction:column;gap:2px;font-size:11px;color:#1A1410}
+.s06-act .effects .row{display:flex;justify-content:space-between}
+
+/* ============================================================
+   SCREEN 07 — EQUIPMENT
+   ============================================================ */
+.screen-07{
+  background:radial-gradient(ellipse at 50% 30%,#1F1F26 0%,#0A0C12 100%);
+}
+.screen-07::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse at 50% 50%,transparent 30%,rgba(0,0,0,.6) 100%)}
+.s07-left{position:absolute;left:32px;top:56px;width:320px;height:968px;
+  background:rgba(14,15,17,.92);border:1px solid #3A3E46;border-radius:8px;padding:24px}
+.s07-left h3{height:56px;margin:-24px -24px 16px;display:flex;
+  align-items:center;justify-content:center;
+  background:linear-gradient(180deg,#2A2620 0%,#1C1814 100%);
+  border-bottom:1px solid #3A3E46;font-size:22px;font-weight:700;color:#E8E6E1;
+  border-radius:8px 8px 0 0}
+.s07-effects-h{font-family:var(--font-display);font-size:13px;font-weight:700;
+  letter-spacing:.15em;color:#A8A39A;margin-bottom:12px;margin-top:16px}
+.s07-stat{display:flex;align-items:center;gap:8px;font-size:14px;margin-bottom:12px}
+.s07-stat .icon{width:18px}
+.s07-stat .lab{flex:1;color:#E8E6E1}
+.s07-stat .val{font-family:var(--font-mono);font-weight:700;font-size:16px}
+.s07-stat .val.up{color:#6FAA58}
+.s07-stat .val.dn{color:#D85949}
+.s07-stat .val.neut{color:#E8E6E1}
+.s07-applied{display:flex;align-items:center;gap:8px;font-size:14px;
+  color:#E8E6E1;padding:8px;background:rgba(255,255,255,.02);
+  border:1px solid #2C2F35;border-radius:4px;margin-bottom:8px}
+
+.s07-center{position:absolute;left:384px;top:56px;width:832px;height:968px;
+  background:rgba(14,15,17,.5);border:1px solid #3A3E46;border-radius:8px;
+  position:absolute}
+.s07-fig{position:absolute;left:50%;top:64px;transform:translateX(-50%);
+  width:320px;height:800px;
+  background:linear-gradient(180deg,#1A1614 0%,#0E0C0A 100%);
+  border-radius:6px;overflow:hidden;
+  background-image:url('assets/spec-preview/lee_jisoo_full.png');
+  background-size:cover;background-position:center top;
+  filter:brightness(.85) contrast(1.1)}
+.s07-fig::after{content:"";position:absolute;inset:0;
+  background:linear-gradient(180deg,transparent 60%,rgba(0,0,0,.5) 100%)}
+.s07-slot{position:absolute;width:104px;height:144px;
+  background:#1A1C20;border:1px solid #3A3E46;border-radius:6px;
+  cursor:pointer;transition:all 200ms;overflow:hidden}
+.s07-slot:hover{border-color:#E8B662}
+.s07-slot .lab{position:absolute;left:8px;top:-22px;
+  font-family:var(--font-display);font-size:12px;font-weight:700;
+  letter-spacing:.1em;color:#A8A39A}
+.s07-slot .rar{position:absolute;left:6px;top:6px;width:8px;height:8px;
+  background:#E8B662;transform:rotate(45deg);z-index:2}
+.s07-slot .icon{position:absolute;left:50%;top:12px;transform:translateX(-50%);
+  width:64px;height:64px;background:rgba(255,255,255,.04);
+  border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:32px}
+.s07-slot .nm{position:absolute;left:4px;right:4px;bottom:18px;text-align:center;
+  font-size:13px;font-weight:700;color:#E8E6E1;line-height:1.2}
+.s07-slot .gr{position:absolute;left:4px;right:4px;bottom:4px;text-align:center;
+  font-size:11px;color:#A8A39A}
+
+.s07-right{position:absolute;left:1248px;top:56px;width:640px;height:968px;
+  background:rgba(14,15,17,.92);border:1px solid #3A3E46;border-radius:8px;overflow:hidden}
+.s07-right .head{height:56px;padding:0 24px;display:flex;align-items:center;
+  justify-content:space-between;border-bottom:1px solid #3A3E46}
+.s07-right .head h3{font-size:22px;font-weight:700;color:#E8E6E1}
+.s07-right .head .x{width:32px;height:32px;display:flex;align-items:center;
+  justify-content:center;color:#A8A39A;cursor:pointer;font-size:24px}
+.s07-tabs{height:48px;display:flex;border-bottom:1px solid #3A3E46}
+.s07-tab{flex:1;display:flex;align-items:center;justify-content:center;
+  font-size:16px;font-weight:500;color:#A8A39A;cursor:pointer;
+  position:relative;transition:all 120ms}
+.s07-tab.active{color:#F5D38A;background:#3A2E1E}
+.s07-tab.active::after{content:"";position:absolute;left:0;right:0;bottom:0;
+  height:4px;background:#E8B662}
+.s07-inv{padding:24px;display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.s07-cell{height:168px;background:linear-gradient(180deg,#1A1C20 0%,#121316 100%);
+  border:1px solid #3A3E46;border-radius:6px;
+  cursor:pointer;transition:all 200ms;position:relative;overflow:hidden}
+.s07-cell:hover{border-color:#E8B662;transform:translateY(-2px)}
+.s07-cell.selected{border:2px solid #E8B662;
+  box-shadow:0 0 16px rgba(232,182,98,.4)}
+.s07-cell .icon{position:absolute;left:50%;top:24px;transform:translateX(-50%);
+  width:64px;height:64px;background:rgba(255,255,255,.04);
+  border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:32px}
+.s07-cell .nm{position:absolute;left:4px;right:4px;top:96px;text-align:center;
+  font-size:12px;font-weight:700;color:#E8E6E1}
+.s07-cell .meta{position:absolute;left:4px;right:4px;bottom:4px;text-align:center;
+  font-size:10px;color:#A8A39A;font-family:var(--font-mono)}
+.s07-cell .meta .pr{color:#E8B662}
+.s07-cell .rar{position:absolute;left:6px;top:6px;width:6px;height:6px;
+  transform:rotate(45deg)}
+
+/* ============================================================
+   SCREEN 08 — ROUTE / TACTICAL MAP
+   ============================================================ */
+.screen-08{
+  background:linear-gradient(180deg,#0F1419 0%,#0A0E12 100%);
+}
+.s08-bg-hex{position:absolute;inset:0;pointer-events:none;
+  background-image:
+    linear-gradient(60deg,transparent 47%,rgba(255,255,255,.02) 47%,rgba(255,255,255,.02) 53%,transparent 53%),
+    linear-gradient(-60deg,transparent 47%,rgba(255,255,255,.02) 47%,rgba(255,255,255,.02) 53%,transparent 53%),
+    linear-gradient(0deg,transparent 47%,rgba(255,255,255,.02) 47%,rgba(255,255,255,.02) 53%,transparent 53%);
+  background-size:48px 48px}
+.s08-topbar{position:absolute;left:0;right:0;top:0;height:56px;
+  background:#0E0F11;border-bottom:1px solid #3A3E46;
+  display:flex;align-items:center;padding:0 32px;gap:16px;font-size:14px}
+.s08-topbar .lab{color:#A8A39A;font-size:14px}
+.s08-topbar .input{padding:6px 12px;background:#1A1C20;border:1px solid #3A3E46;
+  border-radius:4px;color:#E8E6E1;font-size:16px;width:460px}
+.s08-tp{margin-left:auto;display:flex;gap:8px;align-items:center}
+.s08-tp .lab{color:#A8A39A;font-size:14px}
+.s08-tp .val{padding:6px 16px;background:linear-gradient(180deg,#2A2620,#1C1814);
+  border:1px solid #E8B662;border-radius:4px;
+  font-family:var(--font-mono);font-weight:700;font-size:18px;color:#E8B662}
+.s08-filter{position:absolute;left:24px;top:80px;width:200px;height:800px;
+  background:rgba(14,15,17,.85);border:1px solid #3A3E46;border-radius:6px;
+  padding:16px 0;overflow:hidden}
+.s08-filter h3{padding:0 16px 12px;font-size:24px;font-weight:700;color:#E8E6E1}
+.s08-filter-item{height:56px;padding:0 16px;display:flex;align-items:center;gap:12px;
+  cursor:pointer;font-size:14px;color:#A8A39A;transition:all 120ms;position:relative}
+.s08-filter-item:hover{background:#1A1C20}
+.s08-filter-item.active{background:linear-gradient(90deg,#3A2E1E,#2A1E10);color:#E8B662}
+.s08-filter-item.active::before{content:"";position:absolute;left:0;top:0;bottom:0;
+  width:4px;background:#E8B662}
+.s08-filter-item .icon{width:24px;text-align:center;font-size:18px}
+
+.s08-map{position:absolute;left:248px;top:80px;width:1208px;height:800px;
+  background:linear-gradient(180deg,#0F1419 0%,#0A0E12 100%);
+  border:1px solid #3A3E46;border-radius:6px;overflow:hidden}
+.s08-river{position:absolute;left:8%;top:35%;width:84%;height:90px;
+  background:linear-gradient(180deg,#2D5C8F 0%,#1A3A5A 100%);opacity:.65;
+  clip-path:polygon(0 30%,5% 25%,12% 35%,20% 28%,28% 38%,38% 30%,46% 40%,
+    55% 32%,65% 42%,75% 33%,85% 43%,95% 35%,100% 40%,100% 70%,95% 75%,85% 65%,
+    75% 73%,65% 63%,55% 70%,46% 60%,38% 68%,28% 60%,20% 70%,12% 62%,5% 72%,0 65%)}
+.s08-road{position:absolute;background:#E8B662;opacity:.8;height:2px;
+  box-shadow:0 0 4px rgba(232,182,98,.4)}
+.s08-road.r1{left:10%;top:45%;width:80%;transform:rotate(2deg)}
+.s08-road.r2{left:20%;top:25%;width:50%;height:2px;transform:rotate(-12deg)}
+.s08-road.r3{left:35%;top:55%;width:40%;transform:rotate(8deg)}
+.s08-zone{position:absolute;font-family:var(--font-display);font-size:14px;
+  font-weight:500;color:#E8E6E1;letter-spacing:.1em}
+.s08-marker{position:absolute;width:24px;height:24px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:14px;
+  border:2px solid currentColor;background:rgba(0,0,0,.6)}
+.s08-marker.me{color:#E8B662;animation:pulse 1.4s ease-in-out infinite;width:20px;height:20px}
+.s08-marker.danger{color:#D85949}
+.s08-marker.res{color:#6FAA58}
+.s08-marker.land{color:#5C9DD8}
+.s08-danger-zone{position:absolute;border-radius:50%;
+  background:radial-gradient(circle,rgba(216,89,73,.4) 0%,rgba(216,89,73,0) 70%);
+  pointer-events:none}
+
+.s08-info{position:absolute;left:1480px;top:80px;width:416px;height:800px;
+  background:rgba(14,15,17,.85);border:1px solid #3A3E46;border-radius:6px;padding:24px}
+.s08-info h2{font-family:var(--font-display);font-size:36px;font-weight:700;
+  color:#E8E6E1;margin-bottom:24px}
+.s08-info .div{height:1px;background:#3A3E46;margin:16px 0}
+.s08-info h3{font-size:20px;font-weight:700;color:#E8E6E1;margin-bottom:12px}
+.s08-info p{font-size:14px;color:#A8A39A;line-height:1.6}
+.s08-legend{display:flex;flex-direction:column;gap:10px;margin-top:8px}
+.s08-legend-row{display:flex;gap:10px;align-items:center;font-size:14px;color:#E8E6E1}
+.s08-legend-row .dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;border:2px solid currentColor}
+.s08-legend-row.me .dot{color:#E8B662}
+.s08-legend-row.danger .dot{color:#D85949}
+.s08-legend-row.res .dot{color:#6FAA58}
+.s08-legend-row.land .dot{color:#5C9DD8}
+
+.s08-route{position:absolute;left:0;right:0;top:904px;height:152px;
+  background:linear-gradient(180deg,#2A2620 0%,#1C1814 100%);
+  border-top:1px solid #3A3E46;display:flex}
+.s08-route-track{flex:1;padding:16px 32px;position:relative}
+.s08-route-h{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:32px}
+.s08-route-h .ti{font-size:22px;font-weight:700;color:#E8E6E1}
+.s08-route-h .meta{font-size:14px;color:#A8A39A}
+.s08-track{position:relative;height:32px;margin:0 32px}
+.s08-track-line{position:absolute;left:0;right:0;top:50%;height:2px;
+  background:#3A3E46;transform:translateY(-50%)}
+.s08-track-line.active{background:#E8B662;width:60%}
+.s08-cp{position:absolute;width:16px;height:16px;border-radius:50%;
+  background:#3A3E46;border:2px solid #3A3E46;top:50%;transform:translate(-50%,-50%)}
+.s08-cp.done{background:#E8B662;border-color:#E8B662;
+  box-shadow:0 0 8px rgba(232,182,98,.5)}
+.s08-cp.cur{background:#E8B662;border-color:#E8B662;
+  box-shadow:0 0 12px rgba(232,182,98,.7);width:20px;height:20px}
+.s08-cp-lab{position:absolute;top:24px;left:50%;transform:translateX(-50%);
+  font-family:var(--font-mono);font-size:12px;color:#A8A39A;white-space:nowrap}
+.s08-cp.done .s08-cp-lab,.s08-cp.cur .s08-cp-lab{color:#E8B662}
+.s08-route-actions{width:464px;padding:16px 24px;display:flex;flex-direction:column;gap:8px}
+.s08-route-actions .btn-primary,.s08-route-actions .btn-secondary{height:40px;font-size:14px;width:200px}
+</style>
+</head>
+<body>
+
+<nav class="preview-nav" id="nav">
+  <button data-screen="01" class="active">01 메인 메뉴</button>
+  <button data-screen="02">02 이어하기</button>
+  <button data-screen="03">03 엔딩 갤러리</button>
+  <button data-screen="04">04 캐릭터 선택</button>
+  <button data-screen="05">05 메인 플레이</button>
+  <button data-screen="06">06 전투</button>
+  <button data-screen="07">07 장비</button>
+  <button data-screen="08">08 미니맵</button>
+</nav>
+
+<div class="stage">
+<div class="stage-inner" id="stage">
+
+<!-- ============================================================
+     SCREEN 01 — MAIN MENU
+     ============================================================ -->
+<section class="screen screen-01 active" data-id="01">
+  <!-- atmospheric background layers -->
+  <div class="s01-sky"></div>
+  <div class="s01-skyline"></div>
+  <div class="s01-bridge"></div>
+  <div class="s01-river"></div>
+  <div class="s01-rubble"></div>
+  <div class="vignette"></div>
+  <div class="grain"></div>
+  <div class="s01-paper-frame"></div>
+
+  <!-- stamps -->
+  <div class="s01-stamp s01-stamp-doc">DOSSIER<br>AG-7741</div>
+  <div class="s01-stamp s01-stamp-civil">PUBLIC INSTITUTION DEPT</div>
+  <div class="s01-stamp s01-stamp-g2">G2</div>
+  <div class="s01-stamp s01-stamp-confid">CIVIL DEFENSE</div>
+
+  <!-- news clips -->
+  <div class="s01-newsclip s01-newsclip-1">
+    <div class="s01-newsclip-label">CDB-NEWS</div>
+    <div class="s01-newsclip-text">서울 강남 거점 통신 두절<br>국방부 자료 확보 차단 알림</div>
+  </div>
+  <div class="s01-newsclip s01-newsclip-2">
+    <div class="s01-newsclip-label">RPS-21</div>
+    <div class="s01-newsclip-text">긴급 방역·재난 자료<br>제한 통제구역</div>
+  </div>
+  <div class="s01-newsclip s01-newsclip-3">
+    <div class="s01-newsclip-label">YBT</div>
+    <div class="s01-newsclip-text">한강 인근 오염 확산</div>
+  </div>
+
+  <!-- collage elements -->
+  <div class="s01-subway-sign">
+    <div class="icon">⛔</div>
+    <div class="text">지하철<br>운행 중단</div>
+  </div>
+
+  <div class="s01-police-line">통제구역 · 통제구역</div>
+
+  <!-- title + menu -->
+  <div class="s01-title">
+    <h1>Card Survival: Ruined City</h1>
+    <span class="s01-title-rule"></span>
+    <div class="sub">2026년 1월, 서울이 무너졌다.</div>
+  </div>
+
+  <div class="s01-menu">
+    <button class="btn-primary">새 게임</button>
+    <button class="btn-primary">이어하기</button>
+    <button class="btn-primary">엔딩 갤러리</button>
+    <button class="btn-primary">설정</button>
+  </div>
+
+  <!-- caution tape -->
+  <div class="s01-tape">
+    <div class="s01-tape-text">통제구역 · 통제구역 · 통제구역 · 통제구역</div>
+  </div>
+
+  <div class="s01-footer">
+    <span>v1.0.0</span>
+    <span>© 2026 STUDIO</span>
+  </div>
+</section>
+
+<!-- ============================================================
+     SCREEN 02 — CONTINUE / SAVE
+     ============================================================ -->
+<section class="screen screen-02" data-id="02">
+  <div class="s01-bg-city" style="opacity:.45"></div>
+  <div class="vignette"></div>
+  <div class="s02-paper-tex"></div>
+  <div class="s01-paper-frame"></div>
+  <div class="s02-stamp s02-stamp-1">CIVIL DEFENSE DOC. G-8</div>
+
+  <div class="s02-header-patch">이어하기</div>
+
+  <div class="s02-slot selected" style="top:200px">
+    <div class="s02-thumb s02-thumb-1"></div>
+    <div class="s02-slot-meta1">
+      <div class="s02-day">15일차</div>
+      <div class="s02-loc">영등포교</div>
+    </div>
+    <div class="s02-slot-meta2">
+      <div class="row"><span class="lab">캐릭터</span><span class="val">강진우</span></div>
+      <div class="row"><span class="lab">플레이 시간</span><span class="val">2:45:10</span></div>
+      <div class="row"><span class="lab">난이도</span><span class="val">극한</span></div>
+    </div>
+    <div class="s02-slot-stat">
+      <div class="eyebrow" style="margin-bottom:4px;color:#A8A39A">상태</div>
+      <div class="row"><span class="icon" style="color:#C84A3D">❤</span>
+        <div class="bar"><div class="bar-fill hp" style="width:78%"></div></div></div>
+      <div class="row"><span class="icon" style="color:#C97A3A">🍞</span>
+        <div class="bar"><div class="bar-fill hunger" style="width:62%"></div></div></div>
+      <div class="row"><span class="icon" style="color:#A04ECC">☣</span>
+        <div class="bar"><div class="bar-fill infect" style="width:18%"></div></div></div>
+    </div>
+  </div>
+
+  <div class="s02-slot" style="top:368px">
+    <div class="s02-thumb"></div>
+    <div class="s02-slot-meta1">
+      <div class="s02-day" style="color:#A8A39A">8일차</div>
+      <div class="s02-loc">마포역</div>
+    </div>
+    <div class="s02-slot-meta2">
+      <div class="row"><span class="lab">캐릭터</span><span class="val">서은지</span></div>
+      <div class="row"><span class="lab">플레이 시간</span><span class="val">1:12:05</span></div>
+      <div class="row"><span class="lab">난이도</span><span class="val">표준</span></div>
+    </div>
+    <div class="s02-slot-stat">
+      <div class="eyebrow" style="margin-bottom:4px;color:#A8A39A">상태</div>
+      <div class="row"><span class="icon" style="color:#C84A3D">❤</span>
+        <div class="bar"><div class="bar-fill hp" style="width:90%"></div></div></div>
+      <div class="row"><span class="icon" style="color:#C97A3A">🍞</span>
+        <div class="bar"><div class="bar-fill hunger" style="width:80%"></div></div></div>
+      <div class="row"><span class="icon" style="color:#A04ECC">☣</span>
+        <div class="bar"><div class="bar-fill infect" style="width:5%"></div></div></div>
+    </div>
+  </div>
+
+  <div class="s02-slot" style="top:536px">
+    <div class="s02-thumb"></div>
+    <div class="s02-slot-meta1">
+      <div class="s02-day" style="color:#A8A39A">22일차</div>
+      <div class="s02-loc">강남</div>
+    </div>
+    <div class="s02-slot-meta2">
+      <div class="row"><span class="lab">캐릭터</span><span class="val">박동현</span></div>
+      <div class="row"><span class="lab">플레이 시간</span><span class="val">4:30:15</span></div>
+      <div class="row"><span class="lab">난이도</span><span class="val">표준</span></div>
+    </div>
+    <div class="s02-slot-stat">
+      <div class="eyebrow" style="margin-bottom:4px;color:#A8A39A">상태</div>
+      <div class="row"><span class="icon" style="color:#C84A3D">❤</span>
+        <div class="bar"><div class="bar-fill hp" style="width:42%"></div></div></div>
+      <div class="row"><span class="icon" style="color:#C97A3A">🍞</span>
+        <div class="bar"><div class="bar-fill hunger" style="width:30%"></div></div></div>
+      <div class="row"><span class="icon" style="color:#A04ECC">☣</span>
+        <div class="bar"><div class="bar-fill infect" style="width:35%"></div></div></div>
+    </div>
+  </div>
+
+  <div class="s02-actions">
+    <button class="btn-primary" style="position:absolute;left:232px;width:200px">불러오기</button>
+    <button class="btn-secondary" style="position:absolute;left:448px;width:160px">삭제</button>
+    <button class="btn-secondary" style="position:absolute;right:232px;width:160px">뒤로</button>
+  </div>
+</section>
+
+<!-- ============================================================
+     SCREEN 03 — ENDING GALLERY
+     ============================================================ -->
+<section class="screen screen-03" data-id="03">
+  <div class="s02-paper-tex"></div>
+  <div class="vignette"></div>
+  <div class="s01-paper-frame"></div>
+
+  <button class="btn-secondary s03-back" style="height:56px;">← 뒤로</button>
+  <div class="s03-title">엔딩 갤러리</div>
+  <div class="s03-progress">해금률: <span class="num">15</span> / <span class="num">24</span> (62.5%)</div>
+
+  <div class="s03-tabs">
+    <div class="s03-tab active">전체</div>
+    <div class="s03-tab">캐릭터</div>
+    <div class="s03-tab">생존</div>
+    <div class="s03-tab">사망</div>
+  </div>
+
+  <div class="s03-grid">
+    <div class="s03-end selected">
+      <div class="s03-end-thumb t1"></div>
+      <div class="s03-end-info">
+        <div class="s03-end-name"><span class="br">[</span>새로운 연대<span class="br">]</span></div>
+        <div class="s03-end-cat">(생존 엔딩)</div>
+        <div class="s03-end-quote">"누군가의 손을 잡는 순간, 도시는 다시 숨을 쉰다."</div>
+        <div class="s03-end-action"><button class="btn-secondary" style="height:40px;font-size:14px;padding:0 16px">다시 보기</button></div>
+      </div>
+    </div>
+    <div class="s03-end">
+      <div class="s03-end-thumb t2"></div>
+      <div class="s03-end-info">
+        <div class="s03-end-name"><span class="br">[</span>마지막 송신<span class="br">]</span></div>
+        <div class="s03-end-cat">(생존 엔딩)</div>
+        <div class="s03-end-quote">"전파가 끊긴 도시 위로 단 하나의 메시지가 남았다."</div>
+        <div class="s03-end-action"><button class="btn-secondary" style="height:40px;font-size:14px;padding:0 16px">다시 보기</button></div>
+      </div>
+    </div>
+    <div class="s03-end">
+      <div class="s03-end-thumb t3"></div>
+      <div class="s03-end-info">
+        <div class="s03-end-name"><span class="br">[</span>붕괴된 약속<span class="br">]</span></div>
+        <div class="s03-end-cat danger">(사망 엔딩)</div>
+        <div class="s03-end-quote">"가장 먼저 무너진 건 도시가 아니라 사람이었다."</div>
+        <div class="s03-end-action"><button class="btn-secondary" style="height:40px;font-size:14px;padding:0 16px">기록 보기</button></div>
+      </div>
+    </div>
+    <div class="s03-end">
+      <div class="s03-end-thumb t4"></div>
+      <div class="s03-end-info">
+        <div class="s03-end-name"><span class="br">[</span>봄의 첫 신호<span class="br">]</span></div>
+        <div class="s03-end-cat">(생존 엔딩)</div>
+        <div class="s03-end-quote">"폐허 위에 처음 핀 들꽃이 모든 걸 말해주었다."</div>
+        <div class="s03-end-action"><button class="btn-secondary" style="height:40px;font-size:14px;padding:0 16px">다시 보기</button></div>
+      </div>
+    </div>
+    <div class="s03-end">
+      <div class="s03-end-thumb t5"></div>
+      <div class="s03-end-info">
+        <div class="s03-end-name"><span class="br">[</span>잊혀진 이름<span class="br">]</span></div>
+        <div class="s03-end-cat">(캐릭터 엔딩)</div>
+        <div class="s03-end-quote">"그녀의 일기장만이 살아남은 유일한 기록이었다."</div>
+        <div class="s03-end-action"><button class="btn-secondary" style="height:40px;font-size:14px;padding:0 16px">다시 보기</button></div>
+      </div>
+    </div>
+    <div class="s03-end">
+      <div class="s03-end-thumb locked"><span class="lock">🔒</span></div>
+      <div class="s03-end-info">
+        <div class="s03-end-name" style="color:#A8A39A">???</div>
+        <div class="s03-end-cat danger">[달성 불가]</div>
+        <div class="s03-end-quote">달성 조건: ???</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="s03-foot">
+    <button class="btn-primary" style="width:160px">다시 보기</button>
+    <button class="btn-secondary" style="width:160px">기록 보기</button>
+  </div>
+</section>
+
+<!-- ============================================================
+     SCREEN 04 — CHARACTER SELECT
+     ============================================================ -->
+<section class="screen screen-04" data-id="04">
+  <div class="s04-bg-snow"></div>
+  <div class="vignette"></div>
+
+  <div class="s04-header">
+    <div class="s04-title">캐릭터 선택</div>
+    <div class="s04-sub">서울 서바이벌</div>
+  </div>
+
+  <div class="s04-charcard">
+    <div class="s04-charcard-name">이민우</div>
+    <div class="s04-charcard-job">응급의학과 의사</div>
+    <div class="s04-charcard-type"><span class="chip amber">[의료형]</span></div>
+    <div class="s04-charcard-img"></div>
+  </div>
+
+  <div class="s04-info">
+    <div class="s04-info-grid">
+      <div class="s04-section s04-info-personal">
+        <h3>개인 정보</h3>
+        <div class="row"><span class="lab">나이</span><span class="val">38</span></div>
+        <div class="row" style="align-items:flex-start"><span class="lab">배경</span>
+          <span style="flex:1;font-size:18px;line-height:1.4">응급의학과 의사이자, 서울 동부 시민병원 외상의학과 책임자.<br>의약 자격과 풍부한 임상 경험.</span>
+        </div>
+      </div>
+      <div class="s04-section s-strength s04-info-strength">
+        <h3>강점</h3>
+        <ul>
+          <li>전문 의료 지식</li>
+          <li>냉철한 판단력</li>
+          <li>의약품 소지</li>
+        </ul>
+      </div>
+      <div class="s04-section s-weak s04-info-weak">
+        <h3>약점</h3>
+        <ul>
+          <li>비전투 성향</li>
+          <li>체력 한계</li>
+          <li>과거의 트라우마</li>
+        </ul>
+      </div>
+      <div class="s04-section s04-info-stats">
+        <h3>능력치</h3>
+        <div class="s04-stat-row"><span class="lab">면역건강</span>
+          <div class="bar"><div class="bar-fill amber" style="width:78%"></div></div></div>
+        <div class="s04-stat-row"><span class="lab">스테미너</span>
+          <div class="bar"><div class="bar-fill amber" style="width:55%"></div></div></div>
+        <div class="s04-stat-row"><span class="lab">의료 스킬</span>
+          <div class="bar"><div class="bar-fill amber" style="width:95%"></div></div></div>
+        <div class="s04-stat-row"><span class="lab">전투</span>
+          <div class="bar"><div class="bar-fill amber" style="width:25%"></div></div></div>
+        <div class="s04-stat-row"><span class="lab">소등김</span>
+          <div class="bar"><div class="bar-fill amber" style="width:40%"></div></div></div>
+      </div>
+      <div class="s04-section s04-info-goal">
+        <h3>개인 목표</h3>
+        <p style="font-size:18px;color:#E8E6E1">실종된 가족 찾기</p>
+        <h3 class="sub">출발지</h3>
+        <p style="font-size:18px;color:#E8E6E1">서울 성모병원 대피소</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="s04-slots">
+    <div class="s04-slot selected">
+      <div class="s04-slot-tag">선택됨</div>
+      <div class="s04-slot-idx">1</div>
+      <div class="s04-slot-portrait" style="background-image:url('assets/spec-preview/lee_jisoo_full.png')"></div>
+      <div class="s04-slot-name">이민우</div>
+      <div class="s04-slot-type">[의료형]</div>
+    </div>
+    <div class="s04-slot">
+      <div class="s04-slot-idx">2</div>
+      <div class="s04-slot-portrait" style="background-image:url('assets/spec-preview/park_youngchul_full.png')"></div>
+      <div class="s04-slot-name">박태현</div>
+      <div class="s04-slot-type">[전투형]</div>
+    </div>
+    <div class="s04-slot">
+      <div class="s04-slot-idx">3</div>
+      <div class="s04-slot-portrait" style="background-image:url('assets/spec-preview/kang_minjun_full.png')"></div>
+      <div class="s04-slot-name">강민준</div>
+      <div class="s04-slot-type">[탐색형]</div>
+    </div>
+    <div class="s04-slot">
+      <div class="s04-slot-idx">4</div>
+      <div class="s04-slot-portrait" style="background-image:url('assets/spec-preview/choi_hyungsik_full.png')"></div>
+      <div class="s04-slot-name">최형식</div>
+      <div class="s04-slot-type">[제작형]</div>
+    </div>
+    <div class="s04-slot">
+      <div class="s04-slot-idx">5</div>
+      <div class="s04-slot-portrait" style="background-image:url('assets/spec-preview/jeong_daehan_full.png')"></div>
+      <div class="s04-slot-name">정대한</div>
+      <div class="s04-slot-type">[지원형]</div>
+    </div>
+    <div class="s04-slot">
+      <div class="s04-slot-idx">6</div>
+      <div class="s04-slot-portrait" style="background-image:url('assets/spec-preview/yoon_jaehyuk_full.png')"></div>
+      <div class="s04-slot-name">윤재혁</div>
+      <div class="s04-slot-type">[제작형]</div>
+    </div>
+  </div>
+
+  <div class="s04-actions">
+    <button class="btn-primary" style="width:200px">게임 시작</button>
+    <button class="btn-secondary" style="width:80px">뒤로</button>
+  </div>
+</section>
+
+<!-- ============================================================
+     SCREEN 05 — MAIN PLAY
+     ============================================================ -->
+<section class="screen screen-05" data-id="05">
+  <div class="vignette"></div>
+
+  <!-- LEFT SIDEBAR -->
+  <aside class="s05-side">
+    <div class="sect">
+      <h4>지도 (MAP)</h4>
+      <div class="s05-map">
+        <div class="s05-map-marker me"></div>
+        <div class="s05-map-marker danger"></div>
+        <div class="s05-map-marker res"></div>
+        <div class="s05-map-marker land"></div>
+      </div>
+    </div>
+    <div class="sect">
+      <div class="s05-day-line">Day 18 <span class="small">(18일째)</span></div>
+      <div class="s05-time">14:32 <span class="small">(낮)</span></div>
+      <div class="s05-temp">겨울 (WINTER) · 온도 (TEMP): <span class="val">-4℃</span><br>비/눈 (RAIN/SNOW)</div>
+    </div>
+    <div class="sect">
+      <h4>상태 (STATUS)</h4>
+      <div class="s05-stat-row"><span class="icon" style="color:#C84A3D">❤</span><span class="lab">HP</span>
+        <div class="bar"><div class="bar-fill hp" style="width:78%"></div></div><span class="val">78/100</span></div>
+      <div class="s05-stat-row"><span class="icon" style="color:#C97A3A">🍞</span><span class="lab">배고픔</span>
+        <div class="bar"><div class="bar-fill hunger" style="width:62%"></div></div><span class="val">62/100</span></div>
+      <div class="s05-stat-row"><span class="icon" style="color:#4A8FD8">💧</span><span class="lab">갈증</span>
+        <div class="bar"><div class="bar-fill thirst" style="width:55%"></div></div><span class="val">55/100</span></div>
+    </div>
+    <div class="sect">
+      <h4>소음 수치 (NOISE METER)</h4>
+      <div class="s05-noise-bar"><div class="s05-noise-marker" style="left:68%"></div></div>
+      <div class="s05-noise-text"><span style="color:#D85949">위험! 소음 발생</span><span style="color:#E8E6E1;font-family:var(--font-mono)">68%</span></div>
+    </div>
+    <div class="sect">
+      <h4>휴대 무게 (WEIGHT)</h4>
+      <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:18px;color:#E8E6E1;margin-bottom:4px">
+        <span>42.1 / 60kg</span><span style="font-family:var(--font-body);font-size:13px;color:#6FAA58">정상</span></div>
+      <div class="bar" style="height:8px"><div class="bar-fill success" style="width:70%"></div></div>
+    </div>
+    <div class="sect">
+      <h4>퀘스트 (QUESTS)</h4>
+      <div class="s05-quest"><span class="check">☐</span><span>북촌 탐색 (진행중)</span></div>
+      <div class="s05-quest done"><span class="check">☑</span><span>식량 확보 (완료)</span></div>
+    </div>
+  </aside>
+
+  <!-- CENTER -->
+  <div class="s05-main">
+    <div class="s05-topbar">
+      <span class="day">Day 18</span>
+      <span class="sep">|</span>
+      <span class="time">14:32</span>
+      <span class="sep">|</span>
+      <span>-4℃</span>
+    </div>
+
+    <!-- 장소 -->
+    <div class="s05-section s05-locations">
+      <div class="head">
+        <h2>장소</h2><span class="eyebrow">(LOCATIONS)</span>
+      </div>
+      <div class="s05-loc-grid">
+        <div class="s05-loc-card selected">
+          <div class="s05-loc-icon">⚠</div>
+          <div class="s05-loc-action">✎</div>
+          <div class="s05-loc-img t1"></div>
+          <div class="s05-loc-name">명동 거리</div>
+          <div class="s05-loc-desc">명동에 떠나는 이미 빠르게 한복판...</div>
+          <div class="s05-loc-req">Requirements: 12</div>
+        </div>
+        <div class="s05-loc-card">
+          <div class="s05-loc-icon">⚠</div>
+          <div class="s05-loc-action">✎</div>
+          <div class="s05-loc-img t2"></div>
+          <div class="s05-loc-name">청계천 복도</div>
+          <div class="s05-loc-desc">생계의 멕도 비단 휘말링...</div>
+          <div class="s05-loc-req">Requirements: 8</div>
+        </div>
+        <div class="s05-loc-card">
+          <div class="s05-loc-icon">⚠</div>
+          <div class="s05-loc-action">✎</div>
+          <div class="s05-loc-img t3"></div>
+          <div class="s05-loc-name">청계천 북도</div>
+          <div class="s05-loc-desc">서울대 명동에 있따며 한길의...</div>
+          <div class="s05-loc-req">Requirements: 19</div>
+        </div>
+        <div class="s05-loc-card">
+          <div class="s05-loc-icon">⚠</div>
+          <div class="s05-loc-action">✎</div>
+          <div class="s05-loc-img t4"></div>
+          <div class="s05-loc-name">북촌 한옥</div>
+          <div class="s05-loc-desc">자봐트 정몰 임을당의...</div>
+          <div class="s05-loc-req">Requirements: 1</div>
+        </div>
+        <div class="s05-loc-card">
+          <div class="s05-loc-icon">⚠</div>
+          <div class="s05-loc-action">✎</div>
+          <div class="s05-loc-img t5"></div>
+          <div class="s05-loc-name">서울역 폐허</div>
+          <div class="s05-loc-desc">서울 다 떠나 무너...</div>
+          <div class="s05-loc-req">Requirements: 1</div>
+        </div>
+        <div class="s05-loc-empty">8</div>
+        <div class="s05-loc-empty">8</div>
+      </div>
+    </div>
+
+    <!-- 바닥 -->
+    <div class="s05-section s05-ground">
+      <div class="head"><h2>바닥</h2><span class="eyebrow">(GROUND ITEMS)</span></div>
+      <div class="s05-ground-grid">
+        <div class="s05-item-card"><div class="s05-item-icon">💧</div><div class="s05-item-name">생수병</div><div class="s05-item-en">(Water)</div><div class="s05-item-meta"><span>💧</span><span>1</span></div></div>
+        <div class="s05-item-card"><div class="s05-item-icon">🥫</div><div class="s05-item-name">폐캔</div><div class="s05-item-en">(Empty Can)</div><div class="s05-item-meta"><span>🔧</span><span>1</span></div></div>
+        <div class="s05-item-card"><div class="s05-item-icon">🔪</div><div class="s05-item-name">녹슨 칼</div><div class="s05-item-en">(Rusted Knife)</div><div class="s05-item-meta"><span>⚔</span><span>1</span></div></div>
+        <div class="s05-item-card"><div class="s05-item-icon">🎒</div><div class="s05-item-name">낡은 배낭</div><div class="s05-item-en">(Old Bag)</div><div class="s05-item-meta"><span>📦</span><span>1</span></div></div>
+        <div class="s05-item-card"><div class="s05-item-icon">🍜</div><div class="s05-item-name">비상식량</div><div class="s05-item-en">(Rations)</div><div class="s05-item-meta"><span>🍞</span><span>1</span></div></div>
+        <div class="s05-item-card"><div class="s05-item-icon">🔋</div><div class="s05-item-name">배터리</div><div class="s05-item-en">(Battery)</div><div class="s05-item-meta"><span>⚡</span><span>1</span></div></div>
+        <div class="s05-item-card"><div class="s05-item-icon">😷</div><div class="s05-item-name">방독면</div><div class="s05-item-en">(Gas Mask)</div><div class="s05-item-meta"><span>🛡</span><span>1</span></div></div>
+        <div class="s05-item-card"><div class="s05-item-icon">⛑</div><div class="s05-item-name">구급상자</div><div class="s05-item-en">(Medkit)</div><div class="s05-item-meta"><span>+</span><span>1</span></div></div>
+      </div>
+    </div>
+
+    <!-- 휴대 -->
+    <div class="s05-section s05-carry">
+      <div class="head"><h2>휴대</h2><span class="eyebrow">(CARRIED INVENTORY)</span></div>
+      <div class="s05-carry-grid">
+        <div class="s05-carry-card selected">
+          <div class="rar"></div>
+          <div class="s05-carry-icon">🔪</div>
+          <div class="s05-carry-name">전술용 칼</div>
+          <div class="s05-carry-en">Tactical Knife</div>
+          <div class="s05-carry-stats">
+            <div class="row"><span>무게</span><span class="v">42.1 / 60</span></div>
+            <div class="row"><span>Qty</span><span class="v">10/5</span></div>
+            <div class="row"><span>Durability</span><span class="v">0/8</span></div>
+          </div>
+        </div>
+        <div class="s05-carry-card equipped">
+          <div class="rar"></div>
+          <div class="s05-carry-icon">😷</div>
+          <div class="s05-equipped-chip">Equipped</div>
+          <div class="s05-carry-name">방독면</div>
+          <div class="s05-carry-en">Gas Mask</div>
+          <div class="s05-carry-stats">
+            <div class="row"><span>Durability</span><span class="v">0/4</span></div>
+          </div>
+        </div>
+        <div class="s05-carry-card">
+          <div class="rar"></div>
+          <div class="s05-carry-icon">💧</div>
+          <div class="s05-carry-name">식수</div>
+          <div class="s05-carry-en">Water</div>
+          <div class="s05-carry-stats">
+            <div class="row" style="color:#E8B662"><span>x3</span><span></span></div>
+            <div class="row"><span>Durability</span><span class="v">0/4</span></div>
+          </div>
+        </div>
+        <div class="s05-carry-card">
+          <div class="rar"></div>
+          <div class="s05-carry-icon">🩹</div>
+          <div class="s05-carry-name">붕대</div>
+          <div class="s05-carry-en">Bandage</div>
+          <div class="s05-carry-stats">
+            <div class="row" style="color:#E8B662"><span>x3</span><span></span></div>
+            <div class="row"><span>Durability</span><span class="v">0/6</span></div>
+          </div>
+        </div>
+        <div class="s05-carry-card">
+          <div class="rar"></div>
+          <div class="s05-carry-icon">🥫</div>
+          <div class="s05-carry-name">캔푸드</div>
+          <div class="s05-carry-en">Canned Food</div>
+          <div class="s05-carry-stats">
+            <div class="row" style="color:#E8B662"><span>x3</span><span></span></div>
+            <div class="row"><span>Durability</span><span class="v">0/8</span></div>
+          </div>
+        </div>
+        <div class="s05-carry-card">
+          <div class="rar"></div>
+          <div class="s05-carry-icon">🗺</div>
+          <div class="s05-carry-name">지도</div>
+          <div class="s05-carry-en">Map</div>
+          <div class="s05-carry-stats">
+            <div class="row"><span>Durability</span><span class="v">0/4</span></div>
+          </div>
+        </div>
+        <div class="s05-carry-card">
+          <div class="rar"></div>
+          <div class="s05-carry-icon">🔥</div>
+          <div class="s05-carry-name">라이터</div>
+          <div class="s05-carry-en">Lighter</div>
+          <div class="s05-carry-stats">
+            <div class="row"><span>Durability</span><span class="v">0/4</span></div>
+          </div>
+        </div>
+        <div class="s05-carry-card">
+          <div class="rar"></div>
+          <div class="s05-carry-icon">🔫</div>
+          <div class="s05-carry-name">탄약</div>
+          <div class="s05-carry-en">Ammo</div>
+          <div class="s05-carry-stats">
+            <div class="row" style="color:#E8B662"><span>x15</span><span></span></div>
+            <div class="row"><span>Durability</span><span class="v">0/8</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT COMPANION -->
+  <aside class="s05-companion">
+    <div class="s05-comp-header">동료</div>
+    <div class="s05-comp-portrait"></div>
+    <div class="s05-comp-info">
+      <div class="s05-comp-name">지수<span class="en">(Ji-soo)</span></div>
+      <div class="s05-comp-age">22세</div>
+      <div class="s05-comp-hp">
+        <div class="lab"><span>HP</span><span class="v">64%</span></div>
+        <div class="bar"><div class="bar-fill hp" style="width:64%"></div></div>
+      </div>
+      <div class="s05-comp-status">상태: 양호</div>
+      <div class="s05-comp-equip-h">Equipped</div>
+      <div class="s05-comp-eq-list">
+        <div class="s05-comp-eq"><div class="icon">🔫</div><div class="nm">권총</div><div class="qty">1</div></div>
+        <div class="s05-comp-eq"><div class="icon">🩹</div><div class="nm">붕대</div><div class="qty">1</div></div>
+        <div class="s05-comp-eq"><div class="icon">💊</div><div class="nm">진통제</div><div class="qty">1</div></div>
+      </div>
+      <div class="s05-comp-skill-h">Active Skill</div>
+      <div class="s05-comp-skill">
+        <div class="icon">🎯</div>
+        <div class="nm">정찰 탐색</div>
+        <div class="cd">(대기중)</div>
+      </div>
+    </div>
+  </aside>
+</section>
+
+<!-- ============================================================
+     SCREEN 06 — COMBAT
+     ============================================================ -->
+<section class="screen screen-06" data-id="06">
+  <div class="grain"></div>
+  <div class="vignette"></div>
+
+  <div class="s06-topbar">
+    <div class="s06-title">SURVIVAL: <span class="city">SEOUL</span></div>
+    <div class="group"><span class="lab">위치:</span><span class="val">종로3가역 승강장</span></div>
+    <div class="group"><span class="lab">시간:</span><span class="val amber">01:42</span></div>
+    <div class="group"><span class="lab">날씨:</span><span class="val">어둠고 비</span></div>
+    <div class="group"><span class="lab">전투 턴:</span><span class="val">5</span></div>
+    <div class="group"><span class="lab">위험 레벨:</span><span class="val danger">높음</span></div>
+  </div>
+
+  <!-- LEFT PLAYER -->
+  <aside class="s06-player">
+    <div class="s06-portrait">
+      <div class="img"></div>
+      <div class="info">
+        <div class="nm">이유나, 29</div>
+        <div class="hp-line"><span>HP</span><span class="v">58/120</span></div>
+        <div class="bar"><div class="bar-fill hp" style="width:48%"></div></div>
+      </div>
+    </div>
+    <div class="s06-bars">
+      <div class="s06-bar-row">
+        <div class="lab"><span>스태미나</span><span class="v">14/30</span></div>
+        <div class="bar"><div class="bar-fill amber" style="width:46%"></div></div>
+      </div>
+      <div class="s06-bar-row">
+        <div class="lab"><span>감염</span><span class="v">12%</span></div>
+        <div class="bar"><div class="bar-fill infect" style="width:12%"></div></div>
+      </div>
+    </div>
+    <div class="s06-weapon">
+      <div class="s06-weapon-h">무기: K2 소총</div>
+      <div class="s06-weapon-row">
+        <div class="icon">🔫</div>
+        <div class="info">
+          <div class="nm">K2 Rifle</div>
+          <div class="bar" style="height:4px"><div class="bar-fill amber" style="width:75%"></div></div>
+          <div class="ammo">탄약 24/30</div>
+        </div>
+      </div>
+    </div>
+    <div class="s06-armor"><span class="lab">방어구:</span> 전술 조끼</div>
+    <div class="s06-buffs">
+      <div class="s06-buff up">▲ 명중 +10</div>
+      <div class="s06-buff dn">▼ 피로</div>
+    </div>
+  </aside>
+
+  <!-- CENTER COMBAT -->
+  <div class="s06-center">
+    <div class="s06-center-h">광란의 폭도 — 엔카운터</div>
+    <div class="s06-center-body">
+      <div class="s06-center-meta">
+        <div class="s06-meta-row"><span class="lab">거리:</span><span class="val">중거리 (8m)</span></div>
+        <div class="s06-meta-row"><span class="lab">엄폐:</span><span class="val">부분적</span></div>
+        <div class="s06-meta-row"><span class="lab">조명:</span><span class="val">어둠</span></div>
+        <div class="s06-meta-row"><span class="lab">소음:</span><span class="val">보통</span></div>
+      </div>
+      <div class="s06-scene">
+        <div class="s06-scene-fig"></div>
+        <div class="s06-scene-mark">▼</div>
+        <div class="s06-distance">
+          <div class="bar"><div class="bar-fill amber" style="width:55%"></div></div>
+        </div>
+      </div>
+      <div class="s06-center-action">
+        <div class="s06-action-hint">
+          <div class="lab">예상 행동</div>
+          <div class="val">공격 준비</div>
+        </div>
+        <div class="s06-action-hint">
+          <div class="lab">유리 요소</div>
+          <div class="val">엄폐 보호</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT ENEMY -->
+  <aside class="s06-enemy">
+    <div class="badge">감염자</div>
+    <div class="name">광란의 폭도</div>
+    <div class="danger"><span class="lab">위험:</span> <span class="v">위험</span></div>
+    <div class="s06-enemy-portrait"></div>
+    <div class="s06-enemy-hp">
+      <div class="lab"><span>HP</span><span class="v">112/160</span></div>
+      <div class="bar"><div class="bar-fill danger" style="width:70%"></div></div>
+    </div>
+    <div class="stats">
+      <div class="row"><span class="lab">방어력</span><span class="v">12</span></div>
+      <div class="row"><span class="lab">감염 확률</span><span class="v">35%</span></div>
+      <div class="row"><span class="lab">특성</span><span class="v">공격적, 빠른 사적</span></div>
+    </div>
+  </aside>
+
+  <div class="s06-act-title">고전 계칙</div>
+  <div class="s06-actions-row">
+    <div class="s06-act">
+      <div class="icon">⚔</div>
+      <div class="nm">공격</div>
+      <div class="en">(ATTACK)</div>
+      <div class="effects">
+        <div class="row"><span>예상 피해</span><span>24-36</span></div>
+        <div class="row"><span>명중률</span><span>78%</span></div>
+        <div class="row"><span>스태미나</span><span>-4</span></div>
+      </div>
+    </div>
+    <div class="s06-act">
+      <div class="icon">🛡</div>
+      <div class="nm">방어</div>
+      <div class="en">(DEFEND)</div>
+      <div class="effects">
+        <div class="row"><span>방어 보너스</span><span>+25</span></div>
+        <div class="row"><span>피해 감소</span><span>50%</span></div>
+        <div class="row"><span>스태미나</span><span>+2</span></div>
+      </div>
+    </div>
+    <div class="s06-act">
+      <div class="icon">🎒</div>
+      <div class="nm">아이템 사용</div>
+      <div class="en">(USE ITEM)</div>
+      <div class="effects">
+        <div class="row"><span>붕대</span><span>HP +30</span></div>
+        <div class="row"><span>진통제</span><span>피로 -20</span></div>
+        <div class="row"><span>턴 소모</span><span>1</span></div>
+      </div>
+    </div>
+    <div class="s06-act">
+      <div class="icon">🏃</div>
+      <div class="nm">도주</div>
+      <div class="en">(FLEE)</div>
+      <div class="effects">
+        <div class="row"><span>성공률</span><span>62%</span></div>
+        <div class="row"><span>스태미나</span><span>-6</span></div>
+        <div class="row"><span>리스크</span><span>피해 가능</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SCREEN 07 — EQUIPMENT
+     ============================================================ -->
+<section class="screen screen-07" data-id="07">
+  <div class="vignette"></div>
+
+  <!-- LEFT EFFECTS -->
+  <aside class="s07-left">
+    <h3>장비 효과</h3>
+    <div class="s07-effects-h">능력치 변화</div>
+    <div class="s07-stat"><span class="icon">❤</span><span class="lab">생존력</span><span class="val up">+12</span></div>
+    <div class="s07-stat"><span class="icon">🛡</span><span class="lab">방어</span><span class="val up">+45</span></div>
+    <div class="s07-stat"><span class="icon">🏃</span><span class="lab">기동성</span><span class="val dn">-8</span></div>
+    <div class="s07-stat"><span class="icon">⚡</span><span class="lab">스태미나</span><span class="val up">+18</span></div>
+    <div class="s07-stat"><span class="icon">👁</span><span class="lab">은신</span><span class="val dn">-5</span></div>
+    <div class="s07-stat"><span class="icon">🎒</span><span class="lab">소지 무게</span><span class="val neut">35/60kg</span></div>
+
+    <div class="s07-effects-h">적용 효과</div>
+    <div class="s07-applied"><span>🛡</span><span>화생방 보호 III</span></div>
+    <div class="s07-applied"><span>🔇</span><span>소음 감소 I</span></div>
+  </aside>
+
+  <!-- CENTER CHARACTER & SLOTS -->
+  <div class="s07-center">
+    <div class="s07-fig"></div>
+
+    <!-- LEFT SLOTS (인터널 좌표 32~672) -->
+    <div class="s07-slot rarity-rare" style="left:32px;top:32px">
+      <div class="lab">머리</div>
+      <div class="rar" style="background:#5C9DD8"></div>
+      <div class="icon">😷</div>
+      <div class="nm">가스마스크 M40</div>
+      <div class="gr">Rare</div>
+    </div>
+    <div class="s07-slot" style="left:32px;top:192px">
+      <div class="lab">얼굴</div>
+      <div class="rar" style="background:#9A968D"></div>
+      <div class="icon">🥽</div>
+      <div class="nm">전술 마스크</div>
+      <div class="gr">Common</div>
+    </div>
+    <div class="s07-slot rarity-epic" style="left:32px;top:352px">
+      <div class="lab">상의</div>
+      <div class="rar" style="background:#A04ECC"></div>
+      <div class="icon">🦺</div>
+      <div class="nm">방탄조끼 Mk III</div>
+      <div class="gr">Epic</div>
+    </div>
+    <div class="s07-slot rarity-rare" style="left:32px;top:512px">
+      <div class="lab">손</div>
+      <div class="rar" style="background:#5C9DD8"></div>
+      <div class="icon">🧤</div>
+      <div class="nm">강화 장갑</div>
+      <div class="gr">Rare</div>
+    </div>
+    <div class="s07-slot rarity-epic" style="left:32px;top:672px">
+      <div class="lab">가방</div>
+      <div class="rar" style="background:#A04ECC"></div>
+      <div class="icon">🎒</div>
+      <div class="nm">군용 배낭</div>
+      <div class="gr">Epic</div>
+    </div>
+
+    <!-- RIGHT SLOTS -->
+    <div class="s07-slot rarity-epic" style="left:696px;top:32px">
+      <div class="lab">목</div>
+      <div class="rar" style="background:#A04ECC"></div>
+      <div class="icon">🦺</div>
+      <div class="nm">방탄조끼 Mk II</div>
+      <div class="gr">Epic</div>
+    </div>
+    <div class="s07-slot rarity-rare" style="left:696px;top:192px">
+      <div class="lab">손</div>
+      <div class="rar" style="background:#5C9DD8"></div>
+      <div class="icon">🧤</div>
+      <div class="nm">강화 장갑</div>
+      <div class="gr">Rare</div>
+    </div>
+    <div class="s07-slot rarity-legendary" style="left:696px;top:352px">
+      <div class="lab">주무기</div>
+      <div class="rar"></div>
+      <div class="icon">🔫</div>
+      <div class="nm">K2 소총</div>
+      <div class="gr">Leg.</div>
+    </div>
+    <div class="s07-slot rarity-rare" style="left:696px;top:512px">
+      <div class="lab">부무기</div>
+      <div class="rar" style="background:#5C9DD8"></div>
+      <div class="icon">🔫</div>
+      <div class="nm">K5 권총</div>
+      <div class="gr">Rare</div>
+    </div>
+    <div class="s07-slot rarity-rare" style="left:696px;top:672px">
+      <div class="lab">신발</div>
+      <div class="rar" style="background:#5C9DD8"></div>
+      <div class="icon">👟</div>
+      <div class="nm">전투화</div>
+      <div class="gr">Rare</div>
+    </div>
+  </div>
+
+  <!-- RIGHT INVENTORY -->
+  <div class="s07-right">
+    <div class="head">
+      <h3>인벤토리</h3>
+      <div class="x">×</div>
+    </div>
+    <div class="s07-tabs">
+      <div class="s07-tab active">가방</div>
+      <div class="s07-tab">무기</div>
+      <div class="s07-tab">방어구</div>
+      <div class="s07-tab">소모품</div>
+    </div>
+    <div class="s07-inv">
+      <div class="s07-cell"><div class="rar" style="background:#9A968D"></div><div class="icon">😷</div><div class="nm">가스마스크 M50</div><div class="meta">Common</div></div>
+      <div class="s07-cell"><div class="rar" style="background:#5C9DD8"></div><div class="icon">😷</div><div class="nm">가스마스크 M17</div><div class="meta">Rare</div></div>
+      <div class="s07-cell"><div class="rar" style="background:#5C9DD8"></div><div class="icon">😷</div><div class="nm">가스마스크 M17</div><div class="meta">Rare</div></div>
+      <div class="s07-cell"><div class="rar" style="background:#A04ECC"></div><div class="icon">🦺</div><div class="nm">방탄조끼 Mk III</div><div class="meta">Epic</div></div>
+      <div class="s07-cell"><div class="rar" style="background:#9A968D"></div><div class="icon">🦺</div><div class="nm">방탄조끼</div><div class="meta">Common</div></div>
+      <div class="s07-cell"><div class="rar" style="background:#5C9DD8"></div><div class="icon">⛑</div><div class="nm">방탄 헬멧</div><div class="meta">Rare</div></div>
+      <div class="s07-cell rarity-epic selected"><div class="rar" style="background:#A04ECC"></div><div class="icon">🦺</div><div class="nm" style="color:#A04ECC">전술조끼 Mk II</div><div class="meta"><span class="pr">12,800₩</span> · 4.8kg<br>92% 내구도</div></div>
+      <div class="s07-cell"><div class="rar" style="background:#5C9DD8"></div><div class="icon">⛑</div><div class="nm">방탄 헬멧</div><div class="meta">Rare</div></div>
+      <div class="s07-cell"><div class="rar" style="background:#9A968D"></div><div class="icon">👟</div><div class="nm">전투화</div><div class="meta">Common</div></div>
+      <div class="s07-cell"><div class="rar" style="background:#9A968D"></div><div class="icon">👟</div><div class="nm">전투화</div><div class="meta">Common</div></div>
+      <div class="s07-cell"><div class="rar" style="background:#5C9DD8"></div><div class="icon">🔫</div><div class="nm">K2 소총</div><div class="meta">Lern</div></div>
+      <div class="s07-cell"><div class="rar" style="background:#5C9DD8"></div><div class="icon">🔪</div><div class="nm">전술 칼</div><div class="meta">Rare</div></div>
+      <div class="s07-cell"><div class="rar" style="background:#9A968D"></div><div class="icon">🔫</div><div class="nm">K1 소총</div><div class="meta">Lern</div></div>
+      <div class="s07-cell"><div class="rar" style="background:#9A968D"></div><div class="icon">🔫</div><div class="nm">K1 소총</div><div class="meta">Lern</div></div>
+      <div class="s07-cell"><div class="rar" style="background:#9A968D"></div><div class="icon">🔪</div><div class="nm">정찰 칼</div><div class="meta">Common</div></div>
+      <div class="s07-cell" style="opacity:.4;cursor:default"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SCREEN 08 — ROUTE / TACTICAL MAP
+     ============================================================ -->
+<section class="screen screen-08" data-id="08">
+  <div class="s08-bg-hex"></div>
+
+  <div class="s08-topbar">
+    <span class="lab">현재 장소:</span>
+    <input class="input" type="text" value="서울 영등포구 사라짐 루트 자정" readonly>
+    <span class="lab">대상:</span>
+    <span class="chip amber" style="height:28px;font-size:14px">무관용 모양</span>
+    <div class="s08-tp">
+      <span class="lab">TP</span>
+      <span class="val">1/6</span>
+    </div>
+  </div>
+
+  <!-- LEFT FILTER -->
+  <aside class="s08-filter">
+    <h3>필터</h3>
+    <div class="s08-filter-item active"><span class="icon">⚠</span>위험도</div>
+    <div class="s08-filter-item"><span class="icon">⛏</span>자원</div>
+    <div class="s08-filter-item"><span class="icon">🏛</span>랜드마크</div>
+    <div class="s08-filter-item"><span class="icon">☢</span>오염·방사선</div>
+    <div class="s08-filter-item"><span class="icon">👥</span>약탈자 활동</div>
+    <div class="s08-filter-item"><span class="icon">☁</span>날씨 영향</div>
+    <div class="s08-filter-item"><span class="icon">🤝</span>동반자 제안</div>
+  </aside>
+
+  <!-- CENTER MAP -->
+  <div class="s08-map">
+    <div class="s08-river"></div>
+    <div class="s08-road r1"></div>
+    <div class="s08-road r2"></div>
+    <div class="s08-road r3"></div>
+
+    <div class="s08-zone" style="left:18%;top:18%">강북구</div>
+    <div class="s08-zone" style="left:55%;top:20%">동대문구</div>
+    <div class="s08-zone" style="left:30%;top:55%">중구</div>
+    <div class="s08-zone" style="left:65%;top:60%">강남구</div>
+    <div class="s08-zone" style="left:15%;top:75%">영등포구</div>
+
+    <div class="s08-danger-zone" style="left:50%;top:28%;width:200px;height:200px"></div>
+    <div class="s08-danger-zone" style="left:20%;top:70%;width:160px;height:160px"></div>
+
+    <div class="s08-marker me" style="left:25%;top:75%">●</div>
+    <div class="s08-marker danger" style="left:55%;top:30%">⚠</div>
+    <div class="s08-marker danger" style="left:62%;top:25%">⚠</div>
+    <div class="s08-marker res" style="left:40%;top:50%">⛏</div>
+    <div class="s08-marker res" style="left:70%;top:55%">⛏</div>
+    <div class="s08-marker land" style="left:35%;top:42%">🏛</div>
+    <div class="s08-marker land" style="left:60%;top:65%">🏛</div>
+    <div class="s08-marker danger" style="left:18%;top:32%">⚠</div>
+  </div>
+
+  <!-- RIGHT INFO -->
+  <aside class="s08-info">
+    <div class="eyebrow">구구 지도</div>
+    <h2>서울</h2>
+    <div class="div"></div>
+    <h3>오염 제정</h3>
+    <p>한강 인근 오염 농도 상승. 동대문 일대는 약탈자 활동으로 야간 진입을 권장하지 않음. 안전 통로는 영등포 → 마포 → 중구 순으로 우회.</p>
+    <div class="div"></div>
+    <h3>자력 정보</h3>
+    <div class="s08-legend">
+      <div class="s08-legend-row me"><span class="dot"></span>현재 지점</div>
+      <div class="s08-legend-row danger"><span class="dot"></span>자상 / 위험</div>
+      <div class="s08-legend-row land"><span class="dot"></span>랜드마크</div>
+      <div class="s08-legend-row res"><span class="dot"></span>풍염 자원</div>
+    </div>
+  </aside>
+
+  <!-- BOTTOM ROUTE TRACKER + ACTIONS -->
+  <div class="s08-route">
+    <div class="s08-route-track">
+      <div class="s08-route-h">
+        <div class="ti">루트 실메물이</div>
+        <div class="meta">위험도 능정 · 5단 억엄범 린령</div>
+      </div>
+      <div class="s08-track">
+        <div class="s08-track-line"></div>
+        <div class="s08-track-line active"></div>
+        <div class="s08-cp done" style="left:5%"><div class="s08-cp-lab">출발</div></div>
+        <div class="s08-cp done" style="left:25%"><div class="s08-cp-lab">영등포</div></div>
+        <div class="s08-cp done" style="left:45%"><div class="s08-cp-lab">마포</div></div>
+        <div class="s08-cp cur" style="left:65%"><div class="s08-cp-lab">중구</div></div>
+        <div class="s08-cp" style="left:85%"><div class="s08-cp-lab">강남</div></div>
+      </div>
+    </div>
+    <div class="s08-route-actions">
+      <button class="btn-primary">루트 확정</button>
+      <button class="btn-secondary">핀 고정</button>
+      <button class="btn-secondary">즐겨찾기 경로</button>
+    </div>
+  </div>
+</section>
+
+</div><!-- stage-inner -->
+</div><!-- stage -->
+
+<script>
+/* Tab navigation */
+const nav = document.getElementById('nav');
+const screens = document.querySelectorAll('.screen');
+nav.addEventListener('click', (e) => {
+  const btn = e.target.closest('button[data-screen]');
+  if (!btn) return;
+  const id = btn.dataset.screen;
+  nav.querySelectorAll('button').forEach(b => b.classList.toggle('active', b === btn));
+  screens.forEach(s => s.classList.toggle('active', s.dataset.id === id));
+});
+
+/* Auto-scale stage to viewport */
+const stage = document.getElementById('stage');
+function fit() {
+  const navH = document.getElementById('nav').getBoundingClientRect().height;
+  const w = window.innerWidth;
+  const h = window.innerHeight - navH;
+  const scale = Math.min(w / 1920, h / 1080);
+  document.documentElement.style.setProperty('--scale', scale);
+}
+fit();
+window.addEventListener('resize', fit);
+
+/* Click-to-select for selectable elements */
+document.querySelectorAll('.s02-slot, .s04-slot, .s05-loc-card, .s05-carry-card, .s07-cell, .s03-end').forEach(el => {
+  el.addEventListener('click', (e) => {
+    const siblings = el.parentElement.children;
+    Array.from(siblings).forEach(s => {
+      if (s.classList.contains(el.classList[0]) || s.classList.contains('selected')) {
+        if (!s.classList.contains('equipped')) s.classList.remove('selected');
+      }
+    });
+    if (!el.classList.contains('equipped')) el.classList.add('selected');
+  });
+});
+</script>
+
+</body>
+</html>
