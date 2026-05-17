@@ -296,7 +296,6 @@ const Basecamp = {
         <button class="toolbar-btn" id="btn-craft">${I18n.t('basecamp.craft')}</button>
         <button class="toolbar-btn" id="btn-skills">${I18n.t('basecamp.skills')}</button>
         ${erBtn}
-        <button class="toolbar-btn" id="btn-wait">${I18n.t('basecamp.wait')}</button>
         <button class="toolbar-btn" id="btn-rest">${I18n.t('basecamp.rest')}</button>
         ${buildSection}
       `;
@@ -314,7 +313,6 @@ const Basecamp = {
       });
       section.querySelector('#btn-skills')?.addEventListener('click', () => SkillModal.open());
       section.querySelector('#btn-er')?.addEventListener('click', () => EmergencyRoomModal.open());
-      section.querySelector('#btn-wait')?.addEventListener('click', () => TickEngine.skipTP(1, I18n.t('basecamp.waiting')));
       section.querySelector('#btn-rest')?.addEventListener('click', () => StateMachine.transition('rest'));
       section.querySelector('#btn-build-base')?.addEventListener('click', () => BasecampModal.open());
     }

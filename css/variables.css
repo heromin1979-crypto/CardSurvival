@@ -104,11 +104,11 @@
   --msg-tip:         #6BCB77;  /* 💡 팁 (녹색) */
 
   /* ─── 메시지 패널 사이즈 ─── */
-  --notif-panel-w:   320px;
+  --notif-panel-w:   380px;
   --notif-card-h:    72px;
-  --log-panel-w:     320px;
-  --log-panel-h:     380px;
-  --log-time-col:    64px;
+  --log-panel-w:     480px;
+  --log-panel-h:     460px;
+  --log-time-col:    56px;
 
   /* ─── 메시지 카드 내부 그리드 ─── */
   --msg-icon-col:    24px;
@@ -121,4 +121,13 @@
   --msg-body:        13px;
   --msg-reward:      13px;
   --msg-header:      14px;
+
+  /* ─── 숙련도 대시보드 시안 (1280×720 4-zone, 2026.05) ─── */
+  --skill-modal-w:         1280px;
+  --skill-modal-h:         720px;
+  --skill-zone-header-h:   56px;
+  --skill-zone-filter-h:   40px;
+  --skill-zone-status-h:   56px;
+  --skill-card-h:          78px;
+  --locked-gray:           #6B6B75;
 }

@@ -248,24 +248,50 @@ function _initNotifications() {
   };
 
   const TYPE_MAP = {
-    info:    { notif: 'location',       log: 'system', icon: '📍', label: '정보',      speaker: '시스템' },
-    good:    { notif: 'quest-complete', log: 'quest',  icon: '✅', label: '성공',      speaker: '퀘스트' },
-    success: { notif: 'quest-complete', log: 'quest',  icon: '✅', label: '성공',      speaker: '퀘스트' },
-    SUCCESS: { notif: 'quest-complete', log: 'quest',  icon: '✅', label: '성공',      speaker: '퀘스트' },
-    warn:    { notif: 'status',         log: 'status', icon: '⚠️', label: '주의',      speaker: '상태'   },
-    warning: { notif: 'status',         log: 'status', icon: '⚠️', label: '주의',      speaker: '상태'   },
-    danger:  { notif: 'danger',         log: 'danger', icon: '🛑', label: '위험',      speaker: '경고'   },
-    error:   { notif: 'danger',         log: 'danger', icon: '🛑', label: '오류',      speaker: '오류'   },
-    ERROR:   { notif: 'danger',         log: 'danger', icon: '🛑', label: '오류',      speaker: '오류'   },
-    npc_quest_complete: { notif: 'quest-complete', log: 'quest', icon: '✨', label: '퀘스트 완료', speaker: '퀘스트' },
+    info:    { notif: 'location',       log: 'system', icon: '📍', label: '정보',      speaker: '시스템', coalesce: true  },
+    good:    { notif: 'quest-complete', log: 'quest',  icon: '✅', label: '성공',      speaker: '퀘스트', coalesce: true  },
+    success: { notif: 'quest-complete', log: 'quest',  icon: '✅', label: '성공',      speaker: '퀘스트', coalesce: true  },
+    SUCCESS: { notif: 'quest-complete', log: 'quest',  icon: '✅', label: '성공',      speaker: '퀘스트', coalesce: true  },
+    warn:    { notif: 'status',         log: 'status', icon: '⚠️', label: '주의',      speaker: '상태',   coalesce: true  },
+    warning: { notif: 'status',         log: 'status', icon: '⚠️', label: '주의',      speaker: '상태',   coalesce: true  },
+    danger:  { notif: 'danger',         log: 'danger', icon: '🛑', label: '위험',      speaker: '경고',   coalesce: false },
+    error:   { notif: 'danger',         log: 'danger', icon: '🛑', label: '오류',      speaker: '오류',   coalesce: false },
+    ERROR:   { notif: 'danger',         log: 'danger', icon: '🛑', label: '오류',      speaker: '오류',   coalesce: false },
+    npc_quest_complete: { notif: 'quest-complete', log: 'quest', icon: '✨', label: '퀘스트 완료', speaker: '퀘스트', coalesce: false },
   };
 
-  const MAX_LOG     = 200;
-  const TOAST_LIFE  = 6800;  // ui.css .is-ephemeral: slideOutRight 6s 이후 0.4s — 총 6.4s + 여유
-  const _log        = [];
-  let   logFilter   = 'all';
-  let   isLogOpen   = false;
-  let   unreadCount = 0;
+  // 토스트 묶음 — 동일 카테고리 메시지가 짧은 시간 안에 여러 번 들어오면 한 카드로 묶고 ×N 카운트 표시.
+  // 알려진 패턴은 사전 정의된 키로 보내 요약 라벨을 더 사람 같은 문장으로 만들고, 그 외는 정규화한 24자 해시.
+  const SIGNATURE_PATTERNS = [
+    { key: 'skill-levelup',   label: '스킬 레벨업', re: /^📊\s/ },
+    { key: 'tp-skip',         label: 'TP 소모',     re: /^⏩\s.*TP/ },
+    { key: 'tp-remaining',    label: '남은 행동력', re: /^⏳\s|^🌙\s/ },
+    { key: 'item-pending',    label: '대기 아이템', re: /^📦\s/ },
+    { key: 'wound-heal',      label: '부상 치료',   re: /^🩹\s/ },
+    { key: 'quality-result',  label: '품질 결과',   re: /품질 —|품질—/ },
+    { key: 'dismantle',       label: '분해 완료',   re: /분해 완료/ },
+    { key: 'season-change',   label: '계절 변화',   re: /^[☀❄🍂🌸]/ },
+    { key: 'recipe-unlock',   label: '레시피 해금', re: /레시피.*해금|해금.*레시피/ },
+  ];
+
+  const _signatureOf = (message) => {
+    const str = String(message ?? '');
+    for (const p of SIGNATURE_PATTERNS) {
+      if (p.re.test(str)) return { key: p.key, label: p.label };
+    }
+    const norm = str.replace(/\s+/g, '').replace(/[\d]+/g, '#').slice(0, 24);
+    return { key: `h:${norm}`, label: null };
+  };
+
+  const MAX_LOG          = 200;
+  const TOAST_LIFE       = 6800;
+  const MAX_TOAST_VISIBLE = 4;
+  const _log             = [];
+  const _groupCards      = new Map();
+  let   logFilter        = 'all';
+  let   isLogOpen        = false;
+  let   unreadCount      = 0;
+  let   _overflowLine    = null;
 
   const _esc = (s) => String(s).replace(/[&<>"']/g,
     c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -299,6 +325,16 @@ function _initNotifications() {
     if (m.notif === 'quest-complete' && !entry.speakerName)
                                       return { tag: 'quest',  label: '퀘스트' };
     return null;
+  };
+
+  // 로그 entry 좌측 카테고리 라벨 (필터 칩과 동일 어휘)
+  const CATEGORY_LABEL = {
+    dialogue: '대사',
+    quest:    '퀘스트',
+    system:   '시스템',
+    status:   '상태',
+    danger:   '위험',
+    combat:   '전투',
   };
 
   // ── 로그 버튼 (📋) ────────────────────────────────────
@@ -341,12 +377,9 @@ function _initNotifications() {
       const dataType = e.speakerName ? 'dialogue' : m.log;
       const speaker  = e.speakerName ?? m.speaker;
       const icon     = e.speakerName ? '💬' : m.icon;
-      const t        = _splitTime(e.ts);
+      const category = CATEGORY_LABEL[dataType] ?? '기타';
       return `<div class="log-entry" data-type="${dataType}" role="listitem">
-        <div class="log-entry-time">
-          <div class="log-entry-time-period">${t.period}</div>
-          <div class="log-entry-time-clock">${t.clock}</div>
-        </div>
+        <div class="log-entry-category">${category}</div>
         <div class="log-entry-content">
           <div class="log-entry-speaker">
             <span class="log-entry-speaker-icon">${icon}</span>${_esc(speaker)}
@@ -357,12 +390,14 @@ function _initNotifications() {
     }).join('');
   };
 
-  // ── 토스트(자동소멸 카드) — 시안 v2: 아이콘 / 제목+상대시간 / 본문 / 태그 ─
-  const _toast = (entry) => {
+  // ── 토스트(자동소멸 카드) — 시안 v2: 아이콘 / 제목+카운트+상대시간 / 본문 / 태그 ─
+  const _toast = (entry, groupKey) => {
     const m = _mapping(entry.type);
     const card = document.createElement('div');
     card.className = 'notif-card is-ephemeral';
     card.dataset.type = entry.speakerName ? 'quest-active' : m.notif;
+    card.dataset.count = '1';
+    if (groupKey) card.dataset.groupKey = groupKey;
 
     const icon  = entry.speakerName ? '💬' : m.icon;
     const title = entry.speakerName ?? m.label;
@@ -373,15 +408,105 @@ function _initNotifications() {
       <div class="notif-card-main">
         <div class="notif-card-header">
           <span class="notif-card-title">${_esc(title)}</span>
+          <span class="notif-card-count" data-show="false">×1</span>
           <span class="notif-card-time">${_relTime(entry.ts)}</span>
         </div>
         <div class="notif-card-body">${_esc(entry.message)}</div>
       </div>
       ${tag ? `<span class="notif-card-tag" data-tag="${tag.tag}">${tag.label}</span>` : ''}
     `;
-    container.appendChild(card);
+    container.insertBefore(card, _overflowLine ?? null);
 
-    setTimeout(() => card.remove(), TOAST_LIFE);
+    const timer = setTimeout(() => {
+      card.remove();
+      if (card.dataset.groupKey) _groupCards.delete(card.dataset.groupKey);
+      _enforceMaxToasts();
+    }, TOAST_LIFE);
+    card.dataset.timer = String(timer);
+
+    _enforceMaxToasts();
+    return card;
+  };
+
+  const _summaryBody = (count, sig, lastMessage) => {
+    if (sig.label) return `${sig.label} ×${count}`;
+    return `최근 ${count}건 — ${lastMessage}`;
+  };
+
+  const _updateCardCount = (card, entry, sig) => {
+    const count = Number(card.dataset.count || 1) + 1;
+    card.dataset.count = String(count);
+
+    const countEl = card.querySelector('.notif-card-count');
+    if (countEl) {
+      countEl.textContent = `×${count}`;
+      countEl.dataset.show = 'true';
+    }
+
+    const bodyEl = card.querySelector('.notif-card-body');
+    if (bodyEl) bodyEl.textContent = _summaryBody(count, sig, entry.message);
+
+    const timeEl = card.querySelector('.notif-card-time');
+    if (timeEl) timeEl.textContent = _relTime(Date.now());
+
+    const oldTimer = Number(card.dataset.timer || 0);
+    if (oldTimer) clearTimeout(oldTimer);
+    const timer = setTimeout(() => {
+      card.remove();
+      if (card.dataset.groupKey) _groupCards.delete(card.dataset.groupKey);
+      _enforceMaxToasts();
+    }, TOAST_LIFE);
+    card.dataset.timer = String(timer);
+
+    card.classList.remove('is-pulse');
+    void card.offsetWidth;
+    card.classList.add('is-pulse');
+  };
+
+  // 토스트 4장 초과 시 가장 오래된 카드를 잘라내고 컨테이너 끝에 `+N개 더 — 로그에서 보기` 슬림 라인을 갱신.
+  const _enforceMaxToasts = () => {
+    const cards = Array.from(container.querySelectorAll('.notif-card'));
+    while (cards.length > MAX_TOAST_VISIBLE) {
+      const oldest = cards.shift();
+      if (!oldest) break;
+      const t = Number(oldest.dataset.timer || 0);
+      if (t) clearTimeout(t);
+      if (oldest.dataset.groupKey) _groupCards.delete(oldest.dataset.groupKey);
+      oldest.remove();
+    }
+
+    const overflow = !isLogOpen ? Math.max(0, unreadCount - MAX_TOAST_VISIBLE) : 0;
+    if (overflow > 0) {
+      if (!_overflowLine) {
+        _overflowLine = document.createElement('div');
+        _overflowLine.className = 'notif-overflow-line';
+        _overflowLine.setAttribute('role', 'button');
+        _overflowLine.setAttribute('tabindex', '0');
+        _overflowLine.addEventListener('click', () => { _openLog(); });
+        container.appendChild(_overflowLine);
+      }
+      _overflowLine.textContent = `+${overflow}개 더 — 로그에서 보기`;
+    } else if (_overflowLine) {
+      _overflowLine.remove();
+      _overflowLine = null;
+    }
+  };
+
+  const _coalesceToast = (entry) => {
+    const m = _mapping(entry.type);
+    if (m.coalesce === false || entry.speakerName) {
+      _toast(entry);
+      return;
+    }
+    const sig = _signatureOf(entry.message);
+    const groupKey = `${entry.type}|${sig.key}`;
+    const existing = _groupCards.get(groupKey);
+    if (existing && existing.isConnected) {
+      _updateCardCount(existing, entry, sig);
+      return;
+    }
+    const card = _toast(entry, groupKey);
+    _groupCards.set(groupKey, card);
   };
 
   // ── 기록 + 토스트 ─────────────────────────────────────
@@ -396,7 +521,7 @@ function _initNotifications() {
       unreadCount += 1;
       _renderBtnBadge();
     }
-    _toast(entry);
+    _coalesceToast(entry);
   };
 
   // ── 로그 열기/닫기 ────────────────────────────────────
@@ -407,6 +532,10 @@ function _initNotifications() {
     document.body.classList.add('is-log-open');
     _renderLog();
     _renderBtnBadge();
+    if (_overflowLine) {
+      _overflowLine.remove();
+      _overflowLine = null;
+    }
   };
 
   const _closeLog = () => {

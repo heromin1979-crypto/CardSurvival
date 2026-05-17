@@ -276,15 +276,6 @@
   font-style: italic;
 }
 
-/* ── Group Vote Notification ────────────────────────────────── */
-
-.notification.group-vote {
-  background: rgba(106, 90, 205, 0.15);
-  border-left: 3px solid #6a5acd;
-  white-space: pre-line;
-  font-size: 0.8rem;
-}
-
 /* ── Mobile ────────────────────────────────────────────────── */
 
 @media (max-width: 600px) {
