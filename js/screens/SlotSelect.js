@@ -111,8 +111,7 @@ const SlotSelect = {
         <div class="slot-card-lm">${thumbHtml}</div>
         <div class="slot-card-info">
           <div class="slot-info-day">${dayText}${deadFlag}</div>
-          <div class="slot-info-loc">${districtInfo?.icon ?? '📍'} ${districtLabel}</div>
-          <div class="slot-info-char">${charName}</div>
+          <div class="slot-info-where">${districtInfo?.icon ?? '📍'} ${districtLabel} / ${charName}</div>
           <div class="slot-info-time">${timeStr}</div>
         </div>
       </div>

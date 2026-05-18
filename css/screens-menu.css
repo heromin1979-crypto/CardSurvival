@@ -404,21 +404,11 @@
   gap: 8px;
 }
 
-.slot-info-loc {
+.slot-info-where {
   font-family: var(--font-mono);
   font-size: 21px;
   color: rgba(225, 205, 165, 0.92);
   letter-spacing: 0.3px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
-}
-
-.slot-info-char {
-  font-family: var(--font-mono);
-  font-size: 21px;
-  color: rgba(205, 185, 145, 0.88);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

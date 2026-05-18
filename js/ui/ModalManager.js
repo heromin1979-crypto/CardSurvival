@@ -365,7 +365,6 @@ const ModalManager = {
         return { ...req, have, enough: have >= req.qty };
       });
       const needsRepair = (inst.durability ?? 0) < (def.defaultDurability ?? 100);
-      const canRepair = needsRepair && materialStatus.every(m => m.enough);
       if (!needsRepair) repairBtnReason = '내구도가 최대입니다.';
       else if (!materialStatus.every(m => m.enough)) {
         const missing = materialStatus.filter(m => !m.enough).map(m => {
@@ -381,8 +380,8 @@ const ModalManager = {
       }).join(' ');
       repairBtnHtml = `
         <div style="font-size:10px;color:var(--text-secondary);margin-bottom:4px;">수리 재료: ${matListHtml}</div>
-        <button class="card-action-btn${canRepair ? '' : ' disabled'}"
-          id="modal-repair-${instanceId}" ${canRepair ? '' : 'disabled'}
+        <button class="card-action-btn"
+          id="modal-repair-${instanceId}"
           title="${repairBtnReason}">
           🔧 수리 (+${def.repairAmount ?? 0})
         </button>`;
@@ -501,6 +500,25 @@ const ModalManager = {
 
     if (isMedicalStructure) {
       document.getElementById(`modal-repair-${instanceId}`)?.addEventListener('click', () => {
+        const maxDur = def.defaultDurability ?? 100;
+        if ((inst.durability ?? 0) >= maxDur) {
+          EventBus.emit('notify', { message: '내구도가 최대입니다.', type: 'warn' });
+          return;
+        }
+        const boardCards = GameState.getBoardCards();
+        const missing = def.repairRecipe.filter(req => {
+          const have = boardCards
+            .filter(c => c.definitionId === req.definitionId)
+            .reduce((sum, c) => sum + (c.quantity ?? 1), 0);
+          return have < req.qty;
+        });
+        if (missing.length > 0) {
+          const names = missing
+            .map(req => GameData.items[req.definitionId]?.name ?? req.definitionId)
+            .join(', ');
+          EventBus.emit('notify', { message: `재료가 부족하여 수리할 수 없습니다 (${names})`, type: 'warn' });
+          return;
+        }
         // 재료 소모
         for (const req of def.repairRecipe) {
           let remaining = req.qty;
@@ -517,7 +535,6 @@ const ModalManager = {
             }
           }
         }
-        const maxDur = def.defaultDurability ?? 100;
         inst.durability = Math.min(maxDur, (inst.durability ?? 0) + (def.repairAmount ?? 0));
         EventBus.emit('notify', { message: `🔧 ${def.name} 수리 완료 (+${def.repairAmount})`, type: 'good' });
         EventBus.emit('boardChanged', {});
