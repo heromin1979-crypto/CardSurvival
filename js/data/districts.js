@@ -461,7 +461,6 @@ const DISTRICTS = {
     description: '한강 남안 주거지역. 보라매병원과 국립현충원이 공존하는 비교적 안전한 구.',
     dangerLevel: 1, travelCostTP: 2, radiation: 0,
     encounterChance: 0.02, noiseGen: 3,
-    hasFishing: true, fishingQuality: 2,
     adjacentDistricts: ['guro', 'gwanak', 'gangnam'],
     landmarks: ['lm_boramae_hospital', 'lm_dongjak'],
     lootTable: [
@@ -570,6 +569,7 @@ const DISTRICTS = {
     description: '법조타운·예술의전당. 약탈자 두목의 세력권. 무장 약탈자와 변이체가 공존한다.',
     dangerLevel: 4, travelCostTP: 2, radiation: 0,
     encounterChance: 0.25, noiseGen: 7,
+    hasFishing: true, fishingQuality: 2,
     adjacentDistricts: ['gangnam', 'guro'],
     landmark: 'lm_seocho',
     lootTable: [
@@ -899,6 +899,7 @@ const DISTRICTS = {
     description: '명동·남대문시장·서울시청. 지하철에서 올라온 좀비 무리가 도심을 완전히 점령했다.',
     dangerLevel: 5, travelCostTP: 2, radiation: 0,
     encounterChance: 0.35, noiseGen: 8,
+    hasFishing: true, fishingQuality: 2,
     adjacentDistricts: ['yongsan', 'dongdaemun'],
     landmark: 'lm_junggoo',
     lootTable: [

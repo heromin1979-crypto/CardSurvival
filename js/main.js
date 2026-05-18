@@ -378,12 +378,16 @@ function _initNotifications() {
       const speaker  = e.speakerName ?? m.speaker;
       const icon     = e.speakerName ? '💬' : m.icon;
       const category = CATEGORY_LABEL[dataType] ?? '기타';
+      // 대사 외 카테고리는 speaker가 좌측 카테고리 라벨과 동일 — 중복 헤더 생략
+      const speakerHtml = e.speakerName
+        ? `<div class="log-entry-speaker">
+            <span class="log-entry-speaker-icon">${icon}</span>${_esc(speaker)}
+          </div>`
+        : '';
       return `<div class="log-entry" data-type="${dataType}" role="listitem">
         <div class="log-entry-category">${category}</div>
         <div class="log-entry-content">
-          <div class="log-entry-speaker">
-            <span class="log-entry-speaker-icon">${icon}</span>${_esc(speaker)}
-          </div>
+          ${speakerHtml}
           <div class="log-entry-message">${_esc(e.message)}</div>
         </div>
       </div>`;

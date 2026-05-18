@@ -183,20 +183,8 @@ export const LOCATION_CARD_META = {
   }
 };
 
+// lm_hangang(한강)은 정식 25구 랜드마크가 아닌 공용 랜드마크 — items_misc.js가 단일 정의(isHangang 플래그 포함).
 export const LANDMARK_CARD_META = {
-  "lm_hangang": {
-    "name": "한강",
-    "subtype": "landmark",
-    "rarity": "common",
-    "tags": [
-      "location",
-      "landmark",
-      "fishing"
-    ],
-    "icon": "🌊",
-    "description": "한강변 낚시터. 낚시와 통발 설치가 가능한 구역.",
-    "districtId": null
-  },
   "lm_gangnam": {
     "name": "삼성서울병원",
     "subtype": "landmark",
