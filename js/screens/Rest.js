@@ -6,6 +6,8 @@ import I18n        from '../core/I18n.js';
 import TickEngine   from '../core/TickEngine.js';
 import NightSystem  from '../systems/NightSystem.js';
 import MentalSystem from '../systems/MentalSystem.js';
+import SeasonSystem from '../systems/SeasonSystem.js';
+import BALANCE      from '../data/gameBalance.js';
 
 const REST_OPTIONS = [
   {
@@ -18,7 +20,7 @@ const REST_OPTIONS = [
     id: 'sleep',
     icon: '🛌',
     tpCost: 8,
-    effect: { fatigue: -80, stamina: 70, hp: 30, hydration: -20, nutrition: -10 },
+    effect: { fatigue: -80, stamina: 70, hp: 30 },
   },
   {
     id: 'meditate',
@@ -27,6 +29,15 @@ const REST_OPTIONS = [
     effect: { morale: 20, fatigue: -10, stamina: 15 },
   },
 ];
+
+// TP 소모로 발생하는 자연 감소량(수분·영양) 표시용 문자열.
+// 수분은 계절 배율(SeasonSystem)을 반영하므로 렌더 시점에 계산한다.
+function naturalDecayText(tpCost) {
+  const seasonMod = SeasonSystem.getModifiers();
+  const hydration = Math.round(tpCost * BALANCE.stats.hydrationDecayPerTP * (seasonMod.hydrationDecayMult ?? 1.0));
+  const nutrition = Math.round(tpCost * BALANCE.stats.nutritionDecayPerTP);
+  return `${I18n.t('stat.hydration')} -${hydration}, ${I18n.t('stat.nutrition')} -${nutrition}`;
+}
 
 const Rest = {
   _el: null,
@@ -50,7 +61,7 @@ const Rest = {
       <div class="rest-option-card" data-rest-id="${opt.id}">
         <div class="rest-option-name">${I18n.t('rest.' + opt.id)}</div>
         <div class="rest-option-cost">${I18n.t('rest.' + opt.id + 'Cost')}</div>
-        <div class="rest-option-desc">${I18n.t('rest.' + opt.id + 'Desc')}</div>
+        <div class="rest-option-desc">${I18n.t('rest.' + opt.id + 'Desc')}, ${naturalDecayText(opt.tpCost)}</div>
       </div>
     `).join('');
 
