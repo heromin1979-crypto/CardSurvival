@@ -38,7 +38,7 @@ const SEASON_MODIFIERS = {
     gardenYieldMult:     1.0,   // 정상 수확
   },
   summer: {
-    hydrationDecayMult:  2.0,   // 폭염으로 수분 소모 급증 (1.5 → 2.0)
+    hydrationDecayMult:  1.5,   // 폭염으로 수분 소모 증가
     tempDecayPerTP:      0,
     tempRisePerTP:       0.3,   // TP당 체온 +0.3 (방치 시 열사병)
     infectionChanceMult: 1.2,
