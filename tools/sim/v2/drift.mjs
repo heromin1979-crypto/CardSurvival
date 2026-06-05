@@ -26,7 +26,7 @@ function makeProxy(obj, path = '', tracker = usedBalance) {
 // BALANCE를 시뮬에서 사용할 때 이걸 import 권장 (단 PR2에서는 게임 시스템이 자체 BALANCE를 사용하므로 추후 진정한 trace는 module-level patching이 필요)
 export const TRACED_BALANCE = makeProxy(BALANCE);
 
-function enumLeaves(obj, path = '', acc = []) {
+function enumLeafEntries(obj, path = '', acc = []) {
   if (obj === null || typeof obj !== 'object' || Array.isArray(obj)) {
     return acc;
   }
@@ -34,12 +34,16 @@ function enumLeaves(obj, path = '', acc = []) {
     const v = obj[k];
     const p = path ? `${path}.${k}` : k;
     if (v !== null && typeof v === 'object' && !Array.isArray(v) && !(v instanceof Function)) {
-      enumLeaves(v, p, acc);
+      enumLeafEntries(v, p, acc);
     } else {
-      acc.push(p);
+      acc.push([p, v]);
     }
   }
   return acc;
+}
+
+function enumLeaves(obj) {
+  return enumLeafEntries(obj).map(([p]) => p);
 }
 
 export function trackBalanceUsage(path) {
@@ -81,4 +85,19 @@ export function balanceFingerprint() {
     h = (h * 31 + sorted.charCodeAt(i)) | 0;
   }
   return `len${sorted.length}-h${(h >>> 0).toString(16)}`;
+}
+
+// leaf 값까지 반영하는 hash. balanceFingerprint는 KEY 구조만 반영해
+// 중첩 leaf 값 변경(예: fishing.baseCatchChance 0.30→0.50)을 못 잡는다.
+// 본 hash는 (경로=값) 전수를 정렬·직렬화해 값 변경을 탐지한다.
+export function balanceLeafHash() {
+  const entries = enumLeafEntries(BALANCE)
+    .map(([p, v]) => `${p}=${Array.isArray(v) ? JSON.stringify(v) : String(v)}`)
+    .sort();
+  const joined = entries.join('|');
+  let h = 0;
+  for (let i = 0; i < joined.length; i += 1) {
+    h = (h * 31 + joined.charCodeAt(i)) | 0;
+  }
+  return `n${entries.length}-h${(h >>> 0).toString(16)}`;
 }

@@ -6,11 +6,11 @@ import { writeFileSync } from 'fs';
 import { runBatch } from './runner.mjs';
 import { listCharacterIds } from './characterAdapter.mjs';
 import { summarizeAll } from './reporters/index.mjs';
-import { balanceFingerprint, getBalanceDriftReport } from './drift.mjs';
+import { balanceFingerprint, balanceLeafHash, getBalanceDriftReport } from './drift.mjs';
 
 const RUNS_PER_CHARACTER = 100;
 const SEED_BASE = 0;
-const OUTPUT_FILE = 'simulation-data/baselines/raw/BAL_SIM_baseline_v14_result.json';
+const OUTPUT_FILE = 'simulation-data/baselines/raw/BAL_SIM_baseline_v15_result.json';
 
 const characters = listCharacterIds();
 
@@ -35,12 +35,14 @@ console.log(`\nTotal: ${allTraces.length} runs in ${(dt / 1000).toFixed(1)}s`);
 const kpi = summarizeAll(allTraces);
 const drift = getBalanceDriftReport();
 const fp = balanceFingerprint();
+const leafHash = balanceLeafHash();
 
 const out = {
   schemaVersion: 2,
-  buildTag: 'sim-baseline-v14-pr17',
+  buildTag: 'sim-baseline-v15-detfix',
   phase: 'complete',
   balanceFingerprint: fp,
+  balanceLeafHash: leafHash,
   characters,
   totalRuns: allTraces.length,
   runs: allTraces.map(t => ({
@@ -89,4 +91,4 @@ for (const [c, n] of Object.entries(causeAll).sort((a, b) => b[1] - a[1])) {
 }
 
 console.log(`\n=== drift ===`);
-console.log(`  BALANCE leaf total: ${drift.total}, fingerprint: ${fp}`);
+console.log(`  BALANCE leaf total: ${drift.total}, fingerprint: ${fp}, leafHash: ${leafHash}`);
