@@ -7,8 +7,10 @@ import {
   getBalanceDriftReport,
   resetDriftTracker,
   balanceFingerprint,
+  balanceLeafHash,
   getCharactersDriftReport,
 } from '../drift.mjs';
+import BALANCE from '../../../../js/data/gameBalance.js';
 
 let pass = 0, fail = 0;
 
@@ -64,8 +66,23 @@ const charReport = getCharactersDriftReport();
 check('characters has many fields', charReport.totalFields > 10);
 check('characters drift report has sampleKeys', Array.isArray(charReport.sampleKeys));
 
+// 9. balanceLeafHash — 중첩 leaf 값 변경 탐지 (balanceFingerprint KEY 기반 한계 보완)
+const lh1 = balanceLeafHash();
+check('balanceLeafHash deterministic', lh1 === balanceLeafHash());
+check('balanceLeafHash format', typeof lh1 === 'string' && lh1.startsWith('n'));
+
+const fpBefore = balanceFingerprint();
+const origLeaf  = BALANCE.stats.hydrationDecayPerTP;
+BALANCE.stats.hydrationDecayPerTP = origLeaf + 0.123;
+const lhAfter = balanceLeafHash();
+const fpAfter = balanceFingerprint();
+BALANCE.stats.hydrationDecayPerTP = origLeaf; // 복원
+check('balanceLeafHash detects nested value change', lhAfter !== lh1, `${lh1} vs ${lhAfter}`);
+check('balanceFingerprint MISSES nested value change (KEY 기반 한계 입증)', fpAfter === fpBefore);
+check('balanceLeafHash restored after revert', balanceLeafHash() === lh1);
+
 console.log(`\n=== driftDetection.test ===`);
 console.log(`Pass: ${pass}, Fail: ${fail}`);
-console.log(`BALANCE total leaves: ${afterReset.total}, fingerprint: ${fp1}`);
+console.log(`BALANCE total leaves: ${afterReset.total}, fingerprint: ${fp1}, leafHash: ${lh1}`);
 if (fail > 0) process.exit(1);
 console.log('✅ ALL PASS');

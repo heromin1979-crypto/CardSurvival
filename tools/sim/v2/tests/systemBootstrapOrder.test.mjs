@@ -1,6 +1,6 @@
 // === systemBootstrapOrder.test.mjs ===
-// BOOTSTRAP_ORDER가 main.js 121~169 init 순서와 일치하는지 검증.
-// main.js 변경 시 시뮬도 자동 알림.
+// BOOTSTRAP_ORDER가 main.js init() 등장의 상대 순서와 일치하는지 검증.
+// main.js init 순서 변경 시 시뮬도 자동 알림. (절대 라인번호 비의존 — 라인 삽입에 견고)
 
 import { readFileSync } from 'fs';
 import { getBootstrapOrder, getDeferredSystems, getSkippedSystems } from '../systemBootstrap.mjs';
@@ -15,25 +15,28 @@ function check(name, cond, detail = '') {
 const mainJs = readFileSync(new URL('../../../../js/main.js', import.meta.url), 'utf-8');
 const mainLines = mainJs.split('\n');
 
-// 각 BOOTSTRAP 시스템이 main.js 해당 라인에서 init()되는지 검증
+// 각 BOOTSTRAP 시스템의 init()이 main.js에 존재하고, BOOTSTRAP_ORDER와 같은 상대 순서인지 검증
 const order = getBootstrapOrder();
 
 check('31 BOOTSTRAP systems (PR2 14 + PR2.5 17)', order.length === 31, `got ${order.length}`);
 
-for (const { name, mainLine } of order) {
-  const line = mainLines[mainLine - 1] ?? '';
-  const expectedInit = `${name}.init()`;
-  check(
-    `main.js:${mainLine} contains ${expectedInit}`,
-    line.includes(expectedInit),
-    `actual: ${line.trim()}`
-  );
+const lineIndexOf = name => mainLines.findIndex(l => l.includes(`${name}.init()`));
+
+const indices = [];
+for (const { name } of order) {
+  const idx = lineIndexOf(name);
+  check(`main.js has ${name}.init()`, idx >= 0, idx < 0 ? 'not found' : '');
+  indices.push(idx);
 }
 
-// BOOTSTRAP 순서가 main.js의 라인 번호 오름차순인지
-const lineNums = order.map(o => o.mainLine);
-const sorted = [...lineNums].sort((a, b) => a - b);
-check('BOOTSTRAP_ORDER is sorted by main.js line', JSON.stringify(lineNums) === JSON.stringify(sorted));
+// BOOTSTRAP_ORDER 순서대로 main.js 등장 위치가 단조 증가(상대 순서 일치)인지
+let ordered = true, prev = -1;
+for (const idx of indices) {
+  if (idx < 0) continue;
+  if (idx <= prev) ordered = false;
+  prev = idx;
+}
+check('BOOTSTRAP_ORDER matches main.js init order', ordered);
 
 // 분류 카테고리별 개수
 check('UNCERTAIN_DEFERRED empty (all promoted)', getDeferredSystems().length === 0, `got ${getDeferredSystems().length}`);

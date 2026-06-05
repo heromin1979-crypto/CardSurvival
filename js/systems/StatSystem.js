@@ -704,6 +704,7 @@ const StatSystem = {
       this._spawnLeaveOnConsume(gs, leave);
       EventBus.emit('boardChanged', {});
     }
+    EventBus.emit('itemConsumed', { itemId: def.id, qty: 1, day: gs.time.day });
     return true;
   },
 

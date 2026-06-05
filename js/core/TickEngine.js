@@ -24,6 +24,7 @@ const TickEngine = {
       gs.time.tpInDay = 0;
       gs.time.day++;
       gs.time.hour = 6;
+      EventBus.emit('dayEnd', { day: gs.time.day - 1, totalTP: gs.time.totalTP, characterId: gs.player.characterId });
     }
 
     EventBus.emit('tpAdvance', { totalTP: gs.time.totalTP });

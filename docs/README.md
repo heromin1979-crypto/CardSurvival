@@ -45,6 +45,7 @@ simulation-data/                             # 시뮬레이션 데이터 (별도
 
 ### ★ 기획 현황 종합 (최신)
 - [`PLANNING_STATE.md`](./PLANNING_STATE.md) — **2026-05-13 기준 기획 현황 전체 요약** (게임 정체성·7직업·5곳 등록 룰·KPI 추세·페르소나 분담·M4 진입 작업)
+- [`LAUNCH_ROADMAP.md`](./LAUNCH_ROADMAP.md) ★ — **2026-06-05 기준 출시 로드맵** (현재 상태 실측·남은 작업 6영역·Phase 일정·블로커·사용자 결정 항목)
 
 ### 마일스톤
 - [`milestones/2026-05-10-persona-meeting/README.md`](./milestones/2026-05-10-persona-meeting/README.md) — **M0~M3 종결 트랙 인덱스 (49 산출물)**
@@ -52,6 +53,8 @@ simulation-data/                             # 시뮬레이션 데이터 (별도
 
 ### 시뮬레이션 데이터
 - [`/simulation-data/README.md`](../simulation-data/README.md) — baseline v1~v14 측정 데이터 인덱스
+- [`SIMULATION_TOOL.md`](./SIMULATION_TOOL.md) ★ — **시뮬 툴 레퍼런스** (구조·실행·KPI 7종·결과 JSON·drift·v15 데이터·본체 비교)
+- [`SIMULATION_BEHAVIOR.md`](./SIMULATION_BEHAVIOR.md) — **시뮬 행동 프로파일 v16** (직업별 탐색구·제작·소비·낚시·전투·퀘스트 + 구조적 0 발견)
 
 ### 분석 문서
 - [`analysis/CRAFT_DIVERSITY_ANALYSIS.md`](./analysis/CRAFT_DIVERSITY_ANALYSIS.md) — 크래프트 다양성 분석

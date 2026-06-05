@@ -6,11 +6,11 @@ import { writeFileSync } from 'fs';
 import { runBatch } from './runner.mjs';
 import { listCharacterIds } from './characterAdapter.mjs';
 import { summarizeAll } from './reporters/index.mjs';
-import { balanceFingerprint, getBalanceDriftReport } from './drift.mjs';
+import { balanceFingerprint, balanceLeafHash, getBalanceDriftReport } from './drift.mjs';
 
 const RUNS_PER_CHARACTER = 100;
 const SEED_BASE = 0;
-const OUTPUT_FILE = 'simulation-data/baselines/raw/BAL_SIM_baseline_v14_result.json';
+const OUTPUT_FILE = 'simulation-data/baselines/raw/BAL_SIM_baseline_v16_result.json';
 
 const characters = listCharacterIds();
 
@@ -35,12 +35,14 @@ console.log(`\nTotal: ${allTraces.length} runs in ${(dt / 1000).toFixed(1)}s`);
 const kpi = summarizeAll(allTraces);
 const drift = getBalanceDriftReport();
 const fp = balanceFingerprint();
+const leafHash = balanceLeafHash();
 
 const out = {
   schemaVersion: 2,
-  buildTag: 'sim-baseline-v14-pr17',
+  buildTag: 'sim-baseline-v16-behavior',
   phase: 'complete',
   balanceFingerprint: fp,
+  balanceLeafHash: leafHash,
   characters,
   totalRuns: allTraces.length,
   runs: allTraces.map(t => ({
@@ -89,4 +91,12 @@ for (const [c, n] of Object.entries(causeAll).sort((a, b) => b[1] - a[1])) {
 }
 
 console.log(`\n=== drift ===`);
-console.log(`  BALANCE leaf total: ${drift.total}, fingerprint: ${fp}`);
+console.log(`  BALANCE leaf total: ${drift.total}, fingerprint: ${fp}, leafHash: ${leafHash}`);
+
+console.log(`\n=== 행동 프로파일 (직업별, 100회 합산) ===`);
+const top = (obj, n = 3) => Object.entries(obj).sort((a, b) => b[1] - a[1]).slice(0, n).map(([k, v]) => `${k}×${v}`).join(', ') || '(없음)';
+for (const [c, b] of Object.entries(kpi.behaviorProfile.byCharacter)) {
+  console.log(`  ${c.padEnd(12)} avg ${b.avgActionsPerRun} acts/run | 제작: ${top(b.craftedItems)} | 소비: ${top(b.consumedItems)}`);
+  console.log(`  ${' '.repeat(12)} 탐색구: ${top(b.exploreByDistrict)} | 낚시 ${b.fishing.total} | 이동 ${b.moves.total} | 전투 ${b.combat.combats}/kills ${b.combat.totalKills} | 퀘스트 시작 ${b.quests.started}/완료 ${b.quests.completed}`);
+}
+console.log(`\n  ※ combat·move·후반이벤트 = 구조적 ~0 (시뮬 AI day 4~8 아사로 중후반 미도달). 퀘스트는 초반 자동완료분 포함`);

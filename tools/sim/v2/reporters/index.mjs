@@ -7,6 +7,7 @@ import { summarizeReachableContent } from './reachableContent.mjs';
 import { summarizeMoraleDespair }    from './moraleDespair.mjs';
 import { summarizeEventOverlap }     from './eventOverlap.mjs';
 import { summarizeResourceOverTime } from './resourceOverTime.mjs';
+import { summarizeBehaviorProfile }  from './behaviorProfile.mjs';
 
 export function summarizeAll(traces) {
   return {
@@ -16,6 +17,7 @@ export function summarizeAll(traces) {
     moraleDespair:    summarizeMoraleDespair(traces),
     eventOverlap:     summarizeEventOverlap(traces),
     resourceOverTime: summarizeResourceOverTime(traces),
+    behaviorProfile:  summarizeBehaviorProfile(traces),
   };
 }
 
@@ -26,4 +28,5 @@ export {
   summarizeMoraleDespair,
   summarizeEventOverlap,
   summarizeResourceOverTime,
+  summarizeBehaviorProfile,
 };

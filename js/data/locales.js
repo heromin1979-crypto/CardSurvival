@@ -52,6 +52,9 @@ export const ko = {
   'settings.off':      'OFF',
   'settings.close':    '닫기',
   'settings.bgm':     'BGM',
+  'settings.data':                '데이터',
+  'settings.telemetryExportDesc': '플레이 기록(익명)',
+  'settings.exportTelemetry':     '내보내기',
 
   // ── Pause ───────────────────────────────────────────────────
   'pause.title':    '일시 정지',
@@ -911,6 +914,9 @@ export const en = {
   'settings.off':      'OFF',
   'settings.close':    'Close',
   'settings.bgm':     'BGM',
+  'settings.data':                'Data',
+  'settings.telemetryExportDesc': 'Play log (anonymous)',
+  'settings.exportTelemetry':     'Export',
 
   // ── Pause ───────────────────────────────────────────────────
   'pause.title':    'Paused',

@@ -56,6 +56,12 @@ export function runSingleRun({ characterId, seed, runId, maxTP = TARGET_TP, snap
     unsubs.push(unsub);
   }
 
+  // 행동 프로파일용 카운터 — 퀘스트·전투 (questListChanged는 다발성이라 제외)
+  const behaviorCounts = { questsStarted: 0, questsCompleted: 0, combats: 0 };
+  unsubs.push(EventBus.on('questStarted',   () => { behaviorCounts.questsStarted += 1; }));
+  unsubs.push(EventBus.on('questCompleted', () => { behaviorCounts.questsCompleted += 1; }));
+  unsubs.push(EventBus.on('combatEnd',      () => { behaviorCounts.combats += 1; }));
+
   // morale tier trace 핸들러
   const tierUnsub = EventBus.on('tpAdvance', () => {
     const morale = GameState.stats?.morale?.current ?? 50;
@@ -149,6 +155,11 @@ export function runSingleRun({ characterId, seed, runId, maxTP = TARGET_TP, snap
     resourceSnapshots,
     bootstrapErrors,
     _runError: lastError,
+    aiLog, // 일별 행동 문자열 (behaviorProfile 리포터가 집계, baseline JSON엔 미저장)
+    behavior: {
+      ...behaviorCounts,
+      totalKills: GameState.flags?.totalKills ?? 0,
+    },
     kpi: {
       survivedDays: GameState.time.day,
       totalKills: GameState.flags?.totalKills ?? 0,

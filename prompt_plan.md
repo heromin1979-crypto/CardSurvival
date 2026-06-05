@@ -344,45 +344,57 @@ M3는 시뮬 v2 인프라(PR1~PR4) → Player AI 5단계(PR5/PR5.5/PR6/PR7) → 
 
 - [x] 사전 설계 작성 — 채널 매핑 정정 + EventBus 와일드카드 미지원 대응 + 파일 구조 (~380줄 재추정) + 저장/export/익명 전략 + 4 단계 작업 분할 + 위험 5건
 - [x] 협의서 v6 §7.1 채널 명세 정정 — `death`→`playerDied` 신설 / `dayEnd` 신설 / `itemConsumed` 신설 / `npcRecruit`→`npcRecruited` / `questComplete`→`questCompleted` / `craftSuccess`→`craftComplete` 명칭 정정
-- [ ] **단계 A** (소요 1일) — 신규 emit 3건 collateral
-  - [ ] `EventBus.js` Known channels 주석 갱신
-  - [ ] `TickEngine.js:27` `dayEnd` emit (gs.time.day++ 직후)
-  - [ ] `StatSystem.js:411` + `CombatSystem.js:1266` + `DiseaseSystem.js:432` `playerDied` emit 3 사이트 (cause 분기)
-  - [ ] `itemConsumed` 사이트 확정 + emit (BoardActions/ConsumeSystem 확인)
-- [ ] **단계 B** (소요 2일) — `js/systems/TelemetrySystem.js` 신규 (~380줄)
-  - [ ] 모듈 골격: SCHEMA_VERSION / STORAGE_KEY_PREFIX / SESSION_KEY / USER_ID_KEY / MAX_EVENTS_PER_SESSION 5000 / FLUSH_INTERVAL_MS 30s
-  - [ ] init() — userId 로드/신규, sessionId 발급, 7 채널 EventBus.on 명시 구독, 30s flush 타이머, beforeunload flush
-  - [ ] 7 채널 핸들러: `_onPlayerDied`/`_onDayEnd`/`_onSkillLevelUp`/`_onItemConsumed`/`_onNpcRecruited`/`_onQuestCompleted`/`_onCraftComplete`
-  - [ ] `_push(entry)` — envelope wrap `{ ts, sessionId, channel, payload }`
-  - [ ] `_flush()` — localStorage + QuotaExceededError 가드 (IndexedDB 폴백은 M4 #2 안착 후)
-  - [ ] `exportSessionJSON()` / `exportAllSessionsJSON()` / `clearSession()` / `clearAll()`
-  - [ ] `_genUuid()` (crypto.randomUUID + 폴백) / `_genSessionId()` (`YYYYMMDD-HHMMSS-rand4`)
-- [ ] **단계 C** (소요 1일) — 진입점 + Export UI
-  - [ ] `js/main.js` `Game.start()` 또는 등가에 `TelemetrySystem.init()` 등록 (AutoSave 패턴)
-  - [ ] `MainMenu.js` 또는 `Pause.js`에 export 버튼 추가 (UI 위치 미결정 — M4 진입 시 결정)
-  - [ ] (선택) `ModalManager.js` 사망 시 export 제안 모달
-- [ ] **단계 D** (소요 1일) — 검증
-  - [ ] `node --check js/systems/TelemetrySystem.js` OK
-  - [ ] `validate.js` Errors 0 ALL CLEAR (데이터 무변경)
-  - [ ] 헤드리스 1회 플레이 — 1일 진행 후 dayEnd 1건 / 강제 사망 후 playerDied 1건 / export JSON 형식 확인
-  - [ ] localStorage 키 패턴 검증 (`CARD_SURVIVAL_TELE_v1_*`)
+- [x] **단계 A** (2026-06-05 마감) — 신규 emit 3건 collateral
+  - [x] `EventBus.js` Known channels 주석 — `playerDied`/`dayEnd`/`itemConsumed` 3건 추가
+  - [x] `TickEngine.js:25` `_doFullTP` new-day 블록 내 `dayEnd` emit `{ day: day-1, totalTP }` (설계 line 27 → 실제 25)
+  - [x] `playerDied` emit — **단일 깔때기 `EndingSystem.triggerDeathEnding:59`** (설계의 3사이트 대신 사용자 결정). cause = 언어 독립 `_selectDeathEnding` endingId(death_starvation 등 ~13종, 설계 6종 enum보다 세분·i18n 안정). 모든 사망경로(StatSystem 7 cause + Combat + Disease) 자동 포착. payload `{ cause, day, totalTP, characterId }` (jobId 필드 부재 → characterId 사용)
+  - [x] `itemConsumed` emit — `StatSystem.consumeCard:707` 단일 깔때기(분산 아님, wrapper 불필요). payload `{ itemId, qty:1, day }`
+  - [x] 검증 — node --check 4파일 OK / validate.js Errors 0 / 헤드리스 프로브로 3채널 발화 확인(dayEnd `{day:1,totalTP:144}` / itemConsumed `{canned_food,1,2}` / playerDied `{death_starvation,...,doctor}`) / 본체 vitest 443/443 + sim 테스트 회귀 0
+- [x] **단계 B** (2026-06-05 마감) — `js/systems/TelemetrySystem.js` 신규 (실제 ~250줄, 설계 380 추정보다 간결 — IndexedDB 폴백 deferred)
+  - [x] 모듈 골격: SCHEMA_VERSION 1 / STORAGE_KEY_PREFIX / SESSION_INDEX_KEY / USER_ID_KEY / MAX_EVENTS_PER_SESSION 5000 / FLUSH_INTERVAL_MS 30s
+  - [x] init() — userId 로드/신규, sessionId 발급, 7채널 명시 구독, 30s flush 타이머, beforeunload flush. **localStorage 부재(헤드리스/시뮬) 시 비활성 가드**
+  - [x] 7채널 핸들러 — `_onPlayerDied`(즉시 flush)/`_onDayEnd`/`_onSkillLevelUp`(skillName i18n 제외)/`_onItemConsumed`/`_onNpcRecruited`(trust 미수집·event payload 부재)/`_onQuestCompleted`(def 제외)/`_onCraftComplete`(outputInstanceIds→outputCount)
+  - [x] `_push(channel, payload)` — envelope `{ ts, sessionId, channel, payload }` + MAX 가드(1회 warn)
+  - [x] `_flush()` — localStorage + try/catch (QuotaExceededError → IndexedDB 폴백 deferred)
+  - [x] `exportSessionJSON()` / `exportAllSessionsJSON()` / `clearSession()` / `clearAll()` (헤드리스 시 JSON 문자열 반환, 브라우저 시 Blob 다운로드)
+  - [x] `_genUuid()` (crypto.randomUUID + 폴백) / `_genSessionId()` (`YYYYMMDD-HHMMSS-rand4`)
+  - [x] 검증 — node --check OK / 헤드리스 프로브(localStorage 목): 7채널 전수 수집·envelope·flush·exportSession/All 정상. craftComplete outputCount:2, skillLevelUp skillName 제외 확인
+  - [ ] (단계 C 인계) payload 키 `characterId` 사용 — 설계 §5.2/§9의 `jobId`는 실제 필드 부재. K1 알고리즘 `s.meta.characterId`로 정합 필요
+- [x] **단계 C** (2026-06-05 마감) — 진입점 + Export UI
+  - [x] `js/main.js` — import 추가(systems 블록) + Persistence 섹션 `AutoSave.init()` 직후 `TelemetrySystem.init()` 등록
+  - [x] **export 버튼 — 설정(Settings) 모달** (사용자 결정). `js/ui/SettingsModal.js` 데이터 섹션 신규 + `#settings-export-tele` → `TelemetrySystem.exportAllSessionsJSON()` 바인딩
+  - [x] i18n 한/영 — `settings.data`/`settings.telemetryExportDesc`/`settings.exportTelemetry` (locales.js ko·en 양쪽, 파리티 검증 OK)
+  - [x] 검증 — node --check 3파일 OK / validate.js Errors 0 ALL CLEAR / 본체 vitest 443/443 / i18n 키 ko·en 해석 확인
+  - [ ] (보류) 사망 시 자동 export 제안 모달 — 설계 §14 선택 항목, UX 결정 후 별도 진행
+- [x] **단계 D** (2026-06-05 마감) — 검증
+  - [x] `node --check js/systems/TelemetrySystem.js` OK
+  - [x] `validate.js` Errors 0 ALL CLEAR (데이터 무변경)
+  - [x] 헤드리스 통합 검증 — 부트스트랩한 실제 시스템으로 구동: TickEngine.skipTP(72)→dayEnd / consumeCard→itemConsumed / _killPlayer→깔때기→playerDied(cause=death_starvation). 3채널 전수 수집·flush·exportAll JSON 정상
+  - [x] localStorage 키 패턴 검증 — `CARD_SURVIVAL_TELE_v1_userId` / `_session_index` / `_<sessionId>` 생성, flush 3건 영속
+  - [x] (검증이 잡은 버그 수정) `_download` — 부분 DOM 환경에서 `a.click` throw → try/catch로 JSON 항상 반환하도록 방어 (브라우저는 정상 다운로드)
+  - [x] (단계 C collateral → 견고화) `systemBootstrapOrder.test` 절대 라인번호 의존 제거 — `systemBootstrap.mjs` BOOTSTRAP_ORDER에서 mainLine 컬럼 삭제, 테스트를 **상대 순서 검증**(findIndex 기반)으로 전환. main.js 라인 삽입에 면역. Red-Green 확인(정상 통과 / 순서 뒤집기 탐지), sim 6파일 36/36 green, 부트스트랩 bootstrapErrors 0
+  - [x] 회귀 — 본체 vitest 443/443 / sim 테스트 6파일 전부 green
 
 ### M4 #3 (drift.mjs leaf hash 컬럼 추가 — 시스템 백승호, 마감 2026-06-01)
 
 > 협의서 v4 §13.6 단정 동반. 협의서 v6 §7.2 인용.
 
-- [ ] `tools/sim/v2/drift.mjs` 확장 — leaf 값 hash 컬럼 신규 (현재 fingerprint는 KEY 기반, leaf 값 변경 미탐지)
-- [ ] 마지노선 — M3 v3~v14 fingerprint 12연속 유지 + M4 baseline 무회귀
-- [ ] 회귀 검증 — v3~v14 재실행으로 hash 컬럼 추가 후 fingerprint 무회귀 단언
+- [x] (2026-06-05 마감) `tools/sim/v2/drift.mjs` 확장 — `balanceLeafHash()` 신규. 근본 원인: 기존 `balanceFingerprint`는 `JSON.stringify(BALANCE, 최상위키 replacer)`라 중첩 leaf 값(예: `fishing.baseCatchChance`)이 직렬화에서 제외 → 값 변경 미탐지. 신규 hash는 (경로=값) 전수 정렬·직렬화. `enumLeaves`를 `enumLeafEntries` 기반으로 리팩터(공유)
+- [x] `run_baseline.mjs` — `balanceLeafHash` 컬럼 추가(출력 top-level + drift 콘솔). v15 산출물 반영: **fingerprint `len316-h242a5b5f` / leafHash `n227-he960c78b`**
+- [x] 마지노선 — fingerprint `len316-h242a5b5f` 불변(13연속), baseline 무회귀(K1 0% / chef K3 7.7 / doctor 4.2 등 v15 동일)
+- [x] 검증 — `driftDetection.test` 16→21 (신규 5: leafHash 결정성·format·**중첩 값 변경 탐지**·fingerprint가 못 잡음 입증·복원). sim 6파일 전부 green / node --check OK
 
 ### M4 #4 (본체 K1 측정 1회차 — 시스템 백승호 + 사용자, 마감 2026-06-10)
 
 > 협의서 v6 §7.3 인용. 베타 1회차 자체 플레이.
 
-- [ ] 베타 1회차 — 6직업 각각 100일 생존 시도 (사망 시 K1=0, 도달 시 K1=1)
-- [ ] M4 #2 텔레메트리 수집으로 자동 측정 — death 이벤트 + dayEnd 누적
-- [ ] 직업별 K1 추정치 산출 (1회차 측정 + 후속 N회차 누적 계획)
-- [ ] 시뮬 K1 (M3 v14 baseline) 직업별 절대값과 비교 → K_sim_drift 산출 입력
+- [x] **(2026-06-05 사전 작성) K1 산출 스크립트 `tools/telemetry/computeK1.mjs`** — 텔레메트리 export JSON → 직업별 K1(100일 생존율). 설계 §9 알고리즘 + 실제 스키마 정합(run 분할·생존자 직업 귀속)
+  - [x] **스키마 갭 발견·보강** — 설계 §9의 `s.meta.jobId`는 실제 export에 부재. characterId가 `playerDied`에만 있어 **생존 run 귀속 불가**(K1이 세는 대상) → `dayEnd` payload에 `characterId` 추가(TickEngine emit + TelemetrySystem 핸들러 + EventBus 주석). M4 #2 보강
+  - [x] run 분할 — 한 세션 다중 run을 day 감소·playerDied로 분할. 생존 run(playerDied 부재)도 dayEnd.characterId로 귀속
+  - [x] 검증 — `computeK1.test` 12/12(합성 픽스처: 직업별 K1·멀티run·생존자 귀속·부분생존) + 종단(실제 exportAllSessionsJSON→CLI 파싱) + 본체 vitest 443/443 회귀
+- [ ] **(사용자 플레이 필요)** 베타 1회차 — 6직업 각각 100일 생존 시도. 권장 프로토콜: 직업당 1세션(앱 실행→플레이→설정 모달 export). 사망 시 K1=0 / 100일 도달 시 K1=1
+- [ ] 수집 export JSON → `node tools/telemetry/computeK1.mjs <export.json>`로 직업별 K1 산출
+- [ ] 시뮬 K1 (v15 baseline: 전 직업 0%) 직업별 절대값과 비교 → K_sim_drift 산출 입력 (M4 #5)
 
 ### M4 #5 (격차 단정 + M4 마감 보고서 — PD 김재훈 + 시스템 백승호, 마감 2026-06-22)
 
@@ -398,6 +410,19 @@ M3는 시뮬 v2 인프라(PR1~PR4) → Player AI 5단계(PR5/PR5.5/PR6/PR7) → 
 
 - [ ] `js/data/items_misc.js` 또는 `tools/sim/v2/playerAI.mjs` — spice_blend actEat candidates 잔존 결함 정리 (1~2 라인 패치)
 - [ ] validate.js Errors 0 회귀 검증
+
+### M4 #6 (시뮬 결정성 수정 + baseline v15 — 2026-06-05 마감)
+
+> 트리거: 출시 준비 점검 중 `seedDeterminism.test.mjs` #6 실패 발견. 보고서 `simulation-data/baselines/reports/BAL_SIM_baseline_v15_report.md`.
+
+- [x] 근본 원인 — `tools/sim/v2/gameStateReset.mjs` `resetGameStateForRun`이 `INITIAL_SNAPSHOT`(bootstrap 이전 캡처)에 없는 시스템 생성 키(`hospital·ecology·npcs·companions·groupStats·mental·body`) 미삭제 → 회차 간 상태 누수
+- [x] 수정 — 스냅샷에 없는 GameState 키 삭제 루프 추가 (+8라인). Red-Green: `seedDeterminism.test.mjs` Pass 6/Fail 1 → Pass 7/Fail 0. 본체 vitest 443/443 무회귀
+- [x] baseline v15 측정 (`BAL_SIM_baseline_v15_result.json`, buildTag `sim-baseline-v15-detfix`) — 6직업 × 100회, fingerprint `len316-h242a5b5f` 유지, bootstrapErrors 0/600
+- [x] **★ 절망 사망 과대 계상 교정 단언** — 공통 6직업 600회 정규화 시 절망 208→6 (-202), 아사 302→506 (+204). 누수된 `mental` 상태 전이가 절망 사망을 인공적으로 부풀림. 진짜 1위 사인 = 아사 84%
+- [x] K3 교정 — chef 6.1→7.7 (+1.6d, 격차 +2.86d로 강화) / doctor 4.9→4.2 (-0.7d) / 4직업 무변화
+- [x] v15 = 6직업(출시 확정 범위) 신 기준선. v14(7직업)는 과거 기록 보존
+- [ ] (후속 권고) 밸런스 권지나 — v15 사인 구조 기준 M3 morale/절망 KPI 재해석
+- [ ] (별개 기존 결함) `systemBootstrapOrder.test.mjs` 31 fail — `systemBootstrap.mjs` 라인번호 주석이 `main.js`와 1줄 드리프트 (본 수정과 무관)
 
 ---
 

@@ -58,6 +58,13 @@ const EndingSystem = {
    */
   triggerDeathEnding(cause, gs) {
     const endingId = this._selectDeathEnding(cause, gs);
+    // endingId는 cause 현지화 문자열과 달리 언어 독립적이라 텔레메트리 cause 코드로 사용한다.
+    EventBus.emit('playerDied', {
+      cause: endingId,
+      day: gs.time.day,
+      totalTP: gs.time.totalTP,
+      characterId: gs.player.characterId,
+    });
     this.triggerEnding(endingId, gs);
   },
 

@@ -53,5 +53,8 @@ const EventBus = {
 // npcDismissed             { npcId }
 // openNPCDialogue          { npcId }
 // hintUnlocked             { comboId }
+// playerDied               { cause, day, totalTP, characterId }  // cause = stable endingId
+// dayEnd                   { day, totalTP, characterId }
+// itemConsumed             { itemId, qty, day }
 
 export default EventBus;

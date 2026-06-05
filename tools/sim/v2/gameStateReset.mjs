@@ -37,6 +37,15 @@ export function captureInitialState() {
 export function resetGameStateForRun({ characterId }) {
   if (!INITIAL_SNAPSHOT) captureInitialState();
 
+  // 시스템 init()이 첫 회차에 새로 만든 키(hospital·ecology·npcs·companions·
+  // groupStats·mental·body)는 bootstrap 이전에 찍은 스냅샷에 없어 복원 대상이
+  // 아니다. 삭제하지 않으면 직전 회차의 값이 다음 회차로 누수돼 결정성이 깨진다.
+  // 스냅샷에 없는 키를 먼저 제거해 매 회차 동일 출발점을 보장한다.
+  for (const k of Object.keys(GameState)) {
+    if (typeof GameState[k] === 'function') continue;
+    if (!(k in INITIAL_SNAPSHOT)) delete GameState[k];
+  }
+
   for (const [k, v] of Object.entries(INITIAL_SNAPSHOT)) {
     if (typeof GameState[k] === 'function') continue;
     GameState[k] = deepCloneData(v);
