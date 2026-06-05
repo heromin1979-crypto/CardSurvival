@@ -112,6 +112,7 @@ node tools/sim/v2/tests/seedDeterminism.test.mjs
 | **K6** 절망 진입 | `moraleDespair` | `byCharacter[c].{enteredDespair, pctEntered, avgBlockExplorePerRun}`. >25% = 데스 스파이럴 의심 |
 | **E1~E5** 이벤트 폭주 | `eventOverlap` | day 60~100 `E1_pctSimultaneousLateOverlap`, `E2_meanEventsPerRunLate`, `E3_pairFrequency`, `eventCountByType` |
 | **K7** 자원 추이 | `resourceOverTime` | day 30/60/90 `byCharacter[c].byDay[d].avg{hydration, nutrition, ...}` |
+| 행동 프로파일 | `behaviorProfile` | 직업별 `actionCounts·exploreByDistrict·craftedItems·consumedItems·fishing·moves·combat·quests`. 상세: [`SIMULATION_BEHAVIOR.md`](./SIMULATION_BEHAVIOR.md) |
 
 ---
 
@@ -196,6 +197,7 @@ node tools/telemetry/computeK1.mjs telemetry_all_<userId>.json
 | 문서 | 위치 |
 |------|------|
 | baseline v15 보고서 | `simulation-data/baselines/reports/BAL_SIM_baseline_v15_report.md` |
+| 행동 프로파일 (직업별 탐색·제작·소비·전투·퀘스트) | `docs/SIMULATION_BEHAVIOR.md` |
 | baseline 데이터 인덱스 | `simulation-data/README.md` |
 | 진행 트랙 (M4) | `prompt_plan.md` §M4 |
 | 기획 현황 | `docs/PLANNING_STATE.md` |
