@@ -45,6 +45,7 @@ simulation-data/                             # 시뮬레이션 데이터 (별도
 
 ### ★ 기획 현황 종합 (최신)
 - [`PLANNING_STATE.md`](./PLANNING_STATE.md) — **2026-05-13 기준 기획 현황 전체 요약** (게임 정체성·7직업·5곳 등록 룰·KPI 추세·페르소나 분담·M4 진입 작업)
+- [`LAUNCH_ROADMAP.md`](./LAUNCH_ROADMAP.md) ★ — **2026-06-05 기준 출시 로드맵** (현재 상태 실측·남은 작업 6영역·Phase 일정·블로커·사용자 결정 항목)
 
 ### 마일스톤
 - [`milestones/2026-05-10-persona-meeting/README.md`](./milestones/2026-05-10-persona-meeting/README.md) — **M0~M3 종결 트랙 인덱스 (49 산출물)**

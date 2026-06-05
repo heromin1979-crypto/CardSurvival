@@ -20,7 +20,7 @@
 - 레시피: `blueprints.js` + `blueprints_advanced.js` + `hiddenRecipes.js` (CraftSystem.js 병합)
 - **신규 아이템 추가 시**: `stackConfig.js` + `districts.js` lootTable + `CardFactory.js` CARD_IMAGES 반드시 등록
 - 환경 오브젝트(`type:'environment'`): `items_misc.js` 등록 (stream_spring/dry_stream 패턴)
-- 검증: `node --input-type=module js/data/validate.js`
+- 검증: `node js/data/validate.js`
 
 ## 4. 장비 슬롯 · NPC · 시스템
 
