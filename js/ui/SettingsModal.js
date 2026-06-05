@@ -4,6 +4,7 @@ import SettingsManager from '../core/SettingsManager.js';
 import I18n            from '../core/I18n.js';
 import SoundSystem     from '../systems/SoundSystem.js';
 import BGMSystem       from '../systems/BGMSystem.js';
+import TelemetrySystem from '../systems/TelemetrySystem.js';
 
 const SettingsModal = {
   _el: null,
@@ -76,6 +77,14 @@ const SettingsModal = {
           </div>
         </div>
 
+        <div class="settings-section">
+          <div class="settings-label">${t('settings.data')}</div>
+          <div class="settings-sound-row">
+            <span class="settings-sound-label">${t('settings.telemetryExportDesc')}</span>
+            <button class="settings-toggle-btn" id="settings-export-tele">${t('settings.exportTelemetry')}</button>
+          </div>
+        </div>
+
         <button class="settings-done-btn" id="settings-done">${t('settings.close')}</button>
       </div>
     `;
@@ -109,6 +118,11 @@ const SettingsModal = {
       SettingsManager.set('bgm.enabled', !current);
       if (current) BGMSystem.stop(); else BGMSystem.init();
       this._render();
+    });
+
+    // 텔레메트리 export (익명 로컬 기록 → JSON 다운로드)
+    this._el.querySelector('#settings-export-tele')?.addEventListener('click', () => {
+      TelemetrySystem.exportAllSessionsJSON();
     });
 
     // 볼륨 슬라이더

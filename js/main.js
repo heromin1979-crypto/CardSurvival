@@ -22,6 +22,7 @@ import { registerSubLocationItems } from './data/landmarks.js';
 // Systems
 import EndingSystem         from './systems/EndingSystem.js';
 import StatSystem           from './systems/StatSystem.js';
+import TelemetrySystem      from './systems/TelemetrySystem.js';
 import SeasonSystem         from './systems/SeasonSystem.js';
 import DiseaseSystem        from './systems/DiseaseSystem.js';
 import WeatherSystem        from './systems/WeatherSystem.js';
@@ -209,6 +210,7 @@ function init() {
 
   // Persistence
   AutoSave.init();
+  TelemetrySystem.init();
 
   // Notification system
   _initNotifications();
