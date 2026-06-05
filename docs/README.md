@@ -53,6 +53,7 @@ simulation-data/                             # 시뮬레이션 데이터 (별도
 
 ### 시뮬레이션 데이터
 - [`/simulation-data/README.md`](../simulation-data/README.md) — baseline v1~v14 측정 데이터 인덱스
+- [`SIMULATION_TOOL.md`](./SIMULATION_TOOL.md) ★ — **시뮬 툴 레퍼런스** (구조·실행·KPI 6종·결과 JSON·drift·v15 데이터·본체 비교)
 
 ### 분석 문서
 - [`analysis/CRAFT_DIVERSITY_ANALYSIS.md`](./analysis/CRAFT_DIVERSITY_ANALYSIS.md) — 크래프트 다양성 분석
