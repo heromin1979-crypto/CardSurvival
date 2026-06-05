@@ -39,39 +39,40 @@ import SubwaySystem        from '../../../js/systems/SubwaySystem.js';
 import NightSystem         from '../../../js/systems/NightSystem.js';
 import NPCQuestSystem      from '../../../js/systems/NPCQuestSystem.js';
 
-// 시뮬 활성 시스템 — main.js init 순서 그대로 (라인 번호 기준 오름차순)
+// 시뮬 활성 시스템 — 배열 순서 = main.js init() 등장 순서.
+// systemBootstrapOrder.test가 이 상대 순서를 main.js와 대조한다 (절대 라인번호 비의존).
 const BOOTSTRAP_ORDER = [
-  ['EndingSystem',        EndingSystem,        120],
-  ['StatSystem',          StatSystem,          121],
-  ['SeasonSystem',        SeasonSystem,        122],
-  ['DiseaseSystem',       DiseaseSystem,       123],
-  ['WeatherSystem',       WeatherSystem,       124],
-  ['NoiseSystem',         NoiseSystem,         125],
-  ['EcologySystem',       EcologySystem,       126],
-  ['NPCSystem',           NPCSystem,           128],
-  ['NPCRelationSystem',   NPCRelationSystem,   129],
-  ['NPCGroupSystem',      NPCGroupSystem,      130],
-  ['NPCStorySystem',      NPCStorySystem,      131],
-  ['DispatchSystem',      DispatchSystem,      136],
-  ['GuardSystem',         GuardSystem,         137],
-  ['PatientIntakeSystem', PatientIntakeSystem, 140],
-  ['HospitalSiegeSystem', HospitalSiegeSystem, 145],
-  ['MentalSystem',        MentalSystem,        147],
-  ['BodySystem',          BodySystem,          148],
-  ['ContaminationSystem', ContaminationSystem, 150],
-  ['EncumbranceSystem',   EncumbranceSystem,   151],
-  ['CraftSystem',         CraftSystem,         152],
-  ['CombatSystem',        CombatSystem,        153],
-  ['FishingSystem',       FishingSystem,       154],
-  ['ExploreSystem',       ExploreSystem,       155],
-  ['SkillSystem',         SkillSystem,         156],
-  ['BasecampSystem',      BasecampSystem,      157],
-  ['QuestSystem',         QuestSystem,         158],
-  ['HiddenElementSystem', HiddenElementSystem, 162],
-  ['TrapSystem',          TrapSystem,          163],
-  ['SubwaySystem',        SubwaySystem,        168],
-  ['NightSystem',         NightSystem,         169],
-  ['NPCQuestSystem',      NPCQuestSystem,      189],
+  ['EndingSystem',        EndingSystem],
+  ['StatSystem',          StatSystem],
+  ['SeasonSystem',        SeasonSystem],
+  ['DiseaseSystem',       DiseaseSystem],
+  ['WeatherSystem',       WeatherSystem],
+  ['NoiseSystem',         NoiseSystem],
+  ['EcologySystem',       EcologySystem],
+  ['NPCSystem',           NPCSystem],
+  ['NPCRelationSystem',   NPCRelationSystem],
+  ['NPCGroupSystem',      NPCGroupSystem],
+  ['NPCStorySystem',      NPCStorySystem],
+  ['DispatchSystem',      DispatchSystem],
+  ['GuardSystem',         GuardSystem],
+  ['PatientIntakeSystem', PatientIntakeSystem],
+  ['HospitalSiegeSystem', HospitalSiegeSystem],
+  ['MentalSystem',        MentalSystem],
+  ['BodySystem',          BodySystem],
+  ['ContaminationSystem', ContaminationSystem],
+  ['EncumbranceSystem',   EncumbranceSystem],
+  ['CraftSystem',         CraftSystem],
+  ['CombatSystem',        CombatSystem],
+  ['FishingSystem',       FishingSystem],
+  ['ExploreSystem',       ExploreSystem],
+  ['SkillSystem',         SkillSystem],
+  ['BasecampSystem',      BasecampSystem],
+  ['QuestSystem',         QuestSystem],
+  ['HiddenElementSystem', HiddenElementSystem],
+  ['TrapSystem',          TrapSystem],
+  ['SubwaySystem',        SubwaySystem],
+  ['NightSystem',         NightSystem],
+  ['NPCQuestSystem',      NPCQuestSystem],
 ];
 
 const UNCERTAIN_DEFERRED = []; // PR2.5 spike 결과 — 17개 모두 BOOTSTRAP 승급
@@ -86,16 +87,16 @@ export function bootstrapSystems() {
   }
 
   const initResults = [];
-  for (const [name, sys, mainLine] of BOOTSTRAP_ORDER) {
+  for (const [name, sys] of BOOTSTRAP_ORDER) {
     try {
       if (typeof sys.init === 'function') {
         sys.init();
-        initResults.push({ name, ok: true, mainLine });
+        initResults.push({ name, ok: true });
       } else {
-        initResults.push({ name, ok: false, error: 'no init() method', mainLine });
+        initResults.push({ name, ok: false, error: 'no init() method' });
       }
     } catch (e) {
-      initResults.push({ name, ok: false, error: String(e?.message ?? e), mainLine });
+      initResults.push({ name, ok: false, error: String(e?.message ?? e) });
     }
   }
 
@@ -116,7 +117,7 @@ export function teardownSystems() {
 }
 
 export function getBootstrapOrder() {
-  return BOOTSTRAP_ORDER.map(([name, , mainLine]) => ({ name, mainLine }));
+  return BOOTSTRAP_ORDER.map(([name]) => ({ name }));
 }
 
 export function getDeferredSystems() {
