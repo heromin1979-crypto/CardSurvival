@@ -167,6 +167,13 @@ const BALANCE = {
     lootCountMax: 3,
     // W3-2 Phase A — 서브로케이션 재고 고갈
     stockDecayPerDay: 1,  // 일자 경과 시 subLocationStock 자동 감소량 (같은 day 중복 차감 방지)
+    respawnLootDays:     30,   // 구역 루팅 리스폰까지 경과 일수
+    respawnLootChance:   0.5,  // 리스폰 시 각 아이템 드롭 확률
+    respawnLootQtyDivisor: 2,  // 리스폰 수량 = floor(원수량 / 이 값)
+    masteryRareLootChance: 0.05, // 탐색 마스터리 희귀 루팅 확률
+    subLocationNoiseMult:  0.8,  // 세부장소 탐색 소음 배율(구 소음 대비)
+    nightHospitalAmbushChance: 0.20, // 야간 보라매 응급실/수술실 잠복 환자 조우 확률
+    indoorRadiationMult:   0.5,  // 건물 내부 방사선 노출 배율
   },
 
   // ── 조우 ────────────────────────────────────────────
@@ -182,6 +189,17 @@ const BALANCE = {
   // ── 질병 노출 카운터 ───────────────────────────────
   disease: {
     exposureDecayRate:  0.5,   // (기존 2~3 → 0.5로 완화)
+    coldExposureTpThreshold:   48,  // 저체온증 발병 누적 저온 TP (~16시간)
+    heatExposureTpThreshold:   36,  // 열사병 발병 누적 고온 TP (~12시간)
+    sepsisExposureTpThreshold: 48,  // 패혈증 발병 누적 고감염 TP
+    commonColdChance:        0.004, // TP당 감기 발병 확률(계절 보정 전)
+    influenzaChance:         0.004, // TP당 독감 발병 확률
+    radiationSicknessChance: 0.005, // TP당 방사선 질환 발병 확률
+    waterContamSevereThreshold: 50, // 물 오염 '심함' 임계
+    contamMildThreshold:        20, // 음식/물 오염 '중간' 임계
+    choleraChanceSevereWater:  0.55, // 심한 오염수 콜레라 확률
+    dysenteryChanceSevereWater: 0.50, // 심한 오염수 이질 확률
+    dysenteryChanceContamFood:  0.40, // 오염 음식/물 이질 확률
   },
 
   // ── 사기 구간별 효과 ───────────────────────────────
@@ -320,6 +338,28 @@ const BALANCE = {
   // ── 의료 구조물 내구도 ──────────────────────────────────
   medicalStation: {
     durabilityDecayPerTP: 0.093,  // 100 내구도 기준 ~15일(1080TP)
+  },
+
+  // ── 신체 부상 ──────────────────────────────────────────
+  body: {
+    // 부위별 피격 확률 (무기 타입별)
+    hitTables: {
+      melee:   { head: 0.10, torso: 0.35, leftArm: 0.15, rightArm: 0.15, leftLeg: 0.125, rightLeg: 0.125 },
+      ranged:  { head: 0.15, torso: 0.45, leftArm: 0.10, rightArm: 0.10, leftLeg: 0.10,  rightLeg: 0.10 },
+      unarmed: { head: 0.15, torso: 0.25, leftArm: 0.20, rightArm: 0.20, leftLeg: 0.10,  rightLeg: 0.10 },
+    },
+    // 부상 타입별 기본 치유 TP
+    injuryHealTP: { laceration: 36, bleeding: 24, fracture: 108, concussion: 72 },
+    naturalHealRate: 0.05,  // severity 당 TP마다 치유 진행량
+    // 부상 타입 결정 확률 (피해량 구간별)
+    headConcussionChance:  0.6,  // 머리 피격 시 뇌진탕(아니면 열상)
+    highDmgFractureChance: 0.5,  // 피해 ≥25 골절(아니면 출혈)
+    midDmgBleedingChance:  0.35, // 피해 ≥15 출혈
+    midDmgLacerationChance: 0.65,// 피해 ≥15 (누적) 열상, 그 외 골절
+    lowDmgLacerationChance: 0.6, // 그 외 열상(아니면 출혈)
+    // 심각도 결정 확률
+    severeChanceHighDmg: 0.4,  // 피해 ≥30 → 0.4 확률 sev3, 아니면 sev2
+    severeChanceMidDmg:  0.5,  // 피해 ≥18 → 0.5 확률 sev2, 아니면 sev1
   },
 
   // ── 낚시 ──────────────────────────────────────────────

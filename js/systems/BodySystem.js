@@ -6,24 +6,16 @@ import EventBus    from '../core/EventBus.js';
 import GameState   from '../core/GameState.js';
 import I18n        from '../core/I18n.js';
 import SkillSystem from './SkillSystem.js';
+import BALANCE     from '../data/gameBalance.js';
 
-// ── 부위별 피격 확률 테이블 (무기 타입별) ──────────────────────
-const HIT_TABLES = {
-  melee:   { head: 0.10, torso: 0.35, leftArm: 0.15, rightArm: 0.15, leftLeg: 0.125, rightLeg: 0.125 },
-  ranged:  { head: 0.15, torso: 0.45, leftArm: 0.10, rightArm: 0.10, leftLeg: 0.10,  rightLeg: 0.10 },
-  unarmed: { head: 0.15, torso: 0.25, leftArm: 0.20, rightArm: 0.20, leftLeg: 0.10,  rightLeg: 0.10 },
-};
+// ── 부위별 피격 확률 테이블 (무기 타입별) — BALANCE.body.hitTables ──
+const HIT_TABLES = BALANCE.body.hitTables;
 
-// ── 부상 타입별 기본 치유 TP ──────────────────────────────────
-const INJURY_HEAL_TP = {
-  laceration: 36,   // 열상: 36 TP (~12시간)
-  bleeding:   24,   // 출혈: 24 TP (~8시간)
-  fracture:   108,  // 골절: 108 TP (~36시간)
-  concussion: 72,   // 뇌진탕: 72 TP (~24시간)
-};
+// ── 부상 타입별 기본 치유 TP — BALANCE.body.injuryHealTP ──
+const INJURY_HEAL_TP = BALANCE.body.injuryHealTP;
 
 // ── 자연 치유 속도 (severity 당 TP마다 감소량) ──────────────────
-const NATURAL_HEAL_RATE = 0.05;
+const NATURAL_HEAL_RATE = BALANCE.body.naturalHealRate;
 
 // ── 적 타입 → 무기 타입 매핑 ──────────────────────────────────
 const ENEMY_TYPE_TO_WEAPON = {
@@ -35,25 +27,27 @@ const ENEMY_TYPE_TO_WEAPON = {
 // ── 부상 타입 결정 (피해량 기반) ──────────────────────────────
 function _rollInjuryType(bodyPart, damage) {
   // 머리 → 뇌진탕 우선, 나머지 → 피해량 기반 확률
+  const B = BALANCE.body;
   if (bodyPart === 'head') {
-    return Math.random() < 0.6 ? 'concussion' : 'laceration';
+    return Math.random() < (B.headConcussionChance ?? 0.6) ? 'concussion' : 'laceration';
   }
   if (damage >= 25) {
-    return Math.random() < 0.5 ? 'fracture' : 'bleeding';
+    return Math.random() < (B.highDmgFractureChance ?? 0.5) ? 'fracture' : 'bleeding';
   }
   if (damage >= 15) {
     const r = Math.random();
-    if (r < 0.35) return 'bleeding';
-    if (r < 0.65) return 'laceration';
+    if (r < (B.midDmgBleedingChance ?? 0.35)) return 'bleeding';
+    if (r < (B.midDmgLacerationChance ?? 0.65)) return 'laceration';
     return 'fracture';
   }
-  return Math.random() < 0.6 ? 'laceration' : 'bleeding';
+  return Math.random() < (B.lowDmgLacerationChance ?? 0.6) ? 'laceration' : 'bleeding';
 }
 
 // ── 심각도 결정 (피해량 기반) ──────────────────────────────────
 function _rollSeverity(damage) {
-  if (damage >= 30) return Math.random() < 0.4 ? 3 : 2;
-  if (damage >= 18) return Math.random() < 0.5 ? 2 : 1;
+  const B = BALANCE.body;
+  if (damage >= 30) return Math.random() < (B.severeChanceHighDmg ?? 0.4) ? 3 : 2;
+  if (damage >= 18) return Math.random() < (B.severeChanceMidDmg ?? 0.5) ? 2 : 1;
   return 1;
 }
 
