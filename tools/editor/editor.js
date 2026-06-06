@@ -132,6 +132,261 @@ const BAL_CAT_LABEL = {
   night: '야간', medicalStation: '의료소', fishing: '낚시',
 };
 
+// 공용 변수(밸런스) leaf 키 설명 — 공통 사전보다 우선
+const BAL_HELP = {
+  // design
+  survivalRateTargetMin: '밸런스 목표 — 100일 생존율 하한(0~1).',
+  survivalRateTargetMax: '밸런스 목표 — 100일 생존율 상한(0~1).',
+  // stats
+  hydrationDecayPerTP: 'TP당 수분 감소량.',
+  nutritionDecayPerTP: 'TP당 포만감(영양) 감소량.',
+  moraleDecayPerTP: 'TP당 사기 자연 감소량.',
+  fatigueGainPerTP: 'TP당 피로 증가량.',
+  staminaRegenPerTP: 'TP당 스태미나 자연 회복량(과적이 아닐 때).',
+  weightMultipliers: '무게비율(max 이하)별 스태미나 소모 배율(mult) 표.',
+  staminaDrainTiers: '과적 구간(max 이하)별 스태미나 변화량(delta)/TP.',
+  mult: '배율.',
+  delta: '변화량(/TP).',
+  max: '이 구간의 상한값(또는 최대값).',
+  // hydration
+  startValue: '시작 시 값.',
+  // armor
+  damageReductionCap: '피해 감소율 상한(0~1).',
+  critReductionCap: '치명타 감소율 상한(0~1).',
+  specialDmgReductCap: '적 특수스킬 피해 감소 상한(0~1).',
+  // noise
+  baseDecayPerTP: 'TP당 기본 소음 감소량.',
+  influxThreshold: '이 소음 이상이면 적이 유입되기 시작.',
+  flushReductionMult: '소음 플러시 후 influxThreshold 대비 잔존 비율.',
+  bonusDecay: '해당 소음 구간에서 추가로 감소하는 양.',
+  // travel
+  baseCostTP: '기본 이동 TP 비용.',
+  baseStaminaDrain: '이동 시 기본 스태미나 소모.',
+  exploreStaminaDrain: '탐색 시 스태미나 소모.',
+  lowStaminaThreshold: '이 비율 미만이면 저스태미나 페널티(0~1).',
+  lowStaminaPenalty: '저스태미나 시 소모 배율.',
+  immobileWeightPct: '이 무게비율 이상이면 이동 불가.',
+  // crafting
+  maxQueueSize: '제작 큐 최대 개수.',
+  baseFailureChance: '기본 제작 실패 확률.',
+  minFailureChance: '스킬 최대 시 최소 실패 확률.',
+  failureRefundRate: '실패 시 재료 반환 비율.',
+  failureXpMult: '실패 시 획득 XP 배율.',
+  chefTeamBonusHigh: '팀 평균사기 >85 품질 점수 보너스.',
+  chefTeamBonusMid: '팀 평균사기 >70 품질 점수 보너스.',
+  xpBase: '스킬별 제작 기본 XP.',
+  // quality
+  skillBonusPerLevel: '요구 레벨 초과 1레벨당 품질 보너스.',
+  focusBonusSolo: '큐 1개(집중) 품질 보너스.',
+  focusPenaltyFull: '큐 가득 참 품질 페널티.',
+  moraleBonusHigh: '사기 높음 품질 보너스.',
+  moralePenaltyLow: '사기 낮음 품질 페널티.',
+  moralePenaltyDespair: '절망 상태 품질 페널티.',
+  // combat
+  fleeChance: '전투 도주 성공 확률.',
+  fleeNoise: '도주 시 발생 소음.',
+  fleeFatigue: '도주 시 피로 증가.',
+  unarmedBaseDmg: '맨손 기본 피해 범위 [최소, 최대].',
+  unarmedStunChance: '맨손 기절 유발 확률.',
+  unarmedStunDmg: '맨손 기절 추가 피해.',
+  masteryCounterChance: '방어 마스터리 반격 확률.',
+  masteryCounterDmg: '방어 마스터리 반격 피해.',
+  ammoSaveChance: '원거리 마스터리 탄약 미소모 확률.',
+  enemyDropChance: '적 처치 시 전리품 드롭 확률.',
+  killXp: '처치 시 전투 XP.',
+  hitXp: '명중 시 XP.',
+  critBonusXp: '치명타 추가 XP.',
+  defenseXp: '피격 시 방어 XP.',
+  combatLogMaxEntries: '전투 로그 최대 보관 줄 수.',
+  guardDamageReduction: '방어 시 피해 감소율.',
+  guardCounterBonus: '방어 후 반격 피해 보너스.',
+  guardDuration: '방어 지속 턴 수.',
+  nightAccuracyPenalty: '야간 전투 명중률 페널티.',
+  nightLitPenalty: '광원 보유 시 적용되는 야간 페널티(완화값).',
+  weaponWeaknessMult: '약점 속성 피해 배율.',
+  weaponResistanceMult: '저항 속성 피해 배율.',
+  companionAttackCooldown: '동료 공격 쿨다운(턴).',
+  companionHealCooldown: '동료 치유 쿨다운(턴).',
+  baseUnarmedAccuracy: '맨손 공격 기본 명중률.',
+  defaultCritMultiplier: '무기 미지정 시 치명타 배율.',
+  noAmmoMeleeDamage: '탄약 없는 원거리무기 → 근접 전환 피해 범위.',
+  noAmmoAccuracy: '탄약 없는 근접 전환 명중률.',
+  noAmmoNoise: '탄약 없는 근접 전환 소음.',
+  defaultStealthDifficulty: '적 은신 난이도 기본값.',
+  enemyDefaultDamage: '적 공격 기본 피해 범위(미지정 시).',
+  enemyBaseAccuracy: '적 공격 기본 명중률(미지정 시).',
+  enemySpecialSkillChance: '적이 특수스킬을 쓸 확률.',
+  fleeFailedDamageMult: '도주 실패 시 받는 피해 배율.',
+  companionTargetChance: '적이 플레이어 대신 동료를 노릴 확률.',
+  doctorZombieMedDropChance: '의사 — 좀비 처치 시 의료품 추가 드롭 확률.',
+  attackDamage: '동료 자율 공격 피해 범위.',
+  attackAccuracy: '동료 자율 공격 명중률.',
+  healAmount: '회복량.',
+  healThreshold: '플레이어 HP가 이 비율 미만이면 자동 치유(0~1).',
+  holdDamageReduct: 'hold 자세 피해 경감율.',
+  resistBonus: '상태이상 저항 보너스.',
+  atkMult: '적 공격력 배율.',
+  duration: '지속 턴 수.',
+  cooldown: '쿨다운(턴).',
+  // campfire
+  tempBoostPerTP: 'TP당 체온 상승량.',
+  fuelConsumePerTP: 'TP당 연료(내구도) 소모.',
+  noFuelTempBoost: '연료 없을 때 체온 상승량.',
+  // encounter
+  reductionCap: '조우 확률 감소 상한(0~1).',
+  structureReductCap: '구조물 조우 감소 상한(0~1).',
+  respawnNoiseThreshold: '이 소음 이상이면 적 리스폰.',
+  earlyGameGraceDays: '초반 조우 완화 적용 일수.',
+  earlyGameEncounterMult: '초반 조우 확률 배율.',
+  landmarkDangerReduct: '랜드마크 세부장소 기본 위험도 감소.',
+  exposureDecayRate: '비노출 시 노출 카운터 감소율(/TP).',
+  // moraleTiers
+  threshold: '이 값 이상이면 해당 구간 적용.',
+  dmgMult: '피해 배율.',
+  accBonus: '명중률 보정.',
+  staminaRegenMult: '스태미나 회복 배율.',
+  craftFailMult: '제작 실패율 배율.',
+  fatigueGainMult: '피로 증가 배율.',
+  blockExplore: '탐색 차단 여부.',
+  // events (raid/horde/siege/raider)
+  startDay: '이 이벤트가 시작되는 일차.',
+  baseChancePerTP: 'TP당 기본 발생 확률.',
+  dayScaling: '일차마다 증가하는 확률.',
+  maxChance: '최대 발생 확률(/TP).',
+  minEnemies: '최소 적 수.',
+  maxEnemies: '최대 적 수.',
+  intervalDays: '발생 간격(일).',
+  intervalVariance: '간격 랜덤 변동(±일).',
+  baseEnemies: '첫 발생 시 적 수.',
+  enemiesPerWave: '웨이브마다 증가 적 수.',
+  baseDangerLevel: '기본 위험도.',
+  dangerScaling: '웨이브/습격마다 위험도 증가.',
+  structureDamage: '패배/도주 시 구조물 내구도 감소(%).',
+  victoryMorale: '승리 시 사기 변화.',
+  defeatMorale: '패배 시 사기 변화.',
+  dangerModDelta: '패배 시 세부장소 위험도 증가량.',
+  casualtiesMin: '패배 시 최소 사망자.',
+  casualtiesMax: '패배 시 최대 사망자.',
+  minGapWithHordeDays: '습격-호드 최소 간격(일).',
+  numEnemies: '적 수.',
+  moraleMultiplier: '사기 손실 배율.',
+  casualtiesReduce: '사망자 감소량.',
+  defeatMoraleMultiplier: '패배 사기 손실 배율.',
+  baseScore: '기본 점수.',
+  skillMult: '스킬 레벨당 점수 배율.',
+  trustMult: '신뢰 NPC 수당 점수 배율.',
+  partialVictoryMorale: '부분 승리 사기.',
+  partialVictoryStructureMult: '부분 승리 구조물 피해 배율.',
+  partialVictoryDangerMult: '부분 승리 위험도 배율.',
+  cooldownTP: '쿨다운(TP).',
+  demandItems: '요구 아이템 최소 수.',
+  demandItemsMax: '요구 아이템 최대 수.',
+  surrenderMorale: '굴복 시 사기 변화.',
+  refuseMorale: '거부 시 사기 변화.',
+  // patientIntake
+  moraleDeath: '환자 사망 시 사기 변화.',
+  moraleDepart: '환자 이탈 시 사기 변화.',
+  cumulativeMoraleBonusPer: '누적 치료 환자 1명당 사기 보너스.',
+  cumulativeMoraleBonusCap: '누적 환자 사기 보너스 상한.',
+  // night
+  startHour: '야간 시작 시각(시).',
+  endHour: '야간 종료 시각(시).',
+  encounterMult: '조우 확률 배율.',
+  travelCostMult: '이동 비용 배율.',
+  darkSleepFatigueMult: '어둠 수면 피로 회복 배율.',
+  darkSleepAnxietyGain: '어둠 수면 불안 증가.',
+  darkNightmareBonus: '어둠 수면 악몽 확률 증가.',
+  litSleepAnxietyDrop: '광원 수면 불안 감소.',
+  lightDrainPerTP: '야간 광원 카드 내구도 감소(/TP).',
+  // medicalStation
+  durabilityDecayPerTP: '의료 구조물 내구도 감소(/TP).',
+  // fishing
+  tpCostPerCast: '낚시 1회 TP 비용.',
+  baseCatchChance: '기본 어획 확률(Lv.0).',
+  maxCatchChance: '최대 어획 확률(Lv.20).',
+  baitWormBonus: '지렁이 미끼 어획률 보너스.',
+  baitInsectBonus: '곤충 미끼 어획률 보너스.',
+  rodBasicBonus: '기본 낚싯대 어획률 보너스.',
+  rodImprovedBonus: '개량 낚싯대 어획률 보너스.',
+  rareFishChanceMax: 'Lv.20 희귀어 확률.',
+  nonRareSmallChance: '희귀어 아닐 때 소형어 확률(아니면 중형).',
+  trapMediumChance: '통발 수확 시 중형어 확률(아니면 소형).',
+  trapCheckIntervalTP: '통발 자동 수확 주기(TP).',
+  trapBaseCatch: '통발 기본 어획률.',
+  trapMaxCatch: '통발 최대 어획률.',
+  xpPerCast: '낚시 시도 XP.',
+  xpPerRareFish: '희귀어 XP.',
+  xpPerTrapHarvest: '통발 수확 XP.',
+  // npc
+  trustCombatBonusPer5: '전투 보너스 = 1.0 + (신뢰/5) × 이 값.',
+  safetyAdd: '야간 경계 시 안전도 가산.',
+  encounterReduce: '야간 경계 시 조우 확률 감소.',
+  // body
+  hitTables: '무기 타입별 부위 피격 확률 표.',
+  injuryHealTP: '부상 타입별 기본 치유 TP.',
+  naturalHealRate: 'severity당 TP마다 치유 진행량.',
+  headConcussionChance: '머리 피격 시 뇌진탕 확률(아니면 열상).',
+  highDmgFractureChance: '피해 ≥25 골절 확률(아니면 출혈).',
+  midDmgBleedingChance: '피해 ≥15 출혈 확률.',
+  midDmgLacerationChance: '피해 ≥15 (누적)열상 확률.',
+  lowDmgLacerationChance: '저피해 열상 확률(아니면 출혈).',
+  severeChanceHighDmg: '피해 ≥30 시 중상(sev3) 확률.',
+  severeChanceMidDmg: '피해 ≥18 시 중상(sev2) 확률.',
+  head: '머리 피격 확률.', torso: '몸통 피격 확률.',
+  leftArm: '왼팔 피격 확률.', rightArm: '오른팔 피격 확률.',
+  leftLeg: '왼다리 피격 확률.', rightLeg: '오른다리 피격 확률.',
+  laceration: '열상 치유 TP.', bleeding: '출혈 치유 TP.',
+  fracture: '골절 치유 TP.', concussion: '뇌진탕 치유 TP.',
+  // quality tiers / labels
+  label: '표시 이름.', notify: '발생 시 알림 문구.', name: '표시 이름.',
+  // explore (추가)
+  respawnLootDays: '구역 루팅 리스폰까지 경과 일수.',
+  respawnLootChance: '리스폰 시 각 아이템 드롭 확률.',
+  respawnLootQtyDivisor: '리스폰 수량 = 원수량 ÷ 이 값.',
+  masteryRareLootChance: '탐색 마스터리 희귀 루팅 확률.',
+  subLocationNoiseMult: '세부장소 탐색 소음 배율(구 소음 대비).',
+  nightHospitalAmbushChance: '야간 보라매 응급실/수술실 잠복 환자 조우 확률.',
+  indoorRadiationMult: '건물 내부 방사선 노출 배율.',
+  lootCountMin: '모든 구 공통 — 1회 탐색 추첨 횟수 하한.',
+  lootCountMax: '모든 구 공통 — 1회 탐색 추첨 횟수 상한.',
+  stockDecayPerDay: '세부 장소 일일 재고 감소량.',
+  // disease (추가)
+  coldExposureTpThreshold: '저체온증 발병 누적 저온 TP.',
+  heatExposureTpThreshold: '열사병 발병 누적 고온 TP.',
+  sepsisExposureTpThreshold: '패혈증 발병 누적 고감염 TP.',
+  commonColdChance: 'TP당 감기 발병 확률(계절 보정 전).',
+  influenzaChance: 'TP당 독감 발병 확률.',
+  radiationSicknessChance: 'TP당 방사선 질환 발병 확률.',
+  waterContamSevereThreshold: '물 오염 "심함" 임계.',
+  contamMildThreshold: '음식/물 오염 "중간" 임계.',
+  choleraChanceSevereWater: '심한 오염수 콜레라 확률.',
+  dysenteryChanceSevereWater: '심한 오염수 이질 확률.',
+  dysenteryChanceContamFood: '오염 음식/물 이질 확률.',
+  // crafting xpBase 스킬별
+  building: '건축 제작 기본 XP.', weaponcraft: '무기 제작 기본 XP.',
+  armorcraft: '방어구 제작 기본 XP.', medicine: '의약 제작 기본 XP.',
+  cooking: '요리 제작 기본 XP.', crafting: '일반 제작 기본 XP.',
+  xpBase: '스킬별 제작 기본 XP.',
+  // quality 등급/임계
+  normal: '품질 등급(라벨/배율/알림).', good: '품질 등급(라벨/배율/알림).',
+  excellent: '품질 등급(라벨/배율/알림).', masterwork: '품질 등급(라벨/배율/알림).',
+  tiers: '제작 품질 등급 정의.', thresholds: '품질 점수 임계값.',
+  // events 중첩
+  streakBonus: '연승 누적 추가 사기.', at2: '2연승 시 추가 사기.', at5: '5연승 시 추가 사기.',
+  tutorial: '튜토리얼(첫) 습격 완화 설정.', tutorialWarningDay: '습격 예고 알림 일차.',
+  skipStructureDmg: '구조물 피해 생략 여부.', skipDangerMod: '위험도 증가 생략 여부.',
+  skipCasualties: '사망자 생략 여부.',
+  doctorPrivilege: '의사 전용 패배 완화.', doctorEvacuation: '의사 전용 대피 미니게임.',
+  stageWeights: '대피 단계별 선택지 가중치.', stage1: '1단계 선택 가중치.', stage2: '2단계 선택 가중치.',
+  A: '선택지 A 가중치.', B: '선택지 B 가중치.', C: '선택지 C 가중치.', D: '선택지 D 가중치.',
+  victoryItems: '승리 보상 아이템.',
+  moraleMilestones: '누적 치료 환자 수 도달 시 일회성 사기 보너스(횟수: 보너스).',
+  // combat 중첩
+  companionAuto: '동료 자율 행동 설정.', classSkills: '직업별 동료 스킬.',
+  scaledDecayBreakpoints: '소음 구간별 추가 감소.',
+};
+function helpForBalance(key) { return BAL_HELP[key] ?? FIELD_HELP[key] ?? ''; }
+
 // 아이템 탭 전용 설명 (공통 사전보다 우선 — 예: weight는 '무게'로 다름)
 const ITEM_HELP = {
   weight: '아이템 1개의 무게(kg). 소지 무게 한도에 영향을 줍니다.',
@@ -193,9 +448,11 @@ function helpForItem(key) { return ITEM_HELP[key] ?? FIELD_HELP[key] ?? ''; }
 
 
 // 설명이 있으면 점선 밑줄 + 마우스 오버 툴팁을 단 라벨 생성
-function fieldLabel(text, key = text) {
-  const help = helpFor(key);
+function labelEl(text, help) {
   return el('label', help ? { text, title: help, class: 'has-help' } : { text });
+}
+function fieldLabel(text, key = text) {
+  return labelEl(text, helpFor(key));
 }
 
 
@@ -711,13 +968,14 @@ function lootTableEditor(rows, idKey, extraCols, fileKey) {
 }
 
 // ─── generic scalar / object field editors ───────────────────
-function scalarInput(obj, key, fileKey) {
+function scalarInput(obj, key, fileKey, help) {
   const v = obj[key];
+  const lbl = help !== undefined ? labelEl(key, help) : fieldLabel(key);
   // 불리언 → 체크박스
   if (typeof v === 'boolean') {
     const cb = el('input', { type: 'checkbox', ...(v ? { checked: true } : {}) });
     cb.addEventListener('change', () => { obj[key] = cb.checked; markDirty(fileKey); });
-    return el('div', { class: 'field' }, [fieldLabel(key), el('label', { class: 'hint' }, [cb, ' (켜기/끄기)'])]);
+    return el('div', { class: 'field' }, [lbl, el('label', { class: 'hint' }, [cb, ' (켜기/끄기)'])]);
   }
   const isNum = typeof v === 'number' && v !== Infinity && v !== -Infinity;
   const inp = el('input', {
@@ -730,7 +988,7 @@ function scalarInput(obj, key, fileKey) {
     obj[key] = isNum ? Number(inp.value) : inp.value;
     markDirty(fileKey);
   });
-  return el('div', { class: 'field' }, [fieldLabel(key), inp]);
+  return el('div', { class: 'field' }, [lbl, inp]);
 }
 
 // item-reward rows: [{definitionId, qty}]
@@ -873,7 +1131,7 @@ function balanceNode(obj, key, depth) {
   const v = obj[key];
   // 스칼라(숫자/문자/불리언/Infinity)
   if (v === null || typeof v !== 'object') {
-    return scalarInput(obj, key, 'balance');
+    return scalarInput(obj, key, 'balance', helpForBalance(key));
   }
   // 배열
   if (Array.isArray(v)) {
@@ -886,10 +1144,10 @@ function balanceNode(obj, key, depth) {
         inp.addEventListener('input', () => { v[i] = isNum ? Number(inp.value) : inp.value; markDirty('balance'); });
         row.append(el('div', { class: 'field' }, [el('label', { text: `[${i}]` }), inp]));
       });
-      return el('div', { class: 'field' }, [fieldLabel(key), row]);
+      return el('div', { class: 'field' }, [labelEl(key, helpForBalance(key)), row]);
     }
     // 객체 배열 → 각 원소를 박스로
-    const fs = el('fieldset', {}, el('legend', { class: helpFor(key) ? 'has-help' : '', text: key, ...(helpFor(key) ? { title: helpFor(key) } : {}) }));
+    const fs = el('fieldset', {}, el('legend', {}, [labelEl(key, helpForBalance(key))]));
     v.forEach((item, i) => {
       const sub = el('div', { class: 'bal-sub' }, [el('div', { class: 'side-group', text: `#${i}` })]);
       for (const k of Object.keys(item)) sub.append(balanceNode(item, k, depth + 1));
@@ -898,13 +1156,13 @@ function balanceNode(obj, key, depth) {
     return fs;
   }
   // 중첩 객체 → 박스 + 재귀
-  const fs = el('fieldset', {}, el('legend', helpFor(key) ? { text: key, title: helpFor(key), class: 'has-help' } : { text: key }));
+  const fs = el('fieldset', {}, el('legend', {}, [labelEl(key, helpForBalance(key))]));
   const scalars = el('div', { class: 'field-row' });
   const nested = [];
   for (const k of Object.keys(v)) {
     const child = v[k];
     if (child !== null && typeof child === 'object') nested.push(balanceNode(v, k, depth + 1));
-    else scalars.append(scalarInput(v, k, 'balance'));
+    else scalars.append(scalarInput(v, k, 'balance', helpForBalance(k)));
   }
   if (scalars.children.length) fs.append(scalars);
   nested.forEach((n) => fs.append(n));
@@ -938,7 +1196,7 @@ function renderBalanceTab() {
     for (const k of Object.keys(obj)) {
       const child = obj[k];
       if (child !== null && typeof child === 'object') nested.push(balanceNode(obj, k, 0));
-      else scalars.append(scalarInput(obj, k, 'balance'));
+      else scalars.append(scalarInput(obj, k, 'balance', helpForBalance(k)));
     }
     if (scalars.children.length) detailWrap.append(scalars);
     nested.forEach((n) => detailWrap.append(n));
