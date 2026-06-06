@@ -96,6 +96,10 @@ table.loot input.id { width: 170px; }
 table.loot input.num { width: 64px; }
 .pct { color: var(--muted); font-size: 12px; white-space: nowrap; }
 .name-cell { color: var(--muted); font-size: 12px; white-space: nowrap; max-width: 160px; overflow: hidden; text-overflow: ellipsis; }
+
+.kv { display: grid; grid-template-columns: 160px 1fr; gap: 4px 12px; margin-top: 10px; }
+.kv-k { color: var(--muted); font-size: 12px; }
+.kv-v { font-size: 13px; word-break: break-word; }
 .ref-bad { border-color: var(--danger) !important; }
 .row-add { margin-top: 8px; }
 

@@ -36,7 +36,10 @@ try {
   await import('./editor.js');
   check('module boots without throwing', true);
   check('save button present', window.document.querySelector('#save-btn') !== null);
-  check('6 tabs present', window.document.querySelectorAll('.tab').length === 6);
+  check('7 tabs present', window.document.querySelectorAll('.tab').length === 7);
+  // items tab renders without throwing (empty state when items.js not loaded)
+  window.document.querySelector('[data-tab="items"]').click();
+  check('items tab renders', /아이템/.test(window.document.querySelector('#view').textContent));
   // changes tab renders without throwing (empty state when no data loaded)
   window.document.querySelector('[data-tab="changes"]').click();
   check('changes tab renders', /변경 사항/.test(window.document.querySelector('#view').textContent));

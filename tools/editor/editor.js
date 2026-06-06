@@ -20,6 +20,8 @@ const state = {
   files: {},            // key -> { text, data }
   itemIds: new Set(),   // valid item definition ids (for validation/autocomplete)
   itemNames: new Map(), // item id -> 표시 이름
+  items: {},            // full item definitions (read-only 참조용)
+  itemSearch: '',       // 아이템 탭 검색어
   dirty: new Set(),     // file keys with unsaved changes
   tab: 'districts',
   sel: {},              // tab -> selected sub-key
@@ -107,6 +109,7 @@ async function loadAll() {
   // valid item ids + 표시 이름 (로컬 items.js — 자동완성/검증/이름표시용)
   try {
     const items = (await import('../../js/data/items.js')).default;
+    state.items = items;
     state.itemIds = new Set(Object.keys(items));
     state.itemNames = new Map(Object.entries(items).map(([id, it]) => [id, it?.name || id]));
     const dl = $('#item-ids');
@@ -256,6 +259,78 @@ function renderValidationTab() {
     wrap.append(row);
   }
   view.append(wrap);
+}
+
+// ─── 아이템 정보 탭 (읽기 전용 참조) ─────────────────────────
+function fmtField(v) {
+  if (v === null || v === undefined) return String(v);
+  if (Array.isArray(v)) return v.map((x) => (x && typeof x === 'object' ? JSON.stringify(x) : String(x))).join(', ') || '[]';
+  if (typeof v === 'object') return JSON.stringify(v);
+  if (v === Infinity) return '∞';
+  return String(v);
+}
+
+function renderItemsTab() {
+  const items = state.items || {};
+  const ids = Object.keys(items);
+  if (!ids.length) {
+    view.append(el('div', { class: 'empty', text: '아이템 정보를 불러오지 못했습니다 (items.js 로드 실패).' }));
+    return;
+  }
+  if (!state.sel.items || !items[state.sel.items]) state.sel.items = ids[0];
+
+  const search = el('input', { value: state.itemSearch || '', placeholder: '이름·ID·종류 검색…' });
+  const listBox = el('div', { class: 'sidebar' });
+  const detailWrap = el('div', { class: 'detail' });
+
+  const renderDetail = () => {
+    detailWrap.innerHTML = '';
+    const it = items[state.sel.items];
+    if (!it) { detailWrap.append(el('div', { class: 'hint', text: '아이템을 선택하세요.' })); return; }
+    detailWrap.append(el('h2', { text: `${it.icon || ''} ${it.name || it.id}` }));
+    detailWrap.append(el('div', { class: 'sub', text: it.id }));
+    if (it.description) detailWrap.append(el('p', { class: 'hint', text: it.description }));
+    const kv = el('div', { class: 'kv' });
+    for (const k of Object.keys(it)) {
+      if (['id', 'name', 'icon', 'description'].includes(k)) continue;
+      kv.append(el('div', { class: 'kv-row' }, [
+        el('span', { class: 'kv-k', text: k }),
+        el('span', { class: 'kv-v', text: fmtField(it[k]) }),
+      ]));
+    }
+    detailWrap.append(kv);
+  };
+
+  const renderList = () => {
+    const q = (state.itemSearch || '').trim().toLowerCase();
+    listBox.innerHTML = '';
+    const matched = ids.filter((id) => {
+      if (!q) return true;
+      const it = items[id];
+      return id.toLowerCase().includes(q)
+        || (it.name || '').toLowerCase().includes(q)
+        || (it.type || '').toLowerCase().includes(q)
+        || (it.subtype || '').toLowerCase().includes(q);
+    });
+    listBox.append(el('div', { class: 'side-group', text: `${matched.length} / ${ids.length}개` }));
+    for (const id of matched.slice(0, 500)) {
+      const it = items[id];
+      listBox.append(el('button', {
+        class: 'side-item' + (id === state.sel.items ? ' active' : ''),
+        text: `${it.icon || ''} ${it.name || id}`,
+        onclick: () => { state.sel.items = id; renderList(); renderDetail(); },
+      }));
+    }
+    if (matched.length > 500) listBox.append(el('div', { class: 'hint', text: '※ 상위 500개만 표시 — 검색으로 좁히세요.' }));
+  };
+
+  search.addEventListener('input', () => { state.itemSearch = search.value; renderList(); });
+  renderList();
+  renderDetail();
+  view.append(el('div', {}, [
+    el('div', { class: 'field', style: 'margin-bottom:10px' }, [search]),
+    el('div', { class: 'list-layout' }, [listBox, detailWrap]),
+  ]));
 }
 
 // ─── 변경 사항(diff) + 되돌리기 ──────────────────────────────
@@ -501,6 +576,7 @@ function objectFields(obj, fileKey) {
 function render() {
   view.innerHTML = '';
   if (state.tab === 'settings') return renderSettings();
+  if (state.tab === 'items') return renderItemsTab();
   if (state.tab === 'changes') return renderChangesTab();
   if (state.tab === 'validate') return renderValidationTab();
   if (!state.files[state.tab]) {
