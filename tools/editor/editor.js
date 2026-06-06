@@ -752,6 +752,8 @@ function renderItemsTab() {
     if (matched.length > 500) listBox.append(el('div', { class: 'hint', text: '※ 상위 500개만 표시 — 검색으로 좁히세요.' }));
   };
 
+  // objNode의 +/✕가 호출하는 전역 rerenderDetail을 아이템 상세 갱신에 연결
+  rerenderDetail = () => { renderList(); renderDetail(); };
   search.addEventListener('input', () => { state.itemSearch = search.value; renderList(); });
   renderList();
   renderDetail();
