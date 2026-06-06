@@ -68,13 +68,17 @@ async function handleApi(req, res, urlPath) {
   if (req.method !== 'POST') { sendJSON(res, 405, { error: 'POST only' }); return; }
 
   if (urlPath === '/api/info') {
+    // git이 없어도 읽기/저장은 가능하므로 200으로 응답하고 git 가용 여부만 전달
     try {
       const { stdout } = await git(['rev-parse', '--abbrev-ref', 'HEAD']);
       const branch = stdout.trim();
       const { stdout: st } = await git(['status', '--porcelain']);
-      sendJSON(res, 200, { branch, dirty: st.trim().split('\n').filter(Boolean) });
+      sendJSON(res, 200, { git: true, branch, dirty: st.trim().split('\n').filter(Boolean) });
     } catch (e) {
-      sendJSON(res, 500, { error: `git 정보 조회 실패: ${e.message}` });
+      const reason = e.code === 'ENOENT'
+        ? 'git 실행파일을 찾을 수 없습니다 (PATH 미설정 또는 미설치)'
+        : e.message;
+      sendJSON(res, 200, { git: false, branch: null, reason });
     }
     return;
   }
@@ -112,7 +116,10 @@ async function handleApi(req, res, urlPath) {
       const push = await git(['push', '-u', 'origin', branch]);
       sendJSON(res, 200, { committed: true, pushed: true, branch, output: (push.stderr || push.stdout || '').trim() });
     } catch (e) {
-      sendJSON(res, 500, { error: `git 실패: ${e.message}`, detail: (e.stderr || e.stdout || '').trim() });
+      const msg = e.code === 'ENOENT'
+        ? 'git 실행파일을 찾을 수 없습니다. Git 설치 후 PATH에 추가하거나, 파일은 이미 저장됐으니 수동으로 커밋하세요.'
+        : `git 실패: ${e.message}`;
+      sendJSON(res, 500, { error: msg, detail: (e.stderr || e.stdout || '').trim() });
     }
     return;
   }

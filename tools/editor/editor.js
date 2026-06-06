@@ -13,6 +13,8 @@ import {
 
 const state = {
   branch: '?',          // current local git branch (from serve.js)
+  gitAvailable: false,  // git executable found on server PATH
+  gitReason: '',        // why git unavailable (if so)
   commitMsg: 'data: 에디터에서 데이터 수정',
   files: {},            // key -> { text, data }
   itemIds: new Set(),   // valid item definition ids (for validation/autocomplete)
@@ -67,14 +69,17 @@ function switchTab(tab) {
 // ─── data loading (로컬 파일에서) ────────────────────────────
 async function loadAll() {
   status('로컬 데이터 불러오는 중…', 'info');
-  // serve.js 연결 확인 + 현재 브랜치
+  // serve.js 연결 확인 (git이 없어도 읽기/저장은 가능)
+  let info;
   try {
-    const info = await getInfo();
-    state.branch = info.branch || '?';
+    info = await getInfo();
   } catch (e) {
     status(`serve.js에 연결할 수 없습니다. 저장소 루트에서 'node serve.js' 실행 후 http://localhost:8080/tools/editor/ 로 접속하세요. (${e.message})`, 'err');
     return;
   }
+  state.gitAvailable = info.git !== false && !!info.branch;
+  state.branch = info.branch || '(git 없음)';
+  state.gitReason = info.reason || '';
   // valid item ids (로컬 items.js — 자동완성/검증용)
   try {
     const items = (await import('../../js/data/items.js')).default;
@@ -98,7 +103,11 @@ async function loadAll() {
   state.dirty.clear();
   $('#dirty').hidden = true;
   $('#save-btn').disabled = true;
-  status(`불러오기 완료 (브랜치: ${state.branch}). 탭에서 편집하세요.`, 'ok');
+  if (state.gitAvailable) {
+    status(`불러오기 완료 (브랜치: ${state.branch}). 탭에서 편집하세요.`, 'ok');
+  } else {
+    status(`불러오기 완료. ⚠️ git 사용 불가(${state.gitReason}) — 저장은 로컬 디스크에만 기록되고 푸시는 생략됩니다. 수동 커밋이 필요합니다.`, 'info');
+  }
   render();
 }
 
@@ -128,20 +137,26 @@ async function saveAll() {
     }
     if (!files.length) { state.dirty.clear(); $('#dirty').hidden = true; status('변경 사항 없음.', 'info'); return; }
     await saveFiles(files);
-
-    // 2) git add/commit/push
-    status('git 커밋 & 푸시 중…', 'info');
-    const result = await pushChanges(state.commitMsg, files.map((f) => f.path));
     state.dirty.clear();
     $('#dirty').hidden = true;
+
+    // 2) git이 없으면 디스크 기록까지만
+    if (!state.gitAvailable) {
+      status(`💾 로컬 파일 ${files.length}개 저장 완료. git 사용 불가로 푸시 생략 — 수동으로 커밋/푸시하세요.`, 'info');
+      return;
+    }
+
+    // 3) git add/commit/push
+    status('git 커밋 & 푸시 중…', 'info');
+    const result = await pushChanges(state.commitMsg, files.map((f) => f.path));
     if (result.pushed) {
       status(`✅ 저장 + 푸시 완료 → ${result.branch}  (${files.length}개 파일)`, 'ok');
     } else {
       status(`저장 완료 (커밋할 변경 없음): ${result.message || ''}`, 'info');
     }
   } catch (e) {
-    status(`실패: ${e.message}`, 'err');
-    $('#save-btn').disabled = false;
+    // 파일은 이미 디스크에 기록된 상태 — 푸시 단계 실패만 알림
+    status(`파일은 저장됨. 단계 실패: ${e.message}`, 'err');
   }
 }
 $('#save-btn').addEventListener('click', saveAll);
@@ -534,6 +549,17 @@ function renderSettings() {
     el('label', { text: '현재 git 브랜치 (로컬)' }),
     el('input', { value: state.branch, disabled: true }),
   ]));
+
+  if (!state.gitAvailable) {
+    box.append(el('p', { class: 'hint', html:
+      `⚠️ <b>git을 찾을 수 없습니다</b> (${state.gitReason || '미설치/PATH 미설정'}).<br>` +
+      '저장하면 로컬 파일에는 기록되지만 <b>자동 푸시는 생략</b>됩니다. ' +
+      '아래 중 하나로 해결하세요:<br>' +
+      '· <b>Windows</b>: <a href="https://git-scm.com/download/win" target="_blank">Git for Windows</a> 설치 시 ' +
+      '"Git from the command line…" 옵션 선택 → <b>터미널을 새로 열고</b> <code>node serve.js</code> 재실행<br>' +
+      '· 이미 설치했다면 <code>git --version</code>이 되는 터미널에서 serve.js를 실행<br>' +
+      '· 또는 저장 후 직접 <code>git add -A && git commit && git push</code>' }));
+  }
 
   const msg = el('input', { value: state.commitMsg });
   msg.addEventListener('input', () => { state.commitMsg = msg.value; });
