@@ -1137,24 +1137,37 @@ function objNode(obj, key, depth, fileKey, helpFn) {
   }
   // 배열
   if (Array.isArray(v)) {
-    // 스칼라 배열 → 인덱스별 인풋 한 줄
+    // 스칼라 배열 → 인덱스별 인풋 + 개별 삭제(✕) + 추가(+)
     if (v.every((x) => x === null || typeof x !== 'object')) {
       const row = el('div', { class: 'field-row' });
       v.forEach((x, i) => {
         const isNum = typeof x === 'number';
         const inp = el('input', { class: 'num', type: isNum ? 'number' : 'text', step: 'any', value: x });
         inp.addEventListener('input', () => { v[i] = isNum ? Number(inp.value) : inp.value; markDirty(fileKey); });
-        row.append(el('div', { class: 'field' }, [el('label', { text: `[${i}]` }), inp]));
+        const rm = el('button', { class: 'ghost danger mini', text: '✕', title: '삭제',
+          onclick: () => { v.splice(i, 1); markDirty(fileKey); rerenderDetail(); } });
+        row.append(el('div', { class: 'field' }, [el('label', { text: `[${i}]` }), el('div', { class: 'inline-row' }, [inp, rm])]));
       });
-      return el('div', { class: 'field' }, [labelEl(key, helpFn(key)), row]);
+      const add = el('button', { class: 'ghost row-add', text: '+ 추가',
+        onclick: () => { v.push(typeof v[0] === 'number' ? 0 : ''); markDirty(fileKey); rerenderDetail(); } });
+      return el('div', { class: 'field grow' }, [labelEl(key, helpFn(key)), row, add]);
     }
-    // 객체 배열 → 각 원소를 박스로
+    // 객체 배열 → 각 원소를 가로 카드로 + 삭제/추가
     const fs = el('fieldset', {}, el('legend', {}, [labelEl(key, helpFn(key))]));
+    const boxes = el('div', { class: 'obj-array' });
     v.forEach((item, i) => {
-      const sub = el('div', { class: 'bal-sub' }, [el('div', { class: 'side-group', text: `#${i}` })]);
+      const sub = el('div', { class: 'bal-sub' });
+      sub.append(el('div', { class: 'sub-head' }, [
+        el('span', { class: 'side-group', text: `#${i}` }),
+        el('button', { class: 'ghost danger mini', text: '✕', title: '이 항목 삭제',
+          onclick: () => { v.splice(i, 1); markDirty(fileKey); rerenderDetail(); } }),
+      ]));
       for (const k of Object.keys(item)) sub.append(objNode(item, k, depth + 1, fileKey, helpFn));
-      fs.append(sub);
+      boxes.append(sub);
     });
+    fs.append(boxes);
+    fs.append(el('button', { class: 'ghost row-add', text: '+ 항목 추가',
+      onclick: () => { v.push(v.length ? structuredClone(v[v.length - 1]) : {}); markDirty(fileKey); rerenderDetail(); } }));
     return fs;
   }
   // 중첩 객체 → 박스 + 재귀

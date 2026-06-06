@@ -90,6 +90,16 @@ table.loot th.has-help { text-decoration: underline dotted; text-underline-offse
 fieldset { border: 1px solid var(--border); border-radius: 8px; margin: 14px 0; padding: 12px; }
 fieldset legend { color: var(--accent); font-size: 12px; padding: 0 6px; }
 
+/* 객체 배열: 카드를 가로로 채움 (#0 #1 #2 …) */
+.obj-array { display: flex; flex-wrap: wrap; gap: 12px; }
+.bal-sub {
+  background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
+  padding: 8px 10px; min-width: 200px; flex: 0 1 auto;
+}
+.sub-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 4px; }
+.inline-row { display: flex; align-items: center; gap: 4px; }
+button.ghost.mini { padding: 2px 7px; font-size: 12px; line-height: 1; }
+
 table.loot { width: 100%; border-collapse: collapse; margin-top: 6px; }
 table.loot th { text-align: left; font-size: 11px; color: var(--muted); font-weight: 500; padding: 5px 8px; }
 table.loot td { padding: 4px 8px; }
