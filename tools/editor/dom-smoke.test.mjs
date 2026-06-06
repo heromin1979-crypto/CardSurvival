@@ -35,10 +35,11 @@ console.log('=== editor.js boot smoke ===');
 try {
   await import('./editor.js');
   check('module boots without throwing', true);
-  check('settings tab rendered', window.document.querySelector('.settings-box') !== null);
   check('save button present', window.document.querySelector('#save-btn') !== null);
-  // verify tab buttons wired
   check('4 tabs present', window.document.querySelectorAll('.tab').length === 4);
+  // settings tab renders local-settings box (no PAT fields)
+  window.document.querySelector('[data-tab="settings"]').click();
+  check('settings tab renders', window.document.querySelector('.settings-box') !== null);
 } catch (e) {
   check('module boots without throwing', false);
   console.error('   ', String(e).split('\n').slice(0, 3).join('\n    '));

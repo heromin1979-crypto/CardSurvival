@@ -5,19 +5,19 @@ import {
   spliceObjectLiteral,
 } from './serialize.js';
 import {
-  loadSettings,
-  saveSettings,
-  verifyAccess,
-  getFile,
-  putFile,
-} from './github.js';
+  getInfo,
+  getFileText,
+  saveFiles,
+  pushChanges,
+} from './api.js';
 
 const state = {
-  settings: loadSettings(),
-  files: {},            // key -> { text, sha, data }
+  branch: '?',          // current local git branch (from serve.js)
+  commitMsg: 'data: 에디터에서 데이터 수정',
+  files: {},            // key -> { text, data }
   itemIds: new Set(),   // valid item definition ids (for validation/autocomplete)
   dirty: new Set(),     // file keys with unsaved changes
-  tab: 'settings',
+  tab: 'districts',
   sel: {},              // tab -> selected sub-key
 };
 
@@ -64,16 +64,18 @@ function switchTab(tab) {
   render();
 }
 
-// ─── data loading ────────────────────────────────────────────
+// ─── data loading (로컬 파일에서) ────────────────────────────
 async function loadAll() {
-  status('데이터 불러오는 중…', 'info');
+  status('로컬 데이터 불러오는 중…', 'info');
+  // serve.js 연결 확인 + 현재 브랜치
   try {
-    await verifyAccess(state.settings);
+    const info = await getInfo();
+    state.branch = info.branch || '?';
   } catch (e) {
-    status(`GitHub 접근 실패: ${e.message}`, 'err');
+    status(`serve.js에 연결할 수 없습니다. 저장소 루트에서 'node serve.js' 실행 후 http://localhost:8080/tools/editor/ 로 접속하세요. (${e.message})`, 'err');
     return;
   }
-  // valid item ids (live, from this deployed site — for autocomplete/validation only)
+  // valid item ids (로컬 items.js — 자동완성/검증용)
   try {
     const items = (await import('../../js/data/items.js')).default;
     state.itemIds = new Set(Object.keys(items));
@@ -83,16 +85,24 @@ async function loadAll() {
   } catch (e) {
     console.warn('item id 목록 로드 실패 (검증 비활성):', e);
   }
-  // editable data blocks (from target branch — branch-consistent)
-  for (const [key, cfg] of Object.entries(DATA_FILES)) {
-    const { text, sha } = await getFile(state.settings, cfg.path);
-    state.files[key] = { text, sha, data: extractValue(text, cfg.decl) };
+  // editable data blocks (로컬 파일 원문 → 파싱)
+  try {
+    for (const [key, cfg] of Object.entries(DATA_FILES)) {
+      const text = await getFileText(cfg.path);
+      state.files[key] = { text, data: extractValue(text, cfg.decl) };
+    }
+  } catch (e) {
+    status(`데이터 로드 실패: ${e.message}`, 'err');
+    return;
   }
-  status('불러오기 완료. 탭에서 편집하세요.', 'ok');
-  switchTab('districts');
+  state.dirty.clear();
+  $('#dirty').hidden = true;
+  $('#save-btn').disabled = true;
+  status(`불러오기 완료 (브랜치: ${state.branch}). 탭에서 편집하세요.`, 'ok');
+  render();
 }
 
-// ─── saving ──────────────────────────────────────────────────
+// ─── 저장 + 커밋 + 푸시 (로컬 git) ───────────────────────────
 async function saveAll() {
   if (state.dirty.size === 0) return;
   const bad = collectBadRefs();
@@ -100,28 +110,37 @@ async function saveAll() {
     const ok = confirm(
       `존재하지 않는 아이템 ID ${bad.length}건이 있습니다:\n` +
       bad.slice(0, 8).join(', ') + (bad.length > 8 ? ' …' : '') +
-      '\n\n그래도 커밋할까요?');
+      '\n\n그래도 저장/푸시할까요?');
     if (!ok) return;
   }
   $('#save-btn').disabled = true;
-  const msg = prompt('커밋 메시지', 'data: 에디터에서 데이터 수정') || 'data: edit via editor';
-  let last;
+  status('로컬 파일 기록 중…', 'info');
   try {
+    // 1) 변경된 파일을 스플라이스해 디스크에 기록
+    const files = [];
     for (const key of state.dirty) {
       const cfg = DATA_FILES[key];
       const f = state.files[key];
       const newText = spliceObjectLiteral(f.text, cfg.decl, f.data);
       if (newText === f.text) continue;
-      last = await putFile(state.settings, cfg.path, newText, f.sha, `${msg} (${cfg.path})`);
-      // refresh sha + text for subsequent edits
-      const fresh = await getFile(state.settings, cfg.path);
-      f.text = fresh.text; f.sha = fresh.sha;
+      f.text = newText;
+      files.push({ path: cfg.path, content: newText });
     }
+    if (!files.length) { state.dirty.clear(); $('#dirty').hidden = true; status('변경 사항 없음.', 'info'); return; }
+    await saveFiles(files);
+
+    // 2) git add/commit/push
+    status('git 커밋 & 푸시 중…', 'info');
+    const result = await pushChanges(state.commitMsg, files.map((f) => f.path));
     state.dirty.clear();
     $('#dirty').hidden = true;
-    status(`커밋 완료 → ${state.settings.branch}`, 'ok');
+    if (result.pushed) {
+      status(`✅ 저장 + 푸시 완료 → ${result.branch}  (${files.length}개 파일)`, 'ok');
+    } else {
+      status(`저장 완료 (커밋할 변경 없음): ${result.message || ''}`, 'info');
+    }
   } catch (e) {
-    status(`커밋 실패: ${e.message}`, 'err');
+    status(`실패: ${e.message}`, 'err');
     $('#save-btn').disabled = false;
   }
 }
@@ -281,7 +300,7 @@ function render() {
   view.innerHTML = '';
   if (state.tab === 'settings') return renderSettings();
   if (!state.files[state.tab]) {
-    view.append(el('div', { class: 'empty', text: '먼저 설정 탭에서 불러오세요.' }));
+    view.append(el('div', { class: 'empty', text: '데이터 불러오는 중… (serve.js가 떠 있어야 합니다)' }));
     return;
   }
   if (state.tab === 'districts') return renderListTab('districts', (d) => d.name);
@@ -508,38 +527,33 @@ function objectiveEditor(q) {
 
 // ─── settings tab ────────────────────────────────────────────
 function renderSettings() {
-  const s = state.settings;
   const box = el('div', { class: 'detail settings-box' });
-  box.append(el('h2', { text: '⚙️ GitHub 설정' }));
-  const mk = (key, label, type = 'text') => {
-    const inp = el('input', { type, value: s[key] || '' });
-    inp.addEventListener('input', () => { s[key] = inp.value; });
-    return el('div', { class: 'field' }, [el('label', { text: label }), inp]);
-  };
-  box.append(mk('owner', 'owner (조직/사용자)'));
-  box.append(mk('repo', 'repo (저장소명)'));
-  box.append(mk('branch', 'branch (커밋 대상 브랜치)'));
-  box.append(mk('token', 'Personal Access Token (fine-grained, Contents: R/W)', 'password'));
-  box.append(el('div', { class: 'field-row' }, [
-    el('button', { class: 'primary', text: '저장 & 불러오기', onclick: () => {
-      saveSettings(s); loadAll();
-    } }),
-    el('button', { class: 'ghost', text: '토큰만 저장', onclick: () => {
-      saveSettings(s); status('설정 저장됨.', 'ok');
-    } }),
+  box.append(el('h2', { text: '⚙️ 설정 (로컬)' }));
+
+  box.append(el('div', { class: 'field' }, [
+    el('label', { text: '현재 git 브랜치 (로컬)' }),
+    el('input', { value: state.branch, disabled: true }),
   ]));
+
+  const msg = el('input', { value: state.commitMsg });
+  msg.addEventListener('input', () => { state.commitMsg = msg.value; });
+  box.append(el('div', { class: 'field' }, [el('label', { text: '커밋 메시지' }), msg]));
+
+  box.append(el('div', { class: 'field-row' }, [
+    el('button', { class: 'primary', text: '🔄 로컬에서 다시 불러오기', onclick: () => loadAll() }),
+  ]));
+
   box.append(el('p', { class: 'hint', html:
-    'PAT는 이 기기 localStorage에만 저장됩니다(페이지엔 비밀이 없음). ' +
-    'GitHub → Settings → Developer settings → <code>Fine-grained tokens</code> → ' +
-    '이 저장소에 <code>Contents: Read and write</code> 권한으로 발급하세요.<br>' +
-    '저장 시 변경된 데이터 블록만 재직렬화되어 지정 브랜치에 커밋됩니다. ' +
-    '⚠️ 데이터 블록 내부의 인라인 주석은 보존되지 않습니다(git diff로 확인 권장).' }));
+    '이 에디터는 <b>로컬 serve.js</b>를 통해 동작합니다. 저장소 루트에서 ' +
+    '<code>node serve.js</code> 실행 후 <code>http://localhost:8080/tools/editor/</code> 로 접속하세요.<br><br>' +
+    '· 데이터는 로컬 파일에서 읽고, 수정 후 <b>[저장 (커밋&푸시)]</b>를 누르면 ' +
+    '로컬 디스크에 기록 → 현재 브랜치로 <code>git commit</code> + <code>git push</code> 합니다.<br>' +
+    '· 변경된 데이터 블록만 재직렬화됩니다(헤더·함수·export 보존). ' +
+    '⚠️ 데이터 블록 내부의 인라인 주석은 보존되지 않습니다 — push 후 <code>git diff</code> 확인 권장.<br>' +
+    '· 무결성 검증: <code>node js/data/validate.js</code>' }));
   view.append(box);
 }
 
 // ─── boot ────────────────────────────────────────────────────
-switchTab('settings');
-if (state.settings.token) {
-  status('저장된 토큰 발견. [설정 → 저장 & 불러오기] 또는 자동 로드 중…', 'info');
-  loadAll();
-}
+switchTab('districts');
+loadAll();
