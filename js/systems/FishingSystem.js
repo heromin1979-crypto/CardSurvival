@@ -147,7 +147,7 @@ const FishingSystem = {
 
     // 어종 결정
     const isRare = Math.random() < (bonuses.rareFishChance ?? 0);
-    const fishId = isRare ? 'fish_large' : (Math.random() < 0.45 ? 'fish_small' : 'fish_medium');
+    const fishId = isRare ? 'fish_large' : (Math.random() < (BALANCE.fishing.nonRareSmallChance ?? 0.45) ? 'fish_small' : 'fish_medium');
     const fishDef = GameData?.items?.[fishId];
     const fishName = fishDef?.name ?? '물고기';
     const qty    = 1 + (bonuses.catchQtyBonus ?? 0);
@@ -246,7 +246,7 @@ const FishingSystem = {
     baseChance       = Math.min(0.80, Math.max(0.10, baseChance));
 
     if (Math.random() < baseChance) {
-      const fishId = Math.random() < 0.3 ? 'fish_medium' : 'fish_small';
+      const fishId = Math.random() < (BALANCE.fishing.trapMediumChance ?? 0.3) ? 'fish_medium' : 'fish_small';
       const caught = gs.createCardInstance(fishId, { quantity: 1 });
       if (caught) {
         gs.placeCardInRow(caught.instanceId, 'middle');

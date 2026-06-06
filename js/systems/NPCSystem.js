@@ -10,6 +10,7 @@ import SecretCombinationSystem from './SecretCombinationSystem.js';
 import SkillSystem             from './SkillSystem.js';
 import NPCS, { NPC_ITEMS }    from '../data/npcs.js';
 import { NPC_CHEMISTRY }       from '../data/npcChemistry.js';
+import BALANCE                 from '../data/gameBalance.js';
 import GameData from '../data/GameData.js';
 
 // ── NPC → Secret Combination Hint Mapping ─────────────────────
@@ -222,7 +223,7 @@ const NPCSystem = {
   _getTrustMult(npcId) {
     const state = GameState.npcs?.states?.[npcId];
     const trust = state?.trust ?? 0;
-    return 1.0 + (trust / 5) * 0.3;  // 0→1.0, 1→1.06, 2→1.12, 3→1.18, 4→1.24, 5→1.30
+    return 1.0 + (trust / 5) * (BALANCE.npc.trustCombatBonusPer5 ?? 0.3);  // 0→1.0 … 5→1.30
   },
 
   _applyCompanionEffects() {

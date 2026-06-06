@@ -18,6 +18,21 @@ const BALANCE = {
     moraleDecayPerTP:     0.2,
     fatigueGainPerTP:     0.8,
     staminaRegenPerTP:    1.2,   // (기존 1.5 → 1.2로 완화)
+    // 무게 비율(weightPct)별 스태미나 소모 배율 (max 이하이면 해당 mult)
+    weightMultipliers: [
+      { max: 0.50, mult: 1.0 },
+      { max: 0.75, mult: 1.3 },
+      { max: 1.00, mult: 1.7 },
+      { max: 1.50, mult: 2.5 },
+      { max: 2.00, mult: 3.5 },
+      { max: Infinity, mult: 4.0 },
+    ],
+    // 과적 구간별 스태미나 변화량(/TP). pct ≤1.0은 staminaRegenPerTP(회복) 적용
+    staminaDrainTiers: [
+      { max: 1.5, delta: -0.5 },
+      { max: 2.0, delta: -1.0 },
+      { max: Infinity, delta: -2.0 },
+    ],
   },
 
   // ── 수분 ────────────────────────────────────────────
@@ -38,6 +53,7 @@ const BALANCE = {
     max:              100,
     baseDecayPerTP:   1.0,
     influxThreshold:  60,
+    flushReductionMult: 0.5,   // 소음 플러시 시 influxThreshold 대비 잔존 비율
     // 소음 레벨에 따른 추가 감소 (스파이럴 방지)
     scaledDecayBreakpoints: [
       { threshold: 70, bonusDecay: 0.5 },
@@ -62,6 +78,9 @@ const BALANCE = {
     baseFailureChance:  0.12,   // 기본 실패 확률 12%
     minFailureChance:   0.02,   // 스킬 최대 시 최소 실패률 2%
     failureRefundRate:  0.5,    // 실패 시 재료 50% 반환
+    failureXpMult:      0.5,    // 제작 실패 시 획득 XP 배율
+    chefTeamBonusHigh:  0.20,   // 셰프 팀 평균사기 >85 품질 점수 보너스
+    chefTeamBonusMid:   0.10,   // 셰프 팀 평균사기 >70 품질 점수 보너스
     xpBase: {
       building:    10,
       weaponcraft: 8,
@@ -314,6 +333,8 @@ const BALANCE = {
   patientIntake: {
     moraleDeath:   -2,     // W1-1: 기존 -3 완화 (환자 사망)
     moraleDepart:  -1,     // W1-1: 기존 -2 완화 (환자 이탈)
+    cumulativeMoraleBonusPer: 0.5, // 누적 치료 환자 1명당 사기 보너스
+    cumulativeMoraleBonusCap: 50,  // 누적 환자 사기 보너스 상한
     // 의사 마일스톤 사기 보너스 (누적 치료 수 도달 시 one-shot)
     moraleMilestones: {
       5:  5,
@@ -353,6 +374,22 @@ const BALANCE = {
     durabilityDecayPerTP: 0.093,  // 100 내구도 기준 ~15일(1080TP)
   },
 
+  // ── NPC ────────────────────────────────────────────────
+  npc: {
+    trustCombatBonusPer5: 0.3,  // 전투 보너스 배율 = 1.0 + (trust/5) × 이 값
+    // 야간 경계 보너스 (NPC별 안전도 가산 / 조우 감소)
+    watchBonuses: {
+      npc_soldier_deserter: { safetyAdd: 20, encounterReduce: 0.3 },
+      npc_dog:              { safetyAdd: 15, encounterReduce: 0.2 },
+      npc_mechanic:         { safetyAdd: 10, encounterReduce: 0.1 },
+      npc_old_survivor:     { safetyAdd:  8, encounterReduce: 0.1 },
+      npc_nurse:            { safetyAdd:  5, encounterReduce: 0.05 },
+      npc_student:          { safetyAdd:  8, encounterReduce: 0.1 },
+      npc_child:            { safetyAdd:  2, encounterReduce: 0.0 },
+      npc_trader:           { safetyAdd:  5, encounterReduce: 0.05 },
+    },
+  },
+
   // ── 신체 부상 ──────────────────────────────────────────
   body: {
     // 부위별 피격 확률 (무기 타입별)
@@ -385,6 +422,8 @@ const BALANCE = {
     rodBasicBonus:        0.00,  // 기본 낚싯대 추가 보너스 없음
     rodImprovedBonus:     0.15,  // 개량 낚싯대 어획률 보너스
     rareFishChanceMax:    0.15,  // Lv.20 희귀어 확률
+    nonRareSmallChance:   0.45,  // 희귀어 아닐 때 소형어 확률(아니면 중형)
+    trapMediumChance:     0.3,   // 통발 수확 시 중형어 확률(아니면 소형)
     trapCheckIntervalTP:  8,     // 통발 자동 수확 주기 (TP)
     trapBaseCatch:        0.40,  // 통발 기본 어획률
     trapMaxCatch:         0.60,  // 통발 최대 어획률 (fishingQuality 3 기준)

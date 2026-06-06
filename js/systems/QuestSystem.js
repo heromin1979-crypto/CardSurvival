@@ -463,7 +463,10 @@ const QuestSystem = {
   /** 엔딩 완료 시 누적 환자 수를 사기 보너스로 환산 (0.5 / 명, 상한 50) */
   getPatientMoraleBonus() {
     const count = GameState.flags?.doctor_patients_treated ?? 0;
-    return Math.min(50, Math.floor(count * 0.5));
+    return Math.min(
+      BALANCE.patientIntake.cumulativeMoraleBonusCap ?? 50,
+      Math.floor(count * (BALANCE.patientIntake.cumulativeMoraleBonusPer ?? 0.5)),
+    );
   },
 
   /** NPC 퀘스트 완료 → 메인 퀘스트 크로스오버 진행도 */

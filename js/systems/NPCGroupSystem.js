@@ -8,18 +8,10 @@ import EventBus from '../core/EventBus.js';
 import GameState from '../core/GameState.js';
 import { NPC_ITEMS } from '../data/npcs.js';
 import I18n from '../core/I18n.js';
+import BALANCE from '../data/gameBalance.js';
 
-// Night watch bonus table per NPC
-const WATCH_BONUSES = {
-  npc_soldier_deserter: { safetyAdd: 20, encounterReduce: 0.3 },
-  npc_dog:              { safetyAdd: 15, encounterReduce: 0.2 },
-  npc_mechanic:         { safetyAdd: 10, encounterReduce: 0.1 },
-  npc_old_survivor:     { safetyAdd:  8, encounterReduce: 0.1 },
-  npc_nurse:            { safetyAdd:  5, encounterReduce: 0.05 },
-  npc_student:          { safetyAdd:  8, encounterReduce: 0.1 },
-  npc_child:            { safetyAdd:  2, encounterReduce: 0.0 },
-  npc_trader:           { safetyAdd:  5, encounterReduce: 0.05 },
-};
+// Night watch bonus table per NPC — BALANCE.npc.watchBonuses
+const WATCH_BONUSES = BALANCE.npc.watchBonuses;
 
 // Forage yield table per NPC (items + qty range)
 const FORAGE_YIELD = {

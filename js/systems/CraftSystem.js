@@ -275,8 +275,8 @@ const CraftSystem = {
     if (bp.category === 'food' && GameState.player.characterId === 'chef') {
       const npcSys = SystemRegistry.get('NPCSystem');
       const avgMorale = npcSys?.getTeamAverageMorale?.() ?? 70;
-      if      (avgMorale > 85) score += 0.20;
-      else if (avgMorale > 70) score += 0.10;
+      if      (avgMorale > 85) score += (BALANCE.crafting.chefTeamBonusHigh ?? 0.20);
+      else if (avgMorale > 70) score += (BALANCE.crafting.chefTeamBonusMid ?? 0.10);
     }
 
     const t = Q.thresholds;
@@ -324,7 +324,7 @@ const CraftSystem = {
       EventBus.emit('craftFailed', { blueprintId: bp.id });
       // 실패해도 스킬 XP (절반)
       const craftXp = (BALANCE.crafting.xpBase[relevantSkill] ?? 5) * (bp.stages?.length ?? 1);
-      SkillSystem.gainXp(relevantSkill, Math.ceil(craftXp * 0.5));
+      SkillSystem.gainXp(relevantSkill, Math.ceil(craftXp * (BALANCE.crafting.failureXpMult ?? 0.5)));
       return;
     }
 
