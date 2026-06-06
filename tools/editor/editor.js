@@ -71,6 +71,89 @@ function districtName(id) {
   return state.files.districts?.data?.[id]?.name || '';
 }
 
+// ─── 랜드마크/세부장소 연결·삭제 안전 ─────────────────────────
+// 시스템 코드가 하드코딩으로 의존하는 ID — 에디터에서 삭제 차단.
+// 출처: HospitalSiegeSystem.js / FishingSystem.js / ExploreSystem.js / locationCardFactory.js(이벤트 랜드마크)
+const PROTECTED_LANDMARKS = new Set([
+  'lm_boramae_hospital', 'lm_dongjak', 'lm_hangang', 'hangang', 'basecamp',
+  'lm_raider_camp_small', 'lm_raider_camp_medium', 'lm_raider_camp_large',
+  'lm_power_station', 'lm_water_plant', 'lm_comms_tower',
+]);
+// HospitalSiegeSystem.js BORAMAE_SUB_LOCATIONS
+const PROTECTED_SUBLOCATIONS = new Set([
+  'boramae_emergency', 'boramae_surgery', 'boramae_pharmacy',
+  'boramae_morgue', 'boramae_rooftop', 'boramae_cafeteria',
+]);
+
+// 랜드마크 키 ↔ 가능한 참조 id 집합 (키 자체 · lm_접두 · 무접두). getLandmarkData 폴백 규칙과 동일.
+function landmarkIdVariants(key) {
+  const stripped = String(key).replace(/^lm_/, '');
+  return new Set([key, stripped, `lm_${stripped}`]);
+}
+function isProtectedLandmark(key) {
+  if (!key) return false;
+  for (const v of landmarkIdVariants(key)) if (PROTECTED_LANDMARKS.has(v)) return true;
+  return false;
+}
+
+// 구의 연결 랜드마크를 배열로 정규화해 읽기 (landmarks 배열 우선, 없으면 단일 landmark)
+function districtLandmarks(dist) {
+  if (!dist) return [];
+  if (Array.isArray(dist.landmarks)) return dist.landmarks.slice();
+  return dist.landmark ? [dist.landmark] : [];
+}
+// 구의 연결 랜드마크 쓰기 — 개수에 따라 단일/배열 정규화 (diff 최소화, 게임 코드 호환)
+function setDistrictLandmarks(dist, arr) {
+  const list = arr.filter(Boolean);
+  if (list.length === 0) { delete dist.landmark; delete dist.landmarks; }
+  else if (list.length === 1) { dist.landmark = list[0]; delete dist.landmarks; }
+  else { dist.landmarks = list; delete dist.landmark; }
+}
+
+// 구 연결 후보가 되는 랜드마크 카드 id 목록.
+// items.js의 landmark:true 카드 + 에디터에서 새로 만든 LANDMARK_CARD_META 항목(아직 items.js 미반영).
+function landmarkCardIds() {
+  const ids = new Set(Object.keys(state.items || {}).filter((id) => state.items[id]?.landmark === true));
+  for (const id of Object.keys(state.files.landmarkMeta?.data || {})) ids.add(id);
+  return [...ids];
+}
+
+// 이 랜드마크(LANDMARK_DATA 키)를 참조하는 위치 목록 (퀘스트/NPC/구) — 정보/경고용
+function landmarkReferencedBy(key) {
+  const ids = landmarkIdVariants(key);
+  const refs = [];
+  const quests = state.refQuests || {};
+  for (const [qid, q] of Object.entries(quests)) {
+    if (ids.has(q?.objective?.landmarkId)) refs.push(`퀘스트 「${q.title || qid}」 objective`);
+    if (ids.has(q?.locationHint?.landmarkId)) refs.push(`퀘스트 「${q.title || qid}」 locationHint`);
+  }
+  const npcs = state.refNpcs || {};
+  for (const [nid, n] of Object.entries(npcs)) {
+    if (ids.has(n?.spawnLandmark)) refs.push(`NPC 「${n.name || nid}」 spawnLandmark`);
+  }
+  const dists = state.files.districts?.data || {};
+  for (const [did, d] of Object.entries(dists)) {
+    if (districtLandmarks(d).some((l) => ids.has(l))) refs.push(`구 「${d.name || did}」 연결`);
+  }
+  return refs;
+}
+
+// 삭제 가드 — { ok, reason?, refs? }
+function canDeleteLandmark(key) {
+  if (isProtectedLandmark(key)) {
+    return { ok: false, reason: '시스템이 하드코딩으로 의존하는 보호 랜드마크입니다 (병원 공성·낚시·이벤트 등).' };
+  }
+  return { ok: true, refs: landmarkReferencedBy(key) };
+}
+function canDeleteSubLocation(sub) {
+  if (sub?.id && PROTECTED_SUBLOCATIONS.has(sub.id)) {
+    return { ok: false, reason: '병원 공성 시스템(HospitalSiegeSystem)이 하드코딩으로 의존하는 세부장소입니다.' };
+  }
+  const refs = [];
+  if (sub?.firstEnterReward) refs.push('1회 한정 보상(firstEnterReward) 보유 — 삭제 시 보상 진입점이 사라집니다');
+  return { ok: true, refs };
+}
+
 // ─── 필드 설명 (마우스 오버 툴팁) ────────────────────────────
 const FIELD_HELP = {
   // 장소(구)
@@ -526,6 +609,20 @@ async function loadAll() {
   } catch (e) {
     console.warn('item id 목록 로드 실패 (검증 비활성):', e);
   }
+  // 삭제 안전 검증용 — 실제 게임이 쓰는 퀘스트(폴더 병합본) + NPC 정의를 읽기전용 import.
+  // 실패해도 검증만 약화되고 편집 기능은 유지된다.
+  try {
+    state.refQuests = (await import('../../js/data/mainQuests/index.js')).default || {};
+  } catch (e) {
+    state.refQuests = {};
+    console.warn('mainQuests/index.js 로드 실패 (랜드마크 참조 검증 약화):', e);
+  }
+  try {
+    state.refNpcs = (await import('../../js/data/npcs.js')).default || {};
+  } catch (e) {
+    state.refNpcs = {};
+    console.warn('npcs.js 로드 실패 (spawnLandmark 검증 약화):', e);
+  }
   // editable data blocks (로컬 파일 원문 → 파싱). original = 원본 스냅샷(되돌리기용)
   try {
     for (const [key, cfg] of Object.entries(DATA_FILES)) {
@@ -636,6 +733,46 @@ function collectIssues() {
         if (badItem(r.id)) issues.push({ fileKey: 'landmarks', entityKey: key, path: `${sub.name || `세부장소#${si}`} ▸ lootTable[${i}].id`, id: r.id, msg: '존재하지 않는 아이템 ID' });
       });
     });
+  }
+
+  // ── 랜드마크/세부장소 구조 검증 (연결·참조 무결성) ──
+  const lmMeta = state.files.landmarkMeta?.data || {};
+  // 알려진 랜드마크 id의 모든 변형(키·lm_접두·무접두) 집합
+  const knownLandmark = new Set();
+  for (const id of landmarkCardIds()) for (const v of landmarkIdVariants(id)) knownLandmark.add(v);
+  for (const id of Object.keys(lmMeta)) for (const v of landmarkIdVariants(id)) knownLandmark.add(v);
+  for (const k of Object.keys(lm)) for (const v of landmarkIdVariants(k)) knownLandmark.add(v);
+
+  // 1) 구의 연결 랜드마크에 카드 정의가 없음
+  for (const [dkey, dist] of Object.entries(d)) {
+    districtLandmarks(dist).forEach((lmId, i) => {
+      if (lmId && !knownLandmark.has(lmId)) {
+        issues.push({ fileKey: 'districts', entityKey: dkey, path: `연결 랜드마크[${i}]`, id: lmId, msg: '랜드마크 카드 정의 없음 (items/LANDMARK_CARD_META 누락)' });
+      }
+    });
+  }
+
+  // 2) 퀘스트/NPC가 존재하지 않는 랜드마크를 참조 (실사용 소스 스캔)
+  for (const [qid, q] of Object.entries(state.refQuests || {})) {
+    const lid = q?.objective?.landmarkId;
+    if (lid && !knownLandmark.has(lid)) issues.push({ fileKey: 'landmarks', entityKey: lid.replace(/^lm_/, ''), path: `퀘스트 ${q.title || qid} ▸ objective.landmarkId`, id: lid, msg: '퀘스트가 참조하는 랜드마크가 없음' });
+    const hid = q?.locationHint?.landmarkId;
+    if (hid && !knownLandmark.has(hid)) issues.push({ fileKey: 'landmarks', entityKey: hid.replace(/^lm_/, ''), path: `퀘스트 ${q.title || qid} ▸ locationHint.landmarkId`, id: hid, msg: '퀘스트가 참조하는 랜드마크가 없음' });
+  }
+  for (const [nid, n] of Object.entries(state.refNpcs || {})) {
+    const lid = n?.spawnLandmark;
+    if (lid && !knownLandmark.has(lid)) issues.push({ fileKey: 'landmarks', entityKey: lid.replace(/^lm_/, ''), path: `NPC ${n.name || nid} ▸ spawnLandmark`, id: lid, msg: 'NPC가 참조하는 랜드마크가 없음' });
+  }
+
+  // 3) 미연결 랜드마크 (어떤 구에서도 참조되지 않음 — 보호/이벤트 제외, 정보성)
+  const connected = new Set();
+  for (const dist of Object.values(d)) for (const lmId of districtLandmarks(dist)) for (const v of landmarkIdVariants(lmId)) connected.add(v);
+  for (const k of Object.keys(lm)) {
+    if (isProtectedLandmark(k)) continue;
+    if (lm[k]?.isBasecampLandmark) continue;
+    if (![...landmarkIdVariants(k)].some((v) => connected.has(v))) {
+      issues.push({ fileKey: 'landmarks', entityKey: k, path: '(구 연결 없음)', id: k, msg: '미연결 랜드마크 — 어떤 구에서도 참조되지 않습니다' });
+    }
   }
 
   const q = state.files.quests?.data || {};
@@ -1044,6 +1181,8 @@ function render() {
   if (state.tab === 'flow') return renderFlowTab();
   if (state.tab === 'changes') return renderChangesTab();
   if (state.tab === 'validate') return renderValidationTab();
+  // 세부장소는 전용 데이터 파일이 없다(landmarks.js 안에 산다) → 파일 가드보다 먼저 처리.
+  if (state.tab === 'sublocations') return renderSubLocationsTab();
   if (!state.files[state.tab]) {
     view.append(el('div', { class: 'empty', text: '데이터 불러오는 중… (serve.js가 떠 있어야 합니다)' }));
     return;
@@ -1060,17 +1199,23 @@ function renderListTab(fileKey, labelFn) {
   const keys = Object.keys(data);
   if (!state.sel[fileKey] || !data[state.sel[fileKey]]) state.sel[fileKey] = keys[0];
 
-  const sidebar = el('div', { class: 'sidebar' },
-    keys.map((k) => el('button', {
+  const sidebar = el('div', { class: 'sidebar' });
+  if (fileKey === 'landmarks') {
+    sidebar.append(el('button', { class: 'ghost row-add', text: '+ 랜드마크 추가', onclick: createLandmark }));
+  }
+  for (const k of keys) {
+    sidebar.append(el('button', {
       class: 'side-item' + (k === state.sel[fileKey] ? ' active' : ''),
+      'data-key': k,
       text: `${data[k].icon ? data[k].icon + ' ' : ''}${labelFn(data[k]) || k}`,
       onclick: () => { state.sel[fileKey] = k; rerenderDetail(); },
-    })));
+    }));
+  }
 
   const detailWrap = el('div', { class: 'detail' });
   rerenderDetail = () => {
-    sidebar.querySelectorAll('.side-item').forEach((b, i) =>
-      b.classList.toggle('active', keys[i] === state.sel[fileKey]));
+    sidebar.querySelectorAll('.side-item').forEach((b) =>
+      b.classList.toggle('active', b.dataset.key === state.sel[fileKey]));
     detailWrap.innerHTML = '';
     if (fileKey === 'districts') renderDistrictDetail(detailWrap, data[state.sel[fileKey]]);
     else renderLandmarkDetail(detailWrap, data[state.sel[fileKey]]);
@@ -1088,6 +1233,8 @@ function renderDistrictDetail(root, dist) {
   for (const k of numKeys) if (k in dist) fr.append(scalarInput(dist, k, 'districts'));
   root.append(fr);
 
+  renderDistrictLandmarks(root, dist);
+
   const fs = el('fieldset', {}, el('legend', { text: 'lootTable (탐색 드랍 가중치)' }));
   fs.append(lootTableEditor(
     dist.lootTable || (dist.lootTable = []),
@@ -1098,34 +1245,323 @@ function renderDistrictDetail(root, dist) {
   root.append(fs);
 }
 
+// 구 상세 — 연결된 랜드마크(top 슬롯 카드) 추가/해제
+function renderDistrictLandmarks(root, dist) {
+  const fs = el('fieldset', {}, el('legend', { text: '연결된 랜드마크 (top 슬롯 카드)' }));
+  fs.append(el('div', { class: 'hint', text: '구에 입장하면 상단 슬롯에 뜨는 랜드마크 카드. 구당 여러 개 연결 가능합니다.' }));
+
+  const current = districtLandmarks(dist);
+  const chips = el('div', { class: 'arr-row' });
+  if (!current.length) chips.append(el('span', { class: 'hint', text: '연결된 랜드마크 없음.' }));
+  current.forEach((lmId) => {
+    const known = state.items?.[lmId]?.landmark === true;
+    const chip = el('span', { class: 'arr-item', title: known ? lmId : `${lmId} — 카드 정의 없음 (lm_* 아이템 누락)` }, [
+      el('span', { style: known ? '' : 'color:var(--err,#e66)', text: (itemName(lmId) || lmId) + (known ? '' : ' ⚠') }),
+      el('button', {
+        class: 'ghost danger mini', text: '✕', title: '연결 해제',
+        onclick: () => { setDistrictLandmarks(dist, current.filter((x) => x !== lmId)); markDirty('districts'); rerenderDetail(); },
+      }),
+    ]);
+    chips.append(chip);
+  });
+  fs.append(chips);
+
+  const candidates = landmarkCardIds().filter((id) => !current.includes(id)).sort();
+  if (candidates.length) {
+    const sel = el('select');
+    sel.append(el('option', { value: '' }, '+ 랜드마크 연결…'));
+    for (const id of candidates) sel.append(el('option', { value: id }, `${itemName(id) || id}  (${id})`));
+    sel.addEventListener('change', () => {
+      if (!sel.value) return;
+      setDistrictLandmarks(dist, [...current, sel.value]);
+      markDirty('districts'); rerenderDetail();
+    });
+    fs.append(el('div', { class: 'field', style: 'margin-top:8px;max-width:380px' }, [sel]));
+  }
+  root.append(fs);
+}
+
 function renderLandmarkDetail(root, lm) {
-  root.append(el('h2', { text: `${lm.icon || ''} ${lm.name || ''}` }));
-  root.append(el('div', { class: 'sub', text: lm.desc || '' }));
+  const key = state.sel.landmarks;
+  const protectedLm = isProtectedLandmark(key);
+
+  const head = el('div', { class: 'field-row', style: 'align-items:center;justify-content:space-between' }, [
+    el('h2', { text: `${lm.icon || ''} ${lm.name || ''}` }),
+    el('button', {
+      class: 'ghost danger', text: '🗑 랜드마크 삭제',
+      ...(protectedLm ? { disabled: true, title: '시스템 의존 보호 랜드마크 — 삭제 불가' } : {}),
+      onclick: () => deleteLandmark(key),
+    }),
+  ]);
+  root.append(head);
+  root.append(el('div', { class: 'sub', text: `LANDMARK_DATA.${key}` }));
+
+  // 헤더 필드 편집 (name / icon / desc)
+  if (!('name' in lm)) lm.name = '';
+  if (!('icon' in lm)) lm.icon = '';
+  const fr = el('div', { class: 'field-row' });
+  fr.append(scalarInput(lm, 'name', 'landmarks'));
+  fr.append(scalarInput(lm, 'icon', 'landmarks'));
+  root.append(fr);
+  const ta = el('textarea', { text: lm.desc || '' });
+  ta.addEventListener('input', () => { lm.desc = ta.value; markDirty('landmarks'); });
+  root.append(el('div', { class: 'field grow' }, [labelEl('desc', '랜드마크 카드 설명'), ta]));
+
+  // 세부장소 — 편집/추가/삭제/이동은 전용 탭
   const subs = lm.subLocations || [];
+  const subFs = el('fieldset', {}, el('legend', { text: `세부장소 (${subs.length})` }));
+  subFs.append(el('button', {
+    class: 'ghost', text: '→ 세부장소 탭에서 편집·추가',
+    onclick: () => { state.sel.sublocations = `${key}::0`; switchTab('sublocations'); },
+  }));
   if (!subs.length) {
-    root.append(el('div', { class: 'hint', text: '세부 장소 없음.' }));
-    return;
+    subFs.append(el('div', { class: 'hint', text: '세부 장소 없음.' }));
   }
   for (const sub of subs) {
     const fs = el('fieldset', {}, el('legend', { text: `${sub.icon || ''} ${sub.name || sub.id}` }));
-    const fr = el('div', { class: 'field-row' });
-    if ('dangerMod' in sub) fr.append(scalarInput(sub, 'dangerMod', 'landmarks'));
-    // lootCount is a [min,max] tuple
+    const sfr = el('div', { class: 'field-row' });
+    if ('dangerMod' in sub) sfr.append(scalarInput(sub, 'dangerMod', 'landmarks'));
     if (Array.isArray(sub.lootCount)) {
       const mk = (i, label) => {
         const inp = el('input', { type: 'number', value: sub.lootCount[i] ?? 0 });
         inp.addEventListener('input', () => { sub.lootCount[i] = Number(inp.value); markDirty('landmarks'); });
         return el('div', { class: 'field' }, [fieldLabel(label, 'lootCount'), inp]);
       };
-      fr.append(mk(0, 'lootCount min'), mk(1, 'lootCount max'));
+      sfr.append(mk(0, 'lootCount min'), mk(1, 'lootCount max'));
     }
-    fs.append(fr);
-    fs.append(lootTableEditor(
-      sub.lootTable || (sub.lootTable = []),
-      'id', [], 'landmarks',
-    ));
-    root.append(fs);
+    fs.append(sfr);
+    fs.append(lootTableEditor(sub.lootTable || (sub.lootTable = []), 'id', [], 'landmarks'));
+    subFs.append(fs);
   }
+  root.append(subFs);
+}
+
+// 신규 랜드마크 생성 — LANDMARK_DATA + LANDMARK_CARD_META 동시 기록
+function createLandmark() {
+  const raw = (prompt('새 랜드마크 키 (영문/숫자/밑줄, 예: my_place)') || '').trim();
+  if (!raw) return;
+  const key = raw.replace(/[^A-Za-z0-9_]/g, '');
+  if (!key) { alert('키는 영문/숫자/밑줄만 사용하세요.'); return; }
+  if (state.files.landmarks.data[key]) { alert('이미 존재하는 랜드마크 키입니다.'); return; }
+  const name = (prompt('랜드마크 이름', '새 랜드마크') || '새 랜드마크').trim();
+  const icon = (prompt('아이콘 (이모지)', '📍') || '📍').trim();
+  const cardId = key.startsWith('lm_') ? key : `lm_${key}`;
+  state.files.landmarks.data[key] = { name, icon, desc: '', subLocations: [] };
+  if (state.files.landmarkMeta) {
+    state.files.landmarkMeta.data[cardId] = {
+      name, subtype: 'landmark', rarity: 'common',
+      tags: ['location', 'landmark'], icon, description: '',
+      landmarkBonus: null, districtId: null,
+    };
+    markDirty('landmarkMeta');
+  }
+  state.sel.landmarks = key;
+  markDirty('landmarks');
+  status(`랜드마크 「${name}」(${cardId}) 생성. 카드 이미지(CardFactory CARD_IMAGES)·로케일은 선택사항 — 미등록 시 아이콘/이름으로 폴백됩니다. 구에 연결하려면 장소 탭에서 추가하세요.`, 'ok');
+  render();
+}
+
+// 랜드마크 삭제 — 보호/참조 가드 후 LANDMARK_DATA + CARD_META + 구 연결에서 제거
+function deleteLandmark(key) {
+  const verdict = canDeleteLandmark(key);
+  if (!verdict.ok) { alert(`삭제 불가: ${verdict.reason}`); status(`삭제 차단: ${key} — ${verdict.reason}`, 'err'); return; }
+  const refs = verdict.refs || [];
+  const nm = state.files.landmarks.data[key]?.name || key;
+  const msg = `랜드마크 「${nm}」을(를) 삭제할까요?`
+    + (refs.length ? `\n\n⚠️ 다음에서 참조 중:\n${refs.map((r) => '· ' + r).join('\n')}\n\n삭제하면 위 참조가 깨질 수 있습니다.` : '');
+  if (!confirm(msg)) return;
+  delete state.files.landmarks.data[key];
+  const cardId = key.startsWith('lm_') ? key : `lm_${key}`;
+  if (state.files.landmarkMeta?.data?.[cardId]) { delete state.files.landmarkMeta.data[cardId]; markDirty('landmarkMeta'); }
+  // 구 연결에서 제거
+  const ids = landmarkIdVariants(key);
+  const dists = state.files.districts?.data || {};
+  let touchedDist = false;
+  for (const d of Object.values(dists)) {
+    const cur = districtLandmarks(d);
+    const next = cur.filter((l) => !ids.has(l));
+    if (next.length !== cur.length) { setDistrictLandmarks(d, next); touchedDist = true; }
+  }
+  if (touchedDist) markDirty('districts');
+  state.sel.landmarks = Object.keys(state.files.landmarks.data)[0];
+  markDirty('landmarks');
+  status(`랜드마크 「${nm}」 삭제 완료.`, 'ok');
+  render();
+}
+
+// ─── 세부장소(sublocations) 전용 탭 ──────────────────────────
+// 세부장소는 LANDMARK_DATA[키].subLocations 안에 산다 → fileKey는 항상 'landmarks'.
+// 선택 키는 '<lmKey>::<index>' (인덱스 기반 — id 편집 중에도 안정적; 추가/삭제/이동은 render()로 재구성).
+
+function renderSubLocationsTab() {
+  const data = state.files.landmarks?.data;
+  if (!data) { view.append(el('div', { class: 'empty', text: '데이터 불러오는 중…' })); return; }
+  const lmKeys = Object.keys(data);
+
+  // 선택 유효성 보정
+  const valid = (ck) => {
+    if (!ck) return false;
+    const [k, i] = ck.split('::');
+    return data[k] && Array.isArray(data[k].subLocations) && data[k].subLocations[Number(i)];
+  };
+  if (!valid(state.sel.sublocations)) {
+    const firstWithSub = lmKeys.find((k) => (data[k].subLocations || []).length);
+    state.sel.sublocations = firstWithSub ? `${firstWithSub}::0` : '';
+  }
+
+  const sidebar = el('div', { class: 'sidebar' });
+  for (const lmKey of lmKeys) {
+    const lm = data[lmKey];
+    sidebar.append(el('div', { class: 'side-group', style: 'display:flex;align-items:center;justify-content:space-between;gap:6px' }, [
+      el('span', { text: `${lm.icon || ''} ${lm.name || lmKey}` }),
+      el('button', { class: 'ghost mini', text: '+', title: '이 랜드마크에 세부장소 추가', onclick: () => addSubLocation(lmKey) }),
+    ]));
+    const subs = lm.subLocations || [];
+    if (!subs.length) sidebar.append(el('div', { class: 'hint', style: 'padding:2px 12px', text: '(없음)' }));
+    subs.forEach((sub, idx) => {
+      const ck = `${lmKey}::${idx}`;
+      sidebar.append(el('button', {
+        class: 'side-item' + (ck === state.sel.sublocations ? ' active' : ''),
+        'data-key': ck,
+        text: `${sub.icon || ''} ${sub.name || sub.id}`,
+        onclick: () => { state.sel.sublocations = ck; rerenderDetail(); },
+      }));
+    });
+  }
+
+  const detailWrap = el('div', { class: 'detail' });
+  rerenderDetail = () => {
+    sidebar.querySelectorAll('.side-item').forEach((b) =>
+      b.classList.toggle('active', b.dataset.key === state.sel.sublocations));
+    detailWrap.innerHTML = '';
+    renderSubLocationDetail(detailWrap);
+  };
+  rerenderDetail();
+  view.append(el('div', {}, [
+    el('div', { class: 'hint', style: 'margin-bottom:8px' },
+      '세부장소를 추가하면 게임 로딩 시 registerSubLocationItems()가 sl_<id> 위치 카드를 자동 생성합니다 — 별도 아이템 등록은 필요 없습니다.'),
+    el('div', { class: 'list-layout' }, [sidebar, detailWrap]),
+  ]));
+}
+
+function renderSubLocationDetail(root) {
+  const cur = state.sel.sublocations;
+  const data = state.files.landmarks.data;
+  if (!cur) { root.append(el('div', { class: 'hint', text: '세부장소를 선택하거나 사이드바의 + 로 추가하세요.' })); return; }
+  const [lmKey, idxStr] = cur.split('::');
+  const idx = Number(idxStr);
+  const lm = data[lmKey];
+  const sub = lm?.subLocations?.[idx];
+  if (!sub) { root.append(el('div', { class: 'hint', text: '세부장소를 선택하세요.' })); return; }
+
+  const isProt = PROTECTED_SUBLOCATIONS.has(sub.id);
+
+  root.append(el('div', { class: 'field-row', style: 'align-items:center;justify-content:space-between' }, [
+    el('h2', { text: `${sub.icon || ''} ${sub.name || sub.id}` }),
+    el('button', {
+      class: 'ghost danger', text: '🗑 세부장소 삭제',
+      ...(isProt ? { disabled: true, title: '병원 공성 시스템 의존 — 삭제 불가' } : {}),
+      onclick: () => deleteSubLocation(lmKey, idx),
+    }),
+  ]));
+  root.append(el('div', { class: 'sub', text: `${lm.name || lmKey} ▸ ${sub.id}` }));
+
+  // 소속 랜드마크 (이동)
+  const moveSel = el('select');
+  for (const k of Object.keys(data)) {
+    moveSel.append(el('option', { value: k, ...(k === lmKey ? { selected: true } : {}) }, `${data[k].icon || ''} ${data[k].name || k}`));
+  }
+  moveSel.addEventListener('change', () => { if (moveSel.value !== lmKey) moveSubLocation(lmKey, idx, moveSel.value); });
+  root.append(el('fieldset', {}, [
+    el('legend', { text: '소속 랜드마크' }),
+    el('div', { class: 'field', style: 'max-width:380px' }, [labelEl('landmark', '다른 랜드마크로 이동'), moveSel]),
+  ]));
+
+  // 기본 필드 (id / name / icon / dangerMod)
+  const fr = el('div', { class: 'field-row' });
+  const idInp = el('input', { value: sub.id ?? '', ...(isProt ? { disabled: true } : {}) });
+  idInp.addEventListener('input', () => { sub.id = idInp.value.trim(); markDirty('landmarks'); });
+  fr.append(el('div', { class: 'field' }, [
+    labelEl('id', isProt ? '보호 세부장소 — id 변경 불가' : '파생 아이템 sl_<id>의 기준. 변경 시 진행 중 세이브/참조가 깨질 수 있습니다.'),
+    idInp,
+  ]));
+  if (!('name' in sub)) sub.name = '';
+  if (!('icon' in sub)) sub.icon = '';
+  if (!('dangerMod' in sub)) sub.dangerMod = 0;
+  fr.append(scalarInput(sub, 'name', 'landmarks'));
+  fr.append(scalarInput(sub, 'icon', 'landmarks'));
+  fr.append(scalarInput(sub, 'dangerMod', 'landmarks'));
+  root.append(fr);
+
+  // desc
+  const ta = el('textarea', { text: sub.desc || '' });
+  ta.addEventListener('input', () => { sub.desc = ta.value; markDirty('landmarks'); });
+  root.append(el('div', { class: 'field grow' }, [labelEl('desc', '세부장소 설명'), ta]));
+
+  // lootCount [min,max]
+  if (!Array.isArray(sub.lootCount)) sub.lootCount = [1, 2];
+  const mk = (i, label) => {
+    const inp = el('input', { type: 'number', value: sub.lootCount[i] ?? 0 });
+    inp.addEventListener('input', () => { sub.lootCount[i] = Number(inp.value); markDirty('landmarks'); });
+    return el('div', { class: 'field' }, [fieldLabel(label, 'lootCount'), inp]);
+  };
+  root.append(el('div', { class: 'field-row' }, [mk(0, 'lootCount min'), mk(1, 'lootCount max')]));
+
+  if (sub.firstEnterReward) {
+    root.append(el('div', { class: 'hint', text: '⚠️ 이 세부장소에는 1회 한정 보상(firstEnterReward)이 있습니다 — 삭제 시 보상 진입점이 사라집니다.' }));
+  }
+
+  const fs = el('fieldset', {}, el('legend', { text: 'lootTable (세부장소 드랍)' }));
+  fs.append(lootTableEditor(sub.lootTable || (sub.lootTable = []), 'id', [], 'landmarks'));
+  root.append(fs);
+}
+
+// 세부장소 추가 — 고유 id 생성 후 해당 항목 선택
+function addSubLocation(lmKey) {
+  const lm = state.files.landmarks.data[lmKey];
+  if (!lm) return;
+  if (!Array.isArray(lm.subLocations)) lm.subLocations = [];
+  const used = new Set(lm.subLocations.map((s) => s.id));
+  let id = `${lmKey}_new`;
+  let n = 2;
+  while (used.has(id)) id = `${lmKey}_new${n++}`;
+  lm.subLocations.push({ id, name: '새 세부장소', icon: '📍', desc: '', dangerMod: 0, lootTable: [], lootCount: [1, 2] });
+  state.sel.sublocations = `${lmKey}::${lm.subLocations.length - 1}`;
+  markDirty('landmarks');
+  render();
+}
+
+// 세부장소 삭제 — 보호/참조 가드
+function deleteSubLocation(lmKey, idx) {
+  const lm = state.files.landmarks.data[lmKey];
+  const sub = lm?.subLocations?.[idx];
+  if (!sub) return;
+  const verdict = canDeleteSubLocation(sub);
+  if (!verdict.ok) { alert(`삭제 불가: ${verdict.reason}`); status(`삭제 차단: ${sub.id} — ${verdict.reason}`, 'err'); return; }
+  const refs = verdict.refs || [];
+  const msg = `세부장소 「${sub.name || sub.id}」을(를) 삭제할까요?`
+    + (refs.length ? `\n\n⚠️ ${refs.join('\n⚠️ ')}` : '');
+  if (!confirm(msg)) return;
+  lm.subLocations.splice(idx, 1);
+  state.sel.sublocations = lm.subLocations.length ? `${lmKey}::${Math.max(0, idx - 1)}` : '';
+  markDirty('landmarks');
+  status(`세부장소 「${sub.name || sub.id}」 삭제 완료.`, 'ok');
+  render();
+}
+
+// 세부장소를 다른 랜드마크로 이동
+function moveSubLocation(fromKey, idx, toKey) {
+  const from = state.files.landmarks.data[fromKey];
+  const to = state.files.landmarks.data[toKey];
+  if (!from || !to) return;
+  const [sub] = from.subLocations.splice(idx, 1);
+  if (!sub) return;
+  if (!Array.isArray(to.subLocations)) to.subLocations = [];
+  to.subLocations.push(sub);
+  state.sel.sublocations = `${toKey}::${to.subLocations.length - 1}`;
+  markDirty('landmarks');
+  status(`세부장소 「${sub.name || sub.id}」 → 「${to.name || toKey}」 이동.`, 'ok');
+  render();
 }
 
 // ─── 공용 변수(밸런스) 탭 ────────────────────────────────────
