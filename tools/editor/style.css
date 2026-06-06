@@ -97,9 +97,31 @@ table.loot input.num { width: 64px; }
 .pct { color: var(--muted); font-size: 12px; white-space: nowrap; }
 .name-cell { color: var(--muted); font-size: 12px; white-space: nowrap; max-width: 160px; overflow: hidden; text-overflow: ellipsis; }
 
-.kv { display: grid; grid-template-columns: 160px 1fr; gap: 4px 12px; margin-top: 10px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+.chip {
+  display: inline-block; font-size: 12px; color: var(--text);
+  background: var(--panel2); border: 1px solid var(--border);
+  border-radius: 12px; padding: 2px 10px; margin: 2px 4px 2px 0;
+}
+.desc {
+  margin: 12px 0; padding: 10px 12px; background: var(--panel2);
+  border-left: 3px solid var(--accent); border-radius: 4px;
+  font-size: 13px; line-height: 1.6; color: var(--text);
+}
+.kv-title { margin-top: 18px; font-size: 12px; color: var(--accent); text-transform: uppercase; }
+.kv { border-top: 1px solid var(--border); margin-top: 6px; }
+.kv-row {
+  display: grid; grid-template-columns: 180px 1fr; gap: 16px;
+  padding: 8px 4px; border-bottom: 1px solid var(--border); align-items: start;
+}
 .kv-k { color: var(--muted); font-size: 12px; }
 .kv-v { font-size: 13px; word-break: break-word; }
+.kv-v.muted { color: var(--muted); }
+.codeblock {
+  margin: 0; font-size: 12px; line-height: 1.5; white-space: pre-wrap; word-break: break-word;
+  background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace; color: var(--text);
+}
 .ref-bad { border-color: var(--danger) !important; }
 .row-add { margin-top: 8px; }
 

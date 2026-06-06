@@ -262,12 +262,20 @@ function renderValidationTab() {
 }
 
 // ─── 아이템 정보 탭 (읽기 전용 참조) ─────────────────────────
-function fmtField(v) {
-  if (v === null || v === undefined) return String(v);
-  if (Array.isArray(v)) return v.map((x) => (x && typeof x === 'object' ? JSON.stringify(x) : String(x))).join(', ') || '[]';
-  if (typeof v === 'object') return JSON.stringify(v);
-  if (v === Infinity) return '∞';
-  return String(v);
+// 값을 보기 좋은 노드로: 불리언→✓/✗, 문자열 배열→칩, 객체/객체배열→코드블록
+function valueNode(v) {
+  if (v === null || v === undefined) return el('span', { class: 'kv-v muted', text: '—' });
+  if (typeof v === 'boolean') return el('span', { class: 'kv-v', text: v ? '✓' : '✗' });
+  if (v === Infinity) return el('span', { class: 'kv-v', text: '∞' });
+  if (Array.isArray(v)) {
+    if (!v.length) return el('span', { class: 'kv-v muted', text: '[]' });
+    if (v.every((x) => x === null || typeof x !== 'object')) {
+      return el('span', {}, v.map((x) => el('span', { class: 'chip', text: String(x) })));
+    }
+    return el('pre', { class: 'codeblock', text: v.map((x) => JSON.stringify(x)).join('\n') });
+  }
+  if (typeof v === 'object') return el('pre', { class: 'codeblock', text: JSON.stringify(v, null, 2) });
+  return el('span', { class: 'kv-v', text: String(v) });
 }
 
 function renderItemsTab() {
@@ -287,18 +295,33 @@ function renderItemsTab() {
     detailWrap.innerHTML = '';
     const it = items[state.sel.items];
     if (!it) { detailWrap.append(el('div', { class: 'hint', text: '아이템을 선택하세요.' })); return; }
+
     detailWrap.append(el('h2', { text: `${it.icon || ''} ${it.name || it.id}` }));
     detailWrap.append(el('div', { class: 'sub', text: it.id }));
-    if (it.description) detailWrap.append(el('p', { class: 'hint', text: it.description }));
+
+    // 분류 칩 (type / subtype / rarity)
+    const cls = [];
+    if (it.type) cls.push(el('span', { class: 'chip', text: `type: ${it.type}` }));
+    if (it.subtype) cls.push(el('span', { class: 'chip', text: `subtype: ${it.subtype}` }));
+    if (it.rarity) cls.push(el('span', { class: 'chip', text: `rarity: ${it.rarity}` }));
+    if (cls.length) detailWrap.append(el('div', { class: 'chips' }, cls));
+
+    if (it.description) detailWrap.append(el('div', { class: 'desc', text: it.description }));
+
+    // 나머지 필드 (분류·헤더 필드는 위에서 표시했으므로 제외)
+    const skip = ['id', 'name', 'icon', 'description', 'type', 'subtype', 'rarity'];
     const kv = el('div', { class: 'kv' });
     for (const k of Object.keys(it)) {
-      if (['id', 'name', 'icon', 'description'].includes(k)) continue;
+      if (skip.includes(k)) continue;
       kv.append(el('div', { class: 'kv-row' }, [
         el('span', { class: 'kv-k', text: k }),
-        el('span', { class: 'kv-v', text: fmtField(it[k]) }),
+        valueNode(it[k]),
       ]));
     }
-    detailWrap.append(kv);
+    if (kv.children.length) {
+      detailWrap.append(el('div', { class: 'kv-title', text: '속성' }));
+      detailWrap.append(kv);
+    }
   };
 
   const renderList = () => {
