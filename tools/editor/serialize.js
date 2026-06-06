@@ -208,6 +208,14 @@ export const DATA_FILES = {
     decl: 'const MAIN_QUESTS = {',
     label: '메인 퀘스트',
   },
+  // 랜드마크 카드 메타 — 신규 랜드마크 생성 시 LANDMARK_DATA와 함께 기록.
+  // locationCardMeta.js에는 LOCATION_CARD_META·LANDMARK_CARD_META 두 블록이 있으나
+  // decl 문자열이 고유하므로 LANDMARK_CARD_META 블록만 단독 splice 된다.
+  landmarkMeta: {
+    path: 'js/data/locationCardMeta.js',
+    decl: 'export const LANDMARK_CARD_META = {',
+    label: '랜드마크 카드 메타',
+  },
   // 아이템 정의 소스 (편집 가능). items.js는 이들을 병합/파생하는 애그리게이터.
   items_base:       { path: 'js/data/items_base.js',       decl: 'const ITEMS_BASE = {',       label: '아이템:기초' },
   items_combat:     { path: 'js/data/items_combat.js',     decl: 'const ITEMS_COMBAT = {',     label: '아이템:전투' },
