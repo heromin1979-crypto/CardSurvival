@@ -70,6 +70,59 @@ function districtName(id) {
   return state.files.districts?.data?.[id]?.name || '';
 }
 
+// ─── 필드 설명 (마우스 오버 툴팁) ────────────────────────────
+const FIELD_HELP = {
+  // 장소(구)
+  dangerLevel: '위험도 등급(1~4). 높을수록 조우·전투 위험이 큽니다.',
+  travelCostTP: '이 구역으로 이동할 때 드는 시간(TP). 1TP = 게임 내 15분.',
+  radiation: '방사선 수치. 높으면 피폭 위험이 있습니다.',
+  encounterChance: '탐색 시 적과 마주칠 확률(0~1). 예: 0.15 = 15%.',
+  noiseGen: '활동 시 발생하는 소음. 높을수록 적을 끌어들입니다.',
+  fishingQuality: '낚시 품질(높을수록 좋은 어획). 낚시 가능 구역에만 적용.',
+  hasFishing: '이 구역에서 낚시가 가능한지 여부.',
+  // 드랍 테이블
+  definitionId: '드랍되는 아이템의 고유 ID입니다. (📦 아이템 탭에서 검색해 확인)',
+  id: '드랍되는 아이템의 고유 ID입니다. (📦 아이템 탭에서 검색해 확인)',
+  weight: '추첨 가중치. 클수록 더 자주 나옵니다. 드랍 확률 = 이 값 ÷ 같은 표의 weight 합계.',
+  minQty: '한 번 드랍될 때의 최소 수량.',
+  maxQty: '한 번 드랍될 때의 최대 수량.',
+  contamChance: '오염(불결) 상태로 나올 확률(0~1). 예: 0.1 = 10%.',
+  // 랜드마크
+  dangerMod: '이 세부장소의 추가 위험도 보정값(클수록 위험).',
+  lootCount: '탐색 1회에 나오는 아이템 개수 범위 [최소, 최대].',
+  // 퀘스트 기본
+  title: '퀘스트 제목(화면에 표시되는 이름).',
+  icon: '퀘스트 아이콘(이모지).',
+  dayTrigger: '이 퀘스트가 시작(활성화)되는 게임 일차(Day).',
+  deadlineDays: '시작 후 완료 제한 일수. ∞(무한)면 기한이 없습니다.',
+  desc: '퀘스트 설명 문구.',
+  prerequisite: '이 퀘스트보다 먼저 완료해야 하는 선행 퀘스트. 비우면 선행 조건이 없습니다.',
+  // 목표(objective)
+  type: '목표 종류: collect_item(특정 아이템 수집) · collect_item_type(분류별 수집) · craft_item(제작) · build_structure(건설) · survive_days(생존) · visit_district(특정 구 방문).',
+  count: '목표 달성에 필요한 수량/횟수.',
+  itemType: '수집해야 할 아이템 분류(예: food, water, medical).',
+  category: '제작해야 할 아이템 카테고리(예: structure).',
+  districtId: '방문해야 할 구(district)의 ID.',
+  days: '버텨야 하는 생존 일수.',
+  // 보상/패널티
+  morale: '사기(정신력) 변화량. 보상은 +값, 실패 패널티는 -값.',
+  items: '지급(보상) 또는 차감되는 아이템 목록.',
+  qty: '아이템 수량.',
+  trust: 'NPC 신뢰도 변화량.',
+  skillXp: '스킬 경험치 보상량.',
+  // 드랍 테이블 표시 열
+  __name: '아이템 ID에 연결된 표시 이름(자동).',
+  __pct: '같은 표의 weight 합계 대비 이 항목의 드랍 확률.',
+};
+function helpFor(key) { return FIELD_HELP[key] || ''; }
+
+// 설명이 있으면 점선 밑줄 + 마우스 오버 툴팁을 단 라벨 생성
+function fieldLabel(text, key = text) {
+  const help = helpFor(key);
+  return el('label', help ? { text, title: help, class: 'has-help' } : { text });
+}
+
+
 // 변경/검증 배지 + 변경됨 표시 + 저장 버튼 상태를 실제 diff로 동기화
 function refreshChangeCount() {
   const changes = computeChanges();
@@ -506,12 +559,16 @@ function autoSubject() {
 function lootTableEditor(rows, idKey, extraCols, fileKey) {
   const total = rows.reduce((s, r) => s + (Number(r.weight) || 0), 0) || 1;
   const tbl = el('table', { class: 'loot' });
+  const th = (text, key) => {
+    const help = helpFor(key);
+    return el('th', help ? { text, title: help, class: 'has-help' } : { text });
+  };
   const head = el('tr', {}, [
-    el('th', { text: '아이템 ID' }),
-    el('th', { text: '이름' }),
-    el('th', { text: 'weight' }),
-    ...extraCols.map((c) => el('th', { text: c.label })),
-    el('th', { text: '%' }),
+    th('아이템 ID', idKey),
+    th('이름', '__name'),
+    th('weight', 'weight'),
+    ...extraCols.map((c) => th(c.label, c.key)),
+    th('%', '__pct'),
     el('th', {}),
   ]);
   tbl.append(el('thead', {}, head));
@@ -590,7 +647,7 @@ function scalarInput(obj, key, fileKey) {
     obj[key] = isNum ? Number(inp.value) : inp.value;
     markDirty(fileKey);
   });
-  return el('div', { class: 'field' }, [el('label', { text: key }), inp]);
+  return el('div', { class: 'field' }, [fieldLabel(key), inp]);
 }
 
 // item-reward rows: [{definitionId, qty}]
@@ -605,9 +662,9 @@ function itemRows(arr, fileKey) {
     const qty = el('input', { class: 'num', type: 'number', value: it.qty ?? 1 });
     qty.addEventListener('input', () => { it.qty = Number(qty.value); markDirty(fileKey); });
     wrap.append(el('div', { class: 'field-row' }, [
-      el('div', { class: 'field' }, [el('label', { text: 'item' }), id]),
-      el('div', { class: 'field' }, [el('label', { text: '이름' }), nm]),
-      el('div', { class: 'field' }, [el('label', { text: 'qty' }), qty]),
+      el('div', { class: 'field' }, [fieldLabel('item', 'definitionId'), id]),
+      el('div', { class: 'field' }, [fieldLabel('이름', '__name'), nm]),
+      el('div', { class: 'field' }, [fieldLabel('qty', 'qty'), qty]),
       el('button', { class: 'ghost danger', text: '✕',
         onclick: () => { arr.splice(idx, 1); markDirty(fileKey); rerenderDetail(); } }),
     ]));
@@ -712,7 +769,7 @@ function renderLandmarkDetail(root, lm) {
       const mk = (i, label) => {
         const inp = el('input', { type: 'number', value: sub.lootCount[i] ?? 0 });
         inp.addEventListener('input', () => { sub.lootCount[i] = Number(inp.value); markDirty('landmarks'); });
-        return el('div', { class: 'field' }, [el('label', { text: label }), inp]);
+        return el('div', { class: 'field' }, [fieldLabel(label, 'lootCount'), inp]);
       };
       fr.append(mk(0, 'lootCount min'), mk(1, 'lootCount max'));
     }
@@ -786,7 +843,7 @@ function renderQuestDetail(root, q, allQuests) {
     });
     num.addEventListener('input', () => { q.deadlineDays = Number(num.value); markDirty('quests'); });
     fr1.append(el('div', { class: 'field' }, [
-      el('label', { text: 'deadlineDays' }),
+      fieldLabel('deadlineDays'),
       el('div', { class: 'field-row' }, [num, el('label', { class: 'hint' }, [chk, ' ∞'])]),
     ]));
   }
@@ -796,7 +853,7 @@ function renderQuestDetail(root, q, allQuests) {
   if ('desc' in q) {
     const ta = el('textarea', { text: q.desc });
     ta.addEventListener('input', () => { q.desc = ta.value; markDirty('quests'); });
-    root.append(el('div', { class: 'field grow' }, [el('label', { text: 'desc' }), ta]));
+    root.append(el('div', { class: 'field grow' }, [fieldLabel('desc'), ta]));
   }
 
   // prerequisite (chain linkage)
@@ -814,7 +871,7 @@ function renderQuestDetail(root, q, allQuests) {
   const downstream = Object.values(allQuests).filter((x) => x.prerequisite === q.id).map((x) => x.title || x.id);
   root.append(el('fieldset', {}, [
     el('legend', { text: '연계 (체인)' }),
-    el('div', { class: 'field' }, [el('label', { text: 'prerequisite (선행 퀘스트)' }), sel]),
+    el('div', { class: 'field' }, [fieldLabel('prerequisite (선행 퀘스트)', 'prerequisite'), sel]),
     el('div', { class: 'hint', text: `→ 이 퀘스트를 선행으로 하는 후속: ${downstream.length ? downstream.join(', ') : '없음'}` }),
   ]));
 
@@ -849,7 +906,7 @@ function objectiveEditor(q) {
     typeSel.append(el('option', { value: o.type, selected: true }, o.type));
   }
   typeSel.addEventListener('change', () => { o.type = typeSel.value; markDirty('quests'); rerenderDetail(); });
-  wrap.append(el('div', { class: 'field' }, [el('label', { text: 'type' }), typeSel]));
+  wrap.append(el('div', { class: 'field' }, [fieldLabel('type'), typeSel]));
 
   // render all non-type keys generically (preserves any variant fields)
   const fr = el('div', { class: 'field-row' });
@@ -859,12 +916,12 @@ function objectiveEditor(q) {
       const inp = el('input', { class: 'id', value: o[key] ?? '', list: 'item-ids' });
       const nm = el('span', { class: 'chain-badge', text: itemName(o[key]) });
       inp.addEventListener('input', () => { o[key] = inp.value.trim(); nm.textContent = itemName(o[key]); markDirty('quests'); });
-      fr.append(el('div', { class: 'field' }, [el('label', { text: key }), el('div', { class: 'field-row' }, [inp, nm])]));
+      fr.append(el('div', { class: 'field' }, [fieldLabel(key), el('div', { class: 'field-row' }, [inp, nm])]));
     } else if (key === 'districtId') {
       const inp = el('input', { class: 'id', value: o[key] ?? '' });
       const nm = el('span', { class: 'chain-badge', text: districtName(o[key]) });
       inp.addEventListener('input', () => { o[key] = inp.value.trim(); nm.textContent = districtName(o[key]); markDirty('quests'); });
-      fr.append(el('div', { class: 'field' }, [el('label', { text: key }), el('div', { class: 'field-row' }, [inp, nm])]));
+      fr.append(el('div', { class: 'field' }, [fieldLabel(key), el('div', { class: 'field-row' }, [inp, nm])]));
     } else {
       fr.append(scalarInput(o, key, 'quests'));
     }

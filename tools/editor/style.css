@@ -77,6 +77,8 @@ main { padding: 16px; max-width: 1100px; margin: 0 auto; }
 .field-row { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 12px; }
 .field { display: flex; flex-direction: column; gap: 4px; }
 .field label { font-size: 11px; color: var(--muted); }
+.has-help { cursor: help; text-decoration: underline dotted; text-underline-offset: 3px; }
+table.loot th.has-help { text-decoration: underline dotted; text-underline-offset: 3px; }
 .field input, .field select, .field textarea {
   background: var(--panel2); color: var(--text); border: 1px solid var(--border);
   border-radius: 6px; padding: 6px 8px; font-size: 13px; font-family: inherit;
