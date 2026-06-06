@@ -383,11 +383,11 @@ const ExploreSystem = {
         if (!gs.location.districtLootDay) gs.location.districtLootDay = {};
         gs.location.districtLootDay[districtId] = gs.time.day;
       } else {
-        // 루팅 완료 30일 경과 시 감소 리스폰 (50% 드롭률, 수량 절반)
+        // 루팅 완료 10일 경과 시 감소 리스폰 (50% 드롭률, 수량 절반)
         if (!gs.location.districtLootDay) gs.location.districtLootDay = {};
         const lastLootDay = gs.location.districtLootDay[districtId] ?? 0;
         const daysSinceLoot = gs.time.day - lastLootDay;
-        if (daysSinceLoot >= 30) {
+        if (daysSinceLoot >= 10) {
           const fullLoot = generateRouteCards(districtId);
           for (const item of fullLoot) {
             if (Math.random() < 0.5) {
