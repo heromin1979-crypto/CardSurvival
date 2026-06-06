@@ -22,7 +22,6 @@ const state = {
   itemNames: new Map(), // item id -> 표시 이름
   items: {},            // full item definitions (read-only 참조용)
   itemSearch: '',       // 아이템 탭 검색어
-  dirty: new Set(),     // file keys with unsaved changes
   tab: 'districts',
   sel: {},              // tab -> selected sub-key
 };
@@ -53,11 +52,14 @@ function status(msg, kind = 'info') {
   s.textContent = msg;
 }
 
-function markDirty(fileKey) {
-  state.dirty.add(fileKey);
-  $('#dirty').hidden = false;
-  $('#save-btn').disabled = false;
+// 편집 핸들러가 호출 — 실제 변경 여부를 다시 계산해 UI 동기화
+function markDirty() {
   refreshChangeCount();
+}
+
+// 원본 대비 변경된 파일 키 목록 (플래그가 아니라 실제 diff 기반)
+function changedFileKeys() {
+  return [...new Set(computeChanges().map((g) => g.fileKey))];
 }
 
 // id → 표시 이름 헬퍼
@@ -67,18 +69,19 @@ function itemName(id) {
 function districtName(id) {
   return state.files.districts?.data?.[id]?.name || '';
 }
-// 'name (id)' 형태로 라벨링
-function labelWithId(name, id) {
-  return name ? `${name} (${id})` : id;
-}
 
+// 변경/검증 배지 + 변경됨 표시 + 저장 버튼 상태를 실제 diff로 동기화
 function refreshChangeCount() {
-  const n = computeChanges().reduce((s, g) => s + g.changes.length, 0);
+  const changes = computeChanges();
+  const n = changes.reduce((s, g) => s + g.changes.length, 0);
+  const changedFiles = new Set(changes.map((g) => g.fileKey)).size;
   const badge = $('#change-count');
   if (badge) badge.textContent = n ? `(${n})` : '';
-  const vn = collectIssues().length;
   const vbadge = $('#validate-count');
-  if (vbadge) vbadge.textContent = vn ? `(${vn})` : '';
+  if (vbadge) { const vn = collectIssues().length; vbadge.textContent = vn ? `(${vn})` : ''; }
+  // 변경이 있을 때만 "변경됨" 표시 + 저장 버튼 활성화
+  $('#dirty').hidden = changedFiles === 0;
+  $('#save-btn').disabled = changedFiles === 0;
 }
 
 // ─── tab switching ───────────────────────────────────────────
@@ -131,11 +134,8 @@ async function loadAll() {
     status(`데이터 로드 실패: ${e.message}`, 'err');
     return;
   }
-  state.dirty.clear();
-  $('#dirty').hidden = true;
-  // 로드 후 버튼 활성화 — 변경 저장뿐 아니라 밀린 커밋 푸시(동기화)에도 사용
-  $('#save-btn').disabled = false;
-  $('#save-btn').title = '변경 저장 + 커밋 + 푸시 (변경이 없으면 밀린 커밋만 동기화)';
+  // 로드 직후 = 변경 없음. 저장 버튼은 변경이 생기면 자동 활성화된다.
+  $('#save-btn').title = '변경 저장 + 커밋 + 푸시';
   refreshChangeCount();
   if (state.gitAvailable) {
     status(`불러오기 완료 (브랜치: ${state.branch}). 탭에서 편집하세요.`, 'ok');
@@ -157,46 +157,50 @@ async function saveAll() {
       '\n\n[확인]=무시하고 저장/푸시,  [취소]=⚠️검증 탭에서 위치 확인');
     if (!ok) { switchTab('validate'); return; }
   }
+  const changed = changedFileKeys();
+  if (!changed.length) { status('변경된 내용이 없습니다.', 'info'); return; }
   $('#save-btn').disabled = true;
   status('로컬 파일 기록 중…', 'info');
   try {
-    // 1) 변경된 파일을 스플라이스해 디스크에 기록
+    // 1) 변경된 파일을 스플라이스해 디스크에 기록 (실제 텍스트가 바뀐 것만)
     const files = [];
-    for (const key of state.dirty) {
+    for (const key of changed) {
       const cfg = DATA_FILES[key];
       const f = state.files[key];
       const newText = spliceObjectLiteral(f.text, cfg.decl, f.data);
-      if (newText === f.text) continue;
+      if (newText === f.text) continue; // 이미 디스크/커밋에 반영된 경우 (푸시만 필요)
       f.text = newText;
       files.push({ path: cfg.path, content: newText });
     }
     if (files.length) await saveFiles(files);
-    state.dirty.clear();
-    $('#dirty').hidden = true;
-    refreshChangeCount();
 
-    // 2) git이 없으면 디스크 기록까지만
+    // 2) git이 없으면 디스크 기록까지만 — 변경 baseline 갱신 후 종료
     if (!state.gitAvailable) {
+      for (const key of changed) state.files[key].original = structuredClone(state.files[key].data);
+      refreshChangeCount();
       status(`💾 로컬 파일 ${files.length}개 저장 완료. git 사용 불가로 푸시 생략 — 수동으로 커밋/푸시하세요.`, 'info');
       return;
     }
 
-    // 3) git add/commit/push (새 변경이 없어도 밀린 커밋 flush)
+    // 3) git add/commit/push (이미 커밋만 되고 안 밀린 게 있으면 함께 flush)
     status('git 커밋 & 푸시 중…', 'info');
     const result = await pushChanges(state.commitMsg, files.map((f) => f.path));
+
+    // 성공 → 변경 baseline 갱신 (이제 "변경 없음" → 버튼 비활성화)
+    for (const key of changed) state.files[key].original = structuredClone(state.files[key].data);
+    refreshChangeCount();
+
     if (result.committed && result.pushed) {
-      status(`✅ 커밋 + 푸시 완료 → ${result.branch}  (${files.length}개 파일)`, 'ok');
+      status(`✅ 커밋 + 푸시 완료 → ${result.branch}  (${changed.length}개 파일)`, 'ok');
     } else if (!result.committed && result.pushed) {
-      status(`✅ 새 변경은 없지만 밀려있던 로컬 커밋을 푸시했습니다 → ${result.branch}`, 'ok');
+      status(`✅ 밀려있던 로컬 커밋을 푸시했습니다 → ${result.branch}`, 'ok');
     } else {
-      status('이미 최신 상태입니다 (푸시할 변경 없음).', 'info');
+      status('✅ 저장 완료 (원격은 이미 최신).', 'ok');
     }
   } catch (e) {
-    // 파일은 이미 디스크에 기록된 상태 — 푸시 단계 실패만 알림
-    status(`💾 파일은 저장됨. 푸시 실패: ${e.message}${e.detail ? `\n${e.detail}` : ''}`, 'err');
-  } finally {
-    // 작업 종료 후 버튼 재활성화 (재시도/동기화 가능하도록)
-    $('#save-btn').disabled = false;
+    // 파일은 디스크에 기록됨. baseline은 갱신하지 않아 변경 표시/버튼 유지 → 재시도 가능
+    refreshChangeCount();
+    status(`💾 파일은 저장됨. 커밋/푸시 실패: ${e.message}${e.detail ? `\n${e.detail}` : ''}`, 'err');
   }
 }
 $('#save-btn').addEventListener('click', saveAll);
@@ -396,19 +400,11 @@ function fmtVal(v) {
   return String(v);
 }
 
-function recomputeDirty(fileKey) {
-  const changed = computeChanges().some((g) => g.fileKey === fileKey);
-  if (changed) state.dirty.add(fileKey); else state.dirty.delete(fileKey);
-  $('#dirty').hidden = state.dirty.size === 0;
-  $('#save-btn').disabled = state.dirty.size === 0;
-  refreshChangeCount();
-}
-
 function revertEntity(fileKey, key) {
   const f = state.files[fileKey];
   if (f.original && key in f.original) f.data[key] = structuredClone(f.original[key]);
   else delete f.data[key];
-  recomputeDirty(fileKey);
+  refreshChangeCount();
   render();
 }
 
@@ -417,9 +413,6 @@ function revertAll() {
     const f = state.files[fileKey];
     if (f) f.data = structuredClone(f.original);
   }
-  state.dirty.clear();
-  $('#dirty').hidden = true;
-  $('#save-btn').disabled = false;
   refreshChangeCount();
   render();
 }
