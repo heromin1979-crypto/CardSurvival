@@ -129,6 +129,7 @@ const CombatUI = {
 
       let intentIcon = '';
       let intentLabel = '';
+      let countdown = null;
 
       if (entry.type === 'player') {
         label = (gs.player?.name ?? '생존자').slice(0, 4);
@@ -145,6 +146,7 @@ const CombatUI = {
           if (!dead && e._nextIntent) {
             intentIcon = e._nextIntent.iconEmoji ?? '';
             intentLabel = e._nextIntent.label ?? '';
+            countdown = e._nextIntent.countdown ?? null;
           }
         }
       } else if (entry.type === 'companion') {
@@ -165,9 +167,14 @@ const CombatUI = {
       const cls = ['init-slot', entry.type];
       if (isActive) cls.push('active');
       if (dead)     cls.push('dead');
+      if (countdown != null && countdown <= 1) cls.push('charging');
 
       const intentHtml = intentIcon
         ? `<span class="init-intent" title="${intentLabel}">${intentIcon}</span>`
+        : '';
+
+      const countdownHtml = countdown != null
+        ? `<span class="init-countdown">${countdown}</span>`
         : '';
 
       return `
@@ -175,7 +182,7 @@ const CombatUI = {
           <span class="init-icon">${icon}</span>
           <span class="init-label">${label}</span>
           <div class="init-hp-bar"><div class="init-hp-fill" style="width:${hpPct.toFixed(0)}%"></div></div>
-          ${intentHtml}
+          ${intentHtml}${countdownHtml}
         </div>`;
     }).join('');
 

@@ -116,6 +116,7 @@ const ENEMIES = {
     attack: { damage: [14, 22], accuracy: 0.68, noiseOnAttack: 25 },
     defense: 2,
     xp: 25,
+    morale: { min: 80, max: 120 },
     lootTable: [
       { definitionId: 'pistol_ammo', weight: 35, minQty: 2, maxQty: 8 },
       { definitionId: 'canned_food', weight: 20, minQty: 1, maxQty: 3 },
@@ -145,6 +146,7 @@ const ENEMIES = {
     attack: { damage: [18, 28], accuracy: 0.72, noiseOnAttack: 30 },
     defense: 4,
     xp: 45,
+    morale: { min: 110, max: 150 },
     lootTable: [
       { definitionId: 'pistol_ammo', weight: 30, minQty: 3, maxQty: 8 },
       { definitionId: 'canned_food', weight: 15, minQty: 1, maxQty: 3 },
@@ -250,6 +252,85 @@ const ENEMIES = {
     description: '산성 체액을 분사하는 특수 감염자. 명중 시 감염·방사선이 추가 상승한다.',
     stealthDifficulty: 0.6,
   },
+
+  zombie_bloater: {
+    id: 'zombie_bloater',
+    name: '블로터',
+    icon: '🤰',
+    image: './assets/images/zombie.png',
+    type: 'zombie',
+    hp: { min: 45, max: 65 },
+    attack: { damage: [4, 8], accuracy: 0.55, noiseOnAttack: 4 },
+    defense: 0,
+    xp: 32,
+    lootTable: [
+      { definitionId: 'contaminated_water', weight: 30, minQty: 1, maxQty: 1 },
+      { definitionId: 'tattered_rags',      weight: 25, minQty: 1, maxQty: 2 },
+      { definitionId: 'bone',               weight: 20, minQty: 1, maxQty: 1 },
+    ],
+    infectionChance: 0.35,
+    aiPattern: 'normal',
+    specialSkills: [],
+    statusInflict: null,
+    weaknesses: ['fire', 'explosive'],
+    resistances: ['blade', 'bullet'],
+    timedThreat: { id: 'self_destruct', chargeTurns: 3, chargingAttacks: true,
+      counters: { weakness: ['fire', 'explosive'], stunDelays: true } },
+    description: '체내 가스가 부푼 감염자. 시간이 지나면 자폭해 광역 감염을 퍼뜨린다. 불·폭발로 빠르게 처리해야 한다.',
+    stealthDifficulty: 0.4,
+  },
+  zombie_screamer: {
+    id: 'zombie_screamer',
+    name: '스크리머',
+    icon: '🗣️',
+    image: './assets/images/zombie.png',
+    type: 'zombie',
+    hp: { min: 30, max: 45 },
+    attack: { damage: [5, 9], accuracy: 0.6, noiseOnAttack: 6 },
+    defense: 0,
+    xp: 28,
+    lootTable: [
+      { definitionId: 'tattered_rags', weight: 30, minQty: 1, maxQty: 2 },
+      { definitionId: 'cloth_scrap',   weight: 25, minQty: 1, maxQty: 2 },
+      { definitionId: 'bone',          weight: 20, minQty: 1, maxQty: 1 },
+    ],
+    infectionChance: 0.25,
+    aiPattern: 'normal',
+    specialSkills: [],
+    statusInflict: null,
+    weaknesses: ['bullet', 'fire'],
+    resistances: [],
+    timedThreat: { id: 'summon_horde', chargeTurns: 2, chargingAttacks: true,
+      counters: { silentSuppress: true, stunDelays: true } },
+    description: '비명으로 동족을 부르는 감염자. 조용히(silent) 처치하면 비명을 막을 수 있다.',
+    stealthDifficulty: 0.75,
+  },
+  zombie_charger: {
+    id: 'zombie_charger',
+    name: '돌진자',
+    icon: '🐗',
+    image: './assets/images/zombie.png',
+    type: 'zombie',
+    hp: { min: 35, max: 55 },
+    attack: { damage: [6, 10], accuracy: 0.6, noiseOnAttack: 7 },
+    defense: 1,
+    xp: 30,
+    lootTable: [
+      { definitionId: 'tattered_rags', weight: 30, minQty: 1, maxQty: 2 },
+      { definitionId: 'scrap_metal',   weight: 20, minQty: 1, maxQty: 2 },
+      { definitionId: 'bone',          weight: 20, minQty: 1, maxQty: 1 },
+    ],
+    infectionChance: 0.3,
+    aiPattern: 'aggressive',
+    specialSkills: [],
+    statusInflict: null,
+    weaknesses: ['blade', 'fire'],
+    resistances: [],
+    timedThreat: { id: 'charge_strike', chargeTurns: 1, chargingAttacks: false,
+      counters: { stunDelays: true } },
+    description: '몸을 웅크렸다가 돌진하는 감염자. 강타 준비 중 기절시키거나 방어로 받아쳐야 한다.',
+    stealthDifficulty: 0.6,
+  },
 };
 
 // Encounter table per node danger level (1~5)
@@ -276,29 +357,51 @@ const ENCOUNTER_TABLES = {
     { enemyId: 'zombie_brute',  weight: 15 },
     { enemyId: 'zombie_acid',   weight: 15 },
     { enemyId: 'raider',        weight: 15 },
-    { enemyId: 'zombie_horde',  weight: 10 },
-    { enemyId: 'raider_elite',  weight: 5  },
-    { enemyId: 'rabid_dog',     weight: 5  },
+    { enemyId: 'zombie_horde',    weight: 10 },
+    { enemyId: 'raider_elite',   weight: 5  },
+    { enemyId: 'rabid_dog',      weight: 5  },
+    { enemyId: 'zombie_bloater', weight: 8  },
+    { enemyId: 'zombie_screamer',weight: 8  },
+    { enemyId: 'zombie_charger', weight: 10 },
   ],
   // DL4: 고위험 구역 — 거대 좀비·무리 주력, 정예 약탈자 빈출
   4: [
-    { enemyId: 'zombie_brute',  weight: 25 },
-    { enemyId: 'zombie_horde',  weight: 20 },
-    { enemyId: 'zombie_acid',   weight: 15 },
-    { enemyId: 'raider_elite',  weight: 15 },
-    { enemyId: 'zombie_runner', weight: 15 },
-    { enemyId: 'raider',        weight: 5  },
-    { enemyId: 'rabid_dog',     weight: 5  },
+    { enemyId: 'zombie_brute',   weight: 25 },
+    { enemyId: 'zombie_horde',   weight: 20 },
+    { enemyId: 'zombie_acid',    weight: 15 },
+    { enemyId: 'raider_elite',   weight: 15 },
+    { enemyId: 'zombie_runner',  weight: 15 },
+    { enemyId: 'raider',         weight: 5  },
+    { enemyId: 'rabid_dog',      weight: 5  },
+    { enemyId: 'zombie_bloater', weight: 12 },
+    { enemyId: 'zombie_screamer',weight: 12 },
+    { enemyId: 'zombie_charger', weight: 13 },
   ],
   // DL5: 극위험 구역 — 최강 적 위주, 약한 적 없음
   5: [
-    { enemyId: 'zombie_brute',  weight: 30 },
-    { enemyId: 'zombie_horde',  weight: 30 },
-    { enemyId: 'raider_elite',  weight: 20 },
-    { enemyId: 'zombie_acid',   weight: 15 },
-    { enemyId: 'zombie_runner', weight: 5  },
+    { enemyId: 'zombie_brute',   weight: 30 },
+    { enemyId: 'zombie_horde',   weight: 30 },
+    { enemyId: 'raider_elite',   weight: 20 },
+    { enemyId: 'zombie_acid',    weight: 15 },
+    { enemyId: 'zombie_runner',  weight: 5  },
+    { enemyId: 'zombie_bloater', weight: 15 },
+    { enemyId: 'zombie_screamer',weight: 12 },
+    { enemyId: 'zombie_charger', weight: 15 },
   ],
 };
+
+function instantiateEnemy(def) {
+  const hp = def.hp.min + Math.floor(Math.random() * (def.hp.max - def.hp.min + 1));
+  return {
+    ...def,
+    currentHp: hp,
+    maxHp:     hp,
+    _skillCooldowns: {},
+    _statusEffects: [],
+    _chargeRemaining: def.timedThreat?.chargeTurns ?? null,
+    currentMorale:    def.type === 'human' ? (def.morale?.max ?? 100) : null,
+  };
+}
 
 function rollEnemy(dangerLevel) {
   const table = ENCOUNTER_TABLES[Math.min(dangerLevel, 5)] || ENCOUNTER_TABLES[1];
@@ -307,18 +410,10 @@ function rollEnemy(dangerLevel) {
   for (const entry of table) {
     rand -= entry.weight;
     if (rand <= 0) {
-      const def = ENEMIES[entry.enemyId];
-      const hp = def.hp.min + Math.floor(Math.random() * (def.hp.max - def.hp.min + 1));
-      return {
-        ...def,
-        currentHp: hp,
-        maxHp:     hp,
-        _skillCooldowns: {},
-        _statusEffects: [],
-      };
+      return instantiateEnemy(ENEMIES[entry.enemyId]);
     }
   }
-  return { ...ENEMIES['zombie_common'], currentHp: 30, maxHp: 30, _skillCooldowns: {}, _statusEffects: [] };
+  return instantiateEnemy(ENEMIES['zombie_common']);
 }
 
 /**

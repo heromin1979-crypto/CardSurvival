@@ -184,6 +184,30 @@ const BALANCE = {
         },
       },
     },
+    // ── 타이밍 압박 적 (timedThreat) ──
+    timedThreats: {
+      bloater: {
+        aoeDamage:      [25, 40],
+        corpseBurst:    [8, 14],
+        infectionCloud: 15,
+      },
+      screamer: {
+        summonCount:  [1, 2],
+        summonNoise:  25,
+      },
+      charger: {
+        strikeDamage:     [30, 45],
+        strikeStun:       1,
+        guardCounterMult: 2.0,
+      },
+    },
+    // ── 사기 격파 (인간 적) ──
+    moraleBreak: {
+      routThreshold:      0,
+      critMoraleDmg:      25,
+      allyDeathMoraleDmg: 30,
+      routLootMult:       0.5,
+    },
   },
 
   // ── 캠프파이어 ──────────────────────────────────────

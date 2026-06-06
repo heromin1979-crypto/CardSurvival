@@ -11,7 +11,7 @@ import SkillSystem  from './SkillSystem.js';
 import DiseaseSystem from './DiseaseSystem.js';
 import BodySystem    from './BodySystem.js';
 import NPCSystem     from './NPCSystem.js';
-import { rollEnemyGroup } from '../data/enemies.js';
+import { rollEnemyGroup, rollEnemy } from '../data/enemies.js';
 import { NPC_ITEMS } from '../data/npcs.js';
 import BALANCE from '../data/gameBalance.js';
 import CharDialogue from '../data/charDialogues.js';
@@ -433,6 +433,32 @@ const CombatSystem = {
       const finalDmg = Math.max(1, damage - (enemy.defense ?? 0));
       enemy.currentHp = Math.max(0, enemy.currentHp - finalDmg);
 
+      if (enemy.currentHp <= 0) {
+        const wDef = (weaponId && gs.cards[weaponId]) ? gs.getCardDef(weaponId) : null;
+        gs.combat._lastKillContext = {
+          weaponType: wDef?.weaponType ?? 'unarmed',
+          isSilent:   !!wDef?.tags?.includes('silent'),
+          isMelee:    !wDef?.combat?.requiresAmmo,
+        };
+      }
+
+      // 무기 기절 부여 + 충전 적 인터럽트
+      const wInst = (weaponId && gs.cards[weaponId]) ? gs.getCardDef(weaponId) : null;
+      const stunDef = wInst?.combat?.statusInflict;
+      if (stunDef?.id === 'stun' && enemy.currentHp > 0 && Math.random() < (stunDef.chance ?? 1)) {
+        if ((enemy._chargeRemaining ?? null) !== null && enemy.timedThreat?.counters?.stunDelays) {
+          enemy._chargeRemaining = enemy.timedThreat.id === 'charge_strike'
+            ? enemy.timedThreat.chargeTurns
+            : enemy._chargeRemaining + 1;
+          enemy._nextIntent = this._decideNextIntent(enemy, gs.combat, gs) ?? null;
+          gs.combat.log.push(I18n.t('combatSys.chargeInterrupt', { enemy: I18n.enemyName(enemy.id, enemy.name) }));
+        }
+      }
+
+      if (isCrit && enemy.type === 'human' && enemy.currentMorale != null) {
+        enemy.currentMorale = Math.max(0, enemy.currentMorale - BALANCE.combat.moraleBreak.critMoraleDmg);
+      }
+
       // 다중 타겟 (창/산탄총)
       if (weaponId && gs.cards[weaponId]) {
         const mDef = gs.getCardDef(weaponId);
@@ -832,6 +858,28 @@ const CombatSystem = {
     const target = this._pickTargetByPattern(pattern, targets, enemy);
     if (!target) return null;
 
+    // 타이밍 압박 적: 충전 중이면 카운트다운 의도 우선
+    if ((enemy._chargeRemaining ?? null) !== null && enemy.timedThreat) {
+      const icon = enemy.timedThreat.id === 'self_destruct' ? '💥'
+                 : enemy.timedThreat.id === 'summon_horde'  ? '📣'
+                 : '⚡';
+      const labelMap = {
+        self_destruct: `${enemy._chargeRemaining}턴 후 자폭`,
+        summon_horde:  `${enemy._chargeRemaining}턴 후 증원 소환`,
+        charge_strike: `${enemy._chargeRemaining}턴 후 강타`,
+      };
+      return {
+        action: 'timed_threat',
+        threatId: enemy.timedThreat.id,
+        countdown: enemy._chargeRemaining,
+        targetType: target?.type ?? 'player',
+        targetId: target?.id ?? null,
+        iconEmoji: icon,
+        label: labelMap[enemy.timedThreat.id] ?? '위협 충전',
+        pattern: enemy.aiPattern ?? 'normal',
+      };
+    }
+
     // 스킬 사용 가능 여부 (쿨다운 0인 특수 스킬)
     const readySkill = (enemy.specialSkills ?? []).find(s =>
       (enemy._skillCooldowns?.[s.id] ?? 0) === 0
@@ -865,6 +913,32 @@ const CombatSystem = {
     const gs = GameState;
     const enemy = gs.combat.enemies?.[enemyIdx];
     if (!enemy || enemy.currentHp <= 0) return;
+
+    // 사기 격파: 사기 소진 시 도주(rout)
+    if (enemy.type === 'human' && enemy.currentMorale != null
+        && enemy.currentMorale <= BALANCE.combat.moraleBreak.routThreshold) {
+      enemy._routed = true;
+      enemy.currentHp = 0;
+      gs.combat.log.push(I18n.t('combatSys.enemyRout', { enemy: I18n.enemyName(enemy.id, enemy.name) }));
+      return;
+    }
+
+    // 타이밍 압박: 충전 중/발동 처리
+    if ((enemy._chargeRemaining ?? null) !== null) {
+      if (enemy._chargeRemaining > 0) {
+        if (enemy.timedThreat?.chargingAttacks) {
+          const logs = this._runEnemyAI(enemy);
+          for (const log of logs) { gs.combat.log.push(log); if (gs.player.hp.current <= 0) return; }
+        }
+        enemy._chargeRemaining -= 1;
+        enemy._nextIntent = this._decideNextIntent(enemy, gs.combat, gs) ?? null;
+        return;
+      }
+      this._resolveTimedThreat(enemy);
+      enemy._chargeRemaining = enemy.timedThreat?.chargeTurns ?? null;
+      if (enemy.currentHp > 0) enemy._nextIntent = this._decideNextIntent(enemy, gs.combat, gs) ?? null;
+      return;
+    }
 
     const intent = enemy._nextIntent;
     if (intent?.targetType === 'companion' && intent.targetId) {
@@ -970,6 +1044,62 @@ const CombatSystem = {
       if (gs.player.hp.current <= 0) break;
     }
     return logs;
+  },
+
+  // ── 타이밍 압박 트리거 발동 ─────────────────────────────
+  _resolveTimedThreat(enemy) {
+    const gs = GameState;
+    const T = BALANCE.combat.timedThreats;
+    const npcSys = SystemRegistry.get('NPCSystem');
+
+    if (enemy.timedThreat?.id === 'self_destruct') {
+      const [dMin, dMax] = T.bloater.aoeDamage;
+      const dmg = dMin + Math.floor(Math.random() * (dMax - dMin + 1));
+      gs.player.hp.current = Math.max(0, gs.player.hp.current - dmg);
+      gs.modStat('infection', T.bloater.infectionCloud);
+      gs.combat.lastHit = { target: 'player', damage: dmg, isCrit: false };
+      EventBus.emit('playerHit', { damage: dmg });
+      for (const id of (gs.companions ?? [])) {
+        const st = gs.npcs?.states?.[id];
+        if (st && (st.hp ?? 0) > 0 && npcSys?.damageCompanion) npcSys.damageCompanion(id, dmg);
+      }
+      enemy.currentHp = 0;
+      gs.combat.log.push(I18n.t('combatSys.bloaterExplode', { enemy: I18n.enemyName(enemy.id, enemy.name), dmg }));
+      return;
+    }
+
+    if (enemy.timedThreat?.id === 'charge_strike') {
+      const [dMin, dMax] = T.charger.strikeDamage;
+      let dmg = dMin + Math.floor(Math.random() * (dMax - dMin + 1));
+      const armor         = StatSystem.getArmorEffects();
+      const defSkillBonus = SkillSystem.getBonus('defense', 'damageReduction');
+      const totalReduct   = Math.min(BALANCE.armor.damageReductionCap, armor.damageReduction + defSkillBonus);
+      if (totalReduct > 0) dmg = Math.max(1, Math.floor(dmg * (1 - totalReduct)));
+      gs.player.hp.current = Math.max(0, gs.player.hp.current - dmg);
+      if (!gs.combat.playerStatus.some(s => s.id === 'stun')) {
+        gs.combat.playerStatus.push({ id: 'stun', name: I18n.t('combatSys.stun'), duration: T.charger.strikeStun, effect: {} });
+      }
+      gs.combat.lastHit = { target: 'player', damage: dmg, isCrit: true }; // 강타는 연출상 크리티컬 취급(화면 흔들림 트리거)
+      EventBus.emit('playerHit', { damage: dmg });
+      DiseaseSystem.checkCombatInjury(dmg, gs);
+      BodySystem.onCombatHit(dmg, enemy);
+      gs.combat.log.push(I18n.t('combatSys.chargerStrike', { enemy: I18n.enemyName(enemy.id, enemy.name), dmg }));
+      return;
+    }
+
+    if (enemy.timedThreat?.id === 'summon_horde') {
+      const [cMin, cMax] = T.screamer.summonCount;
+      const count = cMin + Math.floor(Math.random() * (cMax - cMin + 1));
+      for (let i = 0; i < count; i++) {
+        const add = rollEnemy(gs.combat.dangerLevel ?? 3);
+        add._nextIntent = this._decideNextIntent(add, gs.combat, gs);
+        gs.combat.enemies.push(add);
+        gs.combat.turnQueue?.push({ type: 'enemy', enemyIdx: gs.combat.enemies.length - 1, order: gs.combat.turnQueue.length });
+      }
+      NoiseSystem.addNoise(T.screamer.summonNoise);
+      gs.combat.log.push(I18n.t('combatSys.screamerSummon', { enemy: I18n.enemyName(enemy.id, enemy.name), count }));
+      return;
+    }
   },
 
   _enemyAttack(enemy) {
@@ -1109,6 +1239,34 @@ const CombatSystem = {
 
   _onEnemyKilled(enemy) {
     const gs  = GameState;
+    const killCtx = gs.combat._lastKillContext ?? {};
+    gs.combat._lastKillContext = null;
+
+    if (enemy.timedThreat?.id === 'self_destruct') {
+      const cleanKill = (enemy.weaknesses ?? []).includes(killCtx.weaponType);
+      if (!cleanKill && killCtx.isMelee) {
+        const [bMin, bMax] = BALANCE.combat.timedThreats.bloater.corpseBurst;
+        const burst = bMin + Math.floor(Math.random() * (bMax - bMin + 1));
+        gs.player.hp.current = Math.max(0, gs.player.hp.current - burst);
+        gs.combat.lastHit = { target: 'player', damage: burst, isCrit: false };
+        EventBus.emit('playerHit', { damage: burst });
+        gs.combat.log.push(I18n.t('combatSys.bloaterCorpseBurst', { dmg: burst }));
+      }
+    }
+    if (enemy.timedThreat?.id === 'summon_horde' && killCtx.weaponType && !killCtx.isSilent) {
+      NoiseSystem.addNoise(BALANCE.combat.timedThreats.screamer.summonNoise);
+      gs.combat.log.push(I18n.t('combatSys.screamerDeathCry'));
+    }
+
+    if (enemy.type === 'human') {
+      const mb = BALANCE.combat.moraleBreak;
+      for (const other of gs.combat.enemies) {
+        if (other !== enemy && other.type === 'human' && other.currentHp > 0 && other.currentMorale != null) {
+          other.currentMorale = Math.max(0, other.currentMorale - mb.allyDeathMoraleDmg);
+        }
+      }
+    }
+
     const xp  = enemy.xp ?? 0;
     gs.player.xp     = (gs.player.xp ?? 0) + xp;
     gs.combat.xpGained += xp;
@@ -1140,7 +1298,10 @@ const CombatSystem = {
     }
 
     for (const lootEntry of (enemy.lootTable ?? [])) {
-      if (Math.random() < BALANCE.combat.enemyDropChance) {
+      const dropChance = enemy._routed
+        ? BALANCE.combat.enemyDropChance * BALANCE.combat.moraleBreak.routLootMult
+        : BALANCE.combat.enemyDropChance;
+      if (Math.random() < dropChance) {
         const qty  = lootEntry.minQty + Math.floor(Math.random() * (lootEntry.maxQty - lootEntry.minQty + 1));
         const inst = gs.createCardInstance(lootEntry.definitionId, { quantity: qty });
         if (inst) {

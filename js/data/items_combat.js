@@ -533,7 +533,7 @@ const ITEMS_COMBAT = {
     defaultDurability: 100, defaultContamination: 0,
     icon: '🔫', description: '철파이프로 제작한 조잡한 산탄총. 근거리에서 파괴적.',
     tags: ['weapon', 'ranged', 'crafted'],
-    weaponType: 'pierce',
+    weaponType: 'bullet',
     combat: { damage: [25, 40], accuracy: 0.65, noiseOnUse: 35, durabilityLoss: 4, critChance: 0.08, critMultiplier: 2.0 },
     dismantle: [
       { definitionId: 'iron_pipe', qty: 1, chance: 0.7 },
@@ -548,7 +548,7 @@ const ITEMS_COMBAT = {
     defaultDurability: 100, defaultContamination: 0,
     icon: '⚔️', description: '합금으로 단조한 명검. 예리한 칼날이 적을 베어낸다.',
     tags: ['weapon', 'melee', 'crafted'],
-    weaponType: 'sharp',
+    weaponType: 'blade',
     combat: { damage: [30, 45], accuracy: 0.85, noiseOnUse: 3, durabilityLoss: 2, critChance: 0.20, critMultiplier: 2.0 },
     dismantle: [
       { definitionId: 'refined_metal', qty: 2, chance: 0.7 },
@@ -562,7 +562,7 @@ const ITEMS_COMBAT = {
     defaultDurability: 120, defaultContamination: 0,
     icon: '🗡️', description: '장인의 기술이 깃든 완벽한 도검. 베기의 극치.',
     tags: ['weapon', 'melee', 'crafted'],
-    weaponType: 'sharp',
+    weaponType: 'blade',
     combat: { damage: [40, 60], accuracy: 0.90, noiseOnUse: 2, durabilityLoss: 1, critChance: 0.25, critMultiplier: 2.5 },
     dismantle: [
       { definitionId: 'refined_metal', qty: 3, chance: 0.8 },

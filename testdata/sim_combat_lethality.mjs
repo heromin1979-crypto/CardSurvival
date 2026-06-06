@@ -11,6 +11,10 @@ const ENEMIES = {
   rabid_dog:      { name: '광견병 걸린 개', dmg:[10,18],  acc:0.80, atkPR:2, def:0, infChance:0.35, bleed:{dmg:4,dur:2},  onHit:{infection:8},         special:null },
   raider:         { name: '약탈자',        dmg:[14,22],  acc:0.68, atkPR:1, def:2, infChance:0,    bleed:null,          onHit:null,                  special:null },
   raider_elite:   { name: '정예 약탈자',   dmg:[18,28],  acc:0.72, atkPR:1, def:4, infChance:0,    bleed:null,          onHit:null,                  special:{dmg:[25,40],acc:0.72,cooldown:3,stunChance:0.3} },
+  // 신규 타이밍 압박 적 — timedThreat 효과(자폭·소환·돌진강타)는 시뮬 미반영, attack 스탯만 측정
+  zombie_bloater:  { name: '블로터',       dmg:[4,8],    acc:0.55, atkPR:1, def:0, infChance:0.35, bleed:null,          onHit:null,                  special:null },
+  zombie_screamer: { name: '스크리머',     dmg:[5,9],    acc:0.60, atkPR:1, def:0, infChance:0.25, bleed:null,          onHit:null,                  special:null },
+  zombie_charger:  { name: '돌진자',       dmg:[6,10],   acc:0.60, atkPR:1, def:1, infChance:0.30, bleed:null,          onHit:null,                  special:null },
 };
 
 // 캐릭터별 스탯 (시뮬레이션: 군인 기준)
@@ -58,6 +62,7 @@ function simOneCombat(char, enemy) {
     zombie_brute:60+Math.floor(Math.random()*31),  zombie_horde:80+Math.floor(Math.random()*41),
     zombie_acid:28+Math.floor(Math.random()*18),   rabid_dog:20+Math.floor(Math.random()*16),
     raider:35+Math.floor(Math.random()*21),        raider_elite:55+Math.floor(Math.random()*26),
+    zombie_bloater:45+Math.floor(Math.random()*21), zombie_screamer:30+Math.floor(Math.random()*16), zombie_charger:35+Math.floor(Math.random()*21),
   };
 
   let enemyId = Object.keys(ENEMIES).find(k => ENEMIES[k] === enemy);
