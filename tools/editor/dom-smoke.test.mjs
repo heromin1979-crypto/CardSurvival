@@ -36,7 +36,10 @@ try {
   await import('./editor.js');
   check('module boots without throwing', true);
   check('save button present', window.document.querySelector('#save-btn') !== null);
-  check('7 tabs present', window.document.querySelectorAll('.tab').length === 7);
+  check('8 tabs present', window.document.querySelectorAll('.tab').length === 8);
+  // flow tab renders without throwing
+  window.document.querySelector('[data-tab="flow"]').click();
+  check('flow tab renders', /흐름|불러오는/.test(window.document.querySelector('#view').textContent));
   // items tab renders without throwing (empty state when items.js not loaded)
   window.document.querySelector('[data-tab="items"]').click();
   check('items tab renders', /아이템/.test(window.document.querySelector('#view').textContent));

@@ -757,6 +757,7 @@ function render() {
   view.innerHTML = '';
   if (state.tab === 'settings') return renderSettings();
   if (state.tab === 'items') return renderItemsTab();
+  if (state.tab === 'flow') return renderFlowTab();
   if (state.tab === 'changes') return renderChangesTab();
   if (state.tab === 'validate') return renderValidationTab();
   if (!state.files[state.tab]) {
@@ -841,6 +842,77 @@ function renderLandmarkDetail(root, lm) {
     ));
     root.append(fs);
   }
+}
+
+// ─── 퀘스트 흐름(체인) 탭 ────────────────────────────────────
+// objective를 사람이 읽는 한 줄 요약으로
+function objectiveSummary(o) {
+  if (!o) return '';
+  switch (o.type) {
+    case 'collect_item': return `${itemName(o.definitionId) || o.definitionId || '?'} ${o.count ?? ''}개 수집`;
+    case 'collect_item_type': return `${o.itemType || '?'} 분류 ${o.count ?? ''}개 수집`;
+    case 'craft_item': return `${o.category || '?'} ${o.count ?? ''}개 제작`;
+    case 'build_structure': return `구조물 ${o.count ?? ''}개 건설`;
+    case 'survive_days': return `${o.days ?? o.count ?? '?'}일 생존`;
+    case 'visit_district': return `${districtName(o.districtId) || o.districtId || '?'} 방문`;
+    default: return o.type || '';
+  }
+}
+
+function flowNode(q, depth) {
+  const day = q.dayTrigger != null ? `D${q.dayTrigger}` : '';
+  const dl = (q.deadlineDays != null && q.deadlineDays !== Infinity) ? `⏳${q.deadlineDays}일` : '';
+  const btn = el('button', {
+    class: 'flow-node', onclick: () => gotoEntity('quests', q.id),
+    title: q.desc || '',
+  }, [
+    el('span', { class: 'flow-day', text: day }),
+    el('span', { class: 'flow-title', text: `${q.icon || ''} ${q.title || q.id}` }),
+    el('span', { class: 'flow-obj', text: objectiveSummary(q.objective) }),
+    dl ? el('span', { class: 'flow-dl', text: dl }) : null,
+  ]);
+  return el('div', {
+    class: 'flow-row' + (depth > 0 ? ' flow-child' : ''),
+    style: `margin-left:${depth * 22}px`,
+  }, [depth > 0 ? el('span', { class: 'flow-arrow', text: '↳' }) : null, btn]);
+}
+
+function renderFlowTab() {
+  if (!state.files.quests) { view.append(el('div', { class: 'empty', text: '데이터 불러오는 중…' })); return; }
+  const data = state.files.quests.data;
+  const ids = Object.keys(data);
+  const groups = {};
+  for (const id of ids) { const c = data[id].characterId || '(공통)'; (groups[c] = groups[c] || []).push(id); }
+
+  const wrap = el('div', { class: 'detail' });
+  wrap.append(el('h2', { text: '🔗 퀘스트 흐름' }));
+  wrap.append(el('p', { class: 'hint', text: '선행(prerequisite) 관계를 따라 이어지는 체인입니다. 분기는 들여쓰기(↳)로 갈라지고, 각 노드의 D=시작 일차 · ⏳=완료 기한입니다. 노드를 클릭하면 편집 화면으로 이동합니다.' }));
+
+  const sortFn = (a, b) => ((data[a].dayTrigger ?? 9999) - (data[b].dayTrigger ?? 9999)) || a.localeCompare(b);
+
+  for (const [char, qids] of Object.entries(groups)) {
+    const fs = el('fieldset', {}, el('legend', { text: char === '(공통)' ? `공통 퀘스트 (${qids.length})` : `${char} (${qids.length})` }));
+    const inGroup = new Set(qids);
+    const childrenOf = {};
+    const roots = [];
+    for (const id of qids) {
+      const pre = data[id].prerequisite;
+      if (pre && inGroup.has(pre)) (childrenOf[pre] = childrenOf[pre] || []).push(id);
+      else roots.push(id);
+    }
+    roots.sort(sortFn);
+    const seen = new Set();
+    const walk = (id, depth) => {
+      if (seen.has(id)) return;
+      seen.add(id);
+      fs.append(flowNode(data[id], depth));
+      for (const k of (childrenOf[id] || []).slice().sort(sortFn)) walk(k, depth + 1);
+    };
+    for (const r of roots) walk(r, 0);
+    for (const id of [...qids].sort(sortFn)) if (!seen.has(id)) walk(id, 0); // 순환 안전망
+    wrap.append(fs);
+  }
+  view.append(wrap);
 }
 
 // ─── quests tab ──────────────────────────────────────────────

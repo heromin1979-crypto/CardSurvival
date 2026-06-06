@@ -119,6 +119,26 @@ table.loot input.num { width: 64px; }
 .kv-k { color: var(--muted); font-size: 12px; }
 .kv-v { font-size: 13px; word-break: break-word; }
 .kv-v.muted { color: var(--muted); }
+
+/* 퀘스트 흐름 */
+.flow-row { display: flex; align-items: center; gap: 4px; margin: 3px 0; }
+.flow-arrow { color: var(--muted); font-size: 13px; }
+.flow-node {
+  display: flex; align-items: center; gap: 10px; flex: 1; text-align: left;
+  background: var(--panel2); color: var(--text);
+  border: 1px solid var(--border); border-radius: 6px;
+  padding: 7px 10px; cursor: pointer; font-size: 13px;
+}
+.flow-node:hover { border-color: var(--accent); }
+.flow-child .flow-node { background: transparent; }
+.flow-day {
+  flex: 0 0 auto; min-width: 38px; text-align: center;
+  font-size: 11px; color: var(--accent);
+  background: rgba(78,161,255,.12); border-radius: 4px; padding: 1px 6px;
+}
+.flow-title { flex: 0 0 auto; font-weight: 600; }
+.flow-obj { flex: 1; color: var(--muted); font-size: 12px; }
+.flow-dl { flex: 0 0 auto; color: var(--warn); font-size: 11px; }
 .codeblock {
   margin: 0; font-size: 12px; line-height: 1.5; white-space: pre-wrap; word-break: break-word;
   background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px;
