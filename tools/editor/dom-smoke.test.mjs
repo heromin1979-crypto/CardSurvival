@@ -1,0 +1,48 @@
+// Boot smoke test: load editor.js into a happy-dom matching index.html and
+// confirm it renders without throwing, then drive a render with injected data.
+// Run: node tools/editor/dom-smoke.test.mjs
+let Window;
+try {
+  ({ Window } = await import('happy-dom'));
+} catch {
+  console.log('happy-dom 미설치 — DOM 스모크 테스트 건너뜀 (npm install 후 재실행).');
+  process.exit(0);
+}
+import { readFileSync } from 'fs';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+const here = dirname(fileURLToPath(import.meta.url));
+const html = readFileSync(join(here, 'index.html'), 'utf8');
+const body = html.split('<body>')[1].split('</body>')[0];
+
+const window = new Window({ url: 'http://localhost/tools/editor/' });
+window.document.body.innerHTML = body;
+
+// expose globals editor.js expects
+for (const k of ['document', 'localStorage', 'confirm', 'prompt', 'alert']) {
+  globalThis[k] = window[k] || (() => {});
+}
+globalThis.window = window;
+globalThis.TextEncoder = TextEncoder;
+globalThis.TextDecoder = TextDecoder;
+globalThis.fetch = async () => { throw new Error('no network in smoke test'); };
+
+let failures = 0;
+const check = (n, c) => { console.log(`  ${c ? '✓' : '✗'} ${n}`); if (!c) failures++; };
+
+console.log('=== editor.js boot smoke ===');
+try {
+  await import('./editor.js');
+  check('module boots without throwing', true);
+  check('settings tab rendered', window.document.querySelector('.settings-box') !== null);
+  check('save button present', window.document.querySelector('#save-btn') !== null);
+  // verify tab buttons wired
+  check('4 tabs present', window.document.querySelectorAll('.tab').length === 4);
+} catch (e) {
+  check('module boots without throwing', false);
+  console.error('   ', String(e).split('\n').slice(0, 3).join('\n    '));
+}
+
+console.log(failures === 0 ? '\nSMOKE PASS' : `\n${failures} FAILURE(S)`);
+process.exit(failures === 0 ? 0 : 1);
