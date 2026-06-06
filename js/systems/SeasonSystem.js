@@ -9,6 +9,7 @@ import SEASONAL_EVENTS from '../data/seasonalEvents.js';
 import { SEASON_EVENT_TO_ENV_CARD } from '../data/items_environment.js';
 import SystemRegistry  from '../core/SystemRegistry.js';
 import GameData from '../data/GameData.js';
+import BALANCE from '../data/gameBalance.js';
 
 // ── 계절 정의 ──────────────────────────────────────────────────
 
@@ -70,30 +71,8 @@ const SEASON_MODIFIERS = {
 // ── 계절별 보너스 루팅 아이템 ─────────────────────────────────
 // 각 계절에 탐색 성공 시 추가로 발견할 수 있는 아이템
 
-const SEASON_LOOT = {
-  spring: [
-    { id: 'vitamins',  qty: 1, chance: 0.40 },  // 봄 나물·비타민
-    { id: 'rainwater', qty: 2, chance: 0.40 },  // 봄비 빗물 수집 (qty 1→2, chance 0.35→0.40)
-    { id: 'gauze',     qty: 1, chance: 0.25 },  // 약국 재고 남음
-  ],
-  summer: [
-    { id: 'rainwater',    qty: 3, chance: 0.55 },  // 장마철 빗물 (qty 1→3, chance 0.50→0.55)
-    { id: 'sports_drink', qty: 1, chance: 0.30 },  // 더위 대비 음료
-    { id: 'empty_bottle', qty: 1, chance: 0.20 },  // 빗물 수집용 병
-  ],
-  autumn: [
-    { id: 'canned_food',  qty: 1, chance: 0.45 },  // 수확 식량 비축
-    { id: 'energy_bar',   qty: 1, chance: 0.35 },  // 에너지 바
-    { id: 'rice',         qty: 1, chance: 0.20 },  // 쌀 수확
-    { id: 'rainwater',    qty: 1, chance: 0.15 },  // 가을에도 약간의 빗물
-  ],
-  winter: [
-    { id: 'wood',               qty: 1, chance: 0.50 },  // 땔감 확보
-    { id: 'cloth',              qty: 1, chance: 0.35 },  // 방한복 재료
-    { id: 'charcoal',           qty: 1, chance: 0.25 },  // 숯 (캠프파이어 연료)
-    { id: 'contaminated_water', qty: 1, chance: 0.30 },  // 눈 녹인 물
-  ],
-};
+// 계절별 보너스 루팅 테이블 — BALANCE.seasonal.seasonLoot (에디터에서 편집 가능)
+const SEASON_LOOT = BALANCE.seasonal.seasonLoot;
 
 // ── SeasonSystem ───────────────────────────────────────────────
 
@@ -134,7 +113,7 @@ const SeasonSystem = {
         result.push({ definitionId: entry.id, quantity: entry.qty });
       }
     }
-    return result.slice(0, 2);  // 최대 2개
+    return result.slice(0, BALANCE.seasonal.maxCount ?? 2);  // 최대 N개
   },
 
   // ── 내부: TP마다 계절 필드 동기화 + 이벤트 체크 ──────────

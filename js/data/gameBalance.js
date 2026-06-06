@@ -206,6 +206,7 @@ const BALANCE = {
     subLocationNoiseMult:  0.8,  // 세부장소 탐색 소음 배율(구 소음 대비)
     nightHospitalAmbushChance: 0.20, // 야간 보라매 응급실/수술실 잠복 환자 조우 확률
     indoorRadiationMult:   0.5,  // 건물 내부 방사선 노출 배율
+    masteryRarePool: ['bandage', 'painkiller', 'antiseptic', 'rope', 'wire'], // 탐색 마스터리 희귀 루팅 풀
   },
 
   // ── 조우 ────────────────────────────────────────────
@@ -410,6 +411,36 @@ const BALANCE = {
     // 심각도 결정 확률
     severeChanceHighDmg: 0.4,  // 피해 ≥30 → 0.4 확률 sev3, 아니면 sev2
     severeChanceMidDmg:  0.5,  // 피해 ≥18 → 0.5 확률 sev2, 아니면 sev1
+  },
+
+  // ── 계절 보너스 루팅 ──────────────────────────────────
+  // 탐색 시 현재 계절에 따라 추가로 굴리는 보너스 아이템 테이블.
+  seasonal: {
+    maxCount: 2,   // 1회 탐색당 계절 보너스 최대 획득 개수
+    seasonLoot: {
+      spring: [
+        { id: 'vitamins',  qty: 1, chance: 0.40 },
+        { id: 'rainwater', qty: 2, chance: 0.40 },
+        { id: 'gauze',     qty: 1, chance: 0.25 },
+      ],
+      summer: [
+        { id: 'rainwater',    qty: 3, chance: 0.55 },
+        { id: 'sports_drink', qty: 1, chance: 0.30 },
+        { id: 'empty_bottle', qty: 1, chance: 0.20 },
+      ],
+      autumn: [
+        { id: 'canned_food', qty: 1, chance: 0.45 },
+        { id: 'energy_bar',  qty: 1, chance: 0.35 },
+        { id: 'rice',        qty: 1, chance: 0.20 },
+        { id: 'rainwater',   qty: 1, chance: 0.15 },
+      ],
+      winter: [
+        { id: 'wood',               qty: 1, chance: 0.50 },
+        { id: 'cloth',              qty: 1, chance: 0.35 },
+        { id: 'charcoal',           qty: 1, chance: 0.25 },
+        { id: 'contaminated_water', qty: 1, chance: 0.30 },
+      ],
+    },
   },
 
   // ── 낚시 ──────────────────────────────────────────────

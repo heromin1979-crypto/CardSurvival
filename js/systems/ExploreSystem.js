@@ -428,7 +428,7 @@ const ExploreSystem = {
           }
           // 탐색 마스터리: 5% 희귀 아이템
           if (SkillSystem.hasMastery('scavenging') && Math.random() < (BALANCE.explore.masteryRareLootChance ?? 0.05)) {
-            const rarePool = ['bandage', 'painkiller', 'antiseptic', 'rope', 'wire'];
+            const rarePool = BALANCE.explore.masteryRarePool ?? ['bandage', 'painkiller', 'antiseptic', 'rope', 'wire'];
             const rareId   = rarePool[Math.floor(Math.random() * rarePool.length)];
             if (GameData?.items[rareId]) loot.push({ definitionId: rareId, quantity: 1 });
           }

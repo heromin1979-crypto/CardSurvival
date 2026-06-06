@@ -129,7 +129,8 @@ const BAL_CAT_LABEL = {
   campfire: '모닥불', explore: '탐색 루팅', encounter: '조우', disease: '질병',
   moraleTiers: '사기 구간', raidEvents: '레이드 이벤트', hordeWaves: '무리 웨이브',
   hospitalSiege: '병원 공성', patientIntake: '환자 유입', raiderEvents: '약탈자 이벤트',
-  night: '야간', medicalStation: '의료소', fishing: '낚시',
+  night: '야간', medicalStation: '의료소', fishing: '낚시', seasonal: '계절 보너스 루팅',
+  npc: 'NPC', body: '신체 부상',
 };
 
 // 공용 변수(밸런스) leaf 키 설명 — 공통 사전보다 우선
@@ -384,6 +385,13 @@ const BAL_HELP = {
   // combat 중첩
   companionAuto: '동료 자율 행동 설정.', classSkills: '직업별 동료 스킬.',
   scaledDecayBreakpoints: '소음 구간별 추가 감소.',
+  // explore / seasonal 루팅 풀
+  masteryRarePool: '탐색 마스터리 희귀 루팅 후보 아이템 ID 목록.',
+  seasonLoot: '계절별 탐색 보너스 루팅 테이블.',
+  maxCount: '1회 탐색당 계절 보너스 최대 획득 개수.',
+  spring: '봄 보너스 루팅.', summer: '여름 보너스 루팅.',
+  autumn: '가을 보너스 루팅.', winter: '겨울 보너스 루팅.',
+  qty: '획득 수량.', chance: '드롭 확률(0~1).',
 };
 function helpForBalance(key) { return BAL_HELP[key] ?? FIELD_HELP[key] ?? ''; }
 
