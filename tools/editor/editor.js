@@ -393,7 +393,7 @@ function lootTableEditor(rows, idKey, extraCols, fileKey) {
     if (state.itemIds.size && row[idKey] && !state.itemIds.has(row[idKey])) {
       idInput.classList.add('ref-bad');
     }
-    const nameCell = el('td', { class: 'pct', text: itemName(row[idKey]) });
+    const nameCell = el('td', { class: 'name-cell', text: itemName(row[idKey]) });
     idInput.addEventListener('input', () => {
       row[idKey] = idInput.value.trim();
       idInput.classList.toggle('ref-bad',

@@ -95,6 +95,7 @@ table.loot input { background: var(--panel2); color: var(--text); border: 1px so
 table.loot input.id { width: 170px; }
 table.loot input.num { width: 64px; }
 .pct { color: var(--muted); font-size: 12px; white-space: nowrap; }
+.name-cell { color: var(--muted); font-size: 12px; white-space: nowrap; max-width: 160px; overflow: hidden; text-overflow: ellipsis; }
 .ref-bad { border-color: var(--danger) !important; }
 .row-add { margin-top: 8px; }
 
