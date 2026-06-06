@@ -74,6 +74,9 @@ function refreshChangeCount() {
   const n = computeChanges().reduce((s, g) => s + g.changes.length, 0);
   const badge = $('#change-count');
   if (badge) badge.textContent = n ? `(${n})` : '';
+  const vn = collectIssues().length;
+  const vbadge = $('#validate-count');
+  if (vbadge) vbadge.textContent = vn ? `(${vn})` : '';
 }
 
 // ─── tab switching ───────────────────────────────────────────
@@ -128,6 +131,7 @@ async function loadAll() {
   state.dirty.clear();
   $('#dirty').hidden = true;
   $('#save-btn').disabled = true;
+  refreshChangeCount();
   if (state.gitAvailable) {
     status(`불러오기 완료 (브랜치: ${state.branch}). 탭에서 편집하세요.`, 'ok');
   } else {
@@ -139,13 +143,14 @@ async function loadAll() {
 // ─── 저장 + 커밋 + 푸시 (로컬 git) ───────────────────────────
 async function saveAll() {
   if (state.dirty.size === 0) return;
-  const bad = collectBadRefs();
-  if (bad.length) {
+  const issues = collectIssues();
+  if (issues.length) {
     const ok = confirm(
-      `존재하지 않는 아이템 ID ${bad.length}건이 있습니다:\n` +
-      bad.slice(0, 8).join(', ') + (bad.length > 8 ? ' …' : '') +
-      '\n\n그래도 저장/푸시할까요?');
-    if (!ok) return;
+      `검증 문제 ${issues.length}건이 있습니다.\n` +
+      issues.slice(0, 5).map((i) => `· ${entityTitle(i.fileKey, i.entityKey)} ▸ ${i.path}: ${i.msg} (${i.id})`).join('\n') +
+      (issues.length > 5 ? `\n… 외 ${issues.length - 5}건` : '') +
+      '\n\n[확인]=무시하고 저장/푸시,  [취소]=⚠️검증 탭에서 위치 확인');
+    if (!ok) { switchTab('validate'); return; }
   }
   $('#save-btn').disabled = true;
   status('로컬 파일 기록 중…', 'info');
@@ -186,27 +191,71 @@ async function saveAll() {
 }
 $('#save-btn').addEventListener('click', saveAll);
 
-// scan loaded data for item-id references that don't exist
-function collectBadRefs() {
-  if (state.itemIds.size === 0) return [];
-  const bad = new Set();
-  const checkId = (id) => { if (id && !state.itemIds.has(id)) bad.add(id); };
+// 데이터 무결성 검사 — 위치(파일/엔티티/필드)까지 포함한 상세 이슈 목록
+// 각 이슈: { fileKey, entityKey, path, id, msg }
+function collectIssues() {
+  const issues = [];
+  const itemsKnown = state.itemIds.size > 0;
+  const badItem = (id) => itemsKnown && id && !state.itemIds.has(id);
+
   const d = state.files.districts?.data || {};
-  for (const dist of Object.values(d)) {
-    for (const r of dist.lootTable || []) checkId(r.definitionId);
+  for (const [key, dist] of Object.entries(d)) {
+    (dist.lootTable || []).forEach((r, i) => {
+      if (badItem(r.definitionId)) issues.push({ fileKey: 'districts', entityKey: key, path: `lootTable[${i}].definitionId`, id: r.definitionId, msg: '존재하지 않는 아이템 ID' });
+    });
   }
+
   const lm = state.files.landmarks?.data || {};
-  for (const m of Object.values(lm)) {
-    for (const sub of m.subLocations || []) {
-      for (const r of sub.lootTable || []) checkId(r.id);
-    }
+  for (const [key, m] of Object.entries(lm)) {
+    (m.subLocations || []).forEach((sub, si) => {
+      (sub.lootTable || []).forEach((r, i) => {
+        if (badItem(r.id)) issues.push({ fileKey: 'landmarks', entityKey: key, path: `${sub.name || `세부장소#${si}`} ▸ lootTable[${i}].id`, id: r.id, msg: '존재하지 않는 아이템 ID' });
+      });
+    });
   }
+
   const q = state.files.quests?.data || {};
-  for (const quest of Object.values(q)) {
-    if (quest.objective?.definitionId) checkId(quest.objective.definitionId);
-    for (const it of quest.reward?.items || []) checkId(it.definitionId);
+  const qIds = new Set(Object.keys(q));
+  for (const [key, quest] of Object.entries(q)) {
+    if (badItem(quest.objective?.definitionId)) issues.push({ fileKey: 'quests', entityKey: key, path: 'objective.definitionId', id: quest.objective.definitionId, msg: '존재하지 않는 아이템 ID' });
+    if (quest.objective?.districtId && !d[quest.objective.districtId]) issues.push({ fileKey: 'quests', entityKey: key, path: 'objective.districtId', id: quest.objective.districtId, msg: '존재하지 않는 구(district) ID' });
+    (quest.reward?.items || []).forEach((it, i) => {
+      if (badItem(it.definitionId)) issues.push({ fileKey: 'quests', entityKey: key, path: `reward.items[${i}].definitionId`, id: it.definitionId, msg: '존재하지 않는 아이템 ID' });
+    });
+    if (quest.prerequisite && !qIds.has(quest.prerequisite)) issues.push({ fileKey: 'quests', entityKey: key, path: 'prerequisite', id: quest.prerequisite, msg: '존재하지 않는 선행 퀘스트 ID' });
   }
-  return [...bad];
+  return issues;
+}
+
+// 해당 엔티티가 있는 탭으로 이동 + 선택
+function gotoEntity(fileKey, entityKey) {
+  state.sel[fileKey] = entityKey;
+  switchTab(fileKey);
+}
+
+function renderValidationTab() {
+  const issues = collectIssues();
+  const wrap = el('div', { class: 'detail' });
+  wrap.append(el('h2', { text: `⚠️ 검증 (${issues.length})` }));
+  if (state.itemIds.size === 0) {
+    wrap.append(el('p', { class: 'hint', text: '※ items.js 로드 실패로 아이템 ID 검증이 비활성화돼 있습니다.' }));
+  }
+  if (!issues.length) {
+    wrap.append(el('div', { class: 'empty', text: '문제가 없습니다. 👍' }));
+    view.append(wrap);
+    return;
+  }
+  for (const it of issues) {
+    const loc = `[${DATA_FILES[it.fileKey].label.split(' ')[0]}] ${entityTitle(it.fileKey, it.entityKey)}`;
+    const row = el('fieldset', {}, [
+      el('legend', { text: it.msg }),
+      el('div', {}, [el('code', { text: it.id || '(빈 값)' })]),
+      el('div', { class: 'hint', text: `${loc}  ▸  ${it.path}` }),
+      el('button', { class: 'ghost', text: '→ 해당 위치로 이동', onclick: () => gotoEntity(it.fileKey, it.entityKey) }),
+    ]);
+    wrap.append(row);
+  }
+  view.append(wrap);
 }
 
 // ─── 변경 사항(diff) + 되돌리기 ──────────────────────────────
@@ -453,6 +502,7 @@ function render() {
   view.innerHTML = '';
   if (state.tab === 'settings') return renderSettings();
   if (state.tab === 'changes') return renderChangesTab();
+  if (state.tab === 'validate') return renderValidationTab();
   if (!state.files[state.tab]) {
     view.append(el('div', { class: 'empty', text: '데이터 불러오는 중… (serve.js가 떠 있어야 합니다)' }));
     return;
