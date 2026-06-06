@@ -102,6 +102,19 @@ const BALANCE = {
     masteryCounterDmg:   5,
     ammoSaveChance:     0.20,
     enemyDropChance:    0.80,  // (기존 0.60 → 0.80 상향)
+    // 명중률/치명타 기본값
+    baseUnarmedAccuracy: 0.70,  // 맨손 공격 기본 명중률
+    defaultCritMultiplier: 1.5, // 무기 미지정 시 치명타 배율 기본값
+    noAmmoMeleeDamage:   [5, 10], // 탄약 없는 원거리무기 → 근접 전환 피해 범위
+    noAmmoAccuracy:      0.65,  // 탄약 없는 근접 전환 명중률
+    noAmmoNoise:         3,     // 탄약 없는 근접 전환 소음
+    defaultStealthDifficulty: 0.5, // 적 은신 난이도 기본값
+    enemyDefaultDamage:  [3, 6],  // 적 공격 피해 기본 범위(attack.damage 미지정 시)
+    enemyBaseAccuracy:   0.7,   // 적 공격 기본 명중률(attack.accuracy 미지정 시)
+    enemySpecialSkillChance: 0.5, // 적이 특수스킬을 사용할 확률
+    fleeFailedDamageMult: 1.5,  // 도주 실패 시(등 보임) 받는 피해 배율
+    companionTargetChance: 0.20, // 적이 플레이어 대신 동료를 노릴 확률
+    doctorZombieMedDropChance: 0.30, // 의사 — 좀비 처치 시 의료품 추가 드롭 확률
     killXp:             5,
     hitXp:              2,
     critBonusXp:        2,
