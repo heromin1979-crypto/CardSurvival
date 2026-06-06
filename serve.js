@@ -20,6 +20,8 @@ const MIME = {
 const server = http.createServer((req, res) => {
   let urlPath = req.url.split('?')[0];
   if (urlPath === '/') urlPath = '/index.html';
+  // 디렉터리 URL(끝이 '/')은 해당 폴더의 index.html로 연결
+  if (urlPath.endsWith('/')) urlPath += 'index.html';
 
   const filePath = path.join(ROOT, urlPath);
 
