@@ -542,6 +542,13 @@ export const ko = {
   'combatSys.companionHealCooldown': '치료 쿨다운: {turns}턴 남음',
   'combatSys.noCompanion':     '동행 NPC가 없다.',
   'combatSys.noTarget':        '대상이 없다.',
+  'combatSys.bloaterExplode':      '💥 {enemy} 자폭! 광역 {dmg} 피해 + 감염 확산',
+  'combatSys.chargerStrike':       '⚡ {enemy} 강타! {dmg} 피해 + 기절',
+  'combatSys.screamerSummon':      '📣 {enemy} 비명! 감염자 {count}마리 합류',
+  'combatSys.bloaterCorpseBurst':  '☠️ 사체 폭발! {dmg} 피해 (불·폭발로 처리했어야 했다)',
+  'combatSys.screamerDeathCry':    '📣 스크리머가 마지막 비명을 질렀다 (소음 급증)',
+  'combatSys.chargeInterrupt':     '⚡ {enemy}의 위협 충전을 끊었다!',
+  'combatSys.enemyRout':           '🏳️ {enemy}이(가) 전의를 잃고 도주했다!',
 
   // ── CraftSystem ─────────────────────────────────────────────
   'craftSys.queueFull':      '작업 큐가 가득 참',
@@ -1404,6 +1411,13 @@ export const en = {
   'combatSys.companionHealCooldown': 'Heal cooldown: {turns} turns remaining',
   'combatSys.noCompanion':     'No companion NPC.',
   'combatSys.noTarget':        'No target.',
+  'combatSys.bloaterExplode':      '💥 {enemy} self-destructs! {dmg} AoE damage + infection',
+  'combatSys.chargerStrike':       '⚡ {enemy} charges! {dmg} damage + stun',
+  'combatSys.screamerSummon':      '📣 {enemy} screams! {count} infected join',
+  'combatSys.bloaterCorpseBurst':  '☠️ Corpse burst! {dmg} damage (should have used fire/explosive)',
+  'combatSys.screamerDeathCry':    '📣 The screamer let out a final cry (noise spike)',
+  'combatSys.chargeInterrupt':     "⚡ Interrupted {enemy}'s threat charge!",
+  'combatSys.enemyRout':           '🏳️ {enemy} lost their will and fled!',
 
   // ── CraftSystem ─────────────────────────────────────────────
   'craftSys.queueFull':      'Queue is full',
@@ -1805,6 +1819,9 @@ export const en = {
   '_enemy.boss_chef_nemesis':       'Mutant Chef',
   '_enemy.boss_doctor_nemesis':     'Infected Fellow Doctor',
   '_enemy.boss_engineer_rival':     'Mad Mechanic',
+  '_enemy.zombie_bloater':          'Bloater',
+  '_enemy.zombie_screamer':         'Screamer',
+  '_enemy.zombie_charger':          'Charger',
 
   // ── Blueprints ──────────────────────────────────────────────
   '_blueprint.make_campfire':        'Campfire',
