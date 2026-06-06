@@ -450,11 +450,9 @@ const StatSystem = {
    * ≤50% → 1.0, ≤75% → 1.3, ≤100% → 1.7, ≤150% → 2.5, ≤200% → 3.5, >200% → 4.0
    */
   _getWeightMult(weightPct) {
-    if (weightPct <= 0.50) return 1.0;
-    if (weightPct <= 0.75) return 1.3;
-    if (weightPct <= 1.00) return 1.7;
-    if (weightPct <= 1.50) return 2.5;
-    if (weightPct <= 2.00) return 3.5;
+    for (const t of BALANCE.stats.weightMultipliers) {
+      if (weightPct <= t.max) return t.mult;
+    }
     return 4.0;
   },
 
@@ -471,10 +469,11 @@ const StatSystem = {
     if (!st) return;
     const pct = gs.player.encumbrance.weightPct ?? 0;
     let delta;
-    if      (pct <= 1.0) delta =  BALANCE.stats.staminaRegenPerTP;
-    else if (pct <= 1.5) delta = -0.5;
-    else if (pct <= 2.0) delta = -1.0;
-    else                 delta = -2.0;
+    if (pct <= 1.0) {
+      delta = BALANCE.stats.staminaRegenPerTP;
+    } else {
+      delta = (BALANCE.stats.staminaDrainTiers.find((t) => pct <= t.max)?.delta) ?? -2.0;
+    }
     // 사기 구간별 스태미나 회복 배율 (회복일 때만 적용, 소모에는 미적용)
     if (delta > 0) {
       const tier = this.getMoraleTier();

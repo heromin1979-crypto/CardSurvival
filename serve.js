@@ -17,9 +17,19 @@ const ROOT = __dirname;
 
 // 에디터가 디스크에 쓸 수 있는 파일 화이트리스트 (그 외 경로 기록 거부)
 const WRITABLE = new Set([
+  'js/data/gameBalance.js',
   'js/data/districts.js',
   'js/data/landmarks.js',
   'js/data/mainQuests.js',
+  'js/data/items_base.js',
+  'js/data/items_combat.js',
+  'js/data/items_misc.js',
+  'js/data/items_tech.js',
+  'js/data/items_medical.js',
+  'js/data/items_tools.js',
+  'js/data/items_structures.js',
+  'js/data/legendaryItems.js',
+  'js/data/items_environment.js',
 ]);
 
 const MIME = {

@@ -1,6 +1,8 @@
 // === SKILL DEFINITIONS ===
 // 12개 스킬 정의 + 레벨업 XP 테이블
 
+import BALANCE from './gameBalance.js';
+
 export const SKILL_CATEGORIES = {
   combat:   { label: '전투',  icon: '⚔️',  color: '#c05050' },
   survival: { label: '생존',  icon: '🌿', color: '#50a050' },
@@ -84,8 +86,8 @@ export const SKILL_DEFS = {
     description: '폐허에서 자원을 찾는 능력. 루팅 보너스 및 희귀 아이템 확률.',
     getBonuses(level) {
       return {
-        extraLootChance: (level / 20) * 0.30,  // 0 → 30% 추가 루팅 확률
-        rareLootChance:  level >= 20 ? 0.05 : 0,
+        extraLootChance: (level / 20) * (BALANCE.skills?.scavenging?.maxExtraLootChance ?? 0.30),  // 0 → 30% 추가 루팅 확률
+        rareLootChance:  level >= 20 ? (BALANCE.skills?.scavenging?.lv20RareLootChance ?? 0.05) : 0,
       };
     },
     masteryDesc: '탐색마다 5% 확률로 희귀 아이템 추가 발견.',

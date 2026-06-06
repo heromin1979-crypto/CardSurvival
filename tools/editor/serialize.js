@@ -188,6 +188,11 @@ export function diffValue(a, b, path, out) {
 
 /** Per-file declaration markers for the editable data blocks. */
 export const DATA_FILES = {
+  balance: {
+    path: 'js/data/gameBalance.js',
+    decl: 'const BALANCE = {',
+    label: '공용 변수 (밸런스)',
+  },
   districts: {
     path: 'js/data/districts.js',
     decl: 'const DISTRICTS = {',
@@ -203,4 +208,20 @@ export const DATA_FILES = {
     decl: 'const MAIN_QUESTS = {',
     label: '메인 퀘스트',
   },
+  // 아이템 정의 소스 (편집 가능). items.js는 이들을 병합/파생하는 애그리게이터.
+  items_base:       { path: 'js/data/items_base.js',       decl: 'const ITEMS_BASE = {',       label: '아이템:기초' },
+  items_combat:     { path: 'js/data/items_combat.js',     decl: 'const ITEMS_COMBAT = {',     label: '아이템:전투' },
+  items_misc:       { path: 'js/data/items_misc.js',       decl: 'const ITEMS_MISC = {',       label: '아이템:기타' },
+  items_tech:       { path: 'js/data/items_tech.js',       decl: 'const ITEMS_TECH = {',       label: '아이템:기술' },
+  items_medical:    { path: 'js/data/items_medical.js',    decl: 'const ITEMS_MEDICAL = {',    label: '아이템:의료' },
+  items_tools:      { path: 'js/data/items_tools.js',      decl: 'const ITEMS_TOOLS = {',      label: '아이템:도구' },
+  items_structures: { path: 'js/data/items_structures.js', decl: 'const ITEMS_STRUCTURES = {', label: '아이템:구조물' },
+  legendaryItems:   { path: 'js/data/legendaryItems.js',   decl: 'const LEGENDARY_ITEMS = {',   label: '아이템:전설' },
+  items_environment:{ path: 'js/data/items_environment.js',decl: 'const ITEMS_ENVIRONMENT = {', label: '아이템:환경' },
 };
+
+// 편집 가능한 아이템 소스 파일 키 목록 (아이템 탭에서 병합 편집)
+export const ITEM_FILE_KEYS = [
+  'items_base', 'items_combat', 'items_misc', 'items_tech', 'items_medical',
+  'items_tools', 'items_structures', 'legendaryItems', 'items_environment',
+];

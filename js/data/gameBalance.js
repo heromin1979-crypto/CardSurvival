@@ -18,6 +18,21 @@ const BALANCE = {
     moraleDecayPerTP:     0.2,
     fatigueGainPerTP:     0.8,
     staminaRegenPerTP:    1.2,   // (기존 1.5 → 1.2로 완화)
+    // 무게 비율(weightPct)별 스태미나 소모 배율 (max 이하이면 해당 mult)
+    weightMultipliers: [
+      { max: 0.50, mult: 1.0 },
+      { max: 0.75, mult: 1.3 },
+      { max: 1.00, mult: 1.7 },
+      { max: 1.50, mult: 2.5 },
+      { max: 2.00, mult: 3.5 },
+      { max: Infinity, mult: 4.0 },
+    ],
+    // 과적 구간별 스태미나 변화량(/TP). pct ≤1.0은 staminaRegenPerTP(회복) 적용
+    staminaDrainTiers: [
+      { max: 1.5, delta: -0.5 },
+      { max: 2.0, delta: -1.0 },
+      { max: Infinity, delta: -2.0 },
+    ],
   },
 
   // ── 수분 ────────────────────────────────────────────
@@ -38,6 +53,7 @@ const BALANCE = {
     max:              100,
     baseDecayPerTP:   1.0,
     influxThreshold:  60,
+    flushReductionMult: 0.5,   // 소음 플러시 시 influxThreshold 대비 잔존 비율
     // 소음 레벨에 따른 추가 감소 (스파이럴 방지)
     scaledDecayBreakpoints: [
       { threshold: 70, bonusDecay: 0.5 },
@@ -62,6 +78,9 @@ const BALANCE = {
     baseFailureChance:  0.12,   // 기본 실패 확률 12%
     minFailureChance:   0.02,   // 스킬 최대 시 최소 실패률 2%
     failureRefundRate:  0.5,    // 실패 시 재료 50% 반환
+    failureXpMult:      0.5,    // 제작 실패 시 획득 XP 배율
+    chefTeamBonusHigh:  0.20,   // 셰프 팀 평균사기 >85 품질 점수 보너스
+    chefTeamBonusMid:   0.10,   // 셰프 팀 평균사기 >70 품질 점수 보너스
     xpBase: {
       building:    10,
       weaponcraft: 8,
@@ -102,6 +121,19 @@ const BALANCE = {
     masteryCounterDmg:   5,
     ammoSaveChance:     0.20,
     enemyDropChance:    0.80,  // (기존 0.60 → 0.80 상향)
+    // 명중률/치명타 기본값
+    baseUnarmedAccuracy: 0.70,  // 맨손 공격 기본 명중률
+    defaultCritMultiplier: 1.5, // 무기 미지정 시 치명타 배율 기본값
+    noAmmoMeleeDamage:   [5, 10], // 탄약 없는 원거리무기 → 근접 전환 피해 범위
+    noAmmoAccuracy:      0.65,  // 탄약 없는 근접 전환 명중률
+    noAmmoNoise:         3,     // 탄약 없는 근접 전환 소음
+    defaultStealthDifficulty: 0.5, // 적 은신 난이도 기본값
+    enemyDefaultDamage:  [3, 6],  // 적 공격 피해 기본 범위(attack.damage 미지정 시)
+    enemyBaseAccuracy:   0.7,   // 적 공격 기본 명중률(attack.accuracy 미지정 시)
+    enemySpecialSkillChance: 0.5, // 적이 특수스킬을 사용할 확률
+    fleeFailedDamageMult: 1.5,  // 도주 실패 시(등 보임) 받는 피해 배율
+    companionTargetChance: 0.20, // 적이 플레이어 대신 동료를 노릴 확률
+    doctorZombieMedDropChance: 0.30, // 의사 — 좀비 처치 시 의료품 추가 드롭 확률
     killXp:             5,
     hitXp:              2,
     critBonusXp:        2,
@@ -167,6 +199,14 @@ const BALANCE = {
     lootCountMax: 3,
     // W3-2 Phase A — 서브로케이션 재고 고갈
     stockDecayPerDay: 1,  // 일자 경과 시 subLocationStock 자동 감소량 (같은 day 중복 차감 방지)
+    respawnLootDays:     30,   // 구역 루팅 리스폰까지 경과 일수
+    respawnLootChance:   0.5,  // 리스폰 시 각 아이템 드롭 확률
+    respawnLootQtyDivisor: 2,  // 리스폰 수량 = floor(원수량 / 이 값)
+    masteryRareLootChance: 0.05, // 탐색 마스터리 희귀 루팅 확률
+    subLocationNoiseMult:  0.8,  // 세부장소 탐색 소음 배율(구 소음 대비)
+    nightHospitalAmbushChance: 0.20, // 야간 보라매 응급실/수술실 잠복 환자 조우 확률
+    indoorRadiationMult:   0.5,  // 건물 내부 방사선 노출 배율
+    masteryRarePool: ['bandage', 'painkiller', 'antiseptic', 'rope', 'wire'], // 탐색 마스터리 희귀 루팅 풀
   },
 
   // ── 조우 ────────────────────────────────────────────
@@ -182,6 +222,17 @@ const BALANCE = {
   // ── 질병 노출 카운터 ───────────────────────────────
   disease: {
     exposureDecayRate:  0.5,   // (기존 2~3 → 0.5로 완화)
+    coldExposureTpThreshold:   48,  // 저체온증 발병 누적 저온 TP (~16시간)
+    heatExposureTpThreshold:   36,  // 열사병 발병 누적 고온 TP (~12시간)
+    sepsisExposureTpThreshold: 48,  // 패혈증 발병 누적 고감염 TP
+    commonColdChance:        0.004, // TP당 감기 발병 확률(계절 보정 전)
+    influenzaChance:         0.004, // TP당 독감 발병 확률
+    radiationSicknessChance: 0.005, // TP당 방사선 질환 발병 확률
+    waterContamSevereThreshold: 50, // 물 오염 '심함' 임계
+    contamMildThreshold:        20, // 음식/물 오염 '중간' 임계
+    choleraChanceSevereWater:  0.55, // 심한 오염수 콜레라 확률
+    dysenteryChanceSevereWater: 0.50, // 심한 오염수 이질 확률
+    dysenteryChanceContamFood:  0.40, // 오염 음식/물 이질 확률
   },
 
   // ── 사기 구간별 효과 ───────────────────────────────
@@ -283,6 +334,8 @@ const BALANCE = {
   patientIntake: {
     moraleDeath:   -2,     // W1-1: 기존 -3 완화 (환자 사망)
     moraleDepart:  -1,     // W1-1: 기존 -2 완화 (환자 이탈)
+    cumulativeMoraleBonusPer: 0.5, // 누적 치료 환자 1명당 사기 보너스
+    cumulativeMoraleBonusCap: 50,  // 누적 환자 사기 보너스 상한
     // 의사 마일스톤 사기 보너스 (누적 치료 수 도달 시 one-shot)
     moraleMilestones: {
       5:  5,
@@ -322,6 +375,91 @@ const BALANCE = {
     durabilityDecayPerTP: 0.093,  // 100 내구도 기준 ~15일(1080TP)
   },
 
+  // ── NPC ────────────────────────────────────────────────
+  npc: {
+    trustCombatBonusPer5: 0.3,  // 전투 보너스 배율 = 1.0 + (trust/5) × 이 값
+    // 야간 경계 보너스 (NPC별 안전도 가산 / 조우 감소)
+    watchBonuses: {
+      npc_soldier_deserter: { safetyAdd: 20, encounterReduce: 0.3 },
+      npc_dog:              { safetyAdd: 15, encounterReduce: 0.2 },
+      npc_mechanic:         { safetyAdd: 10, encounterReduce: 0.1 },
+      npc_old_survivor:     { safetyAdd:  8, encounterReduce: 0.1 },
+      npc_nurse:            { safetyAdd:  5, encounterReduce: 0.05 },
+      npc_student:          { safetyAdd:  8, encounterReduce: 0.1 },
+      npc_child:            { safetyAdd:  2, encounterReduce: 0.0 },
+      npc_trader:           { safetyAdd:  5, encounterReduce: 0.05 },
+    },
+  },
+
+  // ── 스킬 보너스 계수 ───────────────────────────────────
+  // skillDefs.js getBonuses() 수식에 쓰이는 튜닝 계수.
+  skills: {
+    scavenging: {
+      maxExtraLootChance: 0.30,  // 탐색 Lv.20 시 추가 루팅 확률(레벨 비례: level/20 × 이 값)
+      lv20RareLootChance: 0.05,  // 탐색 Lv.20 도달 시 희귀 루팅 확률
+    },
+  },
+
+  // ── 특성(trait) 효과 값 ────────────────────────────────
+  // TraitSystem이 이 값을 우선 참조 (정의의 이름/설명은 TraitSystem에 유지).
+  traits: {
+    scavenger: { bonusLootCount: 1 },   // 탐색 시 추가 발견 아이템 수
+    medic:     { healMultiplier: 1.5 }, // 의료 아이템 회복 배율
+    silent:    { noiseMult: 0.6 },      // 소음 발생 배율
+  },
+
+  // ── 신체 부상 ──────────────────────────────────────────
+  body: {
+    // 부위별 피격 확률 (무기 타입별)
+    hitTables: {
+      melee:   { head: 0.10, torso: 0.35, leftArm: 0.15, rightArm: 0.15, leftLeg: 0.125, rightLeg: 0.125 },
+      ranged:  { head: 0.15, torso: 0.45, leftArm: 0.10, rightArm: 0.10, leftLeg: 0.10,  rightLeg: 0.10 },
+      unarmed: { head: 0.15, torso: 0.25, leftArm: 0.20, rightArm: 0.20, leftLeg: 0.10,  rightLeg: 0.10 },
+    },
+    // 부상 타입별 기본 치유 TP
+    injuryHealTP: { laceration: 36, bleeding: 24, fracture: 108, concussion: 72 },
+    naturalHealRate: 0.05,  // severity 당 TP마다 치유 진행량
+    // 부상 타입 결정 확률 (피해량 구간별)
+    headConcussionChance:  0.6,  // 머리 피격 시 뇌진탕(아니면 열상)
+    highDmgFractureChance: 0.5,  // 피해 ≥25 골절(아니면 출혈)
+    midDmgBleedingChance:  0.35, // 피해 ≥15 출혈
+    midDmgLacerationChance: 0.65,// 피해 ≥15 (누적) 열상, 그 외 골절
+    lowDmgLacerationChance: 0.6, // 그 외 열상(아니면 출혈)
+    // 심각도 결정 확률
+    severeChanceHighDmg: 0.4,  // 피해 ≥30 → 0.4 확률 sev3, 아니면 sev2
+    severeChanceMidDmg:  0.5,  // 피해 ≥18 → 0.5 확률 sev2, 아니면 sev1
+  },
+
+  // ── 계절 보너스 루팅 ──────────────────────────────────
+  // 탐색 시 현재 계절에 따라 추가로 굴리는 보너스 아이템 테이블.
+  seasonal: {
+    maxCount: 2,   // 1회 탐색당 계절 보너스 최대 획득 개수
+    seasonLoot: {
+      spring: [
+        { id: 'vitamins',  qty: 1, chance: 0.40 },
+        { id: 'rainwater', qty: 2, chance: 0.40 },
+        { id: 'gauze',     qty: 1, chance: 0.25 },
+      ],
+      summer: [
+        { id: 'rainwater',    qty: 3, chance: 0.55 },
+        { id: 'sports_drink', qty: 1, chance: 0.30 },
+        { id: 'empty_bottle', qty: 1, chance: 0.20 },
+      ],
+      autumn: [
+        { id: 'canned_food', qty: 1, chance: 0.45 },
+        { id: 'energy_bar',  qty: 1, chance: 0.35 },
+        { id: 'rice',        qty: 1, chance: 0.20 },
+        { id: 'rainwater',   qty: 1, chance: 0.15 },
+      ],
+      winter: [
+        { id: 'wood',               qty: 1, chance: 0.50 },
+        { id: 'cloth',              qty: 1, chance: 0.35 },
+        { id: 'charcoal',           qty: 1, chance: 0.25 },
+        { id: 'contaminated_water', qty: 1, chance: 0.30 },
+      ],
+    },
+  },
+
   // ── 낚시 ──────────────────────────────────────────────
   fishing: {
     tpCostPerCast:        2,     // 낚시 1회 TP 비용
@@ -332,6 +470,8 @@ const BALANCE = {
     rodBasicBonus:        0.00,  // 기본 낚싯대 추가 보너스 없음
     rodImprovedBonus:     0.15,  // 개량 낚싯대 어획률 보너스
     rareFishChanceMax:    0.15,  // Lv.20 희귀어 확률
+    nonRareSmallChance:   0.45,  // 희귀어 아닐 때 소형어 확률(아니면 중형)
+    trapMediumChance:     0.3,   // 통발 수확 시 중형어 확률(아니면 소형)
     trapCheckIntervalTP:  8,     // 통발 자동 수확 주기 (TP)
     trapBaseCatch:        0.40,  // 통발 기본 어획률
     trapMaxCatch:         0.60,  // 통발 최대 어획률 (fishingQuality 3 기준)

@@ -56,7 +56,7 @@ const DiseaseSystem = {
     // ── 저체온증 (48TP ≈ 16시간 연속 저온) ────────────────────
     if (temp < 20) {
       _coldExposureTicks++;
-      if (_coldExposureTicks >= 48 && !this._hasDisease(gs, 'hypothermia')) {
+      if (_coldExposureTicks >= (BALANCE.disease.coldExposureTpThreshold ?? 48) && !this._hasDisease(gs, 'hypothermia')) {
         this._contract(gs, 'hypothermia');
         _coldExposureTicks = 0;
       }
@@ -70,13 +70,13 @@ const DiseaseSystem = {
     // ── 감기 (저온 노출) ─────────────────────────────────────
     if (temp < 35 && !this._hasDisease(gs, 'common_cold')
                   && !this._hasDisease(gs, 'influenza')) {
-      if (Math.random() < 0.004 * seasonMult) this._contract(gs, 'common_cold');
+      if (Math.random() < (BALANCE.disease.commonColdChance ?? 0.004) * seasonMult) this._contract(gs, 'common_cold');
     }
 
     // ── 열사병 (36TP ≈ 12시간 연속 고온) ────────────────────
     if (temp > 85) {
       _heatExposureTicks++;
-      if (_heatExposureTicks >= 36 && !this._hasDisease(gs, 'heatstroke')) {
+      if (_heatExposureTicks >= (BALANCE.disease.heatExposureTpThreshold ?? 36) && !this._hasDisease(gs, 'heatstroke')) {
         this._contract(gs, 'heatstroke');
         _heatExposureTicks = 0;
       }
@@ -87,7 +87,7 @@ const DiseaseSystem = {
     // ── 패혈증 (감염 60+ 방치, 48TP) ────────────────────────
     if (infection > 60) {
       _highInfectTicks++;
-      if (_highInfectTicks >= 48 && !this._hasDisease(gs, 'sepsis')) {
+      if (_highInfectTicks >= (BALANCE.disease.sepsisExposureTpThreshold ?? 48) && !this._hasDisease(gs, 'sepsis')) {
         this._contract(gs, 'sepsis');
         _highInfectTicks = 0;
       }
@@ -98,12 +98,12 @@ const DiseaseSystem = {
     // ── 독감 (감염 수치 높을 때) ─────────────────────────────
     if (infection > 25 && !this._hasDisease(gs, 'influenza')
                        && !this._hasDisease(gs, 'common_cold')) {
-      if (Math.random() < 0.004 * seasonMult) this._contract(gs, 'influenza');
+      if (Math.random() < (BALANCE.disease.influenzaChance ?? 0.004) * seasonMult) this._contract(gs, 'influenza');
     }
 
     // ── 방사선 질환 ──────────────────────────────────────────
     if (radiation > 50 && !this._hasDisease(gs, 'radiation_sickness')) {
-      if (Math.random() < 0.005 * seasonMult) this._contract(gs, 'radiation_sickness');
+      if (Math.random() < (BALANCE.disease.radiationSicknessChance ?? 0.005) * seasonMult) this._contract(gs, 'radiation_sickness');
     }
   },
 
@@ -141,16 +141,16 @@ const DiseaseSystem = {
 
     if (!isWater && !isFood) return;
 
-    if (isWater && contamination >= 50) {
+    if (isWater && contamination >= (BALANCE.disease.waterContamSevereThreshold ?? 50)) {
       // 심하게 오염된 물 → 콜레라 또는 이질
-      if (Math.random() < 0.55) {
+      if (Math.random() < (BALANCE.disease.choleraChanceSevereWater ?? 0.55)) {
         this._contract(gs, 'cholera');
-      } else if (Math.random() < 0.50) {
+      } else if (Math.random() < (BALANCE.disease.dysenteryChanceSevereWater ?? 0.50)) {
         this._contract(gs, 'dysentery');
       }
-    } else if (contamination >= 20) {
+    } else if (contamination >= (BALANCE.disease.contamMildThreshold ?? 20)) {
       // 오염된 음식/물 → 이질 위험
-      if (Math.random() < 0.40) this._contract(gs, 'dysentery');
+      if (Math.random() < (BALANCE.disease.dysenteryChanceContamFood ?? 0.40)) this._contract(gs, 'dysentery');
     }
   },
 

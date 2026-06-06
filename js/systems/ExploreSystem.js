@@ -387,11 +387,11 @@ const ExploreSystem = {
         if (!gs.location.districtLootDay) gs.location.districtLootDay = {};
         const lastLootDay = gs.location.districtLootDay[districtId] ?? 0;
         const daysSinceLoot = gs.time.day - lastLootDay;
-        if (daysSinceLoot >= 30) {
+        if (daysSinceLoot >= (BALANCE.explore.respawnLootDays ?? 30)) {
           const fullLoot = generateRouteCards(districtId);
           for (const item of fullLoot) {
-            if (Math.random() < 0.5) {
-              loot.push({ ...item, quantity: Math.max(1, Math.floor((item.quantity ?? 1) / 2)) });
+            if (Math.random() < (BALANCE.explore.respawnLootChance ?? 0.5)) {
+              loot.push({ ...item, quantity: Math.max(1, Math.floor((item.quantity ?? 1) / (BALANCE.explore.respawnLootQtyDivisor ?? 2))) });
             }
           }
           gs.location.districtLootDay[districtId] = gs.time.day;
@@ -427,8 +427,8 @@ const ExploreSystem = {
             loot.push({ ...extra, quantity: 1 });
           }
           // 탐색 마스터리: 5% 희귀 아이템
-          if (SkillSystem.hasMastery('scavenging') && Math.random() < 0.05) {
-            const rarePool = ['bandage', 'painkiller', 'antiseptic', 'rope', 'wire'];
+          if (SkillSystem.hasMastery('scavenging') && Math.random() < (BALANCE.explore.masteryRareLootChance ?? 0.05)) {
+            const rarePool = BALANCE.explore.masteryRarePool ?? ['bandage', 'painkiller', 'antiseptic', 'rope', 'wire'];
             const rareId   = rarePool[Math.floor(Math.random() * rarePool.length)];
             if (GameData?.items[rareId]) loot.push({ definitionId: rareId, quantity: 1 });
           }
@@ -732,13 +732,13 @@ const ExploreSystem = {
     const actualDistrictId = gs.location.currentDistrict;
     const district  = DISTRICTS[actualDistrictId];
     const noiseBase = district?.noiseGen ?? 3;
-    NoiseSystem.addNoise(noiseBase * 0.8);
+    NoiseSystem.addNoise(noiseBase * (BALANCE.explore.subLocationNoiseMult ?? 0.8));
 
     // 병원 야간 특화 이벤트 — 보라매 응급실/수술실 야간 진입 시 20% 확률로 잠복 환자 좀비 조우
     if (NightSystem.isNight()
         && gs.location.currentLandmark === 'lm_boramae_hospital'
         && (subLocationId === 'boramae_emergency' || subLocationId === 'boramae_surgery')
-        && Math.random() < 0.20) {
+        && Math.random() < (BALANCE.explore.nightHospitalAmbushChance ?? 0.20)) {
       const patientDef = ENEMIES?.zombie_patient_dormant;
       if (patientDef) {
         const hp = patientDef.hp.min + Math.floor(Math.random() * (patientDef.hp.max - patientDef.hp.min + 1));
@@ -778,7 +778,7 @@ const ExploreSystem = {
 
     // 방사선 체크 (건물 내부는 절반)
     if ((district?.radiation ?? 0) > 0) {
-      StatSystem.applyRadiation(district.radiation * 0.5);
+      StatSystem.applyRadiation(district.radiation * (BALANCE.explore.indoorRadiationMult ?? 0.5));
     }
 
     // 루팅: 첫 방문만 아이템 생성 (리스폰 없음 — 식량은 텃밭으로 자급)

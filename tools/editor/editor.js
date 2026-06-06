@@ -1,6 +1,7 @@
 // === DATA EDITOR — main app ===
 import {
   DATA_FILES,
+  ITEM_FILE_KEYS,
   extractValue,
   spliceObjectLiteral,
   diffValue,
@@ -22,7 +23,7 @@ const state = {
   itemNames: new Map(), // item id -> 표시 이름
   items: {},            // full item definitions (read-only 참조용)
   itemSearch: '',       // 아이템 탭 검색어
-  tab: 'districts',
+  tab: 'balance',
   sel: {},              // tab -> selected sub-key
 };
 
@@ -69,6 +70,408 @@ function itemName(id) {
 function districtName(id) {
   return state.files.districts?.data?.[id]?.name || '';
 }
+
+// ─── 필드 설명 (마우스 오버 툴팁) ────────────────────────────
+const FIELD_HELP = {
+  // 장소(구)
+  dangerLevel: '위험도 등급(1~4). 높을수록 조우·전투 위험이 큽니다.',
+  travelCostTP: '이 구역으로 이동할 때 드는 시간(TP). 1TP = 게임 내 15분.',
+  radiation: '방사선 수치. 높으면 피폭 위험이 있습니다.',
+  encounterChance: '탐색 시 적과 마주칠 확률(0~1). 예: 0.15 = 15%.',
+  noiseGen: '활동 시 발생하는 소음. 높을수록 적을 끌어들입니다.',
+  fishingQuality: '낚시 품질(높을수록 좋은 어획). 낚시 가능 구역에만 적용.',
+  hasFishing: '이 구역에서 낚시가 가능한지 여부.',
+  // 드랍 테이블
+  definitionId: '드랍되는 아이템의 고유 ID입니다. (📦 아이템 탭에서 검색해 확인)',
+  id: '드랍되는 아이템의 고유 ID입니다. (📦 아이템 탭에서 검색해 확인)',
+  weight: '추첨 가중치. 클수록 더 자주 나옵니다. 드랍 확률 = 이 값 ÷ 같은 표의 weight 합계.',
+  minQty: '한 번 드랍될 때의 최소 수량.',
+  maxQty: '한 번 드랍될 때의 최대 수량.',
+  contamChance: '오염(불결) 상태로 나올 확률(0~1). 예: 0.1 = 10%.',
+  // 랜드마크
+  dangerMod: '이 세부장소의 추가 위험도 보정값(클수록 위험).',
+  lootCount: '탐색 1회에 나오는 아이템 개수 범위 [최소, 최대].',
+  // 퀘스트 기본
+  title: '퀘스트 제목(화면에 표시되는 이름).',
+  icon: '퀘스트 아이콘(이모지).',
+  dayTrigger: '이 퀘스트가 시작(활성화)되는 게임 일차(Day).',
+  deadlineDays: '시작 후 완료 제한 일수. ∞(무한)면 기한이 없습니다.',
+  desc: '퀘스트 설명 문구.',
+  prerequisite: '이 퀘스트보다 먼저 완료해야 하는 선행 퀘스트. 비우면 선행 조건이 없습니다.',
+  // 목표(objective)
+  type: '목표 종류: collect_item(특정 아이템 수집) · collect_item_type(분류별 수집) · craft_item(제작) · build_structure(건설) · survive_days(생존) · visit_district(특정 구 방문).',
+  count: '목표 달성에 필요한 수량/횟수.',
+  itemType: '수집해야 할 아이템 분류(예: food, water, medical).',
+  category: '제작해야 할 아이템 카테고리(예: structure).',
+  districtId: '방문해야 할 구(district)의 ID.',
+  days: '버텨야 하는 생존 일수.',
+  // 보상/패널티
+  morale: '사기(정신력) 변화량. 보상은 +값, 실패 패널티는 -값.',
+  items: '지급(보상) 또는 차감되는 아이템 목록.',
+  qty: '아이템 수량.',
+  trust: 'NPC 신뢰도 변화량.',
+  skillXp: '스킬 경험치 보상량.',
+  // 드랍 테이블 표시 열
+  __name: '아이템 ID에 연결된 표시 이름(자동).',
+  __pct: '같은 표의 weight 합계 대비 이 항목의 드랍 확률.',
+  // 공용 변수(밸런스) — 탐색/재고
+  lootCountMin: '모든 구 공통 — 1회 탐색 시 추첨 횟수(나오는 아이템 종류 수)의 하한.',
+  lootCountMax: '모든 구 공통 — 1회 탐색 시 추첨 횟수(나오는 아이템 종류 수)의 상한.',
+  stockDecayPerDay: '세부 장소(서브로케이션)의 일일 재고가 하루에 줄어드는 양. 재고가 줄면 드랍이 감소합니다.',
+  survivalRateTargetMin: '밸런스 설계 목표 — 100일 생존율 하한(0~1).',
+  survivalRateTargetMax: '밸런스 설계 목표 — 100일 생존율 상한(0~1).',
+};
+function helpFor(key) { return FIELD_HELP[key] || ''; }
+
+// 공용 변수 탭의 카테고리(최상위 키) 한글 라벨
+const BAL_CAT_LABEL = {
+  design: '설계 목표', stats: '스탯 감소율(/TP)', hydration: '수분', armor: '방어력',
+  noise: '소음', travel: '이동', crafting: '제작', quality: '제작 품질', combat: '전투',
+  campfire: '모닥불', explore: '탐색 루팅', encounter: '조우', disease: '질병',
+  moraleTiers: '사기 구간', raidEvents: '레이드 이벤트', hordeWaves: '무리 웨이브',
+  hospitalSiege: '병원 공성', patientIntake: '환자 유입', raiderEvents: '약탈자 이벤트',
+  night: '야간', medicalStation: '의료소', fishing: '낚시', seasonal: '계절 보너스 루팅',
+  npc: 'NPC', body: '신체 부상', skills: '스킬 계수', traits: '특성 효과',
+};
+
+// 공용 변수(밸런스) leaf 키 설명 — 공통 사전보다 우선
+const BAL_HELP = {
+  // design
+  survivalRateTargetMin: '밸런스 목표 — 100일 생존율 하한(0~1).',
+  survivalRateTargetMax: '밸런스 목표 — 100일 생존율 상한(0~1).',
+  // stats
+  hydrationDecayPerTP: 'TP당 수분 감소량.',
+  nutritionDecayPerTP: 'TP당 포만감(영양) 감소량.',
+  moraleDecayPerTP: 'TP당 사기 자연 감소량.',
+  fatigueGainPerTP: 'TP당 피로 증가량.',
+  staminaRegenPerTP: 'TP당 스태미나 자연 회복량(과적이 아닐 때).',
+  weightMultipliers: '무게비율(max 이하)별 스태미나 소모 배율(mult) 표.',
+  staminaDrainTiers: '과적 구간(max 이하)별 스태미나 변화량(delta)/TP.',
+  mult: '배율.',
+  delta: '변화량(/TP).',
+  max: '이 구간의 상한값(또는 최대값).',
+  // hydration
+  startValue: '시작 시 값.',
+  // armor
+  damageReductionCap: '피해 감소율 상한(0~1).',
+  critReductionCap: '치명타 감소율 상한(0~1).',
+  specialDmgReductCap: '적 특수스킬 피해 감소 상한(0~1).',
+  // noise
+  baseDecayPerTP: 'TP당 기본 소음 감소량.',
+  influxThreshold: '이 소음 이상이면 적이 유입되기 시작.',
+  flushReductionMult: '소음 플러시 후 influxThreshold 대비 잔존 비율.',
+  bonusDecay: '해당 소음 구간에서 추가로 감소하는 양.',
+  // travel
+  baseCostTP: '기본 이동 TP 비용.',
+  baseStaminaDrain: '이동 시 기본 스태미나 소모.',
+  exploreStaminaDrain: '탐색 시 스태미나 소모.',
+  lowStaminaThreshold: '이 비율 미만이면 저스태미나 페널티(0~1).',
+  lowStaminaPenalty: '저스태미나 시 소모 배율.',
+  immobileWeightPct: '이 무게비율 이상이면 이동 불가.',
+  // crafting
+  maxQueueSize: '제작 큐 최대 개수.',
+  baseFailureChance: '기본 제작 실패 확률.',
+  minFailureChance: '스킬 최대 시 최소 실패 확률.',
+  failureRefundRate: '실패 시 재료 반환 비율.',
+  failureXpMult: '실패 시 획득 XP 배율.',
+  chefTeamBonusHigh: '팀 평균사기 >85 품질 점수 보너스.',
+  chefTeamBonusMid: '팀 평균사기 >70 품질 점수 보너스.',
+  xpBase: '스킬별 제작 기본 XP.',
+  // quality
+  skillBonusPerLevel: '요구 레벨 초과 1레벨당 품질 보너스.',
+  focusBonusSolo: '큐 1개(집중) 품질 보너스.',
+  focusPenaltyFull: '큐 가득 참 품질 페널티.',
+  moraleBonusHigh: '사기 높음 품질 보너스.',
+  moralePenaltyLow: '사기 낮음 품질 페널티.',
+  moralePenaltyDespair: '절망 상태 품질 페널티.',
+  // combat
+  fleeChance: '전투 도주 성공 확률.',
+  fleeNoise: '도주 시 발생 소음.',
+  fleeFatigue: '도주 시 피로 증가.',
+  unarmedBaseDmg: '맨손 기본 피해 범위 [최소, 최대].',
+  unarmedStunChance: '맨손 기절 유발 확률.',
+  unarmedStunDmg: '맨손 기절 추가 피해.',
+  masteryCounterChance: '방어 마스터리 반격 확률.',
+  masteryCounterDmg: '방어 마스터리 반격 피해.',
+  ammoSaveChance: '원거리 마스터리 탄약 미소모 확률.',
+  enemyDropChance: '적 처치 시 전리품 드롭 확률.',
+  killXp: '처치 시 전투 XP.',
+  hitXp: '명중 시 XP.',
+  critBonusXp: '치명타 추가 XP.',
+  defenseXp: '피격 시 방어 XP.',
+  combatLogMaxEntries: '전투 로그 최대 보관 줄 수.',
+  guardDamageReduction: '방어 시 피해 감소율.',
+  guardCounterBonus: '방어 후 반격 피해 보너스.',
+  guardDuration: '방어 지속 턴 수.',
+  nightAccuracyPenalty: '야간 전투 명중률 페널티.',
+  nightLitPenalty: '광원 보유 시 적용되는 야간 페널티(완화값).',
+  weaponWeaknessMult: '약점 속성 피해 배율.',
+  weaponResistanceMult: '저항 속성 피해 배율.',
+  companionAttackCooldown: '동료 공격 쿨다운(턴).',
+  companionHealCooldown: '동료 치유 쿨다운(턴).',
+  baseUnarmedAccuracy: '맨손 공격 기본 명중률.',
+  defaultCritMultiplier: '무기 미지정 시 치명타 배율.',
+  noAmmoMeleeDamage: '탄약 없는 원거리무기 → 근접 전환 피해 범위.',
+  noAmmoAccuracy: '탄약 없는 근접 전환 명중률.',
+  noAmmoNoise: '탄약 없는 근접 전환 소음.',
+  defaultStealthDifficulty: '적 은신 난이도 기본값.',
+  enemyDefaultDamage: '적 공격 기본 피해 범위(미지정 시).',
+  enemyBaseAccuracy: '적 공격 기본 명중률(미지정 시).',
+  enemySpecialSkillChance: '적이 특수스킬을 쓸 확률.',
+  fleeFailedDamageMult: '도주 실패 시 받는 피해 배율.',
+  companionTargetChance: '적이 플레이어 대신 동료를 노릴 확률.',
+  doctorZombieMedDropChance: '의사 — 좀비 처치 시 의료품 추가 드롭 확률.',
+  attackDamage: '동료 자율 공격 피해 범위.',
+  attackAccuracy: '동료 자율 공격 명중률.',
+  healAmount: '회복량.',
+  healThreshold: '플레이어 HP가 이 비율 미만이면 자동 치유(0~1).',
+  holdDamageReduct: 'hold 자세 피해 경감율.',
+  resistBonus: '상태이상 저항 보너스.',
+  atkMult: '적 공격력 배율.',
+  duration: '지속 턴 수.',
+  cooldown: '쿨다운(턴).',
+  // campfire
+  tempBoostPerTP: 'TP당 체온 상승량.',
+  fuelConsumePerTP: 'TP당 연료(내구도) 소모.',
+  noFuelTempBoost: '연료 없을 때 체온 상승량.',
+  // encounter
+  reductionCap: '조우 확률 감소 상한(0~1).',
+  structureReductCap: '구조물 조우 감소 상한(0~1).',
+  respawnNoiseThreshold: '이 소음 이상이면 적 리스폰.',
+  earlyGameGraceDays: '초반 조우 완화 적용 일수.',
+  earlyGameEncounterMult: '초반 조우 확률 배율.',
+  landmarkDangerReduct: '랜드마크 세부장소 기본 위험도 감소.',
+  exposureDecayRate: '비노출 시 노출 카운터 감소율(/TP).',
+  // moraleTiers
+  threshold: '이 값 이상이면 해당 구간 적용.',
+  dmgMult: '피해 배율.',
+  accBonus: '명중률 보정.',
+  staminaRegenMult: '스태미나 회복 배율.',
+  craftFailMult: '제작 실패율 배율.',
+  fatigueGainMult: '피로 증가 배율.',
+  blockExplore: '탐색 차단 여부.',
+  // events (raid/horde/siege/raider)
+  startDay: '이 이벤트가 시작되는 일차.',
+  baseChancePerTP: 'TP당 기본 발생 확률.',
+  dayScaling: '일차마다 증가하는 확률.',
+  maxChance: '최대 발생 확률(/TP).',
+  minEnemies: '최소 적 수.',
+  maxEnemies: '최대 적 수.',
+  intervalDays: '발생 간격(일).',
+  intervalVariance: '간격 랜덤 변동(±일).',
+  baseEnemies: '첫 발생 시 적 수.',
+  enemiesPerWave: '웨이브마다 증가 적 수.',
+  baseDangerLevel: '기본 위험도.',
+  dangerScaling: '웨이브/습격마다 위험도 증가.',
+  structureDamage: '패배/도주 시 구조물 내구도 감소(%).',
+  victoryMorale: '승리 시 사기 변화.',
+  defeatMorale: '패배 시 사기 변화.',
+  dangerModDelta: '패배 시 세부장소 위험도 증가량.',
+  casualtiesMin: '패배 시 최소 사망자.',
+  casualtiesMax: '패배 시 최대 사망자.',
+  minGapWithHordeDays: '습격-호드 최소 간격(일).',
+  numEnemies: '적 수.',
+  moraleMultiplier: '사기 손실 배율.',
+  casualtiesReduce: '사망자 감소량.',
+  defeatMoraleMultiplier: '패배 사기 손실 배율.',
+  baseScore: '기본 점수.',
+  skillMult: '스킬 레벨당 점수 배율.',
+  trustMult: '신뢰 NPC 수당 점수 배율.',
+  partialVictoryMorale: '부분 승리 사기.',
+  partialVictoryStructureMult: '부분 승리 구조물 피해 배율.',
+  partialVictoryDangerMult: '부분 승리 위험도 배율.',
+  cooldownTP: '쿨다운(TP).',
+  demandItems: '요구 아이템 최소 수.',
+  demandItemsMax: '요구 아이템 최대 수.',
+  surrenderMorale: '굴복 시 사기 변화.',
+  refuseMorale: '거부 시 사기 변화.',
+  // patientIntake
+  moraleDeath: '환자 사망 시 사기 변화.',
+  moraleDepart: '환자 이탈 시 사기 변화.',
+  cumulativeMoraleBonusPer: '누적 치료 환자 1명당 사기 보너스.',
+  cumulativeMoraleBonusCap: '누적 환자 사기 보너스 상한.',
+  // night
+  startHour: '야간 시작 시각(시).',
+  endHour: '야간 종료 시각(시).',
+  encounterMult: '조우 확률 배율.',
+  travelCostMult: '이동 비용 배율.',
+  darkSleepFatigueMult: '어둠 수면 피로 회복 배율.',
+  darkSleepAnxietyGain: '어둠 수면 불안 증가.',
+  darkNightmareBonus: '어둠 수면 악몽 확률 증가.',
+  litSleepAnxietyDrop: '광원 수면 불안 감소.',
+  lightDrainPerTP: '야간 광원 카드 내구도 감소(/TP).',
+  // medicalStation
+  durabilityDecayPerTP: '의료 구조물 내구도 감소(/TP).',
+  // fishing
+  tpCostPerCast: '낚시 1회 TP 비용.',
+  baseCatchChance: '기본 어획 확률(Lv.0).',
+  maxCatchChance: '최대 어획 확률(Lv.20).',
+  baitWormBonus: '지렁이 미끼 어획률 보너스.',
+  baitInsectBonus: '곤충 미끼 어획률 보너스.',
+  rodBasicBonus: '기본 낚싯대 어획률 보너스.',
+  rodImprovedBonus: '개량 낚싯대 어획률 보너스.',
+  rareFishChanceMax: 'Lv.20 희귀어 확률.',
+  nonRareSmallChance: '희귀어 아닐 때 소형어 확률(아니면 중형).',
+  trapMediumChance: '통발 수확 시 중형어 확률(아니면 소형).',
+  trapCheckIntervalTP: '통발 자동 수확 주기(TP).',
+  trapBaseCatch: '통발 기본 어획률.',
+  trapMaxCatch: '통발 최대 어획률.',
+  xpPerCast: '낚시 시도 XP.',
+  xpPerRareFish: '희귀어 XP.',
+  xpPerTrapHarvest: '통발 수확 XP.',
+  // npc
+  trustCombatBonusPer5: '전투 보너스 = 1.0 + (신뢰/5) × 이 값.',
+  safetyAdd: '야간 경계 시 안전도 가산.',
+  encounterReduce: '야간 경계 시 조우 확률 감소.',
+  // body
+  hitTables: '무기 타입별 부위 피격 확률 표.',
+  injuryHealTP: '부상 타입별 기본 치유 TP.',
+  naturalHealRate: 'severity당 TP마다 치유 진행량.',
+  headConcussionChance: '머리 피격 시 뇌진탕 확률(아니면 열상).',
+  highDmgFractureChance: '피해 ≥25 골절 확률(아니면 출혈).',
+  midDmgBleedingChance: '피해 ≥15 출혈 확률.',
+  midDmgLacerationChance: '피해 ≥15 (누적)열상 확률.',
+  lowDmgLacerationChance: '저피해 열상 확률(아니면 출혈).',
+  severeChanceHighDmg: '피해 ≥30 시 중상(sev3) 확률.',
+  severeChanceMidDmg: '피해 ≥18 시 중상(sev2) 확률.',
+  head: '머리 피격 확률.', torso: '몸통 피격 확률.',
+  leftArm: '왼팔 피격 확률.', rightArm: '오른팔 피격 확률.',
+  leftLeg: '왼다리 피격 확률.', rightLeg: '오른다리 피격 확률.',
+  laceration: '열상 치유 TP.', bleeding: '출혈 치유 TP.',
+  fracture: '골절 치유 TP.', concussion: '뇌진탕 치유 TP.',
+  // quality tiers / labels
+  label: '표시 이름.', notify: '발생 시 알림 문구.', name: '표시 이름.',
+  // explore (추가)
+  respawnLootDays: '구역 루팅 리스폰까지 경과 일수.',
+  respawnLootChance: '리스폰 시 각 아이템 드롭 확률.',
+  respawnLootQtyDivisor: '리스폰 수량 = 원수량 ÷ 이 값.',
+  masteryRareLootChance: '탐색 마스터리 희귀 루팅 확률.',
+  subLocationNoiseMult: '세부장소 탐색 소음 배율(구 소음 대비).',
+  nightHospitalAmbushChance: '야간 보라매 응급실/수술실 잠복 환자 조우 확률.',
+  indoorRadiationMult: '건물 내부 방사선 노출 배율.',
+  lootCountMin: '모든 구 공통 — 1회 탐색 추첨 횟수 하한.',
+  lootCountMax: '모든 구 공통 — 1회 탐색 추첨 횟수 상한.',
+  stockDecayPerDay: '세부 장소 일일 재고 감소량.',
+  // disease (추가)
+  coldExposureTpThreshold: '저체온증 발병 누적 저온 TP.',
+  heatExposureTpThreshold: '열사병 발병 누적 고온 TP.',
+  sepsisExposureTpThreshold: '패혈증 발병 누적 고감염 TP.',
+  commonColdChance: 'TP당 감기 발병 확률(계절 보정 전).',
+  influenzaChance: 'TP당 독감 발병 확률.',
+  radiationSicknessChance: 'TP당 방사선 질환 발병 확률.',
+  waterContamSevereThreshold: '물 오염 "심함" 임계.',
+  contamMildThreshold: '음식/물 오염 "중간" 임계.',
+  choleraChanceSevereWater: '심한 오염수 콜레라 확률.',
+  dysenteryChanceSevereWater: '심한 오염수 이질 확률.',
+  dysenteryChanceContamFood: '오염 음식/물 이질 확률.',
+  // crafting xpBase 스킬별
+  building: '건축 제작 기본 XP.', weaponcraft: '무기 제작 기본 XP.',
+  armorcraft: '방어구 제작 기본 XP.', medicine: '의약 제작 기본 XP.',
+  cooking: '요리 제작 기본 XP.', crafting: '일반 제작 기본 XP.',
+  xpBase: '스킬별 제작 기본 XP.',
+  // quality 등급/임계
+  normal: '품질 등급(라벨/배율/알림).', good: '품질 등급(라벨/배율/알림).',
+  excellent: '품질 등급(라벨/배율/알림).', masterwork: '품질 등급(라벨/배율/알림).',
+  tiers: '제작 품질 등급 정의.', thresholds: '품질 점수 임계값.',
+  // events 중첩
+  streakBonus: '연승 누적 추가 사기.', at2: '2연승 시 추가 사기.', at5: '5연승 시 추가 사기.',
+  tutorial: '튜토리얼(첫) 습격 완화 설정.', tutorialWarningDay: '습격 예고 알림 일차.',
+  skipStructureDmg: '구조물 피해 생략 여부.', skipDangerMod: '위험도 증가 생략 여부.',
+  skipCasualties: '사망자 생략 여부.',
+  doctorPrivilege: '의사 전용 패배 완화.', doctorEvacuation: '의사 전용 대피 미니게임.',
+  stageWeights: '대피 단계별 선택지 가중치.', stage1: '1단계 선택 가중치.', stage2: '2단계 선택 가중치.',
+  A: '선택지 A 가중치.', B: '선택지 B 가중치.', C: '선택지 C 가중치.', D: '선택지 D 가중치.',
+  victoryItems: '승리 보상 아이템.',
+  moraleMilestones: '누적 치료 환자 수 도달 시 일회성 사기 보너스(횟수: 보너스).',
+  // combat 중첩
+  companionAuto: '동료 자율 행동 설정.', classSkills: '직업별 동료 스킬.',
+  scaledDecayBreakpoints: '소음 구간별 추가 감소.',
+  // explore / seasonal 루팅 풀
+  masteryRarePool: '탐색 마스터리 희귀 루팅 후보 아이템 ID 목록.',
+  seasonLoot: '계절별 탐색 보너스 루팅 테이블.',
+  maxCount: '1회 탐색당 계절 보너스 최대 획득 개수.',
+  spring: '봄 보너스 루팅.', summer: '여름 보너스 루팅.',
+  autumn: '가을 보너스 루팅.', winter: '겨울 보너스 루팅.',
+  qty: '획득 수량.', chance: '드롭 확률(0~1).',
+  // 스킬/특성
+  scavenging: '탐색 스킬 보너스 계수.',
+  maxExtraLootChance: '탐색 Lv.20 시 추가 루팅 확률(레벨 비례).',
+  lv20RareLootChance: '탐색 Lv.20 도달 시 희귀 루팅 확률.',
+  scavenger: '스캐빈저 특성 효과.', medic: '의무병 특성 효과.', silent: '침묵 특성 효과.',
+  bonusLootCount: '탐색 시 추가로 발견하는 아이템 수.',
+  healMultiplier: '의료 아이템 회복 배율.',
+  noiseMult: '소음 발생 배율.',
+};
+function helpForBalance(key) { return BAL_HELP[key] ?? FIELD_HELP[key] ?? ''; }
+
+// 아이템 탭 전용 설명 (공통 사전보다 우선 — 예: weight는 '무게'로 다름)
+const ITEM_HELP = {
+  weight: '아이템 1개의 무게(kg). 소지 무게 한도에 영향을 줍니다.',
+  tags: '분류 태그. 검색·필터·레시피 조건 등에 사용됩니다.',
+  defaultDurability: '기본 내구도. 사용·장비하면 닳습니다.',
+  defaultContamination: '기본 오염도(0 = 깨끗).',
+  dismantle: '분해 시 얻는 산출물 목록.',
+  dismantleTP: '분해에 드는 시간(TP).',
+  stackable: '같은 칸에 여러 개를 겹쳐 보관할 수 있는지 여부.',
+  maxStack: '한 칸에 겹칠 수 있는 최대 수량.',
+  onConsume: '먹기/소비할 때 발생하는 효과.',
+  onUse: '사용할 때 발생하는 효과.',
+  onWear: '착용할 때 적용되는 효과.',
+  onTick: '시간이 흐를 때(TP마다) 적용되는 효과.',
+  onTrigger: '특정 조건에서 발동하는 효과.',
+  leaveOnConsume: '소비 후 남는 잔여물(예: 빈 캔).',
+  requiredForBlueprints: '이 아이템을 재료로 쓰는 설계도(레시피) 목록.',
+  nutrition: '섭취 시 회복하는 포만감(영양).',
+  legendary: '전설(고유) 아이템 여부.',
+  isRare: '희귀 아이템 여부.',
+  requiresSlot: '장착·배치에 필요한 슬롯.',
+  equipSlot: '장비 슬롯(머리/몸/손/무기 등).',
+  combat: '전투 관련 능력치(공격력 등).',
+  weaponType: '무기 종류(근접/원거리/투척 등).',
+  damage: '공격력(피해량).',
+  armor: '방어구의 방어 수치.',
+  defense: '방어력 수치.',
+  bagSlots: '가방류: 추가로 늘어나는 보관 칸 수.',
+  storageCapacity: '보관 용량.',
+  repairRecipe: '수리에 필요한 재료.',
+  repairAmount: '수리 시 회복되는 내구도.',
+  effect: '특수 효과 정보.',
+  multiTarget: '여러 대상에게 적용되는지 여부.',
+  throwableEffect: '투척 시 효과.',
+  treatPart: '치료 대상 부위.',
+  diagnose: '진단 관련 정보.',
+  infectionRisk: '감염 위험도.',
+  bleedChance: '출혈 유발 확률.',
+  trapData: '함정 설정 데이터.',
+  craftingTool: '제작에 도구로 사용됩니다.',
+  fragmentOf: '이 조각이 모여 완성되는 아이템.',
+  landmark: '랜드마크(거점/장소) 카드 여부.',
+  landmarkBonus: '이 랜드마크가 주는 보너스 설명.',
+  nodeId: '연결된 노드(장소) ID.',
+  eventDuration: '이벤트 지속 시간.',
+  warmthBonus: '체온 유지 보너스.',
+  waterCapacity: '담을 수 있는 물의 양.',
+  kindlingUses: '불쏘시개 사용 가능 횟수.',
+  sleepFatigueMult: '수면 시 피로 회복 배율.',
+  companionMoraleBoost: '동료 사기 상승 효과.',
+  isStructure: '구조물 여부.',
+  isHangang: '한강 수변 자원 여부.',
+  safeZone: '안전지대(조우/위협 차단) 여부.',
+  weatherProtection: '날씨 패널티 차단 여부.',
+  contaminationShield: '식량 오염 차단 여부.',
+  npcShelter: 'NPC가 합류·거주 가능한지 여부.',
+};
+function helpForItem(key) { return ITEM_HELP[key] ?? FIELD_HELP[key] ?? ''; }
+
+
+// 설명이 있으면 점선 밑줄 + 마우스 오버 툴팁을 단 라벨 생성
+function labelEl(text, help) {
+  return el('label', help ? { text, title: help, class: 'has-help' } : { text });
+}
+function fieldLabel(text, key = text) {
+  return labelEl(text, helpFor(key));
+}
+
 
 // 변경/검증 배지 + 변경됨 표시 + 저장 버튼 상태를 실제 diff로 동기화
 function refreshChangeCount() {
@@ -279,31 +682,26 @@ function renderValidationTab() {
   view.append(wrap);
 }
 
-// ─── 아이템 정보 탭 (읽기 전용 참조) ─────────────────────────
-// 값을 보기 좋은 노드로: 불리언→✓/✗, 문자열 배열→칩, 객체/객체배열→코드블록
-function valueNode(v) {
-  if (v === null || v === undefined) return el('span', { class: 'kv-v muted', text: '—' });
-  if (typeof v === 'boolean') return el('span', { class: 'kv-v', text: v ? '✓' : '✗' });
-  if (v === Infinity) return el('span', { class: 'kv-v', text: '∞' });
-  if (Array.isArray(v)) {
-    if (!v.length) return el('span', { class: 'kv-v muted', text: '[]' });
-    if (v.every((x) => x === null || typeof x !== 'object')) {
-      return el('span', {}, v.map((x) => el('span', { class: 'chip', text: String(x) })));
-    }
-    return el('pre', { class: 'codeblock', text: v.map((x) => JSON.stringify(x)).join('\n') });
+// ─── 아이템 탭 (소스 직접 편집) ───────────────────────────────
+// 편집 가능한 아이템 소스 파일에서 id → fileKey 인덱스 구성
+function buildItemIndex() {
+  const idx = {};
+  for (const fk of ITEM_FILE_KEYS) {
+    const d = state.files[fk]?.data;
+    if (!d) continue;
+    for (const id of Object.keys(d)) idx[id] = fk;
   }
-  if (typeof v === 'object') return el('pre', { class: 'codeblock', text: JSON.stringify(v, null, 2) });
-  return el('span', { class: 'kv-v', text: String(v) });
+  return idx;
 }
 
 function renderItemsTab() {
-  const items = state.items || {};
-  const ids = Object.keys(items);
+  const idx = buildItemIndex();
+  const ids = Object.keys(idx).sort();
   if (!ids.length) {
-    view.append(el('div', { class: 'empty', text: '아이템 정보를 불러오지 못했습니다 (items.js 로드 실패).' }));
+    view.append(el('div', { class: 'empty', text: '아이템 소스를 불러오지 못했습니다. (serve.js 연결 확인)' }));
     return;
   }
-  if (!state.sel.items || !items[state.sel.items]) state.sel.items = ids[0];
+  if (!state.sel.items || !idx[state.sel.items]) state.sel.items = ids[0];
 
   const search = el('input', { value: state.itemSearch || '', placeholder: '이름·ID·종류 검색…' });
   const listBox = el('div', { class: 'sidebar' });
@@ -311,35 +709,24 @@ function renderItemsTab() {
 
   const renderDetail = () => {
     detailWrap.innerHTML = '';
-    const it = items[state.sel.items];
+    const fk = idx[state.sel.items];
+    const it = fk && state.files[fk]?.data?.[state.sel.items];
     if (!it) { detailWrap.append(el('div', { class: 'hint', text: '아이템을 선택하세요.' })); return; }
 
     detailWrap.append(el('h2', { text: `${it.icon || ''} ${it.name || it.id}` }));
-    detailWrap.append(el('div', { class: 'sub', text: it.id }));
+    detailWrap.append(el('div', { class: 'sub', text: `${it.id}  ·  ${DATA_FILES[fk].label}` }));
 
-    // 분류 칩 (type / subtype / rarity)
-    const cls = [];
-    if (it.type) cls.push(el('span', { class: 'chip', text: `type: ${it.type}` }));
-    if (it.subtype) cls.push(el('span', { class: 'chip', text: `subtype: ${it.subtype}` }));
-    if (it.rarity) cls.push(el('span', { class: 'chip', text: `rarity: ${it.rarity}` }));
-    if (cls.length) detailWrap.append(el('div', { class: 'chips' }, cls));
-
-    if (it.description) detailWrap.append(el('div', { class: 'desc', text: it.description }));
-
-    // 나머지 필드 (분류·헤더 필드는 위에서 표시했으므로 제외)
-    const skip = ['id', 'name', 'icon', 'description', 'type', 'subtype', 'rarity'];
-    const kv = el('div', { class: 'kv' });
+    // id 외 모든 필드 편집 (id는 객체 키라 읽기 전용 — 헤더에 표시)
+    const scalars = el('div', { class: 'field-row' });
+    const nested = [];
     for (const k of Object.keys(it)) {
-      if (skip.includes(k)) continue;
-      kv.append(el('div', { class: 'kv-row' }, [
-        el('span', { class: 'kv-k', text: k }),
-        valueNode(it[k]),
-      ]));
+      if (k === 'id') continue;
+      const child = it[k];
+      if (child !== null && typeof child === 'object') nested.push(objNode(it, k, 0, fk, helpForItem));
+      else scalars.append(scalarInput(it, k, fk, helpForItem(k)));
     }
-    if (kv.children.length) {
-      detailWrap.append(el('div', { class: 'kv-title', text: '속성' }));
-      detailWrap.append(kv);
-    }
+    if (scalars.children.length) detailWrap.append(scalars);
+    nested.forEach((n) => detailWrap.append(n));
   };
 
   const renderList = () => {
@@ -347,7 +734,7 @@ function renderItemsTab() {
     listBox.innerHTML = '';
     const matched = ids.filter((id) => {
       if (!q) return true;
-      const it = items[id];
+      const it = state.files[idx[id]].data[id];
       return id.toLowerCase().includes(q)
         || (it.name || '').toLowerCase().includes(q)
         || (it.type || '').toLowerCase().includes(q)
@@ -355,7 +742,7 @@ function renderItemsTab() {
     });
     listBox.append(el('div', { class: 'side-group', text: `${matched.length} / ${ids.length}개` }));
     for (const id of matched.slice(0, 500)) {
-      const it = items[id];
+      const it = state.files[idx[id]].data[id];
       listBox.append(el('button', {
         class: 'side-item' + (id === state.sel.items ? ' active' : ''),
         text: `${it.icon || ''} ${it.name || id}`,
@@ -365,10 +752,13 @@ function renderItemsTab() {
     if (matched.length > 500) listBox.append(el('div', { class: 'hint', text: '※ 상위 500개만 표시 — 검색으로 좁히세요.' }));
   };
 
+  // objNode의 +/✕가 호출하는 전역 rerenderDetail을 아이템 상세 갱신에 연결
+  rerenderDetail = () => { renderList(); renderDetail(); };
   search.addEventListener('input', () => { state.itemSearch = search.value; renderList(); });
   renderList();
   renderDetail();
   view.append(el('div', {}, [
+    el('div', { class: 'hint', style: 'margin-bottom:8px' }, '※ 아이템 정의 소스를 직접 편집합니다. stackable·maxStack은 stackConfig.js가 런타임에 덮어쓸 수 있습니다.'),
     el('div', { class: 'field', style: 'margin-bottom:10px' }, [search]),
     el('div', { class: 'list-layout' }, [listBox, detailWrap]),
   ]));
@@ -506,12 +896,16 @@ function autoSubject() {
 function lootTableEditor(rows, idKey, extraCols, fileKey) {
   const total = rows.reduce((s, r) => s + (Number(r.weight) || 0), 0) || 1;
   const tbl = el('table', { class: 'loot' });
+  const th = (text, key) => {
+    const help = helpFor(key);
+    return el('th', help ? { text, title: help, class: 'has-help' } : { text });
+  };
   const head = el('tr', {}, [
-    el('th', { text: '아이템 ID' }),
-    el('th', { text: '이름' }),
-    el('th', { text: 'weight' }),
-    ...extraCols.map((c) => el('th', { text: c.label })),
-    el('th', { text: '%' }),
+    th('아이템 ID', idKey),
+    th('이름', '__name'),
+    th('weight', 'weight'),
+    ...extraCols.map((c) => th(c.label, c.key)),
+    th('%', '__pct'),
     el('th', {}),
   ]);
   tbl.append(el('thead', {}, head));
@@ -577,8 +971,15 @@ function lootTableEditor(rows, idKey, extraCols, fileKey) {
 }
 
 // ─── generic scalar / object field editors ───────────────────
-function scalarInput(obj, key, fileKey) {
+function scalarInput(obj, key, fileKey, help) {
   const v = obj[key];
+  const lbl = help !== undefined ? labelEl(key, help) : fieldLabel(key);
+  // 불리언 → 체크박스
+  if (typeof v === 'boolean') {
+    const cb = el('input', { type: 'checkbox', ...(v ? { checked: true } : {}) });
+    cb.addEventListener('change', () => { obj[key] = cb.checked; markDirty(fileKey); });
+    return el('div', { class: 'field' }, [lbl, el('label', { class: 'hint' }, [cb, ' (켜기/끄기)'])]);
+  }
   const isNum = typeof v === 'number' && v !== Infinity && v !== -Infinity;
   const inp = el('input', {
     type: isNum ? 'number' : 'text',
@@ -590,7 +991,7 @@ function scalarInput(obj, key, fileKey) {
     obj[key] = isNum ? Number(inp.value) : inp.value;
     markDirty(fileKey);
   });
-  return el('div', { class: 'field' }, [el('label', { text: key }), inp]);
+  return el('div', { class: 'field' }, [lbl, inp]);
 }
 
 // item-reward rows: [{definitionId, qty}]
@@ -605,9 +1006,9 @@ function itemRows(arr, fileKey) {
     const qty = el('input', { class: 'num', type: 'number', value: it.qty ?? 1 });
     qty.addEventListener('input', () => { it.qty = Number(qty.value); markDirty(fileKey); });
     wrap.append(el('div', { class: 'field-row' }, [
-      el('div', { class: 'field' }, [el('label', { text: 'item' }), id]),
-      el('div', { class: 'field' }, [el('label', { text: '이름' }), nm]),
-      el('div', { class: 'field' }, [el('label', { text: 'qty' }), qty]),
+      el('div', { class: 'field' }, [fieldLabel('item', 'definitionId'), id]),
+      el('div', { class: 'field' }, [fieldLabel('이름', '__name'), nm]),
+      el('div', { class: 'field' }, [fieldLabel('qty', 'qty'), qty]),
       el('button', { class: 'ghost danger', text: '✕',
         onclick: () => { arr.splice(idx, 1); markDirty(fileKey); rerenderDetail(); } }),
     ]));
@@ -638,7 +1039,9 @@ function objectFields(obj, fileKey) {
 function render() {
   view.innerHTML = '';
   if (state.tab === 'settings') return renderSettings();
+  if (state.tab === 'balance') return renderBalanceTab();
   if (state.tab === 'items') return renderItemsTab();
+  if (state.tab === 'flow') return renderFlowTab();
   if (state.tab === 'changes') return renderChangesTab();
   if (state.tab === 'validate') return renderValidationTab();
   if (!state.files[state.tab]) {
@@ -712,7 +1115,7 @@ function renderLandmarkDetail(root, lm) {
       const mk = (i, label) => {
         const inp = el('input', { type: 'number', value: sub.lootCount[i] ?? 0 });
         inp.addEventListener('input', () => { sub.lootCount[i] = Number(inp.value); markDirty('landmarks'); });
-        return el('div', { class: 'field' }, [el('label', { text: label }), inp]);
+        return el('div', { class: 'field' }, [fieldLabel(label, 'lootCount'), inp]);
       };
       fr.append(mk(0, 'lootCount min'), mk(1, 'lootCount max'));
     }
@@ -723,6 +1126,177 @@ function renderLandmarkDetail(root, lm) {
     ));
     root.append(fs);
   }
+}
+
+// ─── 공용 변수(밸런스) 탭 ────────────────────────────────────
+// 중첩 객체/배열을 재귀적으로 편집. 스칼라는 scalarInput, 배열/객체는 들여쓴 박스.
+// 범용 재귀 편집 노드: 스칼라/배열/객체를 fileKey 데이터로 편집 (라벨 설명은 helpFn(key))
+function objNode(obj, key, depth, fileKey, helpFn) {
+  const v = obj[key];
+  // 스칼라(숫자/문자/불리언/Infinity)
+  if (v === null || typeof v !== 'object') {
+    return scalarInput(obj, key, fileKey, helpFn(key));
+  }
+  // 배열
+  if (Array.isArray(v)) {
+    // 스칼라 배열 → 균일한 칩(입력+✕) 가로 나열 + 같은 높이의 +
+    if (v.every((x) => x === null || typeof x !== 'object')) {
+      const numeric = v.some((x) => typeof x === 'number');
+      const row = el('div', { class: 'arr-row' });
+      v.forEach((x, i) => {
+        const isNum = typeof x === 'number';
+        const inp = el('input', { class: 'arr-input', type: isNum ? 'number' : 'text', step: 'any', value: x });
+        inp.addEventListener('input', () => { v[i] = isNum ? Number(inp.value) : inp.value; markDirty(fileKey); });
+        const rm = el('button', { class: 'ghost danger mini', text: '✕', title: '삭제',
+          onclick: () => { v.splice(i, 1); markDirty(fileKey); rerenderDetail(); } });
+        row.append(el('span', { class: 'arr-item' }, [inp, rm]));
+      });
+      row.append(el('button', { class: 'ghost mini arr-add', text: '+', title: '추가',
+        onclick: () => { v.push(numeric ? 0 : ''); markDirty(fileKey); rerenderDetail(); } }));
+      return el('div', { class: 'field grow' }, [labelEl(key, helpFn(key)), row]);
+    }
+    // 객체 배열 → 각 원소를 가로 카드로 + 삭제/추가
+    const fs = el('fieldset', {}, el('legend', {}, [labelEl(key, helpFn(key))]));
+    const boxes = el('div', { class: 'obj-array' });
+    v.forEach((item, i) => {
+      const sub = el('div', { class: 'bal-sub' });
+      sub.append(el('div', { class: 'sub-head' }, [
+        el('span', { class: 'side-group', text: `#${i}` }),
+        el('button', { class: 'ghost danger mini', text: '✕', title: '이 항목 삭제',
+          onclick: () => { v.splice(i, 1); markDirty(fileKey); rerenderDetail(); } }),
+      ]));
+      for (const k of Object.keys(item)) sub.append(objNode(item, k, depth + 1, fileKey, helpFn));
+      boxes.append(sub);
+    });
+    // 다음 카드 자리에 카드 크기의 + 타일
+    boxes.append(el('button', { class: 'bal-sub add-card', text: '+', title: '항목 추가',
+      onclick: () => { v.push(v.length ? structuredClone(v[v.length - 1]) : {}); markDirty(fileKey); rerenderDetail(); } }));
+    fs.append(boxes);
+    return fs;
+  }
+  // 중첩 객체 → 박스 + 재귀
+  const fs = el('fieldset', {}, el('legend', {}, [labelEl(key, helpFn(key))]));
+  const scalars = el('div', { class: 'field-row' });
+  const nested = [];
+  for (const k of Object.keys(v)) {
+    const child = v[k];
+    if (child !== null && typeof child === 'object') nested.push(objNode(v, k, depth + 1, fileKey, helpFn));
+    else scalars.append(scalarInput(v, k, fileKey, helpFn(k)));
+  }
+  if (scalars.children.length) fs.append(scalars);
+  nested.forEach((n) => fs.append(n));
+  return fs;
+}
+
+function balanceNode(obj, key, depth) {
+  return objNode(obj, key, depth, 'balance', helpForBalance);
+}
+
+function renderBalanceTab() {
+  if (!state.files.balance) { view.append(el('div', { class: 'empty', text: '데이터 불러오는 중…' })); return; }
+  const data = state.files.balance.data;
+  const cats = Object.keys(data);
+  if (!state.sel.balance || !data[state.sel.balance]) state.sel.balance = cats[0];
+
+  const sidebar = el('div', { class: 'sidebar' },
+    cats.map((c) => el('button', {
+      class: 'side-item' + (c === state.sel.balance ? ' active' : ''),
+      text: BAL_CAT_LABEL[c] ? `${BAL_CAT_LABEL[c]} (${c})` : c,
+      onclick: () => { state.sel.balance = c; rerenderDetail(); },
+    })));
+
+  const detailWrap = el('div', { class: 'detail' });
+  rerenderDetail = () => {
+    sidebar.querySelectorAll('.side-item').forEach((b, i) =>
+      b.classList.toggle('active', cats[i] === state.sel.balance));
+    detailWrap.innerHTML = '';
+    const cat = state.sel.balance;
+    detailWrap.append(el('h2', { text: BAL_CAT_LABEL[cat] ? `${BAL_CAT_LABEL[cat]}` : cat }));
+    detailWrap.append(el('div', { class: 'sub', text: `BALANCE.${cat}` }));
+    const obj = data[cat];
+    const scalars = el('div', { class: 'field-row' });
+    const nested = [];
+    for (const k of Object.keys(obj)) {
+      const child = obj[k];
+      if (child !== null && typeof child === 'object') nested.push(balanceNode(obj, k, 0));
+      else scalars.append(scalarInput(obj, k, 'balance', helpForBalance(k)));
+    }
+    if (scalars.children.length) detailWrap.append(scalars);
+    nested.forEach((n) => detailWrap.append(n));
+  };
+  rerenderDetail();
+  view.append(el('div', { class: 'list-layout' }, [sidebar, detailWrap]));
+}
+
+// ─── 퀘스트 흐름(체인) 탭 ────────────────────────────────────
+// objective를 사람이 읽는 한 줄 요약으로
+function objectiveSummary(o) {
+  if (!o) return '';
+  switch (o.type) {
+    case 'collect_item': return `${itemName(o.definitionId) || o.definitionId || '?'} ${o.count ?? ''}개 수집`;
+    case 'collect_item_type': return `${o.itemType || '?'} 분류 ${o.count ?? ''}개 수집`;
+    case 'craft_item': return `${o.category || '?'} ${o.count ?? ''}개 제작`;
+    case 'build_structure': return `구조물 ${o.count ?? ''}개 건설`;
+    case 'survive_days': return `${o.days ?? o.count ?? '?'}일 생존`;
+    case 'visit_district': return `${districtName(o.districtId) || o.districtId || '?'} 방문`;
+    default: return o.type || '';
+  }
+}
+
+function flowNode(q, depth) {
+  const day = q.dayTrigger != null ? `D${q.dayTrigger}` : '';
+  const dl = (q.deadlineDays != null && q.deadlineDays !== Infinity) ? `⏳${q.deadlineDays}일` : '';
+  const btn = el('button', {
+    class: 'flow-node', onclick: () => gotoEntity('quests', q.id),
+    title: q.desc || '',
+  }, [
+    el('span', { class: 'flow-day', text: day }),
+    el('span', { class: 'flow-title', text: `${q.icon || ''} ${q.title || q.id}` }),
+    el('span', { class: 'flow-obj', text: objectiveSummary(q.objective) }),
+    dl ? el('span', { class: 'flow-dl', text: dl }) : null,
+  ]);
+  return el('div', {
+    class: 'flow-row' + (depth > 0 ? ' flow-child' : ''),
+    style: `margin-left:${depth * 22}px`,
+  }, [depth > 0 ? el('span', { class: 'flow-arrow', text: '↳' }) : null, btn]);
+}
+
+function renderFlowTab() {
+  if (!state.files.quests) { view.append(el('div', { class: 'empty', text: '데이터 불러오는 중…' })); return; }
+  const data = state.files.quests.data;
+  const ids = Object.keys(data);
+  const groups = {};
+  for (const id of ids) { const c = data[id].characterId || '(공통)'; (groups[c] = groups[c] || []).push(id); }
+
+  const wrap = el('div', { class: 'detail' });
+  wrap.append(el('h2', { text: '🔗 퀘스트 흐름' }));
+  wrap.append(el('p', { class: 'hint', text: '선행(prerequisite) 관계를 따라 이어지는 체인입니다. 분기는 들여쓰기(↳)로 갈라지고, 각 노드의 D=시작 일차 · ⏳=완료 기한입니다. 노드를 클릭하면 편집 화면으로 이동합니다.' }));
+
+  const sortFn = (a, b) => ((data[a].dayTrigger ?? 9999) - (data[b].dayTrigger ?? 9999)) || a.localeCompare(b);
+
+  for (const [char, qids] of Object.entries(groups)) {
+    const fs = el('fieldset', {}, el('legend', { text: char === '(공통)' ? `공통 퀘스트 (${qids.length})` : `${char} (${qids.length})` }));
+    const inGroup = new Set(qids);
+    const childrenOf = {};
+    const roots = [];
+    for (const id of qids) {
+      const pre = data[id].prerequisite;
+      if (pre && inGroup.has(pre)) (childrenOf[pre] = childrenOf[pre] || []).push(id);
+      else roots.push(id);
+    }
+    roots.sort(sortFn);
+    const seen = new Set();
+    const walk = (id, depth) => {
+      if (seen.has(id)) return;
+      seen.add(id);
+      fs.append(flowNode(data[id], depth));
+      for (const k of (childrenOf[id] || []).slice().sort(sortFn)) walk(k, depth + 1);
+    };
+    for (const r of roots) walk(r, 0);
+    for (const id of [...qids].sort(sortFn)) if (!seen.has(id)) walk(id, 0); // 순환 안전망
+    wrap.append(fs);
+  }
+  view.append(wrap);
 }
 
 // ─── quests tab ──────────────────────────────────────────────
@@ -786,7 +1360,7 @@ function renderQuestDetail(root, q, allQuests) {
     });
     num.addEventListener('input', () => { q.deadlineDays = Number(num.value); markDirty('quests'); });
     fr1.append(el('div', { class: 'field' }, [
-      el('label', { text: 'deadlineDays' }),
+      fieldLabel('deadlineDays'),
       el('div', { class: 'field-row' }, [num, el('label', { class: 'hint' }, [chk, ' ∞'])]),
     ]));
   }
@@ -796,7 +1370,7 @@ function renderQuestDetail(root, q, allQuests) {
   if ('desc' in q) {
     const ta = el('textarea', { text: q.desc });
     ta.addEventListener('input', () => { q.desc = ta.value; markDirty('quests'); });
-    root.append(el('div', { class: 'field grow' }, [el('label', { text: 'desc' }), ta]));
+    root.append(el('div', { class: 'field grow' }, [fieldLabel('desc'), ta]));
   }
 
   // prerequisite (chain linkage)
@@ -814,7 +1388,7 @@ function renderQuestDetail(root, q, allQuests) {
   const downstream = Object.values(allQuests).filter((x) => x.prerequisite === q.id).map((x) => x.title || x.id);
   root.append(el('fieldset', {}, [
     el('legend', { text: '연계 (체인)' }),
-    el('div', { class: 'field' }, [el('label', { text: 'prerequisite (선행 퀘스트)' }), sel]),
+    el('div', { class: 'field' }, [fieldLabel('prerequisite (선행 퀘스트)', 'prerequisite'), sel]),
     el('div', { class: 'hint', text: `→ 이 퀘스트를 선행으로 하는 후속: ${downstream.length ? downstream.join(', ') : '없음'}` }),
   ]));
 
@@ -849,7 +1423,7 @@ function objectiveEditor(q) {
     typeSel.append(el('option', { value: o.type, selected: true }, o.type));
   }
   typeSel.addEventListener('change', () => { o.type = typeSel.value; markDirty('quests'); rerenderDetail(); });
-  wrap.append(el('div', { class: 'field' }, [el('label', { text: 'type' }), typeSel]));
+  wrap.append(el('div', { class: 'field' }, [fieldLabel('type'), typeSel]));
 
   // render all non-type keys generically (preserves any variant fields)
   const fr = el('div', { class: 'field-row' });
@@ -859,12 +1433,12 @@ function objectiveEditor(q) {
       const inp = el('input', { class: 'id', value: o[key] ?? '', list: 'item-ids' });
       const nm = el('span', { class: 'chain-badge', text: itemName(o[key]) });
       inp.addEventListener('input', () => { o[key] = inp.value.trim(); nm.textContent = itemName(o[key]); markDirty('quests'); });
-      fr.append(el('div', { class: 'field' }, [el('label', { text: key }), el('div', { class: 'field-row' }, [inp, nm])]));
+      fr.append(el('div', { class: 'field' }, [fieldLabel(key), el('div', { class: 'field-row' }, [inp, nm])]));
     } else if (key === 'districtId') {
       const inp = el('input', { class: 'id', value: o[key] ?? '' });
       const nm = el('span', { class: 'chain-badge', text: districtName(o[key]) });
       inp.addEventListener('input', () => { o[key] = inp.value.trim(); nm.textContent = districtName(o[key]); markDirty('quests'); });
-      fr.append(el('div', { class: 'field' }, [el('label', { text: key }), el('div', { class: 'field-row' }, [inp, nm])]));
+      fr.append(el('div', { class: 'field' }, [fieldLabel(key), el('div', { class: 'field-row' }, [inp, nm])]));
     } else {
       fr.append(scalarInput(o, key, 'quests'));
     }
@@ -918,5 +1492,5 @@ const dirtyFlag = $('#dirty');
 if (dirtyFlag) { dirtyFlag.style.cursor = 'pointer'; dirtyFlag.addEventListener('click', () => switchTab('changes')); }
 
 // ─── boot ────────────────────────────────────────────────────
-switchTab('districts');
+switchTab('balance');
 loadAll();

@@ -301,8 +301,8 @@ const CombatSystem = {
 
   _attackAction(type, weaponId, enemy) {
     const gs = GameState;
-    let damage = 0, accuracy = 0.70, noise = 5, durLoss = 0;
-    let critChance = 0, critMultiplier = 1.5;
+    let damage = 0, accuracy = BALANCE.combat.baseUnarmedAccuracy ?? 0.70, noise = 5, durLoss = 0;
+    let critChance = 0, critMultiplier = BALANCE.combat.defaultCritMultiplier ?? 1.5;
     let weaponName = I18n.t('combatSys.unarmed');
     let isCrit = false;
     let skillId = 'unarmed';  // 사용 스킬 (XP 훅용)
@@ -319,7 +319,7 @@ const CombatSystem = {
         noise          = def.combat.noiseOnUse;
         durLoss        = def.combat.durabilityLoss ?? 0;
         critChance     = def.combat.critChance     ?? 0;
-        critMultiplier = def.combat.critMultiplier ?? 1.5;
+        critMultiplier = def.combat.critMultiplier ?? (BALANCE.combat.defaultCritMultiplier ?? 1.5);
         weaponName     = I18n.itemName(def.id, def.name);
         isRanged       = !!(def.combat.requiresAmmo);
         skillId        = isRanged ? 'ranged' : 'melee';
@@ -332,8 +332,9 @@ const CombatSystem = {
           const ammoInst = gs.getBoardCards().find(c => c.definitionId === def.combat.requiresAmmo);
           if (!ammoInst) {
             EventBus.emit('notify', { message: I18n.t('combatSys.noAmmo'), type: 'warn' });
-            damage = 5 + Math.floor(Math.random() * 6);
-            accuracy = 0.65; noise = 3; skillId = 'melee';
+            const [nMin, nMax] = BALANCE.combat.noAmmoMeleeDamage ?? [5, 10];
+            damage = nMin + Math.floor(Math.random() * (nMax - nMin + 1));
+            accuracy = BALANCE.combat.noAmmoAccuracy ?? 0.65; noise = BALANCE.combat.noAmmoNoise ?? 3; skillId = 'melee';
           } else {
             // 마스터리: 20% 확률 탄약 미소모
             const ammoSave = SkillSystem.hasMastery('ranged') && Math.random() < BALANCE.combat.ammoSaveChance;
@@ -490,7 +491,7 @@ const CombatSystem = {
     const gs      = GameState;
     const alive   = this.getAliveEnemies();
     // 그룹 은신 난이도: 살아있는 적 중 최고값
-    const maxDiff = Math.max(...alive.map(e => e.stealthDifficulty ?? 0.5));
+    const maxDiff = Math.max(...alive.map(e => e.stealthDifficulty ?? (BALANCE.combat.defaultStealthDifficulty ?? 0.5)));
     const success = Math.random() > maxDiff;
     if (success) {
       gs.combat.active  = false;
@@ -896,9 +897,9 @@ const CombatSystem = {
     const st = gs.npcs?.states?.[npcId];
     if (!st || (st.hp ?? 0) <= 0) return;
 
-    const [dMin, dMax] = enemy.attack?.damage ?? [3, 6];
+    const [dMin, dMax] = enemy.attack?.damage ?? (BALANCE.combat.enemyDefaultDamage ?? [3, 6]);
     let damage = dMin + Math.floor(Math.random() * (dMax - dMin + 1));
-    const hit = Math.random() < (enemy.attack?.accuracy ?? 0.7);
+    const hit = Math.random() < (enemy.attack?.accuracy ?? (BALANCE.combat.enemyBaseAccuracy ?? 0.7));
     if (!hit) {
       gs.combat.log.push(`${enemy.name ?? '적'} → ${this._npcLabel(npcId)}: 빗나감`);
       return;
@@ -928,7 +929,7 @@ const CombatSystem = {
     for (const skill of (enemy.specialSkills ?? [])) {
       const cd = enemy._skillCooldowns?.[skill.id] ?? 0;
       if (cd > 0) { enemy._skillCooldowns[skill.id]--; continue; }
-      if (Math.random() < 0.5) {
+      if (Math.random() < (BALANCE.combat.enemySpecialSkillChance ?? 0.5)) {
         const [dMin, dMax] = skill.damage;
         let dmg = dMin + Math.floor(Math.random() * (dMax - dMin + 1));
 
@@ -1010,12 +1011,12 @@ const CombatSystem = {
 
       // 도주 실패 시 1.5배 피해 (등을 보인 페널티)
       if (gs.combat._fleeFailed) {
-        damage = Math.floor(damage * 1.5);
+        damage = Math.floor(damage * (BALANCE.combat.fleeFailedDamageMult ?? 1.5));
       }
 
       // 20% chance to target a companion instead of the player
       const companions = gs.companions ?? [];
-      if (companions.length > 0 && Math.random() < 0.20) {
+      if (companions.length > 0 && Math.random() < (BALANCE.combat.companionTargetChance ?? 0.20)) {
         const targetNpcId = companions[Math.floor(Math.random() * companions.length)];
         const npcSys = SystemRegistry.get('NPCSystem');
         if (npcSys) {
@@ -1038,8 +1039,8 @@ const CombatSystem = {
       SkillSystem.gainXp('defense', 1);
 
       // 방어술 마스터리: 15% 확률 반격
-      if (SkillSystem.hasMastery('defense') && Math.random() < 0.15) {
-        enemy.currentHp = Math.max(0, enemy.currentHp - 5);
+      if (SkillSystem.hasMastery('defense') && Math.random() < (BALANCE.combat.masteryCounterChance ?? 0.15)) {
+        enemy.currentHp = Math.max(0, enemy.currentHp - (BALANCE.combat.masteryCounterDmg ?? 5));
         gs.combat.log.push(I18n.t('combatSys.defMastery', { enemy: I18n.enemyName(enemy.id, enemy.name) }));
       }
 
@@ -1165,7 +1166,7 @@ const CombatSystem = {
     // 의사(doctor) 전용: 좀비 처치 시 30% 확률로 의료 아이템 추가 드롭
     const charId = gs.player.characterId ?? '';
     if (charId === 'doctor' && enemy.infectionChance > 0) {
-      if (Math.random() < 0.30) {
+      if (Math.random() < (BALANCE.combat.doctorZombieMedDropChance ?? 0.30)) {
         const medPool = ['bandage', 'gauze', 'antiseptic'];
         const medId   = medPool[Math.floor(Math.random() * medPool.length)];
         const medInst = gs.createCardInstance(medId, { quantity: 1 });

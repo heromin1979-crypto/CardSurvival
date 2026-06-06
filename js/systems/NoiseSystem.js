@@ -337,7 +337,7 @@ const NoiseSystem = {
     }
 
     // Reset to half after influx
-    gs.noise.level = gs.noise.influxThreshold * 0.5;
+    gs.noise.level = gs.noise.influxThreshold * (BALANCE.noise.flushReductionMult ?? 0.5);
     gs.noise.influxTriggered = false;
   },
 };

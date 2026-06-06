@@ -2,6 +2,7 @@
 // 캐릭터 특성(trait) 쿼리 헬퍼
 // 특성 데이터는 GameState.player.traits 배열에 문자열 ID로 저장
 import GameState from '../core/GameState.js';
+import BALANCE from '../data/gameBalance.js';
 
 /**
  * 특성 정의 테이블
@@ -51,6 +52,9 @@ const TraitSystem = {
    */
   getTraitEffect(traitId, effectKey) {
     if (!this.hasActiveTrait(traitId)) return null;
+    // BALANCE.traits를 우선 참조(에디터 편집 대상), 없으면 정의값 폴백
+    const balVal = BALANCE.traits?.[traitId]?.[effectKey];
+    if (balVal !== undefined) return balVal;
     return TRAIT_DEFS[traitId]?.effects?.[effectKey] ?? null;
   },
 
