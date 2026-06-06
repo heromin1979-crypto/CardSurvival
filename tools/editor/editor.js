@@ -22,7 +22,7 @@ const state = {
   itemNames: new Map(), // item id -> 표시 이름
   items: {},            // full item definitions (read-only 참조용)
   itemSearch: '',       // 아이템 탭 검색어
-  tab: 'districts',
+  tab: 'balance',
   sel: {},              // tab -> selected sub-key
 };
 
@@ -113,8 +113,24 @@ const FIELD_HELP = {
   // 드랍 테이블 표시 열
   __name: '아이템 ID에 연결된 표시 이름(자동).',
   __pct: '같은 표의 weight 합계 대비 이 항목의 드랍 확률.',
+  // 공용 변수(밸런스) — 탐색/재고
+  lootCountMin: '모든 구 공통 — 1회 탐색 시 추첨 횟수(나오는 아이템 종류 수)의 하한.',
+  lootCountMax: '모든 구 공통 — 1회 탐색 시 추첨 횟수(나오는 아이템 종류 수)의 상한.',
+  stockDecayPerDay: '세부 장소(서브로케이션)의 일일 재고가 하루에 줄어드는 양. 재고가 줄면 드랍이 감소합니다.',
+  survivalRateTargetMin: '밸런스 설계 목표 — 100일 생존율 하한(0~1).',
+  survivalRateTargetMax: '밸런스 설계 목표 — 100일 생존율 상한(0~1).',
 };
 function helpFor(key) { return FIELD_HELP[key] || ''; }
+
+// 공용 변수 탭의 카테고리(최상위 키) 한글 라벨
+const BAL_CAT_LABEL = {
+  design: '설계 목표', stats: '스탯 감소율(/TP)', hydration: '수분', armor: '방어력',
+  noise: '소음', travel: '이동', crafting: '제작', quality: '제작 품질', combat: '전투',
+  campfire: '모닥불', explore: '탐색 루팅', encounter: '조우', disease: '질병',
+  moraleTiers: '사기 구간', raidEvents: '레이드 이벤트', hordeWaves: '무리 웨이브',
+  hospitalSiege: '병원 공성', patientIntake: '환자 유입', raiderEvents: '약탈자 이벤트',
+  night: '야간', medicalStation: '의료소', fishing: '낚시',
+};
 
 // 아이템 탭 전용 설명 (공통 사전보다 우선 — 예: weight는 '무게'로 다름)
 const ITEM_HELP = {
@@ -697,6 +713,12 @@ function lootTableEditor(rows, idKey, extraCols, fileKey) {
 // ─── generic scalar / object field editors ───────────────────
 function scalarInput(obj, key, fileKey) {
   const v = obj[key];
+  // 불리언 → 체크박스
+  if (typeof v === 'boolean') {
+    const cb = el('input', { type: 'checkbox', ...(v ? { checked: true } : {}) });
+    cb.addEventListener('change', () => { obj[key] = cb.checked; markDirty(fileKey); });
+    return el('div', { class: 'field' }, [fieldLabel(key), el('label', { class: 'hint' }, [cb, ' (켜기/끄기)'])]);
+  }
   const isNum = typeof v === 'number' && v !== Infinity && v !== -Infinity;
   const inp = el('input', {
     type: isNum ? 'number' : 'text',
@@ -756,6 +778,7 @@ function objectFields(obj, fileKey) {
 function render() {
   view.innerHTML = '';
   if (state.tab === 'settings') return renderSettings();
+  if (state.tab === 'balance') return renderBalanceTab();
   if (state.tab === 'items') return renderItemsTab();
   if (state.tab === 'flow') return renderFlowTab();
   if (state.tab === 'changes') return renderChangesTab();
@@ -842,6 +865,86 @@ function renderLandmarkDetail(root, lm) {
     ));
     root.append(fs);
   }
+}
+
+// ─── 공용 변수(밸런스) 탭 ────────────────────────────────────
+// 중첩 객체/배열을 재귀적으로 편집. 스칼라는 scalarInput, 배열/객체는 들여쓴 박스.
+function balanceNode(obj, key, depth) {
+  const v = obj[key];
+  // 스칼라(숫자/문자/불리언/Infinity)
+  if (v === null || typeof v !== 'object') {
+    return scalarInput(obj, key, 'balance');
+  }
+  // 배열
+  if (Array.isArray(v)) {
+    // 스칼라 배열 → 인덱스별 인풋 한 줄
+    if (v.every((x) => x === null || typeof x !== 'object')) {
+      const row = el('div', { class: 'field-row' });
+      v.forEach((x, i) => {
+        const isNum = typeof x === 'number';
+        const inp = el('input', { class: 'num', type: isNum ? 'number' : 'text', step: 'any', value: x });
+        inp.addEventListener('input', () => { v[i] = isNum ? Number(inp.value) : inp.value; markDirty('balance'); });
+        row.append(el('div', { class: 'field' }, [el('label', { text: `[${i}]` }), inp]));
+      });
+      return el('div', { class: 'field' }, [fieldLabel(key), row]);
+    }
+    // 객체 배열 → 각 원소를 박스로
+    const fs = el('fieldset', {}, el('legend', { class: helpFor(key) ? 'has-help' : '', text: key, ...(helpFor(key) ? { title: helpFor(key) } : {}) }));
+    v.forEach((item, i) => {
+      const sub = el('div', { class: 'bal-sub' }, [el('div', { class: 'side-group', text: `#${i}` })]);
+      for (const k of Object.keys(item)) sub.append(balanceNode(item, k, depth + 1));
+      fs.append(sub);
+    });
+    return fs;
+  }
+  // 중첩 객체 → 박스 + 재귀
+  const fs = el('fieldset', {}, el('legend', helpFor(key) ? { text: key, title: helpFor(key), class: 'has-help' } : { text: key }));
+  const scalars = el('div', { class: 'field-row' });
+  const nested = [];
+  for (const k of Object.keys(v)) {
+    const child = v[k];
+    if (child !== null && typeof child === 'object') nested.push(balanceNode(v, k, depth + 1));
+    else scalars.append(scalarInput(v, k, 'balance'));
+  }
+  if (scalars.children.length) fs.append(scalars);
+  nested.forEach((n) => fs.append(n));
+  return fs;
+}
+
+function renderBalanceTab() {
+  if (!state.files.balance) { view.append(el('div', { class: 'empty', text: '데이터 불러오는 중…' })); return; }
+  const data = state.files.balance.data;
+  const cats = Object.keys(data);
+  if (!state.sel.balance || !data[state.sel.balance]) state.sel.balance = cats[0];
+
+  const sidebar = el('div', { class: 'sidebar' },
+    cats.map((c) => el('button', {
+      class: 'side-item' + (c === state.sel.balance ? ' active' : ''),
+      text: BAL_CAT_LABEL[c] ? `${BAL_CAT_LABEL[c]} (${c})` : c,
+      onclick: () => { state.sel.balance = c; rerenderDetail(); },
+    })));
+
+  const detailWrap = el('div', { class: 'detail' });
+  rerenderDetail = () => {
+    sidebar.querySelectorAll('.side-item').forEach((b, i) =>
+      b.classList.toggle('active', cats[i] === state.sel.balance));
+    detailWrap.innerHTML = '';
+    const cat = state.sel.balance;
+    detailWrap.append(el('h2', { text: BAL_CAT_LABEL[cat] ? `${BAL_CAT_LABEL[cat]}` : cat }));
+    detailWrap.append(el('div', { class: 'sub', text: `BALANCE.${cat}` }));
+    const obj = data[cat];
+    const scalars = el('div', { class: 'field-row' });
+    const nested = [];
+    for (const k of Object.keys(obj)) {
+      const child = obj[k];
+      if (child !== null && typeof child === 'object') nested.push(balanceNode(obj, k, 0));
+      else scalars.append(scalarInput(obj, k, 'balance'));
+    }
+    if (scalars.children.length) detailWrap.append(scalars);
+    nested.forEach((n) => detailWrap.append(n));
+  };
+  rerenderDetail();
+  view.append(el('div', { class: 'list-layout' }, [sidebar, detailWrap]));
 }
 
 // ─── 퀘스트 흐름(체인) 탭 ────────────────────────────────────
@@ -1108,5 +1211,5 @@ const dirtyFlag = $('#dirty');
 if (dirtyFlag) { dirtyFlag.style.cursor = 'pointer'; dirtyFlag.addEventListener('click', () => switchTab('changes')); }
 
 // ─── boot ────────────────────────────────────────────────────
-switchTab('districts');
+switchTab('balance');
 loadAll();

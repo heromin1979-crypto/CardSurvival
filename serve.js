@@ -17,6 +17,7 @@ const ROOT = __dirname;
 
 // 에디터가 디스크에 쓸 수 있는 파일 화이트리스트 (그 외 경로 기록 거부)
 const WRITABLE = new Set([
+  'js/data/gameBalance.js',
   'js/data/districts.js',
   'js/data/landmarks.js',
   'js/data/mainQuests.js',

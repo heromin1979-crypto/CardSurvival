@@ -188,6 +188,11 @@ export function diffValue(a, b, path, out) {
 
 /** Per-file declaration markers for the editable data blocks. */
 export const DATA_FILES = {
+  balance: {
+    path: 'js/data/gameBalance.js',
+    decl: 'const BALANCE = {',
+    label: '공용 변수 (밸런스)',
+  },
   districts: {
     path: 'js/data/districts.js',
     decl: 'const DISTRICTS = {',
