@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Card Survival — 데이터 에디터</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>🗂️ 데이터 에디터</h1>
+    <nav class="tabs">
+      <button class="tab" data-tab="items">📦 아이템 (읽기 전용)</button>
+      <button class="tab" data-tab="districts">장소</button>
+      <button class="tab" data-tab="landmarks">랜드마크</button>
+      <button class="tab" data-tab="quests">퀘스트</button>
+      <button class="tab" data-tab="changes">🔧 변경 <span id="change-count"></span></button>
+      <button class="tab" data-tab="validate">⚠️ 검증 <span id="validate-count"></span></button>
+      <button class="tab" data-tab="settings">⚙️ 설정</button>
+    </nav>
+    <div class="actions">
+      <span id="dirty" class="dirty-flag" hidden>● 변경됨</span>
+      <button id="save-btn" class="primary" disabled>저장 (커밋&푸시)</button>
+    </div>
+  </header>
+
+  <div id="status" class="status" hidden></div>
+
+  <main id="view"><div class="empty">로컬 데이터 불러오는 중… (serve.js 필요)</div></main>
+
+  <!-- shared datalist of item ids, populated at runtime -->
+  <datalist id="item-ids"></datalist>
+
+  <script type="module" src="./editor.js"></script>
+</body>
+</html>

@@ -1,0 +1,137 @@
+:root {
+  --bg: #14171c;
+  --panel: #1d222b;
+  --panel2: #252b36;
+  --border: #333b48;
+  --text: #e6e9ef;
+  --muted: #8a93a3;
+  --accent: #4ea1ff;
+  --danger: #ff6b6b;
+  --ok: #4ec97a;
+  --warn: #f5b942;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Malgun Gothic', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+}
+.topbar {
+  position: sticky; top: 0; z-index: 10;
+  display: flex; align-items: center; gap: 16px;
+  padding: 10px 16px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+}
+.topbar h1 { font-size: 16px; margin: 0; white-space: nowrap; }
+.tabs { display: flex; gap: 4px; flex: 1; flex-wrap: wrap; }
+.tab {
+  background: transparent; color: var(--muted);
+  border: 1px solid transparent; border-radius: 6px;
+  padding: 6px 12px; cursor: pointer; font-size: 13px;
+}
+.tab:hover { color: var(--text); }
+.tab.active { color: var(--text); background: var(--panel2); border-color: var(--border); }
+.actions { display: flex; align-items: center; gap: 10px; }
+.dirty-flag { color: var(--warn); font-size: 12px; }
+
+button.primary {
+  background: var(--accent); color: #06121f; border: none;
+  border-radius: 6px; padding: 7px 14px; font-weight: 600; cursor: pointer;
+}
+button.primary:disabled { opacity: .4; cursor: not-allowed; }
+button.ghost {
+  background: var(--panel2); color: var(--text); border: 1px solid var(--border);
+  border-radius: 6px; padding: 5px 10px; cursor: pointer; font-size: 12px;
+}
+button.danger { color: var(--danger); }
+
+.status { padding: 8px 16px; font-size: 13px; white-space: pre-wrap; word-break: break-word; }
+.status.ok { background: rgba(78,201,122,.12); color: var(--ok); }
+.status.err { background: rgba(255,107,107,.12); color: var(--danger); }
+.status.info { background: rgba(78,161,255,.12); color: var(--accent); }
+
+main { padding: 16px; max-width: 1100px; margin: 0 auto; }
+.empty { color: var(--muted); padding: 40px; text-align: center; }
+
+.list-layout { display: grid; grid-template-columns: 230px 1fr; gap: 16px; }
+.sidebar {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 8px;
+  padding: 6px; max-height: 75vh; overflow-y: auto;
+}
+.side-item {
+  display: block; width: 100%; text-align: left; background: transparent;
+  border: none; color: var(--text); padding: 8px 10px; border-radius: 6px;
+  cursor: pointer; font-size: 13px;
+}
+.side-item:hover { background: var(--panel2); }
+.side-item.active { background: var(--accent); color: #06121f; font-weight: 600; }
+.side-group { color: var(--muted); font-size: 11px; padding: 10px 10px 4px; text-transform: uppercase; }
+
+.detail { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+.detail h2 { margin: 0 0 4px; font-size: 18px; }
+.detail .sub { color: var(--muted); font-size: 12px; margin-bottom: 14px; }
+
+.field-row { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 12px; }
+.field { display: flex; flex-direction: column; gap: 4px; }
+.field label { font-size: 11px; color: var(--muted); }
+.field input, .field select, .field textarea {
+  background: var(--panel2); color: var(--text); border: 1px solid var(--border);
+  border-radius: 6px; padding: 6px 8px; font-size: 13px; font-family: inherit;
+}
+.field input[type=number] { width: 90px; }
+.field textarea { width: 100%; min-height: 50px; resize: vertical; }
+.field.grow { flex: 1; min-width: 200px; }
+
+fieldset { border: 1px solid var(--border); border-radius: 8px; margin: 14px 0; padding: 12px; }
+fieldset legend { color: var(--accent); font-size: 12px; padding: 0 6px; }
+
+table.loot { width: 100%; border-collapse: collapse; margin-top: 6px; }
+table.loot th { text-align: left; font-size: 11px; color: var(--muted); font-weight: 500; padding: 4px 6px; }
+table.loot td { padding: 3px 6px; }
+table.loot input { background: var(--panel2); color: var(--text); border: 1px solid var(--border); border-radius: 5px; padding: 4px 6px; }
+table.loot input.id { width: 170px; }
+table.loot input.num { width: 64px; }
+.pct { color: var(--muted); font-size: 12px; white-space: nowrap; }
+.name-cell { color: var(--muted); font-size: 12px; white-space: nowrap; max-width: 160px; overflow: hidden; text-overflow: ellipsis; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+.chip {
+  display: inline-block; font-size: 12px; color: var(--text);
+  background: var(--panel2); border: 1px solid var(--border);
+  border-radius: 12px; padding: 2px 10px; margin: 2px 4px 2px 0;
+}
+.desc {
+  margin: 12px 0; padding: 10px 12px; background: var(--panel2);
+  border-left: 3px solid var(--accent); border-radius: 4px;
+  font-size: 13px; line-height: 1.6; color: var(--text);
+}
+.kv-title { margin-top: 18px; font-size: 12px; color: var(--accent); text-transform: uppercase; }
+.kv { border-top: 1px solid var(--border); margin-top: 6px; }
+.kv-row {
+  display: grid; grid-template-columns: 180px 1fr; gap: 16px;
+  padding: 8px 4px; border-bottom: 1px solid var(--border); align-items: start;
+}
+.kv-k { color: var(--muted); font-size: 12px; }
+.kv-v { font-size: 13px; word-break: break-word; }
+.kv-v.muted { color: var(--muted); }
+.codeblock {
+  margin: 0; font-size: 12px; line-height: 1.5; white-space: pre-wrap; word-break: break-word;
+  background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace; color: var(--text);
+}
+.ref-bad { border-color: var(--danger) !important; }
+.row-add { margin-top: 8px; }
+
+.chain-badge {
+  display: inline-block; font-size: 11px; color: var(--muted);
+  background: var(--panel2); border: 1px solid var(--border);
+  border-radius: 4px; padding: 1px 6px; margin-left: 6px;
+}
+.settings-box { max-width: 520px; }
+.settings-box .field { margin-bottom: 14px; }
+.settings-box input { width: 100%; }
+.hint { color: var(--muted); font-size: 12px; line-height: 1.5; }
+.hint code { background: var(--panel2); padding: 1px 5px; border-radius: 4px; }
