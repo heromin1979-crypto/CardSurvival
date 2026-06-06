@@ -189,7 +189,7 @@ async function saveAll() {
     }
   } catch (e) {
     // 파일은 이미 디스크에 기록된 상태 — 푸시 단계 실패만 알림
-    status(`파일은 저장됨. 단계 실패: ${e.message}`, 'err');
+    status(`💾 파일은 저장됨. 푸시 실패: ${e.message}${e.detail ? `\n${e.detail}` : ''}`, 'err');
   }
 }
 $('#save-btn').addEventListener('click', saveAll);

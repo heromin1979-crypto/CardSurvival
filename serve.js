@@ -116,10 +116,21 @@ async function handleApi(req, res, urlPath) {
       const push = await git(['push', '-u', 'origin', branch]);
       sendJSON(res, 200, { committed: true, pushed: true, branch, output: (push.stderr || push.stdout || '').trim() });
     } catch (e) {
-      const msg = e.code === 'ENOENT'
-        ? 'git 실행파일을 찾을 수 없습니다. Git 설치 후 PATH에 추가하거나, 파일은 이미 저장됐으니 수동으로 커밋하세요.'
-        : `git 실패: ${e.message}`;
-      sendJSON(res, 500, { error: msg, detail: (e.stderr || e.stdout || '').trim() });
+      const detail = (e.stderr || e.stdout || e.message || '').trim();
+      let msg;
+      if (e.code === 'ENOENT') {
+        msg = 'git 실행파일을 찾을 수 없습니다. Git 설치 후 PATH에 추가하거나, 파일은 이미 저장됐으니 수동으로 커밋하세요.';
+      } else if (/403|permission to .* denied|access denied/i.test(detail)) {
+        const who = (/denied to (\S+)/i.exec(detail) || [])[1];
+        msg = `푸시 권한 거부(403)${who ? ` — 현재 인증된 GitHub 계정 "${who}"` : ''}에 이 저장소 쓰기 권한이 없습니다. `
+            + '※ 이건 git의 user.email/이름(커밋 작성자)과 무관한 "인증 계정" 문제입니다. '
+            + '쓰기 권한이 있는 계정의 자격증명/토큰으로 교체해야 합니다. (커밋은 로컬에 완료됨)';
+      } else if (/could not read username|authentication failed|terminal prompts disabled/i.test(detail)) {
+        msg = '인증 정보가 없거나 거부됐습니다. 쓰기 권한이 있는 계정의 토큰(PAT)으로 자격증명을 설정하세요. (커밋은 로컬에 완료됨)';
+      } else {
+        msg = `git 실패: ${e.message}`;
+      }
+      sendJSON(res, 500, { error: msg, detail });
     }
     return;
   }

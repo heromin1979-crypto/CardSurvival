@@ -9,7 +9,11 @@ async function postJSON(url, body) {
     body: JSON.stringify(body || {}),
   });
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error || `${url} 실패 (${res.status})`);
+  if (!res.ok) {
+    const e = new Error(data.error || `${url} 실패 (${res.status})`);
+    e.detail = data.detail || '';
+    throw e;
+  }
   return data;
 }
 
