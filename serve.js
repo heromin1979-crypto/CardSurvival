@@ -109,12 +109,23 @@ async function handleApi(req, res, urlPath) {
       const { stdout: branchOut } = await git(['rev-parse', '--abbrev-ref', 'HEAD']);
       const branch = branchOut.trim();
       // 데이터 파일 경로에만 한정 — 인덱스에 다른 변경이 있어도 휩쓸지 않음
-      await git(['add', '--', ...paths]);
-      const { stdout: staged } = await git(['diff', '--cached', '--name-only', '--', ...paths]);
-      if (!staged.trim()) { sendJSON(res, 200, { committed: false, pushed: false, message: '변경 사항 없음' }); return; }
-      await git(['commit', '-m', message, '--', ...paths]);
+      let committed = false;
+      if (paths.length) {
+        await git(['add', '--', ...paths]);
+        const { stdout: staged } = await git(['diff', '--cached', '--name-only', '--', ...paths]);
+        if (staged.trim()) { await git(['commit', '-m', message, '--', ...paths]); committed = true; }
+      }
+      // 새 커밋이 없어도 항상 push — 이전에 밀려있던 로컬 커밋까지 내보낸다
       const push = await git(['push', '-u', 'origin', branch]);
-      sendJSON(res, 200, { committed: true, pushed: true, branch, output: (push.stderr || push.stdout || '').trim() });
+      const output = (push.stderr || push.stdout || '').trim();
+      const upToDate = /up to date|up-to-date/i.test(output);
+      sendJSON(res, 200, {
+        committed,
+        pushed: !upToDate,
+        upToDate,
+        branch,
+        output,
+      });
     } catch (e) {
       const detail = (e.stderr || e.stdout || e.message || '').trim();
       let msg;

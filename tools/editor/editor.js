@@ -133,7 +133,9 @@ async function loadAll() {
   }
   state.dirty.clear();
   $('#dirty').hidden = true;
-  $('#save-btn').disabled = true;
+  // 로드 후 버튼 활성화 — 변경 저장뿐 아니라 밀린 커밋 푸시(동기화)에도 사용
+  $('#save-btn').disabled = false;
+  $('#save-btn').title = '변경 저장 + 커밋 + 푸시 (변경이 없으면 밀린 커밋만 동기화)';
   refreshChangeCount();
   if (state.gitAvailable) {
     status(`불러오기 완료 (브랜치: ${state.branch}). 탭에서 편집하세요.`, 'ok');
@@ -144,8 +146,8 @@ async function loadAll() {
 }
 
 // ─── 저장 + 커밋 + 푸시 (로컬 git) ───────────────────────────
+// dirty가 없어도 호출 가능 — 이전에 밀려있던 로컬 커밋을 푸시(동기화)하는 용도로도 쓰인다.
 async function saveAll() {
-  if (state.dirty.size === 0) return;
   const issues = collectIssues();
   if (issues.length) {
     const ok = confirm(
@@ -168,10 +170,10 @@ async function saveAll() {
       f.text = newText;
       files.push({ path: cfg.path, content: newText });
     }
-    if (!files.length) { state.dirty.clear(); $('#dirty').hidden = true; status('변경 사항 없음.', 'info'); return; }
-    await saveFiles(files);
+    if (files.length) await saveFiles(files);
     state.dirty.clear();
     $('#dirty').hidden = true;
+    refreshChangeCount();
 
     // 2) git이 없으면 디스크 기록까지만
     if (!state.gitAvailable) {
@@ -179,17 +181,22 @@ async function saveAll() {
       return;
     }
 
-    // 3) git add/commit/push
+    // 3) git add/commit/push (새 변경이 없어도 밀린 커밋 flush)
     status('git 커밋 & 푸시 중…', 'info');
     const result = await pushChanges(state.commitMsg, files.map((f) => f.path));
-    if (result.pushed) {
-      status(`✅ 저장 + 푸시 완료 → ${result.branch}  (${files.length}개 파일)`, 'ok');
+    if (result.committed && result.pushed) {
+      status(`✅ 커밋 + 푸시 완료 → ${result.branch}  (${files.length}개 파일)`, 'ok');
+    } else if (!result.committed && result.pushed) {
+      status(`✅ 새 변경은 없지만 밀려있던 로컬 커밋을 푸시했습니다 → ${result.branch}`, 'ok');
     } else {
-      status(`저장 완료 (커밋할 변경 없음): ${result.message || ''}`, 'info');
+      status('이미 최신 상태입니다 (푸시할 변경 없음).', 'info');
     }
   } catch (e) {
     // 파일은 이미 디스크에 기록된 상태 — 푸시 단계 실패만 알림
     status(`💾 파일은 저장됨. 푸시 실패: ${e.message}${e.detail ? `\n${e.detail}` : ''}`, 'err');
+  } finally {
+    // 작업 종료 후 버튼 재활성화 (재시도/동기화 가능하도록)
+    $('#save-btn').disabled = false;
   }
 }
 $('#save-btn').addEventListener('click', saveAll);
@@ -412,7 +419,7 @@ function revertAll() {
   }
   state.dirty.clear();
   $('#dirty').hidden = true;
-  $('#save-btn').disabled = true;
+  $('#save-btn').disabled = false;
   refreshChangeCount();
   render();
 }
