@@ -21,6 +21,15 @@ const WRITABLE = new Set([
   'js/data/districts.js',
   'js/data/landmarks.js',
   'js/data/mainQuests.js',
+  'js/data/items_base.js',
+  'js/data/items_combat.js',
+  'js/data/items_misc.js',
+  'js/data/items_tech.js',
+  'js/data/items_medical.js',
+  'js/data/items_tools.js',
+  'js/data/items_structures.js',
+  'js/data/legendaryItems.js',
+  'js/data/items_environment.js',
 ]);
 
 const MIME = {

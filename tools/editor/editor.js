@@ -1,6 +1,7 @@
 // === DATA EDITOR — main app ===
 import {
   DATA_FILES,
+  ITEM_FILE_KEYS,
   extractValue,
   spliceObjectLiteral,
   diffValue,
@@ -681,31 +682,26 @@ function renderValidationTab() {
   view.append(wrap);
 }
 
-// ─── 아이템 정보 탭 (읽기 전용 참조) ─────────────────────────
-// 값을 보기 좋은 노드로: 불리언→✓/✗, 문자열 배열→칩, 객체/객체배열→코드블록
-function valueNode(v) {
-  if (v === null || v === undefined) return el('span', { class: 'kv-v muted', text: '—' });
-  if (typeof v === 'boolean') return el('span', { class: 'kv-v', text: v ? '✓' : '✗' });
-  if (v === Infinity) return el('span', { class: 'kv-v', text: '∞' });
-  if (Array.isArray(v)) {
-    if (!v.length) return el('span', { class: 'kv-v muted', text: '[]' });
-    if (v.every((x) => x === null || typeof x !== 'object')) {
-      return el('span', {}, v.map((x) => el('span', { class: 'chip', text: String(x) })));
-    }
-    return el('pre', { class: 'codeblock', text: v.map((x) => JSON.stringify(x)).join('\n') });
+// ─── 아이템 탭 (소스 직접 편집) ───────────────────────────────
+// 편집 가능한 아이템 소스 파일에서 id → fileKey 인덱스 구성
+function buildItemIndex() {
+  const idx = {};
+  for (const fk of ITEM_FILE_KEYS) {
+    const d = state.files[fk]?.data;
+    if (!d) continue;
+    for (const id of Object.keys(d)) idx[id] = fk;
   }
-  if (typeof v === 'object') return el('pre', { class: 'codeblock', text: JSON.stringify(v, null, 2) });
-  return el('span', { class: 'kv-v', text: String(v) });
+  return idx;
 }
 
 function renderItemsTab() {
-  const items = state.items || {};
-  const ids = Object.keys(items);
+  const idx = buildItemIndex();
+  const ids = Object.keys(idx).sort();
   if (!ids.length) {
-    view.append(el('div', { class: 'empty', text: '아이템 정보를 불러오지 못했습니다 (items.js 로드 실패).' }));
+    view.append(el('div', { class: 'empty', text: '아이템 소스를 불러오지 못했습니다. (serve.js 연결 확인)' }));
     return;
   }
-  if (!state.sel.items || !items[state.sel.items]) state.sel.items = ids[0];
+  if (!state.sel.items || !idx[state.sel.items]) state.sel.items = ids[0];
 
   const search = el('input', { value: state.itemSearch || '', placeholder: '이름·ID·종류 검색…' });
   const listBox = el('div', { class: 'sidebar' });
@@ -713,36 +709,24 @@ function renderItemsTab() {
 
   const renderDetail = () => {
     detailWrap.innerHTML = '';
-    const it = items[state.sel.items];
+    const fk = idx[state.sel.items];
+    const it = fk && state.files[fk]?.data?.[state.sel.items];
     if (!it) { detailWrap.append(el('div', { class: 'hint', text: '아이템을 선택하세요.' })); return; }
 
     detailWrap.append(el('h2', { text: `${it.icon || ''} ${it.name || it.id}` }));
-    detailWrap.append(el('div', { class: 'sub', text: it.id }));
+    detailWrap.append(el('div', { class: 'sub', text: `${it.id}  ·  ${DATA_FILES[fk].label}` }));
 
-    // 분류 칩 (type / subtype / rarity)
-    const cls = [];
-    if (it.type) cls.push(el('span', { class: 'chip', text: `type: ${it.type}` }));
-    if (it.subtype) cls.push(el('span', { class: 'chip', text: `subtype: ${it.subtype}` }));
-    if (it.rarity) cls.push(el('span', { class: 'chip', text: `rarity: ${it.rarity}` }));
-    if (cls.length) detailWrap.append(el('div', { class: 'chips' }, cls));
-
-    if (it.description) detailWrap.append(el('div', { class: 'desc', text: it.description }));
-
-    // 나머지 필드 (분류·헤더 필드는 위에서 표시했으므로 제외)
-    const skip = ['id', 'name', 'icon', 'description', 'type', 'subtype', 'rarity'];
-    const kv = el('div', { class: 'kv' });
+    // id 외 모든 필드 편집 (id는 객체 키라 읽기 전용 — 헤더에 표시)
+    const scalars = el('div', { class: 'field-row' });
+    const nested = [];
     for (const k of Object.keys(it)) {
-      if (skip.includes(k)) continue;
-      const help = helpForItem(k);
-      kv.append(el('div', { class: 'kv-row' }, [
-        el('span', help ? { class: 'kv-k has-help', text: k, title: help } : { class: 'kv-k', text: k }),
-        valueNode(it[k]),
-      ]));
+      if (k === 'id') continue;
+      const child = it[k];
+      if (child !== null && typeof child === 'object') nested.push(objNode(it, k, 0, fk, helpForItem));
+      else scalars.append(scalarInput(it, k, fk, helpForItem(k)));
     }
-    if (kv.children.length) {
-      detailWrap.append(el('div', { class: 'kv-title', text: '속성' }));
-      detailWrap.append(kv);
-    }
+    if (scalars.children.length) detailWrap.append(scalars);
+    nested.forEach((n) => detailWrap.append(n));
   };
 
   const renderList = () => {
@@ -750,7 +734,7 @@ function renderItemsTab() {
     listBox.innerHTML = '';
     const matched = ids.filter((id) => {
       if (!q) return true;
-      const it = items[id];
+      const it = state.files[idx[id]].data[id];
       return id.toLowerCase().includes(q)
         || (it.name || '').toLowerCase().includes(q)
         || (it.type || '').toLowerCase().includes(q)
@@ -758,7 +742,7 @@ function renderItemsTab() {
     });
     listBox.append(el('div', { class: 'side-group', text: `${matched.length} / ${ids.length}개` }));
     for (const id of matched.slice(0, 500)) {
-      const it = items[id];
+      const it = state.files[idx[id]].data[id];
       listBox.append(el('button', {
         class: 'side-item' + (id === state.sel.items ? ' active' : ''),
         text: `${it.icon || ''} ${it.name || id}`,
@@ -772,6 +756,7 @@ function renderItemsTab() {
   renderList();
   renderDetail();
   view.append(el('div', {}, [
+    el('div', { class: 'hint', style: 'margin-bottom:8px' }, '※ 아이템 정의 소스를 직접 편집합니다. stackable·maxStack은 stackConfig.js가 런타임에 덮어쓸 수 있습니다.'),
     el('div', { class: 'field', style: 'margin-bottom:10px' }, [search]),
     el('div', { class: 'list-layout' }, [listBox, detailWrap]),
   ]));
@@ -1143,11 +1128,12 @@ function renderLandmarkDetail(root, lm) {
 
 // ─── 공용 변수(밸런스) 탭 ────────────────────────────────────
 // 중첩 객체/배열을 재귀적으로 편집. 스칼라는 scalarInput, 배열/객체는 들여쓴 박스.
-function balanceNode(obj, key, depth) {
+// 범용 재귀 편집 노드: 스칼라/배열/객체를 fileKey 데이터로 편집 (라벨 설명은 helpFn(key))
+function objNode(obj, key, depth, fileKey, helpFn) {
   const v = obj[key];
   // 스칼라(숫자/문자/불리언/Infinity)
   if (v === null || typeof v !== 'object') {
-    return scalarInput(obj, key, 'balance', helpForBalance(key));
+    return scalarInput(obj, key, fileKey, helpFn(key));
   }
   // 배열
   if (Array.isArray(v)) {
@@ -1157,32 +1143,36 @@ function balanceNode(obj, key, depth) {
       v.forEach((x, i) => {
         const isNum = typeof x === 'number';
         const inp = el('input', { class: 'num', type: isNum ? 'number' : 'text', step: 'any', value: x });
-        inp.addEventListener('input', () => { v[i] = isNum ? Number(inp.value) : inp.value; markDirty('balance'); });
+        inp.addEventListener('input', () => { v[i] = isNum ? Number(inp.value) : inp.value; markDirty(fileKey); });
         row.append(el('div', { class: 'field' }, [el('label', { text: `[${i}]` }), inp]));
       });
-      return el('div', { class: 'field' }, [labelEl(key, helpForBalance(key)), row]);
+      return el('div', { class: 'field' }, [labelEl(key, helpFn(key)), row]);
     }
     // 객체 배열 → 각 원소를 박스로
-    const fs = el('fieldset', {}, el('legend', {}, [labelEl(key, helpForBalance(key))]));
+    const fs = el('fieldset', {}, el('legend', {}, [labelEl(key, helpFn(key))]));
     v.forEach((item, i) => {
       const sub = el('div', { class: 'bal-sub' }, [el('div', { class: 'side-group', text: `#${i}` })]);
-      for (const k of Object.keys(item)) sub.append(balanceNode(item, k, depth + 1));
+      for (const k of Object.keys(item)) sub.append(objNode(item, k, depth + 1, fileKey, helpFn));
       fs.append(sub);
     });
     return fs;
   }
   // 중첩 객체 → 박스 + 재귀
-  const fs = el('fieldset', {}, el('legend', {}, [labelEl(key, helpForBalance(key))]));
+  const fs = el('fieldset', {}, el('legend', {}, [labelEl(key, helpFn(key))]));
   const scalars = el('div', { class: 'field-row' });
   const nested = [];
   for (const k of Object.keys(v)) {
     const child = v[k];
-    if (child !== null && typeof child === 'object') nested.push(balanceNode(v, k, depth + 1));
-    else scalars.append(scalarInput(v, k, 'balance', helpForBalance(k)));
+    if (child !== null && typeof child === 'object') nested.push(objNode(v, k, depth + 1, fileKey, helpFn));
+    else scalars.append(scalarInput(v, k, fileKey, helpFn(k)));
   }
   if (scalars.children.length) fs.append(scalars);
   nested.forEach((n) => fs.append(n));
   return fs;
+}
+
+function balanceNode(obj, key, depth) {
+  return objNode(obj, key, depth, 'balance', helpForBalance);
 }
 
 function renderBalanceTab() {
