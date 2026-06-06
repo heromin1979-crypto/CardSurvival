@@ -36,7 +36,10 @@ try {
   await import('./editor.js');
   check('module boots without throwing', true);
   check('save button present', window.document.querySelector('#save-btn') !== null);
-  check('4 tabs present', window.document.querySelectorAll('.tab').length === 4);
+  check('5 tabs present', window.document.querySelectorAll('.tab').length === 5);
+  // changes tab renders without throwing (empty state when no data loaded)
+  window.document.querySelector('[data-tab="changes"]').click();
+  check('changes tab renders', /변경 사항/.test(window.document.querySelector('#view').textContent));
   // settings tab renders local-settings box (no PAT fields)
   window.document.querySelector('[data-tab="settings"]').click();
   check('settings tab renders', window.document.querySelector('.settings-box') !== null);

@@ -162,6 +162,30 @@ export function spliceObjectLiteral(fileText, declString, value) {
   return fileText.slice(0, open) + literal + fileText.slice(close + 1);
 }
 
+/**
+ * Recursively diff two values, pushing leaf differences into `out`.
+ * Each entry: { path, old, new, kind:'changed'|'added'|'removed' }.
+ * Arrays compared by index (handles added/removed rows); Infinity compared
+ * by identity (Infinity === Infinity). Pure — no DOM. Used for the change list.
+ */
+export function diffValue(a, b, path, out) {
+  if (a === b) return;
+  const aObj = a && typeof a === 'object';
+  const bObj = b && typeof b === 'object';
+  if (aObj && bObj) {
+    if (Array.isArray(a) || Array.isArray(b)) {
+      const len = Math.max(a?.length || 0, b?.length || 0);
+      for (let i = 0; i < len; i++) diffValue(a?.[i], b?.[i], `${path}[${i}]`, out);
+    } else {
+      for (const k of new Set([...Object.keys(a), ...Object.keys(b)])) {
+        diffValue(a[k], b[k], path ? `${path}.${k}` : k, out);
+      }
+    }
+    return;
+  }
+  out.push({ path, old: a, new: b, kind: a === undefined ? 'added' : b === undefined ? 'removed' : 'changed' });
+}
+
 /** Per-file declaration markers for the editable data blocks. */
 export const DATA_FILES = {
   districts: {

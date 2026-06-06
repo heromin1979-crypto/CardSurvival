@@ -10,6 +10,7 @@ import {
   extractValue,
   serializeValue,
   spliceObjectLiteral,
+  diffValue,
   DATA_FILES,
 } from './serialize.js';
 
@@ -108,6 +109,24 @@ console.log('=== edit persists through splice ===');
   check('reward.morale persists', reparsed[firstId].reward.morale === 999);
   check('other quests untouched', Object.keys(reparsed).length === Object.keys(data).length);
   check('serialized output contains Infinity literal', /deadlineDays:\s*Infinity/.test(spliced));
+}
+
+// === diffValue (change list) ===
+console.log('=== diffValue ===');
+{
+  const d = (a, b) => { const o = []; diffValue(a, b, '', o); return o; };
+  check('no change → empty', d({ a: 1 }, { a: 1 }).length === 0);
+  check('scalar change', JSON.stringify(d({ w: 25 }, { w: 40 })) ===
+    JSON.stringify([{ path: 'w', old: 25, new: 40, kind: 'changed' }]));
+  check('nested path', d({ lt: { x: 1 } }, { lt: { x: 2 } })[0].path === 'lt.x');
+  const arr = d({ lt: [{ w: 1 }, { w: 2 }] }, { lt: [{ w: 1 }, { w: 9 }] });
+  check('array index path', arr.length === 1 && arr[0].path === 'lt[1].w');
+  const added = d({ lt: [{ w: 1 }] }, { lt: [{ w: 1 }, { w: 2 }] });
+  check('array add → kind added', added.some((c) => c.kind === 'added'));
+  const removed = d({ lt: [{ w: 1 }, { w: 2 }] }, { lt: [{ w: 1 }] });
+  check('array remove → kind removed', removed.some((c) => c.kind === 'removed'));
+  check('Infinity equal → no change', d({ dl: Infinity }, { dl: Infinity }).length === 0);
+  check('Infinity → finite', d({ dl: Infinity }, { dl: 10 })[0].new === 10);
 }
 
 console.log(failures === 0 ? '\nALL PASS' : `\n${failures} FAILURE(S)`);

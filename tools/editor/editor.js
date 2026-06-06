@@ -3,6 +3,7 @@ import {
   DATA_FILES,
   extractValue,
   spliceObjectLiteral,
+  diffValue,
 } from './serialize.js';
 import {
   getInfo,
@@ -18,6 +19,7 @@ const state = {
   commitMsg: 'data: 에디터에서 데이터 수정',
   files: {},            // key -> { text, data }
   itemIds: new Set(),   // valid item definition ids (for validation/autocomplete)
+  itemNames: new Map(), // item id -> 표시 이름
   dirty: new Set(),     // file keys with unsaved changes
   tab: 'districts',
   sel: {},              // tab -> selected sub-key
@@ -53,6 +55,25 @@ function markDirty(fileKey) {
   state.dirty.add(fileKey);
   $('#dirty').hidden = false;
   $('#save-btn').disabled = false;
+  refreshChangeCount();
+}
+
+// id → 표시 이름 헬퍼
+function itemName(id) {
+  return id && state.itemNames.get(id) ? state.itemNames.get(id) : '';
+}
+function districtName(id) {
+  return state.files.districts?.data?.[id]?.name || '';
+}
+// 'name (id)' 형태로 라벨링
+function labelWithId(name, id) {
+  return name ? `${name} (${id})` : id;
+}
+
+function refreshChangeCount() {
+  const n = computeChanges().reduce((s, g) => s + g.changes.length, 0);
+  const badge = $('#change-count');
+  if (badge) badge.textContent = n ? `(${n})` : '';
 }
 
 // ─── tab switching ───────────────────────────────────────────
@@ -80,21 +101,25 @@ async function loadAll() {
   state.gitAvailable = info.git !== false && !!info.branch;
   state.branch = info.branch || '(git 없음)';
   state.gitReason = info.reason || '';
-  // valid item ids (로컬 items.js — 자동완성/검증용)
+  // valid item ids + 표시 이름 (로컬 items.js — 자동완성/검증/이름표시용)
   try {
     const items = (await import('../../js/data/items.js')).default;
     state.itemIds = new Set(Object.keys(items));
+    state.itemNames = new Map(Object.entries(items).map(([id, it]) => [id, it?.name || id]));
     const dl = $('#item-ids');
     dl.innerHTML = '';
-    for (const id of [...state.itemIds].sort()) dl.append(el('option', { value: id }));
+    for (const id of [...state.itemIds].sort()) {
+      dl.append(el('option', { value: id, label: state.itemNames.get(id) || id }));
+    }
   } catch (e) {
     console.warn('item id 목록 로드 실패 (검증 비활성):', e);
   }
-  // editable data blocks (로컬 파일 원문 → 파싱)
+  // editable data blocks (로컬 파일 원문 → 파싱). original = 원본 스냅샷(되돌리기용)
   try {
     for (const [key, cfg] of Object.entries(DATA_FILES)) {
       const text = await getFileText(cfg.path);
-      state.files[key] = { text, data: extractValue(text, cfg.decl) };
+      const data = extractValue(text, cfg.decl);
+      state.files[key] = { text, data, original: structuredClone(data) };
     }
   } catch (e) {
     status(`데이터 로드 실패: ${e.message}`, 'err');
@@ -184,6 +209,111 @@ function collectBadRefs() {
   return [...bad];
 }
 
+// ─── 변경 사항(diff) + 되돌리기 ──────────────────────────────
+// original 스냅샷과 현재 data를 비교해 엔티티(구/랜드마크/퀘스트)별 변경 목록 생성
+// (diffValue는 serialize.js의 순수 함수)
+function entityTitle(fileKey, key) {
+  const e = state.files[fileKey].data[key] || state.files[fileKey].original[key] || {};
+  if (fileKey === 'quests') return `${e.icon || ''} ${e.title || key} · ${e.characterId || ''}`;
+  return `${e.icon || ''} ${e.name || key}`;
+}
+
+function computeChanges() {
+  const groups = [];
+  for (const fileKey of Object.keys(DATA_FILES)) {
+    const f = state.files[fileKey];
+    if (!f) continue;
+    const keys = new Set([...Object.keys(f.original || {}), ...Object.keys(f.data || {})]);
+    for (const key of keys) {
+      const diffs = [];
+      diffValue(f.original?.[key], f.data?.[key], '', diffs);
+      if (diffs.length) groups.push({ fileKey, entityKey: key, title: entityTitle(fileKey, key), changes: diffs });
+    }
+  }
+  return groups;
+}
+
+function fmtVal(v) {
+  if (v === undefined) return '(없음)';
+  if (v === null) return 'null';
+  if (v === Infinity) return '∞';
+  if (typeof v === 'object') return Array.isArray(v) ? `[${v.length}개]` : '{객체}';
+  if (typeof v === 'string') return v.length > 40 ? `"${v.slice(0, 40)}…"` : `"${v}"`;
+  return String(v);
+}
+
+function recomputeDirty(fileKey) {
+  const changed = computeChanges().some((g) => g.fileKey === fileKey);
+  if (changed) state.dirty.add(fileKey); else state.dirty.delete(fileKey);
+  $('#dirty').hidden = state.dirty.size === 0;
+  $('#save-btn').disabled = state.dirty.size === 0;
+  refreshChangeCount();
+}
+
+function revertEntity(fileKey, key) {
+  const f = state.files[fileKey];
+  if (f.original && key in f.original) f.data[key] = structuredClone(f.original[key]);
+  else delete f.data[key];
+  recomputeDirty(fileKey);
+  render();
+}
+
+function revertAll() {
+  for (const fileKey of Object.keys(DATA_FILES)) {
+    const f = state.files[fileKey];
+    if (f) f.data = structuredClone(f.original);
+  }
+  state.dirty.clear();
+  $('#dirty').hidden = true;
+  $('#save-btn').disabled = true;
+  refreshChangeCount();
+  render();
+}
+
+function changeRow(g, c) {
+  const parts = [];
+  if (c.kind === 'added') parts.push('➕ ');
+  if (c.kind === 'removed') parts.push('➖ ');
+  parts.push(el('code', { text: c.path || '(항목)' }));
+  // lootTable 행이면 해당 아이템 이름 표시
+  const m = /lootTable\[(\d+)\]/.exec(c.path || '');
+  if (m) {
+    const row = state.files[g.fileKey].data[g.entityKey]?.lootTable?.[m[1]]
+      || state.files[g.fileKey].original[g.entityKey]?.lootTable?.[m[1]];
+    const id = row?.definitionId || row?.id;
+    if (id) parts.push(el('span', { class: 'chain-badge', text: itemName(id) || id }));
+  }
+  parts.push(`  ${fmtVal(c.old)} → `);
+  parts.push(el('b', { text: fmtVal(c.new) }));
+  return el('div', { class: 'hint' }, parts);
+}
+
+function renderChangesTab() {
+  const groups = computeChanges();
+  const total = groups.reduce((s, g) => s + g.changes.length, 0);
+  const wrap = el('div', { class: 'detail' });
+  wrap.append(el('h2', { text: `🔧 변경 사항 (${total})` }));
+  if (!groups.length) {
+    wrap.append(el('div', { class: 'empty', text: '변경된 내용이 없습니다.' }));
+    view.append(wrap);
+    return;
+  }
+  wrap.append(el('div', { class: 'field-row' }, [
+    el('button', { class: 'ghost danger', text: '⟲ 전체 되돌리기',
+      onclick: () => { if (confirm('모든 변경을 원본으로 되돌릴까요?')) revertAll(); } }),
+  ]));
+  for (const g of groups) {
+    const fs = el('fieldset', {}, el('legend', {
+      text: `[${DATA_FILES[g.fileKey].label.split(' ')[0]}] ${g.title}`,
+    }));
+    fs.append(el('button', { class: 'ghost', text: '↩ 이 항목 되돌리기',
+      onclick: () => revertEntity(g.fileKey, g.entityKey) }));
+    for (const c of g.changes) fs.append(changeRow(g, c));
+    wrap.append(fs);
+  }
+  view.append(wrap);
+}
+
 // ─── reusable loot-table editor ──────────────────────────────
 // rows: array of objects. idKey = 'definitionId' (districts) | 'id' (landmarks).
 // extraCols: list of {key, label} numeric columns to show.
@@ -192,6 +322,7 @@ function lootTableEditor(rows, idKey, extraCols, fileKey) {
   const tbl = el('table', { class: 'loot' });
   const head = el('tr', {}, [
     el('th', { text: '아이템 ID' }),
+    el('th', { text: '이름' }),
     el('th', { text: 'weight' }),
     ...extraCols.map((c) => el('th', { text: c.label })),
     el('th', { text: '%' }),
@@ -213,10 +344,12 @@ function lootTableEditor(rows, idKey, extraCols, fileKey) {
     if (state.itemIds.size && row[idKey] && !state.itemIds.has(row[idKey])) {
       idInput.classList.add('ref-bad');
     }
+    const nameCell = el('td', { class: 'pct', text: itemName(row[idKey]) });
     idInput.addEventListener('input', () => {
       row[idKey] = idInput.value.trim();
       idInput.classList.toggle('ref-bad',
         state.itemIds.size && row[idKey] && !state.itemIds.has(row[idKey]));
+      nameCell.textContent = itemName(row[idKey]);
       markDirty(fileKey);
     });
     const wInput = el('input', { class: 'num', type: 'number', value: row.weight ?? 0 });
@@ -225,6 +358,7 @@ function lootTableEditor(rows, idKey, extraCols, fileKey) {
     });
     const tr = el('tr', {}, [
       el('td', {}, idInput),
+      nameCell,
       el('td', {}, wInput),
       ...extraCols.map((c) => {
         const inp = el('input', { class: 'num', type: 'number', step: 'any', value: row[c.key] ?? '' });
@@ -278,11 +412,15 @@ function itemRows(arr, fileKey) {
   const wrap = el('div');
   arr.forEach((it, idx) => {
     const id = el('input', { class: 'id', value: it.definitionId ?? '', list: 'item-ids' });
-    id.addEventListener('input', () => { it.definitionId = id.value.trim(); markDirty(fileKey); });
+    const nm = el('span', { class: 'chain-badge', text: itemName(it.definitionId) });
+    id.addEventListener('input', () => {
+      it.definitionId = id.value.trim(); nm.textContent = itemName(it.definitionId); markDirty(fileKey);
+    });
     const qty = el('input', { class: 'num', type: 'number', value: it.qty ?? 1 });
     qty.addEventListener('input', () => { it.qty = Number(qty.value); markDirty(fileKey); });
     wrap.append(el('div', { class: 'field-row' }, [
       el('div', { class: 'field' }, [el('label', { text: 'item' }), id]),
+      el('div', { class: 'field' }, [el('label', { text: '이름' }), nm]),
       el('div', { class: 'field' }, [el('label', { text: 'qty' }), qty]),
       el('button', { class: 'ghost danger', text: '✕',
         onclick: () => { arr.splice(idx, 1); markDirty(fileKey); rerenderDetail(); } }),
@@ -314,6 +452,7 @@ function objectFields(obj, fileKey) {
 function render() {
   view.innerHTML = '';
   if (state.tab === 'settings') return renderSettings();
+  if (state.tab === 'changes') return renderChangesTab();
   if (!state.files[state.tab]) {
     view.append(el('div', { class: 'empty', text: '데이터 불러오는 중… (serve.js가 떠 있어야 합니다)' }));
     return;
@@ -530,8 +669,14 @@ function objectiveEditor(q) {
     if (key === 'type') continue;
     if (key === 'definitionId') {
       const inp = el('input', { class: 'id', value: o[key] ?? '', list: 'item-ids' });
-      inp.addEventListener('input', () => { o[key] = inp.value.trim(); markDirty('quests'); });
-      fr.append(el('div', { class: 'field' }, [el('label', { text: key }), inp]));
+      const nm = el('span', { class: 'chain-badge', text: itemName(o[key]) });
+      inp.addEventListener('input', () => { o[key] = inp.value.trim(); nm.textContent = itemName(o[key]); markDirty('quests'); });
+      fr.append(el('div', { class: 'field' }, [el('label', { text: key }), el('div', { class: 'field-row' }, [inp, nm])]));
+    } else if (key === 'districtId') {
+      const inp = el('input', { class: 'id', value: o[key] ?? '' });
+      const nm = el('span', { class: 'chain-badge', text: districtName(o[key]) });
+      inp.addEventListener('input', () => { o[key] = inp.value.trim(); nm.textContent = districtName(o[key]); markDirty('quests'); });
+      fr.append(el('div', { class: 'field' }, [el('label', { text: key }), el('div', { class: 'field-row' }, [inp, nm])]));
     } else {
       fr.append(scalarInput(o, key, 'quests'));
     }
@@ -579,6 +724,10 @@ function renderSettings() {
     '· 무결성 검증: <code>node js/data/validate.js</code>' }));
   view.append(box);
 }
+
+// 상단 "변경됨" 배지 클릭 → 변경 탭으로 이동
+const dirtyFlag = $('#dirty');
+if (dirtyFlag) { dirtyFlag.style.cursor = 'pointer'; dirtyFlag.addEventListener('click', () => switchTab('changes')); }
 
 // ─── boot ────────────────────────────────────────────────────
 switchTab('districts');
