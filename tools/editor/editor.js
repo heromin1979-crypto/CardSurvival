@@ -116,6 +116,66 @@ const FIELD_HELP = {
 };
 function helpFor(key) { return FIELD_HELP[key] || ''; }
 
+// 아이템 탭 전용 설명 (공통 사전보다 우선 — 예: weight는 '무게'로 다름)
+const ITEM_HELP = {
+  weight: '아이템 1개의 무게(kg). 소지 무게 한도에 영향을 줍니다.',
+  tags: '분류 태그. 검색·필터·레시피 조건 등에 사용됩니다.',
+  defaultDurability: '기본 내구도. 사용·장비하면 닳습니다.',
+  defaultContamination: '기본 오염도(0 = 깨끗).',
+  dismantle: '분해 시 얻는 산출물 목록.',
+  dismantleTP: '분해에 드는 시간(TP).',
+  stackable: '같은 칸에 여러 개를 겹쳐 보관할 수 있는지 여부.',
+  maxStack: '한 칸에 겹칠 수 있는 최대 수량.',
+  onConsume: '먹기/소비할 때 발생하는 효과.',
+  onUse: '사용할 때 발생하는 효과.',
+  onWear: '착용할 때 적용되는 효과.',
+  onTick: '시간이 흐를 때(TP마다) 적용되는 효과.',
+  onTrigger: '특정 조건에서 발동하는 효과.',
+  leaveOnConsume: '소비 후 남는 잔여물(예: 빈 캔).',
+  requiredForBlueprints: '이 아이템을 재료로 쓰는 설계도(레시피) 목록.',
+  nutrition: '섭취 시 회복하는 포만감(영양).',
+  legendary: '전설(고유) 아이템 여부.',
+  isRare: '희귀 아이템 여부.',
+  requiresSlot: '장착·배치에 필요한 슬롯.',
+  equipSlot: '장비 슬롯(머리/몸/손/무기 등).',
+  combat: '전투 관련 능력치(공격력 등).',
+  weaponType: '무기 종류(근접/원거리/투척 등).',
+  damage: '공격력(피해량).',
+  armor: '방어구의 방어 수치.',
+  defense: '방어력 수치.',
+  bagSlots: '가방류: 추가로 늘어나는 보관 칸 수.',
+  storageCapacity: '보관 용량.',
+  repairRecipe: '수리에 필요한 재료.',
+  repairAmount: '수리 시 회복되는 내구도.',
+  effect: '특수 효과 정보.',
+  multiTarget: '여러 대상에게 적용되는지 여부.',
+  throwableEffect: '투척 시 효과.',
+  treatPart: '치료 대상 부위.',
+  diagnose: '진단 관련 정보.',
+  infectionRisk: '감염 위험도.',
+  bleedChance: '출혈 유발 확률.',
+  trapData: '함정 설정 데이터.',
+  craftingTool: '제작에 도구로 사용됩니다.',
+  fragmentOf: '이 조각이 모여 완성되는 아이템.',
+  landmark: '랜드마크(거점/장소) 카드 여부.',
+  landmarkBonus: '이 랜드마크가 주는 보너스 설명.',
+  nodeId: '연결된 노드(장소) ID.',
+  eventDuration: '이벤트 지속 시간.',
+  warmthBonus: '체온 유지 보너스.',
+  waterCapacity: '담을 수 있는 물의 양.',
+  kindlingUses: '불쏘시개 사용 가능 횟수.',
+  sleepFatigueMult: '수면 시 피로 회복 배율.',
+  companionMoraleBoost: '동료 사기 상승 효과.',
+  isStructure: '구조물 여부.',
+  isHangang: '한강 수변 자원 여부.',
+  safeZone: '안전지대(조우/위협 차단) 여부.',
+  weatherProtection: '날씨 패널티 차단 여부.',
+  contaminationShield: '식량 오염 차단 여부.',
+  npcShelter: 'NPC가 합류·거주 가능한지 여부.',
+};
+function helpForItem(key) { return ITEM_HELP[key] ?? FIELD_HELP[key] ?? ''; }
+
+
 // 설명이 있으면 점선 밑줄 + 마우스 오버 툴팁을 단 라벨 생성
 function fieldLabel(text, key = text) {
   const help = helpFor(key);
@@ -384,8 +444,9 @@ function renderItemsTab() {
     const kv = el('div', { class: 'kv' });
     for (const k of Object.keys(it)) {
       if (skip.includes(k)) continue;
+      const help = helpForItem(k);
       kv.append(el('div', { class: 'kv-row' }, [
-        el('span', { class: 'kv-k', text: k }),
+        el('span', help ? { class: 'kv-k has-help', text: k, title: help } : { class: 'kv-k', text: k }),
         valueNode(it[k]),
       ]));
     }
