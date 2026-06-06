@@ -391,6 +391,23 @@ const BALANCE = {
     },
   },
 
+  // ── 스킬 보너스 계수 ───────────────────────────────────
+  // skillDefs.js getBonuses() 수식에 쓰이는 튜닝 계수.
+  skills: {
+    scavenging: {
+      maxExtraLootChance: 0.30,  // 탐색 Lv.20 시 추가 루팅 확률(레벨 비례: level/20 × 이 값)
+      lv20RareLootChance: 0.05,  // 탐색 Lv.20 도달 시 희귀 루팅 확률
+    },
+  },
+
+  // ── 특성(trait) 효과 값 ────────────────────────────────
+  // TraitSystem이 이 값을 우선 참조 (정의의 이름/설명은 TraitSystem에 유지).
+  traits: {
+    scavenger: { bonusLootCount: 1 },   // 탐색 시 추가 발견 아이템 수
+    medic:     { healMultiplier: 1.5 }, // 의료 아이템 회복 배율
+    silent:    { noiseMult: 0.6 },      // 소음 발생 배율
+  },
+
   // ── 신체 부상 ──────────────────────────────────────────
   body: {
     // 부위별 피격 확률 (무기 타입별)
