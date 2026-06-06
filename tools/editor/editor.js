@@ -1139,21 +1139,20 @@ function objNode(obj, key, depth, fileKey, helpFn) {
   }
   // 배열
   if (Array.isArray(v)) {
-    // 스칼라 배열 → 인덱스별 인풋 + 개별 삭제(✕) + 추가(+)
+    // 스칼라 배열 → 균일한 칩(입력+✕) 가로 나열 + 같은 높이의 +
     if (v.every((x) => x === null || typeof x !== 'object')) {
-      const row = el('div', { class: 'field-row' });
+      const numeric = v.some((x) => typeof x === 'number');
+      const row = el('div', { class: 'arr-row' });
       v.forEach((x, i) => {
         const isNum = typeof x === 'number';
-        const inp = el('input', { class: 'num', type: isNum ? 'number' : 'text', step: 'any', value: x });
+        const inp = el('input', { class: 'arr-input', type: isNum ? 'number' : 'text', step: 'any', value: x });
         inp.addEventListener('input', () => { v[i] = isNum ? Number(inp.value) : inp.value; markDirty(fileKey); });
         const rm = el('button', { class: 'ghost danger mini', text: '✕', title: '삭제',
           onclick: () => { v.splice(i, 1); markDirty(fileKey); rerenderDetail(); } });
-        row.append(el('div', { class: 'field' }, [el('label', { text: `[${i}]` }), el('div', { class: 'inline-row' }, [inp, rm])]));
+        row.append(el('span', { class: 'arr-item' }, [inp, rm]));
       });
-      // 마지막 칸에 작은 + (인풋 한 칸 크기)
-      const add = el('button', { class: 'ghost add-inline', text: '+', title: '추가',
-        onclick: () => { v.push(typeof v[0] === 'number' ? 0 : ''); markDirty(fileKey); rerenderDetail(); } });
-      row.append(el('div', { class: 'field' }, [el('label', { text: ' ' }), add]));
+      row.append(el('button', { class: 'ghost mini arr-add', text: '+', title: '추가',
+        onclick: () => { v.push(numeric ? 0 : ''); markDirty(fileKey); rerenderDetail(); } }));
       return el('div', { class: 'field grow' }, [labelEl(key, helpFn(key)), row]);
     }
     // 객체 배열 → 각 원소를 가로 카드로 + 삭제/추가
