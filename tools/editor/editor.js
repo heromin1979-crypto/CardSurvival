@@ -1148,9 +1148,11 @@ function objNode(obj, key, depth, fileKey, helpFn) {
           onclick: () => { v.splice(i, 1); markDirty(fileKey); rerenderDetail(); } });
         row.append(el('div', { class: 'field' }, [el('label', { text: `[${i}]` }), el('div', { class: 'inline-row' }, [inp, rm])]));
       });
-      const add = el('button', { class: 'ghost row-add', text: '+ 추가',
+      // 마지막 칸에 작은 + (인풋 한 칸 크기)
+      const add = el('button', { class: 'ghost add-inline', text: '+', title: '추가',
         onclick: () => { v.push(typeof v[0] === 'number' ? 0 : ''); markDirty(fileKey); rerenderDetail(); } });
-      return el('div', { class: 'field grow' }, [labelEl(key, helpFn(key)), row, add]);
+      row.append(el('div', { class: 'field' }, [el('label', { text: ' ' }), add]));
+      return el('div', { class: 'field grow' }, [labelEl(key, helpFn(key)), row]);
     }
     // 객체 배열 → 각 원소를 가로 카드로 + 삭제/추가
     const fs = el('fieldset', {}, el('legend', {}, [labelEl(key, helpFn(key))]));
@@ -1165,9 +1167,10 @@ function objNode(obj, key, depth, fileKey, helpFn) {
       for (const k of Object.keys(item)) sub.append(objNode(item, k, depth + 1, fileKey, helpFn));
       boxes.append(sub);
     });
-    fs.append(boxes);
-    fs.append(el('button', { class: 'ghost row-add', text: '+ 항목 추가',
+    // 다음 카드 자리에 카드 크기의 + 타일
+    boxes.append(el('button', { class: 'bal-sub add-card', text: '+', title: '항목 추가',
       onclick: () => { v.push(v.length ? structuredClone(v[v.length - 1]) : {}); markDirty(fileKey); rerenderDetail(); } }));
+    fs.append(boxes);
     return fs;
   }
   // 중첩 객체 → 박스 + 재귀
