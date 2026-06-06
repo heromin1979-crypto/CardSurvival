@@ -104,6 +104,7 @@ async function handleApi(req, res, urlPath) {
     let body;
     try { body = await readBody(req); } catch (e) { sendJSON(res, 400, { error: `잘못된 요청: ${e.message}` }); return; }
     const message = String(body.message || 'data: 에디터에서 데이터 수정');
+    const bodyText = typeof body.body === 'string' ? body.body.trim() : '';
     const paths = (Array.isArray(body.paths) ? body.paths : [...WRITABLE]).filter((p) => WRITABLE.has(p));
     try {
       const { stdout: branchOut } = await git(['rev-parse', '--abbrev-ref', 'HEAD']);
@@ -113,7 +114,14 @@ async function handleApi(req, res, urlPath) {
       if (paths.length) {
         await git(['add', '--', ...paths]);
         const { stdout: staged } = await git(['diff', '--cached', '--name-only', '--', ...paths]);
-        if (staged.trim()) { await git(['commit', '-m', message, '--', ...paths]); committed = true; }
+        if (staged.trim()) {
+          // 제목(-m message) + 본문(-m bodyText: 변경 요약) → 커밋 로그에 정리된 내역 기록
+          const commitArgs = ['commit', '-m', message];
+          if (bodyText) commitArgs.push('-m', bodyText);
+          commitArgs.push('--', ...paths);
+          await git(commitArgs);
+          committed = true;
+        }
       }
       // 새 커밋이 없어도 항상 push — 이전에 밀려있던 로컬 커밋까지 내보낸다
       const push = await git(['push', '-u', 'origin', branch]);

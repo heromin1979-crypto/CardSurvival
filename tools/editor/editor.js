@@ -159,6 +159,13 @@ async function saveAll() {
   }
   const changed = changedFileKeys();
   if (!changed.length) { status('변경된 내용이 없습니다.', 'info'); return; }
+  // 커밋 제목/본문 — baseline 갱신 전에 변경 요약을 캡처
+  const summary = changeSummaryLines();
+  const MAX_BODY = 100;
+  const bodyText = summary.slice(0, MAX_BODY).join('\n')
+    + (summary.length > MAX_BODY ? `\n- …외 ${summary.length - MAX_BODY}건` : '');
+  const subject = (state.commitMsg && state.commitMsg !== DEFAULT_COMMIT_MSG)
+    ? state.commitMsg : autoSubject();
   $('#save-btn').disabled = true;
   status('로컬 파일 기록 중…', 'info');
   try {
@@ -184,7 +191,7 @@ async function saveAll() {
 
     // 3) git add/commit/push (이미 커밋만 되고 안 밀린 게 있으면 함께 flush)
     status('git 커밋 & 푸시 중…', 'info');
-    const result = await pushChanges(state.commitMsg, files.map((f) => f.path));
+    const result = await pushChanges(subject, files.map((f) => f.path), bodyText);
 
     // 성공 → 변경 baseline 갱신 (이제 "변경 없음" → 버튼 비활성화)
     for (const key of changed) state.files[key].original = structuredClone(state.files[key].data);
@@ -459,6 +466,38 @@ function renderChangesTab() {
     wrap.append(fs);
   }
   view.append(wrap);
+}
+
+// 변경 요약을 커밋 본문용 텍스트 줄 목록으로 (사람이 읽기 좋게)
+// 예) - [장소] 🏥 강남구 ▸ lootTable[3].weight (천 조각): 25 → 40
+function changeSummaryLines() {
+  const lines = [];
+  for (const g of computeChanges()) {
+    const fileLabel = DATA_FILES[g.fileKey].label.split(' ')[0];
+    for (const c of g.changes) {
+      let ctx = '';
+      const m = /lootTable\[(\d+)\]/.exec(c.path || '');
+      if (m) {
+        const row = state.files[g.fileKey].data[g.entityKey]?.lootTable?.[m[1]]
+          || state.files[g.fileKey].original[g.entityKey]?.lootTable?.[m[1]];
+        const id = row?.definitionId || row?.id;
+        if (id) ctx = ` (${itemName(id) || id})`;
+      }
+      const mark = c.kind === 'added' ? '추가 ' : c.kind === 'removed' ? '삭제 ' : '';
+      lines.push(`- [${fileLabel}] ${g.title} ▸ ${c.path}${ctx}: ${mark}${fmtVal(c.old)} → ${fmtVal(c.new)}`);
+    }
+  }
+  return lines;
+}
+
+// 커밋 제목 자동 생성 (사용자가 기본 메시지를 그대로 둔 경우)
+const DEFAULT_COMMIT_MSG = 'data: 에디터에서 데이터 수정';
+function autoSubject() {
+  const groups = computeChanges();
+  if (!groups.length) return DEFAULT_COMMIT_MSG;
+  const fileLabels = [...new Set(groups.map((g) => DATA_FILES[g.fileKey].label.split(' ')[0]))];
+  const totalChanges = groups.reduce((s, g) => s + g.changes.length, 0);
+  return `data: ${fileLabels.join('·')} ${groups.length}개 항목 ${totalChanges}건 수정`;
 }
 
 // ─── reusable loot-table editor ──────────────────────────────

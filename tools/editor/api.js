@@ -34,7 +34,7 @@ export function saveFiles(files) {
   return postJSON('/api/save', { files });
 }
 
-/** git add/commit/push (현재 브랜치). */
-export function pushChanges(message, paths) {
-  return postJSON('/api/push', { message, paths });
+/** git add/commit/push (현재 브랜치). body = 커밋 본문(변경 요약). */
+export function pushChanges(message, paths, body) {
+  return postJSON('/api/push', { message, paths, body });
 }
