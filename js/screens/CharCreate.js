@@ -513,7 +513,8 @@ const CharCreate = {
 
     // ── 의사 전용 오프닝: 보라매병원 응급실 씬 ───────────────
     // 선행 배치된 NPC/구조물 중 박상훈 하사만 응급실로 이동, 나머지는 동작구 바닥에 보관
-    if (char.id === 'doctor') {
+    // 전투 시뮬레이터 툴에서는 캐릭터별 오프닝 씬을 건너뛴다 (전투 스탯은 이미 위에서 설정됨)
+    if (char.id === 'doctor' && !window.__combatTool) {
       this._doctorEmergencyOpening();
       return;
     }

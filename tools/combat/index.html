@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Card Survival — 전투 시뮬레이터</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <a class="back" href="../" title="툴 목록">←</a>
+    <h1>⚔️ 전투 시뮬레이터</h1>
+    <div class="preset-bar">
+      <label for="preset-select">프리셋</label>
+      <select id="preset-select"><option value="">— 불러오기 —</option></select>
+      <button id="preset-save" class="ghost">저장</button>
+      <button id="preset-delete" class="ghost danger">삭제</button>
+    </div>
+    <div class="actions">
+      <button id="expand-btn" class="ghost" title="셋업 패널을 접고 전투 창을 화면 가득 확대">⛶ 확대</button>
+      <button id="start-btn" class="primary" disabled>▶ 전투 시작</button>
+    </div>
+  </header>
+
+  <div id="status" class="status info">게임 로딩 중… (serve.js 필요)</div>
+
+  <main class="layout">
+    <aside class="setup" id="setup">
+      <!-- 1. 캐릭터 -->
+      <section class="setup-sec">
+        <h2>① 캐릭터</h2>
+        <select id="char-select"></select>
+        <div id="char-info" class="hint"></div>
+      </section>
+
+      <!-- 2. NPC -->
+      <section class="setup-sec">
+        <h2>② NPC 동료 <small>(최대 2)</small></h2>
+        <div id="npc-list" class="checklist"></div>
+      </section>
+
+      <!-- 3. 몬스터 -->
+      <section class="setup-sec">
+        <h2>③ 몬스터 <small>(최대 5)</small></h2>
+        <div id="enemy-chosen" class="chosen-list"></div>
+        <div id="enemy-palette" class="palette"></div>
+      </section>
+
+      <!-- 4. 장비 -->
+      <section class="setup-sec">
+        <h2>④ 장비</h2>
+        <div id="equip-grid" class="equip-grid"></div>
+      </section>
+    </aside>
+
+    <div class="game-col">
+      <iframe id="game-frame" title="전투 화면" src="/?tool=combat"></iframe>
+      <section class="log-panel">
+        <header class="log-head">
+          <span>전투 로그 <span id="log-outcome" class="outcome"></span></span>
+          <button id="log-copy" class="ghost">로그 복사</button>
+        </header>
+        <div id="log-body" class="log-body"><div class="hint">전투를 시작하면 로그가 여기에 표시됩니다.</div></div>
+      </section>
+    </div>
+  </main>
+
+  <script type="module" src="./combat-tool.js"></script>
+</body>
+</html>

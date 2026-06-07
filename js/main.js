@@ -18,6 +18,8 @@ import SystemRegistry  from './core/SystemRegistry.js';
 // Data
 import GameData from './data/GameData.js';
 import { registerSubLocationItems } from './data/landmarks.js';
+import { instantiateEnemy } from './data/enemies.js';
+import NPCS from './data/npcs.js';
 
 // Systems
 import EndingSystem         from './systems/EndingSystem.js';
@@ -221,6 +223,17 @@ function init() {
   // Debug panel (?debug=1 일 때만 활성화)
   if (new URLSearchParams(window.location.search).get('debug') === '1') {
     import('./ui/DebugPanel.js').then(m => m.default.init());
+  }
+
+  // 전투 시뮬레이터 툴 훅 (?tool=combat 일 때만 핸들 노출 — 일반 플레이엔 영향 없음)
+  // tools/combat/ 부모 페이지가 iframe.contentWindow.__combatTool 로 전투를 셋업·조종한다.
+  if (new URLSearchParams(window.location.search).get('tool') === 'combat') {
+    window.__combatTool = {
+      GameState, EventBus, StateMachine, CombatSystem, EquipmentSystem, NPCSystem,
+      CharCreate, GameData, NPCS, instantiateEnemy,
+    };
+    window.__combatToolReady = true;
+    EventBus.emit('__combatToolReady');
   }
 
   // Start on main menu
