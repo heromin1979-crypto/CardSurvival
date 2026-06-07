@@ -91,6 +91,23 @@ function runNode(args) {
 async function handleApi(req, res, urlPath) {
   // 읽기 전용 GET 라우트 (시뮬 결과 뷰어용)
   if (req.method === 'GET') {
+    if (urlPath === '/api/sim/trace') {
+      // 단일 런 행동 타임라인 추적 — trace.mjs를 새 node 프로세스로 실행
+      const q = new URLSearchParams(req.url.split('?')[1] || '');
+      const char = (q.get('char') || '').trim();
+      const seed = String(Number.parseInt(q.get('seed') || '0', 10) || 0);
+      if (!/^[a-z_]+$/i.test(char)) { sendJSON(res, 400, { error: '잘못된 char 값' }); return; }
+      try {
+        const { stdout } = await runNode(['tools/sim/v2/trace.mjs', '--char', char, '--seed', seed]);
+        let data;
+        try { data = JSON.parse(stdout); }
+        catch (e) { sendJSON(res, 500, { error: 'trace 출력 파싱 실패', detail: (stdout || '').slice(0, 500) }); return; }
+        sendJSON(res, 200, data);
+      } catch (e) {
+        sendJSON(res, 500, { error: 'trace 실행 실패: ' + e.message, detail: (e.stderr || '').slice(-1000) });
+      }
+      return;
+    }
     if (urlPath === '/api/sim/list') {
       const dir = path.join(ROOT, 'simulation-data', 'baselines', 'raw');
       const re = /^BAL_SIM_baseline_v(\d+)_result\.json$/;

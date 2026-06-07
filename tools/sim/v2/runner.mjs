@@ -29,7 +29,7 @@ const EVENT_HOOKS = ['siegeTriggered', 'hospitalRewards', 'hospitalDamaged',
                      'patientDied', 'bossKilled', 'hiddenLocationDiscovered',
                      'recipeUnlocked', 'secretEventTriggered'];
 
-export function runSingleRun({ characterId, seed, runId, maxTP = TARGET_TP, snapshotDays = [30, 60, 90], enableAI = true }) {
+export function runSingleRun({ characterId, seed, runId, maxTP = TARGET_TP, snapshotDays = [30, 60, 90], enableAI = true, traceDaily = false }) {
   setupOnce();
 
   resetGameStateForRun({ characterId });
@@ -42,6 +42,7 @@ export function runSingleRun({ characterId, seed, runId, maxTP = TARGET_TP, snap
   Math.random = rng;
 
   const events = [];
+  const dayStarts = [];   // traceDaily 시 매일 아침 스탯 스냅샷
   const resourceSnapshots = [];
   const moraleTierTrace = [];
   let currentTier = null;
@@ -98,6 +99,22 @@ export function runSingleRun({ characterId, seed, runId, maxTP = TARGET_TP, snap
       GameState.time.day = Math.floor(tp / TP_PER_DAY) + 1;
       GameState.time.hour = Math.floor((tp % TP_PER_DAY) / 3);
 
+      // traceDaily: 행동 전 아침 스탯 스냅샷 (AI가 본 그날 시작 상태)
+      if (traceDaily && GameState.time.tpInDay === 0) {
+        const s = GameState.stats ?? {};
+        dayStarts.push({
+          day: GameState.time.day,
+          hp: GameState.player?.hp?.current ?? 0,
+          stats: {
+            hydration: Math.round(s.hydration?.current ?? 0),
+            nutrition: Math.round(s.nutrition?.current ?? 0),
+            morale:    Math.round(s.morale?.current ?? 0),
+            fatigue:   Math.round(s.fatigue?.current ?? 0),
+            stamina:   Math.round(s.stamina?.current ?? 0),
+          },
+        });
+      }
+
       // Player AI 1차: day 시작 시 1회 행동
       if (enableAI && GameState.time.tpInDay === 0 && GameState.time.day > 1) {
         const acts = runDayAI(simInv);
@@ -140,7 +157,22 @@ export function runSingleRun({ characterId, seed, runId, maxTP = TARGET_TP, snap
   const deathDay = alive ? null : GameState.time.day;
   const deathCause = GameState.player.deathCause ?? null;
 
+  // traceDaily: 일자별 타임라인 조립 (아침 스탯 + 그날 행동 + 그날 이벤트)
+  let dailyTrace = null;
+  if (traceDaily) {
+    dailyTrace = dayStarts.map((ds) => ({
+      day: ds.day,
+      hp: ds.hp,
+      stats: ds.stats,
+      actions: aiLog.filter((a) => a.day === ds.day).map((a) => a.action),
+      events: events
+        .filter((e) => Math.floor((e.tp ?? 0) / TP_PER_DAY) + 1 === ds.day)
+        .map((e) => e.type),
+    }));
+  }
+
   return {
+    dailyTrace,
     runId,
     character: characterId,
     seed,
