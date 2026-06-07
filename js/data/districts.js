@@ -34,7 +34,7 @@ const DISTRICTS = {
     lootTable: [
       {
         definitionId: 'cloth',
-        weight: 26,
+        weight: 25,
         minQty: 1,
         maxQty: 3,
       },
