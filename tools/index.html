@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Card Survival — 개발 툴</title>
+  <style>
+    :root {
+      --bg: #14171c; --panel: #1d222b; --panel2: #252b36; --border: #333b48;
+      --text: #e8ebf1; --muted: #9aa4b4; --accent: #4ea1ff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Malgun Gothic', sans-serif;
+      background: var(--bg); color: var(--text);
+      display: flex; flex-direction: column; align-items: center;
+    }
+    header { text-align: center; padding: 56px 16px 8px; }
+    header h1 { margin: 0 0 6px; font-size: 26px; letter-spacing: .5px; }
+    header p { margin: 0; color: var(--muted); font-size: 14px; }
+    main {
+      width: 100%; max-width: 920px; padding: 32px 24px 56px;
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px;
+    }
+    .tool {
+      display: flex; flex-direction: column; gap: 8px;
+      background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+      padding: 22px; text-decoration: none; color: var(--text);
+      transition: border-color .12s, background .12s, transform .12s;
+    }
+    .tool:hover { border-color: var(--accent); background: var(--panel2); transform: translateY(-2px); }
+    .tool .icon { font-size: 30px; }
+    .tool h2 { margin: 0; font-size: 17px; }
+    .tool p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
+    .tool .tag {
+      margin-top: auto; align-self: flex-start; font-size: 11px; color: var(--accent);
+      border: 1px solid var(--border); border-radius: 6px; padding: 3px 8px;
+    }
+    .tool.soon { opacity: .55; pointer-events: none; }
+    .tool.soon .tag { color: var(--muted); }
+    footer { color: var(--muted); font-size: 12px; padding: 0 16px 40px; text-align: center; }
+    footer code { background: var(--panel2); padding: 2px 6px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🛠️ Card Survival — 개발 툴</h1>
+    <p>작업할 툴을 선택하세요</p>
+  </header>
+
+  <main>
+    <a class="tool" href="./editor/">
+      <div class="icon">🗂️</div>
+      <h2>데이터 에디터</h2>
+      <p>장소·랜드마크·퀘스트·아이템·공용 변수를 웹에서 편집하고 로컬 git으로 커밋·푸시.</p>
+      <span class="tag">편집 · 쓰기</span>
+    </a>
+
+    <a class="tool" href="./sim-viewer/">
+      <div class="icon">📊</div>
+      <h2>시뮬 결과 뷰어</h2>
+      <p>baseline 측정 결과(K1 생존율 · K3 사망일 · K5 사인 · drift)를 표로 확인. 버전 전환 지원.</p>
+      <span class="tag">읽기 전용</span>
+    </a>
+  </main>
+
+  <footer>
+    측정 실행은 CLI에서: <code>node tools/sim/v2/run_baseline.mjs</code> · 게임 실행: <a href="/" style="color:var(--accent)">localhost:8080/</a>
+  </footer>
+</body>
+</html>

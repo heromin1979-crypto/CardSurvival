@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Card Survival — 시뮬 결과 뷰어</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <a class="back" href="../" title="툴 목록">←</a>
+    <h1>📊 시뮬 결과 뷰어</h1>
+    <div class="actions">
+      <button id="rerun-btn" class="primary" title="현재 디스크의 데이터로 baseline을 다시 측정합니다 (v16 갱신, ~30초)">▶ 다시 측정</button>
+      <label for="baseline-select">baseline</label>
+      <select id="baseline-select"></select>
+    </div>
+  </header>
+
+  <div id="status" class="status info">결과 목록 불러오는 중… (serve.js 필요)</div>
+
+  <main id="view"></main>
+
+  <script type="module" src="./viewer.js"></script>
+</body>
+</html>
