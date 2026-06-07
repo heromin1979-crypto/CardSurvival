@@ -10,7 +10,15 @@ import { balanceFingerprint, balanceLeafHash, getBalanceDriftReport } from './dr
 
 const RUNS_PER_CHARACTER = 100;
 const SEED_BASE = 0;
-const OUTPUT_FILE = 'simulation-data/baselines/raw/BAL_SIM_baseline_v16_result.json';
+
+// 출력 경로: `--out <path>`로 지정 가능. 없으면 v16 고정(기존 CLI 기본 동작 유지).
+// buildTag/version은 파일명의 _vN_ 에서 자동 유도.
+const outArgIdx = process.argv.indexOf('--out');
+const OUTPUT_FILE = (outArgIdx !== -1 && process.argv[outArgIdx + 1])
+  ? process.argv[outArgIdx + 1]
+  : 'simulation-data/baselines/raw/BAL_SIM_baseline_v16_result.json';
+const VERSION = (/_v(\d+)_/.exec(OUTPUT_FILE) || [, '16'])[1];
+const BUILD_TAG = `sim-baseline-v${VERSION}`;
 
 const characters = listCharacterIds();
 
@@ -39,7 +47,7 @@ const leafHash = balanceLeafHash();
 
 const out = {
   schemaVersion: 2,
-  buildTag: 'sim-baseline-v16-behavior',
+  buildTag: BUILD_TAG,
   phase: 'complete',
   balanceFingerprint: fp,
   balanceLeafHash: leafHash,

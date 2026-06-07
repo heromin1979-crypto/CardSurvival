@@ -74,7 +74,35 @@ function git(args, opts = {}) {
   });
 }
 
+// node 스크립트 실행 헬퍼 (시뮬 baseline 측정용)
+function runNode(args) {
+  return new Promise((resolve, reject) => {
+    execFile('node', args, { cwd: ROOT, timeout: 180000, maxBuffer: 16 * 1024 * 1024 }, (err, stdout, stderr) => {
+      if (err) { err.stdout = stdout; err.stderr = stderr; reject(err); }
+      else resolve({ stdout, stderr });
+    });
+  });
+}
+
 async function handleApi(req, res, urlPath) {
+  // 읽기 전용 GET 라우트 (시뮬 결과 뷰어용)
+  if (req.method === 'GET') {
+    if (urlPath === '/api/sim/list') {
+      const dir = path.join(ROOT, 'simulation-data', 'baselines', 'raw');
+      const re = /^BAL_SIM_baseline_v(\d+)_result\.json$/;
+      let baselines = [];
+      try {
+        baselines = fs.readdirSync(dir)
+          .map((f) => { const m = re.exec(f); return m ? { file: f, version: Number(m[1]), path: `simulation-data/baselines/raw/${f}` } : null; })
+          .filter(Boolean)
+          .sort((a, b) => b.version - a.version);
+      } catch (e) { /* 디렉터리 없으면 빈 목록 */ }
+      sendJSON(res, 200, { baselines });
+      return;
+    }
+    sendJSON(res, 404, { error: 'unknown api' });
+    return;
+  }
   if (req.method !== 'POST') { sendJSON(res, 405, { error: 'POST only' }); return; }
 
   if (urlPath === '/api/info') {
@@ -89,6 +117,41 @@ async function handleApi(req, res, urlPath) {
         ? 'git 실행파일을 찾을 수 없습니다 (PATH 미설정 또는 미설치)'
         : e.message;
       sendJSON(res, 200, { git: false, branch: null, reason });
+    }
+    return;
+  }
+
+  if (urlPath === '/api/sim/run') {
+    // run_baseline.mjs를 새 node 프로세스로 실행 → 현재 디스크의 데이터로 재측정
+    // 매 실행마다 다음 버전(기존 최대 +1)으로 저장해 이력을 보존한다.
+    try {
+      const t0 = Date.now();
+      const rawDir = path.join(ROOT, 'simulation-data', 'baselines', 'raw');
+      const re = /^BAL_SIM_baseline_v(\d+)_result\.json$/;
+      let maxV = 0;
+      try {
+        for (const f of fs.readdirSync(rawDir)) {
+          const m = re.exec(f);
+          if (m) maxV = Math.max(maxV, Number(m[1]));
+        }
+      } catch (e) { /* 디렉터리 없으면 v1부터 */ }
+      const nextV = maxV + 1;
+      const outRel = `simulation-data/baselines/raw/BAL_SIM_baseline_v${nextV}_result.json`;
+      const { stdout, stderr } = await runNode(['tools/sim/v2/run_baseline.mjs', '--out', outRel]);
+      sendJSON(res, 200, {
+        ok: true,
+        file: outRel,
+        version: nextV,
+        durationMs: Date.now() - t0,
+        output: (stdout || '').slice(-4000),
+        stderr: (stderr || '').slice(-1000),
+      });
+    } catch (e) {
+      const detail = (e.stderr || e.stdout || e.message || '').slice(-4000);
+      const msg = e.code === 'ENOENT'
+        ? 'node 실행파일을 찾을 수 없습니다 (PATH 미설정).'
+        : (e.killed ? '측정이 시간 초과로 중단됐습니다 (180초).' : `측정 실패: ${e.message}`);
+      sendJSON(res, 500, { ok: false, error: msg, detail });
     }
     return;
   }
@@ -199,10 +262,12 @@ const server = http.createServer((req, res) => {
 server.listen(PORT, '127.0.0.1', () => {
   console.log(`\n  Card Survival: Ruined City`);
   console.log(`  ──────────────────────────`);
+  console.log(`  Tools:  http://localhost:${PORT}/tools/`);
   console.log(`  Game:   http://localhost:${PORT}/`);
   console.log(`  Editor: http://localhost:${PORT}/tools/editor/`);
+  console.log(`  Sim:    http://localhost:${PORT}/tools/sim-viewer/`);
   console.log(`  Ctrl+C to stop\n`);
 
-  // Auto-open browser (Windows)
-  exec(`start http://localhost:${PORT}/tools/editor/`);
+  // Auto-open browser (Windows) — 툴 런처
+  exec(`start http://localhost:${PORT}/tools/`);
 });

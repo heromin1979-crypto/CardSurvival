@@ -2,8 +2,8 @@
   "schemaVersion": 2,
   "buildTag": "sim-baseline-v16-behavior",
   "phase": "complete",
-  "balanceFingerprint": "len316-h242a5b5f",
-  "balanceLeafHash": "n227-he960c78b",
+  "balanceFingerprint": "len373-hfac83fb5",
+  "balanceLeafHash": "n337-h90e4bddb",
   "characters": [
     "doctor",
     "soldier",
@@ -7196,13 +7196,13 @@
     }
   },
   "drift": {
-    "balanceLeafTotal": 227,
+    "balanceLeafTotal": 337,
     "coverage": 0
   },
   "meta": {
     "runsPerCharacter": 100,
     "seedBase": 0,
     "targetDays": 100,
-    "totalDurationMs": 10042
+    "totalDurationMs": 17592
   }
 }
