@@ -30,20 +30,45 @@ const EVENT_LABELS = {
   secretEventTriggered: '✨ 비밀 이벤트',
 };
 
+// 스탯 키 → 한글 라벨
+const STAT_KO = {
+  hydration: '수분', nutrition: '영양', morale: '사기', fatigue: '피로',
+  hp: 'HP', temperature: '체온', infection: '감염', stamina: '스태미나', radiation: '방사능',
+};
+// onConsume 객체 → "영양 +30, 수분 +10" (부호 포함)
+function fmtDeltas(obj) {
+  if (!obj) return '';
+  const parts = Object.entries(obj).map(([k, v]) => `${STAT_KO[k] ?? k} ${v >= 0 ? '+' : ''}${v}`);
+  return parts.join(', ');
+}
+// 아이템의 섭취 효과 문자열 (괄호 포함). 없으면 ''
+function consumeEffect(id) {
+  const d = fmtDeltas(ITEMS[id]?.onConsume);
+  return d ? ` (${d})` : '';
+}
+
 // 원시 행동 문자열 → { icon, text(한글), raw }
 function humanizeAction(a) {
   let m;
-  if (a === 'sleep') return { icon: '😴', text: '수면 — 피로 회복', raw: a };
+  if (a === 'sleep') return { icon: '😴', text: '수면 — 피로 회복 (HP +10, 피로 → 10)', raw: a };
   if (a === 'fish_large') return { icon: '🎣', text: '낚시 — 대형 물고기 획득', raw: a };
-  if ((m = /^drink:(.+)$/.exec(a)))            return { icon: '💧', text: `수분 보충 — ${itemName(m[1])}`, raw: a };
-  if ((m = /^eat:(.+)$/.exec(a)))              return { icon: '🍖', text: `식사 — ${itemName(m[1])}`, raw: a };
-  if ((m = /^cook:(.+)->(.+)$/.exec(a)))       return { icon: '🍳', text: `요리 — ${itemName(m[2])} 제작`, raw: a };
-  if ((m = /^t1Convert:(.+)->(.+)$/.exec(a)))  return { icon: '🍳', text: `가공 — ${itemName(m[2])} 제작`, raw: a };
-  if ((m = /^moraleBoost:(.+?)\(\+?(.+)\)$/.exec(a))) return { icon: '😊', text: `사기 회복 — ${itemName(m[1])} 사용 (사기 +${m[2]})`, raw: a };
+  if ((m = /^drink:(.+)$/.exec(a)))            return { icon: '💧', text: `수분 보충 — ${itemName(m[1])}${consumeEffect(m[1])}`, raw: a };
+  if ((m = /^eat:(.+)$/.exec(a)))              return { icon: '🍖', text: `식사 — ${itemName(m[1])}${consumeEffect(m[1])}`, raw: a };
+  if ((m = /^cook:(.+)->(.+)$/.exec(a)))       return { icon: '🍳', text: `요리 — ${itemName(m[2])} 제작${cookHint(m[2])}`, raw: a };
+  if ((m = /^t1Convert:(.+)->(.+)$/.exec(a)))  return { icon: '🍳', text: `가공 — ${itemName(m[2])} 제작${cookHint(m[2])}`, raw: a };
+  if ((m = /^moraleBoost:(.+?)\(\+?(.+)\)$/.exec(a))) {
+    const eff = consumeEffect(m[1]) || ` (사기 +${m[2]})`;
+    return { icon: '😊', text: `사기 회복 — ${itemName(m[1])} 사용${eff}`, raw: a };
+  }
   if ((m = /^explore:(.+):\+(\d+)$/.exec(a)))  return { icon: '🔍', text: `탐색 — ${distName(m[1])}에서 자원 ${m[2]}개 획득`, raw: a };
   if ((m = /^move:(.+)->(.+)$/.exec(a)))       return { icon: '🚶', text: `이동 — ${distName(m[1])} → ${distName(m[2])}`, raw: a };
   if ((m = /^fish:\+\d+:(.+)@(.+)$/.exec(a)))  return { icon: '🎣', text: `낚시 — ${itemName(m[1])} 획득 (${distName(m[2])})`, raw: a };
   return { icon: '•', text: a, raw: a };
+}
+// 요리/가공: 만든 음식을 섭취하면 얻는 효과 (행동 자체가 아닌 산출물 효과임을 명시)
+function cookHint(outId) {
+  const d = fmtDeltas(ITEMS[outId]?.onConsume);
+  return d ? ` (섭취 시 ${d})` : '';
 }
 
 const characterId = arg('--char', 'doctor');
