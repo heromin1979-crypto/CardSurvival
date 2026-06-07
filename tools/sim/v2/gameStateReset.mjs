@@ -70,6 +70,12 @@ export function resetGameStateForRun({ characterId }) {
 
   GameState.location.currentDistrict = cc.startDistrict;
   GameState.location.currentNode     = cc.startDistrict;
+  // 현실 제약: 구역 루팅 30일 잠금 추적 (본체 ExploreSystem._arriveAtDistrict 모방)
+  GameState.location.districtsLooted = [];
+  GameState.location.districtLootDay = {};
+  GameState.location.nodesVisited    = [cc.startDistrict];
+  // 현실 제약: 요리 도구(캠프파이어) 상태 — 시뮬 전용 핸들
+  GameState._simCampfire = { built: false, durability: 0 };
 
   // PR7: startingSkills를 GameState.player.skills.{id}.level에 주입.
   // (이전: 시뮬은 initial snapshot의 level:0 그대로 사용 → 직업별 cooking·harvesting 보너스 무효화 → AI 요리 차단)

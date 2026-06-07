@@ -7,6 +7,7 @@
 // 사용: node tools/sim/v2/trace.mjs --char doctor --seed 0
 
 import { runSingleRun } from './runner.mjs';
+import { getStrategy } from './strategies.mjs';
 import ITEMS from '../../../js/data/items.js';
 import { DISTRICTS } from '../../../js/data/districts.js';
 
@@ -51,7 +52,12 @@ function consumeEffect(id) {
 function humanizeAction(a) {
   let m;
   if (a === 'sleep') return { icon: '😴', text: '수면 — 피로 회복 (HP +10, 피로 → 10)', raw: a };
+  if (a === 'buildCampfire') return { icon: '🏕️', text: '캠프파이어 건설 (요리 가능)', raw: a };
   if (a === 'fish_large') return { icon: '🎣', text: '낚시 — 대형 물고기 획득', raw: a };
+  if ((m = /^combat:(승리|사망|도주)\((\d+)\)$/.exec(a))) {
+    const icon = m[1] === '사망' ? '💀' : m[1] === '도주' ? '🏃' : '⚔️';
+    return { icon, text: `전투 — ${m[1]} (적 ${m[2]}마리)`, raw: a };
+  }
   if ((m = /^drink:(.+)$/.exec(a)))            return { icon: '💧', text: `수분 보충 — ${itemName(m[1])}${consumeEffect(m[1])}`, raw: a };
   if ((m = /^eat:(.+)$/.exec(a)))              return { icon: '🍖', text: `식사 — ${itemName(m[1])}${consumeEffect(m[1])}`, raw: a };
   if ((m = /^cook:(.+)->(.+)$/.exec(a)))       return { icon: '🍳', text: `요리 — ${itemName(m[2])} 제작${cookHint(m[2])}`, raw: a };
@@ -73,6 +79,8 @@ function cookHint(outId) {
 
 const characterId = arg('--char', 'doctor');
 const seed = Number.parseInt(arg('--seed', '0'), 10) || 0;
+const strategyId = arg('--strategy', null);
+const strategy = strategyId ? (getStrategy(strategyId)?.cfg ?? {}) : {};
 
 // 시스템 init/run 중 console 출력이 stdout JSON을 오염시키지 않도록 잠시 무음 처리
 const orig = { log: console.log, info: console.info, warn: console.warn, error: console.error };
@@ -80,7 +88,7 @@ console.log = console.info = console.warn = console.error = () => {};
 
 let r;
 try {
-  r = runSingleRun({ characterId, seed, runId: seed, traceDaily: true });
+  r = runSingleRun({ characterId, seed, runId: seed, traceDaily: true, strategy });
 } finally {
   Object.assign(console, orig);
 }
@@ -94,6 +102,7 @@ const dailyTrace = (r.dailyTrace ?? []).map((d) => ({
 const out = {
   character: r.character,
   seed: r.seed,
+  strategy: strategyId,
   alive: r.alive,
   survivedDays: r.survivedDays,
   deathDay: r.deathDay,

@@ -94,6 +94,18 @@ td.char { font-weight: 600; }
 .trace-summary .dead { color: var(--danger); font-weight: 700; }
 .trace-summary .alive { color: var(--ok); font-weight: 700; }
 
+/* 전략 비교 */
+.strat-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.strat-table th, .strat-table td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--border); }
+.strat-table th { color: var(--muted); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: .4px; }
+.strat-table th.num, .strat-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+.strat-table tbody tr { cursor: pointer; transition: background .1s; }
+.strat-table tbody tr:hover { background: var(--panel2); }
+.strat-table .rank { color: var(--muted); width: 28px; }
+.strat-table .sname { font-weight: 600; }
+.strat-table .sdesc { color: var(--muted); font-size: 11px; }
+.strat-table .scause { color: var(--muted); font-size: 11px; }
+.strat-table .viewhint { color: var(--accent); font-size: 11px; white-space: nowrap; }
 .trace-legend { font-size: 12px; color: var(--muted); margin-bottom: 10px; }
 .trace-legend .leg-dim { color: var(--text-dim, #555); }
 .day-card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; }

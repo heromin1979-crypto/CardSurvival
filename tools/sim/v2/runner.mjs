@@ -29,7 +29,7 @@ const EVENT_HOOKS = ['siegeTriggered', 'hospitalRewards', 'hospitalDamaged',
                      'patientDied', 'bossKilled', 'hiddenLocationDiscovered',
                      'recipeUnlocked', 'secretEventTriggered'];
 
-export function runSingleRun({ characterId, seed, runId, maxTP = TARGET_TP, snapshotDays = [30, 60, 90], enableAI = true, traceDaily = false }) {
+export function runSingleRun({ characterId, seed, runId, maxTP = TARGET_TP, snapshotDays = [30, 60, 90], enableAI = true, traceDaily = false, strategy = {} }) {
   setupOnce();
 
   resetGameStateForRun({ characterId });
@@ -117,7 +117,7 @@ export function runSingleRun({ characterId, seed, runId, maxTP = TARGET_TP, snap
 
       // Player AI 1차: day 시작 시 1회 행동
       if (enableAI && GameState.time.tpInDay === 0 && GameState.time.day > 1) {
-        const acts = runDayAI(simInv);
+        const acts = runDayAI(simInv, strategy);
         for (const a of acts) aiLog.push({ day: GameState.time.day, action: a });
       }
 
@@ -203,10 +203,10 @@ export function runSingleRun({ characterId, seed, runId, maxTP = TARGET_TP, snap
   };
 }
 
-export function runBatch({ characterId, runs = 100, seedBase = 0, maxTP }) {
+export function runBatch({ characterId, runs = 100, seedBase = 0, maxTP, strategy = {} }) {
   const traces = [];
   for (let i = 0; i < runs; i += 1) {
-    traces.push(runSingleRun({ characterId, seed: seedBase + i, runId: i, maxTP }));
+    traces.push(runSingleRun({ characterId, seed: seedBase + i, runId: i, maxTP, strategy }));
   }
   return traces;
 }

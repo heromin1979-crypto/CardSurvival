@@ -31,10 +31,24 @@ async function refreshList(selectPath) {
   return baselines;
 }
 
+// 행동 히스토리 전략 드롭다운 옵션 (strategies.mjs와 동기 유지)
+const STRAT_OPTIONS = [
+  { id: '', name: '기본' },
+  { id: 'homebody', name: '정착형' },
+  { id: 'cautious', name: '안전 이동형' },
+  { id: 'forager', name: '적극 채집형' },
+  { id: 'evasive', name: '신중 회피형' },
+  { id: 'water_first', name: '물 우선형' },
+  { id: 'food_farmer', name: '식량 파밍형' },
+];
+
 async function init() {
   selectEl.onchange = () => load(selectEl.value);
   rerunBtn.onclick = rerun;
-  $('#trace-btn').onclick = runTrace;
+  $('#trace-strat').innerHTML = STRAT_OPTIONS.map((o) => `<option value="${esc(o.id)}">${esc(o.name)}</option>`).join('');
+  $('#trace-load').onclick = loadRunList;
+  $('#trace-run').onchange = onRunPicked;
+  $('#strat-btn').onclick = runStrategies;
   let baselines;
   try {
     baselines = await refreshList();
@@ -105,11 +119,12 @@ async function load(path) {
 function render(d) {
   const chars = d.characters || [];
   // 행동 히스토리 캐릭터 드롭다운 동기화 (선택값 보존)
-  const tc = $('#trace-char');
-  if (tc) {
-    const prev = tc.value;
-    tc.innerHTML = chars.map((c) => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
-    if (chars.includes(prev)) tc.value = prev;
+  for (const id of ['#trace-char', '#strat-char']) {
+    const sel = $(id);
+    if (!sel) continue;
+    const prev = sel.value;
+    sel.innerHTML = chars.map((c) => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
+    if (chars.includes(prev)) sel.value = prev;
   }
   const kpi = d.kpi || {};
   const meta = d.meta || {};
@@ -218,25 +233,37 @@ function bar(value, max, kind = '', label = '') {
 const traceOut = $('#trace-output');
 const traceSummary = $('#trace-summary');
 
-async function runTrace() {
+// 생존일 순 런 목록 불러오기 → #trace-run 채우기
+async function loadRunList() {
   const char = $('#trace-char').value;
-  const seed = Number.parseInt($('#trace-seed').value, 10) || 0;
+  const strat = $('#trace-strat').value;
   if (!char) { setStatus('캐릭터를 먼저 선택하세요 (baseline 로드 필요).', 'err'); return; }
-  const btn = $('#trace-btn');
+  const btn = $('#trace-load');
   btn.disabled = true;
-  traceSummary.textContent = '추적 중…';
-  traceOut.innerHTML = '';
+  traceSummary.textContent = '런 목록 불러오는 중… (수십 초)';
   try {
-    const r = await fetch(`/api/sim/trace?char=${encodeURIComponent(char)}&seed=${seed}`);
+    const r = await fetch(`/api/sim/runs?char=${encodeURIComponent(char)}&runs=25&strategy=${encodeURIComponent(strat)}`);
     const j = await r.json();
-    if (!r.ok || j.error) { setStatus('추적 실패: ' + (j.error || `HTTP ${r.status}`), 'err'); traceSummary.textContent = ''; return; }
-    renderTrace(j);
+    if (!r.ok || j.error) { setStatus('런 목록 실패: ' + (j.error || `HTTP ${r.status}`), 'err'); traceSummary.textContent = ''; return; }
+    const sel = $('#trace-run');
+    sel.innerHTML = '<option value="">— 런 선택 (생존일 순) —</option>' + (j.runs || []).map((rn) => {
+      const label = rn.alive ? `100일 생존` : `${rn.survivedDays}일 · ${esc(rn.deathCause ?? '?')}`;
+      return `<option value="${rn.seed}">런 ${rn.seed} · ${label}</option>`;
+    }).join('');
+    const stratName = STRAT_OPTIONS.find((o) => o.id === strat)?.name ?? (strat || '기본');
+    traceSummary.textContent = `${esc(char)} · ${stratName} — ${(j.runs || []).length}개 런 (위=오래 생존)`;
   } catch (e) {
-    setStatus('추적 요청 실패: ' + e.message, 'err');
-    traceSummary.textContent = '';
+    setStatus('런 목록 요청 실패: ' + e.message, 'err'); traceSummary.textContent = '';
   } finally {
     btn.disabled = false;
   }
+}
+
+// 런 선택 시 해당 시드 추적
+function onRunPicked() {
+  const seed = $('#trace-run').value;
+  if (seed === '') return;
+  traceStrategy($('#trace-char').value, Number(seed), $('#trace-strat').value);
 }
 
 // 스탯 칩: 아이콘 + 한글 라벨(title) + 값 + 미니 막대 (낮은 자원=빨강, 높은 피로=노랑)
@@ -257,7 +284,7 @@ function renderTrace(j) {
   const aliveTxt = j.alive
     ? `<span class="alive">100일 생존</span>`
     : `<span class="dead">${j.deathDay}일째 사망 · 사인: ${esc(j.deathCause ?? '?')}</span>`;
-  traceSummary.innerHTML = `${esc(j.character)} · 런 ${j.seed} — ${aliveTxt}`;
+  traceSummary.innerHTML = `${esc(j.character)} · 런 ${j.seed}${j.strategy ? ` · 전략 ${esc(j.strategy)}` : ''} — ${aliveTxt}`;
 
   const legend = `<div class="trace-legend">스탯: 💧 수분 · 🍖 영양 · 😊 사기 · 😴 피로 · ❤️ 체력 <span class="leg-dim">(막대 = 비율 · 빨강 = 고갈 임박 · 노랑 = 피로 높음)</span></div>`;
 
@@ -289,6 +316,72 @@ function renderTrace(j) {
       ${acts}${evs}
     </div>`;
   }).join('');
+}
+
+// ── 전략 비교 ────────────────────────────────────────────────
+const stratOut = $('#strategy-output');
+const stratSummary = $('#strat-summary');
+
+async function runStrategies() {
+  const char = $('#strat-char').value;
+  const runs = Number.parseInt($('#strat-runs').value, 10) || 25;
+  if (!char) { setStatus('캐릭터를 먼저 선택하세요 (baseline 로드 필요).', 'err'); return; }
+  const btn = $('#strat-btn');
+  btn.disabled = true;
+  stratSummary.textContent = `${runs}회씩 비교 중… (수십 초)`;
+  stratOut.innerHTML = '';
+  try {
+    const r = await fetch(`/api/sim/strategies?char=${encodeURIComponent(char)}&runs=${runs}`);
+    const j = await r.json();
+    if (!r.ok || j.error) { setStatus('전략 비교 실패: ' + (j.error || `HTTP ${r.status}`), 'err'); stratSummary.textContent = ''; return; }
+    renderStrategies(j);
+    stratSummary.textContent = `${esc(j.character)} · 전략당 ${j.runsPerStrategy}회`;
+  } catch (e) {
+    setStatus('전략 비교 요청 실패: ' + e.message, 'err'); stratSummary.textContent = '';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function renderStrategies(j) {
+  const list = j.strategies || [];
+  const maxDays = Math.max(1, ...list.map((s) => s.meanDays || 0));
+  const rows = list.map((s, i) => {
+    const cause = Object.entries(s.causeDist || {}).sort((a, b) => b[1] - a[1])
+      .map(([k, n]) => `${esc(k)} ${n}`).join(', ') || '—';
+    return `<tr data-char="${esc(j.character)}" data-seed="${s.sampleSeed}" data-strat="${esc(s.id)}">
+      <td class="rank">${i + 1}</td>
+      <td><div class="sname">${esc(s.name)}</div><div class="sdesc">${esc(s.desc)}</div></td>
+      <td>${bar(s.meanDays, maxDays, '', 'day ' + s.meanDays)}</td>
+      <td class="num">day ${s.medianDays}</td>
+      <td class="num">${s.survivalRate}%</td>
+      <td class="scause">${cause}</td>
+      <td class="viewhint">행동 보기 →</td>
+    </tr>`;
+  }).join('');
+  stratOut.innerHTML = `<table class="strat-table">
+    <thead><tr><th></th><th>전략</th><th>평균 생존일</th><th class="num">중앙값</th><th class="num">100일 생존</th><th>사인 분포</th><th></th></tr></thead>
+    <tbody>${rows}</tbody></table>
+    <div class="note">행을 클릭하면 그 전략의 대표 런(중앙값 시드)을 아래 <b>행동 히스토리</b>에 펼칩니다.</div>`;
+  stratOut.querySelectorAll('tbody tr').forEach((tr) => {
+    tr.onclick = () => traceStrategy(tr.dataset.char, Number(tr.dataset.seed), tr.dataset.strat);
+  });
+}
+
+// 전략 드릴인 — 대표 런을 행동 히스토리로
+async function traceStrategy(char, seed, stratId) {
+  if ([...$('#trace-char').options].some((o) => o.value === char)) $('#trace-char').value = char;
+  if ([...$('#trace-strat').options].some((o) => o.value === (stratId ?? ''))) $('#trace-strat').value = stratId ?? '';
+  traceSummary.textContent = '불러오는 중…';
+  $('#trace').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  try {
+    const r = await fetch(`/api/sim/trace?char=${encodeURIComponent(char)}&seed=${seed}&strategy=${encodeURIComponent(stratId)}`);
+    const j = await r.json();
+    if (!r.ok || j.error) { setStatus('추적 실패: ' + (j.error || `HTTP ${r.status}`), 'err'); return; }
+    renderTrace(j);
+  } catch (e) {
+    setStatus('추적 요청 실패: ' + e.message, 'err');
+  }
 }
 
 init();
