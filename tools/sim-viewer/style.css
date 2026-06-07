@@ -83,6 +83,39 @@ td.char { font-weight: 600; }
 .pill { display: inline-block; font-size: 11px; padding: 2px 7px; border-radius: 5px; background: var(--panel2); border: 1px solid var(--border); color: var(--muted); }
 .note { color: var(--muted); font-size: 12px; margin-top: 8px; line-height: 1.5; }
 
+/* 행동 히스토리 */
+.trace { max-width: 1100px; margin: 0 auto; padding: 0 28px 60px; }
+.trace-h { font-size: 15px; margin: 0 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+.trace-h small { color: var(--muted); font-weight: normal; font-size: 12px; margin-left: 8px; }
+.trace-controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+.trace-controls label { color: var(--muted); font-size: 12px; display: flex; align-items: center; gap: 6px; }
+.trace-controls input[type=number] { width: 80px; background: var(--panel2); color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 6px 8px; font-size: 13px; }
+.trace-summary { font-size: 13px; }
+.trace-summary .dead { color: var(--danger); font-weight: 700; }
+.trace-summary .alive { color: var(--ok); font-weight: 700; }
+
+.trace-legend { font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+.trace-legend .leg-dim { color: var(--text-dim, #555); }
+.day-card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; }
+.day-card.death { border-color: var(--danger); }
+.day-head { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 8px; }
+.day-num { font-weight: 700; font-size: 14px; min-width: 56px; }
+.day-num .skull { color: var(--danger); margin-left: 4px; }
+.stat-chip { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+.stat-chip .sbar { display: inline-block; height: 7px; border-radius: 4px; background: var(--accent); min-width: 2px; }
+.stat-chip .sbar.low { background: var(--danger); }
+.stat-chip .sbar.warn { background: var(--warn); }
+.stat-chip b { color: var(--text); font-variant-numeric: tabular-nums; }
+.day-actions { display: flex; flex-wrap: wrap; gap: 5px; }
+.act { font-size: 11px; padding: 2px 8px; border-radius: 5px; background: var(--panel2); border: 1px solid var(--border); font-family: 'JetBrains Mono', ui-monospace, monospace; }
+.act.sleep { color: var(--text-info, #5090c0); }
+.act.eat, .act.drink, .act.cook { color: var(--ok); }
+.act.explore { color: var(--muted); }
+.act.move { color: var(--warn); }
+.day-events { margin-top: 6px; font-size: 11px; color: var(--muted); }
+.day-events .ev { margin-right: 8px; }
+.day-empty { color: var(--text-dim, #555); font-size: 12px; }
+
 details { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; }
 details summary { cursor: pointer; color: var(--muted); font-size: 13px; }
 details pre { overflow: auto; font-size: 11px; line-height: 1.45; color: var(--text); max-height: 480px; }

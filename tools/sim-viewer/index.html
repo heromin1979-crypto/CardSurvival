@@ -21,6 +21,17 @@
 
   <main id="view"></main>
 
+  <section id="trace" class="trace">
+    <h2 class="trace-h">🎬 행동 히스토리 <small>단일 런을 일자별로 추적 (결정론적 재현)</small></h2>
+    <div class="trace-controls">
+      <label>캐릭터 <select id="trace-char"></select></label>
+      <label>런 번호(시드) <input id="trace-seed" type="number" min="0" value="0" /></label>
+      <button id="trace-btn" class="primary">추적</button>
+      <span id="trace-summary" class="trace-summary"></span>
+    </div>
+    <div id="trace-output" class="trace-output"></div>
+  </section>
+
   <script type="module" src="./viewer.js"></script>
 </body>
 </html>

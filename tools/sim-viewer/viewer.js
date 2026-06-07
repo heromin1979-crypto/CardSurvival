@@ -34,6 +34,7 @@ async function refreshList(selectPath) {
 async function init() {
   selectEl.onchange = () => load(selectEl.value);
   rerunBtn.onclick = rerun;
+  $('#trace-btn').onclick = runTrace;
   let baselines;
   try {
     baselines = await refreshList();
@@ -103,6 +104,13 @@ async function load(path) {
 // ── 렌더 ─────────────────────────────────────────────────────
 function render(d) {
   const chars = d.characters || [];
+  // 행동 히스토리 캐릭터 드롭다운 동기화 (선택값 보존)
+  const tc = $('#trace-char');
+  if (tc) {
+    const prev = tc.value;
+    tc.innerHTML = chars.map((c) => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
+    if (chars.includes(prev)) tc.value = prev;
+  }
   const kpi = d.kpi || {};
   const meta = d.meta || {};
   const parts = [];
@@ -204,6 +212,83 @@ function tableRows(headers, rows) {
 function bar(value, max, kind = '', label = '') {
   const w = Math.max(2, Math.round((value / (max || 1)) * 80));
   return `<span class="bar-cell"><span class="bar ${kind}" style="width:${w}px"></span><span>${esc(label)}</span></span>`;
+}
+
+// ── 행동 히스토리 (단일 런 추적) ─────────────────────────────
+const traceOut = $('#trace-output');
+const traceSummary = $('#trace-summary');
+
+async function runTrace() {
+  const char = $('#trace-char').value;
+  const seed = Number.parseInt($('#trace-seed').value, 10) || 0;
+  if (!char) { setStatus('캐릭터를 먼저 선택하세요 (baseline 로드 필요).', 'err'); return; }
+  const btn = $('#trace-btn');
+  btn.disabled = true;
+  traceSummary.textContent = '추적 중…';
+  traceOut.innerHTML = '';
+  try {
+    const r = await fetch(`/api/sim/trace?char=${encodeURIComponent(char)}&seed=${seed}`);
+    const j = await r.json();
+    if (!r.ok || j.error) { setStatus('추적 실패: ' + (j.error || `HTTP ${r.status}`), 'err'); traceSummary.textContent = ''; return; }
+    renderTrace(j);
+  } catch (e) {
+    setStatus('추적 요청 실패: ' + e.message, 'err');
+    traceSummary.textContent = '';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// 스탯 칩: 아이콘 + 한글 라벨(title) + 값 + 미니 막대 (낮은 자원=빨강, 높은 피로=노랑)
+function statChip(icon, label, value, max, dangerLow) {
+  const w = Math.max(2, Math.round((value / max) * 60));
+  let kind = '';
+  if (dangerLow && value <= max * 0.2) kind = 'low';
+  else if (!dangerLow && value >= max * 0.7) kind = 'warn';
+  return `<span class="stat-chip" title="${esc(label)}">${icon}<span class="sbar ${kind}" style="width:${w}px"></span><b>${value}</b></span>`;
+}
+
+// 색상 분류 (raw 문자열 기준)
+const ACT_CLASS = (raw) => raw.startsWith('sleep') ? 'sleep'
+  : raw.startsWith('eat') ? 'eat' : raw.startsWith('drink') ? 'drink' : (raw.startsWith('cook') || raw.startsWith('t1Convert')) ? 'cook'
+  : (raw.startsWith('explore') || raw.startsWith('fish')) ? 'explore' : raw.startsWith('move') ? 'move' : '';
+
+function renderTrace(j) {
+  const aliveTxt = j.alive
+    ? `<span class="alive">100일 생존</span>`
+    : `<span class="dead">${j.deathDay}일째 사망 · 사인: ${esc(j.deathCause ?? '?')}</span>`;
+  traceSummary.innerHTML = `${esc(j.character)} · 런 ${j.seed} — ${aliveTxt}`;
+
+  const legend = `<div class="trace-legend">스탯: 💧 수분 · 🍖 영양 · 😊 사기 · 😴 피로 · ❤️ 체력 <span class="leg-dim">(막대 = 비율 · 빨강 = 고갈 임박 · 노랑 = 피로 높음)</span></div>`;
+
+  const days = j.dailyTrace || [];
+  traceOut.innerHTML = legend + days.map((d) => {
+    const isDeath = !j.alive && d.day === j.deathDay;
+    const s = d.stats || {};
+    const stats = [
+      statChip('💧', '수분', s.hydration ?? 0, 200, true),
+      statChip('🍖', '영양', s.nutrition ?? 0, 100, true),
+      statChip('😊', '사기', s.morale ?? 0, 100, true),
+      statChip('😴', '피로', s.fatigue ?? 0, 100, false),
+      statChip('❤️', '체력', d.hp ?? 0, 105, true),
+    ].join('');
+    const acts = (d.actions || []).length
+      ? `<div class="day-actions">${d.actions.map((a) => `<span class="act ${ACT_CLASS(a.raw || '')}" title="${esc(a.raw || '')}">${esc(a.icon || '')} ${esc(a.text || '')}</span>`).join('')}</div>`
+      : `<div class="day-empty">행동 없음 (첫날은 자동 행동을 하지 않습니다)</div>`;
+    // 이벤트 종류별 카운트 (이미 한글 라벨)
+    const evCount = {};
+    for (const e of (d.events || [])) evCount[e] = (evCount[e] || 0) + 1;
+    const evs = Object.keys(evCount).length
+      ? `<div class="day-events">${Object.entries(evCount).map(([k, n]) => `<span class="ev">${esc(k)}${n > 1 ? ` ×${n}` : ''}</span>`).join('')}</div>`
+      : '';
+    return `<div class="day-card${isDeath ? ' death' : ''}">
+      <div class="day-head">
+        <span class="day-num">Day ${d.day}${isDeath ? '<span class="skull">☠</span>' : ''}</span>
+        ${stats}
+      </div>
+      ${acts}${evs}
+    </div>`;
+  }).join('');
 }
 
 init();
