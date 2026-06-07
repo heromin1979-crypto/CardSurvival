@@ -91,14 +91,50 @@ function runNode(args) {
 async function handleApi(req, res, urlPath) {
   // 읽기 전용 GET 라우트 (시뮬 결과 뷰어용)
   if (req.method === 'GET') {
+    if (urlPath === '/api/sim/strategies') {
+      // 전략 비교 — compareStrategies.mjs 실행
+      const q = new URLSearchParams(req.url.split('?')[1] || '');
+      const char = (q.get('char') || '').trim();
+      const runs = String(Math.max(1, Math.min(100, Number.parseInt(q.get('runs') || '25', 10) || 25)));
+      if (!/^[a-z_]+$/i.test(char)) { sendJSON(res, 400, { error: '잘못된 char 값' }); return; }
+      try {
+        const { stdout } = await runNode(['tools/sim/v2/compareStrategies.mjs', '--char', char, '--runs', runs]);
+        let data; try { data = JSON.parse(stdout); } catch (e) { sendJSON(res, 500, { error: '전략 비교 파싱 실패', detail: (stdout || '').slice(0, 500) }); return; }
+        sendJSON(res, 200, data);
+      } catch (e) {
+        sendJSON(res, 500, { error: '전략 비교 실행 실패: ' + e.message, detail: (e.stderr || '').slice(-1000) });
+      }
+      return;
+    }
+    if (urlPath === '/api/sim/runs') {
+      // 시드별 생존 결과 목록 — listRuns.mjs 실행
+      const q = new URLSearchParams(req.url.split('?')[1] || '');
+      const char = (q.get('char') || '').trim();
+      const runs = String(Math.max(1, Math.min(100, Number.parseInt(q.get('runs') || '25', 10) || 25)));
+      const strat = (q.get('strategy') || '').trim();
+      if (!/^[a-z_]+$/i.test(char)) { sendJSON(res, 400, { error: '잘못된 char 값' }); return; }
+      const a = ['tools/sim/v2/listRuns.mjs', '--char', char, '--runs', runs];
+      if (/^[a-z_]+$/i.test(strat)) a.push('--strategy', strat);
+      try {
+        const { stdout } = await runNode(a);
+        let data; try { data = JSON.parse(stdout); } catch (e) { sendJSON(res, 500, { error: '런 목록 파싱 실패', detail: (stdout || '').slice(0, 500) }); return; }
+        sendJSON(res, 200, data);
+      } catch (e) {
+        sendJSON(res, 500, { error: '런 목록 실행 실패: ' + e.message, detail: (e.stderr || '').slice(-1000) });
+      }
+      return;
+    }
     if (urlPath === '/api/sim/trace') {
       // 단일 런 행동 타임라인 추적 — trace.mjs를 새 node 프로세스로 실행
       const q = new URLSearchParams(req.url.split('?')[1] || '');
       const char = (q.get('char') || '').trim();
       const seed = String(Number.parseInt(q.get('seed') || '0', 10) || 0);
+      const strat = (q.get('strategy') || '').trim();
       if (!/^[a-z_]+$/i.test(char)) { sendJSON(res, 400, { error: '잘못된 char 값' }); return; }
+      const traceArgs = ['tools/sim/v2/trace.mjs', '--char', char, '--seed', seed];
+      if (/^[a-z_]+$/i.test(strat)) traceArgs.push('--strategy', strat);
       try {
-        const { stdout } = await runNode(['tools/sim/v2/trace.mjs', '--char', char, '--seed', seed]);
+        const { stdout } = await runNode(traceArgs);
         let data;
         try { data = JSON.parse(stdout); }
         catch (e) { sendJSON(res, 500, { error: 'trace 출력 파싱 실패', detail: (stdout || '').slice(0, 500) }); return; }

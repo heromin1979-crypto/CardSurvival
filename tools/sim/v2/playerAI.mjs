@@ -24,7 +24,9 @@
 //   - actCook·actT1Convert 모두 입력 차감 후 산출이라 무한 펌프 자연 차단 (입력 소진되면 null 반환).
 
 import GameState from '../../../js/core/GameState.js';
+import EventBus from '../../../js/core/EventBus.js';
 import { DISTRICTS, generateDistrictLoot, getAdjacentDistricts } from '../../../js/data/districts.js';
+import { rollEnemyGroup } from '../../../js/data/enemies.js';
 import ITEMS from '../../../js/data/items.js';
 import BLUEPRINTS from '../../../js/data/blueprints.js';
 import BLUEPRINTS_ADVANCED from '../../../js/data/blueprints_advanced.js';
@@ -108,10 +110,117 @@ function dec(inv, id, n = 1) {
   return false;
 }
 
+// ════════ 현실 제약 헬퍼 (요리 도구·스태미나·간이 전투) ════════
+
+// ── 캠프파이어(요리 도구) ── 본체: make_boiled_water/cook_* 는 requiredTools:['campfire']
+// 건설 = 구조 재료(돌·판자·장작) + 점화 수단(성냥/라이터/부싯돌/불씨/불꽃, 없으면 마찰용 마른 막대).
+// flame_token의 6단계 제작 체인을 "점화 수단 1개 소비"로 근사.
+const CAMPFIRE_STRUCT = { pebble: 3, wood_plank: 2, kindling: 3 };
+const FIRE_SOURCES = ['flame_token', 'fire_ember', 'matches', 'lighter', 'firestone'];
+function _campfire() {
+  if (!GameState._simCampfire) GameState._simCampfire = { built: false, durability: 0 };
+  return GameState._simCampfire;
+}
+function hasCampfire() { const c = _campfire(); return c.built && c.durability > 0; }
+function actBuildCampfire(inv) {
+  const c = _campfire();
+  if (c.built && c.durability > 0) return null;
+  for (const [id, n] of Object.entries(CAMPFIRE_STRUCT)) if ((inv[id] ?? 0) < n) return null;
+  // 점화 수단 확보
+  let fire = FIRE_SOURCES.find((f) => (inv[f] ?? 0) > 0);
+  if (fire) { if (fire !== 'lighter') dec(inv, fire, 1); }      // lighter는 도구라 미소모
+  else if ((inv.dry_wood_stick ?? 0) >= 2) { dec(inv, 'dry_wood_stick', 2); fire = 'friction'; }
+  else return null;                                            // 점화 불가 → 건설 불가
+  for (const [id, n] of Object.entries(CAMPFIRE_STRUCT)) dec(inv, id, n);
+  c.built = true; c.durability = 50;   // items_structures campfire defaultDurability
+  return 'buildCampfire';
+}
+function _useCampfireFuel() { const c = _campfire(); c.durability -= 1; if (c.durability <= 0) { c.built = false; c.durability = 0; } }
+
+// ── 스태미나 (본체 travel 상수) ──
+function _stamina() { return GameState.stats?.stamina; }
+function staminaBlocked() { const s = _stamina(); return !!(s && s.current <= 0); }
+function _drainStamina(base) {
+  const s = _stamina(); if (!s) return;
+  const low = (s.current / s.max) < (BALANCE.travel?.lowStaminaThreshold ?? 0.3) ? (BALANCE.travel?.lowStaminaPenalty ?? 1.5) : 1;
+  s.current = Math.max(0, s.current - Math.ceil(base * low));
+}
+
+// ── 간이 전투 (탐색 중 조우) ──
+function _bestWeapon(inv) {
+  let best = null, bestAvg = 5; // 맨손 [3,7] avg 5 — 무기는 그보다 나을 때만
+  for (const id of Object.keys(inv)) {
+    if ((inv[id] ?? 0) <= 0) continue;
+    const dmg = ITEMS[id]?.combat?.damage;
+    if (!Array.isArray(dmg)) continue;
+    const avg = (dmg[0] + dmg[1]) / 2;
+    if (avg > bestAvg) { bestAvg = avg; best = { id, dmg, acc: ITEMS[id].combat.accuracy ?? 0.75 }; }
+  }
+  return best;
+}
+// 조우 확률 판정 → 간이 전투. 사망 시 isAlive=false. 반환: 'combat:...' | null(조우 없음)
+function _maybeEncounter(inv, cfg) {
+  const districtId = GameState.location?.currentDistrict;
+  const d = DISTRICTS[districtId];
+  if (!d) return null;
+  const base   = d.encounterChance ?? 0.08;
+  const early  = GameState.time.day <= (BALANCE.encounter?.earlyGameGraceDays ?? 3) ? (BALANCE.encounter?.earlyGameEncounterMult ?? 0.45) : 1;
+  const reduct = Math.min(BALANCE.encounter?.reductionCap ?? 0.85, GameState.player?.encounterRateReduct ?? 0);
+  if (Math.random() >= base * early * (1 - reduct)) return null;
+
+  const enemies = rollEnemyGroup(d.dangerLevel ?? 2, GameState.noise?.level ?? 0);
+  if (cfg.fleePolicy && Math.random() < (BALANCE.combat?.fleeChance ?? 0.6)) {
+    const f = GameState.stats.fatigue;
+    if (f) f.current = Math.min(f.max ?? 100, f.current + (BALANCE.combat?.fleeFatigue ?? 10));
+    EventBus.emit('combatEnd', { outcome: 'fled' });
+    return `combat:도주(${enemies.length})`;
+  }
+  const w = _bestWeapon(inv);
+  const pMin = w ? w.dmg[0] : (BALANCE.combat?.unarmedBaseDmg?.[0] ?? 3);
+  const pMax = w ? w.dmg[1] : (BALANCE.combat?.unarmedBaseDmg?.[1] ?? 7);
+  const pAcc = w ? w.acc : 0.7;
+  const cdMult = GameState.player?.combatDmgBonus ?? 1;
+  const hp = GameState.player.hp;
+  let alive = enemies.filter(e => e.currentHp > 0);
+  let round = 0;
+  while (alive.length && hp.current > 0 && round < 100) {
+    round++;
+    if (Math.random() < pAcc) {
+      const dmg = Math.max(1, Math.round((pMin + Math.floor(Math.random() * (pMax - pMin + 1))) * cdMult) - (alive[0].defense ?? 0));
+      alive[0].currentHp -= dmg;
+      if (alive[0].currentHp <= 0) alive.shift();
+      if (!alive.length) break;
+    }
+    for (const e of alive) {
+      const rounds = e.attacksPerRound ?? 1;
+      for (let i = 0; i < rounds; i++) {
+        if (Math.random() < (e.attack?.accuracy ?? 0.6)) {
+          const dr = e.attack?.damage ?? [5, 10];
+          hp.current = Math.max(0, hp.current - (dr[0] + Math.floor(Math.random() * (dr[1] - dr[0] + 1))));
+          const inf = GameState.stats.infection;
+          if (inf && (e.infectionChance ?? 0) > 0 && Math.random() < e.infectionChance) inf.current = Math.min(inf.max ?? 100, inf.current + 10);
+          if (hp.current <= 0) break;
+        }
+      }
+      if (hp.current <= 0) break;
+    }
+  }
+  if (hp.current <= 0) {
+    GameState.player.isAlive = false;
+    GameState.player.deathCause = '전투';
+    EventBus.emit('combatEnd', { outcome: 'defeat' });
+    return `combat:사망(${enemies.length})`;
+  }
+  EventBus.emit('combatEnd', { outcome: 'victory' });
+  return `combat:승리(${enemies.length})`;
+}
+
 function actSleep() {
   GameState.stats.fatigue.current = SLEEP_FATIGUE_AFTER;
   const hp = GameState.player.hp;
   hp.current = Math.min(hp.max, hp.current + HP_REGEN_FROM_SLEEP);
+  const s = _stamina();   // 본체 Rest 수면 +70
+  if (s) s.current = Math.min(s.max, s.current + 70);
   return 'sleep';
 }
 
@@ -154,11 +263,34 @@ function countByType(simInv) {
 const COOKING_INPUT_ALLOWLIST = new Set(['contaminated_water']);
 
 function actExplore(simInv) {
+  if (staminaBlocked()) return null;       // 스태미나 0 → 탐색 불가
   const districtId = GameState.location?.currentDistrict;
   if (!districtId) return null;
-  const loot = generateDistrictLoot(districtId);
+  _drainStamina(BALANCE.travel?.exploreStaminaDrain ?? 5);
+
+  // 본체 _arriveAtDistrict 30일 루팅 게이트 재현
+  const loc = GameState.location;
+  if (!loc.districtsLooted) loc.districtsLooted = [];
+  if (!loc.districtLootDay) loc.districtLootDay = {};
+  let lootCards = [];
+  if (!loc.districtsLooted.includes(districtId)) {
+    lootCards = generateDistrictLoot(districtId);
+    loc.districtsLooted.push(districtId);
+    loc.districtLootDay[districtId] = GameState.time.day;
+  } else {
+    const since = GameState.time.day - (loc.districtLootDay[districtId] ?? 0);
+    if (since >= (BALANCE.explore?.respawnLootDays ?? 30)) {
+      for (const item of generateDistrictLoot(districtId)) {
+        if (Math.random() < (BALANCE.explore?.respawnLootChance ?? 0.5)) {
+          lootCards.push({ ...item, quantity: Math.max(1, Math.floor((item.quantity ?? 1) / (BALANCE.explore?.respawnLootQtyDivisor ?? 2))) });
+        }
+      }
+      loc.districtLootDay[districtId] = GameState.time.day;
+    }
+    // else: 이미 루팅함(30일 미경과) → 빈손
+  }
   let added = 0;
-  for (const item of loot) {
+  for (const item of lootCards) {
     if (item.contamination > 0 && !COOKING_INPUT_ALLOWLIST.has(item.definitionId)) continue;
     simInv[item.definitionId] = (simInv[item.definitionId] ?? 0) + item.quantity;
     added += item.quantity;
@@ -166,22 +298,35 @@ function actExplore(simInv) {
   return `explore:${districtId}:+${added}`;
 }
 
-function actMove() {
+// roam 정책: 루팅 고갈 시 fresh(미루팅 또는 30일 경과) 인접 구역으로 이동
+function _isFreshDistrict(id) {
+  const loc = GameState.location;
+  if (!loc.districtsLooted?.includes(id)) return true;
+  const since = GameState.time.day - (loc.districtLootDay?.[id] ?? 0);
+  return since >= (BALANCE.explore?.respawnLootDays ?? 30);
+}
+
+function actMove(cfg = {}) {
+  if (staminaBlocked()) return null;
   const districtId = GameState.location?.currentDistrict;
   if (!districtId) return null;
   const adj = getAdjacentDistricts(districtId);
   if (adj.length === 0) return null;
-  let best = null;
-  for (const a of adj) {
-    if (!best || a.dangerLevel < best.dangerLevel) best = a;
+  const dangerCap = cfg.dangerCap ?? 3;
+  // fresh + dangerCap 이내 인접 구역
+  let candidates = adj.filter(a => (a.dangerLevel ?? 2) <= dangerCap && _isFreshDistrict(a.id));
+  if (!candidates.length && cfg.roam === 'aggressive') {
+    candidates = adj.filter(a => _isFreshDistrict(a.id));   // 적극형: 위험 감수
   }
-  if (!best) return null;
-  if (best.dangerLevel < DISTRICTS[districtId].dangerLevel) {
-    GameState.location.currentDistrict = best.id;
-    GameState.location.currentNode = best.id;
-    return `move:${districtId}->${best.id}`;
-  }
-  return null;
+  if (!candidates.length) return null;
+  let best = candidates[0];
+  for (const a of candidates) if ((a.dangerLevel ?? 9) < (best.dangerLevel ?? 9)) best = a;
+  _drainStamina(BALANCE.travel?.baseStaminaDrain ?? 10);
+  const loc = GameState.location;
+  loc.currentDistrict = best.id;
+  loc.currentNode = best.id;
+  if (loc.nodesVisited && !loc.nodesVisited.includes(best.id)) loc.nodesVisited.push(best.id);
+  return `move:${districtId}->${best.id}`;
 }
 
 // ─── PR7: 요리 ─────────────────────────────────────────────────
@@ -241,8 +386,10 @@ function actT1Convert(simInv) {
     if (benefit > bestN) { bestN = benefit; best = rule; }
   }
   if (!best) return null;
+  if (!hasCampfire()) return null;   // 끓이기/조리는 캠프파이어 필요
   if (!dec(simInv, best.input, 1)) return null;
   simInv[best.output] = (simInv[best.output] ?? 0) + 1;
+  _useCampfireFuel();
   _grantCraftMorale();
   return `t1Convert:${best.id}->${best.output}`;
 }
@@ -250,6 +397,7 @@ function actT1Convert(simInv) {
 // needs-aware: 본체 cooking에는 자동 추천이 없음 (SYS_VERIFY_cooking_autopick §5.2 시나리오 γ).
 // 시뮬 actCook은 "이상적 player가 결핍 자원을 우선 보충한다"는 행동 모델의 추정치이며 본체와의 1:1 정합이 아님.
 function actCook(simInv) {
+  if (!hasCampfire()) return null;   // 요리는 캠프파이어 필요
   const cookingLv = GameState.player?.skills?.cooking?.level ?? GameState.player?.skills?.cooking ?? 0;
   const nutCur = GameState.stats?.nutrition?.current ?? 100;
   const nutMax = GameState.stats?.nutrition?.max ?? 100;
@@ -276,6 +424,7 @@ function actCook(simInv) {
   for (const o of best.output ?? []) {
     simInv[o.definitionId] = (simInv[o.definitionId] ?? 0) + o.qty;
   }
+  _useCampfireFuel();
   _grantCraftMorale();
   return `cook:${best.id}->${best.output[0].definitionId}`;
 }
@@ -331,64 +480,68 @@ function actFish(simInv) {
 }
 
 // ─── runDayAI ─────────────────────────────────────────────────
-export function runDayAI(simInv) {
+// 전략 기본값 — 인자 없이 호출하면 현행과 유사한 "안전 이동형" 동작.
+// eatThreshold: 영양이 이 값 미만이면 식사. eatMax: 하루 최대 식사 횟수(임계까지 반복).
+const STRAT_DEFAULT = { exploresPerDay: 3, dangerCap: 3, roam: 'safe', fleePolicy: false, prioritizeWater: false, eatThreshold: 30, eatMax: 1 };
+
+// 영양이 임계 미만이면 식량이 있는 한 임계까지(또는 eatMax회) 먹는다.
+function _eatToThreshold(simInv, s, push) {
+  for (let k = 0; k < (s.eatMax ?? 1); k += 1) {
+    if ((GameState.stats?.nutrition?.current ?? 100) >= (s.eatThreshold ?? 30)) break;
+    const e = actEat(simInv);
+    if (!e) break;
+    push(e);
+  }
+}
+
+export function runDayAI(simInv, cfg = {}) {
+  const s = { ...STRAT_DEFAULT, ...cfg };
   const actions = [];
+  const push = (a) => { if (a) actions.push(a); };
+  const dead = () => !GameState.player.isAlive;
+  const cookingLv = () => GameState.player?.skills?.cooking?.level ?? GameState.player?.skills?.cooking ?? 0;
 
-  if (GameState.stats.fatigue.current > 60) actions.push(actSleep());
-  if (GameState.stats.hydration.current < 80) {
-    const a = actDrinkWater(simInv);
-    if (a) actions.push(a);
+  // 1. 수면 (피로·스태미나 회복)
+  if (GameState.stats.fatigue.current > 60) push(actSleep());
+  // 2. 수분 (물 우선 전략은 더 일찍·자주)
+  if (GameState.stats.hydration.current < (s.prioritizeWater ? 120 : 80)) push(actDrinkWater(simInv));
+  // 3. 캠프파이어 건설 → 요리 (요리는 캠프파이어 필요)
+  push(actBuildCampfire(simInv));
+  if (hasCampfire()) {
+    push(actCook(simInv));
+    if (cookingLv() === 0) push(actT1Convert(simInv));
   }
-  // PR7: 식사 전에 요리 시도 — 영양가 큰 가공식 우선 산출
-  const c = actCook(simInv);
-  if (c) actions.push(c);
-  // M3 #14b: 본체 interactions.js T1 변환 경로 모사 — cooking lv 0 직업 한정.
-  // 본체에서 cooking lv 0 직업은 cook_noodles 등 requiredSkills.cooking ≥ 1 blueprint 잠금이지만
-  // 카드 드롭 변환(T1: instant_noodles+campfire → cooked_noodles)으로 cooked_noodles 산출 가능.
-  // cooking lv ≥1 직업은 blueprint 경로(actCook)로 충분 — T1 적용 시 회차당 1건 추가 산출되어 회귀 발생.
-  const cookingLvForT1 = GameState.player?.skills?.cooking?.level ?? GameState.player?.skills?.cooking ?? 0;
-  if (cookingLvForT1 === 0) {
-    const t1 = actT1Convert(simInv);
-    if (t1) actions.push(t1);
-  }
-  if (GameState.stats.nutrition.current < 30) {
-    const a = actEat(simInv);
-    if (a) actions.push(a);
-  }
-  // PR7: 사기 회복
-  const mb = actBoostMorale(simInv);
-  if (mb) actions.push(mb);
+  // 4. 영양 보충 (전략 임계·횟수만큼)
+  _eatToThreshold(simInv, s, push);
+  // 5. 사기 회복
+  push(actBoostMorale(simInv));
 
-  // PR5.5: 자원 부족 시 안전 구로 이동
-  const { food, water } = countByType(simInv);
-  if ((food + water) < 2 && GameState.time.day > 3) {
-    const m = actMove();
-    if (m) actions.push(m);
+  // 6. 탐색 루프 — 스태미나·30일 루팅 게이트·조우/전투·roam 이동
+  for (let i = 0; i < s.exploresPerDay; i += 1) {
+    if (staminaBlocked()) break;
+    const ex = actExplore(simInv);
+    if (!ex) break;
+    push(ex);
+    push(_maybeEncounter(simInv, s));   // 조우 시 간이 전투
+    if (dead()) return actions;          // 전투 사망
+    // 루팅 고갈(빈손)이면 fresh 구역으로 이동 후 다음 반복에서 탐색
+    if (ex.endsWith(':+0') && s.roam !== 'stay') push(actMove(s));
   }
-  // 매일 3회 탐색
-  for (let i = 0; i < 3; i += 1) {
-    const e = actExplore(simInv);
-    if (e) actions.push(e);
-  }
-  // PR7: 낚시 — 한강 인접 구에서 낚싯대 보유 시
-  const f = actFish(simInv);
-  if (f) actions.push(f);
 
-  // PR16: 탐색 후 위기 시점 추가 craft — R15-1 완전 해소. nutrition<50 또는 morale<30 결정 임계.
-  // 탐색으로 입력 자원이 보충된 직후 시점에 추가 발동 → chef·homeless cook 산출물 +1, cooking lv 0
-  // T1 변환 +1. 무한 펌프는 입력 차감 후 산출 패턴으로 자연 차단.
+  // 7. 낚시
+  push(actFish(simInv));
+
+  // 8. 위기 craft (캠프파이어 필요)
   const nutCur2 = GameState.stats?.nutrition?.current ?? 100;
   const nutMax2 = GameState.stats?.nutrition?.max ?? 100;
   const moraleCur2 = GameState.stats?.morale?.current ?? 100;
-  if (nutCur2 < nutMax2 * 0.5 || moraleCur2 < 30) {
-    const c2 = actCook(simInv);
-    if (c2) actions.push(c2);
-    const cookingLv2 = GameState.player?.skills?.cooking?.level ?? GameState.player?.skills?.cooking ?? 0;
-    if (cookingLv2 === 0) {
-      const t1b = actT1Convert(simInv);
-      if (t1b) actions.push(t1b);
-    }
+  if ((nutCur2 < nutMax2 * 0.5 || moraleCur2 < 30) && hasCampfire()) {
+    push(actCook(simInv));
+    if (cookingLv() === 0) push(actT1Convert(simInv));
   }
+
+  // 9. 탐색·요리로 확보한 식량으로 추가 식사 (식량 파밍형이 굶지 않도록)
+  _eatToThreshold(simInv, s, push);
 
   return actions;
 }

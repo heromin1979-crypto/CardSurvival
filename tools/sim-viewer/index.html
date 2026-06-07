@@ -21,12 +21,24 @@
 
   <main id="view"></main>
 
+  <section id="strategy" class="trace">
+    <h2 class="trace-h">🧭 전략 비교 <small>전략별 생존일 (현실 제약 반영 — 요리 도구·스태미나·30일 잠금·전투)</small></h2>
+    <div class="trace-controls">
+      <label>캐릭터 <select id="strat-char"></select></label>
+      <label>전략당 <input id="strat-runs" type="number" min="1" max="100" value="25" />회</label>
+      <button id="strat-btn" class="primary">비교 실행</button>
+      <span id="strat-summary" class="trace-summary"></span>
+    </div>
+    <div id="strategy-output" class="trace-output"></div>
+  </section>
+
   <section id="trace" class="trace">
-    <h2 class="trace-h">🎬 행동 히스토리 <small>단일 런을 일자별로 추적 (결정론적 재현)</small></h2>
+    <h2 class="trace-h">🎬 행동 히스토리 <small>생존일 보고 런을 골라 일자별로 추적</small></h2>
     <div class="trace-controls">
       <label>캐릭터 <select id="trace-char"></select></label>
-      <label>런 번호(시드) <input id="trace-seed" type="number" min="0" value="0" /></label>
-      <button id="trace-btn" class="primary">추적</button>
+      <label>전략 <select id="trace-strat"></select></label>
+      <button id="trace-load" class="primary">런 목록 불러오기</button>
+      <label>런 선택 <select id="trace-run"><option value="">— 먼저 목록 불러오기 —</option></select></label>
       <span id="trace-summary" class="trace-summary"></span>
     </div>
     <div id="trace-output" class="trace-output"></div>
