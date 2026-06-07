@@ -33,11 +33,13 @@ function copyGameImages() {
   return {
     name: 'copy-game-images',
     closeBundle() {
-      const src  = resolve('assets/images');
-      const dest = resolve('dist-web/assets/images');
-      if (existsSync(src)) {
-        copyDir(src, dest);
-        console.log('[copy-game-images] assets/images → dist-web/assets/images 복사 완료');
+      for (const dir of ['assets/images', 'assets/audio']) {
+        const src  = resolve(dir);
+        const dest = resolve(`dist-web/${dir}`);
+        if (existsSync(src)) {
+          copyDir(src, dest);
+          console.log(`[copy-game-images] ${dir} → dist-web/${dir} 복사 완료`);
+        }
       }
     },
   };

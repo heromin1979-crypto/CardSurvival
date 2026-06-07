@@ -41,6 +41,10 @@ const MIME = {
   '.png':  'image/png',
   '.svg':  'image/svg+xml',
   '.ico':  'image/x-icon',
+  '.mp3':  'audio/mpeg',
+  '.ogg':  'audio/ogg',
+  '.wav':  'audio/wav',
+  '.m4a':  'audio/mp4',
 };
 
 function sendJSON(res, code, obj) {
