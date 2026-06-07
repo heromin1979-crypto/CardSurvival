@@ -516,16 +516,21 @@ export function runDayAI(simInv, cfg = {}) {
   // 5. 사기 회복
   push(actBoostMorale(simInv));
 
-  // 6. 탐색 루프 — 스태미나·30일 루팅 게이트·조우/전투·roam 이동
+  // 6. 탐색 루프 — 고갈된(이미 턴) 구역은 헛탐색하지 않고 fresh 구역으로 먼저 이동.
+  //    갈 fresh 구역이 없으면 탐색 중단(0개 반복 시도 방지).
   for (let i = 0; i < s.exploresPerDay; i += 1) {
     if (staminaBlocked()) break;
+    if (!_isFreshDistrict(GameState.location.currentDistrict)) {
+      if (s.roam === 'stay') break;     // 정착형: 더 털 곳 없으면 탐색 종료
+      const mv = actMove(s);
+      if (!mv) break;                    // 이동 가능한 fresh 구역 없음 → 탐색 종료
+      push(mv);
+    }
     const ex = actExplore(simInv);
     if (!ex) break;
     push(ex);
     push(_maybeEncounter(simInv, s));   // 조우 시 간이 전투
     if (dead()) return actions;          // 전투 사망
-    // 루팅 고갈(빈손)이면 fresh 구역으로 이동 후 다음 반복에서 탐색
-    if (ex.endsWith(':+0') && s.roam !== 'stay') push(actMove(s));
   }
 
   // 7. 낚시
