@@ -441,5 +441,5 @@ function rollEnemyGroup(dangerLevel, noiseLevel = 0) {
   return Array.from({ length: count }, () => rollEnemy(effectiveDanger));
 }
 
-export { ENEMIES, ENCOUNTER_TABLES, rollEnemy, rollEnemyGroup };
+export { ENEMIES, ENCOUNTER_TABLES, rollEnemy, rollEnemyGroup, instantiateEnemy };
 export default ENEMIES;
