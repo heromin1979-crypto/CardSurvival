@@ -988,7 +988,14 @@ function renderItemsTab() {
     const it = fk && state.files[fk]?.data?.[state.sel.items];
     if (!it) { detailWrap.append(el('div', { class: 'hint', text: '아이템을 선택하세요.' })); return; }
 
-    detailWrap.append(el('h2', { text: `${it.icon || ''} ${it.name || it.id}` }));
+    detailWrap.append(el('div', { class: 'field-row', style: 'align-items:center;justify-content:space-between' }, [
+      el('h2', { text: `${it.icon || ''} ${it.name || it.id}` }),
+      el('button', {
+        class: 'ghost', text: '📋 복사',
+        title: '이 아이템을 복사 — 같은 설정의 새 아이템 생성 (아래 붙여넣기 패널)',
+        onclick: () => copyItem(state.sel.items),
+      }),
+    ]));
     detailWrap.append(el('div', { class: 'sub', text: `${it.id}  ·  ${DATA_FILES[fk].label}` }));
 
     // id 외 모든 필드 편집 (id는 객체 키라 읽기 전용 — 헤더에 표시)
@@ -1007,6 +1014,7 @@ function renderItemsTab() {
   const renderList = () => {
     const q = (state.itemSearch || '').trim().toLowerCase();
     listBox.innerHTML = '';
+    listBox.append(el('button', { class: 'ghost row-add', text: '+ 새 아이템 추가', onclick: createItem }));
     const matched = ids.filter((id) => {
       if (!q) return true;
       const it = state.files[idx[id]].data[id];
@@ -1035,8 +1043,86 @@ function renderItemsTab() {
   view.append(el('div', {}, [
     el('div', { class: 'hint', style: 'margin-bottom:8px' }, '※ 아이템 정의 소스를 직접 편집합니다. stackable·maxStack은 stackConfig.js가 런타임에 덮어쓸 수 있습니다.'),
     el('div', { class: 'field', style: 'margin-bottom:10px' }, [search]),
+    renderItemClipboardPanel(),
     el('div', { class: 'list-layout' }, [listBox, detailWrap]),
   ]));
+}
+
+// 전 아이템 id 집합 (복제 시 충돌 검사 — 집계본 + 편집 소스 양쪽)
+function allItemIds() {
+  const ids = new Set(state.itemIds);
+  for (const id of Object.keys(buildItemIndex())) ids.add(id);
+  return ids;
+}
+
+// 신규 아이템 생성 — 현재 선택 아이템과 같은 소스 파일에 최소 골격으로 추가
+function createItem() {
+  const raw = (prompt('새 아이템 ID (영문/숫자/밑줄, 예: my_item)') || '').trim();
+  if (!raw) return;
+  const id = raw.replace(/[^A-Za-z0-9_]/g, '');
+  if (!id) { alert('ID는 영문/숫자/밑줄만 사용하세요.'); return; }
+  if (allItemIds().has(id)) { alert('이미 존재하는 아이템 ID입니다.'); return; }
+  const fk = buildItemIndex()[state.sel.items] || 'items_misc'; // 보던 아이템과 같은 소스 파일
+  if (!state.files[fk]) { alert('아이템 소스 파일을 찾을 수 없습니다.'); return; }
+  const name = (prompt('아이템 이름', '새 아이템') || '새 아이템').trim();
+  const icon = (prompt('아이콘 (이모지)', '📦') || '📦').trim();
+  state.files[fk].data[id] = { id, name, icon, type: 'material', weight: 0.1, stackable: true, maxStack: 20, tags: [] };
+  state.sel.items = id;
+  markDirty(fk);
+  status(`아이템 「${name}」(${id}) 생성 → ${DATA_FILES[fk].label}. 복잡한 효과(onConsume 등)는 비슷한 아이템을 📋 복사하는 게 편합니다. ⚠️ stackConfig·CardFactory(CARD_IMAGES)·드랍 등록은 별도입니다.`, 'ok');
+  render();
+}
+
+function copyItem(id) {
+  const fk = buildItemIndex()[id];
+  const it = fk && state.files[fk]?.data?.[id];
+  if (!it) return;
+  state.itemClipboard = { id, fileKey: fk, item: structuredClone(it), name: it.name || id };
+  status(`아이템 「${it.name || id}」 복사됨 — 아래 패널에서 붙여넣으면 같은 설정의 새 아이템이 생성됩니다.`, 'ok');
+  render();
+}
+
+function pasteItem(count) {
+  const clip = state.itemClipboard;
+  if (!clip) return;
+  const fk = clip.fileKey;
+  const data = state.files[fk]?.data;
+  if (!data) return;
+  const used = allItemIds();
+  let lastId = null;
+  for (let i = 0; i < count; i++) {
+    let id = `${clip.id}_copy`, n = 2;
+    while (used.has(id)) id = `${clip.id}_copy${n++}`;
+    used.add(id);
+    const clone = structuredClone(clip.item);
+    clone.id = id; // 내부 id를 새 키와 동기화
+    if ('name' in clone) clone.name = `${clip.name}${count > 1 ? ` (복사 ${i + 1})` : ' (복사)'}`;
+    data[id] = clone;
+    lastId = id;
+  }
+  markDirty(fk);
+  if (lastId) state.sel.items = lastId;
+  status(`아이템 「${clip.name}」 복제본 ${count}개 생성 (소스: ${DATA_FILES[fk].label}). ⚠️ 새 아이템은 stackConfig.js·CardFactory(CARD_IMAGES)·구/랜드마크 드랍에 자동 등록되지 않습니다 — 필요 시 등록하세요.`, 'ok');
+  render();
+}
+
+// 클립보드가 있을 때 아이템 탭에 뜨는 붙여넣기(복제) 패널
+function renderItemClipboardPanel() {
+  const clip = state.itemClipboard;
+  if (!clip) return null;
+  const fs = el('fieldset', { style: 'margin-bottom:10px' }, el('legend', { text: '📋 붙여넣기 (아이템 복제)' }));
+  fs.append(el('div', { class: 'hint', text: `복사됨: 아이템 「${clip.name}」 (${clip.id}) — 붙여넣으면 같은 설정의 새 아이템이 생성됩니다 (ID 자동 생성, 이름에 "(복사)" 표기). 소스: ${DATA_FILES[clip.fileKey].label}.` }));
+  const cnt = el('input', { type: 'number', value: 1, min: 1, style: 'width:70px' });
+  const pasteBtn = el('button', {
+    class: 'primary', text: '붙여넣기',
+    onclick: () => { const n = Math.max(1, Math.floor(Number(cnt.value) || 1)); pasteItem(n); },
+  });
+  const clearBtn = el('button', { class: 'ghost', text: '복사 취소', onclick: () => { state.itemClipboard = null; render(); } });
+  fs.append(el('div', { class: 'field-row', style: 'margin-top:8px;align-items:flex-end' }, [
+    el('div', { class: 'field' }, [el('label', { text: '개수' }), cnt]),
+    pasteBtn, clearBtn,
+  ]));
+  return fs;
 }
 
 // ─── 변경 사항(diff) + 되돌리기 ──────────────────────────────
@@ -1246,13 +1332,14 @@ function lootTableEditor(rows, idKey, extraCols, fileKey) {
 }
 
 // ─── generic scalar / object field editors ───────────────────
-function scalarInput(obj, key, fileKey, help) {
+// onAfter: 값 변경 직후 호출되는 선택 콜백 (예: 사이드바 라벨·제목 즉시 갱신)
+function scalarInput(obj, key, fileKey, help, onAfter) {
   const v = obj[key];
   const lbl = help !== undefined ? labelEl(key, help) : fieldLabel(key);
   // 불리언 → 체크박스
   if (typeof v === 'boolean') {
     const cb = el('input', { type: 'checkbox', ...(v ? { checked: true } : {}) });
-    cb.addEventListener('change', () => { obj[key] = cb.checked; markDirty(fileKey); });
+    cb.addEventListener('change', () => { obj[key] = cb.checked; markDirty(fileKey); onAfter?.(); });
     return el('div', { class: 'field' }, [lbl, el('label', { class: 'hint' }, [cb, ' (켜기/끄기)'])]);
   }
   const isNum = typeof v === 'number' && v !== Infinity && v !== -Infinity;
@@ -1265,8 +1352,15 @@ function scalarInput(obj, key, fileKey, help) {
   inp.addEventListener('input', () => {
     obj[key] = isNum ? Number(inp.value) : inp.value;
     markDirty(fileKey);
+    onAfter?.();
   });
   return el('div', { class: 'field' }, [lbl, inp]);
+}
+
+// 사이드바의 특정 항목(data-key) 라벨을 즉시 갱신 — 이름/아이콘 편집 시 전체 재렌더 없이 반영
+function refreshSidebarLabel(dataKey, text) {
+  const btn = document.querySelector(`.sidebar .side-item[data-key="${dataKey}"]`);
+  if (btn) btn.textContent = text;
 }
 
 // item-reward rows: [{definitionId, qty}]
@@ -1332,6 +1426,18 @@ function render() {
 
 let rerenderDetail = () => {};
 
+// 사이드바 상단 검색 입력 — 질의를 state.search[tabKey]에 저장(탭 전환해도 유지).
+// 반환: { wrap(=DOM), onInput(fn) } — fn은 입력마다 호출돼 목록을 다시 그린다.
+function sideSearchInput(tabKey) {
+  state.search = state.search || {};
+  const inp = el('input', { value: state.search[tabKey] || '', placeholder: '🔍 이름·ID 검색…' });
+  const wrap = el('div', { class: 'side-search' }, [inp]);
+  return {
+    wrap,
+    onInput(fn) { inp.addEventListener('input', () => { state.search[tabKey] = inp.value; fn(); }); },
+  };
+}
+
 function renderListTab(fileKey, labelFn) {
   const data = state.files[fileKey].data;
   const keys = Object.keys(data);
@@ -1340,15 +1446,29 @@ function renderListTab(fileKey, labelFn) {
   const sidebar = el('div', { class: 'sidebar' });
   if (fileKey === 'landmarks') {
     sidebar.append(el('button', { class: 'ghost row-add', text: '+ 랜드마크 추가', onclick: createLandmark }));
+  } else if (fileKey === 'districts') {
+    sidebar.append(el('button', { class: 'ghost row-add', text: '+ 장소(구) 추가', onclick: createDistrict }));
   }
-  for (const k of keys) {
-    sidebar.append(el('button', {
-      class: 'side-item' + (k === state.sel[fileKey] ? ' active' : ''),
-      'data-key': k,
-      text: `${data[k].icon ? data[k].icon + ' ' : ''}${labelFn(data[k]) || k}`,
-      onclick: () => { state.sel[fileKey] = k; rerenderDetail(); },
-    }));
-  }
+  const search = sideSearchInput(fileKey);
+  sidebar.append(search.wrap);
+  const listBox = el('div');
+  sidebar.append(listBox);
+  const renderList = () => {
+    const q = (state.search[fileKey] || '').trim().toLowerCase();
+    listBox.innerHTML = '';
+    const matched = keys.filter((k) => !q || k.toLowerCase().includes(q) || (labelFn(data[k]) || '').toLowerCase().includes(q));
+    if (!matched.length) { listBox.append(el('div', { class: 'hint', style: 'padding:6px 10px', text: '검색 결과 없음' })); return; }
+    for (const k of matched) {
+      listBox.append(el('button', {
+        class: 'side-item' + (k === state.sel[fileKey] ? ' active' : ''),
+        'data-key': k,
+        text: `${data[k].icon ? data[k].icon + ' ' : ''}${labelFn(data[k]) || k}`,
+        onclick: () => { state.sel[fileKey] = k; rerenderDetail(); },
+      }));
+    }
+  };
+  search.onInput(renderList);
+  renderList();
 
   const detailWrap = el('div', { class: 'detail' });
   rerenderDetail = () => {
@@ -1359,12 +1479,40 @@ function renderListTab(fileKey, labelFn) {
     else renderLandmarkDetail(detailWrap, data[state.sel[fileKey]]);
   };
   rerenderDetail();
-  view.append(el('div', { class: 'list-layout' }, [sidebar, detailWrap]));
+  const panel = fileKey === 'landmarks' ? renderLandmarkClipboardPanel()
+    : fileKey === 'districts' ? renderDistrictClipboardPanel() : null;
+  view.append(el('div', {}, [panel, el('div', { class: 'list-layout' }, [sidebar, detailWrap])]));
 }
 
 function renderDistrictDetail(root, dist) {
-  root.append(el('h2', { text: `${dist.icon || ''} ${dist.name || dist.id}` }));
-  root.append(el('div', { class: 'sub', text: dist.description || '' }));
+  const key = state.sel.districts;
+  const h2 = el('h2', { text: `${dist.icon || ''} ${dist.name || dist.id}` });
+  root.append(el('div', { class: 'field-row', style: 'align-items:center;justify-content:space-between' }, [
+    h2,
+    el('button', {
+      class: 'ghost', text: '📋 복사',
+      title: '이 구를 복사 — 같은 설정의 새 구 생성 (아래 붙여넣기 패널)',
+      onclick: () => copyDistrict(key),
+    }),
+  ]));
+  root.append(el('div', { class: 'sub', text: `DISTRICTS.${key}` }));
+
+  // 이름/아이콘 편집 시 제목·왼쪽 리스트 라벨을 즉시 갱신
+  const syncLabels = () => {
+    h2.textContent = `${dist.icon || ''} ${dist.name || dist.id}`;
+    refreshSidebarLabel(key, `${dist.icon ? dist.icon + ' ' : ''}${dist.name || key}`);
+  };
+
+  // 이름 / 아이콘 / 설명 편집
+  if (!('name' in dist)) dist.name = '';
+  if (!('icon' in dist)) dist.icon = '';
+  const hdr = el('div', { class: 'field-row' });
+  hdr.append(scalarInput(dist, 'name', 'districts', undefined, syncLabels));
+  hdr.append(scalarInput(dist, 'icon', 'districts', undefined, syncLabels));
+  root.append(hdr);
+  const descTa = el('textarea', { text: dist.description || '' });
+  descTa.addEventListener('input', () => { dist.description = descTa.value; markDirty('districts'); });
+  root.append(el('div', { class: 'field grow' }, [labelEl('description', '구 카드 설명(상세에 표시)'), descTa]));
 
   const numKeys = ['dangerLevel', 'travelCostTP', 'radiation', 'encounterChance', 'noiseGen', 'fishingQuality'];
   const fr = el('div', { class: 'field-row' });
@@ -1423,23 +1571,37 @@ function renderLandmarkDetail(root, lm) {
   const key = state.sel.landmarks;
   const protectedLm = isProtectedLandmark(key);
 
+  const h2 = el('h2', { text: `${lm.icon || ''} ${lm.name || ''}` });
   const head = el('div', { class: 'field-row', style: 'align-items:center;justify-content:space-between' }, [
-    el('h2', { text: `${lm.icon || ''} ${lm.name || ''}` }),
-    el('button', {
-      class: 'ghost danger', text: '🗑 랜드마크 삭제',
-      ...(protectedLm ? { disabled: true, title: '시스템 의존 보호 랜드마크 — 삭제 불가' } : {}),
-      onclick: () => deleteLandmark(key),
-    }),
+    h2,
+    el('div', { class: 'field-row' }, [
+      el('button', {
+        class: 'ghost', text: '📋 복사',
+        title: '이 랜드마크를 복사 — 여러 구에 한 번에 연결 (아래 붙여넣기 패널)',
+        onclick: () => copyLandmark(key),
+      }),
+      el('button', {
+        class: 'ghost danger', text: '🗑 랜드마크 삭제',
+        ...(protectedLm ? { disabled: true, title: '시스템 의존 보호 랜드마크 — 삭제 불가' } : {}),
+        onclick: () => deleteLandmark(key),
+      }),
+    ]),
   ]);
   root.append(head);
   root.append(el('div', { class: 'sub', text: `LANDMARK_DATA.${key}` }));
+
+  // 이름/아이콘 편집 시 제목·왼쪽 리스트 라벨 즉시 갱신
+  const syncLabels = () => {
+    h2.textContent = `${lm.icon || ''} ${lm.name || ''}`;
+    refreshSidebarLabel(key, `${lm.icon ? lm.icon + ' ' : ''}${lm.name || key}`);
+  };
 
   // 헤더 필드 편집 (name / icon / desc)
   if (!('name' in lm)) lm.name = '';
   if (!('icon' in lm)) lm.icon = '';
   const fr = el('div', { class: 'field-row' });
-  fr.append(scalarInput(lm, 'name', 'landmarks'));
-  fr.append(scalarInput(lm, 'icon', 'landmarks'));
+  fr.append(scalarInput(lm, 'name', 'landmarks', undefined, syncLabels));
+  fr.append(scalarInput(lm, 'icon', 'landmarks', undefined, syncLabels));
   root.append(fr);
   const ta = el('textarea', { text: lm.desc || '' });
   ta.addEventListener('input', () => { lm.desc = ta.value; markDirty('landmarks'); });
@@ -1472,6 +1634,26 @@ function renderLandmarkDetail(root, lm) {
     subFs.append(fs);
   }
   root.append(subFs);
+}
+
+// 신규 구(장소) 생성 — 기본값으로 빈 구 추가 (인접·랜드마크·드랍은 상세에서 설정)
+function createDistrict() {
+  const raw = (prompt('새 구(장소) 키 (영문/숫자/밑줄, 예: my_district)') || '').trim();
+  if (!raw) return;
+  const key = raw.replace(/[^A-Za-z0-9_]/g, '');
+  if (!key) { alert('키는 영문/숫자/밑줄만 사용하세요.'); return; }
+  if (state.files.districts.data[key]) { alert('이미 존재하는 구 키입니다.'); return; }
+  const name = (prompt('구 이름', '새 장소') || '새 장소').trim();
+  const icon = (prompt('아이콘 (이모지)', '🏙️') || '🏙️').trim();
+  state.files.districts.data[key] = {
+    id: key, name, icon, description: '',
+    dangerLevel: 1, travelCostTP: 1, radiation: 0, encounterChance: 0.1, noiseGen: 0,
+    adjacentDistricts: [], lootTable: [],
+  };
+  state.sel.districts = key;
+  markDirty('districts');
+  status(`장소 「${name}」(${key}) 생성. ⚠️ 인접 구(adjacentDistricts)·연결 랜드마크가 비어 있습니다 — 상세에서 설정하세요.`, 'ok');
+  render();
 }
 
 // 신규 랜드마크 생성 — LANDMARK_DATA + LANDMARK_CARD_META 동시 기록
@@ -1527,6 +1709,133 @@ function deleteLandmark(key) {
   render();
 }
 
+// ─── 랜드마크 복사 → 여러 구에 연결 ──────────────────────────
+// 랜드마크는 구가 "참조"로 연결한다(LANDMARK_DATA 복제 아님). 복사 후 여러 구의
+// 연결 목록(top 슬롯 카드)에 같은 카드 id를 추가한다.
+
+// LANDMARK_DATA 키 → 구 연결에 저장할 카드 id (실제 존재하는 카드 변형 우선, 없으면 lm_ 접두)
+function landmarkCardIdFor(key) {
+  const variants = landmarkIdVariants(key);
+  for (const c of landmarkCardIds()) if (variants.has(c)) return c;
+  return `lm_${String(key).replace(/^lm_/, '')}`;
+}
+
+function copyLandmark(key) {
+  const lm = state.files.landmarks.data[key];
+  if (!lm) return;
+  state.lmClipboard = { key, name: lm.name || key, cardId: landmarkCardIdFor(key) };
+  status(`랜드마크 「${lm.name || key}」 복사됨 — 아래 "📋 구에 연결" 패널에서 구를 골라 연결하세요.`, 'ok');
+  render();
+}
+
+function connectLandmarkToDistricts(cardId, distKeys) {
+  if (!cardId || !distKeys.length) return;
+  const data = state.files.districts.data;
+  let added = 0;
+  for (const dk of distKeys) {
+    const dist = data[dk];
+    if (!dist) continue;
+    const cur = districtLandmarks(dist);
+    if (cur.some((l) => landmarkIdVariants(l).has(cardId))) continue; // 이미 연결됨
+    setDistrictLandmarks(dist, [...cur, cardId]);
+    added++;
+  }
+  if (added) markDirty('districts');
+  const skipped = distKeys.length - added;
+  status(`랜드마크를 ${added}개 구에 연결했습니다${skipped ? ` (이미 연결된 ${skipped}개 제외)` : ''}.`, added ? 'ok' : 'info');
+  render();
+}
+
+// 클립보드가 있을 때 랜드마크 탭 상단에 뜨는 "구에 연결" 패널 (구 다중 선택)
+function renderLandmarkClipboardPanel() {
+  const clip = state.lmClipboard;
+  if (!clip) return null;
+  const dists = state.files.districts?.data || {};
+  const distKeys = Object.keys(dists);
+  const fs = el('fieldset', { style: 'margin-bottom:10px' }, el('legend', { text: '📋 구에 연결' }));
+  fs.append(el('div', { class: 'hint', text: `복사됨: 랜드마크 「${clip.name}」 — 연결할 구를 선택하세요 (여러 곳 동시 가능). 같은 랜드마크 카드가 선택한 구들의 top 슬롯에 표시됩니다.` }));
+  const checks = [];
+  const list = el('div', { class: 'arr-row', style: 'flex-wrap:wrap;gap:6px;margin-top:6px' });
+  for (const dk of distKeys) {
+    const connected = districtLandmarks(dists[dk]).some((l) => landmarkIdVariants(l).has(clip.cardId));
+    const cb = el('input', { type: 'checkbox', ...(connected ? { disabled: true } : {}) });
+    checks.push({ cb, key: dk, connected });
+    list.append(el('label', {
+      class: 'arr-item',
+      style: connected ? 'opacity:.5' : 'cursor:pointer',
+      title: connected ? '이미 연결됨' : '',
+    }, [cb, ` ${dists[dk].icon || ''} ${dists[dk].name || dk}${connected ? ' ✓' : ''}`]));
+  }
+  fs.append(list);
+  const selectAll = el('button', {
+    class: 'ghost mini', text: '전체 선택/해제',
+    onclick: () => { const sel = checks.filter((c) => !c.connected); const all = sel.every((c) => c.cb.checked); sel.forEach((c) => { c.cb.checked = !all; }); },
+  });
+  const connectBtn = el('button', {
+    class: 'primary', text: '선택한 구에 연결',
+    onclick: () => {
+      const targets = checks.filter((c) => c.cb.checked && !c.connected).map((c) => c.key);
+      if (!targets.length) { status('연결할 구를 하나 이상 선택하세요.', 'err'); return; }
+      connectLandmarkToDistricts(clip.cardId, targets);
+    },
+  });
+  const clearBtn = el('button', { class: 'ghost', text: '복사 취소', onclick: () => { state.lmClipboard = null; render(); } });
+  fs.append(el('div', { class: 'field-row', style: 'margin-top:8px' }, [selectAll, connectBtn, clearBtn]));
+  return fs;
+}
+
+// ─── 구(장소) 복사 → 붙여넣기(복제) ──────────────────────────
+// 구는 최상위 항목이라 붙여넣기 = 같은 설정의 새 구를 생성한다(고유 키·id 자동).
+
+function copyDistrict(key) {
+  const dist = state.files.districts.data[key];
+  if (!dist) return;
+  state.distClipboard = { key, dist: structuredClone(dist), name: dist.name || key };
+  status(`장소 「${dist.name || key}」 복사됨 — 아래 패널에서 붙여넣으면 같은 설정의 새 구가 생성됩니다.`, 'ok');
+  render();
+}
+
+function pasteDistrict(count) {
+  const clip = state.distClipboard;
+  if (!clip) return;
+  const data = state.files.districts.data;
+  const used = new Set(Object.keys(data));
+  let lastKey = null;
+  for (let i = 0; i < count; i++) {
+    let k = `${clip.key}_copy`, n = 2;
+    while (used.has(k)) k = `${clip.key}_copy${n++}`;
+    used.add(k);
+    const clone = structuredClone(clip.dist);
+    clone.id = k; // 내부 id는 키와 동기화
+    clone.name = `${clip.name}${count > 1 ? ` (복사 ${i + 1})` : ' (복사)'}`;
+    data[k] = clone;
+    lastKey = k;
+  }
+  markDirty('districts');
+  if (lastKey) state.sel.districts = lastKey;
+  status(`장소 「${clip.name}」 복제본 ${count}개 생성. ⚠️ 새 구는 인접(adjacentDistricts)·퀘스트 참조가 자동 연결되지 않으니 이름·ID와 함께 확인하세요.`, 'ok');
+  render();
+}
+
+// 클립보드가 있을 때 장소 탭 상단에 뜨는 붙여넣기(복제) 패널
+function renderDistrictClipboardPanel() {
+  const clip = state.distClipboard;
+  if (!clip) return null;
+  const fs = el('fieldset', { style: 'margin-bottom:10px' }, el('legend', { text: '📋 붙여넣기 (구 복제)' }));
+  fs.append(el('div', { class: 'hint', text: `복사됨: 장소 「${clip.name}」 — 붙여넣으면 같은 설정의 새 구가 생성됩니다 (ID 자동 생성, 이름에 "(복사)" 표기). 생성 후 이름·ID·인접 구를 확인하세요.` }));
+  const cnt = el('input', { type: 'number', value: 1, min: 1, style: 'width:70px' });
+  const pasteBtn = el('button', {
+    class: 'primary', text: '붙여넣기',
+    onclick: () => { const n = Math.max(1, Math.floor(Number(cnt.value) || 1)); pasteDistrict(n); },
+  });
+  const clearBtn = el('button', { class: 'ghost', text: '복사 취소', onclick: () => { state.distClipboard = null; render(); } });
+  fs.append(el('div', { class: 'field-row', style: 'margin-top:8px;align-items:flex-end' }, [
+    el('div', { class: 'field' }, [el('label', { text: '개수' }), cnt]),
+    pasteBtn, clearBtn,
+  ]));
+  return fs;
+}
+
 // ─── 세부장소(sublocations) 전용 탭 ──────────────────────────
 // 세부장소는 LANDMARK_DATA[키].subLocations 안에 산다 → fileKey는 항상 'landmarks'.
 // 선택 키는 '<lmKey>::<index>' (인덱스 기반 — id 편집 중에도 안정적; 추가/삭제/이동은 render()로 재구성).
@@ -1548,24 +1857,55 @@ function renderSubLocationsTab() {
   }
 
   const sidebar = el('div', { class: 'sidebar' });
-  for (const lmKey of lmKeys) {
-    const lm = data[lmKey];
-    sidebar.append(el('div', { class: 'side-group', style: 'display:flex;align-items:center;justify-content:space-between;gap:6px' }, [
-      el('span', { text: `${lm.icon || ''} ${lm.name || lmKey}` }),
-      el('button', { class: 'ghost mini', text: '+', title: '이 랜드마크에 세부장소 추가', onclick: () => addSubLocation(lmKey) }),
-    ]));
-    const subs = lm.subLocations || [];
-    if (!subs.length) sidebar.append(el('div', { class: 'hint', style: 'padding:2px 12px', text: '(없음)' }));
-    subs.forEach((sub, idx) => {
-      const ck = `${lmKey}::${idx}`;
-      sidebar.append(el('button', {
-        class: 'side-item' + (ck === state.sel.sublocations ? ' active' : ''),
-        'data-key': ck,
-        text: `${sub.icon || ''} ${sub.name || sub.id}`,
-        onclick: () => { state.sel.sublocations = ck; rerenderDetail(); },
-      }));
-    });
-  }
+  const search = sideSearchInput('sublocations');
+  sidebar.append(search.wrap);
+  const listBox = el('div');
+  sidebar.append(listBox);
+
+  const renderList = () => {
+    const q = (state.search.sublocations || '').trim().toLowerCase();
+    listBox.innerHTML = '';
+    let any = false;
+    for (const lmKey of lmKeys) {
+      const lm = data[lmKey];
+      const lmMatch = !q || lmKey.toLowerCase().includes(q) || (lm.name || '').toLowerCase().includes(q);
+      const subs = lm.subLocations || [];
+      const visible = subs
+        .map((sub, idx) => ({ sub, idx }))
+        .filter(({ sub }) => lmMatch || (sub.name || '').toLowerCase().includes(q) || (sub.id || '').toLowerCase().includes(q));
+      if (q && !lmMatch && !visible.length) continue; // 이 랜드마크는 검색과 무관 → 그룹 숨김
+      any = true;
+      listBox.append(el('div', { class: 'side-group', style: 'display:flex;align-items:center;justify-content:space-between;gap:6px' }, [
+        el('span', { text: `${lm.icon || ''} ${lm.name || lmKey}` }),
+        el('button', { class: 'ghost mini', text: '+', title: '이 랜드마크에 세부장소 추가', onclick: () => addSubLocation(lmKey) }),
+      ]));
+      if (!subs.length) { listBox.append(el('div', { class: 'hint', style: 'padding:2px 12px', text: '(없음)' })); continue; }
+      for (const { sub, idx } of visible) {
+        const ck = `${lmKey}::${idx}`;
+        const selBtn = el('button', {
+          class: 'side-item' + (ck === state.sel.sublocations ? ' active' : ''),
+          'data-key': ck,
+          style: 'flex:1;min-width:0',
+          text: `${sub.icon || ''} ${sub.name || sub.id}`,
+          onclick: () => { state.sel.sublocations = ck; rerenderDetail(); },
+        });
+        const up = el('button', {
+          class: 'ghost mini', text: '▲', title: '위로 이동',
+          ...(idx === 0 ? { disabled: true } : {}),
+          onclick: () => moveSubLocationOrder(lmKey, idx, -1),
+        });
+        const down = el('button', {
+          class: 'ghost mini', text: '▼', title: '아래로 이동',
+          ...(idx === subs.length - 1 ? { disabled: true } : {}),
+          onclick: () => moveSubLocationOrder(lmKey, idx, 1),
+        });
+        listBox.append(el('div', { style: 'display:flex;align-items:center;gap:2px' }, [selBtn, up, down]));
+      }
+    }
+    if (!any) listBox.append(el('div', { class: 'hint', style: 'padding:6px 10px', text: '검색 결과 없음' }));
+  };
+  search.onInput(renderList);
+  renderList();
 
   const detailWrap = el('div', { class: 'detail' });
   rerenderDetail = () => {
@@ -1577,7 +1917,8 @@ function renderSubLocationsTab() {
   rerenderDetail();
   view.append(el('div', {}, [
     el('div', { class: 'hint', style: 'margin-bottom:8px' },
-      '세부장소를 추가하면 게임 로딩 시 registerSubLocationItems()가 sl_<id> 위치 카드를 자동 생성합니다 — 별도 아이템 등록은 필요 없습니다.'),
+      '세부장소를 추가하면 게임 로딩 시 registerSubLocationItems()가 sl_<id> 위치 카드를 자동 생성합니다 — 별도 아이템 등록은 필요 없습니다. 같은 세부장소를 여러 랜드마크에 넣으려면 상세에서 📋 복사 후 아래 패널에서 붙여넣으세요.'),
+    renderSubClipboardPanel(),
     el('div', { class: 'list-layout' }, [sidebar, detailWrap]),
   ]));
 }
@@ -1594,15 +1935,29 @@ function renderSubLocationDetail(root) {
 
   const isProt = PROTECTED_SUBLOCATIONS.has(sub.id);
 
+  const h2 = el('h2', { text: `${sub.icon || ''} ${sub.name || sub.id}` });
   root.append(el('div', { class: 'field-row', style: 'align-items:center;justify-content:space-between' }, [
-    el('h2', { text: `${sub.icon || ''} ${sub.name || sub.id}` }),
-    el('button', {
-      class: 'ghost danger', text: '🗑 세부장소 삭제',
-      ...(isProt ? { disabled: true, title: '병원 공성 시스템 의존 — 삭제 불가' } : {}),
-      onclick: () => deleteSubLocation(lmKey, idx),
-    }),
+    h2,
+    el('div', { class: 'field-row' }, [
+      el('button', {
+        class: 'ghost', text: '📋 복사',
+        title: '이 세부장소를 복사 — 다른 랜드마크에 붙여넣기 (아래 붙여넣기 패널)',
+        onclick: () => copySubLocation(lmKey, idx),
+      }),
+      el('button', {
+        class: 'ghost danger', text: '🗑 세부장소 삭제',
+        ...(isProt ? { disabled: true, title: '병원 공성 시스템 의존 — 삭제 불가' } : {}),
+        onclick: () => deleteSubLocation(lmKey, idx),
+      }),
+    ]),
   ]));
   root.append(el('div', { class: 'sub', text: `${lm.name || lmKey} ▸ ${sub.id}` }));
+
+  // 이름/아이콘/id 편집 시 제목·왼쪽 리스트 라벨 즉시 갱신 (사이드바 data-key = "<lmKey>::<idx>")
+  const syncLabels = () => {
+    h2.textContent = `${sub.icon || ''} ${sub.name || sub.id}`;
+    refreshSidebarLabel(`${lmKey}::${idx}`, `${sub.icon || ''} ${sub.name || sub.id}`);
+  };
 
   // 소속 랜드마크 (이동)
   const moveSel = el('select');
@@ -1618,7 +1973,7 @@ function renderSubLocationDetail(root) {
   // 기본 필드 (id / name / icon / dangerMod)
   const fr = el('div', { class: 'field-row' });
   const idInp = el('input', { value: sub.id ?? '', ...(isProt ? { disabled: true } : {}) });
-  idInp.addEventListener('input', () => { sub.id = idInp.value.trim(); markDirty('landmarks'); });
+  idInp.addEventListener('input', () => { sub.id = idInp.value.trim(); markDirty('landmarks'); syncLabels(); });
   fr.append(el('div', { class: 'field' }, [
     labelEl('id', isProt ? '보호 세부장소 — id 변경 불가' : '파생 아이템 sl_<id>의 기준. 변경 시 진행 중 세이브/참조가 깨질 수 있습니다.'),
     idInp,
@@ -1626,8 +1981,8 @@ function renderSubLocationDetail(root) {
   if (!('name' in sub)) sub.name = '';
   if (!('icon' in sub)) sub.icon = '';
   if (!('dangerMod' in sub)) sub.dangerMod = 0;
-  fr.append(scalarInput(sub, 'name', 'landmarks'));
-  fr.append(scalarInput(sub, 'icon', 'landmarks'));
+  fr.append(scalarInput(sub, 'name', 'landmarks', undefined, syncLabels));
+  fr.append(scalarInput(sub, 'icon', 'landmarks', undefined, syncLabels));
   fr.append(scalarInput(sub, 'dangerMod', 'landmarks'));
   root.append(fr);
 
@@ -1702,6 +2057,110 @@ function moveSubLocation(fromKey, idx, toKey) {
   render();
 }
 
+// 같은 랜드마크 안에서 세부장소 순서를 위/아래로 교환 (dir: -1 위, +1 아래)
+function moveSubLocationOrder(lmKey, idx, dir) {
+  const subs = state.files.landmarks.data[lmKey]?.subLocations;
+  if (!subs) return;
+  const j = idx + dir;
+  if (j < 0 || j >= subs.length) return;
+  [subs[idx], subs[j]] = [subs[j], subs[idx]];
+  state.sel.sublocations = `${lmKey}::${j}`; // 선택이 이동한 항목을 따라가도록
+  markDirty('landmarks');
+  render();
+}
+
+// ─── 세부장소 복사/붙여넣기 ──────────────────────────────────
+// 한 세부장소를 클립보드에 담아 여러 랜드마크에 한 번에 복제한다.
+// 파생 위치 카드 sl_<id>가 전역에서 충돌하지 않도록 붙여넣을 때 id를 항상 고유화한다.
+
+// 전 랜드마크의 세부장소 id 집합 (충돌 검사용)
+function allSubLocationIds() {
+  const ids = new Set();
+  for (const lm of Object.values(state.files.landmarks?.data || {})) {
+    for (const s of lm.subLocations || []) if (s?.id) ids.add(s.id);
+  }
+  return ids;
+}
+// base가 이미 쓰였으면 _2, _3… 뒤에 붙여 고유 id 반환
+function uniqueSubId(base, used) {
+  let id = base, n = 2;
+  while (used.has(id)) id = `${base}_${n++}`;
+  return id;
+}
+
+// 세부장소를 클립보드에 복사 (깊은 복제 — 이후 원본 편집과 분리)
+function copySubLocation(lmKey, idx) {
+  const sub = state.files.landmarks.data[lmKey]?.subLocations?.[idx];
+  if (!sub) return;
+  state.subClipboard = { sub: structuredClone(sub), fromLmKey: lmKey, fromName: sub.name || sub.id };
+  status(`세부장소 「${sub.name || sub.id}」 복사됨 — 아래 "📋 붙여넣기" 패널에서 랜드마크를 골라 넣으세요.`, 'ok');
+  render();
+}
+
+// 클립보드의 세부장소를 선택한 랜드마크들에 복제 (각각 고유 id 부여)
+function pasteSubLocationInto(lmKeys) {
+  const clip = state.subClipboard;
+  if (!clip || !lmKeys.length) return;
+  const data = state.files.landmarks.data;
+  const used = allSubLocationIds();
+  // 원본 id에서 출처 랜드마크 접두사를 떼어 깔끔한 베이스명 추출 (예: boramae_emergency → emergency)
+  const base = clip.sub.id?.startsWith(clip.fromLmKey + '_')
+    ? clip.sub.id.slice(clip.fromLmKey.length + 1) : (clip.sub.id || 'sub');
+  let lastTarget = null, lastIdx = 0;
+  for (const lmKey of lmKeys) {
+    const lm = data[lmKey];
+    if (!lm) continue;
+    if (!Array.isArray(lm.subLocations)) lm.subLocations = [];
+    const clone = structuredClone(clip.sub);
+    clone.id = uniqueSubId(`${lmKey}_${base}`, used);
+    used.add(clone.id);
+    lm.subLocations.push(clone);
+    lastTarget = lmKey; lastIdx = lm.subLocations.length - 1;
+  }
+  markDirty('landmarks');
+  if (lastTarget) state.sel.sublocations = `${lastTarget}::${lastIdx}`;
+  const warn = clip.sub.firstEnterReward
+    ? ' ⚠️ 1회 한정 보상(firstEnterReward)이 함께 복사됐습니다 — claimKey가 공유되면 한 곳에서만 수령됩니다. 필요 시 개별 수정하세요.' : '';
+  status(`세부장소 「${clip.fromName}」을(를) ${lmKeys.length}개 랜드마크에 붙여넣었습니다. (id 자동 고유화)${warn}`, 'ok');
+  render();
+}
+
+// 클립보드가 있을 때 표시되는 붙여넣기 패널 (랜드마크 다중 선택 → 일괄 붙여넣기)
+function renderSubClipboardPanel() {
+  const clip = state.subClipboard;
+  if (!clip) return null;
+  const data = state.files.landmarks.data;
+  const lmKeys = Object.keys(data);
+  const fs = el('fieldset', { style: 'margin-bottom:10px' }, el('legend', { text: '📋 붙여넣기' }));
+  fs.append(el('div', { class: 'hint', text: `복사됨: 「${clip.fromName}」 — 넣을 랜드마크를 선택하세요 (여러 곳 동시 가능). 붙여넣을 때 id는 자동으로 고유화됩니다.` }));
+  const checks = [];
+  const list = el('div', { class: 'arr-row', style: 'flex-wrap:wrap;gap:6px;margin-top:6px' });
+  for (const k of lmKeys) {
+    const cb = el('input', { type: 'checkbox' });
+    checks.push({ cb, key: k });
+    list.append(el('label', { class: 'arr-item', style: 'cursor:pointer' }, [cb, ` ${data[k].icon || ''} ${data[k].name || k}`]));
+  }
+  fs.append(list);
+  const selectAll = el('button', {
+    class: 'ghost mini', text: '전체 선택/해제',
+    onclick: () => { const all = checks.every((c) => c.cb.checked); checks.forEach((c) => { c.cb.checked = !all; }); },
+  });
+  const pasteBtn = el('button', {
+    class: 'primary', text: '선택한 곳에 붙여넣기',
+    onclick: () => {
+      const targets = checks.filter((c) => c.cb.checked).map((c) => c.key);
+      if (!targets.length) { status('붙여넣을 랜드마크를 하나 이상 선택하세요.', 'err'); return; }
+      pasteSubLocationInto(targets);
+    },
+  });
+  const clearBtn = el('button', {
+    class: 'ghost', text: '복사 취소',
+    onclick: () => { state.subClipboard = null; render(); },
+  });
+  fs.append(el('div', { class: 'field-row', style: 'margin-top:8px' }, [selectAll, pasteBtn, clearBtn]));
+  return fs;
+}
+
 // ─── 공용 변수(밸런스) 탭 ────────────────────────────────────
 // 중첩 객체/배열을 재귀적으로 편집. 스칼라는 scalarInput, 배열/객체는 들여쓴 박스.
 // 범용 재귀 편집 노드: 스칼라/배열/객체를 fileKey 데이터로 편집 (라벨 설명은 helpFn(key))
@@ -1772,17 +2231,32 @@ function renderBalanceTab() {
   const cats = Object.keys(data);
   if (!state.sel.balance || !data[state.sel.balance]) state.sel.balance = cats[0];
 
-  const sidebar = el('div', { class: 'sidebar' },
-    cats.map((c) => el('button', {
-      class: 'side-item' + (c === state.sel.balance ? ' active' : ''),
-      text: BAL_CAT_LABEL[c] ? `${BAL_CAT_LABEL[c]} (${c})` : c,
-      onclick: () => { state.sel.balance = c; rerenderDetail(); },
-    })));
+  const sidebar = el('div', { class: 'sidebar' });
+  const search = sideSearchInput('balance');
+  sidebar.append(search.wrap);
+  const listBox = el('div');
+  sidebar.append(listBox);
+  const renderList = () => {
+    const q = (state.search.balance || '').trim().toLowerCase();
+    listBox.innerHTML = '';
+    const matched = cats.filter((c) => !q || c.toLowerCase().includes(q) || (BAL_CAT_LABEL[c] || '').toLowerCase().includes(q));
+    if (!matched.length) { listBox.append(el('div', { class: 'hint', style: 'padding:6px 10px', text: '검색 결과 없음' })); return; }
+    for (const c of matched) {
+      listBox.append(el('button', {
+        class: 'side-item' + (c === state.sel.balance ? ' active' : ''),
+        'data-key': c,
+        text: BAL_CAT_LABEL[c] ? `${BAL_CAT_LABEL[c]} (${c})` : c,
+        onclick: () => { state.sel.balance = c; rerenderDetail(); },
+      }));
+    }
+  };
+  search.onInput(renderList);
+  renderList();
 
   const detailWrap = el('div', { class: 'detail' });
   rerenderDetail = () => {
-    sidebar.querySelectorAll('.side-item').forEach((b, i) =>
-      b.classList.toggle('active', cats[i] === state.sel.balance));
+    sidebar.querySelectorAll('.side-item').forEach((b) =>
+      b.classList.toggle('active', b.dataset.key === state.sel.balance));
     detailWrap.innerHTML = '';
     const cat = state.sel.balance;
     detailWrap.append(el('h2', { text: BAL_CAT_LABEL[cat] ? `${BAL_CAT_LABEL[cat]}` : cat }));
@@ -1874,6 +2348,28 @@ function renderFlowTab() {
 }
 
 // ─── quests tab ──────────────────────────────────────────────
+// 신규 퀘스트 생성 — 기본 골격(목표 collect_item) 추가, 상세에서 조건·보상 설정
+function createQuest() {
+  const raw = (prompt('새 퀘스트 ID (영문/숫자/밑줄, 예: q_my_quest)') || '').trim();
+  if (!raw) return;
+  const id = raw.replace(/[^A-Za-z0-9_]/g, '');
+  if (!id) { alert('ID는 영문/숫자/밑줄만 사용하세요.'); return; }
+  if (state.files.quests.data[id]) { alert('이미 존재하는 퀘스트 ID입니다.'); return; }
+  const title = (prompt('퀘스트 제목', '새 퀘스트') || '새 퀘스트').trim();
+  const characterId = (prompt('캐릭터 ID (공통 퀘스트면 비워두기)', '') || '').trim();
+  state.files.quests.data[id] = {
+    id, title, icon: '📜', characterId,
+    dayTrigger: 1, deadlineDays: Infinity, desc: '',
+    prerequisite: null,
+    objective: { type: 'collect_item', definitionId: '', count: 1 },
+    reward: { morale: 0, items: [] },
+  };
+  state.sel.quests = id;
+  markDirty('quests');
+  status(`퀘스트 「${title}」(${id}) 생성. 목표(objective)·보상(reward)을 상세에서 설정하세요.`, 'ok');
+  render();
+}
+
 function renderQuestsTab() {
   const data = state.files.quests.data;
   const ids = Object.keys(data);
@@ -1886,28 +2382,39 @@ function renderQuestsTab() {
   if (!state.sel.quests || !data[state.sel.quests]) state.sel.quests = ids[0];
 
   const sidebar = el('div', { class: 'sidebar' });
-  for (const [char, qids] of Object.entries(groups)) {
-    sidebar.append(el('div', { class: 'side-group', text: char }));
-    for (const id of qids) {
-      sidebar.append(el('button', {
-        class: 'side-item' + (id === state.sel.quests ? ' active' : ''),
-        text: `${data[id].icon || ''} ${data[id].title || id}`,
-        onclick: () => { state.sel.quests = id; rerenderDetail(); },
-      }));
+  sidebar.append(el('button', { class: 'ghost row-add', text: '+ 새 퀘스트 추가', onclick: createQuest }));
+  const search = sideSearchInput('quests');
+  sidebar.append(search.wrap);
+  const listBox = el('div');
+  sidebar.append(listBox);
+  const renderList = () => {
+    const q = (state.search.quests || '').trim().toLowerCase();
+    listBox.innerHTML = '';
+    let any = false;
+    for (const [char, qids] of Object.entries(groups)) {
+      const matched = qids.filter((id) => !q || id.toLowerCase().includes(q) || (data[id].title || '').toLowerCase().includes(q) || char.toLowerCase().includes(q));
+      if (!matched.length) continue;
+      any = true;
+      listBox.append(el('div', { class: 'side-group', text: char }));
+      for (const id of matched) {
+        listBox.append(el('button', {
+          class: 'side-item' + (id === state.sel.quests ? ' active' : ''),
+          'data-key': id,
+          text: `${data[id].icon || ''} ${data[id].title || id}`,
+          onclick: () => { state.sel.quests = id; rerenderDetail(); },
+        }));
+      }
     }
-  }
+    if (!any) listBox.append(el('div', { class: 'hint', style: 'padding:6px 10px', text: '검색 결과 없음' }));
+  };
+  search.onInput(renderList);
+  renderList();
 
   const detailWrap = el('div', { class: 'detail' });
   rerenderDetail = () => {
-    sidebar.querySelectorAll('.side-item').forEach((b) => b.classList.remove('active'));
     detailWrap.innerHTML = '';
     renderQuestDetail(detailWrap, data[state.sel.quests], data);
-    // re-highlight
-    [...sidebar.querySelectorAll('.side-item')].forEach((b) => {
-      if (b.textContent.includes(data[state.sel.quests].title || state.sel.quests)) {
-        b.classList.add('active');
-      }
-    });
+    sidebar.querySelectorAll('.side-item').forEach((b) => b.classList.toggle('active', b.dataset.key === state.sel.quests));
   };
   rerenderDetail();
   view.append(el('div', { class: 'list-layout' }, [sidebar, detailWrap]));
