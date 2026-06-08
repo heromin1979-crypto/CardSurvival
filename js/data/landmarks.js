@@ -1741,8 +1741,8 @@ export const LANDMARK_DATA = {
     ],
   },
 
-  // ── 한강 낚시터 (구별 독립 엔트리 — HANGANG_BASE에서 파생) ──
-  ...Object.fromEntries(HANGANG_DISTRICTS.map(d => [`hangang_${d}`, buildHangangEntry(d)])),
+  // ── 한강 낚시터(구별 독립 엔트리)는 동적 파생이라 정적 리터럴 밖에서 병합한다.
+  //    (LANDMARK_DATA 선언 직후 참고 — 에디터 툴의 리터럴 파싱 호환 목적) ──
 
   // ── 약탈자 소굴 (구출 작전 랜드마크) ─────────────────────────
   // 소굴은 rescue_npc 목표 퀘스트로 연결되며, landmarkCleared 이벤트로 완료된다.
@@ -2067,6 +2067,14 @@ export const LANDMARK_DATA = {
     ],
   },
 };
+
+// ── 한강 낚시터 (구별 독립 엔트리 — HANGANG_BASE에서 파생) ──
+// 정적 리터럴 안에 동적 스프레드(...Object.fromEntries)를 넣으면 에디터 툴
+// (tools/editor)의 리터럴 파싱이 깨지므로, 파생 엔트리는 선언 직후 여기서 병합한다.
+// const 객체의 속성 추가이므로 런타임 키 구성은 종전과 동일하다.
+for (const d of HANGANG_DISTRICTS) {
+  LANDMARK_DATA[`hangang_${d}`] = buildHangangEntry(d);
+}
 
 // ── 유틸리티 ────────────────────────────────────────────────
 
