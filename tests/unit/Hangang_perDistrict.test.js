@@ -91,6 +91,17 @@ describe('items.js 한강 카드 병합', () => {
   });
 });
 
+describe('한강 진입 판정 계약', () => {
+  it('구별 currentLandmark 값을 한강으로 인식한다', () => {
+    expect(isHangangLandmark('hangang_gangnam')).toBe(true);
+    expect(isHangangLandmark('lm_hangang_mapo')).toBe(true);
+  });
+  it('한강이 아닌 랜드마크는 false', () => {
+    expect(isHangangLandmark('lm_gangnam')).toBe(false);
+    expect(isHangangLandmark('basecamp')).toBe(false);
+  });
+});
+
 import ExploreSystem from '../../js/systems/ExploreSystem.js';
 import GameState     from '../../js/core/GameState.js';
 
