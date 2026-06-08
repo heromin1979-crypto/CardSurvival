@@ -61,6 +61,7 @@ const HANGANG_OVERRIDES = {};
 
 // 베이스와 오버라이드를 합성하고 sublocation id에 구 접미사를 붙여 엔트리를 생성한다.
 // id 충돌 없이 구별 stock·탐색 상태를 독립적으로 관리하기 위해 접미사를 사용한다.
+// HANGANG_OVERRIDES[구]는 base에 얕게 병합된다. subLocations를 오버라이드하면 배열 전체가 교체되며 sublocation 단위 부분 수정은 지원하지 않는다.
 function buildHangangEntry(districtId) {
   const ov = HANGANG_OVERRIDES[districtId] ?? {};
   const baseSubs = ov.subLocations ?? HANGANG_BASE.subLocations;
