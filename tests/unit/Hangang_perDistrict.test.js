@@ -43,6 +43,13 @@ describe('한강 구별 랜드마크 데이터', () => {
     expect(getLandmarkData('lm_hangang_songpa')).toBe(LANDMARK_DATA['hangang_songpa']);
   });
 
+  it('구별 엔트리의 lootTable은 참조를 공유하지 않는다', () => {
+    const a = LANDMARK_DATA['hangang_gangnam'].subLocations[0].lootTable;
+    const b = LANDMARK_DATA['hangang_mapo'].subLocations[0].lootTable;
+    expect(a).not.toBe(b);
+    expect(a).toEqual(b);
+  });
+
   it('isHangangLandmark가 구별 키를 한강으로 판정한다', () => {
     expect(isHangangLandmark('hangang_gangnam')).toBe(true);
     expect(isHangangLandmark('lm_hangang_yongsan')).toBe(true);

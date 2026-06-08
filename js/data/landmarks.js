@@ -7,7 +7,7 @@
 // lootTable: [{id, weight}] — weight 합산 기반 가중치 추첨
 
 // 한강이 접하는 10개 구 — hasFishing:true 구역과 1:1 대응.
-// Task 2·5에서 import하므로 named export로 공개한다.
+// 다른 모듈이 한강 대상 구 목록을 직접 참조하므로 named export로 공개한다.
 export const HANGANG_DISTRICTS = [
   'gangnam','gangdong','gwangjin','mapo','seocho',
   'seongdong','songpa','yeongdeungpo','yongsan','junggoo',
@@ -64,7 +64,12 @@ const HANGANG_OVERRIDES = {};
 function buildHangangEntry(districtId) {
   const ov = HANGANG_OVERRIDES[districtId] ?? {};
   const baseSubs = ov.subLocations ?? HANGANG_BASE.subLocations;
-  const subs = baseSubs.map(sub => ({ ...sub, id: `${sub.id}_${districtId}` }));
+  const subs = baseSubs.map(sub => ({
+    ...sub,
+    id: `${sub.id}_${districtId}`,
+    lootTable: sub.lootTable?.map(e => ({ ...e })),
+    lootCount: sub.lootCount ? [...sub.lootCount] : sub.lootCount,
+  }));
   return { ...HANGANG_BASE, ...ov, districtId, subLocations: subs };
 }
 
