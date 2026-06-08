@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import LANDMARK_DATA, { getLandmarkData, isHangangLandmark } from '../../js/data/landmarks.js';
+import { buildAllHangangCards } from '../../js/data/locationCardFactory.js';
 
 const HANGANG_DISTRICTS = ['gangnam','gangdong','gwangjin','mapo','seocho',
                            'seongdong','songpa','yeongdeungpo','yongsan','junggoo'];
@@ -55,5 +56,23 @@ describe('한강 구별 랜드마크 데이터', () => {
     expect(isHangangLandmark('lm_hangang_yongsan')).toBe(true);
     expect(isHangangLandmark('lm_gangnam')).toBe(false);
     expect(isHangangLandmark(null)).toBe(false);
+  });
+});
+
+describe('한강 구별 카드 팩토리', () => {
+  it('lm_hangang_<구> 카드 10개를 생성한다', () => {
+    const cards = buildAllHangangCards();
+    for (const d of HANGANG_DISTRICTS) {
+      expect(cards).toHaveProperty(`lm_hangang_${d}`);
+    }
+  });
+
+  it('각 카드는 isHangang·districtId·landmark 플래그를 가진다', () => {
+    const card = buildAllHangangCards()['lm_hangang_mapo'];
+    expect(card.isHangang).toBe(true);
+    expect(card.districtId).toBe('mapo');
+    expect(card.landmark).toBe(true);
+    expect(card.type).toBe('location');
+    expect(card.subtype).toBe('landmark');
   });
 });
