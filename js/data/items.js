@@ -20,7 +20,7 @@ import ITEMS_TOOLS       from './items_tools.js';
 import ITEMS_STRUCTURES  from './items_structures.js';
 import LEGENDARY_ITEMS   from './legendaryItems.js';
 import ITEMS_ENVIRONMENT from './items_environment.js';
-import { buildAllLocationCards, buildAllLandmarkCards, buildAllEventLandmarkCards } from './locationCardFactory.js';
+import { buildAllLocationCards, buildAllLandmarkCards, buildAllEventLandmarkCards, buildAllHangangCards } from './locationCardFactory.js';
 
 
 // ─── 장소 카드 (25개 구) ─────────────────────────────────────
@@ -34,6 +34,7 @@ const ITEMS_LOCATION = buildAllLocationCards();
 const ITEMS_LANDMARK = {
   ...buildAllLandmarkCards(),
   ...buildAllEventLandmarkCards(),
+  ...buildAllHangangCards(),
 
   // 베이스캠프 랜드마크 — 직접 건설한 안전 거점. 팩토리로 derive 불가 (특수 플래그).
   basecamp_landmark: {

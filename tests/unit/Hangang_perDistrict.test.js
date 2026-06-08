@@ -76,3 +76,17 @@ describe('한강 구별 카드 팩토리', () => {
     expect(card.subtype).toBe('landmark');
   });
 });
+
+import ITEMS from '../../js/data/items.js';
+
+describe('items.js 한강 카드 병합', () => {
+  it('구별 lm_hangang_<구> 카드가 ITEMS에 병합된다', () => {
+    for (const d of HANGANG_DISTRICTS) {
+      expect(ITEMS).toHaveProperty(`lm_hangang_${d}`);
+    }
+  });
+
+  it('단일 lm_hangang 정의는 제거되었다', () => {
+    expect(ITEMS).not.toHaveProperty('lm_hangang');
+  });
+});

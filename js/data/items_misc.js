@@ -221,16 +221,6 @@ const ITEMS_MISC = {
     tags: ['document', 'map'], dismantle: [],
   },
 
-  // ─── 한강 랜드마크 카드 ───────────────────────────────────
-  lm_hangang: {
-    id: 'lm_hangang', name: '한강', type: 'location', subtype: 'landmark',
-    landmark: true, isHangang: true,
-    icon: '🌊', rarity: 'common', weight: 0, stackable: false,
-    description: '한강변 낚시터. 낚시와 통발 설치가 가능한 구역.',
-    tags: ['location', 'landmark', 'fishing'],
-    dismantle: [],
-  },
-
   // ─── 미끼 (2) ─────────────────────────────────────────────
 
   bait_worm: {
