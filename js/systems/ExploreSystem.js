@@ -133,9 +133,10 @@ const ExploreSystem = {
       }
     }
 
-    // 한강 랜드마크 카드 (hasFishing 구역만)
-    if (district?.hasFishing && items['lm_hangang'] && slot < gs.board.top.length) {
-      const hInst = gs.createCardInstance('lm_hangang');
+    // 한강 랜드마크 카드 (hasFishing 구역만 — 구별 카드)
+    const hangangCardId = `lm_hangang_${districtId}`;
+    if (district?.hasFishing && items[hangangCardId] && slot < gs.board.top.length) {
+      const hInst = gs.createCardInstance(hangangCardId);
       if (hInst) gs.board.top[slot++] = hInst.instanceId;
     }
 

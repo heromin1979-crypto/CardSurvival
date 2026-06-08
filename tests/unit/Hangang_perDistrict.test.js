@@ -90,3 +90,34 @@ describe('items.js 한강 카드 병합', () => {
     expect(ITEMS).not.toHaveProperty('lm_hangang');
   });
 });
+
+import ExploreSystem from '../../js/systems/ExploreSystem.js';
+import GameState     from '../../js/core/GameState.js';
+
+// _updateTopRowCards는 GameState 싱글턴을 직접 변이하므로
+// 각 테스트 전에 board와 cards를 초기화해 격리한다.
+function resetBoard() {
+  GameState.board.top   = Array(10).fill(null);
+  GameState.board.middle = Array(20).fill(null);
+  GameState.board.bottom = Array(20).fill(null);
+  GameState.cards       = {};
+  GameState._nextId     = 1;
+}
+
+describe('ExploreSystem._updateTopRowCards — hasFishing 구에 구별 한강 카드 배치', () => {
+  beforeEach(resetBoard);
+
+  it('gangnam(hasFishing)은 top row에 lm_hangang_gangnam 인스턴스를 배치한다', () => {
+    ExploreSystem._updateTopRowCards('gangnam');
+    const topInstIds = GameState.board.top.filter(Boolean);
+    const topDefs = topInstIds.map(id => GameState.cards[id]?.definitionId);
+    expect(topDefs).toContain('lm_hangang_gangnam');
+  });
+
+  it('jongno(hasFishing 없음)는 top row에 lm_hangang_* 카드를 배치하지 않는다', () => {
+    ExploreSystem._updateTopRowCards('jongno');
+    const topInstIds = GameState.board.top.filter(Boolean);
+    const topDefs = topInstIds.map(id => GameState.cards[id]?.definitionId);
+    expect(topDefs.some(d => d?.startsWith('lm_hangang_'))).toBe(false);
+  });
+});
