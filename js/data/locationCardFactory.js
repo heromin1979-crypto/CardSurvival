@@ -8,7 +8,7 @@
 
 import { DISTRICTS } from './districts.js';
 import { LOCATION_CARD_META, LANDMARK_CARD_META } from './locationCardMeta.js';
-import LANDMARK_DATA from './landmarks.js';
+import LANDMARK_DATA, { HANGANG_DISTRICTS } from './landmarks.js';
 
 // 이벤트 전용 랜드마크 ID. landmarks.js LANDMARK_DATA에서 name·icon·desc를 derive.
 // landmarks.js의 GameData import 제거로 순환 의존 해소 — 단일 진리.
@@ -118,6 +118,35 @@ export function buildAllLandmarkCards() {
   for (const [lmId, meta] of Object.entries(LANDMARK_CARD_META)) {
     if (FACTORY_SKIP.has(lmId)) continue;
     out[lmId] = buildLandmarkCard(lmId, meta);
+  }
+  return out;
+}
+
+export function buildAllHangangCards() {
+  const out = {};
+  for (const d of HANGANG_DISTRICTS) {
+    const data = LANDMARK_DATA[`hangang_${d}`];
+    if (!data) throw new Error(`[locationCardFactory] hangang entry missing in landmarks.js: hangang_${d}`);
+    out[`lm_hangang_${d}`] = {
+      id: `lm_hangang_${d}`,
+      name: data.name,
+      type: 'location',
+      subtype: 'landmark',
+      landmark: true,
+      isHangang: true,
+      districtId: d,
+      icon: data.icon,
+      rarity: 'common',
+      weight: 0,
+      stackable: false,
+      maxStack: 1,
+      defaultDurability: 100,
+      defaultContamination: 0,
+      description: '한강변 낚시터. 낚시와 통발 설치가 가능한 구역.',
+      tags: ['location', 'landmark', 'fishing'],
+      requiresSlot: 'top',
+      dismantle: [],
+    };
   }
   return out;
 }

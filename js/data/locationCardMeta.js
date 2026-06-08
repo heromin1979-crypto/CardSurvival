@@ -183,7 +183,7 @@ export const LOCATION_CARD_META = {
   }
 };
 
-// lm_hangang(한강)은 정식 25구 랜드마크가 아닌 공용 랜드마크 — items_misc.js가 단일 정의(isHangang 플래그 포함).
+// 한강 카드는 구별 독립 엔트리(lm_hangang_<구>) 10개로 분리 — locationCardFactory.js buildAllHangangCards()가 생성.
 export const LANDMARK_CARD_META = {
   "lm_gangnam": {
     "name": "삼성서울병원",

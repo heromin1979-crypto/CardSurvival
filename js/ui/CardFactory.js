@@ -6,6 +6,7 @@ import EventBus        from '../core/EventBus.js';
 import SystemRegistry  from '../core/SystemRegistry.js';
 import I18n      from '../core/I18n.js';
 import GameData  from '../data/GameData.js';
+import { HANGANG_DISTRICTS } from '../data/landmarks.js';
 
 // 위험도 색상
 const DANGER_COLORS = ['#449944', '#889933', '#cc8822', '#cc3333', '#881111'];
@@ -43,8 +44,12 @@ const LANDMARK_IMAGES = {
   lm_junggoo:      'assets/images/landmarks/lm_junggoo.png',
   lm_jungrang:     'assets/images/landmarks/lm_jungrang.png',
   basecamp_landmark: 'assets/images/landmarks/basecamp.png',
-  lm_hangang:        'assets/images/landmarks/lm_hangang.png',
 };
+
+// 구별 한강 카드는 모두 같은 이미지를 공유한다.
+for (const d of HANGANG_DISTRICTS) {
+  LANDMARK_IMAGES[`lm_hangang_${d}`] = 'assets/images/landmarks/lm_hangang.png';
+}
 
 // 지역 카드 서브타입별 이미지 (assets/images/locations/)
 const LOCATION_IMAGES = {
@@ -818,12 +823,12 @@ const CardFactory = {
           el.setAttribute('aria-label', `${def.name ?? ''} 랜드마크 진입`);
           el.innerHTML = this._buildLandmarkInner(def, true);
           el.addEventListener('click', () => {
-            EventBus.emit('landmarkRequest', { districtId: 'hangang' });
+            EventBus.emit('landmarkRequest', { districtId: def.id });
           });
           el.addEventListener('keydown', e => {
             if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault();
-              EventBus.emit('landmarkRequest', { districtId: 'hangang' });
+              EventBus.emit('landmarkRequest', { districtId: def.id });
             }
           });
           el.addEventListener('animationend', () => el.classList.remove('spawning'), { once: true });

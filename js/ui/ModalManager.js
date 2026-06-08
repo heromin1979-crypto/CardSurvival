@@ -6,6 +6,7 @@ import EquipmentSystem from '../systems/EquipmentSystem.js';
 import CardFactory     from './CardFactory.js';
 import GameData        from '../data/GameData.js';
 import NPCSystem       from '../systems/NPCSystem.js';
+import { isHangangLandmark } from '../data/landmarks.js';
 
 const FOCUSABLE = 'button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
@@ -292,7 +293,7 @@ const ModalManager = {
     let fishBtnHtml = '';
     let fishBtnReason = '';
     if (isFishingRod) {
-      const inHangang = GameState.location?.currentLandmark === 'hangang';
+      const inHangang = isHangangLandmark(GameState.location?.currentLandmark);
       const hasBait   = [...(GameState.board?.bottom ?? []), ...(GameState.board?.middle ?? [])]
         .some(id => {
           if (!id) return false;

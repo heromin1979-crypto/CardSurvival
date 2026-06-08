@@ -52,7 +52,7 @@ const ExploreSystem = {
 
     // 랜드마크 진입 요청
     // 이벤트 payload의 'districtId' 필드는 레거시 이름이며 실제로는 landmarkKey
-    // (예: 'lm_boramae_hospital', 'basecamp', 'hangang', 단수 구는 구 ID)를 담는다.
+    // (예: 'lm_boramae_hospital', 'basecamp', 'lm_hangang_gangnam', 단수 구는 구 ID)를 담는다.
     EventBus.on('landmarkRequest', ({ districtId: landmarkKey }) => {
       const screen = document.getElementById('screen-main');
       if (screen && screen.classList.contains('active')) {
@@ -133,9 +133,10 @@ const ExploreSystem = {
       }
     }
 
-    // 한강 랜드마크 카드 (hasFishing 구역만)
-    if (district?.hasFishing && items['lm_hangang'] && slot < gs.board.top.length) {
-      const hInst = gs.createCardInstance('lm_hangang');
+    // 한강 랜드마크 카드 (hasFishing 구역만 — 구별 카드)
+    const hangangCardId = `lm_hangang_${districtId}`;
+    if (district?.hasFishing && items[hangangCardId] && slot < gs.board.top.length) {
+      const hInst = gs.createCardInstance(hangangCardId);
       if (hInst) gs.board.top[slot++] = hInst.instanceId;
     }
 
@@ -599,7 +600,7 @@ const ExploreSystem = {
   // landmarkKey: LANDMARK_DATA 조회 키.
   //   - 단수 구: 'guro' 같은 districtId (구 단위 키 엔트리)
   //   - 복수 구: 'lm_boramae_hospital' 같은 랜드마크 ID (lm_ 접두사 엔트리)
-  //   - 공용:    'basecamp', 'hangang', 'lm_raider_camp_small' 등
+  //   - 공용:    'basecamp', 'lm_raider_camp_small' 등 (한강은 구별 독립 키 hangang_<구>로 조회)
   // getLandmarkData가 lm_ 접두사 폴백을 처리하므로 두 형태 모두 허용된다.
 
   enterLandmark(landmarkKey) {

@@ -75,9 +75,12 @@ function districtName(id) {
 // 시스템 코드가 하드코딩으로 의존하는 ID — 에디터에서 삭제 차단.
 // 출처: HospitalSiegeSystem.js / FishingSystem.js / ExploreSystem.js / locationCardFactory.js(이벤트 랜드마크)
 const PROTECTED_LANDMARKS = new Set([
-  'lm_boramae_hospital', 'lm_dongjak', 'lm_hangang', 'hangang', 'basecamp',
+  'lm_boramae_hospital', 'lm_dongjak', 'basecamp',
   'lm_raider_camp_small', 'lm_raider_camp_medium', 'lm_raider_camp_large',
   'lm_power_station', 'lm_water_plant', 'lm_comms_tower',
+  // 한강 구별 독립 랜드마크 — locationCardFactory.js buildAllHangangCards() 의존
+  'hangang_gangnam', 'hangang_gangdong', 'hangang_gwangjin', 'hangang_mapo', 'hangang_seocho',
+  'hangang_seongdong', 'hangang_songpa', 'hangang_yeongdeungpo', 'hangang_yongsan', 'hangang_junggoo',
 ]);
 // HospitalSiegeSystem.js BORAMAE_SUB_LOCATIONS
 const PROTECTED_SUBLOCATIONS = new Set([

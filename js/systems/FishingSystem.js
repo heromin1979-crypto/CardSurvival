@@ -8,6 +8,7 @@ import TickEngine  from '../core/TickEngine.js';
 import { SKILL_DEFS } from '../data/skillDefs.js';
 import BALANCE     from '../data/gameBalance.js';
 import GameData    from '../data/GameData.js';
+import { isHangangLandmark } from '../data/landmarks.js';
 
 const B = BALANCE.fishing;
 
@@ -18,7 +19,7 @@ const WEATHER_MOD = {
 
 /** 한강 랜드마크 내부 여부 확인 */
 function _isInHangang() {
-  return GameState.location?.currentLandmark === 'hangang';
+  return isHangangLandmark(GameState.location?.currentLandmark);
 }
 
 /** board.middle + board.bottom에서 definitionId가 일치하는 첫 인스턴스 반환 */
