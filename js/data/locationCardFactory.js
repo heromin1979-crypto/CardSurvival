@@ -126,6 +126,7 @@ export function buildAllHangangCards() {
   const out = {};
   for (const d of HANGANG_DISTRICTS) {
     const data = LANDMARK_DATA[`hangang_${d}`];
+    if (!data) throw new Error(`[locationCardFactory] hangang entry missing in landmarks.js: hangang_${d}`);
     out[`lm_hangang_${d}`] = {
       id: `lm_hangang_${d}`,
       name: data.name,
