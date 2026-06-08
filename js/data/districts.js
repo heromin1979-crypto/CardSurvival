@@ -30,7 +30,6 @@ const DISTRICTS = {
       'songpa',
       'dongjak',
     ],
-    landmark: 'lm_gangnam',
     lootTable: [
       {
         definitionId: 'cloth',
@@ -144,6 +143,10 @@ const DISTRICTS = {
       },
     ],
     special: 'samsung_hospital',
+    landmarks: [
+      'lm_gangnam',
+      'lm_hangang_gangnam',
+    ],
   },
   gangdong: {
     id: 'gangdong',
@@ -162,7 +165,6 @@ const DISTRICTS = {
       'geumcheon',
       'gwangjin',
     ],
-    landmark: 'lm_gangdong',
     lootTable: [
       {
         definitionId: 'cloth',
@@ -285,6 +287,10 @@ const DISTRICTS = {
       },
     ],
     special: null,
+    landmarks: [
+      'lm_gangdong',
+      'lm_hangang_gangdong',
+    ],
   },
   gangbuk: {
     id: 'gangbuk',
@@ -782,7 +788,6 @@ const DISTRICTS = {
       'seongdong',
       'gangdong',
     ],
-    landmark: 'lm_gwangjin',
     lootTable: [
       {
         definitionId: 'cloth',
@@ -928,6 +933,10 @@ const DISTRICTS = {
       },
     ],
     special: null,
+    landmarks: [
+      'lm_gwangjin',
+      'lm_hangang_gwangjin',
+    ],
   },
   guro: {
     id: 'guro',
@@ -2003,7 +2012,6 @@ const DISTRICTS = {
       'jongno',
       'yeongdeungpo',
     ],
-    landmark: 'lm_mapo',
     lootTable: [
       {
         definitionId: 'cloth',
@@ -2115,6 +2123,10 @@ const DISTRICTS = {
       },
     ],
     special: null,
+    landmarks: [
+      'lm_mapo',
+      'lm_hangang_mapo',
+    ],
   },
   seodaemun: {
     id: 'seodaemun',
@@ -2245,7 +2257,6 @@ const DISTRICTS = {
       'gangnam',
       'guro',
     ],
-    landmark: 'lm_seocho',
     lootTable: [
       {
         definitionId: 'scrap_metal',
@@ -2346,6 +2357,10 @@ const DISTRICTS = {
       },
     ],
     special: null,
+    landmarks: [
+      'lm_seocho',
+      'lm_hangang_seocho',
+    ],
   },
   seongdong: {
     id: 'seongdong',
@@ -2364,7 +2379,6 @@ const DISTRICTS = {
       'jungrang',
       'gwangjin',
     ],
-    landmark: 'lm_seongdong',
     lootTable: [
       {
         definitionId: 'scrap_metal',
@@ -2511,6 +2525,10 @@ const DISTRICTS = {
       },
     ],
     special: null,
+    landmarks: [
+      'lm_seongdong',
+      'lm_hangang_seongdong',
+    ],
   },
   seongbuk: {
     id: 'seongbuk',
@@ -2683,7 +2701,6 @@ const DISTRICTS = {
       'gangdong',
       'gwanak',
     ],
-    landmark: 'lm_songpa',
     lootTable: [
       {
         definitionId: 'scrap_metal',
@@ -2793,6 +2810,10 @@ const DISTRICTS = {
       },
     ],
     special: 'lotte_tower',
+    landmarks: [
+      'lm_songpa',
+      'lm_hangang_songpa',
+    ],
   },
   yangcheon: {
     id: 'yangcheon',
@@ -2934,7 +2955,6 @@ const DISTRICTS = {
       'gangseo',
       'mapo',
     ],
-    landmark: 'lm_yeongdeungpo',
     lootTable: [
       {
         definitionId: 'scrap_metal',
@@ -3050,6 +3070,10 @@ const DISTRICTS = {
       },
     ],
     special: 'kbs',
+    landmarks: [
+      'lm_yeongdeungpo',
+      'lm_hangang_yeongdeungpo',
+    ],
   },
   yongsan: {
     id: 'yongsan',
@@ -3067,7 +3091,6 @@ const DISTRICTS = {
       'jongno',
       'junggoo',
     ],
-    landmark: 'lm_yongsan',
     lootTable: [
       {
         definitionId: 'electronic_parts',
@@ -3176,6 +3199,10 @@ const DISTRICTS = {
       },
     ],
     special: 'us_base',
+    landmarks: [
+      'lm_yongsan',
+      'lm_hangang_yongsan',
+    ],
   },
   eunpyeong: {
     id: 'eunpyeong',
@@ -3549,7 +3576,6 @@ const DISTRICTS = {
       'yongsan',
       'dongdaemun',
     ],
-    landmark: 'lm_junggoo',
     lootTable: [
       {
         definitionId: 'cloth',
@@ -3656,6 +3682,10 @@ const DISTRICTS = {
       },
     ],
     special: 'seoul_city_hall',
+    landmarks: [
+      'lm_junggoo',
+      'lm_hangang_junggoo',
+    ],
   },
   jungrang: {
     id: 'jungrang',
