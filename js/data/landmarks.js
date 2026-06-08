@@ -13,67 +13,6 @@ export const HANGANG_DISTRICTS = [
   'seongdong','songpa','yeongdeungpo','yongsan','junggoo',
 ];
 
-// 구별 차별화 전 공통 베이스. 내용·루트 테이블은 원본 hangang 엔트리에서 그대로 복사.
-const HANGANG_BASE = {
-  name: '한강',
-  desc: '서울을 가로지르는 한강. 오염된 강물이지만 물고기는 살아있다.',
-  icon: '🌊',
-  isHangang: true,
-  subLocations: [
-    {
-      id: 'hangang_fishing_spot', name: '낚시터',
-      icon: '🎣',
-      desc: '낚시꾼들이 즐겨 찾던 자리. 낚싯대로 물고기를 낚거나 통발을 설치할 수 있다.',
-      dangerMod: 0.05,
-      isFishing: true,
-      // 한강 낚시터 / 강변 첫 진입 시 캐릭터당 1회 낚싯대 지급 — 낚시 메커닉 진입 동기.
-      // claimKey 공유로 두 sublocation 합산 1회만 지급 (협의서 §7.2: 어느 쪽이든 첫 진입 1회).
-      firstEnterReward: { claimKey: 'hangang_rod', items: [{ id: 'fishing_rod_basic', qty: 1 }] },
-      lootTable: [
-        { id: 'contaminated_water', weight: 4 },
-        { id: 'pebble',            weight: 3 },
-        { id: 'rope',              weight: 2 },
-        { id: 'bait_worm',         weight: 3 },
-      ],
-      lootCount: [1, 2],
-    },
-    {
-      id: 'hangang_riverside', name: '강변 산책로',
-      icon: '🌿',
-      desc: '강변을 따라 이어진 산책로. 잡초와 돌멩이, 버려진 물건이 있다.',
-      dangerMod: 0.08,
-      isFishing: true,
-      firstEnterReward: { claimKey: 'hangang_rod', items: [{ id: 'fishing_rod_basic', qty: 1 }] },
-      lootTable: [
-        { id: 'wild_garlic',       weight: 4 },
-        { id: 'dandelion',         weight: 3 },
-        { id: 'pebble',            weight: 4 },
-        { id: 'dry_grass',         weight: 3 },
-        { id: 'bait_insect',       weight: 2 },
-      ],
-      lootCount: [1, 3],
-    },
-  ],
-};
-
-// 구별 차별화가 필요해지면 여기에 districtId 키로 오버라이드 객체를 추가한다.
-const HANGANG_OVERRIDES = {};
-
-// 베이스와 오버라이드를 합성하고 sublocation id에 구 접미사를 붙여 엔트리를 생성한다.
-// id 충돌 없이 구별 stock·탐색 상태를 독립적으로 관리하기 위해 접미사를 사용한다.
-// HANGANG_OVERRIDES[구]는 base에 얕게 병합된다. subLocations를 오버라이드하면 배열 전체가 교체되며 sublocation 단위 부분 수정은 지원하지 않는다.
-function buildHangangEntry(districtId) {
-  const ov = HANGANG_OVERRIDES[districtId] ?? {};
-  const baseSubs = ov.subLocations ?? HANGANG_BASE.subLocations;
-  const subs = baseSubs.map(sub => ({
-    ...sub,
-    id: `${sub.id}_${districtId}`,
-    lootTable: sub.lootTable?.map(e => ({ ...e })),
-    lootCount: sub.lootCount ? [...sub.lootCount] : sub.lootCount,
-  }));
-  return { ...HANGANG_BASE, ...ov, districtId, subLocations: subs };
-}
-
 export const LANDMARK_DATA = {
 
   // ── 베이스캠프 (직접 건설한 안전 거점) ─────────────────────
@@ -1741,8 +1680,919 @@ export const LANDMARK_DATA = {
     ],
   },
 
-  // ── 한강 낚시터(구별 독립 엔트리)는 동적 파생이라 정적 리터럴 밖에서 병합한다.
-  //    (LANDMARK_DATA 선언 직후 참고 — 에디터 툴의 리터럴 파싱 호환 목적) ──
+  // ── 한강 낚시터 (구별 독립 영역) ─────────────────────────────
+  // 이름만 "한강"으로 같고 ID·세부장소·재고·루팅은 구별로 완전히 독립.
+  // 구별로 다르게 편집하려면 각 항목을 직접 수정 (에디터 랜드마크 탭).
+  hangang_gangnam: {
+    name: '한강',
+    desc: '서울을 가로지르는 한강. 오염된 강물이지만 물고기는 살아있다.',
+    icon: '🌊',
+    isHangang: true,
+    subLocations: [
+      {
+        id: 'hangang_fishing_spot_gangnam',
+        name: '낚시터',
+        icon: '🎣',
+        desc: '낚시꾼들이 즐겨 찾던 자리. 낚싯대로 물고기를 낚거나 통발을 설치할 수 있다.',
+        dangerMod: 0.05,
+        isFishing: true,
+        firstEnterReward: {
+          claimKey: 'hangang_rod',
+          items: [
+            {
+              id: 'fishing_rod_basic',
+              qty: 1,
+            },
+          ],
+        },
+        lootTable: [
+          {
+            id: 'contaminated_water',
+            weight: 4,
+          },
+          {
+            id: 'pebble',
+            weight: 3,
+          },
+          {
+            id: 'rope',
+            weight: 2,
+          },
+          {
+            id: 'bait_worm',
+            weight: 3,
+          },
+        ],
+        lootCount: [
+          1,
+          2,
+        ],
+      },
+      {
+        id: 'hangang_riverside_gangnam',
+        name: '강변 산책로',
+        icon: '🌿',
+        desc: '강변을 따라 이어진 산책로. 잡초와 돌멩이, 버려진 물건이 있다.',
+        dangerMod: 0.08,
+        isFishing: true,
+        firstEnterReward: {
+          claimKey: 'hangang_rod',
+          items: [
+            {
+              id: 'fishing_rod_basic',
+              qty: 1,
+            },
+          ],
+        },
+        lootTable: [
+          {
+            id: 'wild_garlic',
+            weight: 4,
+          },
+          {
+            id: 'dandelion',
+            weight: 3,
+          },
+          {
+            id: 'pebble',
+            weight: 4,
+          },
+          {
+            id: 'dry_grass',
+            weight: 3,
+          },
+          {
+            id: 'bait_insect',
+            weight: 2,
+          },
+        ],
+        lootCount: [
+          1,
+          3,
+        ],
+      },
+    ],
+    districtId: 'gangnam',
+  },
+  hangang_gangdong: {
+    name: '한강',
+    desc: '서울을 가로지르는 한강. 오염된 강물이지만 물고기는 살아있다.',
+    icon: '🌊',
+    isHangang: true,
+    subLocations: [
+      {
+        id: 'hangang_fishing_spot_gangdong',
+        name: '낚시터',
+        icon: '🎣',
+        desc: '낚시꾼들이 즐겨 찾던 자리. 낚싯대로 물고기를 낚거나 통발을 설치할 수 있다.',
+        dangerMod: 0.05,
+        isFishing: true,
+        firstEnterReward: {
+          claimKey: 'hangang_rod',
+          items: [
+            {
+              id: 'fishing_rod_basic',
+              qty: 1,
+            },
+          ],
+        },
+        lootTable: [
+          {
+            id: 'contaminated_water',
+            weight: 4,
+          },
+          {
+            id: 'pebble',
+            weight: 3,
+          },
+          {
+            id: 'rope',
+            weight: 2,
+          },
+          {
+            id: 'bait_worm',
+            weight: 3,
+          },
+        ],
+        lootCount: [
+          1,
+          2,
+        ],
+      },
+      {
+        id: 'hangang_riverside_gangdong',
+        name: '강변 산책로',
+        icon: '🌿',
+        desc: '강변을 따라 이어진 산책로. 잡초와 돌멩이, 버려진 물건이 있다.',
+        dangerMod: 0.08,
+        isFishing: true,
+        firstEnterReward: {
+          claimKey: 'hangang_rod',
+          items: [
+            {
+              id: 'fishing_rod_basic',
+              qty: 1,
+            },
+          ],
+        },
+        lootTable: [
+          {
+            id: 'wild_garlic',
+            weight: 4,
+          },
+          {
+            id: 'dandelion',
+            weight: 3,
+          },
+          {
+            id: 'pebble',
+            weight: 4,
+          },
+          {
+            id: 'dry_grass',
+            weight: 3,
+          },
+          {
+            id: 'bait_insect',
+            weight: 2,
+          },
+        ],
+        lootCount: [
+          1,
+          3,
+        ],
+      },
+    ],
+    districtId: 'gangdong',
+  },
+  hangang_gwangjin: {
+    name: '한강',
+    desc: '서울을 가로지르는 한강. 오염된 강물이지만 물고기는 살아있다.',
+    icon: '🌊',
+    isHangang: true,
+    subLocations: [
+      {
+        id: 'hangang_fishing_spot_gwangjin',
+        name: '낚시터',
+        icon: '🎣',
+        desc: '낚시꾼들이 즐겨 찾던 자리. 낚싯대로 물고기를 낚거나 통발을 설치할 수 있다.',
+        dangerMod: 0.05,
+        isFishing: true,
+        firstEnterReward: {
+          claimKey: 'hangang_rod',
+          items: [
+            {
+              id: 'fishing_rod_basic',
+              qty: 1,
+            },
+          ],
+        },
+        lootTable: [
+          {
+            id: 'contaminated_water',
+            weight: 4,
+          },
+          {
+            id: 'pebble',
+            weight: 3,
+          },
+          {
+            id: 'rope',
+            weight: 2,
+          },
+          {
+            id: 'bait_worm',
+            weight: 3,
+          },
+        ],
+        lootCount: [
+          1,
+          2,
+        ],
+      },
+      {
+        id: 'hangang_riverside_gwangjin',
+        name: '강변 산책로',
+        icon: '🌿',
+        desc: '강변을 따라 이어진 산책로. 잡초와 돌멩이, 버려진 물건이 있다.',
+        dangerMod: 0.08,
+        isFishing: true,
+        firstEnterReward: {
+          claimKey: 'hangang_rod',
+          items: [
+            {
+              id: 'fishing_rod_basic',
+              qty: 1,
+            },
+          ],
+        },
+        lootTable: [
+          {
+            id: 'wild_garlic',
+            weight: 4,
+          },
+          {
+            id: 'dandelion',
+            weight: 3,
+          },
+          {
+            id: 'pebble',
+            weight: 4,
+          },
+          {
+            id: 'dry_grass',
+            weight: 3,
+          },
+          {
+            id: 'bait_insect',
+            weight: 2,
+          },
+        ],
+        lootCount: [
+          1,
+          3,
+        ],
+      },
+    ],
+    districtId: 'gwangjin',
+  },
+  hangang_mapo: {
+    name: '한강',
+    desc: '서울을 가로지르는 한강. 오염된 강물이지만 물고기는 살아있다.',
+    icon: '🌊',
+    isHangang: true,
+    subLocations: [
+      {
+        id: 'hangang_fishing_spot_mapo',
+        name: '낚시터',
+        icon: '🎣',
+        desc: '낚시꾼들이 즐겨 찾던 자리. 낚싯대로 물고기를 낚거나 통발을 설치할 수 있다.',
+        dangerMod: 0.05,
+        isFishing: true,
+        firstEnterReward: {
+          claimKey: 'hangang_rod',
+          items: [
+            {
+              id: 'fishing_rod_basic',
+              qty: 1,
+            },
+          ],
+        },
+        lootTable: [
+          {
+            id: 'contaminated_water',
+            weight: 4,
+          },
+          {
+            id: 'pebble',
+            weight: 3,
+          },
+          {
+            id: 'rope',
+            weight: 2,
+          },
+          {
+            id: 'bait_worm',
+            weight: 3,
+          },
+        ],
+        lootCount: [
+          1,
+          2,
+        ],
+      },
+      {
+        id: 'hangang_riverside_mapo',
+        name: '강변 산책로',
+        icon: '🌿',
+        desc: '강변을 따라 이어진 산책로. 잡초와 돌멩이, 버려진 물건이 있다.',
+        dangerMod: 0.08,
+        isFishing: true,
+        firstEnterReward: {
+          claimKey: 'hangang_rod',
+          items: [
+            {
+              id: 'fishing_rod_basic',
+              qty: 1,
+            },
+          ],
+        },
+        lootTable: [
+          {
+            id: 'wild_garlic',
+            weight: 4,
+          },
+          {
+            id: 'dandelion',
+            weight: 3,
+          },
+          {
+            id: 'pebble',
+            weight: 4,
+          },
+          {
+            id: 'dry_grass',
+            weight: 3,
+          },
+          {
+            id: 'bait_insect',
+            weight: 2,
+          },
+        ],
+        lootCount: [
+          1,
+          3,
+        ],
+      },
+    ],
+    districtId: 'mapo',
+  },
+  hangang_seocho: {
+    name: '한강',
+    desc: '서울을 가로지르는 한강. 오염된 강물이지만 물고기는 살아있다.',
+    icon: '🌊',
+    isHangang: true,
+    subLocations: [
+      {
+        id: 'hangang_fishing_spot_seocho',
+        name: '낚시터',
+        icon: '🎣',
+        desc: '낚시꾼들이 즐겨 찾던 자리. 낚싯대로 물고기를 낚거나 통발을 설치할 수 있다.',
+        dangerMod: 0.05,
+        isFishing: true,
+        firstEnterReward: {
+          claimKey: 'hangang_rod',
+          items: [
+            {
+              id: 'fishing_rod_basic',
+              qty: 1,
+            },
+          ],
+        },
+        lootTable: [
+          {
+            id: 'contaminated_water',
+            weight: 4,
+          },
+          {
+            id: 'pebble',
+            weight: 3,
+          },
+          {
+            id: 'rope',
+            weight: 2,
+          },
+          {
+            id: 'bait_worm',
+            weight: 3,
+          },
+        ],
+        lootCount: [
+          1,
+          2,
+        ],
+      },
+      {
+        id: 'hangang_riverside_seocho',
+        name: '강변 산책로',
+        icon: '🌿',
+        desc: '강변을 따라 이어진 산책로. 잡초와 돌멩이, 버려진 물건이 있다.',
+        dangerMod: 0.08,
+        isFishing: true,
+        firstEnterReward: {
+          claimKey: 'hangang_rod',
+          items: [
+            {
+              id: 'fishing_rod_basic',
+              qty: 1,
+            },
+          ],
+        },
+        lootTable: [
+          {
+            id: 'wild_garlic',
+            weight: 4,
+          },
+          {
+            id: 'dandelion',
+            weight: 3,
+          },
+          {
+            id: 'pebble',
+            weight: 4,
+          },
+          {
+            id: 'dry_grass',
+            weight: 3,
+          },
+          {
+            id: 'bait_insect',
+            weight: 2,
+          },
+        ],
+        lootCount: [
+          1,
+          3,
+        ],
+      },
+    ],
+    districtId: 'seocho',
+  },
+  hangang_seongdong: {
+    name: '한강',
+    desc: '서울을 가로지르는 한강. 오염된 강물이지만 물고기는 살아있다.',
+    icon: '🌊',
+    isHangang: true,
+    subLocations: [
+      {
+        id: 'hangang_fishing_spot_seongdong',
+        name: '낚시터',
+        icon: '🎣',
+        desc: '낚시꾼들이 즐겨 찾던 자리. 낚싯대로 물고기를 낚거나 통발을 설치할 수 있다.',
+        dangerMod: 0.05,
+        isFishing: true,
+        firstEnterReward: {
+          claimKey: 'hangang_rod',
+          items: [
+            {
+              id: 'fishing_rod_basic',
+              qty: 1,
+            },
+          ],
+        },
+        lootTable: [
+          {
+            id: 'contaminated_water',
+            weight: 4,
+          },
+          {
+            id: 'pebble',
+            weight: 3,
+          },
+          {
+            id: 'rope',
+            weight: 2,
+          },
+          {
+            id: 'bait_worm',
+            weight: 3,
+          },
+        ],
+        lootCount: [
+          1,
+          2,
+        ],
+      },
+      {
+        id: 'hangang_riverside_seongdong',
+        name: '강변 산책로',
+        icon: '🌿',
+        desc: '강변을 따라 이어진 산책로. 잡초와 돌멩이, 버려진 물건이 있다.',
+        dangerMod: 0.08,
+        isFishing: true,
+        firstEnterReward: {
+          claimKey: 'hangang_rod',
+          items: [
+            {
+              id: 'fishing_rod_basic',
+              qty: 1,
+            },
+          ],
+        },
+        lootTable: [
+          {
+            id: 'wild_garlic',
+            weight: 4,
+          },
+          {
+            id: 'dandelion',
+            weight: 3,
+          },
+          {
+            id: 'pebble',
+            weight: 4,
+          },
+          {
+            id: 'dry_grass',
+            weight: 3,
+          },
+          {
+            id: 'bait_insect',
+            weight: 2,
+          },
+        ],
+        lootCount: [
+          1,
+          3,
+        ],
+      },
+    ],
+    districtId: 'seongdong',
+  },
+  hangang_songpa: {
+    name: '한강',
+    desc: '서울을 가로지르는 한강. 오염된 강물이지만 물고기는 살아있다.',
+    icon: '🌊',
+    isHangang: true,
+    subLocations: [
+      {
+        id: 'hangang_fishing_spot_songpa',
+        name: '낚시터',
+        icon: '🎣',
+        desc: '낚시꾼들이 즐겨 찾던 자리. 낚싯대로 물고기를 낚거나 통발을 설치할 수 있다.',
+        dangerMod: 0.05,
+        isFishing: true,
+        firstEnterReward: {
+          claimKey: 'hangang_rod',
+          items: [
+            {
+              id: 'fishing_rod_basic',
+              qty: 1,
+            },
+          ],
+        },
+        lootTable: [
+          {
+            id: 'contaminated_water',
+            weight: 4,
+          },
+          {
+            id: 'pebble',
+            weight: 3,
+          },
+          {
+            id: 'rope',
+            weight: 2,
+          },
+          {
+            id: 'bait_worm',
+            weight: 3,
+          },
+        ],
+        lootCount: [
+          1,
+          2,
+        ],
+      },
+      {
+        id: 'hangang_riverside_songpa',
+        name: '강변 산책로',
+        icon: '🌿',
+        desc: '강변을 따라 이어진 산책로. 잡초와 돌멩이, 버려진 물건이 있다.',
+        dangerMod: 0.08,
+        isFishing: true,
+        firstEnterReward: {
+          claimKey: 'hangang_rod',
+          items: [
+            {
+              id: 'fishing_rod_basic',
+              qty: 1,
+            },
+          ],
+        },
+        lootTable: [
+          {
+            id: 'wild_garlic',
+            weight: 4,
+          },
+          {
+            id: 'dandelion',
+            weight: 3,
+          },
+          {
+            id: 'pebble',
+            weight: 4,
+          },
+          {
+            id: 'dry_grass',
+            weight: 3,
+          },
+          {
+            id: 'bait_insect',
+            weight: 2,
+          },
+        ],
+        lootCount: [
+          1,
+          3,
+        ],
+      },
+    ],
+    districtId: 'songpa',
+  },
+  hangang_yeongdeungpo: {
+    name: '한강',
+    desc: '서울을 가로지르는 한강. 오염된 강물이지만 물고기는 살아있다.',
+    icon: '🌊',
+    isHangang: true,
+    subLocations: [
+      {
+        id: 'hangang_fishing_spot_yeongdeungpo',
+        name: '낚시터',
+        icon: '🎣',
+        desc: '낚시꾼들이 즐겨 찾던 자리. 낚싯대로 물고기를 낚거나 통발을 설치할 수 있다.',
+        dangerMod: 0.05,
+        isFishing: true,
+        firstEnterReward: {
+          claimKey: 'hangang_rod',
+          items: [
+            {
+              id: 'fishing_rod_basic',
+              qty: 1,
+            },
+          ],
+        },
+        lootTable: [
+          {
+            id: 'contaminated_water',
+            weight: 4,
+          },
+          {
+            id: 'pebble',
+            weight: 3,
+          },
+          {
+            id: 'rope',
+            weight: 2,
+          },
+          {
+            id: 'bait_worm',
+            weight: 3,
+          },
+        ],
+        lootCount: [
+          1,
+          2,
+        ],
+      },
+      {
+        id: 'hangang_riverside_yeongdeungpo',
+        name: '강변 산책로',
+        icon: '🌿',
+        desc: '강변을 따라 이어진 산책로. 잡초와 돌멩이, 버려진 물건이 있다.',
+        dangerMod: 0.08,
+        isFishing: true,
+        firstEnterReward: {
+          claimKey: 'hangang_rod',
+          items: [
+            {
+              id: 'fishing_rod_basic',
+              qty: 1,
+            },
+          ],
+        },
+        lootTable: [
+          {
+            id: 'wild_garlic',
+            weight: 4,
+          },
+          {
+            id: 'dandelion',
+            weight: 3,
+          },
+          {
+            id: 'pebble',
+            weight: 4,
+          },
+          {
+            id: 'dry_grass',
+            weight: 3,
+          },
+          {
+            id: 'bait_insect',
+            weight: 2,
+          },
+        ],
+        lootCount: [
+          1,
+          3,
+        ],
+      },
+    ],
+    districtId: 'yeongdeungpo',
+  },
+  hangang_yongsan: {
+    name: '한강',
+    desc: '서울을 가로지르는 한강. 오염된 강물이지만 물고기는 살아있다.',
+    icon: '🌊',
+    isHangang: true,
+    subLocations: [
+      {
+        id: 'hangang_fishing_spot_yongsan',
+        name: '낚시터',
+        icon: '🎣',
+        desc: '낚시꾼들이 즐겨 찾던 자리. 낚싯대로 물고기를 낚거나 통발을 설치할 수 있다.',
+        dangerMod: 0.05,
+        isFishing: true,
+        firstEnterReward: {
+          claimKey: 'hangang_rod',
+          items: [
+            {
+              id: 'fishing_rod_basic',
+              qty: 1,
+            },
+          ],
+        },
+        lootTable: [
+          {
+            id: 'contaminated_water',
+            weight: 4,
+          },
+          {
+            id: 'pebble',
+            weight: 3,
+          },
+          {
+            id: 'rope',
+            weight: 2,
+          },
+          {
+            id: 'bait_worm',
+            weight: 3,
+          },
+        ],
+        lootCount: [
+          1,
+          2,
+        ],
+      },
+      {
+        id: 'hangang_riverside_yongsan',
+        name: '강변 산책로',
+        icon: '🌿',
+        desc: '강변을 따라 이어진 산책로. 잡초와 돌멩이, 버려진 물건이 있다.',
+        dangerMod: 0.08,
+        isFishing: true,
+        firstEnterReward: {
+          claimKey: 'hangang_rod',
+          items: [
+            {
+              id: 'fishing_rod_basic',
+              qty: 1,
+            },
+          ],
+        },
+        lootTable: [
+          {
+            id: 'wild_garlic',
+            weight: 4,
+          },
+          {
+            id: 'dandelion',
+            weight: 3,
+          },
+          {
+            id: 'pebble',
+            weight: 4,
+          },
+          {
+            id: 'dry_grass',
+            weight: 3,
+          },
+          {
+            id: 'bait_insect',
+            weight: 2,
+          },
+        ],
+        lootCount: [
+          1,
+          3,
+        ],
+      },
+    ],
+    districtId: 'yongsan',
+  },
+  hangang_junggoo: {
+    name: '한강',
+    desc: '서울을 가로지르는 한강. 오염된 강물이지만 물고기는 살아있다.',
+    icon: '🌊',
+    isHangang: true,
+    subLocations: [
+      {
+        id: 'hangang_fishing_spot_junggoo',
+        name: '낚시터',
+        icon: '🎣',
+        desc: '낚시꾼들이 즐겨 찾던 자리. 낚싯대로 물고기를 낚거나 통발을 설치할 수 있다.',
+        dangerMod: 0.05,
+        isFishing: true,
+        firstEnterReward: {
+          claimKey: 'hangang_rod',
+          items: [
+            {
+              id: 'fishing_rod_basic',
+              qty: 1,
+            },
+          ],
+        },
+        lootTable: [
+          {
+            id: 'contaminated_water',
+            weight: 4,
+          },
+          {
+            id: 'pebble',
+            weight: 3,
+          },
+          {
+            id: 'rope',
+            weight: 2,
+          },
+          {
+            id: 'bait_worm',
+            weight: 3,
+          },
+        ],
+        lootCount: [
+          1,
+          2,
+        ],
+      },
+      {
+        id: 'hangang_riverside_junggoo',
+        name: '강변 산책로',
+        icon: '🌿',
+        desc: '강변을 따라 이어진 산책로. 잡초와 돌멩이, 버려진 물건이 있다.',
+        dangerMod: 0.08,
+        isFishing: true,
+        firstEnterReward: {
+          claimKey: 'hangang_rod',
+          items: [
+            {
+              id: 'fishing_rod_basic',
+              qty: 1,
+            },
+          ],
+        },
+        lootTable: [
+          {
+            id: 'wild_garlic',
+            weight: 4,
+          },
+          {
+            id: 'dandelion',
+            weight: 3,
+          },
+          {
+            id: 'pebble',
+            weight: 4,
+          },
+          {
+            id: 'dry_grass',
+            weight: 3,
+          },
+          {
+            id: 'bait_insect',
+            weight: 2,
+          },
+        ],
+        lootCount: [
+          1,
+          3,
+        ],
+      },
+    ],
+    districtId: 'junggoo',
+  },
 
   // ── 약탈자 소굴 (구출 작전 랜드마크) ─────────────────────────
   // 소굴은 rescue_npc 목표 퀘스트로 연결되며, landmarkCleared 이벤트로 완료된다.
@@ -2067,14 +2917,6 @@ export const LANDMARK_DATA = {
     ],
   },
 };
-
-// ── 한강 낚시터 (구별 독립 엔트리 — HANGANG_BASE에서 파생) ──
-// 정적 리터럴 안에 동적 스프레드(...Object.fromEntries)를 넣으면 에디터 툴
-// (tools/editor)의 리터럴 파싱이 깨지므로, 파생 엔트리는 선언 직후 여기서 병합한다.
-// const 객체의 속성 추가이므로 런타임 키 구성은 종전과 동일하다.
-for (const d of HANGANG_DISTRICTS) {
-  LANDMARK_DATA[`hangang_${d}`] = buildHangangEntry(d);
-}
 
 // ── 유틸리티 ────────────────────────────────────────────────
 
