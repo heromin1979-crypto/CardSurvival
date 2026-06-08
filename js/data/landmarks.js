@@ -6,6 +6,68 @@
 // 25개 구별 랜드마크 세부 장소 (4~6개씩)
 // lootTable: [{id, weight}] — weight 합산 기반 가중치 추첨
 
+// 한강이 접하는 10개 구 — hasFishing:true 구역과 1:1 대응.
+// Task 2·5에서 import하므로 named export로 공개한다.
+export const HANGANG_DISTRICTS = [
+  'gangnam','gangdong','gwangjin','mapo','seocho',
+  'seongdong','songpa','yeongdeungpo','yongsan','junggoo',
+];
+
+// 구별 차별화 전 공통 베이스. 내용·루트 테이블은 원본 hangang 엔트리에서 그대로 복사.
+const HANGANG_BASE = {
+  name: '한강',
+  desc: '서울을 가로지르는 한강. 오염된 강물이지만 물고기는 살아있다.',
+  icon: '🌊',
+  isHangang: true,
+  subLocations: [
+    {
+      id: 'hangang_fishing_spot', name: '낚시터',
+      icon: '🎣',
+      desc: '낚시꾼들이 즐겨 찾던 자리. 낚싯대로 물고기를 낚거나 통발을 설치할 수 있다.',
+      dangerMod: 0.05,
+      isFishing: true,
+      // 한강 낚시터 / 강변 첫 진입 시 캐릭터당 1회 낚싯대 지급 — 낚시 메커닉 진입 동기.
+      // claimKey 공유로 두 sublocation 합산 1회만 지급 (협의서 §7.2: 어느 쪽이든 첫 진입 1회).
+      firstEnterReward: { claimKey: 'hangang_rod', items: [{ id: 'fishing_rod_basic', qty: 1 }] },
+      lootTable: [
+        { id: 'contaminated_water', weight: 4 },
+        { id: 'pebble',            weight: 3 },
+        { id: 'rope',              weight: 2 },
+        { id: 'bait_worm',         weight: 3 },
+      ],
+      lootCount: [1, 2],
+    },
+    {
+      id: 'hangang_riverside', name: '강변 산책로',
+      icon: '🌿',
+      desc: '강변을 따라 이어진 산책로. 잡초와 돌멩이, 버려진 물건이 있다.',
+      dangerMod: 0.08,
+      isFishing: true,
+      firstEnterReward: { claimKey: 'hangang_rod', items: [{ id: 'fishing_rod_basic', qty: 1 }] },
+      lootTable: [
+        { id: 'wild_garlic',       weight: 4 },
+        { id: 'dandelion',         weight: 3 },
+        { id: 'pebble',            weight: 4 },
+        { id: 'dry_grass',         weight: 3 },
+        { id: 'bait_insect',       weight: 2 },
+      ],
+      lootCount: [1, 3],
+    },
+  ],
+};
+
+// 구별 차별화가 필요해지면 여기에 districtId 키로 오버라이드 객체를 추가한다.
+const HANGANG_OVERRIDES = {};
+
+// 베이스와 오버라이드를 합성하고 sublocation id에 구 접미사를 붙여 엔트리를 생성한다.
+// id 충돌 없이 구별 stock·탐색 상태를 독립적으로 관리하기 위해 접미사를 사용한다.
+function buildHangangEntry(districtId) {
+  const ov = HANGANG_OVERRIDES[districtId] ?? {};
+  const baseSubs = ov.subLocations ?? HANGANG_BASE.subLocations;
+  const subs = baseSubs.map(sub => ({ ...sub, id: `${sub.id}_${districtId}` }));
+  return { ...HANGANG_BASE, ...ov, districtId, subLocations: subs };
+}
+
 export const LANDMARK_DATA = {
 
   // ── 베이스캠프 (직접 건설한 안전 거점) ─────────────────────
@@ -1673,47 +1735,8 @@ export const LANDMARK_DATA = {
     ],
   },
 
-  // ── 한강 낚시터 (공용 — hasFishing 구역 전체 공유) ───────────
-  hangang: {
-    name: '한강',
-    desc: '서울을 가로지르는 한강. 오염된 강물이지만 물고기는 살아있다.',
-    icon: '🌊',
-    subLocations: [
-      {
-        id: 'hangang_fishing_spot', name: '낚시터',
-        icon: '🎣',
-        desc: '낚시꾼들이 즐겨 찾던 자리. 낚싯대로 물고기를 낚거나 통발을 설치할 수 있다.',
-        dangerMod: 0.05,
-        isFishing: true,
-        // 한강 낚시터 / 강변 첫 진입 시 캐릭터당 1회 낚싯대 지급 — 낚시 메커닉 진입 동기.
-        // claimKey 공유로 두 sublocation 합산 1회만 지급 (협의서 §7.2: 어느 쪽이든 첫 진입 1회).
-        firstEnterReward: { claimKey: 'hangang_rod', items: [{ id: 'fishing_rod_basic', qty: 1 }] },
-        lootTable: [
-          { id: 'contaminated_water', weight: 4 },
-          { id: 'pebble',            weight: 3 },
-          { id: 'rope',              weight: 2 },
-          { id: 'bait_worm',         weight: 3 },
-        ],
-        lootCount: [1, 2],
-      },
-      {
-        id: 'hangang_riverside', name: '강변 산책로',
-        icon: '🌿',
-        desc: '강변을 따라 이어진 산책로. 잡초와 돌멩이, 버려진 물건이 있다.',
-        dangerMod: 0.08,
-        isFishing: true,
-        firstEnterReward: { claimKey: 'hangang_rod', items: [{ id: 'fishing_rod_basic', qty: 1 }] },
-        lootTable: [
-          { id: 'wild_garlic',       weight: 4 },
-          { id: 'dandelion',         weight: 3 },
-          { id: 'pebble',            weight: 4 },
-          { id: 'dry_grass',         weight: 3 },
-          { id: 'bait_insect',       weight: 2 },
-        ],
-        lootCount: [1, 3],
-      },
-    ],
-  },
+  // ── 한강 낚시터 (구별 독립 엔트리 — HANGANG_BASE에서 파생) ──
+  ...Object.fromEntries(HANGANG_DISTRICTS.map(d => [`hangang_${d}`, buildHangangEntry(d)])),
 
   // ── 약탈자 소굴 (구출 작전 랜드마크) ─────────────────────────
   // 소굴은 rescue_npc 목표 퀘스트로 연결되며, landmarkCleared 이벤트로 완료된다.
@@ -2053,6 +2076,14 @@ export function getLandmarkData(key) {
   if (LANDMARK_DATA[key]) return LANDMARK_DATA[key];
   const stripped = key.replace(/^lm_/, '');
   return LANDMARK_DATA[stripped] ?? null;
+}
+
+/**
+ * 주어진 랜드마크 키가 한강 계열(구별 파생 엔트리)인지 판정한다.
+ * `lm_` 접두사 폴백을 포함하므로 아이템 ID를 그대로 전달해도 동작한다.
+ */
+export function isHangangLandmark(key) {
+  return !!getLandmarkData(key)?.isHangang;
 }
 
 /**
