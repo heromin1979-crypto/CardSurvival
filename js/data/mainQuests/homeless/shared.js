@@ -91,7 +91,7 @@ const HOMELESS_SHARED = {
     reward: { morale: 8, items: [{ definitionId: 'rope', qty: 2 }] },
     failPenalty: { morale: -5 }, deadlineDays: 23,
     narrative: {
-      start: '저 위, 롯데타워에서 사람들이 손을 흔드는 것 같았다. 거기 가기 전에 제대로 된 거처가 필요하다.',
+      start: '강을 건너기 전에 제대로 된 거처가 필요하다. 강 이남 어딘가에 자리를 잡아야 한다. 롯데타워든, 다른 거점이든.',
       complete: '거처가 완성됐다. 구조물 만들면서 쓰고 남은 로프도 챙겼다. 2년 전 다리 아래보다 훨씬 낫다.',
     },
   },
@@ -117,8 +117,8 @@ const HOMELESS_SHARED = {
     reward: { morale: 8, items: [{ definitionId: 'flashlight', qty: 1 }] },
     failPenalty: { morale: -5 }, deadlineDays: 33,
     narrative: {
-      start: '강남에서 잠실까지. 회사 다닐 때는 차로 20분이었다. 지금은 하루 이상 걸린다.',
-      complete: '8일치 식량. 강남 건물에서 손전등도 발견했다. 두 가지 제안이 들려왔다. 의사 이지수가 치료소를 함께 운영하자고 한다. 롯데타워에서 누군가가 혼자 버티고 있다는 소문도 들렸다.',
+      start: '강남에서 잠실까지. 회사 다닐 때는 차로 20분이었다. 지금은 하루 이상 걸린다. 강남 골목에서 광진 낚시꾼 중 한 명을 다시 만났다.',
+      complete: '8일치 식량. 강남 건물에서 손전등도 발견했다. 낚시꾼이 두 가지 소식을 전했다. "삼성병원 쪽 이지수라는 의사가 사람 찾는대요. 물자 대줄 사람." 그리고 또 하나. "롯데타워엔 누가 혼자 버틴다던데, 무리를 못 모은대요." 길이 둘로 갈렸다.',
     },
   },
 
@@ -132,15 +132,17 @@ const HOMELESS_SHARED = {
     isBranchPoint: true,
     branchOptions: [
       {
-        label: '이지수 의사와 협력',
-        desc: '의료+커뮤니티 결합. 의사가 있으면 살아남을 확률이 높아진다.',
+        label: '이지수 의사와 협력 (강남 치료소)',
+        desc: '의료를 얻는다. 이지수가 동행하고, 거점은 치료 중심으로 선다.',
         setsFlag: 'homeless_branch_a',
         recruitNpc: 'npc_jisu',
+        warning: '롯데타워를 포기한다. 강남에 머무는 만큼 대규모 자치 커뮤니티는 꿈꾸지 않는다. 규모보다 사람을 택하는 길.',
       },
       {
-        label: '롯데타워 자력 커뮤니티',
-        desc: '내 방식대로. 아무것도 없어도 버텨온 사람이다.',
+        label: '롯데타워 자력 커뮤니티 (송파)',
+        desc: '규모를 얻는다. 타워를 본거지로 수십 명의 커뮤니티를 세운다.',
         setsFlag: 'homeless_branch_b',
+        warning: '의사가 없다. 다친 사람은 내 손으로 감당해야 한다. 의료 역량을 포기하는 대신 독립과 규모를 택하는 길.',
       },
     ],
     narrative: {

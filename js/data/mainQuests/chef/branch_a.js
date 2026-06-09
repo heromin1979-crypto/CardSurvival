@@ -132,12 +132,12 @@ const CHEF_BRANCH_A = {
     branchOptions: [
       {
         label: '강남 대형마트 식량 네트워크',
-        desc: '한강 남쪽 대형마트들을 잇는 대규모 보급 네트워크를 완성한다.',
+        desc: '한강 남쪽 대형마트들을 잇는 대규모 보급 네트워크를 완성한다. 더 많은 사람을 먹이는 대신, 식량은 끝내 남의 창고에서 온다. 마트가 마르면 급식소도 마른다.',
         setsFlag: 'chef_end_a1',
       },
       {
         label: '가락시장 농장 연계',
-        desc: '가락시장 옥상 농장을 재가동해 자급 식량 기반을 만든다.',
+        desc: '가락시장 옥상 농장을 재가동해 자급 식량 기반을 만든다. 마침내 직접 기르는 대신, 한 곳에 묶인다 — 먹일 수 있는 입은 줄고, 수확을 기다리는 계절을 견뎌야 한다.',
         setsFlag: 'chef_end_a2',
       },
     ],
@@ -167,7 +167,7 @@ const CHEF_BRANCH_A = {
 
   mq_chef_end_a1: {
     id: 'mq_chef_end_a1', title: '서울 급식 네트워크',
-    desc: '365일을 생존하라. 강남 대형마트 네트워크가 서울 식량 자급 체계가 된다.',
+    desc: '365일을 생존하라. 강남 대형마트 네트워크가 한강 이남의 식량 보급망이 된다.',
     icon: '⭐', characterId: 'chef', dayTrigger: 320,
     prerequisite: 'mq_chef_a1_prep', requiresFlag: 'chef_end_a1',
     objective: { type: 'survive_days', count: 365 },
@@ -175,7 +175,7 @@ const CHEF_BRANCH_A = {
     failPenalty: null, deadlineDays: Infinity,
     narrative: {
       start: '1년. 남대문-강남 축에서 시작한 급식 네트워크가 한강 이남 전역으로 퍼지고 있다. 윤재혁의 이름은 "남대문 셰프"로 불린다.',
-      complete: 'D+365. 4개 마트 + 2개 급식소 보급망. 하루 급식 인원 87명. 누적 급식 12,400끼. 윤재혁은 조리대 앞에 섰다. "음식은 생존이 아니라 희망입니다." 소피텔 호텔 주방보다 훨씬 보람찬 주방이다.',
+      complete: 'D+365. 4개 마트 + 2개 급식소 보급망. 하루 급식 인원 87명. 누적 급식 12,400끼. 윤재혁은 조리대 앞에 섰다. "직접 기르지는 못했다. 흩어진 것을 모아 흐르게 했을 뿐이다. 그래도 오늘 87명이 먹는다." 자급은 아니지만, 굶주림은 멈췄다.',
     },
   },
 

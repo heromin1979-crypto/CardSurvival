@@ -8,16 +8,16 @@ const SOLDIER_BRANCH_B = {
   // ── B경로 공통 (Q11-Q15) ─────────────────────────────────────
 
   mq_soldier_b_11: {
-    id: 'mq_soldier_b_11', title: '전우의 인식표',
-    desc: '나이프 2개를 수집하라. 전우들의 유품을 수습하는 의식이다.',
+    id: 'mq_soldier_b_11', title: '전우의 칼',
+    desc: '나이프 2개를 수습하라. 쓰러진 전우들이 쥐고 있던 무기다.',
     icon: '🎖️', characterId: 'soldier', dayTrigger: 65,
     prerequisite: 'mq_soldier_10', requiresFlag: 'soldier_branch_b',
     objective: { type: 'collect_item', definitionId: 'knife', count: 2 },
     reward: { morale: 15, items: [{ definitionId: 'alcohol_swab', qty: 2 }, { definitionId: 'painkiller', qty: 1 }] },
     failPenalty: { morale: -5 }, deadlineDays: 120,
     narrative: {
-      start: '광화문 복도에서 군번줄 3개를 더 발견했다. 박상현, 김태호, 이동훈. 유품을 찾아 수습해야 한다. 전우에 대한 예의다.',
-      complete: '인식표 4개. 박상현, 김태호, 이동훈, 정재민. 살아서 전달하겠다고 약속했다. 의료품도 챙겼다. 혼자 가는 길, 부상에 대비해야 한다.',
+      start: '목에 건 군번줄 네 개. 박상현, 김태호, 이동훈, 정재민. 시신은 두고 왔다. 대신 그들이 쥐고 있던 칼은 거둘 수 있다. 무기를 거두면 시신을 거둘 수 없다. 둘 다는 안 된다.',
+      complete: '전우의 칼 두 자루. 내 것과 함께 챙겼다. 군번줄은 목에 그대로 둔다. 살아서 전달한다는 약속은 칼을 드는 것으로 대신한다. 혼자 가는 길, 손에 쥔 것이 늘었다.',
     },
   },
 
@@ -66,7 +66,7 @@ const SOLDIER_BRANCH_B = {
   mq_soldier_b_15: {
     id: 'mq_soldier_b_15', title: '약 2개월 생존',
     desc: '100일 이상 생존하라. 살아있는 것 자체가 임무다.',
-    icon: '⏱️', characterId: 'soldier', dayTrigger: 95,
+    icon: '⏱️', characterId: 'soldier', dayTrigger: 175,
     prerequisite: 'mq_soldier_b_14', requiresFlag: 'soldier_branch_b',
     objective: { type: 'survive_days', count: 100 },
     reward: { morale: 10, items: [{ definitionId: 'radio', qty: 1 }] },
@@ -85,8 +85,8 @@ const SOLDIER_BRANCH_B = {
       },
     ],
     narrative: {
-      start: '160일. 광화문에서 팀원들이 쓰러진 날부터 160일. 혼자 살아남았다.',
-      complete: '160일. 박상현이라면 뭐라고 했을까. "민준아, 그냥 살면 돼." KBS 방송이 나가고 있다. 무전기를 손에 쥐었다. 이제 결정할 시간이다.',
+      start: '100일. 광화문에서 팀원들이 쓰러진 날부터 100일. 혼자 살아남았다.',
+      complete: '100일. 박상현이라면 뭐라고 했을까. "민준아, 그냥 살면 돼." KBS 방송이 나가고 있다. 무전기를 손에 쥐었다. 이제 결정할 시간이다.',
     },
   },
 
@@ -117,8 +117,8 @@ const SOLDIER_BRANCH_B = {
     reward: { morale: 15, items: [{ definitionId: 'battle_ration', qty: 3 }], flags: { mainQuestComplete_soldier: true, soldier_ending: 'b3_suwon' } },
     failPenalty: { morale: -5 }, deadlineDays: Infinity,
     narrative: {
-      start: '마지막 방송을 내보낸다. "서울에서 수원으로 이동합니다. 따라오는 분들을 기다리겠습니다." 이제 걷는다.',
-      complete: 'D+90. 수원 외곽. 군용 전투 식량 세 팩. 뒤에서 발소리가 들렸다. 방송을 듣고 따라온 사람들이었다. 박상현, 나는 혼자가 아니야.',
+      start: '마지막 방송을 내보냈다. "서울에서 수원으로 이동합니다. 따라오는 분들을 기다리겠습니다." 마이크를 끄자 KBS는 정적이 됐다. 이제 걷는 일만 남았다. 수원까지 사흘. 사흘치 식량이 없으면 도착 전에 무너진다. 따라오겠다던 사람들이 길 위에서 굶으면, 방송은 그들을 죽인 셈이 된다. 보급이 곧 약속이다.',
+      complete: 'D+90. 수원 외곽. 군용 전투 식량 세 팩. 뒤에서 발소리가 들렸다. 한 명이 아니었다. 방송을 듣고 길에서 합류한 사람들이었다. 식량을 나눴다. 박상현, 나는 혼자가 아니야.',
     },
   },
 

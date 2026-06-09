@@ -16,8 +16,8 @@ const ENGINEER_BRANCH_B = {
     reward: { morale: 15, items: [{ definitionId: 'scrap_metal', qty: 3 }] },
     failPenalty: { morale: -10 }, deadlineDays: 120,
     narrative: {
-      start: '박영철 소방관이 은평구에서 대피소를 짓고 있다. 엔지니어가 없어서 구조 설계가 안 된다고 했다.',
-      complete: '은평구 도착. 박영철이 반겼다. "엔지니어가 왔군요. 이제 제대로 만들 수 있겠습니다." 현장 주변에 고철이 쌓여있었다.',
+      start: '설계도는 가방 안에 있다. 차를 만들어 서울을 빠져나가면 된다. 그런데 발이 떨어지지 않았다. 박영철 소방관이 은평구에서 대피소를 짓고 있다. 엔지니어가 없어 구조 설계가 막혔다고 했다. 떠나는 길과 남는 길. 둘 중 하나를 택하면 다른 하나는 버려야 한다.',
+      complete: '은평구 도착. 박영철이 반겼다. "엔지니어가 왔군요. 이제 제대로 만들 수 있겠습니다." 현장 주변에 고철이 쌓여 있었다. 정대한은 설계도를 가방 깊숙이 넣었다. 탈출은 잠시 미룬다. 여기 사람들이 먼저다. 아버지라면 어느 쪽을 골랐을까 — 답은 알 수 없었다.',
     },
   },
 
@@ -66,7 +66,7 @@ const ENGINEER_BRANCH_B = {
   mq_eng_b_15: {
     id: 'mq_eng_b_15', title: '재건 방향 결정',
     desc: '100일 이상 생존하라. 도시 재건의 방향을 결정해야 한다.',
-    icon: '⚖️', characterId: 'engineer', dayTrigger: 95,
+    icon: '⚖️', characterId: 'engineer', dayTrigger: 180,
     prerequisite: 'mq_eng_b_14', requiresFlag: 'eng_branch_b',
     objective: { type: 'survive_days', count: 100 },
     reward: { morale: 8, items: [{ definitionId: 'pipe_wrench', qty: 1 }] },
@@ -75,12 +75,12 @@ const ENGINEER_BRANCH_B = {
     branchOptions: [
       {
         label: '도시 인프라 복구 완성',
-        desc: '전기, 수도, 통신을 복구해 서울을 다시 살아있는 도시로 만든다.',
+        desc: '전기·수도·통신을 되살려 서울을 다시 살아있는 도시로 만든다. 대신 떠날 기회는 영영 포기한다.',
         setsFlag: 'eng_end_b1',
       },
       {
         label: '재건 포기, 헬기로 탈출',
-        desc: '결국 도시를 고칠 수 없다는 것을 깨닫고, 아버지의 R22 설계도로 헬기를 제작해 탈출한다.',
+        desc: '도시는 너무 크게 부서졌다. 아버지의 R22 설계도로 헬기를 만들어 하늘로 나간다. 대신 여기까지 살린 인프라와 사람들을 등진다.',
         setsFlag: 'eng_end_b3',
         warning: '9단계 제작 체인 + 7종 신규 부품 + 항공 가솔린 정제. 추가 100일 이상의 플레이가 필요합니다.',
       },
@@ -213,13 +213,13 @@ const ENGINEER_BRANCH_B = {
     failPenalty: { morale: -5 }, deadlineDays: Infinity,
     narrative: {
       start: '알루미늄 합금이 이상적이지만 없다. 고철을 용광로에서 녹여 합금화한다. 아버지의 메모: "고철 5에 숯 2. 1600도에서 20분. 식힌 뒤 단조." 작업대를 공장 용광로 옆에 세웠다.',
-      complete: '항공용 합금 잉곳 8개. 두드려 보면 은은한 고음. 밀도와 강도가 항공 규격에 가깝다. 이제 이것으로 모든 부품을 깎는다.',
+      complete: '항공용 합금 잉곳 8개. 두드려 보면 은은한 고음. 밀도와 강도가 항공 규격에 가깝다. 박영철이 용광로 불을 지켜봤다. "대한씨, 이 불 끄지 말고 둬요. 내가 화재 감시는 자신 있으니까." 이제 이것으로 모든 부품을 깎는다.',
     },
   },
 
   mq_eng_b3_3: {
     id: 'mq_eng_b3_3', title: '로터 블레이드',
-    desc: '주회전익(rotor_blade) 4개를 제작하라. 대칭 정밀도가 생명이다.',
+    desc: '주회전익(rotor_blade) 4개를 확보하라. 작업대에서 직접 깎는다. 대칭 정밀도가 생명이다.',
     icon: '🌀', characterId: 'engineer', dayTrigger: 230,
     prerequisite: 'mq_eng_b3_2', requiresFlag: 'eng_end_b3',
     objective: { type: 'collect_item', definitionId: 'rotor_blade', count: 4 },
@@ -233,21 +233,21 @@ const ENGINEER_BRANCH_B = {
 
   mq_eng_b3_4: {
     id: 'mq_eng_b3_4', title: '피스톤 엔진 조립',
-    desc: '4기통 피스톤 엔진(piston_engine)을 제작하라. 가솔린 연소식.',
+    desc: '4기통 피스톤 엔진(piston_engine) 1기를 확보하라. 작업대에서 가솔린 연소식으로 조립한다.',
     icon: '⚙️', characterId: 'engineer', dayTrigger: 245,
     prerequisite: 'mq_eng_b3_3', requiresFlag: 'eng_end_b3',
     objective: { type: 'collect_item', definitionId: 'piston_engine', count: 1 },
     reward: { morale: 20, items: [{ definitionId: 'wire', qty: 5 }, { definitionId: 'rubber', qty: 3 }] },
     failPenalty: { morale: -10 }, deadlineDays: Infinity,
     narrative: {
-      start: '아버지의 설계는 라이커밍 O-320 방식 4기통 피스톤. 전기 모터로 바꿀까 고민했지만 중량 대비 출력이 안 맞는다. 원설계대로 간다. 실린더 블록 → 연료 분사 → 크랭크샤프트. 3단계 조립.',
+      start: '아버지의 설계는 라이커밍 O-320 방식 4기통 피스톤. 전기 모터로 바꿀까 고민했지만 중량 대비 출력이 안 맞는다. 원설계대로 간다. 실린더 블록 → 연료 분사 → 크랭크샤프트. 3단계 조립. 박영철이 무거운 블록을 받쳐줬다. "혼자선 못 들어요, 이건."',
       complete: '피스톤 엔진 완성. 크랭크샤프트를 손으로 돌려본다. 부드럽다. 아버지가 말했었다. "피스톤은 고전적이지만 가장 믿을 수 있어." 이제 가솔린이 필요하다.',
     },
   },
 
   mq_eng_b3_5: {
     id: 'mq_eng_b3_5', title: '꼬리 로터와 항공 전자',
-    desc: '꼬리 로터 조립체(tail_rotor_assembly)와 항공 전자 모듈(avionics_module) 각 1개를 제작하라.',
+    desc: '꼬리 로터 조립체(tail_rotor_assembly)와 항공 전자 모듈(avionics_module)을 각 1개 확보하라. 작업대에서 조립한다.',
     icon: '📟', characterId: 'engineer', dayTrigger: 260,
     prerequisite: 'mq_eng_b3_4', requiresFlag: 'eng_end_b3',
     objective: { type: 'collect_item', definitionId: 'avionics_module', count: 1 },
@@ -261,7 +261,7 @@ const ENGINEER_BRANCH_B = {
 
   mq_eng_b3_6: {
     id: 'mq_eng_b3_6', title: '동체 프레임',
-    desc: '조종석+엔진 베드+꼬리 빔 통합 프레임(fuselage_frame) 1개를 제작하라.',
+    desc: '조종석+엔진 베드+꼬리 빔 통합 프레임(fuselage_frame) 1개를 확보하라. 가장 큰 단일 부품. 작업대에서 용접·조립한다.',
     icon: '🛸', characterId: 'engineer', dayTrigger: 275,
     prerequisite: 'mq_eng_b3_5', requiresFlag: 'eng_end_b3',
     objective: { type: 'collect_item', definitionId: 'fuselage_frame', count: 1 },
@@ -297,7 +297,7 @@ const ENGINEER_BRANCH_B = {
     failPenalty: { morale: -10 }, deadlineDays: Infinity,
     narrative: {
       start: '라이커밍 O-320의 정석은 100LL 항공 가솔린. 자동차 가솔린으로는 엔진이 몇 시간 만에 망가진다. 정제해야 한다. 자동차 연료 5통 → 증류 → 알코올+활성탄 필터링 → 드럼 1개. 2드럼이면 4시간 비행 = 경기도 남부까지 여유.',
-      complete: '100LL 항공 가솔린 드럼 2개 확보. 약 80리터. 납 첨가 고옥탄가. 연료 트럭에서 빼낸 차량 연료가 항공용으로 되살아났다. 아버지의 레시피대로.',
+      complete: '100LL 항공 가솔린 드럼 2개 확보. 약 80리터. 납 첨가 고옥탄가. 박영철이 드럼을 냄새 맡더니 물러섰다. "이거 한 통이면 우리 대피소가 한 달은 버틸 텐데." 정대한은 답하지 못했다. 연료 트럭에서 빼낸 차량 연료가 항공용으로 되살아났다. 아버지의 레시피대로.',
     },
   },
 

@@ -16,8 +16,8 @@ const SOLDIER_BRANCH_A = {
     reward: { morale: 15, items: [{ definitionId: 'flashlight', qty: 1 }] },
     failPenalty: { morale: -10 }, deadlineDays: 120,
     narrative: {
-      start: '박영철의 무전. "강민준 하사, 서대문 쪽에 생존자가 갇혔습니다. 전술 지원이 필요합니다." 군인의 자리는 여기다.',
-      complete: '서대문 소방서. 박영철 소방위가 구조 장비를 챙기고 있었다. "와줬군요. 군인이 옆에 있으니 든든합니다." 소방서 장비함에서 손전등도 받았다. 구조 작전이 시작됐다.',
+      start: 'KBS 좌표를 수첩에서 지웠다. 송출은 신호를 보내는 일이다. 신호는 누군가 받아야 의미가 있고, 받을 사람이 먼저 죽으면 송출할 이유도 없다. 방송을 미룬다. 서대문으로 간다. 박상현이라면 같은 선택을 했을 거다.',
+      complete: '서대문 소방서. 박영철 소방위가 구조 장비를 챙기고 있었다. "와줬군요. 군인이 옆에 있으니 든든합니다." 손전등을 받아 들었다. 마이크 대신 들것을 든다. 방송은 살아남은 사람들의 몫으로 남긴다.',
     },
   },
 
@@ -66,14 +66,14 @@ const SOLDIER_BRANCH_A = {
   mq_soldier_a_15: {
     id: 'mq_soldier_a_15', title: '작전 확대 결정',
     desc: '100일 이상 생존하라. 구조 작전을 서울 전역으로 확대할 때다.',
-    icon: '⚖️', characterId: 'soldier', dayTrigger: 95,
+    icon: '⚖️', characterId: 'soldier', dayTrigger: 175,
     prerequisite: 'mq_soldier_a_14', requiresFlag: 'soldier_branch_a',
     objective: { type: 'survive_days', count: 100 },
     reward: { morale: 8, items: [{ definitionId: 'stimulant', qty: 1 }], flags: { soldier_end_a1: true } },
     failPenalty: null, deadlineDays: Infinity,
     narrative: {
-      start: '180일. 박영철과 함께한 구조 작전이 성과를 냈다.',
-      complete: '박영철: "강 하사, 이제 서울 전역이다. 우리가 해낼 수 있어요." 각성제를 꺼내 마셨다. 길은 하나였다.',
+      start: '100일을 넘겼다. 박영철과 함께한 구조 작전이 성과를 냈다. 서대문 한 구를 지키는 데 100일이 들었다.',
+      complete: '박영철: "강 하사, 이제 서울 전역이다. 우리가 해낼 수 있어요." 한 구를 넓히면 손이 닿는 범위가 늘고, 닿지 않는 곳은 더 멀어진다. 각성제를 마셨다. 길은 하나였다.',
     },
   },
 

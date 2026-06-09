@@ -353,7 +353,7 @@ const CharCreate = {
     gs.flags = {
       tutorialSeen: false, firstBlood: false,
       totalKills: 0, totalItemsFound: 0, totalCrafted: 0,
-      totalMedicalCrafted: 0, structuresBuilt: 0,
+      totalMedicalCrafted: 0, totalFoodCrafted: 0, structuresBuilt: 0,
       despairTicks: 0, nukeZoneEntered: 0, lastEnemyCount: 0,
       yeongdeungpoVisited: false, seodaemunVisited: false,
       songpaVisited: false, jongnoVisited: false,

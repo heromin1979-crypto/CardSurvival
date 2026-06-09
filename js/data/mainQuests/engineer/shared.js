@@ -131,12 +131,12 @@ const ENGINEER_SHARED = {
     branchOptions: [
       {
         label: '아버지 설계도로 탈출',
-        desc: '탈출 차량을 완성해 서울을 빠져나간다. 아버지의 마지막 선물을 완성한다.',
+        desc: '탈출 차량을 완성해 서울을 빠져나간다. 아버지의 마지막 선물을 완성한다. 대신 이 도시에 남은 사람들은 돌아보지 않는다.',
         setsFlag: 'eng_branch_a',
       },
       {
         label: '박영철과 도시 재건',
-        desc: '나가는 것보다 남아서 고치는 것이 맞을 수도 있다. 소방관과 함께 인프라를 복구한다.',
+        desc: '남아서 고친다. 소방관과 함께 인프라를 복구한다. 대신 서울을 나갈 기회는 당분간 닫힌다.',
         setsFlag: 'eng_branch_b',
         recruitNpc: 'npc_yeongcheol',
       },

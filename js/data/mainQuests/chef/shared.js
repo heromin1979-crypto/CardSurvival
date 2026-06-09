@@ -151,12 +151,12 @@ const CHEF_SHARED = {
     branchOptions: [
       {
         label: '한강 이남 식량 루트',
-        desc: '강남 대형마트로 진출해 한강 이남 보급망을 개척한다. 이후 네트워크와 농장 연계로 다시 갈린다.',
+        desc: '강남 대형마트로 진출해 한강 이남 보급망을 개척한다. 규모를 얻는 대신, 칼을 다시 들어야 한다 — 강을 건너고 약탈자와 마주친다. 이후 네트워크와 농장 연계로 다시 갈린다.',
         setsFlag: 'chef_branch_a',
       },
       {
         label: '용산 동료 셰프 — 미식 복원',
-        desc: '용산에서 소피텔 동료 박민호를 찾아 전문 주방을 세우고, 종말 이후의 미식을 되살린다.',
+        desc: '배를 채우는 일은 남대문에 맡긴다. 용산에서 동료 박민호를 찾아, 음식이 다시 존엄이 될 수 있음을 증명한다. 자급의 규모를 포기하는 대신 한 끼의 격을 되찾는다.',
         setsFlag: 'chef_branch_b',
       },
     ],
@@ -242,7 +242,7 @@ const CHEF_SHARED = {
     reward: { morale: 15, items: [{ definitionId: 'wagyu_scrap', qty: 2 }, { definitionId: 'wild_honey', qty: 2 }], flags: { chef_team_assembled: true } },
     failPenalty: { morale: -5 }, deadlineDays: 85,
     narrative: {
-      start: '팀이 있다면 혼자보다 10배 많은 사람을 먹일 수 있다. 부주방장 박민호와 주방 보조 김지은. 두 사람의 신뢰를 얻으려면 요리로 증명해야 한다.',
+      start: '팀이 있다면 혼자보다 더 많은 사람을 먹일 수 있다. 소피텔 부주방장이었던 박민호, 그리고 호텔 조리학교 실습생이던 김지은 — 스무 살, 칼은 서툴지만 눈썰미가 좋다. 두 사람의 신뢰를 얻으려면 요리로 증명해야 한다.',
       complete: '10가지 요리. 팀은 윤재혁의 실력을 인정했다. 박민호: "이 정도면 주방장이야. 소피텔에서도 이보다 못 했어." 김지은: "저도 언젠가 셰프님처럼!" 이제 팀이 생겼다.',
     },
     companionEpilogue: {
