@@ -375,14 +375,14 @@ const DOCTOR_SHARED = {
 
   mq_doctor_09: {
     id: 'mq_doctor_09', title: '홍대 약국 경유',
-    desc: '마포구를 통과하라.',
+    desc: '마포구 홍대 약국가를 통과하며 다음 행선지의 단서를 줍는다.',
     icon: '🗺️', characterId: 'doctor', dayTrigger: 18, prerequisite: 'mq_doctor_08',
     objective: { type: 'visit_district', districtId: 'mapo', count: 1 },
     reward: { morale: 10, items: [{ definitionId: 'antiseptic', qty: 1 }, { definitionId: 'antidote', qty: 1 }] },
     failPenalty: { morale: -5 }, deadlineDays: 20,
     narrative: {
-      start: '마포구 홍대 입구. 약국들이 있는 곳이다.',
-      complete: '홍대 약국 뒷창고에서 소독약, 해독제, 그리고 메모 한 장 발견. "약사 한소희. 서울대 연구소로 갑니다." 용산 방향에서 무전도 잡혔다 — 군의관 강민준 하사. "의사를 찾습니다."',
+      start: '마포구 홍대. 약국이 늘어선 거리다. 세브란스는 여기서 강만 건너면 닿는다 — 그렇게 믿고 떠나온 길이다.',
+      complete: '약국 뒷창고에서 소독약과 해독제, 그리고 메모 한 장. "약사 한소희. 세브란스는 비었다. 서울대 연구소로 간다." 같은 순간 용산 쪽 무전이 잡힌다. "군의관 강민준. 의사를 찾습니다." 두 손이 동시에 손짓한다. 둘 다 잡을 수는 없다는 걸, 이지수는 메모를 접으며 알았다.',
     },
     locationHint: {
       districtId: 'mapo',
@@ -398,13 +398,13 @@ const DOCTOR_SHARED = {
       },
       {
         id: 'so_d09_02',
-        text: '마포구 진입',
-        textEn: 'Enter Mapo district',
+        text: '마포구 홍대 약국가 진입',
+        textEn: 'Enter the Hongdae pharmacy district in Mapo',
         match: { type: 'visit_district', districtId: 'mapo' },
       },
     ],
-    actionHint: '의료 배낭을 챙긴 뒤 마포구로 이동. 홍대 약국 라인을 우선 탐색.',
-    actionHintEn: 'Grab the expedition pack, move to Mapo, and sweep the Hongdae pharmacy line first.',
+    actionHint: '의료 배낭을 챙긴 뒤 마포구로 이동. 홍대 약국 라인을 우선 탐색해 한소희 메모와 강민준 무전을 확인.',
+    actionHintEn: 'Grab the expedition pack, move to Mapo, sweep the Hongdae pharmacy line for Sohee\'s note and Minjun\'s radio call.',
   },
 
   mq_doctor_10: {
@@ -417,27 +417,27 @@ const DOCTOR_SHARED = {
     isBranchPoint: true,
     branchOptions: [
       {
-        label: '한소희 약사와 협력',
-        desc: '서울대 연구소로 함께 간다. 합성 전문가와 백신을 연구한다.',
+        label: '한소희와 서울대로 (합성을 얻고, 통제권을 잃는다)',
+        desc: '관악 약학연구소의 합성 장비와 한소희의 손을 얻는다. 대신 연구의 방향은 한소희가 쥔다 — 무엇을 만들지, 누구에게 먼저 쓸지 당신이 정하지 못한다. 군의 보호도, 0번 환자 표본도 포기한다.',
         setsFlag: 'doctor_branch_a',
         recruitNpc: 'npc_sohee',
       },
       {
-        label: '강민준 군의관과 합류',
-        desc: '군 의료팀에 합류한다. 군 보급로와 전투 지원을 확보한다.',
+        label: '강민준과 용산으로 (안전을 얻고, 연구를 잃는다)',
+        desc: '군의 보급로와 무장 경계를 얻어 살아남을 확률이 가장 높다. 대신 우선순위는 부상 군인이지 백신이 아니다 — 치료 프로토콜 연구는 군의 일정에 밀려 멈춘다. 한소희의 합성 지식과 단독 백신의 길을 함께 닫는다.',
         setsFlag: 'doctor_branch_b',
         recruitNpc: 'npc_minjun',
       },
       {
-        label: '독자 연구 (시크릿)',
-        desc: '보라매에 남아 단독 역학 연구를 시작한다. 협력자 없이, 그러나 0번 환자 표본까지 밀어붙여 역병 백신을 합성한다. (사이드 체인 side_01 → side_end)',
+        label: '보라매에 남는다 (백신을 얻고, 모든 손을 잃는다)',
+        desc: '0번 환자 표본까지 밀어붙여 역병 백신 자체를 합성한다 — 셋 중 유일하게 원인을 끝낸다. 대신 협력자도, 보급도, 무장 경계도 전부 없다. 한소희와 강민준의 무전에 답하지 않는 순간, 두 사람은 당신 없이 떠난다.',
         setsFlag: 'doctor_branch_c',
         warning: '고난이도 — 협력자 없이 40일 이상 단독 생존해야 하며, 0번 환자(보스)와 대면해야 한다.',
       },
     ],
     narrative: {
       start: '유리 파편에 손을 베었다. 의사가 감염으로 쓰러지면 안 된다. 다른 이의 약을 빌릴 수 없다 — 내 손으로 처방해야 한다. 이 한 개의 약이 앞으로의 정체성을 증명한다.',
-      complete: '자기 처방으로 상처를 다스렸다. 비상용 각성제와 소독약이 추가로 확보됐다. 이제 두 갈래 길 앞에 섰다. 한소희의 메모와 강민준의 무전. 의사의 손이 어디로 향할지 선택해야 한다.',
+      complete: '자기 처방으로 상처를 다스렸다. 비상용 각성제와 소독약이 추가로 확보됐다. 세 갈래가 동시에 손짓한다 — 한소희의 합성 장비, 강민준의 보급로, 그리고 아무도 없는 보라매의 연구대. 어느 하나를 잡는 순간 나머지 둘은 닫힌다. 이지수는 베인 손을 폈다. 무엇을 끝내고 싶은지부터 정해야 했다.',
     },
     locationHint: {
       districtId: 'mapo',
@@ -593,7 +593,8 @@ const DOCTOR_SHARED = {
   mq_doctor_side_01: {
     id: 'mq_doctor_side_01', title: '감염 패턴 추적',
     desc: '감염자 10마리를 처치하며 감염 진행 단계를 관찰하라.',
-    icon: '🧫', characterId: 'doctor', dayTrigger: 22, prerequisite: 'mq_doctor_10',
+    icon: '🧫', characterId: 'doctor', dayTrigger: 22,
+    prerequisite: 'mq_doctor_10', requiresFlag: 'doctor_branch_c',
     objective: { type: 'track_infected', enemyType: 'zombie', count: 10 },
     reward: { morale: 10, items: [{ definitionId: 'herb', qty: 2 }, { definitionId: 'antiseptic', qty: 1 }] },
     failPenalty: { morale: -5 }, deadlineDays: 40,
@@ -606,7 +607,8 @@ const DOCTOR_SHARED = {
   mq_doctor_side_02: {
     id: 'mq_doctor_side_02', title: '환자 진료',
     desc: '부상당한 생존자 3명을 치료하라. (붕대/구급키트 사용)',
-    icon: '🩺', characterId: 'doctor', dayTrigger: 25, prerequisite: 'mq_doctor_10',
+    icon: '🩺', characterId: 'doctor', dayTrigger: 25,
+    prerequisite: 'mq_doctor_10', requiresFlag: 'doctor_branch_c',
     objective: { type: 'treat_npc', count: 3 },
     reward: { morale: 12, items: [{ definitionId: 'bandage', qty: 2 }, { definitionId: 'first_aid_kit', qty: 1 }] },
     failPenalty: { morale: -5 }, deadlineDays: 45,
@@ -619,20 +621,22 @@ const DOCTOR_SHARED = {
   mq_doctor_side_03: {
     id: 'mq_doctor_side_03', title: '역학 조사',
     desc: '서울역 중심부(중구)에 진입해 전염병 확산 경로를 지도화하라.',
-    icon: '🗺️', characterId: 'doctor', dayTrigger: 30, prerequisite: 'mq_doctor_10',
+    icon: '🗺️', characterId: 'doctor', dayTrigger: 30,
+    prerequisite: 'mq_doctor_10', requiresFlag: 'doctor_branch_c',
     objective: { type: 'visit_district', districtId: 'junggoo', count: 1 },
     reward: { morale: 15, items: [{ definitionId: 'antidote', qty: 1 }, { definitionId: 'herb', qty: 3 }] },
     failPenalty: { morale: -8 }, deadlineDays: 50,
     narrative: {
-      start: '감염은 어디서 시작됐을까. 서울역 — 하루 수십만이 지나던 교통의 심장. 그곳이 0번 환자의 동선과 겹칠 가능성이 가장 높다. 역학 조사가 필요하다.',
-      complete: '서울역 대합실에 쌓인 시신 분포를 스케치했다. 방사형 패턴 — 중심에서 바깥으로 퍼져나간 자국이 선명하다. 질병관리청 소속이 남긴 메모도 발견했다. 해독제 샘플과 약초도 챙겼다.',
+      start: '감염은 어디서 시작됐을까. 서울역 — 하루 수십만이 지나던 교통의 심장. 0번 환자의 동선과 겹칠 가능성이 가장 높다. 직접 들어가 보는 수밖에 없다.',
+      complete: '서울역 대합실에 들어섰다. 시신은 중심에서 바깥으로 퍼진 자국을 남겼다 — 첫 관찰을 수첩에 옮겼다. 질병관리청 명찰이 붙은 메모 한 장, 해독제 샘플, 약초를 챙겨 나왔다. 조사는 이제 시작이다.',
     },
   },
 
   mq_doctor_side_04: {
     id: 'mq_doctor_side_04', title: '격리 거점 구축',
     desc: '감염자 격리를 위한 의료 아이템 3개를 제작하라.',
-    icon: '⚗️', characterId: 'doctor', dayTrigger: 35, prerequisite: 'mq_doctor_10',
+    icon: '⚗️', characterId: 'doctor', dayTrigger: 35,
+    prerequisite: 'mq_doctor_10', requiresFlag: 'doctor_branch_c',
     objective: { type: 'craft_item', category: 'medical', count: 3 },
     reward: { morale: 10, items: [{ definitionId: 'antiseptic', qty: 2 }, { definitionId: 'bandage', qty: 3 }] },
     failPenalty: { morale: -6 }, deadlineDays: 55,
@@ -645,7 +649,8 @@ const DOCTOR_SHARED = {
   mq_doctor_side_05: {
     id: 'mq_doctor_side_05', title: '특수 감염자 표본',
     desc: '0번 환자(patient zero) 표본을 확보하라. 연구에 필수적이다.',
-    icon: '🧪', characterId: 'doctor', dayTrigger: 45, prerequisite: 'mq_doctor_side_01',
+    icon: '🧪', characterId: 'doctor', dayTrigger: 45,
+    prerequisite: 'mq_doctor_side_01', requiresFlag: 'doctor_branch_c',
     objective: { type: 'track_infected', enemyId: 'boss_patient_zero', count: 1 },
     reward: { morale: 15, items: [{ definitionId: 'antidote', qty: 2 }, { definitionId: 'stimulant', qty: 1 }, { definitionId: 'first_aid_kit', qty: 1 }] },
     failPenalty: { morale: -10 }, deadlineDays: 60,
@@ -658,7 +663,8 @@ const DOCTOR_SHARED = {
   mq_doctor_side_06: {
     id: 'mq_doctor_side_06', title: '야전병원 확장',
     desc: '의료 구조물 3개를 세워 본격적인 야전병원을 구축하라.',
-    icon: '🏥', characterId: 'doctor', dayTrigger: 50, prerequisite: 'mq_doctor_side_04',
+    icon: '🏥', characterId: 'doctor', dayTrigger: 50,
+    prerequisite: 'mq_doctor_side_04', requiresFlag: 'doctor_branch_c',
     objective: { type: 'craft_item', category: 'structure', count: 3 },
     reward: { morale: 20, items: [
       { definitionId: 'reinforced_bandage', qty: 3 },
@@ -676,8 +682,9 @@ const DOCTOR_SHARED = {
 
   mq_doctor_side_end: {
     id: 'mq_doctor_side_end', title: '역병의 종결 — 백신 합성',
-    desc: '0번 환자 혈액 표본으로 역병 백신을 직접 합성하라. (C루트 공식 엔딩 / A·B루트에서는 시크릿 부가 엔딩)',
-    icon: '💠', characterId: 'doctor', dayTrigger: 55, prerequisite: 'mq_doctor_side_05',
+    desc: '0번 환자 혈액 표본으로 역병 백신을 직접 합성하라. (C루트 단독 연구의 종착점)',
+    icon: '💠', characterId: 'doctor', dayTrigger: 55,
+    prerequisite: 'mq_doctor_side_05', requiresFlag: 'doctor_branch_c',
     objective: { type: 'craft_item', definitionId: 'plague_vaccine', count: 1 },
     reward: { morale: 35, items: [
       { definitionId: 'universal_cure', qty: 1 },

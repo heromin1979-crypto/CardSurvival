@@ -66,7 +66,7 @@ const ENGINEER_BRANCH_A = {
   mq_eng_a_15: {
     id: 'mq_eng_a_15', title: '탈출 방향 결정',
     desc: '100일 이상 생존하라. 탈출 차량이 완성에 가까워졌다.',
-    icon: '⚖️', characterId: 'engineer', dayTrigger: 95,
+    icon: '⚖️', characterId: 'engineer', dayTrigger: 180,
     prerequisite: 'mq_eng_a_14', requiresFlag: 'eng_branch_a',
     objective: { type: 'survive_days', count: 100 },
     reward: { morale: 8, items: [{ definitionId: 'binoculars', qty: 1 }] },
@@ -75,12 +75,12 @@ const ENGINEER_BRANCH_A = {
     branchOptions: [
       {
         label: '서울 완전 탈출',
-        desc: '차량을 완성해 서울을 빠져나간다. 아버지의 설계도로 만든 차가 달린다.',
+        desc: '차를 몰고 서울을 빠져나간다. 아버지의 설계가 길 위에서 증명된다. 대신 여기서 쌓은 작업장과 인연은 두고 떠난다.',
         setsFlag: 'eng_end_a1',
       },
       {
         label: '탈출 포기, 거점 구축',
-        desc: '탈출 대신 차량 기술로 이 도시에 기여한다.',
+        desc: '차는 보급 차량이 된다. 기술로 도시에 기여한다. 대신 서울 밖 세상은 끝내 보지 못한다.',
         setsFlag: 'eng_end_a3',
       },
     ],

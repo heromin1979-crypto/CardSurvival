@@ -340,18 +340,19 @@ export const ENDINGS = {
 
   char_homeless: {
     id: 'char_homeless', category: 'character', characterId: 'homeless',
-    title: '최형식: 새 집',          subtitle: '롯데타워 생존자 거점',
+    title: '최형식: 새 집',          subtitle: '한강 이남 생존자 거점',
     gradient: 'linear-gradient(160deg,#0a1000 0%,#121800 60%,#080c00 100%)',
     condition: (gs) => {
       return gs.player.characterId === 'homeless'
           && !(gs.flags.mainQuestComplete_homeless ?? false)
           && !gs.quests.completed.includes('mq_homeless_01')
           && gs.time.day >= 90
-          && gs.location.districtsVisited.includes('songpa')
+          && (gs.location.districtsVisited.includes('songpa')
+              || gs.location.districtsVisited.includes('gangnam'))
           && (gs.flags.totalItemsFound ?? 0) >= 50;
     },
     narrative: [
-      '롯데타워가 가까워졌다. 위에서 불이 켜져 있었다.',
+      '강을 건넜다. 강 이남 어딘가, 불이 켜진 건물이 보였다.',
       '동호대교 아래에서 2년을 살았다. 아무것도 없이.',
       '건물 입구에서 소리가 났다. 사람들. 살아있는 사람들.',
       '"올라오세요. 자리 있어요." 누군가 말했다.',
@@ -445,6 +446,7 @@ export const ENDINGS = {
     condition: (gs) => {
       return gs.player.characterId === 'firefighter'
           && (gs.flags.mainQuestComplete_firefighter ?? false)
+          && gs.flags.fire_ending === 'a1_shelter'
           && gs.time.day >= 100;
     },
     narrative: [
@@ -453,6 +455,44 @@ export const ENDINGS = {
       '방벽 위에서 은평구를 내려다봤다. 조용했다.',
       '이 곳이 새로운 집이다.',
       '박영철은 소방관이 아닌, 아버지로 서 있었다.',
+    ],
+  },
+
+  mq_firefighter_b3: {
+    id: 'mq_firefighter_b3', category: 'character', characterId: 'firefighter',
+    title: '박영철: 떠나는 사람',     subtitle: '대피소를 남기고 서울 밖으로',
+    gradient: 'linear-gradient(160deg,#1a0800 0%,#2a1208 60%,#140600 100%)',
+    condition: (gs) => {
+      return gs.player.characterId === 'firefighter'
+          && (gs.flags.mainQuestComplete_firefighter ?? false)
+          && gs.flags.fire_ending === 'b3_escape'
+          && gs.time.day >= 100;
+    },
+    narrative: [
+      '100일. 성수동 공장은 수십 명의 대피소가 됐다.',
+      '영철은 그곳을 생존자들에게 맡기고 정대한과 길을 나섰다.',
+      '한 번도 가보지 못한 은평이 등 뒤로 멀어졌다.',
+      '많은 사람을 살렸다. 대신 가족의 생사는 끝내 모른 채로 남았다.',
+      '"길이 안전해지면, 그때 불광동으로 갑니다." 영철은 북쪽을 한 번 더 봤다.',
+    ],
+  },
+
+  mq_firefighter_a3: {
+    id: 'mq_firefighter_a3', category: 'character', characterId: 'firefighter',
+    title: '박영철: 이재훈의 이름으로',  subtitle: '추모로 세운 은평 대피소',
+    gradient: 'linear-gradient(160deg,#140600 0%,#241006 60%,#0e0400 100%)',
+    condition: (gs) => {
+      return gs.player.characterId === 'firefighter'
+          && (gs.flags.mainQuestComplete_firefighter ?? false)
+          && gs.flags.fire_ending === 'a3_memorial'
+          && gs.time.day >= 100;
+    },
+    narrative: [
+      '100일. 대피소 입구에 작은 돌 하나가 섰다.',
+      '"이재훈 (1985–2026). 끝까지 동료였다."',
+      '영철은 그가 남긴 로프로 아파트 동들을 이었다.',
+      '가족은 살렸다. 함께 불 속에 뛰어든 동료는 그러지 못했다.',
+      '그 차이를 매일 지난다. 대피소의 모든 길이 그를 지나간다.',
     ],
   },
 
@@ -491,7 +531,7 @@ export const ENDINGS = {
       '매일 순회 보급 트럭이 4개 마트를 돈다. 하루 87명분.',
       '윤재혁은 지도 위에 붉은 선으로 보급 루트를 그렸다.',
       '"한 사람의 주방이 도시의 식탁이 됐다."',
-      '종말 이후 가장 큰 식량 네트워크. 셰프가 만들었다.',
+      '직접 기르지는 못했다. 흩어진 식량을 모아 흐르게 했다. 그것으로 충분했다.',
     ],
   },
 

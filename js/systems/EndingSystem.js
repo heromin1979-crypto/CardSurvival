@@ -47,6 +47,9 @@ const EndingSystem = {
       if (bp.category === 'medical') {
         GameState.flags.totalMedicalCrafted = (GameState.flags.totalMedicalCrafted ?? 0) + 1;
       }
+      if (bp.category === 'food') {
+        GameState.flags.totalFoodCrafted = (GameState.flags.totalFoodCrafted ?? 0) + 1;
+      }
     });
   },
 

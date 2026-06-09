@@ -248,6 +248,7 @@ const GameState = {
     totalItemsFound:     0,    // 누적 발견 아이템 수
     totalCrafted:        0,    // 누적 제작 횟수
     totalMedicalCrafted: 0,    // 의료 카테고리 제작 횟수
+    totalFoodCrafted:    0,    // 음식 카테고리 제작 횟수
     structuresBuilt:     0,    // 구조물 카테고리 제작 횟수
     despairTicks:        0,    // 사기 0 연속 TP 수
     nukeZoneEntered:     0,    // 방사선 구역 진입 횟수
@@ -872,6 +873,7 @@ const GameState = {
     if (ef.totalItemsFound     === undefined) ef.totalItemsFound     = 0;
     if (ef.totalCrafted        === undefined) ef.totalCrafted        = 0;
     if (ef.totalMedicalCrafted === undefined) ef.totalMedicalCrafted = 0;
+    if (ef.totalFoodCrafted    === undefined) ef.totalFoodCrafted    = 0;
     if (ef.structuresBuilt     === undefined) ef.structuresBuilt     = 0;
     if (ef.despairTicks        === undefined) ef.despairTicks        = 0;
     if (ef.nukeZoneEntered     === undefined) ef.nukeZoneEntered     = 0;

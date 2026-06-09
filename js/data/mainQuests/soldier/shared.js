@@ -180,20 +180,20 @@ const SOLDIER_SHARED = {
     isBranchPoint: true,
     branchOptions: [
       {
-        label: '박영철 소방관과 구조 작전',
-        desc: '생존자 구조에 전술 능력을 쓴다.',
+        label: '박영철과 구조 작전 (방송 포기)',
+        desc: '눈앞의 생존자를 구한다. KBS 송출은 포기한다. 전국에 닿는 신호 대신, 손에 닿는 사람을 택한다. 박영철이 합류한다.',
         setsFlag: 'soldier_branch_a',
         recruitNpc: 'npc_yeongcheol',
       },
       {
-        label: 'KBS 단독 방송 임무',
-        desc: '혼자 KBS로 간다. 전국에 신호를 보낸다.',
+        label: 'KBS 단독 방송 (구조 포기)',
+        desc: '혼자 KBS로 간다. 전국에 신호를 보낸다. 박영철의 구조 요청은 거절한다. 서대문에 깔린 사람들은 다른 누군가를 기다려야 한다.',
         setsFlag: 'soldier_branch_b',
       },
     ],
     narrative: {
       start: 'KBS까지 무전이 약하게 잡힌다. 부품으로 증폭기를 만들면 통신 범위가 넓어진다.',
-      complete: '증폭기 완성. KBS 신호가 선명해졌다. 전자부품 수거 중 버려진 쌍안경도 발견했다. 두 선택이 기다린다. 박영철의 구조 요청, 그리고 KBS.',
+      complete: '증폭기 완성. KBS 신호가 선명해졌다. 곧 갈 수 있다. 그때 다른 주파수가 끼어들었다. 박영철 소방위. "서대문에 사람이 깔렸습니다. 지금 안 가면 죽어요." KBS는 기다려준다. 깔린 사람은 안 기다린다. 결정해야 한다.',
     },
   },
 
