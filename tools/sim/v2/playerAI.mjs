@@ -25,6 +25,7 @@
 
 import GameState from '../../../js/core/GameState.js';
 import EventBus from '../../../js/core/EventBus.js';
+import DiseaseSystem from '../../../js/systems/DiseaseSystem.js';
 import { DISTRICTS, generateDistrictLoot, getAdjacentDistricts } from '../../../js/data/districts.js';
 import { rollEnemyGroup } from '../../../js/data/enemies.js';
 import ITEMS from '../../../js/data/items.js';
@@ -233,6 +234,18 @@ function actDrinkWater(inv) {
     }
   }
   return null;
+}
+
+// 깨끗한 물이 없고 갈증이 위급할 때의 최후 수단 — 오염수 음용(콜레라/이질/방사선/감염 위험).
+// 실제 게임 StatSystem.consumeCard 경로의 오염 발병 체크(checkContaminatedConsume)를 직접 호출.
+function actDrinkContaminated(inv) {
+  if ((inv.contaminated_water ?? 0) <= 0) return null;
+  const def = ITEMS.contaminated_water;
+  const contam = def?.defaultContamination ?? 85;
+  dec(inv, 'contaminated_water', 1);
+  applyOnConsume('contaminated_water');   // 수분+60·방사선+10·감염+15 ('contamination'은 player stat 아님 → 무시됨)
+  try { DiseaseSystem.checkContaminatedConsume(def, contam, GameState); } catch (e) { /* 발병 체크 실패 무시 */ }
+  return 'drinkContaminated';
 }
 
 function actEat(inv) {
@@ -503,8 +516,12 @@ export function runDayAI(simInv, cfg = {}) {
 
   // 1. 수면 (피로·스태미나 회복)
   if (GameState.stats.fatigue.current > 60) push(actSleep());
-  // 2. 수분 (물 우선 전략은 더 일찍·자주)
-  if (GameState.stats.hydration.current < (s.prioritizeWater ? 120 : 80)) push(actDrinkWater(simInv));
+  // 2. 수분 (물 우선 전략은 더 일찍·자주). 깨끗한 물이 없고 위급하면 오염수라도 마심(질병 위험).
+  if (GameState.stats.hydration.current < (s.prioritizeWater ? 120 : 80)) {
+    const drank = actDrinkWater(simInv);
+    if (drank) push(drank);
+    else if (GameState.stats.hydration.current < 50) push(actDrinkContaminated(simInv));
+  }
   // 3. 캠프파이어 건설 → 요리 (요리는 캠프파이어 필요)
   push(actBuildCampfire(simInv));
   if (hasCampfire()) {

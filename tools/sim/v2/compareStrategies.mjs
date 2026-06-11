@@ -7,6 +7,7 @@
 
 import { runBatch } from './runner.mjs';
 import { STRATEGIES } from './strategies.mjs';
+import DISEASES from '../../../js/data/diseases.js';
 
 function arg(name, def) {
   const i = process.argv.indexOf(name);
@@ -29,6 +30,11 @@ try {
     const survived = traces.filter((t) => t.alive).length;
     const causeDist = {};
     for (const t of traces) if (!t.alive) { const c = t.deathCause ?? '?'; causeDist[c] = (causeDist[c] || 0) + 1; }
+    // 질병 발병 집계 (치사 여부와 무관) — diseaseContracted 이벤트 기준
+    const diseaseContractions = {};
+    for (const t of traces) for (const e of (t.events ?? [])) {
+      if (e.type === 'diseaseContracted') { const nm = DISEASES[e.data?.diseaseId]?.name ?? e.data?.diseaseId ?? '?'; diseaseContractions[nm] = (diseaseContractions[nm] || 0) + 1; }
+    }
     // 대표 런: 생존일이 중앙값에 가장 가까운 시드
     let sampleSeed = 0, bestDiff = Infinity;
     traces.forEach((t, i) => { const diff = Math.abs(t.survivedDays - median); if (diff < bestDiff) { bestDiff = diff; sampleSeed = i; } });
@@ -37,7 +43,7 @@ try {
       meanDays: Math.round(mean * 10) / 10,
       medianDays: median,
       survivalRate: Math.round((survived / runs) * 1000) / 10,
-      causeDist, sampleSeed,
+      causeDist, diseaseContractions, sampleSeed,
     });
   }
 } finally {

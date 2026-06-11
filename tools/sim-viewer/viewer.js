@@ -349,13 +349,15 @@ function renderStrategies(j) {
   const rows = list.map((s, i) => {
     const cause = Object.entries(s.causeDist || {}).sort((a, b) => b[1] - a[1])
       .map(([k, n]) => `${esc(k)} ${n}`).join(', ') || '—';
+    const dis = Object.entries(s.diseaseContractions || {}).sort((a, b) => b[1] - a[1])
+      .map(([k, n]) => `${esc(k)} ${n}`).join(', ');
     return `<tr data-char="${esc(j.character)}" data-seed="${s.sampleSeed}" data-strat="${esc(s.id)}">
       <td class="rank">${i + 1}</td>
       <td><div class="sname">${esc(s.name)}</div><div class="sdesc">${esc(s.desc)}</div></td>
       <td>${bar(s.meanDays, maxDays, '', 'day ' + s.meanDays)}</td>
       <td class="num">day ${s.medianDays}</td>
       <td class="num">${s.survivalRate}%</td>
-      <td class="scause">${cause}</td>
+      <td class="scause">${cause}${dis ? `<br><span style="color:var(--warn)">🦠 발병: ${dis}</span>` : ''}</td>
       <td class="viewhint">행동 보기 →</td>
     </tr>`;
   }).join('');
