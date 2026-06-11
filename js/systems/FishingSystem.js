@@ -1,5 +1,5 @@
 // === FISHING SYSTEM ===
-// 한강 랜드마크 내부에서만 낚시/통발 사용 가능.
+// hasFishing 랜드마크(한강 등) 내부에서만 낚시/통발 사용 가능.
 // 통발: board.middle에 배치 시 자동 설치, 미끼 필수 (3~4회 소진 후 비활성).
 import EventBus    from '../core/EventBus.js';
 import GameState   from '../core/GameState.js';
@@ -8,7 +8,7 @@ import TickEngine  from '../core/TickEngine.js';
 import { SKILL_DEFS } from '../data/skillDefs.js';
 import BALANCE     from '../data/gameBalance.js';
 import GameData    from '../data/GameData.js';
-import { isHangangLandmark } from '../data/landmarks.js';
+import { landmarkHasFishing } from '../data/landmarks.js';
 
 const B = BALANCE.fishing;
 
@@ -17,9 +17,9 @@ const WEATHER_MOD = {
   sunny: 0,    hot: -0.10,   snow: -0.05, blizzard: -0.15,
 };
 
-/** 한강 랜드마크 내부 여부 확인 */
-function _isInHangang() {
-  return isHangangLandmark(GameState.location?.currentLandmark);
+/** 낚시 가능 랜드마크(hasFishing) 내부 여부 확인 */
+function _isInFishingLandmark() {
+  return landmarkHasFishing(GameState.location?.currentLandmark);
 }
 
 /** board.middle + board.bottom에서 definitionId가 일치하는 첫 인스턴스 반환 */
@@ -75,10 +75,10 @@ function _findInstalledTrap() {
 
 const FishingSystem = {
 
-  /** 낚시 가능 여부 확인 (한강 랜드마크 내부) */
+  /** 낚시 가능 여부 확인 (hasFishing 랜드마크 내부) */
   canFish() {
-    if (!_isInHangang()) {
-      EventBus.emit('notify', { message: '한강 랜드마크 안에서만 낚시를 할 수 있습니다.', type: 'warning' });
+    if (!_isInFishingLandmark()) {
+      EventBus.emit('notify', { message: '낚시 가능한 랜드마크(한강 등) 안에서만 낚시를 할 수 있습니다.', type: 'warning' });
       return false;
     }
     return true;
@@ -176,8 +176,8 @@ const FishingSystem = {
     if (!inst || inst.definitionId !== 'fish_trap') return;
     if (inst._isInstalled) return; // 이미 설치됨
 
-    if (!_isInHangang()) {
-      EventBus.emit('notify', { message: '통발은 한강 랜드마크 안에서만 설치할 수 있습니다.', type: 'warning' });
+    if (!_isInFishingLandmark()) {
+      EventBus.emit('notify', { message: '통발은 낚시 가능한 랜드마크(한강 등) 안에서만 설치할 수 있습니다.', type: 'warning' });
       return;
     }
 
@@ -221,7 +221,7 @@ const FishingSystem = {
 
   /** 통발 패시브 수확 — trapCheckIntervalTP마다 호출 */
   checkFishTrap() {
-    if (!_isInHangang()) return;
+    if (!_isInFishingLandmark()) return;
 
     const gs         = GameState;
     const trapResult = _findInstalledTrap();

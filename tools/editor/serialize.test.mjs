@@ -4,7 +4,7 @@
 import { readFileSync, writeFileSync, mkdtempSync } from 'fs';
 import { tmpdir } from 'os';
 import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
 import {
   findObjectLiteralRange,
   extractValue,
@@ -71,17 +71,19 @@ for (const [key, cfg] of Object.entries(DATA_FILES)) {
   const tmp = mkdtempSync(join(tmpdir(), 'cs-edit-'));
   // copy sibling deps the module imports (gameBalance for districts)
   const tmpFile = join(tmp, 'mod.mjs');
-  // rewrite relative imports to absolute paths in the original data dir
+  // rewrite relative imports to file:// URLs in the original data dir
+  // (Windows 절대경로 'C:\...'는 ESM import 지정자로 쓸 수 없으므로 pathToFileURL 필수)
   const dataDir = dirname(filePath);
   const rewritten = spliced.replace(
     /from\s+'(\.\/[^']+)'/g,
-    (_, rel) => `from '${join(dataDir, rel.slice(2))}'`,
+    (_, rel) => `from '${pathToFileURL(join(dataDir, rel.slice(2))).href}'`,
   );
   writeFileSync(tmpFile, rewritten);
   try {
-    const mod = await import('file://' + tmpFile);
+    const mod = await import(pathToFileURL(tmpFile).href);
     const exported =
-      mod.default ?? mod.MAIN_QUESTS ?? mod.LANDMARK_DATA ?? mod.DISTRICTS ?? null;
+      mod.default ?? mod.MAIN_QUESTS ?? mod.LANDMARK_DATA ?? mod.DISTRICTS ??
+      mod.LANDMARK_CARD_META ?? null;
     check(`${key}: regenerated file imports`, exported && eq(exported, original));
   } catch (e) {
     check(`${key}: regenerated file imports`, false, String(e).split('\n')[0]);

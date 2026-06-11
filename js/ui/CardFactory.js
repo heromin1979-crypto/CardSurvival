@@ -813,8 +813,8 @@ const CardFactory = {
           return el;
         }
 
-        // 한강 카드: 현재 구에 관계없이 항상 랜드마크 진입
-        if (def.isHangang) {
+        // 낚시 가능(hasFishing) 랜드마크 카드(한강 등): 현재 구에 관계없이 항상 진입
+        if (def.hasFishing) {
           el.className = 'card location-card landmark-card spawning is-current-loc';
           el.draggable = false;
           el.style.cursor = 'pointer';
@@ -1392,7 +1392,7 @@ const CardFactory = {
         if (def.id === 'basecamp_landmark') {
           el.innerHTML = this._buildLandmarkInner(def, true);
           el.classList.add('is-current-loc');
-        } else if (def.isHangang) {
+        } else if (def.hasFishing) {
           el.innerHTML = this._buildLandmarkInner(def, true);
           el.classList.add('is-current-loc');
         } else {

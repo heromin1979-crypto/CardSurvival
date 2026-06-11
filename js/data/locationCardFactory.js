@@ -133,7 +133,7 @@ export function buildAllHangangCards() {
       type: 'location',
       subtype: 'landmark',
       landmark: true,
-      isHangang: true,
+      hasFishing: true,
       districtId: d,
       icon: data.icon,
       rarity: 'common',
