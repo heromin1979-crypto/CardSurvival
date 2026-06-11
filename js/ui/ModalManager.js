@@ -6,7 +6,7 @@ import EquipmentSystem from '../systems/EquipmentSystem.js';
 import CardFactory     from './CardFactory.js';
 import GameData        from '../data/GameData.js';
 import NPCSystem       from '../systems/NPCSystem.js';
-import { isHangangLandmark } from '../data/landmarks.js';
+import { landmarkHasFishing } from '../data/landmarks.js';
 
 const FOCUSABLE = 'button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
@@ -293,15 +293,15 @@ const ModalManager = {
     let fishBtnHtml = '';
     let fishBtnReason = '';
     if (isFishingRod) {
-      const inHangang = isHangangLandmark(GameState.location?.currentLandmark);
+      const inFishingLandmark = landmarkHasFishing(GameState.location?.currentLandmark);
       const hasBait   = [...(GameState.board?.bottom ?? []), ...(GameState.board?.middle ?? [])]
         .some(id => {
           if (!id) return false;
           const d = GameData.items[GameState.cards[id]?.definitionId];
           return d?.tags?.includes('bait');
         });
-      const fishOk = inHangang && hasBait;
-      if (!inHangang)    fishBtnReason = '한강 랜드마크 안에서만 낚시할 수 있습니다.';
+      const fishOk = inFishingLandmark && hasBait;
+      if (!inFishingLandmark) fishBtnReason = '낚시 가능한 랜드마크(한강 등) 안에서만 낚시할 수 있습니다.';
       else if (!hasBait) fishBtnReason = '미끼(지렁이 또는 벌레)가 필요합니다.';
       fishBtnHtml = `<button class="card-action-btn fish-btn${fishOk ? '' : ' disabled'}"
         id="modal-fish-${instanceId}" ${fishOk ? '' : 'disabled'}

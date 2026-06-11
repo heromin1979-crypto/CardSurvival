@@ -166,7 +166,15 @@ const FIELD_HELP = {
   encounterChance: '탐색 시 적과 마주칠 확률(0~1). 예: 0.15 = 15%.',
   noiseGen: '활동 시 발생하는 소음. 높을수록 적을 끌어들입니다.',
   fishingQuality: '낚시 품질(높을수록 좋은 어획). 낚시 가능 구역에만 적용.',
-  hasFishing: '이 구역에서 낚시가 가능한지 여부.',
+  hasFishing: '낚시 가능 여부 — 랜드마크: 안에서 낚시·통발 사용 가능 / 구: 시뮬레이터 AI 판정용.',
+  isBasecampLandmark: '거점(베이스캠프) 랜드마크 여부 — 사이드바 거점 버튼 교체 트리거.',
+  districtId: '이 랜드마크가 속한 구 ID.',
+  districts: '이 랜드마크가 연결된 구 ID 목록.',
+  enemyCount: '습격/캠프 전투의 적 수.',
+  enemyType: '적 유형 ID.',
+  rescueNpcId: '구출 대상 NPC ID.',
+  hasLeader: '리더급 적 포함 여부.',
+  hasBoss: '보스급 적 포함 여부.',
   // 드랍 테이블
   definitionId: '드랍되는 아이템의 고유 ID입니다. (📦 아이템 탭에서 검색해 확인)',
   id: '드랍되는 아이템의 고유 ID입니다. (📦 아이템 탭에서 검색해 확인)',
@@ -676,7 +684,7 @@ const ITEM_HELP = {
   sleepFatigueMult: '수면 시 피로 회복 배율.',
   companionMoraleBoost: '동료 사기 상승 효과.',
   isStructure: '구조물 여부.',
-  isHangang: '한강 수변 자원 여부.',
+  hasFishing: '낚시 가능 랜드마크 여부 — 카드 안에서 낚시·통발 사용 가능, 항상 진입 가능 카드로 렌더.',
   safeZone: '안전지대(조우/위협 차단) 여부.',
   weatherProtection: '날씨 패널티 차단 여부.',
   contaminationShield: '식량 오염 차단 여부.',
@@ -1357,6 +1365,16 @@ function scalarInput(obj, key, fileKey, help, onAfter) {
   return el('div', { class: 'field' }, [lbl, inp]);
 }
 
+// 선택적 불리언 플래그 체크박스 — 체크 시 true 기록, 해제 시 필드 자체를 삭제 (diff 오염 방지)
+function optionalFlag(obj, key, fileKey, help) {
+  const cb = el('input', { type: 'checkbox', ...(obj[key] ? { checked: true } : {}) });
+  cb.addEventListener('change', () => {
+    if (cb.checked) obj[key] = true; else delete obj[key];
+    markDirty(fileKey);
+  });
+  return el('div', { class: 'field' }, [labelEl(key, help || helpFor(key)), el('label', { class: 'hint' }, [cb, ' (켜기/끄기)'])]);
+}
+
 // 사이드바의 특정 항목(data-key) 라벨을 즉시 갱신 — 이름/아이콘 편집 시 전체 재렌더 없이 반영
 function refreshSidebarLabel(dataKey, text) {
   const btn = document.querySelector(`.sidebar .side-item[data-key="${dataKey}"]`);
@@ -1606,6 +1624,29 @@ function renderLandmarkDetail(root, lm) {
   const ta = el('textarea', { text: lm.desc || '' });
   ta.addEventListener('input', () => { lm.desc = ta.value; markDirty('landmarks'); });
   root.append(el('div', { class: 'field grow' }, [labelEl('desc', '랜드마크 카드 설명'), ta]));
+
+  // 기능 플래그 — 체크 시 true 기록, 해제 시 필드 삭제
+  const flagRow = el('div', { class: 'field-row' });
+  flagRow.append(optionalFlag(lm, 'hasFishing', 'landmarks',
+    '낚시 가능 — 이 랜드마크 안에서 낚시·통발 사용 가능 (한강 계열). 카드도 항상 진입 가능으로 렌더.'));
+  flagRow.append(optionalFlag(lm, 'isBasecampLandmark', 'landmarks'));
+  root.append(el('fieldset', {}, [el('legend', { text: '기능 플래그' }), flagRow]));
+
+  // 기타 필드 — 수제 폼이 다루지 않는 필드 자동 노출 (레이더 캠프 등)
+  const HANDLED = new Set(['name', 'icon', 'desc', 'subLocations', 'hasFishing', 'isBasecampLandmark']);
+  const extras = Object.keys(lm).filter((k) => !HANDLED.has(k));
+  if (extras.length) {
+    const exRow = el('div', { class: 'field-row' });
+    for (const k of extras) {
+      const v = lm[k];
+      if (v && typeof v === 'object') {
+        exRow.append(el('div', { class: 'field' }, [fieldLabel(k), el('div', { class: 'hint', text: JSON.stringify(v) })]));
+      } else {
+        exRow.append(scalarInput(lm, k, 'landmarks', helpFor(k)));
+      }
+    }
+    root.append(el('fieldset', {}, [el('legend', { text: '기타 필드' }), exRow]));
+  }
 
   // 세부장소 — 편집/추가/삭제/이동은 전용 탭
   const subs = lm.subLocations || [];

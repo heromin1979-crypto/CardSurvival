@@ -1687,7 +1687,7 @@ export const LANDMARK_DATA = {
     name: '한강',
     desc: '서울을 가로지르는 한강. 오염된 강물이지만 물고기는 살아있다.',
     icon: '🌊',
-    isHangang: true,
+    hasFishing: true,
     subLocations: [
       {
         id: 'hangang_fishing_spot_gangnam',
@@ -1778,7 +1778,7 @@ export const LANDMARK_DATA = {
     name: '한강',
     desc: '서울을 가로지르는 한강. 오염된 강물이지만 물고기는 살아있다.',
     icon: '🌊',
-    isHangang: true,
+    hasFishing: true,
     subLocations: [
       {
         id: 'hangang_fishing_spot_gangdong',
@@ -1869,7 +1869,7 @@ export const LANDMARK_DATA = {
     name: '한강',
     desc: '서울을 가로지르는 한강. 오염된 강물이지만 물고기는 살아있다.',
     icon: '🌊',
-    isHangang: true,
+    hasFishing: true,
     subLocations: [
       {
         id: 'hangang_fishing_spot_gwangjin',
@@ -1960,7 +1960,7 @@ export const LANDMARK_DATA = {
     name: '한강',
     desc: '서울을 가로지르는 한강. 오염된 강물이지만 물고기는 살아있다.',
     icon: '🌊',
-    isHangang: true,
+    hasFishing: true,
     subLocations: [
       {
         id: 'hangang_fishing_spot_mapo',
@@ -2051,7 +2051,7 @@ export const LANDMARK_DATA = {
     name: '한강',
     desc: '서울을 가로지르는 한강. 오염된 강물이지만 물고기는 살아있다.',
     icon: '🌊',
-    isHangang: true,
+    hasFishing: true,
     subLocations: [
       {
         id: 'hangang_fishing_spot_seocho',
@@ -2142,7 +2142,7 @@ export const LANDMARK_DATA = {
     name: '한강',
     desc: '서울을 가로지르는 한강. 오염된 강물이지만 물고기는 살아있다.',
     icon: '🌊',
-    isHangang: true,
+    hasFishing: true,
     subLocations: [
       {
         id: 'hangang_fishing_spot_seongdong',
@@ -2233,7 +2233,7 @@ export const LANDMARK_DATA = {
     name: '한강',
     desc: '서울을 가로지르는 한강. 오염된 강물이지만 물고기는 살아있다.',
     icon: '🌊',
-    isHangang: true,
+    hasFishing: true,
     subLocations: [
       {
         id: 'hangang_fishing_spot_songpa',
@@ -2324,7 +2324,7 @@ export const LANDMARK_DATA = {
     name: '한강',
     desc: '서울을 가로지르는 한강. 오염된 강물이지만 물고기는 살아있다.',
     icon: '🌊',
-    isHangang: true,
+    hasFishing: true,
     subLocations: [
       {
         id: 'hangang_fishing_spot_yeongdeungpo',
@@ -2415,7 +2415,7 @@ export const LANDMARK_DATA = {
     name: '한강',
     desc: '서울을 가로지르는 한강. 오염된 강물이지만 물고기는 살아있다.',
     icon: '🌊',
-    isHangang: true,
+    hasFishing: true,
     subLocations: [
       {
         id: 'hangang_fishing_spot_yongsan',
@@ -2506,7 +2506,7 @@ export const LANDMARK_DATA = {
     name: '한강',
     desc: '서울을 가로지르는 한강. 오염된 강물이지만 물고기는 살아있다.',
     icon: '🌊',
-    isHangang: true,
+    hasFishing: true,
     subLocations: [
       {
         id: 'hangang_fishing_spot_junggoo',
@@ -2935,11 +2935,11 @@ export function getLandmarkData(key) {
 }
 
 /**
- * 주어진 랜드마크 키가 한강 계열(구별 파생 엔트리)인지 판정한다.
+ * 주어진 랜드마크 키에서 낚시/통발 사용이 가능한지 판정한다 (hasFishing 플래그).
  * `lm_` 접두사 폴백을 포함하므로 아이템 ID를 그대로 전달해도 동작한다.
  */
-export function isHangangLandmark(key) {
-  return !!getLandmarkData(key)?.isHangang;
+export function landmarkHasFishing(key) {
+  return !!getLandmarkData(key)?.hasFishing;
 }
 
 /**

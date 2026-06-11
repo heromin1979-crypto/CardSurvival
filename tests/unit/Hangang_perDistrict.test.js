@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import LANDMARK_DATA, { getLandmarkData, isHangangLandmark } from '../../js/data/landmarks.js';
+import LANDMARK_DATA, { getLandmarkData, landmarkHasFishing } from '../../js/data/landmarks.js';
 import { buildAllHangangCards } from '../../js/data/locationCardFactory.js';
 
 const HANGANG_DISTRICTS = ['gangnam','gangdong','gwangjin','mapo','seocho',
@@ -16,10 +16,10 @@ describe('한강 구별 랜드마크 데이터', () => {
     expect(LANDMARK_DATA).not.toHaveProperty('hangang');
   });
 
-  it('각 구 엔트리는 isHangang 플래그와 sublocation 2개를 가진다', () => {
+  it('각 구 엔트리는 hasFishing 플래그와 sublocation 2개를 가진다', () => {
     for (const d of HANGANG_DISTRICTS) {
       const e = LANDMARK_DATA[`hangang_${d}`];
-      expect(e.isHangang).toBe(true);
+      expect(e.hasFishing).toBe(true);
       expect(e.subLocations).toHaveLength(2);
     }
   });
@@ -51,11 +51,11 @@ describe('한강 구별 랜드마크 데이터', () => {
     expect(a).toEqual(b);
   });
 
-  it('isHangangLandmark가 구별 키를 한강으로 판정한다', () => {
-    expect(isHangangLandmark('hangang_gangnam')).toBe(true);
-    expect(isHangangLandmark('lm_hangang_yongsan')).toBe(true);
-    expect(isHangangLandmark('lm_gangnam')).toBe(false);
-    expect(isHangangLandmark(null)).toBe(false);
+  it('landmarkHasFishing이 구별 키를 낚시 가능으로 판정한다', () => {
+    expect(landmarkHasFishing('hangang_gangnam')).toBe(true);
+    expect(landmarkHasFishing('lm_hangang_yongsan')).toBe(true);
+    expect(landmarkHasFishing('lm_gangnam')).toBe(false);
+    expect(landmarkHasFishing(null)).toBe(false);
   });
 });
 
@@ -67,9 +67,9 @@ describe('한강 구별 카드 팩토리', () => {
     }
   });
 
-  it('각 카드는 isHangang·districtId·landmark 플래그를 가진다', () => {
+  it('각 카드는 hasFishing·districtId·landmark 플래그를 가진다', () => {
     const card = buildAllHangangCards()['lm_hangang_mapo'];
-    expect(card.isHangang).toBe(true);
+    expect(card.hasFishing).toBe(true);
     expect(card.districtId).toBe('mapo');
     expect(card.landmark).toBe(true);
     expect(card.type).toBe('location');
@@ -91,14 +91,14 @@ describe('items.js 한강 카드 병합', () => {
   });
 });
 
-describe('한강 진입 판정 계약', () => {
-  it('구별 currentLandmark 값을 한강으로 인식한다', () => {
-    expect(isHangangLandmark('hangang_gangnam')).toBe(true);
-    expect(isHangangLandmark('lm_hangang_mapo')).toBe(true);
+describe('낚시 진입 판정 계약', () => {
+  it('구별 currentLandmark 값을 낚시 가능으로 인식한다', () => {
+    expect(landmarkHasFishing('hangang_gangnam')).toBe(true);
+    expect(landmarkHasFishing('lm_hangang_mapo')).toBe(true);
   });
-  it('한강이 아닌 랜드마크는 false', () => {
-    expect(isHangangLandmark('lm_gangnam')).toBe(false);
-    expect(isHangangLandmark('basecamp')).toBe(false);
+  it('낚시 불가 랜드마크는 false', () => {
+    expect(landmarkHasFishing('lm_gangnam')).toBe(false);
+    expect(landmarkHasFishing('basecamp')).toBe(false);
   });
 });
 
@@ -115,17 +115,28 @@ function resetBoard() {
   GameState._nextId     = 1;
 }
 
-describe('ExploreSystem._updateTopRowCards — hasFishing 구에 구별 한강 카드 배치', () => {
+describe('ExploreSystem._updateTopRowCards — landmarks 배열 기반 구별 한강 카드 배치', () => {
   beforeEach(resetBoard);
 
-  it('gangnam(hasFishing)은 top row에 lm_hangang_gangnam 인스턴스를 배치한다', () => {
+  it('gangnam은 top row에 lm_hangang_gangnam 인스턴스를 배치한다', () => {
     ExploreSystem._updateTopRowCards('gangnam');
     const topInstIds = GameState.board.top.filter(Boolean);
     const topDefs = topInstIds.map(id => GameState.cards[id]?.definitionId);
     expect(topDefs).toContain('lm_hangang_gangnam');
   });
 
-  it('jongno(hasFishing 없음)는 top row에 lm_hangang_* 카드를 배치하지 않는다', () => {
+  it('한강 인접 10개 구 모두 한강 카드가 정확히 1장만 배치된다 (중복 회귀)', () => {
+    for (const d of HANGANG_DISTRICTS) {
+      resetBoard();
+      ExploreSystem._updateTopRowCards(d);
+      const topDefs = GameState.board.top.filter(Boolean)
+        .map(id => GameState.cards[id]?.definitionId);
+      const hangangCount = topDefs.filter(def => def === `lm_hangang_${d}`).length;
+      expect(hangangCount, `${d}: 한강 카드 ${hangangCount}장`).toBe(1);
+    }
+  });
+
+  it('jongno(한강 비인접)는 top row에 lm_hangang_* 카드를 배치하지 않는다', () => {
     ExploreSystem._updateTopRowCards('jongno');
     const topInstIds = GameState.board.top.filter(Boolean);
     const topDefs = topInstIds.map(id => GameState.cards[id]?.definitionId);
