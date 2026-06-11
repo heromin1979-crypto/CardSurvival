@@ -596,7 +596,9 @@ const ExploreSystem = {
   //   - 공용:    'basecamp', 'lm_raider_camp_small' 등 (한강은 구별 독립 키 hangang_<구>로 조회)
   // getLandmarkData가 lm_ 접두사 폴백을 처리하므로 두 형태 모두 허용된다.
 
-  enterLandmark(landmarkKey) {
+  // opts.autoEnterSub: 기본 true — 빈 로비를 거치지 않고 첫 세부장소로 바로 진입.
+  // (의사 오프닝처럼 부작용 없이 로비만 세팅해야 하는 경우 false로 호출)
+  enterLandmark(landmarkKey, opts = {}) {
     // 베이스캠프 진입은 야간에도 가능 (외출이 아닌 내부 이동)
     if (landmarkKey !== 'basecamp' && !this._checkNight('explore')) return;
 
@@ -620,6 +622,20 @@ const ExploreSystem = {
     this._updateTopRowForLandmark(landmarkKey);
     EventBus.emit('notify', { message: I18n.t('exploreSys.landmarkEnter', { name: lmData.name }), type: 'info' });
     EventBus.emit('boardChanged', {});
+
+    // ── 로비 제거: 첫 세부장소로 자동 진입 ──────────────────────
+    // basecamp(거점) 및 명시적 skip 제외. 상단에 방금 배치된 첫 세부장소 카드의
+    // def(districtId·subLocationId)를 그대로 읽어, 카드 클릭과 동일한 키로 진입 → 루팅 추적 키 일치.
+    if (opts.autoEnterSub !== false && landmarkKey !== 'basecamp') {
+      const items = GameData?.items ?? {};
+      let firstSub = null;
+      for (const instId of gs.board.top) {
+        if (!instId) continue;
+        const def = items[gs.cards[instId]?.definitionId];
+        if (def?.sublocation) { firstSub = def; break; }
+      }
+      if (firstSub) this.enterSubLocation(firstSub.districtId, firstSub.subLocationId);
+    }
   },
 
   _updateTopRowForLandmark(landmarkKey) {
