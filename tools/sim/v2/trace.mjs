@@ -10,6 +10,7 @@ import { runSingleRun } from './runner.mjs';
 import { getStrategy } from './strategies.mjs';
 import ITEMS from '../../../js/data/items.js';
 import { DISTRICTS } from '../../../js/data/districts.js';
+import DISEASES from '../../../js/data/diseases.js';
 
 function arg(name, def) {
   const i = process.argv.indexOf(name);
@@ -30,6 +31,15 @@ const EVENT_LABELS = {
   recipeUnlocked: '📖 레시피 해금',
   secretEventTriggered: '✨ 비밀 이벤트',
 };
+
+// 이벤트 문자열 → 한글 라벨 (disease:<id>는 질병명으로)
+function humanizeEvent(e) {
+  if (typeof e === 'string' && e.startsWith('disease:')) {
+    const id = e.slice('disease:'.length);
+    return `🦠 ${DISEASES[id]?.name ?? id} 발병`;
+  }
+  return EVENT_LABELS[e] ?? e;
+}
 
 // 스탯 키 → 한글 라벨
 const STAT_KO = {
@@ -58,6 +68,7 @@ function humanizeAction(a) {
     const icon = m[1] === '사망' ? '💀' : m[1] === '도주' ? '🏃' : '⚔️';
     return { icon, text: `전투 — ${m[1]} (적 ${m[2]}마리)`, raw: a };
   }
+  if (a === 'drinkContaminated') return { icon: '🤢', text: '오염수 음용 — 깨끗한 물 없음 (수분 +60 · 방사선 +10 · 감염 +15 · 콜레라/이질 위험)', raw: a };
   if ((m = /^drink:(.+)$/.exec(a)))            return { icon: '💧', text: `수분 보충 — ${itemName(m[1])}${consumeEffect(m[1])}`, raw: a };
   if ((m = /^eat:(.+)$/.exec(a)))              return { icon: '🍖', text: `식사 — ${itemName(m[1])}${consumeEffect(m[1])}`, raw: a };
   if ((m = /^cook:(.+)->(.+)$/.exec(a)))       return { icon: '🍳', text: `요리 — ${itemName(m[2])} 제작${cookHint(m[2])}`, raw: a };
@@ -96,7 +107,7 @@ try {
 const dailyTrace = (r.dailyTrace ?? []).map((d) => ({
   ...d,
   actions: (d.actions || []).map(humanizeAction),
-  events: (d.events || []).map((e) => EVENT_LABELS[e] ?? e),
+  events: (d.events || []).map(humanizeEvent),
 }));
 
 const out = {

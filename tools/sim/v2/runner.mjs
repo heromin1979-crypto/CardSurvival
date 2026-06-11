@@ -27,7 +27,7 @@ function setupOnce() {
 
 const EVENT_HOOKS = ['siegeTriggered', 'hospitalRewards', 'hospitalDamaged',
                      'patientDied', 'bossKilled', 'hiddenLocationDiscovered',
-                     'recipeUnlocked', 'secretEventTriggered'];
+                     'recipeUnlocked', 'secretEventTriggered', 'diseaseContracted'];
 
 export function runSingleRun({ characterId, seed, runId, maxTP = TARGET_TP, snapshotDays = [30, 60, 90], enableAI = true, traceDaily = false, strategy = {} }) {
   setupOnce();
@@ -167,7 +167,7 @@ export function runSingleRun({ characterId, seed, runId, maxTP = TARGET_TP, snap
       actions: aiLog.filter((a) => a.day === ds.day).map((a) => a.action),
       events: events
         .filter((e) => Math.floor((e.tp ?? 0) / TP_PER_DAY) + 1 === ds.day)
-        .map((e) => e.type),
+        .map((e) => (e.type === 'diseaseContracted' ? `disease:${e.data?.diseaseId}` : e.type)),
     }));
   }
 

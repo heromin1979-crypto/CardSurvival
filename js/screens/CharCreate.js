@@ -547,7 +547,8 @@ const CharCreate = {
     // 2) 보라매병원 진입 — enterLandmark가 middle을 동작구 바닥에 저장
     //    (간호사 + 시작 아이템들이 동작구 바닥에 보관됨)
     //    동작구는 보라매병원/현충원 2개 랜드마크를 가지므로 반드시 랜드마크 ID로 진입.
-    ExploreSystem.enterLandmark('lm_boramae_hospital');
+    //    오프닝은 응급실 세부장소를 직접 세팅하므로 자동 첫-세부장소 진입을 끈다.
+    ExploreSystem.enterLandmark('lm_boramae_hospital', { autoEnterSub: false });
 
     // 3) 응급실 서브로케이션 직접 세팅 (enterSubLocation의 TP/조우/루팅 부작용 회피)
     gs.location.currentSubLocation = 'boramae_emergency';
