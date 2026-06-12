@@ -26,6 +26,19 @@ const INIT_TYPE_ICONS = {
   enemy:     '👹',
 };
 
+// 동반자 표시 아이콘 (스테이지 스프라이트 · 패널 공용)
+const COMPANION_ICONS = {
+  npc_dog: '🐕', npc_nurse: '👩‍⚕️', npc_soldier_deserter: '🪖', npc_soldier: '🪖',
+  npc_child: '👧', npc_mechanic: '🔧', npc_trader: '🧳',
+  npc_student: '📖', npc_old_survivor: '👴', npc_doctor: '🥼',
+};
+
+// FX 오버레이 이모지 (cv-fx-* 클래스와 페어)
+const FX_EMOJI = {
+  blunt: '💥', fire: '🔥', spark: '⚡', blast: '💥', punch: '👊',
+  explode: '💥', scream: '📣', muzzle: '✸', skill: '💢',
+};
+
 const CombatUI = {
   _screen:       null,
   _lastRound:    -1,
@@ -40,69 +53,132 @@ const CombatUI = {
         this.render();
       }
     });
-    // Phase 4 — 동료 행동 이벤트 → 애니메이션
-    EventBus.on('companionAction', (data) => this._triggerCompanionAnimation(data));
-    EventBus.on('enemyAttackCompanion', (data) => this._triggerEnemyAttackCompanion(data));
   },
 
-  // ── Combat Overhaul Phase 4 · 동료 애니메이션 ──────────
+  // ── 전투 연출 재생 (CombatSystem.fxQueue → 순차 재생) ──
 
-  /**
-   * 동료 카드 glow + 대상에 데미지/힐 플로팅 텍스트.
-   * data: { npcId, action: 'attack'|'heal'|'hold'|'skill', targetIdx?, damage?, amount?, skillId? }
-   */
-  _triggerCompanionAnimation(data) {
-    if (!this._screen || !data?.npcId) return;
-    const card = this._screen.querySelector(`[data-companion-id="${data.npcId}"]`);
-    if (!card) return;
+  _playFxQueue() {
+    const combat = GameState.combat;
+    const queue  = combat?.fxQueue;
+    if (!Array.isArray(queue) || queue.length === 0) return;
+    combat.fxQueue = [];
+    let delay = 80;
+    for (const fx of queue) {
+      setTimeout(() => this._playFx(fx), delay);
+      delay += 300;
+    }
+  },
 
-    // glow 클래스 (action별 색상)
-    const glowCls = `companion-glow-${data.action}`;
-    card.classList.remove(glowCls);
-    void card.offsetWidth;   // reflow to restart animation
-    card.classList.add(glowCls);
-    setTimeout(() => card.classList.remove(glowCls), 600);
+  _enemySpriteEl(idx) { return this._screen?.querySelector(`.cv-enemy-sprite[data-idx="${idx}"]`); },
+  _playerSpriteEl()   { return this._screen?.querySelector('.cv-player'); },
+  _allyEl(npcId) {
+    return this._screen?.querySelector(`.cv-ally[data-companion-id="${npcId}"]`)
+        ?? this._screen?.querySelector(`[data-companion-id="${npcId}"]`);
+  },
 
-    if (data.action === 'attack' && data.targetIdx != null) {
-      this._spawnFloatText(
-        this._screen.querySelector(`.cv-enemy-sprite[data-idx="${data.targetIdx}"]`),
-        `-${data.damage}`,
-        'dmg',
-      );
-    } else if (data.action === 'heal') {
-      this._spawnFloatText(this._screen.querySelector('.cv-player'), `+${data.amount}`, 'heal');
-    } else if (data.action === 'skill') {
-      // 배경 플래시 (visual element)
-      const visual = this._screen.querySelector('.combat-visual');
-      if (visual) {
-        visual.classList.remove('skill-flash');
-        void visual.offsetWidth;
-        visual.classList.add('skill-flash');
-        setTimeout(() => visual.classList.remove('skill-flash'), 500);
+  _playFx(fx) {
+    if (!this._screen || !fx) return;
+    switch (fx.kind) {
+      case 'playerAttack': {
+        const player = this._playerSpriteEl();
+        const target = this._enemySpriteEl(fx.targetIdx);
+        this._animate(player, 'attacking');
+        if (fx.fx === 'shot') this._spawnFxOverlay(player, 'muzzle');
+        if (fx.miss) { this._spawnFloatText(target, 'MISS', 'miss'); break; }
+        this._spawnFxOverlay(target, fx.fx ?? 'blunt');
+        this._animate(target, 'hit');
+        this._spawnFloatText(target, `-${fx.dmg}`, fx.crit ? 'crit' : 'dmg');
+        if (fx.crit || fx.killed) this._shakeVisual();
+        break;
+      }
+      case 'enemyAttack': {
+        const enemyEl = this._enemySpriteEl(fx.enemyIdx);
+        const player  = this._playerSpriteEl();
+        this._animate(enemyEl, 'lunging');
+        if (fx.miss) { this._spawnFloatText(player, 'MISS', 'miss'); break; }
+        this._spawnFxOverlay(player, fx.fx ?? 'claw');
+        this._animate(player, 'hit');
+        this._spawnFloatText(player, `-${fx.dmg}`, fx.crit ? 'crit' : 'dmg');
+        if (fx.crit) this._shakeVisual();
+        break;
+      }
+      case 'enemyAttackCompanion': {
+        this._animate(this._enemySpriteEl(fx.enemyIdx), 'lunging');
+        const ally = this._allyEl(fx.npcId);
+        this._animate(ally, 'hit');
+        this._spawnFloatText(ally, `-${fx.dmg}`, 'dmg');
+        break;
+      }
+      case 'companionAttack': {
+        const ally   = this._allyEl(fx.npcId);
+        const target = this._enemySpriteEl(fx.targetIdx);
+        this._animate(ally, 'attacking');
+        if (fx.miss) { this._spawnFloatText(target, 'MISS', 'miss'); break; }
+        this._spawnFxOverlay(target, fx.fx ?? 'slash');
+        this._animate(target, 'hit');
+        this._spawnFloatText(target, `-${fx.dmg}`, 'dmg');
+        break;
+      }
+      case 'companionHeal': {
+        this._animate(this._allyEl(fx.npcId), 'glowing');
+        this._spawnFloatText(this._playerSpriteEl(), `+${fx.amount}`, 'heal');
+        break;
+      }
+      case 'companionBuff':
+      case 'companionSkill': {
+        this._animate(this._screen.querySelector('.combat-visual'), 'skill-flash', 500);
+        this._animate(this._allyEl(fx.npcId), 'glowing');
+        break;
+      }
+      case 'advance': {
+        this._animate(this._enemySpriteEl(fx.enemyIdx), 'advancing', 600);
+        break;
+      }
+      case 'explode': {
+        const el = this._enemySpriteEl(fx.enemyIdx);
+        this._spawnFxOverlay(el, 'explode');
+        this._shakeVisual();
+        if (fx.dmg) this._spawnFloatText(this._playerSpriteEl(), `-${fx.dmg}`, 'crit');
+        break;
+      }
+      case 'summon': {
+        this._spawnFxOverlay(this._enemySpriteEl(fx.enemyIdx), 'scream');
+        this._shakeVisual();
+        break;
       }
     }
   },
 
-  /**
-   * 적이 동료 공격 시 동료 카드에 hit flash + 데미지 플로팅.
-   * data: { enemyId, npcId, damage }
-   */
-  _triggerEnemyAttackCompanion(data) {
-    if (!this._screen || !data?.npcId) return;
-    const card = this._screen.querySelector(`[data-companion-id="${data.npcId}"]`);
-    if (!card) return;
-    card.classList.remove('companion-hit');
-    void card.offsetWidth;
-    card.classList.add('companion-hit');
-    setTimeout(() => card.classList.remove('companion-hit'), 350);
-    this._spawnFloatText(card, `-${data.damage}`, 'dmg');
+  // CSS 애니메이션 클래스 재시작 헬퍼
+  _animate(el, cls, dur = 450) {
+    if (!el) return;
+    el.classList.remove(cls);
+    void el.offsetWidth;
+    el.classList.add(cls);
+    setTimeout(() => el.classList.remove(cls), dur);
+  },
+
+  _shakeVisual() {
+    this._animate(this._screen?.querySelector('.combat-visual'), 'shake', 400);
+  },
+
+  // 타격 이펙트 오버레이 (슬래시 궤적/이모지 버스트)
+  _spawnFxOverlay(anchor, type) {
+    if (!anchor) return;
+    const fx = document.createElement('div');
+    fx.className = `cv-fx cv-fx-${type}`;
+    if (FX_EMOJI[type]) fx.textContent = FX_EMOJI[type];
+    const prevPos = getComputedStyle(anchor).position;
+    if (prevPos === 'static') anchor.style.position = 'relative';
+    anchor.appendChild(fx);
+    setTimeout(() => fx.remove(), 700);
   },
 
   // 헬퍼: 타겟 엘리먼트 위에 짧은 플로팅 텍스트 생성
   _spawnFloatText(anchor, text, variant = 'dmg') {
     if (!anchor) return;
     const popup = document.createElement('div');
-    popup.className = `dmg-popup ${variant === 'heal' ? 'heal' : ''}`;
+    popup.className = `dmg-popup ${variant}`;
     popup.textContent = text;
     // 앵커에 append (position:relative 가정)
     const prevPos = getComputedStyle(anchor).position;
@@ -235,11 +311,14 @@ const CombatUI = {
     const infPct     = (gs.stats.infection.current / gs.stats.infection.max) * 100;
 
     // ── 캐릭터 정보 ───────────────────────────────────────────
-    const charDef   = CHARACTERS.find(c => c.id === gs.player.characterId) ?? {};
-    const playerImg = gs.player.gender === 'F' ? PLAYER_IMG_F : PLAYER_IMG_M;
+    const charDef    = CHARACTERS.find(c => c.id === gs.player.characterId) ?? {};
+    const genderImg  = gs.player.gender === 'F' ? PLAYER_IMG_F : PLAYER_IMG_M;
+    const playerImg  = charDef.portraitFull ?? genderImg;
+    const portraitImg = charDef.portraitSmall ?? genderImg;
 
-    // ── 장착 무기 ─────────────────────────────────────────────
-    const weaponId   = gs.player.equipped?.weapon_main ?? gs.player.equipped?.weapon_sub;
+    // ── 장착 무기 (미장착 시 보드 첫 무기로 폴백 — 주 공격 카드와 일치) ──
+    const equippedId = gs.player.equipped?.weapon_main ?? gs.player.equipped?.weapon_sub;
+    const weaponId   = equippedId ?? CombatSystem.getAvailableWeapons()[0]?.instanceId ?? null;
     const weaponCard = weaponId ? gs.cards[weaponId] : null;
     const weaponDef  = weaponCard ? gs.getCardDef(weaponId) : null;
     const durPct     = weaponCard ? Math.round(weaponCard.durability ?? 100) : 0;
@@ -261,10 +340,11 @@ const CombatUI = {
     const enemyCount  = combat.enemies.length;
     const aliveCount  = combat.enemies.filter(e => e.currentHp > 0).length;
     const playerWeaponType = weaponDef?.weaponType ?? null;
+    const isRangedWeapon   = CombatSystem.weaponReachIsRanged(weaponDef);
     const targetEnemy = combat.enemies[combat.targetIndex] ?? combat.enemies[0];
 
-    // ── 적 스프라이트 HTML (중앙 시각 패널) ───────────────────
-    const enemySpritesHtml = combat.enemies.map((enemy, i) => {
+    // ── 적 스프라이트 (전열/후열 진형 — Darkest Dungeon식) ────
+    const renderEnemySprite = (enemy, i) => {
       const isDead   = enemy.currentHp <= 0;
       const wasAlive = enemy._wasAlive ?? !isDead;
       const justDied = wasAlive && isDead;
@@ -272,9 +352,12 @@ const CombatUI = {
       const eHpPct   = Math.max(0, (enemy.currentHp / enemy.maxHp) * 100);
       const eHpClass = eHpPct < 25 ? 'crit' : eHpPct < 50 ? 'low' : '';
       const ghostPct = Math.max(0, ((enemy._prevHp ?? enemy.currentHp) / enemy.maxHp) * 100);
+      const unreachable = !isDead && !CombatSystem.isEnemyReachable(enemy, isRangedWeapon);
 
       const spriteHtml = enemy.image
-        ? `<img class="cv-enemy-img" src="${enemy.image}" alt="${enemy.name}">`
+        ? `<img class="cv-enemy-img" src="${enemy.image}" alt="${enemy.name}"
+              onerror="this.style.display='none';var f=this.parentElement.querySelector('.cv-enemy-icon');if(f)f.style.display='flex';">
+           <div class="cv-enemy-icon img-fallback">${enemy.icon ?? '👾'}</div>`
         : `<div class="cv-enemy-icon">${enemy.icon ?? '👾'}</div>`;
 
       const perEnemyStatus = (enemy._statusEffects ?? []).map(s =>
@@ -289,15 +372,41 @@ const CombatUI = {
           affinityHint = `<span class="affinity-badge resistance">${RESIST_LABEL[playerWeaponType] ?? '⬇저항'}</span>`;
       }
 
+      // 의도 예고 배지 — 머리 위에 [행동 아이콘][카운트다운]➤[타겟 아이콘]
+      let intentHtml = '';
+      const intent = enemy._nextIntent;
+      if (!isDead && intent) {
+        const cd = intent.countdown != null ? `<b class="cvi-cd">${intent.countdown}</b>` : '';
+        const tgtIcon = intent.targetType === 'companion'
+          ? (COMPANION_ICONS[intent.targetId] ?? '🤝')
+          : '👤';
+        // 전진 의도는 타겟 연계 화살표 없이 아이콘만 표시
+        const linkHtml = intent.action === 'advance'
+          ? ''
+          : `<span class="cvi-arrow">➤</span><span class="cvi-target">${tgtIcon}</span>`;
+        const imminent = intent.countdown != null && intent.countdown <= 1;
+        intentHtml = `
+          <div class="cv-intent${imminent ? ' imminent' : ''}" title="${intent.label ?? ''}">
+            <span class="cvi-icon">${intent.iconEmoji ?? '🗡'}</span>${cd}${linkHtml}
+          </div>`;
+      }
+
+      const rowBadge = CombatSystem.rowOf(enemy) === 'back' && !isDead
+        ? `<span class="cv-row-badge">${I18n.t('combat.rankBack')}${unreachable ? ' 🚫' : ''}</span>`
+        : '';
+
       const spriteClass = ['cv-enemy-sprite',
         isTarget ? 'is-target' : '', isDead ? 'is-dead' : '',
         justDied ? 'just-died' : '', isEntry ? 'entering' : '',
+        unreachable ? 'unreachable' : '',
       ].filter(Boolean).join(' ');
 
       return `
         <div class="${spriteClass}" data-idx="${i}">
+          ${intentHtml}
           ${spriteHtml}
           ${affinityHint}
+          ${rowBadge}
           <div class="cv-hp-overlay">
             <div class="cv-hp-name">${I18n.enemyName(enemy.id ?? enemy.definitionId, enemy.name)}${isDead ? ' 💀' : isTarget ? ' ◀' : ''}</div>
             <div class="cv-hp-bar-track">
@@ -307,6 +416,26 @@ const CombatUI = {
             <div class="cv-hp-text">${Math.max(0, enemy.currentHp)} / ${enemy.maxHp}</div>
             ${perEnemyStatus ? `<div class="cv-status-row">${perEnemyStatus}</div>` : ''}
           </div>
+        </div>`;
+    };
+
+    const frontEnemies = combat.enemies.map((e, i) => ({ e, i })).filter(x => CombatSystem.rowOf(x.e) === 'front');
+    const backEnemies  = combat.enemies.map((e, i) => ({ e, i })).filter(x => CombatSystem.rowOf(x.e) === 'back');
+    const frontRankHtml = frontEnemies.map(x => renderEnemySprite(x.e, x.i)).join('');
+    const backRankHtml  = backEnemies.map(x => renderEnemySprite(x.e, x.i)).join('');
+
+    // ── 아군 진형 (플레이어 전열 + 동반자 후열) ───────────────
+    const stageCompanions = gs.companions ?? [];
+    const allySpritesHtml = stageCompanions.map(npcId => {
+      const st = gs.npcs?.states?.[npcId];
+      const hp = st?.hp ?? 0;
+      const maxHp = st?.maxHp ?? 50;
+      const pct = Math.max(0, Math.min(100, (hp / maxHp) * 100));
+      const name = I18n.itemName(npcId, st?.name ?? npcId);
+      return `
+        <div class="cv-ally${hp <= 0 ? ' is-dead' : ''}" data-companion-id="${npcId}" title="${name}">
+          <span class="cv-ally-icon">${COMPANION_ICONS[npcId] ?? '👤'}</span>
+          <div class="cv-ally-hp"><div class="cv-ally-hp-fill" style="width:${pct.toFixed(0)}%"></div></div>
         </div>`;
     }).join('');
 
@@ -407,9 +536,10 @@ const CombatUI = {
           const dead   = e.currentHp <= 0;
           const active = i === combat.targetIndex;
           const hp     = Math.max(0, Math.round((e.currentHp / e.maxHp) * 100));
+          const rowTag = CombatSystem.rowOf(e) === 'back' ? ` <small>[${I18n.t('combat.rankBack')}]</small>` : '';
           return `<div class="cep-enemy-item ${active ? 'active' : ''} ${dead ? 'dead' : ''}" data-idx="${i}">
             <span>${e.icon ?? '👾'}</span>
-            <span>${I18n.enemyName(e.id ?? e.definitionId, e.name)}</span>
+            <span>${I18n.enemyName(e.id ?? e.definitionId, e.name)}${rowTag}</span>
             <span>${dead ? '💀' : hp + '%'}</span>
           </div>`;
         }).join('')}
@@ -445,7 +575,7 @@ const CombatUI = {
           <!-- 좌: 플레이어 패널 ─────────────────────────── -->
           <aside class="combat-player-panel">
             <div class="cpp-portrait">
-              <img class="cpp-img" src="${playerImg}" alt="${gs.player.name ?? ''}">
+              <img class="cpp-img" src="${portraitImg}" alt="${gs.player.name ?? ''}">
               <div class="cpp-name">${gs.player.name ?? '생존자'}</div>
               <div class="cpp-job">${charDef.portrait ?? ''} ${charDef.title ?? ''}</div>
             </div>
@@ -510,12 +640,23 @@ const CombatUI = {
               <span>${noiseText}</span>
             </div>
 
-            <div class="cv-enemies count-${enemyCount}">
-              ${enemySpritesHtml}
-            </div>
-
-            <div class="cv-player">
-              <img class="cv-player-img" src="${playerImg}" alt="${gs.player.name ?? ''}">
+            <div class="cv-stage">
+              <div class="cv-party">
+                ${allySpritesHtml ? `<div class="cv-allies">${allySpritesHtml}</div>` : ''}
+                <div class="cv-player">
+                  <img class="cv-player-img" src="${playerImg}" alt="${gs.player.name ?? ''}"
+                       onerror="if(this.src.indexOf('${genderImg.replace('./', '')}')<0){this.src='${genderImg}';}">
+                </div>
+              </div>
+              <div class="cv-foes">
+                <div class="cv-rank rank-front count-${Math.min(frontEnemies.length, 4)}">
+                  ${frontRankHtml}
+                </div>
+                ${backEnemies.length ? `
+                <div class="cv-rank rank-back count-${Math.min(backEnemies.length, 4)}">
+                  ${backRankHtml}
+                </div>` : ''}
+              </div>
             </div>
 
             ${lastLog ? `<div class="cv-log-overlay">${lastLog}</div>` : ''}
@@ -725,60 +866,12 @@ const CombatUI = {
 
         if (GameState.combat.active) {
           this.render();
-          this._triggerHitFlash();
-          this._spawnDmgPopup();
         }
       });
     });
-  },
 
-  _triggerHitFlash() {
-    const lastHit = GameState.combat.lastHit;
-    if (!lastHit) return;
-
-    let targetEl;
-    if (lastHit.target === 'player') {
-      targetEl = this._screen.querySelector('.cv-player');
-    } else {
-      const idx = lastHit.enemyIndex ?? GameState.combat.targetIndex;
-      targetEl  = this._screen.querySelector(`.cv-enemy-sprite[data-idx="${idx}"]`);
-    }
-    if (!targetEl) return;
-
-    targetEl.classList.remove('hit');
-    void targetEl.offsetWidth;
-    targetEl.classList.add('hit');
-    setTimeout(() => targetEl.classList.remove('hit'), 350);
-
-    if (lastHit.isCrit) {
-      const visual = this._screen.querySelector('.combat-visual');
-      if (visual) {
-        visual.classList.remove('shake');
-        void visual.offsetWidth;
-        visual.classList.add('shake');
-        setTimeout(() => visual.classList.remove('shake'), 400);
-      }
-    }
-  },
-
-  _spawnDmgPopup() {
-    const lastHit = GameState.combat.lastHit;
-    if (!lastHit) return;
-
-    let side;
-    if (lastHit.target === 'player') {
-      side = this._screen.querySelector('.cv-player');
-    } else {
-      const idx = lastHit.enemyIndex ?? GameState.combat.targetIndex;
-      side = this._screen.querySelector(`.cv-enemy-sprite[data-idx="${idx}"]`);
-    }
-    if (!side) return;
-
-    const popup = document.createElement('div');
-    popup.className = 'dmg-popup' + (lastHit.isCrit ? ' crit' : '');
-    popup.textContent = `-${lastHit.damage}`;
-    side.appendChild(popup);
-    setTimeout(() => popup.remove(), 900);
+    // ── 연출 큐 재생 (행동 결과 → 순차 애니메이션) ───────────
+    this._playFxQueue();
   },
 
   // Phase 2 — 동료 stance 셀렉터 + 클래스 스킬 쿨다운 배지

@@ -9,10 +9,12 @@ describe('신규 적 3종 정의', () => {
     expect(e.timedThreat.chargingAttacks).toBe(true);
     expect(e.weaknesses).toEqual(expect.arrayContaining(['fire', 'explosive']));
   });
-  it('zombie_screamer: timedThreat summon_horde, chargeTurns 2', () => {
+  it('zombie_screamer: timedThreat summon_horde, chargeTurns 3 (후열 소환수)', () => {
     const e = ENEMIES.zombie_screamer;
     expect(e.timedThreat.id).toBe('summon_horde');
-    expect(e.timedThreat.chargeTurns).toBe(2);
+    expect(e.timedThreat.chargeTurns).toBe(3);
+    expect(e.position).toBe('back');
+    expect(e.attackType).toBe('ranged');
   });
   it('zombie_charger: timedThreat charge_strike, chargingAttacks false', () => {
     const e = ENEMIES.zombie_charger;
@@ -22,7 +24,27 @@ describe('신규 적 3종 정의', () => {
   });
 });
 
+describe('전열/후열 배치 정의', () => {
+  it('후열 적 3종: position back + attackType ranged', () => {
+    for (const id of ['zombie_acid', 'zombie_screamer', 'raider_elite']) {
+      expect(ENEMIES[id].position).toBe('back');
+      expect(ENEMIES[id].attackType).toBe('ranged');
+    }
+  });
+  it('일반 좀비는 position 미지정 → 전열 기본값', () => {
+    expect(ENEMIES.zombie_common.position).toBeUndefined();
+    const inst = rollEnemy(1);
+    expect(['front', 'back']).toContain(inst.row);
+  });
+});
+
 describe('rollEnemy 런타임 초기화', () => {
+  it('인스턴스는 row 필드를 가진다 (position 기반)', () => {
+    for (let i = 0; i < 40; i++) {
+      const e = rollEnemy(4);
+      expect(e.row).toBe(e.position ?? 'front');
+    }
+  });
   it('timedThreat 적은 _chargeRemaining 초기화', () => {
     let found = false;
     for (let i = 0; i < 80; i++) {

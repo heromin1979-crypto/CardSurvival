@@ -40,7 +40,7 @@ const CombatSystem = {
             playerAction: null, log: ['⚠️ 전투 초기화 오류: ' + (err?.message ?? err)],
             outcome: null, rewards: [], nodeId: data?.nodeId ?? null,
             dangerLevel: data?.dangerLevel ?? 2, round: 0, xpGained: 0,
-            lastHit: null, playerStatus: [], enemyStatus: [],
+            lastHit: null, playerStatus: [], enemyStatus: [], fxQueue: [],
             _encounterData: data ?? {}, _isNew: true, _ambushFailed: false,
           };
           EventBus.emit('combatStarted', {});
@@ -84,6 +84,7 @@ const CombatSystem = {
       lastHit:      null,
       playerStatus: [],
       enemyStatus:  [],
+      fxQueue:      [],   // 연출 이벤트 큐 — CombatUI가 렌더 후 순차 재생
       // Phase 1: 턴 큐 필드
       turnQueue:    [],
       activeIdx:    0,
@@ -191,20 +192,83 @@ const CombatSystem = {
     return GameState.combat.enemies.every(e => e.currentHp <= 0);
   },
 
-  // 죽은 타겟 → 다음 살아있는 적으로 자동 전환, 없으면 -1
+  // ── 전열/후열 (Darkest Dungeon식 랭크) ─────────────────
+  // row: 'front' | 'back'. 근접 무기는 전열만 타격 가능,
+  // 전열이 전멸하면 후열에 도달할 수 있다. 원거리/투척은 열 무시.
+
+  // instantiateEnemy를 거치지 않은 레거시 생성 경로(row 미설정)는 position으로 폴백
+  rowOf(enemy) {
+    return enemy?.row ?? enemy?.position ?? 'front';
+  },
+
+  getReachableEnemies(isRanged = false) {
+    const alive = this.getAliveEnemies();
+    if (isRanged) return alive;
+    const front = alive.filter(e => this.rowOf(e) === 'front');
+    return front.length > 0 ? front : alive;
+  },
+
+  isEnemyReachable(enemy, isRanged = false) {
+    if (!enemy || enemy.currentHp <= 0) return false;
+    if (isRanged) return true;
+    if (this.rowOf(enemy) === 'front') return true;
+    return !this.getAliveEnemies().some(e => this.rowOf(e) === 'front');
+  },
+
+  // 탄약이 있어야 원거리 사거리로 취급 — 빈 총은 근접 폴백 타격이므로 전열 규칙을 따른다
+  weaponReachIsRanged(def) {
+    if (!def?.combat?.requiresAmmo) return false;
+    return GameState.getBoardCards().some(c => c.definitionId === def.combat.requiresAmmo);
+  },
+
+  // 플레이어의 현재 무기가 원거리인지 (장착 → 보드 순)
+  isPlayerWeaponRanged() {
+    return this.weaponReachIsRanged(this._getPlayerWeapon()?.def);
+  },
+
+  // 연출 이벤트 큐에 push — CombatUI._playFxQueue가 렌더 후 순차 재생
+  _fx(payload) {
+    const combat = GameState.combat;
+    if (!combat) return;
+    if (!Array.isArray(combat.fxQueue)) combat.fxQueue = [];
+    combat.fxQueue.push(payload);
+  },
+
+  // 무기 속성 → 연출 종류 매핑
+  _weaponFx(weaponDef) {
+    if (!weaponDef) return 'punch';
+    if (weaponDef.combat?.requiresAmmo) return 'shot';
+    switch (weaponDef.weaponType) {
+      case 'blade':     return 'slash';
+      case 'blunt':     return 'blunt';
+      case 'fire':      return 'fire';
+      case 'electric':  return 'spark';
+      case 'explosive': return 'blast';
+      default:          return 'blunt';
+    }
+  },
+
+  // 죽은 타겟 → 닿을 수 있는 적 우선으로 자동 전환, 없으면 -1
   _autoAdvanceTarget() {
     const { enemies } = GameState.combat;
-    const next = enemies.findIndex(e => e.currentHp > 0);
+    const isRanged = this.isPlayerWeaponRanged();
+    let next = enemies.findIndex(e => e.currentHp > 0 && this.isEnemyReachable(e, isRanged));
+    if (next < 0) next = enemies.findIndex(e => e.currentHp > 0);
     GameState.combat.targetIndex = next >= 0 ? next : 0;
     return next;
   },
 
-  // 플레이어가 직접 타겟 변경
+  // 플레이어가 직접 타겟 변경 — 근접 무기로는 전열 생존 시 후열 선택 불가
   setTarget(index) {
     const { enemies } = GameState.combat;
-    if (enemies[index] && enemies[index].currentHp > 0) {
-      GameState.combat.targetIndex = index;
+    const enemy = enemies[index];
+    if (!enemy || enemy.currentHp <= 0) return false;
+    if (!this.isEnemyReachable(enemy, this.isPlayerWeaponRanged())) {
+      EventBus.emit('notify', { message: I18n.t('combatSys.blockedByFront'), type: 'warn' });
+      return false;
     }
+    GameState.combat.targetIndex = index;
+    return true;
   },
 
   // ── 행동 처리 ──────────────────────────────────────────
@@ -213,8 +277,23 @@ const CombatSystem = {
     const gs = GameState;
     if (!gs.combat.active) return;
 
-    const target = this._getTarget();
+    let target = this._getTarget();
     if (!target) return;
+
+    // 근접 공격이 후열을 노리고 있으면 닿는 적으로 자동 재조준
+    if (action === 'melee' || action === 'shoot') {
+      const wDef = (weaponInstanceId && gs.cards[weaponInstanceId]) ? gs.getCardDef(weaponInstanceId) : null;
+      const isRanged = this.weaponReachIsRanged(wDef);
+      if (!this.isEnemyReachable(target, isRanged)) {
+        const reachable = this.getReachableEnemies(isRanged);
+        if (reachable.length === 0) return;
+        gs.combat.targetIndex = gs.combat.enemies.indexOf(reachable[0]);
+        target = this._getTarget();
+        gs.combat.log.push(I18n.t('combatSys.meleeRetarget', {
+          name: I18n.enemyName(target.id, target.name),
+        }));
+      }
+    }
 
     gs.combat.round++;
     gs.combat.lastHit = null;
@@ -468,6 +547,14 @@ const CombatSystem = {
         }
       }
       gs.combat.lastHit = { target: 'enemy', damage: finalDmg, isCrit, enemyIndex: gs.combat.targetIndex };
+      this._fx({
+        kind:      'playerAttack',
+        fx:        this._weaponFx((weaponId && gs.cards[weaponId]) ? gs.getCardDef(weaponId) : null),
+        targetIdx: gs.combat.targetIndex,
+        dmg:       finalDmg,
+        crit:      isCrit,
+        killed:    enemy.currentHp <= 0,
+      });
 
       // XP 획득
       SkillSystem.gainXp(skillId, isCrit ? 4 : 2);
@@ -486,6 +573,12 @@ const CombatSystem = {
       if (isCrit) return I18n.t('combatSys.critHit', { weapon: weaponName, enemy: eName, dmg: finalDmg });
       return I18n.t('combatSys.normalHit', { weapon: weaponName, enemy: eName, dmg: finalDmg, hp: enemy.currentHp, maxHp: enemy.maxHp });
     }
+    this._fx({
+      kind:      'playerAttack',
+      fx:        this._weaponFx((weaponId && gs.cards[weaponId]) ? gs.getCardDef(weaponId) : null),
+      targetIdx: gs.combat.targetIndex,
+      miss:      true,
+    });
     return I18n.t('combatSys.miss', { weapon: weaponName });
   },
 
@@ -644,13 +737,14 @@ const CombatSystem = {
     }
   },
 
-  // 가장 낮은 HP의 살아있는 적 공격
+  // 가장 낮은 HP의 닿는 적 공격 (원거리 동료는 후열 직접 타격 가능)
   _companionAutoAttack(npcId) {
     const gs = GameState;
     const enemies = gs.combat?.enemies ?? [];
-    const alive = enemies
-      .map((e, idx) => ({ e, idx }))
-      .filter(x => (x.e?.currentHp ?? 0) > 0);
+    const isRangedNpc = (BALANCE.combat.companionAuto.rangedCompanions ?? []).includes(npcId);
+    const alive = this.getReachableEnemies(isRangedNpc)
+      .map(e => ({ e, idx: enemies.indexOf(e) }))
+      .filter(x => x.idx >= 0);
     if (alive.length === 0) return;
     alive.sort((a, b) => (a.e.currentHp ?? 0) - (b.e.currentHp ?? 0));
     const target = alive[0].e;
@@ -664,6 +758,7 @@ const CombatSystem = {
       gs.combat.log.push(I18n.t
         ? I18n.t('combatSys.companionAtkMiss', { name: this._npcLabel(npcId) })
         : `${this._npcLabel(npcId)} 공격 빗나감`);
+      this._fx({ kind: 'companionAttack', npcId, targetIdx: alive[0].idx, miss: true });
       return;
     }
 
@@ -674,6 +769,7 @@ const CombatSystem = {
     gs.combat.log.push(I18n.t
       ? I18n.t('combatSys.companionAtk', { name: this._npcLabel(npcId), enemy: I18n.enemyName?.(target.id, target.name) ?? target.name, dmg })
       : `${this._npcLabel(npcId)}→${target.name}: ${dmg} 피해`);
+    this._fx({ kind: 'companionAttack', npcId, targetIdx: alive[0].idx, dmg, fx: isRangedNpc ? 'shot' : 'slash' });
     EventBus.emit('companionAction', { npcId, action: 'attack', targetIdx: alive[0].idx, damage: dmg });
   },
 
@@ -686,6 +782,7 @@ const CombatSystem = {
     st.combatBuffs = st.combatBuffs ?? {};
     st.combatBuffs.holdReduct = { value: reduct, duration: 1 };
     gs.combat.log.push(`🛡️ ${this._npcLabel(npcId)} 방어 자세 (피해 -${Math.round(reduct * 100)}%)`);
+    this._fx({ kind: 'companionBuff', npcId, buff: 'hold' });
     EventBus.emit('companionAction', { npcId, action: 'hold' });
   },
 
@@ -703,6 +800,7 @@ const CombatSystem = {
     const amt = min + Math.floor(Math.random() * (max - min + 1));
     p.hp.current = Math.min(p.hp.max, (p.hp.current ?? 0) + amt);
     gs.combat.log.push(`💉 ${this._npcLabel(npcId)} 응급 처치 (+${amt} HP)`);
+    this._fx({ kind: 'companionHeal', npcId, amount: amt });
     EventBus.emit('companionAction', { npcId, action: 'heal', amount: amt });
   },
 
@@ -746,6 +844,7 @@ const CombatSystem = {
       gs.combat.log.push(`🔬 ${label} 상태 진단 (${skill.duration}턴 · 아군 상태이상 저항 +${Math.round(skill.resistBonus * 100)}%)`);
     }
 
+    this._fx({ kind: 'companionSkill', npcId, skillId: skill.id });
     EventBus.emit('companionAction', { npcId, action: 'skill', skillId: skill.id });
   },
 
@@ -880,6 +979,18 @@ const CombatSystem = {
       };
     }
 
+    // 후열 근접 적: 다음 턴은 공격이 아니라 전열로 전진
+    if (this.rowOf(enemy) === 'back' && (enemy.attackType ?? 'melee') === 'melee') {
+      return {
+        action: 'advance',
+        targetType: 'self',
+        targetId: null,
+        iconEmoji: '👣',
+        label: I18n.t('combat.rankFront') + ' 전진',
+        pattern,
+      };
+    }
+
     // 스킬 사용 가능 여부 (쿨다운 0인 특수 스킬)
     const readySkill = (enemy.specialSkills ?? []).find(s =>
       (enemy._skillCooldowns?.[s.id] ?? 0) === 0
@@ -920,6 +1031,15 @@ const CombatSystem = {
       enemy._routed = true;
       enemy.currentHp = 0;
       gs.combat.log.push(I18n.t('combatSys.enemyRout', { enemy: I18n.enemyName(enemy.id, enemy.name) }));
+      return;
+    }
+
+    // 후열 근접 적: 공격 대신 전열로 전진 (1턴 소모)
+    if (this.rowOf(enemy) === 'back' && (enemy.attackType ?? 'melee') === 'melee') {
+      enemy.row = 'front';
+      gs.combat.log.push(I18n.t('combatSys.enemyAdvance', { enemy: I18n.enemyName(enemy.id, enemy.name) }));
+      this._fx({ kind: 'advance', enemyIdx });
+      enemy._nextIntent = this._decideNextIntent(enemy, gs.combat, gs) ?? null;
       return;
     }
 
@@ -993,6 +1113,7 @@ const CombatSystem = {
     npcSys.damageCompanion(npcId, damage);
     gs.combat.log.push(`${enemy.name ?? '적'} → ${this._npcLabel(npcId)}: ${damage} 피해`);
     gs.combat.lastHit = { target: 'companion', damage, npcId, isCrit: false };
+    this._fx({ kind: 'enemyAttackCompanion', enemyIdx: gs.combat.enemies.indexOf(enemy), npcId, dmg: damage });
     EventBus.emit('enemyAttackCompanion', { enemyId: enemy.id, npcId, damage });
   },
 
@@ -1024,6 +1145,13 @@ const CombatSystem = {
         enemy._skillCooldowns[skill.id] = skill.cooldown;
         gs.combat.lastHit = { target: 'player', damage: dmg, isCrit: false };
         EventBus.emit('playerHit', { damage: dmg });
+        this._fx({
+          kind:     'enemyAttack',
+          enemyIdx: gs.combat.enemies.indexOf(enemy),
+          fx:       'skill',
+          dmg,
+          crit:     true,
+        });
         DiseaseSystem.checkCombatInjury(dmg, gs);
         BodySystem.onCombatHit(dmg, enemy);
         if (effectiveStunChance > 0 && Math.random() < effectiveStunChance) {
@@ -1065,6 +1193,7 @@ const CombatSystem = {
       }
       enemy.currentHp = 0;
       gs.combat.log.push(I18n.t('combatSys.bloaterExplode', { enemy: I18n.enemyName(enemy.id, enemy.name), dmg }));
+      this._fx({ kind: 'explode', enemyIdx: gs.combat.enemies.indexOf(enemy), dmg });
       return;
     }
 
@@ -1084,6 +1213,7 @@ const CombatSystem = {
       DiseaseSystem.checkCombatInjury(dmg, gs);
       BodySystem.onCombatHit(dmg, enemy);
       gs.combat.log.push(I18n.t('combatSys.chargerStrike', { enemy: I18n.enemyName(enemy.id, enemy.name), dmg }));
+      this._fx({ kind: 'enemyAttack', enemyIdx: gs.combat.enemies.indexOf(enemy), fx: 'claw', dmg, crit: true });
       return;
     }
 
@@ -1092,12 +1222,14 @@ const CombatSystem = {
       const count = cMin + Math.floor(Math.random() * (cMax - cMin + 1));
       for (let i = 0; i < count; i++) {
         const add = rollEnemy(gs.combat.dangerLevel ?? 3);
+        add.row = 'front';   // 소환된 증원은 곧장 전열로 달려든다
         add._nextIntent = this._decideNextIntent(add, gs.combat, gs);
         gs.combat.enemies.push(add);
         gs.combat.turnQueue?.push({ type: 'enemy', enemyIdx: gs.combat.enemies.length - 1, order: gs.combat.turnQueue.length });
       }
       NoiseSystem.addNoise(T.screamer.summonNoise);
       gs.combat.log.push(I18n.t('combatSys.screamerSummon', { enemy: I18n.enemyName(enemy.id, enemy.name), count }));
+      this._fx({ kind: 'summon', enemyIdx: gs.combat.enemies.indexOf(enemy), count });
       return;
     }
   },
@@ -1134,6 +1266,7 @@ const CombatSystem = {
         const tauntChance = nurseDef?.companion?.tauntChance ?? 0;
         if (tauntChance > 0 && Math.random() < tauntChance) {
           npcSysRef.damageCompanion('npc_nurse', damage);
+          this._fx({ kind: 'enemyAttackCompanion', enemyIdx: gs.combat.enemies.indexOf(enemy), npcId: 'npc_nurse', dmg: damage });
           const npcName = I18n.itemName('npc_nurse', GameData?.items?.npc_nurse?.name);
           return I18n.t('npc.hitInstead', { name: npcName, dmg: damage });
         }
@@ -1151,6 +1284,7 @@ const CombatSystem = {
         const npcSys = SystemRegistry.get('NPCSystem');
         if (npcSys) {
           npcSys.damageCompanion(targetNpcId, damage);
+          this._fx({ kind: 'enemyAttackCompanion', enemyIdx: gs.combat.enemies.indexOf(enemy), npcId: targetNpcId, dmg: damage });
           const npcName = I18n.itemName(targetNpcId, GameData?.items?.[targetNpcId]?.name);
           return I18n.t('npc.hitInstead', { name: npcName, dmg: damage });
         }
@@ -1159,6 +1293,12 @@ const CombatSystem = {
       gs.player.hp.current = Math.max(0, gs.player.hp.current - damage);
       gs.combat.lastHit    = { target: 'player', damage, isCrit: false };
       EventBus.emit('playerHit', { damage });
+      this._fx({
+        kind:     'enemyAttack',
+        enemyIdx: gs.combat.enemies.indexOf(enemy),
+        fx:       (enemy.attackType ?? 'melee') === 'ranged' ? 'shot' : 'claw',
+        dmg:      damage,
+      });
 
       // 전투 부상 체크 (출혈, 열상, 골절, 뇌진탕)
       DiseaseSystem.checkCombatInjury(damage, gs);
@@ -1192,6 +1332,12 @@ const CombatSystem = {
       }
       return I18n.t('combatSys.enemyAtk', { enemy: I18n.enemyName(enemy.id, enemy.name), dmg: damage, hp: gs.player.hp.current });
     }
+    this._fx({
+      kind:     'enemyAttack',
+      enemyIdx: gs.combat.enemies.indexOf(enemy),
+      fx:       (enemy.attackType ?? 'melee') === 'ranged' ? 'shot' : 'claw',
+      miss:     true,
+    });
     return I18n.t('combatSys.enemyDodge', { enemy: I18n.enemyName(enemy.id, enemy.name) });
   },
 

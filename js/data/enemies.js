@@ -110,7 +110,7 @@ const ENEMIES = {
   raider: {
     id: 'raider',
     name: '약탈자',
-    icon: '🔫',
+    icon: '🥷',
     type: 'human',
     hp: { min: 35, max: 55 },
     attack: { damage: [14, 22], accuracy: 0.68, noiseOnAttack: 25 },
@@ -129,6 +129,7 @@ const ENEMIES = {
     ],
     infectionChance: 0,
     aiPattern: 'aggressive',
+    attackType: 'ranged',
     specialSkills: [],
     statusInflict: null,
     weaknesses: ['blade'],
@@ -140,7 +141,7 @@ const ENEMIES = {
   raider_elite: {
     id: 'raider_elite',
     name: '정예 약탈자',
-    icon: '🎯',
+    icon: '🦹',
     type: 'human',
     hp: { min: 55, max: 80 },
     attack: { damage: [18, 28], accuracy: 0.72, noiseOnAttack: 30 },
@@ -158,12 +159,14 @@ const ENEMIES = {
       { definitionId: 'bone',        weight: 15, minQty: 1, maxQty: 2 },
     ],
     infectionChance: 0,
-    aiPattern: 'aggressive',
+    aiPattern: 'sniper',
+    position: 'back',
+    attackType: 'ranged',
     specialSkills: [{ id: 'aimed_shot', name: '정조준', damage: [25, 40], cooldown: 3, stunChance: 0.3 }],
     statusInflict: null,
     weaknesses: [],
     resistances: ['bullet', 'blade'],
-    description: '전투 경험이 풍부한 정예 약탈자. 정조준 사격이 치명적이다.',
+    description: '후열에서 정조준 사격을 가하는 정예 약탈자. 전열을 뚫거나 원거리로 제압해야 한다.',
     stealthDifficulty: 0.85,
   },
 
@@ -244,12 +247,14 @@ const ENEMIES = {
       { definitionId: 'bone',               weight: 15, minQty: 1, maxQty: 1 },
     ],
     infectionChance: 0.45,
-    aiPattern: 'normal',
+    aiPattern: 'predator',
+    position: 'back',
+    attackType: 'ranged',
     specialSkills: [],
     statusInflict: { id: 'acid_burn', name: '산성 화상', duration: 2, effect: { hpLossPerRound: 5, infection: 5 } },
     weaknesses: ['fire', 'bullet'],
     resistances: ['blade'],
-    description: '산성 체액을 분사하는 특수 감염자. 명중 시 감염·방사선이 추가 상승한다.',
+    description: '후열에서 산성 체액을 분사하는 특수 감염자. 명중 시 감염·방사선이 추가 상승한다.',
     stealthDifficulty: 0.6,
   },
 
@@ -296,13 +301,15 @@ const ENEMIES = {
     ],
     infectionChance: 0.25,
     aiPattern: 'normal',
+    position: 'back',
+    attackType: 'ranged',
     specialSkills: [],
     statusInflict: null,
+    timedThreat: { id: 'summon_horde', chargeTurns: 3, chargingAttacks: true,
+      counters: { silentSuppress: true, stunDelays: true } },
     weaknesses: ['bullet', 'fire'],
     resistances: [],
-    timedThreat: { id: 'summon_horde', chargeTurns: 2, chargingAttacks: true,
-      counters: { silentSuppress: true, stunDelays: true } },
-    description: '비명으로 동족을 부르는 감염자. 조용히(silent) 처치하면 비명을 막을 수 있다.',
+    description: '후열에서 비명을 충전해 3턴 뒤 동족을 부르는 감염자. 전열을 빠르게 뚫거나 원거리로 침묵시켜야 한다.',
     stealthDifficulty: 0.75,
   },
   zombie_charger: {
@@ -396,6 +403,7 @@ function instantiateEnemy(def) {
     ...def,
     currentHp: hp,
     maxHp:     hp,
+    row:       def.position ?? 'front',
     _skillCooldowns: {},
     _statusEffects: [],
     _chargeRemaining: def.timedThreat?.chargeTurns ?? null,
@@ -438,8 +446,18 @@ function rollEnemyGroup(dangerLevel, noiseLevel = 0) {
     count          = 3;
     effectiveDanger = Math.min(5, dangerLevel + 1);
   }
-  return Array.from({ length: count }, () => rollEnemy(effectiveDanger));
+  return ensureFrontRank(Array.from({ length: count }, () => rollEnemy(effectiveDanger)));
 }
 
-export { ENEMIES, ENCOUNTER_TABLES, rollEnemy, rollEnemyGroup, instantiateEnemy };
+// 진형 보정(호위 규칙): 굴림 결과가 후열로만 구성되면 첫 적을 전열로 내린다.
+// 전열이 비면 근접 도달 규칙상 후열이 그대로 노출되어 랭크 메커닉이 무력화되고,
+// UI의 "후열" 배지가 도달 가능 상태와 모순되게 보이기 때문.
+function ensureFrontRank(enemies) {
+  if (enemies.length > 0 && !enemies.some(e => (e.row ?? 'front') === 'front')) {
+    enemies[0].row = 'front';
+  }
+  return enemies;
+}
+
+export { ENEMIES, ENCOUNTER_TABLES, rollEnemy, rollEnemyGroup, instantiateEnemy, ensureFrontRank };
 export default ENEMIES;
