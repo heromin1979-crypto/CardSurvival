@@ -525,7 +525,7 @@ const ENGINEER_QUESTS = {
     characterId: 'engineer',
     dayTrigger: 84,
     prerequisite: 'mq_eng_28',
-    objective: { type: 'collect_item', definitionId: 'clean_water', count: 10 },
+    objective: { type: 'collect_item_type', itemType: 'clean', count: 10 },
     reward: { morale: 12, flags: { escape_ready: true } },
     failPenalty: { morale: -5 },
     deadlineDays: Infinity,

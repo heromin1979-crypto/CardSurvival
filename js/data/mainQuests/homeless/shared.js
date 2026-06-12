@@ -48,7 +48,7 @@ const HOMELESS_SHARED = {
     id: 'mq_homeless_04', title: '한강 정수',
     desc: '깨끗한 물 3개를 확보하라. 한강변에서 정수하는 법을 안다.',
     icon: '🌊', characterId: 'homeless', dayTrigger: 6, prerequisite: 'mq_homeless_03',
-    objective: { type: 'collect_item', definitionId: 'clean_water', count: 3 },
+    objective: { type: 'collect_item_type', itemType: 'clean', count: 3 },
     reward: { morale: 5, items: [{ definitionId: 'charcoal', qty: 2 }, { definitionId: 'water_filter', qty: 1 }] },
     failPenalty: { morale: -3 }, deadlineDays: 16,
     narrative: {

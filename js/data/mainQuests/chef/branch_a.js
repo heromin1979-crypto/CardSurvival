@@ -80,7 +80,7 @@ const CHEF_BRANCH_A = {
     desc: '깨끗한 물 5개를 확보하라. 급식소에 안정적인 식수 공급이 필요하다.',
     icon: '💧', characterId: 'chef', dayTrigger: 180,
     prerequisite: 'mq_chef_a_15', requiresFlag: 'chef_branch_a',
-    objective: { type: 'collect_item', definitionId: 'clean_water', count: 5 },
+    objective: { type: 'collect_item_type', itemType: 'clean', count: 5 },
     reward: { morale: 10, items: [{ definitionId: 'water_filter', qty: 1 }] },
     failPenalty: { morale: -5 }, deadlineDays: 250,
     narrative: {
