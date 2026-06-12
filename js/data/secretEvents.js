@@ -2637,7 +2637,7 @@ export const SECRET_EVENTS = [
             text: '금고는 이미 털렸다. 하지만 서랍 속에 밀봉된 생수가 남아있었다.',
             effects: {
               items: [
-                { id: 'clean_water', qty: 2 },
+                { id: 'water_bottle', qty: 2 },
               ],
               morale: 5,
               flags: { old_office_visited: true },

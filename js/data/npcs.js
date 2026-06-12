@@ -257,7 +257,7 @@ const NPCS = {
     // V-2: 동반자 자율 수집
     forageItems: [
       { id: 'wild_herb',    chance: 0.4, qty: 1 },
-      { id: 'clean_water',  chance: 0.2, qty: 1 },
+      { id: 'water_bottle', chance: 0.2, qty: 1 },
     ],
     // V-2: 선제 대사 (상황별)
     spontaneous: [
@@ -1714,7 +1714,7 @@ const NPCS = {
         trust: 1,
         id:      'civilian_wounded_02_healed',
         message: '🧑‍🎓 학생이 정신을 차린다. "고시원에 남은 학우들이 있어요. 이거라도 드세요." — 에너지 바 2개 + 깨끗한 물 2개 획득.',
-        effect: { giveItems: [{ id: 'energy_bar', qty: 2 }, { id: 'clean_water', qty: 2 }], morale: 7 },
+        effect: { giveItems: [{ id: 'energy_bar', qty: 2 }, { id: 'water_bottle', qty: 2 }], morale: 7 },
       },
     ],
     quests: [],

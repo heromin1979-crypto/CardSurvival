@@ -48,7 +48,7 @@ const CHEF_SHARED = {
     id: 'mq_chef_04', title: '식수 확보',
     desc: '깨끗한 물 3개를 확보하라. 조리와 음용에 필수다.',
     icon: '💧', characterId: 'chef', dayTrigger: 6, prerequisite: 'mq_chef_03',
-    objective: { type: 'collect_item', definitionId: 'clean_water', count: 3 },
+    objective: { type: 'collect_item_type', itemType: 'clean', count: 3 },
     reward: { morale: 5, items: [{ definitionId: 'herb', qty: 1 }] },
     failPenalty: { morale: -3 }, deadlineDays: 16,
     narrative: {
