@@ -549,6 +549,11 @@ export const ko = {
   'combatSys.screamerDeathCry':    '📣 스크리머가 마지막 비명을 질렀다 (소음 급증)',
   'combatSys.chargeInterrupt':     '⚡ {enemy}의 위협 충전을 끊었다!',
   'combatSys.enemyRout':           '🏳️ {enemy}이(가) 전의를 잃고 도주했다!',
+  'combatSys.blockedByFront':      '🚫 전열의 적이 가로막고 있다! 원거리 무기로만 노릴 수 있다.',
+  'combatSys.meleeRetarget':       '⚔️ 후열에 닿지 않아 {name}을(를) 대신 공격한다.',
+  'combatSys.enemyAdvance':        '👣 {enemy}이(가) 전열로 나선다!',
+  'combat.rankFront':              '전열',
+  'combat.rankBack':               '후열',
 
   // ── CraftSystem ─────────────────────────────────────────────
   'craftSys.queueFull':      '작업 큐가 가득 참',
@@ -1418,6 +1423,11 @@ export const en = {
   'combatSys.screamerDeathCry':    '📣 The screamer let out a final cry (noise spike)',
   'combatSys.chargeInterrupt':     "⚡ Interrupted {enemy}'s threat charge!",
   'combatSys.enemyRout':           '🏳️ {enemy} lost their will and fled!',
+  'combatSys.blockedByFront':      '🚫 The front line is in the way! Only ranged weapons can reach.',
+  'combatSys.meleeRetarget':       "⚔️ Can't reach the back row — attacking {name} instead.",
+  'combatSys.enemyAdvance':        '👣 {enemy} moves up to the front line!',
+  'combat.rankFront':              'Front',
+  'combat.rankBack':               'Back',
 
   // ── CraftSystem ─────────────────────────────────────────────
   'craftSys.queueFull':      'Queue is full',

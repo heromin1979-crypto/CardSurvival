@@ -69,7 +69,8 @@ export function throwableAction(itemId, combatSystemRef) {
         duration:  effect.burnDuration ?? 2,
         dmgPerRound: effect.burnDmgPerRound ?? 5,
         label:     I18n.t('combatSys.throwFire'),
-      }, msgs);
+        fxType:    'fire',
+      }, msgs, combatSystemRef);
 
     case 'aoe_bleed':
       return _applyAoE(alive, {
@@ -79,20 +80,28 @@ export function throwableAction(itemId, combatSystemRef) {
         duration:  effect.bleedDuration ?? 2,
         dmgPerRound: effect.bleedDmgPerRound ?? 4,
         label:     I18n.t('combatSys.throwBlast'),
-      }, msgs);
+        fxType:    'blast',
+      }, msgs, combatSystemRef);
 
     default:
       return I18n.t('combatSys.throwGeneric', { name: I18n.itemName(def.id, def.name) });
   }
 }
 
-function _applyAoE(alive, { baseDmg, statusId, statusName, duration, dmgPerRound, label }, msgs) {
+function _applyAoE(alive, { baseDmg, statusId, statusName, duration, dmgPerRound, label, fxType }, msgs, combatSystemRef = null) {
   const gs  = GameState;
   const [dMin, dMax] = baseDmg;
 
   for (const enemy of alive) {
     const dmg = dMin + Math.floor(Math.random() * (dMax - dMin + 1));
     enemy.currentHp = Math.max(0, enemy.currentHp - dmg);
+    combatSystemRef?._fx?.({
+      kind:      'playerAttack',
+      fx:        fxType ?? 'blast',
+      targetIdx: gs.combat.enemies.indexOf(enemy),
+      dmg,
+      killed:    enemy.currentHp <= 0,
+    });
 
     // 상태이상 부여 (per-enemy _statusEffects)
     if (!enemy._statusEffects) enemy._statusEffects = [];
@@ -130,13 +139,15 @@ function _guaranteedFlee(msgs) {
 // ── 다중 타겟 공격 ──────────────────────────────────────────────
 
 /**
- * multiTarget 무기로 최대 count명의 살아있는 적에게 피해 부여
+ * multiTarget 무기로 최대 count명의 닿는 적에게 피해 부여
  * 추가 타겟에는 50% 데미지 적용 (관통 어택 패널티)
+ * 근접 관통(창)은 전열까지만, 원거리 관통(산탄총)은 후열도 휩쓴다.
  */
 export function applyMultiTarget(primaryDamage, weaponDef, targetIndex, combatSystemRef) {
-  const gs    = GameState;
-  const alive = combatSystemRef.getAliveEnemies();
-  const count = weaponDef.multiTarget ?? 1;
+  const gs      = GameState;
+  const isRanged = combatSystemRef.weaponReachIsRanged(weaponDef);
+  const alive   = combatSystemRef.getReachableEnemies(isRanged);
+  const count   = weaponDef.multiTarget ?? 1;
   if (count <= 1 || alive.length <= 1) return [];
 
   const extraLogs = [];
@@ -145,6 +156,13 @@ export function applyMultiTarget(primaryDamage, weaponDef, targetIndex, combatSy
   for (const extra of extras) {
     const splash = Math.max(1, Math.floor(primaryDamage * 0.5));
     extra.currentHp = Math.max(0, extra.currentHp - splash);
+    combatSystemRef._fx?.({
+      kind:      'playerAttack',
+      fx:        isRanged ? 'shot' : 'slash',
+      targetIdx: gs.combat.enemies.indexOf(extra),
+      dmg:       splash,
+      killed:    extra.currentHp <= 0,
+    });
     extraLogs.push(I18n.t('combatSys.multiTargetHit', {
       enemy: I18n.enemyName(extra.id, extra.name),
       dmg: splash,
@@ -177,6 +195,13 @@ export function companionAttack(combatSystemRef) {
     const bonus = npcSys.getCompanionCombatBonus?.() ?? 1.0;
     const dmg   = Math.floor((8 + Math.floor(Math.random() * 10)) * bonus);
     target.currentHp = Math.max(0, target.currentHp - dmg);
+    combatSystemRef._fx?.({
+      kind:      'companionAttack',
+      npcId,
+      targetIdx: gs.combat.enemies.indexOf(target),
+      dmg,
+      fx:        'slash',
+    });
     const npcName = I18n.itemName(npcId, GameData?.items?.[npcId]?.name ?? npcId);
     logs.push(I18n.t('combatSys.companionAtk', { name: npcName, enemy: I18n.enemyName(target.id, target.name), dmg }));
   }

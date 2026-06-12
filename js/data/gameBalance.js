@@ -160,6 +160,8 @@ const BALANCE = {
       healAmount:        [10, 18],   // heal stance 회복량
       healThreshold:     0.70,       // 플레이어 HP < 70% 이면 auto_heal 트리거
       holdDamageReduct:  0.30,       // hold stance: 피해 30% 경감 (1턴)
+      rangedCompanions:  ['npc_soldier', 'npc_soldier_deserter'],  // 총기 보유 — 후열 직접 타격 가능
+
       // 클래스별 스킬 (support stance 자동 발동 대상)
       classSkills: {
         npc_nurse: {
