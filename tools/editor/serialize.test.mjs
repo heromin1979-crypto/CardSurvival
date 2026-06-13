@@ -93,19 +93,19 @@ for (const [key, cfg] of Object.entries(DATA_FILES)) {
 // === edit-and-persist (mirrors the editor's save path) ===
 console.log('=== edit persists through splice ===');
 {
-  const filePath = join(root, DATA_FILES.quests.path);
+  const filePath = join(root, DATA_FILES.q_global.path);
   const src = readFileSync(filePath, 'utf8');
-  const data = extractValue(src, DATA_FILES.quests.decl);
+  const data = extractValue(src, DATA_FILES.q_global.decl);
   const firstId = Object.keys(data)[0];
   // mutate: set a finite deadline → Infinity, and bump reward.morale
   data[firstId].deadlineDays = Infinity;
   data[firstId].reward = { ...(data[firstId].reward || {}), morale: 999 };
 
-  const spliced = spliceObjectLiteral(src, DATA_FILES.quests.decl, data);
+  const spliced = spliceObjectLiteral(src, DATA_FILES.q_global.decl, data);
   const reparsed = new Function(`return (${
     spliced.slice(
-      findObjectLiteralRange(spliced, DATA_FILES.quests.decl).open,
-      findObjectLiteralRange(spliced, DATA_FILES.quests.decl).close + 1,
+      findObjectLiteralRange(spliced, DATA_FILES.q_global.decl).open,
+      findObjectLiteralRange(spliced, DATA_FILES.q_global.decl).close + 1,
     )});`)();
   check('Infinity persists', reparsed[firstId].deadlineDays === Infinity);
   check('reward.morale persists', reparsed[firstId].reward.morale === 999);
