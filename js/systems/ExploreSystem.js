@@ -13,6 +13,7 @@ import TraitSystem   from './TraitSystem.js';
 import StatSystem    from './StatSystem.js';
 import SeasonSystem  from './SeasonSystem.js';
 import SkillSystem      from './SkillSystem.js';
+import EcologySystem    from './EcologySystem.js';
 import BasecampSystem   from './BasecampSystem.js';
 import BALANCE          from '../data/gameBalance.js';
 import HiddenElementSystem from './HiddenElementSystem.js';
@@ -366,66 +367,41 @@ const ExploreSystem = {
     }
 
     if (district.lootTable?.length) {
-      const looted      = gs.location.districtsLooted ?? [];
-      const isFirstLoot = !looted.includes(districtId);
-      let loot          = [];
+      // ── 자원 이원화 모델 (표면=연속 재생 / 탐사=상시 / 광물=영구 고갈) ──
+      // 표면 산출은 구의 자원 레벨(EcologySystem)에 비례하고, 탐색 1회마다 자원이 줄었다가
+      // 시간 경과로 다시 차오른다(EcologySystem._onTP). 광물은 잔량 안에서만 나오고 재생되지 않는다.
+      EcologySystem.ensureInitialized();
+      const surfaceMult      = EcologySystem.getLootMult(districtId);
+      const mineralRemaining = EcologySystem.getMineralStock(districtId);
+      let loot = generateRouteCards(districtId, { surfaceMult, mineralRemaining });
 
-      if (isFirstLoot) {
-        loot = generateRouteCards(districtId);
-        if (!gs.location.districtsLooted) gs.location.districtsLooted = [];
-        gs.location.districtsLooted.push(districtId);
-        if (!gs.location.districtLootDay) gs.location.districtLootDay = {};
-        gs.location.districtLootDay[districtId] = gs.time.day;
-      } else {
-        // 루팅 완료 30일 경과 시 감소 리스폰 (50% 드롭률, 수량 절반)
-        if (!gs.location.districtLootDay) gs.location.districtLootDay = {};
-        const lastLootDay = gs.location.districtLootDay[districtId] ?? 0;
-        const daysSinceLoot = gs.time.day - lastLootDay;
-        if (daysSinceLoot >= (BALANCE.explore.respawnLootDays ?? 30)) {
-          const fullLoot = generateRouteCards(districtId);
-          for (const item of fullLoot) {
-            if (Math.random() < (BALANCE.explore.respawnLootChance ?? 0.5)) {
-              loot.push({ ...item, quantity: Math.max(1, Math.floor((item.quantity ?? 1) / (BALANCE.explore.respawnLootQtyDivisor ?? 2))) });
-            }
-          }
-          gs.location.districtLootDay[districtId] = gs.time.day;
-          if (loot.length > 0) {
-            EventBus.emit('notify', { message: I18n.t('exploreSys.respawnLoot', { name: I18n.districtName(districtId, district.name) }), type: 'info' });
-          } else {
-            EventBus.emit('notify', { message: I18n.t('exploreSys.noRespawn', { name: I18n.districtName(districtId, district.name) }), type: 'info' });
-          }
-        } else {
-          EventBus.emit('notify', { message: I18n.t('exploreSys.alreadyLooted', { name: I18n.districtName(districtId, district.name) }), type: 'info' });
-        }
-      }
+      // 산출된 광물 개수만큼 영구 차감 (보너스 추가분은 집계에서 제외 — 생성분만)
+      const mineralUsed = loot.filter((l) => l.cls === 'mineral').length;
+      if (mineralUsed > 0) EcologySystem.consumeMineral(districtId, mineralUsed);
 
       if (loot.length > 0) {
         const effects      = toolEffects ?? this._collectToolEffects();
         const exploreBonus = effects.exploreBonus ?? 0;
-        if (isFirstLoot && exploreBonus > 0 && Math.random() < exploreBonus) {
+        if (exploreBonus > 0 && Math.random() < exploreBonus) {
           const extra = loot[Math.floor(Math.random() * loot.length)];
           loot.push({ ...extra, quantity: 1 });
         }
-        if (isFirstLoot) {
-          const traitBonus = TraitSystem.getTraitEffect('scavenger', 'bonusLootCount') ?? 0;
-          if (traitBonus > 0) {
-            const extra = loot[Math.floor(Math.random() * loot.length)];
-            for (let i = 0; i < traitBonus; i++) loot.push({ ...extra, quantity: 1 });
-          }
+        const traitBonus = TraitSystem.getTraitEffect('scavenger', 'bonusLootCount') ?? 0;
+        if (traitBonus > 0) {
+          const extra = loot[Math.floor(Math.random() * loot.length)];
+          for (let i = 0; i < traitBonus; i++) loot.push({ ...extra, quantity: 1 });
         }
         // 탐색 스킬 보너스 루팅
-        if (loot.length > 0) {
-          const scavBonus = SkillSystem.getBonus('scavenging', 'extraLootChance');
-          if (scavBonus > 0 && Math.random() < scavBonus) {
-            const extra = loot[Math.floor(Math.random() * loot.length)];
-            loot.push({ ...extra, quantity: 1 });
-          }
-          // 탐색 마스터리: 5% 희귀 아이템
-          if (SkillSystem.hasMastery('scavenging') && Math.random() < (BALANCE.explore.masteryRareLootChance ?? 0.05)) {
-            const rarePool = BALANCE.explore.masteryRarePool ?? ['bandage', 'painkiller', 'antiseptic', 'rope', 'wire'];
-            const rareId   = rarePool[Math.floor(Math.random() * rarePool.length)];
-            if (GameData?.items[rareId]) loot.push({ definitionId: rareId, quantity: 1 });
-          }
+        const scavBonus = SkillSystem.getBonus('scavenging', 'extraLootChance');
+        if (scavBonus > 0 && Math.random() < scavBonus) {
+          const extra = loot[Math.floor(Math.random() * loot.length)];
+          loot.push({ ...extra, quantity: 1 });
+        }
+        // 탐색 마스터리: 5% 희귀 아이템
+        if (SkillSystem.hasMastery('scavenging') && Math.random() < (BALANCE.explore.masteryRareLootChance ?? 0.05)) {
+          const rarePool = BALANCE.explore.masteryRarePool ?? ['bandage', 'painkiller', 'antiseptic', 'rope', 'wire'];
+          const rareId   = rarePool[Math.floor(Math.random() * rarePool.length)];
+          if (GameData?.items[rareId]) loot.push({ definitionId: rareId, quantity: 1 });
         }
         // 계절 보너스 루팅
         const seasonalLoot = SeasonSystem.rollSeasonalLoot();
@@ -435,7 +411,13 @@ const ExploreSystem = {
           }
         }
         this._placeLoot(loot);
+      } else {
+        // 표면 고갈 + 광물 소진 → 이번엔 거둘 게 없음
+        EventBus.emit('notify', { message: I18n.t('exploreSys.alreadyLooted', { name: I18n.districtName(districtId, district.name) }), type: 'info' });
       }
+
+      // 표면 자원 소진 (탐색 1회분) — EcologySystem이 -resourceExploreConsume 적용, 시간 경과로 재생
+      EventBus.emit('locationExplored', { districtId });
     }
 
     EventBus.emit('notify', { message: I18n.t('exploreSys.exploreComplete', { name: I18n.districtName(districtId, district.name) }), type: 'info' });

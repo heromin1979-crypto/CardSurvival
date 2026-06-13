@@ -225,9 +225,11 @@ const BALANCE = {
     lootCountMax: 3,
     // W3-2 Phase A — 서브로케이션 재고 고갈
     stockDecayPerDay: 1,  // 일자 경과 시 subLocationStock 자동 감소량 (같은 day 중복 차감 방지)
-    respawnLootDays:     30,   // 구역 루팅 리스폰까지 경과 일수
-    respawnLootChance:   0.5,  // 리스폰 시 각 아이템 드롭 확률
-    respawnLootQtyDivisor: 2,  // 리스폰 수량 = floor(원수량 / 이 값)
+    // [DEPRECATED] 구 드랍 30일 이진 리필 — 드랍 개편 Phase 1에서 EcologySystem 연속 자원 모델로 대체됨.
+    //   런타임(ExploreSystem)은 더 이상 사용하지 않음. 시뮬레이터/구버전 참조 호환용으로만 잔존.
+    respawnLootDays:     30,   // (legacy) 구역 루팅 리스폰까지 경과 일수
+    respawnLootChance:   0.5,  // (legacy) 리스폰 시 각 아이템 드롭 확률
+    respawnLootQtyDivisor: 2,  // (legacy) 리스폰 수량 = floor(원수량 / 이 값)
     masteryRareLootChance: 0.05, // 탐색 마스터리 희귀 루팅 확률
     subLocationNoiseMult:  0.8,  // 세부장소 탐색 소음 배율(구 소음 대비)
     nightHospitalAmbushChance: 0.20, // 야간 보라매 응급실/수술실 잠복 환자 조우 확률

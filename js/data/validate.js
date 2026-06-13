@@ -284,6 +284,25 @@ async function validate() {
     }
   }
 
+  // 10. 구 lootTable 자원 클래스(cls) 검증 — surface/expedition/mineral만 허용
+  console.log('\n=== DISTRICT LOOT CLASS CHECK ===');
+  const VALID_CLS = new Set(['surface', 'expedition', 'mineral']);
+  let clsChecked = 0, clsBad = 0;
+  for (const [id, d] of Object.entries(districtsMod.DISTRICTS ?? {})) {
+    for (const [i, entry] of (d.lootTable ?? []).entries()) {
+      clsChecked++;
+      if (entry.cls != null && !VALID_CLS.has(entry.cls)) {
+        console.log(`❌ [${id}] lootTable[${i}] (${entry.definitionId}) invalid cls "${entry.cls}" — surface/expedition/mineral 중 하나여야 함`);
+        errors++; clsBad++;
+      }
+      if (entry.definitionId && !allItemIds.has(entry.definitionId)) {
+        console.log(`⚠️  [${id}] lootTable[${i}] "${entry.definitionId}" not found in items`);
+        warnings++;
+      }
+    }
+  }
+  console.log(`  검사한 드랍 항목: ${clsChecked}, 잘못된 cls: ${clsBad}`);
+
   // Summary
   console.log(`\n=== SUMMARY ===`);
   console.log(`Total items: ${allItemIds.size}`);

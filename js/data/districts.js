@@ -3872,29 +3872,55 @@ function getAdjacentDistricts(districtId) {
   return (d.adjacentDistricts ?? []).map(id => DISTRICTS[id]).filter(Boolean);
 }
 
-/** 구 단위 루팅 결과 생성 */
-function generateDistrictLoot(districtId) {
+/**
+ * 구 단위 루팅 결과 생성.
+ *
+ * 자원 클래스(`entry.cls`, 기본 'surface')별로 다르게 다뤄진다:
+ *  - surface    : 표면 자원. `opts.surfaceMult`(지역 자원 레벨 기반, 0~1) 확률로 채택
+ *                 → 고갈 지역일수록 적게 나온다(연속 재생 모델).
+ *  - expedition : 탐사 자원. surfaceMult 무관, 매 추첨 독립 채택(상시 반복).
+ *  - mineral    : 광물 자원. `opts.mineralRemaining` 잔량 안에서만 채택(영구 고갈).
+ *                 채택된 광물 개수는 반환 항목의 `cls === 'mineral'`로 호출자가 집계해 소진시킨다.
+ *
+ * 반환: [{ definitionId, quantity, contamination, cls }] — cls는 호출자용 추가 필드(다운스트림 무시).
+ * opts 미지정 시 surfaceMult=1·mineralRemaining=Infinity → 종전과 동일하게 전량 산출(하위호환).
+ *
+ * @param {string} districtId
+ * @param {{surfaceMult?:number, mineralRemaining?:number}} [opts]
+ */
+function generateDistrictLoot(districtId, opts = {}) {
   const district = DISTRICTS[districtId];
   if (!district?.lootTable?.length) return [];
+
+  const surfaceMult     = opts.surfaceMult ?? 1;
+  const mineralRemaining = opts.mineralRemaining ?? Infinity;
 
   const results = [];
   const totalWeight = district.lootTable.reduce((s, e) => s + e.weight, 0);
   const count = BALANCE.explore.lootCountMin + Math.floor(Math.random() * (BALANCE.explore.lootCountMax - BALANCE.explore.lootCountMin + 1)); // 1~3개
 
+  let mineralUsed = 0;
   for (let i = 0; i < count; i++) {
     let rand = Math.random() * totalWeight;
     for (const entry of district.lootTable) {
       rand -= entry.weight;
-      if (rand <= 0) {
-        const qty = entry.minQty + Math.floor(Math.random() * (entry.maxQty - entry.minQty + 1));
-        const contaminated = Math.random() < (entry.contamChance ?? 0);
-        results.push({
-          definitionId:  entry.definitionId,
-          quantity:      qty,
-          contamination: contaminated ? 50 + Math.floor(Math.random() * 50) : 0,
-        });
-        break;
-      }
+      if (rand > 0) continue;
+
+      const cls = entry.cls ?? 'surface';
+      // 클래스별 채택 게이트
+      if (cls === 'surface' && Math.random() >= surfaceMult) break;       // 고갈 → 표면 자원 누락
+      if (cls === 'mineral' && mineralUsed >= mineralRemaining) break;     // 광물 영구 고갈
+
+      const qty = entry.minQty + Math.floor(Math.random() * (entry.maxQty - entry.minQty + 1));
+      const contaminated = Math.random() < (entry.contamChance ?? 0);
+      if (cls === 'mineral') mineralUsed += 1;
+      results.push({
+        definitionId:  entry.definitionId,
+        quantity:      qty,
+        contamination: contaminated ? 50 + Math.floor(Math.random() * 50) : 0,
+        cls,
+      });
+      break;
     }
   }
   return results;

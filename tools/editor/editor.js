@@ -168,6 +168,8 @@ const FIELD_HELP = {
   noiseGen: '활동 시 발생하는 소음. 높을수록 적을 끌어들입니다.',
   fishingQuality: '낚시 품질(높을수록 좋은 어획). 낚시 가능 구역에만 적용.',
   hasFishing: '낚시 가능 여부 — 랜드마크: 안에서 낚시·통발 사용 가능 / 구: 시뮬레이터 AI 판정용.',
+  cls: '자원 클래스 — 표면(surface): 지역 자원 레벨에 비례해 나오고 시간 경과로 재생 / 탐사(expedition): 자원 레벨 무관, 매 탐색 독립 추첨 / 광물(mineral): 영구 고갈(잔량 소진 시 안 나옴). 미지정 시 표면.',
+  mineralStock: '이 구의 광물(mineral) 자원 총 잔량 — 캐면 영구 차감, 재생 없음. 비우면 EcologySystem 기본값 사용.',
   isBasecampLandmark: '거점(베이스캠프) 랜드마크 여부 — 사이드바 거점 버튼 교체 트리거.',
   districtId: '이 랜드마크가 속한 구 ID.',
   districts: '이 랜드마크가 연결된 구 ID 목록.',
@@ -1287,7 +1289,8 @@ function autoSubject() {
 // ─── reusable loot-table editor ──────────────────────────────
 // rows: array of objects. idKey = 'definitionId' (districts) | 'id' (landmarks).
 // extraCols: list of {key, label} numeric columns to show.
-function lootTableEditor(rows, idKey, extraCols, fileKey) {
+// opts.classCol: true면 자원 클래스(cls) 드롭다운 열 추가 (구 드랍 전용 — surface/expedition/mineral)
+function lootTableEditor(rows, idKey, extraCols, fileKey, opts = {}) {
   const total = rows.reduce((s, r) => s + (Number(r.weight) || 0), 0) || 1;
   const tbl = el('table', { class: 'loot' });
   const th = (text, key) => {
@@ -1298,6 +1301,7 @@ function lootTableEditor(rows, idKey, extraCols, fileKey) {
     th('아이템 ID', idKey),
     th('이름', '__name'),
     th('weight', 'weight'),
+    opts.classCol ? th('자원', 'cls') : null,
     ...extraCols.map((c) => th(c.label, c.key)),
     th('%', '__pct'),
     el('th', {}),
@@ -1330,10 +1334,24 @@ function lootTableEditor(rows, idKey, extraCols, fileKey) {
     wInput.addEventListener('input', () => {
       row.weight = Number(wInput.value); markDirty(fileKey); redrawPct();
     });
+    // 자원 클래스 드롭다운 (구 드랍 전용). 기본 surface는 필드 미기록(diff 최소화).
+    let clsCell = null;
+    if (opts.classCol) {
+      const sel = el('select');
+      for (const [val, label] of [['surface', '표면'], ['expedition', '탐사'], ['mineral', '광물']]) {
+        sel.append(el('option', { value: val, ...((row.cls ?? 'surface') === val ? { selected: true } : {}) }, label));
+      }
+      sel.addEventListener('change', () => {
+        if (sel.value === 'surface') delete row.cls; else row.cls = sel.value;
+        markDirty(fileKey);
+      });
+      clsCell = el('td', {}, sel);
+    }
     const tr = el('tr', {}, [
       el('td', {}, idInput),
       nameCell,
       el('td', {}, wInput),
+      clsCell,
       ...extraCols.map((c) => {
         const inp = el('input', { class: 'num', type: 'number', step: 'any', value: row[c.key] ?? '' });
         inp.addEventListener('input', () => {
@@ -1561,6 +1579,15 @@ function renderDistrictDetail(root, dist) {
   const numKeys = ['dangerLevel', 'travelCostTP', 'radiation', 'encounterChance', 'noiseGen', 'fishingQuality'];
   const fr = el('div', { class: 'field-row' });
   for (const k of numKeys) if (k in dist) fr.append(scalarInput(dist, k, 'districts'));
+  // 광물 잔량(영구 고갈) — 선택 숫자. 비우면 필드 삭제(기본값 사용), 입력 시 구 데이터에 기록.
+  const mineralInp = el('input', { type: 'number', step: '1', min: '0', value: dist.mineralStock ?? '' });
+  mineralInp.placeholder = '기본값';
+  mineralInp.addEventListener('input', () => {
+    if (mineralInp.value === '') delete dist.mineralStock;
+    else dist.mineralStock = Number(mineralInp.value);
+    markDirty('districts');
+  });
+  fr.append(el('div', { class: 'field' }, [labelEl('mineralStock', helpFor('mineralStock')), mineralInp]));
   root.append(fr);
 
   renderDistrictLandmarks(root, dist);
@@ -1571,6 +1598,7 @@ function renderDistrictDetail(root, dist) {
     'definitionId',
     [{ key: 'minQty', label: 'min' }, { key: 'maxQty', label: 'max' }, { key: 'contamChance', label: '오염%' }],
     'districts',
+    { classCol: true },
   ));
   root.append(fs);
 }
