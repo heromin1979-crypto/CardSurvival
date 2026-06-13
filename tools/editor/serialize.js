@@ -203,11 +203,28 @@ export const DATA_FILES = {
     decl: 'export const LANDMARK_DATA = {',
     label: '랜드마크 (세부장소 lootTable)',
   },
-  quests: {
-    path: 'js/data/mainQuests.js',
-    decl: 'const MAIN_QUESTS = {',
-    label: '메인 퀘스트',
-  },
+  // 메인 퀘스트 — 게임 실사용 소스(mainQuests/index.js가 병합하는 19개 파일).
+  // 직업별 폴더의 shared/branch_a/branch_b + 공통 global. 각 파일은 단일 객체 export라
+  // 고유 const decl로 단독 splice 가능. 퀘스트 탭에서 병합 편집(아이템 탭과 동일 패턴).
+  q_global:           { path: 'js/data/mainQuests/global.js',            decl: 'const GLOBAL_QUESTS = {',      label: '퀘스트:공통' },
+  q_doctor_shared:    { path: 'js/data/mainQuests/doctor/shared.js',     decl: 'const DOCTOR_SHARED = {',      label: '퀘스트:의사 공통' },
+  q_doctor_a:         { path: 'js/data/mainQuests/doctor/branch_a.js',   decl: 'const DOCTOR_BRANCH_A = {',    label: '퀘스트:의사 분기A' },
+  q_doctor_b:         { path: 'js/data/mainQuests/doctor/branch_b.js',   decl: 'const DOCTOR_BRANCH_B = {',    label: '퀘스트:의사 분기B' },
+  q_soldier_shared:   { path: 'js/data/mainQuests/soldier/shared.js',    decl: 'const SOLDIER_SHARED = {',     label: '퀘스트:군인 공통' },
+  q_soldier_a:        { path: 'js/data/mainQuests/soldier/branch_a.js',  decl: 'const SOLDIER_BRANCH_A = {',   label: '퀘스트:군인 분기A' },
+  q_soldier_b:        { path: 'js/data/mainQuests/soldier/branch_b.js',  decl: 'const SOLDIER_BRANCH_B = {',   label: '퀘스트:군인 분기B' },
+  q_firefighter_shared:{ path: 'js/data/mainQuests/firefighter/shared.js',   decl: 'const FIREFIGHTER_SHARED = {',   label: '퀘스트:소방관 공통' },
+  q_firefighter_a:    { path: 'js/data/mainQuests/firefighter/branch_a.js',  decl: 'const FIREFIGHTER_BRANCH_A = {', label: '퀘스트:소방관 분기A' },
+  q_firefighter_b:    { path: 'js/data/mainQuests/firefighter/branch_b.js',  decl: 'const FIREFIGHTER_BRANCH_B = {', label: '퀘스트:소방관 분기B' },
+  q_homeless_shared:  { path: 'js/data/mainQuests/homeless/shared.js',   decl: 'const HOMELESS_SHARED = {',    label: '퀘스트:노숙인 공통' },
+  q_homeless_a:       { path: 'js/data/mainQuests/homeless/branch_a.js', decl: 'const HOMELESS_BRANCH_A = {',  label: '퀘스트:노숙인 분기A' },
+  q_homeless_b:       { path: 'js/data/mainQuests/homeless/branch_b.js', decl: 'const HOMELESS_BRANCH_B = {',  label: '퀘스트:노숙인 분기B' },
+  q_chef_shared:      { path: 'js/data/mainQuests/chef/shared.js',       decl: 'const CHEF_SHARED = {',        label: '퀘스트:셰프 공통' },
+  q_chef_a:           { path: 'js/data/mainQuests/chef/branch_a.js',     decl: 'const CHEF_BRANCH_A = {',      label: '퀘스트:셰프 분기A' },
+  q_chef_b:           { path: 'js/data/mainQuests/chef/branch_b.js',     decl: 'const CHEF_BRANCH_B = {',      label: '퀘스트:셰프 분기B' },
+  q_engineer_shared:  { path: 'js/data/mainQuests/engineer/shared.js',   decl: 'const ENGINEER_SHARED = {',    label: '퀘스트:기계공 공통' },
+  q_engineer_a:       { path: 'js/data/mainQuests/engineer/branch_a.js', decl: 'const ENGINEER_BRANCH_A = {',  label: '퀘스트:기계공 분기A' },
+  q_engineer_b:       { path: 'js/data/mainQuests/engineer/branch_b.js', decl: 'const ENGINEER_BRANCH_B = {',  label: '퀘스트:기계공 분기B' },
   // 랜드마크 카드 메타 — 신규 랜드마크 생성 시 LANDMARK_DATA와 함께 기록.
   // locationCardMeta.js에는 LOCATION_CARD_META·LANDMARK_CARD_META 두 블록이 있으나
   // decl 문자열이 고유하므로 LANDMARK_CARD_META 블록만 단독 splice 된다.
@@ -232,4 +249,16 @@ export const DATA_FILES = {
 export const ITEM_FILE_KEYS = [
   'items_base', 'items_combat', 'items_misc', 'items_tech', 'items_medical',
   'items_tools', 'items_structures', 'legendaryItems', 'items_environment',
+];
+
+// 편집 가능한 퀘스트 소스 파일 키 목록 (퀘스트 탭에서 병합 편집).
+// mainQuests/index.js 병합 순서와 동일 — 신규 퀘스트는 선택 퀘스트의 소속 파일에 추가된다.
+export const QUEST_FILE_KEYS = [
+  'q_doctor_shared', 'q_doctor_a', 'q_doctor_b',
+  'q_soldier_shared', 'q_soldier_a', 'q_soldier_b',
+  'q_firefighter_shared', 'q_firefighter_a', 'q_firefighter_b',
+  'q_homeless_shared', 'q_homeless_a', 'q_homeless_b',
+  'q_chef_shared', 'q_chef_a', 'q_chef_b',
+  'q_engineer_shared', 'q_engineer_a', 'q_engineer_b',
+  'q_global',
 ];

@@ -2,6 +2,7 @@
 import {
   DATA_FILES,
   ITEM_FILE_KEYS,
+  QUEST_FILE_KEYS,
   extractValue,
   spliceObjectLiteral,
   diffValue,
@@ -921,23 +922,29 @@ function collectIssues() {
     }
   }
 
-  const q = state.files.quests?.data || {};
-  const qIds = new Set(Object.keys(q));
-  for (const [key, quest] of Object.entries(q)) {
-    if (badItem(quest.objective?.definitionId)) issues.push({ fileKey: 'quests', entityKey: key, path: 'objective.definitionId', id: quest.objective.definitionId, msg: '존재하지 않는 아이템 ID' });
-    if (quest.objective?.districtId && !d[quest.objective.districtId]) issues.push({ fileKey: 'quests', entityKey: key, path: 'objective.districtId', id: quest.objective.districtId, msg: '존재하지 않는 구(district) ID' });
+  // 퀘스트 — 19개 소스 파일 병합 검증. fileKey는 퀘스트별 실제 소스 파일.
+  const qIdx = buildQuestIndex();
+  const qIds = new Set(Object.keys(qIdx));
+  for (const [key, fk] of Object.entries(qIdx)) {
+    const quest = state.files[fk].data[key];
+    if (badItem(quest.objective?.definitionId)) issues.push({ fileKey: fk, entityKey: key, path: 'objective.definitionId', id: quest.objective.definitionId, msg: '존재하지 않는 아이템 ID' });
+    if (quest.objective?.districtId && !d[quest.objective.districtId]) issues.push({ fileKey: fk, entityKey: key, path: 'objective.districtId', id: quest.objective.districtId, msg: '존재하지 않는 구(district) ID' });
     (quest.reward?.items || []).forEach((it, i) => {
-      if (badItem(it.definitionId)) issues.push({ fileKey: 'quests', entityKey: key, path: `reward.items[${i}].definitionId`, id: it.definitionId, msg: '존재하지 않는 아이템 ID' });
+      if (badItem(it.definitionId)) issues.push({ fileKey: fk, entityKey: key, path: `reward.items[${i}].definitionId`, id: it.definitionId, msg: '존재하지 않는 아이템 ID' });
     });
-    if (quest.prerequisite && !qIds.has(quest.prerequisite)) issues.push({ fileKey: 'quests', entityKey: key, path: 'prerequisite', id: quest.prerequisite, msg: '존재하지 않는 선행 퀘스트 ID' });
+    if (quest.prerequisite && !qIds.has(quest.prerequisite)) issues.push({ fileKey: fk, entityKey: key, path: 'prerequisite', id: quest.prerequisite, msg: '존재하지 않는 선행 퀘스트 ID' });
   }
   return issues;
 }
 
-// 해당 엔티티가 있는 탭으로 이동 + 선택
+// 해당 엔티티가 있는 탭으로 이동 + 선택.
+// 퀘스트·아이템은 소스 파일이 여러 개라 fileKey가 곧 탭이 아니다 → 논리 탭으로 매핑.
 function gotoEntity(fileKey, entityKey) {
-  state.sel[fileKey] = entityKey;
-  switchTab(fileKey);
+  const tab = QUEST_FILE_KEYS.includes(fileKey) ? 'quests'
+            : ITEM_FILE_KEYS.includes(fileKey) ? 'items'
+            : fileKey;
+  state.sel[tab] = entityKey;
+  switchTab(tab);
 }
 
 function renderValidationTab() {
@@ -975,6 +982,24 @@ function buildItemIndex() {
     for (const id of Object.keys(d)) idx[id] = fk;
   }
   return idx;
+}
+
+// 퀘스트 id → 소속 소스 파일 키 인덱스 (게임 실사용 19파일 병합).
+function buildQuestIndex() {
+  const idx = {};
+  for (const fk of QUEST_FILE_KEYS) {
+    const d = state.files[fk]?.data;
+    if (!d) continue;
+    for (const id of Object.keys(d)) idx[id] = fk;
+  }
+  return idx;
+}
+
+// 19파일을 단일 { qid: quest } 맵으로 병합 (편집 중인 라이브 데이터 참조 — 흐름/탭 공용).
+function mergedQuestData(idx = buildQuestIndex()) {
+  const out = {};
+  for (const [qid, fk] of Object.entries(idx)) out[qid] = state.files[fk].data[qid];
+  return out;
 }
 
 function renderItemsTab() {
@@ -1138,7 +1163,7 @@ function renderItemClipboardPanel() {
 // (diffValue는 serialize.js의 순수 함수)
 function entityTitle(fileKey, key) {
   const e = state.files[fileKey].data[key] || state.files[fileKey].original[key] || {};
-  if (fileKey === 'quests') return `${e.icon || ''} ${e.title || key} · ${e.characterId || ''}`;
+  if (QUEST_FILE_KEYS.includes(fileKey)) return `${e.icon || ''} ${e.title || key} · ${e.characterId || ''}`;
   return `${e.icon || ''} ${e.name || key}`;
 }
 
@@ -1431,15 +1456,16 @@ function render() {
   if (state.tab === 'flow') return renderFlowTab();
   if (state.tab === 'changes') return renderChangesTab();
   if (state.tab === 'validate') return renderValidationTab();
-  // 세부장소는 전용 데이터 파일이 없다(landmarks.js 안에 산다) → 파일 가드보다 먼저 처리.
+  // 세부장소·퀘스트는 단일 state.files 키가 없다(세부장소=landmarks.js 내부, 퀘스트=19파일 병합)
+  // → 파일 가드보다 먼저 처리.
   if (state.tab === 'sublocations') return renderSubLocationsTab();
+  if (state.tab === 'quests') return renderQuestsTab();
   if (!state.files[state.tab]) {
     view.append(el('div', { class: 'empty', text: '데이터 불러오는 중… (serve.js가 떠 있어야 합니다)' }));
     return;
   }
   if (state.tab === 'districts') return renderListTab('districts', (d) => d.name);
   if (state.tab === 'landmarks') return renderListTab('landmarks', (d) => d.name);
-  if (state.tab === 'quests') return renderQuestsTab();
 }
 
 let rerenderDetail = () => {};
@@ -2351,9 +2377,9 @@ function flowNode(q, depth) {
 }
 
 function renderFlowTab() {
-  if (!state.files.quests) { view.append(el('div', { class: 'empty', text: '데이터 불러오는 중…' })); return; }
-  const data = state.files.quests.data;
+  const data = mergedQuestData();
   const ids = Object.keys(data);
+  if (!ids.length) { view.append(el('div', { class: 'empty', text: '데이터 불러오는 중…' })); return; }
   const groups = {};
   for (const id of ids) { const c = data[id].characterId || '(공통)'; (groups[c] = groups[c] || []).push(id); }
 
@@ -2389,16 +2415,21 @@ function renderFlowTab() {
 }
 
 // ─── quests tab ──────────────────────────────────────────────
-// 신규 퀘스트 생성 — 기본 골격(목표 collect_item) 추가, 상세에서 조건·보상 설정
+// 신규 퀘스트 생성 — 현재 선택된 퀘스트와 같은 소스 파일에 추가(아이템 탭 선례).
+// 선택이 없으면 공통 파일(q_global)에 추가. 상세에서 조건·보상 설정.
 function createQuest() {
-  const raw = (prompt('새 퀘스트 ID (영문/숫자/밑줄, 예: q_my_quest)') || '').trim();
+  const idx = buildQuestIndex();
+  const targetFk = (state.sel.quests && idx[state.sel.quests]) || 'q_global';
+  if (!state.files[targetFk]?.data) { alert('퀘스트 소스를 불러오지 못했습니다. (serve.js 연결 확인)'); return; }
+  const fileLabel = DATA_FILES[targetFk].label;
+  const raw = (prompt(`새 퀘스트 ID (영문/숫자/밑줄, 예: mq_my_quest)\n\n추가 위치: ${fileLabel}`) || '').trim();
   if (!raw) return;
   const id = raw.replace(/[^A-Za-z0-9_]/g, '');
   if (!id) { alert('ID는 영문/숫자/밑줄만 사용하세요.'); return; }
-  if (state.files.quests.data[id]) { alert('이미 존재하는 퀘스트 ID입니다.'); return; }
+  if (idx[id]) { alert(`이미 존재하는 퀘스트 ID입니다. (${DATA_FILES[idx[id]].label})`); return; }
   const title = (prompt('퀘스트 제목', '새 퀘스트') || '새 퀘스트').trim();
   const characterId = (prompt('캐릭터 ID (공통 퀘스트면 비워두기)', '') || '').trim();
-  state.files.quests.data[id] = {
+  state.files[targetFk].data[id] = {
     id, title, icon: '📜', characterId,
     dayTrigger: 1, deadlineDays: Infinity, desc: '',
     prerequisite: null,
@@ -2406,14 +2437,16 @@ function createQuest() {
     reward: { morale: 0, items: [] },
   };
   state.sel.quests = id;
-  markDirty('quests');
-  status(`퀘스트 「${title}」(${id}) 생성. 목표(objective)·보상(reward)을 상세에서 설정하세요.`, 'ok');
+  markDirty(targetFk);
+  status(`퀘스트 「${title}」(${id}) 생성 → ${fileLabel}. 목표·보상을 상세에서 설정하세요.`, 'ok');
   render();
 }
 
 function renderQuestsTab() {
-  const data = state.files.quests.data;
+  const idx = buildQuestIndex();
+  const data = mergedQuestData(idx);
   const ids = Object.keys(data);
+  if (!ids.length) { view.append(el('div', { class: 'empty', text: '퀘스트 소스를 불러오지 못했습니다. (serve.js 연결 확인)' })); return; }
   // group by characterId
   const groups = {};
   for (const id of ids) {
@@ -2454,21 +2487,23 @@ function renderQuestsTab() {
   const detailWrap = el('div', { class: 'detail' });
   rerenderDetail = () => {
     detailWrap.innerHTML = '';
-    renderQuestDetail(detailWrap, data[state.sel.quests], data);
+    const fk = idx[state.sel.quests];
+    renderQuestDetail(detailWrap, data[state.sel.quests], data, fk);
     sidebar.querySelectorAll('.side-item').forEach((b) => b.classList.toggle('active', b.dataset.key === state.sel.quests));
   };
   rerenderDetail();
   view.append(el('div', { class: 'list-layout' }, [sidebar, detailWrap]));
 }
 
-function renderQuestDetail(root, q, allQuests) {
+function renderQuestDetail(root, q, allQuests, fileKey) {
+  root.append(el('div', { class: 'sub', text: `소스: ${DATA_FILES[fileKey]?.label || fileKey}` }));
   root.append(el('h2', { html: `${q.icon || ''} ${q.title || q.id} <span class="chain-badge">${q.id}</span>` }));
   root.append(el('div', { class: 'sub', text: `캐릭터: ${q.characterId || '-'}` }));
 
   // basic fields
   const fr1 = el('div', { class: 'field-row' });
   for (const k of ['title', 'icon', 'dayTrigger']) {
-    if (k in q) fr1.append(scalarInput(q, k, 'quests'));
+    if (k in q) fr1.append(scalarInput(q, k, fileKey));
   }
   // deadlineDays with ∞ toggle
   if ('deadlineDays' in q) {
@@ -2478,9 +2513,9 @@ function renderQuestDetail(root, q, allQuests) {
     chk.addEventListener('change', () => {
       if (chk.checked) { q.deadlineDays = Infinity; num.disabled = true; num.value = ''; }
       else { q.deadlineDays = Number(num.value) || 0; num.disabled = false; }
-      markDirty('quests');
+      markDirty(fileKey);
     });
-    num.addEventListener('input', () => { q.deadlineDays = Number(num.value); markDirty('quests'); });
+    num.addEventListener('input', () => { q.deadlineDays = Number(num.value); markDirty(fileKey); });
     fr1.append(el('div', { class: 'field' }, [
       fieldLabel('deadlineDays'),
       el('div', { class: 'field-row' }, [num, el('label', { class: 'hint' }, [chk, ' ∞'])]),
@@ -2491,7 +2526,7 @@ function renderQuestDetail(root, q, allQuests) {
   // desc
   if ('desc' in q) {
     const ta = el('textarea', { text: q.desc });
-    ta.addEventListener('input', () => { q.desc = ta.value; markDirty('quests'); });
+    ta.addEventListener('input', () => { q.desc = ta.value; markDirty(fileKey); });
     root.append(el('div', { class: 'field grow' }, [fieldLabel('desc'), ta]));
   }
 
@@ -2504,7 +2539,7 @@ function renderQuestDetail(root, q, allQuests) {
       `${allQuests[id].title || id}`));
   }
   sel.addEventListener('change', () => {
-    q.prerequisite = sel.value || null; markDirty('quests');
+    q.prerequisite = sel.value || null; markDirty(fileKey);
   });
   // downstream (what depends on this)
   const downstream = Object.values(allQuests).filter((x) => x.prerequisite === q.id).map((x) => x.title || x.id);
@@ -2517,24 +2552,24 @@ function renderQuestDetail(root, q, allQuests) {
   // objective (condition)
   root.append(el('fieldset', {}, [
     el('legend', { text: '목표 조건 (objective)' }),
-    objectiveEditor(q),
+    objectiveEditor(q, fileKey),
   ]));
 
   // reward + failPenalty
   root.append(el('fieldset', {}, [
     el('legend', { text: '보상 (reward)' }),
-    objectFields(q.reward, 'quests'),
+    objectFields(q.reward, fileKey),
   ]));
   if (q.failPenalty) {
     root.append(el('fieldset', {}, [
       el('legend', { text: '실패 패널티 (failPenalty)' }),
-      objectFields(q.failPenalty, 'quests'),
+      objectFields(q.failPenalty, fileKey),
     ]));
   }
 }
 
 const OBJ_TYPES = ['collect_item', 'collect_item_type', 'craft_item', 'build_structure', 'survive_days', 'visit_district'];
-function objectiveEditor(q) {
+function objectiveEditor(q, fileKey) {
   const o = q.objective || (q.objective = { type: 'collect_item', count: 1 });
   const wrap = el('div');
   const typeSel = el('select');
@@ -2544,7 +2579,7 @@ function objectiveEditor(q) {
   if (!OBJ_TYPES.includes(o.type)) {
     typeSel.append(el('option', { value: o.type, selected: true }, o.type));
   }
-  typeSel.addEventListener('change', () => { o.type = typeSel.value; markDirty('quests'); rerenderDetail(); });
+  typeSel.addEventListener('change', () => { o.type = typeSel.value; markDirty(fileKey); rerenderDetail(); });
   wrap.append(el('div', { class: 'field' }, [fieldLabel('type'), typeSel]));
 
   // render all non-type keys generically (preserves any variant fields)
@@ -2554,15 +2589,15 @@ function objectiveEditor(q) {
     if (key === 'definitionId') {
       const inp = el('input', { class: 'id', value: o[key] ?? '', list: 'item-ids' });
       const nm = el('span', { class: 'chain-badge', text: itemName(o[key]) });
-      inp.addEventListener('input', () => { o[key] = inp.value.trim(); nm.textContent = itemName(o[key]); markDirty('quests'); });
+      inp.addEventListener('input', () => { o[key] = inp.value.trim(); nm.textContent = itemName(o[key]); markDirty(fileKey); });
       fr.append(el('div', { class: 'field' }, [fieldLabel(key), el('div', { class: 'field-row' }, [inp, nm])]));
     } else if (key === 'districtId') {
       const inp = el('input', { class: 'id', value: o[key] ?? '' });
       const nm = el('span', { class: 'chain-badge', text: districtName(o[key]) });
-      inp.addEventListener('input', () => { o[key] = inp.value.trim(); nm.textContent = districtName(o[key]); markDirty('quests'); });
+      inp.addEventListener('input', () => { o[key] = inp.value.trim(); nm.textContent = districtName(o[key]); markDirty(fileKey); });
       fr.append(el('div', { class: 'field' }, [fieldLabel(key), el('div', { class: 'field-row' }, [inp, nm])]));
     } else {
-      fr.append(scalarInput(o, key, 'quests'));
+      fr.append(scalarInput(o, key, fileKey));
     }
   }
   wrap.append(fr);
