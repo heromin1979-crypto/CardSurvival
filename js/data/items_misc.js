@@ -1453,7 +1453,7 @@ const ITEMS_MISC = {
     maxStack: 5,
     description: '호텔 수족관에서 살려 가져온 살아있는 전복. 죽으면 상한다.',
     onConsume: {
-      nutrition: 26,
+      nutrition: 25,
       morale: 8,
       infection: 4,
     },
