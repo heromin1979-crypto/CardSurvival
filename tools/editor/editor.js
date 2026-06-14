@@ -801,8 +801,22 @@ async function loadAll() {
     for (const id of [...state.itemIds].sort()) {
       dl.append(el('option', { value: id, label: state.itemNames.get(id) || id }));
     }
+    // 태그 자동완성 — 전체 아이템 tags 합집합
+    const tagSet = new Set();
+    for (const it of Object.values(items)) {
+      if (Array.isArray(it?.tags)) for (const t of it.tags) if (t) tagSet.add(t);
+    }
+    const tdl = $('#tag-list');
+    if (tdl) { tdl.innerHTML = ''; for (const t of [...tagSet].sort()) tdl.append(el('option', { value: t })); }
   } catch (e) {
     console.warn('item id 목록 로드 실패 (검증 비활성):', e);
+  }
+  // 필드명 자동완성 — 알려진 필드(ITEM_HELP/FIELD_HELP) 합집합
+  const fdl = $('#field-keys');
+  if (fdl) {
+    fdl.innerHTML = '';
+    const keys = new Set([...Object.keys(ITEM_HELP), ...Object.keys(FIELD_HELP)]);
+    for (const k of [...keys].sort()) fdl.append(el('option', { value: k }));
   }
   // 삭제 안전 검증용 — 실제 게임이 쓰는 퀘스트(폴더 병합본) + NPC 정의를 읽기전용 import.
   // 실패해도 검증만 약화되고 편집 기능은 유지된다.
@@ -1096,6 +1110,11 @@ function renderItemsTab() {
     }
     if (scalars.children.length) detailWrap.append(scalars);
     nested.forEach((n) => detailWrap.append(n));
+    // 새 최상위 필드 추가 (onTick·onWear·armor·combat 등 — 그룹{}으로 넣고 안에서 하위값 추가)
+    detailWrap.append(el('div', { class: 'add-key-wrap' }, [
+      el('span', { class: 'side-group', text: '필드 추가' }),
+      addKeyControl(it, fk, helpForItem),
+    ]));
   };
 
   const renderList = () => {
@@ -1498,6 +1517,30 @@ function optionalFlag(obj, key, fileKey, help) {
     markDirty(fileKey);
   });
   return el('div', { class: 'field' }, [labelEl(key, help || helpFor(key)), el('label', { class: 'hint' }, [cb, ' (켜기/끄기)'])]);
+}
+
+// 객체에 새 필드(키)를 추가하는 인라인 컨트롤 — 필드명 자동완성(#field-keys) + 타입 선택
+//   onTick·onWear 같은 효과 그룹은 '그룹{}'으로 추가 → 그 안에서 다시 +필드로 하위값(temperature 등) 추가
+function addKeyControl(obj, fileKey, helpFn) {
+  const name = el('input', { class: 'add-key-name', list: 'field-keys', placeholder: '필드명 (예: onWear)' });
+  const type = el('select', { class: 'add-key-type' });
+  for (const [v, l] of [['text', '텍스트'], ['number', '숫자'], ['bool', '켜기/끄기'], ['object', '그룹 {}'], ['array', '목록 []']]) {
+    type.append(el('option', { value: v }, l));
+  }
+  const DEFAULTS = { text: '', number: 0, bool: true, object: {}, array: [] };
+  const commit = () => {
+    const k = name.value.trim();
+    if (!k) return;
+    if (Object.prototype.hasOwnProperty.call(obj, k)) { status(`이미 "${k}" 필드가 있습니다.`, 'warn'); return; }
+    obj[k] = structuredClone(DEFAULTS[type.value]);
+    markDirty(fileKey);
+    rerenderDetail();
+  };
+  const add = el('button', { class: 'ghost mini', text: '+ 필드', onclick: commit });
+  name.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); commit(); } });
+  // 알려진 필드면 입력 중 설명을 title로 미리보기
+  name.addEventListener('input', () => { name.title = helpFn?.(name.value.trim()) || ''; });
+  return el('div', { class: 'add-key-row' }, [name, type, add]);
 }
 
 // 사이드바의 특정 항목(data-key) 라벨을 즉시 갱신 — 이름/아이콘 편집 시 전체 재렌더 없이 반영
@@ -2489,7 +2532,8 @@ function objNode(obj, key, depth, fileKey, helpFn) {
       const row = el('div', { class: 'arr-row' });
       v.forEach((x, i) => {
         const isNum = typeof x === 'number';
-        const inp = el('input', { class: 'arr-input', type: isNum ? 'number' : 'text', step: 'any', value: x });
+        const inp = el('input', { class: 'arr-input', type: isNum ? 'number' : 'text', step: 'any', value: x,
+          ...(key === 'tags' ? { list: 'tag-list' } : {}) });
         inp.addEventListener('input', () => { v[i] = isNum ? Number(inp.value) : inp.value; markDirty(fileKey); });
         const rm = el('button', { class: 'ghost danger mini', text: '✕', title: '삭제',
           onclick: () => { v.splice(i, 1); markDirty(fileKey); rerenderDetail(); } });
@@ -2529,6 +2573,8 @@ function objNode(obj, key, depth, fileKey, helpFn) {
   }
   if (scalars.children.length) fs.append(scalars);
   nested.forEach((n) => fs.append(n));
+  // 아이템 컨텍스트: 이 그룹 안에 새 하위 필드 추가 (예: onTick 안에 temperature)
+  if (helpFn === helpForItem) fs.append(addKeyControl(v, fileKey, helpFn));
   return fs;
 }
 

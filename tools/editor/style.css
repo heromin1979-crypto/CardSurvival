@@ -184,6 +184,18 @@ table.loot input.num { width: 72px; }
 .ref-bad { border-color: var(--danger) !important; }
 .row-add { margin-top: 8px; }
 
+/* 필드(키) 추가 컨트롤 — 객체에 새 필드를 끼워넣기 */
+.add-key-wrap { margin-top: 12px; display: flex; flex-direction: column; gap: 4px; }
+.add-key-row { display: flex; gap: 6px; align-items: center; margin-top: 6px; flex-wrap: wrap; }
+.add-key-row .add-key-name {
+  background: var(--panel2); color: var(--text); border: 1px dashed var(--border);
+  border-radius: 6px; padding: 5px 8px; font-size: 12px; min-width: 150px;
+}
+.add-key-row .add-key-type {
+  background: var(--panel2); color: var(--text); border: 1px solid var(--border);
+  border-radius: 6px; padding: 5px 6px; font-size: 12px;
+}
+
 .chain-badge {
   display: inline-block; font-size: 11px; color: var(--muted);
   background: var(--panel2); border: 1px solid var(--border);
