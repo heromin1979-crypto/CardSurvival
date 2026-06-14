@@ -151,7 +151,6 @@ const Basecamp = {
           <div class="bc-char-info">
             <div class="bc-char-name" id="bc-char-name">${I18n.t('basecamp.survivor')}</div>
             <div class="bc-char-sub" id="bc-district-name">📍 마포구</div>
-            <div class="bc-char-hp"><span id="hud-hp">❤ 100/100</span></div>
           </div>
           <!-- 위험 stat 경고 아이콘 (사이드바 축약 표시) -->
           <div class="bc-char-danger-icons" id="bc-danger-icons"></div>
