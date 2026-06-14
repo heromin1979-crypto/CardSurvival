@@ -722,6 +722,8 @@ export const ko = {
   // ── SlotResolver ────────────────────────────────────────────
   'slot.unknownCard':       '알 수 없는 카드',
   'slot.cantMoveLocation':  '장소 카드는 이동할 수 없습니다.',
+  'slot.cantMoveImmovable': '바닥에 고정된 구조물은 옮길 수 없습니다. (분해는 카드를 눌러서)',
+  'slot.cantDisplaceImmovable': '🔥 고정된 구조물이 있어 옮길 수 없습니다.',
   'slot.cantPlaceOnLocation':'장소 행에는 아이템을 놓을 수 없습니다.',
   'slot.stackMerge':        '{name} 스택: {qty}/{max}',
 
@@ -1599,6 +1601,8 @@ export const en = {
   // ── SlotResolver ────────────────────────────────────────────
   'slot.unknownCard':        'Unknown card',
   'slot.cantMoveLocation':   'Location cards cannot be moved.',
+  'slot.cantMoveImmovable':  'Structures fixed to the ground cannot be moved. (Tap the card to dismantle.)',
+  'slot.cantDisplaceImmovable': '🔥 A fixed structure is in the way and cannot be displaced.',
   'slot.cantPlaceOnLocation':'Cannot place items on location row.',
   'slot.stackMerge':         '{name} stacked: {qty}/{max}',
 

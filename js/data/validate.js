@@ -351,6 +351,10 @@ async function validate() {
       console.log(`❌ [${id}] preserved "${def.preserved}" — 불리언이어야 함`);
       errors++; hfBad++;
     }
+    if (def?.immovable != null && typeof def.immovable !== 'boolean') {
+      console.log(`❌ [${id}] immovable "${def.immovable}" — 불리언이어야 함`);
+      errors++; hfBad++;
+    }
   }
   console.log(`  검사한 harvest/forage: ${hfChecked}, 문제: ${hfBad}`);
 

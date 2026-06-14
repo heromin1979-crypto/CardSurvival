@@ -11,6 +11,7 @@ const ITEMS_STRUCTURES = {
     rarity: 'uncommon', weight: 2.0,
     defaultDurability: 50, defaultContamination: 0,
     icon: '🔥', description: '돌을 쌓고 장작을 얹어 피운 화롯불. 온도 회복·요리·숯 생산에 사용. 비·눈에 꺼질 수 있음.',
+    immovable: true,   // 필드 바닥에 고정 — 드래그 이동/배낭 수납/스왑 불가 (분해는 클릭)
     tags: ['structure', 'heat', 'light'],
     onTick: { temperature: 2, noise: 3 },
     dismantleTP: 1,

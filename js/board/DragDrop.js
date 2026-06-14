@@ -49,6 +49,12 @@ const DragDrop = {
       return;
     }
 
+    // 이동 불가 구조물(캠프파이어 등)은 드래그 불가 — 필드 바닥 고정 (분해는 클릭)
+    if (GameState.getCardDef?.(card.dataset.instanceId)?.immovable) {
+      e.preventDefault();
+      return;
+    }
+
     this._draggingId = card.dataset.instanceId;
     card.classList.add('dragging');
 

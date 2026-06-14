@@ -21,6 +21,11 @@ const SlotResolver = {
       return { valid: false, reason: I18n.t('slot.cantMoveLocation') };
     }
 
+    // 이동 불가 구조물(캠프파이어 등): 필드 바닥 고정 — 드래그 이동/배낭 수납 불가 (분해는 클릭)
+    if (def.immovable) {
+      return { valid: false, reason: I18n.t('slot.cantMoveImmovable') };
+    }
+
     // 상단(장소) 행: 일반 아이템 배치 불가
     if (toRow === 'top') {
       return { valid: false, reason: I18n.t('slot.cantPlaceOnLocation') };
@@ -52,6 +57,13 @@ const SlotResolver = {
     // 스택 병합 우선 시도: 같은 정의 ID + stackable + maxStack 여유 있을 때
     const targetId = GameState.board[toRow]?.[toSlot];
     if (targetId && targetId !== instanceId) {
+      // 이동 불가 카드가 목적지에 있으면 swap 차단 (캠프파이어를 배낭/다른 칸으로 밀어내기 방지)
+      // 상호작용·크래프트·스택은 이 시점 이전(DragDrop/TouchDrag)에서 처리되므로 여기 도달 = 순수 swap 시도
+      const tgtDef = GameState.getCardDef(targetId);
+      if (tgtDef?.immovable) {
+        EventBus.emit('notify', { message: I18n.t('slot.cantDisplaceImmovable'), type: 'warn' });
+        return false;
+      }
       if (this._tryStack(instanceId, targetId)) {
         // 같은 타입의 나머지 카드도 전부 targetId 슬롯으로 합산
         if (defId) BoardManager.consolidateSameType(defId, targetId);
