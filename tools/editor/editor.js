@@ -183,6 +183,8 @@ const FIELD_HELP = {
   requiredItems: '발견하려면 보드에 보유해야 하는 아이템 ID 목록(예: lockpick).',
   requiredCharacter: '특정 캐릭터(직업) 전용. null이면 제한 없음.',
   minKills: '누적 최소 처치 수.',
+  weather: '특정 날씨에서만 발견(예: rainy). null이면 날씨 제한 없음.',
+  season: '특정 계절에서만 발견(spring/summer/autumn/winter). null이면 계절 제한 없음.',
   minCraftLevel: '최소 제작 숙련도.',
   maxNoise: '소음이 이 값 이하일 때만(은신 조건). null이면 제한 없음.',
   minDistrictsVisited: '방문한 구 수 최소치.',
@@ -1489,15 +1491,15 @@ function itemRows(arr, fileKey) {
   const wrap = el('div');
   arr.forEach((it, idx) => {
     const id = el('input', { class: 'id', value: it.definitionId ?? '', list: 'item-ids' });
-    const nm = el('span', { class: 'chain-badge', text: itemName(it.definitionId) });
+    const nm = el('div', { class: 'ro-name', text: itemName(it.definitionId) });
     id.addEventListener('input', () => {
       it.definitionId = id.value.trim(); nm.textContent = itemName(it.definitionId); markDirty(fileKey);
     });
     const qty = el('input', { class: 'num', type: 'number', value: it.qty ?? 1 });
     qty.addEventListener('input', () => { it.qty = Number(qty.value); markDirty(fileKey); });
-    wrap.append(el('div', { class: 'field-row', style: 'align-items:flex-end' }, [
-      el('div', { class: 'field' }, [fieldLabel('item', 'definitionId'), id]),
-      el('div', { class: 'field' }, [fieldLabel('이름', '__name'), nm]),
+    wrap.append(el('div', { class: 'field-row item-row', style: 'align-items:flex-end' }, [
+      el('div', { class: 'field id-col' }, [fieldLabel('item', 'definitionId'), id]),
+      el('div', { class: 'field name-col' }, [fieldLabel('이름', '__name'), nm]),
       el('div', { class: 'field' }, [fieldLabel('qty', 'qty'), qty]),
       el('button', { class: 'ghost danger mini', text: '✕',
         onclick: () => { arr.splice(idx, 1); markDirty(fileKey); rerenderDetail(); } }),
