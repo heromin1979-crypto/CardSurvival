@@ -481,11 +481,9 @@ const BALANCE = {
     seasonLoot: {
       spring: [
         { id: 'vitamins',  qty: 1, chance: 0.40 },
-        { id: 'rainwater', qty: 2, chance: 0.40 },
         { id: 'gauze',     qty: 1, chance: 0.25 },
       ],
       summer: [
-        { id: 'rainwater',    qty: 3, chance: 0.55 },
         { id: 'sports_drink', qty: 1, chance: 0.30 },
         { id: 'empty_bottle', qty: 1, chance: 0.20 },
       ],
@@ -493,7 +491,6 @@ const BALANCE = {
         { id: 'canned_food', qty: 1, chance: 0.45 },
         { id: 'energy_bar',  qty: 1, chance: 0.35 },
         { id: 'rice',        qty: 1, chance: 0.20 },
-        { id: 'rainwater',   qty: 1, chance: 0.15 },
       ],
       winter: [
         { id: 'wood',               qty: 1, chance: 0.50 },

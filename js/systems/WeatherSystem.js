@@ -81,6 +81,65 @@ const WeatherSystem = {
     return gs.weather;
   },
 
+  // GM/디버그용: 날씨를 즉시 강제 설정 (모든 계절 테이블에서 id 탐색)
+  setWeather(weatherId) {
+    const gs = GameState;
+    let def = null;
+    for (const table of Object.values(WEATHER_TABLES)) {
+      const found = table.find(w => w.id === weatherId);
+      if (found) { def = found; break; }
+    }
+    if (!def) return false;
+    const prev = gs.weather?.id;
+    if (!gs.weather) gs.weather = {};
+    Object.assign(gs.weather, def);
+    gs.weather.tpRemaining = this._rollDuration();
+    gs.weather.tempJitter  = 0;
+    EventBus.emit('weatherChanged', { weather: gs.weather });
+    this._updateWeatherHUD(gs.weather);
+    this._updateTemperatureHUD(this.getOutdoorTemperature());
+    this._renderWeatherWidget(gs);
+    const rainyIds = ['rainy', 'storm', 'monsoon'];
+    if (rainyIds.includes(weatherId) && !rainyIds.includes(prev)) this._refillDryStreams(gs);
+    EventBus.emit('notify', { message: `🌤 [GM] 날씨 → ${def.icon} ${def.name}`, type: 'info' });
+    return true;
+  },
+
+  // 비 집수: 바닥(middle)에 둔 양동이를 3 TP마다 1/4씩 채운다.
+  // 비/장마/폭풍 → 오염도 30(빗물 수준), 산성비 → 80(고오염).
+  _fillBuckets(gs) {
+    const w = gs.weather;
+    const isAcid    = w?.gardenKill === true || w?.id === 'acid_rain';
+    const isRainy   = ['rainy', 'storm', 'monsoon'].includes(w?.id);
+    if (!isRainy && !isAcid) return;
+    const fillContam = isAcid ? 80 : 30;
+
+    for (const id of gs.board.middle) {
+      if (!id) continue;
+      const inst = gs.cards[id];
+      if (!inst) continue;
+      const defId = inst.definitionId;
+      if (defId !== 'empty_bucket' && defId !== 'water_bucket') continue;
+      // 이미 가득 찬 물 양동이는 건너뜀
+      if (defId === 'water_bucket' && (inst._fillLevel ?? 1) >= 4) continue;
+
+      // 3 TP마다 한 단계
+      inst._rainTick = (inst._rainTick ?? 0) + 1;
+      if (inst._rainTick < 3) continue;
+      inst._rainTick = 0;
+
+      if (defId === 'empty_bucket') {
+        inst.definitionId = 'water_bucket';
+        inst._fillLevel   = 1;
+        inst.contamination = fillContam;
+      } else {
+        inst._fillLevel    = (inst._fillLevel ?? 1) + 1;
+        inst.contamination = Math.max(inst.contamination ?? 0, fillContam);
+      }
+      EventBus.emit('boardChanged', {});
+    }
+  },
+
   // ── 내부 ─────────────────────────────────────────────────────
 
   _onTP() {
@@ -108,6 +167,9 @@ const WeatherSystem = {
 
     // 환경 카드 TP 틱
     this._tickEnvironmentCards(gs);
+
+    // 비 집수: 바닥(middle)에 둔 양동이 채우기
+    this._fillBuckets(gs);
 
     // 젖은 천 자연 건조 (48TP)
     this._tickWetCloth(gs);

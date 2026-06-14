@@ -98,13 +98,6 @@ const DISTRICTS = {
         maxQty: 2,
       },
       {
-        definitionId: 'rainwater',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0.1,
-      },
-      {
         definitionId: 'nettle',
         weight: 6,
         minQty: 1,
@@ -238,13 +231,6 @@ const DISTRICTS = {
         weight: 5,
         minQty: 1,
         maxQty: 1,
-      },
-      {
-        definitionId: 'rainwater',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0.1,
       },
       {
         definitionId: 'nettle',
@@ -813,13 +799,6 @@ const DISTRICTS = {
         weight: 10,
         minQty: 1,
         maxQty: 2,
-      },
-      {
-        definitionId: 'rainwater',
-        weight: 10,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0.15,
       },
       {
         definitionId: 'broken_radio',
@@ -1852,13 +1831,6 @@ const DISTRICTS = {
         maxQty: 2,
       },
       {
-        definitionId: 'rainwater',
-        weight: 10,
-        minQty: 1,
-        maxQty: 1,
-        contamChance: 0.1,
-      },
-      {
         definitionId: 'scrap_metal',
         weight: 8,
         minQty: 1,
@@ -2073,13 +2045,6 @@ const DISTRICTS = {
         weight: 4,
         minQty: 1,
         maxQty: 1,
-      },
-      {
-        definitionId: 'rainwater',
-        weight: 10,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0.2,
       },
       {
         definitionId: 'contaminated_water',
@@ -2490,13 +2455,6 @@ const DISTRICTS = {
         contamChance: 0.5,
       },
       {
-        definitionId: 'rainwater',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0.2,
-      },
-      {
         definitionId: 'circuit_board',
         weight: 5,
         minQty: 1,
@@ -2763,13 +2721,6 @@ const DISTRICTS = {
         maxQty: 1,
       },
       {
-        definitionId: 'rainwater',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0.15,
-      },
-      {
         definitionId: 'nettle',
         weight: 6,
         minQty: 1,
@@ -3029,13 +2980,6 @@ const DISTRICTS = {
         maxQty: 1,
       },
       {
-        definitionId: 'rainwater',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0.1,
-      },
-      {
         definitionId: 'nettle',
         weight: 6,
         minQty: 1,
@@ -3157,13 +3101,6 @@ const DISTRICTS = {
         weight: 4,
         minQty: 1,
         maxQty: 1,
-      },
-      {
-        definitionId: 'rainwater',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0.1,
       },
       {
         definitionId: 'nettle',
@@ -3734,13 +3671,6 @@ const DISTRICTS = {
         weight: 12,
         minQty: 1,
         maxQty: 2,
-      },
-      {
-        definitionId: 'rainwater',
-        weight: 10,
-        minQty: 1,
-        maxQty: 1,
-        contamChance: 0.2,
       },
       {
         definitionId: 'broken_radio',
