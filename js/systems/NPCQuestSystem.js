@@ -137,8 +137,7 @@ const NPCQuestSystem = {
       for (const item of quest.reward.items) {
         const inst = GameState.createCardInstance(item.id, { quantity: item.qty });
         if (inst) {
-          const placed = GameState.placeCardInRow(inst.instanceId, 'middle');
-          if (!placed) GameState.placeCardInRow(inst.instanceId, 'bottom');
+          GameState.placeCardInRow(inst.instanceId, 'bottom');
         }
         // 지도 조각 획득 추적
         if (item.id?.startsWith('map_fragment_')) {
