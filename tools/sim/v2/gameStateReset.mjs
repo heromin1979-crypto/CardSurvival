@@ -73,6 +73,7 @@ export function resetGameStateForRun({ characterId }) {
   // 현실 제약: 구역 루팅 30일 잠금 추적 (본체 ExploreSystem._arriveAtDistrict 모방)
   GameState.location.districtsLooted = [];
   GameState.location.districtLootDay = {};
+  GameState.location.subLocationsLooted = [];
   GameState.location.nodesVisited    = [cc.startDistrict];
   // 현실 제약: 요리 도구(캠프파이어) 상태 — 시뮬 전용 핸들
   GameState._simCampfire = { built: false, durability: 0 };

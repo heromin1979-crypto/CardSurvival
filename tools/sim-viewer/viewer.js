@@ -40,6 +40,8 @@ const STRAT_OPTIONS = [
   { id: 'evasive', name: '신중 회피형' },
   { id: 'water_first', name: '물 우선형' },
   { id: 'food_farmer', name: '식량 파밍형' },
+  { id: 'supply_raider', name: '보급 우선형' },
+  { id: 'medic', name: '의료 파밍형' },
 ];
 
 async function init() {

@@ -36,13 +36,25 @@ export const STRATEGIES = [
     id: 'water_first',
     name: '물 우선형',
     desc: '수분 확보를 최우선, 안전 이동',
-    cfg: { exploresPerDay: 3, dangerCap: 2, roam: 'safe', fleePolicy: true, prioritizeWater: true, eatThreshold: 30, eatMax: 1 },
+    cfg: { exploresPerDay: 3, dangerCap: 2, roam: 'safe', fleePolicy: true, prioritizeWater: true, eatThreshold: 50, eatMax: 3 },
   },
   {
     id: 'food_farmer',
     name: '식량 파밍형',
     desc: '식량 최우선 — 새 구역 적극 순회 + 영양 70 미만이면 가진 식량 다 먹기',
     cfg: { exploresPerDay: 6, dangerCap: 4, roam: 'aggressive', fleePolicy: false, prioritizeWater: false, eatThreshold: 70, eatMax: 6 },
+  },
+  {
+    id: 'supply_raider',
+    name: '보급 우선형',
+    desc: '식량·물이 있는 세부장소(산장·계곡 등)를 우선 약탈하며 순회',
+    cfg: { exploresPerDay: 5, dangerCap: 4, roam: 'aggressive', fleePolicy: true, prioritizeWater: false, eatThreshold: 70, eatMax: 6, subLootPriority: 'food' },
+  },
+  {
+    id: 'medic',
+    name: '의료 파밍형',
+    desc: '의료품 세부장소(병원·대피소)를 우선 확보하고 부상을 적극 치료',
+    cfg: { exploresPerDay: 4, dangerCap: 4, roam: 'safe', fleePolicy: false, prioritizeWater: false, eatThreshold: 60, eatMax: 4, subLootPriority: 'medical' },
   },
 ];
 
