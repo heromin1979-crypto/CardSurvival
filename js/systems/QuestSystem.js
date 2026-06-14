@@ -920,7 +920,7 @@ const QuestSystem = {
       for (const item of r.items) {
         for (let n = 0; n < (item.qty ?? 1); n++) {
           const inst = gs.createCardInstance(item.definitionId);
-          if (inst) gs.placeCardInRow(inst.instanceId);
+          if (inst) gs.placeCardInRow(inst.instanceId, 'bottom');
         }
       }
     }
@@ -1008,7 +1008,7 @@ const QuestSystem = {
       for (const item of bonus.items) {
         for (let n = 0; n < (item.qty ?? 1); n++) {
           const inst = gs.createCardInstance(item.definitionId);
-          if (inst) gs.placeCardInRow(inst.instanceId);
+          if (inst) gs.placeCardInRow(inst.instanceId, 'bottom');
         }
       }
     }

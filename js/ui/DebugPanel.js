@@ -5,6 +5,7 @@ import EventBus   from '../core/EventBus.js';
 import GameState  from '../core/GameState.js';
 import TickEngine from '../core/TickEngine.js';
 import GameData   from '../data/GameData.js';
+import I18n       from '../core/I18n.js';
 
 const STAT_FIELDS = [
   { key: 'hydration',   label: 'Hydration'   },
@@ -89,7 +90,7 @@ const DebugPanel = {
         <div class="dbg-section">
           <div class="dbg-section-title">Give Item</div>
           <div class="dbg-give-row">
-            <input class="dbg-item-input" id="dbg-item-id" type="text" placeholder="item_id" spellcheck="false">
+            <input class="dbg-item-input" id="dbg-item-id" type="text" placeholder="ID 또는 한글 이름" spellcheck="false">
             <input class="dbg-qty-input"  id="dbg-item-qty" type="number" value="1" min="1" max="99">
             <button class="dbg-give-btn" id="dbg-give-btn">Give</button>
           </div>
@@ -187,18 +188,34 @@ const DebugPanel = {
 
   // ── 아이템 지급 ───────────────────────────────────────────
 
-  _giveItem() {
-    const defId = this._el.querySelector('#dbg-item-id').value.trim();
-    const qty   = Math.max(1, parseInt(this._el.querySelector('#dbg-item-qty').value, 10) || 1);
-    const msg   = this._el.querySelector('#dbg-msg');
+  // 입력값을 item_id로 해석. id 직접 매칭 → 한글/표시 이름 정확 일치 → 공백 무시 일치 순.
+  _resolveItemId(input) {
+    const items = GameData.items;
+    if (items[input]) return input;
 
-    if (!defId) {
-      this._showMsg('item ID를 입력하세요.', true);
+    const norm = s => (s ?? '').replace(/\s+/g, '').toLowerCase();
+    const q = norm(input);
+    let fuzzy = null;
+    for (const def of Object.values(items)) {
+      const display = I18n.itemName(def.id, def.name);
+      if (def.name === input || display === input) return def.id; // 이름 정확 일치
+      if (!fuzzy && (norm(def.name) === q || norm(display) === q)) fuzzy = def.id; // 공백 무시 일치
+    }
+    return fuzzy;
+  },
+
+  _giveItem() {
+    const raw = this._el.querySelector('#dbg-item-id').value.trim();
+    const qty = Math.max(1, parseInt(this._el.querySelector('#dbg-item-qty').value, 10) || 1);
+
+    if (!raw) {
+      this._showMsg('item ID 또는 한글 이름을 입력하세요.', true);
       return;
     }
 
-    if (!GameData.items[defId]) {
-      this._showMsg(`❌ 알 수 없는 ID: ${defId}`, true);
+    const defId = this._resolveItemId(raw);
+    if (!defId) {
+      this._showMsg(`❌ 알 수 없는 아이템: ${raw}`, true);
       return;
     }
 
@@ -208,12 +225,13 @@ const DebugPanel = {
       return;
     }
 
+    const label = I18n.itemName(defId, GameData.items[defId].name);
     const placed = GameState.placeCardInRow(inst.instanceId);
     if (!placed) {
       // 보드가 꽉 찬 경우 — 인스턴스는 cards에 존재, 보드 미배치
-      this._showMsg(`⚠ 보드 꽉 참 — cards에 추가됨 (${inst.instanceId})`, false);
+      this._showMsg(`⚠ 보드 꽉 참 — cards에 추가됨 (${label} ${inst.instanceId})`, false);
     } else {
-      this._showMsg(`✓ ${defId} ×${qty} → ${placed.row}[${placed.slot}]`);
+      this._showMsg(`✓ ${label}(${defId}) ×${qty} → ${placed.row}[${placed.slot}]`);
     }
 
     EventBus.emit('boardChanged', {});
