@@ -297,6 +297,8 @@ const BAL_HELP = {
   baseCostTP: '기본 이동 TP 비용.',
   baseStaminaDrain: '이동 시 기본 스태미나 소모.',
   exploreStaminaDrain: '탐색 시 스태미나 소모.',
+  explorationPerExplore: '탐사 1회당 지역 탐사도 상승%(전역 기본). 100%까지 누적. 구별로 districts 탭의 exploreIncrement로 덮어쓸 수 있음.',
+  explorationYieldBonusMax: '탐사도가 높을수록 일반 루팅에 보너스 픽이 붙는 최대 확률(0~1). 예: 0.5 = 탐사도 100%일 때 +50% 확률로 추가 아이템. 탐사도에 비례해 0→이 값까지 선형 증가.',
   lowStaminaThreshold: '이 비율 미만이면 저스태미나 페널티(0~1).',
   lowStaminaPenalty: '저스태미나 시 소모 배율.',
   immobileWeightPct: '이 무게비율 이상이면 이동 불가.',
