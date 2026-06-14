@@ -741,6 +741,70 @@ const ITEM_HELP = {
 };
 function helpForItem(key) { return ITEM_HELP[key] ?? FIELD_HELP[key] ?? ''; }
 
+// 태그 설명 — 코드에서 동작을 좌우하는 태그는 정확히, 그 외 분류 태그는 용도 위주로.
+// (모든 태그는 공통적으로 퀘스트 목표 itemType·레시피/비밀조합 조건·검색에도 쓰일 수 있음)
+const TAG_HELP = {
+  // ── 동작에 직접 영향 ──
+  preserved: '보존 식품 — 시간이 지나도 부패하지 않음(부패 면제). preserved 필드와 동일.',
+  fermented: '발효 식품 — preserved와 동일하게 부패 면제.',
+  bait: '낚시·통발·덫의 미끼로 사용 가능(FishingSystem·TrapSystem).',
+  silent: '무기: 공격 소음이 없고 치명타 시 은밀 처치(CombatSystem).',
+  blade: '근접 무기: 절단 계열 보정 대상(출혈 등).',
+  knife: '칼류 — 절단 보정 + 해체/요리 도구.',
+  throwable: '투척 가능 무기로 취급(전투 투척 행동).',
+  medical: '의료 아이템 — 치료 행동·소음 계산·전투 사용 대상.',
+  bandage: '붕대류 — 출혈·부상 치료에 사용.',
+  antibiotic: '항생제 — 세균성 질병 치료(DiseaseSystem).',
+  antidote: '해독제 — 중독 치료(DiseaseSystem).',
+  rad_blocker: '방사선 차단 — 피폭 완화(DiseaseSystem).',
+  drinkable: '마실 수 있음 — 오염 시 음용 경고(ContaminationSystem).',
+  water: '수분 보충 음용원(StatSystem 갈증 해소 판정).',
+  water_source: '환경 카드: 물을 수집할 수 있는 수원.',
+  light: '광원 — 밤에 시야 확보(NightSystem).',
+  light_source: '전투 중 광원으로 인정 — 야간 전투 페널티 완화(CombatSystem).',
+  heat: '열원 — 체온 회복(난방). 환경 카드는 열기 경고.',
+  cold: '냉기 — 환경 카드 추위 경고.',
+  contamination: '오염원 — 환경 카드 오염 경고.',
+  contaminated: '오염된 상태 — 섭취 시 방사선·감염 위험.',
+  danger: '위험 요소 — 위험 강조 표시(환경/날씨 이벤트).',
+  structure: '설치 구조물 — 바닥 설치형(전투 대상 제외 등).',
+  // ── 상위 분류(타입성) ──
+  material: '재료 — 제작 원료.',
+  crafted: '제작으로 만들어진 아이템.',
+  craftable: '제작 가능한 아이템.',
+  food: '음식 분류(퀘스트 목표·레시피 조건에 사용).',
+  food_raw: '날것 식재료 — 빨리 부패(부패 일수 기본 2일).',
+  cooked: '조리된 음식.',
+  edible: '먹을 수 있는 것.',
+  consumable: '소비형 아이템(1회성).',
+  drink: '음료 분류.',
+  meat: '고기류.', fish: '생선류.', seafood: '해산물.',
+  carcass: '사체 — 손질 전 고기(가장 빨리 부패).',
+  herb: '약초.', plant: '식물.', mushroom: '버섯.', seed: '씨앗.',
+  weapon: '무기.', melee: '근접 무기.', ranged: '원거리 무기.', firearm: '총기.',
+  unarmed: '맨손 무기.', ammo: '탄약.', ammo_part: '탄약 부품.', explosive: '폭발물.',
+  armor: '방어구.', armor_part: '방어구 부품.', shield: '방패(보조 장비).',
+  clothing: '의류.', boots: '신발.', vest: '조끼.', head: '머리 장비.',
+  hands: '손 장비.', fullbody: '전신 장비.', offhand: '보조손 장비.', accessory: '장신구.',
+  tool: '도구.', utility: '유틸리티 도구.', container: '용기.', storage: '보관 용도.',
+  bag: '가방 — 보관 칸 확장.', trap: '함정.',
+  metal: '금속 재료.', wood: '목재.', textile: '섬유/천.', chemical: '화학 물질.',
+  fuel: '연료.', kindling: '불쏘시개.', fire: '발화 관련.', organic: '유기물.',
+  electronic: '전자 부품.', tech: '기술/전자 장비.', fragment: '조각(모으면 완성).',
+  natural: '자연물.', environment: '환경 오브젝트(바닥 고정형).',
+  location: '장소(구) 카드.', landmark: '랜드마크 카드.',
+  legendary: '전설(고유) 아이템.', rare: '희귀 아이템.', rare_ingredient: '희귀 재료.',
+  boss_drop: '보스 처치 드랍.', event: '이벤트 관련.', seasonal: '계절성.',
+  keepsake: '유품/기념품(서사용).', key_item: '핵심 진행 아이템.', document: '문서/기록물.',
+  healing: '치유 효과.', stimulant: '각성·흥분제.', stamina: '스태미나 관련.',
+  diagnostic: '진단 도구.', antiseptic: '소독제.', anesthetic: '마취제.', splint: '부목.',
+  fishing: '낚시 관련 도구/미끼.', forage: '채집 가능 노드.', farm: '농경 관련.',
+  building: '건축 관련.', cooking: '요리 관련.', salvage: '해체로 얻는 부산물.',
+  weather: '날씨 이벤트.', weather_resistant: '날씨에 강함(꺼지지 않음 등).',
+  radiation: '방사선 관련.', toxic: '독성.', poison: '중독 유발.',
+};
+function helpForTag(t) { return TAG_HELP[t] || ''; }
+
 
 // 설명이 있으면 점선 밑줄 + 마우스 오버 툴팁을 단 라벨 생성
 function labelEl(text, help) {
@@ -1250,15 +1314,20 @@ function renderItemHelpPanel() {
         el('span', { class: 'help-desc', text: ITEM_HELP[k] }),
       ]));
     }
-    // ── 태그 (사용 빈도순) ──
+    // ── 태그 (사용 빈도순) — 설명 있으면 같이, 검색은 태그명+설명 ──
     tagsBox.innerHTML = '';
     const tkeys = Object.keys(tagCount)
-      .filter((t) => !q || t.toLowerCase().includes(q))
+      .filter((t) => !q || t.toLowerCase().includes(q) || helpForTag(t).toLowerCase().includes(q))
       .sort((a, b) => tagCount[b] - tagCount[a] || a.localeCompare(b));
-    tagsBox.append(el('div', { class: 'side-group', text: `태그 ${tkeys.length}종 (현재 사용 중)` }));
-    const chips = el('div', { class: 'chips' });
-    for (const t of tkeys) chips.append(el('span', { class: 'chip', title: `${tagCount[t]}개 아이템에서 사용`, text: `${t} ×${tagCount[t]}` }));
-    tagsBox.append(chips);
+    const described = tkeys.filter((t) => helpForTag(t)).length;
+    tagsBox.append(el('div', { class: 'side-group', text: `태그 ${tkeys.length}종 (설명 ${described}) · 사용 중` }));
+    for (const t of tkeys) {
+      const desc = helpForTag(t);
+      tagsBox.append(el('div', { class: 'help-row' }, [
+        el('code', { class: 'help-key', title: `${tagCount[t]}개 아이템에서 사용`, text: `${t} ×${tagCount[t]}` }),
+        el('span', { class: desc ? 'help-desc' : 'help-desc muted', text: desc || '(분류·검색용 태그)' }),
+      ]));
+    }
   };
   filter.addEventListener('input', () => { state.itemHelpQuery = filter.value; draw(); });
   draw();

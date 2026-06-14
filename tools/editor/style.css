@@ -198,8 +198,9 @@ table.loot input.num { width: 72px; }
   display: grid; grid-template-columns: 160px 1fr; gap: 10px;
   padding: 4px 2px; border-bottom: 1px solid var(--border); align-items: baseline;
 }
-.help-key { color: var(--accent); font-size: 12px; white-space: nowrap; }
+.help-key { color: var(--accent); font-size: 12px; word-break: break-word; }
 .help-desc { color: var(--text); font-size: 12px; line-height: 1.45; }
+.help-desc.muted { color: var(--muted); }
 
 /* 필드(키) 추가 컨트롤 — 객체에 새 필드를 끼워넣기 */
 .add-key-wrap { margin-top: 12px; display: flex; flex-direction: column; gap: 4px; }
