@@ -20,6 +20,7 @@ import HiddenElementSystem from './HiddenElementSystem.js';
 import NightSystem         from './NightSystem.js';
 import GameData            from '../data/GameData.js';
 import SystemRegistry      from '../core/SystemRegistry.js';
+import { locationPathText } from '../ui/locationPath.js';
 
 const ExploreSystem = {
   // W3-2 Phase C — 일자 경과 재고 감소 추적 (tpAdvance 시 day 변경 감지)
@@ -415,7 +416,7 @@ const ExploreSystem = {
         this._placeLoot(loot);
       } else {
         // 표면 고갈 → 이번엔 거둘 게 없음
-        EventBus.emit('notify', { message: I18n.t('exploreSys.alreadyLooted', { name: I18n.districtName(districtId, district.name) }), type: 'info' });
+        EventBus.emit('notify', { message: I18n.t('exploreSys.alreadyLooted', { name: locationPathText() }), type: 'info' });
       }
 
       // 표면 자원 소진 (탐색 1회분) — EcologySystem이 -resourceExploreConsume 적용, 시간 경과로 재생
@@ -425,7 +426,7 @@ const ExploreSystem = {
       this._advanceExploration(districtId);
     }
 
-    EventBus.emit('notify', { message: I18n.t('exploreSys.exploreComplete', { name: I18n.districtName(districtId, district.name) }), type: 'info' });
+    EventBus.emit('notify', { message: I18n.t('exploreSys.exploreComplete', { name: locationPathText() }), type: 'info' });
     EventBus.emit('locationChanged', { nodeId: districtId, node: district });
     EventBus.emit('boardChanged', {});
   },
@@ -826,12 +827,12 @@ const ExploreSystem = {
       // W3-2 Phase B — 실제 루팅 수만큼 재고 차감 (stockRatio는 _generateSubLocationLoot가 이미 반영)
       if (loot.length > 0) gs.consumeSubLocationStock(subLocationId, loot.length);
     } else {
-      EventBus.emit('notify', { message: I18n.t('exploreSys.alreadySearched', { name: sub.name }), type: 'info' });
+      EventBus.emit('notify', { message: I18n.t('exploreSys.alreadySearched', { name: locationPathText() }), type: 'info' });
     }
 
     // 세부장소 탐색 완료 XP
     SkillSystem.gainXp('scavenging', 3);
-    EventBus.emit('notify', { message: I18n.t('exploreSys.subComplete', { name: sub.name }), type: 'info' });
+    EventBus.emit('notify', { message: I18n.t('exploreSys.subComplete', { name: locationPathText() }), type: 'info' });
 
     // 캐릭터당 1회 한정 자동 보상 (한강 낚시터 진입 시 fishing_rod_basic 등)
     this._grantFirstEnterReward(sub, subKey);
