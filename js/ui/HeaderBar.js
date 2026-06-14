@@ -7,11 +7,11 @@
 
 import EventBus  from '../core/EventBus.js';
 import GameState from '../core/GameState.js';
-import I18n      from '../core/I18n.js';
-import { DISTRICTS } from '../data/districts.js';
+import { breadcrumbHTML, locationKey } from './locationPath.js';
 
 const HeaderBar = {
   _el: null,
+  _lastLocKey: null,
 
   init() {
     this._el = document.getElementById('game-header');
@@ -26,6 +26,15 @@ const HeaderBar = {
     EventBus.on('stateTransition', ({ to }) => {
       // 메인 화면에서만 렌더
       if (to === 'main') this.render();
+    });
+
+    // 위치 변경 실시간 반영 — 구 이동(districtChanged)·노드 탐색(locationChanged)은
+    // 즉시, 랜드마크/세부장소 진입·퇴장은 boardChanged로 신호가 오므로
+    // 브레드크럼 키가 실제로 바뀐 경우에만 다시 그린다(잦은 보드 변경 무시).
+    EventBus.on('districtChanged', () => this.render());
+    EventBus.on('locationChanged', () => this.render());
+    EventBus.on('boardChanged', () => {
+      if (locationKey() !== this._lastLocKey) this.render();
     });
 
     this.render();
@@ -61,16 +70,13 @@ const HeaderBar = {
     const weatherIcons = { sunny: '☀️', cloudy: '☁️', rain: '🌧', snow: '🌨', storm: '⛈', heatwave: '🥵', coldwave: '🥶' };
     const weatherIcon = weatherIcons[weatherId] ?? '☀️';
 
-    const districtId = gs.location?.currentDistrict;
-    const districtDef = districtId ? DISTRICTS[districtId] : null;
-    const districtName = districtId
-      ? I18n.districtName(districtId, districtDef?.name ?? districtId)
-      : '';
+    const breadcrumb = breadcrumbHTML();
+    this._lastLocKey = locationKey();
 
     this._el.innerHTML = `
       <div class="game-header__inner">
         <div class="game-header__left">
-          <span class="game-header__location">${districtName}</span>
+          <span class="game-header__location">${breadcrumb}</span>
         </div>
         <div class="game-header__center ${dayClass}">
           <span class="game-header__day">Day ${day}</span>

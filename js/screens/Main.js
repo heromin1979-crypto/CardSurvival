@@ -22,6 +22,7 @@ import WeatherSystem   from '../systems/WeatherSystem.js';
 import SeoulMapModal   from '../ui/SeoulMapModal.js';
 import QuestPanel      from '../ui/QuestPanel.js';
 import GameData        from '../data/GameData.js';
+import { breadcrumbHTML } from '../ui/locationPath.js';
 
 const Basecamp = {
   _el: null,
@@ -47,10 +48,26 @@ const Basecamp = {
         this._onEnter();
       }
     });
-    // 보드 변경 시(랜드마크 진입/퇴장 포함) 사이드바 버튼 갱신
+    // 보드 변경 시(랜드마크 진입/퇴장 포함) 사이드바 버튼 + 위치 경로 갱신
     EventBus.on('boardChanged', () => {
-      if (GameState.ui.currentState === 'main') this._updateSidebarButtons();
+      if (GameState.ui.currentState === 'main') {
+        this._updateSidebarButtons();
+        this._updateLocation();
+      }
     });
+    // 위치 변경 실시간 반영 — 구 이동 / 노드 탐색
+    EventBus.on('districtChanged', () => {
+      if (GameState.ui.currentState === 'main') this._updateLocation();
+    });
+    EventBus.on('locationChanged', () => {
+      if (GameState.ui.currentState === 'main') this._updateLocation();
+    });
+  },
+
+  // 사이드바 위치 표시 갱신 — 📍 구 › 랜드마크 › 세부장소
+  _updateLocation() {
+    const el = document.getElementById('bc-district-name');
+    if (el) el.innerHTML = `📍 ${breadcrumbHTML()}`;
   },
 
   _onEnter() {
@@ -62,13 +79,8 @@ const Basecamp = {
     // Update char name display
     const nameEl = document.getElementById('bc-char-name');
     if (nameEl) nameEl.textContent = GameState.player.name;
-    // Update current district display
-    const districtEl = document.getElementById('bc-district-name');
-    if (districtEl) {
-      const distId = GameState.location.currentDistrict ?? 'mapo';
-      const node   = GameData?.nodes?.[distId];
-      districtEl.textContent = `📍 ${I18n.districtName(distId, node?.name ?? distId)}`;
-    }
+    // Update current location display (구 › 랜드마크 › 세부장소 브레드크럼)
+    this._updateLocation();
     CraftUI.init();
     EquipmentModal.init();
     BodyStatusModal.init();
@@ -139,7 +151,6 @@ const Basecamp = {
           <div class="bc-char-info">
             <div class="bc-char-name" id="bc-char-name">${I18n.t('basecamp.survivor')}</div>
             <div class="bc-char-sub" id="bc-district-name">📍 마포구</div>
-            <div class="bc-char-hp"><span id="hud-hp">❤ 100/100</span></div>
           </div>
           <!-- 위험 stat 경고 아이콘 (사이드바 축약 표시) -->
           <div class="bc-char-danger-icons" id="bc-danger-icons"></div>

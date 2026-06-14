@@ -32,10 +32,16 @@
   padding-left: 16px;
 }
 
+/* 위치 브레드크럼 컨테이너 (헤더) */
 .game-header__location {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+  max-width: 42vw;
+  overflow: hidden;
   font-family: var(--font-ui, 'Geist', sans-serif);
   font-size: 14px;
-  color: var(--text-secondary);
   letter-spacing: 0.5px;
 }
 
