@@ -63,6 +63,7 @@ function humanizeAction(a) {
   let m;
   if (a === 'sleep') return { icon: '😴', text: '수면 — 피로 회복 (HP +10, 피로 → 10)', raw: a };
   if (a === 'buildCampfire') return { icon: '🏕️', text: '캠프파이어 건설 (요리 가능)', raw: a };
+  if ((m = /^heal:(.+)$/.exec(a))) return { icon: '🩹', text: `치료 — ${itemName(m[1])}${consumeEffect(m[1])}`, raw: a };
   if (a === 'fish_large') return { icon: '🎣', text: '낚시 — 대형 물고기 획득', raw: a };
   if ((m = /^combat:(승리|사망|도주)\((\d+)\)$/.exec(a))) {
     const icon = m[1] === '사망' ? '💀' : m[1] === '도주' ? '🏃' : '⚔️';
@@ -78,6 +79,7 @@ function humanizeAction(a) {
     return { icon: '😊', text: `사기 회복 — ${itemName(m[1])} 사용${eff}`, raw: a };
   }
   if ((m = /^explore:(.+):\+(\d+)$/.exec(a)))  return { icon: '🔍', text: `탐색 — ${distName(m[1])}에서 자원 ${m[2]}개 획득`, raw: a };
+  if ((m = /^subExplore:(.+):\+(\d+)$/.exec(a))) return { icon: '🏛️', text: `세부장소 — ${m[1]}에서 자원 ${m[2]}개 획득`, raw: a };
   if ((m = /^move:(.+)->(.+)$/.exec(a)))       return { icon: '🚶', text: `이동 — ${distName(m[1])} → ${distName(m[2])}`, raw: a };
   if ((m = /^fish:\+\d+:(.+)@(.+)$/.exec(a)))  return { icon: '🎣', text: `낚시 — ${itemName(m[1])} 획득 (${distName(m[2])})`, raw: a };
   return { icon: '•', text: a, raw: a };

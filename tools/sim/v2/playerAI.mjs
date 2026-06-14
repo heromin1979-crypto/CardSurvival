@@ -28,6 +28,7 @@ import EventBus from '../../../js/core/EventBus.js';
 import DiseaseSystem from '../../../js/systems/DiseaseSystem.js';
 import EcologySystem from '../../../js/systems/EcologySystem.js';
 import { DISTRICTS, generateDistrictLoot, getAdjacentDistricts } from '../../../js/data/districts.js';
+import { getLandmarkData } from '../../../js/data/landmarks.js';
 import { rollEnemyGroup } from '../../../js/data/enemies.js';
 import ITEMS from '../../../js/data/items.js';
 import BLUEPRINTS from '../../../js/data/blueprints.js';
@@ -67,6 +68,12 @@ function applyOnConsume(itemId) {
   if (!def?.onConsume) return false;
   const deltas = _applyAbilityBonusesToConsume(itemId, def.onConsume);
   for (const [stat, delta] of Object.entries(deltas)) {
+    if (typeof delta !== 'number') continue;
+    if (stat === 'hp') {   // hp는 stats가 아닌 player.hp — 의료품 치료 반영
+      const hp = GameState.player.hp;
+      hp.current = Math.max(0, Math.min(hp.max, hp.current + delta));
+      continue;
+    }
     const s = GameState.stats[stat];
     if (!s) continue;
     s.current = Math.max(0, Math.min(s.max, s.current + delta));
@@ -322,6 +329,93 @@ function _isFreshDistrict(id) {
   return lvl >= 50;  // 자원 레벨 50 미만이면 고갈로 간주
 }
 
+// ── 세부장소(랜드마크) 채집 ──────────────────────────────────
+// 본체 원칙: 구 lootTable은 기초 재료만, 가공품(의료품·무기·도구·가공식)은 세부장소에서만 획득.
+// 실제 플레이어는 병원·등산로 등 세부장소를 털어 이 자원들을 확보 → 시뮬도 반드시 모델링해야 함.
+const MEDICAL_LOOT = new Set(['first_aid_kit', 'bandage', 'painkiller', 'splint', 'antiseptic', 'antibiotics', 'vitamins', 'disinfectant', 'sling', 'tourniquet', 'head_bandage']);
+const FOOD_SUB_LOOT = new Set(['canned_food', 'energy_bar', 'preserved_ration', 'rice', 'instant_noodles', 'purified_water', 'sports_drink', 'water_bottle', 'dried_meat', 'salted_meat', 'baked_bread', 'sandwich', 'chocolate', 'crackers']);
+// HP 회복량 높은 순 의료품 (onConsume.hp 기준)
+const MEDICAL_HEAL_ORDER = ['first_aid_kit', 'splint', 'bandage', 'painkiller', 'antiseptic'];
+
+function _landmarkKeysForDistrict(districtId) {
+  const d = DISTRICTS[districtId];
+  return d?.landmarks ?? (d?.landmark ? [d.landmark] : []);
+}
+
+// 현재 구의 랜드마크 세부장소 중 아직 안 턴 것 (sim 전용 키 추적, 첫방문 1회 한정 = 본체와 동일)
+function _freshSubsForDistrict(districtId) {
+  const out = [];
+  const looted = (GameState.location.subLocationsLooted ??= []);
+  for (const lmKey of _landmarkKeysForDistrict(districtId)) {
+    const lm = getLandmarkData(lmKey);
+    for (const sub of lm?.subLocations ?? []) {
+      const key = `${lmKey}:${sub.id}`;
+      if (!looted.includes(key)) out.push({ sub, key });
+    }
+  }
+  return out;
+}
+
+const _subHasMedical = (sub) => (sub.lootTable ?? []).some((e) => MEDICAL_LOOT.has(e.id));
+const _subHasFood    = (sub) => (sub.lootTable ?? []).some((e) => FOOD_SUB_LOOT.has(e.id));
+
+// 다음에 털 세부장소 선택 (subLootPriority: 'medical'=의료 우선, 'food'=식량/물 우선)
+function _pickFreshSub(districtId, s) {
+  const fresh = _freshSubsForDistrict(districtId);
+  if (!fresh.length) return null;
+  if (s.subLootPriority === 'medical') { const f = fresh.filter((x) => _subHasMedical(x.sub)); if (f.length) return f[0]; }
+  if (s.subLootPriority === 'food')    { const f = fresh.filter((x) => _subHasFood(x.sub));    if (f.length) return f[0]; }
+  return fresh[0];
+}
+
+// 부상 시 의료품 사용 (human: HP 60% 미만이면 회복). painkiller/splint는 피로도 같이 회복.
+function actHeal(inv) {
+  const hp = GameState.player.hp;
+  if (hp.current >= hp.max * 0.6) return null;
+  for (const id of MEDICAL_HEAL_ORDER) {
+    if ((inv[id] ?? 0) > 0) {
+      dec(inv, id, 1);
+      applyOnConsume(id);   // hp + infection/fatigue/morale
+      return `heal:${id}`;
+    }
+  }
+  return null;
+}
+
+// 세부장소 1곳 첫방문 루팅 (본체 _generateSubLocationLoot 재현 + firstEnterReward)
+function actExploreSub(simInv, target) {
+  if (staminaBlocked()) return null;
+  const { sub, key } = target;
+  _drainStamina(BALANCE.travel?.exploreStaminaDrain ?? 5);
+  (GameState.location.subLocationsLooted ??= []).push(key);
+
+  const table = sub.lootTable ?? [];
+  const [minC, maxC] = sub.lootCount ?? [1, 3];
+  const count = minC + Math.floor(Math.random() * (maxC - minC + 1));
+  const totalW = table.reduce((a, e) => a + e.weight, 0) || 1;
+  let added = 0;
+  for (let i = 0; i < count; i += 1) {
+    let rand = Math.random() * totalW;
+    for (const e of table) {
+      rand -= e.weight;
+      if (rand <= 0) {
+        const contaminated = Math.random() < (e.contamChance ?? 0);
+        if (!(contaminated && !COOKING_INPUT_ALLOWLIST.has(e.id)) && ITEMS[e.id]) {
+          simInv[e.id] = (simInv[e.id] ?? 0) + 1;
+          added += 1;
+        }
+        break;
+      }
+    }
+  }
+  // 첫 진입 보상 (예: 한강 낚시터 낚싯대)
+  for (const it of sub.firstEnterReward?.items ?? []) {
+    const id = it.definitionId ?? it.id;
+    if (id) { const q = it.quantity ?? it.qty ?? 1; simInv[id] = (simInv[id] ?? 0) + q; added += q; }
+  }
+  return `subExplore:${sub.name ?? sub.id}:+${added}`;
+}
+
 function actMove(cfg = {}) {
   if (staminaBlocked()) return null;
   const districtId = GameState.location?.currentDistrict;
@@ -498,7 +592,8 @@ function actFish(simInv) {
 // ─── runDayAI ─────────────────────────────────────────────────
 // 전략 기본값 — 인자 없이 호출하면 현행과 유사한 "안전 이동형" 동작.
 // eatThreshold: 영양이 이 값 미만이면 식사. eatMax: 하루 최대 식사 횟수(임계까지 반복).
-const STRAT_DEFAULT = { exploresPerDay: 3, dangerCap: 3, roam: 'safe', fleePolicy: false, prioritizeWater: false, eatThreshold: 30, eatMax: 1 };
+// human 기본값: 배고프면(영양<50) 가진 식량을 최대 3개까지 먹음, 세부장소 우선 없음.
+const STRAT_DEFAULT = { exploresPerDay: 3, dangerCap: 3, roam: 'safe', fleePolicy: false, prioritizeWater: false, eatThreshold: 50, eatMax: 3, subLootPriority: null };
 
 // 영양이 임계 미만이면 식량이 있는 한 임계까지(또는 eatMax회) 먹는다.
 function _eatToThreshold(simInv, s, push) {
@@ -533,26 +628,43 @@ export function runDayAI(simInv, cfg = {}) {
   }
   // 4. 영양 보충 (전략 임계·횟수만큼)
   _eatToThreshold(simInv, s, push);
-  // 5. 사기 회복
+  // 5. 사기 회복 + 부상 치료(human: 의료품으로 HP 회복)
   push(actBoostMorale(simInv));
+  push(actHeal(simInv));
 
-  // 6. 탐색 루프 — 고갈된(이미 턴) 구역은 헛탐색하지 않고 fresh 구역으로 먼저 이동.
-  //    갈 fresh 구역이 없으면 탐색 중단(0개 반복 시도 방지).
+  // 6. 탐색 루프 — 우선순위: ① 미방문 세부장소(의료·무기·가공식 유일 소스) ② 구 표면 자원 ③ 새 구로 이동.
   for (let i = 0; i < s.exploresPerDay; i += 1) {
     if (staminaBlocked()) break;
-    if (!_isFreshDistrict(GameState.location.currentDistrict)) {
-      if (s.roam === 'stay') break;     // 정착형: 더 털 곳 없으면 탐색 종료
-      const mv = actMove(s);
-      if (!mv) break;                    // 이동 가능한 fresh 구역 없음 → 탐색 종료
-      push(mv);
+    const cd = GameState.location.currentDistrict;
+
+    // ① 현재 구 랜드마크의 미방문 세부장소 우선 채집 (가공품 유일 획득처)
+    const sub = _pickFreshSub(cd, s);
+    if (sub) {
+      push(actExploreSub(simInv, sub));
+      push(_maybeEncounter(simInv, s));
+      if (dead()) return actions;
+      continue;
     }
-    const ex = actExplore(simInv);
-    if (!ex) break;
-    push(ex);
-    push(_maybeEncounter(simInv, s));   // 조우 시 간이 전투
-    if (dead()) return actions;          // 전투 사망
+
+    // ② 구 표면 자원 (자원 레벨 충분할 때)
+    if (_isFreshDistrict(cd)) {
+      const ex = actExplore(simInv);
+      if (!ex) break;
+      push(ex);
+      push(_maybeEncounter(simInv, s));
+      if (dead()) return actions;
+      continue;
+    }
+
+    // ③ 구·세부장소 모두 고갈 → 새 구로 이동
+    if (s.roam === 'stay') break;
+    const mv = actMove(s);
+    if (!mv) break;
+    push(mv);
   }
 
+  // 6.5 전투 후 부상 치료
+  push(actHeal(simInv));
   // 7. 낚시
   push(actFish(simInv));
 
