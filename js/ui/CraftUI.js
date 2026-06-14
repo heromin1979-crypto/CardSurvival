@@ -91,13 +91,13 @@ const CraftUI = {
         ${tabHtml}
         ${categoryTabHtml}
         <div class="craft-panel">
+          ${this._renderQueue()}
           <div style="font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">
             ${I18n.t('craft.blueprints')}
           </div>
           <div class="blueprint-list">
             ${this._renderBlueprintList()}
           </div>
-          ${this._renderQueue()}
         </div>
       `;
 
@@ -127,6 +127,8 @@ const CraftUI = {
           }
         });
       }
+
+      this._attachQueueHandlers();
     }
 
     // Attach view tab handlers
@@ -325,42 +327,78 @@ const CraftUI = {
 
   _renderQueue() {
     const queue = GameState.crafting.activeQueue;
-    if (!queue.length) return `<div class="craft-queue-label" style="margin-top:12px;">${I18n.t('craft.emptyQueue')}</div>`;
+    // 진행 중 제작이 없으면 큐 영역 자체를 숨긴다 (최상단에 빈 라벨이 뜨지 않도록)
+    if (!queue.length) return '';
 
-    const items = queue.map((entry, i) => {
-      const bp      = ALL_BLUEPRINTS[entry.blueprintId];
-      const stage   = bp?.stages[entry.stageIndex];
-      const pct     = CraftSystem.getQueueProgress(entry) * 100;
+    const items = queue.map((entry) => {
+      const bp   = ALL_BLUEPRINTS[entry.blueprintId];
+      const pct  = CraftSystem.getQueueProgress(entry) * 100;
+      const name = I18n.blueprintName(entry.blueprintId, bp?.name ?? entry.blueprintId);
 
+      // 다음 단계 대기: 필요 재료 + "이어서 제작" 버튼
+      if (entry.awaitingNext) {
+        const nextStage = bp?.stages?.[entry.stageIndex + 1];
+        const reqList   = nextStage?.requiredItems ?? [];
+        const reqsHtml  = reqList.map(req => {
+          const def   = GameData.items[req.definitionId];
+          const count = GameState.countOnBoard(req.definitionId);
+          const met   = count >= req.qty;
+          return `<div class="blueprint-req ${met ? 'met' : 'unmet'}">${I18n.itemName(req.definitionId, def?.name ?? req.definitionId)} ×${req.qty} <span>${count}/${req.qty}</span></div>`;
+        }).join('');
+        const canContinue = reqList.every(req => GameState.countOnBoard(req.definitionId) >= req.qty);
+
+        return `
+          <div class="craft-queue-item">
+            <div class="craft-queue-item-name">${name}</div>
+            <div class="craft-progress-track">
+              <div class="craft-progress-fill" style="width:${pct.toFixed(1)}%"></div>
+            </div>
+            <div style="font-size:9px;color:var(--text-dim);margin-top:2px;">${I18n.t('craft.awaitingNext', { label: nextStage?.label ?? '' })}</div>
+            <div class="blueprint-req-list">${reqsHtml}</div>
+            <button class="toolbar-btn craft-continue-btn" data-craft-card="${entry.craftCardId}" ${canContinue ? '' : 'disabled'} style="margin-top:4px;width:100%">${I18n.t('craft.continueCraft')}</button>
+          </div>
+        `;
+      }
+
+      // 진행 중(즉시 소비 직후) — 단계 라벨만 표시
+      const stage = bp?.stages?.[entry.stageIndex];
       return `
         <div class="craft-queue-item">
           <div class="craft-queue-item-name">
-            ${I18n.blueprintName(entry.blueprintId, bp?.name ?? entry.blueprintId)}
+            ${name}
             <span style="color:var(--text-dim);font-size:9px;"> — ${stage?.label ?? ''}</span>
           </div>
           <div class="craft-progress-track">
             <div class="craft-progress-fill" style="width:${pct.toFixed(1)}%"></div>
-          </div>
-          <div style="font-size:9px;color:var(--text-dim);margin-top:2px;">
-            ${I18n.t('craft.tpRemaining', { tp: entry.tpRemaining })}
           </div>
         </div>
       `;
     }).join('');
 
     return `
-      <div class="craft-queue" style="margin-top:12px;">
+      <div class="craft-queue" style="margin-bottom:12px;">
         <div class="craft-queue-label">${I18n.t('craft.queueLabel', { current: queue.length, max: GameState.crafting.maxQueueSize })}</div>
         ${items}
       </div>
     `;
   },
 
+  _attachQueueHandlers() {
+    this._panel?.querySelectorAll('.craft-continue-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const cardId = btn.dataset.craftCard;
+        if (cardId && CraftSystem.advanceCraftStage(cardId)) this.render();
+      });
+    });
+  },
+
   renderQueue() {
     // Lightweight update: just re-render the queue part
     const queueEl = this._panel?.querySelector('.craft-queue');
-    if (queueEl) queueEl.outerHTML = this._renderQueue();
-    else this.render();
+    if (queueEl) {
+      queueEl.outerHTML = this._renderQueue();
+      this._attachQueueHandlers();
+    } else this.render();
   },
 };
 

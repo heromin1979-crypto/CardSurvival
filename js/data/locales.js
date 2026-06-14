@@ -231,6 +231,8 @@ export const ko = {
   'craft.emptyQueue':  '작업 큐 비어 있음',
   'craft.queueLabel':  '작업 큐 ({current}/{max})',
   'craft.tpRemaining': '{tp} TP 남음',
+  'craft.continueCraft': '이어서 제작',
+  'craft.awaitingNext':  '다음 단계: {label}',
   'craft.ready':       '제작 가능',
   'craft.missing':     '개 부족',
   'craft.vagueHint':   '무언가 만들 수 있을 것 같다',
@@ -565,6 +567,7 @@ export const ko = {
   'craftSys.nextStageShort': '{name} 다음 단계 재료 부족: {reason}',
   'craftSys.failed':         '❌ {name} 제작 실패! 재료 일부가 반환됩니다.',
   'craftSys.complete':       '✅ {name} 완성!',
+  'craftSys.stageComplete':  '⚒️ {name} — {stage} 완료. 다음 단계: {next}',
 
   // ── DismantleSystem ─────────────────────────────────────────
   'dismantle.cantDismantle': '{name}은(는) 분해할 수 없습니다.',
@@ -1105,6 +1108,8 @@ export const en = {
   'craft.emptyQueue':  'Queue empty',
   'craft.queueLabel':  'Queue ({current}/{max})',
   'craft.tpRemaining': '{tp} TP left',
+  'craft.continueCraft': 'Continue',
+  'craft.awaitingNext':  'Next: {label}',
   'craft.ready':       'Ready',
   'craft.missing':     'missing',
   'craft.vagueHint':   'Something can be crafted',
@@ -1439,6 +1444,7 @@ export const en = {
   'craftSys.nextStageShort': '{name} next stage materials short: {reason}',
   'craftSys.failed':         '❌ Crafting {name} failed! Some materials returned.',
   'craftSys.complete':       '✅ {name} completed!',
+  'craftSys.stageComplete':  '⚒️ {name} — {stage} done. Next stage: {next}',
 
   // ── DismantleSystem ─────────────────────────────────────────
   'dismantle.cantDismantle': '{name} cannot be dismantled.',

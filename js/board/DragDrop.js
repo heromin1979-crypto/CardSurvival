@@ -6,6 +6,7 @@ import EventBus        from '../core/EventBus.js';
 import SystemRegistry  from '../core/SystemRegistry.js';
 import { findInteraction } from '../data/interactions.js';
 import CraftDiscovery  from '../systems/CraftDiscovery.js';
+import CraftSystem     from '../systems/CraftSystem.js';
 import HiddenElementSystem from '../systems/HiddenElementSystem.js';
 import SkillSystem     from '../systems/SkillSystem.js';
 import QuickCraftPrompt from '../ui/QuickCraftPrompt.js';
@@ -266,6 +267,13 @@ const DragDrop = {
       if (tgtIsNPC) {
         this._hideInteractionTip();
         slot.classList.remove('drag-over-valid', 'drag-over-invalid', 'drag-over-hover', 'can-interact');
+        return;
+      }
+      // 진행 중 제작 카드에 다음 단계 재료 드롭 → 이어서 제작 (시간 즉시 소비)
+      if (CraftSystem.tryAdvanceByDrop(this._draggingId, existingId)) {
+        this._hideInteractionTip();
+        slot.classList.remove('drag-over-valid', 'drag-over-invalid', 'drag-over-hover', 'can-interact');
+        EventBus.emit('boardChanged', {});
         return;
       }
       // Sub-spec 2A: 카드 to 카드 drop = "시도" — hidden 레시피 잠금 해제 트리거
