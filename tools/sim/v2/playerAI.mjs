@@ -29,6 +29,7 @@ import DiseaseSystem from '../../../js/systems/DiseaseSystem.js';
 import EcologySystem from '../../../js/systems/EcologySystem.js';
 import { DISTRICTS, generateDistrictLoot, getAdjacentDistricts } from '../../../js/data/districts.js';
 import { getLandmarkData } from '../../../js/data/landmarks.js';
+import { HIDDEN_LOCATIONS } from '../../../js/data/hiddenLocations.js';
 import { rollEnemyGroup } from '../../../js/data/enemies.js';
 import ITEMS from '../../../js/data/items.js';
 import BLUEPRINTS from '../../../js/data/blueprints.js';
@@ -382,6 +383,106 @@ function actHeal(inv) {
   return null;
 }
 
+// ── POI(숨겨진 장소) 해금 ────────────────────────────────────
+// 탐사도 임계 등 조건 충족 시 발견 → 확정 보상 + lootTable 2회. 본체 HiddenElementSystem 판정 재현.
+function _checkPOI(simInv) {
+  const gs = GameState;
+  const district = gs.location?.currentDistrict;
+  const expl = gs.flags?.districtExploration?.[district] ?? 0;
+  const discovered = (gs.flags.hiddenLocationsDiscovered ??= []);
+  const out = [];
+  for (const loc of Object.values(HIDDEN_LOCATIONS)) {
+    if (loc.district !== district || discovered.includes(loc.id)) continue;
+    const c = loc.unlockConditions ?? {};
+    if (c.explorationThreshold != null && expl < c.explorationThreshold) continue;
+    if (c.minDay && gs.time.day < c.minDay) continue;
+    if (c.requiredCharacter) {
+      const ch = gs.player.characterId;
+      const ok = Array.isArray(c.requiredCharacter) ? c.requiredCharacter.includes(ch) : ch === c.requiredCharacter;
+      if (!ok) continue;
+    }
+    if (c.weather && gs.weather?.id !== c.weather) continue;
+    if (c.season && gs.season?.current !== c.season) continue;
+    if (c.minKills && (gs.flags.totalKills ?? 0) < c.minKills) continue;
+    if (c.minCraftLevel && _skillLvl('crafting') < c.minCraftLevel) continue;
+    if (c.requiredItems?.length && !c.requiredItems.every((id) => (simInv[id] ?? 0) >= 1)) continue;
+
+    discovered.push(loc.id);
+    let added = 0;
+    for (const r of loc.rewards ?? []) { if (r.definitionId) { simInv[r.definitionId] = (simInv[r.definitionId] ?? 0) + (r.qty ?? 1); added += (r.qty ?? 1); } }
+    const table = loc.lootTable ?? [];
+    const totalW = table.reduce((a, e) => a + (e.weight ?? 1), 0) || 1;
+    for (let i = 0; i < 2; i += 1) {
+      let rand = Math.random() * totalW;
+      for (const e of table) {
+        rand -= (e.weight ?? 1);
+        if (rand <= 0) {
+          const q = (e.minQty ?? 1) + Math.floor(Math.random() * ((e.maxQty ?? 1) - (e.minQty ?? 1) + 1));
+          if (ITEMS[e.definitionId]) { simInv[e.definitionId] = (simInv[e.definitionId] ?? 0) + q; added += q; }
+          break;
+        }
+      }
+    }
+    EventBus.emit('hiddenLocationDiscovered', { locationId: loc.id });
+    out.push(`poi:${loc.name}:+${added}`);
+  }
+  return out;
+}
+
+// 피로 회복 아이템 소비 (human: 지칠 때 스포츠음료·에너지바·진통제)
+function actReduceFatigue(inv) {
+  for (const id of ['sports_drink', 'energy_bar', 'painkiller']) {
+    if ((inv[id] ?? 0) > 0) { dec(inv, id, 1); applyOnConsume(id); return `restItem:${id}`; }
+  }
+  return null;
+}
+
+// ── 카드 조합 깊이: 패시브 생성 구조물 ──────────────────────
+// 본체 onTick 생성을 시뮬에 근사 — 건설 시 재료+스킬 소비, 매일 onTick×72TP를 스탯에 가산.
+// 우선순위 순(영양>수분>의료). 재료/onTick은 items_structures.js·blueprints.js 기준.
+const SIM_TP_PER_DAY = 72;
+const SIM_STRUCTURES = [
+  { id: 'garden',          name: '텃밭',        build: { wood: 3, rope: 1, cloth: 2 },         skill: { building: 2 },               onTick: { nutrition: 0.4 } },
+  { id: 'rain_collector',  name: '빗물 수집기',  build: { empty_bottle: 2, cloth: 1, rope: 1 }, skill: {},                            onTick: { hydration: 0.3 } },
+  { id: 'medical_station', name: '의무 거점',    build: { scrap_metal: 3, cloth: 3, rope: 1 },  skill: { building: 4, medicine: 2 },  onTick: { hp: 3, infection: -1 } },
+];
+
+function _skillLvl(id) {
+  const sk = GameState.player?.skills?.[id];
+  return (sk && typeof sk === 'object' ? sk.level : sk) ?? 0;
+}
+function _builtStructures() { return (GameState._simStructures ??= []); }
+
+// 가장 필요한 미건설 구조물 1개 건설 (재료+스킬 충족 시)
+function actBuildStructure(inv) {
+  const built = _builtStructures();
+  for (const st of SIM_STRUCTURES) {
+    if (built.includes(st.id)) continue;
+    if (!Object.entries(st.skill).every(([id, lv]) => _skillLvl(id) >= lv)) continue;
+    if (!Object.entries(st.build).every(([id, n]) => (inv[id] ?? 0) >= n)) continue;
+    for (const [id, n] of Object.entries(st.build)) dec(inv, id, n);
+    built.push(st.id);
+    return `build:${st.name}`;
+  }
+  return null;
+}
+
+// 매일 구조물 패시브 생성 (onTick × 72TP) — 텃밭이 영양을, 빗물수집기가 수분을 자급
+function applyStructurePassives() {
+  const built = _builtStructures();
+  if (!built.length) return;
+  for (const st of SIM_STRUCTURES) {
+    if (!built.includes(st.id)) continue;
+    for (const [stat, perTp] of Object.entries(st.onTick)) {
+      const delta = perTp * SIM_TP_PER_DAY;
+      if (stat === 'hp') { const hp = GameState.player.hp; hp.current = Math.max(0, Math.min(hp.max, hp.current + delta)); continue; }
+      const s = GameState.stats[stat];
+      if (!s) continue;
+      s.current = Math.max(0, Math.min(s.max, s.current + delta));
+    }
+  }
+}
+
 // 세부장소 1곳 첫방문 루팅 (본체 _generateSubLocationLoot 재현 + firstEnterReward)
 function actExploreSub(simInv, target) {
   if (staminaBlocked()) return null;
@@ -541,7 +642,8 @@ function actCook(simInv) {
 
 // ─── PR7: 사기 회복 ────────────────────────────────────────────
 function actBoostMorale(simInv) {
-  if ((GameState.stats?.morale?.current ?? 100) >= 30) return null;
+  // 선제 회복(<50): 사기가 낮으면 fatigueGainMult 1.6배 → 피로 사망 가속. 미리 올려 억제.
+  if ((GameState.stats?.morale?.current ?? 100) >= 50) return null;
   let bestId = null;
   let bestMorale = 0;
   for (const id of Object.keys(simInv)) {
@@ -612,8 +714,13 @@ export function runDayAI(simInv, cfg = {}) {
   const dead = () => !GameState.player.isAlive;
   const cookingLv = () => GameState.player?.skills?.cooking?.level ?? GameState.player?.skills?.cooking ?? 0;
 
-  // 1. 수면 (피로·스태미나 회복)
-  if (GameState.stats.fatigue.current > 60) push(actSleep());
+  // 0. 구조물 패시브 생성 (어제까지 지은 텃밭·빗물수집기·의무거점이 영양/수분/HP 자급)
+  applyStructurePassives();
+
+  // 1. 수면 — 피로 관리: 더 일찍 자서(>45) 피로 누적을 억제(극도 피로 사망 완화). 피로·스태미나·HP 회복.
+  if (GameState.stats.fatigue.current > 45) push(actSleep());
+  // 1.5 피로 회복 아이템 (스포츠음료/에너지바/진통제 — 피로 추가 감소)
+  if (GameState.stats.fatigue.current > 60) push(actReduceFatigue(simInv));
   // 2. 수분 (물 우선 전략은 더 일찍·자주). 깨끗한 물이 없고 위급하면 오염수라도 마심(질병 위험).
   if (GameState.stats.hydration.current < (s.prioritizeWater ? 120 : 80)) {
     const drank = actDrinkWater(simInv);
@@ -651,6 +758,7 @@ export function runDayAI(simInv, cfg = {}) {
       const ex = actExplore(simInv);
       if (!ex) break;
       push(ex);
+      for (const p of _checkPOI(simInv)) push(p);   // 탐사도 임계 도달 시 POI 해금
       push(_maybeEncounter(simInv, s));
       if (dead()) return actions;
       continue;
@@ -665,6 +773,8 @@ export function runDayAI(simInv, cfg = {}) {
 
   // 6.5 전투 후 부상 치료
   push(actHeal(simInv));
+  // 6.6 구조물 건설 (탐색으로 모은 재료로 텃밭·빗물수집기 등 — 다음날부터 자급)
+  push(actBuildStructure(simInv));
   // 7. 낚시
   push(actFish(simInv));
 
