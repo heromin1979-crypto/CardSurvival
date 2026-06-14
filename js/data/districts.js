@@ -3873,6 +3873,20 @@ function getAdjacentDistricts(districtId) {
 }
 
 /**
+ * 제철 한정 자원 큐레이션 맵 — 구별 lootTable에 반복 등장하는 항목의 계절 기본값.
+ * 엔트리에 `seasons`를 직접 지정하면(에디터) 그게 우선한다. 여기 없는 항목은 사철.
+ */
+const SEASONAL_ITEMS = {
+  acorn:            ['autumn'],
+  chestnut:         ['autumn'],
+  pine_nut:         ['autumn'],
+  apple_wild:       ['autumn'],
+  wild_grape:       ['autumn'],
+  bamboo_shoot:     ['spring'],
+  wild_strawberry:  ['summer'],
+};
+
+/**
  * 구 단위 루팅 결과 생성.
  *
  * 자원 클래스(`entry.cls`, 기본 'surface')별로 다르게 다뤄진다:
@@ -3882,11 +3896,14 @@ function getAdjacentDistricts(districtId) {
  *  - mineral    : 광물 자원. `opts.mineralRemaining` 잔량 안에서만 채택(영구 고갈).
  *                 채택된 광물 개수는 반환 항목의 `cls === 'mineral'`로 호출자가 집계해 소진시킨다.
  *
+ * 계절 한정(`entry.seasons`, 배열): 지정 시 해당 계절에만 추첨 대상이 된다(제철 자원 — 도토리=가을 등).
+ * 미지정 = 사철. `opts.season` 미전달 시 계절 필터 비활성(하위호환).
+ *
  * 반환: [{ definitionId, quantity, contamination, cls }] — cls는 호출자용 추가 필드(다운스트림 무시).
- * opts 미지정 시 surfaceMult=1·mineralRemaining=Infinity → 종전과 동일하게 전량 산출(하위호환).
+ * opts 미지정 시 surfaceMult=1·mineralRemaining=Infinity·계절필터 off → 종전과 동일하게 전량 산출(하위호환).
  *
  * @param {string} districtId
- * @param {{surfaceMult?:number, mineralRemaining?:number}} [opts]
+ * @param {{surfaceMult?:number, mineralRemaining?:number, season?:string}} [opts]
  */
 function generateDistrictLoot(districtId, opts = {}) {
   const district = DISTRICTS[districtId];
@@ -3894,15 +3911,24 @@ function generateDistrictLoot(districtId, opts = {}) {
 
   const surfaceMult     = opts.surfaceMult ?? 1;
   const mineralRemaining = opts.mineralRemaining ?? Infinity;
+  const season          = opts.season ?? null;
+
+  // 계절 한정 항목 필터. 우선순위: 엔트리 seasons(에디터 개별 지정) > SEASONAL_ITEMS(큐레이션 기본) > 사철.
+  const inSeason = (e) => {
+    const s = e.seasons ?? SEASONAL_ITEMS[e.definitionId];
+    return !s || !season || s.includes(season);
+  };
+  const table = district.lootTable.filter(inSeason);
+  if (!table.length) return [];
 
   const results = [];
-  const totalWeight = district.lootTable.reduce((s, e) => s + e.weight, 0);
+  const totalWeight = table.reduce((s, e) => s + e.weight, 0);
   const count = BALANCE.explore.lootCountMin + Math.floor(Math.random() * (BALANCE.explore.lootCountMax - BALANCE.explore.lootCountMin + 1)); // 1~3개
 
   let mineralUsed = 0;
   for (let i = 0; i < count; i++) {
     let rand = Math.random() * totalWeight;
-    for (const entry of district.lootTable) {
+    for (const entry of table) {
       rand -= entry.weight;
       if (rand > 0) continue;
 

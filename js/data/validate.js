@@ -284,9 +284,10 @@ async function validate() {
     }
   }
 
-  // 10. 구 lootTable 자원 클래스(cls) 검증 — surface/expedition/mineral만 허용
-  console.log('\n=== DISTRICT LOOT CLASS CHECK ===');
+  // 10. 구 lootTable 자원 클래스(cls)·계절(seasons) 검증
+  console.log('\n=== DISTRICT LOOT CLASS/SEASON CHECK ===');
   const VALID_CLS = new Set(['surface', 'expedition', 'mineral']);
+  const VALID_SEASON = new Set(['spring', 'summer', 'autumn', 'winter']);
   let clsChecked = 0, clsBad = 0;
   for (const [id, d] of Object.entries(districtsMod.DISTRICTS ?? {})) {
     for (const [i, entry] of (d.lootTable ?? []).entries()) {
@@ -295,13 +296,41 @@ async function validate() {
         console.log(`❌ [${id}] lootTable[${i}] (${entry.definitionId}) invalid cls "${entry.cls}" — surface/expedition/mineral 중 하나여야 함`);
         errors++; clsBad++;
       }
+      if (entry.seasons != null) {
+        if (!Array.isArray(entry.seasons) || entry.seasons.some(s => !VALID_SEASON.has(s))) {
+          console.log(`❌ [${id}] lootTable[${i}] (${entry.definitionId}) invalid seasons "${JSON.stringify(entry.seasons)}" — spring/summer/autumn/winter 배열`);
+          errors++; clsBad++;
+        }
+      }
       if (entry.definitionId && !allItemIds.has(entry.definitionId)) {
         console.log(`⚠️  [${id}] lootTable[${i}] "${entry.definitionId}" not found in items`);
         warnings++;
       }
     }
   }
-  console.log(`  검사한 드랍 항목: ${clsChecked}, 잘못된 cls: ${clsBad}`);
+  console.log(`  검사한 드랍 항목: ${clsChecked}, 잘못된 cls/seasons: ${clsBad}`);
+
+  // 11. 구조물 harvest(텃밭 자동수확)·forage(살살 채취) 산출 아이템 참조 검증
+  console.log('\n=== STRUCTURE HARVEST/FORAGE CHECK ===');
+  let hfChecked = 0, hfBad = 0;
+  for (const [id, def] of Object.entries(items)) {
+    if (def?.harvest) {
+      hfChecked++;
+      if (!def.harvest.itemId || !allItemIds.has(def.harvest.itemId)) {
+        console.log(`❌ [${id}] harvest.itemId "${def.harvest.itemId}" not found in items`);
+        errors++; hfBad++;
+      }
+    }
+    if (def?.forage) {
+      hfChecked++;
+      // forage는 dismantle 테이블을 산출원으로 쓰므로 dismantle 존재만 확인
+      if (!Array.isArray(def.dismantle) || def.dismantle.length === 0) {
+        console.log(`❌ [${id}] forage 설정이 있으나 dismantle 테이블이 없습니다(살살 채취 산출원 부재)`);
+        errors++; hfBad++;
+      }
+    }
+  }
+  console.log(`  검사한 harvest/forage: ${hfChecked}, 문제: ${hfBad}`);
 
   // Summary
   console.log(`\n=== SUMMARY ===`);

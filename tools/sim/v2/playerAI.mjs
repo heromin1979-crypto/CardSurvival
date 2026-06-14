@@ -286,7 +286,8 @@ function actExplore(simInv) {
   EcologySystem.ensureInitialized();
   const surfaceMult      = EcologySystem.getLootMult(districtId);
   const mineralRemaining = EcologySystem.getMineralStock(districtId);
-  const lootCards = generateDistrictLoot(districtId, { surfaceMult, mineralRemaining });
+  const season           = GameState.season?.current ?? null;  // 제철 자원 필터
+  const lootCards = generateDistrictLoot(districtId, { surfaceMult, mineralRemaining, season });
   const mineralUsed = lootCards.filter((l) => l.cls === 'mineral').length;
   if (mineralUsed > 0) EcologySystem.consumeMineral(districtId, mineralUsed);
 

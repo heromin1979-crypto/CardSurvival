@@ -373,7 +373,8 @@ const ExploreSystem = {
       EcologySystem.ensureInitialized();
       const surfaceMult      = EcologySystem.getLootMult(districtId);
       const mineralRemaining = EcologySystem.getMineralStock(districtId);
-      let loot = generateRouteCards(districtId, { surfaceMult, mineralRemaining });
+      const season           = SeasonSystem.getCurrentSeason(gs.time.day)?.id;  // 제철 자원 필터
+      let loot = generateRouteCards(districtId, { surfaceMult, mineralRemaining, season });
 
       // 산출된 광물 개수만큼 영구 차감 (보너스 추가분은 집계에서 제외 — 생성분만)
       const mineralUsed = loot.filter((l) => l.cls === 'mineral').length;

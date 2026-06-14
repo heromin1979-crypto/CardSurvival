@@ -170,6 +170,13 @@ const FIELD_HELP = {
   hasFishing: '낚시 가능 여부 — 랜드마크: 안에서 낚시·통발 사용 가능 / 구: 시뮬레이터 AI 판정용.',
   cls: '자원 클래스 — 표면(surface): 지역 자원 레벨에 비례해 나오고 시간 경과로 재생 / 탐사(expedition): 자원 레벨 무관, 매 탐색 독립 추첨 / 광물(mineral): 영구 고갈(잔량 소진 시 안 나옴). 미지정 시 표면.',
   mineralStock: '이 구의 광물(mineral) 자원 총 잔량 — 캐면 영구 차감, 재생 없음. 비우면 EcologySystem 기본값 사용.',
+  seasons: '제철 한정 — 이 계절에만 추첨된다(예: 도토리=가을). 비우면 사철. districts.js SEASONAL_ITEMS의 기본값을 이 항목에서 덮어쓴다.',
+  harvest: '텃밭 자동 수확 설정 — itemId(산출 작물)·harvestDays(수확 주기 일)·qty(수확량). GardenSystem이 주기마다 자동 산출.',
+  itemId: '산출/대상 아이템의 ID. (📦 아이템 탭에서 검색해 확인)',
+  harvestDays: '수확 주기(일). 이 일수마다 작물 1회 자동 산출(계절 배율 적용, 겨울 정지).',
+  forage: '살살 채취(부분·재생) 설정 — regrowDays(재생 일)·yieldMult(수율 배율). 분해(뿌리째·소멸) 대신 노드를 남기고 일부만 거둔다. dismantle 테이블을 산출원으로 사용.',
+  regrowDays: '살살 채취 후 다시 채취 가능해질 때까지의 일수.',
+  yieldMult: '살살 채취 수율 배율(분해 대비). 예: 0.5 = 절반만 거둠.',
   isBasecampLandmark: '거점(베이스캠프) 랜드마크 여부 — 사이드바 거점 버튼 교체 트리거.',
   districtId: '이 랜드마크가 속한 구 ID.',
   districts: '이 랜드마크가 연결된 구 ID 목록.',
@@ -1302,6 +1309,7 @@ function lootTableEditor(rows, idKey, extraCols, fileKey, opts = {}) {
     th('이름', '__name'),
     th('weight', 'weight'),
     opts.classCol ? th('자원', 'cls') : null,
+    opts.classCol ? th('제철', 'seasons') : null,
     ...extraCols.map((c) => th(c.label, c.key)),
     th('%', '__pct'),
     el('th', {}),
@@ -1347,11 +1355,35 @@ function lootTableEditor(rows, idKey, extraCols, fileKey, opts = {}) {
       });
       clsCell = el('td', {}, sel);
     }
+    // 제철(seasons) 토글 — 4계절 체크박스. 전부 해제 시 필드 삭제(사철/큐레이션 기본 사용).
+    let seasonCell = null;
+    if (opts.classCol) {
+      const wrap = el('div', { class: 'season-toggles', style: 'display:flex;gap:2px' });
+      for (const [val, label] of [['spring', '봄'], ['summer', '여름'], ['autumn', '가을'], ['winter', '겨울']]) {
+        const on = Array.isArray(row.seasons) && row.seasons.includes(val);
+        const b = el('button', {
+          class: 'season-tog' + (on ? ' on' : ''),
+          title: label, text: label[0],
+          style: `font-size:10px;padding:1px 3px;${on ? 'background:var(--accent,#4a8);color:#fff' : 'opacity:.5'}`,
+        });
+        b.addEventListener('click', () => {
+          let s = Array.isArray(row.seasons) ? row.seasons.slice() : [];
+          if (s.includes(val)) s = s.filter(x => x !== val); else s.push(val);
+          if (s.length) row.seasons = s; else delete row.seasons;
+          markDirty(fileKey);
+          b.classList.toggle('on');
+          b.style.cssText = `font-size:10px;padding:1px 3px;${b.classList.contains('on') ? 'background:var(--accent,#4a8);color:#fff' : 'opacity:.5'}`;
+        });
+        wrap.append(b);
+      }
+      seasonCell = el('td', {}, wrap);
+    }
     const tr = el('tr', {}, [
       el('td', {}, idInput),
       nameCell,
       el('td', {}, wInput),
       clsCell,
+      seasonCell,
       ...extraCols.map((c) => {
         const inp = el('input', { class: 'num', type: 'number', step: 'any', value: row[c.key] ?? '' });
         inp.addEventListener('input', () => {

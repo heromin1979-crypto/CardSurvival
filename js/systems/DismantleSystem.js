@@ -157,6 +157,81 @@ const DismantleSystem = {
     return { success: true, gained, count: actualCount };
   },
 
+  /**
+   * 살살 채취(부분 채집) — 노드 카드를 소멸시키지 않고 일부만 거둔 뒤 재생 쿨다운을 건다.
+   * def.forage = { regrowDays, yieldMult } 가 있어야 가능. 수율은 dismantle 테이블을 yieldMult로 축소.
+   * 분해(dismantle)가 "뿌리째(전량·소멸)"라면 본 메서드는 "살살(일부·재생)"에 해당한다.
+   * @returns {{ success: boolean, gained: string[] }}
+   */
+  forage(instanceId) {
+    const gs = GameState;
+    const inst = gs.cards[instanceId];
+    if (!inst) return { success: false, gained: [] };
+    const def = gs.getCardDef(instanceId);
+    if (!def?.forage) {
+      EventBus.emit('notify', { message: '이 자원은 살살 채취할 수 없습니다.', type: 'warn' });
+      return { success: false, gained: [] };
+    }
+
+    const totalTP = gs.time?.totalTP ?? 0;
+    // 재생 쿨다운 — 아직 다시 자라지 않음
+    if ((inst._forageCooldownTp ?? 0) > totalTP) {
+      const days = Math.ceil((inst._forageCooldownTp - totalTP) / 72);
+      EventBus.emit('notify', { message: `🌱 아직 다시 자라지 않았습니다. (약 ${days}일 후)`, type: 'warn' });
+      return { success: false, gained: [] };
+    }
+
+    // 야간 광원 체크
+    const nightCheck = NightSystem.canActAtNight('dismantle');
+    if (!nightCheck.allowed) {
+      EventBus.emit('notify', { message: nightCheck.reason, type: 'danger' });
+      return { success: false, gained: [] };
+    }
+
+    // TP 비용
+    const tpCost = def.dismantleTP ?? 0;
+    if (tpCost > 0) {
+      const remainTP = 72 - gs.time.tpInDay;
+      if (remainTP < tpCost) {
+        EventBus.emit('notify', { message: `시간이 부족합니다. (필요 ${tpCost} TP, 남은 ${remainTP} TP)`, type: 'warn' });
+        return { success: false, gained: [] };
+      }
+      TickEngine.skipTP(tpCost, `${def.name} 채취`);
+    }
+
+    const yieldMult = def.forage.yieldMult ?? 0.5;
+    const gained = [];
+    for (const entry of (def.dismantle ?? [])) {
+      if (Math.random() < entry.chance * yieldMult) {
+        const qty = Math.max(1, Math.round((entry.qty ?? 1) * yieldMult));
+        const ni = gs.createCardInstance(entry.definitionId, { quantity: qty });
+        if (!ni) continue;
+        if (gs.placeCardInRow(ni.instanceId)) {
+          gained.push(ni.instanceId);
+        } else {
+          gs.removeCardInstanceSilent(ni.instanceId);
+          if (!gs.pendingLoot) gs.pendingLoot = [];
+          gs.pendingLoot.push({ definitionId: entry.definitionId, quantity: qty, contamination: 0 });
+        }
+      }
+    }
+
+    if (gained.length > 0) SkillSystem.gainXp('harvesting', 2);
+
+    // 노드 유지 + 재생 쿨다운 설정
+    inst._forageCooldownTp = totalTP + (def.forage.regrowDays ?? 3) * 72;
+
+    const names = gained.map(id => gs.getCardDef(id)?.name ?? '?').join(', ');
+    EventBus.emit('notify', {
+      message: gained.length > 0
+        ? `🌿 ${def.name}에서 ${names}을(를) 살살 채취했습니다. (재생 대기)`
+        : `🌿 ${def.name}을(를) 살살 살폈지만 거둘 게 없었습니다.`,
+      type: gained.length > 0 ? 'info' : 'warn',
+    });
+    EventBus.emit('boardChanged', {});
+    return { success: true, gained };
+  },
+
   /** instanceId 카드가 분해 가능한지 여부를 반환 */
   canDismantle(instanceId) {
     const def = GameState.getCardDef(instanceId);

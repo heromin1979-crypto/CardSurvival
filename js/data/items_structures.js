@@ -656,7 +656,7 @@ const ITEMS_STRUCTURES = {
     id: 'weed_patch', name: '잡초밭', type: 'structure', subtype: 'natural',
     rarity: 'common', weight: 0.5,
     defaultDurability: 20, defaultContamination: 0,
-    icon: '🌾', description: '황폐한 땅에서 자란 잡초. 마른 풀을 채집해 불쏘시개로 활용한다.',
+    icon: '🌾', description: '황폐한 땅에서 자란 잡초. 마른 풀을 채집해 불쏘시개로 활용한다. 뿌리째 뽑으면(분해) 사라지고, 살살 채취하면 줄지만 다시 자란다.',
     tags: ['structure', 'salvage', 'natural'],
     dismantleTP: 1,
     dismantle: [
@@ -664,6 +664,8 @@ const ITEMS_STRUCTURES = {
       { definitionId: 'herb',      qty: 1, chance: 0.4 },
       { definitionId: 'dry_leaves',qty: 1, chance: 0.5 },
     ],
+    // 살살 채취(부분·재생): 분해 수율을 절반으로 거두되 노드 유지, 3일 후 재생
+    forage: { regrowDays: 3, yieldMult: 0.5 },
   },
 
   gravel_pile: {
@@ -746,9 +748,9 @@ const ITEMS_STRUCTURES = {
     id: 'garden_bed_veggie', name: '채소 텃밭', type: 'structure', subtype: 'food',
     rarity: 'rare', weight: 4.0,
     defaultDurability: 100, defaultContamination: 0,
-    icon: '🥬', description: '채소 씨앗을 심은 텃밭. 매 턴 조금씩 성장해 5일 후 채소를 수확할 수 있다.',
+    icon: '🥬', description: '채소 씨앗을 심은 텃밭. 매 턴 조금씩 성장해 5일 후 채소를 자동 수확한다.',
     tags: ['structure', 'crafted', 'food', 'farm'],
-    onTick: { nutrition: 0.25 },
+    harvest: { itemId: 'vegetable', harvestDays: 5, qty: 2 },
     requiredForBlueprints: true,
     dismantleTP: 3,
     dismantle: [
@@ -762,9 +764,9 @@ const ITEMS_STRUCTURES = {
     id: 'garden_bed_herb', name: '약초 텃밭', type: 'structure', subtype: 'food',
     rarity: 'rare', weight: 4.0,
     defaultDurability: 100, defaultContamination: 0,
-    icon: '🌿', description: '약초 씨앗을 심은 텃밭. 꾸준히 약초를 공급해준다. 의료 자급자족의 첫걸음.',
+    icon: '🌿', description: '약초 씨앗을 심은 텃밭. 3일마다 약초를 자동 수확한다. 의료 자급자족의 첫걸음.',
     tags: ['structure', 'crafted', 'food', 'farm'],
-    onTick: { herb: 0.15 },
+    harvest: { itemId: 'herb', harvestDays: 3, qty: 1 },
     requiredForBlueprints: true,
     dismantleTP: 3,
     dismantle: [
@@ -778,9 +780,9 @@ const ITEMS_STRUCTURES = {
     id: 'garden_bed_grain', name: '곡물 텃밭', type: 'structure', subtype: 'food',
     rarity: 'rare', weight: 4.0,
     defaultDurability: 120, defaultContamination: 0,
-    icon: '🌾', description: '곡물 씨앗을 심은 대형 텃밭. 7일 후 대량의 곡물을 수확할 수 있다. 식량 안보의 핵심.',
+    icon: '🌾', description: '곡물 씨앗을 심은 대형 텃밭. 7일마다 대량의 곡물을 자동 수확한다. 식량 안보의 핵심.',
     tags: ['structure', 'crafted', 'food', 'farm'],
-    onTick: { nutrition: 0.2 },
+    harvest: { itemId: 'grain', harvestDays: 7, qty: 3 },
     requiredForBlueprints: true,
     dismantleTP: 3,
     dismantle: [
