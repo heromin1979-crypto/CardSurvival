@@ -184,6 +184,23 @@ table.loot input.num { width: 72px; }
 .ref-bad { border-color: var(--danger) !important; }
 .row-add { margin-top: 8px; }
 
+/* 아이템 탭 도움말 패널 — 필드 설명 + 사용 중인 태그 */
+.help-panel {
+  background: var(--panel2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 12px 14px; margin-bottom: 12px;
+}
+.help-panel .help-filter { width: 100%; box-sizing: border-box; }
+.help-cols { display: grid; grid-template-columns: 1.6fr 1fr; gap: 18px; }
+@media (max-width: 900px) { .help-cols { grid-template-columns: 1fr; } }
+.help-fields { max-height: 340px; overflow-y: auto; padding-right: 6px; }
+.help-tags   { max-height: 340px; overflow-y: auto; }
+.help-row {
+  display: grid; grid-template-columns: 160px 1fr; gap: 10px;
+  padding: 4px 2px; border-bottom: 1px solid var(--border); align-items: baseline;
+}
+.help-key { color: var(--accent); font-size: 12px; white-space: nowrap; }
+.help-desc { color: var(--text); font-size: 12px; line-height: 1.45; }
+
 /* 필드(키) 추가 컨트롤 — 객체에 새 필드를 끼워넣기 */
 .add-key-wrap { margin-top: 12px; display: flex; flex-direction: column; gap: 4px; }
 .add-key-row { display: flex; gap: 6px; align-items: center; margin-top: 6px; flex-wrap: wrap; }
