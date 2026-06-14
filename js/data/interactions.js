@@ -115,33 +115,37 @@ const INTERACTION_RULES = [
     },
   },
 
-  // ── T7. 빗물 + 캠프파이어 → 끓인 물 ────────────────────
+  // ── T7. 양동이 물 + 캠프파이어 → 끓인 물 (수위만큼) + 빈 양동이 ──
   {
-    id: 'boil_rainwater',
-    source: { id: 'rainwater' },
+    id: 'boil_water_bucket',
+    source: { id: 'water_bucket' },
     target: { id: 'campfire' },
-    hint: '빗물 끓이기 → 끓인 물로 변환',
+    hint: '양동이 물 끓이기 → 끓인 물',
     canApply(srcInst, tgtInst) { return { ok: true }; },
     apply(srcInst, tgtInst) {
+      const lv = srcInst._fillLevel ?? 1;
       return {
-        message: '빗물을 끓였다. 끓인 물로 변환됐다.',
-        transformSrc: 'boiled_water',
+        message: `양동이 물을 끓였다. 끓인 물 ${lv}개 완성. 양동이는 비었다.`,
+        transformSrc: 'empty_bucket',
+        spawnItem: 'boiled_water', spawnQty: lv,
         consumeSrc: false, consumeTgt: false, noise: 1,
       };
     },
   },
 
-  // ── T8. 캠프파이어 + 빗물 (역방향) ─────────────────────
+  // ── T8. 캠프파이어 + 양동이 물 (역방향) ─────────────────
   {
-    id: 'boil_rainwater_rev',
+    id: 'boil_water_bucket_rev',
     source: { id: 'campfire' },
-    target: { id: 'rainwater' },
-    hint: '빗물 끓이기 → 끓인 물로 변환',
+    target: { id: 'water_bucket' },
+    hint: '양동이 물 끓이기 → 끓인 물',
     canApply(srcInst, tgtInst) { return { ok: true }; },
     apply(srcInst, tgtInst) {
+      const lv = tgtInst._fillLevel ?? 1;
       return {
-        message: '빗물을 끓였다. 끓인 물로 변환됐다.',
-        transformTgt: 'boiled_water',
+        message: `양동이 물을 끓였다. 끓인 물 ${lv}개 완성. 양동이는 비었다.`,
+        transformTgt: 'empty_bucket',
+        spawnItem: 'boiled_water', spawnQty: lv,
         consumeSrc: false, consumeTgt: false, noise: 1,
       };
     },
@@ -189,43 +193,47 @@ const INTERACTION_RULES = [
     },
   },
 
-  // ── T11. 빗물 + 숯 필터 → 정수된 물 ────────────────────
+  // ── T11. 양동이 물 + 숯 필터 → 정수된 물 (수위만큼) + 빈 양동이 ──
   {
-    id: 'filter_rainwater',
-    source: { id: 'rainwater' },
+    id: 'filter_water_bucket',
+    source: { id: 'water_bucket' },
     target: { id: 'charcoal_filter' },
-    hint: '숯 필터로 빗물 정수 → 정수된 물',
+    hint: '숯 필터로 양동이 물 정수 → 정수된 물',
     canApply(srcInst, tgtInst) {
       if ((tgtInst.durability ?? 100) <= 0) return { ok: false, reason: '필터가 다 닳았다.' };
       return { ok: true };
     },
     apply(srcInst, tgtInst) {
+      const lv = srcInst._fillLevel ?? 1;
       tgtInst.durability = Math.max(0, (tgtInst.durability ?? 100) - 25);
       const consumeTgt = tgtInst.durability <= 0;
       return {
-        message: consumeTgt ? '빗물을 정수했다. 정수된 물 완성. (필터 소진)' : '빗물을 정수했다. 정수된 물 완성.',
-        transformSrc: 'purified_water',
+        message: `숯 필터로 양동이 물을 정수했다. 정수된 물 ${lv}개 완성.${consumeTgt ? ' (필터 소진)' : ''}`,
+        transformSrc: 'empty_bucket',
+        spawnItem: 'purified_water', spawnQty: lv,
         consumeSrc: false, consumeTgt,
       };
     },
   },
 
-  // ── T12. 숯 필터 + 빗물 (역방향) ────────────────────────
+  // ── T12. 숯 필터 + 양동이 물 (역방향) ───────────────────
   {
-    id: 'filter_rainwater_rev',
+    id: 'filter_water_bucket_rev',
     source: { id: 'charcoal_filter' },
-    target: { id: 'rainwater' },
-    hint: '숯 필터로 빗물 정수 → 정수된 물',
+    target: { id: 'water_bucket' },
+    hint: '숯 필터로 양동이 물 정수 → 정수된 물',
     canApply(srcInst, tgtInst) {
       if ((srcInst.durability ?? 100) <= 0) return { ok: false, reason: '필터가 다 닳았다.' };
       return { ok: true };
     },
     apply(srcInst, tgtInst) {
+      const lv = tgtInst._fillLevel ?? 1;
       srcInst.durability = Math.max(0, (srcInst.durability ?? 100) - 25);
       const consumeSrc = srcInst.durability <= 0;
       return {
-        message: consumeSrc ? '빗물을 정수했다. 정수된 물 완성. (필터 소진)' : '빗물을 정수했다. 정수된 물 완성.',
-        transformTgt: 'purified_water',
+        message: `숯 필터로 양동이 물을 정수했다. 정수된 물 ${lv}개 완성.${consumeSrc ? ' (필터 소진)' : ''}`,
+        transformTgt: 'empty_bucket',
+        spawnItem: 'purified_water', spawnQty: lv,
         consumeSrc, consumeTgt: false,
       };
     },
@@ -263,37 +271,6 @@ const INTERACTION_RULES = [
     },
   },
 
-  // ── T15. 빈병 + 빗물 → 빈병이 빗물로 채워짐 ─────────────
-  {
-    id: 'fill_bottle_rain',
-    source: { id: 'empty_bottle' },
-    target: { id: 'rainwater' },
-    hint: '빈 병에 빗물 담기 (빈병 → 빗물)',
-    canApply(srcInst, tgtInst) { return { ok: true }; },
-    apply(srcInst, tgtInst) {
-      return {
-        message: '빈 병에 빗물을 담았다.',
-        transformSrc: 'rainwater',
-        consumeSrc: false, consumeTgt: false,
-      };
-    },
-  },
-
-  // ── T16. 빗물 + 빈병 (역방향) ───────────────────────────
-  {
-    id: 'fill_bottle_rain_rev',
-    source: { id: 'rainwater' },
-    target: { id: 'empty_bottle' },
-    hint: '빈 병에 빗물 채우기',
-    canApply(srcInst, tgtInst) { return { ok: true }; },
-    apply(srcInst, tgtInst) {
-      return {
-        message: '빈 병에 빗물을 담았다.',
-        transformTgt: 'rainwater',
-        consumeSrc: false, consumeTgt: false,
-      };
-    },
-  },
 
   // ── T17. 빈병 + 산개울 → 산물 ────────────────────────────
   {

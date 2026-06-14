@@ -328,17 +328,17 @@ export const SECRET_EVENTS = [
     choices: [
       {
         id: 'collect_rainwater',
-        text: '빈 병으로 빗물을 모은다',
-        conditions: { requiredItems: ['empty_bottle'] },
+        text: '양동이로 빗물을 받는다',
+        conditions: { requiredItems: ['empty_bucket'] },
         outcomes: [
           {
             weight: 100,
-            text: '빗물을 가득 채웠다! 정수하면 마실 수 있을 것이다.',
+            text: '양동이에 빗물이 가득 찼다! 끓이거나 정수하면 깨끗이 마실 수 있다.',
             effects: {
               items: [
-                { id: 'rainwater', qty: 3 },
+                { id: 'water_bucket', qty: 1 },
               ],
-              removeItems: [{ id: 'empty_bottle', qty: 3 }],
+              removeItems: [{ id: 'empty_bucket', qty: 1 }],
               morale: 5,
             },
           },

@@ -147,8 +147,8 @@ const DOCTOR_SHARED = {
     locationHint: {
       districtId: 'dongjak',
       landmarkId: 'lm_boramae_hospital',
-      note: '보라매병원 카페테리아·옥상 빗물받이를 우선 탐색',
-      noteEn: 'Search the Boramae cafeteria and rooftop rain catchers first',
+      note: '보라매병원 카페테리아에서 물병 회수 + 옥상에 양동이를 두고 빗물 집수',
+      noteEn: 'Recover bottles from the Boramae cafeteria + place a bucket on the rooftop to collect rain',
     },
     subObjectives: [
       {
@@ -159,9 +159,9 @@ const DOCTOR_SHARED = {
       },
       {
         id: 'so_d04_02',
-        text: '빗물·시냇물 정수 또는 끓이기',
-        textEn: 'Purify or boil rainwater / stream water',
-        hint: '비가 올 때 빈 물병 액션',
+        text: '양동이 물·시냇물 정수 또는 끓이기',
+        textEn: 'Purify or boil bucket water / stream water',
+        hint: '비 올 때 양동이로 집수하거나 물가에서 채운 뒤 정수·끓이기',
       },
       {
         id: 'so_d04_03',

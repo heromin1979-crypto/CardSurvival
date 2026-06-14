@@ -693,6 +693,23 @@ const StatSystem = {
       CharDialogue.emit(charId, ctx);
     }
 
+    // 물 양동이: 4회 분할 음용 — 수위 1 감소, 0이면 빈 양동이로 전환
+    if (def.id === 'water_bucket') {
+      const level = (inst._fillLevel ?? 4) - 1;
+      if (level > 0) {
+        inst._fillLevel = level;
+        EventBus.emit('boardChanged', {});
+      } else {
+        gs.removeCardInstance(instanceId);
+        EventBus.emit('cardRemoved', { instanceId });
+        const empty = gs.createCardInstance('empty_bucket');
+        if (empty) gs.placeCardInRow(empty.instanceId, 'middle');
+        EventBus.emit('boardChanged', {});
+      }
+      EventBus.emit('itemConsumed', { itemId: def.id, qty: 1, day: gs.time.day });
+      return true;
+    }
+
     // stackable 아이템: 수량 1개만 소모, 0이 되면 제거
     // 약사 능력: 의료 아이템 medicalUsesBonus 확률로 소모 건너뜀
     const medUsesBonus = (isMedical && (gs.player.medicalUsesBonus ?? 0) > 0)

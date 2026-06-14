@@ -174,6 +174,16 @@ const SlotResolver = {
       gs.removeCardInstance(targetId);
     }
 
+    // 아이템 생성 (양동이 물 끓이기·정수 등 — 용기는 유지하고 결과물만 생성)
+    if (result.spawnItem) {
+      const qty = result.spawnQty ?? 1;
+      for (let i = 0; i < qty; i++) {
+        const inst = gs.createCardInstance(result.spawnItem,
+          result.spawnContamination != null ? { contamination: result.spawnContamination } : {});
+        if (inst) gs.placeCardInRow(inst.instanceId);
+      }
+    }
+
     // 소음 추가
     if (result.noise) NoiseSystem.addNoise(result.noise);
 

@@ -4438,6 +4438,21 @@ const BLUEPRINTS = {
     }],
   },
 
+  craft_bucket: {
+    id: 'craft_bucket', name: '양동이', category: 'tool',
+    description: '플라스틱과 고철로 물을 받는 양동이를 만든다. 비 오는 날 바닥에 두거나 물가에서 채운다.',
+    output: [{ definitionId: 'empty_bucket', qty: 1 }],
+    requiredTools: [],
+    stages: [{
+      stageIndex: 0, label: '양동이 조립', tpCost: 2,
+      requiredItems: [
+        { definitionId: 'plastic',     qty: 2 },
+        { definitionId: 'scrap_metal', qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
 };
 
 export default BLUEPRINTS;

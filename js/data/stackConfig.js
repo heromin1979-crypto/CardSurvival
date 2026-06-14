@@ -52,7 +52,6 @@ const STACK_ROWS = [
   // ── 수분 ──────────────────────────────────────────────────────
   ['water_bottle'            , true,  5 ],
   ['contaminated_water'      , true,  5 ],
-  ['rainwater'               , true,  5 ],
   ['boiled_water'            , true,  5 ],
   ['purified_water'          , true,  5 ],
   ['mountain_water'          , true,  5 ],
@@ -143,6 +142,8 @@ const STACK_ROWS = [
   ['compass'                 , false, 1 ],
   ['whetstone'               , false, 1 ],
   ['rope_ladder'             , false, 1 ],
+  ['empty_bucket'            , false, 1 ],
+  ['water_bucket'            , false, 1 ],
 
   // ── 구조물 (내구도 있음 → 스택 불가) ────────────────────────────
   ['campfire'                , false, 1 ],

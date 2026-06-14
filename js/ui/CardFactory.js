@@ -145,7 +145,6 @@ const CARD_IMAGES = {
   boiled_water:          'assets/images/food/boiled_water.png',
   purified_water:        'assets/images/food/purified_water.png',
   contaminated_water:    'assets/images/food/contaminated_water.png',
-  rainwater:             'assets/images/food/rainwater.png',
   pristine_spring_water: 'assets/images/food/pristine_spring_water.png',
   sports_drink:          'assets/images/food/sports_drink.png',
   coffee:                'assets/images/food/coffee.png',

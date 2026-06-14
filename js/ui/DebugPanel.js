@@ -6,6 +6,7 @@ import GameState  from '../core/GameState.js';
 import TickEngine from '../core/TickEngine.js';
 import GameData   from '../data/GameData.js';
 import I18n       from '../core/I18n.js';
+import WeatherSystem from '../systems/WeatherSystem.js';
 
 const STAT_FIELDS = [
   { key: 'hydration',   label: 'Hydration'   },
@@ -96,6 +97,20 @@ const DebugPanel = {
           </div>
           <div class="dbg-msg" id="dbg-msg"></div>
         </div>
+        <!-- 날씨 변경 (GM) -->
+        <div class="dbg-section">
+          <div class="dbg-section-title">Set Weather</div>
+          <div class="dbg-btn-row">
+            <button class="dbg-btn" data-weather="sunny">☀️맑음</button>
+            <button class="dbg-btn" data-weather="rainy">🌧비</button>
+            <button class="dbg-btn" data-weather="monsoon">🌊장마</button>
+          </div>
+          <div class="dbg-btn-row">
+            <button class="dbg-btn" data-weather="storm">🌩폭풍</button>
+            <button class="dbg-btn" data-weather="acid_rain">☢️산성비</button>
+            <button class="dbg-btn" data-weather="snow">🌨눈</button>
+          </div>
+        </div>
       </div>`;
   },
 
@@ -133,6 +148,15 @@ const DebugPanel = {
     this._el.querySelector('#dbg-give-btn').addEventListener('click', () => this._giveItem());
     this._el.querySelector('#dbg-item-id').addEventListener('keydown', e => {
       if (e.key === 'Enter') this._giveItem();
+    });
+
+    // 날씨 변경 (GM)
+    this._el.querySelectorAll('[data-weather]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const ok = WeatherSystem.setWeather(btn.dataset.weather);
+        this._showMsg(ok ? `날씨 → ${btn.textContent.trim()}` : `❌ 알 수 없는 날씨`, !ok);
+        this._refresh();
+      });
     });
   },
 
