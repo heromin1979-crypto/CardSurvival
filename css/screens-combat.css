@@ -793,12 +793,15 @@
 /* 적 스프라이트 hit 플래시 */
 .cv-enemy-sprite.hit,
 .cv-player.hit {
-  animation: hitFlash 0.32s ease;
+  animation: hitFlash 0.4s ease;
 }
+/* 피격 — 대상 이미지를 붉게 물들이며 2회 번쩍 + 좌우 흔들림 */
 @keyframes hitFlash {
-  0%   { filter: brightness(1) drop-shadow(0 0 0 rgba(255,80,80,0)); }
-  20%  { filter: brightness(2.2) drop-shadow(0 0 18px rgba(255,80,80,0.9)); }
-  100% { filter: brightness(1) drop-shadow(0 0 0 rgba(255,80,80,0)); }
+  0%   { filter: none; transform: translateX(0); }
+  12%  { filter: brightness(1.5) sepia(1) saturate(9) hue-rotate(-28deg) drop-shadow(0 0 24px rgba(255,30,30,1)); transform: translateX(-4px); }
+  36%  { filter: brightness(1.1) drop-shadow(0 0 6px rgba(255,30,30,0.45)); transform: translateX(3px); }
+  62%  { filter: brightness(1.5) sepia(1) saturate(9) hue-rotate(-28deg) drop-shadow(0 0 20px rgba(255,30,30,0.95)); transform: translateX(-2px); }
+  100% { filter: none; transform: translateX(0); }
 }
 
 /* ── 공격 모션 (런지) ───────────────────────────────── */
@@ -860,19 +863,23 @@
 /* 도검 — 대각 슬래시 궤적 */
 .cv-fx-slash,
 .cv-fx-claw {
-  width: 94px;
-  height: 94px;
+  width: 104px;
+  height: 104px;
   font-size: 0;
-  background: linear-gradient(135deg, transparent 38%, rgba(255,255,255,0.95) 48%, rgba(255,130,130,0.9) 52%, transparent 62%);
   border-radius: 8px;
+  /* 검은 외곽선 + 빨간 글로우 → 밝은·어두운·붉은 캐릭터 위 모두에서 또렷하게 */
+  filter: drop-shadow(0 0 2px rgba(0,0,0,0.95)) drop-shadow(0 0 9px rgba(255,0,0,0.65));
   animation: fxSlash 0.42s ease forwards;
 }
-/* 발톱 — 3줄 긁힘 */
+.cv-fx-slash {
+  background: linear-gradient(135deg, transparent 36%, #fff 46%, rgba(255,55,55,1) 53%, transparent 64%);
+}
+/* 발톱 — 3줄 긁힘 (흰 코어 + 진한 빨강) */
 .cv-fx-claw {
   background:
-    linear-gradient(125deg, transparent 28%, rgba(255,80,80,0.8) 36%, transparent 44%),
-    linear-gradient(125deg, transparent 42%, rgba(255,80,80,0.92) 50%, transparent 58%),
-    linear-gradient(125deg, transparent 56%, rgba(255,80,80,0.8) 64%, transparent 72%);
+    linear-gradient(125deg, transparent 26%, #fff 32%, rgba(255,20,20,1) 39%, transparent 47%),
+    linear-gradient(125deg, transparent 40%, #fff 46%, rgba(255,20,20,1) 53%, transparent 61%),
+    linear-gradient(125deg, transparent 54%, #fff 60%, rgba(255,20,20,1) 67%, transparent 75%);
 }
 @keyframes fxSlash {
   0%   { opacity: 0; transform: translate(-50%,-50%) rotate(-18deg) scale(0.5); }
