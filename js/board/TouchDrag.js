@@ -2,7 +2,7 @@
 // Pointer Events 기반 모바일 터치 드래그.
 // HTML5 DragDrop API는 모바일에서 미지원 → PointerEvent로 구현.
 // 마우스 이벤트는 제외 (HTML5 DnD가 처리).
-import SlotResolver    from './SlotResolver.js';
+import SlotResolver, { isImmovable } from './SlotResolver.js';
 import BoardManager    from './BoardManager.js';
 import GameState       from '../core/GameState.js';
 import EventBus        from '../core/EventBus.js';
@@ -66,8 +66,8 @@ const TouchDrag = {
       this._pendingCard = null;
       return;
     }
-    // 이동 불가 구조물(캠프파이어 등)은 드래그 불가 — 필드 바닥 고정 (분해는 클릭)
-    if (GameState.getCardDef?.(card.dataset.instanceId)?.immovable) {
+    // 이동 불가 구조물(캠프파이어 등)은 드래그 불가 — 바닥 고정 (분해는 클릭)
+    if (isImmovable(GameState.getCardDef?.(card.dataset.instanceId))) {
       this._pendingCard = null;
       return;
     }

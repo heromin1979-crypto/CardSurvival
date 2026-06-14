@@ -1,5 +1,5 @@
 // === DRAG & DROP ===
-import SlotResolver    from './SlotResolver.js';
+import SlotResolver, { isImmovable } from './SlotResolver.js';
 import BoardManager    from './BoardManager.js';
 import GameState       from '../core/GameState.js';
 import EventBus        from '../core/EventBus.js';
@@ -49,8 +49,8 @@ const DragDrop = {
       return;
     }
 
-    // 이동 불가 구조물(캠프파이어 등)은 드래그 불가 — 필드 바닥 고정 (분해는 클릭)
-    if (GameState.getCardDef?.(card.dataset.instanceId)?.immovable) {
+    // 이동 불가 구조물(캠프파이어 등)은 드래그 불가 — 바닥 고정 (분해는 클릭)
+    if (isImmovable(GameState.getCardDef?.(card.dataset.instanceId))) {
       e.preventDefault();
       return;
     }

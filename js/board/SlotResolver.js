@@ -9,6 +9,11 @@ import { findInteraction }     from '../data/interactions.js';
 import SecretCombinationSystem from '../systems/SecretCombinationSystem.js';
 import GameData                from '../data/GameData.js';
 
+// 이동 불가 판정 — 태그 'immovable' 기본 + 필드 immovable:true 하위호환 (preserved 패턴)
+export function isImmovable(def) {
+  return !!(def && (def.immovable === true || def.tags?.includes('immovable')));
+}
+
 const SlotResolver = {
 
   // 드래그 중인 카드를 (row, slot)에 드랍할 수 있는지 검사
@@ -21,8 +26,8 @@ const SlotResolver = {
       return { valid: false, reason: I18n.t('slot.cantMoveLocation') };
     }
 
-    // 이동 불가 구조물(캠프파이어 등): 필드 바닥 고정 — 드래그 이동/배낭 수납 불가 (분해는 클릭)
-    if (def.immovable) {
+    // 이동 불가 구조물(캠프파이어 등): 바닥 고정 — 드래그 이동/배낭 수납 불가 (분해는 클릭)
+    if (isImmovable(def)) {
       return { valid: false, reason: I18n.t('slot.cantMoveImmovable') };
     }
 
@@ -60,7 +65,7 @@ const SlotResolver = {
       // 이동 불가 카드가 목적지에 있으면 swap 차단 (캠프파이어를 배낭/다른 칸으로 밀어내기 방지)
       // 상호작용·크래프트·스택은 이 시점 이전(DragDrop/TouchDrag)에서 처리되므로 여기 도달 = 순수 swap 시도
       const tgtDef = GameState.getCardDef(targetId);
-      if (tgtDef?.immovable) {
+      if (isImmovable(tgtDef)) {
         EventBus.emit('notify', { message: I18n.t('slot.cantDisplaceImmovable'), type: 'warn' });
         return false;
       }
