@@ -264,6 +264,7 @@ const BAL_CAT_LABEL = {
   hospitalSiege: '병원 공성', patientIntake: '환자 유입', raiderEvents: '약탈자 이벤트',
   night: '야간', medicalStation: '의료소', fishing: '낚시', seasonal: '계절 보너스 루팅',
   npc: 'NPC', body: '신체 부상', skills: '스킬 계수', traits: '특성 효과',
+  spoilage: '음식 부패', theft: '동물 도난',
 };
 
 // 공용 변수(밸런스) leaf 키 설명 — 공통 사전보다 우선
@@ -299,6 +300,16 @@ const BAL_HELP = {
   exploreStaminaDrain: '탐색 시 스태미나 소모.',
   explorationPerExplore: '탐사 1회당 지역 탐사도 상승%(전역 기본). 100%까지 누적. 구별로 districts 탭의 exploreIncrement로 덮어쓸 수 있음.',
   explorationYieldBonusMax: '탐사도가 높을수록 일반 루팅에 보너스 픽이 붙는 최대 확률(0~1). 예: 0.5 = 탐사도 100%일 때 +50% 확률로 추가 아이템. 탐사도에 비례해 0→이 값까지 선형 증가.',
+  // 부패(spoilage) — Phase 4
+  daysBySubtype: 'subtype별 기본 부패 일수 — 이 일수에 걸쳐 음식 contamination이 0→100으로 누적된다. 아이템 개별 spoilDays로 덮어쓸 수 있음. (food_raw·carcass·food·drink)',
+  food_raw: '날것/조리 안 한 음식의 기본 부패 일수.',
+  carcass: '사체(손질 전 고기)의 기본 부패 일수 — 가장 빨리 상함.',
+  food: '일반(조리된) 음식의 기본 부패 일수.',
+  drink: '음료의 기본 부패 일수.',
+  defaultDays: 'daysBySubtype에 해당 없는 음식의 기본 부패 일수.',
+  seasonMult: '계절별 부패 속도 배율 — 여름 빠르게(2배), 겨울 느리게(0.5배). 부패 누적량에 곱해진다.',
+  // 도난(theft) — Phase 4
+  dailyChance: '바닥에 음식이 있을 때 하루 1회 동물 도난이 발생할 확률(0~1). 발생 시 음식 1스택이 둥지(animal_nest)로 옮겨져 회수 대상이 됨. 베이스캠프는 안전(제외).',
   lowStaminaThreshold: '이 비율 미만이면 저스태미나 페널티(0~1).',
   lowStaminaPenalty: '저스태미나 시 소모 배율.',
   immobileWeightPct: '이 무게비율 이상이면 이동 불가.',
