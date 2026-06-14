@@ -487,6 +487,28 @@
   color: var(--text-dim);
 }
 
+/* 사이드바 위치 브레드크럼 — 폭이 좁아 줄바꿈 허용 */
+#bc-district-name.bc-char-sub {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1px 4px;
+}
+
+/* === 위치 브레드크럼 세그먼트 (헤더·사이드바 공용) === */
+.loc-crumb {
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+/* 현재(가장 깊은) 위치 강조 */
+.loc-crumb--current {
+  color: var(--accent-primary);
+  font-weight: 600;
+}
+.loc-crumb-sep {
+  color: var(--text-dim);
+}
+
 .bc-char-hp {
   font-size: var(--font-size-xs);
   color: var(--text-secondary);
