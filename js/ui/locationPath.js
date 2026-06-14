@@ -40,6 +40,12 @@ export function locationSegments() {
   return segs;
 }
 
+// 플레인 텍스트 경로 — "구 > 랜드마크 > 세부장소" (알림/로그 메시지용).
+// 세그먼트가 없으면 빈 문자열. 기본 구분자는 ' > '.
+export function locationPathText(sep = ' > ') {
+  return locationSegments().join(sep);
+}
+
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c =>
     ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
