@@ -1146,9 +1146,18 @@ function renderItemsTab() {
   search.addEventListener('input', () => { state.itemSearch = search.value; renderList(); });
   renderList();
   renderDetail();
+  const helpBtn = el('button', {
+    class: 'ghost' + (state.itemHelpOpen ? ' active' : ''),
+    text: state.itemHelpOpen ? '❓ 도움말 닫기' : '❓ 태그·필드 도움말',
+    onclick: () => { state.itemHelpOpen = !state.itemHelpOpen; render(); },
+  });
   view.append(el('div', {}, [
-    el('div', { class: 'hint', style: 'margin-bottom:8px' }, '※ 아이템 정의 소스를 직접 편집합니다. stackable·maxStack은 stackConfig.js가 런타임에 덮어쓸 수 있습니다.'),
+    el('div', { class: 'field-row', style: 'align-items:center;gap:10px;margin-bottom:8px' }, [
+      helpBtn,
+      el('div', { class: 'hint', style: 'margin:0' }, '※ 아이템 정의 소스를 직접 편집합니다. stackable·maxStack은 stackConfig.js가 런타임에 덮어쓸 수 있습니다.'),
+    ]),
     el('div', { class: 'field', style: 'margin-bottom:10px' }, [search]),
+    ...(state.itemHelpOpen ? [renderItemHelpPanel()] : []),
     renderItemClipboardPanel(),
     el('div', { class: 'list-layout' }, [listBox, detailWrap]),
   ]));
@@ -1210,6 +1219,56 @@ function pasteItem(count) {
   if (lastId) state.sel.items = lastId;
   status(`아이템 「${clip.name}」 복제본 ${count}개 생성 (소스: ${DATA_FILES[fk].label}). ⚠️ 새 아이템은 stackConfig.js·CardFactory(CARD_IMAGES)·구/랜드마크 드랍에 자동 등록되지 않습니다 — 필요 시 등록하세요.`, 'ok');
   render();
+}
+
+// 아이템 탭 도움말 — 쓸 수 있는 필드(ITEM_HELP)와 현재 사용 중인 태그 목록을 정리해 보여준다.
+// 「필드 추가」 / tags 입력 시 무엇이 있는지 참고용. 필터로 필드·태그·설명을 동시 검색.
+function renderItemHelpPanel() {
+  const wrap = el('div', { class: 'help-panel' });
+
+  // 현재 사용 중인 태그 → 사용 아이템 수 집계
+  const tagCount = {};
+  for (const it of Object.values(state.items || {})) {
+    if (Array.isArray(it?.tags)) for (const t of it.tags) if (t) tagCount[t] = (tagCount[t] || 0) + 1;
+  }
+
+  const filter   = el('input', { class: 'help-filter', placeholder: '🔍 필드·태그·설명 검색…', value: state.itemHelpQuery || '' });
+  const fieldsBox = el('div', { class: 'help-fields' });
+  const tagsBox   = el('div', { class: 'help-tags' });
+
+  const draw = () => {
+    const q = (state.itemHelpQuery || '').trim().toLowerCase();
+    // ── 필드 ──
+    fieldsBox.innerHTML = '';
+    const fkeys = Object.keys(ITEM_HELP)
+      .filter((k) => !q || k.toLowerCase().includes(q) || ITEM_HELP[k].toLowerCase().includes(q))
+      .sort();
+    fieldsBox.append(el('div', { class: 'side-group', text: `필드 ${fkeys.length}개` }));
+    for (const k of fkeys) {
+      fieldsBox.append(el('div', { class: 'help-row' }, [
+        el('code', { class: 'help-key', text: k }),
+        el('span', { class: 'help-desc', text: ITEM_HELP[k] }),
+      ]));
+    }
+    // ── 태그 (사용 빈도순) ──
+    tagsBox.innerHTML = '';
+    const tkeys = Object.keys(tagCount)
+      .filter((t) => !q || t.toLowerCase().includes(q))
+      .sort((a, b) => tagCount[b] - tagCount[a] || a.localeCompare(b));
+    tagsBox.append(el('div', { class: 'side-group', text: `태그 ${tkeys.length}종 (현재 사용 중)` }));
+    const chips = el('div', { class: 'chips' });
+    for (const t of tkeys) chips.append(el('span', { class: 'chip', title: `${tagCount[t]}개 아이템에서 사용`, text: `${t} ×${tagCount[t]}` }));
+    tagsBox.append(chips);
+  };
+  filter.addEventListener('input', () => { state.itemHelpQuery = filter.value; draw(); });
+  draw();
+
+  wrap.append(
+    el('div', { class: 'hint', text: '※ 아이템에 쓸 수 있는 필드 설명과 현재 사용 중인 태그입니다. 「필드 추가」·tags 입력 시 참고하세요. (효과 그룹 onTick·onWear 등은 그룹{}으로 추가 후 안에 하위 필드를 넣습니다.)' }),
+    el('div', { class: 'field', style: 'margin:6px 0 10px' }, [filter]),
+    el('div', { class: 'help-cols' }, [fieldsBox, tagsBox]),
+  );
+  return wrap;
 }
 
 // 클립보드가 있을 때 아이템 탭에 뜨는 붙여넣기(복제) 패널
