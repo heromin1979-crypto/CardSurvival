@@ -762,7 +762,7 @@ const TAG_HELP = {
   water_source: '환경 카드: 물을 수집할 수 있는 수원.',
   light: '광원 — 밤에 시야 확보(NightSystem).',
   light_source: '전투 중 광원으로 인정 — 야간 전투 페널티 완화(CombatSystem).',
-  heat: '열원 — 체온 회복(난방). 환경 카드는 열기 경고.',
+  heat: '열원 분류. 환경 카드의 열기 경고 표시에 사용. (실제 난방=체온 회복은 campfire 전용 하드코딩 로직 — 태그가 아니라 아이템 id로 동작)',
   cold: '냉기 — 환경 카드 추위 경고.',
   contamination: '오염원 — 환경 카드 오염 경고.',
   contaminated: '오염된 상태 — 섭취 시 방사선·감염 위험.',
@@ -800,7 +800,8 @@ const TAG_HELP = {
   diagnostic: '진단 도구.', antiseptic: '소독제.', anesthetic: '마취제.', splint: '부목.',
   fishing: '낚시 관련 도구/미끼.', forage: '채집 가능 노드.', farm: '농경 관련.',
   building: '건축 관련.', cooking: '요리 관련.', salvage: '해체로 얻는 부산물.',
-  weather: '날씨 이벤트.', weather_resistant: '날씨에 강함(꺼지지 않음 등).',
+  weather: '날씨 이벤트.',
+  weather_resistant: '⚠️ 코드 미연결(설명용 라벨) — "비·눈에 꺼지지 않음"은 플레이버일 뿐 실제 로직 없음(날씨로 불이 꺼지는 처리 자체가 미구현).',
   radiation: '방사선 관련.', toxic: '독성.', poison: '중독 유발.',
 };
 function helpForTag(t) { return TAG_HELP[t] || ''; }
