@@ -168,6 +168,8 @@ const FIELD_HELP = {
   noiseGen: '활동 시 발생하는 소음. 높을수록 적을 끌어들입니다.',
   fishingQuality: '낚시 품질(높을수록 좋은 어획). 낚시 가능 구역에만 적용.',
   hasFishing: '낚시 가능 여부 — 랜드마크: 안에서 낚시·통발 사용 가능 / 구: 시뮬레이터 AI 판정용.',
+  preserved: '보존 식품 여부 — true면 부패 안 함(건조·훈연·발효·통조림). tags에 \'preserved\'/\'fermented\'가 있어도 동일하게 부패 면제.',
+  spoilDays: '부패 일수 — 이 일수에 걸쳐 contamination이 0→100으로 누적(여름 2배·겨울 0.5배). 미지정 시 subtype 기본(food_raw 2·carcass 1·food 5·drink 7). 비음식·preserved는 부패 안 함.',
   cls: '자원 클래스 — 표면(surface): 지역 자원 레벨에 비례해 나오고 시간 경과로 재생 / 탐사(expedition): 자원 레벨 무관, 매 탐색 독립 추첨. 미지정 시 표면. (특수/광물 자원은 lootTable이 아니라 explorationYields로 다룸)',
   exploreIncrement: '탐사 1회당 지역 탐사도 상승%(이 구). 비우면 전역 기본값(gameBalance.explore.explorationPerExplore). 100%까지 누적.',
   explorationYields: '탐사도 임계값 특수자원 — [{at:30, items:[{definitionId,qty}]}] 형태. 탐사도가 at% 통과 시 items를 1회 고정 지급(확률 아님). 100% 후 종료.',

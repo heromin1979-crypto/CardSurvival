@@ -285,6 +285,7 @@ const ModalManager = {
     const canConsume   = def.type === 'consumable' && def.onConsume;
     const canDismantle = Array.isArray(def.dismantle) && def.dismantle.length > 0;
     const canForage    = !!def.forage;  // 살살 채취(부분·재생) 가능 노드
+    const canNest      = inst._stolenLoot?.length > 0;  // 동물 둥지 — 도난물 회수 가능
     const stackQty     = inst.quantity ?? 1;
     const equipSlots   = EquipmentSystem.getSlotsForDef(def);
     const canEquip     = equipSlots.length > 0;
@@ -399,7 +400,7 @@ const ModalManager = {
       </button>`
     ).join('');
 
-    const hasActions = canConsume || canDismantle || canForage || canEquip || isFishingRod || isMedicalStructure || isTapeRepairable || weatherActions.length > 0;
+    const hasActions = canConsume || canDismantle || canForage || canNest || canEquip || isFishingRod || isMedicalStructure || isTapeRepairable || weatherActions.length > 0;
 
     // 장착 슬롯 버튼 목록 (슬롯이 여럿이면 각각 버튼 생성)
     const slotLabels = {
@@ -442,6 +443,7 @@ const ModalManager = {
                 ? `<button class="card-action-btn dismantle" id="modal-dismantle-${instanceId}">${I18n.t('modal.dismantle')}</button>`
                 : ''}
             ${canForage ? `<button class="card-action-btn" id="modal-forage-${instanceId}">🌿 살살 채취</button>` : ''}
+            ${canNest ? `<button class="card-action-btn" id="modal-nest-${instanceId}">🪺 둥지 뒤지기</button>` : ''}
             ${fishBtnHtml}
             ${weatherBtnsHtml}
           </div>` : ''}
@@ -566,6 +568,13 @@ const ModalManager = {
       document.getElementById(`modal-forage-${instanceId}`)?.addEventListener('click', () => {
         this.close();
         import('../systems/DismantleSystem.js').then(m => m.default.forage(instanceId));
+      });
+    }
+
+    if (canNest) {
+      document.getElementById(`modal-nest-${instanceId}`)?.addEventListener('click', () => {
+        this.close();
+        import('../systems/TheftSystem.js').then(m => m.default.recoverNest(instanceId));
       });
     }
 

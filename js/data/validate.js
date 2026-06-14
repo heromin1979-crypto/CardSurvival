@@ -342,8 +342,23 @@ async function validate() {
         errors++; hfBad++;
       }
     }
+    // Phase 4 부패 필드 타입 검사
+    if (def?.spoilDays != null && (typeof def.spoilDays !== 'number' || def.spoilDays <= 0)) {
+      console.log(`❌ [${id}] spoilDays "${def.spoilDays}" — 0보다 큰 숫자여야 함`);
+      errors++; hfBad++;
+    }
+    if (def?.preserved != null && typeof def.preserved !== 'boolean') {
+      console.log(`❌ [${id}] preserved "${def.preserved}" — 불리언이어야 함`);
+      errors++; hfBad++;
+    }
   }
   console.log(`  검사한 harvest/forage: ${hfChecked}, 문제: ${hfBad}`);
+
+  // 12. 도난 둥지 카드(animal_nest) 존재 확인 (TheftSystem 의존)
+  if (!allItemIds.has('animal_nest')) {
+    console.log('❌ animal_nest 아이템이 없습니다 — TheftSystem 둥지 생성 실패');
+    errors++;
+  }
 
   // Summary
   console.log(`\n=== SUMMARY ===`);

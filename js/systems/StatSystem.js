@@ -15,6 +15,7 @@ import GameData      from '../data/GameData.js';
 const StatSystem = {
   init() {
     EventBus.on('tpAdvance', () => this.onTP());
+    EventBus.on('dayEnd', () => this._spoilPerishables());  // 부패: 일 1회 (Phase 4)
   },
 
   // ── 사기 구간별 효과 조회 ─────────────────────────────────────
@@ -79,11 +80,7 @@ const StatSystem = {
     // Structure passive effects (medical_station, barricade 등)
     this._applyStructureEffects();
 
-    // 식량 부패 체크 (여름 foodSpoilChance)
-    const spoilChance = seasonMod.foodSpoilChance ?? 0;
-    if (spoilChance > 0) {
-      this._checkFoodSpoilage(spoilChance);
-    }
+    // (식량 부패는 일 1회 dayEnd → _spoilPerishables 로 이동 — Phase 4)
 
     // 질병 진행 및 증상 적용
     DiseaseSystem.onTP();
@@ -286,25 +283,38 @@ const StatSystem = {
 
   // ── 식량 부패 (여름 계절 효과) ──────────────────────────────────
 
-  _checkFoodSpoilage(spoilChance) {
+  // 부패 (Phase 4) — 일 1회. 유기물(음식) 카드만 품목별 일수에 걸쳐 contamination 누적.
+  //  - preserved:true(건조·훈연·발효·통조림)는 부패 안 함. 비음식은 대상 외(영구 보존 → 야외 창고).
+  //  - spoilDays = def.spoilDays ?? subtype 기본. 하루치 = round(100/spoilDays) × 계절배율.
+  _spoilPerishables() {
     const gs = GameState;
+    if (!gs.player?.isAlive) return;
+    const SP = BALANCE.spoilage ?? {};
+    const PERISHABLE_SUB = new Set(['food', 'drink', 'food_raw', 'carcass']);
+    const seasonId = gs.season?.current ?? SeasonSystem.getCurrentSeason?.(gs.time?.day ?? 1)?.id ?? 'spring';
+    const seasonMult = SP.seasonMult?.[seasonId] ?? 1;
+
     for (const card of gs.getBoardCards()) {
       const def = gs.getCardDef(card.instanceId);
-      if (!def) continue;
-      // food 타입 소모품만 대상
-      if (def.type !== 'consumable' || (def.subtype !== 'food' && def.subtype !== 'drink')) continue;
-      if (Math.random() >= spoilChance) continue;
+      if (!def || def.type !== 'consumable' || !PERISHABLE_SUB.has(def.subtype)) continue;
+      // 가공 보존품 — 부패 안 함: 명시 preserved 플래그 또는 preserved/fermented 태그(건조·훈연·발효·절임·통조림)
+      if (def.preserved === true || def.tags?.includes('preserved') || def.tags?.includes('fermented')) continue;
 
       const inst = gs.cards[card.instanceId];
       if (!inst) continue;
-      inst.contamination = Math.min(100, (inst.contamination ?? 0) + 25);
-      if (inst.contamination >= 100) {
+      const spoilDays = def.spoilDays ?? SP.daysBySubtype?.[def.subtype] ?? SP.defaultDays ?? 5;
+      const perDay = Math.max(1, Math.round((100 / spoilDays) * seasonMult));
+      const before = inst.contamination ?? 0;
+      if (before >= 100) continue;
+      inst.contamination = Math.min(100, before + perDay);
+      if (inst.contamination >= 100 && before < 100) {
         EventBus.emit('notify', {
           message: I18n.t('statSys.foodSpoiled', { name: I18n.itemName(def.id, def.name) }),
           type: 'danger',
         });
       }
     }
+    EventBus.emit('boardChanged', {});
   },
 
   // ── 계절별 체온 효과 ────────────────────────────────────────────

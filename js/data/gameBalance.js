@@ -240,6 +240,19 @@ const BALANCE = {
     masteryRarePool: ['bandage', 'painkiller', 'antiseptic', 'rope', 'wire'], // 탐색 마스터리 희귀 루팅 풀
   },
 
+  // ── 부패 (Phase 4) — 음식 유기물만, 일 1회 contamination 누적 ───
+  spoilage: {
+    // subtype별 기본 부패 일수(이 일수에 걸쳐 contamination 0→100). 아이템 spoilDays로 개별 덮어쓰기.
+    daysBySubtype: { food_raw: 2, carcass: 1, food: 5, drink: 7 },
+    defaultDays: 5,                       // subtype 미해당 음식 기본
+    seasonMult: { spring: 1.0, summer: 2.0, autumn: 1.0, winter: 0.5 }, // 여름 빨리, 겨울 느리게
+  },
+
+  // ── 도난 (Phase 4) — 동물이 바닥 음식을 물어가 둥지로 ──────────
+  theft: {
+    dailyChance: 0.15,   // 바닥에 음식이 있을 때 일 1회 도난 확률
+  },
+
   // ── 조우 ────────────────────────────────────────────
   encounter: {
     reductionCap:           0.85,

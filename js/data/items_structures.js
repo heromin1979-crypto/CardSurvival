@@ -652,6 +652,16 @@ const ITEMS_STRUCTURES = {
     ],
   },
 
+  // 동물 둥지 — 도난(TheftSystem)으로 생성. 훔쳐간 아이템을 _stolenLoot로 보관, 카드에서 '둥지 뒤지기'로 회수.
+  animal_nest: {
+    id: 'animal_nest', name: '동물 둥지', type: 'structure', subtype: 'natural',
+    rarity: 'common', weight: 0,
+    defaultDurability: 1, defaultContamination: 0,
+    stackable: false, maxStack: 1,
+    icon: '🪺', description: '들짐승이 물어온 물건을 쌓아둔 둥지. 뒤지면 도둑맞은 물건을 되찾을 수 있다.',
+    tags: ['structure', 'natural'],
+  },
+
   weed_patch: {
     id: 'weed_patch', name: '잡초밭', type: 'structure', subtype: 'natural',
     rarity: 'common', weight: 0.5,
