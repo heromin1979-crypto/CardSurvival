@@ -276,6 +276,13 @@ const DragDrop = {
         EventBus.emit('boardChanged', {});
         return;
       }
+      // 양동이 + 물 지역(산개울 등) → 양동이 가득 채움 (오염도 = 물의 오염도)
+      if (this._tryFillBucketFromSource(this._draggingId, existingId)) {
+        this._hideInteractionTip();
+        slot.classList.remove('drag-over-valid', 'drag-over-invalid', 'drag-over-hover', 'can-interact');
+        EventBus.emit('boardChanged', {});
+        return;
+      }
       // Sub-spec 2A: 카드 to 카드 drop = "시도" — hidden 레시피 잠금 해제 트리거
       // hover(getQuickHint)는 영향 없음. 실제 commit된 drop만 unlock으로 간주.
       const srcDefForUnlock = GameState.getCardDef(this._draggingId);
@@ -346,6 +353,36 @@ const DragDrop = {
     document.querySelectorAll('.slot').forEach(s => {
       s.classList.remove('drag-over-valid', 'drag-over-invalid', 'drag-over-hover', 'can-interact');
     });
+  },
+
+  // ── 양동이 집수 헬퍼 ───────────────────────────────────────
+
+  // 양동이 ↔ 물 지역(water_source, dry 제외) 드래그 → 양동이를 가득 채움.
+  // 물 오염도는 매개 물(인스턴스 contamination, 없으면 정의 기본값)을 따른다.
+  _tryFillBucketFromSource(aId, bId) {
+    const a = GameState.cards[aId], b = GameState.cards[bId];
+    if (!a || !b) return false;
+    const aDef = GameState.getCardDef(aId), bDef = GameState.getCardDef(bId);
+    if (!aDef || !bDef) return false;
+    const isBucket   = d => d.id === 'empty_bucket' || d.id === 'water_bucket';
+    const isWaterSrc = d => d.subtype === 'water_source' && !(d.tags || []).includes('dry');
+    let bucket, srcInst, srcDef;
+    if (isBucket(aDef) && isWaterSrc(bDef))      { bucket = a; srcInst = b; srcDef = bDef; }
+    else if (isWaterSrc(aDef) && isBucket(bDef)) { bucket = b; srcInst = a; srcDef = aDef; }
+    else return false;
+
+    if (bucket.definitionId === 'water_bucket' && (bucket._fillLevel ?? 1) >= 4) {
+      EventBus.emit('notify', { message: '양동이가 이미 가득 찼다.', type: 'info' });
+      return true;
+    }
+    const contam = srcInst.contamination ?? srcDef.defaultContamination ?? 0;
+    bucket.definitionId  = 'water_bucket';
+    bucket._fillLevel    = 4;
+    bucket.contamination = contam;
+    bucket._rainTick     = 0;
+    EventBus.emit('notify', { message: `${srcDef.name}에서 양동이를 가득 채웠다.`, type: 'good' });
+    EventBus.emit('boardChanged', {});
+    return true;
   },
 
   // ── 부상 NPC 진단 헬퍼 ─────────────────────────────────────

@@ -3611,6 +3611,23 @@ const ITEMS_MISC = {
     ],
     dismantle: [],
   },
+  empty_bucket: {
+    id: 'empty_bucket', name: '빈 양동이', type: 'tool', subtype: 'container',
+    rarity: 'common', weight: 1.2,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🪣', description: '물을 받는 양동이. 비 오는 날 바닥에 두면 빗물이 차고, 물가에 가져가면 물을 가득 채울 수 있다.',
+    tags: ['tool', 'container', 'bucket'],
+    dismantle: [],
+  },
+  water_bucket: {
+    id: 'water_bucket', name: '물 양동이', type: 'consumable', subtype: 'drink',
+    rarity: 'common', weight: 2.5,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🪣', description: '물이 담긴 양동이. 4번에 나눠 마실 수 있고, 다 마시면 빈 양동이가 된다. 오염도는 받은 물에 따라 다르다.',
+    onConsume: { hydration: 25, contamination: 'inherit' },
+    tags: ['drinkable', 'container', 'bucket'],
+    dismantle: [],
+  },
 };
 
 export default ITEMS_MISC;

@@ -1627,6 +1627,8 @@ export const en = {
   '_item.leather':          'Leather',
   '_item.empty_bottle':     'Empty Bottle',
   '_item.empty_can':        'Empty Can',
+  '_item.empty_bucket':     'Empty Bucket',
+  '_item.water_bucket':     'Water Bucket',
   '_item.electronic_parts': 'Electronic Parts',
   '_item.spring':           'Spring',
   '_item.tree_log':         'Log',
@@ -1643,7 +1645,6 @@ export const en = {
   // ── Items: Consumables ──────────────────────────────────────
   '_item.water_bottle':       'Water Bottle',
   '_item.contaminated_water': 'Contaminated Water',
-  '_item.rainwater':          'Rainwater',
   '_item.boiled_water':       'Boiled Water',
   '_item.purified_water':     'Purified Water',
   '_item.mountain_water':     'Mountain Water',

@@ -328,17 +328,6 @@ const ITEMS_BASE = {
     dismantle: [],
   },
 
-  rainwater: {
-    id: 'rainwater', name: '빗물', type: 'consumable', subtype: 'drink',
-    rarity: 'common', weight: 0.5,
-    defaultDurability: 100, defaultContamination: 30,
-    icon: '🌧️', description: '수집한 빗물. 정화하면 음용 가능.',
-    onConsume: { hydration: 40, contamination: 20, radiation: 5 },
-    leaveOnConsume: { definitionId: 'empty_bottle', qty: 1 },
-    tags: ['drinkable', 'contaminated'],
-    dismantle: [],
-  },
-
   // 무쇠솥에 빗물/눈을 받은 상태. 끓이면 boiled_water 2장, 마시면 오염수와 동일 + 솥이 비워짐.
   iron_pot_water: {
     id: 'iron_pot_water', name: '물이 찬 무쇠솥', type: 'consumable', subtype: 'drink',
