@@ -691,6 +691,7 @@ const ITEM_HELP = {
   dismantleTP: '분해에 드는 시간(TP).',
   stackable: '같은 칸에 여러 개를 겹쳐 보관할 수 있는지 여부.',
   maxStack: '한 칸에 겹칠 수 있는 최대 수량.',
+  immovable: '이동 불가 — 필드 바닥에 고정. 드래그로 옮기거나 배낭에 담을 수 없고, 다른 아이템을 얹어도 밀려나지 않는다(분해는 카드 클릭). 캠프파이어 등 설치형 구조물에 적합.',
   onConsume: '먹기/소비할 때 발생하는 효과.',
   onUse: '사용할 때 발생하는 효과.',
   onWear: '착용할 때 적용되는 효과.',
@@ -1078,11 +1079,17 @@ function renderItemsTab() {
     ]));
     detailWrap.append(el('div', { class: 'sub', text: `${it.id}  ·  ${DATA_FILES[fk].label}` }));
 
-    // id 외 모든 필드 편집 (id는 객체 키라 읽기 전용 — 헤더에 표시)
+    // 선택 플래그 — 필드가 없어도 켜고 끌 수 있게 항상 노출(끄면 필드 삭제)
+    const ITEM_FLAGS = new Set(['immovable']);
+    const flagRow = el('div', { class: 'field-row' });
+    flagRow.append(optionalFlag(it, 'immovable', fk, helpForItem('immovable')));
+    detailWrap.append(flagRow);
+
+    // id·플래그 외 모든 필드 편집 (id는 객체 키라 읽기 전용 — 헤더에 표시)
     const scalars = el('div', { class: 'field-row' });
     const nested = [];
     for (const k of Object.keys(it)) {
-      if (k === 'id') continue;
+      if (k === 'id' || ITEM_FLAGS.has(k)) continue;
       const child = it[k];
       if (child !== null && typeof child === 'object') nested.push(objNode(it, k, 0, fk, helpForItem));
       else scalars.append(scalarInput(it, k, fk, helpForItem(k)));
