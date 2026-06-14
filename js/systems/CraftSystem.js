@@ -11,6 +11,7 @@ import StatSystem      from './StatSystem.js';
 import SystemRegistry  from '../core/SystemRegistry.js';
 import BALANCE         from '../data/gameBalance.js';
 import NightSystem     from './NightSystem.js';
+import TickEngine      from '../core/TickEngine.js';
 import GameData from '../data/GameData.js';
 
 // 히든 레시피 포함 전체 레시피
@@ -18,7 +19,8 @@ const BLUEPRINTS = { ...BLUEPRINTS_BASE, ...BLUEPRINTS_ADV, ...HIDDEN_RECIPES };
 
 const CraftSystem = {
   init() {
-    EventBus.on('tpAdvance', () => this.onTP());
+    // 제작은 스테이지 단위로 시간을 즉시 소비한다(TickEngine.skipTP).
+    // 더 이상 tpAdvance에 묻어 자동 진행하지 않으므로 구독하지 않는다.
   },
 
   // Check if a blueprint's current stage requirements are met on the board
@@ -91,155 +93,149 @@ const CraftSystem = {
       return false;
     }
 
-    const stage = bp.stages[0];
-
-    // Consume items at 'start'
-    const reservedIds = [];
-    // 소방관 능력: craftSaveChance 확률로 재료 1개 절약
-    const craftSave = GameState.player.craftSaveChance ?? 0;
-    let savedOnce = false;
-    if (stage.consumeAt === 'start') {
-      for (const req of stage.requiredItems) {
-        let needed = req.qty;
-        // 소방관 재료 절약: 1개 아이템에만 적용 (최초 1회)
-        if (!savedOnce && craftSave > 0 && needed > 0 && Math.random() < craftSave) {
-          needed = Math.max(0, needed - 1);
-          savedOnce = true;
-          EventBus.emit('notify', { message: '도구 숙련 — 재료 1개를 절약했다.', type: 'good' });
-        }
-        const matching = GameState.getBoardCards().filter(c => c.definitionId === req.definitionId);
-        for (const card of matching) {
-          if (needed <= 0) break;
-          if ((card.quantity ?? 1) <= needed) {
-            needed -= (card.quantity ?? 1);
-            GameState.removeCardInstance(card.instanceId);
-            EventBus.emit('cardRemoved', { instanceId: card.instanceId });
-          } else {
-            card.quantity -= needed;
-            needed = 0;
-            EventBus.emit('boardChanged', {}); // 수량 변경 → 화면 갱신
-          }
-        }
-      }
-    }
-
-    // ── 1-TP 기초 제작: 큐/카드 생성 생략하고 즉시 생산 ─────────
-    // (단일 스테이지 + 총 TP === 1인 경우)
-    const totalTpAll = bp.stages.reduce((sum, s) => sum + s.tpCost, 0);
-    if (bp.stages.length === 1 && totalTpAll === 1) {
-      EventBus.emit('craftStarted', { blueprintId });
-      this._produceOutput(bp, { craftCardId: null });
-      return true;
-    }
-
     const entry = {
       blueprintId,
       stageIndex:   0,
-      tpTotal:      stage.tpCost,
-      tpRemaining:  stage.tpCost,
-      reservedIds,
       craftCardId:  null,
+      awaitingNext: false,
     };
-
-    // 바닥(middle) 행에 제작 진행 카드 생성
-    const outputDefId = bp.output?.[0]?.definitionId;
-    if (outputDefId) {
-      const craftInst = GameState.createCardInstance(outputDefId, {
-        _crafting: true,
-        _craftEntry: {
-          blueprintId,
-          blueprintName: bp.name,
-          stageIndex: 0,
-          stageLabel: stage.label,
-          tpTotal: stage.tpCost,
-          tpRemaining: stage.tpCost,
-          totalStages: bp.stages.length,
-          totalTpAll,
-          completedTp: 0,
-        },
-      });
-      if (craftInst) {
-        GameState.placeCardInRow(craftInst.instanceId, 'middle');
-        entry.craftCardId = craftInst.instanceId;
-      }
-    }
-
     GameState.crafting.activeQueue.push(entry);
-    EventBus.emit('notify', { message: I18n.t('craftSys.started', { name: I18n.blueprintName(blueprintId, bp.name) }), type: 'info' });
     EventBus.emit('craftStarted', { blueprintId });
+
+    // 첫 단계 즉시 실행. 실패(야간/재료) 시 큐에서 롤백.
+    if (!this._runStage(entry, 0, true)) {
+      const idx = GameState.crafting.activeQueue.indexOf(entry);
+      if (idx >= 0) GameState.crafting.activeQueue.splice(idx, 1);
+      return false;
+    }
     return true;
   },
 
-  onTP() {
-    const queue = GameState.crafting.activeQueue;
-    const completed = [];
+  // 한 스테이지 실행: 야간/재료 확인 → 재료 소모 → 시간 즉시 소비 → 완성 또는 다음 단계 대기.
+  // 시간·재료 소모 전에 모든 차단 조건을 검사하므로, 실패 시 부작용이 없다.
+  _runStage(entry, stageIndex, isFirstStage = false) {
+    const bp     = BLUEPRINTS[entry.blueprintId];
+    const stage  = bp.stages[stageIndex];
+    const bpName = I18n.blueprintName(entry.blueprintId, bp.name);
 
-    for (let i = queue.length - 1; i >= 0; i--) {
-      const entry = queue[i];
-      entry.tpRemaining--;
+    // 야간 광원 체크 — 각 단계 진행 시점마다 판정 (낮에 끝난 단계는 소급 없음)
+    const nightCheck = NightSystem.canActAtNight('craft');
+    if (!nightCheck.allowed) {
+      EventBus.emit('notify', { message: nightCheck.reason, type: 'warn' });
+      return false;
+    }
+    // 재료 충족 체크
+    const stageCheck = this._checkStageReqs(stage, entry.blueprintId);
+    if (!stageCheck.ok) {
+      EventBus.emit('notify', { message: I18n.t('craftSys.nextStageShort', { name: bpName, reason: stageCheck.reason }), type: 'warn' });
+      return false;
+    }
 
-      // 제작 카드 진행 동기화
-      if (entry.craftCardId && GameState.cards[entry.craftCardId]?._craftEntry) {
-        GameState.cards[entry.craftCardId]._craftEntry.tpRemaining = entry.tpRemaining;
+    // 재료 소모 (소방관 craftSave는 첫 단계에만 적용 — 기존 동작 보존)
+    this._consumeStageItems(stage, isFirstStage);
+    // 시간 즉시 소비 — 야간이어도 광원이 있으면 흐른다
+    TickEngine.skipTP(stage.tpCost, `${bpName} — ${stage.label}`);
+    entry.stageIndex = stageIndex;
+
+    // 마지막 단계면 산출, 아니면 다음 단계 대기
+    if (stageIndex >= bp.stages.length - 1) {
+      this._produceOutput(bp, entry);
+      const idx = GameState.crafting.activeQueue.indexOf(entry);
+      if (idx >= 0) GameState.crafting.activeQueue.splice(idx, 1);
+      return true;
+    }
+    entry.awaitingNext = true;
+    this._ensureCraftCard(entry, bp);
+    const nextStage = bp.stages[stageIndex + 1];
+    EventBus.emit('craftStageAdvanced', { blueprintId: entry.blueprintId, stageIndex });
+    EventBus.emit('notify', {
+      message: I18n.t('craftSys.stageComplete', { name: bpName, stage: stage.label, next: nextStage.label }),
+      type: 'info',
+    });
+    return true;
+  },
+
+  // 다음 단계 진행 — "이어서 제작" 버튼 / 카드 드롭의 공통 진입점
+  advanceCraftStage(craftCardId) {
+    const entry = GameState.crafting.activeQueue.find(e => e.craftCardId === craftCardId);
+    if (!entry || !entry.awaitingNext) return false;
+    const bp = BLUEPRINTS[entry.blueprintId];
+    const nextIdx = entry.stageIndex + 1;
+    if (!bp || nextIdx >= bp.stages.length) return false;
+
+    entry.awaitingNext = false;
+    const ok = this._runStage(entry, nextIdx, false);
+    if (!ok) entry.awaitingNext = true; // 실패 시 대기 상태 복구
+    return ok;
+  },
+
+  // 진행 중 제작 카드(targetId)에 다음 단계 필요 재료(sourceId)를 드롭하면 다음 단계 진행
+  tryAdvanceByDrop(sourceId, targetId) {
+    const target = GameState.cards[targetId];
+    if (!target?._crafting || !target._craftEntry?.awaitingNext) return false;
+    const srcDef = GameState.getCardDef(sourceId);
+    if (!srcDef) return false;
+    const reqs = target._craftEntry.nextStageReqs ?? [];
+    if (!reqs.some(r => r.definitionId === srcDef.id)) return false;
+    return this.advanceCraftStage(targetId);
+  },
+
+  // 스테이지 재료 소모 (consumeAt:'start' 한정). startBlueprint·다음 단계 진행 공용.
+  _consumeStageItems(stage, applyCraftSave = false) {
+    if (stage.consumeAt !== 'start') return;
+    const craftSave = applyCraftSave ? (GameState.player.craftSaveChance ?? 0) : 0;
+    let savedOnce = false;
+    for (const req of stage.requiredItems) {
+      let needed = req.qty;
+      if (!savedOnce && craftSave > 0 && needed > 0 && Math.random() < craftSave) {
+        needed = Math.max(0, needed - 1);
+        savedOnce = true;
+        EventBus.emit('notify', { message: '도구 숙련 — 재료 1개를 절약했다.', type: 'good' });
       }
-
-      if (entry.tpRemaining <= 0) {
-        const bp = BLUEPRINTS[entry.blueprintId];
-        // Check next stage
-        const nextStageIdx = entry.stageIndex + 1;
-        if (nextStageIdx < bp.stages.length) {
-          // Advance to next stage
-          const nextStage = bp.stages[nextStageIdx];
-          const stageCheck = this._checkStageReqs(nextStage, entry.blueprintId);
-
-          if (!stageCheck.ok) {
-            // Pause and notify
-            entry.tpRemaining = 0;
-            EventBus.emit('notify', { message: I18n.t('craftSys.nextStageShort', { name: I18n.blueprintName(entry.blueprintId, bp.name), reason: stageCheck.reason }), type: 'warn' });
-            continue;
-          }
-          // Consume next stage items
-          if (nextStage.consumeAt === 'start') {
-            for (const req of nextStage.requiredItems) {
-              let needed = req.qty;
-              const matching = GameState.getBoardCards().filter(c => c.definitionId === req.definitionId);
-              for (const card of matching) {
-                if (needed <= 0) break;
-                if ((card.quantity ?? 1) <= needed) {
-                  needed -= (card.quantity ?? 1);
-                  GameState.removeCardInstance(card.instanceId);
-                  EventBus.emit('cardRemoved', { instanceId: card.instanceId });
-                } else {
-                  card.quantity -= needed;
-                  needed = 0;
-                  EventBus.emit('boardChanged', {}); // 수량 변경 → 화면 갱신
-                }
-              }
-            }
-          }
-          entry.stageIndex   = nextStageIdx;
-          entry.tpTotal      = nextStage.tpCost;
-          entry.tpRemaining  = nextStage.tpCost;
-          // 제작 카드 스테이지 진행 동기화
-          if (entry.craftCardId && GameState.cards[entry.craftCardId]?._craftEntry) {
-            const ce = GameState.cards[entry.craftCardId]._craftEntry;
-            ce.completedTp += bp.stages[nextStageIdx - 1].tpCost;
-            ce.stageIndex   = nextStageIdx;
-            ce.stageLabel   = nextStage.label;
-            ce.tpTotal      = nextStage.tpCost;
-            ce.tpRemaining  = nextStage.tpCost;
-          }
+      const matching = GameState.getBoardCards().filter(c => c.definitionId === req.definitionId);
+      for (const card of matching) {
+        if (needed <= 0) break;
+        if ((card.quantity ?? 1) <= needed) {
+          needed -= (card.quantity ?? 1);
+          GameState.removeCardInstance(card.instanceId);
+          EventBus.emit('cardRemoved', { instanceId: card.instanceId });
         } else {
-          // All stages complete — produce output
-          completed.push(i);
-          this._produceOutput(bp, entry);
+          card.quantity -= needed;
+          needed = 0;
+          EventBus.emit('boardChanged', {});
         }
       }
     }
+  },
 
-    // Remove completed entries
-    for (const idx of completed) {
-      queue.splice(idx, 1);
+  // 다음 단계 대기용 제작 카드 생성/갱신 (바닥 middle 행)
+  _ensureCraftCard(entry, bp) {
+    const nextStageIdx = entry.stageIndex + 1;
+    const nextStage    = bp.stages[nextStageIdx];
+    const ceData = {
+      blueprintId:    entry.blueprintId,
+      blueprintName:  bp.name,
+      stageIndex:     entry.stageIndex,
+      totalStages:    bp.stages.length,
+      awaitingNext:   true,
+      nextStageIndex: nextStageIdx,
+      nextStageLabel: nextStage?.label ?? '',
+      nextStageReqs:  (nextStage?.requiredItems ?? []).map(r => ({ definitionId: r.definitionId, qty: r.qty })),
+    };
+    if (entry.craftCardId && GameState.cards[entry.craftCardId]) {
+      GameState.cards[entry.craftCardId]._craftEntry = ceData;
+      EventBus.emit('boardChanged', {});
+      return;
+    }
+    const outputDefId = bp.output?.[0]?.definitionId;
+    if (!outputDefId) return;
+    const craftInst = GameState.createCardInstance(outputDefId, {
+      _crafting: true,
+      _craftEntry: ceData,
+    });
+    if (craftInst) {
+      GameState.placeCardInRow(craftInst.instanceId, 'middle');
+      entry.craftCardId = craftInst.instanceId;
     }
   },
 
@@ -424,8 +420,10 @@ const CraftSystem = {
   },
 
   getQueueProgress(entry) {
-    if (!entry || entry.tpTotal === 0) return 1;
-    return (entry.tpTotal - entry.tpRemaining) / entry.tpTotal;
+    const bp = BLUEPRINTS[entry?.blueprintId];
+    if (!bp || !bp.stages?.length) return 1;
+    // 완료된 단계 수 기준 (현재 단계까지 완료 → stageIndex+1 / 전체)
+    return Math.min(1, (entry.stageIndex + 1) / bp.stages.length);
   },
 };
 

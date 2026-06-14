@@ -1217,7 +1217,7 @@ const ITEMS_BASE = {
     defaultDurability: 100, defaultContamination: 0,
     icon: '🪨', description: '자갈더미나 건축 현장에서 모은 흙. 텃밭 조성에 필수 재료.',
     tags: ['material', 'natural'],
-    dismantle: [{ definitionId: 'pebble', qty: 2, chance: 0.5 }],
+    dismantle: [],
   },
 
   // ═══ Phase C: 식생 확장 — 낚시 수확물 (2) ════════════════════════════

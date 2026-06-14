@@ -178,7 +178,9 @@ const GameState = {
 
   // ── crafting ──────────────────────────────────────────
   crafting: {
-    activeQueue: [],   // [{ blueprintId, stageIndex, tpRemaining, tpTotal, reservedItemIds }]
+    // 스테이지 단위 즉시 소비 모델: 각 단계 시작 시 TickEngine.skipTP(tpCost)로 시간을 즉시 소비하고
+    // 멈춘다. awaitingNext=true면 다음 단계 재료 투입(카드 드롭/버튼)을 기다리는 상태.
+    activeQueue: [],   // [{ blueprintId, stageIndex, craftCardId, awaitingNext }]
     maxQueueSize: 3,
   },
 
@@ -846,6 +848,15 @@ const GameState = {
     Object.assign(this.location, d.location);
     Object.assign(this.noise,    d.noise);
     Object.assign(this.crafting, d.crafting);
+    // 구버전 세이브 호환: 제작이 외부 TP로 자동 진행되던 옛 모델 → 즉시 소비 모델로 정규화.
+    // 진행 중이던 제작은 "현재 단계 대기(awaitingNext)" 상태로 전환해 '이어서 제작'으로 재개 가능하게 한다.
+    if (Array.isArray(this.crafting.activeQueue)) {
+      for (const entry of this.crafting.activeQueue) {
+        if (entry.awaitingNext === undefined) entry.awaitingNext = true;
+        const ce = entry.craftCardId ? this.cards[entry.craftCardId]?._craftEntry : null;
+        if (ce && ce.awaitingNext === undefined) ce.awaitingNext = true;
+      }
+    }
     Object.assign(this.combat,   d.combat);
     // 저장 파일에서 encounter/combat 상태로 복원 시 이후 화면 불일치 문제 방지:
     // ui.currentState가 encounter/combat이면 'main'으로 강제 복원 (전투 데이터 없이는 화면 렌더 불가)

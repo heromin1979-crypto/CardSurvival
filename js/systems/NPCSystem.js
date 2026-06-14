@@ -660,7 +660,7 @@ const NPCSystem = {
         for (const gift of evt.effect.giveItems) {
           const inst = GameState.createCardInstance(gift.id, { quantity: gift.qty });
           if (inst) {
-            const placed = GameState.placeCardInRow(inst.instanceId, 'middle');
+            const placed = GameState.placeCardInRow(inst.instanceId, 'bottom');
             if (!placed) GameState.removeCardInstance(inst.instanceId);
           }
         }
@@ -701,7 +701,7 @@ const NPCSystem = {
         // Give the gift item
         const inst = GameState.createCardInstance(gift.itemId, { quantity: gift.qty });
         if (inst) {
-          const placed = GameState.placeCardInRow(inst.instanceId, 'middle');
+          const placed = GameState.placeCardInRow(inst.instanceId, 'bottom');
           if (!placed) {
             GameState.removeCardInstance(inst.instanceId);
           } else {
@@ -919,7 +919,7 @@ const NPCSystem = {
     // Give received items
     const inst = GameState.createCardInstance(trade.receive.id, { quantity: trade.receive.qty });
     if (inst) {
-      const placed = GameState.placeCardInRow(inst.instanceId, 'middle');
+      const placed = GameState.placeCardInRow(inst.instanceId, 'bottom');
       if (!placed) {
         GameState.removeCardInstance(inst.instanceId);
         return false;
@@ -1104,8 +1104,7 @@ const NPCSystem = {
         if (Math.random() >= forage.chance) continue;
         const inst = GameState.createCardInstance(forage.id, { quantity: forage.qty ?? 1 });
         if (inst) {
-          const placed = GameState.placeCardInRow(inst.instanceId, 'middle')
-                      || GameState.placeCardInRow(inst.instanceId, 'bottom');
+          const placed = GameState.placeCardInRow(inst.instanceId, 'bottom');
           if (placed) {
             GameState.npcs._foragingToday[npcId] = true;
             const name     = I18n.itemName(npcId, NPC_ITEMS[npcId]?.name);

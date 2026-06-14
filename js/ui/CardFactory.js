@@ -1333,13 +1333,15 @@ const CardFactory = {
     const ce = inst._craftEntry;
     if (!ce) return '';
 
-    const consumed   = ce.completedTp + (ce.tpTotal - ce.tpRemaining);
-    const overallPct = ce.totalTpAll > 0 ? (consumed / ce.totalTpAll * 100) : 0;
-    const totalRemaining = Math.max(0, ce.totalTpAll - consumed);
+    // 즉시 소비 모델: 제작 카드는 '다음 단계 대기' 상태에서만 보드에 존재.
+    // 진행률은 완료된 단계 수 기준.
+    const completedStages = (ce.stageIndex ?? 0) + 1;
+    const totalStages     = ce.totalStages ?? 1;
+    const overallPct      = Math.min(100, completedStages / totalStages * 100);
 
-    const stageInfo = ce.totalStages > 1
-      ? `${ce.stageIndex + 1}/${ce.totalStages} — ${ce.stageLabel}`
-      : ce.stageLabel;
+    const stageInfo = totalStages > 1
+      ? `${completedStages}/${totalStages} — ${ce.nextStageLabel ?? ''}`
+      : (ce.nextStageLabel ?? '');
 
     return `
       <div class="card-header">
@@ -1356,7 +1358,7 @@ const CardFactory = {
         </div>
       </div>
       <div class="card-footer">
-        <span class="crafting-tp-label">${I18n.t('card.tpRemaining', { tp: totalRemaining })}</span>
+        <span class="crafting-tp-label">${I18n.t('craft.awaitingNext', { label: ce.nextStageLabel ?? '' })}</span>
       </div>
     `;
   },
