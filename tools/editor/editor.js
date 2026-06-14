@@ -174,6 +174,25 @@ const FIELD_HELP = {
   exploreIncrement: '탐사 1회당 지역 탐사도 상승%(이 구). 비우면 전역 기본값(gameBalance.explore.explorationPerExplore). 100%까지 누적.',
   explorationYields: '탐사도 임계값 특수자원 — [{at:30, items:[{definitionId,qty}]}] 형태. 탐사도가 at% 통과 시 items를 1회 고정 지급(확률 아님). 100% 후 종료.',
   at: '이 특수자원이 지급되는 탐사도 임계값(%). 탐사도가 이 값을 통과하는 탐사에서 1회 산출.',
+  // ── 숨은 장소(POI) ──
+  district: '이 숨은 장소가 속한 구 ID. 해당 구에서만 발견 시도.',
+  unlockConditions: '해금 조건(모두 AND). 충족 시 구 진입에서 발견·보상 지급.',
+  explorationThreshold: '구 탐사도 이 % 이상이어야 해금(Phase 3). 비우면 탐사도 조건 없음.',
+  minVisits: '해당 구 최소 방문 횟수.',
+  minDay: '최소 게임 일차(Day).',
+  requiredItems: '발견하려면 보드에 보유해야 하는 아이템 ID 목록(예: lockpick).',
+  requiredCharacter: '특정 캐릭터(직업) 전용. null이면 제한 없음.',
+  minKills: '누적 최소 처치 수.',
+  minCraftLevel: '최소 제작 숙련도.',
+  maxNoise: '소음이 이 값 이하일 때만(은신 조건). null이면 제한 없음.',
+  minDistrictsVisited: '방문한 구 수 최소치.',
+  minItemsFound: '누적 발견 아이템 수 최소치.',
+  customCheck: '특수 커스텀 조건(코드). 보통 null.',
+  rewards: '최초 발견 시 1회 확정 지급 보상 [{definitionId, qty}].',
+  bossId: '진입 시 스폰되는 보스 ID. null이면 없음.',
+  repeatable: '재방문 가능 여부. true면 쿨다운 후 재탐색 가능.',
+  repeatCooldownDays: '재방문 가능까지의 쿨다운 일수(repeatable=true일 때).',
+  discoveryMessage: '발견 순간 표시되는 메시지.',
   seasons: '제철 — 켠 계절에만 추첨된다. 기본은 4계절 전부 켜짐(사철). 전부 끄면 어느 계절에도 안 나온다.',
   harvest: '텃밭 자동 수확 설정 — itemId(산출 작물)·harvestDays(수확 주기 일)·qty(수확량). GardenSystem이 주기마다 자동 산출.',
   itemId: '산출/대상 아이템의 ID. (📦 아이템 탭에서 검색해 확인)',
@@ -1525,6 +1544,7 @@ function render() {
   }
   if (state.tab === 'districts') return renderListTab('districts', (d) => d.name);
   if (state.tab === 'landmarks') return renderListTab('landmarks', (d) => d.name);
+  if (state.tab === 'hidden') return renderListTab('hidden', (d) => d.name);
 }
 
 let rerenderDetail = () => {};
@@ -1551,6 +1571,8 @@ function renderListTab(fileKey, labelFn) {
     sidebar.append(el('button', { class: 'ghost row-add', text: '+ 랜드마크 추가', onclick: createLandmark }));
   } else if (fileKey === 'districts') {
     sidebar.append(el('button', { class: 'ghost row-add', text: '+ 장소(구) 추가', onclick: createDistrict }));
+  } else if (fileKey === 'hidden') {
+    sidebar.append(el('button', { class: 'ghost row-add', text: '+ 숨은 장소 추가', onclick: createHidden }));
   }
   const search = sideSearchInput(fileKey);
   sidebar.append(search.wrap);
@@ -1579,6 +1601,7 @@ function renderListTab(fileKey, labelFn) {
       b.classList.toggle('active', b.dataset.key === state.sel[fileKey]));
     detailWrap.innerHTML = '';
     if (fileKey === 'districts') renderDistrictDetail(detailWrap, data[state.sel[fileKey]]);
+    else if (fileKey === 'hidden') renderHiddenDetail(detailWrap, data[state.sel[fileKey]]);
     else renderLandmarkDetail(detailWrap, data[state.sel[fileKey]]);
   };
   rerenderDetail();
@@ -1702,6 +1725,112 @@ function renderExplorationYields(root, dist) {
   fs.append(el('button', { class: 'ghost row-add', text: '+ 임계값 추가',
     onclick: () => { list.push({ at: 50, items: [] }); markDirty('districts'); rerenderDetail(); } }));
   root.append(fs);
+}
+
+// ─── 숨은 장소(POI) 상세 ──────────────────────────────────────
+function renderHiddenDetail(root, loc) {
+  if (!loc) { root.append(el('div', { class: 'hint', text: '항목을 선택하세요.' })); return; }
+  const key = state.sel.hidden;
+
+  const h2 = el('h2', { text: `${loc.icon || ''} ${loc.name || ''}` });
+  root.append(el('div', { class: 'field-row', style: 'align-items:center;justify-content:space-between' }, [
+    h2,
+    el('button', { class: 'ghost danger', text: '🗑 숨은 장소 삭제', onclick: () => deleteHidden(key) }),
+  ]));
+  root.append(el('div', { class: 'sub', text: `HIDDEN_LOCATIONS.${key}` }));
+
+  const syncLabels = () => {
+    h2.textContent = `${loc.icon || ''} ${loc.name || ''}`;
+    refreshSidebarLabel(key, `${loc.icon ? loc.icon + ' ' : ''}${loc.name || key}`);
+  };
+
+  // 헤더: 이름·아이콘·소속 구
+  if (!('name' in loc)) loc.name = '';
+  if (!('icon' in loc)) loc.icon = '';
+  const fr = el('div', { class: 'field-row' });
+  fr.append(scalarInput(loc, 'name', 'hidden', undefined, syncLabels));
+  fr.append(scalarInput(loc, 'icon', 'hidden', undefined, syncLabels));
+  const distSel = el('select');
+  const dkeys = Object.keys(state.files.districts?.data ?? {});
+  distSel.append(el('option', { value: '' }, '(구 선택)'));
+  for (const dk of dkeys) distSel.append(el('option', { value: dk, ...(loc.district === dk ? { selected: true } : {}) }, dk));
+  if (loc.district && !dkeys.includes(loc.district)) distSel.append(el('option', { value: loc.district, selected: true }, `${loc.district} ⚠`));
+  distSel.addEventListener('change', () => { loc.district = distSel.value; markDirty('hidden'); });
+  fr.append(el('div', { class: 'field' }, [labelEl('district', helpFor('district')), distSel]));
+  root.append(fr);
+
+  const ta = el('textarea', { text: loc.description || '' });
+  ta.addEventListener('input', () => { loc.description = ta.value; markDirty('hidden'); });
+  root.append(el('div', { class: 'field grow' }, [labelEl('description', '설명'), ta]));
+
+  // 해금 조건 (중첩 객체 자동 렌더)
+  if (loc.unlockConditions && typeof loc.unlockConditions === 'object') {
+    root.append(el('fieldset', {}, [
+      el('legend', { text: '해금 조건 (unlockConditions) — 모두 충족(AND) 시 발견' }),
+      objNode(loc, 'unlockConditions', 0, 'hidden', helpForItem),
+    ]));
+  }
+
+  // 확정 보상
+  root.append(el('fieldset', {}, [
+    el('legend', { text: '확정 보상 (rewards) — 최초 발견 시 1회' }),
+    itemRows(loc.rewards || (loc.rewards = []), 'hidden'),
+  ]));
+
+  // 추가 루팅
+  root.append(el('fieldset', {}, [
+    el('legend', { text: '추가 루팅 (lootTable)' }),
+    lootTableEditor(loc.lootTable || (loc.lootTable = []), 'definitionId',
+      [{ key: 'minQty', label: 'min' }, { key: 'maxQty', label: 'max' }], 'hidden'),
+  ]));
+
+  // 기타 설정
+  const fr2 = el('div', { class: 'field-row' });
+  for (const k of ['dangerLevel', 'encounterChance', 'bossId', 'repeatable', 'repeatCooldownDays']) {
+    if (k in loc) fr2.append(scalarInput(loc, k, 'hidden', helpFor(k)));
+  }
+  if (fr2.children.length) root.append(fr2);
+
+  if ('discoveryMessage' in loc) {
+    const dm = el('textarea', { text: loc.discoveryMessage || '' });
+    dm.addEventListener('input', () => { loc.discoveryMessage = dm.value; markDirty('hidden'); });
+    root.append(el('div', { class: 'field grow' }, [labelEl('discoveryMessage', helpFor('discoveryMessage')), dm]));
+  }
+}
+
+// 신규 숨은 장소 생성 — 기본 골격
+function createHidden() {
+  const raw = (prompt('새 숨은 장소 ID (영문/숫자/밑줄, 예: hidden_my_spot)') || '').trim();
+  if (!raw) return;
+  const idk = raw.replace(/[^A-Za-z0-9_]/g, '');
+  if (!idk) { alert('ID는 영문/숫자/밑줄만 사용하세요.'); return; }
+  if (state.files.hidden.data[idk]) { alert('이미 존재하는 ID입니다.'); return; }
+  const name = (prompt('이름', '새 숨은 장소') || '새 숨은 장소').trim();
+  const icon = (prompt('아이콘(이모지)', '❓') || '❓').trim();
+  state.files.hidden.data[idk] = {
+    id: idk, name, icon, district: '', description: '',
+    unlockConditions: {
+      explorationThreshold: 50, minDay: 1, requiredItems: [], requiredCharacter: null,
+      minKills: 0, weather: null, season: null, minCraftLevel: 0, customCheck: null,
+    },
+    rewards: [], lootTable: [],
+    dangerLevel: 1, encounterChance: 0.1, bossId: null, repeatable: false, repeatCooldownDays: 0,
+    discoveryMessage: '',
+  };
+  state.sel.hidden = idk;
+  markDirty('hidden');
+  status(`숨은 장소 「${name}」(${idk}) 생성. 소속 구·해금 조건·보상을 설정하세요.`, 'ok');
+  render();
+}
+
+function deleteHidden(key) {
+  if (!key || !state.files.hidden.data[key]) return;
+  if (!confirm(`숨은 장소 「${state.files.hidden.data[key].name || key}」을(를) 삭제할까요?`)) return;
+  delete state.files.hidden.data[key];
+  state.sel.hidden = Object.keys(state.files.hidden.data)[0] ?? null;
+  markDirty('hidden');
+  status('숨은 장소를 삭제했습니다.', 'ok');
+  render();
 }
 
 function renderLandmarkDetail(root, lm) {

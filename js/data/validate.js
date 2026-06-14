@@ -360,6 +360,38 @@ async function validate() {
     errors++;
   }
 
+  // 13. 숨은 장소(hiddenLocations) — 구 참조·보상/루팅 아이템 참조 검증
+  console.log('\n=== HIDDEN LOCATIONS CHECK ===');
+  let hlChecked = 0, hlBad = 0;
+  try {
+    const hlMod = await import('./hiddenLocations.js');
+    const HL = hlMod.default ?? hlMod.HIDDEN_LOCATIONS ?? {};
+    const VALID_SEASON_HL = new Set(['spring', 'summer', 'autumn', 'winter']);
+    for (const [id, loc] of Object.entries(HL)) {
+      hlChecked++;
+      if (loc.district && !knownDistricts.has(loc.district)) {
+        console.log(`❌ [hidden ${id}] district "${loc.district}" — 존재하지 않는 구`); errors++; hlBad++;
+      }
+      const uc = loc.unlockConditions ?? {};
+      if (uc.explorationThreshold != null && (typeof uc.explorationThreshold !== 'number' || uc.explorationThreshold < 0 || uc.explorationThreshold > 100)) {
+        console.log(`❌ [hidden ${id}] explorationThreshold "${uc.explorationThreshold}" — 0~100`); errors++; hlBad++;
+      }
+      if (uc.season && !VALID_SEASON_HL.has(uc.season)) {
+        console.log(`❌ [hidden ${id}] unlockConditions.season "${uc.season}" — spring/summer/autumn/winter`); errors++; hlBad++;
+      }
+      for (const it of (loc.rewards ?? [])) {
+        if (it.definitionId && !allItemIds.has(it.definitionId)) { console.log(`⚠️  [hidden ${id}] rewards "${it.definitionId}" not in items`); warnings++; }
+      }
+      for (const r of (loc.lootTable ?? [])) {
+        if (r.definitionId && !allItemIds.has(r.definitionId)) { console.log(`⚠️  [hidden ${id}] lootTable "${r.definitionId}" not in items`); warnings++; }
+      }
+    }
+    console.log(`  검사한 숨은 장소: ${hlChecked}, 오류: ${hlBad}`);
+  } catch (e) {
+    console.log(`⚠️  hiddenLocations.js 로드 실패 — ${e.message}`);
+    warnings++;
+  }
+
   // Summary
   console.log(`\n=== SUMMARY ===`);
   console.log(`Total items: ${allItemIds.size}`);
