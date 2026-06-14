@@ -15,16 +15,29 @@ afterEach(() => { delete DISTRICTS[TID]; });
 describe('generateDistrictLoot — 계절 한정(seasons) 필터', () => {
   it('entry.seasons가 현재 계절과 맞으면 추첨, 아니면 제외', () => {
     installDistrict([{ definitionId: 'acorn', weight: 100, minQty: 1, maxQty: 1, seasons: ['autumn'] }]);
-    const fall = generateDistrictLoot(TID, { season: 'autumn' });
-    expect(fall.length).toBeGreaterThan(0);
-    const spring = generateDistrictLoot(TID, { season: 'spring' });
-    expect(spring.length).toBe(0);  // 제철 아님 → 후보 없음
+    expect(generateDistrictLoot(TID, { season: 'autumn' }).length).toBeGreaterThan(0);
+    expect(generateDistrictLoot(TID, { season: 'spring' }).length).toBe(0);  // 제철 아님
   });
 
-  it('SEASONAL_ITEMS 큐레이션 기본값도 적용된다 (acorn=가을, seasons 미지정)', () => {
-    installDistrict([{ definitionId: 'acorn', weight: 100, minQty: 1, maxQty: 1 }]);
-    expect(generateDistrictLoot(TID, { season: 'spring' }).length).toBe(0);   // 큐레이션상 가을 한정
+  it('복수 계절 지정(봄·가을)은 두 계절 모두 추첨된다', () => {
+    installDistrict([{ definitionId: 'acorn', weight: 100, minQty: 1, maxQty: 1, seasons: ['spring', 'autumn'] }]);
+    expect(generateDistrictLoot(TID, { season: 'spring' }).length).toBeGreaterThan(0);
     expect(generateDistrictLoot(TID, { season: 'autumn' }).length).toBeGreaterThan(0);
+    expect(generateDistrictLoot(TID, { season: 'summer' }).length).toBe(0);
+  });
+
+  it('seasons 미지정 = 사철(전 계절 등장)', () => {
+    installDistrict([{ definitionId: 'cloth', weight: 100, minQty: 1, maxQty: 1 }]);
+    for (const s of ['spring', 'summer', 'autumn', 'winter']) {
+      expect(generateDistrictLoot(TID, { season: s }).length).toBeGreaterThan(0);
+    }
+  });
+
+  it('seasons 빈 배열([]) = 어느 계절에도 안 나옴', () => {
+    installDistrict([{ definitionId: 'cloth', weight: 100, minQty: 1, maxQty: 1, seasons: [] }]);
+    for (const s of ['spring', 'summer', 'autumn', 'winter']) {
+      expect(generateDistrictLoot(TID, { season: s }).length).toBe(0);
+    }
   });
 
   it('season 미전달 시 계절 필터 비활성(하위호환)', () => {

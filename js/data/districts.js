@@ -3873,20 +3873,6 @@ function getAdjacentDistricts(districtId) {
 }
 
 /**
- * 제철 한정 자원 큐레이션 맵 — 구별 lootTable에 반복 등장하는 항목의 계절 기본값.
- * 엔트리에 `seasons`를 직접 지정하면(에디터) 그게 우선한다. 여기 없는 항목은 사철.
- */
-const SEASONAL_ITEMS = {
-  acorn:            ['autumn'],
-  chestnut:         ['autumn'],
-  pine_nut:         ['autumn'],
-  apple_wild:       ['autumn'],
-  wild_grape:       ['autumn'],
-  bamboo_shoot:     ['spring'],
-  wild_strawberry:  ['summer'],
-};
-
-/**
  * 구 단위 루팅 결과 생성.
  *
  * 자원 클래스(`entry.cls`, 기본 'surface')별로 다르게 다뤄진다:
@@ -3913,10 +3899,14 @@ function generateDistrictLoot(districtId, opts = {}) {
   const mineralRemaining = opts.mineralRemaining ?? Infinity;
   const season          = opts.season ?? null;
 
-  // 계절 한정 항목 필터. 우선순위: 엔트리 seasons(에디터 개별 지정) > SEASONAL_ITEMS(큐레이션 기본) > 사철.
+  // 계절 한정 항목 필터.
+  //  - seasons 미지정 = 사철(전부 등장). 에디터 기본 = 4계절 전부 켜짐.
+  //  - seasons 배열 지정 = 그 계절에만. 빈 배열([]) = 전부 끔 → 절대 안 나옴.
+  //  - season 미전달(opts 없음) = 필터 off(하위호환).
   const inSeason = (e) => {
-    const s = e.seasons ?? SEASONAL_ITEMS[e.definitionId];
-    return !s || !season || s.includes(season);
+    if (!e.seasons) return true;          // 미지정 = 사철
+    if (!season) return true;             // 계절 정보 없음 = 필터 off
+    return e.seasons.includes(season);    // [] 포함 — 빈 배열은 어떤 계절도 매칭 안 됨
   };
   const table = district.lootTable.filter(inSeason);
   if (!table.length) return [];

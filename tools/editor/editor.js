@@ -170,7 +170,7 @@ const FIELD_HELP = {
   hasFishing: '낚시 가능 여부 — 랜드마크: 안에서 낚시·통발 사용 가능 / 구: 시뮬레이터 AI 판정용.',
   cls: '자원 클래스 — 표면(surface): 지역 자원 레벨에 비례해 나오고 시간 경과로 재생 / 탐사(expedition): 자원 레벨 무관, 매 탐색 독립 추첨 / 광물(mineral): 영구 고갈(잔량 소진 시 안 나옴). 미지정 시 표면.',
   mineralStock: '이 구의 광물(mineral) 자원 총 잔량 — 캐면 영구 차감, 재생 없음. 비우면 EcologySystem 기본값 사용.',
-  seasons: '제철 한정 — 이 계절에만 추첨된다(예: 도토리=가을). 비우면 사철. districts.js SEASONAL_ITEMS의 기본값을 이 항목에서 덮어쓴다.',
+  seasons: '제철 — 켠 계절에만 추첨된다. 기본은 4계절 전부 켜짐(사철). 전부 끄면 어느 계절에도 안 나온다.',
   harvest: '텃밭 자동 수확 설정 — itemId(산출 작물)·harvestDays(수확 주기 일)·qty(수확량). GardenSystem이 주기마다 자동 산출.',
   itemId: '산출/대상 아이템의 ID. (📦 아이템 탭에서 검색해 확인)',
   harvestDays: '수확 주기(일). 이 일수마다 작물 1회 자동 산출(계절 배율 적용, 겨울 정지).',
@@ -1355,25 +1355,30 @@ function lootTableEditor(rows, idKey, extraCols, fileKey, opts = {}) {
       });
       clsCell = el('td', {}, sel);
     }
-    // 제철(seasons) 토글 — 4계절 체크박스. 전부 해제 시 필드 삭제(사철/큐레이션 기본 사용).
+    // 제철(seasons) 토글 — 4계절 체크. 기본(미지정) = 전부 켜짐(사철).
+    // 전부 끄면 빈 배열([]) → 절대 안 나옴. 다시 4개 모두 켜면 필드 삭제(사철, diff 최소화).
     let seasonCell = null;
     if (opts.classCol) {
+      const ALL = ['spring', 'summer', 'autumn', 'winter'];
       const wrap = el('div', { class: 'season-toggles', style: 'display:flex;gap:2px' });
+      const curSet = () => (Array.isArray(row.seasons) ? row.seasons : ALL.slice());
+      const paint = (b, on) => {
+        b.classList.toggle('on', on);
+        b.style.cssText = `font-size:10px;padding:1px 3px;${on ? 'background:var(--accent,#4a8);color:#fff' : 'opacity:.4'}`;
+      };
+      const btns = {};
       for (const [val, label] of [['spring', '봄'], ['summer', '여름'], ['autumn', '가을'], ['winter', '겨울']]) {
-        const on = Array.isArray(row.seasons) && row.seasons.includes(val);
-        const b = el('button', {
-          class: 'season-tog' + (on ? ' on' : ''),
-          title: label, text: label[0],
-          style: `font-size:10px;padding:1px 3px;${on ? 'background:var(--accent,#4a8);color:#fff' : 'opacity:.5'}`,
-        });
+        const b = el('button', { class: 'season-tog', title: label, text: label[0] });
+        paint(b, curSet().includes(val));
         b.addEventListener('click', () => {
-          let s = Array.isArray(row.seasons) ? row.seasons.slice() : [];
-          if (s.includes(val)) s = s.filter(x => x !== val); else s.push(val);
-          if (s.length) row.seasons = s; else delete row.seasons;
+          let s = curSet();
+          s = s.includes(val) ? s.filter(x => x !== val) : [...s, val];
+          if (s.length === ALL.length) delete row.seasons;       // 전부 온 = 사철(기본)
+          else row.seasons = ALL.filter(x => s.includes(x));     // 일부 또는 [] (전부 끔 = 안 나옴)
           markDirty(fileKey);
-          b.classList.toggle('on');
-          b.style.cssText = `font-size:10px;padding:1px 3px;${b.classList.contains('on') ? 'background:var(--accent,#4a8);color:#fff' : 'opacity:.5'}`;
+          for (const v of ALL) paint(btns[v], curSet().includes(v));
         });
+        btns[val] = b;
         wrap.append(b);
       }
       seasonCell = el('td', {}, wrap);
