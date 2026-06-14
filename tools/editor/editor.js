@@ -1476,11 +1476,11 @@ function itemRows(arr, fileKey) {
     });
     const qty = el('input', { class: 'num', type: 'number', value: it.qty ?? 1 });
     qty.addEventListener('input', () => { it.qty = Number(qty.value); markDirty(fileKey); });
-    wrap.append(el('div', { class: 'field-row' }, [
+    wrap.append(el('div', { class: 'field-row', style: 'align-items:flex-end' }, [
       el('div', { class: 'field' }, [fieldLabel('item', 'definitionId'), id]),
       el('div', { class: 'field' }, [fieldLabel('이름', '__name'), nm]),
       el('div', { class: 'field' }, [fieldLabel('qty', 'qty'), qty]),
-      el('button', { class: 'ghost danger', text: '✕',
+      el('button', { class: 'ghost danger mini', text: '✕',
         onclick: () => { arr.splice(idx, 1); markDirty(fileKey); rerenderDetail(); } }),
     ]));
   });
@@ -1690,9 +1690,9 @@ function renderExplorationYields(root, dist) {
     const box = el('fieldset', {}, el('legend', { text: `임계값 ${y.at ?? 0}%` }));
     const atInp = el('input', { type: 'number', min: '1', max: '100', value: y.at ?? 0, style: 'max-width:90px' });
     atInp.addEventListener('input', () => { y.at = Number(atInp.value); markDirty('districts'); });
-    const head = el('div', { class: 'field-row' }, [
-      el('div', { class: 'field' }, [labelEl('at', helpFor('at')), atInp]),
-      el('button', { class: 'ghost danger', text: '✕ 임계값 삭제',
+    const head = el('div', { class: 'field-row', style: 'align-items:flex-end' }, [
+      el('div', { class: 'field' }, [labelEl('at (%)', helpFor('at')), atInp]),
+      el('button', { class: 'ghost danger mini', text: '✕ 임계값 삭제',
         onclick: () => { list.splice(idx, 1); markDirty('districts'); rerenderDetail(); } }),
     ]);
     box.append(head);
