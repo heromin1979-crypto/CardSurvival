@@ -77,6 +77,12 @@ const HiddenElementSystem = {
       if (visitCount < cond.minVisits) return false;
     }
 
+    // 지역 탐사도(%) 임계값 (Phase 3) — 구를 충분히 탐사해야 해금되는 POI
+    if (cond.explorationThreshold != null) {
+      const expl = gs.flags?.districtExploration?.[loc.district] ?? 0;
+      if (expl < cond.explorationThreshold) return false;
+    }
+
     // 필요 아이템 (보드에 소지)
     if (cond.requiredItems?.length) {
       for (const itemId of cond.requiredItems) {

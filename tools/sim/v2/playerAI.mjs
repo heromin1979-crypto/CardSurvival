@@ -26,6 +26,7 @@
 import GameState from '../../../js/core/GameState.js';
 import EventBus from '../../../js/core/EventBus.js';
 import DiseaseSystem from '../../../js/systems/DiseaseSystem.js';
+import EcologySystem from '../../../js/systems/EcologySystem.js';
 import { DISTRICTS, generateDistrictLoot, getAdjacentDistricts } from '../../../js/data/districts.js';
 import { rollEnemyGroup } from '../../../js/data/enemies.js';
 import ITEMS from '../../../js/data/items.js';
@@ -281,42 +282,44 @@ function actExplore(simInv) {
   if (!districtId) return null;
   _drainStamina(BALANCE.travel?.exploreStaminaDrain ?? 5);
 
-  // 본체 _arriveAtDistrict 30일 루팅 게이트 재현
-  const loc = GameState.location;
-  if (!loc.districtsLooted) loc.districtsLooted = [];
-  if (!loc.districtLootDay) loc.districtLootDay = {};
-  let lootCards = [];
-  if (!loc.districtsLooted.includes(districtId)) {
-    lootCards = generateDistrictLoot(districtId);
-    loc.districtsLooted.push(districtId);
-    loc.districtLootDay[districtId] = GameState.time.day;
-  } else {
-    const since = GameState.time.day - (loc.districtLootDay[districtId] ?? 0);
-    if (since >= (BALANCE.explore?.respawnLootDays ?? 30)) {
-      for (const item of generateDistrictLoot(districtId)) {
-        if (Math.random() < (BALANCE.explore?.respawnLootChance ?? 0.5)) {
-          lootCards.push({ ...item, quantity: Math.max(1, Math.floor((item.quantity ?? 1) / (BALANCE.explore?.respawnLootQtyDivisor ?? 2))) });
-        }
-      }
-      loc.districtLootDay[districtId] = GameState.time.day;
-    }
-    // else: 이미 루팅함(30일 미경과) → 빈손
-  }
+  // 본체 _arriveAtDistrict 자원 이원화 모델 재현 (표면=자원레벨 비례 + 표면 소진 + 탐사도 누적/임계값)
+  EcologySystem.ensureInitialized();
+  const surfaceMult = EcologySystem.getLootMult(districtId);
+  const season      = GameState.season?.current ?? null;  // 제철 자원 필터
+  const lootCards = generateDistrictLoot(districtId, { surfaceMult, season });
+
   let added = 0;
   for (const item of lootCards) {
     if (item.contamination > 0 && !COOKING_INPUT_ALLOWLIST.has(item.definitionId)) continue;
     simInv[item.definitionId] = (simInv[item.definitionId] ?? 0) + item.quantity;
     added += item.quantity;
   }
+  EventBus.emit('locationExplored', { districtId });  // 표면 자원 소진 (EcologySystem -resourceExploreConsume)
+
+  // 지역 탐사도 누적 + 임계값 특수자원 고정 산출 (확률 아님)
+  const gs = GameState;
+  if (!gs.flags) gs.flags = {};
+  if (!gs.flags.districtExploration) gs.flags.districtExploration = {};
+  const prev = gs.flags.districtExploration[districtId] ?? 0;
+  if (prev < 100) {
+    const inc  = DISTRICTS[districtId]?.exploreIncrement ?? BALANCE.explore?.explorationPerExplore ?? 5;
+    const next = Math.min(100, prev + inc);
+    gs.flags.districtExploration[districtId] = next;
+    for (const y of (DISTRICTS[districtId]?.explorationYields ?? [])) {
+      if (!(y.at > prev && y.at <= next)) continue;
+      for (const it of (y.items ?? [])) {
+        simInv[it.definitionId] = (simInv[it.definitionId] ?? 0) + (it.qty ?? 1);
+        added += (it.qty ?? 1);
+      }
+    }
+  }
   return `explore:${districtId}:+${added}`;
 }
 
-// roam 정책: 루팅 고갈 시 fresh(미루팅 또는 30일 경과) 인접 구역으로 이동
+// roam 정책: 표면 자원이 고갈된 구를 피하고 자원 레벨이 높은 인접 구로 이동
 function _isFreshDistrict(id) {
-  const loc = GameState.location;
-  if (!loc.districtsLooted?.includes(id)) return true;
-  const since = GameState.time.day - (loc.districtLootDay?.[id] ?? 0);
-  return since >= (BALANCE.explore?.respawnLootDays ?? 30);
+  const lvl = GameState.ecology?.districts?.[id]?.resourceLevel ?? 100;
+  return lvl >= 50;  // 자원 레벨 50 미만이면 고갈로 간주
 }
 
 function actMove(cfg = {}) {

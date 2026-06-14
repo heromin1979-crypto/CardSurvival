@@ -3872,29 +3872,66 @@ function getAdjacentDistricts(districtId) {
   return (d.adjacentDistricts ?? []).map(id => DISTRICTS[id]).filter(Boolean);
 }
 
-/** 구 단위 루팅 결과 생성 */
-function generateDistrictLoot(districtId) {
+/**
+ * 구 단위 루팅 결과 생성.
+ *
+ * 자원 클래스(`entry.cls`, 기본 'surface')별로 다르게 다뤄진다:
+ *  - surface    : 표면 자원. `opts.surfaceMult`(지역 자원 레벨 기반, 0~1) 확률로 채택
+ *                 → 고갈 지역일수록 적게 나온다(연속 재생 모델).
+ *  - expedition : 탐사 자원. surfaceMult 무관, 매 추첨 독립 채택(상시 반복).
+ *  (특수/광물 자원은 lootTable이 아니라 구의 explorationYields[탐사도 임계값 고정 산출]로 다룬다 — Phase 3)
+ *
+ * 계절 한정(`entry.seasons`, 배열): 지정 시 해당 계절에만 추첨 대상이 된다(제철 자원 — 도토리=가을 등).
+ * 미지정 = 사철. `opts.season` 미전달 시 계절 필터 비활성(하위호환).
+ *
+ * 반환: [{ definitionId, quantity, contamination, cls }] — cls는 호출자용 추가 필드(다운스트림 무시).
+ * opts 미지정 시 surfaceMult=1·계절필터 off → 종전과 동일하게 전량 산출(하위호환).
+ *
+ * @param {string} districtId
+ * @param {{surfaceMult?:number, season?:string}} [opts]
+ */
+function generateDistrictLoot(districtId, opts = {}) {
   const district = DISTRICTS[districtId];
   if (!district?.lootTable?.length) return [];
 
+  const surfaceMult     = opts.surfaceMult ?? 1;
+  const season          = opts.season ?? null;
+
+  // 계절 한정 항목 필터.
+  //  - seasons 미지정 = 사철(전부 등장). 에디터 기본 = 4계절 전부 켜짐.
+  //  - seasons 배열 지정 = 그 계절에만. 빈 배열([]) = 전부 끔 → 절대 안 나옴.
+  //  - season 미전달(opts 없음) = 필터 off(하위호환).
+  const inSeason = (e) => {
+    if (!e.seasons) return true;          // 미지정 = 사철
+    if (!season) return true;             // 계절 정보 없음 = 필터 off
+    return e.seasons.includes(season);    // [] 포함 — 빈 배열은 어떤 계절도 매칭 안 됨
+  };
+  const table = district.lootTable.filter(inSeason);
+  if (!table.length) return [];
+
   const results = [];
-  const totalWeight = district.lootTable.reduce((s, e) => s + e.weight, 0);
+  const totalWeight = table.reduce((s, e) => s + e.weight, 0);
   const count = BALANCE.explore.lootCountMin + Math.floor(Math.random() * (BALANCE.explore.lootCountMax - BALANCE.explore.lootCountMin + 1)); // 1~3개
 
   for (let i = 0; i < count; i++) {
     let rand = Math.random() * totalWeight;
-    for (const entry of district.lootTable) {
+    for (const entry of table) {
       rand -= entry.weight;
-      if (rand <= 0) {
-        const qty = entry.minQty + Math.floor(Math.random() * (entry.maxQty - entry.minQty + 1));
-        const contaminated = Math.random() < (entry.contamChance ?? 0);
-        results.push({
-          definitionId:  entry.definitionId,
-          quantity:      qty,
-          contamination: contaminated ? 50 + Math.floor(Math.random() * 50) : 0,
-        });
-        break;
-      }
+      if (rand > 0) continue;
+
+      const cls = entry.cls ?? 'surface';
+      // 표면 자원은 자원 레벨 배율 확률로 채택(고갈 시 누락). 탐사 자원은 항상 채택.
+      if (cls === 'surface' && Math.random() >= surfaceMult) break;
+
+      const qty = entry.minQty + Math.floor(Math.random() * (entry.maxQty - entry.minQty + 1));
+      const contaminated = Math.random() < (entry.contamChance ?? 0);
+      results.push({
+        definitionId:  entry.definitionId,
+        quantity:      qty,
+        contamination: contaminated ? 50 + Math.floor(Math.random() * 50) : 0,
+        cls,
+      });
+      break;
     }
   }
   return results;

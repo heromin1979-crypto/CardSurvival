@@ -84,10 +84,10 @@ const EcologySystem = {
 
   ensureInitialized() {
     const gs = GameState;
+
     if (gs.ecology) return;
 
     gs.ecology = { districts: {}, global: {} };
-
     // 구역별 초기 상태
     for (const [id, d] of Object.entries(DISTRICTS)) {
       gs.ecology.districts[id] = {
@@ -98,7 +98,6 @@ const EcologySystem = {
         lastVisitDay:     0,
       };
     }
-
     gs.ecology.global = {
       totalZombies: Object.values(gs.ecology.districts)
         .reduce((sum, e) => sum + e.zombiePopulation, 0),

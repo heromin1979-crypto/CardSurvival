@@ -60,6 +60,8 @@ import BodySystem           from './systems/BodySystem.js';
 import SubwaySystem         from './systems/SubwaySystem.js';
 import NightSystem          from './systems/NightSystem.js';
 import FishingSystem        from './systems/FishingSystem.js';
+import GardenSystem         from './systems/GardenSystem.js';
+import TheftSystem          from './systems/TheftSystem.js';
 
 // Board
 import BoardManager from './board/BoardManager.js';
@@ -156,6 +158,8 @@ function init() {
   CraftSystem.init();
   CombatSystem.init();
   FishingSystem.init();
+  GardenSystem.init();
+  TheftSystem.init();
   ExploreSystem.init();
   SkillSystem.init();
   BasecampSystem.init();

@@ -225,14 +225,32 @@ const BALANCE = {
     lootCountMax: 3,
     // W3-2 Phase A — 서브로케이션 재고 고갈
     stockDecayPerDay: 1,  // 일자 경과 시 subLocationStock 자동 감소량 (같은 day 중복 차감 방지)
-    respawnLootDays:     30,   // 구역 루팅 리스폰까지 경과 일수
-    respawnLootChance:   0.5,  // 리스폰 시 각 아이템 드롭 확률
-    respawnLootQtyDivisor: 2,  // 리스폰 수량 = floor(원수량 / 이 값)
+    // [DEPRECATED] 구 드랍 30일 이진 리필 — 드랍 개편 Phase 1에서 EcologySystem 연속 자원 모델로 대체됨.
+    //   런타임(ExploreSystem)은 더 이상 사용하지 않음. 시뮬레이터/구버전 참조 호환용으로만 잔존.
+    respawnLootDays:     30,   // (legacy) 구역 루팅 리스폰까지 경과 일수
+    respawnLootChance:   0.5,  // (legacy) 리스폰 시 각 아이템 드롭 확률
+    respawnLootQtyDivisor: 2,  // (legacy) 리스폰 수량 = floor(원수량 / 이 값)
     masteryRareLootChance: 0.05, // 탐색 마스터리 희귀 루팅 확률
+    // 지역 탐사도(%) — Phase 3. 탐사 1회당 상승량(구별 exploreIncrement로 덮어쓰기 가능), 100%까지 누적.
+    explorationPerExplore: 5,    // 탐사 1회당 탐사도 상승 % (전역 기본)
+    explorationYieldBonusMax: 0.5, // 탐사도 100% 시 일반 루팅 보너스 픽 확률 최대치(0.5 = 50%)
     subLocationNoiseMult:  0.8,  // 세부장소 탐색 소음 배율(구 소음 대비)
     nightHospitalAmbushChance: 0.20, // 야간 보라매 응급실/수술실 잠복 환자 조우 확률
     indoorRadiationMult:   0.5,  // 건물 내부 방사선 노출 배율
     masteryRarePool: ['bandage', 'painkiller', 'antiseptic', 'rope', 'wire'], // 탐색 마스터리 희귀 루팅 풀
+  },
+
+  // ── 부패 (Phase 4) — 음식 유기물만, 일 1회 contamination 누적 ───
+  spoilage: {
+    // subtype별 기본 부패 일수(이 일수에 걸쳐 contamination 0→100). 아이템 spoilDays로 개별 덮어쓰기.
+    daysBySubtype: { food_raw: 2, carcass: 1, food: 5, drink: 7 },
+    defaultDays: 5,                       // subtype 미해당 음식 기본
+    seasonMult: { spring: 1.0, summer: 2.0, autumn: 1.0, winter: 0.5 }, // 여름 빨리, 겨울 느리게
+  },
+
+  // ── 도난 (Phase 4) — 동물이 바닥 음식을 물어가 둥지로 ──────────
+  theft: {
+    dailyChance: 0.15,   // 바닥에 음식이 있을 때 일 1회 도난 확률
   },
 
   // ── 조우 ────────────────────────────────────────────

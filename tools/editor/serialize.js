@@ -203,6 +203,11 @@ export const DATA_FILES = {
     decl: 'export const LANDMARK_DATA = {',
     label: '랜드마크 (세부장소 lootTable)',
   },
+  hidden: {
+    path: 'js/data/hiddenLocations.js',
+    decl: 'export const HIDDEN_LOCATIONS = {',
+    label: '숨은 장소 (POI)',
+  },
   // 메인 퀘스트 — 게임 실사용 소스(mainQuests/index.js가 병합하는 19개 파일).
   // 직업별 폴더의 shared/branch_a/branch_b + 공통 global. 각 파일은 단일 객체 export라
   // 고유 const decl로 단독 splice 가능. 퀘스트 탭에서 병합 편집(아이템 탭과 동일 패턴).

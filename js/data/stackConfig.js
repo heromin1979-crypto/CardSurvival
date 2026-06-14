@@ -449,6 +449,7 @@ const STACK_ROWS = [
   // ── 환경 오브젝트 ──────────────────────────────────────────────
   ['stream_spring'           , true,  10],
   ['dry_stream'              , false, 1 ],
+  ['animal_nest'             , false, 1 ],  // 도난 둥지 (Phase 4) — 단일 슬롯
 ];
 
 const STACK_CONFIG = Object.fromEntries(

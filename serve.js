@@ -20,6 +20,7 @@ const WRITABLE = new Set([
   'js/data/gameBalance.js',
   'js/data/districts.js',
   'js/data/landmarks.js',
+  'js/data/hiddenLocations.js',
   // 메인 퀘스트 — 게임 실사용 소스(mainQuests/index.js가 병합하는 19파일)
   'js/data/mainQuests/global.js',
   'js/data/mainQuests/doctor/shared.js',

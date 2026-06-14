@@ -189,6 +189,18 @@ table.loot input.num { width: 72px; }
   background: var(--panel2); border: 1px solid var(--border);
   border-radius: 4px; padding: 1px 6px; margin-left: 6px;
 }
+
+/* 보상 등 아이템 행 — id 입력은 남는 폭을 흡수, 이름은 입력칸과 같은 높이의 읽기전용 박스로 정렬 */
+.item-row .field.id-col { flex: 1 1 200px; min-width: 160px; }
+.item-row .field.id-col input { width: 100%; box-sizing: border-box; }
+.item-row .field.name-col { flex: 1 1 150px; min-width: 110px; }
+.item-row .ro-name {
+  display: flex; align-items: center; min-height: 31px; box-sizing: border-box;
+  font-size: 12px; color: var(--muted);
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 6px; padding: 6px 8px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
 .settings-box { max-width: 520px; }
 .settings-box .field { margin-bottom: 14px; }
 .settings-box input { width: 100%; }

@@ -13,6 +13,7 @@ import TraitSystem   from './TraitSystem.js';
 import StatSystem    from './StatSystem.js';
 import SeasonSystem  from './SeasonSystem.js';
 import SkillSystem      from './SkillSystem.js';
+import EcologySystem    from './EcologySystem.js';
 import BasecampSystem   from './BasecampSystem.js';
 import BALANCE          from '../data/gameBalance.js';
 import HiddenElementSystem from './HiddenElementSystem.js';
@@ -366,66 +367,43 @@ const ExploreSystem = {
     }
 
     if (district.lootTable?.length) {
-      const looted      = gs.location.districtsLooted ?? [];
-      const isFirstLoot = !looted.includes(districtId);
-      let loot          = [];
-
-      if (isFirstLoot) {
-        loot = generateRouteCards(districtId);
-        if (!gs.location.districtsLooted) gs.location.districtsLooted = [];
-        gs.location.districtsLooted.push(districtId);
-        if (!gs.location.districtLootDay) gs.location.districtLootDay = {};
-        gs.location.districtLootDay[districtId] = gs.time.day;
-      } else {
-        // 루팅 완료 30일 경과 시 감소 리스폰 (50% 드롭률, 수량 절반)
-        if (!gs.location.districtLootDay) gs.location.districtLootDay = {};
-        const lastLootDay = gs.location.districtLootDay[districtId] ?? 0;
-        const daysSinceLoot = gs.time.day - lastLootDay;
-        if (daysSinceLoot >= (BALANCE.explore.respawnLootDays ?? 30)) {
-          const fullLoot = generateRouteCards(districtId);
-          for (const item of fullLoot) {
-            if (Math.random() < (BALANCE.explore.respawnLootChance ?? 0.5)) {
-              loot.push({ ...item, quantity: Math.max(1, Math.floor((item.quantity ?? 1) / (BALANCE.explore.respawnLootQtyDivisor ?? 2))) });
-            }
-          }
-          gs.location.districtLootDay[districtId] = gs.time.day;
-          if (loot.length > 0) {
-            EventBus.emit('notify', { message: I18n.t('exploreSys.respawnLoot', { name: I18n.districtName(districtId, district.name) }), type: 'info' });
-          } else {
-            EventBus.emit('notify', { message: I18n.t('exploreSys.noRespawn', { name: I18n.districtName(districtId, district.name) }), type: 'info' });
-          }
-        } else {
-          EventBus.emit('notify', { message: I18n.t('exploreSys.alreadyLooted', { name: I18n.districtName(districtId, district.name) }), type: 'info' });
-        }
-      }
+      // ── 자원 이원화 모델 (표면=연속 재생 / 탐사=상시) + 지역 탐사도 ──
+      // 표면 산출은 구의 자원 레벨(EcologySystem)에 비례, 탐색 1회마다 줄었다 시간 경과로 재생.
+      // 탐사도가 높을수록 채집 효율(보너스 픽)↑. 특수자원은 lootTable이 아니라 탐사도 임계값(explorationYields)으로 산출.
+      EcologySystem.ensureInitialized();
+      const surfaceMult = EcologySystem.getLootMult(districtId);
+      const season      = SeasonSystem.getCurrentSeason(gs.time.day)?.id;  // 제철 자원 필터
+      let loot = generateRouteCards(districtId, { surfaceMult, season });
 
       if (loot.length > 0) {
         const effects      = toolEffects ?? this._collectToolEffects();
         const exploreBonus = effects.exploreBonus ?? 0;
-        if (isFirstLoot && exploreBonus > 0 && Math.random() < exploreBonus) {
+        if (exploreBonus > 0 && Math.random() < exploreBonus) {
           const extra = loot[Math.floor(Math.random() * loot.length)];
           loot.push({ ...extra, quantity: 1 });
         }
-        if (isFirstLoot) {
-          const traitBonus = TraitSystem.getTraitEffect('scavenger', 'bonusLootCount') ?? 0;
-          if (traitBonus > 0) {
-            const extra = loot[Math.floor(Math.random() * loot.length)];
-            for (let i = 0; i < traitBonus; i++) loot.push({ ...extra, quantity: 1 });
-          }
+        const traitBonus = TraitSystem.getTraitEffect('scavenger', 'bonusLootCount') ?? 0;
+        if (traitBonus > 0) {
+          const extra = loot[Math.floor(Math.random() * loot.length)];
+          for (let i = 0; i < traitBonus; i++) loot.push({ ...extra, quantity: 1 });
         }
         // 탐색 스킬 보너스 루팅
-        if (loot.length > 0) {
-          const scavBonus = SkillSystem.getBonus('scavenging', 'extraLootChance');
-          if (scavBonus > 0 && Math.random() < scavBonus) {
-            const extra = loot[Math.floor(Math.random() * loot.length)];
-            loot.push({ ...extra, quantity: 1 });
-          }
-          // 탐색 마스터리: 5% 희귀 아이템
-          if (SkillSystem.hasMastery('scavenging') && Math.random() < (BALANCE.explore.masteryRareLootChance ?? 0.05)) {
-            const rarePool = BALANCE.explore.masteryRarePool ?? ['bandage', 'painkiller', 'antiseptic', 'rope', 'wire'];
-            const rareId   = rarePool[Math.floor(Math.random() * rarePool.length)];
-            if (GameData?.items[rareId]) loot.push({ definitionId: rareId, quantity: 1 });
-          }
+        const scavBonus = SkillSystem.getBonus('scavenging', 'extraLootChance');
+        if (scavBonus > 0 && Math.random() < scavBonus) {
+          const extra = loot[Math.floor(Math.random() * loot.length)];
+          loot.push({ ...extra, quantity: 1 });
+        }
+        // 지역 탐사도 채집 효율 보너스 (탐사도 높을수록 추가 픽 확률↑, 100%에서 최고)
+        const explBonus = (this.getExploration(districtId) / 100) * (BALANCE.explore.explorationYieldBonusMax ?? 0.5);
+        if (explBonus > 0 && Math.random() < explBonus) {
+          const extra = loot[Math.floor(Math.random() * loot.length)];
+          loot.push({ ...extra, quantity: 1 });
+        }
+        // 탐색 마스터리: 5% 희귀 아이템
+        if (SkillSystem.hasMastery('scavenging') && Math.random() < (BALANCE.explore.masteryRareLootChance ?? 0.05)) {
+          const rarePool = BALANCE.explore.masteryRarePool ?? ['bandage', 'painkiller', 'antiseptic', 'rope', 'wire'];
+          const rareId   = rarePool[Math.floor(Math.random() * rarePool.length)];
+          if (GameData?.items[rareId]) loot.push({ definitionId: rareId, quantity: 1 });
         }
         // 계절 보너스 루팅
         const seasonalLoot = SeasonSystem.rollSeasonalLoot();
@@ -435,12 +413,61 @@ const ExploreSystem = {
           }
         }
         this._placeLoot(loot);
+      } else {
+        // 표면 고갈 → 이번엔 거둘 게 없음
+        EventBus.emit('notify', { message: I18n.t('exploreSys.alreadyLooted', { name: I18n.districtName(districtId, district.name) }), type: 'info' });
       }
+
+      // 표면 자원 소진 (탐색 1회분) — EcologySystem이 -resourceExploreConsume 적용, 시간 경과로 재생
+      EventBus.emit('locationExplored', { districtId });
+
+      // 지역 탐사도 누적 + 임계값 특수자원 산출 + POI 재검사
+      this._advanceExploration(districtId);
     }
 
     EventBus.emit('notify', { message: I18n.t('exploreSys.exploreComplete', { name: I18n.districtName(districtId, district.name) }), type: 'info' });
     EventBus.emit('locationChanged', { nodeId: districtId, node: district });
     EventBus.emit('boardChanged', {});
+  },
+
+  // ── 지역 탐사도 (Phase 3) ────────────────────────────────
+
+  /** 구의 현재 탐사도(%) 0~100 */
+  getExploration(districtId) {
+    return GameState.flags?.districtExploration?.[districtId] ?? 0;
+  },
+
+  /**
+   * 탐사 1회 분 탐사도 누적 + 임계값 특수자원(explorationYields) 고정 산출.
+   * 특수자원은 확률이 아니라 `prev < at <= next` 임계값 통과 시 정해진 수량을 1회 지급한다.
+   * (탐사도는 단조 증가하므로 구간 판정만으로 중복 지급이 없다. 100% 도달 후 특수자원 끝.)
+   */
+  _advanceExploration(districtId) {
+    const gs = GameState;
+    if (!gs.flags.districtExploration) gs.flags.districtExploration = {};
+    const prev = gs.flags.districtExploration[districtId] ?? 0;
+    if (prev >= 100) return;
+
+    const inc  = DISTRICTS[districtId]?.exploreIncrement ?? BALANCE.explore.explorationPerExplore ?? 5;
+    const next = Math.min(100, prev + inc);
+    gs.flags.districtExploration[districtId] = next;
+    EventBus.emit('explorationProgressChanged', { districtId, pct: next });
+
+    const yields = DISTRICTS[districtId]?.explorationYields;
+    if (Array.isArray(yields)) {
+      const loot = [];
+      for (const y of yields) {
+        if (!(y.at > prev && y.at <= next)) continue;  // 이번 탐사로 통과한 임계값만
+        for (const it of (y.items ?? [])) {
+          if (GameData?.items[it.definitionId]) loot.push({ definitionId: it.definitionId, quantity: it.qty ?? 1, contamination: 0 });
+        }
+      }
+      if (loot.length > 0) {
+        this._placeLoot(loot);
+        const names = loot.map(l => GameData?.items[l.definitionId]?.name ?? l.definitionId).join(', ');
+        EventBus.emit('notify', { message: `⛏ 탐사도 ${next}% 돌파 — 특수 자원 발견: ${names}`, type: 'good' });
+      }
+    }
   },
 
   // ── travelTo (보드 위치 카드 클릭 → 위임) ────────────────

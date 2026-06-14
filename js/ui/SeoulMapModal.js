@@ -442,6 +442,11 @@ const SeoulMapModal = {
         }
       } catch (_) { /* EcologySystem 미로드 */ }
 
+      // ── 지역 탐사도(%) 오버레이 (Phase 3) ──
+      const explPct = GameState.flags?.districtExploration?.[id] ?? 0;
+      const eColor  = explPct < 40 ? '#cc6644' : explPct < 80 ? '#ccaa44' : '#44aa88';
+      const explOverlay = `<text x="${cx}" y="${barY - 20}" font-size="7" fill="${eColor}" text-anchor="middle">📍${explPct}%</text>`;
+
       const currentBadge = isCurrent
         ? `<text x="${cx}" y="${barY - 3}"
              text-anchor="middle" font-size="8" fill="#c8a060">${I18n.t('map.currentBadge')}</text>`
@@ -481,6 +486,7 @@ const SeoulMapModal = {
           ${dangerBars}
           ${radTag}
           ${ecoOverlay}
+          ${explOverlay}
           ${questPin}
         </g>`;
     }).join('\n');

@@ -10,9 +10,9 @@ for (const [id, d] of Object.entries(DISTRICTS)) {
   NODES[id] = { ...d, noiseGen: d.noiseGen ?? 3 };
 }
 
-/** 루팅 결과 생성 */
-function generateRouteCards(nodeId) {
-  if (DISTRICTS[nodeId]) return generateDistrictLoot(nodeId);
+/** 루팅 결과 생성 (opts는 generateDistrictLoot로 전달 — surfaceMult/mineralRemaining) */
+function generateRouteCards(nodeId, opts) {
+  if (DISTRICTS[nodeId]) return generateDistrictLoot(nodeId, opts);
   if (SUB_LOCATIONS[nodeId]) return generateSubLocationLoot(nodeId);
   return [];
 }

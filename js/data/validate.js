@@ -284,6 +284,114 @@ async function validate() {
     }
   }
 
+  // 10. 구 lootTable 자원 클래스(cls)·계절(seasons) + 탐사도 임계값(explorationYields) 검증
+  console.log('\n=== DISTRICT LOOT CLASS/SEASON/EXPLORATION CHECK ===');
+  const VALID_CLS = new Set(['surface', 'expedition']);  // 광물은 explorationYields로 이관됨
+  const VALID_SEASON = new Set(['spring', 'summer', 'autumn', 'winter']);
+  let clsChecked = 0, clsBad = 0;
+  for (const [id, d] of Object.entries(districtsMod.DISTRICTS ?? {})) {
+    for (const [i, entry] of (d.lootTable ?? []).entries()) {
+      clsChecked++;
+      if (entry.cls != null && !VALID_CLS.has(entry.cls)) {
+        console.log(`❌ [${id}] lootTable[${i}] (${entry.definitionId}) invalid cls "${entry.cls}" — surface/expedition 중 하나여야 함`);
+        errors++; clsBad++;
+      }
+      if (entry.seasons != null) {
+        if (!Array.isArray(entry.seasons) || entry.seasons.some(s => !VALID_SEASON.has(s))) {
+          console.log(`❌ [${id}] lootTable[${i}] (${entry.definitionId}) invalid seasons "${JSON.stringify(entry.seasons)}" — spring/summer/autumn/winter 배열`);
+          errors++; clsBad++;
+        }
+      }
+      if (entry.definitionId && !allItemIds.has(entry.definitionId)) {
+        console.log(`⚠️  [${id}] lootTable[${i}] "${entry.definitionId}" not found in items`);
+        warnings++;
+      }
+    }
+    // explorationYields: at 0~100, items.definitionId 존재
+    for (const [yi, y] of (d.explorationYields ?? []).entries()) {
+      if (typeof y.at !== 'number' || y.at < 1 || y.at > 100) {
+        console.log(`❌ [${id}] explorationYields[${yi}].at "${y.at}" — 1~100 숫자여야 함`);
+        errors++; clsBad++;
+      }
+      for (const [ii, it] of (y.items ?? []).entries()) {
+        if (!it.definitionId || !allItemIds.has(it.definitionId)) {
+          console.log(`❌ [${id}] explorationYields[${yi}].items[${ii}] "${it.definitionId}" not found in items`);
+          errors++; clsBad++;
+        }
+      }
+    }
+  }
+  console.log(`  검사한 드랍 항목: ${clsChecked}, 잘못된 cls/seasons/exploration: ${clsBad}`);
+
+  // 11. 구조물 harvest(텃밭 자동수확)·forage(살살 채취) 산출 아이템 참조 검증
+  console.log('\n=== STRUCTURE HARVEST/FORAGE CHECK ===');
+  let hfChecked = 0, hfBad = 0;
+  for (const [id, def] of Object.entries(items)) {
+    if (def?.harvest) {
+      hfChecked++;
+      if (!def.harvest.itemId || !allItemIds.has(def.harvest.itemId)) {
+        console.log(`❌ [${id}] harvest.itemId "${def.harvest.itemId}" not found in items`);
+        errors++; hfBad++;
+      }
+    }
+    if (def?.forage) {
+      hfChecked++;
+      // forage는 dismantle 테이블을 산출원으로 쓰므로 dismantle 존재만 확인
+      if (!Array.isArray(def.dismantle) || def.dismantle.length === 0) {
+        console.log(`❌ [${id}] forage 설정이 있으나 dismantle 테이블이 없습니다(살살 채취 산출원 부재)`);
+        errors++; hfBad++;
+      }
+    }
+    // Phase 4 부패 필드 타입 검사
+    if (def?.spoilDays != null && (typeof def.spoilDays !== 'number' || def.spoilDays <= 0)) {
+      console.log(`❌ [${id}] spoilDays "${def.spoilDays}" — 0보다 큰 숫자여야 함`);
+      errors++; hfBad++;
+    }
+    if (def?.preserved != null && typeof def.preserved !== 'boolean') {
+      console.log(`❌ [${id}] preserved "${def.preserved}" — 불리언이어야 함`);
+      errors++; hfBad++;
+    }
+  }
+  console.log(`  검사한 harvest/forage: ${hfChecked}, 문제: ${hfBad}`);
+
+  // 12. 도난 둥지 카드(animal_nest) 존재 확인 (TheftSystem 의존)
+  if (!allItemIds.has('animal_nest')) {
+    console.log('❌ animal_nest 아이템이 없습니다 — TheftSystem 둥지 생성 실패');
+    errors++;
+  }
+
+  // 13. 숨은 장소(hiddenLocations) — 구 참조·보상/루팅 아이템 참조 검증
+  console.log('\n=== HIDDEN LOCATIONS CHECK ===');
+  let hlChecked = 0, hlBad = 0;
+  try {
+    const hlMod = await import('./hiddenLocations.js');
+    const HL = hlMod.default ?? hlMod.HIDDEN_LOCATIONS ?? {};
+    const VALID_SEASON_HL = new Set(['spring', 'summer', 'autumn', 'winter']);
+    for (const [id, loc] of Object.entries(HL)) {
+      hlChecked++;
+      if (loc.district && !knownDistricts.has(loc.district)) {
+        console.log(`❌ [hidden ${id}] district "${loc.district}" — 존재하지 않는 구`); errors++; hlBad++;
+      }
+      const uc = loc.unlockConditions ?? {};
+      if (uc.explorationThreshold != null && (typeof uc.explorationThreshold !== 'number' || uc.explorationThreshold < 0 || uc.explorationThreshold > 100)) {
+        console.log(`❌ [hidden ${id}] explorationThreshold "${uc.explorationThreshold}" — 0~100`); errors++; hlBad++;
+      }
+      if (uc.season && !VALID_SEASON_HL.has(uc.season)) {
+        console.log(`❌ [hidden ${id}] unlockConditions.season "${uc.season}" — spring/summer/autumn/winter`); errors++; hlBad++;
+      }
+      for (const it of (loc.rewards ?? [])) {
+        if (it.definitionId && !allItemIds.has(it.definitionId)) { console.log(`⚠️  [hidden ${id}] rewards "${it.definitionId}" not in items`); warnings++; }
+      }
+      for (const r of (loc.lootTable ?? [])) {
+        if (r.definitionId && !allItemIds.has(r.definitionId)) { console.log(`⚠️  [hidden ${id}] lootTable "${r.definitionId}" not in items`); warnings++; }
+      }
+    }
+    console.log(`  검사한 숨은 장소: ${hlChecked}, 오류: ${hlBad}`);
+  } catch (e) {
+    console.log(`⚠️  hiddenLocations.js 로드 실패 — ${e.message}`);
+    warnings++;
+  }
+
   // Summary
   console.log(`\n=== SUMMARY ===`);
   console.log(`Total items: ${allItemIds.size}`);
