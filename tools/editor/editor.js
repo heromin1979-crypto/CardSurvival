@@ -168,8 +168,10 @@ const FIELD_HELP = {
   noiseGen: '활동 시 발생하는 소음. 높을수록 적을 끌어들입니다.',
   fishingQuality: '낚시 품질(높을수록 좋은 어획). 낚시 가능 구역에만 적용.',
   hasFishing: '낚시 가능 여부 — 랜드마크: 안에서 낚시·통발 사용 가능 / 구: 시뮬레이터 AI 판정용.',
-  cls: '자원 클래스 — 표면(surface): 지역 자원 레벨에 비례해 나오고 시간 경과로 재생 / 탐사(expedition): 자원 레벨 무관, 매 탐색 독립 추첨 / 광물(mineral): 영구 고갈(잔량 소진 시 안 나옴). 미지정 시 표면.',
-  mineralStock: '이 구의 광물(mineral) 자원 총 잔량 — 캐면 영구 차감, 재생 없음. 비우면 EcologySystem 기본값 사용.',
+  cls: '자원 클래스 — 표면(surface): 지역 자원 레벨에 비례해 나오고 시간 경과로 재생 / 탐사(expedition): 자원 레벨 무관, 매 탐색 독립 추첨. 미지정 시 표면. (특수/광물 자원은 lootTable이 아니라 explorationYields로 다룸)',
+  exploreIncrement: '탐사 1회당 지역 탐사도 상승%(이 구). 비우면 전역 기본값(gameBalance.explore.explorationPerExplore). 100%까지 누적.',
+  explorationYields: '탐사도 임계값 특수자원 — [{at:30, items:[{definitionId,qty}]}] 형태. 탐사도가 at% 통과 시 items를 1회 고정 지급(확률 아님). 100% 후 종료.',
+  at: '이 특수자원이 지급되는 탐사도 임계값(%). 탐사도가 이 값을 통과하는 탐사에서 1회 산출.',
   seasons: '제철 — 켠 계절에만 추첨된다. 기본은 4계절 전부 켜짐(사철). 전부 끄면 어느 계절에도 안 나온다.',
   harvest: '텃밭 자동 수확 설정 — itemId(산출 작물)·harvestDays(수확 주기 일)·qty(수확량). GardenSystem이 주기마다 자동 산출.',
   itemId: '산출/대상 아이템의 ID. (📦 아이템 탭에서 검색해 확인)',
@@ -1346,7 +1348,7 @@ function lootTableEditor(rows, idKey, extraCols, fileKey, opts = {}) {
     let clsCell = null;
     if (opts.classCol) {
       const sel = el('select');
-      for (const [val, label] of [['surface', '표면'], ['expedition', '탐사'], ['mineral', '광물']]) {
+      for (const [val, label] of [['surface', '표면'], ['expedition', '탐사']]) {
         sel.append(el('option', { value: val, ...((row.cls ?? 'surface') === val ? { selected: true } : {}) }, label));
       }
       sel.addEventListener('change', () => {
@@ -1616,18 +1618,19 @@ function renderDistrictDetail(root, dist) {
   const numKeys = ['dangerLevel', 'travelCostTP', 'radiation', 'encounterChance', 'noiseGen', 'fishingQuality'];
   const fr = el('div', { class: 'field-row' });
   for (const k of numKeys) if (k in dist) fr.append(scalarInput(dist, k, 'districts'));
-  // 광물 잔량(영구 고갈) — 선택 숫자. 비우면 필드 삭제(기본값 사용), 입력 시 구 데이터에 기록.
-  const mineralInp = el('input', { type: 'number', step: '1', min: '0', value: dist.mineralStock ?? '' });
-  mineralInp.placeholder = '기본값';
-  mineralInp.addEventListener('input', () => {
-    if (mineralInp.value === '') delete dist.mineralStock;
-    else dist.mineralStock = Number(mineralInp.value);
+  // 탐사 1회당 탐사도 상승%(선택) — 비우면 전역 기본값(gameBalance.explore.explorationPerExplore).
+  const incInp = el('input', { type: 'number', step: '1', min: '1', max: '100', value: dist.exploreIncrement ?? '' });
+  incInp.placeholder = '기본값';
+  incInp.addEventListener('input', () => {
+    if (incInp.value === '') delete dist.exploreIncrement;
+    else dist.exploreIncrement = Number(incInp.value);
     markDirty('districts');
   });
-  fr.append(el('div', { class: 'field' }, [labelEl('mineralStock', helpFor('mineralStock')), mineralInp]));
+  fr.append(el('div', { class: 'field' }, [labelEl('exploreIncrement', helpFor('exploreIncrement')), incInp]));
   root.append(fr);
 
   renderDistrictLandmarks(root, dist);
+  renderExplorationYields(root, dist);
 
   const fs = el('fieldset', {}, el('legend', { text: 'lootTable (탐색 드랍 가중치)' }));
   fs.append(lootTableEditor(
@@ -1673,6 +1676,29 @@ function renderDistrictLandmarks(root, dist) {
     });
     fs.append(el('div', { class: 'field', style: 'margin-top:8px;max-width:380px' }, [sel]));
   }
+  root.append(fs);
+}
+
+// 구 상세 — 탐사도 임계값 특수자원(explorationYields) 편집기
+function renderExplorationYields(root, dist) {
+  const fs = el('fieldset', {}, el('legend', { text: '탐사도 임계값 특수자원 (explorationYields)' }));
+  fs.append(el('div', { class: 'hint', text: '탐사도(%)가 임계값(at)을 통과하면 정해진 아이템을 1회 고정 지급(확률 아님). 100%까지 누적, 100% 후 특수자원 종료.' }));
+  const list = dist.explorationYields || (dist.explorationYields = []);
+  list.forEach((y, idx) => {
+    const box = el('fieldset', {}, el('legend', { text: `임계값 ${y.at ?? 0}%` }));
+    const atInp = el('input', { type: 'number', min: '1', max: '100', value: y.at ?? 0, style: 'max-width:90px' });
+    atInp.addEventListener('input', () => { y.at = Number(atInp.value); markDirty('districts'); });
+    const head = el('div', { class: 'field-row' }, [
+      el('div', { class: 'field' }, [labelEl('at', helpFor('at')), atInp]),
+      el('button', { class: 'ghost danger', text: '✕ 임계값 삭제',
+        onclick: () => { list.splice(idx, 1); markDirty('districts'); rerenderDetail(); } }),
+    ]);
+    box.append(head);
+    box.append(itemRows(y.items || (y.items = []), 'districts'));  // {definitionId, qty} 행 편집 재사용
+    fs.append(box);
+  });
+  fs.append(el('button', { class: 'ghost row-add', text: '+ 임계값 추가',
+    onclick: () => { list.push({ at: 50, items: [] }); markDirty('districts'); rerenderDetail(); } }));
   root.append(fs);
 }
 

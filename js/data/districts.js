@@ -3879,24 +3879,22 @@ function getAdjacentDistricts(districtId) {
  *  - surface    : 표면 자원. `opts.surfaceMult`(지역 자원 레벨 기반, 0~1) 확률로 채택
  *                 → 고갈 지역일수록 적게 나온다(연속 재생 모델).
  *  - expedition : 탐사 자원. surfaceMult 무관, 매 추첨 독립 채택(상시 반복).
- *  - mineral    : 광물 자원. `opts.mineralRemaining` 잔량 안에서만 채택(영구 고갈).
- *                 채택된 광물 개수는 반환 항목의 `cls === 'mineral'`로 호출자가 집계해 소진시킨다.
+ *  (특수/광물 자원은 lootTable이 아니라 구의 explorationYields[탐사도 임계값 고정 산출]로 다룬다 — Phase 3)
  *
  * 계절 한정(`entry.seasons`, 배열): 지정 시 해당 계절에만 추첨 대상이 된다(제철 자원 — 도토리=가을 등).
  * 미지정 = 사철. `opts.season` 미전달 시 계절 필터 비활성(하위호환).
  *
  * 반환: [{ definitionId, quantity, contamination, cls }] — cls는 호출자용 추가 필드(다운스트림 무시).
- * opts 미지정 시 surfaceMult=1·mineralRemaining=Infinity·계절필터 off → 종전과 동일하게 전량 산출(하위호환).
+ * opts 미지정 시 surfaceMult=1·계절필터 off → 종전과 동일하게 전량 산출(하위호환).
  *
  * @param {string} districtId
- * @param {{surfaceMult?:number, mineralRemaining?:number, season?:string}} [opts]
+ * @param {{surfaceMult?:number, season?:string}} [opts]
  */
 function generateDistrictLoot(districtId, opts = {}) {
   const district = DISTRICTS[districtId];
   if (!district?.lootTable?.length) return [];
 
   const surfaceMult     = opts.surfaceMult ?? 1;
-  const mineralRemaining = opts.mineralRemaining ?? Infinity;
   const season          = opts.season ?? null;
 
   // 계절 한정 항목 필터.
@@ -3915,7 +3913,6 @@ function generateDistrictLoot(districtId, opts = {}) {
   const totalWeight = table.reduce((s, e) => s + e.weight, 0);
   const count = BALANCE.explore.lootCountMin + Math.floor(Math.random() * (BALANCE.explore.lootCountMax - BALANCE.explore.lootCountMin + 1)); // 1~3개
 
-  let mineralUsed = 0;
   for (let i = 0; i < count; i++) {
     let rand = Math.random() * totalWeight;
     for (const entry of table) {
@@ -3923,13 +3920,11 @@ function generateDistrictLoot(districtId, opts = {}) {
       if (rand > 0) continue;
 
       const cls = entry.cls ?? 'surface';
-      // 클래스별 채택 게이트
-      if (cls === 'surface' && Math.random() >= surfaceMult) break;       // 고갈 → 표면 자원 누락
-      if (cls === 'mineral' && mineralUsed >= mineralRemaining) break;     // 광물 영구 고갈
+      // 표면 자원은 자원 레벨 배율 확률로 채택(고갈 시 누락). 탐사 자원은 항상 채택.
+      if (cls === 'surface' && Math.random() >= surfaceMult) break;
 
       const qty = entry.minQty + Math.floor(Math.random() * (entry.maxQty - entry.minQty + 1));
       const contaminated = Math.random() < (entry.contamChance ?? 0);
-      if (cls === 'mineral') mineralUsed += 1;
       results.push({
         definitionId:  entry.definitionId,
         quantity:      qty,

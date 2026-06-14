@@ -896,6 +896,7 @@ const GameState = {
     if (ef.diseaseCured  === undefined) ef.diseaseCured               = 0;
     if (ef.meleeKills    === undefined) ef.meleeKills                 = 0;
     if (!ef._hiddenLocationLastVisit)   ef._hiddenLocationLastVisit   = {};
+    if (!ef.districtExploration)        ef.districtExploration        = {};  // 지역 탐사도(%) — Phase 3
     // season 필드 복원 (구버전 세이브 호환)
     if (d.season) {
       Object.assign(this.season, d.season);

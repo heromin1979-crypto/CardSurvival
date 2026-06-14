@@ -125,6 +125,7 @@ const ExploreUI = {
     const danger    = district.dangerLevel ?? 1;
     const color     = DANGER_COLORS[Math.min(danger, DANGER_COLORS.length - 1)];
     const encPct    = Math.round((district.encounterChance ?? 0) * 100);
+    const explPct   = GameState.flags?.districtExploration?.[district.id] ?? 0;
 
     return `
       <div class="district-card" data-district-id="${district.id}"
@@ -135,6 +136,7 @@ const ExploreUI = {
         <div class="node-meta">
           <span>🕒 ${district.travelCostTP}TP</span>
           <span>💀 ${encPct}%</span>
+          ${explPct > 0 ? `<span>📍 ${explPct}%</span>` : ''}
           ${district.radiation > 0 ? `<span class="radiation-badge">☢ ${district.radiation}</span>` : ''}
           ${isVisited ? `<span class="node-visited-badge">${I18n.t('map.visited')}</span>` : ''}
         </div>

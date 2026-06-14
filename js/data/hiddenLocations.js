@@ -13,9 +13,9 @@ export const HIDDEN_LOCATIONS = {
     name: '도봉산 은자의 동굴',
     icon: '🕯️',
     district: 'dobong',
-    description: '도봉산 깊은 곳에 숨겨진 동굴. 은둔자가 남긴 약재와 물자가 있다.',
+    description: '도봉산 깊은 곳에 숨겨진 동굴. 은둔자가 남긴 약재와 물자가 있다. 도봉구를 충분히 탐사해야 발견된다.',
     unlockConditions: {
-      minVisits: 3,
+      explorationThreshold: 45,   // 도봉구 탐사도 45% 이상에서 해금 (Phase 3)
       minDay: 14,
       requiredItems: [],
       requiredCharacter: null,

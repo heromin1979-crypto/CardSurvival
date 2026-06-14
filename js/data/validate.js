@@ -284,16 +284,16 @@ async function validate() {
     }
   }
 
-  // 10. 구 lootTable 자원 클래스(cls)·계절(seasons) 검증
-  console.log('\n=== DISTRICT LOOT CLASS/SEASON CHECK ===');
-  const VALID_CLS = new Set(['surface', 'expedition', 'mineral']);
+  // 10. 구 lootTable 자원 클래스(cls)·계절(seasons) + 탐사도 임계값(explorationYields) 검증
+  console.log('\n=== DISTRICT LOOT CLASS/SEASON/EXPLORATION CHECK ===');
+  const VALID_CLS = new Set(['surface', 'expedition']);  // 광물은 explorationYields로 이관됨
   const VALID_SEASON = new Set(['spring', 'summer', 'autumn', 'winter']);
   let clsChecked = 0, clsBad = 0;
   for (const [id, d] of Object.entries(districtsMod.DISTRICTS ?? {})) {
     for (const [i, entry] of (d.lootTable ?? []).entries()) {
       clsChecked++;
       if (entry.cls != null && !VALID_CLS.has(entry.cls)) {
-        console.log(`❌ [${id}] lootTable[${i}] (${entry.definitionId}) invalid cls "${entry.cls}" — surface/expedition/mineral 중 하나여야 함`);
+        console.log(`❌ [${id}] lootTable[${i}] (${entry.definitionId}) invalid cls "${entry.cls}" — surface/expedition 중 하나여야 함`);
         errors++; clsBad++;
       }
       if (entry.seasons != null) {
@@ -307,8 +307,21 @@ async function validate() {
         warnings++;
       }
     }
+    // explorationYields: at 0~100, items.definitionId 존재
+    for (const [yi, y] of (d.explorationYields ?? []).entries()) {
+      if (typeof y.at !== 'number' || y.at < 1 || y.at > 100) {
+        console.log(`❌ [${id}] explorationYields[${yi}].at "${y.at}" — 1~100 숫자여야 함`);
+        errors++; clsBad++;
+      }
+      for (const [ii, it] of (y.items ?? []).entries()) {
+        if (!it.definitionId || !allItemIds.has(it.definitionId)) {
+          console.log(`❌ [${id}] explorationYields[${yi}].items[${ii}] "${it.definitionId}" not found in items`);
+          errors++; clsBad++;
+        }
+      }
+    }
   }
-  console.log(`  검사한 드랍 항목: ${clsChecked}, 잘못된 cls/seasons: ${clsBad}`);
+  console.log(`  검사한 드랍 항목: ${clsChecked}, 잘못된 cls/seasons/exploration: ${clsBad}`);
 
   // 11. 구조물 harvest(텃밭 자동수확)·forage(살살 채취) 산출 아이템 참조 검증
   console.log('\n=== STRUCTURE HARVEST/FORAGE CHECK ===');

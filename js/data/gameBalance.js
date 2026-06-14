@@ -231,6 +231,9 @@ const BALANCE = {
     respawnLootChance:   0.5,  // (legacy) 리스폰 시 각 아이템 드롭 확률
     respawnLootQtyDivisor: 2,  // (legacy) 리스폰 수량 = floor(원수량 / 이 값)
     masteryRareLootChance: 0.05, // 탐색 마스터리 희귀 루팅 확률
+    // 지역 탐사도(%) — Phase 3. 탐사 1회당 상승량(구별 exploreIncrement로 덮어쓰기 가능), 100%까지 누적.
+    explorationPerExplore: 5,    // 탐사 1회당 탐사도 상승 % (전역 기본)
+    explorationYieldBonusMax: 0.5, // 탐사도 100% 시 일반 루팅 보너스 픽 확률 최대치(0.5 = 50%)
     subLocationNoiseMult:  0.8,  // 세부장소 탐색 소음 배율(구 소음 대비)
     nightHospitalAmbushChance: 0.20, // 야간 보라매 응급실/수술실 잠복 환자 조우 확률
     indoorRadiationMult:   0.5,  // 건물 내부 방사선 노출 배율

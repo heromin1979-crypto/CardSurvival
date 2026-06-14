@@ -282,14 +282,11 @@ function actExplore(simInv) {
   if (!districtId) return null;
   _drainStamina(BALANCE.travel?.exploreStaminaDrain ?? 5);
 
-  // 본체 _arriveAtDistrict 자원 이원화 모델 재현 (표면=자원레벨 비례 + 광물 영구 고갈 + 표면 소진)
+  // 본체 _arriveAtDistrict 자원 이원화 모델 재현 (표면=자원레벨 비례 + 표면 소진 + 탐사도 누적/임계값)
   EcologySystem.ensureInitialized();
-  const surfaceMult      = EcologySystem.getLootMult(districtId);
-  const mineralRemaining = EcologySystem.getMineralStock(districtId);
-  const season           = GameState.season?.current ?? null;  // 제철 자원 필터
-  const lootCards = generateDistrictLoot(districtId, { surfaceMult, mineralRemaining, season });
-  const mineralUsed = lootCards.filter((l) => l.cls === 'mineral').length;
-  if (mineralUsed > 0) EcologySystem.consumeMineral(districtId, mineralUsed);
+  const surfaceMult = EcologySystem.getLootMult(districtId);
+  const season      = GameState.season?.current ?? null;  // 제철 자원 필터
+  const lootCards = generateDistrictLoot(districtId, { surfaceMult, season });
 
   let added = 0;
   for (const item of lootCards) {
@@ -298,6 +295,24 @@ function actExplore(simInv) {
     added += item.quantity;
   }
   EventBus.emit('locationExplored', { districtId });  // 표면 자원 소진 (EcologySystem -resourceExploreConsume)
+
+  // 지역 탐사도 누적 + 임계값 특수자원 고정 산출 (확률 아님)
+  const gs = GameState;
+  if (!gs.flags) gs.flags = {};
+  if (!gs.flags.districtExploration) gs.flags.districtExploration = {};
+  const prev = gs.flags.districtExploration[districtId] ?? 0;
+  if (prev < 100) {
+    const inc  = DISTRICTS[districtId]?.exploreIncrement ?? BALANCE.explore?.explorationPerExplore ?? 5;
+    const next = Math.min(100, prev + inc);
+    gs.flags.districtExploration[districtId] = next;
+    for (const y of (DISTRICTS[districtId]?.explorationYields ?? [])) {
+      if (!(y.at > prev && y.at <= next)) continue;
+      for (const it of (y.items ?? [])) {
+        simInv[it.definitionId] = (simInv[it.definitionId] ?? 0) + (it.qty ?? 1);
+        added += (it.qty ?? 1);
+      }
+    }
+  }
   return `explore:${districtId}:+${added}`;
 }
 

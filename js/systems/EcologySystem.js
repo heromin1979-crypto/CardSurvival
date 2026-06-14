@@ -26,9 +26,6 @@ const ECO = {
     winter: 0.5,
   },
 
-  // 광물 자원 (영구 고갈 — 재생 없음). 구 데이터의 mineralStock 미지정 시 이 기본값 사용.
-  mineralDefaultStock: 12,
-
   // 오염
   contamNaturalDecay:    0.01,   // TP당 자연 감소
   contamAcidRainAdd:     5,      // 산성비 이벤트 시 전 구역 추가
@@ -88,32 +85,23 @@ const EcologySystem = {
   ensureInitialized() {
     const gs = GameState;
 
-    if (!gs.ecology) {
-      gs.ecology = { districts: {}, global: {} };
-      // 구역별 초기 상태
-      for (const [id, d] of Object.entries(DISTRICTS)) {
-        gs.ecology.districts[id] = {
-          zombiePopulation: (d.dangerLevel ?? 1) * 15,
-          resourceLevel:    100,
-          contamination:    (d.radiation ?? 0) * 5,
-          noiseAttraction:  0,
-          lastVisitDay:     0,
-          mineralStock:     d.mineralStock ?? ECO.mineralDefaultStock,  // 광물 영구 잔량
-        };
-      }
-      gs.ecology.global = {
-        totalZombies: Object.values(gs.ecology.districts)
-          .reduce((sum, e) => sum + e.zombiePopulation, 0),
-      };
-      return;
-    }
+    if (gs.ecology) return;
 
-    // 구버전 세이브 호환: 누락된 per-구역 필드 백필 (mineralStock 등)
+    gs.ecology = { districts: {}, global: {} };
+    // 구역별 초기 상태
     for (const [id, d] of Object.entries(DISTRICTS)) {
-      const st = gs.ecology.districts[id];
-      if (!st) continue;
-      if (st.mineralStock == null) st.mineralStock = d.mineralStock ?? ECO.mineralDefaultStock;
+      gs.ecology.districts[id] = {
+        zombiePopulation: (d.dangerLevel ?? 1) * 15,
+        resourceLevel:    100,
+        contamination:    (d.radiation ?? 0) * 5,
+        noiseAttraction:  0,
+        lastVisitDay:     0,
+      };
     }
+    gs.ecology.global = {
+      totalZombies: Object.values(gs.ecology.districts)
+        .reduce((sum, e) => sum + e.zombiePopulation, 0),
+    };
   },
 
   // ── TP 콜백 ──────────────────────────────────────────────────
@@ -242,24 +230,6 @@ const EcologySystem = {
   },
 
   /**
-   * 구역의 광물 잔량 반환 (영구 고갈 자원). 미초기화 시 기본값.
-   */
-  getMineralStock(districtId) {
-    this.ensureInitialized();
-    const st = GameState.ecology?.districts[districtId];
-    return st?.mineralStock ?? (DISTRICTS[districtId]?.mineralStock ?? ECO.mineralDefaultStock);
-  },
-
-  /**
-   * 광물 자원 n개 소진 (영구 — 재생 없음). 잔량은 0 미만으로 내려가지 않는다.
-   */
-  consumeMineral(districtId, n = 1) {
-    this.ensureInitialized();
-    const st = GameState.ecology?.districts[districtId];
-    if (st) st.mineralStock = Math.max(0, (st.mineralStock ?? 0) - n);
-  },
-
-  /**
    * 구역의 오염도 반환 (0~100).
    */
   getContamination(districtId) {
@@ -273,12 +243,11 @@ const EcologySystem = {
   getDistrictEcology(districtId) {
     this.ensureInitialized();
     const state = GameState.ecology?.districts[districtId];
-    if (!state) return { zombie: 0, resource: 100, contam: 0, mineral: 0 };
+    if (!state) return { zombie: 0, resource: 100, contam: 0 };
     return {
       zombie:   Math.round(state.zombiePopulation),
       resource: Math.round(state.resourceLevel),
       contam:   Math.round(state.contamination),
-      mineral:  Math.round(state.mineralStock ?? 0),
     };
   },
 
