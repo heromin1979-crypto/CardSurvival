@@ -77,6 +77,7 @@ export function resetGameStateForRun({ characterId }) {
   GameState.location.nodesVisited    = [cc.startDistrict];
   // 현실 제약: 요리 도구(캠프파이어) 상태 — 시뮬 전용 핸들
   GameState._simCampfire = { built: false, durability: 0 };
+  GameState._simStructures = [];   // 건설한 패시브 구조물 id 목록 (텃밭·빗물수집기 등)
 
   // PR7: startingSkills를 GameState.player.skills.{id}.level에 주입.
   // (이전: 시뮬은 initial snapshot의 level:0 그대로 사용 → 직업별 cooking·harvesting 보너스 무효화 → AI 요리 차단)

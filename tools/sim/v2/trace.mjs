@@ -63,7 +63,10 @@ function humanizeAction(a) {
   let m;
   if (a === 'sleep') return { icon: '😴', text: '수면 — 피로 회복 (HP +10, 피로 → 10)', raw: a };
   if (a === 'buildCampfire') return { icon: '🏕️', text: '캠프파이어 건설 (요리 가능)', raw: a };
+  if ((m = /^build:(.+)$/.exec(a))) return { icon: '🏗️', text: `구조물 건설 — ${m[1]} (매일 자동 생산)`, raw: a };
   if ((m = /^heal:(.+)$/.exec(a))) return { icon: '🩹', text: `치료 — ${itemName(m[1])}${consumeEffect(m[1])}`, raw: a };
+  if ((m = /^restItem:(.+)$/.exec(a))) return { icon: '☕', text: `피로 회복 — ${itemName(m[1])}${consumeEffect(m[1])}`, raw: a };
+  if ((m = /^poi:(.+):\+(\d+)$/.exec(a))) return { icon: '✨', text: `숨겨진 장소 발견 — ${m[1]} (자원 ${m[2]}개)`, raw: a };
   if (a === 'fish_large') return { icon: '🎣', text: '낚시 — 대형 물고기 획득', raw: a };
   if ((m = /^combat:(승리|사망|도주)\((\d+)\)$/.exec(a))) {
     const icon = m[1] === '사망' ? '💀' : m[1] === '도주' ? '🏃' : '⚔️';
