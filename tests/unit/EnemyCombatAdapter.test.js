@@ -4,6 +4,7 @@ import {
   buildEnemyProfile,
   decideEnemyIntent,
 } from '../../js/systems/combat/EnemyCombatAdapter.js';
+import { validateEnemyCombatProfiles } from '../../js/data/validate.js';
 
 describe('EnemyCombatAdapter', () => {
   it('converts legacy attack and front row into a basic enemy skill', () => {
@@ -53,17 +54,26 @@ describe('EnemyCombatAdapter', () => {
         speed: 8,
         startRank: 3,
         skillIds: ['charger_prepare', 'charger_strike'],
+        skills: [{
+          id: 'charger_prepare',
+          source: 'enemy',
+          usableFrom: [1],
+          target: { side: 'ally', ranks: [1], count: 1 },
+          accuracy: 1,
+          effects: [{ type: 'damage', value: [1, 2] }],
+        }],
         ai: 'charger',
       },
     });
 
-    expect(profile).toEqual({
+    expect(profile).toMatchObject({
       speed: 8,
       startRank: 3,
       skillIds: ['charger_prepare', 'charger_strike'],
       ai: 'charger',
     });
-    expect(profile.skills).toBeUndefined();
+    expect(profile.skills).toHaveLength(1);
+    expect(profile.skills[0].id).toBe('charger_prepare');
   });
 
   it('copies arrays so callers cannot mutate source data through the profile', () => {
@@ -71,13 +81,23 @@ describe('EnemyCombatAdapter', () => {
       id: 'zombie_screamer',
       combatProfile: {
         skillIds: ['scream_charge', 'scream_call'],
+        skills: [{
+          id: 'scream_charge',
+          source: 'enemy',
+          usableFrom: [1],
+          target: { side: 'ally', ranks: [1], count: 1 },
+          accuracy: 1,
+          effects: [{ type: 'damage', value: [1, 1] }],
+        }],
       },
     };
 
     const profile = buildEnemyProfile(enemy);
     profile.skillIds.push('mutated');
+    profile.skills[0].effects[0].value[0] = 999;
 
     expect(enemy.combatProfile.skillIds).toEqual(['scream_charge', 'scream_call']);
+    expect(enemy.combatProfile.skills[0].effects[0].value).toEqual([1, 1]);
   });
 
   it('falls back to balance defaults when legacy attack data is absent', () => {
@@ -88,6 +108,15 @@ describe('EnemyCombatAdapter', () => {
     expect(skill.accuracy).toBe(BALANCE.combat.enemyBaseAccuracy);
     expect(skill.effects[0].value).toEqual(BALANCE.combat.enemyDefaultDamage);
     expect(skill.effects[0].value).not.toBe(BALANCE.combat.enemyDefaultDamage);
+  });
+
+  it('normalizes non-safe-integer speed to the enemy speed default', () => {
+    expect(buildEnemyProfile({ id: 'fractional', speed: 2.5 }).speed)
+      .toBe(BALANCE.combat.defaultEnemySpeed);
+    expect(buildEnemyProfile({
+      id: 'explicit_fractional',
+      combatProfile: { speed: 2.5, skillIds: [], skills: [] },
+    }).speed).toBe(BALANCE.combat.defaultEnemySpeed);
   });
 
   it('decides an enemy intent through the supplied AI hooks', () => {
@@ -131,5 +160,27 @@ describe('EnemyCombatAdapter', () => {
       pickSkill: () => ({}),
       pickTarget: () => 'player',
     }, 'enemy:0')).toBeNull();
+  });
+
+  it('validates explicit combat profile speed duplicates and skill definitions', () => {
+    const report = validateEnemyCombatProfiles({
+      broken_enemy: {
+        id: 'broken_enemy',
+        combatProfile: {
+          speed: 2.5,
+          startRank: 1,
+          skillIds: ['missing_skill', 'missing_skill'],
+          skills: [],
+          ai: 'normal',
+        },
+      },
+    });
+
+    expect(report.ok).toBe(false);
+    expect(report.errors).toEqual(expect.arrayContaining([
+      '[enemy/broken_enemy] combatProfile.speed must be non-negative safe integer',
+      '[enemy/broken_enemy] combatProfile.skillIds must not contain duplicates',
+      '[enemy/broken_enemy] combatProfile.skills must be non-empty array',
+    ]));
   });
 });

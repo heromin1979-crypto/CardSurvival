@@ -189,9 +189,12 @@ export function validateEnemyCombatProfiles(enemies = ENEMIES) {
       }
       if (
         explicitProfile.speed != null
-        && !Number.isFinite(explicitProfile.speed)
+        && (
+          !Number.isSafeInteger(explicitProfile.speed)
+          || explicitProfile.speed < 0
+        )
       ) {
-        reportEnemyError(`[enemy/${enemyId}] combatProfile.speed must be finite number`);
+        reportEnemyError(`[enemy/${enemyId}] combatProfile.speed must be non-negative safe integer`);
       }
       if (
         explicitProfile.startRank != null
@@ -213,6 +216,22 @@ export function validateEnemyCombatProfiles(enemies = ENEMIES) {
         reportEnemyError(`[enemy/${enemyId}] combatProfile.skillIds must be non-empty strings`);
       }
       if (
+        Array.isArray(explicitProfile.skillIds)
+        && new Set(explicitProfile.skillIds).size !== explicitProfile.skillIds.length
+      ) {
+        reportEnemyError(`[enemy/${enemyId}] combatProfile.skillIds must not contain duplicates`);
+      }
+      if (!Array.isArray(explicitProfile.skills) || explicitProfile.skills.length === 0) {
+        reportEnemyError(`[enemy/${enemyId}] combatProfile.skills must be non-empty array`);
+      } else if (Array.isArray(explicitProfile.skillIds)) {
+        const skillMap = new Map(explicitProfile.skills.map(skill => [skill?.id, skill]));
+        for (const skillId of explicitProfile.skillIds) {
+          if (!skillMap.has(skillId)) {
+            reportEnemyError(`[enemy/${enemyId}] combatProfile skill "${skillId}" not found in skills`);
+          }
+        }
+      }
+      if (
         explicitProfile.ai != null
         && (typeof explicitProfile.ai !== 'string' || explicitProfile.ai.length === 0)
       ) {
@@ -221,8 +240,8 @@ export function validateEnemyCombatProfiles(enemies = ENEMIES) {
     }
 
     const profile = buildEnemyProfile(enemy);
-    if (!Number.isFinite(profile.speed)) {
-      reportEnemyError(`[enemy/${enemyId}] profile.speed must be finite number`);
+    if (!Number.isSafeInteger(profile.speed) || profile.speed < 0) {
+      reportEnemyError(`[enemy/${enemyId}] profile.speed must be non-negative safe integer`);
     }
     if (
       !Number.isInteger(profile.startRank)

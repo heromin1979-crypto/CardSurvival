@@ -7,6 +7,14 @@ function cloneArray(value, fallback = []) {
   return Array.isArray(value) ? [...value] : [...fallback];
 }
 
+function cloneValue(value) {
+  if (Array.isArray(value)) return value.map(cloneValue);
+  if (!value || typeof value !== 'object') return value;
+  return Object.fromEntries(
+    Object.entries(value).map(([key, nested]) => [key, cloneValue(nested)]),
+  );
+}
+
 function normalizeStartRank(enemy) {
   const explicitRank = enemy?.combatProfile?.startRank;
   if (Number.isInteger(explicitRank) && explicitRank >= 1 && explicitRank <= 4) {
@@ -16,7 +24,9 @@ function normalizeStartRank(enemy) {
 }
 
 function normalizeSpeed(value) {
-  return Number.isFinite(value) ? value : BALANCE.combat.defaultEnemySpeed;
+  return Number.isSafeInteger(value) && value >= 0
+    ? value
+    : BALANCE.combat.defaultEnemySpeed;
 }
 
 function normalizeDamage(value) {
@@ -59,6 +69,7 @@ export function buildEnemyProfile(enemy = {}) {
       speed: normalizeSpeed(combatProfile.speed ?? enemy.speed),
       startRank: normalizeStartRank(enemy),
       skillIds: cloneArray(combatProfile.skillIds),
+      skills: cloneArray(combatProfile.skills).map(cloneValue),
       ai: combatProfile.ai ?? enemy.aiPattern ?? 'normal',
     };
   }
