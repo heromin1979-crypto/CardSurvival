@@ -23,8 +23,8 @@ function normalizeBond(value) {
 }
 
 function normalizeRoll(value) {
-  if (!Number.isFinite(value)) return null;
-  return Math.min(1 - Number.EPSILON, Math.max(0, value));
+  if (!Number.isFinite(value) || value < 0 || value >= 1) return null;
+  return value;
 }
 
 function readRoll(context) {
@@ -75,6 +75,14 @@ function makeReaction(type, allyId, actorId, phase) {
   };
 }
 
+function compareSupportCandidate(a, b) {
+  return b.bond - a.bond || a.ally.id.localeCompare(b.ally.id);
+}
+
+function compareInterfereCandidate(a, b) {
+  return a.bond - b.bond || a.ally.id.localeCompare(b.ally.id);
+}
+
 export function getRelationshipSkillEffects(skill, bond) {
   if (!isObject(skill) || !Array.isArray(skill.relationshipModifiers)) {
     return [];
@@ -115,7 +123,6 @@ export function resolveRelationshipReaction(context, event) {
     context.resolvedRelationshipPhases = new Set();
   }
   if (context.resolvedRelationshipPhases.has(key)) return null;
-  context.resolvedRelationshipPhases.add(key);
 
   let allies;
   try {
@@ -125,6 +132,8 @@ export function resolveRelationshipReaction(context, event) {
   }
   if (!Array.isArray(allies)) return null;
 
+  const supportCandidates = [];
+  const interfereCandidates = [];
   for (const ally of allies) {
     if (!isAliveCandidate(ally, event.actorId)) continue;
 
@@ -136,47 +145,57 @@ export function resolveRelationshipReaction(context, event) {
     }
     if (bond === null) continue;
 
-    let reactionType = null;
-    let chance = 0;
     if (bond >= 61) {
-      reactionType = 'support';
-      chance = BALANCE.combat.relationship.positiveChance;
+      supportCandidates.push({ ally, bond });
     } else if (bond <= 30) {
-      reactionType = 'interfere';
-      chance = BALANCE.combat.relationship.negativeChance;
-    } else {
-      continue;
+      interfereCandidates.push({ ally, bond });
     }
-
-    const roll = readRoll(context);
-    if (roll === null || roll >= chance) continue;
-
-    const reaction = makeReaction(
-      reactionType,
-      ally.id,
-      event.actorId,
-      event.phase,
-    );
-
-    if (typeof context.applyRelationshipReaction === 'function') {
-      try {
-        const result = context.applyRelationshipReaction(reaction, event);
-        if (result?.ok === false) {
-          return {
-            ok: false,
-            reason: result.reason ?? 'relationship_callback_error',
-          };
-        }
-      } catch {
-        return {
-          ok: false,
-          reason: 'relationship_callback_error',
-        };
-      }
-    }
-
-    return reaction;
   }
 
-  return null;
+  context.resolvedRelationshipPhases.add(key);
+
+  const positiveChance = supportCandidates.length > 0
+    ? BALANCE.combat.relationship.positiveChance
+    : 0;
+  const negativeChance = interfereCandidates.length > 0
+    ? BALANCE.combat.relationship.negativeChance
+    : 0;
+  if (positiveChance <= 0 && negativeChance <= 0) return null;
+
+  const roll = readRoll(context);
+  if (roll === null) return null;
+
+  let reactionType = null;
+  let candidate = null;
+  if (roll < positiveChance) {
+    reactionType = 'support';
+    candidate = [...supportCandidates].sort(compareSupportCandidate)[0];
+  } else if (roll < positiveChance + negativeChance) {
+    reactionType = 'interfere';
+    candidate = [...interfereCandidates].sort(compareInterfereCandidate)[0];
+  }
+
+  if (!reactionType || !candidate) return null;
+
+  const reaction = makeReaction(
+    reactionType,
+    candidate.ally.id,
+    event.actorId,
+    event.phase,
+  );
+
+  if (typeof context.applyRelationshipReaction === 'function') {
+    try {
+      const result = context.applyRelationshipReaction(reaction, event);
+      if (result?.ok === false) {
+        context.resolvedRelationshipPhases.delete(key);
+        return null;
+      }
+    } catch {
+      context.resolvedRelationshipPhases.delete(key);
+      return null;
+    }
+  }
+
+  return reaction;
 }

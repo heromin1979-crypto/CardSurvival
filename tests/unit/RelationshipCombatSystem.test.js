@@ -170,14 +170,59 @@ describe('RelationshipCombatSystem', () => {
     expect(context.getBond).toHaveBeenCalledWith('player', 'npc_valid');
   });
 
-  it('treats invalid random rolls as safe non-triggering results', () => {
+  it.each([
+    ['NaN', Number.NaN],
+    ['negative', -1],
+    ['one', 1],
+    ['infinity', Number.POSITIVE_INFINITY],
+  ])('treats invalid random roll %s as a safe non-triggering result', (_label, value) => {
     const context = makeContext({
-      random: () => Number.NaN,
+      random: () => value,
       getBond: () => 90,
     });
 
     expect(resolveRelationshipReaction(context, makeEvent())).toBeNull();
     expect(context.applyRelationshipReaction).not.toHaveBeenCalled();
+  });
+
+  it('uses one phase-level roll instead of amplifying chance per ally', () => {
+    const random = vi.fn(() => BALANCE.combat.relationship.positiveChance + 0.01);
+    const context = makeContext({
+      random,
+      getAlliesExcept: () => [
+        { id: 'npc_nurse', dead: false },
+        { id: 'npc_soldier', dead: false },
+      ],
+      getBond: () => 90,
+    });
+
+    expect(resolveRelationshipReaction(context, makeEvent())).toBeNull();
+    expect(random).toHaveBeenCalledOnce();
+    expect(context.applyRelationshipReaction).not.toHaveBeenCalled();
+  });
+
+  it('uses the strongest support and weakest interference candidate deterministically', () => {
+    const supportContext = makeContext({
+      random: () => 0,
+      getAlliesExcept: () => [
+        { id: 'npc_low_support', dead: false },
+        { id: 'npc_high_support', dead: false },
+      ],
+      getBond: (_actorId, allyId) => (allyId === 'npc_high_support' ? 95 : 70),
+    });
+    expect(resolveRelationshipReaction(supportContext, makeEvent()))
+      .toMatchObject({ type: 'support', sourceId: 'npc_high_support' });
+
+    const interfereContext = makeContext({
+      random: () => 0,
+      getAlliesExcept: () => [
+        { id: 'npc_low_interfere', dead: false },
+        { id: 'npc_lower_interfere', dead: false },
+      ],
+      getBond: (_actorId, allyId) => (allyId === 'npc_lower_interfere' ? 5 : 25),
+    });
+    expect(resolveRelationshipReaction(interfereContext, makeEvent()))
+      .toMatchObject({ type: 'interfere', sourceId: 'npc_lower_interfere' });
   });
 
   it('passes the created reaction and original event to the callback', () => {
@@ -198,7 +243,7 @@ describe('RelationshipCombatSystem', () => {
     expect(resolveRelationshipReaction({}, makeEvent())).toBeNull();
   });
 
-  it('returns a safe failure when the reaction callback throws', () => {
+  it('returns null and leaves the phase retryable when the reaction callback throws', () => {
     const context = makeContext({
       random: () => 0,
       getBond: () => 90,
@@ -212,10 +257,23 @@ describe('RelationshipCombatSystem', () => {
       phase: 'after',
     }));
 
-    expect(result).toEqual({
-      ok: false,
-      reason: 'relationship_callback_error',
+    expect(result).toBeNull();
+    expect(context.resolvedRelationshipPhases.has('4:after')).toBe(false);
+  });
+
+  it('returns null and leaves the phase retryable when the callback soft-fails', () => {
+    const context = makeContext({
+      random: () => 0,
+      getBond: () => 90,
+      applyRelationshipReaction: vi.fn(() => ({ ok: false, reason: 'blocked' })),
     });
-    expect(context.resolvedRelationshipPhases.has('4:after')).toBe(true);
+
+    const result = resolveRelationshipReaction(context, makeEvent({
+      actionSequence: 5,
+      phase: 'after',
+    }));
+
+    expect(result).toBeNull();
+    expect(context.resolvedRelationshipPhases.has('5:after')).toBe(false);
   });
 });
