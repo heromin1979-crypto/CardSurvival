@@ -49,7 +49,20 @@ export function buildInitiativeQueue(combatants, random = Math.random, rollMax =
 }
 
 export function canAct(combatant) {
-  if (!combatant || typeof combatant !== 'object' || combatant.dead === true) {
+  if (!combatant || typeof combatant !== 'object' || Array.isArray(combatant)) {
+    return false;
+  }
+
+  const prototype = Object.getPrototypeOf(combatant);
+  if (prototype !== Object.prototype && prototype !== null) {
+    return false;
+  }
+
+  if (typeof combatant.id !== 'string' || combatant.id.trim().length === 0) {
+    return false;
+  }
+
+  if (combatant.dead === true) {
     return false;
   }
 

@@ -139,6 +139,26 @@ describe('canAct', () => {
     expect(canAct({ id: 'dead', dead: true })).toBe(false);
   });
 
+  it.each([
+    ['array', []],
+    ['empty object', {}],
+    ['missing id', { dead: false }],
+    ['empty id', { id: '' }],
+    ['whitespace-only id', { id: '   ' }],
+    ['non-string id', { id: 123 }],
+    ['non-plain object', Object.assign(new Date(0), { id: 'date' })],
+  ])('rejects malformed combatant: %s', (_label, combatant) => {
+    expect(canAct(combatant)).toBe(false);
+  });
+
+  it('checks trimmed id emptiness without changing the combatant', () => {
+    const combatant = { id: ' ready ', dead: false, statusEffects: [] };
+    const snapshot = structuredClone(combatant);
+
+    expect(canAct(combatant)).toBe(true);
+    expect(combatant).toEqual(snapshot);
+  });
+
   it('rejects skip-turn effects and tolerates malformed statuses', () => {
     expect(canAct({
       id: 'stunned',
@@ -177,6 +197,42 @@ describe('nextActionableIndex', () => {
     };
 
     expect(nextActionableIndex(queue, 1, combatants)).toBe(-1);
+  });
+
+  it('skips malformed combatant map values and finds the next valid combatant', () => {
+    const queue = [
+      { combatantId: 'current' },
+      { combatantId: 'empty-object' },
+      { combatantId: 'array' },
+      { combatantId: 'empty-id' },
+      { combatantId: 'ready' },
+    ];
+    const combatants = {
+      current: { id: 'current' },
+      'empty-object': {},
+      array: [],
+      'empty-id': { id: '   ' },
+      ready: { id: 'ready' },
+    };
+
+    expect(nextActionableIndex(queue, 0, combatants)).toBe(4);
+  });
+
+  it('returns minus one when all remaining combatant map values are malformed', () => {
+    const queue = [
+      { combatantId: 'current' },
+      { combatantId: 'empty-object' },
+      { combatantId: 'array' },
+      { combatantId: 'empty-id' },
+    ];
+    const combatants = {
+      current: { id: 'current' },
+      'empty-object': {},
+      array: [],
+      'empty-id': { id: '' },
+    };
+
+    expect(nextActionableIndex(queue, 0, combatants)).toBe(-1);
   });
 
   it('returns minus one for malformed inputs without throwing', () => {
