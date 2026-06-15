@@ -383,7 +383,14 @@ describe('executeSkillCommand', () => {
 
     const result = executeSkillCommand(ctx, strikeCommand, () => 0.8);
 
-    expect(result).toEqual({ ok: true, hit: false, turnConsumed: true });
+    expect(result).toEqual({
+      ok: true,
+      hit: false,
+      turnConsumed: true,
+      costsConsumed: true,
+      effectsApplied: 0,
+      partialApplied: false,
+    });
     expect(ctx.consumeCosts).toHaveBeenCalledOnce();
     expect(ctx.consumeCosts).toHaveBeenCalledWith(ctx.combatants[0], ctx.skillsById.strike);
     expect(ctx.applyEffect).not.toHaveBeenCalled();
@@ -403,7 +410,9 @@ describe('executeSkillCommand', () => {
       ok: true,
       hit: true,
       turnConsumed: true,
+      costsConsumed: true,
       effectsApplied: 2,
+      partialApplied: false,
     });
     expect(ctx.applyEffect.mock.calls.map(([effect]) => effect)).toEqual(ctx.skillsById.strike.effects);
     expect(ctx.applyEffect.mock.calls[0].slice(1)).toEqual([
@@ -423,28 +432,87 @@ describe('executeSkillCommand', () => {
       ok: true,
       hit: true,
       turnConsumed: true,
+      costsConsumed: true,
       effectsApplied: 0,
+      partialApplied: false,
     });
     expect(ctx.applyEffect).not.toHaveBeenCalled();
   });
 
-  it('wraps consume and effect throws as execution_error without rolling back consumed costs', () => {
+  it('reports consumeCost throws as retry-safe pre-execution failures', () => {
     const consumeCtx = makeCommandContext({
       consumeCosts: vi.fn(() => {
         throw new Error('consume failed');
       }),
     });
+
+    expect(executeSkillCommand(consumeCtx, strikeCommand, () => 0))
+      .toEqual({
+        ok: false,
+        reason: 'execution_error',
+        turnConsumed: false,
+        costsConsumed: false,
+        partialApplied: false,
+        effectsApplied: 0,
+      });
+    expect(consumeCtx.applyEffect).not.toHaveBeenCalled();
+  });
+
+  it('preserves consumeCosts soft-fail reasons before applying effects', () => {
+    const ctx = makeCommandContext({
+      consumeCosts: vi.fn(() => ({ ok: false, reason: 'stamina_spent_elsewhere' })),
+    });
+
+    expect(executeSkillCommand(ctx, strikeCommand, () => 0))
+      .toEqual({
+        ok: false,
+        reason: 'stamina_spent_elsewhere',
+        turnConsumed: false,
+        costsConsumed: false,
+        partialApplied: false,
+        effectsApplied: 0,
+      });
+    expect(ctx.applyEffect).not.toHaveBeenCalled();
+  });
+
+  it('reports effect throws after consumed costs with partial execution metadata', () => {
     const effectCtx = makeCommandContext({
       applyEffect: vi.fn(() => {
         throw new Error('effect failed');
       }),
     });
 
-    expect(executeSkillCommand(consumeCtx, strikeCommand, () => 0))
-      .toEqual({ ok: false, reason: 'execution_error' });
     expect(executeSkillCommand(effectCtx, strikeCommand, () => 0))
-      .toEqual({ ok: false, reason: 'execution_error' });
+      .toEqual({
+        ok: false,
+        reason: 'execution_error',
+        turnConsumed: true,
+        costsConsumed: true,
+        partialApplied: false,
+        effectsApplied: 0,
+      });
     expect(effectCtx.consumeCosts).toHaveBeenCalledOnce();
+  });
+
+  it('reports effect soft-fails after prior effects with partial execution metadata', () => {
+    const ctx = makeCommandContext();
+    ctx.skillsById.strike.effects = [
+      { type: 'damage', value: [2, 2] },
+      { type: 'status', status: { id: 'bleed' } },
+    ];
+    ctx.applyEffect = vi.fn()
+      .mockReturnValueOnce({ ok: true })
+      .mockReturnValueOnce({ ok: false, reason: 'status_resisted' });
+
+    expect(executeSkillCommand(ctx, strikeCommand, () => 0))
+      .toEqual({
+        ok: false,
+        reason: 'status_resisted',
+        turnConsumed: true,
+        costsConsumed: true,
+        partialApplied: true,
+        effectsApplied: 1,
+      });
   });
 
   it('does not consume costs when applyEffect callback is missing for a hitting effect skill', () => {
@@ -452,25 +520,63 @@ describe('executeSkillCommand', () => {
 
     const result = executeSkillCommand(ctx, strikeCommand, () => 0);
 
-    expect(result).toEqual({ ok: false, reason: 'execution_error' });
+    expect(result).toEqual({
+      ok: false,
+      reason: 'execution_error',
+      turnConsumed: false,
+      costsConsumed: false,
+      partialApplied: false,
+      effectsApplied: 0,
+    });
     expect(ctx.consumeCosts).not.toHaveBeenCalled();
   });
 
-  it('clamps random rolls and defaults malformed accuracy to 0.7', () => {
-    const clampedCtx = makeCommandContext();
-    clampedCtx.skillsById.strike.accuracy = 0;
+  it('uses strict hit checks and makes invalid random rolls miss safely', () => {
+    const zeroAccuracyCtx = makeCommandContext();
+    zeroAccuracyCtx.skillsById.strike.accuracy = 0;
+    const invalidRollCtx = makeCommandContext();
+    invalidRollCtx.skillsById.strike.accuracy = 1;
+    const clampedFiniteCtx = makeCommandContext();
+    clampedFiniteCtx.skillsById.strike.accuracy = 1;
     const defaultCtx = makeCommandContext();
     defaultCtx.skillsById.strike.accuracy = Number.NaN;
 
-    expect(executeSkillCommand(clampedCtx, strikeCommand, () => Number.NaN))
+    expect(executeSkillCommand(zeroAccuracyCtx, strikeCommand, () => 0))
+      .toEqual({
+        ok: true,
+        hit: false,
+        turnConsumed: true,
+        costsConsumed: true,
+        effectsApplied: 0,
+        partialApplied: false,
+      });
+    expect(executeSkillCommand(invalidRollCtx, strikeCommand, () => Number.NaN))
+      .toEqual({
+        ok: true,
+        hit: false,
+        turnConsumed: true,
+        costsConsumed: true,
+        effectsApplied: 0,
+        partialApplied: false,
+      });
+    expect(executeSkillCommand(clampedFiniteCtx, strikeCommand, () => 1))
       .toEqual({
         ok: true,
         hit: true,
         turnConsumed: true,
+        costsConsumed: true,
         effectsApplied: 1,
+        partialApplied: false,
       });
     expect(executeSkillCommand(defaultCtx, strikeCommand, () => 0.75))
-      .toEqual({ ok: true, hit: false, turnConsumed: true });
+      .toEqual({
+        ok: true,
+        hit: false,
+        turnConsumed: true,
+        costsConsumed: true,
+        effectsApplied: 0,
+        partialApplied: false,
+      });
   });
 });
 
@@ -517,6 +623,22 @@ describe('useCombatItem', () => {
     const result = useCombatItem(ctx, 'player', 'bandage_1');
 
     expect(result).toBe(itemFailure);
+    expect(ctx.combatants[0].itemUsedThisTurn).toBeUndefined();
+  });
+
+  it.each([
+    ['undefined', undefined, 'item_unavailable'],
+    ['null', null, 'item_unavailable'],
+    ['empty object', {}, 'item_unavailable'],
+    ['false without reason', { ok: false }, 'item_unavailable'],
+  ])('requires explicit ok:true item callback result for %s', (_, callbackResult, reason) => {
+    const ctx = makeCommandContext({
+      consumeCombatItem: vi.fn(() => callbackResult),
+    });
+
+    const result = useCombatItem(ctx, 'player', 'bandage_1');
+
+    expect(result).toEqual({ ok: false, reason });
     expect(ctx.combatants[0].itemUsedThisTurn).toBeUndefined();
   });
 

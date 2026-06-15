@@ -40,6 +40,28 @@ function commandFailure(reason) {
   return { ok: false, reason };
 }
 
+function preExecutionFailure(reason) {
+  return {
+    ok: false,
+    reason,
+    turnConsumed: false,
+    costsConsumed: false,
+    partialApplied: false,
+    effectsApplied: 0,
+  };
+}
+
+function postCostFailure(reason, effectsApplied) {
+  return {
+    ok: false,
+    reason,
+    turnConsumed: true,
+    costsConsumed: true,
+    partialApplied: effectsApplied > 0,
+    effectsApplied,
+  };
+}
+
 function lookupById(collection, id) {
   if (typeof id !== 'string' || id.length === 0) return null;
   if (!collection) return null;
@@ -96,8 +118,8 @@ function normalizeAccuracy(value) {
 }
 
 function normalizeRoll(value) {
-  if (!Number.isFinite(value)) return 0;
-  return Math.min(1, Math.max(0, value));
+  if (!Number.isFinite(value)) return null;
+  return Math.min(1 - Number.EPSILON, Math.max(0, value));
 }
 
 function normalizeDamage(damage) {
@@ -334,35 +356,65 @@ export function executeSkillCommand(context, command, random = Math.random) {
   const { actor, target, skill } = validation;
   const effects = Array.isArray(skill.effects) ? skill.effects : [];
   if (typeof context.consumeCosts !== 'function') {
-    return commandFailure('execution_error');
+    return preExecutionFailure('execution_error');
   }
   if (effects.length > 0 && typeof context.applyEffect !== 'function') {
-    return commandFailure('execution_error');
+    return preExecutionFailure('execution_error');
   }
 
+  let consumeResult;
   try {
-    context.consumeCosts(actor, skill);
+    consumeResult = context.consumeCosts(actor, skill);
+  } catch {
+    return preExecutionFailure('execution_error');
+  }
+  if (consumeResult?.ok === false) {
+    return preExecutionFailure(consumeResult.reason ?? 'execution_error');
+  }
 
-    const randomFn = typeof random === 'function' ? random : Math.random;
-    const roll = normalizeRoll(randomFn());
-    const hit = roll <= normalizeAccuracy(skill.accuracy);
-    if (!hit) {
-      return { ok: true, hit: false, turnConsumed: true };
-    }
-
-    for (const effect of effects) {
-      context.applyEffect(effect, actor, target, randomFn);
-    }
-
+  const randomFn = typeof random === 'function' ? random : Math.random;
+  let roll;
+  try {
+    roll = normalizeRoll(randomFn());
+  } catch {
+    return postCostFailure('execution_error', 0);
+  }
+  const hit = roll !== null && roll < normalizeAccuracy(skill.accuracy);
+  if (!hit) {
     return {
       ok: true,
-      hit: true,
+      hit: false,
       turnConsumed: true,
-      effectsApplied: effects.length,
+      costsConsumed: true,
+      effectsApplied: 0,
+      partialApplied: false,
     };
-  } catch {
-    return commandFailure('execution_error');
   }
+
+  let effectsApplied = 0;
+  for (const effect of effects) {
+    let effectResult;
+    try {
+      effectResult = context.applyEffect(effect, actor, target, randomFn);
+    } catch {
+      return postCostFailure('execution_error', effectsApplied);
+    }
+
+    if (effectResult?.ok === false) {
+      return postCostFailure(effectResult.reason ?? 'execution_error', effectsApplied);
+    }
+
+    effectsApplied++;
+  }
+
+  return {
+    ok: true,
+    hit: true,
+    turnConsumed: true,
+    costsConsumed: true,
+    effectsApplied,
+    partialApplied: false,
+  };
 }
 
 export function useCombatItem(context, actorId, itemInstanceId) {
@@ -392,8 +444,9 @@ export function useCombatItem(context, actorId, itemInstanceId) {
     return commandFailure('item_error');
   }
 
-  if (result?.ok === false) {
-    return result;
+  if (result?.ok !== true) {
+    if (result?.ok === false && result.reason) return result;
+    return commandFailure('item_unavailable');
   }
 
   actor.itemUsedThisTurn = true;

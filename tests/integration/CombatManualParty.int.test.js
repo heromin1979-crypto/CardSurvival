@@ -74,7 +74,9 @@ describe('manual party combat commands', () => {
       ok: true,
       hit: true,
       turnConsumed: true,
+      costsConsumed: true,
       effectsApplied: 1,
+      partialApplied: false,
     });
     expect(ctx.consumeCosts).toHaveBeenCalledWith(
       expect.objectContaining({ id: actorId }),
