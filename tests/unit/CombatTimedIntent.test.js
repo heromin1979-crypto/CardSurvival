@@ -1,6 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import CombatSystem from '../../js/systems/CombatSystem.js';
 import GameState    from '../../js/core/GameState.js';
+import { ENEMIES, instantiateEnemy } from '../../js/data/enemies.js';
+import { buildEnemyProfile } from '../../js/systems/combat/EnemyCombatAdapter.js';
 
 beforeEach(() => {
   GameState.player.hp = { current: 100, max: 100 };
@@ -37,5 +39,18 @@ describe('_decideNextIntent — timedThreat', () => {
     };
     const intent = CombatSystem._decideNextIntent(enemy, makeCombat(), GameState);
     expect(intent.action).toBe('attack');
+  });
+
+  it('combatProfile does not replace timedThreat intent on generated enemies', () => {
+    const enemy = instantiateEnemy(ENEMIES.zombie_bloater);
+    enemy._chargeRemaining = 2;
+    const profile = buildEnemyProfile(enemy);
+
+    const intent = CombatSystem._decideNextIntent(enemy, makeCombat(), GameState);
+
+    expect(profile.skillIds).toEqual(['bloater_swipe', 'bloater_self_destruct']);
+    expect(intent.action).toBe('timed_threat');
+    expect(intent.threatId).toBe('self_destruct');
+    expect(intent.countdown).toBe(2);
   });
 });

@@ -7,6 +7,8 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import CombatSystem from '../../js/systems/CombatSystem.js';
 import GameState    from '../../js/core/GameState.js';
+import { ENEMIES } from '../../js/data/enemies.js';
+import { buildEnemyProfile } from '../../js/systems/combat/EnemyCombatAdapter.js';
 
 function makePlayer({ hp = 100, maxHp = 100, isRanged = false } = {}) {
   GameState.player.hp = { current: hp, max: maxHp };
@@ -252,5 +254,23 @@ describe('_decideNextIntent', () => {
     const enemy = makeEnemy({ aiPattern: 'normal' });
     const intent = CombatSystem._decideNextIntent(enemy, combat, GameState);
     expect(intent.label).toContain('플레이어');
+  });
+
+  it('combatProfile data coexists with legacy intent preview fields', () => {
+    const profile = buildEnemyProfile(ENEMIES.raider_elite);
+    const combat = makeCombat();
+    const enemy = {
+      ...ENEMIES.raider_elite,
+      currentHp: 70,
+      maxHp: 70,
+      _skillCooldowns: { aimed_shot: 0 },
+    };
+
+    const intent = CombatSystem._decideNextIntent(enemy, combat, GameState);
+
+    expect(profile.skillIds).toEqual(['raider_elite_basic_shot', 'raider_elite_aimed_shot']);
+    expect(intent.action).toBe('skill');
+    expect(intent.skillId).toBe('aimed_shot');
+    expect(intent.pattern).toBe('sniper');
   });
 });
