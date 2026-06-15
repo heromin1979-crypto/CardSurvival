@@ -199,7 +199,9 @@ describe('manual party combat commands', () => {
     expect(CombatSystem.selectTarget('enemy:0')).toBe(true);
 
     const before = GameState.combat.enemies[0].currentHp;
+    const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0);
     const result = CombatSystem.confirmAction();
+    randomSpy.mockRestore();
 
     expect(result.ok).toBe(true);
     expect(result.hit).toBe(true);
