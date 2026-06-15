@@ -120,6 +120,11 @@ const BALANCE = {
       resistLossPerCheck: 0.10,
       minimumResist: 0.05,
     },
+    stress: {
+      resolveChance: 0.10,
+      afterResolve: 4,
+      afterMeltdown: 2,
+    },
     fleeChance:         0.6,
     fleeNoise:          10,
     fleeFatigue:        10,
