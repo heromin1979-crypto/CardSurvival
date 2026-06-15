@@ -4,14 +4,18 @@ function isValidCombatantId(combatantId) {
   return typeof combatantId === 'string' && combatantId !== '';
 }
 
+function normalizeSlot(slot) {
+  return isValidCombatantId(slot) ? slot : null;
+}
+
 function isEmptySlot(slot) {
-  return slot == null;
+  return normalizeSlot(slot) === null;
 }
 
 function toDenseFormation(formation) {
   return Array.from({ length: FORMATION_SIZE }, (_, index) => {
     const slot = Array.isArray(formation) ? formation[index] : null;
-    return isEmptySlot(slot) ? null : slot;
+    return normalizeSlot(slot);
   });
 }
 
@@ -23,12 +27,10 @@ function findPosition(formations, combatantId) {
   if (!isValidCombatantId(combatantId)) return null;
 
   for (const side of ['ally', 'enemy']) {
-    const formation = formations?.[side];
-    if (!Array.isArray(formation)) continue;
+    if (!Array.isArray(formations?.[side])) continue;
+    const formation = toDenseFormation(formations[side]);
 
-    const index = formation
-      .slice(0, FORMATION_SIZE)
-      .findIndex((slot) => slot === combatantId);
+    const index = formation.findIndex((slot) => slot === combatantId);
     if (index === -1) continue;
 
     const rank = side === 'ally' ? FORMATION_SIZE - index : index + 1;
@@ -85,7 +87,7 @@ export function moveCombatant(formations, combatantId, destinationRank) {
     return false;
   }
 
-  const formation = formations[position.side];
+  const formation = toDenseFormation(formations[position.side]);
   const destinationIndex = rankToIndex(position.side, destinationRank);
   if (!isEmptySlot(formation[destinationIndex])) return false;
 
@@ -95,10 +97,9 @@ export function moveCombatant(formations, combatantId, destinationRank) {
     if (!isEmptySlot(formation[rankToIndex(position.side, rank)])) return false;
   }
 
-  formations.ally = toDenseFormation(formations.ally);
-  formations.enemy = toDenseFormation(formations.enemy);
-  formations[position.side][position.index] = null;
-  formations[position.side][destinationIndex] = combatantId;
+  formation[position.index] = null;
+  formation[destinationIndex] = combatantId;
+  formations[position.side] = formation;
   return true;
 }
 
@@ -114,7 +115,10 @@ export function validateSkillPosition(
   const target = findPosition(formations, targetId);
   if (!target) return { ok: false, reason: 'invalid_target' };
 
-  if (!skill?.usableFrom?.includes(actor.rank)) {
+  if (
+    !Array.isArray(skill?.usableFrom)
+    || !skill.usableFrom.includes(actor.rank)
+  ) {
     return { ok: false, reason: 'invalid_origin_rank' };
   }
 
@@ -122,7 +126,10 @@ export function validateSkillPosition(
     return { ok: false, reason: 'invalid_target_side' };
   }
 
-  if (!skill?.target?.ranks?.includes(target.rank)) {
+  if (
+    !Array.isArray(skill?.target?.ranks)
+    || !skill.target.ranks.includes(target.rank)
+  ) {
     return { ok: false, reason: 'invalid_target_rank' };
   }
 

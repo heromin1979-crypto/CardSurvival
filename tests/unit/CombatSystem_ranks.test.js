@@ -181,9 +181,9 @@ describe('후열 근접 적 — 전진 행동', () => {
 });
 
 describe('legacy row compatibility with four-rank formations', () => {
-  it('converts current front/back enemies while preserving the legacy contract', () => {
+  it('converts current and legacy enemy positions into formation ranks', () => {
     const front = makeEnemy({ id: 'front', row: 'front' });
-    const back = makeEnemy({ id: 'back', row: 'back' });
+    const back = { id: 'back', position: 'back' };
     const formations = createFormations(['player'], [
       { combatantId: front.id, row: CombatSystem.rowOf(front) },
       { combatantId: back.id, row: CombatSystem.rowOf(back) },

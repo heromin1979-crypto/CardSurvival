@@ -149,6 +149,18 @@ describe('getRank', () => {
     },
   );
 
+  it.each([42, {}, '', null, undefined])(
+    'returns null for invalid slot value %p',
+    (invalidSlot) => {
+      const formations = {
+        ally: [invalidSlot, null, null, 'player'],
+        enemy: [null, null, null, null],
+      };
+
+      expect(getRank(formations, invalidSlot)).toBeNull();
+    },
+  );
+
   it.each([null, undefined, {}, [], 'invalid'])(
     'returns null for malformed formations %p',
     (formations) => {
@@ -165,24 +177,42 @@ describe('moveCombatant', () => {
     expect(formations.ally).toEqual([null, 'player', null, null]);
   });
 
+  it('moves through invalid slots and normalizes only the moved formation', () => {
+    const enemy = [undefined, 'enemy', 9];
+    const formations = {
+      ally: [42, {}, '', 'player'],
+      enemy,
+    };
+    const enemyBefore = structuredClone(enemy);
+
+    expect(moveCombatant(formations, 'player', 4)).toBe(true);
+    expect(formations.ally).toEqual(['player', null, null, null]);
+    expect(formations.enemy).toBe(enemy);
+    expect(formations.enemy).toEqual(enemyBefore);
+  });
+
   it.each([
     ['ally forward', { ally: [null, null, null, 'player'], enemy: [] }, 'player', 3],
     ['ally backward', { ally: [null, 'player', null, null], enemy: [] }, 'player', 1],
     ['enemy forward', { ally: [], enemy: ['enemy', null, null, null] }, 'enemy', 3],
     ['enemy backward', { ally: [], enemy: [null, null, 'enemy', null] }, 'enemy', 1],
-  ])('supports %s movement and leaves dense null-filled formations', (
+  ])('supports %s movement and normalizes only the moved formation', (
     _case,
     formations,
     combatantId,
     destinationRank,
   ) => {
+    const movedSide = combatantId === 'player' ? 'ally' : 'enemy';
+    const otherSide = movedSide === 'ally' ? 'enemy' : 'ally';
+    const otherFormation = formations[otherSide];
+    const otherBefore = structuredClone(otherFormation);
+
     expect(moveCombatant(formations, combatantId, destinationRank)).toBe(true);
-    expect(formations.ally).toHaveLength(4);
-    expect(formations.enemy).toHaveLength(4);
-    expect(Object.keys(formations.ally)).toEqual(['0', '1', '2', '3']);
-    expect(Object.keys(formations.enemy)).toEqual(['0', '1', '2', '3']);
-    expect(formations.ally.every((slot) => slot !== undefined)).toBe(true);
-    expect(formations.enemy.every((slot) => slot !== undefined)).toBe(true);
+    expect(formations[movedSide]).toHaveLength(4);
+    expect(Object.keys(formations[movedSide])).toEqual(['0', '1', '2', '3']);
+    expect(formations[movedSide].every((slot) => slot !== undefined)).toBe(true);
+    expect(formations[otherSide]).toBe(otherFormation);
+    expect(formations[otherSide]).toEqual(otherBefore);
     expect(getRank(formations, combatantId)).toBe(destinationRank);
   });
 
@@ -198,6 +228,21 @@ describe('moveCombatant', () => {
 
     expect(moveCombatant(formations, combatantId, destinationRank)).toBe(false);
     expect(formations).toEqual(before);
+  });
+
+  it('leaves external formations unchanged when movement fails', () => {
+    const formations = {
+      ally: ['blocker', {}, '', 'player'],
+      enemy: [undefined, 'enemy', 9],
+    };
+    const ally = formations.ally;
+    const enemy = formations.enemy;
+    const before = structuredClone(formations);
+
+    expect(moveCombatant(formations, 'player', 4)).toBe(false);
+    expect(formations).toEqual(before);
+    expect(formations.ally).toBe(ally);
+    expect(formations.enemy).toBe(enemy);
   });
 
   it('does not allow movement through another combatant', () => {
@@ -253,6 +298,78 @@ describe('validateSkillPosition', () => {
     expect(
       validateSkillPosition(formations, 'player', 'enemy_front', skill),
     ).toEqual({ ok: true });
+  });
+
+  it.each([
+    ['missing skill', undefined],
+    ['null skill', null],
+    ['primitive skill', 1],
+    ['missing usableFrom', {}],
+    ['string usableFrom', { usableFrom: '1' }],
+    ['object usableFrom', { usableFrom: {} }],
+  ])('rejects %s as invalid_origin_rank', (_case, testedSkill) => {
+    expect(
+      validateSkillPosition(
+        formations,
+        'player',
+        'enemy_front',
+        testedSkill,
+      ),
+    ).toEqual({ ok: false, reason: 'invalid_origin_rank' });
+  });
+
+  it.each([
+    ['missing target', { usableFrom: [1] }],
+    ['null target', { usableFrom: [1], target: null }],
+    ['primitive target', { usableFrom: [1], target: 1 }],
+    [
+      'missing target side',
+      { usableFrom: [1], target: { ranks: [1] } },
+    ],
+    [
+      'non-string target side',
+      { usableFrom: [1], target: { side: 1, ranks: [1] } },
+    ],
+  ])('rejects %s as invalid_target_side', (_case, testedSkill) => {
+    expect(
+      validateSkillPosition(
+        formations,
+        'player',
+        'enemy_front',
+        testedSkill,
+      ),
+    ).toEqual({ ok: false, reason: 'invalid_target_side' });
+  });
+
+  it.each([
+    ['missing target ranks', undefined],
+    ['null target ranks', null],
+    ['string target ranks', '1'],
+    ['number target ranks', 1],
+    ['object target ranks', {}],
+  ])('rejects %s as invalid_target_rank', (_case, ranks) => {
+    const testedSkill = {
+      usableFrom: [1],
+      target: { side: 'enemy', ranks },
+    };
+
+    expect(
+      validateSkillPosition(
+        formations,
+        'player',
+        'enemy_front',
+        testedSkill,
+      ),
+    ).toEqual({ ok: false, reason: 'invalid_target_rank' });
+  });
+
+  it('validates actor and target existence before the skill contract', () => {
+    expect(
+      validateSkillPosition(formations, 'missing', 'enemy_front', null),
+    ).toEqual({ ok: false, reason: 'invalid_actor' });
+    expect(
+      validateSkillPosition(formations, 'player', 'missing', null),
+    ).toEqual({ ok: false, reason: 'invalid_target' });
   });
 
   it.each([null, undefined])(
