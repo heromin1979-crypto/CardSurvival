@@ -67,6 +67,12 @@ function periodicDamageFor(status) {
   return 0;
 }
 
+function shouldKeepUnprocessedStatus(status) {
+  if (!isObject(status)) return false;
+  if (typeof status.id !== 'string' || status.id.length === 0) return false;
+  return !(Number.isFinite(status.duration) && status.duration <= 0);
+}
+
 export function addToken(target, tokenId, stacks = 1) {
   const tokens = ensureTokenBag(target);
   const amount = normalizeStacks(stacks);
@@ -261,7 +267,7 @@ export function tickStatusEffects(target, random = Math.random) {
   let stoppedByDeath = false;
   for (const status of statuses) {
     if (stoppedByDeath) {
-      if (isObject(status)) remaining.push(status);
+      if (shouldKeepUnprocessedStatus(status)) remaining.push(status);
       continue;
     }
 

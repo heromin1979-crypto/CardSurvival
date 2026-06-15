@@ -345,6 +345,9 @@ describe('tickStatusEffects', () => {
       statusEffects: [
         { id: 'bleed', duration: 2, effect: { hpLossPerRound: 3 } },
         { id: 'burn', duration: 2, effect: { hpLossPerRound: 3 } },
+        { id: 'expired', duration: 0, effect: { hpLossPerRound: 99 } },
+        { duration: 2, effect: { hpLossPerRound: 99 } },
+        null,
       ],
     });
 
