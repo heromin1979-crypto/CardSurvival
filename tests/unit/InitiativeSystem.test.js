@@ -145,19 +145,35 @@ describe('buildInitiativeQueue', () => {
     }
   });
 
-  it('uses only rollMax values whose inclusive range remains safe', () => {
+  it('accepts rollMax only within the supported safe integer range', () => {
     const combatants = { a: { id: 'a', speed: 0 } };
-    const largestSafeRollMax = Number.MAX_SAFE_INTEGER - 1;
 
-    expect(buildInitiativeQueue(combatants, () => 0.5, largestSafeRollMax)).toEqual([
-      { combatantId: 'a', initiative: 4503599627370495 },
+    expect(buildInitiativeQueue(combatants, () => 0.99, 1_000_000)).toEqual([
+      { combatantId: 'a', initiative: 990000 },
     ]);
-    expect(buildInitiativeQueue(combatants, () => 0.5, Number.MAX_SAFE_INTEGER)).toEqual([
+    expect(buildInitiativeQueue(combatants, () => 0.99, 1_000_001)).toEqual([
       { combatantId: 'a', initiative: 0 },
     ]);
     expect(buildInitiativeQueue(combatants, () => 0.99, 3)).toEqual([
       { combatantId: 'a', initiative: 3 },
     ]);
+  });
+
+  it('normalizes non-safe-integer speeds and always produces safe integer initiative', () => {
+    const combatants = {
+      fractional: { id: 'fractional', speed: 2.5 },
+      unsafe: { id: 'unsafe', speed: Number.MAX_SAFE_INTEGER + 1 },
+      largestSafe: { id: 'largestSafe', speed: Number.MAX_SAFE_INTEGER },
+    };
+
+    const queue = buildInitiativeQueue(combatants, () => 0.99, 1_000_000);
+
+    expect(queue).toEqual([
+      { combatantId: 'largestSafe', initiative: Number.MAX_SAFE_INTEGER },
+      { combatantId: 'fractional', initiative: 990000 },
+      { combatantId: 'unsafe', initiative: 990000 },
+    ]);
+    expect(queue.every(entry => Number.isSafeInteger(entry.initiative))).toBe(true);
   });
 
   it('does not mutate the combatants map or its entries', () => {
@@ -279,6 +295,34 @@ describe('nextActionableIndex', () => {
       'empty-object': {},
       array: [],
       'empty-id': { id: '' },
+    };
+
+    expect(nextActionableIndex(queue, 0, combatants)).toBe(-1);
+  });
+
+  it('skips a combatant whose map key and id do not match and finds the next valid combatant', () => {
+    const queue = [
+      { combatantId: 'current' },
+      { combatantId: 'mismatched' },
+      { combatantId: 'ready' },
+    ];
+    const combatants = {
+      current: { id: 'current' },
+      mismatched: { id: 'different-id' },
+      ready: { id: 'ready' },
+    };
+
+    expect(nextActionableIndex(queue, 0, combatants)).toBe(2);
+  });
+
+  it('returns minus one when only a key and id mismatched combatant remains', () => {
+    const queue = [
+      { combatantId: 'current' },
+      { combatantId: 'mismatched' },
+    ];
+    const combatants = {
+      current: { id: 'current' },
+      mismatched: { id: 'different-id' },
     };
 
     expect(nextActionableIndex(queue, 0, combatants)).toBe(-1);

@@ -1,9 +1,9 @@
-const MAX_ROLL_MAX = Number.MAX_SAFE_INTEGER - 1;
+const MAX_INITIATIVE_ROLL = 1_000_000;
 
 function normalizedRollMax(rollMax) {
   return Number.isSafeInteger(rollMax)
     && rollMax >= 0
-    && rollMax <= MAX_ROLL_MAX
+    && rollMax <= MAX_INITIATIVE_ROLL
     ? rollMax
     : 0;
 }
@@ -51,12 +51,16 @@ export function buildInitiativeQueue(combatants, random = Math.random, rollMax =
     if (combatant.dead === true) continue;
     if (queuedIds.has(combatant.id)) continue;
 
-    const speed = Number.isFinite(combatant.speed) ? combatant.speed : 0;
+    const speed = Number.isFinite(combatant.speed)
+      && Number.isSafeInteger(combatant.speed)
+      ? combatant.speed
+      : 0;
     const roll = Math.floor(clampedRandom(random) * (maxRoll + 1));
+    const rolledInitiative = speed + roll;
     queuedIds.add(combatant.id);
     queue.push({
       combatantId: combatant.id,
-      initiative: speed + roll,
+      initiative: Number.isSafeInteger(rolledInitiative) ? rolledInitiative : speed,
     });
   }
 
@@ -95,7 +99,9 @@ export function nextActionableIndex(queue, currentIndex, combatants) {
     const id = entry?.combatantId;
     if (typeof id !== 'string' || id.length === 0) continue;
     if (!Object.prototype.hasOwnProperty.call(combatants, id)) continue;
-    if (canAct(combatants[id])) return index;
+    const combatant = combatants[id];
+    if (combatant?.id !== id) continue;
+    if (canAct(combatant)) return index;
   }
 
   return -1;
