@@ -1,11 +1,170 @@
 // === DATA INTEGRITY VALIDATOR ===
-// Run: node --input-type=module js/data/validate.js
+// Run: node js/data/validate.js
+
+import { pathToFileURL } from 'node:url';
 
 import {
   CHARACTER_COMBAT_LOADOUTS,
   COMBAT_SKILLS,
   COMPANION_COMBAT_LOADOUTS,
 } from './combatSkills.js';
+
+const VALID_COMBAT_EFFECTS = new Set([
+  'damage',
+  'heal',
+  'token',
+  'status',
+  'move',
+  'stress',
+  'guard',
+  'flee',
+]);
+
+export function validateCombatSkillContracts(
+  combatSkills = COMBAT_SKILLS,
+  characterLoadouts = CHARACTER_COMBAT_LOADOUTS,
+  companionLoadouts = COMPANION_COMBAT_LOADOUTS,
+  options = {},
+) {
+  const contractErrors = [];
+  const reportCombatError = (message) => {
+    contractErrors.push(message);
+  };
+
+  for (const [id, skill] of Object.entries(combatSkills)) {
+    if (skill?.id !== id) {
+      reportCombatError(`[combat skill/${id}] id must match object key`);
+    }
+    if (typeof skill?.nameKey !== 'string' || skill.nameKey.length === 0) {
+      reportCombatError(`[combat skill/${id}] nameKey must be non-empty string`);
+    }
+    if (
+      typeof skill?.icon !== 'string'
+      || skill.icon.length === 0
+      || !/^[\x20-\x7E]+$/.test(skill.icon)
+    ) {
+      reportCombatError(`[combat skill/${id}] icon must be ASCII symbolic string`);
+    }
+    if (skill?.source !== 'character') {
+      reportCombatError(`[combat skill/${id}] source must be "character"`);
+    }
+    if (
+      !Array.isArray(skill?.usableFrom)
+      || skill.usableFrom.length === 0
+      || skill.usableFrom.some(rank => (
+        !Number.isInteger(rank) || rank < 1 || rank > 4
+      ))
+    ) {
+      reportCombatError(`[combat skill/${id}] usableFrom must contain ranks 1~4`);
+    }
+    if (!['ally', 'enemy'].includes(skill?.target?.side)) {
+      reportCombatError(`[combat skill/${id}] target.side must be ally or enemy`);
+    }
+    if (
+      !Array.isArray(skill?.target?.ranks)
+      || skill.target.ranks.length === 0
+      || skill.target.ranks.some(rank => (
+        !Number.isInteger(rank) || rank < 1 || rank > 4
+      ))
+    ) {
+      reportCombatError(`[combat skill/${id}] target.ranks must contain ranks 1~4`);
+    }
+    if (
+      !Number.isInteger(skill?.target?.count)
+      || skill.target.count <= 0
+    ) {
+      reportCombatError(`[combat skill/${id}] target.count must be positive integer`);
+    }
+    if (
+      !skill?.costs
+      || typeof skill.costs !== 'object'
+      || Array.isArray(skill.costs)
+    ) {
+      reportCombatError(`[combat skill/${id}] costs must be object`);
+    }
+    if (
+      !Number.isFinite(skill?.accuracy)
+      || skill.accuracy < 0
+      || skill.accuracy > 1
+    ) {
+      reportCombatError(`[combat skill/${id}] accuracy must be between 0 and 1`);
+    }
+    if (!Array.isArray(skill?.effects) || skill.effects.length === 0) {
+      reportCombatError(`[combat skill/${id}] effects must be non-empty array`);
+      continue;
+    }
+    for (const [effectIndex, effect] of skill.effects.entries()) {
+      if (!VALID_COMBAT_EFFECTS.has(effect?.type)) {
+        reportCombatError(
+          `[combat skill/${id}] effects[${effectIndex}] has invalid type "${effect?.type}"`,
+        );
+      }
+      if (
+        ['damage', 'heal'].includes(effect?.type)
+        && (
+          !Array.isArray(effect.value)
+          || effect.value.length !== 2
+          || effect.value.some(value => !Number.isFinite(value))
+          || effect.value[0] > effect.value[1]
+        )
+      ) {
+        reportCombatError(
+          `[combat skill/${id}] effects[${effectIndex}].value must be [min, max]`,
+        );
+      }
+      if (effect?.type === 'token') {
+        if (!Number.isInteger(effect.stacks) || effect.stacks <= 0) {
+          reportCombatError(
+            `[combat skill/${id}] effects[${effectIndex}].stacks must be positive integer`,
+          );
+        }
+        if (Object.hasOwn(effect, 'amount')) {
+          reportCombatError(
+            `[combat skill/${id}] effects[${effectIndex}].amount is not allowed for token effects`,
+          );
+        }
+      }
+    }
+  }
+
+  const validateCombatLoadouts = (label, loadouts, expectedCount) => {
+    const entries = Object.entries(loadouts);
+    if (expectedCount != null && entries.length !== expectedCount) {
+      reportCombatError(
+        `[${label}] expected ${expectedCount} mappings, got ${entries.length}`,
+      );
+    }
+    for (const [ownerId, skillIds] of entries) {
+      if (!Array.isArray(skillIds) || skillIds.length !== 3) {
+        reportCombatError(`[${label}/${ownerId}] loadout must contain exactly 3 skills`);
+        continue;
+      }
+      if (new Set(skillIds).size !== skillIds.length) {
+        reportCombatError(`[${label}/${ownerId}] loadout contains duplicate skill IDs`);
+      }
+      for (const skillId of skillIds) {
+        if (!combatSkills[skillId]) {
+          reportCombatError(
+            `[${label}/${ownerId}] skill "${skillId}" not found in COMBAT_SKILLS`,
+          );
+        }
+      }
+    }
+  };
+
+  validateCombatLoadouts(
+    'character combat loadout',
+    characterLoadouts,
+    options.expectedCharacterCount,
+  );
+  validateCombatLoadouts(
+    'companion combat loadout',
+    companionLoadouts,
+    options.expectedCompanionCount,
+  );
+
+  return { ok: contractErrors.length === 0, errors: contractErrors };
+}
 
 async function validate() {
   const items = {
@@ -470,6 +629,18 @@ async function validate() {
           `[combat skill/${id}] effects[${effectIndex}].value must be [min, max]`,
         );
       }
+      if (effect?.type === 'token') {
+        if (!Number.isInteger(effect.stacks) || effect.stacks <= 0) {
+          reportCombatError(
+            `[combat skill/${id}] effects[${effectIndex}].stacks must be positive integer`,
+          );
+        }
+        if (Object.hasOwn(effect, 'amount')) {
+          reportCombatError(
+            `[combat skill/${id}] effects[${effectIndex}].amount is not allowed for token effects`,
+          );
+        }
+      }
     }
   }
 
@@ -591,4 +762,9 @@ export function validateMainQuestSchema(quest, ctx = {}) {
   return { ok: errors.length === 0, errors };
 }
 
-validate().catch(e => console.error('Validation failed:', e));
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  validate().catch((e) => {
+    console.error('Validation failed:', e);
+    process.exitCode = 1;
+  });
+}

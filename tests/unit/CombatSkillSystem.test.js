@@ -9,6 +9,7 @@ import {
   buildAllyLoadout,
   buildEquipmentSkill,
 } from '../../js/systems/combat/CombatSkillSystem.js';
+import { validateCombatSkillContracts } from '../../js/data/validate.js';
 
 const PLAYER_IDS = [
   'doctor',
@@ -175,8 +176,35 @@ describe('combat skill data', () => {
           expect(effect.value.every(Number.isFinite)).toBe(true);
           expect(effect.value[0]).toBeLessThanOrEqual(effect.value[1]);
         }
+        if (effect.type === 'token') {
+          expect(Number.isInteger(effect.stacks)).toBe(true);
+          expect(effect.stacks).toBeGreaterThan(0);
+          expect(effect).not.toHaveProperty('amount');
+        }
       }
     }
+  });
+
+  it('validator rejects token effects without positive integer stacks', () => {
+    const result = validateCombatSkillContracts({
+      bad_token: {
+        id: 'bad_token',
+        nameKey: 'combat.skill.bad_token',
+        icon: 'token',
+        source: 'character',
+        usableFrom: [1],
+        target: { side: 'enemy', ranks: [1], count: 1 },
+        costs: {},
+        accuracy: 1,
+        effects: [{ type: 'token', token: 'vulnerable', amount: 1 }],
+      },
+    }, {}, {});
+
+    expect(result.ok).toBe(false);
+    expect(result.errors).toEqual(expect.arrayContaining([
+      '[combat skill/bad_token] effects[0].stacks must be positive integer',
+      '[combat skill/bad_token] effects[0].amount is not allowed for token effects',
+    ]));
   });
 
   it('does not put ammo definition IDs on character firearm skills', () => {
@@ -221,7 +249,8 @@ describe('buildEquipmentSkill', () => {
 
     expect(skill).toEqual({
       id: 'equipment:knife_instance',
-      nameKey: 'Knife',
+      nameKey: null,
+      fallbackName: 'Knife',
       icon: 'knife',
       source: 'equipment',
       equipmentInstanceId: 'knife_instance',
@@ -234,6 +263,25 @@ describe('buildEquipmentSkill', () => {
       effects: [{ type: 'damage', value: [8, 14] }],
     });
     expect(definition).toEqual(before);
+  });
+
+  it('uses nullish fallbackName precedence for equipment skills', () => {
+    const baseDefinition = {
+      combat: { damage: [1, 2] },
+    };
+
+    expect(buildEquipmentSkill('empty_name', {
+      ...baseDefinition,
+      name: '',
+      id: 'fallback_id',
+    }).fallbackName).toBe('');
+    expect(buildEquipmentSkill('definition_id', {
+      ...baseDefinition,
+      name: null,
+      id: 'fallback_id',
+    }).fallbackName).toBe('fallback_id');
+    expect(buildEquipmentSkill('instance_id', baseDefinition).fallbackName)
+      .toBe('instance_id');
   });
 
   it('converts ranged, multi-target, and status data with isolated clones', () => {
@@ -270,6 +318,43 @@ describe('buildEquipmentSkill', () => {
       .not.toBe(definition.combat.statusInflict.effect);
   });
 
+  it.each([
+    false,
+    '',
+    {},
+    [],
+  ])('treats malformed requiresAmmo %# as melee with no ammo cost', (requiresAmmo) => {
+    const skill = buildEquipmentSkill('bad_ammo', {
+      id: 'bad_ammo',
+      combat: {
+        damage: [3, 5],
+        requiresAmmo,
+        statusInflict: [{ id: 'bleed' }],
+      },
+    });
+
+    expect(skill.usableFrom).toEqual([1, 2]);
+    expect(skill.target.ranks).toEqual([1, 2]);
+    expect(skill.costs.ammo).toBeNull();
+    expect(skill.effects).toEqual([{ type: 'damage', value: [3, 5] }]);
+  });
+
+  it.each([
+    null,
+    ['bleed'],
+    'bleed',
+  ])('ignores malformed statusInflict %#', (statusInflict) => {
+    const skill = buildEquipmentSkill('bad_status', {
+      id: 'bad_status',
+      combat: {
+        damage: [3, 5],
+        statusInflict,
+      },
+    });
+
+    expect(skill.effects).toEqual([{ type: 'damage', value: [3, 5] }]);
+  });
+
   it('normalizes malformed combat values to safe defaults', () => {
     const skill = buildEquipmentSkill('broken', {
       id: 'broken',
@@ -283,7 +368,8 @@ describe('buildEquipmentSkill', () => {
       },
     });
 
-    expect(skill.nameKey).toBe('broken');
+    expect(skill.nameKey).toBeNull();
+    expect(skill.fallbackName).toBe('broken');
     expect(skill.icon).toBe('weapon');
     expect(skill.costs).toEqual({
       ammo: null,

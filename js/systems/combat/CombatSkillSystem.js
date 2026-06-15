@@ -23,6 +23,15 @@ function nonnegative(value) {
   return Number.isFinite(value) && value >= 0 ? value : 0;
 }
 
+function isPlainObject(value) {
+  return (
+    value !== null
+    && typeof value === 'object'
+    && !Array.isArray(value)
+    && Object.getPrototypeOf(value) === Object.prototype
+  );
+}
+
 function normalizeDamage(damage) {
   if (
     Array.isArray(damage)
@@ -50,13 +59,17 @@ export function buildEquipmentSkill(instanceId, definition) {
   }
 
   const combat = definition.combat;
-  const ranged = combat.requiresAmmo != null;
+  const ammoId = typeof combat.requiresAmmo === 'string'
+    && combat.requiresAmmo.length > 0
+    ? combat.requiresAmmo
+    : null;
+  const ranged = ammoId !== null;
   const effects = [{
     type: 'damage',
     value: normalizeDamage(combat.damage),
   }];
 
-  if (combat.statusInflict && typeof combat.statusInflict === 'object') {
+  if (isPlainObject(combat.statusInflict)) {
     effects.push({
       type: 'status',
       status: cloneValue(combat.statusInflict),
@@ -65,11 +78,8 @@ export function buildEquipmentSkill(instanceId, definition) {
 
   return {
     id: `equipment:${instanceId}`,
-    nameKey: typeof definition.name === 'string' && definition.name.length > 0
-      ? definition.name
-      : (typeof definition.id === 'string' && definition.id.length > 0
-        ? definition.id
-        : instanceId),
+    nameKey: null,
+    fallbackName: definition.name ?? definition.id ?? instanceId,
     icon: typeof definition.icon === 'string' && definition.icon.length > 0
       ? definition.icon
       : 'weapon',
@@ -85,7 +95,7 @@ export function buildEquipmentSkill(instanceId, definition) {
         : 1,
     },
     costs: {
-      ammo: combat.requiresAmmo ?? null,
+      ammo: ammoId,
       durability: nonnegative(combat.durabilityLoss),
       noise: nonnegative(combat.noiseOnUse),
     },
