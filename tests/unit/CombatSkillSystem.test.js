@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   CHARACTER_COMBAT_LOADOUTS,
   COMBAT_SKILLS,
@@ -8,6 +8,9 @@ import {
 import {
   buildAllyLoadout,
   buildEquipmentSkill,
+  executeSkillCommand,
+  useCombatItem,
+  validateSkillCommand,
 } from '../../js/systems/combat/CombatSkillSystem.js';
 import { validateCombatSkillContracts } from '../../js/data/validate.js';
 
@@ -113,6 +116,47 @@ function makeGameState() {
     },
   };
 }
+
+function makeCommandContext(overrides = {}) {
+  const actor = {
+    id: 'player',
+    side: 'ally',
+    rank: 1,
+    currentHp: 20,
+  };
+  const target = {
+    id: 'zombie',
+    side: 'enemy',
+    rank: 1,
+    currentHp: 15,
+  };
+  const skill = {
+    id: 'strike',
+    costs: {},
+    accuracy: 1,
+    effects: [{ type: 'damage', value: [4, 4] }],
+  };
+
+  return {
+    activeCombatantId: 'player',
+    combatants: [actor, target],
+    skillsById: { strike: skill },
+    validatePosition: () => ({ ok: true }),
+    getStamina: () => 10,
+    getAmmo: () => 1,
+    getDurability: () => 5,
+    consumeCosts: vi.fn(() => ({ ok: true })),
+    applyEffect: vi.fn(() => ({ ok: true })),
+    consumeCombatItem: vi.fn(() => ({ ok: true, effects: ['patched'] })),
+    ...overrides,
+  };
+}
+
+const strikeCommand = {
+  actorId: 'player',
+  targetId: 'zombie',
+  skillId: 'strike',
+};
 
 describe('combat skill data', () => {
   it('declares the common fallback skills', () => {
@@ -226,6 +270,267 @@ describe('combat skill data', () => {
     expect(getCombatSkill('missing_skill')).toBeNull();
     expect(getCombatSkill('toString')).toBeNull();
     expect(getCombatSkill(null)).toBeNull();
+  });
+});
+
+describe('validateSkillCommand', () => {
+  it.each([
+    ['invalid actor', { actorId: 'missing' }, 'invalid_actor'],
+    ['dead actor', { mutate: (ctx) => { ctx.combatants[0].dead = true; } }, 'invalid_actor'],
+    ['not active actor', { activeCombatantId: 'companion' }, 'not_active_actor'],
+    ['invalid target', { targetId: 'missing' }, 'invalid_target'],
+    ['dead target', { mutate: (ctx) => { ctx.combatants[1].dead = true; } }, 'invalid_target'],
+    ['invalid skill', { skillId: 'missing' }, 'invalid_skill'],
+    ['position error', { validatePosition: () => ({ ok: false, reason: 'out_of_range' }) }, 'out_of_range'],
+    ['insufficient stamina', { skill: { costs: { stamina: 4 } }, getStamina: () => 3 }, 'insufficient_stamina'],
+    ['insufficient ammo', { skill: { costs: { ammo: 'pistol_ammo' } }, getAmmo: () => 0 }, 'insufficient_ammo'],
+    ['insufficient durability', { skill: { costs: { durability: 2 }, equipmentInstanceId: 'knife_1' }, getDurability: () => 1 }, 'insufficient_durability'],
+  ])('rejects %s', (_, setup, reason) => {
+    const overrides = {};
+    for (const key of [
+      'activeCombatantId',
+      'validatePosition',
+      'getStamina',
+      'getAmmo',
+      'getDurability',
+    ]) {
+      if (Object.hasOwn(setup, key)) overrides[key] = setup[key];
+    }
+    const ctx = makeCommandContext(overrides);
+    if (setup.skill) {
+      ctx.skillsById.strike = {
+        ...ctx.skillsById.strike,
+        ...setup.skill,
+      };
+    }
+    setup.mutate?.(ctx);
+
+    const result = validateSkillCommand(ctx, {
+      ...strikeCommand,
+      actorId: setup.actorId ?? strikeCommand.actorId,
+      targetId: setup.targetId ?? strikeCommand.targetId,
+      skillId: setup.skillId ?? strikeCommand.skillId,
+    });
+
+    expect(result).toEqual({ ok: false, reason });
+  });
+
+  it('returns invalid_context for malformed context or command without throwing', () => {
+    expect(validateSkillCommand(null, strikeCommand))
+      .toEqual({ ok: false, reason: 'invalid_context' });
+    expect(validateSkillCommand(makeCommandContext(), null))
+      .toEqual({ ok: false, reason: 'invalid_context' });
+    expect(validateSkillCommand(makeCommandContext(), { ...strikeCommand, actorId: '' }))
+      .toEqual({ ok: false, reason: 'invalid_context' });
+  });
+
+  it('returns position callback failures unchanged', () => {
+    const positionFailure = {
+      ok: false,
+      reason: 'blocked_by_ally',
+      lane: 1,
+    };
+    const ctx = makeCommandContext({
+      validatePosition: () => positionFailure,
+    });
+
+    expect(validateSkillCommand(ctx, strikeCommand)).toBe(positionFailure);
+  });
+
+  it('treats deathsDoor targets as valid when they are not dead', () => {
+    const ctx = makeCommandContext();
+    ctx.combatants[1].currentHp = 0;
+    ctx.combatants[1].deathsDoor = true;
+
+    const result = validateSkillCommand(ctx, strikeCommand);
+
+    expect(result.ok).toBe(true);
+    expect(result.target).toBe(ctx.combatants[1]);
+  });
+
+  it('returns actor target and skill references on success', () => {
+    const ctx = makeCommandContext();
+
+    const result = validateSkillCommand(ctx, strikeCommand);
+
+    expect(result).toEqual({
+      ok: true,
+      actor: ctx.combatants[0],
+      target: ctx.combatants[1],
+      skill: ctx.skillsById.strike,
+    });
+  });
+
+  it('does not call execution callbacks when validation fails', () => {
+    const ctx = makeCommandContext({ getStamina: () => 0 });
+    ctx.skillsById.strike = {
+      ...ctx.skillsById.strike,
+      costs: { stamina: 1 },
+    };
+
+    const result = executeSkillCommand(ctx, strikeCommand, () => 0);
+
+    expect(result).toEqual({ ok: false, reason: 'insufficient_stamina' });
+    expect(ctx.consumeCosts).not.toHaveBeenCalled();
+    expect(ctx.applyEffect).not.toHaveBeenCalled();
+  });
+});
+
+describe('executeSkillCommand', () => {
+  it('consumes costs and applies no effects on a miss', () => {
+    const ctx = makeCommandContext();
+    ctx.skillsById.strike.accuracy = 0.25;
+
+    const result = executeSkillCommand(ctx, strikeCommand, () => 0.8);
+
+    expect(result).toEqual({ ok: true, hit: false, turnConsumed: true });
+    expect(ctx.consumeCosts).toHaveBeenCalledOnce();
+    expect(ctx.consumeCosts).toHaveBeenCalledWith(ctx.combatants[0], ctx.skillsById.strike);
+    expect(ctx.applyEffect).not.toHaveBeenCalled();
+  });
+
+  it('applies all effects in order on hit', () => {
+    const ctx = makeCommandContext();
+    ctx.skillsById.strike.effects = [
+      { type: 'damage', value: [2, 2] },
+      { type: 'status', status: { id: 'bleed' } },
+    ];
+    const random = () => 0.1;
+
+    const result = executeSkillCommand(ctx, strikeCommand, random);
+
+    expect(result).toEqual({
+      ok: true,
+      hit: true,
+      turnConsumed: true,
+      effectsApplied: 2,
+    });
+    expect(ctx.applyEffect.mock.calls.map(([effect]) => effect)).toEqual(ctx.skillsById.strike.effects);
+    expect(ctx.applyEffect.mock.calls[0].slice(1)).toEqual([
+      ctx.combatants[0],
+      ctx.combatants[1],
+      random,
+    ]);
+  });
+
+  it('treats malformed effects as an empty list', () => {
+    const ctx = makeCommandContext();
+    ctx.skillsById.strike.effects = null;
+
+    const result = executeSkillCommand(ctx, strikeCommand, () => 0);
+
+    expect(result).toEqual({
+      ok: true,
+      hit: true,
+      turnConsumed: true,
+      effectsApplied: 0,
+    });
+    expect(ctx.applyEffect).not.toHaveBeenCalled();
+  });
+
+  it('wraps consume and effect throws as execution_error', () => {
+    const consumeCtx = makeCommandContext({
+      consumeCosts: vi.fn(() => {
+        throw new Error('consume failed');
+      }),
+    });
+    const effectCtx = makeCommandContext({
+      applyEffect: vi.fn(() => {
+        throw new Error('effect failed');
+      }),
+    });
+
+    expect(executeSkillCommand(consumeCtx, strikeCommand, () => 0))
+      .toEqual({ ok: false, reason: 'execution_error' });
+    expect(executeSkillCommand(effectCtx, strikeCommand, () => 0))
+      .toEqual({ ok: false, reason: 'execution_error' });
+    expect(effectCtx.consumeCosts).toHaveBeenCalledOnce();
+  });
+
+  it('does not consume costs when applyEffect callback is missing for a hitting effect skill', () => {
+    const ctx = makeCommandContext({ applyEffect: undefined });
+
+    const result = executeSkillCommand(ctx, strikeCommand, () => 0);
+
+    expect(result).toEqual({ ok: false, reason: 'execution_error' });
+    expect(ctx.consumeCosts).not.toHaveBeenCalled();
+  });
+
+  it('clamps random rolls and defaults malformed accuracy to 0.7', () => {
+    const clampedCtx = makeCommandContext();
+    clampedCtx.skillsById.strike.accuracy = 0;
+    const defaultCtx = makeCommandContext();
+    defaultCtx.skillsById.strike.accuracy = Number.NaN;
+
+    expect(executeSkillCommand(clampedCtx, strikeCommand, () => Number.NaN))
+      .toEqual({
+        ok: true,
+        hit: true,
+        turnConsumed: true,
+        effectsApplied: 1,
+      });
+    expect(executeSkillCommand(defaultCtx, strikeCommand, () => 0.75))
+      .toEqual({ ok: true, hit: false, turnConsumed: true });
+  });
+});
+
+describe('useCombatItem', () => {
+  it('uses a combat item as a free action once per turn', () => {
+    const ctx = makeCommandContext();
+
+    const result = useCombatItem(ctx, 'player', 'bandage_1');
+
+    expect(result).toEqual({
+      ok: true,
+      turnConsumed: false,
+      effects: ['patched'],
+    });
+    expect(ctx.consumeCombatItem).toHaveBeenCalledWith('bandage_1', ctx.combatants[0]);
+    expect(ctx.combatants[0].itemUsedThisTurn).toBe(true);
+    expect(useCombatItem(ctx, 'player', 'bandage_2'))
+      .toEqual({ ok: false, reason: 'item_already_used' });
+  });
+
+  it.each([
+    ['invalid actor', { actorId: 'missing' }, 'invalid_actor'],
+    ['not active actor', { activeCombatantId: 'companion' }, 'not_active_actor'],
+    ['missing callback', { consumeCombatItem: undefined }, 'item_unavailable'],
+  ])('rejects %s without setting itemUsedThisTurn', (_, setup, reason) => {
+    const ctx = makeCommandContext(setup);
+
+    const result = useCombatItem(ctx, setup.actorId ?? 'player', 'bandage_1');
+
+    expect(result).toEqual({ ok: false, reason });
+    expect(ctx.combatants[0].itemUsedThisTurn).toBeUndefined();
+  });
+
+  it('does not set itemUsedThisTurn when callback fails', () => {
+    const itemFailure = {
+      ok: false,
+      reason: 'no_charge',
+      itemInstanceId: 'bandage_1',
+    };
+    const ctx = makeCommandContext({
+      consumeCombatItem: vi.fn(() => itemFailure),
+    });
+
+    const result = useCombatItem(ctx, 'player', 'bandage_1');
+
+    expect(result).toBe(itemFailure);
+    expect(ctx.combatants[0].itemUsedThisTurn).toBeUndefined();
+  });
+
+  it('wraps consumeCombatItem throws as item_error', () => {
+    const ctx = makeCommandContext({
+      consumeCombatItem: vi.fn(() => {
+        throw new Error('broken item');
+      }),
+    });
+
+    const result = useCombatItem(ctx, 'player', 'bandage_1');
+
+    expect(result).toEqual({ ok: false, reason: 'item_error' });
+    expect(ctx.combatants[0].itemUsedThisTurn).toBeUndefined();
   });
 });
 
