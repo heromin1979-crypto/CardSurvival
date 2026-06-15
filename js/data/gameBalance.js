@@ -125,6 +125,12 @@ const BALANCE = {
       afterResolve: 4,
       afterMeltdown: 2,
     },
+    relationship: {
+      positiveChance: 0.18,
+      negativeChance: 0.15,
+      supportStressHeal: 1,
+      interfereStress: 1,
+    },
     fleeChance:         0.6,
     fleeNoise:          10,
     fleeFatigue:        10,

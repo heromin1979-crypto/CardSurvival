@@ -282,6 +282,8 @@ export const ko = {
   'combat.nightPenalty': '야간 전투 — 명중률 감소',
   'combat.companionAtk': '동행 공격',
   'combat.companionHeal':'동행 치료',
+  'combat.relationshipSupport': '{name}의 응원이 긴장을 낮췄다.',
+  'combat.relationshipInterfere': '{name}의 흔들림이 긴장을 높였다.',
   'combat.item':         '아이템',
 
   // ── StatRenderer ────────────────────────────────────────────
@@ -1176,6 +1178,8 @@ export const en = {
   'combat.nightPenalty': 'Night Combat — accuracy reduced',
   'combat.companionAtk': 'Companion Attack',
   'combat.companionHeal':'Companion Heal',
+  'combat.relationshipSupport': "{name}'s support eased the pressure.",
+  'combat.relationshipInterfere': "{name}'s hesitation raised the pressure.",
   'combat.item':        'Item',
 
   // ── StatRenderer ────────────────────────────────────────────
