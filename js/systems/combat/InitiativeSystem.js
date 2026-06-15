@@ -1,9 +1,24 @@
+const MAX_ROLL_MAX = Number.MAX_SAFE_INTEGER - 1;
+
 function normalizedRollMax(rollMax) {
-  return Number.isFinite(rollMax)
-    && Number.isInteger(rollMax)
+  return Number.isSafeInteger(rollMax)
     && rollMax >= 0
+    && rollMax <= MAX_ROLL_MAX
     ? rollMax
     : 0;
+}
+
+function isValidCombatant(combatant) {
+  if (!combatant || typeof combatant !== 'object' || Array.isArray(combatant)) {
+    return false;
+  }
+
+  const prototype = Object.getPrototypeOf(combatant);
+  if (prototype !== Object.prototype && prototype !== null) {
+    return false;
+  }
+
+  return typeof combatant.id === 'string' && combatant.id.trim().length > 0;
 }
 
 function clampedRandom(random) {
@@ -28,14 +43,17 @@ export function buildInitiativeQueue(combatants, random = Math.random, rollMax =
 
   const maxRoll = normalizedRollMax(rollMax);
   const queue = [];
+  const queuedIds = new Set();
 
-  for (const combatant of Object.values(combatants)) {
-    if (!combatant || typeof combatant !== 'object' || Array.isArray(combatant)) continue;
-    if (typeof combatant.id !== 'string' || combatant.id.trim().length === 0) continue;
+  for (const [key, combatant] of Object.entries(combatants)) {
+    if (typeof key !== 'string' || key.length === 0) continue;
+    if (!isValidCombatant(combatant) || combatant.id !== key) continue;
     if (combatant.dead === true) continue;
+    if (queuedIds.has(combatant.id)) continue;
 
     const speed = Number.isFinite(combatant.speed) ? combatant.speed : 0;
     const roll = Math.floor(clampedRandom(random) * (maxRoll + 1));
+    queuedIds.add(combatant.id);
     queue.push({
       combatantId: combatant.id,
       initiative: speed + roll,
@@ -49,16 +67,7 @@ export function buildInitiativeQueue(combatants, random = Math.random, rollMax =
 }
 
 export function canAct(combatant) {
-  if (!combatant || typeof combatant !== 'object' || Array.isArray(combatant)) {
-    return false;
-  }
-
-  const prototype = Object.getPrototypeOf(combatant);
-  if (prototype !== Object.prototype && prototype !== null) {
-    return false;
-  }
-
-  if (typeof combatant.id !== 'string' || combatant.id.trim().length === 0) {
+  if (!isValidCombatant(combatant)) {
     return false;
   }
 

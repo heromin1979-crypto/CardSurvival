@@ -41,9 +41,9 @@ describe('buildInitiativeQueue', () => {
 
   it('uses combatant id ascending order for initiative ties', () => {
     const combatants = {
-      z: { id: 'zeta', speed: 5 },
-      a: { id: 'alpha', speed: 5 },
-      m: { id: 'middle', speed: 5 },
+      zeta: { id: 'zeta', speed: 5 },
+      alpha: { id: 'alpha', speed: 5 },
+      middle: { id: 'middle', speed: 5 },
     };
 
     expect(buildInitiativeQueue(combatants, () => 0, 3)).toEqual([
@@ -56,7 +56,7 @@ describe('buildInitiativeQueue', () => {
   it('excludes dead combatants and includes living combatants at deaths door', () => {
     const combatants = {
       dead: { id: 'dead', speed: 99, dead: true },
-      deathsDoor: { id: 'deaths-door', speed: 4, deathsDoor: true, dead: false },
+      'deaths-door': { id: 'deaths-door', speed: 4, deathsDoor: true, dead: false },
     };
 
     expect(buildInitiativeQueue(combatants, () => 0, 3)).toEqual([
@@ -71,9 +71,9 @@ describe('buildInitiativeQueue', () => {
       missingId: { speed: 9 },
       blankId: { id: '   ', speed: 9 },
       dead: { id: 'dead', speed: 9, dead: true },
-      missingSpeed: { id: 'missing-speed' },
-      nanSpeed: { id: 'nan-speed', speed: Number.NaN },
-      infiniteSpeed: { id: 'infinite-speed', speed: Number.POSITIVE_INFINITY },
+      'missing-speed': { id: 'missing-speed' },
+      'nan-speed': { id: 'nan-speed', speed: Number.NaN },
+      'infinite-speed': { id: 'infinite-speed', speed: Number.POSITIVE_INFINITY },
     };
 
     expect(buildInitiativeQueue(combatants, () => 0, 3)).toEqual([
@@ -83,6 +83,40 @@ describe('buildInitiativeQueue', () => {
     ]);
     expect(buildInitiativeQueue(null)).toEqual([]);
     expect(buildInitiativeQueue([])).toEqual([]);
+  });
+
+  it('requires matching non-empty map keys and combatant ids', () => {
+    const combatants = {
+      current: { id: 'current', speed: 10 },
+      impostor: { id: 'ready', speed: 9 },
+      ready: { id: 'ready', speed: 8 },
+      '': { id: '', speed: 99 },
+    };
+
+    const queue = buildInitiativeQueue(combatants, () => 0, 3);
+
+    expect(queue).toEqual([
+      { combatantId: 'current', initiative: 10 },
+      { combatantId: 'ready', initiative: 8 },
+    ]);
+    expect(nextActionableIndex(queue, 0, combatants)).toBe(1);
+  });
+
+  it('rejects non-plain combatants and accepts null-prototype combatants', () => {
+    const nullPrototypeCombatant = Object.assign(Object.create(null), {
+      id: 'null-prototype',
+      speed: 4,
+    });
+    const combatants = {
+      array: Object.assign([], { id: 'array', speed: 9 }),
+      date: Object.assign(new Date(0), { id: 'date', speed: 8 }),
+      'null-prototype': nullPrototypeCombatant,
+    };
+
+    expect(buildInitiativeQueue(combatants, () => 0, 3)).toEqual([
+      { combatantId: 'null-prototype', initiative: 4 },
+    ]);
+    expect(canAct(nullPrototypeCombatant)).toBe(true);
   });
 
   it('clamps random results and normalizes malformed rollMax values', () => {
@@ -109,6 +143,21 @@ describe('buildInitiativeQueue', () => {
         { combatantId: 'a', initiative: 2 },
       ]);
     }
+  });
+
+  it('uses only rollMax values whose inclusive range remains safe', () => {
+    const combatants = { a: { id: 'a', speed: 0 } };
+    const largestSafeRollMax = Number.MAX_SAFE_INTEGER - 1;
+
+    expect(buildInitiativeQueue(combatants, () => 0.5, largestSafeRollMax)).toEqual([
+      { combatantId: 'a', initiative: 4503599627370495 },
+    ]);
+    expect(buildInitiativeQueue(combatants, () => 0.5, Number.MAX_SAFE_INTEGER)).toEqual([
+      { combatantId: 'a', initiative: 0 },
+    ]);
+    expect(buildInitiativeQueue(combatants, () => 0.99, 3)).toEqual([
+      { combatantId: 'a', initiative: 3 },
+    ]);
   });
 
   it('does not mutate the combatants map or its entries', () => {
