@@ -428,7 +428,7 @@ describe('executeSkillCommand', () => {
     expect(ctx.applyEffect).not.toHaveBeenCalled();
   });
 
-  it('wraps consume and effect throws as execution_error', () => {
+  it('wraps consume and effect throws as execution_error without rolling back consumed costs', () => {
     const consumeCtx = makeCommandContext({
       consumeCosts: vi.fn(() => {
         throw new Error('consume failed');

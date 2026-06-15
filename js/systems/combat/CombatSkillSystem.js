@@ -322,6 +322,11 @@ export function validateSkillCommand(context, command) {
   };
 }
 
+/**
+ * Executes a validated combat skill through context callbacks.
+ * If an effect callback throws after costs were consumed, this returns
+ * execution_error and intentionally does not roll those costs back.
+ */
 export function executeSkillCommand(context, command, random = Math.random) {
   const validation = validateSkillCommand(context, command);
   if (!validation.ok) return validation;
