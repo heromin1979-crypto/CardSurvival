@@ -451,6 +451,27 @@ const CombatSystem = {
     }
   },
 
+  _syncLegacyAlliesToRankedCombatants() {
+    const combatants = GameState.combat?.combatants;
+    if (!combatants) return;
+
+    const player = combatants.player;
+    if (player && GameState.player?.hp) {
+      player.hp = Math.max(0, GameState.player.hp.current ?? player.hp ?? 0);
+      player.maxHp = GameState.player.hp.max ?? player.maxHp;
+      player.dead = player.hp <= 0;
+    }
+
+    for (const combatant of Object.values(combatants)) {
+      if (combatant?.sourceType !== 'companion') continue;
+      const state = GameState.npcs?.states?.[combatant.sourceId];
+      if (!state) continue;
+      combatant.hp = Math.max(0, state.hp ?? combatant.hp ?? 0);
+      combatant.maxHp = state.maxHp ?? combatant.maxHp;
+      combatant.dead = combatant.hp <= 0;
+    }
+  },
+
   confirmAction() {
     const combat = GameState.combat;
     if (!combat?.active || !combat.selectedSkillId || !combat.selectedTargetId) {
@@ -474,6 +495,7 @@ const CombatSystem = {
         return result;
       }
       this.advanceTurn();
+      this.processUntilAllyTurn();
     }
 
     return result;
@@ -512,6 +534,11 @@ const CombatSystem = {
       const entry = combat.turnQueue?.[combat.activeTurnIndex ?? combat.activeIdx ?? 0];
       if (entry?.type === 'enemy') {
         this._runSingleEnemyTurn(entry.enemyIdx);
+        this._syncLegacyAlliesToRankedCombatants();
+        if ((GameState.player?.hp?.current ?? 0) <= 0 || combat.combatants?.player?.dead === true) {
+          this._resolveDefeat();
+          return true;
+        }
         if (!combat.active || this._allEnemiesDead()) return true;
       }
       this.advanceTurn();

@@ -206,6 +206,45 @@ describe('manual party combat commands', () => {
     expect(result.ok).toBe(true);
     expect(result.hit).toBe(true);
     expect(GameState.combat.enemies[0].currentHp).toBeLessThan(before);
-    expect(GameState.combat.activeCombatantId).not.toBe('player');
+    expect(GameState.combat.activeCombatantId).toBe('player');
+    expect(GameState.combat.phase).toBe('await_ally_input');
+  });
+
+  it('resolves enemy turns after an ally action so controls return to a manual ally', () => {
+    GameState.player.hp = { current: 100, max: 100 };
+    GameState.player.characterId = 'doctor';
+    GameState.player.equipped = {};
+    GameState.companions = [];
+    GameState.npcs = { states: {} };
+    GameState.flags = GameState.flags ?? {};
+
+    CombatSystem._setupCombat({
+      enemies: [{
+        id: 'zombie_common',
+        name: 'infected',
+        currentHp: 100,
+        maxHp: 100,
+        speed: 4,
+        row: 'front',
+        attack: { damage: [4, 4], accuracy: 1 },
+        specialSkills: [],
+        weaknesses: [],
+        resistances: [],
+      }],
+      dangerLevel: 1,
+    });
+
+    const skillId = GameState.combat.combatants.player.skillIds[0];
+    expect(CombatSystem.selectSkill(skillId)).toBe(true);
+    expect(CombatSystem.selectTarget('enemy:0')).toBe(true);
+
+    const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0);
+    const result = CombatSystem.confirmAction();
+    randomSpy.mockRestore();
+
+    expect(result.ok).toBe(true);
+    expect(GameState.combat.activeCombatantId).toBe('player');
+    expect(GameState.combat.phase).toBe('await_ally_input');
+    expect(GameState.combat.combatants.player.skillIds.length).toBeGreaterThan(0);
   });
 });

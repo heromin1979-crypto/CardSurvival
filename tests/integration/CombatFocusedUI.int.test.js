@@ -1,6 +1,7 @@
 // @vitest-environment happy-dom
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import CombatUI from '../../js/ui/CombatUI.js';
+import CombatSystem from '../../js/systems/CombatSystem.js';
 import GameState from '../../js/core/GameState.js';
 
 function setupFocusedCombatState(gs) {
@@ -86,5 +87,42 @@ describe('Combat focused UI', () => {
     document.querySelector('[data-combatant-id="enemy:0"]').click();
     expect(document.querySelector('.combat-detail-popover')).not.toBeNull();
     expect(document.querySelector('.combat-detail-popover').textContent).toContain('enemy:0');
+  });
+
+  it('keeps attack controls visible after resolving the enemy turn', () => {
+    GameState.player.hp = { current: 100, max: 100 };
+    GameState.player.stamina = { current: 10, max: 10 };
+    GameState.player.characterId = 'doctor';
+    GameState.player.equipped = {};
+    GameState.companions = [];
+    GameState.npcs = { states: {} };
+    GameState.flags = GameState.flags ?? {};
+
+    CombatSystem._setupCombat({
+      enemies: [{
+        id: 'zombie_common',
+        name: 'infected',
+        currentHp: 100,
+        maxHp: 100,
+        speed: 4,
+        row: 'front',
+        attack: { damage: [4, 4], accuracy: 1 },
+        specialSkills: [],
+        weaknesses: [],
+        resistances: [],
+      }],
+      dangerLevel: 1,
+    });
+    CombatUI.render();
+
+    const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0);
+    document.querySelector('.combat-skill-button').click();
+    document.querySelector('[data-combatant-id="enemy:0"]').click();
+    randomSpy.mockRestore();
+
+    expect(GameState.combat.activeCombatantId).toBe('player');
+    expect(GameState.combat.phase).toBe('await_ally_input');
+    expect(GameState.combat.combatants.player.hp).toBe(GameState.player.hp.current);
+    expect(document.querySelectorAll('.combat-skill-button').length).toBeGreaterThan(0);
   });
 });
