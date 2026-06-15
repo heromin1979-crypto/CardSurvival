@@ -123,6 +123,8 @@ export function applyDamage(target, rawDamage, random = Math.random) {
 
   if (!isObject(target) || target.dead === true) return result;
 
+  if (damageBeforeBlock <= 0) return result;
+
   let damage = damageBeforeBlock;
   if (normalizeStacks(target.tokens?.block) > 0) {
     consumeToken(target, 'block', 1);
@@ -256,7 +258,13 @@ export function tickStatusEffects(target, random = Math.random) {
   const remaining = [];
   const events = [];
 
+  let stoppedByDeath = false;
   for (const status of statuses) {
+    if (stoppedByDeath) {
+      if (isObject(status)) remaining.push(status);
+      continue;
+    }
+
     if (!isObject(status)) continue;
 
     const hasFiniteDuration = Number.isFinite(status.duration);
@@ -300,6 +308,10 @@ export function tickStatusEffects(target, random = Math.random) {
       remaining.push(hasFiniteDuration
         ? { ...status, duration: nextDuration }
         : status);
+    }
+
+    if (target.dead === true) {
+      stoppedByDeath = true;
     }
   }
 

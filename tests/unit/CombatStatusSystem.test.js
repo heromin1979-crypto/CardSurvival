@@ -88,12 +88,16 @@ describe('applyDamage', () => {
   });
 
   it('normalizes malformed damage to zero', () => {
-    const target = enemy({ hp: 5 });
+    const target = enemy({ hp: 5, tokens: { block: 1 } });
     const result = applyDamage(target, Number.POSITIVE_INFINITY);
 
-    expect(result.damage).toBe(0);
+    expect(result).toMatchObject({
+      damage: 0,
+      blocked: false,
+    });
     expect(target.hp).toBe(5);
     expect(target.dead).toBe(false);
+    expect(target.tokens.block).toBe(1);
   });
 
   it('kills non-ally targets immediately at zero HP', () => {
@@ -333,5 +337,30 @@ describe('tickStatusEffects', () => {
     ]);
     expect(target.tokens.block).toBe(0);
     expect(target.dead).toBe(true);
+  });
+
+  it('stops ticking later statuses once the target dies', () => {
+    const target = enemy({
+      hp: 2,
+      statusEffects: [
+        { id: 'bleed', duration: 2, effect: { hpLossPerRound: 3 } },
+        { id: 'burn', duration: 2, effect: { hpLossPerRound: 3 } },
+      ],
+    });
+
+    const events = tickStatusEffects(target);
+
+    expect(events).toEqual([
+      expect.objectContaining({
+        statusId: 'bleed',
+        damage: 3,
+        dead: true,
+        expired: false,
+      }),
+    ]);
+    expect(target.statusEffects).toEqual([
+      { id: 'bleed', duration: 1, effect: { hpLossPerRound: 3 } },
+      { id: 'burn', duration: 2, effect: { hpLossPerRound: 3 } },
+    ]);
   });
 });
