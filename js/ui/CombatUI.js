@@ -269,6 +269,176 @@ const CombatUI = {
       </div>`;
   },
 
+  _escape(value) {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  },
+
+  _combatantLabel(combatant) {
+    if (!combatant) return '';
+    if (combatant.id === 'player') return GameState.player?.name ?? 'player';
+    if (combatant.sourceType === 'companion') {
+      return I18n.itemName(combatant.sourceId ?? combatant.id, NPC_ITEMS?.[combatant.sourceId ?? combatant.id]?.name ?? combatant.id);
+    }
+    const enemy = GameState.combat?.enemies?.[combatant.enemyIndex];
+    return I18n.enemyName(enemy?.id, enemy?.name ?? combatant.id);
+  },
+
+  _renderTopHud(combat, gs) {
+    return `
+      <header class="combat-top-bar combat-focused-top">
+        <span class="ctb-brand">SEOUL SURVIVAL / COMBAT</span>
+        <span class="ctb-chip">Round ${combat.roundNumber ?? 1}</span>
+        <span class="ctb-chip">Phase ${this._escape(combat.phase ?? '-')}</span>
+        <span class="ctb-chip">HP ${gs.player?.hp?.current ?? 0}/${gs.player?.hp?.max ?? 0}</span>
+      </header>`;
+  },
+
+  _renderFormationSide(side, combat) {
+    const slots = Array.isArray(combat?.formations?.[side])
+      ? combat.formations[side]
+      : [null, null, null, null];
+    return `
+      <section class="combat-formation ${side}" data-side="${side}">
+        ${slots.map((combatantId, index) => `
+          <div class="formation-slot ${side}${combatantId ? ' occupied' : ' empty'}"
+               data-side="${side}"
+               data-rank="${side === 'ally' ? 4 - index : index + 1}">
+            ${combatantId ? this._renderCombatant(combatantId, combat) : '<div class="formation-empty">EMPTY</div>'}
+          </div>`).join('')}
+      </section>`;
+  },
+
+  _renderCombatant(combatantId, combat) {
+    const combatant = combat?.combatants?.[combatantId];
+    if (!combatant) return '';
+    const hp = Math.max(0, combatant.hp ?? 0);
+    const maxHp = Math.max(1, combatant.maxHp ?? 1);
+    const hpPct = Math.max(0, Math.min(100, (hp / maxHp) * 100));
+    const tokens = Object.entries(combatant.tokens ?? {})
+      .filter(([, stacks]) => stacks > 0)
+      .map(([token, stacks]) => `<span class="combat-token">${this._escape(token)} ${stacks}</span>`)
+      .join('');
+    const intent = combat.pendingIntentByEnemy?.[combatantId];
+    const intentHtml = intent
+      ? `<div class="combat-intent">${this._escape(intent.skillId)} → ${this._escape(intent.targetId)}</div>`
+      : '';
+    const cls = [
+      'combatant-piece',
+      combatant.side,
+      combat.activeCombatantId === combatantId ? 'is-active' : '',
+      combatant.deathsDoor ? 'is-deaths-door' : '',
+      combatant.dead ? 'is-dead' : '',
+    ].filter(Boolean).join(' ');
+
+    return `
+      <button class="${cls}" data-combatant-id="${this._escape(combatantId)}">
+        ${intentHtml}
+        <span class="combatant-name">${this._escape(this._combatantLabel(combatant))}</span>
+        <span class="combatant-hp">${hp}/${maxHp}</span>
+        <span class="combatant-hp-bar"><span style="width:${hpPct.toFixed(0)}%"></span></span>
+        ${combatant.deathsDoor ? '<span class="deaths-door-label">DEATHS DOOR</span>' : ''}
+        ${tokens ? `<span class="combat-token-row">${tokens}</span>` : ''}
+      </button>`;
+  },
+
+  _renderSkillBar(activeCombatant, combat) {
+    const skillIds = activeCombatant?.skillIds ?? [];
+    return `
+      <div class="combat-skill-bar">
+        ${skillIds.slice(0, 5).map(skillId => {
+          const skill = combat.skillsById?.[skillId] ?? { id: skillId };
+          const selected = combat.selectedSkillId === skillId ? ' selected' : '';
+          const label = skill.fallbackName ?? skill.nameKey ?? skill.id;
+          return `
+            <button class="combat-skill-button${selected}"
+                    data-skill-id="${this._escape(skillId)}">
+              <span class="skill-icon">${this._escape(skill.icon ?? 'skill')}</span>
+              <span class="skill-name">${this._escape(label)}</span>
+            </button>`;
+        }).join('')}
+      </div>`;
+  },
+
+  _renderCombatItemSlot(activeCombatant) {
+    const disabled = activeCombatant?.itemUsedThisTurn ? ' disabled' : '';
+    return `<button class="combat-item-slot${disabled}" data-command="item">ITEM</button>`;
+  },
+
+  _renderDetailPopover(combatantId, combat) {
+    const combatant = combat?.combatants?.[combatantId];
+    if (!combatant) return '';
+    const statuses = (combatant.statusEffects ?? [])
+      .map(status => this._escape(status.id ?? status.name ?? 'status'))
+      .join(', ');
+    return `
+      <aside class="combat-detail-popover" data-popover-for="${this._escape(combatantId)}">
+        <strong>${this._escape(this._combatantLabel(combatant))}</strong>
+        <span>${this._escape(combatantId)}</span>
+        <span>HP ${combatant.hp ?? 0}/${combatant.maxHp ?? 0}</span>
+        <span>Stress ${combatant.stress ?? 0}</span>
+        ${statuses ? `<span>${statuses}</span>` : ''}
+      </aside>`;
+  },
+
+  _renderEventTicker(combat) {
+    const latest = (combat?.log ?? []).slice(-2).map(entry => this._escape(entry)).join(' / ');
+    return `<div class="combat-event-ticker">${latest}</div>`;
+  },
+
+  _renderFocusedInternal(combat, gs) {
+    const active = combat.combatants?.[combat.activeCombatantId];
+    this._screen.innerHTML = `
+      <div class="combat-wrap combat-focused">
+        ${this._renderTopHud(combat, gs)}
+        ${this._renderInitiativeBar(combat, gs)}
+        <main class="combat-battlefield" style="background-image:url('${BATTLE_BG}')">
+          ${this._renderFormationSide('ally', combat)}
+          <div class="combat-stage-center">${this._renderEventTicker(combat)}</div>
+          ${this._renderFormationSide('enemy', combat)}
+          ${this._renderDetailPopover(combat.inspectedCombatantId, combat)}
+        </main>
+        <footer class="combat-command-deck">
+          ${this._renderSkillBar(active, combat)}
+          ${this._renderCombatItemSlot(active)}
+          <button class="combat-common-command" data-command="move">이동</button>
+          <button class="combat-common-command" data-command="flee">도주</button>
+        </footer>
+      </div>`;
+    this._bindFocusedCombatEvents(combat);
+  },
+
+  _bindFocusedCombatEvents(combat) {
+    this._screen.querySelectorAll('.combat-skill-button').forEach(button => {
+      button.addEventListener('click', () => {
+        if (CombatSystem.selectSkill(button.dataset.skillId)) this.render();
+      });
+    });
+
+    this._screen.querySelectorAll('[data-combatant-id]').forEach(button => {
+      button.addEventListener('click', () => {
+        const combatantId = button.dataset.combatantId;
+        if (combat.selectedSkillId) {
+          if (CombatSystem.selectTarget(combatantId)) {
+            CombatSystem.confirmAction();
+          }
+        } else {
+          combat.inspectedCombatantId = combat.inspectedCombatantId === combatantId ? null : combatantId;
+        }
+        if (GameState.combat?.active) this.render();
+      });
+    });
+
+    this._screen.querySelector('.combat-item-slot')?.addEventListener('click', () => {
+      const itemId = (GameState.getBoardCards?.() ?? []).find(card => card?.combat)?.instanceId;
+      if (itemId) CombatSystem.useCombatItem(itemId);
+      if (GameState.combat?.active) this.render();
+    });
+  },
+
   render() {
     try {
       this._renderInternal();
@@ -296,6 +466,12 @@ const CombatUI = {
     const gs     = GameState;
     const combat = gs.combat;
     if (!combat?.enemies?.length || !this._screen) return;
+
+    if (combat.combatants && combat.formations) {
+      this._renderFocusedInternal(combat, gs);
+      this._playFxQueue();
+      return;
+    }
 
     const isEntry    = combat._isNew === true;
     if (isEntry) combat._isNew = false;
