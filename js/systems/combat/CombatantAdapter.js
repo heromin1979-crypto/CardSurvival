@@ -1,4 +1,5 @@
 import BALANCE from '../../data/gameBalance.js';
+import NPCS from '../../data/npcs.js';
 
 export function buildCombatants(gs, enemies = []) {
   const combatants = {};
@@ -11,7 +12,7 @@ export function buildCombatants(gs, enemies = []) {
     hp: gs.player.hp.current,
     maxHp: gs.player.hp.max,
     speed: BALANCE.combat.defaultPlayerSpeed,
-    stress: gs.stats?.stress?.current ?? 0,
+    stress: 0,
     tokens: {},
     statusEffects: [],
     deathsDoor: false,
@@ -35,7 +36,7 @@ export function buildCombatants(gs, enemies = []) {
       sourceType: 'companion',
       sourceId: id,
       hp: state.hp,
-      maxHp: state.maxHp ?? 50,
+      maxHp: state.maxHp ?? NPCS[id]?.maxHp ?? 50,
       speed: state.combatSpeed ?? BALANCE.combat.defaultCompanionSpeed,
       stress: state.combatStress ?? 0,
       bond: state.bond ?? 0,

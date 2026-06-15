@@ -10,15 +10,11 @@ function makeGameState() {
     player: {
       hp: { current: 80, max: 100 },
     },
-    stats: {
-      stress: { current: 3, max: 10 },
-    },
     companions: ['npc_nurse', 'npc_dead', 'npc_soldier', 'npc_extra'],
     npcs: {
       states: {
         npc_nurse: {
           hp: 40,
-          maxHp: 50,
           isCompanion: true,
           combatSpeed: 7,
           combatStress: 2,
@@ -74,7 +70,7 @@ describe('CombatantAdapter', () => {
       hp: 80,
       maxHp: 100,
       speed: 5,
-      stress: 3,
+      stress: 0,
       tokens: {},
       statusEffects: [],
       deathsDoor: false,
@@ -88,7 +84,7 @@ describe('CombatantAdapter', () => {
       sourceType: 'companion',
       sourceId: 'npc_nurse',
       hp: 40,
-      maxHp: 50,
+      maxHp: 100,
       speed: 7,
       stress: 2,
       bond: 70,
@@ -119,6 +115,15 @@ describe('CombatantAdapter', () => {
     const result = buildCombatants(makeGameState());
 
     expect(result.npc_dead).toBeUndefined();
+  });
+
+  it('prefers an explicit companion max HP from migrated state', () => {
+    const gs = makeGameState();
+    gs.npcs.states.npc_nurse.maxHp = 75;
+
+    const result = buildCombatants(gs);
+
+    expect(result.npc_nurse.maxHp).toBe(75);
   });
 
   it('excludes the third living companion', () => {
