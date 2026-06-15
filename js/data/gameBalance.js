@@ -111,6 +111,14 @@ const BALANCE = {
 
   // ── 전투 ────────────────────────────────────────────
   combat: {
+    defaultPlayerSpeed: 5,
+    defaultCompanionSpeed: 5,
+    defaultEnemySpeed: 4,
+    deathsDoor: {
+      baseResist: 0.75,
+      resistLossPerCheck: 0.10,
+      minimumResist: 0.05,
+    },
     fleeChance:         0.6,
     fleeNoise:          10,
     fleeFatigue:        10,
