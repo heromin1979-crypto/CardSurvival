@@ -36,7 +36,7 @@ export function createFormations(allyIds = [], enemies = []) {
     });
 
     if (rank !== undefined) {
-      enemy[rankToIndex('enemy', rank)] = combatant.id;
+      enemy[rankToIndex('enemy', rank)] = combatant.combatantId;
     }
   });
 

@@ -32,12 +32,12 @@ describe('createFormations', () => {
     ]);
   });
 
-  it('places legacy front and back enemies without collisions', () => {
+  it('places front and back enemies without collisions', () => {
     const enemies = [
-      { id: 'front_a', row: 'front' },
-      { id: 'back_a', row: 'back' },
-      { id: 'front_b', row: 'front' },
-      { id: 'back_b', row: 'back' },
+      { combatantId: 'front_a', row: 'front' },
+      { combatantId: 'back_a', row: 'back' },
+      { combatantId: 'front_b', row: 'front' },
+      { combatantId: 'back_b', row: 'back' },
     ];
 
     expect(createFormations([], enemies).enemy).toEqual([
@@ -50,11 +50,11 @@ describe('createFormations', () => {
 
   it('limits enemies to four combatants', () => {
     const enemies = [
-      { id: 'e1', row: 'front' },
-      { id: 'e2', row: 'front' },
-      { id: 'e3', row: 'back' },
-      { id: 'e4', row: 'back' },
-      { id: 'e5', row: 'front' },
+      { combatantId: 'e1', row: 'front' },
+      { combatantId: 'e2', row: 'front' },
+      { combatantId: 'e3', row: 'back' },
+      { combatantId: 'e4', row: 'back' },
+      { combatantId: 'e5', row: 'front' },
     ];
 
     expect(createFormations([], enemies).enemy).toEqual([

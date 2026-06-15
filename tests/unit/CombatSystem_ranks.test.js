@@ -181,7 +181,10 @@ describe('legacy row compatibility with four-rank formations', () => {
   it('converts current front/back enemies while preserving the legacy contract', () => {
     const front = makeEnemy({ id: 'front', row: 'front' });
     const back = makeEnemy({ id: 'back', row: 'back' });
-    const formations = createFormations(['player'], [front, back]);
+    const formations = createFormations(['player'], [
+      { combatantId: front.id, row: front.row },
+      { combatantId: back.id, row: back.row },
+    ]);
 
     expect(formations).toEqual({
       ally: [null, null, null, 'player'],
