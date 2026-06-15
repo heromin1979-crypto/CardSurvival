@@ -8,7 +8,10 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import CombatSystem from '../../js/systems/CombatSystem.js';
 import GameState    from '../../js/core/GameState.js';
-import { createFormations } from '../../js/systems/combat/FormationSystem.js';
+import {
+  createFormations,
+  getRank,
+} from '../../js/systems/combat/FormationSystem.js';
 
 function makePlayer({ isRanged = false, ammo = 5 } = {}) {
   GameState.player.hp = { current: 100, max: 100 };
@@ -182,8 +185,8 @@ describe('legacy row compatibility with four-rank formations', () => {
     const front = makeEnemy({ id: 'front', row: 'front' });
     const back = makeEnemy({ id: 'back', row: 'back' });
     const formations = createFormations(['player'], [
-      { combatantId: front.id, row: front.row },
-      { combatantId: back.id, row: back.row },
+      { combatantId: front.id, row: CombatSystem.rowOf(front) },
+      { combatantId: back.id, row: CombatSystem.rowOf(back) },
     ]);
 
     expect(formations).toEqual({
@@ -192,5 +195,7 @@ describe('legacy row compatibility with four-rank formations', () => {
     });
     expect(CombatSystem.rowOf(front)).toBe('front');
     expect(CombatSystem.rowOf(back)).toBe('back');
+    expect(getRank(formations, front.id)).toBe(1);
+    expect(getRank(formations, back.id)).toBe(3);
   });
 });
