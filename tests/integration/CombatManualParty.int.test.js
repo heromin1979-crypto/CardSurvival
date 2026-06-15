@@ -1,5 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { executeSkillCommand } from '../../js/systems/combat/CombatSkillSystem.js';
+import CombatSystem from '../../js/systems/CombatSystem.js';
+import GameState from '../../js/core/GameState.js';
 
 function makeManualPartyContext(activeCombatantId) {
   const player = {
@@ -87,5 +89,121 @@ describe('manual party combat commands', () => {
       actorId,
       targetId: 'enemy:zombie',
     }]);
+  });
+
+  it('waits for ally input and exposes selectable skills after setup', () => {
+    GameState.player.hp = { current: 100, max: 100 };
+    GameState.player.characterId = 'doctor';
+    GameState.player.equipped = {};
+    GameState.companions = [];
+    GameState.npcs = { states: {} };
+    GameState.flags = GameState.flags ?? {};
+
+    CombatSystem._setupCombat({
+      enemies: [{
+        id: 'zombie_common',
+        name: 'infected',
+        currentHp: 30,
+        maxHp: 30,
+        speed: 4,
+        row: 'front',
+        attack: { damage: [4, 6], accuracy: 1 },
+        specialSkills: [],
+        weaknesses: [],
+        resistances: [],
+      }],
+      dangerLevel: 1,
+    });
+
+    if (GameState.combat.combatants[GameState.combat.activeCombatantId].side !== 'ally') {
+      CombatSystem.processUntilAllyTurn();
+    }
+
+    expect(GameState.combat.phase).toBe('await_ally_input');
+    expect(GameState.combat.activeCombatantId).toBeTruthy();
+    expect(CombatSystem.selectSkill(GameState.combat.combatants.player.skillIds[0])).toBe(true);
+  });
+
+  it('stops on a companion turn instead of auto-running companion stance actions', () => {
+    GameState.player.hp = { current: 100, max: 100 };
+    GameState.player.characterId = 'doctor';
+    GameState.player.equipped = {};
+    GameState.companions = ['npc_nurse'];
+    GameState.npcs = {
+      states: {
+        npc_nurse: {
+          hp: 50,
+          maxHp: 50,
+          isCompanion: true,
+          bond: 70,
+          combatSpeed: 50,
+          stance: 'heal',
+        },
+      },
+    };
+    GameState.flags = GameState.flags ?? {};
+
+    CombatSystem._setupCombat({
+      enemies: [{
+        id: 'zombie_common',
+        name: 'infected',
+        currentHp: 30,
+        maxHp: 30,
+        speed: 4,
+        row: 'front',
+        attack: { damage: [4, 6], accuracy: 1 },
+        specialSkills: [],
+        weaknesses: [],
+        resistances: [],
+      }],
+      dangerLevel: 1,
+    });
+
+    const index = GameState.combat.turnQueue.findIndex(entry => entry.combatantId === 'npc_nurse');
+    GameState.combat.activeIdx = index;
+    GameState.combat.activeTurnIndex = index;
+    GameState.combat.activeCombatantId = 'npc_nurse';
+    CombatSystem.beginActiveTurn();
+
+    expect(GameState.combat.phase).toBe('await_ally_input');
+    expect(GameState.combat.activeCombatantId).toBe('npc_nurse');
+    expect(GameState.player.hp.current).toBe(100);
+  });
+
+  it('confirms a selected ally skill through the ranked command context', () => {
+    GameState.player.hp = { current: 100, max: 100 };
+    GameState.player.characterId = 'doctor';
+    GameState.player.equipped = {};
+    GameState.companions = [];
+    GameState.npcs = { states: {} };
+    GameState.flags = GameState.flags ?? {};
+
+    CombatSystem._setupCombat({
+      enemies: [{
+        id: 'zombie_common',
+        name: 'infected',
+        currentHp: 30,
+        maxHp: 30,
+        speed: 4,
+        row: 'front',
+        attack: { damage: [4, 6], accuracy: 1 },
+        specialSkills: [],
+        weaknesses: [],
+        resistances: [],
+      }],
+      dangerLevel: 1,
+    });
+
+    const skillId = GameState.combat.combatants.player.skillIds[0];
+    expect(CombatSystem.selectSkill(skillId)).toBe(true);
+    expect(CombatSystem.selectTarget('enemy:0')).toBe(true);
+
+    const before = GameState.combat.enemies[0].currentHp;
+    const result = CombatSystem.confirmAction();
+
+    expect(result.ok).toBe(true);
+    expect(result.hit).toBe(true);
+    expect(GameState.combat.enemies[0].currentHp).toBeLessThan(before);
+    expect(GameState.combat.activeCombatantId).not.toBe('player');
   });
 });
