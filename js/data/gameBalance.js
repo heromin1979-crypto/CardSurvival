@@ -114,6 +114,7 @@ const BALANCE = {
     defaultPlayerSpeed: 5,
     defaultCompanionSpeed: 5,
     defaultEnemySpeed: 4,
+    initiativeRollMax: 3,
     deathsDoor: {
       baseResist: 0.75,
       resistLossPerCheck: 0.10,
