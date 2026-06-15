@@ -1,6 +1,12 @@
 // === DATA INTEGRITY VALIDATOR ===
 // Run: node --input-type=module js/data/validate.js
 
+import {
+  CHARACTER_COMBAT_LOADOUTS,
+  COMBAT_SKILLS,
+  COMPANION_COMBAT_LOADOUTS,
+} from './combatSkills.js';
+
 async function validate() {
   const items = {
     ...(await import('./items_base.js')).default,
@@ -364,7 +370,149 @@ async function validate() {
     errors++;
   }
 
-  // 13. 숨은 장소(hiddenLocations) — 구 참조·보상/루팅 아이템 참조 검증
+  // 13. Data-driven combat skill and loadout contracts
+  console.log('\n=== COMBAT SKILL DATA CHECK ===');
+  const VALID_COMBAT_EFFECTS = new Set([
+    'damage',
+    'heal',
+    'token',
+    'status',
+    'move',
+    'stress',
+    'guard',
+    'flee',
+  ]);
+  let combatSkillErrors = 0;
+  const reportCombatError = (message) => {
+    console.log(`❌ ${message}`);
+    errors++;
+    combatSkillErrors++;
+  };
+
+  for (const [id, skill] of Object.entries(COMBAT_SKILLS)) {
+    if (skill?.id !== id) {
+      reportCombatError(`[combat skill/${id}] id must match object key`);
+    }
+    if (typeof skill?.nameKey !== 'string' || skill.nameKey.length === 0) {
+      reportCombatError(`[combat skill/${id}] nameKey must be non-empty string`);
+    }
+    if (
+      typeof skill?.icon !== 'string'
+      || skill.icon.length === 0
+      || !/^[\x20-\x7E]+$/.test(skill.icon)
+    ) {
+      reportCombatError(`[combat skill/${id}] icon must be ASCII symbolic string`);
+    }
+    if (skill?.source !== 'character') {
+      reportCombatError(`[combat skill/${id}] source must be "character"`);
+    }
+    if (
+      !Array.isArray(skill?.usableFrom)
+      || skill.usableFrom.length === 0
+      || skill.usableFrom.some(rank => (
+        !Number.isInteger(rank) || rank < 1 || rank > 4
+      ))
+    ) {
+      reportCombatError(`[combat skill/${id}] usableFrom must contain ranks 1~4`);
+    }
+    if (!['ally', 'enemy'].includes(skill?.target?.side)) {
+      reportCombatError(`[combat skill/${id}] target.side must be ally or enemy`);
+    }
+    if (
+      !Array.isArray(skill?.target?.ranks)
+      || skill.target.ranks.length === 0
+      || skill.target.ranks.some(rank => (
+        !Number.isInteger(rank) || rank < 1 || rank > 4
+      ))
+    ) {
+      reportCombatError(`[combat skill/${id}] target.ranks must contain ranks 1~4`);
+    }
+    if (
+      !Number.isInteger(skill?.target?.count)
+      || skill.target.count <= 0
+    ) {
+      reportCombatError(`[combat skill/${id}] target.count must be positive integer`);
+    }
+    if (
+      !skill?.costs
+      || typeof skill.costs !== 'object'
+      || Array.isArray(skill.costs)
+    ) {
+      reportCombatError(`[combat skill/${id}] costs must be object`);
+    }
+    if (
+      !Number.isFinite(skill?.accuracy)
+      || skill.accuracy < 0
+      || skill.accuracy > 1
+    ) {
+      reportCombatError(`[combat skill/${id}] accuracy must be between 0 and 1`);
+    }
+    if (!Array.isArray(skill?.effects) || skill.effects.length === 0) {
+      reportCombatError(`[combat skill/${id}] effects must be non-empty array`);
+      continue;
+    }
+    for (const [effectIndex, effect] of skill.effects.entries()) {
+      if (!VALID_COMBAT_EFFECTS.has(effect?.type)) {
+        reportCombatError(
+          `[combat skill/${id}] effects[${effectIndex}] has invalid type "${effect?.type}"`,
+        );
+      }
+      if (
+        ['damage', 'heal'].includes(effect?.type)
+        && (
+          !Array.isArray(effect.value)
+          || effect.value.length !== 2
+          || effect.value.some(value => !Number.isFinite(value))
+          || effect.value[0] > effect.value[1]
+        )
+      ) {
+        reportCombatError(
+          `[combat skill/${id}] effects[${effectIndex}].value must be [min, max]`,
+        );
+      }
+    }
+  }
+
+  const validateCombatLoadouts = (label, loadouts, expectedCount) => {
+    const entries = Object.entries(loadouts);
+    if (entries.length !== expectedCount) {
+      reportCombatError(
+        `[${label}] expected ${expectedCount} mappings, got ${entries.length}`,
+      );
+    }
+    for (const [ownerId, skillIds] of entries) {
+      if (!Array.isArray(skillIds) || skillIds.length !== 3) {
+        reportCombatError(`[${label}/${ownerId}] loadout must contain exactly 3 skills`);
+        continue;
+      }
+      if (new Set(skillIds).size !== skillIds.length) {
+        reportCombatError(`[${label}/${ownerId}] loadout contains duplicate skill IDs`);
+      }
+      for (const skillId of skillIds) {
+        if (!COMBAT_SKILLS[skillId]) {
+          reportCombatError(
+            `[${label}/${ownerId}] skill "${skillId}" not found in COMBAT_SKILLS`,
+          );
+        }
+      }
+    }
+  };
+
+  validateCombatLoadouts(
+    'character combat loadout',
+    CHARACTER_COMBAT_LOADOUTS,
+    6,
+  );
+  validateCombatLoadouts(
+    'companion combat loadout',
+    COMPANION_COMBAT_LOADOUTS,
+    20,
+  );
+  console.log(
+    `  Skills: ${Object.keys(COMBAT_SKILLS).length}, errors: ${combatSkillErrors}`,
+  );
+
+  // 14. 숨은 장소(hiddenLocations) — 구 참조·보상/루팅 아이템 참조 검증
   console.log('\n=== HIDDEN LOCATIONS CHECK ===');
   let hlChecked = 0, hlBad = 0;
   try {
