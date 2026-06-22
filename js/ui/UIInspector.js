@@ -200,7 +200,7 @@ const UIInspector = {
         <span>🎯 UI INSPECTOR</span>
         <button class="uii-close" title="닫기 (Esc)">✕</button>
       </div>
-      <div class="uii-hint">화면의 요소를 <b>클릭</b>하면 스택·편집기가 열립니다. 편집은 <b>자동 저장</b>되어 다음 실행에도 유지됩니다. <b>CSS Export</b>는 소스에 영구 반영(커밋)용 스니펫/파일입니다.</div>
+      <div class="uii-hint">요소를 <b>클릭</b>해 편집(로컬 자동 저장). 모두에게 적용하려면 <b>💾 파일 저장</b>(→ css/ui-overrides.css) 후 커밋하거나 <b>🚀 저장+Push</b>로 한 번에 git에 올리세요.</div>
       <div class="uii-section">
         <div class="uii-sect-title">클릭 지점 레이어 (위 = 실제 클릭됨)</div>
         <div class="uii-stack"><div class="uii-empty">아무 곳이나 클릭하세요</div></div>
@@ -210,10 +210,13 @@ const UIInspector = {
         <div class="uii-editor"><div class="uii-empty">선택된 요소 없음</div></div>
       </div>
       <div class="uii-section uii-actions">
-        <button class="uii-btn" data-act="export">CSS Export</button>
+        <button class="uii-btn uii-primary" data-act="save-repo" title="css/ui-overrides.css 에 기록 (node serve.js 필요)">💾 파일 저장</button>
+        <button class="uii-btn uii-primary" data-act="save-push" title="파일 저장 + 현재 브랜치로 git push">🚀 저장+Push</button>
+        <button class="uii-btn" data-act="export" title="CSS 파일 다운로드 (오프라인 대체용)">CSS 다운로드</button>
         <button class="uii-btn" data-act="reset-el">선택 초기화</button>
         <button class="uii-btn uii-danger" data-act="reset-all">전체 초기화</button>
       </div>
+      <div class="uii-status"></div>
       <textarea class="uii-export" readonly placeholder="Export 결과 (커밋용 CSS)"></textarea>
     `;
     document.body.appendChild(p);
@@ -244,6 +247,8 @@ const UIInspector = {
     p.querySelector('.uii-close').addEventListener('click', () => this.disable());
     p.querySelector('.uii-actions').addEventListener('click', (e) => {
       const act = e.target.dataset.act;
+      if (act === 'save-repo') this._saveToRepo({ push: false });
+      if (act === 'save-push') this._saveToRepo({ push: true });
       if (act === 'export')    this._exportCSS();
       if (act === 'reset-el')  this._resetSelected();
       if (act === 'reset-all') this._resetAll();
@@ -458,21 +463,72 @@ const UIInspector = {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(this._overrides));
   },
 
-  _exportCSS() {
-    const ta = this._panel?.querySelector('.uii-export');
-    if (!ta) return;
+  // 커밋 대상 css/ui-overrides.css 전체 내용을 생성
+  _buildCSS() {
     const rules = Object.entries(this._overrides)
       .map(([sel, ov]) => this._ruleFor(sel, ov))
       .filter(Boolean)
       .join('\n');
-    const css = rules
-      ? `/* === UI Inspector 오버라이드 — css/ 의 적절한 파일에 붙여 커밋 === */\n${rules}\n`
-      : '/* 오버라이드 없음 */';
+    const header =
+      '/* === UI Inspector 오버라이드 (자동 생성 / git 커밋 대상) ===\n' +
+      '   게임 내 UI 인스펙터(?debug=1 → Ctrl+Shift+U)로 기록됨. */\n';
+    return rules ? `${header}${rules}\n` : header;
+  },
+
+  _status(msg, kind = '') {
+    const el = this._panel?.querySelector('.uii-status');
+    if (!el) return;
+    el.textContent = msg;
+    el.dataset.kind = kind;
+  },
+
+  // 로컬 개발 서버(node serve.js)에 디스크 기록 요청 → 커밋되면 모두에게 적용
+  async _saveToRepo({ push = false } = {}) {
+    const css = this._buildCSS();
+    this._status('저장 중…');
+    try {
+      const r = await fetch('/api/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ files: [{ path: 'css/ui-overrides.css', content: css }] }),
+      });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(j.error || `HTTP ${r.status}`);
+      if (push) { await this._pushToRepo(); return; }
+      this._status('✅ css/ui-overrides.css 저장됨 — 커밋/푸시하면 모두에게 적용됩니다', 'ok');
+    } catch (e) {
+      this._status(`⚠️ 저장 실패: ${e.message} — "node serve.js" 로 실행해야 합니다. 대신 [CSS 다운로드]를 쓰세요.`, 'err');
+    }
+  },
+
+  async _pushToRepo() {
+    this._status('git push 중…');
+    try {
+      const r = await fetch('/api/push', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: 'style(ui): 인스펙터 레이아웃 오버라이드 갱신',
+          paths: ['css/ui-overrides.css'],
+        }),
+      });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(j.error || `HTTP ${r.status}`);
+      this._status(`✅ ${j.branch} 브랜치에 push 완료${j.committed ? '' : ' (변경 없음)'}`, 'ok');
+    } catch (e) {
+      this._status(`⚠️ push 실패: ${e.message} (파일은 저장됨, 수동 커밋 가능)`, 'err');
+    }
+  },
+
+  _exportCSS() {
+    const ta = this._panel?.querySelector('.uii-export');
+    if (!ta) return;
+    const css = this._buildCSS();
     ta.value = css;
     ta.style.display = 'block';
     ta.select();
     try { document.execCommand('copy'); } catch {}
-    // 파일로도 저장 (tangible save)
+    // 파일로도 저장 (오프라인 대체용)
     try {
       const blob = new Blob([css], { type: 'text/css' });
       const a = document.createElement('a');

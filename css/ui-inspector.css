@@ -149,6 +149,15 @@
 .uii-btn:hover { background: #3a3a44; }
 .uii-danger { border-color: #a44; color: #f99; }
 .uii-danger:hover { background: #422; }
+.uii-primary { border-color: #2a8; color: #7fe; background: #173; }
+.uii-primary:hover { background: #1a5; }
+
+.uii-status {
+  padding: 0 10px 6px;
+  font-size: 10px; color: #9aa; min-height: 14px; word-break: break-word;
+}
+.uii-status[data-kind="ok"]  { color: #6f6; }
+.uii-status[data-kind="err"] { color: #f99; }
 
 .uii-export {
   display: none; width: calc(100% - 20px); margin: 0 10px 10px;
