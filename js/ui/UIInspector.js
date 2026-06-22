@@ -493,11 +493,23 @@ const UIInspector = {
         body: JSON.stringify({ files: [{ path: 'css/ui-overrides.css', content: css }] }),
       });
       const j = await r.json().catch(() => ({}));
-      if (!r.ok) throw new Error(j.error || `HTTP ${r.status}`);
+      if (!r.ok) {
+        // 403 = serve.js 는 떠 있으나 WRITABLE 미반영(구버전 프로세스) → 재시작 안내
+        if (r.status === 403) {
+          throw new Error('서버가 구버전입니다. serve.js 를 재시작하세요 (WRITABLE 목록 갱신 필요).');
+        }
+        throw new Error(j.error || `HTTP ${r.status}`);
+      }
       if (push) { await this._pushToRepo(); return; }
       this._status('✅ css/ui-overrides.css 저장됨 — 커밋/푸시하면 모두에게 적용됩니다', 'ok');
     } catch (e) {
-      this._status(`⚠️ 저장 실패: ${e.message} — "node serve.js" 로 실행해야 합니다. 대신 [CSS 다운로드]를 쓰세요.`, 'err');
+      // fetch 자체 실패(TypeError) = serve.js 미실행, 그 외는 서버가 준 사유
+      const offline = (e instanceof TypeError);
+      this._status(
+        offline
+          ? `⚠️ 저장 실패: 로컬 서버 없음 — "node serve.js" 로 실행해야 합니다. 대신 [CSS 다운로드]를 쓰세요.`
+          : `⚠️ 저장 실패: ${e.message}`,
+        'err');
     }
   },
 
