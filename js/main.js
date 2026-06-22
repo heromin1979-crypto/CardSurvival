@@ -224,11 +224,16 @@ function init() {
   // 이슈 #7 — 사망 위험 중앙 경고 (스탯 임계 + HP 20% 미만)
   _initCriticalWarning();
 
+  // UI 인스펙터로 저장한 레이아웃 오버라이드는 항상 적용 (일반 플레이에도 반영)
+  // 인스펙터 UI(단축키/패널) 자체는 ?debug=1 에서만 활성화된다.
+  const _isDebug = new URLSearchParams(window.location.search).get('debug') === '1';
+  import('./ui/UIInspector.js').then(m => {
+    _isDebug ? m.default.init() : m.default.applyStored();
+  });
+
   // Debug panel (?debug=1 일 때만 활성화)
-  if (new URLSearchParams(window.location.search).get('debug') === '1') {
+  if (_isDebug) {
     import('./ui/DebugPanel.js').then(m => m.default.init());
-    // UI 인스펙터/레이아웃 편집기 (Ctrl+Shift+U 토글) — 개발용
-    import('./ui/UIInspector.js').then(m => m.default.init());
   }
 
   // 전투 시뮬레이터 툴 훅 (?tool=combat 일 때만 핸들 노출 — 일반 플레이엔 영향 없음)

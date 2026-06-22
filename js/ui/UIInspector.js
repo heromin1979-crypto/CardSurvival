@@ -27,12 +27,18 @@ const UIInspector = {
   _styleEl:   null,
   _shield:    null,        // 전체화면 캡처 실드 (게임 hover 효과 차단)
   _drag:      null,        // 요소 드래그 상태
-  _panelDrag: null,        // 패널 이동 드래그 상태
 
-  init() {
+  // 저장된 레이아웃 오버라이드를 적용한다. 디버그 여부와 무관하게 매 실행 호출되어
+  // 인스펙터로 편집·저장한 위치/크기가 일반 플레이에도 그대로 반영되게 한다.
+  applyStored() {
     this._loadOverrides();
     this._injectStyleEl();
-    this._applyAllOverrides();   // 저장된 오버라이드 즉시 재적용
+    this._applyAllOverrides();
+  },
+
+  // 인스펙터 UI(단축키/패널) 활성화 — ?debug=1 에서만 호출된다.
+  init() {
+    this.applyStored();
 
     // CSS
     const link = document.createElement('link');
@@ -86,12 +92,11 @@ const UIInspector = {
     this._hoverBox?.remove(); this._hoverBox = null;
     this._label?.remove();    this._label    = null;
     this._shield?.remove();   this._shield   = null;
-    this._drag = this._panelDrag = null;
+    this._drag = null;
   },
 
   _handleUp() {
-    if (this._panelDrag) { this._panelDrag = null; this._savePanelPos(); }
-    if (this._drag)      { this._drag = null; this._renderEditor(); }
+    if (this._drag) { this._drag = null; this._renderEditor(); }
   },
 
   // ── 오버레이(하이라이트 박스) ─────────────────────────────
@@ -139,7 +144,6 @@ const UIInspector = {
 
   // ── 마우스 이동 → 호버 하이라이트 ─────────────────────────
   _handleMove(e) {
-    if (this._panelDrag) { this._dragPanel(e); return; }
     if (this._drag)      { this._dragMove(e); return; }
     if (this._isPanel(e.target)) { this._drawBox(this._hoverBox, null); this._drawLabel(null); return; }
     const el = this._topGameEl(e.clientX, e.clientY);
@@ -196,7 +200,7 @@ const UIInspector = {
         <span>🎯 UI INSPECTOR</span>
         <button class="uii-close" title="닫기 (Esc)">✕</button>
       </div>
-      <div class="uii-hint">화면의 요소를 <b>클릭</b>하면 클릭 판정 스택과 편집기가 열립니다.</div>
+      <div class="uii-hint">화면의 요소를 <b>클릭</b>하면 스택·편집기가 열립니다. 편집은 <b>자동 저장</b>되어 다음 실행에도 유지됩니다. <b>CSS Export</b>는 소스에 영구 반영(커밋)용 스니펫/파일입니다.</div>
       <div class="uii-section">
         <div class="uii-sect-title">클릭 지점 레이어 (위 = 실제 클릭됨)</div>
         <div class="uii-stack"><div class="uii-empty">아무 곳이나 클릭하세요</div></div>
@@ -216,12 +220,25 @@ const UIInspector = {
     this._panel = p;
     this._applyPanelPos();
 
-    // 헤더 드래그로 패널 이동
+    // 헤더 드래그로 패널 이동 — 자체 포함형(전역 핸들러 충돌 방지)
     p.querySelector('.uii-head').addEventListener('mousedown', (e) => {
       if (e.target.closest('.uii-close')) return;
-      const r = p.getBoundingClientRect();
-      this._panelDrag = { x0: e.clientX, y0: e.clientY, left: r.left, top: r.top };
       e.preventDefault();
+      e.stopPropagation();
+      const r = p.getBoundingClientRect();
+      const x0 = e.clientX, y0 = e.clientY, left0 = r.left, top0 = r.top;
+      const move = (ev) => {
+        p.style.left  = (left0 + ev.clientX - x0) + 'px';
+        p.style.top   = (top0  + ev.clientY - y0) + 'px';
+        p.style.right = 'auto';
+      };
+      const up = () => {
+        document.removeEventListener('mousemove', move, true);
+        document.removeEventListener('mouseup', up, true);
+        this._savePanelPos();
+      };
+      document.addEventListener('mousemove', move, true);
+      document.addEventListener('mouseup', up, true);
     });
 
     p.querySelector('.uii-close').addEventListener('click', () => this.disable());
@@ -359,16 +376,7 @@ const UIInspector = {
     // 드래그 종료는 enable() 에서 등록한 공용 mouseup(_handleUp)이 처리
   },
 
-  // ── 패널 이동/위치 영속 ───────────────────────────────────
-  _dragPanel(e) {
-    const pd = this._panelDrag;
-    const left = pd.left + (e.clientX - pd.x0);
-    const top  = pd.top  + (e.clientY - pd.y0);
-    this._panel.style.left  = left + 'px';
-    this._panel.style.top   = top + 'px';
-    this._panel.style.right = 'auto';
-  },
-
+  // ── 패널 위치 영속 ────────────────────────────────────────
   _applyPanelPos() {
     try {
       const pos = JSON.parse(localStorage.getItem(PANEL_POS_KEY) || 'null');
@@ -453,14 +461,26 @@ const UIInspector = {
   _exportCSS() {
     const ta = this._panel?.querySelector('.uii-export');
     if (!ta) return;
-    const css = Object.entries(this._overrides)
+    const rules = Object.entries(this._overrides)
       .map(([sel, ov]) => this._ruleFor(sel, ov))
       .filter(Boolean)
       .join('\n');
-    ta.value = css || '/* 오버라이드 없음 */';
+    const css = rules
+      ? `/* === UI Inspector 오버라이드 — css/ 의 적절한 파일에 붙여 커밋 === */\n${rules}\n`
+      : '/* 오버라이드 없음 */';
+    ta.value = css;
     ta.style.display = 'block';
     ta.select();
     try { document.execCommand('copy'); } catch {}
+    // 파일로도 저장 (tangible save)
+    try {
+      const blob = new Blob([css], { type: 'text/css' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'ui-overrides.css';
+      a.click();
+      URL.revokeObjectURL(a.href);
+    } catch {}
   },
 
   _resetSelected() {
