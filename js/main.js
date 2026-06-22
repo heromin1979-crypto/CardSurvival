@@ -227,6 +227,8 @@ function init() {
   // Debug panel (?debug=1 일 때만 활성화)
   if (new URLSearchParams(window.location.search).get('debug') === '1') {
     import('./ui/DebugPanel.js').then(m => m.default.init());
+    // UI 인스펙터/레이아웃 편집기 (Ctrl+Shift+U 토글) — 개발용
+    import('./ui/UIInspector.js').then(m => m.default.init());
   }
 
   // 전투 시뮬레이터 툴 훅 (?tool=combat 일 때만 핸들 노출 — 일반 플레이엔 영향 없음)
