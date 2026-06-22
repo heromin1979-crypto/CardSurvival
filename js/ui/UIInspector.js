@@ -10,6 +10,7 @@
 //     마우스 픽셀 이동량은 ÷scale 변환해 적용한다.
 
 const STORAGE_KEY  = '__uiInspectorOverrides';
+const PANEL_POS_KEY = '__uiInspectorPanelPos';
 const STYLE_ID     = 'ui-inspector-overrides';
 const DESIGN_W     = 1920;
 const DESIGN_H     = 1080;
@@ -24,7 +25,9 @@ const UIInspector = {
   _stack:     [],          // 마지막 클릭 지점의 elementsFromPoint 결과
   _overrides: {},          // { selector: { dx, dy, w, h, noPointer } }
   _styleEl:   null,
-  _drag:      null,        // 드래그 상태
+  _shield:    null,        // 전체화면 캡처 실드 (게임 hover 효과 차단)
+  _drag:      null,        // 요소 드래그 상태
+  _panelDrag: null,        // 패널 이동 드래그 상태
 
   init() {
     this._loadOverrides();
@@ -65,8 +68,10 @@ const UIInspector = {
     document.body.classList.add('uii-active');
     this._onMove  = (e) => this._handleMove(e);
     this._onClick = (e) => this._handleClick(e);
+    this._onUp    = () => this._handleUp();
     document.addEventListener('mousemove', this._onMove, true);
     document.addEventListener('click', this._onClick, true);
+    window.addEventListener('mouseup', this._onUp, true);
   },
 
   disable() {
@@ -75,14 +80,24 @@ const UIInspector = {
     document.body.classList.remove('uii-active');
     document.removeEventListener('mousemove', this._onMove, true);
     document.removeEventListener('click', this._onClick, true);
+    window.removeEventListener('mouseup', this._onUp, true);
     this._panel?.remove();    this._panel    = null;
     this._overlay?.remove();  this._overlay  = null;
     this._hoverBox?.remove(); this._hoverBox = null;
     this._label?.remove();    this._label    = null;
+    this._shield?.remove();   this._shield   = null;
+    this._drag = this._panelDrag = null;
+  },
+
+  _handleUp() {
+    if (this._panelDrag) { this._panelDrag = null; this._savePanelPos(); }
+    if (this._drag)      { this._drag = null; this._renderEditor(); }
   },
 
   // ── 오버레이(하이라이트 박스) ─────────────────────────────
   _buildOverlays() {
+    // 캡처 실드를 먼저 깔아 마우스가 게임 요소에 직접 닿지 않게 한다
+    this._shield   = this._mkBox('uii-shield');
     this._overlay  = this._mkBox('uii-overlay');
     this._hoverBox = this._mkBox('uii-hoverbox');
     this._label    = document.createElement('div');
@@ -124,8 +139,9 @@ const UIInspector = {
 
   // ── 마우스 이동 → 호버 하이라이트 ─────────────────────────
   _handleMove(e) {
-    if (this._drag) { this._dragMove(e); return; }
-    if (this._isOwnUI(e.target)) { this._drawBox(this._hoverBox, null); this._drawLabel(null); return; }
+    if (this._panelDrag) { this._dragPanel(e); return; }
+    if (this._drag)      { this._dragMove(e); return; }
+    if (this._isPanel(e.target)) { this._drawBox(this._hoverBox, null); this._drawLabel(null); return; }
     const el = this._topGameEl(e.clientX, e.clientY);
     this._drawBox(this._hoverBox, el);
     this._drawLabel(el);
@@ -133,7 +149,7 @@ const UIInspector = {
 
   // ── 클릭 → 선택 + 스택 분석 ───────────────────────────────
   _handleClick(e) {
-    if (this._isOwnUI(e.target)) return;     // 패널 자체 클릭은 통과
+    if (this._isPanel(e.target)) return;     // 패널 자체 클릭은 통과
     e.preventDefault();
     e.stopPropagation();
     this._stack = this._stackAt(e.clientX, e.clientY);
@@ -152,13 +168,17 @@ const UIInspector = {
       .filter(el => !this._isOwnUI(el) && el !== document.documentElement && el !== document.body);
   },
 
+  // elementsFromPoint 결과에서 걸러낼 자체 레이어 (실드·패널·오버레이 등)
   _isOwnUI(el) {
-    return !!(el && el.closest && (
-      el.closest('.uii-panel') ||
-      el.classList?.contains('uii-overlay') ||
-      el.classList?.contains('uii-hoverbox') ||
-      el.classList?.contains('uii-size-label')
-    ));
+    if (!el || !el.classList) return false;
+    if (el.closest && el.closest('.uii-panel')) return true;
+    return ['uii-shield', 'uii-overlay', 'uii-hoverbox', 'uii-size-label']
+      .some(c => el.classList.contains(c));
+  },
+
+  // 패널 위인지 (패널 클릭/호버는 인스펙션에서 제외)
+  _isPanel(el) {
+    return !!(el && el.closest && el.closest('.uii-panel'));
   },
 
   _select(el) {
@@ -194,6 +214,15 @@ const UIInspector = {
     `;
     document.body.appendChild(p);
     this._panel = p;
+    this._applyPanelPos();
+
+    // 헤더 드래그로 패널 이동
+    p.querySelector('.uii-head').addEventListener('mousedown', (e) => {
+      if (e.target.closest('.uii-close')) return;
+      const r = p.getBoundingClientRect();
+      this._panelDrag = { x0: e.clientX, y0: e.clientY, left: r.left, top: r.top };
+      e.preventDefault();
+    });
 
     p.querySelector('.uii-close').addEventListener('click', () => this.disable());
     p.querySelector('.uii-actions').addEventListener('click', (e) => {
@@ -327,9 +356,34 @@ const UIInspector = {
       e.preventDefault();
       e.stopPropagation();
     };
-    window.addEventListener('mouseup', () => {
-      if (this._drag) { this._drag = null; this._renderEditor(); }
-    });
+    // 드래그 종료는 enable() 에서 등록한 공용 mouseup(_handleUp)이 처리
+  },
+
+  // ── 패널 이동/위치 영속 ───────────────────────────────────
+  _dragPanel(e) {
+    const pd = this._panelDrag;
+    const left = pd.left + (e.clientX - pd.x0);
+    const top  = pd.top  + (e.clientY - pd.y0);
+    this._panel.style.left  = left + 'px';
+    this._panel.style.top   = top + 'px';
+    this._panel.style.right = 'auto';
+  },
+
+  _applyPanelPos() {
+    try {
+      const pos = JSON.parse(localStorage.getItem(PANEL_POS_KEY) || 'null');
+      if (pos && Number.isFinite(pos.left) && Number.isFinite(pos.top)) {
+        this._panel.style.left  = pos.left + 'px';
+        this._panel.style.top   = pos.top + 'px';
+        this._panel.style.right = 'auto';
+      }
+    } catch {}
+  },
+
+  _savePanelPos() {
+    const r = this._panel?.getBoundingClientRect();
+    if (!r) return;
+    localStorage.setItem(PANEL_POS_KEY, JSON.stringify({ left: Math.round(r.left), top: Math.round(r.top) }));
   },
 
   _dragMove(e) {

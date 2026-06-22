@@ -4,6 +4,19 @@
 
 .uii-active { cursor: crosshair; }
 
+/* ── 캡처 실드 ───────────────────────────────────────
+   인스펙트 중 전체 화면을 덮어 마우스가 게임 요소에 실제로 닿지 않게 한다.
+   → 게임 버튼의 :hover/:active 효과가 뜨지 않고(요소 크기 변형으로 인한
+   하이라이트 어긋남 방지), elementsFromPoint 로는 실드를 걸러내 그 아래
+   실제 요소 스택을 분석한다. */
+.uii-shield {
+  position: fixed;
+  inset: 0;
+  z-index: 99990;
+  cursor: crosshair;
+  background: transparent;
+}
+
 /* ── 하이라이트 박스 ─────────────────────────────── */
 .uii-overlay,
 .uii-hoverbox {
@@ -69,6 +82,8 @@
   font-weight: 700;
   letter-spacing: 0.05em;
   position: sticky; top: 0;
+  cursor: move;
+  user-select: none;
 }
 .uii-close {
   background: none; border: none; color: #ff9cc0;
