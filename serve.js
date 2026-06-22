@@ -51,6 +51,8 @@ const WRITABLE = new Set([
   'js/data/items_structures.js',
   'js/data/legendaryItems.js',
   'js/data/items_environment.js',
+  // UI 인스펙터 레이아웃 오버라이드 (게임 내 편집 → 디스크 기록 → 커밋)
+  'css/ui-overrides.css',
 ]);
 
 const MIME = {
