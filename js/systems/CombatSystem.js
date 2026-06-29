@@ -34,6 +34,7 @@ import {
   useCombatItem as useCombatItemCommand,
 } from './combat/CombatSkillSystem.js';
 import {
+  compactEnemyFormation,
   createFormations,
   getRank,
   moveCombatant,
@@ -334,7 +335,7 @@ const CombatSystem = {
       combatants: combat?.combatants,
       skillsById: combat?.skillsById,
       validatePosition: (actorId, targetId, skill) => (
-        validateSkillPosition(combat?.formations, actorId, targetId, skill)
+        this._validateRankedSkillPosition(actorId, targetId, skill)
       ),
       getStamina: () => GameState.player?.stamina?.current ?? 10,
       getAmmo: (ammoId) => {
@@ -352,7 +353,7 @@ const CombatSystem = {
       applyEffect: (effect, actor, target, random) => (
         this._applyRankedEffect(effect, actor, target, random)
       ),
-      consumeCombatItem: (actor, itemInstanceId) => this._consumeRankedCombatItem(actor, itemInstanceId),
+      consumeCombatItem: (itemInstanceId, actor) => this._consumeRankedCombatItem(actor, itemInstanceId),
     };
   },
 
@@ -390,6 +391,7 @@ const CombatSystem = {
         if (status?.chance != null && random() >= status.chance) return { ok: true };
         if (!Array.isArray(target.statusEffects)) target.statusEffects = [];
         target.statusEffects.push({ ...status });
+        this._fx({ kind: 'status', targetId: target.id, statusId: status?.id ?? status?.name ?? 'effect' });
         return { ok: true };
       }
       case 'move': {
@@ -427,11 +429,162 @@ const CombatSystem = {
     return { ok: true };
   },
 
+  _rankedFailureMessage(reason) {
+    const messages = {
+      invalid_origin_rank: '현재 위치에서는 이 전투 행동을 사용할 수 없습니다. 이동으로 위치를 바꾸세요.',
+      invalid_target_rank: '대상의 위치가 이 전투 행동의 사거리 밖입니다.',
+      invalid_target_side: '이 전투 행동으로는 해당 대상을 지정할 수 없습니다.',
+      insufficient_stamina: '스태미나가 부족합니다.',
+      insufficient_ammo: '탄약이 부족합니다.',
+      insufficient_durability: '장비 내구도가 부족합니다.',
+      invalid_skill: '사용할 수 없는 전투 행동입니다.',
+      invalid_target: '대상을 다시 선택해야 합니다.',
+      invalid_actor: '현재 행동할 수 없는 전투원입니다.',
+    };
+    return messages[reason] ?? `전투 행동을 실행하지 못했습니다: ${reason ?? 'unknown'}`;
+  },
+
+  _pushCombatLog(entry) {
+    const combat = GameState.combat;
+    if (!combat?.log || typeof entry !== 'string' || entry.length === 0) return;
+    combat.log.push(entry);
+    if (combat.log.length > BALANCE.combat.combatLogMaxEntries) {
+      combat.log.splice(0, combat.log.length - BALANCE.combat.combatLogMaxEntries);
+    }
+  },
+
+  _rankedCombatantLabel(combatant) {
+    if (!combatant) return '대상';
+    if (combatant.sourceType === 'player') return GameState.player?.name ?? '생존자';
+    if (combatant.sourceType === 'companion') {
+      return I18n.itemName(
+        combatant.sourceId ?? combatant.id,
+        NPC_ITEMS?.[combatant.sourceId ?? combatant.id]?.name ?? combatant.id,
+      );
+    }
+    if (combatant.sourceType === 'enemy') {
+      const enemy = GameState.combat?.enemies?.[combatant.enemyIndex];
+      return I18n.enemyName(enemy?.id, enemy?.name ?? combatant.id);
+    }
+    return combatant.id ?? '대상';
+  },
+
+  _rankedSkillLabel(skill) {
+    return skill?.fallbackName ?? skill?.nameKey ?? skill?.id ?? '전투 행동';
+  },
+
+  _rankedActionMessage(skill, target, result, targetHpBefore) {
+    const skillLabel = this._rankedSkillLabel(skill);
+    const targetLabel = this._rankedCombatantLabel(target);
+    if (result?.hit === false) return `${skillLabel}: 빗나감`;
+
+    const targetHpAfter = target?.hp;
+    if (Number.isFinite(targetHpBefore) && Number.isFinite(targetHpAfter)) {
+      const delta = targetHpBefore - targetHpAfter;
+      if (delta > 0) return `${skillLabel}: ${targetLabel}에게 ${delta} 피해`;
+      if (delta < 0) return `${skillLabel}: ${targetLabel} ${Math.abs(delta)} 회복`;
+    }
+
+    const effectTypes = new Set((skill?.effects ?? []).map(effect => effect?.type));
+    if (effectTypes.has('move')) return `${skillLabel}: 위치 이동`;
+    if (effectTypes.has('guard')) return `${skillLabel}: 방어 태세`;
+    if (effectTypes.has('flee')) return `${skillLabel}: 도주 시도`;
+    return `${skillLabel}: 실행`;
+  },
+
+  findActiveSkillByEffect(effectType) {
+    const combat = GameState.combat;
+    const active = combat?.combatants?.[combat.activeCombatantId];
+    if (
+      combat?.phase !== 'await_ally_input'
+      || active?.side !== 'ally'
+      || typeof effectType !== 'string'
+    ) {
+      return null;
+    }
+
+    return (active.skillIds ?? [])
+      .map(skillId => combat.skillsById?.[skillId])
+      .find(skill => (skill?.effects ?? []).some(effect => effect?.type === effectType))
+      ?? null;
+  },
+
+  _autoTargetForSkill(skill, active) {
+    const combat = GameState.combat;
+    if (!skill || !active) return null;
+    const targetSide = skill.target?.side ?? 'enemy';
+    const ranks = Array.isArray(skill.target?.ranks) ? skill.target.ranks : [];
+
+    const candidates = Object.values(combat?.combatants ?? {})
+      .filter(combatant => (
+        combatant?.side === targetSide
+        && combatant.dead !== true
+        && (combatant.hp ?? 0) > 0
+        && ranks.includes(getRank(combat?.formations, combatant.id))
+      ));
+
+    if (targetSide === active.side) {
+      return candidates.find(combatant => combatant.id === active.id)?.id
+        ?? candidates[0]?.id
+        ?? null;
+    }
+
+    return candidates[0]?.id ?? null;
+  },
+
+  useActiveSkillByEffect(effectType) {
+    const combat = GameState.combat;
+    const active = combat?.combatants?.[combat.activeCombatantId];
+    const skill = this.findActiveSkillByEffect(effectType);
+    if (!skill || !active) {
+      this._pushCombatLog('현재 사용할 수 있는 해당 전투 행동이 없습니다.');
+      return { ok: false, reason: 'invalid_skill' };
+    }
+
+    const targetId = this._autoTargetForSkill(skill, active);
+    if (!targetId) {
+      this._pushCombatLog(this._rankedFailureMessage('invalid_target'));
+      return { ok: false, reason: 'invalid_target' };
+    }
+
+    if (!this.selectSkill(skill.id) || !this.selectTarget(targetId)) {
+      this.cancelSelection();
+      return { ok: false, reason: 'invalid_context' };
+    }
+
+    return this.confirmAction();
+  },
+
   _syncRankedCombatants() {
     const combat = GameState.combat;
     if (combat?.combatants) {
       syncCombatantsToGameState(GameState, combat.combatants);
+      this._compactRankedEnemyFormation();
     }
+  },
+
+  _compactRankedEnemyFormation() {
+    const combat = GameState.combat;
+    if (!combat?.formations || !combat?.combatants) return false;
+
+    const changed = compactEnemyFormation(combat.formations, combat.combatants);
+    if (!changed) return false;
+
+    for (const combatantId of combat.formations.enemy ?? []) {
+      const combatant = combat.combatants?.[combatantId];
+      if (!combatant || combatant.sourceType !== 'enemy') continue;
+      const enemy = combat.enemies?.[combatant.enemyIndex];
+      if (!enemy) continue;
+      const rank = getRank(combat.formations, combatantId);
+      enemy.row = rank !== null && rank <= 2 ? 'front' : 'back';
+    }
+
+    return true;
+  },
+
+  _validateRankedSkillPosition(actorId, targetId, skill) {
+    this._compactRankedEnemyFormation();
+    return validateSkillPosition(GameState.combat?.formations, actorId, targetId, skill);
   },
 
   _syncRankedTargetToLegacy(target) {
@@ -448,6 +601,7 @@ const CombatSystem = {
     if (target.sourceType === 'enemy') {
       const enemy = GameState.combat?.enemies?.[target.enemyIndex];
       if (enemy) enemy.currentHp = Math.max(0, target.hp ?? enemy.currentHp ?? 0);
+      this._compactRankedEnemyFormation();
     }
   },
 
@@ -478,6 +632,9 @@ const CombatSystem = {
       return { ok: false, reason: 'invalid_context' };
     }
 
+    const skill = combat.skillsById?.[combat.selectedSkillId];
+    const target = combat.combatants?.[combat.selectedTargetId];
+    const targetHpBefore = target?.hp;
     const result = executeSkillCommand(this._commandContext(), {
       actorId: combat.activeCombatantId,
       skillId: combat.selectedSkillId,
@@ -485,6 +642,7 @@ const CombatSystem = {
     });
 
     if (result.ok) {
+      this._pushCombatLog(this._rankedActionMessage(skill, target, result, targetHpBefore));
       combat.actionSequence = (combat.actionSequence ?? 0) + 1;
       if (this._allEnemiesDead()) {
         this._resolveVictory();
@@ -496,6 +654,15 @@ const CombatSystem = {
       }
       this.advanceTurn();
       this.processUntilAllyTurn();
+    } else {
+      combat.lastActionFailure = result.reason ?? null;
+      this._pushCombatLog(this._rankedFailureMessage(result.reason));
+      if (result.turnConsumed) {
+        this.advanceTurn();
+        this.processUntilAllyTurn();
+      } else {
+        this.cancelSelection();
+      }
     }
 
     return result;
@@ -509,6 +676,21 @@ const CombatSystem = {
     );
     if (result.ok && result.turnConsumed) this.advanceTurn();
     return result;
+  },
+
+  attemptFlee() {
+    const combat = GameState.combat;
+    const active = combat?.combatants?.[combat.activeCombatantId];
+    if (combat?.phase !== 'await_ally_input' || active?.side !== 'ally') {
+      return { ok: false, reason: 'not_active_actor' };
+    }
+
+    combat.selectedSkillId = null;
+    combat.selectedTargetId = null;
+    this._fleeAction();
+    this._syncLegacyAlliesToRankedCombatants();
+    if (combat.active) this.beginActiveTurn();
+    return { ok: true, turnConsumed: true, outcome: combat.outcome ?? null };
   },
 
   advanceTurn() {

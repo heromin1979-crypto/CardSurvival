@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  compactEnemyFormation,
   createFormations,
   getRank,
   moveCombatant,
@@ -120,6 +121,51 @@ describe('createFormations', () => {
       ' ',
       'back_b',
     ]);
+  });
+});
+
+describe('compactEnemyFormation', () => {
+  it('pulls surviving back-rank enemies forward when front ranks are empty', () => {
+    const formations = {
+      ally: [null, null, null, 'player'],
+      enemy: [null, null, 'enemy_back', null],
+    };
+    const combatants = {
+      enemy_back: { id: 'enemy_back', side: 'enemy', hp: 40, dead: false },
+    };
+
+    expect(compactEnemyFormation(formations, combatants)).toBe(true);
+    expect(formations.enemy).toEqual(['enemy_back', null, null, null]);
+    expect(getRank(formations, 'enemy_back')).toBe(1);
+  });
+
+  it('removes dead enemies while preserving living enemy order', () => {
+    const formations = {
+      ally: [null, null, null, 'player'],
+      enemy: ['dead_front', null, 'back_a', 'back_b'],
+    };
+    const combatants = {
+      dead_front: { id: 'dead_front', side: 'enemy', hp: 0, dead: true },
+      back_a: { id: 'back_a', side: 'enemy', hp: 15, dead: false },
+      back_b: { id: 'back_b', side: 'enemy', hp: 20, dead: false },
+    };
+
+    expect(compactEnemyFormation(formations, combatants)).toBe(true);
+    expect(formations.enemy).toEqual(['back_a', 'back_b', null, null]);
+  });
+
+  it('does not report movement when the enemy formation is already compact', () => {
+    const formations = {
+      ally: [null, null, null, 'player'],
+      enemy: ['front_a', 'front_b', null, null],
+    };
+    const combatants = {
+      front_a: { id: 'front_a', side: 'enemy', hp: 10, dead: false },
+      front_b: { id: 'front_b', side: 'enemy', hp: 10, dead: false },
+    };
+
+    expect(compactEnemyFormation(formations, combatants)).toBe(false);
+    expect(formations.enemy).toEqual(['front_a', 'front_b', null, null]);
   });
 });
 

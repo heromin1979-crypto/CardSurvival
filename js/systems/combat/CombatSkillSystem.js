@@ -228,39 +228,55 @@ function getEquipmentIds(combatant, gs) {
   return [];
 }
 
+function isAttackSkill(skill) {
+  return (skill?.effects ?? []).some(effect => effect?.type === 'damage');
+}
+
 export function buildAllyLoadout(combatant, gs) {
-  const characterSkills = getCharacterSkillIds(combatant, gs)
+  if (combatant?.sourceType === 'companion') {
+    return getCharacterSkillIds(combatant, gs)
+      .map(getCombatSkill)
+      .filter(Boolean)
+      .map(cloneValue);
+  }
+
+  const characterUtilitySkills = getCharacterSkillIds(combatant, gs)
     .map(getCombatSkill)
     .filter(Boolean)
+    .filter(skill => !isAttackSkill(skill))
     .map(cloneValue);
 
-  if (typeof gs?.getCardDef !== 'function') return characterSkills;
-
   const equipmentSkills = [];
-  const seen = new Set();
-  for (const instanceId of getEquipmentIds(combatant, gs)) {
-    if (
-      equipmentSkills.length >= 2
-      || typeof instanceId !== 'string'
-      || instanceId.length === 0
-      || seen.has(instanceId)
-    ) {
-      continue;
-    }
-    seen.add(instanceId);
+  if (typeof gs?.getCardDef === 'function') {
+    const seen = new Set();
+    for (const instanceId of getEquipmentIds(combatant, gs)) {
+      if (
+        equipmentSkills.length >= 2
+        || typeof instanceId !== 'string'
+        || instanceId.length === 0
+        || seen.has(instanceId)
+      ) {
+        continue;
+      }
+      seen.add(instanceId);
 
-    try {
-      const skill = buildEquipmentSkill(
-        instanceId,
-        gs.getCardDef(instanceId),
-      );
-      if (skill) equipmentSkills.push(skill);
-    } catch {
-      continue;
+      try {
+        const skill = buildEquipmentSkill(
+          instanceId,
+          gs.getCardDef(instanceId),
+        );
+        if (skill) equipmentSkills.push(skill);
+      } catch {
+        continue;
+      }
     }
   }
 
-  return [...characterSkills, ...equipmentSkills];
+  const attackSkills = equipmentSkills.length > 0
+    ? equipmentSkills
+    : [getCombatSkill('basic_strike')].filter(Boolean).map(cloneValue);
+
+  return [...attackSkills, ...characterUtilitySkills];
 }
 
 export function validateSkillCommand(context, command) {

@@ -103,6 +103,30 @@ export function moveCombatant(formations, combatantId, destinationRank) {
   return true;
 }
 
+function isLivingEnemyCombatant(combatant) {
+  return combatant?.side === 'enemy'
+    && combatant.dead !== true
+    && (combatant.hp ?? 0) > 0;
+}
+
+export function compactEnemyFormation(formations, combatants = {}) {
+  if (!formations || !Array.isArray(formations.enemy)) return false;
+
+  const previous = toDenseFormation(formations.enemy);
+  const livingEnemies = previous.filter((combatantId) => {
+    const combatant = combatants?.[combatantId];
+    return isLivingEnemyCombatant(combatant);
+  });
+  const next = [
+    ...livingEnemies.slice(0, FORMATION_SIZE),
+    ...Array(FORMATION_SIZE).fill(null),
+  ].slice(0, FORMATION_SIZE);
+
+  const changed = previous.some((combatantId, index) => combatantId !== next[index]);
+  if (changed) formations.enemy = next;
+  return changed;
+}
+
 export function validateSkillPosition(
   formations,
   actorId,

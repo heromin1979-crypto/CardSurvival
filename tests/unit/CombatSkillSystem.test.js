@@ -811,19 +811,20 @@ describe('buildEquipmentSkill', () => {
 });
 
 describe('buildAllyLoadout', () => {
-  it('returns three player skills followed by up to two equipment skills', () => {
+  it('uses equipped weapons as the player attacks before non-attack character skills', () => {
     const gs = makeGameState();
 
     const loadout = buildAllyLoadout({ sourceType: 'player' }, gs);
 
     expect(loadout.map((skill) => skill.id)).toEqual([
-      ...CHARACTER_COMBAT_LOADOUTS.doctor,
       'equipment:knife_instance',
       'equipment:pistol_instance',
+      'doctor_triage',
+      'doctor_diagnose',
     ]);
   });
 
-  it('returns three companion skills followed by companion equipment', () => {
+  it('uses the companion combat profile instead of equipment attacks', () => {
     const gs = makeGameState();
 
     const loadout = buildAllyLoadout({
@@ -831,10 +832,65 @@ describe('buildAllyLoadout', () => {
       sourceId: 'npc_nurse',
     }, gs);
 
-    expect(loadout.map((skill) => skill.id)).toEqual([
-      ...COMPANION_COMBAT_LOADOUTS.npc_nurse,
+    expect(loadout.map((skill) => skill.id)).toEqual(COMPANION_COMBAT_LOADOUTS.npc_nurse);
+  });
+
+  it('gives combat-flavored attacks to companions that have no equipment concept', () => {
+    const gs = makeGameState();
+    gs.npcs.states = {};
+
+    expect(buildAllyLoadout({
+      sourceType: 'companion',
+      sourceId: 'npc_dog',
+    }, gs).map((skill) => skill.id)).toEqual([
+      'dog_bite',
+      'dog_guard',
+      'dog_track_weakness',
+    ]);
+
+    expect(buildAllyLoadout({
+      sourceType: 'companion',
+      sourceId: 'npc_soldier_deserter',
+    }, gs).map((skill) => skill.id)).toEqual([
+      'deserter_rifle_shot',
+      'deserter_covering_fire',
+      'deserter_reposition',
+    ]);
+  });
+
+  it('does not grant soldier shot skills without an equipped firearm', () => {
+    const gs = makeGameState();
+    gs.player.characterId = 'soldier';
+    gs.player.equipped = {};
+
+    expect(buildAllyLoadout({ sourceType: 'player' }, gs)
+      .map((skill) => skill.id)).toEqual([
+      'basic_strike',
+      'soldier_tactical_shift',
+    ]);
+  });
+
+  it('uses the equipped melee weapon attack instead of soldier shot skills', () => {
+    const gs = makeGameState();
+    gs.player.characterId = 'soldier';
+    gs.player.equipped = { weapon_main: 'knife_instance' };
+
+    expect(buildAllyLoadout({ sourceType: 'player' }, gs)
+      .map((skill) => skill.id)).toEqual([
       'equipment:knife_instance',
+      'soldier_tactical_shift',
+    ]);
+  });
+
+  it('uses the equipped firearm attack instead of innate soldier shot skills', () => {
+    const gs = makeGameState();
+    gs.player.characterId = 'soldier';
+    gs.player.equipped = { weapon_main: 'pistol_instance' };
+
+    expect(buildAllyLoadout({ sourceType: 'player' }, gs)
+      .map((skill) => skill.id)).toEqual([
       'equipment:pistol_instance',
+      'soldier_tactical_shift',
     ]);
   });
 
@@ -869,35 +925,47 @@ describe('buildAllyLoadout', () => {
     gs.player.equipped.weapon_sub = 'knife_instance';
 
     expect(buildAllyLoadout({ sourceType: 'player' }, gs))
-      .toHaveLength(4);
+      .toHaveLength(3);
 
     gs.player.equipped.weapon_main = 'missing_instance';
     gs.player.equipped.weapon_sub = null;
 
-    expect(buildAllyLoadout({ sourceType: 'player' }, gs))
-      .toHaveLength(3);
+    expect(buildAllyLoadout({ sourceType: 'player' }, gs)
+      .map((skill) => skill.id)).toEqual([
+      'basic_strike',
+      'doctor_triage',
+      'doctor_diagnose',
+    ]);
   });
 
-  it('returns character skills when getCardDef is missing or throws', () => {
+  it('returns fallback attack and non-attack character skills when getCardDef is missing or throws', () => {
     const withoutGetter = makeGameState();
     delete withoutGetter.getCardDef;
 
-    expect(buildAllyLoadout({ sourceType: 'player' }, withoutGetter))
-      .toHaveLength(3);
+    expect(buildAllyLoadout({ sourceType: 'player' }, withoutGetter)
+      .map((skill) => skill.id)).toEqual([
+      'basic_strike',
+      'doctor_triage',
+      'doctor_diagnose',
+    ]);
 
     const throwingGetter = makeGameState();
     throwingGetter.getCardDef = () => {
       throw new Error('broken registry');
     };
 
-    expect(buildAllyLoadout({ sourceType: 'player' }, throwingGetter))
-      .toHaveLength(3);
+    expect(buildAllyLoadout({ sourceType: 'player' }, throwingGetter)
+      .map((skill) => skill.id)).toEqual([
+      'basic_strike',
+      'doctor_triage',
+      'doctor_diagnose',
+    ]);
   });
 
   it('isolates every returned loadout from skill data and other calls', () => {
     const first = buildAllyLoadout({ sourceType: 'player' }, makeGameState());
     const second = buildAllyLoadout({ sourceType: 'player' }, makeGameState());
-    const original = COMBAT_SKILLS[CHARACTER_COMBAT_LOADOUTS.doctor[0]];
+    const original = buildEquipmentSkill('knife_instance', makeGameState().getCardDef('knife_instance'));
 
     first[0].usableFrom.push(99);
     first[0].target.ranks.push(99);
