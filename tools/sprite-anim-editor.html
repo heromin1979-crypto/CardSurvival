@@ -167,6 +167,7 @@
           <label>X</label><input type="number" id="dx" value="0" style="width:64px" />
           <label>Y</label><input type="number" id="dy" value="0" style="width:64px" />
           <label style="margin-left:auto"><input type="checkbox" id="rowMove" /> 행 전체 이동</label>
+          <button id="fitRow" class="ghost" title="현재 행 콘텐츠를 셀 안에 중앙 정렬 — 총구 화염 등 한쪽 돌출이 잘리는 것 방지">행 셀맞춤</button>
           <button id="nudgeReset" class="ghost">이 프레임 0</button>
         </div>
         <div class="hint"><b>행 전체 이동</b>을 켜면 드래그·방향키·숫자가 현재 행 6프레임에 함께 적용됩니다(예: 공격 행 전체를 왼쪽으로). 끄면 선택 프레임만. <kbd>←↑↓→</kbd>(<kbd>Shift</kbd>=10px), <kbd>[</kbd><kbd>]</kbd> 프레임 이동, <kbd>Space</kbd> 재생.</div>
@@ -650,6 +651,26 @@ function syncRowControls() {
 }
 function renderAll() { renderSheet(); renderPreview(); renderStrip(); Array.from($('rowTabs').children).forEach((el, i) => el.classList.toggle('active', i === S.rowTab)); }
 
+// 현재 행 콘텐츠를 셀 안에 중앙 정렬 — 한쪽으로 뻗은 동작(총구 화염 등)이 셀 경계를
+// 넘어 잘리는 걸 막는다. 행 전체에 동일한 시프트를 더하므로 프레임 간 떨림이 없다.
+function fitRowInCell() {
+  if (!S.keyedCanvas) return;
+  const r = Math.floor(S.sel / S.cols), cw = cellW();
+  let maxR = -Infinity, minL = Infinity, any = false;
+  for (let c = 0; c < S.cols; c++) {
+    const i = r * S.cols + c, f = S.frames[i]; if (!f.box) continue; any = true;
+    const { ax } = srcAnchor(i);
+    const destL = cw / 2 + f.dx + (f.box.x0 - ax);
+    const destR = cw / 2 + f.dx + (f.box.x1 - ax);
+    if (destR > maxR) maxR = destR; if (destL < minL) minL = destL;
+  }
+  if (!any) { toast('이 행에 감지된 프레임이 없습니다'); return; }
+  const s = Math.round((cw - maxR - minL) / 2); // 콘텐츠 전체 범위를 셀 중앙으로
+  if (s) for (let c = 0; c < S.cols; c++) S.frames[r * S.cols + c].dx += s;
+  selectFrame(S.sel);
+  toast(s ? `행을 셀 중앙으로 맞춤 (${s > 0 ? '+' : ''}${s}px)` : '이미 셀 안에 맞음');
+}
+
 // ── 내보내기 ────────────────────────────────────────────────
 function buildExportCanvas() {
   const out = document.createElement('canvas'); out.width = S.W; out.height = S.H;
@@ -751,6 +772,7 @@ $('durRange').oninput = (e) => { S.rowDur[S.rowTab] = +e.target.value; $('durV')
 $('dx').oninput = (e) => { const v = parseInt(e.target.value) || 0, d = v - S.frames[S.sel].dx; for (const i of targetFrames()) S.frames[i].dx += d; renderAll(); };
 $('dy').oninput = (e) => { const v = parseInt(e.target.value) || 0, d = v - S.frames[S.sel].dy; for (const i of targetFrames()) S.frames[i].dy += d; renderAll(); };
 $('rowMove').onchange = (e) => { S.rowMove = e.target.checked; };
+$('fitRow').onclick = fitRowInCell;
 $('nudgeReset').onclick = () => { for (const i of targetFrames()) { S.frames[i].dx = 0; S.frames[i].dy = 0; } selectFrame(S.sel); };
 
 $('saveServer').onclick = saveToServer;
