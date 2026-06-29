@@ -81,7 +81,7 @@ function readBody(req) {
     let data = '';
     req.on('data', (c) => {
       data += c;
-      if (data.length > 8 * 1024 * 1024) { reject(new Error('body too large')); req.destroy(); }
+      if (data.length > 32 * 1024 * 1024) { reject(new Error('body too large')); req.destroy(); }
     });
     req.on('end', () => {
       try { resolve(data ? JSON.parse(data) : {}); }
@@ -180,6 +180,27 @@ async function handleApi(req, res, urlPath) {
       sendJSON(res, 200, { baselines });
       return;
     }
+    if (urlPath === '/api/sheets') {
+      // 스프라이트 애니 에디터 — 전투 시트 목록 (assets/images/combat/spritesheets/**.png)
+      const dir = path.join(ROOT, 'assets', 'images', 'combat', 'spritesheets');
+      const out = [];
+      const walk = (d) => {
+        let ents = [];
+        try { ents = fs.readdirSync(d, { withFileTypes: true }); } catch (e) { return; }
+        for (const e of ents) {
+          const full = path.join(d, e.name);
+          if (e.isDirectory()) walk(full);
+          else if (e.isFile() && path.extname(e.name).toLowerCase() === '.png') {
+            const rel = path.relative(ROOT, full).split(path.sep).join('/');
+            out.push({ path: '/' + rel, name: e.name, isSrc: /_src\.png$/i.test(e.name) });
+          }
+        }
+      };
+      walk(dir);
+      out.sort((a, b) => a.path.localeCompare(b.path));
+      sendJSON(res, 200, { ok: true, sheets: out });
+      return;
+    }
     sendJSON(res, 404, { error: 'unknown api' });
     return;
   }
@@ -250,6 +271,48 @@ async function handleApi(req, res, urlPath) {
       catch (e) { sendJSON(res, 500, { error: `기록 실패 ${rel}: ${e.message}` }); return; }
     }
     sendJSON(res, 200, { written });
+    return;
+  }
+
+  if (urlPath === '/api/save-sheet') {
+    // 스프라이트 애니 에디터 — 정렬된 시트 PNG 저장 (원본 _src 백업 + manifest 갱신)
+    let body;
+    try { body = await readBody(req); } catch (e) { sendJSON(res, 400, { error: `잘못된 요청: ${e.message}` }); return; }
+    const sheetDir = path.join(ROOT, 'assets', 'images', 'combat', 'spritesheets');
+    const clean = String(body.path || '').replace(/^\/+/, '').replace(/\\/g, '/');
+    if (clean.includes('..')) { sendJSON(res, 400, { error: 'bad path' }); return; }
+    const target = path.join(ROOT, clean);
+    if (!target.startsWith(sheetDir) || path.extname(target).toLowerCase() !== '.png') {
+      sendJSON(res, 400, { error: 'path must be a .png under assets/images/combat/spritesheets/' }); return;
+    }
+    const m = String(body.dataUrl || '').match(/^data:image\/png;base64,(.+)$/);
+    if (!m) { sendJSON(res, 400, { error: 'dataUrl (data:image/png;base64,...) required' }); return; }
+    const buf = Buffer.from(m[1], 'base64');
+    try {
+      // 원본을 _src.png로 1회 백업 (게임 시트를 처음 덮어쓸 때만)
+      if (!/_src\.png$/i.test(target) && fs.existsSync(target)) {
+        const srcSib = target.replace(/\.png$/i, '_src.png');
+        if (!fs.existsSync(srcSib)) { try { fs.copyFileSync(target, srcSib); } catch (e) { /* ignore */ } }
+      }
+      fs.writeFileSync(target, buf);
+      let manifestWritten = false;
+      if (body.meta && Number(body.meta.cols) > 0) {
+        const manifestPath = path.join(sheetDir, 'manifest.json');
+        let manifest = {};
+        try { manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8')); } catch (e) { /* new */ }
+        const name = path.basename(target).replace(/_src\.png$/i, '.png');
+        manifest[name] = {
+          cols: Number(body.meta.cols),
+          rows: Number(body.meta.rows) || 4,
+          ...(Array.isArray(body.meta.rowFrames) ? { rowFrames: body.meta.rowFrames } : {}),
+        };
+        fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
+        manifestWritten = true;
+      }
+      sendJSON(res, 200, { ok: true, bytes: buf.length, path: '/' + path.relative(ROOT, target).split(path.sep).join('/'), manifest: manifestWritten });
+    } catch (e) {
+      sendJSON(res, 500, { error: `기록 실패: ${e.message}` });
+    }
     return;
   }
 
