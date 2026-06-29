@@ -6,6 +6,7 @@
 //  - _advanceTurn(combatLike, npcStates): 다음 살아있는 entry로 이동, roundNumber 증가
 import { describe, it, expect } from 'vitest';
 import CombatSystem from '../../js/systems/CombatSystem.js';
+import { buildInitiativeQueue } from '../../js/systems/combat/InitiativeSystem.js';
 
 function makeCombat({ enemies = [], ...rest } = {}) {
   return {
@@ -171,5 +172,23 @@ describe('CombatSystem._currentEntry', () => {
   it('빈 큐 → null', () => {
     const combat = makeCombat({ turnQueue: [], activeIdx: 0 });
     expect(CombatSystem._currentEntry(combat)).toBeNull();
+  });
+});
+
+describe('InitiativeSystem staged compatibility', () => {
+  it('builds initiative without changing the legacy turn queue contract', () => {
+    const combat = makeCombat({ enemies: [makeEnemy()] });
+
+    expect(CombatSystem._buildTurnQueue(combat, [])).toEqual([
+      { type: 'player', order: 0 },
+      { type: 'enemy', enemyIdx: 0, order: 1 },
+    ]);
+    expect(buildInitiativeQueue({
+      player: { id: 'player', speed: 5 },
+      'enemy:0': { id: 'enemy:0', speed: 4 },
+    }, () => 0, 3)).toEqual([
+      { combatantId: 'player', initiative: 5 },
+      { combatantId: 'enemy:0', initiative: 4 },
+    ]);
   });
 });

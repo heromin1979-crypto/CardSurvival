@@ -10,6 +10,9 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import CombatUI     from '../../js/ui/CombatUI.js';
 import CombatSystem from '../../js/systems/CombatSystem.js';
 import GameState    from '../../js/core/GameState.js';
+import BALANCE from '../../js/data/gameBalance.js';
+import { buildCombatants } from '../../js/systems/combat/CombatantAdapter.js';
+import { buildInitiativeQueue } from '../../js/systems/combat/InitiativeSystem.js';
 
 function setupDom() {
   document.body.innerHTML = `<div id="screen-combat"></div>`;
@@ -197,5 +200,43 @@ describe('Phase 1 end-to-end — _setupCombat 후 큐가 초기화됨', () => {
     expect(GameState.combat.turnQueue.length).toBe(3);
     const ids = GameState.combat.turnQueue.filter(e => e.type === 'companion').map(e => e.id);
     expect(ids).toEqual(['npc_nurse']);
+  });
+});
+
+describe('InitiativeSystem integration contract', () => {
+  it('builds a round queue from adapted combatants and balance roll maximum', () => {
+    const gs = {
+      player: { hp: { current: 100, max: 100 } },
+      companions: ['npc_nurse'],
+      npcs: {
+        states: {
+          npc_nurse: {
+            hp: 40,
+            maxHp: 50,
+            isCompanion: true,
+            combatSpeed: 7,
+          },
+        },
+      },
+    };
+    const enemies = [{
+      id: 'zombie',
+      currentHp: 30,
+      maxHp: 30,
+      speed: 4,
+      _statusEffects: [],
+    }];
+    const combatants = buildCombatants(gs, enemies);
+
+    expect(BALANCE.combat.initiativeRollMax).toBe(3);
+    expect(buildInitiativeQueue(
+      combatants,
+      () => 0,
+      BALANCE.combat.initiativeRollMax,
+    )).toEqual([
+      { combatantId: 'npc_nurse', initiative: 7 },
+      { combatantId: 'player', initiative: 5 },
+      { combatantId: 'enemy:0', initiative: 4 },
+    ]);
   });
 });

@@ -14,11 +14,11 @@ function setupDom() {
   document.body.innerHTML = `
     <div id="screen-combat">
       <div class="combat-visual"></div>
-      <div class="cv-player"></div>
-      <div class="cv-enemy-sprite" data-idx="0"></div>
-      <div class="cv-enemy-sprite" data-idx="1"></div>
-      <div class="cv-ally" data-companion-id="npc_nurse" style="position:relative;"></div>
-      <div class="cv-ally" data-companion-id="npc_soldier" style="position:relative;"></div>
+      <div class="cv-player" data-combatant-id="player" data-sprite-id="player_rifle" data-motion-state="idle"></div>
+      <div class="cv-enemy-sprite" data-idx="0" data-combatant-id="enemy:0" data-sprite-id="zombie_bare" data-motion-state="idle"></div>
+      <div class="cv-enemy-sprite" data-idx="1" data-combatant-id="enemy:1" data-sprite-id="zombie_rage" data-motion-state="idle"></div>
+      <div class="cv-ally" data-companion-id="npc_nurse" data-combatant-id="ally:npc_nurse" style="position:relative;"></div>
+      <div class="cv-ally" data-companion-id="npc_soldier" data-combatant-id="ally:npc_soldier" style="position:relative;"></div>
     </div>
   `;
   CombatUI._screen = document.getElementById('screen-combat');
@@ -35,6 +35,8 @@ describe('_playFx — 개별 연출 분기', () => {
     expect(document.querySelector('.cv-player').classList.contains('attacking')).toBe(true);
     expect(document.querySelector('.cv-player').classList.contains('motion-knife-slash')).toBe(true);
     expect(enemy.classList.contains('motion-zombie-hit')).toBe(true);
+    expect(document.querySelector('.cv-player').dataset.motionState).toBe('attack');
+    expect(enemy.dataset.motionState).toBe('hit');
     expect(enemy.querySelector('.cv-fx-slash')).not.toBeNull();
     expect(document.querySelector('.combat-visual').classList.contains('camera-ally-strike')).toBe(true);
     expect(document.querySelector('.combat-visual').classList.contains('camera-work-active')).toBe(true);
@@ -195,6 +197,13 @@ describe('_playFx — 개별 연출 분기', () => {
 
     CombatUI._playFx({ kind: 'companionSkill', npcId: 'npc_nurse', skillId: 'nurse_triage' });
     expect(document.querySelector('.cv-ally[data-companion-id="npc_nurse"]').classList.contains('motion-heal-pulse')).toBe(true);
+  });
+
+  it('status → combatant id 대상에 상태이상 오버레이 + glow', () => {
+    CombatUI._playFx({ kind: 'status', targetId: 'enemy:0', statusId: 'bleed' });
+    const enemy = document.querySelector('.cv-enemy-sprite[data-idx="0"]');
+    expect(enemy.classList.contains('glowing')).toBe(true);
+    expect(enemy.querySelector('.cv-fx-status-bleed')).not.toBeNull();
   });
 
   it('존재하지 않는 npcId/idx → 안전하게 no-op (에러 없음)', () => {

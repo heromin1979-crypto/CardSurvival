@@ -8,6 +8,10 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import CombatSystem from '../../js/systems/CombatSystem.js';
 import GameState    from '../../js/core/GameState.js';
+import {
+  createFormations,
+  getRank,
+} from '../../js/systems/combat/FormationSystem.js';
 
 function makePlayer({ isRanged = false, ammo = 5 } = {}) {
   GameState.player.hp = { current: 100, max: 100 };
@@ -173,5 +177,25 @@ describe('후열 근접 적 — 전진 행동', () => {
     const intent = CombatSystem._decideNextIntent(enemy, combat, GameState);
     expect(intent.action).toBe('advance');
     expect(intent.iconEmoji).toBe('👣');
+  });
+});
+
+describe('legacy row compatibility with four-rank formations', () => {
+  it('converts current and legacy enemy positions into formation ranks', () => {
+    const front = makeEnemy({ id: 'front', row: 'front' });
+    const back = { id: 'back', position: 'back' };
+    const formations = createFormations(['player'], [
+      { combatantId: front.id, row: CombatSystem.rowOf(front) },
+      { combatantId: back.id, row: CombatSystem.rowOf(back) },
+    ]);
+
+    expect(formations).toEqual({
+      ally: [null, null, null, 'player'],
+      enemy: ['front', null, 'back', null],
+    });
+    expect(CombatSystem.rowOf(front)).toBe('front');
+    expect(CombatSystem.rowOf(back)).toBe('back');
+    expect(getRank(formations, front.id)).toBe(1);
+    expect(getRank(formations, back.id)).toBe(3);
   });
 });

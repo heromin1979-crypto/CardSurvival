@@ -282,6 +282,8 @@ export const ko = {
   'combat.nightPenalty': '야간 전투 — 명중률 감소',
   'combat.companionAtk': '동행 공격',
   'combat.companionHeal':'동행 치료',
+  'combat.relationshipSupport': '{name}의 응원이 긴장을 낮췄다.',
+  'combat.relationshipInterfere': '{name}의 흔들림이 긴장을 높였다.',
   'combat.item':         '아이템',
 
   // ── StatRenderer ────────────────────────────────────────────
@@ -557,6 +559,21 @@ export const ko = {
   'combatSys.playerMove':          '[이동] {rank}로 이동했다.',
   'combat.rankFront':              '전열',
   'combat.rankBack':               '후열',
+  'combat.deathsDoor':             '죽음의 문턱',
+  'combat.deathResist':            '죽음 저항',
+  'combat.stressResolve':          '결의',
+  'combat.stressMeltdown':         '붕괴',
+  'combat.token.block':            '방어',
+  'combat.token.strength':         '힘',
+  'combat.token.vulnerable':       '취약',
+  'combat.token.dodge':            '회피',
+  'combat.token.improvised':       '즉흥 무기',
+  'combat.token.accuracy':         '정확도',
+  'combat.token.focus':            '집중',
+  'combat.token.power':            '위력',
+  'combat.token.taunted':          '도발',
+  'combat.token.hesitation':       '망설임',
+  'combat.token.speed':            '속도',
 
   // ── CraftSystem ─────────────────────────────────────────────
   'craftSys.queueFull':      '작업 큐가 가득 참',
@@ -1162,6 +1179,8 @@ export const en = {
   'combat.nightPenalty': 'Night Combat — accuracy reduced',
   'combat.companionAtk': 'Companion Attack',
   'combat.companionHeal':'Companion Heal',
+  'combat.relationshipSupport': "{name}'s support eased the pressure.",
+  'combat.relationshipInterfere': "{name}'s hesitation raised the pressure.",
   'combat.item':        'Item',
 
   // ── StatRenderer ────────────────────────────────────────────
@@ -1437,6 +1456,21 @@ export const en = {
   'combatSys.playerMove':          '[Move] Moved to {rank}.',
   'combat.rankFront':              'Front',
   'combat.rankBack':               'Back',
+  'combat.deathsDoor':             "Death's Door",
+  'combat.deathResist':            'Death Resist',
+  'combat.stressResolve':          'Resolve',
+  'combat.stressMeltdown':         'Meltdown',
+  'combat.token.block':            'Block',
+  'combat.token.strength':         'Strength',
+  'combat.token.vulnerable':       'Vulnerable',
+  'combat.token.dodge':            'Dodge',
+  'combat.token.improvised':       'Improvised',
+  'combat.token.accuracy':         'Accuracy',
+  'combat.token.focus':            'Focus',
+  'combat.token.power':            'Power',
+  'combat.token.taunted':          'Taunted',
+  'combat.token.hesitation':       'Hesitation',
+  'combat.token.speed':            'Speed',
 
   // ── CraftSystem ─────────────────────────────────────────────
   'craftSys.queueFull':      'Queue is full',

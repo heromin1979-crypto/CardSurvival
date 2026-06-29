@@ -2,6 +2,8 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import CombatSystem   from '../../js/systems/CombatSystem.js';
 import GameState      from '../../js/core/GameState.js';
 import SystemRegistry from '../../js/core/SystemRegistry.js';
+import { ENEMIES, instantiateEnemy } from '../../js/data/enemies.js';
+import { buildEnemyProfile } from '../../js/systems/combat/EnemyCombatAdapter.js';
 
 beforeEach(() => {
   GameState.player.hp = { current: 100, max: 100 };
@@ -43,5 +45,22 @@ describe('_resolveTimedThreat', () => {
     const before = GameState.combat.enemies.length;
     CombatSystem._resolveTimedThreat(enemy);
     expect(GameState.combat.enemies.length).toBeGreaterThan(before);
+  });
+
+  it('explicit combat profiles preserve timed threat identities', () => {
+    const cases = [
+      ['zombie_bloater', 'self_destruct', ['bloater_swipe', 'bloater_self_destruct']],
+      ['zombie_screamer', 'summon_horde', ['screamer_spit', 'screamer_summon_horde']],
+      ['zombie_charger', 'charge_strike', ['charger_lunge', 'charger_impact']],
+    ];
+
+    for (const [enemyId, threatId, skillIds] of cases) {
+      const enemy = instantiateEnemy(ENEMIES[enemyId]);
+      const profile = buildEnemyProfile(enemy);
+
+      expect(enemy.timedThreat.id).toBe(threatId);
+      expect(enemy._chargeRemaining).toBe(enemy.timedThreat.chargeTurns);
+      expect(profile.skillIds).toEqual(skillIds);
+    }
   });
 });

@@ -175,6 +175,9 @@ export function applyMultiTarget(primaryDamage, weaponDef, targetIndex, combatSy
 
 // ── NPC 동행 전투 명령 ──────────────────────────────────────────
 
+/**
+ * @deprecated Use manual combat skill commands instead.
+ */
 export function companionAttack(combatSystemRef) {
   const gs      = GameState;
   const npcSys  = SystemRegistry.get('NPCSystem');
@@ -212,6 +215,9 @@ export function companionAttack(combatSystemRef) {
   return logs.join(' ');
 }
 
+/**
+ * @deprecated Use manual combat skill commands instead.
+ */
 export function companionHeal(combatSystemRef) {
   const gs      = GameState;
   const npcSys  = SystemRegistry.get('NPCSystem');
@@ -236,6 +242,9 @@ export function companionHeal(combatSystemRef) {
 
 // ── 쿨다운 틱 (매 라운드 호출) ──────────────────────────────────
 
+/**
+ * @deprecated Legacy companion auto-action cooldown support.
+ */
 export function tickCompanionCooldowns() {
   const gs  = GameState;
   if ((gs.combat._companionAttackCooldown ?? 0) > 0) gs.combat._companionAttackCooldown--;

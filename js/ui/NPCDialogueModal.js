@@ -143,10 +143,13 @@ const NPCDialogueModal = {
     let questHtml = '';
     if (activeQuest) {
       const stepDescs = activeQuest.steps.map(s => {
-        if (s.type === 'collect') {
+        if (s.type === 'collect' || s.type === 'offer_item') {
           const have = GameState.countOnBoard?.(s.itemId) ?? 0;
           const itemDef = GameData?.items[s.itemId];
           const iname   = I18n.itemName(s.itemId, itemDef?.name);
+          if (s.type === 'offer_item') {
+            return `<div class="npc-quest-step ${have >= s.qty ? 'done' : ''}">${have >= s.qty ? '✅' : '⬜'} ${iname} ${have}/${s.qty} 건네기 — <em>${s.hint}</em></div>`;
+          }
           return `<div class="npc-quest-step ${have >= s.qty ? 'done' : ''}">${have >= s.qty ? '✅' : '⬜'} ${iname} ${have}/${s.qty} — <em>${s.hint}</em></div>`;
         }
         if (s.type === 'visit') {
