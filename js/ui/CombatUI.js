@@ -52,7 +52,7 @@ const COMPANION_ICONS = {
 };
 
 // FX 오버레이 이모지 (cv-fx-* 클래스와 페어)
-const spriteSheet = (src) => ({ src, cols: 6, rows: 4 });
+const spriteSheet = (src, cols = 6, rows = 4) => ({ src, cols, rows });
 
 const COMBAT_SPRITE_SHEETS = {
   doctor_f: spriteSheet('/assets/images/combat/spritesheets/doctor_f_sheet.png'),
@@ -78,6 +78,22 @@ const COMBAT_SPRITE_SHEETS = {
   boss_homeless_nemesis: spriteSheet('/assets/images/combat/spritesheets/enemies/boss_homeless_nemesis_sheet.png'),
   food_warlord: spriteSheet('/assets/images/combat/spritesheets/enemies/food_warlord_sheet.png'),
 };
+
+// Per-sheet frame counts (cols) live in a manifest the sprite-anim-editor tool writes.
+// If absent, every sheet stays the legacy 6×4 — so this is a zero-regression enhancement.
+async function _loadSpriteManifest() {
+  try {
+    const res = await fetch('/assets/images/combat/spritesheets/manifest.json', { cache: 'no-store' });
+    if (!res.ok) return;
+    const manifest = await res.json();
+    for (const key in COMBAT_SPRITE_SHEETS) {
+      const sheet = COMBAT_SPRITE_SHEETS[key];
+      const meta = manifest[sheet.src.split('/').pop()];
+      if (meta && meta.cols) { sheet.cols = meta.cols | 0; if (meta.rows) sheet.rows = meta.rows | 0; }
+    }
+  } catch (e) { /* manifest optional → keep 6×4 defaults */ }
+}
+_loadSpriteManifest();
 
 const COMPANION_SPRITE_KEYS = {
   npc_nurse: 'nurse_companion',
@@ -226,10 +242,14 @@ const CombatUI = {
   _spriteSheetStyle(sheetKey) {
     const sheet = COMBAT_SPRITE_SHEETS[sheetKey];
     if (!sheet) return '';
+    // steps(N, jump-none) walks the 0→100% ramp onto exactly N columns. Works for any N
+    // (≤6 or >6); jump-none needs ≥2 steps, so clamp. Overrides the stylesheet's linear inline.
+    const steps = Math.max(2, sheet.cols | 0);
     return [
       `--sprite-url: url('${sheet.src}')`,
       `--sprite-cols: ${sheet.cols}`,
       `--sprite-rows: ${sheet.rows}`,
+      `animation-timing-function: steps(${steps}, jump-none)`,
     ].join('; ');
   },
 
