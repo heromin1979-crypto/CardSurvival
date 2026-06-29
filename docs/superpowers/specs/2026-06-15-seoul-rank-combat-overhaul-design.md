@@ -443,3 +443,12 @@ UI는 상태를 직접 수정하지 않고 `CombatSystem.selectSkill`, `selectTa
 - 중앙 전장 중심 UI가 프로젝트 디자인 토큰을 사용하며 768px 이상에서 조작 가능하다.
 - 기존 전투 결과, 보상, 소음, 탄약, 내구도, NPC 상태와 엔딩 연결이 회귀하지 않는다.
 - 관련 단위 및 통합 테스트와 브라우저 플레이테스트가 통과한다.
+
+## 14. 현재 구현 범위 결정 (2026-06-22)
+
+이 문서의 1~13장은 장기 설계 목표를 포함한다. 현재 `js/systems/CombatSystem.js`, `js/systems/CombatActions.js`, `js/ui/CombatUI.js` 기준 구현은 아래 범위로 고정한다.
+
+- `_buildTurnQueue`는 이번 단계에서 `speed + random(initiative)` 재설계를 하지 않는다. 현재 구현은 `player -> companions -> enemies` 고정 순서를 의도된 간소화로 유지한다. speed/initiative 기반 재계산은 별도 phase에서 진행한다.
+- `js/data/combatSkills.js`와 `usableFrom`/`targetRanks` 기반 데이터 주도 스킬 시스템은 이번 단계에서 도입하지 않는다. 현재 액션 진입점은 `CombatSystem.resolveAction(action, weaponInstanceId)`와 기존 카드/무기 데이터 경로를 유지한다.
+- `tokens`, 전투 전용 `stress`, `deathsDoor`는 이번 단계 전투 상태에 추가하지 않는다. 현재 구현은 기존 `morale`, `playerStatus`, `enemy._statusEffects`, `EndingSystem` 패배 처리로 대응한다.
+- 플레이어 이동은 현재 `GameState.combat.playerRank`의 `front`/`back` 토글과 `move` FX를 제공하는 MVP 동작으로 연결한다. 동료 개별 rank 이동, 빈 칸 검증, 스킬별 `usableFrom` 연동은 위 스킬 시스템 phase로 이월한다.

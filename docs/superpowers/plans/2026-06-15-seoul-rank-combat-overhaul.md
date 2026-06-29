@@ -649,7 +649,7 @@ export function buildAllyLoadout(combatant, gs) {
 
 Run: `npx vitest run tests/unit/CombatSkillSystem.test.js`
 
-Run: `node --input-type=module js/data/validate.js`
+Run: `node js/data/validate.js`
 
 Expected: PASS, data validation exits with code 0
 
@@ -1200,7 +1200,7 @@ export function decideEnemyIntent(context, enemyId) {
 
 Run: `npx vitest run tests/unit/EnemyCombatAdapter.test.js tests/unit/CombatSystem_enemyIntent.test.js tests/unit/CombatTimedIntent.test.js tests/unit/CombatTimedResolve.test.js`
 
-Run: `node --input-type=module js/data/validate.js`
+Run: `node js/data/validate.js`
 
 Expected: PASS
 
@@ -1707,7 +1707,7 @@ Expected: PASS
 
 Run: `npm test`
 
-Run: `node --input-type=module js/data/validate.js`
+Run: `node js/data/validate.js`
 
 Expected: 모든 Vitest 테스트 PASS, data validation exit code 0
 
@@ -1752,7 +1752,7 @@ Expected: 마이그레이션 문서나 과거 테스트 설명을 제외한 실�
 
 Run: `npm test`
 
-Run: `node --input-type=module js/data/validate.js`
+Run: `node js/data/validate.js`
 
 Run: `npm run build:web`
 

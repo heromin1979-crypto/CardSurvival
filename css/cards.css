@@ -520,6 +520,21 @@
   min-height: 0;
 }
 
+.lc-scene--sublocation {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lc-scene--sublocation::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,0.05), rgba(0,0,0,0.35));
+  pointer-events: none;
+}
+
 .lc-name {
   font-size: var(--font-size-xs);
   color: var(--text-primary);

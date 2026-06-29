@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-labelledby="title desc">
+  <title id="title">목동 종합운동장</title>
+  <desc id="desc">yangcheon landmark icon for Card Survival minimap.</desc>
+  <defs>
+    <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="2.2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <pattern id="hatch" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(-22)">
+      <path d="M0 0V9" stroke="#d4c9a8" stroke-opacity=".13" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <g fill="none" stroke="#171512" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity=".78">
+    
+      <ellipse cx="128" cy="143" rx="89" ry="51"/>
+      <ellipse cx="128" cy="143" rx="59" ry="31"/>
+      <path d="M49 161 C88 134 167 134 207 161"/>
+      <path d="M58 181 H198 M74 100 H182"/>
+      <path d="M40 215 H216"/>
+  </g>
+  <g fill="url(#hatch)" stroke="#d4c9a8" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round" filter="url(#softGlow)">
+    
+      <ellipse cx="128" cy="143" rx="89" ry="51"/>
+      <ellipse cx="128" cy="143" rx="59" ry="31"/>
+      <path d="M49 161 C88 134 167 134 207 161"/>
+      <path d="M58 181 H198 M74 100 H182"/>
+      <path d="M40 215 H216"/>
+  </g>
+  <g fill="none" stroke="#f2ddb0" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" opacity=".72">
+    
+      <ellipse cx="128" cy="143" rx="89" ry="51"/>
+      <ellipse cx="128" cy="143" rx="59" ry="31"/>
+      <path d="M49 161 C88 134 167 134 207 161"/>
+      <path d="M58 181 H198 M74 100 H182"/>
+      <path d="M40 215 H216"/>
+  </g>
+</svg>

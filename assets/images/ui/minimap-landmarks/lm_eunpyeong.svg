@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-labelledby="title desc">
+  <title id="title">진관사</title>
+  <desc id="desc">eunpyeong landmark icon for Card Survival minimap.</desc>
+  <defs>
+    <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="2.2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <pattern id="hatch" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(-22)">
+      <path d="M0 0V9" stroke="#d4c9a8" stroke-opacity=".13" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <g fill="none" stroke="#171512" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity=".78">
+    
+      <path d="M38 121 H218 L195 92 H61 Z"/>
+      <path d="M56 121 V214 H200 V121"/>
+      <path d="M75 92 L128 55 L181 92"/>
+      <path d="M84 214 V160 H116 V214 M140 214 V160 H172 V214"/>
+      <path d="M70 143 H186"/>
+      <path d="M31 224 H225"/>
+  </g>
+  <g fill="url(#hatch)" stroke="#d4c9a8" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round" filter="url(#softGlow)">
+    
+      <path d="M38 121 H218 L195 92 H61 Z"/>
+      <path d="M56 121 V214 H200 V121"/>
+      <path d="M75 92 L128 55 L181 92"/>
+      <path d="M84 214 V160 H116 V214 M140 214 V160 H172 V214"/>
+      <path d="M70 143 H186"/>
+      <path d="M31 224 H225"/>
+  </g>
+  <g fill="none" stroke="#f2ddb0" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" opacity=".72">
+    
+      <path d="M38 121 H218 L195 92 H61 Z"/>
+      <path d="M56 121 V214 H200 V121"/>
+      <path d="M75 92 L128 55 L181 92"/>
+      <path d="M84 214 V160 H116 V214 M140 214 V160 H172 V214"/>
+      <path d="M70 143 H186"/>
+      <path d="M31 224 H225"/>
+  </g>
+</svg>

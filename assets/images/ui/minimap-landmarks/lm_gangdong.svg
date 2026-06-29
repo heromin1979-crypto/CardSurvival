@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-labelledby="title desc">
+  <title id="title">올림픽공원</title>
+  <desc id="desc">gangdong landmark icon for Card Survival minimap.</desc>
+  <defs>
+    <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="2.2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <pattern id="hatch" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(-22)">
+      <path d="M0 0V9" stroke="#d4c9a8" stroke-opacity=".13" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <g fill="none" stroke="#171512" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity=".78">
+    
+      <path d="M44 216 C66 153 105 111 128 84 C151 111 190 153 212 216"/>
+      <path d="M70 216 C88 166 112 136 128 116 C144 136 168 166 186 216"/>
+      <path d="M51 219 H206"/>
+      <circle cx="82" cy="76" r="14"/><circle cx="112" cy="76" r="14"/><circle cx="142" cy="76" r="14"/>
+      <circle cx="97" cy="98" r="14"/><circle cx="127" cy="98" r="14"/>
+  </g>
+  <g fill="url(#hatch)" stroke="#d4c9a8" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round" filter="url(#softGlow)">
+    
+      <path d="M44 216 C66 153 105 111 128 84 C151 111 190 153 212 216"/>
+      <path d="M70 216 C88 166 112 136 128 116 C144 136 168 166 186 216"/>
+      <path d="M51 219 H206"/>
+      <circle cx="82" cy="76" r="14"/><circle cx="112" cy="76" r="14"/><circle cx="142" cy="76" r="14"/>
+      <circle cx="97" cy="98" r="14"/><circle cx="127" cy="98" r="14"/>
+  </g>
+  <g fill="none" stroke="#f2ddb0" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" opacity=".72">
+    
+      <path d="M44 216 C66 153 105 111 128 84 C151 111 190 153 212 216"/>
+      <path d="M70 216 C88 166 112 136 128 116 C144 136 168 166 186 216"/>
+      <path d="M51 219 H206"/>
+      <circle cx="82" cy="76" r="14"/><circle cx="112" cy="76" r="14"/><circle cx="142" cy="76" r="14"/>
+      <circle cx="97" cy="98" r="14"/><circle cx="127" cy="98" r="14"/>
+  </g>
+</svg>

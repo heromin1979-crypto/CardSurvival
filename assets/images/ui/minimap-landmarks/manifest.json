@@ -1,0 +1,152 @@
+{
+  "lm_gangnam": {
+    "districtId": "gangnam",
+    "name": "삼성서울병원",
+    "kind": "hospital",
+    "svg": "assets/images/ui/minimap-landmarks/lm_gangnam.svg"
+  },
+  "lm_gangdong": {
+    "districtId": "gangdong",
+    "name": "올림픽공원",
+    "kind": "olympicPark",
+    "svg": "assets/images/ui/minimap-landmarks/lm_gangdong.svg"
+  },
+  "lm_gangbuk": {
+    "districtId": "gangbuk",
+    "name": "북한산 국립공원",
+    "kind": "mountainFortress",
+    "svg": "assets/images/ui/minimap-landmarks/lm_gangbuk.svg"
+  },
+  "lm_gangseo": {
+    "districtId": "gangseo",
+    "name": "김포국제공항",
+    "kind": "airport",
+    "svg": "assets/images/ui/minimap-landmarks/lm_gangseo.svg"
+  },
+  "lm_gwanak": {
+    "districtId": "gwanak",
+    "name": "서울대학교 연구소",
+    "kind": "campusMountain",
+    "svg": "assets/images/ui/minimap-landmarks/lm_gwanak.svg"
+  },
+  "lm_gwangjin": {
+    "districtId": "gwangjin",
+    "name": "어린이대공원",
+    "kind": "parkGate",
+    "svg": "assets/images/ui/minimap-landmarks/lm_gwangjin.svg"
+  },
+  "lm_guro": {
+    "districtId": "guro",
+    "name": "구로디지털단지",
+    "kind": "digitalComplex",
+    "svg": "assets/images/ui/minimap-landmarks/lm_guro.svg"
+  },
+  "lm_geumcheon": {
+    "districtId": "geumcheon",
+    "name": "시흥공단 기계창",
+    "kind": "machineShop",
+    "svg": "assets/images/ui/minimap-landmarks/lm_geumcheon.svg"
+  },
+  "lm_nowon": {
+    "districtId": "nowon",
+    "name": "태릉선수촌",
+    "kind": "sportsVillage",
+    "svg": "assets/images/ui/minimap-landmarks/lm_nowon.svg"
+  },
+  "lm_dobong": {
+    "districtId": "dobong",
+    "name": "도봉산 등산로",
+    "kind": "mountainTrail",
+    "svg": "assets/images/ui/minimap-landmarks/lm_dobong.svg"
+  },
+  "lm_dongdaemun": {
+    "districtId": "dongdaemun",
+    "name": "동대문 디자인 플라자",
+    "kind": "ddp",
+    "svg": "assets/images/ui/minimap-landmarks/lm_dongdaemun.svg"
+  },
+  "lm_boramae_hospital": {
+    "districtId": "dongjak",
+    "name": "보라매병원",
+    "kind": "hospitalWide",
+    "svg": "assets/images/ui/minimap-landmarks/lm_boramae_hospital.svg"
+  },
+  "lm_mapo": {
+    "districtId": "mapo",
+    "name": "홍대 지하상가",
+    "kind": "musicUnderground",
+    "svg": "assets/images/ui/minimap-landmarks/lm_mapo.svg"
+  },
+  "lm_seodaemun": {
+    "districtId": "seodaemun",
+    "name": "세브란스병원",
+    "kind": "hospitalCross",
+    "svg": "assets/images/ui/minimap-landmarks/lm_seodaemun.svg"
+  },
+  "lm_seocho": {
+    "districtId": "seocho",
+    "name": "예술의전당",
+    "kind": "artsCenter",
+    "svg": "assets/images/ui/minimap-landmarks/lm_seocho.svg"
+  },
+  "lm_seongdong": {
+    "districtId": "seongdong",
+    "name": "성수 공방거리",
+    "kind": "workshopStreet",
+    "svg": "assets/images/ui/minimap-landmarks/lm_seongdong.svg"
+  },
+  "lm_seongbuk": {
+    "districtId": "seongbuk",
+    "name": "고려대학교 캠퍼스",
+    "kind": "university",
+    "svg": "assets/images/ui/minimap-landmarks/lm_seongbuk.svg"
+  },
+  "lm_songpa": {
+    "districtId": "songpa",
+    "name": "롯데월드타워",
+    "kind": "lotteTower",
+    "svg": "assets/images/ui/minimap-landmarks/lm_songpa.svg"
+  },
+  "lm_yangcheon": {
+    "districtId": "yangcheon",
+    "name": "목동 종합운동장",
+    "kind": "stadium",
+    "svg": "assets/images/ui/minimap-landmarks/lm_yangcheon.svg"
+  },
+  "lm_yeongdeungpo": {
+    "districtId": "yeongdeungpo",
+    "name": "KBS 방송국",
+    "kind": "broadcastStation",
+    "svg": "assets/images/ui/minimap-landmarks/lm_yeongdeungpo.svg"
+  },
+  "lm_yongsan": {
+    "districtId": "yongsan",
+    "name": "용산 전자상가",
+    "kind": "electronicsMarket",
+    "svg": "assets/images/ui/minimap-landmarks/lm_yongsan.svg"
+  },
+  "lm_eunpyeong": {
+    "districtId": "eunpyeong",
+    "name": "진관사",
+    "kind": "temple",
+    "svg": "assets/images/ui/minimap-landmarks/lm_eunpyeong.svg"
+  },
+  "lm_jongno": {
+    "districtId": "jongno",
+    "name": "경복궁",
+    "kind": "palaceGate",
+    "svg": "assets/images/ui/minimap-landmarks/lm_jongno.svg"
+  },
+  "lm_junggoo": {
+    "districtId": "junggoo",
+    "name": "남대문시장",
+    "kind": "marketGate",
+    "svg": "assets/images/ui/minimap-landmarks/lm_junggoo.svg"
+  },
+  "lm_jungrang": {
+    "districtId": "jungrang",
+    "name": "중랑천 습지",
+    "kind": "wetland",
+    "svg": "assets/images/ui/minimap-landmarks/lm_jungrang.svg"
+  }
+}

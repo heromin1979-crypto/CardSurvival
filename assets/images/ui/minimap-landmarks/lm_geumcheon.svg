@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-labelledby="title desc">
+  <title id="title">시흥공단 기계창</title>
+  <desc id="desc">geumcheon landmark icon for Card Survival minimap.</desc>
+  <defs>
+    <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="2.2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <pattern id="hatch" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(-22)">
+      <path d="M0 0V9" stroke="#d4c9a8" stroke-opacity=".13" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <g fill="none" stroke="#171512" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity=".78">
+    
+      <path d="M41 215 V112 L89 137 V107 L136 137 V93 H211 V215"/>
+      <path d="M159 93 V58 H210 V93"/>
+      <path d="M62 165 H89 M111 165 H138 M162 165 H194"/>
+      <path d="M67 192 H95 M117 192 H145 M167 192 H197"/>
+      <path d="M32 224 H224"/>
+  </g>
+  <g fill="url(#hatch)" stroke="#d4c9a8" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round" filter="url(#softGlow)">
+    
+      <path d="M41 215 V112 L89 137 V107 L136 137 V93 H211 V215"/>
+      <path d="M159 93 V58 H210 V93"/>
+      <path d="M62 165 H89 M111 165 H138 M162 165 H194"/>
+      <path d="M67 192 H95 M117 192 H145 M167 192 H197"/>
+      <path d="M32 224 H224"/>
+  </g>
+  <g fill="none" stroke="#f2ddb0" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" opacity=".72">
+    
+      <path d="M41 215 V112 L89 137 V107 L136 137 V93 H211 V215"/>
+      <path d="M159 93 V58 H210 V93"/>
+      <path d="M62 165 H89 M111 165 H138 M162 165 H194"/>
+      <path d="M67 192 H95 M117 192 H145 M167 192 H197"/>
+      <path d="M32 224 H224"/>
+  </g>
+</svg>

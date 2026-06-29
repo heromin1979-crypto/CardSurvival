@@ -43,14 +43,18 @@ const SlotSelect = {
 
     const primaryBtnClass = isNew ? 'slot-img-btn--newgame' : 'slot-img-btn--load';
     const primaryBtnLabel = isNew ? t('menu.newGame') : t('slotSelect.btnLoad');
+    const hasSelection = this._selectedSlot !== null;
+    const primaryReadyClass = hasSelection ? 'is-ready' : 'is-waiting';
 
     this._el.innerHTML = `
-      <div class="slot-select-frame">
+      <div class="slot-select-frame ${hasSelection ? 'has-selected-slot' : ''}">
         <div class="slot-select-grid">${slotsHtml}</div>
 
         <footer class="slot-select-footer">
           <div class="slot-footer-center">
-            <button class="slot-img-btn ${primaryBtnClass}" id="ss-btn-primary">
+            <button class="slot-img-btn ${primaryBtnClass} ${primaryReadyClass}" id="ss-btn-primary"
+                    aria-disabled="${hasSelection ? 'false' : 'true'}" title="${primaryBtnLabel}">
+              <span class="slot-img-btn-label" aria-hidden="true">${primaryBtnLabel}</span>
               <span class="visually-hidden">${primaryBtnLabel}</span>
             </button>
           </div>

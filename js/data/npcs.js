@@ -878,7 +878,7 @@ const NPCS = {
         title:        '옛 주인의 흔적',
         description:  '개가 어딘가를 애타게 바라본다. 무언가를 찾고 있는 것 같다.',
         steps: [
-          { type: 'collect', itemId: 'cloth', qty: 2, hint: '천 조각으로 개의 목줄을 만들어줄 수 있다.' },
+          { type: 'offer_item', itemId: 'dried_meat', qty: 1, hint: '경계심을 낮추려면 먹을 것을 조금 나눠줘야 한다.' },
         ],
         reward: { trust: 2, items: [], skillUnlock: { skillId: 'scent_tracking', value: 0.05 } },
       },

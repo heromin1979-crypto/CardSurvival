@@ -198,8 +198,8 @@
   max-width: calc(100% - 80px);
   display: flex;
   flex-direction: column;
-  gap: 28px;
-  margin-top: 150px;
+  gap: clamp(16px, 2.1vh, 28px);
+  margin-top: clamp(56px, 10vh, 120px);
 }
 
 .slot-select-header {
@@ -439,7 +439,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-top: 28px;
+  margin-top: clamp(14px, 2.2vh, 28px);
   position: relative;
 }
 
@@ -464,6 +464,11 @@
   padding: 0;
   cursor: pointer;
   flex-shrink: 0;
+  filter:
+    brightness(1.12)
+    contrast(1.08)
+    drop-shadow(0 8px 18px rgba(0, 0, 0, 0.82));
+  transition: filter 0.15s ease, transform 0.08s ease;
 }
 .slot-img-btn::after {
   content: '';
@@ -473,7 +478,50 @@
   opacity: 0;
   transition: opacity 0.18s ease;
 }
-.slot-img-btn:hover:not(:disabled)::after { opacity: 1; }
+.slot-img-btn:hover:not(:disabled)::after,
+.slot-img-btn:focus-visible:not(:disabled)::after,
+.slot-img-btn.is-ready::after {
+  opacity: 1;
+}
+
+.slot-img-btn:hover:not(:disabled),
+.slot-img-btn:focus-visible:not(:disabled),
+.slot-img-btn.is-ready {
+  filter:
+    brightness(1.34)
+    contrast(1.16)
+    drop-shadow(0 0 16px rgba(230, 178, 82, 0.52))
+    drop-shadow(0 10px 22px rgba(0, 0, 0, 0.84));
+}
+
+.slot-img-btn.is-waiting {
+  filter:
+    brightness(0.92)
+    contrast(1.05)
+    drop-shadow(0 7px 14px rgba(0, 0, 0, 0.76));
+}
+
+.slot-img-btn-label {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #f6d58a;
+  font-family: var(--font-display, var(--font-base));
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.94),
+    0 0 10px rgba(224, 170, 74, 0.42);
+  pointer-events: none;
+}
+
+.slot-img-btn.is-waiting .slot-img-btn-label {
+  color: rgba(226, 196, 138, 0.72);
+}
 
 .slot-img-btn--back  { background-image: url('../assets/images/menu/btn-back-idle.png'); }
 .slot-img-btn--back::after  { background-image: url('../assets/images/menu/btn-back-active.png'); }
@@ -871,4 +919,3 @@
   border-radius: var(--radius-sm);
   padding: 2px 6px;
 }
-

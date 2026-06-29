@@ -78,7 +78,7 @@ const NPCQuestSystem = {
 
   _isQuestComplete(quest) {
     for (const step of quest.steps) {
-      if (step.type === 'collect') {
+      if (this._isItemDeliveryStep(step)) {
         const qty = GameState.countOnBoard?.(step.itemId) ?? 0;
         if (qty < step.qty) return false;
       }
@@ -111,7 +111,7 @@ const NPCQuestSystem = {
 
     // Consume required items
     for (const step of quest.steps) {
-      if (step.type !== 'collect') continue;
+      if (!this._isItemDeliveryStep(step)) continue;
       let remaining = step.qty;
       for (const card of GameState.getBoardCards?.() ?? []) {
         if (remaining <= 0) break;
@@ -172,6 +172,10 @@ const NPCQuestSystem = {
   },
 
   // ── 지도 조각 수집 ─────────────────────────────────────────────
+
+  _isItemDeliveryStep(step) {
+    return step?.type === 'collect' || step?.type === 'offer_item';
+  },
 
   _collectMapFragment(itemId) {
     const part = itemId.replace('map_fragment_', '');

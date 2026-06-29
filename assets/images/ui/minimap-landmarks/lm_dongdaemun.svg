@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-labelledby="title desc">
+  <title id="title">동대문 디자인 플라자</title>
+  <desc id="desc">dongdaemun landmark icon for Card Survival minimap.</desc>
+  <defs>
+    <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="2.2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <pattern id="hatch" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(-22)">
+      <path d="M0 0V9" stroke="#d4c9a8" stroke-opacity=".13" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <g fill="none" stroke="#171512" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity=".78">
+    
+      <path d="M40 174 C63 102 115 72 201 94 C221 145 175 188 77 190 C57 190 44 184 40 174 Z"/>
+      <path d="M61 161 C93 145 139 137 196 142"/>
+      <path d="M76 124 C112 116 151 115 190 123"/>
+      <path d="M55 194 H208 M78 194 V215 M116 188 V215 M158 183 V215"/>
+      <path d="M36 218 H220"/>
+  </g>
+  <g fill="url(#hatch)" stroke="#d4c9a8" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round" filter="url(#softGlow)">
+    
+      <path d="M40 174 C63 102 115 72 201 94 C221 145 175 188 77 190 C57 190 44 184 40 174 Z"/>
+      <path d="M61 161 C93 145 139 137 196 142"/>
+      <path d="M76 124 C112 116 151 115 190 123"/>
+      <path d="M55 194 H208 M78 194 V215 M116 188 V215 M158 183 V215"/>
+      <path d="M36 218 H220"/>
+  </g>
+  <g fill="none" stroke="#f2ddb0" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" opacity=".72">
+    
+      <path d="M40 174 C63 102 115 72 201 94 C221 145 175 188 77 190 C57 190 44 184 40 174 Z"/>
+      <path d="M61 161 C93 145 139 137 196 142"/>
+      <path d="M76 124 C112 116 151 115 190 123"/>
+      <path d="M55 194 H208 M78 194 V215 M116 188 V215 M158 183 V215"/>
+      <path d="M36 218 H220"/>
+  </g>
+</svg>

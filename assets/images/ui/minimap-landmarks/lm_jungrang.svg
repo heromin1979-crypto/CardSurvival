@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-labelledby="title desc">
+  <title id="title">중랑천 습지</title>
+  <desc id="desc">jungrang landmark icon for Card Survival minimap.</desc>
+  <defs>
+    <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="2.2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <pattern id="hatch" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(-22)">
+      <path d="M0 0V9" stroke="#d4c9a8" stroke-opacity=".13" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <g fill="none" stroke="#171512" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity=".78">
+    
+      <path d="M41 184 C75 160 96 206 128 182 C161 158 182 205 215 182"/>
+      <path d="M41 213 C75 189 96 232 128 208 C161 184 182 230 215 208"/>
+      <path d="M75 176 C75 136 65 111 54 82 M102 174 C102 132 94 103 83 70 M178 177 C178 134 188 107 201 76"/>
+      <path d="M54 82 C72 91 82 105 85 126 M83 70 C104 85 115 103 115 126 M201 76 C178 88 166 107 164 130"/>
+      <path d="M38 224 H218"/>
+  </g>
+  <g fill="url(#hatch)" stroke="#d4c9a8" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round" filter="url(#softGlow)">
+    
+      <path d="M41 184 C75 160 96 206 128 182 C161 158 182 205 215 182"/>
+      <path d="M41 213 C75 189 96 232 128 208 C161 184 182 230 215 208"/>
+      <path d="M75 176 C75 136 65 111 54 82 M102 174 C102 132 94 103 83 70 M178 177 C178 134 188 107 201 76"/>
+      <path d="M54 82 C72 91 82 105 85 126 M83 70 C104 85 115 103 115 126 M201 76 C178 88 166 107 164 130"/>
+      <path d="M38 224 H218"/>
+  </g>
+  <g fill="none" stroke="#f2ddb0" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" opacity=".72">
+    
+      <path d="M41 184 C75 160 96 206 128 182 C161 158 182 205 215 182"/>
+      <path d="M41 213 C75 189 96 232 128 208 C161 184 182 230 215 208"/>
+      <path d="M75 176 C75 136 65 111 54 82 M102 174 C102 132 94 103 83 70 M178 177 C178 134 188 107 201 76"/>
+      <path d="M54 82 C72 91 82 105 85 126 M83 70 C104 85 115 103 115 126 M201 76 C178 88 166 107 164 130"/>
+      <path d="M38 224 H218"/>
+  </g>
+</svg>

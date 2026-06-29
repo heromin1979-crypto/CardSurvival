@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-labelledby="title desc">
+  <title id="title">서울대학교 연구소</title>
+  <desc id="desc">gwanak landmark icon for Card Survival minimap.</desc>
+  <defs>
+    <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="2.2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <pattern id="hatch" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(-22)">
+      <path d="M0 0V9" stroke="#d4c9a8" stroke-opacity=".13" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <g fill="none" stroke="#171512" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity=".78">
+    
+      <path d="M31 214 L79 124 L106 161 L143 91 L225 214 Z"/>
+      <path d="M90 139 L106 161 L122 145 M135 107 L151 128 L166 112"/>
+      <path d="M75 214 V162 H183 V214"/>
+      <path d="M86 162 L129 128 L172 162"/>
+      <path d="M114 214 V183 H144 V214 M91 180 H108 M150 180 H167"/>
+  </g>
+  <g fill="url(#hatch)" stroke="#d4c9a8" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round" filter="url(#softGlow)">
+    
+      <path d="M31 214 L79 124 L106 161 L143 91 L225 214 Z"/>
+      <path d="M90 139 L106 161 L122 145 M135 107 L151 128 L166 112"/>
+      <path d="M75 214 V162 H183 V214"/>
+      <path d="M86 162 L129 128 L172 162"/>
+      <path d="M114 214 V183 H144 V214 M91 180 H108 M150 180 H167"/>
+  </g>
+  <g fill="none" stroke="#f2ddb0" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" opacity=".72">
+    
+      <path d="M31 214 L79 124 L106 161 L143 91 L225 214 Z"/>
+      <path d="M90 139 L106 161 L122 145 M135 107 L151 128 L166 112"/>
+      <path d="M75 214 V162 H183 V214"/>
+      <path d="M86 162 L129 128 L172 162"/>
+      <path d="M114 214 V183 H144 V214 M91 180 H108 M150 180 H167"/>
+  </g>
+</svg>

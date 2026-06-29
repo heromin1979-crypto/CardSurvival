@@ -9,15 +9,17 @@ import StateMachine from '../core/StateMachine.js';
 import NoiseSystem from './NoiseSystem.js';
 import BALANCE    from '../data/gameBalance.js';
 import GameData from '../data/GameData.js';
+import { getCharacterCombatEffects } from '../data/characters.js';
 
 // ── 방어(Guard) 행동 ────────────────────────────────────────────
 
 export function guardAction() {
   const gs = GameState;
+  const effects = getCharacterCombatEffects(gs.player?.characterId);
   gs.combat.playerGuard = {
     active:       true,
-    damageReduce: BALANCE.combat.guardDamageReduction,
-    counterBonus: BALANCE.combat.guardCounterBonus,
+    damageReduce: Math.min(0.85, BALANCE.combat.guardDamageReduction + (effects.guardDamageReduceBonus ?? 0)),
+    counterBonus: BALANCE.combat.guardCounterBonus + (effects.guardCounterBonus ?? 0),
     duration:     BALANCE.combat.guardDuration,
   };
 }
@@ -173,6 +175,9 @@ export function applyMultiTarget(primaryDamage, weaponDef, targetIndex, combatSy
 
 // ── NPC 동행 전투 명령 ──────────────────────────────────────────
 
+/**
+ * @deprecated Use manual combat skill commands instead.
+ */
 export function companionAttack(combatSystemRef) {
   const gs      = GameState;
   const npcSys  = SystemRegistry.get('NPCSystem');
@@ -210,6 +215,9 @@ export function companionAttack(combatSystemRef) {
   return logs.join(' ');
 }
 
+/**
+ * @deprecated Use manual combat skill commands instead.
+ */
 export function companionHeal(combatSystemRef) {
   const gs      = GameState;
   const npcSys  = SystemRegistry.get('NPCSystem');
@@ -234,6 +242,9 @@ export function companionHeal(combatSystemRef) {
 
 // ── 쿨다운 틱 (매 라운드 호출) ──────────────────────────────────
 
+/**
+ * @deprecated Legacy companion auto-action cooldown support.
+ */
 export function tickCompanionCooldowns() {
   const gs  = GameState;
   if ((gs.combat._companionAttackCooldown ?? 0) > 0) gs.combat._companionAttackCooldown--;
