@@ -164,11 +164,12 @@
       <div class="card" style="width:100%; max-width:460px">
         <h2>④ 좌표 미세조정 — 프레임 <span id="selIdx">0</span> (행<span id="selR">0</span>·열<span id="selC">0</span>) <span id="selState" class="hint"></span></h2>
         <div class="row">
-          <label>X</label><input type="number" id="dx" value="0" style="width:74px" />
-          <label>Y</label><input type="number" id="dy" value="0" style="width:74px" />
+          <label>X</label><input type="number" id="dx" value="0" style="width:64px" />
+          <label>Y</label><input type="number" id="dy" value="0" style="width:64px" />
+          <label style="margin-left:auto"><input type="checkbox" id="rowMove" /> 행 전체 이동</label>
           <button id="nudgeReset" class="ghost">이 프레임 0</button>
         </div>
-        <div class="hint">미리보기를 <b>드래그</b>하거나 방향키(<kbd>←↑↓→</kbd>, <kbd>Shift</kbd>=10px)로 셀 안에서 보정. <kbd>[</kbd> <kbd>]</kbd> 프레임 이동, <kbd>Space</kbd> 재생.</div>
+        <div class="hint"><b>행 전체 이동</b>을 켜면 드래그·방향키·숫자가 현재 행 6프레임에 함께 적용됩니다(예: 공격 행 전체를 왼쪽으로). 끄면 선택 프레임만. <kbd>←↑↓→</kbd>(<kbd>Shift</kbd>=10px), <kbd>[</kbd><kbd>]</kbd> 프레임 이동, <kbd>Space</kbd> 재생.</div>
       </div>
     </div>
   </div>
@@ -217,8 +218,14 @@ const S = {
   anchorMode: 'bottom',
   playing: false, playStart: 0, playRow: 0,
   saveTargetPath: null, saveName: 'sheet.png',
-  serverOn: false, sheets: [], picking: false,
+  serverOn: false, sheets: [], picking: false, rowMove: false,
 };
+
+// frames a nudge applies to: whole current row when 행 전체 이동 is on, else just the selected one
+function targetFrames() {
+  if (S.rowMove) { const r = Math.floor(S.sel / S.cols); return Array.from({ length: S.cols }, (_, c) => r * S.cols + c); }
+  return [S.sel];
+}
 
 const cellW = () => S.W / S.cols;
 const cellH = () => S.H / S.rows;
@@ -741,9 +748,10 @@ $('prevFrame').onclick = () => selectFrame(S.rowTab * S.cols + (S.sel % S.cols +
 $('nextFrame').onclick = () => selectFrame(S.rowTab * S.cols + (S.sel % S.cols + 1) % S.cols);
 $('durRange').oninput = (e) => { S.rowDur[S.rowTab] = +e.target.value; $('durV').textContent = e.target.value; $('perFrame').textContent = Math.round(e.target.value / S.cols); renderStrip(); };
 
-$('dx').oninput = (e) => { S.frames[S.sel].dx = parseInt(e.target.value) || 0; renderAll(); };
-$('dy').oninput = (e) => { S.frames[S.sel].dy = parseInt(e.target.value) || 0; renderAll(); };
-$('nudgeReset').onclick = () => { S.frames[S.sel].dx = 0; S.frames[S.sel].dy = 0; selectFrame(S.sel); };
+$('dx').oninput = (e) => { const v = parseInt(e.target.value) || 0, d = v - S.frames[S.sel].dx; for (const i of targetFrames()) S.frames[i].dx += d; renderAll(); };
+$('dy').oninput = (e) => { const v = parseInt(e.target.value) || 0, d = v - S.frames[S.sel].dy; for (const i of targetFrames()) S.frames[i].dy += d; renderAll(); };
+$('rowMove').onchange = (e) => { S.rowMove = e.target.checked; };
+$('nudgeReset').onclick = () => { for (const i of targetFrames()) { S.frames[i].dx = 0; S.frames[i].dy = 0; } selectFrame(S.sel); };
 
 $('saveServer').onclick = saveToServer;
 $('downloadPng').onclick = downloadPng;
@@ -770,23 +778,25 @@ $('sheetCanvas').addEventListener('click', (e) => {
   const k = () => Math.max(cellW(), cellH()) / (PW - MARGIN * 2);
   cv.addEventListener('mousedown', (e) => { if (S.playing) return; drag = true; lx = e.clientX; ly = e.clientY; });
   window.addEventListener('mousemove', (e) => {
-    if (!drag) return; const f = S.frames[S.sel], kk = k();
-    f.dx = Math.round(f.dx + (e.clientX - lx) * kk); f.dy = Math.round(f.dy + (e.clientY - ly) * kk);
-    lx = e.clientX; ly = e.clientY; $('dx').value = f.dx; $('dy').value = f.dy; renderPreview();
+    if (!drag) return; const kk = k();
+    const ddx = (e.clientX - lx) * kk, ddy = (e.clientY - ly) * kk;
+    for (const i of targetFrames()) { S.frames[i].dx = Math.round(S.frames[i].dx + ddx); S.frames[i].dy = Math.round(S.frames[i].dy + ddy); }
+    lx = e.clientX; ly = e.clientY;
+    $('dx').value = S.frames[S.sel].dx; $('dy').value = S.frames[S.sel].dy; renderPreview();
   });
   window.addEventListener('mouseup', () => { if (drag) { drag = false; renderAll(); } });
 })();
 
 window.addEventListener('keydown', (e) => {
   if (/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName)) return;
-  const step = e.shiftKey ? 10 : 1, f = S.frames[S.sel]; if (!f) return; let used = true;
-  if (e.key === 'ArrowLeft') f.dx -= step; else if (e.key === 'ArrowRight') f.dx += step;
-  else if (e.key === 'ArrowUp') f.dy -= step; else if (e.key === 'ArrowDown') f.dy += step;
+  const step = e.shiftKey ? 10 : 1; if (!S.frames[S.sel]) return; let ddx = 0, ddy = 0, used = true;
+  if (e.key === 'ArrowLeft') ddx = -step; else if (e.key === 'ArrowRight') ddx = step;
+  else if (e.key === 'ArrowUp') ddy = -step; else if (e.key === 'ArrowDown') ddy = step;
   else if (e.key === '[') { selectFrame(S.rowTab * S.cols + (S.sel % S.cols + S.cols - 1) % S.cols); return; }
   else if (e.key === ']') { selectFrame(S.rowTab * S.cols + (S.sel % S.cols + 1) % S.cols); return; }
   else if (e.key === ' ') { togglePlay(); e.preventDefault(); return; }
   else used = false;
-  if (used) { e.preventDefault(); $('dx').value = f.dx; $('dy').value = f.dy; renderAll(); }
+  if (used) { e.preventDefault(); for (const i of targetFrames()) { S.frames[i].dx += ddx; S.frames[i].dy += ddy; } $('dx').value = S.frames[S.sel].dx; $('dy').value = S.frames[S.sel].dy; renderAll(); }
 });
 
 window.addEventListener('dragover', (e) => { e.preventDefault(); $('drop').classList.add('show'); });
