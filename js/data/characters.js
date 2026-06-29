@@ -55,6 +55,16 @@ export const CHARACTERS = [
         effect: { startingItems: ['bandage', 'bandage', 'bandage', 'bandage', 'antiseptic', 'stethoscope', 'combat_scalpel', 'canned_food', 'canned_food', 'energy_bar', 'energy_bar', 'instant_noodles', 'contaminated_water'] },
       },
     ],
+    combatIdentity: {
+      role: 'medical_control',
+      passiveId: 'doctor_field_triage',
+      passiveName: '현장 트리아지',
+      utility: '진단으로 위험한 대상을 먼저 읽고, 전투 중 첫 의료 처치의 효율을 끌어올린다.',
+      weaponSynergies: ['medical', 'blade'],
+      effects: {
+        firstMedicalItemHealBonus: 0.25,
+      },
+    },
     startingSkills: {
       medicine:   4,  // 의사 — 의료 숙련도 최상
       scavenging: 2,  // 약품·의료재료 탐색 경험
@@ -136,6 +146,17 @@ export const CHARACTERS = [
         },
       },
     ],
+    combatIdentity: {
+      role: 'firearm_tactics',
+      passiveId: 'soldier_firearm_discipline',
+      passiveName: '사격 통제',
+      utility: '총기를 장착했을 때 명중률과 치명타가 상승하며, 이동 후 교전 각을 잡는 데 능하다.',
+      weaponSynergies: ['firearm', 'ranged'],
+      effects: {
+        firearmAccBonus: 0.08,
+        firearmCritBonus: 0.05,
+      },
+    },
     startingSkills: {
       melee:   4,  // 군인 — 근접무기 전문
       ranged:  4,  // 군인 — 총기 훈련
@@ -210,6 +231,17 @@ export const CHARACTERS = [
         },
       },
     ],
+    combatIdentity: {
+      role: 'rescue_guardian',
+      passiveId: 'firefighter_rescue_guard',
+      passiveName: '구조 본능',
+      utility: '방어 자세의 피해 감소율이 높고, 도끼와 둔기로 전열을 밀어붙이는 데 강하다.',
+      weaponSynergies: ['axe', 'blunt'],
+      effects: {
+        guardDamageReduceBonus: 0.15,
+        guardCounterBonus: 0.05,
+      },
+    },
     startingSkills: {
       unarmed:    3,  // 소방관 — 신체 단련, 격투
       building:   3,  // 구조물 지식, 현장 경험
@@ -283,6 +315,17 @@ export const CHARACTERS = [
         },
       },
     ],
+    combatIdentity: {
+      role: 'street_survivor',
+      passiveId: 'homeless_cornered_survival',
+      passiveName: '궁지의 생존술',
+      utility: '체력이 낮을수록 적의 공격을 읽고 흘려보내며, 도주 판단이 빠르다.',
+      weaponSynergies: ['improvised', 'unarmed'],
+      effects: {
+        lowHpThreshold: 0.30,
+        lowHpEnemyAccuracyPenalty: 0.12,
+      },
+    },
     startingSkills: {
       scavenging:  4,  // 노숙인 — 뭐든 찾는 생존 본능
       harvesting:  3,  // 자원 채취 (거리 생활)
@@ -366,6 +409,18 @@ export const CHARACTERS = [
         },
       },
     ],
+    combatIdentity: {
+      role: 'blade_morale',
+      passiveId: 'chef_precise_blade',
+      passiveName: '정밀한 칼끝',
+      utility: '칼 계열 무기로 상처를 벌리고, 음식과 조리 도구로 사기 회복을 보조한다.',
+      weaponSynergies: ['blade', 'knife'],
+      effects: {
+        bladeBleedChance: 0.25,
+        bladeBleedDuration: 2,
+        bladeBleedDmgPerRound: 3,
+      },
+    },
     startingSkills: {
       cooking:     4,  // 셰프 — 요리 전문
       harvesting:  3,  // 식재료 감별·채취
@@ -440,6 +495,16 @@ export const CHARACTERS = [
         },
       },
     ],
+    combatIdentity: {
+      role: 'improvised_engineering',
+      passiveId: 'engineer_crafted_edge',
+      passiveName: '자작 무기 숙련',
+      utility: '직접 만든 무기를 더 안정적으로 다루고, 전선과 부품으로 즉석 전술을 만든다.',
+      weaponSynergies: ['crafted', 'electric', 'blunt'],
+      effects: {
+        craftedWeaponDmgBonus: 0.15,
+      },
+    },
     startingSkills: {
       crafting:    4,  // 엔지니어 — 핵심 제작 능력
       building:    4,  // 공학 설계·건설
@@ -477,6 +542,14 @@ export function getCharacterGauges(character) {
     combat:   clamp(((skills.melee ?? 0) + (skills.ranged ?? 0) + (skills.unarmed ?? 0)) * 10),
     crafting: clamp(((skills.crafting ?? 0) + (skills.weaponcraft ?? 0) + (skills.armorcraft ?? 0) + (skills.building ?? 0)) * 8),
   };
+}
+
+export function getCharacterCombatIdentity(characterId) {
+  return CHARACTERS.find(c => c.id === characterId)?.combatIdentity ?? null;
+}
+
+export function getCharacterCombatEffects(characterId) {
+  return getCharacterCombatIdentity(characterId)?.effects ?? {};
 }
 
 export default CHARACTERS;

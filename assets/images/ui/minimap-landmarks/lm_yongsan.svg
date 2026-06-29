@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-labelledby="title desc">
+  <title id="title">용산 전자상가</title>
+  <desc id="desc">yongsan landmark icon for Card Survival minimap.</desc>
+  <defs>
+    <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="2.2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <pattern id="hatch" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(-22)">
+      <path d="M0 0V9" stroke="#d4c9a8" stroke-opacity=".13" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <g fill="none" stroke="#171512" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity=".78">
+    
+      <path d="M44 214 V95 H211 V214"/>
+      <path d="M65 123 H112 V163 H65 Z M135 123 H190 V163 H135 Z"/>
+      <path d="M82 181 H178 M98 195 H162"/>
+      <path d="M51 81 H203 L191 95 H62 Z"/>
+      <path d="M124 95 V58 M112 58 H136 M116 47 H132"/>
+      <path d="M35 224 H224"/>
+  </g>
+  <g fill="url(#hatch)" stroke="#d4c9a8" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round" filter="url(#softGlow)">
+    
+      <path d="M44 214 V95 H211 V214"/>
+      <path d="M65 123 H112 V163 H65 Z M135 123 H190 V163 H135 Z"/>
+      <path d="M82 181 H178 M98 195 H162"/>
+      <path d="M51 81 H203 L191 95 H62 Z"/>
+      <path d="M124 95 V58 M112 58 H136 M116 47 H132"/>
+      <path d="M35 224 H224"/>
+  </g>
+  <g fill="none" stroke="#f2ddb0" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" opacity=".72">
+    
+      <path d="M44 214 V95 H211 V214"/>
+      <path d="M65 123 H112 V163 H65 Z M135 123 H190 V163 H135 Z"/>
+      <path d="M82 181 H178 M98 195 H162"/>
+      <path d="M51 81 H203 L191 95 H62 Z"/>
+      <path d="M124 95 V58 M112 58 H136 M116 47 H132"/>
+      <path d="M35 224 H224"/>
+  </g>
+</svg>

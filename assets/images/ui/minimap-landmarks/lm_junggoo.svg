@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-labelledby="title desc">
+  <title id="title">남대문시장</title>
+  <desc id="desc">junggoo landmark icon for Card Survival minimap.</desc>
+  <defs>
+    <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="2.2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <pattern id="hatch" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(-22)">
+      <path d="M0 0V9" stroke="#d4c9a8" stroke-opacity=".13" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <g fill="none" stroke="#171512" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity=".78">
+    
+      <path d="M45 216 V103 H211 V216"/>
+      <path d="M32 103 H224 L198 74 H58 Z"/>
+      <path d="M78 216 V154 H121 V216 M136 216 V154 H179 V216"/>
+      <path d="M67 127 H95 M114 127 H142 M161 127 H190"/>
+      <path d="M25 224 H231"/>
+  </g>
+  <g fill="url(#hatch)" stroke="#d4c9a8" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round" filter="url(#softGlow)">
+    
+      <path d="M45 216 V103 H211 V216"/>
+      <path d="M32 103 H224 L198 74 H58 Z"/>
+      <path d="M78 216 V154 H121 V216 M136 216 V154 H179 V216"/>
+      <path d="M67 127 H95 M114 127 H142 M161 127 H190"/>
+      <path d="M25 224 H231"/>
+  </g>
+  <g fill="none" stroke="#f2ddb0" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" opacity=".72">
+    
+      <path d="M45 216 V103 H211 V216"/>
+      <path d="M32 103 H224 L198 74 H58 Z"/>
+      <path d="M78 216 V154 H121 V216 M136 216 V154 H179 V216"/>
+      <path d="M67 127 H95 M114 127 H142 M161 127 H190"/>
+      <path d="M25 224 H231"/>
+  </g>
+</svg>

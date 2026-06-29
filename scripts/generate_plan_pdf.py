@@ -16,7 +16,7 @@ FONT_DIR = os.path.join(os.environ.get("WINDIR", r"C:\Windows"), "Fonts")
 pdfmetrics.registerFont(TTFont("Malgun", os.path.join(FONT_DIR, "malgun.ttf")))
 pdfmetrics.registerFont(TTFont("MalgunBd", os.path.join(FONT_DIR, "malgunbd.ttf")))
 
-OUTPUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "doc", "이지수_100일_생존플랜.pdf")
+OUTPUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "doc", "이지수_100일_생존플랜.pdf")
 
 # ── 색상 ──
 C_TITLE = HexColor("#19407A")

@@ -118,6 +118,11 @@ describe('_processAiTurns — stance 기반 동료 행동 통합', () => {
     const before = GameState.player.hp.current;
     CombatSystem._processAiTurns();
     // 힐 발동 (player HP < 70% 조건)
+    expect(GameState.combat.activeIdx).toBe(1);
+    expect(CombatSystem.currentEntry().type).toBe('companion');
+    expect(CombatSystem.isManualCompanionTurn()).toBe(true);
+    expect(GameState.player.hp.current).toBe(before);
+    expect(CombatSystem.resolveManualCompanionAction('heal', 'npc_nurse')).toBe(true);
     expect(GameState.player.hp.current).toBeGreaterThan(before);
     // 큐가 플레이어(0)로 복귀
     expect(GameState.combat.activeIdx).toBe(0);
@@ -126,7 +131,26 @@ describe('_processAiTurns — stance 기반 동료 행동 통합', () => {
   it('support stance 동료 + nurse → nurse_triage 발동 및 쿨다운 설정', () => {
     GameState.npcs.states.npc_nurse.stance = 'support';
     CombatSystem._processAiTurns();
+    expect(GameState.npcs.states.npc_nurse.skillCooldowns?.nurse_triage).toBeUndefined();
+    expect(GameState.combat.activeIdx).toBe(1);
+    expect(CombatSystem.resolveManualCompanionAction('support', 'npc_nurse')).toBe(true);
     const skill = BALANCE.combat.companionAuto.classSkills.npc_nurse;
     expect(GameState.npcs.states.npc_nurse.skillCooldowns?.nurse_triage).toBe(skill.cooldown);
+  });
+
+  it('manual stance 동료는 현재 턴에서 멈추고 명령 후 턴을 진행한다', () => {
+    GameState.npcs.states.npc_nurse.stance = 'manual';
+
+    CombatSystem._processAiTurns();
+
+    expect(GameState.combat.activeIdx).toBe(1);
+    expect(CombatSystem.currentEntry().type).toBe('companion');
+    expect(CombatSystem.isManualCompanionTurn()).toBe(true);
+
+    const acted = CombatSystem.resolveManualCompanionAction('attack', 'npc_nurse');
+
+    expect(acted).toBe(true);
+    expect(GameState.combat.activeIdx).toBe(0);
+    expect(CombatSystem.canPlayerAct()).toBe(true);
   });
 });

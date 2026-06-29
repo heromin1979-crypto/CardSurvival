@@ -33,7 +33,11 @@ describe('_playFx — 개별 연출 분기', () => {
     expect(enemy.classList.contains('hit')).toBe(true);
     expect(enemy.querySelector('.dmg-popup').textContent).toBe('-12');
     expect(document.querySelector('.cv-player').classList.contains('attacking')).toBe(true);
+    expect(document.querySelector('.cv-player').classList.contains('motion-knife-slash')).toBe(true);
+    expect(enemy.classList.contains('motion-zombie-hit')).toBe(true);
     expect(enemy.querySelector('.cv-fx-slash')).not.toBeNull();
+    expect(document.querySelector('.combat-visual').classList.contains('camera-ally-strike')).toBe(true);
+    expect(document.querySelector('.combat-visual').classList.contains('camera-work-active')).toBe(true);
   });
 
   it('playerAttack 빗나감 → MISS 플로팅, hit flash 없음', () => {
@@ -41,6 +45,8 @@ describe('_playFx — 개별 연출 분기', () => {
     const enemy = document.querySelector('.cv-enemy-sprite[data-idx="1"]');
     expect(enemy.classList.contains('hit')).toBe(false);
     expect(enemy.querySelector('.dmg-popup.miss').textContent).toBe('MISS');
+    expect(document.querySelector('.cv-player').classList.contains('motion-whiff')).toBe(true);
+    expect(document.querySelector('.combat-visual').classList.contains('camera-ally-whiff')).toBe(true);
   });
 
   it('playerAttack 치명타 → combat-visual shake', () => {
@@ -51,16 +57,35 @@ describe('_playFx — 개별 연출 분기', () => {
 
   it('enemyAttack → 적 lunging + 플레이어 hit + -N 플로팅', () => {
     CombatUI._playFx({ kind: 'enemyAttack', enemyIdx: 0, fx: 'claw', dmg: 9 });
-    expect(document.querySelector('.cv-enemy-sprite[data-idx="0"]').classList.contains('lunging')).toBe(true);
+    const enemy = document.querySelector('.cv-enemy-sprite[data-idx="0"]');
+    expect(enemy.classList.contains('lunging')).toBe(true);
+    expect(enemy.classList.contains('motion-zombie-lunge')).toBe(true);
     const player = document.querySelector('.cv-player');
     expect(player.classList.contains('hit')).toBe(true);
+    expect(player.classList.contains('motion-player-hit')).toBe(true);
     expect(player.querySelector('.dmg-popup').textContent).toBe('-9');
     expect(player.querySelector('.cv-fx-claw')).not.toBeNull();
+    expect(document.querySelector('.combat-visual').classList.contains('camera-enemy-strike')).toBe(true);
+    expect(document.querySelector('.combat-visual').classList.contains('camera-work-active')).toBe(true);
+  });
+
+  it('enemyAttack rupture FX -> player impact overlay', () => {
+    CombatUI._playFx({ kind: 'enemyAttack', enemyIdx: 0, fx: 'rupture', dmg: 11 });
+    const enemy = document.querySelector('.cv-enemy-sprite[data-idx="0"]');
+    const player = document.querySelector('.cv-player');
+    expect(enemy.classList.contains('motion-zombie-heavy')).toBe(true);
+    expect(player.classList.contains('hit')).toBe(true);
+    expect(player.querySelector('.cv-fx-rupture')).not.toBeNull();
+    expect(player.querySelector('.dmg-popup').textContent).toBe('-11');
   });
 
   it('companionAttack → 아군 attacking + 타겟 적 위 -N 플로팅', () => {
     CombatUI._playFx({ kind: 'companionAttack', npcId: 'npc_nurse', targetIdx: 1, dmg: 8, fx: 'slash' });
-    expect(document.querySelector('.cv-ally[data-companion-id="npc_nurse"]').classList.contains('attacking')).toBe(true);
+    const ally = document.querySelector('.cv-ally[data-companion-id="npc_nurse"]');
+    const enemy = document.querySelector('.cv-enemy-sprite[data-idx="1"]');
+    expect(ally.classList.contains('attacking')).toBe(true);
+    expect(ally.classList.contains('motion-knife-slash')).toBe(true);
+    expect(enemy.classList.contains('motion-zombie-hit')).toBe(true);
     expect(document.querySelector('.cv-enemy-sprite[data-idx="1"] .dmg-popup').textContent).toBe('-8');
   });
 
@@ -70,6 +95,7 @@ describe('_playFx — 개별 연출 분기', () => {
     const popup = document.querySelector('.cv-player .dmg-popup.heal');
     expect(popup).not.toBeNull();
     expect(popup.textContent).toBe('+15');
+    expect(document.querySelector('.cv-player').classList.contains('motion-heal-pulse')).toBe(true);
   });
 
   it('companionSkill → combat-visual skill-flash + 아군 glowing', () => {
@@ -82,19 +108,93 @@ describe('_playFx — 개별 연출 분기', () => {
     CombatUI._playFx({ kind: 'enemyAttackCompanion', enemyIdx: 0, npcId: 'npc_soldier', dmg: 7 });
     const ally = document.querySelector('.cv-ally[data-companion-id="npc_soldier"]');
     expect(ally.classList.contains('hit')).toBe(true);
+    expect(ally.querySelector('.cv-fx-claw')).not.toBeNull();
     expect(ally.querySelector('.dmg-popup').textContent).toBe('-7');
-    expect(document.querySelector('.cv-enemy-sprite[data-idx="0"]').classList.contains('lunging')).toBe(true);
+    const enemy = document.querySelector('.cv-enemy-sprite[data-idx="0"]');
+    expect(enemy.classList.contains('lunging')).toBe(true);
+    expect(enemy.classList.contains('motion-zombie-lunge')).toBe(true);
+    expect(document.querySelector('.combat-visual').classList.contains('camera-enemy-strike')).toBe(true);
   });
 
   it('advance → 적 advancing 슬라이드', () => {
     CombatUI._playFx({ kind: 'advance', enemyIdx: 1 });
-    expect(document.querySelector('.cv-enemy-sprite[data-idx="1"]').classList.contains('advancing')).toBe(true);
+    const enemy = document.querySelector('.cv-enemy-sprite[data-idx="1"]');
+    expect(enemy.classList.contains('advancing')).toBe(true);
+    expect(enemy.classList.contains('motion-zombie-advance')).toBe(true);
   });
 
-  it('explode → 적 위 explode 오버레이 + shake', () => {
+  it('summon → 좀비 scream 모션 + 카메라 충격', () => {
+    CombatUI._playFx({ kind: 'summon', enemyIdx: 0 });
+    const summonEnemy = document.querySelector('.cv-enemy-sprite[data-idx="0"]');
+    expect(summonEnemy.classList.contains('motion-zombie-scream')).toBe(true);
+    expect(summonEnemy.querySelector('.cv-fx-scream')).not.toBeNull();
+    expect(document.querySelector('.combat-visual').classList.contains('camera-impact-heavy')).toBe(true);
+  });
+
+  it('extended combat motion events are applied', () => {
+    const player = document.querySelector('.cv-player');
+    const enemy = document.querySelector('.cv-enemy-sprite[data-idx="0"]');
+
+    CombatUI._playFx({ kind: 'guard' });
+    expect(player.classList.contains('motion-guard-brace')).toBe(true);
+
+    CombatUI._playFx({ kind: 'useItem', fx: 'heal', label: '+12' });
+    expect(player.classList.contains('motion-heal-pulse')).toBe(true);
+
+    CombatUI._playFx({ kind: 'flee', success: true });
+    expect(player.classList.contains('motion-move-back')).toBe(true);
+
+    CombatUI._playFx({ kind: 'move', target: 'player', direction: 'forward' });
+    expect(player.classList.contains('motion-move-forward')).toBe(true);
+
+    CombatUI._playFx({ kind: 'rankSwap', target: 'player' });
+    expect(player.classList.contains('motion-rank-swap')).toBe(true);
+
+    CombatUI._playFx({ kind: 'dodge', target: 'player' });
+    expect(player.classList.contains('motion-dodge')).toBe(true);
+
+    CombatUI._playFx({ kind: 'status', target: 'enemy', enemyIdx: 0, statusId: 'bleed' });
+    expect(enemy.classList.contains('motion-status-bleed')).toBe(true);
+
+    CombatUI._playFx({ kind: 'downed', target: 'player' });
+    expect(player.classList.contains('motion-downed')).toBe(true);
+
+    CombatUI._playFx({ kind: 'victory' });
+    expect(player.classList.contains('motion-victory')).toBe(true);
+
+    CombatUI._playFx({ kind: 'defeat' });
+    expect(player.classList.contains('motion-defeat')).toBe(true);
+  });
+
+  it('explode image FX + shake', () => {
     CombatUI._playFx({ kind: 'explode', enemyIdx: 0, dmg: 28 });
     expect(document.querySelector('.cv-enemy-sprite[data-idx="0"] .cv-fx-explode')).not.toBeNull();
     expect(document.querySelector('.combat-visual').classList.contains('shake')).toBe(true);
+    expect(document.querySelector('.combat-visual').classList.contains('camera-impact-heavy')).toBe(true);
+  });
+
+  it('camera work exposes a shared active state and clears it after the animation', () => {
+    vi.useFakeTimers();
+
+    CombatUI._cameraWork('ally-strike', 200);
+    const visual = document.querySelector('.combat-visual');
+
+    expect(visual.classList.contains('camera-work-active')).toBe(true);
+    expect(visual.classList.contains('camera-ally-strike')).toBe(true);
+
+    vi.advanceTimersByTime(220);
+
+    expect(visual.classList.contains('camera-work-active')).toBe(false);
+    expect(visual.classList.contains('camera-ally-strike')).toBe(false);
+    vi.useRealTimers();
+  });
+
+  it('companionSkill maps role skills to their matching sprite motion rows', () => {
+    CombatUI._playFx({ kind: 'companionSkill', npcId: 'npc_soldier', skillId: 'soldier_suppress' });
+    expect(document.querySelector('.cv-ally[data-companion-id="npc_soldier"]').classList.contains('motion-firearm-shot')).toBe(true);
+
+    CombatUI._playFx({ kind: 'companionSkill', npcId: 'npc_nurse', skillId: 'nurse_triage' });
+    expect(document.querySelector('.cv-ally[data-companion-id="npc_nurse"]').classList.contains('motion-heal-pulse')).toBe(true);
   });
 
   it('존재하지 않는 npcId/idx → 안전하게 no-op (에러 없음)', () => {

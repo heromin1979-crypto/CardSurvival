@@ -43,6 +43,12 @@ const LANDMARK_IMAGES = {
   lm_jongno:       'assets/images/landmarks/lm_jongno.png',
   lm_junggoo:      'assets/images/landmarks/lm_junggoo.png',
   lm_jungrang:     'assets/images/landmarks/lm_jungrang.png',
+  lm_raider_camp_small:  'assets/images/landmarks/lm_raider_camp_small.png',
+  lm_raider_camp_medium: 'assets/images/landmarks/lm_raider_camp_medium.png',
+  lm_raider_camp_large:  'assets/images/landmarks/lm_raider_camp_large.png',
+  lm_power_station:      'assets/images/landmarks/lm_power_station.png',
+  lm_water_plant:        'assets/images/landmarks/lm_water_plant.png',
+  lm_comms_tower:        'assets/images/landmarks/lm_comms_tower.png',
   basecamp_landmark: 'assets/images/landmarks/basecamp.png',
 };
 
@@ -733,7 +739,85 @@ const CARD_IMAGES = {
   medical_clinic:        'assets/images/structures/medical_station.png',
   medical_ward:          'assets/images/structures/medical_station.png',
   field_hospital:        'assets/images/structures/medical_station.png',
+
+  // Card image audit overrides: dedicated generated assets for cards that were
+  // previously missing or pointed at unrelated placeholder art.
+  medical_cabinet:       'assets/images/structures/medical_cabinet.png',
+  mountain_water:        'assets/images/food/mountain_water.png',
+  axe:                   'assets/images/weapons/axe.png',
+  shovel:                'assets/images/weapons/shovel.png',
+  hammer:                'assets/images/weapons/hammer.png',
+  improved_crossbow_bolt: 'assets/images/weapons/improved_crossbow_bolt.png',
+  rifle:                 'assets/images/weapons/rifle.png',
+  acorn_boiled:          'assets/images/food/acorn_boiled.png',
+  poison:                'assets/images/medical/poison.png',
+  guard_stance_kit:      'assets/images/special/guard_stance_kit.png',
+  bibimbap_chef:         'assets/images/food/bibimbap_chef.png',
+  stream_spring:         'assets/images/environment/stream_spring.png',
+  dry_stream:            'assets/images/environment/dry_stream.png',
+  empty_bucket:          'assets/images/tools/empty_bucket.png',
+  water_bucket:          'assets/images/tools/water_bucket.png',
+  stethoscope:           'assets/images/medical/stethoscope.png',
+  animal_nest:           'assets/images/environment/animal_nest.png',
+  kimchi_stew:           'assets/images/food/kimchi_stew.png',
+  soybean_stew:          'assets/images/food/soybean_stew.png',
+  galbi_jjim:            'assets/images/food/galbi_jjim.png',
+  cold_noodles:          'assets/images/food/cold_noodles.png',
+  tomato_pasta:          'assets/images/food/tomato_pasta.png',
+  grilled_steak:         'assets/images/food/grilled_steak.png',
+  cream_soup:            'assets/images/food/cream_soup.png',
+  mushroom_risotto:      'assets/images/food/mushroom_risotto.png',
+  hard_bread:            'assets/images/food/hard_bread.png',
+  honey_cookies:         'assets/images/food/honey_cookies.png',
+  sponge_cake:           'assets/images/food/sponge_cake.png',
+  pudding:               'assets/images/food/pudding.png',
+  recovery_stew:         'assets/images/food/recovery_stew.png',
+  hangover_soup:         'assets/images/food/hangover_soup.png',
+  fish_cake_stew:        'assets/images/food/fish_cake_stew.png',
+  hot_pot:               'assets/images/food/hot_pot.png',
+  rice_porridge:         'assets/images/food/rice_porridge.png',
+  combat_scalpel:        'assets/images/weapons/combat_scalpel.png',
+  battered_can:          'assets/images/tools/battered_can.png',
+  old_blanket:           'assets/images/armor/old_blanket.png',
+  newspaper_bundle:      'assets/images/materials/newspaper_bundle.png',
+  worn_photo:            'assets/images/special/worn_photo.png',
+  sketch_notebook:       'assets/images/special/sketch_notebook.png',
+  chef_journal:          'assets/images/special/chef_journal.png',
+  spice_blend:           'assets/images/food/spice_blend.png',
+  chef_meal_kit:         'assets/images/food/chef_meal_kit.png',
+  hearty_stew:           'assets/images/food/hearty_stew.png',
+  family_photo:          'assets/images/special/family_photo.png',
+  dog_tag:               'assets/images/special/dog_tag.png',
+  box_cutter:            'assets/images/weapons/box_cutter.png',
+  broken_bottle:         'assets/images/weapons/broken_bottle.png',
+  truffle:               'assets/images/food/truffle.png',
+  korean_beef_premium:   'assets/images/food/korean_beef_premium.png',
+  matsutake_mushroom:    'assets/images/food/matsutake_mushroom.png',
+  abalone:               'assets/images/food/abalone.png',
+  king_crab:             'assets/images/food/king_crab.png',
+  ginseng_6years:        'assets/images/food/ginseng_6years.png',
+  wild_honey:            'assets/images/food/wild_honey.png',
+  caviar_local:          'assets/images/food/caviar_local.png',
+  wagyu_scrap:           'assets/images/food/wagyu_scrap.png',
+  saffron_dried:         'assets/images/food/saffron_dried.png',
+  gourmet_steak:         'assets/images/food/gourmet_steak.png',
+  traditional_feast:     'assets/images/food/traditional_feast.png',
+  truffle_risotto:       'assets/images/food/truffle_risotto.png',
+  seafood_platter:       'assets/images/food/seafood_platter.png',
+  special_soup:          'assets/images/food/special_soup.png',
+  iron_pipe_reinforced:  'assets/images/weapons/iron_pipe_reinforced.png',
+  sharpened_knife_plus:  'assets/images/weapons/sharpened_knife_plus.png',
+  reinforced_bat_plus:   'assets/images/weapons/reinforced_bat_plus.png',
+  machete_plus:          'assets/images/weapons/machete_plus.png',
+  garden_salad:          'assets/images/food/garden_salad.png',
+  dark_chocolate:        'assets/images/food/dark_chocolate.png',
+  thermometer:           'assets/images/medical/thermometer.png',
 };
+
+function subLocationImage(def) {
+  const key = def?.subLocationId ?? def?.id?.replace(/^sl_/, '');
+  return key ? `assets/images/sublocations/${key}.png` : null;
+}
 
 const CardFactory = {
   images: CARD_IMAGES,
@@ -1096,11 +1180,13 @@ const CardFactory = {
   _buildSubLocationInner(def) {
     const dangerPct   = Math.round((def.dangerMod ?? 0) * 100);
     const dangerColor = dangerPct <= 10 ? '#449944' : dangerPct <= 20 ? '#cc8822' : '#cc3333';
+    const subImg      = subLocationImage(def);
+    const subBg       = subImg ? `style="background-image:url('${subImg}');background-size:cover;background-position:center;"` : '';
     return `
       <div class="lc-header">
         <span class="lm-badge">${I18n.t('card.interior')}</span>
       </div>
-      <div class="lc-icon">${def.icon}</div>
+      <div class="lc-scene lc-scene--sublocation" ${subBg}></div>
       <div class="lc-name">${I18n.itemName(def.id ?? def.subLocationId, def.name)}</div>
       <div class="lc-danger" style="color:${dangerColor}; font-size:9px; margin-top:2px;">
         ${dangerPct > 0 ? I18n.t('card.dangerHigh', { pct: dangerPct }) : I18n.t('card.dangerLow')}

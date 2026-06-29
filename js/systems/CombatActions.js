@@ -9,15 +9,17 @@ import StateMachine from '../core/StateMachine.js';
 import NoiseSystem from './NoiseSystem.js';
 import BALANCE    from '../data/gameBalance.js';
 import GameData from '../data/GameData.js';
+import { getCharacterCombatEffects } from '../data/characters.js';
 
 // ── 방어(Guard) 행동 ────────────────────────────────────────────
 
 export function guardAction() {
   const gs = GameState;
+  const effects = getCharacterCombatEffects(gs.player?.characterId);
   gs.combat.playerGuard = {
     active:       true,
-    damageReduce: BALANCE.combat.guardDamageReduction,
-    counterBonus: BALANCE.combat.guardCounterBonus,
+    damageReduce: Math.min(0.85, BALANCE.combat.guardDamageReduction + (effects.guardDamageReduceBonus ?? 0)),
+    counterBonus: BALANCE.combat.guardCounterBonus + (effects.guardCounterBonus ?? 0),
     duration:     BALANCE.combat.guardDuration,
   };
 }

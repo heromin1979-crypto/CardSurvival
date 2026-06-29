@@ -554,6 +554,7 @@ export const ko = {
   'combatSys.blockedByFront':      '🚫 전열의 적이 가로막고 있다! 원거리 무기로만 노릴 수 있다.',
   'combatSys.meleeRetarget':       '⚔️ 후열에 닿지 않아 {name}을(를) 대신 공격한다.',
   'combatSys.enemyAdvance':        '👣 {enemy}이(가) 전열로 나선다!',
+  'combatSys.playerMove':          '[이동] {rank}로 이동했다.',
   'combat.rankFront':              '전열',
   'combat.rankBack':               '후열',
 
@@ -1433,6 +1434,7 @@ export const en = {
   'combatSys.blockedByFront':      '🚫 The front line is in the way! Only ranged weapons can reach.',
   'combatSys.meleeRetarget':       "⚔️ Can't reach the back row — attacking {name} instead.",
   'combatSys.enemyAdvance':        '👣 {enemy} moves up to the front line!',
+  'combatSys.playerMove':          '[Move] Moved to {rank}.',
   'combat.rankFront':              'Front',
   'combat.rankBack':               'Back',
 
@@ -1839,7 +1841,6 @@ export const en = {
   '_enemy.boss_homeless_nemesis':   'Loan Shark',
   '_enemy.boss_chef_nemesis':       'Mutant Chef',
   '_enemy.boss_doctor_nemesis':     'Infected Fellow Doctor',
-  '_enemy.boss_engineer_rival':     'Mad Mechanic',
   '_enemy.zombie_bloater':          'Bloater',
   '_enemy.zombie_screamer':         'Screamer',
   '_enemy.zombie_charger':          'Charger',

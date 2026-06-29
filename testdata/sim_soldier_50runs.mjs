@@ -186,9 +186,7 @@ const SIM_BOSSES = [
   { id: 'boss_radiation_colossus',name: '방사선 거인',   hp: 180, dmg: [28,45], acc: 0.50, def: 5,  regen: 0,  atkPR: 1, districts: ['jongno'],                     minDay: 100, season: null,     weather: null,       isNemesis: false, infOnHit: 0  },
   { id: 'boss_cult_leader',      name: '교단 교주',      hp: 70,  dmg: [15,28], acc: 0.65, def: 2,  regen: 0,  atkPR: 1, districts: ['seongbuk','dongdaemun'],      minDay: 100, season: null,     weather: null,       isNemesis: false, infOnHit: 0  },
   { id: 'boss_phantom_sniper',   name: '유령 저격수',    hp: 50,  dmg: [35,55], acc: 0.80, def: 1,  regen: 0,  atkPR: 1, districts: ['jongno','junggoo'],           minDay: 120, season: null,     weather: null,       isNemesis: false, infOnHit: 0  },
-  { id: 'boss_monsoon_leviathan',name: '장마 수괴',      hp: 130, dmg: [18,35], acc: 0.60, def: 4,  regen: 0,  atkPR: 1, districts: ['mapo','yeongdeungpo','yongsan'],minDay:135, season: 'summer', weather: 'monsoon',  isNemesis: false, infOnHit: 0  },
   { id: 'boss_blizzard_wraith',  name: '눈보라의 망령',  hp: 90,  dmg: [18,30], acc: 0.70, def: 2,  regen: 0,  atkPR: 1, districts: [],                             minDay: 0,   season: 'winter', weather: 'blizzard', isNemesis: false, infOnHit: 0  },
-  { id: 'boss_acid_rain_horror', name: '산성비 괴물',    hp: 110, dmg: [15,28], acc: 0.65, def: 3,  regen: 0,  atkPR: 1, districts: [],                             minDay: 0,   season: 'autumn', weather: 'acid_rain',isNemesis: false, infOnHit: 0  },
 ];
 
 // ─── 히든 레시피 ───────────────────────────────────────────────

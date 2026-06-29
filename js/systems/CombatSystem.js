@@ -17,6 +17,7 @@ import BALANCE from '../data/gameBalance.js';
 import CharDialogue from '../data/charDialogues.js';
 import NightSystem from './NightSystem.js';
 import GameData from '../data/GameData.js';
+import { getCharacterCombatEffects } from '../data/characters.js';
 import {
   guardAction, consumeGuard,
   throwableAction,
@@ -41,6 +42,7 @@ const CombatSystem = {
             outcome: null, rewards: [], nodeId: data?.nodeId ?? null,
             dangerLevel: data?.dangerLevel ?? 2, round: 0, xpGained: 0,
             lastHit: null, playerStatus: [], enemyStatus: [], fxQueue: [],
+            playerRank: 'front',
             _encounterData: data ?? {}, _isNew: true, _ambushFailed: false,
           };
           EventBus.emit('combatStarted', {});
@@ -84,6 +86,7 @@ const CombatSystem = {
       lastHit:      null,
       playerStatus: [],
       enemyStatus:  [],
+      playerRank:   data.playerRank ?? 'front',
       fxQueue:      [],   // 연출 이벤트 큐 — CombatUI가 렌더 후 순차 재생
       // Phase 1: 턴 큐 필드
       turnQueue:    [],
@@ -99,7 +102,10 @@ const CombatSystem = {
       return st?.isCompanion && (st.hp ?? 0) > 0;
     });
     gs.combat.turnQueue = this._buildTurnQueue(gs.combat, companions);
-    gs.combat.activeIdx = 0;   // 항상 플레이어부터
+    gs.combat.activeIdx = Math.max(0, gs.combat.turnQueue.findIndex(entry =>
+      entry.type === 'player'
+      || (entry.type === 'companion' && this._getCompanionStance(entry.id) === 'manual')
+    ));
 
     // Phase 3 — 전투 시작 시 모든 적의 초기 의도 결정 (Into the Breach 방식 가시성)
     for (const e of gs.combat.enemies) {
@@ -133,13 +139,53 @@ const CombatSystem = {
     for (let i = 0; i < enemies.length; i++) {
       queue.push({ type: 'enemy', enemyIdx: i, order: order++ });
     }
-    return queue;
+    return queue
+      .map(entry => ({ entry, score: this._initiativeScore(entry, combat) }))
+      .sort((a, b) => (b.score - a.score) || (a.entry.order - b.entry.order))
+      .map((item, idx) => ({ ...item.entry, order: idx }));
+  },
+
+  _initiativeScore(entry, combat = GameState.combat) {
+    if (!entry) return 0;
+    if (entry.type === 'player') {
+      const st = GameState.stats?.stamina;
+      const staminaPct = st?.max ? (st.current ?? 0) / st.max : 1;
+      const explicit = GameState.player?.actionSpeed ?? GameState.player?.speed ?? GameState.player?.initiative;
+      return Number.isFinite(explicit) ? explicit : 80 + Math.round(staminaPct * 20);
+    }
+    if (entry.type === 'companion') {
+      const st = GameState.npcs?.states?.[entry.id];
+      const hpPct = st?.maxHp ? (st.hp ?? 0) / st.maxHp : 1;
+      const explicit = st?.actionSpeed ?? st?.speed ?? st?.initiative;
+      return Number.isFinite(explicit) ? explicit : 65 + Math.round(hpPct * 10);
+    }
+    if (entry.type === 'enemy') {
+      const enemy = combat?.enemies?.[entry.enemyIdx];
+      const explicit = enemy?.actionSpeed ?? enemy?.speed ?? enemy?.initiative;
+      if (Number.isFinite(explicit)) return explicit;
+      return 45 + Math.max(0, (enemy?.attacksPerRound ?? 1) - 1) * 15;
+    }
+    return 0;
   },
 
   _currentEntry(combat) {
     const q = combat?.turnQueue;
     if (!q || q.length === 0) return null;
     return q[combat.activeIdx] ?? null;
+  },
+
+  currentEntry(combat = GameState.combat) {
+    return this._currentEntry(combat);
+  },
+
+  canPlayerAct(combat = GameState.combat) {
+    const entry = this._currentEntry(combat);
+    return !entry || entry.type === 'player';
+  },
+
+  isManualCompanionTurn(combat = GameState.combat) {
+    const entry = this._currentEntry(combat);
+    return entry?.type === 'companion';
   },
 
   _isEntryAlive(entry, combat, npcStates) {
@@ -234,6 +280,61 @@ const CombatSystem = {
     combat.fxQueue.push(payload);
   },
 
+  playerRankOf(combat = GameState.combat) {
+    return combat?.playerRank === 'back' ? 'back' : 'front';
+  },
+
+  _movePlayerRank() {
+    const combat = GameState.combat;
+    const next = this.playerRankOf(combat) === 'front' ? 'back' : 'front';
+    combat.playerRank = next;
+    this._fx({ kind: 'move', target: 'player', direction: next === 'back' ? 'back' : 'forward' });
+    return I18n.t('combatSys.playerMove', { rank: next === 'back' ? '후열' : '전열' });
+  },
+
+  _normalizeStatusInflict(statusDef) {
+    if (!statusDef?.id) return null;
+    const effect = { ...(statusDef.effect ?? {}) };
+    if (effect.hpLossPerRound == null && effect.hpPerRound != null) {
+      effect.hpLossPerRound = Math.abs(effect.hpPerRound);
+      delete effect.hpPerRound;
+    }
+    return {
+      ...statusDef,
+      duration: statusDef.duration ?? 1,
+      effect,
+    };
+  },
+
+  _applyEnemyStatusInflict(enemy, statusDef, enemyIdx = null) {
+    const status = this._normalizeStatusInflict(statusDef);
+    if (!enemy || !status) return false;
+    if (!enemy._statusEffects) enemy._statusEffects = [];
+
+    const existing = enemy._statusEffects.find(s => s.id === status.id);
+    if (existing) {
+      existing.duration = Math.max(existing.duration ?? 0, status.duration ?? 1);
+      existing.effect = { ...(existing.effect ?? {}) };
+      if (status.effect?.hpLossPerRound != null) {
+        existing.effect.hpLossPerRound = Math.max(existing.effect.hpLossPerRound ?? 0, status.effect.hpLossPerRound);
+      }
+      for (const [key, val] of Object.entries(status.effect ?? {})) {
+        if (key !== 'hpLossPerRound' && existing.effect[key] == null) existing.effect[key] = val;
+      }
+    } else {
+      enemy._statusEffects.push({
+        id: status.id,
+        name: status.name ?? status.id,
+        duration: status.duration ?? 1,
+        effect: { ...(status.effect ?? {}) },
+      });
+    }
+
+    const idx = enemyIdx ?? GameState.combat?.enemies?.indexOf(enemy);
+    this._fx({ kind: 'status', target: 'enemy', enemyIdx: idx, statusId: status.id });
+    return true;
+  },
+
   // 무기 속성 → 연출 종류 매핑
   _weaponFx(weaponDef) {
     if (!weaponDef) return 'punch';
@@ -246,6 +347,89 @@ const CombatSystem = {
       case 'explosive': return 'blast';
       default:          return 'blunt';
     }
+  },
+
+  _characterCombatEffects() {
+    return getCharacterCombatEffects(GameState.player?.characterId);
+  },
+
+  _isFirearmWeapon(weaponDef) {
+    return !!weaponDef?.combat?.requiresAmmo;
+  },
+
+  _isBladeWeapon(weaponDef) {
+    return weaponDef?.weaponType === 'blade'
+      || weaponDef?.tags?.includes('blade')
+      || weaponDef?.tags?.includes('knife')
+      || weaponDef?.subtype === 'knife';
+  },
+
+  _isMedicalItem(def) {
+    return def?.tags?.includes('medical') || def?.type === 'medical';
+  },
+
+  _applyCharacterAimIdentity({ accuracy, critChance, weaponDef, skillId = null }) {
+    const effects = this._characterCombatEffects();
+    const usesLoadedFirearm = this._isFirearmWeapon(weaponDef) && (skillId == null || skillId === 'ranged');
+    if (usesLoadedFirearm) {
+      accuracy = Math.min(1, accuracy + (effects.firearmAccBonus ?? 0));
+      critChance = Math.min(1, critChance + (effects.firearmCritBonus ?? 0));
+    }
+    return { accuracy, critChance };
+  },
+
+  _applyCharacterDamageIdentity(damage, weaponId, weaponDef) {
+    const effects = this._characterCombatEffects();
+    if (weaponId && GameState.cards?.[weaponId]?._crafted && effects.craftedWeaponDmgBonus) {
+      damage = Math.floor(damage * (1 + effects.craftedWeaponDmgBonus));
+    }
+    return damage;
+  },
+
+  _applyCharacterOnHitIdentity(enemy, weaponDef) {
+    const effects = this._characterCombatEffects();
+    if (!enemy || !this._isBladeWeapon(weaponDef) || !effects.bladeBleedChance) return false;
+    if (Math.random() >= effects.bladeBleedChance) return false;
+
+    if (!enemy._statusEffects) enemy._statusEffects = [];
+    const bleed = {
+      id: 'bleed',
+      name: '출혈',
+      duration: effects.bladeBleedDuration ?? 2,
+      effect: { hpLossPerRound: effects.bladeBleedDmgPerRound ?? 3 },
+    };
+    const existing = enemy._statusEffects.find(s => s.id === 'bleed');
+    if (existing) {
+      existing.duration = Math.max(existing.duration, bleed.duration);
+      existing.effect.hpLossPerRound = Math.max(existing.effect.hpLossPerRound ?? 0, bleed.effect.hpLossPerRound);
+    } else {
+      enemy._statusEffects.push(bleed);
+    }
+    return true;
+  },
+
+  _getEnemyAccuracyAgainstPlayer(baseAccuracy) {
+    const effects = this._characterCombatEffects();
+    const hp = GameState.player?.hp;
+    if (!hp?.max || !effects.lowHpEnemyAccuracyPenalty) return baseAccuracy;
+    const threshold = effects.lowHpThreshold ?? 0.30;
+    if ((hp.current / hp.max) > threshold) return baseAccuracy;
+    return Math.max(0.1, baseAccuracy - effects.lowHpEnemyAccuracyPenalty);
+  },
+
+  _getMedicalHealMultiplier(def) {
+    let healMult = GameState.player?.healBonus ?? 1.0;
+    const effects = this._characterCombatEffects();
+    if (this._isMedicalItem(def) && !GameState.combat?._identityFirstMedicalUsed) {
+      healMult += effects.firstMedicalItemHealBonus ?? 0;
+    }
+    return healMult;
+  },
+
+  _markMedicalIdentityUse(def) {
+    const effects = this._characterCombatEffects();
+    if (!effects.firstMedicalItemHealBonus || !this._isMedicalItem(def) || !GameState.combat) return;
+    GameState.combat._identityFirstMedicalUsed = true;
   },
 
   // 죽은 타겟 → 닿을 수 있는 적 우선으로 자동 전환, 없으면 -1
@@ -263,7 +447,7 @@ const CombatSystem = {
     const { enemies } = GameState.combat;
     const enemy = enemies[index];
     if (!enemy || enemy.currentHp <= 0) return false;
-    if (!this.isEnemyReachable(enemy, this.isPlayerWeaponRanged())) {
+    if (!this.isEnemyReachable(enemy, this._currentActorCanTargetBackRow())) {
       EventBus.emit('notify', { message: I18n.t('combatSys.blockedByFront'), type: 'warn' });
       return false;
     }
@@ -272,6 +456,14 @@ const CombatSystem = {
   },
 
   // ── 행동 처리 ──────────────────────────────────────────
+
+  _currentActorCanTargetBackRow(combat = GameState.combat) {
+    const entry = this._currentEntry(combat);
+    if (entry?.type === 'companion') {
+      return (BALANCE.combat.companionAuto.rangedCompanions ?? []).includes(entry.id);
+    }
+    return this.isPlayerWeaponRanged();
+  },
 
   resolveAction(action, weaponInstanceId = null) {
     const gs = GameState;
@@ -324,7 +516,11 @@ const CombatSystem = {
         break;
       case 'guard':
         guardAction();
+        this._fx({ kind: 'guard' });
         logEntry = I18n.t('combatSys.guardStart');
+        break;
+      case 'move':
+        logEntry = this._movePlayerRank();
         break;
       case 'throwable':
         logEntry = throwableAction(weaponInstanceId, this);
@@ -462,6 +658,18 @@ const CombatSystem = {
       const hasLight = gs.getBoardCards().some(c => gs.getCardDef(c.instanceId)?.tags?.includes('light_source') && (c.durability ?? 100) > 0);
       accuracy = Math.max(0.1, accuracy - (hasLight ? BALANCE.combat.nightLitPenalty : BALANCE.combat.nightAccuracyPenalty));
     }
+    ({ accuracy, critChance } = this._applyCharacterAimIdentity({
+      accuracy,
+      critChance,
+      weaponDef: weaponId && gs.cards[weaponId] ? gs.getCardDef(weaponId) : null,
+      skillId,
+    }));
+
+    const evasion = enemy._combatBuffs?.evasion;
+    if (evasion && (evasion.duration ?? 0) > 0) {
+      accuracy = Math.max(0.05, accuracy * (1 - (evasion.value ?? 0)));
+    }
+
     const hit = Math.random() < accuracy;
     if (hit) {
       const effectiveCritChance = Math.min(1, critChance + (gs.player.critBonus ?? 0));
@@ -475,10 +683,7 @@ const CombatSystem = {
       }
 
       damage = Math.floor(damage * (gs.player.combatDmgBonus ?? 1.0));
-      // 기계공 자작 무기 보너스 (+15%)
-      if (gs.player.characterId === 'engineer' && weaponId && gs.cards[weaponId]?._crafted) {
-        damage = Math.floor(damage * 1.15);
-      }
+      damage = this._applyCharacterDamageIdentity(damage, weaponId, weaponId && gs.cards[weaponId] ? gs.getCardDef(weaponId) : null);
       // 셰프 나이프/칼 무기 보너스
       if (gs.player.knifeDmgBonus && weaponId) {
         const wDef = gs.getCardDef(weaponId);
@@ -509,7 +714,8 @@ const CombatSystem = {
         gs.combat.playerGuard = null;
       }
 
-      const finalDmg = Math.max(1, damage - (enemy.defense ?? 0));
+      let finalDmg = Math.max(1, damage - (enemy.defense ?? 0));
+      if ((enemy._combatBuffs?.invulnerable?.duration ?? 0) > 0) finalDmg = 0;
       enemy.currentHp = Math.max(0, enemy.currentHp - finalDmg);
 
       if (enemy.currentHp <= 0) {
@@ -532,6 +738,12 @@ const CombatSystem = {
           enemy._nextIntent = this._decideNextIntent(enemy, gs.combat, gs) ?? null;
           gs.combat.log.push(I18n.t('combatSys.chargeInterrupt', { enemy: I18n.enemyName(enemy.id, enemy.name) }));
         }
+      }
+      if (stunDef?.id !== 'stun' && enemy.currentHp > 0 && Math.random() < (stunDef?.chance ?? 1)) {
+        this._applyEnemyStatusInflict(enemy, stunDef, gs.combat.targetIndex);
+      }
+      if (enemy.currentHp > 0) {
+        this._applyCharacterOnHitIdentity(enemy, wInst);
       }
 
       if (isCrit && enemy.type === 'human' && enemy.currentMorale != null) {
@@ -565,6 +777,7 @@ const CombatSystem = {
           const stunDmg = BALANCE.combat.unarmedStunDmg;
           enemy.currentHp = Math.max(0, enemy.currentHp - stunDmg);
           gs.combat.enemyStatus.push({ id: 'stun', name: I18n.t('combatSys.stun'), duration: 1, effect: {} });
+          this._fx({ kind: 'status', target: 'enemy', enemyIdx: gs.combat.targetIndex, statusId: 'stun' });
           gs.combat.log.push(I18n.t('combatSys.unarmedMastery', { enemy: I18n.enemyName(enemy.id, enemy.name), dmg: stunDmg }));
         }
       }
@@ -590,9 +803,11 @@ const CombatSystem = {
 
     const { hp, infection, morale } = def.onConsume;
     const msgs = [];
+    let healedAmount = 0;
     if (hp) {
-      const healMult = gs.player.healBonus ?? 1.0;
+      const healMult = this._getMedicalHealMultiplier(def);
       const healed = Math.round(hp * healMult);
+      healedAmount = healed;
       gs.player.hp.current = Math.min(gs.player.hp.max, gs.player.hp.current + healed);
       msgs.push(I18n.t('combatSys.hpHeal', { val: healed }));
     }
@@ -602,6 +817,12 @@ const CombatSystem = {
     const inst = gs.cards[itemId];
     inst.quantity = (inst.quantity ?? 1) - 1;
     if (inst.quantity <= 0) { gs.removeCardInstance(itemId); EventBus.emit('cardRemoved', { instanceId: itemId }); }
+    this._markMedicalIdentityUse(def);
+    this._fx({
+      kind: 'useItem',
+      fx: hp ? 'heal' : 'buff',
+      label: hp ? `+${healedAmount}` : 'ITEM',
+    });
 
     return I18n.t('combatSys.itemUsed', { name: I18n.itemName(def.id, def.name), effects: msgs.join(', ') });
   },
@@ -630,6 +851,7 @@ const CombatSystem = {
     const success = Math.random() < (BALANCE.combat.fleeChance + fleeBonus);
     NoiseSystem.addNoise(10);
     if (success) {
+      this._fx({ kind: 'flee', success: true });
       gs.combat.active  = false;
       gs.combat.outcome = 'fled';
       gs.modStat('fatigue', 10);
@@ -658,6 +880,7 @@ const CombatSystem = {
       StateMachine.transition('combat_result', { outcome: 'fled', nodeId: gs.combat.nodeId });
     } else {
       // 도주 실패: 모든 적이 강화 공격 (1.5배 데미지)
+      this._fx({ kind: 'flee', success: false });
       gs.combat.log.push(I18n.t('combatSys.fleeFail'));
       gs.combat._fleeFailed = true;
       if (gs.combat.active) this._allEnemiesAttack();
@@ -697,7 +920,7 @@ const CombatSystem = {
       if (entry.type === 'player') return;   // 플레이어 차례로 복귀
 
       if (entry.type === 'companion') {
-        this._runCompanionTurn(entry.id);
+        return;
       } else if (entry.type === 'enemy') {
         this._runSingleEnemyTurn(entry.enemyIdx);
         if (gs.player.hp.current <= 0) { this._resolveDefeat(); return; }
@@ -715,6 +938,66 @@ const CombatSystem = {
   _getCompanionStance(npcId) {
     const st = GameState.npcs?.states?.[npcId];
     return st?.stance ?? 'attack';
+  },
+
+  resolveManualCompanionAction(action, npcId = null) {
+    const gs = GameState;
+    const combat = gs.combat;
+    if (!combat?.active) return false;
+
+    const entry = this._currentEntry(combat);
+    if (entry?.type !== 'companion') return false;
+    const activeNpcId = entry.id;
+    if (npcId && npcId !== activeNpcId) return false;
+
+    const st = gs.npcs?.states?.[activeNpcId];
+    if (!st || (st.hp ?? 0) <= 0) return false;
+
+    this._tickCompanionSkillCooldowns(activeNpcId);
+
+    switch (action) {
+      case 'attack':
+        this._companionAutoAttack(activeNpcId, { preferSelectedTarget: true });
+        break;
+      case 'heal':
+        this._companionAutoHeal(activeNpcId);
+        break;
+      case 'support':
+        this._companionAutoSupport(activeNpcId);
+        break;
+      case 'hold':
+      case 'wait':
+        this._companionHold(activeNpcId);
+        break;
+      default:
+        return false;
+    }
+
+    this._finishActorTurn();
+    return true;
+  },
+
+  _finishActorTurn() {
+    const gs = GameState;
+    if (!gs.combat?.active) return;
+
+    for (const enemy of gs.combat.enemies ?? []) {
+      if ((enemy.currentHp ?? 0) <= 0 && !enemy._killProcessed) {
+        this._onEnemyKilled(enemy);
+      }
+    }
+
+    if (this._allEnemiesDead()) {
+      this._resolveVictory();
+      return;
+    }
+
+    this._autoAdvanceTarget();
+    this._tickStatusEffects();
+    if (this._allEnemiesDead()) { this._resolveVictory(); return; }
+    if (gs.player.hp.current <= 0) { this._resolveDefeat(); return; }
+
+    this._processAiTurns();
   },
 
   _runCompanionTurn(npcId) {
@@ -738,7 +1021,7 @@ const CombatSystem = {
   },
 
   // 가장 낮은 HP의 닿는 적 공격 (원거리 동료는 후열 직접 타격 가능)
-  _companionAutoAttack(npcId) {
+  _companionAutoAttack(npcId, options = {}) {
     const gs = GameState;
     const enemies = gs.combat?.enemies ?? [];
     const isRangedNpc = (BALANCE.combat.companionAuto.rangedCompanions ?? []).includes(npcId);
@@ -746,8 +1029,13 @@ const CombatSystem = {
       .map(e => ({ e, idx: enemies.indexOf(e) }))
       .filter(x => x.idx >= 0);
     if (alive.length === 0) return;
-    alive.sort((a, b) => (a.e.currentHp ?? 0) - (b.e.currentHp ?? 0));
-    const target = alive[0].e;
+    const selectedIdx = gs.combat?.targetIndex ?? -1;
+    const selected = options.preferSelectedTarget
+      ? alive.find(x => x.idx === selectedIdx)
+      : null;
+    if (!selected) alive.sort((a, b) => (a.e.currentHp ?? 0) - (b.e.currentHp ?? 0));
+    const targetEntry = selected ?? alive[0];
+    const target = targetEntry.e;
 
     const cfg = BALANCE.combat.companionAuto;
     const [dMin, dMax] = cfg.attackDamage;
@@ -758,7 +1046,7 @@ const CombatSystem = {
       gs.combat.log.push(I18n.t
         ? I18n.t('combatSys.companionAtkMiss', { name: this._npcLabel(npcId) })
         : `${this._npcLabel(npcId)} 공격 빗나감`);
-      this._fx({ kind: 'companionAttack', npcId, targetIdx: alive[0].idx, miss: true });
+      this._fx({ kind: 'companionAttack', npcId, targetIdx: targetEntry.idx, miss: true });
       return;
     }
 
@@ -769,8 +1057,8 @@ const CombatSystem = {
     gs.combat.log.push(I18n.t
       ? I18n.t('combatSys.companionAtk', { name: this._npcLabel(npcId), enemy: I18n.enemyName?.(target.id, target.name) ?? target.name, dmg })
       : `${this._npcLabel(npcId)}→${target.name}: ${dmg} 피해`);
-    this._fx({ kind: 'companionAttack', npcId, targetIdx: alive[0].idx, dmg, fx: isRangedNpc ? 'shot' : 'slash' });
-    EventBus.emit('companionAction', { npcId, action: 'attack', targetIdx: alive[0].idx, damage: dmg });
+    this._fx({ kind: 'companionAttack', npcId, targetIdx: targetEntry.idx, dmg, fx: isRangedNpc ? 'shot' : 'slash' });
+    EventBus.emit('companionAction', { npcId, action: 'attack', targetIdx: targetEntry.idx, damage: dmg });
   },
 
   // 이번 턴 받는 피해 감소 버프 (1턴)
@@ -1024,6 +1312,7 @@ const CombatSystem = {
     const gs = GameState;
     const enemy = gs.combat.enemies?.[enemyIdx];
     if (!enemy || enemy.currentHp <= 0) return;
+    this._applyEnemyTurnStartTraits(enemy);
 
     // 사기 격파: 사기 소진 시 도주(rout)
     if (enemy.type === 'human' && enemy.currentMorale != null
@@ -1113,8 +1402,249 @@ const CombatSystem = {
     npcSys.damageCompanion(npcId, damage);
     gs.combat.log.push(`${enemy.name ?? '적'} → ${this._npcLabel(npcId)}: ${damage} 피해`);
     gs.combat.lastHit = { target: 'companion', damage, npcId, isCrit: false };
-    this._fx({ kind: 'enemyAttackCompanion', enemyIdx: gs.combat.enemies.indexOf(enemy), npcId, dmg: damage });
+    this._fx({
+      kind: 'enemyAttackCompanion',
+      enemyIdx: gs.combat.enemies.indexOf(enemy),
+      npcId,
+      fx: this._monsterImpactFx(enemy),
+      dmg: damage,
+    });
     EventBus.emit('enemyAttackCompanion', { enemyId: enemy.id, npcId, damage });
+  },
+
+  _monsterImpactFx(enemy) {
+    if ((enemy?.attackType ?? 'melee') === 'ranged') return 'shot';
+
+    const id = String(enemy?.id ?? enemy?.definitionId ?? '').toLowerCase();
+    const name = String(enemy?.name ?? '').toLowerCase();
+    const key = `${id} ${name}`;
+
+    if (key.includes('acid') || key.includes('poison') || key.includes('부식')) return 'acid';
+    if (key.includes('charger') || key.includes('돌진')) return 'shock';
+    if (key.includes('brute') || key.includes('horde') || key.includes('tiger') || key.includes('거대')) return 'slam';
+    if (key.includes('bloater') || key.includes('radiation') || key.includes('폭발') || key.includes('방사')) return 'rupture';
+
+    return 'claw';
+  },
+
+  _addPlayerStatus(status) {
+    if (!status?.id) return false;
+    const gs = GameState;
+    if (!Array.isArray(gs.combat.playerStatus)) gs.combat.playerStatus = [];
+    const existing = gs.combat.playerStatus.find(s => s.id === status.id);
+    if (existing) {
+      existing.duration = Math.max(existing.duration ?? 0, status.duration ?? 1);
+      existing.effect = { ...(existing.effect ?? {}), ...(status.effect ?? {}) };
+    } else {
+      gs.combat.playerStatus.push({
+        id: status.id,
+        name: status.name ?? status.id,
+        duration: status.duration ?? 1,
+        effect: { ...(status.effect ?? {}) },
+      });
+    }
+    this._fx({ kind: 'status', target: 'player', statusId: status.id });
+    return true;
+  },
+
+  _instantiateEnemyFromDefinition(def) {
+    if (!def) return null;
+    const hpDef = def.hp ?? { min: def.maxHp ?? 1, max: def.maxHp ?? 1 };
+    const hp = hpDef.min + Math.floor(Math.random() * (hpDef.max - hpDef.min + 1));
+    return {
+      ...def,
+      currentHp: hp,
+      maxHp: hp,
+      row: def.position ?? def.row ?? 'front',
+      _skillCooldowns: {},
+      _statusEffects: [],
+      _chargeRemaining: def.timedThreat?.chargeTurns ?? null,
+      currentMorale: def.type === 'human' ? (def.morale?.max ?? 100) : null,
+    };
+  },
+
+  _summonEnemyById(enemyId, count = 1, row = 'front', sourceEnemy = null) {
+    const gs = GameState;
+    const def = GameData?.enemies?.[enemyId];
+    if (!def || count <= 0) return 0;
+    let spawned = 0;
+    for (let i = 0; i < count; i++) {
+      const add = this._instantiateEnemyFromDefinition(def);
+      if (!add) continue;
+      add.row = row;
+      add._nextIntent = this._decideNextIntent(add, gs.combat, gs);
+      gs.combat.enemies.push(add);
+      gs.combat.turnQueue?.push({
+        type: 'enemy',
+        enemyIdx: gs.combat.enemies.length - 1,
+        order: gs.combat.turnQueue.length,
+      });
+      spawned++;
+    }
+    if (spawned > 0) {
+      this._fx({
+        kind: 'summon',
+        enemyIdx: sourceEnemy ? gs.combat.enemies.indexOf(sourceEnemy) : -1,
+        count: spawned,
+      });
+    }
+    return spawned;
+  },
+
+  _applyEnemyTemporaryBuff(enemy, id, value, duration) {
+    if (!enemy || !id || !duration) return;
+    if (!enemy._combatBuffs) enemy._combatBuffs = {};
+    enemy._combatBuffs[id] = { value, duration };
+  },
+
+  _tickEnemyTemporaryBuffs(enemy) {
+    if (!enemy?._combatBuffs) return;
+    for (const [id, buff] of Object.entries(enemy._combatBuffs)) {
+      buff.duration = (buff.duration ?? 1) - 1;
+      if (buff.duration <= 0) {
+        if (id === 'defenseBoost') enemy.defense = Math.max(0, (enemy.defense ?? 0) - (buff.value ?? 0));
+        delete enemy._combatBuffs[id];
+      }
+    }
+  },
+
+  _applyEnemyTurnStartTraits(enemy) {
+    if (!enemy || enemy.currentHp <= 0) return;
+    this._tickEnemyTemporaryBuffs(enemy);
+    this._applyBossPhaseTriggers(enemy);
+    if (enemy.regeneration && enemy.currentHp < enemy.maxHp) {
+      const before = enemy.currentHp;
+      enemy.currentHp = Math.min(enemy.maxHp, enemy.currentHp + enemy.regeneration);
+      const healed = enemy.currentHp - before;
+      if (healed > 0) {
+        GameState.combat.log.push(`${enemy.name ?? enemy.id} regenerates ${healed} HP`);
+        this._fx({ kind: 'status', target: 'enemy', enemyIdx: GameState.combat.enemies.indexOf(enemy), statusId: 'regeneration' });
+      }
+    }
+  },
+
+  _applyEnemyAoeAttack(enemy, aoeAttack) {
+    if (!aoeAttack || Math.random() >= (aoeAttack.chance ?? 1)) return 0;
+    const gs = GameState;
+    const [dMin, dMax] = aoeAttack.damage ?? [0, 0];
+    const dmg = dMin + Math.floor(Math.random() * (dMax - dMin + 1));
+    gs.player.hp.current = Math.max(0, gs.player.hp.current - dmg);
+    gs.combat.lastHit = { target: 'player', damage: dmg, isCrit: false };
+    EventBus.emit('playerHit', { damage: dmg });
+
+    const npcSys = SystemRegistry.get('NPCSystem');
+    for (const id of (gs.companions ?? [])) {
+      const st = gs.npcs?.states?.[id];
+      if (st && (st.hp ?? 0) > 0 && npcSys?.damageCompanion) npcSys.damageCompanion(id, dmg);
+    }
+
+    if (aoeAttack.effect) {
+      this._applyEnemySkillEffect(enemy, { id: 'aoe_attack', effect: aoeAttack.effect }, dmg);
+    }
+    this._fx({ kind: 'enemyAttack', enemyIdx: gs.combat.enemies.indexOf(enemy), fx: 'skill', dmg, crit: true });
+    return dmg;
+  },
+
+  _applyBossPhaseTriggers(enemy) {
+    if (!enemy?.phaseThresholds?.length || !enemy.maxHp) return;
+    if (!enemy._triggeredPhaseThresholds) enemy._triggeredPhaseThresholds = [];
+    const ratio = enemy.currentHp / enemy.maxHp;
+    const thresholds = [...enemy.phaseThresholds].sort((a, b) => b - a);
+    for (const threshold of thresholds) {
+      if (ratio > threshold || enemy._triggeredPhaseThresholds.includes(threshold)) continue;
+      enemy._triggeredPhaseThresholds.push(threshold);
+      if (enemy._skillCooldowns) {
+        for (const skill of (enemy.specialSkills ?? [])) enemy._skillCooldowns[skill.id] = 0;
+      }
+      if (enemy.summon?.enemyId) {
+        this._summonEnemyById(enemy.summon.enemyId, enemy.summon.count ?? 1, 'front', enemy);
+      }
+      if (enemy.aoeAttack) this._applyEnemyAoeAttack(enemy, enemy.aoeAttack);
+      GameState.combat.log.push(`${enemy.name ?? enemy.id} enters phase ${threshold}`);
+    }
+  },
+
+  _applyEnemySkillEffect(enemy, skill, damageDealt = 0) {
+    const effect = skill?.effect;
+    if (!effect) return [];
+    const gs = GameState;
+    const logs = [];
+
+    if (effect.selfHeal) {
+      const before = enemy.currentHp ?? 0;
+      enemy.currentHp = Math.min(enemy.maxHp ?? before, before + effect.selfHeal);
+      logs.push(`${enemy.name ?? enemy.id} heals ${enemy.currentHp - before} HP`);
+    }
+
+    if (effect.summon?.enemyId) {
+      const count = effect.summon.count ?? 1;
+      const spawned = this._summonEnemyById(effect.summon.enemyId, count, 'front', enemy);
+      if (spawned > 0) logs.push(`${enemy.name ?? enemy.id} summons ${spawned} reinforcements`);
+    }
+
+    const dot = effect.dot ?? effect.bleed;
+    if (dot) {
+      const statusId = effect.bleed ? 'bleed' : `${skill.id}_dot`;
+      this._addPlayerStatus({
+        id: statusId,
+        name: dot.name ?? statusId,
+        duration: dot.duration ?? effect.duration ?? 2,
+        effect: { hpLossPerRound: dot.hpLossPerRound ?? dot.hpPerRound ?? 0 },
+      });
+    }
+
+    if (effect.poison) {
+      this._addPlayerStatus({
+        id: 'poison',
+        name: 'poison',
+        duration: effect.duration ?? effect.dot?.duration ?? 3,
+        effect: { hpLossPerRound: effect.dot?.hpLossPerRound ?? 4 },
+      });
+    }
+
+    if (effect.infection) gs.modStat?.('infection', effect.infection);
+    if (effect.radiation) gs.modStat?.('radiation', effect.radiation);
+    if (effect.bodyTemp) gs.modStat?.('temperature', effect.bodyTemp);
+
+    if (effect.staminaDrain && gs.stats?.stamina) {
+      gs.stats.stamina.current = Math.max(0, (gs.stats.stamina.current ?? 0) - effect.staminaDrain);
+    }
+    if (effect.moraleDrain && gs.stats?.morale) {
+      gs.stats.morale.current = Math.max(0, (gs.stats.morale.current ?? 0) - effect.moraleDrain);
+    }
+
+    if (effect.stun) {
+      this._addPlayerStatus({ id: 'stun', name: I18n.t('combatSys.stun'), duration: effect.stun, effect: {} });
+    }
+
+    if (effect.defenseBoost) {
+      enemy.defense = (enemy.defense ?? 0) + effect.defenseBoost;
+      this._applyEnemyTemporaryBuff(enemy, 'defenseBoost', effect.defenseBoost, effect.duration ?? 2);
+    }
+    if (effect.evasion) this._applyEnemyTemporaryBuff(enemy, 'evasion', effect.evasion, effect.duration ?? 2);
+    if (effect.invulnerable) this._applyEnemyTemporaryBuff(enemy, 'invulnerable', 1, effect.invulnerable);
+
+    if (effect.multiHit && damageDealt > 0) {
+      const extraHits = Math.max(0, (effect.multiHit ?? 1) - 1);
+      const extraDamage = damageDealt * extraHits;
+      gs.player.hp.current = Math.max(0, gs.player.hp.current - extraDamage);
+      if (extraDamage > 0) logs.push(`${enemy.name ?? enemy.id} follows up for ${extraDamage} damage`);
+    }
+
+    if (effect.doubleShot && damageDealt > 0) {
+      gs.player.hp.current = Math.max(0, gs.player.hp.current - damageDealt);
+      logs.push(`${enemy.name ?? enemy.id} fires again for ${damageDealt} damage`);
+    }
+
+    if (effect.aoe && damageDealt > 0) {
+      const npcSys = SystemRegistry.get('NPCSystem');
+      for (const id of (gs.companions ?? [])) {
+        const st = gs.npcs?.states?.[id];
+        if (st && (st.hp ?? 0) > 0 && npcSys?.damageCompanion) npcSys.damageCompanion(id, damageDealt);
+      }
+    }
+
+    return logs;
   },
 
   _runEnemyAI(enemy) {
@@ -1162,6 +1692,7 @@ const CombatSystem = {
         } else {
           logs.push(I18n.t('combatSys.enemySkill', { skill: skill.name, enemy: I18n.enemyName(enemy.id, enemy.name), dmg, hp: gs.player.hp.current }));
         }
+        logs.push(...this._applyEnemySkillEffect(enemy, skill, dmg));
         return logs;
       }
     }
@@ -1213,7 +1744,7 @@ const CombatSystem = {
       DiseaseSystem.checkCombatInjury(dmg, gs);
       BodySystem.onCombatHit(dmg, enemy);
       gs.combat.log.push(I18n.t('combatSys.chargerStrike', { enemy: I18n.enemyName(enemy.id, enemy.name), dmg }));
-      this._fx({ kind: 'enemyAttack', enemyIdx: gs.combat.enemies.indexOf(enemy), fx: 'claw', dmg, crit: true });
+      this._fx({ kind: 'enemyAttack', enemyIdx: gs.combat.enemies.indexOf(enemy), fx: 'shock', dmg, crit: true });
       return;
     }
 
@@ -1238,7 +1769,7 @@ const CombatSystem = {
     const gs = GameState;
     const [dMin, dMax] = enemy.attack.damage;
     let   damage = dMin + Math.floor(Math.random() * (dMax - dMin + 1));
-    const hit    = Math.random() < enemy.attack.accuracy;
+    const hit    = Math.random() < this._getEnemyAccuracyAgainstPlayer(enemy.attack.accuracy);
 
     if (hit) {
       // 방어구 효과 + 방어술 스킬 감소
@@ -1266,7 +1797,13 @@ const CombatSystem = {
         const tauntChance = nurseDef?.companion?.tauntChance ?? 0;
         if (tauntChance > 0 && Math.random() < tauntChance) {
           npcSysRef.damageCompanion('npc_nurse', damage);
-          this._fx({ kind: 'enemyAttackCompanion', enemyIdx: gs.combat.enemies.indexOf(enemy), npcId: 'npc_nurse', dmg: damage });
+          this._fx({
+            kind: 'enemyAttackCompanion',
+            enemyIdx: gs.combat.enemies.indexOf(enemy),
+            npcId: 'npc_nurse',
+            fx: this._monsterImpactFx(enemy),
+            dmg: damage,
+          });
           const npcName = I18n.itemName('npc_nurse', GameData?.items?.npc_nurse?.name);
           return I18n.t('npc.hitInstead', { name: npcName, dmg: damage });
         }
@@ -1284,7 +1821,13 @@ const CombatSystem = {
         const npcSys = SystemRegistry.get('NPCSystem');
         if (npcSys) {
           npcSys.damageCompanion(targetNpcId, damage);
-          this._fx({ kind: 'enemyAttackCompanion', enemyIdx: gs.combat.enemies.indexOf(enemy), npcId: targetNpcId, dmg: damage });
+          this._fx({
+            kind: 'enemyAttackCompanion',
+            enemyIdx: gs.combat.enemies.indexOf(enemy),
+            npcId: targetNpcId,
+            fx: this._monsterImpactFx(enemy),
+            dmg: damage,
+          });
           const npcName = I18n.itemName(targetNpcId, GameData?.items?.[targetNpcId]?.name);
           return I18n.t('npc.hitInstead', { name: npcName, dmg: damage });
         }
@@ -1296,7 +1839,7 @@ const CombatSystem = {
       this._fx({
         kind:     'enemyAttack',
         enemyIdx: gs.combat.enemies.indexOf(enemy),
-        fx:       (enemy.attackType ?? 'melee') === 'ranged' ? 'shot' : 'claw',
+        fx:       this._monsterImpactFx(enemy),
         dmg:      damage,
       });
 
@@ -1324,6 +1867,7 @@ const CombatSystem = {
           already.duration = Math.max(already.duration, enemy.statusInflict.duration);
         } else {
           gs.combat.playerStatus.push({ ...enemy.statusInflict, effect: { ...enemy.statusInflict.effect } });
+          this._fx({ kind: 'status', target: 'player', statusId: enemy.statusInflict.id });
         }
       }
       if (enemy.infectionChance && Math.random() < enemy.infectionChance) {
@@ -1335,7 +1879,7 @@ const CombatSystem = {
     this._fx({
       kind:     'enemyAttack',
       enemyIdx: gs.combat.enemies.indexOf(enemy),
-      fx:       (enemy.attackType ?? 'melee') === 'ranged' ? 'shot' : 'claw',
+      fx:       this._monsterImpactFx(enemy),
       miss:     true,
     });
     return I18n.t('combatSys.enemyDodge', { enemy: I18n.enemyName(enemy.id, enemy.name) });
@@ -1384,6 +1928,8 @@ const CombatSystem = {
   // ── 적 사망 처리 (개별) ────────────────────────────────
 
   _onEnemyKilled(enemy) {
+    if (!enemy || enemy._killProcessed) return;
+    enemy._killProcessed = true;
     const gs  = GameState;
     const killCtx = gs.combat._lastKillContext ?? {};
     gs.combat._lastKillContext = null;
@@ -1539,6 +2085,7 @@ const CombatSystem = {
 
     // 캐릭터 전투 승리 대사
     CharDialogue.emit(gs.player.characterId, 'combat_win');
+    this._fx({ kind: 'victory' });
     // 군견 유대감: 함께 싸워 이긴 동반자에게 +3 bond
     NPCSystem.onCombatVictory();
     EventBus.emit('combatEnd', { outcome: 'victory', rewards: gs.combat.rewards });
@@ -1573,6 +2120,8 @@ const CombatSystem = {
 
     gs.player.isAlive      = false;
     gs.player.deathCause   = I18n.t('combatSys.deathCause');
+    this._fx({ kind: 'playerDeath' });
+    this._fx({ kind: 'defeat' });
     EventBus.emit('combatEnd', { outcome: 'defeat' });
     // 보라매병원 습격 패배 — HospitalSiegeSystem이 구조물/환자/dangerMod 후처리
     if (data.isSiege) {
@@ -1712,6 +2261,15 @@ const CombatSystem = {
 
     const moraleTier = StatSystem.getMoraleTier();
     accuracy = Math.max(0.10, Math.min(1, accuracy + (moraleTier.accBonus ?? 0)));
+
+    const weaponDef = weaponId && gs.cards[weaponId] ? gs.getCardDef(weaponId) : null;
+    const previewSkillId = weaponDef?.combat?.requiresAmmo && ammoLeft !== 0 ? 'ranged' : null;
+    ({ accuracy, critChance } = this._applyCharacterAimIdentity({
+      accuracy,
+      critChance,
+      weaponDef,
+      skillId: previewSkillId,
+    }));
 
     return {
       dmgMin,

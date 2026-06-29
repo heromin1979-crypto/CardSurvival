@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-labelledby="title desc">
+  <title id="title">성수 공방거리</title>
+  <desc id="desc">seongdong landmark icon for Card Survival minimap.</desc>
+  <defs>
+    <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="2.2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <pattern id="hatch" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(-22)">
+      <path d="M0 0V9" stroke="#d4c9a8" stroke-opacity=".13" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <g fill="none" stroke="#171512" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity=".78">
+    
+      <path d="M35 215 V126 L79 149 V118 L122 149 V101 H205 V215"/>
+      <path d="M144 101 V70 H202 V101"/>
+      <path d="M50 173 H77 M96 173 H123 M148 173 H184"/>
+      <path d="M64 215 V190 H94 V215 M151 215 V185 H184 V215"/>
+      <path d="M29 224 H224"/>
+  </g>
+  <g fill="url(#hatch)" stroke="#d4c9a8" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round" filter="url(#softGlow)">
+    
+      <path d="M35 215 V126 L79 149 V118 L122 149 V101 H205 V215"/>
+      <path d="M144 101 V70 H202 V101"/>
+      <path d="M50 173 H77 M96 173 H123 M148 173 H184"/>
+      <path d="M64 215 V190 H94 V215 M151 215 V185 H184 V215"/>
+      <path d="M29 224 H224"/>
+  </g>
+  <g fill="none" stroke="#f2ddb0" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" opacity=".72">
+    
+      <path d="M35 215 V126 L79 149 V118 L122 149 V101 H205 V215"/>
+      <path d="M144 101 V70 H202 V101"/>
+      <path d="M50 173 H77 M96 173 H123 M148 173 H184"/>
+      <path d="M64 215 V190 H94 V215 M151 215 V185 H184 V215"/>
+      <path d="M29 224 H224"/>
+  </g>
+</svg>

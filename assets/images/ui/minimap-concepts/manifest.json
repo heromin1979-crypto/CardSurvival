@@ -1,0 +1,100 @@
+{
+  "assetGroup": "minimap-concepts",
+  "screen": "district-map",
+  "generatedWith": "image_gen",
+  "notes": "Concept references for the Card Survival: Ruined City district minimap. These images intentionally exclude route planning, path simulation, TP cost, route confirmation, and travel timeline UI.",
+  "concepts": [
+    {
+      "id": "emergency_operations_district_map",
+      "title": "Emergency Operations District Map",
+      "file": "minimap-emergency-operations-district-map.png",
+      "intendedUse": "Base district map inspection screen with central Seoul map, layer filters, selected district dossier, scan log, and legend.",
+      "supports": [
+        "current_location_marker",
+        "district_status_overlay",
+        "risk_layer_filter",
+        "resource_layer_filter",
+        "landmark_layer_filter",
+        "selected_district_info",
+        "scan_log",
+        "map_legend"
+      ],
+      "excludes": [
+        "route_planning",
+        "path_simulator",
+        "tp_cost",
+        "confirm_route",
+        "travel_timeline"
+      ]
+    },
+    {
+      "id": "folded_survival_map_inspection",
+      "title": "Folded Survival Map - Inspection Mode",
+      "file": "minimap-folded-survival-map-inspection.png",
+      "intendedUse": "Semi-diegetic tabletop map inspection concept with scouting notes, weather warnings, resource pins, and district facts.",
+      "supports": [
+        "current_location_marker",
+        "district_notes",
+        "scout_report",
+        "weather_layer",
+        "risk_layer_filter",
+        "resource_layer_filter",
+        "selected_district_info",
+        "map_legend"
+      ],
+      "excludes": [
+        "route_planning",
+        "path_simulator",
+        "tp_cost",
+        "confirm_route",
+        "travel_timeline"
+      ]
+    },
+    {
+      "id": "contamination_survey_map",
+      "title": "Contamination Survey Map",
+      "file": "minimap-contamination-survey-map.png",
+      "intendedUse": "Danger analysis concept for contamination, wind, blocked roads, enemy activity, resources, and selected district scan results.",
+      "supports": [
+        "contamination_heatmap",
+        "wind_direction_layer",
+        "blocked_road_layer",
+        "enemy_activity_layer",
+        "resource_layer_filter",
+        "safe_shelter_markers",
+        "selected_district_analysis",
+        "sensor_legend"
+      ],
+      "excludes": [
+        "route_planning",
+        "path_simulator",
+        "tp_cost",
+        "confirm_route",
+        "travel_timeline"
+      ]
+    },
+    {
+      "id": "district_card_atlas",
+      "title": "District Card Atlas",
+      "file": "minimap-district-card-atlas.png",
+      "intendedUse": "Card-based district atlas concept where district cards represent inspectable areas rather than travel nodes.",
+      "supports": [
+        "district_card_grid",
+        "selected_district_card",
+        "risk_stat_summary",
+        "resource_stat_summary",
+        "landmark_badges",
+        "enemy_activity_badges",
+        "discovered_reports",
+        "card_legend"
+      ],
+      "excludes": [
+        "route_planning",
+        "path_simulator",
+        "tp_cost",
+        "confirm_route",
+        "travel_timeline"
+      ]
+    }
+  ]
+}

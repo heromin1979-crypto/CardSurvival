@@ -19,9 +19,12 @@
     "postinstall": "node scripts/patch-proguard.js",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:editor": "node tools/editor/serialize.test.mjs"
+    "test:editor": "node tools/editor/serialize.test.mjs",
+    "test:e2e:combat": "node tests/e2e/combat-screen.playwright.mjs",
+    "test:e2e:combat:full": "node tests/e2e/combat-full.playwright.mjs"
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.0",
     "electron": "^33.0.0",
     "electron-builder": "^25.0.0",
     "electron-reload": "^2.0.0-alpha.1",

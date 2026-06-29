@@ -8,7 +8,7 @@
 //   - manual: 아무 행동 없음 (기존 명령 플로우 유지)
 //   - 3개 클래스 스킬 효과 (nurse_triage, soldier_suppress, doctor_diagnose)
 //   - skillCooldowns tick
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import CombatSystem from '../../js/systems/CombatSystem.js';
 import GameState    from '../../js/core/GameState.js';
 import BALANCE      from '../../js/data/gameBalance.js';
@@ -32,8 +32,12 @@ function resetCombat({ enemies = [], companions = [], npcStates = {}, playerHp =
 }
 
 function makeEnemy(hp) {
-  return { id: 'e', name: 'E', currentHp: hp, maxHp: 30, specialSkills: [], _skillCooldowns: {}, _statusEffects: [] };
+  return { id: 'e', name: 'E', currentHp: hp, maxHp: 30, attack: { damage: [1, 1], accuracy: 0 }, specialSkills: [], _skillCooldowns: {}, _statusEffects: [] };
 }
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 describe('_runCompanionTurn — stance 디스패치', () => {
   beforeEach(() => {
@@ -201,6 +205,54 @@ describe('스킬 쿨다운 tick', () => {
     expect(cds.foo).toBe(2);
     expect(cds.bar).toBe(0);
     expect(cds.zero).toBe(0);
+  });
+});
+
+describe('manual companion turn control', () => {
+  it('stops on a companion entry even when the companion stance is heal', () => {
+    resetCombat({
+      enemies: [makeEnemy(30)],
+      companions: ['npc_nurse'],
+      npcStates: { npc_nurse: { hp: 50, maxHp: 50, isCompanion: true, stance: 'heal' } },
+      playerHp: 40,
+      playerMaxHp: 100,
+    });
+    GameState.combat.turnQueue = [
+      { type: 'player', order: 0 },
+      { type: 'companion', id: 'npc_nurse', order: 1 },
+      { type: 'enemy', enemyIdx: 0, order: 2 },
+    ];
+    GameState.combat.activeIdx = 0;
+
+    CombatSystem._processAiTurns();
+
+    expect(GameState.combat.activeIdx).toBe(1);
+    expect(CombatSystem.isManualCompanionTurn()).toBe(true);
+    expect(GameState.player.hp.current).toBe(40);
+    expect(GameState.combat.enemies[0].currentHp).toBe(30);
+  });
+
+  it('manual companion attack prioritizes the selected target', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+    resetCombat({
+      enemies: [makeEnemy(10), makeEnemy(30)],
+      companions: ['npc_soldier'],
+      npcStates: { npc_soldier: { hp: 50, maxHp: 50, isCompanion: true, stance: 'attack' } },
+    });
+    GameState.combat.turnQueue = [
+      { type: 'player', order: 0 },
+      { type: 'companion', id: 'npc_soldier', order: 1 },
+      { type: 'enemy', enemyIdx: 0, order: 2 },
+    ];
+    GameState.combat.activeIdx = 1;
+    GameState.combat.targetIndex = 1;
+
+    const firstHp = GameState.combat.enemies[0].currentHp;
+    const secondHp = GameState.combat.enemies[1].currentHp;
+
+    expect(CombatSystem.resolveManualCompanionAction('attack', 'npc_soldier')).toBe(true);
+    expect(GameState.combat.enemies[0].currentHp).toBe(firstHp);
+    expect(GameState.combat.enemies[1].currentHp).toBeLessThan(secondHp);
   });
 });
 
