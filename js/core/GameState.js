@@ -667,10 +667,20 @@ const GameState = {
   },
 
   _updateEncumbrance() {
-    const total = Object.values(this.cards).reduce((sum, c) => {
+    // 적재량은 플레이어가 실제 소지한 카드만 합산: 휴대(bottom) + 장착(equipped).
+    // 바닥(middle)·장소(top)·environment·타지역 locationFloors 잔존 인스턴스를
+    // 포함하면 바닥에 스폰된 잔해(wrecked_bus 등)만으로 이동이 차단된다.
+    const carriedIds = new Set([
+      ...this.board.bottom.filter(Boolean),
+      ...Object.values(this.player.equipped ?? {}).filter(Boolean),
+    ]);
+    let total = 0;
+    for (const id of carriedIds) {
+      const c = this.cards[id];
+      if (!c) continue;
       const def = GameData?.items[c.definitionId];
-      return sum + ((def?.weight ?? 0) * (c.quantity ?? 1));
-    }, 0);
+      total += (def?.weight ?? 0) * (c.quantity ?? 1);
+    }
     const enc = this.player.encumbrance;
     enc.current   = parseFloat(total.toFixed(2));
     const pct     = enc.max > 0 ? enc.current / enc.max : 0;
