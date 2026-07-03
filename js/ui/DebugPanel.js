@@ -22,6 +22,11 @@ const DebugPanel = {
   _inspector: null,
   _msgEl:     null,
   _collapsed: false,
+  _giveRow:   'bottom',   // 아이템 지급 대상 행: 'bottom'(휴대) | 'middle'(바닥)
+  _searchIndex: null,     // [{id, name, display, icon, def}] 캐시
+  _acMatches: [],
+  _acIndex:   -1,
+  _dictEl:    null,
 
   init() {
     // CSS 동적 삽입
@@ -90,10 +95,18 @@ const DebugPanel = {
         <!-- 아이템 지급 -->
         <div class="dbg-section">
           <div class="dbg-section-title">Give Item</div>
+          <div class="dbg-row-toggle">
+            <button class="dbg-row-btn active" data-give-row="bottom">휴대</button>
+            <button class="dbg-row-btn" data-give-row="middle">바닥</button>
+          </div>
           <div class="dbg-give-row">
-            <input class="dbg-item-input" id="dbg-item-id" type="text" placeholder="ID 또는 한글 이름" spellcheck="false">
+            <div class="dbg-item-wrap">
+              <input class="dbg-item-input" id="dbg-item-id" type="text" placeholder="ID 또는 한글 이름" spellcheck="false" autocomplete="off">
+              <div class="dbg-autocomplete hidden" id="dbg-autocomplete"></div>
+            </div>
             <input class="dbg-qty-input"  id="dbg-item-qty" type="number" value="1" min="1" max="99">
             <button class="dbg-give-btn" id="dbg-give-btn">Give</button>
+            <button class="dbg-dict-btn" id="dbg-dict-btn" title="아이템 사전">📖</button>
           </div>
           <div class="dbg-msg" id="dbg-msg"></div>
         </div>
@@ -144,11 +157,40 @@ const DebugPanel = {
       });
     });
 
-    // 아이템 지급
-    this._el.querySelector('#dbg-give-btn').addEventListener('click', () => this._giveItem());
-    this._el.querySelector('#dbg-item-id').addEventListener('keydown', e => {
-      if (e.key === 'Enter') this._giveItem();
+    // 지급 행 선택 (휴대/바닥)
+    this._el.querySelectorAll('[data-give-row]').forEach(btn => {
+      btn.addEventListener('click', () => this._setGiveRow(btn.dataset.giveRow));
     });
+
+    // 아이템 지급 + 자동완성
+    const itemInput = this._el.querySelector('#dbg-item-id');
+    this._acEl = this._el.querySelector('#dbg-autocomplete');
+
+    this._el.querySelector('#dbg-give-btn').addEventListener('click', () => this._giveItem());
+    itemInput.addEventListener('input', () => this._onItemInput());
+    itemInput.addEventListener('blur',  () => this._hideAc());
+    itemInput.addEventListener('keydown', e => {
+      const acOpen = !this._acEl.classList.contains('hidden');
+      if (e.key === 'ArrowDown' && acOpen) { e.preventDefault(); this._moveAc(1); return; }
+      if (e.key === 'ArrowUp'   && acOpen) { e.preventDefault(); this._moveAc(-1); return; }
+      if (e.key === 'Escape'    && acOpen) { this._hideAc(); return; }
+      if (e.key === 'Enter') {
+        if (acOpen && this._acIndex >= 0) { this._selectAc(this._acIndex); return; }
+        this._hideAc();
+        this._giveItem();
+      }
+    });
+
+    // 자동완성 항목 클릭 (mousedown: blur보다 먼저 처리)
+    this._acEl.addEventListener('mousedown', e => {
+      const item = e.target.closest('.dbg-ac-item');
+      if (!item) return;
+      e.preventDefault();
+      this._selectAc(parseInt(item.dataset.i, 10));
+    });
+
+    // 아이템 사전
+    this._el.querySelector('#dbg-dict-btn').addEventListener('click', () => this._openDict());
 
     // 날씨 변경 (GM)
     this._el.querySelectorAll('[data-weather]').forEach(btn => {
@@ -228,19 +270,22 @@ const DebugPanel = {
     return fuzzy;
   },
 
-  _giveItem() {
-    const raw = this._el.querySelector('#dbg-item-id').value.trim();
+  // directId 지정 시(사전에서 Give) 입력창 해석을 건너뛴다.
+  _giveItem(directId = null) {
     const qty = Math.max(1, parseInt(this._el.querySelector('#dbg-item-qty').value, 10) || 1);
 
-    if (!raw) {
-      this._showMsg('item ID 또는 한글 이름을 입력하세요.', true);
-      return;
-    }
-
-    const defId = this._resolveItemId(raw);
+    let defId = directId;
     if (!defId) {
-      this._showMsg(`❌ 알 수 없는 아이템: ${raw}`, true);
-      return;
+      const raw = this._el.querySelector('#dbg-item-id').value.trim();
+      if (!raw) {
+        this._showMsg('item ID 또는 한글 이름을 입력하세요.', true);
+        return;
+      }
+      defId = this._resolveItemId(raw);
+      if (!defId) {
+        this._showMsg(`❌ 알 수 없는 아이템: ${raw}`, true);
+        return;
+      }
     }
 
     const inst = GameState.createCardInstance(defId, { quantity: qty });
@@ -250,15 +295,158 @@ const DebugPanel = {
     }
 
     const label = I18n.itemName(defId, GameData.items[defId].name);
-    const placed = GameState.placeCardInRow(inst.instanceId);
+    const rowLabel = { bottom: '휴대', middle: '바닥', top: '장소' };
+    const placed = GameState.placeCardInRow(inst.instanceId, this._giveRow);
     if (!placed) {
       // 보드가 꽉 찬 경우 — 인스턴스는 cards에 존재, 보드 미배치
       this._showMsg(`⚠ 보드 꽉 참 — cards에 추가됨 (${label} ${inst.instanceId})`, false);
     } else {
-      this._showMsg(`✓ ${label}(${defId}) ×${qty} → ${placed.row}[${placed.slot}]`);
+      this._showMsg(`✓ ${label}(${defId}) ×${qty} → ${rowLabel[placed.row] ?? placed.row}[${placed.slot}]`);
     }
 
     EventBus.emit('boardChanged', {});
+  },
+
+  _setGiveRow(row) {
+    this._giveRow = row;
+    document.querySelectorAll('[data-give-row]').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.giveRow === row);
+    });
+  },
+
+  // ── 아이템 검색 인덱스 · 자동완성 ─────────────────────────
+
+  _getSearchIndex() {
+    if (!this._searchIndex) {
+      this._searchIndex = Object.values(GameData.items).map(def => ({
+        id:      def.id,
+        name:    (def.name ?? '').toLowerCase(),
+        display: I18n.itemName(def.id, def.name),
+        icon:    def.icon ?? '',
+        def,
+      }));
+    }
+    return this._searchIndex;
+  },
+
+  _onItemInput() {
+    const q = this._el.querySelector('#dbg-item-id').value.trim().toLowerCase();
+    if (!q) { this._hideAc(); return; }
+
+    const starts = [], contains = [];
+    for (const it of this._getSearchIndex()) {
+      const hay = [it.id, it.name, it.display.toLowerCase()];
+      if (hay.some(h => h.startsWith(q)))      starts.push(it);
+      else if (hay.some(h => h.includes(q)))   contains.push(it);
+    }
+    this._acMatches = [...starts, ...contains];
+    this._acIndex   = -1;
+
+    if (!this._acMatches.length) { this._hideAc(); return; }
+    this._acEl.innerHTML = this._acMatches.map((it, i) => `
+      <div class="dbg-ac-item" data-i="${i}">
+        <span class="dbg-ac-icon">${it.icon}</span>
+        <span class="dbg-ac-name">${it.display}</span>
+        <span class="dbg-ac-id">${it.id}</span>
+      </div>`).join('');
+    this._acEl.classList.remove('hidden');
+  },
+
+  _moveAc(dir) {
+    const n = this._acMatches.length;
+    if (!n) return;
+    this._acIndex = (this._acIndex + dir + n) % n;
+    this._acEl.querySelectorAll('.dbg-ac-item').forEach((el, i) => {
+      el.classList.toggle('active', i === this._acIndex);
+      if (i === this._acIndex) el.scrollIntoView({ block: 'nearest' });
+    });
+  },
+
+  _selectAc(i) {
+    const it = this._acMatches[i];
+    if (!it) return;
+    const input = this._el.querySelector('#dbg-item-id');
+    input.value = it.display;
+    this._hideAc();
+    input.focus();
+  },
+
+  _hideAc() {
+    this._acEl?.classList.add('hidden');
+    this._acIndex = -1;
+  },
+
+  // ── 아이템 사전 ───────────────────────────────────────────
+
+  _openDict() {
+    if (!this._dictEl) this._buildDict();
+    this._dictEl.classList.remove('hidden');
+    this._renderDictList();
+    this._dictEl.querySelector('#dbg-dict-search').focus();
+  },
+
+  _closeDict() {
+    this._dictEl?.classList.add('hidden');
+  },
+
+  _buildDict() {
+    const types = [...new Set(this._getSearchIndex().map(it => it.def.type ?? ''))].sort();
+    const el = document.createElement('div');
+    el.id = 'dbg-dict';
+    el.innerHTML = `
+      <div class="dbg-dict-panel">
+        <div class="dbg-dict-head">
+          <span class="dbg-dict-title">📖 ITEM DICTIONARY</span>
+          <input class="dbg-item-input" id="dbg-dict-search" type="text" placeholder="검색 (ID·이름·설명)" spellcheck="false" autocomplete="off">
+          <select class="dbg-dict-type" id="dbg-dict-type">
+            <option value="">전체 타입</option>
+            ${types.map(t => `<option value="${t}">${t}</option>`).join('')}
+          </select>
+          <span class="dbg-dict-count" id="dbg-dict-count"></span>
+          <button class="dbg-dict-close" id="dbg-dict-close">✕</button>
+        </div>
+        <div class="dbg-dict-list" id="dbg-dict-list"></div>
+      </div>`;
+    document.body.appendChild(el);
+    this._dictEl = el;
+
+    el.addEventListener('mousedown', e => { if (e.target === el) this._closeDict(); });
+    el.querySelector('#dbg-dict-close').addEventListener('click', () => this._closeDict());
+    el.querySelector('#dbg-dict-search').addEventListener('input', () => this._renderDictList());
+    el.querySelector('#dbg-dict-search').addEventListener('keydown', e => {
+      if (e.key === 'Escape') this._closeDict();
+    });
+    el.querySelector('#dbg-dict-type').addEventListener('change', () => this._renderDictList());
+    el.querySelector('#dbg-dict-list').addEventListener('click', e => {
+      const btn = e.target.closest('.dbg-dict-give');
+      if (btn) this._giveItem(btn.dataset.id);
+    });
+  },
+
+  _renderDictList() {
+    const q    = this._dictEl.querySelector('#dbg-dict-search').value.trim().toLowerCase();
+    const type = this._dictEl.querySelector('#dbg-dict-type').value;
+
+    const rows = this._getSearchIndex()
+      .filter(it => !type || it.def.type === type)
+      .filter(it => !q
+        || it.id.includes(q) || it.name.includes(q)
+        || it.display.toLowerCase().includes(q)
+        || (it.def.description ?? '').toLowerCase().includes(q))
+      .sort((a, b) => (a.def.type ?? '').localeCompare(b.def.type ?? '')
+        || a.display.localeCompare(b.display, 'ko'));
+
+    this._dictEl.querySelector('#dbg-dict-count').textContent = `${rows.length}개`;
+    this._dictEl.querySelector('#dbg-dict-list').innerHTML = rows.map(it => `
+      <div class="dbg-dict-row">
+        <span class="dbg-dict-icon">${it.icon}</span>
+        <div class="dbg-dict-info">
+          <div class="dbg-dict-name">${it.display} <span class="dbg-dict-id">${it.id}</span></div>
+          <div class="dbg-dict-desc">${it.def.description ?? ''}</div>
+        </div>
+        <span class="dbg-dict-meta">${it.def.type ?? ''}${it.def.subtype ? '/' + it.def.subtype : ''}<br>${it.def.rarity ?? ''}</span>
+        <button class="dbg-dict-give" data-id="${it.id}">Give</button>
+      </div>`).join('');
   },
 
   _showMsg(text, isErr = false) {

@@ -210,3 +210,216 @@
 }
 
 .dbg-msg.err { color: #e05555; }
+
+/* 지급 행 선택 토글 (휴대/바닥) */
+.dbg-row-toggle {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 5px;
+}
+
+.dbg-row-btn {
+  flex: 1;
+  padding: 2px 0;
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 2px;
+  color: #888;
+  font-family: inherit;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.dbg-row-btn:hover { border-color: #666; color: #ccc; }
+
+.dbg-row-btn.active {
+  background: #2a2416;
+  border-color: #e8b84b;
+  color: #e8b84b;
+}
+
+/* 아이템 자동완성 */
+.dbg-item-wrap {
+  position: relative;
+  flex: 1;
+  display: flex;
+  min-width: 0;
+}
+
+.dbg-item-wrap .dbg-item-input { width: 100%; }
+
+.dbg-autocomplete {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 230px;
+  max-height: 224px;
+  overflow-y: auto;
+  background: rgba(14, 14, 14, 0.98);
+  border: 1px solid #555;
+  border-radius: 0 0 3px 3px;
+  z-index: 10001;
+}
+
+.dbg-autocomplete.hidden { display: none; }
+
+.dbg-ac-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 6px;
+  color: #ccc;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.dbg-ac-item:hover,
+.dbg-ac-item.active { background: #2a2a2a; color: #e8b84b; }
+
+.dbg-ac-name { overflow: hidden; text-overflow: ellipsis; }
+
+.dbg-ac-id {
+  margin-left: auto;
+  color: #666;
+  font-size: 10px;
+}
+
+/* 사전 열기 버튼 */
+.dbg-dict-btn {
+  padding: 3px 6px;
+  background: #1a1a1a;
+  border: 1px solid #444;
+  border-radius: 2px;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.dbg-dict-btn:hover { border-color: #e8b84b; }
+
+/* 아이템 사전 모달 */
+#dbg-dict {
+  position: fixed;
+  inset: 0;
+  z-index: 9998; /* 디버그 패널(9999) 아래 — 지급 메시지가 가려지지 않게 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* 우측 디버그 패널(260px + 여백)과 겹치지 않게 중앙을 왼쪽으로 보정 */
+  padding-right: 288px;
+  background: rgba(0, 0, 0, 0.55);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+}
+
+#dbg-dict.hidden { display: none; }
+
+.dbg-dict-panel {
+  width: 720px;
+  max-width: calc(100vw - 308px);
+  max-height: 82vh;
+  display: flex;
+  flex-direction: column;
+  background: rgba(12, 12, 12, 0.98);
+  border: 1px solid #e8b84b;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.dbg-dict-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border-bottom: 1px solid #333;
+  background: rgba(20, 20, 20, 0.95);
+}
+
+.dbg-dict-title {
+  color: #e8b84b;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.dbg-dict-head .dbg-item-input { flex: 1; }
+
+.dbg-dict-type {
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 2px;
+  color: #ccc;
+  font-family: inherit;
+  font-size: 11px;
+  padding: 2px 4px;
+}
+
+.dbg-dict-count { color: #888; font-size: 10px; white-space: nowrap; }
+
+.dbg-dict-close {
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 0 2px;
+}
+
+.dbg-dict-close:hover { color: #e05555; }
+
+.dbg-dict-list {
+  overflow-y: auto;
+  flex: 1;
+}
+
+.dbg-dict-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px;
+  border-bottom: 1px solid #1c1c1c;
+  color: #ccc;
+}
+
+.dbg-dict-row:hover { background: #161616; }
+
+.dbg-dict-icon { flex: 0 0 20px; font-size: 15px; text-align: center; }
+
+.dbg-dict-info { flex: 1; min-width: 0; }
+
+.dbg-dict-name { color: #e8b84b; }
+
+.dbg-dict-id { color: #666; font-size: 10px; margin-left: 4px; }
+
+.dbg-dict-desc {
+  color: #999;
+  font-size: 10px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dbg-dict-meta {
+  flex: 0 0 96px;
+  color: #777;
+  font-size: 9px;
+  text-align: right;
+  line-height: 1.4;
+}
+
+.dbg-dict-give {
+  flex: 0 0 auto;
+  padding: 2px 10px;
+  background: #1a1a2a;
+  border: 1px solid #2a2a4a;
+  border-radius: 2px;
+  color: #6a6aaa;
+  font-family: inherit;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.dbg-dict-give:hover {
+  background: #1e1e3a;
+  border-color: #4a4a8a;
+  color: #9a9aee;
+}
