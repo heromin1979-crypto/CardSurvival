@@ -19,13 +19,10 @@ const BALANCE = {
     fatigueGainPerTP:     0.8,
     staminaRegenPerTP:    1.2,   // (기존 1.5 → 1.2로 완화)
     // 무게 비율(weightPct)별 스태미나 소모 배율 (max 이하이면 해당 mult)
+    // 과적(>100%)에서만 페널티를 부여하고 그 이하 무게는 배율 없음
     weightMultipliers: [
-      { max: 0.50, mult: 1.0 },
-      { max: 0.75, mult: 1.3 },
-      { max: 1.00, mult: 1.7 },
-      { max: 1.50, mult: 2.5 },
-      { max: 2.00, mult: 3.5 },
-      { max: Infinity, mult: 4.0 },
+      { max: 1.00, mult: 1.0 },
+      { max: Infinity, mult: 1.2 },
     ],
     // 과적 구간별 스태미나 변화량(/TP). pct ≤1.0은 staminaRegenPerTP(회복) 적용
     staminaDrainTiers: [

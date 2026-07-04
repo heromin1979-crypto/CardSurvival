@@ -685,11 +685,14 @@ const GameState = {
     enc.current   = parseFloat(total.toFixed(2));
     const pct     = enc.max > 0 ? enc.current / enc.max : 0;
     enc.weightPct = pct;
+    // tpMult는 이동·탐색 TP 비용 배율(EncumbranceSystem.applyCost)에 쓰인다.
+    // TP는 정수 올림이라 1.2 같은 소수 배율도 1TP 행동을 2TP로 만들어 버리므로
+    // 과적(>100%) 구간에서만 배율을 부여한다.
     if      (pct <= 0.50) { enc.tier = 0; enc.tpMult = 1.0; }
-    else if (pct <= 0.75) { enc.tier = 1; enc.tpMult = 1.2; }
-    else if (pct <= 1.00) { enc.tier = 2; enc.tpMult = 1.5; }
-    else if (pct <= 2.00) { enc.tier = 3; enc.tpMult = 2.0; }
-    else                  { enc.tier = 4; enc.tpMult = 3.0; } // >200% — 이동 불가
+    else if (pct <= 0.75) { enc.tier = 1; enc.tpMult = 1.0; }
+    else if (pct <= 1.00) { enc.tier = 2; enc.tpMult = 1.0; }
+    else if (pct <= 2.00) { enc.tier = 3; enc.tpMult = 1.2; }
+    else                  { enc.tier = 4; enc.tpMult = 1.2; } // >200% — 이동 불가
   },
 
   serialize() {

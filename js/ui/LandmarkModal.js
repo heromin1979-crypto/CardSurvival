@@ -10,6 +10,7 @@ import { rollEnemyGroup } from '../data/enemies.js';
 import LANDMARK_DATA, { rollLoot, getLandmarkData } from '../data/landmarks.js';
 import GameData from '../data/GameData.js';
 import BALANCE  from '../data/gameBalance.js';
+import EncumbranceSystem from '../systems/EncumbranceSystem.js';
 
 const LandmarkModal = {
   _initialized:  false,
@@ -193,7 +194,7 @@ const LandmarkModal = {
     if (!districtId) return;  // [L-3] null 가드
 
     this._isExploring = true;
-    const tpCost = 1;
+    const tpCost = EncumbranceSystem.applyCost(1);
 
     // 조우 체크 (구별 encounterChance + dangerMod + 생태계 좀비 밀도 배율)
     const DISTRICTS     = GameData?.districts ?? {};

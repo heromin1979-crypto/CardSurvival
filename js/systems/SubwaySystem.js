@@ -6,6 +6,7 @@ import I18n         from '../core/I18n.js';
 import StateMachine from '../core/StateMachine.js';
 import TickEngine   from '../core/TickEngine.js';
 import StatSystem   from './StatSystem.js';
+import EncumbranceSystem from './EncumbranceSystem.js';
 import { SUBWAY_LINES, SEWER_ROUTES, STATION_LOOT } from '../data/subwayRoutes.js';
 import { DISTRICTS }   from '../data/districts.js';
 import { rollEnemyGroup } from '../data/enemies.js';
@@ -190,8 +191,8 @@ const SubwaySystem = {
     const nextStation = pending.stationsRemaining.shift();
     const line        = pending.line;
 
-    // Consume 1 TP per station
-    TickEngine.skipTP(line.tpCostPerStation, I18n.t('subway.travel'));
+    // Consume 1 TP per station (과적 배율 적용)
+    TickEngine.skipTP(EncumbranceSystem.applyCost(line.tpCostPerStation), I18n.t('subway.travel'));
 
     // Stamina cost per station
     StatSystem.drainStamina(5);
@@ -329,8 +330,8 @@ const SubwaySystem = {
     // Must be at a station
     if (!this.hasStation(districtId)) return;
 
-    // Consume 1 TP
-    TickEngine.skipTP(1, I18n.t('subway.explore'));
+    // Consume 1 TP (과적 배율 적용)
+    TickEngine.skipTP(EncumbranceSystem.applyCost(1), I18n.t('subway.explore'));
 
     // 25% encounter chance (darkness combat)
     if (Math.random() < 0.25) {
@@ -425,8 +426,8 @@ const SubwaySystem = {
     const currentDistrict = gs.location.currentDistrict;
     const dest = route.from === currentDistrict ? route.to : route.from;
 
-    // TP cost
-    TickEngine.skipTP(route.tpCost, I18n.t('subway.sewer'));
+    // TP cost (과적 배율 적용)
+    TickEngine.skipTP(EncumbranceSystem.applyCost(route.tpCost), I18n.t('subway.sewer'));
 
     // Stamina drain (heavier than subway)
     StatSystem.drainStamina(15);

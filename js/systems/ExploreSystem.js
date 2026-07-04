@@ -18,6 +18,7 @@ import BasecampSystem   from './BasecampSystem.js';
 import BALANCE          from '../data/gameBalance.js';
 import HiddenElementSystem from './HiddenElementSystem.js';
 import NightSystem         from './NightSystem.js';
+import EncumbranceSystem   from './EncumbranceSystem.js';
 import GameData            from '../data/GameData.js';
 import SystemRegistry      from '../core/SystemRegistry.js';
 import { locationPathText } from '../ui/locationPath.js';
@@ -206,8 +207,10 @@ const ExploreSystem = {
       EventBus.emit('notify', { message: I18n.t('exploreSys.lowStamina'), type: 'warn' });
     }
 
-    // TP 소비 (야간 1.5배)
-    const costTP = Math.ceil((district.travelCostTP ?? 2) * NightSystem.getNightTravelCostMult());
+    // TP 소비 (야간 1.5배 × 과적 배율)
+    const costTP = EncumbranceSystem.applyCost(
+      Math.ceil((district.travelCostTP ?? 2) * NightSystem.getNightTravelCostMult()),
+    );
     if (costTP > 0) TickEngine.skipTP(costTP, `${district.name}(으)로 이동`);
 
     // 방사선 (방어구 radiationMult 적용)
@@ -306,7 +309,7 @@ const ExploreSystem = {
       EventBus.emit('notify', { message: I18n.t('exploreSys.lowStamina'), type: 'warn' });
     }
 
-    TickEngine.skipTP(1, `${district.name} 탐색`);
+    TickEngine.skipTP(EncumbranceSystem.applyCost(1), `${district.name} 탐색`);
 
     // ── 탐색 스태미나 소모 (이동의 절반) ────────────────────
     const expWeightMult   = StatSystem._getWeightMult(wPctExp);
@@ -762,8 +765,8 @@ const ExploreSystem = {
       return;
     }
 
-    // 1 TP 소비
-    TickEngine.skipTP(1, `${sub.name} 탐색`);
+    // 1 TP 소비 (과적 배율 적용)
+    TickEngine.skipTP(EncumbranceSystem.applyCost(1), `${sub.name} 탐색`);
 
     // 소음 생성 — districtId 파라미터는 랜드마크 키일 수 있으므로
     // 실제 구 레벨 스탯(소음/조우/위험도/방사선)은 플레이어의 currentDistrict 기준으로 조회
