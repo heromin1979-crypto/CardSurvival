@@ -457,13 +457,13 @@ const StatSystem = {
 
   /**
    * 무게 비율에 따른 스태미나 소모 배율 반환
-   * ≤50% → 1.0, ≤75% → 1.3, ≤100% → 1.7, ≤150% → 2.5, ≤200% → 3.5, >200% → 4.0
+   * ≤100% → 1.0 (패널티 없음), >100% → 1.2 (과적)
    */
   _getWeightMult(weightPct) {
     for (const t of BALANCE.stats.weightMultipliers) {
       if (weightPct <= t.max) return t.mult;
     }
-    return 4.0;
+    return 1.2;
   },
 
   /**
