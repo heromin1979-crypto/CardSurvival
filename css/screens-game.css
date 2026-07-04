@@ -3169,3 +3169,69 @@
   font-size: 12px;
   margin-left: 2px;
 }
+
+/* === Seoul map: embedded artwork alignment (minimap focus fix) ===
+   The blueprint artwork is now drawn inside the SVG (<image class="sm-map-artwork">)
+   so hover hit-zones line up with the printed borders. Suppress the old CSS
+   background-image layers so the map is not doubled/offset behind the SVG. */
+.seoul-map-stage { aspect-ratio: 1376 / 768; }
+.seoul-map-stage::before,
+.minimap-ops-shell::before { display: none !important; }
+.sm-map-artwork { opacity: 1; }
+.seoul-map-stage .sm-map-artwork { opacity: 0.98; }
+.minimap-ops-shell .sm-map-artwork { opacity: 0.95; }
+
+/* Artwork + labels must not intercept pointer events, or hover/click over a
+   district's centre would hit the label text (which has no district id) instead
+   of the hit polygon. */
+.sm-map-artwork,
+.sm-annotation-layer,
+.sm-map-annotation,
+.sm-map-label,
+.sm-map-label-en { pointer-events: none; }
+
+/* Hit zones: capture pointer over the WHOLE polygon area (transparent fill
+   included) so hover/click register anywhere inside a district, not just on the
+   painted stroke edge. */
+.seoul-map-svg--drawn-seoul .sm-district-hit {
+  pointer-events: all;
+  fill: #58bedd;
+  fill-opacity: 0;
+  stroke: #b8f4ff;
+  stroke-opacity: 0;
+  stroke-width: 2;
+  transition: fill-opacity var(--transition-fast), stroke-opacity var(--transition-fast);
+}
+
+/* Hover: the district's own border line thickens and brightens — the printed
+   boundary appears to light up. Only a whisper of fill so the pointer's target
+   still reads on dense areas. */
+.seoul-map-stage .sm-map-district:hover .sm-district-hit,
+.minimap-ops-shell .sm-map-district:hover .sm-district-hit {
+  fill: #58bedd;
+  fill-opacity: 0.06 !important;
+  stroke: #dff7ff;
+  stroke-opacity: 1 !important;
+  stroke-width: 4.5;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 6px rgba(136, 220, 245, 0.85));
+}
+
+/* Selected (clicked) district keeps a thickened gold border so the TARGET reads. */
+.seoul-map-stage .sm-map-district.is-selected .sm-district-hit {
+  fill: #d4c9a8;
+  fill-opacity: 0.05 !important;
+  stroke: #ffe9a8;
+  stroke-opacity: 0.95 !important;
+  stroke-width: 4;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 5px rgba(255, 224, 140, 0.7));
+}
+
+/* Current player location: subtle persistent outline. */
+.seoul-map-stage .sm-map-district.is-current .sm-district-hit,
+.minimap-ops-shell .sm-map-district.is-current .sm-district-hit {
+  stroke: #d7f6ff;
+  stroke-opacity: 0.65 !important;
+  stroke-width: 3;
+}
