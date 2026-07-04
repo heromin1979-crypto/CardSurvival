@@ -312,6 +312,26 @@ const ModalManager = {
       </button>`;
     }
 
+    // 아이템 상자 — 내용물 목록 + 전부 획득
+    const containedItems = Array.isArray(def.containedItems) ? def.containedItems : [];
+    const canOpenBox = containedItems.length > 0;
+    let containedHtml = '';
+    if (canOpenBox) {
+      const rows = containedItems.map(entry => {
+        const cDef  = GameData.items[entry.definitionId];
+        const cName = I18n.itemName(entry.definitionId, cDef?.name ?? entry.definitionId);
+        return `<div class="card-inspect-dismantle-row">
+          <span>${cDef?.icon ?? '📦'} ${cName}</span>
+          <span class="card-inspect-dismantle-chance">×${entry.qty ?? 1}</span>
+        </div>`;
+      }).join('');
+      containedHtml = `
+        <div class="card-inspect-dismantle">
+          <div class="card-inspect-dismantle-title">📦 내용물</div>
+          ${rows}
+        </div>`;
+    }
+
     // 분해 재료 미리보기
     let dismantleHtml = '';
     if (canDismantle) {
@@ -400,7 +420,7 @@ const ModalManager = {
       </button>`
     ).join('');
 
-    const hasActions = canConsume || canDismantle || canForage || canNest || canEquip || isFishingRod || isMedicalStructure || isTapeRepairable || weatherActions.length > 0;
+    const hasActions = canConsume || canDismantle || canForage || canNest || canEquip || isFishingRod || isMedicalStructure || isTapeRepairable || canOpenBox || weatherActions.length > 0;
 
     // 장착 슬롯 버튼 목록 (슬롯이 여럿이면 각각 버튼 생성)
     const slotLabels = {
@@ -429,9 +449,12 @@ const ModalManager = {
           <div class="card-inspect-type">${def.type} · ${def.rarity}</div>
           <p style="font-size:11px;color:var(--text-secondary);margin:8px 0;">${def.description ?? ''}</p>
           <div class="card-inspect-stats">${statsHtml}</div>
+          ${containedHtml}
           ${dismantleHtml}
           ${hasActions ? `
           <div class="card-inspect-actions">
+            ${canOpenBox ? `<button class="card-action-btn" id="modal-openbox-${instanceId}">📦 획득하기</button>
+                            <button class="card-action-btn" id="modal-closebox-${instanceId}">닫기</button>` : ''}
             ${canConsume    ? `<button class="card-action-btn" id="modal-consume-${instanceId}">${I18n.t('modal.use')}</button>` : ''}
             ${equipBtnsHtml}
             ${tapeRepairBtnHtml}
@@ -452,6 +475,23 @@ const ModalManager = {
     `;
 
     this.open(html, I18n.t('modal.cardInfo'));
+
+    if (canOpenBox) {
+      document.getElementById(`modal-openbox-${instanceId}`)?.addEventListener('click', () => {
+        this.close();
+        const loot = containedItems.map(e => ({
+          definitionId: e.definitionId,
+          quantity:     e.qty ?? 1,
+        }));
+        // 상자를 먼저 제거해 슬롯을 비운 뒤 내용물 배치 (만차 시 pendingLoot 폴백)
+        GameState.removeCardInstance(instanceId);
+        import('../systems/ExploreSystem.js').then(m => {
+          m.default._placeLoot(loot, { skillXp: false });
+          EventBus.emit('boardChanged', {});
+        });
+      });
+      document.getElementById(`modal-closebox-${instanceId}`)?.addEventListener('click', () => this.close());
+    }
 
     if (canConsume) {
       document.getElementById(`modal-consume-${instanceId}`)?.addEventListener('click', () => {

@@ -644,6 +644,18 @@ async function validate() {
         errors++; hfBad++;
       }
     }
+    // 아이템 상자(containedItems) — 내용물 아이템 참조·수량 검증
+    for (const [ci, c] of (def.containedItems ?? []).entries()) {
+      hfChecked++;
+      if (!c.definitionId || !allItemIds.has(c.definitionId)) {
+        console.log(`❌ [${id}] containedItems[${ci}] "${c.definitionId}" not found in items`);
+        errors++; hfBad++;
+      }
+      if (typeof c.qty !== 'number' || c.qty <= 0) {
+        console.log(`❌ [${id}] containedItems[${ci}].qty "${c.qty}" — 0보다 큰 숫자여야 함`);
+        errors++; hfBad++;
+      }
+    }
     // Phase 4 부패 필드 타입 검사
     if (def?.spoilDays != null && (typeof def.spoilDays !== 'number' || def.spoilDays <= 0)) {
       console.log(`❌ [${id}] spoilDays "${def.spoilDays}" — 0보다 큰 숫자여야 함`);

@@ -549,7 +549,8 @@ const ExploreSystem = {
 
   // ── 루팅 배치 ────────────────────────────────────────────
 
-  _placeLoot(loot) {
+  // skillXp: false — 탐색 행위가 아닌 배치(아이템 상자 열기 등)에서는 스킬 XP 제외
+  _placeLoot(loot, { skillXp = true } = {}) {
     const gs = GameState;
     if (!loot?.length) {
       EventBus.emit('notify', { message: I18n.t('exploreSys.nothingFound'), type: 'info' });
@@ -585,12 +586,14 @@ const ExploreSystem = {
 
     if (foundNames.length > 0) {
       gs.flags.totalItemsFound = (gs.flags.totalItemsFound ?? 0) + foundNames.length;
-      // 탐색 스킬 XP: 아이템 발견당 2 XP
-      SkillSystem.gainXp('scavenging', foundNames.length * 2);
-      // 자연 재료(약초·나무·돌 등) 발견 시 채취 스킬 XP 보너스
-      const harvestTypes = ['herb', 'wood', 'wild_root', 'wild_berry', 'mushroom_edible', 'bamboo_shoot', 'pine_cone', 'wood_bark', 'pebble', 'firestone', 'cloth_scrap', 'raw_meat', 'raw_fish'];
-      const harvestCount = loot.filter(e => harvestTypes.includes(e.definitionId)).length;
-      if (harvestCount > 0) SkillSystem.gainXp('harvesting', harvestCount);
+      if (skillXp) {
+        // 탐색 스킬 XP: 아이템 발견당 2 XP
+        SkillSystem.gainXp('scavenging', foundNames.length * 2);
+        // 자연 재료(약초·나무·돌 등) 발견 시 채취 스킬 XP 보너스
+        const harvestTypes = ['herb', 'wood', 'wild_root', 'wild_berry', 'mushroom_edible', 'bamboo_shoot', 'pine_cone', 'wood_bark', 'pebble', 'firestone', 'cloth_scrap', 'raw_meat', 'raw_fish'];
+        const harvestCount = loot.filter(e => harvestTypes.includes(e.definitionId)).length;
+        if (harvestCount > 0) SkillSystem.gainXp('harvesting', harvestCount);
+      }
       EventBus.emit('notify', { message: I18n.t('exploreSys.found', { items: foundNames.join(', ') }), type: 'good' });
     } else if (queuedNames.length === 0) {
       EventBus.emit('notify', { message: I18n.t('exploreSys.boardFull'), type: 'warn' });

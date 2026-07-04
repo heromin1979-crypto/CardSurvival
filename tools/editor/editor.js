@@ -688,6 +688,7 @@ const ITEM_HELP = {
   defaultDurability: '기본 내구도. 사용·장비하면 닳습니다.',
   defaultContamination: '기본 오염도(0 = 깨끗).',
   dismantle: '분해 시 얻는 산출물 목록.',
+  containedItems: '아이템 상자 내용물 목록. 카드 보기 → "획득하기"로 전부 수령하며 상자는 사라진다. (definitionId·qty)',
   dismantleTP: '분해에 드는 시간(TP).',
   stackable: '같은 칸에 여러 개를 겹쳐 보관할 수 있는지 여부.',
   maxStack: '한 칸에 겹칠 수 있는 최대 수량.',
