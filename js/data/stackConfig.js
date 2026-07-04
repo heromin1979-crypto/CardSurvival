@@ -487,6 +487,11 @@ const STACK_ROWS = [
   ['stream_spring'           , true,  10],
   ['dry_stream'              , false, 1 ],
   ['animal_nest'             , false, 1 ],  // 도난 둥지 (Phase 4) — 단일 슬롯
+
+  // ── 아이템 상자 (containedItems) ──────────────────────────────
+  ['item_box_1'              , false, 1 ],
+  ['item_box_2'              , false, 1 ],
+  ['item_box_3'              , false, 1 ],
 ];
 
 const STACK_CONFIG = Object.fromEntries(

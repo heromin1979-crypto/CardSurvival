@@ -3628,6 +3628,55 @@ const ITEMS_MISC = {
     tags: ['drinkable', 'container', 'bucket'],
     dismantle: [],
   },
+
+  // ── 아이템 상자 (containedItems) ──────────────────────────────
+  // 카드 보기 모달에서 내용물 확인 후 "획득하기"로 전부 수령.
+  // 상자 카드는 획득과 동시에 제거된다. (ModalManager.showCardInspect 참조)
+  item_box_1: {
+    id: 'item_box_1', name: '아이템 상자 1', type: 'misc', subtype: 'container',
+    rarity: 'uncommon', weight: 2,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '📦', description: '생존 물자가 담긴 상자. 열어서 내용물을 전부 획득할 수 있다.',
+    tags: ['container', 'box'],
+    containedItems: [
+      { definitionId: 'water_bottle', qty: 2 },
+      { definitionId: 'canned_food',  qty: 2 },
+      { definitionId: 'bandage',      qty: 3 },
+      { definitionId: 'rope',         qty: 1 },
+      { definitionId: 'duct_tape',    qty: 1 },
+    ],
+    dismantle: [],
+  },
+  item_box_2: {
+    id: 'item_box_2', name: '아이템 상자 2', type: 'misc', subtype: 'container',
+    rarity: 'uncommon', weight: 2,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '📦', description: '건축 자재가 담긴 상자. 열어서 내용물을 전부 획득할 수 있다.',
+    tags: ['container', 'box'],
+    containedItems: [
+      { definitionId: 'scrap_metal', qty: 4 },
+      { definitionId: 'wood',        qty: 3 },
+      { definitionId: 'nail',        qty: 10 },
+      { definitionId: 'wire',        qty: 2 },
+      { definitionId: 'cloth',       qty: 3 },
+    ],
+    dismantle: [],
+  },
+  item_box_3: {
+    id: 'item_box_3', name: '아이템 상자 3', type: 'misc', subtype: 'container',
+    rarity: 'rare', weight: 2,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '📦', description: '의료 물자가 담긴 상자. 열어서 내용물을 전부 획득할 수 있다.',
+    tags: ['container', 'box'],
+    containedItems: [
+      { definitionId: 'first_aid_kit', qty: 1 },
+      { definitionId: 'painkiller',    qty: 3 },
+      { definitionId: 'antibiotics',   qty: 2 },
+      { definitionId: 'alcohol_swab',  qty: 5 },
+      { definitionId: 'gauze',         qty: 4 },
+    ],
+    dismantle: [],
+  },
 };
 
 export default ITEMS_MISC;
