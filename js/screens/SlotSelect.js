@@ -2,7 +2,7 @@
 import EventBus      from '../core/EventBus.js';
 import GameState     from '../core/GameState.js';
 import StateMachine  from '../core/StateMachine.js';
-import SaveManager   from '../persistence/SaveManager.js';
+import SaveManager, { AUTOSAVE_SLOT } from '../persistence/SaveManager.js';
 import I18n          from '../core/I18n.js';
 import { CHARACTERS }  from '../data/characters.js';
 import { DISTRICTS }   from '../data/districts.js';
@@ -73,8 +73,24 @@ const SlotSelect = {
     const meta = SaveManager.getMeta(slot);
     const isSelected = this._selectedSlot === slot;
     const isNew = this._mode === 'new';
+    const isAuto = slot === AUTOSAVE_SLOT;
+
+    // 자동 저장 슬롯: 새 게임 시작 슬롯으로는 사용 불가
+    const autoBadge = isAuto ? `<span class="slot-card-auto-badge">${t('slotSelect.autoSlotLabel')}</span>` : '';
+    const autoLockedClass = isAuto && isNew ? 'is-locked' : '';
 
     if (!meta) {
+      if (isAuto) {
+        return `
+          <div class="slot-card empty autosave ${autoLockedClass}" data-slot="${slot}">
+            ${autoBadge}
+            <div class="slot-card-empty-content">
+              <span class="slot-card-empty-icon">🔒</span>
+              <span class="slot-card-empty-label">${t('slotSelect.autoSlotDesc')}</span>
+            </div>
+          </div>
+        `;
+      }
       return `
         <div class="slot-card empty ${isSelected ? 'selected' : ''}" data-slot="${slot}">
           <div class="slot-card-empty-content">
@@ -109,8 +125,9 @@ const SlotSelect = {
     const deadFlag = isDead ? `<span class="slot-card-dead-flag">${t('menu.dead')}</span>` : '';
 
     return `
-      <div class="slot-card occupied ${isSelected ? 'selected' : ''} ${isDead ? 'is-dead' : ''}"
+      <div class="slot-card occupied ${isSelected ? 'selected' : ''} ${isDead ? 'is-dead' : ''} ${isAuto ? 'autosave' : ''} ${autoLockedClass}"
            data-slot="${slot}">
+        ${autoBadge}
         <button class="slot-card-delete-btn" data-delete-slot="${slot}" title="${t('slotSelect.btnDelete')}">✕</button>
         <div class="slot-card-lm">${thumbHtml}</div>
         <div class="slot-card-info">
@@ -126,6 +143,11 @@ const SlotSelect = {
     this._el.querySelectorAll('.slot-card').forEach(card => {
       card.addEventListener('click', () => {
         const slot = parseInt(card.dataset.slot, 10);
+        // 자동 저장 슬롯은 새 게임 시작 슬롯으로 선택 불가
+        if (this._mode === 'new' && slot === AUTOSAVE_SLOT) {
+          EventBus.emit('notify', { message: I18n.t('slotSelect.autoSlotLocked'), type: 'warn' });
+          return;
+        }
         // 새게임 모드에서 점유 슬롯은 선택 불가 (X 버튼으로 삭제만 가능)
         if (this._mode === 'new' && card.classList.contains('occupied')) return;
         this._selectedSlot = slot;
@@ -188,7 +210,8 @@ const SlotSelect = {
       return;
     }
     if (SaveManager.load(slot)) {
-      GameState.ui.saveSlot = slot;
+      // 자동 저장본을 불러오면 이후 수동 저장은 원래 런의 슬롯으로 계속되게 복원
+      GameState.ui.saveSlot = (slot === AUTOSAVE_SLOT) ? (meta.originSlot ?? 0) : slot;
       GameState.ui.currentState = 'slot_select';
       StateMachine.transition('main');
     }
