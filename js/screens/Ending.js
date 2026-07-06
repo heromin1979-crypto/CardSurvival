@@ -2,7 +2,7 @@
 import EventBus     from '../core/EventBus.js';
 import GameState    from '../core/GameState.js';
 import I18n         from '../core/I18n.js';
-import SaveManager  from '../persistence/SaveManager.js';
+import SaveManager, { AUTOSAVE_SLOT } from '../persistence/SaveManager.js';
 import EndingSystem from '../systems/EndingSystem.js';
 import { getEndingImage } from '../data/endingImages.js';
 
@@ -190,7 +190,11 @@ const Ending = {
   _restart() {
     this._clearTimers();
     // Delete current save slot and go to char_create
-    try { SaveManager.deleteSave(GameState.ui.saveSlot ?? 0); } catch { /* ignore */ }
+    // 자동 저장본도 함께 삭제 — 남겨두면 사망 직전 상태로 되돌아가 사망 처리를 우회할 수 있음
+    try {
+      SaveManager.deleteSave(GameState.ui.saveSlot ?? 0);
+      SaveManager.deleteSave(AUTOSAVE_SLOT, { silent: true });
+    } catch { /* ignore */ }
     GameState.ui.currentState = 'char_create';
     GameState.time.isPaused = false;
     EventBus.emit('stateTransition', { from: 'ending', to: 'char_create', data: {} });

@@ -35,6 +35,9 @@ export const ko = {
   'slotSelect.confirmOverwrite': '이 슬롯에 저장된 게임이 있습니다. 덮어쓰시겠습니까?',
   'slotSelect.cannotLoadDead':   '사망한 캐릭터는 이어할 수 없습니다',
   'slotSelect.selectFirst':      '슬롯을 먼저 선택하세요',
+  'slotSelect.autoSlotLabel':    '자동 저장',
+  'slotSelect.autoSlotDesc':     '자동 저장 전용 슬롯',
+  'slotSelect.autoSlotLocked':   '자동 저장 전용 슬롯에는 새 게임을 시작할 수 없습니다',
 
   // ── Time ────────────────────────────────────────────────────
   'time.justNow':  '방금 전',
@@ -932,6 +935,9 @@ export const en = {
   'slotSelect.confirmOverwrite': 'A saved game exists in this slot. Overwrite?',
   'slotSelect.cannotLoadDead':   'Cannot continue with a dead character',
   'slotSelect.selectFirst':      'Select a slot first',
+  'slotSelect.autoSlotLabel':    'Auto Save',
+  'slotSelect.autoSlotDesc':     'Auto-save only slot',
+  'slotSelect.autoSlotLocked':   'Cannot start a new game in the auto-save slot',
 
   // ── Time ────────────────────────────────────────────────────
   'time.justNow':  'Just now',

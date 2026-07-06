@@ -3,7 +3,6 @@ import EventBus     from '../core/EventBus.js';
 import GameState    from '../core/GameState.js';
 import StateMachine from '../core/StateMachine.js';
 import TickEngine   from '../core/TickEngine.js';
-import SaveManager  from '../persistence/SaveManager.js';
 import I18n         from '../core/I18n.js';
 import SettingsModal from '../ui/SettingsModal.js';
 
@@ -49,7 +48,6 @@ const Pause = {
       <div class="menu-box" style="align-items:center;gap:16px;">
         <div class="menu-title">${t('pause.title')}</div>
         <button class="menu-btn primary" id="btn-resume">${t('pause.resume')}</button>
-        <button class="menu-btn" id="btn-save-pause">${t('pause.save')}</button>
         <button class="menu-btn" id="btn-pause-settings">⚙️ ${t('pause.settings')}</button>
         <button class="menu-btn danger" id="btn-quit">${t('pause.quit')}</button>
         <button class="menu-btn danger" id="btn-exit-game">🚪 게임 종료</button>
@@ -57,10 +55,6 @@ const Pause = {
     `;
 
     this._el.querySelector('#btn-resume')?.addEventListener('click', () => this._unpause());
-
-    this._el.querySelector('#btn-save-pause')?.addEventListener('click', () => {
-      SaveManager.save(0);
-    });
 
     this._el.querySelector('#btn-pause-settings')?.addEventListener('click', () => {
       SettingsModal.open();
