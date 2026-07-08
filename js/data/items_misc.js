@@ -993,6 +993,7 @@ const ITEMS_MISC = {
       'training',
     ],
     defense: 2,
+    armor: { defense: 2, damageReduction: 0.02, critReduction: 0.01, movePenalty: 0.00 },
     dismantle: [
       {
         definitionId: 'cloth',
@@ -1075,6 +1076,7 @@ const ITEMS_MISC = {
     defense: 1,
     warmthBonus: 5,
     sleepFatigueMult: 1.2,
+    armor: { defense: 1, damageReduction: 0.01, critReduction: 0.00, movePenalty: 0.00 },
     dismantle: [
       {
         definitionId: 'cloth',
@@ -2908,10 +2910,12 @@ const ITEMS_MISC = {
       'hot',
     ],
     onUse: {
+      hydration: 8,
       nutrition: 28,
       warmth: 8,
     },
     onConsume: {
+      hydration: 8,
       nutrition: 28,
       warmth: 8,
     },

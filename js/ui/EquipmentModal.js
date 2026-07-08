@@ -83,6 +83,7 @@ const SLOT_META = {
   body:        { i18nKey: 'equip.body',       icon: '🦺',  row: 3 },
   hands:       { i18nKey: 'equip.hands',      icon: '🧤',  row: 4, col: 'left' },
   backpack:    { i18nKey: 'equip.backpack',   icon: '🎒',  row: 4, col: 'right' },
+  accessory:   { i18nKey: 'equip.accessory',  icon: '📿',  row: 5 },
   weapon_main: { i18nKey: 'equip.weaponMain', icon: '⚔️',  row: 5, col: 'left' },
   weapon_sub:  { i18nKey: 'equip.weaponSub',  icon: '🛡️⚔',  row: 5, col: 'right' },
   boots:       { i18nKey: 'equip.boots',      icon: '👟',  row: 6 },
@@ -268,13 +269,17 @@ const EquipmentModal = {
     if (!eq) return result;
     for (const id of Object.values(eq)) {
       if (!id) continue;
-      const w = GameState.getCardDef(id)?.onWear;
-      if (!w) continue;
-      if (w.damageReduction)   result.damageReduction   += w.damageReduction;
-      if (w.critReduction)     result.critReduction     += w.critReduction;
-      if (w.radiationMult)     result.radiationMult     *= w.radiationMult;
-      if (w.contaminationMult) result.contaminationMult *= w.contaminationMult;
-      if (w.infectionMult)     result.infectionMult     *= w.infectionMult;
+      const def = GameState.getCardDef(id);
+      const w = def?.onWear;
+      const armor = def?.armor;
+      if (!w && !armor) continue;
+      if (w?.damageReduction)   result.damageReduction   += w.damageReduction;
+      if (w?.critReduction)     result.critReduction     += w.critReduction;
+      if (w?.radiationMult)     result.radiationMult     *= w.radiationMult;
+      if (w?.contaminationMult) result.contaminationMult *= w.contaminationMult;
+      if (w?.infectionMult)     result.infectionMult     *= w.infectionMult;
+      if (armor?.damageReduction) result.damageReduction += armor.damageReduction;
+      if (armor?.critReduction)   result.critReduction   += armor.critReduction;
     }
     result.damageReduction = Math.min(0.75, result.damageReduction);
     result.critReduction   = Math.min(0.90, result.critReduction);
@@ -296,6 +301,7 @@ const EquipmentModal = {
             ${this._renderSlot('body')}
             ${this._renderSlot('hands')}
             ${this._renderSlot('backpack')}
+            <div class="equip-grid-full">${this._renderSlot('accessory')}</div>
             ${this._renderSlot('weapon_main')}
             ${this._renderSlot('weapon_sub')}
             <div class="equip-grid-full">${this._renderSlot('boots')}</div>

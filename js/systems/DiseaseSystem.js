@@ -14,6 +14,7 @@ import BALANCE     from '../data/gameBalance.js';
 let _coldExposureTicks  = 0;  // temp < 20 연속 TP
 let _heatExposureTicks  = 0;  // temp > 85 연속 TP
 let _highInfectTicks    = 0;  // infection > 70 연속 TP
+const INFECTIOUS_DISEASE_IDS = new Set(['common_cold', 'influenza', 'sepsis', 'cholera', 'dysentery']);
 
 const DiseaseSystem = {
 
@@ -364,6 +365,15 @@ const DiseaseSystem = {
     if (this._hasDisease(gs, diseaseId)) return;
     const def = DISEASES[diseaseId];
     if (!def) return;
+    if (INFECTIOUS_DISEASE_IDS.has(diseaseId) && gs.player?.permanentInfectionImmunity) {
+      EventBus.emit('notify', { message: '감염 면역으로 질병 발병을 막았습니다.', type: 'good' });
+      return;
+    }
+    const diseaseResist = gs.player?.permanentDiseaseResist ?? 0;
+    if (INFECTIOUS_DISEASE_IDS.has(diseaseId) && diseaseResist > 0 && Math.random() < diseaseResist) {
+      EventBus.emit('notify', { message: '질병 저항으로 발병을 막았습니다.', type: 'good' });
+      return;
+    }
 
     const [minDays, maxDays] = def.durationDays;
     const days       = minDays + Math.floor(Math.random() * (maxDays - minDays + 1));

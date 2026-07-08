@@ -3,6 +3,7 @@ import EventBus        from '../core/EventBus.js';
 import GameState       from '../core/GameState.js';
 import I18n            from '../core/I18n.js';
 import EquipmentSystem from '../systems/EquipmentSystem.js';
+import { formatCardEffectEntries } from '../systems/ItemEffectSystem.js';
 import CardFactory     from './CardFactory.js';
 import GameData        from '../data/GameData.js';
 import NPCSystem       from '../systems/NPCSystem.js';
@@ -265,9 +266,9 @@ const ModalManager = {
     if (def.weight)             stats.push([I18n.t('modal.weight'), `${def.weight} kg`]);
     if (def.defaultDurability)  stats.push([I18n.t('modal.durability'), `${inst.durability}%`]);
     if (inst.contamination > 0) stats.push([I18n.t('modal.contamination'), `${inst.contamination}%`, 'danger']);
-    if (def.onConsume?.hydration) stats.push([I18n.t('modal.hydration'), `+${def.onConsume.hydration}`]);
-    if (def.onConsume?.nutrition) stats.push([I18n.t('modal.nutrition'), `+${def.onConsume.nutrition}`]);
-    if (def.onConsume?.hp)        stats.push([I18n.t('modal.hpRestore'), `+${def.onConsume.hp}`]);
+    for (const entry of formatCardEffectEntries(def, inst)) {
+      stats.push([entry.label, entry.value, entry.cls]);
+    }
     if (def.combat) {
       const [dMin, dMax] = def.combat.damage;
       stats.push([I18n.t('modal.damage'), `${dMin}-${dMax}`]);

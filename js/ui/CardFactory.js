@@ -1292,6 +1292,50 @@ const CardFactory = {
     `;
   },
 
+  _cardTypeLabel(def) {
+    const subtypeLabels = {
+      food: '음식',
+      drink: '음료',
+      medical: '의료품',
+      fuel: '연료',
+      ammo: '탄약',
+      bait: '미끼',
+      melee: '근접무기',
+      firearm: '총기',
+      ranged: '원거리',
+      throwable: '투척무기',
+      shield: '방패',
+      body: '장비',
+      head: '장비',
+      face: '장비',
+      hands: '장비',
+      boots: '장비',
+      accessory: '장신구',
+      bag: '가방',
+      trap: '덫',
+      live_animal: '동물',
+      carcass: '사체',
+      document: '문서',
+      key: '열쇠',
+      storage: '보관',
+      special: '소모품',
+    };
+    const typeLabels = {
+      consumable: '소모품',
+      armor: '장비',
+      weapon: '무기',
+      material: '재료',
+      tool: '도구',
+      structure: '설비',
+      equipment: '장비',
+      location: '장소',
+      npc: '인물',
+      environment: '환경',
+      misc: '기타',
+    };
+    return subtypeLabels[def?.subtype] ?? typeLabels[def?.type] ?? '아이템';
+  },
+
   // ── 일반 카드 내부 HTML ──────────────────────────────────
 
   _buildInner(inst, def) {
@@ -1332,24 +1376,6 @@ const CardFactory = {
         <div class="card-durability-fill ${durClass}" style="width:${durPct}%"></div>
       </div>` : '';
 
-    let statsHtml = '';
-    if (def.onConsume) {
-      const e = def.onConsume;
-      const parts = [];
-      if (e.hydration > 0) parts.push(`💧+${e.hydration}`);
-      if (e.nutrition  > 0) parts.push(`🥗+${e.nutrition}`);
-      if (e.hp         > 0) parts.push(`❤️+${e.hp}`);
-      if (e.fatigue    < 0) parts.push(`😴${e.fatigue}`);
-      if (parts.length) statsHtml = `<div class="card-stats">${parts.map(p => `<span class="card-stat">${p}</span>`).join('')}</div>`;
-    }
-    if (def.combat) {
-      const [dMin, dMax] = def.combat.damage ?? [0, 0];
-      const qMult = QUALITY_MULT[inst._quality] ?? 1.0;
-      const adjMin = Math.round(dMin * qMult);
-      const adjMax = Math.round(dMax * qMult);
-      statsHtml = `<div class="card-stats"><span class="card-stat">⚔${adjMin}-${adjMax}</span><span class="card-stat">🔊${def.combat.noiseOnUse}</span></div>`;
-    }
-
     const imgSrc = CARD_IMAGES[inst.definitionId] ?? null;
     const artHtml = imgSrc
       ? `<div class="card-art card-art--img"><img class="card-img" src="${imgSrc}" alt="${def.name ?? ''}"></div>`
@@ -1375,17 +1401,8 @@ const CardFactory = {
       actionHint = baitTags ? I18n.t('card.actionTrapBait', { tags: baitTags }) : '';
     }
 
-    // 카테고리 캡 라벨 (Track B+E)
-    const CATEGORY_CAPS = {
-      melee: 'MELEE', firearm: 'FIREARM', ranged: 'RANGED', throwable: 'THROW',
-      shield: 'SHIELD', armor: 'ARMOR', bag: 'BAG',
-      food: 'FOOD', drink: 'DRINK', medical: 'MEDICAL',
-      live_animal: 'LIVE', carcass: 'CARCASS', trap: 'TRAP',
-      weapon: 'WEAPON', consumable: 'ITEM', tool: 'TOOL',
-      material: 'MATL', equipment: 'EQUIP', structure: 'BUILD',
-    };
     const catKey = def.subtype ?? def.type ?? '';
-    const typeBadgeText = CATEGORY_CAPS[catKey] ?? catKey.slice(0, 6).toUpperCase();
+    const typeBadgeText = this._cardTypeLabel(def);
     const typeBadgeClass = 'card-type-badge cap';
 
     const actionHintHtml = actionHint
@@ -1400,7 +1417,6 @@ const CardFactory = {
       <div class="card-body">
         <div class="card-type-row">
           <span class="${typeBadgeClass}" data-cat="${catKey}">${typeBadgeText}</span>
-          ${statsHtml}
         </div>
         ${artHtml}
         ${durBar}
