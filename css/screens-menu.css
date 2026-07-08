@@ -328,6 +328,41 @@
   color: rgba(220, 175, 90, 0.85);
 }
 
+/* 자동 저장 전용 슬롯 */
+.slot-card-auto-badge {
+  position: absolute;
+  top: 6px;
+  left: 8px;
+  padding: 2px 8px;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: rgba(220, 175, 90, 0.9);
+  background: rgba(200, 160, 96, 0.12);
+  border: 1px solid rgba(200, 160, 96, 0.4);
+  border-radius: 4px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.slot-card.autosave {
+  border-style: dashed;
+  border-color: rgba(107, 85, 53, 0.6);
+}
+
+/* 새 게임 모드 — 자동 저장 슬롯 사용 불가 */
+.slot-card.autosave.is-locked {
+  cursor: not-allowed;
+  filter: saturate(0.4) brightness(0.75);
+}
+
+.slot-card.autosave.is-locked:hover {
+  filter: saturate(0.4) brightness(0.75);
+}
+
+.slot-card.autosave .slot-card-empty-icon {
+  font-size: 32px;
+}
+
 /* 사망 슬롯 */
 .slot-card.is-dead {
   filter: saturate(0.45) brightness(0.8);
