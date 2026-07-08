@@ -2,7 +2,6 @@
 import EventBus     from '../core/EventBus.js';
 import GameState    from '../core/GameState.js';
 import I18n         from '../core/I18n.js';
-import TraitSystem  from './TraitSystem.js';
 import EndingSystem from './EndingSystem.js';
 import SeasonSystem  from './SeasonSystem.js';
 import DiseaseSystem from './DiseaseSystem.js';
@@ -11,6 +10,7 @@ import NPCSystem     from './NPCSystem.js';
 import BALANCE       from '../data/gameBalance.js';
 import CharDialogue  from '../data/charDialogues.js';
 import GameData      from '../data/GameData.js';
+import { consumeEffectMultiplier, getConsumableEffect, normalizeConsumeEffect } from './ItemEffectSystem.js';
 
 const StatSystem = {
   init() {
@@ -597,18 +597,71 @@ const StatSystem = {
 
     for (const instanceId of Object.values(equipped)) {
       if (!instanceId) continue;
-      const w = GameState.getCardDef(instanceId)?.onWear;
-      if (!w) continue;
-      if (w.damageReduction)   result.damageReduction   += w.damageReduction;
-      if (w.critReduction)     result.critReduction     += w.critReduction;
-      if (w.radiationMult)     result.radiationMult     *= w.radiationMult;
-      if (w.contaminationMult) result.contaminationMult *= w.contaminationMult;
-      if (w.infectionMult)     result.infectionMult     *= w.infectionMult;
+      const inst = GameState.cards[instanceId];
+      const def = GameState.getCardDef(instanceId);
+      const w = def?.onWear;
+      const armor = def?.armor;
+      const modDamageReduction = inst?._damageReductionBonus ?? 0;
+      const modCritReduction = inst?._critReductionBonus ?? 0;
+      if (!w && !armor && !modDamageReduction && !modCritReduction) continue;
+      if (w?.damageReduction)   result.damageReduction   += w.damageReduction;
+      if (w?.critReduction)     result.critReduction     += w.critReduction;
+      if (w?.radiationMult)     result.radiationMult     *= w.radiationMult;
+      if (w?.contaminationMult) result.contaminationMult *= w.contaminationMult;
+      if (w?.infectionMult)     result.infectionMult     *= w.infectionMult;
+      if (armor?.damageReduction) result.damageReduction += armor.damageReduction;
+      if (armor?.critReduction)   result.critReduction   += armor.critReduction;
+      result.damageReduction += modDamageReduction;
+      result.critReduction   += modCritReduction;
     }
     // 상한 클램핑: BALANCE 상수 기반
     result.damageReduction = Math.min(BALANCE.armor.damageReductionCap, result.damageReduction);
     result.critReduction   = Math.min(BALANCE.armor.critReductionCap, result.critReduction);
     return result;
+  },
+
+  _applyGuaranteedStun(gs, duration) {
+    const turns = Math.max(1, Math.floor(duration ?? 0));
+    const combat = gs.combat;
+    const targetIndex = combat?.targetIndex ?? 0;
+    const enemy = combat?.enemies?.[targetIndex];
+    if (!combat?.active || !enemy || (enemy.currentHp ?? 0) <= 0) {
+      EventBus.emit('notify', { message: '전투 중 살아있는 대상에게만 사용할 수 있습니다.', type: 'warn' });
+      return false;
+    }
+
+    const status = {
+      id: 'stun',
+      name: I18n.t('combatSys.stun'),
+      duration: turns,
+      effect: { skipTurn: true },
+    };
+    if (!Array.isArray(enemy._statusEffects)) enemy._statusEffects = [];
+    const existing = enemy._statusEffects.find(s => s.id === 'stun');
+    if (existing) {
+      existing.duration = Math.max(existing.duration ?? 0, turns);
+      existing.effect = { ...(existing.effect ?? {}), skipTurn: true };
+    } else {
+      enemy._statusEffects.push({ ...status });
+    }
+
+    const combatant = Object.values(combat.combatants ?? {}).find(c =>
+      c?.side === 'enemy' && c.enemyIndex === targetIndex);
+    if (combatant) {
+      if (!Array.isArray(combatant.statusEffects)) combatant.statusEffects = [];
+      const rankedExisting = combatant.statusEffects.find(s => s.id === 'stun');
+      if (rankedExisting) {
+        rankedExisting.duration = Math.max(rankedExisting.duration ?? 0, turns);
+        rankedExisting.effect = { ...(rankedExisting.effect ?? {}), skipTurn: true };
+      } else {
+        combatant.statusEffects.push({ ...status });
+      }
+    }
+
+    const enemyName = I18n.enemyName(enemy.id, enemy.name);
+    combat.log?.push(`${enemyName}에게 기절 ${turns}턴을 부여했다.`);
+    EventBus.emit('notify', { message: `${enemyName} 기절 ${turns}턴`, type: 'good' });
+    return true;
   },
 
   // Apply consume effect of a card
@@ -619,21 +672,21 @@ const StatSystem = {
     const def   = gs.getCardDef(instanceId);
     if (!def) return false;
 
-    const eff = def.onConsume;
+    const eff = normalizeConsumeEffect(getConsumableEffect(def));
     if (!eff) return false;
 
     // medic 특성 + 의료 스킬: 의료 태그 아이템 회복량 배율
-    const isMedical  = def.tags?.includes('medical') ?? false;
+    const { isMedical, isFood, healMult } = consumeEffectMultiplier(def, inst);
     const isCrafted  = inst._crafted ?? false;  // 제작된 음식 여부
-    const isFood     = def.subtype === 'food' || def.subtype === 'drink';
-    const traitMult  = isMedical ? (TraitSystem.getTraitEffect('medic', 'healMultiplier') ?? 1.0) : 1.0;
-    const medSkill   = isMedical ? SkillSystem.getBonus('medicine', 'healMult') : 1.0;
-    const compHeal   = isMedical ? NPCSystem.getCompanionHealBonus() : 1.0;
-    const cookSkill  = isFood    ? SkillSystem.getBonus('cooking',  'foodEffectMult') : 1.0;
-    const healMult   = traitMult * compHeal * (isMedical ? medSkill : (isFood ? cookSkill : 1.0));
+
+    if (eff.guaranteedStun && !this._applyGuaranteedStun(gs, eff.guaranteedStun)) {
+      return false;
+    }
 
     if (eff.hydration)    gs.modStat('hydration',  eff.hydration * healMult);
     if (eff.nutrition)    gs.modStat('nutrition',   eff.nutrition * healMult);
+    if (eff.stamina)      gs.modStat('stamina',     eff.stamina);
+    if (eff.temperature)  gs.modStat('temperature', eff.temperature);
     if (eff.morale)       gs.modStat('morale',      eff.morale);
     if (eff.fatigue)      gs.modStat('fatigue',     eff.fatigue);
     // 감염 감소 효과 (치료제 등 infection < 0)
@@ -642,6 +695,20 @@ const StatSystem = {
       gs.modStat('infection', reduction);
     }
     if (eff.radiation < 0) gs.modStat('radiation', eff.radiation);
+    if (eff.permanentInfectionImmunity) {
+      gs.player.permanentInfectionImmunity = true;
+      EventBus.emit('notify', { message: '감염 면역이 영구 적용되었습니다.', type: 'good' });
+    }
+    if (eff.permanentDiseaseResist) {
+      gs.player.permanentDiseaseResist = Math.max(gs.player.permanentDiseaseResist ?? 0, eff.permanentDiseaseResist);
+      EventBus.emit('notify', { message: `질병 저항 +${Math.round(eff.permanentDiseaseResist * 100)}%가 영구 적용되었습니다.`, type: 'good' });
+    }
+    if (eff.zombieRepelTP) {
+      const now = Math.floor(gs.time.totalTP ?? 0);
+      const until = now + Math.max(1, Math.floor(eff.zombieRepelTP));
+      gs.player.zombieRepelUntilTP = Math.max(gs.player.zombieRepelUntilTP ?? 0, until);
+      EventBus.emit('notify', { message: `좀비 회피 효과가 ${eff.zombieRepelTP}TP 동안 지속됩니다.`, type: 'good' });
+    }
     if (eff.hp) {
       // 의사 능력: 붕대 사용 시 bandageHpBonus 추가 회복
       const isBandage = def.tags?.includes('bandage') ?? false;
@@ -659,14 +726,15 @@ const StatSystem = {
       const poisonResist = SkillSystem.getBonus('medicine', 'poisonResist') ?? 0;
       const medMult = poisonImmune ? 0 : (1 - poisonResist);
       const radGain  = Math.round((eff.radiation  ?? Math.floor(contam / 10)) * armor.radiationMult * medMult);
-      const infGain  = Math.round((eff.infection  ?? Math.floor(contam / 8))  * armor.contaminationMult * medMult);
+      const infGainBase = Math.round((eff.infection ?? Math.floor(contam / 8)) * armor.contaminationMult * medMult);
+      const infGain = gs.player.permanentInfectionImmunity ? 0 : infGainBase;
       gs.modStat('radiation', radGain);
       gs.modStat('infection', infGain);
       if (contam > 50 && !poisonImmune) {
         EventBus.emit('notify', { message: I18n.t('statSys.contamConsumed'), type: 'danger' });
       }
       // 오염 음식/물 → 질병 발병 체크 (면역 시 건너뜀)
-      if (!poisonImmune) DiseaseSystem.checkContaminatedConsume(def, inst.contamination, gs);
+      if (!poisonImmune && !gs.player.permanentInfectionImmunity) DiseaseSystem.checkContaminatedConsume(def, inst.contamination, gs);
     }
 
     // 아이템 사용 → 질병 치료 체크

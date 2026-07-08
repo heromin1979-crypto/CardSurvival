@@ -10,7 +10,7 @@ const BOTTOM_PAGE1_SIZE = 20;
 // accepts: [{type, subtypes}] 배열을 쓰면 복수 타입 허용 (weapon_sub처럼 무기+방패 겸용 슬롯)
 const SLOT_RULES = {
   head:        { type: 'armor',  subtypes: ['head'] },
-  body:        { type: 'armor',  subtypes: ['vest', 'fullbody', 'clothing'] },
+  body:        { type: 'armor',  subtypes: ['vest', 'fullbody', 'clothing', 'body'] },
   hands:       { type: 'armor',  subtypes: ['hands'] },
   face:        { type: 'tool',   subtypes: ['protection'], requiresOnWear: true },
   weapon_main: { type: 'weapon', subtypes: ['melee', 'firearm', 'ranged'] },
@@ -23,7 +23,7 @@ const SLOT_RULES = {
   backpack:    { type: 'tool',   subtypes: ['bag'] },
   boots:       { type: 'armor',  subtypes: ['boots'] },
   belt:        { locked: true },
-  accessory:   { locked: true },
+  accessory:   { type: 'armor',  subtypes: ['accessory'] },
 };
 
 const EquipmentSystem = {

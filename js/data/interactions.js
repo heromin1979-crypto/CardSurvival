@@ -1,6 +1,25 @@
 import GameData from './GameData.js';
 import EventBus from '../core/EventBus.js';
 
+function _defFor(inst) {
+  return inst ? GameData.items?.[inst.definitionId] : null;
+}
+
+function _isPoisonableWeapon(inst) {
+  const def = _defFor(inst);
+  return def?.type === 'weapon' && (
+    def.tags?.includes('melee') ||
+    def.tags?.includes('blade') ||
+    def.subtype === 'melee' ||
+    def.weaponType === 'blade'
+  );
+}
+
+function _isSuppressorTarget(inst) {
+  const def = _defFor(inst);
+  return def?.type === 'weapon' && !!def.combat?.requiresAmmo;
+}
+
 // === CARD INTERACTION RULES ===
 // 카드를 다른 카드 위에 드랍할 때 발생하는 상호작용 규칙 테이블.
 //
@@ -1587,6 +1606,149 @@ const INTERACTION_RULES = [
         consumeSrc: false,
         consumeTgt: false,
         noise:      0,
+      };
+    },
+  },
+
+  {
+    id: 'apply_poison_to_weapon',
+    source: { id: 'poison' },
+    target: { type: 'weapon' },
+    hint: '독을 근접 무기에 바르기',
+    canApply(srcInst, tgtInst) {
+      if (!_isPoisonableWeapon(tgtInst)) return { ok: false, reason: '독은 칼날이 있는 근접 무기에만 바를 수 있습니다.' };
+      if ((tgtInst._poisonDamage ?? 0) > 0) return { ok: false, reason: '이미 독이 발라진 무기입니다.' };
+      return { ok: true };
+    },
+    apply(srcInst, tgtInst) {
+      tgtInst._poisonDamage = 3;
+      return {
+        message: '무기에 독을 발랐습니다. 공격 적중 시 독 피해 +3.',
+        consumeSrc: true,
+        consumeTgt: false,
+      };
+    },
+  },
+  {
+    id: 'poison_cutting_tool_feedback',
+    source: { id: 'poison' },
+    target: { tag: 'cutting' },
+    hint: '독 적용 대상 확인',
+    canApply() {
+      return { ok: false, reason: '메스 같은 절단 도구에는 전투 독 효과를 적용할 수 없습니다. 근접 무기에 사용하세요.' };
+    },
+    apply() {
+      return { message: '', consumeSrc: false, consumeTgt: false };
+    },
+  },
+  {
+    id: 'apply_poison_to_weapon_rev',
+    source: { type: 'weapon' },
+    target: { id: 'poison' },
+    hint: '독을 근접 무기에 바르기',
+    canApply(srcInst, tgtInst) {
+      if (!_isPoisonableWeapon(srcInst)) return { ok: false, reason: '독은 칼날이 있는 근접 무기에만 바를 수 있습니다.' };
+      if ((srcInst._poisonDamage ?? 0) > 0) return { ok: false, reason: '이미 독이 발라진 무기입니다.' };
+      return { ok: true };
+    },
+    apply(srcInst, tgtInst) {
+      srcInst._poisonDamage = 3;
+      return {
+        message: '무기에 독을 발랐습니다. 공격 적중 시 독 피해 +3.',
+        consumeSrc: false,
+        consumeTgt: true,
+      };
+    },
+  },
+  {
+    id: 'poison_cutting_tool_feedback_rev',
+    source: { tag: 'cutting' },
+    target: { id: 'poison' },
+    hint: '독 적용 대상 확인',
+    canApply() {
+      return { ok: false, reason: '메스 같은 절단 도구에는 전투 독 효과를 적용할 수 없습니다. 근접 무기에 사용하세요.' };
+    },
+    apply() {
+      return { message: '', consumeSrc: false, consumeTgt: false };
+    },
+  },
+  {
+    id: 'apply_defense_salve',
+    source: { id: 'defense_salve' },
+    target: { type: 'armor' },
+    hint: '방어구에 방어연고 바르기',
+    canApply(srcInst, tgtInst) {
+      if (tgtInst._defenseSalve) return { ok: false, reason: '이미 방어연고가 발라진 방어구입니다.' };
+      return { ok: true };
+    },
+    apply(srcInst, tgtInst) {
+      tgtInst._defenseSalve = true;
+      tgtInst._damageReductionBonus = (tgtInst._damageReductionBonus ?? 0) + 0.05;
+      tgtInst._critReductionBonus = (tgtInst._critReductionBonus ?? 0) + 0.02;
+      return {
+        message: '방어구에 방어연고를 발랐습니다. 장착 중 피해 -5%, 치명타 -2%.',
+        consumeSrc: true,
+        consumeTgt: false,
+      };
+    },
+  },
+  {
+    id: 'apply_defense_salve_rev',
+    source: { type: 'armor' },
+    target: { id: 'defense_salve' },
+    hint: '방어구에 방어연고 바르기',
+    canApply(srcInst, tgtInst) {
+      if (srcInst._defenseSalve) return { ok: false, reason: '이미 방어연고가 발라진 방어구입니다.' };
+      return { ok: true };
+    },
+    apply(srcInst, tgtInst) {
+      srcInst._defenseSalve = true;
+      srcInst._damageReductionBonus = (srcInst._damageReductionBonus ?? 0) + 0.05;
+      srcInst._critReductionBonus = (srcInst._critReductionBonus ?? 0) + 0.02;
+      return {
+        message: '방어구에 방어연고를 발랐습니다. 장착 중 피해 -5%, 치명타 -2%.',
+        consumeSrc: false,
+        consumeTgt: true,
+      };
+    },
+  },
+  {
+    id: 'apply_suppressor',
+    source: { id: 'suppressor' },
+    target: { type: 'weapon' },
+    hint: '총기에 소음기 장착',
+    canApply(srcInst, tgtInst) {
+      if (!_isSuppressorTarget(tgtInst)) return { ok: false, reason: '소음기는 탄약을 쓰는 총기류에만 장착할 수 있습니다.' };
+      if (tgtInst._suppressor) return { ok: false, reason: '이미 소음기가 장착된 무기입니다.' };
+      return { ok: true };
+    },
+    apply(srcInst, tgtInst) {
+      tgtInst._suppressor = true;
+      tgtInst._noiseReduction = Math.max(tgtInst._noiseReduction ?? 0, 0.5);
+      return {
+        message: '총기에 소음기를 장착했습니다. 공격 소음 -50%.',
+        consumeSrc: true,
+        consumeTgt: false,
+      };
+    },
+  },
+  {
+    id: 'apply_suppressor_rev',
+    source: { type: 'weapon' },
+    target: { id: 'suppressor' },
+    hint: '총기에 소음기 장착',
+    canApply(srcInst, tgtInst) {
+      if (!_isSuppressorTarget(srcInst)) return { ok: false, reason: '소음기는 탄약을 쓰는 총기류에만 장착할 수 있습니다.' };
+      if (srcInst._suppressor) return { ok: false, reason: '이미 소음기가 장착된 무기입니다.' };
+      return { ok: true };
+    },
+    apply(srcInst, tgtInst) {
+      srcInst._suppressor = true;
+      srcInst._noiseReduction = Math.max(srcInst._noiseReduction ?? 0, 0.5);
+      return {
+        message: '총기에 소음기를 장착했습니다. 공격 소음 -50%.',
+        consumeSrc: false,
+        consumeTgt: true,
       };
     },
   },

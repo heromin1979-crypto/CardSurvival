@@ -83,4 +83,10 @@ for (const [id, cfg] of Object.entries(STACK_CONFIG)) {
   }
 }
 
+for (const def of Object.values(ITEMS)) {
+  if (def.type === 'consumable' && !def.onConsume && def.onUse) {
+    def.onConsume = { ...def.onUse };
+  }
+}
+
 export default ITEMS;

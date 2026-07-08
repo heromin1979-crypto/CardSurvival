@@ -1177,13 +1177,14 @@ const CombatSystem = {
     let isRanged = false;
 
     if (weaponId && gs.cards[weaponId]) {
+      const weaponInst = gs.cards[weaponId];
       const def = gs.getCardDef(weaponId);
       if (def?.combat) {
         const [dMin, dMax] = def.combat.damage;
         const rawDmg = dMin + Math.floor(Math.random() * (dMax - dMin + 1));
-        const qualityMult = BALANCE.quality.tiers[gs.cards[weaponId]?._quality]?.mult ?? 1.0;
-        damage         = Math.round(rawDmg * qualityMult);
-        accuracy       = def.combat.accuracy;
+        const qualityMult = BALANCE.quality.tiers[weaponInst?._quality]?.mult ?? 1.0;
+        damage         = Math.round(rawDmg * qualityMult) + (weaponInst.damageBonus ?? 0);
+        accuracy       = def.combat.accuracy + (weaponInst.accuracyBonus ?? 0);
         noise          = def.combat.noiseOnUse;
         durLoss        = def.combat.durabilityLoss ?? 0;
         critChance     = def.combat.critChance     ?? 0;
@@ -1193,6 +1194,9 @@ const CombatSystem = {
         skillId        = isRanged ? 'ranged' : 'melee';
 
         if (isRanged) {
+          if (weaponInst._suppressor) {
+            noise = Math.max(0, Math.round(noise * (1 - Math.min(1, weaponInst._noiseReduction ?? 0.5))));
+          }
           // 원거리: 명중률·치명타 스킬 보너스 적용
           accuracy   = Math.min(1, accuracy   + SkillSystem.getBonus('ranged', 'accBonus'));
           critChance = Math.min(1, critChance + SkillSystem.getBonus('ranged', 'critBonus'));
@@ -1309,6 +1313,11 @@ const CombatSystem = {
 
       let finalDmg = Math.max(1, damage - (enemy.defense ?? 0));
       if ((enemy._combatBuffs?.invulnerable?.duration ?? 0) > 0) finalDmg = 0;
+      const poisonDmg = Math.max(0, Math.floor(gs.cards[weaponId]?._poisonDamage ?? 0));
+      if (poisonDmg > 0 && finalDmg > 0) {
+        finalDmg += poisonDmg;
+        gs.combat.log.push(`독 피해 +${poisonDmg}`);
+      }
       enemy.currentHp = Math.max(0, enemy.currentHp - finalDmg);
 
       if (enemy.currentHp <= 0) {
@@ -1905,6 +1914,16 @@ const CombatSystem = {
     const gs = GameState;
     const enemy = gs.combat.enemies?.[enemyIdx];
     if (!enemy || enemy.currentHp <= 0) return;
+    const stunIdx = (enemy._statusEffects ?? []).findIndex(s =>
+      s?.id === 'stun' || s?.effect?.skipTurn === true);
+    if (stunIdx !== -1) {
+      const [stun] = enemy._statusEffects.splice(stunIdx, 1);
+      const enemyName = I18n.enemyName(enemy.id, enemy.name);
+      gs.combat.log.push(`${enemyName}은(는) ${stun?.name ?? I18n.t('combatSys.stun')} 상태라 행동하지 못했다.`);
+      this._fx({ kind: 'status', target: 'enemy', enemyIdx, statusId: 'stun' });
+      enemy._nextIntent = this._decideNextIntent(enemy, gs.combat, gs) ?? null;
+      return;
+    }
     this._applyEnemyTurnStartTraits(enemy);
 
     // 사기 격파: 사기 소진 시 도주(rout)
