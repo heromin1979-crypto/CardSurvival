@@ -57,6 +57,30 @@
   margin-bottom: 6px;
 }
 
+/* 접이식 섹션 */
+.dbg-sec-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+}
+
+.dbg-sec-toggle:hover { color: #e8b84b; }
+
+.dbg-sec-icon {
+  font-size: 8px;
+  transition: transform 0.15s;
+}
+
+.dbg-sec-icon.collapsed { transform: rotate(-90deg); }
+
+.dbg-sec-body.hidden { display: none; }
+
+/* 접힌 섹션은 제목 아래 여백 제거 */
+.dbg-sec-body.hidden + *,
+.dbg-section:has(.dbg-sec-body.hidden) .dbg-section-title { margin-bottom: 0; }
+
 /* 인스펙터 */
 .dbg-inspector {
   color: #ccc;

@@ -7,14 +7,21 @@ import TickEngine from '../core/TickEngine.js';
 import GameData   from '../data/GameData.js';
 import I18n       from '../core/I18n.js';
 import WeatherSystem from '../systems/WeatherSystem.js';
+import MentalSystem  from '../systems/MentalSystem.js';
 
+// kind: 'stats'(기본) = GameState.stats[key], 'noise' = noise.level, 'mental' = mental[key]
 const STAT_FIELDS = [
-  { key: 'hydration',   label: 'Hydration'   },
-  { key: 'nutrition',   label: 'Nutrition'   },
-  { key: 'morale',      label: 'Morale'      },
-  { key: 'fatigue',     label: 'Fatigue'     },
-  { key: 'temperature', label: 'Temperature' },
-  { key: 'radiation',   label: 'Radiation'   },
+  { key: 'hydration',   label: '수분'     },
+  { key: 'nutrition',   label: '영양'     },
+  { key: 'morale',      label: '사기'     },
+  { key: 'stamina',     label: '스태미나' },
+  { key: 'fatigue',     label: '피로'     },
+  { key: 'temperature', label: '체온'     },
+  { key: 'radiation',   label: '방사선'   },
+  { key: 'infection',   label: '감염'     },
+  { key: 'noise',       label: '소음',     kind: 'noise'  },
+  { key: 'anxiety',     label: '불안',     kind: 'mental' },
+  { key: 'trauma',      label: '트라우마', kind: 'mental' },
 ];
 
 const DebugPanel = {
@@ -29,10 +36,10 @@ const DebugPanel = {
   _dictEl:    null,
 
   init() {
-    // CSS 동적 삽입
+    // CSS 동적 삽입 (디버그 전용이라 캐시 무효화 쿼리 부착 — 수정 즉시 반영)
     const link = document.createElement('link');
     link.rel  = 'stylesheet';
-    link.href = 'css/debug.css';
+    link.href = 'css/debug.css?v=' + Date.now();
     document.head.appendChild(link);
 
     const container = document.getElementById('debug-panel');
@@ -62,39 +69,38 @@ const DebugPanel = {
         <button class="dbg-set-btn" data-stat="${key}">Set</button>
       </div>`).join('');
 
+    // 접이식 섹션 래퍼 — key는 접힘 상태 저장(localStorage) 식별자
+    const section = (key, title, inner) => `
+      <div class="dbg-section">
+        <div class="dbg-section-title dbg-sec-toggle" data-sec="${key}">
+          <span>${title}</span>
+          <span class="dbg-sec-icon">▼</span>
+        </div>
+        <div class="dbg-sec-body" data-sec-body="${key}">${inner}</div>
+      </div>`;
+
     return `
       <div class="dbg-header" id="dbg-toggle">
         <span>🛠 DEBUG</span>
         <span class="dbg-toggle-icon" id="dbg-icon">▼</span>
       </div>
       <div class="dbg-body" id="dbg-body">
-        <!-- 인스펙터 -->
-        <div class="dbg-section">
-          <div class="dbg-section-title">Inspector</div>
-          <div class="dbg-inspector"></div>
-        </div>
-        <!-- TP 스킵 -->
-        <div class="dbg-section">
-          <div class="dbg-section-title">Skip TP</div>
+        ${section('inspector', 'Inspector', `
+          <div class="dbg-inspector"></div>`)}
+        ${section('skiptp', 'Skip TP', `
           <div class="dbg-btn-row">
             <button class="dbg-btn" data-skip="1">+1 TP</button>
             <button class="dbg-btn" data-skip="10">+10 TP</button>
             <button class="dbg-btn" data-skip="72">+1 Day</button>
-          </div>
-        </div>
-        <!-- 스탯 편집 -->
-        <div class="dbg-section">
-          <div class="dbg-section-title">Set Stats</div>
+          </div>`)}
+        ${section('stats', 'Set Stats', `
           ${statRows}
           <div class="dbg-stat-row" style="margin-top:4px">
             <span class="dbg-stat-label">HP</span>
             <input class="dbg-stat-input" type="number" data-stat="hp" min="0" max="999" step="1">
             <button class="dbg-set-btn" data-stat="hp">Set</button>
-          </div>
-        </div>
-        <!-- 아이템 지급 -->
-        <div class="dbg-section">
-          <div class="dbg-section-title">Give Item</div>
+          </div>`)}
+        ${section('give', 'Give Item', `
           <div class="dbg-row-toggle">
             <button class="dbg-row-btn active" data-give-row="bottom">휴대</button>
             <button class="dbg-row-btn" data-give-row="middle">바닥</button>
@@ -108,11 +114,8 @@ const DebugPanel = {
             <button class="dbg-give-btn" id="dbg-give-btn">Give</button>
             <button class="dbg-dict-btn" id="dbg-dict-btn" title="아이템 사전">📖</button>
           </div>
-          <div class="dbg-msg" id="dbg-msg"></div>
-        </div>
-        <!-- 날씨 변경 (GM) -->
-        <div class="dbg-section">
-          <div class="dbg-section-title">Set Weather</div>
+          <div class="dbg-msg" id="dbg-msg"></div>`)}
+        ${section('weather', 'Set Weather', `
           <div class="dbg-btn-row">
             <button class="dbg-btn" data-weather="sunny">☀️맑음</button>
             <button class="dbg-btn" data-weather="rainy">🌧비</button>
@@ -122,20 +125,36 @@ const DebugPanel = {
             <button class="dbg-btn" data-weather="storm">🌩폭풍</button>
             <button class="dbg-btn" data-weather="acid_rain">☢️산성비</button>
             <button class="dbg-btn" data-weather="snow">🌨눈</button>
-          </div>
-        </div>
+          </div>`)}
       </div>`;
   },
 
   // ── 이벤트 바인딩 ─────────────────────────────────────────
 
   _bindEvents() {
-    // 접기/펼치기
+    // 패널 전체 접기/펼치기
     this._el.querySelector('#dbg-toggle').addEventListener('click', () => {
       this._collapsed = !this._collapsed;
       this._el.querySelector('#dbg-body').classList.toggle('hidden', this._collapsed);
       this._el.querySelector('#dbg-icon').classList.toggle('collapsed', this._collapsed);
     });
+
+    // 섹션별 접기/펼치기 (상태는 localStorage에 유지)
+    this._el.querySelectorAll('.dbg-sec-toggle').forEach(title => {
+      title.addEventListener('click', () => {
+        const key = title.dataset.sec;
+        const collapsed = this._toggleSection(key);
+        const state = this._loadSectionState();
+        state[key] = collapsed;
+        try { localStorage.setItem('dbgSectionsCollapsed', JSON.stringify(state)); } catch { /* 프라이빗 모드 등 */ }
+      });
+    });
+
+    // 저장된 섹션 접힘 상태 복원 (기본: Set Stats·Set Weather 접힘)
+    const stored = this._loadSectionState();
+    for (const [key, collapsed] of Object.entries(stored)) {
+      if (collapsed) this._toggleSection(key, true);
+    }
 
     // TP 스킵
     this._el.querySelectorAll('[data-skip]').forEach(btn => {
@@ -202,6 +221,26 @@ const DebugPanel = {
     });
   },
 
+  // 섹션 접기/펼치기. force: true=접기, false=펼치기, 생략=토글. 접힘 여부 반환.
+  _toggleSection(key, force = null) {
+    const body  = this._el.querySelector(`[data-sec-body="${key}"]`);
+    const title = this._el.querySelector(`.dbg-sec-toggle[data-sec="${key}"]`);
+    if (!body || !title) return false;
+    const collapsed = force ?? !body.classList.contains('hidden');
+    body.classList.toggle('hidden', collapsed);
+    title.querySelector('.dbg-sec-icon').classList.toggle('collapsed', collapsed);
+    return collapsed;
+  },
+
+  _loadSectionState() {
+    try {
+      const raw = localStorage.getItem('dbgSectionsCollapsed');
+      if (raw) return JSON.parse(raw);
+    } catch { /* 파싱 실패 시 기본값 */ }
+    // 기본: Inspector만 펼침, 나머지 전부 접힘 (사용자가 토글하면 그 상태 유지)
+    return { skiptp: true, stats: true, give: true, weather: true };
+  },
+
   // ── 인스펙터 갱신 ─────────────────────────────────────────
 
   _refresh() {
@@ -220,14 +259,14 @@ const DebugPanel = {
     const statCls = (v, max) => v < max * 0.25 ? 'low' : v < max * 0.5 ? 'warn' : '';
 
     this._inspector.innerHTML = [
-      row('Day / TP / Hr', `${t.day} / ${t.totalTP} / ${t.hour}:00`),
-      row('HP',         `${p.hp.current}/${p.hp.max}`,    statCls(p.hp.current, p.hp.max)),
-      row('Hydration',  `${Math.round(s.hydration.current)}/${s.hydration.max}`, statCls(s.hydration.current, s.hydration.max)),
-      row('Nutrition',  `${Math.round(s.nutrition.current)}/${s.nutrition.max}`, statCls(s.nutrition.current, s.nutrition.max)),
-      row('Morale',     `${Math.round(s.morale.current)}/${s.morale.max}`,       statCls(s.morale.current, s.morale.max)),
-      row('Fatigue',    `${Math.round(s.fatigue.current)}/${s.fatigue.max}`,     s.fatigue.current > 70 ? 'warn' : ''),
-      row('Noise',      `${gs.noise.level} / ${gs.noise.influxThreshold}`),
-      row('Board cards',`${Object.keys(gs.cards).length}`),
+      row('일 / TP / 시각', `${t.day} / ${t.totalTP} / ${t.hour}:00`),
+      row('HP',       `${p.hp.current}/${p.hp.max}`,    statCls(p.hp.current, p.hp.max)),
+      row('수분',     `${Math.round(s.hydration.current)}/${s.hydration.max}`, statCls(s.hydration.current, s.hydration.max)),
+      row('영양',     `${Math.round(s.nutrition.current)}/${s.nutrition.max}`, statCls(s.nutrition.current, s.nutrition.max)),
+      row('사기',     `${Math.round(s.morale.current)}/${s.morale.max}`,       statCls(s.morale.current, s.morale.max)),
+      row('피로',     `${Math.round(s.fatigue.current)}/${s.fatigue.max}`,     s.fatigue.current > 70 ? 'warn' : ''),
+      row('소음',     `${gs.noise.level} / ${gs.noise.influxThreshold}`),
+      row('보드 카드', `${Object.keys(gs.cards).length}`),
     ].join('');
   },
 
@@ -239,9 +278,21 @@ const DebugPanel = {
     const raw = parseFloat(input.value);
     if (isNaN(raw)) return;
 
-    if (stat === 'hp') {
+    const kind = stat === 'hp' ? 'hp'
+      : (STAT_FIELDS.find(f => f.key === stat)?.kind ?? 'stats');
+
+    if (kind === 'hp') {
       const max = GameState.player.hp.max;
       GameState.player.hp.current = Math.max(0, Math.min(max, raw));
+    } else if (kind === 'noise') {
+      GameState.noise.level = Math.max(0, raw);
+      // 임계값 아래로 내리면 유입 트리거 재무장 (좀비 유입 재테스트 가능)
+      if (GameState.noise.level < GameState.noise.influxThreshold) {
+        GameState.noise.influxTriggered = false;
+      }
+    } else if (kind === 'mental') {
+      MentalSystem.ensureInitialized(); // mental은 첫 TP에 지연 생성 — 디버그에선 즉시 생성
+      GameState.mental[stat] = Math.max(0, Math.min(100, raw));
     } else if (GameState.stats[stat]) {
       const max = GameState.stats[stat].max;
       GameState.stats[stat].current = Math.max(0, Math.min(max, raw));
