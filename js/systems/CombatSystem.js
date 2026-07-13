@@ -74,11 +74,15 @@ const CombatSystem = {
     const gs          = GameState;
     const dangerLevel = data.dangerLevel ?? 2;
     const noiseLevel  = gs.noise?.level ?? 0;
+    const livingCompanions = (gs.companions ?? []).filter(id => {
+      const st = gs.npcs?.states?.[id];
+      return st?.isCompanion && (st.hp ?? 0) > 0;
+    });
 
-    // enemies 배열: 전달받거나 소음 기반으로 새로 생성
+    // enemies 배열: 전달받거나 소음+파티 규모 기반으로 새로 생성
     const enemies = data.enemies?.length
       ? data.enemies
-      : rollEnemyGroup(dangerLevel, noiseLevel);
+      : rollEnemyGroup(dangerLevel, noiseLevel, 1 + livingCompanions.length);
 
     // 습격/약탈자 전투 정보 보존
     const encounterLabel = data.isHordeWave

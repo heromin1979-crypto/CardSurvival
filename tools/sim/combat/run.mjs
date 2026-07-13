@@ -25,13 +25,21 @@ const BASE_URL = `http://127.0.0.1:${PORT}`;
 const WEAPONS = [null, 'knife', 'reinforced_bat', 'machete', 'pistol', 'rifle'];
 
 // 조우 축 — ids가 있으면 고정 편성, dangerLevel이면 인카운터 테이블 롤.
+// noise는 조우 규모 축: rollEnemyGroup이 소음 0→1마리(DL-1) / 30~64→2마리(DL) / 65+→3마리(DL+1).
+// 정숙(0) 셀만 재면 항상 최저 난이도 구성이 측정되므로 소음 45 셀을 함께 잰다.
 const ENCOUNTERS = [
-  { key: 'DL1 조우 롤', dangerLevel: 1 },
-  { key: 'DL3 조우 롤', dangerLevel: 3 },
-  { key: 'DL5 조우 롤', dangerLevel: 5 },
+  { key: 'DL1 조우 롤(정숙)', dangerLevel: 1, noise: 0 },
+  { key: 'DL3 조우 롤(정숙)', dangerLevel: 3, noise: 0 },
+  { key: 'DL3 조우 롤(소음45)', dangerLevel: 3, noise: 45 },
+  { key: 'DL5 조우 롤(정숙)', dangerLevel: 5, noise: 0 },
+  { key: 'DL5 조우 롤(소음45)', dangerLevel: 5, noise: 45 },
   { key: '거대 좀비 단독', ids: ['zombie_brute'] },
   { key: '약탈자 2인조', ids: ['raider', 'raider_elite'] },
 ];
+
+// 실플레이 조건 플래그 — 하한선(무방어구·단독)과 별도 리포트를 뜰 때 사용
+const WITH_ARMOR = args.includes('--armor');
+const WITH_COMPANION = args.includes('--companion');
 
 async function loadPlaywright() {
   try {
@@ -61,8 +69,8 @@ async function waitForServer(timeoutMs = 20000) {
 }
 
 // 페이지 컨텍스트에서 한 셀(무기×조우)을 N회 시뮬레이션
-async function simulateCell(page, weaponId, encounter, runs) {
-  return page.evaluate(async ({ weaponId, encounter, runs }) => {
+async function simulateCell(page, weaponId, encounter, runs, conditions) {
+  return page.evaluate(async ({ weaponId, encounter, runs, conditions }) => {
     const gs = window.GameState;
     const CS = window.CombatSystem;
     const SM = window.StateMachine;
@@ -95,9 +103,30 @@ async function simulateCell(page, weaponId, encounter, runs) {
       gs.stats.stamina = { current: 100, max: 100, decayPerTP: 0 };
       gs.stats.morale = { current: 50, max: 100 };
       if (gs.stats.fatigue) gs.stats.fatigue.current = 0;
-      if (gs.noise) gs.noise.level = 0;
+      if (gs.noise) gs.noise.level = encounter.noise ?? 0;
       if (skillsSnapshot) gs.skills = JSON.parse(skillsSnapshot);
       gs.combatRespawn = gs.combatRespawn ?? {};
+
+      if (conditions.armor) {
+        const vest = gs.createCardInstance('tactical_vest', { quantity: 1 });
+        if (vest) {
+          cleanupIds.push(vest.instanceId);
+          gs.player.equipped.body = vest.instanceId;
+        }
+      } else {
+        gs.player.equipped.body = null;
+      }
+
+      if (conditions.companion) {
+        gs.companions = ['npc_nurse'];
+        gs.npcs = gs.npcs ?? { states: {} };
+        gs.npcs.states = gs.npcs.states ?? {};
+        gs.npcs.states.npc_nurse = {
+          hp: 50, maxHp: 50, isCompanion: true, statusEffects: [],
+        };
+      } else {
+        gs.companions = [];
+      }
     };
 
     const equipWeapon = () => {
@@ -223,7 +252,7 @@ async function simulateCell(page, weaponId, encounter, runs) {
 
     cleanupBoard();
     return stats;
-  }, { weaponId, encounter, runs });
+  }, { weaponId, encounter, runs, conditions });
 }
 
 function formatRow(weaponLabel, stats) {
@@ -256,7 +285,10 @@ async function main() {
     for (const encounter of ENCOUNTERS) {
       const rows = [];
       for (let w = 0; w < WEAPONS.length; w++) {
-        const stats = await simulateCell(page, WEAPONS[w], encounter, RUNS_PER_CELL);
+        const stats = await simulateCell(page, WEAPONS[w], encounter, RUNS_PER_CELL, {
+          armor: WITH_ARMOR,
+          companion: WITH_COMPANION,
+        });
         rows.push(formatRow(weaponLabels[w], stats));
         if (DUMP_STUCK_DIR && stats.stuckDumps?.length) {
           allDumps.push(...stats.stuckDumps.map(d => ({
@@ -279,7 +311,8 @@ async function main() {
       '# 전투 밸런스 시뮬레이션 리포트',
       '',
       `> 생성: ${startedAt} · 셀당 ${RUNS_PER_CELL}회 · tools/sim/combat/run.mjs`,
-      `> 조건: 플레이어 단독(동료 없음), HP 100, 사기 50(normal), 소음 0, 스킬 레벨 초기화, 무기 매 전투 새 인스턴스`,
+      `> 조건: ${WITH_COMPANION ? '동료 1(간호사)' : '플레이어 단독'}, ${WITH_ARMOR ? '전술조끼 착용' : '무방어구'}, HP 100, 사기 50(normal), 스킬 레벨 초기화, 무기 매 전투 새 인스턴스`,
+      `> 소음은 조우 규모 축(섹션명에 표기): 0→1마리(DL-1) / 45→2마리(DL) / 65+→3마리(DL+1)`,
       '',
       ...sections,
       '## 해석 가이드',

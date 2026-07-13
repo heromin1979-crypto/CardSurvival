@@ -528,9 +528,10 @@ function rollEnemy(dangerLevel) {
  *
  * @param {number} dangerLevel - 장소 위험도 (1~5)
  * @param {number} noiseLevel  - 현재 소음 수치 (0~100)
+ * @param {number} partySize   - 플레이어 포함 아군 수 (동료 수만큼 조우 규모 확대)
  * @returns {Array} 적 인스턴스 배열
  */
-function rollEnemyGroup(dangerLevel, noiseLevel = 0) {
+function rollEnemyGroup(dangerLevel, noiseLevel = 0, partySize = 1) {
   let count, effectiveDanger;
   if (noiseLevel < 30) {
     count          = 1;
@@ -542,6 +543,9 @@ function rollEnemyGroup(dangerLevel, noiseLevel = 0) {
     count          = 3;
     effectiveDanger = Math.min(5, dangerLevel + 1);
   }
+  // 파티 화력이 조우 난이도를 무력화하지 않도록 동료 수만큼 규모 확대 (진형 4칸 상한).
+  // 솔로 플레이 수치는 불변.
+  count = Math.min(4, count + Math.max(0, partySize - 1));
   return ensureFrontRank(Array.from({ length: count }, () => rollEnemy(effectiveDanger)));
 }
 
