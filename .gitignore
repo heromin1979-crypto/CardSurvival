@@ -10,3 +10,6 @@ ouroboros/
 design-audit-screenshots/
 screen-emulator.png
 screen-main.png
+tmp/
+output/
+outputs/

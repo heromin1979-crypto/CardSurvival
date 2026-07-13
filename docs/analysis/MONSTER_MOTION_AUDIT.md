@@ -6,8 +6,8 @@
 - 전투 스프라이트 매핑: `js/ui/CombatUI.js`
 - 스프라이트 자산 폴더: `assets/images/combat/spritesheets/enemies`
 - 모션 계약: `docs/analysis/COMBAT_CHARACTER_MOTION_LIST.md`
-- 생성 프리뷰: `output/combat/monster_motion_preview_active_sheets.png`
-- 감사 JSON: `output/combat/monster_motion_audit.json`
+- 생성 프리뷰: `output/combat/monster_motion_preview_active_sheets.png` (git 미추적 — `python tools/render_monster_motion_preview.py`로 재생성)
+- 감사 JSON: `output/combat/monster_motion_audit.json` (git 미추적 — 동일 스크립트로 재생성)
 
 ## 현재 스프라이트시트 계약
 
