@@ -333,7 +333,8 @@ const CombatUI = {
     const isEnemy = combatant.side === 'enemy';
     // 의도 표시 단일 소스: 실행 경로(_runSingleEnemyTurn)가 소비하는 _nextIntent만 사용 —
     // 별도 계산된 의도를 표시하면 실제 행동과 어긋날 수 있다
-    const intent = isEnemy ? this._enemyForCombatant(combatant)?._nextIntent : null;
+    const legacyEnemy = isEnemy ? this._enemyForCombatant(combatant) : null;
+    const intent = legacyEnemy?._nextIntent ?? null;
     let intentHtml = '';
     if (intent && !combatant.dead) {
       const countdownHtml = intent.countdown != null
@@ -344,6 +345,18 @@ const CombatUI = {
              title="${this._escape(intent.label ?? '')}">
           <span class="intent-icon">${intent.iconEmoji ?? '🗡'}</span>${countdownHtml}
         </div>`;
+    }
+    // 발견한 약점만 표시 — 첫 약점 타격 전에는 미지의 정보
+    let weaknessHtml = '';
+    if (legacyEnemy && !combatant.dead
+        && GameState.flags?.enemyWeaknessSeen?.[legacyEnemy.id]
+        && (legacyEnemy.weaknesses ?? []).length > 0) {
+      const WEAKNESS_ICONS = { blade: '🔪', fire: '🔥', bullet: '🔫', blunt: '🔨', explosive: '💥' };
+      const icons = legacyEnemy.weaknesses
+        .map(type => WEAKNESS_ICONS[type] ?? '⚔')
+        .join('');
+      weaknessHtml = `
+        <div class="combat-weakness" title="약점: ${this._escape(legacyEnemy.weaknesses.join(', '))}">${icons}</div>`;
     }
     const rank = getRank(combat?.formations, combatantId);
     const image = this._combatantImage(combatant);
@@ -381,7 +394,7 @@ const CombatUI = {
 
     return `
       <button class="${cls}" data-combatant-id="${this._escape(combatantId)}"${spriteAttrs} ${anchorAttrs}${this._spriteStyle(sprite)}>
-        ${intentHtml}
+        ${intentHtml}${weaknessHtml}
         <span class="combatant-rank-badge">${rank ?? '-'}</span>
         <span class="combatant-portrait" aria-hidden="true">
           ${image

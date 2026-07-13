@@ -440,3 +440,46 @@ describe('F3 — 셋업→페이오프 스킬 연결', () => {
     expect(60 - target.hp).toBeLessThan(15);
   });
 });
+
+describe('F4 — 약점 발견·표기', () => {
+  it('약점 무기로 첫 타격 시 enemyWeaknessSeen에 기록된다', () => {
+    const combat = setupCombat({
+      enemies: [makeEnemy({ id: 'zombie_common', weaknesses: ['blade'] })],
+    });
+    delete GameState.flags.enemyWeaknessSeen;
+    const target = combat.combatants['enemy:0'];
+    const weaponId = 'w1';
+    GameState.cards = { [weaponId]: { instanceId: weaponId, definitionId: 'knife' } };
+    GameState.getCardDef = () => ({ id: 'knife', weaponType: 'blade', combat: {} });
+
+    CombatSystem._applyRankedDamageEffect(
+      { type: 'damage', value: [5, 5] },
+      combat.combatants.player, target, () => 0,
+      { hit: true, crit: false, skill: { id: 's', equipmentInstanceId: weaponId, effects: [] } },
+    );
+
+    expect(GameState.flags.enemyWeaknessSeen.zombie_common).toBe(true);
+  });
+
+  it('발견 전에는 약점 배지가 없고, 발견 후에는 표시된다', async () => {
+    const CombatUI = (await import('../../js/ui/CombatUI.js')).default;
+    CombatUI._screen = document.getElementById('screen-combat');
+    setupCombat({ enemies: [makeEnemy({ id: 'zombie_common', weaknesses: ['blade', 'fire'] })] });
+    GameState.flags.enemyWeaknessSeen = {};
+
+    CombatUI.render();
+    expect(document.querySelector('.combat-weakness')).toBeNull();
+
+    GameState.flags.enemyWeaknessSeen.zombie_common = true;
+    CombatUI.render();
+    const badge = document.querySelector('.combat-weakness');
+    expect(badge).not.toBeNull();
+    expect(badge.getAttribute('title')).toContain('blade');
+  });
+
+  it('발견 기록은 세이브 직렬화에 포함된다', () => {
+    GameState.flags.enemyWeaknessSeen = { zombie_brute: true };
+    const parsed = JSON.parse(GameState.serialize());
+    expect(parsed.flags.enemyWeaknessSeen.zombie_brute).toBe(true);
+  });
+});

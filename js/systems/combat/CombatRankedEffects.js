@@ -346,6 +346,9 @@ export const CombatRankedEffects = {
       if (affinity > 1) {
         damage = Math.floor(damage * affinity);
         this._pushCombatLog(I18n.t('combatSys.weakness', { type: weaponDef.weaponType }));
+        // 약점 발견 기록 — 이후 조우부터 UI에 약점 아이콘 노출 (다회차 지식 축적)
+        gs.flags.enemyWeaknessSeen = gs.flags.enemyWeaknessSeen ?? {};
+        gs.flags.enemyWeaknessSeen[legacyEnemy.id] = true;
       } else if (affinity < 1) {
         damage = Math.floor(damage * affinity);
         this._pushCombatLog(I18n.t('combatSys.resistance', { type: weaponDef.weaponType }));
