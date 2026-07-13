@@ -70,6 +70,7 @@ describe('CombatantAdapter', () => {
       hp: 80,
       maxHp: 100,
       speed: 5,
+      dodge: 0.05,
       stress: 0,
       tokens: {},
       statusEffects: [],
@@ -86,6 +87,7 @@ describe('CombatantAdapter', () => {
       hp: 40,
       maxHp: 100,
       speed: 7,
+      dodge: 0.05,
       stress: 2,
       bond: 70,
       tokens: {},
@@ -105,6 +107,7 @@ describe('CombatantAdapter', () => {
       hp: 30,
       maxHp: 40,
       speed: 6,
+      dodge: 0,
       tokens: {},
       statusEffects: [{ id: 'bleed', duration: 2 }],
       dead: false,
@@ -199,6 +202,7 @@ describe('combat adapter balance defaults', () => {
       baseResist: 0.75,
       resistLossPerCheck: 0.10,
       minimumResist: 0.05,
+      outgoingDamageMult: 0.7,
     });
   });
 });

@@ -68,7 +68,8 @@ const SUPPORT_EFFECTS = {
   mechanic_tripwire: { type: 'status', status: { id: 'rooted', duration: 1, chance: 0.7 } },
   student_quick_step: { type: 'move', distance: 1 },
   dog_guard: { type: 'guard', value: 0.25 },
-  dog_track_weakness: { type: 'token', token: 'vulnerable', stacks: 1 },
+  // 군견의 약점 추적 = 표식(marked) — vulnerable보다 강한 집중 공격 시너지
+  dog_track_weakness: { type: 'token', token: 'marked', stacks: 1 },
   colleague_brace: { type: 'guard', value: 0.3 },
   colleague_teamwork: { type: 'token', token: 'accuracy', stacks: 1 },
   minjun_command: { type: 'stress', value: -10 },
@@ -88,13 +89,13 @@ const SUPPORT_EFFECTS = {
   kitchen_helper_duck: { type: 'move', distance: 1 },
 };
 
+// security_taunt는 여기서 제외 — taunted 토큰은 아군에게 붙어 적의 공격을 끌어온다(도발)
 const ENEMY_SUPPORT_SKILLS = new Set([
   'doctor_diagnose',
   'engineer_shock_trap',
   'mechanic_tripwire',
   'dog_track_weakness',
   'jisu_diagnose',
-  'security_taunt',
   'merchant_bargain',
   'tower_engineer_trap',
   'sous_chef_intimidate',
@@ -122,6 +123,17 @@ const FIREARM_SKILLS = new Set([
 const STATUS_DAMAGE = {
   chef_hot_pan: { id: 'burn', duration: 2, chance: 0.45 },
   tower_cook_burn: { id: 'burn', duration: 2, chance: 0.5 },
+};
+
+// 직업 대표 공격 스킬 개별화 — 카테고리 파생값(근접 [7,12]/0.82 등) 위에 정체성만 얹는다.
+// 전면 개별 튜닝은 하지 않는다(YAGNI): 여기 없는 스킬은 카테고리 기본값 유지.
+const SKILL_OVERRIDES = {
+  doctor_precise_cut:      { accuracy: 0.88, critChance: 0.25, damage: [6, 10] },
+  soldier_burst_fire:      { accuracy: 0.78, damage: [10, 16] },
+  firefighter_axe_swing:   { accuracy: 0.78, damage: [9, 15] },
+  homeless_dirty_fighting: { accuracy: 0.86, damage: [6, 10] },
+  chef_knife_flurry:       { accuracy: 0.84, damage: [6, 11] },
+  engineer_wrench_strike:  { accuracy: 0.80, damage: [8, 13] },
 };
 
 const COMMON_SKILL_IDS = ['basic_strike', 'guard', 'reposition'];
@@ -199,8 +211,20 @@ function buildMappedSkill(id) {
   );
 }
 
+function applySkillOverride(skill) {
+  const override = SKILL_OVERRIDES[skill.id];
+  if (!override) return skill;
+  if (Number.isFinite(override.accuracy)) skill.accuracy = override.accuracy;
+  if (Number.isFinite(override.critChance)) skill.critChance = override.critChance;
+  if (Array.isArray(override.damage)) {
+    const damageEffect = skill.effects.find((effect) => effect.type === 'damage');
+    if (damageEffect) damageEffect.value = [...override.damage];
+  }
+  return skill;
+}
+
 const mappedSkills = Object.fromEntries(
-  MAPPED_SKILL_IDS.map((id) => [id, buildMappedSkill(id)]),
+  MAPPED_SKILL_IDS.map((id) => [id, applySkillOverride(buildMappedSkill(id))]),
 );
 
 export const COMBAT_SKILLS = {

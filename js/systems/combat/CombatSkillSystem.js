@@ -175,6 +175,7 @@ export function buildEquipmentSkill(instanceId, definition) {
       : 'weapon',
     source: 'equipment',
     equipmentInstanceId: instanceId,
+    weaponType: typeof definition.weaponType === 'string' ? definition.weaponType : null,
     usableFrom: ranged ? [2, 3, 4] : [1, 2],
     target: {
       side: 'enemy',
@@ -232,12 +233,50 @@ function isAttackSkill(skill) {
   return (skill?.effects ?? []).some(effect => effect?.type === 'damage');
 }
 
+function buildEquipmentSkillsFor(combatant, gs) {
+  const equipmentSkills = [];
+  if (typeof gs?.getCardDef !== 'function') return equipmentSkills;
+
+  const seen = new Set();
+  for (const instanceId of getEquipmentIds(combatant, gs)) {
+    if (
+      equipmentSkills.length >= 2
+      || typeof instanceId !== 'string'
+      || instanceId.length === 0
+      || seen.has(instanceId)
+    ) {
+      continue;
+    }
+    seen.add(instanceId);
+
+    try {
+      const skill = buildEquipmentSkill(
+        instanceId,
+        gs.getCardDef(instanceId),
+      );
+      if (skill) equipmentSkills.push(skill);
+    } catch {
+      continue;
+    }
+  }
+  return equipmentSkills;
+}
+
 export function buildAllyLoadout(combatant, gs) {
   if (combatant?.sourceType === 'companion') {
-    return getCharacterSkillIds(combatant, gs)
+    const characterSkills = getCharacterSkillIds(combatant, gs)
       .map(getCombatSkill)
       .filter(Boolean)
       .map(cloneValue);
+
+    // 동료 딜 장비 스케일링: 무기를 장착한 동료는 장비 공격이 내재 공격 스킬을 대체한다
+    // (미장착 동료는 기존 내재 스킬 그대로 — 후반 동료 존재감 소멸 보정)
+    const equipmentSkills = buildEquipmentSkillsFor(combatant, gs);
+    if (equipmentSkills.length === 0) return characterSkills;
+    return [
+      ...equipmentSkills,
+      ...characterSkills.filter(skill => !isAttackSkill(skill)),
+    ];
   }
 
   const characterUtilitySkills = getCharacterSkillIds(combatant, gs)
@@ -246,32 +285,7 @@ export function buildAllyLoadout(combatant, gs) {
     .filter(skill => !isAttackSkill(skill))
     .map(cloneValue);
 
-  const equipmentSkills = [];
-  if (typeof gs?.getCardDef === 'function') {
-    const seen = new Set();
-    for (const instanceId of getEquipmentIds(combatant, gs)) {
-      if (
-        equipmentSkills.length >= 2
-        || typeof instanceId !== 'string'
-        || instanceId.length === 0
-        || seen.has(instanceId)
-      ) {
-        continue;
-      }
-      seen.add(instanceId);
-
-      try {
-        const skill = buildEquipmentSkill(
-          instanceId,
-          gs.getCardDef(instanceId),
-        );
-        if (skill) equipmentSkills.push(skill);
-      } catch {
-        continue;
-      }
-    }
-  }
-
+  const equipmentSkills = buildEquipmentSkillsFor(combatant, gs);
   const attackSkills = equipmentSkills.length > 0
     ? equipmentSkills
     : [getCombatSkill('basic_strike')].filter(Boolean).map(cloneValue);
@@ -389,15 +403,28 @@ export function executeSkillCommand(context, command, random = Math.random) {
   }
 
   const randomFn = typeof random === 'function' ? random : Math.random;
-  let roll;
-  try {
-    roll = normalizeRoll(randomFn());
-  } catch {
-    return postCostFailure('execution_error', 0);
+  // resolveHit 주입 시 판정(명중 보정·회피/치명 토큰)을 호출자에게 위임한다.
+  // 미주입 컨텍스트는 기존 단일 명중 굴림 계약을 그대로 유지한다.
+  const usePipeline = typeof context.resolveHit === 'function';
+  let hitInfo = null;
+  if (usePipeline) {
+    try {
+      hitInfo = context.resolveHit(actor, target, skill, randomFn);
+    } catch {
+      return postCostFailure('execution_error', 0);
+    }
+  } else {
+    let roll;
+    try {
+      roll = normalizeRoll(randomFn());
+    } catch {
+      return postCostFailure('execution_error', 0);
+    }
+    hitInfo = { hit: roll !== null && roll < normalizeAccuracy(skill.accuracy) };
   }
-  const hit = roll !== null && roll < normalizeAccuracy(skill.accuracy);
-  if (!hit) {
-    return {
+
+  if (hitInfo?.hit !== true) {
+    const missResult = {
       ok: true,
       hit: false,
       turnConsumed: true,
@@ -405,13 +432,17 @@ export function executeSkillCommand(context, command, random = Math.random) {
       effectsApplied: 0,
       partialApplied: false,
     };
+    if (usePipeline) missResult.dodged = hitInfo?.dodged === true;
+    return missResult;
   }
 
   let effectsApplied = 0;
   for (const effect of effects) {
     let effectResult;
     try {
-      effectResult = context.applyEffect(effect, actor, target, randomFn);
+      effectResult = usePipeline
+        ? context.applyEffect(effect, actor, target, randomFn, hitInfo)
+        : context.applyEffect(effect, actor, target, randomFn);
     } catch {
       return postCostFailure('execution_error', effectsApplied);
     }
@@ -423,7 +454,7 @@ export function executeSkillCommand(context, command, random = Math.random) {
     effectsApplied++;
   }
 
-  return {
+  const hitResult = {
     ok: true,
     hit: true,
     turnConsumed: true,
@@ -431,6 +462,11 @@ export function executeSkillCommand(context, command, random = Math.random) {
     effectsApplied,
     partialApplied: false,
   };
+  if (usePipeline) {
+    hitResult.dodged = false;
+    hitResult.crit = hitInfo?.crit === true;
+  }
+  return hitResult;
 }
 
 export function useCombatItem(context, actorId, itemInstanceId) {

@@ -116,11 +116,38 @@ const BALANCE = {
       baseResist: 0.75,
       resistLossPerCheck: 0.10,
       minimumResist: 0.05,
+      outgoingDamageMult: 0.7,  // 죽음의 문턱 상태에서 가하는 피해 감소
     },
     stress: {
       resolveChance: 0.10,
       afterResolve: 4,
       afterMeltdown: 2,
+      // 상시 축적원 (0~10 스케일 기준)
+      heavyHitThreshold: 15,    // 이 이상 피해 피격 시 스트레스 축적
+      heavyHitStress: 1,
+      deathsDoorStress: 2,      // 죽음의 문턱 진입 시
+      allyDownStress: 2,        // 아군(동료) 다운 목격 시
+      nightRoundStress: 1,      // 야간 전투 라운드당 (광원 없을 때)
+      nightLitRoundStress: 0,   // 광원 보유 시 야간 라운드 스트레스
+    },
+    // ── 기본 회피(토큰과 별개인 상시 회피 확률) ──
+    defaultPlayerDodge: 0.05,
+    defaultCompanionDodge: 0.05,
+    // ── 랭크 위치 시너지 ──
+    position: {
+      backlineRangedAccBonus: 0.05,   // 3~4랭크에서 원거리 스킬 명중 보너스
+      frontlineMeleeDamageMult: 1.05, // 1랭크에서 근접 스킬 피해 보너스
+    },
+    // ── 전투 토큰 (1회 소비형 버프/디버프 계수) ──
+    tokens: {
+      blockDamageMult:      0.5,   // block: 받는 피해 절반 (CombatStatusSystem.applyDamage)
+      strengthDamageMult:   1.3,   // strength/power/improvised: 다음 공격 피해 증가 (공격 강화 계열 — 공격당 1개만 소비)
+      vulnerableDamageMult: 1.3,   // vulnerable: 받는 피해 증가
+      hesitationDamageMult: 0.7,   // hesitation: 다음 공격 피해 감소
+      accuracyBonus:        0.15,  // accuracy: 다음 공격 명중 보정
+      focusCritBonus:       0.15,  // focus: 다음 공격 치명타 확률 보정
+      speedInitiativeBonus: 4,     // speed: 다음 라운드 이니셔티브 굴림 보정
+      markedDamageMult:     1.5,   // marked(표식): 받는 피해 대폭 증가 — 집중 사격 시너지
     },
     relationship: {
       positiveChance: 0.18,
@@ -166,6 +193,9 @@ const BALANCE = {
     // ── 약점/저항 ──
     weaponWeaknessMult:   1.50,  // 약점 속성 데미지 ×1.5
     weaponResistanceMult: 0.60,  // 저항 속성 데미지 ×0.6
+    // ── 방어 관통 바닥 ──
+    // 정액 방어가 피해를 이 비율 아래로 깎지 못한다 — 저티어 무기의 고방어 적 무력화 방지
+    defenseFloorRatio:    0.30,
     // ── NPC 동행 액션 쿨다운 ──
     companionAttackCooldown: 3,
     companionHealCooldown:   4,

@@ -81,7 +81,8 @@ const ITEMS_COMBAT = {
     icon: '⚾', description: '못이 박힌 배트. 피해량이 크게 증가.',
     tags: ['weapon', 'melee', 'crafted'],
     weaponType: 'blunt',
-    combat: { damage: [26, 40], accuracy: 0.72, noiseOnUse: 8, durabilityLoss: 2, critChance: 0.20, critMultiplier: 2.2 },
+    // 티어 역전 보정(시뮬 실측: rare 무기들을 전 조우에서 압도) — uncommon 상한선으로 하향
+    combat: { damage: [20, 32], accuracy: 0.72, noiseOnUse: 8, durabilityLoss: 2, critChance: 0.15, critMultiplier: 2.0 },
     dismantle: [
       { definitionId: 'wood', qty: 1, chance: 0.8 },
       { definitionId: 'scrap_metal', qty: 1, chance: 0.6 },
@@ -207,7 +208,8 @@ const ITEMS_COMBAT = {
     icon: '🏹', description: '소음 없는 원거리 무기. 화살을 재사용 가능.',
     tags: ['weapon', 'ranged', 'silent', 'crafted'],
     weaponType: 'bullet',
-    combat: { damage: [26, 40], accuracy: 0.72, noiseOnUse: 3, durabilityLoss: 2, requiresAmmo: 'crossbow_bolt', critChance: 0.25, critMultiplier: 2.2 },
+    // 무소음+재사용 탄이라는 유틸 정체성 유지, 화력은 rare(pipe_shotgun) 아래로
+    combat: { damage: [22, 34], accuracy: 0.72, noiseOnUse: 3, durabilityLoss: 2, requiresAmmo: 'crossbow_bolt', critChance: 0.20, critMultiplier: 2.2 },
     dismantle: [
       { definitionId: 'wood', qty: 2, chance: 0.8 },
       { definitionId: 'spring', qty: 1, chance: 0.6 },
@@ -534,7 +536,8 @@ const ITEMS_COMBAT = {
     icon: '🔫', description: '철파이프로 제작한 조잡한 산탄총. 근거리에서 파괴적.',
     tags: ['weapon', 'ranged', 'crafted'],
     weaponType: 'bullet',
-    combat: { damage: [25, 40], accuracy: 0.65, noiseOnUse: 35, durabilityLoss: 4, critChance: 0.08, critMultiplier: 2.0 },
+    // rare 화력 정체성 확보 (uncommon crossbow에 사실상 밀리던 문제 보정)
+    combat: { damage: [30, 46], accuracy: 0.65, noiseOnUse: 35, durabilityLoss: 4, critChance: 0.10, critMultiplier: 2.0 },
     dismantle: [
       { definitionId: 'iron_pipe', qty: 1, chance: 0.7 },
       { definitionId: 'scrap_metal', qty: 2, chance: 0.8 },

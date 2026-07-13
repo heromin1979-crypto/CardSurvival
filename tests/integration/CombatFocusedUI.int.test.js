@@ -54,6 +54,8 @@ function setupFocusedCombatState(gs) {
     enemies: [{ id: 'zombie_common', name: '감염자', currentHp: 30, maxHp: 30 }],
     log: ['전투 시작'],
     fxQueue: [],
+    playerStatus: [],
+    enemyStatus: [],
   };
 }
 

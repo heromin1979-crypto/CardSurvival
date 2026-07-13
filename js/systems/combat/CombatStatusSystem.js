@@ -134,7 +134,7 @@ export function applyDamage(target, rawDamage, random = Math.random) {
   let damage = damageBeforeBlock;
   if (normalizeStacks(target.tokens?.block) > 0) {
     consumeToken(target, 'block', 1);
-    damage = Math.ceil(damage * 0.5);
+    damage = Math.ceil(damage * BALANCE.combat.tokens.blockDamageMult);
     result.blocked = true;
   }
 

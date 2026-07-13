@@ -12,6 +12,7 @@ import {
   useCombatItem,
   validateSkillCommand,
 } from '../../js/systems/combat/CombatSkillSystem.js';
+import { en, ko } from '../../js/data/locales.js';
 import { validateCombatSkillContracts } from '../../js/data/validate.js';
 
 const PLAYER_IDS = [
@@ -226,6 +227,15 @@ describe('combat skill data', () => {
           expect(effect).not.toHaveProperty('amount');
         }
       }
+    }
+  });
+
+  it('has localized labels for every declared combat skill', () => {
+    for (const skill of Object.values(COMBAT_SKILLS)) {
+      expect(ko[skill.nameKey], `${skill.id} ko label`).toBeTypeOf('string');
+      expect(ko[skill.nameKey], `${skill.id} ko label`).not.toBe(skill.nameKey);
+      expect(en[skill.nameKey], `${skill.id} en label`).toBeTypeOf('string');
+      expect(en[skill.nameKey], `${skill.id} en label`).not.toBe(skill.nameKey);
     }
   });
 
@@ -681,6 +691,7 @@ describe('buildEquipmentSkill', () => {
       icon: 'knife',
       source: 'equipment',
       equipmentInstanceId: 'knife_instance',
+      weaponType: null,
       usableFrom: [1, 2],
       target: { side: 'enemy', ranks: [1, 2], count: 1 },
       costs: { ammo: null, durability: 3, noise: 0 },
@@ -824,8 +835,26 @@ describe('buildAllyLoadout', () => {
     ]);
   });
 
-  it('uses the companion combat profile instead of equipment attacks', () => {
+  it('scales companion attacks with equipped weapons, keeping utility skills', () => {
     const gs = makeGameState();
+
+    const loadout = buildAllyLoadout({
+      sourceType: 'companion',
+      sourceId: 'npc_nurse',
+    }, gs);
+
+    // 장비 장착 동료: 장비 공격 스킬이 내재 공격(nurse_scalpel)을 대체하고 지원 스킬은 유지
+    expect(loadout.map((skill) => skill.id)).toEqual([
+      'equipment:knife_instance',
+      'equipment:pistol_instance',
+      'nurse_triage',
+      'nurse_encourage',
+    ]);
+  });
+
+  it('keeps innate companion attacks when no weapon is equipped', () => {
+    const gs = makeGameState();
+    gs.npcs.states.npc_nurse = {};
 
     const loadout = buildAllyLoadout({
       sourceType: 'companion',
@@ -981,5 +1010,58 @@ describe('buildAllyLoadout', () => {
     expect(first[0].effects).not.toBe(second[0].effects);
     expect(first[0].effects[0]).not.toBe(second[0].effects[0]);
     expect(first[0].effects[0].value).not.toBe(second[0].effects[0].value);
+  });
+});
+
+describe('executeSkillCommand with context.resolveHit (ranked pipeline)', () => {
+  it('uses resolveHit verdict instead of the internal accuracy roll', () => {
+    const resolveHit = vi.fn(() => ({ hit: false, dodged: true }));
+    const ctx = makeCommandContext({ resolveHit });
+
+    const result = executeSkillCommand(ctx, strikeCommand, () => 0);
+
+    expect(resolveHit).toHaveBeenCalledWith(
+      ctx.combatants[0],
+      ctx.combatants[1],
+      ctx.skillsById.strike,
+      expect.any(Function),
+    );
+    expect(result).toMatchObject({
+      ok: true,
+      hit: false,
+      dodged: true,
+      turnConsumed: true,
+      costsConsumed: true,
+      effectsApplied: 0,
+    });
+    expect(ctx.applyEffect).not.toHaveBeenCalled();
+  });
+
+  it('passes hit metadata (crit) through to applyEffect as fifth argument', () => {
+    const hitInfo = { hit: true, dodged: false, crit: true, critMultiplier: 2 };
+    const ctx = makeCommandContext({ resolveHit: vi.fn(() => hitInfo) });
+
+    const result = executeSkillCommand(ctx, strikeCommand, () => 0);
+
+    expect(result).toMatchObject({ ok: true, hit: true, crit: true });
+    expect(ctx.applyEffect).toHaveBeenCalledOnce();
+    expect(ctx.applyEffect.mock.calls[0][4]).toBe(hitInfo);
+  });
+
+  it('treats resolveHit throws as post-cost execution errors', () => {
+    const ctx = makeCommandContext({
+      resolveHit: vi.fn(() => {
+        throw new Error('broken resolver');
+      }),
+    });
+
+    expect(executeSkillCommand(ctx, strikeCommand, () => 0)).toEqual({
+      ok: false,
+      reason: 'execution_error',
+      turnConsumed: true,
+      costsConsumed: true,
+      partialApplied: false,
+      effectsApplied: 0,
+    });
   });
 });
