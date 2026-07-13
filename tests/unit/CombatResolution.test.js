@@ -211,3 +211,33 @@ describe('Track 1 — 전투 디테일 확장', () => {
     expect(result.hit).toBe(true);
   });
 });
+
+describe('기본 dodge 스탯 상한', () => {
+  // 데이터 실수로 dodge가 1.0 이상 들어가도 회피가 확정되지 않도록 0.9 상한을 유지한다
+  it('dodge 스탯은 0.9로 캡되어 그 이상의 굴림은 명중한다', () => {
+    const defender = combatant({ side: 'enemy', dodge: 5 });
+    const rolls = [0.1, 0.95];
+    const result = resolveHitRoll({
+      attacker: combatant(),
+      defender,
+      accuracy: 1,
+      random: () => rolls.shift() ?? 0.99,
+    });
+
+    expect(result.hit).toBe(true);
+    expect(result.dodged).toBe(false);
+  });
+
+  it('캡 이내 굴림은 여전히 회피된다', () => {
+    const defender = combatant({ side: 'enemy', dodge: 5 });
+    const rolls = [0.1, 0.89];
+    const result = resolveHitRoll({
+      attacker: combatant(),
+      defender,
+      accuracy: 1,
+      random: () => rolls.shift() ?? 0.99,
+    });
+
+    expect(result.dodged).toBe(true);
+  });
+});

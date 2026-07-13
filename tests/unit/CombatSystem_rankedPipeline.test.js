@@ -414,3 +414,77 @@ describe('processUntilAllyTurn — 적 자기 턴 사망 결선', () => {
     victory.mockRestore();
   });
 });
+
+describe('_applyEnemyDefense — 방어 관통 바닥', () => {
+  it('정액 방어가 원피해의 defenseFloorRatio 아래로 깎지 못한다', () => {
+    const ratio = BALANCE.combat.defenseFloorRatio;
+    expect(CombatSystem._applyEnemyDefense(30, 100)).toBe(Math.ceil(30 * ratio));
+    expect(CombatSystem._applyEnemyDefense(30, 10)).toBe(20);
+    expect(CombatSystem._applyEnemyDefense(2, 50)).toBe(1);
+  });
+});
+
+describe('previewRankedSkill — 프리뷰 정직성', () => {
+  // 스킬 카드에 표기되는 명중/치명이 실제 판정(_resolveRankedHit)과 같은
+  // _rankedAimProfile 계산을 쓰는지 고정한다 — 표기와 실판정의 драйф 방지
+  it('프리뷰 수치는 실판정 프로필과 일치하고, 경계 굴림 결과가 프로필 명중률을 따른다', () => {
+    const combat = setupRankedCombat();
+    GameState.time = { ...(GameState.time ?? {}), hour: 12 };
+    const skill = {
+      id: 'test_strike',
+      accuracy: 0.5,
+      critChance: 0.1,
+      usableFrom: [1, 2, 3, 4],
+      target: { side: 'enemy', ranks: [1, 2, 3, 4], count: 1 },
+      effects: [{ type: 'damage', value: [5, 7] }],
+    };
+    combat.skillsById.test_strike = skill;
+    combat.combatants.player.skillIds = ['test_strike'];
+    combat.activeCombatantId = 'player';
+
+    const profile = CombatSystem._rankedAimProfile(combat.combatants.player, skill);
+    const preview = CombatSystem.previewRankedSkill('test_strike');
+
+    expect(preview.accuracy).toBe(Math.round(profile.accuracy * 100));
+    expect(preview.critChance).toBe(Math.round(Math.min(1, profile.critChance) * 100));
+    expect(preview.dmgMin).toBe(5);
+    expect(preview.dmgMax).toBe(7);
+
+    const enemy = combat.combatants['enemy:0'];
+    const justUnder = CombatSystem._resolveRankedHit(
+      combat.combatants.player, enemy, skill, () => profile.accuracy - 0.001,
+    );
+    expect(justUnder.hit).toBe(true);
+
+    const justOver = CombatSystem._resolveRankedHit(
+      combat.combatants.player, enemy, skill, () => Math.min(0.999, profile.accuracy + 0.001),
+    );
+    expect(justOver.hit).toBe(false);
+  });
+});
+
+describe('상태이상 저장소 분리 — 라운드당 단일 틱', () => {
+  it('랭크 저장소에만 있는 플레이어 DoT는 라운드당 정확히 1회 틱된다', () => {
+    const combat = setupRankedCombat();
+    combat.combatants.player.statusEffects = [
+      { id: 'bleed', duration: 2, effect: { hpLossPerRound: 5 } },
+    ];
+
+    CombatSystem._onRoundStart(combat);
+
+    expect(combat.combatants.player.hp).toBe(95);
+    expect(GameState.player.hp.current).toBe(95);
+  });
+
+  it('레거시 playerStatus에만 있는 DoT도 라운드당 정확히 1회 틱된다', () => {
+    const combat = setupRankedCombat();
+    combat.playerStatus = [
+      { id: 'bleed', name: '출혈', duration: 2, effect: { hpLossPerRound: 5 } },
+    ];
+
+    CombatSystem._onRoundStart(combat);
+
+    expect(GameState.player.hp.current).toBe(95);
+    expect(combat.combatants.player.hp).toBe(95);
+  });
+});
