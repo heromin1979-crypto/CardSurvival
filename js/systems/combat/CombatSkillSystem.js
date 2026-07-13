@@ -269,13 +269,21 @@ export function buildAllyLoadout(combatant, gs) {
       .filter(Boolean)
       .map(cloneValue);
 
+    // 동료도 진형 구성원 — 스왑/넉백/끌기로 밀려난 랭크에서 복귀·방어할 수단이 없으면
+    // 근접 스킬이 잠긴 채 유효 행동이 사라진다 (플레이어의 reposition 갭과 동일)
+    const commonUtilitySkills = ['guard', 'reposition']
+      .map(getCombatSkill)
+      .filter(Boolean)
+      .map(cloneValue);
+
     // 동료 딜 장비 스케일링: 무기를 장착한 동료는 장비 공격이 내재 공격 스킬을 대체한다
     // (미장착 동료는 기존 내재 스킬 그대로 — 후반 동료 존재감 소멸 보정)
     const equipmentSkills = buildEquipmentSkillsFor(combatant, gs);
-    if (equipmentSkills.length === 0) return characterSkills;
+    if (equipmentSkills.length === 0) return [...characterSkills, ...commonUtilitySkills];
     return [
       ...equipmentSkills,
       ...characterSkills.filter(skill => !isAttackSkill(skill)),
+      ...commonUtilitySkills,
     ];
   }
 

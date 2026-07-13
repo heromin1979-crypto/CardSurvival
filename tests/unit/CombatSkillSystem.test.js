@@ -849,6 +849,8 @@ describe('buildAllyLoadout', () => {
       'equipment:pistol_instance',
       'nurse_triage',
       'nurse_encourage',
+      'guard',
+      'reposition',
     ]);
   });
 
@@ -861,7 +863,7 @@ describe('buildAllyLoadout', () => {
       sourceId: 'npc_nurse',
     }, gs);
 
-    expect(loadout.map((skill) => skill.id)).toEqual(COMPANION_COMBAT_LOADOUTS.npc_nurse);
+    expect(loadout.map((skill) => skill.id)).toEqual([...COMPANION_COMBAT_LOADOUTS.npc_nurse, 'guard', 'reposition']);
   });
 
   it('gives combat-flavored attacks to companions that have no equipment concept', () => {
@@ -875,6 +877,8 @@ describe('buildAllyLoadout', () => {
       'dog_bite',
       'dog_guard',
       'dog_track_weakness',
+      'guard',
+      'reposition',
     ]);
 
     expect(buildAllyLoadout({
@@ -884,6 +888,8 @@ describe('buildAllyLoadout', () => {
       'deserter_rifle_shot',
       'deserter_covering_fire',
       'deserter_reposition',
+      'guard',
+      'reposition',
     ]);
   });
 

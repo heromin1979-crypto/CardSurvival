@@ -190,15 +190,25 @@ async function simulateCell(page, weaponId, encounter, runs, conditions) {
         const target = Object.values(gs.combat.combatants ?? {})
           .find(c => c.side === 'enemy' && !c.dead && (c.hp ?? 0) > 0
             && CS._validateRankedSkillPosition(active.id, c.id, dmgSkill)?.ok);
-        if (!dmgSkill) { stuckReason = 'no_skill'; break; }
+        if (!dmgSkill) {
+          // 붕괴 스킬 잠금 등으로 공격 수단이 없는 턴 — 방어로 넘긴다
+          const guarded = CS.useActiveSkillByEffect('guard');
+          pushTrace(`guard(noskill)→${guarded?.ok}`);
+          if (!guarded?.ok) { stuckReason = 'no_skill'; break; }
+          continue;
+        }
         if (!target) {
-          // 사거리 밖 — 이동 시도 후 재개
+          // 사거리 밖 — 이동, 그것도 안 되면 방어로 턴을 넘긴다 (지원형 동료의 패스)
           const moved = CS.useActiveSkillByEffect('move');
           pushTrace(`move→${moved?.ok}`);
           if (!moved?.ok) {
-            stuckReason = 'move_failed';
-            lastFailDetail = moved?.reason ?? moved?.error ?? null;
-            break;
+            const guarded = CS.useActiveSkillByEffect('guard');
+            pushTrace(`guard→${guarded?.ok}`);
+            if (!guarded?.ok) {
+              stuckReason = 'move_failed';
+              lastFailDetail = moved?.reason ?? moved?.error ?? null;
+              break;
+            }
           }
           continue;
         }
