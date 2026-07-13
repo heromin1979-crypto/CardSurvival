@@ -325,6 +325,22 @@ export const CombatRankedEffects = {
     const result = applyDamage(target, damage, random);
     this._syncRankedTargetToLegacy(target);
 
+    // 조준형 예고(cancelOnHit)는 피격으로 흐트러진다 — 저격수를 때리는 것이 카운터
+    if (legacyEnemy?._telegraph && result.damage > 0) {
+      const tgSkill = (legacyEnemy.specialSkills ?? [])
+        .find(s => s.id === legacyEnemy._telegraph.skillId);
+      if (tgSkill?.telegraph?.cancelOnHit) {
+        legacyEnemy._telegraph = null;
+        if (!legacyEnemy._skillCooldowns) legacyEnemy._skillCooldowns = {};
+        legacyEnemy._skillCooldowns[tgSkill.id] = tgSkill.cooldown;
+        this._pushCombatLog(I18n.t('combatSys.telegraphCancelled', {
+          enemy: I18n.enemyName(legacyEnemy.id, legacyEnemy.name),
+          skill: tgSkill.name ?? tgSkill.id,
+        }));
+        legacyEnemy._nextIntent = this._decideNextIntent(legacyEnemy, gs.combat, gs) ?? null;
+      }
+    }
+
     if (legacyEnemy) {
       if (hitInfo?.crit && legacyEnemy.type === 'human' && legacyEnemy.currentMorale != null) {
         legacyEnemy.currentMorale = Math.max(

@@ -21,6 +21,8 @@ const ENEMIES = {
     ],
     infectionChance: 0.25,
     aiPattern: 'aggressive',
+    // 잠복 상태로 등장 — 깨어나기 전 처치하면 한 번도 공격받지 않는다 (기습 무효 카운터)
+    dormant: { wakeTurns: 1 },
     specialSkills: [],
     statusInflict: null,
     weaknesses: ['blade', 'fire'],
@@ -72,7 +74,12 @@ const ENEMIES = {
     ],
     infectionChance: 0.30,
     aiPattern: 'aggressive',
-    specialSkills: [],
+    // 돌진은 1턴 예고제 — 예고 턴에 이동하면 완전 회피, 명중 시 즉시 후속타(총 2연타)
+    specialSkills: [{
+      id: 'runner_rush', name: '돌진', damage: [12, 18], cooldown: 3,
+      telegraph: { turns: 1, moveEvadeChance: 1 },
+      effect: { multiHit: 2 },
+    }],
     statusInflict: { id: 'bleed', name: '출혈', duration: 3, effect: { hpLossPerRound: 3 } },
     weaknesses: ['bullet', 'fire'],
     resistances: [],
@@ -99,7 +106,11 @@ const ENEMIES = {
     ],
     infectionChance: 0.40,
     aiPattern: 'defensive',
-    specialSkills: [{ id: 'slam', name: '강타', damage: [30, 45], cooldown: 3, stunChance: 0.5 }],
+    // slam은 1턴 예고제 — 예고 턴에 이동하면 완전 회피, block 토큰 보유 시 기절 무효(피해는 블록 절반)
+    specialSkills: [{
+      id: 'slam', name: '강타', damage: [30, 45], cooldown: 3, stunChance: 0.5,
+      telegraph: { turns: 1, moveEvadeChance: 1, blockNegatesStun: true },
+    }],
     statusInflict: null,
     weaknesses: ['fire', 'explosive'],
     resistances: ['blunt', 'blade'],
@@ -162,7 +173,11 @@ const ENEMIES = {
     aiPattern: 'sniper',
     position: 'back',
     attackType: 'ranged',
-    specialSkills: [{ id: 'aimed_shot', name: '정조준', damage: [25, 40], cooldown: 3, stunChance: 0.3 }],
+    // 정조준은 1턴 예고제 — 대상이 이동하면 70% 빗나감, 조준 중 피격 시 조준 취소
+    specialSkills: [{
+      id: 'aimed_shot', name: '정조준', damage: [25, 40], cooldown: 3, stunChance: 0.3,
+      telegraph: { turns: 1, moveEvadeChance: 0.7, cancelOnHit: true },
+    }],
     combatProfile: {
       speed: 5,
       startRank: 3,
@@ -206,6 +221,7 @@ const ENEMIES = {
     defense: 0,
     xp: 35,
     attacksPerRound: 2,   // 매 라운드 2회 공격 (무리 패턴)
+    spreadAttacks: true,  // 전열 아군 2+ 시 타격을 분산 — 전열 유지가 카운터
     lootTable: [
       { definitionId: 'tattered_rags', weight: 45, minQty: 2, maxQty: 4 },
       { definitionId: 'scrap_metal',   weight: 20, minQty: 1, maxQty: 3 },
@@ -275,7 +291,8 @@ const ENEMIES = {
     position: 'back',
     attackType: 'ranged',
     specialSkills: [],
-    statusInflict: { id: 'acid_burn', name: '산성 화상', duration: 2, effect: { hpLossPerRound: 5, infection: 5 } },
+    // escalatePerTurn: 생존한 자기 턴마다 산성이 축적돼 hpLossPerRound가 커진다 — 방치 비용
+    statusInflict: { id: 'acid_burn', name: '산성 화상', duration: 2, escalatePerTurn: 1, effect: { hpLossPerRound: 5, infection: 5 } },
     weaknesses: ['fire', 'bullet'],
     resistances: ['blade'],
     description: '후열에서 산성 체액을 분사하는 특수 감염자. 명중 시 감염·방사선이 추가 상승한다.',
@@ -503,6 +520,7 @@ function instantiateEnemy(def) {
     _skillCooldowns: {},
     _statusEffects: [],
     _chargeRemaining: def.timedThreat?.chargeTurns ?? null,
+    _dormantRemaining: def.dormant?.wakeTurns ?? null,
     currentMorale:    def.type === 'human' ? (def.morale?.max ?? 100) : null,
   };
 }

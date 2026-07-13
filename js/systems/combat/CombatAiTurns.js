@@ -16,6 +16,7 @@ import GameData       from '../../data/GameData.js';
 import { applyDamage, consumeToken } from './CombatStatusSystem.js';
 import { modifyIncomingDamage, modifyOutgoingDamage } from './CombatResolution.js';
 import { buildEnemyProfile } from './EnemyCombatAdapter.js';
+import { getRank } from './FormationSystem.js';
 
 export const CombatAiTurns = {
   // ── Combat Overhaul Phase 2 · 동료 자율 행동 ──────
@@ -345,6 +346,39 @@ export const CombatAiTurns = {
     if (!target) return null;
     const viaTaunt = taunted !== null;
 
+    // 잠복: 깨어나기 전에는 위협이 아니다 — 이 창에 처치하면 기습 무효
+    if ((enemy._dormantRemaining ?? 0) > 0) {
+      return {
+        action: 'dormant',
+        countdown: enemy._dormantRemaining,
+        targetType: 'self',
+        targetId: null,
+        iconEmoji: '💤',
+        label: '잠복 — 곧 깨어난다',
+        pattern,
+      };
+    }
+
+    // 예고: 다음 턴 발동할 스킬을 보여준다 — 이동/블록/피격 취소로 대응할 창
+    if (enemy._telegraph) {
+      const tgSkill = (enemy.specialSkills ?? []).find(s => s.id === enemy._telegraph.skillId);
+      return {
+        action: 'telegraph',
+        skillId: enemy._telegraph.skillId,
+        countdown: enemy._telegraph.remaining,
+        targetType: target?.type ?? 'player',
+        targetId: target?.id ?? null,
+        iconEmoji: '⚠️',
+        label: `${tgSkill?.name ?? '강습'} 준비 중!`,
+        pattern,
+      };
+    }
+
+    // 동요: 사기가 꺾이기 시작한 인간 적 — 사기 공격·처치 압박이 유효함을 노출
+    const wavering = enemy.type === 'human'
+      && enemy.currentMorale != null
+      && (enemy.currentHp / (enemy.maxHp || 1)) <= 0.5;
+
     // 타이밍 압박 적: 충전 중이면 카운트다운 의도 우선
     if ((enemy._chargeRemaining ?? null) !== null && enemy.timedThreat) {
       const icon = enemy.timedThreat.id === 'self_destruct' ? '💥'
@@ -352,7 +386,7 @@ export const CombatAiTurns = {
                  : '⚡';
       const labelMap = {
         self_destruct: `${enemy._chargeRemaining}턴 후 자폭`,
-        summon_horde:  `${enemy._chargeRemaining}턴 후 증원 소환`,
+        summon_horde:  `${enemy._chargeRemaining}턴 후 증원 소환 · 시끄럽게 처치 시 비명`,
         charge_strike: `${enemy._chargeRemaining}턴 후 강타`,
       };
       return {
@@ -387,9 +421,10 @@ export const CombatAiTurns = {
 
     const iconEmoji = willUseSkill ? '💢' : '🗡';
     const tgtName = target.type === 'player' ? '플레이어' : this._npcLabel(target.id);
-    const label = willUseSkill
+    const baseLabel = willUseSkill
       ? `${tgtName}에 ${readySkill.name ?? '스킬'} 사용`
       : `${tgtName} 공격`;
+    const label = wavering ? `${baseLabel} · 동요` : baseLabel;
 
     return {
       action: willUseSkill ? 'skill' : 'attack',
@@ -400,6 +435,7 @@ export const CombatAiTurns = {
       label,
       pattern,
       viaTaunt,
+      wavering,
     };
   },
 
@@ -413,6 +449,28 @@ export const CombatAiTurns = {
     const gs = GameState;
     const enemy = gs.combat.enemies?.[enemyIdx];
     if (!enemy || enemy.currentHp <= 0) return;
+
+    // 잠복 상태: 깨어나기 전에는 행동하지 않는다 — 이 사이 처치하면 기습 무효
+    if ((enemy._dormantRemaining ?? 0) > 0) {
+      enemy._dormantRemaining -= 1;
+      const enemyName = I18n.enemyName(enemy.id, enemy.name);
+      gs.combat.log.push(enemy._dormantRemaining > 0
+        ? I18n.t('combatSys.dormantStir', { enemy: enemyName })
+        : I18n.t('combatSys.dormantWake', { enemy: enemyName }));
+      enemy._nextIntent = this._decideNextIntent(enemy, gs.combat, gs) ?? null;
+      return;
+    }
+
+    // 산성 축적 등 방치 비용: 생존한 자기 턴마다 상태이상 피해가 커진다
+    if (enemy.statusInflict?.escalatePerTurn) {
+      enemy._inflictEscalation = (enemy._inflictEscalation ?? 0) + enemy.statusInflict.escalatePerTurn;
+      gs.combat.log.push(I18n.t('combatSys.inflictEscalate', {
+        enemy: I18n.enemyName(enemy.id, enemy.name),
+        status: enemy.statusInflict.name,
+        stacks: enemy._inflictEscalation,
+      }));
+    }
+
     const stunIdx = (enemy._statusEffects ?? []).findIndex(s =>
       s?.id === 'stun' || s?.effect?.skipTurn === true);
     if (stunIdx !== -1) {
@@ -581,6 +639,7 @@ export const CombatAiTurns = {
       _skillCooldowns: {},
       _statusEffects: [],
       _chargeRemaining: def.timedThreat?.chargeTurns ?? null,
+      _dormantRemaining: def.dormant?.wakeTurns ?? null,
       currentMorale: def.type === 'human' ? (def.morale?.max ?? 100) : null,
     };
   },
@@ -831,64 +890,158 @@ export const CombatAiTurns = {
     const gs   = GameState;
     const logs = [];
 
+    // 예고된 스킬이 있으면 이번 턴은 그 발동이다 (이동 회피/블록 카운터 판정 포함)
+    if (enemy._telegraph) {
+      return this._resolveTelegraphedSkill(enemy);
+    }
+
     for (const skill of (enemy.specialSkills ?? [])) {
       const cd = enemy._skillCooldowns?.[skill.id] ?? 0;
       if (cd > 0) { enemy._skillCooldowns[skill.id]--; continue; }
       if (Math.random() < (BALANCE.combat.enemySpecialSkillChance ?? 0.5)) {
-        const [dMin, dMax] = skill.damage;
-        let dmg = dMin + Math.floor(Math.random() * (dMax - dMin + 1));
-
-        // 방어구 효과: 피해 감소 + 방어술 스킬 보너스
-        const armor         = StatSystem.getArmorEffects();
-        const defSkillBonus = SkillSystem.getBonus('defense', 'damageReduction');
-        const totalReduct   = Math.min(BALANCE.armor.specialDmgReductCap, armor.damageReduction + defSkillBonus);
-        if (totalReduct > 0) {
-          dmg = Math.max(1, Math.floor(dmg * (1 - totalReduct)));
-        }
-        // critReduction: 스킬의 stunChance도 비례 감소
-        const effectiveStunChance = skill.stunChance
-          ? skill.stunChance * (1 - armor.critReduction)
-          : 0;
-
-        const struck = this._dealDamageToAlly({ rawDamage: dmg });
-        if (struck.dodged) {
-          if (!enemy._skillCooldowns) enemy._skillCooldowns = {};
-          enemy._skillCooldowns[skill.id] = skill.cooldown;
-          logs.push(`${I18n.enemyName(enemy.id, enemy.name)}의 ${skill.name ?? '스킬'}을 회피했다!`);
+        // 예고형 스킬: 이번 턴은 준비 동작만 — 플레이어에게 대응할 1턴을 준다
+        if (skill.telegraph) {
+          enemy._telegraph = {
+            skillId: skill.id,
+            remaining: skill.telegraph.turns ?? 1,
+            targetRank: getRank(gs.combat.formations, 'player'),
+          };
+          logs.push(I18n.t('combatSys.telegraphStart', {
+            enemy: I18n.enemyName(enemy.id, enemy.name),
+            skill: skill.name ?? skill.id,
+          }));
+          this._fx({
+            kind: 'status',
+            target: 'enemy',
+            enemyIdx: gs.combat.enemies.indexOf(enemy),
+            statusId: 'telegraph',
+          });
           return logs;
         }
-        dmg = struck.damage;
-        if (!enemy._skillCooldowns) enemy._skillCooldowns = {};
-        enemy._skillCooldowns[skill.id] = skill.cooldown;
-        gs.combat.lastHit = { target: 'player', damage: dmg, isCrit: false };
-        EventBus.emit('playerHit', { damage: dmg });
-        this._fx({
-          kind:     'enemyAttack',
-          enemyIdx: gs.combat.enemies.indexOf(enemy),
-          fx:       'skill',
-          dmg,
-          crit:     true,
-        });
-        DiseaseSystem.checkCombatInjury(dmg, gs);
-        BodySystem.onCombatHit(dmg, enemy);
-        if (effectiveStunChance > 0 && Math.random() < effectiveStunChance) {
-          if (!gs.combat.playerStatus.some(s => s.id === 'stun')) {
-            gs.combat.playerStatus.push({ id: 'stun', name: I18n.t('combatSys.stun'), duration: 1, effect: {} });
-          }
-          logs.push(I18n.t('combatSys.enemySkillStun', { skill: skill.name, enemy: I18n.enemyName(enemy.id, enemy.name), dmg, hp: gs.player.hp.current }));
-        } else {
-          logs.push(I18n.t('combatSys.enemySkill', { skill: skill.name, enemy: I18n.enemyName(enemy.id, enemy.name), dmg, hp: gs.player.hp.current }));
-        }
-        logs.push(...this._applyEnemySkillEffect(enemy, skill, dmg));
+        logs.push(...this._executeEnemySpecialSkill(enemy, skill));
         return logs;
       }
     }
 
+    // 무리 패턴(spreadAttacks): 전열(1~2랭크) 동료가 있으면 다중 타격을 분산한다 —
+    // 전열이 무너져 혼자 남으면 전 타격이 집중되므로 전열 유지가 카운터가 된다
     const rounds = enemy.attacksPerRound ?? 1;
+    const spreadTargets = enemy.spreadAttacks && rounds >= 2 ? this._frontlineCompanionIds() : [];
     for (let i = 0; i < rounds; i++) {
-      logs.push(this._enemyAttack(enemy));
+      if (spreadTargets.length > 0 && i % 2 === 1) {
+        this._enemyAttackCompanion(enemy, spreadTargets[Math.floor((i - 1) / 2) % spreadTargets.length]);
+      } else {
+        logs.push(this._enemyAttack(enemy));
+      }
       if (this._isPlayerDefeated()) break;
     }
+    return logs;
+  },
+
+  _frontlineCompanionIds() {
+    const combat = GameState.combat;
+    return Object.values(combat?.combatants ?? {})
+      .filter(c => c.side === 'ally' && c.sourceType === 'companion' && c.dead !== true && (c.hp ?? 0) > 0)
+      .filter(c => {
+        const rank = getRank(combat.formations, c.id);
+        return rank !== null && rank <= 2;
+      })
+      .map(c => c.sourceId ?? c.id);
+  },
+
+  _resolveTelegraphedSkill(enemy) {
+    const gs = GameState;
+    const logs = [];
+    const tg = enemy._telegraph;
+    const skill = (enemy.specialSkills ?? []).find(s => s.id === tg?.skillId);
+    if (!skill) {
+      enemy._telegraph = null;
+      return logs;
+    }
+    if (tg.remaining > 1) {
+      tg.remaining -= 1;
+      logs.push(I18n.t('combatSys.telegraphHold', {
+        enemy: I18n.enemyName(enemy.id, enemy.name),
+        skill: skill.name ?? skill.id,
+      }));
+      return logs;
+    }
+    enemy._telegraph = null;
+    if (!enemy._skillCooldowns) enemy._skillCooldowns = {};
+    const cfg = skill.telegraph ?? {};
+
+    // 예고 시점 위치에서 벗어난 대상은 회피 기회를 얻는다 — 이동이 유효한 카운터
+    const currentRank = getRank(gs.combat.formations, 'player');
+    if (cfg.moveEvadeChance
+        && tg.targetRank !== null
+        && currentRank !== tg.targetRank
+        && Math.random() < cfg.moveEvadeChance) {
+      enemy._skillCooldowns[skill.id] = skill.cooldown;
+      logs.push(I18n.t('combatSys.telegraphEvaded', {
+        enemy: I18n.enemyName(enemy.id, enemy.name),
+        skill: skill.name ?? skill.id,
+      }));
+      this._fx({ kind: 'enemyAttack', enemyIdx: gs.combat.enemies.indexOf(enemy), miss: true });
+      return logs;
+    }
+
+    logs.push(...this._executeEnemySpecialSkill(enemy, skill, {
+      blockNegatesStun: cfg.blockNegatesStun === true,
+    }));
+    return logs;
+  },
+
+  _executeEnemySpecialSkill(enemy, skill, counters = {}) {
+    const gs = GameState;
+    const logs = [];
+    const [dMin, dMax] = skill.damage;
+    let dmg = dMin + Math.floor(Math.random() * (dMax - dMin + 1));
+
+    // 방어구 효과: 피해 감소 + 방어술 스킬 보너스
+    const armor         = StatSystem.getArmorEffects();
+    const defSkillBonus = SkillSystem.getBonus('defense', 'damageReduction');
+    const totalReduct   = Math.min(BALANCE.armor.specialDmgReductCap, armor.damageReduction + defSkillBonus);
+    if (totalReduct > 0) {
+      dmg = Math.max(1, Math.floor(dmg * (1 - totalReduct)));
+    }
+    // critReduction: 스킬의 stunChance도 비례 감소
+    const effectiveStunChance = skill.stunChance
+      ? skill.stunChance * (1 - armor.critReduction)
+      : 0;
+
+    const struck = this._dealDamageToAlly({ rawDamage: dmg });
+    if (!enemy._skillCooldowns) enemy._skillCooldowns = {};
+    enemy._skillCooldowns[skill.id] = skill.cooldown;
+    if (struck.dodged) {
+      logs.push(`${I18n.enemyName(enemy.id, enemy.name)}의 ${skill.name ?? '스킬'}을 회피했다!`);
+      return logs;
+    }
+    dmg = struck.damage;
+    gs.combat.lastHit = { target: 'player', damage: dmg, isCrit: false };
+    EventBus.emit('playerHit', { damage: dmg });
+    this._fx({
+      kind:     'enemyAttack',
+      enemyIdx: gs.combat.enemies.indexOf(enemy),
+      fx:       'skill',
+      dmg,
+      crit:     true,
+    });
+    DiseaseSystem.checkCombatInjury(dmg, gs);
+    BodySystem.onCombatHit(dmg, enemy);
+    // 예고를 블록으로 받아냈다면 기절은 통하지 않는다
+    const stunNegated = counters.blockNegatesStun === true && struck.blocked === true;
+    if (effectiveStunChance > 0 && !stunNegated && Math.random() < effectiveStunChance) {
+      if (!gs.combat.playerStatus.some(s => s.id === 'stun')) {
+        gs.combat.playerStatus.push({ id: 'stun', name: I18n.t('combatSys.stun'), duration: 1, effect: {} });
+      }
+      logs.push(I18n.t('combatSys.enemySkillStun', { skill: skill.name, enemy: I18n.enemyName(enemy.id, enemy.name), dmg, hp: gs.player.hp.current }));
+    } else {
+      if (stunNegated) {
+        logs.push(I18n.t('combatSys.telegraphBlocked', { skill: skill.name ?? skill.id }));
+      }
+      logs.push(I18n.t('combatSys.enemySkill', { skill: skill.name, enemy: I18n.enemyName(enemy.id, enemy.name), dmg, hp: gs.player.hp.current }));
+    }
+    logs.push(...this._applyEnemySkillEffect(enemy, skill, dmg));
     return logs;
   },
 
@@ -984,7 +1137,7 @@ export const CombatAiTurns = {
     if (combatant && canBeDodged && (combatant.tokens?.dodge ?? 0) > 0) {
       consumeToken(combatant, 'dodge', 1);
       this._pushCombatLog(`${this._rankedCombatantLabel(combatant)}이(가) 공격을 회피했다!`);
-      return { dodged: true, damage: 0, dead: false };
+      return { dodged: true, damage: 0, dead: false, blocked: false };
     }
     if (combatant) damage = modifyIncomingDamage(damage, combatant);
 
@@ -1003,10 +1156,10 @@ export const CombatAiTurns = {
         } else if (result.damage >= BALANCE.combat.stress.heavyHitThreshold) {
           this._applyStressWithFeedback(combatant, BALANCE.combat.stress.heavyHitStress);
         }
-        return { dodged: false, damage: result.damage, dead: result.dead };
+        return { dodged: false, damage: result.damage, dead: result.dead, blocked: result.blocked === true };
       }
       gs.player.hp.current = Math.max(0, gs.player.hp.current - damage);
-      return { dodged: false, damage, dead: gs.player.hp.current <= 0 };
+      return { dodged: false, damage, dead: gs.player.hp.current <= 0, blocked: false };
     }
 
     // 동료: block 토큰만 수동 적용 후 damageCompanion 경유(NPC 사망 처리 보존)
@@ -1143,12 +1296,23 @@ export const CombatAiTurns = {
         if (enemy.onHitEffect.radiation) gs.modStat('radiation', enemy.onHitEffect.radiation);
       }
       if (enemy.statusInflict) {
-        const already = gs.combat.playerStatus.find(s => s.id === enemy.statusInflict.id);
+        const inflict = { ...enemy.statusInflict, effect: { ...enemy.statusInflict.effect } };
+        // 방치 비용: 축적된 만큼 상태이상 피해가 커진다 (zombie_acid 등)
+        if (enemy._inflictEscalation && Number.isFinite(inflict.effect.hpLossPerRound)) {
+          inflict.effect.hpLossPerRound += enemy._inflictEscalation;
+        }
+        const already = gs.combat.playerStatus.find(s => s.id === inflict.id);
         if (already) {
-          already.duration = Math.max(already.duration, enemy.statusInflict.duration);
+          already.duration = Math.max(already.duration, inflict.duration);
+          if (Number.isFinite(inflict.effect.hpLossPerRound)) {
+            already.effect.hpLossPerRound = Math.max(
+              already.effect.hpLossPerRound ?? 0,
+              inflict.effect.hpLossPerRound,
+            );
+          }
         } else {
-          gs.combat.playerStatus.push({ ...enemy.statusInflict, effect: { ...enemy.statusInflict.effect } });
-          this._fx({ kind: 'status', target: 'player', statusId: enemy.statusInflict.id });
+          gs.combat.playerStatus.push(inflict);
+          this._fx({ kind: 'status', target: 'player', statusId: inflict.id });
         }
       }
       if (enemy.infectionChance && Math.random() < enemy.infectionChance) {
