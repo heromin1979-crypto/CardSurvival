@@ -48,9 +48,6 @@ function setupFocusedCombatState(gs) {
       { combatantId: 'player', type: 'player', initiative: 8 },
       { combatantId: 'enemy:0', type: 'enemy', enemyIdx: 0, initiative: 5 },
     ],
-    pendingIntentByEnemy: {
-      'enemy:0': { enemyId: 'enemy:0', skillId: 'enemy_attack', targetId: 'player' },
-    },
     enemies: [{ id: 'zombie_common', name: '감염자', currentHp: 30, maxHp: 30 }],
     log: ['전투 시작'],
     fxQueue: [],
@@ -122,6 +119,21 @@ describe('Combat focused UI', () => {
     expect(document.querySelectorAll('.combat-skill-button')).toHaveLength(5);
     expect(document.querySelectorAll('.combat-action-card')).toHaveLength(8);
     expect(document.querySelector('.combat-item-slot')).not.toBeNull();
+  });
+
+  it('renders the enemy intent badge from the execution-path _nextIntent only', () => {
+    GameState.combat.enemies[0]._nextIntent = {
+      action: 'attack', targetType: 'player', targetId: null,
+      iconEmoji: '🗡', label: '플레이어 공격',
+    };
+    CombatUI.render();
+    const intent = document.querySelector('.combatant-piece.enemy .combat-intent');
+    expect(intent).not.toBeNull();
+    expect(intent.getAttribute('title')).toBe('플레이어 공격');
+
+    delete GameState.combat.enemies[0]._nextIntent;
+    CombatUI.render();
+    expect(document.querySelector('.combatant-piece.enemy .combat-intent')).toBeNull();
   });
 
   it('shows inspected combatant context in the battlefield ticker', () => {

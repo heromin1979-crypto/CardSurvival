@@ -41,7 +41,7 @@ import {
 import { consumeToken, tickStatusEffects } from './combat/CombatStatusSystem.js';
 import { buildInitiativeQueue } from './combat/InitiativeSystem.js';
 import { resolveRelationshipReaction } from './combat/RelationshipCombatSystem.js';
-import { buildEnemyProfile, decideEnemyIntent } from './combat/EnemyCombatAdapter.js';
+import { buildEnemyProfile } from './combat/EnemyCombatAdapter.js';
 import { CombatAiTurns } from './combat/CombatAiTurns.js';
 import { CombatRankedEffects } from './combat/CombatRankedEffects.js';
 
@@ -254,7 +254,6 @@ const CombatSystem = {
     combat.activeCombatantId = this._combatantIdForEntry(combat.turnQueue?.[combat.activeTurnIndex]);
     combat.selectedSkillId = null;
     combat.selectedTargetId = null;
-    combat.pendingIntentByEnemy = {};
     combat.relationshipEvents = [];
     combat.actionSequence = 0;
   },
@@ -283,10 +282,6 @@ const CombatSystem = {
     combat.phase = active.side === 'ally'
       ? 'await_ally_input'
       : 'resolve_enemy_intent';
-
-    if (active.side === 'enemy') {
-      combat.pendingIntentByEnemy[activeId] = decideEnemyIntent(this._enemyIntentContext(), activeId);
-    }
 
     return true;
   },
@@ -330,71 +325,6 @@ const CombatSystem = {
     combat.selectedTargetId = null;
     combat.phase = 'await_ally_input';
     return true;
-  },
-
-  _enemyIntentContext() {
-    const combat = GameState.combat;
-    return {
-      enemyProfiles: combat?.enemyProfiles ?? {},
-      getUsableEnemySkills: (_enemyId, profile) => {
-        if (Array.isArray(profile?.skills)) return profile.skills;
-        return (profile?.skillIds ?? [])
-          .map(skillId => combat.skillsById?.[skillId])
-          .filter(Boolean);
-      },
-      pickSkill: (_ai, candidates) => {
-        if (!Array.isArray(candidates) || candidates.length === 0) return null;
-        return candidates[Math.floor(Math.random() * candidates.length)] ?? null;
-      },
-      pickTarget: (ai, _enemyId, skill) => {
-        const targetSide = skill?.target?.side ?? 'ally';
-        const pool = Object.values(combat?.combatants ?? {})
-          .filter(combatant => (
-            combatant.side === targetSide
-            && combatant.dead !== true
-            && (combatant.hp ?? 0) > 0
-          ));
-        if (pool.length === 0) return null;
-        if (targetSide !== 'ally') return pool[0]?.id ?? null;
-
-        const taunted = pool.find(c => (c.tokens?.taunted ?? 0) > 0);
-        if (taunted) return taunted.id;
-        return this._pickRankTargetByPattern(ai, pool)?.id ?? null;
-      },
-    };
-  },
-
-  // 레거시 _pickTargetByPattern의 6패턴을 랭크 combatant 풀에 적용 (의도 표시용)
-  _pickRankTargetByPattern(pattern, pool) {
-    const gs = GameState;
-    const player = pool.find(c => c.sourceType === 'player');
-    const hasDot = c => {
-      const statuses = c.sourceType === 'player'
-        ? (gs.combat?.playerStatus ?? [])
-        : (c.statusEffects ?? []);
-      return statuses.some(s => ['bleed', 'infection', 'burn', 'acid_burn'].includes(s?.id));
-    };
-
-    switch (pattern) {
-      case 'aggressive':
-        return [...pool].sort((a, b) =>
-          ((a.hp ?? 0) / (a.maxHp || 1)) - ((b.hp ?? 0) / (b.maxHp || 1)))[0];
-      case 'defensive': {
-        const weaponId = gs.player?.equipped?.weapon_main ?? gs.player?.equipped?.weapon_sub;
-        const isRanged = weaponId ? !!gs.getCardDef?.(weaponId)?.combat?.requiresAmmo : false;
-        return (isRanged && player) ? player : (player ?? pool[0]);
-      }
-      case 'horde':
-        return pool[Math.floor(Math.random() * pool.length)];
-      case 'sniper':
-        return pool.find(c => ['npc_nurse', 'npc_doctor', 'npc_tower_doctor', 'npc_jisu'].includes(c.sourceId))
-          ?? player ?? pool[0];
-      case 'predator':
-        return pool.find(hasDot) ?? player ?? pool[0];
-      case 'normal':
-      default:
-        return player ?? pool[0];
-    }
   },
 
   _commandContext() {

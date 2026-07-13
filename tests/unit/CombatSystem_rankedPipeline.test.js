@@ -106,7 +106,6 @@ function setupRankedCombat({ enemies = [makeEnemy()] } = {}) {
     },
     skillsById: {},
     enemyProfiles: {},
-    pendingIntentByEnemy: {},
     activeTurnIndex: 0,
     activeCombatantId: 'player',
   };

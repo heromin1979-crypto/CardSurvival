@@ -82,18 +82,3 @@ export function buildEnemyProfile(enemy = {}) {
   };
 }
 
-export function decideEnemyIntent(context, enemyId) {
-  const profile = context?.enemyProfiles?.[enemyId];
-  if (!profile) return null;
-
-  const candidates = context.getUsableEnemySkills?.(enemyId, profile) ?? [];
-  const skill = context.pickSkill?.(profile.ai, candidates);
-  if (!skill || typeof skill.id !== 'string' || skill.id.length === 0) return null;
-
-  const target = context.pickTarget?.(profile.ai, enemyId, skill);
-  const targetId = typeof target === 'string'
-    ? target
-    : target?.id ?? target?.combatantId ?? null;
-
-  return targetId ? { enemyId, skillId: skill.id, targetId } : null;
-}

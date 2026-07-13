@@ -331,21 +331,19 @@ const CombatUI = {
       .map(([token, stacks]) => `<span class="combat-token">${this._escape(token)} ${stacks}</span>`)
       .join('');
     const isEnemy = combatant.side === 'enemy';
-    // 의도 표시: 레거시 _nextIntent(아이콘/카운트다운/타겟)가 있으면 우선, 없으면 랭크 pendingIntent 폴백
-    const legacyIntent = isEnemy ? this._enemyForCombatant(combatant)?._nextIntent : null;
-    const pendingIntent = combat.pendingIntentByEnemy?.[combatantId];
+    // 의도 표시 단일 소스: 실행 경로(_runSingleEnemyTurn)가 소비하는 _nextIntent만 사용 —
+    // 별도 계산된 의도를 표시하면 실제 행동과 어긋날 수 있다
+    const intent = isEnemy ? this._enemyForCombatant(combatant)?._nextIntent : null;
     let intentHtml = '';
-    if (legacyIntent && !combatant.dead) {
-      const countdownHtml = legacyIntent.countdown != null
-        ? `<span class="intent-count">${this._escape(legacyIntent.countdown)}</span>`
+    if (intent && !combatant.dead) {
+      const countdownHtml = intent.countdown != null
+        ? `<span class="intent-count">${this._escape(intent.countdown)}</span>`
         : '';
       intentHtml = `
-        <div class="combat-intent${legacyIntent.countdown != null && legacyIntent.countdown <= 1 ? ' imminent' : ''}"
-             title="${this._escape(legacyIntent.label ?? '')}">
-          <span class="intent-icon">${legacyIntent.iconEmoji ?? '🗡'}</span>${countdownHtml}
+        <div class="combat-intent${intent.countdown != null && intent.countdown <= 1 ? ' imminent' : ''}"
+             title="${this._escape(intent.label ?? '')}">
+          <span class="intent-icon">${intent.iconEmoji ?? '🗡'}</span>${countdownHtml}
         </div>`;
-    } else if (pendingIntent) {
-      intentHtml = `<div class="combat-intent"><span class="intent-icon">🗡</span></div>`;
     }
     const rank = getRank(combat?.formations, combatantId);
     const image = this._combatantImage(combatant);
