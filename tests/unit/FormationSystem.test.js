@@ -262,8 +262,23 @@ describe('moveCombatant', () => {
     expect(getRank(formations, combatantId)).toBe(destinationRank);
   });
 
+  it('swaps with a same-side occupant in an adjacent rank', () => {
+    const formations = createFormations(['player', 'npc_nurse'], []);
+
+    expect(moveCombatant(formations, 'player', 2)).toBe(true);
+    expect(getRank(formations, 'player')).toBe(2);
+    expect(getRank(formations, 'npc_nurse')).toBe(1);
+  });
+
+  it('refuses to swap into a non-adjacent occupied rank', () => {
+    const formations = { ally: ['npc_a', null, null, 'player'], enemy: [] };
+    const before = structuredClone(formations);
+
+    expect(moveCombatant(formations, 'player', 4)).toBe(false);
+    expect(formations).toEqual(before);
+  });
+
   it.each([
-    ['occupied destination', 'player', 2],
     ['rank below range', 'player', 0],
     ['rank above range', 'player', 5],
     ['missing combatant', 'missing', 2],
