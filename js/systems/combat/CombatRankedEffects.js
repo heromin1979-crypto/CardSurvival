@@ -245,11 +245,14 @@ export const CombatRankedEffects = {
       }
       case 'move': {
         const rank = getRank(GameState.combat?.formations, target.id);
+        const distance = effect.distance === 'auto'
+          ? this._autoMoveDirection(target, rank)
+          : (effect.distance ?? 0);
         return {
           ok: moveCombatant(
             GameState.combat?.formations,
             target.id,
-            Math.max(1, Math.min(4, (rank ?? 1) + (effect.distance ?? 0))),
+            Math.max(1, Math.min(4, (rank ?? 1) + distance)),
           ),
         };
       }
@@ -271,6 +274,23 @@ export const CombatRankedEffects = {
       default:
         return { ok: false, reason: 'invalid_effect' };
     }
+  },
+
+  // 공용 이동(distance 'auto')의 방향 결정 — 현재 랭크에서 잠긴 공격 스킬이
+  // 풀리는 방향을 우선한다. 넉백당한 근접은 전방 복귀, 원거리는 후열 확보가
+  // 같은 카드 한 장으로 성립한다. 잠긴 스킬이 없으면 기존 동작(후열 +1) 유지.
+  _autoMoveDirection(target, rank) {
+    if (!Number.isFinite(rank)) return 1;
+    const combat = GameState.combat;
+    const attackSkills = (target?.skillIds ?? [])
+      .map(id => combat?.skillsById?.[id])
+      .filter(skill => Array.isArray(skill?.usableFrom)
+        && (skill.effects ?? []).some(e => e?.type === 'damage'));
+    const locked = attackSkills.filter(skill => !skill.usableFrom.includes(rank));
+    if (locked.length === 0) return 1;
+    const forward = rank - 1;
+    if (forward >= 1 && locked.some(skill => skill.usableFrom.includes(forward))) return -1;
+    return 1;
   },
 
   // 랭크 피해 파이프라인: 치명타 → 공격측 배율(플레이어 스위트+토큰) → 약점/저항 → 방어 → 피격측 토큰 → 적용

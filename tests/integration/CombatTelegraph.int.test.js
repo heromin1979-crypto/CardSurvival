@@ -11,7 +11,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import CombatSystem   from '../../js/systems/CombatSystem.js';
 import GameState      from '../../js/core/GameState.js';
 import SystemRegistry from '../../js/core/SystemRegistry.js';
-import { moveCombatant } from '../../js/systems/combat/FormationSystem.js';
+import { moveCombatant, getRank } from '../../js/systems/combat/FormationSystem.js';
 
 function makeEnemy(overrides = {}) {
   return {
@@ -281,5 +281,91 @@ describe('인간 적 동요(wavering) 노출', () => {
     });
     const intent = CombatSystem._decideNextIntent(combat.enemies[0], combat, GameState);
     expect(intent.wavering).toBe(false);
+  });
+});
+
+describe('F2 — 위치 공격 (forcedMove)', () => {
+  it('charger 강타 발동 시 플레이어가 후열로 밀려난다', () => {
+    const combat = setupCombat({
+      enemies: [makeEnemy({
+        timedThreat: { id: 'charge_strike', chargeTurns: 1 },
+        _chargeRemaining: 0,
+      })],
+    });
+    const rand = vi.spyOn(Math, 'random').mockReturnValue(0.99);
+    CombatSystem._runSingleEnemyTurn(0);
+    rand.mockRestore();
+
+    const rank = getRank(combat.formations, 'player');
+    expect(rank).toBe(2);
+    expect(GameState.player.hp.current).toBeLessThan(100);
+  });
+
+  it('4랭크 벽에 막힌 밀치기는 이동 대신 충돌 고정 피해', () => {
+    const combat = setupCombat({ enemies: [makeEnemy()] });
+    combat.formations.ally = ['player', null, null, null];
+    const hpBefore = GameState.player.hp.current;
+
+    CombatSystem._forceMoveAlly('player', 1, combat.enemies[0]);
+
+    expect(getRank(combat.formations, 'player')).toBe(4);
+    expect(GameState.player.hp.current).toBe(hpBefore - 4);
+  });
+
+  it('acid_lash는 후열 플레이어를 전열로 끌어온다', () => {
+    const combat = setupCombat({ enemies: [makeEnemy()] });
+    combat.formations.ally = [null, 'player', null, null];
+    expect(getRank(combat.formations, 'player')).toBe(3);
+
+    CombatSystem._applyEnemySkillEffect(
+      combat.enemies[0],
+      { id: 'acid_lash', effect: { forcedMove: -2 } },
+      8,
+    );
+
+    expect(getRank(combat.formations, 'player')).toBe(1);
+  });
+
+  it('강제 이동 후에도 진형 불변식(4칸, 유효 슬롯)이 유지된다', () => {
+    const combat = setupCombat({ enemies: [makeEnemy()], companions: true });
+    CombatSystem._forceMoveAlly('player', 1, combat.enemies[0]);
+    CombatSystem._forceMoveAlly('player', -1, combat.enemies[0]);
+
+    expect(combat.formations.ally).toHaveLength(4);
+    const occupied = combat.formations.ally.filter(Boolean);
+    expect(new Set(occupied).size).toBe(occupied.length);
+    expect(occupied).toContain('player');
+  });
+});
+
+describe('F2 — reposition auto 방향', () => {
+  it('넉백당해 근접 스킬이 잠긴 랭크에서는 전방으로 복귀한다', () => {
+    const combat = setupCombat({ enemies: [makeEnemy()] });
+    combat.formations.ally = [null, 'player', null, null];
+    const player = combat.combatants.player;
+    combat.skillsById.test_melee = {
+      id: 'test_melee', usableFrom: [1, 2], target: { side: 'enemy', ranks: [1, 2] },
+      effects: [{ type: 'damage', value: [5, 5] }],
+    };
+    player.skillIds = ['test_melee'];
+
+    CombatSystem._applyRankedEffect({ type: 'move', distance: 'auto' }, player, player);
+
+    expect(getRank(combat.formations, 'player')).toBe(2);
+  });
+
+  it('모든 공격 스킬이 사용 가능하면 기존처럼 후열(+1)로 이동한다', () => {
+    const combat = setupCombat({ enemies: [makeEnemy()] });
+    const player = combat.combatants.player;
+    combat.skillsById.test_any = {
+      id: 'test_any', usableFrom: [1, 2, 3, 4], target: { side: 'enemy', ranks: [1, 2, 3, 4] },
+      effects: [{ type: 'damage', value: [5, 5] }],
+    };
+    player.skillIds = ['test_any'];
+    const before = getRank(combat.formations, 'player');
+
+    CombatSystem._applyRankedEffect({ type: 'move', distance: 'auto' }, player, player);
+
+    expect(getRank(combat.formations, 'player')).toBe(before + 1);
   });
 });

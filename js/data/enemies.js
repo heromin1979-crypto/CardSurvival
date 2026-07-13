@@ -290,7 +290,11 @@ const ENEMIES = {
     aiPattern: 'predator',
     position: 'back',
     attackType: 'ranged',
-    specialSkills: [],
+    // 혀 낚아채기: 후열에 숨은 대상을 전열로 끌어온다 — 원거리 캐릭터 보호가 과제가 된다
+    specialSkills: [{
+      id: 'acid_lash', name: '혀 낚아채기', damage: [6, 10], cooldown: 4,
+      effect: { forcedMove: -2 },
+    }],
     // escalatePerTurn: 생존한 자기 턴마다 산성이 축적돼 hpLossPerRound가 커진다 — 방치 비용
     statusInflict: { id: 'acid_burn', name: '산성 화상', duration: 2, escalatePerTurn: 1, effect: { hpLossPerRound: 5, infection: 5 } },
     weaknesses: ['fire', 'bullet'],

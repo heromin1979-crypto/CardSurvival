@@ -135,8 +135,9 @@ const BALANCE = {
     defaultCompanionDodge: 0.05,
     // ── 랭크 위치 시너지 ──
     position: {
-      backlineRangedAccBonus: 0.05,   // 3~4랭크에서 원거리 스킬 명중 보너스
-      frontlineMeleeDamageMult: 1.05, // 1랭크에서 근접 스킬 피해 보너스
+      backlineRangedAccBonus: 0.10,   // 3~4랭크에서 원거리 스킬 명중 보너스
+      frontlineMeleeDamageMult: 1.10, // 1랭크에서 근접 스킬 피해 보너스
+      knockbackWallDamage: 4,         // 강제 밀치기가 벽(4랭크)에 막힐 때의 충돌 고정 피해
     },
     // ── 전투 토큰 (1회 소비형 버프/디버프 계수) ──
     tokens: {

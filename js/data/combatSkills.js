@@ -246,7 +246,8 @@ export const COMBAT_SKILLS = {
     'reposition',
     'move',
     { side: 'ally', ranks: ALL_RANKS },
-    [{ type: 'move', distance: 1 }],
+    // 'auto': 잠긴 공격 스킬이 풀리는 방향 우선 — 넉백 복귀와 원거리 자리 잡기를 한 카드로
+    [{ type: 'move', distance: 'auto' }],
     { costs: { stamina: 1 } },
   ),
   ...mappedSkills,

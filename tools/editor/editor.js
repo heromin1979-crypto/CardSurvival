@@ -390,6 +390,7 @@ const BAL_HELP = {
   // 랭크 위치 시너지
   backlineRangedAccBonus: '3~4랭크에서 원거리 스킬 명중 보너스.',
   frontlineMeleeDamageMult: '1랭크에서 근접 스킬 피해 배율.',
+  knockbackWallDamage: '강제 밀치기가 4랭크 벽에 막힐 때의 충돌 고정 피해.',
   noAmmoMeleeDamage: '탄약 없는 원거리무기 → 근접 전환 피해 범위.',
   noAmmoAccuracy: '탄약 없는 근접 전환 명중률.',
   noAmmoNoise: '탄약 없는 근접 전환 소음.',

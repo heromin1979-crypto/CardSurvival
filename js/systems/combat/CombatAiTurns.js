@@ -16,7 +16,7 @@ import GameData       from '../../data/GameData.js';
 import { applyDamage, consumeToken } from './CombatStatusSystem.js';
 import { modifyIncomingDamage, modifyOutgoingDamage } from './CombatResolution.js';
 import { buildEnemyProfile } from './EnemyCombatAdapter.js';
-import { getRank } from './FormationSystem.js';
+import { getRank, moveCombatant } from './FormationSystem.js';
 
 export const CombatAiTurns = {
   // ── Combat Overhaul Phase 2 · 동료 자율 행동 ──────
@@ -808,6 +808,10 @@ export const CombatAiTurns = {
     const gs = GameState;
     const logs = [];
 
+    if (Number.isFinite(effect.forcedMove) && effect.forcedMove !== 0) {
+      this._forceMoveAlly('player', effect.forcedMove, enemy);
+    }
+
     if (effect.selfHeal) {
       const before = enemy.currentHp ?? 0;
       enemy.currentHp = Math.min(enemy.maxHp ?? before, before + effect.selfHeal);
@@ -936,6 +940,34 @@ export const CombatAiTurns = {
       if (this._isPlayerDefeated()) break;
     }
     return logs;
+  },
+
+  // 적의 강제 이동(넉백/끌기) — 아군 랭크 기준(1=최전방), 양수는 후열로 밀고 음수는 전열로 끈다.
+  // 4랭크 벽에 막힌 밀치기는 이동 대신 충돌 고정 피해. 인접 아군이 막은 끌기는 무산된다.
+  _forceMoveAlly(combatantId, distance, _enemy) {
+    const gs = GameState;
+    const combat = gs.combat;
+    if (!combat?.formations || !Number.isFinite(distance) || distance === 0) return false;
+    const rank = getRank(combat.formations, combatantId);
+    if (rank === null) return false;
+    const destination = Math.max(1, Math.min(4, rank + distance));
+    const label = this._rankedCombatantLabel(combat.combatants?.[combatantId]) ?? combatantId;
+
+    if (destination === rank || !moveCombatant(combat.formations, combatantId, destination)) {
+      const wallDmg = BALANCE.combat.position.knockbackWallDamage ?? 0;
+      if (distance > 0 && wallDmg > 0) {
+        this._dealDamageToAlly({
+          npcId: combatantId === 'player' ? null : combatantId,
+          rawDamage: wallDmg,
+          canBeDodged: false,
+        });
+        combat.log.push(I18n.t('combatSys.knockbackWall', { target: label, dmg: wallDmg }));
+      }
+      return false;
+    }
+    combat.log.push(I18n.t(distance > 0 ? 'combatSys.knockback' : 'combatSys.pulledIn', { target: label }));
+    this._fx({ kind: 'rankSwap', targetId: combatantId });
+    return true;
   },
 
   _frontlineCompanionIds() {
@@ -1095,6 +1127,8 @@ export const CombatAiTurns = {
       BodySystem.onCombatHit(dmg, enemy);
       gs.combat.log.push(I18n.t('combatSys.chargerStrike', { enemy: I18n.enemyName(enemy.id, enemy.name), dmg }));
       this._fx({ kind: 'enemyAttack', enemyIdx: gs.combat.enemies.indexOf(enemy), fx: 'shock', dmg, crit: true });
+      // 돌진의 운동량이 대상을 후열로 밀쳐낸다 — 근접 스킬이 잠기는 실제 턴 비용
+      this._forceMoveAlly('player', 1, enemy);
       return;
     }
 
