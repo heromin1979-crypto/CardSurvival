@@ -110,6 +110,19 @@ function alphaBounds(image, x0, y0, width, height) {
   return { centerX: (minX + maxX) / 2, bottom: maxY };
 }
 
+function countEdgeAlpha(image, x0, y0, width, height) {
+  let count = 0;
+  for (let x = 0; x < width; x += 1) {
+    if (image.pixels[((y0 * image.width) + x0 + x) * 4 + 3] > 12) count += 1;
+    if (image.pixels[(((y0 + height - 1) * image.width) + x0 + x) * 4 + 3] > 12) count += 1;
+  }
+  for (let y = 1; y < height - 1; y += 1) {
+    if (image.pixels[(((y0 + y) * image.width) + x0) * 4 + 3] > 12) count += 1;
+    if (image.pixels[(((y0 + y) * image.width) + x0 + width - 1) * 4 + 3] > 12) count += 1;
+  }
+  return count;
+}
+
 describe('combat sprite sheet assets', () => {
   it('keeps all displayed combat sprite sheets on the 6x4 256px cell contract', () => {
     const files = walk(SPRITE_ROOT)
@@ -189,6 +202,32 @@ describe('combat sprite sheet assets', () => {
     }
 
     expect(filesWithChromaKey).toEqual([]);
+  });
+
+  it('keeps displayed sprite pixels away from frame edges to avoid animation clipping', () => {
+    const files = walk(SPRITE_ROOT)
+      .filter((filePath) => /_sheet\.png$/.test(path.basename(filePath)))
+      .filter((filePath) => !/_src\.png$/.test(path.basename(filePath)));
+
+    const clippedFrames = [];
+    for (const filePath of files) {
+      const image = decodePngRgba(filePath);
+      for (let row = 0; row < 4; row += 1) {
+        for (let col = 0; col < 6; col += 1) {
+          const edgePixels = countEdgeAlpha(image, col * 256, row * 256, 256, 256);
+          if (edgePixels > 0) {
+            clippedFrames.push({
+              file: path.relative(ROOT, filePath).replaceAll(path.sep, '/'),
+              row,
+              col,
+              edgePixels,
+            });
+          }
+        }
+      }
+    }
+
+    expect(clippedFrames).toEqual([]);
   });
 
   it('uses exact six-frame background positions instead of fractional CSS steps', () => {
