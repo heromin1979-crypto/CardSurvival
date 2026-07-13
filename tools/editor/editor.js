@@ -371,6 +371,11 @@ const BAL_HELP = {
   // 스트레스 (0~10 스케일)
   resolveChance: '스트레스 10 도달 시 각오(strength 획득) 확률. 실패 시 붕괴(vulnerable).',
   afterResolve: '각오 성공 후 스트레스 리셋값.',
+  shakenThreshold: '동요 시작 스트레스 (이 이상이면 명중 감소).',
+  shakenAccPenalty: '동요 상태의 명중 감소량.',
+  openFrontBonus: '적 전열 공백 시 도주 성공률 가산.',
+  speedTokenBonus: 'speed 토큰 보유 시 도주 성공률 가산.',
+  disabledEnemiesBonus: '살아있는 적 전원 기절/주저 시 도주 성공률 가산.',
   afterMeltdown: '붕괴 후 스트레스 리셋값.',
   heavyHitThreshold: '이 이상 피해 피격 시 스트레스가 쌓이는 임계값.',
   heavyHitStress: '강타 피격 시 스트레스 증가량.',

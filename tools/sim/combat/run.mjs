@@ -181,9 +181,12 @@ async function simulateCell(page, weaponId, encounter, runs, conditions) {
           continue;
         }
         const active = gs.combat.combatants?.[gs.combat.activeCombatantId];
+        const skillLocked = (s) => active?._skillLock
+          && active._skillLock.skillId === s?.id
+          && (gs.combat.roundNumber ?? 1) <= active._skillLock.untilRound;
         const dmgSkill = (active?.skillIds ?? [])
           .map(id => gs.combat.skillsById[id])
-          .find(s => (s?.effects ?? []).some(e => e.type === 'damage'));
+          .find(s => (s?.effects ?? []).some(e => e.type === 'damage') && !skillLocked(s));
         const target = Object.values(gs.combat.combatants ?? {})
           .find(c => c.side === 'enemy' && !c.dead && (c.hp ?? 0) > 0
             && CS._validateRankedSkillPosition(active.id, c.id, dmgSkill)?.ok);

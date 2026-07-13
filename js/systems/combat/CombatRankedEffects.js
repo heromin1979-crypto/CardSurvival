@@ -91,8 +91,28 @@ export const CombatRankedEffects = {
     } else if (result.meltdown) {
       this._pushCombatLog(`${this._rankedCombatantLabel(target)}이(가) 스트레스로 무너진다… (vulnerable 노출)`);
       this._fx({ kind: 'status', targetId: target.id, statusId: 'panic' });
+      // 붕괴는 행동으로도 보인다 — 공격 스킬 하나가 다음 라운드까지 잠긴다
+      const lockable = (target.skillIds ?? []).filter(id => {
+        const skill = GameState.combat?.skillsById?.[id];
+        return skill && (skill.effects ?? []).some(e => e?.type === 'damage');
+      });
+      if (lockable.length > 0) {
+        const skillId = lockable[Math.floor(random() * lockable.length)];
+        target._skillLock = { skillId, untilRound: (GameState.combat?.roundNumber ?? 1) + 1 };
+        const skill = GameState.combat.skillsById[skillId];
+        this._pushCombatLog(I18n.t('combatSys.meltdownSkillLock', {
+          skill: I18n.t(skill?.nameKey ?? '') || skillId,
+        }));
+      }
     }
     return result;
+  },
+
+  // 붕괴로 잠긴 스킬 여부 — 라운드가 지나면 자연 해제
+  _isSkillLocked(combatant, skillId) {
+    const lock = combatant?._skillLock;
+    if (!lock || lock.skillId !== skillId) return false;
+    return (GameState.combat?.roundNumber ?? 1) <= lock.untilRound;
   },
 
   _rankedSkillWeaponDef(skill) {
@@ -134,6 +154,11 @@ export const CombatRankedEffects = {
           backline: BALANCE.combat.position.backlineRangedAccBonus,
         });
       }
+    }
+
+    // 스트레스 동요 구간: 임계 전부터 손이 흔들린다 — 스트레스 관리 스킬의 가치
+    if ((actor?.stress ?? 0) >= BALANCE.combat.stress.shakenThreshold) {
+      accuracy = composeAccuracy(accuracy, { shaken: -BALANCE.combat.stress.shakenAccPenalty });
     }
 
     if (actor?.sourceType === 'player') {
@@ -275,7 +300,13 @@ export const CombatRankedEffects = {
         this._fx({ kind: 'guard', targetId: target.id });
         return { ok: true };
       case 'flee':
-        if (random() < (effect.chance ?? 0)) {
+        // 상황식 도주 + 스킬 고유 보정(bonus). 구식 고정 확률(chance)은 하위호환 유지
+        if (random() < (Number.isFinite(effect.chance)
+          ? effect.chance
+          : Math.min(
+            BALANCE.combat.flee?.cap ?? 1,
+            this._situationalFleeChance() + (effect.bonus ?? 0),
+          ))) {
           this._syncRankedCombatants();
           this._stabilizePlayerAfterCombat();
           GameState.combat.active = false;

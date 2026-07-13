@@ -299,6 +299,7 @@ const CombatSystem = {
       || typeof skillId !== 'string'
       || !active.skillIds?.includes(skillId)
       || !combat.skillsById?.[skillId]
+      || this._isSkillLocked(active, skillId)
     ) {
       return false;
     }
@@ -1599,11 +1600,33 @@ const CombatSystem = {
     }
   },
 
+  // 도주 성공률은 상황식 — 도주각(전열 공백·속도·적 무력화)을 만드는 턴이 유효 전술이 된다
+  _situationalFleeChance() {
+    const F = BALANCE.combat.flee;
+    if (!F) return BALANCE.combat.fleeChance;
+    let chance = F.base;
+    const aliveEnemies = this.getAliveEnemies();
+    if (aliveEnemies.length > 0 && !aliveEnemies.some(e => this.rowOf(e) === 'front')) {
+      chance += F.openFrontBonus;
+    }
+    if ((GameState.combat?.combatants?.player?.tokens?.speed ?? 0) > 0) {
+      chance += F.speedTokenBonus;
+    }
+    const allDisabled = aliveEnemies.length > 0 && aliveEnemies.every(e =>
+      (e._statusEffects ?? []).some(s => s?.id === 'stun' || s?.effect?.skipTurn === true)
+      || (this._rankCombatantForEnemy(e)?.tokens?.hesitation ?? 0) > 0);
+    if (allDisabled) chance += F.disabledEnemiesBonus;
+    return Math.min(F.cap, chance);
+  },
+
   _fleeAction() {
     const gs      = GameState;
     const data    = gs.combat._encounterData ?? {};
     const fleeBonus = gs.player.fleeBonus ?? 0;
-    const success = Math.random() < (BALANCE.combat.fleeChance + fleeBonus);
+    const success = Math.random() < Math.min(
+      BALANCE.combat.flee?.cap ?? 1,
+      this._situationalFleeChance() + fleeBonus,
+    );
     NoiseSystem.addNoise(10);
     if (success) {
       this._fx({ kind: 'flee', success: true });

@@ -120,7 +120,7 @@ const BALANCE = {
     },
     stress: {
       resolveChance: 0.10,
-      afterResolve: 4,
+      afterResolve: 3,
       afterMeltdown: 2,
       // 상시 축적원 (0~10 스케일 기준)
       heavyHitThreshold: 15,    // 이 이상 피해 피격 시 스트레스 축적
@@ -129,6 +129,16 @@ const BALANCE = {
       allyDownStress: 2,        // 아군(동료) 다운 목격 시
       nightRoundStress: 1,      // 야간 전투 라운드당 (광원 없을 때)
       nightLitRoundStress: 0,   // 광원 보유 시 야간 라운드 스트레스
+      shakenThreshold: 7,       // 이 이상이면 동요 — 임계 전부터 스트레스 관리에 가치 부여
+      shakenAccPenalty: 0.05,   // 동요 상태 명중 감소
+    },
+    // ── 도주 (상황식 — 도주각을 만드는 플레이가 유효 전술이 되도록) ──
+    flee: {
+      base: 0.5,                // 기본 도주 성공률
+      openFrontBonus: 0.2,      // 적 전열 공백 시 가산
+      speedTokenBonus: 0.15,    // 자신 speed 토큰 보유 시 가산
+      disabledEnemiesBonus: 0.15, // 살아있는 적 전원 기절/주저 시 가산
+      cap: 0.9,                 // 상한
     },
     // ── 기본 회피(토큰과 별개인 상시 회피 확률) ──
     defaultPlayerDodge: 0.05,

@@ -63,7 +63,8 @@ const SUPPORT_EFFECTS = {
     { type: 'move', distance: -1 },
     { type: 'token', token: 'strength', stacks: 1 },
   ],
-  homeless_slip_away: { type: 'flee', chance: 0.45 },
+  // 상황식 도주에 노숙자 고유 보정 — 골목을 아는 사람의 이탈
+  homeless_slip_away: { type: 'flee', bonus: 0.2 },
   homeless_scavenge_weapon: { type: 'token', token: 'improvised', stacks: 1 },
   engineer_improvised_cover: { type: 'guard', value: 0.3 },
   engineer_shock_trap: { type: 'status', status: { id: 'shock', duration: 1, chance: 0.6 } },

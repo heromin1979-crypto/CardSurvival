@@ -483,3 +483,60 @@ describe('F4 — 약점 발견·표기', () => {
     expect(parsed.flags.enemyWeaknessSeen.zombie_brute).toBe(true);
   });
 });
+
+describe('F5 — 스트레스 동요·붕괴·도주', () => {
+  it('스트레스 7+ 동요는 명중을 떨어뜨린다', () => {
+    const combat = setupCombat({ enemies: [makeEnemy()] });
+    const player = combat.combatants.player;
+    const skill = {
+      id: 's', accuracy: 0.7, usableFrom: [1, 2, 3, 4],
+      target: { side: 'enemy', ranks: [1, 2, 3, 4] },
+      effects: [{ type: 'damage', value: [5, 5] }],
+    };
+    player.stress = 0;
+    const calm = CombatSystem._rankedAimProfile(player, skill).accuracy;
+    player.stress = 7;
+    const shaken = CombatSystem._rankedAimProfile(player, skill).accuracy;
+
+    expect(calm - shaken).toBeCloseTo(0.05, 5);
+  });
+
+  it('붕괴 시 공격 스킬 하나가 다음 라운드까지 잠긴다', () => {
+    const combat = setupCombat({ enemies: [makeEnemy()] });
+    const player = combat.combatants.player;
+    combat.skillsById.lockme = {
+      id: 'lockme', nameKey: 'combat.skill.basic_strike', usableFrom: [1, 2, 3, 4],
+      target: { side: 'enemy', ranks: [1, 2, 3, 4] },
+      effects: [{ type: 'damage', value: [5, 5] }],
+    };
+    player.skillIds = ['lockme'];
+    player.stress = 9;
+    combat.roundNumber = 2;
+    combat.activeCombatantId = 'player';
+    combat.phase = 'await_ally_input';
+
+    // random 0.5 ≥ resolveChance 0.10 → 붕괴 확정
+    CombatSystem._applyStressWithFeedback(player, 2, () => 0.5);
+
+    expect(player._skillLock).toMatchObject({ skillId: 'lockme', untilRound: 3 });
+    expect(CombatSystem.selectSkill('lockme')).toBe(false);
+
+    combat.roundNumber = 4;
+    expect(CombatSystem.selectSkill('lockme')).toBe(true);
+  });
+
+  it('도주 성공률은 상황에 따라 오르고 상한 0.9에 캡된다', () => {
+    const combat = setupCombat({ enemies: [makeEnemy({ row: 'back', position: 'back' })] });
+    combat.enemies[0].row = 'back';
+    combat.combatants.player.tokens.speed = 1;
+    combat.enemies[0]._statusEffects = [{ id: 'stun' }];
+
+    // base 0.5 + 전열 공백 0.2 + speed 0.15 + 전원 무력화 0.15 = 1.0 → cap 0.9
+    expect(CombatSystem._situationalFleeChance()).toBeCloseTo(0.9, 5);
+  });
+
+  it('아무 이점 없는 도주는 base 확률만 적용된다', () => {
+    setupCombat({ enemies: [makeEnemy()] });
+    expect(CombatSystem._situationalFleeChance()).toBeCloseTo(0.5, 5);
+  });
+});
