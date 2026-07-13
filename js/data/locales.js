@@ -759,6 +759,7 @@ export const ko = {
   'combat.token.taunted':          '도발',
   'combat.token.hesitation':       '망설임',
   'combat.token.speed':            '속도',
+  'combat.token.marked':           '표식',
 
   // ── CraftSystem ─────────────────────────────────────────────
   'craftSys.queueFull':      '작업 큐가 가득 참',
@@ -1673,6 +1674,7 @@ export const en = {
   'combat.token.taunted':          'Taunted',
   'combat.token.hesitation':       'Hesitation',
   'combat.token.speed':            'Speed',
+  'combat.token.marked':           'Marked',
 
   // ── CraftSystem ─────────────────────────────────────────────
   'craftSys.queueFull':      'Queue is full',

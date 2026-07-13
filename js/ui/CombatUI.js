@@ -33,6 +33,12 @@ const SAMPLE_SKILL_LABELS = {
   soldier_tactical_shift: '전술 이동',
 };
 
+const TOKEN_ICONS = {
+  block: '🛡', strength: '💪', power: '⚒', improvised: '🔧',
+  vulnerable: '💔', dodge: '💨', accuracy: '🎯', focus: '👁',
+  taunted: '🗯', hesitation: '😰', speed: '⚡', marked: '☠',
+};
+
 const DANGER_LABEL = ['안전', '보통', '경계', '위험', '극위험', '극위험'];
 const DANGER_COLOR = ['#449944', '#889933', '#cc8822', '#cc3333', '#881111', '#881111'];
 
@@ -276,6 +282,12 @@ const CombatUI = {
     return String(skill.id ?? '').replace(/^combat\.skill\./, '').replaceAll('_', ' ');
   },
 
+  // 상태이상 라벨 + 잔여 턴 — "무엇이 언제 끝나는지"가 대응 판단의 재료
+  _statusLabel(status) {
+    const name = status?.name ?? status?.id ?? 'status';
+    return Number.isFinite(status?.duration) ? `${name}(${status.duration})` : name;
+  },
+
   _skillIconHtml(icon, isAttack = false) {
     const key = icon ?? (isAttack ? 'strike' : 'item');
     const src = combatAssetManifest.skillIcon(key, isAttack ? 'strike' : 'item');
@@ -328,7 +340,11 @@ const CombatUI = {
     const hpPct = Math.max(0, Math.min(100, (hp / maxHp) * 100));
     const tokens = Object.entries(combatant.tokens ?? {})
       .filter(([, stacks]) => stacks > 0)
-      .map(([token, stacks]) => `<span class="combat-token">${this._escape(token)} ${stacks}</span>`)
+      .map(([token, stacks]) => {
+        const label = I18n.t(`combat.token.${token}`);
+        return `<span class="combat-token" title="${this._escape(label)} ×${stacks}">`
+          + `${TOKEN_ICONS[token] ?? '◆'}${stacks > 1 ? `<i>${stacks}</i>` : ''}</span>`;
+      })
       .join('');
     const isEnemy = combatant.side === 'enemy';
     // 의도 표시 단일 소스: 실행 경로(_runSingleEnemyTurn)가 소비하는 _nextIntent만 사용 —
@@ -363,8 +379,8 @@ const CombatUI = {
     const statuses = [
       ...Object.entries(combatant.tokens ?? {})
         .filter(([, stacks]) => stacks > 0)
-        .map(([token, stacks]) => `${token} ${stacks}`),
-      ...(combatant.statusEffects ?? []).map(status => status.name ?? status.id ?? 'status'),
+        .map(([token, stacks]) => `${I18n.t(`combat.token.${token}`)} ${stacks}`),
+      ...(combatant.statusEffects ?? []).map(status => this._statusLabel(status)),
     ];
     const anchorCls = isEnemy
       ? 'cv-enemy-sprite'
@@ -508,7 +524,7 @@ const CombatUI = {
     const combatant = combat?.combatants?.[combatantId];
     if (!combatant) return '';
     const statuses = (combatant.statusEffects ?? [])
-      .map(status => this._escape(status.id ?? status.name ?? 'status'))
+      .map(status => this._escape(this._statusLabel(status)))
       .join(', ');
     return `
       <aside class="combat-detail-popover" data-popover-for="${this._escape(combatantId)}">

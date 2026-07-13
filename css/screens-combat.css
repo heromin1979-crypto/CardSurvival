@@ -346,10 +346,19 @@
   padding: 1px 4px;
   border-radius: 3px;
   font-family: var(--font-mono);
-  font-size: 8px;
+  font-size: 10px;
+  line-height: 1.1;
   color: #e8c84a;
   background: rgba(200, 160, 40, 0.16);
   border: 1px solid rgba(200, 160, 40, 0.28);
+  cursor: help;
+}
+
+.combat-token i {
+  margin-left: 2px;
+  font-style: normal;
+  font-size: 8px;
+  vertical-align: top;
 }
 
 .combat-intent {

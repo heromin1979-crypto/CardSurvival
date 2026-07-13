@@ -540,3 +540,35 @@ describe('F5 — 스트레스 동요·붕괴·도주', () => {
     expect(CombatSystem._situationalFleeChance()).toBeCloseTo(0.5, 5);
   });
 });
+
+describe('C3 — 토큰 배지·상태이상 잔여 턴 표시', () => {
+  it('토큰은 아이콘+스택+한글 툴팁으로 렌더된다', async () => {
+    const CombatUI = (await import('../../js/ui/CombatUI.js')).default;
+    CombatUI._screen = document.getElementById('screen-combat');
+    const combat = setupCombat({ enemies: [makeEnemy()] });
+    combat.combatants.player.tokens = { focus: 2 };
+
+    CombatUI.render();
+
+    const badge = document.querySelector('.combat-token');
+    expect(badge).not.toBeNull();
+    expect(badge.getAttribute('title')).toBe('집중 ×2');
+    expect(badge.textContent).toContain('2');
+    expect(badge.textContent).not.toContain('focus');
+  });
+
+  it('전장 유닛의 상태이상 오브에 잔여 턴이 표기된다', async () => {
+    const CombatUI = (await import('../../js/ui/CombatUI.js')).default;
+    CombatUI._screen = document.getElementById('screen-combat');
+    const combat = setupCombat({ enemies: [makeEnemy()] });
+    combat.combatants['enemy:0'].statusEffects = [
+      { id: 'bleed', name: '출혈', duration: 3, effect: { hpLossPerRound: 3 } },
+    ];
+
+    CombatUI.render();
+
+    const orbs = document.querySelector('[data-combatant-id="enemy:0"] .combat-status-orbs');
+    expect(orbs).not.toBeNull();
+    expect(orbs.textContent).toContain('출혈(3)');
+  });
+});
