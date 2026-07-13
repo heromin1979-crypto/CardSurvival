@@ -958,7 +958,15 @@ const CombatSystem = {
           return true;
         }
         this._processRankedKills();
-        if (!combat.active || this._allEnemiesDead()) return true;
+        // 적이 자기 턴에 죽는 경로(자폭·사기 격파·상태이상)는 플레이어 공격 경로의
+        // 승리 판정을 거치지 않는다 — 레거시 hp를 랭크 combatant로 동기화하고
+        // 여기서 직접 결선하지 않으면 phase가 resolve_enemy_intent에 갇힌다.
+        this._syncLegacyEnemiesToRanked(combat);
+        if (this._allEnemiesDead()) {
+          if (combat.active) this._resolveVictory();
+          return true;
+        }
+        if (!combat.active) return true;
       }
       this.advanceTurn();
       if (!combat.active) return true;

@@ -13,6 +13,10 @@ const argValue = (flag, fallback) => {
 };
 const RUNS_PER_CELL = Number(argValue('--n', 100));
 const OUT_PATH = path.resolve(argValue('--out', 'docs/analysis/COMBAT_SIM_REPORT.md'));
+// stuck 런의 사유·전장 스냅샷을 JSON으로 남길 디렉토리 (미지정 시 덤프 생략)
+const DUMP_STUCK_DIR = args.includes('--dump-stuck')
+  ? path.resolve(argValue('--dump-stuck', 'tmp/stuck-dumps'))
+  : null;
 
 const PORT = 43555;
 const BASE_URL = `http://127.0.0.1:${PORT}`;
@@ -67,6 +71,7 @@ async function simulateCell(page, weaponId, encounter, runs) {
     const stats = {
       wins: 0, defeats: 0, fleds: 0, stuck: 0,
       totalRounds: 0, totalHpLoss: 0, totalStress: 0, samples: 0,
+      stuckReasons: {}, stuckDumps: [],
     };
 
     const cleanupIds = [];
@@ -133,9 +138,17 @@ async function simulateCell(page, weaponId, encounter, runs) {
       });
 
       let guard = 0;
+      let stuckReason = null;
+      let lastFailDetail = null;
+      const trace = [];
+      const pushTrace = (event) => {
+        trace.push(`${gs.combat?.roundNumber ?? '?'}:${gs.combat?.phase ?? '?'}:${gs.combat?.activeCombatantId ?? '?'}:${event}`);
+        if (trace.length > 16) trace.shift();
+      };
       while (gs.combat?.active && guard++ < 120) {
         if (gs.combat.phase !== 'await_ally_input') {
-          CS.processUntilAllyTurn();
+          const progressed = CS.processUntilAllyTurn();
+          pushTrace(`process→${progressed}`);
           continue;
         }
         const active = gs.combat.combatants?.[gs.combat.activeCombatantId];
@@ -145,24 +158,62 @@ async function simulateCell(page, weaponId, encounter, runs) {
         const target = Object.values(gs.combat.combatants ?? {})
           .find(c => c.side === 'enemy' && !c.dead && (c.hp ?? 0) > 0
             && CS._validateRankedSkillPosition(active.id, c.id, dmgSkill)?.ok);
-        if (!dmgSkill) break;
+        if (!dmgSkill) { stuckReason = 'no_skill'; break; }
         if (!target) {
           // 사거리 밖 — 이동 시도 후 재개
           const moved = CS.useActiveSkillByEffect('move');
-          if (!moved?.ok) break;
+          pushTrace(`move→${moved?.ok}`);
+          if (!moved?.ok) {
+            stuckReason = 'move_failed';
+            lastFailDetail = moved?.reason ?? moved?.error ?? null;
+            break;
+          }
           continue;
         }
         CS.selectSkill(dmgSkill.id);
         CS.selectTarget(target.id);
         const result = CS.confirmAction();
-        if (!result?.ok && !result?.turnConsumed) break;
+        pushTrace(`act→${result?.ok}/${result?.turnConsumed}`);
+        if (!result?.ok && !result?.turnConsumed) {
+          stuckReason = 'confirm_failed';
+          lastFailDetail = result?.reason ?? result?.error ?? null;
+          break;
+        }
       }
+      if (gs.combat?.active && !stuckReason && guard >= 120) stuckReason = 'guard_exceeded';
 
       const outcome = gs.combat?.outcome ?? null;
       if (outcome === 'victory') stats.wins++;
       else if (outcome === 'defeat') stats.defeats++;
       else if (outcome === 'fled') stats.fleds++;
-      else { stats.stuck++; if (gs.combat) gs.combat.active = false; }
+      else {
+        stats.stuck++;
+        const reason = stuckReason ?? 'unknown';
+        stats.stuckReasons[reason] = (stats.stuckReasons[reason] ?? 0) + 1;
+        const c = gs.combat;
+        stats.stuckDumps.push({
+          run, reason, detail: lastFailDetail,
+          round: c?.roundNumber ?? null,
+          phase: c?.phase ?? null,
+          activeId: c?.activeCombatantId ?? null,
+          activeIdx: c?.activeIdx ?? null,
+          playerHp: gs.player.hp?.current ?? null,
+          turnQueue: (c?.turnQueue ?? []).map(e => ({
+            type: e?.type, enemyIdx: e?.enemyIdx, id: e?.id,
+          })),
+          enemies: (c?.enemies ?? []).map(e => ({
+            id: e?.id, hp: e?.currentHp, row: e?.row ?? e?.position ?? null,
+            charge: e?._chargeRemaining ?? null,
+          })),
+          trace,
+          combatants: Object.values(c?.combatants ?? {}).map(u => ({
+            id: u.id, side: u.side, rank: u.rank, hp: u.hp, dead: !!u.dead,
+            stunned: !!u.stunned, skillIds: u.skillIds ?? [],
+            tokens: u.tokens ?? null,
+          })),
+        });
+        if (gs.combat) gs.combat.active = false;
+      }
 
       stats.totalRounds += gs.combat?.roundNumber ?? 0;
       stats.totalHpLoss += Math.max(0, 100 - (gs.player.hp?.current ?? 0));
@@ -178,7 +229,9 @@ async function simulateCell(page, weaponId, encounter, runs) {
 function formatRow(weaponLabel, stats) {
   const pct = value => `${Math.round((value / Math.max(1, stats.samples)) * 100)}%`;
   const avg = value => (value / Math.max(1, stats.samples)).toFixed(1);
-  return `| ${weaponLabel} | ${pct(stats.wins)} | ${pct(stats.defeats)} | ${avg(stats.totalRounds)} | ${avg(stats.totalHpLoss)} | ${avg(stats.totalStress)} |${stats.stuck > 0 ? ` ⚠ stuck ${stats.stuck}` : ''}`;
+  const reasons = Object.entries(stats.stuckReasons ?? {})
+    .map(([k, v]) => `${k} ${v}`).join(' · ');
+  return `| ${weaponLabel} | ${pct(stats.wins)} | ${pct(stats.defeats)} | ${avg(stats.totalRounds)} | ${avg(stats.totalHpLoss)} | ${avg(stats.totalStress)} |${stats.stuck > 0 ? ` ⚠ stuck ${stats.stuck} (${reasons})` : ''}`;
 }
 
 async function main() {
@@ -199,11 +252,17 @@ async function main() {
     ), WEAPONS);
 
     const sections = [];
+    const allDumps = [];
     for (const encounter of ENCOUNTERS) {
       const rows = [];
       for (let w = 0; w < WEAPONS.length; w++) {
         const stats = await simulateCell(page, WEAPONS[w], encounter, RUNS_PER_CELL);
         rows.push(formatRow(weaponLabels[w], stats));
+        if (DUMP_STUCK_DIR && stats.stuckDumps?.length) {
+          allDumps.push(...stats.stuckDumps.map(d => ({
+            cell: `${encounter.key} × ${weaponLabels[w]}`, ...d,
+          })));
+        }
         console.log(`${encounter.key} × ${weaponLabels[w]} — 승률 ${Math.round((stats.wins / stats.samples) * 100)}% (${stats.samples}회)`);
       }
       sections.push([
@@ -226,13 +285,21 @@ async function main() {
       '## 해석 가이드',
       '',
       '- 목표 지표(마스터플랜): DL1 90%+, DL3 동티어 60~75%, DL5/보스급 40~60%, 평균 4~7라운드.',
-      '- `stuck`은 유효 행동을 찾지 못해 중단된 런 — AI 드라이버 한계이며 밸런스 문제와 구분할 것.',
+      '- `stuck`은 완주 실패 런 — 사유(no_skill/move_failed/confirm_failed/guard_exceeded)가 함께 표기된다.',
+      '- guard_exceeded는 드라이버 한계가 아니라 엔진 교착일 수 있다 — `--dump-stuck`으로 스냅샷을 떠서 분류할 것.',
       '',
     ].join('\n');
 
     await mkdir(path.dirname(OUT_PATH), { recursive: true });
     await writeFile(OUT_PATH, report, 'utf8');
     console.log(`report written: ${OUT_PATH}`);
+
+    if (DUMP_STUCK_DIR && allDumps.length) {
+      await mkdir(DUMP_STUCK_DIR, { recursive: true });
+      const dumpPath = path.join(DUMP_STUCK_DIR, `stuck-${startedAt.replace(/[:.]/g, '-')}.json`);
+      await writeFile(dumpPath, JSON.stringify(allDumps, null, 2), 'utf8');
+      console.log(`stuck dumps (${allDumps.length}): ${dumpPath}`);
+    }
   } finally {
     if (browser) await browser.close();
     server.kill();

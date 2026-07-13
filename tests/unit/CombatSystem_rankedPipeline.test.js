@@ -383,3 +383,35 @@ describe('관계 반응 결선 (RelationshipCombatSystem)', () => {
     expect(second).toBeNull();
   });
 });
+
+describe('processUntilAllyTurn — 적 자기 턴 사망 결선', () => {
+  // 자폭(bloater)·사기 격파(rout)처럼 적이 자기 턴에 죽는 경로는 플레이어 공격
+  // 경로의 승리 판정을 거치지 않는다. 결선 누락 시 phase가 resolve_enemy_intent에
+  // 갇혀 전투가 영원히 active로 남는 회귀(시뮬 stuck guard_exceeded)를 방지한다.
+  it('적이 자기 턴에 죽으면 승리를 결선하고 랭크 combatant를 동기화한다', () => {
+    const combat = setupRankedCombat();
+    combat.activeIdx = 1;
+    combat.activeTurnIndex = 1;
+    combat.activeCombatantId = 'enemy:0';
+    combat.phase = 'resolve_enemy_intent';
+
+    const selfDestruct = vi.spyOn(CombatSystem, '_runSingleEnemyTurn')
+      .mockImplementation(() => { GameState.combat.enemies[0].currentHp = 0; });
+    const victory = vi.spyOn(CombatSystem, '_resolveVictory')
+      .mockImplementation(() => {
+        GameState.combat.active = false;
+        GameState.combat.outcome = 'victory';
+      });
+
+    const progressed = CombatSystem.processUntilAllyTurn();
+
+    expect(progressed).toBe(true);
+    expect(victory).toHaveBeenCalledTimes(1);
+    expect(combat.combatants['enemy:0'].dead).toBe(true);
+    expect(combat.combatants['enemy:0'].hp).toBe(0);
+    expect(combat.outcome).toBe('victory');
+
+    selfDestruct.mockRestore();
+    victory.mockRestore();
+  });
+});
