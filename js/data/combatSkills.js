@@ -52,9 +52,17 @@ const HEAL_SKILLS = new Set([
 
 const SUPPORT_EFFECTS = {
   doctor_diagnose: { type: 'token', token: 'vulnerable', stacks: 1 },
-  soldier_tactical_shift: { type: 'move', distance: 1 },
+  // 셋업→페이오프: 물러나며 조준(focus) — 다음 burst_fire의 치명이 선다
+  soldier_tactical_shift: [
+    { type: 'move', distance: 1 },
+    { type: 'token', token: 'focus', stacks: 1 },
+  ],
   firefighter_rescue_guard: { type: 'guard', value: 0.35 },
-  firefighter_force_advance: { type: 'move', distance: -1 },
+  // 셋업→페이오프: 돌파 전진(strength) — 다음 axe_swing에 체중이 실린다
+  firefighter_force_advance: [
+    { type: 'move', distance: -1 },
+    { type: 'token', token: 'strength', stacks: 1 },
+  ],
   homeless_slip_away: { type: 'flee', chance: 0.45 },
   homeless_scavenge_weapon: { type: 'token', token: 'improvised', stacks: 1 },
   engineer_improvised_cover: { type: 'guard', value: 0.3 },
@@ -132,8 +140,16 @@ const SKILL_OVERRIDES = {
   soldier_burst_fire:      { accuracy: 0.78, damage: [10, 16] },
   firefighter_axe_swing:   { accuracy: 0.78, damage: [9, 15] },
   homeless_dirty_fighting: { accuracy: 0.86, damage: [6, 10] },
-  chef_knife_flurry:       { accuracy: 0.84, damage: [6, 11] },
-  engineer_wrench_strike:  { accuracy: 0.80, damage: [8, 13] },
+  // 셋업→페이오프: hot_pan의 burn 등 DoT가 붙은 대상은 굽고 썰린다
+  chef_knife_flurry:       {
+    accuracy: 0.84, damage: [6, 11],
+    bonusVs: { statusIds: ['burn', 'bleed', 'acid_burn', 'poison'], mult: 1.5 },
+  },
+  // 셋업→페이오프: shock_trap 등 제어에 걸린 대상은 정비공의 정확한 일격(치명 확정)
+  engineer_wrench_strike:  {
+    accuracy: 0.80, damage: [8, 13],
+    bonusVs: { statusIds: ['shock', 'rooted', 'stun'], critAuto: true },
+  },
 };
 
 const COMMON_SKILL_IDS = ['basic_strike', 'guard', 'reposition'];
@@ -174,14 +190,17 @@ function buildMappedSkill(id) {
   const supportEffect = SUPPORT_EFFECTS[id];
   if (supportEffect) {
     const targetsEnemy = ENEMY_SUPPORT_SKILLS.has(id);
+    const effects = Array.isArray(supportEffect)
+      ? supportEffect.map((entry) => ({ ...entry }))
+      : [{ ...supportEffect }];
     return baseSkill(
       id,
-      supportEffect.type,
+      effects[0].type,
       {
         side: targetsEnemy ? 'enemy' : 'ally',
         ranks: ALL_RANKS,
       },
-      [{ ...supportEffect }],
+      effects,
       { costs: { stamina: 2 }, accuracy: targetsEnemy ? 0.85 : 1 },
     );
   }
@@ -219,6 +238,12 @@ function applySkillOverride(skill) {
   if (Array.isArray(override.damage)) {
     const damageEffect = skill.effects.find((effect) => effect.type === 'damage');
     if (damageEffect) damageEffect.value = [...override.damage];
+  }
+  if (override.bonusVs) {
+    skill.bonusVs = {
+      ...override.bonusVs,
+      statusIds: [...(override.bonusVs.statusIds ?? [])],
+    };
   }
   return skill;
 }

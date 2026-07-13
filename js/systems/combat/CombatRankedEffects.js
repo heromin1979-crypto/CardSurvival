@@ -106,6 +106,17 @@ export const CombatRankedEffects = {
     return GameState.combat?.enemies?.[combatant.enemyIndex] ?? null;
   },
 
+  // bonusVs 판정용 — 랭크 상태이상과 레거시 적 상태이상 양쪽 저장소를 검사
+  _targetHasAnyStatus(target, statusIds) {
+    const ids = new Set(statusIds ?? []);
+    if ((target?.statusEffects ?? []).some(s => ids.has(s?.id))) return true;
+    const legacyEnemy = this._legacyEnemyFor(target);
+    if ((legacyEnemy?._statusEffects ?? []).some(s => ids.has(s?.id))) return true;
+    if (legacyEnemy && (GameState.combat?.enemyStatus ?? []).some(s => ids.has(s?.id))
+        && GameState.combat?.enemies?.[GameState.combat.targetIndex] === legacyEnemy) return true;
+    return false;
+  },
+
   // 스킬의 최종 명중/치명 프로필 — 판정(_resolveRankedHit)과 UI 프리뷰가 공유하는 단일 계산기
   _rankedAimProfile(actor, skill) {
     const gs = GameState;
@@ -301,8 +312,20 @@ export const CombatRankedEffects = {
 
     let damage = this._rollRange(effect.value, random);
 
-    if (hitInfo?.crit) {
-      damage = Math.floor(damage * (hitInfo.critMultiplier ?? BALANCE.combat.defaultCritMultiplier ?? 1.5));
+    // 셋업→페이오프: 대상이 특정 상태이상일 때의 조건부 보너스 (chef DoT 시너지,
+    // engineer 제어 처벌 등 — 스킬 데이터의 bonusVs 필드로만 정의)
+    const bonusVs = skill?.bonusVs;
+    let crit = hitInfo?.crit === true;
+    if (bonusVs?.statusIds?.length && this._targetHasAnyStatus(target, bonusVs.statusIds)) {
+      if (Number.isFinite(bonusVs.mult)) damage = Math.floor(damage * bonusVs.mult);
+      if (bonusVs.critAuto === true) crit = true;
+      this._pushCombatLog(I18n.t('combatSys.bonusVs', {
+        skill: I18n.t(skill.nameKey ?? '') || skill.id,
+      }));
+    }
+
+    if (crit) {
+      damage = Math.floor(damage * (hitInfo?.critMultiplier ?? BALANCE.combat.defaultCritMultiplier ?? 1.5));
     }
 
     if (actor?.sourceType === 'player') {
@@ -362,7 +385,7 @@ export const CombatRankedEffects = {
     }
 
     if (legacyEnemy) {
-      if (hitInfo?.crit && legacyEnemy.type === 'human' && legacyEnemy.currentMorale != null) {
+      if (crit && legacyEnemy.type === 'human' && legacyEnemy.currentMorale != null) {
         legacyEnemy.currentMorale = Math.max(
           0,
           legacyEnemy.currentMorale - BALANCE.combat.moraleBreak.critMoraleDmg,
@@ -370,12 +393,12 @@ export const CombatRankedEffects = {
       }
       if (actor?.sourceType === 'player') {
         if (legacyEnemy.currentHp > 0) this._applyCharacterOnHitIdentity(legacyEnemy, weaponDef);
-        SkillSystem.gainXp(this._rankedXpSkillId(skill, weaponDef), hitInfo?.crit ? 4 : 2);
+        SkillSystem.gainXp(this._rankedXpSkillId(skill, weaponDef), crit ? 4 : 2);
       }
       gs.combat.lastHit = {
         target: 'enemy',
         damage: result.damage,
-        isCrit: hitInfo?.crit === true,
+        isCrit: crit,
         enemyIndex: target.enemyIndex,
       };
       this._fx({
@@ -384,7 +407,7 @@ export const CombatRankedEffects = {
         fx: weaponDef ? this._weaponFx(weaponDef) : (skill?.icon === 'shot' ? 'shot' : 'slash'),
         targetIdx: target.enemyIndex,
         dmg: result.damage,
-        crit: hitInfo?.crit === true,
+        crit,
         killed: target.dead === true,
       });
     }

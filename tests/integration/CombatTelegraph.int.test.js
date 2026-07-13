@@ -369,3 +369,74 @@ describe('F2 — reposition auto 방향', () => {
     expect(getRank(combat.formations, 'player')).toBe(before + 1);
   });
 });
+
+describe('F3 — 셋업→페이오프 스킬 연결', () => {
+  it('soldier_tactical_shift는 이동과 함께 focus 토큰을 준다', async () => {
+    const { COMBAT_SKILLS } = await import('../../js/data/combatSkills.js');
+    const skill = COMBAT_SKILLS.soldier_tactical_shift;
+    expect(skill.effects.some(e => e.type === 'move')).toBe(true);
+    expect(skill.effects.some(e => e.type === 'token' && e.token === 'focus')).toBe(true);
+  });
+
+  it('firefighter_force_advance는 전진과 함께 strength 토큰을 준다', async () => {
+    const { COMBAT_SKILLS } = await import('../../js/data/combatSkills.js');
+    const skill = COMBAT_SKILLS.firefighter_force_advance;
+    expect(skill.effects.some(e => e.type === 'move' && e.distance === -1)).toBe(true);
+    expect(skill.effects.some(e => e.type === 'token' && e.token === 'strength')).toBe(true);
+  });
+
+  it('chef_knife_flurry는 DoT 걸린 대상에 1.5배 피해 (bonusVs)', () => {
+    const combat = setupCombat({ enemies: [makeEnemy({ currentHp: 60, maxHp: 60, defense: 0 })] });
+    const target = combat.combatants['enemy:0'];
+    target.statusEffects = [{ id: 'burn', duration: 2, effect: { hpLossPerRound: 3 } }];
+
+    const skill = {
+      id: 'chef_knife_flurry', nameKey: 'combat.skill.chef_knife_flurry',
+      bonusVs: { statusIds: ['burn'], mult: 1.5 },
+      effects: [{ type: 'damage', value: [10, 10] }],
+    };
+    CombatSystem._applyRankedDamageEffect(
+      skill.effects[0], combat.combatants.player, target, () => 0,
+      { hit: true, crit: false, skill },
+    );
+
+    // 기본 10 → bonusVs x1.5 = 15 (도터 미보유 대조군은 10)
+    expect(60 - target.hp).toBeGreaterThanOrEqual(15);
+  });
+
+  it('engineer_wrench_strike는 제어 상태 대상에 치명 확정 (bonusVs critAuto)', () => {
+    const combat = setupCombat({ enemies: [makeEnemy({ currentHp: 60, maxHp: 60, defense: 0 })] });
+    const target = combat.combatants['enemy:0'];
+    target.statusEffects = [{ id: 'shock', duration: 1, effect: {} }];
+
+    const skill = {
+      id: 'engineer_wrench_strike', nameKey: 'combat.skill.engineer_wrench_strike',
+      bonusVs: { statusIds: ['shock', 'rooted', 'stun'], critAuto: true },
+      effects: [{ type: 'damage', value: [10, 10] }],
+    };
+    CombatSystem._applyRankedDamageEffect(
+      skill.effects[0], combat.combatants.player, target, () => 0,
+      { hit: true, crit: false, critMultiplier: 2, skill },
+    );
+
+    expect(60 - target.hp).toBeGreaterThanOrEqual(20);
+    expect(combat.lastHit.isCrit).toBe(true);
+  });
+
+  it('상태이상이 없으면 bonusVs가 발동하지 않는다 (대조군)', () => {
+    const combat = setupCombat({ enemies: [makeEnemy({ currentHp: 60, maxHp: 60, defense: 0 })] });
+    const target = combat.combatants['enemy:0'];
+
+    const skill = {
+      id: 'chef_knife_flurry', nameKey: 'combat.skill.chef_knife_flurry',
+      bonusVs: { statusIds: ['burn'], mult: 1.5 },
+      effects: [{ type: 'damage', value: [10, 10] }],
+    };
+    CombatSystem._applyRankedDamageEffect(
+      skill.effects[0], combat.combatants.player, target, () => 0,
+      { hit: true, crit: false, skill },
+    );
+
+    expect(60 - target.hp).toBeLessThan(15);
+  });
+});
