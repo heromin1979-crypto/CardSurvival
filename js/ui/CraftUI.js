@@ -31,11 +31,20 @@ const CATEGORY_TABS = [
   { key: 'secret',     icon: '🔮', labelKey: 'craft.tab.secret' },
 ];
 
+// 스펙 게이지 정규화 기준 — 카테고리 내 상대 비교용 상한 (표시 전용)
+const SPEC_REF = {
+  damage: 60, accuracy: 1, critChance: 0.5,
+  defense: 8, damageReduction: 0.5, movePenalty: 0.3,
+  consume: 50,
+};
+
 const CraftUI = {
   _panel: null,
   _selectedBp: null,
   _viewMode: 'list',
   _categoryFilter: 'all',
+  _statusFilter: 'craftable',
+  _searchTerm: '',
 
   _listenersRegistered: false,
 
@@ -65,8 +74,8 @@ const CraftUI = {
     // View mode tabs
     const tabHtml = `
       <div class="craft-view-tabs">
-        <button class="craft-view-tab ${this._viewMode !== 'tree' ? 'active' : ''}" data-view="list">\uD83D\uDCCB \uB808\uC2DC\uD53C</button>
-        <button class="craft-view-tab ${this._viewMode === 'tree' ? 'active' : ''}" data-view="tree">\uD83C\uDF33 \uD14C\uD06C \uD2B8\uB9AC</button>
+        <button class="craft-view-tab ${this._viewMode !== 'tree' ? 'active' : ''}" data-view="list">📋 레시피</button>
+        <button class="craft-view-tab ${this._viewMode === 'tree' ? 'active' : ''}" data-view="tree">🌳 테크 트리</button>
       </div>
     `;
 
@@ -88,47 +97,36 @@ const CraftUI = {
         </div>
       `;
 
-      this._panel.innerHTML = `
-        ${tabHtml}
-        ${categoryTabHtml}
-        <div class="craft-panel">
-          ${this._renderQueue()}
-          <div style="font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">
-            ${I18n.t('craft.blueprints')}
+      if (this._categoryFilter === 'secret') {
+        this._panel.innerHTML = `
+          ${tabHtml}
+          ${categoryTabHtml}
+          <div class="craft-panel">${this._renderSecretList()}</div>
+        `;
+      } else {
+        const groups = this._classifyBlueprints();
+        const selected = this._selectedVisibleBlueprint(groups);
+        this._panel.innerHTML = `
+          ${tabHtml}
+          ${categoryTabHtml}
+          <div class="craft-workbench">
+            <div class="craft-col craft-list-col">
+              ${this._renderStatusTabs(groups)}
+              <input type="search" class="craft-search" placeholder="${I18n.t('craft.searchPh')}"
+                     value="${this._escapeAttr(this._searchTerm)}">
+              <div class="blueprint-list">${this._renderListItems(groups)}</div>
+            </div>
+            <div class="craft-col craft-spec-col">
+              ${this._renderSpecSheet(selected)}
+            </div>
+            <div class="craft-col craft-stage-col">
+              ${this._renderStagePanel(selected)}
+              ${this._renderQueue()}
+            </div>
           </div>
-          <div class="blueprint-list">
-            ${this._renderBlueprintList()}
-          </div>
-        </div>
-      `;
-
-      // Attach click handlers
-      this._panel.querySelectorAll('.blueprint-item').forEach(el => {
-        el.addEventListener('click', () => {
-          this._selectedBp = el.dataset.bpId;
-          this.render();
-        });
-      });
-
-      // Category tab handlers
-      this._panel.querySelectorAll('.craft-category-tab').forEach(btn => {
-        btn.addEventListener('click', () => {
-          this._categoryFilter = btn.dataset.category;
-          this._selectedBp = null;
-          this.render();
-        });
-      });
-
-      const startBtn = this._panel.querySelector('#craft-start-btn');
-      if (startBtn) {
-        startBtn.addEventListener('click', () => {
-          if (this._selectedBp) {
-            CraftSystem.startBlueprint(this._selectedBp);
-            this.render();
-          }
-        });
+        `;
+        this._attachWorkbenchHandlers();
       }
-
       this._attachQueueHandlers();
     }
 
@@ -139,68 +137,342 @@ const CraftUI = {
         this.render();
       });
     });
+    this._panel.querySelectorAll('.craft-category-tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        this._categoryFilter = btn.dataset.category;
+        this._selectedBp = null;
+        this.render();
+      });
+    });
   },
 
-  _renderBlueprintList() {
-    if (this._categoryFilter === 'secret') {
-      return this._renderSecretList();
-    }
-    const unlockedHidden = GameState.flags.hiddenRecipesUnlocked ?? [];
-    const visibleBlueprints = Object.values(ALL_BLUEPRINTS).filter(bp => {
-      // 히든 레시피: 해금된 것만 표시
-      if (bp.hidden) return unlockedHidden.includes(bp.id);
-      // 일반 레시피: 요구 스킬을 모두 달성해야 표시
-      if (bp.requiredSkills) {
-        for (const [skillId, minLevel] of Object.entries(bp.requiredSkills)) {
-          if (SkillSystem.getLevel(skillId) < minLevel) return false;
-        }
-      }
-      return true;
+  _attachWorkbenchHandlers() {
+    this._panel.querySelectorAll('.blueprint-item').forEach(el => {
+      el.addEventListener('click', () => {
+        if (el.dataset.locked === '1') return;
+        this._selectedBp = el.dataset.bpId;
+        this.render();
+      });
     });
+    this._panel.querySelectorAll('.craft-status-tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        this._statusFilter = btn.dataset.status;
+        this._selectedBp = null;
+        this.render();
+      });
+    });
+    // 검색은 목록만 부분 갱신 — 전체 재렌더 시 입력 포커스가 날아간다
+    const search = this._panel.querySelector('.craft-search');
+    search?.addEventListener('input', () => {
+      this._searchTerm = search.value;
+      const list = this._panel.querySelector('.blueprint-list');
+      if (list) {
+        list.innerHTML = this._renderListItems(this._classifyBlueprints());
+        list.querySelectorAll('.blueprint-item').forEach(el => {
+          el.addEventListener('click', () => {
+            if (el.dataset.locked === '1') return;
+            this._selectedBp = el.dataset.bpId;
+            this.render();
+          });
+        });
+      }
+    });
+    const startBtn = this._panel.querySelector('#craft-start-btn');
+    startBtn?.addEventListener('click', () => {
+      if (this._selectedBp) {
+        CraftSystem.startBlueprint(this._selectedBp);
+        this.render();
+      }
+    });
+  },
 
-    const filteredBlueprints = this._categoryFilter === 'all'
-      ? visibleBlueprints
-      : visibleBlueprints.filter(bp => bp.category === this._categoryFilter);
+  // 상태 3분류: 제작 가능 / 재료 부족 / 잠금(사유 노출) — 시도형 hidden은 발견의 재미를 위해 비노출
+  _classifyBlueprints() {
+    const unlockedHidden = GameState.flags.hiddenRecipesUnlocked ?? [];
+    const term = this._searchTerm.trim().toLowerCase();
+    const groups = { craftable: [], lacking: [], locked: [] };
 
-    if (filteredBlueprints.length === 0) {
-      const msg = this._categoryFilter === 'all'
-        ? '스킬을 높여 새로운 레시피를 해금하세요'
-        : '이 카테고리에 해금된 레시피가 없습니다';
-      return `<div style="text-align:center;padding:20px;color:var(--text-dim);font-size:10px;">
-        ${msg}
-      </div>`;
+    for (const bp of Object.values(ALL_BLUEPRINTS)) {
+      if (this._categoryFilter !== 'all' && bp.category !== this._categoryFilter) continue;
+      if (term && !I18n.blueprintName(bp.id, bp.name).toLowerCase().includes(term)) continue;
+
+      if (bp.hidden && !unlockedHidden.includes(bp.id)) {
+        const reason = this._hiddenLockHint(bp);
+        if (reason) groups.locked.push({ bp, reason, mystery: true });
+        continue;
+      }
+
+      const skillReason = this._skillLockReason(bp);
+      if (skillReason) {
+        groups.locked.push({ bp, reason: skillReason, mystery: false });
+        continue;
+      }
+
+      const check = CraftSystem.canStartBlueprint(bp.id);
+      if (check.ok) groups.craftable.push({ bp });
+      else groups.lacking.push({ bp, reason: check.reason });
     }
+    return groups;
+  },
 
-    return filteredBlueprints.map(bp => {
+  _skillLockReason(bp) {
+    if (!bp.requiredSkills) return null;
+    for (const [skillId, minLevel] of Object.entries(bp.requiredSkills)) {
+      if (SkillSystem.getLevel(skillId) < minLevel) {
+        const def = SKILL_DEFS[skillId];
+        return I18n.t('craft.lockedSkill', { skill: def?.name ?? skillId, lv: minLevel });
+      }
+    }
+    return null;
+  },
+
+  // 조건형 hidden만 모호한 사유로 존재를 암시 — 시도형(조합 발견)은 null 반환으로 비노출
+  _hiddenLockHint(bp) {
+    const c = bp.unlockConditions;
+    if (!c) return null;
+    if (c.minCraftLevel) return I18n.t('craft.lockedSkill', { skill: I18n.t('craft.craftSkill'), lv: c.minCraftLevel });
+    if (c.bossKillId) return I18n.t('craft.lockedBoss');
+    if (c.hiddenLocationId) return I18n.t('craft.lockedPlace');
+    if (c.requiredCharacter) return I18n.t('craft.lockedCharacter');
+    if (c.minDay > 0) return I18n.t('craft.lockedTime');
+    return null;
+  },
+
+  _selectedVisibleBlueprint(groups) {
+    const pool = groups[this._statusFilter] ?? [];
+    if (this._selectedBp && pool.some(e => e.bp.id === this._selectedBp)) {
+      return ALL_BLUEPRINTS[this._selectedBp];
+    }
+    // 탭 전환 직후에는 첫 항목을 자동 선택해 스펙 시트가 비지 않게 한다
+    if (this._statusFilter !== 'locked' && pool.length > 0) {
+      this._selectedBp = pool[0].bp.id;
+      return pool[0].bp;
+    }
+    return null;
+  },
+
+  _renderStatusTabs(groups) {
+    const tabs = [
+      { key: 'craftable', label: I18n.t('craft.ready'),         count: groups.craftable.length },
+      { key: 'lacking',   label: I18n.t('craft.statusLacking'), count: groups.lacking.length },
+      { key: 'locked',    label: I18n.t('craft.statusLocked'),  count: groups.locked.length },
+    ];
+    return `
+      <div class="craft-status-tabs">
+        ${tabs.map(t => `
+          <button class="craft-status-tab ${this._statusFilter === t.key ? 'active' : ''} status-${t.key}"
+                  data-status="${t.key}">${t.label} (${t.count})</button>
+        `).join('')}
+      </div>`;
+  },
+
+  _renderListItems(groups) {
+    const entries = groups[this._statusFilter] ?? [];
+    if (entries.length === 0) {
+      return `<div class="craft-empty-msg">${I18n.t('craft.emptyList')}</div>`;
+    }
+    return entries.map(({ bp, reason, mystery }) => {
       const isSelected = this._selectedBp === bp.id;
-      const check      = CraftSystem.canStartBlueprint(bp.id);
+      const locked = this._statusFilter === 'locked';
+      const name = mystery ? '???' : I18n.blueprintName(bp.id, bp.name);
+      const outDef = GameData.items[(Array.isArray(bp.output) ? bp.output[0] : bp.output)?.definitionId];
+      const icon = mystery ? '❔' : (outDef?.icon ?? '📦');
 
-      const reqs = (bp.stages?.[0]?.requiredItems ?? []).map(req => {
-        const def   = GameData.items[req.definitionId];
-        const count = GameState.countOnBoard(req.definitionId);
-        const met   = count >= req.qty;
-        return `<div class="blueprint-req ${met ? 'met' : 'unmet'}">
-          ${I18n.itemName(req.definitionId, def?.name ?? req.definitionId)} ×${req.qty}
-          <span>${count}/${req.qty}</span>
-        </div>`;
+      const matIcons = locked ? '' : (bp.stages?.[0]?.requiredItems ?? []).slice(0, 3).map(req => {
+        const def = GameData.items[req.definitionId];
+        const met = GameState.countOnBoard(req.definitionId) >= req.qty;
+        return `<span class="bp-mat-icon ${met ? 'met' : 'unmet'}" title="${I18n.itemName(req.definitionId, def?.name ?? req.definitionId)}">${def?.icon ?? '▫'}</span>`;
       }).join('');
 
       return `
-        <div class="blueprint-item ${isSelected ? 'selected' : ''}" data-bp-id="${bp.id}">
-          <div class="blueprint-name">${I18n.blueprintName(bp.id, bp.name)}</div>
-          <div class="blueprint-cost">${bp.stages.map(s => `${s.label} (${s.tpCost}TP)`).join(' → ')}</div>
-          ${this._renderSkillReqs(bp)}
-          ${isSelected ? `
-            ${this._renderOutputPreview(bp)}
-            <div class="blueprint-req-list">${reqs}</div>
-            ${check.ok
-              ? `<button class="toolbar-btn" id="craft-start-btn" style="margin-top:6px;width:100%">${I18n.t('craft.startCraft')}</button>`
-              : `<div style="font-size:9px;color:var(--text-danger);margin-top:4px;">${check.reason}</div>`
-            }
-          ` : ''}
-        </div>
-      `;
+        <div class="blueprint-item bp-status-${this._statusFilter} ${isSelected ? 'selected' : ''}"
+             data-bp-id="${bp.id}" ${locked ? 'data-locked="1"' : ''}>
+          <span class="bp-item-icon">${icon}</span>
+          <div class="bp-item-body">
+            <div class="blueprint-name">${name}</div>
+            ${locked
+              ? `<div class="bp-lock-reason">🔒 ${reason}</div>`
+              : `<div class="bp-mat-row">${matIcons}</div>`}
+          </div>
+          <span class="bp-item-mark">${locked ? '🔒' : this._statusFilter === 'craftable' ? '✔' : '✖'}</span>
+        </div>`;
     }).join('');
+  },
+
+  // ── 중앙: 아이템 스펙 시트 ────────────────────────────────
+  _renderSpecSheet(bp) {
+    if (!bp) {
+      return `<div class="craft-spec-empty">${I18n.t('craft.selectPrompt')}</div>`;
+    }
+    const out = (Array.isArray(bp.output) ? bp.output : [bp.output])[0];
+    const def = out ? GameData.items[out.definitionId] : null;
+    if (!def) return `<div class="craft-spec-empty">${I18n.t('craft.selectPrompt')}</div>`;
+
+    const qtyLabel = out.qty > 1 ? ` ×${out.qty}` : '';
+    return `
+      <div class="craft-spec-sheet">
+        <div class="spec-sheet-title">
+          <span class="spec-sheet-label">${I18n.t('craft.specSheet')}</span>
+          <span class="spec-sheet-name">${I18n.itemName(def.id, def.name)}${qtyLabel}</span>
+          <span class="preview-rarity rarity-${def.rarity ?? 'common'}">${def.rarity ?? 'common'}</span>
+        </div>
+        <div class="spec-sheet-figure"><span>${def.icon ?? '📦'}</span></div>
+        <div class="spec-sheet-desc">${def.description ?? ''}</div>
+        <div class="spec-sheet-grid">
+          <div class="spec-sheet-block">
+            <div class="spec-block-label">${I18n.t('craft.specs')}</div>
+            ${this._renderSpecGauges(def)}
+          </div>
+          <div class="spec-sheet-block">
+            <div class="spec-block-label">${I18n.t('craft.properties')}</div>
+            ${this._renderProperties(def)}
+            <div class="spec-block-label" style="margin-top:10px;">${I18n.t('craft.materials')}</div>
+            ${this._renderMaterialGauges(bp)}
+          </div>
+        </div>
+      </div>`;
+  },
+
+  _gauge(label, value, refMax, text, delta = null) {
+    const pct = Math.max(0, Math.min(100, (value / refMax) * 100));
+    const deltaHtml = delta === null || delta === 0 ? ''
+      : `<span class="spec-delta ${delta > 0 ? 'up' : 'down'}">${delta > 0 ? '▲' : '▼'}${Math.abs(delta)}</span>`;
+    return `
+      <div class="spec-gauge-row">
+        <span class="spec-gauge-label">${label}</span>
+        <span class="spec-gauge-track"><i style="width:${pct.toFixed(0)}%"></i></span>
+        <span class="spec-gauge-value">${text}${deltaHtml}</span>
+      </div>`;
+  },
+
+  _renderSpecGauges(def) {
+    const rows = [];
+    const eq = this._equippedCompare(def);
+    if (def.combat) {
+      const c = def.combat;
+      const avg = (c.damage[0] + c.damage[1]) / 2;
+      rows.push(this._gauge(I18n.t('craft.stat.damage'), avg, SPEC_REF.damage, `${c.damage[0]}~${c.damage[1]}`, eq?.damage ?? null));
+      rows.push(this._gauge(I18n.t('craft.stat.accuracy'), c.accuracy, SPEC_REF.accuracy, `${Math.round(c.accuracy * 100)}%`, eq?.accuracy ?? null));
+      if (c.critChance > 0) rows.push(this._gauge(I18n.t('craft.stat.crit'), c.critChance, SPEC_REF.critChance, `${Math.round(c.critChance * 100)}%`));
+    }
+    if (def.armor) {
+      const a = def.armor;
+      rows.push(this._gauge(I18n.t('craft.stat.defense'), a.defense, SPEC_REF.defense, `${a.defense}`, eq?.defense ?? null));
+      rows.push(this._gauge(I18n.t('craft.stat.reduction'), a.damageReduction, SPEC_REF.damageReduction, `-${Math.round(a.damageReduction * 100)}%`, eq?.damageReduction ?? null));
+      if (a.movePenalty > 0) rows.push(this._gauge(I18n.t('craft.stat.movePenalty'), a.movePenalty, SPEC_REF.movePenalty, `-${Math.round(a.movePenalty * 100)}%`));
+    }
+    if (def.onConsume) {
+      const oc = def.onConsume;
+      const entries = [
+        ['hp', '❤️'], ['nutrition', '🍖'], ['hydration', '💧'],
+        ['morale', '😊'], ['infection', '🦠'], ['contamination', '☢️'],
+      ];
+      for (const [key, icon] of entries) {
+        if (oc[key]) rows.push(this._gauge(icon, Math.abs(oc[key]), SPEC_REF.consume, `${oc[key] > 0 ? '+' : ''}${oc[key]}`));
+      }
+    }
+    if (def.weight != null) {
+      rows.push(`<div class="spec-gauge-row"><span class="spec-gauge-label">${I18n.t('craft.stat.weight')}</span><span class="spec-gauge-track"></span><span class="spec-gauge-value">${def.weight}kg</span></div>`);
+    }
+    return rows.join('') || `<div class="craft-empty-msg">-</div>`;
+  },
+
+  // 장착 중 아이템 대비 증감 — 무기는 weapon_main, 방어구는 슬롯 일치 기준
+  _equippedCompare(def) {
+    const equipped = GameState.player?.equipped ?? {};
+    const defFor = (instanceId) => {
+      if (!instanceId || !GameState.cards?.[instanceId]) return null;
+      return GameState.getCardDef(instanceId);
+    };
+    if (def.combat) {
+      const cur = defFor(equipped.weapon_main);
+      if (!cur?.combat) return null;
+      const avg = (arr) => (arr[0] + arr[1]) / 2;
+      return {
+        damage: Math.round(avg(def.combat.damage) - avg(cur.combat.damage)),
+        accuracy: Math.round((def.combat.accuracy - cur.combat.accuracy) * 100),
+      };
+    }
+    if (def.armor) {
+      const slot = def.slot ?? 'body';
+      const cur = defFor(equipped[slot]);
+      if (!cur?.armor) return null;
+      return {
+        defense: def.armor.defense - cur.armor.defense,
+        damageReduction: Math.round((def.armor.damageReduction - cur.armor.damageReduction) * 100),
+      };
+    }
+    return null;
+  },
+
+  _renderProperties(def) {
+    const props = [];
+    if (def.combat?.requiresAmmo) props.push(I18n.t('craft.prop.ammo', { ammo: I18n.itemName(def.combat.requiresAmmo, GameData.items[def.combat.requiresAmmo]?.name ?? def.combat.requiresAmmo) }));
+    if (def.weaponType) props.push(I18n.t('craft.prop.weaponType', { type: def.weaponType }));
+    for (const tag of (def.tags ?? []).slice(0, 5)) props.push(tag);
+    if (props.length === 0) return `<div class="craft-empty-msg">-</div>`;
+    return `<ul class="spec-props">${props.map(p => `<li>${p}</li>`).join('')}</ul>`;
+  },
+
+  _renderMaterialGauges(bp) {
+    const stages = bp.stages ?? [];
+    return stages.map((stage, idx) => {
+      const rows = (stage.requiredItems ?? []).map(req => {
+        const def = GameData.items[req.definitionId];
+        const count = GameState.countOnBoard(req.definitionId);
+        const met = count >= req.qty;
+        const pct = Math.max(0, Math.min(100, (count / req.qty) * 100));
+        return `
+          <div class="spec-gauge-row mat ${met ? 'met' : 'unmet'}">
+            <span class="spec-gauge-label">${def?.icon ?? '▫'} ${I18n.itemName(req.definitionId, def?.name ?? req.definitionId)}</span>
+            <span class="spec-gauge-track"><i style="width:${pct.toFixed(0)}%"></i></span>
+            <span class="spec-gauge-value">${Math.min(count, req.qty)}/${req.qty}</span>
+          </div>`;
+      }).join('');
+      const stageLabel = stages.length > 1 ? `<div class="spec-stage-label">${idx + 1}. ${stage.label ?? ''}</div>` : '';
+      return stageLabel + rows;
+    }).join('');
+  },
+
+  // ── 우측: 제작 단계 패널 ─────────────────────────────────
+  _renderStagePanel(bp) {
+    if (!bp) return '';
+    const check = CraftSystem.canStartBlueprint(bp.id);
+    const queueEntry = (GameState.crafting?.activeQueue ?? []).find(e => e.blueprintId === bp.id);
+
+    const steps = (bp.stages ?? []).map((stage, idx) => {
+      let state = 'pending';
+      if (queueEntry) {
+        if (idx < queueEntry.stageIndex || (idx === queueEntry.stageIndex && !queueEntry.awaitingNext && CraftSystem.getQueueProgress(queueEntry) >= 1)) state = 'done';
+        else if (idx === queueEntry.stageIndex) state = 'active';
+      }
+      const pct = state === 'done' ? 100
+        : state === 'active' ? Math.round(CraftSystem.getQueueProgress(queueEntry) * 100)
+        : 0;
+      return `
+        <div class="craft-stage-step ${state}">
+          <span class="stage-step-num">${String(idx + 1).padStart(2, '0')}</span>
+          <div class="stage-step-body">
+            <div class="stage-step-label">${stage.label ?? ''} ${state === 'done' ? '✔' : ''}<span class="stage-step-tp">${stage.tpCost}TP</span></div>
+            <div class="craft-progress-track"><div class="craft-progress-fill" style="width:${pct}%"></div></div>
+          </div>
+        </div>`;
+    }).join('');
+
+    const skillReqs = this._renderSkillReqs(bp);
+    const action = queueEntry
+      ? ''
+      : check.ok
+        ? `<button class="craft-item-btn" id="craft-start-btn">🛠 ${I18n.t('craft.craftItem')}</button>`
+        : `<div class="craft-check-reason">${check.reason}</div>`;
+
+    return `
+      <div class="craft-stage-panel">
+        <div class="spec-block-label">${I18n.t('craft.stages')}</div>
+        ${steps}
+        ${skillReqs}
+        ${action}
+      </div>`;
   },
 
   _renderSecretList() {
@@ -272,58 +544,6 @@ const CraftUI = {
       return `<span class="blueprint-skill-req ${met ? 'met' : 'unmet'}">${def?.icon ?? ''}${def?.name ?? skillId} Lv.${minLevel}</span>`;
     }).join('');
     return `<div class="blueprint-skill-reqs">${reqs}</div>`;
-  },
-
-  _renderOutputPreview(bp) {
-    const outputs = Array.isArray(bp.output) ? bp.output : [bp.output];
-    if (!outputs.length || !outputs[0]) return '';
-
-    const out = outputs[0];
-    const def = GameData.items[out.definitionId];
-    if (!def) return '';
-
-    let statsHtml = '';
-
-    // Weapon stats
-    if (def.combat) {
-      const c = def.combat;
-      statsHtml += `<div class="preview-stat">\u2694\uFE0F ${c.damage[0]}~${c.damage[1]}</div>`;
-      statsHtml += `<div class="preview-stat">\uD83C\uDFAF ${Math.round(c.accuracy * 100)}%</div>`;
-      if (c.critChance > 0) statsHtml += `<div class="preview-stat">\uD83D\uDCA5 ${Math.round(c.critChance * 100)}% \u00D7${c.critMultiplier}</div>`;
-    }
-
-    // Armor stats
-    if (def.armor) {
-      const a = def.armor;
-      statsHtml += `<div class="preview-stat">\uD83D\uDEE1\uFE0F ${a.defense}</div>`;
-      statsHtml += `<div class="preview-stat">\uD83D\uDD3D -${Math.round(a.damageReduction * 100)}%</div>`;
-      if (a.movePenalty > 0) statsHtml += `<div class="preview-stat">\uD83E\uDDBF -${Math.round(a.movePenalty * 100)}%</div>`;
-    }
-
-    // Consumable effects
-    if (def.onConsume) {
-      const oc = def.onConsume;
-      if (oc.hp) statsHtml += `<div class="preview-stat">\u2764\uFE0F +${oc.hp}</div>`;
-      if (oc.nutrition) statsHtml += `<div class="preview-stat">\uD83C\uDF56 +${oc.nutrition}</div>`;
-      if (oc.hydration) statsHtml += `<div class="preview-stat">\uD83D\uDCA7 +${oc.hydration}</div>`;
-      if (oc.morale) statsHtml += `<div class="preview-stat">${oc.morale > 0 ? '\uD83D\uDE0A' : '\uD83D\uDE1F'} ${oc.morale > 0 ? '+' : ''}${oc.morale}</div>`;
-      if (oc.infection) statsHtml += `<div class="preview-stat">\uD83E\uDDA0 ${oc.infection}</div>`;
-      if (oc.contamination) statsHtml += `<div class="preview-stat">\u2622\uFE0F ${oc.contamination}</div>`;
-    }
-
-    const qtyLabel = out.qty > 1 ? ` \u00D7${out.qty}` : '';
-
-    return `
-      <div class="blueprint-output-preview">
-        <div class="preview-header">
-          <span class="preview-icon">${def.icon ?? '\uD83D\uDCE6'}</span>
-          <span class="preview-name">${def.name}${qtyLabel}</span>
-          <span class="preview-rarity rarity-${def.rarity ?? 'common'}">${def.rarity ?? 'common'}</span>
-        </div>
-        <div class="preview-desc">${def.description ?? ''}</div>
-        ${statsHtml ? `<div class="preview-stats">${statsHtml}</div>` : ''}
-      </div>
-    `;
   },
 
   _renderQueue() {
@@ -400,6 +620,10 @@ const CraftUI = {
       queueEl.outerHTML = this._renderQueue();
       this._attachQueueHandlers();
     } else this.render();
+  },
+
+  _escapeAttr(str) {
+    return String(str ?? '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
   },
 };
 

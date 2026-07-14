@@ -3235,3 +3235,277 @@
   stroke-opacity: 0.65 !important;
   stroke-width: 3;
 }
+
+/* ── 제작 워크벤치 (아이템 스펙 시트 3열 레이아웃) ───────────────
+   좌: 상태별 목록 / 중: 도면풍 스펙 시트 / 우: 제작 단계.
+   웜 앰버 계열 유지 — 도면 서식 톤(관료적 붕괴)과 정합. */
+.modal-box.craft-modal-box {
+  max-width: min(1560px, 94vw);
+  width: 94%;
+  max-height: 88vh;
+  height: 88vh;
+}
+
+.craft-workbench {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr) 320px;
+  gap: var(--gap-md);
+  align-items: start;
+  min-height: 0;
+}
+
+.craft-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+  min-width: 0;
+}
+
+.craft-list-col .blueprint-list {
+  grid-template-columns: 1fr;
+  max-height: 58vh;
+  overflow-y: auto;
+}
+
+.craft-status-tabs {
+  display: flex;
+  gap: 4px;
+}
+
+.craft-status-tab {
+  flex: 1;
+  padding: 5px 4px;
+  font-size: var(--font-size-xs);
+  color: var(--text-dim);
+  background: var(--bg-raised);
+  border: 1px solid var(--border-dim);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.craft-status-tab.active { color: var(--text-primary); border-color: var(--accent-primary); }
+.craft-status-tab.active.status-craftable { border-color: var(--text-good); }
+.craft-status-tab.active.status-lacking   { border-color: var(--text-danger); }
+
+.craft-search {
+  width: 100%;
+  padding: 6px 8px;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  color: var(--text-primary);
+  background: var(--bg-raised);
+  border: 1px solid var(--border-dim);
+  border-radius: var(--radius-sm);
+}
+
+.blueprint-item {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-sm);
+  border-left: 3px solid var(--border-dim);
+}
+
+.blueprint-item.bp-status-craftable { border-left-color: var(--text-good); }
+.blueprint-item.bp-status-lacking   { border-left-color: var(--text-danger); }
+.blueprint-item.bp-status-locked    { border-left-color: var(--border-dim); opacity: 0.75; cursor: default; }
+
+.bp-item-icon { font-size: 20px; }
+.bp-item-body { flex: 1; min-width: 0; }
+.bp-item-mark { font-size: var(--font-size-xs); color: var(--text-dim); }
+.bp-status-craftable .bp-item-mark { color: var(--text-good); }
+.bp-status-lacking .bp-item-mark   { color: var(--text-danger); }
+
+.bp-mat-row { display: flex; gap: 3px; margin-top: 2px; }
+.bp-mat-icon { font-size: 13px; opacity: 0.9; }
+.bp-mat-icon.unmet { opacity: 0.35; filter: grayscale(0.8); }
+.bp-lock-reason { font-size: var(--font-size-xs); color: var(--text-dim); margin-top: 2px; }
+
+.craft-empty-msg {
+  padding: 16px;
+  text-align: center;
+  color: var(--text-dim);
+  font-size: var(--font-size-xs);
+}
+
+/* 스펙 시트 — 도면 서식 프레임 */
+.craft-spec-sheet {
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius-sm);
+  background:
+    linear-gradient(135deg, rgba(200, 160, 96, 0.04), transparent 30%),
+    var(--bg-raised);
+  padding: var(--gap-md);
+  max-height: 62vh;
+  overflow-y: auto;
+}
+
+.craft-spec-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  color: var(--text-dim);
+  font-size: var(--font-size-sm);
+  border: 1px dashed var(--border-dim);
+  border-radius: var(--radius-sm);
+}
+
+.spec-sheet-title {
+  display: flex;
+  align-items: baseline;
+  gap: var(--gap-sm);
+  border-bottom: 1px solid var(--border-mid);
+  padding-bottom: 6px;
+  margin-bottom: var(--gap-sm);
+}
+
+.spec-sheet-label {
+  font-size: var(--font-size-xs);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--accent-primary);
+}
+
+.spec-sheet-name { font-size: var(--font-size-md); color: var(--text-primary); }
+
+.spec-sheet-figure {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 110px;
+  margin-bottom: var(--gap-sm);
+  border: 1px solid var(--border-dim);
+  border-radius: var(--radius-sm);
+  background: radial-gradient(circle at 50% 45%, rgba(200, 160, 96, 0.08), transparent 65%);
+}
+
+.spec-sheet-figure span {
+  font-size: 64px;
+  filter: sepia(0.35) saturate(0.75) drop-shadow(0 6px 10px rgba(0, 0, 0, 0.5));
+}
+
+.spec-sheet-desc {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  margin-bottom: var(--gap-sm);
+}
+
+.spec-sheet-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gap-md);
+}
+
+.spec-block-label {
+  font-size: var(--font-size-xs);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--accent-primary);
+  border-bottom: 1px solid var(--border-dim);
+  padding-bottom: 3px;
+  margin-bottom: 6px;
+}
+
+.spec-gauge-row {
+  display: grid;
+  grid-template-columns: 84px 1fr auto;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 5px;
+  font-size: var(--font-size-xs);
+}
+
+.spec-gauge-label { color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.spec-gauge-value { color: var(--text-primary); font-family: var(--font-mono); }
+
+.spec-gauge-track {
+  height: 7px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+
+.spec-gauge-track i {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-dim), var(--accent-primary));
+}
+
+.spec-gauge-row.mat.unmet .spec-gauge-track i { background: var(--text-danger); }
+.spec-gauge-row.mat.unmet .spec-gauge-value { color: var(--text-danger); }
+
+.spec-delta { margin-left: 4px; font-size: 10px; }
+.spec-delta.up { color: var(--text-good); }
+.spec-delta.down { color: var(--text-danger); }
+
+.spec-props {
+  margin: 0;
+  padding-left: 16px;
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+.spec-stage-label {
+  font-size: var(--font-size-xs);
+  color: var(--text-dim);
+  margin: 6px 0 3px;
+}
+
+/* 우측 단계 패널 */
+.craft-stage-panel {
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius-sm);
+  background: var(--bg-raised);
+  padding: var(--gap-md);
+}
+
+.craft-stage-step {
+  display: flex;
+  gap: var(--gap-sm);
+  align-items: flex-start;
+  margin-bottom: var(--gap-sm);
+}
+
+.stage-step-num {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-lg);
+  color: var(--accent-dim);
+  line-height: 1;
+}
+
+.craft-stage-step.active .stage-step-num,
+.craft-stage-step.done .stage-step-num { color: var(--accent-primary); }
+
+.stage-step-body { flex: 1; min-width: 0; }
+
+.stage-step-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  margin-bottom: 3px;
+}
+
+.craft-stage-step.done .stage-step-label { color: var(--text-good); }
+.stage-step-tp { color: var(--text-dim); font-family: var(--font-mono); }
+
+.craft-item-btn {
+  width: 100%;
+  margin-top: var(--gap-sm);
+  padding: 12px;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-md);
+  color: #1a1102;
+  background: linear-gradient(180deg, var(--accent-primary), var(--accent-dim));
+  border: 1px solid var(--accent-primary);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.craft-item-btn:hover { filter: brightness(1.1); }
+
+.craft-check-reason {
+  margin-top: var(--gap-sm);
+  font-size: var(--font-size-xs);
+  color: var(--text-danger);
+}

@@ -231,7 +231,7 @@ const Basecamp = {
 
       <!-- Craft modal -->
       <div class="modal-overlay" id="craft-modal">
-        <div class="modal-box" style="max-width:420px;max-height:85vh;">
+        <div class="modal-box craft-modal-box">
           <div class="modal-title">${I18n.t('basecamp.craftBench')}</div>
           <div id="craft-panel" style="flex:1;overflow-y:auto;"></div>
           <div class="modal-actions">
