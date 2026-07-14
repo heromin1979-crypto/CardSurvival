@@ -9,7 +9,7 @@ export function formatCraftModalTitle(
   const day = time?.day ?? 1;
   const hour = time?.hour ?? 6;
   const minutes = ((time?.tpInDay ?? 0) % 3) * 20;
-  return `Day ${day} | ${String(hour).padStart(2, '0')}:${String(minutes).padStart(2, '0')} | ${temperature}C`;
+  return `${day}일차 | ${String(hour).padStart(2, '0')}:${String(minutes).padStart(2, '0')} | ${temperature}°C`;
 }
 
 export function refreshCraftModalTitle() {

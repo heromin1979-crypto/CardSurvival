@@ -13,16 +13,48 @@ import CraftTreeUI     from './CraftTreeUI.js';
 import CardFactory     from './CardFactory.js';
 import SecretCombinationSystem from '../systems/SecretCombinationSystem.js';
 import SECRET_COMBINATIONS     from '../data/secretCombinations.js';
-import { en as EN_LOCALE }     from '../data/locales.js';
 
-// 목업의 이중 표기(한/영) 스탯 라벨 — 표시 전용
-const STAT_EN = {
-  damage: 'DAMAGE', accuracy: 'ACCURACY', crit: 'CRITICAL',
-  defense: 'DEFENSE', reduction: 'REDUCTION', movePenalty: 'MOBILITY', weight: 'WEIGHT',
-};
+// 제작 데이터의 내부 영문 분류값을 화면용 한글 표기로 변환한다.
+const CRAFT_TERM_KO = Object.freeze({
+  common: '일반', uncommon: '고급', rare: '희귀', epic: '영웅', legendary: '전설',
+  weapon: '무기', armor: '방어구', tool: '도구', structure: '시설', food: '식량',
+  medical: '의료', material: '재료', consumable: '소모품', special: '특수품',
+  blade: '도검', blunt: '둔기', bullet: '총기', explosive: '폭발물', fire: '화염', utility: '다용도',
+  advanced: '고급', ammo: '탄약', ammo_part: '탄약 부품', anesthetic: '마취',
+  antibiotic: '항생', antidote: '해독', antiseptic: '소독', aviation: '항공',
+  bag: '가방', bait: '미끼', bandage: '붕대', body: '몸통', boots: '신발',
+  bucket: '양동이', building: '건축', carcass: '사체', carpentry: '목공', chef: '요리',
+  chemical: '화학 물질', chemistry: '화학', clean: '청결', clothing: '의류', cold: '방한',
+  comfort: '편안함', companion_boost: '동료 강화', companion_food: '동료 식량',
+  container: '용기', contaminated: '오염', cooked: '조리됨', cooking: '요리',
+  craftable: '제작 가능', crafted: '제작품', crafting: '제작', cutting: '절단',
+  defense: '방어', despair_cure: '절망 회복', dessert: '후식', diagnostic: '진단',
+  doctor: '의사', drink: '음료', drinkable: '음용 가능', edible: '섭취 가능',
+  electronic: '전자', emergency: '응급', energy: '에너지', engine: '엔진', engineer: '공학',
+  exploration: '탐사', farm: '농장', farming: '농사', fermented: '발효', fireproof: '내화',
+  fishing: '낚시', food_raw: '생식 재료', forge: '단조', fresh: '신선', fuel: '연료',
+  fullbody: '전신', furnace: '용광로', gourmet: '고급 요리', hands: '손', head: '머리',
+  healing: '치료', hearty: '든든함', heat: '보온', herbal: '약초', hot: '뜨거움',
+  immovable: '고정 시설', isolation: '격리', korean: '한식', large: '대형', light: '경량',
+  meat: '고기', medicinal: '약용', melee: '근접', metal: '금속', military: '군용',
+  misc: '기타', natural: '천연', navigation: '항법', offhand: '보조 장비', organic: '유기물',
+  pasta: '면 요리', preserved: '보존식', processing: '가공', radiation: '방사선', ranged: '원거리',
+  raw: '생재료', regen: '회복', remedy: '치료제', research: '연구', rice: '쌀 요리',
+  rotor: '회전날개', scouting: '정찰', serum: '혈청', shareable: '나눔 가능', shield: '방패',
+  sick_food: '환자식', silent: '저소음', small: '소형', soft: '부드러움', soldier: '군인',
+  splint: '부목', stamina: '지구력', stimulant: '자극제', storage: '저장', sweet: '단맛',
+  tanning: '무두질', tech: '기술', temp: '임시', textile: '직물', throwable: '투척',
+  training: '훈련', trap: '함정', upgraded: '개량', vaccine: '백신', vest: '조끼',
+  weather_resistant: '내후성', western: '서양식', wood: '목재',
+  aviation_part: '항공 부품', craft: '제작품', firearm: '총기', medical_structure: '의료 시설',
+  resource: '자원', water: '물', field_use: '현장용',
+});
 
-function enItemName(id) {
-  return EN_LOCALE[`_item.${id}`] ?? '';
+function craftTermKo(value, fallback = '기타') {
+  if (value == null || value === '') return fallback;
+  const text = String(value).trim();
+  if (!/[A-Za-z_]/.test(text)) return text;
+  return CRAFT_TERM_KO[text.toLowerCase()] ?? fallback;
 }
 
 // 전체 레시피 — CraftSystem과 동일한 3중 병합 (advanced 누락 시 62종이 목록에서 사라진다)
@@ -149,7 +181,7 @@ const CraftUI = {
           ${categoryTabHtml}
           <div class="craft-workbench craft-workbench--spec">
             <div class="craft-col craft-list-col">
-              <div class="craft-side-header">${I18n.t('craft.blueprints')} <span>BLUEPRINTS</span></div>
+              <div class="craft-side-header">${I18n.t('craft.blueprints')}</div>
               <div class="craft-list-controls">
                 <select class="craft-sort-select">
                   <option value="name" ${this._sortMode === 'name' ? 'selected' : ''}>${I18n.t('craft.sortName')}</option>
@@ -364,7 +396,7 @@ const CraftUI = {
              data-bp-id="${bp.id}" ${locked ? 'data-locked="1"' : ''}>
           <span class="bp-item-icon ${img ? 'bp-item-icon--img' : ''}">${img ? `<img src="${img}" alt="">` : icon}</span>
           <div class="bp-item-body">
-            <div class="blueprint-name">${locked ? '' : `<span class="bp-status-prefix">[${this._statusFilter === 'craftable' ? 'Craftable' : 'Lacking'}]</span>`}${name}</div>
+            <div class="blueprint-name">${locked ? '' : `<span class="bp-status-prefix">[${this._statusFilter === 'craftable' ? '제작 가능' : '재료 부족'}]</span>`}${name}</div>
             ${locked
               ? `<div class="bp-lock-reason">🔒 ${reason}</div>`
               : `<div class="bp-mat-row">${matIcons}</div>`}
@@ -387,31 +419,30 @@ const CraftUI = {
     return `
       <div class="craft-spec-sheet">
         <div class="spec-sheet-title">
-          <span class="spec-sheet-label">ITEM SPEC SHEET:</span>
+          <span class="spec-sheet-label">아이템 설계 명세:</span>
           <span class="spec-sheet-name">${I18n.itemName(def.id, def.name)}${qtyLabel}</span>
-          ${enItemName(def.id) ? `<span class="spec-sheet-name-en">/ ${enItemName(def.id)}</span>` : ''}
-          <span class="preview-rarity rarity-${def.rarity ?? 'common'}">${def.rarity ?? 'common'}</span>
+          <span class="preview-rarity rarity-${def.rarity ?? 'common'}">${craftTermKo(def.rarity ?? 'common')}</span>
         </div>
         <div class="spec-blueprint-frame">
           <div class="spec-blueprint-grid"></div>
           <div class="spec-sheet-figure">
             <img class="spec-figure-img" src="${this._blueprintImage(bp.category)}" alt="">
-            <div class="spec-figure-callout callout-1"><span>${def.type ?? 'component'}</span></div>
-            <div class="spec-figure-callout callout-2"><span>${(def.tags ?? [def.rarity ?? 'common'])[0]}</span></div>
-            <div class="spec-figure-callout callout-3"><span>${I18n.itemName((bp.stages?.[0]?.requiredItems ?? [])[0]?.definitionId, GameData.items[(bp.stages?.[0]?.requiredItems ?? [])[0]?.definitionId]?.name ?? 'material')}</span></div>
-            <div class="spec-figure-callout callout-4"><span>${def.weaponType ?? def.slot ?? def.subtype ?? 'field use'}</span></div>
+            <div class="spec-figure-callout callout-1"><span>${craftTermKo(def.type, '구성품')}</span></div>
+            <div class="spec-figure-callout callout-2"><span>${craftTermKo((def.tags ?? [def.rarity ?? 'common'])[0])}</span></div>
+            <div class="spec-figure-callout callout-3"><span>${I18n.itemName((bp.stages?.[0]?.requiredItems ?? [])[0]?.definitionId, GameData.items[(bp.stages?.[0]?.requiredItems ?? [])[0]?.definitionId]?.name ?? '재료')}</span></div>
+            <div class="spec-figure-callout callout-4"><span>${craftTermKo(def.weaponType ?? def.slot ?? def.subtype ?? 'field_use', '현장용')}</span></div>
           </div>
         </div>
         <div class="spec-sheet-desc">${def.description ?? ''}</div>
         <div class="spec-sheet-grid">
           <div class="spec-sheet-block">
-            <div class="spec-block-label">${I18n.t('craft.specs')} / SPECS</div>
+            <div class="spec-block-label">${I18n.t('craft.specs')}</div>
             ${this._renderSpecGauges(def)}
           </div>
           <div class="spec-sheet-block">
-            <div class="spec-block-label">${I18n.t('craft.properties')} / PROPERTIES</div>
+            <div class="spec-block-label">${I18n.t('craft.properties')}</div>
             ${this._renderProperties(def)}
-            <div class="spec-block-label" style="margin-top:10px;">${I18n.t('craft.materials')} / MATERIALS REQUIRED</div>
+            <div class="spec-block-label" style="margin-top:10px;">${I18n.t('craft.materials')}</div>
             ${this._renderMaterialGauges(bp)}
           </div>
         </div>
@@ -436,15 +467,15 @@ const CraftUI = {
     if (def.combat) {
       const c = def.combat;
       const avg = (c.damage[0] + c.damage[1]) / 2;
-      rows.push(this._gauge(`${I18n.t('craft.stat.damage')} / ${STAT_EN.damage}`, avg, SPEC_REF.damage, `${c.damage[0]}~${c.damage[1]}`, eq?.damage ?? null));
-      rows.push(this._gauge(`${I18n.t('craft.stat.accuracy')} / ${STAT_EN.accuracy}`, c.accuracy, SPEC_REF.accuracy, `${Math.round(c.accuracy * 100)}%`, eq?.accuracy ?? null));
-      if (c.critChance > 0) rows.push(this._gauge(`${I18n.t('craft.stat.crit')} / ${STAT_EN.crit}`, c.critChance, SPEC_REF.critChance, `${Math.round(c.critChance * 100)}%`));
+      rows.push(this._gauge(I18n.t('craft.stat.damage'), avg, SPEC_REF.damage, `${c.damage[0]}~${c.damage[1]}`, eq?.damage ?? null));
+      rows.push(this._gauge(I18n.t('craft.stat.accuracy'), c.accuracy, SPEC_REF.accuracy, `${Math.round(c.accuracy * 100)}%`, eq?.accuracy ?? null));
+      if (c.critChance > 0) rows.push(this._gauge(I18n.t('craft.stat.crit'), c.critChance, SPEC_REF.critChance, `${Math.round(c.critChance * 100)}%`));
     }
     if (def.armor) {
       const a = def.armor;
-      rows.push(this._gauge(`${I18n.t('craft.stat.defense')} / ${STAT_EN.defense}`, a.defense, SPEC_REF.defense, `${a.defense}`, eq?.defense ?? null));
-      rows.push(this._gauge(`${I18n.t('craft.stat.reduction')} / ${STAT_EN.reduction}`, a.damageReduction, SPEC_REF.damageReduction, `-${Math.round(a.damageReduction * 100)}%`, eq?.damageReduction ?? null));
-      if (a.movePenalty > 0) rows.push(this._gauge(`${I18n.t('craft.stat.movePenalty')} / ${STAT_EN.movePenalty}`, a.movePenalty, SPEC_REF.movePenalty, `-${Math.round(a.movePenalty * 100)}%`));
+      rows.push(this._gauge(I18n.t('craft.stat.defense'), a.defense, SPEC_REF.defense, `${a.defense}`, eq?.defense ?? null));
+      rows.push(this._gauge(I18n.t('craft.stat.reduction'), a.damageReduction, SPEC_REF.damageReduction, `-${Math.round(a.damageReduction * 100)}%`, eq?.damageReduction ?? null));
+      if (a.movePenalty > 0) rows.push(this._gauge(I18n.t('craft.stat.movePenalty'), a.movePenalty, SPEC_REF.movePenalty, `-${Math.round(a.movePenalty * 100)}%`));
     }
     if (def.onConsume) {
       const oc = def.onConsume;
@@ -457,7 +488,7 @@ const CraftUI = {
       }
     }
     if (def.weight != null) {
-      rows.push(`<div class="spec-gauge-row"><span class="spec-gauge-label">${I18n.t('craft.stat.weight')} / ${STAT_EN.weight}</span><span class="spec-gauge-track"></span><span class="spec-gauge-value">${def.weight}kg</span></div>`);
+      rows.push(`<div class="spec-gauge-row"><span class="spec-gauge-label">${I18n.t('craft.stat.weight')}</span><span class="spec-gauge-track"></span><span class="spec-gauge-value">${def.weight}kg</span></div>`);
     }
     return rows.join('') || `<div class="craft-empty-msg">-</div>`;
   },
@@ -493,8 +524,8 @@ const CraftUI = {
   _renderProperties(def) {
     const props = [];
     if (def.combat?.requiresAmmo) props.push(I18n.t('craft.prop.ammo', { ammo: I18n.itemName(def.combat.requiresAmmo, GameData.items[def.combat.requiresAmmo]?.name ?? def.combat.requiresAmmo) }));
-    if (def.weaponType) props.push(I18n.t('craft.prop.weaponType', { type: def.weaponType }));
-    for (const tag of (def.tags ?? []).slice(0, 5)) props.push(tag);
+    if (def.weaponType) props.push(I18n.t('craft.prop.weaponType', { type: craftTermKo(def.weaponType) }));
+    for (const tag of (def.tags ?? []).slice(0, 5)) props.push(craftTermKo(tag));
     if (props.length === 0) return `<div class="craft-empty-msg">-</div>`;
     return `<ul class="spec-props">${props.map(p => `<li>${p}</li>`).join('')}</ul>`;
   },
@@ -507,10 +538,9 @@ const CraftUI = {
         const count = GameState.countOnBoard(req.definitionId);
         const met = count >= req.qty;
         const pct = Math.max(0, Math.min(100, (count / req.qty) * 100));
-        const enName = enItemName(req.definitionId);
         return `
           <div class="spec-gauge-row mat ${met ? 'met' : 'unmet'}">
-            <span class="spec-gauge-label" title="${I18n.itemName(req.definitionId, def?.name ?? req.definitionId)}${enName ? ' / ' + enName : ''}">${def?.icon ?? '▫'} ${I18n.itemName(req.definitionId, def?.name ?? req.definitionId)}${enName ? ` / ${enName}` : ''}</span>
+            <span class="spec-gauge-label" title="${I18n.itemName(req.definitionId, def?.name ?? req.definitionId)}">${def?.icon ?? '▫'} ${I18n.itemName(req.definitionId, def?.name ?? req.definitionId)}</span>
             <span class="spec-gauge-track"><i style="width:${pct.toFixed(0)}%"></i></span>
             <span class="spec-gauge-value">${Math.min(count, req.qty)}/${req.qty} ${met ? `(${I18n.t('craft.owned')})` : ''}</span>
           </div>`;
@@ -528,9 +558,7 @@ const CraftUI = {
     const stages = bp.stages ?? [];
     const stageProgress = queueEntry ? CraftSystem.getQueueProgress(queueEntry) : 0;
     const allDone = this._completedBp === bp.id;
-    const header = allDone
-      ? 'CRAFTING COMPLETE / 제작 완료'
-      : 'CRAFTING STAGES / 제작 단계';
+    const header = allDone ? '제작 완료' : '제작 단계';
 
     const steps = stages.map((stage, idx) => {
       let state = 'pending';
@@ -549,7 +577,7 @@ const CraftUI = {
           <div class="stage-step-body">
             <div class="stage-step-label">
               <span>${stage.label ?? ''} ${state === 'done' ? '✔' : ''}</span>
-              <span class="stage-step-state">${pct}% ${state === 'done' ? 'Done' : state === 'active' ? 'In progress' : 'Ready'}</span>
+              <span class="stage-step-state">${pct}% ${state === 'done' ? '완료' : state === 'active' ? '진행 중' : '대기'}</span>
               <span class="stage-step-tp">${stage.tpCost}TP</span>
             </div>
             <div class="craft-progress-track"><div class="craft-progress-fill" style="width:${pct}%"></div></div>
@@ -561,8 +589,8 @@ const CraftUI = {
     const action = queueEntry
       ? ''
       : check.ok
-        ? `<button class="craft-item-btn" id="craft-start-btn"><span class="craft-item-btn-icon">⚙</span><span>${I18n.t('craft.craftItem')}<small>CRAFT ITEM</small></span></button>`
-        : `<button class="craft-item-btn disabled" id="craft-start-btn" disabled><span class="craft-item-btn-icon">⚙</span><span>${I18n.t('craft.craftItem')}<small>CRAFT ITEM</small></span></button><div class="craft-check-reason">${check.reason}</div>`;
+        ? `<button class="craft-item-btn" id="craft-start-btn"><span class="craft-item-btn-icon">⚙</span><span>${I18n.t('craft.craftItem')}</span></button>`
+        : `<button class="craft-item-btn disabled" id="craft-start-btn" disabled><span class="craft-item-btn-icon">⚙</span><span>${I18n.t('craft.craftItem')}</span></button><div class="craft-check-reason">${check.reason}</div>`;
 
     return `
       <div class="craft-stage-panel">

@@ -3,7 +3,7 @@
 // 검증:
 //   - 상태 3분류 탭(제작 가능/재료 부족/잠금)과 카운트
 //   - 잠금 탭: 스킬 미달 레시피가 사유와 함께 노출, 조건형 hidden은 모호 사유('???')
-//   - 스펙 시트: SPECS 게이지 + 장착 대비 증감 + MATERIALS 게이지
+//   - 스펙 시트: 능력치 게이지 + 장착 대비 증감 + 제작 재료 게이지
 //   - 단계 패널: stages 스텝 + 제작 버튼
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import CraftUI from '../../js/ui/CraftUI.js';
@@ -75,7 +75,7 @@ describe('제작 워크벤치', () => {
     }
   });
 
-  it('레시피 선택 시 스펙 시트에 SPECS/재료 게이지가 렌더된다', () => {
+  it('레시피 선택 시 스펙 시트에 능력치와 재료 게이지가 렌더된다', () => {
     CraftUI.render();
     const first = document.querySelector('.blueprint-item');
     if (!first) return; // 제작 가능 항목이 없으면 스킵 (보드 비어있는 환경)
@@ -85,6 +85,31 @@ describe('제작 워크벤치', () => {
     expect(document.querySelectorAll('.spec-gauge-row.mat').length).toBeGreaterThan(0);
     expect(document.querySelector('.craft-stage-panel')).not.toBeNull();
     expect(document.querySelectorAll('.craft-stage-step').length).toBeGreaterThan(0);
+  });
+
+  it('제작 워크벤치의 UI와 데이터 분류를 한글로만 표시한다', () => {
+    CraftUI._statusFilter = 'lacking';
+    CraftUI.render();
+
+    const text = document.querySelector('.craft-workbench')?.textContent ?? '';
+    expect(text).toContain('아이템 설계 명세');
+    expect(text).toContain('[재료 부족]');
+    expect(text).toContain('제작 단계');
+    expect(text).toContain('대기');
+    expect(text).not.toMatch(/BLUEPRINTS|ITEM SPEC SHEET|CRAFTING (?:STAGES|COMPLETE)|SPECS|PROPERTIES|MATERIALS REQUIRED|CRAFT ITEM|\[(?:Craftable|Lacking)\]|\b(?:Done|Ready|In progress)\b/);
+
+    const calloutAndProperties = [
+      ...document.querySelectorAll('.spec-figure-callout, .spec-props'),
+    ].map(el => el.textContent).join(' ');
+    expect(calloutAndProperties).not.toMatch(/[A-Za-z_]/);
+
+    for (const bp of Object.values(ALL_BLUEPRINTS)) {
+      document.body.innerHTML = CraftUI._renderSpecSheet(bp);
+      const localizedData = [
+        ...document.querySelectorAll('.preview-rarity, .spec-figure-callout, .spec-props'),
+      ].map(el => el.textContent).join(' ');
+      expect(localizedData, bp.id).not.toMatch(/[A-Za-z_]/);
+    }
   });
 
   it('장착 무기 대비 증감(▲/▼)이 무기 스펙에 병기된다', async () => {
@@ -115,7 +140,7 @@ describe('제작 워크벤치', () => {
     expect(document.querySelector('.craft-workbench.craft-workbench--spec')).not.toBeNull();
     expect(document.querySelector('.spec-blueprint-frame')).not.toBeNull();
     expect(document.querySelector('.spec-figure-callout')).not.toBeNull();
-    expect(document.querySelector('.craft-stage-header-main')?.textContent).toContain('CRAFTING STAGES');
+    expect(document.querySelector('.craft-stage-header-main')?.textContent).toContain('제작 단계');
     expect(document.querySelector('.craft-stage-tools')).toBeNull();
     expect(document.querySelector('.craft-stage-search')).toBeNull();
     expect(document.querySelector('.craft-item-btn .craft-item-btn-icon')).not.toBeNull();
@@ -155,7 +180,7 @@ describe('제작 워크벤치', () => {
     document.body.innerHTML = CraftUI._renderStagePanel(bp);
 
     expect(document.querySelector('.craft-stage-header-main')?.textContent)
-      .toContain('CRAFTING STAGES');
+      .toContain('제작 단계');
   });
 
   it('persists the complete header after craftComplete removes the queue entry', () => {
@@ -169,12 +194,12 @@ describe('제작 워크벤치', () => {
     document.body.innerHTML = CraftUI._renderStagePanel(bp);
 
     expect(document.querySelector('.craft-stage-header-main')?.textContent)
-      .toContain('CRAFTING COMPLETE');
+      .toContain('제작 완료');
     const steps = [...document.querySelectorAll('.craft-stage-step')];
     expect(steps).toHaveLength(bp.stages.length);
     for (const step of steps) {
       expect(step.classList.contains('done')).toBe(true);
-      expect(step.querySelector('.stage-step-state')?.textContent.trim()).toBe('100% Done');
+      expect(step.querySelector('.stage-step-state')?.textContent.trim()).toBe('100% 완료');
       expect(step.querySelector('.craft-progress-fill')?.style.width).toBe('100%');
     }
   });
@@ -189,7 +214,7 @@ describe('제작 워크벤치', () => {
     document.body.innerHTML = CraftUI._renderStagePanel(backgroundBp);
 
     expect(document.querySelector('.craft-stage-header-main')?.textContent)
-      .toContain('CRAFTING STAGES');
+      .toContain('제작 단계');
   });
 
   it('clears the persisted completion when another blueprint is selected', () => {
@@ -208,7 +233,7 @@ describe('제작 워크벤치', () => {
     document.body.innerHTML = CraftUI._renderStagePanel(completedBp);
 
     expect(document.querySelector('.craft-stage-header-main')?.textContent)
-      .toContain('CRAFTING STAGES');
+      .toContain('제작 단계');
   });
 
   it('clears the persisted completion when a different blueprint starts crafting', () => {
@@ -221,7 +246,7 @@ describe('제작 워크벤치', () => {
     document.body.innerHTML = CraftUI._renderStagePanel(completedBp);
 
     expect(document.querySelector('.craft-stage-header-main')?.textContent)
-      .toContain('CRAFTING STAGES');
+      .toContain('제작 단계');
   });
 
   it('clears stale completion when the first visible blueprint is selected automatically', () => {
@@ -239,6 +264,6 @@ describe('제작 워크벤치', () => {
     document.body.innerHTML = CraftUI._renderStagePanel(completedBp);
 
     expect(document.querySelector('.craft-stage-header-main')?.textContent)
-      .toContain('CRAFTING STAGES');
+      .toContain('제작 단계');
   });
 });

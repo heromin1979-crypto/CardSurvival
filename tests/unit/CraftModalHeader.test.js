@@ -35,7 +35,7 @@ describe('craft modal header', () => {
   });
 
   it('uses 20-minute TP intervals and the real outdoor temperature in both screens', () => {
-    const expected = `Day 4 | 16:00 | ${WeatherSystem.getOutdoorTemperature()}C`;
+    const expected = `4일차 | 16:00 | ${WeatherSystem.getOutdoorTemperature()}°C`;
 
     expect(renderScreen(Basecamp)).toBe(expected);
     expect(renderScreen(Main)).toBe(expected);
@@ -61,7 +61,7 @@ describe('craft modal header', () => {
       EventBus.emit('tpAdvance', { totalTP: 31 });
 
       expect(document.querySelector('#craft-modal .modal-title')?.textContent)
-        .toBe(`Day 4 | 16:20 | ${WeatherSystem.getOutdoorTemperature()}C`);
+        .toBe(`4일차 | 16:20 | ${WeatherSystem.getOutdoorTemperature()}°C`);
     } finally {
       EventBus._listeners = originalListeners;
     }
