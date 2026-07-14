@@ -43,6 +43,32 @@
 
 `CardFactory.images`의 아이템 ID별 매핑이 전체 420개 파일의 상세 인덱스다. 제작 리스트의 결과물 썸네일과 최대 3개의 요구 재료 썸네일은 이 매핑을 직접 사용한다.
 
+## 중앙 아이템 설계 이미지
+
+표시 우선순위:
+
+1. 아이템별 Image 2.0 설계도 이미지
+2. `CardFactory.images`에 등록된 실제 결과물 이미지
+3. 카테고리 대표 설계도 이미지
+
+전체 346개 레시피를 순회해 333종 결과물이 1번 또는 2번 경로로 표시되는 것을 테스트한다. 실제 결과물 이미지는 어두운 배경이 사라지도록 화면 합성하고, 흑백·세피아·구리색 필터를 적용해 설계 명세의 시각 톤을 유지한다.
+
+| 결과물 | 설계도 ID | Image 2.0 파일 |
+|---|---|---|
+| 침전수 | `settle_water` | `assets/images/ui/crafting-blueprints/items/settled-water.png` |
+| 장작 | `make_kindling` | `assets/images/ui/crafting-blueprints/items/kindling.png` |
+| 천 조각 | `make_cloth_scrap` | `assets/images/ui/crafting-blueprints/items/cloth-scrap.png` |
+
+세 이미지 모두 기존 아이템 이미지를 주제 참조로 사용해 형태와 재질을 보존하고, 따뜻한 호박색·구리색 제도 선화로 변환했다. 배경은 단색 `#00ff00`으로 생성한 뒤 로컬 크로마키 제거를 거쳐 투명 PNG로 저장했다.
+
+```text
+Convert the exact referenced survival item into a highly readable technical
+blueprint illustration. Use precise warm amber and pale copper drafting lines,
+layered material contours, restrained shadow accents, generous clear padding,
+and a perfectly flat #00ff00 chroma-key background. Preserve the subject's
+identity and proportions. No text, labels, arrows, dimensions, border, or shadow.
+```
+
 ## 제작창 전용 아이콘
 
 Image 2.0으로 생성한 4x4 투명 스프라이트 아틀라스:

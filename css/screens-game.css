@@ -3769,6 +3769,8 @@
 .craft-workbench--spec .blueprint-list {
   padding: 2px 5px 10px 0;
   gap: 3px;
+  align-content: start;
+  grid-auto-rows: max-content;
 }
 
 .craft-workbench--spec .blueprint-item {
@@ -3927,12 +3929,28 @@
     drop-shadow(0 0 14px rgba(224, 138, 78, 0.42));
 }
 
-.craft-workbench--spec .spec-figure-img {
+.craft-workbench--spec .spec-figure-img.is-blueprint {
   width: min(54%, 680px);
   max-width: none;
   max-height: 78%;
   opacity: 0.94;
   filter: drop-shadow(0 0 2px #ffd09a) drop-shadow(0 0 14px rgba(224,138,78,.5));
+}
+
+.craft-workbench--spec .spec-figure-img.is-item-art {
+  width: min(44%, 460px);
+  max-width: none;
+  max-height: 72%;
+  opacity: 0.88;
+  mix-blend-mode: screen;
+  filter:
+    grayscale(0.75)
+    sepia(0.82)
+    saturate(1.8)
+    brightness(1.08)
+    contrast(1.12)
+    drop-shadow(0 0 2px rgba(255, 198, 135, 0.88))
+    drop-shadow(0 0 16px rgba(224, 138, 78, 0.38));
 }
 
 .craft-workbench--spec .spec-figure-icon {

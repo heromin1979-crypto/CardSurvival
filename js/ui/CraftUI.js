@@ -98,6 +98,12 @@ const CRAFT_BLUEPRINT_IMAGES = Object.freeze({
   consumable: 'assets/images/ui/crafting-blueprints/consumable.png',
 });
 
+const CRAFT_ITEM_BLUEPRINT_IMAGES = Object.freeze({
+  settled_water: 'assets/images/ui/crafting-blueprints/items/settled-water.png',
+  kindling: 'assets/images/ui/crafting-blueprints/items/kindling.png',
+  cloth_scrap: 'assets/images/ui/crafting-blueprints/items/cloth-scrap.png',
+});
+
 const CraftUI = {
   _panel: null,
   _selectedBp: null,
@@ -185,7 +191,6 @@ const CraftUI = {
           ${categoryTabHtml}
           <div class="craft-workbench craft-workbench--spec">
             <div class="craft-col craft-list-col">
-              <div class="craft-side-header">${I18n.t('craft.blueprints')}</div>
               <div class="craft-list-controls">
                 <select class="craft-sort-select">
                   <option value="name" ${this._sortMode === 'name' ? 'selected' : ''}>${I18n.t('craft.sortName')}</option>
@@ -359,6 +364,16 @@ const CraftUI = {
     return CRAFT_BLUEPRINT_IMAGES[category] ?? CRAFT_BLUEPRINT_IMAGES.tool;
   },
 
+  _specImage(bp, def) {
+    const blueprintImage = CRAFT_ITEM_BLUEPRINT_IMAGES[def.id];
+    if (blueprintImage) return { src: blueprintImage, className: 'is-blueprint' };
+
+    const itemImage = CardFactory.images[def.id];
+    if (itemImage) return { src: itemImage, className: 'is-item-art' };
+
+    return { src: this._blueprintImage(bp.category), className: 'is-blueprint' };
+  },
+
   _renderStatusTabs(groups) {
     const tabs = [
       { key: 'craftable', label: I18n.t('craft.ready'),         count: groups.craftable.length },
@@ -421,6 +436,7 @@ const CraftUI = {
     if (!def) return `<div class="craft-spec-empty">${I18n.t('craft.selectPrompt')}</div>`;
 
     const qtyLabel = out.qty > 1 ? ` ×${out.qty}` : '';
+    const specImage = this._specImage(bp, def);
     return `
       <div class="craft-spec-sheet">
         <div class="spec-sheet-title">
@@ -431,7 +447,7 @@ const CraftUI = {
         <div class="spec-blueprint-frame">
           <div class="spec-blueprint-grid"></div>
           <div class="spec-sheet-figure">
-            <img class="spec-figure-img" src="${this._blueprintImage(bp.category)}" alt="">
+            <img class="spec-figure-img ${specImage.className}" src="${specImage.src}" alt="">
             <div class="spec-figure-callout callout-1"><span>${craftTermKo(def.type, '구성품')}</span></div>
             <div class="spec-figure-callout callout-2"><span>${craftTermKo((def.tags ?? [def.rarity ?? 'common'])[0])}</span></div>
             <div class="spec-figure-callout callout-3"><span>${I18n.itemName((bp.stages?.[0]?.requiredItems ?? [])[0]?.definitionId, GameData.items[(bp.stages?.[0]?.requiredItems ?? [])[0]?.definitionId]?.name ?? '재료')}</span></div>

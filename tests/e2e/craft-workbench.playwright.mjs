@@ -104,14 +104,31 @@ async function openWorkbench(page) {
   await page.waitForSelector('#craft-modal.open .craft-workbench--spec');
   await page.locator('.craft-status-tab.status-lacking').click();
   await page.waitForSelector('.blueprint-list .blueprint-item');
+  const compactList = await page.evaluate(() => {
+    const items = [...document.querySelectorAll('.blueprint-list .blueprint-item')];
+    items.slice(3).forEach(item => { item.style.display = 'none'; });
+    const rects = items.slice(0, 3).map(item => item.getBoundingClientRect());
+    const gaps = rects.slice(1).map((rect, index) => rect.top - rects[index].bottom);
+    items.slice(3).forEach(item => { item.style.display = ''; });
+    return { itemCount: items.length, maxGap: gaps.length ? Math.max(...gaps) : 0 };
+  });
+  assert.ok(compactList.itemCount > 3, `probe itemCount=${compactList.itemCount}`);
+  assert.ok(compactList.maxGap <= 4, `three-item maxGap=${compactList.maxGap}`);
+  const settledWater = page.locator('.blueprint-item[data-bp-id="settle_water"]');
+  assert.equal(await settledWater.count(), 1, 'settle_water blueprint is missing');
+  await settledWater.click();
   await page.waitForFunction(() => {
     const image = document.querySelector('.spec-figure-img');
-    return image?.complete === true && image.naturalWidth > 0;
+    return image?.complete === true
+      && image.naturalWidth > 0
+      && image.classList.contains('is-blueprint')
+      && image.getAttribute('src')?.endsWith('/items/settled-water.png');
   });
   await page.waitForFunction(() => {
     const images = [...document.querySelectorAll('.bp-mat-icon img')];
     return images.length > 0 && images.every(image => image.complete && image.naturalWidth > 0);
   });
+  return compactList;
 }
 
 async function measure(page) {
@@ -184,7 +201,7 @@ async function main() {
     await waitForServer();
     browser = await chromium.launch();
     const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
-    await openWorkbench(page);
+    const sparseList = await openWorkbench(page);
 
     const desktop = await measure(page);
     assertDesktop(desktop);
@@ -197,6 +214,7 @@ async function main() {
     assert.equal(compact.overflowX, false, '1400x900 document has horizontal overflow');
     assert.equal(compact.overflowY, false, '1400x900 document has vertical overflow');
 
+    console.log(`craft-workbench:ok sparse=${JSON.stringify(sparseList)}`);
     console.log(`craft-workbench:ok desktop=${JSON.stringify(desktop)}`);
     console.log(`craft-workbench:ok compact=${JSON.stringify(compact)}`);
     console.log(`craft-workbench:ok screenshot=${screenshotPath}`);

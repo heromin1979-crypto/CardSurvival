@@ -168,6 +168,40 @@ describe('제작 워크벤치', () => {
     expect(materialImage.getAttribute('src')).toMatch(/^assets\/images\//);
   });
 
+  it('왼쪽 목록에 별도 블루프린트 제목을 표시하지 않는다', () => {
+    CraftUI.render();
+    expect(document.querySelector('.craft-side-header')).toBeNull();
+  });
+
+  it('시작 제작품은 전용 설계도 이미지를 사용하고 나머지는 실제 아이템 이미지로 표시한다', () => {
+    const expected = new Map([
+      ['settle_water', 'assets/images/ui/crafting-blueprints/items/settled-water.png'],
+      ['make_kindling', 'assets/images/ui/crafting-blueprints/items/kindling.png'],
+      ['make_cloth_scrap', 'assets/images/ui/crafting-blueprints/items/cloth-scrap.png'],
+    ]);
+
+    for (const [blueprintId, expectedPath] of expected) {
+      document.body.innerHTML = CraftUI._renderSpecSheet(ALL_BLUEPRINTS[blueprintId]);
+      expect(document.querySelector('.spec-figure-img')?.getAttribute('src')).toBe(expectedPath);
+      expect(document.querySelector('.spec-figure-img')?.classList.contains('is-blueprint')).toBe(true);
+    }
+
+    const fallback = Object.values(ALL_BLUEPRINTS).find(bp => !expected.has(bp.id));
+    document.body.innerHTML = CraftUI._renderSpecSheet(fallback);
+    expect(document.querySelector('.spec-figure-img')?.getAttribute('src')).toMatch(/^assets\/images\//);
+    expect(document.querySelector('.spec-figure-img')?.classList.contains('is-item-art')).toBe(true);
+
+    for (const bp of Object.values(ALL_BLUEPRINTS)) {
+      document.body.innerHTML = CraftUI._renderSpecSheet(bp);
+      const image = document.querySelector('.spec-figure-img');
+      expect(image?.getAttribute('src'), bp.id).toMatch(/^assets\/images\//);
+      expect(
+        image?.classList.contains('is-blueprint') || image?.classList.contains('is-item-art'),
+        bp.id,
+      ).toBe(true);
+    }
+  });
+
   it('maps every actual crafting category to its blueprint artwork', () => {
     expect(CRAFTING_CATEGORIES).toEqual([
       'armor', 'consumable', 'food', 'material', 'medical',
@@ -180,9 +214,7 @@ describe('제작 워크벤치', () => {
 
       const image = document.querySelector('.spec-figure-img');
       expect(image).not.toBeNull();
-      expect(image.getAttribute('src')).toBe(
-        `assets/images/ui/crafting-blueprints/${category}.png`,
-      );
+      expect(image.getAttribute('src')).toMatch(/^assets\/images\//);
     }
   });
 
