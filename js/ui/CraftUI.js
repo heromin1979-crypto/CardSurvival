@@ -448,10 +448,6 @@ const CraftUI = {
           <div class="spec-blueprint-grid"></div>
           <div class="spec-sheet-figure">
             <img class="spec-figure-img ${specImage.className}" src="${specImage.src}" alt="">
-            <div class="spec-figure-callout callout-1"><span>${craftTermKo(def.type, '구성품')}</span></div>
-            <div class="spec-figure-callout callout-2"><span>${craftTermKo((def.tags ?? [def.rarity ?? 'common'])[0])}</span></div>
-            <div class="spec-figure-callout callout-3"><span>${I18n.itemName((bp.stages?.[0]?.requiredItems ?? [])[0]?.definitionId, GameData.items[(bp.stages?.[0]?.requiredItems ?? [])[0]?.definitionId]?.name ?? '재료')}</span></div>
-            <div class="spec-figure-callout callout-4"><span>${craftTermKo(def.weaponType ?? def.slot ?? def.subtype ?? 'field_use', '현장용')}</span></div>
           </div>
         </div>
         <div class="spec-sheet-desc">${def.description ?? ''}</div>

@@ -139,7 +139,7 @@ describe('제작 워크벤치', () => {
 
     expect(document.querySelector('.craft-workbench.craft-workbench--spec')).not.toBeNull();
     expect(document.querySelector('.spec-blueprint-frame')).not.toBeNull();
-    expect(document.querySelector('.spec-figure-callout')).not.toBeNull();
+    expect(document.querySelector('.spec-figure-callout')).toBeNull();
     expect(document.querySelector('.craft-stage-header-main')?.textContent).toContain('제작 단계');
     expect(document.querySelector('.craft-stage-tools')).toBeNull();
     expect(document.querySelector('.craft-stage-search')).toBeNull();

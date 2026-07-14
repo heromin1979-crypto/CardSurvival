@@ -189,7 +189,7 @@ function assertDesktop(result) {
   assert.equal(result.blueprintLoaded, true, 'blueprint image did not load');
   assert.equal(result.materialImagesLoaded, true, 'material thumbnail did not load');
   assert.equal(result.uiIconAtlasLoaded, true, 'crafting UI icon atlas did not load');
-  assert.ok(result.calloutCount > 0, 'no blueprint callouts rendered');
+  assert.equal(result.calloutCount, 0, 'blueprint callouts should not render');
   assert.equal(result.calloutOverlapCount, 0, 'blueprint callouts overlap');
 }
 

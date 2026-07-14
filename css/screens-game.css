@@ -3958,38 +3958,6 @@
   line-height: 1;
 }
 
-.craft-workbench--spec .spec-figure-callout {
-  position: absolute;
-  max-width: 245px;
-  color: #efe2c7;
-  font-size: 16px;
-  line-height: 1.28;
-  text-shadow: 0 2px 3px #000;
-}
-
-.craft-workbench--spec .spec-figure-callout::before {
-  content: "";
-  position: absolute;
-  height: 1px;
-  background: rgba(236, 224, 192, 0.64);
-}
-
-.craft-workbench--spec .spec-figure-callout span {
-  display: inline-block;
-  font-size: inherit;
-  padding: 2px 4px;
-  background: rgba(12, 14, 12, 0.28);
-}
-
-.craft-workbench--spec .spec-figure-callout.callout-1 { left: 43%; top: 12%; }
-.craft-workbench--spec .spec-figure-callout.callout-1::before { right: 100%; top: 50%; width: 52px; }
-.craft-workbench--spec .spec-figure-callout.callout-2 { right: 7%; top: 18%; }
-.craft-workbench--spec .spec-figure-callout.callout-2::before { right: 100%; top: 50%; width: 74px; }
-.craft-workbench--spec .spec-figure-callout.callout-3 { left: 8%; bottom: 16%; }
-.craft-workbench--spec .spec-figure-callout.callout-3::before { left: 100%; top: 50%; width: 96px; }
-.craft-workbench--spec .spec-figure-callout.callout-4 { right: 12%; bottom: 14%; }
-.craft-workbench--spec .spec-figure-callout.callout-4::before { right: 100%; top: 50%; width: 88px; }
-
 .craft-workbench--spec .spec-sheet-desc {
   font-size: 15px;
 }
