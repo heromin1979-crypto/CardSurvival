@@ -120,6 +120,15 @@ describe('제작 워크벤치', () => {
     expect(document.querySelector('.craft-item-btn .craft-item-btn-icon')).not.toBeNull();
   });
 
+  it('renders the dense sample-style list structure', () => {
+    CraftUI._statusFilter = 'lacking';
+    CraftUI.render();
+    expect(document.querySelector('.blueprint-list')).not.toBeNull();
+    expect(document.querySelectorAll('.blueprint-item').length).toBeGreaterThan(5);
+    expect(document.querySelector('.blueprint-item .bp-item-icon')).not.toBeNull();
+    expect(document.querySelector('.blueprint-item .bp-mat-row')).not.toBeNull();
+  });
+
   it('maps every actual crafting category to its blueprint artwork', () => {
     expect(CRAFTING_CATEGORIES).toEqual([
       'armor', 'consumable', 'food', 'material', 'medical',
