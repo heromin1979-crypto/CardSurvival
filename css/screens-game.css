@@ -3032,6 +3032,33 @@
 }
 
 /* ── 크래프팅 뷰 탭 ── */
+.craft-ui-icon {
+  display: inline-block;
+  flex: 0 0 auto;
+  width: 1.25em;
+  height: 1.25em;
+  background-image: url('../assets/images/ui/crafting-icons/crafting-ui-icons.png');
+  background-repeat: no-repeat;
+  background-size: 400% 400%;
+  vertical-align: middle;
+}
+.craft-ui-icon--all         { background-position: 0 0; }
+.craft-ui-icon--weapon      { background-position: 33.333% 0; }
+.craft-ui-icon--armor       { background-position: 66.667% 0; }
+.craft-ui-icon--tool        { background-position: 100% 0; }
+.craft-ui-icon--structure   { background-position: 0 33.333%; }
+.craft-ui-icon--food        { background-position: 33.333% 33.333%; }
+.craft-ui-icon--medical     { background-position: 66.667% 33.333%; }
+.craft-ui-icon--material    { background-position: 100% 33.333%; }
+.craft-ui-icon--upgrade     { background-position: 0 66.667%; }
+.craft-ui-icon--consumable  { background-position: 33.333% 66.667%; }
+.craft-ui-icon--secret      { background-position: 66.667% 66.667%; }
+.craft-ui-icon--craft       { background-position: 100% 66.667%; }
+.craft-ui-icon--complete    { background-position: 0 100%; }
+.craft-ui-icon--unavailable { background-position: 33.333% 100%; }
+.craft-ui-icon--locked      { background-position: 66.667% 100%; }
+.craft-ui-icon--search      { background-position: 100% 100%; }
+
 .craft-view-tabs {
   display: flex;
   gap: 2px;
@@ -3356,12 +3383,24 @@
 
 .craft-list-controls label { display: flex; align-items: center; gap: 4px; cursor: pointer; }
 .bp-item-body { flex: 1; min-width: 0; }
-.bp-item-mark { font-size: var(--font-size-xs); color: var(--text-dim); }
+.bp-item-mark {
+  display: grid;
+  place-items: center;
+  font-size: var(--font-size-xs);
+  color: var(--text-dim);
+}
 .bp-status-craftable .bp-item-mark { color: var(--text-good); }
 .bp-status-lacking .bp-item-mark   { color: var(--text-danger); }
 
 .bp-mat-row { display: flex; gap: 3px; margin-top: 2px; }
-.bp-mat-icon { font-size: 13px; opacity: 0.9; }
+.bp-mat-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  opacity: 0.9;
+}
+.bp-mat-icon img { width: 100%; height: 100%; object-fit: contain; }
 .bp-mat-icon.unmet { opacity: 0.35; filter: grayscale(0.8); }
 .bp-lock-reason { font-size: var(--font-size-xs); color: var(--text-dim); margin-top: 2px; }
 
@@ -3779,7 +3818,8 @@
 }
 
 .craft-workbench--spec .bp-mat-icon {
-  font-size: 19px;
+  width: 20px;
+  height: 20px;
 }
 
 .craft-workbench--spec .bp-item-mark {
@@ -4048,6 +4088,11 @@
   border: 1px solid rgba(236, 214, 180, 0.42);
   color: #d7bf9b;
   font-size: 42px;
+}
+
+.craft-workbench--spec .craft-item-btn-icon .craft-ui-icon {
+  width: 52px;
+  height: 52px;
 }
 
 .craft-workbench--spec .craft-item-btn small {

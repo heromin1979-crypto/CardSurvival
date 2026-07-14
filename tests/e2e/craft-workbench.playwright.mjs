@@ -108,6 +108,10 @@ async function openWorkbench(page) {
     const image = document.querySelector('.spec-figure-img');
     return image?.complete === true && image.naturalWidth > 0;
   });
+  await page.waitForFunction(() => {
+    const images = [...document.querySelectorAll('.bp-mat-icon img')];
+    return images.length > 0 && images.every(image => image.complete && image.naturalWidth > 0);
+  });
 }
 
 async function measure(page) {
@@ -130,6 +134,8 @@ async function measure(page) {
       }
     }
     const image = document.querySelector('.spec-figure-img');
+    const materialImages = [...document.querySelectorAll('.bp-mat-icon img')];
+    const uiIcons = [...document.querySelectorAll('.bp-item-mark .craft-ui-icon, .craft-item-btn .craft-ui-icon')];
     return {
       viewport: { width: innerWidth, height: innerHeight },
       itemCount: items.length,
@@ -144,6 +150,10 @@ async function measure(page) {
       overflowX: document.documentElement.scrollWidth > document.documentElement.clientWidth,
       overflowY: document.documentElement.scrollHeight > document.documentElement.clientHeight,
       blueprintLoaded: image?.complete === true && (image?.naturalWidth ?? 0) > 0,
+      materialImagesLoaded: materialImages.length > 0
+        && materialImages.every(item => item.complete && item.naturalWidth > 0),
+      uiIconAtlasLoaded: uiIcons.length > 0
+        && uiIcons.every(icon => getComputedStyle(icon).backgroundImage.includes('crafting-ui-icons.png')),
       calloutCount: callouts.length,
       calloutOverlapCount,
     };
@@ -160,6 +170,8 @@ function assertDesktop(result) {
   assert.equal(result.overflowX, false, 'document has horizontal overflow');
   assert.equal(result.overflowY, false, 'document has vertical overflow');
   assert.equal(result.blueprintLoaded, true, 'blueprint image did not load');
+  assert.equal(result.materialImagesLoaded, true, 'material thumbnail did not load');
+  assert.equal(result.uiIconAtlasLoaded, true, 'crafting UI icon atlas did not load');
   assert.ok(result.calloutCount > 0, 'no blueprint callouts rendered');
   assert.equal(result.calloutOverlapCount, 0, 'blueprint callouts overlap');
 }

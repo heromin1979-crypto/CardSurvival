@@ -155,6 +155,19 @@ describe('제작 워크벤치', () => {
     expect(document.querySelector('.blueprint-item .bp-mat-row')).not.toBeNull();
   });
 
+  it('제작창 전용 이미지 아이콘과 재료 썸네일을 사용한다', () => {
+    CraftUI._statusFilter = 'lacking';
+    CraftUI.render();
+
+    expect(document.querySelector('.craft-category-tab .craft-ui-icon--all')).not.toBeNull();
+    expect(document.querySelector('.bp-item-mark .craft-ui-icon--unavailable')).not.toBeNull();
+    expect(document.querySelector('.craft-item-btn .craft-ui-icon--craft')).not.toBeNull();
+
+    const materialImage = document.querySelector('.bp-mat-icon img');
+    expect(materialImage).not.toBeNull();
+    expect(materialImage.getAttribute('src')).toMatch(/^assets\/images\//);
+  });
+
   it('maps every actual crafting category to its blueprint artwork', () => {
     expect(CRAFTING_CATEGORIES).toEqual([
       'armor', 'consumable', 'food', 'material', 'medical',

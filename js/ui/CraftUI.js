@@ -62,18 +62,22 @@ const ALL_BLUEPRINTS = { ...BLUEPRINTS_BASE, ...BLUEPRINTS_ADV, ...HIDDEN_RECIPE
 
 // 카테고리 탭 정의 (표시 순서대로) — 'secret'은 발견된 비밀 조합 갤러리
 const CATEGORY_TABS = [
-  { key: 'all',        icon: '📋', labelKey: 'craft.tab.all' },
-  { key: 'weapon',     icon: '⚔️', labelKey: 'craft.tab.weapon' },
-  { key: 'armor',      icon: '🛡️', labelKey: 'craft.tab.armor' },
-  { key: 'tool',       icon: '🔧', labelKey: 'craft.tab.tool' },
-  { key: 'structure',  icon: '🏠', labelKey: 'craft.tab.structure' },
-  { key: 'food',       icon: '🍲', labelKey: 'craft.tab.food' },
-  { key: 'medical',    icon: '🩹', labelKey: 'craft.tab.medical' },
-  { key: 'material',   icon: '📦', labelKey: 'craft.tab.material' },
-  { key: 'upgrade',    icon: '⬆️', labelKey: 'craft.tab.upgrade' },
-  { key: 'consumable', icon: '🧪', labelKey: 'craft.tab.consumable' },
-  { key: 'secret',     icon: '🔮', labelKey: 'craft.tab.secret' },
+  { key: 'all',        labelKey: 'craft.tab.all' },
+  { key: 'weapon',     labelKey: 'craft.tab.weapon' },
+  { key: 'armor',      labelKey: 'craft.tab.armor' },
+  { key: 'tool',       labelKey: 'craft.tab.tool' },
+  { key: 'structure',  labelKey: 'craft.tab.structure' },
+  { key: 'food',       labelKey: 'craft.tab.food' },
+  { key: 'medical',    labelKey: 'craft.tab.medical' },
+  { key: 'material',   labelKey: 'craft.tab.material' },
+  { key: 'upgrade',    labelKey: 'craft.tab.upgrade' },
+  { key: 'consumable', labelKey: 'craft.tab.consumable' },
+  { key: 'secret',     labelKey: 'craft.tab.secret' },
 ];
+
+function craftUiIcon(name) {
+  return `<span class="craft-ui-icon craft-ui-icon--${name}" aria-hidden="true"></span>`;
+}
 
 // 스펙 게이지 정규화 기준 — 카테고리 내 상대 비교용 상한 (표시 전용)
 const SPEC_REF = {
@@ -144,8 +148,8 @@ const CraftUI = {
     // View mode tabs
     const tabHtml = `
       <div class="craft-view-tabs">
-        <button class="craft-view-tab ${this._viewMode !== 'tree' ? 'active' : ''}" data-view="list">📋 레시피</button>
-        <button class="craft-view-tab ${this._viewMode === 'tree' ? 'active' : ''}" data-view="tree">🌳 테크 트리</button>
+        <button class="craft-view-tab ${this._viewMode !== 'tree' ? 'active' : ''}" data-view="list">${craftUiIcon('all')} 레시피</button>
+        <button class="craft-view-tab ${this._viewMode === 'tree' ? 'active' : ''}" data-view="tree">${craftUiIcon('secret')} 테크 트리</button>
       </div>
     `;
 
@@ -161,7 +165,7 @@ const CraftUI = {
             <button class="craft-category-tab ${this._categoryFilter === tab.key ? 'active' : ''}"
                     data-category="${tab.key}"
                     title="${I18n.t(tab.labelKey)}">
-              ${tab.icon}<span class="cat-label">${I18n.t(tab.labelKey)}</span>
+              ${craftUiIcon(tab.key)}<span class="cat-label">${I18n.t(tab.labelKey)}</span>
             </button>
           `).join('')}
         </div>
@@ -388,7 +392,8 @@ const CraftUI = {
       const matIcons = locked ? '' : (bp.stages?.[0]?.requiredItems ?? []).slice(0, 3).map(req => {
         const def = GameData.items[req.definitionId];
         const met = GameState.countOnBoard(req.definitionId) >= req.qty;
-        return `<span class="bp-mat-icon ${met ? 'met' : 'unmet'}" title="${I18n.itemName(req.definitionId, def?.name ?? req.definitionId)}">${def?.icon ?? '▫'}</span>`;
+        const materialImage = def ? CardFactory.images[def.id] : null;
+        return `<span class="bp-mat-icon ${met ? 'met' : 'unmet'}" title="${I18n.itemName(req.definitionId, def?.name ?? req.definitionId)}">${materialImage ? `<img src="${materialImage}" alt="">` : craftUiIcon('material')}</span>`;
       }).join('');
 
       return `
@@ -401,7 +406,7 @@ const CraftUI = {
               ? `<div class="bp-lock-reason">🔒 ${reason}</div>`
               : `<div class="bp-mat-row">${matIcons}</div>`}
           </div>
-          <span class="bp-item-mark">${locked ? '🔒' : this._statusFilter === 'craftable' ? '✔' : '✖'}</span>
+          <span class="bp-item-mark">${craftUiIcon(locked ? 'locked' : this._statusFilter === 'craftable' ? 'complete' : 'unavailable')}</span>
         </div>`;
     }).join('');
   },
@@ -589,8 +594,8 @@ const CraftUI = {
     const action = queueEntry
       ? ''
       : check.ok
-        ? `<button class="craft-item-btn" id="craft-start-btn"><span class="craft-item-btn-icon">⚙</span><span>${I18n.t('craft.craftItem')}</span></button>`
-        : `<button class="craft-item-btn disabled" id="craft-start-btn" disabled><span class="craft-item-btn-icon">⚙</span><span>${I18n.t('craft.craftItem')}</span></button><div class="craft-check-reason">${check.reason}</div>`;
+        ? `<button class="craft-item-btn" id="craft-start-btn"><span class="craft-item-btn-icon">${craftUiIcon('craft')}</span><span>${I18n.t('craft.craftItem')}</span></button>`
+        : `<button class="craft-item-btn disabled" id="craft-start-btn" disabled><span class="craft-item-btn-icon">${craftUiIcon('craft')}</span><span>${I18n.t('craft.craftItem')}</span></button><div class="craft-check-reason">${check.reason}</div>`;
 
     return `
       <div class="craft-stage-panel">
