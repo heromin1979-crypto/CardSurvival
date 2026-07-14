@@ -116,7 +116,8 @@ describe('제작 워크벤치', () => {
     expect(document.querySelector('.spec-blueprint-frame')).not.toBeNull();
     expect(document.querySelector('.spec-figure-callout')).not.toBeNull();
     expect(document.querySelector('.craft-stage-header-main')?.textContent).toContain('CRAFTING STAGES');
-    expect(document.querySelector('.craft-stage-tools')).not.toBeNull();
+    expect(document.querySelector('.craft-stage-tools')).toBeNull();
+    expect(document.querySelector('.craft-stage-search')).toBeNull();
     expect(document.querySelector('.craft-item-btn .craft-item-btn-icon')).not.toBeNull();
   });
 
@@ -169,6 +170,26 @@ describe('제작 워크벤치', () => {
 
     expect(document.querySelector('.craft-stage-header-main')?.textContent)
       .toContain('CRAFTING COMPLETE');
+    const steps = [...document.querySelectorAll('.craft-stage-step')];
+    expect(steps).toHaveLength(bp.stages.length);
+    for (const step of steps) {
+      expect(step.classList.contains('done')).toBe(true);
+      expect(step.querySelector('.stage-step-state')?.textContent.trim()).toBe('100% Done');
+      expect(step.querySelector('.craft-progress-fill')?.style.width).toBe('100%');
+    }
+  });
+
+  it('clears a background completion when selection changes to that blueprint', () => {
+    const [selectedBp, backgroundBp] = [...BLUEPRINTS_BY_CATEGORY.values()];
+    CraftUI._selectBlueprint(selectedBp.id);
+    CraftUI.init();
+
+    EventBus.emit('craftComplete', { blueprintId: backgroundBp.id, outputInstanceIds: [] });
+    CraftUI._selectBlueprint(backgroundBp.id);
+    document.body.innerHTML = CraftUI._renderStagePanel(backgroundBp);
+
+    expect(document.querySelector('.craft-stage-header-main')?.textContent)
+      .toContain('CRAFTING STAGES');
   });
 
   it('clears the persisted completion when another blueprint is selected', () => {

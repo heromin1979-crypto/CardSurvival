@@ -313,7 +313,7 @@ const CraftUI = {
   },
 
   _selectBlueprint(blueprintId) {
-    if (this._completedBp && this._completedBp !== blueprintId) {
+    if (this._selectedBp !== blueprintId) {
       this._completedBp = null;
     }
     this._selectedBp = blueprintId;
@@ -534,7 +534,9 @@ const CraftUI = {
 
     const steps = stages.map((stage, idx) => {
       let state = 'pending';
-      if (queueEntry) {
+      if (allDone) {
+        state = 'done';
+      } else if (queueEntry) {
         if (idx < queueEntry.stageIndex || (idx === queueEntry.stageIndex && !queueEntry.awaitingNext && stageProgress >= 1)) state = 'done';
         else if (idx === queueEntry.stageIndex) state = 'active';
       }
@@ -566,11 +568,6 @@ const CraftUI = {
       <div class="craft-stage-panel">
         <div class="craft-stage-header">
           <span class="craft-stage-header-main">${header}</span>
-        </div>
-        <div class="craft-stage-tools">
-          <span>생물/보안성 ▼</span>
-          <label><input type="checkbox" checked> 보유 증언 보기</label>
-          <input type="search" class="craft-stage-search" placeholder="${I18n.t('craft.searchPh')}">
         </div>
         ${steps}
         ${skillReqs}
