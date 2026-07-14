@@ -222,7 +222,7 @@ const Basecamp = {
       <!-- Craft modal -->
       <div class="modal-overlay" id="craft-modal">
         <div class="modal-box craft-modal-box">
-          <div class="modal-title">${I18n.t('basecamp.craftBench')}</div>
+          <div class="modal-title">Day ${GameState.time?.day ?? 1} | ${String(GameState.time?.hour ?? 6).padStart(2, '0')}:${String(Math.min(59, Math.floor((GameState.time?.tpInDay ?? 0) * (60 / 18)))).padStart(2, '0')} | ${Math.round(GameState.weather?.temp ?? GameState.stats?.temperature?.outdoor ?? 0)}C</div>
           <div id="craft-panel" style="flex:1;overflow-y:auto;"></div>
           <div class="modal-actions">
             <button class="modal-btn" id="btn-craft-close">${I18n.t('basecamp.close')}</button>

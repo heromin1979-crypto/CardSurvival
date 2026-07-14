@@ -10,6 +10,7 @@ import SkillSystem     from '../systems/SkillSystem.js';
 import I18n            from '../core/I18n.js';
 import GameData        from '../data/GameData.js';
 import CraftTreeUI     from './CraftTreeUI.js';
+import CardFactory     from './CardFactory.js';
 import SecretCombinationSystem from '../systems/SecretCombinationSystem.js';
 import SECRET_COMBINATIONS     from '../data/secretCombinations.js';
 import { en as EN_LOCALE }     from '../data/locales.js';
@@ -122,7 +123,7 @@ const CraftUI = {
         this._panel.innerHTML = `
           ${tabHtml}
           ${categoryTabHtml}
-          <div class="craft-workbench">
+          <div class="craft-workbench craft-workbench--spec">
             <div class="craft-col craft-list-col">
               <div class="craft-side-header">${I18n.t('craft.blueprints')} <span>BLUEPRINTS</span></div>
               <div class="craft-list-controls">
@@ -314,6 +315,7 @@ const CraftUI = {
       const locked = this._statusFilter === 'locked';
       const name = mystery ? '???' : I18n.blueprintName(bp.id, bp.name);
       const outDef = GameData.items[(Array.isArray(bp.output) ? bp.output[0] : bp.output)?.definitionId];
+      const img = !mystery && outDef ? CardFactory.images[outDef.id] : null;
       const icon = mystery ? '❔' : (outDef?.icon ?? '📦');
 
       const matIcons = locked ? '' : (bp.stages?.[0]?.requiredItems ?? []).slice(0, 3).map(req => {
@@ -325,7 +327,7 @@ const CraftUI = {
       return `
         <div class="blueprint-item bp-status-${this._statusFilter} ${isSelected ? 'selected' : ''}"
              data-bp-id="${bp.id}" ${locked ? 'data-locked="1"' : ''}>
-          <span class="bp-item-icon">${icon}</span>
+          <span class="bp-item-icon ${img ? 'bp-item-icon--img' : ''}">${img ? `<img src="${img}" alt="">` : icon}</span>
           <div class="bp-item-body">
             <div class="blueprint-name">${locked ? '' : `<span class="bp-status-prefix">[${this._statusFilter === 'craftable' ? 'Craftable' : 'Lacking'}]</span>`}${name}</div>
             ${locked
@@ -355,7 +357,16 @@ const CraftUI = {
           ${enItemName(def.id) ? `<span class="spec-sheet-name-en">/ ${enItemName(def.id)}</span>` : ''}
           <span class="preview-rarity rarity-${def.rarity ?? 'common'}">${def.rarity ?? 'common'}</span>
         </div>
-        <div class="spec-sheet-figure"><span>${def.icon ?? '📦'}</span></div>
+        <div class="spec-blueprint-frame">
+          <div class="spec-blueprint-grid"></div>
+          <div class="spec-sheet-figure">
+            <span class="spec-figure-icon">${def.icon ?? '📦'}</span>
+            <div class="spec-figure-callout callout-1"><span>${def.type ?? 'component'}</span></div>
+            <div class="spec-figure-callout callout-2"><span>${(def.tags ?? [def.rarity ?? 'common'])[0]}</span></div>
+            <div class="spec-figure-callout callout-3"><span>${I18n.itemName((bp.stages?.[0]?.requiredItems ?? [])[0]?.definitionId, GameData.items[(bp.stages?.[0]?.requiredItems ?? [])[0]?.definitionId]?.name ?? 'material')}</span></div>
+            <div class="spec-figure-callout callout-4"><span>${def.weaponType ?? def.slot ?? def.subtype ?? 'field use'}</span></div>
+          </div>
+        </div>
         <div class="spec-sheet-desc">${def.description ?? ''}</div>
         <div class="spec-sheet-grid">
           <div class="spec-sheet-block">
@@ -493,7 +504,11 @@ const CraftUI = {
         <div class="craft-stage-step ${state}">
           <span class="stage-step-num">${String(idx + 1).padStart(2, '0')}</span>
           <div class="stage-step-body">
-            <div class="stage-step-label">${stage.label ?? ''} ${state === 'done' ? '✔' : ''}<span class="stage-step-tp">${stage.tpCost}TP</span></div>
+            <div class="stage-step-label">
+              <span>${stage.label ?? ''} ${state === 'done' ? '✔' : ''}</span>
+              <span class="stage-step-state">${pct}% ${state === 'done' ? 'Done' : state === 'active' ? 'In progress' : 'Ready'}</span>
+              <span class="stage-step-tp">${stage.tpCost}TP</span>
+            </div>
             <div class="craft-progress-track"><div class="craft-progress-fill" style="width:${pct}%"></div></div>
           </div>
         </div>`;
@@ -503,12 +518,19 @@ const CraftUI = {
     const action = queueEntry
       ? ''
       : check.ok
-        ? `<button class="craft-item-btn" id="craft-start-btn">🛠 ${I18n.t('craft.craftItem')}<small>CRAFT ITEM</small></button>`
-        : `<div class="craft-check-reason">${check.reason}</div>`;
+        ? `<button class="craft-item-btn" id="craft-start-btn"><span class="craft-item-btn-icon">⚙</span><span>${I18n.t('craft.craftItem')}<small>CRAFT ITEM</small></span></button>`
+        : `<button class="craft-item-btn disabled" id="craft-start-btn" disabled><span class="craft-item-btn-icon">⚙</span><span>${I18n.t('craft.craftItem')}<small>CRAFT ITEM</small></span></button><div class="craft-check-reason">${check.reason}</div>`;
 
     return `
       <div class="craft-stage-panel">
-        <div class="craft-stage-header">${I18n.t('craft.stages')} <span>CRAFTING STAGES</span></div>
+        <div class="craft-stage-header">
+          <span class="craft-stage-header-main">CRAFTING COMPLETE / 제작 완료</span>
+        </div>
+        <div class="craft-stage-tools">
+          <span>생물/보안성 ▼</span>
+          <label><input type="checkbox" checked> 보유 증언 보기</label>
+          <input type="search" class="craft-stage-search" placeholder="${I18n.t('craft.searchPh')}">
+        </div>
         ${steps}
         ${skillReqs}
         ${action}

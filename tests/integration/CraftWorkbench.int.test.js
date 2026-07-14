@@ -96,4 +96,15 @@ describe('제작 워크벤치', () => {
     if (!sheet) return; // 무기 레시피가 노출 풀에 없으면 스킵
     expect(sheet.querySelectorAll('.spec-gauge-row').length).toBeGreaterThan(0);
   });
+  it('sample-style blueprint workbench shell is rendered', () => {
+    CraftUI._statusFilter = 'lacking';
+    CraftUI.render();
+
+    expect(document.querySelector('.craft-workbench.craft-workbench--spec')).not.toBeNull();
+    expect(document.querySelector('.spec-blueprint-frame')).not.toBeNull();
+    expect(document.querySelector('.spec-figure-callout')).not.toBeNull();
+    expect(document.querySelector('.craft-stage-header-main')?.textContent).toContain('CRAFTING COMPLETE');
+    expect(document.querySelector('.craft-stage-tools')).not.toBeNull();
+    expect(document.querySelector('.craft-item-btn .craft-item-btn-icon')).not.toBeNull();
+  });
 });

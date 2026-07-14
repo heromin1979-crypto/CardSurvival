@@ -3590,3 +3590,497 @@
   font-size: var(--font-size-xs);
   color: var(--text-danger);
 }
+
+/* === Craft bench sample-style blueprint skin === */
+#craft-modal.modal-overlay {
+  align-items: stretch;
+  justify-content: stretch;
+  background:
+    linear-gradient(90deg, rgba(5, 6, 5, 0.78) 0%, rgba(12, 15, 16, 0.34) 31%, rgba(12, 15, 16, 0.28) 68%, rgba(5, 6, 5, 0.74) 100%),
+    linear-gradient(180deg, rgba(8, 10, 10, 0.18), rgba(6, 7, 7, 0.72)),
+    url('../assets/images/menu/ruin_hangang_bridge.png') center / cover no-repeat;
+}
+
+#craft-modal .craft-modal-box {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  max-height: none;
+  padding: 24px 34px 26px;
+  border: 0;
+  border-radius: 0;
+  background:
+    radial-gradient(circle at 53% 48%, rgba(210, 230, 220, 0.10), transparent 36%),
+    linear-gradient(90deg, rgba(7, 8, 7, 0.92) 0 24%, rgba(17, 22, 23, 0.33) 24% 74%, rgba(7, 8, 7, 0.84) 74% 100%);
+  box-shadow: inset 0 0 120px rgba(0, 0, 0, 0.74);
+  overflow: hidden;
+}
+
+#craft-modal .craft-modal-box::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(0deg, rgba(255,255,255,0.035) 0 1px, transparent 1px 5px),
+    radial-gradient(circle at 2% 50%, rgba(228, 141, 91, 0.22), transparent 7%),
+    radial-gradient(circle at 98% 70%, rgba(198, 153, 100, 0.18), transparent 11%);
+  mix-blend-mode: screen;
+  opacity: 0.32;
+}
+
+#craft-modal .craft-modal-box > .modal-title {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  z-index: 2;
+  transform: translateX(-50%);
+  padding: 6px 52px 10px;
+  border: 1px solid rgba(204, 165, 105, 0.25);
+  border-top: 0;
+  border-radius: 0 0 8px 8px;
+  background: linear-gradient(180deg, rgba(31, 28, 22, 0.92), rgba(12, 11, 10, 0.78));
+  color: #d6b07a;
+  font-family: var(--font-title);
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+  text-shadow: 0 2px 3px #000;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45);
+}
+
+#craft-modal .craft-modal-box > .modal-actions {
+  position: absolute;
+  right: 34px;
+  bottom: 26px;
+  z-index: 3;
+  border: 0;
+  padding: 0;
+}
+
+#craft-modal #craft-panel {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  overflow: hidden !important;
+  padding-top: 60px;
+}
+
+#craft-modal .craft-view-tabs,
+#craft-modal .craft-category-tabs {
+  display: none;
+}
+
+.craft-workbench--spec {
+  grid-template-columns: minmax(330px, 430px) minmax(620px, 1fr) minmax(360px, 500px);
+  gap: 26px;
+  height: 100%;
+}
+
+.craft-workbench--spec .craft-list-col {
+  position: relative;
+  padding: 0 14px 0 10px;
+  background: linear-gradient(90deg, rgba(6, 6, 5, 0.80), rgba(18, 18, 15, 0.50));
+  border-right: 1px solid rgba(214, 190, 143, 0.22);
+  box-shadow: 20px 0 42px rgba(0, 0, 0, 0.30);
+}
+
+.craft-workbench--spec .craft-side-header {
+  justify-content: center;
+  min-height: 42px;
+  color: #d6c49a;
+  font-size: 24px;
+  text-shadow: 0 2px 3px #000;
+}
+
+.craft-workbench--spec .craft-side-header span,
+.craft-workbench--spec .craft-stage-header span,
+.craft-workbench--spec .spec-sheet-name-en {
+  color: rgba(214, 196, 154, 0.72);
+}
+
+.craft-workbench--spec .craft-list-controls {
+  justify-content: space-between;
+  min-height: 34px;
+}
+
+.craft-workbench--spec .craft-sort-select,
+.craft-workbench--spec .craft-search,
+.craft-stage-search {
+  background: linear-gradient(180deg, rgba(29, 28, 23, 0.92), rgba(12, 12, 10, 0.86));
+  border-color: rgba(220, 200, 150, 0.20);
+  box-shadow: inset 0 1px 8px rgba(0, 0, 0, 0.56);
+}
+
+.craft-workbench--spec .craft-status-tabs {
+  gap: 0;
+  justify-content: space-between;
+  margin: 12px 0 6px;
+}
+
+.craft-workbench--spec .craft-status-tab {
+  flex: 1;
+  padding: 10px 6px;
+  font-size: 18px;
+  text-align: center;
+  text-shadow: 0 2px 3px #000;
+  border-bottom-width: 3px;
+}
+
+.craft-workbench--spec .blueprint-list {
+  padding: 2px 6px 14px 0;
+  gap: 10px;
+}
+
+.craft-workbench--spec .blueprint-item {
+  min-height: 86px;
+  padding: 10px 12px;
+  border: 1px solid rgba(218, 194, 145, 0.18);
+  border-left-width: 7px;
+  background:
+    linear-gradient(90deg, rgba(204, 128, 77, 0.19), transparent 28%),
+    linear-gradient(180deg, rgba(48, 45, 34, 0.72), rgba(13, 13, 11, 0.78));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 8px 18px rgba(0,0,0,0.28);
+}
+
+.craft-workbench--spec .blueprint-item.selected {
+  border-color: rgba(239, 177, 105, 0.70);
+  background:
+    linear-gradient(90deg, rgba(235, 143, 80, 0.38), rgba(204, 160, 96, 0.12) 36%, rgba(12, 12, 10, 0.72)),
+    linear-gradient(180deg, rgba(62, 53, 37, 0.82), rgba(17, 16, 13, 0.80));
+}
+
+.craft-workbench--spec .bp-item-icon {
+  width: 54px;
+  height: 54px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 54px;
+  font-size: 34px;
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.65));
+}
+
+.craft-workbench--spec .bp-item-icon--img img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.craft-workbench--spec .blueprint-name {
+  font-size: 18px;
+  line-height: 1.2;
+  color: #efe1c4;
+  text-shadow: 0 2px 3px #000;
+}
+
+.craft-workbench--spec .bp-mat-icon {
+  font-size: 19px;
+}
+
+.craft-workbench--spec .bp-item-mark {
+  font-size: 28px;
+}
+
+.craft-workbench--spec .craft-spec-col {
+  padding: 0;
+}
+
+.craft-workbench--spec .craft-spec-sheet {
+  position: relative;
+  height: 100%;
+  padding: 0 20px 18px;
+  border: 1px solid rgba(214, 223, 214, 0.30);
+  background: rgba(18, 24, 24, 0.38);
+  box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.42), 0 18px 40px rgba(0,0,0,0.26);
+  backdrop-filter: blur(2px);
+}
+
+.craft-workbench--spec .spec-sheet-title {
+  min-height: 50px;
+  margin: 0 -20px 12px;
+  padding: 10px 20px;
+  background: linear-gradient(90deg, rgba(22, 19, 14, 0.86), rgba(255, 255, 255, 0.10), rgba(12, 11, 10, 0.45));
+}
+
+.craft-workbench--spec .spec-sheet-label,
+.craft-workbench--spec .spec-block-label {
+  color: #dfba7d;
+}
+
+.craft-workbench--spec .spec-sheet-label {
+  font-size: 20px;
+}
+
+.craft-workbench--spec .spec-sheet-name {
+  font-size: 23px;
+  color: #f0ead5;
+  text-shadow: 0 2px 3px #000;
+}
+
+.spec-blueprint-frame {
+  position: relative;
+  min-height: clamp(300px, 47vh, 540px);
+  margin-bottom: 12px;
+  border: 1px solid rgba(223, 236, 226, 0.22);
+  background:
+    radial-gradient(circle at 50% 46%, rgba(226, 157, 96, 0.14), transparent 34%),
+    rgba(10, 15, 15, 0.20);
+  overflow: hidden;
+}
+
+.spec-blueprint-frame::before,
+.spec-blueprint-frame::after {
+  content: "";
+  position: absolute;
+  inset: 16px;
+  border: 1px dashed rgba(218, 232, 223, 0.22);
+  pointer-events: none;
+}
+
+.spec-blueprint-frame::after {
+  inset: 28px 20px;
+  border-style: solid;
+  opacity: 0.36;
+}
+
+.spec-blueprint-grid {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(rgba(230, 220, 190, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(230, 220, 190, 0.035) 1px, transparent 1px);
+  background-size: 42px 42px;
+  opacity: 0.42;
+}
+
+.craft-workbench--spec .spec-sheet-figure {
+  position: absolute;
+  inset: 0;
+  min-height: 0;
+  margin: 0;
+  border: 0;
+  background: transparent;
+}
+
+.spec-figure-img,
+.spec-figure-icon {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  max-width: min(66%, 620px);
+  max-height: 76%;
+  transform: translate(-50%, -50%) rotate(-1deg);
+  object-fit: contain;
+  opacity: 0.82;
+  filter:
+    sepia(0.9)
+    saturate(1.5)
+    hue-rotate(338deg)
+    brightness(1.23)
+    contrast(1.05)
+    drop-shadow(0 0 2px rgba(255, 191, 128, 0.95))
+    drop-shadow(0 0 14px rgba(224, 138, 78, 0.42));
+}
+
+.spec-figure-icon {
+  font-size: clamp(120px, 17vw, 260px);
+  line-height: 1;
+}
+
+.spec-figure-callout {
+  position: absolute;
+  max-width: 245px;
+  color: #efe2c7;
+  font-size: 16px;
+  line-height: 1.28;
+  text-shadow: 0 2px 3px #000;
+}
+
+.spec-figure-callout::before {
+  content: "";
+  position: absolute;
+  height: 1px;
+  background: rgba(236, 224, 192, 0.64);
+}
+
+.spec-figure-callout span {
+  display: inline-block;
+  font-size: inherit;
+  padding: 2px 4px;
+  background: rgba(12, 14, 12, 0.28);
+}
+
+.spec-figure-callout.callout-1 { left: 43%; top: 12%; }
+.spec-figure-callout.callout-1::before { right: 100%; top: 50%; width: 52px; }
+.spec-figure-callout.callout-2 { right: 7%; top: 18%; }
+.spec-figure-callout.callout-2::before { right: 100%; top: 50%; width: 74px; }
+.spec-figure-callout.callout-3 { left: 8%; bottom: 16%; }
+.spec-figure-callout.callout-3::before { left: 100%; top: 50%; width: 96px; }
+.spec-figure-callout.callout-4 { right: 12%; bottom: 14%; }
+.spec-figure-callout.callout-4::before { right: 100%; top: 50%; width: 88px; }
+
+.craft-workbench--spec .spec-sheet-desc {
+  font-size: 15px;
+}
+
+.craft-workbench--spec .spec-block-label {
+  font-size: 20px;
+  text-shadow: 0 2px 3px #000;
+}
+
+.craft-workbench--spec .spec-gauge-row {
+  grid-template-columns: 185px minmax(110px, 1fr) auto;
+  font-size: 16px;
+}
+
+.craft-workbench--spec .spec-gauge-track {
+  height: 13px;
+  background: rgba(255,255,255,0.10);
+}
+
+.craft-workbench--spec .spec-gauge-track i {
+  background: linear-gradient(90deg, #9b673e, #e6a86b);
+}
+
+.craft-stage-col {
+  padding-right: 6px;
+}
+
+.craft-workbench--spec .craft-stage-panel {
+  padding: 14px;
+  border: 1px solid rgba(214, 223, 214, 0.25);
+  background: rgba(15, 18, 17, 0.46);
+  box-shadow: inset 0 0 38px rgba(0,0,0,0.40);
+}
+
+.craft-workbench--spec .craft-stage-header {
+  min-height: 42px;
+  margin-bottom: 6px;
+  border-bottom-color: rgba(214, 196, 154, 0.16);
+}
+
+.craft-stage-header-main {
+  color: #f2e7cf;
+  font-family: var(--font-title);
+  font-size: 24px;
+  font-weight: 700;
+  text-shadow: 0 2px 3px #000;
+}
+
+.craft-stage-tools {
+  display: grid;
+  grid-template-columns: auto 1fr minmax(118px, 0.8fr);
+  align-items: center;
+  gap: 8px;
+  margin: 6px 0 14px;
+  color: #d6c49a;
+  font-size: 15px;
+}
+
+.craft-stage-tools label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.craft-stage-search {
+  min-width: 0;
+  width: 100%;
+  padding: 7px 8px;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+}
+
+.craft-workbench--spec .craft-stage-step {
+  min-height: 88px;
+  margin-bottom: 12px;
+  border-color: rgba(214, 176, 120, 0.24);
+  background:
+    linear-gradient(90deg, rgba(160, 103, 63, 0.20), transparent 34%),
+    linear-gradient(180deg, rgba(41, 36, 27, 0.68), rgba(16, 15, 13, 0.72));
+  box-shadow: 0 8px 18px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.04);
+}
+
+.craft-workbench--spec .stage-step-num {
+  min-width: 58px;
+  color: rgba(214, 160, 110, 0.62);
+  font-size: 40px;
+}
+
+.craft-workbench--spec .stage-step-label {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 8px;
+  align-items: baseline;
+  color: #e9ddc2;
+  font-size: 18px;
+}
+
+.stage-step-state {
+  color: #d29a74;
+  white-space: nowrap;
+}
+
+.craft-workbench--spec .stage-step-tp {
+  color: rgba(221, 198, 160, 0.72);
+}
+
+.craft-workbench--spec .craft-progress-track {
+  height: 12px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.10);
+}
+
+.craft-workbench--spec .craft-progress-fill {
+  background: linear-gradient(90deg, #b36f3d, #f0b274);
+  box-shadow: 0 0 14px rgba(239, 151, 83, 0.55);
+}
+
+.craft-workbench--spec .craft-item-btn {
+  display: grid;
+  grid-template-columns: 94px 1fr;
+  align-items: center;
+  min-height: 92px;
+  padding: 8px 20px;
+  color: #fff5e8;
+  background:
+    linear-gradient(90deg, rgba(236, 174, 103, 0.24), rgba(82, 51, 31, 0.54)),
+    linear-gradient(180deg, rgba(72, 61, 47, 0.82), rgba(24, 19, 15, 0.92));
+  border-color: rgba(236, 174, 103, 0.48);
+  text-shadow: 0 2px 3px #000;
+  box-shadow: inset 0 0 22px rgba(255, 195, 128, 0.10), 0 0 24px rgba(226, 133, 74, 0.20);
+}
+
+.craft-item-btn-icon {
+  display: grid;
+  place-items: center;
+  width: 62px;
+  height: 62px;
+  border: 1px solid rgba(236, 214, 180, 0.42);
+  color: #d7bf9b;
+  font-size: 42px;
+}
+
+.craft-workbench--spec .craft-item-btn small {
+  font-size: 20px;
+  letter-spacing: 0;
+}
+
+@media (max-width: 1400px) {
+  .craft-workbench--spec {
+    grid-template-columns: minmax(280px, 360px) minmax(460px, 1fr) minmax(300px, 380px);
+    gap: 16px;
+  }
+
+  .craft-workbench--spec .blueprint-name,
+  .craft-workbench--spec .stage-step-label,
+  .craft-workbench--spec .spec-gauge-row {
+    font-size: 14px;
+  }
+
+  .craft-stage-tools {
+    grid-template-columns: 1fr;
+  }
+}
