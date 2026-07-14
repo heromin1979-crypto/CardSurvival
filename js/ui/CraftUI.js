@@ -83,9 +83,10 @@ const CraftUI = {
         this._completedBp = blueprintId ?? null;
         this.render();
       });
-      EventBus.on('craftStarted', ({ blueprintId } = {}) => {
-        if (this._completedBp === blueprintId) {
-          this._completedBp = null;
+      EventBus.on('craftStarted', () => {
+        const hadCompletedBp = Boolean(this._completedBp);
+        this._completedBp = null;
+        if (hadCompletedBp) {
           this.render();
           return;
         }
@@ -185,7 +186,7 @@ const CraftUI = {
     this._panel.querySelectorAll('.craft-category-tab').forEach(btn => {
       btn.addEventListener('click', () => {
         this._categoryFilter = btn.dataset.category;
-        this._selectedBp = null;
+        this._selectBlueprint(null);
         this.render();
       });
     });
@@ -202,7 +203,7 @@ const CraftUI = {
     this._panel.querySelectorAll('.craft-status-tab').forEach(btn => {
       btn.addEventListener('click', () => {
         this._statusFilter = btn.dataset.status;
-        this._selectedBp = null;
+        this._selectBlueprint(null);
         this.render();
       });
     });
@@ -236,7 +237,7 @@ const CraftUI = {
     this._panel.querySelector('.craft-craftable-only')?.addEventListener('change', (e) => {
       this._craftableOnly = e.target.checked;
       if (this._craftableOnly) this._statusFilter = 'craftable';
-      this._selectedBp = null;
+      this._selectBlueprint(null);
       this.render();
     });
   },
@@ -305,7 +306,7 @@ const CraftUI = {
     }
     // 탭 전환 직후에는 첫 항목을 자동 선택해 스펙 시트가 비지 않게 한다
     if (this._statusFilter !== 'locked' && pool.length > 0) {
-      this._selectedBp = pool[0].bp.id;
+      this._selectBlueprint(pool[0].bp.id);
       return pool[0].bp;
     }
     return null;

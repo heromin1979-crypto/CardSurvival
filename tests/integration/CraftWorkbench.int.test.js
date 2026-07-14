@@ -28,7 +28,7 @@ function setupPanel() {
   CraftUI._categoryFilter = 'all';
   CraftUI._statusFilter = 'craftable';
   CraftUI._searchTerm = '';
-  CraftUI._selectedBp = null;
+  CraftUI._selectBlueprint(null);
   CraftUI._completedBp = null;
   GameState.ui = { ...GameState.ui, basecampMode: 'CRAFT' };
   GameState.flags = GameState.flags ?? {};
@@ -100,7 +100,7 @@ describe('제작 워크벤치', () => {
 
     for (const tab of ['craftable', 'lacking']) {
       CraftUI._statusFilter = tab;
-      CraftUI._selectedBp = null;
+      CraftUI._selectBlueprint(null);
       CraftUI.render();
       if (document.querySelector('.craft-spec-sheet')) break;
     }
@@ -151,7 +151,7 @@ describe('제작 워크벤치', () => {
   it('persists the complete header after craftComplete removes the queue entry', () => {
     const bp = [...BLUEPRINTS_BY_CATEGORY.values()].find(candidate => candidate.stages.length > 1);
     expect(bp).toBeDefined();
-    CraftUI._selectedBp = bp.id;
+    CraftUI._selectBlueprint(bp.id);
     CraftUI.init();
 
     EventBus.emit('craftComplete', { blueprintId: bp.id, outputInstanceIds: ['crafted-1'] });
@@ -164,7 +164,7 @@ describe('제작 워크벤치', () => {
 
   it('clears the persisted completion when another blueprint is selected', () => {
     const [completedBp, nextBp] = [...BLUEPRINTS_BY_CATEGORY.values()];
-    CraftUI._selectedBp = completedBp.id;
+    CraftUI._selectBlueprint(completedBp.id);
     CraftUI.init();
     EventBus.emit('craftComplete', { blueprintId: completedBp.id, outputInstanceIds: [] });
 
@@ -175,6 +175,37 @@ describe('제작 워크벤치', () => {
     CraftUI._panel = document.getElementById('craft-panel');
     CraftUI._attachWorkbenchHandlers();
     document.querySelector('.blueprint-item').click();
+    document.body.innerHTML = CraftUI._renderStagePanel(completedBp);
+
+    expect(document.querySelector('.craft-stage-header-main')?.textContent)
+      .toContain('CRAFTING STAGES');
+  });
+
+  it('clears the persisted completion when a different blueprint starts crafting', () => {
+    const [completedBp, startedBp] = [...BLUEPRINTS_BY_CATEGORY.values()];
+    CraftUI._selectBlueprint(completedBp.id);
+    CraftUI.init();
+    EventBus.emit('craftComplete', { blueprintId: completedBp.id, outputInstanceIds: [] });
+
+    EventBus.emit('craftStarted', { blueprintId: startedBp.id });
+    document.body.innerHTML = CraftUI._renderStagePanel(completedBp);
+
+    expect(document.querySelector('.craft-stage-header-main')?.textContent)
+      .toContain('CRAFTING STAGES');
+  });
+
+  it('clears stale completion when the first visible blueprint is selected automatically', () => {
+    const [completedBp, nextBp] = [...BLUEPRINTS_BY_CATEGORY.values()];
+    CraftUI._selectBlueprint(completedBp.id);
+    CraftUI.init();
+    EventBus.emit('craftComplete', { blueprintId: completedBp.id, outputInstanceIds: [] });
+
+    const selected = CraftUI._selectedVisibleBlueprint({
+      craftable: [{ bp: nextBp }],
+      lacking: [],
+      locked: [],
+    });
+    expect(selected).toBe(nextBp);
     document.body.innerHTML = CraftUI._renderStagePanel(completedBp);
 
     expect(document.querySelector('.craft-stage-header-main')?.textContent)
