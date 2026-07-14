@@ -65,6 +65,7 @@ const CRAFT_BLUEPRINT_IMAGES = Object.freeze({
 const CraftUI = {
   _panel: null,
   _selectedBp: null,
+  _completedBp: null,
   _viewMode: 'list',
   _categoryFilter: 'all',
   _statusFilter: 'craftable',
@@ -78,14 +79,24 @@ const CraftUI = {
     if (!this._listenersRegistered) {
       this._listenersRegistered = true;
       EventBus.on('tpAdvance',    () => { if (GameState.ui.basecampMode === 'CRAFT') this.renderQueue(); });
-      EventBus.on('craftComplete',() => this.render());
-      EventBus.on('craftStarted', () => this.renderQueue());
+      EventBus.on('craftComplete', ({ blueprintId } = {}) => {
+        this._completedBp = blueprintId ?? null;
+        this.render();
+      });
+      EventBus.on('craftStarted', ({ blueprintId } = {}) => {
+        if (this._completedBp === blueprintId) {
+          this._completedBp = null;
+          this.render();
+          return;
+        }
+        this.renderQueue();
+      });
       EventBus.on('boardChanged', () => { if (GameState.ui.basecampMode === 'CRAFT') this.render(); });
       EventBus.on('cardPlaced',   () => { if (GameState.ui.basecampMode === 'CRAFT') this.render(); });
       EventBus.on('cardRemoved',  () => { if (GameState.ui.basecampMode === 'CRAFT') this.render(); });
       EventBus.on('craftTreeSelectRecipe', ({ recipeId }) => {
         this._viewMode = 'list';
-        this._selectedBp = recipeId;
+        this._selectBlueprint(recipeId);
         this.render();
       });
     }
@@ -184,7 +195,7 @@ const CraftUI = {
     this._panel.querySelectorAll('.blueprint-item').forEach(el => {
       el.addEventListener('click', () => {
         if (el.dataset.locked === '1') return;
-        this._selectedBp = el.dataset.bpId;
+        this._selectBlueprint(el.dataset.bpId);
         this.render();
       });
     });
@@ -205,7 +216,7 @@ const CraftUI = {
         list.querySelectorAll('.blueprint-item').forEach(el => {
           el.addEventListener('click', () => {
             if (el.dataset.locked === '1') return;
-            this._selectedBp = el.dataset.bpId;
+            this._selectBlueprint(el.dataset.bpId);
             this.render();
           });
         });
@@ -298,6 +309,13 @@ const CraftUI = {
       return pool[0].bp;
     }
     return null;
+  },
+
+  _selectBlueprint(blueprintId) {
+    if (this._completedBp && this._completedBp !== blueprintId) {
+      this._completedBp = null;
+    }
+    this._selectedBp = blueprintId;
   },
 
   _blueprintImage(category) {
@@ -508,11 +526,7 @@ const CraftUI = {
     const queueEntry = (GameState.crafting?.activeQueue ?? []).find(e => e.blueprintId === bp.id);
     const stages = bp.stages ?? [];
     const stageProgress = queueEntry ? CraftSystem.getQueueProgress(queueEntry) : 0;
-    const allDone = Boolean(queueEntry) && stages.length > 0
-      && stages.every((_, idx) => (
-        idx < queueEntry.stageIndex
-        || (idx === queueEntry.stageIndex && !queueEntry.awaitingNext && stageProgress >= 1)
-      ));
+    const allDone = this._completedBp === bp.id;
     const header = allDone
       ? 'CRAFTING COMPLETE / 제작 완료'
       : 'CRAFTING STAGES / 제작 단계';

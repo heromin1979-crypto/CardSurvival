@@ -8,6 +8,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import CraftUI from '../../js/ui/CraftUI.js';
 import GameState from '../../js/core/GameState.js';
+import EventBus from '../../js/core/EventBus.js';
 import SkillSystem from '../../js/systems/SkillSystem.js';
 import BLUEPRINTS_BASE from '../../js/data/blueprints.js';
 import BLUEPRINTS_ADV from '../../js/data/blueprints_advanced.js';
@@ -28,6 +29,7 @@ function setupPanel() {
   CraftUI._statusFilter = 'craftable';
   CraftUI._searchTerm = '';
   CraftUI._selectedBp = null;
+  CraftUI._completedBp = null;
   GameState.ui = { ...GameState.ui, basecampMode: 'CRAFT' };
   GameState.flags = GameState.flags ?? {};
   GameState.flags.hiddenRecipesUnlocked = [];
@@ -141,6 +143,39 @@ describe('제작 워크벤치', () => {
     expect(bp).toBeDefined();
 
     document.body.innerHTML = CraftUI._renderStagePanel(bp);
+
+    expect(document.querySelector('.craft-stage-header-main')?.textContent)
+      .toContain('CRAFTING STAGES');
+  });
+
+  it('persists the complete header after craftComplete removes the queue entry', () => {
+    const bp = [...BLUEPRINTS_BY_CATEGORY.values()].find(candidate => candidate.stages.length > 1);
+    expect(bp).toBeDefined();
+    CraftUI._selectedBp = bp.id;
+    CraftUI.init();
+
+    EventBus.emit('craftComplete', { blueprintId: bp.id, outputInstanceIds: ['crafted-1'] });
+    expect(GameState.crafting.activeQueue).toEqual([]);
+    document.body.innerHTML = CraftUI._renderStagePanel(bp);
+
+    expect(document.querySelector('.craft-stage-header-main')?.textContent)
+      .toContain('CRAFTING COMPLETE');
+  });
+
+  it('clears the persisted completion when another blueprint is selected', () => {
+    const [completedBp, nextBp] = [...BLUEPRINTS_BY_CATEGORY.values()];
+    CraftUI._selectedBp = completedBp.id;
+    CraftUI.init();
+    EventBus.emit('craftComplete', { blueprintId: completedBp.id, outputInstanceIds: [] });
+
+    document.body.innerHTML = `
+      <div id="craft-panel">
+        <div class="blueprint-item" data-bp-id="${nextBp.id}"></div>
+      </div>`;
+    CraftUI._panel = document.getElementById('craft-panel');
+    CraftUI._attachWorkbenchHandlers();
+    document.querySelector('.blueprint-item').click();
+    document.body.innerHTML = CraftUI._renderStagePanel(completedBp);
 
     expect(document.querySelector('.craft-stage-header-main')?.textContent)
       .toContain('CRAFTING STAGES');
