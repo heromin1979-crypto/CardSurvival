@@ -50,6 +50,18 @@ const SPEC_REF = {
   consume: 50,
 };
 
+const CRAFT_BLUEPRINT_IMAGES = Object.freeze({
+  weapon: 'assets/images/ui/crafting-blueprints/weapon.png',
+  armor: 'assets/images/ui/crafting-blueprints/armor.png',
+  tool: 'assets/images/ui/crafting-blueprints/tool.png',
+  structure: 'assets/images/ui/crafting-blueprints/structure.png',
+  food: 'assets/images/ui/crafting-blueprints/food.png',
+  medical: 'assets/images/ui/crafting-blueprints/medical.png',
+  material: 'assets/images/ui/crafting-blueprints/material.png',
+  upgrade: 'assets/images/ui/crafting-blueprints/upgrade.png',
+  consumable: 'assets/images/ui/crafting-blueprints/consumable.png',
+});
+
 const CraftUI = {
   _panel: null,
   _selectedBp: null,
@@ -288,6 +300,10 @@ const CraftUI = {
     return null;
   },
 
+  _blueprintImage(category) {
+    return CRAFT_BLUEPRINT_IMAGES[category] ?? CRAFT_BLUEPRINT_IMAGES.tool;
+  },
+
   _renderStatusTabs(groups) {
     const tabs = [
       { key: 'craftable', label: I18n.t('craft.ready'),         count: groups.craftable.length },
@@ -360,7 +376,7 @@ const CraftUI = {
         <div class="spec-blueprint-frame">
           <div class="spec-blueprint-grid"></div>
           <div class="spec-sheet-figure">
-            <span class="spec-figure-icon">${def.icon ?? '📦'}</span>
+            <img class="spec-figure-img" src="${this._blueprintImage(bp.category)}" alt="">
             <div class="spec-figure-callout callout-1"><span>${def.type ?? 'component'}</span></div>
             <div class="spec-figure-callout callout-2"><span>${(def.tags ?? [def.rarity ?? 'common'])[0]}</span></div>
             <div class="spec-figure-callout callout-3"><span>${I18n.itemName((bp.stages?.[0]?.requiredItems ?? [])[0]?.definitionId, GameData.items[(bp.stages?.[0]?.requiredItems ?? [])[0]?.definitionId]?.name ?? 'material')}</span></div>
@@ -490,15 +506,25 @@ const CraftUI = {
     if (!bp) return '';
     const check = CraftSystem.canStartBlueprint(bp.id);
     const queueEntry = (GameState.crafting?.activeQueue ?? []).find(e => e.blueprintId === bp.id);
+    const stages = bp.stages ?? [];
+    const stageProgress = queueEntry ? CraftSystem.getQueueProgress(queueEntry) : 0;
+    const allDone = Boolean(queueEntry) && stages.length > 0
+      && stages.every((_, idx) => (
+        idx < queueEntry.stageIndex
+        || (idx === queueEntry.stageIndex && !queueEntry.awaitingNext && stageProgress >= 1)
+      ));
+    const header = allDone
+      ? 'CRAFTING COMPLETE / 제작 완료'
+      : 'CRAFTING STAGES / 제작 단계';
 
-    const steps = (bp.stages ?? []).map((stage, idx) => {
+    const steps = stages.map((stage, idx) => {
       let state = 'pending';
       if (queueEntry) {
-        if (idx < queueEntry.stageIndex || (idx === queueEntry.stageIndex && !queueEntry.awaitingNext && CraftSystem.getQueueProgress(queueEntry) >= 1)) state = 'done';
+        if (idx < queueEntry.stageIndex || (idx === queueEntry.stageIndex && !queueEntry.awaitingNext && stageProgress >= 1)) state = 'done';
         else if (idx === queueEntry.stageIndex) state = 'active';
       }
       const pct = state === 'done' ? 100
-        : state === 'active' ? Math.round(CraftSystem.getQueueProgress(queueEntry) * 100)
+        : state === 'active' ? Math.round(stageProgress * 100)
         : 0;
       return `
         <div class="craft-stage-step ${state}">
@@ -524,7 +550,7 @@ const CraftUI = {
     return `
       <div class="craft-stage-panel">
         <div class="craft-stage-header">
-          <span class="craft-stage-header-main">CRAFTING COMPLETE / 제작 완료</span>
+          <span class="craft-stage-header-main">${header}</span>
         </div>
         <div class="craft-stage-tools">
           <span>생물/보안성 ▼</span>

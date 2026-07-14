@@ -9,6 +9,16 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import CraftUI from '../../js/ui/CraftUI.js';
 import GameState from '../../js/core/GameState.js';
 import SkillSystem from '../../js/systems/SkillSystem.js';
+import BLUEPRINTS_BASE from '../../js/data/blueprints.js';
+import BLUEPRINTS_ADV from '../../js/data/blueprints_advanced.js';
+import HIDDEN_RECIPES from '../../js/data/hiddenRecipes.js';
+
+const ALL_BLUEPRINTS = { ...BLUEPRINTS_BASE, ...BLUEPRINTS_ADV, ...HIDDEN_RECIPES };
+const BLUEPRINTS_BY_CATEGORY = Object.values(ALL_BLUEPRINTS).reduce((byCategory, bp) => {
+  if (!byCategory.has(bp.category)) byCategory.set(bp.category, bp);
+  return byCategory;
+}, new Map());
+const CRAFTING_CATEGORIES = [...BLUEPRINTS_BY_CATEGORY.keys()].sort();
 
 function setupPanel() {
   document.body.innerHTML = '<div id="craft-panel"></div>';
@@ -103,8 +113,36 @@ describe('제작 워크벤치', () => {
     expect(document.querySelector('.craft-workbench.craft-workbench--spec')).not.toBeNull();
     expect(document.querySelector('.spec-blueprint-frame')).not.toBeNull();
     expect(document.querySelector('.spec-figure-callout')).not.toBeNull();
-    expect(document.querySelector('.craft-stage-header-main')?.textContent).toContain('CRAFTING COMPLETE');
+    expect(document.querySelector('.craft-stage-header-main')?.textContent).toContain('CRAFTING STAGES');
     expect(document.querySelector('.craft-stage-tools')).not.toBeNull();
     expect(document.querySelector('.craft-item-btn .craft-item-btn-icon')).not.toBeNull();
+  });
+
+  it('maps every actual crafting category to its blueprint artwork', () => {
+    expect(CRAFTING_CATEGORIES).toEqual([
+      'armor', 'consumable', 'food', 'material', 'medical',
+      'structure', 'tool', 'upgrade', 'weapon',
+    ]);
+
+    for (const category of CRAFTING_CATEGORIES) {
+      const bp = BLUEPRINTS_BY_CATEGORY.get(category);
+      document.body.innerHTML = CraftUI._renderSpecSheet(bp);
+
+      const image = document.querySelector('.spec-figure-img');
+      expect(image).not.toBeNull();
+      expect(image.getAttribute('src')).toBe(
+        `assets/images/ui/crafting-blueprints/${category}.png`,
+      );
+    }
+  });
+
+  it('uses a stages header while the selected blueprint is not in the craft queue', () => {
+    const bp = [...BLUEPRINTS_BY_CATEGORY.values()].find(candidate => candidate.stages.length > 1);
+    expect(bp).toBeDefined();
+
+    document.body.innerHTML = CraftUI._renderStagePanel(bp);
+
+    expect(document.querySelector('.craft-stage-header-main')?.textContent)
+      .toContain('CRAFTING STAGES');
   });
 });
