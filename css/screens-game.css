@@ -3583,7 +3583,7 @@
   opacity: 0.75;
 }
 
-.craft-item-btn:hover { filter: brightness(1.1); }
+.craft-item-btn:hover:not(:disabled) { filter: brightness(1.1); }
 
 .craft-check-reason {
   margin-top: var(--gap-sm);
@@ -4053,6 +4053,12 @@
 .craft-workbench--spec .craft-item-btn small {
   font-size: 20px;
   letter-spacing: 0;
+}
+
+#craft-modal .craft-workbench--spec .craft-item-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+  filter: brightness(0.65) saturate(0.72);
 }
 
 @media (max-width: 1400px) {

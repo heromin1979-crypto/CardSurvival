@@ -42,13 +42,50 @@ async function waitForServer(timeoutMs = 15000) {
   throw new Error(`Timed out waiting for ${baseUrl}`);
 }
 
+function waitForExit(child, timeoutMs) {
+  return new Promise(resolve => {
+    if (child.exitCode !== null || child.signalCode !== null) {
+      resolve(true);
+      return;
+    }
+
+    let timer;
+    const finish = exited => {
+      clearTimeout(timer);
+      child.removeListener('exit', onExit);
+      resolve(exited);
+    };
+    const onExit = () => finish(true);
+    child.once('exit', onExit);
+    timer = setTimeout(() => finish(false), timeoutMs);
+  });
+}
+
+async function forceStopServer(server) {
+  if (process.platform === 'win32') {
+    await new Promise((resolve, reject) => {
+      const taskkill = spawn('taskkill', ['/pid', String(server.pid), '/t', '/f'], {
+        stdio: 'ignore',
+        windowsHide: true,
+      });
+      taskkill.once('error', reject);
+      taskkill.once('close', resolve);
+    });
+    return;
+  }
+
+  server.kill('SIGKILL');
+}
+
 async function stopServer(server) {
-  if (server.exitCode !== null) return;
+  if (server.exitCode !== null || server.signalCode !== null) return;
   server.kill();
-  await Promise.race([
-    new Promise(resolve => server.once('exit', resolve)),
-    new Promise(resolve => setTimeout(resolve, 3000)),
-  ]);
+  if (await waitForExit(server, 3000)) return;
+
+  await forceStopServer(server);
+  if (!await waitForExit(server, 3000)) {
+    throw new Error(`Vite server process ${server.pid} did not exit after forced termination`);
+  }
 }
 
 async function openWorkbench(page) {
@@ -152,8 +189,11 @@ async function main() {
     console.log(`craft-workbench:ok compact=${JSON.stringify(compact)}`);
     console.log(`craft-workbench:ok screenshot=${screenshotPath}`);
   } finally {
-    if (browser) await browser.close();
-    await stopServer(server);
+    try {
+      if (browser) await browser.close();
+    } finally {
+      await stopServer(server);
+    }
   }
 }
 
