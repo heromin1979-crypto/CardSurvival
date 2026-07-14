@@ -4,11 +4,13 @@
 
 import GameState       from '../core/GameState.js';
 import BLUEPRINTS_BASE from '../data/blueprints.js';
+import BLUEPRINTS_ADV  from '../data/blueprints_advanced.js';
 import HIDDEN_RECIPES  from '../data/hiddenRecipes.js';
 import I18n            from '../core/I18n.js';
 import GameData        from '../data/GameData.js';
 
-const ALL_BPS = { ...BLUEPRINTS_BASE, ...HIDDEN_RECIPES };
+// CraftSystem과 동일한 3중 병합 — advanced 누락 시 드래그 힌트에서 62종이 사라진다
+const ALL_BPS = { ...BLUEPRINTS_BASE, ...BLUEPRINTS_ADV, ...HIDDEN_RECIPES };
 const HIDDEN_IDS = new Set(Object.keys(HIDDEN_RECIPES));
 
 const CraftDiscovery = {

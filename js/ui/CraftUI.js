@@ -3,6 +3,7 @@ import EventBus   from '../core/EventBus.js';
 import GameState  from '../core/GameState.js';
 import CraftSystem from '../systems/CraftSystem.js';
 import BLUEPRINTS_BASE from '../data/blueprints.js';
+import BLUEPRINTS_ADV  from '../data/blueprints_advanced.js';
 import HIDDEN_RECIPES  from '../data/hiddenRecipes.js';
 import { SKILL_DEFS }  from '../data/skillDefs.js';
 import SkillSystem     from '../systems/SkillSystem.js';
@@ -12,8 +13,8 @@ import CraftTreeUI     from './CraftTreeUI.js';
 import SecretCombinationSystem from '../systems/SecretCombinationSystem.js';
 import SECRET_COMBINATIONS     from '../data/secretCombinations.js';
 
-// 전체 레시피 (히든 포함)
-const ALL_BLUEPRINTS = { ...BLUEPRINTS_BASE, ...HIDDEN_RECIPES };
+// 전체 레시피 — CraftSystem과 동일한 3중 병합 (advanced 누락 시 62종이 목록에서 사라진다)
+const ALL_BLUEPRINTS = { ...BLUEPRINTS_BASE, ...BLUEPRINTS_ADV, ...HIDDEN_RECIPES };
 
 // 카테고리 탭 정의 (표시 순서대로) — 'secret'은 발견된 비밀 조합 갤러리
 const CATEGORY_TABS = [
