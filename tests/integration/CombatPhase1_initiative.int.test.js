@@ -33,8 +33,8 @@ describe('_renderInitiativeBar — 순수 HTML 반환', () => {
       enemies: [],
     };
     const html = CombatUI._renderInitiativeBar(combat, GameState);
-    expect(html).toContain('class="initiative-bar"');
-    expect(html).toContain('Round 1');
+    expect(html).toContain('class="initiative-bar" data-round="1"');
+    expect(html).toContain('<b>1</b><em>ROUND</em>');
     expect(html).toMatch(/class="init-slot player active"/);
   });
 
