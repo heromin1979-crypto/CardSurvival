@@ -97,6 +97,7 @@
 .dbg-val { color: #e8b84b; font-weight: 500; }
 .dbg-val.low  { color: #e05555; }
 .dbg-val.warn { color: #e0a030; }
+.dbg-val.god  { color: #4bc97a; }
 
 /* TP 스킵 버튼 */
 .dbg-btn-row {
@@ -124,6 +125,19 @@
 }
 
 .dbg-btn:active { background: #333; }
+
+/* 무적 토글 */
+.dbg-god-btn { width: 100%; }
+.dbg-god-btn.on {
+  background: #143d24;
+  border-color: #4bc97a;
+  color: #4bc97a;
+}
+.dbg-god-desc {
+  margin-top: 4px;
+  font-size: 10px;
+  color: #777;
+}
 
 /* 스탯 편집기 */
 .dbg-stat-row {
