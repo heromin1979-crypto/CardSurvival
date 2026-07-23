@@ -1,6 +1,6 @@
 // === DEBUG PANEL ===
 // ?debug=1 URL 파라미터로만 활성화되는 밸런스 디버그 패널.
-// 인스펙터, TP 스킵, 스탯 편집, 아이템 지급 기능 제공.
+// 인스펙터, 무적, TP 스킵, 스탯 편집, 아이템 지급 기능 제공.
 import EventBus   from '../core/EventBus.js';
 import GameState  from '../core/GameState.js';
 import TickEngine from '../core/TickEngine.js';
@@ -87,6 +87,9 @@ const DebugPanel = {
       <div class="dbg-body" id="dbg-body">
         ${section('inspector', 'Inspector', `
           <div class="dbg-inspector"></div>`)}
+        ${section('god', 'God Mode', `
+          <button class="dbg-btn dbg-god-btn" id="dbg-god-btn">🛡 무적 OFF</button>
+          <div class="dbg-god-desc">TP 경과·행동으로 소비되는 스탯 차단 (회복은 정상)</div>`)}
         ${section('skiptp', 'Skip TP', `
           <div class="dbg-btn-row">
             <button class="dbg-btn" data-skip="1">+1 TP</button>
@@ -156,6 +159,15 @@ const DebugPanel = {
       if (collapsed) this._toggleSection(key, true);
     }
 
+    // 무적 토글
+    this._el.querySelector('#dbg-god-btn').addEventListener('click', () => {
+      GameState.debug.godMode = !GameState.debug.godMode;
+      this._updateGodBtn();
+      this._showMsg(GameState.debug.godMode ? '🛡 무적 ON — 스탯 소비 차단' : '무적 OFF');
+      this._refresh();
+    });
+    this._updateGodBtn();
+
     // TP 스킵
     this._el.querySelectorAll('[data-skip]').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -221,6 +233,14 @@ const DebugPanel = {
     });
   },
 
+  _updateGodBtn() {
+    const btn = this._el.querySelector('#dbg-god-btn');
+    if (!btn) return;
+    const on = GameState.debug?.godMode ?? false;
+    btn.textContent = on ? '🛡 무적 ON' : '🛡 무적 OFF';
+    btn.classList.toggle('on', on);
+  },
+
   // 섹션 접기/펼치기. force: true=접기, false=펼치기, 생략=토글. 접힘 여부 반환.
   _toggleSection(key, force = null) {
     const body  = this._el.querySelector(`[data-sec-body="${key}"]`);
@@ -259,6 +279,7 @@ const DebugPanel = {
     const statCls = (v, max) => v < max * 0.25 ? 'low' : v < max * 0.5 ? 'warn' : '';
 
     this._inspector.innerHTML = [
+      ...(gs.debug?.godMode ? [row('무적', '🛡 ON', 'god')] : []),
       row('일 / TP / 시각', `${t.day} / ${t.totalTP} / ${t.hour}:00`),
       row('HP',       `${p.hp.current}/${p.hp.max}`,    statCls(p.hp.current, p.hp.max)),
       row('수분',     `${Math.round(s.hydration.current)}/${s.hydration.max}`, statCls(s.hydration.current, s.hydration.max)),

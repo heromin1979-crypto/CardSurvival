@@ -240,6 +240,11 @@ const GameState = {
     eventsTriggered: [],        // 이미 발동된 이벤트 id 목록
   },
 
+  // ── debug (런타임 전용 — serialize 미포함, 세이브에 남지 않음) ──
+  debug: {
+    godMode: false,  // 무적: TP 경과 등으로 인한 스탯 소비 차단 (DebugPanel 토글)
+  },
+
   // ── flags ─────────────────────────────────────────────
   flags: {
     tutorialSeen:         false,
@@ -579,6 +584,11 @@ const GameState = {
   modStat(stat, delta) {
     const s = this.stats[stat];
     if (!s) return;
+    // 무적(디버그): 해로운 방향의 변화만 차단 — 회복/보급은 정상 적용
+    if (this.debug?.godMode) {
+      const isAccumulator = stat === 'radiation' || stat === 'infection' || stat === 'fatigue';
+      if (isAccumulator ? delta > 0 : delta < 0) return;
+    }
     // 감염 증가분에 한해 rateMultiplier 적용 (의사 -35% 등)
     let d = delta;
     if (stat === 'infection' && d > 0) {

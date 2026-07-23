@@ -191,16 +191,20 @@ describe('combat sprite sheet assets', () => {
     expect(filesWithChromaKey).toEqual([]);
   });
 
-  it('uses exact six-frame background positions instead of fractional CSS steps', () => {
+  it('drives sprite frames via per-sheet steps(N, jump-none) over a 0→100% ramp', () => {
     const css = fs.readFileSync(path.join(ROOT, 'css', 'screens-combat.css'), 'utf8');
+    const ui = fs.readFileSync(path.join(ROOT, 'js', 'ui', 'CombatUI.js'), 'utf8');
 
+    // 구식 고정 6프레임 방식 금지 (off-by-one 프레임 오차 원인)
     expect(css).not.toContain('steps(6, end)');
     expect(css).not.toContain('background-size: 600% 400%');
-    expect(css).toContain('background-position-x: 20%');
-    expect(css).toContain('background-position-x: 40%');
-    expect(css).toContain('background-position-x: 60%');
-    expect(css).toContain('background-position-x: 80%');
-    expect(css).toContain('background-position-x: 100%');
+
+    // 가변 프레임 수: 시트 크기는 --sprite-cols/--sprite-rows 변수로 계산
+    expect(css).toContain('background-size: calc(var(--sprite-cols) * 100%) calc(var(--sprite-rows) * 100%)');
+    expect(css).toMatch(/@keyframes combatSpriteSheetFrames\s*\{\s*from\s*\{\s*background-position-x:\s*0%;\s*\}\s*to\s*\{\s*background-position-x:\s*100%;\s*\}/);
+
+    // 프레임 스냅은 시트별 인라인 steps(N, jump-none)이 담당 (CombatUI._spriteSheetStyle)
+    expect(ui).toContain('animation-timing-function: steps(${steps}, jump-none)');
   });
 
   it('renders player and companion sprite sheets from the same ally size token', () => {

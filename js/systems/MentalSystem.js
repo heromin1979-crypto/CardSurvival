@@ -96,6 +96,10 @@ const MentalSystem = {
     // 캐릭터 특성 적용
     if (anxietyDelta > 0) anxietyDelta *= traits.anxietyResist;
 
+    // 무적(디버그): 멘탈 악화 차단 (회복만 허용)
+    const godMode = gs.debug?.godMode ?? false;
+    if (godMode && anxietyDelta > 0) anxietyDelta = 0;
+
     m.anxiety = Math.max(0, Math.min(100, m.anxiety + anxietyDelta));
 
     // ── 외로움 ────────────────────────────────────────────
@@ -108,6 +112,8 @@ const MentalSystem = {
     // 라디오 아이템 보유 시 감소
     const hasRadio = gs.getBoardCards().some(c => c.definitionId === 'radio' || c.definitionId === 'broken_radio');
     if (hasRadio) lonelyDelta -= 0.05;
+
+    if (godMode && lonelyDelta > 0) lonelyDelta = 0;
 
     m.loneliness = Math.max(0, Math.min(100, m.loneliness + lonelyDelta));
 
@@ -139,14 +145,14 @@ const MentalSystem = {
     }
 
     // ── 악몽 이벤트 (야간, 트라우마 기반) ──────────────────
-    if (NightSystem.isNight() && Math.random() < traumaTier.nightmareChance) {
+    if (!godMode && NightSystem.isNight() && Math.random() < traumaTier.nightmareChance) {
       gs.modStat('fatigue', 3);
       m.anxiety = Math.min(100, m.anxiety + 5);
       EventBus.emit('notify', { message: I18n.t('mental.nightmare'), type: 'danger' });
     }
 
     // ── 환각 이벤트 (외로움 50+, 낮은 확률) ────────────────
-    if (m.loneliness > 50 && Math.random() < 0.005) {
+    if (!godMode && m.loneliness > 50 && Math.random() < 0.005) {
       EventBus.emit('notify', { message: I18n.t('mental.hallucination'), type: 'warn' });
       m.anxiety = Math.min(100, m.anxiety + 3);
     }
