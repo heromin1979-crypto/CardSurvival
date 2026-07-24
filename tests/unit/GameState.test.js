@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import GameState from '../../js/core/GameState.js';
 
 // GameState는 싱글턴이므로 초기값 읽기 테스트에 집중한다.
@@ -64,5 +64,31 @@ describe('GameState 초기 구조 — player', () => {
     const inst = GameState.createCardInstance('pistol');
     expect(inst.loadedAmmo).toBe(0);
     GameState.removeCardInstance(inst.instanceId);
+  });
+});
+
+describe('GameState 장착 무기 슬롯 저장 마이그레이션', () => {
+  let initialSave;
+
+  beforeEach(() => {
+    initialSave = GameState.serialize();
+  });
+
+  afterEach(() => {
+    GameState.deserialize(initialSave);
+  });
+
+  it('유효한 원거리 무기의 누락된 loadedAmmo를 0으로 복원한다', () => {
+    const save = JSON.parse(GameState.serialize());
+    save.cards = {
+      pistol_old: { instanceId: 'pistol_old', definitionId: 'pistol' },
+    };
+    save.player.equipped.weapon_main = 'pistol_old';
+    save.board.middle = Array(20).fill(null);
+    save.board.bottom = Array(20).fill(null);
+
+    GameState.deserialize(JSON.stringify(save));
+
+    expect(GameState.cards.pistol_old.loadedAmmo).toBe(0);
   });
 });

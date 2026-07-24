@@ -3,28 +3,31 @@ import EventBus  from '../core/EventBus.js';
 import GameState from '../core/GameState.js';
 import I18n      from '../core/I18n.js';
 import { lookupBagExtraSlots } from '../data/bagSlots.js';
+import { weaponSlotForDefinition } from './WeaponSlotPolicy.js';
 
 const BOTTOM_PAGE1_SIZE = 20;
 
 // 슬롯별 장착 규칙 테이블
-// accepts: [{type, subtypes}] 배열을 쓰면 복수 타입 허용 (weapon_sub처럼 무기+방패 겸용 슬롯)
 const SLOT_RULES = {
   head:        { type: 'armor',  subtypes: ['head'] },
   body:        { type: 'armor',  subtypes: ['vest', 'fullbody', 'clothing', 'body'] },
   hands:       { type: 'armor',  subtypes: ['hands'] },
   face:        { type: 'tool',   subtypes: ['protection'], requiresOnWear: true },
-  weapon_main: { type: 'weapon', subtypes: ['melee', 'firearm', 'ranged'] },
-  weapon_sub:  {
-    accepts: [
-      { type: 'weapon', subtypes: ['melee', 'firearm', 'ranged', 'throwable'] },
-      { type: 'armor',  subtypes: ['offhand'] },
-    ],
-  },
+  weapon_main: { predicate: def => weaponSlotForDefinition(def) === 'weapon_main' },
+  weapon_sub:  { predicate: def => weaponSlotForDefinition(def) === 'weapon_sub' },
   backpack:    { type: 'tool',   subtypes: ['bag'] },
   boots:       { type: 'armor',  subtypes: ['boots'] },
   belt:        { locked: true },
   accessory:   { type: 'armor',  subtypes: ['accessory'] },
 };
+
+function ruleAcceptsDefinition(rule, def) {
+  if (typeof rule.predicate === 'function') return rule.predicate(def);
+  if (rule.accepts) {
+    return rule.accepts.some(a => a.type === def.type && a.subtypes.includes(def.subtype));
+  }
+  return def.type === rule.type && rule.subtypes.includes(def.subtype);
+}
 
 const EquipmentSystem = {
   /**
@@ -42,15 +45,11 @@ const EquipmentSystem = {
     const def = GameState.getCardDef(instanceId);
     if (!def)  return { ok: false, reason: I18n.t('equipSys.noItemDef') };
 
-    // accepts 배열이 있으면 다중 타입 허용 (weapon_sub 등)
-    if (rule.accepts) {
-      const ok = rule.accepts.some(a => a.type === def.type && a.subtypes.includes(def.subtype));
-      if (!ok) return { ok: false, reason: I18n.t('equipSys.wrongSlot') };
-    } else {
-      if (def.type !== rule.type)
+    if (!ruleAcceptsDefinition(rule, def)) {
+      if (!rule.predicate && !rule.accepts && def.type !== rule.type) {
         return { ok: false, reason: I18n.t('equipSys.typeReq', { type: rule.type }) };
-      if (!rule.subtypes.includes(def.subtype))
-        return { ok: false, reason: I18n.t('equipSys.wrongSlot') };
+      }
+      return { ok: false, reason: I18n.t('equipSys.wrongSlot') };
     }
 
     if (rule.requiresOnWear && !def.onWear)
@@ -150,11 +149,7 @@ const EquipmentSystem = {
     return Object.entries(SLOT_RULES)
       .filter(([, rule]) => {
         if (rule.locked) return false;
-        if (rule.accepts) {
-          return rule.accepts.some(a => a.type === def.type && a.subtypes.includes(def.subtype));
-        }
-        if (def.type !== rule.type) return false;
-        if (!rule.subtypes.includes(def.subtype)) return false;
+        if (!ruleAcceptsDefinition(rule, def)) return false;
         if (rule.requiresOnWear && !def.onWear) return false;
         return true;
       })
