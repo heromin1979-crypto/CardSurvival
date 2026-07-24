@@ -506,6 +506,20 @@ M3는 시뮬 v2 인프라(PR1~PR4) → Player AI 5단계(PR5/PR5.5/PR6/PR7) → 
 - [ ] 후속 — i18n locales.js `basecamp.wait`/`basecamp.waiting` 키 정리 (별도 PR)
 - [ ] 후속 — `js/screens/Basecamp.js` 레거시 파일(미참조) 처리 (별도 PR)
 
+### UI #7 (크래프팅 워크벤치 고밀도 시안 — 브랜치 `codex-crafting-window-sample-ui`, master 병합 완료)
+
+> 계획: `docs/superpowers/plans/2026-07-15-crafting-workbench-high-fidelity.md` (346줄) / 스펙: `docs/superpowers/specs/2026-07-15-crafting-workbench-high-fidelity-design.md`
+> 영향 범위: `CraftUI.js` + `CraftModalHeader.js`(신규) + `css/screens-game.css` + 자산 13종. `CraftSystem`·데이터 변경 0.
+> 15 커밋 (`54870ec`~`4ad9845`), 24 파일 +1734/-73
+
+- [x] `js/ui/CraftUI.js` — 샘플 스타일 고밀도 3열 워크벤치 레이아웃 재구성 (+233 변경). `BLUEPRINT` 카테고리→PNG 매핑 9종 + 아이템 전용 아트워크 3종 (`CraftUI.js:90-104`)
+- [x] `js/ui/CraftModalHeader.js` 신규 — `formatCraftModalTitle` / `bindCraftModalTitleUpdates` (워크벤치 라벨 로컬라이즈). `Main.js`·`Basecamp.js` import 연결
+- [x] `css/screens-game.css` +520 — 워크벤치 모달 전용 스타일 + 아이콘 아틀라스 배경 (`screens-game.css:3278`)
+- [x] 자산 — `crafting-blueprints/` 카테고리 설계도 PNG 9종(weapon~consumable) + `items/` 3종(settled-water·kindling·cloth-scrap) + `crafting-icons/crafting-ui-icons.png` 아틀라스. 인벤토리 문서 `docs/CRAFTING_ASSET_INVENTORY.md` 신규
+- [x] 후반 정리 커밋 — 완료 상태 영속(`4a9a6de`) / stale 전환 클리어(`183712f`) / 라벨 로컬라이즈(`2def52b`) / 리스트 압축·아트워크 복원(`622b15f`) / 중앙 blueprint callout 제거(`4ad9845`, -38줄)
+- [x] 테스트 3종 추가 — `tests/unit/CraftModalHeader.test.js` (69줄) + `tests/integration/CraftWorkbench.int.test.js` (+223) + `tests/e2e/craft-workbench.playwright.mjs` (233줄)
+- [x] master 머지
+
 ---
 
 ### M3 후속 (M4 이월 또는 분리 트랙)
@@ -672,6 +686,7 @@ UI 시안 트랙 (병렬 — AD_GUIDE_UI_REVAMP, M3/M4와 의존 0)
   UI #4 (sticky 알림 + FAB 동적 + 데드 코드 제거 + AD M3 #15) ─── 부분 마감 (데드 코드 제거만 완료, 나머지 후속 PR)
   UI #5 (사이드 알림 메시지 묶음 + 컨테이너 스크롤 개선) ─── 마감 (5단계 모두 적용)
   UI #6 (숙련도 대시보드 4-zone + 로그 카테고리 라벨 + Wait 정리) ─── 진행 중
+  UI #7 (크래프팅 워크벤치 고밀도 시안, codex-crafting-window-sample-ui) ─── 구현 마감 (master 병합 완료)
 
 M3 후속 (R13-1 / R14-2 / R14-3 / spice_blend / AD UI) ─── M4 이월 또는 분리 트랙
 M3 #25 (조건부 트랙 D/C — baseline v14 미달 시 폴백)
