@@ -230,16 +230,19 @@ describe('combat sprite sheet assets', () => {
     expect(clippedFrames).toEqual([]);
   });
 
-  it('uses exact six-frame background positions instead of fractional CSS steps', () => {
+  it('uses exact six-frame positions with per-sheet steps(N, jump-none)', () => {
     const css = fs.readFileSync(path.join(ROOT, 'css', 'screens-combat.css'), 'utf8');
+    const fxPlayer = fs.readFileSync(path.join(ROOT, 'js', 'ui', 'combat', 'CombatFxPlayer.js'), 'utf8');
 
     expect(css).not.toContain('steps(6, end)');
     expect(css).not.toContain('background-size: 600% 400%');
+    expect(css).toContain('background-size: calc(var(--sprite-cols) * 100%) calc(var(--sprite-rows) * 100%)');
     expect(css).toContain('background-position-x: 20%');
     expect(css).toContain('background-position-x: 40%');
     expect(css).toContain('background-position-x: 60%');
     expect(css).toContain('background-position-x: 80%');
     expect(css).toContain('background-position-x: 100%');
+    expect(fxPlayer).toContain('animation-timing-function: steps(${steps}, jump-none)');
   });
 
   it('renders player and companion sprite sheets from the same ally size token', () => {

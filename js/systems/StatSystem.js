@@ -376,6 +376,7 @@ const StatSystem = {
   _checkDeaths() {
     const gs = GameState;
     if (!gs.player.isAlive) return;
+    if (gs.debug?.godMode) return; // 무적: 사망 판정 스킵
 
     const { hydration, nutrition, radiation, infection, fatigue, morale } = gs.stats;
 
