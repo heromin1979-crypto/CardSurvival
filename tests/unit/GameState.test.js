@@ -59,4 +59,10 @@ describe('GameState 초기 구조 — player', () => {
       expect(skill).toHaveProperty('level');
     }
   });
+
+  it('탄약 요구 무기 인스턴스를 빈 탄창으로 생성한다', () => {
+    const inst = GameState.createCardInstance('pistol');
+    expect(inst.loadedAmmo).toBe(0);
+    GameState.removeCardInstance(inst.instanceId);
+  });
 });

@@ -2,6 +2,7 @@
 import EventBus  from './EventBus.js';
 import GameData  from '../data/GameData.js';
 import { lookupBagExtraSlots } from '../data/bagSlots.js';
+import { isMagazineWeapon } from '../systems/WeaponAmmoSystem.js';
 
 // 페이지 단위 행 정의 — 압축·해금 트리거가 참조
 const MIDDLE_PAGE_SIZE = 10;
@@ -311,6 +312,7 @@ const GameState = {
       quantity:      overrides.quantity      ?? (def.stackable ? 1 : 1),
       durability:    Math.round(baseDur * durBonus),
       contamination: overrides.contamination ?? def.defaultContamination ?? 0,
+      ...(isMagazineWeapon(def) ? { loadedAmmo: 0 } : {}),
       ...overrides,
     };
     this.cards[id] = instance;
