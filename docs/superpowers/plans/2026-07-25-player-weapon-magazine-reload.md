@@ -511,7 +511,7 @@ it('부적합 방패를 장착 해제해 보드로 복구한다', () => {
 
 it('보드가 가득 차면 부적합 장비를 pendingLoot로 보존한다', () => {
   const save = JSON.parse(GameState.serialize());
-  const fillerIds = Array.from({ length: 20 }, (_, index) => `filler_${index}`);
+  const fillerIds = Array.from({ length: 40 }, (_, index) => `filler_${index}`);
   save.cards = Object.fromEntries([
     ['shield_old', {
       instanceId: 'shield_old',
@@ -525,7 +525,8 @@ it('보드가 가득 차면 부적합 장비를 pendingLoot로 보존한다', ()
     }]),
   ]);
   save.player.equipped.weapon_sub = 'shield_old';
-  save.board.middle = fillerIds;
+  save.board.middle = fillerIds.slice(0, 20);
+  save.board.bottom = fillerIds.slice(20, 40);
   save.pendingLoot = [];
 
   GameState.deserialize(JSON.stringify(save));
