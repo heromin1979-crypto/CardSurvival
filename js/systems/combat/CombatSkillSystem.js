@@ -4,6 +4,7 @@ import {
   COMPANION_COMBAT_LOADOUTS,
   getCombatSkill,
 } from '../../data/combatSkills.js';
+import { weaponSlotForDefinition } from '../WeaponSlotPolicy.js';
 
 function cloneValue(value) {
   if (Array.isArray(value)) return value.map(cloneValue);
@@ -175,6 +176,7 @@ export function buildEquipmentSkill(instanceId, definition) {
       : 'weapon',
     source: 'equipment',
     equipmentInstanceId: instanceId,
+    ammoDefinitionId: ammoId,
     weaponType: typeof definition.weaponType === 'string' ? definition.weaponType : null,
     usableFrom: ranged ? [2, 3, 4] : [1, 2],
     target: {
@@ -186,7 +188,7 @@ export function buildEquipmentSkill(instanceId, definition) {
         : 1,
     },
     costs: {
-      ammo: ammoId,
+      magazineRound: ranged ? 1 : 0,
       durability: nonnegative(combat.durabilityLoss),
       noise: nonnegative(combat.noiseOnUse),
     },
@@ -215,51 +217,40 @@ function getCharacterSkillIds(combatant, gs) {
   return COMMON_COMBAT_LOADOUT;
 }
 
-function getEquipmentIds(combatant, gs) {
-  if (combatant?.sourceType === 'player') {
-    return [
-      gs?.player?.equipped?.weapon_main,
-      gs?.player?.equipped?.weapon_sub,
-    ];
-  }
-  if (combatant?.sourceType === 'companion') {
-    const state = gs?.npcs?.states?.[combatant.sourceId];
-    return [state?.equippedWeapon, state?.equippedTool];
-  }
-  return [];
-}
-
 function isAttackSkill(skill) {
   return (skill?.effects ?? []).some(effect => effect?.type === 'damage');
 }
 
-function buildEquipmentSkillsFor(combatant, gs) {
-  const equipmentSkills = [];
-  if (typeof gs?.getCardDef !== 'function') return equipmentSkills;
+function buildPlayerAttackSkills(gs) {
+  const fallback = () => [getCombatSkill('basic_strike')]
+    .filter(Boolean)
+    .map(cloneValue);
+  if (typeof gs?.getCardDef !== 'function') return fallback();
 
-  const seen = new Set();
-  for (const instanceId of getEquipmentIds(combatant, gs)) {
-    if (
-      equipmentSkills.length >= 2
-      || typeof instanceId !== 'string'
-      || instanceId.length === 0
-      || seen.has(instanceId)
-    ) {
-      continue;
-    }
-    seen.add(instanceId);
-
-    try {
-      const skill = buildEquipmentSkill(
-        instanceId,
-        gs.getCardDef(instanceId),
-      );
-      if (skill) equipmentSkills.push(skill);
-    } catch {
-      continue;
-    }
+  const mainId = gs?.player?.equipped?.weapon_main;
+  const subId = gs?.player?.equipped?.weapon_sub;
+  let mainDefinition;
+  let subDefinition;
+  try {
+    mainDefinition = typeof mainId === 'string' ? gs.getCardDef(mainId) : null;
+    subDefinition = typeof subId === 'string' ? gs.getCardDef(subId) : null;
+  } catch {
+    return fallback();
   }
-  return equipmentSkills;
+
+  const attacks = [];
+  if (weaponSlotForDefinition(mainDefinition) === 'weapon_main') {
+    const ranged = buildEquipmentSkill(mainId, mainDefinition);
+    if (ranged) attacks.push(ranged);
+  }
+  if (weaponSlotForDefinition(subDefinition) === 'weapon_sub') {
+    const melee = buildEquipmentSkill(subId, subDefinition);
+    if (melee) attacks.push(melee);
+  } else {
+    const unarmed = getCombatSkill('basic_strike');
+    if (unarmed) attacks.push(cloneValue(unarmed));
+  }
+  return attacks;
 }
 
 export function buildAllyLoadout(combatant, gs) {
@@ -276,15 +267,14 @@ export function buildAllyLoadout(combatant, gs) {
       .filter(Boolean)
       .map(cloneValue);
 
-    // 동료 딜 장비 스케일링: 무기를 장착한 동료는 장비 공격이 내재 공격 스킬을 대체한다
-    // (미장착 동료는 기존 내재 스킬 그대로 — 후반 동료 존재감 소멸 보정)
-    const equipmentSkills = buildEquipmentSkillsFor(combatant, gs);
-    if (equipmentSkills.length === 0) return [...characterSkills, ...commonUtilitySkills];
-    return [
-      ...equipmentSkills,
-      ...characterSkills.filter(skill => !isAttackSkill(skill)),
-      ...commonUtilitySkills,
-    ];
+    return [...characterSkills, ...commonUtilitySkills];
+  }
+
+  if (combatant?.sourceType !== 'player') {
+    return getCharacterSkillIds(combatant, gs)
+      .map(getCombatSkill)
+      .filter(Boolean)
+      .map(cloneValue);
   }
 
   const characterUtilitySkills = getCharacterSkillIds(combatant, gs)
@@ -293,10 +283,7 @@ export function buildAllyLoadout(combatant, gs) {
     .filter(skill => !isAttackSkill(skill))
     .map(cloneValue);
 
-  const equipmentSkills = buildEquipmentSkillsFor(combatant, gs);
-  const attackSkills = equipmentSkills.length > 0
-    ? equipmentSkills
-    : [getCombatSkill('basic_strike')].filter(Boolean).map(cloneValue);
+  const attackSkills = buildPlayerAttackSkills(gs);
 
   return [...attackSkills, ...characterUtilitySkills];
 }
@@ -357,13 +344,20 @@ export function validateSkillCommand(context, command) {
     return commandFailure('insufficient_stamina');
   }
 
-  const ammoId = skill.costs?.ammo;
-  if (
-    typeof ammoId === 'string'
-    && ammoId.length > 0
-    && availableFrom(ctx.getAmmo, [ammoId]) < 1
-  ) {
-    return commandFailure('insufficient_ammo');
+  const magazineRoundCost = positiveCost(skill.costs?.magazineRound);
+  if (magazineRoundCost > 0) {
+    if (typeof ctx.canFireWeapon !== 'function') {
+      return commandFailure('invalid_context');
+    }
+    let fireCheck;
+    try {
+      fireCheck = ctx.canFireWeapon(actor, skill);
+    } catch {
+      return commandFailure('invalid_context');
+    }
+    if (!fireCheck?.ok) {
+      return commandFailure(fireCheck?.reason ?? 'empty_magazine');
+    }
   }
 
   const durabilityCost = positiveCost(skill.costs?.durability);

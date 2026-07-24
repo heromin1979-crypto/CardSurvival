@@ -64,6 +64,8 @@ function makeGameState() {
       id: 'knife',
       name: 'Knife',
       icon: 'knife',
+      type: 'weapon',
+      subtype: 'melee',
       combat: {
         damage: [8, 14],
         accuracy: 0.85,
@@ -77,6 +79,8 @@ function makeGameState() {
       id: 'pistol',
       name: 'Pistol',
       icon: 'pistol',
+      type: 'weapon',
+      subtype: 'firearm',
       multiTarget: 2,
       combat: {
         damage: [30, 45],
@@ -100,8 +104,8 @@ function makeGameState() {
     player: {
       characterId: 'doctor',
       equipped: {
-        weapon_main: 'knife_instance',
-        weapon_sub: 'pistol_instance',
+        weapon_main: 'pistol_instance',
+        weapon_sub: 'knife_instance',
       },
     },
     npcs: {
@@ -293,7 +297,6 @@ describe('validateSkillCommand', () => {
     ['invalid skill', { skillId: 'missing' }, 'invalid_skill'],
     ['position error', { validatePosition: () => ({ ok: false, reason: 'out_of_range' }) }, 'out_of_range'],
     ['insufficient stamina', { skill: { costs: { stamina: 4 } }, getStamina: () => 3 }, 'insufficient_stamina'],
-    ['insufficient ammo', { skill: { costs: { ammo: 'pistol_ammo' } }, getAmmo: () => 0 }, 'insufficient_ammo'],
     ['insufficient durability', { skill: { costs: { durability: 2 }, equipmentInstanceId: 'knife_1' }, getDurability: () => 1 }, 'insufficient_durability'],
   ])('rejects %s', (_, setup, reason) => {
     const overrides = {};
@@ -381,6 +384,30 @@ describe('validateSkillCommand', () => {
     const result = executeSkillCommand(ctx, strikeCommand, () => 0);
 
     expect(result).toEqual({ ok: false, reason: 'insufficient_stamina' });
+    expect(ctx.consumeCosts).not.toHaveBeenCalled();
+    expect(ctx.applyEffect).not.toHaveBeenCalled();
+  });
+
+  it('rejects an empty-magazine ranged command before costs or effects', () => {
+    const ctx = makeCommandContext({
+      skillsById: {
+        shot: {
+          id: 'shot',
+          equipmentInstanceId: 'pistol_instance',
+          costs: { magazineRound: 1 },
+          usableFrom: [1],
+          target: { side: 'enemy', ranks: [1], count: 1 },
+          effects: [{ type: 'damage', value: [5, 5] }],
+        },
+      },
+      canFireWeapon: vi.fn(() => ({ ok: false, reason: 'empty_magazine' })),
+    });
+
+    expect(validateSkillCommand(ctx, {
+      actorId: 'player',
+      targetId: 'zombie',
+      skillId: 'shot',
+    })).toEqual({ ok: false, reason: 'empty_magazine' });
     expect(ctx.consumeCosts).not.toHaveBeenCalled();
     expect(ctx.applyEffect).not.toHaveBeenCalled();
   });
@@ -694,7 +721,8 @@ describe('buildEquipmentSkill', () => {
       weaponType: null,
       usableFrom: [1, 2],
       target: { side: 'enemy', ranks: [1, 2], count: 1 },
-      costs: { ammo: null, durability: 3, noise: 0 },
+      ammoDefinitionId: null,
+      costs: { magazineRound: 0, durability: 3, noise: 0 },
       accuracy: 0.85,
       critChance: 0.3,
       critMultiplier: 2,
@@ -733,8 +761,9 @@ describe('buildEquipmentSkill', () => {
       ranks: [1, 2, 3, 4],
       count: 2,
     });
+    expect(skill.ammoDefinitionId).toBe('pistol_ammo');
     expect(skill.costs).toEqual({
-      ammo: 'pistol_ammo',
+      magazineRound: 1,
       durability: 1,
       noise: 30,
     });
@@ -773,7 +802,8 @@ describe('buildEquipmentSkill', () => {
 
     expect(skill.usableFrom).toEqual([1, 2]);
     expect(skill.target.ranks).toEqual([1, 2]);
-    expect(skill.costs.ammo).toBeNull();
+    expect(skill.ammoDefinitionId).toBeNull();
+    expect(skill.costs.magazineRound).toBe(0);
     expect(skill.effects).toEqual([{ type: 'damage', value: [3, 5] }]);
   });
 
@@ -810,7 +840,7 @@ describe('buildEquipmentSkill', () => {
     expect(skill.fallbackName).toBe('broken');
     expect(skill.icon).toBe('weapon');
     expect(skill.costs).toEqual({
-      ammo: null,
+      magazineRound: 0,
       durability: 0,
       noise: 0,
     });
@@ -828,14 +858,14 @@ describe('buildAllyLoadout', () => {
     const loadout = buildAllyLoadout({ sourceType: 'player' }, gs);
 
     expect(loadout.map((skill) => skill.id)).toEqual([
-      'equipment:knife_instance',
       'equipment:pistol_instance',
+      'equipment:knife_instance',
       'doctor_triage',
       'doctor_diagnose',
     ]);
   });
 
-  it('scales companion attacks with equipped weapons, keeping utility skills', () => {
+  it('keeps a companion fixed combat loadout despite NPC equipment state', () => {
     const gs = makeGameState();
 
     const loadout = buildAllyLoadout({
@@ -843,12 +873,8 @@ describe('buildAllyLoadout', () => {
       sourceId: 'npc_nurse',
     }, gs);
 
-    // 장비 장착 동료: 장비 공격 스킬이 내재 공격(nurse_scalpel)을 대체하고 지원 스킬은 유지
     expect(loadout.map((skill) => skill.id)).toEqual([
-      'equipment:knife_instance',
-      'equipment:pistol_instance',
-      'nurse_triage',
-      'nurse_encourage',
+      ...COMPANION_COMBAT_LOADOUTS.npc_nurse,
       'guard',
       'reposition',
     ]);
@@ -908,7 +934,7 @@ describe('buildAllyLoadout', () => {
   it('uses the equipped melee weapon attack instead of soldier shot skills', () => {
     const gs = makeGameState();
     gs.player.characterId = 'soldier';
-    gs.player.equipped = { weapon_main: 'knife_instance' };
+    gs.player.equipped = { weapon_main: null, weapon_sub: 'knife_instance' };
 
     expect(buildAllyLoadout({ sourceType: 'player' }, gs)
       .map((skill) => skill.id)).toEqual([
@@ -920,11 +946,12 @@ describe('buildAllyLoadout', () => {
   it('uses the equipped firearm attack instead of innate soldier shot skills', () => {
     const gs = makeGameState();
     gs.player.characterId = 'soldier';
-    gs.player.equipped = { weapon_main: 'pistol_instance' };
+    gs.player.equipped = { weapon_main: 'pistol_instance', weapon_sub: null };
 
     expect(buildAllyLoadout({ sourceType: 'player' }, gs)
       .map((skill) => skill.id)).toEqual([
       'equipment:pistol_instance',
+      'basic_strike',
       'soldier_tactical_shift',
     ]);
   });
@@ -957,10 +984,15 @@ describe('buildAllyLoadout', () => {
 
   it('deduplicates equipment IDs and skips missing definitions safely', () => {
     const gs = makeGameState();
-    gs.player.equipped.weapon_sub = 'knife_instance';
+    gs.player.equipped.weapon_sub = 'pistol_instance';
 
-    expect(buildAllyLoadout({ sourceType: 'player' }, gs))
-      .toHaveLength(3);
+    expect(buildAllyLoadout({ sourceType: 'player' }, gs)
+      .map((skill) => skill.id)).toEqual([
+      'equipment:pistol_instance',
+      'basic_strike',
+      'doctor_triage',
+      'doctor_diagnose',
+    ]);
 
     gs.player.equipped.weapon_main = 'missing_instance';
     gs.player.equipped.weapon_sub = null;
@@ -1000,7 +1032,7 @@ describe('buildAllyLoadout', () => {
   it('isolates every returned loadout from skill data and other calls', () => {
     const first = buildAllyLoadout({ sourceType: 'player' }, makeGameState());
     const second = buildAllyLoadout({ sourceType: 'player' }, makeGameState());
-    const original = buildEquipmentSkill('knife_instance', makeGameState().getCardDef('knife_instance'));
+    const original = buildEquipmentSkill('pistol_instance', makeGameState().getCardDef('pistol_instance'));
 
     first[0].usableFrom.push(99);
     first[0].target.ranks.push(99);
