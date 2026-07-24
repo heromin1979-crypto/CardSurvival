@@ -566,8 +566,8 @@ export const ko = {
   'equip.offhand':     '방패',
   'equip.hands':       '장갑',
   'equip.backpack':    '가방',
-  'equip.weaponMain':  '주무기',
-  'equip.weaponSub':   '보조',
+  'equip.weaponMain':  '원거리 주무기',
+  'equip.weaponSub':   '근접 보조무기',
   'equip.belt':        '허리띠',
   'equip.accessory':   '장식',
   'equip.boots':       '신발',
@@ -633,6 +633,10 @@ export const ko = {
   'modal.use':             '사용',
   'modal.dismantle':       '분해',
   'modal.cardInfo':        '카드 정보',
+  'modal.loadedAmmo':      '장전 탄약',
+  'modal.compatibleAmmo':  '호환 탄약',
+  'modal.ammoPackSize':    '탄약 팩',
+  'modal.twentyRounds':    '1팩 = 20발',
 
   // ── ExploreUI ───────────────────────────────────────────────
   'explore.hud':          '🗺 탐색 — Day {day} {time}',
@@ -1515,8 +1519,8 @@ export const en = {
   'equip.offhand':     'Shield',
   'equip.hands':       'Gloves',
   'equip.backpack':    'Backpack',
-  'equip.weaponMain':  'Main Weapon',
-  'equip.weaponSub':   'Secondary',
+  'equip.weaponMain':  'Ranged Weapon',
+  'equip.weaponSub':   'Melee Sidearm',
   'equip.belt':        'Belt',
   'equip.accessory':   'Accessory',
   'equip.boots':       'Boots',
@@ -1582,6 +1586,10 @@ export const en = {
   'modal.use':             'Use',
   'modal.dismantle':       'Dismantle',
   'modal.cardInfo':        'Card Info',
+  'modal.loadedAmmo':      'Loaded Ammo',
+  'modal.compatibleAmmo':  'Compatible Ammo',
+  'modal.ammoPackSize':    'Ammo Pack',
+  'modal.twentyRounds':    '1 pack = 20 rounds',
 
   // ── ExploreUI ───────────────────────────────────────────────
   'explore.hud':          '🗺 Explore — Day {day} {time}',

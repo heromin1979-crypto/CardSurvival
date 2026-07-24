@@ -8,6 +8,7 @@ import CardFactory     from './CardFactory.js';
 import GameData        from '../data/GameData.js';
 import NPCSystem       from '../systems/NPCSystem.js';
 import { landmarkHasFishing } from '../data/landmarks.js';
+import { getMagazineState } from '../systems/WeaponAmmoSystem.js';
 
 const FOCUSABLE = 'button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
@@ -275,6 +276,24 @@ const ModalManager = {
       stats.push([I18n.t('modal.accuracy'), `${Math.round(def.combat.accuracy * 100)}%`]);
       stats.push([I18n.t('modal.noise'), `+${def.combat.noiseOnUse}`]);
     }
+    if (def.combat?.requiresAmmo) {
+      const magazine = getMagazineState(GameState, instanceId);
+      const ammoDef = GameData.items[def.combat.requiresAmmo];
+      if (magazine.ok) {
+        stats.push([
+          I18n.t('modal.loadedAmmo'),
+          `${magazine.loadedAmmo}/${magazine.capacity}`,
+          magazine.loadedAmmo === 0 ? 'danger' : '',
+        ]);
+      }
+      stats.push([
+        I18n.t('modal.compatibleAmmo'),
+        I18n.itemName(ammoDef?.id, ammoDef?.name ?? def.combat.requiresAmmo),
+      ]);
+    }
+    if (def.subtype === 'ammo') {
+      stats.push([I18n.t('modal.ammoPackSize'), I18n.t('modal.twentyRounds')]);
+    }
 
     const statsHtml = stats.map(([k, v, cls]) =>
       `<div class="card-inspect-stat">
@@ -425,9 +444,9 @@ const ModalManager = {
 
     // 장착 슬롯 버튼 목록 (슬롯이 여럿이면 각각 버튼 생성)
     const slotLabels = {
-      head: '머리', face: '얼굴', body: '몸통', offhand: '보조손',
-      hands: '장갑', backpack: '배낭', weapon_main: '주무기', weapon_sub: '보조무기',
-      belt: '벨트', accessory: '장신구', boots: '신발',
+      head: I18n.t('equip.head'), face: I18n.t('equip.face'), body: I18n.t('equip.body'), offhand: I18n.t('equip.offhand'),
+      hands: I18n.t('equip.hands'), backpack: I18n.t('equip.backpack'), weapon_main: I18n.t('equip.weaponMain'), weapon_sub: I18n.t('equip.weaponSub'),
+      belt: I18n.t('equip.belt'), accessory: I18n.t('equip.accessory'), boots: I18n.t('equip.boots'),
     };
     const equipBtnsHtml = canEquip
       ? equipSlots.map(slotId =>
