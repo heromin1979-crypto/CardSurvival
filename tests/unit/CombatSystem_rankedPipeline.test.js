@@ -263,18 +263,97 @@ describe('_consumeRankedCosts', () => {
     expect(GameState.stats.stamina.current).toBe(7);
   });
 
-  it('탄약을 보드에서 실제로 차감한다', () => {
+  it('플레이어 원거리 명령 비용은 장착 무기의 탄창에서 한 발을 소비한다', () => {
     setupRankedCombat();
-    const ammo = { instanceId: 'ammo_1', definitionId: 'pistol_ammo', quantity: 2 };
-    GameState.getBoardCards = () => [ammo];
+    GameState.cards = {
+      pistol_1: {
+        instanceId: 'pistol_1',
+        definitionId: 'pistol',
+        loadedAmmo: 2,
+        durability: 100,
+      },
+    };
+    GameState.player.equipped = { weapon_main: 'pistol_1', weapon_sub: null };
 
     const result = CombatSystem._consumeRankedCosts(
       GameState.combat.combatants.player,
-      { costs: { ammo: 'pistol_ammo' } },
+      {
+        equipmentInstanceId: 'pistol_1',
+        costs: { magazineRound: 1, durability: 0, noise: 0 },
+      },
     );
 
     expect(result.ok).toBe(true);
-    expect(ammo.quantity).toBe(1);
+    expect(GameState.cards.pistol_1.loadedAmmo).toBe(1);
+  });
+
+  it('빈 탄창 비용 실패는 스태미나와 소음을 먼저 소비하지 않는다', () => {
+    setupRankedCombat();
+    GameState.cards = {
+      pistol_1: {
+        instanceId: 'pistol_1',
+        definitionId: 'pistol',
+        loadedAmmo: 0,
+        durability: 100,
+      },
+    };
+
+    const result = CombatSystem._consumeRankedCosts(
+      GameState.combat.combatants.player,
+      {
+        equipmentInstanceId: 'pistol_1',
+        costs: { magazineRound: 1, stamina: 3, noise: 40 },
+      },
+    );
+
+    expect(result).toMatchObject({ ok: false, reason: 'empty_magazine' });
+    expect(GameState.stats.stamina.current).toBe(10);
+  });
+});
+
+describe('동료 개별 공격력과 비용', () => {
+  it('동료 자신의 combatDamageMultiplier를 고정 스킬 피해에 한 번만 적용한다', () => {
+    const combat = setupRankedCombat({ enemies: [makeEnemy({ defense: 0 })] });
+    const actor = makeCombatant({
+      sourceType: 'companion',
+      combatDamageMultiplier: 1.4,
+    });
+    const target = combat.combatants['enemy:0'];
+
+    CombatSystem._applyRankedDamageEffect(
+      { type: 'damage', value: [10, 10] },
+      actor,
+      target,
+      () => 0,
+      { hit: true, crit: false, skill: { id: 'deserter_rifle_shot' } },
+    );
+
+    expect(target.hp).toBe(16);
+  });
+
+  it('NPC 고정 스킬 비용은 플레이어 탄창과 탄약 팩을 변경하지 않는다', () => {
+    setupRankedCombat();
+    GameState.cards = {
+      pistol_1: {
+        instanceId: 'pistol_1', definitionId: 'pistol', loadedAmmo: 2, durability: 100,
+      },
+      ammo_1: {
+        instanceId: 'ammo_1', definitionId: 'pistol_ammo', quantity: 3,
+      },
+    };
+    const actor = makeCombatant({
+      sourceType: 'companion',
+      sourceId: 'npc_soldier_deserter',
+    });
+
+    const result = CombatSystem._consumeRankedCosts(actor, {
+      id: 'deserter_rifle_shot',
+      costs: { noise: 10 },
+    });
+
+    expect(result.ok).toBe(true);
+    expect(GameState.cards.pistol_1.loadedAmmo).toBe(2);
+    expect(GameState.cards.ammo_1.quantity).toBe(3);
   });
 });
 

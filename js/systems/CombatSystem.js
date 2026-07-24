@@ -44,6 +44,7 @@ import { resolveRelationshipReaction } from './combat/RelationshipCombatSystem.j
 import { buildEnemyProfile } from './combat/EnemyCombatAdapter.js';
 import { CombatAiTurns } from './combat/CombatAiTurns.js';
 import { CombatRankedEffects } from './combat/CombatRankedEffects.js';
+import { canFire } from './WeaponAmmoSystem.js';
 
 const CombatSystem = {
   init() {
@@ -350,11 +351,13 @@ const CombatSystem = {
       resolveHit: (actor, target, skill, random) => (
         this._resolveRankedHit(actor, target, skill, random)
       ),
-      getAmmo: (ammoId) => {
-        if (typeof ammoId !== 'string' || ammoId.length === 0) return 0;
-        return (GameState.getBoardCards?.() ?? [])
-          .filter(card => card.definitionId === ammoId)
-          .reduce((sum, card) => sum + (card.quantity ?? 1), 0);
+      canFireWeapon: (actor, skill) => {
+        if (actor?.sourceType !== 'player') return { ok: false, reason: 'invalid_actor' };
+        const instanceId = skill?.equipmentInstanceId;
+        if (GameState.player?.equipped?.weapon_main !== instanceId) {
+          return { ok: false, reason: 'invalid_weapon' };
+        }
+        return canFire(GameState, instanceId);
       },
       getDurability: (instanceId) => (
         Number.isFinite(GameState.cards?.[instanceId]?.durability)

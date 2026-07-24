@@ -19,10 +19,20 @@ import {
   weaponAffinityMult,
 } from './CombatResolution.js';
 import { getRank, moveCombatant } from './FormationSystem.js';
+import { consumeRound } from '../WeaponAmmoSystem.js';
 
 export const CombatRankedEffects = {
   _consumeRankedCosts(actor, skill) {
     const gs = GameState;
+    const magazineRound = skill?.costs?.magazineRound ?? 0;
+    if (magazineRound > 0) {
+      if (actor?.sourceType !== 'player') {
+        return { ok: false, reason: 'invalid_actor' };
+      }
+      const roundResult = consumeRound(gs, skill?.equipmentInstanceId);
+      if (!roundResult.ok) return roundResult;
+    }
+
     const stamina = skill?.costs?.stamina ?? 0;
     if (stamina > 0 && actor?.sourceType === 'player' && gs.stats?.stamina) {
       gs.stats.stamina.current = Math.max(0, (gs.stats.stamina.current ?? 0) - stamina);
@@ -31,29 +41,10 @@ export const CombatRankedEffects = {
     const noise = skill?.costs?.noise ?? 0;
     if (noise > 0) NoiseSystem.addNoise(noise);
 
-    const ammoId = skill?.costs?.ammo;
-    if (typeof ammoId === 'string' && ammoId.length > 0) {
-      const ammoInst = gs.getBoardCards().find(c => c.definitionId === ammoId);
-      if (!ammoInst) return { ok: false, reason: 'insufficient_ammo' };
-      // 원거리 마스터리: 확률적으로 탄약 미소모 (레거시 _attackAction과 동일 규칙)
-      const ammoSave = actor?.sourceType === 'player'
-        && SkillSystem.hasMastery('ranged')
-        && Math.random() < BALANCE.combat.ammoSaveChance;
-      if (!ammoSave) {
-        ammoInst.quantity = (ammoInst.quantity ?? 1) - 1;
-        if (ammoInst.quantity <= 0) {
-          gs.removeCardInstance(ammoInst.instanceId);
-          EventBus.emit('cardRemoved', { instanceId: ammoInst.instanceId });
-        } else {
-          EventBus.emit('boardChanged', {});
-        }
-      }
-    }
-
     const durLoss = skill?.costs?.durability ?? 0;
     const weaponInstanceId = skill?.equipmentInstanceId;
     if (durLoss > 0 && weaponInstanceId && gs.cards?.[weaponInstanceId]) {
-      const isMeleeEquipment = !ammoId;
+      const isMeleeEquipment = magazineRound <= 0;
       const durSave = actor?.sourceType === 'player'
         && isMeleeEquipment
         && Math.random() < SkillSystem.getBonus('melee', 'durSaveChance');
@@ -361,6 +352,12 @@ export const CombatRankedEffects = {
 
     if (actor?.sourceType === 'player') {
       damage = this._applyPlayerDamageSuite(damage, skill, weaponDef);
+    } else if (actor?.sourceType === 'companion') {
+      const multiplier = Number.isFinite(actor.combatDamageMultiplier)
+        && actor.combatDamageMultiplier > 0
+        ? actor.combatDamageMultiplier
+        : 1;
+      damage = Math.floor(damage * multiplier);
     }
 
     // 위치 시너지: 최전방(1랭크) 근접 공격은 체중이 실린다

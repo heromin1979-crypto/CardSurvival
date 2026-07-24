@@ -90,6 +90,7 @@ describe('CombatantAdapter', () => {
       dodge: 0.05,
       stress: 2,
       bond: 70,
+      combatDamageMultiplier: 1,
       tokens: {},
       statusEffects: [{ id: 'guarded', duration: 1 }],
       deathsDoor: false,
@@ -133,6 +134,24 @@ describe('CombatantAdapter', () => {
     const result = buildCombatants(makeGameState());
 
     expect(result.npc_extra).toBeUndefined();
+  });
+
+  it('copies a positive companion combatDmg as the individual damage multiplier', () => {
+    const gs = makeGameState();
+    gs.companions = ['npc_soldier_deserter'];
+    gs.npcs.states.npc_soldier_deserter = {
+      hp: 60,
+      maxHp: 60,
+      isCompanion: true,
+    };
+
+    expect(buildCombatants(gs).npc_soldier_deserter.combatDamageMultiplier).toBe(1.4);
+  });
+
+  it('uses a 1.0 individual damage multiplier when combatDmg is not positive', () => {
+    const result = buildCombatants(makeGameState());
+
+    expect(result.npc_nurse.combatDamageMultiplier).toBe(1);
   });
 
   it('copies status effect arrays without sharing the source arrays', () => {

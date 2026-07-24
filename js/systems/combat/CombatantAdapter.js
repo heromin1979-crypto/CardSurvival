@@ -31,6 +31,11 @@ export function buildCombatants(gs, enemies = []) {
 
   for (const id of companionIds) {
     const state = gs.npcs.states[id];
+    const configuredCombatDmg = NPCS[id]?.companion?.combatDmg;
+    const combatDamageMultiplier = Number.isFinite(configuredCombatDmg)
+      && configuredCombatDmg > 0
+      ? configuredCombatDmg
+      : 1;
     combatants[id] = {
       id,
       side: 'ally',
@@ -42,6 +47,7 @@ export function buildCombatants(gs, enemies = []) {
       dodge: state.combatDodge ?? BALANCE.combat.defaultCompanionDodge,
       stress: state.combatStress ?? 0,
       bond: state.bond ?? 0,
+      combatDamageMultiplier,
       tokens: {},
       statusEffects: [...(state.statusEffects ?? [])],
       deathsDoor: false,
