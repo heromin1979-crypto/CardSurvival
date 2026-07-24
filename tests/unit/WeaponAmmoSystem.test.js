@@ -112,4 +112,17 @@ describe('WeaponAmmoSystem', () => {
     expect(consumeRound(gs, 'pistol_1')).toMatchObject({ ok: true, loadedAmmo: 0 });
     expect(consumeRound(gs, 'pistol_1')).toMatchObject({ ok: false, reason: 'empty_magazine' });
   });
+
+  it('실패한 발사와 재장전 검증은 비정상 탄창 수량을 정규화하지 않는다', () => {
+    const emptyMagazine = makeState({ loadedAmmo: -3 });
+    expect(canFire(emptyMagazine, 'pistol_1'))
+      .toMatchObject({ ok: false, reason: 'empty_magazine', loadedAmmo: 0 });
+    expect(emptyMagazine.cards.pistol_1.loadedAmmo).toBe(-3);
+
+    const fullMagazine = makeState({ loadedAmmo: 27, ammoQuantity: 2 });
+    expect(reload(fullMagazine, 'pistol_1'))
+      .toMatchObject({ ok: false, reason: 'magazine_not_empty', loadedAmmo: 20 });
+    expect(fullMagazine.cards.pistol_1.loadedAmmo).toBe(27);
+    expect(fullMagazine.cards.ammo_1.quantity).toBe(2);
+  });
 });

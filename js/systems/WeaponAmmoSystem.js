@@ -16,11 +16,15 @@ function failure(reason, state = {}) {
   return { ...state, ok: false, reason };
 }
 
+function normalizedLoadedAmmo(instance) {
+  const raw = Number.isFinite(instance?.loadedAmmo) ? Math.trunc(instance.loadedAmmo) : 0;
+  return Math.min(MAGAZINE_CAPACITY, Math.max(0, raw));
+}
+
 export function getLoadedAmmo(gameState, weaponInstanceId) {
   const instance = gameState?.cards?.[weaponInstanceId];
   if (!instance) return 0;
-  const raw = Number.isFinite(instance.loadedAmmo) ? Math.trunc(instance.loadedAmmo) : 0;
-  const normalized = Math.min(MAGAZINE_CAPACITY, Math.max(0, raw));
+  const normalized = normalizedLoadedAmmo(instance);
   instance.loadedAmmo = normalized;
   return normalized;
 }
@@ -40,7 +44,7 @@ export function getMagazineState(gameState, weaponInstanceId) {
   return {
     ok: true,
     reason: null,
-    loadedAmmo: getLoadedAmmo(gameState, weaponInstanceId),
+    loadedAmmo: normalizedLoadedAmmo(instance),
     capacity: MAGAZINE_CAPACITY,
     ammoDefinitionId: definition.combat.requiresAmmo,
   };
