@@ -103,4 +103,100 @@ describe('weapon combat.statusInflict', () => {
     expect(enemy.currentHp).toBe(hpAfterHit - 4);
     expect(enemy._statusEffects[0].duration).toBe(1);
   });
+
+  it('빈 탄창 shoot은 피해, 턴, 내구도, 소음을 변경하지 않는다', () => {
+    const enemy = makeEnemy();
+    GameState.player.equipped = { weapon_main: 'weapon_1', weapon_sub: null };
+    GameState.cards.weapon_1 = {
+      instanceId: 'weapon_1',
+      definitionId: 'pistol',
+      loadedAmmo: 0,
+      durability: 100,
+    };
+    GameState.getCardDef = id => id === 'weapon_1'
+      ? {
+          id: 'pistol',
+          name: 'Pistol',
+          type: 'weapon',
+          subtype: 'firearm',
+          combat: {
+            damage: [10, 10],
+            accuracy: 1,
+            noiseOnUse: 30,
+            durabilityLoss: 1,
+            requiresAmmo: 'pistol_ammo',
+          },
+        }
+      : null;
+    GameState.noise = { level: 0, decayPerTP: 1, influxThreshold: 60 };
+    GameState.combat = {
+      active: true,
+      enemies: [enemy],
+      targetIndex: 0,
+      round: 0,
+      log: [],
+      playerStatus: [],
+      enemyStatus: [],
+    };
+    const before = {
+      hp: enemy.currentHp,
+      round: GameState.combat.round,
+      durability: GameState.cards.weapon_1.durability,
+      noise: GameState.noise.level,
+    };
+
+    expect(CombatSystem.resolveAction('shoot', 'weapon_1')).toBe(false);
+    expect({
+      hp: enemy.currentHp,
+      round: GameState.combat.round,
+      durability: GameState.cards.weapon_1.durability,
+      noise: GameState.noise.level,
+    }).toEqual(before);
+  });
+
+  it('다중 대상 원거리 공격은 적중 여부와 무관하게 탄창 한 발만 소비한다', () => {
+    const enemies = [makeEnemy(), { ...makeEnemy(), id: 'zombie_second' }];
+    GameState.player.equipped = { weapon_main: 'weapon_1', weapon_sub: null };
+    GameState.cards.weapon_1 = {
+      instanceId: 'weapon_1',
+      definitionId: 'shotgun',
+      loadedAmmo: 2,
+      durability: 100,
+    };
+    GameState.getCardDef = id => id === 'weapon_1'
+      ? {
+          id: 'shotgun',
+          name: 'Shotgun',
+          type: 'weapon',
+          subtype: 'firearm',
+          multiTarget: 2,
+          weaponType: 'bullet',
+          tags: ['weapon', 'firearm'],
+          combat: {
+            damage: [10, 10],
+            accuracy: 1,
+            noiseOnUse: 10,
+            durabilityLoss: 0,
+            requiresAmmo: 'shotgun_ammo',
+            critChance: 0,
+          },
+        }
+      : null;
+    GameState.noise = { level: 0, decayPerTP: 1, influxThreshold: 60 };
+    GameState.combat = {
+      active: true,
+      enemies,
+      targetIndex: 0,
+      round: 0,
+      log: [],
+      playerStatus: [],
+      enemyStatus: [],
+      fxQueue: [],
+      playerGuard: null,
+    };
+
+    CombatSystem._attackAction('shoot', 'weapon_1', enemies[0]);
+
+    expect(GameState.cards.weapon_1.loadedAmmo).toBe(1);
+  });
 });

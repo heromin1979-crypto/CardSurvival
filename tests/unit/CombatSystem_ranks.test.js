@@ -137,16 +137,17 @@ describe('탄약 소진 원거리 무기 — 근접 도달 규칙 적용', () =>
     expect(combat.targetIndex).toBe(0);
   });
 
-  it('resolveAction shoot: 탄약 0이면 후열 조준이 전열로 재조준된다', () => {
+  it('resolveAction shoot: 빈 탄창이면 대상과 피해 상태를 변경하지 않고 실패한다', () => {
     makePlayer({ isRanged: true, ammo: 0 });
     const front = makeEnemy({ id: 'f', row: 'front', hp: 500 });
     const back  = makeEnemy({ id: 'b', row: 'back',  hp: 500 });
     front.maxHp = 500; back.maxHp = 500;
     const combat = makeCombat([front, back]);
     combat.targetIndex = 1;
-    CombatSystem.resolveAction('shoot', 'ranged_inst');
+    expect(CombatSystem.resolveAction('shoot', 'ranged_inst')).toBe(false);
+    expect(front.currentHp).toBe(500);
     expect(back.currentHp).toBe(500);      // 후열은 무피해
-    expect(combat.targetIndex).toBe(0);    // 전열로 재조준
+    expect(combat.targetIndex).toBe(1);    // 빈 탄창 발사는 대상도 변경하지 않는다.
   });
 });
 

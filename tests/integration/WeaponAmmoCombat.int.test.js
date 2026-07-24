@@ -77,4 +77,40 @@ describe('탄창 기반 원거리 전투 비용', () => {
     expect(result.ok).toBe(true);
     expect(GameState.cards.pistol_1.loadedAmmo).toBe(1);
   });
+
+  it('빈 주무기를 재장전하면 탄약 팩 하나를 소비하고 다음 아군 입력으로 진행한다', () => {
+    setupPistolCombat({ loadedAmmo: 0, ammoQuantity: 6 });
+    const beforeRound = GameState.combat.roundNumber;
+
+    const result = CombatSystem.reloadActiveWeapon('pistol_1');
+
+    expect(result).toMatchObject({ ok: true, turnConsumed: true, loadedAmmo: 20 });
+    expect(GameState.cards.ammo_1.quantity).toBe(5);
+    expect(GameState.combat.roundNumber).toBeGreaterThanOrEqual(beforeRound);
+    expect(GameState.combat.phase).toBe('await_ally_input');
+  });
+
+  it('호환 탄약 팩이 없으면 재장전과 턴 상태를 모두 보존한다', () => {
+    setupPistolCombat({ loadedAmmo: 0, ammoQuantity: 0 });
+    const beforeQueue = structuredClone(GameState.combat.turnQueue);
+
+    const result = CombatSystem.reloadActiveWeapon('pistol_1');
+
+    expect(result).toMatchObject({
+      ok: false,
+      reason: 'missing_ammo_pack',
+      turnConsumed: false,
+    });
+    expect(GameState.cards.pistol_1.loadedAmmo).toBe(0);
+    expect(GameState.combat.turnQueue).toEqual(beforeQueue);
+    expect(GameState.combat.phase).toBe('await_ally_input');
+  });
+
+  it('탄창에 한 발이라도 남았으면 재장전하지 않는다', () => {
+    setupPistolCombat({ loadedAmmo: 1, ammoQuantity: 2 });
+
+    expect(CombatSystem.reloadActiveWeapon('pistol_1'))
+      .toMatchObject({ ok: false, reason: 'magazine_not_empty', turnConsumed: false });
+    expect(GameState.cards.ammo_1.quantity).toBe(2);
+  });
 });

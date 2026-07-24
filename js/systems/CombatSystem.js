@@ -44,7 +44,12 @@ import { resolveRelationshipReaction } from './combat/RelationshipCombatSystem.j
 import { buildEnemyProfile } from './combat/EnemyCombatAdapter.js';
 import { CombatAiTurns } from './combat/CombatAiTurns.js';
 import { CombatRankedEffects } from './combat/CombatRankedEffects.js';
-import { canFire } from './WeaponAmmoSystem.js';
+import {
+  canFire,
+  canReload,
+  consumeRound,
+  reload,
+} from './WeaponAmmoSystem.js';
 
 const CombatSystem = {
   init() {
@@ -375,6 +380,11 @@ const CombatSystem = {
   ...CombatRankedEffects,
 
   _rankedFailureMessage(reason) {
+    if (reason === 'empty_magazine') return I18n.t('combatSys.emptyMagazine');
+    if (reason === 'missing_ammo_pack') return I18n.t('combatSys.missingAmmoPack');
+    if (reason === 'magazine_not_empty') return I18n.t('combatSys.magazineNotEmpty');
+    if (reason === 'invalid_weapon') return '유효하지 않은 무기입니다.';
+    if (reason === 'invalid_reload_actor') return '현재 재장전할 수 없습니다.';
     const messages = {
       invalid_origin_rank: '현재 위치에서는 이 전투 행동을 사용할 수 없습니다. 이동으로 위치를 바꾸세요.',
       invalid_target_rank: '대상의 위치가 이 전투 행동의 사거리 밖입니다.',
@@ -592,6 +602,39 @@ const CombatSystem = {
       return;
     }
     if (combatant.deathsDoor !== true) combatant.dead = true;
+  },
+
+  reloadActiveWeapon(instanceId) {
+    const combat = GameState.combat;
+    const active = combat?.combatants?.[combat.activeCombatantId];
+    if (
+      !combat?.active
+      || combat.phase !== 'await_ally_input'
+      || active?.sourceType !== 'player'
+      || GameState.player?.equipped?.weapon_main !== instanceId
+    ) {
+      return { ok: false, reason: 'invalid_reload_actor', turnConsumed: false };
+    }
+
+    const check = canReload(GameState, instanceId);
+    if (!check.ok) {
+      combat.lastActionFailure = check.reason;
+      this._pushCombatLog(this._rankedFailureMessage(check.reason));
+      return { ...check, turnConsumed: false };
+    }
+
+    const result = reload(GameState, instanceId);
+    if (!result.ok) return { ...result, turnConsumed: false };
+
+    combat.actionSequence = (combat.actionSequence ?? 0) + 1;
+    this._pushCombatLog(I18n.t('combatSys.reloaded', {
+      ammo: result.loadedAmmo,
+      capacity: result.capacity,
+    }));
+    this._resolveRelationshipAfterAction(combat.activeCombatantId);
+    this.advanceTurn();
+    this.processUntilAllyTurn();
+    return { ...result, turnConsumed: true };
   },
 
   confirmAction() {
@@ -1221,6 +1264,17 @@ const CombatSystem = {
     let target = this._getTarget();
     if (!target) return;
 
+    if (action === 'shoot') {
+      const fireCheck = canFire(gs, weaponInstanceId);
+      if (!fireCheck.ok) {
+        EventBus.emit('notify', {
+          message: I18n.t('combatSys.emptyMagazine'),
+          type: 'warn',
+        });
+        return false;
+      }
+    }
+
     // 근접 공격이 후열을 노리고 있으면 닿는 적으로 자동 재조준
     if (action === 'melee' || action === 'shoot') {
       const wDef = (weaponInstanceId && gs.cards[weaponInstanceId]) ? gs.getCardDef(weaponInstanceId) : null;
@@ -1350,6 +1404,8 @@ const CombatSystem = {
         skillId        = isRanged ? 'ranged' : 'melee';
 
         if (isRanged) {
+          const roundResult = consumeRound(gs, weaponId);
+          if (!roundResult.ok) return I18n.t('combatSys.emptyMagazine');
           if (weaponInst._suppressor) {
             noise = Math.max(0, Math.round(noise * (1 - Math.min(1, weaponInst._noiseReduction ?? 0.5))));
           }
@@ -1357,25 +1413,6 @@ const CombatSystem = {
           accuracy   = Math.min(1, accuracy   + SkillSystem.getBonus('ranged', 'accBonus'));
           critChance = Math.min(1, critChance + SkillSystem.getBonus('ranged', 'critBonus'));
 
-          const ammoInst = gs.getBoardCards().find(c => c.definitionId === def.combat.requiresAmmo);
-          if (!ammoInst) {
-            EventBus.emit('notify', { message: I18n.t('combatSys.noAmmo'), type: 'warn' });
-            const [nMin, nMax] = BALANCE.combat.noAmmoMeleeDamage ?? [5, 10];
-            damage = nMin + Math.floor(Math.random() * (nMax - nMin + 1));
-            accuracy = BALANCE.combat.noAmmoAccuracy ?? 0.65; noise = BALANCE.combat.noAmmoNoise ?? 3; skillId = 'melee';
-          } else {
-            // 마스터리: 20% 확률 탄약 미소모
-            const ammoSave = SkillSystem.hasMastery('ranged') && Math.random() < BALANCE.combat.ammoSaveChance;
-            if (!ammoSave) {
-              ammoInst.quantity = (ammoInst.quantity ?? 1) - 1;
-              if (ammoInst.quantity <= 0) {
-                gs.removeCardInstance(ammoInst.instanceId);
-                EventBus.emit('cardRemoved', { instanceId: ammoInst.instanceId });
-              } else {
-                EventBus.emit('boardChanged', {}); // 탄약 수량 변경 UI 동기화
-              }
-            }
-          }
         }
 
         if (durLoss > 0 && gs.cards[weaponId]) {
