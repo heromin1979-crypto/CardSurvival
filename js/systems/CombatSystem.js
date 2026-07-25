@@ -48,6 +48,7 @@ import {
   canFire,
   canReload,
   consumeRound,
+  getMagazineState,
   reload,
 } from './WeaponAmmoSystem.js';
 
@@ -1053,15 +1054,16 @@ const CombatSystem = {
     return !this.getAliveEnemies().some(e => this.rowOf(e) === 'front');
   },
 
-  // 탄약이 있어야 원거리 사거리로 취급 — 빈 총은 근접 폴백 타격이므로 전열 규칙을 따른다
-  weaponReachIsRanged(def) {
+  weaponReachIsRanged(def, weaponInstanceId = null) {
     if (!def?.combat?.requiresAmmo) return false;
-    return GameState.getBoardCards().some(c => c.definitionId === def.combat.requiresAmmo);
+    return typeof weaponInstanceId === 'string'
+      && canFire(GameState, weaponInstanceId).ok;
   },
 
   // 플레이어의 현재 무기가 원거리인지 (장착 → 보드 순)
   isPlayerWeaponRanged() {
-    return this.weaponReachIsRanged(this._getPlayerWeapon()?.def);
+    const weapon = this._getPlayerWeapon();
+    return this.weaponReachIsRanged(weapon?.def, weapon?.instanceId);
   },
 
   // 연출 이벤트 큐에 push — CombatUI._playFxQueue가 렌더 후 순차 재생
@@ -1278,7 +1280,7 @@ const CombatSystem = {
     // 근접 공격이 후열을 노리고 있으면 닿는 적으로 자동 재조준
     if (action === 'melee' || action === 'shoot') {
       const wDef = (weaponInstanceId && gs.cards[weaponInstanceId]) ? gs.getCardDef(weaponInstanceId) : null;
-      const isRanged = this.weaponReachIsRanged(wDef);
+      const isRanged = this.weaponReachIsRanged(wDef, weaponInstanceId);
       if (!this.isEnemyReachable(target, isRanged)) {
         const reachable = this.getReachableEnemies(isRanged);
         if (reachable.length === 0) return;
@@ -1549,7 +1551,13 @@ const CombatSystem = {
       if (weaponId && gs.cards[weaponId]) {
         const mDef = gs.getCardDef(weaponId);
         if (mDef?.multiTarget > 1) {
-          const extraLogs = applyMultiTarget(finalDmg, mDef, gs.combat.targetIndex, this);
+          const extraLogs = applyMultiTarget(
+            finalDmg,
+            mDef,
+            gs.combat.targetIndex,
+            this,
+            isRanged,
+          );
           for (const el of extraLogs) gs.combat.log.push(el);
         }
       }
@@ -2109,9 +2117,23 @@ const CombatSystem = {
   previewAttack(weaponId = null) {
     const gs    = GameState;
     const enemy = gs.combat.enemies?.[gs.combat.targetIndex];
-    if (!enemy) return { dmgMin: 0, dmgMax: 0, accuracy: 70, critChance: 0, ammoLeft: null };
+    if (!enemy) {
+      return {
+        dmgMin: 0,
+        dmgMax: 0,
+        accuracy: 70,
+        critChance: 0,
+        ammoLeft: null,
+        ammoCapacity: null,
+      };
+    }
 
-    let dmgMin = 0, dmgMax = 0, accuracy = 0.70, critChance = 0, ammoLeft = null;
+    let dmgMin = 0;
+    let dmgMax = 0;
+    let accuracy = 0.70;
+    let critChance = 0;
+    let ammoLeft = null;
+    let ammoCapacity = null;
 
     if (weaponId && gs.cards[weaponId]) {
       const def = gs.getCardDef(weaponId);
@@ -2126,8 +2148,9 @@ const CombatSystem = {
         if (def.combat.requiresAmmo) {
           accuracy   = Math.min(1, accuracy + SkillSystem.getBonus('ranged', 'accBonus'));
           critChance = Math.min(1, critChance + SkillSystem.getBonus('ranged', 'critBonus'));
-          const ammoInst = gs.getBoardCards().find(c => c.definitionId === def.combat.requiresAmmo);
-          ammoLeft = ammoInst ? (ammoInst.quantity ?? 1) : 0;
+          const magazine = getMagazineState(gs, weaponId);
+          ammoLeft = magazine.ok ? magazine.loadedAmmo : 0;
+          ammoCapacity = magazine.ok ? magazine.capacity : 0;
         }
       }
     } else {
@@ -2150,7 +2173,7 @@ const CombatSystem = {
     accuracy = Math.max(0.10, Math.min(1, accuracy + (moraleTier.accBonus ?? 0)));
 
     const weaponDef = weaponId && gs.cards[weaponId] ? gs.getCardDef(weaponId) : null;
-    const previewSkillId = weaponDef?.combat?.requiresAmmo && ammoLeft !== 0 ? 'ranged' : null;
+    const previewSkillId = weaponDef?.combat?.requiresAmmo && ammoLeft > 0 ? 'ranged' : null;
     ({ accuracy, critChance } = this._applyCharacterAimIdentity({
       accuracy,
       critChance,
@@ -2164,6 +2187,7 @@ const CombatSystem = {
       accuracy:   Math.round(accuracy * 100),
       critChance: Math.round(Math.min(1, critChance + (gs.player.critBonus ?? 0)) * 100),
       ammoLeft,
+      ammoCapacity,
     };
   },
 };

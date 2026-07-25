@@ -13,22 +13,45 @@ import {
   getRank,
 } from '../../js/systems/combat/FormationSystem.js';
 
-function makePlayer({ isRanged = false, ammo = 5 } = {}) {
+function makePlayer({ isRanged = false, loadedAmmo = 5, ammoPacks = 0 } = {}) {
   GameState.player.hp = { current: 100, max: 100 };
   GameState.player.equipped = { weapon_main: isRanged ? 'ranged_inst' : 'melee_inst' };
   GameState.companions = [];
   GameState.cards = {
-    ranged_inst: { instanceId: 'ranged_inst', definitionId: 'rifle', durability: 100 },
+    ranged_inst: {
+      instanceId: 'ranged_inst',
+      definitionId: 'rifle',
+      durability: 100,
+      loadedAmmo,
+    },
     melee_inst:  { instanceId: 'melee_inst',  definitionId: 'bat',   durability: 100 },
   };
+  if (ammoPacks > 0) {
+    GameState.cards.ammo_inst = {
+      instanceId: 'ammo_inst',
+      definitionId: 'bullet',
+      quantity: ammoPacks,
+    };
+  }
   GameState.getCardDef = (id) => {
-    if (id === 'ranged_inst') return { combat: { requiresAmmo: 'bullet', damage: [10, 15], accuracy: 0.8, noiseOnUse: 5 } };
-    if (id === 'melee_inst')  return { combat: { damage: [8, 12], accuracy: 0.9, noiseOnUse: 2 } };
+    if (id === 'ranged_inst') return {
+      type: 'weapon',
+      subtype: 'firearm',
+      combat: {
+        requiresAmmo: 'bullet',
+        damage: [10, 15],
+        accuracy: 0.8,
+        noiseOnUse: 5,
+      },
+    };
+    if (id === 'melee_inst') return {
+      type: 'weapon',
+      subtype: 'melee',
+      combat: { damage: [8, 12], accuracy: 0.9, noiseOnUse: 2 },
+    };
     return null;
   };
-  const boardCards = ammo > 0
-    ? [{ instanceId: 'ammo_inst', definitionId: 'bullet', quantity: ammo }]
-    : [];
+  const boardCards = ammoPacks > 0 ? [GameState.cards.ammo_inst] : [];
   GameState.getBoardCards = () => boardCards;
 }
 
@@ -100,7 +123,7 @@ describe('setTarget — 후열 선택 제한', () => {
   });
 
   it('원거리 무기 장착 시 후열 선택 허용', () => {
-    makePlayer({ isRanged: true });
+    makePlayer({ isRanged: true, loadedAmmo: 3, ammoPacks: 0 });
     const front = makeEnemy({ id: 'f', row: 'front' });
     const back  = makeEnemy({ id: 'b', row: 'back' });
     const combat = makeCombat([front, back]);
@@ -117,19 +140,19 @@ describe('setTarget — 후열 선택 제한', () => {
   });
 });
 
-describe('탄약 소진 원거리 무기 — 근접 도달 규칙 적용', () => {
-  it('탄약 0이면 isPlayerWeaponRanged는 false', () => {
-    makePlayer({ isRanged: true, ammo: 0 });
+describe('탄창 기반 원거리 무기 도달 규칙', () => {
+  it('장전탄이 없으면 호환 탄약 팩이 있어도 isPlayerWeaponRanged는 false다', () => {
+    makePlayer({ isRanged: true, loadedAmmo: 0, ammoPacks: 3 });
     expect(CombatSystem.isPlayerWeaponRanged()).toBe(false);
   });
 
-  it('탄약 보유 시 isPlayerWeaponRanged는 true', () => {
-    makePlayer({ isRanged: true, ammo: 3 });
+  it('장전탄이 있으면 호환 탄약 팩이 없어도 isPlayerWeaponRanged는 true다', () => {
+    makePlayer({ isRanged: true, loadedAmmo: 3, ammoPacks: 0 });
     expect(CombatSystem.isPlayerWeaponRanged()).toBe(true);
   });
 
-  it('탄약 0 원거리 무기로 전열 생존 중 후열 선택 차단', () => {
-    makePlayer({ isRanged: true, ammo: 0 });
+  it('빈 탄창 원거리 무기로 전열 생존 중 후열 선택 차단', () => {
+    makePlayer({ isRanged: true, loadedAmmo: 0, ammoPacks: 3 });
     const front = makeEnemy({ id: 'f', row: 'front' });
     const back  = makeEnemy({ id: 'b', row: 'back' });
     const combat = makeCombat([front, back]);
@@ -138,7 +161,7 @@ describe('탄약 소진 원거리 무기 — 근접 도달 규칙 적용', () =>
   });
 
   it('resolveAction shoot: 빈 탄창이면 대상과 피해 상태를 변경하지 않고 실패한다', () => {
-    makePlayer({ isRanged: true, ammo: 0 });
+    makePlayer({ isRanged: true, loadedAmmo: 0, ammoPacks: 3 });
     const front = makeEnemy({ id: 'f', row: 'front', hp: 500 });
     const back  = makeEnemy({ id: 'b', row: 'back',  hp: 500 });
     front.maxHp = 500; back.maxHp = 500;
@@ -148,6 +171,16 @@ describe('탄약 소진 원거리 무기 — 근접 도달 규칙 적용', () =>
     expect(front.currentHp).toBe(500);
     expect(back.currentHp).toBe(500);      // 후열은 무피해
     expect(combat.targetIndex).toBe(1);    // 빈 탄창 발사는 대상도 변경하지 않는다.
+  });
+
+  it('공격 미리보기는 예비 탄약 팩이 아니라 현재 탄창 N/20을 반환한다', () => {
+    makePlayer({ isRanged: true, loadedAmmo: 7, ammoPacks: 4 });
+    makeCombat([makeEnemy({ id: 'f', row: 'front' })]);
+
+    expect(CombatSystem.previewAttack('ranged_inst')).toMatchObject({
+      ammoLeft: 7,
+      ammoCapacity: 20,
+    });
   });
 });
 

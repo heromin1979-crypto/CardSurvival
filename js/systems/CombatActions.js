@@ -145,9 +145,17 @@ function _guaranteedFlee(msgs) {
  * 추가 타겟에는 50% 데미지 적용 (관통 어택 패널티)
  * 근접 관통(창)은 전열까지만, 원거리 관통(산탄총)은 후열도 휩쓴다.
  */
-export function applyMultiTarget(primaryDamage, weaponDef, targetIndex, combatSystemRef) {
+export function applyMultiTarget(
+  primaryDamage,
+  weaponDef,
+  targetIndex,
+  combatSystemRef,
+  rangedForAction = null,
+) {
   const gs      = GameState;
-  const isRanged = combatSystemRef.weaponReachIsRanged(weaponDef);
+  const isRanged = typeof rangedForAction === 'boolean'
+    ? rangedForAction
+    : combatSystemRef.weaponReachIsRanged(weaponDef);
   const alive   = combatSystemRef.getReachableEnemies(isRanged);
   const count   = weaponDef.multiTarget ?? 1;
   if (count <= 1 || alive.length <= 1) return [];

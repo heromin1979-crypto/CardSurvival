@@ -778,12 +778,6 @@ const CombatUI = {
     const armorId    = gs.player.equipped?.body;
     const armorDef   = armorId ? gs.getCardDef(armorId) : null;
 
-    let ammoCount = null;
-    if (weaponDef?.combat?.requiresAmmo) {
-      const ammoInst = gs.getBoardCards().find(c => c.definitionId === weaponDef.combat.requiresAmmo);
-      ammoCount = ammoInst ? (ammoInst.quantity ?? 1) : 0;
-    }
-
     // ── 상태이상 배지 ─────────────────────────────────────────
     const playerStatusHtml = combat.playerStatus.map(s =>
       `<span class="status-badge">${s.name}(${s.duration})</span>`
@@ -794,7 +788,7 @@ const CombatUI = {
     const enemyCount  = combat.enemies.length;
     const aliveCount  = combat.enemies.filter(e => e.currentHp > 0).length;
     const playerWeaponType = weaponDef?.weaponType ?? null;
-    const isRangedWeapon   = CombatSystem.weaponReachIsRanged(weaponDef);
+    const isRangedWeapon   = CombatSystem.weaponReachIsRanged(weaponDef, weaponId);
     const targetEnemy = combat.enemies[combat.targetIndex] ?? combat.enemies[0];
 
     // ── 적 스프라이트 (전열/후열 진형 — Darkest Dungeon식) ────
@@ -1218,7 +1212,7 @@ const CombatUI = {
               <div class="ac-row"><span>예상 피해</span><strong>${preview.dmgMin}~${preview.dmgMax}</strong></div>
               <div class="ac-row"><span>명중률</span><strong>${preview.accuracy}%</strong></div>
               ${preview.critChance > 0 ? `<div class="ac-row"><span>치명타</span><strong>${preview.critChance}%</strong></div>` : ''}
-              ${preview.ammoLeft !== null ? `<div class="ac-row${preview.ammoLeft === 0 ? ' warn' : ''}"><span>탄약</span><strong>${preview.ammoLeft}발</strong></div>` : ''}
+              ${preview.ammoLeft !== null ? `<div class="ac-row${preview.ammoLeft === 0 ? ' warn' : ''}"><span>탄약</span><strong>${preview.ammoLeft}/${preview.ammoCapacity}</strong></div>` : ''}
             </div>
           </div>
 
