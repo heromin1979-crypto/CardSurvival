@@ -96,4 +96,58 @@ describe('플레이어 무기 슬롯 정책', () => {
       expect.objectContaining({ definitionId: 'reinforced_shield', quantity: 1 }),
     ]));
   });
+
+  it('만차 슬롯 마이그레이션은 무기의 내구도와 잔탄을 저장 왕복과 보드 복구 뒤에도 보존한다', () => {
+    const save = JSON.parse(GameState.serialize());
+    const fillerIds = Array.from({ length: 40 }, (_, index) => `filler_${index}`);
+    save.cards = Object.fromEntries([
+      ['pistol_keep', {
+        instanceId: 'pistol_keep',
+        definitionId: 'pistol',
+        durability: 91,
+        loadedAmmo: 8,
+      }],
+      ['shotgun_overflow', {
+        instanceId: 'shotgun_overflow',
+        definitionId: 'shotgun',
+        durability: 37,
+        loadedAmmo: 6,
+      }],
+      ...fillerIds.map(instanceId => [instanceId, {
+        instanceId,
+        definitionId: 'scrap_metal',
+        quantity: 1,
+      }]),
+    ]);
+    save.player.equipped.weapon_main = 'pistol_keep';
+    save.player.equipped.weapon_sub = 'shotgun_overflow';
+    save.board.middle = fillerIds.slice(0, 20);
+    save.board.bottom = fillerIds.slice(20, 40);
+    save.pendingLoot = [];
+
+    GameState.deserialize(JSON.stringify(save));
+    expect(GameState.cards.shotgun_overflow).toBeUndefined();
+    expect(GameState.pendingLoot).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        definitionId: 'shotgun',
+        instanceOverrides: expect.objectContaining({
+          durability: 37,
+          loadedAmmo: 6,
+        }),
+      }),
+    ]));
+
+    GameState.deserialize(GameState.serialize());
+    GameState.removeCardInstanceSilent(fillerIds[0]);
+    GameState.flushPendingLoot();
+
+    const restored = Object.values(GameState.cards)
+      .find(card => card.definitionId === 'shotgun');
+    expect(restored).toMatchObject({
+      definitionId: 'shotgun',
+      durability: 37,
+      loadedAmmo: 6,
+    });
+    expect(GameState.pendingLoot).toHaveLength(0);
+  });
 });

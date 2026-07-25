@@ -11,10 +11,18 @@ function recoverToBoardOrPending(gameState, instanceId) {
   if (gameState.placeCardInRow(instanceId, 'middle')) return true;
 
   const instance = gameState.cards[instanceId];
+  const {
+    instanceId: _instanceId,
+    definitionId,
+    quantity,
+    contamination,
+    ...instanceOverrides
+  } = instance;
   gameState.pendingLoot = [...(gameState.pendingLoot ?? []), {
-    definitionId: instance.definitionId,
-    quantity: instance.quantity ?? 1,
-    contamination: instance.contamination ?? 0,
+    definitionId,
+    quantity: quantity ?? 1,
+    contamination: contamination ?? 0,
+    ...(Object.keys(instanceOverrides).length > 0 ? { instanceOverrides } : {}),
   }];
   delete gameState.cards[instanceId];
   return true;

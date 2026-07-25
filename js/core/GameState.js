@@ -349,7 +349,13 @@ const GameState = {
     const placed = [];
     const remaining = [];
     for (const entry of this.pendingLoot) {
+      const instanceOverrides = entry?.instanceOverrides
+        && typeof entry.instanceOverrides === 'object'
+        && !Array.isArray(entry.instanceOverrides)
+        ? entry.instanceOverrides
+        : {};
       const inst = this.createCardInstance(entry.definitionId, {
+        ...instanceOverrides,
         quantity:      entry.quantity,
         contamination: entry.contamination ?? 0,
       });
