@@ -78,11 +78,20 @@ describe('플레이어 무기 탄창 UI', () => {
     expect(ModalManager._box.textContent).toContain('권총 탄약');
   });
 
-  it('탄약 카드 상세에 한 팩이 20발임을 표시한다', () => {
+  it.each(['pistol_ammo', 'shotgun_ammo', 'crossbow_bolt'])('%s처럼 무기가 참조하는 탄약 팩 상세에 한 팩이 20발임을 표시한다', definitionId => {
+    GameState.cards.ammo_1.definitionId = definitionId;
     ModalManager.showCardInspect('ammo_1');
 
     expect(ModalManager._box.textContent).toContain('탄약 팩');
     expect(ModalManager._box.textContent).toContain('1팩 = 20발');
+  });
+
+  it.each(['improved_crossbow_bolt', 'fire_bolt', 'explosive_bolt'])('%s처럼 무기가 참조하지 않는 특수 탄약에는 20발 팩 정보를 표시하지 않는다', definitionId => {
+    GameState.cards.ammo_1.definitionId = definitionId;
+    ModalManager.showCardInspect('ammo_1');
+
+    expect(ModalManager._box.textContent).not.toContain('탄약 팩');
+    expect(ModalManager._box.textContent).not.toContain('1팩 = 20발');
   });
 
   it('장비 패널의 원거리 주무기에 같은 탄창 값을 표시하고 무기 슬롯을 구분한다', () => {

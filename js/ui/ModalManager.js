@@ -8,7 +8,7 @@ import CardFactory     from './CardFactory.js';
 import GameData        from '../data/GameData.js';
 import NPCSystem       from '../systems/NPCSystem.js';
 import { landmarkHasFishing } from '../data/landmarks.js';
-import { getMagazineState } from '../systems/WeaponAmmoSystem.js';
+import { getMagazineState, isMagazineAmmoPack } from '../systems/WeaponAmmoSystem.js';
 
 const FOCUSABLE = 'button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
@@ -291,7 +291,7 @@ const ModalManager = {
         I18n.itemName(ammoDef?.id, ammoDef?.name ?? def.combat.requiresAmmo),
       ]);
     }
-    if (def.subtype === 'ammo') {
+    if (isMagazineAmmoPack(def, GameData.items)) {
       stats.push([I18n.t('modal.ammoPackSize'), I18n.t('modal.twentyRounds')]);
     }
 

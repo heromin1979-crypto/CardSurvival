@@ -8,6 +8,12 @@ export function isMagazineWeapon(definition) {
     && definition.combat.requiresAmmo.length > 0;
 }
 
+export function isMagazineAmmoPack(definition, itemDefinitions) {
+  if (definition?.subtype !== 'ammo' || typeof definition.id !== 'string') return false;
+  return Object.values(itemDefinitions ?? {}).some(item =>
+    item?.combat?.requiresAmmo === definition.id);
+}
+
 export function getMagazineCapacity(definition) {
   return isMagazineWeapon(definition) ? MAGAZINE_CAPACITY : 0;
 }
