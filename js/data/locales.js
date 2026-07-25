@@ -174,6 +174,10 @@ const COMBAT_SKILL_EN = {
 
 export const ko = {
   ...COMBAT_SKILL_KO,
+  'combat.reload':         '재장전',
+  'combat.noAmmo':         '탄약 없음',
+  'combat.reloadPackCost': '20발 탄약 팩 1개 소비',
+  'combat.loadedAmmo':     '탄창 {ammo}/{capacity}',
 
   // ── Menu ────────────────────────────────────────────────────
   'menu.newGame':       '새 게임',
@@ -1127,6 +1131,10 @@ export const ko = {
 
 export const en = {
   ...COMBAT_SKILL_EN,
+  'combat.reload':         'Reload',
+  'combat.noAmmo':         'No Ammo',
+  'combat.reloadPackCost': 'Consumes 1 x 20-round pack',
+  'combat.loadedAmmo':     'Ammo {ammo}/{capacity}',
 
   // ── Menu ────────────────────────────────────────────────────
   'menu.newGame':       'New Game',

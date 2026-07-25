@@ -10,6 +10,7 @@ import BALANCE        from '../data/gameBalance.js';
 import { NPC_ITEMS }  from '../data/npcs.js';
 import { combatAssetManifest } from '../data/combatAssets.js';
 import { getRank }   from '../systems/combat/FormationSystem.js';
+import { canReload, getMagazineState } from '../systems/WeaponAmmoSystem.js';
 import { CombatFxPlayer } from './combat/CombatFxPlayer.js';
 import { COMPANION_ICONS, INIT_TYPE_ICONS } from './combat/combatUiAssets.js';
 
@@ -467,10 +468,30 @@ const CombatUI = {
           const costLabel = skill.costs?.ammo ? '탄약 1' : skill.costs?.stamina ? `스태미나 ${skill.costs.stamina}` : '행동 1';
           const dmg = (skill.effects ?? []).find(effect => effect?.type === 'damage')?.value;
           const preview = CombatSystem.previewRankedSkill?.(skillId);
-          const invalidOrigin = Array.isArray(skill.usableFrom)
+          const magazineAction = this._magazineActionState(activeCombatant, skill);
+          const reloadMode = magazineAction?.mode === 'reload';
+          const isEmpty = magazineAction?.mode === 'empty';
+          const command = reloadMode ? 'reload' : 'attack';
+          const displayLabel = reloadMode
+            ? I18n.t('combat.reload')
+            : isEmpty
+              ? I18n.t('combat.noAmmo')
+              : label;
+          const ammoDetail = reloadMode
+            ? I18n.t('combat.reloadPackCost')
+            : magazineAction
+              ? I18n.t('combat.loadedAmmo', {
+                ammo: magazineAction.magazine.loadedAmmo,
+                capacity: magazineAction.magazine.capacity,
+              })
+              : null;
+          const invalidOrigin = !reloadMode
+            && Array.isArray(skill.usableFrom)
             && activeRank !== null
             && !skill.usableFrom.includes(activeRank);
-          const disabled = invalidOrigin || combat.phase !== 'await_ally_input';
+          const disabled = magazineAction?.disabled === true
+            || invalidOrigin
+            || combat.phase !== 'await_ally_input';
           const title = invalidOrigin
             ? `현재 위치(rank ${activeRank})에서는 사용할 수 없습니다.`
             : '';
@@ -482,19 +503,38 @@ const CombatUI = {
           }
           if (!dmg) statRows.push(`<span class="skill-stat">${this._escape(costLabel)}</span>`);
           return `
-            <button class="combat-skill-button combat-action-card${selected}${invalidOrigin ? ' disabled' : ''}"
+            <button class="combat-skill-button combat-action-card${selected}${reloadMode ? ' is-reload' : ''}${isEmpty ? ' is-empty' : ''}${invalidOrigin ? ' disabled' : ''}"
                     data-skill-id="${this._escape(skillId)}"
+                    data-command="${command}"
+                    data-weapon-instance-id="${this._escape(skill.equipmentInstanceId ?? '')}"
                     title="${this._escape(title)}"
                     ${disabled ? 'disabled' : ''}>
               <span class="action-cost">${skill.costs?.stamina ?? 1}</span>
-              <span class="skill-name">${this._escape(label)}</span>
+              <span class="skill-name">${this._escape(displayLabel)}</span>
               <span class="skill-range">${this._escape(rangeLabel)}</span>
               <span class="skill-icon">${this._skillIconHtml(skill.icon, isAttack)}</span>
-              <span class="skill-detail skill-stats">${statRows.join('')}</span>
+              <span class="skill-detail skill-stats">${ammoDetail ? `<span class="skill-stat">${this._escape(ammoDetail)}</span>` : statRows.join('')}</span>
               ${invalidOrigin ? '<span class="skill-lock">(위치 변경 필요)</span>' : ''}
             </button>`;
         }).join('')}
       </div>`;
+  },
+
+  _magazineActionState(activeCombatant, skill) {
+    if (
+      activeCombatant?.sourceType !== 'player'
+      || (skill?.costs?.magazineRound ?? 0) <= 0
+      || !skill?.equipmentInstanceId
+    ) return null;
+
+    const magazine = getMagazineState(GameState, skill.equipmentInstanceId);
+    if (!magazine.ok) return { mode: 'empty', disabled: true, magazine };
+    if (magazine.loadedAmmo > 0) return { mode: 'attack', disabled: false, magazine };
+
+    const reloadCheck = canReload(GameState, skill.equipmentInstanceId);
+    return reloadCheck.ok
+      ? { mode: 'reload', disabled: false, magazine }
+      : { mode: 'empty', disabled: true, magazine };
   },
 
   _firstCombatItemId() {
@@ -620,6 +660,11 @@ const CombatUI = {
     this._screen.querySelectorAll('.combat-skill-button').forEach(button => {
       button.addEventListener('click', () => {
         if (button.disabled) return;
+        if (button.dataset.command === 'reload') {
+          CombatSystem.reloadActiveWeapon(button.dataset.weaponInstanceId);
+          if (GameState.combat?.active) this.render();
+          return;
+        }
         if (CombatSystem.selectSkill(button.dataset.skillId)) this.render();
       });
     });

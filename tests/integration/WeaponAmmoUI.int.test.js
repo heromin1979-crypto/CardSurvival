@@ -3,6 +3,8 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import CardFactory from '../../js/ui/CardFactory.js';
 import EquipmentModal from '../../js/ui/EquipmentModal.js';
 import ModalManager from '../../js/ui/ModalManager.js';
+import CombatUI from '../../js/ui/CombatUI.js';
+import CombatSystem from '../../js/systems/CombatSystem.js';
 import GameState from '../../js/core/GameState.js';
 import GameData from '../../js/data/GameData.js';
 
@@ -13,6 +15,11 @@ function saveState() {
   saved.board = GameState.board;
   saved.player = GameState.player;
   saved.ui = GameState.ui;
+  saved.stats = GameState.stats;
+  saved.companions = GameState.companions;
+  saved.npcs = GameState.npcs;
+  saved.flags = GameState.flags;
+  saved.combat = GameState.combat;
 }
 
 function restoreState() {
@@ -20,6 +27,60 @@ function restoreState() {
   GameState.board = saved.board;
   GameState.player = saved.player;
   GameState.ui = saved.ui;
+  GameState.stats = saved.stats;
+  GameState.companions = saved.companions;
+  GameState.npcs = saved.npcs;
+  GameState.flags = saved.flags;
+  GameState.combat = saved.combat;
+}
+
+function setupFocusedPistolUi({ loadedAmmo = 0, ammoQuantity = 0, melee = false } = {}) {
+  document.body.innerHTML = '<div id="screen-combat"></div>';
+  CombatUI._screen = document.getElementById('screen-combat');
+  GameState.cards = {
+    pistol_1: {
+      instanceId: 'pistol_1', definitionId: 'pistol', loadedAmmo,
+      durability: 100, contamination: 0,
+    },
+  };
+  if (melee) {
+    GameState.cards.knife_1 = {
+      instanceId: 'knife_1', definitionId: 'knife', durability: 100, contamination: 0,
+    };
+  }
+  if (ammoQuantity > 0) {
+    GameState.cards.ammo_1 = {
+      instanceId: 'ammo_1', definitionId: 'pistol_ammo', quantity: ammoQuantity,
+      durability: 100, contamination: 0,
+    };
+  }
+  GameState.board = {
+    top: [], environment: [], middle: ammoQuantity > 0 ? ['ammo_1'] : [], bottom: [],
+  };
+  GameState.player = {
+    ...GameState.player,
+    hp: { current: 100, max: 100 },
+    characterId: 'doctor',
+    equipped: { weapon_main: 'pistol_1', weapon_sub: melee ? 'knife_1' : null },
+  };
+  GameState.stats = {
+    ...GameState.stats,
+    stamina: { current: 10, max: 10, decayPerTP: 0 },
+    morale: { current: 50, max: 100, decayPerTP: 0 },
+  };
+  GameState.companions = [];
+  GameState.npcs = { states: {} };
+  GameState.flags = {};
+  CombatSystem._setupCombat({
+    enemies: [{
+      id: 'zombie_common', name: 'infected', currentHp: 100, maxHp: 100,
+      speed: 1, row: 'front', defense: 0,
+      attack: { damage: [0, 0], accuracy: 0 }, specialSkills: [],
+      weaknesses: [], resistances: [], _skillCooldowns: {}, _statusEffects: [], lootTable: [],
+    }],
+    dangerLevel: 1,
+  });
+  GameState.combat.formations.ally = [null, null, 'player', null];
 }
 
 describe('플레이어 무기 탄창 UI', () => {
@@ -104,5 +165,44 @@ describe('플레이어 무기 탄창 UI', () => {
     expect(equippedWeapon).toContain('0/20');
     expect(mainSlot).toContain('원거리 주무기');
     expect(subSlot).toContain('근접 보조무기');
+  });
+  it('장전된 원거리 무기는 탄창 수를 표시하며 공격 명령을 활성화한다', () => {
+    setupFocusedPistolUi({ loadedAmmo: 2, ammoQuantity: 1 });
+    CombatUI.render();
+
+    const button = document.querySelector('[data-skill-id="equipment:pistol_1"]');
+    expect(button.dataset.command).toBe('attack');
+    expect(button.textContent).toContain('2/20');
+    expect(button.disabled).toBe(false);
+  });
+
+  it('빈 탄창과 호환 탄약 팩은 같은 원거리 카드에서 재장전 명령이 된다', () => {
+    setupFocusedPistolUi({ loadedAmmo: 0, ammoQuantity: 1 });
+    CombatUI.render();
+
+    const button = document.querySelector('[data-skill-id="equipment:pistol_1"]');
+    expect(button.dataset.command).toBe('reload');
+    expect(button.classList.contains('is-reload')).toBe(true);
+    expect(button.disabled).toBe(false);
+    button.click();
+    expect(GameState.cards.pistol_1.loadedAmmo).toBe(20);
+  });
+
+  it('빈 탄창에 호환 탄약 팩이 없으면 원거리 카드를 비활성화한다', () => {
+    setupFocusedPistolUi({ loadedAmmo: 0 });
+    CombatUI.render();
+
+    const button = document.querySelector('[data-skill-id="equipment:pistol_1"]');
+    expect(button.dataset.command).toBe('attack');
+    expect(button.classList.contains('is-empty')).toBe(true);
+    expect(button.disabled).toBe(true);
+  });
+
+  it('빈 원거리 카드와 별개로 장착된 근접 무기 카드는 활성 상태를 유지한다', () => {
+    setupFocusedPistolUi({ loadedAmmo: 0, melee: true });
+    CombatUI.render();
+
+    expect(document.querySelector('[data-skill-id="equipment:pistol_1"]').disabled).toBe(true);
+    expect(document.querySelector('[data-skill-id="equipment:knife_1"]').disabled).toBe(false);
   });
 });
