@@ -80,6 +80,13 @@ function lookupById(collection, id) {
   return null;
 }
 
+function collectionValues(collection) {
+  if (collection instanceof Map) return [...collection.values()];
+  if (Array.isArray(collection)) return collection;
+  if (collection && typeof collection === 'object') return Object.values(collection);
+  return [];
+}
+
 function combatantHp(combatant) {
   if (Number.isFinite(combatant?.currentHp)) return combatant.currentHp;
   if (Number.isFinite(combatant?.hp)) return combatant.hp;
@@ -133,6 +140,113 @@ function normalizeDamage(damage) {
     return [...damage];
   }
   return [1, 2];
+}
+
+function selectCommandTargets(context, actor, primaryTarget, skill) {
+  const count = Number.isInteger(skill?.target?.count) && skill.target.count > 0
+    ? skill.target.count
+    : 1;
+  if (count === 1) return [primaryTarget];
+
+  const selected = [primaryTarget];
+  for (const candidate of collectionValues(context.combatants)) {
+    if (
+      selected.length >= count
+      || candidate === primaryTarget
+      || candidate?.id === primaryTarget?.id
+      || candidate?.side !== skill?.target?.side
+      || isDeadCombatant(candidate, { allowDeathsDoor: true })
+    ) {
+      continue;
+    }
+
+    try {
+      if (context.validatePosition(actor.id, candidate.id, skill)?.ok) {
+        selected.push(candidate);
+      }
+    } catch {
+      continue;
+    }
+  }
+  return selected;
+}
+
+function executeMultiTargetEffects({
+  context,
+  actor,
+  targets,
+  skill,
+  effects,
+  randomFn,
+  usePipeline,
+}) {
+  let effectsApplied = 0;
+  const targetResults = [];
+
+  for (const target of targets) {
+    let hitInfo;
+    if (usePipeline) {
+      try {
+        hitInfo = context.resolveHit(actor, target, skill, randomFn);
+      } catch {
+        return postCostFailure('execution_error', effectsApplied);
+      }
+    } else {
+      let roll;
+      try {
+        roll = normalizeRoll(randomFn());
+      } catch {
+        return postCostFailure('execution_error', effectsApplied);
+      }
+      hitInfo = { hit: roll !== null && roll < normalizeAccuracy(skill.accuracy) };
+    }
+
+    const targetResult = {
+      targetId: target.id,
+      hit: hitInfo?.hit === true,
+      effectsApplied: 0,
+    };
+    if (usePipeline) {
+      targetResult.dodged = hitInfo?.dodged === true;
+      targetResult.crit = hitInfo?.crit === true;
+    }
+
+    if (hitInfo?.hit === true) {
+      for (const effect of effects) {
+        let effectResult;
+        try {
+          effectResult = usePipeline
+            ? context.applyEffect(effect, actor, target, randomFn, hitInfo)
+            : context.applyEffect(effect, actor, target, randomFn);
+        } catch {
+          return postCostFailure('execution_error', effectsApplied);
+        }
+        if (effectResult?.ok === false) {
+          return postCostFailure(effectResult.reason ?? 'execution_error', effectsApplied);
+        }
+        effectsApplied++;
+        targetResult.effectsApplied++;
+      }
+    }
+    targetResults.push(targetResult);
+  }
+
+  const hits = targetResults.filter(result => result.hit);
+  const result = {
+    ok: true,
+    hit: hits.length > 0,
+    turnConsumed: true,
+    costsConsumed: true,
+    effectsApplied,
+    partialApplied: false,
+    targetResults,
+  };
+  if (usePipeline) {
+    result.dodged = hits.length === 0
+      && targetResults.some(targetResult => targetResult.dodged);
+    result.crit = hits.some(targetResult => targetResult.crit);
+  }
+  return result;
 }
 
 export function buildEquipmentSkill(instanceId, definition) {
@@ -386,6 +500,7 @@ export function executeSkillCommand(context, command, random = Math.random) {
   if (!validation.ok) return validation;
 
   const { actor, target, skill } = validation;
+  const targets = selectCommandTargets(context, actor, target, skill);
   const effects = Array.isArray(skill.effects) ? skill.effects : [];
   if (typeof context.consumeCosts !== 'function') {
     return preExecutionFailure('execution_error');
@@ -408,6 +523,18 @@ export function executeSkillCommand(context, command, random = Math.random) {
   // resolveHit 주입 시 판정(명중 보정·회피/치명 토큰)을 호출자에게 위임한다.
   // 미주입 컨텍스트는 기존 단일 명중 굴림 계약을 그대로 유지한다.
   const usePipeline = typeof context.resolveHit === 'function';
+  if (targets.length > 1) {
+    return executeMultiTargetEffects({
+      context,
+      actor,
+      targets,
+      skill,
+      effects,
+      randomFn,
+      usePipeline,
+    });
+  }
+
   let hitInfo = null;
   if (usePipeline) {
     try {

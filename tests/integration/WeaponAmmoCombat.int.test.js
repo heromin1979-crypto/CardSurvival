@@ -78,6 +78,48 @@ describe('탄창 기반 원거리 전투 비용', () => {
     expect(GameState.cards.pistol_1.loadedAmmo).toBe(1);
   });
 
+  it('산탄총 ranked 명령은 적 둘을 공격하고 탄창은 한 발만 소비한다', () => {
+    setupPistolCombat({ loadedAmmo: 2 });
+    GameState.cards.shotgun_1 = {
+      instanceId: 'shotgun_1',
+      definitionId: 'shotgun',
+      loadedAmmo: 2,
+      durability: 100,
+      contamination: 0,
+    };
+    delete GameState.cards.pistol_1;
+    GameState.player.equipped.weapon_main = 'shotgun_1';
+    CombatSystem._setupCombat({
+      enemies: [
+        {
+          id: 'zombie_first', name: '감염자 1', currentHp: 100, maxHp: 100,
+          speed: 1, row: 'front', defense: 0,
+          attack: { damage: [0, 0], accuracy: 0 }, specialSkills: [],
+          weaknesses: [], resistances: [], _skillCooldowns: {}, _statusEffects: [], lootTable: [],
+        },
+        {
+          id: 'zombie_second', name: '감염자 2', currentHp: 100, maxHp: 100,
+          speed: 1, row: 'front', defense: 0,
+          attack: { damage: [0, 0], accuracy: 0 }, specialSkills: [],
+          weaknesses: [], resistances: [], _skillCooldowns: {}, _statusEffects: [], lootTable: [],
+        },
+      ],
+      dangerLevel: 1,
+    });
+    GameState.combat.formations.ally = [null, null, 'player', null];
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+
+    expect(CombatSystem.selectSkill('equipment:shotgun_1')).toBe(true);
+    expect(CombatSystem.selectTarget('enemy:0')).toBe(true);
+    expect(CombatSystem.confirmAction()).toMatchObject({ ok: true });
+
+    expect(GameState.combat.combatants['enemy:0'].hp).toBeLessThan(100);
+    expect(GameState.combat.combatants['enemy:1'].hp).toBeLessThan(100);
+    expect(GameState.cards.shotgun_1.loadedAmmo).toBe(1);
+    expect(GameState.cards.shotgun_1.durability).toBe(98);
+    expect(GameState.noise.level).toBe(50);
+  });
+
   it('빈 주무기를 재장전하면 탄약 팩 하나를 소비하고 다음 아군 입력으로 진행한다', () => {
     setupPistolCombat({ loadedAmmo: 0, ammoQuantity: 6 });
     const beforeRound = GameState.combat.roundNumber;
