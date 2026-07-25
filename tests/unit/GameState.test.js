@@ -91,4 +91,69 @@ describe('GameState 장착 무기 슬롯 저장 마이그레이션', () => {
 
     expect(GameState.cards.pistol_old.loadedAmmo).toBe(0);
   });
+
+  it('장전된 탄창과 대기 전리품을 저장 후 다시 불러와도 보존한다', () => {
+    const pistol = GameState.createCardInstance('pistol', { loadedAmmo: 7 });
+    GameState.player.equipped.weapon_main = pistol.instanceId;
+    GameState.pendingLoot = [{
+      definitionId: 'scrap_metal',
+      quantity: 3,
+      contamination: 0,
+    }];
+
+    const serialized = GameState.serialize();
+    GameState.deserialize(serialized);
+
+    expect(GameState.cards[pistol.instanceId].loadedAmmo).toBe(7);
+    expect(GameState.player.equipped.weapon_main).toBe(pistol.instanceId);
+    expect(GameState.pendingLoot).toEqual([{
+      definitionId: 'scrap_metal',
+      quantity: 3,
+      contamination: 0,
+    }]);
+  });
+
+  it.each(['pistol', 'crossbow', 'crossbow_plus'])('%s의 레거시 저장은 빈 탄창으로 마이그레이션한다', definitionId => {
+    const save = JSON.parse(GameState.serialize());
+    save.cards = {
+      weapon_old: { instanceId: 'weapon_old', definitionId },
+    };
+    save.player.equipped.weapon_main = 'weapon_old';
+    save.board.middle = Array(20).fill(null);
+    save.board.bottom = Array(20).fill(null);
+
+    GameState.deserialize(JSON.stringify(save));
+
+    expect(GameState.cards.weapon_old.loadedAmmo).toBe(0);
+  });
+
+  it('보드가 가득 찬 레거시 무기 슬롯의 회수 전리품을 다음 저장에도 보존한다', () => {
+    const save = JSON.parse(GameState.serialize());
+    const fillerIds = Array.from({ length: 40 }, (_, index) => `filler_${index}`);
+    save.cards = Object.fromEntries([
+      ['shield_old', {
+        instanceId: 'shield_old',
+        definitionId: 'reinforced_shield',
+        quantity: 1,
+      }],
+      ...fillerIds.map(instanceId => [instanceId, {
+        instanceId,
+        definitionId: 'scrap_metal',
+        quantity: 1,
+      }]),
+    ]);
+    save.player.equipped.weapon_sub = 'shield_old';
+    save.board.middle = fillerIds.slice(0, 20);
+    save.board.bottom = fillerIds.slice(20, 40);
+    save.pendingLoot = [];
+
+    GameState.deserialize(JSON.stringify(save));
+    const roundTrip = GameState.serialize();
+    GameState.deserialize(roundTrip);
+
+    expect(GameState.player.equipped.weapon_sub).toBeNull();
+    expect(GameState.pendingLoot).toEqual(expect.arrayContaining([
+      expect.objectContaining({ definitionId: 'reinforced_shield', quantity: 1 }),
+    ]));
+  });
 });

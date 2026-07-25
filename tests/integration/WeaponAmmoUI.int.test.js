@@ -5,6 +5,7 @@ import EquipmentModal from '../../js/ui/EquipmentModal.js';
 import ModalManager from '../../js/ui/ModalManager.js';
 import CombatUI from '../../js/ui/CombatUI.js';
 import CombatSystem from '../../js/systems/CombatSystem.js';
+import EquipmentSystem from '../../js/systems/EquipmentSystem.js';
 import GameState from '../../js/core/GameState.js';
 import GameData from '../../js/data/GameData.js';
 
@@ -204,5 +205,19 @@ describe('플레이어 무기 탄창 UI', () => {
 
     expect(document.querySelector('[data-skill-id="equipment:pistol_1"]').disabled).toBe(true);
     expect(document.querySelector('[data-skill-id="equipment:knife_1"]').disabled).toBe(false);
+  });
+
+  it('무기를 장착 해제하고 다시 장착해도 인스턴스의 탄창 수를 보존한다', () => {
+    GameState.board.middle = Array(20).fill(null);
+    GameState.board.bottom = Array(20).fill(null);
+    GameState.player.equipped.weapon_main = null;
+    const pistol = GameState.createCardInstance('pistol', { loadedAmmo: 9 });
+
+    expect(GameState.placeCardInRow(pistol.instanceId, 'middle')).toBeTruthy();
+    expect(EquipmentSystem.equip(pistol.instanceId, 'weapon_main')).toBe(true);
+    expect(EquipmentSystem.unequip('weapon_main')).toBe(true);
+    expect(GameState.cards[pistol.instanceId].loadedAmmo).toBe(9);
+    expect(EquipmentSystem.equip(pistol.instanceId, 'weapon_main')).toBe(true);
+    expect(GameState.cards[pistol.instanceId].loadedAmmo).toBe(9);
   });
 });

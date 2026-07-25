@@ -116,4 +116,35 @@ describe('탄창 기반 원거리 전투 비용', () => {
       .toMatchObject({ ok: false, reason: 'magazine_not_empty', turnConsumed: false });
     expect(GameState.cards.ammo_1.quantity).toBe(2);
   });
+
+  it('전투 승리 결선 뒤에도 발사한 무기 인스턴스의 남은 탄창을 보존한다', () => {
+    setupPistolCombat({ loadedAmmo: 2, enemyHp: 1 });
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+    selectPistolAndTarget();
+
+    expect(CombatSystem.confirmAction()).toMatchObject({ ok: true });
+
+    expect(GameState.combat.active).toBe(false);
+    expect(GameState.cards.pistol_1.loadedAmmo).toBe(1);
+  });
+
+  it('UI를 거치지 않은 빈 탄창 공격은 전투 상태를 변경하지 않고 거부한다', () => {
+    setupPistolCombat({ loadedAmmo: 0, ammoQuantity: 1 });
+    GameState.combat.selectedSkillId = 'equipment:pistol_1';
+    GameState.combat.selectedTargetId = 'enemy:0';
+    GameState.combat.phase = 'confirm_action';
+    const beforeHp = GameState.combat.combatants['enemy:0'].hp;
+    const beforeDurability = GameState.cards.pistol_1.durability;
+    const beforeNoise = GameState.noise.level;
+    const beforeActor = GameState.combat.activeCombatantId;
+
+    const result = CombatSystem.confirmAction();
+
+    expect(result).toMatchObject({ ok: false, reason: 'empty_magazine' });
+    expect(GameState.combat.combatants['enemy:0'].hp).toBe(beforeHp);
+    expect(GameState.cards.pistol_1.loadedAmmo).toBe(0);
+    expect(GameState.cards.pistol_1.durability).toBe(beforeDurability);
+    expect(GameState.noise.level).toBe(beforeNoise);
+    expect(GameState.combat.activeCombatantId).toBe(beforeActor);
+  });
 });
