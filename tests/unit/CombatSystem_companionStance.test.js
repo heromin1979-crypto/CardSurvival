@@ -74,6 +74,72 @@ describe('_runCompanionTurn — stance 디스패치', () => {
     CombatSystem._runCompanionTurn('npc_a');
     expect(GameState.combat.enemies.map(e => e.currentHp)).toEqual(before);
   });
+
+  it('기본 attack 자동 턴은 각 동료의 고정 공격과 개인 combatDmg 배율을 사용한다', () => {
+    GameState.cards = {
+      pistol_1: {
+        instanceId: 'pistol_1',
+        definitionId: 'pistol',
+        loadedAmmo: 5,
+        durability: 100,
+      },
+      ammo_1: {
+        instanceId: 'ammo_1',
+        definitionId: 'pistol_ammo',
+        quantity: 2,
+      },
+    };
+    GameState.board.middle = ['ammo_1'];
+    GameState.board.bottom = [];
+    GameState.player.characterId = 'doctor';
+    GameState.player.equipped = { weapon_main: 'pistol_1', weapon_sub: null };
+    GameState.stats.stamina = { current: 10, max: 10, decayPerTP: 0 };
+    GameState.stats.morale = { current: 50, max: 100, decayPerTP: 0 };
+    GameState.companions = ['npc_soldier_deserter', 'npc_dog'];
+    GameState.npcs = {
+      states: {
+        npc_soldier_deserter: {
+          hp: 60,
+          maxHp: 60,
+          isCompanion: true,
+          stance: 'attack',
+        },
+        npc_dog: {
+          hp: 45,
+          maxHp: 45,
+          isCompanion: true,
+          stance: 'attack',
+        },
+      },
+    };
+    CombatSystem._setupCombat({
+      enemies: [{
+        ...makeEnemy(100),
+        row: 'front',
+        defense: 0,
+        weaknesses: [],
+        resistances: [],
+        lootTable: [],
+      }],
+      dangerLevel: 1,
+    });
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+
+    const enemy = GameState.combat.enemies[0];
+    CombatSystem._runCompanionTurn('npc_soldier_deserter');
+    const deserterDamage = 100 - enemy.currentHp;
+    enemy.currentHp = 100;
+    GameState.combat.combatants['enemy:0'].hp = 100;
+    CombatSystem._runCompanionTurn('npc_dog');
+    const dogDamage = 100 - enemy.currentHp;
+
+    expect(GameState.combat.combatants.npc_soldier_deserter.combatDamageMultiplier).toBe(1.4);
+    expect(GameState.combat.combatants.npc_dog.combatDamageMultiplier).toBe(0.2);
+    expect(deserterDamage).toBe(12);
+    expect(dogDamage).toBe(1);
+    expect(GameState.cards.pistol_1.loadedAmmo).toBe(5);
+    expect(GameState.cards.ammo_1.quantity).toBe(2);
+  });
 });
 
 describe('hold stance — 피해 감소 버프', () => {

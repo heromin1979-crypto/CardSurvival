@@ -17,6 +17,10 @@ import { applyDamage, consumeToken } from './CombatStatusSystem.js';
 import { modifyIncomingDamage, modifyOutgoingDamage } from './CombatResolution.js';
 import { buildEnemyProfile } from './EnemyCombatAdapter.js';
 import { getRank, moveCombatant } from './FormationSystem.js';
+import {
+  COMPANION_COMBAT_LOADOUTS,
+  getCombatSkill,
+} from '../../data/combatSkills.js';
 
 export const CombatAiTurns = {
   // ── Combat Overhaul Phase 2 · 동료 자율 행동 ──────
@@ -113,7 +117,13 @@ export const CombatAiTurns = {
   _companionAutoAttack(npcId, options = {}) {
     const gs = GameState;
     const enemies = gs.combat?.enemies ?? [];
-    const isRangedNpc = (BALANCE.combat.companionAuto.rangedCompanions ?? []).includes(npcId);
+    const attackSkill = (COMPANION_COMBAT_LOADOUTS[npcId] ?? [])
+      .map(skillId => gs.combat?.skillsById?.[skillId] ?? getCombatSkill(skillId))
+      .find(skill => (skill?.effects ?? []).some(effect => effect?.type === 'damage'));
+    const damageEffect = attackSkill?.effects?.find(effect => effect?.type === 'damage');
+    const isRangedNpc = attackSkill
+      ? (attackSkill.target?.ranks ?? []).some(rank => rank > 2)
+      : (BALANCE.combat.companionAuto.rangedCompanions ?? []).includes(npcId);
     const alive = this.getReachableEnemies(isRangedNpc)
       .map(e => ({ e, idx: enemies.indexOf(e) }))
       .filter(x => x.idx >= 0);
@@ -127,11 +137,19 @@ export const CombatAiTurns = {
     const target = targetEntry.e;
 
     const cfg = BALANCE.combat.companionAuto;
-    const [dMin, dMax] = cfg.attackDamage;
-    const npcSys = SystemRegistry.get('NPCSystem');
-    const bonus  = npcSys?.getCompanionCombatBonus?.() ?? 1.0;
+    const [dMin, dMax] = Array.isArray(damageEffect?.value)
+      ? damageEffect.value
+      : cfg.attackDamage;
+    const accuracy = Number.isFinite(attackSkill?.accuracy)
+      ? attackSkill.accuracy
+      : cfg.attackAccuracy;
+    const combatant = gs.combat?.combatants?.[npcId];
+    const multiplier = Number.isFinite(combatant?.combatDamageMultiplier)
+      && combatant.combatDamageMultiplier > 0
+      ? combatant.combatDamageMultiplier
+      : 1;
 
-    if (Math.random() > cfg.attackAccuracy) {
+    if (Math.random() > accuracy) {
       gs.combat.log.push(I18n.t
         ? I18n.t('combatSys.companionAtkMiss', { name: this._npcLabel(npcId) })
         : `${this._npcLabel(npcId)} 공격 빗나감`);
@@ -140,7 +158,7 @@ export const CombatAiTurns = {
     }
 
     const raw = dMin + Math.floor(Math.random() * (dMax - dMin + 1));
-    const dmg = Math.floor(raw * bonus);
+    const dmg = Math.floor(raw * multiplier);
     target.currentHp = Math.max(0, (target.currentHp ?? 0) - dmg);
 
     gs.combat.log.push(I18n.t
