@@ -128,7 +128,7 @@ describe('탄창 기반 원거리 전투 비용', () => {
     expect(GameState.cards.pistol_1.loadedAmmo).toBe(1);
   });
 
-  it('UI를 거치지 않은 빈 탄창 공격은 전투 상태를 변경하지 않고 거부한다', () => {
+  it('UI를 거치지 않은 빈 탄창 공격은 자원과 턴을 소비하지 않고 선택을 취소한다', () => {
     setupPistolCombat({ loadedAmmo: 0, ammoQuantity: 1 });
     GameState.combat.selectedSkillId = 'equipment:pistol_1';
     GameState.combat.selectedTargetId = 'enemy:0';
@@ -137,6 +137,8 @@ describe('탄창 기반 원거리 전투 비용', () => {
     const beforeDurability = GameState.cards.pistol_1.durability;
     const beforeNoise = GameState.noise.level;
     const beforeActor = GameState.combat.activeCombatantId;
+    const beforeTurnQueue = structuredClone(GameState.combat.turnQueue);
+    const beforeActionSequence = GameState.combat.actionSequence;
 
     const result = CombatSystem.confirmAction();
 
@@ -146,5 +148,10 @@ describe('탄창 기반 원거리 전투 비용', () => {
     expect(GameState.cards.pistol_1.durability).toBe(beforeDurability);
     expect(GameState.noise.level).toBe(beforeNoise);
     expect(GameState.combat.activeCombatantId).toBe(beforeActor);
+    expect(GameState.combat.turnQueue).toEqual(beforeTurnQueue);
+    expect(GameState.combat.actionSequence).toBe(beforeActionSequence);
+    expect(GameState.combat.selectedSkillId).toBeNull();
+    expect(GameState.combat.selectedTargetId).toBeNull();
+    expect(GameState.combat.phase).toBe('await_ally_input');
   });
 });
