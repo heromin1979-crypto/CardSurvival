@@ -139,12 +139,18 @@ describe('탄창 기반 원거리 전투 비용', () => {
     const beforeActor = GameState.combat.activeCombatantId;
     const beforeTurnQueue = structuredClone(GameState.combat.turnQueue);
     const beforeActionSequence = GameState.combat.actionSequence;
+    const compatibleAmmo = GameState.getBoardCards()
+      .find(card => card.definitionId === 'pistol_ammo');
+
+    expect(compatibleAmmo?.instanceId).toBe('ammo_1');
+    expect(compatibleAmmo?.quantity).toBe(1);
 
     const result = CombatSystem.confirmAction();
 
     expect(result).toMatchObject({ ok: false, reason: 'empty_magazine' });
     expect(GameState.combat.combatants['enemy:0'].hp).toBe(beforeHp);
     expect(GameState.cards.pistol_1.loadedAmmo).toBe(0);
+    expect(GameState.cards[compatibleAmmo.instanceId].quantity).toBe(1);
     expect(GameState.cards.pistol_1.durability).toBe(beforeDurability);
     expect(GameState.noise.level).toBe(beforeNoise);
     expect(GameState.combat.activeCombatantId).toBe(beforeActor);
