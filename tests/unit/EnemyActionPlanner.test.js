@@ -105,4 +105,38 @@ describe('EnemyActionPlanner', () => {
       motionKey: 'runner_rush',
     });
   });
+
+  it('준비된 특수 스킬을 순서대로 판정해 첫 성공 스킬을 예약한다', () => {
+    const rolls = [0.9, 0.1];
+    const state = commitEnemyAction({
+      enemy: {
+        patternProfile: { targetPolicy: 'ally' },
+        specialSkills: [
+          { id: 'first_skill', cooldown: 2 },
+          { id: 'second_skill', cooldown: 2 },
+        ],
+      },
+      candidates,
+      random: () => rolls.shift(),
+    });
+
+    expect(state.committedAction).toMatchObject({
+      actionId: 'second_skill',
+      category: 'special',
+    });
+  });
+
+  it('side 정책에 맞는 생존 대상이 없으면 빈 대상 목록을 예약한다', () => {
+    const state = commitEnemyAction({
+      enemy: {
+        patternProfile: {
+          targetPolicy: 'ally',
+          defaultAction: { actionId: 'basic_attack', motionKey: 'melee' },
+        },
+      },
+      candidates: [{ id: 'enemy_one', side: 'enemy', hp: 10, maxHp: 10 }],
+    });
+
+    expect(state.committedAction.targetIds).toEqual([]);
+  });
 });

@@ -67,8 +67,7 @@ function targetCountFor(action) {
 function eligibleCandidates(candidates, targetPolicy) {
   const alive = (candidates ?? []).filter(candidate => candidateId(candidate) && isAlive(candidate));
   if (!['ally', 'enemy', 'self'].includes(targetPolicy)) return alive;
-  const matchingSide = alive.filter(candidate => candidate?.side === targetPolicy);
-  return matchingSide.length > 0 ? matchingSide : alive;
+  return alive.filter(candidate => candidate?.side === targetPolicy);
 }
 
 function candidatesByPolicy(candidates, targetPolicy, random) {
@@ -104,15 +103,14 @@ function selectTargetIds(candidates, targetPolicy, targetCount, random) {
 }
 
 function selectAction(enemy, cooldowns, random) {
-  const specialSkills = (enemy?.specialSkills ?? []).filter(skill =>
-    (cooldowns?.[skill.id] ?? 0) <= 0,
-  );
   const specialChance = enemy?.patternProfile?.specialActionChance
     ?? enemy?.specialActionChance
     ?? 0.5;
 
-  if (specialSkills.length > 0 && random() < specialChance) {
-    return { ...specialSkills[0], category: 'special' };
+  for (const skill of (enemy?.specialSkills ?? [])) {
+    if ((cooldowns?.[skill.id] ?? 0) <= 0 && random() < specialChance) {
+      return { ...skill, category: 'special' };
+    }
   }
 
   return {
