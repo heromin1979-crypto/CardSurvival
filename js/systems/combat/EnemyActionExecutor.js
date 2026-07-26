@@ -140,11 +140,16 @@ export function executeEnemyAction({
   const statuses = statusDefinitionsFor(enemy, definition);
   const forcedMove = forcedMoveFor(definition);
   const affectedTargetIds = [];
+  const hitPlan = enemy?.spreadAttacks === true && targetIds.length > 1
+    ? Array.from({ length: hitCount }, (_, hitIndex) => ({
+        targetId: targetIds[hitIndex % targetIds.length],
+        hitIndex,
+      }))
+    : targetIds.flatMap(targetId =>
+        Array.from({ length: hitCount }, (_, hitIndex) => ({ targetId, hitIndex }))
+      );
 
-  for (const targetId of targetIds) {
-    let affected = false;
-
-    for (let hitIndex = 0; hitIndex < hitCount; hitIndex++) {
+  for (const { targetId, hitIndex } of hitPlan) {
       const hit = random() < accuracy;
       if (!hit) {
         services.emitFx({
@@ -169,7 +174,9 @@ export function executeEnemyAction({
         hitCount,
       });
       const succeeded = hitSucceeded(result);
-      affected ||= succeeded;
+      if (succeeded && !affectedTargetIds.includes(targetId)) {
+        affectedTargetIds.push(targetId);
+      }
       services.emitFx({
         kind: 'enemyAction',
         enemyId: enemy?.id ?? null,
@@ -183,9 +190,6 @@ export function executeEnemyAction({
       services.addLog(succeeded
         ? `${enemy?.name ?? enemy?.id ?? '적'} → ${targetId}: ${result?.damage ?? amount} 피해`
         : `${enemy?.name ?? enemy?.id ?? '적'} → ${targetId}: 회피`);
-    }
-
-    if (affected) affectedTargetIds.push(targetId);
   }
 
   for (const targetId of affectedTargetIds) {

@@ -387,7 +387,8 @@ export const CombatAiTurns = {
       ...enemy,
       specialActionChance: enemy?.patternProfile?.specialActionChance
         ?? enemy?.specialActionChance
-        ?? 1,
+        ?? BALANCE.combat.enemySpecialSkillChance
+        ?? 0.5,
       patternProfile: {
         ...(enemy?.patternProfile ?? {}),
         targetPolicy,
@@ -640,21 +641,30 @@ export const CombatAiTurns = {
 
     let action = enemy._enemyActionState?.committedAction;
     if (!action && enemy._nextIntent) {
+      const legacySkillId = enemy._telegraph?.skillId ?? enemy._nextIntent.skillId;
+      const legacySkill = (enemy.specialSkills ?? []).find(candidate =>
+        (candidate.actionId ?? candidate.id) === legacySkillId);
       const legacyTargetId = enemy._nextIntent.targetType === 'player'
         ? 'player'
         : enemy._nextIntent.targetId;
-      const category = enemy._nextIntent.action === 'skill' ? 'special' : 'basic';
+      const category = enemy._nextIntent.action === 'skill'
+        || (enemy._nextIntent.action === 'telegraph' && legacySkill)
+        ? 'special'
+        : 'basic';
       action = {
         actionId: category === 'special'
-          ? enemy._nextIntent.skillId ?? 'basic_attack'
+          ? legacySkillId
           : 'basic_attack',
         category,
         state: 'ready',
         targetIds: legacyTargetId ? [legacyTargetId] : [],
         remainingTelegraphTurns: 0,
-        hitCount: enemy.attacksPerRound ?? 1,
+        hitCount: legacySkill?.hitCount
+          ?? legacySkill?.effect?.multiHit
+          ?? enemy.attacksPerRound
+          ?? 1,
         motionKey: category === 'special'
-          ? enemy._nextIntent.skillId ?? 'basic_attack'
+          ? legacySkill?.motionKey ?? legacySkillId
           : 'basic_attack',
       };
       enemy._enemyActionState = { committedAction: action };

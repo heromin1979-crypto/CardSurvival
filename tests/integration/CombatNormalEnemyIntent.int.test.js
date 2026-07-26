@@ -1,6 +1,7 @@
 // @vitest-environment happy-dom
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import GameState from '../../js/core/GameState.js';
+import SystemRegistry from '../../js/core/SystemRegistry.js';
 import CombatSystem from '../../js/systems/CombatSystem.js';
 import CombatUI from '../../js/ui/CombatUI.js';
 import { ENEMIES, instantiateEnemy } from '../../js/data/enemies.js';
@@ -33,6 +34,14 @@ function setupCombat(enemy, { withNurse = false } = {}) {
 describe('일반 몬스터 committed action intent 통합', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+    SystemRegistry.register('NPCSystem', {
+      damageCompanion: (npcId, damage) => {
+        const state = GameState.npcs?.states?.[npcId];
+        if (state) state.hp = Math.max(0, state.hp - damage);
+      },
+      getCompanionCombatBonus: () => 1,
+      getNpcDef: () => null,
+    });
   });
 
   it('의도 결정 뒤 난수가 바뀌어도 runner_rush를 기본 공격으로 재추첨하지 않는다', () => {
@@ -69,7 +78,9 @@ describe('일반 몬스터 committed action intent 통합', () => {
 
   it('zombie_horde는 두 대상과 hitCount 2를 view model과 UI에 표시한다', () => {
     vi.spyOn(Math, 'random').mockReturnValue(0.6);
-    const combat = setupCombat(instantiateEnemy(ENEMIES.zombie_horde), {
+    const enemy = instantiateEnemy(ENEMIES.zombie_horde);
+    enemy.attack = { damage: [6, 6], accuracy: 1 };
+    const combat = setupCombat(enemy, {
       withNurse: true,
     });
     const intent = combat.enemies[0]._nextIntent;
@@ -85,5 +96,12 @@ describe('일반 몬스터 committed action intent 통합', () => {
     expect(badge.textContent).toContain('플레이어');
     expect(badge.textContent).toContain('간호사');
     expect(badge.textContent).toContain('×2');
+
+    CombatSystem._runSingleEnemyTurn(0);
+
+    expect(GameState.player.hp.current).toBe(94);
+    expect(GameState.npcs.states.npc_nurse.hp).toBe(74);
+    expect(combat.combatants.player.hp).toBe(94);
+    expect(combat.combatants.npc_nurse.hp).toBe(74);
   });
 });

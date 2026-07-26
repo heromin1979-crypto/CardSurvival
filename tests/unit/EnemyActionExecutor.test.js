@@ -298,6 +298,24 @@ describe('executeEnemyAction', () => {
     ]);
   });
 
+  it('spreadAttacks는 hitCount 총 타격을 targetIds에 순서대로 분배한다', () => {
+    const recorder = createServices();
+
+    executeEnemyAction({
+      enemy: ENEMIES.zombie_horde,
+      action: readyAction({
+        targetIds: ['player', 'npc_doctor'],
+        hitCount: 2,
+      }),
+      services: recorder.services,
+      random: () => 0,
+    });
+
+    expect(recorder.services.damageTarget).toHaveBeenCalledTimes(2);
+    expect(recorder.services.damageTarget.mock.calls.map(([targetId]) => targetId))
+      .toEqual(['player', 'npc_doctor']);
+  });
+
   it('CombatAiTurns 어댑터는 동료 피해·상태·강제 이동을 공용 서비스에 연결한다', () => {
     const damageCompanion = vi.fn((npcId, amount) => {
       const state = GameState.npcs.states[npcId];

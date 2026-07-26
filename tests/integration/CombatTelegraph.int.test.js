@@ -18,6 +18,7 @@ function makeEnemy(overrides = {}) {
     id: 'test_e', name: '테스트적', icon: '👹',
     currentHp: 60, maxHp: 60,
     aiPattern: 'normal',
+    specialActionChance: 1,
     specialSkills: [],
     _skillCooldowns: {},
     _statusEffects: [],
@@ -64,6 +65,34 @@ beforeEach(() => {
 });
 
 describe('텔레그래프 시작과 발동', () => {
+  it('legacy telegraph intent는 저장된 특수 행동으로 이행해 실행한다', () => {
+    const combat = setupCombat({ enemies: [makeEnemy({ specialSkills: [SLAM] })] });
+    const enemy = combat.enemies[0];
+    enemy._enemyActionState = { committedAction: null };
+    enemy._telegraph = {
+      skillId: 'slam',
+      remaining: 1,
+      targetRank: getRank(combat.formations, 'player'),
+    };
+    enemy._nextIntent = {
+      action: 'telegraph',
+      skillId: 'slam',
+      targetType: 'player',
+      targetId: null,
+      countdown: 1,
+      iconEmoji: '⚠️',
+      label: '강타 준비 중!',
+    };
+    const rand = vi.spyOn(Math, 'random').mockReturnValue(0);
+
+    CombatSystem._runSingleEnemyTurn(0);
+    rand.mockRestore();
+
+    expect(GameState.player.hp.current).toBe(80);
+    expect(enemy._skillCooldowns.slam).toBe(3);
+    expect(enemy._telegraph).toBeNull();
+  });
+
   it('예고형 스킬은 예고 턴에 피해 없이 _telegraph만 세팅하고 인텐트로 노출한다', () => {
     const combat = setupCombat({ enemies: [makeEnemy({ specialSkills: [SLAM] })] });
     const enemy = combat.enemies[0];
