@@ -31,7 +31,47 @@ describe('planCompanionTurn', () => {
     });
   });
 
-  it('치료기가 없는 탈영병은 heal 자세에서도 실제 공격 스킬로 폴백한다', () => {
+  it('간호사의 heal과 support 조건이 모두 거짓이면 실제 damage로 폴백한다', () => {
+    const plan = planCompanionTurn({
+      npcId: 'npc_nurse',
+      stance: 'heal',
+      skills: COMPANION_COMBAT_LOADOUTS.npc_nurse.map(skill),
+      allies: [
+        { id: 'npc_nurse', side: 'ally', hp: 45, maxHp: 50, stress: 2 },
+        { id: 'player', side: 'ally', hp: 80, maxHp: 100, stress: 5 },
+      ],
+      enemies: [{ id: 'enemy:0', side: 'enemy', hp: 18, maxHp: 30 }],
+      canUse: () => true,
+    });
+
+    expect(plan).toEqual({
+      skillId: 'nurse_scalpel',
+      targetId: 'enemy:0',
+      reason: 'lowest_hp_enemy',
+    });
+  });
+
+  it('간호사의 stress 조건만 참이면 stance fallback보다 support를 먼저 선택한다', () => {
+    const plan = planCompanionTurn({
+      npcId: 'npc_nurse',
+      stance: 'heal',
+      skills: COMPANION_COMBAT_LOADOUTS.npc_nurse.map(skill),
+      allies: [
+        { id: 'npc_nurse', side: 'ally', hp: 45, maxHp: 50, stress: 1 },
+        { id: 'player', side: 'ally', hp: 80, maxHp: 100, stress: 6 },
+      ],
+      enemies: [{ id: 'enemy:0', side: 'enemy', hp: 18, maxHp: 30 }],
+      canUse: () => true,
+    });
+
+    expect(plan).toEqual({
+      skillId: 'nurse_encourage',
+      targetId: 'player',
+      reason: 'support_ally',
+    });
+  });
+
+  it('치료기가 없는 탈영병은 heal 자세에서도 실제 재배치 스킬로 폴백한다', () => {
     const loadout = COMPANION_COMBAT_LOADOUTS.npc_soldier_deserter.map(skill);
     const plan = planCompanionTurn({
       npcId: 'npc_soldier_deserter',
@@ -47,9 +87,9 @@ describe('planCompanionTurn', () => {
 
     expect(loadout.map(({ id }) => id)).toContain(plan?.skillId);
     expect(plan).toEqual({
-      skillId: 'deserter_rifle_shot',
-      targetId: 'enemy:0',
-      reason: 'lowest_hp_enemy',
+      skillId: 'deserter_reposition',
+      targetId: 'player',
+      reason: 'support_ally',
     });
   });
 
@@ -129,14 +169,15 @@ describe('planCompanionTurn', () => {
       }],
     }, { statusEffects: [{ id: 'rooted', duration: 1 }] }, { statusEffects: [] }],
   ])('이미 %s가 충분한 대상은 같은 효과 대상에서 제외한다', (
-    _effectId,
+    effectId,
     tacticalSkill,
     saturatedState,
     clearState,
   ) => {
     const targetsAllies = tacticalSkill.target.side === 'ally';
+    const npcId = effectId === 'focus' ? 'npc_sohee' : 'npc_nurse';
     const saturated = {
-      id: targetsAllies ? 'npc_nurse' : 'enemy:saturated',
+      id: targetsAllies ? npcId : 'enemy:saturated',
       side: tacticalSkill.target.side,
       hp: 5,
       maxHp: 20,
@@ -150,13 +191,13 @@ describe('planCompanionTurn', () => {
       ...clearState,
     };
     const plan = planCompanionTurn({
-      npcId: 'npc_nurse',
+      npcId,
       stance: targetsAllies && tacticalSkill.tacticalRole === 'guard'
         ? 'hold'
         : 'support',
       skills: [tacticalSkill],
       allies: targetsAllies ? [saturated, clear] : [
-        { id: 'npc_nurse', side: 'ally', hp: 20, maxHp: 20 },
+        { id: npcId, side: 'ally', hp: 20, maxHp: 20 },
       ],
       enemies: targetsAllies ? [
         { id: 'enemy:0', side: 'enemy', hp: 20, maxHp: 20 },
@@ -222,5 +263,26 @@ describe('COMPANION_TACTICS data contract', () => {
       tactics: COMPANION_TACTICS,
       expectedCompanionIds: Object.keys(COMPANION_COMBAT_LOADOUTS),
     })).toEqual([]);
+  });
+
+  it('지원하지 않는 priority when은 validator 오류로 거부한다', () => {
+    expect(validateCompanionPatternData({
+      loadouts: { npc_test: ['test_damage'] },
+      skills: {
+        test_damage: {
+          tacticalRole: 'damage',
+          target: { side: 'enemy' },
+          effects: [{ type: 'damage', value: [1, 1] }],
+        },
+      },
+      tactics: {
+        npc_test: {
+          preferredStance: 'attack',
+          priorities: [{ role: 'damage', when: 'unknown_condition' }],
+        },
+      },
+    })).toContain(
+      '[companion tactic/npc_test] priorities[0] when "unknown_condition" is not supported',
+    );
   });
 });

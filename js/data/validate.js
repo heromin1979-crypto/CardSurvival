@@ -12,6 +12,7 @@ import { COMPANION_TACTICS } from './companionTactics.js';
 import { ENEMIES } from './enemies.js';
 import {
   COMPANION_STANCE_ROLES,
+  COMPANION_TACTIC_WHEN,
   getCompanionSkillRole,
 } from '../systems/combat/CompanionTactics.js';
 import { buildEnemyProfile } from '../systems/combat/EnemyCombatAdapter.js';
@@ -85,6 +86,14 @@ export function validateCompanionPatternData({
       );
     }
     for (const [priorityIndex, priority] of (tactic?.priorities ?? []).entries()) {
+      if (
+        priority?.when !== undefined
+        && !COMPANION_TACTIC_WHEN.includes(priority.when)
+      ) {
+        errors.push(
+          `[companion tactic/${companionId}] priorities[${priorityIndex}] when "${priority.when}" is not supported`,
+        );
+      }
       if (priority?.role && !hasLoadoutRole(priority.role)) {
         errors.push(
           `[companion tactic/${companionId}] priorities[${priorityIndex}] role "${priority.role}" not found in loadout`,

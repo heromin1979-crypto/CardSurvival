@@ -7,6 +7,11 @@ export const COMPANION_STANCE_ROLES = {
   hold: ['guard'],
 };
 
+export const COMPANION_TACTIC_WHEN = Object.freeze([
+  'ally_below_60',
+  'ally_stress_6_plus',
+]);
+
 const SATURATION_IDS = new Set([
   'block',
   'focus',
@@ -74,6 +79,43 @@ function isAlive(combatant) {
 function hpRatio(combatant) {
   const hp = combatantHp(combatant);
   return hp === null ? 1 : hp / combatantMaxHp(combatant);
+}
+
+function priorityConditionMatches(condition, allies) {
+  const livingAllies = allies.filter(isAlive);
+  if (condition === undefined) return true;
+  if (condition === 'ally_below_60') {
+    return livingAllies.some(ally => hpRatio(ally) < 0.6);
+  }
+  if (condition === 'ally_stress_6_plus') {
+    return livingAllies.some(ally => (
+      Number.isFinite(ally?.stress) && ally.stress >= 6
+    ));
+  }
+  return false;
+}
+
+function orderedRoles(tactic, stance, allies) {
+  const prioritized = [];
+  const skipped = new Set();
+  const holdOnly = stance === 'hold';
+
+  for (const priority of tactic?.priorities ?? []) {
+    const role = priority?.role;
+    if (!role || (holdOnly && role !== 'guard')) continue;
+    if (!priorityConditionMatches(priority.when, allies)) {
+      skipped.add(role);
+      continue;
+    }
+    if (!prioritized.includes(role)) prioritized.push(role);
+  }
+
+  for (const role of COMPANION_STANCE_ROLES[stance]) {
+    if (!skipped.has(role) && !prioritized.includes(role)) {
+      prioritized.push(role);
+    }
+  }
+  return prioritized;
 }
 
 function tokenStacks(target, tokenId) {
@@ -181,7 +223,7 @@ export function planCompanionTurn(input = {}) {
     return null;
   }
 
-  for (const role of COMPANION_STANCE_ROLES[stance]) {
+  for (const role of orderedRoles(tactic, stance, allies)) {
     for (const skill of skills) {
       if (
         !skill
