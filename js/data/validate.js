@@ -8,7 +8,12 @@ import {
   COMBAT_SKILLS,
   COMPANION_COMBAT_LOADOUTS,
 } from './combatSkills.js';
+import { COMPANION_TACTICS } from './companionTactics.js';
 import { ENEMIES } from './enemies.js';
+import {
+  COMPANION_STANCE_ROLES,
+  getCompanionSkillRole,
+} from '../systems/combat/CompanionTactics.js';
 import { buildEnemyProfile } from '../systems/combat/EnemyCombatAdapter.js';
 
 const VALID_COMBAT_EFFECTS = new Set([
@@ -22,9 +27,27 @@ const VALID_COMBAT_EFFECTS = new Set([
   'flee',
 ]);
 
-export function validateCompanionPatternData({ loadouts = {}, skills = {}, tactics = {} } = {}) {
+export function validateCompanionPatternData({
+  loadouts = {},
+  skills = {},
+  tactics = {},
+  expectedCompanionIds = null,
+} = {}) {
   const errors = [];
   const hasEffect = (skill, type) => skill?.effects?.some(effect => effect?.type === type);
+
+  if (Array.isArray(expectedCompanionIds)) {
+    for (const companionId of expectedCompanionIds) {
+      if (!Object.hasOwn(tactics, companionId)) {
+        errors.push(`[companion tactic/${companionId}] profile is required`);
+      }
+    }
+    for (const companionId of Object.keys(tactics)) {
+      if (!expectedCompanionIds.includes(companionId)) {
+        errors.push(`[companion tactic/${companionId}] profile is not in companion roster`);
+      }
+    }
+  }
 
   for (const [skillId, skill] of Object.entries(skills)) {
     if (skill?.selfOnly && skill?.target?.side !== 'ally') {
@@ -48,10 +71,15 @@ export function validateCompanionPatternData({ loadouts = {}, skills = {}, tacti
       ? loadouts[companionId]
       : [];
     const hasLoadoutRole = (role) => loadoutSkillIds.some(
-      skillId => skills[skillId]?.tacticalRole === role,
+      skillId => getCompanionSkillRole(skills[skillId]) === role,
     );
 
-    if (tactic?.preferredStance && !hasLoadoutRole(tactic.preferredStance)) {
+    const stanceRoles = COMPANION_STANCE_ROLES[tactic?.preferredStance]
+      ?? [tactic?.preferredStance];
+    if (
+      tactic?.preferredStance
+      && !stanceRoles.some(role => hasLoadoutRole(role))
+    ) {
       errors.push(
         `[companion tactic/${companionId}] preferredStance role "${tactic.preferredStance}" not found in loadout`,
       );
@@ -910,6 +938,14 @@ async function validate() {
     COMPANION_COMBAT_LOADOUTS,
     20,
   );
+  for (const message of validateCompanionPatternData({
+    loadouts: COMPANION_COMBAT_LOADOUTS,
+    skills: COMBAT_SKILLS,
+    tactics: COMPANION_TACTICS,
+    expectedCompanionIds: Object.keys(COMPANION_COMBAT_LOADOUTS),
+  })) {
+    reportCombatError(message);
+  }
   console.log(
     `  Skills: ${Object.keys(COMBAT_SKILLS).length}, errors: ${combatSkillErrors}`,
   );
