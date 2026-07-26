@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import CombatSystem from '../../js/systems/CombatSystem.js';
 import GameState    from '../../js/core/GameState.js';
 import { ENEMIES, instantiateEnemy } from '../../js/data/enemies.js';
@@ -47,6 +47,38 @@ describe('_decideNextIntent — timedThreat', () => {
     expect(intent.state).toBe('ready');
     expect(intent.countdown).toBeNull();
     expect(intent.label).toBe('다음 행동에 돌진');
+  });
+
+  it('UI에 노출한 ready committed action 객체를 다음 실행까지 그대로 사용한다', () => {
+    const enemy = {
+      id: 'zombie_charger', name: '돌진자', currentHp: 40, maxHp: 40,
+      row: 'front', attackType: 'melee',
+      aiPattern: 'aggressive', specialSkills: [], _skillCooldowns: {},
+      timedThreat: { id: 'charge_strike', chargeTurns: 1 },
+      _chargeRemaining: 0,
+    };
+    GameState.combat = {
+      active: true,
+      enemies: [enemy],
+      targetIndex: 0,
+      log: [],
+      playerStatus: [],
+      enemyStatus: [],
+      dangerLevel: 3,
+      turnQueue: [],
+    };
+
+    CombatSystem._decideNextIntent(enemy, GameState.combat, GameState);
+    const readyAction = enemy._enemyActionState.committedAction;
+    let executedAction = null;
+    vi.spyOn(CombatSystem, '_resolveTimedThreat').mockImplementation((_enemy, action) => {
+      executedAction = action;
+    });
+
+    CombatSystem._runSingleEnemyTurn(0);
+
+    expect(executedAction).toBe(readyAction);
+    expect(executedAction.actionId).toBe('charge_strike');
   });
 
   it.each([

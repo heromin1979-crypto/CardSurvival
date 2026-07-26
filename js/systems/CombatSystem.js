@@ -1836,7 +1836,11 @@ const CombatSystem = {
         gs.combat.log.push(I18n.t('combatSys.bloaterCorpseBurst', { dmg: burst }));
       }
     }
-    if (enemy.timedThreat?.id === 'summon_horde' && killCtx.weaponType && !killCtx.isSilent) {
+    const quietKillPreventedCry = enemy.timedThreat?.counters?.quietKill === true
+      && killCtx.isSilent === true;
+    if (enemy.timedThreat?.id === 'summon_horde'
+        && killCtx.weaponType
+        && !quietKillPreventedCry) {
       NoiseSystem.addNoise(BALANCE.combat.timedThreats.screamer.summonNoise);
       gs.combat.log.push(I18n.t('combatSys.screamerDeathCry'));
     }

@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import CombatSystem from '../../js/systems/CombatSystem.js';
 import GameState from '../../js/core/GameState.js';
 import NoiseSystem from '../../js/systems/NoiseSystem.js';
+import BALANCE from '../../js/data/gameBalance.js';
 import { ENEMIES, instantiateEnemy } from '../../js/data/enemies.js';
 
 const quietWeapon = {
@@ -121,14 +122,24 @@ describe('스크리머 timedThreat 카운터', () => {
     GameState.combat.enemies = [enemy];
     const noiseSpy = vi.spyOn(NoiseSystem, 'addNoise');
     const spawnSpy = vi.spyOn(CombatSystem, '_spawnEnemyMidCombat');
+    vi.spyOn(CombatSystem, '_resolveVictory').mockImplementation(() => {});
 
-    CombatSystem._attackAction('melee', 'weapon_inst', enemy);
-    noiseSpy.mockClear();
-    CombatSystem._onEnemyKilled(enemy);
-    CombatSystem._runSingleEnemyTurn(0);
+    CombatSystem.resolveAction('melee', 'weapon_inst');
 
-    expect(noiseSpy).not.toHaveBeenCalled();
+    expect(noiseSpy.mock.calls.filter(([amount]) => amount > 0)).toEqual([]);
     expect(spawnSpy).not.toHaveBeenCalled();
     expect(GameState.combat.enemies).toEqual([enemy]);
+  });
+
+  it('quietKill 카운터가 없으면 조용한 처치도 기존 사망 비명을 발생시킨다', () => {
+    const enemy = makeScreamer(1);
+    delete enemy.timedThreat.counters.quietKill;
+    GameState.combat.enemies = [enemy];
+    const noiseSpy = vi.spyOn(NoiseSystem, 'addNoise');
+    vi.spyOn(CombatSystem, '_resolveVictory').mockImplementation(() => {});
+
+    CombatSystem.resolveAction('melee', 'weapon_inst');
+
+    expect(noiseSpy).toHaveBeenCalledWith(BALANCE.combat.timedThreats.screamer.summonNoise);
   });
 });

@@ -60,7 +60,8 @@ describe('_onEnemyKilled — 블로터 사체 폭발', () => {
 
 describe('_onEnemyKilled — 스크리머 비명 차단', () => {
   const makeScreamer = () => ({ id: 'zombie_screamer', name: '스크리머', currentHp: 0, maxHp: 30,
-    weaknesses: [], lootTable: [], timedThreat: { id: 'summon_horde' } });
+    weaknesses: [], lootTable: [],
+    timedThreat: { id: 'summon_horde', counters: { quietKill: true } } });
 
   it('비-silent 플레이어 무기 처치 → 비명 발동 (소음 급증)', () => {
     const spy = vi.spyOn(NoiseSystem, 'addNoise');

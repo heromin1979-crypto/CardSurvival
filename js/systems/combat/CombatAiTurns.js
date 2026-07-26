@@ -670,14 +670,21 @@ export const CombatAiTurns = {
         enemy._nextIntent = this._decideNextIntent(enemy, gs.combat, gs) ?? null;
         return;
       }
-      const previousAction = enemy._enemyActionState?.committedAction;
-      enemy._enemyActionState = commitTimedThreatAction({
-        enemy,
-        targetIds: previousAction?.category === 'timed_threat'
-          ? previousAction.targetIds
-          : [],
-      });
-      this._resolveTimedThreat(enemy, enemy._enemyActionState.committedAction);
+      let action = enemy._enemyActionState?.committedAction;
+      const hasReadyTimedAction = action?.category === 'timed_threat'
+        && action.actionId === enemy.timedThreat?.id
+        && action.state === 'ready'
+        && action.remainingTelegraphTurns === 0;
+      if (!hasReadyTimedAction) {
+        enemy._enemyActionState = commitTimedThreatAction({
+          enemy,
+          targetIds: action?.category === 'timed_threat'
+            ? action.targetIds
+            : [],
+        });
+        action = enemy._enemyActionState.committedAction;
+      }
+      this._resolveTimedThreat(enemy, action);
       enemy._chargeRemaining = enemy.timedThreat?.chargeTurns ?? null;
       if (enemy.currentHp > 0) enemy._nextIntent = this._decideNextIntent(enemy, gs.combat, gs) ?? null;
       return;
