@@ -28,226 +28,83 @@ import {
   COMPANION_COMBAT_LOADOUTS,
   getCombatSkill,
 } from '../../data/combatSkills.js';
+import { planCompanionTurn } from './CompanionTactics.js';
 
 export const CombatAiTurns = {
-  // ── Combat Overhaul Phase 2 · 동료 자율 행동 ──────
-  // stance: 'attack'(기본) | 'heal' | 'support' | 'hold' | 'manual'
-  // state 위치: GameState.npcs.states[npcId].stance
-  // 'manual'은 자동 행동 skip — 기존 companionAttack/Heal 명령 플로우 유지
-
   _getCompanionStance(npcId) {
     const st = GameState.npcs?.states?.[npcId];
     return st?.stance ?? 'attack';
   },
 
-  resolveManualCompanionAction(action, npcId = null) {
-    const gs = GameState;
-    const combat = gs.combat;
-    if (!combat?.active) return false;
-
-    const entry = this._currentEntry(combat);
-    if (entry?.type !== 'companion') return false;
-    const activeNpcId = entry.id;
-    if (npcId && npcId !== activeNpcId) return false;
-
-    const st = gs.npcs?.states?.[activeNpcId];
-    if (!st || (st.hp ?? 0) <= 0) return false;
-
-    this._tickCompanionSkillCooldowns(activeNpcId);
-
-    switch (action) {
-      case 'attack':
-        this._companionAutoAttack(activeNpcId, { preferSelectedTarget: true });
-        break;
-      case 'heal':
-        this._companionAutoHeal(activeNpcId);
-        break;
-      case 'support':
-        this._companionAutoSupport(activeNpcId);
-        break;
-      case 'hold':
-      case 'wait':
-        this._companionHold(activeNpcId);
-        break;
-      default:
-        return false;
-    }
-
-    this._finishActorTurn();
+  _prepareCompanionTurn(npcId) {
+    const combat = GameState.combat;
+    if (!combat?.active || typeof npcId !== 'string') return false;
+    const turnKey = `${combat.roundNumber ?? 1}:${combat.activeIdx ?? 0}:${npcId}`;
+    if (combat._preparedCompanionTurnKey === turnKey) return false;
+    combat._preparedCompanionTurnKey = turnKey;
+    this._tickCompanionSkillCooldowns(npcId);
     return true;
   },
 
-  _finishActorTurn() {
-    const gs = GameState;
-    if (!gs.combat?.active) return;
-
-    for (const enemy of gs.combat.enemies ?? []) {
-      if ((enemy.currentHp ?? 0) <= 0 && !enemy._killProcessed) {
-        this._onEnemyKilled(enemy);
-      }
+  _planCompanionAction(npcId, stance = this._getCompanionStance(npcId)) {
+    const combat = GameState.combat;
+    const actor = combat?.combatants?.[npcId];
+    if (
+      !combat?.active
+      || actor?.sourceType !== 'companion'
+      || actor.dead === true
+      || (actor.hp ?? 0) <= 0
+    ) {
+      return null;
     }
 
-    if (this._allEnemiesDead()) {
-      this._resolveVictory();
-      return;
-    }
-
-    this._autoAdvanceTarget();
-    this._tickStatusEffects();
-    if (this._allEnemiesDead()) { this._resolveVictory(); return; }
-    if (this._isPlayerDefeated()) { this._resolveDefeat(); return; }
-
-    this._processAiTurns();
+    const combatants = Object.values(combat.combatants ?? {});
+    const skills = (actor.skillIds ?? [])
+      .map(skillId => combat.skillsById?.[skillId])
+      .filter(Boolean);
+    return planCompanionTurn({
+      npcId,
+      stance,
+      skills,
+      allies: combatants.filter(combatant => combatant?.side === 'ally'),
+      enemies: combatants.filter(combatant => combatant?.side === 'enemy'),
+      canUse: (skill, target) => (
+        this._canUsePlannedCompanionSkill(npcId, skill, target)
+      ),
+    });
   },
 
-  _runCompanionTurn(npcId) {
-    const gs = GameState;
-    const st = gs.npcs?.states?.[npcId];
-    if (!st || (st.hp ?? 0) <= 0) return;
-    if (!gs.combat?.active) return;
-
-    // 쿨다운 틱 (턴 시작 시점)
-    this._tickCompanionSkillCooldowns(npcId);
-
-    const stance = this._getCompanionStance(npcId);
-    switch (stance) {
-      case 'manual': return;                        // 자동 행동 skip
-      case 'hold':    return this._companionHold(npcId);
-      case 'heal':    return this._companionAutoHeal(npcId);
-      case 'support': return this._companionAutoSupport(npcId);
-      case 'attack':
-      default:        return this._companionAutoAttack(npcId);
-    }
+  _runCompanionTurn(npcId, { stance = this._getCompanionStance(npcId) } = {}) {
+    this._prepareCompanionTurn(npcId);
+    const plan = this._planCompanionAction(npcId, stance);
+    if (!plan) return { ok: false, reason: 'no_plan', turnConsumed: false };
+    return this._executePlannedCompanionAction(plan);
   },
 
-  // 가장 낮은 HP의 닿는 적 공격 (원거리 동료는 후열 직접 타격 가능)
-  _companionAutoAttack(npcId, options = {}) {
-    const gs = GameState;
-    const enemies = gs.combat?.enemies ?? [];
-    const attackSkill = (COMPANION_COMBAT_LOADOUTS[npcId] ?? [])
-      .map(skillId => gs.combat?.skillsById?.[skillId] ?? getCombatSkill(skillId))
-      .find(skill => (skill?.effects ?? []).some(effect => effect?.type === 'damage'));
-    const damageEffect = attackSkill?.effects?.find(effect => effect?.type === 'damage');
-    const isRangedNpc = attackSkill
-      ? (attackSkill.target?.ranks ?? []).some(rank => rank > 2)
-      : (BALANCE.combat.companionAuto.rangedCompanions ?? []).includes(npcId);
-    const alive = this.getReachableEnemies(isRangedNpc)
-      .map(e => ({ e, idx: enemies.indexOf(e) }))
-      .filter(x => x.idx >= 0);
-    if (alive.length === 0) return;
-    const selectedIdx = gs.combat?.targetIndex ?? -1;
-    const selected = options.preferSelectedTarget
-      ? alive.find(x => x.idx === selectedIdx)
-      : null;
-    if (!selected) alive.sort((a, b) => (a.e.currentHp ?? 0) - (b.e.currentHp ?? 0));
-    const targetEntry = selected ?? alive[0];
-    const target = targetEntry.e;
-
-    const cfg = BALANCE.combat.companionAuto;
-    const [dMin, dMax] = Array.isArray(damageEffect?.value)
-      ? damageEffect.value
-      : cfg.attackDamage;
-    const accuracy = Number.isFinite(attackSkill?.accuracy)
-      ? attackSkill.accuracy
-      : cfg.attackAccuracy;
-    const combatant = gs.combat?.combatants?.[npcId];
-    const multiplier = Number.isFinite(combatant?.combatDamageMultiplier)
-      && combatant.combatDamageMultiplier > 0
-      ? combatant.combatDamageMultiplier
-      : 1;
-
-    if (Math.random() > accuracy) {
-      gs.combat.log.push(I18n.t
-        ? I18n.t('combatSys.companionAtkMiss', { name: this._npcLabel(npcId) })
-        : `${this._npcLabel(npcId)} 공격 빗나감`);
-      this._fx({ kind: 'companionAttack', npcId, targetIdx: targetEntry.idx, miss: true });
-      return;
+  requestCompanionPlan(stance, npcId = null) {
+    const combat = GameState.combat;
+    const entry = this._currentEntry(combat);
+    const activeNpcId = entry?.type === 'companion'
+      ? entry.id
+      : combat?.combatants?.[combat?.activeCombatantId]?.sourceType === 'companion'
+        ? combat.activeCombatantId
+        : null;
+    if (
+      !combat?.active
+      || combat.phase !== 'await_ally_input'
+      || !activeNpcId
+      || (npcId && npcId !== activeNpcId)
+      || !['attack', 'heal', 'support', 'hold'].includes(stance)
+    ) {
+      return { ok: false, reason: 'invalid_context', turnConsumed: false };
     }
 
-    const raw = dMin + Math.floor(Math.random() * (dMax - dMin + 1));
-    const dmg = Math.floor(raw * multiplier);
-    target.currentHp = Math.max(0, (target.currentHp ?? 0) - dmg);
-
-    gs.combat.log.push(I18n.t
-      ? I18n.t('combatSys.companionAtk', { name: this._npcLabel(npcId), enemy: I18n.enemyName?.(target.id, target.name) ?? target.name, dmg })
-      : `${this._npcLabel(npcId)}→${target.name}: ${dmg} 피해`);
-    this._fx({ kind: 'companionAttack', npcId, targetIdx: targetEntry.idx, dmg, fx: isRangedNpc ? 'shot' : 'slash' });
-    EventBus.emit('companionAction', { npcId, action: 'attack', targetIdx: targetEntry.idx, damage: dmg });
-  },
-
-  // 이번 턴 받는 피해 감소 버프 (1턴)
-  _companionHold(npcId) {
-    const gs = GameState;
-    const st = gs.npcs?.states?.[npcId];
-    if (!st) return;
-    const reduct = BALANCE.combat.companionAuto.holdDamageReduct;
-    st.combatBuffs = st.combatBuffs ?? {};
-    st.combatBuffs.holdReduct = { value: reduct, duration: 1 };
-    gs.combat.log.push(`🛡️ ${this._npcLabel(npcId)} 방어 자세 (피해 -${Math.round(reduct * 100)}%)`);
-    this._fx({ kind: 'companionBuff', npcId, buff: 'hold' });
-    EventBus.emit('companionAction', { npcId, action: 'hold' });
-  },
-
-  // 플레이어 HP < 70% 이면 힐, 아니면 attack 폴백
-  _companionAutoHeal(npcId) {
-    const gs = GameState;
-    const p = gs.player;
-    const hpRatio = (p?.hp?.current ?? 0) / (p?.hp?.max ?? 1);
-    const cfg = BALANCE.combat.companionAuto;
-    if (hpRatio >= cfg.healThreshold) {
-      // 힐 필요 없음 → 공격 폴백
-      return this._companionAutoAttack(npcId);
+    const result = this._runCompanionTurn(activeNpcId, { stance });
+    if (result.turnConsumed && combat.active) {
+      this.advanceTurn();
+      this.processUntilAllyTurn();
     }
-    const [min, max] = cfg.healAmount;
-    const amt = min + Math.floor(Math.random() * (max - min + 1));
-    p.hp.current = Math.min(p.hp.max, (p.hp.current ?? 0) + amt);
-    gs.combat.log.push(`💉 ${this._npcLabel(npcId)} 응급 처치 (+${amt} HP)`);
-    this._fx({ kind: 'companionHeal', npcId, amount: amt });
-    EventBus.emit('companionAction', { npcId, action: 'heal', amount: amt });
-  },
-
-  // 클래스 스킬 쿨다운 0이면 사용, 아니면 attack 폴백
-  _companionAutoSupport(npcId) {
-    const skill = BALANCE.combat.companionAuto.classSkills?.[npcId];
-    if (!skill) return this._companionAutoAttack(npcId);
-    const st = GameState.npcs?.states?.[npcId];
-    if (!st) return;
-    st.skillCooldowns = st.skillCooldowns ?? {};
-    const cd = st.skillCooldowns[skill.id] ?? 0;
-    if (cd > 0) return this._companionAutoAttack(npcId);
-
-    this._applyCompanionSkill(npcId, skill);
-    st.skillCooldowns[skill.id] = skill.cooldown;
-  },
-
-  _applyCompanionSkill(npcId, skill) {
-    const gs = GameState;
-    const label = this._npcLabel(npcId);
-
-    if (skill.id === 'nurse_triage') {
-      // 모든 아군 +healAmount
-      const p = gs.player;
-      if (p.hp) p.hp.current = Math.min(p.hp.max, (p.hp.current ?? 0) + skill.healAmount);
-      for (const id of (gs.companions ?? [])) {
-        const s = gs.npcs?.states?.[id];
-        if (!s || (s.hp ?? 0) <= 0) continue;
-        s.hp = Math.min(s.maxHp ?? 50, s.hp + skill.healAmount);
-      }
-      gs.combat.log.push(`⚕️ ${label} 응급 분류 (모두 +${skill.healAmount} HP)`);
-    }
-    else if (skill.id === 'soldier_suppress') {
-      gs.combat._suppressMult = skill.atkMult;
-      gs.combat._suppressRemaining = skill.duration;
-      gs.combat.log.push(`🎯 ${label} 제압 사격 (${skill.duration}턴 · 적 공격력 ×${skill.atkMult})`);
-    }
-    else if (skill.id === 'doctor_diagnose') {
-      gs.combat._diagnoseResistBonus = skill.resistBonus;
-      gs.combat._diagnoseRemaining   = skill.duration;
-      gs.combat.log.push(`🔬 ${label} 상태 진단 (${skill.duration}턴 · 아군 상태이상 저항 +${Math.round(skill.resistBonus * 100)}%)`);
-    }
-
-    this._fx({ kind: 'companionSkill', npcId, skillId: skill.id });
-    EventBus.emit('companionAction', { npcId, action: 'skill', skillId: skill.id });
+    return result;
   },
 
   _tickCompanionSkillCooldowns(npcId) {
@@ -308,7 +165,6 @@ export const CombatAiTurns = {
       if (!st || (st.hp ?? 0) <= 0) continue;
       const combatant = combat?.combatants?.[id];
       const tokens = combatant?.tokens ?? {};
-      const holdReduct = st.combatBuffs?.holdReduct;
       const isHealer = (COMPANION_COMBAT_LOADOUTS[id] ?? []).some(skillId => {
         const skill = combat?.skillsById?.[skillId] ?? getCombatSkill(skillId);
         return (skill?.effects ?? []).some(effect => effect?.type === 'heal');
@@ -322,8 +178,7 @@ export const CombatAiTurns = {
         rank: getRank(combat?.formations, id),
         isHealer,
         isDefended: (tokens.block ?? 0) > 0
-          || (tokens.dodge ?? 0) > 0
-          || (holdReduct?.duration ?? 0) > 0,
+          || (tokens.dodge ?? 0) > 0,
         isExposed: (tokens.vulnerable ?? 0) > 0 || (tokens.marked ?? 0) > 0,
         statusEffects: st.statusEffects ?? [],
       });
@@ -895,16 +750,7 @@ export const CombatAiTurns = {
           const npcId = targetId === 'player' ? null : targetId;
           let damage = modifyOutgoingDamage(amount, this._rankCombatantForEnemy(enemy));
 
-          if ((combat?._suppressRemaining ?? 0) > 0) {
-            damage = Math.max(1, Math.floor(damage * (combat._suppressMult ?? 1)));
-          }
-
-          if (npcId) {
-            const holdReduct = gs.npcs?.states?.[npcId]?.combatBuffs?.holdReduct;
-            if (holdReduct && (holdReduct.duration ?? 0) > 0) {
-              damage = Math.max(1, Math.floor(damage * (1 - (holdReduct.value ?? 0))));
-            }
-          } else {
+          if (!npcId) {
             const armor = StatSystem.getArmorEffects();
             const defSkillBonus = SkillSystem.getBonus('defense', 'damageReduction');
             const totalReduct = Math.min(

@@ -1,156 +1,142 @@
 // @vitest-environment happy-dom
-// === Combat Overhaul Phase 2 — 동료 stance UI 통합 ===
-// 목적:
-//   - _renderStanceSelector HTML 구조
-//   - 활성 stance 강조
-//   - 클래스 스킬 쿨다운 배지 (ready vs waiting)
-//   - 버튼 클릭 → state.stance 업데이트
-//   - 통합 시나리오: _processAiTurns 내에서 stance 기반 동료 턴 실행
-import { describe, it, expect, beforeEach } from 'vitest';
-import CombatUI     from '../../js/ui/CombatUI.js';
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vitest';
+import CombatUI from '../../js/ui/CombatUI.js';
 import CombatSystem from '../../js/systems/CombatSystem.js';
-import GameState    from '../../js/core/GameState.js';
-import BALANCE      from '../../js/data/gameBalance.js';
+import GameState from '../../js/core/GameState.js';
 
 function setupDom() {
-  document.body.innerHTML = `<div id="screen-combat"></div>`;
+  document.body.innerHTML = '<div id="screen-combat"></div>';
   CombatUI._screen = document.getElementById('screen-combat');
 }
 
-describe('_renderStanceSelector — HTML 구조', () => {
-  it('5개 stance 버튼 렌더 + 기본 attack 활성', () => {
-    const html = CombatUI._renderStanceSelector('npc_a', { hp: 50 });
-    expect(html).toContain('data-stance="attack"');
-    expect(html).toContain('data-stance="heal"');
-    expect(html).toContain('data-stance="support"');
-    expect(html).toContain('data-stance="hold"');
-    expect(html).toContain('data-stance="manual"');
-    // attack에만 active
-    expect(html).toMatch(/stance-btn active" data-stance="attack"/);
+function setupManualNurseTurn() {
+  GameState.player.hp = { current: 10, max: 100 };
+  GameState.player.characterId = 'doctor';
+  GameState.player.equipped = {};
+  GameState.player.traits = [];
+  GameState.stats.stamina = { current: 10, max: 10, decayPerTP: 0 };
+  GameState.stats.morale = { current: 50, max: 100, decayPerTP: 0 };
+  GameState.noise = { level: 0 };
+  GameState.companions = ['npc_nurse'];
+  GameState.npcs = {
+    states: {
+      npc_nurse: {
+        hp: 50,
+        maxHp: 50,
+        isCompanion: true,
+        stance: 'manual',
+      },
+    },
+  };
+  GameState.flags = {};
+  CombatSystem._setupCombat({
+    dangerLevel: 1,
+    enemies: [{
+      id: 'zombie_common',
+      name: '감염자',
+      currentHp: 100,
+      maxHp: 100,
+      row: 'front',
+      defense: 0,
+      attack: { damage: [1, 1], accuracy: 0 },
+      specialSkills: [],
+      weaknesses: [],
+      resistances: [],
+      lootTable: [],
+      _skillCooldowns: {},
+      _statusEffects: [],
+    }],
   });
 
-  it('설정된 stance에 active 클래스', () => {
-    const html = CombatUI._renderStanceSelector('npc_a', { hp: 50, stance: 'heal' });
-    expect(html).toMatch(/stance-btn active" data-stance="heal"/);
-    expect(html).not.toMatch(/stance-btn active" data-stance="attack"/);
-  });
+  const combat = GameState.combat;
+  combat.turnQueue = [
+    { type: 'companion', id: 'npc_nurse', combatantId: 'npc_nurse', order: 0 },
+    { type: 'player', combatantId: 'player', order: 1 },
+    { type: 'enemy', enemyIdx: 0, combatantId: 'enemy:0', order: 2 },
+  ];
+  combat.activeIdx = 0;
+  combat.activeTurnIndex = 0;
+  combat.activeCombatantId = 'npc_nurse';
+  CombatSystem.beginActiveTurn();
+  return combat;
+}
 
-  it('클래스 스킬 ready 배지 (쿨다운 0)', () => {
-    const html = CombatUI._renderStanceSelector('npc_nurse', { hp: 50, skillCooldowns: {} });
-    const skill = BALANCE.combat.companionAuto.classSkills.npc_nurse;
-    expect(html).toContain('skill-cd-badge ready');
-    expect(html).toContain(skill.name);
-    expect(html).toContain('✨');
-  });
-
-  it('클래스 스킬 쿨다운 중 배지 (숫자 표시)', () => {
-    const html = CombatUI._renderStanceSelector('npc_nurse', { hp: 50, skillCooldowns: { nurse_triage: 3 } });
-    expect(html).toContain('⏳3');
-    expect(html).not.toMatch(/skill-cd-badge ready/);
-  });
-
-  it('클래스 스킬 없는 NPC → 배지 없음', () => {
-    const html = CombatUI._renderStanceSelector('npc_unknown', { hp: 50 });
-    expect(html).not.toContain('skill-cd-badge');
-  });
+beforeEach(() => {
+  setupDom();
+  vi.spyOn(Math, 'random').mockReturnValue(0);
 });
 
-describe('stance 버튼 클릭 → state 업데이트 (DOM 통합)', () => {
-  beforeEach(() => {
-    setupDom();
-    GameState.companions = ['npc_a'];
-    GameState.npcs = { states: { npc_a: { hp: 50, maxHp: 50, isCompanion: true } } };
-  });
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
-  it('클릭 후 npcs.states[id].stance가 변경된다', () => {
-    // DOM 직접 구성 (CombatUI.render 전체는 과도)
-    CombatUI._screen.innerHTML = CombatUI._renderStanceSelector('npc_a', GameState.npcs.states.npc_a);
-    // 이벤트 바인딩 수동 재현 (렌더 후에 일반적으로 하는 작업)
-    CombatUI._screen.querySelectorAll('.stance-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const npcId = btn.dataset.npcId;
-        const stance = btn.dataset.stance;
-        const st = GameState.npcs?.states?.[npcId];
-        if (st) st.stance = stance;
-      });
+describe('동료 빠른 계획 UI', () => {
+  it('영구 stance 표시와 분리된 네 개 one-shot 계획 버튼을 렌더한다', () => {
+    const html = CombatUI._renderStanceSelector('npc_nurse', {
+      hp: 50,
+      stance: 'manual',
     });
 
-    const healBtn = CombatUI._screen.querySelector('[data-stance="heal"]');
-    expect(healBtn).not.toBeNull();
-    healBtn.click();
-    expect(GameState.npcs.states.npc_a.stance).toBe('heal');
+    expect(html).toContain('data-current-stance="manual"');
+    expect(html).toContain('data-plan-stance="attack"');
+    expect(html).toContain('data-plan-stance="heal"');
+    expect(html).toContain('data-plan-stance="support"');
+    expect(html).toContain('data-plan-stance="hold"');
+    expect(html).not.toContain('data-plan-stance="manual"');
+  });
 
-    const supBtn = CombatUI._screen.querySelector('[data-stance="support"]');
-    supBtn.click();
-    expect(GameState.npcs.states.npc_a.stance).toBe('support');
+  it('빠른 치료 클릭은 실제 계획을 실행하고 저장 stance는 manual로 유지한다', () => {
+    const combat = setupManualNurseTurn();
+    CombatUI._screen.innerHTML = CombatUI._renderStanceSelector(
+      'npc_nurse',
+      GameState.npcs.states.npc_nurse,
+    );
+    CombatUI._bindCompanionPlanButtons?.();
+
+    const healButton = CombatUI._screen.querySelector('[data-plan-stance="heal"]');
+    expect(healButton).not.toBeNull();
+    healButton?.click();
+
+    expect(GameState.player.hp.current).toBe(18);
+    expect(GameState.npcs.states.npc_nurse.stance).toBe('manual');
+    expect(combat.activeCombatantId).toBe('player');
   });
 });
 
-describe('_processAiTurns — stance 기반 동료 행동 통합', () => {
-  beforeEach(() => {
-    GameState.player.hp = { current: 40, max: 100 };
-    GameState.companions = ['npc_nurse'];
-    GameState.npcs = {
-      states: {
-        npc_nurse: { hp: 40, maxHp: 50, isCompanion: true, stance: 'heal' },
-      },
-    };
-    GameState.combat = {
-      active:      true,
-      enemies:     [{ id: 'e', name: 'E', currentHp: 30, maxHp: 30, specialSkills: [], attack: { damage: [1, 1], accuracy: 0 }, weaknesses: [], resistances: [] }],
-      targetIndex: 0,
-      log:         [],
-      round:       0,
-      playerStatus: [], enemyStatus: [],
-      turnQueue: [
-        { type: 'player', order: 0 },
-        { type: 'companion', id: 'npc_nurse', order: 1 },
-        { type: 'enemy', enemyIdx: 0, order: 2 },
-      ],
-      activeIdx:   0,
-      roundNumber: 1,
-    };
+describe('manual 동료 실제 스킬 카드', () => {
+  it('현재 combat.skillsById의 실제 loadout 카드를 노출한다', () => {
+    const combat = setupManualNurseTurn();
+    const html = CombatUI._renderSkillBar(
+      combat.combatants.npc_nurse,
+      combat,
+    );
+
+    expect(html).toContain('data-skill-id="nurse_scalpel"');
+    expect(html).toContain('data-skill-id="nurse_triage"');
+    expect(html).toContain('data-skill-id="nurse_encourage"');
   });
 
-  it('heal stance 동료가 큐 순서대로 플레이어 힐', () => {
-    // _processAiTurns: player(0) → advance → companion heal → enemy turn → back to player
-    const before = GameState.player.hp.current;
-    CombatSystem._processAiTurns();
-    // 힐 발동 (player HP < 70% 조건)
-    expect(GameState.combat.activeIdx).toBe(1);
-    expect(CombatSystem.currentEntry().type).toBe('companion');
-    expect(CombatSystem.isManualCompanionTurn()).toBe(true);
-    expect(GameState.player.hp.current).toBe(before);
-    expect(CombatSystem.resolveManualCompanionAction('heal', 'npc_nurse')).toBe(true);
-    expect(GameState.player.hp.current).toBeGreaterThan(before);
-    // 큐가 플레이어(0)로 복귀
-    expect(GameState.combat.activeIdx).toBe(0);
-  });
+  it('실제 스킬 쿨다운 중인 카드는 비활성 상태와 남은 턴을 표시한다', () => {
+    const combat = setupManualNurseTurn();
+    combat.skillsById.nurse_scalpel.cooldown = 3;
+    GameState.npcs.states.npc_nurse.skillCooldowns = { nurse_scalpel: 2 };
 
-  it('support stance 동료 + nurse → nurse_triage 발동 및 쿨다운 설정', () => {
-    GameState.npcs.states.npc_nurse.stance = 'support';
-    CombatSystem._processAiTurns();
-    expect(GameState.npcs.states.npc_nurse.skillCooldowns?.nurse_triage).toBeUndefined();
-    expect(GameState.combat.activeIdx).toBe(1);
-    expect(CombatSystem.resolveManualCompanionAction('support', 'npc_nurse')).toBe(true);
-    const skill = BALANCE.combat.companionAuto.classSkills.npc_nurse;
-    expect(GameState.npcs.states.npc_nurse.skillCooldowns?.nurse_triage).toBe(skill.cooldown);
-  });
+    const html = CombatUI._renderSkillBar(
+      combat.combatants.npc_nurse,
+      combat,
+    );
+    const host = document.createElement('div');
+    host.innerHTML = html;
+    const scalpelCard = host.querySelector('[data-skill-id="nurse_scalpel"]');
 
-  it('manual stance 동료는 현재 턴에서 멈추고 명령 후 턴을 진행한다', () => {
-    GameState.npcs.states.npc_nurse.stance = 'manual';
-
-    CombatSystem._processAiTurns();
-
-    expect(GameState.combat.activeIdx).toBe(1);
-    expect(CombatSystem.currentEntry().type).toBe('companion');
-    expect(CombatSystem.isManualCompanionTurn()).toBe(true);
-
-    const acted = CombatSystem.resolveManualCompanionAction('attack', 'npc_nurse');
-
-    expect(acted).toBe(true);
-    expect(GameState.combat.activeIdx).toBe(0);
-    expect(CombatSystem.canPlayerAct()).toBe(true);
+    expect(scalpelCard?.disabled).toBe(true);
+    expect(scalpelCard?.textContent).toContain('쿨다운 2');
   });
 });

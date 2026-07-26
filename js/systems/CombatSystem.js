@@ -31,6 +31,7 @@ import {
   buildAllyLoadout,
   executeSkillCommand,
   useCombatItem as useCombatItemCommand,
+  validateSkillCommand,
 } from './combat/CombatSkillSystem.js';
 import {
   compactEnemyFormation,
@@ -307,6 +308,7 @@ const CombatSystem = {
       || !active.skillIds?.includes(skillId)
       || !combat.skillsById?.[skillId]
       || this._isSkillLocked(active, skillId)
+      || this._isCompanionSkillOnCooldown(active, skillId)
     ) {
       return false;
     }
@@ -337,6 +339,52 @@ const CombatSystem = {
     combat.selectedTargetId = null;
     combat.phase = 'await_ally_input';
     return true;
+  },
+
+  _isCompanionSkillOnCooldown(combatant, skillId) {
+    if (combatant?.sourceType !== 'companion') return false;
+    const npcId = combatant.sourceId ?? combatant.id;
+    return (GameState.npcs?.states?.[npcId]?.skillCooldowns?.[skillId] ?? 0) > 0;
+  },
+
+  _startCompanionSkillCooldown(combatant, skill) {
+    const cooldown = Number.isFinite(skill?.cooldown)
+      ? Math.max(0, Math.floor(skill.cooldown))
+      : 0;
+    if (combatant?.sourceType !== 'companion' || cooldown <= 0) return;
+    const npcId = combatant.sourceId ?? combatant.id;
+    const state = GameState.npcs?.states?.[npcId];
+    if (!state) return;
+    state.skillCooldowns = state.skillCooldowns ?? {};
+    state.skillCooldowns[skill.id] = cooldown;
+  },
+
+  _canUsePlannedCompanionSkill(actorId, skill, target) {
+    const combat = GameState.combat;
+    const actor = combat?.combatants?.[actorId];
+    if (
+      actor?.sourceType !== 'companion'
+      || !actor.skillIds?.includes(skill?.id)
+      || this._isSkillLocked(actor, skill?.id)
+      || this._isCompanionSkillOnCooldown(actor, skill?.id)
+    ) {
+      return false;
+    }
+
+    const context = this._commandContext();
+    context.validatePosition = (commandActorId, targetId, commandSkill) => (
+      validateSkillPosition(
+        combat.formations,
+        commandActorId,
+        targetId,
+        commandSkill,
+      )
+    );
+    return validateSkillCommand(context, {
+      actorId,
+      skillId: skill.id,
+      targetId: target?.id,
+    }).ok === true;
   },
 
   _commandContext() {
@@ -370,7 +418,11 @@ const CombatSystem = {
           ? GameState.cards[instanceId].durability
           : 999
       ),
-      consumeCosts: (actor, skill) => this._consumeRankedCosts(actor, skill),
+      consumeCosts: (actor, skill) => {
+        const result = this._consumeRankedCosts(actor, skill);
+        if (result?.ok !== false) this._startCompanionSkillCooldown(actor, skill);
+        return result;
+      },
       applyEffect: (effect, actor, target, random, hitInfo) => (
         this._applyRankedEffect(effect, actor, target, random, hitInfo)
       ),
@@ -638,26 +690,19 @@ const CombatSystem = {
     return { ...result, turnConsumed: true };
   },
 
-  confirmAction() {
+  _finalizeSkillCommandResult({
+    actorId,
+    skill,
+    target,
+    targetHpBefore,
+    result,
+  }) {
     const combat = GameState.combat;
-    if (!combat?.active || !combat.selectedSkillId || !combat.selectedTargetId) {
-      return { ok: false, reason: 'invalid_context' };
-    }
-
-    const skill = combat.skillsById?.[combat.selectedSkillId];
-    const target = combat.combatants?.[combat.selectedTargetId];
-    const targetHpBefore = target?.hp;
-    const result = executeSkillCommand(this._commandContext(), {
-      actorId: combat.activeCombatantId,
-      skillId: combat.selectedSkillId,
-      targetId: combat.selectedTargetId,
-    });
-
     if (result.ok) {
       this._pushCombatLog(this._rankedActionMessage(skill, target, result, targetHpBefore));
       combat.actionSequence = (combat.actionSequence ?? 0) + 1;
       if (result.hit === false && target?.sourceType === 'enemy') {
-        const actor = combat.combatants?.[combat.activeCombatantId];
+        const actor = combat.combatants?.[actorId];
         this._fx({
           kind: actor?.sourceType === 'companion' ? 'companionAttack' : 'playerAttack',
           npcId: actor?.sourceType === 'companion' ? actor.sourceId : undefined,
@@ -669,19 +714,78 @@ const CombatSystem = {
       this._processRankedKills();
       if (this._allEnemiesDead()) {
         this._resolveVictory();
-        return result;
+        return;
       }
       if (this._isPlayerDefeated()) {
         this._resolveDefeat();
-        return result;
+        return;
       }
-      this._resolveRelationshipAfterAction(combat.activeCombatantId);
-      this.advanceTurn();
-      this.processUntilAllyTurn();
+      this._resolveRelationshipAfterAction(actorId);
     } else {
       combat.lastActionFailure = result.reason ?? null;
       this._pushCombatLog(this._rankedFailureMessage(result.reason));
-      if (result.turnConsumed) {
+    }
+  },
+
+  _executePlannedCompanionAction(plan) {
+    const combat = GameState.combat;
+    if (!combat?.active || !plan) {
+      return { ok: false, reason: 'invalid_context', turnConsumed: false };
+    }
+
+    const actorId = combat.activeCombatantId;
+    const skill = combat.skillsById?.[plan.skillId];
+    const target = combat.combatants?.[plan.targetId];
+    const targetHpBefore = target?.hp;
+    const result = executeSkillCommand(this._commandContext(), {
+      actorId,
+      skillId: plan.skillId,
+      targetId: plan.targetId,
+    });
+    this._finalizeSkillCommandResult({
+      actorId,
+      skill,
+      target,
+      targetHpBefore,
+      result,
+    });
+    if (result.ok) {
+      EventBus.emit('companionAction', {
+        npcId: actorId,
+        action: 'skill',
+        skillId: plan.skillId,
+        targetId: plan.targetId,
+        reason: plan.reason,
+      });
+    }
+    return result;
+  },
+
+  confirmAction() {
+    const combat = GameState.combat;
+    if (!combat?.active || !combat.selectedSkillId || !combat.selectedTargetId) {
+      return { ok: false, reason: 'invalid_context' };
+    }
+
+    const actorId = combat.activeCombatantId;
+    const skill = combat.skillsById?.[combat.selectedSkillId];
+    const target = combat.combatants?.[combat.selectedTargetId];
+    const targetHpBefore = target?.hp;
+    const result = executeSkillCommand(this._commandContext(), {
+      actorId,
+      skillId: combat.selectedSkillId,
+      targetId: combat.selectedTargetId,
+    });
+    this._finalizeSkillCommandResult({
+      actorId,
+      skill,
+      target,
+      targetHpBefore,
+      result,
+    });
+
+    if (combat.active) {
+      if (result.ok || result.turnConsumed) {
         this.advanceTurn();
         this.processUntilAllyTurn();
       } else {
@@ -928,6 +1032,17 @@ const CombatSystem = {
           if (!combat.active) return true;
           continue;
         }
+        if (active?.sourceType === 'companion') {
+          const npcId = active.sourceId ?? active.id;
+          this._prepareCompanionTurn(npcId);
+          if (this._getCompanionStance(npcId) !== 'manual') {
+            this._runCompanionTurn(npcId);
+            if (!combat.active) return true;
+            this.advanceTurn();
+            if (!combat.active) return true;
+            continue;
+          }
+        }
         combat.phase = 'await_ally_input';
         return true;
       }
@@ -975,7 +1090,8 @@ const CombatSystem = {
 
   isManualCompanionTurn(combat = GameState.combat) {
     const entry = this._currentEntry(combat);
-    return entry?.type === 'companion';
+    return entry?.type === 'companion'
+      && this._getCompanionStance(entry.id) === 'manual';
   },
 
   _isEntryAlive(entry, combat, npcStates) {
@@ -1255,7 +1371,13 @@ const CombatSystem = {
   _currentActorCanTargetBackRow(combat = GameState.combat) {
     const entry = this._currentEntry(combat);
     if (entry?.type === 'companion') {
-      return (BALANCE.combat.companionAuto.rangedCompanions ?? []).includes(entry.id);
+      const actor = combat?.combatants?.[entry.combatantId ?? entry.id];
+      return (actor?.skillIds ?? [])
+        .map(skillId => combat?.skillsById?.[skillId])
+        .some(skill => (
+          (skill?.effects ?? []).some(effect => effect?.type === 'damage')
+          && (skill?.target?.ranks ?? []).some(rank => rank > 2)
+        ));
     }
     return this.isPlayerWeaponRanged();
   },
@@ -1729,7 +1851,7 @@ const CombatSystem = {
   /**
    * Phase 1: 턴 큐 순서대로 AI 엔티티(동료/적) 턴을 플레이어 차례 전까지 실행.
    *   - activeIdx를 advance → entry type 분기 → 실행 → 승/패 판정 루프
-   *   - 동료 턴은 Phase 1에서 stub (Phase 2에서 stance 기반 자율 행동 구현)
+   *   - manual 동료는 입력을 기다리고, 나머지 stance는 실제 스킬을 한 번 계획·실행
    *   - 최대 iter 제한(큐 길이×2)으로 무한루프 방지
    */
   _processAiTurns() {
@@ -1745,12 +1867,19 @@ const CombatSystem = {
       this._advanceTurn(combat, npcStates);
       // 레거시 폴백 루프에서는 라운드 경계 후처리를 쓰지 않는다 (resolveAction이 직접 틱)
       combat._roundWrapped = false;
+      this._syncActiveTurnFromLegacy(combat);
       const entry = this._currentEntry(combat);
       if (!entry) return;
       if (entry.type === 'player') return;   // 플레이어 차례로 복귀
 
       if (entry.type === 'companion') {
-        return;
+        this._prepareCompanionTurn(entry.id);
+        if (this._getCompanionStance(entry.id) === 'manual') {
+          this.beginActiveTurn();
+          return;
+        }
+        this._runCompanionTurn(entry.id);
+        if (!combat.active) return;
       } else if (entry.type === 'enemy') {
         this._runSingleEnemyTurn(entry.enemyIdx);
         if (this._isPlayerDefeated()) { this._resolveDefeat(); return; }

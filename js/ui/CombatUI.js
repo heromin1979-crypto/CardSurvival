@@ -6,7 +6,6 @@ import I18n          from '../core/I18n.js';
 import NightSystem   from '../systems/NightSystem.js';
 import { CHARACTERS } from '../data/characters.js';
 import { DISTRICTS }  from '../data/districts.js';
-import BALANCE        from '../data/gameBalance.js';
 import { NPC_ITEMS }  from '../data/npcs.js';
 import { combatAssetManifest } from '../data/combatAssets.js';
 import { getRank }   from '../systems/combat/FormationSystem.js';
@@ -487,6 +486,12 @@ const CombatUI = {
           const magazineAction = this._magazineActionState(activeCombatant, skill);
           const reloadMode = magazineAction?.mode === 'reload';
           const isEmpty = magazineAction?.mode === 'empty';
+          const cooldown = activeCombatant?.sourceType === 'companion'
+            ? (GameState.npcs?.states?.[
+                activeCombatant.sourceId ?? activeCombatant.id
+              ]?.skillCooldowns?.[skillId] ?? 0)
+            : 0;
+          const onCooldown = cooldown > 0;
           const command = reloadMode ? 'reload' : 'attack';
           const displayLabel = reloadMode
             ? I18n.t('combat.reload')
@@ -507,9 +512,12 @@ const CombatUI = {
             && !skill.usableFrom.includes(activeRank);
           const disabled = magazineAction?.disabled === true
             || invalidOrigin
+            || onCooldown
             || combat.phase !== 'await_ally_input';
           const title = invalidOrigin
             ? `현재 위치(rank ${activeRank})에서는 사용할 수 없습니다.`
+            : onCooldown
+              ? `쿨다운 ${cooldown}턴`
             : '';
           const statRows = [];
           if (dmg) statRows.push(`<span class="skill-stat">피해 ${dmg[0]}-${dmg[1]}</span>`);
@@ -518,8 +526,9 @@ const CombatUI = {
             if (preview.critChance > 0) statRows.push(`<span class="skill-stat crit">치명타 ${preview.critChance}%</span>`);
           }
           if (!dmg) statRows.push(`<span class="skill-stat">${this._escape(costLabel)}</span>`);
+          if (onCooldown) statRows.push(`<span class="skill-stat">쿨다운 ${cooldown}</span>`);
           return `
-            <button class="combat-skill-button combat-action-card${selected}${reloadMode ? ' is-reload' : ''}${isEmpty ? ' is-empty' : ''}${invalidOrigin ? ' disabled' : ''}"
+            <button class="combat-skill-button combat-action-card${selected}${reloadMode ? ' is-reload' : ''}${isEmpty ? ' is-empty' : ''}${invalidOrigin || onCooldown ? ' disabled' : ''}"
                     data-skill-id="${this._escape(skillId)}"
                     data-command="${command}"
                     data-weapon-instance-id="${this._escape(skill.equipmentInstanceId ?? '')}"
@@ -608,6 +617,13 @@ const CombatUI = {
     const canMove = CombatSystem.findActiveSkillByEffect?.('move') !== null;
     const commandDisabled = combat.phase !== 'await_ally_input';
     const scene = this._combatScene();
+    const companionPlanControls = active?.sourceType === 'companion'
+      && CombatSystem.isManualCompanionTurn(combat)
+      ? this._renderStanceSelector(
+          active.sourceId ?? active.id,
+          gs.npcs?.states?.[active.sourceId ?? active.id],
+        )
+      : '';
 
     // 타겟 선택 단계: 선택한 스킬로 실제 지정 가능한 대상을 미리 계산해 하이라이트
     this._targetableIds = null;
@@ -647,6 +663,7 @@ const CombatUI = {
           <div class="combat-stage-center">${this._renderEventTicker(combat)}</div>
         </main>
         <footer class="combat-command-deck">
+          ${companionPlanControls}
           ${this._renderSkillBar(active, combat)}
           ${this._renderCombatItemSlot(active)}
           <button class="combat-common-command combat-action-card${canMove ? '' : ' disabled'}"
@@ -673,6 +690,8 @@ const CombatUI = {
   },
 
   _bindFocusedCombatEvents(combat) {
+    this._bindCompanionPlanButtons();
+
     this._screen.querySelectorAll('.combat-skill-button').forEach(button => {
       button.addEventListener('click', () => {
         if (button.disabled) return;
@@ -1008,18 +1027,11 @@ const CombatUI = {
     const dangerText   = DANGER_LABEL[Math.min(dangerLv, 5)] ?? '위험';
     const dangerColor  = DANGER_COLOR[Math.min(dangerLv, 5)] ?? '#cc3333';
 
-    // ── 아이템 / 투척물 / 동행 ────────────────────────────────
+    // ── 아이템 / 투척물 ──────────────────────────────────────
     const medicals   = CombatSystem.getAvailableMedicals();
     const throwables = CombatSystem.getAvailableThrowables();
-    const companions = gs.companions ?? [];
-    const atkCd      = combat._companionAttackCooldown ?? 0;
-    const healCd     = combat._companionHealCooldown   ?? 0;
     const weapons    = CombatSystem.getAvailableWeapons();
     const guardActive = !!combat.playerGuard?.active;
-    const currentEntry = CombatSystem.currentEntry(combat);
-    const manualCompanionTurn = currentEntry?.type === 'companion'
-      && CombatSystem.isManualCompanionTurn(combat);
-    const activeCompanionId = manualCompanionTurn ? currentEntry.id : null;
     const canPlayerAct = CombatSystem.canPlayerAct(combat);
 
     const medBtnsHtml = medicals.length > 0
@@ -1046,86 +1058,6 @@ const CombatUI = {
         ${def?.icon ?? '💣'} ${I18n.itemName(def?.id ?? t.definitionId, def?.name ?? '')}
       </button>`;
     }).join('');
-
-    const activeCompanionName = activeCompanionId
-      ? I18n.itemName(activeCompanionId, gs.npcs?.states?.[activeCompanionId]?.name ?? activeCompanionId)
-      : '';
-    const companionActionCardsHtml = manualCompanionTurn ? `
-          <div class="action-card companion-action-card primary" data-action="manualCompanionAttack" data-companion-id="${activeCompanionId}">
-            <span class="ac-cost">1</span>
-            <div class="ac-header">
-              <span class="ac-icon">⚔</span>
-              <div class="ac-title-group">
-                <span class="ac-name">${activeCompanionName} 공격</span>
-                <span class="ac-sub">COMPANION ATTACK</span>
-              </div>
-            </div>
-            <div class="ac-preview">
-              <div class="ac-row"><span>대상</span><strong>${I18n.enemyName(targetEnemy?.id ?? targetEnemy?.definitionId, targetEnemy?.name ?? '')}</strong></div>
-              <div class="ac-row"><span>행동</span><strong>선택 적 공격</strong></div>
-            </div>
-          </div>
-          <div class="action-card companion-action-card" data-action="manualCompanionHeal" data-companion-id="${activeCompanionId}">
-            <span class="ac-cost">1</span>
-            <div class="ac-header">
-              <span class="ac-icon">✚</span>
-              <div class="ac-title-group">
-                <span class="ac-name">${activeCompanionName} 치료</span>
-                <span class="ac-sub">COMPANION HEAL</span>
-              </div>
-            </div>
-            <div class="ac-preview">
-              <div class="ac-row"><span>대상</span><strong>플레이어</strong></div>
-              <div class="ac-row good"><span>조건</span><strong>HP 낮을 때 효과</strong></div>
-            </div>
-          </div>
-          <div class="action-card companion-action-card" data-action="manualCompanionSupport" data-companion-id="${activeCompanionId}">
-            <span class="ac-cost">2</span>
-            <div class="ac-header">
-              <span class="ac-icon">✦</span>
-              <div class="ac-title-group">
-                <span class="ac-name">${activeCompanionName} 지원</span>
-                <span class="ac-sub">COMPANION SKILL</span>
-              </div>
-            </div>
-            <div class="ac-preview">
-              <div class="ac-row"><span>스킬</span><strong>직업 지원</strong></div>
-              <div class="ac-row"><span>쿨다운</span><strong>가능 시 사용</strong></div>
-            </div>
-          </div>
-          <div class="action-card companion-action-card" data-action="manualCompanionHold" data-companion-id="${activeCompanionId}">
-            <span class="ac-cost">1</span>
-            <div class="ac-header">
-              <span class="ac-icon">◼</span>
-              <div class="ac-title-group">
-                <span class="ac-name">${activeCompanionName} 대기</span>
-                <span class="ac-sub">COMPANION HOLD</span>
-              </div>
-            </div>
-            <div class="ac-preview">
-              <div class="ac-row"><span>효과</span><strong>피해 감소</strong></div>
-              <div class="ac-row good"><span>턴</span><strong>동료 행동 종료</strong></div>
-            </div>
-          </div>` : '';
-    const companionBtns = manualCompanionTurn ? `
-      <button class="sec-btn companion manual" data-action="manualCompanionAttack" data-companion-id="${activeCompanionId}">
-        ${activeCompanionName} 공격
-      </button>
-      <button class="sec-btn companion manual" data-action="manualCompanionHeal" data-companion-id="${activeCompanionId}">
-        ${activeCompanionName} 치료
-      </button>
-      <button class="sec-btn companion manual" data-action="manualCompanionSupport" data-companion-id="${activeCompanionId}">
-        ${activeCompanionName} 지원
-      </button>
-      <button class="sec-btn companion manual secondary" data-action="manualCompanionHold" data-companion-id="${activeCompanionId}">
-        ${activeCompanionName} 대기
-      </button>` : false ? `
-      <button class="sec-btn companion" data-action="companionAttack" ${atkCd > 0 ? 'disabled' : ''}>
-        ⚔️ 동행 공격${atkCd > 0 ? ` (${atkCd})` : ''}
-      </button>
-      <button class="sec-btn companion" data-action="companionHeal" ${healCd > 0 ? 'disabled' : ''}>
-        💉 동행 치료${healCd > 0 ? ` (${healCd})` : ''}
-      </button>` : '';
 
     // ── 적 패널 (우측) ────────────────────────────────────────
     const tEnemy    = targetEnemy;
@@ -1159,7 +1091,7 @@ const CombatUI = {
     // HTML 조립
     // ══════════════════════════════════════════════════════════
     this._screen.innerHTML = `
-      <div class="combat-wrap${canPlayerAct ? '' : ' actor-locked'}${manualCompanionTurn ? ' manual-companion-turn' : ''}"
+      <div class="combat-wrap${canPlayerAct ? '' : ' actor-locked'}"
            data-combat-scene="${this._escape(this._combatScene().id)}" style="${this._combatAssetStyle()}">
 
         <!-- ① 상단 바 ────────────────────────────────────── -->
@@ -1213,8 +1145,6 @@ const CombatUI = {
 
         <!-- ③ 하단: 액션 카드 바 ───────────────────────── -->
         <footer class="combat-action-bar">
-          ${companionActionCardsHtml}
-
           <!-- 공격 카드 -->
           <div class="action-card primary" data-action="${weaponId ? 'attack' : 'unarmed'}" data-weapon="${weaponId ?? ''}">
             <span class="ac-cost">${weaponDef?.combat?.requiresAmmo ? 2 : 1}</span>
@@ -1301,7 +1231,6 @@ const CombatUI = {
         <div class="combat-sec-row">
           ${extraWeaponBtns}
           ${throwBtns}
-          ${companionBtns}
           <button class="sec-btn" data-action="unarmed">👊 맨손</button>
           <button class="sec-btn secondary" data-action="stealth">🤫 은신</button>
         </div>
@@ -1341,10 +1270,6 @@ const CombatUI = {
     const logEl = this._screen.querySelector('#combat-log');
     if (logEl) logEl.scrollTop = logEl.scrollHeight;
 
-    if (manualCompanionTurn) {
-      this._syncManualCompanionActionUi(activeCompanionId);
-    }
-
     // ── 적 스프라이트 클릭 (타겟 변경) ───────────────────────
     this._screen.querySelectorAll('.cv-enemy-sprite:not(.is-dead)').forEach(el => {
       el.addEventListener('click', () => {
@@ -1353,20 +1278,7 @@ const CombatUI = {
       });
     });
 
-    // ── Phase 2 · 동료 stance 버튼 클릭 ──────────────────────
-    this._screen.querySelectorAll('.stance-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const npcId = btn.dataset.npcId;
-        const stance = btn.dataset.stance;
-        if (!npcId || !stance) return;
-        const st = GameState.npcs?.states?.[npcId];
-        if (st) {
-          st.stance = stance;
-          this.render();
-        }
-      });
-    });
+    this._bindCompanionPlanButtons();
 
     // ── 우측 패널 적 목록 클릭 ────────────────────────────────
     this._screen.querySelectorAll('.cep-enemy-item:not(.dead)').forEach(el => {
@@ -1383,15 +1295,7 @@ const CombatUI = {
         const action   = btn.dataset.action;
         const wId      = btn.dataset.weapon || null;
 
-        if (action === 'manualCompanionAttack') {
-          CombatSystem.resolveManualCompanionAction('attack', btn.dataset.companionId);
-        } else if (action === 'manualCompanionHeal') {
-          CombatSystem.resolveManualCompanionAction('heal', btn.dataset.companionId);
-        } else if (action === 'manualCompanionSupport') {
-          CombatSystem.resolveManualCompanionAction('support', btn.dataset.companionId);
-        } else if (action === 'manualCompanionHold') {
-          CombatSystem.resolveManualCompanionAction('hold', btn.dataset.companionId);
-        } else if (!CombatSystem.canPlayerAct(GameState.combat)) {
+        if (!CombatSystem.canPlayerAct(GameState.combat)) {
           return;
         } else if (action === 'attack' && wId) {
           CombatSystem.resolveAction('shoot', wId);
@@ -1415,94 +1319,38 @@ const CombatUI = {
     this._playFxQueue();
   },
 
-  _companionClassSkill(npcId) {
-    return BALANCE.combat?.companionAuto?.classSkills?.[npcId] ?? null;
-  },
-
-  _syncManualCompanionActionUi(npcId) {
-    if (!this._screen || !npcId) return;
-
-    const actionBar = this._screen.querySelector('.combat-action-bar');
-    if (actionBar) {
-      actionBar.querySelectorAll('.action-card:not(.companion-action-card)')
-        .forEach(el => el.remove());
-    }
-
-    const secRow = this._screen.querySelector('.combat-sec-row');
-    if (secRow) {
-      secRow.querySelectorAll('[data-action]').forEach(el => {
-        if (!String(el.dataset.action ?? '').startsWith('manualCompanion')) el.remove();
+  _bindCompanionPlanButtons() {
+    if (!this._screen) return;
+    this._screen.querySelectorAll('[data-plan-stance]').forEach(button => {
+      button.addEventListener('click', (event) => {
+        event.stopPropagation();
+        const npcId = button.dataset.npcId;
+        const stance = button.dataset.planStance;
+        if (!npcId || !stance) return;
+        CombatSystem.requestCompanionPlan(stance, npcId);
+        if (GameState.combat?.active) this.render();
       });
-    }
-
-    const supportCard = this._screen.querySelector('.companion-action-card[data-action="manualCompanionSupport"]');
-    if (!supportCard) return;
-
-    const skill = this._companionClassSkill(npcId);
-    const state = GameState.npcs?.states?.[npcId];
-    const npcName = I18n.itemName(npcId, state?.name ?? npcId);
-    const nameEl = supportCard.querySelector('.ac-name');
-    const subEl = supportCard.querySelector('.ac-sub');
-    const previewEl = supportCard.querySelector('.ac-preview');
-
-    if (!skill) {
-      supportCard.classList.add('disabled');
-      supportCard.setAttribute('aria-disabled', 'true');
-      if (nameEl) nameEl.textContent = `${npcName} 지원 없음`;
-      if (subEl) subEl.textContent = 'NO CLASS SKILL';
-      if (previewEl) {
-        previewEl.innerHTML = `
-          <div class="ac-row warn"><span>스킬</span><strong>설정된 전투 스킬 없음</strong></div>
-          <div class="ac-row"><span>대체</span><strong>공격/치료/대기 사용</strong></div>`;
-      }
-      return;
-    }
-
-    const cooldown = state?.skillCooldowns?.[skill.id] ?? 0;
-    const ready = cooldown <= 0;
-    supportCard.classList.toggle('disabled', !ready);
-    supportCard.setAttribute('aria-disabled', ready ? 'false' : 'true');
-    supportCard.dataset.skillId = skill.id;
-    if (nameEl) nameEl.textContent = `${npcName} ${skill.name}`;
-    if (subEl) subEl.textContent = skill.id;
-    if (previewEl) {
-      previewEl.innerHTML = `
-        <div class="ac-row"><span>스킬</span><strong>${skill.name}</strong></div>
-        <div class="ac-row ${ready ? 'good' : 'warn'}"><span>상태</span><strong>${ready ? '사용 가능' : `쿨다운 ${cooldown}턴`}</strong></div>
-        <div class="ac-row"><span>행동</span><strong>동료 고유 스킬</strong></div>`;
-    }
+    });
   },
 
-  // Phase 2 — 동료 stance 셀렉터 + 클래스 스킬 쿨다운 배지
   _renderStanceSelector(npcId, state) {
     const stances = [
       { key: 'attack',  icon: '🗡', label: '공격' },
       { key: 'heal',    icon: '💉', label: '치료' },
       { key: 'support', icon: '⚙',  label: '지원' },
       { key: 'hold',    icon: '🛡', label: '방어' },
-      { key: 'manual',  icon: '✋', label: '대기' },
     ];
-    const active = state?.stance ?? 'attack';
+    const current = state?.stance ?? 'attack';
+    const currentLabel = current === 'manual'
+      ? '수동'
+      : stances.find(stance => stance.key === current)?.label ?? current;
+    const btnHtml = stances.map(stance => (
+      `<button class="stance-btn companion-plan-btn" data-plan-stance="${stance.key}" data-npc-id="${npcId}" title="이번 턴 ${stance.label} 계획">${stance.icon}</button>`
+    )).join('');
 
-    const btnHtml = stances.map(s => {
-      const sel = s.key === active ? ' active' : '';
-      return `<button class="stance-btn${sel}" data-stance="${s.key}" data-npc-id="${npcId}" title="${s.label}">${s.icon}</button>`;
-    }).join('');
-
-    // 클래스 스킬 쿨다운 배지
-    const skill = BALANCE.combat?.companionAuto?.classSkills?.[npcId];
-    let skillHtml = '';
-    if (skill) {
-      const cd = state?.skillCooldowns?.[skill.id] ?? 0;
-      const ready = cd === 0;
-      skillHtml = `<span class="skill-cd-badge${ready ? ' ready' : ''}" title="${skill.name}">
-          ${ready ? '✨' : `⏳${cd}`} ${skill.name}
-        </span>`;
-    }
-
-    return `<div class="cpp-stance-row" style="margin-top:5px;display:flex;gap:3px;align-items:center;flex-wrap:wrap;">
+    return `<div class="cpp-stance-row companion-plan-row" data-current-stance="${current}" style="margin-top:5px;display:flex;gap:3px;align-items:center;flex-wrap:wrap;">
+      <span class="companion-stance-label">자동: ${currentLabel}</span>
       ${btnHtml}
-      ${skillHtml}
     </div>`;
   },
 
