@@ -96,6 +96,7 @@ _bossActionState: {
 committedAction: {
   actionId: 'alpha_hunt',
   category: 'ultimate',
+  state: 'telegraphing',
   motionKey: 'alpha_hunt',
   targetId: 'player',
   remainingTelegraphTurns: 1
@@ -103,6 +104,8 @@ committedAction: {
 ```
 
 전투 저장 데이터에는 필살기 예약·사용 여부와 진행 중인 카운트다운을 포함한다. 전투가 끝나거나 보스가 죽으면 상태를 제거한다.
+
+`state`는 `planned`, `telegraphing`, `ready` 중 하나다. 일반 행동은 이전 행동이 끝날 때 한 번만 `planned`로 결정하며 실행 시 다시 추첨하지 않는다. 대상이 죽거나 위치 조건이 무효가 된 경우에만 같은 행동의 합법적인 대상을 다시 선택한다.
 
 ## 5. 행동 우선순위
 
@@ -130,6 +133,8 @@ committedAction: {
 - 한 번의 피해로 여러 기존 페이즈 임계점을 통과해도 필살기는 한 번만 예약한다.
 - 회복으로 HP가 다시 30%를 넘어가도 예약은 유지하며 재사용은 불가능하다.
 - 소환된 부하는 보스의 필살기 상태를 공유하지 않는다.
+
+임계점 판정은 보스가 피해를 받고 살아남은 직후 수행한다. 아직 예고를 시작하지 않은 `planned` 일반 행동은 필살기 예고로 교체하고 의도 UI를 즉시 갱신한다. 이미 `telegraphing` 중인 행동은 유지하고 `ultimatePending`만 설정한다. `ultimateUsed`는 필살기 예고를 시작할 때 `true`가 되며, 기술별 카운터로 필살기가 취소되더라도 다시 예약하지 않는다.
 
 ### 장기 예고와 겹칠 때
 
@@ -317,6 +322,7 @@ delivery: 'attack' | 'self' | 'summon' | 'battlefield'
 - 의료 아이템, 플레이어 기술, 동료 기술, 자동 치료에 동일하게 적용한다.
 - 죽음의 문턱 해제에 필요한 최소 회복은 유지한다.
 - 식량·의료품 카드는 삭제하거나 오염시키지 않는다.
+- 지속시간은 `remainingPlayerTurns: 2`인 전장 상태로 보관하고 플레이어 행동 종료 때만 1씩 감소한다. 이 기간 안에 발생한 동료 치료도 같은 배율을 적용한다.
 
 ## 12. 중복 패턴 정리
 
