@@ -16,6 +16,7 @@ import GameData       from '../../data/GameData.js';
 import { applyDamage, consumeToken } from './CombatStatusSystem.js';
 import { modifyIncomingDamage, modifyOutgoingDamage } from './CombatResolution.js';
 import { buildEnemyProfile } from './EnemyCombatAdapter.js';
+import { executeEnemyAction } from './EnemyActionExecutor.js';
 import { getRank, moveCombatant } from './FormationSystem.js';
 import {
   COMPANION_COMBAT_LOADOUTS,
@@ -561,53 +562,88 @@ export const CombatAiTurns = {
     enemy._nextIntent = this._decideNextIntent(enemy, gs.combat, gs) ?? null;
   },
 
-  /**
-   * Phase 3 — 적이 동료를 명시적으로 공격.
-   * 공격 로직은 _enemyAttack과 동일 구조이되, 최종 데미지를 NPCSystem.damageCompanion으로 라우팅.
-   * 간결성을 위해 기본 attack 데미지만 사용 (스킬은 플레이어 전용 유지).
-   */
-  _enemyAttackCompanion(enemy, npcId) {
+  _executeEnemyCommittedAction(enemy, action) {
     const gs = GameState;
-    const npcSys = SystemRegistry.get('NPCSystem');
-    if (!npcSys?.damageCompanion) return;
-    const st = gs.npcs?.states?.[npcId];
-    if (!st || (st.hp ?? 0) <= 0) return;
+    const combat = gs.combat;
+    const enemyIdx = combat?.enemies?.indexOf(enemy) ?? -1;
+    const impactFx = this._monsterImpactFx(enemy);
 
-    const [dMin, dMax] = enemy.attack?.damage ?? (BALANCE.combat.enemyDefaultDamage ?? [3, 6]);
-    let damage = dMin + Math.floor(Math.random() * (dMax - dMin + 1));
-    const hit = Math.random() < (enemy.attack?.accuracy ?? (BALANCE.combat.enemyBaseAccuracy ?? 0.7));
-    if (!hit) {
-      gs.combat.log.push(`${enemy.name ?? '적'} → ${this._npcLabel(npcId)}: 빗나감`);
-      return;
-    }
+    return executeEnemyAction({
+      enemy,
+      action,
+      random: Math.random,
+      services: {
+        damageTarget: (targetId, amount) => {
+          const npcId = targetId === 'player' ? null : targetId;
+          let damage = modifyOutgoingDamage(amount, this._rankCombatantForEnemy(enemy));
 
-    // hold stance 피해 경감
-    const holdReduct = st.combatBuffs?.holdReduct;
-    if (holdReduct && (holdReduct.duration ?? 0) > 0) {
-      damage = Math.max(1, Math.floor(damage * (1 - (holdReduct.value ?? 0))));
-    }
+          if ((combat?._suppressRemaining ?? 0) > 0) {
+            damage = Math.max(1, Math.floor(damage * (combat._suppressMult ?? 1)));
+          }
 
-    // suppress 버프 (companion skill: soldier_suppress)
-    if ((gs.combat._suppressRemaining ?? 0) > 0) {
-      damage = Math.max(1, Math.floor(damage * (gs.combat._suppressMult ?? 1)));
-    }
+          if (npcId) {
+            const holdReduct = gs.npcs?.states?.[npcId]?.combatBuffs?.holdReduct;
+            if (holdReduct && (holdReduct.duration ?? 0) > 0) {
+              damage = Math.max(1, Math.floor(damage * (1 - (holdReduct.value ?? 0))));
+            }
+          } else {
+            const armor = StatSystem.getArmorEffects();
+            const defSkillBonus = SkillSystem.getBonus('defense', 'damageReduction');
+            const totalReduct = Math.min(
+              BALANCE.armor.damageReductionCap,
+              armor.damageReduction + defSkillBonus,
+            );
+            if (totalReduct > 0) damage = Math.max(1, Math.floor(damage * (1 - totalReduct)));
+            if (combat?.playerGuard?.active) {
+              damage = Math.max(1, Math.floor(damage * (1 - combat.playerGuard.damageReduce)));
+            }
+          }
 
-    const struck = this._dealDamageToAlly({ npcId, rawDamage: damage });
-    if (struck.dodged) {
-      gs.combat.log.push(`${enemy.name ?? '적'} → ${this._npcLabel(npcId)}: 회피!`);
-      return;
-    }
-    damage = struck.damage;
-    gs.combat.log.push(`${enemy.name ?? '적'} → ${this._npcLabel(npcId)}: ${damage} 피해`);
-    gs.combat.lastHit = { target: 'companion', damage, npcId, isCrit: false };
-    this._fx({
-      kind: 'enemyAttackCompanion',
-      enemyIdx: gs.combat.enemies.indexOf(enemy),
-      npcId,
-      fx: this._monsterImpactFx(enemy),
-      dmg: damage,
+          const result = this._dealDamageToAlly({ npcId, rawDamage: damage });
+          if (result.dodged) return result;
+
+          if (npcId) {
+            combat.lastHit = { target: 'companion', damage: result.damage, npcId, isCrit: false };
+            EventBus.emit('enemyAttackCompanion', { enemyId: enemy.id, npcId, damage: result.damage });
+          } else {
+            combat.lastHit = { target: 'player', damage: result.damage, isCrit: false };
+            EventBus.emit('playerHit', { damage: result.damage });
+            DiseaseSystem.checkCombatInjury(result.damage, gs);
+            BodySystem.onCombatHit(result.damage, enemy);
+            SkillSystem.gainXp('defense', 1);
+          }
+          return result;
+        },
+        addStatus: (targetId, status) => this._addAllyStatus(targetId, status),
+        moveTarget: (targetId, distance) => this._forceMoveAlly(targetId, distance, enemy),
+        emitFx: payload => {
+          const companionTarget = payload.targetId !== 'player';
+          this._fx({
+            kind: companionTarget ? 'enemyAttackCompanion' : 'enemyAttack',
+            enemyIdx,
+            ...(companionTarget ? { npcId: payload.targetId } : {}),
+            fx: impactFx,
+            dmg: payload.damage,
+            miss: payload.miss,
+          });
+        },
+        addLog: message => {
+          if (Array.isArray(combat?.log)) combat.log.push(message);
+        },
+      },
     });
-    EventBus.emit('enemyAttackCompanion', { enemyId: enemy.id, npcId, damage });
+  },
+
+  _enemyAttackCompanion(enemy, npcId, { hitCount = enemy?.attacksPerRound ?? 1 } = {}) {
+    return this._executeEnemyCommittedAction(enemy, {
+      actionId: 'basic_attack',
+      category: 'basic',
+      state: 'ready',
+      targetIds: npcId ? [npcId] : [],
+      remainingTelegraphTurns: 0,
+      hitCount,
+      motionKey: 'basic_attack',
+    });
   },
 
   _monsterImpactFx(enemy) {
@@ -625,24 +661,49 @@ export const CombatAiTurns = {
     return 'claw';
   },
 
-  _addPlayerStatus(status) {
+  _addAllyStatus(targetId, status) {
     if (!status?.id) return false;
     const gs = GameState;
-    if (!Array.isArray(gs.combat.playerStatus)) gs.combat.playerStatus = [];
-    const existing = gs.combat.playerStatus.find(s => s.id === status.id);
+    const combat = gs.combat;
+    const isPlayer = targetId === 'player';
+    const combatant = combat?.combatants?.[targetId];
+    if (!isPlayer && !combatant) return false;
+
+    if (isPlayer && !Array.isArray(combat.playerStatus)) combat.playerStatus = [];
+    if (!isPlayer && !Array.isArray(combatant.statusEffects)) combatant.statusEffects = [];
+    const statuses = isPlayer ? combat.playerStatus : combatant.statusEffects;
+    const existing = statuses.find(s => s.id === status.id);
     if (existing) {
       existing.duration = Math.max(existing.duration ?? 0, status.duration ?? 1);
       existing.effect = { ...(existing.effect ?? {}), ...(status.effect ?? {}) };
     } else {
-      gs.combat.playerStatus.push({
+      statuses.push({
         id: status.id,
         name: status.name ?? status.id,
         duration: status.duration ?? 1,
         effect: { ...(status.effect ?? {}) },
       });
     }
-    this._fx({ kind: 'status', target: 'player', statusId: status.id });
+    if (!isPlayer) {
+      const state = gs.npcs?.states?.[targetId];
+      if (state) {
+        state.statusEffects = statuses.map(entry => ({
+          ...entry,
+          effect: { ...(entry.effect ?? {}) },
+        }));
+      }
+    }
+    this._fx({
+      kind: 'status',
+      target: isPlayer ? 'player' : 'companion',
+      ...(isPlayer ? {} : { targetId, npcId: targetId }),
+      statusId: status.id,
+    });
     return true;
+  },
+
+  _addPlayerStatus(status) {
+    return this._addAllyStatus('player', status);
   },
 
   _instantiateEnemyFromDefinition(def) {
@@ -951,7 +1012,11 @@ export const CombatAiTurns = {
     const spreadTargets = enemy.spreadAttacks && rounds >= 2 ? this._frontlineCompanionIds() : [];
     for (let i = 0; i < rounds; i++) {
       if (spreadTargets.length > 0 && i % 2 === 1) {
-        this._enemyAttackCompanion(enemy, spreadTargets[Math.floor((i - 1) / 2) % spreadTargets.length]);
+        this._enemyAttackCompanion(
+          enemy,
+          spreadTargets[Math.floor((i - 1) / 2) % spreadTargets.length],
+          { hitCount: 1 },
+        );
       } else {
         logs.push(this._enemyAttack(enemy));
       }
