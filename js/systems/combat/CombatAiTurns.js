@@ -20,6 +20,7 @@ import { executeEnemyAction } from './EnemyActionExecutor.js';
 import {
   advanceEnemyAction,
   commitEnemyAction,
+  commitTimedThreatAction,
   createEnemyActionState,
   retargetCommittedAction,
 } from './EnemyActionPlanner.js';
@@ -519,22 +520,58 @@ export const CombatAiTurns = {
 
     // 타이밍 압박 적: 충전 중이면 카운트다운 의도 우선
     if ((enemy._chargeRemaining ?? null) !== null && enemy.timedThreat) {
+      const previousAction = enemy._enemyActionState?.committedAction;
+      const eligibleTargetIds = targets.map(candidate =>
+        candidate?.type === 'player' ? 'player' : candidate?.id
+      ).filter(Boolean);
+      const previousTargetIds = previousAction?.category === 'timed_threat'
+        && previousAction.actionId === enemy.timedThreat.id
+        ? previousAction.targetIds.filter(targetId => eligibleTargetIds.includes(targetId))
+        : [];
+      const selectedTargetId = target?.type === 'player' ? 'player' : target?.id;
+      enemy._enemyActionState = commitTimedThreatAction({
+        enemy,
+        targetIds: previousTargetIds.length > 0
+          ? previousTargetIds
+          : selectedTargetId ? [selectedTargetId] : [],
+      });
+      const action = enemy._enemyActionState.committedAction;
       const icon = enemy.timedThreat.id === 'self_destruct' ? '💥'
                  : enemy.timedThreat.id === 'summon_horde'  ? '📣'
                  : '⚡';
-      const labelMap = {
-        self_destruct: `${enemy._chargeRemaining}턴 후 자폭`,
-        summon_horde:  `${enemy._chargeRemaining}턴 후 증원 소환 · 시끄럽게 처치 시 비명`,
-        charge_strike: `${enemy._chargeRemaining}턴 후 강타`,
+      const chargingLabelMap = {
+        self_destruct: `${action.remainingTelegraphTurns}턴 후 자폭`,
+        summon_horde: `${action.remainingTelegraphTurns}턴 후 증원 소환 · ${I18n.t('combat.intent.quiet_kill_counter')}`,
+        charge_strike: `${action.remainingTelegraphTurns}턴 후 돌진`,
       };
+      const readyLabelMap = {
+        self_destruct: '다음 행동에 자폭',
+        summon_horde: `다음 행동에 증원 소환 · ${I18n.t('combat.intent.quiet_kill_counter')}`,
+        charge_strike: '다음 행동에 돌진',
+      };
+      const primaryTargetId = action.targetIds[0] ?? null;
+      const targetType = primaryTargetId === 'player'
+        ? 'player'
+        : primaryTargetId ? 'companion' : null;
       return {
+        actionId: action.actionId,
+        category: action.category,
+        state: action.state,
+        targetIds: [...action.targetIds],
+        remainingTelegraphTurns: action.remainingTelegraphTurns,
+        hitCount: action.hitCount,
+        motionKey: action.motionKey,
         action: 'timed_threat',
         threatId: enemy.timedThreat.id,
-        countdown: enemy._chargeRemaining,
-        targetType: target?.type ?? 'player',
-        targetId: target?.id ?? null,
+        countdown: action.state === 'telegraphing'
+          ? action.remainingTelegraphTurns
+          : null,
+        targetType,
+        targetId: targetType === 'companion' ? primaryTargetId : null,
         iconEmoji: icon,
-        label: labelMap[enemy.timedThreat.id] ?? '위협 충전',
+        label: action.state === 'ready'
+          ? readyLabelMap[enemy.timedThreat.id] ?? I18n.t('combat.intent.ready')
+          : chargingLabelMap[enemy.timedThreat.id] ?? I18n.t('combat.intent.charging'),
         pattern: enemy.aiPattern ?? 'normal',
       };
     }
@@ -633,7 +670,14 @@ export const CombatAiTurns = {
         enemy._nextIntent = this._decideNextIntent(enemy, gs.combat, gs) ?? null;
         return;
       }
-      this._resolveTimedThreat(enemy);
+      const previousAction = enemy._enemyActionState?.committedAction;
+      enemy._enemyActionState = commitTimedThreatAction({
+        enemy,
+        targetIds: previousAction?.category === 'timed_threat'
+          ? previousAction.targetIds
+          : [],
+      });
+      this._resolveTimedThreat(enemy, enemy._enemyActionState.committedAction);
       enemy._chargeRemaining = enemy.timedThreat?.chargeTurns ?? null;
       if (enemy.currentHp > 0) enemy._nextIntent = this._decideNextIntent(enemy, gs.combat, gs) ?? null;
       return;
@@ -1382,11 +1426,14 @@ export const CombatAiTurns = {
   },
 
   // ── 타이밍 압박 트리거 발동 ─────────────────────────────
-  _resolveTimedThreat(enemy) {
+  _resolveTimedThreat(enemy, committedAction = null) {
     const gs = GameState;
     const T = BALANCE.combat.timedThreats;
+    const threatId = committedAction?.category === 'timed_threat'
+      ? committedAction.actionId
+      : enemy.timedThreat?.id;
 
-    if (enemy.timedThreat?.id === 'self_destruct') {
+    if (threatId === 'self_destruct') {
       const [dMin, dMax] = T.bloater.aoeDamage;
       // 자폭 폭발은 광역 — 회피 불가, 블록/취약 토큰만 적용
       const burst = this._dealDamageToAlly({
@@ -1409,7 +1456,7 @@ export const CombatAiTurns = {
       return;
     }
 
-    if (enemy.timedThreat?.id === 'charge_strike') {
+    if (threatId === 'charge_strike') {
       const [dMin, dMax] = T.charger.strikeDamage;
       let dmg = dMin + Math.floor(Math.random() * (dMax - dMin + 1));
       const armor         = StatSystem.getArmorEffects();
@@ -1436,7 +1483,7 @@ export const CombatAiTurns = {
       return;
     }
 
-    if (enemy.timedThreat?.id === 'summon_horde') {
+    if (threatId === 'summon_horde') {
       const [cMin, cMax] = T.screamer.summonCount;
       const count = cMin + Math.floor(Math.random() * (cMax - cMin + 1));
       let spawned = 0;

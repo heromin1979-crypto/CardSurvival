@@ -399,10 +399,10 @@ const ENEMIES = {
     },
     statusInflict: null,
     timedThreat: { id: 'summon_horde', chargeTurns: 3, chargingAttacks: true,
-      counters: { silentSuppress: true, stunDelays: true } },
+      counters: { quietKill: true, stunDelays: true } },
     weaknesses: ['bullet', 'fire'],
     resistances: [],
-    description: '후열에서 비명을 충전해 3턴 뒤 동족을 부르는 감염자. 전열을 빠르게 뚫거나 원거리로 침묵시켜야 한다.',
+    description: '후열에서 비명을 충전해 3턴 뒤 동족을 부르는 감염자. 기절로 비명을 늦추거나 조용히 처치해 사망 비명을 막아야 한다.',
     stealthDifficulty: 0.75,
   },
   zombie_charger: {

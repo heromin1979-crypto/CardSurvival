@@ -19,14 +19,14 @@ beforeEach(() => {
 });
 
 describe('충전 인터럽트', () => {
-  it('charge_strike 적이 기절하면 _chargeRemaining 리셋', () => {
-    const c = { id: 'zombie_charger', name: '돌진자', currentHp: 999, maxHp: 999, defense: 0,
+  it('summon_horde 적이 기절하면 _chargeRemaining이 1 증가한다', () => {
+    const c = { id: 'zombie_screamer', name: '스크리머', currentHp: 999, maxHp: 999, defense: 0,
       weaknesses: [], resistances: [], _statusEffects: [],
-      timedThreat: { id: 'charge_strike', chargeTurns: 1, counters: { stunDelays: true } },
-      _chargeRemaining: 0 };
+      timedThreat: { id: 'summon_horde', chargeTurns: 3, counters: { stunDelays: true } },
+      _chargeRemaining: 1 };
     GameState.combat = { active: true, enemies: [c], targetIndex: 0, log: [], playerStatus: [], enemyStatus: [], playerGuard: null };
     CombatSystem._attackAction('melee', 'baton_inst', c);
-    expect(c._chargeRemaining).toBe(1);
+    expect(c._chargeRemaining).toBe(2);
   });
 
   it('timedThreat 없는 적은 _chargeRemaining에 영향 없음', () => {

@@ -126,6 +126,26 @@ export function createEnemyActionState() {
   return { committedAction: null };
 }
 
+export function commitTimedThreatAction({ enemy, targetIds = [] }) {
+  const threat = enemy?.timedThreat;
+  if (!threat?.id || !Number.isFinite(enemy?._chargeRemaining)) {
+    return createEnemyActionState();
+  }
+
+  const remainingTelegraphTurns = Math.max(0, Math.floor(enemy._chargeRemaining));
+  return {
+    committedAction: {
+      actionId: threat.id,
+      category: 'timed_threat',
+      state: remainingTelegraphTurns > 0 ? 'telegraphing' : 'ready',
+      targetIds: [...targetIds],
+      remainingTelegraphTurns,
+      hitCount: 1,
+      motionKey: threat.motionKey ?? threat.id,
+    },
+  };
+}
+
 export function commitEnemyAction({
   enemy,
   candidates,
