@@ -166,6 +166,21 @@ const CombatUI = {
       .replace(/"/g, '&quot;');
   },
 
+  _renderIntentMeta(intent, classPrefix = 'intent') {
+    const targetNames = Array.isArray(intent?.targetNames)
+      ? intent.targetNames.filter(Boolean)
+      : [];
+    const targetsHtml = targetNames.length > 0
+      ? `<span class="${classPrefix}-targets">${targetNames.map(name =>
+          `<i>${this._escape(name)}</i>`
+        ).join('')}</span>`
+      : '';
+    const hitsHtml = (intent?.hitCount ?? 1) > 1
+      ? `<span class="${classPrefix}-hits">×${this._escape(intent.hitCount)}</span>`
+      : '';
+    return `${targetsHtml}${hitsHtml}`;
+  },
+
   _combatScene() {
     return combatAssetManifest.scene(GameState.combat?.sceneId);
   },
@@ -361,6 +376,7 @@ const CombatUI = {
         <div class="combat-intent${intent.countdown != null && intent.countdown <= 1 ? ' imminent' : ''}"
              title="${this._escape(intent.label ?? '')}">
           <span class="intent-icon">${intent.iconEmoji ?? '🗡'}</span>${countdownHtml}
+          ${this._renderIntentMeta(intent)}
         </div>`;
     }
     // 발견한 약점만 표시 — 첫 약점 타격 전에는 미지의 정보
@@ -847,8 +863,9 @@ const CombatUI = {
           : `<span class="cvi-arrow">➤</span><span class="cvi-target">${tgtIcon}</span>`;
         const imminent = intent.countdown != null && intent.countdown <= 1;
         intentHtml = `
-          <div class="cv-intent${imminent ? ' imminent' : ''}" title="${intent.label ?? ''}">
+          <div class="cv-intent${imminent ? ' imminent' : ''}" title="${this._escape(intent.label ?? '')}">
             <span class="cvi-icon">${intent.iconEmoji ?? '🗡'}</span>${cd}${linkHtml}
+            ${this._renderIntentMeta(intent, 'cvi')}
           </div>`;
       }
 

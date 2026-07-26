@@ -17,6 +17,12 @@ import { applyDamage, consumeToken } from './CombatStatusSystem.js';
 import { modifyIncomingDamage, modifyOutgoingDamage } from './CombatResolution.js';
 import { buildEnemyProfile } from './EnemyCombatAdapter.js';
 import { executeEnemyAction } from './EnemyActionExecutor.js';
+import {
+  advanceEnemyAction,
+  commitEnemyAction,
+  createEnemyActionState,
+  retargetCommittedAction,
+} from './EnemyActionPlanner.js';
 import { getRank, moveCombatant } from './FormationSystem.js';
 import {
   COMPANION_COMBAT_LOADOUTS,
@@ -280,6 +286,8 @@ export const CombatAiTurns = {
       const isRanged = !!wDef?.combat?.requiresAmmo;
       const statusEffects = combat?.playerStatus ?? [];
       targets.push({
+        id: 'player',
+        side: 'ally',
         type: 'player',
         hp: gs.player.hp.current,
         maxHp: gs.player.hp.max,
@@ -292,6 +300,7 @@ export const CombatAiTurns = {
       const st = gs.npcs?.states?.[id];
       if (!st || (st.hp ?? 0) <= 0) continue;
       targets.push({
+        side: 'ally',
         type: 'companion',
         id,
         hp: st.hp,
@@ -356,6 +365,121 @@ export const CombatAiTurns = {
     }) ?? null;
   },
 
+  _enemyForActionPlanning(enemy) {
+    const legacyPolicy = {
+      aggressive: 'lowest_hp',
+      defensive: 'player',
+      horde: 'random',
+      sniper: 'healer',
+      predator: 'predator',
+      normal: 'player',
+    }[enemy?.aiPattern ?? 'normal'] ?? 'player';
+    const targetPolicy = enemy?.patternProfile?.targetPolicy ?? legacyPolicy;
+    const targetCount = enemy?.patternProfile?.defaultAction?.target?.count
+      ?? (enemy?.spreadAttacks ? Math.max(2, enemy.attacksPerRound ?? 2) : 1);
+    const defaultAction = enemy?.patternProfile?.defaultAction ?? enemy?.defaultAction ?? {
+      actionId: 'basic_attack',
+      motionKey: enemy?.attackType === 'ranged' ? 'ranged' : 'melee',
+      target: { side: targetPolicy, count: targetCount },
+    };
+
+    return {
+      ...enemy,
+      specialActionChance: enemy?.patternProfile?.specialActionChance
+        ?? enemy?.specialActionChance
+        ?? 1,
+      patternProfile: {
+        ...(enemy?.patternProfile ?? {}),
+        targetPolicy,
+        defaultAction: {
+          ...defaultAction,
+          target: {
+            ...(defaultAction.target ?? {}),
+            side: defaultAction.target?.side ?? targetPolicy,
+            count: defaultAction.target?.count ?? targetCount,
+          },
+        },
+      },
+    };
+  },
+
+  _commitEnemyAction(enemy, combat, gs) {
+    const targets = this._getEligibleTargets(combat, gs);
+    const taunted = this._tauntedTargetOf(targets, combat);
+    enemy._enemyActionState = commitEnemyAction({
+      enemy: this._enemyForActionPlanning(enemy),
+      candidates: taunted ? [taunted] : targets,
+      cooldowns: enemy._skillCooldowns,
+      random: Math.random,
+    });
+    return enemy._enemyActionState.committedAction;
+  },
+
+  _intentFromCommittedAction(enemy, action, combat, gs) {
+    if (!action) return null;
+    const targetIds = [...(action.targetIds ?? [])];
+    const targetNames = targetIds.map(targetId =>
+      targetId === 'player'
+        ? (I18n.getLang?.() === 'ko' ? '플레이어' : 'Player')
+        : this._npcLabel(targetId)
+    );
+    const primaryTargetId = targetIds[0] ?? null;
+    const targetType = primaryTargetId === 'player'
+      ? 'player'
+      : primaryTargetId
+        ? 'companion'
+        : null;
+    const definition = action.category === 'special'
+      ? (enemy.specialSkills ?? []).find(skill =>
+          (skill.actionId ?? skill.id) === action.actionId)
+      : enemy.patternProfile?.defaultAction ?? enemy.defaultAction ?? enemy.attack;
+    const actionName = definition?.name ?? action.actionId;
+    const compatibilityTelegraph = action.category === 'special' && enemy._telegraph;
+    const isTelegraphing = action.state === 'telegraphing' || compatibilityTelegraph;
+    const countdown = isTelegraphing
+      ? (enemy._telegraph?.remaining ?? action.remainingTelegraphTurns)
+      : null;
+    const targetLabel = targetNames.join(', ');
+    const detailLabels = [];
+
+    if (targetIds.length > 1) {
+      detailLabels.push(I18n.t('combat.intent.multi_target', { targets: targetLabel }));
+    }
+    if (action.hitCount > 1) {
+      detailLabels.push(I18n.t('combat.intent.multi_hit', { count: action.hitCount }));
+    }
+    detailLabels.push(I18n.t(isTelegraphing ? 'combat.intent.charging' : 'combat.intent.ready'));
+
+    const baseLabel = action.category === 'special'
+      ? `${targetLabel}에 ${actionName} 사용`
+      : `${targetLabel} 공격`;
+    const wavering = enemy.type === 'human'
+      && enemy.currentMorale != null
+      && (enemy.currentHp / (enemy.maxHp || 1)) <= 0.5;
+    const taunted = this._tauntedTargetOf(this._getEligibleTargets(combat, gs), combat);
+
+    return {
+      actionId: action.actionId,
+      category: action.category,
+      state: action.state,
+      targetIds,
+      remainingTelegraphTurns: action.remainingTelegraphTurns,
+      hitCount: action.hitCount,
+      motionKey: action.motionKey,
+      action: compatibilityTelegraph ? 'telegraph' : action.category === 'special' ? 'skill' : 'attack',
+      targetType,
+      targetId: targetType === 'companion' ? primaryTargetId : null,
+      targetNames,
+      skillId: action.category === 'special' ? action.actionId : null,
+      countdown,
+      iconEmoji: isTelegraphing ? '⚠️' : action.category === 'special' ? '💢' : '🗡',
+      label: `${baseLabel} · ${detailLabels.join(' · ')}${wavering ? ' · 동요' : ''}`,
+      pattern: enemy.aiPattern ?? 'normal',
+      viaTaunt: !!taunted && targetIds.includes(taunted.id),
+      wavering,
+    };
+  },
+
   _decideNextIntent(enemy, combat, gs) {
     if (!enemy || (enemy.currentHp ?? 0) <= 0) return null;
     const targets = this._getEligibleTargets(combat, gs);
@@ -363,7 +487,6 @@ export const CombatAiTurns = {
     const taunted = this._tauntedTargetOf(targets, combat);
     const target = taunted ?? this._pickTargetByPattern(pattern, targets, enemy);
     if (!target) return null;
-    const viaTaunt = taunted !== null;
 
     // 잠복: 깨어나기 전에는 위협이 아니다 — 이 창에 처치하면 기습 무효
     if ((enemy._dormantRemaining ?? 0) > 0) {
@@ -373,13 +496,13 @@ export const CombatAiTurns = {
         targetType: 'self',
         targetId: null,
         iconEmoji: '💤',
-        label: '잠복 — 곧 깨어난다',
+        label: `${I18n.t('combat.intent.wake')} — ${enemy._dormantRemaining}`,
         pattern,
       };
     }
 
-    // 예고: 다음 턴 발동할 스킬을 보여준다 — 이동/블록/피격 취소로 대응할 창
-    if (enemy._telegraph) {
+    // 기존 저장 데이터의 예고 상태는 committed action으로 이행되기 전까지만 호환한다.
+    if (enemy._telegraph && !enemy._enemyActionState?.committedAction) {
       const tgSkill = (enemy.specialSkills ?? []).find(s => s.id === enemy._telegraph.skillId);
       return {
         action: 'telegraph',
@@ -392,11 +515,6 @@ export const CombatAiTurns = {
         pattern,
       };
     }
-
-    // 동요: 사기가 꺾이기 시작한 인간 적 — 사기 공격·처치 압박이 유효함을 노출
-    const wavering = enemy.type === 'human'
-      && enemy.currentMorale != null
-      && (enemy.currentHp / (enemy.maxHp || 1)) <= 0.5;
 
     // 타이밍 압박 적: 충전 중이면 카운트다운 의도 우선
     if ((enemy._chargeRemaining ?? null) !== null && enemy.timedThreat) {
@@ -432,37 +550,14 @@ export const CombatAiTurns = {
       };
     }
 
-    // 스킬 사용 가능 여부 (쿨다운 0인 특수 스킬)
-    const readySkill = (enemy.specialSkills ?? []).find(s =>
-      (enemy._skillCooldowns?.[s.id] ?? 0) === 0
-    );
-    const willUseSkill = !!readySkill;
-
-    const iconEmoji = willUseSkill ? '💢' : '🗡';
-    const tgtName = target.type === 'player' ? '플레이어' : this._npcLabel(target.id);
-    const baseLabel = willUseSkill
-      ? `${tgtName}에 ${readySkill.name ?? '스킬'} 사용`
-      : `${tgtName} 공격`;
-    const label = wavering ? `${baseLabel} · 동요` : baseLabel;
-
-    return {
-      action: willUseSkill ? 'skill' : 'attack',
-      targetType: target.type,
-      targetId: target.id ?? null,
-      skillId: willUseSkill ? readySkill.id : null,
-      iconEmoji,
-      label,
-      pattern,
-      viaTaunt,
-      wavering,
-    };
+    const action = enemy._enemyActionState?.committedAction
+      ?? this._commitEnemyAction(enemy, combat, gs);
+    return this._intentFromCommittedAction(enemy, action, combat, gs);
   },
 
   /**
-   * 큐 엔트리 기반 단일 적 턴 실행. Phase 3 — intent 기반 타겟 라우팅.
-   *   - enemy._nextIntent.targetType === 'companion' → 해당 동료 공격 (NPCSystem.damageCompanion)
-   *   - 그 외 → 기존 _runEnemyAI (플레이어 타겟)
-   *   - 턴 종료 후 다음 intent 재결정
+   * 큐 엔트리 기반 단일 적 턴 실행.
+   * UI가 표시한 committed action을 예고 진행·대상 재선정 후 공용 실행기에 전달한다.
    */
   _runSingleEnemyTurn(enemyIdx) {
     const gs = GameState;
@@ -497,6 +592,12 @@ export const CombatAiTurns = {
       const enemyName = I18n.enemyName(enemy.id, enemy.name);
       gs.combat.log.push(`${enemyName}은(는) ${stun?.name ?? I18n.t('combatSys.stun')} 상태라 행동하지 못했다.`);
       this._fx({ kind: 'status', target: 'enemy', enemyIdx, statusId: 'stun' });
+      if (enemy._enemyActionState?.committedAction) {
+        enemy._enemyActionState = advanceEnemyAction({
+          state: enemy._enemyActionState,
+          stunned: true,
+        });
+      }
       enemy._nextIntent = this._decideNextIntent(enemy, gs.combat, gs) ?? null;
       return;
     }
@@ -537,23 +638,120 @@ export const CombatAiTurns = {
       return;
     }
 
-    const intent = enemy._nextIntent;
-    // 도발이 이 턴의 타겟을 강제했다면 스택 1 소비 (1스택 = 적 1턴 유도)
-    if (intent?.viaTaunt) {
-      const tauntedId = intent.targetType === 'player' ? 'player' : intent.targetId;
-      const tauntedCombatant = gs.combat.combatants?.[tauntedId];
-      if (tauntedCombatant) consumeToken(tauntedCombatant, 'taunted', 1);
+    let action = enemy._enemyActionState?.committedAction;
+    if (!action && enemy._nextIntent) {
+      const legacyTargetId = enemy._nextIntent.targetType === 'player'
+        ? 'player'
+        : enemy._nextIntent.targetId;
+      const category = enemy._nextIntent.action === 'skill' ? 'special' : 'basic';
+      action = {
+        actionId: category === 'special'
+          ? enemy._nextIntent.skillId ?? 'basic_attack'
+          : 'basic_attack',
+        category,
+        state: 'ready',
+        targetIds: legacyTargetId ? [legacyTargetId] : [],
+        remainingTelegraphTurns: 0,
+        hitCount: enemy.attacksPerRound ?? 1,
+        motionKey: category === 'special'
+          ? enemy._nextIntent.skillId ?? 'basic_attack'
+          : 'basic_attack',
+      };
+      enemy._enemyActionState = { committedAction: action };
     }
-    if (intent?.targetType === 'companion' && intent.targetId) {
-      this._enemyAttackCompanion(enemy, intent.targetId);
-    } else {
-      // 기본 플레이어 타겟 (기존 로직 유지)
-      const logs = this._runEnemyAI(enemy);
-      for (const log of logs) {
-        gs.combat.log.push(log);
-        if (this._isPlayerDefeated()) return;
+    if (!action) {
+      this._decideNextIntent(enemy, gs.combat, gs);
+      action = enemy._enemyActionState?.committedAction;
+    }
+    if (!action) return;
+
+    if (action.state === 'telegraphing') {
+      const skill = (enemy.specialSkills ?? []).find(candidate =>
+        (candidate.actionId ?? candidate.id) === action.actionId);
+      enemy._telegraph = {
+        skillId: action.actionId,
+        remaining: action.remainingTelegraphTurns,
+        targetRank: getRank(gs.combat.formations, action.targetIds[0] ?? 'player'),
+        targetRanks: Object.fromEntries((action.targetIds ?? []).map(targetId => [
+          targetId,
+          getRank(gs.combat.formations, targetId),
+        ])),
+      };
+      gs.combat.log.push(I18n.t('combatSys.telegraphStart', {
+        enemy: I18n.enemyName(enemy.id, enemy.name),
+        skill: skill?.name ?? action.actionId,
+      }));
+      this._fx({
+        kind: 'status',
+        target: 'enemy',
+        enemyIdx,
+        statusId: 'telegraph',
+      });
+      enemy._enemyActionState = advanceEnemyAction({
+        state: enemy._enemyActionState,
+      });
+      enemy._nextIntent = this._decideNextIntent(enemy, gs.combat, gs) ?? null;
+      return;
+    }
+
+    action = retargetCommittedAction({
+      action,
+      candidates: this._getEligibleTargets(gs.combat, gs),
+    });
+    enemy._enemyActionState = { committedAction: action };
+    const skill = action.category === 'special'
+      ? (enemy.specialSkills ?? []).find(candidate =>
+          (candidate.actionId ?? candidate.id) === action.actionId)
+      : null;
+    const telegraph = skill?.telegraph;
+    const cancelledByHit = telegraph?.cancelOnHit === true
+      && !enemy._telegraph
+      && (enemy._skillCooldowns?.[action.actionId] ?? 0) > 0;
+    const movedTarget = enemy._telegraph && telegraph?.moveEvadeChance
+      ? (action.targetIds ?? []).find(targetId => {
+          const before = enemy._telegraph.targetRanks?.[targetId]
+            ?? (targetId === action.targetIds[0] ? enemy._telegraph.targetRank : null);
+          const current = getRank(gs.combat.formations, targetId);
+          return before !== null && current !== before;
+        })
+      : null;
+    const evadedByMove = !!movedTarget && Math.random() < telegraph.moveEvadeChance;
+
+    const intent = this._intentFromCommittedAction(enemy, action, gs.combat, gs);
+    if (intent?.viaTaunt) {
+      for (const targetId of action.targetIds ?? []) {
+        const tauntedCombatant = gs.combat.combatants?.[targetId];
+        if ((tauntedCombatant?.tokens?.taunted ?? 0) > 0) {
+          consumeToken(tauntedCombatant, 'taunted', 1);
+          break;
+        }
       }
     }
+
+    if (evadedByMove) {
+      gs.combat.log.push(I18n.t('combatSys.telegraphEvaded', {
+        enemy: I18n.enemyName(enemy.id, enemy.name),
+        skill: skill?.name ?? action.actionId,
+      }));
+      this._fx({ kind: 'enemyAttack', enemyIdx, miss: true });
+    } else if (!cancelledByHit) {
+      this._executeEnemyCommittedAction(enemy, action);
+    }
+
+    if (enemy._skillCooldowns) {
+      for (const candidate of (enemy.specialSkills ?? [])) {
+        if ((enemy._skillCooldowns[candidate.id] ?? 0) > 0) {
+          enemy._skillCooldowns[candidate.id] -= 1;
+        }
+      }
+    }
+    if (skill) {
+      enemy._skillCooldowns = enemy._skillCooldowns ?? {};
+      enemy._skillCooldowns[skill.id] = skill.cooldown ?? 0;
+    }
+    enemy._telegraph = null;
+    enemy._enemyActionState = createEnemyActionState();
+
     if (gs.combat.log.length > BALANCE.combat.combatLogMaxEntries) {
       gs.combat.log.splice(0, gs.combat.log.length - BALANCE.combat.combatLogMaxEntries);
     }
@@ -567,6 +765,11 @@ export const CombatAiTurns = {
     const combat = gs.combat;
     const enemyIdx = combat?.enemies?.indexOf(enemy) ?? -1;
     const impactFx = this._monsterImpactFx(enemy);
+    const definition = action?.category === 'special'
+      ? (enemy?.specialSkills ?? []).find(skill =>
+          (skill?.actionId ?? skill?.id) === action.actionId)
+      : null;
+    const blockedTargets = new Set();
 
     return executeEnemyAction({
       enemy,
@@ -600,6 +803,7 @@ export const CombatAiTurns = {
           }
 
           const result = this._dealDamageToAlly({ npcId, rawDamage: damage });
+          if (result.blocked) blockedTargets.add(targetId);
           if (result.dodged) return result;
 
           if (npcId) {
@@ -610,11 +814,18 @@ export const CombatAiTurns = {
             EventBus.emit('playerHit', { damage: result.damage });
             DiseaseSystem.checkCombatInjury(result.damage, gs);
             BodySystem.onCombatHit(result.damage, enemy);
-            SkillSystem.gainXp('defense', 1);
+            if (action.category === 'basic') SkillSystem.gainXp('defense', 1);
           }
           return result;
         },
-        addStatus: (targetId, status) => this._addAllyStatus(targetId, status),
+        addStatus: (targetId, status) => {
+          if (status?.id === 'stun'
+              && definition?.telegraph?.blockNegatesStun === true
+              && blockedTargets.has(targetId)) {
+            return false;
+          }
+          return this._addAllyStatus(targetId, status);
+        },
         moveTarget: (targetId, distance) => this._forceMoveAlly(targetId, distance, enemy),
         emitFx: payload => {
           const companionTarget = payload.targetId !== 'player';
