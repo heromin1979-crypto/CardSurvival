@@ -292,6 +292,51 @@ describe('executeEnemyAction', () => {
     expect(recorder.services.addNoise).toHaveBeenCalledWith(25);
   });
 
+  it('0 damage 행동도 status와 forced move를 예약 대상별 한 번씩 적용한다', () => {
+    const recorder = createServices();
+    recorder.services.summonEnemy = vi.fn(() => 1);
+    recorder.services.addNoise = vi.fn();
+    const enemy = {
+      timedThreat: {
+        id: 'control_wave',
+        accuracy: 1,
+        effects: [
+          { type: 'damage', value: [0, 0] },
+          { type: 'status', id: 'rooted', duration: 2 },
+          { type: 'move', distance: 1 },
+          { type: 'summon', enemyId: 'zombie_common', count: [1, 1] },
+          { type: 'noise', value: 7 },
+        ],
+      },
+    };
+
+    executeEnemyAction({
+      enemy,
+      action: readyAction({
+        actionId: 'control_wave',
+        category: 'timed_threat',
+        targetIds: ['player', 'npc_nurse'],
+        hitCount: 3,
+        motionKey: 'control_wave',
+      }),
+      services: recorder.services,
+      random: () => 0,
+    });
+
+    expect(recorder.services.damageTarget).not.toHaveBeenCalled();
+    expect(recorder.services.addStatus.mock.calls).toEqual([
+      ['player', { id: 'rooted', name: 'rooted', duration: 2, effect: {} }],
+      ['npc_nurse', { id: 'rooted', name: 'rooted', duration: 2, effect: {} }],
+    ]);
+    expect(recorder.services.moveTarget.mock.calls).toEqual([
+      ['player', 1],
+      ['npc_nurse', 1],
+    ]);
+    expect(recorder.services.summonEnemy)
+      .toHaveBeenCalledWith('zombie_common', 1, 'front');
+    expect(recorder.services.addNoise).toHaveBeenCalledWith(7);
+  });
+
   it('다중 대상의 모든 타격이 끝난 뒤에만 대상별 상태를 한 번씩 판정한다', () => {
     const recorder = createServices();
 

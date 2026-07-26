@@ -178,9 +178,13 @@ export function executeEnemyAction({
     includeEnemyDefaults: action.category !== 'timed_threat',
   });
   const forcedMove = forcedMoveFor(definition);
-  const affectedTargetIds = [];
-  const damageResults = [];
   const canDealDamage = damageRange.some(value => Number.isFinite(value) && value > 0);
+  const hasTargetEffects = statuses.length > 0
+    || (Number.isFinite(forcedMove) && forcedMove !== 0);
+  const affectedTargetIds = !canDealDamage && hasTargetEffects
+    ? [...new Set(targetIds)]
+    : [];
+  const damageResults = [];
   const hitPlan = !canDealDamage
     ? []
     : enemy?.spreadAttacks === true && targetIds.length > 1
