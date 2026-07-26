@@ -267,6 +267,31 @@ describe('executeEnemyAction', () => {
     expect(recorder.services.moveTarget).not.toHaveBeenCalled();
   });
 
+  it('실제 summon_horde의 0 damage는 타격을 만들지 않고 summon과 noise만 실행한다', () => {
+    const recorder = createServices();
+    recorder.services.summonEnemy = vi.fn(() => 1);
+    recorder.services.addNoise = vi.fn();
+
+    executeEnemyAction({
+      enemy: ENEMIES.zombie_screamer,
+      action: readyAction({
+        actionId: 'summon_horde',
+        category: 'timed_threat',
+        targetIds: ['player', 'npc_nurse'],
+        motionKey: 'summon_horde',
+      }),
+      services: recorder.services,
+      random: () => 0,
+    });
+
+    expect(recorder.services.damageTarget).not.toHaveBeenCalled();
+    expect(recorder.services.emitFx).not.toHaveBeenCalled();
+    expect(recorder.services.addLog).not.toHaveBeenCalled();
+    expect(recorder.services.summonEnemy)
+      .toHaveBeenCalledWith('zombie_common', 1, 'front');
+    expect(recorder.services.addNoise).toHaveBeenCalledWith(25);
+  });
+
   it('다중 대상의 모든 타격이 끝난 뒤에만 대상별 상태를 한 번씩 판정한다', () => {
     const recorder = createServices();
 

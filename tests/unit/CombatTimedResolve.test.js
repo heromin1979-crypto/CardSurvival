@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import CombatSystem from '../../js/systems/CombatSystem.js';
+import EventBus from '../../js/core/EventBus.js';
 import GameState from '../../js/core/GameState.js';
 import SystemRegistry from '../../js/core/SystemRegistry.js';
 import NoiseSystem from '../../js/systems/NoiseSystem.js';
@@ -132,6 +133,51 @@ describe('_resolveTimedThreat', () => {
       readyTimedAction(enemy, ['player']),
     );
 
+    expect(summonSpy).toHaveBeenCalledWith('zombie_common', 1, 'front', enemy);
+    expect(noiseSpy).toHaveBeenCalledWith(25);
+  });
+
+  it('summon_horde는 player와 companion의 HP·방어 자원·피격 이벤트를 변경하지 않는다', () => {
+    const enemy = instantiateEnemy(ENEMIES.zombie_screamer);
+    enemy.currentHp = 30;
+    enemy.maxHp = 30;
+    GameState.combat.enemies = [enemy];
+    GameState.combat.combatants.player.tokens.dodge = 1;
+    GameState.combat.combatants.npc_nurse.tokens.block = 1;
+    GameState.combat.playerGuard = {
+      active: true,
+      damageReduce: 0.5,
+      duration: 1,
+    };
+    GameState.npcs.states.npc_nurse.combatBuffs = {
+      holdReduct: { value: 0.5, duration: 1 },
+    };
+    const summonSpy = vi.spyOn(CombatSystem, '_summonEnemyById').mockReturnValue(1);
+    const damageSpy = vi.spyOn(CombatSystem, '_dealDamageToAlly');
+    const eventSpy = vi.spyOn(EventBus, 'emit');
+    const noiseSpy = vi.spyOn(NoiseSystem, 'addNoise');
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+
+    CombatSystem._resolveTimedThreat(
+      enemy,
+      readyTimedAction(enemy, ['player', 'npc_nurse']),
+    );
+
+    expect(GameState.player.hp.current).toBe(100);
+    expect(GameState.npcs.states.npc_nurse.hp).toBe(80);
+    expect(GameState.combat.combatants.player.tokens.dodge).toBe(1);
+    expect(GameState.combat.combatants.npc_nurse.tokens.block).toBe(1);
+    expect(GameState.combat.playerGuard).toEqual({
+      active: true,
+      damageReduce: 0.5,
+      duration: 1,
+    });
+    expect(GameState.npcs.states.npc_nurse.combatBuffs.holdReduct)
+      .toEqual({ value: 0.5, duration: 1 });
+    expect(damageSpy).not.toHaveBeenCalled();
+    expect(eventSpy.mock.calls.filter(([eventName]) =>
+      eventName === 'playerHit' || eventName === 'enemyAttackCompanion'
+    )).toEqual([]);
     expect(summonSpy).toHaveBeenCalledWith('zombie_common', 1, 'front', enemy);
     expect(noiseSpy).toHaveBeenCalledWith(25);
   });

@@ -180,7 +180,10 @@ export function executeEnemyAction({
   const forcedMove = forcedMoveFor(definition);
   const affectedTargetIds = [];
   const damageResults = [];
-  const hitPlan = enemy?.spreadAttacks === true && targetIds.length > 1
+  const canDealDamage = damageRange.some(value => Number.isFinite(value) && value > 0);
+  const hitPlan = !canDealDamage
+    ? []
+    : enemy?.spreadAttacks === true && targetIds.length > 1
     ? Array.from({ length: hitCount }, (_, hitIndex) => ({
         targetId: targetIds[hitIndex % targetIds.length],
         hitIndex,
