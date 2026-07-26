@@ -42,6 +42,26 @@ function statusDefinitionsFor(enemy, definition) {
     statuses.push(status);
   }
 
+  if (Number.isFinite(enemy?.infectionChance) && enemy.infectionChance > 0) {
+    statuses.push({
+      id: 'infection',
+      name: '감염',
+      duration: 1,
+      effect: { infection: 10 },
+      chance: enemy.infectionChance,
+    });
+  }
+
+  for (const [effectId, value] of Object.entries(enemy?.onHitEffect ?? {})) {
+    if (!Number.isFinite(value) || value === 0) continue;
+    statuses.push({
+      id: `${effectId}_exposure`,
+      name: effectId === 'infection' ? '감염 노출' : effectId === 'radiation' ? '방사선 노출' : effectId,
+      duration: 1,
+      effect: { [effectId]: value },
+    });
+  }
+
   if (definition?.statusInflict?.id) {
     statuses.push({
       ...definition.statusInflict,
@@ -72,6 +92,15 @@ function statusDefinitionsFor(enemy, definition) {
   }
   if (effect?.stun) {
     statuses.push({ id: 'stun', name: 'stun', duration: effect.stun, effect: {} });
+  }
+  if (Number.isFinite(definition?.stunChance) && definition.stunChance > 0) {
+    statuses.push({
+      id: 'stun',
+      name: 'stun',
+      duration: 1,
+      effect: { skipTurn: true },
+      chance: definition.stunChance,
+    });
   }
 
   return statuses;

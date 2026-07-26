@@ -797,6 +797,7 @@ const CombatSystem = {
 
     for (const combatant of Object.values(combat.combatants ?? {})) {
       if (combatant.dead === true) continue;
+      if (combatant.sourceType === 'companion') continue;
       const events = tickStatusEffects(combatant, Math.random);
       for (const event of events) {
         if (event.damage > 0) {
@@ -1772,9 +1773,23 @@ const CombatSystem = {
         gs.combat.log.push(I18n.t('combatSys.statusTick', { name: s.name, dmg: s.effect.hpLossPerRound, hp: gs.player.hp.current }));
       }
       if (s.effect.infection) gs.modStat('infection', s.effect.infection);
+      if (s.effect.radiation) gs.modStat('radiation', s.effect.radiation);
       s.duration--;
       return s.duration > 0;
     });
+
+    for (const companion of Object.values(gs.combat.combatants ?? {})) {
+      if (companion?.sourceType !== 'companion' || companion.dead === true) continue;
+      const events = tickStatusEffects(companion, Math.random);
+      for (const event of events) {
+        if (event.damage > 0) {
+          this._pushCombatLog(
+            `${this._rankedCombatantLabel(companion)}: ${event.statusId ?? '상태이상'}으로 ${event.damage} 피해`,
+          );
+        }
+      }
+      syncCombatantsToGameState(gs, { [companion.id]: companion });
+    }
 
     // per-enemy 상태이상 틱 (AoE 투척 효과 포함)
     for (const enemy of this.getAliveEnemies()) {

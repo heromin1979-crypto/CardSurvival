@@ -3,6 +3,7 @@ import { executeEnemyAction } from '../../js/systems/combat/EnemyActionExecutor.
 import CombatSystem from '../../js/systems/CombatSystem.js';
 import GameState from '../../js/core/GameState.js';
 import SystemRegistry from '../../js/core/SystemRegistry.js';
+import ENEMIES from '../../js/data/enemies.js';
 
 function createServices() {
   const events = [];
@@ -137,25 +138,19 @@ describe('executeEnemyAction', () => {
     },
     {
       label: '호드의 연속 공격',
-      enemy: {
-        attack: { damage: [6, 6], accuracy: 1 },
-        statusInflict: {
-          id: 'infection',
-          name: '감염',
-          duration: 2,
-          effect: { hpLossPerRound: 2 },
-        },
-      },
+      enemy: ENEMIES.zombie_horde,
       action: readyAction({
         targetIds: ['npc_soldier'],
         hitCount: 2,
       }),
       damage: 6,
+      statusId: 'infection',
     },
   ])('$label은 동료 대상 피해를 hitCount만큼 실행하고 상태는 완료 후 한 번만 적용한다', ({
     enemy,
     action,
     damage,
+    statusId,
   }) => {
     const recorder = createServices();
 
@@ -181,6 +176,71 @@ describe('executeEnemyAction', () => {
       expect.objectContaining({ actionId: action.actionId, hitIndex: 1, hitCount: 2 }),
     );
     expect(recorder.services.addStatus).toHaveBeenCalledTimes(1);
+    if (statusId) {
+      expect(recorder.services.addStatus).toHaveBeenCalledWith(
+        'npc_soldier',
+        expect.objectContaining({ id: statusId }),
+      );
+    }
+  });
+
+  it('실제 광견 데이터의 infectionChance와 onHitEffect를 연속타 전체에서 각각 한 번만 판정한다', () => {
+    const recorder = createServices();
+
+    executeEnemyAction({
+      enemy: ENEMIES.rabid_dog,
+      action: readyAction({
+        targetIds: ['npc_doctor'],
+        hitCount: 2,
+      }),
+      services: recorder.services,
+      random: () => 0,
+    });
+
+    const statuses = recorder.services.addStatus.mock.calls.map(([, status]) => status);
+    expect(statuses.map(status => status.id)).toEqual([
+      'bleed',
+      'infection',
+      'infection_exposure',
+    ]);
+    expect(statuses.find(status => status.id === 'infection')?.effect).toEqual({ infection: 10 });
+    expect(statuses.find(status => status.id === 'infection_exposure')?.effect).toEqual({ infection: 5 });
+  });
+
+  it.each([
+    { enemy: ENEMIES.zombie_brute, actionId: 'slam' },
+    { enemy: ENEMIES.raider_elite, actionId: 'aimed_shot' },
+  ])('실제 $actionId 스킬의 최상위 stunChance를 행동당 한 번만 판정한다', ({
+    enemy,
+    actionId,
+  }) => {
+    const recorder = createServices();
+
+    executeEnemyAction({
+      enemy,
+      action: readyAction({
+        actionId,
+        category: 'special',
+        targetIds: ['player'],
+        motionKey: actionId,
+      }),
+      services: recorder.services,
+      random: () => 0,
+    });
+
+    const stunCalls = recorder.services.addStatus.mock.calls
+      .filter(([, status]) => status.id === 'stun');
+    expect(stunCalls).toHaveLength(1);
+    expect(stunCalls[0]).toEqual([
+      'player',
+      {
+        id: 'stun',
+        name: 'stun',
+        duration: 1,
+        effect: { skipTurn: true },
+        chance: enemy.specialSkills.find(skill => skill.id === actionId).stunChance,
+      },
+    ]);
   });
 
   it('예약 대상이 비어 있으면 반대 진영으로 대체하지 않고 아무 효과도 실행하지 않는다', () => {
