@@ -6,7 +6,8 @@ import CombatSystem from '../../js/systems/CombatSystem.js';
 import CombatUI from '../../js/ui/CombatUI.js';
 import { ENEMIES, instantiateEnemy } from '../../js/data/enemies.js';
 
-function setupCombat(enemy, { withNurse = false } = {}) {
+function setupCombat(enemy, { withNurse = false, companionId = null } = {}) {
+  const activeCompanionId = companionId ?? (withNurse ? 'npc_nurse' : null);
   document.body.innerHTML = '<div id="screen-combat"></div>';
   CombatUI._screen = document.getElementById('screen-combat');
 
@@ -16,10 +17,10 @@ function setupCombat(enemy, { withNurse = false } = {}) {
   GameState.player.equipped = {};
   GameState.flags = GameState.flags ?? {};
   GameState.ui = { ...GameState.ui, currentState: 'combat' };
-  GameState.companions = withNurse ? ['npc_nurse'] : [];
+  GameState.companions = activeCompanionId ? [activeCompanionId] : [];
   GameState.npcs = {
-    states: withNurse
-      ? { npc_nurse: { hp: 80, maxHp: 80, isCompanion: true } }
+    states: activeCompanionId
+      ? { [activeCompanionId]: { hp: 80, maxHp: 80, isCompanion: true } }
       : {},
   };
 
@@ -110,5 +111,32 @@ describe('일반 몬스터 committed action intent 통합', () => {
     expect(GameState.npcs.states.npc_nurse.hp).toBe(74);
     expect(combat.combatants.player.hp).toBe(94);
     expect(combat.combatants.npc_nurse.hp).toBe(74);
+  });
+
+  it('AI 후보에 실제 rank·방어/노출·heal effect 기반 healer 메타데이터를 제공한다', () => {
+    const combat = setupCombat(instantiateEnemy(ENEMIES.zombie_common), {
+      companionId: 'npc_student',
+    });
+    combat.combatants.player.tokens.block = 1;
+    combat.combatants.npc_student.tokens.vulnerable = 1;
+    combat.playerGuard = { active: true, damageReduce: 0.5 };
+
+    const targets = CombatSystem._getEligibleTargets(combat, GameState);
+
+    expect(targets).toEqual([
+      expect.objectContaining({
+        id: 'player',
+        rank: 1,
+        isDefended: true,
+        isExposed: false,
+      }),
+      expect.objectContaining({
+        id: 'npc_student',
+        rank: 2,
+        isDefended: false,
+        isExposed: true,
+        isHealer: true,
+      }),
+    ]);
   });
 });

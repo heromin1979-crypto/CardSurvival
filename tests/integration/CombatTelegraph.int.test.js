@@ -11,6 +11,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import CombatSystem   from '../../js/systems/CombatSystem.js';
 import GameState      from '../../js/core/GameState.js';
 import SystemRegistry from '../../js/core/SystemRegistry.js';
+import { ENEMIES } from '../../js/data/enemies.js';
 import { moveCombatant, getRank } from '../../js/systems/combat/FormationSystem.js';
 
 function makeEnemy(overrides = {}) {
@@ -317,11 +318,11 @@ describe('F2 — 위치 공격 (forcedMove)', () => {
   it('charger 강타 발동 시 플레이어가 후열로 밀려난다', () => {
     const combat = setupCombat({
       enemies: [makeEnemy({
-        timedThreat: { id: 'charge_strike', chargeTurns: 1 },
+        timedThreat: { ...ENEMIES.zombie_charger.timedThreat },
         _chargeRemaining: 0,
       })],
     });
-    const rand = vi.spyOn(Math, 'random').mockReturnValue(0.99);
+    const rand = vi.spyOn(Math, 'random').mockReturnValue(0);
     CombatSystem._runSingleEnemyTurn(0);
     rand.mockRestore();
 

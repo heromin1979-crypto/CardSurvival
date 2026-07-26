@@ -138,6 +138,79 @@ const EXPECTED_PATTERNS = {
   },
 };
 
+const EXPECTED_ACTION_CONTRACTS = {
+  zombie_patient_dormant: [
+    ['default', 'basic_attack', 'player', 1, { turns: 0 }, [['damage', [10, 16]]], 'basic_attack', {}],
+    ['special', 'startled_lunge', 'player', 1, { turns: 0 }, [['damage', [10, 16]]], 'startled_lunge', {}],
+  ],
+  zombie_common: [
+    ['default', 'basic_attack', 'frontmost', 1, { turns: 0 }, [['damage', [8, 15]]], 'basic_attack', {}],
+  ],
+  zombie_runner: [
+    ['default', 'basic_attack', 'lowest_hp', 1, { turns: 0 }, [['damage', [12, 20]]], 'basic_attack', {}],
+    ['special', 'runner_rush', 'lowest_hp', 2, { turns: 1, moveEvadeChance: 1 }, [['damage', [12, 18]]], 'runner_rush', {}],
+  ],
+  zombie_brute: [
+    ['default', 'basic_attack', 'frontmost', 1, { turns: 0 }, [['damage', [20, 35]]], 'basic_attack', {}],
+    ['special', 'slam', 'frontmost', 1, { turns: 1, moveEvadeChance: 1, blockNegatesStun: true }, [
+      ['damage', [30, 45]],
+      ['move', 1],
+    ], 'slam', {}],
+  ],
+  raider: [
+    ['default', 'basic_attack', 'opportunist', 1, { turns: 0 }, [['damage', [14, 22]]], 'basic_attack', {}],
+  ],
+  raider_elite: [
+    ['default', 'raider_elite_basic_shot', 'healer', 1, { turns: 0 }, [['damage', [18, 28]]], 'basic_attack', {}],
+    ['special', 'aimed_shot', 'healer', 1, { turns: 1, moveEvadeChance: 0.7, cancelOnHit: true }, [['damage', [25, 40]]], 'aimed_shot', {}],
+  ],
+  zombie_horde: [
+    ['default', 'basic_attack', 'frontmost', 2, { turns: 0 }, [['damage', [6, 12]]], 'basic_attack', {}],
+  ],
+  rabid_dog: [
+    ['default', 'basic_attack', 'lowest_hp', 2, { turns: 0 }, [['damage', [8, 14]]], 'basic_attack', {}],
+  ],
+  zombie_acid: [
+    ['default', 'basic_attack', 'predator', 1, { turns: 0 }, [['damage', [8, 14]]], 'basic_attack', {}],
+    ['special', 'acid_lash', 'predator', 1, { turns: 0 }, [
+      ['damage', [6, 10]],
+      ['move', -2],
+    ], 'acid_lash', {}],
+  ],
+  zombie_bloater: [
+    ['default', 'bloater_swipe', 'frontmost', 1, { turns: 0 }, [['damage', [4, 8]]], 'basic_attack', {}],
+    ['timed', 'self_destruct', 'all', 1, { turns: 3 }, [
+      ['damage', [25, 40]],
+      ['status', 'infection', 15],
+    ], 'self_destruct', { weakness: ['fire', 'explosive'], stunDelays: true }],
+  ],
+  zombie_screamer: [
+    ['default', 'screamer_spit', 'frontmost', 1, { turns: 0 }, [['damage', [5, 9]]], 'basic_attack', {}],
+    ['timed', 'summon_horde', 'frontmost', 1, { turns: 3 }, [
+      ['damage', [0, 0]],
+      ['summon', 'zombie_common', [1, 2]],
+      ['noise', 25],
+    ], 'summon_horde', { quietKill: true, stunDelays: true }],
+  ],
+  zombie_charger: [
+    ['default', 'charger_lunge', 'frontmost', 1, { turns: 0 }, [['damage', [6, 10]]], 'basic_attack', {}],
+    ['timed', 'charge_strike', 'frontmost', 1, { turns: 1 }, [
+      ['damage', [30, 45]],
+      ['status', 'stun', 1],
+      ['move', 1],
+    ], 'charge_strike', { stunDelays: true }],
+  ],
+};
+
+function effectCore(effect) {
+  if (effect.type === 'damage') return ['damage', effect.value];
+  if (effect.type === 'move') return ['move', effect.distance];
+  if (effect.type === 'status') return ['status', effect.id, effect.value ?? effect.duration];
+  if (effect.type === 'summon') return ['summon', effect.enemyId, effect.count];
+  if (effect.type === 'noise') return ['noise', effect.value];
+  return [effect.type];
+}
+
 describe('일반 몬스터 패턴 데이터 계약', () => {
   it('유효한 fixture는 오류 없이 통과한다', () => {
     expect(validateNormalEnemyPatternData(validFixture())).toEqual([]);
@@ -221,5 +294,27 @@ describe('일반 몬스터 패턴 데이터 계약', () => {
     }
 
     expect(validateNormalEnemyPatternData(ENEMIES)).toEqual([]);
+  });
+
+  it('12종의 모든 기본·특수·timed threat 행동 계약이 정확한 테이블과 일치한다', () => {
+    const actual = Object.fromEntries(Object.entries(ENEMIES).map(([enemyId, enemy]) => [
+      enemyId,
+      [
+        ['default', enemy.patternProfile.defaultAction],
+        ...(enemy.specialSkills ?? []).map(action => ['special', action]),
+        ...(enemy.timedThreat ? [['timed', enemy.timedThreat]] : []),
+      ].map(([kind, action]) => [
+        kind,
+        action.actionId ?? action.id,
+        action.targetPolicy,
+        action.hitCount,
+        action.telegraph,
+        action.effects.map(effectCore),
+        action.motionKey,
+        action.counters ?? {},
+      ]),
+    ]));
+
+    expect(actual).toEqual(EXPECTED_ACTION_CONTRACTS);
   });
 });

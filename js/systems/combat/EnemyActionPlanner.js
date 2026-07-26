@@ -75,6 +75,11 @@ function candidatesByPolicy(candidates, targetPolicy, random) {
   const byHealth = () => ordered.sort((a, b) =>
     (candidateHp(a) ?? candidateMaxHp(a)) / candidateMaxHp(a)
     - (candidateHp(b) ?? candidateMaxHp(b)) / candidateMaxHp(b));
+  const opportunistPriority = candidate => {
+    if (candidate?.isExposed === true) return 0;
+    if (candidate?.isDefended === true) return 2;
+    return 1;
+  };
 
   switch (targetPolicy) {
     case 'player':
@@ -82,8 +87,14 @@ function candidatesByPolicy(candidates, targetPolicy, random) {
     case 'frontmost':
       return ordered.sort((a, b) => (a.rank ?? Infinity) - (b.rank ?? Infinity));
     case 'lowest_hp':
-    case 'opportunist':
       return byHealth();
+    case 'opportunist':
+      return ordered.sort((a, b) => {
+        const priority = opportunistPriority(a) - opportunistPriority(b);
+        if (priority !== 0) return priority;
+        return (candidateHp(a) ?? candidateMaxHp(a)) / candidateMaxHp(a)
+          - (candidateHp(b) ?? candidateMaxHp(b)) / candidateMaxHp(b);
+      });
     case 'healer':
     case 'sniper':
       return ordered.sort((a, b) => Number(b.isHealer === true) - Number(a.isHealer === true));
@@ -126,23 +137,35 @@ export function createEnemyActionState() {
   return { committedAction: null };
 }
 
-export function commitTimedThreatAction({ enemy, targetIds = [] }) {
+export function commitTimedThreatAction({
+  enemy,
+  candidates = [],
+  targetIds = null,
+  random = Math.random,
+}) {
   const threat = enemy?.timedThreat;
   if (!threat?.id || !Number.isFinite(enemy?._chargeRemaining)) {
     return createEnemyActionState();
   }
 
+  const targetPolicy = targetPolicyFor(enemy, threat);
+  const targetCount = targetCountFor(threat);
+  const selectedTargetIds = Array.isArray(targetIds) && targetIds.length > 0
+    ? [...targetIds]
+    : selectTargetIds(candidates, targetPolicy, targetCount, random);
   const remainingTelegraphTurns = Math.max(0, Math.floor(enemy._chargeRemaining));
+  const committedAction = withMetadata({
+    actionId: threat.id,
+    category: 'timed_threat',
+    state: remainingTelegraphTurns > 0 ? 'telegraphing' : 'ready',
+    targetIds: selectedTargetIds,
+    remainingTelegraphTurns,
+    hitCount: hitCount(threat, enemy),
+    motionKey: threat.motionKey ?? threat.id,
+  }, { targetPolicy, targetCount });
+
   return {
-    committedAction: {
-      actionId: threat.id,
-      category: 'timed_threat',
-      state: remainingTelegraphTurns > 0 ? 'telegraphing' : 'ready',
-      targetIds: [...targetIds],
-      remainingTelegraphTurns,
-      hitCount: 1,
-      motionKey: threat.motionKey ?? threat.id,
-    },
+    committedAction,
   };
 }
 

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   advanceEnemyAction,
   commitEnemyAction,
+  commitTimedThreatAction,
   createEnemyActionState,
   retargetCommittedAction,
 } from '../../js/systems/combat/EnemyActionPlanner.js';
@@ -138,5 +139,111 @@ describe('EnemyActionPlanner', () => {
     });
 
     expect(state.committedAction.targetIds).toEqual([]);
+  });
+
+  it('frontmost 정책은 후보 배열 순서가 아니라 실제 진형 rank가 가장 낮은 대상을 고른다', () => {
+    const state = commitEnemyAction({
+      enemy: {
+        patternProfile: {
+          targetPolicy: 'frontmost',
+          defaultAction: {
+            actionId: 'basic_attack',
+            targetPolicy: 'frontmost',
+            target: { side: 'frontmost', count: 1 },
+          },
+        },
+      },
+      candidates: [
+        { id: 'player', side: 'ally', rank: 3, hp: 100, maxHp: 100 },
+        { id: 'npc_front', side: 'ally', rank: 1, hp: 100, maxHp: 100 },
+      ],
+    });
+
+    expect(state.committedAction.targetIds).toEqual(['npc_front']);
+  });
+
+  it('opportunist 정책은 저체력이어도 방어 중인 대상보다 노출된 대상을 우선한다', () => {
+    const state = commitEnemyAction({
+      enemy: {
+        patternProfile: {
+          targetPolicy: 'opportunist',
+          defaultAction: {
+            actionId: 'basic_attack',
+            targetPolicy: 'opportunist',
+            target: { side: 'opportunist', count: 1 },
+          },
+        },
+      },
+      candidates: [
+        {
+          id: 'npc_covered',
+          side: 'ally',
+          hp: 10,
+          maxHp: 100,
+          isDefended: true,
+          isExposed: false,
+        },
+        {
+          id: 'npc_exposed',
+          side: 'ally',
+          hp: 80,
+          maxHp: 100,
+          isDefended: false,
+          isExposed: true,
+        },
+      ],
+    });
+
+    expect(state.committedAction.targetIds).toEqual(['npc_exposed']);
+  });
+
+  it('timed threat도 선언된 targetPolicy와 count로 예약 대상을 결정한다', () => {
+    const allTargets = commitTimedThreatAction({
+      enemy: {
+        _chargeRemaining: 2,
+        timedThreat: {
+          id: 'self_destruct',
+          targetPolicy: 'all',
+          target: { side: 'all', count: 4 },
+          hitCount: 1,
+          motionKey: 'self_destruct',
+        },
+      },
+      candidates: [
+        { id: 'player', side: 'ally', rank: 2, hp: 100, maxHp: 100 },
+        { id: 'npc_front', side: 'ally', rank: 1, hp: 80, maxHp: 80 },
+      ],
+    });
+    const frontmost = commitTimedThreatAction({
+      enemy: {
+        _chargeRemaining: 0,
+        timedThreat: {
+          id: 'charge_strike',
+          targetPolicy: 'frontmost',
+          target: { side: 'frontmost', count: 1 },
+          hitCount: 1,
+          motionKey: 'charge_strike',
+        },
+      },
+      candidates: [
+        { id: 'player', side: 'ally', rank: 3, hp: 100, maxHp: 100 },
+        { id: 'npc_front', side: 'ally', rank: 1, hp: 80, maxHp: 80 },
+      ],
+    });
+
+    expect(allTargets.committedAction).toMatchObject({
+      actionId: 'self_destruct',
+      state: 'telegraphing',
+      targetIds: ['player', 'npc_front'],
+      remainingTelegraphTurns: 2,
+      hitCount: 1,
+    });
+    expect(frontmost.committedAction).toMatchObject({
+      actionId: 'charge_strike',
+      state: 'ready',
+      targetIds: ['npc_front'],
+      remainingTelegraphTurns: 0,
+      hitCount: 1,
+    });
   });
 });

@@ -9,7 +9,6 @@ import StatSystem     from '../StatSystem.js';
 import SkillSystem    from '../SkillSystem.js';
 import DiseaseSystem  from '../DiseaseSystem.js';
 import BodySystem     from '../BodySystem.js';
-import { rollEnemy }  from '../../data/enemies.js';
 import { NPC_ITEMS }  from '../../data/npcs.js';
 import BALANCE        from '../../data/gameBalance.js';
 import GameData       from '../../data/GameData.js';
@@ -286,13 +285,20 @@ export const CombatAiTurns = {
       const wDef = weapon ? gs.getCardDef?.(weapon) : null;
       const isRanged = !!wDef?.combat?.requiresAmmo;
       const statusEffects = combat?.playerStatus ?? [];
+      const combatant = combat?.combatants?.player;
+      const tokens = combatant?.tokens ?? {};
       targets.push({
         id: 'player',
         side: 'ally',
         type: 'player',
         hp: gs.player.hp.current,
         maxHp: gs.player.hp.max,
+        rank: getRank(combat?.formations, 'player'),
         isRanged,
+        isDefended: (tokens.block ?? 0) > 0
+          || (tokens.dodge ?? 0) > 0
+          || combat?.playerGuard?.active === true,
+        isExposed: (tokens.vulnerable ?? 0) > 0 || (tokens.marked ?? 0) > 0,
         statusEffects,
       });
     }
@@ -300,13 +306,25 @@ export const CombatAiTurns = {
     for (const id of companions) {
       const st = gs.npcs?.states?.[id];
       if (!st || (st.hp ?? 0) <= 0) continue;
+      const combatant = combat?.combatants?.[id];
+      const tokens = combatant?.tokens ?? {};
+      const holdReduct = st.combatBuffs?.holdReduct;
+      const isHealer = (COMPANION_COMBAT_LOADOUTS[id] ?? []).some(skillId => {
+        const skill = combat?.skillsById?.[skillId] ?? getCombatSkill(skillId);
+        return (skill?.effects ?? []).some(effect => effect?.type === 'heal');
+      });
       targets.push({
         side: 'ally',
         type: 'companion',
         id,
         hp: st.hp,
         maxHp: st.maxHp ?? 50,
-        isHealer: id === 'npc_nurse' || id === 'npc_doctor',
+        rank: getRank(combat?.formations, id),
+        isHealer,
+        isDefended: (tokens.block ?? 0) > 0
+          || (tokens.dodge ?? 0) > 0
+          || (holdReduct?.duration ?? 0) > 0,
+        isExposed: (tokens.vulnerable ?? 0) > 0 || (tokens.marked ?? 0) > 0,
         statusEffects: st.statusEffects ?? [],
       });
     }
@@ -547,12 +565,14 @@ export const CombatAiTurns = {
         && previousAction.actionId === enemy.timedThreat.id
         ? previousAction.targetIds.filter(targetId => eligibleTargetIds.includes(targetId))
         : [];
-      const selectedTargetId = target?.type === 'player' ? 'player' : target?.id;
       enemy._enemyActionState = commitTimedThreatAction({
         enemy,
+        candidates: taunted && enemy.timedThreat.targetPolicy !== 'all'
+          ? [taunted]
+          : targets,
         targetIds: previousTargetIds.length > 0
           ? previousTargetIds
-          : selectedTargetId ? [selectedTargetId] : [],
+          : null,
       });
       const action = enemy._enemyActionState.committedAction;
       const icon = enemy.timedThreat.id === 'self_destruct' ? '💥'
@@ -703,9 +723,10 @@ export const CombatAiTurns = {
       if (!hasReadyTimedAction) {
         enemy._enemyActionState = commitTimedThreatAction({
           enemy,
+          candidates: this._getEligibleTargets(gs.combat, gs),
           targetIds: action?.category === 'timed_threat'
             ? action.targetIds
-            : [],
+            : null,
         });
         action = enemy._enemyActionState.committedAction;
       }
@@ -860,6 +881,8 @@ export const CombatAiTurns = {
     const definition = action?.category === 'special'
       ? (enemy?.specialSkills ?? []).find(skill =>
           (skill?.actionId ?? skill?.id) === action.actionId)
+      : action?.category === 'timed_threat'
+        ? enemy?.timedThreat
       : null;
     const blockedTargets = new Set();
 
@@ -894,7 +917,12 @@ export const CombatAiTurns = {
             }
           }
 
-          const result = this._dealDamageToAlly({ npcId, rawDamage: damage });
+          const result = this._dealDamageToAlly({
+            npcId,
+            rawDamage: damage,
+            canBeDodged: !(action.category === 'timed_threat'
+              && action.actionId === 'self_destruct'),
+          });
           if (result.blocked) blockedTargets.add(targetId);
           if (result.dodged) return result;
 
@@ -919,6 +947,17 @@ export const CombatAiTurns = {
           return this._addAllyStatus(targetId, status);
         },
         moveTarget: (targetId, distance) => this._forceMoveAlly(targetId, distance, enemy),
+        summonEnemy: (enemyId, count, row) => {
+          const spawned = this._summonEnemyById(enemyId, count, row, enemy);
+          if (spawned > 0) {
+            combat.log.push(I18n.t('combatSys.screamerSummon', {
+              enemy: I18n.enemyName(enemy.id, enemy.name),
+              count: spawned,
+            }));
+          }
+          return spawned;
+        },
+        addNoise: amount => NoiseSystem.addNoise(amount),
         emitFx: payload => {
           const companionTarget = payload.targetId !== 'player';
           this._fx({
@@ -1466,77 +1505,32 @@ export const CombatAiTurns = {
   // ── 타이밍 압박 트리거 발동 ─────────────────────────────
   _resolveTimedThreat(enemy, committedAction = null) {
     const gs = GameState;
-    const T = BALANCE.combat.timedThreats;
-    const threatId = committedAction?.category === 'timed_threat'
-      ? committedAction.actionId
-      : enemy.timedThreat?.id;
+    const action = committedAction?.category === 'timed_threat'
+      ? committedAction
+      : commitTimedThreatAction({
+          enemy,
+          candidates: this._getEligibleTargets(gs.combat, gs),
+        }).committedAction;
+    if (!action || action.state !== 'ready') return;
 
-    if (threatId === 'self_destruct') {
-      const [dMin, dMax] = T.bloater.aoeDamage;
-      // 자폭 폭발은 광역 — 회피 불가, 블록/취약 토큰만 적용
-      const burst = this._dealDamageToAlly({
-        rawDamage: dMin + Math.floor(Math.random() * (dMax - dMin + 1)),
-        canBeDodged: false,
-      });
-      const dmg = burst.damage;
-      gs.modStat('infection', T.bloater.infectionCloud);
-      gs.combat.lastHit = { target: 'player', damage: dmg, isCrit: false };
-      EventBus.emit('playerHit', { damage: dmg });
-      for (const id of (gs.companions ?? [])) {
-        const st = gs.npcs?.states?.[id];
-        if (st && (st.hp ?? 0) > 0) {
-          this._dealDamageToAlly({ npcId: id, rawDamage: dmg, canBeDodged: false });
-        }
-      }
+    const result = this._executeEnemyCommittedAction(enemy, action);
+    if (action.actionId === 'self_destruct') {
+      const damage = result?.damageResults?.find(entry => entry.targetId === 'player')?.amount
+        ?? result?.damageResults?.[0]?.amount
+        ?? 0;
       enemy.currentHp = 0;
-      gs.combat.log.push(I18n.t('combatSys.bloaterExplode', { enemy: I18n.enemyName(enemy.id, enemy.name), dmg }));
-      this._fx({ kind: 'explode', enemyIdx: gs.combat.enemies.indexOf(enemy), dmg });
-      return;
+      gs.combat.log.push(I18n.t('combatSys.bloaterExplode', {
+        enemy: I18n.enemyName(enemy.id, enemy.name),
+        dmg: damage,
+      }));
+      this._fx({
+        kind: 'explode',
+        enemyIdx: gs.combat.enemies.indexOf(enemy),
+        dmg: damage,
+      });
     }
+    return result;
 
-    if (threatId === 'charge_strike') {
-      const [dMin, dMax] = T.charger.strikeDamage;
-      let dmg = dMin + Math.floor(Math.random() * (dMax - dMin + 1));
-      const armor         = StatSystem.getArmorEffects();
-      const defSkillBonus = SkillSystem.getBonus('defense', 'damageReduction');
-      const totalReduct   = Math.min(BALANCE.armor.damageReductionCap, armor.damageReduction + defSkillBonus);
-      if (totalReduct > 0) dmg = Math.max(1, Math.floor(dmg * (1 - totalReduct)));
-      const struck = this._dealDamageToAlly({ rawDamage: dmg });
-      if (struck.dodged) {
-        gs.combat.log.push(I18n.t('combatSys.chargerStrike', { enemy: I18n.enemyName(enemy.id, enemy.name), dmg: 0 }) + ' — 회피!');
-        return;
-      }
-      dmg = struck.damage;
-      if (!gs.combat.playerStatus.some(s => s.id === 'stun')) {
-        gs.combat.playerStatus.push({ id: 'stun', name: I18n.t('combatSys.stun'), duration: T.charger.strikeStun, effect: {} });
-      }
-      gs.combat.lastHit = { target: 'player', damage: dmg, isCrit: true }; // 강타는 연출상 크리티컬 취급(화면 흔들림 트리거)
-      EventBus.emit('playerHit', { damage: dmg });
-      DiseaseSystem.checkCombatInjury(dmg, gs);
-      BodySystem.onCombatHit(dmg, enemy);
-      gs.combat.log.push(I18n.t('combatSys.chargerStrike', { enemy: I18n.enemyName(enemy.id, enemy.name), dmg }));
-      this._fx({ kind: 'enemyAttack', enemyIdx: gs.combat.enemies.indexOf(enemy), fx: 'shock', dmg, crit: true });
-      // 돌진의 운동량이 대상을 후열로 밀쳐낸다 — 근접 스킬이 잠기는 실제 턴 비용
-      this._forceMoveAlly('player', 1, enemy);
-      return;
-    }
-
-    if (threatId === 'summon_horde') {
-      const [cMin, cMax] = T.screamer.summonCount;
-      const count = cMin + Math.floor(Math.random() * (cMax - cMin + 1));
-      let spawned = 0;
-      for (let i = 0; i < count; i++) {
-        // 소환된 증원은 곧장 전열로 달려든다
-        if (!this._spawnEnemyMidCombat(rollEnemy(gs.combat.dangerLevel ?? 3), 'front')) break;
-        spawned++;
-      }
-      NoiseSystem.addNoise(T.screamer.summonNoise);
-      if (spawned > 0) {
-        gs.combat.log.push(I18n.t('combatSys.screamerSummon', { enemy: I18n.enemyName(enemy.id, enemy.name), count: spawned }));
-        this._fx({ kind: 'summon', enemyIdx: gs.combat.enemies.indexOf(enemy), count: spawned });
-      }
-      return;
-    }
   },
 
   _rankCombatantForEnemy(enemy) {

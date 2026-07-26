@@ -570,6 +570,7 @@ const ENEMIES = {
       effects: [
         { type: 'damage', value: [0, 0] },
         { type: 'summon', enemyId: 'zombie_common', count: [1, 2] },
+        { type: 'noise', value: 25 },
       ],
       motionKey: 'summon_horde',
       counters: { quietKill: true, stunDelays: true } },

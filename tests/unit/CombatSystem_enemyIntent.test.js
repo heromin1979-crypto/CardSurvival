@@ -89,18 +89,18 @@ describe('_getEligibleTargets', () => {
     expect(tgts[0].type).toBe('companion');
   });
 
-  it('isHealer 플래그: npc_nurse / npc_doctor', () => {
+  it('isHealer 플래그는 실제 loadout의 heal effect에서 파생한다', () => {
     makePlayer({ hp: 100 });
-    GameState.companions = ['npc_nurse', 'npc_doctor', 'npc_soldier'];
+    GameState.companions = ['npc_nurse', 'npc_student', 'npc_soldier'];
     GameState.npcs = { states: {
       npc_nurse:   { hp: 50, maxHp: 50, isCompanion: true },
-      npc_doctor:  { hp: 50, maxHp: 50, isCompanion: true },
+      npc_student: { hp: 50, maxHp: 50, isCompanion: true },
       npc_soldier: { hp: 50, maxHp: 50, isCompanion: true },
     }};
     const combat = makeCombat();
     const tgts = CombatSystem._getEligibleTargets(combat, GameState);
     expect(tgts.find(t => t.id === 'npc_nurse').isHealer).toBe(true);
-    expect(tgts.find(t => t.id === 'npc_doctor').isHealer).toBe(true);
+    expect(tgts.find(t => t.id === 'npc_student').isHealer).toBe(true);
     expect(tgts.find(t => t.id === 'npc_soldier').isHealer).toBe(false);
   });
 });

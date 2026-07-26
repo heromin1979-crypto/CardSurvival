@@ -1,4 +1,11 @@
 function actionDefinitionFor(enemy, action) {
+  if (action?.category === 'timed_threat') {
+    return enemy?.timedThreat
+      && enemy.timedThreat.id === action.actionId
+      ? enemy.timedThreat
+      : null;
+  }
+
   if (action?.category === 'special') {
     return (enemy?.specialSkills ?? []).find(skill =>
       (skill?.actionId ?? skill?.id) === action.actionId) ?? null;
@@ -29,9 +36,9 @@ function rollDamage(range, random) {
   return Math.max(0, low + Math.floor(random() * (high - low + 1)));
 }
 
-function statusDefinitionsFor(enemy, definition) {
+function statusDefinitionsFor(enemy, definition, { includeEnemyDefaults = true } = {}) {
   const statuses = [];
-  if (enemy?.statusInflict?.id) {
+  if (includeEnemyDefaults && enemy?.statusInflict?.id) {
     const status = {
       ...enemy.statusInflict,
       effect: { ...(enemy.statusInflict.effect ?? {}) },
@@ -42,7 +49,7 @@ function statusDefinitionsFor(enemy, definition) {
     statuses.push(status);
   }
 
-  if (Number.isFinite(enemy?.infectionChance) && enemy.infectionChance > 0) {
+  if (includeEnemyDefaults && Number.isFinite(enemy?.infectionChance) && enemy.infectionChance > 0) {
     statuses.push({
       id: 'infection',
       name: '감염',
@@ -52,7 +59,9 @@ function statusDefinitionsFor(enemy, definition) {
     });
   }
 
-  for (const [effectId, value] of Object.entries(enemy?.onHitEffect ?? {})) {
+  for (const [effectId, value] of Object.entries(
+    includeEnemyDefaults ? enemy?.onHitEffect ?? {} : {},
+  )) {
     if (!Number.isFinite(value) || value === 0) continue;
     statuses.push({
       id: `${effectId}_exposure`,
@@ -103,6 +112,24 @@ function statusDefinitionsFor(enemy, definition) {
     });
   }
 
+  for (const effectDefinition of (definition?.effects ?? [])) {
+    if (effectDefinition?.type !== 'status' || !effectDefinition.id) continue;
+    const statusEffect = effectDefinition.effect
+      ? { ...effectDefinition.effect }
+      : Number.isFinite(effectDefinition.value)
+        ? { [effectDefinition.id]: effectDefinition.value }
+        : {};
+    statuses.push({
+      id: effectDefinition.id,
+      name: effectDefinition.name ?? effectDefinition.id,
+      duration: effectDefinition.duration ?? 1,
+      effect: statusEffect,
+      ...(Number.isFinite(effectDefinition.chance)
+        ? { chance: effectDefinition.chance }
+        : {}),
+    });
+  }
+
   return statuses;
 }
 
@@ -115,6 +142,16 @@ function forcedMoveFor(definition) {
 
 function hitSucceeded(result) {
   return result?.dodged !== true && result?.missed !== true;
+}
+
+function rollCount(value, random) {
+  if (Number.isFinite(value)) return Math.max(0, Math.floor(value));
+  if (!Array.isArray(value)) return 0;
+  const min = Number.isFinite(value[0]) ? Math.floor(value[0]) : 0;
+  const max = Number.isFinite(value[1]) ? Math.floor(value[1]) : min;
+  const low = Math.max(0, Math.min(min, max));
+  const high = Math.max(low, Math.max(min, max));
+  return low === high ? low : low + Math.floor(random() * (high - low + 1));
 }
 
 export function executeEnemyAction({
@@ -137,9 +174,12 @@ export function executeEnemyAction({
   const accuracy = Number.isFinite(definition.accuracy)
     ? Math.max(0, Math.min(1, definition.accuracy))
     : Math.max(0, Math.min(1, enemy?.attack?.accuracy ?? 1));
-  const statuses = statusDefinitionsFor(enemy, definition);
+  const statuses = statusDefinitionsFor(enemy, definition, {
+    includeEnemyDefaults: action.category !== 'timed_threat',
+  });
   const forcedMove = forcedMoveFor(definition);
   const affectedTargetIds = [];
+  const damageResults = [];
   const hitPlan = enemy?.spreadAttacks === true && targetIds.length > 1
     ? Array.from({ length: hitCount }, (_, hitIndex) => ({
         targetId: targetIds[hitIndex % targetIds.length],
@@ -173,6 +213,7 @@ export function executeEnemyAction({
         hitIndex,
         hitCount,
       });
+      damageResults.push({ targetId, amount: result?.damage ?? amount, result });
       const succeeded = hitSucceeded(result);
       if (succeeded && !affectedTargetIds.includes(targetId)) {
         affectedTargetIds.push(targetId);
@@ -204,4 +245,22 @@ export function executeEnemyAction({
       services.moveTarget(targetId, forcedMove);
     }
   }
+
+  const resolvedEffects = [];
+  for (const effect of (definition.effects ?? [])) {
+    if (effect?.type === 'summon' && typeof effect.enemyId === 'string') {
+      const count = rollCount(effect.count, random);
+      const spawned = services.summonEnemy?.(
+        effect.enemyId,
+        count,
+        effect.row ?? 'front',
+      ) ?? 0;
+      resolvedEffects.push({ type: 'summon', enemyId: effect.enemyId, count, spawned });
+    } else if (effect?.type === 'noise' && Number.isFinite(effect.value)) {
+      services.addNoise?.(effect.value);
+      resolvedEffects.push({ type: 'noise', value: effect.value });
+    }
+  }
+
+  return { affectedTargetIds, damageResults, resolvedEffects };
 }
