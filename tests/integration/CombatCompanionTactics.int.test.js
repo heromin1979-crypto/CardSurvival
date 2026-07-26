@@ -2,13 +2,16 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import CombatSystem from '../../js/systems/CombatSystem.js';
 import GameState from '../../js/core/GameState.js';
 
-function enemy(hp = 100) {
+function enemy(hp = 100, {
+  id = 'zombie_common',
+  row = 'front',
+} = {}) {
   return {
-    id: 'zombie_common',
+    id,
     name: '감염자',
     currentHp: hp,
     maxHp: hp,
-    row: 'front',
+    row,
     defense: 0,
     attack: { damage: [1, 1], accuracy: 0 },
     specialSkills: [],
@@ -26,6 +29,7 @@ function setupCompanionCombat({
   playerHp = 10,
   playerMaxHp = 100,
   enemyHp = 100,
+  enemies = null,
 } = {}) {
   GameState.player.hp = { current: playerHp, max: playerMaxHp };
   GameState.player.characterId = 'doctor';
@@ -48,7 +52,7 @@ function setupCompanionCombat({
   GameState.flags = {};
 
   CombatSystem._setupCombat({
-    enemies: [enemy(enemyHp)],
+    enemies: enemies ?? [enemy(enemyHp)],
     dangerLevel: 1,
   });
 
@@ -152,6 +156,60 @@ describe('동료 전술의 실제 스킬 command 통합', () => {
     expect(GameState.npcs.states.npc_nurse.skillCooldowns?.nurse_scalpel)
       .toBeUndefined();
     expect(combat.actionSequence).toBe(0);
+    expect(combat.activeCombatantId).toBe('player');
+  });
+
+  it('죽은 전열 슬롯을 턴 경계에서 압축해 계획과 실행이 같은 formation을 사용한다', () => {
+    const combat = setupCompanionCombat({
+      stance: 'attack',
+      playerHp: 100,
+      enemies: [
+        enemy(1),
+        enemy(100, { id: 'zombie_runner', row: 'back' }),
+      ],
+    });
+    combat.enemies[0].currentHp = 0;
+    combat.combatants['enemy:0'].hp = 0;
+    combat.combatants['enemy:0'].dead = true;
+    expect(combat.formations.enemy).toEqual([
+      'enemy:0',
+      null,
+      'enemy:1',
+      null,
+    ]);
+
+    CombatSystem._prepareCompanionTurn('npc_nurse');
+    const beforePlan = {
+      hp: combat.enemies[1].currentHp,
+      noise: GameState.noise.level,
+      actionSequence: combat.actionSequence,
+      cooldowns: GameState.npcs.states.npc_nurse.skillCooldowns,
+    };
+    const plan = CombatSystem._planCompanionAction('npc_nurse', 'attack');
+
+    expect(plan).toEqual({
+      skillId: 'nurse_scalpel',
+      targetId: 'enemy:1',
+      reason: 'lowest_hp_enemy',
+    });
+    expect({
+      hp: combat.enemies[1].currentHp,
+      noise: GameState.noise.level,
+      actionSequence: combat.actionSequence,
+      cooldowns: GameState.npcs.states.npc_nurse.skillCooldowns,
+    }).toEqual(beforePlan);
+
+    CombatSystem.processUntilAllyTurn();
+
+    expect(combat.formations.enemy).toEqual([
+      'enemy:1',
+      null,
+      null,
+      null,
+    ]);
+    expect(combat.enemies[1].currentHp).toBe(93);
+    expect(GameState.noise.level).toBe(1);
+    expect(combat.actionSequence).toBe(1);
     expect(combat.activeCombatantId).toBe('player');
   });
 });

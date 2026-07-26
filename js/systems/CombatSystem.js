@@ -20,8 +20,7 @@ import {
   guardAction, consumeGuard,
   throwableAction,
   applyMultiTarget,
-  companionAttack, companionHeal,
-  tickCompanionCooldowns, tickEnemyStatusEffects,
+  tickEnemyStatusEffects,
 } from './CombatActions.js';
 import {
   buildCombatants,
@@ -52,6 +51,17 @@ import {
   getMagazineState,
   reload,
 } from './WeaponAmmoSystem.js';
+
+const DIRECT_ACTION_TYPES = new Set([
+  'melee',
+  'shoot',
+  'guard',
+  'move',
+  'throwable',
+  'stealth',
+  'flee',
+  'useItem',
+]);
 
 const CombatSystem = {
   init() {
@@ -359,7 +369,12 @@ const CombatSystem = {
     state.skillCooldowns[skill.id] = cooldown;
   },
 
-  _canUsePlannedCompanionSkill(actorId, skill, target) {
+  _canUsePlannedCompanionSkill(
+    actorId,
+    skill,
+    target,
+    validationFormations,
+  ) {
     const combat = GameState.combat;
     const actor = combat?.combatants?.[actorId];
     if (
@@ -371,15 +386,7 @@ const CombatSystem = {
       return false;
     }
 
-    const context = this._commandContext();
-    context.validatePosition = (commandActorId, targetId, commandSkill) => (
-      validateSkillPosition(
-        combat.formations,
-        commandActorId,
-        targetId,
-        commandSkill,
-      )
-    );
+    const context = this._commandContext({ validationFormations });
     return validateSkillCommand(context, {
       actorId,
       skillId: skill.id,
@@ -387,14 +394,21 @@ const CombatSystem = {
     }).ok === true;
   },
 
-  _commandContext() {
+  _commandContext({ validationFormations = null } = {}) {
     const combat = GameState.combat;
     return {
       activeCombatantId: combat?.activeCombatantId,
       combatants: combat?.combatants,
       skillsById: combat?.skillsById,
       validatePosition: (actorId, targetId, skill) => (
-        this._validateRankedSkillPosition(actorId, targetId, skill)
+        validationFormations
+          ? validateSkillPosition(
+              validationFormations,
+              actorId,
+              targetId,
+              skill,
+            )
+          : this._validateRankedSkillPosition(actorId, targetId, skill)
       ),
       // 스태미나 실소스는 gs.stats.stamina — 동료는 스태미나 자원이 없어 항상 통과
       getStamina: (actor) => (
@@ -602,6 +616,16 @@ const CombatSystem = {
     return true;
   },
 
+  _createCompactedFormationSnapshot() {
+    const combat = GameState.combat;
+    const formations = {
+      ally: [...(combat?.formations?.ally ?? [])],
+      enemy: [...(combat?.formations?.enemy ?? [])],
+    };
+    compactEnemyFormation(formations, combat?.combatants);
+    return formations;
+  },
+
   _validateRankedSkillPosition(actorId, targetId, skill) {
     this._compactRankedEnemyFormation();
     return validateSkillPosition(GameState.combat?.formations, actorId, targetId, skill);
@@ -734,10 +758,16 @@ const CombatSystem = {
     }
 
     const actorId = combat.activeCombatantId;
+    const actor = combat.combatants?.[actorId];
     const skill = combat.skillsById?.[plan.skillId];
     const target = combat.combatants?.[plan.targetId];
     const targetHpBefore = target?.hp;
-    const result = executeSkillCommand(this._commandContext(), {
+    const npcId = actor?.sourceId ?? actorId;
+    const validationFormations = this._getPreparedCompanionFormations(npcId)
+      ?? this._createCompactedFormationSnapshot();
+    const result = executeSkillCommand(this._commandContext({
+      validationFormations,
+    }), {
       actorId,
       skillId: plan.skillId,
       targetId: plan.targetId,
@@ -1385,6 +1415,7 @@ const CombatSystem = {
   resolveAction(action, weaponInstanceId = null) {
     const gs = GameState;
     if (!gs.combat.active) return;
+    if (!DIRECT_ACTION_TYPES.has(action)) return false;
 
     let target = this._getTarget();
     if (!target) return;
@@ -1453,12 +1484,6 @@ const CombatSystem = {
       case 'throwable':
         logEntry = throwableAction(weaponInstanceId, this);
         if (!gs.combat.active) return; // smoke bomb fled
-        break;
-      case 'companionAttack':
-        logEntry = companionAttack(this);
-        break;
-      case 'companionHeal':
-        logEntry = companionHeal(this);
         break;
       case 'stealth':
         logEntry = this._stealthAction();
@@ -1937,9 +1962,6 @@ const CombatSystem = {
         return s.duration > 0;
       });
     }
-
-    // 동행 쿨다운 틱
-    tickCompanionCooldowns();
 
     // 방어 상태 만료
     if (gs.combat.playerGuard?.active) consumeGuard();

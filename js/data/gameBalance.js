@@ -207,9 +207,6 @@ const BALANCE = {
     // ── 방어 관통 바닥 ──
     // 정액 방어가 피해를 이 비율 아래로 깎지 못한다 — 저티어 무기의 고방어 적 무력화 방지
     defenseFloorRatio:    0.30,
-    // ── NPC 동행 액션 쿨다운 ──
-    companionAttackCooldown: 3,
-    companionHealCooldown:   4,
     // ── 타이밍 압박 적 (timedThreat) ──
     timedThreats: {
       bloater: {
