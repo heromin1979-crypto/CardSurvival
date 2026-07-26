@@ -22,6 +22,88 @@ const VALID_COMBAT_EFFECTS = new Set([
   'flee',
 ]);
 
+export function validateCompanionPatternData({ loadouts = {}, skills = {}, tactics = {} } = {}) {
+  const errors = [];
+  const hasEffect = (skill, type) => skill?.effects?.some(effect => effect?.type === type);
+
+  for (const [skillId, skill] of Object.entries(skills)) {
+    if (skill?.selfOnly && skill?.target?.side !== 'ally') {
+      errors.push(`[companion skill/${skillId}] selfOnly target.side must be ally`);
+    }
+    if (skill?.tacticalRole === 'heal' && !hasEffect(skill, 'heal')) {
+      errors.push(`[companion skill/${skillId}] heal tacticalRole must include a heal effect`);
+    }
+    if (
+      ['food', 'ration'].includes(skill?.tacticalRole)
+      && hasEffect(skill, 'heal')
+    ) {
+      errors.push(
+        `[companion skill/${skillId}] ${skill.tacticalRole} tacticalRole must not include a heal effect`,
+      );
+    }
+  }
+
+  for (const [companionId, tactic] of Object.entries(tactics)) {
+    const loadoutSkillIds = Array.isArray(loadouts[companionId])
+      ? loadouts[companionId]
+      : [];
+    const hasLoadoutRole = (role) => loadoutSkillIds.some(
+      skillId => skills[skillId]?.tacticalRole === role,
+    );
+
+    if (tactic?.preferredStance && !hasLoadoutRole(tactic.preferredStance)) {
+      errors.push(
+        `[companion tactic/${companionId}] preferredStance role "${tactic.preferredStance}" not found in loadout`,
+      );
+    }
+    for (const [priorityIndex, priority] of (tactic?.priorities ?? []).entries()) {
+      if (priority?.role && !hasLoadoutRole(priority.role)) {
+        errors.push(
+          `[companion tactic/${companionId}] priorities[${priorityIndex}] role "${priority.role}" not found in loadout`,
+        );
+      }
+    }
+  }
+
+  return errors;
+}
+
+export function validateNormalEnemyPatternData(enemies = {}) {
+  const errors = [];
+  const allowedTimedThreatCounters = new Set(['stunDelays', 'quietKill', 'weakness']);
+
+  for (const [enemyId, enemy] of Object.entries(enemies)) {
+    const patternProfile = enemy?.patternProfile;
+    const targetPolicy = patternProfile?.targetPolicy;
+    const defaultAction = patternProfile?.defaultAction;
+
+    if (typeof targetPolicy !== 'string' || targetPolicy.length === 0) {
+      errors.push(`[normal enemy/${enemyId}] patternProfile.targetPolicy is required`);
+    }
+    if (typeof defaultAction?.motionKey !== 'string' || defaultAction.motionKey.length === 0) {
+      errors.push(`[normal enemy/${enemyId}] patternProfile.defaultAction.motionKey is required`);
+    }
+    if (
+      typeof targetPolicy === 'string'
+      && targetPolicy.length > 0
+      && defaultAction?.target?.side !== targetPolicy
+    ) {
+      errors.push(
+        `[normal enemy/${enemyId}] patternProfile.targetPolicy must match defaultAction.target.side`,
+      );
+    }
+    for (const counterKey of Object.keys(enemy?.timedThreat?.counters ?? {})) {
+      if (!allowedTimedThreatCounters.has(counterKey)) {
+        errors.push(
+          `[normal enemy/${enemyId}] timedThreat.counters.${counterKey} is not allowed`,
+        );
+      }
+    }
+  }
+
+  return errors;
+}
+
 export function validateCombatSkillContracts(
   combatSkills = COMBAT_SKILLS,
   characterLoadouts = CHARACTER_COMBAT_LOADOUTS,
