@@ -79,7 +79,14 @@ describe('일반 몬스터 committed action intent 통합', () => {
   it('zombie_horde는 두 대상과 hitCount 2를 view model과 UI에 표시한다', () => {
     vi.spyOn(Math, 'random').mockReturnValue(0.6);
     const enemy = instantiateEnemy(ENEMIES.zombie_horde);
-    enemy.attack = { damage: [6, 6], accuracy: 1 };
+    enemy.patternProfile = {
+      ...enemy.patternProfile,
+      defaultAction: {
+        ...enemy.patternProfile.defaultAction,
+        accuracy: 1,
+        effects: [{ type: 'damage', value: [6, 6] }],
+      },
+    };
     const combat = setupCombat(enemy, {
       withNurse: true,
     });

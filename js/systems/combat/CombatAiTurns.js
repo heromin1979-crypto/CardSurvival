@@ -408,11 +408,30 @@ export const CombatAiTurns = {
   _commitEnemyAction(enemy, combat, gs) {
     const targets = this._getEligibleTargets(combat, gs);
     const taunted = this._tauntedTargetOf(targets, combat);
+    const firstActionId = enemy?._firstActionPendingId;
+    const firstAction = firstActionId
+      ? (enemy.specialSkills ?? []).find(action =>
+          (action.actionId ?? action.id) === firstActionId)
+      : null;
+    const planningEnemy = this._enemyForActionPlanning(enemy);
+    const repeatableSpecialSkills = enemy?.dormant?.consumeFirstAction === true
+      ? (planningEnemy.specialSkills ?? []).filter(action =>
+          (action.actionId ?? action.id) !== enemy.dormant.firstActionId)
+      : planningEnemy.specialSkills;
     enemy._enemyActionState = commitEnemyAction({
-      enemy: this._enemyForActionPlanning(enemy),
+      enemy: firstAction
+        ? {
+            ...planningEnemy,
+            specialActionChance: 1,
+            specialSkills: [firstAction],
+          }
+        : {
+            ...planningEnemy,
+            specialSkills: repeatableSpecialSkills,
+          },
       candidates: taunted ? [taunted] : targets,
       cooldowns: enemy._skillCooldowns,
-      random: Math.random,
+      random: firstAction ? () => 0 : Math.random,
     });
     return enemy._enemyActionState.committedAction;
   },
@@ -609,6 +628,12 @@ export const CombatAiTurns = {
       gs.combat.log.push(enemy._dormantRemaining > 0
         ? I18n.t('combatSys.dormantStir', { enemy: enemyName })
         : I18n.t('combatSys.dormantWake', { enemy: enemyName }));
+      if (
+        enemy._dormantRemaining === 0
+        && typeof enemy.dormant?.firstActionId === 'string'
+      ) {
+        enemy._firstActionPendingId = enemy.dormant.firstActionId;
+      }
       enemy._nextIntent = this._decideNextIntent(enemy, gs.combat, gs) ?? null;
       return;
     }
@@ -812,6 +837,12 @@ export const CombatAiTurns = {
     }
     enemy._telegraph = null;
     enemy._enemyActionState = createEnemyActionState();
+    if (
+      enemy.dormant?.consumeFirstAction === true
+      && enemy._firstActionPendingId === action.actionId
+    ) {
+      enemy._firstActionPendingId = null;
+    }
 
     if (gs.combat.log.length > BALANCE.combat.combatLogMaxEntries) {
       gs.combat.log.splice(0, gs.combat.log.length - BALANCE.combat.combatLogMaxEntries);
