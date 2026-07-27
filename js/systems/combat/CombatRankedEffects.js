@@ -25,8 +25,11 @@ import {
   reserveUltimateAfterDamage,
 } from './BossPatternController.js';
 import { resolveEnemyDamageResponsePassives } from './EnemyActionExecutor.js';
+import { createEnemyActionState } from './EnemyActionPlanner.js';
 
 const PENDING_BOSS_COUNTERS = Symbol('pendingBossCounters');
+const RANKED_ACTION_SCOPE = Symbol('rankedActionScope');
+const ACTIVE_RANKED_ACTION_SCOPE = Symbol('activeRankedActionScope');
 
 export const CombatRankedEffects = {
   _consumeRankedCosts(actor, skill) {
@@ -254,11 +257,91 @@ export const CombatRankedEffects = {
     };
   },
 
+  _rankedCommandTargetIds(actor, primaryTarget, skill) {
+    const combatants = GameState.combat?.combatants;
+    if (!actor || !primaryTarget || !combatants) return [];
+    const count = Number.isInteger(skill?.target?.count) && skill.target.count > 0
+      ? skill.target.count
+      : 1;
+    const selected = [primaryTarget.id];
+    if (count === 1) return selected;
+
+    for (const candidate of Object.values(combatants)) {
+      const hp = candidate?.hp?.current ?? candidate?.hp ?? candidate?.currentHp;
+      const dead = candidate?.dead === true
+        || candidate?.isDead === true
+        || (
+          Number.isFinite(hp)
+          && hp <= 0
+          && candidate?.deathsDoor !== true
+        );
+      if (selected.length >= count
+          || candidate === primaryTarget
+          || candidate?.id === primaryTarget.id
+          || candidate?.side !== skill?.target?.side
+          || dead) {
+        continue;
+      }
+      try {
+        if (this._validateRankedSkillPosition(actor.id, candidate.id, skill)?.ok) {
+          selected.push(candidate.id);
+        }
+      } catch {
+        continue;
+      }
+    }
+    return selected;
+  },
+
+  _rankedActionScopeFor(actor, target, skill) {
+    const combat = GameState.combat;
+    if (!combat || !actor?.id || !target?.id || !skill?.id) return null;
+    const primaryTarget = combat.combatants?.[combat.selectedTargetId] ?? target;
+    const key = [
+      combat.actionSequence ?? 0,
+      actor.id,
+      skill.id,
+      primaryTarget.id,
+    ].join(':');
+    let scope = combat[ACTIVE_RANKED_ACTION_SCOPE];
+    if (!scope || scope.key !== key || scope.completed === true) {
+      scope = {
+        key,
+        targetIds: this._rankedCommandTargetIds(actor, primaryTarget, skill),
+        pendingCounters: [],
+        completed: false,
+      };
+      combat[ACTIVE_RANKED_ACTION_SCOPE] = scope;
+    }
+    return {
+      scope,
+      isFinalTarget: target.id === scope.targetIds.at(-1),
+    };
+  },
+
+  _attachRankedActionScope(hitInfo, actor, target, skill) {
+    const scopeInfo = this._rankedActionScopeFor(actor, target, skill);
+    if (!scopeInfo || !hitInfo) return hitInfo;
+    Object.defineProperty(hitInfo, RANKED_ACTION_SCOPE, {
+      value: scopeInfo,
+      configurable: true,
+    });
+    if (hitInfo.hit !== true && scopeInfo.isFinalTarget) {
+      this._flushBossCounterActionScope(scopeInfo.scope);
+    }
+    return hitInfo;
+  },
+
   // 랭크 스킬 명중/치명타 판정 — 레거시 _attackAction의 보정 체계를 단일 파이프라인으로 통합
   _resolveRankedHit(actor, target, skill, random = Math.random) {
     // 아군 대상 스킬(힐/버프/이동)은 판정 없이 성공 — 회피/명중 토큰을 소모하지 않는다
     if (actor?.side && target?.side && actor.side === target.side) {
-      return { hit: true, dodged: false, crit: false, skill };
+      return this._attachRankedActionScope(
+        { hit: true, dodged: false, crit: false, skill },
+        actor,
+        target,
+        skill,
+      );
     }
 
     let { accuracy, critChance, critMultiplier, weaponDef } = this._rankedAimProfile(actor, skill);
@@ -272,7 +355,12 @@ export const CombatRankedEffects = {
 
     const hitRoll = resolveHitRoll({ attacker: actor, defender: target, accuracy, random });
     if (!hitRoll.hit) {
-      return { hit: false, dodged: hitRoll.dodged, crit: false, skill, weaponDef };
+      return this._attachRankedActionScope(
+        { hit: false, dodged: hitRoll.dodged, crit: false, skill, weaponDef },
+        actor,
+        target,
+        skill,
+      );
     }
 
     const dealsDamage = (skill?.effects ?? []).some(effect => effect?.type === 'damage');
@@ -280,14 +368,14 @@ export const CombatRankedEffects = {
       ? rollCrit({ attacker: actor, critChance, critMultiplier, random })
       : { crit: false, multiplier: critMultiplier };
 
-    return {
+    return this._attachRankedActionScope({
       hit: true,
       dodged: false,
       crit: critRoll.crit,
       critMultiplier: critRoll.multiplier,
       skill,
       weaponDef,
-    };
+    }, actor, target, skill);
   },
 
   _rankedEffectHasRemaining(effect, hitInfo) {
@@ -351,7 +439,24 @@ export const CombatRankedEffects = {
     return true;
   },
 
+  _flushBossCounterActionScope(scope) {
+    if (!scope || scope.completed === true) return;
+    scope.completed = true;
+    const combat = GameState.combat;
+    if (combat?.[ACTIVE_RANKED_ACTION_SCOPE] === scope) {
+      delete combat[ACTIVE_RANKED_ACTION_SCOPE];
+    }
+    const pending = [...scope.pendingCounters];
+    scope.pendingCounters.length = 0;
+    for (const entry of pending) this._executeBossCounterAction(entry);
+  },
+
   _queueOrExecuteBossCounterAction(entry, effect, hitInfo) {
+    const actionScope = hitInfo?.[RANKED_ACTION_SCOPE]?.scope;
+    if (actionScope) {
+      actionScope.pendingCounters.push(entry);
+      return true;
+    }
     if (hitInfo && this._rankedEffectHasRemaining(effect, hitInfo)) {
       hitInfo[PENDING_BOSS_COUNTERS] = hitInfo[PENDING_BOSS_COUNTERS] ?? [];
       hitInfo[PENDING_BOSS_COUNTERS].push(entry);
@@ -361,6 +466,14 @@ export const CombatRankedEffects = {
   },
 
   _flushPendingBossCounterActions(effect, hitInfo) {
+    const actionScopeInfo = hitInfo?.[RANKED_ACTION_SCOPE];
+    if (actionScopeInfo) {
+      if (actionScopeInfo.isFinalTarget
+          && !this._rankedEffectHasRemaining(effect, hitInfo)) {
+        this._flushBossCounterActionScope(actionScopeInfo.scope);
+      }
+      return;
+    }
     if (!hitInfo || this._rankedEffectHasRemaining(effect, hitInfo)) return;
     const pending = hitInfo[PENDING_BOSS_COUNTERS];
     if (!Array.isArray(pending) || pending.length === 0) return;
@@ -625,6 +738,8 @@ export const CombatRankedEffects = {
               ? { ultimatePending: false, ultimateUsed: true }
               : {}),
           };
+        } else if (!isPatternBoss) {
+          legacyEnemy._enemyActionState = createEnemyActionState();
         }
         if (Number.isFinite(tgSkill.cooldown)) {
           if (!legacyEnemy._skillCooldowns) legacyEnemy._skillCooldowns = {};

@@ -5,6 +5,7 @@ import SystemRegistry from '../../js/core/SystemRegistry.js';
 import CombatSystem from '../../js/systems/CombatSystem.js';
 import StatSystem from '../../js/systems/StatSystem.js';
 import SkillSystem from '../../js/systems/SkillSystem.js';
+import { executeSkillCommand } from '../../js/systems/combat/CombatSkillSystem.js';
 
 function bossDefinition(overrides = {}) {
   return {
@@ -335,5 +336,158 @@ describe('보스 피격 반응 passive production 결선', () => {
     );
     CombatSystem._applyRankedEffect(statusEffect, actor, target, () => 0, counterHitInfo);
     expect(counterSpy).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('일반 적 cancelOnHit committed action 회귀', () => {
+  it.each([1, 2])('%i턴 예고 취소 후 다음 턴에는 취소된 특수기 대신 기본 공격을 실행한다', (turns) => {
+    const aimedSkill = {
+      id: `normal_aimed_${turns}`,
+      name: `${turns}턴 조준`,
+      damage: [25, 25],
+      accuracy: 1,
+      cooldown: 3,
+      telegraph: { turns, cancelOnHit: true },
+    };
+    const definition = {
+      id: `normal_cancel_fixture_${turns}`,
+      name: '일반 조준 적',
+      icon: '🎯',
+      type: 'human',
+      hp: { min: 100, max: 100 },
+      attack: { damage: [5, 5], accuracy: 1 },
+      defense: 0,
+      aiPattern: 'normal',
+      specialSkills: [aimedSkill],
+    };
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+    const { combat, enemy } = setupCombat(definition);
+
+    CombatSystem._runSingleEnemyTurn(0);
+    expect(enemy._telegraph?.skillId).toBe(aimedSkill.id);
+
+    const damageEffect = { type: 'damage', value: [1, 1] };
+    CombatSystem._applyRankedDamageEffect(
+      damageEffect,
+      combat.combatants.player,
+      combat.combatants['enemy:0'],
+      () => 0,
+      {
+        hit: true,
+        crit: false,
+        skill: {
+          id: 'cancel_probe',
+          damageType: 'blunt',
+          effects: [damageEffect],
+        },
+      },
+    );
+
+    expect(enemy._telegraph).toBeNull();
+    expect(enemy._enemyActionState.committedAction).toMatchObject({
+      actionId: 'basic_attack',
+      category: 'basic',
+    });
+    expect(enemy._nextIntent.actionId).toBe('basic_attack');
+
+    const hpBefore = GameState.player.hp.current;
+    CombatSystem._runSingleEnemyTurn(0);
+    expect(GameState.player.hp.current).toBe(hpBefore - 5);
+  });
+});
+
+describe('보스 반격 command scope 회귀', () => {
+  it('다중 대상의 모든 effect 뒤 반격하고 반격 사망 이후 원 행동 effect를 남기지 않는다', () => {
+    const definition = bossDefinition();
+    definition.bossPattern.basicAttacks[0] = {
+      id: 'lethal_counter',
+      category: 'basic',
+      name: '치명 반격',
+      damage: [10, 10],
+      accuracy: 1,
+      targetPolicy: 'frontmost',
+      motionKey: 'lethal_counter',
+      effects: [],
+    };
+    definition.bossPattern.passives = [
+      { type: 'counterAttack', actionId: 'lethal_counter', maxPerRound: 1 },
+    ];
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+    const { combat, enemy } = setupCombat(definition, { companionHp: 4 });
+    const secondEnemy = CombatSystem._instantiateEnemyFromDefinition({
+      id: 'multi_target_dummy',
+      name: '다중 대상 더미',
+      icon: '🧟',
+      type: 'zombie',
+      hp: { min: 100, max: 100 },
+      attack: { damage: [1, 1], accuracy: 1 },
+      defense: 0,
+      aiPattern: 'normal',
+      specialSkills: [],
+    });
+    CombatSystem._spawnEnemyMidCombat(secondEnemy, 'front');
+
+    const damageEffect = { type: 'damage', value: [1, 1] };
+    const statusEffect = {
+      type: 'status',
+      status: {
+        id: 'multi_target_mark',
+        name: '다중 대상 표식',
+        duration: 1,
+        effect: {},
+      },
+    };
+    const skill = {
+      id: 'multi_target_counter_probe',
+      name: '다중 대상 반격 검사',
+      accuracy: 1,
+      usableFrom: [1, 2, 3, 4],
+      target: { side: 'enemy', ranks: [1, 2, 3, 4], count: 2 },
+      costs: {},
+      effects: [damageEffect, statusEffect],
+    };
+    const actor = combat.combatants.npc_guard;
+    actor.skillIds = [skill.id];
+    combat.skillsById[skill.id] = skill;
+    combat.activeCombatantId = actor.id;
+    combat.selectedTargetId = 'enemy:0';
+
+    const order = [];
+    const applyStatus = CombatSystem._applyEnemyStatusInflict.bind(CombatSystem);
+    vi.spyOn(CombatSystem, '_applyEnemyStatusInflict')
+      .mockImplementation((targetEnemy, ...args) => {
+        order.push(`status:${targetEnemy.id}`);
+        return applyStatus(targetEnemy, ...args);
+      });
+    const executeCounter = CombatSystem._executeEnemyCommittedAction.bind(CombatSystem);
+    vi.spyOn(CombatSystem, '_executeEnemyCommittedAction')
+      .mockImplementation((counterEnemy, action) => {
+        order.push(`counter:${counterEnemy.id}`);
+        return executeCounter(counterEnemy, action);
+      });
+
+    const result = executeSkillCommand(
+      CombatSystem._commandContext(),
+      {
+        actorId: actor.id,
+        targetId: 'enemy:0',
+        skillId: skill.id,
+      },
+      () => 0,
+    );
+
+    expect(result).toMatchObject({
+      ok: true,
+      hit: true,
+      effectsApplied: 4,
+    });
+    expect(order).toEqual([
+      `status:${enemy.id}`,
+      'status:multi_target_dummy',
+      `counter:${enemy.id}`,
+    ]);
+    expect(combat.combatants.npc_guard.dead).toBe(true);
+    expect(combat.combatants['enemy:0'].hp).toBe(99);
+    expect(combat.combatants['enemy:1'].hp).toBe(99);
   });
 });
