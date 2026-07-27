@@ -4110,28 +4110,34 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-image: var(--combat-stage-image);
-  background-position: center top;
-  background-size: 100% 100%;
-  background-blend-mode: normal;
+  background-image:
+    linear-gradient(rgba(82, 74, 64, 0.26), rgba(82, 74, 64, 0.26)),
+    var(--combat-bg-image);
+  background-position: center;
+  background-size: cover;
+  background-blend-mode: screen, normal;
+  box-shadow:
+    inset 0 72px 94px rgba(0, 0, 0, 0.38),
+    inset 0 -118px 104px rgba(0, 0, 0, 0.54);
   overflow: hidden;
 }
 
 .combat-focused .combat-battlefield::before {
   background:
-    linear-gradient(90deg, rgba(0, 0, 0, 0.16), transparent 16%, transparent 82%, rgba(0, 0, 0, 0.22)),
-    linear-gradient(180deg, rgba(0, 0, 0, 0.04), transparent 48%, rgba(0, 0, 0, 0.20)),
-    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.018) 0 1px, transparent 1px 5px);
+    linear-gradient(90deg, rgba(21, 91, 146, 0.24), rgba(21, 91, 146, 0.09) 24%, transparent 43%, transparent 57%, rgba(155, 43, 38, 0.10) 76%, rgba(155, 43, 38, 0.25)),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.05), transparent 52%, rgba(0, 0, 0, 0.14)),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.012) 0 1px, transparent 1px 5px);
 }
 
 .combat-focused .combat-battlefield::after {
-  left: 5%;
-  right: 5%;
-  bottom: 112px;
-  height: 120px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 34%;
   background:
-    linear-gradient(90deg, transparent, rgba(200, 160, 96, 0.10), transparent),
-    radial-gradient(ellipse at center, rgba(0, 0, 0, 0.38), transparent 72%);
+    linear-gradient(180deg, transparent 18%, rgba(0, 0, 0, 0.22)),
+    radial-gradient(ellipse at 16% 100%, rgba(46, 134, 200, 0.11), transparent 44%),
+    radial-gradient(ellipse at 84% 100%, rgba(196, 72, 61, 0.12), transparent 44%);
 }
 
 .combat-stage-floor {
@@ -4139,7 +4145,6 @@
   position: absolute;
   left: 43%;
   top: 50%;
-  display: flex;
   flex-direction: column;
   gap: 22px;
   color: rgba(212, 201, 168, 0.38);
@@ -4415,27 +4420,28 @@
 
 .combat-status-board {
   position: absolute;
-  left: 7%;
-  right: 7%;
-  bottom: 72px;
+  left: 9%;
+  right: 9%;
+  bottom: 68px;
   z-index: 3;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: clamp(56px, 7vw, 120px);
+  gap: clamp(72px, 11vw, 200px);
   pointer-events: none;
 }
 
 .combat-status-panels {
   display: flex;
-  gap: 22px;
+  align-items: flex-end;
+  gap: 14px;
   min-width: 0;
 }
 
-.combat-status-panels.ally { justify-content: flex-start; }
-.combat-status-panels.enemy { justify-content: flex-end; }
+.combat-status-panels.ally { justify-content: flex-end; }
+.combat-status-panels.enemy { justify-content: flex-start; }
 
 .combat-status-card {
-  width: clamp(176px, 13vw, 232px);
+  width: clamp(168px, 11.5vw, 216px);
   min-height: 94px;
   padding: 12px 16px 12px 46px;
   position: relative;
@@ -4510,15 +4516,16 @@
   position: absolute;
   left: 50%;
   right: auto;
-  bottom: 48px;
-  width: min(760px, 46vw);
+  bottom: 20px;
+  width: min(720px, 42vw);
   transform: translateX(-50%);
   z-index: 4;
 }
 
 .combat-focused .combat-event-ticker {
   width: 100%;
-  padding: 9px 14px;
+  min-height: 38px;
+  padding: 10px 14px;
   border-color: rgba(200, 160, 96, 0.34);
   color: rgba(212, 201, 168, 0.78);
   background: rgba(0, 0, 0, 0.58);

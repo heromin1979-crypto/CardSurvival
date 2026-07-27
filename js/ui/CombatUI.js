@@ -242,7 +242,6 @@ const CombatUI = {
     const scene = this._combatScene();
     const parts = [
       `--combat-bg-image:url('${scene.backdrop}')`,
-      `--combat-stage-image:url('${scene.stagePlate ?? scene.backdrop}')`,
     ];
     if (scene.cardFrame) parts.push(`--combat-card-frame-image:url('${scene.cardFrame}')`);
     return parts.join(';');

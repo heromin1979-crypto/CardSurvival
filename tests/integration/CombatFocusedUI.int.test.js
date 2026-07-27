@@ -87,7 +87,9 @@ describe('Combat focused UI', () => {
     expect(document.querySelectorAll('.combatant-piece.enemy')).toHaveLength(1);
     expect(document.querySelector('.combat-stage-center')).not.toBeNull();
     expect(document.querySelector('.combat-focused').dataset.combatScene).toBe('jongno_subway_ruin');
-    expect(document.querySelector('.combat-focused').style.getPropertyValue('--combat-bg-image')).toContain('combat_empty_battlefield.png');
+    const sceneStyle = document.querySelector('.combat-focused').getAttribute('style');
+    expect(sceneStyle).toContain('combat_jongno_subway_clean_v2.png');
+    expect(sceneStyle).not.toContain('combat_empty_stage_plate.png');
     expect(document.querySelector('[data-combatant-id="player"]').dataset.spriteId).toBe('player_unarmed');
     expect(document.querySelector('[data-combatant-id="npc_nurse"]').dataset.spriteId).toBe('ally_pistol');
     expect(document.querySelector('[data-combatant-id="enemy:0"]').dataset.spriteId).toBe('enemy_zombie_common');
