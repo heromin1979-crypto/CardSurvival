@@ -221,6 +221,42 @@ describe('production boss pattern execution', () => {
     ]));
   });
 
+  it('백드래프트는 player 명중/companion 회피 결과를 대상별 production FX로 보존한다', () => {
+    const scenario = setupBoss('boss_firefighter_nemesis', { companionHp: 80 });
+    if (!scenario) return;
+    const { combat, enemy } = scenario;
+    const action = enemy.bossPattern.ultimate;
+    forceReadyAction(enemy, action, 'ultimate', ['player', 'npc_guard']);
+    vi.spyOn(CombatSystem, '_dealDamageToAlly').mockImplementation(({ npcId }) => (
+      npcId
+        ? { dodged: true, missed: false, blocked: false, damage: 0 }
+        : { dodged: false, missed: false, blocked: false, damage: 30 }
+    ));
+    vi.spyOn(CombatSystem, '_forceMoveAlly').mockImplementation(() => true);
+
+    CombatSystem._runSingleEnemyTurn(0);
+
+    expect(combat.playerStatus)
+      .toContainEqual(expect.objectContaining({ id: 'burn', duration: 3 }));
+    expect(GameState.npcs.states.npc_guard.statusEffects.map(status => status.id))
+      .not.toContain('burn');
+    expect(combat.fxQueue).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        kind: 'enemyAttack',
+        fx: 'fire',
+        dmg: 30,
+        miss: false,
+      }),
+      expect.objectContaining({
+        kind: 'enemyAttackCompanion',
+        npcId: 'npc_guard',
+        fx: 'fire',
+        dmg: 0,
+        miss: true,
+      }),
+    ]));
+  });
+
   it('하수도의 왕 죽음의 회전은 production 턴에서 세 번 타격한다', () => {
     const scenario = setupBoss('boss_sewer_king');
     if (!scenario) return;

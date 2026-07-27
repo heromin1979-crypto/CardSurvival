@@ -81,6 +81,33 @@ describe('_playFx — 개별 연출 분기', () => {
     expect(player.querySelector('.dmg-popup').textContent).toBe('-11');
   });
 
+  it.each([
+    ['toxic', 'acid', 'motion-zombie-spit'],
+    ['shockwave', 'shock', 'motion-zombie-heavy'],
+    ['radiation', 'rupture', 'motion-zombie-heavy'],
+    ['frost', 'skill', 'motion-zombie-lunge'],
+  ])('enemyAttack %s FX를 표시 가능한 %s overlay로 정규화한다', (
+    sourceFx,
+    displayFx,
+    expectedMotion,
+  ) => {
+    CombatUI._playFx({ kind: 'enemyAttack', enemyIdx: 0, fx: sourceFx, dmg: 11 });
+
+    const player = document.querySelector('.cv-player');
+    const enemy = document.querySelector('.cv-enemy-sprite[data-idx="0"]');
+    expect(player.querySelector(`.cv-fx-${displayFx}`)).not.toBeNull();
+    expect(player.querySelector(`.cv-fx-${sourceFx}`)).toBeNull();
+    expect(enemy.classList.contains(expectedMotion)).toBe(true);
+  });
+
+  it('알 수 없는 impactFx도 빈 overlay 대신 표시 가능한 skill fallback을 사용한다', () => {
+    CombatUI._playFx({ kind: 'enemyAttack', enemyIdx: 0, fx: 'future_fx', dmg: 11 });
+
+    const overlay = document.querySelector('.cv-player .cv-fx-skill');
+    expect(overlay).not.toBeNull();
+    expect(overlay.textContent).toBe('💢');
+  });
+
   it('companionAttack → 아군 attacking + 타겟 적 위 -N 플로팅', () => {
     CombatUI._playFx({ kind: 'companionAttack', npcId: 'npc_nurse', targetIdx: 1, dmg: 8, fx: 'slash' });
     const ally = document.querySelector('.cv-ally[data-companion-id="npc_nurse"]');
@@ -115,6 +142,53 @@ describe('_playFx — 개별 연출 분기', () => {
     const enemy = document.querySelector('.cv-enemy-sprite[data-idx="0"]');
     expect(enemy.classList.contains('lunging')).toBe(true);
     expect(enemy.classList.contains('motion-zombie-lunge')).toBe(true);
+    expect(document.querySelector('.combat-visual').classList.contains('camera-enemy-strike')).toBe(true);
+  });
+
+  it('partyDamage player hit/companion miss는 동료에게 MISS와 whiff만 표시한다', () => {
+    CombatUI._playFx({ kind: 'enemyAttack', enemyIdx: 0, fx: 'blast', dmg: 8, miss: false });
+    CombatUI._playFx({
+      kind: 'enemyAttackCompanion',
+      enemyIdx: 0,
+      npcId: 'npc_soldier',
+      fx: 'blast',
+      dmg: 0,
+      miss: true,
+    });
+
+    const player = document.querySelector('.cv-player');
+    const ally = document.querySelector('.cv-ally[data-companion-id="npc_soldier"]');
+    const enemy = document.querySelector('.cv-enemy-sprite[data-idx="0"]');
+    expect(player.classList.contains('hit')).toBe(true);
+    expect(player.querySelector('.cv-fx-blast')).not.toBeNull();
+    expect(player.querySelector('.dmg-popup').textContent).toBe('-8');
+    expect(ally.classList.contains('hit')).toBe(false);
+    expect(ally.querySelector('.cv-fx')).toBeNull();
+    expect(ally.querySelector('.dmg-popup.miss').textContent).toBe('MISS');
+    expect(ally.textContent).not.toContain('-0');
+    expect(enemy.classList.contains('motion-whiff')).toBe(true);
+    expect(document.querySelector('.combat-visual').classList.contains('camera-enemy-whiff')).toBe(true);
+  });
+
+  it('partyDamage player miss/companion hit는 플레이어 MISS와 동료 hit를 분리해 표시한다', () => {
+    CombatUI._playFx({ kind: 'enemyAttack', enemyIdx: 0, fx: 'blast', dmg: 0, miss: true });
+    CombatUI._playFx({
+      kind: 'enemyAttackCompanion',
+      enemyIdx: 0,
+      npcId: 'npc_soldier',
+      fx: 'blast',
+      dmg: 7,
+      miss: false,
+    });
+
+    const player = document.querySelector('.cv-player');
+    const ally = document.querySelector('.cv-ally[data-companion-id="npc_soldier"]');
+    expect(player.classList.contains('hit')).toBe(false);
+    expect(player.querySelector('.cv-fx')).toBeNull();
+    expect(player.querySelector('.dmg-popup.miss').textContent).toBe('MISS');
+    expect(ally.classList.contains('hit')).toBe(true);
+    expect(ally.querySelector('.cv-fx-blast')).not.toBeNull();
+    expect(ally.querySelector('.dmg-popup').textContent).toBe('-7');
     expect(document.querySelector('.combat-visual').classList.contains('camera-enemy-strike')).toBe(true);
   });
 

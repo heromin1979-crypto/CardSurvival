@@ -12,6 +12,8 @@ import {
   ENEMY_SPRITE_KEYS,
   FX_DURATIONS,
   FX_EMOJI,
+  normalizeFxOverlay,
+  normalizeImpactFx,
   PLAYER_SPRITE_KEYS,
   STATUS_MOTION_CLASSES,
 } from './combatUiAssets.js';
@@ -176,10 +178,15 @@ export const CombatFxPlayer = {
       }
       case 'enemyAttackCompanion': {
         const enemyEl = this._enemySpriteEl(fx.enemyIdx);
+        const ally = this._allyEl(fx.npcId);
         this._animate(enemyEl, 'lunging');
         this._motion(enemyEl, ['motion-move-forward', this._enemyAttackMotion(fx)], 780);
-        this._cameraWork('enemy-strike', 650);
-        const ally = this._allyEl(fx.npcId);
+        this._cameraWork(fx.miss ? 'enemy-whiff' : 'enemy-strike', 650);
+        if (fx.miss) {
+          this._motion(enemyEl, ['motion-move-forward', 'motion-whiff'], 720);
+          this._spawnFloatText(ally, 'MISS', 'miss');
+          break;
+        }
         this._spawnFxOverlay(ally, fx.fx ?? 'claw');
         this._motion(ally, ['motion-player-hit', this._hitReactionMotion(fx)], 620);
         this._animate(ally, 'hit');
@@ -381,13 +388,15 @@ export const CombatFxPlayer = {
   },
 
   _enemyAttackMotion(fx) {
-    if (fx?.fx === 'shot' || fx?.fx === 'acid') return 'motion-zombie-spit';
-    if (fx?.fx === 'slam' || fx?.fx === 'shock' || fx?.fx === 'rupture') return 'motion-zombie-heavy';
+    const impactFx = normalizeImpactFx(fx?.fx, 'claw');
+    if (impactFx === 'shot' || impactFx === 'acid') return 'motion-zombie-spit';
+    if (impactFx === 'slam' || impactFx === 'shock' || impactFx === 'rupture') return 'motion-zombie-heavy';
     return 'motion-zombie-lunge';
   },
 
   _hitReactionMotion(fx) {
-    if (fx?.crit || (fx?.dmg ?? 0) >= 18 || fx?.fx === 'shock' || fx?.fx === 'explode') {
+    const impactFx = normalizeImpactFx(fx?.fx);
+    if (fx?.crit || (fx?.dmg ?? 0) >= 18 || impactFx === 'shock' || fx?.fx === 'explode') {
       return 'motion-hit-heavy';
     }
     return 'motion-hit-light';
@@ -450,9 +459,10 @@ export const CombatFxPlayer = {
 
   _spawnFxOverlay(anchor, type) {
     if (!anchor) return;
+    const displayType = normalizeFxOverlay(type);
     const fx = document.createElement('div');
-    fx.className = `cv-fx cv-fx-${type}`;
-    if (FX_EMOJI[type]) fx.textContent = FX_EMOJI[type];
+    fx.className = `cv-fx cv-fx-${displayType}`;
+    if (FX_EMOJI[displayType]) fx.textContent = FX_EMOJI[displayType];
     const prevPos = getComputedStyle(anchor).position;
     if (prevPos === 'static') anchor.style.position = 'relative';
     anchor.appendChild(fx);

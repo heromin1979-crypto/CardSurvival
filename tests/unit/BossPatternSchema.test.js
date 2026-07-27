@@ -121,6 +121,14 @@ describe('validateBossPatternSchema', () => {
     }));
   });
 
+  it('rejects an impactFx that cannot resolve to a displayable UI asset', () => {
+    const errors = validateBossPatternSchema(fixtureWith((pattern) => {
+      pattern.ultimate.impactFx = 'invisible_future_fx';
+    }));
+
+    expect(errors).toContainEqual(expect.stringContaining('impactFx'));
+  });
+
   it('rejects a non-range damage value without throwing', () => {
     expectSchemaError(fixtureWith((pattern) => {
       pattern.ultimate.damage = 14;

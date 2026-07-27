@@ -45,6 +45,7 @@ export const COMBAT_SPRITE_SHEETS = {
 // Per-sheet frame counts (cols) live in a manifest the sprite-anim-editor tool writes.
 // If absent, every sheet stays the legacy 6×4 — so this is a zero-regression enhancement.
 async function _loadSpriteManifest() {
+  if (typeof document === 'undefined') return;
   // vitest(jsdom)에는 정적 서버가 없어 상대 경로 fetch가 실제 소켓 연결(ECONNREFUSED 노이즈)을
   // 시도한다. 매니페스트는 선택적 리소스이므로 테스트에서는 6×4 기본값을 그대로 쓴다.
   if (typeof process !== 'undefined' && process.env?.VITEST) return;
@@ -140,6 +141,61 @@ export const ENEMY_SPRITE_KEYS = {
   boss_homeless_nemesis: 'boss_homeless_nemesis',
   food_warlord: 'food_warlord',
 };
+
+// 실제 CSS/emoji 자산으로 표시 가능한 impact FX 키와 의미 보존 alias.
+// 데이터 validator와 renderer가 이 단일 계약을 공유한다.
+export const IMPACT_FX_KEYS = new Set([
+  'acid',
+  'blast',
+  'blunt',
+  'claw',
+  'fire',
+  'punch',
+  'rupture',
+  'scream',
+  'shock',
+  'shot',
+  'skill',
+  'slam',
+  'slash',
+  'spark',
+]);
+
+export const IMPACT_FX_ALIASES = Object.freeze({
+  buff: 'skill',
+  debuff: 'skill',
+  frost: 'skill',
+  heal: 'skill',
+  radiation: 'rupture',
+  shockwave: 'shock',
+  summon: 'scream',
+  toxic: 'acid',
+});
+
+export function isResolvableImpactFx(value) {
+  if (typeof value !== 'string' || value.trim().length === 0) return false;
+  const key = value.trim();
+  const resolved = IMPACT_FX_ALIASES[key] ?? key;
+  return IMPACT_FX_KEYS.has(resolved);
+}
+
+export function normalizeImpactFx(value, fallback = 'skill') {
+  const key = typeof value === 'string' ? value.trim() : '';
+  const resolved = IMPACT_FX_ALIASES[key] ?? key;
+  if (IMPACT_FX_KEYS.has(resolved)) return resolved;
+
+  const fallbackKey = typeof fallback === 'string' ? fallback.trim() : 'skill';
+  const resolvedFallback = IMPACT_FX_ALIASES[fallbackKey] ?? fallbackKey;
+  return IMPACT_FX_KEYS.has(resolvedFallback) ? resolvedFallback : 'skill';
+}
+
+const NON_IMPACT_OVERLAY_KEYS = new Set(['death-burst', 'explode', 'muzzle']);
+
+export function normalizeFxOverlay(value) {
+  const key = typeof value === 'string' ? value.trim() : '';
+  if (key.startsWith('status-') || NON_IMPACT_OVERLAY_KEYS.has(key)) return key;
+  return normalizeImpactFx(key);
+}
 
 export const FX_EMOJI = {
   blunt: '💥', fire: '🔥', spark: '⚡', blast: '💥', punch: '👊',

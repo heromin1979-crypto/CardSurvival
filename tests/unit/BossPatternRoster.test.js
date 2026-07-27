@@ -1,7 +1,14 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { en, ko } from '../../js/data/locales.js';
 import { SECRET_ENEMIES } from '../../js/data/secretEnemies.js';
 import { validateBossPatternSchema } from '../../js/data/validate.js';
+import * as combatUiAssets from '../../js/ui/combat/combatUiAssets.js';
+
+const COMBAT_CSS = readFileSync(
+  new URL('../../css/screens-combat.css', import.meta.url),
+  'utf8',
+);
 
 const EXPECTED_ACTION_NAMES = {
   boss_patient_zero: ['감염된 돌진', '바이러스 폭발', '변이 재생', '숙주 폭주'],
@@ -121,6 +128,37 @@ describe('final boss pattern roster', () => {
           `${boss.id}/${passive.type}`,
         ).toBe(true);
       }
+    }
+  });
+
+  it('resolves every production impactFx to a displayable UI asset key', () => {
+    const {
+      IMPACT_FX_KEYS,
+      isResolvableImpactFx,
+      normalizeImpactFx,
+    } = combatUiAssets;
+
+    expect(IMPACT_FX_KEYS).toBeInstanceOf(Set);
+    expect(isResolvableImpactFx).toEqual(expect.any(Function));
+    expect(normalizeImpactFx).toEqual(expect.any(Function));
+
+    let actionCount = 0;
+    for (const boss of Object.values(SECRET_ENEMIES)) {
+      for (const action of actionsFor(boss.bossPattern)) {
+        actionCount += 1;
+        const path = `${boss.id}/${action.id}/${action.impactFx}`;
+        expect(isResolvableImpactFx(action.impactFx), path).toBe(true);
+        expect(IMPACT_FX_KEYS.has(normalizeImpactFx(action.impactFx)), path).toBe(true);
+      }
+    }
+    expect(actionCount).toBe(84);
+  });
+
+  it('backs every displayable impact FX key with CSS or emoji assets', () => {
+    for (const key of combatUiAssets.IMPACT_FX_KEYS) {
+      const hasCssAsset = COMBAT_CSS.includes(`.cv-fx-${key}`);
+      const hasEmojiAsset = Boolean(combatUiAssets.FX_EMOJI[key]);
+      expect(hasCssAsset || hasEmojiAsset, key).toBe(true);
     }
   });
 

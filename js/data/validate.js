@@ -11,6 +11,7 @@ import {
 import { COMPANION_TACTICS } from './companionTactics.js';
 import { ENEMIES } from './enemies.js';
 import { SECRET_ENEMIES } from './secretEnemies.js';
+import { isResolvableImpactFx } from '../ui/combat/combatUiAssets.js';
 import {
   COMPANION_STANCE_ROLES,
   COMPANION_TACTIC_WHEN,
@@ -45,6 +46,8 @@ function validateBossAction(action, expectedCategory, path) {
   }
   if (typeof action?.impactFx !== 'string' || action.impactFx.trim().length === 0) {
     errors.push(`${path}.impactFx is required`);
+  } else if (!isResolvableImpactFx(action.impactFx)) {
+    errors.push(`${path}.impactFx "${action.impactFx}" cannot resolve to a displayable UI asset`);
   }
   if (!VALID_BOSS_MOVEMENTS.has(action?.movement)) {
     errors.push(`${path}.movement must be none, lunge, advance, or retreat`);
