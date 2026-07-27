@@ -1,5 +1,6 @@
 // @vitest-environment happy-dom
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { readFileSync } from 'node:fs';
 import CombatUI from '../../js/ui/CombatUI.js';
 import CombatSystem from '../../js/systems/CombatSystem.js';
 import GameState from '../../js/core/GameState.js';
@@ -119,6 +120,41 @@ describe('Combat focused UI', () => {
     expect(document.querySelectorAll('.combat-skill-button')).toHaveLength(5);
     expect(document.querySelectorAll('.combat-action-card')).toHaveLength(8);
     expect(document.querySelector('.combat-item-slot')).not.toBeNull();
+  });
+
+  it('renders all four battlefield rank guide markers in rank order', () => {
+    const markers = document.querySelectorAll('.combat-stage-floor .combat-rank-marker');
+
+    expect(markers).toHaveLength(4);
+    expect([...markers].map(marker => marker.dataset.rank)).toEqual(['1', '2', '3', '4']);
+  });
+
+  it('exposes the active combatant skillIds count on the skill bar', () => {
+    GameState.combat.combatants.player.skillIds = ['s1', 's2', 's3'];
+    CombatUI.render();
+
+    const skillBar = document.querySelector('.combat-skill-bar');
+    expect(skillBar).not.toBeNull();
+    expect(skillBar.dataset.skillCount).toBe('3');
+    expect(skillBar.querySelectorAll('.combat-skill-button')).toHaveLength(3);
+  });
+
+  it('renders combat utility commands in a rail separate from skill cards', () => {
+    const utilityRail = document.querySelector('.combat-utility-rail');
+
+    expect(utilityRail).not.toBeNull();
+    expect(utilityRail.querySelector('.combat-item-slot')).not.toBeNull();
+    expect(utilityRail.querySelectorAll('.combat-common-command')).toHaveLength(2);
+    expect(utilityRail.querySelector('.combat-skill-button')).toBeNull();
+  });
+
+  it('declares the combat result shell, overview, rewards, and actions sections', () => {
+    const resultSource = readFileSync('js/screens/CombatResult.js', 'utf8');
+
+    expect(resultSource).toContain('combat-result-shell');
+    expect(resultSource).toContain('combat-result-overview');
+    expect(resultSource).toContain('combat-result-rewards');
+    expect(resultSource).toContain('combat-result-actions');
   });
 
   it('renders the enemy intent badge from the execution-path _nextIntent only', () => {
