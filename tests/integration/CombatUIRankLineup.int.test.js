@@ -205,9 +205,6 @@ describe('CombatUI rank lineup layout', () => {
     expect(plate?.querySelector('.cv-unit-name')?.textContent).toBeTruthy();
     expect(plate?.querySelector('.cv-hp-bar-track')).not.toBeNull();
     expect(plate?.textContent).toContain('HP');
-    expect(plate?.querySelector('.cpp-stance-row')).toBeNull();
-    expect(plate?.querySelector('.stance-btn')).toBeNull();
-    expect(plate?.querySelector('.skill-cd-badge')).toBeNull();
     expect(plate?.querySelector('.cv-unit-meta')).toBeNull();
   });
 
@@ -228,6 +225,5 @@ describe('CombatUI rank lineup layout', () => {
     CombatUI.render();
 
     expect(document.querySelector('.companion-action-card')).toBeNull();
-    expect(GameState.npcs.states.npc_dog.stance).toBe('manual');
   });
 });

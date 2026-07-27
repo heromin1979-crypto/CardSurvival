@@ -666,13 +666,7 @@ const CombatUI = {
     const canMove = CombatSystem.findActiveSkillByEffect?.('move') !== null;
     const commandDisabled = combat.phase !== 'await_ally_input';
     const scene = this._combatScene();
-    const companionPlanControls = active?.sourceType === 'companion'
-      && CombatSystem.isManualCompanionTurn(combat)
-      ? this._renderStanceSelector(
-          active.sourceId ?? active.id,
-          gs.npcs?.states?.[active.sourceId ?? active.id],
-        )
-      : '';
+    const manualCompanionTurn = CombatSystem.isManualCompanionTurn(combat);
 
     // 타겟 선택 단계: 선택한 스킬로 실제 지정 가능한 대상을 미리 계산해 하이라이트
     this._targetableIds = null;
@@ -687,7 +681,7 @@ const CombatUI = {
       }
     }
     this._screen.innerHTML = `
-      <div class="combat-wrap combat-focused" data-combat-scene="${this._escape(scene.id)}" style="${this._combatAssetStyle()}">
+      <div class="combat-wrap combat-focused${manualCompanionTurn ? ' manual-companion-turn' : ''}" data-combat-scene="${this._escape(scene.id)}" style="${this._combatAssetStyle()}">
         ${this._renderTopHud(combat, gs)}
         <div class="combat-round-track">
           ${this._renderInitiativeBar(combat, gs)}
@@ -713,35 +707,34 @@ const CombatUI = {
           <div class="combat-stage-center">${this._renderEventTicker(combat)}</div>
         </main>
         <footer class="combat-command-deck">
-          ${companionPlanControls}
           ${this._renderSkillBar(active, combat)}
-          ${this._renderCombatItemSlot(active)}
-          <button class="combat-common-command combat-action-card${canMove ? '' : ' disabled'}"
-                  data-command="move"
-                  ${(!canMove || commandDisabled) ? 'disabled' : ''}>
-            <span class="action-cost">1</span>
-            <span class="skill-name">이동</span>
-            <span class="skill-range">기동</span>
-            <span class="skill-icon">${this._skillIconHtml('move')}</span>
-            <span class="skill-detail">위치 변경</span>
-          </button>
-          <button class="combat-common-command combat-action-card"
-                  data-command="flee"
-                  ${commandDisabled ? 'disabled' : ''}>
-            <span class="action-cost">1</span>
-            <span class="skill-name">도주</span>
-            <span class="skill-range">탈출</span>
-            <span class="skill-icon">${this._skillIconHtml('move')}</span>
-            <span class="skill-detail">전투 이탈 시도</span>
-          </button>
+          ${manualCompanionTurn ? '' : `
+            ${this._renderCombatItemSlot(active)}
+            <button class="combat-common-command combat-action-card${canMove ? '' : ' disabled'}"
+                    data-command="move"
+                    ${(!canMove || commandDisabled) ? 'disabled' : ''}>
+              <span class="action-cost">1</span>
+              <span class="skill-name">이동</span>
+              <span class="skill-range">기동</span>
+              <span class="skill-icon">${this._skillIconHtml('move')}</span>
+              <span class="skill-detail">위치 변경</span>
+            </button>
+            <button class="combat-common-command combat-action-card"
+                    data-command="flee"
+                    ${commandDisabled ? 'disabled' : ''}>
+              <span class="action-cost">1</span>
+              <span class="skill-name">도주</span>
+              <span class="skill-range">탈출</span>
+              <span class="skill-icon">${this._skillIconHtml('move')}</span>
+              <span class="skill-detail">전투 이탈 시도</span>
+            </button>
+          `}
         </footer>
       </div>`;
     this._bindFocusedCombatEvents(combat);
   },
 
   _bindFocusedCombatEvents(combat) {
-    this._bindCompanionPlanButtons();
-
     this._screen.querySelectorAll('.combat-skill-button').forEach(button => {
       button.addEventListener('click', () => {
         if (button.disabled) return;
@@ -1323,8 +1316,6 @@ const CombatUI = {
       });
     });
 
-    this._bindCompanionPlanButtons();
-
     // ── 우측 패널 적 목록 클릭 ────────────────────────────────
     this._screen.querySelectorAll('.cep-enemy-item:not(.dead)').forEach(el => {
       el.addEventListener('click', () => {
@@ -1362,41 +1353,6 @@ const CombatUI = {
 
     // ── 연출 큐 재생 (행동 결과 → 순차 애니메이션) ───────────
     this._playFxQueue();
-  },
-
-  _bindCompanionPlanButtons() {
-    if (!this._screen) return;
-    this._screen.querySelectorAll('[data-plan-stance]').forEach(button => {
-      button.addEventListener('click', (event) => {
-        event.stopPropagation();
-        const npcId = button.dataset.npcId;
-        const stance = button.dataset.planStance;
-        if (!npcId || !stance) return;
-        CombatSystem.requestCompanionPlan(stance, npcId);
-        if (GameState.combat?.active) this.render();
-      });
-    });
-  },
-
-  _renderStanceSelector(npcId, state) {
-    const stances = [
-      { key: 'attack',  icon: '🗡', label: '공격' },
-      { key: 'heal',    icon: '💉', label: '치료' },
-      { key: 'support', icon: '⚙',  label: '지원' },
-      { key: 'hold',    icon: '🛡', label: '방어' },
-    ];
-    const current = state?.stance ?? 'attack';
-    const currentLabel = current === 'manual'
-      ? '수동'
-      : stances.find(stance => stance.key === current)?.label ?? current;
-    const btnHtml = stances.map(stance => (
-      `<button class="stance-btn companion-plan-btn" data-plan-stance="${stance.key}" data-npc-id="${npcId}" title="이번 턴 ${stance.label} 계획">${stance.icon}</button>`
-    )).join('');
-
-    return `<div class="cpp-stance-row companion-plan-row" data-current-stance="${current}" style="margin-top:5px;display:flex;gap:3px;align-items:center;flex-wrap:wrap;">
-      <span class="companion-stance-label">자동: ${currentLabel}</span>
-      ${btnHtml}
-    </div>`;
   },
 
   /** 동반자(NPC) 전투 상태 패널 — 플레이어 패널 하단에 표시 */
@@ -1447,9 +1403,6 @@ const CombatUI = {
         ? `<span style="font-size:10px;color:${tierColor};margin-left:4px;">[${tierLabel}]</span>`
         : '';
 
-      // Phase 2 — stance selector
-      const stanceHtml = CombatUI._renderStanceSelector(npcId, state);
-
       return `
         <div class="cpp-companion-row" data-companion-id="${npcId}" style="margin-top:8px;padding:6px;background:rgba(255,255,255,0.04);border-radius:4px;position:relative;">
           <div style="display:flex;justify-content:space-between;align-items:center;">
@@ -1461,7 +1414,6 @@ const CombatUI = {
           </div>
           <div style="font-size:10px;color:var(--text-dim);">HP ${hp}/${maxHp}</div>
           ${bondHtml}
-          ${stanceHtml}
         </div>`;
     }).join('');
     return `<div class="cpp-companions" style="margin-top:10px;border-top:1px solid var(--border-dim);padding-top:8px;">

@@ -16,7 +16,7 @@ function setupDom() {
   CombatUI._screen = document.getElementById('screen-combat');
 }
 
-function setupManualNurseTurn() {
+function setupManualNurseTurn({ savedStance = 'manual' } = {}) {
   GameState.player.hp = { current: 10, max: 100 };
   GameState.player.characterId = 'doctor';
   GameState.player.equipped = {};
@@ -31,7 +31,7 @@ function setupManualNurseTurn() {
         hp: 50,
         maxHp: 50,
         isCompanion: true,
-        stance: 'manual',
+        stance: savedStance,
       },
     },
   };
@@ -77,36 +77,32 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('동료 빠른 계획 UI', () => {
-  it('영구 stance 표시와 분리된 네 개 one-shot 계획 버튼을 렌더한다', () => {
-    const html = CombatUI._renderStanceSelector('npc_nurse', {
-      hp: 50,
-      stance: 'manual',
-    });
+describe('동료 완전 수동 UI', () => {
+  it('저장 stance와 무관하게 자동 계획과 플레이어 전용 명령 없이 실제 기술 카드만 렌더한다', () => {
+    setupManualNurseTurn({ savedStance: 'attack' });
+    CombatUI.render();
 
-    expect(html).toContain('data-current-stance="manual"');
-    expect(html).toContain('data-plan-stance="attack"');
-    expect(html).toContain('data-plan-stance="heal"');
-    expect(html).toContain('data-plan-stance="support"');
-    expect(html).toContain('data-plan-stance="hold"');
-    expect(html).not.toContain('data-plan-stance="manual"');
+    expect(document.querySelector('[data-plan-stance]')).toBeNull();
+    expect(document.querySelector('.stance-btn')).toBeNull();
+    expect(document.querySelector('.companion-plan-row')).toBeNull();
+    expect(document.querySelector('[data-skill-id="nurse_scalpel"]')).not.toBeNull();
+    expect(document.querySelector('[data-skill-id="nurse_triage"]')).not.toBeNull();
+    expect(document.querySelector('[data-skill-id="nurse_encourage"]')).not.toBeNull();
+    expect(document.querySelector('.combat-item-slot')).toBeNull();
+    expect(document.querySelector('[data-command="move"]')).toBeNull();
+    expect(document.querySelector('[data-command="flee"]')).toBeNull();
   });
 
-  it('빠른 치료 클릭은 실제 계획을 실행하고 저장 stance는 manual로 유지한다', () => {
-    const combat = setupManualNurseTurn();
-    CombatUI._screen.innerHTML = CombatUI._renderStanceSelector(
-      'npc_nurse',
-      GameState.npcs.states.npc_nurse,
-    );
-    CombatUI._bindCompanionPlanButtons?.();
+  it('동료 기술 카드를 선택하면 실제 대상 선택 상태와 유효 대상 표시로 전환한다', () => {
+    const combat = setupManualNurseTurn({ savedStance: 'hold' });
+    CombatUI.render();
 
-    const healButton = CombatUI._screen.querySelector('[data-plan-stance="heal"]');
-    expect(healButton).not.toBeNull();
-    healButton?.click();
+    document.querySelector('[data-skill-id="nurse_scalpel"]')?.click();
 
-    expect(GameState.player.hp.current).toBe(18);
-    expect(GameState.npcs.states.npc_nurse.stance).toBe('manual');
-    expect(combat.activeCombatantId).toBe('player');
+    expect(combat.phase).toBe('select_target');
+    expect(combat.selectedSkillId).toBe('nurse_scalpel');
+    expect(document.querySelector('[data-combatant-id="enemy:0"]')?.classList.contains('targetable')).toBe(true);
+    expect(document.querySelector('[data-combatant-id="player"]')?.classList.contains('not-targetable')).toBe(true);
   });
 });
 
