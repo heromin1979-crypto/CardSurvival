@@ -45,47 +45,58 @@ const CombatResult = {
     const rewards  = gs.combat.rewards ?? [];
     const xpGained = gs.combat.xpGained ?? 0;
     const playerXp = gs.player.xp ?? 0;
-    const xpMax    = 200; // visual cap only
-    const xpPct    = Math.min(((playerXp % xpMax) / xpMax) * 100, 100);
-
     const lootHtml = rewards.length
       ? `<div class="result-loot-grid">
           ${rewards.map(id => {
             const def  = gs.getCardDef(id);
             const inst = gs.cards[id];
-            return `<div class="result-loot-card">
+            return `<div class="result-loot-card" data-reward-id="${id}">
               <div class="result-loot-icon">${def?.icon ?? '📦'}</div>
               <div class="result-loot-name">${def?.name ?? I18n.t('combatResult.item')}</div>
               ${(inst?.quantity > 1) ? `<div class="result-loot-qty">x${inst.quantity}</div>` : ''}
             </div>`;
           }).join('')}
         </div>`
-      : `<div style="color:var(--text-dim);font-size:12px;margin-top:8px;">${I18n.t('combatResult.noLoot')}</div>`;
+      : `<div class="combat-result-no-loot">${I18n.t('combatResult.noLoot')}</div>`;
 
     const xpHtml = (outcome === 'victory' && xpGained > 0)
       ? `<div class="result-xp-section">
           <div class="result-xp-label">${I18n.t('combatResult.xpLabel')}: <span id="xp-counter">0</span> / +${xpGained} XP</div>
-          <div class="result-xp-track">
-            <div class="result-xp-fill" id="xp-fill" style="width:0%"></div>
-          </div>
+          <progress class="result-xp-track" id="xp-fill" max="${xpGained}" value="0"></progress>
         </div>`
       : '';
 
     this._el.innerHTML = `
-      <div class="result-title ${outcome}">${title}</div>
-      <div class="result-summary">
-        HP: ${Math.round(gs.player.hp.current)} / ${gs.player.hp.max}
-        &nbsp;·&nbsp; ${I18n.t('combatResult.totalXp')}: ${playerXp}
-      </div>
-      ${xpHtml}
-      <div style="margin-top:16px;font-size:11px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;">${I18n.t('combatResult.loot')}</div>
-      ${lootHtml}
-      <div style="display:flex;gap:12px;margin-top:24px;">
-        <button class="toolbar-btn" id="res-continue">${I18n.t('combatResult.returnTo', { name: btnLabel })}</button>
+      <div class="combat-result-shell" data-outcome="${outcome}">
+        <header class="combat-result-header">
+          <div class="combat-result-header-rule" aria-hidden="true"></div>
+          <h1 class="result-title">${title}</h1>
+          <div class="combat-result-header-rule" aria-hidden="true"></div>
+        </header>
+        <div class="combat-result-content">
+          <section class="combat-result-overview" aria-label="${title}">
+            <div class="combat-result-stat">
+              <span class="combat-result-stat-label">HP</span>
+              <strong class="combat-result-stat-value">${Math.round(gs.player.hp.current)} / ${gs.player.hp.max}</strong>
+            </div>
+            <div class="combat-result-stat">
+              <span class="combat-result-stat-label">${I18n.t('combatResult.totalXp')}</span>
+              <strong class="combat-result-stat-value">${playerXp}</strong>
+            </div>
+          </section>
+          <section class="combat-result-rewards">
+            <div class="combat-result-section-label">${I18n.t('combatResult.loot')}</div>
+            ${xpHtml}
+            ${lootHtml}
+          </section>
+        </div>
+        <footer class="combat-result-actions">
+          <button class="toolbar-btn combat-result-return" id="res-continue">${I18n.t('combatResult.returnTo', { name: btnLabel })}</button>
+        </footer>
       </div>
     `;
 
-    if (xpGained > 0) this._animateXp(xpGained, xpPct);
+    if (outcome === 'victory' && xpGained > 0) this._animateXp(xpGained);
 
     this._el.querySelector('#res-continue')?.addEventListener('click', () => {
       ExploreSystem.arriveAfterCombat(returnNodeId);
@@ -93,17 +104,23 @@ const CombatResult = {
     });
   },
 
-  _animateXp(gained, targetPct) {
+  _animateXp(gained) {
     const counter = this._el?.querySelector('#xp-counter');
     const fill    = this._el?.querySelector('#xp-fill');
     if (!counter || !fill) return;
+
+    if (globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+      counter.textContent = gained;
+      fill.value = gained;
+      return;
+    }
 
     let current = 0;
     const step  = Math.max(1, Math.ceil(gained / 30));
     this._xpTimer = setInterval(() => {
       current = Math.min(current + step, gained);
       counter.textContent = current;
-      fill.style.width = (targetPct * (current / gained)).toFixed(1) + '%';
+      fill.value = current;
       if (current >= gained) { clearInterval(this._xpTimer); this._xpTimer = null; }
     }, 40);
   },

@@ -166,7 +166,7 @@ describe('Combat focused UI', () => {
     expect(utilityRail.querySelector('.combat-skill-button')).toBeNull();
   });
 
-  it('renders combat result shell, overview, rewards, and actions sections without EventBus initialization', () => {
+  it('renders the fled result structure and no-loot state without EventBus initialization', () => {
     const resultScreen = document.createElement('div');
     const previousResultElement = CombatResult._el;
     const previousRewards = GameState.combat.rewards;
@@ -181,15 +181,65 @@ describe('Combat focused UI', () => {
       GameState.player.xp = 0;
       CombatResult._render({ outcome: 'fled', nodeId: 'mapo' });
 
-      expect(resultScreen.querySelector('.combat-result-shell')).not.toBeNull();
+      expect(resultScreen.querySelector('.combat-result-shell')?.dataset.outcome).toBe('fled');
+      expect(resultScreen.querySelector('.combat-result-header')).not.toBeNull();
       expect(resultScreen.querySelector('.combat-result-overview')).not.toBeNull();
       expect(resultScreen.querySelector('.combat-result-rewards')).not.toBeNull();
+      expect(resultScreen.querySelector('.combat-result-no-loot')?.textContent)
+        .toContain('획득 아이템 없음');
       expect(resultScreen.querySelector('.combat-result-actions')).not.toBeNull();
+      expect(resultScreen.querySelector('#res-continue')?.textContent).toContain('마포구');
     } finally {
       CombatResult._el = previousResultElement;
       GameState.combat.rewards = previousRewards;
       GameState.combat.xpGained = previousXpGained;
       GameState.player.xp = previousPlayerXp;
+      resultScreen.remove();
+    }
+  });
+
+  it('renders victory XP and actual reward instance data in the result summary', () => {
+    const resultScreen = document.createElement('div');
+    const previousResultElement = CombatResult._el;
+    const previousRewards = GameState.combat.rewards;
+    const previousXpGained = GameState.combat.xpGained;
+    const previousPlayerXp = GameState.player.xp;
+    const previousRewardCard = GameState.cards.reward_bandage;
+    document.body.append(resultScreen);
+
+    try {
+      CombatResult._el = resultScreen;
+      GameState.cards.reward_bandage = {
+        instanceId: 'reward_bandage',
+        definitionId: 'bandage',
+        quantity: 3,
+      };
+      GameState.combat.rewards = ['reward_bandage'];
+      GameState.combat.xpGained = 25;
+      GameState.player.xp = 125;
+      CombatResult._render({ outcome: 'victory', nodeId: 'mapo' });
+
+      expect(resultScreen.querySelector('.combat-result-shell')?.dataset.outcome).toBe('victory');
+      expect(resultScreen.querySelector('.result-xp-section')).not.toBeNull();
+      expect(resultScreen.querySelector('.combat-result-no-loot')).toBeNull();
+      expect(resultScreen.querySelector('[data-reward-id="reward_bandage"] .result-loot-name')?.textContent)
+        .toContain('붕대');
+      expect(resultScreen.querySelector('[data-reward-id="reward_bandage"] .result-loot-qty')?.textContent)
+        .toBe('x3');
+    } finally {
+      if (CombatResult._xpTimer) {
+        clearInterval(CombatResult._xpTimer);
+        CombatResult._xpTimer = null;
+      }
+      CombatResult._el = previousResultElement;
+      GameState.combat.rewards = previousRewards;
+      GameState.combat.xpGained = previousXpGained;
+      GameState.player.xp = previousPlayerXp;
+      if (previousRewardCard === undefined) {
+        delete GameState.cards.reward_bandage;
+      } else {
+        GameState.cards.reward_bandage = previousRewardCard;
+      }
       resultScreen.remove();
     }
   });
