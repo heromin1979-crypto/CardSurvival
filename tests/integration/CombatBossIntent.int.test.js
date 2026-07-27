@@ -396,98 +396,195 @@ describe('일반 적 cancelOnHit committed action 회귀', () => {
   });
 });
 
-describe('보스 반격 command scope 회귀', () => {
-  it('다중 대상의 모든 effect 뒤 반격하고 반격 사망 이후 원 행동 effect를 남기지 않는다', () => {
-    const definition = bossDefinition();
-    definition.bossPattern.basicAttacks[0] = {
-      id: 'lethal_counter',
-      category: 'basic',
-      name: '치명 반격',
-      damage: [10, 10],
-      accuracy: 1,
-      targetPolicy: 'frontmost',
-      motionKey: 'lethal_counter',
-      effects: [],
-    };
-    definition.bossPattern.passives = [
-      { type: 'counterAttack', actionId: 'lethal_counter', maxPerRound: 1 },
-    ];
-    vi.spyOn(Math, 'random').mockReturnValue(0);
-    const { combat, enemy } = setupCombat(definition, { companionHp: 4 });
-    const secondEnemy = CombatSystem._instantiateEnemyFromDefinition({
-      id: 'multi_target_dummy',
-      name: '다중 대상 더미',
-      icon: '🧟',
-      type: 'zombie',
-      hp: { min: 100, max: 100 },
-      attack: { damage: [1, 1], accuracy: 1 },
-      defense: 0,
-      aiPattern: 'normal',
-      specialSkills: [],
-    });
-    CombatSystem._spawnEnemyMidCombat(secondEnemy, 'front');
+function runMultiTargetCounterCommand(mode) {
+  const definition = bossDefinition();
+  definition.bossPattern.basicAttacks[0] = {
+    id: 'lethal_counter',
+    category: 'basic',
+    name: '치명 반격',
+    damage: [10, 10],
+    accuracy: 1,
+    targetPolicy: 'frontmost',
+    motionKey: 'lethal_counter',
+    effects: [],
+  };
+  definition.bossPattern.passives = [
+    { type: 'counterAttack', actionId: 'lethal_counter', maxPerRound: 1 },
+  ];
+  vi.spyOn(Math, 'random').mockReturnValue(0);
+  const { combat, enemy } = setupCombat(definition, { companionHp: 4 });
+  const secondEnemy = CombatSystem._instantiateEnemyFromDefinition({
+    id: 'multi_target_dummy',
+    name: '다중 대상 더미',
+    icon: '🧟',
+    type: 'zombie',
+    hp: { min: 100, max: 100 },
+    attack: { damage: [1, 1], accuracy: 1 },
+    defense: 0,
+    aiPattern: 'normal',
+    specialSkills: [],
+  });
+  CombatSystem._spawnEnemyMidCombat(secondEnemy, 'front');
 
-    const damageEffect = { type: 'damage', value: [1, 1] };
-    const statusEffect = {
-      type: 'status',
-      status: {
-        id: 'multi_target_mark',
-        name: '다중 대상 표식',
-        duration: 1,
-        effect: {},
-      },
-    };
-    const skill = {
-      id: 'multi_target_counter_probe',
-      name: '다중 대상 반격 검사',
-      accuracy: 1,
-      usableFrom: [1, 2, 3, 4],
-      target: { side: 'enemy', ranks: [1, 2, 3, 4], count: 2 },
-      costs: {},
-      effects: [damageEffect, statusEffect],
-    };
-    const actor = combat.combatants.npc_guard;
-    actor.skillIds = [skill.id];
-    combat.skillsById[skill.id] = skill;
-    combat.activeCombatantId = actor.id;
-    combat.selectedTargetId = 'enemy:0';
-
-    const order = [];
-    const applyStatus = CombatSystem._applyEnemyStatusInflict.bind(CombatSystem);
-    vi.spyOn(CombatSystem, '_applyEnemyStatusInflict')
-      .mockImplementation((targetEnemy, ...args) => {
-        order.push(`status:${targetEnemy.id}`);
-        return applyStatus(targetEnemy, ...args);
-      });
-    const executeCounter = CombatSystem._executeEnemyCommittedAction.bind(CombatSystem);
-    vi.spyOn(CombatSystem, '_executeEnemyCommittedAction')
-      .mockImplementation((counterEnemy, action) => {
-        order.push(`counter:${counterEnemy.id}`);
-        return executeCounter(counterEnemy, action);
-      });
-
-    const result = executeSkillCommand(
-      CombatSystem._commandContext(),
+  const skill = {
+    id: 'multi_target_counter_probe',
+    name: '다중 대상 반격 검사',
+    accuracy: mode === 'miss' ? 0.5 : 1,
+    usableFrom: [1, 2, 3, 4],
+    target: { side: 'enemy', ranks: [1, 2, 3, 4], count: 2 },
+    costs: {},
+    effects: [
+      { type: 'damage', value: [1, 1] },
       {
-        actorId: actor.id,
-        targetId: 'enemy:0',
-        skillId: skill.id,
+        type: 'status',
+        status: {
+          id: 'multi_target_mark',
+          name: '다중 대상 표식',
+          duration: 1,
+          effect: {},
+        },
       },
-      () => 0,
-    );
+    ],
+  };
+  const actor = combat.combatants.npc_guard;
+  actor.skillIds = [skill.id];
+  combat.skillsById[skill.id] = skill;
+  combat.activeCombatantId = actor.id;
+  combat.selectedTargetId = 'enemy:0';
 
-    expect(result).toMatchObject({
-      ok: true,
-      hit: true,
-      effectsApplied: 4,
+  const order = [];
+  const context = CombatSystem._commandContext();
+  const resolveHit = context.resolveHit;
+  context.resolveHit = (hitActor, target, hitSkill, random) => {
+    const hitInfo = resolveHit(
+      hitActor,
+      target,
+      hitSkill,
+      mode === 'miss' && target.id === 'enemy:1' ? () => 0.99 : random,
+    );
+    order.push(`${hitInfo.hit ? 'hit' : 'miss'}:${target.id}`);
+    return hitInfo;
+  };
+  const applyEffect = context.applyEffect;
+  context.applyEffect = (effect, effectActor, target, ...args) => {
+    if (target.id === 'enemy:1' && effect.type === 'status') {
+      if (mode === 'soft_failure') {
+        order.push(`soft_failure:${effect.type}:${target.id}`);
+        return { ok: false, reason: 'second_target_failed' };
+      }
+      if (mode === 'throw') {
+        order.push(`throw:${effect.type}:${target.id}`);
+        throw new Error('second target failed');
+      }
+    }
+    const effectResult = applyEffect(effect, effectActor, target, ...args);
+    order.push(`effect:${effect.type}:${target.id}`);
+    return effectResult;
+  };
+  const executeCounter = CombatSystem._executeEnemyCommittedAction.bind(CombatSystem);
+  vi.spyOn(CombatSystem, '_executeEnemyCommittedAction')
+    .mockImplementation((counterEnemy, action) => {
+      order.push(`counter:${counterEnemy.id}`);
+      return executeCounter(counterEnemy, action);
     });
-    expect(order).toEqual([
-      `status:${enemy.id}`,
-      'status:multi_target_dummy',
-      `counter:${enemy.id}`,
-    ]);
+
+  const result = executeSkillCommand(
+    context,
+    {
+      actorId: actor.id,
+      targetId: 'enemy:0',
+      skillId: skill.id,
+    },
+    () => 0,
+  );
+  return { combat, enemy, order, result };
+}
+
+describe('보스 반격 command scope 회귀', () => {
+  it.each([
+    [
+      '정상 성공',
+      'success',
+      { ok: true, hit: true, effectsApplied: 4, partialApplied: false },
+      [
+        'hit:enemy:0',
+        'effect:damage:enemy:0',
+        'effect:status:enemy:0',
+        'hit:enemy:1',
+        'effect:damage:enemy:1',
+        'effect:status:enemy:1',
+        'counter:boss_intent_fixture',
+      ],
+      99,
+    ],
+    [
+      '마지막 대상 miss',
+      'miss',
+      { ok: true, hit: true, effectsApplied: 2, partialApplied: false },
+      [
+        'hit:enemy:0',
+        'effect:damage:enemy:0',
+        'effect:status:enemy:0',
+        'miss:enemy:1',
+        'counter:boss_intent_fixture',
+      ],
+      100,
+    ],
+    [
+      '두 번째 대상 soft failure',
+      'soft_failure',
+      {
+        ok: false,
+        reason: 'second_target_failed',
+        effectsApplied: 3,
+        partialApplied: true,
+      },
+      [
+        'hit:enemy:0',
+        'effect:damage:enemy:0',
+        'effect:status:enemy:0',
+        'hit:enemy:1',
+        'effect:damage:enemy:1',
+        'soft_failure:status:enemy:1',
+        'counter:boss_intent_fixture',
+      ],
+      99,
+    ],
+    [
+      '두 번째 대상 throw',
+      'throw',
+      {
+        ok: false,
+        reason: 'execution_error',
+        effectsApplied: 3,
+        partialApplied: true,
+      },
+      [
+        'hit:enemy:0',
+        'effect:damage:enemy:0',
+        'effect:status:enemy:0',
+        'hit:enemy:1',
+        'effect:damage:enemy:1',
+        'throw:status:enemy:1',
+        'counter:boss_intent_fixture',
+      ],
+      99,
+    ],
+  ])('다중 대상 %s 종료 뒤 반격을 정확히 한 번 실행한다', (
+    _label,
+    mode,
+    expectedResult,
+    expectedOrder,
+    secondEnemyHp,
+  ) => {
+    const { combat, enemy, order, result } = runMultiTargetCounterCommand(mode);
+
+    expect(result).toMatchObject(expectedResult);
+    expect(order).toEqual(expectedOrder);
+    expect(order.filter(event => event.startsWith('counter:'))).toHaveLength(1);
     expect(combat.combatants.npc_guard.dead).toBe(true);
     expect(combat.combatants['enemy:0'].hp).toBe(99);
-    expect(combat.combatants['enemy:1'].hp).toBe(99);
+    expect(combat.combatants['enemy:1'].hp).toBe(secondEnemyHp);
+    expect(enemy._counterActionState.counts.lethal_counter).toBe(1);
   });
 });

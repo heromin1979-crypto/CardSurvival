@@ -635,6 +635,95 @@ describe('executeSkillCommand', () => {
         partialApplied: false,
       });
   });
+
+  it.each([
+    [
+      '정상 성공',
+      'success',
+      { ok: true, effectsApplied: 2, partialApplied: false },
+      ['resolve:zombie', 'effect:zombie', 'resolve:zombie_2', 'effect:zombie_2', 'finalize'],
+    ],
+    [
+      '마지막 대상 miss',
+      'miss',
+      { ok: true, effectsApplied: 1, partialApplied: false },
+      ['resolve:zombie', 'effect:zombie', 'resolve:zombie_2', 'finalize'],
+    ],
+    [
+      '두 번째 대상 soft failure',
+      'soft_failure',
+      { ok: false, reason: 'second_target_failed', effectsApplied: 1, partialApplied: true },
+      ['resolve:zombie', 'effect:zombie', 'resolve:zombie_2', 'effect:zombie_2', 'finalize'],
+    ],
+    [
+      '두 번째 대상 throw',
+      'throw',
+      { ok: false, reason: 'execution_error', effectsApplied: 1, partialApplied: true },
+      ['resolve:zombie', 'effect:zombie', 'resolve:zombie_2', 'effect:zombie_2', 'finalize'],
+    ],
+  ])('다중 대상 %s 후 command finalizer를 마지막에 정확히 한 번 실행한다', (
+    _label,
+    mode,
+    expectedResult,
+    expectedOrder,
+  ) => {
+    const ctx = makeCommandContext();
+    ctx.combatants.push({
+      id: 'zombie_2',
+      side: 'enemy',
+      rank: 1,
+      currentHp: 15,
+    });
+    ctx.skillsById.strike.target = {
+      side: 'enemy',
+      ranks: [1],
+      count: 2,
+    };
+    const order = [];
+    ctx.resolveHit = (_actor, target) => {
+      order.push(`resolve:${target.id}`);
+      return {
+        hit: !(mode === 'miss' && target.id === 'zombie_2'),
+        dodged: false,
+        crit: false,
+      };
+    };
+    ctx.applyEffect = (_effect, _actor, target) => {
+      order.push(`effect:${target.id}`);
+      if (target.id === 'zombie_2' && mode === 'soft_failure') {
+        return { ok: false, reason: 'second_target_failed' };
+      }
+      if (target.id === 'zombie_2' && mode === 'throw') {
+        throw new Error('second target failed');
+      }
+      return { ok: true };
+    };
+    ctx.finalizeCommand = () => order.push('finalize');
+
+    const result = executeSkillCommand(ctx, strikeCommand, () => 0);
+
+    expect(result).toMatchObject(expectedResult);
+    expect(order).toEqual(expectedOrder);
+    expect(order.filter(event => event === 'finalize')).toHaveLength(1);
+  });
+
+  it('command finalizer throw를 소비된 비용과 적용 effect 수를 보존한 실패로 정규화한다', () => {
+    const ctx = makeCommandContext();
+    ctx.finalizeCommand = () => {
+      throw new Error('finalize failed');
+    };
+
+    const result = executeSkillCommand(ctx, strikeCommand, () => 0);
+
+    expect(result).toEqual({
+      ok: false,
+      reason: 'execution_error',
+      turnConsumed: true,
+      costsConsumed: true,
+      partialApplied: true,
+      effectsApplied: 1,
+    });
+  });
 });
 
 describe('useCombatItem', () => {

@@ -418,6 +418,7 @@ const CombatSystem = {
       applyEffect: (effect, actor, target, random, hitInfo) => (
         this._applyRankedEffect(effect, actor, target, random, hitInfo)
       ),
+      finalizeCommand: () => this._finalizeRankedCommand(),
       consumeCombatItem: (itemInstanceId, actor) => this._consumeRankedCombatItem(actor, itemInstanceId),
     };
   },

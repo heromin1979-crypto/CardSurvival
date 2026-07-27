@@ -257,78 +257,27 @@ export const CombatRankedEffects = {
     };
   },
 
-  _rankedCommandTargetIds(actor, primaryTarget, skill) {
-    const combatants = GameState.combat?.combatants;
-    if (!actor || !primaryTarget || !combatants) return [];
-    const count = Number.isInteger(skill?.target?.count) && skill.target.count > 0
-      ? skill.target.count
-      : 1;
-    const selected = [primaryTarget.id];
-    if (count === 1) return selected;
-
-    for (const candidate of Object.values(combatants)) {
-      const hp = candidate?.hp?.current ?? candidate?.hp ?? candidate?.currentHp;
-      const dead = candidate?.dead === true
-        || candidate?.isDead === true
-        || (
-          Number.isFinite(hp)
-          && hp <= 0
-          && candidate?.deathsDoor !== true
-        );
-      if (selected.length >= count
-          || candidate === primaryTarget
-          || candidate?.id === primaryTarget.id
-          || candidate?.side !== skill?.target?.side
-          || dead) {
-        continue;
-      }
-      try {
-        if (this._validateRankedSkillPosition(actor.id, candidate.id, skill)?.ok) {
-          selected.push(candidate.id);
-        }
-      } catch {
-        continue;
-      }
-    }
-    return selected;
-  },
-
-  _rankedActionScopeFor(actor, target, skill) {
+  _rankedActionScopeFor() {
     const combat = GameState.combat;
-    if (!combat || !actor?.id || !target?.id || !skill?.id) return null;
-    const primaryTarget = combat.combatants?.[combat.selectedTargetId] ?? target;
-    const key = [
-      combat.actionSequence ?? 0,
-      actor.id,
-      skill.id,
-      primaryTarget.id,
-    ].join(':');
+    if (!combat) return null;
     let scope = combat[ACTIVE_RANKED_ACTION_SCOPE];
-    if (!scope || scope.key !== key || scope.completed === true) {
+    if (!scope || scope.completed === true) {
       scope = {
-        key,
-        targetIds: this._rankedCommandTargetIds(actor, primaryTarget, skill),
         pendingCounters: [],
         completed: false,
       };
       combat[ACTIVE_RANKED_ACTION_SCOPE] = scope;
     }
-    return {
-      scope,
-      isFinalTarget: target.id === scope.targetIds.at(-1),
-    };
+    return scope;
   },
 
-  _attachRankedActionScope(hitInfo, actor, target, skill) {
-    const scopeInfo = this._rankedActionScopeFor(actor, target, skill);
-    if (!scopeInfo || !hitInfo) return hitInfo;
+  _attachRankedActionScope(hitInfo) {
+    const scope = this._rankedActionScopeFor();
+    if (!scope || !hitInfo) return hitInfo;
     Object.defineProperty(hitInfo, RANKED_ACTION_SCOPE, {
-      value: scopeInfo,
+      value: scope,
       configurable: true,
     });
-    if (hitInfo.hit !== true && scopeInfo.isFinalTarget) {
-      this._flushBossCounterActionScope(scopeInfo.scope);
-    }
     return hitInfo;
   },
 
@@ -336,12 +285,12 @@ export const CombatRankedEffects = {
   _resolveRankedHit(actor, target, skill, random = Math.random) {
     // 아군 대상 스킬(힐/버프/이동)은 판정 없이 성공 — 회피/명중 토큰을 소모하지 않는다
     if (actor?.side && target?.side && actor.side === target.side) {
-      return this._attachRankedActionScope(
-        { hit: true, dodged: false, crit: false, skill },
-        actor,
-        target,
+      return this._attachRankedActionScope({
+        hit: true,
+        dodged: false,
+        crit: false,
         skill,
-      );
+      });
     }
 
     let { accuracy, critChance, critMultiplier, weaponDef } = this._rankedAimProfile(actor, skill);
@@ -355,12 +304,13 @@ export const CombatRankedEffects = {
 
     const hitRoll = resolveHitRoll({ attacker: actor, defender: target, accuracy, random });
     if (!hitRoll.hit) {
-      return this._attachRankedActionScope(
-        { hit: false, dodged: hitRoll.dodged, crit: false, skill, weaponDef },
-        actor,
-        target,
+      return this._attachRankedActionScope({
+        hit: false,
+        dodged: hitRoll.dodged,
+        crit: false,
         skill,
-      );
+        weaponDef,
+      });
     }
 
     const dealsDamage = (skill?.effects ?? []).some(effect => effect?.type === 'damage');
@@ -375,7 +325,7 @@ export const CombatRankedEffects = {
       critMultiplier: critRoll.multiplier,
       skill,
       weaponDef,
-    }, actor, target, skill);
+    });
   },
 
   _rankedEffectHasRemaining(effect, hitInfo) {
@@ -451,8 +401,15 @@ export const CombatRankedEffects = {
     for (const entry of pending) this._executeBossCounterAction(entry);
   },
 
+  _finalizeRankedCommand() {
+    const scope = GameState.combat?.[ACTIVE_RANKED_ACTION_SCOPE];
+    if (!scope) return false;
+    this._flushBossCounterActionScope(scope);
+    return true;
+  },
+
   _queueOrExecuteBossCounterAction(entry, effect, hitInfo) {
-    const actionScope = hitInfo?.[RANKED_ACTION_SCOPE]?.scope;
+    const actionScope = hitInfo?.[RANKED_ACTION_SCOPE];
     if (actionScope) {
       actionScope.pendingCounters.push(entry);
       return true;
@@ -466,14 +423,7 @@ export const CombatRankedEffects = {
   },
 
   _flushPendingBossCounterActions(effect, hitInfo) {
-    const actionScopeInfo = hitInfo?.[RANKED_ACTION_SCOPE];
-    if (actionScopeInfo) {
-      if (actionScopeInfo.isFinalTarget
-          && !this._rankedEffectHasRemaining(effect, hitInfo)) {
-        this._flushBossCounterActionScope(actionScopeInfo.scope);
-      }
-      return;
-    }
+    if (hitInfo?.[RANKED_ACTION_SCOPE]) return;
     if (!hitInfo || this._rankedEffectHasRemaining(effect, hitInfo)) return;
     const pending = hitInfo[PENDING_BOSS_COUNTERS];
     if (!Array.isArray(pending) || pending.length === 0) return;
