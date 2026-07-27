@@ -596,29 +596,6 @@ const CARD_IMAGES = {
   stun:                  'assets/images/special/stun.png',
 
   // 환경 카드
-  env_sunny:                   'assets/images/environment/env_sunny.png',
-  env_cloudy:                  'assets/images/environment/env_cloudy.png',
-  env_rainy:                   'assets/images/environment/env_rainy.png',
-  env_foggy:                   'assets/images/environment/env_foggy.png',
-  env_snow:                    'assets/images/environment/env_snow.png',
-  env_storm:                   'assets/images/environment/env_storm.png',
-  env_overcast:                'assets/images/environment/env_overcast.png',
-  env_hot:                     'assets/images/environment/env_hot.png',
-  env_windy:                   'assets/images/environment/env_windy.png',
-  env_monsoon:                 'assets/images/environment/env_monsoon.png',
-  env_clear:                   'assets/images/environment/env_clear.png',
-  env_blizzard:                'assets/images/environment/env_blizzard.png',
-  env_acid_rain:               'assets/images/environment/env_acid_rain.png',
-  env_event_heatwave:          'assets/images/environment/env_event_heatwave.png',
-  env_event_extreme_cold:      'assets/images/environment/env_event_extreme_cold.png',
-  env_event_drought:           'assets/images/environment/env_event_drought.png',
-  env_event_frost:             'assets/images/environment/env_event_frost.png',
-  env_event_monsoon_heavy:     'assets/images/environment/env_event_monsoon_heavy.png',
-  env_event_typhoon:           'assets/images/environment/env_event_typhoon.png',
-  env_event_pollen:            'assets/images/environment/env_event_pollen.png',
-  env_event_spring_rain:       'assets/images/environment/env_event_spring_rain.png',
-  env_event_warmth:            'assets/images/environment/env_event_warmth.png',
-  env_event_zombie_migration:  'assets/images/environment/env_event_zombie_migration.png',
 
   // ── 신규: 크래프팅 체인 확장 아이템 ──────────────────────────
 

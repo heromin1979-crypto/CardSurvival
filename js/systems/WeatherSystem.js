@@ -4,7 +4,6 @@
 
 import EventBus  from '../core/EventBus.js';
 import GameState from '../core/GameState.js';
-import { WEATHER_TO_ENV_CARD } from '../data/items_environment.js';
 import GameData from '../data/GameData.js';
 
 // ── 계절별 날씨 테이블 ─────────────────────────────────────────
@@ -46,6 +45,19 @@ const SEASON_BASE_TEMP = {
   summer: 27,
   autumn: 14,
   winter:  1,
+};
+
+// 날씨별 위젯 힌트 태그 (구 env_* 카드 tags에서 이관 — 미등록 날씨는 힌트 없음)
+const WEATHER_HINTS = {
+  rainy:     ['water_source'],
+  hot:       ['heat', 'danger'],
+  storm:     ['danger'],
+  monsoon:   ['water_source', 'danger'],
+  clear:     ['cold'],
+  snow:      ['cold', 'water_source'],
+  blizzard:  ['cold', 'danger'],
+  overcast:  ['cold'],
+  acid_rain: ['danger', 'contamination'],
 };
 
 // 날씨별 기온 보정 (°C)
@@ -165,8 +177,8 @@ const WeatherSystem = {
       }
     }
 
-    // 환경 카드 TP 틱
-    this._tickEnvironmentCards(gs);
+    // 계절 이벤트 남은 시간 틱
+    this._tickSeasonEvents(gs);
 
     // 비 집수: 바닥(middle)에 둔 양동이 채우기
     this._fillBuckets(gs);
@@ -194,8 +206,8 @@ const WeatherSystem = {
     Object.assign(gs.weather, w);
     gs.weather.tpRemaining = this._rollDuration();
     gs.weather.tempJitter  = parseFloat((Math.random() * 4 - 2).toFixed(1));
-    // 구버전 세이브 호환: slot 0 orphan 정리
-    this._cleanupWeatherSlot(gs);
+    // 구버전 세이브 호환: environment 행 orphan 정리
+    this._cleanupEnvironmentRow(gs);
   },
 
   _changeWeather(gs) {
@@ -295,18 +307,21 @@ const WeatherSystem = {
     el.className = cls;
   },
 
-  // ── 환경 카드 slot 0 정리 ────────────────────────────────────
-  // 날씨는 HUD·위젯으로만 표시. 보드 slot 0에 카드를 두지 않는다.
-  // 구버전 세이브에 남아 있던 slot 0 카드를 제거.
+  // ── environment 행 정리 ─────────────────────────────────────
+  // 날씨·계절 이벤트 모두 카드가 아닌 HUD·위젯 상태로 전환됨.
+  // 구버전 세이브에 남아 있던 environment 행 카드(날씨 slot 0, 이벤트 slot 1~2)를 제거.
+  // 진행 중이던 이벤트의 남은 시간은 이관하지 않는다(표시 1회 유실, 효과와는 무관).
 
-  _cleanupWeatherSlot(gs) {
+  _cleanupEnvironmentRow(gs) {
     const envRow = gs.board?.environment;
     if (!envRow) return;
-    const oldId = envRow[0];
-    if (oldId && gs.cards[oldId]) {
-      delete gs.cards[oldId];
+    for (let i = 0; i < envRow.length; i++) {
+      const oldId = envRow[i];
+      if (oldId && gs.cards[oldId]) {
+        delete gs.cards[oldId];
+      }
+      if (envRow[i] != null) envRow[i] = null;
     }
-    if (envRow[0] != null) envRow[0] = null;
   },
 
   // 젖은 천: 48TP 후 자동으로 마른 천으로 복귀
@@ -325,29 +340,22 @@ const WeatherSystem = {
     if (changed) EventBus.emit('boardChanged', {});
   },
 
-  // environment 카드의 남은 시간을 매 TP 갱신 (slot 1, 2 계절 이벤트 전용)
-  _tickEnvironmentCards(gs) {
-    // 이벤트 카드(slot 1, 2) — duration 카운트다운
-    for (let i = 1; i <= 2; i++) {
-      const evtId = gs.board.environment[i];
-      if (!evtId || !gs.cards[evtId]) continue;
-      const evtInst = gs.cards[evtId];
-      evtInst._envTpRemaining = (evtInst._envTpRemaining ?? 0) - 1;
-      if (evtInst._envTpRemaining <= 0) {
-        // 이벤트 카드 만료 — 자동 제거
-        delete gs.cards[evtId];
-        gs.board.environment[i] = null;
-        EventBus.emit('boardChanged', {});
-      }
+  // 진행 중 계절 이벤트(season.activeEvents)의 남은 시간을 매 TP 갱신
+  _tickSeasonEvents(gs) {
+    const active = gs.season?.activeEvents;
+    if (!Array.isArray(active) || active.length === 0) return;
+    for (const evt of active) {
+      evt.tpRemaining = (evt.tpRemaining ?? 0) - 1;
     }
+    gs.season.activeEvents = active.filter(evt => evt.tpRemaining > 0);
   },
 
   // Basecamp 입장 시 표시 갱신용
   renderHUD() {
     const gs = GameState;
     if (!gs.weather) this._initWeather(gs);
-    // 구버전 세이브 호환: 보드 slot 0 orphan 정리
-    this._cleanupWeatherSlot(gs);
+    // 구버전 세이브 호환: environment 행 orphan 카드 정리
+    this._cleanupEnvironmentRow(gs);
     this._updateWeatherHUD(gs.weather);
     this._updateTemperatureHUD(this.getOutdoorTemperature());
     this._renderWeatherWidget(gs);
@@ -358,10 +366,6 @@ const WeatherSystem = {
     const el = document.getElementById('weather-widget');
     if (!el) return;
 
-    // 날씨 정의는 WEATHER_TO_ENV_CARD 매핑으로 조회 (slot 0 카드 사용 중단)
-    const envCardId = WEATHER_TO_ENV_CARD[gs.weather?.id];
-    const weatherDef = envCardId ? GameData?.items?.[envCardId] : null;
-
     const hintMap = {
       water_source:  { icon: '💧', label: '물 수집 가능' },
       heat:          { icon: '🔥', label: '고온 주의' },
@@ -370,32 +374,25 @@ const WeatherSystem = {
       danger:        { icon: '⚠️', label: '위험 날씨' },
     };
 
-    const hints = weatherDef?.tags
-      ? weatherDef.tags
-          .filter(t => hintMap[t])
-          .map(t => `<span class="ww-hint ww-hint-${t}">${hintMap[t].icon} ${hintMap[t].label}</span>`)
-          .join('')
-      : '';
+    const hints = (WEATHER_HINTS[gs.weather?.id] ?? [])
+      .filter(t => hintMap[t])
+      .map(t => `<span class="ww-hint ww-hint-${t}">${hintMap[t].icon} ${hintMap[t].label}</span>`)
+      .join('');
 
-    // 이벤트 카드 목록 (slot 1, 2)
+    // 진행 중 계절 이벤트 목록 (season.activeEvents)
     let eventsHtml = '';
-    for (let i = 1; i <= 2; i++) {
-      const evtId   = gs.board?.environment?.[i];
-      const evtInst = evtId ? gs.cards[evtId] : null;
-      const evtDef  = evtInst ? GameData?.items?.[evtInst.definitionId] : null;
-      if (!evtDef) continue;
-      const pct = evtInst._envTpTotal > 0
-        ? Math.round((evtInst._envTpRemaining / evtInst._envTpTotal) * 100)
+    for (const evt of gs.season?.activeEvents ?? []) {
+      const pct = evt.tpTotal > 0
+        ? Math.round((evt.tpRemaining / evt.tpTotal) * 100)
         : 0;
-      const daysLeft = Math.max(1, Math.ceil((evtInst._envTpRemaining ?? 0) / 72));
-      const isDanger = evtDef.tags?.includes('danger');
+      const daysLeft = Math.max(1, Math.ceil((evt.tpRemaining ?? 0) / 72));
       eventsHtml += `
-        <div class="ww-event${isDanger ? ' ww-event-danger' : ''}">
-          <span class="ww-event-icon">${evtDef.icon ?? '⚡'}</span>
-          <span class="ww-event-name">${evtDef.name}</span>
+        <div class="ww-event${evt.danger ? ' ww-event-danger' : ''}">
+          <span class="ww-event-icon">${evt.icon ?? '⚡'}</span>
+          <span class="ww-event-name">${evt.name}</span>
           <span class="ww-event-days">${daysLeft}일</span>
           <div class="ww-event-bar">
-            <div class="ww-event-fill${isDanger ? ' danger' : ''}" style="width:${pct}%"></div>
+            <div class="ww-event-fill${evt.danger ? ' danger' : ''}" style="width:${pct}%"></div>
           </div>
         </div>`;
     }

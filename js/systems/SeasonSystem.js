@@ -6,7 +6,6 @@
 import EventBus        from '../core/EventBus.js';
 import GameState       from '../core/GameState.js';
 import SEASONAL_EVENTS from '../data/seasonalEvents.js';
-import { SEASON_EVENT_TO_ENV_CARD } from '../data/items_environment.js';
 import SystemRegistry  from '../core/SystemRegistry.js';
 import GameData from '../data/GameData.js';
 import BALANCE from '../data/gameBalance.js';
@@ -160,7 +159,7 @@ const SeasonSystem = {
     EventBus.emit('notify', { message: event.message, type: event.type });
     EventBus.emit('seasonalEvent', { eventId: event.id, event });
     this._applyEventEffects(event.effects, gs);
-    this._placeEventCard(event.id, gs);
+    this._registerActiveEvent(event, gs);
   },
 
   // ── 계절 전환 충격 ──────────────────────────────────────────────
@@ -277,53 +276,29 @@ const SeasonSystem = {
     EventBus.emit('boardChanged', {});
   },
 
-  // 이벤트 카드를 environment 행 slot 1 또는 2에 배치
-  _placeEventCard(eventId, gs) {
-    // 이벤트 ID → 환경 카드 매핑 (직접 매핑 또는 유사 매핑)
-    const DIRECT_MAP = {
-      spring_rain:          'env_event_spring_rain',
-      spring_pollen:        'env_event_pollen',
-      spring_warmth:        'env_event_warmth',
-      summer_drought:       'env_event_drought',
-      heat_wave:            'env_event_heatwave',
-      monsoon:              'env_event_monsoon_heavy',
-      typhoon:              'env_event_typhoon',
-      zombie_migration:     'env_event_zombie_migration',
-      first_frost:          'env_event_frost',
-      extreme_cold:         'env_event_extreme_cold',
+  // 진행형 이벤트를 season.activeEvents에 등록 — 사이드바 날씨 위젯이 남은 기간을 표시
+  // duration 없는 이벤트(단순 알림)는 등록하지 않는다. 표시는 최대 2개 유지.
+  _registerActiveEvent(event, gs) {
+    if (!event.duration) return;
+
+    if (!Array.isArray(gs.season.activeEvents)) gs.season.activeEvents = [];
+    const active = gs.season.activeEvents;
+
+    const entry = {
+      id:          event.id,
+      name:        event.title,
+      icon:        event.icon ?? '⚡',
+      danger:      event.type === 'danger',
+      tpRemaining: event.duration,
+      tpTotal:     event.duration,
     };
 
-    const envCardId = DIRECT_MAP[eventId] ?? SEASON_EVENT_TO_ENV_CARD[eventId];
-    if (!envCardId) return;  // 매핑 없는 이벤트 (summer_start 등 단순 알림)
-
-    const envDef = GameData?.items[envCardId];
-    if (!envDef) return;
-
-    const duration = envDef.eventDuration ?? 72;
-
-    // slot 1 우선, 이미 차있으면 slot 2
-    const envRow = gs.board.environment;
-    let targetSlot = null;
-    if (!envRow[1] || !gs.cards[envRow[1]]) targetSlot = 1;
-    else if (!envRow[2] || !gs.cards[envRow[2]]) targetSlot = 2;
-    else {
-      // 두 슬롯 모두 차있으면 더 오래된(남은 시간 적은) 카드를 교체
-      const rem1 = gs.cards[envRow[1]]?._envTpRemaining ?? 0;
-      const rem2 = gs.cards[envRow[2]]?._envTpRemaining ?? 0;
-      targetSlot = rem1 <= rem2 ? 1 : 2;
-      // 기존 카드 제거
-      const oldId = envRow[targetSlot];
-      if (oldId) delete gs.cards[oldId];
+    if (active.length >= 2) {
+      // 가득 차면 남은 시간이 가장 적은 이벤트를 교체
+      active.sort((a, b) => a.tpRemaining - b.tpRemaining);
+      active.shift();
     }
-
-    const inst = gs.createCardInstance(envCardId, {
-      _envTpRemaining: duration,
-      _envTpTotal:     duration,
-    });
-    if (inst) {
-      envRow[targetSlot] = inst.instanceId;
-      EventBus.emit('boardChanged', {});
-    }
+    active.push(entry);
   },
 
   _updateSeasonBadge(season) {

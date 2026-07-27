@@ -1,5 +1,7 @@
 // === SEASONAL EVENTS ===
 // 날짜 기반 1회성 이벤트 테이블 — 봄(1-90) → 여름(91-180) → 가을(181-270) → 겨울(271+)
+// icon/duration(TP)이 있는 이벤트는 발동 시 season.activeEvents에 등록되어
+// 사이드바 날씨 위젯에 남은 기간이 표시된다 (없으면 알림만).
 
 export const SEASONAL_EVENTS = [
 
@@ -10,6 +12,7 @@ export const SEASONAL_EVENTS = [
     title: '봄비',
     message: '🌧 봄비가 내렸습니다. 오염된 빗물이 고였습니다. 보관 식량을 점검하십시오.',
     type: 'warn',
+    icon: '🌧️', duration: 72,
     effects: { contaminateFood: 10 },
   },
 
@@ -18,6 +21,7 @@ export const SEASONAL_EVENTS = [
     title: '꽃가루 시즌',
     message: '🌸 꽃가루가 날립니다. 호흡기가 약해집니다. 감염 위험이 증가했습니다.',
     type: 'warn',
+    icon: '🌿', duration: 72,
     effects: { infection: 5 },
   },
 
@@ -26,6 +30,7 @@ export const SEASONAL_EVENTS = [
     title: '따뜻한 봄',
     message: '🌤 봄 기운이 완연합니다. 기온이 오르고 있습니다. 여름 준비가 필요합니다.',
     type: 'info',
+    icon: '🌸', duration: 72,
     effects: { morale: 5 },
   },
 
@@ -36,6 +41,7 @@ export const SEASONAL_EVENTS = [
     title: '가뭄',
     message: '🏜 극심한 가뭄이 이어지고 있습니다. 수원이 마르고 있습니다.',
     type: 'danger',
+    icon: '🏜️', duration: 144,
     effects: { morale: -10 },
   },
 
@@ -60,6 +66,7 @@ export const SEASONAL_EVENTS = [
     title: '폭염 경보',
     message: '🌡 극심한 폭염입니다. 체온이 위험 수준으로 치솟습니다.',
     type: 'danger',
+    icon: '🔥', duration: 144,
     effects: { temperature: 15 },
   },
 
@@ -68,6 +75,7 @@ export const SEASONAL_EVENTS = [
     title: '장마 시작',
     message: '🌊 장마가 시작되었습니다. 습기와 빗물이 감염과 오염 위험을 높입니다.',
     type: 'warn',
+    icon: '🌊', duration: 72,
     effects: { contaminateFood: 15, infection: 8 },
   },
 
@@ -76,6 +84,7 @@ export const SEASONAL_EVENTS = [
     title: '태풍 상륙',
     message: '🌀 강력한 태풍이 상륙했습니다! 구조물이 손상되었습니다.',
     type: 'danger',
+    icon: '🌪️', duration: 72,
     effects: { structureDamage: 30 },
   },
 
@@ -94,6 +103,7 @@ export const SEASONAL_EVENTS = [
     title: '좀비 대이동',
     message: '🧟 대규모 좀비 무리가 이동 중입니다. 조우 확률이 크게 증가했습니다!',
     type: 'danger',
+    icon: '🧟', duration: 144,
     effects: { morale: -5 },
   },
 
@@ -118,6 +128,7 @@ export const SEASONAL_EVENTS = [
     title: '첫 서리',
     message: '❄️ 첫 서리가 내렸습니다. 겨울이 다가오고 있습니다. 방한 준비를 하십시오.',
     type: 'warn',
+    icon: '🥶', duration: 72,
     effects: { temperature: -10 },
   },
 
@@ -144,6 +155,7 @@ export const SEASONAL_EVENTS = [
     title: '강추위',
     message: '🥶 영하 20도를 넘어섰습니다. 방한 장비 없이는 몇 시간도 버티기 힘듭니다.',
     type: 'danger',
+    icon: '🧊', duration: 144,
     effects: { temperature: -20 },
   },
 

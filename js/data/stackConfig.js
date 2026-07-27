@@ -100,6 +100,7 @@ const STACK_ROWS = [
   ['wooden_sword'            , false, 1 ],
   ['combat_scalpel'          , false, 1 ],
   ['knife'                   , false, 1 ],
+  ['combat_knife'            , false, 1 ],
   ['sharpened_knife'         , false, 1 ],
   ['crowbar'                 , false, 1 ],
   ['baseball_bat'            , false, 1 ],

@@ -247,13 +247,12 @@ export const DATA_FILES = {
   items_tools:      { path: 'js/data/items_tools.js',      decl: 'const ITEMS_TOOLS = {',      label: '아이템:도구' },
   items_structures: { path: 'js/data/items_structures.js', decl: 'const ITEMS_STRUCTURES = {', label: '아이템:구조물' },
   legendaryItems:   { path: 'js/data/legendaryItems.js',   decl: 'const LEGENDARY_ITEMS = {',   label: '아이템:전설' },
-  items_environment:{ path: 'js/data/items_environment.js',decl: 'const ITEMS_ENVIRONMENT = {', label: '아이템:환경' },
 };
 
 // 편집 가능한 아이템 소스 파일 키 목록 (아이템 탭에서 병합 편집)
 export const ITEM_FILE_KEYS = [
   'items_base', 'items_combat', 'items_misc', 'items_tech', 'items_medical',
-  'items_tools', 'items_structures', 'legendaryItems', 'items_environment',
+  'items_tools', 'items_structures', 'legendaryItems',
 ];
 
 // 편집 가능한 퀘스트 소스 파일 키 목록 (퀘스트 탭에서 병합 편집).
