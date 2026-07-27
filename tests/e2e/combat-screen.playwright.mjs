@@ -227,6 +227,7 @@ async function main() {
     ) {
       throw new Error(`Product mobile result did not use the native viewport: ${JSON.stringify(mobileResultLayout)}`);
     }
+    await mobilePage.waitForTimeout(1500);
     await mobilePage.screenshot({ path: mobileResultScreenshotPath, fullPage: true });
     await mobilePage.close();
 
