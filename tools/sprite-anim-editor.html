@@ -161,8 +161,14 @@
           <label>전체</label>
           <input type="range" id="durRange" min="200" max="3000" step="20" value="920" />
           <span class="val"><span id="durV">920</span>ms</span>
+          <button id="rowEven" class="ghost" title="현재 행 프레임 간격을 균등하게 리셋">행 균등</button>
         </div>
-        <div class="hint">행(동작) 1사이클 전체 시간 → 프레임당 <span id="perFrame">153</span>ms. 게임 CSS <code>--sprite-duration</code>과 동일.</div>
+        <div class="row">
+          <label>이 프레임</label>
+          <input type="number" id="frameDur" min="20" max="4000" step="10" value="153" style="width:80px" /> <span class="hint">ms</span>
+          <span class="hint" style="margin-left:auto">프레임 <span id="fdIdx">0</span> · 행 합계 <span id="rowTotal">920</span>ms</span>
+        </div>
+        <div class="hint"><b>프레임별로 다른 시간</b> 지정 가능(예: 특정 포즈를 오래). 저장 시 <code>manifest.frameDur</code>로 기록돼 게임이 그 완급대로 재생합니다. ‘전체’ 슬라이더/‘행 균등’은 현재 행을 균등으로 리셋.</div>
       </div>
 
       <div class="card" style="width:100%; max-width:460px">
@@ -217,6 +223,7 @@ const S = {
   W: 0, H: 0, cols: 6, rows: 4,
   frames: [],            // { box:{x0,y0,x1,y1}|null, dx, dy }
   rowDur: [920, 620, 760, 820],
+  frameDur: null,        // per-frame ms: frameDur[row][col]; null → uniform (rowDur/cols)
   sel: 0, rowTab: 0,
   bg: { color: [21, 192, 0], tol: 90 },
   removeBg: true, hasAlpha: false, isolate: true,
@@ -225,6 +232,31 @@ const S = {
   saveTargetPath: null, saveName: 'sheet.png',
   serverOn: false, sheets: [], picking: false, rowMove: false, showRaw: false,
 };
+
+// ── per-frame timing helpers ────────────────────────────────
+// duration of frame (r,c) in ms — falls back to the uniform rowDur/cols split
+function frameDurOf(r, c) {
+  const fd = S.frameDur && S.frameDur[r];
+  if (Array.isArray(fd) && fd[c] > 0) return +fd[c];
+  return Math.max(20, Math.round((S.rowDur[r] || 800) / S.cols));
+}
+function rowTotalDur(r) { let t = 0; for (let c = 0; c < S.cols; c++) t += frameDurOf(r, c); return t; }
+function ensureFrameDur() {
+  if (!S.frameDur) S.frameDur = [];
+  for (let r = 0; r < S.rows; r++) {
+    if (!Array.isArray(S.frameDur[r])) S.frameDur[r] = [];
+    for (let c = 0; c < S.cols; c++) if (!(S.frameDur[r][c] > 0)) S.frameDur[r][c] = frameDurOf(r, c);
+  }
+}
+// is any row actually non-uniform? (only then do we save frameDur to the manifest)
+function frameDurDirty() {
+  if (!S.frameDur) return false;
+  for (let r = 0; r < S.rows; r++) {
+    const fd = S.frameDur[r]; if (!Array.isArray(fd)) continue;
+    for (let c = 1; c < S.cols; c++) if (fd[c] !== fd[0]) return true;
+  }
+  return false;
+}
 
 // frames a nudge applies to: whole current row when 행 전체 이동 is on, else just the selected one
 function targetFrames() {
@@ -303,6 +335,7 @@ function onImageReady(img, name, savePath) {
   S.cols = clamp(parseInt($('cols').value) || 6, 1, 16);
   S.rows = clamp(parseInt($('rows').value) || 4, 1, 16);
   rebuildFrames(true);
+  S.frameDur = null; // new sheet → uniform timing until edited
 
   // detect alpha vs solid bg
   let full;
@@ -622,9 +655,15 @@ function renderPreview(frameCol) {
 function playLoop(ts) {
   if (!S.playing) return;
   if (!S.playStart) S.playStart = ts;
-  const dur = S.rowDur[S.playRow] || 800, elapsed = ts - S.playStart, loop = $('loopChk').checked;
-  let col = Math.floor((elapsed / dur) * S.cols);
-  if (col >= S.cols) { if (loop) { S.playStart = ts; col = 0; } else { col = S.cols - 1; S.playing = false; $('playBtn').textContent = '▶ 재생'; } }
+  const r = S.playRow, total = rowTotalDur(r), loop = $('loopChk').checked;
+  let elapsed = ts - S.playStart;
+  if (elapsed >= total) {
+    if (loop) { S.playStart = ts; elapsed = 0; }
+    else { renderPreview(S.cols - 1); S.playing = false; $('playBtn').textContent = '▶ 재생'; return; }
+  }
+  // walk cumulative per-frame durations to find the current column (matches in-game step-end)
+  let col = S.cols - 1, cum = 0;
+  for (let c = 0; c < S.cols; c++) { cum += frameDurOf(r, c); if (elapsed < cum) { col = c; break; } }
   renderPreview(col);
   if (S.playing) requestAnimationFrame(playLoop);
 }
@@ -654,7 +693,8 @@ function renderStrip() {
     wrap.appendChild(div);
     if (c === S.cols - 1) {
       const lab = document.createElement('div'); lab.className = 'rowlabel';
-      lab.innerHTML = `<span>행 ${r}: ${ROW_PRESETS[r] ? ROW_PRESETS[r].name : '추가행'}</span><span>${S.rowDur[r] || '-'}ms</span>`;
+      const uneven = S.frameDur && Array.isArray(S.frameDur[r]) && S.frameDur[r].some((v) => v !== S.frameDur[r][0]);
+      lab.innerHTML = `<span>행 ${r}: ${ROW_PRESETS[r] ? ROW_PRESETS[r].name : '추가행'}</span><span>${rowTotalDur(r)}ms${uneven ? ' ·완급' : ''}</span>`;
       wrap.appendChild(lab);
     }
   }
@@ -683,9 +723,11 @@ function selectFrame(i) {
   renderAll();
 }
 function syncRowControls() {
-  const dur = S.rowDur[S.rowTab] || 800;
-  $('durRange').value = dur; $('durV').textContent = dur; $('perFrame').textContent = Math.round(dur / S.cols);
+  const total = rowTotalDur(S.rowTab);
+  $('durRange').value = clamp(total, 200, 3000); $('durV').textContent = total;
   $('rowName').textContent = ROW_PRESETS[S.rowTab] ? ROW_PRESETS[S.rowTab].name : '행 ' + S.rowTab;
+  $('frameDur').value = frameDurOf(S.rowTab, S.sel % S.cols);
+  $('fdIdx').textContent = S.sel; $('rowTotal').textContent = total;
 }
 function renderAll() { renderSheet(); renderPreview(); renderStrip(); Array.from($('rowTabs').children).forEach((el, i) => el.classList.toggle('active', i === S.rowTab)); }
 
@@ -725,6 +767,10 @@ async function saveToServer() {
   if (!S.saveTargetPath) { toast('저장 대상 경로 없음 (파일 열기 시트는 다운로드만)'); return; }
   const dataUrl = buildExportCanvas().toDataURL('image/png');
   const meta = { cols: S.cols, rows: S.rows, rowFrames: rowFrameCounts() };
+  if (frameDurDirty()) {
+    // full per-row arrays (uniform rows included) so the game can build one keyframe per row
+    meta.frameDur = Array.from({ length: S.rows }, (_, r) => Array.from({ length: S.cols }, (_, c) => frameDurOf(r, c)));
+  }
   try {
     const j = await fetch('/api/save-sheet', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: S.saveTargetPath, dataUrl, meta }) }).then(r => r.json());
     toast(j.ok ? `저장됨: ${j.path} (cols ${S.cols}${j.manifest ? ', manifest 갱신' : ''})` : '저장 실패: ' + (j.error || ''));
@@ -741,7 +787,7 @@ function copyCss() {
 }
 function saveProject() {
   const frames = S.frames.map(f => ({ box: f.box || null, dx: f.dx | 0, dy: f.dy | 0 }));
-  const proj = { v: 2, src: S.saveName, path: S.saveTargetPath, cols: S.cols, rows: S.rows, rowDur: S.rowDur, bg: S.bg, removeBg: S.removeBg, isolate: S.isolate, anchorMode: S.anchorMode, frames };
+  const proj = { v: 2, src: S.saveName, path: S.saveTargetPath, cols: S.cols, rows: S.rows, rowDur: S.rowDur, frameDur: S.frameDur, bg: S.bg, removeBg: S.removeBg, isolate: S.isolate, anchorMode: S.anchorMode, frames };
   const a = document.createElement('a');
   a.download = S.saveName.replace(/\.png$/i, '') + '.anim.json';
   a.href = URL.createObjectURL(new Blob([JSON.stringify(proj, null, 2)], { type: 'application/json' })); a.click();
@@ -751,6 +797,7 @@ function applyProject(p) {
   rebuildFrames(true);
   if (Array.isArray(p.frames)) p.frames.forEach((f, i) => { if (S.frames[i]) S.frames[i] = { box: f.box || null, dx: f.dx | 0, dy: f.dy | 0 }; });
   if (Array.isArray(p.rowDur)) S.rowDur = p.rowDur.slice();
+  S.frameDur = Array.isArray(p.frameDur) ? p.frameDur.map(r => Array.isArray(r) ? r.slice() : null) : null;
   if (p.bg) { S.bg = p.bg; $('bgTol').value = p.bg.tol; $('bgTolV').textContent = p.bg.tol; $('bgSwatch').style.background = `rgb(${p.bg.color.join(',')})`; }
   if (typeof p.removeBg === 'boolean') { S.removeBg = p.removeBg; $('removeBg').checked = p.removeBg; }
   if (typeof p.isolate === 'boolean') { S.isolate = p.isolate; $('isolate').checked = p.isolate; }
@@ -805,7 +852,20 @@ $('resetOffsets').onclick = () => { S.frames.forEach(f => { f.dx = 0; f.dy = 0; 
 $('playBtn').onclick = togglePlay;
 $('prevFrame').onclick = () => selectFrame(S.rowTab * S.cols + (S.sel % S.cols + S.cols - 1) % S.cols);
 $('nextFrame').onclick = () => selectFrame(S.rowTab * S.cols + (S.sel % S.cols + 1) % S.cols);
-$('durRange').oninput = (e) => { S.rowDur[S.rowTab] = +e.target.value; $('durV').textContent = e.target.value; $('perFrame').textContent = Math.round(e.target.value / S.cols); renderStrip(); };
+$('durRange').oninput = (e) => {
+  // whole-row slider resets the row to UNIFORM at the chosen total
+  S.rowDur[S.rowTab] = +e.target.value;
+  if (S.frameDur && S.frameDur[S.rowTab]) S.frameDur[S.rowTab] = null;
+  syncRowControls(); renderStrip();
+};
+$('rowEven').onclick = () => { if (S.frameDur) S.frameDur[S.rowTab] = null; syncRowControls(); renderStrip(); toast('행 간격 균등으로 리셋'); };
+$('frameDur').oninput = (e) => {
+  const v = clamp(parseInt(e.target.value) || 0, 20, 4000); if (!v) return;
+  ensureFrameDur();
+  S.frameDur[S.rowTab][S.sel % S.cols] = v;
+  $('rowTotal').textContent = rowTotalDur(S.rowTab); $('durV').textContent = rowTotalDur(S.rowTab);
+  renderStrip();
+};
 
 $('dx').oninput = (e) => { const v = parseInt(e.target.value) || 0, d = v - S.frames[S.sel].dx; for (const i of targetFrames()) S.frames[i].dx += d; renderAll(); };
 $('dy').oninput = (e) => { const v = parseInt(e.target.value) || 0, d = v - S.frames[S.sel].dy; for (const i of targetFrames()) S.frames[i].dy += d; renderAll(); };
