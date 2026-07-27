@@ -33,6 +33,7 @@ const bossFixture = {
         id: 'fixture_guard',
         category: 'special',
         cooldown: 4,
+        chance: 0.3,
         motionKey: 'fixture_guard',
         impactFx: 'buff',
         movement: 'none',
@@ -89,6 +90,12 @@ describe('validateBossPatternSchema', () => {
     }));
   });
 
+  it.each([0.29, 0.31])('rejects a special skill chance other than 0.3 (%s)', (chance) => {
+    expectSchemaError(fixtureWith((pattern) => {
+      pattern.specialSkill.chance = chance;
+    }));
+  });
+
   it.each([
     ['hpThreshold', 0.5],
     ['telegraphTurns', 2],
@@ -127,5 +134,15 @@ describe('validateBossPatternSchema', () => {
       pattern.basicAttacks[1].effects = [];
       pattern.basicAttacks[1].hitCount = 1;
     }));
+  });
+
+  it.each([
+    ['a null basic action', pattern => { pattern.basicAttacks[0] = null; }],
+    ['non-array basic action effects', pattern => { pattern.basicAttacks[0].effects = {}; }],
+  ])('returns schema errors instead of throwing for %s', (_caseName, mutator) => {
+    const errors = validateBossPatternSchema(fixtureWith(mutator));
+
+    expect(errors).toEqual(expect.any(Array));
+    expect(errors).not.toHaveLength(0);
   });
 });

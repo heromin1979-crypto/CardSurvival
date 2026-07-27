@@ -48,6 +48,9 @@ function validateBossAction(action, expectedCategory, path) {
   if (!VALID_BOSS_MOVEMENTS.has(action?.movement)) {
     errors.push(`${path}.movement must be none, lunge, advance, or retreat`);
   }
+  if (!Array.isArray(action?.effects)) {
+    errors.push(`${path}.effects must be an array`);
+  }
   if (action?.damage !== undefined) {
     const hasAscendingDamageRange = Array.isArray(action.damage)
       && action.damage.length === 2
@@ -63,15 +66,18 @@ function validateBossAction(action, expectedCategory, path) {
 }
 
 function basicIdentitySignature(action) {
+  const safeAction = action ?? {};
+  const effects = Array.isArray(safeAction.effects) ? safeAction.effects : [];
+
   return JSON.stringify({
-    targetPolicy: action.targetPolicy ?? 'frontmost',
-    targetCount: action.targetCount ?? 1,
-    hitCount: action.hitCount ?? 1,
-    statusEffects: (action.effects ?? [])
+    targetPolicy: safeAction.targetPolicy ?? 'frontmost',
+    targetCount: safeAction.targetCount ?? 1,
+    hitCount: safeAction.hitCount ?? 1,
+    statusEffects: effects
       .filter(effect => effect?.type === 'targetStatus')
       .map(effect => effect.id)
       .sort(),
-    forcedMoves: (action.effects ?? [])
+    forcedMoves: effects
       .filter(effect => effect?.type === 'forcedMove')
       .map(effect => effect.distance),
   });
@@ -103,6 +109,9 @@ export function validateBossPatternSchema(bosses = {}) {
     errors.push(...validateBossAction(pattern?.specialSkill, 'special', `${path}.specialSkill`));
     errors.push(...validateBossAction(pattern?.ultimate, 'ultimate', `${path}.ultimate`));
 
+    if (pattern?.specialSkill?.chance !== 0.3) {
+      errors.push(`${path}.specialSkill.chance must be 0.3`);
+    }
     if (pattern?.ultimate?.hpThreshold !== 0.3) {
       errors.push(`${path}.ultimate.hpThreshold must be 0.3`);
     }
