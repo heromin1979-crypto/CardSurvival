@@ -274,6 +274,21 @@ async function handleApi(req, res, urlPath) {
     return;
   }
 
+  if (urlPath === '/api/reveal') {
+    // 스프라이트 애니 에디터 — 원본 파일을 OS 파일탐색기에서 열어 보여주기
+    let body;
+    try { body = await readBody(req); } catch (e) { sendJSON(res, 400, { error: `잘못된 요청: ${e.message}` }); return; }
+    const clean = String(body.path || '').replace(/^\/+/, '').replace(/\\/g, '/');
+    if (clean.includes('..')) { sendJSON(res, 400, { error: 'bad path' }); return; }
+    const abs = path.join(ROOT, clean);
+    if (!abs.startsWith(ROOT) || !fs.existsSync(abs)) { sendJSON(res, 404, { error: '파일 없음' }); return; }
+    const cmd = process.platform === 'darwin' ? 'open' : (process.platform === 'win32' ? 'explorer' : 'xdg-open');
+    const args = process.platform === 'darwin' ? ['-R', abs] : (process.platform === 'win32' ? ['/select,', abs] : [path.dirname(abs)]);
+    execFile(cmd, args, () => { /* best-effort */ });
+    sendJSON(res, 200, { ok: true, path: '/' + path.relative(ROOT, abs).split(path.sep).join('/') });
+    return;
+  }
+
   if (urlPath === '/api/save-sheet') {
     // 스프라이트 애니 에디터 — 정렬된 시트 PNG 저장 (원본 _src 백업 + manifest 갱신)
     let body;

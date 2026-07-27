@@ -104,9 +104,13 @@
         <label>행</label><input type="number" id="rows" min="1" max="16" value="4" style="width:58px" />
         <button id="detectBtn" class="primary" style="flex:1">⌖ 프레임 자동 감지</button>
       </div>
-      <div class="hint" id="cellInfo">셀 크기: —</div>
+      <div class="row">
+        <div class="hint" id="cellInfo" style="flex:1">셀 크기: —</div>
+        <label style="font-size:12px"><input type="checkbox" id="showRaw" /> 원본 보기</label>
+        <button id="revealBtn" class="ghost" title="원본 파일을 파일 탐색기에서 표시">📂 원본 위치</button>
+      </div>
       <div id="sheetWrap" style="margin-top:8px"><canvas id="sheetCanvas" width="1" height="1"></canvas></div>
-      <div class="hint" style="margin-top:6px">노란선=출력 격자, <span style="color:#39d0ff">하늘색 박스</span>=감지된 포즈. 셀 클릭=프레임 선택. <b>열(cols)=게임 재생 프레임 수</b>(6 아니어도 OK, manifest에 저장됨). 짧은 행은 마지막 프레임으로 자동 유지. 감지 어긋나면 ④에서 보정.</div>
+      <div class="hint" style="margin-top:6px">노란선=출력 격자, <span style="color:#39d0ff">하늘색 박스</span>=감지된 포즈. 셀 클릭=프레임 선택. <b>선택 프레임의 박스는 모서리/안쪽을 드래그해 직접 조정</b>(자동 감지가 어긋난 넓은 포즈·이펙트 보정). <b>원본 보기</b>=배경 포함 원본과 비교. 열(cols)=게임 재생 프레임 수.</div>
     </div>
 
     <div class="card">
@@ -219,7 +223,7 @@ const S = {
   anchorMode: 'bottom',
   playing: false, playStart: 0, playRow: 0,
   saveTargetPath: null, saveName: 'sheet.png',
-  serverOn: false, sheets: [], picking: false, rowMove: false,
+  serverOn: false, sheets: [], picking: false, rowMove: false, showRaw: false,
 };
 
 // frames a nudge applies to: whole current row when 행 전체 이동 is on, else just the selected one
@@ -325,12 +329,14 @@ function rebuildFrames(reset) {
 }
 
 function loadFromUrl(url, name, savePath) {
+  S.loadedPath = url.split('?')[0]; // the actual file being edited (e.g. the _src), for "원본 위치"
   const img = new Image();
   img.onload = () => onImageReady(img, name, savePath);
   img.onerror = () => toast('이미지 로드 실패: ' + url);
   img.src = url + (url.includes('?') ? '' : '?_=' + Date.now());
 }
 function loadFromFile(file) {
+  S.loadedPath = null;
   const fr = new FileReader();
   fr.onload = () => { const img = new Image(); img.onload = () => onImageReady(img, file.name, null); img.src = fr.result; };
   fr.readAsDataURL(file);
@@ -542,13 +548,24 @@ function buildPatches() {
   }
 }
 
+// recompute a box's foot anchor after a manual edit (mirror of the detection logic)
+function recomputeBoxAnchor(box) {
+  if (!S.mask || !box) return;
+  const W = S.W;
+  const footTop = Math.round(box.y1 - (box.y1 - box.y0) * 0.28);
+  let fsx = 0, fn = 0;
+  for (let y = footTop; y <= box.y1; y++) { const row = y * W; for (let x = box.x0; x <= box.x1; x++) if (S.mask[row + x]) { fsx += x; fn++; } }
+  box.ax = fn ? Math.round(fsx / fn) : Math.round((box.x0 + box.x1) / 2);
+}
+
 // ── 시트 격자 뷰 ────────────────────────────────────────────
 function renderSheet() {
   if (!S.keyedCanvas) return;
   const cv = $('sheetCanvas'); cv.width = S.W; cv.height = S.H;
   const ctx = cv.getContext('2d');
   ctx.clearRect(0, 0, S.W, S.H);
-  ctx.drawImage(S.keyedCanvas, 0, 0);
+  // "원본 보기" shows the untouched source (background intact) so it can be compared with the boxes
+  ctx.drawImage(S.showRaw && S.srcCanvas ? S.srcCanvas : S.keyedCanvas, 0, 0);
   const cw = cellW(), ch = cellH();
   // output grid
   ctx.strokeStyle = 'rgba(224,185,104,.45)'; ctx.lineWidth = 2;
@@ -567,6 +584,16 @@ function renderSheet() {
   const sr = Math.floor(S.sel / S.cols), sc = S.sel % S.cols;
   ctx.strokeStyle = '#e0b968'; ctx.lineWidth = 4;
   ctx.strokeRect(sc * cw + 2, sr * ch + 2, cw - 4, ch - 4);
+  // selected box resize handles (drag to adjust the crop)
+  const sb = S.frames[S.sel] && S.frames[S.sel].box;
+  if (sb) {
+    ctx.strokeStyle = '#ffcb45'; ctx.lineWidth = 3;
+    ctx.strokeRect(sb.x0, sb.y0, sb.x1 - sb.x0, sb.y1 - sb.y0);
+    const hs = Math.max(6, S.W / 200); ctx.fillStyle = '#ffcb45';
+    const mx = (sb.x0 + sb.x1) / 2, my = (sb.y0 + sb.y1) / 2;
+    for (const [hx, hy] of [[sb.x0, sb.y0], [mx, sb.y0], [sb.x1, sb.y0], [sb.x0, my], [sb.x1, my], [sb.x0, sb.y1], [mx, sb.y1], [sb.x1, sb.y1]])
+      ctx.fillRect(hx - hs, hy - hs, hs * 2, hs * 2);
+  }
   $('cellInfo').textContent = `셀 ${Math.round(cw)}×${Math.round(ch)} · 총 ${S.cols * S.rows}프레임 · ${S.hasAlpha ? '알파시트' : '단색배경'}`;
 }
 
@@ -793,18 +820,75 @@ $('saveProj').onclick = saveProject;
 $('loadProj').onclick = () => $('projInput').click();
 $('projInput').onchange = (e) => { const f = e.target.files[0]; if (!f) return; const fr = new FileReader(); fr.onload = () => { try { applyProject(JSON.parse(fr.result)); } catch (err) { toast('JSON 파싱 실패'); } }; fr.readAsText(f); };
 
-$('sheetCanvas').addEventListener('click', (e) => {
-  if (!S.W) return;
-  const rect = e.currentTarget.getBoundingClientRect();
-  const x = (e.clientX - rect.left) / rect.width * S.W, y = (e.clientY - rect.top) / rect.height * S.H;
-  if (S.picking) {
-    const d = S.srcCanvas.getContext('2d').getImageData(clamp(x | 0, 0, S.W - 1), clamp(y | 0, 0, S.H - 1), 1, 1).data;
-    S.bg.color = [d[0], d[1], d[2]]; S.hasAlpha = false; S.removeBg = true; $('removeBg').checked = true;
-    $('bgSwatch').style.background = `rgb(${d[0]},${d[1]},${d[2]})`; S.picking = false;
-    rebuildMaskAndKeyed(); detectFrames(); toast(`배경색 rgb(${d[0]},${d[1]},${d[2]}) → 재감지`); return;
+// sheet canvas: chroma pick / cell select / manual box edit (drag selected box's edges or interior)
+(() => {
+  const cv = $('sheetCanvas');
+  let mode = null, startBox = null, sx = 0, sy = 0, rect = null, moved = false;
+  const T = () => S.W / 40; // grab threshold in source px (canvas is shown small)
+  const toSrc = (e) => ({ x: (e.clientX - rect.left) / rect.width * S.W, y: (e.clientY - rect.top) / rect.height * S.H });
+  function hit(b, x, y) {
+    const t = T(), inX = x >= b.x0 - t && x <= b.x1 + t, inY = y >= b.y0 - t && y <= b.y1 + t;
+    let m = '';
+    if (Math.abs(x - b.x0) < t && inY) m += 'L'; else if (Math.abs(x - b.x1) < t && inY) m += 'R';
+    if (Math.abs(y - b.y0) < t && inX) m += 'T'; else if (Math.abs(y - b.y1) < t && inX) m += 'B';
+    if (m) return m;
+    if (x > b.x0 && x < b.x1 && y > b.y0 && y < b.y1) return 'move';
+    return null;
   }
-  selectFrame(clamp(Math.floor(y / cellH()), 0, S.rows - 1) * S.cols + clamp(Math.floor(x / cellW()), 0, S.cols - 1));
-});
+  cv.addEventListener('mousedown', (e) => {
+    if (!S.W) return;
+    rect = cv.getBoundingClientRect();
+    const { x, y } = toSrc(e);
+    if (S.picking) {
+      const d = S.srcCanvas.getContext('2d').getImageData(clamp(x | 0, 0, S.W - 1), clamp(y | 0, 0, S.H - 1), 1, 1).data;
+      S.bg.color = [d[0], d[1], d[2]]; S.hasAlpha = false; S.removeBg = true; $('removeBg').checked = true;
+      $('bgSwatch').style.background = `rgb(${d[0]},${d[1]},${d[2]})`; S.picking = false;
+      rebuildMaskAndKeyed(); detectFrames(); toast(`배경색 rgb(${d[0]},${d[1]},${d[2]}) → 재감지`); return;
+    }
+    const b = S.frames[S.sel] && S.frames[S.sel].box;
+    if (b) { const m = hit(b, x, y); if (m) { mode = m; startBox = { ...b }; sx = x; sy = y; moved = false; e.preventDefault(); return; } }
+    mode = 'select'; sx = x; sy = y; moved = false;
+  });
+  window.addEventListener('mousemove', (e) => {
+    if (!mode || mode === 'select' || !rect) return;
+    const { x, y } = toSrc(e), b = S.frames[S.sel].box; if (!b) return;
+    moved = true;
+    const ddx = Math.round(x - sx), ddy = Math.round(y - sy);
+    if (mode === 'move') {
+      let nx0 = startBox.x0 + ddx, nx1 = startBox.x1 + ddx, ny0 = startBox.y0 + ddy, ny1 = startBox.y1 + ddy;
+      if (nx0 < 0) { nx1 -= nx0; nx0 = 0; } if (nx1 > S.W) { nx0 -= nx1 - S.W; nx1 = S.W; }
+      if (ny0 < 0) { ny1 -= ny0; ny0 = 0; } if (ny1 > S.H) { ny0 -= ny1 - S.H; ny1 = S.H; }
+      b.x0 = Math.round(nx0); b.x1 = Math.round(nx1); b.y0 = Math.round(ny0); b.y1 = Math.round(ny1);
+    } else {
+      if (mode.includes('L')) b.x0 = clamp(Math.round(startBox.x0 + ddx), 0, b.x1 - 4);
+      if (mode.includes('R')) b.x1 = clamp(Math.round(startBox.x1 + ddx), b.x0 + 4, S.W);
+      if (mode.includes('T')) b.y0 = clamp(Math.round(startBox.y0 + ddy), 0, b.y1 - 4);
+      if (mode.includes('B')) b.y1 = clamp(Math.round(startBox.y1 + ddy), b.y0 + 4, S.H);
+    }
+    renderSheet();
+  });
+  window.addEventListener('mouseup', (e) => {
+    if (!mode) return;
+    if (mode === 'select' && !moved) {
+      const { x, y } = toSrc(e);
+      selectFrame(clamp(Math.floor(y / cellH()), 0, S.rows - 1) * S.cols + clamp(Math.floor(x / cellW()), 0, S.cols - 1));
+    } else if (moved) {
+      const b = S.frames[S.sel].box;
+      if (b) { recomputeBoxAnchor(b); buildPatches(); renderAll(); }
+    }
+    mode = null; startBox = null; rect = null;
+  });
+})();
+
+async function revealSource() {
+  if (!S.serverOn) { toast('서버 미연결 — node serve.js로 실행하세요'); return; }
+  const p = S.loadedPath || S.saveTargetPath;
+  if (!p) { toast('원본 경로 없음 (파일 열기로 로드한 시트는 불가)'); return; }
+  try { const j = await fetch('/api/reveal', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: p }) }).then(r => r.json()); toast(j.ok ? '파일 탐색기에서 표시: ' + p.split('/').pop() : '실패: ' + (j.error || '')); }
+  catch (e) { toast('오류: ' + e.message); }
+}
+$('revealBtn').onclick = revealSource;
+$('showRaw').onchange = (e) => { S.showRaw = e.target.checked; renderSheet(); };
 
 (() => {
   const cv = $('previewCanvas'); let drag = false, lx = 0, ly = 0;
