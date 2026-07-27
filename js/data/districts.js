@@ -3085,6 +3085,13 @@ const DISTRICTS = {
         maxQty: 1,
       },
       {
+        definitionId: 'combat_knife',
+        weight: 2,
+        minQty: 1,
+        maxQty: 1,
+        cls: 'expedition',
+      },
+      {
         definitionId: 'wrecked_car',
         weight: 5,
         minQty: 1,

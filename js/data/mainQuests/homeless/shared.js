@@ -191,7 +191,7 @@ const HOMELESS_SHARED = {
     desc: '음식 5개를 조리해 주방장 박수미의 저녁 배식을 도와라. (오늘의 메뉴와 일치하면 보너스)',
     icon: '👩‍🍳', characterId: 'homeless', dayTrigger: 45, prerequisite: 'mq_homeless_side_02',
     objective: { type: 'craft_item', category: 'food', count: 5 },
-    reward: { morale: 15, items: [{ definitionId: 'canned_food', qty: 4 }, { definitionId: 'wild_herb', qty: 3 }] },
+    reward: { morale: 15, items: [{ definitionId: 'canned_food', qty: 4 }, { definitionId: 'herb', qty: 3 }] },
     prescriptionOptions: {
       '밥류 배식':     'cooked_rice',
       '생선 구이':     'grilled_fish',

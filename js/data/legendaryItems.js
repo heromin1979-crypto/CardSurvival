@@ -866,7 +866,7 @@ const LEGENDARY_ITEMS = {
     defaultDurability: 100, defaultContamination: 0,
     icon: '☢️', description: '방사선 오염을 제거하는 정화제. 방사선과 오염 수치를 대폭 낮춘다.',
     tags: ['medical', 'legendary'],
-    onConsume: { radiation: -100, contamination: -50 },
+    onConsume: { radiation: -100 },
     dismantle: [],
   },
 

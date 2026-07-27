@@ -248,6 +248,11 @@ const NPCS = {
       noiseAdd:     0,
       foodCostPerDay: 0.3,      // nutrition drain per TP
       skillBonus:   null,
+      gear: [
+        { id: 'iron_pipe' },
+        { id: 'bandage', qty: 2 },
+        { id: 'painkiller' },
+      ],
     },
     gifts: [
       { trust: 2, itemId: 'bandage', qty: 2 },
@@ -256,7 +261,7 @@ const NPCS = {
     trades: null,
     // V-2: 동반자 자율 수집
     forageItems: [
-      { id: 'wild_herb',    chance: 0.4, qty: 1 },
+      { id: 'herb',    chance: 0.4, qty: 1 },
       { id: 'water_bottle', chance: 0.2, qty: 1 },
     ],
     // V-2: 선제 대사 (상황별)
@@ -330,6 +335,12 @@ const NPCS = {
       skillBonus:   { medicine: 0.3 },
       combatDmgReduce: 0.10,   // 적 피해 10% 감소
       tauntChance:     0.15,   // 15% 확률로 적 공격을 대신 받음
+      gear: [
+        { id: 'combat_scalpel' },
+        { id: 'first_aid_kit' },
+        { id: 'bandage', qty: 3 },
+        { id: 'antiseptic' },
+      ],
     },
     gifts: [
       { trust: 1, itemId: 'bandage', qty: 3 },
@@ -454,6 +465,12 @@ const NPCS = {
       skillBonus:   { melee: 0.2, defense: 0.15 },
       combatDmgReduce: 0.15,
       tauntChance:     0.20,
+      gear: [
+        { id: 'knife' },
+        { id: 'helmet' },
+        { id: 'tactical_vest' },
+        { id: 'bandage', qty: 2 },
+      ],
     },
     gifts: [
       { trust: 2, itemId: 'pistol_ammo', qty: 3 },
@@ -509,6 +526,12 @@ const NPCS = {
       noiseAdd:     3,          // makes more noise
       foodCostPerDay: 0.7,      // eats a lot
       skillBonus:   { melee: 0.2, ranged: 0.2 },
+      gear: [
+        { id: 'rifle' },
+        { id: 'rifle_ammo', qty: 12 },
+        { id: 'combat_boots' },
+        { id: 'knife' },
+      ],
     },
     gifts: [
       { trust: 2, itemId: 'pistol_ammo', qty: 5 },
@@ -517,7 +540,7 @@ const NPCS = {
     trades: null,
     forageItems: [
       { id: 'pistol_ammo', chance: 0.3, qty: 2 },
-      { id: 'metal_scrap', chance: 0.4, qty: 3 },
+      { id: 'scrap_metal', chance: 0.4, qty: 3 },
     ],
     spontaneous: [
       { condition: 'low_hp',        line: '"그 정도 상처는 전장에서 긁힌 거지. 계속 움직여."' },
@@ -649,14 +672,19 @@ const NPCS = {
       noiseAdd:     2,
       foodCostPerDay: 0.5,
       skillBonus:   { crafting: 0.3, building: 0.2 },
+      gear: [
+        { id: 'pipe_wrench' },
+        { id: 'work_gloves' },
+        { id: 'wire', qty: 4 },
+      ],
     },
     gifts: [
-      { trust: 2, itemId: 'metal_scrap', qty: 3 },
+      { trust: 2, itemId: 'scrap_metal', qty: 3 },
       { trust: 4, itemId: 'duct_tape', qty: 2 },
     ],
     trades: null,
     forageItems: [
-      { id: 'metal_scrap', chance: 0.45, qty: 2 },
+      { id: 'scrap_metal', chance: 0.45, qty: 2 },
       { id: 'duct_tape',   chance: 0.2,  qty: 1 },
     ],
     spontaneous: [
@@ -678,10 +706,10 @@ const NPCS = {
         title:        '발전기 수리',
         description:  '"부품만 있으면 발전기를 고칠 수 있어. 고철 좀 모아다 줄 수 있어?"',
         steps: [
-          { type: 'collect', itemId: 'metal_scrap', qty: 8, hint: '주변 폐차장이나 건물에서 찾을 수 있다.' },
+          { type: 'collect', itemId: 'scrap_metal', qty: 8, hint: '주변 폐차장이나 건물에서 찾을 수 있다.' },
           { type: 'collect', itemId: 'wire',        qty: 3, hint: '전선은 건물 내부에서 발견된다.' },
         ],
-        reward: { trust: 2, items: [{ id: 'metal_scrap', qty: 5 }], skillUnlock: { skillId: 'master_craft', value: 0.05 } },
+        reward: { trust: 2, items: [{ id: 'scrap_metal', qty: 5 }], skillUnlock: { skillId: 'master_craft', value: 0.05 } },
       },
     ],
     specialDays: [
@@ -719,7 +747,7 @@ const NPCS = {
     trades: [
       // { give: { id, qty }, receive: { id, qty }, trustRequired }
       { give: { id: 'canned_food', qty: 3 },   receive: { id: 'first_aid_kit', qty: 1 }, trustRequired: 0 },
-      { give: { id: 'metal_scrap', qty: 5 },   receive: { id: 'pistol_ammo', qty: 3 },   trustRequired: 1 },
+      { give: { id: 'scrap_metal', qty: 5 },   receive: { id: 'pistol_ammo', qty: 3 },   trustRequired: 1 },
       { give: { id: 'cloth', qty: 4 },          receive: { id: 'bandage', qty: 5 },        trustRequired: 0 },
       { give: { id: 'water_bottle', qty: 2 },   receive: { id: 'canned_food', qty: 3 },    trustRequired: 0 },
       { give: { id: 'rope', qty: 3 },           receive: { id: 'duct_tape', qty: 2 },      trustRequired: 2 },
@@ -740,7 +768,7 @@ const NPCS = {
           { type: 'collect', itemId: 'canned_food',  qty: 5, hint: '비축 식량 5개를 모아라.' },
           { type: 'collect', itemId: 'water_bottle', qty: 3, hint: '정수된 물 3개를 준비하라.' },
         ],
-        reward: { trust: 2, items: [{ id: 'rare_medicine', qty: 1 }, { id: 'canned_food', qty: 5 }], skillUnlock: { skillId: 'barter_mastery', value: 0.1 } },
+        reward: { trust: 2, items: [{ id: 'antibiotics', qty: 1 }, { id: 'canned_food', qty: 5 }], skillUnlock: { skillId: 'barter_mastery', value: 0.1 } },
       },
     ],
     specialDays: [
@@ -772,6 +800,11 @@ const NPCS = {
       noiseAdd:     0,
       foodCostPerDay: 0.35,
       skillBonus:   { scavenging: 0.25, medicine: 0.15 },
+      gear: [
+        { id: 'baseball_bat' },
+        { id: 'bandage', qty: 2 },
+        { id: 'running_shoes' },
+      ],
     },
     gifts: [
       { trust: 2, itemId: 'water_bottle', qty: 1 },
@@ -779,7 +812,7 @@ const NPCS = {
     ],
     trades: null,
     forageItems: [
-      { id: 'wild_herb',    chance: 0.3, qty: 1 },
+      { id: 'herb',    chance: 0.3, qty: 1 },
       { id: 'water_bottle', chance: 0.2, qty: 1 },
     ],
     spontaneous: [
@@ -842,7 +875,7 @@ const NPCS = {
     trades: null,
     forageItems: [
       { id: 'raw_meat',  chance: 0.5, qty: 1 },
-      { id: 'wild_herb', chance: 0.3, qty: 1 },
+      { id: 'herb', chance: 0.3, qty: 1 },
     ],
     spontaneous: [
       { condition: 'low_hp',        line: '개가 걱정스럽게 킁킁거리며 다가온다.' },
@@ -925,6 +958,11 @@ const NPCS = {
       noiseAdd:     3,
       foodCostPerDay: 0.3,
       skillBonus:   { building: 0.4, crafting: 0.2 },
+      gear: [
+        { id: 'hammer' },
+        { id: 'helmet' },
+        { id: 'work_gloves' },
+      ],
     },
     gifts: [
       { trust: 2, definitionId: 'scrap_metal', qty: 3, message: '👷 상우가 공사장에서 건진 고철을 내밀었다.' },
@@ -969,6 +1007,12 @@ const NPCS = {
       healBonus: 0.1, craftBonus: 0, moralBonus: 0.2,
       lonelinessReduction: 0.2, noiseAdd: 2, foodCostPerDay: 0.3,
       skillBonus: { combat: 0.15 },
+      gear: [
+        { id: 'pistol' },
+        { id: 'pistol_ammo', qty: 10 },
+        { id: 'first_aid_kit' },
+        { id: 'antibiotics', qty: 2 },
+      ],
     },
     gifts: [], trades: null, forageItems: [{ id: 'bandage', chance: 0.4, qty: 2 }],
     spontaneous: [{ condition: 'always', line: '강민준: "경계를 늦추지 마십시오."' }],
@@ -989,6 +1033,12 @@ const NPCS = {
       healBonus: 0.3, craftBonus: 0.2, moralBonus: 0.15,
       lonelinessReduction: 0.25, noiseAdd: 0, foodCostPerDay: 0.2,
       skillBonus: { crafting: 0.2, medical: 0.25 },
+      gear: [
+        { id: 'pistol' },
+        { id: 'pistol_ammo', qty: 6 },
+        { id: 'suppressor' },
+        { id: 'stimulant', qty: 2 },
+      ],
     },
     gifts: [], trades: null, forageItems: [{ id: 'herb', chance: 0.5, qty: 2 }],
     spontaneous: [{ condition: 'always', line: '한소희: "이 성분 조합이 흥미롭네요."' }],
@@ -1009,6 +1059,12 @@ const NPCS = {
       healBonus: 0.4, craftBonus: 0.1, moralBonus: 0.2,
       lonelinessReduction: 0.3, noiseAdd: 0, foodCostPerDay: 0.2,
       skillBonus: { medical: 0.3 },
+      gear: [
+        { id: 'combat_scalpel' },
+        { id: 'surgery_kit' },
+        { id: 'first_aid_kit' },
+        { id: 'antiseptic' },
+      ],
     },
     gifts: [], trades: null, forageItems: [{ id: 'bandage', chance: 0.5, qty: 2 }],
     spontaneous: [{ condition: 'low_hp', line: '이지수: "잠깐, 내가 봐줄게요."' }],
@@ -1029,6 +1085,11 @@ const NPCS = {
       healBonus: 0.1, craftBonus: 0.15, moralBonus: 0.2,
       lonelinessReduction: 0.2, noiseAdd: 1, foodCostPerDay: 0.3,
       skillBonus: { scavenging: 0.15, crafting: 0.1 },
+      gear: [
+        { id: 'axe' },
+        { id: 'helmet' },
+        { id: 'first_aid_kit' },
+      ],
     },
     gifts: [], trades: null, forageItems: [{ id: 'rope', chance: 0.4, qty: 1 }],
     spontaneous: [{ condition: 'always', line: '박영철: "내가 먼저 들어가지."' }],
@@ -1049,6 +1110,11 @@ const NPCS = {
       healBonus: 0, craftBonus: 0.35, moralBonus: 0.1,
       lonelinessReduction: 0.15, noiseAdd: 3, foodCostPerDay: 0.25,
       skillBonus: { crafting: 0.35 },
+      gear: [
+        { id: 'master_wrench' },
+        { id: 'work_gloves' },
+        { id: 'wire', qty: 4 },
+      ],
     },
     gifts: [], trades: null, forageItems: [{ id: 'scrap_metal', chance: 0.5, qty: 2 }],
     spontaneous: [{ condition: 'always', line: '정대한: "이거 제가 고칠 수 있어요."' }],
@@ -1083,6 +1149,11 @@ const NPCS = {
       noiseAdd:     1,
       foodCostPerDay: 0.5,
       skillBonus:   { melee: 0.2 },
+      gear: [
+        { id: 'stun_gun' },
+        { id: 'shield' },
+        { id: 'knife' },
+      ],
     },
     gifts: [
       { trust: 2, itemId: 'combat_knife', qty: 1 },
@@ -1158,6 +1229,10 @@ const NPCS = {
       noiseAdd:     0,
       foodCostPerDay: 0.35,
       skillBonus:   { scavenging: 0.15 },
+      gear: [
+        { id: 'sharpened_knife' },
+        { id: 'smoke_bomb' },
+      ],
     },
     gifts: [
       { trust: 2, itemId: 'canned_food', qty: 2 },
@@ -1229,14 +1304,18 @@ const NPCS = {
       noiseAdd:     0,
       foodCostPerDay: 0.25,       // eats less — professional
       skillBonus:   { cooking: 0.3 },
+      gear: [
+        { id: 'knife' },
+        { id: 'battle_ration', qty: 2 },
+      ],
     },
     gifts: [
       { trust: 2, itemId: 'canned_food', qty: 2 },
-      { trust: 4, itemId: 'wild_herb',   qty: 3 },
+      { trust: 4, itemId: 'herb',   qty: 3 },
     ],
     trades: null,
     forageItems: [
-      { id: 'wild_herb',   chance: 0.4, qty: 2 },
+      { id: 'herb',   chance: 0.4, qty: 2 },
       { id: 'wild_berry',  chance: 0.3, qty: 2 },
     ],
     spontaneous: [
@@ -1258,7 +1337,7 @@ const NPCS = {
         title:        '주방 재료 수집',
         description:  '"타워 사람들 밥을 해먹이려면 재료가 필요해. 야생 허브 좀 구해줄래?"',
         steps: [
-          { type: 'collect', itemId: 'wild_herb', qty: 6, hint: '한강변에서 자주 발견된다.' },
+          { type: 'collect', itemId: 'herb', qty: 6, hint: '한강변에서 자주 발견된다.' },
         ],
         reward: { trust: 2, items: [{ id: 'canned_food', qty: 4 }], skillUnlock: null },
       },
@@ -1293,6 +1372,11 @@ const NPCS = {
       noiseAdd:     2,
       foodCostPerDay: 0.4,
       skillBonus:   { crafting: 0.3, building: 0.2 },
+      gear: [
+        { id: 'pipe_wrench_improved' },
+        { id: 'work_gloves' },
+        { id: 'wire', qty: 4 },
+      ],
     },
     gifts: [
       { trust: 2, itemId: 'wire',         qty: 3 },
@@ -1357,6 +1441,12 @@ const NPCS = {
       noiseAdd:     0,
       foodCostPerDay: 0.35,
       skillBonus:   { medicine: 0.3 },
+      gear: [
+        { id: 'combat_scalpel' },
+        { id: 'first_aid_kit' },
+        { id: 'stimulant', qty: 2 },
+        { id: 'bandage', qty: 3 },
+      ],
     },
     gifts: [
       { trust: 2, itemId: 'bandage',      qty: 3 },
@@ -1425,6 +1515,10 @@ const NPCS = {
       noiseAdd:     0,
       foodCostPerDay: 0.5,
       skillBonus:   { cooking: 0.3, melee: 0.15 },
+      gear: [
+        { id: 'sharpened_knife' },
+        { id: 'battle_ration', qty: 2 },
+      ],
     },
     gifts: [
       { trust: 1, itemId: 'wild_honey', qty: 1 },
@@ -1501,6 +1595,10 @@ const NPCS = {
       noiseAdd:     0,
       foodCostPerDay: 0.4,
       skillBonus:   { cooking: 0.15 },
+      gear: [
+        { id: 'iron_pipe' },
+        { id: 'battle_ration' },
+      ],
     },
     gifts: [
       { trust: 1, itemId: 'wild_berry', qty: 3 },

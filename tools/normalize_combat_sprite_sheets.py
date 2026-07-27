@@ -192,9 +192,122 @@ def fit_frame(cell: Image.Image) -> tuple[Image.Image, bool]:
     return out, bool(removed) or bbox[0] <= 0 or bbox[1] <= 0 or bbox[2] >= CELL or bbox[3] >= CELL
 
 
+def _labeled_component_map(image: Image.Image) -> tuple[list[int], list[dict]]:
+    width, height = image.size
+    alpha = image.getchannel("A")
+    pixels = alpha.load()
+    labels = [0] * (width * height)
+    components = []
+    next_id = 0
+
+    for start_y in range(height):
+        for start_x in range(width):
+            idx = start_y * width + start_x
+            if labels[idx] != 0 or pixels[start_x, start_y] <= ALPHA_THRESHOLD:
+                continue
+
+            next_id += 1
+            stack = [(start_x, start_y)]
+            labels[idx] = next_id
+            min_x = max_x = start_x
+            min_y = max_y = start_y
+            area = 0
+
+            while stack:
+                x, y = stack.pop()
+                area += 1
+                min_x = min(min_x, x)
+                max_x = max(max_x, x)
+                min_y = min(min_y, y)
+                max_y = max(max_y, y)
+
+                for nx, ny in ((x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)):
+                    if nx < 0 or nx >= width or ny < 0 or ny >= height:
+                        continue
+                    nidx = ny * width + nx
+                    if labels[nidx] == 0 and pixels[nx, ny] > ALPHA_THRESHOLD:
+                        labels[nidx] = next_id
+                        stack.append((nx, ny))
+
+            components.append({
+                "id": next_id,
+                "box": (min_x, min_y, max_x + 1, max_y + 1),
+                "area": area,
+            })
+
+    return labels, components
+
+
 def reslice_source_sheet(source: Image.Image) -> Image.Image:
+    # 생성 원본은 캐릭터가 256px 격자를 가로·세로 모두 침범한다 (발끝이 아래 행까지
+    # 최대 48px 하강). 행 스트립 절단조차 발을 잘라내므로, 시트 전체에서 연결 성분을
+    # 찾아 면적 상위 24개를 프레임 앵커로 삼고 중심 좌표로 격자 순서를 복원한다.
+    # 나머지 조각(분리된 파츠·다중 개체·탄피 등)은 가장 가까운 앵커 프레임에 귀속시키고,
+    # 라벨 맵으로 픽셀 소유권을 지켜 이웃 프레임 픽셀이 섞이지 않게 한다.
+    sheet = remove_chroma_key(remove_edge_connected_green(source.copy()))
+    labels, components = _labeled_component_map(sheet)
+
+    def center(component):
+        box = component["box"]
+        return ((box[0] + box[2]) / 2, (box[1] + box[3]) / 2)
+
+    # 본체를 y중심으로 명목 행에 배정한다 — 전역 정렬 후 6개씩 자르면
+    # 행당 7개를 그려 넣은 원본에서 행 경계가 밀려 프레임이 뒤섞인다.
+    row_bodies = [[] for _ in range(ROWS)]
+    for component in components:
+        if component["area"] < 4000:
+            continue
+        row = min(ROWS - 1, max(0, int(center(component)[1] // CELL)))
+        row_bodies[row].append(component)
+    if any(len(bodies) < COLS for bodies in row_bodies):
+        return _reslice_source_rows(sheet)
+
+    # 행당 6개 초과분(원본이 그려 넣은 잉여 키프레임)은 면적 하위부터 버린다.
+    grid = []
+    for bodies in row_bodies:
+        kept = sorted(bodies, key=lambda component: component["area"], reverse=True)[:COLS]
+        kept.sort(key=lambda component: center(component)[0])
+        grid.extend(kept)
+
+    # 소품·탄피 등 작은 조각만 같은 행의 가까운 앵커에 귀속시킨다.
+    # 잉여 본체를 프레임에 합성하면 두 몸이 한 셀에 축소되므로 붙이지 않는다.
+    anchor_ids = {component["id"] for component in grid}
+    frame_members = {component["id"]: [component] for component in grid}
+    anchor_centers = [(component["id"], center(component)) for component in grid]
+    for component in components:
+        if component["id"] in anchor_ids or component["area"] < 24 or component["area"] >= 4000:
+            continue
+        cx, cy = center(component)
+        owner = min(anchor_centers, key=lambda item: (item[1][0] - cx) ** 2 + (item[1][1] - cy) ** 2)
+        ox, oy = owner[1]
+        if abs(ox - cx) <= 140 and abs(oy - cy) <= 160:
+            frame_members[owner[0]].append(component)
+
+    width = sheet.width
+    src_pixels = sheet.load()
+    normalized = Image.new("RGBA", (CELL * COLS, CELL * ROWS), (0, 0, 0, 0))
+    for index, anchor in enumerate(grid):
+        member_ids = {component["id"] for component in frame_members[anchor["id"]]}
+        canvas = Image.new("RGBA", sheet.size, (0, 0, 0, 0))
+        canvas_pixels = canvas.load()
+        for component in frame_members[anchor["id"]]:
+            x0, y0, x1, y1 = component["box"]
+            for y in range(y0, y1):
+                row_base = y * width
+                for x in range(x0, x1):
+                    if labels[row_base + x] in member_ids:
+                        canvas_pixels[x, y] = src_pixels[x, y]
+        frame = fit_content(canvas)
+        normalized.alpha_composite(frame, ((index % COLS) * CELL, (index // COLS) * CELL))
+
+    return normalized
+
+
+def _reslice_source_rows(source: Image.Image) -> Image.Image:
+    # 본체 24개가 정확히 분리되지 않는 시트(무리형 적 등)를 위한 행 스트립 폴백.
+    if source.size != (CELL * COLS, CELL * ROWS):
+        raise ValueError(f"row-strip fallback needs {(CELL * COLS, CELL * ROWS)}, got {source.size}")
     normalized = Image.new("RGBA", source.size, (0, 0, 0, 0))
-    margin = 96
 
     for row in range(ROWS):
         row_img = source.crop((0, row * CELL, COLS * CELL, (row + 1) * CELL))
@@ -246,6 +359,42 @@ def reslice_source_sheet(source: Image.Image) -> Image.Image:
     return normalized
 
 
+def reslice_sheet_from_src(path: Path, dry_run: bool) -> dict:
+    # 고정 격자 절단은 격자선을 걸친 프레임을 두 셀로 쪼갠다 —
+    # _src 원본에서 성분 탐지로 본체를 찾아 셀 중앙에 재배치해야 복구된다.
+    src_path = path.with_name(path.name.replace("_sheet.png", "_sheet_src.png"))
+    if not src_path.exists():
+        return {
+            "path": path.relative_to(ROOT).as_posix(),
+            "source": None,
+            "changedFrames": 0,
+            "changed": False,
+        }
+
+    source = Image.open(src_path).convert("RGBA")
+    target = (CELL * COLS, CELL * ROWS)
+    if source.size != target:
+        # 비규격 원본은 종횡비를 유지한 채 규격 안으로 맞춰 프레임 간 상대 크기를 보존한다
+        scale = min(target[0] / source.width, target[1] / source.height)
+        source = source.resize(
+            (max(1, round(source.width * scale)), max(1, round(source.height * scale))),
+            Image.Resampling.LANCZOS,
+        )
+
+    normalized = remove_chroma_key(reslice_source_sheet(source))
+    current = Image.open(path).convert("RGBA")
+    changed = current.size != normalized.size or current.tobytes() != normalized.tobytes()
+    if changed and not dry_run:
+        normalized.save(path)
+
+    return {
+        "path": path.relative_to(ROOT).as_posix(),
+        "source": src_path.relative_to(ROOT).as_posix(),
+        "changedFrames": COLS * ROWS,
+        "changed": changed,
+    }
+
+
 def normalize_sheet(path: Path, dry_run: bool, from_head: bool) -> dict:
     rel_path = path.relative_to(ROOT).as_posix()
     input_label = rel_path
@@ -289,9 +438,17 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--from-head", action="store_true")
+    parser.add_argument("--from-src", action="store_true",
+                        help="_src 원본에서 성분 탐지로 재절단 (격자 걸침 프레임 복구)")
+    parser.add_argument("--only", default=None,
+                        help="파일명에 이 문자열이 포함된 시트만 처리")
     args = parser.parse_args()
 
-    results = [normalize_sheet(path, args.dry_run, args.from_head) for path in display_sheets()]
+    targets = [path for path in display_sheets() if not args.only or args.only in path.name]
+    if args.from_src:
+        results = [reslice_sheet_from_src(path, args.dry_run) for path in targets]
+    else:
+        results = [normalize_sheet(path, args.dry_run, args.from_head) for path in targets]
     changed = [result for result in results if result["changed"]]
     print(f"sheets={len(results)} changed={len(changed)} dryRun={args.dry_run} fromHead={args.from_head}")
     for result in changed:

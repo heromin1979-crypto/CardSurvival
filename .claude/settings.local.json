@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__8f2a5e98-3600-47df-bcae-d497f4b720dc__updateConfluencePage",
+      "mcp__8f2a5e98-3600-47df-bcae-d497f4b720dc__getConfluencePage"
+    ]
+  }
+}

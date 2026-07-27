@@ -289,11 +289,11 @@ const ITEMS_MEDICAL = {
   },
 
   detox_potion: {
-    id: 'detox_potion', name: '해독제', type: 'consumable', subtype: 'medical',
+    id: 'detox_potion', name: '해독 물약', type: 'consumable', subtype: 'medical',
     rarity: 'uncommon', weight: 0.3,
     defaultDurability: 100, defaultContamination: 0,
-    icon: '🧪', description: '체내 독소를 중화하는 해독 물약.',
-    onConsume: { hp: 10, infection: -15, contamination: -20 },
+    icon: '🧪', description: '체내 독소를 중화하는 해독 물약. 방사능도 소량 정화한다.',
+    onConsume: { hp: 10, infection: -15, radiation: -10 },
     tags: ['medical', 'antidote'],
     dismantle: [],
   },
@@ -303,7 +303,7 @@ const ITEMS_MEDICAL = {
     rarity: 'rare', weight: 0.2,
     defaultDurability: 100, defaultContamination: 0,
     icon: '☢️', description: '방사능 오염을 급속히 제거하는 특수 약제.',
-    onConsume: { hp: 5, contamination: -40 },
+    onConsume: { hp: 5, radiation: -40 },
     tags: ['medical', 'radiation'],
     dismantle: [],
   },

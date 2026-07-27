@@ -19,7 +19,6 @@ import ITEMS_MEDICAL     from './items_medical.js';
 import ITEMS_TOOLS       from './items_tools.js';
 import ITEMS_STRUCTURES  from './items_structures.js';
 import LEGENDARY_ITEMS   from './legendaryItems.js';
-import ITEMS_ENVIRONMENT from './items_environment.js';
 import { buildAllLocationCards, buildAllLandmarkCards, buildAllEventLandmarkCards, buildAllHangangCards } from './locationCardFactory.js';
 
 
@@ -72,7 +71,6 @@ const ITEMS = {
   ...LEGENDARY_ITEMS,
   ...ITEMS_LOCATION,
   ...ITEMS_LANDMARK,
-  ...ITEMS_ENVIRONMENT,
 };
 
 // stackConfig.js 의 설정을 덮어씌워 적용

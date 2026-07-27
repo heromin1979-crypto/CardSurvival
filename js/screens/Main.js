@@ -13,6 +13,7 @@ import EquipmentModal  from '../ui/EquipmentModal.js';
 import BodyStatusModal from '../ui/BodyStatusModal.js';
 import LandmarkModal   from '../ui/LandmarkModal.js';
 import SkillModal      from '../ui/SkillModal.js';
+import CompanionModal  from '../ui/CompanionModal.js';
 import BasecampModal  from '../ui/BasecampModal.js';
 import DoctorPatientModal from '../ui/DoctorPatientModal.js';
 import EmergencyRoomModal      from '../ui/EmergencyRoomModal.js';
@@ -57,6 +58,13 @@ const Basecamp = {
         this._updateLocation();
       }
     });
+    // 동료 영입/해제 시 사이드바 동료 버튼 카운트 갱신
+    EventBus.on('npcRecruited', () => {
+      if (GameState.ui.currentState === 'main') this._updateSidebarButtons();
+    });
+    EventBus.on('npcDismissed', () => {
+      if (GameState.ui.currentState === 'main') this._updateSidebarButtons();
+    });
     // 위치 변경 실시간 반영 — 구 이동 / 노드 탐색
     EventBus.on('districtChanged', () => {
       if (GameState.ui.currentState === 'main') this._updateLocation();
@@ -88,6 +96,7 @@ const Basecamp = {
     BodyStatusModal.init();
     LandmarkModal.init();
     SkillModal.init();
+    CompanionModal.init();
     BasecampModal.init();
     DoctorPatientModal.init();
     EmergencyRoomModal.init();
@@ -242,6 +251,11 @@ const Basecamp = {
         </div>
       </div>
 
+      <!-- Companion modal -->
+      <div class="modal-overlay" id="companion-modal">
+        <div class="companion-modal-box"></div>
+      </div>
+
       <!-- Quest modal -->
       <div class="modal-overlay" id="quest-modal">
         <div class="modal-box" style="max-width:520px;max-height:85vh;">
@@ -273,6 +287,7 @@ const Basecamp = {
       section.innerHTML = `
         <div class="bc-toolbar-label">🏕 베이스캠프</div>
         <button class="toolbar-btn primary" id="btn-bc-manage">🔧 거점 관리</button>
+        <button class="toolbar-btn" id="btn-bc-companions">👥 동료 (${(GameState.companions ?? []).length})</button>
         <button class="toolbar-btn" id="btn-bc-craft">제작</button>
         <button class="toolbar-btn" id="btn-bc-skills">숙련도</button>
         ${bcErBtn}
@@ -280,6 +295,7 @@ const Basecamp = {
         <button class="toolbar-btn" id="btn-bc-exit">나가기</button>
       `;
       section.querySelector('#btn-bc-manage')?.addEventListener('click', () => BasecampModal.open());
+      section.querySelector('#btn-bc-companions')?.addEventListener('click', () => CompanionModal.open());
       section.querySelector('#btn-bc-er')?.addEventListener('click', () => EmergencyRoomModal.open());
       section.querySelector('#btn-bc-craft')?.addEventListener('click', () => {
         const modal = document.getElementById('craft-modal');
@@ -306,6 +322,7 @@ const Basecamp = {
         <div class="bc-toolbar-label">⚡ 행동</div>
         <button class="toolbar-btn primary" id="btn-explore">🔍 탐색</button>
         <button class="toolbar-btn" id="btn-quest">📋 퀘스트</button>
+        <button class="toolbar-btn" id="btn-companions">👥 동료 (${(GameState.companions ?? []).length})</button>
         <button class="toolbar-btn" id="btn-craft">${I18n.t('basecamp.craft')}</button>
         <button class="toolbar-btn" id="btn-skills">${I18n.t('basecamp.skills')}</button>
         ${erBtn}
@@ -317,6 +334,7 @@ const Basecamp = {
         this._refreshQuestModal();
         document.getElementById('quest-modal')?.classList.add('open');
       });
+      section.querySelector('#btn-companions')?.addEventListener('click', () => CompanionModal.open());
       section.querySelector('#btn-craft')?.addEventListener('click', () => {
         const modal = document.getElementById('craft-modal');
         modal?.classList.add('open');
