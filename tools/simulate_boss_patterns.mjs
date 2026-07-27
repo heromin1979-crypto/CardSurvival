@@ -124,6 +124,31 @@ function actionDefinitionFor(boss, action) {
   return null;
 }
 
+function validateBossRoster(bosses) {
+  const failures = [];
+  for (const boss of bosses) {
+    const basics = boss?.bossPattern?.basicAttacks;
+    if (!Array.isArray(basics) || basics.length !== 2) {
+      failures.push(
+        `${boss?.id ?? 'unknown'}: basicAttacks는 정확히 2개여야 함 `
+        + `(actual=${Array.isArray(basics) ? basics.length : 'not-array'})`,
+      );
+      continue;
+    }
+
+    const ids = basics.map(definition => actionId(definition));
+    for (let index = 0; index < ids.length; index++) {
+      if (typeof ids[index] !== 'string' || ids[index].trim().length === 0) {
+        failures.push(`${boss.id}: basicAttacks[${index}] action ID가 비어 있음`);
+      }
+    }
+    if (new Set(ids).size !== ids.length) {
+      failures.push(`${boss.id}: 기본공격 action ID가 고유하지 않음 (${ids.join(', ')})`);
+    }
+  }
+  return failures;
+}
+
 function hasValidTargets(action) {
   if (!Array.isArray(action?.targetIds) || action.targetIds.length === 0) {
     return false;
@@ -152,6 +177,7 @@ function emptyBossMetrics(boss) {
     ultimateWarnings: 0,
     ultimateActivations: 0,
     ultimateCancellations: 0,
+    invalidUltimateWarningStates: 0,
     maxUltimateUsesPerCombat: 0,
     combatsWithRepeatedUltimateUse: 0,
     unsupportedEffects: 0,
@@ -297,8 +323,12 @@ function recordCommittedAction({
     metrics.specialSelections += 1;
   }
   if (action.category === 'ultimate') {
-    metrics.ultimateWarnings += 1;
     runMetrics.ultimateUses += 1;
+    if (action.state === 'telegraphing') {
+      metrics.ultimateWarnings += 1;
+    } else {
+      metrics.invalidUltimateWarningStates += 1;
+    }
   }
 
   classifyRepeatedBasic({
@@ -528,6 +558,12 @@ function validateResults(results) {
         + `${metrics.ultimateReservations}`,
       );
     }
+    if (metrics.invalidUltimateWarningStates > 0) {
+      failures.push(
+        `${metrics.id}: 필살기 invalid warning state `
+        + `${metrics.invalidUltimateWarningStates}회`,
+      );
+    }
     const terminalUltimates = metrics.ultimateActivations
       + metrics.ultimateCancellations;
     if (terminalUltimates !== metrics.ultimateReservations) {
@@ -591,6 +627,7 @@ function formatReport({ options, results, failures }) {
     `| 필살기 예고 | ${sum(results, 'ultimateWarnings')} |`,
     `| 필살기 발동 | ${sum(results, 'ultimateActivations')} |`,
     `| 필살기 취소 | ${sum(results, 'ultimateCancellations')} |`,
+    `| 필살기 invalid warning state | ${sum(results, 'invalidUltimateWarningStates')} |`,
     `| 지원되지 않은 effect | ${sum(results, 'unsupportedEffects')} |`,
     `| 대상 없음 또는 무효 action | ${sum(results, 'invalidActions')} |`,
     '',
@@ -599,8 +636,8 @@ function formatReport({ options, results, failures }) {
     '',
     '## 보스별 결과',
     '',
-    '| 보스 | 기본 A | 기본 B | 연속 / fallback / 불필요 | 특수기 기회 / 선택 / 비율 | 필살기 임계 / 예약 / 예고 / 발동 / 취소 | 최대 사용 | unsupported | invalid |',
-    '|---|---:|---:|---:|---:|---:|---:|---:|---:|',
+    '| 보스 | 기본 A | 기본 B | 연속 / fallback / 불필요 | 특수기 기회 / 선택 / 비율 | 필살기 임계 / 예약 / 예고 / 발동 / 취소 | 최대 사용 | unsupported | invalid | warning state |',
+    '|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|',
   ];
 
   for (const metrics of results) {
@@ -615,7 +652,8 @@ function formatReport({ options, results, failures }) {
       + `${metrics.ultimateWarnings} / ${metrics.ultimateActivations} / ${metrics.ultimateCancellations} `
       + `| ${metrics.maxUltimateUsesPerCombat} `
       + `| ${metrics.unsupportedEffects} `
-      + `| ${metrics.invalidActions} |`,
+      + `| ${metrics.invalidActions} `
+      + `| ${metrics.invalidUltimateWarningStates} |`,
     );
   }
 
@@ -633,6 +671,10 @@ async function main() {
   const options = parseArgs(process.argv.slice(2));
   const bosses = Object.values(SECRET_ENEMIES)
     .filter(enemy => enemy.isBoss === true);
+  const rosterFailures = validateBossRoster(bosses);
+  if (rosterFailures.length > 0) {
+    throw new Error(`boss roster contract 실패:\n- ${rosterFailures.join('\n- ')}`);
+  }
   const results = [];
 
   for (const boss of bosses) {
