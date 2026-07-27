@@ -501,15 +501,45 @@ async function scenarioCompanionMonsterPatterns(browser) {
     window.GameState.npcs.states.npc_child.skillCooldowns.guard = 2;
     const hpBefore = enemy.currentHp;
     const attack = window.__patternCompanionAction('attack');
+    const childBlock = child.tokens.block ?? 0;
+    const childHpBeforeRabidAttack = child.hp;
+    const rabidDamageEvents = [];
+    let rabidExecutionAction = null;
+    const originalExecuteEnemyAction = window.CombatSystem._executeEnemyCommittedAction;
+    window.CombatSystem._executeEnemyCommittedAction = function observeRabidAttack(
+      observedEnemy,
+      committedAction,
+    ) {
+      const result = originalExecuteEnemyAction.call(this, observedEnemy, committedAction);
+      rabidExecutionAction = {
+        actionId: committedAction.actionId,
+        targetIds: [...committedAction.targetIds],
+        hitCount: committedAction.hitCount,
+      };
+      rabidDamageEvents.push(...(result?.damageResults ?? []).map(entry => ({
+        targetId: entry.targetId,
+        amount: entry.amount,
+      })));
+      return result;
+    };
+    try {
+      window.CombatSystem._runSingleEnemyTurn(0);
+    } finally {
+      window.CombatSystem._executeEnemyCommittedAction = originalExecuteEnemyAction;
+    }
     return {
       hide,
       attack,
-      childBlock: child.tokens.block ?? 0,
+      childBlock,
       damage: hpBefore - enemy.currentHp,
       childDamageRange: COMBAT_SKILLS.child_throw_debris.effects
         .find(effect => effect.type === 'damage')?.value,
       rifleDamageRange: COMBAT_SKILLS.deserter_rifle_shot.effects
         .find(effect => effect.type === 'damage')?.value,
+      rabidExecutionAction,
+      rabidDamageEvents,
+      childHpBeforeRabidAttack,
+      childHpAfterRabidAttack: child.hp,
     };
   });
   record(
@@ -527,6 +557,17 @@ async function scenarioCompanionMonsterPatterns(browser) {
       && childResult.damage >= childResult.childDamageRange[0]
       && childResult.damage <= childResult.childDamageRange[1]
       && childResult.childDamageRange[1] < childResult.rifleDamageRange[1],
+    JSON.stringify(childResult),
+  );
+  record(
+    'pattern: rabid dog production turn executes both committed hits on the child',
+    childResult.rabidExecutionAction?.actionId === 'basic_attack'
+      && childResult.rabidExecutionAction?.hitCount === 2
+      && childResult.rabidExecutionAction?.targetIds?.length === 1
+      && childResult.rabidExecutionAction.targetIds[0] === 'npc_child'
+      && childResult.rabidDamageEvents.length === 2
+      && childResult.rabidDamageEvents.every(event => event.targetId === 'npc_child')
+      && childResult.childHpAfterRabidAttack < childResult.childHpBeforeRabidAttack,
     JSON.stringify(childResult),
   );
   await screenshot(childPage, '12-pattern-child-rabid');
@@ -655,12 +696,45 @@ async function scenarioCompanionMonsterPatterns(browser) {
     const combat = window.GameState.combat;
     combat.formations.ally = [null, null, 'player', 'npc_dog'];
     const action = window.__patternCompanionAction('hold');
+    const playerBlock = combat.combatants.player.tokens.block ?? 0;
+    const playerHpBeforeHordeAttack = combat.combatants.player.hp;
+    const dogHpBeforeHordeAttack = combat.combatants.npc_dog.hp;
+    const hordeDamageEvents = [];
+    let hordeExecutionAction = null;
+    const originalExecuteEnemyAction = window.CombatSystem._executeEnemyCommittedAction;
+    window.CombatSystem._executeEnemyCommittedAction = function observeHordeAttack(
+      observedEnemy,
+      committedAction,
+    ) {
+      const result = originalExecuteEnemyAction.call(this, observedEnemy, committedAction);
+      hordeExecutionAction = {
+        actionId: committedAction.actionId,
+        targetIds: [...committedAction.targetIds],
+        hitCount: committedAction.hitCount,
+      };
+      hordeDamageEvents.push(...(result?.damageResults ?? []).map(entry => ({
+        targetId: entry.targetId,
+        amount: entry.amount,
+      })));
+      return result;
+    };
+    try {
+      window.CombatSystem._runSingleEnemyTurn(0);
+    } finally {
+      window.CombatSystem._executeEnemyCommittedAction = originalExecuteEnemyAction;
+    }
     return {
       action,
       playerRank: getRank(combat.formations, 'player'),
       dogRank: getRank(combat.formations, 'npc_dog'),
-      playerBlock: combat.combatants.player.tokens.block ?? 0,
+      playerBlock,
       intent: combat.enemies[0]._nextIntent,
+      hordeExecutionAction,
+      hordeDamageEvents,
+      playerHpBeforeHordeAttack,
+      playerHpAfterHordeAttack: combat.combatants.player.hp,
+      dogHpBeforeHordeAttack,
+      dogHpAfterHordeAttack: combat.combatants.npc_dog.hp,
     };
   });
   record(
@@ -680,6 +754,20 @@ async function scenarioCompanionMonsterPatterns(browser) {
       && dogResult.dogRank === 2
       && dogResult.playerBlock > 0,
     JSON.stringify(dogResult),
+  );
+  record(
+    'pattern: horde production turn spreads both committed hits across player and dog',
+    dogResult.hordeExecutionAction?.actionId
+      === dogSetup.initialIntent?.actionId
+      && dogResult.hordeExecutionAction?.hitCount === 2
+      && JSON.stringify(dogResult.hordeExecutionAction?.targetIds)
+        === JSON.stringify(dogSetup.initialIntent?.targetIds)
+      && dogResult.hordeDamageEvents.length === 2
+      && dogResult.hordeDamageEvents.some(event => event.targetId === 'player')
+      && dogResult.hordeDamageEvents.some(event => event.targetId === 'npc_dog')
+      && dogResult.playerHpAfterHordeAttack < dogResult.playerHpBeforeHordeAttack
+      && dogResult.dogHpAfterHordeAttack < dogResult.dogHpBeforeHordeAttack,
+    JSON.stringify({ setup: dogSetup, result: dogResult }),
   );
   await screenshot(dogPage, '15-pattern-dog-horde');
   await dogPage.close();

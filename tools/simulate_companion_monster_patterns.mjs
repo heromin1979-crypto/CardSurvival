@@ -6,39 +6,70 @@ import {
   COMPANION_COMBAT_LOADOUTS,
 } from '../js/data/combatSkills.js';
 import { COMPANION_TACTICS } from '../js/data/companionTactics.js';
-import ENEMIES from '../js/data/enemies.js';
-import CombatSystem from '../js/systems/CombatSystem.js';
+import ENEMIES, { instantiateEnemy } from '../js/data/enemies.js';
 import GameState from '../js/core/GameState.js';
-import {
-  advanceEnemyAction,
-  commitEnemyAction,
-  commitTimedThreatAction,
-} from '../js/systems/combat/EnemyActionPlanner.js';
-import { executeEnemyAction } from '../js/systems/combat/EnemyActionExecutor.js';
-import {
-  executeSkillCommand,
-  validateSkillCommand,
-} from '../js/systems/combat/CombatSkillSystem.js';
-import { planCompanionTurn } from '../js/systems/combat/CompanionTactics.js';
-import {
-  getRank,
-  moveCombatant,
-  validateSkillPosition,
-} from '../js/systems/combat/FormationSystem.js';
-import {
-  addStress,
-  addToken,
-  applyDamage,
-  healCombatant,
-} from '../js/systems/combat/CombatStatusSystem.js';
-import {
-  resolveHitRoll,
-  weaponAffinityMult,
-} from '../js/systems/combat/CombatResolution.js';
+import SystemRegistry from '../js/core/SystemRegistry.js';
+import CombatSystem from '../js/systems/CombatSystem.js';
+import NPCSystem from '../js/systems/NPCSystem.js';
+import { advanceEnemyAction } from '../js/systems/combat/EnemyActionPlanner.js';
+import { weaponAffinityMult } from '../js/systems/combat/CombatResolution.js';
 
 const DEFAULT_RUNS = 500;
 const DEFAULT_SEED = 20260727;
 const TURNS_PER_RUN = 3;
+const HARNESS_HP = 1_000_000;
+const MAX_ENEMY_STEPS = 10;
+
+const EXPECTED_COMPANION_IDS = Object.freeze([
+  'npc_old_survivor',
+  'npc_nurse',
+  'npc_soldier_deserter',
+  'npc_child',
+  'npc_mechanic',
+  'npc_student',
+  'npc_dog',
+  'npc_former_colleague',
+  'npc_minjun',
+  'npc_sohee',
+  'npc_jisu',
+  'npc_yeongcheol',
+  'npc_daehan',
+  'npc_tower_security',
+  'npc_tower_merchant',
+  'npc_tower_cook',
+  'npc_tower_engineer',
+  'npc_tower_doctor',
+  'npc_sous_chef',
+  'npc_kitchen_helper',
+]);
+
+const EXPECTED_ENEMY_IDS = Object.freeze([
+  'zombie_patient_dormant',
+  'zombie_common',
+  'zombie_runner',
+  'zombie_brute',
+  'raider',
+  'raider_elite',
+  'zombie_horde',
+  'rabid_dog',
+  'zombie_acid',
+  'zombie_bloater',
+  'zombie_screamer',
+  'zombie_charger',
+]);
+
+const EXPECTED_UNIQUE_COMPANION_SKILLS = 60;
+const GAMESTATE_SANDBOX_KEYS = Object.freeze([
+  'player',
+  'stats',
+  'noise',
+  'companions',
+  'npcs',
+  'cards',
+  'flags',
+  'location',
+  'combat',
+]);
 const NON_STACKING_SUPPORT_IDS = new Set([
   'block',
   'focus',
@@ -76,14 +107,14 @@ const METRIC_LABELS = {
   invalidSkillSelections: '무효 기술 선택',
   invalidTargetSelections: '무효 대상 선택',
   invalidPositionSelections: '무효 위치 선택',
-  duplicateSupportWaste: '중복 지원기 낭비',
+  duplicateSupportWaste: '중복 지원 효과 낭비',
   nonHealerHealing: '치료 미보유 동료의 치유',
-  intentActionIdMismatches: '의도/실행 행동 ID 불일치',
-  intentTargetMismatches: '의도/실행 대상 불일치',
-  companionMultiHitLoss: '동료 대상 연속공격 타격 소실',
-  companionStatusLoss: '동료 대상 상태이상 소실',
+  intentActionIdMismatches: 'UI 의도/실행 행동 ID 불일치',
+  intentTargetMismatches: 'UI 의도/실행 대상 불일치',
+  companionMultiHitLoss: '동료 대상 연속 공격 횟수 손실',
+  companionStatusLoss: '동료 대상 상태이상 손실',
   declaredButUnexecutedCounters: '선언됐지만 실행되지 않는 카운터',
-  invalidMotionKeys: '유효하지 않은 실행 motionKey',
+  invalidMotionKeys: '유효하지 않은 motionKey',
 };
 
 function parseArgs(argv) {
@@ -155,191 +186,263 @@ function randomFor(seed, ...parts) {
   return mulberry32((seed ^ fnv1a(parts.join('/'))) >>> 0);
 }
 
-function rollRange(range, random) {
-  const [minimum, maximum] = Array.isArray(range) ? range : [0, 0];
-  const low = Number.isFinite(minimum) ? minimum : 0;
-  const high = Number.isFinite(maximum) ? maximum : low;
-  return low + Math.floor(random() * (high - low + 1));
+function sorted(values) {
+  return [...values].sort((left, right) => left.localeCompare(right));
 }
 
-function cloneStatus(status) {
-  return {
-    ...status,
-    effect: { ...(status?.effect ?? {}) },
-  };
+function sameMembers(actual, expected) {
+  return JSON.stringify(sorted(actual)) === JSON.stringify(sorted(expected));
 }
 
-function isAlive(combatant) {
-  return combatant?.dead !== true && (combatant?.hp ?? 0) > 0;
-}
+function validateRosterContract() {
+  const companionIds = Object.keys(COMPANION_COMBAT_LOADOUTS);
+  const enemyIds = Object.keys(ENEMIES);
+  const skillIds = companionIds.flatMap(
+    companionId => COMPANION_COMBAT_LOADOUTS[companionId] ?? [],
+  );
+  const uniqueSkillIds = new Set(skillIds);
+  const failures = [];
 
-function createRunState(companionId, enemyId, runIndex) {
-  const hasHealingSkill = COMPANION_COMBAT_LOADOUTS[companionId]
-    .map(skillId => COMBAT_SKILLS[skillId])
-    .some(skill => skill.effects.some(effect => effect.type === 'heal'));
-  const playerStatuses = runIndex % 5 === 0
-    ? [{ id: 'bleed', duration: 2, effect: { hpLossPerRound: 2 } }]
-    : [];
-  const combatants = {
-    player: {
-      id: 'player',
-      side: 'ally',
-      sourceType: 'player',
-      hp: 1000,
-      maxHp: 1000,
-      stress: 0,
-      dodge: 0,
-      tokens: {},
-      statusEffects: playerStatuses,
-      dead: false,
-    },
-    [companionId]: {
-      id: companionId,
-      side: 'ally',
-      sourceType: 'companion',
-      sourceId: companionId,
-      hp: 1000,
-      maxHp: 1000,
-      stress: 0,
-      dodge: 0,
-      tokens: {},
-      statusEffects: [],
-      dead: false,
-      skillIds: [...COMPANION_COMBAT_LOADOUTS[companionId]],
-    },
-    'enemy:0': {
-      id: 'enemy:0',
-      side: 'enemy',
-      sourceType: 'enemy',
-      sourceId: enemyId,
-      hp: 100000,
-      maxHp: 100000,
-      stress: 0,
-      dodge: 0,
-      tokens: {},
-      statusEffects: [],
-      dead: false,
-    },
-  };
+  if (
+    companionIds.length !== EXPECTED_COMPANION_IDS.length
+    || !sameMembers(companionIds, EXPECTED_COMPANION_IDS)
+  ) {
+    failures.push(
+      `동료 roster: expected=${EXPECTED_COMPANION_IDS.length} actual=${companionIds.length}`,
+    );
+  }
+  if (
+    enemyIds.length !== EXPECTED_ENEMY_IDS.length
+    || !sameMembers(enemyIds, EXPECTED_ENEMY_IDS)
+  ) {
+    failures.push(
+      `일반 적 roster: expected=${EXPECTED_ENEMY_IDS.length} actual=${enemyIds.length}`,
+    );
+  }
+  if (
+    skillIds.length !== EXPECTED_UNIQUE_COMPANION_SKILLS
+    || uniqueSkillIds.size !== EXPECTED_UNIQUE_COMPANION_SKILLS
+  ) {
+    failures.push(
+      `동료 기술: expected=${EXPECTED_UNIQUE_COMPANION_SKILLS} `
+      + `entries=${skillIds.length} unique=${uniqueSkillIds.size}`,
+    );
+  }
+  for (const companionId of companionIds) {
+    const loadout = COMPANION_COMBAT_LOADOUTS[companionId];
+    if (!Array.isArray(loadout) || loadout.length !== 3) {
+      failures.push(`${companionId}: loadout은 정확히 3개여야 함`);
+      continue;
+    }
+    for (const skillId of loadout) {
+      if (!COMBAT_SKILLS[skillId]) {
+        failures.push(`${companionId}: COMBAT_SKILLS에 없는 ${skillId}`);
+      }
+    }
+  }
+  for (const enemyId of enemyIds) {
+    if (!ENEMIES[enemyId]?.id || ENEMIES[enemyId].id !== enemyId) {
+      failures.push(`${enemyId}: 적 정의 ID 누락 또는 key 불일치`);
+    }
+  }
+
+  if (failures.length > 0) {
+    throw new Error(`roster contract 실패:\n- ${failures.join('\n- ')}`);
+  }
 
   return {
-    companionId,
-    enemyId,
-    hasHealingSkill,
-    combatants,
-    formations: {
-      ally: [null, null, companionId, 'player'],
-      enemy: ['enemy:0', null, null, null],
-    },
-    skillsById: Object.fromEntries(
-      COMPANION_COMBAT_LOADOUTS[companionId]
-        .map(skillId => [skillId, COMBAT_SKILLS[skillId]]),
-    ),
-    enemyCooldowns: {},
+    companionCount: companionIds.length,
+    uniqueCompanionSkillCount: uniqueSkillIds.size,
+    enemyCount: enemyIds.length,
   };
 }
 
-function stanceForRole(role, preferredStance) {
+function withGameStateSnapshot(callback) {
+  const snapshot = Object.fromEntries(
+    GAMESTATE_SANDBOX_KEYS.map(key => [key, GameState[key]]),
+  );
+  const originalRandom = Math.random;
+  const originalNpcSystem = SystemRegistry.get('NPCSystem');
+  try {
+    SystemRegistry.register('NPCSystem', NPCSystem);
+    return callback();
+  } finally {
+    for (const [key, value] of Object.entries(snapshot)) {
+      GameState[key] = value;
+    }
+    SystemRegistry.register('NPCSystem', originalNpcSystem);
+    Math.random = originalRandom;
+  }
+}
+
+function snapshotAction(action) {
+  if (!action) return null;
+  return {
+    actionId: action.actionId ?? null,
+    category: action.category ?? null,
+    state: action.state ?? null,
+    targetIds: [...(action.targetIds ?? [])],
+    remainingTelegraphTurns: action.remainingTelegraphTurns ?? null,
+    hitCount: action.hitCount ?? 1,
+    motionKey: action.motionKey ?? null,
+  };
+}
+
+function snapshotIntent(intent) {
+  if (!intent) return null;
+  return {
+    actionId: intent.actionId ?? null,
+    category: intent.category ?? null,
+    state: intent.state ?? null,
+    targetIds: [...(intent.targetIds ?? [])],
+    remainingTelegraphTurns: intent.remainingTelegraphTurns ?? null,
+    hitCount: intent.hitCount ?? 1,
+    motionKey: intent.motionKey ?? null,
+  };
+}
+
+function freshPlayer() {
+  return {
+    name: 'Pattern QA',
+    characterId: 'soldier',
+    hp: { current: HARNESS_HP, max: HARNESS_HP },
+    xp: 0,
+    isAlive: true,
+    deathCause: null,
+    traits: [],
+    diseases: [],
+    skills: {
+      unarmed: { xp: 0, level: 0 },
+      melee: { xp: 0, level: 0 },
+      ranged: { xp: 0, level: 0 },
+      defense: { xp: 0, level: 0 },
+    },
+    equipped: {
+      head: null,
+      body: null,
+      hands: null,
+      face: null,
+      weapon_main: null,
+      weapon_sub: null,
+      backpack: null,
+      boots: null,
+      belt: null,
+      accessory: null,
+    },
+  };
+}
+
+function freshStats() {
+  return {
+    stamina: { current: 100, max: 100, decayPerTP: 0 },
+    morale: { current: 100, max: 100, decayPerTP: 0 },
+    infection: { current: 0, max: 100, decayPerTP: 0 },
+    radiation: { current: 0, max: 100, decayPerTP: 0 },
+    fatigue: { current: 0, max: 100, decayPerTP: 0 },
+  };
+}
+
+function createProductionCombat(companionId, enemyId, random) {
+  Math.random = random;
+  GameState.player = freshPlayer();
+  GameState.stats = freshStats();
+  GameState.noise = {
+    level: 0,
+    decayPerTP: 1,
+    influxThreshold: 60,
+    influxTriggered: false,
+  };
+  GameState.companions = [companionId];
+  GameState.npcs = {
+    states: {
+      [companionId]: {
+        hp: HARNESS_HP,
+        maxHp: HARNESS_HP,
+        isCompanion: true,
+        name: companionId,
+        stance: COMPANION_TACTICS[companionId]?.preferredStance ?? 'attack',
+        statusEffects: [],
+        skillCooldowns: {},
+      },
+    },
+  };
+  GameState.cards = {};
+  GameState.flags = {};
+  GameState.location = {
+    currentDistrict: 'pattern-qa',
+    currentNode: 'pattern-qa',
+  };
+  GameState.combat = null;
+
+  const enemy = instantiateEnemy(ENEMIES[enemyId]);
+  enemy.currentHp = HARNESS_HP;
+  enemy.maxHp = HARNESS_HP;
+  enemy.lootTable = [];
+  CombatSystem._setupCombat({
+    enemies: [enemy],
+    dangerLevel: 3,
+    nodeId: 'pattern-qa',
+  });
+
+  const rankedEnemy = GameState.combat.combatants['enemy:0'];
+  rankedEnemy.hp = HARNESS_HP;
+  rankedEnemy.maxHp = HARNESS_HP;
+  rankedEnemy.dead = false;
+  return enemy;
+}
+
+function stanceForRole(role, fallback) {
   if (role === 'damage') return 'attack';
   if (role === 'heal') return 'heal';
   if (role === 'guard') return 'hold';
   if (['control', 'support', 'food', 'ration'].includes(role)) return 'support';
-  return preferredStance;
+  return fallback;
 }
 
-function configureTacticalSituation(state, desiredSkill, turnIndex) {
-  const player = state.combatants.player;
-  const companion = state.combatants[state.companionId];
-  player.hp = Math.max(player.hp, 800);
-  companion.hp = Math.max(companion.hp, 800);
+function configureProductionTacticalSituation(companionId, desiredSkillId) {
+  const combat = GameState.combat;
+  const desiredSkill = COMBAT_SKILLS[desiredSkillId];
+  const player = combat.combatants.player;
+  const companion = combat.combatants[companionId];
+  const enemy = combat.combatants['enemy:0'];
+  const npcState = GameState.npcs.states[companionId];
+
+  combat.formations.ally = [null, null, companionId, 'player'];
+  combat.formations.enemy = ['enemy:0', null, null, null];
+  player.hp = HARNESS_HP;
+  player.maxHp = HARNESS_HP;
   player.stress = 0;
+  player.dead = false;
+  player.tokens = {};
+  player.statusEffects = [];
+  companion.hp = HARNESS_HP;
+  companion.maxHp = HARNESS_HP;
   companion.stress = 0;
+  companion.dead = false;
+  companion.tokens = {};
+  companion.statusEffects = [];
+  enemy.tokens = {};
+  enemy.statusEffects = [];
+  GameState.player.hp = { current: HARNESS_HP, max: HARNESS_HP };
+  npcState.hp = HARNESS_HP;
+  npcState.maxHp = HARNESS_HP;
+  npcState.statusEffects = [];
+
+  const declaredSkillIds = COMPANION_COMBAT_LOADOUTS[companionId];
+  npcState.skillCooldowns = Object.fromEntries(
+    [...declaredSkillIds, 'guard', 'reposition']
+      .map(skillId => [skillId, skillId === desiredSkillId ? 0 : 2]),
+  );
 
   if (['heal', 'guard'].includes(desiredSkill?.tacticalRole)) {
-    const wounded = turnIndex % 2 === 0 ? player : companion;
-    wounded.hp = 500;
+    player.hp = Math.floor(HARNESS_HP * 0.45);
+    GameState.player.hp.current = player.hp;
   }
   if (['support', 'food', 'ration'].includes(desiredSkill?.tacticalRole)) {
-    player.stress = 8;
+    player.stress = 10;
   }
-}
 
-function addOrRefreshStatus(target, status) {
-  target.statusEffects ??= [];
-  const existing = target.statusEffects.find(entry => entry.id === status.id);
-  if (existing) {
-    existing.duration = Math.max(existing.duration ?? 0, status.duration ?? 1);
-    existing.effect = { ...(existing.effect ?? {}), ...(status.effect ?? {}) };
-  } else {
-    target.statusEffects.push(cloneStatus(status));
-  }
-}
-
-function commandContext(state, events) {
-  return {
-    activeCombatantId: state.companionId,
-    combatants: state.combatants,
-    skillsById: state.skillsById,
-    validatePosition: (actorId, targetId, skill) => (
-      validateSkillPosition(state.formations, actorId, targetId, skill)
-    ),
-    getStamina: () => Number.MAX_SAFE_INTEGER,
-    getDurability: () => Number.MAX_SAFE_INTEGER,
-    consumeCosts: () => ({ ok: true }),
-    resolveHit: (actor, target, skill, random) => {
-      if (actor.side === target.side) {
-        return { hit: true, dodged: false, crit: false, skill };
-      }
-      return {
-        ...resolveHitRoll({
-          attacker: actor,
-          defender: target,
-          accuracy: skill.accuracy,
-          random,
-        }),
-        crit: false,
-        skill,
-      };
-    },
-    applyEffect: (effect, actor, target, random) => {
-      events.push({
-        type: 'companionEffect',
-        effectType: effect?.type ?? null,
-        skillId: events.skillId,
-        targetId: target.id,
-      });
-      if (effect?.type === 'damage') {
-        applyDamage(target, rollRange(effect.value, random), random);
-      } else if (effect?.type === 'heal') {
-        healCombatant(target, rollRange(effect.value, random));
-        const removable = new Set(effect.removeStatus ?? []);
-        target.statusEffects = target.statusEffects
-          .filter(status => !removable.has(status.id));
-      } else if (effect?.type === 'token') {
-        addToken(target, effect.token, effect.stacks ?? 1);
-      } else if (effect?.type === 'status') {
-        const status = effect.status;
-        if (status?.chance == null || random() < status.chance) {
-          addOrRefreshStatus(target, status);
-        }
-      } else if (effect?.type === 'move') {
-        const rank = getRank(state.formations, target.id);
-        const distance = effect.distance === 'auto' ? 1 : (effect.distance ?? 0);
-        const destination = Math.max(1, Math.min(4, (rank ?? 1) + distance));
-        if (destination !== rank
-            && !moveCombatant(state.formations, target.id, destination)) {
-          return { ok: false, reason: 'invalid_position' };
-        }
-      } else if (effect?.type === 'stress') {
-        addStress(target, effect.value ?? 0, random);
-      } else if (effect?.type === 'guard') {
-        addToken(target, 'block', 1);
-      } else if (effect?.type !== 'flee') {
-        return { ok: false, reason: 'invalid_effect' };
-      }
-      return { ok: true };
-    },
-  };
+  return desiredSkill;
 }
 
 function repeatedSupportEffectIds(skill) {
@@ -349,9 +452,11 @@ function repeatedSupportEffectIds(skill) {
     if (effect.type === 'token' && NON_STACKING_SUPPORT_IDS.has(effect.token)) {
       ids.push(effect.token);
     }
-    if (effect.type === 'status'
-        && NON_STACKING_SUPPORT_IDS.has(effect.status?.id)) {
-      ids.push(effect.status.id);
+    if (
+      effect.type === 'status'
+      && NON_STACKING_SUPPORT_IDS.has(effect.status?.id ?? effect.id)
+    ) {
+      ids.push(effect.status?.id ?? effect.id);
     }
   }
   return ids;
@@ -380,35 +485,112 @@ function categorizeCommandFailure(metrics, reason) {
   }
 }
 
-function enemyCandidates(state) {
-  return ['player', state.companionId]
-    .map(id => state.combatants[id])
-    .filter(isAlive)
-    .map(combatant => ({
-      id: combatant.id,
-      side: 'ally',
-      hp: combatant.hp,
-      maxHp: combatant.maxHp,
-      rank: getRank(state.formations, combatant.id),
-      isHealer: combatant.id === state.companionId
-        ? state.hasHealingSkill
-        : false,
-      isDefended: (combatant.tokens?.block ?? 0) > 0
-        || (combatant.tokens?.dodge ?? 0) > 0,
-      isExposed: (combatant.tokens?.vulnerable ?? 0) > 0
-        || (combatant.tokens?.marked ?? 0) > 0,
-      statusEffects: combatant.statusEffects ?? [],
-    }));
+function allyHpTotal(companionId) {
+  const combat = GameState.combat;
+  return (combat.combatants.player?.hp ?? 0)
+    + (combat.combatants[companionId]?.hp ?? 0);
+}
+
+function activateCompanion(companionId) {
+  const combat = GameState.combat;
+  const companionIndex = combat.turnQueue.findIndex(entry => (
+    entry.type === 'companion' && entry.id === companionId
+  ));
+  combat.roundNumber = (combat.roundNumber ?? 0) + 1;
+  combat.activeIdx = companionIndex;
+  combat.activeTurnIndex = companionIndex;
+  CombatSystem.beginActiveTurn();
+}
+
+function runProductionCompanionTurn({
+  companionId,
+  desiredSkillId,
+  metrics,
+  distribution,
+}) {
+  const desiredSkill = configureProductionTacticalSituation(
+    companionId,
+    desiredSkillId,
+  );
+  const npcState = GameState.npcs.states[companionId];
+  const stance = stanceForRole(
+    desiredSkill?.tacticalRole,
+    COMPANION_TACTICS[companionId]?.preferredStance ?? 'attack',
+  );
+
+  activateCompanion(companionId);
+  CombatSystem._prepareCompanionTurn(companionId);
+  const plan = CombatSystem._planCompanionAction(companionId, stance);
+  if (!plan) {
+    distribution.noPlan++;
+    return { plan: null, result: null };
+  }
+
+  const skill = GameState.combat.skillsById[plan.skillId];
+  const target = GameState.combat.combatants[plan.targetId];
+  distribution.plannedCommands++;
+  if (Object.hasOwn(distribution.skills, plan.skillId)) {
+    distribution.skills[plan.skillId]++;
+  } else {
+    distribution.otherSkills[plan.skillId]
+      = (distribution.otherSkills[plan.skillId] ?? 0) + 1;
+  }
+
+  if (!skill || !target) {
+    categorizeCommandFailure(metrics, !skill ? 'invalid_skill' : 'invalid_target');
+    return { plan, result: null };
+  }
+  if (!COMPANION_MOTION_KEYS.has(skill.motionKey)) {
+    metrics.invalidMotionKeys++;
+  }
+  if (supportWouldBeWasted(skill, target)) {
+    metrics.duplicateSupportWaste++;
+  }
+
+  const hpBefore = allyHpTotal(companionId);
+  const hasHealingSkill = COMPANION_COMBAT_LOADOUTS[companionId]
+    .map(skillId => COMBAT_SKILLS[skillId])
+    .some(candidate => candidate.effects?.some(effect => effect.type === 'heal'));
+  const result = CombatSystem._executePlannedCompanionAction(plan);
+  if (result?.ok !== true) {
+    categorizeCommandFailure(metrics, result?.reason ?? 'unknown');
+  } else {
+    distribution.executedCommands++;
+  }
+  if (!hasHealingSkill && allyHpTotal(companionId) > hpBefore) {
+    metrics.nonHealerHealing++;
+  }
+
+  npcState.stance = stance;
+  return { plan, result };
+}
+
+function isExecutableIntent(intent) {
+  return (
+    typeof intent?.actionId === 'string'
+    && Array.isArray(intent.targetIds)
+    && intent.targetIds.length > 0
+  );
+}
+
+function prepareDisplayedIntent(enemy) {
+  for (let step = 0; step < MAX_ENEMY_STEPS; step++) {
+    const intent = snapshotIntent(enemy._nextIntent);
+    if (isExecutableIntent(intent)) return intent;
+    CombatSystem._runSingleEnemyTurn(0);
+    if (enemy.currentHp <= 0 || GameState.combat?.active === false) break;
+  }
+  return snapshotIntent(enemy._nextIntent);
 }
 
 function enemyActionDefinition(enemy, action) {
-  if (action.category === 'timed_threat') return enemy.timedThreat;
-  if (action.category === 'special') {
-    return enemy.specialSkills.find(skill => (
+  if (action?.category === 'timed_threat') return enemy.timedThreat;
+  if (action?.category === 'special') {
+    return enemy.specialSkills?.find(skill => (
       (skill.actionId ?? skill.id) === action.actionId
     ));
   }
-  return enemy.patternProfile.defaultAction;
+  return enemy.patternProfile?.defaultAction ?? enemy.defaultAction;
 }
 
 function damageRangeOf(enemy, definition) {
@@ -416,82 +598,12 @@ function damageRangeOf(enemy, definition) {
   return effect?.value ?? definition?.damage ?? enemy.attack?.damage ?? [0, 0];
 }
 
-function forcedMoveOf(definition) {
-  return definition?.effects?.find(effect => (
-    effect.type === 'move' || effect.type === 'forcedMove'
-  ))?.distance ?? definition?.effect?.forcedMove ?? null;
-}
-
-function expectedStatusIds(enemy, definition, category) {
-  const ids = [];
-  const includeDefaults = category !== 'timed_threat';
-  if (includeDefaults && enemy.statusInflict?.id) ids.push(enemy.statusInflict.id);
-  if (includeDefaults && (enemy.infectionChance ?? 0) > 0) ids.push('infection');
-  if (includeDefaults) {
-    for (const [effectId, value] of Object.entries(enemy.onHitEffect ?? {})) {
-      if (Number.isFinite(value) && value !== 0) ids.push(`${effectId}_exposure`);
-    }
-  }
-  if (definition?.statusInflict?.id) ids.push(definition.statusInflict.id);
-  if (definition?.effect?.status?.id) ids.push(definition.effect.status.id);
-  if (definition?.effect?.dot || definition?.effect?.bleed) {
-    ids.push(definition.effect.bleed
-      ? 'bleed'
-      : `${definition.id ?? definition.actionId}_dot`);
-  }
-  if (definition?.effect?.poison) ids.push('poison');
-  if (definition?.effect?.stun) ids.push('stun');
-  if ((definition?.stunChance ?? 0) > 0) ids.push('stun');
-  for (const effect of definition?.effects ?? []) {
-    if (effect.type === 'status' && effect.id) ids.push(effect.id);
-  }
-  return [...new Set(ids)];
-}
-
-function enemyExecutionServices(state, action, events) {
-  return {
-    damageTarget: (targetId, amount, metadata) => {
-      const target = state.combatants[targetId];
-      events.push({ type: 'damage', targetId, amount, metadata });
-      if (!target) return { missed: true, damage: 0 };
-      return applyDamage(target, amount, () => 0);
-    },
-    addStatus: (targetId, status) => {
-      events.push({ type: 'status', targetId, status: cloneStatus(status) });
-      const target = state.combatants[targetId];
-      if (target) addOrRefreshStatus(target, status);
-      return !!target;
-    },
-    moveTarget: (targetId, distance) => {
-      events.push({ type: 'move', targetId, distance });
-      const rank = getRank(state.formations, targetId);
-      if (rank === null) return false;
-      const destination = Math.max(1, Math.min(4, rank + distance));
-      return destination === rank
-        || moveCombatant(state.formations, targetId, destination);
-    },
-    summonEnemy: (enemyId, count, row) => {
-      events.push({ type: 'summon', enemyId, count, row });
-      return count;
-    },
-    addNoise: value => {
-      events.push({ type: 'noise', value });
-    },
-    emitFx: payload => {
-      events.push({ type: 'fx', ...payload });
-    },
-    addLog: message => {
-      events.push({ type: 'log', message });
-    },
-  };
-}
-
 function expectedAttemptsByTarget(enemy, action, definition) {
   const damageRange = damageRangeOf(enemy, definition);
   if (!damageRange.some(value => Number.isFinite(value) && value > 0)) {
     return new Map();
   }
-  const targets = action.targetIds;
+  const targets = action.targetIds ?? [];
   const result = new Map(targets.map(targetId => [targetId, 0]));
   if (enemy.spreadAttacks === true && targets.length > 1) {
     for (let hitIndex = 0; hitIndex < action.hitCount; hitIndex++) {
@@ -504,252 +616,204 @@ function expectedAttemptsByTarget(enemy, action, definition) {
   return result;
 }
 
-function inspectEnemyExecution({
-  state,
-  enemy,
-  intent,
-  action,
-  definition,
-  events,
-  result,
-  metrics,
-}) {
-  const plannedTargets = new Set(intent.targetIds);
-  const targetedEvents = events.filter(event => (
-    ['damage', 'status', 'move', 'fx'].includes(event.type) && event.targetId
-  ));
-  const targetEffectsExist = damageRangeOf(enemy, definition)
-    .some(value => Number.isFinite(value) && value > 0)
-    || expectedStatusIds(enemy, definition, action.category).length > 0
-    || Number.isFinite(forcedMoveOf(definition));
+function expectedStatusIds(enemy, definition, category) {
+  const ids = [];
+  if (category !== 'timed_threat' && enemy.statusInflict?.id) {
+    ids.push(enemy.statusInflict.id);
+  }
+  if (definition?.statusInflict?.id) ids.push(definition.statusInflict.id);
+  if (definition?.effect?.status?.id) ids.push(definition.effect.status.id);
+  if (definition?.effect?.bleed) ids.push('bleed');
+  if (definition?.effect?.poison) ids.push('poison');
+  if (definition?.effect?.stun || (definition?.stunChance ?? 0) > 0) {
+    ids.push('stun');
+  }
+  for (const effect of definition?.effects ?? []) {
+    if (effect.type === 'status' && (effect.status?.id ?? effect.id)) {
+      ids.push(effect.status?.id ?? effect.id);
+    }
+  }
+  return [...new Set(ids)];
+}
 
-  if (
-    targetedEvents.some(event => !plannedTargets.has(event.targetId))
-    || (targetEffectsExist
-      && intent.targetIds.some(targetId => (
-        !targetedEvents.some(event => event.targetId === targetId)
-      )))
+function allyStatusIds(targetId) {
+  if (targetId === 'player') {
+    return new Set([
+      ...(GameState.combat.playerStatus ?? []).map(status => status.id),
+      ...(GameState.combat.combatants.player?.statusEffects ?? [])
+        .map(status => status.id),
+    ]);
+  }
+  return new Set([
+    ...(GameState.combat.combatants[targetId]?.statusEffects ?? [])
+      .map(status => status.id),
+    ...(GameState.npcs.states[targetId]?.statusEffects ?? [])
+      .map(status => status.id),
+  ]);
+}
+
+function observeProductionEnemyExecution(enemy, displayedIntent) {
+  const calls = [];
+  const originalExecute = CombatSystem._executeEnemyCommittedAction;
+  CombatSystem._executeEnemyCommittedAction = function observedExecution(
+    observedEnemy,
+    action,
   ) {
+    const result = originalExecute.call(this, observedEnemy, action);
+    calls.push({
+      action: snapshotAction(action),
+      result: result ? structuredClone(result) : result,
+    });
+    return result;
+  };
+
+  try {
+    for (let step = 0; step < MAX_ENEMY_STEPS && calls.length === 0; step++) {
+      CombatSystem._runSingleEnemyTurn(0);
+      if (enemy.currentHp <= 0 && calls.length === 0) break;
+    }
+  } finally {
+    CombatSystem._executeEnemyCommittedAction = originalExecute;
+  }
+
+  return {
+    displayedIntent,
+    execution: calls[0] ?? null,
+  };
+}
+
+function inspectProductionEnemyExecution({
+  companionId,
+  enemy,
+  observation,
+  statusesBefore,
+  blocksBefore,
+  metrics,
+  distribution,
+}) {
+  const intent = observation.displayedIntent;
+  const execution = observation.execution;
+  if (!execution?.action) {
+    metrics.intentActionIdMismatches++;
+    return;
+  }
+
+  const action = execution.action;
+  const result = execution.result;
+  distribution[action.actionId] = (distribution[action.actionId] ?? 0) + 1;
+  if (action.actionId !== intent?.actionId) {
+    metrics.intentActionIdMismatches++;
+  }
+  if (JSON.stringify(action.targetIds) !== JSON.stringify(intent?.targetIds ?? [])) {
     metrics.intentTargetMismatches++;
   }
 
-  const actionEvents = events.filter(event => (
-    event.type === 'damage' || event.type === 'fx'
-  ));
-  if (
-    action.actionId !== intent.actionId
-    || actionEvents.some(event => (
-      (event.metadata?.actionId ?? event.actionId) !== intent.actionId
-    ))
-    || (targetEffectsExist && result === undefined)
-  ) {
-    metrics.intentActionIdMismatches++;
-  }
-
+  const definition = enemyActionDefinition(enemy, action);
   if (
     !ENEMY_MOTION_KEYS.has(action.motionKey)
     || action.motionKey !== definition?.motionKey
-    || events.some(event => event.type === 'fx'
-      && event.motionKey !== action.motionKey)
   ) {
     metrics.invalidMotionKeys++;
   }
 
-  if (!action.targetIds.every(targetId => isAlive(state.combatants[targetId]))) {
-    metrics.invalidTargetSelections++;
-  }
-
-  const attempts = expectedAttemptsByTarget(enemy, action, definition);
-  const companionId = state.companionId;
-  if (attempts.has(companionId)) {
-    const observedAttempts = events.filter(event => (
-      event.type === 'fx' && event.targetId === companionId
-    )).length;
-    if (observedAttempts !== attempts.get(companionId)) {
-      metrics.companionMultiHitLoss += Math.abs(
-        attempts.get(companionId) - observedAttempts,
-      );
-    }
-  }
-
-  const companionWasAffected = events.some(event => (
-    event.targetId === companionId
-    && ['damage', 'status', 'move'].includes(event.type)
-  ));
-  if (companionWasAffected) {
-    const expectedStatuses = expectedStatusIds(enemy, definition, action.category);
-    const observedStatuses = new Set(events
-      .filter(event => event.type === 'status' && event.targetId === companionId)
-      .map(event => event.status.id));
-    metrics.companionStatusLoss += expectedStatuses
-      .filter(statusId => !observedStatuses.has(statusId))
-      .length;
-  }
-}
-
-function runCompanionTurn({
-  state,
-  desiredSkill,
-  random,
-  metrics,
-  distribution,
-}) {
-  const tactic = COMPANION_TACTICS[state.companionId];
-  const stance = stanceForRole(desiredSkill?.tacticalRole, tactic.preferredStance);
-  const skills = COMPANION_COMBAT_LOADOUTS[state.companionId]
-    .map(skillId => COMBAT_SKILLS[skillId]);
-  const events = [];
-  const context = commandContext(state, events);
-  const plan = planCompanionTurn({
-    npcId: state.companionId,
-    stance,
-    skills,
-    allies: [state.combatants.player, state.combatants[state.companionId]],
-    enemies: [state.combatants['enemy:0']],
-    canUse: (skill, target) => validateSkillCommand(context, {
-      actorId: state.companionId,
-      skillId: skill.id,
-      targetId: target.id,
-    }).ok,
-  });
-
-  if (!plan) {
-    distribution.noPlan++;
-    return;
-  }
-
-  const skill = state.skillsById[plan.skillId];
-  const target = state.combatants[plan.targetId];
-  distribution.skills[plan.skillId]++;
-  distribution.commands++;
-
-  if (!COMPANION_MOTION_KEYS.has(skill?.motionKey)) {
-    metrics.invalidMotionKeys++;
-  }
-  if (supportWouldBeWasted(skill, target)) {
-    metrics.duplicateSupportWaste++;
-  }
-
-  const validation = validateSkillCommand(context, {
-    actorId: state.companionId,
-    skillId: plan.skillId,
-    targetId: plan.targetId,
-  });
-  if (!validation.ok) {
-    categorizeCommandFailure(metrics, validation.reason);
-    return;
-  }
-
-  events.skillId = plan.skillId;
-  const result = executeSkillCommand(context, {
-    actorId: state.companionId,
-    skillId: plan.skillId,
-    targetId: plan.targetId,
-  }, random);
-  if (!result.ok) {
-    categorizeCommandFailure(metrics, result.reason);
-    return;
-  }
-
-  const healingEffects = events.filter(event => (
-    event.type === 'companionEffect' && event.effectType === 'heal'
-  )).length;
-  if (!state.hasHealingSkill && healingEffects > 0) {
-    metrics.nonHealerHealing += healingEffects;
-  }
-}
-
-function runEnemyTurn({
-  state,
-  enemy,
-  random,
-  executionRandom,
-  runIndex,
-  turnIndex,
-  metrics,
-  distribution,
-}) {
-  for (const skillId of Object.keys(state.enemyCooldowns)) {
-    state.enemyCooldowns[skillId] = Math.max(
-      0,
-      state.enemyCooldowns[skillId] - 1,
+  const expectedAttempts = expectedAttemptsByTarget(enemy, action, definition);
+  const actualAttempts = new Map();
+  for (const damage of result?.damageResults ?? []) {
+    actualAttempts.set(
+      damage.targetId,
+      (actualAttempts.get(damage.targetId) ?? 0) + 1,
     );
   }
-  const candidates = enemyCandidates(state);
-  const useTimedThreat = !!enemy.timedThreat
-    && (runIndex + turnIndex) % 5 === 0;
-  let actionState = useTimedThreat
-    ? commitTimedThreatAction({
-        enemy: { ...enemy, _chargeRemaining: 0 },
-        candidates,
-        random,
-      })
-    : commitEnemyAction({
-        enemy,
-        candidates,
-        cooldowns: state.enemyCooldowns,
-        random,
-      });
-  const intent = {
-    actionId: actionState.committedAction.actionId,
-    targetIds: [...actionState.committedAction.targetIds],
-    motionKey: actionState.committedAction.motionKey,
-  };
-
-  while (actionState.committedAction?.state === 'telegraphing') {
-    actionState = advanceEnemyAction({ state: actionState });
+  const expectedCompanionAttempts = expectedAttempts.get(companionId) ?? 0;
+  const actualCompanionAttempts = actualAttempts.get(companionId) ?? 0;
+  if (actualCompanionAttempts !== expectedCompanionAttempts) {
+    metrics.companionMultiHitLoss += Math.abs(
+      expectedCompanionAttempts - actualCompanionAttempts,
+    );
   }
-  const action = actionState.committedAction;
-  const definition = enemyActionDefinition(enemy, action);
-  distribution[action.actionId] = (distribution[action.actionId] ?? 0) + 1;
-  const events = [];
-  const result = executeEnemyAction({
-    enemy,
-    action,
-    services: enemyExecutionServices(state, action, events),
-    random: executionRandom,
-  });
 
-  inspectEnemyExecution({
-    state,
-    enemy,
-    intent,
-    action,
-    definition,
-    events,
-    result,
-    metrics,
-  });
-
-  if (action.category === 'special') {
-    state.enemyCooldowns[action.actionId] = definition?.cooldown ?? 0;
+  if (action.targetIds.includes(companionId)) {
+    const observedStatuses = allyStatusIds(companionId);
+    const expectedDamageAttempts = expectedAttempts.get(companionId) ?? 0;
+    const companionWasHit = (result?.damageResults ?? []).some(entry => (
+      entry.targetId === companionId
+      && entry.result?.dodged !== true
+      && entry.result?.missed !== true
+    ));
+    const onHitEffectsWereEvaded = (
+      expectedDamageAttempts > 0
+      && !companionWasHit
+    );
+    const blockNegatesStun = definition?.telegraph?.blockNegatesStun === true
+      && (blocksBefore.get(companionId) ?? 0) > 0;
+    for (const statusId of expectedStatusIds(enemy, definition, action.category)) {
+      if (onHitEffectsWereEvaded) continue;
+      if (statusId === 'stun' && blockNegatesStun) continue;
+      if (
+        !statusesBefore.get(companionId)?.has(statusId)
+        && !observedStatuses.has(statusId)
+      ) {
+        metrics.companionStatusLoss++;
+      }
+    }
   }
 }
 
-function setupKillProbe(enemy, killContext) {
-  const probeEnemy = structuredClone(enemy);
-  probeEnemy.currentHp = 0;
-  probeEnemy.maxHp = Math.max(1, probeEnemy.hp?.max ?? 50);
-  probeEnemy.lootTable = [];
-  probeEnemy.infectionChance = 0;
-  delete probeEnemy._killProcessed;
+function runProductionEnemyTurn({
+  companionId,
+  enemy,
+  displayedIntent,
+  metrics,
+  distribution,
+}) {
+  if (!isExecutableIntent(displayedIntent)) {
+    metrics.intentActionIdMismatches++;
+    return;
+  }
+  const targetIds = displayedIntent.targetIds ?? [];
+  const statusesBefore = new Map(
+    targetIds.map(targetId => [targetId, allyStatusIds(targetId)]),
+  );
+  const blocksBefore = new Map(
+    targetIds.map(targetId => [
+      targetId,
+      GameState.combat.combatants[targetId]?.tokens?.block ?? 0,
+    ]),
+  );
+  const observation = observeProductionEnemyExecution(enemy, displayedIntent);
+  inspectProductionEnemyExecution({
+    companionId,
+    enemy,
+    observation,
+    statusesBefore,
+    blocksBefore,
+    metrics,
+    distribution,
+  });
+}
+
+function setupKillProbe(enemyDefinition, killContext) {
+  const enemy = structuredClone(enemyDefinition);
+  enemy.currentHp = 0;
+  enemy.maxHp = Math.max(1, enemy.hp?.max ?? 50);
+  enemy.lootTable = [];
+  enemy.infectionChance = 0;
+  delete enemy._killProcessed;
+
   GameState.player = {
-    ...(GameState.player ?? {}),
+    ...freshPlayer(),
     hp: { current: 100, max: 100 },
-    xp: 0,
-    characterId: 'soldier',
-    equipped: {},
   };
+  GameState.stats = freshStats();
   GameState.cards = {};
   GameState.flags = {};
-  GameState.location = {
-    ...(GameState.location ?? {}),
-    currentDistrict: 'pattern-simulator',
-  };
+  GameState.location = { currentDistrict: 'pattern-counter-probe' };
   GameState.noise = { level: 0 };
+  GameState.companions = [];
+  GameState.npcs = { states: {} };
   GameState.combat = {
     active: true,
-    enemies: [probeEnemy],
+    enemies: [enemy],
     log: [],
     fxQueue: [],
     rewards: [],
@@ -757,38 +821,78 @@ function setupKillProbe(enemy, killContext) {
     lastHit: null,
     _lastKillContext: killContext,
   };
-  CombatSystem._onEnemyKilled(probeEnemy);
+
+  CombatSystem._onEnemyKilled(enemy);
   return {
     hp: GameState.player.hp.current,
     noise: GameState.noise.level,
   };
 }
 
+function probeProductionStunDelay(enemyId, declaredValue) {
+  const enemy = createProductionCombat('npc_nurse', enemyId, () => 0);
+  const before = snapshotAction(enemy._enemyActionState?.committedAction);
+  const normalAdvance = advanceEnemyAction({
+    state: enemy._enemyActionState,
+    stunned: false,
+  });
+  const normalAfter = snapshotAction(normalAdvance.committedAction);
+  const normalDecreases = (
+    Number.isFinite(before?.remainingTelegraphTurns)
+    && before.remainingTelegraphTurns > 0
+    && normalAfter?.remainingTelegraphTurns
+      === before.remainingTelegraphTurns - 1
+  );
+
+  const applied = CombatSystem._applyEnemyStatusInflict(enemy, {
+    id: 'stun',
+    name: 'stun',
+    duration: 1,
+    effect: { skipTurn: true },
+  }, 0);
+  CombatSystem._runSingleEnemyTurn(0);
+  const productionStun = snapshotAction(
+    enemy._enemyActionState?.committedAction,
+  );
+  const committedActionPreserved = (
+    productionStun?.actionId === before?.actionId
+    && JSON.stringify(productionStun?.targetIds)
+      === JSON.stringify(before?.targetIds)
+    && productionStun?.remainingTelegraphTurns
+      === before?.remainingTelegraphTurns
+  );
+  const stunConsumed = !(enemy._statusEffects ?? []).some(
+    status => status.id === 'stun',
+  );
+  const ok = (
+    declaredValue === true
+    && normalDecreases
+    && applied === true
+    && committedActionPreserved
+    && stunConsumed
+  );
+
+  return {
+    ok,
+    detail: `normal ${before?.remainingTelegraphTurns}→${normalAfter?.remainingTelegraphTurns}, `
+      + `production stun ${before?.remainingTelegraphTurns}→`
+      + `${productionStun?.remainingTelegraphTurns}, action=${before?.actionId}`,
+  };
+}
+
 function probeDeclaredCounters() {
-  const rows = [];
-  const failures = [];
-  const originalRandom = Math.random;
-  Math.random = () => 0;
-  try {
+  return withGameStateSnapshot(() => {
+    const rows = [];
+    const failures = [];
+    Math.random = () => 0;
+
     for (const [enemyId, enemy] of Object.entries(ENEMIES)) {
       for (const [counter, value] of Object.entries(
         enemy.timedThreat?.counters ?? {},
       )) {
-        let ok = false;
-        let detail = '';
+        let probe = { ok: false, detail: `지원되지 않는 카운터: ${JSON.stringify(value)}` };
         if (counter === 'stunDelays') {
-          const state = commitTimedThreatAction({
-            enemy: {
-              ...enemy,
-              _chargeRemaining: enemy.timedThreat.chargeTurns,
-            },
-            candidates: [{ id: 'player', side: 'ally', hp: 100, maxHp: 100 }],
-            random: () => 0,
-          });
-          const delayed = advanceEnemyAction({ state, stunned: true });
-          ok = delayed.committedAction.remainingTelegraphTurns
-            === state.committedAction.remainingTelegraphTurns;
-          detail = `stun ${state.committedAction.remainingTelegraphTurns}→${delayed.committedAction.remainingTelegraphTurns}`;
+          probe = probeProductionStunDelay(enemyId, value);
         } else if (counter === 'weakness' && Array.isArray(value)) {
           const affinityWorks = value.every(weaponType => (
             enemy.weaknesses.includes(weaponType)
@@ -804,8 +908,10 @@ function probeDeclaredCounters() {
             isSilent: false,
             isMelee: true,
           });
-          ok = affinityWorks && clean.hp === 100 && dirty.hp < clean.hp;
-          detail = `clean HP ${clean.hp}, non-counter HP ${dirty.hp}`;
+          probe = {
+            ok: affinityWorks && clean.hp === 100 && dirty.hp < clean.hp,
+            detail: `counter HP ${clean.hp}, non-counter HP ${dirty.hp}`,
+          };
         } else if (counter === 'quietKill' && value === true) {
           const quiet = setupKillProbe(enemy, {
             weaponType: 'blade',
@@ -817,102 +923,168 @@ function probeDeclaredCounters() {
             isSilent: false,
             isMelee: true,
           });
-          ok = quiet.noise === 0 && loud.noise > quiet.noise;
-          detail = `quiet noise ${quiet.noise}, loud noise ${loud.noise}`;
-        } else {
-          detail = `지원되지 않는 카운터 값 ${JSON.stringify(value)}`;
+          probe = {
+            ok: quiet.noise === 0 && loud.noise > quiet.noise,
+            detail: `quiet noise ${quiet.noise}, loud noise ${loud.noise}`,
+          };
         }
-        rows.push({ enemyId, counter, ok, detail });
-        if (!ok) failures.push(`${enemyId}.${counter}`);
+        rows.push({ enemyId, counter, ...probe });
+        if (!probe.ok) failures.push(`${enemyId}.${counter}`);
       }
     }
-  } finally {
-    Math.random = originalRandom;
-  }
-  return { rows, failures };
+
+    return { rows, failures };
+  });
 }
 
-function simulate({ runs, seed }) {
-  const companionIds = Object.keys(COMPANION_COMBAT_LOADOUTS);
-  const enemyIds = Object.keys(ENEMIES);
-  const metrics = emptyMetrics();
-  const companionDistributions = Object.fromEntries(companionIds.map(companionId => [
-    companionId,
-    {
-      skills: Object.fromEntries(
-        COMPANION_COMBAT_LOADOUTS[companionId].map(skillId => [skillId, 0]),
-      ),
-      commands: 0,
-      noPlan: 0,
-    },
-  ]));
-  const enemyDistributions = Object.fromEntries(
-    enemyIds.map(enemyId => [enemyId, {}]),
-  );
-  const combos = [];
-
+function collectWarnings(companionIds, companionDistributions) {
+  const warnings = [];
   for (const companionId of companionIds) {
-    for (const enemyId of enemyIds) {
-      const comboMetrics = emptyMetrics();
-      const enemy = ENEMIES[enemyId];
-      for (let runIndex = 0; runIndex < runs; runIndex++) {
-        const state = createRunState(companionId, enemyId, runIndex);
-        for (let turnIndex = 0; turnIndex < TURNS_PER_RUN; turnIndex++) {
-          const desiredSkillId = COMPANION_COMBAT_LOADOUTS[companionId][
-            (runIndex + turnIndex) % 3
-          ];
-          const desiredSkill = COMBAT_SKILLS[desiredSkillId];
-          configureTacticalSituation(state, desiredSkill, turnIndex);
-          const actionRandom = randomFor(
-            seed,
-            companionId,
-            enemyId,
-            runIndex,
-            turnIndex,
-            'action',
-          );
-          const executionRandom = () => actionRandom() * 0.19;
-          runCompanionTurn({
-            state,
-            desiredSkill,
-            random: executionRandom,
-            metrics: comboMetrics,
-            distribution: companionDistributions[companionId],
-          });
-          runEnemyTurn({
-            state,
-            enemy,
-            random: actionRandom,
-            executionRandom,
-            runIndex,
-            turnIndex,
-            metrics: comboMetrics,
-            distribution: enemyDistributions[enemyId],
-          });
-        }
+    const distribution = companionDistributions[companionId];
+    for (const [skillId, count] of Object.entries(distribution.skills)) {
+      if (count === 0) {
+        warnings.push({
+          type: 'zero_use',
+          companionId,
+          skillId,
+          detail: '관찰 시나리오에서 선택되지 않음',
+        });
       }
-      addMetrics(metrics, comboMetrics);
-      combos.push({
+    }
+    if (distribution.noPlan > 0) {
+      warnings.push({
+        type: 'no_plan',
         companionId,
-        enemyId,
-        representative: REPRESENTATIVE_COMBOS.has(`${companionId}/${enemyId}`),
-        metrics: comboMetrics,
+        skillId: '-',
+        detail: `production planner가 ${distribution.noPlan}회 계획을 만들지 못함`,
       });
     }
   }
+  return warnings;
+}
 
-  const counters = probeDeclaredCounters();
-  metrics.declaredButUnexecutedCounters = counters.failures.length;
+function simulate({ runs, seed }, roster) {
+  return withGameStateSnapshot(() => {
+    const companionIds = [...EXPECTED_COMPANION_IDS];
+    const enemyIds = [...EXPECTED_ENEMY_IDS];
+    const metrics = emptyMetrics();
+    const companionDistributions = Object.fromEntries(
+      companionIds.map(companionId => [
+        companionId,
+        {
+          skills: Object.fromEntries(
+            COMPANION_COMBAT_LOADOUTS[companionId]
+              .map(skillId => [skillId, 0]),
+          ),
+          otherSkills: {},
+          plannedCommands: 0,
+          executedCommands: 0,
+          noPlan: 0,
+        },
+      ]),
+    );
+    const enemyDistributions = Object.fromEntries(
+      enemyIds.map(enemyId => [enemyId, {}]),
+    );
+    const combos = [];
 
-  return {
-    companionIds,
-    enemyIds,
-    metrics,
-    companionDistributions,
-    enemyDistributions,
-    combos,
-    counters,
-  };
+    for (const companionId of companionIds) {
+      for (const enemyId of enemyIds) {
+        const comboMetrics = emptyMetrics();
+        let enemy = null;
+        for (let runIndex = 0; runIndex < runs; runIndex++) {
+          enemy = createProductionCombat(
+            companionId,
+            enemyId,
+            randomFor(seed, companionId, enemyId, runIndex, 'setup'),
+          );
+          for (let turnIndex = 0; turnIndex < TURNS_PER_RUN; turnIndex++) {
+            if (
+              enemy.currentHp <= 0
+              || GameState.combat?.active === false
+            ) {
+              enemy = createProductionCombat(
+                companionId,
+                enemyId,
+                randomFor(
+                  seed,
+                  companionId,
+                  enemyId,
+                  runIndex,
+                  turnIndex,
+                  'reset',
+                ),
+              );
+            }
+
+            const displayedIntent = prepareDisplayedIntent(enemy);
+            const desiredSkillId = COMPANION_COMBAT_LOADOUTS[companionId][
+              (runIndex + turnIndex) % 3
+            ];
+            Math.random = randomFor(
+              seed,
+              companionId,
+              enemyId,
+              runIndex,
+              turnIndex,
+              'companion',
+            );
+            runProductionCompanionTurn({
+              companionId,
+              desiredSkillId,
+              metrics: comboMetrics,
+              distribution: companionDistributions[companionId],
+            });
+
+            const enemyRandom = randomFor(
+              seed,
+              companionId,
+              enemyId,
+              runIndex,
+              turnIndex,
+              'enemy',
+            );
+            Math.random = () => enemyRandom() * 0.1;
+            runProductionEnemyTurn({
+              companionId,
+              enemy,
+              displayedIntent,
+              metrics: comboMetrics,
+              distribution: enemyDistributions[enemyId],
+            });
+          }
+        }
+        addMetrics(metrics, comboMetrics);
+        combos.push({
+          companionId,
+          enemyId,
+          representative: REPRESENTATIVE_COMBOS.has(
+            `${companionId}/${enemyId}`,
+          ),
+          metrics: comboMetrics,
+        });
+      }
+    }
+
+    const counters = probeDeclaredCounters();
+    metrics.declaredButUnexecutedCounters = counters.failures.length;
+    const warnings = collectWarnings(
+      companionIds,
+      companionDistributions,
+    );
+
+    return {
+      roster,
+      companionIds,
+      enemyIds,
+      metrics,
+      companionDistributions,
+      enemyDistributions,
+      combos,
+      counters,
+      warnings,
+    };
+  });
 }
 
 function markdownCell(value) {
@@ -925,6 +1097,7 @@ function percent(value, total) {
 
 function renderReport(result, options) {
   const {
+    roster,
     companionIds,
     enemyIds,
     metrics,
@@ -932,13 +1105,24 @@ function renderReport(result, options) {
     enemyDistributions,
     combos,
     counters,
+    warnings,
   } = result;
   const lines = [
     '# 동료·일반 몬스터 패턴 통합 QA',
     '',
     `> 명령: \`node tools/simulate_companion_monster_patterns.mjs --runs ${options.runs} --seed ${options.seed} --out ${markdownCell(options.out)}\``,
-    `> 범위: 동료 ${companionIds.length}종 × 일반 몬스터 ${enemyIds.length}종 = ${combos.length}조합, 조합당 ${options.runs}회, 회당 ${TURNS_PER_RUN}개 행동 라운드`,
-    `> 결정성: seed \`${options.seed}\`; 같은 데이터·Node 버전·인자로 실행하면 같은 분포를 생성한다.`,
+    `> 범위: 동료 ${companionIds.length}종 × 일반 몬스터 ${enemyIds.length}종 = ${combos.length}조합, 조합당 ${options.runs}회 × ${TURNS_PER_RUN}행동`,
+    `> 결정적 seed: \`${options.seed}\``,
+    '',
+    '## 데이터 계약',
+    '',
+    '| 계약 | 기대 | 실제 | 결과 |',
+    '|---|---:|---:|---|',
+    `| 동료 roster | 20 | ${roster.companionCount} | PASS |`,
+    `| 고유 동료 기술 ID | 60 | ${roster.uniqueCompanionSkillCount} | PASS |`,
+    `| 일반 몬스터 roster | 12 | ${roster.enemyCount} | PASS |`,
+    '',
+    'roster 수, ID 완전성, 동료별 3개 loadout, 기술 정의 존재 여부는 시뮬레이션 전에 hard fail로 검사한다.',
     '',
     '## 판정',
     '',
@@ -948,30 +1132,37 @@ function renderReport(result, options) {
     '|---|---:|---:|---|',
   ];
   for (const [metric, label] of Object.entries(METRIC_LABELS)) {
-    lines.push(`| ${label} | ${metrics[metric]} | 0 | ${metrics[metric] === 0 ? 'PASS' : 'FAIL'} |`);
+    lines.push(
+      `| ${label} | ${metrics[metric]} | 0 | `
+      + `${metrics[metric] === 0 ? 'PASS' : 'FAIL'} |`,
+    );
   }
 
   lines.push(
     '',
-    '## 동료별 실제 기술 사용 분포',
+    '## 동료별 production 기술 사용 분포',
     '',
-    '| 동료 | 기술 1 | 기술 2 | 기술 3 | 실행 명령 | 계획 없음 |',
-    '|---|---:|---:|---:|---:|---:|',
+    '| 동료 | 기술 1 | 기술 2 | 기술 3 | 계획 | 실행 | no-plan |',
+    '|---|---:|---:|---:|---:|---:|---:|',
   );
   for (const companionId of companionIds) {
     const distribution = companionDistributions[companionId];
     const skillCells = COMPANION_COMBAT_LOADOUTS[companionId].map(skillId => {
       const count = distribution.skills[skillId];
-      return `\`${skillId}\` ${count} (${percent(count, distribution.commands)})`;
+      return `\`${skillId}\` ${count} (${percent(count, distribution.plannedCommands)})`;
     });
-    lines.push(`| \`${companionId}\` | ${skillCells.join(' | ')} | ${distribution.commands} | ${distribution.noPlan} |`);
+    lines.push(
+      `| \`${companionId}\` | ${skillCells.join(' | ')} | `
+      + `${distribution.plannedCommands} | ${distribution.executedCommands} | `
+      + `${distribution.noPlan} |`,
+    );
   }
 
   lines.push(
     '',
-    '## 일반 몬스터 실제 행동 분포',
+    '## 일반 몬스터 production 실행 분포',
     '',
-    '| 몬스터 | 실행 행동 분포 |',
+    '| 몬스터 | `_executeEnemyCommittedAction`에서 관찰한 행동 |',
     '|---|---|',
   );
   for (const enemyId of enemyIds) {
@@ -979,14 +1170,14 @@ function renderReport(result, options) {
       .sort(([left], [right]) => left.localeCompare(right))
       .map(([actionId, count]) => `\`${actionId}\` ${count}`)
       .join(', ');
-    lines.push(`| \`${enemyId}\` | ${cells} |`);
+    lines.push(`| \`${enemyId}\` | ${cells || '-'} |`);
   }
 
   lines.push(
     '',
     '## 20×12 조합 오류 매트릭스',
     '',
-    '각 셀은 해당 조합의 모든 허용 기준 위반 합계다. `★`는 브라우저 E2E 대표 조합이다.',
+    '각 셀은 해당 조합의 오류 지표 합계이며, ★는 브라우저 대표 조합이다.',
     '',
     `| 동료 \\ 몬스터 | ${enemyIds.map(enemyId => `\`${enemyId}\``).join(' | ')} |`,
     `|---|${enemyIds.map(() => '---:').join('|')}|`,
@@ -996,38 +1187,65 @@ function renderReport(result, options) {
       const combo = combos.find(entry => (
         entry.companionId === companionId && entry.enemyId === enemyId
       ));
-      return `${combo.representative ? '★ ' : ''}${totalViolations(combo.metrics)}`;
+      return `${combo.representative ? '★' : ''}${totalViolations(combo.metrics)}`;
     });
     lines.push(`| \`${companionId}\` | ${cells.join(' | ')} |`);
   }
 
   lines.push(
     '',
-    '## 선언 카운터 실행 프로브',
+    '## 선언 카운터 production probe',
     '',
-    '| 몬스터 | 카운터 | 실제 실행 프로브 | 결과 |',
+    '| 몬스터 | 카운터 | 실행 근거 | 결과 |',
     '|---|---|---|---|',
   );
   for (const row of counters.rows) {
-    lines.push(`| \`${row.enemyId}\` | \`${row.counter}\` | ${markdownCell(row.detail)} | ${row.ok ? 'PASS' : 'FAIL'} |`);
+    lines.push(
+      `| \`${row.enemyId}\` | \`${row.counter}\` | `
+      + `${markdownCell(row.detail)} | ${row.ok ? 'PASS' : 'FAIL'} |`,
+    );
   }
 
   lines.push(
     '',
-    '## 계측 계약',
+    '## 관찰 경고 (비차단)',
     '',
-    '- 동료 선택은 실제 `COMPANION_TACTICS`와 60개 로드아웃을 `planCompanionTurn()`에 넣고, 선택 결과를 `validateSkillCommand()`와 `executeSkillCommand()`로 실행했다.',
-    '- 대상·위치 검증은 실제 `validateSkillPosition()`을 사용하며, 지원 중복은 런타임이 비중첩으로 취급하는 `block`, `focus`, `marked`, `vulnerable`, `rooted` 상태를 실행 직전에 관측했다.',
-    '- 적 행동은 실제 데이터에서 `commitEnemyAction()` 또는 `commitTimedThreatAction()`으로 한 번 예약하고, 예고 상태를 `advanceEnemyAction()`으로 진행한 뒤 같은 객체를 `executeEnemyAction()`에 전달했다.',
-    '- 타격, 상태이상, 강제 이동, FX의 실제 콜백 인자에서 행동 ID·대상·타격 수·`motionKey`를 비교했다. 결과 숫자는 하드코딩하지 않는다.',
-    '- `weakness`, `quietKill`, `stunDelays`는 각각 실제 약점 배율/사망 처리, 소음 처리, committed-action 지연 동작을 행동 프로브로 검증했다.',
+    'zero-use와 no-plan은 오류를 숨기지 않기 위해 별도 경고로 보고한다. 이는 production 전술 우선순위·위치·포화 회피 때문에 현재 fixture에서 선택 경로가 없을 수 있다는 뜻이며, 기술 무효를 자동으로 뜻하지 않는다.',
+    '',
   );
+  if (warnings.length === 0) {
+    lines.push('- 없음');
+  } else {
+    lines.push(
+      '| 유형 | 동료 | 기술 | 해석 |',
+      '|---|---|---|---|',
+    );
+    for (const warning of warnings) {
+      lines.push(
+        `| \`${warning.type}\` | \`${warning.companionId}\` | `
+        + `\`${warning.skillId}\` | ${markdownCell(warning.detail)} |`,
+      );
+    }
+  }
+
+  lines.push(
+    '',
+    '## 계측 경계',
+    '',
+    '- 동료는 production `_setupCombat()` 뒤 `_prepareCompanionTurn()` → `_planCompanionAction()` → `_executePlannedCompanionAction()`으로만 계획·실행한다. simulator는 효과 adapter를 재구현하지 않는다.',
+    '- 몬스터는 UI가 읽는 `enemy._nextIntent`를 값 snapshot으로 보존하고, 그 사이에 동료 행동을 삽입한 뒤 production `_runSingleEnemyTurn()`을 진행한다.',
+    '- 실제 행동·대상·다중타격은 `_executeEnemyCommittedAction()` 호출을 observation wrapper로 관찰한다. wrapper는 production 결과를 바꾸지 않고 즉시 복원된다.',
+    '- `stunDelays`는 `advanceEnemyAction()` 정상 진행이 1 감소하는 negative control, 선언값 `true`, production stun 부여 후 `_runSingleEnemyTurn()`에서 같은 committed action과 countdown이 보존되는지를 모두 요구한다.',
+    '- 카운터 probe와 전체 simulator는 변경한 `GameState` top-level 참조, `Math.random`, `SystemRegistry` 등록을 `finally`에서 복원한다.',
+  );
+
   return `${lines.join('\n')}\n`;
 }
 
 async function main() {
   const options = parseArgs(process.argv.slice(2));
-  const result = simulate(options);
+  const roster = validateRosterContract();
+  const result = simulate(options, roster);
   const report = renderReport(result, options);
   const outputPath = path.resolve(options.out);
   await mkdir(path.dirname(outputPath), { recursive: true });
@@ -1036,9 +1254,11 @@ async function main() {
   const violations = totalViolations(result.metrics);
   console.log(
     `companion-monster-patterns: ${violations === 0 ? 'PASS' : 'FAIL'} `
-    + `companions=${result.companionIds.length} enemies=${result.enemyIds.length} `
+    + `companions=${result.companionIds.length} `
+    + `skills=${result.roster.uniqueCompanionSkillCount} `
+    + `enemies=${result.enemyIds.length} `
     + `combinations=${result.combos.length} runs=${options.runs} `
-    + `violations=${violations}`,
+    + `warnings=${result.warnings.length} violations=${violations}`,
   );
   console.log(`report=${outputPath}`);
   if (violations > 0) process.exitCode = 1;
