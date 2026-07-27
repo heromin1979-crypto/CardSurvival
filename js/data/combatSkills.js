@@ -156,6 +156,87 @@ const FIREARM_SKILLS = new Set([
   'sohee_precise_shot',
 ]);
 
+export const SKILL_MOTION_KEYS = Object.freeze({
+  doctor_precise_cut: 'melee',
+  doctor_triage: 'support',
+  doctor_diagnose: 'support',
+  soldier_burst_fire: 'ranged',
+  soldier_suppressive_fire: 'ranged',
+  soldier_tactical_shift: 'move',
+  firefighter_axe_swing: 'melee',
+  firefighter_rescue_guard: 'guard',
+  firefighter_force_advance: 'move',
+  homeless_dirty_fighting: 'melee',
+  homeless_slip_away: 'move',
+  homeless_scavenge_weapon: 'support',
+  chef_knife_flurry: 'melee',
+  chef_field_ration: 'support',
+  chef_hot_pan: 'melee',
+  engineer_wrench_strike: 'melee',
+  engineer_improvised_cover: 'guard',
+  engineer_shock_trap: 'support',
+  old_survivor_cane_strike: 'melee',
+  old_survivor_warning: 'support',
+  old_survivor_hold_line: 'guard',
+  nurse_scalpel: 'melee',
+  nurse_triage: 'support',
+  nurse_encourage: 'support',
+  deserter_rifle_shot: 'ranged',
+  deserter_covering_fire: 'ranged',
+  deserter_reposition: 'move',
+  child_throw_debris: 'ranged',
+  child_hide: 'guard',
+  child_warning: 'support',
+  mechanic_wrench: 'melee',
+  mechanic_field_repair: 'support',
+  mechanic_tripwire: 'support',
+  student_improvised_strike: 'melee',
+  student_first_aid: 'support',
+  student_quick_step: 'move',
+  dog_bite: 'melee',
+  dog_guard: 'guard',
+  dog_track_weakness: 'support',
+  colleague_hammer: 'melee',
+  colleague_brace: 'guard',
+  colleague_teamwork: 'support',
+  minjun_pistol: 'ranged',
+  minjun_combat_medicine: 'support',
+  minjun_command: 'support',
+  sohee_precise_shot: 'ranged',
+  sohee_silent_cover: 'guard',
+  sohee_focus: 'support',
+  jisu_scalpel: 'melee',
+  jisu_emergency_care: 'support',
+  jisu_diagnose: 'support',
+  yeongcheol_axe: 'melee',
+  yeongcheol_rescue: 'guard',
+  yeongcheol_rally: 'support',
+  daehan_wrench: 'melee',
+  daehan_barricade: 'guard',
+  daehan_overcharge: 'support',
+  security_baton: 'melee',
+  security_guard: 'guard',
+  security_taunt: 'support',
+  merchant_hidden_blade: 'melee',
+  merchant_supply: 'support',
+  merchant_bargain: 'support',
+  tower_cook_knife: 'melee',
+  tower_cook_meal: 'support',
+  tower_cook_burn: 'melee',
+  tower_engineer_wrench: 'melee',
+  tower_engineer_cover: 'guard',
+  tower_engineer_trap: 'support',
+  tower_doctor_scalpel: 'melee',
+  tower_doctor_triage: 'support',
+  tower_doctor_stimulant: 'support',
+  sous_chef_cleaver: 'melee',
+  sous_chef_ration: 'support',
+  sous_chef_intimidate: 'support',
+  kitchen_helper_pan: 'melee',
+  kitchen_helper_assist: 'support',
+  kitchen_helper_duck: 'move',
+});
+
 const STATUS_DAMAGE = {
   chef_hot_pan: { id: 'burn', duration: 2, chance: 0.45 },
   tower_cook_burn: { id: 'burn', duration: 2, chance: 0.5 },
@@ -179,45 +260,37 @@ const SKILL_OVERRIDES = {
   },
   old_survivor_cane_strike: {
     tacticalRole: 'damage',
-    motionKey: 'melee',
     accuracy: 0.84,
     damage: [6, 10],
   },
   old_survivor_warning: {
     tacticalRole: 'support',
-    motionKey: 'support',
   },
   old_survivor_hold_line: {
     tacticalRole: 'guard',
-    motionKey: 'guard',
     target: { ranks: FRONT_RANKS },
   },
   nurse_scalpel: {
     tacticalRole: 'damage',
-    motionKey: 'melee',
     accuracy: 0.9,
     damage: [7, 9],
   },
   nurse_triage: {
     tacticalRole: 'heal',
-    motionKey: 'support',
     replaceEffects: [
       { type: 'heal', value: [8, 10], removeStatus: ['bleed'] },
     ],
   },
   nurse_encourage: {
     tacticalRole: 'support',
-    motionKey: 'support',
   },
   deserter_rifle_shot: {
     tacticalRole: 'damage',
-    motionKey: 'ranged',
     accuracy: 0.78,
     damage: [8, 13],
   },
   deserter_covering_fire: {
     tacticalRole: 'control',
-    motionKey: 'ranged',
     accuracy: 0.74,
     damage: [5, 9],
     appendEffects: [
@@ -226,12 +299,10 @@ const SKILL_OVERRIDES = {
   },
   deserter_reposition: {
     tacticalRole: 'support',
-    motionKey: 'move',
     target: { selfOnly: true },
   },
   child_throw_debris: {
     tacticalRole: 'damage',
-    motionKey: 'ranged',
     accuracy: 0.7,
     damage: [3, 6],
     costs: { stamina: 1, noise: 1 },
@@ -241,51 +312,42 @@ const SKILL_OVERRIDES = {
   },
   child_hide: {
     tacticalRole: 'guard',
-    motionKey: 'guard',
     costs: { stamina: 1 },
     target: { selfOnly: true },
   },
   child_warning: {
     tacticalRole: 'support',
-    motionKey: 'support',
     costs: { stamina: 1 },
   },
   mechanic_wrench: {
     tacticalRole: 'damage',
-    motionKey: 'melee',
     accuracy: 0.82,
     damage: [7, 11],
   },
   mechanic_field_repair: {
     tacticalRole: 'guard',
-    motionKey: 'support',
   },
   mechanic_tripwire: {
     tacticalRole: 'control',
-    motionKey: 'support',
   },
   student_improvised_strike: {
     tacticalRole: 'damage',
-    motionKey: 'melee',
     accuracy: 0.78,
     damage: [4, 7],
     costs: { stamina: 1, noise: 1 },
   },
   student_first_aid: {
     tacticalRole: 'heal',
-    motionKey: 'support',
     costs: { stamina: 1 },
     replaceEffects: [{ type: 'heal', value: [4, 7] }],
   },
   student_quick_step: {
     tacticalRole: 'support',
-    motionKey: 'move',
     costs: { stamina: 1 },
     target: { selfOnly: true },
   },
   dog_bite: {
     tacticalRole: 'damage',
-    motionKey: 'melee',
     accuracy: 0.86,
     damage: [5, 9],
     appendEffects: [
@@ -302,22 +364,18 @@ const SKILL_OVERRIDES = {
   },
   dog_guard: {
     tacticalRole: 'guard',
-    motionKey: 'guard',
   },
   dog_track_weakness: {
     tacticalRole: 'control',
-    motionKey: 'support',
   },
   colleague_hammer: {
     tacticalRole: 'damage',
-    motionKey: 'melee',
     accuracy: 0.68,
     damage: [10, 16],
     costs: { stamina: 3, noise: 2 },
   },
   colleague_brace: {
     tacticalRole: 'guard',
-    motionKey: 'guard',
     replaceEffects: [
       { type: 'guard', value: 0.45 },
       { type: 'guard', value: 0.45 },
@@ -325,26 +383,21 @@ const SKILL_OVERRIDES = {
   },
   colleague_teamwork: {
     tacticalRole: 'support',
-    motionKey: 'support',
   },
   minjun_pistol: {
     tacticalRole: 'damage',
-    motionKey: 'ranged',
     accuracy: 0.82,
     damage: [7, 11],
   },
   minjun_combat_medicine: {
     tacticalRole: 'heal',
-    motionKey: 'support',
     replaceEffects: [{ type: 'heal', value: [7, 11] }],
   },
   minjun_command: {
     tacticalRole: 'support',
-    motionKey: 'support',
   },
   sohee_precise_shot: {
     tacticalRole: 'damage',
-    motionKey: 'ranged',
     accuracy: 0.9,
     critChance: 0.2,
     damage: [8, 13],
@@ -354,24 +407,20 @@ const SKILL_OVERRIDES = {
   },
   sohee_silent_cover: {
     tacticalRole: 'guard',
-    motionKey: 'guard',
     costs: { stamina: 2, noise: 0 },
   },
   sohee_focus: {
     tacticalRole: 'support',
-    motionKey: 'support',
     target: { selfOnly: true },
   },
   jisu_scalpel: {
     tacticalRole: 'damage',
-    motionKey: 'melee',
     accuracy: 0.9,
     critChance: 0.15,
     damage: [5, 9],
   },
   jisu_emergency_care: {
     tacticalRole: 'heal',
-    motionKey: 'support',
     costs: { stamina: 3 },
     replaceEffects: [
       { type: 'heal', value: [12, 18], removeStatus: ['bleed'] },
@@ -379,18 +428,15 @@ const SKILL_OVERRIDES = {
   },
   jisu_diagnose: {
     tacticalRole: 'control',
-    motionKey: 'support',
   },
   yeongcheol_axe: {
     tacticalRole: 'damage',
-    motionKey: 'melee',
     accuracy: 0.78,
     damage: [9, 14],
     costs: { stamina: 3, noise: 2 },
   },
   yeongcheol_rescue: {
     tacticalRole: 'guard',
-    motionKey: 'guard',
     replaceEffects: [
       { type: 'move', distance: 1 },
       { type: 'guard', value: 0.35 },
@@ -398,11 +444,9 @@ const SKILL_OVERRIDES = {
   },
   yeongcheol_rally: {
     tacticalRole: 'support',
-    motionKey: 'support',
   },
   daehan_wrench: {
     tacticalRole: 'damage',
-    motionKey: 'melee',
     accuracy: 0.8,
     damage: [8, 13],
     bonusVs: {
@@ -412,7 +456,6 @@ const SKILL_OVERRIDES = {
   },
   daehan_barricade: {
     tacticalRole: 'guard',
-    motionKey: 'guard',
     replaceEffects: [
       { type: 'guard', value: 0.4 },
       { type: 'guard', value: 0.4 },
@@ -420,11 +463,9 @@ const SKILL_OVERRIDES = {
   },
   daehan_overcharge: {
     tacticalRole: 'support',
-    motionKey: 'support',
   },
   security_baton: {
     tacticalRole: 'damage',
-    motionKey: 'melee',
     accuracy: 0.84,
     damage: [6, 10],
     appendEffects: [
@@ -436,53 +477,43 @@ const SKILL_OVERRIDES = {
   },
   security_guard: {
     tacticalRole: 'guard',
-    motionKey: 'guard',
   },
   security_taunt: {
     tacticalRole: 'support',
-    motionKey: 'support',
     target: { selfOnly: true },
   },
   merchant_hidden_blade: {
     tacticalRole: 'damage',
-    motionKey: 'melee',
     accuracy: 0.88,
     critChance: 0.15,
     damage: [6, 10],
   },
   merchant_supply: {
     tacticalRole: 'support',
-    motionKey: 'support',
   },
   merchant_bargain: {
     tacticalRole: 'control',
-    motionKey: 'support',
   },
   tower_cook_knife: {
     tacticalRole: 'damage',
-    motionKey: 'melee',
     accuracy: 0.86,
     damage: [7, 11],
   },
   tower_cook_meal: {
     tacticalRole: 'food',
-    motionKey: 'support',
   },
   tower_cook_burn: {
     tacticalRole: 'damage',
-    motionKey: 'melee',
     accuracy: 0.8,
     damage: [6, 9],
   },
   tower_engineer_wrench: {
     tacticalRole: 'damage',
-    motionKey: 'melee',
     accuracy: 0.8,
     damage: [7, 12],
   },
   tower_engineer_cover: {
     tacticalRole: 'guard',
-    motionKey: 'guard',
     replaceEffects: [
       { type: 'guard', value: 0.45 },
       { type: 'guard', value: 0.45 },
@@ -490,17 +521,14 @@ const SKILL_OVERRIDES = {
   },
   tower_engineer_trap: {
     tacticalRole: 'control',
-    motionKey: 'support',
   },
   tower_doctor_scalpel: {
     tacticalRole: 'damage',
-    motionKey: 'melee',
     accuracy: 0.9,
     damage: [5, 8],
   },
   tower_doctor_triage: {
     tacticalRole: 'heal',
-    motionKey: 'support',
     replaceEffects: [
       {
         type: 'heal',
@@ -511,37 +539,30 @@ const SKILL_OVERRIDES = {
   },
   tower_doctor_stimulant: {
     tacticalRole: 'support',
-    motionKey: 'support',
   },
   sous_chef_cleaver: {
     tacticalRole: 'damage',
-    motionKey: 'melee',
     accuracy: 0.8,
     damage: [8, 13],
   },
   sous_chef_ration: {
     tacticalRole: 'ration',
-    motionKey: 'support',
   },
   sous_chef_intimidate: {
     tacticalRole: 'control',
-    motionKey: 'support',
   },
   kitchen_helper_pan: {
     tacticalRole: 'damage',
-    motionKey: 'melee',
     accuracy: 0.78,
     damage: [4, 8],
     costs: { stamina: 1, noise: 2 },
   },
   kitchen_helper_assist: {
     tacticalRole: 'support',
-    motionKey: 'support',
     costs: { stamina: 1 },
   },
   kitchen_helper_duck: {
     tacticalRole: 'support',
-    motionKey: 'move',
     costs: { stamina: 1 },
     target: { selfOnly: true },
   },
@@ -559,6 +580,7 @@ function baseSkill(id, icon, target, effects, options = {}) {
     nameKey: `combat.skill.${id}`,
     icon,
     source: 'character',
+    motionKey: options.motionKey,
     usableFrom: [...(options.usableFrom ?? ALL_RANKS)],
     target: {
       side: target.side,
@@ -571,14 +593,29 @@ function baseSkill(id, icon, target, effects, options = {}) {
   };
 }
 
+function inferMotionKey(id, effects, { ranged = false } = {}) {
+  if (typeof SKILL_MOTION_KEYS[id] === 'string') return SKILL_MOTION_KEYS[id];
+  if (effects.some((effect) => effect.type === 'damage')) return ranged ? 'ranged' : 'melee';
+  if (effects.some((effect) => ['heal', 'token', 'status', 'stress', 'flee'].includes(effect.type))) {
+    return 'support';
+  }
+  if (effects.some((effect) => effect.type === 'move')) return 'move';
+  if (effects.some((effect) => effect.type === 'guard')) return 'guard';
+  return undefined;
+}
+
 function buildMappedSkill(id) {
   if (HEAL_SKILLS.has(id)) {
+    const effects = [{ type: 'heal', value: [8, 14] }];
     return baseSkill(
       id,
       'med',
       { side: 'ally', ranks: ALL_RANKS },
-      [{ type: 'heal', value: [8, 14] }],
-      { costs: { stamina: 2 } },
+      effects,
+      {
+        costs: { stamina: 2 },
+        motionKey: inferMotionKey(id, effects),
+      },
     );
   }
 
@@ -596,7 +633,11 @@ function buildMappedSkill(id) {
         ranks: ALL_RANKS,
       },
       effects,
-      { costs: { stamina: 2 }, accuracy: targetsEnemy ? 0.85 : 1 },
+      {
+        costs: { stamina: 2 },
+        accuracy: targetsEnemy ? 0.85 : 1,
+        motionKey: inferMotionKey(id, effects),
+      },
     );
   }
 
@@ -621,6 +662,7 @@ function buildMappedSkill(id) {
         ? { stamina: 3, noise: 12 }
         : { stamina: 2, noise: 1 },
       accuracy: ranged ? 0.75 : 0.82,
+      motionKey: inferMotionKey(id, effects, { ranged }),
     },
   );
 }
@@ -650,9 +692,6 @@ function applySkillOverride(skill) {
   if (!override) return skill;
   if (typeof override.tacticalRole === 'string') {
     skill.tacticalRole = override.tacticalRole;
-  }
-  if (typeof override.motionKey === 'string') {
-    skill.motionKey = override.motionKey;
   }
   if (Number.isFinite(override.accuracy)) skill.accuracy = override.accuracy;
   if (Number.isFinite(override.critChance)) skill.critChance = override.critChance;
