@@ -30,7 +30,6 @@ import {
   buildAllyLoadout,
   executeSkillCommand,
   useCombatItem as useCombatItemCommand,
-  validateSkillCommand,
 } from './combat/CombatSkillSystem.js';
 import {
   compactEnemyFormation,
@@ -148,6 +147,10 @@ const CombatSystem = {
     ));
     this._attachCombatantIds(gs.combat);
     this._setupRankedCombatState(gs.combat, gs, enemies);
+    const initialActive = gs.combat.combatants?.[gs.combat.activeCombatantId];
+    if (initialActive?.sourceType === 'companion') {
+      this._prepareCompanionTurn(initialActive.sourceId ?? initialActive.id);
+    }
     this.beginActiveTurn();
 
     // Phase 3 — 전투 시작 시 모든 적의 초기 의도 결정 (Into the Breach 방식 가시성)
@@ -375,46 +378,14 @@ const CombatSystem = {
     state.skillCooldowns[skill.id] = cooldown;
   },
 
-  _canUsePlannedCompanionSkill(
-    actorId,
-    skill,
-    target,
-    validationFormations,
-  ) {
-    const combat = GameState.combat;
-    const actor = combat?.combatants?.[actorId];
-    if (
-      actor?.sourceType !== 'companion'
-      || !actor.skillIds?.includes(skill?.id)
-      || this._isSkillLocked(actor, skill?.id)
-      || this._isCompanionSkillOnCooldown(actor, skill?.id)
-    ) {
-      return false;
-    }
-
-    const context = this._commandContext({ validationFormations });
-    return validateSkillCommand(context, {
-      actorId,
-      skillId: skill.id,
-      targetId: target?.id,
-    }).ok === true;
-  },
-
-  _commandContext({ validationFormations = null } = {}) {
+  _commandContext() {
     const combat = GameState.combat;
     return {
       activeCombatantId: combat?.activeCombatantId,
       combatants: combat?.combatants,
       skillsById: combat?.skillsById,
       validatePosition: (actorId, targetId, skill) => (
-        validationFormations
-          ? validateSkillPosition(
-              validationFormations,
-              actorId,
-              targetId,
-              skill,
-            )
-          : this._validateRankedSkillPosition(actorId, targetId, skill)
+        this._validateRankedSkillPosition(actorId, targetId, skill)
       ),
       // 스태미나 실소스는 gs.stats.stamina — 동료는 스태미나 자원이 없어 항상 통과
       getStamina: (actor) => (
@@ -620,16 +591,6 @@ const CombatSystem = {
     }
 
     return true;
-  },
-
-  _createCompactedFormationSnapshot() {
-    const combat = GameState.combat;
-    const formations = {
-      ally: [...(combat?.formations?.ally ?? [])],
-      enemy: [...(combat?.formations?.enemy ?? [])],
-    };
-    compactEnemyFormation(formations, combat?.combatants);
-    return formations;
   },
 
   _validateRankedSkillPosition(actorId, targetId, skill) {

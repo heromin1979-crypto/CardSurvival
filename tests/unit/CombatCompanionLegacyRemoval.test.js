@@ -99,12 +99,25 @@ describe('레거시 공용 동료 행동 제거', () => {
   });
 
   it('production combat은 개발용 companion tactic planner를 import하지 않는다', () => {
-    const source = readFileSync(
+    const combatAiTurnsSource = readFileSync(
       new URL('../../js/systems/combat/CombatAiTurns.js', import.meta.url),
       'utf8',
     );
+    const combatSystemSource = readFileSync(
+      new URL('../../js/systems/CombatSystem.js', import.meta.url),
+      'utf8',
+    );
 
-    expect(source).not.toContain("from './CompanionTactics.js'");
-    expect(source).not.toContain("from '../../data/companionTactics.js'");
+    expect(combatAiTurnsSource).not.toContain("from './CompanionTactics.js'");
+    expect(combatAiTurnsSource).not.toContain("from '../../data/companionTactics.js'");
+    for (const symbol of [
+      '_canUsePlannedCompanionSkill',
+      '_getPreparedCompanionFormations',
+      '_preparedCompanionFormations',
+      '_createCompactedFormationSnapshot',
+    ]) {
+      expect(combatSystemSource).not.toContain(symbol);
+      expect(combatAiTurnsSource).not.toContain(symbol);
+    }
   });
 });

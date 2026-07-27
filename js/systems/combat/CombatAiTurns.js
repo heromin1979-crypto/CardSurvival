@@ -35,28 +35,12 @@ export const CombatAiTurns = {
     return `${combat?.roundNumber ?? 1}:${combat?.activeIdx ?? 0}:${npcId}`;
   },
 
-  _getPreparedCompanionFormations(npcId) {
-    const combat = GameState.combat;
-    const prepared = combat?._preparedCompanionFormations;
-    return prepared?.turnKey === this._companionTurnKey(npcId)
-      ? prepared.formations
-      : null;
-  },
-
   _prepareCompanionTurn(npcId) {
     const combat = GameState.combat;
     if (!combat?.active || typeof npcId !== 'string') return false;
     const turnKey = this._companionTurnKey(npcId);
     if (combat._preparedCompanionTurnKey === turnKey) return false;
     this._compactRankedEnemyFormation();
-    const snapshot = this._createCompactedFormationSnapshot();
-    combat._preparedCompanionFormations = {
-      turnKey,
-      formations: Object.freeze({
-        ally: Object.freeze(snapshot.ally),
-        enemy: Object.freeze(snapshot.enemy),
-      }),
-    };
     combat._preparedCompanionTurnKey = turnKey;
     this._tickCompanionSkillCooldowns(npcId);
     return true;

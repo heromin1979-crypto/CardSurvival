@@ -179,6 +179,78 @@ describe('Combat focused UI', () => {
     expect(document.querySelectorAll('.combat-skill-button').length).toBeGreaterThan(0);
   });
 
+  it('prepares an initial fast companion exactly once before manual input', () => {
+    const hadPlayerActionSpeed = Object.prototype.hasOwnProperty.call(
+      GameState.player,
+      'actionSpeed',
+    );
+    const previousPlayerActionSpeed = GameState.player.actionSpeed;
+
+    try {
+      GameState.player.hp = { current: 100, max: 100 };
+      GameState.player.characterId = 'doctor';
+      GameState.player.equipped = {};
+      GameState.player.traits = [];
+      GameState.player.actionSpeed = 1;
+      GameState.stats.stamina = { current: 10, max: 10, decayPerTP: 0 };
+      GameState.stats.morale = { current: 50, max: 100, decayPerTP: 0 };
+      GameState.noise = { level: 0 };
+      GameState.companions = ['npc_nurse'];
+      GameState.npcs = {
+        states: {
+          npc_nurse: {
+            hp: 50,
+            maxHp: 50,
+            isCompanion: true,
+            actionSpeed: 200,
+            skillCooldowns: { nurse_scalpel: 3 },
+          },
+        },
+      };
+      GameState.flags = {};
+
+      CombatSystem._setupCombat({
+        enemies: [{
+          id: 'zombie_common',
+          name: 'infected',
+          currentHp: 100,
+          maxHp: 100,
+          actionSpeed: 0,
+          row: 'front',
+          attack: { damage: [1, 1], accuracy: 0 },
+          specialSkills: [],
+          weaknesses: [],
+          resistances: [],
+          lootTable: [],
+          _skillCooldowns: {},
+          _statusEffects: [],
+        }],
+        dangerLevel: 1,
+      });
+
+      expect(GameState.combat.activeCombatantId).toBe('npc_nurse');
+      expect(GameState.combat.phase).toBe('await_ally_input');
+      expect(GameState.npcs.states.npc_nurse.skillCooldowns.nurse_scalpel)
+        .toBe(2);
+
+      CombatUI.render();
+      CombatSystem.processUntilAllyTurn();
+      CombatSystem.beginActiveTurn();
+      CombatUI.render();
+
+      expect(GameState.combat.activeCombatantId).toBe('npc_nurse');
+      expect(GameState.combat.phase).toBe('await_ally_input');
+      expect(GameState.npcs.states.npc_nurse.skillCooldowns.nurse_scalpel)
+        .toBe(2);
+    } finally {
+      if (hadPlayerActionSpeed) {
+        GameState.player.actionSpeed = previousPlayerActionSpeed;
+      } else {
+        delete GameState.player.actionSpeed;
+      }
+    }
+  });
+
   it('recovers to ally input when a selected skill fails its origin rank check', () => {
     GameState.combat.skillsById.s1.usableFrom = [2, 3, 4];
     GameState.combat.combatants.player.skillIds = ['s1'];
