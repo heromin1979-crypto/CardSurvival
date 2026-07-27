@@ -171,23 +171,25 @@
 - Modify: `js/data/validate.js`
 - Modify: `js/ui/combat/combatUiAssets.js`
 
-- [ ] **Step 1: 현재 누락과 4행 고정을 드러내는 실패 테스트 작성**
+- [ ] **Step 1: fixture와 현재 표시 자산으로 동기 registry 계약 실패 테스트 작성**
 
 검사 대상:
 
-- 일반 몬스터 12종 전부 `ENEMY_SPRITE_KEYS`에 존재
-- 보스 21종 전부 전용 `sheetKey` 존재
-- 플레이어 6종 전부 `PLAYER_SPRITE_KEYS`에 존재
-- 동료 20종 전부 `COMPANION_SPRITE_KEYS`에 존재
-- 모든 매핑이 실제 매니페스트 키를 가리킴
-- 모든 시트에 `idle`, `hit`, `death` 존재
-- 모든 스킬의 `motionKey`가 해당 배우 시트에서 해석 가능
+- fixture의 행 범위, `cols`, `rows`, `durationMs`, `locomotion`, idle 전용 loop 계약
+- fixture의 1단계 별칭 해석과 순환·2단계 별칭 거부
+- 현재 `COMBAT_SPRITE_SHEETS`에 표시 중인 23개 시트가 실제 매니페스트 키를 가리킴
+- 현재 시트에 `idle`, `hit`, `death` 존재
+- `combatUiAssets.js`가 비동기 fetch 없이 같은 동기 registry 객체에서 파생됨
+
+전체 일반 몬스터 12종, 플레이어 6종, 동료 20종, 보스 21종의 전용
+파일·mapping·skill motion 완전성은 아직 존재하지 않는 자산 경로를 production에
+노출하지 않도록 Task 7~10의 각 roster 구현 단계에서 검사한다.
 
 - [ ] **Step 2: 실패 확인**
 
 Run: `npx vitest run tests/unit/CombatMotionManifest.test.js`
 
-Expected: 플레이어 5종, 동료 18종, 보스 14종 전용 매핑 누락으로 실패.
+Expected: 동기 registry 모듈과 fixture validator 부재로 실패.
 
 - [ ] **Step 3: 동기식 레지스트리 구현**
 
@@ -216,7 +218,10 @@ export function spriteRowPercent(row, rows) {}
 
 앱 시작 시 fetch 경합을 없애기 위해 `combatUiAssets.js`가 `COMBAT_MOTION_MANIFEST`를 동기 import하여 `COMBAT_SPRITE_SHEETS`를 생성하게 한다.
 
-- [ ] **Step 5: 데이터 검증기에 행·별칭·파일 경로 검사 추가**
+- [ ] **Step 5: 데이터 검증기에 fixture 행·별칭·파일 경로 검사 추가**
+
+이 단계의 파일 경로 검사는 현재 표시 중인 시트만 대상으로 한다. 전체 roster
+전용 파일 존재 검사는 Task 7~10에서 각 그룹의 데이터 구현과 함께 추가한다.
 
 - [ ] **Step 6: 통과 확인**
 
