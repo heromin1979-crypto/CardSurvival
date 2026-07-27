@@ -678,13 +678,14 @@ export const CombatRankedEffects = {
 
     const result = applyDamage(target, damage, random);
     this._syncRankedTargetToLegacy(target);
+    const actualHpDamage = Math.max(0, result.hpBefore - result.hpAfter);
 
     if (
       this._bossActionAcceptsCounterWindowDamage(
         legacyEnemy,
         bossActionBeforeDamage,
       )
-      && result.damage > 0
+      && actualHpDamage > 0
       && this._bossActionDefinition(
         legacyEnemy,
         bossActionBeforeDamage.actionId,
@@ -694,7 +695,7 @@ export const CombatRankedEffects = {
       bossActionBeforeDamage.telegraphDamageTaken = Math.max(
         0,
         bossActionBeforeDamage.telegraphDamageTaken ?? 0,
-      ) + result.damage;
+      ) + actualHpDamage;
     }
 
     if (isPatternBoss) {

@@ -1,8 +1,10 @@
 // @vitest-environment happy-dom
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import EventBus from '../../js/core/EventBus.js';
 import GameState from '../../js/core/GameState.js';
 import SystemRegistry from '../../js/core/SystemRegistry.js';
 import { SECRET_ENEMIES } from '../../js/data/secretEnemies.js';
+import { LEVEL_XP_TABLE } from '../../js/data/skillDefs.js';
 import {
   applyMultiTarget,
   throwableAction,
@@ -336,6 +338,70 @@ describe('Finding A - 동적 필살기 퍼즐', () => {
     expect(actionFxCount(actionId)).toBe(expectedHits);
   });
 
+  it('player duration 2 stun은 legacy/ranked mirror를 한 턴씩 소비한다', () => {
+    const { combat } = setupBoss('boss_sewer_king');
+    const playerEntry = combat.turnQueue.find(entry => entry.type === 'player');
+    CombatSystem._addAllyStatus('player', {
+      id: 'stun',
+      name: 'two-turn player stun',
+      duration: 2,
+      effect: {},
+    });
+
+    expect(CombatSystem._canAllyEntryTakeTurn(playerEntry, combat)).toBe(false);
+    expect(CombatSystem._consumeAllyStun(combat.combatants.player)).toBe(true);
+    expect(combat.playerStatus.map(status => status.id)).not.toContain('stun');
+    expect(combat.combatants.player.statusEffects).toContainEqual(expect.objectContaining({
+      id: 'stun',
+      duration: 2,
+    }));
+
+    CombatSystem._tickStatusEffects();
+
+    expect(combat.playerStatus).toContainEqual(expect.objectContaining({
+      id: 'stun',
+      duration: 1,
+    }));
+    expect(CombatSystem._canAllyEntryTakeTurn(playerEntry, combat)).toBe(false);
+    expect(CombatSystem._consumeAllyStun(combat.combatants.player)).toBe(true);
+    CombatSystem._tickStatusEffects();
+    expect(combat.playerStatus.map(status => status.id)).not.toContain('stun');
+    expect(combat.combatants.player.statusEffects.map(status => status.id))
+      .not.toContain('stun');
+    expect(CombatSystem._canAllyEntryTakeTurn(playerEntry, combat)).toBe(true);
+  });
+
+  it('blocked companion 뒤 eligible player가 남으면 wrap 전 행동 기회를 보존한다', () => {
+    const { combat, enemy } = setupBoss('boss_sewer_king', {
+      companionIds: ['npc_nurse'],
+    });
+    arrangeTurnQueue(combat, ['enemy:0', 'npc_nurse', 'player'], 'enemy:0');
+    const blocker = {
+      id: 'tail_skip_turn',
+      name: 'companion tail skip',
+      duration: 1,
+      effect: { skipTurn: true },
+    };
+    combat.combatants.npc_nurse.statusEffects.push(blocker);
+    const roundBefore = combat.roundNumber;
+    forceAction(enemy, enemy.bossPattern.specialSkill, 'special');
+
+    CombatSystem._runSingleEnemyTurn(0);
+    CombatSystem.advanceTurn();
+    CombatSystem.processUntilAllyTurn();
+
+    expect(combat.activeCombatantId).toBe('player');
+    expect(combat.roundNumber).toBe(roundBefore);
+    expect(enemy._statusEffects).toContainEqual(expect.objectContaining({
+      id: 'submerged',
+      remainingRounds: 1,
+    }));
+    expect(combat.combatants.npc_nurse.statusEffects).not.toContain(blocker);
+
+    CombatSystem.advanceTurn();
+    expect(enemy._statusEffects.map(status => status.id)).not.toContain('submerged');
+  });
+
   it.each([
     ['boss_raider_warlord', 'execution_order'],
     ['boss_feral_dog_alpha', 'alpha_hunt'],
@@ -368,6 +434,41 @@ describe('Finding B - source-aware 적/전장/무기 상태 소비', () => {
     }));
     expect(enemy.currentHp).toBe(hpBefore - 15);
     expect(combat.combatants['enemy:0'].hp).toBe(hpBefore - 15);
+  });
+
+  it('heal callback은 아직 legacy sync 전인 revived player tail을 eligible로 계산한다', () => {
+    const { combat, enemy } = setupBoss('food_warlord', {
+      playerHp: 40,
+      playerMaxHp: 100,
+      companionIds: ['npc_nurse'],
+    });
+    activateHungerDomination(enemy, ['player', 'npc_nurse']);
+    arrangeTurnQueue(combat, ['enemy:0', 'npc_nurse', 'player'], 'npc_nurse');
+    GameState.player.hp.current = 0;
+    Object.assign(combat.combatants.player, {
+      hp: 0,
+      dead: false,
+      deathsDoor: true,
+    });
+    forceAction(enemy, enemy.bossPattern.basicAttacks[0], 'basic');
+    expect(CombatSystem.selectSkill('nurse_triage')).toBe(true);
+    expect(CombatSystem.selectTarget('player')).toBe(true);
+    const roundBefore = combat.roundNumber;
+
+    const result = CombatSystem.confirmAction();
+
+    expect(result.ok).toBe(true);
+    expect(combat.activeCombatantId).toBe('player');
+    expect(combat.roundNumber).toBe(roundBefore);
+    expect(GameState.player.hp.current).toBeGreaterThan(0);
+    const shield = enemy._statusEffects.find(status => (
+      status.id === 'hunger_domination_shield'
+    ));
+    expect(shield).toMatchObject({ remainingRounds: 2 });
+    expect(shield?._skipNextRoundTick).not.toBe(true);
+
+    CombatSystem.advanceTurn();
+    expect(shield.remainingRounds).toBe(1);
   });
 
   it('camouflage의 evasionIncrease는 ranked hit/dodge 판정에 참여한다', () => {
@@ -1361,5 +1462,363 @@ describe('Finding C - hunger_domination 치료 간섭', () => {
     CombatSystem.resolveAction('guard');
     expect(combat.battlefieldStatuses.map(status => status.id))
       .not.toContain('hunger_domination');
+  });
+});
+
+describe('Final broad review - turn eligibility와 공용 피해 경계', () => {
+  function applyTailTurnBlock(combat, mode) {
+    if (mode === 'player-stun') {
+      const status = {
+        id: 'stun',
+        name: 'player tail stun',
+        duration: 1,
+        effect: {},
+      };
+      combat.playerStatus.push(status);
+      return { statuses: combat.playerStatus, status };
+    }
+    if (mode === 'companion-stun' || mode === 'companion-skip') {
+      const status = mode === 'companion-stun'
+        ? {
+            id: 'stun',
+            name: 'companion tail stun',
+            duration: 1,
+            effect: {},
+          }
+        : {
+            id: 'tail_skip_turn',
+            name: 'companion tail skip',
+            duration: 1,
+            effect: { skipTurn: true },
+          };
+      const statuses = combat.combatants.npc_nurse.statusEffects;
+      statuses.push(status);
+      return { statuses, status };
+    }
+    return null;
+  }
+
+  function enableUnarmedMastery() {
+    GameState.player.skills ??= {};
+    GameState.player.skills.unarmed = {
+      xp: 7735,
+      level: 20,
+    };
+  }
+
+  it.each([
+    [
+      'stunned player tail',
+      ['npc_nurse', 'enemy:0', 'player'],
+      'player-stun',
+      true,
+    ],
+    [
+      'stunned companion tail',
+      ['player', 'enemy:0', 'npc_nurse'],
+      'companion-stun',
+      true,
+    ],
+    [
+      'skipTurn companion tail',
+      ['player', 'enemy:0', 'npc_nurse'],
+      'companion-skip',
+      true,
+    ],
+    [
+      'normal eligible companion tail',
+      ['player', 'enemy:0', 'npc_nurse'],
+      'none',
+      false,
+    ],
+  ])('ranked self-status는 실제 행동 가능한 tail만 기회로 계산한다: %s', (
+    _label,
+    queueIds,
+    blockMode,
+    wrapsBeforeInput,
+  ) => {
+    const { combat, enemy } = setupBoss('boss_sewer_king', {
+      companionIds: ['npc_nurse'],
+    });
+    arrangeTurnQueue(combat, queueIds, 'enemy:0');
+    const blocker = applyTailTurnBlock(combat, blockMode);
+    const roundBefore = combat.roundNumber;
+    forceAction(enemy, enemy.bossPattern.specialSkill, 'special');
+
+    CombatSystem._runSingleEnemyTurn(0);
+
+    if (blocker) expect(blocker.statuses).toContain(blocker.status);
+    CombatSystem.advanceTurn();
+    CombatSystem.processUntilAllyTurn();
+
+    expect(combat.combatants[combat.activeCombatantId]?.side).toBe('ally');
+    if (!wrapsBeforeInput) expect(combat.activeCombatantId).toBe('npc_nurse');
+    expect(combat.roundNumber).toBe(roundBefore + (wrapsBeforeInput ? 1 : 0));
+    expect(enemy._statusEffects).toContainEqual(expect.objectContaining({
+      id: 'submerged',
+      remainingRounds: 1,
+      effect: { invulnerable: true },
+    }));
+    if (blocker) {
+      const currentStatuses = blockMode === 'player-stun'
+        ? [
+            ...(combat.playerStatus ?? []),
+            ...(combat.combatants.player.statusEffects ?? []),
+          ]
+        : combat.combatants.npc_nurse.statusEffects;
+      expect(currentStatuses).not.toContainEqual(expect.objectContaining({
+        name: blocker.status.name,
+      }));
+    }
+
+    if (!wrapsBeforeInput) {
+      CombatSystem.advanceTurn();
+      expect(enemy._statusEffects.map(status => status.id)).not.toContain('submerged');
+    }
+  });
+
+  it.each([
+    [
+      'stunned player tail',
+      ['enemy:0', 'npc_nurse', 'player'],
+      'npc_nurse',
+      'player-stun',
+      true,
+    ],
+    [
+      'stunned companion tail',
+      ['enemy:0', 'player', 'npc_nurse'],
+      'player',
+      'companion-stun',
+      true,
+    ],
+    [
+      'skipTurn companion tail',
+      ['enemy:0', 'player', 'npc_nurse'],
+      'player',
+      'companion-skip',
+      true,
+    ],
+    [
+      'normal eligible companion tail',
+      ['enemy:0', 'player', 'npc_nurse'],
+      'player',
+      'none',
+      false,
+    ],
+  ])('ranked heal shield는 실제 행동 가능한 tail만 기회로 계산한다: %s', (
+    _label,
+    queueIds,
+    healerId,
+    blockMode,
+    wrapsBeforeInput,
+  ) => {
+    const { combat, enemy } = setupBoss('food_warlord', {
+      playerHp: 40,
+      playerMaxHp: 100,
+      companionIds: ['npc_nurse'],
+    });
+    activateHungerDomination(enemy, ['player', 'npc_nurse']);
+    arrangeTurnQueue(combat, queueIds, healerId);
+    const blocker = applyTailTurnBlock(combat, blockMode);
+    const roundBefore = combat.roundNumber;
+    forceAction(enemy, enemy.bossPattern.basicAttacks[0], 'basic');
+    const skillId = healerId === 'player' ? 'doctor_triage' : 'nurse_triage';
+    expect(CombatSystem.selectSkill(skillId)).toBe(true);
+    expect(CombatSystem.selectTarget('player')).toBe(true);
+
+    const result = CombatSystem.confirmAction();
+
+    expect(result.ok).toBe(true);
+    expect(combat.combatants[combat.activeCombatantId]?.side).toBe('ally');
+    if (!wrapsBeforeInput) expect(combat.activeCombatantId).toBe('npc_nurse');
+    expect(combat.roundNumber).toBe(roundBefore + (wrapsBeforeInput ? 1 : 0));
+    const shield = enemy._statusEffects.find(status => (
+      status.id === 'hunger_domination_shield'
+    ));
+    expect(shield).toMatchObject({
+      sourceEnemyId: enemy.id,
+      remainingRounds: 2,
+    });
+    if (blocker) {
+      const currentStatuses = blockMode === 'player-stun'
+        ? [
+            ...(combat.playerStatus ?? []),
+            ...(combat.combatants.player.statusEffects ?? []),
+          ]
+        : combat.combatants.npc_nurse.statusEffects;
+      expect(currentStatuses).not.toContainEqual(expect.objectContaining({
+        name: blocker.status.name,
+      }));
+    }
+
+    if (!wrapsBeforeInput) {
+      CombatSystem.advanceTurn();
+      expect(shield.remainingRounds).toBe(1);
+    }
+  });
+
+  it('legacy unarmed mastery는 shield를 base와 합친 한 번의 공격으로 소비한다', () => {
+    const { combat, enemy } = setupBoss('boss_sewer_king');
+    enableUnarmedMastery();
+    enemy.defense = 0;
+    enemy.currentHp = 100;
+    combat.combatants['enemy:0'].hp = 100;
+    CombatSystem._applyEnemyStatusInflict(enemy, {
+      id: 'mastery_shield',
+      sourceEnemyId: enemy.id,
+      remainingRounds: 2,
+      effect: { damageShield: 20 },
+    }, 0);
+
+    const attackLog = CombatSystem._attackAction('melee', null, enemy);
+
+    expect(enemy.currentHp).toBe(100);
+    expect(combat.combatants['enemy:0'].hp).toBe(100);
+    expect(enemy._statusEffects.find(status => status.id === 'mastery_shield')
+      ?.effect.damageShield).toBe(11);
+    expect(combat.lastHit?.damage).toBe(0);
+    expect(combat.fxQueue.find(entry => entry.kind === 'playerAttack')?.dmg).toBe(0);
+    expect(attackLog).toContain('0 피해');
+    expect(combat.log.find(entry => entry.includes('[맨손 마스터리]'))).toContain('+0');
+  });
+
+  it('legacy unarmed mastery는 invulnerable을 우회하지 않고 ranked HP와 로그를 유지한다', () => {
+    const { combat, enemy } = setupBoss('boss_sewer_king');
+    enableUnarmedMastery();
+    enemy.defense = 0;
+    enemy.currentHp = 100;
+    combat.combatants['enemy:0'].hp = 100;
+    CombatSystem._applyEnemyStatusInflict(enemy, {
+      id: 'mastery_invulnerable',
+      sourceEnemyId: enemy.id,
+      remainingRounds: 2,
+      effect: { invulnerable: true },
+    }, 0);
+
+    const attackLog = CombatSystem._attackAction('melee', null, enemy);
+
+    expect(enemy.currentHp).toBe(100);
+    expect(combat.combatants['enemy:0'].hp).toBe(100);
+    expect(combat.lastHit?.damage).toBe(0);
+    expect(attackLog).toContain('0 피해');
+    expect(combat.log.find(entry => entry.includes('[맨손 마스터리]'))).toContain('+0');
+  });
+
+  it('legacy unarmed mastery는 base와 함께 incoming damage reduction을 한 번 적용한다', () => {
+    const { combat, enemy } = setupBoss('boss_sewer_king');
+    enableUnarmedMastery();
+    enemy.defense = 0;
+    enemy.currentHp = 100;
+    combat.combatants['enemy:0'].hp = 100;
+    CombatSystem._applyEnemyStatusInflict(enemy, {
+      id: 'mastery_reduction',
+      sourceEnemyId: enemy.id,
+      remainingRounds: 2,
+      effect: { incomingDamageReduction: 0.5 },
+    }, 0);
+
+    const attackLog = CombatSystem._attackAction('melee', null, enemy);
+
+    expect(enemy.currentHp).toBe(96);
+    expect(combat.combatants['enemy:0'].hp).toBe(96);
+    expect(combat.lastHit?.damage).toBe(4);
+    expect(combat.fxQueue.find(entry => entry.kind === 'playerAttack')?.dmg).toBe(4);
+    expect(attackLog).toContain('2 피해');
+    expect(combat.log.find(entry => entry.includes('[맨손 마스터리]'))).toContain('+2');
+  });
+
+  it('Lv19→20 hit은 결산된 피해 state로 level-up을 emit하면서 같은 hit mastery를 적용한다', () => {
+    const { combat, enemy } = setupBoss('boss_sewer_king');
+    GameState.player.skills ??= {};
+    GameState.player.skills.unarmed = {
+      xp: LEVEL_XP_TABLE[20] - 1,
+      level: 19,
+    };
+    enemy.defense = 0;
+    enemy.currentHp = 100;
+    combat.combatants['enemy:0'].hp = 100;
+    let levelUpSnapshot = null;
+    vi.spyOn(EventBus, 'emit').mockImplementation((eventName, payload) => {
+      if (eventName === 'skillLevelUp' && payload?.skillId === 'unarmed') {
+        levelUpSnapshot = {
+          legacyHp: enemy.currentHp,
+          rankedHp: combat.combatants['enemy:0'].hp,
+          lastHitDamage: combat.lastHit?.damage ?? null,
+          enemyStatusIds: enemy._statusEffects.map(status => status.id),
+        };
+      }
+    });
+
+    const attackLog = CombatSystem._attackAction('melee', null, enemy);
+
+    expect(GameState.player.skills.unarmed.level).toBe(20);
+    expect(enemy.currentHp).toBe(91);
+    expect(combat.combatants['enemy:0'].hp).toBe(91);
+    expect(combat.lastHit?.damage).toBe(9);
+    expect(levelUpSnapshot).toEqual({
+      legacyHp: 91,
+      rankedHp: 91,
+      lastHitDamage: 9,
+      enemyStatusIds: ['stun'],
+    });
+    expect(attackLog).toContain('4 피해');
+    expect(combat.log.find(entry => entry.includes('[맨손 마스터리]'))).toContain('+5');
+  });
+
+  it('legacy unarmed mastery stun은 즉시 status tick 뒤 실제 enemy turn을 소비한다', () => {
+    const { combat, enemy } = setupBoss('boss_radiation_colossus');
+    enableUnarmedMastery();
+    enemy.defense = 0;
+    enemy.currentHp = 100;
+    combat.combatants['enemy:0'].hp = 100;
+    forceAction(enemy, enemy.bossPattern.basicAttacks[0], 'basic');
+    arrangeTurnQueue(combat, ['player', 'enemy:0'], 'player');
+    const playerHpBefore = GameState.player.hp.current;
+
+    CombatSystem.resolveAction('melee');
+
+    expect(GameState.player.hp.current).toBe(playerHpBefore);
+    expect(enemy._statusEffects.map(status => status.id)).not.toContain('stun');
+    expect(combat.log).toContainEqual(expect.stringContaining('행동하지 못했다'));
+  });
+
+  it('legacy unarmed mastery는 flat defense를 한 번 적용하고 ready counter와 hit feedback을 동기화한다', () => {
+    const { combat, enemy } = setupBoss('boss_radiation_colossus');
+    enableUnarmedMastery();
+    enemy.defense = 3;
+    enemy.currentHp = 100;
+    combat.combatants['enemy:0'].hp = 100;
+    forceAction(enemy, enemy.bossPattern.ultimate, 'ultimate', {
+      state: 'ready',
+      committed: { telegraphDamageTaken: 0 },
+    });
+
+    const attackLog = CombatSystem._attackAction('melee', null, enemy);
+
+    expect(enemy.currentHp).toBe(94);
+    expect(combat.combatants['enemy:0'].hp).toBe(94);
+    expect(enemy._bossActionState.committedAction.telegraphDamageTaken).toBe(6);
+    expect(combat.lastHit?.damage).toBe(6);
+    expect(combat.fxQueue.find(entry => entry.kind === 'playerAttack')?.dmg).toBe(6);
+    expect(attackLog).toContain('2 피해');
+    expect(combat.log.find(entry => entry.includes('[맨손 마스터리]'))).toContain('+4');
+  });
+
+  it('ranked lethal overkill은 critical_mass counter에 실제 HP 감소량만 누적한다', () => {
+    const { combat, enemy } = setupBoss('boss_radiation_colossus');
+    enemy.defense = 0;
+    enemy.currentHp = 5;
+    combat.combatants['enemy:0'].hp = 5;
+    forceAction(enemy, enemy.bossPattern.ultimate, 'ultimate', {
+      state: 'ready',
+      committed: { telegraphDamageTaken: 0 },
+    });
+
+    damageBoss(enemy, 100);
+
+    expect(enemy.currentHp).toBe(0);
+    expect(combat.combatants['enemy:0']).toMatchObject({ hp: 0, dead: true });
+    expect(enemy._bossActionState.committedAction.telegraphDamageTaken).toBe(5);
   });
 });

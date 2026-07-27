@@ -11,11 +11,12 @@ import SkillSystem  from './SkillSystem.js';
 import NPCSystem     from './NPCSystem.js';
 import { rollEnemyGroup } from '../data/enemies.js';
 import { NPC_ITEMS } from '../data/npcs.js';
+import { LEVEL_XP_TABLE } from '../data/skillDefs.js';
 import BALANCE from '../data/gameBalance.js';
 import CharDialogue from '../data/charDialogues.js';
 import NightSystem from './NightSystem.js';
 import GameData from '../data/GameData.js';
-import { getCharacterCombatEffects } from '../data/characters.js';
+import { CHARACTERS, getCharacterCombatEffects } from '../data/characters.js';
 import {
   guardAction, consumeGuard,
   throwableAction,
@@ -1175,32 +1176,62 @@ const CombatSystem = {
     combat.activeIdx = firstAlive >= 0 ? firstAlive : 0;
   },
 
+  _isAllyTurnBlockingStatus(status) {
+    return status?.id === 'stun' || status?.effect?.skipTurn === true;
+  },
+
+  _isAllyTurnAutoConsumed(combatant, combat = GameState.combat) {
+    if (!combatant || combatant.side !== 'ally') return false;
+    if (
+      combatant.sourceType === 'player'
+      && (combat?.playerStatus ?? []).some(status => this._isAllyTurnBlockingStatus(status))
+    ) {
+      return true;
+    }
+    return (combatant.statusEffects ?? [])
+      .some(status => this._isAllyTurnBlockingStatus(status));
+  },
+
+  _canAllyEntryTakeTurn(
+    entry,
+    combat = GameState.combat,
+  ) {
+    if (entry?.type !== 'player' && entry?.type !== 'companion') {
+      return false;
+    }
+    const combatant = combat?.combatants?.[this._combatantIdForEntry(entry)];
+    return !!combatant
+      && combatant.side === 'ally'
+      && combatant.dead !== true
+      && (combatant.hp ?? 0) > 0
+      && !this._isAllyTurnAutoConsumed(combatant, combat);
+  },
+
   // 기절 상태의 아군 턴을 소비 — 랭크 statusEffects와 레거시 playerStatus 양쪽을 지원
   _consumeAllyStun(combatant) {
     const combat = GameState.combat;
-    let stunned = false;
+    let consumedStatus = null;
 
     if (combatant.sourceType === 'player' && Array.isArray(combat?.playerStatus)) {
-      const stunIdx = combat.playerStatus.findIndex(s => s.id === 'stun');
-      if (stunIdx !== -1) {
-        combat.playerStatus.splice(stunIdx, 1);
-        stunned = true;
+      const statusIdx = combat.playerStatus.findIndex(status =>
+        this._isAllyTurnBlockingStatus(status));
+      if (statusIdx !== -1) {
+        [consumedStatus] = combat.playerStatus.splice(statusIdx, 1);
       }
     }
-    if (!stunned && Array.isArray(combatant.statusEffects)) {
-      const stunIdx = combatant.statusEffects.findIndex(s =>
-        s?.id === 'stun' || s?.effect?.skipTurn === true);
-      if (stunIdx !== -1) {
-        combatant.statusEffects.splice(stunIdx, 1);
-        stunned = true;
+    if (!consumedStatus && Array.isArray(combatant.statusEffects)) {
+      const statusIdx = combatant.statusEffects.findIndex(status =>
+        this._isAllyTurnBlockingStatus(status));
+      if (statusIdx !== -1) {
+        [consumedStatus] = combatant.statusEffects.splice(statusIdx, 1);
       }
     }
 
-    if (stunned) {
+    if (consumedStatus) {
       this._pushCombatLog(`${this._rankedCombatantLabel(combatant)}은(는) 기절해서 움직일 수 없다!`);
       this._fx({ kind: 'status', targetId: combatant.id, statusId: 'stun' });
     }
-    return stunned;
+    return !!consumedStatus;
   },
 
   processUntilAllyTurn() {
@@ -1211,8 +1242,13 @@ const CombatSystem = {
     const maxIterations = (combat.turnQueue?.length ?? 0) * 2 + 2;
     for (let i = 0; i < maxIterations; i++) {
       const active = combat.combatants?.[combat.activeCombatantId];
+      const entry = combat.turnQueue?.[combat.activeTurnIndex ?? combat.activeIdx ?? 0];
       if (!active || active.side === 'ally') {
-        if (active && this._consumeAllyStun(active)) {
+        if (
+          active?.side === 'ally'
+          && !this._canAllyEntryTakeTurn(entry, combat)
+        ) {
+          this._consumeAllyStun(active);
           this.advanceTurn();
           if (!combat.active) return true;
           continue;
@@ -1227,7 +1263,6 @@ const CombatSystem = {
         return true;
       }
 
-      const entry = combat.turnQueue?.[combat.activeTurnIndex ?? combat.activeIdx ?? 0];
       if (entry?.type === 'enemy') {
         this._runSingleEnemyTurn(entry.enemyIdx);
         this._syncLegacyAlliesToRankedCombatants();
@@ -1301,10 +1336,7 @@ const CombatSystem = {
 
     for (let index = activeIndex + 1; index < queue.length; index++) {
       const entry = queue[index];
-      if (
-        (entry?.type === 'player' || entry?.type === 'companion')
-        && this._isEntryAlive(entry, combat, GameState.npcs?.states)
-      ) {
+      if (this._canAllyEntryTakeTurn(entry, combat)) {
         return true;
       }
     }
@@ -1452,6 +1484,18 @@ const CombatSystem = {
 
   _characterCombatEffects() {
     return getCharacterCombatEffects(GameState.player?.characterId);
+  },
+
+  _willHaveMasteryAfterXp(skillId, amount) {
+    const skill = GameState.player?.skills?.[skillId];
+    if (!skill) return false;
+    if ((skill.level ?? 0) >= 20) return true;
+
+    const npcMultiplier = 1 + SkillSystem.getNpcSkillBonus(skillId);
+    const character = CHARACTERS.find(entry => entry.id === GameState.player?.characterId);
+    const specialtyMultiplier = character?.specialtySkills?.includes(skillId) ? 1.5 : 1;
+    const awardedXp = Math.round(Math.max(0, amount) * npcMultiplier * specialtyMultiplier);
+    return (skill.xp ?? 0) + awardedXp >= LEVEL_XP_TABLE[20];
   },
 
   _isFirearmWeapon(weaponDef) {
@@ -1715,6 +1759,7 @@ const CombatSystem = {
   // ── 개별 행동 ──────────────────────────────────────────
 
   _resolveDirectEnemyDamage(enemy, rawDamage, {
+    bonusBeforeDefense = 0,
     bonusAfterDefense = 0,
     bypassBaseDefense = false,
   } = {}) {
@@ -1722,24 +1767,46 @@ const CombatSystem = {
       return {
         damage: 0,
         absorbed: 0,
+        bonusBeforeDefenseDamage: 0,
         bonusApplied: 0,
       };
     }
 
     const modifiers = enemyStatusModifiers(enemy);
-    let damage = this._applyEnemyDefense(
-      Math.max(0, Math.floor(Number.isFinite(rawDamage) ? rawDamage : 0)),
-      (bypassBaseDefense ? 0 : (enemy.defense ?? 0)) + modifiers.defenseIncrease,
+    const normalizedBaseDamage = Math.max(
+      0,
+      Math.floor(Number.isFinite(rawDamage) ? rawDamage : 0),
     );
-    if (modifiers.incomingDamageReduction > 0) {
-      damage = Math.floor(damage * (1 - modifiers.incomingDamageReduction));
-    }
-    if (
-      modifiers.invulnerable
-      || (enemy._combatBuffs?.invulnerable?.duration ?? 0) > 0
-    ) {
-      damage = 0;
-    }
+    const normalizedBonusBeforeDefense = Math.max(
+      0,
+      Math.floor(Number.isFinite(bonusBeforeDefense) ? bonusBeforeDefense : 0),
+    );
+    const defense = (bypassBaseDefense ? 0 : (enemy.defense ?? 0))
+      + modifiers.defenseIncrease;
+    const resolveBeforeShield = incomingDamage => {
+      if (incomingDamage <= 0) return 0;
+      let resolvedDamage = this._applyEnemyDefense(incomingDamage, defense);
+      if (modifiers.incomingDamageReduction > 0) {
+        resolvedDamage = Math.floor(
+          resolvedDamage * (1 - modifiers.incomingDamageReduction),
+        );
+      }
+      if (
+        modifiers.invulnerable
+        || (enemy._combatBuffs?.invulnerable?.duration ?? 0) > 0
+      ) {
+        return 0;
+      }
+      return resolvedDamage;
+    };
+    const baseDamageBeforeShield = resolveBeforeShield(normalizedBaseDamage);
+    let damage = resolveBeforeShield(
+      normalizedBaseDamage + normalizedBonusBeforeDefense,
+    );
+    const bonusBeforeDefenseResolved = Math.max(
+      0,
+      damage - baseDamageBeforeShield,
+    );
 
     const normalizedBonus = Math.max(
       0,
@@ -1754,6 +1821,23 @@ const CombatSystem = {
     const hpBefore = enemy.currentHp;
     enemy.currentHp = Math.max(0, hpBefore - shieldResult.damage);
     const actualDamage = Math.max(0, hpBefore - enemy.currentHp);
+    const baseDamageAfterShield = Math.max(
+      0,
+      baseDamageBeforeShield - shieldResult.absorbed,
+    );
+    const shieldBeyondBase = Math.max(
+      0,
+      shieldResult.absorbed - baseDamageBeforeShield,
+    );
+    const bonusBeforeDefenseAfterShield = Math.max(
+      0,
+      bonusBeforeDefenseResolved - shieldBeyondBase,
+    );
+    const actualBaseDamage = Math.min(actualDamage, baseDamageAfterShield);
+    const bonusBeforeDefenseDamage = Math.min(
+      bonusBeforeDefenseAfterShield,
+      Math.max(0, actualDamage - actualBaseDamage),
+    );
 
     const committedAction = enemy._bossActionState?.committedAction;
     if (
@@ -1781,6 +1865,7 @@ const CombatSystem = {
     return {
       damage: actualDamage,
       absorbed: shieldResult.absorbed,
+      bonusBeforeDefenseDamage,
       bonusApplied,
     };
   },
@@ -1919,11 +2004,25 @@ const CombatSystem = {
         gs.combat.playerGuard = null;
       }
 
+      const earnedXp = isCrit ? 4 : 2;
+      const unarmedMasteryTriggered = (
+        skillId === 'unarmed'
+        && this._willHaveMasteryAfterXp('unarmed', earnedXp)
+        && Math.random() < BALANCE.combat.unarmedStunChance
+        && !(enemy._statusEffects ?? []).some(status => status.id === 'stun')
+        && !gs.combat.enemyStatus.some(status => status.id === 'stun')
+      );
+      const unarmedMasteryRawDamage = unarmedMasteryTriggered
+        ? BALANCE.combat.unarmedStunDmg
+        : 0;
       const poisonDmg = Math.max(0, Math.floor(gs.cards[weaponId]?._poisonDamage ?? 0));
       const damageResult = this._resolveDirectEnemyDamage(enemy, damage, {
+        bonusBeforeDefense: unarmedMasteryRawDamage,
         bonusAfterDefense: poisonDmg,
       });
       const finalDmg = damageResult.damage;
+      const unarmedMasteryDamage = damageResult.bonusBeforeDefenseDamage;
+      const attackLogDamage = Math.max(0, finalDmg - unarmedMasteryDamage);
       if (damageResult.bonusApplied > 0) {
         gs.combat.log.push(`독 피해 +${poisonDmg}`);
       }
@@ -1984,23 +2083,27 @@ const CombatSystem = {
         killed:    enemy.currentHp <= 0,
       });
 
-      // XP 획득
-      SkillSystem.gainXp(skillId, isCrit ? 4 : 2);
-
       // 맨손 마스터리: 기절 확률 + 추가 데미지
-      if (skillId === 'unarmed' && SkillSystem.hasMastery('unarmed')) {
-        if (Math.random() < BALANCE.combat.unarmedStunChance && !gs.combat.enemyStatus.some(s => s.id === 'stun')) {
-          const stunDmg = BALANCE.combat.unarmedStunDmg;
-          enemy.currentHp = Math.max(0, enemy.currentHp - stunDmg);
-          gs.combat.enemyStatus.push({ id: 'stun', name: I18n.t('combatSys.stun'), duration: 1, effect: {} });
-          this._fx({ kind: 'status', target: 'enemy', enemyIdx: gs.combat.targetIndex, statusId: 'stun' });
-          gs.combat.log.push(I18n.t('combatSys.unarmedMastery', { enemy: I18n.enemyName(enemy.id, enemy.name), dmg: stunDmg }));
-        }
+      if (unarmedMasteryTriggered) {
+        this._applyEnemyStatusInflict(enemy, {
+          id: 'stun',
+          name: I18n.t('combatSys.stun'),
+          sourceEnemyId: 'player',
+          duration: 1,
+          remainingRounds: 1,
+          effect: {},
+          _skipNextRoundTick: gs.combat._directActionTickPending === true,
+        }, gs.combat.targetIndex);
+        gs.combat.log.push(I18n.t('combatSys.unarmedMastery', {
+          enemy: I18n.enemyName(enemy.id, enemy.name),
+          dmg: unarmedMasteryDamage,
+        }));
       }
+      SkillSystem.gainXp(skillId, earnedXp);
 
       const eName = I18n.enemyName(enemy.id, enemy.name);
-      if (isCrit) return I18n.t('combatSys.critHit', { weapon: weaponName, enemy: eName, dmg: finalDmg });
-      return I18n.t('combatSys.normalHit', { weapon: weaponName, enemy: eName, dmg: finalDmg, hp: enemy.currentHp, maxHp: enemy.maxHp });
+      if (isCrit) return I18n.t('combatSys.critHit', { weapon: weaponName, enemy: eName, dmg: attackLogDamage });
+      return I18n.t('combatSys.normalHit', { weapon: weaponName, enemy: eName, dmg: attackLogDamage, hp: enemy.currentHp, maxHp: enemy.maxHp });
     }
     this._fx({
       kind:      'playerAttack',
