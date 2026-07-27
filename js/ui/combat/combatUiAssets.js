@@ -1,3 +1,5 @@
+import { COMBAT_MOTION_MANIFEST } from '../../data/combatMotionManifest.js';
+
 // CombatUI 공용 상수 — 스프라이트시트/아이콘/모션·연출 클래스 테이블.
 // CombatUI 본체와 CombatFxPlayer 믹스인이 공유한다.
 // Combat Overhaul Phase 1 — 턴 큐 HUD 아이콘/라벨 매핑
@@ -15,32 +17,22 @@ export const COMPANION_ICONS = {
 };
 
 // FX 오버레이 이모지 (cv-fx-* 클래스와 페어)
-export const spriteSheet = (src, cols = 6, rows = 4) => ({ src, cols, rows });
+function deriveCombatSpriteSheets(manifest) {
+  return Object.fromEntries(Object.entries(manifest).map(([sheetKey, sheet]) => {
+    const derivedSheet = {
+      src: sheet.src,
+      cols: sheet.cols,
+      rows: sheet.rows,
+      motions: { ...sheet.motions },
+    };
+    if (Array.isArray(sheet.frameDur)) {
+      derivedSheet.frameDur = sheet.frameDur.map(row => (Array.isArray(row) ? [...row] : row));
+    }
+    return [sheetKey, derivedSheet];
+  }));
+}
 
-export const COMBAT_SPRITE_SHEETS = {
-  doctor_f: spriteSheet('/assets/images/combat/spritesheets/doctor_f_sheet.png'),
-  soldier_companion: spriteSheet('/assets/images/combat/spritesheets/soldier_companion_sheet.png'),
-  nurse_companion: spriteSheet('/assets/images/combat/spritesheets/nurse_companion_sheet.png'),
-  zombie_patient_dormant: spriteSheet('/assets/images/combat/spritesheets/enemies/zombie_patient_dormant_sheet.png'),
-  zombie_common: spriteSheet('/assets/images/combat/spritesheets/enemies/zombie_common_sheet.png'),
-  zombie_runner: spriteSheet('/assets/images/combat/spritesheets/enemies/zombie_runner_sheet.png'),
-  zombie_brute: spriteSheet('/assets/images/combat/spritesheets/enemies/zombie_brute_sheet.png'),
-  zombie_horde: spriteSheet('/assets/images/combat/spritesheets/enemies/zombie_horde_sheet.png'),
-  rabid_dog: spriteSheet('/assets/images/combat/spritesheets/enemies/rabid_dog_sheet.png'),
-  zombie_acid: spriteSheet('/assets/images/combat/spritesheets/enemies/zombie_acid_sheet.png'),
-  zombie_bloater: spriteSheet('/assets/images/combat/spritesheets/enemies/zombie_bloater_sheet.png'),
-  zombie_screamer: spriteSheet('/assets/images/combat/spritesheets/enemies/zombie_screamer_sheet.png'),
-  zombie_charger: spriteSheet('/assets/images/combat/spritesheets/enemies/zombie_charger_sheet.png'),
-  raider: spriteSheet('/assets/images/combat/spritesheets/enemies/raider_sheet.png'),
-  raider_elite: spriteSheet('/assets/images/combat/spritesheets/enemies/raider_elite_sheet.png'),
-  boss_horde_mother: spriteSheet('/assets/images/combat/spritesheets/enemies/boss_horde_mother_sheet.png'),
-  boss_raider_warlord: spriteSheet('/assets/images/combat/spritesheets/enemies/boss_raider_warlord_sheet.png'),
-  boss_feral_dog_alpha: spriteSheet('/assets/images/combat/spritesheets/enemies/boss_feral_dog_alpha_sheet.png'),
-  boss_penthouse_survivor: spriteSheet('/assets/images/combat/spritesheets/enemies/boss_penthouse_survivor_sheet.png'),
-  boss_soldier_nemesis: spriteSheet('/assets/images/combat/spritesheets/enemies/boss_soldier_nemesis_sheet.png'),
-  boss_homeless_nemesis: spriteSheet('/assets/images/combat/spritesheets/enemies/boss_homeless_nemesis_sheet.png'),
-  food_warlord: spriteSheet('/assets/images/combat/spritesheets/enemies/food_warlord_sheet.png'),
-};
+export const COMBAT_SPRITE_SHEETS = deriveCombatSpriteSheets(COMBAT_MOTION_MANIFEST);
 
 export function validateCombatSpriteManifest(manifest) {
   const errors = [];
@@ -54,7 +46,7 @@ export function validateCombatSpriteManifest(manifest) {
       continue;
     }
     for (const [motionKey, motion] of Object.entries(meta.motions)) {
-      if (motion?.loop === true) {
+      if (motion?.loop === true && motionKey !== 'idle') {
         errors.push(
           `[combat sprite/${fileName}/${motionKey}] loop:true is unsupported; action motions must return to idle after durationMs`,
         );
@@ -82,26 +74,12 @@ export function applyCombatSpriteManifest(manifest) {
       sheet.motions = { ...meta.motions };
     }
   }
+  _injectSpriteKeyframes();
   return { ok: true, errors: [] };
 }
 
-// Per-sheet frame counts (cols) live in a manifest the sprite-anim-editor tool writes.
-// If absent, every sheet stays the legacy 6×4 — so this is a zero-regression enhancement.
-async function _loadSpriteManifest() {
-  if (typeof document === 'undefined') return;
-  // vitest(jsdom)에는 정적 서버가 없어 상대 경로 fetch가 실제 소켓 연결(ECONNREFUSED 노이즈)을
-  // 시도한다. 매니페스트는 선택적 리소스이므로 테스트에서는 6×4 기본값을 그대로 쓴다.
-  if (typeof process !== 'undefined' && process.env?.VITEST) return;
-  try {
-    const res = await fetch('/assets/images/combat/spritesheets/manifest.json', { cache: 'no-store' });
-    if (!res.ok) return;
-    const manifest = await res.json();
-    const applied = applyCombatSpriteManifest(manifest);
-    if (applied.ok) _injectSpriteKeyframes();
-  } catch (e) { /* manifest optional → keep 6×4 defaults */ }
-}
-
 function _injectSpriteKeyframes() {
+  if (typeof document === 'undefined') return;
   let css = '';
   for (const key in COMBAT_SPRITE_SHEETS) {
     const sheet = COMBAT_SPRITE_SHEETS[key];
@@ -139,7 +117,7 @@ function _injectSpriteKeyframes() {
   style.textContent = css;
 }
 
-_loadSpriteManifest();
+_injectSpriteKeyframes();
 
 // 직업×성별 → 플레이어 스프라이트시트 키. 신규 시트 제작 시 여기만 추가하면 된다.
 export const PLAYER_SPRITE_KEYS = {

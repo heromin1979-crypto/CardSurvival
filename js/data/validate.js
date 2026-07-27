@@ -1,6 +1,8 @@
 // === DATA INTEGRITY VALIDATOR ===
 // Run: node js/data/validate.js
 
+import { existsSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 import {
@@ -11,6 +13,10 @@ import {
 import { COMPANION_TACTICS } from './companionTactics.js';
 import { ENEMIES } from './enemies.js';
 import { SECRET_ENEMIES } from './secretEnemies.js';
+import {
+  COMBAT_MOTION_MANIFEST,
+  DISPLAYED_COMBAT_SHEET_KEYS,
+} from './combatMotionManifest.js';
 import { isResolvableImpactFx } from '../ui/combat/combatUiAssets.js';
 import {
   COMPANION_STANCE_ROLES,
@@ -63,6 +69,89 @@ const VALID_BATTLEFIELD_EFFECT_KEYS = new Set([
   'preventedHealingShieldConversion',
   'shieldDurationRounds',
 ]);
+const VALID_COMBAT_MOTION_LOCOMOTION = new Set(['stationary', 'approach', 'retreat']);
+const PROJECT_ROOT = process.cwd();
+
+export function validateCombatMotionManifest(manifest = COMBAT_MOTION_MANIFEST) {
+  const errors = [];
+  if (!manifest || typeof manifest !== 'object' || Array.isArray(manifest)) {
+    return ['[combat motion] manifest must be an object'];
+  }
+
+  for (const [sheetKey, sheet] of Object.entries(manifest)) {
+    const path = `[combat motion/${sheetKey}]`;
+    if (!sheet || typeof sheet !== 'object' || Array.isArray(sheet)) {
+      errors.push(`${path} must be an object`);
+      continue;
+    }
+    if (typeof sheet.src !== 'string' || !sheet.src.startsWith('/assets/')) {
+      errors.push(`${path}.src must be an /assets path`);
+    }
+    if (!positiveInteger(sheet.cols)) errors.push(`${path}.cols must be a positive integer`);
+    if (!positiveInteger(sheet.rows)) errors.push(`${path}.rows must be a positive integer`);
+
+    const motions = sheet.motions;
+    if (!motions || typeof motions !== 'object' || Array.isArray(motions)) {
+      errors.push(`${path}.motions must be an object`);
+      continue;
+    }
+    for (const requiredMotion of ['idle', 'hit', 'death']) {
+      if (!motions[requiredMotion]) errors.push(`${path}.motions.${requiredMotion} is required`);
+    }
+    for (const [motionKey, motion] of Object.entries(motions)) {
+      const motionPath = `${path}.motions.${motionKey}`;
+      if (!motion || typeof motion !== 'object' || Array.isArray(motion)) {
+        errors.push(`${motionPath} must be an object`);
+        continue;
+      }
+      if (!Number.isInteger(motion.row) || motion.row < 0 || motion.row >= sheet.rows) {
+        errors.push(`${motionPath}.row must be within 0..${Math.max((sheet.rows ?? 0) - 1, 0)}`);
+      }
+      if (typeof motion.loop !== 'boolean') {
+        errors.push(`${motionPath}.loop must be a boolean`);
+      } else if (motion.loop && motionKey !== 'idle') {
+        errors.push(`${motionPath}.loop:true is only allowed for idle`);
+      }
+      if (!Number.isFinite(motion.durationMs) || motion.durationMs <= 0) {
+        errors.push(`${motionPath}.durationMs must be a positive number`);
+      }
+      if (!VALID_COMBAT_MOTION_LOCOMOTION.has(motion.locomotion)) {
+        errors.push(`${motionPath}.locomotion must be stationary, approach, or retreat`);
+      }
+    }
+
+    if (sheet.aliases !== undefined) {
+      if (!sheet.aliases || typeof sheet.aliases !== 'object' || Array.isArray(sheet.aliases)) {
+        errors.push(`${path}.aliases must be an object`);
+      } else {
+        for (const [aliasKey, targetKey] of Object.entries(sheet.aliases)) {
+          const aliasPath = `${path}.aliases.${aliasKey}`;
+          if (typeof targetKey !== 'string' || targetKey.length === 0) {
+            errors.push(`${aliasPath} must target a motion key`);
+          } else if (sheet.aliases[targetKey]) {
+            errors.push(`${aliasPath} must resolve in one alias step`);
+          } else if (!motions[targetKey]) {
+            errors.push(`${aliasPath} targets unknown motion "${targetKey}"`);
+          }
+        }
+      }
+    }
+  }
+
+  const validatesDisplayedSheets = DISPLAYED_COMBAT_SHEET_KEYS.every(key => manifest[key]);
+  if (validatesDisplayedSheets) {
+    for (const sheetKey of DISPLAYED_COMBAT_SHEET_KEYS) {
+      const src = manifest[sheetKey]?.src;
+      if (typeof src !== 'string' || !src.startsWith('/assets/')) continue;
+      const assetPath = resolve(PROJECT_ROOT, src.slice(1));
+      if (!existsSync(assetPath)) {
+        errors.push(`[combat motion/${sheetKey}] asset not found: ${src}`);
+      }
+    }
+  }
+
+  return errors;
+}
 
 function nonemptyObject(value) {
   return value !== null
@@ -1385,7 +1474,18 @@ async function validate() {
     `  Bosses: ${finalBosses.length}, errors: ${bossPatternErrors.length + (finalBosses.length === 21 ? 0 : 1)}`,
   );
 
-  // 16. 숨은 장소(hiddenLocations) — 구 참조·보상/루팅 아이템 참조 검증
+  // 16. 현재 전투 화면에 표시되는 sprite sheet의 모션·자산 계약
+  console.log('\n=== COMBAT MOTION MANIFEST CHECK ===');
+  const combatMotionErrors = validateCombatMotionManifest();
+  for (const error of combatMotionErrors) {
+    console.log(`ERROR ${error}`);
+    errors++;
+  }
+  console.log(
+    `  Displayed sheets: ${DISPLAYED_COMBAT_SHEET_KEYS.length}, errors: ${combatMotionErrors.length}`,
+  );
+
+  // 17. 숨은 장소(hiddenLocations) — 구 참조·보상/루팅 아이템 참조 검증
   console.log('\n=== HIDDEN LOCATIONS CHECK ===');
   let hlChecked = 0, hlBad = 0;
   try {
