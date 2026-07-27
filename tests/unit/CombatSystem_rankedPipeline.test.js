@@ -9,6 +9,8 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import CombatSystem from '../../js/systems/CombatSystem.js';
 import GameState from '../../js/core/GameState.js';
 import BALANCE from '../../js/data/gameBalance.js';
+import { COMBAT_SKILLS } from '../../js/data/combatSkills.js';
+import { getRank } from '../../js/systems/combat/FormationSystem.js';
 
 function makeEnemy(overrides = {}) {
   return {
@@ -218,6 +220,184 @@ describe('_applyRankedEffect heal', () => {
     expect(target.statusEffects).toEqual([
       { id: 'marked', duration: 1 },
     ]);
+  });
+
+  it('플레이어 치료는 playerStatus를 정리하고 combatant mirror를 동기화한다', () => {
+    const combat = setupRankedCombat();
+    const actor = makeCombatant({ id: 'npc_tower_doctor', sourceId: 'npc_tower_doctor' });
+    const target = combat.combatants.player;
+    combat.playerStatus = [
+      { id: 'bleed', duration: 2 },
+      { id: 'burn', duration: 1 },
+      { id: 'poison', duration: 3 },
+      { id: 'marked', duration: 1 },
+    ];
+    target.statusEffects = [
+      { id: 'bleed', duration: 2 },
+      { id: 'burn', duration: 1 },
+      { id: 'poison', duration: 3 },
+      { id: 'marked', duration: 1 },
+    ];
+
+    const result = CombatSystem._applyRankedEffect(
+      {
+        type: 'heal',
+        value: [5, 5],
+        removeStatus: ['bleed', 'burn', 'poison'],
+      },
+      actor,
+      target,
+      () => 0,
+    );
+
+    expect(result).toEqual({ ok: true });
+    expect(combat.playerStatus).toEqual([
+      { id: 'marked', duration: 1 },
+    ]);
+    expect(target.statusEffects).toEqual([
+      { id: 'marked', duration: 1 },
+    ]);
+  });
+
+  it('동료 치료는 combatant와 영속 NPC 상태를 함께 정리한다', () => {
+    setupRankedCombat();
+    const actor = makeCombatant({ id: 'npc_jisu', sourceId: 'npc_jisu' });
+    const target = makeCombatant({
+      id: 'npc_patient',
+      sourceId: 'npc_patient',
+      hp: 10,
+      statusEffects: [
+        { id: 'bleed', duration: 2 },
+        { id: 'marked', duration: 1 },
+      ],
+    });
+    GameState.npcs.states.npc_patient = {
+      hp: 10,
+      maxHp: 30,
+      statusEffects: [
+        { id: 'bleed', duration: 2 },
+        { id: 'marked', duration: 1 },
+      ],
+    };
+
+    const result = CombatSystem._applyRankedEffect(
+      {
+        type: 'heal',
+        value: [5, 5],
+        removeStatus: ['bleed'],
+      },
+      actor,
+      target,
+      () => 0,
+    );
+
+    expect(result).toEqual({ ok: true });
+    expect(target.statusEffects).toEqual([
+      { id: 'marked', duration: 1 },
+    ]);
+    expect(GameState.npcs.states.npc_patient.statusEffects).toEqual([
+      { id: 'marked', duration: 1 },
+    ]);
+  });
+});
+
+describe('복합 이동 기술의 경계 rank 실행', () => {
+  it('rank 4 재배치는 이동 no-op 뒤 dodge를 적용하고 비용과 쿨다운을 한 번 처리한다', () => {
+    const combat = setupRankedCombat();
+    const actorId = 'npc_soldier_deserter';
+    const skillId = 'deserter_reposition';
+    const actor = makeCombatant({
+      id: actorId,
+      sourceId: actorId,
+      skillIds: [skillId],
+    });
+    const skill = {
+      ...COMBAT_SKILLS[skillId],
+      cooldown: 2,
+      costs: { ...COMBAT_SKILLS[skillId].costs },
+      target: { ...COMBAT_SKILLS[skillId].target },
+      effects: COMBAT_SKILLS[skillId].effects.map(effect => ({ ...effect })),
+    };
+    combat.combatants[actorId] = actor;
+    combat.formations.ally = [actorId, null, null, 'player'];
+    combat.skillsById[skillId] = skill;
+    combat.activeCombatantId = actorId;
+    GameState.npcs.states[actorId] = {
+      hp: 30,
+      maxHp: 30,
+      isCompanion: true,
+      skillCooldowns: {},
+    };
+    const consumeCosts = vi.spyOn(CombatSystem, '_consumeRankedCosts');
+
+    try {
+      const result = CombatSystem._executePlannedCompanionAction({
+        skillId,
+        targetId: actorId,
+        reason: 'support_ally',
+      });
+
+      expect(result).toMatchObject({
+        ok: true,
+        costsConsumed: true,
+        effectsApplied: 2,
+      });
+      expect(consumeCosts).toHaveBeenCalledTimes(1);
+      expect(GameState.npcs.states[actorId].skillCooldowns[skillId]).toBe(2);
+      expect(getRank(combat.formations, actorId)).toBe(4);
+      expect(actor.tokens.dodge).toBe(1);
+    } finally {
+      consumeCosts.mockRestore();
+    }
+  });
+
+  it('rank 1 경호는 이동 no-op 뒤 guard를 적용하고 비용과 쿨다운을 한 번 처리한다', () => {
+    const combat = setupRankedCombat();
+    const actorId = 'npc_dog';
+    const skillId = 'dog_guard';
+    const actor = makeCombatant({
+      id: actorId,
+      sourceId: actorId,
+      skillIds: [skillId],
+    });
+    const skill = {
+      ...COMBAT_SKILLS[skillId],
+      cooldown: 2,
+      costs: { ...COMBAT_SKILLS[skillId].costs },
+      target: { ...COMBAT_SKILLS[skillId].target },
+      effects: COMBAT_SKILLS[skillId].effects.map(effect => ({ ...effect })),
+    };
+    combat.combatants[actorId] = actor;
+    combat.formations.ally = [null, null, actorId, 'player'];
+    combat.skillsById[skillId] = skill;
+    combat.activeCombatantId = actorId;
+    GameState.npcs.states[actorId] = {
+      hp: 30,
+      maxHp: 30,
+      isCompanion: true,
+      skillCooldowns: {},
+    };
+    const consumeCosts = vi.spyOn(CombatSystem, '_consumeRankedCosts');
+
+    try {
+      const result = CombatSystem._executePlannedCompanionAction({
+        skillId,
+        targetId: 'player',
+        reason: 'guard_ally',
+      });
+
+      expect(result).toMatchObject({
+        ok: true,
+        costsConsumed: true,
+        effectsApplied: 2,
+      });
+      expect(consumeCosts).toHaveBeenCalledTimes(1);
+      expect(GameState.npcs.states[actorId].skillCooldowns[skillId]).toBe(2);
+      expect(getRank(combat.formations, 'player')).toBe(1);
+      expect(combat.combatants.player.tokens.block).toBe(1);
+    } finally {
+      consumeCosts.mockRestore();
+    }
   });
 });
 

@@ -117,6 +117,48 @@ export const CombatRankedEffects = {
     return GameState.combat?.enemies?.[combatant.enemyIndex] ?? null;
   },
 
+  _removeRankedStatuses(target, statusIds) {
+    const removableStatusIds = new Set(
+      Array.isArray(statusIds)
+        ? statusIds.filter(statusId => (
+            typeof statusId === 'string' && statusId.length > 0
+          ))
+        : [],
+    );
+    if (!target || removableStatusIds.size === 0) return;
+
+    const filteredStatuses = statuses => (
+      Array.isArray(statuses)
+        ? statuses.filter(status => !removableStatusIds.has(status?.id))
+        : []
+    );
+    const combat = GameState.combat;
+    target.statusEffects = filteredStatuses(target.statusEffects);
+
+    if (target.sourceType === 'player') {
+      if (combat) combat.playerStatus = filteredStatuses(combat.playerStatus);
+      return;
+    }
+
+    if (target.sourceType === 'companion') {
+      const state = GameState.npcs?.states?.[target.sourceId];
+      if (state) state.statusEffects = filteredStatuses(state.statusEffects);
+      return;
+    }
+
+    if (target.sourceType === 'enemy') {
+      const enemy = this._legacyEnemyFor(target);
+      if (enemy) enemy._statusEffects = filteredStatuses(enemy._statusEffects);
+      if (
+        enemy
+        && GameState.combat?.enemies?.[GameState.combat.targetIndex] === enemy
+        && Array.isArray(GameState.combat.enemyStatus)
+      ) {
+        GameState.combat.enemyStatus = filteredStatuses(GameState.combat.enemyStatus);
+      }
+    }
+  },
+
   // bonusVs 판정용 — 랭크 상태이상과 레거시 적 상태이상 양쪽 저장소를 검사
   _targetHasAnyStatus(target, statusIds) {
     const ids = new Set(statusIds ?? []);
@@ -246,18 +288,7 @@ export const CombatRankedEffects = {
         return this._applyRankedDamageEffect(effect, actor, target, random, hitInfo);
       case 'heal': {
         const healResult = healCombatant(target, this._rollRange(effect.value, random));
-        const removableStatusIds = new Set(
-          Array.isArray(effect.removeStatus)
-            ? effect.removeStatus.filter(statusId => (
-                typeof statusId === 'string' && statusId.length > 0
-              ))
-            : [],
-        );
-        if (removableStatusIds.size > 0 && Array.isArray(target.statusEffects)) {
-          target.statusEffects = target.statusEffects.filter(
-            status => !removableStatusIds.has(status?.id),
-          );
-        }
+        this._removeRankedStatuses(target, effect.removeStatus);
         this._syncRankedTargetToLegacy(target);
         if (healResult.healed > 0) {
           if (target.sourceType === 'companion') {
@@ -287,11 +318,13 @@ export const CombatRankedEffects = {
         const distance = effect.distance === 'auto'
           ? this._autoMoveDirection(target, rank)
           : (effect.distance ?? 0);
+        const destinationRank = Math.max(1, Math.min(4, (rank ?? 1) + distance));
+        if (destinationRank === rank) return { ok: true };
         return {
           ok: moveCombatant(
             GameState.combat?.formations,
             target.id,
-            Math.max(1, Math.min(4, (rank ?? 1) + distance)),
+            destinationRank,
           ),
         };
       }
