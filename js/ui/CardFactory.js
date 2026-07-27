@@ -68,6 +68,7 @@ const LOCATION_IMAGES = {
 };
 
 // 아이템 카드 이미지 매핑 (assets/images/materials/)
+// 외부 모듈(동료 모달 등)은 getCardImage 접근자로만 조회
 const CARD_IMAGES = {
   scrap_metal:      'assets/images/materials/scrap_metal.png',
   cloth:            'assets/images/materials/cloth.png',
@@ -1530,5 +1531,9 @@ const CardFactory = {
 EventBus.on('trapStateChange', ({ trapId }) => {
   if (trapId) CardFactory.update(trapId);
 });
+
+export function getCardImage(definitionId) {
+  return CARD_IMAGES[definitionId] ?? null;
+}
 
 export default CardFactory;

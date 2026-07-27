@@ -570,6 +570,7 @@ const BAL_HELP = {
   moraleMilestones: '누적 치료 환자 수 도달 시 일회성 사기 보너스(횟수: 보너스).',
   // combat 중첩
   companionAuto: '동료 자율 행동 설정.', classSkills: '직업별 동료 스킬.',
+  gear: '동료 장착 아이템 목록(최대 4, {id, qty}). 표시용 — 전투 수치는 combatDmg가 근거.',
   scaledDecayBreakpoints: '소음 구간별 추가 감소.',
   // explore / seasonal 루팅 풀
   masteryRarePool: '탐색 마스터리 희귀 루팅 후보 아이템 ID 목록.',

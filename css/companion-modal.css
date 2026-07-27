@@ -1,0 +1,699 @@
+/* === COMPANION MODAL === */
+/* 좌측 사이드바 '동료' 버튼으로 여는 중앙 모달. 오버레이는 modals.css .modal-overlay 공통 규칙 사용 */
+
+.companion-modal-box {
+  position: relative;
+  width: min(880px, 92vw);
+  max-height: 85vh;
+  background: linear-gradient(150deg, #10130f 0%, var(--bg-surface) 50%, #0f120e 100%);
+  border: 1px solid var(--accent-dim);
+  border-radius: var(--radius-lg);
+  box-shadow:
+    0 0 0 1px rgba(200,160,96,0.08),
+    0 20px 60px rgba(0,0,0,0.7),
+    inset 0 0 120px rgba(0,0,0,0.4);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transform: scale(0.96);
+  transition: transform var(--transition-mid);
+}
+
+.modal-overlay.open .companion-modal-box {
+  transform: scale(1);
+}
+
+/* 스캔라인 오버레이 */
+.companion-modal-box::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0,
+    transparent 2px,
+    rgba(200,160,96,0.015) 2px,
+    rgba(200,160,96,0.015) 3px
+  );
+  z-index: 1;
+}
+
+/* ── 헤더 ── */
+.npcd-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--gap-sm) var(--gap-md);
+  background: linear-gradient(90deg, rgba(200,160,96,0.1), transparent);
+  border-bottom: 1px solid var(--accent-dim);
+  z-index: 2;
+}
+
+.npcd-title {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-sm);
+  font-family: var(--font-title);
+  font-size: var(--font-size-md);
+  color: var(--accent-primary);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.npcd-title-sub {
+  font-size: 11px;
+  color: var(--text-dim);
+  letter-spacing: 0.2em;
+}
+
+.npcd-marker {
+  width: 9px;
+  height: 9px;
+  background: var(--accent-primary);
+  box-shadow: 0 0 8px var(--accent-primary);
+  border-radius: 1px;
+  animation: npcdMarkerBlink 2s ease-in-out infinite;
+}
+
+@keyframes npcdMarkerBlink {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.4; }
+}
+
+.npcd-close {
+  width: 26px;
+  height: 26px;
+  background: transparent;
+  border: 1px solid var(--accent-dim);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.npcd-close:hover {
+  background: var(--bg-hover);
+  color: var(--text-danger);
+  border-color: var(--text-danger);
+}
+
+/* ── 2컬럼: 좌측 로스터 / 우측 상세 ── */
+.npcd-columns {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 190px 1fr;
+  z-index: 2;
+}
+
+.npcd-roster {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+  padding: var(--gap-md) var(--gap-sm);
+  border-right: 1px solid var(--accent-dim);
+  overflow-y: auto;
+}
+
+.npcd-roster-item {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-sm);
+  padding: 6px var(--gap-sm);
+  background: var(--slot-occupied);
+  border: 1px solid rgba(200,160,96,0.15);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  text-align: left;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.npcd-roster-item:hover {
+  background: var(--bg-hover);
+  border-color: var(--accent-dim);
+}
+
+.npcd-roster-item.selected {
+  background: rgba(200,160,96,0.1);
+  border-color: var(--accent-primary);
+}
+
+.npcd-roster-icon {
+  font-size: 22px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.npcd-roster-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.npcd-roster-name {
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.npcd-roster-hp {
+  display: block;
+  height: 3px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.npcd-roster-hp-fill {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  transition: width var(--transition-slow);
+}
+.npcd-roster-hp-fill.good { background: var(--text-good); }
+.npcd-roster-hp-fill.warn { background: var(--text-warn); }
+.npcd-roster-hp-fill.crit { background: var(--text-danger); }
+
+.npcd-roster-dispatch {
+  font-size: 10px;
+  color: var(--text-warn);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── 빈 상태 ── */
+.npcd-empty {
+  position: relative;
+  padding: var(--gap-xl);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--gap-sm);
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  text-align: center;
+  z-index: 2;
+}
+
+.npcd-empty-icon {
+  font-size: 40px;
+  opacity: 0.5;
+}
+
+.npcd-empty-hint {
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+/* ── 상세 본문 ── */
+.npcd-detail {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.npcd-body {
+  position: relative;
+  flex: 1;
+  padding: var(--gap-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-md);
+  overflow-y: auto;
+  z-index: 2;
+}
+
+.npcd-body::-webkit-scrollbar,
+.npcd-roster::-webkit-scrollbar        { width: 6px; }
+.npcd-body::-webkit-scrollbar-track,
+.npcd-roster::-webkit-scrollbar-track  { background: transparent; }
+.npcd-body::-webkit-scrollbar-thumb,
+.npcd-roster::-webkit-scrollbar-thumb  { background: var(--accent-dim); border-radius: 3px; }
+
+/* ── 초상화 + 기본 정보 ── */
+.npcd-identity-row {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: var(--gap-md);
+}
+
+.npcd-portrait {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  background: radial-gradient(ellipse at center, #2a2820 0%, #0f0e0a 100%);
+  border: 1px solid var(--accent-dim);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.npcd-portrait-icon {
+  font-size: 56px;
+  line-height: 1;
+  filter: drop-shadow(0 6px 10px rgba(0,0,0,0.6));
+}
+
+.npcd-corner {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-color: var(--accent-primary);
+  border-style: solid;
+  border-width: 0;
+}
+.npcd-corner.tl { top: 4px; left: 4px; border-top-width: 2px; border-left-width: 2px; }
+.npcd-corner.tr { top: 4px; right: 4px; border-top-width: 2px; border-right-width: 2px; }
+.npcd-corner.bl { bottom: 4px; left: 4px; border-bottom-width: 2px; border-left-width: 2px; }
+.npcd-corner.br { bottom: 4px; right: 4px; border-bottom-width: 2px; border-right-width: 2px; }
+
+.npcd-portrait-scan {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(200,160,96,0.6), transparent);
+  animation: npcdScanMove 4s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes npcdScanMove {
+  0%   { transform: translateY(0); }
+  100% { transform: translateY(120px); }
+}
+
+.npcd-identity {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+  justify-content: center;
+  min-width: 0;
+}
+
+.npcd-name {
+  font-family: var(--font-title);
+  font-size: var(--font-size-lg);
+  color: var(--text-primary);
+  line-height: 1.1;
+}
+
+.npcd-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap-xs);
+  align-items: center;
+}
+
+.npcd-chip {
+  padding: 1px 7px;
+  border: 1px solid var(--accent-dim);
+  border-radius: var(--radius-sm);
+  background: rgba(200,160,96,0.08);
+  font-size: 11px;
+  color: var(--text-secondary);
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+.npcd-chip.companion {
+  color: var(--text-good);
+  background: rgba(96,176,96,0.1);
+  border-color: rgba(96,176,96,0.3);
+}
+
+.npcd-chip.status-ok     { color: var(--text-good);      background: rgba(96,176,96,0.1);  border-color: rgba(96,176,96,0.3); }
+.npcd-chip.status-stable { color: var(--text-warn);      background: rgba(224,160,48,0.1); border-color: rgba(224,160,48,0.3); }
+.npcd-chip.status-wound  { color: var(--text-danger);    background: rgba(224,80,80,0.1);  border-color: rgba(224,80,80,0.3); }
+.npcd-chip.status-infect { color: var(--stat-infection); background: rgba(204,51,51,0.1);  border-color: rgba(204,51,51,0.3); }
+
+.npcd-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.npcd-tag {
+  padding: 1px 8px;
+  background: rgba(200,160,96,0.08);
+  border: 1px solid var(--accent-dim);
+  border-radius: 999px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+/* ── 섹션 공통 ── */
+.npcd-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+}
+
+.npcd-section-header {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-sm);
+  font-family: var(--font-title);
+  font-size: 12px;
+  color: var(--accent-primary);
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--accent-dim);
+}
+
+.npcd-section-header::before {
+  content: "//";
+  color: var(--text-dim);
+}
+
+.npcd-section-count {
+  margin-left: auto;
+  font-size: 10px;
+  color: var(--text-dim);
+  letter-spacing: 0.15em;
+}
+
+.npcd-subheader {
+  font-size: 11px;
+  color: var(--text-dim);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.npcd-divider {
+  color: var(--text-dim);
+  margin: 0 6px;
+}
+
+/* ── STATUS ── */
+.npcd-stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gap-sm) var(--gap-md);
+}
+
+.npcd-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.npcd-stat-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+}
+
+.npcd-stat-name {
+  color: var(--text-secondary);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.npcd-stat-value {
+  color: var(--text-primary);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.npcd-tier {
+  color: var(--accent-primary);
+  font-size: 11px;
+}
+
+.npcd-stars {
+  display: flex;
+  gap: 2px;
+}
+
+.npcd-star       { color: var(--accent-primary); font-size: 14px; line-height: 1; }
+.npcd-star.empty { color: var(--text-dim); }
+
+.npcd-bar {
+  position: relative;
+  height: 7px;
+  background: var(--slot-empty);
+  border: 1px solid rgba(200,160,96,0.15);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.npcd-bar-fill {
+  height: 100%;
+  transition: width var(--transition-slow);
+}
+
+.npcd-bar-fill.hp.good { background: linear-gradient(90deg, var(--text-good), #80d080); }
+.npcd-bar-fill.hp.warn { background: linear-gradient(90deg, var(--text-warn), #f0c060); }
+.npcd-bar-fill.hp.crit { background: linear-gradient(90deg, var(--stat-hp), #ff6060); }
+.npcd-bar-fill.bond,
+.npcd-bar-fill.morale  { background: linear-gradient(90deg, var(--stat-morale), #cc88ee); }
+
+/* 25% 간격 눈금 오버레이 */
+.npcd-bar::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(90deg,
+    transparent 0, transparent 24%,
+    rgba(0,0,0,0.35) 24%, rgba(0,0,0,0.35) 25%,
+    transparent 25%, transparent 49%,
+    rgba(0,0,0,0.35) 49%, rgba(0,0,0,0.35) 50%,
+    transparent 50%, transparent 74%,
+    rgba(0,0,0,0.35) 74%, rgba(0,0,0,0.35) 75%,
+    transparent 75%);
+  pointer-events: none;
+}
+
+.npcd-upkeep {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-sm);
+  padding: 6px var(--gap-md);
+  background: rgba(200,160,96,0.08);
+  border: 1px solid var(--accent-dim);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.npcd-upkeep-label {
+  color: var(--accent-primary);
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+/* ── COMBAT ── */
+.npcd-combat-line,
+.npcd-passive-line {
+  padding: 6px var(--gap-md);
+  background: rgba(96,176,96,0.06);
+  border-left: 2px solid var(--text-good);
+  border-radius: 2px;
+  font-size: 13px;
+  color: var(--text-good);
+  letter-spacing: 0.03em;
+}
+
+.npcd-passive-label {
+  color: var(--accent-primary);
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-right: 6px;
+}
+
+.npcd-skill-slots {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--gap-sm);
+}
+
+.npcd-skill-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: var(--gap-sm) 4px;
+  background: var(--slot-occupied);
+  border: 1px solid rgba(200,160,96,0.18);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+}
+
+.npcd-skill-slot:hover {
+  background: var(--bg-hover);
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 12px rgba(200,160,96,0.15);
+}
+
+.npcd-skill-icon {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #0f0e08, #1c1a12);
+  border: 1px solid var(--accent-dim);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+.npcd-skill-icon img {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.npcd-skill-name {
+  font-size: 11px;
+  color: var(--text-primary);
+  text-align: center;
+  letter-spacing: 0.03em;
+}
+
+/* ── INVENTORY (플레이스홀더) ── */
+.npcd-inv-slots {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--gap-sm);
+}
+
+.npcd-inv-slot {
+  aspect-ratio: 1 / 1;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.npcd-inv-slot.filled {
+  position: relative;
+  flex-direction: column;
+  gap: 3px;
+  padding: var(--gap-xs);
+  background: var(--slot-occupied);
+  border: 1px solid rgba(200,160,96,0.2);
+  transition: all var(--transition-fast);
+}
+
+.npcd-inv-slot.filled:hover {
+  background: var(--bg-hover);
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 12px rgba(200,160,96,0.2);
+}
+
+.npcd-inv-img {
+  width: 60%;
+  height: 60%;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+}
+
+.npcd-inv-icon {
+  font-size: 30px;
+  line-height: 1;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+}
+
+.npcd-inv-name {
+  max-width: 100%;
+  font-size: 10px;
+  color: var(--text-primary);
+  letter-spacing: 0.03em;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.npcd-inv-qty {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  min-width: 18px;
+  height: 16px;
+  padding: 0 4px;
+  background: var(--accent-primary);
+  color: var(--bg-void);
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.npcd-inv-slot.empty {
+  background: var(--slot-empty);
+  border: 1px dashed rgba(200,160,96,0.15);
+}
+
+.npcd-inv-placeholder {
+  font-size: 18px;
+  color: var(--text-dim);
+  letter-spacing: 0.3em;
+}
+
+/* ── 푸터 ── */
+.npcd-actions {
+  display: flex;
+  gap: var(--gap-md);
+  padding: var(--gap-sm) var(--gap-md);
+  background: linear-gradient(0deg, rgba(0,0,0,0.4), transparent);
+  border-top: 1px solid var(--accent-dim);
+  justify-content: center;
+  z-index: 2;
+}
+
+.npcd-btn {
+  flex: 1;
+  max-width: 180px;
+  padding: var(--gap-sm) var(--gap-md);
+  background: var(--bg-raised);
+  border: 1px solid var(--accent-dim);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.npcd-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.npcd-btn.confirm {
+  color: var(--accent-primary);
+  border-color: var(--accent-primary);
+}
+.npcd-btn.confirm:hover {
+  background: rgba(200,160,96,0.12);
+  box-shadow: 0 0 12px rgba(200,160,96,0.2);
+}
+
+.npcd-btn.danger {
+  color: var(--text-danger);
+  border-color: #6b2020;
+}
+.npcd-btn.danger:hover {
+  background: rgba(224,80,80,0.1);
+}

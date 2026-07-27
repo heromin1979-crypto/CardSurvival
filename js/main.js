@@ -86,7 +86,6 @@ import LandmarkModal       from './ui/LandmarkModal.js';
 import PatientBoardBridge  from './ui/PatientBoardBridge.js';
 import SettingsModal       from './ui/SettingsModal.js';
 import NPCDialogueModal   from './ui/NPCDialogueModal.js';
-import NPCPanel           from './ui/NPCPanel.js';
 import SecretGalleryTab   from './ui/SecretGalleryTab.js';
 import CinematicScene     from './ui/CinematicScene.js';
 
@@ -193,7 +192,6 @@ function init() {
   // Settings modal
   SettingsModal.init();
   NPCDialogueModal.init();
-  NPCPanel.init();
   NPCQuestSystem.init();
   SecretGalleryTab.init();
   CinematicScene.init();

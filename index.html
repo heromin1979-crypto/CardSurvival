@@ -42,6 +42,7 @@
   <link rel="stylesheet" href="css/mobile.css">
   <link rel="stylesheet" href="css/cinematic.css">
   <link rel="stylesheet" href="css/npc-panel.css">
+  <link rel="stylesheet" href="css/companion-modal.css">
   <link rel="stylesheet" href="css/npc-group.css">
   <link rel="stylesheet" href="css/quest-panel.css">
   <!-- UI 인스펙터 오버라이드 — 항상 마지막 로드 (보정 규칙이 우선되도록) -->
@@ -184,47 +185,6 @@
 
   <!-- 이슈 #7 — 사망 위험 중앙 경고 배너 -->
   <div id="critical-warning-banner" class="critical-warning-banner" role="alert" aria-live="assertive"></div>
-
-  <!-- ═══════════════════════════════════════════ -->
-  <!--  NPC SIDE PANEL                             -->
-  <!-- ═══════════════════════════════════════════ -->
-  <div id="npc-panel" class="npc-panel hidden" role="complementary" aria-label="NPC 패널">
-    <button id="npc-panel-toggle" class="npc-panel-toggle" title="NPC 패널 접기/펼치기">👥</button>
-    <div class="npc-panel-inner">
-      <div class="npc-panel-section">
-        <div class="npc-panel-section-title">🤝 동반자</div>
-        <div id="npc-panel-companions-list" class="npc-panel-list is-empty"></div>
-      </div>
-      <div class="npc-panel-section">
-        <div class="npc-panel-section-title">📍 현재 위치</div>
-        <div id="npc-panel-location-list" class="npc-panel-list is-empty"></div>
-      </div>
-      <!-- W-9: Group stats -->
-      <div id="npc-panel-group-stats" class="group-stats-panel" style="display:none">
-        <div class="group-stats-title">📊 그룹 상태</div>
-        <div class="group-stat-row">
-          <span class="group-stat-label">사기</span>
-          <div class="group-stat-bar"><div class="group-stat-fill morale" id="gs-morale" style="width:50%"></div></div>
-          <span class="group-stat-value" id="gs-morale-val">50</span>
-        </div>
-        <div class="group-stat-row">
-          <span class="group-stat-label">결속</span>
-          <div class="group-stat-bar"><div class="group-stat-fill cohesion" id="gs-cohesion" style="width:50%"></div></div>
-          <span class="group-stat-value" id="gs-cohesion-val">50</span>
-        </div>
-        <div class="group-stat-row">
-          <span class="group-stat-label">식량</span>
-          <div class="group-stat-bar"><div class="group-stat-fill food" id="gs-food" style="width:50%"></div></div>
-          <span class="group-stat-value" id="gs-food-val">50</span>
-        </div>
-        <div class="group-stat-row">
-          <span class="group-stat-label">안전</span>
-          <div class="group-stat-bar"><div class="group-stat-fill safety" id="gs-safety" style="width:50%"></div></div>
-          <span class="group-stat-value" id="gs-safety-val">50</span>
-        </div>
-      </div>
-    </div>
-  </div>
 
 </div>
 
