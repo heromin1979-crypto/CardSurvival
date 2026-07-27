@@ -37,7 +37,7 @@ import {
   getRank,
   validateSkillPosition,
 } from './combat/FormationSystem.js';
-import { consumeToken, tickStatusEffects } from './combat/CombatStatusSystem.js';
+import { consumeToken, healCombatant, tickStatusEffects } from './combat/CombatStatusSystem.js';
 import { buildInitiativeQueue } from './combat/InitiativeSystem.js';
 import { resolveRelationshipReaction } from './combat/RelationshipCombatSystem.js';
 import { buildEnemyProfile } from './combat/EnemyCombatAdapter.js';
@@ -618,6 +618,34 @@ const CombatSystem = {
     }
   },
 
+  _copyCombatStatus(status) {
+    return {
+      ...status,
+      effect: { ...(status?.effect ?? {}) },
+    };
+  },
+
+  _syncLegacyPlayerStatusesToRanked(combat = GameState.combat) {
+    const player = combat?.combatants?.player;
+    if (!player) return null;
+    if (!Array.isArray(player.statusEffects)) player.statusEffects = [];
+
+    for (const legacyStatus of combat.playerStatus ?? []) {
+      if (!legacyStatus?.id) continue;
+      const exists = player.statusEffects.some(status => status?.id === legacyStatus.id);
+      if (!exists) player.statusEffects.push(this._copyCombatStatus(legacyStatus));
+    }
+    return player;
+  },
+
+  _syncRankedPlayerStatusesToLegacy(combat = GameState.combat) {
+    const player = combat?.combatants?.player;
+    if (!player) return false;
+    combat.playerStatus = (player.statusEffects ?? [])
+      .map(status => this._copyCombatStatus(status));
+    return true;
+  },
+
   _syncLegacyAlliesToRankedCombatants() {
     const combatants = GameState.combat?.combatants;
     if (!combatants) return;
@@ -852,29 +880,12 @@ const CombatSystem = {
     }
   },
 
-  // 라운드 경계: 상태이상 틱(레거시+랭크) → 사망/승패 정리 → 이니셔티브 재굴림
+  // 라운드 경계: 상태이상 틱 → 사망/승패 정리 → 이니셔티브 재굴림
   _onRoundStart(combat) {
     this._migrateRankedEnemyStatusesToLegacy(combat);
     this._tickStatusEffects();
     this._syncLegacyAlliesToRankedCombatants();
     this._syncLegacyEnemiesToRanked(combat);
-
-    for (const combatant of Object.values(combat.combatants ?? {})) {
-      if (combatant.dead === true) continue;
-      if (combatant.sourceType === 'companion' || combatant.sourceType === 'enemy') continue;
-      const events = tickStatusEffects(combatant, Math.random);
-      for (const event of events) {
-        if (event.damage > 0) {
-          this._pushCombatLog(
-            `${this._rankedCombatantLabel(combatant)}: ${event.statusId ?? '상태이상'}으로 ${event.damage} 피해`,
-          );
-        }
-        if (event.deathsDoorEntered) {
-          this._pushCombatLog(`${this._rankedCombatantLabel(combatant)}이(가) 죽음의 문턱에 몰렸다!`);
-        }
-      }
-      if (events.length > 0) this._syncRankedTargetToLegacy(combatant);
-    }
 
     this._processRankedKills();
     if (this._allEnemiesDead()) {
@@ -1718,10 +1729,31 @@ const CombatSystem = {
     let healedAmount = 0;
     if (hp) {
       const healMult = this._getMedicalHealMultiplier(def);
-      const healed = Math.round(hp * healMult);
-      healedAmount = healed;
-      gs.player.hp.current = Math.min(gs.player.hp.max, gs.player.hp.current + healed);
-      msgs.push(I18n.t('combatSys.hpHeal', { val: healed }));
+      const requestedHealing = Math.round(hp * healMult);
+      const rankedPlayer = this._syncLegacyPlayerStatusesToRanked(gs.combat);
+      if (rankedPlayer) {
+        rankedPlayer.hp = Math.max(0, gs.player.hp.current ?? rankedPlayer.hp ?? 0);
+        rankedPlayer.maxHp = gs.player.hp.max ?? rankedPlayer.maxHp;
+        const result = healCombatant(rankedPlayer, requestedHealing);
+        healedAmount = result.healed;
+        this._syncRankedTargetToLegacy(rankedPlayer);
+        this._syncRankedPlayerStatusesToLegacy(gs.combat);
+      } else {
+        const legacyPlayer = {
+          id: 'player',
+          side: 'ally',
+          sourceType: 'player',
+          hp: gs.player.hp.current,
+          maxHp: gs.player.hp.max,
+          statusEffects: (gs.combat?.playerStatus ?? [])
+            .map(status => this._copyCombatStatus(status)),
+          dead: false,
+        };
+        const result = healCombatant(legacyPlayer, requestedHealing);
+        healedAmount = result.healed;
+        gs.player.hp.current = legacyPlayer.hp;
+      }
+      msgs.push(I18n.t('combatSys.hpHeal', { val: healedAmount }));
     }
     if (infection) { gs.modStat('infection', infection); msgs.push(I18n.t('combatSys.infectionChange', { val: `${infection > 0 ? '+' : ''}${infection}` })); }
     if (morale)    { gs.modStat('morale', morale);    msgs.push(I18n.t('combatSys.moraleUp', { val: morale })); }
@@ -1877,17 +1909,49 @@ const CombatSystem = {
 
   _tickStatusEffects() {
     const gs = GameState;
+    const rankedPlayer = this._syncLegacyPlayerStatusesToRanked(gs.combat);
 
-    gs.combat.playerStatus = (gs.combat.playerStatus ?? []).filter(s => {
-      if (s.effect.hpLossPerRound) {
-        gs.player.hp.current = Math.max(0, gs.player.hp.current - s.effect.hpLossPerRound);
-        gs.combat.log.push(I18n.t('combatSys.statusTick', { name: s.name, dmg: s.effect.hpLossPerRound, hp: gs.player.hp.current }));
+    if (rankedPlayer) {
+      rankedPlayer.hp = Math.max(0, gs.player.hp.current ?? rankedPlayer.hp ?? 0);
+      rankedPlayer.maxHp = gs.player.hp.max ?? rankedPlayer.maxHp;
+      this._reconcileAllyVitals(rankedPlayer);
+      const statusNames = new Map(
+        (rankedPlayer.statusEffects ?? []).map(status => [
+          status.id,
+          status.name ?? status.id,
+        ]),
+      );
+      for (const status of rankedPlayer.statusEffects ?? []) {
+        if (status.effect?.infection) gs.modStat('infection', status.effect.infection);
+        if (status.effect?.radiation) gs.modStat('radiation', status.effect.radiation);
       }
-      if (s.effect.infection) gs.modStat('infection', s.effect.infection);
-      if (s.effect.radiation) gs.modStat('radiation', s.effect.radiation);
-      s.duration--;
-      return s.duration > 0;
-    });
+      const events = tickStatusEffects(rankedPlayer, Math.random);
+      for (const event of events) {
+        if (event.damage > 0) {
+          gs.combat.log.push(I18n.t('combatSys.statusTick', {
+            name: statusNames.get(event.statusId) ?? event.statusId,
+            dmg: event.damage,
+            hp: rankedPlayer.hp,
+          }));
+        }
+        if (event.deathsDoorEntered) {
+          this._pushCombatLog(`${this._rankedCombatantLabel(rankedPlayer)}이(가) 죽음의 문턱에 몰렸다!`);
+        }
+      }
+      this._syncRankedTargetToLegacy(rankedPlayer);
+      this._syncRankedPlayerStatusesToLegacy(gs.combat);
+    } else {
+      gs.combat.playerStatus = (gs.combat.playerStatus ?? []).filter(s => {
+        if (s.effect.hpLossPerRound) {
+          gs.player.hp.current = Math.max(0, gs.player.hp.current - s.effect.hpLossPerRound);
+          gs.combat.log.push(I18n.t('combatSys.statusTick', { name: s.name, dmg: s.effect.hpLossPerRound, hp: gs.player.hp.current }));
+        }
+        if (s.effect.infection) gs.modStat('infection', s.effect.infection);
+        if (s.effect.radiation) gs.modStat('radiation', s.effect.radiation);
+        s.duration--;
+        return s.duration > 0;
+      });
+    }
 
     for (const companion of Object.values(gs.combat.combatants ?? {})) {
       if (companion?.sourceType !== 'companion' || companion.dead === true) continue;

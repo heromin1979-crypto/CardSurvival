@@ -895,8 +895,8 @@ export const CombatAiTurns = {
     const gs = GameState;
     const combat = gs.combat;
     const enemyIdx = combat?.enemies?.indexOf(enemy) ?? -1;
-    const impactFx = this._monsterImpactFx(enemy);
     const definition = this._committedActionDefinition(enemy, action);
+    const impactFx = definition?.impactFx ?? this._monsterImpactFx(enemy);
     const blockedTargets = new Set();
 
     const defenseReductionFor = (targetId) => {
@@ -1118,15 +1118,22 @@ export const CombatAiTurns = {
     if (existing) {
       existing.duration = Math.max(existing.duration ?? 0, status.duration ?? 1);
       existing.effect = { ...(existing.effect ?? {}), ...(status.effect ?? {}) };
+      if (Number.isFinite(status.value)) existing.value = status.value;
     } else {
       statuses.push({
         id: status.id,
         name: status.name ?? status.id,
         duration: status.duration ?? 1,
         effect: { ...(status.effect ?? {}) },
+        ...(Number.isFinite(status.value) ? { value: status.value } : {}),
       });
     }
-    if (!isPlayer) {
+    if (isPlayer && combatant) {
+      combatant.statusEffects = statuses.map(entry => ({
+        ...entry,
+        effect: { ...(entry.effect ?? {}) },
+      }));
+    } else if (!isPlayer) {
       const state = gs.npcs?.states?.[targetId];
       if (state) {
         state.statusEffects = statuses.map(entry => ({

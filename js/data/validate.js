@@ -10,6 +10,7 @@ import {
 } from './combatSkills.js';
 import { COMPANION_TACTICS } from './companionTactics.js';
 import { ENEMIES } from './enemies.js';
+import { SECRET_ENEMIES } from './secretEnemies.js';
 import {
   COMPANION_STANCE_ROLES,
   COMPANION_TACTIC_WHEN,
@@ -1144,7 +1145,23 @@ async function validate() {
     `  Enemies: ${Object.keys(ENEMIES).length}, errors: ${enemyCombatReport.errors.length}`,
   );
 
-  // 14. 숨은 장소(hiddenLocations) — 구 참조·보상/루팅 아이템 참조 검증
+  // 15. Final boss roster and boss pattern contracts
+  console.log('\n=== BOSS PATTERN CHECK ===');
+  const finalBosses = Object.values(SECRET_ENEMIES).filter(enemy => enemy?.isBoss === true);
+  if (finalBosses.length !== 21) {
+    console.log(`ERROR [boss roster] expected 21 final bosses, found ${finalBosses.length}`);
+    errors++;
+  }
+  const bossPatternErrors = validateBossPatternSchema(SECRET_ENEMIES);
+  for (const error of bossPatternErrors) {
+    console.log(`ERROR ${error}`);
+    errors++;
+  }
+  console.log(
+    `  Bosses: ${finalBosses.length}, errors: ${bossPatternErrors.length + (finalBosses.length === 21 ? 0 : 1)}`,
+  );
+
+  // 16. 숨은 장소(hiddenLocations) — 구 참조·보상/루팅 아이템 참조 검증
   console.log('\n=== HIDDEN LOCATIONS CHECK ===');
   let hlChecked = 0, hlBad = 0;
   try {

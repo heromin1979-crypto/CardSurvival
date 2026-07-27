@@ -212,6 +212,7 @@ export const ko = {
   'combat.noAmmo':         '탄약 없음',
   'combat.reloadPackCost': '20발 탄약 팩 1개 소비',
   'combat.loadedAmmo':     '탄창 {ammo}/{capacity}',
+  'combat.status.healing_received_down.description': '받는 치료와 회복 효과 50% 감소',
 
   // ── Menu ────────────────────────────────────────────────────
   'menu.newGame':       '새 게임',
@@ -1176,6 +1177,7 @@ export const en = {
   'combat.noAmmo':         'No Ammo',
   'combat.reloadPackCost': 'Consumes 1 x 20-round pack',
   'combat.loadedAmmo':     'Ammo {ammo}/{capacity}',
+  'combat.status.healing_received_down.description': 'Healing and recovery received reduced by 50%',
 
   // ── Menu ────────────────────────────────────────────────────
   'menu.newGame':       'New Game',
@@ -2207,11 +2209,15 @@ export const en = {
   '_enemy.boss_sewer_king':         'Sewer King',
   '_enemy.boss_swarm_queen_bee':    'Swarm Queen Bee',
   '_enemy.boss_feral_dog_alpha':    'Feral Dog Alpha',
+  '_enemy.boss_penthouse_survivor': 'Penthouse Survivor',
+  '_enemy.boss_escaped_experiment': 'Escaped Experiment',
+  '_enemy.boss_blizzard_wraith':    'Blizzard Wraith',
   '_enemy.boss_soldier_nemesis':    'Deserter Comrade',
   '_enemy.boss_firefighter_nemesis':'Infected Jae-hoon',
   '_enemy.boss_homeless_nemesis':   'Loan Shark',
   '_enemy.boss_chef_nemesis':       'Mutant Chef',
   '_enemy.boss_doctor_nemesis':     'Infected Fellow Doctor',
+  '_enemy.food_warlord':             'Food Warlord',
   '_enemy.zombie_bloater':          'Bloater',
   '_enemy.zombie_screamer':         'Screamer',
   '_enemy.zombie_charger':          'Charger',

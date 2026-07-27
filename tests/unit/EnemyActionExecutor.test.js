@@ -82,7 +82,10 @@ describe('executeEnemyAction', () => {
       healSelf: vi.fn(),
       addSelfStatus: vi.fn(),
       summonEnemy: vi.fn(() => 1),
-      damageParty: vi.fn(),
+      damageParty: vi.fn(() => [
+        { targetId: 'player', result: { dodged: false, damage: 5 } },
+        { targetId: 'npc_guard', result: { dodged: false, damage: 5 } },
+      ]),
       setBattlefieldStatus: vi.fn(),
       modifyResource: vi.fn(),
       lockWeapon: vi.fn(),
@@ -123,7 +126,7 @@ describe('executeEnemyAction', () => {
     });
 
     expect(recorder.services.damageTarget).not.toHaveBeenCalled();
-    expect(recorder.services.emitFx).not.toHaveBeenCalled();
+    expect(recorder.services.emitFx).toHaveBeenCalledTimes(2);
     expect(recorder.services.addLog).not.toHaveBeenCalled();
     expect(recorder.services.healSelf).toHaveBeenCalledOnce();
     expect(recorder.services.healSelf).toHaveBeenCalledWith(8);
@@ -164,6 +167,181 @@ describe('executeEnemyAction', () => {
       skipped: true,
       reason: 'unsupported',
     });
+  });
+
+  it.each([
+    {
+      label: '전원 명중',
+      partyResults: [
+        { targetId: 'player', result: { dodged: false, damage: 6 } },
+        { targetId: 'npc_guard', result: { dodged: false, damage: 6 } },
+      ],
+      expectedTargetIds: ['player', 'npc_guard'],
+    },
+    {
+      label: '일부 회피',
+      partyResults: [
+        { targetId: 'player', result: { dodged: true, damage: 0 } },
+        { targetId: 'npc_guard', result: { dodged: false, damage: 6 } },
+      ],
+      expectedTargetIds: ['npc_guard'],
+    },
+    {
+      label: '전원 회피',
+      partyResults: [
+        { targetId: 'player', result: { dodged: true, damage: 0 } },
+        { targetId: 'npc_guard', result: { missed: true, damage: 0 } },
+      ],
+      expectedTargetIds: [],
+    },
+  ])('partyDamage $label 시 실제 명중 대상에게만 후속 target effect를 적용한다', ({
+    partyResults,
+    expectedTargetIds,
+  }) => {
+    const recorder = createServices();
+    Object.assign(recorder.services, {
+      damageParty: vi.fn(() => partyResults),
+      modifyResource: vi.fn(),
+      lockWeapon: vi.fn(),
+    });
+    const enemy = {
+      bossPattern: {
+        basicAttacks: [],
+        specialSkill: {
+          id: 'party_control',
+          damage: [0, 0],
+          effects: [
+            { type: 'partyDamage', value: [6, 6] },
+            { type: 'targetStatus', id: 'shocked', duration: 2 },
+            { type: 'forcedMove', distance: -1 },
+            { type: 'resource', resource: 'morale', value: -4 },
+            { type: 'weaponLock', tag: 'firearm', duration: 1 },
+          ],
+        },
+        ultimate: null,
+      },
+    };
+
+    const result = executeEnemyAction({
+      enemy,
+      action: readyAction({
+        actionId: 'party_control',
+        category: 'special',
+        targetIds: ['player'],
+      }),
+      services: recorder.services,
+      random: () => 0,
+    });
+
+    expect(result.affectedTargetIds).toEqual(expectedTargetIds);
+    expect(recorder.services.addStatus.mock.calls.map(([targetId]) => targetId))
+      .toEqual(expectedTargetIds);
+    expect(recorder.services.moveTarget.mock.calls.map(([targetId]) => targetId))
+      .toEqual(expectedTargetIds);
+    expect(recorder.services.modifyResource.mock.calls.map(([targetId]) => targetId))
+      .toEqual(expectedTargetIds);
+    expect(recorder.services.lockWeapon.mock.calls.map(([targetId]) => targetId))
+      .toEqual(expectedTargetIds);
+    expect(recorder.services.emitFx.mock.calls.map(([payload]) => ({
+      targetId: payload.targetId,
+      miss: payload.miss,
+    }))).toEqual(partyResults.map(outcome => ({
+      targetId: outcome.targetId,
+      miss: outcome.result.dodged === true || outcome.result.missed === true,
+    })));
+  });
+
+  it('실제 피해를 주는 partyDamage는 명중 대상에게만 enemy 기본 감염을 적용한다', () => {
+    const recorder = createServices();
+    recorder.services.damageParty = vi.fn(() => [
+      { targetId: 'player', result: { dodged: false, damage: 6 } },
+      { targetId: 'npc_guard', result: { dodged: true, damage: 0 } },
+    ]);
+    const enemy = {
+      infectionChance: 1,
+      bossPattern: {
+        basicAttacks: [],
+        specialSkill: {
+          id: 'infectious_party_hit',
+          damage: [0, 0],
+          effects: [{ type: 'partyDamage', value: [6, 6] }],
+        },
+        ultimate: null,
+      },
+    };
+
+    const result = executeEnemyAction({
+      enemy,
+      action: readyAction({
+        actionId: 'infectious_party_hit',
+        category: 'special',
+        targetIds: ['player'],
+      }),
+      services: recorder.services,
+      random: () => 0,
+    });
+
+    expect(result.affectedTargetIds).toEqual(['player']);
+    expect(recorder.services.addStatus).toHaveBeenCalledTimes(1);
+    expect(recorder.services.addStatus).toHaveBeenCalledWith(
+      'player',
+      expect.objectContaining({ id: 'infection' }),
+    );
+  });
+
+  it('partyDamage가 없는 명시적 0 피해 targetStatus는 기존 action 대상을 유지한다', () => {
+    const recorder = createServices();
+    Object.assign(recorder.services, {
+      modifyResource: vi.fn(),
+      lockWeapon: vi.fn(),
+    });
+    const enemy = {
+      infectionChance: 1,
+      onHitEffect: { infection: 5 },
+      statusInflict: {
+        id: 'legacy_burn',
+        name: '레거시 화상',
+        duration: 2,
+        effect: { hpLossPerRound: 3 },
+      },
+      bossPattern: {
+        basicAttacks: [],
+        specialSkill: {
+          id: 'zero_damage_control',
+          damage: [0, 0],
+          effects: [
+            { type: 'targetStatus', id: 'marked', duration: 2 },
+            { type: 'forcedMove', distance: 1 },
+            { type: 'resource', resource: 'morale', value: -2 },
+            { type: 'weaponLock', tag: 'melee', duration: 1 },
+          ],
+        },
+        ultimate: null,
+      },
+    };
+
+    const result = executeEnemyAction({
+      enemy,
+      action: readyAction({
+        actionId: 'zero_damage_control',
+        category: 'special',
+        targetIds: ['player', 'npc_guard'],
+      }),
+      services: recorder.services,
+      random: () => 0,
+    });
+
+    expect(result.affectedTargetIds).toEqual(['player', 'npc_guard']);
+    expect(recorder.services.addStatus.mock.calls).toEqual([
+      ['player', expect.objectContaining({ id: 'marked' })],
+      ['npc_guard', expect.objectContaining({ id: 'marked' })],
+    ]);
+    expect(recorder.services.moveTarget.mock.calls.map(([targetId]) => targetId))
+      .toEqual(['player', 'npc_guard']);
+    expect(recorder.services.modifyResource.mock.calls.map(([targetId]) => targetId))
+      .toEqual(['player', 'npc_guard']);
+    expect(recorder.services.lockWeapon.mock.calls.map(([targetId]) => targetId))
+      .toEqual(['player', 'npc_guard']);
   });
 
   it('피해 공격이 빗나가면 대상 effect를 건너뛰고 자기·전장 effect는 한 번씩 실행한다', () => {

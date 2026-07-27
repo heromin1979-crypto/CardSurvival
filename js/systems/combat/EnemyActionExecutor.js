@@ -225,6 +225,13 @@ function resolvedTargetEffect(type, affectedTargetIds) {
   };
 }
 
+function partyDamageOutcomes(result) {
+  if (Array.isArray(result)) return result;
+  if (Array.isArray(result?.results)) return result.results;
+  if (Array.isArray(result?.targets)) return result.targets;
+  return [];
+}
+
 export function executeEnemyAction({
   enemy,
   action,
@@ -242,18 +249,27 @@ export function executeEnemyAction({
     ? Math.max(1, Math.floor(action.hitCount))
     : 1;
   const damageRange = damageRangeFor(enemy, definition);
+  const effects = definition.effects ?? [];
   const accuracy = Number.isFinite(definition.accuracy)
     ? Math.max(0, Math.min(1, definition.accuracy))
     : Math.max(0, Math.min(1, enemy?.attack?.accuracy ?? 1));
+  const canDealDirectDamage = damageRange
+    .some(value => Number.isFinite(value) && value > 0);
+  const canDealPartyDamage = effects.some(effect => (
+    effect?.type === 'partyDamage'
+    && (Array.isArray(effect.value) ? effect.value : [effect.value])
+      .some(value => Number.isFinite(value) && value > 0)
+  ));
+  const canDealDamage = canDealDirectDamage || canDealPartyDamage;
   const statuses = statusDefinitionsFor(enemy, definition, {
-    includeEnemyDefaults: action.category !== 'timed_threat',
+    includeEnemyDefaults: action.category !== 'timed_threat' && canDealDamage,
   });
   const forcedMove = forcedMoveFor(definition);
-  const canDealDamage = damageRange.some(value => Number.isFinite(value) && value > 0);
   const hasTargetEffects = statuses.length > 0
     || (Number.isFinite(forcedMove) && forcedMove !== 0)
     || hasTargetScopedTypedEffect(definition);
-  const affectedTargetIds = !canDealDamage && hasTargetEffects
+  const hasPartyDamage = effects.some(effect => effect?.type === 'partyDamage');
+  const affectedTargetIds = !canDealDirectDamage && hasTargetEffects && !hasPartyDamage
     ? [...new Set(targetIds)]
     : [];
   const damageResults = [];
@@ -263,7 +279,7 @@ export function executeEnemyAction({
     motionKey: action.motionKey,
     ...actionModifiersFor(definition),
   };
-  const hitPlan = !canDealDamage
+  const hitPlan = !canDealDirectDamage
     ? []
     : enemy?.spreadAttacks === true && targetIds.length > 1
     ? Array.from({ length: hitCount }, (_, hitIndex) => ({
@@ -316,6 +332,35 @@ export function executeEnemyAction({
         : `${enemy?.name ?? enemy?.id ?? '적'} → ${targetId}: 회피`);
   }
 
+  const partyDamageResolutions = new Map();
+  for (const effect of effects) {
+    if (effect?.type !== 'partyDamage') continue;
+    const amount = rollDamage(
+      Array.isArray(effect.value) ? effect.value : [effect.value, effect.value],
+      random,
+    );
+    const result = services.damageParty?.(amount, actionMetadata);
+    for (const outcome of partyDamageOutcomes(result)) {
+      const targetId = outcome?.targetId;
+      const damageResult = outcome?.result ?? outcome;
+      if (!targetId) continue;
+      const succeeded = hitSucceeded(damageResult);
+      if (succeeded && !affectedTargetIds.includes(targetId)) {
+        affectedTargetIds.push(targetId);
+      }
+      services.emitFx({
+        kind: 'enemyAction',
+        enemyId: enemy?.id ?? null,
+        targetId,
+        actionId: action.actionId,
+        motionKey: action.motionKey,
+        damage: succeeded ? (damageResult?.damage ?? amount) : 0,
+        miss: !succeeded,
+      });
+    }
+    partyDamageResolutions.set(effect, { type: 'partyDamage', amount, result });
+  }
+
   for (const targetId of affectedTargetIds) {
     for (const status of statuses) {
       if (Number.isFinite(status.chance) && random() >= status.chance) continue;
@@ -330,7 +375,7 @@ export function executeEnemyAction({
   }
 
   const resolvedEffects = [];
-  for (const effect of (definition.effects ?? [])) {
+  for (const effect of effects) {
     switch (effect?.type) {
       case 'damage':
         resolvedEffects.push(resolvedTargetEffect('damage', affectedTargetIds));
@@ -382,12 +427,7 @@ export function executeEnemyAction({
         break;
       }
       case 'partyDamage': {
-        const amount = rollDamage(
-          Array.isArray(effect.value) ? effect.value : [effect.value, effect.value],
-          random,
-        );
-        const result = services.damageParty?.(amount, actionMetadata);
-        resolvedEffects.push({ type: 'partyDamage', amount, result });
+        resolvedEffects.push(partyDamageResolutions.get(effect));
         break;
       }
       case 'battlefieldStatus': {

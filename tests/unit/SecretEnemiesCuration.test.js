@@ -23,11 +23,17 @@ describe('secret enemy curation', () => {
 
   it('keeps all remaining summon references valid', () => {
     for (const enemy of Object.values(SECRET_ENEMIES)) {
-      const summonIds = [];
-      if (enemy.summon?.enemyId) summonIds.push(enemy.summon.enemyId);
-      for (const skill of enemy.specialSkills ?? []) {
-        if (skill.effect?.summon?.enemyId) summonIds.push(skill.effect.summon.enemyId);
-      }
+      const pattern = enemy.bossPattern;
+      const actions = [
+        ...(pattern?.basicAttacks ?? []),
+        pattern?.specialSkill,
+        pattern?.ultimate,
+      ].filter(Boolean);
+      const summonIds = actions.flatMap(action =>
+        (action.effects ?? [])
+          .filter(effect => effect?.type === 'summon' && effect.enemyId)
+          .map(effect => effect.enemyId),
+      );
 
       for (const summonId of summonIds) {
         expect(GameData.enemies, `${enemy.id} summons ${summonId}`).toHaveProperty(summonId);
