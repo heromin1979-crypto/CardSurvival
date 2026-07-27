@@ -73,6 +73,25 @@ function shouldKeepUnprocessedStatus(status) {
   return !(Number.isFinite(status.duration) && status.duration <= 0);
 }
 
+function healingReceivedMultiplierFor(target) {
+  const statuses = new Set([
+    ...(Array.isArray(target?.statusEffects) ? target.statusEffects : []),
+    ...(Array.isArray(target?._statusEffects) ? target._statusEffects : []),
+  ]);
+  let strongestReduction = 0;
+
+  for (const status of statuses) {
+    if (status?.id !== 'healing_received_down'
+      || (Number.isFinite(status.duration) && status.duration <= 0)
+      || !Number.isFinite(status.value)) {
+      continue;
+    }
+    strongestReduction = Math.max(strongestReduction, status.value);
+  }
+
+  return clamp(1 - strongestReduction, 0, 1);
+}
+
 export function addToken(target, tokenId, stacks = 1) {
   const tokens = ensureTokenBag(target);
   const amount = normalizeStacks(stacks);
@@ -190,9 +209,17 @@ export function applyDamage(target, rawDamage, random = Math.random) {
 }
 
 export function healCombatant(target, amount) {
+  const rawAmount = normalizeNonnegative(amount);
+  const multiplier = isObject(target)
+    ? healingReceivedMultiplierFor(target)
+    : 1;
+  const effectiveAmount = rawAmount * multiplier;
   const result = {
     ok: isObject(target),
-    amount: normalizeNonnegative(amount),
+    amount: rawAmount,
+    rawAmount,
+    multiplier,
+    prevented: rawAmount - effectiveAmount,
     healed: 0,
     hpBefore: isObject(target) ? currentHpFor(target) : 0,
     hpAfter: isObject(target) ? currentHpFor(target) : 0,
@@ -203,8 +230,8 @@ export function healCombatant(target, amount) {
   if (!isObject(target) || target.dead === true) return result;
 
   const maxHp = maxHpFor(target);
-  const nextRaw = Math.min(maxHp, result.hpBefore + result.amount);
-  target.hp = result.amount > 0 && nextRaw > 0
+  const nextRaw = Math.min(maxHp, result.hpBefore + effectiveAmount);
+  target.hp = effectiveAmount > 0 && nextRaw > 0
     ? Math.max(1, nextRaw)
     : nextRaw;
 

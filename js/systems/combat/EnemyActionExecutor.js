@@ -6,6 +6,27 @@ function actionDefinitionFor(enemy, action) {
       : null;
   }
 
+  if (enemy?.bossPattern) {
+    if (action?.category === 'basic') {
+      return (enemy.bossPattern.basicAttacks ?? []).find(definition =>
+        (definition?.actionId ?? definition?.id) === action.actionId) ?? null;
+    }
+    if (action?.category === 'special') {
+      const definition = enemy.bossPattern.specialSkill;
+      return definition
+        && (definition.actionId ?? definition.id) === action.actionId
+        ? definition
+        : null;
+    }
+    if (action?.category === 'ultimate') {
+      const definition = enemy.bossPattern.ultimate;
+      return definition
+        && (definition.actionId ?? definition.id) === action.actionId
+        ? definition
+        : null;
+    }
+  }
+
   if (action?.category === 'special') {
     return (enemy?.specialSkills ?? []).find(skill =>
       (skill?.actionId ?? skill?.id) === action.actionId) ?? null;
@@ -34,6 +55,30 @@ function rollDamage(range, random) {
   const high = Math.max(min, max);
   if (low === high) return Math.max(0, low);
   return Math.max(0, low + Math.floor(random() * (high - low + 1)));
+}
+
+function clampUnit(value) {
+  return Number.isFinite(value) ? Math.max(0, Math.min(1, value)) : null;
+}
+
+function statusFromEffect(effectDefinition) {
+  const statusEffect = effectDefinition?.effect
+    ? { ...effectDefinition.effect }
+    : effectDefinition?.type === 'status' && Number.isFinite(effectDefinition.value)
+      ? { [effectDefinition.id]: effectDefinition.value }
+      : {};
+  return {
+    id: effectDefinition.id,
+    name: effectDefinition.name ?? effectDefinition.id,
+    duration: effectDefinition.duration ?? 1,
+    effect: statusEffect,
+    ...(effectDefinition?.type !== 'status' && Number.isFinite(effectDefinition.value)
+      ? { value: effectDefinition.value }
+      : {}),
+    ...(Number.isFinite(effectDefinition.chance)
+      ? { chance: effectDefinition.chance }
+      : {}),
+  };
 }
 
 function statusDefinitionsFor(enemy, definition, { includeEnemyDefaults = true } = {}) {
@@ -113,21 +158,11 @@ function statusDefinitionsFor(enemy, definition, { includeEnemyDefaults = true }
   }
 
   for (const effectDefinition of (definition?.effects ?? [])) {
-    if (effectDefinition?.type !== 'status' || !effectDefinition.id) continue;
-    const statusEffect = effectDefinition.effect
-      ? { ...effectDefinition.effect }
-      : Number.isFinite(effectDefinition.value)
-        ? { [effectDefinition.id]: effectDefinition.value }
-        : {};
-    statuses.push({
-      id: effectDefinition.id,
-      name: effectDefinition.name ?? effectDefinition.id,
-      duration: effectDefinition.duration ?? 1,
-      effect: statusEffect,
-      ...(Number.isFinite(effectDefinition.chance)
-        ? { chance: effectDefinition.chance }
-        : {}),
-    });
+    if (!['status', 'targetStatus'].includes(effectDefinition?.type)
+      || !effectDefinition.id) {
+      continue;
+    }
+    statuses.push(statusFromEffect(effectDefinition));
   }
 
   return statuses;
@@ -152,6 +187,42 @@ function rollCount(value, random) {
   const low = Math.max(0, Math.min(min, max));
   const high = Math.max(low, Math.max(min, max));
   return low === high ? low : low + Math.floor(random() * (high - low + 1));
+}
+
+function actionModifiersFor(definition) {
+  const armorPiercing = clampUnit(
+    definition?.armorPiercing ?? definition?.effect?.armorPiercing,
+  );
+  const executeThreshold = clampUnit(
+    definition?.executeThreshold ?? definition?.effect?.executeThreshold,
+  );
+  const executeBonusMultiplier = definition?.executeBonusMultiplier
+    ?? definition?.effect?.executeBonusMultiplier;
+  const damageType = definition?.damageType ?? definition?.effect?.damageType;
+
+  return {
+    ...(armorPiercing !== null ? { armorPiercing } : {}),
+    ...(executeThreshold !== null ? { executeThreshold } : {}),
+    ...(Number.isFinite(executeBonusMultiplier)
+      ? { executeBonusMultiplier }
+      : {}),
+    ...(typeof damageType === 'string' && damageType.length > 0
+      ? { damageType }
+      : {}),
+  };
+}
+
+function hasTargetScopedTypedEffect(definition) {
+  return (definition?.effects ?? []).some(effect =>
+    ['targetStatus', 'forcedMove', 'resource', 'weaponLock'].includes(effect?.type));
+}
+
+function resolvedTargetEffect(type, affectedTargetIds) {
+  return {
+    type,
+    skipped: false,
+    targetIds: [...affectedTargetIds],
+  };
 }
 
 export function executeEnemyAction({
@@ -180,11 +251,18 @@ export function executeEnemyAction({
   const forcedMove = forcedMoveFor(definition);
   const canDealDamage = damageRange.some(value => Number.isFinite(value) && value > 0);
   const hasTargetEffects = statuses.length > 0
-    || (Number.isFinite(forcedMove) && forcedMove !== 0);
+    || (Number.isFinite(forcedMove) && forcedMove !== 0)
+    || hasTargetScopedTypedEffect(definition);
   const affectedTargetIds = !canDealDamage && hasTargetEffects
     ? [...new Set(targetIds)]
     : [];
   const damageResults = [];
+  const actionMetadata = {
+    actionId: action.actionId,
+    category: action.category,
+    motionKey: action.motionKey,
+    ...actionModifiersFor(definition),
+  };
   const hitPlan = !canDealDamage
     ? []
     : enemy?.spreadAttacks === true && targetIds.length > 1
@@ -214,9 +292,7 @@ export function executeEnemyAction({
 
       const amount = rollDamage(damageRange, random);
       const result = services.damageTarget(targetId, amount, {
-        actionId: action.actionId,
-        category: action.category,
-        motionKey: action.motionKey,
+        ...actionMetadata,
         hitIndex,
         hitCount,
       });
@@ -255,19 +331,148 @@ export function executeEnemyAction({
 
   const resolvedEffects = [];
   for (const effect of (definition.effects ?? [])) {
-    if (effect?.type === 'summon' && typeof effect.enemyId === 'string') {
-      const count = rollCount(effect.count, random);
-      const spawned = services.summonEnemy?.(
-        effect.enemyId,
-        count,
-        effect.row ?? 'front',
-      ) ?? 0;
-      resolvedEffects.push({ type: 'summon', enemyId: effect.enemyId, count, spawned });
-    } else if (effect?.type === 'noise' && Number.isFinite(effect.value)) {
-      services.addNoise?.(effect.value);
-      resolvedEffects.push({ type: 'noise', value: effect.value });
+    switch (effect?.type) {
+      case 'damage':
+        resolvedEffects.push(resolvedTargetEffect('damage', affectedTargetIds));
+        break;
+      case 'status':
+      case 'targetStatus':
+        resolvedEffects.push(resolvedTargetEffect(effect.type, affectedTargetIds));
+        break;
+      case 'move':
+      case 'forcedMove':
+        resolvedEffects.push(resolvedTargetEffect(effect.type, affectedTargetIds));
+        break;
+      case 'selfHeal': {
+        const amount = rollDamage(
+          Array.isArray(effect.value) ? effect.value : [effect.value, effect.value],
+          random,
+        );
+        const healed = services.healSelf?.(amount);
+        resolvedEffects.push({ type: 'selfHeal', amount, healed });
+        break;
+      }
+      case 'selfStatus': {
+        const status = statusFromEffect(effect);
+        services.addSelfStatus?.(status);
+        resolvedEffects.push({ type: 'selfStatus', status });
+        break;
+      }
+      case 'summon': {
+        if (typeof effect.enemyId !== 'string') {
+          resolvedEffects.push({
+            type: effect.type,
+            skipped: true,
+            reason: 'unsupported',
+          });
+          break;
+        }
+        const count = rollCount(effect.count, random);
+        const spawned = services.summonEnemy?.(
+          effect.enemyId,
+          count,
+          effect.row ?? 'front',
+        ) ?? 0;
+        resolvedEffects.push({
+          type: 'summon',
+          enemyId: effect.enemyId,
+          count,
+          spawned,
+        });
+        break;
+      }
+      case 'partyDamage': {
+        const amount = rollDamage(
+          Array.isArray(effect.value) ? effect.value : [effect.value, effect.value],
+          random,
+        );
+        const result = services.damageParty?.(amount, actionMetadata);
+        resolvedEffects.push({ type: 'partyDamage', amount, result });
+        break;
+      }
+      case 'battlefieldStatus': {
+        const status = statusFromEffect(effect);
+        services.setBattlefieldStatus?.(status);
+        resolvedEffects.push({ type: 'battlefieldStatus', status });
+        break;
+      }
+      case 'resource':
+        for (const targetId of affectedTargetIds) {
+          services.modifyResource?.(targetId, effect.resource, effect.value);
+        }
+        resolvedEffects.push(resolvedTargetEffect('resource', affectedTargetIds));
+        break;
+      case 'weaponLock':
+        for (const targetId of affectedTargetIds) {
+          services.lockWeapon?.(targetId, effect.tag, effect.duration);
+        }
+        resolvedEffects.push(resolvedTargetEffect('weaponLock', affectedTargetIds));
+        break;
+      case 'noise':
+        if (Number.isFinite(effect.value)) {
+          services.addNoise?.(effect.value);
+          resolvedEffects.push({ type: 'noise', value: effect.value });
+        } else {
+          resolvedEffects.push({
+            type: effect.type,
+            skipped: true,
+            reason: 'unsupported',
+          });
+        }
+        break;
+      default:
+        resolvedEffects.push({
+          type: effect?.type,
+          skipped: true,
+          reason: 'unsupported',
+        });
     }
   }
 
   return { affectedTargetIds, damageResults, resolvedEffects };
+}
+
+export function resolveEnemyDamageResponsePassives({
+  enemy,
+  attackerId,
+  damageType,
+  isCounter = false,
+  services,
+}) {
+  const resolvedPassives = [];
+
+  for (const passive of (enemy?.bossPattern?.passives ?? [])) {
+    if (passive?.type === 'counterAttack'
+      && isCounter !== true
+      && typeof passive.actionId === 'string'
+      && attackerId) {
+      services?.queueCounterAction?.(
+        passive.actionId,
+        attackerId,
+        passive.maxPerRound,
+      );
+      resolvedPassives.push({
+        type: 'counterAttack',
+        actionId: passive.actionId,
+        attackerId,
+        maxPerRound: passive.maxPerRound,
+      });
+    } else if (passive?.type === 'resistanceShift'
+      && passive.source === 'lastDamageType'
+      && damageType) {
+      services?.setResistanceShift?.(
+        damageType,
+        passive.duration,
+        passive.value,
+      );
+      resolvedPassives.push({
+        type: 'resistanceShift',
+        damageType,
+        duration: passive.duration,
+        value: passive.value,
+      });
+    }
+  }
+
+  return { resolvedPassives };
 }

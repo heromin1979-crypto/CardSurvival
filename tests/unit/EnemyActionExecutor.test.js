@@ -1,5 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
-import { executeEnemyAction } from '../../js/systems/combat/EnemyActionExecutor.js';
+import {
+  executeEnemyAction,
+  resolveEnemyDamageResponsePassives,
+} from '../../js/systems/combat/EnemyActionExecutor.js';
 import CombatSystem from '../../js/systems/CombatSystem.js';
 import GameState from '../../js/core/GameState.js';
 import SystemRegistry from '../../js/core/SystemRegistry.js';
@@ -40,6 +43,219 @@ function readyAction(overrides = {}) {
 }
 
 describe('executeEnemyAction', () => {
+  it.each([
+    ['basic', 'boss_jab', 11],
+    ['special', 'boss_roar', 22],
+    ['ultimate', 'boss_end', 33],
+  ])('보스 %s 행동은 bossPattern의 %s 정의를 실행한다', (category, actionId, damage) => {
+    const recorder = createServices();
+    const enemy = {
+      attack: { damage: [99, 99], accuracy: 1 },
+      specialSkills: [{ id: actionId, damage: [88, 88], accuracy: 1 }],
+      bossPattern: {
+        basicAttacks: [
+          { id: 'boss_jab', damage: [11, 11], accuracy: 1 },
+          { id: 'boss_sweep', damage: [12, 12], accuracy: 1 },
+        ],
+        specialSkill: { id: 'boss_roar', damage: [22, 22], accuracy: 1 },
+        ultimate: { id: 'boss_end', damage: [33, 33], accuracy: 1 },
+      },
+    };
+
+    executeEnemyAction({
+      enemy,
+      action: readyAction({ actionId, category }),
+      services: recorder.services,
+      random: () => 0,
+    });
+
+    expect(recorder.services.damageTarget).toHaveBeenCalledWith(
+      'player',
+      damage,
+      expect.objectContaining({ actionId, category }),
+    );
+  });
+
+  it('0 피해 보스 행동은 공격 판정 없이 typed effect service를 실행한다', () => {
+    const recorder = createServices();
+    Object.assign(recorder.services, {
+      healSelf: vi.fn(),
+      addSelfStatus: vi.fn(),
+      summonEnemy: vi.fn(() => 1),
+      damageParty: vi.fn(),
+      setBattlefieldStatus: vi.fn(),
+      modifyResource: vi.fn(),
+      lockWeapon: vi.fn(),
+    });
+    const enemy = {
+      bossPattern: {
+        basicAttacks: [],
+        specialSkill: {
+          id: 'boss_control',
+          damage: [0, 0],
+          accuracy: 1,
+          effects: [
+            { type: 'selfHeal', value: [8, 12] },
+            { type: 'selfStatus', id: 'defense_up', duration: 2, value: 0.25 },
+            { type: 'summon', enemyId: 'zombie_common', count: [1, 2], row: 'front' },
+            { type: 'partyDamage', value: [5, 7] },
+            { type: 'targetStatus', id: 'stun', duration: 1, chance: 0.5 },
+            { type: 'battlefieldStatus', id: 'acid_pool', duration: 2, value: 4 },
+            { type: 'forcedMove', distance: 1 },
+            { type: 'resource', resource: 'morale', value: -15 },
+            { type: 'weaponLock', tag: 'firearm', duration: 1 },
+            { type: 'futureEffect', value: 1 },
+          ],
+        },
+        ultimate: null,
+      },
+    };
+
+    const result = executeEnemyAction({
+      enemy,
+      action: readyAction({
+        actionId: 'boss_control',
+        category: 'special',
+        targetIds: ['player', 'npc_guard'],
+      }),
+      services: recorder.services,
+      random: () => 0,
+    });
+
+    expect(recorder.services.damageTarget).not.toHaveBeenCalled();
+    expect(recorder.services.emitFx).not.toHaveBeenCalled();
+    expect(recorder.services.addLog).not.toHaveBeenCalled();
+    expect(recorder.services.healSelf).toHaveBeenCalledOnce();
+    expect(recorder.services.healSelf).toHaveBeenCalledWith(8);
+    expect(recorder.services.addSelfStatus).toHaveBeenCalledWith(expect.objectContaining({
+      id: 'defense_up',
+      duration: 2,
+      value: 0.25,
+    }));
+    expect(recorder.services.summonEnemy)
+      .toHaveBeenCalledWith('zombie_common', 1, 'front');
+    expect(recorder.services.damageParty).toHaveBeenCalledWith(
+      5,
+      expect.objectContaining({ actionId: 'boss_control', category: 'special' }),
+    );
+    expect(recorder.services.setBattlefieldStatus).toHaveBeenCalledWith(expect.objectContaining({
+      id: 'acid_pool',
+      duration: 2,
+      value: 4,
+    }));
+    expect(recorder.services.addStatus.mock.calls).toEqual([
+      ['player', expect.objectContaining({ id: 'stun', duration: 1, chance: 0.5 })],
+      ['npc_guard', expect.objectContaining({ id: 'stun', duration: 1, chance: 0.5 })],
+    ]);
+    expect(recorder.services.moveTarget.mock.calls).toEqual([
+      ['player', 1],
+      ['npc_guard', 1],
+    ]);
+    expect(recorder.services.modifyResource.mock.calls).toEqual([
+      ['player', 'morale', -15],
+      ['npc_guard', 'morale', -15],
+    ]);
+    expect(recorder.services.lockWeapon.mock.calls).toEqual([
+      ['player', 'firearm', 1],
+      ['npc_guard', 'firearm', 1],
+    ]);
+    expect(result.resolvedEffects).toContainEqual({
+      type: 'futureEffect',
+      skipped: true,
+      reason: 'unsupported',
+    });
+  });
+
+  it('피해 공격이 빗나가면 대상 effect를 건너뛰고 자기·전장 effect는 한 번씩 실행한다', () => {
+    const recorder = createServices();
+    Object.assign(recorder.services, {
+      healSelf: vi.fn(),
+      addSelfStatus: vi.fn(),
+      setBattlefieldStatus: vi.fn(),
+      modifyResource: vi.fn(),
+      lockWeapon: vi.fn(),
+    });
+    const enemy = {
+      bossPattern: {
+        basicAttacks: [{
+          id: 'boss_miss',
+          damage: [4, 4],
+          accuracy: 0,
+          effects: [
+            { type: 'selfHeal', value: 3 },
+            { type: 'selfStatus', id: 'guarded', duration: 1, value: 0.2 },
+            { type: 'battlefieldStatus', id: 'smoke', duration: 1, value: 1 },
+            { type: 'targetStatus', id: 'stun', duration: 1 },
+            { type: 'forcedMove', distance: -1 },
+            { type: 'resource', resource: 'morale', value: -5 },
+            { type: 'weaponLock', tag: 'melee', duration: 1 },
+          ],
+        }],
+        specialSkill: null,
+        ultimate: null,
+      },
+    };
+
+    executeEnemyAction({
+      enemy,
+      action: readyAction({ actionId: 'boss_miss', targetIds: ['player'] }),
+      services: recorder.services,
+      random: () => 0,
+    });
+
+    expect(recorder.services.damageTarget).not.toHaveBeenCalled();
+    expect(recorder.services.addStatus).not.toHaveBeenCalled();
+    expect(recorder.services.moveTarget).not.toHaveBeenCalled();
+    expect(recorder.services.modifyResource).not.toHaveBeenCalled();
+    expect(recorder.services.lockWeapon).not.toHaveBeenCalled();
+    expect(recorder.services.healSelf).toHaveBeenCalledTimes(1);
+    expect(recorder.services.addSelfStatus).toHaveBeenCalledTimes(1);
+    expect(recorder.services.setBattlefieldStatus).toHaveBeenCalledTimes(1);
+  });
+
+  it('damage effect는 범위가 보정된 armorPiercing과 execute modifier를 피해 service에 전달한다', () => {
+    const recorder = createServices();
+    const enemy = {
+      bossPattern: {
+        basicAttacks: [{
+          id: 'boss_execute',
+          accuracy: 1,
+          armorPiercing: 1.5,
+          executeThreshold: -0.25,
+          executeBonusMultiplier: 2,
+          damageType: 'chemical',
+          effects: [{ type: 'damage', value: [10, 10] }],
+        }],
+        specialSkill: null,
+        ultimate: null,
+      },
+    };
+
+    const result = executeEnemyAction({
+      enemy,
+      action: readyAction({ actionId: 'boss_execute' }),
+      services: recorder.services,
+      random: () => 0,
+    });
+
+    expect(recorder.services.damageTarget).toHaveBeenCalledWith('player', 10, {
+      actionId: 'boss_execute',
+      category: 'basic',
+      motionKey: 'basic_attack',
+      hitIndex: 0,
+      hitCount: 1,
+      armorPiercing: 1,
+      executeThreshold: 0,
+      executeBonusMultiplier: 2,
+      damageType: 'chemical',
+    });
+    expect(result.damageResults[0].amount).toBe(10);
+    expect(result.resolvedEffects).toContainEqual(expect.objectContaining({
+      type: 'damage',
+      skipped: false,
+    }));
+  });
+
   it('같은 산성 기술을 플레이어와 동료에게 동일한 피해·상태·강제 이동 규칙으로 적용한다', () => {
     const enemy = {
       attack: { damage: [8, 8], accuracy: 1 },
@@ -533,5 +749,90 @@ describe('executeEnemyAction', () => {
     expect(damageCompanion).toHaveBeenCalledTimes(2);
     expect(GameState.npcs.states.npc_soldier.hp).toBe(24);
     expect(GameState.npcs.states.npc_soldier.statusEffects).toHaveLength(1);
+  });
+});
+
+describe('resolveEnemyDamageResponsePassives', () => {
+  function passiveEnemy() {
+    return {
+      bossPattern: {
+        passives: [
+          { type: 'counterAttack', actionId: 'toxic_blood_counter', maxPerRound: 1 },
+          {
+            type: 'resistanceShift',
+            source: 'lastDamageType',
+            duration: 2,
+            value: 0.5,
+          },
+        ],
+      },
+    };
+  }
+
+  it('반격 횟수 상태를 소유하지 않고 service에 제한값과 최근 피해 속성을 전달한다', () => {
+    const services = {
+      queueCounterAction: vi.fn(),
+      setResistanceShift: vi.fn(),
+    };
+
+    const result = resolveEnemyDamageResponsePassives({
+      enemy: passiveEnemy(),
+      attackerId: 'player',
+      damageType: 'chemical',
+      services,
+    });
+
+    expect(services.queueCounterAction)
+      .toHaveBeenCalledWith('toxic_blood_counter', 'player', 1);
+    expect(services.setResistanceShift).toHaveBeenCalledWith('chemical', 2, 0.5);
+    expect(result.resolvedPassives).toEqual([
+      {
+        type: 'counterAttack',
+        actionId: 'toxic_blood_counter',
+        attackerId: 'player',
+        maxPerRound: 1,
+      },
+      {
+        type: 'resistanceShift',
+        damageType: 'chemical',
+        duration: 2,
+        value: 0.5,
+      },
+    ]);
+  });
+
+  it('반격에서 재귀 반격을 건너뛰되 피해 속성이 있으면 저항 전환은 유지한다', () => {
+    const services = {
+      queueCounterAction: vi.fn(),
+      setResistanceShift: vi.fn(),
+    };
+
+    resolveEnemyDamageResponsePassives({
+      enemy: passiveEnemy(),
+      attackerId: 'player',
+      damageType: 'fire',
+      isCounter: true,
+      services,
+    });
+
+    expect(services.queueCounterAction).not.toHaveBeenCalled();
+    expect(services.setResistanceShift).toHaveBeenCalledWith('fire', 2, 0.5);
+  });
+
+  it('피해 속성이 없으면 저항 전환을 건너뛰되 반격 예약은 유지한다', () => {
+    const services = {
+      queueCounterAction: vi.fn(),
+      setResistanceShift: vi.fn(),
+    };
+
+    resolveEnemyDamageResponsePassives({
+      enemy: passiveEnemy(),
+      attackerId: 'npc_guard',
+      services,
+    });
+
+    expect(services.queueCounterAction)
+      .toHaveBeenCalledWith('toxic_blood_counter', 'npc_guard', 1);
+    expect(services.setResistanceShift).not.toHaveBeenCalled();
   });
 });
