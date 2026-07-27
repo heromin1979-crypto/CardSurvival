@@ -99,6 +99,7 @@ describe('동료 턴 수동 입력 계약', () => {
     expect(CombatSystem._runCompanionTurn).toBeUndefined();
     expect(CombatSystem._getCompanionStance).toBeUndefined();
     expect(CombatSystem._planCompanionAction).toBeUndefined();
+    expect(CombatSystem._executePlannedCompanionAction).toBeUndefined();
   });
 
   it('legacy AI loop prepares the next companion and returns without acting', () => {

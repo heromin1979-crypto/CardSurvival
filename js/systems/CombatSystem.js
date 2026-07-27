@@ -757,46 +757,6 @@ const CombatSystem = {
     }
   },
 
-  _executePlannedCompanionAction(plan) {
-    const combat = GameState.combat;
-    if (!combat?.active || !plan) {
-      return { ok: false, reason: 'invalid_context', turnConsumed: false };
-    }
-
-    const actorId = combat.activeCombatantId;
-    const actor = combat.combatants?.[actorId];
-    const skill = combat.skillsById?.[plan.skillId];
-    const target = combat.combatants?.[plan.targetId];
-    const targetHpBefore = target?.hp;
-    const npcId = actor?.sourceId ?? actorId;
-    const validationFormations = this._getPreparedCompanionFormations(npcId)
-      ?? this._createCompactedFormationSnapshot();
-    const result = executeSkillCommand(this._commandContext({
-      validationFormations,
-    }), {
-      actorId,
-      skillId: plan.skillId,
-      targetId: plan.targetId,
-    });
-    this._finalizeSkillCommandResult({
-      actorId,
-      skill,
-      target,
-      targetHpBefore,
-      result,
-    });
-    if (result.ok) {
-      EventBus.emit('companionAction', {
-        npcId: actorId,
-        action: 'skill',
-        skillId: plan.skillId,
-        targetId: plan.targetId,
-        reason: plan.reason,
-      });
-    }
-    return result;
-  },
-
   confirmAction() {
     const combat = GameState.combat;
     if (!combat?.active || !combat.selectedSkillId || !combat.selectedTargetId) {

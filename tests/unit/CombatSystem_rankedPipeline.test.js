@@ -365,6 +365,13 @@ describe('복합 이동 기술의 경계 rank 실행', () => {
     combat.combatants[actorId] = actor;
     combat.formations.ally = [actorId, null, null, 'player'];
     combat.skillsById[skillId] = skill;
+    combat.turnQueue = [
+      { type: 'companion', id: actorId, combatantId: actorId, order: 0 },
+      { type: 'player', combatantId: 'player', order: 1 },
+      { type: 'enemy', enemyIdx: 0, combatantId: 'enemy:0', order: 2 },
+    ];
+    combat.activeIdx = 0;
+    combat.activeTurnIndex = 0;
     combat.activeCombatantId = actorId;
     GameState.npcs.states[actorId] = {
       hp: 30,
@@ -375,11 +382,10 @@ describe('복합 이동 기술의 경계 rank 실행', () => {
     const consumeCosts = vi.spyOn(CombatSystem, '_consumeRankedCosts');
 
     try {
-      const result = CombatSystem._executePlannedCompanionAction({
-        skillId,
-        targetId: actorId,
-        reason: 'support_ally',
-      });
+      CombatSystem.beginActiveTurn();
+      expect(CombatSystem.selectSkill(skillId)).toBe(true);
+      expect(CombatSystem.selectTarget(actorId)).toBe(true);
+      const result = CombatSystem.confirmAction();
 
       expect(result).toMatchObject({
         ok: true,
@@ -414,6 +420,13 @@ describe('복합 이동 기술의 경계 rank 실행', () => {
     combat.combatants[actorId] = actor;
     combat.formations.ally = [null, null, actorId, 'player'];
     combat.skillsById[skillId] = skill;
+    combat.turnQueue = [
+      { type: 'companion', id: actorId, combatantId: actorId, order: 0 },
+      { type: 'player', combatantId: 'player', order: 1 },
+      { type: 'enemy', enemyIdx: 0, combatantId: 'enemy:0', order: 2 },
+    ];
+    combat.activeIdx = 0;
+    combat.activeTurnIndex = 0;
     combat.activeCombatantId = actorId;
     GameState.npcs.states[actorId] = {
       hp: 30,
@@ -424,11 +437,10 @@ describe('복합 이동 기술의 경계 rank 실행', () => {
     const consumeCosts = vi.spyOn(CombatSystem, '_consumeRankedCosts');
 
     try {
-      const result = CombatSystem._executePlannedCompanionAction({
-        skillId,
-        targetId: 'player',
-        reason: 'guard_ally',
-      });
+      CombatSystem.beginActiveTurn();
+      expect(CombatSystem.selectSkill(skillId)).toBe(true);
+      expect(CombatSystem.selectTarget('player')).toBe(true);
+      const result = CombatSystem.confirmAction();
 
       expect(result).toMatchObject({
         ok: true,
