@@ -296,6 +296,32 @@ describe('_playFx — 개별 연출 분기', () => {
     expect(document.querySelector('.cv-enemy-sprite[data-idx="1"] .dmg-popup').textContent).toBe('-8');
   });
 
+  it('정규 action 동료 miss는 행동자와 대상 의미를 유지해 적에게 MISS를 표시한다', () => {
+    CombatUI._playFx({
+      kind: 'action',
+      actorId: 'npc_nurse',
+      actorSide: 'ally',
+      actorIndex: 0,
+      targetId: 'enemy:1',
+      targetSide: 'enemy',
+      targetIndex: 1,
+      skillId: 'nurse_scalpel',
+      motionKey: 'blade_combo',
+      impactFx: 'slash',
+      damage: 0,
+      healing: 0,
+      crit: false,
+      miss: true,
+      killed: false,
+    });
+
+    const ally = document.querySelector('.cv-ally[data-companion-id="npc_nurse"]');
+    const enemy = document.querySelector('.cv-enemy-sprite[data-idx="1"]');
+    expect(ally.classList.contains('motion-whiff')).toBe(true);
+    expect(enemy.classList.contains('hit')).toBe(false);
+    expect(enemy.querySelector('.dmg-popup.miss').textContent).toBe('MISS');
+  });
+
   it('companionHeal → 아군 glowing + 플레이어 위 +N 녹색 플로팅', () => {
     CombatUI._playFx({ kind: 'companionHeal', npcId: 'npc_nurse', amount: 15 });
     expect(document.querySelector('.cv-ally[data-companion-id="npc_nurse"]').classList.contains('glowing')).toBe(true);
@@ -303,6 +329,32 @@ describe('_playFx — 개별 연출 분기', () => {
     expect(popup).not.toBeNull();
     expect(popup.textContent).toBe('+15');
     expect(document.querySelector('.cv-player').classList.contains('motion-heal-pulse')).toBe(true);
+  });
+
+  it('정규 heal action은 actor와 별개인 companion target에 회복 결과를 표시한다', () => {
+    CombatUI._playFx({
+      kind: 'action',
+      actorId: 'npc_nurse',
+      actorSide: 'ally',
+      actorIndex: 0,
+      targetId: 'npc_soldier',
+      targetSide: 'ally',
+      targetIndex: 1,
+      skillId: 'nurse_triage',
+      motionKey: 'support',
+      impactFx: 'heal',
+      damage: 0,
+      healing: 10,
+      crit: false,
+      miss: false,
+      killed: false,
+    });
+
+    const actor = document.querySelector('.cv-ally[data-companion-id="npc_nurse"]');
+    const target = document.querySelector('.cv-ally[data-companion-id="npc_soldier"]');
+    expect(actor.classList.contains('glowing')).toBe(true);
+    expect(target.querySelector('.dmg-popup.heal').textContent).toBe('+10');
+    expect(document.querySelector('.cv-player .dmg-popup')).toBeNull();
   });
 
   it('companionSkill → combat-visual skill-flash + 아군 glowing', () => {

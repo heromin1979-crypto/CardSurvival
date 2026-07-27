@@ -147,10 +147,13 @@ describe('production boss pattern execution', () => {
 
       CombatSystem._runSingleEnemyTurn(0);
       const actionFx = GameState.combat.fxQueue.find(entry =>
-        entry.kind === 'enemyAttack' && entry.enemyIdx === 0 && entry.miss === false);
+        entry.kind === 'action'
+        && entry.actorId === 'enemy:0'
+        && entry.targetId === 'player'
+        && entry.miss === false);
       return {
         damage: playerHp - GameState.player.hp.current,
-        fx: actionFx?.fx,
+        fx: actionFx?.impactFx,
       };
     };
 
@@ -171,14 +174,15 @@ describe('production boss pattern execution', () => {
     expect(GameState.npcs.states.npc_guard.hp).toBe(55);
     expect(GameState.combat.fxQueue).toEqual(expect.arrayContaining([
       expect.objectContaining({
-        kind: 'enemyAttack',
-        fx: 'blast',
+        kind: 'action',
+        targetId: 'player',
+        impactFx: 'blast',
         miss: false,
       }),
       expect.objectContaining({
-        kind: 'enemyAttackCompanion',
-        npcId: 'npc_guard',
-        fx: 'blast',
+        kind: 'action',
+        targetId: 'npc_guard',
+        impactFx: 'blast',
         miss: false,
       }),
     ]));
@@ -207,15 +211,16 @@ describe('production boss pattern execution', () => {
     expect(moveSpy).toHaveBeenCalledWith('npc_guard', 1, enemy);
     expect(combat.fxQueue).toEqual(expect.arrayContaining([
       expect.objectContaining({
-        kind: 'enemyAttack',
-        fx: 'fire',
+        kind: 'action',
+        targetId: 'player',
+        impactFx: 'fire',
         miss: true,
       }),
       expect.objectContaining({
-        kind: 'enemyAttackCompanion',
-        npcId: 'npc_guard',
-        fx: 'fire',
-        dmg: 30,
+        kind: 'action',
+        targetId: 'npc_guard',
+        impactFx: 'fire',
+        damage: 30,
         miss: false,
       }),
     ]));
@@ -242,16 +247,17 @@ describe('production boss pattern execution', () => {
       .not.toContain('burn');
     expect(combat.fxQueue).toEqual(expect.arrayContaining([
       expect.objectContaining({
-        kind: 'enemyAttack',
-        fx: 'fire',
-        dmg: 30,
+        kind: 'action',
+        targetId: 'player',
+        impactFx: 'fire',
+        damage: 30,
         miss: false,
       }),
       expect.objectContaining({
-        kind: 'enemyAttackCompanion',
-        npcId: 'npc_guard',
-        fx: 'fire',
-        dmg: 0,
+        kind: 'action',
+        targetId: 'npc_guard',
+        impactFx: 'fire',
+        damage: 0,
         miss: true,
       }),
     ]));
@@ -267,7 +273,10 @@ describe('production boss pattern execution', () => {
     CombatSystem._runSingleEnemyTurn(0);
 
     const actionFx = GameState.combat.fxQueue.filter(entry =>
-      entry.kind === 'enemyAttack' && entry.enemyIdx === 0 && entry.miss === false);
+      entry.kind === 'action'
+      && entry.actorId === 'enemy:0'
+      && entry.targetId === 'player'
+      && entry.miss === false);
     expect(actionFx).toHaveLength(3);
     expect(GameState.player.hp.current).toBe(55);
   });

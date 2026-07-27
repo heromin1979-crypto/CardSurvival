@@ -55,6 +55,10 @@ import { buildEnemyProfile } from './combat/EnemyCombatAdapter.js';
 import { CombatAiTurns } from './combat/CombatAiTurns.js';
 import { CombatRankedEffects } from './combat/CombatRankedEffects.js';
 import {
+  combatantActionIndex,
+  createActionFx,
+} from './combat/CombatMotionFx.js';
+import {
   canFire,
   canReload,
   consumeRound,
@@ -907,15 +911,30 @@ const CombatSystem = {
     if (result.ok) {
       this._pushCombatLog(this._rankedActionMessage(skill, target, result, targetHpBefore));
       combat.actionSequence = (combat.actionSequence ?? 0) + 1;
+      const hasImpactAction = (skill?.effects ?? []).some(effect =>
+        effect?.type === 'damage' || effect?.type === 'heal');
+      if (result.hit !== false && !hasImpactAction) {
+        const actor = combat.combatants?.[actorId];
+        this._fx(createActionFx({
+          actor,
+          actorIndex: combatantActionIndex(actor, GameState.companions),
+          target,
+          targetIndex: combatantActionIndex(target, GameState.companions),
+          skill,
+          impactFx: target?.side === 'enemy' ? 'debuff' : 'buff',
+        }));
+      }
       if (result.hit === false && target?.sourceType === 'enemy') {
         const actor = combat.combatants?.[actorId];
-        this._fx({
-          kind: actor?.sourceType === 'companion' ? 'companionAttack' : 'playerAttack',
-          npcId: actor?.sourceType === 'companion' ? actor.sourceId : undefined,
-          fx: this._weaponFx(this._rankedSkillWeaponDef(skill)),
-          targetIdx: target.enemyIndex,
+        this._fx(createActionFx({
+          actor,
+          actorIndex: combatantActionIndex(actor, GameState.companions),
+          target,
+          targetIndex: combatantActionIndex(target, GameState.companions),
+          skill,
+          impactFx: this._weaponFx(this._rankedSkillWeaponDef(skill)),
           miss: true,
-        });
+        }));
       }
       this._processRankedKills();
       if (this._allEnemiesDead()) {
@@ -2074,14 +2093,28 @@ const CombatSystem = {
         }
       }
       gs.combat.lastHit = { target: 'enemy', damage: finalDmg, isCrit, enemyIndex: gs.combat.targetIndex };
-      this._fx({
-        kind:      'playerAttack',
-        fx:        this._weaponFx((weaponId && gs.cards[weaponId]) ? gs.getCardDef(weaponId) : null),
-        targetIdx: gs.combat.targetIndex,
-        dmg:       finalDmg,
-        crit:      isCrit,
-        killed:    enemy.currentHp <= 0,
-      });
+      const rankedTarget = gs.combat.combatants?.[`enemy:${gs.combat.targetIndex}`] ?? {
+        id: `enemy:${gs.combat.targetIndex}`,
+        side: 'enemy',
+        sourceType: 'enemy',
+        enemyIndex: gs.combat.targetIndex,
+      };
+      this._fx(createActionFx({
+        actor: gs.combat.combatants?.player ?? {
+          id: 'player',
+          side: 'ally',
+          sourceType: 'player',
+        },
+        actorIndex: 0,
+        target: rankedTarget,
+        targetIndex: gs.combat.targetIndex,
+        actionId: type,
+        motionKey: isRanged ? 'ranged' : 'melee',
+        impactFx: this._weaponFx((weaponId && gs.cards[weaponId]) ? gs.getCardDef(weaponId) : null),
+        damage: finalDmg,
+        crit: isCrit,
+        killed: enemy.currentHp <= 0,
+      }));
 
       // 맨손 마스터리: 기절 확률 + 추가 데미지
       if (unarmedMasteryTriggered) {
@@ -2105,12 +2138,26 @@ const CombatSystem = {
       if (isCrit) return I18n.t('combatSys.critHit', { weapon: weaponName, enemy: eName, dmg: attackLogDamage });
       return I18n.t('combatSys.normalHit', { weapon: weaponName, enemy: eName, dmg: attackLogDamage, hp: enemy.currentHp, maxHp: enemy.maxHp });
     }
-    this._fx({
-      kind:      'playerAttack',
-      fx:        this._weaponFx((weaponId && gs.cards[weaponId]) ? gs.getCardDef(weaponId) : null),
-      targetIdx: gs.combat.targetIndex,
-      miss:      true,
-    });
+    const rankedTarget = gs.combat.combatants?.[`enemy:${gs.combat.targetIndex}`] ?? {
+      id: `enemy:${gs.combat.targetIndex}`,
+      side: 'enemy',
+      sourceType: 'enemy',
+      enemyIndex: gs.combat.targetIndex,
+    };
+    this._fx(createActionFx({
+      actor: gs.combat.combatants?.player ?? {
+        id: 'player',
+        side: 'ally',
+        sourceType: 'player',
+      },
+      actorIndex: 0,
+      target: rankedTarget,
+      targetIndex: gs.combat.targetIndex,
+      actionId: type,
+      motionKey: isRanged ? 'ranged' : 'melee',
+      impactFx: this._weaponFx((weaponId && gs.cards[weaponId]) ? gs.getCardDef(weaponId) : null),
+      miss: true,
+    }));
     return I18n.t('combatSys.miss', { weapon: weaponName });
   },
 

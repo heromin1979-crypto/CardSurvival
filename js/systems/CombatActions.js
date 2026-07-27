@@ -8,6 +8,7 @@ import StateMachine from '../core/StateMachine.js';
 import NoiseSystem from './NoiseSystem.js';
 import BALANCE    from '../data/gameBalance.js';
 import { getCharacterCombatEffects } from '../data/characters.js';
+import { createActionFx } from './combat/CombatMotionFx.js';
 
 // ── 방어(Guard) 행동 ────────────────────────────────────────────
 
@@ -102,13 +103,29 @@ function _applyAoE(alive, { baseDmg, statusId, statusName, duration, dmgPerRound
       enemy.currentHp = Math.max(0, enemy.currentHp - rolledDamage);
       dmg = hpBefore - enemy.currentHp;
     }
-    combatSystemRef?._fx?.({
-      kind:      'playerAttack',
-      fx:        fxType ?? 'blast',
-      targetIdx: gs.combat.enemies.indexOf(enemy),
-      dmg,
-      killed:    enemy.currentHp <= 0,
-    });
+    const targetIndex = gs.combat.enemies.indexOf(enemy);
+    const actor = gs.combat.combatants?.player ?? {
+      id: 'player',
+      side: 'ally',
+      sourceType: 'player',
+    };
+    const target = gs.combat.combatants?.[`enemy:${targetIndex}`] ?? {
+      id: `enemy:${targetIndex}`,
+      side: 'enemy',
+      sourceType: 'enemy',
+      enemyIndex: targetIndex,
+    };
+    combatSystemRef?._fx?.(createActionFx({
+      actor,
+      actorIndex: 0,
+      target,
+      targetIndex,
+      actionId: `throwable_${statusId}`,
+      motionKey: 'ranged',
+      impactFx: fxType ?? 'blast',
+      damage: dmg,
+      killed: enemy.currentHp <= 0,
+    }));
 
     // 상태이상 부여 (per-enemy _statusEffects)
     if (typeof combatSystemRef?._applyEnemyStatusInflict === 'function') {
@@ -195,13 +212,29 @@ export function applyMultiTarget(
       extra.currentHp = Math.max(0, extra.currentHp - rolledSplash);
       splash = hpBefore - extra.currentHp;
     }
-    combatSystemRef._fx?.({
-      kind:      'playerAttack',
-      fx:        isRanged ? 'shot' : 'slash',
-      targetIdx: gs.combat.enemies.indexOf(extra),
-      dmg:       splash,
-      killed:    extra.currentHp <= 0,
-    });
+    const extraIndex = gs.combat.enemies.indexOf(extra);
+    const actor = gs.combat.combatants?.player ?? {
+      id: 'player',
+      side: 'ally',
+      sourceType: 'player',
+    };
+    const target = gs.combat.combatants?.[`enemy:${extraIndex}`] ?? {
+      id: `enemy:${extraIndex}`,
+      side: 'enemy',
+      sourceType: 'enemy',
+      enemyIndex: extraIndex,
+    };
+    combatSystemRef._fx?.(createActionFx({
+      actor,
+      actorIndex: 0,
+      target,
+      targetIndex: extraIndex,
+      actionId: isRanged ? 'shoot' : 'melee',
+      motionKey: isRanged ? 'ranged' : 'melee',
+      impactFx: isRanged ? 'shot' : 'slash',
+      damage: splash,
+      killed: extra.currentHp <= 0,
+    }));
     extraLogs.push(I18n.t('combatSys.multiTargetHit', {
       enemy: I18n.enemyName(extra.id, extra.name),
       dmg: splash,

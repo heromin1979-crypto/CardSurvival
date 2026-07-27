@@ -120,7 +120,8 @@ function damageBoss(enemy, amount) {
 
 function actionFxCount(actionId) {
   return GameState.combat.fxQueue.filter(entry => (
-    entry.kind === 'enemyAttack'
+    entry.kind === 'action'
+    && entry.actorSide === 'enemy'
     && entry.actionId === actionId
     && entry.miss === false
   )).length;
@@ -743,7 +744,7 @@ describe('Finding B - source-aware 적/전장/무기 상태 소비', () => {
     expect(GameState.player.hp.current).toBe(474);
     expect(combat.fxQueue).toContainEqual(expect.objectContaining({
       actionId: action.id,
-      dmg: 26,
+      damage: 26,
     }));
   });
 
@@ -1138,7 +1139,7 @@ describe('Finding B - source-aware 적/전장/무기 상태 소비', () => {
   });
 
   it('throwable AoE도 typed 무적과 피해 보호막을 공통 피해 경계에서 소비한다', () => {
-    const { enemy } = setupBoss('boss_sewer_king');
+    const { combat, enemy } = setupBoss('boss_sewer_king');
     const throwableId = addCombatItem('molotov_cocktail', 1);
     CombatSystem._applyEnemyStatusInflict(enemy, {
       id: 'throwable_invulnerable',
@@ -1159,6 +1160,13 @@ describe('Finding B - source-aware 적/전장/무기 상태 소비', () => {
     expect(enemy.currentHp).toBe(hpBefore);
     expect(enemy._statusEffects.find(status => status.id === 'throwable_shield')
       ?.effect.damageShield).toBe(99);
+    expect(combat.fxQueue).toContainEqual(expect.objectContaining({
+      kind: 'action',
+      actorId: 'player',
+      targetId: 'enemy:0',
+      impactFx: 'fire',
+      damage: 0,
+    }));
   });
 
   it('legacy direct throwable도 weaponLock에서 아이템 소비 전 validation 실패한다', () => {
@@ -1204,6 +1212,13 @@ describe('Finding B - source-aware 적/전장/무기 상태 소비', () => {
     expect(extra.currentHp).toBe(hpBefore);
     expect(extra._statusEffects.find(status => status.id === 'splash_shield')
       ?.effect.damageShield).toBe(99);
+    expect(combat.fxQueue).toContainEqual(expect.objectContaining({
+      kind: 'action',
+      actorId: 'player',
+      targetId: 'enemy:1',
+      impactFx: 'slash',
+      damage: 0,
+    }));
   });
 });
 
@@ -1678,7 +1693,8 @@ describe('Final broad review - turn eligibility와 공용 피해 경계', () => 
     expect(enemy._statusEffects.find(status => status.id === 'mastery_shield')
       ?.effect.damageShield).toBe(11);
     expect(combat.lastHit?.damage).toBe(0);
-    expect(combat.fxQueue.find(entry => entry.kind === 'playerAttack')?.dmg).toBe(0);
+    expect(combat.fxQueue.find(entry =>
+      entry.kind === 'action' && entry.actorId === 'player')?.damage).toBe(0);
     expect(attackLog).toContain('0 피해');
     expect(combat.log.find(entry => entry.includes('[맨손 마스터리]'))).toContain('+0');
   });
@@ -1723,7 +1739,8 @@ describe('Final broad review - turn eligibility와 공용 피해 경계', () => 
     expect(enemy.currentHp).toBe(96);
     expect(combat.combatants['enemy:0'].hp).toBe(96);
     expect(combat.lastHit?.damage).toBe(4);
-    expect(combat.fxQueue.find(entry => entry.kind === 'playerAttack')?.dmg).toBe(4);
+    expect(combat.fxQueue.find(entry =>
+      entry.kind === 'action' && entry.actorId === 'player')?.damage).toBe(4);
     expect(attackLog).toContain('2 피해');
     expect(combat.log.find(entry => entry.includes('[맨손 마스터리]'))).toContain('+2');
   });
@@ -1800,7 +1817,8 @@ describe('Final broad review - turn eligibility와 공용 피해 경계', () => 
     expect(combat.combatants['enemy:0'].hp).toBe(94);
     expect(enemy._bossActionState.committedAction.telegraphDamageTaken).toBe(6);
     expect(combat.lastHit?.damage).toBe(6);
-    expect(combat.fxQueue.find(entry => entry.kind === 'playerAttack')?.dmg).toBe(6);
+    expect(combat.fxQueue.find(entry =>
+      entry.kind === 'action' && entry.actorId === 'player')?.damage).toBe(6);
     expect(attackLog).toContain('2 피해');
     expect(combat.log.find(entry => entry.includes('[맨손 마스터리]'))).toContain('+4');
   });

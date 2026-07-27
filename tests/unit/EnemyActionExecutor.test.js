@@ -166,7 +166,9 @@ describe('executeEnemyAction', () => {
       expect(damage).toHaveBeenCalledTimes(2);
       expect(GameState.combat.fxQueue).toEqual([
         expect.objectContaining({
-          kind: 'enemyAttack',
+          kind: 'action',
+          actorId: 'enemy:0',
+          targetId: 'player',
           actionId: 'rifle_burst',
           category: 'basic',
           motionKey: 'rifle_burst',
@@ -175,8 +177,9 @@ describe('executeEnemyAction', () => {
           camera: 'enemy-strike',
         }),
         expect.objectContaining({
-          kind: 'enemyAttackCompanion',
-          npcId: 'npc_soldier',
+          kind: 'action',
+          actorId: 'enemy:0',
+          targetId: 'npc_soldier',
           actionId: 'rifle_burst',
           category: 'basic',
           motionKey: 'rifle_burst',
@@ -257,7 +260,6 @@ describe('executeEnemyAction', () => {
       expect(fallback).not.toHaveBeenCalled();
       expect(explicitFx).toMatchObject({
         impactFx: 'shot',
-        fx: 'shot',
       });
 
       fallback.mockClear();
@@ -265,7 +267,6 @@ describe('executeEnemyAction', () => {
       expect(fallback).toHaveBeenCalledTimes(1);
       expect(inferredFx).toMatchObject({
         impactFx: 'claw',
-        fx: 'claw',
       });
     } finally {
       fallback.mockRestore();

@@ -4,6 +4,10 @@ import EventBus     from '../../core/EventBus.js';
 import GameState    from '../../core/GameState.js';
 import CombatSystem from '../../systems/CombatSystem.js';
 import {
+  actionFxToPresentationFx,
+  normalizeLegacyActionFx,
+} from '../../systems/combat/CombatMotionFx.js';
+import {
   CAMERA_CLASSES,
   COMBAT_MOTION_CLASSES,
   COMBAT_SPRITE_SHEETS,
@@ -32,9 +36,11 @@ export const CombatFxPlayer = {
     combat.fxQueue = [];
     const speed = this._fxSpeed > 0 ? this._fxSpeed : 1;
     let delay = 80;
-    for (const fx of queue) {
+    for (const queuedFx of queue) {
+      const fx = normalizeLegacyActionFx(queuedFx);
+      const presentationKind = actionFxToPresentationFx(fx)?.kind;
       this._fxTimers.push(setTimeout(() => this._playFx(fx), Math.round(delay / speed)));
-      delay += FX_DURATIONS[fx.kind] ?? 300;
+      delay += FX_DURATIONS[presentationKind] ?? 300;
     }
   },
 
@@ -125,8 +131,9 @@ export const CombatFxPlayer = {
     return `<span class="cv-ally-icon">${COMPANION_ICONS[npcId] ?? '?뫀'}</span>`;
   },
 
-  _playFx(fx) {
-    if (!this._screen || !fx) return;
+  _playFx(queuedFx) {
+    if (!this._screen || !queuedFx) return;
+    const fx = actionFxToPresentationFx(normalizeLegacyActionFx(queuedFx));
     // 사운드 시스템 결선 지점 — 오디오 도입 시 이 이벤트만 구독하면 된다
     EventBus.emit('combatSfx', {
       kind: fx.kind,
@@ -219,10 +226,14 @@ export const CombatFxPlayer = {
         break;
       }
       case 'companionHeal': {
-        this._animate(this._allyEl(fx.npcId), 'glowing');
-        this._motion(this._allyEl(fx.npcId), 'motion-heal-pulse', 700);
-        this._motion(this._playerSpriteEl(), 'motion-heal-pulse', 700);
-        this._spawnFloatText(this._playerSpriteEl(), `+${fx.amount}`, 'heal');
+        const actor = this._allyEl(fx.npcId);
+        const target = fx.targetId && fx.targetId !== 'player'
+          ? this._combatantEl(fx.targetId) ?? this._allyEl(fx.targetId)
+          : this._playerSpriteEl();
+        this._animate(actor, 'glowing');
+        this._motion(actor, 'motion-heal-pulse', 700);
+        this._motion(target, 'motion-heal-pulse', 700);
+        this._spawnFloatText(target, `+${fx.amount}`, 'heal');
         break;
       }
       case 'status': {

@@ -32,6 +32,10 @@ import {
 } from './BossPatternController.js';
 import { resolveEnemyDamageResponsePassives } from './EnemyActionExecutor.js';
 import { createEnemyActionState } from './EnemyActionPlanner.js';
+import {
+  combatantActionIndex,
+  createActionFx,
+} from './CombatMotionFx.js';
 
 const PENDING_BOSS_COUNTERS = Symbol('pendingBossCounters');
 const RANKED_ACTION_SCOPE = Symbol('rankedActionScope');
@@ -460,11 +464,16 @@ export const CombatRankedEffects = {
         this._removeRankedStatuses(target, effect.removeStatus);
         this._syncRankedTargetToLegacy(target);
         if (healResult.healed > 0) {
-          if (target.sourceType === 'companion') {
-            this._fx({ kind: 'companionHeal', npcId: target.sourceId, amount: healResult.healed });
-          } else {
-            this._fx({ kind: 'useItem', fx: 'heal', label: `+${healResult.healed}` });
-          }
+          this._fx(createActionFx({
+            actor,
+            actorIndex: combatantActionIndex(actor, GameState.companions),
+            target,
+            targetIndex: combatantActionIndex(target, GameState.companions),
+            skill: hitInfo?.skill,
+            motionKey: hitInfo?.skill?.motionKey ?? 'support',
+            impactFx: 'heal',
+            healing: healResult.healed,
+          }));
         }
         if (healResult.deathsDoorCleared) {
           this._pushCombatLog(`${this._rankedCombatantLabel(target)}이(가) 죽음의 문턱에서 벗어났다.`);
@@ -781,15 +790,17 @@ export const CombatRankedEffects = {
         isCrit: crit,
         enemyIndex: target.enemyIndex,
       };
-      this._fx({
-        kind: actor?.sourceType === 'companion' ? 'companionAttack' : 'playerAttack',
-        npcId: actor?.sourceType === 'companion' ? actor.sourceId : undefined,
-        fx: weaponDef ? this._weaponFx(weaponDef) : (skill?.icon === 'shot' ? 'shot' : 'slash'),
-        targetIdx: target.enemyIndex,
-        dmg: result.damage,
+      this._fx(createActionFx({
+        actor,
+        actorIndex: combatantActionIndex(actor, gs.companions),
+        target,
+        targetIndex: combatantActionIndex(target, gs.companions),
+        skill,
+        impactFx: weaponDef ? this._weaponFx(weaponDef) : (skill?.icon === 'shot' ? 'shot' : 'slash'),
+        damage: result.damage,
         crit,
         killed: target.dead === true,
-      });
+      }));
     }
 
     if (result.deathsDoorEntered) {

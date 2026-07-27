@@ -39,6 +39,29 @@ import {
   COMPANION_COMBAT_LOADOUTS,
   getCombatSkill,
 } from '../../data/combatSkills.js';
+import {
+  combatantActionIndex,
+  createActionFx,
+} from './CombatMotionFx.js';
+
+function enemyActionCombatant(combat, enemy, enemyIndex) {
+  return combat?.combatants?.[`enemy:${enemyIndex}`] ?? {
+    id: `enemy:${enemyIndex}`,
+    side: 'enemy',
+    sourceType: 'enemy',
+    sourceId: enemy?.id ?? enemy?.definitionId ?? null,
+    enemyIndex,
+  };
+}
+
+function allyActionCombatant(combat, targetId) {
+  return combat?.combatants?.[targetId] ?? {
+    id: targetId,
+    side: 'ally',
+    sourceType: targetId === 'player' ? 'player' : 'companion',
+    sourceId: targetId,
+  };
+}
 
 export const CombatAiTurns = {
   _isBossPatternEnemy(enemy) {
@@ -857,7 +880,21 @@ export const CombatAiTurns = {
         enemy: I18n.enemyName(enemy.id, enemy.name),
         skill: skill?.name ?? action.actionId,
       }));
-      this._fx({ kind: 'enemyAttack', enemyIdx, miss: true });
+      const targetId = movedTarget ?? action.targetIds?.[0] ?? 'player';
+      const target = allyActionCombatant(gs.combat, targetId);
+      this._fx(createActionFx({
+        actor: enemyActionCombatant(gs.combat, enemy, enemyIdx),
+        actorIndex: enemyIdx,
+        target,
+        targetIndex: combatantActionIndex(target, gs.companions),
+        action,
+        motionKey: action.motionKey,
+        impactFx: skill?.impactFx ?? this._monsterImpactFx(enemy),
+        miss: true,
+        category: action.category,
+        movement: skill?.movement,
+        camera: skill?.camera,
+      }));
     } else if (!cancelledByHit) {
       this._executeEnemyCommittedAction(enemy, action);
     }
@@ -1076,22 +1113,23 @@ export const CombatAiTurns = {
         }),
         addNoise: amount => NoiseSystem.addNoise(amount),
         emitFx: payload => {
-          const companionTarget = payload.targetId !== 'player';
           const impactFx = payload.impactFx ?? this._monsterImpactFx(enemy);
-          this._fx({
-            kind: companionTarget ? 'enemyAttackCompanion' : 'enemyAttack',
-            enemyIdx,
-            ...(companionTarget ? { npcId: payload.targetId } : {}),
+          const target = allyActionCombatant(combat, payload.targetId);
+          this._fx(createActionFx({
+            actor: enemyActionCombatant(combat, enemy, enemyIdx),
+            actorIndex: enemyIdx,
+            target,
+            targetIndex: combatantActionIndex(target, gs.companions),
             actionId: payload.actionId,
             category: payload.category,
             motionKey: payload.motionKey,
             impactFx,
             movement: payload.movement,
             camera: payload.camera,
-            fx: impactFx,
-            dmg: payload.damage,
+            damage: payload.damage,
             miss: payload.miss,
-          });
+            killed: target.dead === true,
+          }));
         },
         addLog: message => {
           if (Array.isArray(combat?.log)) combat.log.push(message);
@@ -1224,11 +1262,18 @@ export const CombatAiTurns = {
       spawned++;
     }
     if (spawned > 0) {
-      this._fx({
-        kind: 'summon',
-        enemyIdx: sourceEnemy ? gs.combat.enemies.indexOf(sourceEnemy) : -1,
+      const enemyIndex = sourceEnemy ? gs.combat.enemies.indexOf(sourceEnemy) : -1;
+      const actor = enemyActionCombatant(gs.combat, sourceEnemy, enemyIndex);
+      this._fx(createActionFx({
+        actor,
+        actorIndex: enemyIndex,
+        target: actor,
+        targetIndex: enemyIndex,
+        actionId: sourceEnemy?.timedThreat?.id ?? 'summon',
+        motionKey: 'summon',
+        impactFx: 'summon',
         count: spawned,
-      });
+      }));
     }
     return spawned;
   },
@@ -1403,7 +1448,18 @@ export const CombatAiTurns = {
     if (aoeAttack.effect) {
       this._applyEnemySkillEffect(enemy, { id: 'aoe_attack', effect: aoeAttack.effect }, dmg);
     }
-    this._fx({ kind: 'enemyAttack', enemyIdx: gs.combat.enemies.indexOf(enemy), fx: 'skill', dmg, crit: true });
+    const enemyIndex = gs.combat.enemies.indexOf(enemy);
+    this._fx(createActionFx({
+      actor: enemyActionCombatant(gs.combat, enemy, enemyIndex),
+      actorIndex: enemyIndex,
+      target: allyActionCombatant(gs.combat, 'player'),
+      targetIndex: 0,
+      actionId: 'aoe_attack',
+      motionKey: 'aoe_attack',
+      impactFx: 'skill',
+      damage: dmg,
+      crit: true,
+    }));
     return dmg;
   },
 
@@ -1641,7 +1697,17 @@ export const CombatAiTurns = {
         enemy: I18n.enemyName(enemy.id, enemy.name),
         skill: skill.name ?? skill.id,
       }));
-      this._fx({ kind: 'enemyAttack', enemyIdx: gs.combat.enemies.indexOf(enemy), miss: true });
+      const enemyIndex = gs.combat.enemies.indexOf(enemy);
+      this._fx(createActionFx({
+        actor: enemyActionCombatant(gs.combat, enemy, enemyIndex),
+        actorIndex: enemyIndex,
+        target: allyActionCombatant(gs.combat, 'player'),
+        targetIndex: 0,
+        action: skill,
+        motionKey: skill.motionKey,
+        impactFx: skill.impactFx ?? this._monsterImpactFx(enemy),
+        miss: true,
+      }));
       return logs;
     }
 
@@ -1679,13 +1745,18 @@ export const CombatAiTurns = {
     dmg = struck.damage;
     gs.combat.lastHit = { target: 'player', damage: dmg, isCrit: false };
     EventBus.emit('playerHit', { damage: dmg });
-    this._fx({
-      kind:     'enemyAttack',
-      enemyIdx: gs.combat.enemies.indexOf(enemy),
-      fx:       'skill',
-      dmg,
-      crit:     true,
-    });
+    const enemyIndex = gs.combat.enemies.indexOf(enemy);
+    this._fx(createActionFx({
+      actor: enemyActionCombatant(gs.combat, enemy, enemyIndex),
+      actorIndex: enemyIndex,
+      target: allyActionCombatant(gs.combat, 'player'),
+      targetIndex: 0,
+      action: skill,
+      motionKey: skill.motionKey,
+      impactFx: skill.impactFx ?? 'skill',
+      damage: dmg,
+      crit: true,
+    }));
     DiseaseSystem.checkCombatInjury(dmg, gs);
     BodySystem.onCombatHit(dmg, enemy);
     // 예고를 블록으로 받아냈다면 기절은 통하지 않는다
@@ -1726,11 +1797,19 @@ export const CombatAiTurns = {
         enemy: I18n.enemyName(enemy.id, enemy.name),
         dmg: damage,
       }));
-      this._fx({
-        kind: 'explode',
-        enemyIdx: gs.combat.enemies.indexOf(enemy),
-        dmg: damage,
-      });
+      const enemyIndex = gs.combat.enemies.indexOf(enemy);
+      this._fx(createActionFx({
+        actor: enemyActionCombatant(gs.combat, enemy, enemyIndex),
+        actorIndex: enemyIndex,
+        target: allyActionCombatant(gs.combat, 'player'),
+        targetIndex: 0,
+        action,
+        motionKey: action.motionKey ?? 'self_destruct',
+        impactFx: 'explode',
+        damage,
+        killed: true,
+        category: action.category,
+      }));
     }
     return result;
 
@@ -1841,13 +1920,18 @@ export const CombatAiTurns = {
         const tauntChance = nurseDef?.companion?.tauntChance ?? 0;
         if (tauntChance > 0 && Math.random() < tauntChance) {
           npcSysRef.damageCompanion('npc_nurse', damage);
-          this._fx({
-            kind: 'enemyAttackCompanion',
-            enemyIdx: gs.combat.enemies.indexOf(enemy),
-            npcId: 'npc_nurse',
-            fx: this._monsterImpactFx(enemy),
-            dmg: damage,
-          });
+          const enemyIndex = gs.combat.enemies.indexOf(enemy);
+          const target = allyActionCombatant(gs.combat, 'npc_nurse');
+          this._fx(createActionFx({
+            actor: enemyActionCombatant(gs.combat, enemy, enemyIndex),
+            actorIndex: enemyIndex,
+            target,
+            targetIndex: combatantActionIndex(target, gs.companions),
+            actionId: 'basic_attack',
+            motionKey: 'basic_attack',
+            impactFx: this._monsterImpactFx(enemy),
+            damage,
+          }));
           const npcName = I18n.itemName('npc_nurse', GameData?.items?.npc_nurse?.name);
           return I18n.t('npc.hitInstead', { name: npcName, dmg: damage });
         }
@@ -1866,36 +1950,54 @@ export const CombatAiTurns = {
         if (redirect.dodged) {
           return I18n.t('combatSys.enemyDodge', { enemy: I18n.enemyName(enemy.id, enemy.name) });
         }
-        this._fx({
-          kind: 'enemyAttackCompanion',
-          enemyIdx: gs.combat.enemies.indexOf(enemy),
-          npcId: targetNpcId,
-          fx: this._monsterImpactFx(enemy),
-          dmg: redirect.damage,
-        });
+        const enemyIndex = gs.combat.enemies.indexOf(enemy);
+        const target = allyActionCombatant(gs.combat, targetNpcId);
+        this._fx(createActionFx({
+          actor: enemyActionCombatant(gs.combat, enemy, enemyIndex),
+          actorIndex: enemyIndex,
+          target,
+          targetIndex: combatantActionIndex(target, gs.companions),
+          actionId: 'basic_attack',
+          motionKey: 'basic_attack',
+          impactFx: this._monsterImpactFx(enemy),
+          damage: redirect.damage,
+          killed: target.dead === true,
+        }));
         const npcName = I18n.itemName(targetNpcId, GameData?.items?.[targetNpcId]?.name);
         return I18n.t('npc.hitInstead', { name: npcName, dmg: redirect.damage });
       }
 
       const struck = this._dealDamageToAlly({ rawDamage: damage });
       if (struck.dodged) {
-        this._fx({
-          kind:     'enemyAttack',
-          enemyIdx: gs.combat.enemies.indexOf(enemy),
-          fx:       this._monsterImpactFx(enemy),
-          miss:     true,
-        });
+        const enemyIndex = gs.combat.enemies.indexOf(enemy);
+        this._fx(createActionFx({
+          actor: enemyActionCombatant(gs.combat, enemy, enemyIndex),
+          actorIndex: enemyIndex,
+          target: allyActionCombatant(gs.combat, 'player'),
+          targetIndex: 0,
+          actionId: 'basic_attack',
+          motionKey: 'basic_attack',
+          impactFx: this._monsterImpactFx(enemy),
+          miss: true,
+        }));
         return I18n.t('combatSys.enemyDodge', { enemy: I18n.enemyName(enemy.id, enemy.name) });
       }
       damage = struck.damage;
       gs.combat.lastHit    = { target: 'player', damage, isCrit: false };
       EventBus.emit('playerHit', { damage });
-      this._fx({
-        kind:     'enemyAttack',
-        enemyIdx: gs.combat.enemies.indexOf(enemy),
-        fx:       this._monsterImpactFx(enemy),
-        dmg:      damage,
-      });
+      const enemyIndex = gs.combat.enemies.indexOf(enemy);
+      const playerTarget = allyActionCombatant(gs.combat, 'player');
+      this._fx(createActionFx({
+        actor: enemyActionCombatant(gs.combat, enemy, enemyIndex),
+        actorIndex: enemyIndex,
+        target: playerTarget,
+        targetIndex: 0,
+        actionId: 'basic_attack',
+        motionKey: 'basic_attack',
+        impactFx: this._monsterImpactFx(enemy),
+        damage,
+        killed: playerTarget.dead === true,
+      }));
 
       // 전투 부상 체크 (출혈, 열상, 골절, 뇌진탕)
       DiseaseSystem.checkCombatInjury(damage, gs);
@@ -1941,12 +2043,17 @@ export const CombatAiTurns = {
       }
       return I18n.t('combatSys.enemyAtk', { enemy: I18n.enemyName(enemy.id, enemy.name), dmg: damage, hp: gs.player.hp.current });
     }
-    this._fx({
-      kind:     'enemyAttack',
-      enemyIdx: gs.combat.enemies.indexOf(enemy),
-      fx:       this._monsterImpactFx(enemy),
-      miss:     true,
-    });
+    const enemyIndex = gs.combat.enemies.indexOf(enemy);
+    this._fx(createActionFx({
+      actor: enemyActionCombatant(gs.combat, enemy, enemyIndex),
+      actorIndex: enemyIndex,
+      target: allyActionCombatant(gs.combat, 'player'),
+      targetIndex: 0,
+      actionId: 'basic_attack',
+      motionKey: 'basic_attack',
+      impactFx: this._monsterImpactFx(enemy),
+      miss: true,
+    }));
     return I18n.t('combatSys.enemyDodge', { enemy: I18n.enemyName(enemy.id, enemy.name) });
   },
 
