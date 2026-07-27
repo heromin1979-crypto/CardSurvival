@@ -139,6 +139,25 @@
       </div>
       <div class="hint">감지 후 모든 포즈를 이 기준으로 셀에 재배치합니다. 게임은 <code>transform-origin:50% 100%</code>(하단중앙). ‘본체만 분리’는 발에서 연결된 픽셀만 남겨 옆 프레임이 비집고 들어온 조각을 떼어냅니다.</div>
     </div>
+
+    <div class="card">
+      <h2>⑤ 레이어 (이미지 합성)</h2>
+      <div class="row">
+        <button id="layerAdd" style="flex:1">＋ 이미지 추가 (선택 프레임에 부착)</button>
+        <input type="file" id="layerInput" accept="image/*" hidden />
+      </div>
+      <div id="layerList"></div>
+      <div id="layerEdit" style="display:none; border-top:1px solid var(--line); margin-top:8px; padding-top:8px">
+        <div class="row">
+          <label>X</label><input type="number" id="lx" value="0" style="width:60px" />
+          <label>Y</label><input type="number" id="ly" value="0" style="width:60px" />
+          <label>크기%</label><input type="number" id="lscale" value="100" min="5" max="500" style="width:60px" />
+          <label>회전°</label><input type="number" id="lrot" value="0" style="width:60px" />
+        </div>
+        <div class="row"><button id="layerDel" class="ghost" style="color:var(--danger)">레이어 삭제</button></div>
+      </div>
+      <div class="hint">외부 이미지(무기 이펙트·화염 등)를 프레임 위에 얹어 <b>출력 PNG에 함께 굽기</b>. 목록에서 레이어 선택 → 미리보기 <b>드래그</b>로 위치 이동.</div>
+    </div>
   </div>
 
   <!-- CENTER -->
@@ -180,6 +199,11 @@
           <button id="fitRow" class="ghost" title="현재 행 콘텐츠를 셀 안에 중앙 정렬 — 총구 화염 등 한쪽 돌출이 잘리는 것 방지">행 셀맞춤</button>
           <button id="nudgeReset" class="ghost">이 프레임 0</button>
         </div>
+        <div class="row">
+          <label>회전°</label><input type="number" id="rot" value="0" step="1" style="width:64px" />
+          <label>크기%</label><input type="number" id="scl" value="100" step="1" min="10" max="300" style="width:64px" />
+          <span class="hint" style="margin-left:auto">앵커(발) 기준 회전·확대 — 출력 PNG에 구워짐</span>
+        </div>
         <div class="hint"><b>행 전체 이동</b>을 켜면 드래그·방향키·숫자가 현재 행 6프레임에 함께 적용됩니다(예: 공격 행 전체를 왼쪽으로). 끄면 선택 프레임만. <kbd>←↑↓→</kbd>(<kbd>Shift</kbd>=10px), <kbd>[</kbd><kbd>]</kbd> 프레임 이동, <kbd>Space</kbd> 재생.</div>
       </div>
     </div>
@@ -192,7 +216,7 @@
       <div id="strip"></div>
     </div>
     <div class="card">
-      <h2>⑤ 내보내기</h2>
+      <h2>⑥ 내보내기</h2>
       <div class="row"><button id="saveServer" class="primary" style="flex:1">정렬 시트 저장 (서버)</button></div>
       <div class="hint" id="saveTargetInfo" style="margin:-2px 0 8px">저장 대상: —</div>
       <div class="row"><button id="downloadPng" style="flex:1">PNG 다운로드</button><button id="copyCss" style="flex:1">타이밍 CSS</button></div>
@@ -231,6 +255,7 @@ const S = {
   playing: false, playStart: 0, playRow: 0,
   saveTargetPath: null, saveName: 'sheet.png',
   serverOn: false, sheets: [], picking: false, rowMove: false, showRaw: false,
+  layers: [], activeLayer: null,  // overlay images: { name, dataUrl, img, frame, x, y, scale, rot }
 };
 
 // ── per-frame timing helpers ────────────────────────────────
@@ -312,6 +337,13 @@ function drawCell(ctx, i, cx, cyAnchor, s) {
   const cellL = cx - cw * s / 2, cellT = cyAnchor - ch * s * ayFrac();
   ctx.save();
   ctx.beginPath(); ctx.rect(cellL, cellT, cw * s, ch * s); ctx.clip();
+  // per-frame rotate/scale around the anchor point (feet stay planted); baked on export
+  ctx.save();
+  const rot = (f.rot || 0) * Math.PI / 180, scl = f.scale > 0 ? f.scale : 1;
+  if (rot || scl !== 1) {
+    const px = cx + f.dx * s, py = cyAnchor + f.dy * s;
+    ctx.translate(px, py); ctx.rotate(rot); ctx.scale(scl, scl); ctx.translate(-px, -py);
+  }
   const b = f.box;
   if (S.isolate && f.patch) {
     // isolated main figure (neighbour fragments already removed) — draw the patch only
@@ -321,6 +353,17 @@ function drawCell(ctx, i, cx, cyAnchor, s) {
     // fallback: clip to the pose bounding box (+pad) so the next frame's hand / other row's feet are excluded
     if (b) { const pad = 4; ctx.beginPath(); ctx.rect(destX + (b.x0 - pad) * s, destY + (b.y0 - pad) * s, (b.x1 - b.x0 + pad * 2) * s, (b.y1 - b.y0 + pad * 2) * s); ctx.clip(); }
     ctx.drawImage(S.keyedCanvas, 0, 0, S.W, S.H, destX, destY, S.W * s, S.H * s);
+  }
+  ctx.restore();
+  // overlay layers attached to this frame (position relative to the frame anchor, baked on export)
+  if (S.layers) for (const L of S.layers) {
+    if (!L.img || L.frame !== i) continue;
+    const lw = L.img.naturalWidth * (L.scale || 1) * s, lh = L.img.naturalHeight * (L.scale || 1) * s;
+    ctx.save();
+    ctx.translate(cx + f.dx * s + (L.x || 0) * s, cyAnchor + f.dy * s + (L.y || 0) * s);
+    ctx.rotate((L.rot || 0) * Math.PI / 180);
+    ctx.drawImage(L.img, -lw / 2, -lh / 2, lw, lh);
+    ctx.restore();
   }
   ctx.restore();
 }
@@ -336,6 +379,7 @@ function onImageReady(img, name, savePath) {
   S.rows = clamp(parseInt($('rows').value) || 4, 1, 16);
   rebuildFrames(true);
   S.frameDur = null; // new sheet → uniform timing until edited
+  S.layers = []; S.activeLayer = null; renderLayerUI();
 
   // detect alpha vs solid bg
   let full;
@@ -357,7 +401,7 @@ function onImageReady(img, name, savePath) {
 
 function rebuildFrames(reset) {
   const n = S.cols * S.rows, old = S.frames;
-  S.frames = Array.from({ length: n }, (_, i) => reset ? { box: null, dx: 0, dy: 0 } : (old[i] || { box: null, dx: 0, dy: 0 }));
+  S.frames = Array.from({ length: n }, (_, i) => reset ? { box: null, dx: 0, dy: 0, rot: 0, scale: 1 } : (old[i] || { box: null, dx: 0, dy: 0, rot: 0, scale: 1 }));
   $('strip').style.setProperty('--cols', S.cols);
 }
 
@@ -519,7 +563,7 @@ function detectFrames() {
       let fsx = 0, fn = 0;
       for (let y = footTop; y <= yBot; y++) { const row = y * W; for (let x = x0; x <= x1; x++) if (S.mask[row + x]) { fsx += x; fn++; } }
       f.box = { x0, y0: yTop, x1, y1: yBot, ax: fn ? Math.round(fsx / fn) : Math.round((x0 + x1) / 2) };
-      f.dx = 0; f.dy = 0;
+      f.dx = 0; f.dy = 0; f.rot = 0; f.scale = 1;
     }
   }
   buildPatches();
@@ -688,7 +732,12 @@ function renderStrip() {
     div.appendChild(tc);
     const idx = document.createElement('span'); idx.className = 'idx'; idx.textContent = i; div.appendChild(idx);
     if (!f.box) { const n = document.createElement('span'); n.className = 'nofind'; div.appendChild(n); }
-    if (f.dx || f.dy) { const b = document.createElement('span'); b.className = 'badge'; b.textContent = `${f.dx | 0},${f.dy | 0}`; div.appendChild(b); }
+    const marks = [];
+    if (f.dx || f.dy) marks.push(`${f.dx | 0},${f.dy | 0}`);
+    if (f.rot) marks.push(`${Math.round(f.rot)}°`);
+    if (f.scale && f.scale !== 1) marks.push(`${Math.round(f.scale * 100)}%`);
+    if (S.layers.some(L => L.frame === i)) marks.push('L');
+    if (marks.length) { const b = document.createElement('span'); b.className = 'badge'; b.textContent = marks.join(' '); div.appendChild(b); }
     div.onclick = () => { S.rowTab = r; selectFrame(i); };
     wrap.appendChild(div);
     if (c === S.cols - 1) {
@@ -719,6 +768,7 @@ function selectFrame(i) {
   $('selIdx').textContent = S.sel; $('selR').textContent = Math.floor(S.sel / S.cols); $('selC').textContent = S.sel % S.cols;
   $('selState').textContent = f.box ? '· 감지됨' : '· 미검출(수동)';
   $('dx').value = f.dx; $('dy').value = f.dy;
+  $('rot').value = Math.round(f.rot || 0); $('scl').value = Math.round((f.scale > 0 ? f.scale : 1) * 100);
   syncRowControls();
   renderAll();
 }
@@ -730,6 +780,40 @@ function syncRowControls() {
   $('fdIdx').textContent = S.sel; $('rowTotal').textContent = total;
 }
 function renderAll() { renderSheet(); renderPreview(); renderStrip(); Array.from($('rowTabs').children).forEach((el, i) => el.classList.toggle('active', i === S.rowTab)); }
+
+// ── 레이어 (오버레이 이미지 합성) ───────────────────────────
+function addLayerFromFile(file) {
+  const fr = new FileReader();
+  fr.onload = () => {
+    const img = new Image();
+    img.onload = () => {
+      S.layers.push({ name: file.name, dataUrl: fr.result, img, frame: S.sel, x: 0, y: -Math.round(cellH() / 2), scale: 1, rot: 0 });
+      S.activeLayer = S.layers.length - 1;
+      renderLayerUI(); renderAll();
+      toast(`레이어 추가: ${file.name} → 프레임 ${S.sel}`);
+    };
+    img.src = fr.result;
+  };
+  fr.readAsDataURL(file);
+}
+function activeLayerObj() { return S.activeLayer != null ? S.layers[S.activeLayer] : null; }
+function renderLayerUI() {
+  const list = $('layerList'); list.innerHTML = '';
+  S.layers.forEach((L, idx) => {
+    const row = document.createElement('div');
+    row.className = 'row';
+    row.style.cssText = 'cursor:pointer; padding:4px 6px; border-radius:6px;' + (idx === S.activeLayer ? 'background:var(--panel2); outline:1px solid var(--accent);' : '');
+    row.innerHTML = `<span style="font-size:12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1">${L.name}</span><span class="hint">프레임 ${L.frame}</span>`;
+    row.onclick = () => {
+      S.activeLayer = S.activeLayer === idx ? null : idx;
+      if (S.activeLayer != null) selectFrame(L.frame); else renderLayerUI();
+    };
+    list.appendChild(row);
+  });
+  const L = activeLayerObj();
+  $('layerEdit').style.display = L ? '' : 'none';
+  if (L) { $('lx').value = Math.round(L.x); $('ly').value = Math.round(L.y); $('lscale').value = Math.round((L.scale || 1) * 100); $('lrot').value = Math.round(L.rot || 0); }
+}
 
 // 현재 행 콘텐츠를 셀 안에 중앙 정렬 — 한쪽으로 뻗은 동작(총구 화염 등)이 셀 경계를
 // 넘어 잘리는 걸 막는다. 행 전체에 동일한 시프트를 더하므로 프레임 간 떨림이 없다.
@@ -786,8 +870,9 @@ function copyCss() {
   navigator.clipboard?.writeText(txt).then(() => toast('타이밍 CSS 복사됨'), () => toast(txt));
 }
 function saveProject() {
-  const frames = S.frames.map(f => ({ box: f.box || null, dx: f.dx | 0, dy: f.dy | 0 }));
-  const proj = { v: 2, src: S.saveName, path: S.saveTargetPath, cols: S.cols, rows: S.rows, rowDur: S.rowDur, frameDur: S.frameDur, bg: S.bg, removeBg: S.removeBg, isolate: S.isolate, anchorMode: S.anchorMode, frames };
+  const frames = S.frames.map(f => ({ box: f.box || null, dx: f.dx | 0, dy: f.dy | 0, rot: +f.rot || 0, scale: f.scale > 0 ? +f.scale : 1 }));
+  const layers = S.layers.map(L => ({ name: L.name, dataUrl: L.dataUrl, frame: L.frame, x: L.x, y: L.y, scale: L.scale, rot: L.rot }));
+  const proj = { v: 3, src: S.saveName, path: S.saveTargetPath, cols: S.cols, rows: S.rows, rowDur: S.rowDur, frameDur: S.frameDur, bg: S.bg, removeBg: S.removeBg, isolate: S.isolate, anchorMode: S.anchorMode, frames, layers };
   const a = document.createElement('a');
   a.download = S.saveName.replace(/\.png$/i, '') + '.anim.json';
   a.href = URL.createObjectURL(new Blob([JSON.stringify(proj, null, 2)], { type: 'application/json' })); a.click();
@@ -795,7 +880,13 @@ function saveProject() {
 function applyProject(p) {
   S.cols = p.cols || 6; S.rows = p.rows || 4; $('cols').value = S.cols; $('rows').value = S.rows;
   rebuildFrames(true);
-  if (Array.isArray(p.frames)) p.frames.forEach((f, i) => { if (S.frames[i]) S.frames[i] = { box: f.box || null, dx: f.dx | 0, dy: f.dy | 0 }; });
+  if (Array.isArray(p.frames)) p.frames.forEach((f, i) => { if (S.frames[i]) S.frames[i] = { box: f.box || null, dx: f.dx | 0, dy: f.dy | 0, rot: +f.rot || 0, scale: f.scale > 0 ? +f.scale : 1 }; });
+  S.layers = []; S.activeLayer = null;
+  if (Array.isArray(p.layers)) for (const L of p.layers) {
+    const img = new Image(); img.onload = () => renderAll(); img.src = L.dataUrl;
+    S.layers.push({ name: L.name, dataUrl: L.dataUrl, img, frame: L.frame | 0, x: +L.x || 0, y: +L.y || 0, scale: L.scale > 0 ? +L.scale : 1, rot: +L.rot || 0 });
+  }
+  renderLayerUI();
   if (Array.isArray(p.rowDur)) S.rowDur = p.rowDur.slice();
   S.frameDur = Array.isArray(p.frameDur) ? p.frameDur.map(r => Array.isArray(r) ? r.slice() : null) : null;
   if (p.bg) { S.bg = p.bg; $('bgTol').value = p.bg.tol; $('bgTolV').textContent = p.bg.tol; $('bgSwatch').style.background = `rgb(${p.bg.color.join(',')})`; }
@@ -871,7 +962,18 @@ $('dx').oninput = (e) => { const v = parseInt(e.target.value) || 0, d = v - S.fr
 $('dy').oninput = (e) => { const v = parseInt(e.target.value) || 0, d = v - S.frames[S.sel].dy; for (const i of targetFrames()) S.frames[i].dy += d; renderAll(); };
 $('rowMove').onchange = (e) => { S.rowMove = e.target.checked; };
 $('fitRow').onclick = fitRowInCell;
-$('nudgeReset').onclick = () => { for (const i of targetFrames()) { S.frames[i].dx = 0; S.frames[i].dy = 0; } selectFrame(S.sel); };
+$('nudgeReset').onclick = () => { for (const i of targetFrames()) { S.frames[i].dx = 0; S.frames[i].dy = 0; S.frames[i].rot = 0; S.frames[i].scale = 1; } selectFrame(S.sel); };
+$('rot').oninput = (e) => { const v = parseFloat(e.target.value) || 0; for (const i of targetFrames()) S.frames[i].rot = v; renderAll(); };
+$('scl').oninput = (e) => { const v = clamp(parseFloat(e.target.value) || 100, 10, 300) / 100; for (const i of targetFrames()) S.frames[i].scale = v; renderAll(); };
+
+// 레이어
+$('layerAdd').onclick = () => $('layerInput').click();
+$('layerInput').onchange = (e) => { const f = e.target.files[0]; if (f) addLayerFromFile(f); e.target.value = ''; };
+$('layerDel').onclick = () => { const L = activeLayerObj(); if (!L) return; S.layers.splice(S.activeLayer, 1); S.activeLayer = null; renderLayerUI(); renderAll(); toast('레이어 삭제'); };
+$('lx').oninput = (e) => { const L = activeLayerObj(); if (L) { L.x = parseInt(e.target.value) || 0; renderAll(); } };
+$('ly').oninput = (e) => { const L = activeLayerObj(); if (L) { L.y = parseInt(e.target.value) || 0; renderAll(); } };
+$('lscale').oninput = (e) => { const L = activeLayerObj(); if (L) { L.scale = clamp(parseFloat(e.target.value) || 100, 5, 500) / 100; renderAll(); } };
+$('lrot').oninput = (e) => { const L = activeLayerObj(); if (L) { L.rot = parseFloat(e.target.value) || 0; renderAll(); } };
 
 $('saveServer').onclick = saveToServer;
 $('downloadPng').onclick = downloadPng;
@@ -957,9 +1059,16 @@ $('showRaw').onchange = (e) => { S.showRaw = e.target.checked; renderSheet(); };
   window.addEventListener('mousemove', (e) => {
     if (!drag) return; const kk = k();
     const ddx = (e.clientX - lx) * kk, ddy = (e.clientY - ly) * kk;
-    for (const i of targetFrames()) { S.frames[i].dx = Math.round(S.frames[i].dx + ddx); S.frames[i].dy = Math.round(S.frames[i].dy + ddy); }
-    lx = e.clientX; ly = e.clientY;
-    $('dx').value = S.frames[S.sel].dx; $('dy').value = S.frames[S.sel].dy; renderPreview();
+    const L = activeLayerObj();
+    if (L && L.frame === S.sel) {
+      // active layer attached to this frame → drag moves the LAYER
+      L.x += ddx; L.y += ddy;
+      $('lx').value = Math.round(L.x); $('ly').value = Math.round(L.y);
+    } else {
+      for (const i of targetFrames()) { S.frames[i].dx = Math.round(S.frames[i].dx + ddx); S.frames[i].dy = Math.round(S.frames[i].dy + ddy); }
+      $('dx').value = S.frames[S.sel].dx; $('dy').value = S.frames[S.sel].dy;
+    }
+    lx = e.clientX; ly = e.clientY; renderPreview();
   });
   window.addEventListener('mouseup', () => { if (drag) { drag = false; renderAll(); } });
 })();
