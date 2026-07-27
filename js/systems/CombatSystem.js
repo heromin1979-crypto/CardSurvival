@@ -329,14 +329,17 @@ const CombatSystem = {
 
   selectTarget(targetId) {
     const combat = GameState.combat;
+    const active = combat?.combatants?.[combat?.activeCombatantId];
     const skill = combat?.skillsById?.[combat?.selectedSkillId];
     const target = combat?.combatants?.[targetId];
+    const rejectsCompanionAllySkillOnEnemy = active?.sourceType === 'companion'
+      && skill?.target?.side === 'ally'
+      && target?.side === 'enemy';
     if (
       combat?.phase !== 'select_target'
       || typeof targetId !== 'string'
       || !target
-      || !skill
-      || skill.target?.side !== target.side
+      || rejectsCompanionAllySkillOnEnemy
     ) {
       return false;
     }

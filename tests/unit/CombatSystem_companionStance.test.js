@@ -100,6 +100,38 @@ describe('동료 턴 수동 입력 계약', () => {
     expect(CombatSystem._getCompanionStance).toBeUndefined();
     expect(CombatSystem._planCompanionAction).toBeUndefined();
   });
+
+  it('legacy AI loop prepares the next companion and returns without acting', () => {
+    const combat = setupCompanionTurn({ stance: 'attack' });
+    combat.turnQueue = [
+      { type: 'player', combatantId: 'player', order: 0 },
+      {
+        type: 'companion',
+        id: 'npc_nurse',
+        combatantId: 'npc_nurse',
+        order: 1,
+      },
+      { type: 'enemy', enemyIdx: 0, combatantId: 'enemy:0', order: 2 },
+    ];
+    combat.activeIdx = 0;
+    combat.activeTurnIndex = 0;
+    combat.activeCombatantId = 'player';
+    GameState.npcs.states.npc_nurse.skillCooldowns = {
+      nurse_scalpel: 2,
+    };
+    CombatSystem.beginActiveTurn();
+    const enemyHpBefore = combat.enemies[0].currentHp;
+
+    CombatSystem._processAiTurns();
+
+    expect(combat.activeIdx).toBe(1);
+    expect(combat.activeCombatantId).toBe('npc_nurse');
+    expect(combat.phase).toBe('await_ally_input');
+    expect(GameState.npcs.states.npc_nurse.skillCooldowns.nurse_scalpel)
+      .toBe(1);
+    expect(combat.enemies[0].currentHp).toBe(enemyHpBefore);
+    expect(combat.actionSequence).toBe(0);
+  });
 });
 
 describe('동료 실제 스킬 쿨다운', () => {

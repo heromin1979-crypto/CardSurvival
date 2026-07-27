@@ -216,6 +216,32 @@ describe('manual party combat commands', () => {
     expect(combat.actionSequence).toBe(0);
   });
 
+  it.each([
+    [1, 'doctor_triage', 'enemy:0', 'player'],
+    [0, 'nurse_scalpel', 'player', 'npc_nurse'],
+  ])(
+    'other side mismatches keep legacy confirmation-time validation',
+    (activeIdx, skillId, targetId, actorId) => {
+      const combat = setupNurseTurn({ stance: 'attack' });
+      combat.activeIdx = activeIdx;
+      CombatSystem.beginActiveTurn();
+
+      expect(combat.activeCombatantId).toBe(actorId);
+      expect(CombatSystem.selectSkill(skillId)).toBe(true);
+      expect(CombatSystem.selectTarget(targetId)).toBe(true);
+
+      const result = CombatSystem.confirmAction();
+
+      expect(result).toMatchObject({
+        ok: false,
+        reason: 'invalid_target_side',
+      });
+      expect(combat.phase).toBe('await_ally_input');
+      expect(combat.activeCombatantId).toBe(actorId);
+      expect(combat.actionSequence).toBe(0);
+    },
+  );
+
   it('confirms a selected ally skill through the ranked command context', () => {
     GameState.player.hp = { current: 100, max: 100 };
     GameState.player.characterId = 'doctor';
