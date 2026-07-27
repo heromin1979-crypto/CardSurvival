@@ -418,7 +418,7 @@ export const CombatFxPlayer = {
     sprite.style.setProperty('--sprite-row-y', `${rowPercent.toFixed(4)}%`);
     sprite.style.setProperty('--sprite-duration', `${Math.round(duration)}ms`);
     sprite.style.animationName = `var(--anim-r${motion.row}, combatSpriteSheetFrames)`;
-    sprite.style.animationIterationCount = motion.loop === true ? 'infinite' : '1';
+    sprite.style.animationIterationCount = '1';
     setTimeout(() => {
       if (sprite.dataset.actionMotionToken !== token) return;
       delete sprite.dataset.actionMotionToken;

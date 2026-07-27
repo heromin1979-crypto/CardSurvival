@@ -48,6 +48,7 @@ const SUPPORTED_EFFECT_TYPES = new Set([
   'resource',
   'weaponLock',
   'noise',
+  'consumeSummons',
 ]);
 
 const SUPPORTED_PASSIVE_TYPES = new Set([
@@ -182,11 +183,16 @@ describe('final boss pattern roster', () => {
     expect(action).toBeDefined();
     if (!action) return;
     expect(action.effects).toContainEqual({
-      type: 'targetStatus',
-      id: 'healing_received_down',
-      name: '치료 방해',
-      duration: 2,
-      value: 0.5,
+      type: 'battlefieldStatus',
+      id: 'hunger_domination',
+      name: '굶주림의 지배',
+      remainingPlayerTurns: 2,
+      effect: {
+        healingReduction: 0.5,
+        guardedHealingReduction: 0.25,
+        preventedHealingShieldConversion: 0.5,
+        shieldDurationRounds: 2,
+      },
     });
     const effectIdentifiers = action.effects.flatMap(effect => [
       effect.type,
@@ -200,5 +206,42 @@ describe('final boss pattern roster', () => {
       .toBe('받는 치료와 회복 효과 50% 감소');
     expect(en['combat.status.healing_received_down.description'])
       .toBe('Healing and recovery received reduced by 50%');
+    expect(ko['combat.status.hunger_domination.description'])
+      .toContain('플레이어 행동 2회');
+    expect(ko['combat.status.hunger_domination.description'])
+      .toContain('차단량의 50%');
+    expect(en['combat.status.hunger_domination.description'])
+      .toContain('2 player actions');
+    expect(en['combat.status.hunger_domination.description'])
+      .toContain('50% of prevented healing');
+  });
+});
+
+describe('combat sprite manifest motion lifecycle', () => {
+  it('실제 lifecycle이 없는 loop:true action motion을 거부하고 manifest를 적용하지 않는다', () => {
+    const sheet = combatUiAssets.COMBAT_SPRITE_SHEETS.boss_horde_mother;
+    const previousMotions = sheet.motions;
+    const manifest = {
+      [sheet.src.split('/').pop()]: {
+        cols: 6,
+        rows: 4,
+        motions: {
+          mother_feast: {
+            row: 3,
+            durationMs: 500,
+            loop: true,
+          },
+        },
+      },
+    };
+
+    const errors = combatUiAssets.validateCombatSpriteManifest(manifest);
+    const result = combatUiAssets.applyCombatSpriteManifest(manifest);
+
+    expect(errors).toEqual([
+      '[combat sprite/boss_horde_mother_sheet.png/mother_feast] loop:true is unsupported; action motions must return to idle after durationMs',
+    ]);
+    expect(result).toEqual({ ok: false, errors });
+    expect(sheet.motions).toBe(previousMotions);
   });
 });

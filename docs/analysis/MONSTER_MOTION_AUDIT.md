@@ -56,7 +56,7 @@ PNG 파일을 검사한 결과다.
    유지하고 필살기를 다음 행동으로 예약하는 B안이다. 필살기 기회는 commit/예고 시점에
    한 번 소비되고 이후 발동 또는 취소로 종결된다.
 4. 준비된 action은 `executeEnemyAction()`에서 `damage`, `status`, `targetStatus`,
-   `move`, `forcedMove`, `selfHeal`, `selfStatus`, `summon`, `partyDamage`,
+   `move`, `forcedMove`, `selfHeal`, `selfStatus`, `summon`, `consumeSummons`, `partyDamage`,
    `battlefieldStatus`, `resource`, `weaponLock`, `noise`로 해석된다.
 5. `CombatFxPlayer`는 action의 `motionKey`, `impactFx`, `movement`, `camera`를 받아
    전용 시트가 있으면 해당 시트를 사용하고, 없으면 적 타입별 공용 시트로 fallback한다.

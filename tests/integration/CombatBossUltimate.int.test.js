@@ -129,8 +129,8 @@ describe('보스 필살기 임계점과 B안 직렬 실행', () => {
 
     damageBoss(combat, 1);
     expect(enemy._bossActionState).toMatchObject({
-      ultimatePending: true,
-      ultimateUsed: false,
+      ultimatePending: false,
+      ultimateUsed: true,
       committedAction: {
         category: 'ultimate',
         remainingTelegraphTurns: 1,
@@ -144,8 +144,8 @@ describe('보스 필살기 임계점과 B안 직렬 실행', () => {
     const reservedState = enemy._bossActionState;
     damageBoss(combat, 1);
     expect(enemy._bossActionState).toMatchObject({
-      ultimatePending: true,
-      ultimateUsed: false,
+      ultimatePending: false,
+      ultimateUsed: true,
       committedAction: {
         category: 'ultimate',
       },
@@ -155,8 +155,8 @@ describe('보스 필살기 임계점과 B안 직렬 실행', () => {
     enemy.currentHp = 40;
     combat.combatants['enemy:0'].hp = 40;
     expect(enemy._bossActionState).toMatchObject({
-      ultimatePending: true,
-      ultimateUsed: false,
+      ultimatePending: false,
+      ultimateUsed: true,
     });
     expect(enemy._nextIntent).toMatchObject({
       category: 'ultimate',

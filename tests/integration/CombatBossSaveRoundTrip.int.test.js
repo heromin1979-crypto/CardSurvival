@@ -138,4 +138,118 @@ describe('보스 전투 상태 저장 왕복', () => {
       remainingTelegraphTurns: 1,
     });
   });
+
+  it.each([
+    [29, true],
+    [31, false],
+  ])('구버전 저장에 bossActionState가 없을 때 HP %i%%에서 pending=%s로 마이그레이션한다', (
+    hp,
+    expectedPending,
+  ) => {
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+    const enemy = CombatSystem._instantiateEnemyFromDefinition(bossDefinition());
+    CombatSystem._setupCombat({
+      enemies: [enemy],
+      dangerLevel: 1,
+      nodeId: 'boss-old-save-migration',
+    });
+    const liveBoss = GameState.combat.enemies[0];
+    liveBoss.currentHp = hp;
+    GameState.combat.combatants['enemy:0'].hp = hp;
+    delete liveBoss._bossActionState;
+    const oldSave = GameState.serialize();
+
+    GameState.deserialize(oldSave);
+    const restored = GameState.combat.enemies[0];
+    CombatSystem._ensureBossActionState(restored);
+
+    expect(restored._bossActionState).toMatchObject({
+      ultimatePending: expectedPending,
+      ultimateUsed: false,
+    });
+  });
+
+  it('구버전 필살기 legacy telegraph는 필살기 소비 증거로 마이그레이션한다', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+    const enemy = CombatSystem._instantiateEnemyFromDefinition(bossDefinition());
+    CombatSystem._setupCombat({
+      enemies: [enemy],
+      dangerLevel: 1,
+      nodeId: 'boss-old-save-legacy-telegraph',
+    });
+    const liveBoss = GameState.combat.enemies[0];
+    liveBoss.currentHp = 29;
+    liveBoss._telegraph = {
+      skillId: 'save_ultimate',
+      remaining: 1,
+    };
+    delete liveBoss._bossActionState;
+
+    const oldSave = GameState.serialize();
+    GameState.deserialize(oldSave);
+    const restored = GameState.combat.enemies[0];
+    CombatSystem._ensureBossActionState(restored);
+
+    expect(restored._bossActionState).toMatchObject({
+      ultimatePending: false,
+      ultimateUsed: true,
+    });
+  });
+
+  it.each([
+    ['특수기 예고', {
+      ultimatePending: false,
+      ultimateUsed: false,
+      committedAction: {
+        actionId: 'save_special',
+        category: 'special',
+        state: 'telegraphing',
+        targetIds: ['player'],
+        remainingTelegraphTurns: 1,
+        hitCount: 1,
+        motionKey: 'save_special',
+      },
+    }],
+    ['필살기 예고', {
+      ultimatePending: false,
+      ultimateUsed: true,
+      committedAction: {
+        actionId: 'save_ultimate',
+        category: 'ultimate',
+        state: 'telegraphing',
+        targetIds: ['player'],
+        remainingTelegraphTurns: 1,
+        hitCount: 1,
+        motionKey: 'save_ultimate',
+        telegraphDamageTaken: 40,
+      },
+    }],
+    ['필살기 취소 후', {
+      ultimatePending: false,
+      ultimateUsed: true,
+      committedAction: null,
+    }],
+  ])('%s 상태를 저장·복원해도 필살기 invariant를 유지한다', (_label, partialState) => {
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+    const enemy = CombatSystem._instantiateEnemyFromDefinition(bossDefinition());
+    CombatSystem._setupCombat({
+      enemies: [enemy],
+      dangerLevel: 1,
+      nodeId: 'boss-save-invariant',
+    });
+    const liveBoss = GameState.combat.enemies[0];
+    liveBoss._bossActionState = {
+      lastBasicActionId: 'save_basic_a',
+      ...partialState,
+    };
+
+    GameState.deserialize(GameState.serialize());
+    const restored = GameState.combat.enemies[0];
+    CombatSystem._ensureBossActionState(restored);
+
+    expect(restored._bossActionState).toEqual({
+      lastBasicActionId: 'save_basic_a',
+      ...partialState,
+    });
+  });
 });

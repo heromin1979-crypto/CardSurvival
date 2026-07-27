@@ -325,17 +325,17 @@ describe('production boss pattern execution', () => {
 
     CombatSystem._runSingleEnemyTurn(0);
 
-    expect(combat.playerStatus).toContainEqual(expect.objectContaining({
-      id: 'healing_received_down',
-      duration: 2,
-      value: 0.5,
+    expect(combat.battlefieldStatuses).toContainEqual(expect.objectContaining({
+      id: 'hunger_domination',
+      remainingPlayerTurns: 2,
+      effect: expect.objectContaining({
+        healingReduction: 0.5,
+      }),
     }));
-    expect(GameState.npcs.states.npc_guard.statusEffects)
-      .toContainEqual(expect.objectContaining({
-        id: 'healing_received_down',
-        duration: 2,
-        value: 0.5,
-      }));
+    expect(combat.playerStatus.map(status => status.id))
+      .not.toContain('healing_received_down');
+    expect(GameState.npcs.states.npc_guard.statusEffects.map(status => status.id))
+      .not.toContain('healing_received_down');
 
   });
 
@@ -369,12 +369,11 @@ describe('production boss pattern execution', () => {
         id: 'test_dot',
         duration: 1,
       }));
-      expect(statuses).toContainEqual(expect.objectContaining({
-        id: 'healing_received_down',
-        duration: 1,
-        value: 0.5,
-      }));
     }
+    expect(combat.battlefieldStatuses).toContainEqual(expect.objectContaining({
+      id: 'hunger_domination',
+      remainingPlayerTurns: 2,
+    }));
 
     CombatSystem._onRoundStart(combat);
 
@@ -387,6 +386,10 @@ describe('production boss pattern execution', () => {
       expect(ids).not.toContain('test_dot');
       expect(ids).not.toContain('healing_received_down');
     }
+    expect(combat.battlefieldStatuses).toContainEqual(expect.objectContaining({
+      id: 'hunger_domination',
+      remainingPlayerTurns: 2,
+    }));
   });
 
   it('실제 useItem action은 치료 감소를 적용하고 아이템·턴·비HP 효과를 그대로 소비한다', () => {

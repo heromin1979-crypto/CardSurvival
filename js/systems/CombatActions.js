@@ -93,8 +93,15 @@ function _applyAoE(alive, { baseDmg, statusId, statusName, duration, dmgPerRound
   const [dMin, dMax] = baseDmg;
 
   for (const enemy of alive) {
-    const dmg = dMin + Math.floor(Math.random() * (dMax - dMin + 1));
-    enemy.currentHp = Math.max(0, enemy.currentHp - dmg);
+    const rolledDamage = dMin + Math.floor(Math.random() * (dMax - dMin + 1));
+    let dmg = rolledDamage;
+    if (typeof combatSystemRef?._resolveDirectEnemyDamage === 'function') {
+      dmg = combatSystemRef._resolveDirectEnemyDamage(enemy, rolledDamage).damage;
+    } else {
+      const hpBefore = enemy.currentHp;
+      enemy.currentHp = Math.max(0, enemy.currentHp - rolledDamage);
+      dmg = hpBefore - enemy.currentHp;
+    }
     combatSystemRef?._fx?.({
       kind:      'playerAttack',
       fx:        fxType ?? 'blast',
@@ -104,15 +111,32 @@ function _applyAoE(alive, { baseDmg, statusId, statusName, duration, dmgPerRound
     });
 
     // 상태이상 부여 (per-enemy _statusEffects)
-    if (!enemy._statusEffects) enemy._statusEffects = [];
-    const existing = enemy._statusEffects.find(s => s.id === statusId);
-    if (existing) {
-      existing.duration = Math.max(existing.duration, duration);
-    } else {
-      enemy._statusEffects.push({
-        id: statusId, name: statusName, duration,
+    if (typeof combatSystemRef?._applyEnemyStatusInflict === 'function') {
+      combatSystemRef._applyEnemyStatusInflict(enemy, {
+        id: statusId,
+        name: statusName,
+        sourceEnemyId: 'player',
+        remainingRounds: duration,
         effect: { hpLossPerRound: dmgPerRound },
-      });
+      }, gs.combat.enemies.indexOf(enemy));
+    } else {
+      if (!enemy._statusEffects) enemy._statusEffects = [];
+      const existing = enemy._statusEffects.find(status => status.id === statusId);
+      if (existing) {
+        existing.duration = Math.max(existing.duration ?? 0, duration);
+        existing.effect = {
+          ...(existing.effect ?? {}),
+          hpLossPerRound: Math.max(
+            existing.effect?.hpLossPerRound ?? 0,
+            dmgPerRound,
+          ),
+        };
+      } else {
+        enemy._statusEffects.push({
+          id: statusId, name: statusName, duration,
+          effect: { hpLossPerRound: dmgPerRound },
+        });
+      }
     }
     msgs.push(I18n.t('combatSys.throwAoeHit', {
       label,
@@ -162,8 +186,15 @@ export function applyMultiTarget(
   const extras = alive.filter((_, i) => gs.combat.enemies.indexOf(_) !== targetIndex).slice(0, count - 1);
 
   for (const extra of extras) {
-    const splash = Math.max(1, Math.floor(primaryDamage * 0.5));
-    extra.currentHp = Math.max(0, extra.currentHp - splash);
+    const rolledSplash = Math.max(1, Math.floor(primaryDamage * 0.5));
+    let splash = rolledSplash;
+    if (typeof combatSystemRef?._resolveDirectEnemyDamage === 'function') {
+      splash = combatSystemRef._resolveDirectEnemyDamage(extra, rolledSplash).damage;
+    } else {
+      const hpBefore = extra.currentHp;
+      extra.currentHp = Math.max(0, extra.currentHp - rolledSplash);
+      splash = hpBefore - extra.currentHp;
+    }
     combatSystemRef._fx?.({
       kind:      'playerAttack',
       fx:        isRanged ? 'shot' : 'slash',
@@ -184,6 +215,10 @@ export function applyMultiTarget(
 export function tickEnemyStatusEffects(enemy, logFn) {
   if (!enemy._statusEffects?.length) return;
   enemy._statusEffects = enemy._statusEffects.filter(s => {
+    if (s._skipNextRoundTick === true) {
+      delete s._skipNextRoundTick;
+      return true;
+    }
     if (s.effect?.hpLossPerRound) {
       enemy.currentHp = Math.max(0, enemy.currentHp - s.effect.hpLossPerRound);
       logFn(I18n.t('combatSys.statusTickEnemy', {
@@ -192,7 +227,15 @@ export function tickEnemyStatusEffects(enemy, logFn) {
         dmg:    s.effect.hpLossPerRound,
       }));
     }
-    s.duration--;
-    return s.duration > 0;
+    if (Number.isFinite(s.remainingRounds)) {
+      s.remainingRounds--;
+      if (Number.isFinite(s.duration)) s.duration = s.remainingRounds;
+      return s.remainingRounds > 0;
+    }
+    if (Number.isFinite(s.duration)) {
+      s.duration--;
+      return s.duration > 0;
+    }
+    return true;
   });
 }

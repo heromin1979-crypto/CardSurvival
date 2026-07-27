@@ -12,7 +12,12 @@ import BodySystem     from '../BodySystem.js';
 import { NPC_ITEMS }  from '../../data/npcs.js';
 import BALANCE        from '../../data/gameBalance.js';
 import GameData       from '../../data/GameData.js';
-import { applyDamage, consumeToken, healCombatant } from './CombatStatusSystem.js';
+import {
+  applyDamage,
+  consumeToken,
+  enemyStatusModifiers,
+  healCombatant,
+} from './CombatStatusSystem.js';
 import { modifyIncomingDamage, modifyOutgoingDamage } from './CombatResolution.js';
 import { buildEnemyProfile } from './EnemyCombatAdapter.js';
 import { executeEnemyAction } from './EnemyActionExecutor.js';
@@ -42,7 +47,10 @@ export const CombatAiTurns = {
 
   _ensureBossActionState(enemy) {
     if (!this._isBossPatternEnemy(enemy)) return null;
-    enemy._bossActionState = normalizeBossActionState(enemy._bossActionState);
+    enemy._bossActionState = normalizeBossActionState(
+      enemy._bossActionState,
+      { enemy },
+    );
     return enemy._bossActionState;
   },
 
@@ -923,6 +931,10 @@ export const CombatAiTurns = {
       const npcId = targetId === 'player' ? null : targetId;
       const target = combat?.combatants?.[targetId] ?? null;
       let damage = modifyOutgoingDamage(amount, this._rankCombatantForEnemy(enemy));
+      const outgoingIncrease = enemyStatusModifiers(enemy).outgoingDamageIncrease;
+      if (outgoingIncrease > 0) {
+        damage = Math.floor(damage * (1 + outgoingIncrease));
+      }
 
       const threshold = Number.isFinite(metadata.executeThreshold)
         ? Math.max(0, Math.min(1, metadata.executeThreshold))
@@ -998,7 +1010,12 @@ export const CombatAiTurns = {
         },
         addSelfStatus: (status) => {
           if (!status?.id) return false;
-          this._applyEnemyStatusInflict(enemy, status, enemyIdx);
+          this._applyEnemyStatusInflict(enemy, {
+            ...status,
+            sourceEnemyId: status.sourceEnemyId ?? enemy.id,
+            remainingRounds: status.remainingRounds ?? status.duration ?? 1,
+            _skipNextRoundTick: true,
+          }, enemyIdx);
           const rankedEnemy = this._rankCombatantForEnemy(enemy);
           if (rankedEnemy) rankedEnemy.statusEffects = enemy._statusEffects ?? [];
           return true;
@@ -1013,6 +1030,14 @@ export const CombatAiTurns = {
           }
           return spawned;
         },
+        consumeSummons: enemyId => this._consumeSummonedEnemies(enemy, enemyId),
+        countLivingEnemies: enemyId => (
+          (combat?.enemies ?? []).filter(candidate => (
+            candidate?.id === enemyId
+            && candidate?._consumed !== true
+            && (candidate?.currentHp ?? 0) > 0
+          )).length
+        ),
         damageParty: (amount, metadata = {}) => (
           this._getEligibleTargets(combat, gs).map(target => ({
             targetId: target.id,
@@ -1020,22 +1045,13 @@ export const CombatAiTurns = {
           }))
         ),
         setBattlefieldStatus: (status) => {
-          if (!status?.id) return false;
-          if (!Array.isArray(combat.battlefieldStatuses)) {
-            combat.battlefieldStatuses = [];
-          }
-          const existing = combat.battlefieldStatuses.find(entry => entry.id === status.id);
-          if (existing) {
-            existing.duration = Math.max(existing.duration ?? 0, status.duration ?? 1);
-            existing.effect = { ...(existing.effect ?? {}), ...(status.effect ?? {}) };
-            if (Number.isFinite(status.value)) existing.value = status.value;
-          } else {
-            combat.battlefieldStatuses.push({
-              ...status,
-              effect: { ...(status.effect ?? {}) },
-            });
-          }
-          return true;
+          return Boolean(this._addBattlefieldStatus({
+            ...status,
+            sourceEnemyId: status.sourceEnemyId ?? enemy.id,
+            ...(Number.isFinite(status.remainingPlayerTurns)
+              ? { remainingPlayerTurns: status.remainingPlayerTurns }
+              : { remainingRounds: status.remainingRounds ?? status.duration ?? 1 }),
+          }));
         },
         modifyResource: (targetId, resource, value) => {
           if (!Number.isFinite(value) || typeof resource !== 'string') return false;
@@ -1053,7 +1069,8 @@ export const CombatAiTurns = {
         lockWeapon: (targetId, tag, duration) => this._addAllyStatus(targetId, {
           id: `weapon_lock_${tag}`,
           name: tag,
-          duration: duration ?? 1,
+          sourceEnemyId: enemy.id,
+          remainingPlayerTurns: duration ?? 1,
           effect: { weaponLock: tag },
         }),
         addNoise: amount => NoiseSystem.addNoise(amount),
@@ -1122,14 +1139,25 @@ export const CombatAiTurns = {
     const statuses = isPlayer ? combat.playerStatus : combatant.statusEffects;
     const existing = statuses.find(s => s.id === status.id);
     if (existing) {
-      existing.duration = Math.max(existing.duration ?? 0, status.duration ?? 1);
+      if (Number.isFinite(status.remainingPlayerTurns)) {
+        existing.remainingPlayerTurns = Math.max(
+          existing.remainingPlayerTurns ?? 0,
+          status.remainingPlayerTurns,
+        );
+      } else {
+        existing.duration = Math.max(existing.duration ?? 0, status.duration ?? 1);
+      }
       existing.effect = { ...(existing.effect ?? {}), ...(status.effect ?? {}) };
+      if (status.sourceEnemyId) existing.sourceEnemyId = status.sourceEnemyId;
       if (Number.isFinite(status.value)) existing.value = status.value;
     } else {
       statuses.push({
         id: status.id,
         name: status.name ?? status.id,
-        duration: status.duration ?? 1,
+        ...(Number.isFinite(status.remainingPlayerTurns)
+          ? { remainingPlayerTurns: Math.max(1, Math.floor(status.remainingPlayerTurns)) }
+          : { duration: status.duration ?? 1 }),
+        ...(status.sourceEnemyId ? { sourceEnemyId: status.sourceEnemyId } : {}),
         effect: { ...(status.effect ?? {}) },
         ...(Number.isFinite(status.value) ? { value: status.value } : {}),
       });
@@ -1190,6 +1218,7 @@ export const CombatAiTurns = {
     for (let i = 0; i < count; i++) {
       const add = this._instantiateEnemyFromDefinition(def);
       if (!add) continue;
+      if (sourceEnemy?.id) add._summonedByEnemyId = sourceEnemy.id;
       if (!this._spawnEnemyMidCombat(add, row)) break;
       spawned++;
     }
@@ -1201,6 +1230,48 @@ export const CombatAiTurns = {
       });
     }
     return spawned;
+  },
+
+  _consumeSummonedEnemies(sourceEnemy, enemyId) {
+    const combat = GameState.combat;
+    if (!combat || !sourceEnemy?.id || typeof enemyId !== 'string') return 0;
+    let consumed = 0;
+
+    for (const [enemyIndex, candidate] of (combat.enemies ?? []).entries()) {
+      if (
+        candidate?.id !== enemyId
+        || candidate?._summonedByEnemyId !== sourceEnemy.id
+        || candidate?._consumed === true
+        || (candidate?.currentHp ?? 0) <= 0
+      ) {
+        continue;
+      }
+
+      consumed++;
+      candidate.currentHp = 0;
+      candidate._consumed = true;
+      candidate._killProcessed = true;
+      const combatantId = `enemy:${enemyIndex}`;
+      const ranked = combat.combatants?.[combatantId];
+      if (ranked) {
+        ranked.hp = 0;
+        ranked.dead = true;
+      }
+      for (const side of ['enemy', 'ally']) {
+        if (!Array.isArray(combat.formations?.[side])) continue;
+        combat.formations[side] = combat.formations[side].map(id => (
+          id === combatantId ? null : id
+        ));
+      }
+      if (Array.isArray(combat.turnQueue)) {
+        combat.turnQueue = combat.turnQueue.filter(entry => (
+          entry?.enemyIdx !== enemyIndex && entry?.combatantId !== combatantId
+        ));
+      }
+    }
+
+    if (consumed > 0) this._compactRankedEnemyFormation();
+    return consumed;
   },
 
   // 전투 중 적 증원의 단일 진입점 — 레거시 enemies/turnQueue와 랭크 combatants/formations를

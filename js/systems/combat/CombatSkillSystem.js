@@ -454,6 +454,17 @@ export function validateSkillCommand(context, command) {
   if (!skill) {
     return commandFailure('invalid_skill');
   }
+  if (typeof ctx.validateEligibility === 'function') {
+    let eligibility;
+    try {
+      eligibility = ctx.validateEligibility(actor, skill);
+    } catch {
+      return commandFailure('invalid_context');
+    }
+    if (!eligibility?.ok) {
+      return commandFailure(eligibility?.reason ?? 'invalid_skill');
+    }
+  }
   if (skill?.target?.selfOnly === true && cmd.targetId !== cmd.actorId) {
     return commandFailure('invalid_target');
   }

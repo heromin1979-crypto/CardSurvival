@@ -213,6 +213,7 @@ export const ko = {
   'combat.reloadPackCost': '20발 탄약 팩 1개 소비',
   'combat.loadedAmmo':     '탄창 {ammo}/{capacity}',
   'combat.status.healing_received_down.description': '받는 치료와 회복 효과 50% 감소',
+  'combat.status.hunger_domination.description': '플레이어 행동 2회 동안 받는 치료 50% 감소(방어 중 25%), 차단량의 50%는 식량 군벌의 2라운드 보호막으로 전환',
 
   // ── Menu ────────────────────────────────────────────────────
   'menu.newGame':       '새 게임',
@@ -1178,6 +1179,7 @@ export const en = {
   'combat.reloadPackCost': 'Consumes 1 x 20-round pack',
   'combat.loadedAmmo':     'Ammo {ammo}/{capacity}',
   'combat.status.healing_received_down.description': 'Healing and recovery received reduced by 50%',
+  'combat.status.hunger_domination.description': 'Healing received is reduced by 50% for 2 player actions (25% while guarding); 50% of prevented healing becomes the Food Warlord’s 2-round shield',
 
   // ── Menu ────────────────────────────────────────────────────
   'menu.newGame':       'New Game',

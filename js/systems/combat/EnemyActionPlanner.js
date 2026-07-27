@@ -206,6 +206,9 @@ export function commitEnemyActionDefinition({
     remainingTelegraphTurns,
     hitCount: hitCount(definition, enemy),
     motionKey: definition?.motionKey ?? actionId,
+    ...(definition?.telegraphDamageThreshold
+      ? { telegraphDamageTaken: 0 }
+      : {}),
   }, { targetPolicy, targetCount });
 
   return { committedAction };

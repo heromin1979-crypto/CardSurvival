@@ -37,7 +37,12 @@ const bossFixture = {
         motionKey: 'fixture_guard',
         impactFx: 'buff',
         movement: 'none',
-        effects: [{ type: 'selfStatus', id: 'defense_up', duration: 2, value: 0.25 }],
+        effects: [{
+          type: 'selfStatus',
+          id: 'defense_up',
+          duration: 2,
+          effect: { incomingDamageReduction: 0.25 },
+        }],
       },
       ultimate: {
         id: 'fixture_end',
@@ -133,6 +138,94 @@ describe('validateBossPatternSchema', () => {
     expectSchemaError(fixtureWith((pattern) => {
       pattern.ultimate.damage = 14;
     }));
+  });
+
+  it('requires typed runtime payloads instead of a bare selfStatus value', () => {
+    const errors = validateBossPatternSchema(fixtureWith((pattern) => {
+      pattern.specialSkill.effects = [{
+        type: 'selfStatus',
+        id: 'legacy_defense',
+        duration: 2,
+        value: 0.25,
+      }];
+    }));
+
+    expect(errors).toContainEqual(expect.stringContaining(
+      'specialSkill.effects[0].effect',
+    ));
+  });
+
+  it('accepts declared threshold, dynamic hit-count, and summon-consumption contracts', () => {
+    const fixture = fixtureWith((pattern) => {
+      pattern.ultimate.telegraphDamageThreshold = {
+        amount: 100,
+        resolutionMultiplier: 0.5,
+        statusMagnitudeKeys: ['radiation'],
+      };
+      pattern.ultimate.hitCountRule = {
+        type: 'livingMinions',
+        enemyId: 'fixture_minion',
+        base: 1,
+        perMinion: 1,
+        min: 1,
+        max: 3,
+      };
+      pattern.ultimate.effects.push({
+        type: 'consumeSummons',
+        enemyId: 'fixture_minion',
+        healPerSummon: 20,
+        strengthPerSummon: 0.15,
+        strengthStatus: {
+          id: 'devoured_strength',
+          name: '포식 강화',
+          duration: 2,
+        },
+      });
+    });
+
+    expect(validateBossPatternSchema(fixture)).toEqual([]);
+  });
+
+  it.each([
+    ['zero threshold', pattern => {
+      pattern.ultimate.telegraphDamageThreshold = {
+        amount: 0,
+        resolutionMultiplier: 0.5,
+        statusMagnitudeKeys: ['radiation'],
+      };
+    }],
+    ['reversed dynamic hit bounds', pattern => {
+      pattern.ultimate.hitCountRule = {
+        type: 'livingMinions',
+        enemyId: 'fixture_minion',
+        base: 1,
+        perMinion: 1,
+        min: 3,
+        max: 1,
+      };
+    }],
+    ['untyped battlefield payload', pattern => {
+      pattern.specialSkill.effects = [{
+        type: 'battlefieldStatus',
+        id: 'fixture_field',
+        duration: 2,
+        effect: {},
+      }];
+    }],
+    ['missing summon-consumption source', pattern => {
+      pattern.ultimate.effects = [{
+        type: 'consumeSummons',
+        healPerSummon: 20,
+        strengthPerSummon: 0.15,
+        strengthStatus: {
+          id: 'devoured_strength',
+          name: '포식 강화',
+          duration: 2,
+        },
+      }];
+    }],
+  ])('rejects invalid typed contract: %s', (_caseName, mutator) => {
+    expectSchemaError(fixtureWith(mutator));
   });
 
   it('rejects basic attacks with the same combat identity', () => {

@@ -106,7 +106,8 @@ committedAction: {
   state: 'telegraphing',
   motionKey: 'alpha_hunt',
   targetId: 'player',
-  remainingTelegraphTurns: 1
+  remainingTelegraphTurns: 1,
+  telegraphDamageTaken: 0
 }
 ```
 
@@ -205,8 +206,13 @@ delivery: 'attack' | 'self' | 'summon' | 'battlefield'
 - `guaranteedFirstStrike`: 전투 최초 행동 예약
 - `resistanceType`: 지정 주기 또는 최근 피해 속성에 따른 저항 전환
 - `counterAttack`: 정해진 횟수 제한을 둔 반격
-- `weaponFreeze`: 지정 턴 동안 해당 무기 사용 제한
-- `healingReceivedMultiplier`: 모든 아군 회복 경로에 적용되는 받는 치료 배율
+- `selfStatus.effect`: `defenseIncrease`, `evasionIncrease`, `invulnerable`,
+  `incomingDamageReduction`, `outgoingDamageIncrease`
+- `battlefieldStatus.effect`: 라운드 단위 피해·방사선·상태 또는
+  플레이어 행동 단위 `healingReduction`
+- `weaponLock`: 지정된 `tag`의 장비 기술을 `remainingPlayerTurns` 동안 제한
+- `consumeSummons`: 선언한 소환체만 소비해 수에 비례한 회복·강화를 적용
+- `hitCountRule`: 발동 시점의 살아 있는 선언 부하 수로 타격 수를 계산
 
 즉사, 영구 무적, 영구 장비 잠금은 사용하지 않는다. 상태 효과는 UI에 남은 턴과 대응 방법을 표시한다.
 
@@ -244,7 +250,8 @@ delivery: 'attack' | 'self' | 'summon' | 'battlefield'
 
 ### 방사선 거인 — 임계 질량
 
-예고 중 지정 피해량을 주면 노심이 불안정해져 발동 피해와 방사선이 절반으로 감소한다. 실패하면 전체 피해와 방사선 축적이 발생한다.
+예고 중 누적 100 피해를 주면 노심이 불안정해져 발동 피해와 방사선이
+절반으로 감소한다. 실패하면 전체 피해와 방사선 축적이 발생한다.
 
 ### 산성 여왕 — 완전 부식
 
@@ -252,7 +259,8 @@ delivery: 'attack' | 'self' | 'summon' | 'battlefield'
 
 ### 무리의 어미 — 어미의 포식
 
-살아 있는 소환수를 흡수해 소환수마다 HP를 회복하고 다음 강타를 강화한다. 필살기 전에 소환수를 제거하면 위력이 감소한다.
+자신이 소환한 살아 있는 좀비만 흡수한다. 한 마리마다 HP 20을 회복하고
+2라운드 동안 주는 피해가 15% 증가하며, 소비할 좀비가 없으면 두 효과 모두 0이다.
 
 ### 얼어붙은 거인 — 빙결 감옥
 
@@ -260,7 +268,7 @@ delivery: 'attack' | 'self' | 'summon' | 'battlefield'
 
 ### 약탈자 두목 — 처형 명령
 
-살아 있는 약탈자들이 표시된 대상을 순서대로 사격한다. 남은 부하 수가 타격 횟수가 된다.
+기본 1회에 살아 있는 약탈자 한 명당 1회를 더해 최소 1회, 최대 3회 사격한다.
 
 ### 유령 저격수 — 헤드샷
 
@@ -284,7 +292,7 @@ delivery: 'attack' | 'self' | 'summon' | 'battlefield'
 
 ### 야생견 알파 — 알파의 사냥
 
-알파가 먼저 물고 살아 있는 야생견이 연계 공격한다. 무리를 먼저 줄이면 연타 횟수가 감소한다.
+기본 1회에 살아 있는 광견 한 마리당 1회를 더해 최소 1회, 최대 4회 공격한다.
 
 ### 미친 재벌 — 현상금 선고
 
@@ -320,7 +328,8 @@ delivery: 'attack' | 'self' | 'summon' | 'battlefield'
 
 ### 식량 군벌 — 굶주림의 지배
 
-아군 전체가 받는 치료를 2턴 동안 50% 감소시킨다. 감소로 차단된 회복량 일부는 식량 군벌의 임시 보호막으로 전환한다.
+아군 전체가 받는 치료를 2턴 동안 50% 감소시킨다. 감소로 차단된 회복량의
+50%는 식량 군벌의 2라운드 임시 보호막으로 전환한다.
 
 - 방어 상태로 받으면 치료 감소율은 25%로 완화한다.
 - 의료 아이템, 플레이어 기술, 동료 기술, 자동 치료에 동일하게 적용한다.
@@ -383,7 +392,8 @@ delivery: 'attack' | 'self' | 'summon' | 'battlefield'
 - `durationMs`
 - `impactFrame`
 - `movement`: `none`, `lunge`, `advance`, `retreat`
-- `loop`
+- `loop:true`는 지원하지 않는다. action motion은 `durationMs` 뒤 idle로 복귀하며
+  매니페스트 validator가 무한 반복 선언을 거부한다.
 - `camera`
 
 `CombatFxPlayer`는 `fx` 문자열로 모션을 추측하지 않고 `committedAction.motionKey`를 사용한다. 레거시 몬스터는 기존 4행 매핑으로 폴백한다.

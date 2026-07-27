@@ -42,8 +42,31 @@ export const COMBAT_SPRITE_SHEETS = {
   food_warlord: spriteSheet('/assets/images/combat/spritesheets/enemies/food_warlord_sheet.png'),
 };
 
+export function validateCombatSpriteManifest(manifest) {
+  const errors = [];
+  if (!manifest || typeof manifest !== 'object' || Array.isArray(manifest)) {
+    return ['[combat sprite] manifest must be an object'];
+  }
+
+  for (const [fileName, meta] of Object.entries(manifest)) {
+    if (!meta || typeof meta !== 'object' || Array.isArray(meta)) continue;
+    if (!meta.motions || typeof meta.motions !== 'object' || Array.isArray(meta.motions)) {
+      continue;
+    }
+    for (const [motionKey, motion] of Object.entries(meta.motions)) {
+      if (motion?.loop === true) {
+        errors.push(
+          `[combat sprite/${fileName}/${motionKey}] loop:true is unsupported; action motions must return to idle after durationMs`,
+        );
+      }
+    }
+  }
+  return errors;
+}
+
 export function applyCombatSpriteManifest(manifest) {
-  if (!manifest || typeof manifest !== 'object') return;
+  const errors = validateCombatSpriteManifest(manifest);
+  if (errors.length > 0) return { ok: false, errors };
 
   for (const key in COMBAT_SPRITE_SHEETS) {
     const sheet = COMBAT_SPRITE_SHEETS[key];
@@ -59,6 +82,7 @@ export function applyCombatSpriteManifest(manifest) {
       sheet.motions = { ...meta.motions };
     }
   }
+  return { ok: true, errors: [] };
 }
 
 // Per-sheet frame counts (cols) live in a manifest the sprite-anim-editor tool writes.
@@ -72,8 +96,8 @@ async function _loadSpriteManifest() {
     const res = await fetch('/assets/images/combat/spritesheets/manifest.json', { cache: 'no-store' });
     if (!res.ok) return;
     const manifest = await res.json();
-    applyCombatSpriteManifest(manifest);
-    _injectSpriteKeyframes();
+    const applied = applyCombatSpriteManifest(manifest);
+    if (applied.ok) _injectSpriteKeyframes();
   } catch (e) { /* manifest optional → keep 6×4 defaults */ }
 }
 

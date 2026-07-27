@@ -12,11 +12,34 @@ export function createBossActionState() {
   };
 }
 
-export function normalizeBossActionState(value) {
+export function normalizeBossActionState(value, { enemy = null } = {}) {
+  const committedAction = value?.committedAction ?? null;
+  let ultimatePending = value?.ultimatePending === true;
+  let ultimateUsed = value?.ultimateUsed === true;
+
+  if (committedAction?.category === 'ultimate') {
+    ultimatePending = false;
+    ultimateUsed = true;
+  } else if (ultimateUsed) {
+    ultimatePending = false;
+  } else if (value == null && enemy?.bossPattern?.ultimate) {
+    const hpRatio = hpRatioFor(enemy);
+    const threshold = enemy.bossPattern.ultimate.hpThreshold ?? 0.3;
+    if (hpRatio !== null && hpRatio <= threshold && hpRatio > 0) {
+      const ultimateId = enemy.bossPattern.ultimate.id
+        ?? enemy.bossPattern.ultimate.actionId;
+      if (enemy._telegraph?.skillId === ultimateId) {
+        ultimateUsed = true;
+      } else {
+        ultimatePending = true;
+      }
+    }
+  }
+
   return {
-    committedAction: value?.committedAction ?? null,
-    ultimatePending: value?.ultimatePending === true,
-    ultimateUsed: value?.ultimateUsed === true,
+    committedAction,
+    ultimatePending,
+    ultimateUsed,
     lastBasicActionId: typeof value?.lastBasicActionId === 'string'
       ? value.lastBasicActionId
       : null,

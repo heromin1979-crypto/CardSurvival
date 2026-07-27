@@ -37,7 +37,17 @@ import {
   getRank,
   validateSkillPosition,
 } from './combat/FormationSystem.js';
-import { consumeToken, healCombatant, tickStatusEffects } from './combat/CombatStatusSystem.js';
+import {
+  addEnemyDamageShield,
+  addOrRefreshBattlefieldStatus,
+  addOrRefreshEnemyStatus,
+  consumeToken,
+  consumeEnemyDamageShield,
+  enemyStatusModifiers,
+  healCombatant,
+  tickPlayerActionStatuses,
+  tickStatusEffects,
+} from './combat/CombatStatusSystem.js';
 import { buildInitiativeQueue } from './combat/InitiativeSystem.js';
 import { resolveRelationshipReaction } from './combat/RelationshipCombatSystem.js';
 import { buildEnemyProfile } from './combat/EnemyCombatAdapter.js';
@@ -77,7 +87,7 @@ const CombatSystem = {
             playerAction: null, log: ['⚠️ 전투 초기화 오류: ' + (err?.message ?? err)],
             outcome: null, rewards: [], rewardItems: [], nodeId: data?.nodeId ?? null,
             dangerLevel: data?.dangerLevel ?? 2, round: 0, xpGained: 0,
-            lastHit: null, playerStatus: [], enemyStatus: [], fxQueue: [],
+            lastHit: null, playerStatus: [], enemyStatus: [], battlefieldStatuses: [], fxQueue: [],
             playerRank: 'front',
             _encounterData: data ?? {}, _isNew: true, _ambushFailed: false,
           };
@@ -127,6 +137,7 @@ const CombatSystem = {
       lastHit:      null,
       playerStatus: [],
       enemyStatus:  [],
+      battlefieldStatuses: [],
       playerRank:   data.playerRank ?? 'front',
       fxQueue:      [],   // 연출 이벤트 큐 — CombatUI가 렌더 후 순차 재생
       // Phase 1: 턴 큐 필드
@@ -325,6 +336,15 @@ const CombatSystem = {
     ) {
       return false;
     }
+    const eligibility = this._validateRankedSkillEligibility(
+      active,
+      combat.skillsById[skillId],
+    );
+    if (!eligibility.ok) {
+      combat.lastActionFailure = eligibility.reason;
+      this._pushCombatLog(this._rankedFailureMessage(eligibility.reason));
+      return false;
+    }
     combat.selectedSkillId = skillId;
     combat.selectedTargetId = null;
     combat.phase = 'select_target';
@@ -388,6 +408,9 @@ const CombatSystem = {
       validatePosition: (actorId, targetId, skill) => (
         this._validateRankedSkillPosition(actorId, targetId, skill)
       ),
+      validateEligibility: (actor, skill) => (
+        this._validateRankedSkillEligibility(actor, skill)
+      ),
       // 스태미나 실소스는 gs.stats.stamina — 동료는 스태미나 자원이 없어 항상 통과
       getStamina: (actor) => (
         actor?.sourceType === 'player'
@@ -418,7 +441,10 @@ const CombatSystem = {
       applyEffect: (effect, actor, target, random, hitInfo) => (
         this._applyRankedEffect(effect, actor, target, random, hitInfo)
       ),
-      finalizeCommand: () => this._finalizeRankedCommand(),
+      finalizeCommand: result => this._finalizeRankedCommand(
+        result,
+        combat?.activeCombatantId,
+      ),
       consumeCombatItem: (itemInstanceId, actor) => this._consumeRankedCombatItem(actor, itemInstanceId),
     };
   },
@@ -426,6 +452,9 @@ const CombatSystem = {
   ...CombatRankedEffects,
 
   _rankedFailureMessage(reason) {
+    if (reason === 'weapon_locked') {
+      return '동결 효과로 해당 무기 행동을 사용할 수 없습니다.';
+    }
     if (reason === 'empty_magazine') return I18n.t('combatSys.emptyMagazine');
     if (reason === 'missing_ammo_pack') return I18n.t('combatSys.missingAmmoPack');
     if (reason === 'magazine_not_empty') return I18n.t('combatSys.magazineNotEmpty');
@@ -600,6 +629,157 @@ const CombatSystem = {
     return validateSkillPosition(GameState.combat?.formations, actorId, targetId, skill);
   },
 
+  _validateRankedSkillEligibility(actor, skill) {
+    if (!actor || !skill) return { ok: false, reason: 'invalid_skill' };
+    if (actor.sourceType !== 'player') return { ok: true };
+
+    const statuses = [
+      ...(GameState.combat?.playerStatus ?? []),
+      ...(actor.statusEffects ?? []),
+    ];
+    const locks = statuses.filter(status => (
+      typeof status?.effect?.weaponLock === 'string'
+      && (
+        !Number.isFinite(status.remainingPlayerTurns)
+        || status.remainingPlayerTurns > 0
+      )
+    ));
+    if (locks.length === 0) return { ok: true };
+
+    const definition = this._rankedSkillWeaponDef(skill);
+    const tags = new Set([
+      ...(definition?.tags ?? []),
+      definition?.weaponType,
+      skill?.weaponType,
+      skill?.source === 'equipment' ? 'weapon' : null,
+    ].filter(Boolean));
+    const blocked = locks.some(status => tags.has(status.effect.weaponLock));
+    return blocked
+      ? { ok: false, reason: 'weapon_locked' }
+      : { ok: true };
+  },
+
+  _validateDirectWeaponEligibility(action, weaponInstanceId) {
+    if (!['melee', 'shoot', 'throwable'].includes(action) || !weaponInstanceId) {
+      return { ok: true };
+    }
+    const definition = GameState.cards?.[weaponInstanceId]
+      ? GameState.getCardDef(weaponInstanceId)
+      : null;
+    return this._validateRankedSkillEligibility(
+      GameState.combat?.combatants?.player ?? {
+        id: 'player',
+        sourceType: 'player',
+      },
+      {
+        source: 'equipment',
+        equipmentInstanceId: weaponInstanceId,
+        weaponType: definition?.weaponType
+          ?? (action === 'shoot' ? 'firearm' : 'melee'),
+      },
+    );
+  },
+
+  _addBattlefieldStatus(status) {
+    return addOrRefreshBattlefieldStatus(GameState.combat, status);
+  },
+
+  _completePlayerCommand(actor = null) {
+    const combat = GameState.combat;
+    const resolvedActor = actor
+      ?? combat?.combatants?.[combat?.activeCombatantId]
+      ?? null;
+    if (resolvedActor?.sourceType !== 'player') return false;
+
+    tickPlayerActionStatuses(combat?.battlefieldStatuses);
+    tickPlayerActionStatuses(combat?.playerStatus);
+    if (combat?.combatants?.player) {
+      combat.combatants.player.statusEffects = (combat.playerStatus ?? [])
+        .map(status => this._copyCombatStatus(status));
+    }
+    return true;
+  },
+
+  _healCombatant(target, amount) {
+    const combat = GameState.combat;
+    const guarded = (target?.tokens?.block ?? 0) > 0
+      || (
+        target?.sourceType === 'player'
+        && combat?.playerGuard?.active === true
+      );
+    const result = healCombatant(target, amount, {
+      battlefieldStatuses: combat?.battlefieldStatuses,
+      guarded,
+      onHealingPrevented: ({
+        prevented,
+        status,
+        sourceEnemyId,
+      }) => {
+        const ratio = status?.effect?.preventedHealingShieldConversion;
+        const duration = status?.effect?.shieldDurationRounds;
+        if (!sourceEnemyId || !Number.isFinite(ratio) || ratio <= 0) return;
+        const source = (combat?.enemies ?? []).find(enemy => (
+          enemy?.id === sourceEnemyId && (enemy?.currentHp ?? 0) > 0
+        ));
+        if (!source) return;
+        const shield = Math.floor(prevented * ratio);
+        const applied = addEnemyDamageShield(source, {
+          id: `${status.id}_shield`,
+          name: status.name ?? status.id,
+          sourceEnemyId,
+          amount: shield,
+          remainingRounds: Number.isFinite(duration) ? duration : 1,
+          skipNextRoundTick: combat?._directActionTickPending === true,
+        });
+        const rankedSource = this._rankCombatantForEnemy(source);
+        if (applied && rankedSource) rankedSource.statusEffects = source._statusEffects;
+      },
+    });
+    this._syncRankedTargetToLegacy(target);
+    return result;
+  },
+
+  _tickBattlefieldStatuses() {
+    const combat = GameState.combat;
+    if (!Array.isArray(combat?.battlefieldStatuses)) return [];
+    const expired = [];
+    const targetIds = Object.values(combat.combatants ?? {})
+      .filter(target => target?.side === 'ally' && target.dead !== true)
+      .map(target => target.id);
+
+    for (const status of combat.battlefieldStatuses) {
+      if (!Number.isFinite(status?.remainingRounds)) continue;
+      const effect = status.effect ?? {};
+      if (Number.isFinite(effect.radiationPerTurn) && effect.radiationPerTurn !== 0) {
+        GameState.modStat('radiation', effect.radiationPerTurn);
+      }
+      if (Number.isFinite(effect.hpLossPerRound) && effect.hpLossPerRound > 0) {
+        for (const targetId of targetIds) {
+          this._dealDamageToAlly({
+            npcId: targetId === 'player' ? null : targetId,
+            rawDamage: effect.hpLossPerRound,
+            canBeDodged: false,
+          });
+        }
+      }
+      if (effect.status?.id) {
+        for (const targetId of targetIds) {
+          this._addAllyStatus(targetId, {
+            ...effect.status,
+            effect: { ...(effect.status.effect ?? {}) },
+          });
+        }
+      }
+      status.remainingRounds -= 1;
+      if (status.remainingRounds <= 0) expired.push(status);
+    }
+
+    combat.battlefieldStatuses = combat.battlefieldStatuses.filter(status => (
+      !Number.isFinite(status?.remainingRounds) || status.remainingRounds > 0
+    ));
+    return expired;
+  },
+
   _syncRankedTargetToLegacy(target) {
     if (!target) return;
     if (target.sourceType === 'player') {
@@ -706,6 +886,7 @@ const CombatSystem = {
       capacity: result.capacity,
     }));
     this._resolveRelationshipAfterAction(combat.activeCombatantId);
+    this._completePlayerCommand(active);
     this.advanceTurn();
     this.processUntilAllyTurn();
     return { ...result, turnConsumed: true };
@@ -845,6 +1026,7 @@ const CombatSystem = {
 
     combat.selectedSkillId = null;
     combat.selectedTargetId = null;
+    this._completePlayerCommand(active);
     this._fleeAction();
     this._syncLegacyAlliesToRankedCombatants();
     if (combat.active) this.beginActiveTurn();
@@ -928,22 +1110,11 @@ const CombatSystem = {
       for (const rankedStatus of rankedStatuses) {
         const status = this._normalizeStatusInflict(rankedStatus);
         if (!status) continue;
-        const existing = enemy._statusEffects.find(candidate => candidate.id === status.id);
-        if (!existing) {
-          enemy._statusEffects.push(status);
-          continue;
-        }
-        existing.duration = Math.max(existing.duration ?? 0, status.duration ?? 1);
-        existing.effect = {
-          ...(status.effect ?? {}),
-          ...(existing.effect ?? {}),
-        };
-        if (status.effect?.hpLossPerRound != null) {
-          existing.effect.hpLossPerRound = Math.max(
-            existing.effect.hpLossPerRound ?? 0,
-            status.effect.hpLossPerRound,
-          );
-        }
+        addOrRefreshEnemyStatus(enemy, {
+          ...status,
+          sourceEnemyId: status.sourceEnemyId ?? null,
+          remainingRounds: status.remainingRounds ?? status.duration ?? 1,
+        });
       }
       combatant.statusEffects = enemy._statusEffects;
     }
@@ -1219,26 +1390,12 @@ const CombatSystem = {
   _applyEnemyStatusInflict(enemy, statusDef, enemyIdx = null) {
     const status = this._normalizeStatusInflict(statusDef);
     if (!enemy || !status) return false;
-    if (!enemy._statusEffects) enemy._statusEffects = [];
-
-    const existing = enemy._statusEffects.find(s => s.id === status.id);
-    if (existing) {
-      existing.duration = Math.max(existing.duration ?? 0, status.duration ?? 1);
-      existing.effect = { ...(existing.effect ?? {}) };
-      if (status.effect?.hpLossPerRound != null) {
-        existing.effect.hpLossPerRound = Math.max(existing.effect.hpLossPerRound ?? 0, status.effect.hpLossPerRound);
-      }
-      for (const [key, val] of Object.entries(status.effect ?? {})) {
-        if (key !== 'hpLossPerRound' && existing.effect[key] == null) existing.effect[key] = val;
-      }
-    } else {
-      enemy._statusEffects.push({
-        id: status.id,
-        name: status.name ?? status.id,
-        duration: status.duration ?? 1,
-        effect: { ...(status.effect ?? {}) },
-      });
-    }
+    const applied = addOrRefreshEnemyStatus(enemy, {
+      ...status,
+      sourceEnemyId: status.sourceEnemyId ?? enemy.id ?? null,
+      remainingRounds: status.remainingRounds ?? status.duration ?? 1,
+    });
+    if (!applied) return false;
 
     const idx = enemyIdx ?? GameState.combat?.enemies?.indexOf(enemy);
     const rankedTarget = Object.values(GameState.combat?.combatants ?? {}).find(combatant =>
@@ -1389,6 +1546,20 @@ const CombatSystem = {
     if (!gs.combat.active) return;
     if (!DIRECT_ACTION_TYPES.has(action)) return false;
 
+    const eligibility = this._validateDirectWeaponEligibility(
+      action,
+      weaponInstanceId,
+    );
+    if (!eligibility.ok) {
+      gs.combat.lastActionFailure = eligibility.reason;
+      this._pushCombatLog(this._rankedFailureMessage(eligibility.reason));
+      EventBus.emit('notify', {
+        message: this._rankedFailureMessage(eligibility.reason),
+        type: 'warn',
+      });
+      return false;
+    }
+
     let target = this._getTarget();
     if (!target) return;
 
@@ -1433,12 +1604,14 @@ const CombatSystem = {
     if (stunIdx !== -1) {
       gs.combat.playerStatus.splice(stunIdx, 1);
       gs.combat.log.push(I18n.t('combatSys.stunned'));
+      this._completePlayerCommand(gs.combat.combatants?.player);
       this._tickStatusEffects();
       if (gs.combat.active) this._allEnemiesAttack();
       return;
     }
 
     let logEntry = '';
+    gs.combat._directActionTickPending = true;
 
     switch (action) {
       case 'melee':
@@ -1455,22 +1628,31 @@ const CombatSystem = {
         break;
       case 'throwable':
         logEntry = throwableAction(weaponInstanceId, this);
-        if (!gs.combat.active) return; // smoke bomb fled
+        if (!gs.combat.active) {
+          gs.combat._directActionTickPending = false;
+          return;
+        }
         break;
       case 'stealth':
+        this._completePlayerCommand(gs.combat.combatants?.player);
         logEntry = this._stealthAction();
+        gs.combat._directActionTickPending = false;
         return;
       case 'flee':
+        this._completePlayerCommand(gs.combat.combatants?.player);
         logEntry = this._fleeAction();
+        gs.combat._directActionTickPending = false;
         return;
       case 'useItem':
         logEntry = this._useItemAction(weaponInstanceId);
         break;
       default:
+        gs.combat._directActionTickPending = false;
         return;
     }
 
     gs.combat.log.push(logEntry);
+    this._completePlayerCommand(gs.combat.combatants?.player);
 
     // 전투 로그 크기 제한
     if (gs.combat.log.length > BALANCE.combat.combatLogMaxEntries) {
@@ -1481,6 +1663,7 @@ const CombatSystem = {
     if (target.currentHp <= 0) {
       this._onEnemyKilled(target);
       if (this._allEnemiesDead()) {
+        gs.combat._directActionTickPending = false;
         this._resolveVictory();
         return;
       }
@@ -1490,6 +1673,7 @@ const CombatSystem = {
 
     // 상태이상 틱
     this._tickStatusEffects();
+    gs.combat._directActionTickPending = false;
     if (this._allEnemiesDead()) { this._resolveVictory(); return; }
     if (this._isPlayerDefeated()) { this._resolveDefeat(); return; }
 
@@ -1498,6 +1682,77 @@ const CombatSystem = {
   },
 
   // ── 개별 행동 ──────────────────────────────────────────
+
+  _resolveDirectEnemyDamage(enemy, rawDamage, {
+    bonusAfterDefense = 0,
+  } = {}) {
+    if (!enemy || (enemy.currentHp ?? 0) <= 0) {
+      return {
+        damage: 0,
+        absorbed: 0,
+        bonusApplied: 0,
+      };
+    }
+
+    const modifiers = enemyStatusModifiers(enemy);
+    let damage = this._applyEnemyDefense(
+      Math.max(0, Math.floor(Number.isFinite(rawDamage) ? rawDamage : 0)),
+      (enemy.defense ?? 0) + modifiers.defenseIncrease,
+    );
+    if (modifiers.incomingDamageReduction > 0) {
+      damage = Math.floor(damage * (1 - modifiers.incomingDamageReduction));
+    }
+    if (
+      modifiers.invulnerable
+      || (enemy._combatBuffs?.invulnerable?.duration ?? 0) > 0
+    ) {
+      damage = 0;
+    }
+
+    const normalizedBonus = Math.max(
+      0,
+      Math.floor(Number.isFinite(bonusAfterDefense) ? bonusAfterDefense : 0),
+    );
+    const bonusApplied = damage > 0 ? normalizedBonus : 0;
+    damage += bonusApplied;
+
+    const shieldResult = damage > 0
+      ? consumeEnemyDamageShield(enemy, damage)
+      : { damage: 0, absorbed: 0 };
+    const hpBefore = enemy.currentHp;
+    enemy.currentHp = Math.max(0, hpBefore - shieldResult.damage);
+    const actualDamage = Math.max(0, hpBefore - enemy.currentHp);
+
+    const committedAction = enemy._bossActionState?.committedAction;
+    if (
+      enemy.isBoss === true
+      && committedAction?.state === 'telegraphing'
+      && actualDamage > 0
+      && this._bossActionDefinition(
+        enemy,
+        committedAction.actionId,
+        committedAction.category,
+      )?.telegraphDamageThreshold
+    ) {
+      committedAction.telegraphDamageTaken = Math.max(
+        0,
+        committedAction.telegraphDamageTaken ?? 0,
+      ) + actualDamage;
+    }
+
+    const rankedEnemy = this._rankCombatantForEnemy(enemy);
+    if (rankedEnemy) {
+      rankedEnemy.hp = enemy.currentHp;
+      rankedEnemy.dead = enemy.currentHp <= 0;
+      rankedEnemy.statusEffects = enemy._statusEffects ?? [];
+    }
+
+    return {
+      damage: actualDamage,
+      absorbed: shieldResult.absorbed,
+      bonusApplied,
+    };
+  },
 
   _attackAction(type, weaponId, enemy) {
     const gs = GameState;
@@ -1577,9 +1832,16 @@ const CombatSystem = {
       skillId,
     }));
 
-    const evasion = enemy._combatBuffs?.evasion;
-    if (evasion && (evasion.duration ?? 0) > 0) {
-      accuracy = Math.max(0.05, accuracy * (1 - (evasion.value ?? 0)));
+    const statusModifiers = enemyStatusModifiers(enemy);
+    const legacyEvasion = enemy._combatBuffs?.evasion;
+    const evasion = Math.max(
+      statusModifiers.evasionIncrease,
+      legacyEvasion && (legacyEvasion.duration ?? 0) > 0
+        ? legacyEvasion.value ?? 0
+        : 0,
+    );
+    if (evasion > 0) {
+      accuracy = Math.max(0.05, accuracy * (1 - evasion));
     }
 
     const hit = Math.random() < accuracy;
@@ -1626,14 +1888,14 @@ const CombatSystem = {
         gs.combat.playerGuard = null;
       }
 
-      let finalDmg = this._applyEnemyDefense(damage, enemy.defense);
-      if ((enemy._combatBuffs?.invulnerable?.duration ?? 0) > 0) finalDmg = 0;
       const poisonDmg = Math.max(0, Math.floor(gs.cards[weaponId]?._poisonDamage ?? 0));
-      if (poisonDmg > 0 && finalDmg > 0) {
-        finalDmg += poisonDmg;
+      const damageResult = this._resolveDirectEnemyDamage(enemy, damage, {
+        bonusAfterDefense: poisonDmg,
+      });
+      const finalDmg = damageResult.damage;
+      if (damageResult.bonusApplied > 0) {
         gs.combat.log.push(`독 피해 +${poisonDmg}`);
       }
-      enemy.currentHp = Math.max(0, enemy.currentHp - finalDmg);
 
       if (enemy.currentHp <= 0) {
         const wDef = (weaponId && gs.cards[weaponId]) ? gs.getCardDef(weaponId) : null;
@@ -1734,7 +1996,7 @@ const CombatSystem = {
       if (rankedPlayer) {
         rankedPlayer.hp = Math.max(0, gs.player.hp.current ?? rankedPlayer.hp ?? 0);
         rankedPlayer.maxHp = gs.player.hp.max ?? rankedPlayer.maxHp;
-        const result = healCombatant(rankedPlayer, requestedHealing);
+        const result = this._healCombatant(rankedPlayer, requestedHealing);
         healedAmount = result.healed;
         this._syncRankedTargetToLegacy(rankedPlayer);
         this._syncRankedPlayerStatusesToLegacy(gs.combat);
@@ -1749,7 +2011,7 @@ const CombatSystem = {
             .map(status => this._copyCombatStatus(status)),
           dead: false,
         };
-        const result = healCombatant(legacyPlayer, requestedHealing);
+        const result = this._healCombatant(legacyPlayer, requestedHealing);
         healedAmount = result.healed;
         gs.player.hp.current = legacyPlayer.hp;
       }
@@ -1965,6 +2227,8 @@ const CombatSystem = {
       }
       syncCombatantsToGameState(gs, { [companion.id]: companion });
     }
+
+    this._tickBattlefieldStatuses();
 
     // per-enemy 상태이상 틱 (AoE 투척 효과 포함)
     for (const enemy of this.getAliveEnemies()) {

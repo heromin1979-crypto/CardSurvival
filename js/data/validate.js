@@ -31,6 +31,214 @@ const VALID_COMBAT_EFFECTS = new Set([
 ]);
 
 const VALID_BOSS_MOVEMENTS = new Set(['none', 'lunge', 'advance', 'retreat']);
+const VALID_BOSS_EFFECTS = new Set([
+  'damage',
+  'status',
+  'targetStatus',
+  'move',
+  'forcedMove',
+  'selfHeal',
+  'selfStatus',
+  'summon',
+  'consumeSummons',
+  'partyDamage',
+  'battlefieldStatus',
+  'resource',
+  'weaponLock',
+  'noise',
+]);
+const VALID_ENEMY_STATUS_EFFECT_KEYS = new Set([
+  'defenseIncrease',
+  'evasionIncrease',
+  'invulnerable',
+  'incomingDamageReduction',
+  'outgoingDamageIncrease',
+]);
+const VALID_BATTLEFIELD_EFFECT_KEYS = new Set([
+  'radiationPerTurn',
+  'hpLossPerRound',
+  'status',
+  'healingReduction',
+  'guardedHealingReduction',
+  'preventedHealingShieldConversion',
+  'shieldDurationRounds',
+]);
+
+function nonemptyObject(value) {
+  return value !== null
+    && typeof value === 'object'
+    && !Array.isArray(value)
+    && Object.keys(value).length > 0;
+}
+
+function positiveInteger(value) {
+  return Number.isSafeInteger(value) && value > 0;
+}
+
+function validateBossEffect(effect, path) {
+  const errors = [];
+  if (!VALID_BOSS_EFFECTS.has(effect?.type)) {
+    errors.push(`${path}.type "${effect?.type}" is unsupported`);
+    return errors;
+  }
+
+  if (effect.type === 'selfStatus') {
+    if (typeof effect.id !== 'string' || effect.id.length === 0) {
+      errors.push(`${path}.id is required`);
+    }
+    if (!positiveInteger(effect.duration)) {
+      errors.push(`${path}.duration must be a positive integer`);
+    }
+    if (!nonemptyObject(effect.effect)) {
+      errors.push(`${path}.effect must be a non-empty typed object`);
+    } else {
+      for (const [key, value] of Object.entries(effect.effect)) {
+        if (!VALID_ENEMY_STATUS_EFFECT_KEYS.has(key)) {
+          errors.push(`${path}.effect.${key} is unsupported`);
+        } else if (key === 'invulnerable' ? value !== true : !Number.isFinite(value)) {
+          errors.push(`${path}.effect.${key} has an invalid value`);
+        }
+      }
+    }
+  }
+
+  if (effect.type === 'battlefieldStatus') {
+    if (typeof effect.id !== 'string' || effect.id.length === 0) {
+      errors.push(`${path}.id is required`);
+    }
+    const hasRoundDuration = effect.duration !== undefined;
+    const hasPlayerDuration = effect.remainingPlayerTurns !== undefined;
+    if (hasRoundDuration === hasPlayerDuration) {
+      errors.push(`${path} must declare exactly one duration clock`);
+    } else {
+      const duration = hasRoundDuration ? effect.duration : effect.remainingPlayerTurns;
+      if (!positiveInteger(duration)) {
+        errors.push(`${path} duration must be a positive integer`);
+      }
+    }
+    if (!nonemptyObject(effect.effect)) {
+      errors.push(`${path}.effect must be a non-empty typed object`);
+    } else {
+      for (const [key, value] of Object.entries(effect.effect)) {
+        if (!VALID_BATTLEFIELD_EFFECT_KEYS.has(key)) {
+          errors.push(`${path}.effect.${key} is unsupported`);
+        } else if (key === 'status') {
+          if (!nonemptyObject(value) || typeof value.id !== 'string') {
+            errors.push(`${path}.effect.status must declare an id`);
+          }
+        } else if (key === 'shieldDurationRounds') {
+          if (!positiveInteger(value)) {
+            errors.push(`${path}.effect.shieldDurationRounds must be a positive integer`);
+          }
+        } else if (!Number.isFinite(value) || value < 0) {
+          errors.push(`${path}.effect.${key} must be a nonnegative number`);
+        } else if (
+          [
+            'healingReduction',
+            'guardedHealingReduction',
+            'preventedHealingShieldConversion',
+          ].includes(key)
+          && value > 1
+        ) {
+          errors.push(`${path}.effect.${key} must be at most 1`);
+        }
+      }
+    }
+  }
+
+  if (effect.type === 'weaponLock') {
+    if (typeof effect.tag !== 'string' || effect.tag.length === 0) {
+      errors.push(`${path}.tag is required`);
+    }
+    if (!positiveInteger(effect.duration)) {
+      errors.push(`${path}.duration must be a positive integer`);
+    }
+  }
+
+  if (effect.type === 'consumeSummons') {
+    if (typeof effect.enemyId !== 'string' || effect.enemyId.length === 0) {
+      errors.push(`${path}.enemyId is required`);
+    }
+    for (const key of ['healPerSummon', 'strengthPerSummon']) {
+      if (!Number.isFinite(effect[key]) || effect[key] < 0) {
+        errors.push(`${path}.${key} must be a nonnegative number`);
+      }
+    }
+    if (
+      !nonemptyObject(effect.strengthStatus)
+      || typeof effect.strengthStatus.id !== 'string'
+      || effect.strengthStatus.id.length === 0
+      || !positiveInteger(effect.strengthStatus.duration)
+    ) {
+      errors.push(`${path}.strengthStatus must declare id and positive duration`);
+    }
+  }
+
+  return errors;
+}
+
+function validateTelegraphDamageThreshold(threshold, path) {
+  if (threshold === undefined) return [];
+  const errors = [];
+  if (!nonemptyObject(threshold)) {
+    return [`${path} must be an object`];
+  }
+  if (!Number.isFinite(threshold.amount) || threshold.amount <= 0) {
+    errors.push(`${path}.amount must be positive`);
+  }
+  if (
+    !Number.isFinite(threshold.resolutionMultiplier)
+    || threshold.resolutionMultiplier <= 0
+    || threshold.resolutionMultiplier > 1
+  ) {
+    errors.push(`${path}.resolutionMultiplier must be greater than 0 and at most 1`);
+  }
+  if (
+    !Array.isArray(threshold.statusMagnitudeKeys)
+    || threshold.statusMagnitudeKeys.length === 0
+    || threshold.statusMagnitudeKeys.some(key => typeof key !== 'string' || key.length === 0)
+  ) {
+    errors.push(`${path}.statusMagnitudeKeys must contain strings`);
+  }
+  return errors;
+}
+
+function validateHitCountRule(rule, action, path) {
+  if (rule === undefined) return [];
+  const errors = [];
+  if (!nonemptyObject(rule)) return [`${path} must be an object`];
+  if (rule.type !== 'livingMinions') {
+    errors.push(`${path}.type must be "livingMinions"`);
+  }
+  if (typeof rule.enemyId !== 'string' || rule.enemyId.length === 0) {
+    errors.push(`${path}.enemyId is required`);
+  }
+  for (const key of ['base', 'perMinion', 'min', 'max']) {
+    if (!Number.isSafeInteger(rule[key])) {
+      errors.push(`${path}.${key} must be a safe integer`);
+    }
+  }
+  if (Number.isSafeInteger(rule.base) && rule.base < 0) {
+    errors.push(`${path}.base must be nonnegative`);
+  }
+  if (Number.isSafeInteger(rule.perMinion) && rule.perMinion < 0) {
+    errors.push(`${path}.perMinion must be nonnegative`);
+  }
+  if (Number.isSafeInteger(rule.min) && rule.min < 1) {
+    errors.push(`${path}.min must be at least 1`);
+  }
+  if (
+    Number.isSafeInteger(rule.min)
+    && Number.isSafeInteger(rule.max)
+    && rule.max < rule.min
+  ) {
+    errors.push(`${path}.max must be at least min`);
+  }
+  if (Object.hasOwn(action ?? {}, 'hitCount')) {
+    errors.push(`${path} cannot be combined with fixed hitCount`);
+  }
+  return errors;
+}
 
 function validateBossAction(action, expectedCategory, path) {
   const errors = [];
@@ -54,6 +262,10 @@ function validateBossAction(action, expectedCategory, path) {
   }
   if (!Array.isArray(action?.effects)) {
     errors.push(`${path}.effects must be an array`);
+  } else {
+    for (const [index, effect] of action.effects.entries()) {
+      errors.push(...validateBossEffect(effect, `${path}.effects[${index}]`));
+    }
   }
   if (action?.damage !== undefined) {
     const hasAscendingDamageRange = Array.isArray(action.damage)
@@ -65,6 +277,15 @@ function validateBossAction(action, expectedCategory, path) {
       errors.push(`${path}.damage must be an ascending [minimum, maximum] range`);
     }
   }
+  errors.push(...validateTelegraphDamageThreshold(
+    action?.telegraphDamageThreshold,
+    `${path}.telegraphDamageThreshold`,
+  ));
+  errors.push(...validateHitCountRule(
+    action?.hitCountRule,
+    action,
+    `${path}.hitCountRule`,
+  ));
 
   return errors;
 }

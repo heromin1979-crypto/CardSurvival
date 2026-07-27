@@ -71,6 +71,9 @@ function statusFromEffect(effectDefinition) {
     id: effectDefinition.id,
     name: effectDefinition.name ?? effectDefinition.id,
     duration: effectDefinition.duration ?? 1,
+    ...(Number.isFinite(effectDefinition.remainingPlayerTurns)
+      ? { remainingPlayerTurns: effectDefinition.remainingPlayerTurns }
+      : {}),
     effect: statusEffect,
     ...(effectDefinition?.type !== 'status' && Number.isFinite(effectDefinition.value)
       ? { value: effectDefinition.value }
@@ -232,6 +235,59 @@ function partyDamageOutcomes(result) {
   return [];
 }
 
+function resolvedHitCount(definition, action, services) {
+  const rule = definition?.hitCountRule;
+  if (rule?.type === 'livingMinions' && typeof rule.enemyId === 'string') {
+    const livingMinions = Math.max(
+      0,
+      Math.floor(services.countLivingEnemies?.(rule.enemyId) ?? 0),
+    );
+    const base = Number.isFinite(rule.base) ? Math.floor(rule.base) : 1;
+    const perMinion = Number.isFinite(rule.perMinion)
+      ? Math.floor(rule.perMinion)
+      : 1;
+    const minimum = Number.isFinite(rule.min) ? Math.floor(rule.min) : 1;
+    const maximum = Number.isFinite(rule.max)
+      ? Math.max(minimum, Math.floor(rule.max))
+      : Number.MAX_SAFE_INTEGER;
+    return Math.max(minimum, Math.min(maximum, base + livingMinions * perMinion));
+  }
+  return Number.isFinite(action.hitCount)
+    ? Math.max(1, Math.floor(action.hitCount))
+    : 1;
+}
+
+function resolutionThresholdFor(definition, action) {
+  const threshold = definition?.telegraphDamageThreshold;
+  if (!threshold
+      || !Number.isFinite(threshold.amount)
+      || (action?.telegraphDamageTaken ?? 0) < threshold.amount) {
+    return {
+      multiplier: 1,
+      statusMagnitudeKeys: new Set(),
+    };
+  }
+  return {
+    multiplier: Number.isFinite(threshold.resolutionMultiplier)
+      ? Math.max(0, threshold.resolutionMultiplier)
+      : 1,
+    statusMagnitudeKeys: new Set(threshold.statusMagnitudeKeys ?? []),
+  };
+}
+
+function scaleStatusForResolution(status, resolution) {
+  if (resolution.multiplier === 1 || resolution.statusMagnitudeKeys.size === 0) {
+    return status;
+  }
+  const effect = { ...(status.effect ?? {}) };
+  for (const key of resolution.statusMagnitudeKeys) {
+    if (Number.isFinite(effect[key])) {
+      effect[key] *= resolution.multiplier;
+    }
+  }
+  return { ...status, effect };
+}
+
 export function executeEnemyAction({
   enemy,
   action,
@@ -245,9 +301,8 @@ export function executeEnemyAction({
   const definition = actionDefinitionFor(enemy, action);
   if (!definition) return;
 
-  const hitCount = Number.isFinite(action.hitCount)
-    ? Math.max(1, Math.floor(action.hitCount))
-    : 1;
+  const hitCount = resolvedHitCount(definition, action, services);
+  const resolution = resolutionThresholdFor(definition, action);
   const damageRange = damageRangeFor(enemy, definition);
   const effects = definition.effects ?? [];
   const accuracy = Number.isFinite(definition.accuracy)
@@ -341,10 +396,11 @@ export function executeEnemyAction({
   const partyDamageResolutions = new Map();
   for (const effect of effects) {
     if (effect?.type !== 'partyDamage') continue;
-    const amount = rollDamage(
+    const rolledAmount = rollDamage(
       Array.isArray(effect.value) ? effect.value : [effect.value, effect.value],
       random,
     );
+    const amount = Math.floor(rolledAmount * resolution.multiplier);
     const result = services.damageParty?.(amount, actionMetadata);
     for (const outcome of partyDamageOutcomes(result)) {
       const targetId = outcome?.targetId;
@@ -369,9 +425,10 @@ export function executeEnemyAction({
   for (const targetId of affectedTargetIds) {
     for (const status of statuses) {
       if (Number.isFinite(status.chance) && random() >= status.chance) continue;
+      const resolvedStatus = scaleStatusForResolution(status, resolution);
       services.addStatus(targetId, {
-        ...status,
-        effect: { ...(status.effect ?? {}) },
+        ...resolvedStatus,
+        effect: { ...(resolvedStatus.effect ?? {}) },
       });
     }
     if (Number.isFinite(forcedMove) && forcedMove !== 0) {
@@ -428,6 +485,40 @@ export function executeEnemyAction({
           enemyId: effect.enemyId,
           count,
           spawned,
+        });
+        break;
+      }
+      case 'consumeSummons': {
+        const consumed = Math.max(
+          0,
+          Math.floor(services.consumeSummons?.(effect.enemyId) ?? 0),
+        );
+        let healed = 0;
+        let strength = 0;
+        if (consumed > 0) {
+          const healPerSummon = Number.isFinite(effect.healPerSummon)
+            ? Math.max(0, effect.healPerSummon)
+            : 0;
+          const strengthPerSummon = Number.isFinite(effect.strengthPerSummon)
+            ? Math.max(0, effect.strengthPerSummon)
+            : 0;
+          healed = services.healSelf?.(consumed * healPerSummon) ?? 0;
+          strength = consumed * strengthPerSummon;
+          if (strength > 0 && effect.strengthStatus?.id) {
+            services.addSelfStatus?.({
+              id: effect.strengthStatus.id,
+              name: effect.strengthStatus.name ?? effect.strengthStatus.id,
+              duration: effect.strengthStatus.duration ?? 1,
+              effect: { outgoingDamageIncrease: strength },
+            });
+          }
+        }
+        resolvedEffects.push({
+          type: 'consumeSummons',
+          enemyId: effect.enemyId,
+          consumed,
+          healed,
+          strength,
         });
         break;
       }

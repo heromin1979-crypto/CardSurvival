@@ -283,4 +283,26 @@ describe('BossPatternController', () => {
     expect(completed.committedAction).toBeNull();
     expect(completed.ultimateUsed).toBe(true);
   });
+
+  it('committed ultimate가 있으면 누락되거나 잘못된 저장 플래그를 사용 완료로 정규화한다', () => {
+    const committedAction = {
+      actionId: 'ultimate_end',
+      category: 'ultimate',
+      state: 'telegraphing',
+      targetIds: ['player'],
+      remainingTelegraphTurns: 1,
+      hitCount: 1,
+      motionKey: 'ultimate_end',
+    };
+
+    expect(normalizeBossActionState({
+      committedAction,
+      ultimatePending: true,
+      ultimateUsed: false,
+    })).toMatchObject({
+      committedAction,
+      ultimatePending: false,
+      ultimateUsed: true,
+    });
+  });
 });

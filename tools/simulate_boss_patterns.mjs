@@ -18,6 +18,18 @@ const ULTIMATE_CROSSING_TURN = 7;
 const EXPECTED_BOSS_COUNT = 21;
 const SPECIAL_RATE_MIN = 0.27;
 const SPECIAL_RATE_MAX = 0.33;
+const USAGE = 'Usage: node tools/simulate_boss_patterns.mjs --runs <positive integer>=500 --seed <positive integer> --out <path>';
+
+function parsePositiveInteger(value, flag) {
+  if (typeof value !== 'string' || !/^[0-9]+$/.test(value)) {
+    throw new Error(`${flag} must be a positive integer: ${value}`);
+  }
+  const number = Number(value);
+  if (!Number.isSafeInteger(number) || number <= 0) {
+    throw new Error(`${flag} must be a positive integer: ${value}`);
+  }
+  return number;
+}
 
 const CANDIDATES = Object.freeze([
   Object.freeze({
@@ -60,7 +72,7 @@ function parseArgs(argv) {
       continue;
     }
 
-    const number = Number.parseInt(value, 10);
+    const number = parsePositiveInteger(value, flag);
     if (!Number.isSafeInteger(number) || number <= 0) {
       throw new Error(`${flag}는 1 이상의 정수여야 합니다: ${value}`);
     }
@@ -199,6 +211,7 @@ function createRuntimeBoss(definition) {
 function createRunContext() {
   return {
     activeSummons: 0,
+    summonsByEnemyId: {},
     selfStatuses: [],
   };
 }
@@ -237,9 +250,19 @@ function createExecutionServices(context) {
       );
       context.selfStatuses = [...remaining, status];
     },
-    summonEnemy: (_enemyId, count) => {
+    summonEnemy: (enemyId, count) => {
       context.activeSummons += count;
+      context.summonsByEnemyId[enemyId] = (
+        context.summonsByEnemyId[enemyId] ?? 0
+      ) + count;
       return count;
+    },
+    countLivingEnemies: enemyId => context.summonsByEnemyId[enemyId] ?? 0,
+    consumeSummons: (enemyId) => {
+      const consumed = context.summonsByEnemyId[enemyId] ?? 0;
+      context.summonsByEnemyId[enemyId] = 0;
+      context.activeSummons = Math.max(0, context.activeSummons - consumed);
+      return consumed;
     },
     setBattlefieldStatus: () => {},
     modifyResource: () => {},
@@ -710,5 +733,6 @@ async function main() {
 
 main().catch(error => {
   console.error(error instanceof Error ? error.message : error);
+  console.error(USAGE);
   process.exitCode = 1;
 });
