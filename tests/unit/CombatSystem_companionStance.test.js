@@ -28,7 +28,7 @@ function setupCompanionTurn({
         hp: 50,
         maxHp: 50,
         isCompanion: true,
-        stance,
+        ...(stance === undefined ? {} : { stance }),
       },
     },
   };
@@ -73,68 +73,32 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('동료 stance 턴 의미', () => {
-  it('미설정 stance는 동료 profile의 preferredStance로 해석한다', () => {
-    GameState.npcs = {
-      states: {
-        npc_nurse: { hp: 50, maxHp: 50, isCompanion: true },
-      },
-    };
-
-    expect(CombatSystem._getCompanionStance('npc_nurse')).toBe('heal');
-  });
-
-  it('profile이 없는 동료의 미설정 stance는 attack으로 fallback한다', () => {
-    GameState.npcs = {
-      states: {
-        npc_unknown: { hp: 50, maxHp: 50, isCompanion: true },
-      },
-    };
-
-    expect(CombatSystem._getCompanionStance('npc_unknown')).toBe('attack');
-  });
-
-  it('manual은 현재 동료에서 실제 스킬 카드 입력을 기다린다', () => {
-    const combat = setupCompanionTurn({ stance: 'manual' });
+describe('동료 턴 수동 입력 계약', () => {
+  it.each([
+    ['manual'],
+    ['attack'],
+    ['heal'],
+    ['support'],
+    ['hold'],
+    [undefined],
+  ])('저장 stance=%s여도 동료 턴은 수동 입력에서 멈춘다', (stance) => {
+    const combat = setupCompanionTurn({ stance });
+    const enemyHpBefore = combat.enemies[0].currentHp;
 
     CombatSystem.processUntilAllyTurn();
 
-    expect(combat.activeCombatantId).toBe('npc_nurse');
     expect(combat.phase).toBe('await_ally_input');
-    expect(CombatSystem.isManualCompanionTurn()).toBe(true);
+    expect(combat.activeCombatantId).toBe('npc_nurse');
+    expect(CombatSystem.isManualCompanionTurn(combat)).toBe(true);
+    expect(combat.enemies[0].currentHp).toBe(enemyHpBefore);
     expect(combat.actionSequence).toBe(0);
   });
 
-  it('attack은 실제 loadout 피해 스킬을 한 번 실행하고 다음 아군으로 넘긴다', () => {
-    const combat = setupCompanionTurn({ stance: 'attack' });
-
-    CombatSystem.processUntilAllyTurn();
-
-    expect(combat.enemies[0].currentHp).toBe(93);
-    expect(GameState.noise.level).toBe(1);
-    expect(combat.actionSequence).toBe(1);
-    expect(combat.activeCombatantId).toBe('player');
-  });
-
-  it('hold는 레거시 피해감소 필드 대신 실제 guard의 block 토큰을 적용한다', () => {
-    const combat = setupCompanionTurn({ stance: 'hold' });
-
-    CombatSystem.processUntilAllyTurn();
-
-    expect(combat.combatants.player.tokens.block).toBe(1);
-    expect(combat.enemies[0].currentHp).toBe(100);
-  });
-
-  it('support는 실제 dog_track_weakness의 marked 토큰을 적용한다', () => {
-    const combat = setupCompanionTurn({
-      npcId: 'npc_dog',
-      stance: 'support',
-    });
-
-    CombatSystem.processUntilAllyTurn();
-
-    expect(combat.combatants['enemy:0'].tokens.marked).toBe(1);
-    expect(combat.actionSequence).toBe(1);
+  it('CombatSystem은 동료 자동 계획 public API를 노출하지 않는다', () => {
+    expect(CombatSystem.requestCompanionPlan).toBeUndefined();
+    expect(CombatSystem._runCompanionTurn).toBeUndefined();
+    expect(CombatSystem._getCompanionStance).toBeUndefined();
+    expect(CombatSystem._planCompanionAction).toBeUndefined();
   });
 });
 
@@ -157,7 +121,7 @@ describe('동료 실제 스킬 쿨다운', () => {
       .toBe(1);
   });
 
-  it('manual 카드도 남은 쿨다운이 있으면 선택할 수 없다', () => {
+  it('수동 카드의 스킬 쿨다운이 있으면 선택할 수 없다', () => {
     setupCompanionTurn({ stance: 'manual' });
     GameState.npcs.states.npc_nurse.skillCooldowns = {
       nurse_scalpel: 1,

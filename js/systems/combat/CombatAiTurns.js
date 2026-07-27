@@ -1,4 +1,4 @@
-// CombatSystem 믹스인 — 동료 자율 행동 + 적 의도/AI/공격/타이밍 위협.
+// CombatSystem 믹스인 — 동료 턴 준비 + 적 의도/AI/공격/타이밍 위협.
 // 메서드는 CombatSystem 객체에 스프레드되어 this=CombatSystem으로 실행된다.
 import EventBus       from '../../core/EventBus.js';
 import GameState      from '../../core/GameState.js';
@@ -28,15 +28,8 @@ import {
   COMPANION_COMBAT_LOADOUTS,
   getCombatSkill,
 } from '../../data/combatSkills.js';
-import { COMPANION_TACTICS } from '../../data/companionTactics.js';
-import { planCompanionTurn } from './CompanionTactics.js';
 
 export const CombatAiTurns = {
-  _getCompanionStance(npcId) {
-    const st = GameState.npcs?.states?.[npcId];
-    return st?.stance ?? COMPANION_TACTICS[npcId]?.preferredStance ?? 'attack';
-  },
-
   _companionTurnKey(npcId) {
     const combat = GameState.combat;
     return `${combat?.roundNumber ?? 1}:${combat?.activeIdx ?? 0}:${npcId}`;
@@ -67,74 +60,6 @@ export const CombatAiTurns = {
     combat._preparedCompanionTurnKey = turnKey;
     this._tickCompanionSkillCooldowns(npcId);
     return true;
-  },
-
-  _planCompanionAction(npcId, stance = this._getCompanionStance(npcId)) {
-    const combat = GameState.combat;
-    const actor = combat?.combatants?.[npcId];
-    if (
-      !combat?.active
-      || actor?.sourceType !== 'companion'
-      || actor.dead === true
-      || (actor.hp ?? 0) <= 0
-    ) {
-      return null;
-    }
-
-    const combatants = Object.values(combat.combatants ?? {});
-    const skills = (actor.skillIds ?? [])
-      .map(skillId => combat.skillsById?.[skillId])
-      .filter(Boolean);
-    const validationFormations = this._getPreparedCompanionFormations(npcId)
-      ?? this._createCompactedFormationSnapshot();
-    return planCompanionTurn({
-      npcId,
-      stance,
-      skills,
-      allies: combatants.filter(combatant => combatant?.side === 'ally'),
-      enemies: combatants.filter(combatant => combatant?.side === 'enemy'),
-      canUse: (skill, target) => (
-        this._canUsePlannedCompanionSkill(
-          npcId,
-          skill,
-          target,
-          validationFormations,
-        )
-      ),
-    });
-  },
-
-  _runCompanionTurn(npcId, { stance = this._getCompanionStance(npcId) } = {}) {
-    this._prepareCompanionTurn(npcId);
-    const plan = this._planCompanionAction(npcId, stance);
-    if (!plan) return { ok: false, reason: 'no_plan', turnConsumed: false };
-    return this._executePlannedCompanionAction(plan);
-  },
-
-  requestCompanionPlan(stance, npcId = null) {
-    const combat = GameState.combat;
-    const entry = this._currentEntry(combat);
-    const activeNpcId = entry?.type === 'companion'
-      ? entry.id
-      : combat?.combatants?.[combat?.activeCombatantId]?.sourceType === 'companion'
-        ? combat.activeCombatantId
-        : null;
-    if (
-      !combat?.active
-      || combat.phase !== 'await_ally_input'
-      || !activeNpcId
-      || (npcId && npcId !== activeNpcId)
-      || !['attack', 'heal', 'support', 'hold'].includes(stance)
-    ) {
-      return { ok: false, reason: 'invalid_context', turnConsumed: false };
-    }
-
-    const result = this._runCompanionTurn(activeNpcId, { stance });
-    if (result.turnConsumed && combat.active) {
-      this.advanceTurn();
-      this.processUntilAllyTurn();
-    }
-    return result;
   },
 
   _tickCompanionSkillCooldowns(npcId) {

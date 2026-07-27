@@ -143,9 +143,8 @@ const CombatSystem = {
       return st?.isCompanion && (st.hp ?? 0) > 0;
     });
     gs.combat.turnQueue = this._buildTurnQueue(gs.combat, companions);
-    gs.combat.activeIdx = Math.max(0, gs.combat.turnQueue.findIndex(entry =>
-      entry.type === 'player'
-      || (entry.type === 'companion' && this._getCompanionStance(entry.id) === 'manual')
+    gs.combat.activeIdx = Math.max(0, gs.combat.turnQueue.findIndex(
+      entry => entry.type === 'player' || entry.type === 'companion',
     ));
     this._attachCombatantIds(gs.combat);
     this._setupRankedCombatState(gs.combat, gs, enemies);
@@ -330,10 +329,14 @@ const CombatSystem = {
 
   selectTarget(targetId) {
     const combat = GameState.combat;
+    const skill = combat?.skillsById?.[combat?.selectedSkillId];
+    const target = combat?.combatants?.[targetId];
     if (
       combat?.phase !== 'select_target'
       || typeof targetId !== 'string'
-      || !combat.combatants?.[targetId]
+      || !target
+      || !skill
+      || skill.target?.side !== target.side
     ) {
       return false;
     }
@@ -1100,13 +1103,8 @@ const CombatSystem = {
         if (active?.sourceType === 'companion') {
           const npcId = active.sourceId ?? active.id;
           this._prepareCompanionTurn(npcId);
-          if (this._getCompanionStance(npcId) !== 'manual') {
-            this._runCompanionTurn(npcId);
-            if (!combat.active) return true;
-            this.advanceTurn();
-            if (!combat.active) return true;
-            continue;
-          }
+          combat.phase = 'await_ally_input';
+          return true;
         }
         combat.phase = 'await_ally_input';
         return true;
@@ -1155,8 +1153,7 @@ const CombatSystem = {
 
   isManualCompanionTurn(combat = GameState.combat) {
     const entry = this._currentEntry(combat);
-    return entry?.type === 'companion'
-      && this._getCompanionStance(entry.id) === 'manual';
+    return entry?.type === 'companion';
   },
 
   _isEntryAlive(entry, combat, npcStates) {
@@ -1912,9 +1909,9 @@ const CombatSystem = {
   },
 
   /**
-   * Phase 1: 턴 큐 순서대로 AI 엔티티(동료/적) 턴을 플레이어 차례 전까지 실행.
+   * Phase 1: 턴 큐 순서대로 적 턴을 수동 아군 차례 전까지 실행.
    *   - activeIdx를 advance → entry type 분기 → 실행 → 승/패 판정 루프
-   *   - manual 동료는 입력을 기다리고, 나머지 stance는 실제 스킬을 한 번 계획·실행
+   *   - 동료는 저장 stance와 무관하게 턴을 준비하고 수동 입력을 기다림
    *   - 최대 iter 제한(큐 길이×2)으로 무한루프 방지
    */
   _processAiTurns() {
@@ -1937,12 +1934,8 @@ const CombatSystem = {
 
       if (entry.type === 'companion') {
         this._prepareCompanionTurn(entry.id);
-        if (this._getCompanionStance(entry.id) === 'manual') {
-          this.beginActiveTurn();
-          return;
-        }
-        this._runCompanionTurn(entry.id);
-        if (!combat.active) return;
+        this.beginActiveTurn();
+        return;
       } else if (entry.type === 'enemy') {
         this._runSingleEnemyTurn(entry.enemyIdx);
         if (this._isPlayerDefeated()) { this._resolveDefeat(); return; }

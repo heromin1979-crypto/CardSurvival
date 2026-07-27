@@ -59,6 +59,62 @@ function makeManualPartyContext(activeCombatantId) {
   };
 }
 
+function setupNurseTurn({ stance = 'attack' } = {}) {
+  GameState.player.hp = { current: 100, max: 100 };
+  GameState.player.characterId = 'doctor';
+  GameState.player.equipped = {};
+  GameState.player.traits = [];
+  GameState.stats.stamina = { current: 10, max: 10, decayPerTP: 0 };
+  GameState.stats.morale = { current: 50, max: 100, decayPerTP: 0 };
+  GameState.noise = { level: 0 };
+  GameState.companions = ['npc_nurse'];
+  GameState.npcs = {
+    states: {
+      npc_nurse: {
+        hp: 50,
+        maxHp: 50,
+        isCompanion: true,
+        bond: 70,
+        combatSpeed: 50,
+        stance,
+      },
+    },
+  };
+  GameState.flags = {};
+
+  CombatSystem._setupCombat({
+    enemies: [{
+      id: 'zombie_common',
+      name: 'infected',
+      currentHp: 30,
+      maxHp: 30,
+      speed: 4,
+      row: 'front',
+      defense: 0,
+      attack: { damage: [4, 6], accuracy: 1 },
+      specialSkills: [],
+      weaknesses: [],
+      resistances: [],
+      lootTable: [],
+      _skillCooldowns: {},
+      _statusEffects: [],
+    }],
+    dangerLevel: 1,
+  });
+
+  const combat = GameState.combat;
+  combat.turnQueue = [
+    { type: 'companion', id: 'npc_nurse', combatantId: 'npc_nurse', order: 0 },
+    { type: 'player', combatantId: 'player', order: 1 },
+    { type: 'enemy', enemyIdx: 0, combatantId: 'enemy:0', order: 2 },
+  ];
+  combat.activeIdx = 0;
+  combat.activeTurnIndex = 0;
+  combat.activeCombatantId = 'npc_nurse';
+  CombatSystem.beginActiveTurn();
+  return combat;
+}
+
 describe('manual party combat commands', () => {
   it.each([
     ['player', 'player_strike'],
@@ -125,49 +181,39 @@ describe('manual party combat commands', () => {
   });
 
   it('stops on a companion turn instead of auto-running companion stance actions', () => {
-    GameState.player.hp = { current: 100, max: 100 };
-    GameState.player.characterId = 'doctor';
-    GameState.player.equipped = {};
-    GameState.companions = ['npc_nurse'];
-    GameState.npcs = {
-      states: {
-        npc_nurse: {
-          hp: 50,
-          maxHp: 50,
-          isCompanion: true,
-          bond: 70,
-          combatSpeed: 50,
-          stance: 'heal',
-        },
-      },
-    };
-    GameState.flags = GameState.flags ?? {};
+    const combat = setupNurseTurn({ stance: 'attack' });
+    const enemyHpBeforeInput = combat.enemies[0].currentHp;
 
-    CombatSystem._setupCombat({
-      enemies: [{
-        id: 'zombie_common',
-        name: 'infected',
-        currentHp: 30,
-        maxHp: 30,
-        speed: 4,
-        row: 'front',
-        attack: { damage: [4, 6], accuracy: 1 },
-        specialSkills: [],
-        weaknesses: [],
-        resistances: [],
-      }],
-      dangerLevel: 1,
-    });
+    CombatSystem.processUntilAllyTurn();
 
-    const index = GameState.combat.turnQueue.findIndex(entry => entry.combatantId === 'npc_nurse');
-    GameState.combat.activeIdx = index;
-    GameState.combat.activeTurnIndex = index;
-    GameState.combat.activeCombatantId = 'npc_nurse';
-    CombatSystem.beginActiveTurn();
+    expect(combat.phase).toBe('await_ally_input');
+    expect(combat.activeCombatantId).toBe('npc_nurse');
+    expect(combat.enemies[0].currentHp).toBe(enemyHpBeforeInput);
+    expect(combat.actionSequence).toBe(0);
 
-    expect(GameState.combat.phase).toBe('await_ally_input');
-    expect(GameState.combat.activeCombatantId).toBe('npc_nurse');
-    expect(GameState.player.hp.current).toBe(100);
+    expect(CombatSystem.selectSkill('nurse_scalpel')).toBe(true);
+    expect(CombatSystem.selectTarget('enemy:0')).toBe(true);
+    const before = combat.enemies[0].currentHp;
+    const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0);
+    const result = CombatSystem.confirmAction();
+    randomSpy.mockRestore();
+
+    expect(result.ok).toBe(true);
+    expect(combat.enemies[0].currentHp).toBeLessThan(before);
+    expect(combat.actionSequence).toBe(1);
+    expect(combat.activeCombatantId).not.toBe('npc_nurse');
+  });
+
+  it('invalid target selection keeps the same companion turn pending', () => {
+    const combat = setupNurseTurn({ stance: 'attack' });
+
+    CombatSystem.processUntilAllyTurn();
+
+    expect(CombatSystem.selectSkill('nurse_triage')).toBe(true);
+    expect(CombatSystem.selectTarget('enemy:0')).toBe(false);
+    expect(combat.phase).toBe('select_target');
+    expect(combat.activeCombatantId).toBe('npc_nurse');
+    expect(combat.actionSequence).toBe(0);
   });
 
   it('confirms a selected ally skill through the ranked command context', () => {

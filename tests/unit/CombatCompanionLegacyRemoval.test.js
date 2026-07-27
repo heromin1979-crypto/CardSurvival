@@ -97,4 +97,14 @@ describe('레거시 공용 동료 행동 제거', () => {
       /companion(?:Attack|Heal)Cooldown/,
     );
   });
+
+  it('production combat은 개발용 companion tactic planner를 import하지 않는다', () => {
+    const source = readFileSync(
+      new URL('../../js/systems/combat/CombatAiTurns.js', import.meta.url),
+      'utf8',
+    );
+
+    expect(source).not.toContain("from './CompanionTactics.js'");
+    expect(source).not.toContain("from '../../data/companionTactics.js'");
+  });
 });
