@@ -43,6 +43,153 @@ function readyAction(overrides = {}) {
 }
 
 describe('executeEnemyAction', () => {
+  it('총기 행동의 시각 의미를 플레이어와 동료 enemyAction payload에 보존한다', () => {
+    const recorder = createServices();
+    const enemy = {
+      id: 'boss_soldier_nemesis',
+      bossPattern: {
+        basicAttacks: [{
+          id: 'rifle_burst',
+          damage: [12, 12],
+          accuracy: 1,
+          impactFx: 'shot',
+          movement: 'none',
+          camera: 'enemy-strike',
+        }],
+        specialSkill: null,
+        ultimate: null,
+      },
+    };
+
+    executeEnemyAction({
+      enemy,
+      action: readyAction({
+        actionId: 'rifle_burst',
+        targetIds: ['player', 'npc_soldier'],
+        motionKey: 'rifle_burst',
+      }),
+      services: recorder.services,
+      random: () => 0,
+    });
+
+    expect(recorder.services.emitFx.mock.calls.map(([fx]) => fx)).toEqual([
+      expect.objectContaining({
+        kind: 'enemyAction',
+        targetId: 'player',
+        actionId: 'rifle_burst',
+        category: 'basic',
+        motionKey: 'rifle_burst',
+        impactFx: 'shot',
+        movement: 'none',
+        camera: 'enemy-strike',
+      }),
+      expect.objectContaining({
+        kind: 'enemyAction',
+        targetId: 'npc_soldier',
+        actionId: 'rifle_burst',
+        category: 'basic',
+        motionKey: 'rifle_burst',
+        impactFx: 'shot',
+        movement: 'none',
+        camera: 'enemy-strike',
+      }),
+    ]);
+  });
+
+  it('CombatAiTurns가 플레이어와 동료 UI 큐에도 행동의 시각 의미를 보존한다', () => {
+    const enemy = {
+      id: 'boss_soldier_nemesis',
+      name: '탈영병 네메시스',
+      currentHp: 100,
+      maxHp: 100,
+      bossPattern: {
+        basicAttacks: [{
+          id: 'rifle_burst',
+          damage: [12, 12],
+          accuracy: 1,
+          impactFx: 'shot',
+          movement: 'none',
+          camera: 'enemy-strike',
+        }],
+        specialSkill: null,
+        ultimate: null,
+      },
+    };
+    GameState.player.hp = { current: 100, max: 100 };
+    GameState.npcs = {
+      states: {
+        npc_soldier: {
+          hp: 80,
+          maxHp: 80,
+          isCompanion: true,
+          statusEffects: [],
+        },
+      },
+    };
+    GameState.combat = {
+      enemies: [enemy],
+      log: [],
+      fxQueue: [],
+      combatants: {
+        player: {
+          id: 'player',
+          side: 'ally',
+          hp: 100,
+          maxHp: 100,
+          tokens: {},
+          statusEffects: [],
+          dead: false,
+        },
+        npc_soldier: {
+          id: 'npc_soldier',
+          side: 'ally',
+          sourceType: 'companion',
+          sourceId: 'npc_soldier',
+          hp: 80,
+          maxHp: 80,
+          tokens: {},
+          statusEffects: [],
+          dead: false,
+        },
+      },
+    };
+    const damage = vi.spyOn(CombatSystem, '_dealDamageToAlly')
+      .mockReturnValue({ dodged: false, damage: 12, dead: false, blocked: false });
+
+    try {
+      CombatSystem._executeEnemyCommittedAction(enemy, readyAction({
+        actionId: 'rifle_burst',
+        targetIds: ['player', 'npc_soldier'],
+        motionKey: 'rifle_burst',
+      }));
+
+      expect(damage).toHaveBeenCalledTimes(2);
+      expect(GameState.combat.fxQueue).toEqual([
+        expect.objectContaining({
+          kind: 'enemyAttack',
+          actionId: 'rifle_burst',
+          category: 'basic',
+          motionKey: 'rifle_burst',
+          impactFx: 'shot',
+          movement: 'none',
+          camera: 'enemy-strike',
+        }),
+        expect.objectContaining({
+          kind: 'enemyAttackCompanion',
+          npcId: 'npc_soldier',
+          actionId: 'rifle_burst',
+          category: 'basic',
+          motionKey: 'rifle_burst',
+          impactFx: 'shot',
+          movement: 'none',
+          camera: 'enemy-strike',
+        }),
+      ]);
+    } finally {
+      damage.mockRestore();
+    }
+  });
+
   it.each([
     ['basic', 'boss_jab', 11],
     ['special', 'boss_roar', 22],

@@ -279,6 +279,14 @@ export function executeEnemyAction({
     motionKey: action.motionKey,
     ...actionModifiersFor(definition),
   };
+  const actionPresentation = {
+    actionId: action.actionId,
+    category: action.category,
+    motionKey: action.motionKey,
+    impactFx: definition?.impactFx,
+    movement: definition?.movement,
+    camera: definition?.camera,
+  };
   const hitPlan = !canDealDirectDamage
     ? []
     : enemy?.spreadAttacks === true && targetIds.length > 1
@@ -297,8 +305,7 @@ export function executeEnemyAction({
           kind: 'enemyAction',
           enemyId: enemy?.id ?? null,
           targetId,
-          actionId: action.actionId,
-          motionKey: action.motionKey,
+          ...actionPresentation,
           hitIndex,
           miss: true,
         });
@@ -321,8 +328,7 @@ export function executeEnemyAction({
         kind: 'enemyAction',
         enemyId: enemy?.id ?? null,
         targetId,
-        actionId: action.actionId,
-        motionKey: action.motionKey,
+        ...actionPresentation,
         hitIndex,
         damage: succeeded ? (result?.damage ?? amount) : 0,
         miss: !succeeded,
@@ -352,8 +358,7 @@ export function executeEnemyAction({
         kind: 'enemyAction',
         enemyId: enemy?.id ?? null,
         targetId,
-        actionId: action.actionId,
-        motionKey: action.motionKey,
+        ...actionPresentation,
         damage: succeeded ? (damageResult?.damage ?? amount) : 0,
         miss: !succeeded,
       });

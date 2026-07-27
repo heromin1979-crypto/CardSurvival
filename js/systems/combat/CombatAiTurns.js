@@ -896,7 +896,6 @@ export const CombatAiTurns = {
     const combat = gs.combat;
     const enemyIdx = combat?.enemies?.indexOf(enemy) ?? -1;
     const definition = this._committedActionDefinition(enemy, action);
-    const impactFx = definition?.impactFx ?? this._monsterImpactFx(enemy);
     const blockedTargets = new Set();
 
     const defenseReductionFor = (targetId) => {
@@ -1060,10 +1059,17 @@ export const CombatAiTurns = {
         addNoise: amount => NoiseSystem.addNoise(amount),
         emitFx: payload => {
           const companionTarget = payload.targetId !== 'player';
+          const impactFx = payload.impactFx ?? this._monsterImpactFx(enemy);
           this._fx({
             kind: companionTarget ? 'enemyAttackCompanion' : 'enemyAttack',
             enemyIdx,
             ...(companionTarget ? { npcId: payload.targetId } : {}),
+            actionId: payload.actionId,
+            category: payload.category,
+            motionKey: payload.motionKey,
+            impactFx,
+            movement: payload.movement,
+            camera: payload.camera,
             fx: impactFx,
             dmg: payload.damage,
             miss: payload.miss,

@@ -23,6 +23,7 @@ export const CombatFxPlayer = {
 
   _fxSpeed: 1,
   _fxTimers: [],
+  _actionMotionToken: 0,
 
   _playFxQueue() {
     const combat = GameState.combat;
@@ -160,15 +161,17 @@ export const CombatFxPlayer = {
       case 'enemyAttack': {
         const enemyEl = this._enemySpriteEl(fx.enemyIdx);
         const player  = this._playerSpriteEl();
-        this._animate(enemyEl, 'lunging');
-        this._motion(enemyEl, ['motion-move-forward', this._enemyAttackMotion(fx)], 780);
-        this._cameraWork(fx.miss ? 'enemy-whiff' : 'enemy-strike', fx.crit ? 760 : 650);
+        const presentation = this._playEnemyActionMotion(enemyEl, fx, 780);
+        this._cameraWork(
+          this._enemyActionCamera(fx, presentation.manifestMotion),
+          fx.crit ? 760 : 650,
+        );
         if (fx.miss) {
-          this._motion(enemyEl, ['motion-move-forward', 'motion-whiff'], 720);
+          this._motion(enemyEl, [presentation.movementClass, 'motion-whiff'], 720);
           this._spawnFloatText(player, 'MISS', 'miss');
           break;
         }
-        this._spawnFxOverlay(player, fx.fx ?? 'claw');
+        this._spawnFxOverlay(player, fx.impactFx ?? fx.fx ?? 'claw');
         this._motion(player, ['motion-player-hit', this._hitReactionMotion(fx)], 620);
         this._animate(player, 'hit');
         this._spawnFloatText(player, `-${fx.dmg}`, fx.crit ? 'crit' : 'dmg');
@@ -179,15 +182,17 @@ export const CombatFxPlayer = {
       case 'enemyAttackCompanion': {
         const enemyEl = this._enemySpriteEl(fx.enemyIdx);
         const ally = this._allyEl(fx.npcId);
-        this._animate(enemyEl, 'lunging');
-        this._motion(enemyEl, ['motion-move-forward', this._enemyAttackMotion(fx)], 780);
-        this._cameraWork(fx.miss ? 'enemy-whiff' : 'enemy-strike', 650);
+        const presentation = this._playEnemyActionMotion(enemyEl, fx, 780);
+        this._cameraWork(
+          this._enemyActionCamera(fx, presentation.manifestMotion),
+          650,
+        );
         if (fx.miss) {
-          this._motion(enemyEl, ['motion-move-forward', 'motion-whiff'], 720);
+          this._motion(enemyEl, [presentation.movementClass, 'motion-whiff'], 720);
           this._spawnFloatText(ally, 'MISS', 'miss');
           break;
         }
-        this._spawnFxOverlay(ally, fx.fx ?? 'claw');
+        this._spawnFxOverlay(ally, fx.impactFx ?? fx.fx ?? 'claw');
         this._motion(ally, ['motion-player-hit', this._hitReactionMotion(fx)], 620);
         this._animate(ally, 'hit');
         this._spawnFloatText(ally, `-${fx.dmg}`, 'dmg');
@@ -387,15 +392,87 @@ export const CombatFxPlayer = {
     return 'motion-melee-strike';
   },
 
+  _enemyManifestMotion(fx) {
+    if (typeof fx?.motionKey !== 'string' || fx.motionKey.length === 0) return null;
+    const enemy = GameState.combat?.enemies?.[fx.enemyIdx];
+    const sheetKey = this._enemySpriteSheetKey(enemy);
+    const sheet = sheetKey ? COMBAT_SPRITE_SHEETS[sheetKey] : null;
+    const rawMotion = sheet?.motions?.[fx.motionKey];
+    const motion = Number.isInteger(rawMotion) ? { row: rawMotion } : rawMotion;
+    const row = motion?.row;
+    if (!Number.isInteger(row) || row < 0 || row >= (sheet?.rows ?? 0)) return null;
+    return { ...motion, row, sheetKey, sheet };
+  },
+
+  _applyEnemyManifestMotion(enemyEl, motion, dur) {
+    const sprite = enemyEl?.querySelector('.combat-sprite-sheet');
+    if (!sprite || !motion) return false;
+
+    const rows = motion.sheet.rows;
+    const rowPercent = rows > 1 ? (motion.row / (rows - 1)) * 100 : 0;
+    const duration = Number.isFinite(motion.durationMs) && motion.durationMs > 0
+      ? motion.durationMs
+      : dur;
+    const token = String(++this._actionMotionToken);
+    sprite.dataset.actionMotionToken = token;
+    sprite.style.setProperty('--sprite-row-y', `${rowPercent.toFixed(4)}%`);
+    sprite.style.setProperty('--sprite-duration', `${Math.round(duration)}ms`);
+    sprite.style.animationName = `var(--anim-r${motion.row}, combatSpriteSheetFrames)`;
+    sprite.style.animationIterationCount = motion.loop === true ? 'infinite' : '1';
+    setTimeout(() => {
+      if (sprite.dataset.actionMotionToken !== token) return;
+      delete sprite.dataset.actionMotionToken;
+      sprite.style.removeProperty('--sprite-row-y');
+      sprite.style.removeProperty('--sprite-duration');
+      sprite.style.removeProperty('animation-name');
+      sprite.style.removeProperty('animation-iteration-count');
+    }, duration);
+    return true;
+  },
+
+  _enemyMovementClass(fx, manifestMotion) {
+    const movement = manifestMotion?.movement ?? fx?.movement;
+    if (movement === 'none') return null;
+    if (movement === 'retreat') return 'motion-move-back';
+    return 'motion-move-forward';
+  },
+
+  _enemyActionCamera(fx, manifestMotion) {
+    if (fx?.miss) return 'enemy-whiff';
+    const camera = manifestMotion?.camera ?? fx?.camera;
+    const kind = typeof camera === 'string' && camera.startsWith('camera-')
+      ? camera.slice('camera-'.length)
+      : camera;
+    return CAMERA_CLASSES.includes(`camera-${kind}`) ? kind : 'enemy-strike';
+  },
+
+  _playEnemyActionMotion(enemyEl, fx, dur) {
+    const manifestMotion = this._enemyManifestMotion(fx);
+    const movementClass = this._enemyMovementClass(fx, manifestMotion);
+    this._animate(enemyEl, movementClass ? 'lunging' : 'attacking');
+
+    const usedManifest = this._applyEnemyManifestMotion(enemyEl, manifestMotion, dur);
+    const motionClasses = [
+      movementClass,
+      usedManifest ? null : this._enemyAttackMotion(fx),
+    ].filter(Boolean);
+    if (motionClasses.length > 0) {
+      this._motion(enemyEl, motionClasses, dur);
+    } else if (enemyEl) {
+      enemyEl.classList.remove(...COMBAT_MOTION_CLASSES);
+    }
+    return { manifestMotion: usedManifest ? manifestMotion : null, movementClass };
+  },
+
   _enemyAttackMotion(fx) {
-    const impactFx = normalizeImpactFx(fx?.fx, 'claw');
+    const impactFx = normalizeImpactFx(fx?.impactFx ?? fx?.fx, 'claw');
     if (impactFx === 'shot' || impactFx === 'acid') return 'motion-zombie-spit';
     if (impactFx === 'slam' || impactFx === 'shock' || impactFx === 'rupture') return 'motion-zombie-heavy';
     return 'motion-zombie-lunge';
   },
 
   _hitReactionMotion(fx) {
-    const impactFx = normalizeImpactFx(fx?.fx);
+    const impactFx = normalizeImpactFx(fx?.impactFx ?? fx?.fx);
     if (fx?.crit || (fx?.dmg ?? 0) >= 18 || impactFx === 'shock' || fx?.fx === 'explode') {
       return 'motion-hit-heavy';
     }

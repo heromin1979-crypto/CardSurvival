@@ -9,6 +9,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import CombatUI  from '../../js/ui/CombatUI.js';
 import GameState from '../../js/core/GameState.js';
+import * as CombatUiAssets from '../../js/ui/combat/combatUiAssets.js';
 
 function setupDom() {
   document.body.innerHTML = `
@@ -23,6 +24,46 @@ function setupDom() {
   `;
   CombatUI._screen = document.getElementById('screen-combat');
 }
+
+describe('combat sprite manifest motion metadata', () => {
+  it('실제 6×4 시트에 제공된 motions 메타데이터만 보존한다', () => {
+    const sheet = CombatUiAssets.COMBAT_SPRITE_SHEETS.boss_soldier_nemesis;
+    const previous = { ...sheet };
+
+    try {
+      expect(typeof CombatUiAssets.applyCombatSpriteManifest).toBe('function');
+
+      CombatUiAssets.applyCombatSpriteManifest?.({
+        'boss_soldier_nemesis_sheet.png': {
+          cols: 6,
+          rows: 4,
+          motions: {
+            rifle_burst: {
+              row: 1,
+              movement: 'none',
+              camera: 'enemy-strike',
+            },
+          },
+        },
+      });
+
+      expect(sheet).toMatchObject({
+        cols: 6,
+        rows: 4,
+        motions: {
+          rifle_burst: {
+            row: 1,
+            movement: 'none',
+            camera: 'enemy-strike',
+          },
+        },
+      });
+    } finally {
+      Object.keys(sheet).forEach(key => delete sheet[key]);
+      Object.assign(sheet, previous);
+    }
+  });
+});
 
 describe('_playFx — 개별 연출 분기', () => {
   beforeEach(setupDom);
@@ -79,6 +120,90 @@ describe('_playFx — 개별 연출 분기', () => {
     expect(player.classList.contains('hit')).toBe(true);
     expect(player.querySelector('.cv-fx-rupture')).not.toBeNull();
     expect(player.querySelector('.dmg-popup').textContent).toBe('-11');
+  });
+
+  it('motions 메타데이터가 있으면 실제 4행 범위의 motionKey 행과 고정 사격 이동을 사용한다', () => {
+    const sheet = CombatUiAssets.COMBAT_SPRITE_SHEETS.boss_soldier_nemesis;
+    const previous = { ...sheet };
+    const enemy = document.querySelector('.cv-enemy-sprite[data-idx="0"]');
+    enemy.innerHTML = '<span class="cv-enemy-img combat-sprite-sheet"></span>';
+    GameState.combat = {
+      enemies: [{ id: 'boss_soldier_nemesis' }],
+    };
+
+    try {
+      CombatUiAssets.applyCombatSpriteManifest({
+        'boss_soldier_nemesis_sheet.png': {
+          cols: 6,
+          rows: 4,
+          motions: {
+            rifle_burst: {
+              row: 1,
+              movement: 'none',
+              camera: 'enemy-strike',
+            },
+          },
+        },
+      });
+
+      CombatUI._playFx({
+        kind: 'enemyAttack',
+        enemyIdx: 0,
+        actionId: 'rifle_burst',
+        category: 'basic',
+        motionKey: 'rifle_burst',
+        impactFx: 'shot',
+        fx: 'shot',
+        movement: 'none',
+        camera: 'enemy-strike',
+        dmg: 12,
+      });
+
+      const sprite = enemy.querySelector('.combat-sprite-sheet');
+      expect(sprite.style.getPropertyValue('--sprite-row-y')).toBe('33.3333%');
+      expect(enemy.classList.contains('lunging')).toBe(false);
+      expect(enemy.classList.contains('motion-move-forward')).toBe(false);
+      expect(enemy.classList.contains('motion-zombie-spit')).toBe(false);
+      expect(document.querySelector('.combat-visual').classList.contains('camera-enemy-strike')).toBe(true);
+    } finally {
+      Object.keys(sheet).forEach(key => delete sheet[key]);
+      Object.assign(sheet, previous);
+    }
+  });
+
+  it('motions 메타데이터가 없으면 4행 CSS 사격 모션으로 폴백하되 전진하지 않는다', () => {
+    const sheet = CombatUiAssets.COMBAT_SPRITE_SHEETS.boss_soldier_nemesis;
+    const previous = { ...sheet };
+    const enemy = document.querySelector('.cv-enemy-sprite[data-idx="0"]');
+    enemy.innerHTML = '<span class="cv-enemy-img combat-sprite-sheet"></span>';
+    GameState.combat = {
+      enemies: [{ id: 'boss_soldier_nemesis' }],
+    };
+
+    try {
+      delete sheet.motions;
+      CombatUI._playFx({
+        kind: 'enemyAttack',
+        enemyIdx: 0,
+        actionId: 'rifle_burst',
+        category: 'basic',
+        motionKey: 'rifle_burst',
+        impactFx: 'shot',
+        fx: 'shot',
+        movement: 'none',
+        camera: 'enemy-strike',
+        dmg: 12,
+      });
+
+      const sprite = enemy.querySelector('.combat-sprite-sheet');
+      expect(sprite.style.getPropertyValue('--sprite-row-y')).toBe('');
+      expect(enemy.classList.contains('lunging')).toBe(false);
+      expect(enemy.classList.contains('motion-move-forward')).toBe(false);
+      expect(enemy.classList.contains('motion-zombie-spit')).toBe(true);
+    } finally {
+      Object.keys(sheet).forEach(key => delete sheet[key]);
+      Object.assign(sheet, previous);
+    }
   });
 
   it.each([

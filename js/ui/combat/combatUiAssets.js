@@ -42,6 +42,25 @@ export const COMBAT_SPRITE_SHEETS = {
   food_warlord: spriteSheet('/assets/images/combat/spritesheets/enemies/food_warlord_sheet.png'),
 };
 
+export function applyCombatSpriteManifest(manifest) {
+  if (!manifest || typeof manifest !== 'object') return;
+
+  for (const key in COMBAT_SPRITE_SHEETS) {
+    const sheet = COMBAT_SPRITE_SHEETS[key];
+    const meta = manifest[sheet.src.split('/').pop()];
+    if (!meta || typeof meta !== 'object') continue;
+
+    if (Number.isInteger(meta.cols) && meta.cols > 0) sheet.cols = meta.cols;
+    if (Number.isInteger(meta.rows) && meta.rows > 0) sheet.rows = meta.rows;
+    if (Array.isArray(meta.frameDur) && meta.frameDur.length) {
+      sheet.frameDur = meta.frameDur;
+    }
+    if (meta.motions && typeof meta.motions === 'object' && !Array.isArray(meta.motions)) {
+      sheet.motions = { ...meta.motions };
+    }
+  }
+}
+
 // Per-sheet frame counts (cols) live in a manifest the sprite-anim-editor tool writes.
 // If absent, every sheet stays the legacy 6×4 — so this is a zero-regression enhancement.
 async function _loadSpriteManifest() {
@@ -53,17 +72,7 @@ async function _loadSpriteManifest() {
     const res = await fetch('/assets/images/combat/spritesheets/manifest.json', { cache: 'no-store' });
     if (!res.ok) return;
     const manifest = await res.json();
-    for (const key in COMBAT_SPRITE_SHEETS) {
-      const sheet = COMBAT_SPRITE_SHEETS[key];
-      const meta = manifest[sheet.src.split('/').pop()];
-      if (meta && meta.cols) {
-        sheet.cols = meta.cols | 0;
-        if (meta.rows) sheet.rows = meta.rows | 0;
-        if (Array.isArray(meta.frameDur) && meta.frameDur.length) {
-          sheet.frameDur = meta.frameDur;
-        }
-      }
-    }
+    applyCombatSpriteManifest(manifest);
     _injectSpriteKeyframes();
   } catch (e) { /* manifest optional → keep 6×4 defaults */ }
 }
