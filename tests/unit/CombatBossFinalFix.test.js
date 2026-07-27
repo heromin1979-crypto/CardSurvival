@@ -509,6 +509,122 @@ describe('Finding B - source-aware 적/전장/무기 상태 소비', () => {
     expect(statusLog).toContain('5');
   });
 
+  it.each([
+    ['shield → per-enemy DoT', 'defense-first', { damageShield: 10 }, 100, 0],
+    ['per-enemy DoT → shield', 'dot-first', { damageShield: 10 }, 100, 0],
+    ['shield + legacy DoT', 'legacy', { damageShield: 10 }, 100, 0],
+    ['invulnerable → per-enemy DoT', 'defense-first', { invulnerable: true }, 100, 0],
+    ['per-enemy DoT → invulnerable', 'dot-first', { invulnerable: true }, 100, 0],
+    ['invulnerable + legacy DoT', 'legacy', { invulnerable: true }, 100, 0],
+    ['reduction → per-enemy DoT', 'defense-first', { incomingDamageReduction: 0.5 }, 95, 5],
+    ['per-enemy DoT → reduction', 'dot-first', { incomingDamageReduction: 0.5 }, 95, 5],
+    ['reduction + legacy DoT', 'legacy', { incomingDamageReduction: 0.5 }, 95, 5],
+  ])('duration-1 방어와 DoT는 tick-start snapshot을 사용한다: %s', (
+    _label,
+    storageOrder,
+    defenseEffect,
+    expectedHp,
+    expectedDamage,
+  ) => {
+    const { combat, enemy } = setupBoss('boss_sewer_king');
+    enemy.defense = 0;
+    enemy.currentHp = 100;
+    combat.combatants['enemy:0'].hp = 100;
+    const defenseStatus = {
+      id: 'tick_snapshot_defense',
+      name: 'tick snapshot 방어',
+      sourceEnemyId: enemy.id,
+      remainingRounds: 1,
+      duration: 1,
+      effect: defenseEffect,
+    };
+    const dotStatus = {
+      id: 'tick_snapshot_dot',
+      name: 'tick snapshot DoT',
+      sourceEnemyId: 'player',
+      remainingRounds: 1,
+      duration: 1,
+      effect: { hpLossPerRound: 10 },
+    };
+    if (storageOrder === 'legacy') {
+      enemy._statusEffects = [defenseStatus];
+      combat.enemyStatus = [{
+        ...dotStatus,
+        effect: { ...dotStatus.effect },
+      }];
+    } else {
+      enemy._statusEffects = storageOrder === 'defense-first'
+        ? [defenseStatus, dotStatus]
+        : [dotStatus, defenseStatus];
+      combat.enemyStatus = [];
+    }
+    combat.combatants['enemy:0'].statusEffects = enemy._statusEffects;
+    const logBefore = combat.log.length;
+
+    CombatSystem._tickStatusEffects();
+
+    expect(enemy.currentHp).toBe(expectedHp);
+    expect(combat.combatants['enemy:0'].hp).toBe(expectedHp);
+    expect(enemy._statusEffects).toEqual([]);
+    expect(combat.enemyStatus).toEqual([]);
+    const statusLog = combat.log.slice(logBefore)
+      .find(entry => entry.includes('tick snapshot DoT'));
+    expect(statusLog).toContain(String(expectedDamage));
+  });
+
+  it('per-enemy와 legacy DoT는 tick-start shield pool을 한 번만 공유한다', () => {
+    const { combat, enemy } = setupBoss('boss_sewer_king');
+    enemy.defense = 0;
+    enemy.currentHp = 100;
+    combat.combatants['enemy:0'].hp = 100;
+    enemy._statusEffects = [{
+      id: 'shared_pool_per_dot',
+      name: 'shared pool per DoT',
+      sourceEnemyId: 'player',
+      remainingRounds: 1,
+      effect: { hpLossPerRound: 10 },
+    }, {
+      id: 'shared_pool_shield',
+      name: 'shared pool shield',
+      sourceEnemyId: enemy.id,
+      remainingRounds: 1,
+      effect: { damageShield: 15 },
+    }];
+    combat.combatants['enemy:0'].statusEffects = enemy._statusEffects;
+    combat.enemyStatus = [{
+      id: 'shared_pool_legacy_dot',
+      name: 'shared pool legacy DoT',
+      duration: 1,
+      effect: { hpLossPerRound: 10 },
+    }];
+    const logBefore = combat.log.length;
+
+    CombatSystem._tickStatusEffects();
+
+    expect(enemy.currentHp).toBe(95);
+    expect(combat.combatants['enemy:0'].hp).toBe(95);
+    expect(enemy._statusEffects).toEqual([]);
+    expect(combat.enemyStatus).toEqual([]);
+    const statusLogs = combat.log.slice(logBefore);
+    expect(statusLogs.find(entry => entry.includes('shared pool per DoT')))
+      .toContain('0');
+    expect(statusLogs.find(entry => entry.includes('shared pool legacy DoT')))
+      .toContain('5');
+  });
+
+  it('legacy enemyStatus의 duration이 유효하지 않으면 기존 cleanup 계약대로 제거한다', () => {
+    const { combat } = setupBoss('boss_sewer_king');
+    combat.enemyStatus = [{
+      id: 'invalid_legacy_duration',
+      name: 'invalid legacy duration',
+      effect: {},
+    }];
+
+    CombatSystem._tickStatusEffects();
+
+    expect(combat.enemyStatus).toEqual([]);
+  });
+
   it('outgoingDamageIncrease는 enemy action 피해에 적용된다', () => {
     const { combat, enemy } = setupBoss('boss_horde_mother');
     CombatSystem._applyEnemyStatusInflict(enemy, {
@@ -1025,6 +1141,31 @@ describe('Finding C - hunger_domination 치료 간섭', () => {
       remainingRounds: 2,
       effect: { damageShield: 12 },
     }));
+  });
+
+  it('direct UI item heal은 wrap 전 living ally가 남으면 source shield를 즉시 한 번 tick한다', () => {
+    const { combat, enemy } = setupBoss('food_warlord', {
+      playerHp: 40,
+      playerMaxHp: 100,
+      companionIds: ['npc_nurse'],
+    });
+    const itemId = addCombatItem('first_aid_kit');
+    combat._identityFirstMedicalUsed = true;
+    activateHungerDomination(enemy);
+    arrangeTurnQueue(combat, ['enemy:0', 'player', 'npc_nurse'], 'player');
+    const roundNumberBefore = combat.roundNumber;
+
+    CombatSystem.resolveAction('useItem', itemId);
+
+    expect(enemy._statusEffects).toContainEqual(expect.objectContaining({
+      id: 'hunger_domination_shield',
+      sourceEnemyId: enemy.id,
+      remainingRounds: 1,
+      effect: { damageShield: 12 },
+    }));
+    expect(combat.activeCombatantId).toBe('npc_nurse');
+    expect(combat.roundNumber).toBe(roundNumberBefore);
+    expect(combat._directActionTickPending).toBe(false);
   });
 
   it('turn을 소비하지 않는 ranked item heal은 미래 round tick을 추가 유예하지 않는다', () => {

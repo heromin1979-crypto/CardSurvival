@@ -729,11 +729,10 @@ const CombatSystem = {
           sourceEnemyId,
           amount: shield,
           remainingRounds: Number.isFinite(duration) ? duration : 1,
-          skipNextRoundTick: combat?._directActionTickPending === true
-            || (
-              combat?._rankedActionTurnAdvancePending === true
-              && !this._hasLivingAllyActionBeforeWrap(combat)
-            ),
+          skipNextRoundTick: (
+            combat?._directActionTickPending === true
+            || combat?._rankedActionTurnAdvancePending === true
+          ) && !this._hasLivingAllyActionBeforeWrap(combat),
         });
         const rankedSource = this._rankCombatantForEnemy(source);
         if (applied && rankedSource) rankedSource.statusEffects = source._statusEffects;
@@ -2267,37 +2266,53 @@ const CombatSystem = {
 
     this._tickBattlefieldStatuses();
 
-    // per-enemy 상태이상 틱 (AoE 투척 효과 포함)
-    for (const enemy of this.getAliveEnemies()) {
+    const enemiesAtStatusTickStart = this.getAliveEnemies();
+    const legacyTarget = this._getTarget();
+    const legacyStatusesAtTickStart = [...(gs.combat.enemyStatus ?? [])];
+
+    // 배열 순서와 저장 위치에 관계없이 tick 시작 시점의 방어 상태로 DoT를 해결한다.
+    for (const enemy of enemiesAtStatusTickStart) {
       tickEnemyStatusEffects(
         enemy,
         msg => gs.combat.log.push(msg),
         (target, rawDamage) => this._resolveDirectEnemyDamage(target, rawDamage, {
           bypassBaseDefense: true,
         }),
+        { phase: 'damage' },
       );
     }
 
-    // 레거시 enemyStatus 틱 (단일 타겟용 하위호환)
-    const target = this._getTarget();
-    if (target) {
-      gs.combat.enemyStatus = (gs.combat.enemyStatus ?? []).filter(s => {
+    if (legacyTarget) {
+      for (const s of legacyStatusesAtTickStart) {
+        if (!(gs.combat.enemyStatus ?? []).includes(s)) continue;
         if (s.effect.hpLossPerRound) {
           const result = this._resolveDirectEnemyDamage(
-            target,
+            legacyTarget,
             s.effect.hpLossPerRound,
             { bypassBaseDefense: true },
           );
           gs.combat.log.push(I18n.t('combatSys.statusTickEnemy', {
             name: s.name,
-            target: I18n.enemyName(target.id, target.name),
+            target: I18n.enemyName(legacyTarget.id, legacyTarget.name),
             dmg: result.damage,
           }));
         }
-        s.duration--;
-        return s.duration > 0;
-      });
+      }
     }
+
+    // DoT 해결이 끝난 뒤 tick 시작 시점 status의 수명과 만료를 처리한다.
+    for (const enemy of enemiesAtStatusTickStart) {
+      tickEnemyStatusEffects(enemy, null, null, { phase: 'duration' });
+    }
+    const expiredLegacyStatuses = new Set();
+    for (const s of legacyStatusesAtTickStart) {
+      if (!(gs.combat.enemyStatus ?? []).includes(s)) continue;
+      s.duration--;
+      if (!(s.duration > 0)) expiredLegacyStatuses.add(s);
+    }
+    gs.combat.enemyStatus = (gs.combat.enemyStatus ?? []).filter(
+      status => !expiredLegacyStatuses.has(status),
+    );
 
     // 방어 상태 만료
     if (gs.combat.playerGuard?.active) consumeGuard();

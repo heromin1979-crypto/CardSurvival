@@ -212,30 +212,45 @@ export function applyMultiTarget(
 
 // ── 적 per-enemy 상태이상 틱 ────────────────────────────────────
 
-export function tickEnemyStatusEffects(enemy, logFn, resolveDamage = null) {
+export function tickEnemyStatusEffects(
+  enemy,
+  logFn,
+  resolveDamage = null,
+  { phase = 'all' } = {},
+) {
   if (!enemy._statusEffects?.length) return;
   const statusesAtTickStart = [...enemy._statusEffects];
+
+  if (phase !== 'duration') {
+    for (const s of statusesAtTickStart) {
+      if (!(enemy._statusEffects ?? []).includes(s)) continue;
+      if (s._skipNextRoundTick === true) continue;
+      if (s.effect?.hpLossPerRound) {
+        const rawDamage = s.effect.hpLossPerRound;
+        const result = typeof resolveDamage === 'function'
+          ? resolveDamage(enemy, rawDamage)
+          : (() => {
+              const hpBefore = enemy.currentHp;
+              enemy.currentHp = Math.max(0, enemy.currentHp - rawDamage);
+              return { damage: hpBefore - enemy.currentHp };
+            })();
+        logFn(I18n.t('combatSys.statusTickEnemy', {
+          name:   s.name,
+          target: I18n.enemyName(enemy.id, enemy.name),
+          dmg:    result?.damage ?? 0,
+        }));
+      }
+    }
+  }
+
+  if (phase === 'damage') return;
+
   const expired = new Set();
   for (const s of statusesAtTickStart) {
     if (!(enemy._statusEffects ?? []).includes(s)) continue;
     if (s._skipNextRoundTick === true) {
       delete s._skipNextRoundTick;
       continue;
-    }
-    if (s.effect?.hpLossPerRound) {
-      const rawDamage = s.effect.hpLossPerRound;
-      const result = typeof resolveDamage === 'function'
-        ? resolveDamage(enemy, rawDamage)
-        : (() => {
-            const hpBefore = enemy.currentHp;
-            enemy.currentHp = Math.max(0, enemy.currentHp - rawDamage);
-            return { damage: hpBefore - enemy.currentHp };
-          })();
-      logFn(I18n.t('combatSys.statusTickEnemy', {
-        name:   s.name,
-        target: I18n.enemyName(enemy.id, enemy.name),
-        dmg:    result?.damage ?? 0,
-      }));
     }
     if (Number.isFinite(s.remainingRounds)) {
       s.remainingRounds--;
