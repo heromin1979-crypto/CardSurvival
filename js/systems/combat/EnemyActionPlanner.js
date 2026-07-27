@@ -38,7 +38,7 @@ function copyAction(action, changes = {}) {
 }
 
 function telegraphTurns(action) {
-  const value = action?.telegraph?.turns ?? action?.telegraph ?? 0;
+  const value = action?.telegraphTurns ?? action?.telegraph?.turns ?? action?.telegraph ?? 0;
   return Number.isFinite(value) ? Math.max(0, Math.floor(value)) : 0;
 }
 
@@ -176,19 +176,36 @@ export function commitEnemyAction({
   random = Math.random,
 }) {
   const selected = selectAction(enemy, cooldowns, random);
-  const actionId = selected.actionId ?? selected.id ?? 'basic_attack';
-  const targetPolicy = targetPolicyFor(enemy, selected);
-  const targetCount = targetCountFor(selected);
-  const remainingTelegraphTurns = telegraphTurns(selected);
+
+  return commitEnemyActionDefinition({
+    enemy,
+    definition: selected,
+    category: selected.category,
+    candidates,
+    random,
+  });
+}
+
+export function commitEnemyActionDefinition({
+  enemy,
+  definition,
+  category,
+  candidates,
+  random = Math.random,
+}) {
+  const actionId = definition?.actionId ?? definition?.id ?? 'basic_attack';
+  const targetPolicy = targetPolicyFor(enemy, definition);
+  const targetCount = targetCountFor(definition);
+  const remainingTelegraphTurns = telegraphTurns(definition);
 
   const committedAction = withMetadata({
     actionId,
-    category: selected.category ?? 'basic',
+    category: category ?? definition?.category ?? 'basic',
     state: remainingTelegraphTurns > 0 ? 'telegraphing' : 'ready',
     targetIds: selectTargetIds(candidates, targetPolicy, targetCount, random),
     remainingTelegraphTurns,
-    hitCount: hitCount(selected, enemy),
-    motionKey: selected.motionKey ?? actionId,
+    hitCount: hitCount(definition, enemy),
+    motionKey: definition?.motionKey ?? actionId,
   }, { targetPolicy, targetCount });
 
   return { committedAction };
