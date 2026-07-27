@@ -6,10 +6,12 @@ import I18n          from '../core/I18n.js';
 import NightSystem   from '../systems/NightSystem.js';
 import { CHARACTERS } from '../data/characters.js';
 import { DISTRICTS }  from '../data/districts.js';
-import BALANCE        from '../data/gameBalance.js';
 import { NPC_ITEMS }  from '../data/npcs.js';
 import { combatAssetManifest } from '../data/combatAssets.js';
 import { getRank }   from '../systems/combat/FormationSystem.js';
+import { canReload, getMagazineState } from '../systems/WeaponAmmoSystem.js';
+import { CombatFxPlayer } from './combat/CombatFxPlayer.js';
+import { COMPANION_ICONS, INIT_TYPE_ICONS } from './combat/combatUiAssets.js';
 
 const PLAYER_IMG_M = './assets/images/player_M.jpg';
 const PLAYER_IMG_F = './assets/images/player_F.jpg';
@@ -31,183 +33,18 @@ const SAMPLE_SKILL_LABELS = {
   soldier_tactical_shift: '전술 이동',
 };
 
+const TOKEN_ICONS = {
+  block: '🛡', strength: '💪', power: '⚒', improvised: '🔧',
+  vulnerable: '💔', dodge: '💨', accuracy: '🎯', focus: '👁',
+  taunted: '🗯', hesitation: '😰', speed: '⚡', marked: '☠',
+};
+
 const DANGER_LABEL = ['안전', '보통', '경계', '위험', '극위험', '극위험'];
 const DANGER_COLOR = ['#449944', '#889933', '#cc8822', '#cc3333', '#881111', '#881111'];
 
 const WEAKNESS_LABEL = { fire:'🔥약점', blade:'🗡️약점', bullet:'🔫약점', blunt:'💥약점', explosive:'💣약점', electric:'⚡약점' };
 const RESIST_LABEL   = { fire:'🔥저항', blade:'🗡️저항', bullet:'🔫저항', blunt:'💥저항', explosive:'💣저항', electric:'⚡저항' };
 
-// Combat Overhaul Phase 1 — 턴 큐 HUD 아이콘/라벨 매핑
-const INIT_TYPE_ICONS = {
-  player:    '👤',
-  companion: '🤝',
-  enemy:     '👹',
-};
-
-// 동반자 표시 아이콘 (스테이지 스프라이트 · 패널 공용)
-const COMPANION_ICONS = {
-  npc_dog: '🐕', npc_nurse: '👩‍⚕️', npc_soldier_deserter: '🪖', npc_soldier: '🪖',
-  npc_child: '👧', npc_mechanic: '🔧', npc_trader: '🧳',
-  npc_student: '📖', npc_old_survivor: '👴', npc_doctor: '🥼',
-};
-
-// FX 오버레이 이모지 (cv-fx-* 클래스와 페어)
-const spriteSheet = (src, cols = 6, rows = 4) => ({ src, cols, rows });
-
-const COMBAT_SPRITE_SHEETS = {
-  doctor_f: spriteSheet('/assets/images/combat/spritesheets/doctor_f_sheet.png'),
-  soldier_companion: spriteSheet('/assets/images/combat/spritesheets/soldier_companion_sheet.png'),
-  nurse_companion: spriteSheet('/assets/images/combat/spritesheets/nurse_companion_sheet.png'),
-  zombie_patient_dormant: spriteSheet('/assets/images/combat/spritesheets/enemies/zombie_patient_dormant_sheet.png'),
-  zombie_common: spriteSheet('/assets/images/combat/spritesheets/enemies/zombie_common_sheet.png'),
-  zombie_runner: spriteSheet('/assets/images/combat/spritesheets/enemies/zombie_runner_sheet.png'),
-  zombie_brute: spriteSheet('/assets/images/combat/spritesheets/enemies/zombie_brute_sheet.png'),
-  zombie_horde: spriteSheet('/assets/images/combat/spritesheets/enemies/zombie_horde_sheet.png'),
-  rabid_dog: spriteSheet('/assets/images/combat/spritesheets/enemies/rabid_dog_sheet.png'),
-  zombie_acid: spriteSheet('/assets/images/combat/spritesheets/enemies/zombie_acid_sheet.png'),
-  zombie_bloater: spriteSheet('/assets/images/combat/spritesheets/enemies/zombie_bloater_sheet.png'),
-  zombie_screamer: spriteSheet('/assets/images/combat/spritesheets/enemies/zombie_screamer_sheet.png'),
-  zombie_charger: spriteSheet('/assets/images/combat/spritesheets/enemies/zombie_charger_sheet.png'),
-  raider: spriteSheet('/assets/images/combat/spritesheets/enemies/raider_sheet.png'),
-  raider_elite: spriteSheet('/assets/images/combat/spritesheets/enemies/raider_elite_sheet.png'),
-  boss_horde_mother: spriteSheet('/assets/images/combat/spritesheets/enemies/boss_horde_mother_sheet.png'),
-  boss_raider_warlord: spriteSheet('/assets/images/combat/spritesheets/enemies/boss_raider_warlord_sheet.png'),
-  boss_feral_dog_alpha: spriteSheet('/assets/images/combat/spritesheets/enemies/boss_feral_dog_alpha_sheet.png'),
-  boss_penthouse_survivor: spriteSheet('/assets/images/combat/spritesheets/enemies/boss_penthouse_survivor_sheet.png'),
-  boss_soldier_nemesis: spriteSheet('/assets/images/combat/spritesheets/enemies/boss_soldier_nemesis_sheet.png'),
-  boss_homeless_nemesis: spriteSheet('/assets/images/combat/spritesheets/enemies/boss_homeless_nemesis_sheet.png'),
-  food_warlord: spriteSheet('/assets/images/combat/spritesheets/enemies/food_warlord_sheet.png'),
-};
-
-// Per-sheet frame counts (cols) live in a manifest the sprite-anim-editor tool writes.
-// If absent, every sheet stays the legacy 6×4 — so this is a zero-regression enhancement.
-async function _loadSpriteManifest() {
-  try {
-    const res = await fetch('/assets/images/combat/spritesheets/manifest.json', { cache: 'no-store' });
-    if (!res.ok) return;
-    const manifest = await res.json();
-    for (const key in COMBAT_SPRITE_SHEETS) {
-      const sheet = COMBAT_SPRITE_SHEETS[key];
-      const meta = manifest[sheet.src.split('/').pop()];
-      if (meta && meta.cols) {
-        sheet.cols = meta.cols | 0; if (meta.rows) sheet.rows = meta.rows | 0;
-        if (Array.isArray(meta.frameDur) && meta.frameDur.length) sheet.frameDur = meta.frameDur;
-      }
-    }
-    _injectSpriteKeyframes();
-  } catch (e) { /* manifest optional → keep 6×4 defaults */ }
-}
-
-// Build per-sheet per-row @keyframes for sheets with explicit per-frame timing (frameDur).
-// step-end holds each stop until the next, so a stop at cumulative-time% with that frame's
-// column position gives per-frame hold durations. Rows without frameDur get a uniform keyframe.
-function _injectSpriteKeyframes() {
-  let css = '';
-  for (const key in COMBAT_SPRITE_SHEETS) {
-    const sheet = COMBAT_SPRITE_SHEETS[key];
-    if (!Array.isArray(sheet.frameDur) || !sheet.frameDur.length) continue;
-    const cols = sheet.cols | 0, rows = sheet.rows | 0;
-    for (let r = 0; r < rows; r++) {
-      const durs = (Array.isArray(sheet.frameDur[r]) && sheet.frameDur[r].length) ? sheet.frameDur[r] : new Array(cols).fill(1);
-      const total = durs.reduce((a, b) => a + (+b || 0), 0) || 1;
-      let cum = 0, stops = '';
-      for (let i = 0; i < durs.length; i++) {
-        const pct = (cum / total) * 100;
-        const x = cols > 1 ? (i / (cols - 1)) * 100 : 0;
-        stops += `${pct.toFixed(4)}%{background-position-x:${x.toFixed(4)}%}`;
-        cum += (+durs[i] || 0);
-      }
-      stops += `100%{background-position-x:${cols > 1 ? 100 : 0}%}`;
-      css += `@keyframes spriteanim_${key}_r${r}{${stops}}`;
-    }
-  }
-  let el = document.getElementById('sprite-anim-keyframes');
-  if (!css) { if (el) el.textContent = ''; return; }
-  if (!el) { el = document.createElement('style'); el.id = 'sprite-anim-keyframes'; document.head.appendChild(el); }
-  el.textContent = css;
-}
-_loadSpriteManifest();
-
-const COMPANION_SPRITE_KEYS = {
-  npc_nurse: 'nurse_companion',
-  npc_soldier: 'soldier_companion',
-  npc_wounded_soldier: 'soldier_companion',
-  npc_soldier_deserter: 'soldier_companion',
-};
-
-const ENEMY_SPRITE_KEYS = {
-  zombie_patient_dormant: 'zombie_patient_dormant',
-  zombie_common: 'zombie_common',
-  zombie_runner: 'zombie_runner',
-  zombie_brute: 'zombie_brute',
-  zombie_horde: 'zombie_horde',
-  rabid_dog: 'rabid_dog',
-  zombie_acid: 'zombie_acid',
-  zombie_bloater: 'zombie_bloater',
-  zombie_screamer: 'zombie_screamer',
-  zombie_charger: 'zombie_charger',
-  raider: 'raider',
-  raider_elite: 'raider_elite',
-  boss_horde_mother: 'boss_horde_mother',
-  boss_raider_warlord: 'boss_raider_warlord',
-  boss_feral_dog_alpha: 'boss_feral_dog_alpha',
-  boss_penthouse_survivor: 'boss_penthouse_survivor',
-  boss_soldier_nemesis: 'boss_soldier_nemesis',
-  boss_homeless_nemesis: 'boss_homeless_nemesis',
-  food_warlord: 'food_warlord',
-};
-
-const FX_EMOJI = {
-  blunt: '💥', fire: '🔥', spark: '⚡', blast: '💥', punch: '👊',
-  explode: '💥', scream: '📣', muzzle: '✸', skill: '💢',
-};
-
-const CAMERA_CLASSES = [
-  'camera-ally-strike',
-  'camera-enemy-strike',
-  'camera-ally-whiff',
-  'camera-enemy-whiff',
-  'camera-impact-heavy',
-];
-
-const COMBAT_MOTION_CLASSES = [
-  'motion-move-forward',
-  'motion-move-back',
-  'motion-rank-swap',
-  'motion-melee-strike',
-  'motion-knife-slash',
-  'motion-blunt-strike',
-  'motion-firearm-shot',
-  'motion-whiff',
-  'motion-dodge',
-  'motion-player-hit',
-  'motion-hit-light',
-  'motion-hit-heavy',
-  'motion-knockback',
-  'motion-guard-brace',
-  'motion-heal-pulse',
-  'motion-buff-pulse',
-  'motion-debuff-pulse',
-  'motion-downed',
-  'motion-player-death',
-  'motion-victory',
-  'motion-defeat',
-  'motion-zombie-lunge',
-  'motion-zombie-heavy',
-  'motion-zombie-spit',
-  'motion-zombie-hit',
-  'motion-zombie-advance',
-  'motion-zombie-scream',
-  'motion-zombie-death',
-];
-
-const STATUS_MOTION_CLASSES = [
-  'motion-combat-ready',
-  'motion-status-stun',
-  'motion-status-bleed',
-  'motion-status-infected',
-  'motion-status-panic',
-];
 
 const CombatUI = {
   _screen:       null,
@@ -225,408 +62,9 @@ const CombatUI = {
     });
   },
 
-  // ── 전투 연출 재생 (CombatSystem.fxQueue → 순차 재생) ──
+  // 연출 재생/모션/스프라이트시트 헬퍼 — CombatFxPlayer 믹스인
+  ...CombatFxPlayer,
 
-  _playFxQueue() {
-    const combat = GameState.combat;
-    const queue  = combat?.fxQueue;
-    if (!Array.isArray(queue) || queue.length === 0) return;
-    combat.fxQueue = [];
-    let delay = 80;
-    for (const fx of queue) {
-      setTimeout(() => this._playFx(fx), delay);
-      delay += 300;
-    }
-  },
-
-  _enemySpriteEl(idx) { return this._screen?.querySelector(`.cv-enemy-sprite[data-idx="${idx}"]`); },
-  _playerSpriteEl()   { return this._screen?.querySelector('.cv-player'); },
-  _combatantEl(combatantId) {
-    if (typeof combatantId !== 'string' || combatantId.length === 0) return null;
-    const safeId = globalThis.CSS?.escape
-      ? globalThis.CSS.escape(combatantId)
-      : combatantId.replace(/["\\]/g, '\\$&');
-    return this._screen?.querySelector(`[data-combatant-id="${safeId}"]`);
-  },
-  _allyEl(npcId) {
-    return this._screen?.querySelector(`.cv-ally[data-companion-id="${npcId}"]`)
-        ?? this._screen?.querySelector(`[data-companion-id="${npcId}"]`);
-  },
-
-  _playerSpriteSheetKey(gs = GameState) {
-    return gs.player?.characterId === 'doctor' && gs.player?.gender === 'F'
-      ? 'doctor_f'
-      : null;
-  },
-
-  _companionSpriteSheetKey(npcId) {
-    return COMPANION_SPRITE_KEYS[npcId] ?? null;
-  },
-
-  _enemySpriteSheetKey(enemy) {
-    const id = String(enemy?.id ?? enemy?.definitionId ?? '');
-    if (ENEMY_SPRITE_KEYS[id]) return ENEMY_SPRITE_KEYS[id];
-    if (id.includes('dog') || enemy?.type === 'animal') return 'rabid_dog';
-    if (id.includes('raider') || enemy?.type === 'human') return 'raider';
-    if (id.includes('zombie') || enemy?.type === 'zombie') return 'zombie_common';
-    return null;
-  },
-
-  _spriteSheetStyle(sheetKey) {
-    const sheet = COMBAT_SPRITE_SHEETS[sheetKey];
-    if (!sheet) return '';
-    // steps(N, jump-none) walks the 0→100% ramp onto exactly N columns. Works for any N
-    // (≤6 or >6); jump-none needs ≥2 steps, so clamp. Overrides the stylesheet's linear inline.
-    const parts = [
-      `--sprite-url: url('${sheet.src}')`,
-      `--sprite-cols: ${sheet.cols}`,
-      `--sprite-rows: ${sheet.rows}`,
-    ];
-    if (Array.isArray(sheet.frameDur) && sheet.frameDur.length) {
-      // per-frame timing: step-end + generated keyframe per row (see _injectSpriteKeyframes)
-      const defDur = [920, 620, 760, 820];
-      parts.push('animation-timing-function: step-end');
-      for (let r = 0; r < (sheet.rows | 0); r++) {
-        const durs = sheet.frameDur[r];
-        const total = (Array.isArray(durs) && durs.length) ? durs.reduce((a, b) => a + (+b || 0), 0) : (defDur[r] || 800);
-        parts.push(`--anim-r${r}: spriteanim_${sheetKey}_r${r}`);
-        parts.push(`--sprite-dur-r${r}: ${Math.round(total)}ms`);
-      }
-    } else {
-      parts.push(`animation-timing-function: steps(${Math.max(2, sheet.cols | 0)}, jump-none)`);
-    }
-    return parts.join('; ');
-  },
-
-  _renderCombatSpriteSheet(sheetKey, className, label = '') {
-    const style = this._spriteSheetStyle(sheetKey);
-    if (!style) return '';
-    return `<span class="${className}" role="img" aria-label="${label}" style="${style}"></span>`;
-  },
-
-  _renderCompanionBodySprite(npcId, label = '') {
-    const sheetKey = this._companionSpriteSheetKey(npcId);
-    if (sheetKey) {
-      return this._renderCombatSpriteSheet(sheetKey, 'cv-ally-icon combat-sprite-sheet cv-companion-sheet', label);
-    }
-    return `<span class="cv-ally-icon">${COMPANION_ICONS[npcId] ?? '?뫀'}</span>`;
-  },
-
-  _playFx(fx) {
-    if (!this._screen || !fx) return;
-    switch (fx.kind) {
-      case 'playerAttack': {
-        const player = this._playerSpriteEl();
-        const target = this._enemySpriteEl(fx.targetIdx);
-        this._animate(player, 'attacking');
-        this._motion(player, ['motion-move-forward', this._playerAttackMotion(fx)], 780);
-        if (fx.fx === 'shot') this._spawnFxOverlay(player, 'muzzle');
-        this._cameraWork(fx.miss ? 'ally-whiff' : 'ally-strike', fx.crit ? 760 : 640);
-        if (fx.miss) {
-          this._motion(player, ['motion-move-forward', 'motion-whiff'], 720);
-          this._spawnFloatText(target, 'MISS', 'miss');
-          break;
-        }
-        this._spawnFxOverlay(target, fx.fx ?? 'blunt');
-        this._motion(target, ['motion-zombie-hit', this._hitReactionMotion(fx)], 560);
-        this._animate(target, 'hit');
-        this._spawnFloatText(target, `-${fx.dmg}`, fx.crit ? 'crit' : 'dmg');
-        if (fx.crit || fx.killed) this._shakeVisual();
-        break;
-      }
-      case 'enemyAttack': {
-        const enemyEl = this._enemySpriteEl(fx.enemyIdx);
-        const player  = this._playerSpriteEl();
-        this._animate(enemyEl, 'lunging');
-        this._motion(enemyEl, ['motion-move-forward', this._enemyAttackMotion(fx)], 780);
-        this._cameraWork(fx.miss ? 'enemy-whiff' : 'enemy-strike', fx.crit ? 760 : 650);
-        if (fx.miss) {
-          this._motion(enemyEl, ['motion-move-forward', 'motion-whiff'], 720);
-          this._spawnFloatText(player, 'MISS', 'miss');
-          break;
-        }
-        this._spawnFxOverlay(player, fx.fx ?? 'claw');
-        this._motion(player, ['motion-player-hit', this._hitReactionMotion(fx)], 620);
-        this._animate(player, 'hit');
-        this._spawnFloatText(player, `-${fx.dmg}`, fx.crit ? 'crit' : 'dmg');
-        if (fx.crit) this._shakeVisual();
-        break;
-      }
-      case 'enemyAttackCompanion': {
-        const enemyEl = this._enemySpriteEl(fx.enemyIdx);
-        this._animate(enemyEl, 'lunging');
-        this._motion(enemyEl, ['motion-move-forward', this._enemyAttackMotion(fx)], 780);
-        this._cameraWork('enemy-strike', 650);
-        const ally = this._allyEl(fx.npcId);
-        this._spawnFxOverlay(ally, fx.fx ?? 'claw');
-        this._motion(ally, ['motion-player-hit', this._hitReactionMotion(fx)], 620);
-        this._animate(ally, 'hit');
-        this._spawnFloatText(ally, `-${fx.dmg}`, 'dmg');
-        break;
-      }
-      case 'companionAttack': {
-        const ally   = this._allyEl(fx.npcId);
-        const target = this._enemySpriteEl(fx.targetIdx);
-        this._animate(ally, 'attacking');
-        this._motion(ally, ['motion-move-forward', this._allyAttackMotion(fx)], 780);
-        this._cameraWork(fx.miss ? 'ally-whiff' : 'ally-strike', 620);
-        if (fx.miss) {
-          this._motion(ally, ['motion-move-forward', 'motion-whiff'], 720);
-          this._spawnFloatText(target, 'MISS', 'miss');
-          break;
-        }
-        this._spawnFxOverlay(target, fx.fx ?? 'slash');
-        this._motion(target, ['motion-zombie-hit', this._hitReactionMotion(fx)], 560);
-        this._animate(target, 'hit');
-        this._spawnFloatText(target, `-${fx.dmg}`, 'dmg');
-        break;
-      }
-      case 'companionHeal': {
-        this._animate(this._allyEl(fx.npcId), 'glowing');
-        this._motion(this._allyEl(fx.npcId), 'motion-heal-pulse', 700);
-        this._motion(this._playerSpriteEl(), 'motion-heal-pulse', 700);
-        this._spawnFloatText(this._playerSpriteEl(), `+${fx.amount}`, 'heal');
-        break;
-      }
-      case 'status': {
-        const target = this._combatantEl(fx.targetId) ?? this._actorEl(fx);
-        this._spawnFxOverlay(target, `status-${fx.statusId ?? 'effect'}`);
-        this._animate(target, 'glowing', 650);
-        this._motion(target, this._statusTransientMotion(fx.statusId), 760);
-        break;
-      }
-      case 'companionBuff':
-      case 'companionSkill': {
-        this._animate(this._screen.querySelector('.combat-visual'), 'skill-flash', 500);
-        this._animate(this._allyEl(fx.npcId), 'glowing');
-        const skillMotion = fx.skillId === 'soldier_suppress'
-          ? 'motion-firearm-shot'
-          : fx.skillId === 'nurse_triage'
-            ? 'motion-heal-pulse'
-            : 'motion-buff-pulse';
-        this._motion(this._allyEl(fx.npcId), skillMotion, 760);
-        if (fx.skillId === 'nurse_triage') this._motion(this._playerSpriteEl(), 'motion-heal-pulse', 760);
-        break;
-      }
-      case 'advance': {
-        const enemyEl = this._enemySpriteEl(fx.enemyIdx);
-        this._animate(enemyEl, 'advancing', 600);
-        this._motion(enemyEl, ['motion-zombie-advance', 'motion-move-forward'], 620);
-        break;
-      }
-      case 'guard': {
-        this._motion(this._playerSpriteEl(), 'motion-guard-brace', 640);
-        break;
-      }
-      case 'useItem': {
-        const motion = fx.fx === 'heal' ? 'motion-heal-pulse' : 'motion-buff-pulse';
-        this._motion(this._playerSpriteEl(), motion, 720);
-        this._spawnFloatText(this._playerSpriteEl(), fx.label ?? 'ITEM', fx.fx === 'heal' ? 'heal' : 'dmg');
-        break;
-      }
-      case 'flee': {
-        const player = this._playerSpriteEl();
-        this._motion(player, fx.success ? 'motion-move-back' : 'motion-dodge', 680);
-        this._cameraWork(fx.success ? 'ally-whiff' : 'enemy-whiff', 620);
-        break;
-      }
-      case 'move':
-      case 'rankSwap': {
-        const actor = this._actorEl(fx);
-        const motion = fx.kind === 'rankSwap'
-          ? 'motion-rank-swap'
-          : fx.direction === 'back'
-            ? 'motion-move-back'
-            : 'motion-move-forward';
-        this._motion(actor, motion, 650);
-        break;
-      }
-      case 'dodge': {
-        this._motion(this._actorEl(fx), 'motion-dodge', 560);
-        break;
-      }
-      case 'status': {
-        const actor = this._actorEl(fx);
-        this._motion(actor, this._statusTransientMotion(fx.statusId), 760);
-        break;
-      }
-      case 'downed': {
-        this._motion(this._actorEl(fx) ?? this._playerSpriteEl(), 'motion-downed', 900);
-        break;
-      }
-      case 'playerDeath': {
-        this._motion(this._playerSpriteEl(), 'motion-player-death', 1100);
-        break;
-      }
-      case 'victory': {
-        this._motion(this._playerSpriteEl(), 'motion-victory', 900);
-        break;
-      }
-      case 'defeat': {
-        this._motion(this._playerSpriteEl(), 'motion-defeat', 1000);
-        break;
-      }
-      case 'explode': {
-        const el = this._enemySpriteEl(fx.enemyIdx);
-        this._spawnFxOverlay(el, 'explode');
-        this._motion(this._playerSpriteEl(), ['motion-hit-heavy', 'motion-knockback'], 720);
-        this._cameraWork('impact-heavy', 720);
-        this._shakeVisual();
-        if (fx.dmg) this._spawnFloatText(this._playerSpriteEl(), `-${fx.dmg}`, 'crit');
-        break;
-      }
-      case 'summon': {
-        const enemyEl = this._enemySpriteEl(fx.enemyIdx);
-        this._spawnFxOverlay(enemyEl, 'scream');
-        this._motion(enemyEl, 'motion-zombie-scream', 780);
-        this._cameraWork('impact-heavy', 720);
-        this._shakeVisual();
-        break;
-      }
-    }
-  },
-
-  // CSS 애니메이션 클래스 재시작 헬퍼
-  _animate(el, cls, dur = 450) {
-    if (!el) return;
-    if (cls === 'hit' && dur === 450) dur = 520;
-    const motionState = {
-      attacking: 'attack',
-      lunging: 'attack',
-      hit: 'hit',
-      'just-died': 'death',
-    }[cls];
-    if (motionState) this._setMotionState(el, motionState);
-    el.classList.remove(cls);
-    void el.offsetWidth;
-    el.classList.add(cls);
-    setTimeout(() => {
-      el.classList.remove(cls);
-      if (motionState && el.dataset?.spriteId && !el.classList.contains('is-dead')) {
-        this._setMotionState(el, 'idle');
-      }
-    }, dur);
-  },
-
-  _motion(el, cls, dur = 560) {
-    if (!el || !cls) return;
-    const classes = Array.isArray(cls) ? cls.filter(Boolean) : [cls];
-    if (classes.length === 0) return;
-    const persistentBefore = new Set(classes.filter(c => STATUS_MOTION_CLASSES.includes(c) && el.classList.contains(c)));
-    el.classList.remove(...COMBAT_MOTION_CLASSES);
-    void el.offsetWidth;
-    el.classList.add(...classes);
-    setTimeout(() => {
-      const removable = classes.filter(c => !persistentBefore.has(c));
-      if (removable.length) el.classList.remove(...removable);
-    }, dur);
-  },
-
-  _playerAttackMotion(fx) {
-    if (fx?.fx === 'shot') return 'motion-firearm-shot';
-    if (fx?.fx === 'slash') return 'motion-knife-slash';
-    if (fx?.fx === 'blunt') return 'motion-blunt-strike';
-    return 'motion-melee-strike';
-  },
-
-  _allyAttackMotion(fx) {
-    if (fx?.fx === 'shot') return 'motion-firearm-shot';
-    if (fx?.fx === 'slash') return 'motion-knife-slash';
-    if (fx?.fx === 'blunt') return 'motion-blunt-strike';
-    return 'motion-melee-strike';
-  },
-
-  _enemyAttackMotion(fx) {
-    if (fx?.fx === 'shot' || fx?.fx === 'acid') return 'motion-zombie-spit';
-    if (fx?.fx === 'slam' || fx?.fx === 'shock' || fx?.fx === 'rupture') return 'motion-zombie-heavy';
-    return 'motion-zombie-lunge';
-  },
-
-  _hitReactionMotion(fx) {
-    if (fx?.crit || (fx?.dmg ?? 0) >= 18 || fx?.fx === 'shock' || fx?.fx === 'explode') {
-      return 'motion-hit-heavy';
-    }
-    return 'motion-hit-light';
-  },
-
-  _actorEl(fx) {
-    if (!fx) return null;
-    if (fx.target === 'enemy' || fx.enemyIdx != null) return this._enemySpriteEl(fx.enemyIdx ?? fx.targetIdx);
-    if (fx.target === 'ally' || fx.npcId) return this._allyEl(fx.npcId);
-    return this._playerSpriteEl();
-  },
-
-  _statusTransientMotion(statusId) {
-    switch (statusId) {
-      case 'stun': return 'motion-status-stun';
-      case 'bleed':
-      case 'bleeding':
-      case 'laceration': return 'motion-status-bleed';
-      case 'infected':
-      case 'infection':
-      case 'poison':
-      case 'burn': return 'motion-status-infected';
-      case 'panic':
-      case 'fear':
-      case 'stress': return 'motion-status-panic';
-      default: return 'motion-debuff-pulse';
-    }
-  },
-
-  _statusMotionClasses(statuses = []) {
-    const ids = statuses.map(s => s?.id).filter(Boolean);
-    const classes = ['motion-combat-ready'];
-    if (ids.includes('stun')) classes.push('motion-status-stun');
-    if (ids.some(id => ['bleed', 'bleeding', 'laceration'].includes(id))) classes.push('motion-status-bleed');
-    if (ids.some(id => ['infected', 'infection', 'poison', 'burn'].includes(id))) classes.push('motion-status-infected');
-    if (ids.some(id => ['panic', 'fear', 'stress'].includes(id))) classes.push('motion-status-panic');
-    return classes.join(' ');
-  },
-
-  _shakeVisual() {
-    this._animate(this._screen?.querySelector('.combat-visual'), 'shake', 400);
-  },
-
-  // 타격 이펙트 오버레이 (슬래시 궤적/이모지 버스트)
-  _cameraWork(kind, dur = 650) {
-    const visual = this._screen?.querySelector('.combat-visual');
-    if (!visual) return;
-    const cls = `camera-${kind}`;
-    const token = `${Date.now()}-${Math.random()}`;
-    visual.classList.remove(...CAMERA_CLASSES, 'camera-work-active');
-    void visual.offsetWidth;
-    visual.dataset.cameraWorkToken = token;
-    visual.classList.add('camera-work-active', cls);
-    setTimeout(() => {
-      if (visual.dataset.cameraWorkToken !== token) return;
-      visual.classList.remove(cls, 'camera-work-active');
-      delete visual.dataset.cameraWorkToken;
-    }, dur);
-  },
-
-  _spawnFxOverlay(anchor, type) {
-    if (!anchor) return;
-    const fx = document.createElement('div');
-    fx.className = `cv-fx cv-fx-${type}`;
-    if (FX_EMOJI[type]) fx.textContent = FX_EMOJI[type];
-    const prevPos = getComputedStyle(anchor).position;
-    if (prevPos === 'static') anchor.style.position = 'relative';
-    anchor.appendChild(fx);
-    setTimeout(() => fx.remove(), 700);
-  },
-
-  // 헬퍼: 타겟 엘리먼트 위에 짧은 플로팅 텍스트 생성
-  _spawnFloatText(anchor, text, variant = 'dmg') {
-    if (!anchor) return;
-    const popup = document.createElement('div');
-    popup.className = `dmg-popup ${variant}`;
-    popup.textContent = text;
-    // 앵커에 append (position:relative 가정)
-    const prevPos = getComputedStyle(anchor).position;
-    if (prevPos === 'static') anchor.style.position = 'relative';
-    anchor.appendChild(popup);
-    setTimeout(() => popup.remove(), 900);
-  },
 
   /**
    * Combat Overhaul Phase 1 — 턴 순서 HUD 바.
@@ -646,6 +84,8 @@ const CombatUI = {
 
       let intentIcon = '';
       let intentLabel = '';
+      let reservedIntentIcon = '';
+      let reservedIntentLabel = '';
       let countdown = null;
 
       if (entry.type === 'player') {
@@ -663,7 +103,10 @@ const CombatUI = {
           if (!dead && e._nextIntent) {
             intentIcon = e._nextIntent.iconEmoji ?? '';
             intentLabel = e._nextIntent.label ?? '';
-            countdown = e._nextIntent.countdown ?? null;
+            const reservedThreat = this._reservedThreatIntent(e);
+            reservedIntentIcon = reservedThreat?.iconEmoji ?? '';
+            reservedIntentLabel = reservedThreat?.label ?? '';
+            countdown = reservedThreat?.countdown ?? e._nextIntent.countdown ?? null;
           }
         }
       } else if (entry.type === 'companion') {
@@ -687,19 +130,31 @@ const CombatUI = {
       if (countdown != null && countdown <= 1) cls.push('charging');
 
       const intentHtml = intentIcon
-        ? `<span class="init-intent" title="${intentLabel}">${intentIcon}</span>`
+        ? `<span class="init-intent" data-intent-role="current-action" title="${this._escape(intentLabel)}">${intentIcon}</span>`
+        : '';
+      const reservedIntentHtml = reservedIntentIcon
+        ? `<span class="init-intent reserved-threat" data-intent-role="reserved-threat" title="${this._escape(reservedIntentLabel)}">${reservedIntentIcon}</span>`
         : '';
 
       const countdownHtml = countdown != null
         ? `<span class="init-countdown">${countdown}</span>`
         : '';
 
+      // 육각 초상화 (샘플 UI) — 랭크 combatant가 있으면 초상 이미지, 없으면 아이콘 폴백
+      const combatantId = entry.combatantId
+        ?? (entry.type === 'player' ? 'player' : entry.type === 'companion' ? entry.id : `enemy:${entry.enemyIdx}`);
+      const combatant = combat.combatants?.[combatantId] ?? null;
+      const portrait = combatant ? this._combatantImage(combatant) : null;
+      const portraitHtml = portrait
+        ? `<span class="init-portrait"><img src="${this._escape(portrait)}" alt="" onerror="this.remove();"></span>`
+        : `<span class="init-portrait init-portrait-fallback"><span class="init-icon">${icon}</span></span>`;
+
       return `
         <div class="${cls.join(' ')}" data-init-idx="${i}" data-init-type="${entry.type}">
-          <span class="init-icon">${icon}</span>
+          ${portraitHtml}
           <span class="init-label">${label}</span>
           <div class="init-hp-bar"><div class="init-hp-fill" style="width:${hpPct.toFixed(0)}%"></div></div>
-          ${intentHtml}${countdownHtml}
+          ${intentHtml}${reservedIntentHtml}${countdownHtml}
         </div>`;
     }).join('');
 
@@ -718,17 +173,81 @@ const CombatUI = {
       .replace(/"/g, '&quot;');
   },
 
+  _renderIntentMeta(intent, classPrefix = 'intent') {
+    const targetNames = Array.isArray(intent?.targetNames)
+      ? intent.targetNames.filter(Boolean)
+      : [];
+    const targetsHtml = targetNames.length > 0
+      ? `<span class="${classPrefix}-targets">${targetNames.map(name =>
+          `<i>${this._escape(name)}</i>`
+        ).join('')}</span>`
+      : '';
+    const hitsHtml = (intent?.hitCount ?? 1) > 1
+      ? `<span class="${classPrefix}-hits">×${this._escape(intent.hitCount)}</span>`
+      : '';
+    return `${targetsHtml}${hitsHtml}`;
+  },
+
+  _reservedThreatIntent(enemy) {
+    const current = enemy?._nextIntent;
+    const reserved = enemy?._timedThreatIntent;
+    if (!reserved || reserved === current) return null;
+    if (
+      reserved.actionId === current?.actionId
+      && reserved.category === current?.category
+    ) {
+      return null;
+    }
+    return reserved;
+  },
+
+  _renderCombatIntentBadge(intent, role) {
+    if (!intent) return '';
+    const countdownHtml = intent.countdown != null
+      ? `<span class="intent-count">${this._escape(intent.countdown)}</span>`
+      : '';
+    return `
+      <div class="combat-intent${intent.countdown != null && intent.countdown <= 1 ? ' imminent' : ''}"
+           data-intent-role="${role}" title="${this._escape(intent.label ?? '')}">
+        <span class="intent-icon">${intent.iconEmoji ?? '🗡'}</span>${countdownHtml}
+        ${this._renderIntentMeta(intent)}
+      </div>`;
+  },
+
+  _renderVisualIntentBadge(intent, role) {
+    if (!intent) return '';
+    const countdownHtml = intent.countdown != null
+      ? `<b class="cvi-cd">${this._escape(intent.countdown)}</b>`
+      : '';
+    const targetIcon = intent.targetType === 'companion'
+      ? (COMPANION_ICONS[intent.targetId] ?? '🤝')
+      : '👤';
+    const linkHtml = intent.action === 'advance'
+      ? ''
+      : `<span class="cvi-arrow">➤</span><span class="cvi-target">${targetIcon}</span>`;
+    const imminent = intent.countdown != null && intent.countdown <= 1;
+    return `
+      <div class="cv-intent${imminent ? ' imminent' : ''}"
+           data-intent-role="${role}" title="${this._escape(intent.label ?? '')}">
+        <span class="cvi-icon">${intent.iconEmoji ?? '🗡'}</span>${countdownHtml}${linkHtml}
+        ${this._renderIntentMeta(intent, 'cvi')}
+      </div>`;
+  },
+
   _combatScene() {
     return combatAssetManifest.scene(GameState.combat?.sceneId);
   },
 
   _combatAssetStyle() {
     const scene = this._combatScene();
+    const backdropUrl = new URL(scene.backdrop, document.baseURI).href;
     const parts = [
-      `--combat-bg-image:url('${scene.backdrop}')`,
-      `--combat-stage-image:url('${scene.stagePlate ?? scene.backdrop}')`,
+      `--combat-bg-image:url('${backdropUrl}')`,
     ];
-    if (scene.cardFrame) parts.push(`--combat-card-frame-image:url('${scene.cardFrame}')`);
+    if (scene.cardFrame) {
+      const cardFrameUrl = new URL(scene.cardFrame, document.baseURI).href;
+      parts.push(`--combat-card-frame-image:url('${cardFrameUrl}')`);
+    }
     return parts.join(';');
   },
 
@@ -835,6 +354,12 @@ const CombatUI = {
     return String(skill.id ?? '').replace(/^combat\.skill\./, '').replaceAll('_', ' ');
   },
 
+  // 상태이상 라벨 + 잔여 턴 — "무엇이 언제 끝나는지"가 대응 판단의 재료
+  _statusLabel(status) {
+    const name = status?.name ?? status?.id ?? 'status';
+    return Number.isFinite(status?.duration) ? `${name}(${status.duration})` : name;
+  },
+
   _skillIconHtml(icon, isAttack = false) {
     const key = icon ?? (isAttack ? 'strike' : 'item');
     const src = combatAssetManifest.skillIcon(key, isAttack ? 'strike' : 'item');
@@ -852,13 +377,13 @@ const CombatUI = {
         <div class="ctb-left">
           <span class="ctb-brand">서울 생존 · <b>전투</b></span>
           <span class="ctb-divider"></span>
-          <span class="ctb-chip">${combat.roundNumber ?? 1} 라운드</span>
         </div>
         <div class="ctb-right">
           <span class="ctb-chip">지역 ${this._escape(districtName)}</span>
           <span class="ctb-chip">시간 ${gameHour}:42</span>
           <span class="ctb-chip">날씨 ${this._escape(weatherName)}</span>
           <span class="ctb-chip danger-chip">위험 레벨 <b>${this._escape(dangerText)}</b></span>
+          <button class="ctb-chip fx-speed-toggle" type="button" title="전투 연출 배속 (빈 전장 클릭 = 연출 스킵)">연출 ×${this._fxSpeed}</button>
         </div>
       </header>`;
   },
@@ -886,20 +411,43 @@ const CombatUI = {
     const hpPct = Math.max(0, Math.min(100, (hp / maxHp) * 100));
     const tokens = Object.entries(combatant.tokens ?? {})
       .filter(([, stacks]) => stacks > 0)
-      .map(([token, stacks]) => `<span class="combat-token">${this._escape(token)} ${stacks}</span>`)
+      .map(([token, stacks]) => {
+        const label = I18n.t(`combat.token.${token}`);
+        return `<span class="combat-token" title="${this._escape(label)} ×${stacks}">`
+          + `${TOKEN_ICONS[token] ?? '◆'}${stacks > 1 ? `<i>${stacks}</i>` : ''}</span>`;
+      })
       .join('');
-    const intent = combat.pendingIntentByEnemy?.[combatantId];
-    const intentHtml = intent
-      ? `<div class="combat-intent"><span>${this._escape(intent.skillId)}</span></div>`
-      : '';
     const isEnemy = combatant.side === 'enemy';
+    const legacyEnemy = isEnemy ? this._enemyForCombatant(combatant) : null;
+    const intent = legacyEnemy?._nextIntent ?? null;
+    const reservedThreat = this._reservedThreatIntent(legacyEnemy);
+    let intentHtml = '';
+    if (intent && !combatant.dead) {
+      intentHtml = `
+        <div class="combat-intent-stack">
+          ${this._renderCombatIntentBadge(intent, 'current-action')}
+          ${this._renderCombatIntentBadge(reservedThreat, 'reserved-threat')}
+        </div>`;
+    }
+    // 발견한 약점만 표시 — 첫 약점 타격 전에는 미지의 정보
+    let weaknessHtml = '';
+    if (legacyEnemy && !combatant.dead
+        && GameState.flags?.enemyWeaknessSeen?.[legacyEnemy.id]
+        && (legacyEnemy.weaknesses ?? []).length > 0) {
+      const WEAKNESS_ICONS = { blade: '🔪', fire: '🔥', bullet: '🔫', blunt: '🔨', explosive: '💥' };
+      const icons = legacyEnemy.weaknesses
+        .map(type => WEAKNESS_ICONS[type] ?? '⚔')
+        .join('');
+      weaknessHtml = `
+        <div class="combat-weakness" title="약점: ${this._escape(legacyEnemy.weaknesses.join(', '))}">${icons}</div>`;
+    }
     const rank = getRank(combat?.formations, combatantId);
     const image = this._combatantImage(combatant);
     const statuses = [
       ...Object.entries(combatant.tokens ?? {})
         .filter(([, stacks]) => stacks > 0)
-        .map(([token, stacks]) => `${token} ${stacks}`),
-      ...(combatant.statusEffects ?? []).map(status => status.name ?? status.id ?? 'status'),
+        .map(([token, stacks]) => `${I18n.t(`combat.token.${token}`)} ${stacks}`),
+      ...(combatant.statusEffects ?? []).map(status => this._statusLabel(status)),
     ];
     const anchorCls = isEnemy
       ? 'cv-enemy-sprite'
@@ -924,11 +472,12 @@ const CombatUI = {
       combat.activeCombatantId === combatantId ? 'is-active' : '',
       combatant.deathsDoor ? 'is-deaths-door' : '',
       combatant.dead ? 'is-dead' : '',
+      this._targetableIds ? (this._targetableIds.has(combatantId) ? 'targetable' : 'not-targetable') : '',
     ].filter(Boolean).join(' ');
 
     return `
       <button class="${cls}" data-combatant-id="${this._escape(combatantId)}"${spriteAttrs} ${anchorAttrs}${this._spriteStyle(sprite)}>
-        ${intentHtml}
+        ${intentHtml}${weaknessHtml}
         <span class="combatant-rank-badge">${rank ?? '-'}</span>
         <span class="combatant-portrait" aria-hidden="true">
           ${image
@@ -975,8 +524,8 @@ const CombatUI = {
     const skillIds = activeCombatant?.skillIds ?? [];
     const activeRank = getRank(combat?.formations, activeCombatant?.id);
     return `
-      <div class="combat-skill-bar">
-        ${skillIds.slice(0, 5).map(skillId => {
+      <div class="combat-skill-bar" data-skill-count="${skillIds.length}">
+        ${skillIds.map(skillId => {
           const skill = combat.skillsById?.[skillId] ?? { id: skillId };
           const selected = combat.selectedSkillId === skillId ? ' selected' : '';
           const label = this._skillLabel(skill);
@@ -984,27 +533,84 @@ const CombatUI = {
           const rangeLabel = skill.target?.side === 'ally' ? '보조' : (skill.target?.ranks?.length >= 4 ? '원거리' : '근접');
           const costLabel = skill.costs?.ammo ? '탄약 1' : skill.costs?.stamina ? `스태미나 ${skill.costs.stamina}` : '행동 1';
           const dmg = (skill.effects ?? []).find(effect => effect?.type === 'damage')?.value;
-          const invalidOrigin = Array.isArray(skill.usableFrom)
+          const preview = CombatSystem.previewRankedSkill?.(skillId);
+          const magazineAction = this._magazineActionState(activeCombatant, skill);
+          const reloadMode = magazineAction?.mode === 'reload';
+          const isEmpty = magazineAction?.mode === 'empty';
+          const cooldown = activeCombatant?.sourceType === 'companion'
+            ? (GameState.npcs?.states?.[
+                activeCombatant.sourceId ?? activeCombatant.id
+              ]?.skillCooldowns?.[skillId] ?? 0)
+            : 0;
+          const onCooldown = cooldown > 0;
+          const command = reloadMode ? 'reload' : 'attack';
+          const displayLabel = reloadMode
+            ? I18n.t('combat.reload')
+            : isEmpty
+              ? I18n.t('combat.noAmmo')
+              : label;
+          const ammoDetail = reloadMode
+            ? I18n.t('combat.reloadPackCost')
+            : magazineAction
+              ? I18n.t('combat.loadedAmmo', {
+                ammo: magazineAction.magazine.loadedAmmo,
+                capacity: magazineAction.magazine.capacity,
+              })
+              : null;
+          const invalidOrigin = !reloadMode
+            && Array.isArray(skill.usableFrom)
             && activeRank !== null
             && !skill.usableFrom.includes(activeRank);
-          const disabled = invalidOrigin || combat.phase !== 'await_ally_input';
+          const disabled = magazineAction?.disabled === true
+            || invalidOrigin
+            || onCooldown
+            || combat.phase !== 'await_ally_input';
           const title = invalidOrigin
             ? `현재 위치(rank ${activeRank})에서는 사용할 수 없습니다.`
+            : onCooldown
+              ? `쿨다운 ${cooldown}턴`
             : '';
+          const statRows = [];
+          if (dmg) statRows.push(`<span class="skill-stat">피해 ${dmg[0]}-${dmg[1]}</span>`);
+          if (isAttack && preview && !preview.supportive) {
+            statRows.push(`<span class="skill-stat">명중 ${preview.accuracy}%</span>`);
+            if (preview.critChance > 0) statRows.push(`<span class="skill-stat crit">치명타 ${preview.critChance}%</span>`);
+          }
+          if (!dmg) statRows.push(`<span class="skill-stat">${this._escape(costLabel)}</span>`);
+          if (onCooldown) statRows.push(`<span class="skill-stat">쿨다운 ${cooldown}</span>`);
           return `
-            <button class="combat-skill-button combat-action-card${selected}${invalidOrigin ? ' disabled' : ''}"
+            <button class="combat-skill-button combat-action-card${selected}${reloadMode ? ' is-reload' : ''}${isEmpty ? ' is-empty' : ''}${invalidOrigin || onCooldown ? ' disabled' : ''}"
                     data-skill-id="${this._escape(skillId)}"
+                    data-command="${command}"
+                    data-weapon-instance-id="${this._escape(skill.equipmentInstanceId ?? '')}"
                     title="${this._escape(title)}"
                     ${disabled ? 'disabled' : ''}>
               <span class="action-cost">${skill.costs?.stamina ?? 1}</span>
-              <span class="skill-name">${this._escape(label)}</span>
+              <span class="skill-name">${this._escape(displayLabel)}</span>
               <span class="skill-range">${this._escape(rangeLabel)}</span>
               <span class="skill-icon">${this._skillIconHtml(skill.icon, isAttack)}</span>
-              <span class="skill-detail">${dmg ? `피해 ${dmg[0]}-${dmg[1]}` : this._escape(costLabel)}</span>
+              <span class="skill-detail skill-stats">${ammoDetail ? `<span class="skill-stat">${this._escape(ammoDetail)}</span>` : statRows.join('')}</span>
               ${invalidOrigin ? '<span class="skill-lock">(위치 변경 필요)</span>' : ''}
             </button>`;
         }).join('')}
       </div>`;
+  },
+
+  _magazineActionState(activeCombatant, skill) {
+    if (
+      activeCombatant?.sourceType !== 'player'
+      || (skill?.costs?.magazineRound ?? 0) <= 0
+      || !skill?.equipmentInstanceId
+    ) return null;
+
+    const magazine = getMagazineState(GameState, skill.equipmentInstanceId);
+    if (!magazine.ok) return { mode: 'empty', disabled: true, magazine };
+    if (magazine.loadedAmmo > 0) return { mode: 'attack', disabled: false, magazine };
+
+    const reloadCheck = canReload(GameState, skill.equipmentInstanceId);
+    return reloadCheck.ok
+      ? { mode: 'reload', disabled: false, magazine }
+      : { mode: 'empty', disabled: true, magazine };
   },
 
   _firstCombatItemId() {
@@ -1034,7 +640,7 @@ const CombatUI = {
     const combatant = combat?.combatants?.[combatantId];
     if (!combatant) return '';
     const statuses = (combatant.statusEffects ?? [])
-      .map(status => this._escape(status.id ?? status.name ?? 'status'))
+      .map(status => this._escape(this._statusLabel(status)))
       .join(', ');
     return `
       <aside class="combat-detail-popover" data-popover-for="${this._escape(combatantId)}">
@@ -1062,15 +668,36 @@ const CombatUI = {
     const canMove = CombatSystem.findActiveSkillByEffect?.('move') !== null;
     const commandDisabled = combat.phase !== 'await_ally_input';
     const scene = this._combatScene();
+    const manualCompanionTurn = CombatSystem.isManualCompanionTurn(combat);
+
+    // 타겟 선택 단계: 선택한 스킬로 실제 지정 가능한 대상을 미리 계산해 하이라이트
+    this._targetableIds = null;
+    if (combat.phase === 'select_target' && combat.selectedSkillId) {
+      const selectedSkill = combat.skillsById?.[combat.selectedSkillId];
+      if (selectedSkill && combat.activeCombatantId) {
+        this._targetableIds = new Set(Object.values(combat.combatants ?? {})
+          .filter(c => c.dead !== true && (c.hp ?? 0) > 0)
+          .filter(c => selectedSkill.target?.selfOnly !== true || c.id === combat.activeCombatantId)
+          .filter(c => CombatSystem._validateRankedSkillPosition?.(combat.activeCombatantId, c.id, selectedSkill)?.ok === true)
+          .map(c => c.id));
+      }
+    }
     this._screen.innerHTML = `
-      <div class="combat-wrap combat-focused" data-combat-scene="${this._escape(scene.id)}" style="${this._combatAssetStyle()}">
+      <div class="combat-wrap combat-focused${manualCompanionTurn ? ' manual-companion-turn' : ''}" data-combat-scene="${this._escape(scene.id)}" style="${this._combatAssetStyle()}">
         ${this._renderTopHud(combat, gs)}
         <div class="combat-round-track">
           ${this._renderInitiativeBar(combat, gs)}
-          <div class="combat-round-medallion"><span>${combat.roundNumber ?? 1}</span></div>
+          <div class="combat-round-medallion">
+            <span class="combat-round-context">
+              <small>ROUND</small>
+              <strong>${combat.roundNumber ?? 1}</strong>
+            </span>
+          </div>
         </div>
         <main class="combat-battlefield combat-visual">
-          <div class="combat-stage-floor" aria-hidden="true"><span>1</span><span>2</span><span>3</span></div>
+          <div class="combat-stage-floor" aria-hidden="true">
+            ${[1, 2, 3, 4].map(rank => `<span class="combat-rank-marker" data-rank="${rank}">${rank}</span>`).join('')}
+          </div>
           <div class="combat-focused-lineup">
             <div class="combat-line-zone combat-line-zone-ally">
               ${this._renderFormationSide('ally', combat)}
@@ -1090,25 +717,29 @@ const CombatUI = {
         </main>
         <footer class="combat-command-deck">
           ${this._renderSkillBar(active, combat)}
-          ${this._renderCombatItemSlot(active)}
-          <button class="combat-common-command combat-action-card${canMove ? '' : ' disabled'}"
-                  data-command="move"
-                  ${(!canMove || commandDisabled) ? 'disabled' : ''}>
-            <span class="action-cost">1</span>
-            <span class="skill-name">이동</span>
-            <span class="skill-range">기동</span>
-            <span class="skill-icon">${this._skillIconHtml('move')}</span>
-            <span class="skill-detail">위치 변경</span>
-          </button>
-          <button class="combat-common-command combat-action-card"
-                  data-command="flee"
-                  ${commandDisabled ? 'disabled' : ''}>
-            <span class="action-cost">1</span>
-            <span class="skill-name">도주</span>
-            <span class="skill-range">탈출</span>
-            <span class="skill-icon">${this._skillIconHtml('move')}</span>
-            <span class="skill-detail">전투 이탈 시도</span>
-          </button>
+          ${manualCompanionTurn ? '' : `
+            <aside class="combat-utility-rail" aria-label="공용 전투 명령">
+              ${this._renderCombatItemSlot(active)}
+              <button class="combat-common-command combat-action-card${canMove ? '' : ' disabled'}"
+                      data-command="move"
+                      ${(!canMove || commandDisabled) ? 'disabled' : ''}>
+                <span class="action-cost">1</span>
+                <span class="skill-name">이동</span>
+                <span class="skill-range">기동</span>
+                <span class="skill-icon">${this._skillIconHtml('move')}</span>
+                <span class="skill-detail">위치 변경</span>
+              </button>
+              <button class="combat-common-command combat-action-card"
+                      data-command="flee"
+                      ${commandDisabled ? 'disabled' : ''}>
+                <span class="action-cost">1</span>
+                <span class="skill-name">도주</span>
+                <span class="skill-range">탈출</span>
+                <span class="skill-icon">${this._skillIconHtml('move')}</span>
+                <span class="skill-detail">전투 이탈 시도</span>
+              </button>
+            </aside>
+          `}
         </footer>
       </div>`;
     this._bindFocusedCombatEvents(combat);
@@ -1118,6 +749,11 @@ const CombatUI = {
     this._screen.querySelectorAll('.combat-skill-button').forEach(button => {
       button.addEventListener('click', () => {
         if (button.disabled) return;
+        if (button.dataset.command === 'reload') {
+          CombatSystem.reloadActiveWeapon(button.dataset.weaponInstanceId);
+          if (GameState.combat?.active) this.render();
+          return;
+        }
         if (CombatSystem.selectSkill(button.dataset.skillId)) this.render();
       });
     });
@@ -1126,6 +762,10 @@ const CombatUI = {
       button.addEventListener('click', () => {
         const combatantId = button.dataset.combatantId;
         if (combat.selectedSkillId) {
+          if (
+            this._targetableIds
+            && !this._targetableIds.has(combatantId)
+          ) return;
           if (CombatSystem.selectTarget(combatantId)) {
             CombatSystem.confirmAction();
           }
@@ -1152,6 +792,17 @@ const CombatUI = {
         }
         if (GameState.combat?.active) this.render();
       });
+    });
+
+    this._screen.querySelector('.fx-speed-toggle')?.addEventListener('click', () => {
+      this.toggleFxSpeed();
+      const toggle = this._screen.querySelector('.fx-speed-toggle');
+      if (toggle) toggle.textContent = `연출 ×${this._fxSpeed}`;
+    });
+
+    // 빈 전장 클릭 = 진행 중인 연출 스킵 (combatant 클릭은 타겟 지정이므로 제외)
+    this._screen.querySelector('.combat-battlefield')?.addEventListener('click', (event) => {
+      if (!event.target.closest('[data-combatant-id]')) this.skipFxQueue();
     });
   },
 
@@ -1220,12 +871,6 @@ const CombatUI = {
     const armorId    = gs.player.equipped?.body;
     const armorDef   = armorId ? gs.getCardDef(armorId) : null;
 
-    let ammoCount = null;
-    if (weaponDef?.combat?.requiresAmmo) {
-      const ammoInst = gs.getBoardCards().find(c => c.definitionId === weaponDef.combat.requiresAmmo);
-      ammoCount = ammoInst ? (ammoInst.quantity ?? 1) : 0;
-    }
-
     // ── 상태이상 배지 ─────────────────────────────────────────
     const playerStatusHtml = combat.playerStatus.map(s =>
       `<span class="status-badge">${s.name}(${s.duration})</span>`
@@ -1236,7 +881,7 @@ const CombatUI = {
     const enemyCount  = combat.enemies.length;
     const aliveCount  = combat.enemies.filter(e => e.currentHp > 0).length;
     const playerWeaponType = weaponDef?.weaponType ?? null;
-    const isRangedWeapon   = CombatSystem.weaponReachIsRanged(weaponDef);
+    const isRangedWeapon   = CombatSystem.weaponReachIsRanged(weaponDef, weaponId);
     const targetEnemy = combat.enemies[combat.targetIndex] ?? combat.enemies[0];
 
     // ── 적 스프라이트 (전열/후열 진형 — Darkest Dungeon식) ────
@@ -1281,22 +926,14 @@ const CombatUI = {
           affinityHint = `<span class="affinity-badge resistance">${RESIST_LABEL[playerWeaponType] ?? '⬇저항'}</span>`;
       }
 
-      // 의도 예고 배지 — 머리 위에 [행동 아이콘][카운트다운]➤[타겟 아이콘]
       let intentHtml = '';
       const intent = enemy._nextIntent;
+      const reservedThreat = this._reservedThreatIntent(enemy);
       if (!isDead && intent) {
-        const cd = intent.countdown != null ? `<b class="cvi-cd">${intent.countdown}</b>` : '';
-        const tgtIcon = intent.targetType === 'companion'
-          ? (COMPANION_ICONS[intent.targetId] ?? '🤝')
-          : '👤';
-        // 전진 의도는 타겟 연계 화살표 없이 아이콘만 표시
-        const linkHtml = intent.action === 'advance'
-          ? ''
-          : `<span class="cvi-arrow">➤</span><span class="cvi-target">${tgtIcon}</span>`;
-        const imminent = intent.countdown != null && intent.countdown <= 1;
         intentHtml = `
-          <div class="cv-intent${imminent ? ' imminent' : ''}" title="${intent.label ?? ''}">
-            <span class="cvi-icon">${intent.iconEmoji ?? '🗡'}</span>${cd}${linkHtml}
+          <div class="cv-intent-stack">
+            ${this._renderVisualIntentBadge(intent, 'current-action')}
+            ${this._renderVisualIntentBadge(reservedThreat, 'reserved-threat')}
           </div>`;
       }
 
@@ -1439,18 +1076,11 @@ const CombatUI = {
     const dangerText   = DANGER_LABEL[Math.min(dangerLv, 5)] ?? '위험';
     const dangerColor  = DANGER_COLOR[Math.min(dangerLv, 5)] ?? '#cc3333';
 
-    // ── 아이템 / 투척물 / 동행 ────────────────────────────────
+    // ── 아이템 / 투척물 ──────────────────────────────────────
     const medicals   = CombatSystem.getAvailableMedicals();
     const throwables = CombatSystem.getAvailableThrowables();
-    const companions = gs.companions ?? [];
-    const atkCd      = combat._companionAttackCooldown ?? 0;
-    const healCd     = combat._companionHealCooldown   ?? 0;
     const weapons    = CombatSystem.getAvailableWeapons();
     const guardActive = !!combat.playerGuard?.active;
-    const currentEntry = CombatSystem.currentEntry(combat);
-    const manualCompanionTurn = currentEntry?.type === 'companion'
-      && CombatSystem.isManualCompanionTurn(combat);
-    const activeCompanionId = manualCompanionTurn ? currentEntry.id : null;
     const canPlayerAct = CombatSystem.canPlayerAct(combat);
 
     const medBtnsHtml = medicals.length > 0
@@ -1477,86 +1107,6 @@ const CombatUI = {
         ${def?.icon ?? '💣'} ${I18n.itemName(def?.id ?? t.definitionId, def?.name ?? '')}
       </button>`;
     }).join('');
-
-    const activeCompanionName = activeCompanionId
-      ? I18n.itemName(activeCompanionId, gs.npcs?.states?.[activeCompanionId]?.name ?? activeCompanionId)
-      : '';
-    const companionActionCardsHtml = manualCompanionTurn ? `
-          <div class="action-card companion-action-card primary" data-action="manualCompanionAttack" data-companion-id="${activeCompanionId}">
-            <span class="ac-cost">1</span>
-            <div class="ac-header">
-              <span class="ac-icon">⚔</span>
-              <div class="ac-title-group">
-                <span class="ac-name">${activeCompanionName} 공격</span>
-                <span class="ac-sub">COMPANION ATTACK</span>
-              </div>
-            </div>
-            <div class="ac-preview">
-              <div class="ac-row"><span>대상</span><strong>${I18n.enemyName(targetEnemy?.id ?? targetEnemy?.definitionId, targetEnemy?.name ?? '')}</strong></div>
-              <div class="ac-row"><span>행동</span><strong>선택 적 공격</strong></div>
-            </div>
-          </div>
-          <div class="action-card companion-action-card" data-action="manualCompanionHeal" data-companion-id="${activeCompanionId}">
-            <span class="ac-cost">1</span>
-            <div class="ac-header">
-              <span class="ac-icon">✚</span>
-              <div class="ac-title-group">
-                <span class="ac-name">${activeCompanionName} 치료</span>
-                <span class="ac-sub">COMPANION HEAL</span>
-              </div>
-            </div>
-            <div class="ac-preview">
-              <div class="ac-row"><span>대상</span><strong>플레이어</strong></div>
-              <div class="ac-row good"><span>조건</span><strong>HP 낮을 때 효과</strong></div>
-            </div>
-          </div>
-          <div class="action-card companion-action-card" data-action="manualCompanionSupport" data-companion-id="${activeCompanionId}">
-            <span class="ac-cost">2</span>
-            <div class="ac-header">
-              <span class="ac-icon">✦</span>
-              <div class="ac-title-group">
-                <span class="ac-name">${activeCompanionName} 지원</span>
-                <span class="ac-sub">COMPANION SKILL</span>
-              </div>
-            </div>
-            <div class="ac-preview">
-              <div class="ac-row"><span>스킬</span><strong>직업 지원</strong></div>
-              <div class="ac-row"><span>쿨다운</span><strong>가능 시 사용</strong></div>
-            </div>
-          </div>
-          <div class="action-card companion-action-card" data-action="manualCompanionHold" data-companion-id="${activeCompanionId}">
-            <span class="ac-cost">1</span>
-            <div class="ac-header">
-              <span class="ac-icon">◼</span>
-              <div class="ac-title-group">
-                <span class="ac-name">${activeCompanionName} 대기</span>
-                <span class="ac-sub">COMPANION HOLD</span>
-              </div>
-            </div>
-            <div class="ac-preview">
-              <div class="ac-row"><span>효과</span><strong>피해 감소</strong></div>
-              <div class="ac-row good"><span>턴</span><strong>동료 행동 종료</strong></div>
-            </div>
-          </div>` : '';
-    const companionBtns = manualCompanionTurn ? `
-      <button class="sec-btn companion manual" data-action="manualCompanionAttack" data-companion-id="${activeCompanionId}">
-        ${activeCompanionName} 공격
-      </button>
-      <button class="sec-btn companion manual" data-action="manualCompanionHeal" data-companion-id="${activeCompanionId}">
-        ${activeCompanionName} 치료
-      </button>
-      <button class="sec-btn companion manual" data-action="manualCompanionSupport" data-companion-id="${activeCompanionId}">
-        ${activeCompanionName} 지원
-      </button>
-      <button class="sec-btn companion manual secondary" data-action="manualCompanionHold" data-companion-id="${activeCompanionId}">
-        ${activeCompanionName} 대기
-      </button>` : false ? `
-      <button class="sec-btn companion" data-action="companionAttack" ${atkCd > 0 ? 'disabled' : ''}>
-        ⚔️ 동행 공격${atkCd > 0 ? ` (${atkCd})` : ''}
-      </button>
-      <button class="sec-btn companion" data-action="companionHeal" ${healCd > 0 ? 'disabled' : ''}>
-        💉 동행 치료${healCd > 0 ? ` (${healCd})` : ''}
-      </button>` : '';
 
     // ── 적 패널 (우측) ────────────────────────────────────────
     const tEnemy    = targetEnemy;
@@ -1590,7 +1140,7 @@ const CombatUI = {
     // HTML 조립
     // ══════════════════════════════════════════════════════════
     this._screen.innerHTML = `
-      <div class="combat-wrap${canPlayerAct ? '' : ' actor-locked'}${manualCompanionTurn ? ' manual-companion-turn' : ''}"
+      <div class="combat-wrap${canPlayerAct ? '' : ' actor-locked'}"
            data-combat-scene="${this._escape(this._combatScene().id)}" style="${this._combatAssetStyle()}">
 
         <!-- ① 상단 바 ────────────────────────────────────── -->
@@ -1644,8 +1194,6 @@ const CombatUI = {
 
         <!-- ③ 하단: 액션 카드 바 ───────────────────────── -->
         <footer class="combat-action-bar">
-          ${companionActionCardsHtml}
-
           <!-- 공격 카드 -->
           <div class="action-card primary" data-action="${weaponId ? 'attack' : 'unarmed'}" data-weapon="${weaponId ?? ''}">
             <span class="ac-cost">${weaponDef?.combat?.requiresAmmo ? 2 : 1}</span>
@@ -1660,7 +1208,7 @@ const CombatUI = {
               <div class="ac-row"><span>예상 피해</span><strong>${preview.dmgMin}~${preview.dmgMax}</strong></div>
               <div class="ac-row"><span>명중률</span><strong>${preview.accuracy}%</strong></div>
               ${preview.critChance > 0 ? `<div class="ac-row"><span>치명타</span><strong>${preview.critChance}%</strong></div>` : ''}
-              ${preview.ammoLeft !== null ? `<div class="ac-row${preview.ammoLeft === 0 ? ' warn' : ''}"><span>탄약</span><strong>${preview.ammoLeft}발</strong></div>` : ''}
+              ${preview.ammoLeft !== null ? `<div class="ac-row${preview.ammoLeft === 0 ? ' warn' : ''}"><span>탄약</span><strong>${preview.ammoLeft}/${preview.ammoCapacity}</strong></div>` : ''}
             </div>
           </div>
 
@@ -1732,7 +1280,6 @@ const CombatUI = {
         <div class="combat-sec-row">
           ${extraWeaponBtns}
           ${throwBtns}
-          ${companionBtns}
           <button class="sec-btn" data-action="unarmed">👊 맨손</button>
           <button class="sec-btn secondary" data-action="stealth">🤫 은신</button>
         </div>
@@ -1772,30 +1319,11 @@ const CombatUI = {
     const logEl = this._screen.querySelector('#combat-log');
     if (logEl) logEl.scrollTop = logEl.scrollHeight;
 
-    if (manualCompanionTurn) {
-      this._syncManualCompanionActionUi(activeCompanionId);
-    }
-
     // ── 적 스프라이트 클릭 (타겟 변경) ───────────────────────
     this._screen.querySelectorAll('.cv-enemy-sprite:not(.is-dead)').forEach(el => {
       el.addEventListener('click', () => {
         const idx = parseInt(el.dataset.idx, 10);
         if (!Number.isNaN(idx)) { CombatSystem.setTarget(idx); this.render(); }
-      });
-    });
-
-    // ── Phase 2 · 동료 stance 버튼 클릭 ──────────────────────
-    this._screen.querySelectorAll('.stance-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const npcId = btn.dataset.npcId;
-        const stance = btn.dataset.stance;
-        if (!npcId || !stance) return;
-        const st = GameState.npcs?.states?.[npcId];
-        if (st) {
-          st.stance = stance;
-          this.render();
-        }
       });
     });
 
@@ -1814,15 +1342,7 @@ const CombatUI = {
         const action   = btn.dataset.action;
         const wId      = btn.dataset.weapon || null;
 
-        if (action === 'manualCompanionAttack') {
-          CombatSystem.resolveManualCompanionAction('attack', btn.dataset.companionId);
-        } else if (action === 'manualCompanionHeal') {
-          CombatSystem.resolveManualCompanionAction('heal', btn.dataset.companionId);
-        } else if (action === 'manualCompanionSupport') {
-          CombatSystem.resolveManualCompanionAction('support', btn.dataset.companionId);
-        } else if (action === 'manualCompanionHold') {
-          CombatSystem.resolveManualCompanionAction('hold', btn.dataset.companionId);
-        } else if (!CombatSystem.canPlayerAct(GameState.combat)) {
+        if (!CombatSystem.canPlayerAct(GameState.combat)) {
           return;
         } else if (action === 'attack' && wId) {
           CombatSystem.resolveAction('shoot', wId);
@@ -1844,97 +1364,6 @@ const CombatUI = {
 
     // ── 연출 큐 재생 (행동 결과 → 순차 애니메이션) ───────────
     this._playFxQueue();
-  },
-
-  _companionClassSkill(npcId) {
-    return BALANCE.combat?.companionAuto?.classSkills?.[npcId] ?? null;
-  },
-
-  _syncManualCompanionActionUi(npcId) {
-    if (!this._screen || !npcId) return;
-
-    const actionBar = this._screen.querySelector('.combat-action-bar');
-    if (actionBar) {
-      actionBar.querySelectorAll('.action-card:not(.companion-action-card)')
-        .forEach(el => el.remove());
-    }
-
-    const secRow = this._screen.querySelector('.combat-sec-row');
-    if (secRow) {
-      secRow.querySelectorAll('[data-action]').forEach(el => {
-        if (!String(el.dataset.action ?? '').startsWith('manualCompanion')) el.remove();
-      });
-    }
-
-    const supportCard = this._screen.querySelector('.companion-action-card[data-action="manualCompanionSupport"]');
-    if (!supportCard) return;
-
-    const skill = this._companionClassSkill(npcId);
-    const state = GameState.npcs?.states?.[npcId];
-    const npcName = I18n.itemName(npcId, state?.name ?? npcId);
-    const nameEl = supportCard.querySelector('.ac-name');
-    const subEl = supportCard.querySelector('.ac-sub');
-    const previewEl = supportCard.querySelector('.ac-preview');
-
-    if (!skill) {
-      supportCard.classList.add('disabled');
-      supportCard.setAttribute('aria-disabled', 'true');
-      if (nameEl) nameEl.textContent = `${npcName} 지원 없음`;
-      if (subEl) subEl.textContent = 'NO CLASS SKILL';
-      if (previewEl) {
-        previewEl.innerHTML = `
-          <div class="ac-row warn"><span>스킬</span><strong>설정된 전투 스킬 없음</strong></div>
-          <div class="ac-row"><span>대체</span><strong>공격/치료/대기 사용</strong></div>`;
-      }
-      return;
-    }
-
-    const cooldown = state?.skillCooldowns?.[skill.id] ?? 0;
-    const ready = cooldown <= 0;
-    supportCard.classList.toggle('disabled', !ready);
-    supportCard.setAttribute('aria-disabled', ready ? 'false' : 'true');
-    supportCard.dataset.skillId = skill.id;
-    if (nameEl) nameEl.textContent = `${npcName} ${skill.name}`;
-    if (subEl) subEl.textContent = skill.id;
-    if (previewEl) {
-      previewEl.innerHTML = `
-        <div class="ac-row"><span>스킬</span><strong>${skill.name}</strong></div>
-        <div class="ac-row ${ready ? 'good' : 'warn'}"><span>상태</span><strong>${ready ? '사용 가능' : `쿨다운 ${cooldown}턴`}</strong></div>
-        <div class="ac-row"><span>행동</span><strong>동료 고유 스킬</strong></div>`;
-    }
-  },
-
-  // Phase 2 — 동료 stance 셀렉터 + 클래스 스킬 쿨다운 배지
-  _renderStanceSelector(npcId, state) {
-    const stances = [
-      { key: 'attack',  icon: '🗡', label: '공격' },
-      { key: 'heal',    icon: '💉', label: '치료' },
-      { key: 'support', icon: '⚙',  label: '지원' },
-      { key: 'hold',    icon: '🛡', label: '방어' },
-      { key: 'manual',  icon: '✋', label: '대기' },
-    ];
-    const active = state?.stance ?? 'attack';
-
-    const btnHtml = stances.map(s => {
-      const sel = s.key === active ? ' active' : '';
-      return `<button class="stance-btn${sel}" data-stance="${s.key}" data-npc-id="${npcId}" title="${s.label}">${s.icon}</button>`;
-    }).join('');
-
-    // 클래스 스킬 쿨다운 배지
-    const skill = BALANCE.combat?.companionAuto?.classSkills?.[npcId];
-    let skillHtml = '';
-    if (skill) {
-      const cd = state?.skillCooldowns?.[skill.id] ?? 0;
-      const ready = cd === 0;
-      skillHtml = `<span class="skill-cd-badge${ready ? ' ready' : ''}" title="${skill.name}">
-          ${ready ? '✨' : `⏳${cd}`} ${skill.name}
-        </span>`;
-    }
-
-    return `<div class="cpp-stance-row" style="margin-top:5px;display:flex;gap:3px;align-items:center;flex-wrap:wrap;">
-      ${btnHtml}
-      ${skillHtml}
-    </div>`;
   },
 
   /** 동반자(NPC) 전투 상태 패널 — 플레이어 패널 하단에 표시 */
@@ -1985,9 +1414,6 @@ const CombatUI = {
         ? `<span style="font-size:10px;color:${tierColor};margin-left:4px;">[${tierLabel}]</span>`
         : '';
 
-      // Phase 2 — stance selector
-      const stanceHtml = CombatUI._renderStanceSelector(npcId, state);
-
       return `
         <div class="cpp-companion-row" data-companion-id="${npcId}" style="margin-top:8px;padding:6px;background:rgba(255,255,255,0.04);border-radius:4px;position:relative;">
           <div style="display:flex;justify-content:space-between;align-items:center;">
@@ -1999,7 +1425,6 @@ const CombatUI = {
           </div>
           <div style="font-size:10px;color:var(--text-dim);">HP ${hp}/${maxHp}</div>
           ${bondHtml}
-          ${stanceHtml}
         </div>`;
     }).join('');
     return `<div class="cpp-companions" style="margin-top:10px;border-top:1px solid var(--border-dim);padding-top:8px;">

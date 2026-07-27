@@ -7,6 +7,7 @@ import SystemRegistry  from '../core/SystemRegistry.js';
 import I18n      from '../core/I18n.js';
 import GameData  from '../data/GameData.js';
 import { HANGANG_DISTRICTS } from '../data/landmarks.js';
+import { getMagazineState } from '../systems/WeaponAmmoSystem.js';
 
 // 위험도 색상
 const DANGER_COLORS = ['#449944', '#889933', '#cc8822', '#cc3333', '#881111'];
@@ -1407,12 +1408,18 @@ const CardFactory = {
 
     const actionHintHtml = actionHint
       ? `<span class="card-action-hint">${actionHint}</span>` : '';
+    const magazine = def?.combat?.requiresAmmo
+      ? getMagazineState(GameState, inst.instanceId)
+      : null;
+    const ammoBadge = magazine?.ok
+      ? `<span class="card-ammo-badge ${magazine.loadedAmmo === 0 ? 'empty' : 'loaded'}">${magazine.loadedAmmo}/${magazine.capacity}</span>`
+      : '';
 
     return `
       <div class="card-header">
         <span class="card-icon">${def.icon ?? '📦'}</span>
         <span class="card-name">${I18n.itemName(def.id ?? inst.definitionId, def.name)}${nameRemainder ? ' ' : ''}${nameRemainder}</span>
-        ${qualityBadge}${contamBadge}${subtypeBadge}
+        ${ammoBadge}${qualityBadge}${contamBadge}${subtypeBadge}
       </div>
       <div class="card-body">
         <div class="card-type-row">

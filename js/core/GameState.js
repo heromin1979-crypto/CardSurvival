@@ -2,6 +2,8 @@
 import EventBus  from './EventBus.js';
 import GameData  from '../data/GameData.js';
 import { lookupBagExtraSlots } from '../data/bagSlots.js';
+import { isMagazineWeapon, normalizeMagazineCards } from '../systems/WeaponAmmoSystem.js';
+import { normalizeEquippedWeaponSlots } from '../systems/WeaponSlotPolicy.js';
 
 // 페이지 단위 행 정의 — 압축·해금 트리거가 참조
 const MIDDLE_PAGE_SIZE = 10;
@@ -200,6 +202,7 @@ const GameState = {
     log:          [],
     outcome:      null,   // 'victory'|'defeat'|'fled'
     rewards:      [],
+    rewardItems:   [],
     round:        0,
     xpGained:     0,
     lastHit:      null,   // { target:'player'|'enemy', damage, isCrit }
@@ -311,6 +314,7 @@ const GameState = {
       quantity:      overrides.quantity      ?? (def.stackable ? 1 : 1),
       durability:    Math.round(baseDur * durBonus),
       contamination: overrides.contamination ?? def.defaultContamination ?? 0,
+      ...(isMagazineWeapon(def) ? { loadedAmmo: 0 } : {}),
       ...overrides,
     };
     this.cards[id] = instance;
@@ -346,7 +350,13 @@ const GameState = {
     const placed = [];
     const remaining = [];
     for (const entry of this.pendingLoot) {
+      const instanceOverrides = entry?.instanceOverrides
+        && typeof entry.instanceOverrides === 'object'
+        && !Array.isArray(entry.instanceOverrides)
+        ? entry.instanceOverrides
+        : {};
       const inst = this.createCardInstance(entry.definitionId, {
+        ...instanceOverrides,
         quantity:      entry.quantity,
         contamination: entry.contamination ?? 0,
       });
@@ -862,7 +872,7 @@ const GameState = {
     if (!d.board.environment) d.board.environment = [null, null, null];
     while (d.board.environment.length < 3) d.board.environment.push(null);
     Object.assign(this.board,    d.board);
-    this.cards   = d.cards;
+    this.cards   = d.cards ?? {};
     this._nextId = d._nextId;
     // 구버전 세이브 호환: middle/bottom에 흩어진 빈 슬롯이 남아 있을 수 있어
     // 페이지 단위로 한 번 압축해 가운데 구멍을 정리한다 (consolidate/오프닝 버그 자가 치유).
@@ -941,6 +951,10 @@ const GameState = {
     // locationFloors 복원 (구버전 세이브 호환)
     this.locationFloors  = d.locationFloors  ?? {};
     this.pendingLoot     = d.pendingLoot     ?? [];
+    normalizeMagazineCards(this);
+    normalizeEquippedWeaponSlots(this);
+    this._compactRow('middle');
+    this._compactRow('bottom');
     // 랜드마크 탐색 이력 복원
     this.landmarkHistory     = d.landmarkHistory     ?? {};
     this.subwayStationVisits = d.subwayStationVisits ?? {};

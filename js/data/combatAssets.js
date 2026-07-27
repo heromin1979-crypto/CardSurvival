@@ -99,9 +99,7 @@ export const COMBAT_ASSETS = {
   scenes: {
     jongno_subway_ruin: {
       id: 'jongno_subway_ruin',
-      backdrop: `${IMG}combat_empty_battlefield.png`,
-      stagePlate: `${IMG}combat_empty_stage_plate.png`,
-      cardFrame: `${IMG}combat_sample_card_frame_reference.png`,
+      backdrop: `${IMG}combat_jongno_subway_clean_v2.png`,
     },
   },
   ui: {

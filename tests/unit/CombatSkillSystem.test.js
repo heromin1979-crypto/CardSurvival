@@ -12,6 +12,7 @@ import {
   useCombatItem,
   validateSkillCommand,
 } from '../../js/systems/combat/CombatSkillSystem.js';
+import { en, ko } from '../../js/data/locales.js';
 import { validateCombatSkillContracts } from '../../js/data/validate.js';
 
 const PLAYER_IDS = [
@@ -63,6 +64,8 @@ function makeGameState() {
       id: 'knife',
       name: 'Knife',
       icon: 'knife',
+      type: 'weapon',
+      subtype: 'melee',
       combat: {
         damage: [8, 14],
         accuracy: 0.85,
@@ -76,6 +79,8 @@ function makeGameState() {
       id: 'pistol',
       name: 'Pistol',
       icon: 'pistol',
+      type: 'weapon',
+      subtype: 'firearm',
       multiTarget: 2,
       combat: {
         damage: [30, 45],
@@ -99,8 +104,8 @@ function makeGameState() {
     player: {
       characterId: 'doctor',
       equipped: {
-        weapon_main: 'knife_instance',
-        weapon_sub: 'pistol_instance',
+        weapon_main: 'pistol_instance',
+        weapon_sub: 'knife_instance',
       },
     },
     npcs: {
@@ -229,6 +234,15 @@ describe('combat skill data', () => {
     }
   });
 
+  it('has localized labels for every declared combat skill', () => {
+    for (const skill of Object.values(COMBAT_SKILLS)) {
+      expect(ko[skill.nameKey], `${skill.id} ko label`).toBeTypeOf('string');
+      expect(ko[skill.nameKey], `${skill.id} ko label`).not.toBe(skill.nameKey);
+      expect(en[skill.nameKey], `${skill.id} en label`).toBeTypeOf('string');
+      expect(en[skill.nameKey], `${skill.id} en label`).not.toBe(skill.nameKey);
+    }
+  });
+
   it('validator rejects token effects without positive integer stacks', () => {
     const result = validateCombatSkillContracts({
       bad_token: {
@@ -283,7 +297,6 @@ describe('validateSkillCommand', () => {
     ['invalid skill', { skillId: 'missing' }, 'invalid_skill'],
     ['position error', { validatePosition: () => ({ ok: false, reason: 'out_of_range' }) }, 'out_of_range'],
     ['insufficient stamina', { skill: { costs: { stamina: 4 } }, getStamina: () => 3 }, 'insufficient_stamina'],
-    ['insufficient ammo', { skill: { costs: { ammo: 'pistol_ammo' } }, getAmmo: () => 0 }, 'insufficient_ammo'],
     ['insufficient durability', { skill: { costs: { durability: 2 }, equipmentInstanceId: 'knife_1' }, getDurability: () => 1 }, 'insufficient_durability'],
   ])('rejects %s', (_, setup, reason) => {
     const overrides = {};
@@ -337,6 +350,26 @@ describe('validateSkillCommand', () => {
     expect(validateSkillCommand(ctx, strikeCommand)).toBe(positionFailure);
   });
 
+  it('target.selfOnly 기술은 행동자 외 대상을 거부한다', () => {
+    const ctx = makeCommandContext();
+    ctx.skillsById.strike = {
+      ...ctx.skillsById.strike,
+      target: {
+        side: 'ally',
+        ranks: [1, 2, 3, 4],
+        count: 1,
+        selfOnly: true,
+      },
+    };
+
+    expect(validateSkillCommand(ctx, strikeCommand))
+      .toEqual({ ok: false, reason: 'invalid_target' });
+    expect(validateSkillCommand(ctx, {
+      ...strikeCommand,
+      targetId: strikeCommand.actorId,
+    }).ok).toBe(true);
+  });
+
   it('treats deathsDoor targets as valid when they are not dead', () => {
     const ctx = makeCommandContext();
     ctx.combatants[1].currentHp = 0;
@@ -371,6 +404,30 @@ describe('validateSkillCommand', () => {
     const result = executeSkillCommand(ctx, strikeCommand, () => 0);
 
     expect(result).toEqual({ ok: false, reason: 'insufficient_stamina' });
+    expect(ctx.consumeCosts).not.toHaveBeenCalled();
+    expect(ctx.applyEffect).not.toHaveBeenCalled();
+  });
+
+  it('rejects an empty-magazine ranged command before costs or effects', () => {
+    const ctx = makeCommandContext({
+      skillsById: {
+        shot: {
+          id: 'shot',
+          equipmentInstanceId: 'pistol_instance',
+          costs: { magazineRound: 1 },
+          usableFrom: [1],
+          target: { side: 'enemy', ranks: [1], count: 1 },
+          effects: [{ type: 'damage', value: [5, 5] }],
+        },
+      },
+      canFireWeapon: vi.fn(() => ({ ok: false, reason: 'empty_magazine' })),
+    });
+
+    expect(validateSkillCommand(ctx, {
+      actorId: 'player',
+      targetId: 'zombie',
+      skillId: 'shot',
+    })).toEqual({ ok: false, reason: 'empty_magazine' });
     expect(ctx.consumeCosts).not.toHaveBeenCalled();
     expect(ctx.applyEffect).not.toHaveBeenCalled();
   });
@@ -681,9 +738,11 @@ describe('buildEquipmentSkill', () => {
       icon: 'knife',
       source: 'equipment',
       equipmentInstanceId: 'knife_instance',
+      weaponType: null,
       usableFrom: [1, 2],
       target: { side: 'enemy', ranks: [1, 2], count: 1 },
-      costs: { ammo: null, durability: 3, noise: 0 },
+      ammoDefinitionId: null,
+      costs: { magazineRound: 0, durability: 3, noise: 0 },
       accuracy: 0.85,
       critChance: 0.3,
       critMultiplier: 2,
@@ -722,8 +781,9 @@ describe('buildEquipmentSkill', () => {
       ranks: [1, 2, 3, 4],
       count: 2,
     });
+    expect(skill.ammoDefinitionId).toBe('pistol_ammo');
     expect(skill.costs).toEqual({
-      ammo: 'pistol_ammo',
+      magazineRound: 1,
       durability: 1,
       noise: 30,
     });
@@ -762,7 +822,8 @@ describe('buildEquipmentSkill', () => {
 
     expect(skill.usableFrom).toEqual([1, 2]);
     expect(skill.target.ranks).toEqual([1, 2]);
-    expect(skill.costs.ammo).toBeNull();
+    expect(skill.ammoDefinitionId).toBeNull();
+    expect(skill.costs.magazineRound).toBe(0);
     expect(skill.effects).toEqual([{ type: 'damage', value: [3, 5] }]);
   });
 
@@ -799,7 +860,7 @@ describe('buildEquipmentSkill', () => {
     expect(skill.fallbackName).toBe('broken');
     expect(skill.icon).toBe('weapon');
     expect(skill.costs).toEqual({
-      ammo: null,
+      magazineRound: 0,
       durability: 0,
       noise: 0,
     });
@@ -817,14 +878,14 @@ describe('buildAllyLoadout', () => {
     const loadout = buildAllyLoadout({ sourceType: 'player' }, gs);
 
     expect(loadout.map((skill) => skill.id)).toEqual([
-      'equipment:knife_instance',
       'equipment:pistol_instance',
+      'equipment:knife_instance',
       'doctor_triage',
       'doctor_diagnose',
     ]);
   });
 
-  it('uses the companion combat profile instead of equipment attacks', () => {
+  it('keeps a companion fixed combat loadout despite NPC equipment state', () => {
     const gs = makeGameState();
 
     const loadout = buildAllyLoadout({
@@ -832,7 +893,23 @@ describe('buildAllyLoadout', () => {
       sourceId: 'npc_nurse',
     }, gs);
 
-    expect(loadout.map((skill) => skill.id)).toEqual(COMPANION_COMBAT_LOADOUTS.npc_nurse);
+    expect(loadout.map((skill) => skill.id)).toEqual([
+      ...COMPANION_COMBAT_LOADOUTS.npc_nurse,
+      'guard',
+      'reposition',
+    ]);
+  });
+
+  it('keeps innate companion attacks when no weapon is equipped', () => {
+    const gs = makeGameState();
+    gs.npcs.states.npc_nurse = {};
+
+    const loadout = buildAllyLoadout({
+      sourceType: 'companion',
+      sourceId: 'npc_nurse',
+    }, gs);
+
+    expect(loadout.map((skill) => skill.id)).toEqual([...COMPANION_COMBAT_LOADOUTS.npc_nurse, 'guard', 'reposition']);
   });
 
   it('gives combat-flavored attacks to companions that have no equipment concept', () => {
@@ -846,6 +923,8 @@ describe('buildAllyLoadout', () => {
       'dog_bite',
       'dog_guard',
       'dog_track_weakness',
+      'guard',
+      'reposition',
     ]);
 
     expect(buildAllyLoadout({
@@ -855,6 +934,8 @@ describe('buildAllyLoadout', () => {
       'deserter_rifle_shot',
       'deserter_covering_fire',
       'deserter_reposition',
+      'guard',
+      'reposition',
     ]);
   });
 
@@ -873,7 +954,7 @@ describe('buildAllyLoadout', () => {
   it('uses the equipped melee weapon attack instead of soldier shot skills', () => {
     const gs = makeGameState();
     gs.player.characterId = 'soldier';
-    gs.player.equipped = { weapon_main: 'knife_instance' };
+    gs.player.equipped = { weapon_main: null, weapon_sub: 'knife_instance' };
 
     expect(buildAllyLoadout({ sourceType: 'player' }, gs)
       .map((skill) => skill.id)).toEqual([
@@ -885,11 +966,12 @@ describe('buildAllyLoadout', () => {
   it('uses the equipped firearm attack instead of innate soldier shot skills', () => {
     const gs = makeGameState();
     gs.player.characterId = 'soldier';
-    gs.player.equipped = { weapon_main: 'pistol_instance' };
+    gs.player.equipped = { weapon_main: 'pistol_instance', weapon_sub: null };
 
     expect(buildAllyLoadout({ sourceType: 'player' }, gs)
       .map((skill) => skill.id)).toEqual([
       'equipment:pistol_instance',
+      'basic_strike',
       'soldier_tactical_shift',
     ]);
   });
@@ -922,10 +1004,15 @@ describe('buildAllyLoadout', () => {
 
   it('deduplicates equipment IDs and skips missing definitions safely', () => {
     const gs = makeGameState();
-    gs.player.equipped.weapon_sub = 'knife_instance';
+    gs.player.equipped.weapon_sub = 'pistol_instance';
 
-    expect(buildAllyLoadout({ sourceType: 'player' }, gs))
-      .toHaveLength(3);
+    expect(buildAllyLoadout({ sourceType: 'player' }, gs)
+      .map((skill) => skill.id)).toEqual([
+      'equipment:pistol_instance',
+      'basic_strike',
+      'doctor_triage',
+      'doctor_diagnose',
+    ]);
 
     gs.player.equipped.weapon_main = 'missing_instance';
     gs.player.equipped.weapon_sub = null;
@@ -965,7 +1052,7 @@ describe('buildAllyLoadout', () => {
   it('isolates every returned loadout from skill data and other calls', () => {
     const first = buildAllyLoadout({ sourceType: 'player' }, makeGameState());
     const second = buildAllyLoadout({ sourceType: 'player' }, makeGameState());
-    const original = buildEquipmentSkill('knife_instance', makeGameState().getCardDef('knife_instance'));
+    const original = buildEquipmentSkill('pistol_instance', makeGameState().getCardDef('pistol_instance'));
 
     first[0].usableFrom.push(99);
     first[0].target.ranks.push(99);
@@ -981,5 +1068,58 @@ describe('buildAllyLoadout', () => {
     expect(first[0].effects).not.toBe(second[0].effects);
     expect(first[0].effects[0]).not.toBe(second[0].effects[0]);
     expect(first[0].effects[0].value).not.toBe(second[0].effects[0].value);
+  });
+});
+
+describe('executeSkillCommand with context.resolveHit (ranked pipeline)', () => {
+  it('uses resolveHit verdict instead of the internal accuracy roll', () => {
+    const resolveHit = vi.fn(() => ({ hit: false, dodged: true }));
+    const ctx = makeCommandContext({ resolveHit });
+
+    const result = executeSkillCommand(ctx, strikeCommand, () => 0);
+
+    expect(resolveHit).toHaveBeenCalledWith(
+      ctx.combatants[0],
+      ctx.combatants[1],
+      ctx.skillsById.strike,
+      expect.any(Function),
+    );
+    expect(result).toMatchObject({
+      ok: true,
+      hit: false,
+      dodged: true,
+      turnConsumed: true,
+      costsConsumed: true,
+      effectsApplied: 0,
+    });
+    expect(ctx.applyEffect).not.toHaveBeenCalled();
+  });
+
+  it('passes hit metadata (crit) through to applyEffect as fifth argument', () => {
+    const hitInfo = { hit: true, dodged: false, crit: true, critMultiplier: 2 };
+    const ctx = makeCommandContext({ resolveHit: vi.fn(() => hitInfo) });
+
+    const result = executeSkillCommand(ctx, strikeCommand, () => 0);
+
+    expect(result).toMatchObject({ ok: true, hit: true, crit: true });
+    expect(ctx.applyEffect).toHaveBeenCalledOnce();
+    expect(ctx.applyEffect.mock.calls[0][4]).toBe(hitInfo);
+  });
+
+  it('treats resolveHit throws as post-cost execution errors', () => {
+    const ctx = makeCommandContext({
+      resolveHit: vi.fn(() => {
+        throw new Error('broken resolver');
+      }),
+    });
+
+    expect(executeSkillCommand(ctx, strikeCommand, () => 0)).toEqual({
+      ok: false,
+      reason: 'execution_error',
+      turnConsumed: true,
+      costsConsumed: true,
+      partialApplied: false,
+      effectsApplied: 0,
+    });
   });
 });

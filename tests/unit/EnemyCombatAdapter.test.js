@@ -1,9 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import BALANCE from '../../js/data/gameBalance.js';
-import {
-  buildEnemyProfile,
-  decideEnemyIntent,
-} from '../../js/systems/combat/EnemyCombatAdapter.js';
+import { buildEnemyProfile } from '../../js/systems/combat/EnemyCombatAdapter.js';
 import { validateEnemyCombatProfiles } from '../../js/data/validate.js';
 
 describe('EnemyCombatAdapter', () => {
@@ -117,49 +114,6 @@ describe('EnemyCombatAdapter', () => {
       id: 'explicit_fractional',
       combatProfile: { speed: 2.5, skillIds: [], skills: [] },
     }).speed).toBe(BALANCE.combat.defaultEnemySpeed);
-  });
-
-  it('decides an enemy intent through the supplied AI hooks', () => {
-    const skill = { id: 'enemy:zombie_common:basic_attack' };
-    const context = {
-      enemyProfiles: {
-        'enemy:0': { ai: 'normal' },
-      },
-      getUsableEnemySkills: vi.fn(() => [skill]),
-      pickSkill: vi.fn(() => skill),
-      pickTarget: vi.fn(() => 'player'),
-    };
-
-    expect(decideEnemyIntent(context, 'enemy:0')).toEqual({
-      enemyId: 'enemy:0',
-      skillId: 'enemy:zombie_common:basic_attack',
-      targetId: 'player',
-    });
-    expect(context.getUsableEnemySkills).toHaveBeenCalledWith('enemy:0', { ai: 'normal' });
-    expect(context.pickSkill).toHaveBeenCalledWith('normal', [skill]);
-    expect(context.pickTarget).toHaveBeenCalledWith('normal', 'enemy:0', skill);
-  });
-
-  it('returns null when profile skill or target cannot be resolved', () => {
-    expect(decideEnemyIntent({}, 'enemy:0')).toBeNull();
-    expect(decideEnemyIntent({
-      enemyProfiles: { 'enemy:0': { ai: 'normal' } },
-      getUsableEnemySkills: () => [],
-      pickSkill: () => null,
-      pickTarget: () => 'player',
-    }, 'enemy:0')).toBeNull();
-    expect(decideEnemyIntent({
-      enemyProfiles: { 'enemy:0': { ai: 'normal' } },
-      getUsableEnemySkills: () => [{ id: 'skill' }],
-      pickSkill: () => ({ id: 'skill' }),
-      pickTarget: () => null,
-    }, 'enemy:0')).toBeNull();
-    expect(decideEnemyIntent({
-      enemyProfiles: { 'enemy:0': { ai: 'normal' } },
-      getUsableEnemySkills: () => [{}],
-      pickSkill: () => ({}),
-      pickTarget: () => 'player',
-    }, 'enemy:0')).toBeNull();
   });
 
   it('validates explicit combat profile speed duplicates and skill definitions', () => {

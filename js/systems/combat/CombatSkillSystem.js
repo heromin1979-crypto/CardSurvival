@@ -4,6 +4,7 @@ import {
   COMPANION_COMBAT_LOADOUTS,
   getCombatSkill,
 } from '../../data/combatSkills.js';
+import { weaponSlotForDefinition } from '../WeaponSlotPolicy.js';
 
 function cloneValue(value) {
   if (Array.isArray(value)) return value.map(cloneValue);
@@ -79,6 +80,13 @@ function lookupById(collection, id) {
   return null;
 }
 
+function collectionValues(collection) {
+  if (collection instanceof Map) return [...collection.values()];
+  if (Array.isArray(collection)) return collection;
+  if (collection && typeof collection === 'object') return Object.values(collection);
+  return [];
+}
+
 function combatantHp(combatant) {
   if (Number.isFinite(combatant?.currentHp)) return combatant.currentHp;
   if (Number.isFinite(combatant?.hp)) return combatant.hp;
@@ -134,6 +142,113 @@ function normalizeDamage(damage) {
   return [1, 2];
 }
 
+function selectCommandTargets(context, actor, primaryTarget, skill) {
+  const count = Number.isInteger(skill?.target?.count) && skill.target.count > 0
+    ? skill.target.count
+    : 1;
+  if (count === 1) return [primaryTarget];
+
+  const selected = [primaryTarget];
+  for (const candidate of collectionValues(context.combatants)) {
+    if (
+      selected.length >= count
+      || candidate === primaryTarget
+      || candidate?.id === primaryTarget?.id
+      || candidate?.side !== skill?.target?.side
+      || isDeadCombatant(candidate, { allowDeathsDoor: true })
+    ) {
+      continue;
+    }
+
+    try {
+      if (context.validatePosition(actor.id, candidate.id, skill)?.ok) {
+        selected.push(candidate);
+      }
+    } catch {
+      continue;
+    }
+  }
+  return selected;
+}
+
+function executeMultiTargetEffects({
+  context,
+  actor,
+  targets,
+  skill,
+  effects,
+  randomFn,
+  usePipeline,
+}) {
+  let effectsApplied = 0;
+  const targetResults = [];
+
+  for (const target of targets) {
+    let hitInfo;
+    if (usePipeline) {
+      try {
+        hitInfo = context.resolveHit(actor, target, skill, randomFn);
+      } catch {
+        return postCostFailure('execution_error', effectsApplied);
+      }
+    } else {
+      let roll;
+      try {
+        roll = normalizeRoll(randomFn());
+      } catch {
+        return postCostFailure('execution_error', effectsApplied);
+      }
+      hitInfo = { hit: roll !== null && roll < normalizeAccuracy(skill.accuracy) };
+    }
+
+    const targetResult = {
+      targetId: target.id,
+      hit: hitInfo?.hit === true,
+      effectsApplied: 0,
+    };
+    if (usePipeline) {
+      targetResult.dodged = hitInfo?.dodged === true;
+      targetResult.crit = hitInfo?.crit === true;
+    }
+
+    if (hitInfo?.hit === true) {
+      for (const effect of effects) {
+        let effectResult;
+        try {
+          effectResult = usePipeline
+            ? context.applyEffect(effect, actor, target, randomFn, hitInfo)
+            : context.applyEffect(effect, actor, target, randomFn);
+        } catch {
+          return postCostFailure('execution_error', effectsApplied);
+        }
+        if (effectResult?.ok === false) {
+          return postCostFailure(effectResult.reason ?? 'execution_error', effectsApplied);
+        }
+        effectsApplied++;
+        targetResult.effectsApplied++;
+      }
+    }
+    targetResults.push(targetResult);
+  }
+
+  const hits = targetResults.filter(result => result.hit);
+  const result = {
+    ok: true,
+    hit: hits.length > 0,
+    turnConsumed: true,
+    costsConsumed: true,
+    effectsApplied,
+    partialApplied: false,
+    targetResults,
+  };
+  if (usePipeline) {
+    result.dodged = hits.length === 0
+      && targetResults.some(targetResult => targetResult.dodged);
+    result.crit = hits.some(targetResult => targetResult.crit);
+  }
+  return result;
+}
+
 export function buildEquipmentSkill(instanceId, definition) {
   if (
     typeof instanceId !== 'string'
@@ -175,6 +290,8 @@ export function buildEquipmentSkill(instanceId, definition) {
       : 'weapon',
     source: 'equipment',
     equipmentInstanceId: instanceId,
+    ammoDefinitionId: ammoId,
+    weaponType: typeof definition.weaponType === 'string' ? definition.weaponType : null,
     usableFrom: ranged ? [2, 3, 4] : [1, 2],
     target: {
       side: 'enemy',
@@ -185,7 +302,7 @@ export function buildEquipmentSkill(instanceId, definition) {
         : 1,
     },
     costs: {
-      ammo: ammoId,
+      magazineRound: ranged ? 1 : 0,
       durability: nonnegative(combat.durabilityLoss),
       noise: nonnegative(combat.noiseOnUse),
     },
@@ -214,26 +331,60 @@ function getCharacterSkillIds(combatant, gs) {
   return COMMON_COMBAT_LOADOUT;
 }
 
-function getEquipmentIds(combatant, gs) {
-  if (combatant?.sourceType === 'player') {
-    return [
-      gs?.player?.equipped?.weapon_main,
-      gs?.player?.equipped?.weapon_sub,
-    ];
-  }
-  if (combatant?.sourceType === 'companion') {
-    const state = gs?.npcs?.states?.[combatant.sourceId];
-    return [state?.equippedWeapon, state?.equippedTool];
-  }
-  return [];
-}
-
 function isAttackSkill(skill) {
   return (skill?.effects ?? []).some(effect => effect?.type === 'damage');
 }
 
+function buildPlayerAttackSkills(gs) {
+  const fallback = () => [getCombatSkill('basic_strike')]
+    .filter(Boolean)
+    .map(cloneValue);
+  if (typeof gs?.getCardDef !== 'function') return fallback();
+
+  const mainId = gs?.player?.equipped?.weapon_main;
+  const subId = gs?.player?.equipped?.weapon_sub;
+  let mainDefinition;
+  let subDefinition;
+  try {
+    mainDefinition = typeof mainId === 'string' ? gs.getCardDef(mainId) : null;
+    subDefinition = typeof subId === 'string' ? gs.getCardDef(subId) : null;
+  } catch {
+    return fallback();
+  }
+
+  const attacks = [];
+  if (weaponSlotForDefinition(mainDefinition) === 'weapon_main') {
+    const ranged = buildEquipmentSkill(mainId, mainDefinition);
+    if (ranged) attacks.push(ranged);
+  }
+  if (weaponSlotForDefinition(subDefinition) === 'weapon_sub') {
+    const melee = buildEquipmentSkill(subId, subDefinition);
+    if (melee) attacks.push(melee);
+  } else {
+    const unarmed = getCombatSkill('basic_strike');
+    if (unarmed) attacks.push(cloneValue(unarmed));
+  }
+  return attacks;
+}
+
 export function buildAllyLoadout(combatant, gs) {
   if (combatant?.sourceType === 'companion') {
+    const characterSkills = getCharacterSkillIds(combatant, gs)
+      .map(getCombatSkill)
+      .filter(Boolean)
+      .map(cloneValue);
+
+    // 동료도 진형 구성원 — 스왑/넉백/끌기로 밀려난 랭크에서 복귀·방어할 수단이 없으면
+    // 근접 스킬이 잠긴 채 유효 행동이 사라진다 (플레이어의 reposition 갭과 동일)
+    const commonUtilitySkills = ['guard', 'reposition']
+      .map(getCombatSkill)
+      .filter(Boolean)
+      .map(cloneValue);
+
+    return [...characterSkills, ...commonUtilitySkills];
+  }
+
+  if (combatant?.sourceType !== 'player') {
     return getCharacterSkillIds(combatant, gs)
       .map(getCombatSkill)
       .filter(Boolean)
@@ -246,35 +397,7 @@ export function buildAllyLoadout(combatant, gs) {
     .filter(skill => !isAttackSkill(skill))
     .map(cloneValue);
 
-  const equipmentSkills = [];
-  if (typeof gs?.getCardDef === 'function') {
-    const seen = new Set();
-    for (const instanceId of getEquipmentIds(combatant, gs)) {
-      if (
-        equipmentSkills.length >= 2
-        || typeof instanceId !== 'string'
-        || instanceId.length === 0
-        || seen.has(instanceId)
-      ) {
-        continue;
-      }
-      seen.add(instanceId);
-
-      try {
-        const skill = buildEquipmentSkill(
-          instanceId,
-          gs.getCardDef(instanceId),
-        );
-        if (skill) equipmentSkills.push(skill);
-      } catch {
-        continue;
-      }
-    }
-  }
-
-  const attackSkills = equipmentSkills.length > 0
-    ? equipmentSkills
-    : [getCombatSkill('basic_strike')].filter(Boolean).map(cloneValue);
+  const attackSkills = buildPlayerAttackSkills(gs);
 
   return [...attackSkills, ...characterUtilitySkills];
 }
@@ -314,6 +437,9 @@ export function validateSkillCommand(context, command) {
   if (!skill) {
     return commandFailure('invalid_skill');
   }
+  if (skill?.target?.selfOnly === true && cmd.targetId !== cmd.actorId) {
+    return commandFailure('invalid_target');
+  }
 
   if (typeof ctx.validatePosition !== 'function') {
     return commandFailure('invalid_position');
@@ -335,13 +461,20 @@ export function validateSkillCommand(context, command) {
     return commandFailure('insufficient_stamina');
   }
 
-  const ammoId = skill.costs?.ammo;
-  if (
-    typeof ammoId === 'string'
-    && ammoId.length > 0
-    && availableFrom(ctx.getAmmo, [ammoId]) < 1
-  ) {
-    return commandFailure('insufficient_ammo');
+  const magazineRoundCost = positiveCost(skill.costs?.magazineRound);
+  if (magazineRoundCost > 0) {
+    if (typeof ctx.canFireWeapon !== 'function') {
+      return commandFailure('invalid_context');
+    }
+    let fireCheck;
+    try {
+      fireCheck = ctx.canFireWeapon(actor, skill);
+    } catch {
+      return commandFailure('invalid_context');
+    }
+    if (!fireCheck?.ok) {
+      return commandFailure(fireCheck?.reason ?? 'empty_magazine');
+    }
   }
 
   const durabilityCost = positiveCost(skill.costs?.durability);
@@ -370,6 +503,7 @@ export function executeSkillCommand(context, command, random = Math.random) {
   if (!validation.ok) return validation;
 
   const { actor, target, skill } = validation;
+  const targets = selectCommandTargets(context, actor, target, skill);
   const effects = Array.isArray(skill.effects) ? skill.effects : [];
   if (typeof context.consumeCosts !== 'function') {
     return preExecutionFailure('execution_error');
@@ -389,15 +523,40 @@ export function executeSkillCommand(context, command, random = Math.random) {
   }
 
   const randomFn = typeof random === 'function' ? random : Math.random;
-  let roll;
-  try {
-    roll = normalizeRoll(randomFn());
-  } catch {
-    return postCostFailure('execution_error', 0);
+  // resolveHit 주입 시 판정(명중 보정·회피/치명 토큰)을 호출자에게 위임한다.
+  // 미주입 컨텍스트는 기존 단일 명중 굴림 계약을 그대로 유지한다.
+  const usePipeline = typeof context.resolveHit === 'function';
+  if (targets.length > 1) {
+    return executeMultiTargetEffects({
+      context,
+      actor,
+      targets,
+      skill,
+      effects,
+      randomFn,
+      usePipeline,
+    });
   }
-  const hit = roll !== null && roll < normalizeAccuracy(skill.accuracy);
-  if (!hit) {
-    return {
+
+  let hitInfo = null;
+  if (usePipeline) {
+    try {
+      hitInfo = context.resolveHit(actor, target, skill, randomFn);
+    } catch {
+      return postCostFailure('execution_error', 0);
+    }
+  } else {
+    let roll;
+    try {
+      roll = normalizeRoll(randomFn());
+    } catch {
+      return postCostFailure('execution_error', 0);
+    }
+    hitInfo = { hit: roll !== null && roll < normalizeAccuracy(skill.accuracy) };
+  }
+
+  if (hitInfo?.hit !== true) {
+    const missResult = {
       ok: true,
       hit: false,
       turnConsumed: true,
@@ -405,13 +564,17 @@ export function executeSkillCommand(context, command, random = Math.random) {
       effectsApplied: 0,
       partialApplied: false,
     };
+    if (usePipeline) missResult.dodged = hitInfo?.dodged === true;
+    return missResult;
   }
 
   let effectsApplied = 0;
   for (const effect of effects) {
     let effectResult;
     try {
-      effectResult = context.applyEffect(effect, actor, target, randomFn);
+      effectResult = usePipeline
+        ? context.applyEffect(effect, actor, target, randomFn, hitInfo)
+        : context.applyEffect(effect, actor, target, randomFn);
     } catch {
       return postCostFailure('execution_error', effectsApplied);
     }
@@ -423,7 +586,7 @@ export function executeSkillCommand(context, command, random = Math.random) {
     effectsApplied++;
   }
 
-  return {
+  const hitResult = {
     ok: true,
     hit: true,
     turnConsumed: true,
@@ -431,6 +594,11 @@ export function executeSkillCommand(context, command, random = Math.random) {
     effectsApplied,
     partialApplied: false,
   };
+  if (usePipeline) {
+    hitResult.dodged = false;
+    hitResult.crit = hitInfo?.crit === true;
+  }
+  return hitResult;
 }
 
 export function useCombatItem(context, actorId, itemInstanceId) {

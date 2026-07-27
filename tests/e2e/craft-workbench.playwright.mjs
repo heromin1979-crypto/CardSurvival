@@ -1,0 +1,233 @@
+import assert from 'node:assert/strict';
+import { spawn } from 'node:child_process';
+import { mkdir } from 'node:fs/promises';
+import path from 'node:path';
+
+const port = Number(process.env.CRAFT_E2E_PORT ?? 43182);
+const baseUrl = `http://127.0.0.1:${port}`;
+const screenshotPath = path.resolve('outputs/craft-workbench-high-fidelity.png');
+
+async function loadPlaywright() {
+  try {
+    return await import('playwright');
+  } catch (err) {
+    throw new Error(`Playwright dependency is not installed. ${err.message}`);
+  }
+}
+
+function startServer() {
+  const viteBin = path.resolve('node_modules/vite/bin/vite.js');
+  const child = spawn(process.execPath, [
+    viteBin,
+    '--host', '127.0.0.1',
+    '--port', String(port),
+    '--strictPort',
+  ], { stdio: ['ignore', 'pipe', 'pipe'] });
+  child.stdout.on('data', data => process.stdout.write(`[vite] ${data}`));
+  child.stderr.on('data', data => process.stderr.write(`[vite] ${data}`));
+  return child;
+}
+
+async function waitForServer(timeoutMs = 15000) {
+  const started = Date.now();
+  while (Date.now() - started < timeoutMs) {
+    try {
+      const response = await fetch(baseUrl);
+      if (response.ok) return;
+    } catch {
+      // Server is still starting.
+    }
+    await new Promise(resolve => setTimeout(resolve, 250));
+  }
+  throw new Error(`Timed out waiting for ${baseUrl}`);
+}
+
+function waitForExit(child, timeoutMs) {
+  return new Promise(resolve => {
+    if (child.exitCode !== null || child.signalCode !== null) {
+      resolve(true);
+      return;
+    }
+
+    let timer;
+    const finish = exited => {
+      clearTimeout(timer);
+      child.removeListener('exit', onExit);
+      resolve(exited);
+    };
+    const onExit = () => finish(true);
+    child.once('exit', onExit);
+    timer = setTimeout(() => finish(false), timeoutMs);
+  });
+}
+
+async function forceStopServer(server) {
+  if (process.platform === 'win32') {
+    await new Promise((resolve, reject) => {
+      const taskkill = spawn('taskkill', ['/pid', String(server.pid), '/t', '/f'], {
+        stdio: 'ignore',
+        windowsHide: true,
+      });
+      taskkill.once('error', reject);
+      taskkill.once('close', resolve);
+    });
+    return;
+  }
+
+  server.kill('SIGKILL');
+}
+
+async function stopServer(server) {
+  if (server.exitCode !== null || server.signalCode !== null) return;
+  server.kill();
+  if (await waitForExit(server, 3000)) return;
+
+  await forceStopServer(server);
+  if (!await waitForExit(server, 3000)) {
+    throw new Error(`Vite server process ${server.pid} did not exit after forced termination`);
+  }
+}
+
+async function openWorkbench(page) {
+  await page.goto(baseUrl, { waitUntil: 'networkidle' });
+  await page.waitForSelector('#screen-main-menu.active');
+  await page.evaluate(async () => {
+    const [{ default: GameState }, { default: StateMachine }] = await Promise.all([
+      import('/js/core/GameState.js'),
+      import('/js/core/StateMachine.js'),
+    ]);
+    GameState.ui.currentState = 'slot_select';
+    StateMachine.transition('main');
+  });
+  await page.waitForSelector('#screen-main.active');
+  await page.locator('#btn-craft').click();
+  await page.waitForSelector('#craft-modal.open .craft-workbench--spec');
+  await page.locator('.craft-status-tab.status-lacking').click();
+  await page.waitForSelector('.blueprint-list .blueprint-item');
+  const compactList = await page.evaluate(() => {
+    const items = [...document.querySelectorAll('.blueprint-list .blueprint-item')];
+    items.slice(3).forEach(item => { item.style.display = 'none'; });
+    const rects = items.slice(0, 3).map(item => item.getBoundingClientRect());
+    const gaps = rects.slice(1).map((rect, index) => rect.top - rects[index].bottom);
+    items.slice(3).forEach(item => { item.style.display = ''; });
+    return { itemCount: items.length, maxGap: gaps.length ? Math.max(...gaps) : 0 };
+  });
+  assert.ok(compactList.itemCount > 3, `probe itemCount=${compactList.itemCount}`);
+  assert.ok(compactList.maxGap <= 4, `three-item maxGap=${compactList.maxGap}`);
+  const settledWater = page.locator('.blueprint-item[data-bp-id="settle_water"]');
+  assert.equal(await settledWater.count(), 1, 'settle_water blueprint is missing');
+  await settledWater.click();
+  await page.waitForFunction(() => {
+    const image = document.querySelector('.spec-figure-img');
+    return image?.complete === true
+      && image.naturalWidth > 0
+      && image.classList.contains('is-blueprint')
+      && image.getAttribute('src')?.endsWith('/items/settled-water.png');
+  });
+  await page.waitForFunction(() => {
+    const images = [...document.querySelectorAll('.bp-mat-icon img')];
+    return images.length > 0 && images.every(image => image.complete && image.naturalWidth > 0);
+  });
+  return compactList;
+}
+
+async function measure(page) {
+  return page.evaluate(() => {
+    const items = [...document.querySelectorAll('.blueprint-item')];
+    const list = document.querySelector('.blueprint-list');
+    const first = items[0]?.getBoundingClientRect();
+    const second = items[1]?.getBoundingClientRect();
+    const listRect = list?.getBoundingClientRect();
+    const callouts = [...document.querySelectorAll('.spec-figure-callout')]
+      .map(el => el.getBoundingClientRect());
+    let calloutOverlapCount = 0;
+    for (let i = 0; i < callouts.length; i++) {
+      for (let j = i + 1; j < callouts.length; j++) {
+        const a = callouts[i];
+        const b = callouts[j];
+        const overlapX = Math.min(a.right, b.right) - Math.max(a.left, b.left);
+        const overlapY = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top);
+        if (overlapX > 0 && overlapY > 0) calloutOverlapCount++;
+      }
+    }
+    const image = document.querySelector('.spec-figure-img');
+    const materialImages = [...document.querySelectorAll('.bp-mat-icon img')];
+    const uiIcons = [...document.querySelectorAll('.bp-item-mark .craft-ui-icon, .craft-item-btn .craft-ui-icon')];
+    return {
+      viewport: { width: innerWidth, height: innerHeight },
+      itemCount: items.length,
+      itemHeight: first?.height ?? null,
+      itemGap: first && second ? second.top - first.bottom : null,
+      visibleItems: listRect
+        ? items.filter(el => {
+          const rect = el.getBoundingClientRect();
+          return rect.top >= listRect.top - 1 && rect.bottom <= listRect.bottom + 1;
+        }).length
+        : 0,
+      overflowX: document.documentElement.scrollWidth > document.documentElement.clientWidth,
+      overflowY: document.documentElement.scrollHeight > document.documentElement.clientHeight,
+      blueprintLoaded: image?.complete === true && (image?.naturalWidth ?? 0) > 0,
+      materialImagesLoaded: materialImages.length > 0
+        && materialImages.every(item => item.complete && item.naturalWidth > 0),
+      uiIconAtlasLoaded: uiIcons.length > 0
+        && uiIcons.every(icon => getComputedStyle(icon).backgroundImage.includes('crafting-ui-icons.png')),
+      calloutCount: callouts.length,
+      calloutOverlapCount,
+    };
+  });
+}
+
+function assertDesktop(result) {
+  assert.ok(result.itemHeight >= 64 && result.itemHeight <= 68, `itemHeight=${result.itemHeight}`);
+  assert.ok(result.itemGap >= 2 && result.itemGap <= 4, `itemGap=${result.itemGap}`);
+  assert.ok(
+    result.visibleItems >= Math.min(10, result.itemCount),
+    `visibleItems=${result.visibleItems} itemCount=${result.itemCount}`,
+  );
+  assert.equal(result.overflowX, false, 'document has horizontal overflow');
+  assert.equal(result.overflowY, false, 'document has vertical overflow');
+  assert.equal(result.blueprintLoaded, true, 'blueprint image did not load');
+  assert.equal(result.materialImagesLoaded, true, 'material thumbnail did not load');
+  assert.equal(result.uiIconAtlasLoaded, true, 'crafting UI icon atlas did not load');
+  assert.equal(result.calloutCount, 0, 'blueprint callouts should not render');
+  assert.equal(result.calloutOverlapCount, 0, 'blueprint callouts overlap');
+}
+
+async function main() {
+  const { chromium } = await loadPlaywright();
+  const server = startServer();
+  let browser;
+  try {
+    await waitForServer();
+    browser = await chromium.launch();
+    const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
+    const sparseList = await openWorkbench(page);
+
+    const desktop = await measure(page);
+    assertDesktop(desktop);
+    await mkdir(path.dirname(screenshotPath), { recursive: true });
+    await page.screenshot({ path: screenshotPath, fullPage: true });
+
+    await page.setViewportSize({ width: 1400, height: 900 });
+    await page.waitForTimeout(100);
+    const compact = await measure(page);
+    assert.equal(compact.overflowX, false, '1400x900 document has horizontal overflow');
+    assert.equal(compact.overflowY, false, '1400x900 document has vertical overflow');
+
+    console.log(`craft-workbench:ok sparse=${JSON.stringify(sparseList)}`);
+    console.log(`craft-workbench:ok desktop=${JSON.stringify(desktop)}`);
+    console.log(`craft-workbench:ok compact=${JSON.stringify(compact)}`);
+    console.log(`craft-workbench:ok screenshot=${screenshotPath}`);
+  } finally {
+    try {
+      if (browser) await browser.close();
+    } finally {
+      await stopServer(server);
+    }
+  }
+}
+
+main().catch(err => {
+  console.error(err);
+  process.exitCode = 1;
+});

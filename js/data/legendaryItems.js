@@ -602,7 +602,7 @@ const LEGENDARY_ITEMS = {
     id: 'rifle_ammo', name: '소총 탄약', type: 'consumable', subtype: 'ammo',
     rarity: 'uncommon', weight: 0.08,
     defaultDurability: 100, defaultContamination: 0,
-    icon: '🔴', description: '5.56mm NATO 탄. 전설급 소총류에 사용.',
+    icon: '🔴', description: '소총 사격에 사용하는 20발 탄약 팩. 카드 1장으로 빈 탄창을 가득 채운다.',
     tags: ['ammo'],
     dismantle: [],
   },

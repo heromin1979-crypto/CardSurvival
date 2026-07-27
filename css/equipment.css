@@ -308,6 +308,16 @@
   color: var(--text-dim);
 }
 
+.equip-mini-ammo {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.equip-mini-ammo.loaded { color: var(--accent-primary); }
+.equip-mini-ammo.empty  { color: var(--text-danger); }
+
 /* ── Right: 인벤토리 패널 ── */
 .equip-inv-panel {
   width: 280px;

@@ -8,7 +8,13 @@ import {
   COMBAT_SKILLS,
   COMPANION_COMBAT_LOADOUTS,
 } from './combatSkills.js';
+import { COMPANION_TACTICS } from './companionTactics.js';
 import { ENEMIES } from './enemies.js';
+import {
+  COMPANION_STANCE_ROLES,
+  COMPANION_TACTIC_WHEN,
+  getCompanionSkillRole,
+} from '../systems/combat/CompanionTactics.js';
 import { buildEnemyProfile } from '../systems/combat/EnemyCombatAdapter.js';
 
 const VALID_COMBAT_EFFECTS = new Set([
@@ -21,6 +27,119 @@ const VALID_COMBAT_EFFECTS = new Set([
   'guard',
   'flee',
 ]);
+
+export function validateCompanionPatternData({
+  loadouts = {},
+  skills = {},
+  tactics = {},
+  expectedCompanionIds = null,
+} = {}) {
+  const errors = [];
+  const hasEffect = (skill, type) => skill?.effects?.some(effect => effect?.type === type);
+
+  if (Array.isArray(expectedCompanionIds)) {
+    for (const companionId of expectedCompanionIds) {
+      if (!Object.hasOwn(tactics, companionId)) {
+        errors.push(`[companion tactic/${companionId}] profile is required`);
+      }
+    }
+    for (const companionId of Object.keys(tactics)) {
+      if (!expectedCompanionIds.includes(companionId)) {
+        errors.push(`[companion tactic/${companionId}] profile is not in companion roster`);
+      }
+    }
+  }
+
+  for (const [skillId, skill] of Object.entries(skills)) {
+    if (skill?.target?.selfOnly === true && skill.target.side !== 'ally') {
+      errors.push(`[companion skill/${skillId}] selfOnly target.side must be ally`);
+    }
+    if (skill?.tacticalRole === 'heal' && !hasEffect(skill, 'heal')) {
+      errors.push(`[companion skill/${skillId}] heal tacticalRole must include a heal effect`);
+    }
+    if (
+      ['food', 'ration'].includes(skill?.tacticalRole)
+      && hasEffect(skill, 'heal')
+    ) {
+      errors.push(
+        `[companion skill/${skillId}] ${skill.tacticalRole} tacticalRole must not include a heal effect`,
+      );
+    }
+  }
+
+  for (const [companionId, tactic] of Object.entries(tactics)) {
+    const loadoutSkillIds = Array.isArray(loadouts[companionId])
+      ? loadouts[companionId]
+      : [];
+    const hasLoadoutRole = (role) => loadoutSkillIds.some(
+      skillId => getCompanionSkillRole(skills[skillId]) === role,
+    );
+
+    const stanceRoles = COMPANION_STANCE_ROLES[tactic?.preferredStance]
+      ?? [tactic?.preferredStance];
+    if (
+      tactic?.preferredStance
+      && !stanceRoles.some(role => hasLoadoutRole(role))
+    ) {
+      errors.push(
+        `[companion tactic/${companionId}] preferredStance role "${tactic.preferredStance}" not found in loadout`,
+      );
+    }
+    for (const [priorityIndex, priority] of (tactic?.priorities ?? []).entries()) {
+      if (
+        priority?.when !== undefined
+        && !COMPANION_TACTIC_WHEN.includes(priority.when)
+      ) {
+        errors.push(
+          `[companion tactic/${companionId}] priorities[${priorityIndex}] when "${priority.when}" is not supported`,
+        );
+      }
+      if (priority?.role && !hasLoadoutRole(priority.role)) {
+        errors.push(
+          `[companion tactic/${companionId}] priorities[${priorityIndex}] role "${priority.role}" not found in loadout`,
+        );
+      }
+    }
+  }
+
+  return errors;
+}
+
+export function validateNormalEnemyPatternData(enemies = {}) {
+  const errors = [];
+  const allowedTimedThreatCounters = new Set(['stunDelays', 'quietKill', 'weakness']);
+
+  for (const [enemyId, enemy] of Object.entries(enemies)) {
+    const patternProfile = enemy?.patternProfile;
+    const targetPolicy = patternProfile?.targetPolicy;
+    const defaultAction = patternProfile?.defaultAction;
+
+    if (typeof targetPolicy !== 'string' || targetPolicy.length === 0) {
+      errors.push(`[normal enemy/${enemyId}] patternProfile.targetPolicy is required`);
+    }
+    if (typeof defaultAction?.motionKey !== 'string' || defaultAction.motionKey.length === 0) {
+      errors.push(`[normal enemy/${enemyId}] patternProfile.defaultAction.motionKey is required`);
+    }
+    if (
+      typeof targetPolicy === 'string'
+      && targetPolicy.length > 0
+      && defaultAction?.target?.side !== targetPolicy
+    ) {
+      errors.push(
+        `[normal enemy/${enemyId}] patternProfile.targetPolicy must match defaultAction.target.side`,
+      );
+    }
+    for (const counterKey of Object.keys(enemy?.timedThreat?.counters ?? {})) {
+      if (!allowedTimedThreatCounters.has(counterKey)) {
+        errors.push(
+          `[normal enemy/${enemyId}] timedThreat.counters.${counterKey} is not allowed`,
+        );
+      }
+    }
+  }
+
+  return errors;
+}
 
 export function validateCombatSkillContracts(
   combatSkills = COMBAT_SKILLS,
@@ -828,6 +947,14 @@ async function validate() {
     COMPANION_COMBAT_LOADOUTS,
     20,
   );
+  for (const message of validateCompanionPatternData({
+    loadouts: COMPANION_COMBAT_LOADOUTS,
+    skills: COMBAT_SKILLS,
+    tactics: COMPANION_TACTICS,
+    expectedCompanionIds: Object.keys(COMPANION_COMBAT_LOADOUTS),
+  })) {
+    reportCombatError(message);
+  }
   console.log(
     `  Skills: ${Object.keys(COMBAT_SKILLS).length}, errors: ${combatSkillErrors}`,
   );

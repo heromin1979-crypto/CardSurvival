@@ -7,9 +7,14 @@ const STORAGE_KEY = 'CARD_SURVIVAL_SETTINGS_v1';
 const DEFAULTS = {
   language: 'ko',
   sound: { enabled: true, volume: 0.3 },
+  bgm: { enabled: true },
 };
 
-let _settings = { language: DEFAULTS.language, sound: { ...DEFAULTS.sound } };
+let _settings = {
+  language: DEFAULTS.language,
+  sound: { ...DEFAULTS.sound },
+  bgm: { ...DEFAULTS.bgm },
+};
 
 const SettingsManager = {
   init() {
@@ -23,6 +28,9 @@ const SettingsManager = {
             enabled: saved.sound?.enabled ?? DEFAULTS.sound.enabled,
             volume:  saved.sound?.volume  ?? DEFAULTS.sound.volume,
           },
+          bgm: {
+            enabled: saved.bgm?.enabled ?? DEFAULTS.bgm.enabled,
+          },
         };
       } catch { /* corrupted → use defaults */ }
     }
@@ -32,6 +40,7 @@ const SettingsManager = {
     if (key === 'language')      return _settings.language;
     if (key === 'sound.enabled') return _settings.sound.enabled;
     if (key === 'sound.volume')  return _settings.sound.volume;
+    if (key === 'bgm.enabled')   return _settings.bgm.enabled;
     return undefined;
   },
 
@@ -39,6 +48,7 @@ const SettingsManager = {
     if (key === 'language')           _settings.language = value;
     else if (key === 'sound.enabled') _settings.sound.enabled = !!value;
     else if (key === 'sound.volume')  _settings.sound.volume = Math.max(0, Math.min(1, value));
+    else if (key === 'bgm.enabled')   _settings.bgm.enabled = !!value;
     else return;
 
     this._save();
@@ -46,7 +56,7 @@ const SettingsManager = {
   },
 
   getAll() {
-    return { language: _settings.language, sound: { ..._settings.sound } };
+    return { language: _settings.language, sound: { ..._settings.sound }, bgm: { ..._settings.bgm } };
   },
 
   _save() {

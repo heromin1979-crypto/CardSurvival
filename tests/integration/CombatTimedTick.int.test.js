@@ -53,3 +53,75 @@ describe('_runSingleEnemyTurn — 충전 틱', () => {
     expect(c._chargeRemaining).toBe(0);
   });
 });
+
+describe('_tickStatusEffects — 동료 상태 동기화', () => {
+  it('동료 상태가 다음 틱에 피해와 기간 감소를 적용하고 만료 시 두 저장소에서 제거된다', () => {
+    const damageCompanion = vi.fn((npcId, damage) => {
+      const state = GameState.npcs.states[npcId];
+      state.hp = Math.max(0, state.hp - damage);
+    });
+    SystemRegistry.register('NPCSystem', {
+      damageCompanion,
+      getCompanionCombatBonus: () => 1.0,
+    });
+    GameState.companions = ['npc_a'];
+    GameState.npcs = {
+      states: {
+        npc_a: {
+          hp: 20,
+          maxHp: 20,
+          isCompanion: true,
+          statusEffects: [],
+        },
+      },
+    };
+    GameState.combat = {
+      active: true,
+      enemies: [],
+      targetIndex: 0,
+      log: [],
+      playerStatus: [],
+      enemyStatus: [],
+      combatants: {
+        npc_a: {
+          id: 'npc_a',
+          side: 'ally',
+          sourceType: 'companion',
+          sourceId: 'npc_a',
+          hp: 20,
+          maxHp: 20,
+          tokens: {},
+          statusEffects: [],
+          dead: false,
+        },
+      },
+    };
+
+    CombatSystem._addAllyStatus('npc_a', {
+      id: 'bleed',
+      name: '출혈',
+      duration: 2,
+      effect: { hpLossPerRound: 3 },
+    });
+    CombatSystem._tickStatusEffects();
+
+    expect(GameState.npcs.states.npc_a.hp).toBe(17);
+    expect(GameState.combat.combatants.npc_a.hp).toBe(17);
+    expect(GameState.combat.combatants.npc_a.statusEffects).toEqual([{
+      id: 'bleed',
+      name: '출혈',
+      duration: 1,
+      effect: { hpLossPerRound: 3 },
+    }]);
+    expect(GameState.npcs.states.npc_a.statusEffects).toEqual(
+      GameState.combat.combatants.npc_a.statusEffects,
+    );
+
+    CombatSystem._tickStatusEffects();
+
+    expect(GameState.npcs.states.npc_a.hp).toBe(14);
+    expect(GameState.combat.combatants.npc_a.hp).toBe(14);
+    expect(GameState.combat.combatants.npc_a.statusEffects).toEqual([]);
+    expect(GameState.npcs.states.npc_a.statusEffects).toEqual([]);
+  });
+});

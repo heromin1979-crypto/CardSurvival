@@ -44,3 +44,22 @@ describe('rollEnemyGroup 진형 불변식', () => {
     }
   });
 });
+
+describe('rollEnemyGroup 파티 스케일링', () => {
+  it('동료 수만큼 조우 규모가 늘고 진형 4칸 상한을 지킨다', () => {
+    for (let i = 0; i < 30; i++) {
+      expect(rollEnemyGroup(3, 0, 1)).toHaveLength(1);
+      expect(rollEnemyGroup(3, 0, 2)).toHaveLength(2);
+      expect(rollEnemyGroup(3, 45, 2)).toHaveLength(3);
+      expect(rollEnemyGroup(3, 80, 3)).toHaveLength(4);
+      expect(rollEnemyGroup(3, 80, 5)).toHaveLength(4);
+    }
+  });
+
+  it('파티 확대 그룹도 전열 불변식을 지킨다', () => {
+    for (let i = 0; i < 60; i++) {
+      const group = rollEnemyGroup(5, 45, 3);
+      expect(group.some(e => e.row === 'front')).toBe(true);
+    }
+  });
+});

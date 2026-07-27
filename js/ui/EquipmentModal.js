@@ -5,6 +5,7 @@ import EquipmentSystem from '../systems/EquipmentSystem.js';
 import I18n            from '../core/I18n.js';
 import SystemRegistry  from '../core/SystemRegistry.js';
 import StatRenderer    from './StatRenderer.js';
+import { getMagazineState } from '../systems/WeaponAmmoSystem.js';
 
 // ── 부상 타입 → 이모지 매핑 ────────────────────────────────────
 const INJURY_ICONS = {
@@ -363,10 +364,17 @@ const EquipmentModal = {
     const inst = GameState.cards[instanceId];
     if (!def || !inst) return '';
     const durPct = inst.durability != null ? `${Math.round(inst.durability)}%` : '';
+    const magazine = def.combat?.requiresAmmo
+      ? getMagazineState(GameState, instanceId)
+      : null;
+    const ammoHtml = magazine?.ok
+      ? `<div class="equip-mini-ammo ${magazine.loadedAmmo === 0 ? 'empty' : 'loaded'}">${magazine.loadedAmmo}/${magazine.capacity}</div>`
+      : '';
     return `
       <div class="equip-mini-card">
         <div class="equip-mini-icon">${def.icon ?? '?'}</div>
         <div class="equip-mini-name">${I18n.itemName(def.id ?? inst.definitionId, def.name)}</div>
+        ${ammoHtml}
         ${durPct ? `<div class="equip-mini-dur">${durPct}</div>` : ''}
       </div>
     `;

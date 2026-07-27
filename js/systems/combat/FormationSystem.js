@@ -89,7 +89,17 @@ export function moveCombatant(formations, combatantId, destinationRank) {
 
   const formation = toDenseFormation(formations[position.side]);
   const destinationIndex = rankToIndex(position.side, destinationRank);
-  if (!isEmptySlot(formation[destinationIndex])) return false;
+
+  const occupant = normalizeSlot(formation[destinationIndex]);
+  if (occupant !== null) {
+    // 같은 편이 점유한 인접 랭크로는 자리를 맞바꾼다 (다키스트 던전식 스왑).
+    // 스왑이 없으면 동료가 길을 막아 원거리 무기가 전투 내내 봉인되는 교착이 생긴다.
+    if (Math.abs(destinationRank - position.rank) !== 1) return false;
+    formation[position.index] = occupant;
+    formation[destinationIndex] = combatantId;
+    formations[position.side] = formation;
+    return true;
+  }
 
   const firstIntermediateRank = Math.min(position.rank, destinationRank) + 1;
   const lastIntermediateRank = Math.max(position.rank, destinationRank) - 1;

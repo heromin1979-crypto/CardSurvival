@@ -1,6 +1,6 @@
 /* === SKILLS DASHBOARD (1280×720 4-zone, 2026-05 시안 v3) ===
  * Zone 1: 헤더(56) / Zone 2: 필터바(40) / Zone 3: 3열 그리드(1fr) / Zone 4: 상태(56)
- * 토큰: variables.css §숙련도 대시보드 시안 + 기존 --bg-*/--text-*/--accent-* */
+ * 토큰: variables.css §숙련도 대시보드 시안 + 기존 --bg-*, --text-*, --accent-* */
 
 #skill-modal {
   display: none;

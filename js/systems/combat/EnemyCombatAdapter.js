@@ -16,7 +16,7 @@ function cloneValue(value) {
 }
 
 function normalizeStartRank(enemy) {
-  const explicitRank = enemy?.combatProfile?.startRank;
+  const explicitRank = enemy?.startRank ?? enemy?.combatProfile?.startRank;
   if (Number.isInteger(explicitRank) && explicitRank >= 1 && explicitRank <= 4) {
     return explicitRank;
   }
@@ -62,7 +62,71 @@ function buildLegacyBasicAttack(enemy) {
   };
 }
 
+function actionIdForProfile(enemy, action) {
+  const actionId = action?.actionId ?? action?.id ?? 'basic_attack';
+  if (typeof action?.rankSkillId === 'string' && action.rankSkillId.length > 0) {
+    return action.rankSkillId;
+  }
+  return actionId === 'basic_attack'
+    ? `enemy:${enemy?.id ?? 'unknown'}:basic_attack`
+    : actionId;
+}
+
+function buildActionSkill(enemy, action) {
+  const ranged = enemy?.attackType === 'ranged';
+  const usableFrom = cloneArray(action?.usableFrom, ranged ? ALL_RANKS : FRONT_RANKS);
+  const targetRanks = cloneArray(action?.target?.ranks, ranged ? ALL_RANKS : FRONT_RANKS);
+  const damageEffects = cloneArray(action?.effects)
+    .filter(effect => effect?.type === 'damage')
+    .map(cloneValue);
+
+  return {
+    id: actionIdForProfile(enemy, action),
+    source: 'enemy',
+    usableFrom,
+    target: {
+      side: 'ally',
+      ranks: targetRanks,
+      count: Number.isInteger(action?.target?.count) && action.target.count > 0
+        ? action.target.count
+        : 1,
+    },
+    accuracy: normalizeAccuracy(action?.accuracy ?? enemy?.attack?.accuracy),
+    effects: damageEffects.length > 0
+      ? damageEffects
+      : [{ type: 'damage', value: normalizeDamage(enemy?.attack?.damage) }],
+    targetPolicy: action?.targetPolicy ?? enemy?.patternProfile?.targetPolicy ?? 'frontmost',
+    hitCount: Number.isInteger(action?.hitCount) && action.hitCount > 0 ? action.hitCount : 1,
+    telegraph: cloneValue(action?.telegraph ?? { turns: 0 }),
+    motionKey: action?.motionKey ?? action?.actionId ?? action?.id ?? 'basic_attack',
+    ...(action?.nameKey ? { nameKey: action.nameKey } : {}),
+    ...(action?.name ? { fallbackName: action.name } : {}),
+  };
+}
+
+function buildActionSkills(enemy) {
+  const defaultAction = enemy?.patternProfile?.defaultAction;
+  if (!defaultAction) return [];
+
+  return [
+    defaultAction,
+    ...(enemy?.specialSkills ?? []),
+    ...(enemy?.timedThreat ? [enemy.timedThreat] : []),
+  ].map(action => buildActionSkill(enemy, action));
+}
+
 export function buildEnemyProfile(enemy = {}) {
+  const actionSkills = buildActionSkills(enemy);
+  if (actionSkills.length > 0) {
+    return {
+      speed: normalizeSpeed(enemy?.combatProfile?.speed ?? enemy?.speed),
+      startRank: normalizeStartRank(enemy),
+      skillIds: actionSkills.map(skill => skill.id),
+      skills: actionSkills,
+      ai: enemy?.patternProfile?.role ?? enemy?.aiPattern ?? 'normal',
+    };
+  }
+
   if (enemy?.combatProfile) {
     const combatProfile = enemy.combatProfile;
     return {
@@ -82,18 +146,3 @@ export function buildEnemyProfile(enemy = {}) {
   };
 }
 
-export function decideEnemyIntent(context, enemyId) {
-  const profile = context?.enemyProfiles?.[enemyId];
-  if (!profile) return null;
-
-  const candidates = context.getUsableEnemySkills?.(enemyId, profile) ?? [];
-  const skill = context.pickSkill?.(profile.ai, candidates);
-  if (!skill || typeof skill.id !== 'string' || skill.id.length === 0) return null;
-
-  const target = context.pickTarget?.(profile.ai, enemyId, skill);
-  const targetId = typeof target === 'string'
-    ? target
-    : target?.id ?? target?.combatantId ?? null;
-
-  return targetId ? { enemyId, skillId: skill.id, targetId } : null;
-}

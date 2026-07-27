@@ -4,10 +4,11 @@
 //   - _pickTargetByPattern: 5개 패턴 분기 + fallback
 //   - _decideNextIntent: 적 스킬 쿨다운 0이면 skill action, 아니면 attack
 //   - 죽은 적은 null 반환
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import CombatSystem from '../../js/systems/CombatSystem.js';
 import GameState    from '../../js/core/GameState.js';
 import { ENEMIES } from '../../js/data/enemies.js';
+import BALANCE from '../../js/data/gameBalance.js';
 import { buildEnemyProfile } from '../../js/systems/combat/EnemyCombatAdapter.js';
 
 function makePlayer({ hp = 100, maxHp = 100, isRanged = false } = {}) {
@@ -88,18 +89,18 @@ describe('_getEligibleTargets', () => {
     expect(tgts[0].type).toBe('companion');
   });
 
-  it('isHealer 플래그: npc_nurse / npc_doctor', () => {
+  it('isHealer 플래그는 실제 loadout의 heal effect에서 파생한다', () => {
     makePlayer({ hp: 100 });
-    GameState.companions = ['npc_nurse', 'npc_doctor', 'npc_soldier'];
+    GameState.companions = ['npc_nurse', 'npc_student', 'npc_soldier'];
     GameState.npcs = { states: {
       npc_nurse:   { hp: 50, maxHp: 50, isCompanion: true },
-      npc_doctor:  { hp: 50, maxHp: 50, isCompanion: true },
+      npc_student: { hp: 50, maxHp: 50, isCompanion: true },
       npc_soldier: { hp: 50, maxHp: 50, isCompanion: true },
     }};
     const combat = makeCombat();
     const tgts = CombatSystem._getEligibleTargets(combat, GameState);
     expect(tgts.find(t => t.id === 'npc_nurse').isHealer).toBe(true);
-    expect(tgts.find(t => t.id === 'npc_doctor').isHealer).toBe(true);
+    expect(tgts.find(t => t.id === 'npc_student').isHealer).toBe(true);
     expect(tgts.find(t => t.id === 'npc_soldier').isHealer).toBe(false);
   });
 });
@@ -184,6 +185,7 @@ describe('_pickTargetByPattern', () => {
 
 describe('_decideNextIntent', () => {
   beforeEach(() => {
+    vi.restoreAllMocks();
     makePlayer({ hp: 100 });
     GameState.companions = ['npc_a'];
     GameState.npcs = { states: { npc_a: { hp: 40, maxHp: 50, isCompanion: true } } };
@@ -199,6 +201,7 @@ describe('_decideNextIntent', () => {
   });
 
   it('스킬 쿨다운 0이면 action=skill, 아이콘 💢, skillId 포함', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0);
     const combat = makeCombat();
     const enemy = makeEnemy({
       aiPattern: 'normal',
@@ -209,6 +212,29 @@ describe('_decideNextIntent', () => {
     expect(intent.action).toBe('skill');
     expect(intent.skillId).toBe('bite');
     expect(intent.iconEmoji).toBe('💢');
+  });
+
+  it('기본 특수 행동 확률은 BALANCE 경계 아래에서만 스킬을 예약한다', () => {
+    const skill = { id: 'bite', name: '깨물기', damage: [5, 10], cooldown: 3 };
+    const combat = makeCombat();
+    const random = vi.spyOn(Math, 'random')
+      .mockReturnValueOnce(BALANCE.combat.enemySpecialSkillChance - 0.01)
+      .mockReturnValueOnce(BALANCE.combat.enemySpecialSkillChance + 0.01);
+
+    const specialIntent = CombatSystem._decideNextIntent(
+      makeEnemy({ specialSkills: [skill], skillCooldowns: { bite: 0 } }),
+      combat,
+      GameState,
+    );
+    const basicIntent = CombatSystem._decideNextIntent(
+      makeEnemy({ specialSkills: [skill], skillCooldowns: { bite: 0 } }),
+      combat,
+      GameState,
+    );
+
+    expect(specialIntent.actionId).toBe('bite');
+    expect(basicIntent.actionId).toBe('basic_attack');
+    expect(random).toHaveBeenCalledTimes(2);
   });
 
   it('스킬 쿨다운 > 0 이면 attack fallback', () => {
@@ -257,6 +283,7 @@ describe('_decideNextIntent', () => {
   });
 
   it('combatProfile data coexists with legacy intent preview fields', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0);
     const profile = buildEnemyProfile(ENEMIES.raider_elite);
     const combat = makeCombat();
     const enemy = {

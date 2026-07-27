@@ -3,6 +3,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import CombatUI from '../../js/ui/CombatUI.js';
 import CombatSystem from '../../js/systems/CombatSystem.js';
 import GameState from '../../js/core/GameState.js';
+import CombatResult from '../../js/screens/CombatResult.js';
 
 function setupFocusedCombatState(gs) {
   gs.combat = {
@@ -48,12 +49,11 @@ function setupFocusedCombatState(gs) {
       { combatantId: 'player', type: 'player', initiative: 8 },
       { combatantId: 'enemy:0', type: 'enemy', enemyIdx: 0, initiative: 5 },
     ],
-    pendingIntentByEnemy: {
-      'enemy:0': { enemyId: 'enemy:0', skillId: 'enemy_attack', targetId: 'player' },
-    },
     enemies: [{ id: 'zombie_common', name: '감염자', currentHp: 30, maxHp: 30 }],
     log: ['전투 시작'],
     fxQueue: [],
+    playerStatus: [],
+    enemyStatus: [],
   };
 }
 
@@ -87,10 +87,28 @@ describe('Combat focused UI', () => {
     expect(document.querySelectorAll('.combatant-piece.enemy')).toHaveLength(1);
     expect(document.querySelector('.combat-stage-center')).not.toBeNull();
     expect(document.querySelector('.combat-focused').dataset.combatScene).toBe('jongno_subway_ruin');
-    expect(document.querySelector('.combat-focused').style.getPropertyValue('--combat-bg-image')).toContain('combat_empty_battlefield.png');
+    const sceneStyle = document.querySelector('.combat-focused').getAttribute('style');
+    expect(sceneStyle).toContain('combat_jongno_subway_clean_v2.png');
+    expect(sceneStyle).not.toContain('combat_empty_stage_plate.png');
     expect(document.querySelector('[data-combatant-id="player"]').dataset.spriteId).toBe('player_unarmed');
     expect(document.querySelector('[data-combatant-id="npc_nurse"]').dataset.spriteId).toBe('ally_pistol');
     expect(document.querySelector('[data-combatant-id="enemy:0"]').dataset.spriteId).toBe('enemy_zombie_common');
+  });
+
+  it('resolves the focused backdrop from the document base instead of the stylesheet path', () => {
+    const sceneStyle = document.querySelector('.combat-focused').getAttribute('style');
+    const expectedBackdropUrl = new URL(
+      './assets/images/combat_jongno_subway_clean_v2.png',
+      document.baseURI,
+    ).href;
+
+    expect(sceneStyle).toContain(`--combat-bg-image:url('${expectedBackdropUrl}')`);
+  });
+
+  it('does not expose a baked card frame image on the focused wrapper', () => {
+    const sceneStyle = document.querySelector('.combat-focused').getAttribute('style');
+
+    expect(sceneStyle).not.toContain('--combat-card-frame-image');
   });
 
   it('selects the player combat sprite from the equipped weapon', () => {
@@ -120,6 +138,144 @@ describe('Combat focused UI', () => {
     expect(document.querySelectorAll('.combat-skill-button')).toHaveLength(5);
     expect(document.querySelectorAll('.combat-action-card')).toHaveLength(8);
     expect(document.querySelector('.combat-item-slot')).not.toBeNull();
+  });
+
+  it('renders all four battlefield rank guide markers in rank order', () => {
+    const markers = document.querySelectorAll('.combat-stage-floor .combat-rank-marker');
+
+    expect(markers).toHaveLength(4);
+    expect([...markers].map(marker => marker.dataset.rank)).toEqual(['1', '2', '3', '4']);
+  });
+
+  it('renders every active combatant skillId and exposes the same count on the skill bar', () => {
+    GameState.combat.combatants.player.skillIds = ['s1', 's2', 's3', 's4', 's5', 's6'];
+    GameState.combat.skillsById.s6 = {
+      ...GameState.combat.skillsById.s5,
+      id: 's6',
+      fallbackName: 's6',
+    };
+    CombatUI.render();
+
+    const skillBar = document.querySelector('.combat-skill-bar');
+    expect(skillBar).not.toBeNull();
+    expect(skillBar.dataset.skillCount).toBe('6');
+    expect(skillBar.querySelectorAll('.combat-skill-button')).toHaveLength(6);
+    expect([...skillBar.querySelectorAll('.combat-skill-button')]
+      .map(button => button.dataset.skillId))
+      .toEqual(['s1', 's2', 's3', 's4', 's5', 's6']);
+  });
+
+  it('renders combat utility commands in a rail separate from skill cards', () => {
+    const utilityRail = document.querySelector('.combat-utility-rail');
+
+    expect(utilityRail).not.toBeNull();
+    expect(utilityRail.querySelector('.combat-item-slot[data-command="item"]')).not.toBeNull();
+    expect(utilityRail.querySelector('.combat-common-command[data-command="move"]')).not.toBeNull();
+    expect(utilityRail.querySelector('.combat-common-command[data-command="flee"]')).not.toBeNull();
+    expect(utilityRail.querySelector('.combat-skill-button')).toBeNull();
+  });
+
+  it('renders the fled result structure and no-loot state without EventBus initialization', () => {
+    const resultScreen = document.createElement('div');
+    const previousResultElement = CombatResult._el;
+    const previousRewards = GameState.combat.rewards;
+    const previousRewardItems = GameState.combat.rewardItems;
+    const previousXpGained = GameState.combat.xpGained;
+    const previousPlayerXp = GameState.player.xp;
+    document.body.append(resultScreen);
+
+    try {
+      CombatResult._el = resultScreen;
+      GameState.combat.rewards = [];
+      GameState.combat.rewardItems = [];
+      GameState.combat.xpGained = 0;
+      GameState.player.xp = 0;
+      CombatResult._render({ outcome: 'fled', nodeId: 'mapo' });
+
+      expect(resultScreen.querySelector('.combat-result-shell')?.dataset.outcome).toBe('fled');
+      expect(resultScreen.querySelector('.combat-result-header')).not.toBeNull();
+      expect(resultScreen.querySelector('.combat-result-overview')).not.toBeNull();
+      expect(resultScreen.querySelector('.combat-result-rewards')).not.toBeNull();
+      expect(resultScreen.querySelector('.combat-result-no-loot')?.textContent)
+        .toContain('획득 아이템 없음');
+      expect(resultScreen.querySelector('.combat-result-actions')).not.toBeNull();
+      expect(resultScreen.querySelector('#res-continue')?.textContent).toContain('마포구');
+    } finally {
+      CombatResult._el = previousResultElement;
+      GameState.combat.rewards = previousRewards;
+      GameState.combat.rewardItems = previousRewardItems;
+      GameState.combat.xpGained = previousXpGained;
+      GameState.player.xp = previousPlayerXp;
+      resultScreen.remove();
+    }
+  });
+
+  it('renders victory XP and actual reward instance data in the result summary', () => {
+    const resultScreen = document.createElement('div');
+    const previousResultElement = CombatResult._el;
+    const previousRewards = GameState.combat.rewards;
+    const previousRewardItems = GameState.combat.rewardItems;
+    const previousXpGained = GameState.combat.xpGained;
+    const previousPlayerXp = GameState.player.xp;
+    const previousRewardCard = GameState.cards.reward_bandage;
+    document.body.append(resultScreen);
+
+    try {
+      CombatResult._el = resultScreen;
+      GameState.cards.reward_bandage = {
+        instanceId: 'reward_bandage',
+        definitionId: 'bandage',
+        quantity: 3,
+      };
+      GameState.combat.rewards = [];
+      GameState.combat.rewardItems = [];
+      CombatSystem._recordReward('reward_bandage', 'bandage', 1);
+      GameState.combat.xpGained = 25;
+      GameState.player.xp = 125;
+      CombatResult._render({ outcome: 'victory', nodeId: 'mapo' });
+
+      expect(resultScreen.querySelector('.combat-result-shell')?.dataset.outcome).toBe('victory');
+      expect(resultScreen.querySelector('.result-xp-section')).not.toBeNull();
+      expect(resultScreen.querySelector('.combat-result-no-loot')).toBeNull();
+      expect(resultScreen.querySelector('[data-reward-id="reward_bandage"] .result-loot-name')?.textContent)
+        .toContain('붕대');
+      expect(resultScreen.querySelector('[data-reward-id="reward_bandage"] .result-loot-qty')?.textContent)
+        .toBe('x1');
+      expect(resultScreen.querySelector('.result-title')).toBe(document.activeElement);
+      expect(resultScreen.querySelector('.result-xp-track')?.getAttribute('aria-labelledby'))
+        .toBe('combat-result-xp-label');
+    } finally {
+      if (CombatResult._xpTimer) {
+        clearInterval(CombatResult._xpTimer);
+        CombatResult._xpTimer = null;
+      }
+      CombatResult._el = previousResultElement;
+      GameState.combat.rewards = previousRewards;
+      GameState.combat.rewardItems = previousRewardItems;
+      GameState.combat.xpGained = previousXpGained;
+      GameState.player.xp = previousPlayerXp;
+      if (previousRewardCard === undefined) {
+        delete GameState.cards.reward_bandage;
+      } else {
+        GameState.cards.reward_bandage = previousRewardCard;
+      }
+      resultScreen.remove();
+    }
+  });
+
+  it('renders the enemy intent badge from the execution-path _nextIntent only', () => {
+    GameState.combat.enemies[0]._nextIntent = {
+      action: 'attack', targetType: 'player', targetId: null,
+      iconEmoji: '🗡', label: '플레이어 공격',
+    };
+    CombatUI.render();
+    const intent = document.querySelector('.combatant-piece.enemy .combat-intent');
+    expect(intent).not.toBeNull();
+    expect(intent.getAttribute('title')).toBe('플레이어 공격');
+
+    delete GameState.combat.enemies[0]._nextIntent;
+    CombatUI.render();
+    expect(document.querySelector('.combatant-piece.enemy .combat-intent')).toBeNull();
   });
 
   it('shows inspected combatant context in the battlefield ticker', () => {
@@ -163,6 +319,78 @@ describe('Combat focused UI', () => {
     expect(GameState.combat.phase).toBe('await_ally_input');
     expect(GameState.combat.combatants.player.hp).toBe(GameState.player.hp.current);
     expect(document.querySelectorAll('.combat-skill-button').length).toBeGreaterThan(0);
+  });
+
+  it('prepares an initial fast companion exactly once before manual input', () => {
+    const hadPlayerActionSpeed = Object.prototype.hasOwnProperty.call(
+      GameState.player,
+      'actionSpeed',
+    );
+    const previousPlayerActionSpeed = GameState.player.actionSpeed;
+
+    try {
+      GameState.player.hp = { current: 100, max: 100 };
+      GameState.player.characterId = 'doctor';
+      GameState.player.equipped = {};
+      GameState.player.traits = [];
+      GameState.player.actionSpeed = 1;
+      GameState.stats.stamina = { current: 10, max: 10, decayPerTP: 0 };
+      GameState.stats.morale = { current: 50, max: 100, decayPerTP: 0 };
+      GameState.noise = { level: 0 };
+      GameState.companions = ['npc_nurse'];
+      GameState.npcs = {
+        states: {
+          npc_nurse: {
+            hp: 50,
+            maxHp: 50,
+            isCompanion: true,
+            actionSpeed: 200,
+            skillCooldowns: { nurse_scalpel: 3 },
+          },
+        },
+      };
+      GameState.flags = {};
+
+      CombatSystem._setupCombat({
+        enemies: [{
+          id: 'zombie_common',
+          name: 'infected',
+          currentHp: 100,
+          maxHp: 100,
+          actionSpeed: 0,
+          row: 'front',
+          attack: { damage: [1, 1], accuracy: 0 },
+          specialSkills: [],
+          weaknesses: [],
+          resistances: [],
+          lootTable: [],
+          _skillCooldowns: {},
+          _statusEffects: [],
+        }],
+        dangerLevel: 1,
+      });
+
+      expect(GameState.combat.activeCombatantId).toBe('npc_nurse');
+      expect(GameState.combat.phase).toBe('await_ally_input');
+      expect(GameState.npcs.states.npc_nurse.skillCooldowns.nurse_scalpel)
+        .toBe(2);
+
+      CombatUI.render();
+      CombatSystem.processUntilAllyTurn();
+      CombatSystem.beginActiveTurn();
+      CombatUI.render();
+
+      expect(GameState.combat.activeCombatantId).toBe('npc_nurse');
+      expect(GameState.combat.phase).toBe('await_ally_input');
+      expect(GameState.npcs.states.npc_nurse.skillCooldowns.nurse_scalpel)
+        .toBe(2);
+    } finally {
+      if (hadPlayerActionSpeed) {
+        GameState.player.actionSpeed = previousPlayerActionSpeed;
+      } else {
+        delete GameState.player.actionSpeed;
+      }
+    }
   });
 
   it('recovers to ally input when a selected skill fails its origin rank check', () => {

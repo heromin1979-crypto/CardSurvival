@@ -189,12 +189,27 @@ describe('_runSingleEnemyTurn — intent 기반 실행', () => {
     expect(after).not.toBe(before);
   });
 
-  it('hold stance companion 피해 경감', () => {
-    GameState.npcs.states.npc_a.combatBuffs = { holdReduct: { value: 0.3, duration: 1 } };
+  it('guard 스킬의 block 토큰이 동료 피해를 줄이고 한 번 소비된다', () => {
+    GameState.combat.combatants = {
+      npc_a: {
+        id: 'npc_a',
+        side: 'ally',
+        sourceType: 'companion',
+        sourceId: 'npc_a',
+        hp: 50,
+        maxHp: 50,
+        dead: false,
+        tokens: { block: 1 },
+        statusEffects: [],
+      },
+    };
     const before = GameState.npcs.states.npc_a.hp;
+
     CombatSystem._runSingleEnemyTurn(0);
+
     const dmg = before - GameState.npcs.states.npc_a.hp;
-    // 기본 5-8 피해 → hold 30% 경감 적용되어 더 낮은 범위
-    expect(dmg).toBeLessThanOrEqual(6);  // 느슨한 상한
+    expect(dmg).toBeGreaterThanOrEqual(3);
+    expect(dmg).toBeLessThanOrEqual(4);
+    expect(GameState.combat.combatants.npc_a.tokens.block).toBe(0);
   });
 });

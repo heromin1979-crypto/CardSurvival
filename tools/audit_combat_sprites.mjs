@@ -4,7 +4,11 @@ import zlib from 'node:zlib';
 
 const ROOT = process.cwd();
 const SPRITE_ROOT = path.join(ROOT, 'assets', 'images', 'combat', 'spritesheets');
-const COMBAT_UI_PATH = path.join(ROOT, 'js', 'ui', 'CombatUI.js');
+// 시트 참조 테이블이 combatUiAssets.js로 분리됨 — 두 파일 모두 스캔해 하위호환 유지
+const COMBAT_UI_PATHS = [
+  path.join(ROOT, 'js', 'ui', 'combat', 'combatUiAssets.js'),
+  path.join(ROOT, 'js', 'ui', 'CombatUI.js'),
+];
 const OUT_JSON = path.join(ROOT, 'output', 'combat', 'sprite_audit.json');
 const OUT_MD = path.join(ROOT, 'docs', 'analysis', 'COMBAT_SPRITE_AUDIT.md');
 
@@ -29,10 +33,13 @@ function normalizeAssetPath(assetPath) {
 }
 
 function referencedSpritePaths() {
-  const js = fs.readFileSync(COMBAT_UI_PATH, 'utf8');
   const paths = new Set();
-  for (const match of js.matchAll(/spriteSheet\('([^']+\.png)'\)/g)) {
-    paths.add(path.normalize(path.join(ROOT, normalizeAssetPath(match[1]))));
+  for (const sourcePath of COMBAT_UI_PATHS) {
+    if (!fs.existsSync(sourcePath)) continue;
+    const js = fs.readFileSync(sourcePath, 'utf8');
+    for (const match of js.matchAll(/spriteSheet\('([^']+\.png)'\)/g)) {
+      paths.add(path.normalize(path.join(ROOT, normalizeAssetPath(match[1]))));
+    }
   }
   return paths;
 }

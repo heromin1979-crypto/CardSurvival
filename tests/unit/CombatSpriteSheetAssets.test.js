@@ -110,6 +110,19 @@ function alphaBounds(image, x0, y0, width, height) {
   return { centerX: (minX + maxX) / 2, bottom: maxY };
 }
 
+function countEdgeAlpha(image, x0, y0, width, height) {
+  let count = 0;
+  for (let x = 0; x < width; x += 1) {
+    if (image.pixels[((y0 * image.width) + x0 + x) * 4 + 3] > 12) count += 1;
+    if (image.pixels[(((y0 + height - 1) * image.width) + x0 + x) * 4 + 3] > 12) count += 1;
+  }
+  for (let y = 1; y < height - 1; y += 1) {
+    if (image.pixels[(((y0 + y) * image.width) + x0) * 4 + 3] > 12) count += 1;
+    if (image.pixels[(((y0 + y) * image.width) + x0 + width - 1) * 4 + 3] > 12) count += 1;
+  }
+  return count;
+}
+
 describe('combat sprite sheet assets', () => {
   it('keeps all displayed combat sprite sheets on the 6x4 256px cell contract', () => {
     const files = walk(SPRITE_ROOT)
@@ -191,20 +204,45 @@ describe('combat sprite sheet assets', () => {
     expect(filesWithChromaKey).toEqual([]);
   });
 
-  it('drives sprite frames via per-sheet steps(N, jump-none) over a 0→100% ramp', () => {
-    const css = fs.readFileSync(path.join(ROOT, 'css', 'screens-combat.css'), 'utf8');
-    const ui = fs.readFileSync(path.join(ROOT, 'js', 'ui', 'CombatUI.js'), 'utf8');
+  it('keeps displayed sprite pixels away from frame edges to avoid animation clipping', () => {
+    const files = walk(SPRITE_ROOT)
+      .filter((filePath) => /_sheet\.png$/.test(path.basename(filePath)))
+      .filter((filePath) => !/_src\.png$/.test(path.basename(filePath)));
 
-    // 구식 고정 6프레임 방식 금지 (off-by-one 프레임 오차 원인)
+    const clippedFrames = [];
+    for (const filePath of files) {
+      const image = decodePngRgba(filePath);
+      for (let row = 0; row < 4; row += 1) {
+        for (let col = 0; col < 6; col += 1) {
+          const edgePixels = countEdgeAlpha(image, col * 256, row * 256, 256, 256);
+          if (edgePixels > 0) {
+            clippedFrames.push({
+              file: path.relative(ROOT, filePath).replaceAll(path.sep, '/'),
+              row,
+              col,
+              edgePixels,
+            });
+          }
+        }
+      }
+    }
+
+    expect(clippedFrames).toEqual([]);
+  });
+
+  it('uses exact six-frame positions with per-sheet steps(N, jump-none)', () => {
+    const css = fs.readFileSync(path.join(ROOT, 'css', 'screens-combat.css'), 'utf8');
+    const fxPlayer = fs.readFileSync(path.join(ROOT, 'js', 'ui', 'combat', 'CombatFxPlayer.js'), 'utf8');
+
     expect(css).not.toContain('steps(6, end)');
     expect(css).not.toContain('background-size: 600% 400%');
-
-    // 가변 프레임 수: 시트 크기는 --sprite-cols/--sprite-rows 변수로 계산
     expect(css).toContain('background-size: calc(var(--sprite-cols) * 100%) calc(var(--sprite-rows) * 100%)');
-    expect(css).toMatch(/@keyframes combatSpriteSheetFrames\s*\{\s*from\s*\{\s*background-position-x:\s*0%;\s*\}\s*to\s*\{\s*background-position-x:\s*100%;\s*\}/);
-
-    // 프레임 스냅은 시트별 인라인 steps(N, jump-none)이 담당 (CombatUI._spriteSheetStyle)
-    expect(ui).toContain('animation-timing-function: steps(${steps}, jump-none)');
+    expect(css).toContain('background-position-x: 20%');
+    expect(css).toContain('background-position-x: 40%');
+    expect(css).toContain('background-position-x: 60%');
+    expect(css).toContain('background-position-x: 80%');
+    expect(css).toContain('background-position-x: 100%');
+    expect(fxPlayer).toContain('animation-timing-function: steps(${steps}, jump-none)');
   });
 
   it('renders player and companion sprite sheets from the same ally size token', () => {

@@ -231,8 +231,8 @@ describe('_playFxQueue — 큐 순차 재생', () => {
     expect(document.querySelector('.cv-enemy-sprite[data-idx="0"] .dmg-popup')).not.toBeNull();
     expect(document.querySelector('.cv-player .dmg-popup')).toBeNull();
 
-    // 두 번째 fx (380ms)
-    vi.advanceTimersByTime(300);
+    // 두 번째 fx (900ms = 80 + FX_DURATIONS.playerAttack 820)
+    vi.advanceTimersByTime(850);
     expect(document.querySelector('.cv-player .dmg-popup')).not.toBeNull();
     vi.useRealTimers();
   });

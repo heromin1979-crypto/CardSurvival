@@ -5,6 +5,7 @@ import StateMachine    from '../core/StateMachine.js';
 import I18n            from '../core/I18n.js';
 import TickEngine      from '../core/TickEngine.js';
 import CraftUI        from '../ui/CraftUI.js';
+import { bindCraftModalTitleUpdates, formatCraftModalTitle } from '../ui/CraftModalHeader.js';
 import BoardRenderer  from '../ui/BoardRenderer.js';
 import StatRenderer   from '../ui/StatRenderer.js';
 import SaveManager    from '../persistence/SaveManager.js';
@@ -29,6 +30,7 @@ const Basecamp = {
 
   init() {
     this._el = document.getElementById('screen-main');
+    bindCraftModalTitleUpdates();
     EventBus.on('stateTransition', ({ to }) => {
       if (to === 'main') this._onEnter();
     });
@@ -231,8 +233,8 @@ const Basecamp = {
 
       <!-- Craft modal -->
       <div class="modal-overlay" id="craft-modal">
-        <div class="modal-box" style="max-width:420px;max-height:85vh;">
-          <div class="modal-title">${I18n.t('basecamp.craftBench')}</div>
+        <div class="modal-box craft-modal-box">
+          <div class="modal-title">${formatCraftModalTitle()}</div>
           <div id="craft-panel" style="flex:1;overflow-y:auto;"></div>
           <div class="modal-actions">
             <button class="modal-btn" id="btn-craft-close">${I18n.t('basecamp.close')}</button>

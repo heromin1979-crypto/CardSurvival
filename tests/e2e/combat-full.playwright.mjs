@@ -62,7 +62,52 @@ async function newCombatPage(browser, viewport = { width: 1280, height: 820 }) {
     }
   });
   await page.goto(`${baseUrl}/combat-test.html`, { waitUntil: 'networkidle' });
-  await page.waitForSelector('.combat-stage-lineup', { timeout: 10000 });
+  try {
+    await page.waitForSelector('.combat-stage-lineup', { timeout: 10000 });
+  } catch (err) {
+    const diagnostics = {
+      title: await page.title().catch(() => ''),
+      bodyText: await page.locator('body').innerText().catch(() => ''),
+      browserErrors: browserErrors.slice(-8),
+    };
+    throw new Error(`${err.message}\ncombat page diagnostics=${JSON.stringify(diagnostics)}`);
+  }
+  return page;
+}
+
+async function newPatternPage(browser, viewport = { width: 1280, height: 820 }) {
+  const page = await browser.newPage({ viewport });
+  page.on('pageerror', err => browserErrors.push({ type: 'pageerror', message: err.message }));
+  page.on('console', msg => {
+    if (['error', 'warning'].includes(msg.type())) {
+      browserErrors.push({ type: msg.type(), message: msg.text() });
+    }
+  });
+  page.on('requestfailed', req => {
+    if (['document', 'script', 'stylesheet'].includes(req.resourceType())) {
+      browserErrors.push({ type: 'requestfailed', url: req.url(), failure: req.failure()?.errorText ?? '' });
+    }
+  });
+
+  await page.goto(`${baseUrl}/js/core/GameState.js`, { waitUntil: 'domcontentloaded' });
+  await page.evaluate(async () => {
+    document.head.innerHTML = '<meta charset="UTF-8"><title>Combat pattern E2E</title>';
+    document.body.innerHTML = [
+      '<div id="screen-combat" class="screen active"></div>',
+      '<div id="screen-combat-result" class="screen"></div>',
+      '<div id="screen-game-over" class="screen"></div>',
+      '<div id="notification-container"></div>',
+    ].join('');
+    const [
+      { default: GameState },
+      { default: CombatSystem },
+    ] = await Promise.all([
+      import('/js/core/GameState.js'),
+      import('/js/systems/CombatSystem.js'),
+    ]);
+    window.GameState = GameState;
+    window.CombatSystem = CombatSystem;
+  });
   return page;
 }
 
@@ -236,6 +281,535 @@ async function scenarioCompanionStance(browser) {
   await page.close();
 }
 
+async function setupPatternCombat(page, {
+  companionId,
+  enemyId,
+  companionHp = 50,
+  companionMaxHp = 50,
+  companionStatusEffects = [],
+  playerHp = 100,
+  playerMaxHp = 100,
+}) {
+  return page.evaluate(async config => {
+    const [{ ENEMIES, instantiateEnemy }, { default: NPCSystem }, { default: SystemRegistry }] = await Promise.all([
+      import('/js/data/enemies.js'),
+      import('/js/systems/NPCSystem.js'),
+      import('/js/core/SystemRegistry.js'),
+    ]);
+    const gs = window.GameState;
+    const combatSystem = window.CombatSystem;
+
+    Math.random = () => 0;
+    SystemRegistry.register('NPCSystem', NPCSystem);
+
+    gs.player.characterId = 'soldier';
+    gs.player.hp = { current: config.playerHp, max: config.playerMaxHp };
+    gs.player.isAlive = true;
+    gs.player.traits = [];
+    gs.player.diseases = [];
+    gs.player.equipped = {
+      ...gs.player.equipped,
+      weapon_main: null,
+      weapon_sub: null,
+    };
+    gs.stats.stamina = { ...gs.stats.stamina, current: 100, max: 100 };
+    gs.stats.morale = { ...gs.stats.morale, current: 100, max: 100 };
+    gs.noise.level = 0;
+    gs.companions = [config.companionId];
+    gs.npcs = {
+      ...(gs.npcs ?? {}),
+      states: {
+        [config.companionId]: {
+          hp: config.companionHp,
+          maxHp: config.companionMaxHp,
+          isCompanion: true,
+          name: config.companionId,
+          statusEffects: config.companionStatusEffects.map(status => ({ ...status })),
+          skillCooldowns: {},
+        },
+      },
+    };
+
+    const enemy = instantiateEnemy(ENEMIES[config.enemyId]);
+    enemy.currentHp = 1000;
+    enemy.maxHp = 1000;
+    enemy.lootTable = [];
+    enemy.infectionChance = 0;
+    combatSystem._setupCombat({
+      enemies: [enemy],
+      dangerLevel: 3,
+      nodeId: 'pattern-e2e',
+    });
+
+    window.__patternActivateCompanion = () => {
+      const combat = gs.combat;
+      const companionEntry = combat.turnQueue.find(entry =>
+        entry.type === 'companion' && entry.id === config.companionId
+      );
+      const playerEntry = combat.turnQueue.find(entry => entry.type === 'player');
+      const enemyEntries = combat.turnQueue.filter(entry => entry.type === 'enemy');
+      combat.turnQueue = [companionEntry, playerEntry, ...enemyEntries].filter(Boolean);
+      combat.roundNumber = (combat.roundNumber ?? 0) + 1;
+      combat.activeIdx = 0;
+      combat.activeTurnIndex = 0;
+      return 0;
+    };
+    window.__patternCompanionAction = (skillId, targetId) => {
+      window.__patternActivateCompanion();
+      combatSystem.processUntilAllyTurn();
+      const activeCombatantId = gs.combat.activeCombatantId;
+      const selected = activeCombatantId === config.companionId
+        && combatSystem.selectSkill(skillId);
+      const targeted = selected && combatSystem.selectTarget(targetId);
+      const result = targeted
+        ? combatSystem.confirmAction()
+        : { ok: false, reason: 'manual_selection_failed', turnConsumed: false };
+      return {
+        skillId,
+        targetId,
+        activeCombatantId,
+        selected,
+        targeted,
+        result: {
+          ok: result?.ok === true,
+          reason: result?.reason ?? null,
+          turnConsumed: result?.turnConsumed === true,
+        },
+      };
+    };
+
+    return {
+      companionId: config.companionId,
+      enemyId: enemy.id,
+      initialIntent: enemy._nextIntent,
+      formation: {
+        ally: [...gs.combat.formations.ally],
+        enemy: [...gs.combat.formations.enemy],
+      },
+    };
+  }, {
+    companionId,
+    enemyId,
+    companionHp,
+    companionMaxHp,
+    companionStatusEffects,
+    playerHp,
+    playerMaxHp,
+  });
+}
+
+async function scenarioCompanionMonsterPatterns(browser) {
+  const nursePage = await newPatternPage(browser);
+  const nurseSetup = await setupPatternCombat(nursePage, {
+    companionId: 'npc_nurse',
+    enemyId: 'zombie_acid',
+    companionHp: 40,
+    companionMaxHp: 80,
+    companionStatusEffects: [{
+      id: 'bleed',
+      duration: 2,
+      effect: { hpLossPerRound: 3 },
+    }],
+  });
+  const nurseResult = await nursePage.evaluate(() => {
+    const action = window.__patternCompanionAction('nurse_triage', 'npc_nurse');
+    const state = window.GameState.npcs.states.npc_nurse;
+    const combatant = window.GameState.combat.combatants.npc_nurse;
+    return {
+      action,
+      hp: state.hp,
+      stateStatuses: state.statusEffects.map(status => status.id),
+      combatantStatuses: combatant.statusEffects.map(status => status.id),
+      intent: window.GameState.combat.enemies[0]._nextIntent,
+    };
+  });
+  record(
+    'pattern: acid predator commits to the bleeding nurse',
+    nurseSetup.initialIntent?.targetIds?.includes('npc_nurse') === true,
+    JSON.stringify(nurseSetup.initialIntent),
+  );
+  record(
+    'pattern: nurse triage heals herself and removes bleed',
+    nurseResult.action.skillId === 'nurse_triage'
+      && nurseResult.action.targetId === 'npc_nurse'
+      && nurseResult.action.selected
+      && nurseResult.action.targeted
+      && nurseResult.action.result.ok
+      && nurseResult.hp > 40
+      && !nurseResult.stateStatuses.includes('bleed')
+      && !nurseResult.combatantStatuses.includes('bleed'),
+    JSON.stringify(nurseResult),
+  );
+  await screenshot(nursePage, '10-pattern-nurse-acid');
+  await nursePage.close();
+
+  const deserterPage = await newPatternPage(browser);
+  const deserterSetup = await setupPatternCombat(deserterPage, {
+    companionId: 'npc_soldier_deserter',
+    enemyId: 'raider_elite',
+  });
+  const deserterResult = await deserterPage.evaluate(() => {
+    const enemy = window.GameState.combat.enemies[0];
+    window.CombatSystem._runSingleEnemyTurn(0);
+    const telegraphBefore = enemy._telegraph
+      ? { ...enemy._telegraph, targetRanks: { ...(enemy._telegraph.targetRanks ?? {}) } }
+      : null;
+    const committedBefore = enemy._enemyActionState?.committedAction
+      ? {
+          actionId: enemy._enemyActionState.committedAction.actionId,
+          targetIds: [...enemy._enemyActionState.committedAction.targetIds],
+          state: enemy._enemyActionState.committedAction.state,
+        }
+      : null;
+    const action = window.__patternCompanionAction(
+      'deserter_covering_fire',
+      'enemy:0',
+    );
+    return {
+      action,
+      telegraphBefore,
+      committedBefore,
+      telegraphAfter: enemy._telegraph,
+      aimedShotCooldown: enemy._skillCooldowns?.aimed_shot ?? 0,
+      hesitation: window.GameState.combat.combatants['enemy:0'].tokens.hesitation ?? 0,
+    };
+  });
+  record(
+    'pattern: elite aimed shot preserves its committed target through telegraph',
+    deserterSetup.initialIntent?.actionId === 'aimed_shot'
+      && deserterResult.committedBefore?.actionId === 'aimed_shot'
+      && JSON.stringify(deserterResult.committedBefore?.targetIds)
+        === JSON.stringify(deserterSetup.initialIntent?.targetIds),
+    JSON.stringify({ initial: deserterSetup.initialIntent, executed: deserterResult.committedBefore }),
+  );
+  record(
+    'pattern: deserter covering fire applies hesitation and cancels aimed shot',
+    deserterResult.action.skillId === 'deserter_covering_fire'
+      && deserterResult.action.targetId === 'enemy:0'
+      && deserterResult.action.selected
+      && deserterResult.action.targeted
+      && deserterResult.action.result.ok
+      && deserterResult.telegraphBefore?.skillId === 'aimed_shot'
+      && deserterResult.telegraphAfter === null
+      && deserterResult.aimedShotCooldown > 0
+      && deserterResult.hesitation > 0,
+    JSON.stringify(deserterResult),
+  );
+  await screenshot(deserterPage, '11-pattern-deserter-elite');
+  await deserterPage.close();
+
+  const childPage = await newPatternPage(browser);
+  await setupPatternCombat(childPage, {
+    companionId: 'npc_child',
+    enemyId: 'rabid_dog',
+    companionHp: 20,
+    companionMaxHp: 50,
+  });
+  const childResult = await childPage.evaluate(async () => {
+    const { COMBAT_SKILLS } = await import('/js/data/combatSkills.js');
+    const child = window.GameState.combat.combatants.npc_child;
+    const enemy = window.GameState.combat.enemies[0];
+    const hide = window.__patternCompanionAction('child_hide', 'npc_child');
+    const hpBefore = enemy.currentHp;
+    const attack = window.__patternCompanionAction(
+      'child_throw_debris',
+      'enemy:0',
+    );
+    const childBlock = child.tokens.block ?? 0;
+    const childHpBeforeRabidAttack = child.hp;
+    const rabidDamageEvents = [];
+    let rabidExecutionAction = null;
+    const originalExecuteEnemyAction = window.CombatSystem._executeEnemyCommittedAction;
+    window.CombatSystem._executeEnemyCommittedAction = function observeRabidAttack(
+      observedEnemy,
+      committedAction,
+    ) {
+      const result = originalExecuteEnemyAction.call(this, observedEnemy, committedAction);
+      rabidExecutionAction = {
+        actionId: committedAction.actionId,
+        targetIds: [...committedAction.targetIds],
+        hitCount: committedAction.hitCount,
+      };
+      rabidDamageEvents.push(...(result?.damageResults ?? []).map(entry => ({
+        targetId: entry.targetId,
+        amount: entry.amount,
+      })));
+      return result;
+    };
+    try {
+      window.CombatSystem._runSingleEnemyTurn(0);
+    } finally {
+      window.CombatSystem._executeEnemyCommittedAction = originalExecuteEnemyAction;
+    }
+    return {
+      hide,
+      attack,
+      childBlock,
+      damage: hpBefore - enemy.currentHp,
+      childDamageRange: COMBAT_SKILLS.child_throw_debris.effects
+        .find(effect => effect.type === 'damage')?.value,
+      rifleDamageRange: COMBAT_SKILLS.deserter_rifle_shot.effects
+        .find(effect => effect.type === 'damage')?.value,
+      rabidExecutionAction,
+      rabidDamageEvents,
+      childHpBeforeRabidAttack,
+      childHpAfterRabidAttack: child.hp,
+    };
+  });
+  record(
+    'pattern: child hide is a self-targeted defensive action',
+    childResult.hide.skillId === 'child_hide'
+      && childResult.hide.targetId === 'npc_child'
+      && childResult.hide.selected
+      && childResult.hide.targeted
+      && childResult.hide.result.ok
+      && childResult.childBlock > 0,
+    JSON.stringify(childResult),
+  );
+  record(
+    'pattern: child debris remains a low-damage ranged identity',
+    childResult.attack.skillId === 'child_throw_debris'
+      && childResult.attack.targetId === 'enemy:0'
+      && childResult.attack.selected
+      && childResult.attack.targeted
+      && childResult.attack.result.ok
+      && childResult.damage >= childResult.childDamageRange[0]
+      && childResult.damage <= childResult.childDamageRange[1]
+      && childResult.childDamageRange[1] < childResult.rifleDamageRange[1],
+    JSON.stringify(childResult),
+  );
+  record(
+    'pattern: rabid dog production turn executes both committed hits on the child',
+    childResult.rabidExecutionAction?.actionId === 'basic_attack'
+      && childResult.rabidExecutionAction?.hitCount === 2
+      && childResult.rabidExecutionAction?.targetIds?.length === 1
+      && childResult.rabidExecutionAction.targetIds[0] === 'npc_child'
+      && childResult.rabidDamageEvents.length === 2
+      && childResult.rabidDamageEvents.every(event => event.targetId === 'npc_child')
+      && childResult.childHpAfterRabidAttack < childResult.childHpBeforeRabidAttack,
+    JSON.stringify(childResult),
+  );
+  await screenshot(childPage, '12-pattern-child-rabid');
+  await childPage.close();
+
+  const rescuePage = await newPatternPage(browser);
+  const rescueSetup = await setupPatternCombat(rescuePage, {
+    companionId: 'npc_yeongcheol',
+    enemyId: 'zombie_charger',
+    playerHp: 500,
+    playerMaxHp: 1000,
+  });
+  const rescueResult = await rescuePage.evaluate(async () => {
+    const { getRank } = await import('/js/systems/combat/FormationSystem.js');
+    const combat = window.GameState.combat;
+    const enemy = combat.enemies[0];
+    const initialAction = enemy._enemyActionState?.committedAction;
+    const initialSnapshot = initialAction
+      ? {
+          actionId: initialAction.actionId,
+          targetIds: [...initialAction.targetIds],
+        }
+      : null;
+    const rankBefore = getRank(combat.formations, 'player');
+    const action = window.__patternCompanionAction(
+      'yeongcheol_rescue',
+      'player',
+    );
+    const rankAfterRescue = getRank(combat.formations, 'player');
+    const blockAfterRescue = combat.combatants.player.tokens.block ?? 0;
+    window.CombatSystem._runSingleEnemyTurn(0);
+    const chargingAction = enemy._enemyActionState?.committedAction;
+    const chargeSnapshot = chargingAction
+      ? {
+          actionId: chargingAction.actionId,
+          targetIds: [...chargingAction.targetIds],
+          state: chargingAction.state,
+          remainingTelegraphTurns: chargingAction.remainingTelegraphTurns,
+        }
+      : null;
+    window.CombatSystem._runSingleEnemyTurn(0);
+    return {
+      action,
+      initialSnapshot,
+      chargeSnapshot,
+      rankBefore,
+      rankAfterRescue,
+      rankAfterImpact: getRank(combat.formations, 'player'),
+      blockAfterRescue,
+      playerHpAfterImpact: combat.combatants.player.hp,
+    };
+  });
+  record(
+    'pattern: yeongcheol rescue moves and guards the wounded player',
+    rescueResult.action.skillId === 'yeongcheol_rescue'
+      && rescueResult.action.targetId === 'player'
+      && rescueResult.action.selected
+      && rescueResult.action.targeted
+      && rescueResult.action.result.ok
+      && rescueResult.rankBefore === 1
+      && rescueResult.rankAfterRescue === 2
+      && rescueResult.blockAfterRescue > 0,
+    JSON.stringify(rescueResult),
+  );
+  record(
+    'pattern: charger keeps the committed target and pushes it on impact',
+    rescueSetup.initialIntent?.actionId === 'charge_strike'
+      && rescueResult.initialSnapshot?.actionId === 'charge_strike'
+      && rescueResult.chargeSnapshot?.actionId === 'charge_strike'
+      && JSON.stringify(rescueResult.initialSnapshot?.targetIds)
+        === JSON.stringify(rescueResult.chargeSnapshot?.targetIds)
+      && rescueResult.rankAfterImpact === 3,
+    JSON.stringify(rescueResult),
+  );
+  await screenshot(rescuePage, '13-pattern-rescue-charger');
+  await rescuePage.close();
+
+  const mechanicPage = await newPatternPage(browser);
+  await setupPatternCombat(mechanicPage, {
+    companionId: 'npc_mechanic',
+    enemyId: 'zombie_bloater',
+  });
+  const mechanicResult = await mechanicPage.evaluate(() => {
+    const combat = window.GameState.combat;
+    const tripwire = window.__patternCompanionAction(
+      'mechanic_tripwire',
+      'enemy:0',
+    );
+    const enemyStatuses = combat.combatants['enemy:0'].statusEffects.map(status => status.id);
+    combat.combatants.player.hp = 500;
+    combat.combatants.player.maxHp = 1000;
+    window.GameState.player.hp = { current: 500, max: 1000 };
+    const hpBeforeRepair = combat.combatants.player.hp;
+    const repair = window.__patternCompanionAction(
+      'mechanic_field_repair',
+      'player',
+    );
+    return {
+      tripwire,
+      repair,
+      enemyStatuses,
+      playerBlock: combat.combatants.player.tokens.block ?? 0,
+      hpBeforeRepair,
+      hpAfterRepair: combat.combatants.player.hp,
+      threat: combat.enemies[0]._enemyActionState?.committedAction,
+    };
+  });
+  record(
+    'pattern: mechanic tripwire roots the charging bloater threat',
+    mechanicResult.tripwire.skillId === 'mechanic_tripwire'
+      && mechanicResult.tripwire.targetId === 'enemy:0'
+      && mechanicResult.tripwire.selected
+      && mechanicResult.tripwire.targeted
+      && mechanicResult.tripwire.result.ok
+      && mechanicResult.enemyStatuses.includes('rooted')
+      && mechanicResult.threat?.actionId === 'self_destruct',
+    JSON.stringify(mechanicResult),
+  );
+  record(
+    'pattern: mechanic field repair grants cover without healing',
+    mechanicResult.repair.skillId === 'mechanic_field_repair'
+      && mechanicResult.repair.targetId === 'player'
+      && mechanicResult.repair.selected
+      && mechanicResult.repair.targeted
+      && mechanicResult.repair.result.ok
+      && mechanicResult.playerBlock > 0
+      && mechanicResult.hpAfterRepair === mechanicResult.hpBeforeRepair,
+    JSON.stringify(mechanicResult),
+  );
+  await screenshot(mechanicPage, '14-pattern-mechanic-bloater');
+  await mechanicPage.close();
+
+  const dogPage = await newPatternPage(browser);
+  const dogSetup = await setupPatternCombat(dogPage, {
+    companionId: 'npc_dog',
+    enemyId: 'zombie_horde',
+    playerHp: 500,
+    playerMaxHp: 1000,
+  });
+  const dogResult = await dogPage.evaluate(async () => {
+    const { getRank } = await import('/js/systems/combat/FormationSystem.js');
+    const combat = window.GameState.combat;
+    combat.formations.ally = [null, null, 'player', 'npc_dog'];
+    const action = window.__patternCompanionAction('dog_guard', 'player');
+    const playerBlock = combat.combatants.player.tokens.block ?? 0;
+    const playerHpBeforeHordeAttack = combat.combatants.player.hp;
+    const dogHpBeforeHordeAttack = combat.combatants.npc_dog.hp;
+    const hordeDamageEvents = [];
+    let hordeExecutionAction = null;
+    const originalExecuteEnemyAction = window.CombatSystem._executeEnemyCommittedAction;
+    window.CombatSystem._executeEnemyCommittedAction = function observeHordeAttack(
+      observedEnemy,
+      committedAction,
+    ) {
+      const result = originalExecuteEnemyAction.call(this, observedEnemy, committedAction);
+      hordeExecutionAction = {
+        actionId: committedAction.actionId,
+        targetIds: [...committedAction.targetIds],
+        hitCount: committedAction.hitCount,
+      };
+      hordeDamageEvents.push(...(result?.damageResults ?? []).map(entry => ({
+        targetId: entry.targetId,
+        amount: entry.amount,
+      })));
+      return result;
+    };
+    try {
+      window.CombatSystem._runSingleEnemyTurn(0);
+    } finally {
+      window.CombatSystem._executeEnemyCommittedAction = originalExecuteEnemyAction;
+    }
+    return {
+      action,
+      playerRank: getRank(combat.formations, 'player'),
+      dogRank: getRank(combat.formations, 'npc_dog'),
+      playerBlock,
+      intent: combat.enemies[0]._nextIntent,
+      hordeExecutionAction,
+      hordeDamageEvents,
+      playerHpBeforeHordeAttack,
+      playerHpAfterHordeAttack: combat.combatants.player.hp,
+      dogHpBeforeHordeAttack,
+      dogHpAfterHordeAttack: combat.combatants.npc_dog.hp,
+    };
+  });
+  record(
+    'pattern: horde intent exposes multi-target and multi-hit behavior',
+    dogSetup.initialIntent?.targetIds?.includes('player')
+      && dogSetup.initialIntent?.targetIds?.includes('npc_dog')
+      && dogSetup.initialIntent?.targetIds?.length === 2
+      && dogSetup.initialIntent?.hitCount === 2,
+    JSON.stringify(dogSetup.initialIntent),
+  );
+  record(
+    'pattern: dog guard swaps forward and protects the wounded player',
+    dogResult.action.skillId === 'dog_guard'
+      && dogResult.action.targetId === 'player'
+      && dogResult.action.selected
+      && dogResult.action.targeted
+      && dogResult.action.result.ok
+      && dogResult.playerRank === 1
+      && dogResult.dogRank === 2
+      && dogResult.playerBlock > 0,
+    JSON.stringify(dogResult),
+  );
+  record(
+    'pattern: horde production turn spreads both committed hits across player and dog',
+    dogResult.hordeExecutionAction?.actionId
+      === dogSetup.initialIntent?.actionId
+      && dogResult.hordeExecutionAction?.hitCount === 2
+      && JSON.stringify(dogResult.hordeExecutionAction?.targetIds)
+        === JSON.stringify(dogSetup.initialIntent?.targetIds)
+      && dogResult.hordeDamageEvents.length === 2
+      && dogResult.hordeDamageEvents.some(event => event.targetId === 'player')
+      && dogResult.hordeDamageEvents.some(event => event.targetId === 'npc_dog')
+      && dogResult.playerHpAfterHordeAttack < dogResult.playerHpBeforeHordeAttack
+      && dogResult.dogHpAfterHordeAttack < dogResult.dogHpBeforeHordeAttack,
+    JSON.stringify({ setup: dogSetup, result: dogResult }),
+  );
+  await screenshot(dogPage, '15-pattern-dog-horde');
+  await dogPage.close();
+}
+
 async function scenarioOutcomes(browser) {
   const victoryPage = await newCombatPage(browser);
   await victoryPage.evaluate(() => {
@@ -313,17 +887,21 @@ async function main() {
   await mkdir(outDir, { recursive: true });
   const { chromium } = await loadPlaywright();
   const server = startServer();
+  const patternOnly = process.argv.includes('--pattern-only');
   let browser;
   try {
     await waitForServer();
     browser = await chromium.launch();
-    await scenarioInitialLayout(browser);
-    await scenarioMove(browser);
-    await scenarioRanksAndTargets(browser);
-    await scenarioActionsAndStatus(browser);
-    await scenarioCompanionStance(browser);
-    await scenarioOutcomes(browser);
-    await scenarioResponsive(browser);
+    await scenarioCompanionMonsterPatterns(browser);
+    if (!patternOnly) {
+      await scenarioInitialLayout(browser);
+      await scenarioMove(browser);
+      await scenarioRanksAndTargets(browser);
+      await scenarioActionsAndStatus(browser);
+      await scenarioCompanionStance(browser);
+      await scenarioOutcomes(browser);
+      await scenarioResponsive(browser);
+    }
 
     for (const err of browserErrors) {
       record(`browser ${err.type}`, false, JSON.stringify(err));

@@ -37,6 +37,10 @@
   /* UI accents */
   --accent-primary:  #c8a060;
   --accent-dim:      #6b5535;
+
+  /* 전투 진영 컬러 (전투 UI 리뉴얼 2026.07) — 아군 청 / 적 적 */
+  --combat-ally:     #2e86c8;
+  --combat-enemy:    #c4483d;
   --border-dim:      #2a2a2a;
   --border-mid:      #3a3a3a;
   --border-bright:   #555555;

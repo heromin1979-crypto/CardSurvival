@@ -12,6 +12,7 @@ export function buildCombatants(gs, enemies = []) {
     hp: gs.player.hp.current,
     maxHp: gs.player.hp.max,
     speed: BALANCE.combat.defaultPlayerSpeed,
+    dodge: gs.player.dodgeBonus ?? BALANCE.combat.defaultPlayerDodge,
     stress: 0,
     tokens: {},
     statusEffects: [],
@@ -30,6 +31,11 @@ export function buildCombatants(gs, enemies = []) {
 
   for (const id of companionIds) {
     const state = gs.npcs.states[id];
+    const configuredCombatDmg = NPCS[id]?.companion?.combatDmg;
+    const combatDamageMultiplier = Number.isFinite(configuredCombatDmg)
+      && configuredCombatDmg > 0
+      ? configuredCombatDmg
+      : 1;
     combatants[id] = {
       id,
       side: 'ally',
@@ -38,8 +44,10 @@ export function buildCombatants(gs, enemies = []) {
       hp: state.hp,
       maxHp: state.maxHp ?? NPCS[id]?.maxHp ?? 50,
       speed: state.combatSpeed ?? BALANCE.combat.defaultCompanionSpeed,
+      dodge: state.combatDodge ?? BALANCE.combat.defaultCompanionDodge,
       stress: state.combatStress ?? 0,
       bond: state.bond ?? 0,
+      combatDamageMultiplier,
       tokens: {},
       statusEffects: [...(state.statusEffects ?? [])],
       deathsDoor: false,
@@ -60,6 +68,7 @@ export function buildCombatants(gs, enemies = []) {
       hp: enemy.currentHp,
       maxHp: enemy.maxHp,
       speed: enemy.speed ?? BALANCE.combat.defaultEnemySpeed,
+      dodge: enemy.dodge ?? 0,
       tokens: {},
       statusEffects: [...(enemy._statusEffects ?? [])],
       dead: enemy.currentHp <= 0,

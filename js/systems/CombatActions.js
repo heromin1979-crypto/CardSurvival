@@ -3,12 +3,10 @@
 
 import EventBus        from '../core/EventBus.js';
 import GameState       from '../core/GameState.js';
-import SystemRegistry  from '../core/SystemRegistry.js';
 import I18n       from '../core/I18n.js';
 import StateMachine from '../core/StateMachine.js';
 import NoiseSystem from './NoiseSystem.js';
 import BALANCE    from '../data/gameBalance.js';
-import GameData from '../data/GameData.js';
 import { getCharacterCombatEffects } from '../data/characters.js';
 
 // ── 방어(Guard) 행동 ────────────────────────────────────────────
@@ -145,9 +143,17 @@ function _guaranteedFlee(msgs) {
  * 추가 타겟에는 50% 데미지 적용 (관통 어택 패널티)
  * 근접 관통(창)은 전열까지만, 원거리 관통(산탄총)은 후열도 휩쓴다.
  */
-export function applyMultiTarget(primaryDamage, weaponDef, targetIndex, combatSystemRef) {
+export function applyMultiTarget(
+  primaryDamage,
+  weaponDef,
+  targetIndex,
+  combatSystemRef,
+  rangedForAction = null,
+) {
   const gs      = GameState;
-  const isRanged = combatSystemRef.weaponReachIsRanged(weaponDef);
+  const isRanged = typeof rangedForAction === 'boolean'
+    ? rangedForAction
+    : combatSystemRef.weaponReachIsRanged(weaponDef);
   const alive   = combatSystemRef.getReachableEnemies(isRanged);
   const count   = weaponDef.multiTarget ?? 1;
   if (count <= 1 || alive.length <= 1) return [];
@@ -171,84 +177,6 @@ export function applyMultiTarget(primaryDamage, weaponDef, targetIndex, combatSy
     }));
   }
   return extraLogs;
-}
-
-// ── NPC 동행 전투 명령 ──────────────────────────────────────────
-
-/**
- * @deprecated Use manual combat skill commands instead.
- */
-export function companionAttack(combatSystemRef) {
-  const gs      = GameState;
-  const npcSys  = SystemRegistry.get('NPCSystem');
-  if (!npcSys) return I18n.t('combatSys.noCompanion');
-
-  const companions = gs.companions ?? [];
-  if (companions.length === 0) return I18n.t('combatSys.noCompanion');
-
-  // 쿨다운 체크
-  const cooldownKey = '_companionAttackCooldown';
-  if ((gs.combat[cooldownKey] ?? 0) > 0) {
-    return I18n.t('combatSys.companionCooldown', { turns: gs.combat[cooldownKey] });
-  }
-
-  const target  = combatSystemRef._getTarget();
-  if (!target) return I18n.t('combatSys.noTarget');
-
-  const logs = [];
-  for (const npcId of companions) {
-    const bonus = npcSys.getCompanionCombatBonus?.() ?? 1.0;
-    const dmg   = Math.floor((8 + Math.floor(Math.random() * 10)) * bonus);
-    target.currentHp = Math.max(0, target.currentHp - dmg);
-    combatSystemRef._fx?.({
-      kind:      'companionAttack',
-      npcId,
-      targetIdx: gs.combat.enemies.indexOf(target),
-      dmg,
-      fx:        'slash',
-    });
-    const npcName = I18n.itemName(npcId, GameData?.items?.[npcId]?.name ?? npcId);
-    logs.push(I18n.t('combatSys.companionAtk', { name: npcName, enemy: I18n.enemyName(target.id, target.name), dmg }));
-  }
-
-  gs.combat[cooldownKey] = BALANCE.combat.companionAttackCooldown;
-  return logs.join(' ');
-}
-
-/**
- * @deprecated Use manual combat skill commands instead.
- */
-export function companionHeal(combatSystemRef) {
-  const gs      = GameState;
-  const npcSys  = SystemRegistry.get('NPCSystem');
-  if (!npcSys) return I18n.t('combatSys.noCompanion');
-
-  const companions = gs.companions ?? [];
-  if (companions.length === 0) return I18n.t('combatSys.noCompanion');
-
-  const cooldownKey = '_companionHealCooldown';
-  if ((gs.combat[cooldownKey] ?? 0) > 0) {
-    return I18n.t('combatSys.companionHealCooldown', { turns: gs.combat[cooldownKey] });
-  }
-
-  const healed = 10 + Math.floor(Math.random() * 8);
-  gs.player.hp.current = Math.min(gs.player.hp.max, gs.player.hp.current + healed);
-  gs.combat[cooldownKey] = BALANCE.combat.companionHealCooldown;
-
-  const npcId   = companions[0];
-  const npcName = I18n.itemName(npcId, GameData?.items?.[npcId]?.name ?? npcId);
-  return I18n.t('combatSys.companionHeal', { name: npcName, val: healed });
-}
-
-// ── 쿨다운 틱 (매 라운드 호출) ──────────────────────────────────
-
-/**
- * @deprecated Legacy companion auto-action cooldown support.
- */
-export function tickCompanionCooldowns() {
-  const gs  = GameState;
-  if ((gs.combat._companionAttackCooldown ?? 0) > 0) gs.combat._companionAttackCooldown--;
-  if ((gs.combat._companionHealCooldown  ?? 0) > 0) gs.combat._companionHealCooldown--;
 }
 
 // ── 적 per-enemy 상태이상 틱 ────────────────────────────────────

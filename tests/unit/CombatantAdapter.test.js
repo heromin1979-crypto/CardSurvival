@@ -70,6 +70,7 @@ describe('CombatantAdapter', () => {
       hp: 80,
       maxHp: 100,
       speed: 5,
+      dodge: 0.05,
       stress: 0,
       tokens: {},
       statusEffects: [],
@@ -86,8 +87,10 @@ describe('CombatantAdapter', () => {
       hp: 40,
       maxHp: 100,
       speed: 7,
+      dodge: 0.05,
       stress: 2,
       bond: 70,
+      combatDamageMultiplier: 1,
       tokens: {},
       statusEffects: [{ id: 'guarded', duration: 1 }],
       deathsDoor: false,
@@ -105,6 +108,7 @@ describe('CombatantAdapter', () => {
       hp: 30,
       maxHp: 40,
       speed: 6,
+      dodge: 0,
       tokens: {},
       statusEffects: [{ id: 'bleed', duration: 2 }],
       dead: false,
@@ -130,6 +134,24 @@ describe('CombatantAdapter', () => {
     const result = buildCombatants(makeGameState());
 
     expect(result.npc_extra).toBeUndefined();
+  });
+
+  it('copies a positive companion combatDmg as the individual damage multiplier', () => {
+    const gs = makeGameState();
+    gs.companions = ['npc_soldier_deserter'];
+    gs.npcs.states.npc_soldier_deserter = {
+      hp: 60,
+      maxHp: 60,
+      isCompanion: true,
+    };
+
+    expect(buildCombatants(gs).npc_soldier_deserter.combatDamageMultiplier).toBe(1.4);
+  });
+
+  it('uses a 1.0 individual damage multiplier when combatDmg is not positive', () => {
+    const result = buildCombatants(makeGameState());
+
+    expect(result.npc_nurse.combatDamageMultiplier).toBe(1);
   });
 
   it('copies status effect arrays without sharing the source arrays', () => {
@@ -199,6 +221,7 @@ describe('combat adapter balance defaults', () => {
       baseResist: 0.75,
       resistLossPerCheck: 0.10,
       minimumResist: 0.05,
+      outgoingDamageMult: 0.7,
     });
   });
 });

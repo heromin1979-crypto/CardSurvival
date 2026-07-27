@@ -116,11 +116,49 @@ const BALANCE = {
       baseResist: 0.75,
       resistLossPerCheck: 0.10,
       minimumResist: 0.05,
+      outgoingDamageMult: 0.7,  // 죽음의 문턱 상태에서 가하는 피해 감소
     },
     stress: {
       resolveChance: 0.10,
-      afterResolve: 4,
+      afterResolve: 3,
       afterMeltdown: 2,
+      // 상시 축적원 (0~10 스케일 기준)
+      heavyHitThreshold: 15,    // 이 이상 피해 피격 시 스트레스 축적
+      heavyHitStress: 1,
+      deathsDoorStress: 2,      // 죽음의 문턱 진입 시
+      allyDownStress: 2,        // 아군(동료) 다운 목격 시
+      nightRoundStress: 1,      // 야간 전투 라운드당 (광원 없을 때)
+      nightLitRoundStress: 0,   // 광원 보유 시 야간 라운드 스트레스
+      shakenThreshold: 7,       // 이 이상이면 동요 — 임계 전부터 스트레스 관리에 가치 부여
+      shakenAccPenalty: 0.05,   // 동요 상태 명중 감소
+    },
+    // ── 도주 (상황식 — 도주각을 만드는 플레이가 유효 전술이 되도록) ──
+    flee: {
+      base: 0.5,                // 기본 도주 성공률
+      openFrontBonus: 0.2,      // 적 전열 공백 시 가산
+      speedTokenBonus: 0.15,    // 자신 speed 토큰 보유 시 가산
+      disabledEnemiesBonus: 0.15, // 살아있는 적 전원 기절/주저 시 가산
+      cap: 0.9,                 // 상한
+    },
+    // ── 기본 회피(토큰과 별개인 상시 회피 확률) ──
+    defaultPlayerDodge: 0.05,
+    defaultCompanionDodge: 0.05,
+    // ── 랭크 위치 시너지 ──
+    position: {
+      backlineRangedAccBonus: 0.10,   // 3~4랭크에서 원거리 스킬 명중 보너스
+      frontlineMeleeDamageMult: 1.10, // 1랭크에서 근접 스킬 피해 보너스
+      knockbackWallDamage: 4,         // 강제 밀치기가 벽(4랭크)에 막힐 때의 충돌 고정 피해
+    },
+    // ── 전투 토큰 (1회 소비형 버프/디버프 계수) ──
+    tokens: {
+      blockDamageMult:      0.5,   // block: 받는 피해 절반 (CombatStatusSystem.applyDamage)
+      strengthDamageMult:   1.3,   // strength/power/improvised: 다음 공격 피해 증가 (공격 강화 계열 — 공격당 1개만 소비)
+      vulnerableDamageMult: 1.3,   // vulnerable: 받는 피해 증가
+      hesitationDamageMult: 0.7,   // hesitation: 다음 공격 피해 감소
+      accuracyBonus:        0.15,  // accuracy: 다음 공격 명중 보정
+      focusCritBonus:       0.15,  // focus: 다음 공격 치명타 확률 보정
+      speedInitiativeBonus: 4,     // speed: 다음 라운드 이니셔티브 굴림 보정
+      markedDamageMult:     1.5,   // marked(표식): 받는 피해 대폭 증가 — 집중 사격 시너지
     },
     relationship: {
       positiveChance: 0.18,
@@ -166,43 +204,9 @@ const BALANCE = {
     // ── 약점/저항 ──
     weaponWeaknessMult:   1.50,  // 약점 속성 데미지 ×1.5
     weaponResistanceMult: 0.60,  // 저항 속성 데미지 ×0.6
-    // ── NPC 동행 액션 쿨다운 ──
-    companionAttackCooldown: 3,
-    companionHealCooldown:   4,
-    // ── Combat Overhaul Phase 2 — 동료 자율 행동 ──────
-    // stance: 'attack' | 'heal' | 'support' | 'hold' | 'manual'
-    companionAuto: {
-      attackDamage:      [4, 10],    // 동반자 자율 공격 — 무기 든 NPC는 combatDmg 보너스로 차별화
-      attackAccuracy:    0.65,
-      healAmount:        [10, 18],   // heal stance 회복량
-      healThreshold:     0.70,       // 플레이어 HP < 70% 이면 auto_heal 트리거
-      holdDamageReduct:  0.30,       // hold stance: 피해 30% 경감 (1턴)
-      rangedCompanions:  ['npc_soldier', 'npc_soldier_deserter'],  // 총기 보유 — 후열 직접 타격 가능
-
-      // 클래스별 스킬 (support stance 자동 발동 대상)
-      classSkills: {
-        npc_nurse: {
-          id:         'nurse_triage',
-          name:       '응급 분류',
-          cooldown:   5,
-          healAmount: 12,       // 모든 아군 +12 HP
-        },
-        npc_soldier: {
-          id:         'soldier_suppress',
-          name:       '제압 사격',
-          cooldown:   4,
-          atkMult:    0.70,     // 모든 적 공격력 × 0.7
-          duration:   2,        // 지속 턴 수
-        },
-        npc_doctor: {
-          id:         'doctor_diagnose',
-          name:       '상태 진단',
-          cooldown:   4,
-          resistBonus: 0.50,    // 모든 아군 상태이상 저항 +50%
-          duration:   3,
-        },
-      },
-    },
+    // ── 방어 관통 바닥 ──
+    // 정액 방어가 피해를 이 비율 아래로 깎지 못한다 — 저티어 무기의 고방어 적 무력화 방지
+    defenseFloorRatio:    0.30,
     // ── 타이밍 압박 적 (timedThreat) ──
     timedThreats: {
       bloater: {

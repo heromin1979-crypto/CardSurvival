@@ -205,9 +205,6 @@ describe('CombatUI rank lineup layout', () => {
     expect(plate?.querySelector('.cv-unit-name')?.textContent).toBeTruthy();
     expect(plate?.querySelector('.cv-hp-bar-track')).not.toBeNull();
     expect(plate?.textContent).toContain('HP');
-    expect(plate?.querySelector('.cpp-stance-row')).toBeNull();
-    expect(plate?.querySelector('.stance-btn')).toBeNull();
-    expect(plate?.querySelector('.skill-cd-badge')).toBeNull();
     expect(plate?.querySelector('.cv-unit-meta')).toBeNull();
   });
 
@@ -221,57 +218,12 @@ describe('CombatUI rank lineup layout', () => {
     expect(document.querySelector('.action-card.primary .ac-cost')?.textContent).toMatch(/\d+/);
   });
 
-  it('renders manual action controls whenever a companion has the active turn', () => {
+  it('does not synthesize removed manual companion action cards', () => {
     GameState.combat.activeIdx = 1;
-    GameState.npcs.states.npc_dog.stance = 'heal';
+    GameState.npcs.states.npc_dog.stance = 'manual';
 
     CombatUI.render();
 
-    expect(document.querySelector('.combat-wrap')?.classList.contains('manual-companion-turn')).toBe(true);
-    expect(document.querySelector('[data-action="manualCompanionAttack"]')).not.toBeNull();
-    expect(document.querySelector('[data-action="manualCompanionHeal"]')).not.toBeNull();
-    expect(document.querySelector('[data-action="manualCompanionSupport"]')).not.toBeNull();
-    expect(document.querySelector('[data-action="manualCompanionHold"]')).not.toBeNull();
-    expect(document.querySelector('[data-action="companionAttack"]')).toBeNull();
-    expect(document.querySelector('[data-action="companionHeal"]')).toBeNull();
-  });
-
-  it('renders sample-style action cost badges for manual companion action cards', () => {
-    GameState.combat.activeIdx = 1;
-    GameState.npcs.states.npc_dog.stance = 'heal';
-
-    CombatUI.render();
-
-    const actionCards = [...document.querySelectorAll('.combat-action-bar > .companion-action-card')];
-
-    expect(actionCards.length).toBe(4);
-    expect(actionCards.every(card => card.querySelector('.ac-cost'))).toBe(true);
-  });
-
-  it('renders the active companion skill cards instead of the player action cards on companion turns', () => {
-    GameState.combat.activeIdx = 1;
-    GameState.companions = ['npc_nurse'];
-    GameState.npcs.states = {
-      npc_nurse: { hp: 50, maxHp: 50, isCompanion: true, name: 'Nurse', stance: 'support' },
-    };
-    GameState.combat.turnQueue = [
-      { type: 'player', order: 0 },
-      { type: 'companion', id: 'npc_nurse', order: 1 },
-      { type: 'enemy', enemyIdx: 0, order: 2 },
-    ];
-
-    CombatUI.render();
-
-    const actionBar = document.querySelector('.combat-action-bar');
-    const supportCard = actionBar?.querySelector('[data-action="manualCompanionSupport"]');
-
-    expect(document.querySelector('.combat-wrap')?.classList.contains('manual-companion-turn')).toBe(true);
-    expect(actionBar?.querySelector('[data-action="attack"]')).toBeNull();
-    expect(actionBar?.querySelector('[data-action="unarmed"]')).toBeNull();
-    expect(actionBar?.querySelector('[data-action="guard"]')).toBeNull();
-    expect(actionBar?.querySelector('[data-action="move"]')).toBeNull();
-    expect(actionBar?.querySelector('[data-action="flee"]')).toBeNull();
-    expect(supportCard?.textContent).toContain('응급 분류');
-    expect(supportCard?.textContent).not.toContain('직업 지원');
+    expect(document.querySelector('.companion-action-card')).toBeNull();
   });
 });
