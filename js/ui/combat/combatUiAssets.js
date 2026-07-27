@@ -55,10 +55,56 @@ async function _loadSpriteManifest() {
     for (const key in COMBAT_SPRITE_SHEETS) {
       const sheet = COMBAT_SPRITE_SHEETS[key];
       const meta = manifest[sheet.src.split('/').pop()];
-      if (meta && meta.cols) { sheet.cols = meta.cols | 0; if (meta.rows) sheet.rows = meta.rows | 0; }
+      if (meta && meta.cols) {
+        sheet.cols = meta.cols | 0;
+        if (meta.rows) sheet.rows = meta.rows | 0;
+        if (Array.isArray(meta.frameDur) && meta.frameDur.length) {
+          sheet.frameDur = meta.frameDur;
+        }
+      }
     }
+    _injectSpriteKeyframes();
   } catch (e) { /* manifest optional → keep 6×4 defaults */ }
 }
+
+function _injectSpriteKeyframes() {
+  let css = '';
+  for (const key in COMBAT_SPRITE_SHEETS) {
+    const sheet = COMBAT_SPRITE_SHEETS[key];
+    if (!Array.isArray(sheet.frameDur) || !sheet.frameDur.length) continue;
+    const cols = sheet.cols | 0;
+    const rows = sheet.rows | 0;
+    for (let row = 0; row < rows; row++) {
+      const durations = Array.isArray(sheet.frameDur[row]) && sheet.frameDur[row].length
+        ? sheet.frameDur[row]
+        : new Array(cols).fill(1);
+      const total = durations.reduce((sum, duration) => sum + (+duration || 0), 0) || 1;
+      let elapsed = 0;
+      let stops = '';
+      for (let frame = 0; frame < durations.length; frame++) {
+        const percent = (elapsed / total) * 100;
+        const x = cols > 1 ? (frame / (cols - 1)) * 100 : 0;
+        stops += `${percent.toFixed(4)}%{background-position-x:${x.toFixed(4)}%}`;
+        elapsed += (+durations[frame] || 0);
+      }
+      stops += `100%{background-position-x:${cols > 1 ? 100 : 0}%}`;
+      css += `@keyframes spriteanim_${key}_r${row}{${stops}}`;
+    }
+  }
+
+  let style = document.getElementById('sprite-anim-keyframes');
+  if (!css) {
+    if (style) style.textContent = '';
+    return;
+  }
+  if (!style) {
+    style = document.createElement('style');
+    style.id = 'sprite-anim-keyframes';
+    document.head.appendChild(style);
+  }
+  style.textContent = css;
+}
+
 _loadSpriteManifest();
 
 // 직업×성별 → 플레이어 스프라이트시트 키. 신규 시트 제작 시 여기만 추가하면 된다.

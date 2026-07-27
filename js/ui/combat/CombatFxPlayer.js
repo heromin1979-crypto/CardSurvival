@@ -85,13 +85,27 @@ export const CombatFxPlayer = {
     if (!sheet) return '';
     // steps(N, jump-none) walks the 0→100% ramp onto exactly N columns. Works for any N
     // (≤6 or >6); jump-none needs ≥2 steps, so clamp. Overrides the stylesheet's linear inline.
-    const steps = Math.max(2, sheet.cols | 0);
-    return [
+    const parts = [
       `--sprite-url: url('${sheet.src}')`,
       `--sprite-cols: ${sheet.cols}`,
       `--sprite-rows: ${sheet.rows}`,
-      `animation-timing-function: steps(${steps}, jump-none)`,
-    ].join('; ');
+    ];
+    if (Array.isArray(sheet.frameDur) && sheet.frameDur.length) {
+      const defaultDurations = [920, 620, 760, 820];
+      parts.push('animation-timing-function: step-end');
+      for (let row = 0; row < (sheet.rows | 0); row++) {
+        const durations = sheet.frameDur[row];
+        const total = Array.isArray(durations) && durations.length
+          ? durations.reduce((sum, duration) => sum + (+duration || 0), 0)
+          : (defaultDurations[row] || 800);
+        parts.push(`--anim-r${row}: spriteanim_${sheetKey}_r${row}`);
+        parts.push(`--sprite-dur-r${row}: ${Math.round(total)}ms`);
+      }
+    } else {
+      const steps = Math.max(2, sheet.cols | 0);
+      parts.push(`animation-timing-function: steps(${steps}, jump-none)`);
+    }
+    return parts.join('; ');
   },
 
   _renderCombatSpriteSheet(sheetKey, className, label = '') {
