@@ -729,7 +729,11 @@ const CombatSystem = {
           sourceEnemyId,
           amount: shield,
           remainingRounds: Number.isFinite(duration) ? duration : 1,
-          skipNextRoundTick: combat?._directActionTickPending === true,
+          skipNextRoundTick: combat?._directActionTickPending === true
+            || (
+              combat?._rankedActionTurnAdvancePending === true
+              && !this._hasLivingAllyActionBeforeWrap(combat)
+            ),
         });
         const rankedSource = this._rankCombatantForEnemy(source);
         if (applied && rankedSource) rankedSource.statusEffects = source._statusEffects;
@@ -939,11 +943,17 @@ const CombatSystem = {
     const skill = combat.skillsById?.[combat.selectedSkillId];
     const target = combat.combatants?.[combat.selectedTargetId];
     const targetHpBefore = target?.hp;
-    const result = executeSkillCommand(this._commandContext(), {
-      actorId,
-      skillId: combat.selectedSkillId,
-      targetId: combat.selectedTargetId,
-    });
+    let result;
+    combat._rankedActionTurnAdvancePending = true;
+    try {
+      result = executeSkillCommand(this._commandContext(), {
+        actorId,
+        skillId: combat.selectedSkillId,
+        targetId: combat.selectedTargetId,
+      });
+    } finally {
+      delete combat._rankedActionTurnAdvancePending;
+    }
     this._finalizeSkillCommandResult({
       actorId,
       skill,
@@ -1276,6 +1286,28 @@ const CombatSystem = {
     if (entry.type === 'companion') {
       const st = npcStates?.[entry.id];
       return !!st && (st.hp ?? 0) > 0;
+    }
+    return false;
+  },
+
+  _hasLivingAllyActionBeforeWrap(combat = GameState.combat) {
+    const queue = combat?.turnQueue;
+    if (!Array.isArray(queue) || queue.length === 0) return false;
+    const activeCombatantId = combat.activeCombatantId
+      ?? this._combatantIdForEntry(queue[combat.activeIdx ?? 0]);
+    let activeIndex = queue.findIndex(entry => (
+      this._combatantIdForEntry(entry) === activeCombatantId
+    ));
+    if (activeIndex < 0) activeIndex = combat.activeIdx ?? 0;
+
+    for (let index = activeIndex + 1; index < queue.length; index++) {
+      const entry = queue[index];
+      if (
+        (entry?.type === 'player' || entry?.type === 'companion')
+        && this._isEntryAlive(entry, combat, GameState.npcs?.states)
+      ) {
+        return true;
+      }
     }
     return false;
   },
@@ -1685,6 +1717,7 @@ const CombatSystem = {
 
   _resolveDirectEnemyDamage(enemy, rawDamage, {
     bonusAfterDefense = 0,
+    bypassBaseDefense = false,
   } = {}) {
     if (!enemy || (enemy.currentHp ?? 0) <= 0) {
       return {
@@ -1697,7 +1730,7 @@ const CombatSystem = {
     const modifiers = enemyStatusModifiers(enemy);
     let damage = this._applyEnemyDefense(
       Math.max(0, Math.floor(Number.isFinite(rawDamage) ? rawDamage : 0)),
-      (enemy.defense ?? 0) + modifiers.defenseIncrease,
+      (bypassBaseDefense ? 0 : (enemy.defense ?? 0)) + modifiers.defenseIncrease,
     );
     if (modifiers.incomingDamageReduction > 0) {
       damage = Math.floor(damage * (1 - modifiers.incomingDamageReduction));
@@ -1725,8 +1758,7 @@ const CombatSystem = {
 
     const committedAction = enemy._bossActionState?.committedAction;
     if (
-      enemy.isBoss === true
-      && committedAction?.state === 'telegraphing'
+      this._bossActionAcceptsCounterWindowDamage(enemy, committedAction)
       && actualDamage > 0
       && this._bossActionDefinition(
         enemy,
@@ -2143,25 +2175,30 @@ const CombatSystem = {
     const maxIter = combat.turnQueue.length * 2 + 2;
     let iter = 0;
 
-    while (combat.active && iter++ < maxIter) {
-      this._advanceTurn(combat, npcStates);
-      // 레거시 폴백 루프에서는 라운드 경계 후처리를 쓰지 않는다 (resolveAction이 직접 틱)
-      combat._roundWrapped = false;
-      this._syncActiveTurnFromLegacy(combat);
-      const entry = this._currentEntry(combat);
-      if (!entry) return;
-      if (entry.type === 'player') return;   // 플레이어 차례로 복귀
+    combat._legacyAiTurnProcessing = true;
+    try {
+      while (combat.active && iter++ < maxIter) {
+        this._advanceTurn(combat, npcStates);
+        // 레거시 폴백 루프에서는 라운드 경계 후처리를 쓰지 않는다 (resolveAction이 직접 틱)
+        combat._roundWrapped = false;
+        this._syncActiveTurnFromLegacy(combat);
+        const entry = this._currentEntry(combat);
+        if (!entry) return;
+        if (entry.type === 'player') return;   // 플레이어 차례로 복귀
 
-      if (entry.type === 'companion') {
-        this._prepareCompanionTurn(entry.id);
-        this.beginActiveTurn();
-        return;
-      } else if (entry.type === 'enemy') {
-        this._runSingleEnemyTurn(entry.enemyIdx);
-        if (this._isPlayerDefeated()) { this._resolveDefeat(); return; }
+        if (entry.type === 'companion') {
+          this._prepareCompanionTurn(entry.id);
+          this.beginActiveTurn();
+          return;
+        } else if (entry.type === 'enemy') {
+          this._runSingleEnemyTurn(entry.enemyIdx);
+          if (this._isPlayerDefeated()) { this._resolveDefeat(); return; }
+        }
+
+        if (this._allEnemiesDead()) { this._resolveVictory(); return; }
       }
-
-      if (this._allEnemiesDead()) { this._resolveVictory(); return; }
+    } finally {
+      delete combat._legacyAiTurnProcessing;
     }
   },
 
@@ -2232,7 +2269,13 @@ const CombatSystem = {
 
     // per-enemy 상태이상 틱 (AoE 투척 효과 포함)
     for (const enemy of this.getAliveEnemies()) {
-      tickEnemyStatusEffects(enemy, msg => gs.combat.log.push(msg));
+      tickEnemyStatusEffects(
+        enemy,
+        msg => gs.combat.log.push(msg),
+        (target, rawDamage) => this._resolveDirectEnemyDamage(target, rawDamage, {
+          bypassBaseDefense: true,
+        }),
+      );
     }
 
     // 레거시 enemyStatus 틱 (단일 타겟용 하위호환)
@@ -2240,8 +2283,16 @@ const CombatSystem = {
     if (target) {
       gs.combat.enemyStatus = (gs.combat.enemyStatus ?? []).filter(s => {
         if (s.effect.hpLossPerRound) {
-          target.currentHp = Math.max(0, target.currentHp - s.effect.hpLossPerRound);
-          gs.combat.log.push(I18n.t('combatSys.statusTickEnemy', { name: s.name, target: I18n.enemyName(target.id, target.name), dmg: s.effect.hpLossPerRound }));
+          const result = this._resolveDirectEnemyDamage(
+            target,
+            s.effect.hpLossPerRound,
+            { bypassBaseDefense: true },
+          );
+          gs.combat.log.push(I18n.t('combatSys.statusTickEnemy', {
+            name: s.name,
+            target: I18n.enemyName(target.id, target.name),
+            dmg: result.damage,
+          }));
         }
         s.duration--;
         return s.duration > 0;

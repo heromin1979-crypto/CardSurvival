@@ -1014,7 +1014,8 @@ export const CombatAiTurns = {
             ...status,
             sourceEnemyId: status.sourceEnemyId ?? enemy.id,
             remainingRounds: status.remainingRounds ?? status.duration ?? 1,
-            _skipNextRoundTick: true,
+            _skipNextRoundTick: combat?._legacyAiTurnProcessing !== true
+              && !this._hasLivingAllyActionBeforeWrap(combat),
           }, enemyIdx);
           const rankedEnemy = this._rankCombatantForEnemy(enemy);
           if (rankedEnemy) rankedEnemy.statusEffects = enemy._statusEffects ?? [];
@@ -1235,6 +1236,10 @@ export const CombatAiTurns = {
   _consumeSummonedEnemies(sourceEnemy, enemyId) {
     const combat = GameState.combat;
     if (!combat || !sourceEnemy?.id || typeof enemyId !== 'string') return 0;
+    const sourceEnemyIndex = (combat.enemies ?? []).indexOf(sourceEnemy);
+    const sourceCombatantId = sourceEnemyIndex >= 0
+      ? `enemy:${sourceEnemyIndex}`
+      : combat.activeCombatantId;
     let consumed = 0;
 
     for (const [enemyIndex, candidate] of (combat.enemies ?? []).entries()) {
@@ -1270,7 +1275,17 @@ export const CombatAiTurns = {
       }
     }
 
-    if (consumed > 0) this._compactRankedEnemyFormation();
+    if (consumed > 0) {
+      this._compactRankedEnemyFormation();
+      const sourceQueueIndex = (combat.turnQueue ?? []).findIndex(entry => (
+        this._combatantIdForEntry(entry) === sourceCombatantId
+      ));
+      if (sourceQueueIndex >= 0) {
+        combat.activeIdx = sourceQueueIndex;
+        combat.activeTurnIndex = sourceQueueIndex;
+        combat.activeCombatantId = sourceCombatantId;
+      }
+    }
     return consumed;
   },
 

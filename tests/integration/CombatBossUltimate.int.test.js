@@ -2,6 +2,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import GameState from '../../js/core/GameState.js';
 import SystemRegistry from '../../js/core/SystemRegistry.js';
+import { SECRET_ENEMIES } from '../../js/data/secretEnemies.js';
 import CombatSystem from '../../js/systems/CombatSystem.js';
 import CombatUI from '../../js/ui/CombatUI.js';
 
@@ -255,6 +256,32 @@ describe('보스 필살기 임계점과 B안 직렬 실행', () => {
       category: 'ultimate',
       remainingTelegraphTurns: 1,
     });
+  });
+
+  it('critical_mass는 production telegraph가 ready가 된 뒤 받은 실제 피해도 누적한다', () => {
+    const definition = structuredClone(SECRET_ENEMIES.boss_radiation_colossus);
+    const { combat, enemy } = setupCombat(definition, 0.99);
+    enemy.currentHp = 106;
+    combat.combatants['enemy:0'].hp = 106;
+    GameState.stats.morale.current = 50;
+
+    damageBoss(combat, 10);
+    expect(enemy._bossActionState.committedAction).toMatchObject({
+      actionId: 'critical_mass',
+      state: 'telegraphing',
+      telegraphDamageTaken: 0,
+    });
+    CombatSystem._runSingleEnemyTurn(0);
+    expect(enemy._bossActionState.committedAction).toMatchObject({
+      actionId: 'critical_mass',
+      state: 'ready',
+      telegraphDamageTaken: 0,
+    });
+    enemy.defense = 0;
+
+    damageBoss(combat, 100);
+
+    expect(enemy._bossActionState.committedAction.telegraphDamageTaken).toBe(100);
   });
 
   it('필살기 예고가 피격으로 취소되어도 사용 기회가 소모되고 다시 예약되지 않는다', () => {

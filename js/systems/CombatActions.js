@@ -212,30 +212,42 @@ export function applyMultiTarget(
 
 // ── 적 per-enemy 상태이상 틱 ────────────────────────────────────
 
-export function tickEnemyStatusEffects(enemy, logFn) {
+export function tickEnemyStatusEffects(enemy, logFn, resolveDamage = null) {
   if (!enemy._statusEffects?.length) return;
-  enemy._statusEffects = enemy._statusEffects.filter(s => {
+  const statusesAtTickStart = [...enemy._statusEffects];
+  const expired = new Set();
+  for (const s of statusesAtTickStart) {
+    if (!(enemy._statusEffects ?? []).includes(s)) continue;
     if (s._skipNextRoundTick === true) {
       delete s._skipNextRoundTick;
-      return true;
+      continue;
     }
     if (s.effect?.hpLossPerRound) {
-      enemy.currentHp = Math.max(0, enemy.currentHp - s.effect.hpLossPerRound);
+      const rawDamage = s.effect.hpLossPerRound;
+      const result = typeof resolveDamage === 'function'
+        ? resolveDamage(enemy, rawDamage)
+        : (() => {
+            const hpBefore = enemy.currentHp;
+            enemy.currentHp = Math.max(0, enemy.currentHp - rawDamage);
+            return { damage: hpBefore - enemy.currentHp };
+          })();
       logFn(I18n.t('combatSys.statusTickEnemy', {
         name:   s.name,
         target: I18n.enemyName(enemy.id, enemy.name),
-        dmg:    s.effect.hpLossPerRound,
+        dmg:    result?.damage ?? 0,
       }));
     }
     if (Number.isFinite(s.remainingRounds)) {
       s.remainingRounds--;
       if (Number.isFinite(s.duration)) s.duration = s.remainingRounds;
-      return s.remainingRounds > 0;
-    }
-    if (Number.isFinite(s.duration)) {
+      if (s.remainingRounds <= 0) expired.add(s);
+    } else if (Number.isFinite(s.duration)) {
       s.duration--;
-      return s.duration > 0;
+      if (s.duration <= 0) expired.add(s);
     }
-    return true;
-  });
+  }
+  const activeStatuses = enemy._statusEffects ?? [];
+  for (let index = activeStatuses.length - 1; index >= 0; index--) {
+    if (expired.has(activeStatuses[index])) activeStatuses.splice(index, 1);
+  }
 }

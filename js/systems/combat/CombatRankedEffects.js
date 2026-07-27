@@ -549,6 +549,19 @@ export const CombatRankedEffects = {
     return 1;
   },
 
+  _bossActionAcceptsCounterWindowDamage(enemy, action = null) {
+    const committedAction = enemy?._bossActionState?.committedAction ?? null;
+    if (
+      enemy?.isBoss !== true
+      || !committedAction
+      || (action && committedAction !== action)
+    ) {
+      return false;
+    }
+    return committedAction.state === 'telegraphing'
+      || committedAction.state === 'ready';
+  },
+
   // 랭크 피해 파이프라인: 치명타 → 공격측 배율(플레이어 스위트+토큰) → 약점/저항 → 방어 → 피격측 토큰 → 적용
   _applyRankedDamageEffect(effect, actor, target, random = Math.random, hitInfo = null) {
     const gs = GameState;
@@ -667,8 +680,10 @@ export const CombatRankedEffects = {
     this._syncRankedTargetToLegacy(target);
 
     if (
-      isPatternBoss
-      && bossActionBeforeDamage?.state === 'telegraphing'
+      this._bossActionAcceptsCounterWindowDamage(
+        legacyEnemy,
+        bossActionBeforeDamage,
+      )
       && result.damage > 0
       && this._bossActionDefinition(
         legacyEnemy,

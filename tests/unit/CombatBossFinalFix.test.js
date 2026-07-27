@@ -144,6 +144,21 @@ function activateHungerDomination(enemy, targetIds = ['player']) {
   ));
 }
 
+function arrangeTurnQueue(combat, combatantIds, activeCombatantId) {
+  const entriesById = new Map(combat.turnQueue.map(entry => [
+    entry.combatantId,
+    entry,
+  ]));
+  combat.turnQueue = combatantIds.map((combatantId, order) => ({
+    ...entriesById.get(combatantId),
+    order,
+  }));
+  combat.activeIdx = combatantIds.indexOf(activeCombatantId);
+  combat.activeTurnIndex = combat.activeIdx;
+  combat.activeCombatantId = activeCombatantId;
+  CombatSystem.beginActiveTurn();
+}
+
 beforeEach(() => {
   vi.restoreAllMocks();
   GameState.deserialize(BASELINE_SAVE);
@@ -200,6 +215,26 @@ describe('Finding A - 동적 필살기 퍼즐', () => {
     }));
   });
 
+  it('critical_mass ready 창의 legacy direct 피해만 누적하고 닫힌 action state는 제외한다', () => {
+    const { enemy } = setupBoss('boss_radiation_colossus');
+    const ultimate = enemy.bossPattern.ultimate;
+    enemy.defense = 0;
+    forceAction(enemy, ultimate, 'ultimate', {
+      state: 'ready',
+      committed: { telegraphDamageTaken: 0 },
+    });
+    const committedAction = enemy._bossActionState.committedAction;
+
+    CombatSystem._resolveDirectEnemyDamage(enemy, 100);
+
+    expect(committedAction.telegraphDamageTaken).toBe(100);
+    for (const state of ['executing', 'completed', 'cancelled']) {
+      committedAction.state = state;
+      CombatSystem._resolveDirectEnemyDamage(enemy, 1);
+      expect(committedAction.telegraphDamageTaken).toBe(100);
+    }
+  });
+
   it('mother_feast는 자신이 소환한 살아 있는 좀비만 소비해 수만큼 회복·강화한다', () => {
     const { combat, enemy } = setupBoss('boss_horde_mother');
     expect(CombatSystem._summonEnemyById('zombie_common', 2, 'front', enemy)).toBe(2);
@@ -222,6 +257,40 @@ describe('Finding A - 동적 필살기 퍼즐', () => {
     expect(combat.formations.enemy).not.toContain('enemy:1');
     expect(combat.formations.enemy).not.toContain('enemy:2');
     expect(combat.turnQueue.some(entry => [1, 2].includes(entry.enemyIdx))).toBe(false);
+  });
+
+  it('mother_feast는 소환체 제거 뒤 현재 boss cursor와 원래 cyclic 다음 actor를 보존한다', () => {
+    const { combat, enemy } = setupBoss('boss_horde_mother');
+    expect(CombatSystem._summonEnemyById('zombie_common', 2, 'front', enemy)).toBe(2);
+    expect(CombatSystem._summonEnemyById('zombie_common', 1, 'front')).toBe(1);
+    const summoned = [combat.enemies[1], combat.enemies[2]];
+    arrangeTurnQueue(
+      combat,
+      ['player', 'enemy:1', 'enemy:3', 'enemy:0', 'enemy:2'],
+      'enemy:0',
+    );
+    const roundBefore = combat.roundNumber;
+    forceAction(enemy, enemy.bossPattern.ultimate, 'ultimate');
+
+    CombatSystem._runSingleEnemyTurn(0);
+
+    expect(combat.turnQueue.map(entry => entry.combatantId))
+      .toEqual(['player', 'enemy:3', 'enemy:0']);
+    expect(combat.activeIdx).toBe(2);
+    expect(combat.activeTurnIndex).toBe(2);
+    expect(combat.activeCombatantId).toBe('enemy:0');
+    expect(summoned.every(entry => entry.currentHp === 0 && entry._consumed === true))
+      .toBe(true);
+    expect(combat.combatants['enemy:1']).toMatchObject({ hp: 0, dead: true });
+    expect(combat.combatants['enemy:2']).toMatchObject({ hp: 0, dead: true });
+    expect(combat.formations.enemy).not.toContain('enemy:1');
+    expect(combat.formations.enemy).not.toContain('enemy:2');
+
+    CombatSystem._advanceTurn(combat, GameState.npcs.states);
+    CombatSystem._syncActiveTurnFromLegacy(combat);
+
+    expect(combat.activeCombatantId).toBe('player');
+    expect(combat.roundNumber).toBe(roundBefore + 1);
   });
 
   it('mother_feast는 소비할 소환 좀비가 없으면 회복과 강화를 전혀 얻지 않는다', () => {
@@ -343,6 +412,101 @@ describe('Finding B - source-aware 적/전장/무기 상태 소비', () => {
 
     damageBoss(enemy, 20);
     expect(enemy.currentHp).toBe(hpBefore - 20);
+  });
+
+  it('per-enemy DoT는 무적을 존중하고 로그에 실제 HP 피해 0을 기록한다', () => {
+    const { combat, enemy } = setupBoss('boss_sewer_king');
+    CombatSystem._applyEnemyStatusInflict(enemy, {
+      id: 'invulnerable_dot_probe',
+      name: '무적 DoT 시험',
+      sourceEnemyId: 'player',
+      remainingRounds: 2,
+      effect: { hpLossPerRound: 10 },
+    }, 0);
+    CombatSystem._applyEnemyStatusInflict(enemy, {
+      id: 'dot_invulnerable',
+      name: 'DoT 무적',
+      sourceEnemyId: enemy.id,
+      remainingRounds: 2,
+      effect: { invulnerable: true },
+    }, 0);
+    const hpBefore = enemy.currentHp;
+    const logBefore = combat.log.length;
+
+    CombatSystem._tickStatusEffects();
+
+    expect(enemy.currentHp).toBe(hpBefore);
+    const statusLog = combat.log.slice(logBefore)
+      .find(entry => entry.includes('무적 DoT 시험'));
+    expect(statusLog).toContain('0');
+  });
+
+  it('per-enemy DoT는 base defense를 우회하고 감쇠·shield 뒤 실제 피해만 ready 창에 누적한다', () => {
+    const { combat, enemy } = setupBoss('boss_radiation_colossus');
+    enemy.defense = 99;
+    forceAction(enemy, enemy.bossPattern.ultimate, 'ultimate', {
+      state: 'ready',
+      committed: { telegraphDamageTaken: 0 },
+    });
+    CombatSystem._applyEnemyStatusInflict(enemy, {
+      id: 'reduced_dot_probe',
+      name: '감쇠 DoT 시험',
+      sourceEnemyId: 'player',
+      remainingRounds: 2,
+      effect: { hpLossPerRound: 20 },
+    }, 0);
+    CombatSystem._applyEnemyStatusInflict(enemy, {
+      id: 'dot_reduction',
+      name: 'DoT 감쇠',
+      sourceEnemyId: enemy.id,
+      remainingRounds: 2,
+      effect: { incomingDamageReduction: 0.25 },
+    }, 0);
+    CombatSystem._applyEnemyStatusInflict(enemy, {
+      id: 'dot_shield',
+      name: 'DoT 보호막',
+      sourceEnemyId: enemy.id,
+      remainingRounds: 2,
+      effect: { damageShield: 12 },
+    }, 0);
+    const hpBefore = enemy.currentHp;
+    const logBefore = combat.log.length;
+
+    CombatSystem._tickStatusEffects();
+
+    expect(enemy.currentHp).toBe(hpBefore - 3);
+    expect(enemy._statusEffects.map(status => status.id)).not.toContain('dot_shield');
+    expect(enemy._bossActionState.committedAction.telegraphDamageTaken).toBe(3);
+    expect(combat.combatants['enemy:0']).toMatchObject({
+      hp: hpBefore - 3,
+      dead: false,
+    });
+    expect(combat.combatants['enemy:0'].statusEffects).toEqual(enemy._statusEffects);
+    const statusLog = combat.log.slice(logBefore)
+      .find(entry => entry.includes('감쇠 DoT 시험'));
+    expect(statusLog).toContain('3');
+  });
+
+  it('legacy enemyStatus DoT도 실제 HP 피해와 ranked death state를 동기화한다', () => {
+    const { combat, enemy } = setupBoss('boss_sewer_king');
+    enemy.defense = 99;
+    enemy.currentHp = 5;
+    combat.combatants['enemy:0'].hp = 5;
+    combat.enemyStatus = [{
+      id: 'legacy_dot_probe',
+      name: 'legacy DoT 시험',
+      duration: 1,
+      effect: { hpLossPerRound: 10 },
+    }];
+    const logBefore = combat.log.length;
+
+    CombatSystem._tickStatusEffects();
+
+    expect(enemy.currentHp).toBe(0);
+    expect(combat.combatants['enemy:0']).toMatchObject({ hp: 0, dead: true });
+    const statusLog = combat.log.slice(logBefore)
+      .find(entry => entry.includes('legacy DoT 시험'));
+    expect(statusLog).toContain('5');
   });
 
   it('outgoingDamageIncrease는 enemy action 피해에 적용된다', () => {
@@ -545,12 +709,14 @@ describe('Finding B - source-aware 적/전장/무기 상태 소비', () => {
     }));
   });
   it('라운드 마지막에 적용된 duration 1 selfStatus도 다음 라운드 대응 전에는 만료되지 않는다', () => {
-    const { enemy } = setupBoss('boss_sewer_king');
+    const { combat, enemy } = setupBoss('boss_sewer_king');
+    arrangeTurnQueue(combat, ['player', 'enemy:0'], 'enemy:0');
     forceAction(enemy, enemy.bossPattern.specialSkill, 'special');
 
     CombatSystem._runSingleEnemyTurn(0);
-    CombatSystem._tickStatusEffects();
+    CombatSystem.advanceTurn();
 
+    expect(combat.activeCombatantId).toBe('player');
     expect(enemy._statusEffects).toContainEqual(expect.objectContaining({
       id: 'submerged',
       remainingRounds: 1,
@@ -558,6 +724,50 @@ describe('Finding B - source-aware 적/전장/무기 상태 소비', () => {
     }));
 
     CombatSystem._tickStatusEffects();
+    expect(enemy._statusEffects.map(status => status.id)).not.toContain('submerged');
+  });
+
+  it('legacy 순서에서 duration 1 selfStatus는 다음 player action 하나만 막고 만료한다', () => {
+    const { combat, enemy } = setupBoss('boss_sewer_king');
+    enemy.defense = 0;
+    forceAction(enemy, enemy.bossPattern.specialSkill, 'special');
+
+    CombatSystem.resolveAction('guard');
+
+    expect(enemy._statusEffects).toContainEqual(expect.objectContaining({
+      id: 'submerged',
+      remainingRounds: 1,
+    }));
+    const hpBefore = enemy.currentHp;
+    vi.spyOn(CombatSystem, '_allEnemiesAttack').mockImplementation(() => {});
+
+    CombatSystem.resolveAction('melee');
+
+    expect(enemy.currentHp).toBe(hpBefore);
+    expect(enemy._statusEffects.map(status => status.id)).not.toContain('submerged');
+
+    CombatSystem.resolveAction('melee');
+    expect(enemy.currentHp).toBeLessThan(hpBefore);
+  });
+
+  it('ranked enemy 뒤 ally action이 남으면 selfStatus tick을 추가 유예하지 않는다', () => {
+    const { combat, enemy } = setupBoss('boss_sewer_king', {
+      companionIds: ['npc_nurse'],
+    });
+    arrangeTurnQueue(combat, ['player', 'enemy:0', 'npc_nurse'], 'enemy:0');
+    forceAction(enemy, enemy.bossPattern.specialSkill, 'special');
+
+    CombatSystem._runSingleEnemyTurn(0);
+    CombatSystem.advanceTurn();
+
+    expect(combat.activeCombatantId).toBe('npc_nurse');
+    expect(enemy._statusEffects).toContainEqual(expect.objectContaining({
+      id: 'submerged',
+      remainingRounds: 1,
+    }));
+
+    CombatSystem.advanceTurn();
+
     expect(enemy._statusEffects.map(status => status.id)).not.toContain('submerged');
   });
 
@@ -817,6 +1027,31 @@ describe('Finding C - hunger_domination 치료 간섭', () => {
     }));
   });
 
+  it('turn을 소비하지 않는 ranked item heal은 미래 round tick을 추가 유예하지 않는다', () => {
+    const { combat, enemy } = setupBoss('food_warlord', {
+      playerHp: 40,
+      playerMaxHp: 100,
+    });
+    const itemId = addCombatItem('bandage');
+    activateHungerDomination(enemy);
+    arrangeTurnQueue(combat, ['enemy:0', 'player'], 'player');
+
+    const result = CombatSystem.useCombatItem(itemId);
+
+    expect(result).toMatchObject({ ok: true, turnConsumed: false });
+    const shield = enemy._statusEffects.find(status => (
+      status.id === 'hunger_domination_shield'
+    ));
+    expect(shield).toMatchObject({
+      sourceEnemyId: enemy.id,
+      remainingRounds: 2,
+    });
+
+    CombatSystem.advanceTurn();
+
+    expect(shield.remainingRounds).toBe(1);
+  });
+
   it('player heal skill은 50% 간섭을 받고 성공한 player command 뒤 수명을 한 번 줄인다', () => {
     const { combat, enemy } = setupBoss('food_warlord', {
       playerHp: 40,
@@ -836,6 +1071,43 @@ describe('Finding C - hunger_domination 치료 간섭', () => {
       id: 'hunger_domination',
       remainingPlayerTurns: 1,
     }));
+  });
+
+  it.each([
+    ['healer가 wrap 직전인 경우', ['enemy:0', 'player'], true],
+    ['healer 뒤 living ally가 남는 경우', ['enemy:0', 'player', 'npc_nurse'], false],
+  ])('ranked heal shield는 %s에도 선언된 두 round 기회를 보존한다', (
+    _label,
+    queueIds,
+    wrapsImmediately,
+  ) => {
+    const { combat, enemy } = setupBoss('food_warlord', {
+      playerHp: 40,
+      playerMaxHp: 100,
+      companionIds: ['npc_nurse'],
+    });
+    activateHungerDomination(enemy);
+    arrangeTurnQueue(combat, queueIds, 'player');
+    vi.spyOn(CombatSystem, 'processUntilAllyTurn').mockReturnValue(true);
+    expect(CombatSystem.selectSkill('doctor_triage')).toBe(true);
+    expect(CombatSystem.selectTarget('player')).toBe(true);
+
+    const result = CombatSystem.confirmAction();
+
+    expect(result.ok).toBe(true);
+    const shield = enemy._statusEffects.find(status => (
+      status.id === 'hunger_domination_shield'
+    ));
+    expect(shield).toMatchObject({
+      sourceEnemyId: enemy.id,
+      remainingRounds: 2,
+      effect: { damageShield: 2 },
+    });
+    if (!wrapsImmediately) {
+      expect(combat.activeCombatantId).toBe('npc_nurse');
+      CombatSystem.advanceTurn();
+      expect(shield.remainingRounds).toBe(1);
+    }
   });
 
   it('companion heal도 같은 배율을 쓰지만 player-turn 수명은 줄이지 않는다', () => {
