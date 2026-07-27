@@ -20,6 +20,13 @@ import {
 } from './CombatResolution.js';
 import { getRank, moveCombatant } from './FormationSystem.js';
 import { consumeRound } from '../WeaponAmmoSystem.js';
+import {
+  normalizeBossActionState,
+  reserveUltimateAfterDamage,
+} from './BossPatternController.js';
+import { resolveEnemyDamageResponsePassives } from './EnemyActionExecutor.js';
+
+const PENDING_BOSS_COUNTERS = Symbol('pendingBossCounters');
 
 export const CombatRankedEffects = {
   _consumeRankedCosts(actor, skill) {
@@ -283,8 +290,87 @@ export const CombatRankedEffects = {
     };
   },
 
+  _rankedEffectHasRemaining(effect, hitInfo) {
+    const effects = hitInfo?.skill?.effects;
+    if (!Array.isArray(effects)) return false;
+    const effectIndex = effects.indexOf(effect);
+    return effectIndex >= 0 && effectIndex < effects.length - 1;
+  },
+
+  _executeBossCounterAction({
+    enemy,
+    actionId,
+    attackerId,
+    maxPerRound,
+  }) {
+    const combat = GameState.combat;
+    const rankedEnemy = this._rankCombatantForEnemy(enemy);
+    if (!enemy
+        || (enemy.currentHp ?? 0) <= 0
+        || rankedEnemy?.dead === true
+        || (rankedEnemy && (rankedEnemy.hp ?? 0) <= 0)) {
+      return false;
+    }
+    const attacker = combat?.combatants?.[attackerId];
+    if (!attacker || attacker.dead === true || (attacker.hp ?? 0) <= 0) return false;
+
+    const definition = this._bossActionDefinition(enemy, actionId);
+    const category = this._bossActionCategory(enemy, actionId);
+    if (!definition || !category) return false;
+
+    const currentRound = combat?.roundNumber ?? 1;
+    const limit = Number.isFinite(maxPerRound)
+      ? Math.max(0, Math.floor(maxPerRound))
+      : 1;
+    const counterState = enemy._counterActionState?.round === currentRound
+      ? enemy._counterActionState
+      : { round: currentRound, counts: {} };
+    const count = counterState.counts?.[actionId] ?? 0;
+    if (count >= limit) {
+      enemy._counterActionState = counterState;
+      return false;
+    }
+
+    counterState.counts = {
+      ...(counterState.counts ?? {}),
+      [actionId]: count + 1,
+    };
+    enemy._counterActionState = counterState;
+    this._executeEnemyCommittedAction(enemy, {
+      actionId,
+      category,
+      state: 'ready',
+      targetIds: [attackerId],
+      remainingTelegraphTurns: 0,
+      hitCount: Number.isFinite(definition.hitCount)
+        ? Math.max(1, Math.floor(definition.hitCount))
+        : 1,
+      motionKey: definition.motionKey ?? actionId,
+      isCounter: true,
+    });
+    return true;
+  },
+
+  _queueOrExecuteBossCounterAction(entry, effect, hitInfo) {
+    if (hitInfo && this._rankedEffectHasRemaining(effect, hitInfo)) {
+      hitInfo[PENDING_BOSS_COUNTERS] = hitInfo[PENDING_BOSS_COUNTERS] ?? [];
+      hitInfo[PENDING_BOSS_COUNTERS].push(entry);
+      return true;
+    }
+    return this._executeBossCounterAction(entry);
+  },
+
+  _flushPendingBossCounterActions(effect, hitInfo) {
+    if (!hitInfo || this._rankedEffectHasRemaining(effect, hitInfo)) return;
+    const pending = hitInfo[PENDING_BOSS_COUNTERS];
+    if (!Array.isArray(pending) || pending.length === 0) return;
+    delete hitInfo[PENDING_BOSS_COUNTERS];
+    for (const entry of pending) this._executeBossCounterAction(entry);
+  },
+
   _applyRankedEffect(effect, actor, target, random = Math.random, hitInfo = null) {
-    switch (effect?.type) {
+    const result = (() => {
+      switch (effect?.type) {
       case 'damage':
         return this._applyRankedDamageEffect(effect, actor, target, random, hitInfo);
       case 'heal': {
@@ -358,7 +444,10 @@ export const CombatRankedEffects = {
         return { ok: true };
       default:
         return { ok: false, reason: 'invalid_effect' };
-    }
+      }
+    })();
+    this._flushPendingBossCounterActions(effect, hitInfo);
+    return result;
   },
 
   // 공용 이동(distance 'auto')의 방향 결정 — 현재 랭크에서 잠긴 공격 스킬이
@@ -383,6 +472,23 @@ export const CombatRankedEffects = {
     const gs = GameState;
     const skill = hitInfo?.skill ?? null;
     const weaponDef = hitInfo?.weaponDef ?? this._rankedSkillWeaponDef(skill);
+    const legacyEnemy = this._legacyEnemyFor(target);
+    const legacyHpBefore = legacyEnemy?.currentHp;
+    const isPatternBoss = legacyEnemy?.isBoss === true && !!legacyEnemy?.bossPattern;
+    const bossActionBeforeDamage = isPatternBoss
+      ? normalizeBossActionState(legacyEnemy._bossActionState).committedAction
+      : null;
+    const bossActionHadTelegraph = !!bossActionBeforeDamage && (
+      bossActionBeforeDamage.state === 'telegraphing'
+      || (
+        bossActionBeforeDamage.state === 'ready'
+        && legacyEnemy._telegraph?.skillId === bossActionBeforeDamage.actionId
+      )
+    );
+    const damageType = effect?.damageType
+      ?? skill?.damageType
+      ?? weaponDef?.weaponType
+      ?? null;
 
     let damage = this._rollRange(effect.value, random);
 
@@ -420,7 +526,17 @@ export const CombatRankedEffects = {
 
     damage = modifyOutgoingDamage(damage, actor);
 
-    const legacyEnemy = this._legacyEnemyFor(target);
+    if (legacyEnemy?._resistanceShift) {
+      const shift = legacyEnemy._resistanceShift;
+      const currentRound = gs.combat?.roundNumber ?? 1;
+      if (Number.isFinite(shift.untilRound) && currentRound > shift.untilRound) {
+        delete legacyEnemy._resistanceShift;
+      } else if (damageType && shift.damageType === damageType && Number.isFinite(shift.value)) {
+        const reduction = Math.max(0, Math.min(1, shift.value));
+        damage = Math.floor(damage * (1 - reduction));
+      }
+    }
+
     if (legacyEnemy) {
       const affinity = weaponAffinityMult(weaponDef?.weaponType, legacyEnemy);
       if (affinity > 1) {
@@ -451,19 +567,82 @@ export const CombatRankedEffects = {
     const result = applyDamage(target, damage, random);
     this._syncRankedTargetToLegacy(target);
 
+    if (isPatternBoss) {
+      if (legacyEnemy.currentHp > 0) {
+        legacyEnemy._bossActionState = reserveUltimateAfterDamage({
+          state: normalizeBossActionState(legacyEnemy._bossActionState),
+          hpBefore: legacyHpBefore,
+          hpAfter: legacyEnemy.currentHp,
+          maxHp: legacyEnemy.maxHp,
+          threshold: legacyEnemy.bossPattern.ultimate?.hpThreshold ?? 0.3,
+        });
+        if (legacyEnemy._bossActionState.ultimatePending
+            && !legacyEnemy._bossActionState.committedAction
+            && bossActionHadTelegraph) {
+          legacyEnemy._bossActionState = {
+            ...legacyEnemy._bossActionState,
+            committedAction: bossActionBeforeDamage,
+          };
+        }
+        if (legacyEnemy._bossActionState.ultimatePending
+            && !legacyEnemy._bossActionState.committedAction) {
+          legacyEnemy._nextIntent = this._decideNextIntent(legacyEnemy, gs.combat, gs) ?? null;
+          if (legacyEnemy._bossActionState.committedAction?.category === 'ultimate') {
+            legacyEnemy._bossActionState = {
+              ...legacyEnemy._bossActionState,
+              ultimatePending: true,
+              ultimateUsed: false,
+            };
+          }
+        }
+      } else {
+        legacyEnemy._nextIntent = null;
+      }
+    }
+
     // 조준형 예고(cancelOnHit)는 피격으로 흐트러진다 — 저격수를 때리는 것이 카운터
-    if (legacyEnemy?._telegraph && result.damage > 0) {
-      const tgSkill = (legacyEnemy.specialSkills ?? [])
-        .find(s => s.id === legacyEnemy._telegraph.skillId);
+    const activeBossTelegraph = isPatternBoss && bossActionHadTelegraph
+      ? bossActionBeforeDamage
+      : null;
+    if ((activeBossTelegraph || (!isPatternBoss && legacyEnemy?._telegraph))
+        && result.damage > 0) {
+      const tgSkill = isPatternBoss
+        ? this._bossActionDefinition(
+            legacyEnemy,
+            activeBossTelegraph.actionId,
+            activeBossTelegraph.category,
+          )
+        : (legacyEnemy.specialSkills ?? [])
+          .find(s => s.id === legacyEnemy._telegraph.skillId);
       if (tgSkill?.telegraph?.cancelOnHit) {
         legacyEnemy._telegraph = null;
-        if (!legacyEnemy._skillCooldowns) legacyEnemy._skillCooldowns = {};
-        legacyEnemy._skillCooldowns[tgSkill.id] = tgSkill.cooldown;
+        const cancelledUltimate = activeBossTelegraph?.category === 'ultimate';
+        if (activeBossTelegraph) {
+          legacyEnemy._bossActionState = {
+            ...normalizeBossActionState(legacyEnemy._bossActionState),
+            committedAction: null,
+            ...(cancelledUltimate
+              ? { ultimatePending: false, ultimateUsed: true }
+              : {}),
+          };
+        }
+        if (Number.isFinite(tgSkill.cooldown)) {
+          if (!legacyEnemy._skillCooldowns) legacyEnemy._skillCooldowns = {};
+          legacyEnemy._skillCooldowns[tgSkill.id] = tgSkill.cooldown;
+        }
         this._pushCombatLog(I18n.t('combatSys.telegraphCancelled', {
           enemy: I18n.enemyName(legacyEnemy.id, legacyEnemy.name),
           skill: tgSkill.name ?? tgSkill.id,
         }));
         legacyEnemy._nextIntent = this._decideNextIntent(legacyEnemy, gs.combat, gs) ?? null;
+        if (!cancelledUltimate
+            && legacyEnemy._bossActionState?.committedAction?.category === 'ultimate') {
+          legacyEnemy._bossActionState = {
+            ...legacyEnemy._bossActionState,
+            ultimatePending: true,
+            ultimateUsed: false,
+          };
+        }
       }
     }
 
@@ -498,6 +677,44 @@ export const CombatRankedEffects = {
     if (result.deathsDoorEntered) {
       this._pushCombatLog(`${this._rankedCombatantLabel(target)}이(가) 죽음의 문턱에 몰렸다!`);
       this._fx({ kind: 'status', targetId: target.id, statusId: 'deaths_door' });
+    }
+
+    if (legacyEnemy?.isBoss === true
+        && legacyEnemy.bossPattern
+        && legacyEnemy.currentHp > 0
+        && result.damage > 0) {
+      const currentRound = gs.combat?.roundNumber ?? 1;
+      resolveEnemyDamageResponsePassives({
+        enemy: legacyEnemy,
+        attackerId: actor?.id ?? null,
+        damageType,
+        isCounter: hitInfo?.isCounter === true
+          || skill?.isCounter === true
+          || effect?.isCounter === true,
+        services: {
+          queueCounterAction: (actionId, attackerId, maxPerRound) => (
+            this._queueOrExecuteBossCounterAction({
+              enemy: legacyEnemy,
+              actionId,
+              attackerId,
+              maxPerRound,
+            }, effect, hitInfo)
+          ),
+          setResistanceShift: (nextDamageType, duration, value) => {
+            if (!nextDamageType || !Number.isFinite(value)) return false;
+            const safeDuration = Number.isFinite(duration)
+              ? Math.max(1, Math.floor(duration))
+              : 1;
+            legacyEnemy._resistanceShift = {
+              damageType: nextDamageType,
+              duration: safeDuration,
+              value: Math.max(0, Math.min(1, value)),
+              untilRound: currentRound + safeDuration - 1,
+            };
+            return true;
+          },
+        },
+      });
     }
 
     return { ok: true };

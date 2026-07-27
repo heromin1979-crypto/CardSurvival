@@ -1,0 +1,339 @@
+// @vitest-environment happy-dom
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import GameState from '../../js/core/GameState.js';
+import SystemRegistry from '../../js/core/SystemRegistry.js';
+import CombatSystem from '../../js/systems/CombatSystem.js';
+import StatSystem from '../../js/systems/StatSystem.js';
+import SkillSystem from '../../js/systems/SkillSystem.js';
+
+function bossDefinition(overrides = {}) {
+  return {
+    id: 'boss_intent_fixture',
+    name: '의도 시험 보스',
+    icon: '👹',
+    type: 'zombie',
+    isBoss: true,
+    hp: { min: 100, max: 100 },
+    attack: { damage: [99, 99], accuracy: 1 },
+    defense: 0,
+    aiPattern: 'normal',
+    bossPattern: {
+      basicAttacks: [
+        {
+          id: 'boss_jab',
+          category: 'basic',
+          name: '찌르기',
+          damage: [7, 7],
+          accuracy: 1,
+          targetPolicy: 'player',
+          motionKey: 'boss_jab_motion',
+          effects: [],
+        },
+        {
+          id: 'boss_sweep',
+          category: 'basic',
+          name: '휩쓸기',
+          damage: [11, 11],
+          accuracy: 1,
+          targetPolicy: 'all',
+          targetCount: 2,
+          motionKey: 'boss_sweep_motion',
+          effects: [],
+        },
+      ],
+      specialSkill: {
+        id: 'boss_special',
+        category: 'special',
+        name: '특수 난타',
+        damage: [33, 33],
+        accuracy: 1,
+        cooldown: 3,
+        chance: 0.3,
+        targetPolicy: 'player',
+        motionKey: 'boss_special_motion',
+        effects: [],
+      },
+      ultimate: {
+        id: 'boss_ultimate',
+        category: 'ultimate',
+        name: '종말',
+        damage: [44, 44],
+        accuracy: 1,
+        hpThreshold: 0.3,
+        telegraphTurns: 1,
+        oncePerCombat: true,
+        targetPolicy: 'player',
+        motionKey: 'boss_ultimate_motion',
+        effects: [],
+      },
+      passives: [],
+    },
+    ...overrides,
+  };
+}
+
+function setupCombat(definition = bossDefinition(), {
+  playerHp = 100,
+  companionHp = 80,
+} = {}) {
+  document.body.innerHTML = '<div id="screen-combat"></div>';
+  GameState.player.hp = { current: playerHp, max: 100 };
+  GameState.player.characterId = 'doctor';
+  GameState.player.diseases = [];
+  GameState.player.equipped = {};
+  GameState.stats.morale = { current: 70, max: 100, decayPerTP: 0.2 };
+  GameState.flags = GameState.flags ?? {};
+  GameState.ui = { ...GameState.ui, currentState: 'combat' };
+  GameState.companions = ['npc_guard'];
+  GameState.npcs = {
+    states: {
+      npc_guard: {
+        hp: companionHp,
+        maxHp: 80,
+        isCompanion: true,
+        statusEffects: [],
+      },
+    },
+  };
+
+  const enemy = CombatSystem._instantiateEnemyFromDefinition(definition);
+  CombatSystem._setupCombat({
+    enemies: [enemy],
+    dangerLevel: 1,
+    nodeId: 'boss-intent-test',
+  });
+  return { combat: GameState.combat, enemy: GameState.combat.enemies[0] };
+}
+
+beforeEach(() => {
+  vi.restoreAllMocks();
+  SystemRegistry.register('NPCSystem', {
+    damageCompanion: (npcId, damage) => {
+      const state = GameState.npcs?.states?.[npcId];
+      if (state) state.hp = Math.max(0, state.hp - damage);
+    },
+    getCompanionCombatBonus: () => 1,
+    getNpcDef: () => null,
+  });
+});
+
+describe('보스 committed action production 결선', () => {
+  it('표시한 actionId·category·targetIds·motionKey를 난수 재추첨 없이 그대로 실행한다', () => {
+    const random = vi.spyOn(Math, 'random').mockReturnValue(0.99);
+    const { enemy } = setupCombat();
+    const shownIntent = enemy._nextIntent;
+
+    expect(shownIntent).toMatchObject({
+      actionId: 'boss_sweep',
+      category: 'basic',
+      targetIds: ['player', 'npc_guard'],
+      motionKey: 'boss_sweep_motion',
+    });
+    expect(enemy._bossActionState?.committedAction).toMatchObject({
+      actionId: shownIntent.actionId,
+      category: shownIntent.category,
+      targetIds: shownIntent.targetIds,
+      motionKey: shownIntent.motionKey,
+    });
+
+    const executeSpy = vi.spyOn(CombatSystem, '_executeEnemyCommittedAction');
+    random.mockReturnValue(0);
+    CombatSystem._runSingleEnemyTurn(0);
+
+    expect(executeSpy).toHaveBeenCalledTimes(1);
+    expect(executeSpy.mock.calls[0][1]).toMatchObject({
+      actionId: shownIntent.actionId,
+      category: shownIntent.category,
+      targetIds: shownIntent.targetIds,
+      motionKey: shownIntent.motionKey,
+    });
+    expect(GameState.player.hp.current).toBe(89);
+    expect(GameState.npcs.states.npc_guard.hp).toBe(69);
+  });
+
+  it('selfHeal은 ranked·legacy HP를 함께 회복하고 partyDamage는 생존 아군마다 독립 적용한다', () => {
+    const definition = bossDefinition();
+    definition.bossPattern.basicAttacks[0] = {
+      id: 'boss_recovering_wave',
+      category: 'basic',
+      name: '회복 파동',
+      damage: [0, 0],
+      accuracy: 1,
+      targetPolicy: 'player',
+      motionKey: 'boss_recovering_wave',
+      effects: [
+        { type: 'selfHeal', value: [20, 20] },
+        { type: 'partyDamage', value: [6, 6] },
+      ],
+    };
+    const { combat, enemy } = setupCombat(definition);
+    enemy.currentHp = 40;
+    combat.combatants['enemy:0'].hp = 40;
+
+    CombatSystem._executeEnemyCommittedAction(enemy, {
+      actionId: 'boss_recovering_wave',
+      category: 'basic',
+      state: 'ready',
+      targetIds: ['player'],
+      remainingTelegraphTurns: 0,
+      hitCount: 1,
+      motionKey: 'boss_recovering_wave',
+    });
+
+    expect(enemy.currentHp).toBe(60);
+    expect(combat.combatants['enemy:0'].hp).toBe(60);
+    expect(GameState.player.hp.current).toBe(94);
+    expect(combat.combatants.player.hp).toBe(94);
+    expect(GameState.npcs.states.npc_guard.hp).toBe(74);
+    expect(combat.combatants.npc_guard.hp).toBe(74);
+  });
+
+  it('armorPiercing은 방어 감소율 일부만 무시하고 executeThreshold는 보너스 배율만 적용한다', () => {
+    const definition = bossDefinition();
+    definition.bossPattern.basicAttacks[0] = {
+      id: 'boss_execute',
+      category: 'basic',
+      name: '처형 시도',
+      damage: [20, 20],
+      accuracy: 1,
+      armorPiercing: 0.5,
+      executeThreshold: 0.5,
+      executeBonusMultiplier: 2,
+      damageType: 'chemical',
+      targetPolicy: 'all',
+      targetCount: 2,
+      motionKey: 'boss_execute',
+      effects: [],
+    };
+    vi.spyOn(StatSystem, 'getArmorEffects').mockReturnValue({
+      damageReduction: 0.5,
+      critReduction: 0,
+    });
+    vi.spyOn(SkillSystem, 'getBonus').mockImplementation(
+      (_skillId, bonusId) => bonusId === 'damageReduction' ? 0 : 1,
+    );
+    const { combat, enemy } = setupCombat(definition, {
+      playerHp: 40,
+      companionHp: 32,
+    });
+    combat.combatants.npc_guard.damageReduction = 0.5;
+
+    CombatSystem._executeEnemyCommittedAction(enemy, {
+      actionId: 'boss_execute',
+      category: 'basic',
+      state: 'ready',
+      targetIds: ['player', 'npc_guard'],
+      remainingTelegraphTurns: 0,
+      hitCount: 1,
+      motionKey: 'boss_execute',
+    });
+
+    // 20 × execute 2 × (1 - 방어 0.5 × 관통 후 잔여 0.5) = 30.
+    expect(GameState.player.hp.current).toBe(10);
+    expect(GameState.npcs.states.npc_guard.hp).toBe(2);
+    expect(combat.combatants.player.dead).toBe(false);
+    expect(combat.combatants.npc_guard.dead).toBe(false);
+  });
+});
+
+describe('보스 피격 반응 passive production 결선', () => {
+  it('원 공격 피해 뒤 생존 공격자에게 라운드당 한 번만 isCounter 행동을 실행하고 최근 속성 저항을 갱신한다', () => {
+    const definition = bossDefinition();
+    definition.bossPattern.basicAttacks[0] = {
+      id: 'toxic_blood_counter',
+      category: 'basic',
+      name: '독혈 반격',
+      damage: [4, 4],
+      accuracy: 1,
+      targetPolicy: 'frontmost',
+      motionKey: 'toxic_blood_counter',
+      effects: [],
+    };
+    definition.bossPattern.passives = [
+      { type: 'counterAttack', actionId: 'toxic_blood_counter', maxPerRound: 1 },
+      {
+        type: 'resistanceShift',
+        source: 'lastDamageType',
+        duration: 2,
+        value: 0.5,
+      },
+    ];
+    const { combat, enemy } = setupCombat(definition);
+    const actor = combat.combatants.npc_guard;
+    const target = combat.combatants['enemy:0'];
+    const damageEffect = { type: 'damage', value: [10, 10] };
+    const statusEffect = {
+      type: 'status',
+      status: {
+        id: 'counter_probe_mark',
+        name: '반격 순서 표식',
+        duration: 1,
+        effect: {},
+      },
+    };
+    const hitInfo = {
+      hit: true,
+      crit: false,
+      skill: {
+        id: 'companion_probe',
+        damageType: 'fire',
+        effects: [damageEffect, statusEffect],
+      },
+    };
+    const executeCounter = CombatSystem._executeEnemyCommittedAction.bind(CombatSystem);
+    let statusPresentWhenCounterRuns = false;
+    const counterSpy = vi.spyOn(CombatSystem, '_executeEnemyCommittedAction')
+      .mockImplementation((...args) => {
+        statusPresentWhenCounterRuns = (enemy._statusEffects ?? [])
+          .some(status => status.id === 'counter_probe_mark');
+        return executeCounter(...args);
+      });
+
+    CombatSystem._applyRankedEffect(
+      damageEffect,
+      actor,
+      target,
+      () => 0,
+      hitInfo,
+    );
+    expect(counterSpy).not.toHaveBeenCalled();
+    CombatSystem._applyRankedEffect(statusEffect, actor, target, () => 0, hitInfo);
+
+    CombatSystem._applyRankedEffect(
+      damageEffect,
+      actor,
+      target,
+      () => 0,
+      hitInfo,
+    );
+    CombatSystem._applyRankedEffect(statusEffect, actor, target, () => 0, hitInfo);
+
+    expect(counterSpy).toHaveBeenCalledTimes(1);
+    expect(statusPresentWhenCounterRuns).toBe(true);
+    expect(counterSpy.mock.calls[0][1]).toMatchObject({
+      actionId: 'toxic_blood_counter',
+      targetIds: ['npc_guard'],
+      isCounter: true,
+    });
+    expect(GameState.npcs.states.npc_guard.hp).toBe(76);
+    expect(enemy._resistanceShift).toMatchObject({
+      damageType: 'fire',
+      duration: 2,
+      value: 0.5,
+    });
+    // 첫 타격 10, 같은 속성의 두 번째 타격은 새 저항 50%가 적용된다.
+    expect(enemy.currentHp).toBe(85);
+
+    combat.roundNumber += 1;
+    const counterHitInfo = { ...hitInfo, isCounter: true };
+    CombatSystem._applyRankedEffect(
+      damageEffect,
+      actor,
+      target,
+      () => 0,
+      counterHitInfo,
+    );
+    CombatSystem._applyRankedEffect(statusEffect, actor, target, () => 0, counterHitInfo);
+    expect(counterSpy).toHaveBeenCalledTimes(1);
+  });
+});
