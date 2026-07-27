@@ -160,6 +160,9 @@ describe('Combat focused UI', () => {
     expect(skillBar).not.toBeNull();
     expect(skillBar.dataset.skillCount).toBe('6');
     expect(skillBar.querySelectorAll('.combat-skill-button')).toHaveLength(6);
+    expect([...skillBar.querySelectorAll('.combat-skill-button')]
+      .map(button => button.dataset.skillId))
+      .toEqual(['s1', 's2', 's3', 's4', 's5', 's6']);
   });
 
   it('renders combat utility commands in a rail separate from skill cards', () => {
@@ -176,6 +179,7 @@ describe('Combat focused UI', () => {
     const resultScreen = document.createElement('div');
     const previousResultElement = CombatResult._el;
     const previousRewards = GameState.combat.rewards;
+    const previousRewardItems = GameState.combat.rewardItems;
     const previousXpGained = GameState.combat.xpGained;
     const previousPlayerXp = GameState.player.xp;
     document.body.append(resultScreen);
@@ -183,6 +187,7 @@ describe('Combat focused UI', () => {
     try {
       CombatResult._el = resultScreen;
       GameState.combat.rewards = [];
+      GameState.combat.rewardItems = [];
       GameState.combat.xpGained = 0;
       GameState.player.xp = 0;
       CombatResult._render({ outcome: 'fled', nodeId: 'mapo' });
@@ -198,6 +203,7 @@ describe('Combat focused UI', () => {
     } finally {
       CombatResult._el = previousResultElement;
       GameState.combat.rewards = previousRewards;
+      GameState.combat.rewardItems = previousRewardItems;
       GameState.combat.xpGained = previousXpGained;
       GameState.player.xp = previousPlayerXp;
       resultScreen.remove();
@@ -208,6 +214,7 @@ describe('Combat focused UI', () => {
     const resultScreen = document.createElement('div');
     const previousResultElement = CombatResult._el;
     const previousRewards = GameState.combat.rewards;
+    const previousRewardItems = GameState.combat.rewardItems;
     const previousXpGained = GameState.combat.xpGained;
     const previousPlayerXp = GameState.player.xp;
     const previousRewardCard = GameState.cards.reward_bandage;
@@ -220,7 +227,9 @@ describe('Combat focused UI', () => {
         definitionId: 'bandage',
         quantity: 3,
       };
-      GameState.combat.rewards = ['reward_bandage'];
+      GameState.combat.rewards = [];
+      GameState.combat.rewardItems = [];
+      CombatSystem._recordReward('reward_bandage', 'bandage', 1);
       GameState.combat.xpGained = 25;
       GameState.player.xp = 125;
       CombatResult._render({ outcome: 'victory', nodeId: 'mapo' });
@@ -231,7 +240,10 @@ describe('Combat focused UI', () => {
       expect(resultScreen.querySelector('[data-reward-id="reward_bandage"] .result-loot-name')?.textContent)
         .toContain('붕대');
       expect(resultScreen.querySelector('[data-reward-id="reward_bandage"] .result-loot-qty')?.textContent)
-        .toBe('x3');
+        .toBe('x1');
+      expect(resultScreen.querySelector('.result-title')).toBe(document.activeElement);
+      expect(resultScreen.querySelector('.result-xp-track')?.getAttribute('aria-labelledby'))
+        .toBe('combat-result-xp-label');
     } finally {
       if (CombatResult._xpTimer) {
         clearInterval(CombatResult._xpTimer);
@@ -239,6 +251,7 @@ describe('Combat focused UI', () => {
       }
       CombatResult._el = previousResultElement;
       GameState.combat.rewards = previousRewards;
+      GameState.combat.rewardItems = previousRewardItems;
       GameState.combat.xpGained = previousXpGained;
       GameState.player.xp = previousPlayerXp;
       if (previousRewardCard === undefined) {

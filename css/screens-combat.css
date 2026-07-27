@@ -3505,6 +3505,16 @@
 }
 
 @media (max-width: 680px), (max-height: 620px) {
+  #app:has(#screen-combat-result.active) {
+    width: 100vw !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    position: fixed !important;
+    inset: 0 !important;
+    transform: none !important;
+    transform-origin: 0 0 !important;
+  }
+
   #screen-combat-result {
     justify-content: flex-start;
     padding: var(--gap-md);

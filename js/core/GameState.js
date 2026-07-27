@@ -202,6 +202,7 @@ const GameState = {
     log:          [],
     outcome:      null,   // 'victory'|'defeat'|'fled'
     rewards:      [],
+    rewardItems:   [],
     round:        0,
     xpGained:     0,
     lastHit:      null,   // { target:'player'|'enemy', damage, isCrit }

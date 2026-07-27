@@ -43,17 +43,27 @@ const CombatResult = {
     const title  = titles[outcome] ?? I18n.t('combatResult.ended');
 
     const rewards  = gs.combat.rewards ?? [];
+    const rewardItems = (gs.combat.rewardItems?.length ?? 0) > 0
+      ? gs.combat.rewardItems
+      : rewards.map(instanceId => {
+          const inst = gs.cards[instanceId];
+          return {
+            instanceId,
+            definitionId: inst?.definitionId,
+            quantity: inst?.quantity ?? 1,
+          };
+        });
     const xpGained = gs.combat.xpGained ?? 0;
     const playerXp = gs.player.xp ?? 0;
-    const lootHtml = rewards.length
+    const lootHtml = rewardItems.length
       ? `<div class="result-loot-grid">
-          ${rewards.map(id => {
-            const def  = gs.getCardDef(id);
-            const inst = gs.cards[id];
-            return `<div class="result-loot-card" data-reward-id="${id}">
+          ${rewardItems.map(reward => {
+            const id  = reward.instanceId;
+            const def = gs.getCardDef(id);
+            return `<div class="result-loot-card" data-reward-id="${id}" data-reward-definition-id="${reward.definitionId}">
               <div class="result-loot-icon">${def?.icon ?? '📦'}</div>
               <div class="result-loot-name">${def?.name ?? I18n.t('combatResult.item')}</div>
-              ${(inst?.quantity > 1) ? `<div class="result-loot-qty">x${inst.quantity}</div>` : ''}
+              <div class="result-loot-qty">x${reward.quantity}</div>
             </div>`;
           }).join('')}
         </div>`
@@ -61,16 +71,16 @@ const CombatResult = {
 
     const xpHtml = (outcome === 'victory' && xpGained > 0)
       ? `<div class="result-xp-section">
-          <div class="result-xp-label">${I18n.t('combatResult.xpLabel')}: <span id="xp-counter">0</span> / +${xpGained} XP</div>
-          <progress class="result-xp-track" id="xp-fill" max="${xpGained}" value="0"></progress>
+          <div class="result-xp-label" id="combat-result-xp-label">${I18n.t('combatResult.xpLabel')}: <span id="xp-counter">0</span> / +${xpGained} XP</div>
+          <progress class="result-xp-track" id="xp-fill" max="${xpGained}" value="0" aria-labelledby="combat-result-xp-label"></progress>
         </div>`
       : '';
 
     this._el.innerHTML = `
-      <div class="combat-result-shell" data-outcome="${outcome}">
+      <div class="combat-result-shell" data-outcome="${outcome}" role="region" aria-labelledby="combat-result-title">
         <header class="combat-result-header">
           <div class="combat-result-header-rule" aria-hidden="true"></div>
-          <h1 class="result-title">${title}</h1>
+          <h1 class="result-title" id="combat-result-title" tabindex="-1">${title}</h1>
           <div class="combat-result-header-rule" aria-hidden="true"></div>
         </header>
         <div class="combat-result-content">
@@ -102,6 +112,7 @@ const CombatResult = {
       ExploreSystem.arriveAfterCombat(returnNodeId);
       StateMachine.transition('main');
     });
+    this._el.querySelector('.result-title')?.focus({ preventScroll: true });
   },
 
   _animateXp(gained) {

@@ -6,6 +6,7 @@ const port = Number(process.env.COMBAT_E2E_PORT ?? 43179);
 const baseUrl = `http://127.0.0.1:${port}`;
 const defaultScreenshotPath = path.resolve('tmp/combat-screen-default.png');
 const selectedScreenshotPath = path.resolve('tmp/combat-screen-selected.png');
+const mobileResultScreenshotPath = path.resolve('tmp/combat-result-product-mobile.png');
 
 async function loadPlaywright() {
   try {
@@ -184,7 +185,53 @@ async function main() {
       return total < previous || combat.log.some(line => line.includes('빗나감') || line.includes('회피'));
     }, hpBefore);
 
+    const mobilePage = await browser.newPage({ viewport: { width: 390, height: 844 } });
+    await mobilePage.goto(`${baseUrl}/index.html`, { waitUntil: 'networkidle' });
+    await mobilePage.waitForSelector('#loading-overlay', { state: 'detached' });
+    await mobilePage.evaluate(async () => {
+      const [{ default: EventBus }, { default: GameState }] = await Promise.all([
+        import('/js/core/EventBus.js'),
+        import('/js/core/GameState.js'),
+      ]);
+      GameState.player.hp = { current: 72, max: 100 };
+      GameState.player.xp = 145;
+      GameState.combat.outcome = 'victory';
+      GameState.combat.xpGained = 25;
+      GameState.combat.rewards = [];
+      GameState.combat.rewardItems = [];
+      GameState.ui.currentState = 'combat_result';
+      EventBus.emit('stateTransition', {
+        from: 'combat',
+        to: 'combat_result',
+        data: { outcome: 'victory', nodeId: 'mapo' },
+      });
+      window.dispatchEvent(new Event('resize'));
+    });
+    await mobilePage.waitForSelector('#screen-combat-result.active .combat-result-shell');
+    const mobileResultLayout = await mobilePage.evaluate(() => {
+      const app = document.querySelector('#app').getBoundingClientRect();
+      const shell = document.querySelector('.combat-result-shell').getBoundingClientRect();
+      return {
+        viewport: { width: innerWidth, height: innerHeight },
+        app: { left: app.left, top: app.top, width: app.width, height: app.height },
+        shell: { left: shell.left, right: shell.right, width: shell.width, height: shell.height },
+        horizontalOverflow: document.documentElement.scrollWidth > innerWidth,
+      };
+    });
+    if (
+      mobileResultLayout.app.width < 380
+      || mobileResultLayout.app.height < 820
+      || mobileResultLayout.shell.width < 340
+      || mobileResultLayout.shell.right > mobileResultLayout.viewport.width
+      || mobileResultLayout.horizontalOverflow
+    ) {
+      throw new Error(`Product mobile result did not use the native viewport: ${JSON.stringify(mobileResultLayout)}`);
+    }
+    await mobilePage.screenshot({ path: mobileResultScreenshotPath, fullPage: true });
+    await mobilePage.close();
+
     console.log(`combat-screen:ok default=${defaultScreenshotPath} selected=${selectedScreenshotPath}`);
+    console.log(`combat-result-mobile:ok screenshot=${mobileResultScreenshotPath}`);
   } finally {
     if (browser) await browser.close();
     server.kill();

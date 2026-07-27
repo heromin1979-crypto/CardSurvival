@@ -75,7 +75,7 @@ const CombatSystem = {
           GameState.combat = {
             active: true, enemies: data?.enemies ?? [], targetIndex: 0,
             playerAction: null, log: ['⚠️ 전투 초기화 오류: ' + (err?.message ?? err)],
-            outcome: null, rewards: [], nodeId: data?.nodeId ?? null,
+            outcome: null, rewards: [], rewardItems: [], nodeId: data?.nodeId ?? null,
             dangerLevel: data?.dangerLevel ?? 2, round: 0, xpGained: 0,
             lastHit: null, playerStatus: [], enemyStatus: [], fxQueue: [],
             playerRank: 'front',
@@ -119,6 +119,7 @@ const CombatSystem = {
       log:          [encounterLabel],
       outcome:      null,
       rewards:      [],
+      rewardItems:   [],
       nodeId:       data.nodeId ?? null,
       dangerLevel:  dangerLevel,
       round:        0,
@@ -1924,6 +1925,22 @@ const CombatSystem = {
 
   // ── 적 사망 처리 (개별) ────────────────────────────────
 
+  _recordReward(instanceId, definitionId, quantity) {
+    const combat = GameState.combat;
+    if (!combat || !GameState.cards[instanceId]) return;
+
+    combat.rewards ??= [];
+    if (!combat.rewards.includes(instanceId)) combat.rewards.push(instanceId);
+
+    combat.rewardItems ??= [];
+    const existing = combat.rewardItems.find(item => item.definitionId === definitionId);
+    if (existing) {
+      existing.quantity += quantity;
+      return;
+    }
+    combat.rewardItems.push({ instanceId, definitionId, quantity });
+  },
+
   _onEnemyKilled(enemy) {
     if (!enemy || enemy._killProcessed) return;
     enemy._killProcessed = true;
@@ -2001,9 +2018,7 @@ const CombatSystem = {
           const placed = gs.placeCardInRow(inst.instanceId, 'middle');
           if (placed) {
             const actualId = placed.instanceId ?? inst.instanceId;
-            if (gs.cards[actualId] && !gs.combat.rewards.includes(actualId)) {
-              gs.combat.rewards.push(actualId);
-            }
+            this._recordReward(actualId, lootEntry.definitionId, qty);
           } else {
             // 바닥/가방 모두 차면 pendingLoot에 보관
             gs.pendingLoot = [...(gs.pendingLoot ?? []), {
@@ -2028,9 +2043,7 @@ const CombatSystem = {
           const placed = gs.placeCardInRow(medInst.instanceId, 'middle');
           if (placed) {
             const actualId = placed.instanceId ?? medInst.instanceId;
-            if (gs.cards[actualId] && !gs.combat.rewards.includes(actualId)) {
-              gs.combat.rewards.push(actualId);
-            }
+            this._recordReward(actualId, medId, 1);
           } else {
             gs.pendingLoot = [...(gs.pendingLoot ?? []), {
               definitionId:  medId,
