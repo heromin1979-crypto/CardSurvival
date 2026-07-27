@@ -74,15 +74,53 @@ async function main() {
 
     const visualContracts = await page.evaluate(() => {
       const focused = document.querySelector('.combat-focused');
+      const stageFloor = document.querySelector('.combat-stage-floor');
       const markers = [...document.querySelectorAll('.combat-rank-marker')];
       const medallion = document.querySelector('.combat-round-medallion');
       const icons = [...document.querySelectorAll('.skill-icon-img')];
+      const actionCards = [...document.querySelectorAll('.combat-action-card')];
+      const protectedElements = [
+        ...document.querySelectorAll('.combatant-piece'),
+        ...document.querySelectorAll('.combat-status-card'),
+        document.querySelector('.combat-event-ticker'),
+      ].filter(Boolean);
+      const rect = element => {
+        const bounds = element.getBoundingClientRect();
+        return {
+          left: bounds.left,
+          right: bounds.right,
+          top: bounds.top,
+          bottom: bounds.bottom,
+          width: bounds.width,
+          height: bounds.height,
+        };
+      };
+      const overlaps = (a, b) => (
+        a.left < b.right
+        && a.right > b.left
+        && a.top < b.bottom
+        && a.bottom > b.top
+      );
+      const markerBoxes = markers.map(rect);
+      const protectedBoxes = protectedElements.map(rect);
       return {
         cardFrameImage: getComputedStyle(focused).getPropertyValue('--combat-card-frame-image').trim(),
+        actionCardCount: actionCards.length,
+        actionCardBackgrounds: actionCards.map(card => getComputedStyle(card).backgroundImage),
+        stageFloorDisplay: getComputedStyle(stageFloor).display,
+        stageFloorVisibility: getComputedStyle(stageFloor).visibility,
+        stageFloorOpacity: Number(getComputedStyle(stageFloor).opacity),
         markerDisplays: markers.map(marker => getComputedStyle(marker).display),
         markerLabels: markers.map(marker => marker.textContent.trim()),
+        markerBoxes,
+        markerOverlapCount: markerBoxes.reduce(
+          (count, markerBox) => count + protectedBoxes.filter(box => overlaps(markerBox, box)).length,
+          0,
+        ),
         medallionBefore: getComputedStyle(medallion, '::before').content,
         medallionAfter: getComputedStyle(medallion, '::after').content,
+        iconCount: icons.length,
+        iconLoaded: icons.map(icon => icon.complete && icon.naturalWidth > 0),
         iconBlendModes: [...new Set(icons.map(icon => getComputedStyle(icon).mixBlendMode))],
       };
     });
@@ -90,10 +128,17 @@ async function main() {
       throw new Error(`Focused wrapper still exposes a baked card frame: ${visualContracts.cardFrameImage}`);
     }
     if (
-      visualContracts.markerLabels.join(',') !== '1,2,3,4'
+      visualContracts.stageFloorDisplay === 'none'
+      || visualContracts.stageFloorVisibility !== 'visible'
+      || visualContracts.stageFloorOpacity <= 0
+      || visualContracts.markerLabels.join(',') !== '1,2,3,4'
       || visualContracts.markerDisplays.some(display => display === 'none')
+      || visualContracts.markerBoxes.some(box => box.width <= 0 || box.height <= 0)
     ) {
       throw new Error(`Rank guides are not visible in order: ${JSON.stringify(visualContracts)}`);
+    }
+    if (visualContracts.markerOverlapCount > 0) {
+      throw new Error(`Rank guides overlap combatants or HUD: ${JSON.stringify(visualContracts)}`);
     }
     if (
       visualContracts.medallionBefore !== 'none'
@@ -101,8 +146,18 @@ async function main() {
     ) {
       throw new Error(`Round medallion connector lines remain: ${JSON.stringify(visualContracts)}`);
     }
-    if (visualContracts.iconBlendModes.some(mode => mode !== 'screen')) {
+    if (
+      visualContracts.iconCount === 0
+      || visualContracts.iconLoaded.some(loaded => !loaded)
+      || visualContracts.iconBlendModes.some(mode => mode !== 'screen')
+    ) {
       throw new Error(`Skill icons do not use screen blending: ${visualContracts.iconBlendModes.join(',')}`);
+    }
+    if (
+      visualContracts.actionCardCount === 0
+      || visualContracts.actionCardBackgrounds.some(background => background.includes('url('))
+    ) {
+      throw new Error(`Action cards still use a baked image: ${JSON.stringify(visualContracts.actionCardBackgrounds)}`);
     }
 
     await mkdir(path.dirname(defaultScreenshotPath), { recursive: true });
