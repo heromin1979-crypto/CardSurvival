@@ -5,18 +5,21 @@ import {
   COMBAT_SKILLS,
   COMPANION_COMBAT_LOADOUTS,
 } from '../js/data/combatSkills.js';
-import { COMPANION_TACTICS } from '../js/data/companionTactics.js';
 import ENEMIES, { instantiateEnemy } from '../js/data/enemies.js';
 import GameState from '../js/core/GameState.js';
 import SystemRegistry from '../js/core/SystemRegistry.js';
 import CombatSystem from '../js/systems/CombatSystem.js';
 import NPCSystem from '../js/systems/NPCSystem.js';
 import { advanceEnemyAction } from '../js/systems/combat/EnemyActionPlanner.js';
+import {
+  getRank,
+  validateSkillPosition,
+} from '../js/systems/combat/FormationSystem.js';
 import { weaponAffinityMult } from '../js/systems/combat/CombatResolution.js';
 
 const DEFAULT_RUNS = 500;
 const DEFAULT_SEED = 20260727;
-const TURNS_PER_RUN = 3;
+const SKILLS_PER_COMPANION = 3;
 const HARNESS_HP = 1_000_000;
 const MAX_ENEMY_STEPS = 10;
 
@@ -70,13 +73,6 @@ const GAMESTATE_SANDBOX_KEYS = Object.freeze([
   'location',
   'combat',
 ]);
-const NON_STACKING_SUPPORT_IDS = new Set([
-  'block',
-  'focus',
-  'marked',
-  'vulnerable',
-  'rooted',
-]);
 const COMPANION_MOTION_KEYS = new Set([
   'melee',
   'ranged',
@@ -104,18 +100,19 @@ const REPRESENTATIVE_COMBOS = new Set([
   'npc_dog/zombie_horde',
 ]);
 const METRIC_LABELS = {
+  invalidManualTurn: '무효 수동 동료 턴',
   invalidSkillSelections: '무효 기술 선택',
   invalidTargetSelections: '무효 대상 선택',
   invalidPositionSelections: '무효 위치 선택',
-  duplicateSupportWaste: '중복 지원 효과 낭비',
-  nonHealerHealing: '치료 미보유 동료의 치유',
+  commandFailures: '수동 명령 실행 실패',
+  duplicateCostCooldownConsumption: '비용·쿨다운 중복 소비',
+  nonHealingSkillHealing: '비치료 기술의 치유',
   intentActionIdMismatches: 'UI 의도/실행 행동 ID 불일치',
   intentTargetMismatches: 'UI 의도/실행 대상 불일치',
   companionMultiHitLoss: '동료 대상 연속 공격 횟수 손실',
   companionStatusLoss: '동료 대상 상태이상 손실',
   declaredButUnexecutedCounters: '선언됐지만 실행되지 않는 카운터',
   invalidMotionKeys: '유효하지 않은 motionKey',
-  productionDefaultStanceMismatches: 'production 기본 동료 자세 불일치',
 };
 
 function parseArgs(argv) {
@@ -391,27 +388,31 @@ function createProductionCombat(companionId, enemyId, random) {
   return enemy;
 }
 
-function stanceForRole(role, fallback) {
-  if (role === 'damage') return 'attack';
-  if (role === 'heal') return 'heal';
-  if (role === 'guard') return 'hold';
-  if (['control', 'support', 'food', 'ration'].includes(role)) return 'support';
-  return fallback;
+function targetIdForManualSkill(skill, state) {
+  if (skill.target?.selfOnly) return state.companion.id;
+  if (skill.target?.side === 'enemy') return state.enemy.id;
+  return state.lowestHpAlly.id;
 }
 
-function configureProductionTacticalSituation(companionId, desiredSkillId) {
+function formationIndex(side, rank) {
+  return side === 'ally' ? 4 - rank : rank - 1;
+}
+
+function placeAtRank(formation, side, combatantId, rank) {
+  formation[side][formationIndex(side, rank)] = combatantId;
+}
+
+function configureManualSkillState(companionId, skillId) {
   const combat = GameState.combat;
-  const desiredSkill = COMBAT_SKILLS[desiredSkillId];
+  const skill = COMBAT_SKILLS[skillId];
   const player = combat.combatants.player;
   const companion = combat.combatants[companionId];
   const enemy = combat.combatants['enemy:0'];
   const npcState = GameState.npcs.states[companionId];
 
-  combat.formations.ally = [null, null, companionId, 'player'];
-  combat.formations.enemy = ['enemy:0', null, null, null];
-  player.hp = HARNESS_HP;
+  player.hp = Math.floor(HARNESS_HP * 0.45);
   player.maxHp = HARNESS_HP;
-  player.stress = 0;
+  player.stress = 10;
   player.dead = false;
   player.tokens = {};
   player.statusEffects = [];
@@ -423,55 +424,58 @@ function configureProductionTacticalSituation(companionId, desiredSkillId) {
   companion.statusEffects = [];
   enemy.tokens = {};
   enemy.statusEffects = [];
-  GameState.player.hp = { current: HARNESS_HP, max: HARNESS_HP };
+  GameState.player.hp = { current: player.hp, max: HARNESS_HP };
   npcState.hp = HARNESS_HP;
   npcState.maxHp = HARNESS_HP;
   npcState.statusEffects = [];
+  npcState.skillCooldowns = {};
 
-  const declaredSkillIds = COMPANION_COMBAT_LOADOUTS[companionId];
-  npcState.skillCooldowns = Object.fromEntries(
-    [...declaredSkillIds, 'guard', 'reposition']
-      .map(skillId => [skillId, skillId === desiredSkillId ? 0 : 2]),
-  );
-
-  if (['heal', 'guard'].includes(desiredSkill?.tacticalRole)) {
-    player.hp = Math.floor(HARNESS_HP * 0.45);
-    GameState.player.hp.current = player.hp;
+  const state = {
+    companion,
+    enemy,
+    lowestHpAlly: player,
+  };
+  const targetId = targetIdForManualSkill(skill, state);
+  const target = combat.combatants[targetId];
+  const sharedSelfRank = skill.target?.selfOnly
+    ? skill.usableFrom?.find(rank => skill.target?.ranks?.includes(rank))
+    : null;
+  const actorRank = sharedSelfRank ?? skill.usableFrom?.[0];
+  const targetRank = skill.target?.selfOnly
+    ? actorRank
+    : skill.target?.ranks?.find(rank => (
+        skill.target.side !== 'ally' || rank !== actorRank
+      ));
+  const formations = {
+    ally: [null, null, null, null],
+    enemy: [null, null, null, null],
+  };
+  placeAtRank(formations, 'ally', companionId, actorRank);
+  if (targetId === 'player') {
+    placeAtRank(formations, 'ally', 'player', targetRank);
+  } else if (targetId === 'enemy:0') {
+    placeAtRank(formations, 'enemy', 'enemy:0', targetRank);
+    const playerRank = [1, 2, 3, 4].find(rank => rank !== actorRank);
+    placeAtRank(formations, 'ally', 'player', playerRank);
+  } else {
+    const playerRank = [1, 2, 3, 4].find(rank => rank !== actorRank);
+    placeAtRank(formations, 'ally', 'player', playerRank);
+    placeAtRank(formations, 'enemy', 'enemy:0', 1);
   }
-  if (['support', 'food', 'ration'].includes(desiredSkill?.tacticalRole)) {
-    player.stress = 10;
+  if (targetId !== 'enemy:0' && !formations.enemy.includes('enemy:0')) {
+    placeAtRank(formations, 'enemy', 'enemy:0', 1);
+  }
+  combat.formations = formations;
+  for (const combatant of [player, companion, enemy]) {
+    combatant.rank = getRank(formations, combatant.id);
   }
 
-  return desiredSkill;
-}
-
-function repeatedSupportEffectIds(skill) {
-  const ids = [];
-  for (const effect of skill?.effects ?? []) {
-    if (effect.type === 'guard') ids.push('block');
-    if (effect.type === 'token' && NON_STACKING_SUPPORT_IDS.has(effect.token)) {
-      ids.push(effect.token);
-    }
-    if (
-      effect.type === 'status'
-      && NON_STACKING_SUPPORT_IDS.has(effect.status?.id ?? effect.id)
-    ) {
-      ids.push(effect.status?.id ?? effect.id);
-    }
-  }
-  return ids;
-}
-
-function supportWouldBeWasted(skill, target) {
-  if (['damage', 'heal'].includes(skill?.tacticalRole)) return false;
-  return repeatedSupportEffectIds(skill).some(effectId => (
-    (target?.tokens?.[effectId] ?? 0) > 0
-    || target?.statusEffects?.some(status => status.id === effectId)
-  ));
+  return { skill, target, targetId };
 }
 
 function categorizeCommandFailure(metrics, reason) {
-  metrics.invalidSkillSelections++;
+  metrics.commandFailures++;
+  if (reason === 'invalid_skill') metrics.invalidSkillSelections++;
   if (['invalid_target', 'invalid_target_side'].includes(reason)) {
     metrics.invalidTargetSelections++;
   }
@@ -493,76 +497,114 @@ function allyHpTotal(companionId) {
 
 function activateCompanion(companionId) {
   const combat = GameState.combat;
-  const companionIndex = combat.turnQueue.findIndex(entry => (
+  const companionEntry = combat.turnQueue.find(entry => (
     entry.type === 'companion' && entry.id === companionId
   ));
-  combat.roundNumber = (combat.roundNumber ?? 0) + 1;
-  combat.activeIdx = companionIndex;
-  combat.activeTurnIndex = companionIndex;
-  CombatSystem.beginActiveTurn();
+  const playerEntry = combat.turnQueue.find(entry => entry.type === 'player');
+  const enemyEntries = combat.turnQueue.filter(entry => entry.type === 'enemy');
+  combat.turnQueue = [companionEntry, playerEntry, ...enemyEntries].filter(Boolean);
+  combat.activeIdx = 0;
+  combat.activeTurnIndex = 0;
 }
 
-function runProductionCompanionTurn({
+function commandResourceSnapshot(companionId, skillId) {
+  return {
+    cooldown: GameState.npcs.states[companionId]?.skillCooldowns?.[skillId] ?? 0,
+    stamina: GameState.stats?.stamina?.current ?? 0,
+    noise: GameState.noise?.level ?? 0,
+  };
+}
+
+function hasDuplicateCostOrCooldownConsumption({
+  before,
+  afterSelection,
+  afterConfirmation,
+  skill,
+}) {
+  if (JSON.stringify(before) !== JSON.stringify(afterSelection)) return true;
+  const expectedCooldown = Number.isFinite(skill?.cooldown)
+    ? Math.max(0, Math.floor(skill.cooldown))
+    : 0;
+  const expectedNoise = before.noise + (skill?.costs?.noise ?? 0);
+  return (
+    afterConfirmation.cooldown !== expectedCooldown
+    || afterConfirmation.stamina !== before.stamina
+    || afterConfirmation.noise !== expectedNoise
+  );
+}
+
+function runManualCompanionTurn({
   companionId,
-  desiredSkillId,
+  skillId,
   metrics,
   distribution,
 }) {
-  const desiredSkill = configureProductionTacticalSituation(
+  const manualSkill = distribution.skills[skillId];
+  manualSkill.attempts++;
+  distribution.manualAttempts++;
+  const { skill, target, targetId } = configureManualSkillState(
     companionId,
-    desiredSkillId,
+    skillId,
   );
-  const npcState = GameState.npcs.states[companionId];
-  const stance = stanceForRole(
-    desiredSkill?.tacticalRole,
-    COMPANION_TACTICS[companionId]?.preferredStance ?? 'attack',
-  );
-
   activateCompanion(companionId);
-  CombatSystem._prepareCompanionTurn(companionId);
-  const plan = CombatSystem._planCompanionAction(companionId, stance);
-  if (!plan) {
-    distribution.noPlan++;
-    return { plan: null, result: null };
-  }
-
-  const skill = GameState.combat.skillsById[plan.skillId];
-  const target = GameState.combat.combatants[plan.targetId];
-  distribution.plannedCommands++;
-  if (Object.hasOwn(distribution.skills, plan.skillId)) {
-    distribution.skills[plan.skillId]++;
-  } else {
-    distribution.otherSkills[plan.skillId]
-      = (distribution.otherSkills[plan.skillId] ?? 0) + 1;
+  CombatSystem.processUntilAllyTurn();
+  if (GameState.combat.activeCombatantId !== companionId) {
+    metrics.invalidManualTurn++;
+    return { skillId, targetId, result: null };
   }
 
   if (!skill || !target) {
-    categorizeCommandFailure(metrics, !skill ? 'invalid_skill' : 'invalid_target');
-    return { plan, result: null };
+    if (!skill) metrics.invalidSkillSelections++;
+    if (!target) metrics.invalidTargetSelections++;
+    return { skillId, targetId, result: null };
   }
   if (!COMPANION_MOTION_KEYS.has(skill.motionKey)) {
     metrics.invalidMotionKeys++;
   }
-  if (supportWouldBeWasted(skill, target)) {
-    metrics.duplicateSupportWaste++;
+  const position = validateSkillPosition(
+    GameState.combat.formations,
+    companionId,
+    targetId,
+    skill,
+  );
+  if (!position.ok) {
+    metrics.invalidPositionSelections++;
+    return { skillId, targetId, result: null };
   }
 
+  const resourceBefore = commandResourceSnapshot(companionId, skillId);
+  if (!CombatSystem.selectSkill(skillId)) {
+    metrics.invalidSkillSelections++;
+    return { skillId, targetId, result: null };
+  }
+  if (!CombatSystem.selectTarget(targetId)) {
+    metrics.invalidTargetSelections++;
+    return { skillId, targetId, result: null };
+  }
+  const resourceAfterSelection = commandResourceSnapshot(companionId, skillId);
   const hpBefore = allyHpTotal(companionId);
-  const hasHealingSkill = COMPANION_COMBAT_LOADOUTS[companionId]
-    .map(skillId => COMBAT_SKILLS[skillId])
-    .some(candidate => candidate.effects?.some(effect => effect.type === 'heal'));
-  const result = CombatSystem._executePlannedCompanionAction(plan);
+  const result = CombatSystem.confirmAction();
+  const resourceAfterConfirmation = commandResourceSnapshot(companionId, skillId);
   if (result?.ok !== true) {
     categorizeCommandFailure(metrics, result?.reason ?? 'unknown');
   } else {
-    distribution.executedCommands++;
+    manualSkill.successes++;
+    distribution.manualSuccesses++;
   }
-  if (!hasHealingSkill && allyHpTotal(companionId) > hpBefore) {
-    metrics.nonHealerHealing++;
+  if (hasDuplicateCostOrCooldownConsumption({
+    before: resourceBefore,
+    afterSelection: resourceAfterSelection,
+    afterConfirmation: resourceAfterConfirmation,
+    skill,
+  })) {
+    metrics.duplicateCostCooldownConsumption++;
+  }
+  const isHealingSkill = skill.effects?.some(effect => effect.type === 'heal');
+  if (!isHealingSkill && allyHpTotal(companionId) > hpBefore) {
+    metrics.nonHealingSkillHealing++;
   }
 
-  npcState.stance = stance;
-  return { plan, result };
+  return { skillId, targetId, result };
 }
 
 function isExecutableIntent(intent) {
@@ -941,46 +983,26 @@ function collectWarnings(companionIds, companionDistributions) {
   const warnings = [];
   for (const companionId of companionIds) {
     const distribution = companionDistributions[companionId];
-    for (const [skillId, count] of Object.entries(distribution.skills)) {
-      if (count === 0) {
+    for (const [skillId, skillResult] of Object.entries(distribution.skills)) {
+      if (skillResult.attempts === 0) {
         warnings.push({
-          type: 'zero_use',
+          type: 'zero_manual_attempt',
           companionId,
           skillId,
-          detail: '관찰 시나리오에서 선택되지 않음',
+          detail: '수동 명령 실행 시도가 없음',
+        });
+      }
+      if (skillResult.successes !== skillResult.attempts) {
+        warnings.push({
+          type: 'manual_command_failure',
+          companionId,
+          skillId,
+          detail: `성공 ${skillResult.successes}/${skillResult.attempts}`,
         });
       }
     }
-    if (distribution.noPlan > 0) {
-      warnings.push({
-        type: 'no_plan',
-        companionId,
-        skillId: '-',
-        detail: `production planner가 ${distribution.noPlan}회 계획을 만들지 못함`,
-      });
-    }
   }
   return warnings;
-}
-
-function probeProductionDefaultStances(seed, companionIds) {
-  return companionIds.map(companionId => {
-    createProductionCombat(
-      companionId,
-      'zombie_common',
-      randomFor(seed, companionId, 'production-default-stance'),
-    );
-    const state = GameState.npcs.states[companionId];
-    const expected = COMPANION_TACTICS[companionId]?.preferredStance ?? 'attack';
-    const actual = CombatSystem._getCompanionStance(companionId);
-    return {
-      companionId,
-      expected,
-      actual,
-      stateHasExplicitStance: Object.hasOwn(state, 'stance'),
-      ok: !Object.hasOwn(state, 'stance') && actual === expected,
-    };
-  });
 }
 
 function simulate({ runs, seed }, roster) {
@@ -994,12 +1016,10 @@ function simulate({ runs, seed }, roster) {
         {
           skills: Object.fromEntries(
             COMPANION_COMBAT_LOADOUTS[companionId]
-              .map(skillId => [skillId, 0]),
+              .map(skillId => [skillId, { attempts: 0, successes: 0 }]),
           ),
-          otherSkills: {},
-          plannedCommands: 0,
-          executedCommands: 0,
-          noPlan: 0,
+          manualAttempts: 0,
+          manualSuccesses: 0,
         },
       ]),
     );
@@ -1007,55 +1027,29 @@ function simulate({ runs, seed }, roster) {
       enemyIds.map(enemyId => [enemyId, {}]),
     );
     const combos = [];
-    const defaultStanceProbe = probeProductionDefaultStances(seed, companionIds);
-    metrics.productionDefaultStanceMismatches = defaultStanceProbe
-      .filter(row => !row.ok)
-      .length;
 
     for (const companionId of companionIds) {
       for (const enemyId of enemyIds) {
         const comboMetrics = emptyMetrics();
-        let enemy = null;
         for (let runIndex = 0; runIndex < runs; runIndex++) {
-          enemy = createProductionCombat(
-            companionId,
-            enemyId,
-            randomFor(seed, companionId, enemyId, runIndex, 'setup'),
-          );
-          for (let turnIndex = 0; turnIndex < TURNS_PER_RUN; turnIndex++) {
-            if (
-              enemy.currentHp <= 0
-              || GameState.combat?.active === false
-            ) {
-              enemy = createProductionCombat(
-                companionId,
-                enemyId,
-                randomFor(
-                  seed,
-                  companionId,
-                  enemyId,
-                  runIndex,
-                  turnIndex,
-                  'reset',
-                ),
-              );
-            }
-
+          for (const skillId of COMPANION_COMBAT_LOADOUTS[companionId]) {
+            const enemy = createProductionCombat(
+              companionId,
+              enemyId,
+              randomFor(seed, companionId, enemyId, runIndex, skillId, 'setup'),
+            );
             const displayedIntent = prepareDisplayedIntent(enemy);
-            const desiredSkillId = COMPANION_COMBAT_LOADOUTS[companionId][
-              (runIndex + turnIndex) % 3
-            ];
             Math.random = randomFor(
               seed,
               companionId,
               enemyId,
               runIndex,
-              turnIndex,
+              skillId,
               'companion',
             );
-            runProductionCompanionTurn({
+            runManualCompanionTurn({
               companionId,
-              desiredSkillId,
+              skillId,
               metrics: comboMetrics,
               distribution: companionDistributions[companionId],
             });
@@ -1065,7 +1059,7 @@ function simulate({ runs, seed }, roster) {
               companionId,
               enemyId,
               runIndex,
-              turnIndex,
+              skillId,
               'enemy',
             );
             Math.random = () => enemyRandom() * 0.1;
@@ -1107,7 +1101,6 @@ function simulate({ runs, seed }, roster) {
       combos,
       counters,
       warnings,
-      defaultStanceProbe,
     };
   });
 }
@@ -1131,13 +1124,31 @@ function renderReport(result, options) {
     combos,
     counters,
     warnings,
-    defaultStanceProbe,
   } = result;
+  const manualAttempts = companionIds.reduce(
+    (total, companionId) => (
+      total + companionDistributions[companionId].manualAttempts
+    ),
+    0,
+  );
+  const manualSuccesses = companionIds.reduce(
+    (total, companionId) => (
+      total + companionDistributions[companionId].manualSuccesses
+    ),
+    0,
+  );
+  const expectedManualAttempts = (
+    companionIds.length
+    * enemyIds.length
+    * options.runs
+    * SKILLS_PER_COMPANION
+  );
   const lines = [
     '# 동료·일반 몬스터 패턴 통합 QA',
     '',
     `> 명령: \`node tools/simulate_companion_monster_patterns.mjs --runs ${options.runs} --seed ${options.seed} --out ${markdownCell(options.out)}\``,
-    `> 범위: 동료 ${companionIds.length}종 × 일반 몬스터 ${enemyIds.length}종 = ${combos.length}조합, 조합당 ${options.runs}회 × ${TURNS_PER_RUN}행동`,
+    `> 범위: 동료 ${companionIds.length}종 × 일반 몬스터 ${enemyIds.length}종 = ${combos.length}조합, 각 기술별 ${options.runs}회`,
+    `> 수동 실행: ${companionIds.length} × ${enemyIds.length} × ${SKILLS_PER_COMPANION} × ${options.runs} = ${manualAttempts}회, 성공 ${manualSuccesses}회`,
     `> 결정적 seed: \`${options.seed}\``,
     '',
     '## 데이터 계약',
@@ -1147,17 +1158,9 @@ function renderReport(result, options) {
     `| 동료 roster | 20 | ${roster.companionCount} | PASS |`,
     `| 고유 동료 기술 ID | 60 | ${roster.uniqueCompanionSkillCount} | PASS |`,
     `| 일반 몬스터 roster | 12 | ${roster.enemyCount} | PASS |`,
+    `| 수동 기술 실행 | ${expectedManualAttempts} | ${manualAttempts} | ${manualAttempts === expectedManualAttempts ? 'PASS' : 'FAIL'} |`,
     '',
     'roster 수, ID 완전성, 동료별 3개 loadout, 기술 정의 존재 여부는 시뮬레이션 전에 hard fail로 검사한다.',
-    '',
-    '## Production 기본 동료 자세 smoke',
-    '',
-    '| 동료 | profile 기본 | production 기본 | state stance 미설정 | 결과 |',
-    '|---|---|---|---|---|',
-    ...defaultStanceProbe.map(row => (
-      `| \`${row.companionId}\` | \`${row.expected}\` | \`${row.actual}\` | `
-      + `${row.stateHasExplicitStance ? '아니오' : '예'} | ${row.ok ? 'PASS' : 'FAIL'} |`
-    )),
     '',
     '## 판정',
     '',
@@ -1175,21 +1178,21 @@ function renderReport(result, options) {
 
   lines.push(
     '',
-    '## 동료별 production 기술 사용 분포',
+    '## 동료별·기술별 수동 실행',
     '',
-    '| 동료 | 기술 1 | 기술 2 | 기술 3 | 계획 | 실행 | no-plan |',
-    '|---|---:|---:|---:|---:|---:|---:|',
+    '| 동료 | 기술 1 | 기술 2 | 기술 3 | 전체 시도 | 전체 성공 |',
+    '|---|---:|---:|---:|---:|---:|',
   );
   for (const companionId of companionIds) {
     const distribution = companionDistributions[companionId];
     const skillCells = COMPANION_COMBAT_LOADOUTS[companionId].map(skillId => {
-      const count = distribution.skills[skillId];
-      return `\`${skillId}\` ${count} (${percent(count, distribution.plannedCommands)})`;
+      const skillResult = distribution.skills[skillId];
+      return `\`${skillId}\` ${skillResult.attempts}회 / `
+        + `${percent(skillResult.successes, skillResult.attempts)}`;
     });
     lines.push(
       `| \`${companionId}\` | ${skillCells.join(' | ')} | `
-      + `${distribution.plannedCommands} | ${distribution.executedCommands} | `
-      + `${distribution.noPlan} |`,
+      + `${distribution.manualAttempts} | ${distribution.manualSuccesses} |`,
     );
   }
 
@@ -1245,7 +1248,7 @@ function renderReport(result, options) {
     '',
     '## 관찰 경고 (비차단)',
     '',
-    'zero-use와 no-plan은 오류를 숨기지 않기 위해 별도 경고로 보고한다. 이는 production 전술 우선순위·위치·포화 회피 때문에 현재 fixture에서 선택 경로가 없을 수 있다는 뜻이며, 기술 무효를 자동으로 뜻하지 않는다.',
+    '수동 실행 시도가 없거나 시도 대비 성공이 누락된 기술은 오류 지표와 별도로 경고한다.',
     '',
   );
   if (warnings.length === 0) {
@@ -1267,8 +1270,8 @@ function renderReport(result, options) {
     '',
     '## 계측 경계',
     '',
-    '- 동료는 production `_setupCombat()` 뒤 `_prepareCompanionTurn()` → `_planCompanionAction()` → `_executePlannedCompanionAction()`으로만 계획·실행한다. simulator는 효과 adapter를 재구현하지 않는다.',
-    '- simulator의 동료 state에는 `stance`를 주입하지 않으며, 별도 smoke가 `CombatSystem._getCompanionStance()`의 production 기본값을 20종 `preferredStance`와 대조한다.',
+    '- 각 동료·몬스터·run·기술 조합마다 fresh combat state와 기술 계약에 맞는 진형을 구성하고 `validateSkillPosition()`으로 확인한다.',
+    '- 동료는 `processUntilAllyTurn()` → `selectSkill()` → `selectTarget()` → `confirmAction()` 공개 수동 명령 경로로만 실행한다.',
     '- 몬스터는 UI가 읽는 `enemy._nextIntent`를 값 snapshot으로 보존하고, 그 사이에 동료 행동을 삽입한 뒤 production `_runSingleEnemyTurn()`을 진행한다.',
     '- 실제 행동·대상·다중타격은 `_executeEnemyCommittedAction()` 호출을 observation wrapper로 관찰한다. wrapper는 production 결과를 바꾸지 않고 즉시 복원된다.',
     '- `stunDelays`는 `advanceEnemyAction()` 정상 진행이 1 감소하는 negative control, 선언값 `true`, production stun 부여 후 `_runSingleEnemyTurn()`에서 같은 committed action과 countdown이 보존되는지를 모두 요구한다.',
@@ -1288,12 +1291,17 @@ async function main() {
   await writeFile(outputPath, report, 'utf8');
 
   const violations = totalViolations(result.metrics);
+  const manualAttempts = Object.values(result.companionDistributions)
+    .reduce((total, distribution) => total + distribution.manualAttempts, 0);
+  const manualSuccesses = Object.values(result.companionDistributions)
+    .reduce((total, distribution) => total + distribution.manualSuccesses, 0);
   console.log(
     `companion-monster-patterns: ${violations === 0 ? 'PASS' : 'FAIL'} `
     + `companions=${result.companionIds.length} `
     + `skills=${result.roster.uniqueCompanionSkillCount} `
     + `enemies=${result.enemyIds.length} `
     + `combinations=${result.combos.length} runs=${options.runs} `
+    + `manualAttempts=${manualAttempts} manualSuccesses=${manualSuccesses} `
     + `warnings=${result.warnings.length} violations=${violations}`,
   );
   console.log(`report=${outputPath}`);

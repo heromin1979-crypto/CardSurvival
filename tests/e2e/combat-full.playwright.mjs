@@ -324,7 +324,6 @@ async function setupPatternCombat(page, {
           maxHp: config.companionMaxHp,
           isCompanion: true,
           name: config.companionId,
-          stance: 'attack',
           statusEffects: config.companionStatusEffects.map(status => ({ ...status })),
           skillCooldowns: {},
         },
@@ -344,24 +343,33 @@ async function setupPatternCombat(page, {
 
     window.__patternActivateCompanion = () => {
       const combat = gs.combat;
-      const companionIndex = combat.turnQueue.findIndex(entry =>
+      const companionEntry = combat.turnQueue.find(entry =>
         entry.type === 'companion' && entry.id === config.companionId
       );
+      const playerEntry = combat.turnQueue.find(entry => entry.type === 'player');
+      const enemyEntries = combat.turnQueue.filter(entry => entry.type === 'enemy');
+      combat.turnQueue = [companionEntry, playerEntry, ...enemyEntries].filter(Boolean);
       combat.roundNumber = (combat.roundNumber ?? 0) + 1;
-      combat.activeIdx = companionIndex;
-      combat.activeTurnIndex = companionIndex;
-      combatSystem.beginActiveTurn();
-      return companionIndex;
+      combat.activeIdx = 0;
+      combat.activeTurnIndex = 0;
+      return 0;
     };
-    window.__patternCompanionAction = stance => {
+    window.__patternCompanionAction = (skillId, targetId) => {
       window.__patternActivateCompanion();
-      combatSystem._prepareCompanionTurn(config.companionId);
-      const plan = combatSystem._planCompanionAction(config.companionId, stance);
-      const result = plan
-        ? combatSystem._executePlannedCompanionAction(plan)
-        : { ok: false, reason: 'no_plan', turnConsumed: false };
+      combatSystem.processUntilAllyTurn();
+      const activeCombatantId = gs.combat.activeCombatantId;
+      const selected = activeCombatantId === config.companionId
+        && combatSystem.selectSkill(skillId);
+      const targeted = selected && combatSystem.selectTarget(targetId);
+      const result = targeted
+        ? combatSystem.confirmAction()
+        : { ok: false, reason: 'manual_selection_failed', turnConsumed: false };
       return {
-        plan,
+        skillId,
+        targetId,
+        activeCombatantId,
+        selected,
+        targeted,
         result: {
           ok: result?.ok === true,
           reason: result?.reason ?? null,
@@ -404,7 +412,7 @@ async function scenarioCompanionMonsterPatterns(browser) {
     }],
   });
   const nurseResult = await nursePage.evaluate(() => {
-    const action = window.__patternCompanionAction('heal');
+    const action = window.__patternCompanionAction('nurse_triage', 'npc_nurse');
     const state = window.GameState.npcs.states.npc_nurse;
     const combatant = window.GameState.combat.combatants.npc_nurse;
     return {
@@ -422,8 +430,10 @@ async function scenarioCompanionMonsterPatterns(browser) {
   );
   record(
     'pattern: nurse triage heals herself and removes bleed',
-    nurseResult.action.plan?.skillId === 'nurse_triage'
-      && nurseResult.action.plan?.targetId === 'npc_nurse'
+    nurseResult.action.skillId === 'nurse_triage'
+      && nurseResult.action.targetId === 'npc_nurse'
+      && nurseResult.action.selected
+      && nurseResult.action.targeted
       && nurseResult.action.result.ok
       && nurseResult.hp > 40
       && !nurseResult.stateStatuses.includes('bleed')
@@ -451,7 +461,10 @@ async function scenarioCompanionMonsterPatterns(browser) {
           state: enemy._enemyActionState.committedAction.state,
         }
       : null;
-    const action = window.__patternCompanionAction('support');
+    const action = window.__patternCompanionAction(
+      'deserter_covering_fire',
+      'enemy:0',
+    );
     return {
       action,
       telegraphBefore,
@@ -471,7 +484,10 @@ async function scenarioCompanionMonsterPatterns(browser) {
   );
   record(
     'pattern: deserter covering fire applies hesitation and cancels aimed shot',
-    deserterResult.action.plan?.skillId === 'deserter_covering_fire'
+    deserterResult.action.skillId === 'deserter_covering_fire'
+      && deserterResult.action.targetId === 'enemy:0'
+      && deserterResult.action.selected
+      && deserterResult.action.targeted
       && deserterResult.action.result.ok
       && deserterResult.telegraphBefore?.skillId === 'aimed_shot'
       && deserterResult.telegraphAfter === null
@@ -493,14 +509,12 @@ async function scenarioCompanionMonsterPatterns(browser) {
     const { COMBAT_SKILLS } = await import('/js/data/combatSkills.js');
     const child = window.GameState.combat.combatants.npc_child;
     const enemy = window.GameState.combat.enemies[0];
-    const hide = window.__patternCompanionAction('hold');
-    // 공격 태세도 사용 가능한 지원·방어 우선순위를 먼저 따르므로, 다음 턴에는 그 선택지를 cooldown으로 잠가 아이의 공격 정체성을 검증한다.
-    window.GameState.npcs.states.npc_child.skillCooldowns.child_warning = 2;
-    window.GameState.npcs.states.npc_child.skillCooldowns.reposition = 2;
-    window.GameState.npcs.states.npc_child.skillCooldowns.child_hide = 2;
-    window.GameState.npcs.states.npc_child.skillCooldowns.guard = 2;
+    const hide = window.__patternCompanionAction('child_hide', 'npc_child');
     const hpBefore = enemy.currentHp;
-    const attack = window.__patternCompanionAction('attack');
+    const attack = window.__patternCompanionAction(
+      'child_throw_debris',
+      'enemy:0',
+    );
     const childBlock = child.tokens.block ?? 0;
     const childHpBeforeRabidAttack = child.hp;
     const rabidDamageEvents = [];
@@ -544,15 +558,20 @@ async function scenarioCompanionMonsterPatterns(browser) {
   });
   record(
     'pattern: child hide is a self-targeted defensive action',
-    childResult.hide.plan?.skillId === 'child_hide'
-      && childResult.hide.plan?.targetId === 'npc_child'
+    childResult.hide.skillId === 'child_hide'
+      && childResult.hide.targetId === 'npc_child'
+      && childResult.hide.selected
+      && childResult.hide.targeted
       && childResult.hide.result.ok
       && childResult.childBlock > 0,
     JSON.stringify(childResult),
   );
   record(
     'pattern: child debris remains a low-damage ranged identity',
-    childResult.attack.plan?.skillId === 'child_throw_debris'
+    childResult.attack.skillId === 'child_throw_debris'
+      && childResult.attack.targetId === 'enemy:0'
+      && childResult.attack.selected
+      && childResult.attack.targeted
       && childResult.attack.result.ok
       && childResult.damage >= childResult.childDamageRange[0]
       && childResult.damage <= childResult.childDamageRange[1]
@@ -592,7 +611,10 @@ async function scenarioCompanionMonsterPatterns(browser) {
         }
       : null;
     const rankBefore = getRank(combat.formations, 'player');
-    const action = window.__patternCompanionAction('support');
+    const action = window.__patternCompanionAction(
+      'yeongcheol_rescue',
+      'player',
+    );
     const rankAfterRescue = getRank(combat.formations, 'player');
     const blockAfterRescue = combat.combatants.player.tokens.block ?? 0;
     window.CombatSystem._runSingleEnemyTurn(0);
@@ -619,8 +641,10 @@ async function scenarioCompanionMonsterPatterns(browser) {
   });
   record(
     'pattern: yeongcheol rescue moves and guards the wounded player',
-    rescueResult.action.plan?.skillId === 'yeongcheol_rescue'
-      && rescueResult.action.plan?.targetId === 'player'
+    rescueResult.action.skillId === 'yeongcheol_rescue'
+      && rescueResult.action.targetId === 'player'
+      && rescueResult.action.selected
+      && rescueResult.action.targeted
       && rescueResult.action.result.ok
       && rescueResult.rankBefore === 1
       && rescueResult.rankAfterRescue === 2
@@ -647,13 +671,19 @@ async function scenarioCompanionMonsterPatterns(browser) {
   });
   const mechanicResult = await mechanicPage.evaluate(() => {
     const combat = window.GameState.combat;
-    const tripwire = window.__patternCompanionAction('support');
+    const tripwire = window.__patternCompanionAction(
+      'mechanic_tripwire',
+      'enemy:0',
+    );
     const enemyStatuses = combat.combatants['enemy:0'].statusEffects.map(status => status.id);
     combat.combatants.player.hp = 500;
     combat.combatants.player.maxHp = 1000;
     window.GameState.player.hp = { current: 500, max: 1000 };
     const hpBeforeRepair = combat.combatants.player.hp;
-    const repair = window.__patternCompanionAction('support');
+    const repair = window.__patternCompanionAction(
+      'mechanic_field_repair',
+      'player',
+    );
     return {
       tripwire,
       repair,
@@ -666,7 +696,10 @@ async function scenarioCompanionMonsterPatterns(browser) {
   });
   record(
     'pattern: mechanic tripwire roots the charging bloater threat',
-    mechanicResult.tripwire.plan?.skillId === 'mechanic_tripwire'
+    mechanicResult.tripwire.skillId === 'mechanic_tripwire'
+      && mechanicResult.tripwire.targetId === 'enemy:0'
+      && mechanicResult.tripwire.selected
+      && mechanicResult.tripwire.targeted
       && mechanicResult.tripwire.result.ok
       && mechanicResult.enemyStatuses.includes('rooted')
       && mechanicResult.threat?.actionId === 'self_destruct',
@@ -674,8 +707,10 @@ async function scenarioCompanionMonsterPatterns(browser) {
   );
   record(
     'pattern: mechanic field repair grants cover without healing',
-    mechanicResult.repair.plan?.skillId === 'mechanic_field_repair'
-      && mechanicResult.repair.plan?.targetId === 'player'
+    mechanicResult.repair.skillId === 'mechanic_field_repair'
+      && mechanicResult.repair.targetId === 'player'
+      && mechanicResult.repair.selected
+      && mechanicResult.repair.targeted
       && mechanicResult.repair.result.ok
       && mechanicResult.playerBlock > 0
       && mechanicResult.hpAfterRepair === mechanicResult.hpBeforeRepair,
@@ -695,7 +730,7 @@ async function scenarioCompanionMonsterPatterns(browser) {
     const { getRank } = await import('/js/systems/combat/FormationSystem.js');
     const combat = window.GameState.combat;
     combat.formations.ally = [null, null, 'player', 'npc_dog'];
-    const action = window.__patternCompanionAction('hold');
+    const action = window.__patternCompanionAction('dog_guard', 'player');
     const playerBlock = combat.combatants.player.tokens.block ?? 0;
     const playerHpBeforeHordeAttack = combat.combatants.player.hp;
     const dogHpBeforeHordeAttack = combat.combatants.npc_dog.hp;
@@ -747,8 +782,10 @@ async function scenarioCompanionMonsterPatterns(browser) {
   );
   record(
     'pattern: dog guard swaps forward and protects the wounded player',
-    dogResult.action.plan?.skillId === 'dog_guard'
-      && dogResult.action.plan?.targetId === 'player'
+    dogResult.action.skillId === 'dog_guard'
+      && dogResult.action.targetId === 'player'
+      && dogResult.action.selected
+      && dogResult.action.targeted
       && dogResult.action.result.ok
       && dogResult.playerRank === 1
       && dogResult.dogRank === 2
