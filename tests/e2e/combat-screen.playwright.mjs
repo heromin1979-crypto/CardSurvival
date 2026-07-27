@@ -4,7 +4,8 @@ import path from 'node:path';
 
 const port = Number(process.env.COMBAT_E2E_PORT ?? 43179);
 const baseUrl = `http://127.0.0.1:${port}`;
-const screenshotPath = path.resolve('tmp/combat-screen-playwright.png');
+const defaultScreenshotPath = path.resolve('tmp/combat-screen-default.png');
+const selectedScreenshotPath = path.resolve('tmp/combat-screen-selected.png');
 
 async function loadPlaywright() {
   try {
@@ -71,6 +72,42 @@ async function main() {
     await page.waitForSelector('.combat-round-track .init-portrait');
     await page.waitForSelector('.combat-skill-button .skill-stat');
 
+    const visualContracts = await page.evaluate(() => {
+      const focused = document.querySelector('.combat-focused');
+      const markers = [...document.querySelectorAll('.combat-rank-marker')];
+      const medallion = document.querySelector('.combat-round-medallion');
+      const icons = [...document.querySelectorAll('.skill-icon-img')];
+      return {
+        cardFrameImage: getComputedStyle(focused).getPropertyValue('--combat-card-frame-image').trim(),
+        markerDisplays: markers.map(marker => getComputedStyle(marker).display),
+        markerLabels: markers.map(marker => marker.textContent.trim()),
+        medallionBefore: getComputedStyle(medallion, '::before').content,
+        medallionAfter: getComputedStyle(medallion, '::after').content,
+        iconBlendModes: [...new Set(icons.map(icon => getComputedStyle(icon).mixBlendMode))],
+      };
+    });
+    if (visualContracts.cardFrameImage) {
+      throw new Error(`Focused wrapper still exposes a baked card frame: ${visualContracts.cardFrameImage}`);
+    }
+    if (
+      visualContracts.markerLabels.join(',') !== '1,2,3,4'
+      || visualContracts.markerDisplays.some(display => display === 'none')
+    ) {
+      throw new Error(`Rank guides are not visible in order: ${JSON.stringify(visualContracts)}`);
+    }
+    if (
+      visualContracts.medallionBefore !== 'none'
+      || visualContracts.medallionAfter !== 'none'
+    ) {
+      throw new Error(`Round medallion connector lines remain: ${JSON.stringify(visualContracts)}`);
+    }
+    if (visualContracts.iconBlendModes.some(mode => mode !== 'screen')) {
+      throw new Error(`Skill icons do not use screen blending: ${visualContracts.iconBlendModes.join(',')}`);
+    }
+
+    await mkdir(path.dirname(defaultScreenshotPath), { recursive: true });
+    await page.screenshot({ path: defaultScreenshotPath, fullPage: true });
+
     // 공격 스킬 선택 → 유효 타겟 하이라이트 → 대상 지정으로 피해 발생 확인
     const hpBefore = await page.evaluate(() => (
       Object.values(window.GameState.combat.combatants)
@@ -79,6 +116,9 @@ async function main() {
     ));
     await page.locator('.combat-skill-button:not(.disabled)').first().click();
     await page.waitForSelector('.combatant-piece.targetable');
+    await page.waitForSelector('.combat-skill-button.selected');
+    await page.mouse.move(960, 30);
+    await page.screenshot({ path: selectedScreenshotPath, fullPage: true });
     await page.locator('.combatant-piece.targetable').first().click();
     await page.waitForFunction(previous => {
       const combat = window.GameState.combat;
@@ -89,9 +129,7 @@ async function main() {
       return total < previous || combat.log.some(line => line.includes('빗나감') || line.includes('회피'));
     }, hpBefore);
 
-    await mkdir(path.dirname(screenshotPath), { recursive: true });
-    await page.screenshot({ path: screenshotPath, fullPage: true });
-    console.log(`combat-screen:ok screenshot=${screenshotPath}`);
+    console.log(`combat-screen:ok default=${defaultScreenshotPath} selected=${selectedScreenshotPath}`);
   } finally {
     if (browser) await browser.close();
     server.kill();

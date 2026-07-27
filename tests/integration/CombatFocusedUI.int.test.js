@@ -105,6 +105,12 @@ describe('Combat focused UI', () => {
     expect(sceneStyle).toContain(`--combat-bg-image:url('${expectedBackdropUrl}')`);
   });
 
+  it('does not expose a baked card frame image on the focused wrapper', () => {
+    const sceneStyle = document.querySelector('.combat-focused').getAttribute('style');
+
+    expect(sceneStyle).not.toContain('--combat-card-frame-image');
+  });
+
   it('selects the player combat sprite from the equipped weapon', () => {
     const cases = [
       ['knife', 'player_knife'],
