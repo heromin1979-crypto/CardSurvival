@@ -1,9 +1,9 @@
 // @vitest-environment happy-dom
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { readFileSync } from 'node:fs';
 import CombatUI from '../../js/ui/CombatUI.js';
 import CombatSystem from '../../js/systems/CombatSystem.js';
 import GameState from '../../js/core/GameState.js';
+import CombatResult from '../../js/screens/CombatResult.js';
 
 function setupFocusedCombatState(gs) {
   gs.combat = {
@@ -129,32 +129,57 @@ describe('Combat focused UI', () => {
     expect([...markers].map(marker => marker.dataset.rank)).toEqual(['1', '2', '3', '4']);
   });
 
-  it('exposes the active combatant skillIds count on the skill bar', () => {
-    GameState.combat.combatants.player.skillIds = ['s1', 's2', 's3'];
+  it('renders every active combatant skillId and exposes the same count on the skill bar', () => {
+    GameState.combat.combatants.player.skillIds = ['s1', 's2', 's3', 's4', 's5', 's6'];
+    GameState.combat.skillsById.s6 = {
+      ...GameState.combat.skillsById.s5,
+      id: 's6',
+      fallbackName: 's6',
+    };
     CombatUI.render();
 
     const skillBar = document.querySelector('.combat-skill-bar');
     expect(skillBar).not.toBeNull();
-    expect(skillBar.dataset.skillCount).toBe('3');
-    expect(skillBar.querySelectorAll('.combat-skill-button')).toHaveLength(3);
+    expect(skillBar.dataset.skillCount).toBe('6');
+    expect(skillBar.querySelectorAll('.combat-skill-button')).toHaveLength(6);
   });
 
   it('renders combat utility commands in a rail separate from skill cards', () => {
     const utilityRail = document.querySelector('.combat-utility-rail');
 
     expect(utilityRail).not.toBeNull();
-    expect(utilityRail.querySelector('.combat-item-slot')).not.toBeNull();
-    expect(utilityRail.querySelectorAll('.combat-common-command')).toHaveLength(2);
+    expect(utilityRail.querySelector('.combat-item-slot[data-command="item"]')).not.toBeNull();
+    expect(utilityRail.querySelector('.combat-common-command[data-command="move"]')).not.toBeNull();
+    expect(utilityRail.querySelector('.combat-common-command[data-command="flee"]')).not.toBeNull();
     expect(utilityRail.querySelector('.combat-skill-button')).toBeNull();
   });
 
-  it('declares the combat result shell, overview, rewards, and actions sections', () => {
-    const resultSource = readFileSync('js/screens/CombatResult.js', 'utf8');
+  it('renders combat result shell, overview, rewards, and actions sections without EventBus initialization', () => {
+    const resultScreen = document.createElement('div');
+    const previousResultElement = CombatResult._el;
+    const previousRewards = GameState.combat.rewards;
+    const previousXpGained = GameState.combat.xpGained;
+    const previousPlayerXp = GameState.player.xp;
+    document.body.append(resultScreen);
 
-    expect(resultSource).toContain('combat-result-shell');
-    expect(resultSource).toContain('combat-result-overview');
-    expect(resultSource).toContain('combat-result-rewards');
-    expect(resultSource).toContain('combat-result-actions');
+    try {
+      CombatResult._el = resultScreen;
+      GameState.combat.rewards = [];
+      GameState.combat.xpGained = 0;
+      GameState.player.xp = 0;
+      CombatResult._render({ outcome: 'fled', nodeId: 'mapo' });
+
+      expect(resultScreen.querySelector('.combat-result-shell')).not.toBeNull();
+      expect(resultScreen.querySelector('.combat-result-overview')).not.toBeNull();
+      expect(resultScreen.querySelector('.combat-result-rewards')).not.toBeNull();
+      expect(resultScreen.querySelector('.combat-result-actions')).not.toBeNull();
+    } finally {
+      CombatResult._el = previousResultElement;
+      GameState.combat.rewards = previousRewards;
+      GameState.combat.xpGained = previousXpGained;
+      GameState.player.xp = previousPlayerXp;
+      resultScreen.remove();
+    }
   });
 
   it('renders the enemy intent badge from the execution-path _nextIntent only', () => {
