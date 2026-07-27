@@ -207,6 +207,59 @@ describe('_playFx — 개별 연출 분기', () => {
   });
 
   it.each([
+    ['sheet.rows와 같은 행', 4],
+    ['음수 행', -1],
+  ])('manifest motion의 %s은 적용하지 않고 기존 4행 CSS 사격으로 폴백한다', (
+    _label,
+    row,
+  ) => {
+    const sheet = CombatUiAssets.COMBAT_SPRITE_SHEETS.boss_soldier_nemesis;
+    const previous = { ...sheet };
+    const enemy = document.querySelector('.cv-enemy-sprite[data-idx="0"]');
+    enemy.innerHTML = '<span class="cv-enemy-img combat-sprite-sheet"></span>';
+    GameState.combat = {
+      enemies: [{ id: 'boss_soldier_nemesis' }],
+    };
+
+    try {
+      CombatUiAssets.applyCombatSpriteManifest({
+        'boss_soldier_nemesis_sheet.png': {
+          cols: 6,
+          rows: 4,
+          motions: {
+            rifle_burst: {
+              row,
+              movement: 'lunge',
+              camera: 'impact-heavy',
+            },
+          },
+        },
+      });
+
+      CombatUI._playFx({
+        kind: 'enemyAttack',
+        enemyIdx: 0,
+        motionKey: 'rifle_burst',
+        impactFx: 'shot',
+        movement: 'none',
+        camera: 'enemy-strike',
+        dmg: 12,
+      });
+
+      const sprite = enemy.querySelector('.combat-sprite-sheet');
+      expect(sprite.style.getPropertyValue('--sprite-row-y')).toBe('');
+      expect(enemy.classList.contains('motion-zombie-spit')).toBe(true);
+      expect(enemy.classList.contains('lunging')).toBe(false);
+      expect(enemy.classList.contains('motion-move-forward')).toBe(false);
+      expect(document.querySelector('.combat-visual').classList.contains('camera-enemy-strike')).toBe(true);
+      expect(document.querySelector('.combat-visual').classList.contains('camera-impact-heavy')).toBe(false);
+    } finally {
+      Object.keys(sheet).forEach(key => delete sheet[key]);
+      Object.assign(sheet, previous);
+    }
+  });
+
+  it.each([
     ['toxic', 'acid', 'motion-zombie-spit'],
     ['shockwave', 'shock', 'motion-zombie-heavy'],
     ['radiation', 'rupture', 'motion-zombie-heavy'],

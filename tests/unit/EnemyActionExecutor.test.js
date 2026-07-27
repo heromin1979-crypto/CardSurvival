@@ -190,6 +190,89 @@ describe('executeEnemyAction', () => {
     }
   });
 
+  it('CombatAiTurns는 impactFx가 없을 때만 몬스터 FX fallback을 호출한다', () => {
+    const damage = vi.spyOn(CombatSystem, '_dealDamageToAlly')
+      .mockReturnValue({ dodged: false, damage: 12, dead: false, blocked: false });
+    const fallback = vi.spyOn(CombatSystem, '_monsterImpactFx')
+      .mockReturnValue('claw');
+
+    const execute = (impactFx) => {
+      const definition = {
+        id: 'rifle_burst',
+        damage: [12, 12],
+        accuracy: 1,
+        movement: 'none',
+        ...(impactFx === undefined ? {} : { impactFx }),
+      };
+      const enemy = {
+        id: 'boss_soldier_nemesis',
+        name: '탈영병 네메시스',
+        currentHp: 100,
+        maxHp: 100,
+        bossPattern: {
+          basicAttacks: [definition],
+          specialSkill: null,
+          ultimate: null,
+        },
+      };
+      GameState.npcs = {
+        states: {
+          npc_soldier: {
+            hp: 80,
+            maxHp: 80,
+            isCompanion: true,
+            statusEffects: [],
+          },
+        },
+      };
+      GameState.combat = {
+        enemies: [enemy],
+        log: [],
+        fxQueue: [],
+        combatants: {
+          npc_soldier: {
+            id: 'npc_soldier',
+            side: 'ally',
+            sourceType: 'companion',
+            sourceId: 'npc_soldier',
+            hp: 80,
+            maxHp: 80,
+            tokens: {},
+            statusEffects: [],
+            dead: false,
+          },
+        },
+      };
+
+      CombatSystem._executeEnemyCommittedAction(enemy, readyAction({
+        actionId: 'rifle_burst',
+        targetIds: ['npc_soldier'],
+        motionKey: 'rifle_burst',
+      }));
+      return GameState.combat.fxQueue[0];
+    };
+
+    try {
+      const explicitFx = execute('shot');
+      expect(fallback).not.toHaveBeenCalled();
+      expect(explicitFx).toMatchObject({
+        impactFx: 'shot',
+        fx: 'shot',
+      });
+
+      fallback.mockClear();
+      const inferredFx = execute(undefined);
+      expect(fallback).toHaveBeenCalledTimes(1);
+      expect(inferredFx).toMatchObject({
+        impactFx: 'claw',
+        fx: 'claw',
+      });
+    } finally {
+      fallback.mockRestore();
+      damage.mockRestore();
+    }
+  });
+
   it.each([
     ['basic', 'boss_jab', 11],
     ['special', 'boss_roar', 22],
