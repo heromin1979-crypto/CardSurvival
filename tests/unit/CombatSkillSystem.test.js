@@ -350,6 +350,26 @@ describe('validateSkillCommand', () => {
     expect(validateSkillCommand(ctx, strikeCommand)).toBe(positionFailure);
   });
 
+  it('target.selfOnly 기술은 행동자 외 대상을 거부한다', () => {
+    const ctx = makeCommandContext();
+    ctx.skillsById.strike = {
+      ...ctx.skillsById.strike,
+      target: {
+        side: 'ally',
+        ranks: [1, 2, 3, 4],
+        count: 1,
+        selfOnly: true,
+      },
+    };
+
+    expect(validateSkillCommand(ctx, strikeCommand))
+      .toEqual({ ok: false, reason: 'invalid_target' });
+    expect(validateSkillCommand(ctx, {
+      ...strikeCommand,
+      targetId: strikeCommand.actorId,
+    }).ok).toBe(true);
+  });
+
   it('treats deathsDoor targets as valid when they are not dead', () => {
     const ctx = makeCommandContext();
     ctx.combatants[1].currentHp = 0;

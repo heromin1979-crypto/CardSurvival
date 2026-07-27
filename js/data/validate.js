@@ -51,7 +51,7 @@ export function validateCompanionPatternData({
   }
 
   for (const [skillId, skill] of Object.entries(skills)) {
-    if (skill?.selfOnly && skill?.target?.side !== 'ally') {
+    if (skill?.target?.selfOnly === true && skill.target.side !== 'ally') {
       errors.push(`[companion skill/${skillId}] selfOnly target.side must be ally`);
     }
     if (skill?.tacticalRole === 'heal' && !hasEffect(skill, 'heal')) {

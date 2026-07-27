@@ -18,6 +18,7 @@ export const COMPANION_TACTICS = {
   npc_soldier_deserter: {
     preferredStance: 'support',
     priorities: [
+      { role: 'control' },
       { role: 'support' },
       { role: 'damage' },
     ],
@@ -33,6 +34,7 @@ export const COMPANION_TACTICS = {
   npc_mechanic: {
     preferredStance: 'support',
     priorities: [
+      { role: 'guard', when: 'ally_below_60' },
       { role: 'control' },
       { role: 'damage' },
     ],
@@ -40,6 +42,7 @@ export const COMPANION_TACTICS = {
   npc_student: {
     preferredStance: 'support',
     priorities: [
+      { role: 'heal', when: 'ally_below_60' },
       { role: 'support' },
       { role: 'damage' },
     ],
@@ -87,6 +90,7 @@ export const COMPANION_TACTICS = {
   npc_yeongcheol: {
     preferredStance: 'support',
     priorities: [
+      { role: 'guard', when: 'ally_below_60' },
       { role: 'support', when: 'ally_stress_6_plus' },
       { role: 'damage' },
     ],
@@ -117,6 +121,7 @@ export const COMPANION_TACTICS = {
   npc_tower_cook: {
     preferredStance: 'support',
     priorities: [
+      { role: 'support', when: 'ally_stress_6_plus' },
       { role: 'damage' },
     ],
   },

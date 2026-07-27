@@ -188,6 +188,39 @@ describe('_applyRankedDamageEffect', () => {
   });
 });
 
+describe('_applyRankedEffect heal', () => {
+  it('removeStatus에 지정한 상태만 치유와 함께 제거한다', () => {
+    setupRankedCombat();
+    const actor = makeCombatant({ id: 'npc_jisu', sourceId: 'npc_jisu' });
+    const target = makeCombatant({
+      id: 'npc_patient',
+      sourceId: 'npc_patient',
+      hp: 10,
+      statusEffects: [
+        { id: 'bleed', duration: 2 },
+        { id: 'marked', duration: 1 },
+      ],
+    });
+
+    const result = CombatSystem._applyRankedEffect(
+      {
+        type: 'heal',
+        value: [5, 5],
+        removeStatus: ['bleed'],
+      },
+      actor,
+      target,
+      () => 0,
+    );
+
+    expect(result).toEqual({ ok: true });
+    expect(target.hp).toBe(15);
+    expect(target.statusEffects).toEqual([
+      { id: 'marked', duration: 1 },
+    ]);
+  });
+});
+
 describe('_dealDamageToAlly', () => {
   it('dodge 토큰으로 적 공격을 회피하고 토큰을 소비한다', () => {
     const combat = setupRankedCombat();

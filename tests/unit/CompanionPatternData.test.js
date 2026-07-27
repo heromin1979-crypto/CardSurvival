@@ -35,8 +35,7 @@ describe('동료 패턴 데이터 계약', () => {
     const fixture = validFixture();
     fixture.skills.test_guard = {
       ...fixture.skills.test_guard,
-      selfOnly: true,
-      target: { side: 'enemy' },
+      target: { side: 'enemy', selfOnly: true },
     };
 
     expect(validateCompanionPatternData(fixture)).toContain(

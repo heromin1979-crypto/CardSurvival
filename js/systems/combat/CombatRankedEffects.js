@@ -246,6 +246,18 @@ export const CombatRankedEffects = {
         return this._applyRankedDamageEffect(effect, actor, target, random, hitInfo);
       case 'heal': {
         const healResult = healCombatant(target, this._rollRange(effect.value, random));
+        const removableStatusIds = new Set(
+          Array.isArray(effect.removeStatus)
+            ? effect.removeStatus.filter(statusId => (
+                typeof statusId === 'string' && statusId.length > 0
+              ))
+            : [],
+        );
+        if (removableStatusIds.size > 0 && Array.isArray(target.statusEffects)) {
+          target.statusEffects = target.statusEffects.filter(
+            status => !removableStatusIds.has(status?.id),
+          );
+        }
         this._syncRankedTargetToLegacy(target);
         if (healResult.healed > 0) {
           if (target.sourceType === 'companion') {

@@ -437,6 +437,9 @@ export function validateSkillCommand(context, command) {
   if (!skill) {
     return commandFailure('invalid_skill');
   }
+  if (skill?.target?.selfOnly === true && cmd.targetId !== cmd.actorId) {
+    return commandFailure('invalid_target');
+  }
 
   if (typeof ctx.validatePosition !== 'function') {
     return commandFailure('invalid_position');

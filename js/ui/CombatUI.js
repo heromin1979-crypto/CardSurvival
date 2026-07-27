@@ -632,6 +632,7 @@ const CombatUI = {
       if (selectedSkill && combat.activeCombatantId) {
         this._targetableIds = new Set(Object.values(combat.combatants ?? {})
           .filter(c => c.dead !== true && (c.hp ?? 0) > 0)
+          .filter(c => selectedSkill.target?.selfOnly !== true || c.id === combat.activeCombatantId)
           .filter(c => CombatSystem._validateRankedSkillPosition?.(combat.activeCombatantId, c.id, selectedSkill)?.ok === true)
           .map(c => c.id));
       }
@@ -708,6 +709,10 @@ const CombatUI = {
       button.addEventListener('click', () => {
         const combatantId = button.dataset.combatantId;
         if (combat.selectedSkillId) {
+          if (
+            this._targetableIds
+            && !this._targetableIds.has(combatantId)
+          ) return;
           if (CombatSystem.selectTarget(combatantId)) {
             CombatSystem.confirmAction();
           }

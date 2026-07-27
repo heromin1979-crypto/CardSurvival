@@ -71,12 +71,12 @@ describe('planCompanionTurn', () => {
     });
   });
 
-  it('치료기가 없는 탈영병은 heal 자세에서도 실제 재배치 스킬로 폴백한다', () => {
-    const loadout = COMPANION_COMBAT_LOADOUTS.npc_soldier_deserter.map(skill);
+  it('탈영병의 자기 전용 재배치는 부상한 다른 아군을 대상으로 삼지 않는다', () => {
+    const reposition = skill('deserter_reposition');
     const plan = planCompanionTurn({
       npcId: 'npc_soldier_deserter',
       stance: 'heal',
-      skills: loadout,
+      skills: [reposition],
       allies: [
         { id: 'npc_soldier_deserter', side: 'ally', hp: 40, maxHp: 50 },
         { id: 'player', side: 'ally', hp: 20, maxHp: 100 },
@@ -85,10 +85,9 @@ describe('planCompanionTurn', () => {
       canUse: () => true,
     });
 
-    expect(loadout.map(({ id }) => id)).toContain(plan?.skillId);
     expect(plan).toEqual({
       skillId: 'deserter_reposition',
-      targetId: 'player',
+      targetId: 'npc_soldier_deserter',
       reason: 'support_ally',
     });
   });

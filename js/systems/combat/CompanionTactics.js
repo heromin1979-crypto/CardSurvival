@@ -162,7 +162,7 @@ function canUseSkill(canUse, skill, target) {
 function candidatesFor(skill, npcId, allies, enemies) {
   const source = skill?.target?.side === 'enemy' ? enemies : allies;
   const living = source.filter(isAlive);
-  if (skill?.selfOnly === true) {
+  if (skill?.target?.selfOnly === true) {
     return living.filter(candidate => candidate.id === npcId);
   }
   return living;
