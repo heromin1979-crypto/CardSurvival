@@ -1625,7 +1625,9 @@
 
 .combat-sprite-sheet {
   --sprite-row-y: 0%;
-  --sprite-duration: 920ms;
+  /* per-sheet per-frame timing: sprite element sets --anim-rN (generated keyframe) + --sprite-dur-rN
+     when its manifest has frameDur; otherwise these fall back to the uniform ramp (no regression). */
+  --sprite-duration: var(--sprite-dur-r0, 920ms);
   --ally-sprite-size: var(--combat-ally-sprite-size);
   display: block;
   flex-shrink: 0;
@@ -1634,7 +1636,10 @@
   background-size: calc(var(--sprite-cols) * 100%) calc(var(--sprite-rows) * 100%);
   background-position-x: 0%;
   background-position-y: var(--sprite-row-y);
-  animation: combatSpriteSheetFrames var(--sprite-duration) linear infinite;
+  animation-name: var(--anim-r0, combatSpriteSheetFrames);
+  animation-duration: var(--sprite-duration);
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
   image-rendering: auto;
   transform-origin: 50% 100%;
 }
@@ -1836,8 +1841,8 @@
 .cv-player.motion-combat-ready .combat-sprite-sheet,
 .cv-ally.motion-combat-ready .combat-sprite-sheet {
   --sprite-row-y: 0%;
-  --sprite-duration: 920ms;
-  animation-name: combatSpriteSheetFrames;
+  --sprite-duration: var(--sprite-dur-r0, 920ms);
+  animation-name: var(--anim-r0, combatSpriteSheetFrames);
   animation-timing-function: linear;
   animation-iteration-count: infinite;
 }
@@ -1851,7 +1856,8 @@
 .cv-ally.motion-blunt-strike .combat-sprite-sheet,
 .cv-ally.motion-firearm-shot .combat-sprite-sheet {
   --sprite-row-y: 33.333%;
-  --sprite-duration: 620ms;
+  --sprite-duration: var(--sprite-dur-r1, 620ms);
+  animation-name: var(--anim-r1, combatSpriteSheetFrames);
   animation-iteration-count: 1;
 }
 
@@ -1864,7 +1870,8 @@
 .cv-ally.motion-buff-pulse .combat-sprite-sheet,
 .cv-ally.motion-victory .combat-sprite-sheet {
   --sprite-row-y: 66.666%;
-  --sprite-duration: 760ms;
+  --sprite-duration: var(--sprite-dur-r2, 760ms);
+  animation-name: var(--anim-r2, combatSpriteSheetFrames);
   animation-iteration-count: 1;
 }
 
@@ -1882,7 +1889,8 @@
 .cv-ally.motion-downed .combat-sprite-sheet,
 .cv-ally.motion-defeat .combat-sprite-sheet {
   --sprite-row-y: 100%;
-  --sprite-duration: 820ms;
+  --sprite-duration: var(--sprite-dur-r3, 820ms);
+  animation-name: var(--anim-r3, combatSpriteSheetFrames);
   animation-iteration-count: 1;
 }
 

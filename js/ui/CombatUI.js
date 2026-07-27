@@ -89,9 +89,42 @@ async function _loadSpriteManifest() {
     for (const key in COMBAT_SPRITE_SHEETS) {
       const sheet = COMBAT_SPRITE_SHEETS[key];
       const meta = manifest[sheet.src.split('/').pop()];
-      if (meta && meta.cols) { sheet.cols = meta.cols | 0; if (meta.rows) sheet.rows = meta.rows | 0; }
+      if (meta && meta.cols) {
+        sheet.cols = meta.cols | 0; if (meta.rows) sheet.rows = meta.rows | 0;
+        if (Array.isArray(meta.frameDur) && meta.frameDur.length) sheet.frameDur = meta.frameDur;
+      }
     }
+    _injectSpriteKeyframes();
   } catch (e) { /* manifest optional → keep 6×4 defaults */ }
+}
+
+// Build per-sheet per-row @keyframes for sheets with explicit per-frame timing (frameDur).
+// step-end holds each stop until the next, so a stop at cumulative-time% with that frame's
+// column position gives per-frame hold durations. Rows without frameDur get a uniform keyframe.
+function _injectSpriteKeyframes() {
+  let css = '';
+  for (const key in COMBAT_SPRITE_SHEETS) {
+    const sheet = COMBAT_SPRITE_SHEETS[key];
+    if (!Array.isArray(sheet.frameDur) || !sheet.frameDur.length) continue;
+    const cols = sheet.cols | 0, rows = sheet.rows | 0;
+    for (let r = 0; r < rows; r++) {
+      const durs = (Array.isArray(sheet.frameDur[r]) && sheet.frameDur[r].length) ? sheet.frameDur[r] : new Array(cols).fill(1);
+      const total = durs.reduce((a, b) => a + (+b || 0), 0) || 1;
+      let cum = 0, stops = '';
+      for (let i = 0; i < durs.length; i++) {
+        const pct = (cum / total) * 100;
+        const x = cols > 1 ? (i / (cols - 1)) * 100 : 0;
+        stops += `${pct.toFixed(4)}%{background-position-x:${x.toFixed(4)}%}`;
+        cum += (+durs[i] || 0);
+      }
+      stops += `100%{background-position-x:${cols > 1 ? 100 : 0}%}`;
+      css += `@keyframes spriteanim_${key}_r${r}{${stops}}`;
+    }
+  }
+  let el = document.getElementById('sprite-anim-keyframes');
+  if (!css) { if (el) el.textContent = ''; return; }
+  if (!el) { el = document.createElement('style'); el.id = 'sprite-anim-keyframes'; document.head.appendChild(el); }
+  el.textContent = css;
 }
 _loadSpriteManifest();
 
@@ -244,13 +277,25 @@ const CombatUI = {
     if (!sheet) return '';
     // steps(N, jump-none) walks the 0→100% ramp onto exactly N columns. Works for any N
     // (≤6 or >6); jump-none needs ≥2 steps, so clamp. Overrides the stylesheet's linear inline.
-    const steps = Math.max(2, sheet.cols | 0);
-    return [
+    const parts = [
       `--sprite-url: url('${sheet.src}')`,
       `--sprite-cols: ${sheet.cols}`,
       `--sprite-rows: ${sheet.rows}`,
-      `animation-timing-function: steps(${steps}, jump-none)`,
-    ].join('; ');
+    ];
+    if (Array.isArray(sheet.frameDur) && sheet.frameDur.length) {
+      // per-frame timing: step-end + generated keyframe per row (see _injectSpriteKeyframes)
+      const defDur = [920, 620, 760, 820];
+      parts.push('animation-timing-function: step-end');
+      for (let r = 0; r < (sheet.rows | 0); r++) {
+        const durs = sheet.frameDur[r];
+        const total = (Array.isArray(durs) && durs.length) ? durs.reduce((a, b) => a + (+b || 0), 0) : (defDur[r] || 800);
+        parts.push(`--anim-r${r}: spriteanim_${sheetKey}_r${r}`);
+        parts.push(`--sprite-dur-r${r}: ${Math.round(total)}ms`);
+      }
+    } else {
+      parts.push(`animation-timing-function: steps(${Math.max(2, sheet.cols | 0)}, jump-none)`);
+    }
+    return parts.join('; ');
   },
 
   _renderCombatSpriteSheet(sheetKey, className, label = '') {
