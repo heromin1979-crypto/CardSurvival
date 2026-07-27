@@ -149,6 +149,7 @@ export const CombatRankedEffects = {
     if (target.sourceType === 'enemy') {
       const enemy = this._legacyEnemyFor(target);
       if (enemy) enemy._statusEffects = filteredStatuses(enemy._statusEffects);
+      if (enemy) target.statusEffects = enemy._statusEffects;
       if (
         enemy
         && GameState.combat?.enemies?.[GameState.combat.targetIndex] === enemy
@@ -308,6 +309,12 @@ export const CombatRankedEffects = {
       case 'status': {
         const status = effect.status;
         if (status?.chance != null && random() >= status.chance) return { ok: true };
+        const legacyEnemy = this._legacyEnemyFor(target);
+        if (legacyEnemy) {
+          this._applyEnemyStatusInflict(legacyEnemy, status, target.enemyIndex);
+          target.statusEffects = legacyEnemy._statusEffects;
+          return { ok: true };
+        }
         if (!Array.isArray(target.statusEffects)) target.statusEffects = [];
         target.statusEffects.push({ ...status });
         this._fx({ kind: 'status', targetId: target.id, statusId: status?.id ?? status?.name ?? 'effect' });

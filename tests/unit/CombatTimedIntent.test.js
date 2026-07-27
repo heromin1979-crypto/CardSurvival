@@ -114,7 +114,7 @@ describe('_decideNextIntent — timedThreat', () => {
     expect(intent.action).toBe('attack');
   });
 
-  it('combatProfile does not replace timedThreat intent on generated enemies', () => {
+  it('generated charging enemy는 combatProfile 기본공격과 예약 timedThreat를 함께 유지한다', () => {
     const enemy = instantiateEnemy(ENEMIES.zombie_bloater);
     enemy._chargeRemaining = 2;
     const profile = buildEnemyProfile(enemy);
@@ -122,8 +122,14 @@ describe('_decideNextIntent — timedThreat', () => {
     const intent = CombatSystem._decideNextIntent(enemy, makeCombat(), GameState);
 
     expect(profile.skillIds).toEqual(['bloater_swipe', 'bloater_self_destruct']);
-    expect(intent.action).toBe('timed_threat');
-    expect(intent.threatId).toBe('self_destruct');
-    expect(intent.countdown).toBe(2);
+    expect(intent).toMatchObject({
+      action: 'attack',
+      actionId: 'bloater_swipe',
+    });
+    expect(enemy._timedThreatIntent).toMatchObject({
+      action: 'timed_threat',
+      threatId: 'self_destruct',
+      countdown: 2,
+    });
   });
 });

@@ -28,12 +28,13 @@ import {
   COMPANION_COMBAT_LOADOUTS,
   getCombatSkill,
 } from '../../data/combatSkills.js';
+import { COMPANION_TACTICS } from '../../data/companionTactics.js';
 import { planCompanionTurn } from './CompanionTactics.js';
 
 export const CombatAiTurns = {
   _getCompanionStance(npcId) {
     const st = GameState.npcs?.states?.[npcId];
-    return st?.stance ?? 'attack';
+    return st?.stance ?? COMPANION_TACTICS[npcId]?.preferredStance ?? 'attack';
   },
 
   _companionTurnKey(npcId) {
@@ -338,6 +339,30 @@ export const CombatAiTurns = {
     return enemy._enemyActionState.committedAction;
   },
 
+  _commitChargingAction(enemy, combat, gs) {
+    const committedAction = enemy._chargingActionState?.committedAction;
+    if (committedAction?.category === 'basic') return committedAction;
+
+    const targets = this._getEligibleTargets(combat, gs);
+    const taunted = this._tauntedTargetOf(targets, combat);
+    const planningEnemy = this._enemyForActionPlanning(enemy);
+    enemy._chargingActionState = commitEnemyAction({
+      enemy: {
+        ...planningEnemy,
+        specialSkills: [],
+        specialActionChance: 0,
+        patternProfile: {
+          ...(planningEnemy.patternProfile ?? {}),
+          specialActionChance: 0,
+        },
+      },
+      candidates: taunted ? [taunted] : targets,
+      cooldowns: {},
+      random: Math.random,
+    });
+    return enemy._chargingActionState.committedAction;
+  },
+
   _intentFromCommittedAction(enemy, action, combat, gs) {
     if (!action) return null;
     const targetIds = [...(action.targetIds ?? [])];
@@ -405,6 +430,7 @@ export const CombatAiTurns = {
 
   _decideNextIntent(enemy, combat, gs) {
     if (!enemy || (enemy.currentHp ?? 0) <= 0) return null;
+    enemy._timedThreatIntent = null;
     const targets = this._getEligibleTargets(combat, gs);
     const pattern = enemy.aiPattern ?? 'normal';
     const taunted = this._tauntedTargetOf(targets, combat);
@@ -439,7 +465,7 @@ export const CombatAiTurns = {
       };
     }
 
-    // 타이밍 압박 적: 충전 중이면 카운트다운 의도 우선
+    // 예약 위협은 실행할 현재 행동과 별도로 유지해야 충전 중 기본 공격을 정직하게 예고할 수 있다.
     if ((enemy._chargeRemaining ?? null) !== null && enemy.timedThreat) {
       const previousAction = enemy._enemyActionState?.committedAction;
       const eligibleTargetIds = targets.map(candidate =>
@@ -476,7 +502,7 @@ export const CombatAiTurns = {
       const targetType = primaryTargetId === 'player'
         ? 'player'
         : primaryTargetId ? 'companion' : null;
-      return {
+      const threatIntent = {
         actionId: action.actionId,
         category: action.category,
         state: action.state,
@@ -497,7 +523,17 @@ export const CombatAiTurns = {
           : chargingLabelMap[enemy.timedThreat.id] ?? I18n.t('combat.intent.charging'),
         pattern: enemy.aiPattern ?? 'normal',
       };
+      enemy._timedThreatIntent = threatIntent;
+
+      if (enemy._chargeRemaining > 0 && enemy.timedThreat.chargingAttacks) {
+        const chargingAction = this._commitChargingAction(enemy, combat, gs);
+        return this._intentFromCommittedAction(enemy, chargingAction, combat, gs);
+      }
+
+      enemy._chargingActionState = createEnemyActionState();
+      return threatIntent;
     }
+    enemy._chargingActionState = createEnemyActionState();
 
     // 후열 근접 적: 다음 턴은 공격이 아니라 전열로 전진
     if (this.rowOf(enemy) === 'back' && (enemy.attackType ?? 'melee') === 'melee') {
@@ -565,6 +601,7 @@ export const CombatAiTurns = {
           stunned: true,
         });
       }
+      this._syncLegacyEnemiesToRanked(gs.combat);
       enemy._nextIntent = this._decideNextIntent(enemy, gs.combat, gs) ?? null;
       return;
     }
@@ -592,8 +629,28 @@ export const CombatAiTurns = {
     if ((enemy._chargeRemaining ?? null) !== null) {
       if (enemy._chargeRemaining > 0) {
         if (enemy.timedThreat?.chargingAttacks) {
-          const logs = this._runEnemyAI(enemy);
-          for (const log of logs) { gs.combat.log.push(log); if (this._isPlayerDefeated()) return; }
+          let action = enemy._chargingActionState?.committedAction
+            ?? this._commitChargingAction(enemy, gs.combat, gs);
+          action = retargetCommittedAction({
+            action,
+            candidates: this._getEligibleTargets(gs.combat, gs),
+          });
+          enemy._chargingActionState = { committedAction: action };
+
+          const intent = this._intentFromCommittedAction(enemy, action, gs.combat, gs);
+          if (intent?.viaTaunt) {
+            for (const targetId of action?.targetIds ?? []) {
+              const tauntedCombatant = gs.combat.combatants?.[targetId];
+              if ((tauntedCombatant?.tokens?.taunted ?? 0) > 0) {
+                consumeToken(tauntedCombatant, 'taunted', 1);
+                break;
+              }
+            }
+          }
+
+          this._executeEnemyCommittedAction(enemy, action);
+          enemy._chargingActionState = createEnemyActionState();
+          if (this._isPlayerDefeated()) return;
         }
         enemy._chargeRemaining -= 1;
         enemy._nextIntent = this._decideNextIntent(enemy, gs.combat, gs) ?? null;

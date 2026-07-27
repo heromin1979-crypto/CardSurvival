@@ -14,6 +14,31 @@
 
 roster 수, ID 완전성, 동료별 3개 loadout, 기술 정의 존재 여부는 시뮬레이션 전에 hard fail로 검사한다.
 
+## Production 기본 동료 자세 smoke
+
+| 동료 | profile 기본 | production 기본 | state stance 미설정 | 결과 |
+|---|---|---|---|---|
+| `npc_old_survivor` | `hold` | `hold` | 예 | PASS |
+| `npc_nurse` | `heal` | `heal` | 예 | PASS |
+| `npc_soldier_deserter` | `support` | `support` | 예 | PASS |
+| `npc_child` | `support` | `support` | 예 | PASS |
+| `npc_mechanic` | `support` | `support` | 예 | PASS |
+| `npc_student` | `support` | `support` | 예 | PASS |
+| `npc_dog` | `support` | `support` | 예 | PASS |
+| `npc_former_colleague` | `hold` | `hold` | 예 | PASS |
+| `npc_minjun` | `support` | `support` | 예 | PASS |
+| `npc_sohee` | `support` | `support` | 예 | PASS |
+| `npc_jisu` | `heal` | `heal` | 예 | PASS |
+| `npc_yeongcheol` | `support` | `support` | 예 | PASS |
+| `npc_daehan` | `hold` | `hold` | 예 | PASS |
+| `npc_tower_security` | `hold` | `hold` | 예 | PASS |
+| `npc_tower_merchant` | `support` | `support` | 예 | PASS |
+| `npc_tower_cook` | `support` | `support` | 예 | PASS |
+| `npc_tower_engineer` | `hold` | `hold` | 예 | PASS |
+| `npc_tower_doctor` | `heal` | `heal` | 예 | PASS |
+| `npc_sous_chef` | `support` | `support` | 예 | PASS |
+| `npc_kitchen_helper` | `support` | `support` | 예 | PASS |
+
 ## 판정
 
 **PASS** — 허용 기준은 모든 오류 지표 0이다.
@@ -31,6 +56,7 @@ roster 수, ID 완전성, 동료별 3개 loadout, 기술 정의 존재 여부는
 | 동료 대상 상태이상 손실 | 0 | 0 | PASS |
 | 선언됐지만 실행되지 않는 카운터 | 0 | 0 | PASS |
 | 유효하지 않은 motionKey | 0 | 0 | PASS |
+| production 기본 동료 자세 불일치 | 0 | 0 | PASS |
 
 ## 동료별 production 기술 사용 분포
 
@@ -70,8 +96,8 @@ roster 수, ID 완전성, 동료별 3개 loadout, 기술 정의 존재 여부는
 | `zombie_horde` | `basic_attack` 30000 |
 | `rabid_dog` | `basic_attack` 30000 |
 | `zombie_acid` | `acid_lash` 10000, `basic_attack` 20000 |
-| `zombie_bloater` | `self_destruct` 30000 |
-| `zombie_screamer` | `summon_horde` 30000 |
+| `zombie_bloater` | `bloater_swipe` 30000 |
+| `zombie_screamer` | `screamer_spit` 30000 |
 | `zombie_charger` | `charge_strike` 30000 |
 
 ## 20×12 조합 오류 매트릭스
@@ -120,6 +146,7 @@ zero-use와 no-plan은 오류를 숨기지 않기 위해 별도 경고로 보고
 ## 계측 경계
 
 - 동료는 production `_setupCombat()` 뒤 `_prepareCompanionTurn()` → `_planCompanionAction()` → `_executePlannedCompanionAction()`으로만 계획·실행한다. simulator는 효과 adapter를 재구현하지 않는다.
+- simulator의 동료 state에는 `stance`를 주입하지 않으며, 별도 smoke가 `CombatSystem._getCompanionStance()`의 production 기본값을 20종 `preferredStance`와 대조한다.
 - 몬스터는 UI가 읽는 `enemy._nextIntent`를 값 snapshot으로 보존하고, 그 사이에 동료 행동을 삽입한 뒤 production `_runSingleEnemyTurn()`을 진행한다.
 - 실제 행동·대상·다중타격은 `_executeEnemyCommittedAction()` 호출을 observation wrapper로 관찰한다. wrapper는 production 결과를 바꾸지 않고 즉시 복원된다.
 - `stunDelays`는 `advanceEnemyAction()` 정상 진행이 1 감소하는 negative control, 선언값 `true`, production stun 부여 후 `_runSingleEnemyTurn()`에서 같은 committed action과 countdown이 보존되는지를 모두 요구한다.

@@ -84,6 +84,8 @@ const CombatUI = {
 
       let intentIcon = '';
       let intentLabel = '';
+      let reservedIntentIcon = '';
+      let reservedIntentLabel = '';
       let countdown = null;
 
       if (entry.type === 'player') {
@@ -101,7 +103,10 @@ const CombatUI = {
           if (!dead && e._nextIntent) {
             intentIcon = e._nextIntent.iconEmoji ?? '';
             intentLabel = e._nextIntent.label ?? '';
-            countdown = e._nextIntent.countdown ?? null;
+            const reservedThreat = this._reservedThreatIntent(e);
+            reservedIntentIcon = reservedThreat?.iconEmoji ?? '';
+            reservedIntentLabel = reservedThreat?.label ?? '';
+            countdown = reservedThreat?.countdown ?? e._nextIntent.countdown ?? null;
           }
         }
       } else if (entry.type === 'companion') {
@@ -125,7 +130,10 @@ const CombatUI = {
       if (countdown != null && countdown <= 1) cls.push('charging');
 
       const intentHtml = intentIcon
-        ? `<span class="init-intent" title="${intentLabel}">${intentIcon}</span>`
+        ? `<span class="init-intent" data-intent-role="current-action" title="${this._escape(intentLabel)}">${intentIcon}</span>`
+        : '';
+      const reservedIntentHtml = reservedIntentIcon
+        ? `<span class="init-intent reserved-threat" data-intent-role="reserved-threat" title="${this._escape(reservedIntentLabel)}">${reservedIntentIcon}</span>`
         : '';
 
       const countdownHtml = countdown != null
@@ -146,7 +154,7 @@ const CombatUI = {
           ${portraitHtml}
           <span class="init-label">${label}</span>
           <div class="init-hp-bar"><div class="init-hp-fill" style="width:${hpPct.toFixed(0)}%"></div></div>
-          ${intentHtml}${countdownHtml}
+          ${intentHtml}${reservedIntentHtml}${countdownHtml}
         </div>`;
     }).join('');
 
@@ -178,6 +186,52 @@ const CombatUI = {
       ? `<span class="${classPrefix}-hits">×${this._escape(intent.hitCount)}</span>`
       : '';
     return `${targetsHtml}${hitsHtml}`;
+  },
+
+  _reservedThreatIntent(enemy) {
+    const current = enemy?._nextIntent;
+    const reserved = enemy?._timedThreatIntent;
+    if (!reserved || reserved === current) return null;
+    if (
+      reserved.actionId === current?.actionId
+      && reserved.category === current?.category
+    ) {
+      return null;
+    }
+    return reserved;
+  },
+
+  _renderCombatIntentBadge(intent, role) {
+    if (!intent) return '';
+    const countdownHtml = intent.countdown != null
+      ? `<span class="intent-count">${this._escape(intent.countdown)}</span>`
+      : '';
+    return `
+      <div class="combat-intent${intent.countdown != null && intent.countdown <= 1 ? ' imminent' : ''}"
+           data-intent-role="${role}" title="${this._escape(intent.label ?? '')}">
+        <span class="intent-icon">${intent.iconEmoji ?? '🗡'}</span>${countdownHtml}
+        ${this._renderIntentMeta(intent)}
+      </div>`;
+  },
+
+  _renderVisualIntentBadge(intent, role) {
+    if (!intent) return '';
+    const countdownHtml = intent.countdown != null
+      ? `<b class="cvi-cd">${this._escape(intent.countdown)}</b>`
+      : '';
+    const targetIcon = intent.targetType === 'companion'
+      ? (COMPANION_ICONS[intent.targetId] ?? '🤝')
+      : '👤';
+    const linkHtml = intent.action === 'advance'
+      ? ''
+      : `<span class="cvi-arrow">➤</span><span class="cvi-target">${targetIcon}</span>`;
+    const imminent = intent.countdown != null && intent.countdown <= 1;
+    return `
+      <div class="cv-intent${imminent ? ' imminent' : ''}"
+           data-intent-role="${role}" title="${this._escape(intent.label ?? '')}">
+        <span class="cvi-icon">${intent.iconEmoji ?? '🗡'}</span>${countdownHtml}${linkHtml}
+        ${this._renderIntentMeta(intent, 'cvi')}
+      </div>`;
   },
 
   _combatScene() {
@@ -362,20 +416,15 @@ const CombatUI = {
       })
       .join('');
     const isEnemy = combatant.side === 'enemy';
-    // 의도 표시 단일 소스: 실행 경로(_runSingleEnemyTurn)가 소비하는 _nextIntent만 사용 —
-    // 별도 계산된 의도를 표시하면 실제 행동과 어긋날 수 있다
     const legacyEnemy = isEnemy ? this._enemyForCombatant(combatant) : null;
     const intent = legacyEnemy?._nextIntent ?? null;
+    const reservedThreat = this._reservedThreatIntent(legacyEnemy);
     let intentHtml = '';
     if (intent && !combatant.dead) {
-      const countdownHtml = intent.countdown != null
-        ? `<span class="intent-count">${this._escape(intent.countdown)}</span>`
-        : '';
       intentHtml = `
-        <div class="combat-intent${intent.countdown != null && intent.countdown <= 1 ? ' imminent' : ''}"
-             title="${this._escape(intent.label ?? '')}">
-          <span class="intent-icon">${intent.iconEmoji ?? '🗡'}</span>${countdownHtml}
-          ${this._renderIntentMeta(intent)}
+        <div class="combat-intent-stack">
+          ${this._renderCombatIntentBadge(intent, 'current-action')}
+          ${this._renderCombatIntentBadge(reservedThreat, 'reserved-threat')}
         </div>`;
     }
     // 발견한 약점만 표시 — 첫 약점 타격 전에는 미지의 정보
@@ -873,23 +922,14 @@ const CombatUI = {
           affinityHint = `<span class="affinity-badge resistance">${RESIST_LABEL[playerWeaponType] ?? '⬇저항'}</span>`;
       }
 
-      // 의도 예고 배지 — 머리 위에 [행동 아이콘][카운트다운]➤[타겟 아이콘]
       let intentHtml = '';
       const intent = enemy._nextIntent;
+      const reservedThreat = this._reservedThreatIntent(enemy);
       if (!isDead && intent) {
-        const cd = intent.countdown != null ? `<b class="cvi-cd">${intent.countdown}</b>` : '';
-        const tgtIcon = intent.targetType === 'companion'
-          ? (COMPANION_ICONS[intent.targetId] ?? '🤝')
-          : '👤';
-        // 전진 의도는 타겟 연계 화살표 없이 아이콘만 표시
-        const linkHtml = intent.action === 'advance'
-          ? ''
-          : `<span class="cvi-arrow">➤</span><span class="cvi-target">${tgtIcon}</span>`;
-        const imminent = intent.countdown != null && intent.countdown <= 1;
         intentHtml = `
-          <div class="cv-intent${imminent ? ' imminent' : ''}" title="${this._escape(intent.label ?? '')}">
-            <span class="cvi-icon">${intent.iconEmoji ?? '🗡'}</span>${cd}${linkHtml}
-            ${this._renderIntentMeta(intent, 'cvi')}
+          <div class="cv-intent-stack">
+            ${this._renderVisualIntentBadge(intent, 'current-action')}
+            ${this._renderVisualIntentBadge(reservedThreat, 'reserved-threat')}
           </div>`;
       }
 

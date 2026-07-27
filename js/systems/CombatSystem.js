@@ -925,13 +925,14 @@ const CombatSystem = {
 
   // 라운드 경계: 상태이상 틱(레거시+랭크) → 사망/승패 정리 → 이니셔티브 재굴림
   _onRoundStart(combat) {
+    this._migrateRankedEnemyStatusesToLegacy(combat);
     this._tickStatusEffects();
     this._syncLegacyAlliesToRankedCombatants();
     this._syncLegacyEnemiesToRanked(combat);
 
     for (const combatant of Object.values(combat.combatants ?? {})) {
       if (combatant.dead === true) continue;
-      if (combatant.sourceType === 'companion') continue;
+      if (combatant.sourceType === 'companion' || combatant.sourceType === 'enemy') continue;
       const events = tickStatusEffects(combatant, Math.random);
       for (const event of events) {
         if (event.damage > 0) {
@@ -975,6 +976,39 @@ const CombatSystem = {
     this._rebuildTurnOrder(combat);
   },
 
+  _migrateRankedEnemyStatusesToLegacy(combat) {
+    for (const combatant of Object.values(combat?.combatants ?? {})) {
+      if (combatant.sourceType !== 'enemy') continue;
+      const enemy = combat.enemies?.[combatant.enemyIndex];
+      const rankedStatuses = combatant.statusEffects;
+      if (!enemy || !Array.isArray(rankedStatuses) || rankedStatuses.length === 0) continue;
+      if (enemy._statusEffects === rankedStatuses) continue;
+      if (!Array.isArray(enemy._statusEffects)) enemy._statusEffects = [];
+
+      for (const rankedStatus of rankedStatuses) {
+        const status = this._normalizeStatusInflict(rankedStatus);
+        if (!status) continue;
+        const existing = enemy._statusEffects.find(candidate => candidate.id === status.id);
+        if (!existing) {
+          enemy._statusEffects.push(status);
+          continue;
+        }
+        existing.duration = Math.max(existing.duration ?? 0, status.duration ?? 1);
+        existing.effect = {
+          ...(status.effect ?? {}),
+          ...(existing.effect ?? {}),
+        };
+        if (status.effect?.hpLossPerRound != null) {
+          existing.effect.hpLossPerRound = Math.max(
+            existing.effect.hpLossPerRound ?? 0,
+            status.effect.hpLossPerRound,
+          );
+        }
+      }
+      combatant.statusEffects = enemy._statusEffects;
+    }
+  },
+
   _syncLegacyEnemiesToRanked(combat) {
     for (const combatant of Object.values(combat?.combatants ?? {})) {
       if (combatant.sourceType !== 'enemy') continue;
@@ -982,6 +1016,7 @@ const CombatSystem = {
       if (!enemy) continue;
       combatant.hp = Math.max(0, enemy.currentHp ?? combatant.hp ?? 0);
       combatant.dead = combatant.hp <= 0;
+      combatant.statusEffects = enemy._statusEffects ?? [];
     }
   },
 
@@ -1272,6 +1307,9 @@ const CombatSystem = {
     }
 
     const idx = enemyIdx ?? GameState.combat?.enemies?.indexOf(enemy);
+    const rankedTarget = Object.values(GameState.combat?.combatants ?? {}).find(combatant =>
+      combatant?.sourceType === 'enemy' && combatant.enemyIndex === idx);
+    if (rankedTarget) rankedTarget.statusEffects = enemy._statusEffects;
     this._fx({ kind: 'status', target: 'enemy', enemyIdx: idx, statusId: status.id });
     return true;
   },

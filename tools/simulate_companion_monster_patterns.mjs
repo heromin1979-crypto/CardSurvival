@@ -115,6 +115,7 @@ const METRIC_LABELS = {
   companionStatusLoss: '동료 대상 상태이상 손실',
   declaredButUnexecutedCounters: '선언됐지만 실행되지 않는 카운터',
   invalidMotionKeys: '유효하지 않은 motionKey',
+  productionDefaultStanceMismatches: 'production 기본 동료 자세 불일치',
 };
 
 function parseArgs(argv) {
@@ -360,7 +361,6 @@ function createProductionCombat(companionId, enemyId, random) {
         maxHp: HARNESS_HP,
         isCompanion: true,
         name: companionId,
-        stance: COMPANION_TACTICS[companionId]?.preferredStance ?? 'attack',
         statusEffects: [],
         skillCooldowns: {},
       },
@@ -963,6 +963,26 @@ function collectWarnings(companionIds, companionDistributions) {
   return warnings;
 }
 
+function probeProductionDefaultStances(seed, companionIds) {
+  return companionIds.map(companionId => {
+    createProductionCombat(
+      companionId,
+      'zombie_common',
+      randomFor(seed, companionId, 'production-default-stance'),
+    );
+    const state = GameState.npcs.states[companionId];
+    const expected = COMPANION_TACTICS[companionId]?.preferredStance ?? 'attack';
+    const actual = CombatSystem._getCompanionStance(companionId);
+    return {
+      companionId,
+      expected,
+      actual,
+      stateHasExplicitStance: Object.hasOwn(state, 'stance'),
+      ok: !Object.hasOwn(state, 'stance') && actual === expected,
+    };
+  });
+}
+
 function simulate({ runs, seed }, roster) {
   return withGameStateSnapshot(() => {
     const companionIds = [...EXPECTED_COMPANION_IDS];
@@ -987,6 +1007,10 @@ function simulate({ runs, seed }, roster) {
       enemyIds.map(enemyId => [enemyId, {}]),
     );
     const combos = [];
+    const defaultStanceProbe = probeProductionDefaultStances(seed, companionIds);
+    metrics.productionDefaultStanceMismatches = defaultStanceProbe
+      .filter(row => !row.ok)
+      .length;
 
     for (const companionId of companionIds) {
       for (const enemyId of enemyIds) {
@@ -1083,6 +1107,7 @@ function simulate({ runs, seed }, roster) {
       combos,
       counters,
       warnings,
+      defaultStanceProbe,
     };
   });
 }
@@ -1106,6 +1131,7 @@ function renderReport(result, options) {
     combos,
     counters,
     warnings,
+    defaultStanceProbe,
   } = result;
   const lines = [
     '# 동료·일반 몬스터 패턴 통합 QA',
@@ -1123,6 +1149,15 @@ function renderReport(result, options) {
     `| 일반 몬스터 roster | 12 | ${roster.enemyCount} | PASS |`,
     '',
     'roster 수, ID 완전성, 동료별 3개 loadout, 기술 정의 존재 여부는 시뮬레이션 전에 hard fail로 검사한다.',
+    '',
+    '## Production 기본 동료 자세 smoke',
+    '',
+    '| 동료 | profile 기본 | production 기본 | state stance 미설정 | 결과 |',
+    '|---|---|---|---|---|',
+    ...defaultStanceProbe.map(row => (
+      `| \`${row.companionId}\` | \`${row.expected}\` | \`${row.actual}\` | `
+      + `${row.stateHasExplicitStance ? '아니오' : '예'} | ${row.ok ? 'PASS' : 'FAIL'} |`
+    )),
     '',
     '## 판정',
     '',
@@ -1233,6 +1268,7 @@ function renderReport(result, options) {
     '## 계측 경계',
     '',
     '- 동료는 production `_setupCombat()` 뒤 `_prepareCompanionTurn()` → `_planCompanionAction()` → `_executePlannedCompanionAction()`으로만 계획·실행한다. simulator는 효과 adapter를 재구현하지 않는다.',
+    '- simulator의 동료 state에는 `stance`를 주입하지 않으며, 별도 smoke가 `CombatSystem._getCompanionStance()`의 production 기본값을 20종 `preferredStance`와 대조한다.',
     '- 몬스터는 UI가 읽는 `enemy._nextIntent`를 값 snapshot으로 보존하고, 그 사이에 동료 행동을 삽입한 뒤 production `_runSingleEnemyTurn()`을 진행한다.',
     '- 실제 행동·대상·다중타격은 `_executeEnemyCommittedAction()` 호출을 observation wrapper로 관찰한다. wrapper는 production 결과를 바꾸지 않고 즉시 복원된다.',
     '- `stunDelays`는 `advanceEnemyAction()` 정상 진행이 1 감소하는 negative control, 선언값 `true`, production stun 부여 후 `_runSingleEnemyTurn()`에서 같은 committed action과 countdown이 보존되는지를 모두 요구한다.',

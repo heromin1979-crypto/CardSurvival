@@ -301,6 +301,50 @@ describe('_applyRankedEffect heal', () => {
   });
 });
 
+describe('적 ranked 상태의 legacy 단일 틱 동기화', () => {
+  it.each(['bleed', 'burn', 'poison'])(
+    '%s를 반복 부여해도 한 번만 저장되고 라운드당 한 번만 피해를 준다',
+    statusId => {
+      const combat = setupRankedCombat();
+      const actor = makeCombatant({
+        id: 'npc_tower_security',
+        sourceId: 'npc_tower_security',
+      });
+      const target = combat.combatants['enemy:0'];
+      const statusEffect = {
+        type: 'status',
+        status: {
+          id: statusId,
+          name: statusId,
+          duration: 2,
+          effect: { hpLossPerRound: 3 },
+        },
+      };
+
+      CombatSystem._applyRankedEffect(statusEffect, actor, target, () => 0);
+      CombatSystem._applyRankedEffect(statusEffect, actor, target, () => 0);
+
+      expect(combat.enemies[0]._statusEffects).toEqual([
+        expect.objectContaining({ id: statusId, duration: 2 }),
+      ]);
+      expect(target.statusEffects).toEqual([
+        expect.objectContaining({ id: statusId, duration: 2 }),
+      ]);
+
+      CombatSystem._onRoundStart(combat);
+
+      expect(combat.enemies[0].currentHp).toBe(27);
+      expect(target.hp).toBe(27);
+      expect(combat.enemies[0]._statusEffects).toEqual([
+        expect.objectContaining({ id: statusId, duration: 1 }),
+      ]);
+      expect(target.statusEffects).toEqual([
+        expect.objectContaining({ id: statusId, duration: 1 }),
+      ]);
+    },
+  );
+});
+
 describe('복합 이동 기술의 경계 rank 실행', () => {
   it('rank 4 재배치는 이동 no-op 뒤 dodge를 적용하고 비용과 쿨다운을 한 번 처리한다', () => {
     const combat = setupRankedCombat();

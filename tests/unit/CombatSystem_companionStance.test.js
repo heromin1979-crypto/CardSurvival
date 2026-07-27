@@ -74,14 +74,24 @@ afterEach(() => {
 });
 
 describe('동료 stance 턴 의미', () => {
-  it('미설정 stance는 attack으로 해석한다', () => {
+  it('미설정 stance는 동료 profile의 preferredStance로 해석한다', () => {
     GameState.npcs = {
       states: {
         npc_nurse: { hp: 50, maxHp: 50, isCompanion: true },
       },
     };
 
-    expect(CombatSystem._getCompanionStance('npc_nurse')).toBe('attack');
+    expect(CombatSystem._getCompanionStance('npc_nurse')).toBe('heal');
+  });
+
+  it('profile이 없는 동료의 미설정 stance는 attack으로 fallback한다', () => {
+    GameState.npcs = {
+      states: {
+        npc_unknown: { hp: 50, maxHp: 50, isCompanion: true },
+      },
+    };
+
+    expect(CombatSystem._getCompanionStance('npc_unknown')).toBe('attack');
   });
 
   it('manual은 현재 동료에서 실제 스킬 카드 입력을 기다린다', () => {

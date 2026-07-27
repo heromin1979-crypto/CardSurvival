@@ -26,6 +26,7 @@ function enemy(hp = 100, {
 function setupCompanionCombat({
   npcId = 'npc_nurse',
   stance = 'heal',
+  omitStance = false,
   playerHp = 10,
   playerMaxHp = 100,
   enemyHp = 100,
@@ -45,7 +46,7 @@ function setupCompanionCombat({
         hp: 50,
         maxHp: 50,
         isCompanion: true,
-        stance,
+        ...(omitStance ? {} : { stance }),
       },
     },
   };
@@ -101,6 +102,30 @@ afterEach(() => {
 });
 
 describe('동료 전술의 실제 스킬 command 통합', () => {
+  it.each([
+    ['npc_nurse', 'heal', 'nurse_triage'],
+    ['npc_tower_doctor', 'heal', 'tower_doctor_triage'],
+    ['npc_soldier_deserter', 'support', 'deserter_covering_fire'],
+    ['npc_tower_security', 'hold', 'security_guard'],
+  ])(
+    'stance 없는 %s state는 production 기본 %s 전술로 %s를 계획한다',
+    (npcId, expectedStance, expectedSkillId) => {
+      setupCompanionCombat({
+        npcId,
+        omitStance: true,
+        playerHp: 10,
+      });
+
+      expect(GameState.npcs.states[npcId]).not.toHaveProperty('stance');
+      expect(CombatSystem._getCompanionStance(npcId)).toBe(expectedStance);
+
+      CombatSystem._prepareCompanionTurn(npcId);
+      expect(CombatSystem._planCompanionAction(npcId)).toMatchObject({
+        skillId: expectedSkillId,
+      });
+    },
+  );
+
   it('레거시 공용 치료 설정 없이 combat.skillsById의 nurse_triage를 자동 실행한다', () => {
     const combat = setupCompanionCombat();
 
@@ -211,5 +236,47 @@ describe('동료 전술의 실제 스킬 command 통합', () => {
     expect(GameState.noise.level).toBe(1);
     expect(combat.actionSequence).toBe(1);
     expect(combat.activeCombatantId).toBe('player');
+  });
+
+  it('실제 security_baton 명중의 stun이 다음 production 적 턴을 건너뛰고 소비된다', () => {
+    const combat = setupCompanionCombat({
+      npcId: 'npc_tower_security',
+      stance: 'attack',
+      playerHp: 100,
+    });
+    const enemy = combat.enemies[0];
+
+    CombatSystem._prepareCompanionTurn('npc_tower_security');
+    const plan = {
+      skillId: 'security_baton',
+      targetId: 'enemy:0',
+      reason: 'integration_probe',
+    };
+    expect(combat.skillsById.security_baton.effects).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          type: 'status',
+          status: expect.objectContaining({ id: 'stun' }),
+        }),
+      ]),
+    );
+    const result = CombatSystem._executePlannedCompanionAction(plan);
+
+    expect(result).toMatchObject({ ok: true, turnConsumed: true });
+    expect(combat.combatants['enemy:0'].statusEffects).toEqual(
+      expect.arrayContaining([expect.objectContaining({ id: 'stun' })]),
+    );
+    expect(enemy._statusEffects).toEqual(
+      expect.arrayContaining([expect.objectContaining({ id: 'stun' })]),
+    );
+
+    const executeSpy = vi.spyOn(CombatSystem, '_executeEnemyCommittedAction');
+    CombatSystem._runSingleEnemyTurn(0);
+
+    expect(executeSpy).not.toHaveBeenCalled();
+    expect(enemy._statusEffects.some(status => status.id === 'stun')).toBe(false);
+    expect(
+      combat.combatants['enemy:0'].statusEffects.some(status => status.id === 'stun'),
+    ).toBe(false);
   });
 });

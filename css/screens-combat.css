@@ -376,6 +376,19 @@
   white-space: nowrap;
 }
 
+.combat-intent-stack {
+  align-self: center;
+  display: flex;
+  max-width: 100%;
+  gap: var(--gap-xs);
+}
+
+.combat-intent[data-intent-role="reserved-threat"],
+.cv-intent[data-intent-role="reserved-threat"] {
+  border-color: var(--text-warn);
+  color: var(--text-warn);
+}
+
 .combat-stage-center {
   align-self: stretch;
   display: flex;
@@ -2553,6 +2566,16 @@
   cursor: help;
   z-index: 4;
 }
+.cv-intent-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--gap-xs);
+  margin-bottom: var(--gap-xs);
+}
+.cv-intent-stack .cv-intent {
+  margin-bottom: 0;
+}
 .cv-intent .cvi-cd {
   color: #ff5a3c;
   font-family: var(--font-mono);
@@ -4353,6 +4376,32 @@
   border-left: 8px solid transparent;
   border-right: 8px solid transparent;
   border-top: 12px solid rgba(196, 72, 61, 0.88);
+}
+
+.combat-focused .combat-intent-stack {
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  display: flex;
+  gap: var(--gap-xs);
+  transform: translateX(-50%);
+  z-index: 4;
+}
+
+.combat-focused .combat-intent-stack .combat-intent {
+  position: relative;
+  top: auto;
+  left: auto;
+  transform: none;
+}
+
+.combat-focused .combat-intent-stack .combat-intent[data-intent-role="reserved-threat"] {
+  border-color: var(--text-warn);
+  color: var(--text-warn);
+}
+
+.combat-focused .combat-intent-stack .combat-intent[data-intent-role="reserved-threat"]::after {
+  border-top-color: var(--text-warn);
 }
 
 /* 발견된 약점 배지 — 첫 약점 타격 이후에만 표시 (다회차 지식 축적) */
