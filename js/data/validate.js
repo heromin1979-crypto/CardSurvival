@@ -28,6 +28,95 @@ const VALID_COMBAT_EFFECTS = new Set([
   'flee',
 ]);
 
+const VALID_BOSS_MOVEMENTS = new Set(['none', 'lunge', 'advance', 'retreat']);
+
+function validateBossAction(action, expectedCategory, path) {
+  const errors = [];
+
+  if (typeof action?.id !== 'string' || action.id.trim().length === 0) {
+    errors.push(`${path}.id is required`);
+  }
+  if (action?.category !== expectedCategory) {
+    errors.push(`${path}.category must be "${expectedCategory}"`);
+  }
+  if (typeof action?.motionKey !== 'string' || action.motionKey.trim().length === 0) {
+    errors.push(`${path}.motionKey is required`);
+  }
+  if (typeof action?.impactFx !== 'string' || action.impactFx.trim().length === 0) {
+    errors.push(`${path}.impactFx is required`);
+  }
+  if (!VALID_BOSS_MOVEMENTS.has(action?.movement)) {
+    errors.push(`${path}.movement must be none, lunge, advance, or retreat`);
+  }
+  if (action?.damage !== undefined) {
+    const hasAscendingDamageRange = Array.isArray(action.damage)
+      && action.damage.length === 2
+      && Number.isFinite(action.damage[0])
+      && Number.isFinite(action.damage[1])
+      && action.damage[0] <= action.damage[1];
+    if (!hasAscendingDamageRange) {
+      errors.push(`${path}.damage must be an ascending [minimum, maximum] range`);
+    }
+  }
+
+  return errors;
+}
+
+function basicIdentitySignature(action) {
+  return JSON.stringify({
+    targetPolicy: action.targetPolicy ?? 'frontmost',
+    targetCount: action.targetCount ?? 1,
+    hitCount: action.hitCount ?? 1,
+    statusEffects: (action.effects ?? [])
+      .filter(effect => effect?.type === 'targetStatus')
+      .map(effect => effect.id)
+      .sort(),
+    forcedMoves: (action.effects ?? [])
+      .filter(effect => effect?.type === 'forcedMove')
+      .map(effect => effect.distance),
+  });
+}
+
+export function validateBossPatternSchema(bosses = {}) {
+  const errors = [];
+
+  for (const [bossId, boss] of Object.entries(bosses)) {
+    const path = `[boss/${bossId}] bossPattern`;
+    const pattern = boss?.bossPattern;
+    const basicAttacks = pattern?.basicAttacks;
+
+    if (!Array.isArray(basicAttacks) || basicAttacks.length !== 2) {
+      errors.push(`${path}.basicAttacks must contain exactly two actions`);
+    } else {
+      for (const [index, action] of basicAttacks.entries()) {
+        errors.push(...validateBossAction(action, 'basic', `${path}.basicAttacks[${index}]`));
+      }
+      if (basicIdentitySignature(basicAttacks[0]) === basicIdentitySignature(basicAttacks[1])) {
+        errors.push(`${path}.basicAttacks must have distinct combat identities`);
+      }
+    }
+
+    if (Object.hasOwn(pattern ?? {}, 'normalSkills')) {
+      errors.push(`${path}.normalSkills is not supported`);
+    }
+
+    errors.push(...validateBossAction(pattern?.specialSkill, 'special', `${path}.specialSkill`));
+    errors.push(...validateBossAction(pattern?.ultimate, 'ultimate', `${path}.ultimate`));
+
+    if (pattern?.ultimate?.hpThreshold !== 0.3) {
+      errors.push(`${path}.ultimate.hpThreshold must be 0.3`);
+    }
+    if (pattern?.ultimate?.telegraphTurns !== 1) {
+      errors.push(`${path}.ultimate.telegraphTurns must be 1`);
+    }
+    if (pattern?.ultimate?.oncePerCombat !== true) {
+      errors.push(`${path}.ultimate.oncePerCombat must be true`);
+    }
+  }
+
+  return errors;
+}
+
 export function validateCompanionPatternData({
   loadouts = {},
   skills = {},
