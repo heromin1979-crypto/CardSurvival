@@ -599,7 +599,6 @@ const ITEMS_MISC = {
     stackable: true,
     maxStack: 10,
     nutrition: 15,
-    infectionRisk: 0.15,
     description: '날로 먹을 수 있지만 감염 위험. 구워 먹길 권장.',
     onConsume: {
       nutrition: 15,
@@ -1403,11 +1402,11 @@ const ITEMS_MISC = {
     icon: '🥩',
     stackable: true,
     maxStack: 3,
-    description: '폐점한 한우 전문점 냉동고에서 구한 특등급 한우. 감염 위험 있음.',
+    description: '폐점한 한우 전문점 냉동고에서 구한 특등급 한우. 냉동 보관 덕에 감염 위험은 낮다.',
     onConsume: {
       nutrition: 55,
       morale: 12,
-      infection: 6,
+      infection: 3,
     },
     tags: [
       'food',

@@ -2057,6 +2057,7 @@ export const en = {
   // ── Items: Combat ───────────────────────────────────────────
   '_item.iron_pipe':       'Iron Pipe',
   '_item.knife':           'Knife',
+  '_item.combat_knife':    'Combat Knife',
   '_item.crowbar':         'Crowbar',
   '_item.baseball_bat':    'Baseball Bat',
   '_item.reinforced_bat':  'Reinforced Bat',

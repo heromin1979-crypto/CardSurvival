@@ -261,6 +261,7 @@ const CARD_IMAGES = {
   wooden_sword:          'assets/images/weapons/knife.png',
   combat_scalpel:        'assets/images/tools/scalpel.png',
   knife:                 'assets/images/weapons/knife.png',
+  combat_knife:          'assets/images/weapons/knife.png',
   sharpened_knife:       'assets/images/weapons/sharpened_knife.png',
   machete:               'assets/images/weapons/machete.png',
   hand_axe:              'assets/images/weapons/hand_axe.png',

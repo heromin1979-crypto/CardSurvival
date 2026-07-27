@@ -16,6 +16,7 @@ const EFFECT_LABELS = {
   contamination: '오염',
 };
 
+// contamination은 플레이어 스탯이 아니라 카드 뱃지에서 제외 (아이템 오염도·분기 트리거 전용 필드)
 const CARD_EFFECT_ORDER = [
   'hydration',
   'nutrition',
@@ -26,7 +27,6 @@ const CARD_EFFECT_ORDER = [
   'fatigue',
   'infection',
   'radiation',
-  'contamination',
 ];
 
 export function getConsumableEffect(def) {

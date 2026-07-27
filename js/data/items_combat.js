@@ -38,6 +38,20 @@ const ITEMS_COMBAT = {
     dismantle: [{ definitionId: 'sharp_blade', qty: 1, chance: 0.7 }],
   },
 
+  combat_knife: {
+    id: 'combat_knife', name: '전투용 칼', type: 'weapon', subtype: 'melee',
+    rarity: 'rare', weight: 0.4,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🗡️', description: '군용 전투 나이프. 정확하고 조용하며 쉽게 무뎌지지 않는다.',
+    tags: ['weapon', 'melee', 'silent'],
+    weaponType: 'blade',
+    combat: { damage: [16, 26], accuracy: 0.85, noiseOnUse: 1, durabilityLoss: 4, critChance: 0.30, critMultiplier: 2.0 },
+    dismantle: [
+      { definitionId: 'sharp_blade', qty: 1, chance: 0.8 },
+      { definitionId: 'scrap_metal', qty: 1, chance: 0.4 },
+    ],
+  },
+
   sharpened_knife: {
     id: 'sharpened_knife', name: '날카로운 칼', type: 'weapon', subtype: 'melee',
     rarity: 'uncommon', weight: 0.3,

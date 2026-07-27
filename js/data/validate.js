@@ -664,15 +664,31 @@ async function validate() {
   } catch { /* landmarks.js \uBBF8\uC874\uC7AC/\uD3EC\uB9F7 \uBCC0\uACBD \uC2DC ID \uAC80\uC99D\uC740 \uAC74\uB108\uB700 */ }
 
   let mqChecked = 0;
+  let mqItemRefBad = 0;
   for (const [id, q] of Object.entries(MAIN_QUESTS)) {
     const r = validateMainQuestSchema({ ...q, id }, { knownDistricts, knownLandmarks });
     for (const e of r.errors) {
       console.log(`\u274C [main quest] ${e}`);
       errors++;
     }
+    // \uBCF4\uC0C1\u00B7\uC218\uC9D1 \uBAA9\uD45C \uC544\uC774\uD15C \uCC38\uC870 \uAC80\uC99D (\uBBF8\uC815\uC758 \uC544\uC774\uD15C\uC740 \uC9C0\uAE09 \uC2DC \uC870\uC6A9\uD788 \uC99D\uBC1C)
+    for (const [ri, it] of (q.reward?.items ?? []).entries()) {
+      const itemId = it.definitionId ?? it.id;
+      if (!itemId || !allItemIds.has(itemId)) {
+        console.log(`\u274C [main quest/${id}] reward.items[${ri}] "${itemId}" not found in items`);
+        errors++; mqItemRefBad++;
+      }
+    }
+    const objectives = Array.isArray(q.objectives) ? q.objectives : (q.objective ? [q.objective] : []);
+    for (const [oi, obj] of objectives.entries()) {
+      if (obj?.type === 'collect_item' && obj.definitionId && !allItemIds.has(obj.definitionId)) {
+        console.log(`\u274C [main quest/${id}] objectives[${oi}] collect_item "${obj.definitionId}" not found in items`);
+        errors++; mqItemRefBad++;
+      }
+    }
     mqChecked++;
   }
-  console.log(`  \uAC80\uC0AC\uD55C \uD018\uC2A4\uD2B8: ${mqChecked}`);
+  console.log(`  \uAC80\uC0AC\uD55C \uD018\uC2A4\uD2B8: ${mqChecked}, \uC544\uC774\uD15C \uCC38\uC870 \uC624\uB958: ${mqItemRefBad}`);
 
   // 9. 6\uC9C1\uC5C5 \uBA54\uC778 \uD018\uC2A4\uD2B8 \uC778\uB371\uC2A4 \uB4F1\uB85D \uAC80\uC99D
   // \uC9C1\uC5C5\uBCC4 \uD3F4\uB354 index.js\uC758 quest \uD0A4\uAC00 mainQuests/index.js \uBCD1\uD569 \uACB0\uACFC\uC5D0 \uBAA8\uB450 \uD3EC\uD568\uB418\uB294\uC9C0 \uD655\uC778.
@@ -796,6 +812,66 @@ async function validate() {
     console.log('❌ animal_nest 아이템이 없습니다 — TheftSystem 둥지 생성 실패');
     errors++;
   }
+
+  // 12-1. NPC 아이템 참조 검증 — gear/gifts/trades/forage/치료/보상 전반
+  //        (combat_knife 미정의 사고 재발 방지: 보상 지급은 정의 누락 시 조용히 증발)
+  console.log('\n=== NPC ITEM REFS CHECK ===');
+  const NPCS_DATA = (await import('./npcs.js')).default;
+  let npcRefChecked = 0, npcRefBad = 0;
+  for (const [npcId, npc] of Object.entries(NPCS_DATA)) {
+    const checkId = (where, id) => {
+      npcRefChecked++;
+      if (!id || !allItemIds.has(id)) {
+        console.log(`❌ [npc/${npcId}] ${where} "${id}" not found in items`);
+        errors++; npcRefBad++;
+      }
+    };
+
+    // companion.gear — 최대 4개 + qty 정수
+    const gear = npc?.companion?.gear;
+    if (gear != null) {
+      if (!Array.isArray(gear) || gear.length === 0 || gear.length > 4) {
+        console.log(`❌ [npc/${npcId}] gear must be array of 1~4 entries, got ${Array.isArray(gear) ? gear.length : typeof gear}`);
+        errors++; npcRefBad++;
+      } else {
+        for (const [gi, entry] of gear.entries()) {
+          checkId(`gear[${gi}]`, entry?.id);
+          if (entry?.qty != null && (!Number.isInteger(entry.qty) || entry.qty <= 0)) {
+            console.log(`❌ [npc/${npcId}] gear[${gi}].qty "${entry.qty}" — 1 이상 정수여야 함`);
+            errors++; npcRefBad++;
+          }
+        }
+      }
+    }
+
+    for (const [gi, g] of (npc.gifts ?? []).entries()) {
+      checkId(`gifts[${gi}]`, g.itemId ?? g.definitionId);
+    }
+    for (const [ti, tr] of (npc.trades ?? []).entries()) {
+      const giveId    = typeof tr.give    === 'string' ? tr.give    : tr.give?.id;
+      const receiveId = typeof tr.receive === 'string' ? tr.receive : tr.receive?.id;
+      checkId(`trades[${ti}].give`, giveId);
+      checkId(`trades[${ti}].receive`, receiveId);
+    }
+    for (const [fi, f] of (npc.forageItems ?? []).entries()) {
+      checkId(`forageItems[${fi}]`, f.id);
+    }
+    if (npc.woundHealItem) checkId('woundHealItem', npc.woundHealItem);
+    for (const evt of (npc.trustEvents ?? [])) {
+      for (const [ii, it] of (evt.effect?.giveItems ?? []).entries()) {
+        checkId(`trustEvents(${evt.id}).giveItems[${ii}]`, it.id);
+      }
+    }
+    for (const q of (npc.quests ?? [])) {
+      for (const [ri, it] of (q.reward?.items ?? []).entries()) {
+        checkId(`quests(${q.id}).reward.items[${ri}]`, it.id ?? it.definitionId);
+      }
+      for (const [si, step] of (q.steps ?? []).entries()) {
+        if (step.type === 'collect') checkId(`quests(${q.id}).steps[${si}]`, step.itemId);
+      }
+    }
+  }
+  console.log(`  검사한 NPC 아이템 참조: ${npcRefChecked}, 오류: ${npcRefBad}`);
 
   // 13. Data-driven combat skill and loadout contracts
   console.log('\n=== COMBAT SKILL DATA CHECK ===');

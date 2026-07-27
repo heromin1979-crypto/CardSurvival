@@ -719,23 +719,29 @@ const StatSystem = {
       EventBus.emit('statChanged', { stat: 'hp', oldVal: gs.player.hp.current - healed, newVal: gs.player.hp.current });
     }
 
-    // contamination effects (medicine 스킬 Lv15+ poisonResist, Lv20 poisonImmune 적용)
+    // 감염/방사능 증가 — 카드 표기 수치(eff)를 오염도와 무관하게 그대로 적용.
+    // 오염도(contam) 파생값은 명시 수치가 없을 때만 사용 (medicine 스킬 Lv15+ poisonResist, Lv20 poisonImmune 적용)
     const contam = eff.contamination === 'inherit' ? inst.contamination : (eff.contamination ?? 0);
-    if (contam > 0) {
+    const infSource = eff.infection > 0 ? eff.infection : (contam > 0 ? Math.floor(contam / 8) : 0);
+    const radSource = eff.radiation > 0 ? eff.radiation : (contam > 0 ? Math.floor(contam / 10) : 0);
+    if (infSource > 0 || radSource > 0 || contam > 0) {
       const armor    = this.getArmorEffects();
       const poisonImmune = SkillSystem.getBonus('medicine', 'poisonImmune');
       const poisonResist = SkillSystem.getBonus('medicine', 'poisonResist') ?? 0;
       const medMult = poisonImmune ? 0 : (1 - poisonResist);
-      const radGain  = Math.round((eff.radiation  ?? Math.floor(contam / 10)) * armor.radiationMult * medMult);
-      const infGainBase = Math.round((eff.infection ?? Math.floor(contam / 8)) * armor.contaminationMult * medMult);
-      const infGain = gs.player.permanentInfectionImmunity ? 0 : infGainBase;
-      gs.modStat('radiation', radGain);
-      gs.modStat('infection', infGain);
+      const radGain  = Math.round(radSource * armor.radiationMult * medMult);
+      const infGain = gs.player.permanentInfectionImmunity
+        ? 0
+        : Math.round(infSource * armor.infectionMult * medMult);
+      if (radGain > 0) gs.modStat('radiation', radGain);
+      if (infGain > 0) gs.modStat('infection', infGain);
       if (contam > 50 && !poisonImmune) {
         EventBus.emit('notify', { message: I18n.t('statSys.contamConsumed'), type: 'danger' });
       }
       // 오염 음식/물 → 질병 발병 체크 (면역 시 건너뜀)
-      if (!poisonImmune && !gs.player.permanentInfectionImmunity) DiseaseSystem.checkContaminatedConsume(def, inst.contamination, gs);
+      if (contam > 0 && !poisonImmune && !gs.player.permanentInfectionImmunity) {
+        DiseaseSystem.checkContaminatedConsume(def, inst.contamination, gs);
+      }
     }
 
     // 아이템 사용 → 질병 치료 체크
