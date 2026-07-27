@@ -54,6 +54,19 @@ async function main() {
     await page.waitForSelector('.combat-focused-lineup');
     await page.waitForSelector('.combat-command-deck');
 
+    const computedBackdrop = await page.locator('.combat-battlefield').evaluate(element => (
+      getComputedStyle(element).backgroundImage
+    ));
+    const backdropMatch = computedBackdrop.match(/url\(["']?([^"')]+combat_jongno_subway_clean_v2\.png)["']?\)/);
+    if (!backdropMatch) {
+      throw new Error(`Focused battlefield did not expose the clean backdrop URL: ${computedBackdrop}`);
+    }
+    const backdropResponse = await page.request.get(backdropMatch[1]);
+    if (!backdropResponse.ok()) {
+      throw new Error(`Focused battlefield backdrop request failed: ${backdropResponse.status()} ${backdropMatch[1]}`);
+    }
+    console.log(`combat-backdrop:ok status=${backdropResponse.status()} url=${backdropMatch[1]}`);
+
     // 초상화 스트립과 스킬 카드 스탯 표기 확인
     await page.waitForSelector('.combat-round-track .init-portrait');
     await page.waitForSelector('.combat-skill-button .skill-stat');

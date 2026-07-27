@@ -95,6 +95,16 @@ describe('Combat focused UI', () => {
     expect(document.querySelector('[data-combatant-id="enemy:0"]').dataset.spriteId).toBe('enemy_zombie_common');
   });
 
+  it('resolves the focused backdrop from the document base instead of the stylesheet path', () => {
+    const sceneStyle = document.querySelector('.combat-focused').getAttribute('style');
+    const expectedBackdropUrl = new URL(
+      './assets/images/combat_jongno_subway_clean_v2.png',
+      document.baseURI,
+    ).href;
+
+    expect(sceneStyle).toContain(`--combat-bg-image:url('${expectedBackdropUrl}')`);
+  });
+
   it('selects the player combat sprite from the equipped weapon', () => {
     const cases = [
       ['knife', 'player_knife'],

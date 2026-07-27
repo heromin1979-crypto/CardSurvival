@@ -240,10 +240,14 @@ const CombatUI = {
 
   _combatAssetStyle() {
     const scene = this._combatScene();
+    const backdropUrl = new URL(scene.backdrop, document.baseURI).href;
     const parts = [
-      `--combat-bg-image:url('${scene.backdrop}')`,
+      `--combat-bg-image:url('${backdropUrl}')`,
     ];
-    if (scene.cardFrame) parts.push(`--combat-card-frame-image:url('${scene.cardFrame}')`);
+    if (scene.cardFrame) {
+      const cardFrameUrl = new URL(scene.cardFrame, document.baseURI).href;
+      parts.push(`--combat-card-frame-image:url('${cardFrameUrl}')`);
+    }
     return parts.join(';');
   },
 
