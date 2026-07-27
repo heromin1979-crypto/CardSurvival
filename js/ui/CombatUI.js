@@ -374,7 +374,6 @@ const CombatUI = {
         <div class="ctb-left">
           <span class="ctb-brand">서울 생존 · <b>전투</b></span>
           <span class="ctb-divider"></span>
-          <span class="ctb-chip">${combat.roundNumber ?? 1} 라운드</span>
         </div>
         <div class="ctb-right">
           <span class="ctb-chip">지역 ${this._escape(districtName)}</span>
@@ -522,8 +521,8 @@ const CombatUI = {
     const skillIds = activeCombatant?.skillIds ?? [];
     const activeRank = getRank(combat?.formations, activeCombatant?.id);
     return `
-      <div class="combat-skill-bar">
-        ${skillIds.slice(0, 5).map(skillId => {
+      <div class="combat-skill-bar" data-skill-count="${skillIds.length}">
+        ${skillIds.map(skillId => {
           const skill = combat.skillsById?.[skillId] ?? { id: skillId };
           const selected = combat.selectedSkillId === skillId ? ' selected' : '';
           const label = this._skillLabel(skill);
@@ -685,10 +684,17 @@ const CombatUI = {
         ${this._renderTopHud(combat, gs)}
         <div class="combat-round-track">
           ${this._renderInitiativeBar(combat, gs)}
-          <div class="combat-round-medallion"><span>${combat.roundNumber ?? 1}</span></div>
+          <div class="combat-round-medallion">
+            <span class="combat-round-context">
+              <small>ROUND</small>
+              <strong>${combat.roundNumber ?? 1}</strong>
+            </span>
+          </div>
         </div>
         <main class="combat-battlefield combat-visual">
-          <div class="combat-stage-floor" aria-hidden="true"><span>1</span><span>2</span><span>3</span></div>
+          <div class="combat-stage-floor" aria-hidden="true">
+            ${[1, 2, 3, 4].map(rank => `<span class="combat-rank-marker" data-rank="${rank}">${rank}</span>`).join('')}
+          </div>
           <div class="combat-focused-lineup">
             <div class="combat-line-zone combat-line-zone-ally">
               ${this._renderFormationSide('ally', combat)}
@@ -709,25 +715,27 @@ const CombatUI = {
         <footer class="combat-command-deck">
           ${this._renderSkillBar(active, combat)}
           ${manualCompanionTurn ? '' : `
-            ${this._renderCombatItemSlot(active)}
-            <button class="combat-common-command combat-action-card${canMove ? '' : ' disabled'}"
-                    data-command="move"
-                    ${(!canMove || commandDisabled) ? 'disabled' : ''}>
-              <span class="action-cost">1</span>
-              <span class="skill-name">이동</span>
-              <span class="skill-range">기동</span>
-              <span class="skill-icon">${this._skillIconHtml('move')}</span>
-              <span class="skill-detail">위치 변경</span>
-            </button>
-            <button class="combat-common-command combat-action-card"
-                    data-command="flee"
-                    ${commandDisabled ? 'disabled' : ''}>
-              <span class="action-cost">1</span>
-              <span class="skill-name">도주</span>
-              <span class="skill-range">탈출</span>
-              <span class="skill-icon">${this._skillIconHtml('move')}</span>
-              <span class="skill-detail">전투 이탈 시도</span>
-            </button>
+            <aside class="combat-utility-rail" aria-label="공용 전투 명령">
+              ${this._renderCombatItemSlot(active)}
+              <button class="combat-common-command combat-action-card${canMove ? '' : ' disabled'}"
+                      data-command="move"
+                      ${(!canMove || commandDisabled) ? 'disabled' : ''}>
+                <span class="action-cost">1</span>
+                <span class="skill-name">이동</span>
+                <span class="skill-range">기동</span>
+                <span class="skill-icon">${this._skillIconHtml('move')}</span>
+                <span class="skill-detail">위치 변경</span>
+              </button>
+              <button class="combat-common-command combat-action-card"
+                      data-command="flee"
+                      ${commandDisabled ? 'disabled' : ''}>
+                <span class="action-cost">1</span>
+                <span class="skill-name">도주</span>
+                <span class="skill-range">탈출</span>
+                <span class="skill-icon">${this._skillIconHtml('move')}</span>
+                <span class="skill-detail">전투 이탈 시도</span>
+              </button>
+            </aside>
           `}
         </footer>
       </div>`;
