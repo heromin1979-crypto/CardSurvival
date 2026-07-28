@@ -186,6 +186,7 @@ const SoundSystem = {
       case 'companionHeal':
       case 'useItem':
       case 'companionBuff':
+      case 'playerSkill':
         playTone(660, 0.08, 'sine', volume * 0.25);
         setTimeout(() => playTone(880, 0.1, 'sine', volume * 0.2), 70);
         break;
