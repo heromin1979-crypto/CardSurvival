@@ -3,6 +3,7 @@
 import EventBus     from '../../core/EventBus.js';
 import GameState    from '../../core/GameState.js';
 import CombatSystem from '../../systems/CombatSystem.js';
+import { resolveCombatMotion, spriteRowPercent } from '../../data/combatMotionManifest.js';
 import {
   actionFxToPresentationFx,
   normalizeLegacyActionFx,
@@ -146,12 +147,18 @@ export const CombatFxPlayer = {
       case 'playerAttack': {
         const player = this._playerSpriteEl();
         const target = this._enemySpriteEl(fx.targetIdx);
-        this._animate(player, 'attacking');
-        this._motion(player, ['motion-move-forward', this._playerAttackMotion(fx)], 780);
+        const presentation = this._playActorActionMotion(
+          player,
+          this._playerSpriteSheetKey(),
+          fx,
+          780,
+        );
+        this._animate(player, presentation.movementClass ? 'attacking' : 'attacking-stationary');
+        this._motion(player, [presentation.movementClass, this._playerAttackMotion(fx)], 780);
         if (fx.fx === 'shot') this._spawnFxOverlay(player, 'muzzle');
         this._cameraWork(fx.miss ? 'ally-whiff' : 'ally-strike', fx.crit ? 760 : 640);
         if (fx.miss) {
-          this._motion(player, ['motion-move-forward', 'motion-whiff'], 720);
+          this._motion(player, [presentation.movementClass, 'motion-whiff'], 720);
           this._spawnFloatText(target, 'MISS', 'miss');
           break;
         }
@@ -208,11 +215,17 @@ export const CombatFxPlayer = {
       case 'companionAttack': {
         const ally   = this._allyEl(fx.npcId);
         const target = this._enemySpriteEl(fx.targetIdx);
-        this._animate(ally, 'attacking');
-        this._motion(ally, ['motion-move-forward', this._allyAttackMotion(fx)], 780);
+        const presentation = this._playActorActionMotion(
+          ally,
+          this._companionSpriteSheetKey(fx.npcId),
+          fx,
+          780,
+        );
+        this._animate(ally, presentation.movementClass ? 'attacking' : 'attacking-stationary');
+        this._motion(ally, [presentation.movementClass, this._allyAttackMotion(fx)], 780);
         this._cameraWork(fx.miss ? 'ally-whiff' : 'ally-strike', 620);
         if (fx.miss) {
-          this._motion(ally, ['motion-move-forward', 'motion-whiff'], 720);
+          this._motion(ally, [presentation.movementClass, 'motion-whiff'], 720);
           this._spawnFloatText(target, 'MISS', 'miss');
           break;
         }
@@ -231,6 +244,7 @@ export const CombatFxPlayer = {
           ? this._combatantEl(fx.targetId) ?? this._allyEl(fx.targetId)
           : this._playerSpriteEl();
         this._animate(actor, 'glowing');
+        this._playActorActionMotion(actor, this._companionSpriteSheetKey(fx.npcId), fx, 700);
         this._motion(actor, 'motion-heal-pulse', 700);
         this._motion(target, 'motion-heal-pulse', 700);
         this._spawnFloatText(target, `+${fx.amount}`, 'heal');
@@ -246,6 +260,7 @@ export const CombatFxPlayer = {
               : this._allyEl(fx.targetId));
         this._animate(this._screen.querySelector('.combat-visual'), 'skill-flash', 500);
         this._animate(player, 'glowing');
+        this._playActorActionMotion(player, this._playerSpriteSheetKey(), fx, 760);
         this._motion(
           player,
           fx.healing > 0 || fx.impactFx === 'heal'
@@ -272,6 +287,12 @@ export const CombatFxPlayer = {
       case 'companionSkill': {
         this._animate(this._screen.querySelector('.combat-visual'), 'skill-flash', 500);
         this._animate(this._allyEl(fx.npcId), 'glowing');
+        this._playActorActionMotion(
+          this._allyEl(fx.npcId),
+          this._companionSpriteSheetKey(fx.npcId),
+          fx,
+          760,
+        );
         const skillMotion = fx.skillId === 'soldier_suppress'
           ? 'motion-firearm-shot'
           : fx.skillId === 'nurse_triage'
@@ -316,11 +337,6 @@ export const CombatFxPlayer = {
       }
       case 'dodge': {
         this._motion(this._actorEl(fx), 'motion-dodge', 560);
-        break;
-      }
-      case 'status': {
-        const actor = this._actorEl(fx);
-        this._motion(actor, this._statusTransientMotion(fx.statusId), 760);
         break;
       }
       case 'downed': {
@@ -386,6 +402,7 @@ export const CombatFxPlayer = {
     if (cls === 'hit' && dur === 450) dur = 520;
     const motionState = {
       attacking: 'attack',
+      'attacking-stationary': 'attack',
       lunging: 'attack',
       hit: 'hit',
       'just-died': 'death',
@@ -430,33 +447,29 @@ export const CombatFxPlayer = {
     return 'motion-melee-strike';
   },
 
-  _enemyManifestMotion(fx) {
-    if (typeof fx?.motionKey !== 'string' || fx.motionKey.length === 0) return null;
-    const enemy = GameState.combat?.enemies?.[fx.enemyIdx];
-    const sheetKey = this._enemySpriteSheetKey(enemy);
-    const sheet = sheetKey ? COMBAT_SPRITE_SHEETS[sheetKey] : null;
-    const rawMotion = sheet?.motions?.[fx.motionKey];
-    const motion = Number.isInteger(rawMotion) ? { row: rawMotion } : rawMotion;
-    const row = motion?.row;
-    if (!Number.isInteger(row) || row < 0 || row >= (sheet?.rows ?? 0)) return null;
-    return { ...motion, row, sheetKey, sheet };
+  _resolveSpriteMotion(sheetKey, motionKey) {
+    if (typeof sheetKey !== 'string' || typeof motionKey !== 'string') return null;
+    const sheet = COMBAT_SPRITE_SHEETS[sheetKey];
+    const motion = resolveCombatMotion(sheetKey, motionKey, COMBAT_SPRITE_SHEETS);
+    const rowPercent = spriteRowPercent(motion?.row, sheet?.rows);
+    if (!sheet || !motion || rowPercent == null) return null;
+    return { ...motion, sheetKey, sheet, rowPercent };
   },
 
-  _applyEnemyManifestMotion(enemyEl, motion, dur) {
-    const sprite = enemyEl?.querySelector('.combat-sprite-sheet');
-    if (!sprite || !motion) return false;
-
-    const rows = motion.sheet.rows;
-    const rowPercent = rows > 1 ? (motion.row / (rows - 1)) * 100 : 0;
+  _playResolvedSpriteMotion(element, motion, dur) {
+    const sprite = element?.querySelector('.combat-sprite-sheet');
+    if (!sprite || !motion) return null;
     const duration = Number.isFinite(motion.durationMs) && motion.durationMs > 0
       ? motion.durationMs
       : dur;
     const token = String(++this._actionMotionToken);
     sprite.dataset.actionMotionToken = token;
-    sprite.style.setProperty('--sprite-row-y', `${rowPercent.toFixed(4)}%`);
+    sprite.style.setProperty('--sprite-row-y', `${motion.rowPercent.toFixed(4)}%`);
     sprite.style.setProperty('--sprite-duration', `${Math.round(duration)}ms`);
     sprite.style.animationName = `var(--anim-r${motion.row}, combatSpriteSheetFrames)`;
-    sprite.style.animationIterationCount = '1';
+    sprite.style.animationIterationCount = motion.loop === true ? 'infinite' : '1';
+    sprite.style.animationFillMode = motion.holdLast === true ? 'forwards' : '';
+    if (motion.loop === true || motion.holdLast === true) return motion;
     setTimeout(() => {
       if (sprite.dataset.actionMotionToken !== token) return;
       delete sprite.dataset.actionMotionToken;
@@ -464,15 +477,50 @@ export const CombatFxPlayer = {
       sprite.style.removeProperty('--sprite-duration');
       sprite.style.removeProperty('animation-name');
       sprite.style.removeProperty('animation-iteration-count');
+      sprite.style.removeProperty('animation-fill-mode');
     }, duration);
-    return true;
+    return motion;
+  },
+
+  _playSpriteMotion(element, sheetKey, motionKey, dur = 0) {
+    return this._playResolvedSpriteMotion(
+      element,
+      this._resolveSpriteMotion(sheetKey, motionKey),
+      dur,
+    );
+  },
+
+  _enemyManifestMotion(fx) {
+    const enemy = GameState.combat?.enemies?.[fx.enemyIdx];
+    const motionKey = typeof fx?.motionKey === 'string' && fx.motionKey.length > 0
+      ? fx.motionKey
+      : 'basic_attack';
+    return this._resolveSpriteMotion(this._enemySpriteSheetKey(enemy), motionKey);
+  },
+
+  _applyEnemyManifestMotion(enemyEl, motion, dur) {
+    return this._playResolvedSpriteMotion(enemyEl, motion, dur) !== null;
   },
 
   _enemyMovementClass(fx, manifestMotion) {
-    const movement = manifestMotion?.movement ?? fx?.movement;
-    if (movement === 'none') return null;
-    if (movement === 'retreat') return 'motion-move-back';
-    return 'motion-move-forward';
+    if (manifestMotion?.locomotion === 'approach') return 'motion-move-forward';
+    if (manifestMotion?.locomotion === 'retreat') return 'motion-move-back';
+    return null;
+  },
+
+  _playActorActionMotion(element, sheetKey, fx, dur) {
+    const motionKey = fx?.motionKey === 'melee'
+      ? 'basic_attack'
+      : fx?.motionKey ?? 'basic_attack';
+    const motion = this._playSpriteMotion(element, sheetKey, motionKey, dur);
+    return {
+      motion,
+      movementClass: motion?.locomotion === 'approach'
+        ? 'motion-move-forward'
+        : motion?.locomotion === 'retreat'
+          ? 'motion-move-back'
+          : null,
+    };
   },
 
   _enemyActionCamera(fx, manifestMotion) {

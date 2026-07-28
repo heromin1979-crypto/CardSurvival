@@ -2087,60 +2087,6 @@
   transform-origin: 50% 96%;
 }
 
-.cv-player .combat-sprite-sheet,
-.cv-ally .combat-sprite-sheet,
-.cv-player.motion-idle .combat-sprite-sheet,
-.cv-player.motion-combat-ready .combat-sprite-sheet,
-.cv-ally.motion-combat-ready .combat-sprite-sheet {
-  --sprite-row-y: 0%;
-  --sprite-duration: 920ms;
-  animation: combatSpriteSheetFrames var(--sprite-duration) linear infinite;
-}
-
-.cv-player.motion-melee-strike .combat-sprite-sheet,
-.cv-player.motion-knife-slash .combat-sprite-sheet,
-.cv-player.motion-blunt-strike .combat-sprite-sheet,
-.cv-player.motion-firearm-shot .combat-sprite-sheet,
-.cv-ally.motion-melee-strike .combat-sprite-sheet,
-.cv-ally.motion-knife-slash .combat-sprite-sheet,
-.cv-ally.motion-blunt-strike .combat-sprite-sheet,
-.cv-ally.motion-firearm-shot .combat-sprite-sheet {
-  --sprite-row-y: 33.333%;
-  --sprite-duration: 620ms;
-  animation: combatSpriteSheetFrames var(--sprite-duration) linear 1;
-}
-
-.cv-player.motion-guard-brace .combat-sprite-sheet,
-.cv-player.motion-heal-pulse .combat-sprite-sheet,
-.cv-player.motion-buff-pulse .combat-sprite-sheet,
-.cv-player.motion-victory .combat-sprite-sheet,
-.cv-ally.motion-guard-brace .combat-sprite-sheet,
-.cv-ally.motion-heal-pulse .combat-sprite-sheet,
-.cv-ally.motion-buff-pulse .combat-sprite-sheet,
-.cv-ally.motion-victory .combat-sprite-sheet {
-  --sprite-row-y: 66.666%;
-  --sprite-duration: 760ms;
-  animation: combatSpriteSheetFrames var(--sprite-duration) linear 1;
-}
-
-.cv-player.motion-player-hit .combat-sprite-sheet,
-.cv-player.motion-hit-light .combat-sprite-sheet,
-.cv-player.motion-hit-heavy .combat-sprite-sheet,
-.cv-player.motion-knockback .combat-sprite-sheet,
-.cv-player.motion-downed .combat-sprite-sheet,
-.cv-player.motion-player-death .combat-sprite-sheet,
-.cv-player.motion-defeat .combat-sprite-sheet,
-.cv-ally.motion-player-hit .combat-sprite-sheet,
-.cv-ally.motion-hit-light .combat-sprite-sheet,
-.cv-ally.motion-hit-heavy .combat-sprite-sheet,
-.cv-ally.motion-knockback .combat-sprite-sheet,
-.cv-ally.motion-downed .combat-sprite-sheet,
-.cv-ally.motion-defeat .combat-sprite-sheet {
-  --sprite-row-y: 100%;
-  --sprite-duration: 820ms;
-  animation: combatSpriteSheetFrames var(--sprite-duration) linear 1;
-}
-
 .cv-enemy-sprite .combat-sprite-sheet,
 .cv-enemy-sprite.motion-zombie-idle .combat-sprite-sheet,
 .cv-enemy-sprite.motion-combat-ready .combat-sprite-sheet {

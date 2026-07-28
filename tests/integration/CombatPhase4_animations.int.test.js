@@ -15,14 +15,18 @@ function setupDom() {
   document.body.innerHTML = `
     <div id="screen-combat">
       <div class="combat-visual"></div>
-      <div class="cv-player" data-combatant-id="player" data-sprite-id="player_rifle" data-motion-state="idle"></div>
-      <div class="cv-enemy-sprite" data-idx="0" data-combatant-id="enemy:0" data-sprite-id="zombie_bare" data-motion-state="idle"></div>
-      <div class="cv-enemy-sprite" data-idx="1" data-combatant-id="enemy:1" data-sprite-id="zombie_rage" data-motion-state="idle"></div>
-      <div class="cv-ally" data-companion-id="npc_nurse" data-combatant-id="ally:npc_nurse" style="position:relative;"></div>
-      <div class="cv-ally" data-companion-id="npc_soldier" data-combatant-id="ally:npc_soldier" style="position:relative;"></div>
+      <div class="cv-player" data-combatant-id="player" data-sprite-id="player_rifle" data-motion-state="idle"><span class="cv-player-img combat-sprite-sheet"></span></div>
+      <div class="cv-enemy-sprite" data-idx="0" data-combatant-id="enemy:0" data-sprite-id="zombie_bare" data-motion-state="idle"><span class="cv-enemy-img combat-sprite-sheet"></span></div>
+      <div class="cv-enemy-sprite" data-idx="1" data-combatant-id="enemy:1" data-sprite-id="zombie_rage" data-motion-state="idle"><span class="cv-enemy-img combat-sprite-sheet"></span></div>
+      <div class="cv-ally" data-companion-id="npc_nurse" data-combatant-id="ally:npc_nurse" style="position:relative;"><span class="cv-ally-icon combat-sprite-sheet"></span></div>
+      <div class="cv-ally" data-companion-id="npc_soldier" data-combatant-id="ally:npc_soldier" style="position:relative;"><span class="cv-ally-icon combat-sprite-sheet"></span></div>
     </div>
   `;
   CombatUI._screen = document.getElementById('screen-combat');
+  GameState.player = { characterId: 'doctor', gender: 'F' };
+  GameState.combat = {
+    enemies: [{ id: 'zombie_common' }, { id: 'zombie_common' }],
+  };
 }
 
 describe('combat sprite manifest motion metadata', () => {
@@ -102,7 +106,7 @@ describe('_playFx — 개별 연출 분기', () => {
     CombatUI._playFx({ kind: 'enemyAttack', enemyIdx: 0, fx: 'claw', dmg: 9 });
     const enemy = document.querySelector('.cv-enemy-sprite[data-idx="0"]');
     expect(enemy.classList.contains('lunging')).toBe(true);
-    expect(enemy.classList.contains('motion-zombie-lunge')).toBe(true);
+    expect(enemy.querySelector('.combat-sprite-sheet').style.getPropertyValue('--sprite-row-y')).toBe('33.3333%');
     const player = document.querySelector('.cv-player');
     expect(player.classList.contains('hit')).toBe(true);
     expect(player.classList.contains('motion-player-hit')).toBe(true);
@@ -116,7 +120,7 @@ describe('_playFx — 개별 연출 분기', () => {
     CombatUI._playFx({ kind: 'enemyAttack', enemyIdx: 0, fx: 'rupture', dmg: 11 });
     const enemy = document.querySelector('.cv-enemy-sprite[data-idx="0"]');
     const player = document.querySelector('.cv-player');
-    expect(enemy.classList.contains('motion-zombie-heavy')).toBe(true);
+    expect(enemy.querySelector('.combat-sprite-sheet').style.getPropertyValue('--sprite-row-y')).toBe('33.3333%');
     expect(player.classList.contains('hit')).toBe(true);
     expect(player.querySelector('.cv-fx-rupture')).not.toBeNull();
     expect(player.querySelector('.dmg-popup').textContent).toBe('-11');
@@ -267,7 +271,7 @@ describe('_playFx — 개별 연출 분기', () => {
   ])('enemyAttack %s FX를 표시 가능한 %s overlay로 정규화한다', (
     sourceFx,
     displayFx,
-    expectedMotion,
+    _expectedMotion,
   ) => {
     CombatUI._playFx({ kind: 'enemyAttack', enemyIdx: 0, fx: sourceFx, dmg: 11 });
 
@@ -275,7 +279,7 @@ describe('_playFx — 개별 연출 분기', () => {
     const enemy = document.querySelector('.cv-enemy-sprite[data-idx="0"]');
     expect(player.querySelector(`.cv-fx-${displayFx}`)).not.toBeNull();
     expect(player.querySelector(`.cv-fx-${sourceFx}`)).toBeNull();
-    expect(enemy.classList.contains(expectedMotion)).toBe(true);
+    expect(enemy.querySelector('.combat-sprite-sheet').style.getPropertyValue('--sprite-row-y')).toBe('33.3333%');
   });
 
   it('알 수 없는 impactFx도 빈 overlay 대신 표시 가능한 skill fallback을 사용한다', () => {
@@ -424,7 +428,7 @@ describe('_playFx — 개별 연출 분기', () => {
     expect(ally.querySelector('.dmg-popup').textContent).toBe('-7');
     const enemy = document.querySelector('.cv-enemy-sprite[data-idx="0"]');
     expect(enemy.classList.contains('lunging')).toBe(true);
-    expect(enemy.classList.contains('motion-zombie-lunge')).toBe(true);
+    expect(enemy.querySelector('.combat-sprite-sheet').style.getPropertyValue('--sprite-row-y')).toBe('33.3333%');
     expect(document.querySelector('.combat-visual').classList.contains('camera-enemy-strike')).toBe(true);
   });
 
