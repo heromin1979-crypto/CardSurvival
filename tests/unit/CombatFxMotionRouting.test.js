@@ -1,8 +1,11 @@
 // @vitest-environment happy-dom
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import CombatUI from '../../js/ui/CombatUI.js';
 import GameState from '../../js/core/GameState.js';
-import { COMBAT_SPRITE_SHEETS } from '../../js/ui/combat/combatUiAssets.js';
+import {
+  applyCombatSpriteManifest,
+  COMBAT_SPRITE_SHEETS,
+} from '../../js/ui/combat/combatUiAssets.js';
 
 function setupDom() {
   document.body.innerHTML = `
@@ -21,6 +24,7 @@ describe('combat FX motion routing', () => {
 
   afterEach(() => {
     GameState.combat = null;
+    vi.useRealTimers();
   });
 
   it.each([
@@ -94,5 +98,77 @@ describe('combat FX motion routing', () => {
     });
     expect(player.querySelector('.combat-sprite-sheet').style.getPropertyValue('--sprite-row-y'))
       .toBe('33.3333%');
+  });
+
+  it('resolves a one-step runtime alias and rejects chained or circular aliases', () => {
+    const player = document.querySelector('.cv-player');
+    const sheet = COMBAT_SPRITE_SHEETS.doctor_f;
+    const previousAliases = sheet.aliases;
+    player.innerHTML = '<span class="combat-sprite-sheet"></span>';
+
+    try {
+      expect(applyCombatSpriteManifest({
+        'doctor_f_sheet.png': { aliases: { quick_strike: 'basic_attack' } },
+      })).toMatchObject({ ok: true });
+      expect(CombatUI._playSpriteMotion(player, 'doctor_f', 'quick_strike')).toMatchObject({
+        row: 1,
+        locomotion: 'approach',
+      });
+
+      applyCombatSpriteManifest({
+        'doctor_f_sheet.png': { aliases: { quick_strike: 'strike', strike: 'basic_attack' } },
+      });
+      expect(CombatUI._resolveSpriteMotion('doctor_f', 'quick_strike')).toBeNull();
+
+      applyCombatSpriteManifest({
+        'doctor_f_sheet.png': { aliases: { quick_strike: 'strike', strike: 'quick_strike' } },
+      });
+      expect(CombatUI._resolveSpriteMotion('doctor_f', 'quick_strike')).toBeNull();
+    } finally {
+      if (previousAliases === undefined) delete sheet.aliases;
+      else sheet.aliases = previousAliases;
+    }
+  });
+
+  it('restarts the same action row from frame zero and protects the newer playback from stale cleanup', () => {
+    vi.useFakeTimers();
+    const player = document.querySelector('.cv-player');
+    player.innerHTML = '<span class="combat-sprite-sheet"></span>';
+    const sprite = player.querySelector('.combat-sprite-sheet');
+    let reflowCount = 0;
+    Object.defineProperty(sprite, 'offsetWidth', {
+      configurable: true,
+      get: () => {
+        reflowCount += 1;
+        return 1;
+      },
+    });
+
+    CombatUI._playSpriteMotion(player, 'doctor_f', 'basic_attack');
+    vi.advanceTimersByTime(360);
+    CombatUI._playSpriteMotion(player, 'doctor_f', 'basic_attack');
+    vi.advanceTimersByTime(360);
+
+    expect(reflowCount).toBe(2);
+    expect(sprite.style.getPropertyValue('--sprite-row-y')).toBe('33.3333%');
+    vi.advanceTimersByTime(360);
+    expect(sprite.style.getPropertyValue('--sprite-row-y')).toBe('');
+  });
+
+  it('returns non-loop motions to idle CSS while holdLast motions retain their final row', () => {
+    vi.useFakeTimers();
+    const player = document.querySelector('.cv-player');
+    player.innerHTML = '<span class="combat-sprite-sheet"></span>';
+    const sprite = player.querySelector('.combat-sprite-sheet');
+
+    CombatUI._playSpriteMotion(player, 'doctor_f', 'basic_attack');
+    vi.advanceTimersByTime(720);
+    expect(sprite.style.getPropertyValue('--sprite-row-y')).toBe('');
+    expect(sprite.style.animationName).toBe('');
+
+    CombatUI._playSpriteMotion(player, 'doctor_f', 'death');
+    vi.advanceTimersByTime(900);
+    expect(sprite.style.getPropertyValue('--sprite-row-y')).toBe('100.0000%');
+    expect(sprite.style.animationFillMode).toBe('forwards');
   });
 });

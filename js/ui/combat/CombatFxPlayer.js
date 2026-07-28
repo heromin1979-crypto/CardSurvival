@@ -466,7 +466,10 @@ export const CombatFxPlayer = {
     sprite.dataset.actionMotionToken = token;
     sprite.style.setProperty('--sprite-row-y', `${motion.rowPercent.toFixed(4)}%`);
     sprite.style.setProperty('--sprite-duration', `${Math.round(duration)}ms`);
-    sprite.style.animationName = `var(--anim-r${motion.row}, combatSpriteSheetFrames)`;
+    const animationName = `var(--anim-r${motion.row}, combatSpriteSheetFrames)`;
+    sprite.style.animationName = 'none';
+    void sprite.offsetWidth;
+    sprite.style.animationName = animationName;
     sprite.style.animationIterationCount = motion.loop === true ? 'infinite' : '1';
     sprite.style.animationFillMode = motion.holdLast === true ? 'forwards' : '';
     if (motion.loop === true || motion.holdLast === true) return motion;

@@ -25,6 +25,9 @@ function deriveCombatSpriteSheets(manifest) {
       rows: sheet.rows,
       motions: { ...sheet.motions },
     };
+    if (sheet.aliases && typeof sheet.aliases === 'object' && !Array.isArray(sheet.aliases)) {
+      derivedSheet.aliases = { ...sheet.aliases };
+    }
     if (Array.isArray(sheet.frameDur)) {
       derivedSheet.frameDur = sheet.frameDur.map(row => (Array.isArray(row) ? [...row] : row));
     }
@@ -72,6 +75,9 @@ export function applyCombatSpriteManifest(manifest) {
     }
     if (meta.motions && typeof meta.motions === 'object' && !Array.isArray(meta.motions)) {
       sheet.motions = { ...meta.motions };
+    }
+    if (meta.aliases && typeof meta.aliases === 'object' && !Array.isArray(meta.aliases)) {
+      sheet.aliases = { ...meta.aliases };
     }
   }
   _injectSpriteKeyframes();
