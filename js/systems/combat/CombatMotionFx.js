@@ -193,8 +193,7 @@ export function actionFxToPresentationFx(fx) {
       if (fx.actorId === 'player') {
         return {
           ...shared,
-          kind: 'useItem',
-          label: `+${fx.healing}`,
+          kind: 'playerSkill',
         };
       }
       return {
@@ -216,8 +215,7 @@ export function actionFxToPresentationFx(fx) {
       }
       return {
         ...shared,
-        kind: 'useItem',
-        label: 'ITEM',
+        kind: 'playerSkill',
       };
     }
     if (fx.targetSide === 'enemy') {
@@ -243,8 +241,7 @@ export function actionFxToPresentationFx(fx) {
     }
     return {
       ...shared,
-      kind: 'useItem',
-      label: fx.healing > 0 ? `+${fx.healing}` : 'ITEM',
+      kind: 'playerSkill',
     };
   }
 

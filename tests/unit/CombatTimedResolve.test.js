@@ -96,6 +96,79 @@ describe('_resolveTimedThreat', () => {
       expect.objectContaining({ id: 'infection', effect: { infection: 15 } }),
     ]);
     expect(enemy.currentHp).toBe(0);
+
+    const actions = GameState.combat.fxQueue.filter(
+      fx => fx.kind === 'action' && fx.actionId === 'self_destruct',
+    );
+    expect(actions.filter(fx => fx.targetId === 'player')).toEqual([
+      expect.objectContaining({ damage: 25, killed: false }),
+    ]);
+    expect(actions.filter(fx => fx.targetId === 'npc_nurse')).toEqual([
+      expect.objectContaining({ damage: 25, killed: false }),
+    ]);
+    expect(actions.filter(fx => fx.impactFx === 'explode')).toEqual([
+      expect.objectContaining({
+        targetId: 'enemy:0',
+        damage: 0,
+        killed: false,
+      }),
+    ]);
+  });
+
+  it('self_destruct는 실제로 사망한 동료 action만 killed로 표시한다', () => {
+    const enemy = instantiateEnemy(ENEMIES.zombie_bloater);
+    enemy.currentHp = 50;
+    enemy.maxHp = 50;
+    GameState.combat.enemies = [enemy];
+    GameState.npcs.states.npc_nurse.hp = 20;
+    GameState.combat.combatants.npc_nurse.hp = 20;
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+
+    CombatSystem._resolveTimedThreat(
+      enemy,
+      readyTimedAction(enemy, ['npc_nurse']),
+    );
+
+    const actions = GameState.combat.fxQueue.filter(
+      fx => fx.kind === 'action' && fx.actionId === 'self_destruct',
+    );
+    expect(actions.filter(fx => fx.targetId === 'npc_nurse')).toEqual([
+      expect.objectContaining({ damage: 25, killed: true }),
+    ]);
+    expect(actions.some(fx => fx.targetId === 'player')).toBe(false);
+    expect(actions.filter(fx => fx.impactFx === 'explode')).toEqual([
+      expect.objectContaining({ targetId: 'enemy:0', damage: 0, killed: false }),
+    ]);
+  });
+
+  it('self_destruct는 플레이어가 실제로 사망한 경우에만 해당 피해 action을 killed로 표시한다', () => {
+    const enemy = instantiateEnemy(ENEMIES.zombie_bloater);
+    enemy.currentHp = 50;
+    enemy.maxHp = 50;
+    GameState.combat.enemies = [enemy];
+    GameState.player.hp.current = 20;
+    Object.assign(GameState.combat.combatants.player, {
+      hp: 20,
+      maxHp: 100,
+      deathsDoor: true,
+      deathResist: 0,
+    });
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+
+    CombatSystem._resolveTimedThreat(
+      enemy,
+      readyTimedAction(enemy, ['player']),
+    );
+
+    const actions = GameState.combat.fxQueue.filter(
+      fx => fx.kind === 'action' && fx.actionId === 'self_destruct',
+    );
+    expect(actions.filter(fx => fx.targetId === 'player')).toEqual([
+      expect.objectContaining({ damage: 25, killed: true }),
+    ]);
+    expect(actions.filter(fx => fx.impactFx === 'explode')).toEqual([
+      expect.objectContaining({ targetId: 'enemy:0', damage: 0, killed: false }),
+    ]);
   });
 
   it('charge_strike는 UI에 예약된 동료 한 명만 피해·기절·밀치기 대상으로 사용한다', () => {
@@ -197,5 +270,65 @@ describe('_resolveTimedThreat', () => {
       expect(enemy._chargeRemaining).toBe(enemy.timedThreat.chargeTurns);
       expect(profile.skillIds).toEqual(skillIds);
     }
+  });
+});
+
+describe('enemy area and special action fx', () => {
+  it('_applyEnemyAoeAttack은 플레이어와 생존 동료의 실제 결과를 각각 emit하고 crit을 만들지 않는다', () => {
+    const enemy = instantiateEnemy(ENEMIES.zombie_bloater);
+    GameState.combat.enemies = [enemy];
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+
+    CombatSystem._applyEnemyAoeAttack(enemy, {
+      chance: 1,
+      damage: [10, 10],
+    });
+
+    expect(GameState.player.hp.current).toBe(90);
+    expect(GameState.npcs.states.npc_nurse.hp).toBe(70);
+    const actions = GameState.combat.fxQueue.filter(
+      fx => fx.kind === 'action' && fx.actionId === 'aoe_attack',
+    );
+    expect(actions).toEqual([
+      expect.objectContaining({
+        targetId: 'player',
+        damage: 10,
+        miss: false,
+        killed: false,
+        crit: false,
+      }),
+      expect.objectContaining({
+        targetId: 'npc_nurse',
+        damage: 10,
+        miss: false,
+        killed: false,
+        crit: false,
+      }),
+    ]);
+  });
+
+  it('_executeEnemySpecialSkill은 실제 비치명타 결과와 별도의 강한 카메라 강조를 emit한다', () => {
+    const enemy = instantiateEnemy(ENEMIES.zombie_bloater);
+    GameState.combat.enemies = [enemy];
+    vi.spyOn(Math, 'random').mockReturnValue(0.99);
+    vi.spyOn(CombatSystem, '_applyEnemySkillEffect').mockReturnValue([]);
+
+    CombatSystem._executeEnemySpecialSkill(enemy, {
+      id: 'acid_burst',
+      name: 'Acid Burst',
+      damage: [10, 10],
+      cooldown: 2,
+      motionKey: 'acid_burst',
+      impactFx: 'acid',
+    });
+
+    const action = GameState.combat.fxQueue.find(
+      fx => fx.kind === 'action' && fx.actionId === 'acid_burst',
+    );
+    expect(action).toEqual(expect.objectContaining({
+      damage: 10,
+      crit: false,
+      camera: 'impact-heavy',
+    }));
   });
 });

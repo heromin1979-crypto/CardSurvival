@@ -222,6 +222,7 @@ export const FX_DURATIONS = {
   status: 420,
   guard: 320,
   useItem: 420,
+  playerSkill: 560,
   companionHeal: 480,
   companionBuff: 520,
   companionSkill: 560,

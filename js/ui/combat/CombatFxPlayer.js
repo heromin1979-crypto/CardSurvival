@@ -236,6 +236,31 @@ export const CombatFxPlayer = {
         this._spawnFloatText(target, `+${fx.amount}`, 'heal');
         break;
       }
+      case 'playerSkill': {
+        const player = this._playerSpriteEl();
+        const target = this._combatantEl(fx.targetId)
+          ?? (fx.targetSide === 'enemy'
+            ? this._enemySpriteEl(fx.targetIndex)
+            : fx.targetId === 'player'
+              ? player
+              : this._allyEl(fx.targetId));
+        this._animate(this._screen.querySelector('.combat-visual'), 'skill-flash', 500);
+        this._animate(player, 'glowing');
+        this._motion(
+          player,
+          fx.healing > 0 || fx.impactFx === 'heal'
+            ? 'motion-heal-pulse'
+            : 'motion-buff-pulse',
+          760,
+        );
+        if (fx.healing > 0) {
+          this._motion(target, 'motion-heal-pulse', 700);
+          this._spawnFloatText(target, `+${fx.healing}`, 'heal');
+        } else if (target && fx.impactFx) {
+          this._spawnFxOverlay(target, fx.impactFx);
+        }
+        break;
+      }
       case 'status': {
         const target = this._combatantEl(fx.targetId) ?? this._actorEl(fx);
         this._spawnFxOverlay(target, `status-${fx.statusId ?? 'effect'}`);
@@ -317,10 +342,12 @@ export const CombatFxPlayer = {
       case 'explode': {
         const el = this._enemySpriteEl(fx.enemyIdx);
         this._spawnFxOverlay(el, 'explode');
-        this._motion(this._playerSpriteEl(), ['motion-hit-heavy', 'motion-knockback'], 720);
         this._cameraWork('impact-heavy', 720);
         this._shakeVisual();
-        if (fx.dmg) this._spawnFloatText(this._playerSpriteEl(), `-${fx.dmg}`, 'crit');
+        if (fx.dmg) {
+          this._motion(this._playerSpriteEl(), ['motion-hit-heavy', 'motion-knockback'], 720);
+          this._spawnFloatText(this._playerSpriteEl(), `-${fx.dmg}`, 'crit');
+        }
         break;
       }
       case 'summon': {

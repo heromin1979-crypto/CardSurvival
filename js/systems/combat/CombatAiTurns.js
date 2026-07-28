@@ -1430,18 +1430,26 @@ export const CombatAiTurns = {
     if (!aoeAttack || Math.random() >= (aoeAttack.chance ?? 1)) return 0;
     const gs = GameState;
     const [dMin, dMax] = aoeAttack.damage ?? [0, 0];
-    const struck = this._dealDamageToAlly({
+    const playerResult = this._dealDamageToAlly({
       rawDamage: dMin + Math.floor(Math.random() * (dMax - dMin + 1)),
       canBeDodged: false,
     });
-    const dmg = struck.damage;
+    const dmg = playerResult.damage;
     gs.combat.lastHit = { target: 'player', damage: dmg, isCrit: false };
     EventBus.emit('playerHit', { damage: dmg });
 
+    const results = [{ targetId: 'player', result: playerResult }];
     for (const id of (gs.companions ?? [])) {
       const st = gs.npcs?.states?.[id];
       if (st && (st.hp ?? 0) > 0) {
-        this._dealDamageToAlly({ npcId: id, rawDamage: dmg, canBeDodged: false });
+        results.push({
+          targetId: id,
+          result: this._dealDamageToAlly({
+            npcId: id,
+            rawDamage: dmg,
+            canBeDodged: false,
+          }),
+        });
       }
     }
 
@@ -1449,17 +1457,27 @@ export const CombatAiTurns = {
       this._applyEnemySkillEffect(enemy, { id: 'aoe_attack', effect: aoeAttack.effect }, dmg);
     }
     const enemyIndex = gs.combat.enemies.indexOf(enemy);
-    this._fx(createActionFx({
-      actor: enemyActionCombatant(gs.combat, enemy, enemyIndex),
-      actorIndex: enemyIndex,
-      target: allyActionCombatant(gs.combat, 'player'),
-      targetIndex: 0,
-      actionId: 'aoe_attack',
-      motionKey: 'aoe_attack',
-      impactFx: 'skill',
-      damage: dmg,
-      crit: true,
-    }));
+    for (const { targetId, result } of results) {
+      this._fx(createActionFx({
+        actor: enemyActionCombatant(gs.combat, enemy, enemyIndex),
+        actorIndex: enemyIndex,
+        target: allyActionCombatant(gs.combat, targetId),
+        targetIndex: targetId === 'player'
+          ? 0
+          : combatantActionIndex(
+              allyActionCombatant(gs.combat, targetId),
+              gs.companions ?? [],
+            ),
+        actionId: 'aoe_attack',
+        motionKey: 'aoe_attack',
+        impactFx: 'skill',
+        damage: result.damage,
+        crit: false,
+        miss: result.dodged === true,
+        killed: result.dead === true,
+        camera: 'impact-heavy',
+      }));
+    }
     return dmg;
   },
 
@@ -1755,7 +1773,9 @@ export const CombatAiTurns = {
       motionKey: skill.motionKey,
       impactFx: skill.impactFx ?? 'skill',
       damage: dmg,
-      crit: true,
+      crit: false,
+      movement: skill.movement,
+      camera: skill.camera ?? 'impact-heavy',
     }));
     DiseaseSystem.checkCombatInjury(dmg, gs);
     BodySystem.onCombatHit(dmg, enemy);
@@ -1798,16 +1818,17 @@ export const CombatAiTurns = {
         dmg: damage,
       }));
       const enemyIndex = gs.combat.enemies.indexOf(enemy);
+      const actor = enemyActionCombatant(gs.combat, enemy, enemyIndex);
       this._fx(createActionFx({
-        actor: enemyActionCombatant(gs.combat, enemy, enemyIndex),
+        actor,
         actorIndex: enemyIndex,
-        target: allyActionCombatant(gs.combat, 'player'),
-        targetIndex: 0,
+        target: actor,
+        targetIndex: enemyIndex,
         action,
         motionKey: action.motionKey ?? 'self_destruct',
         impactFx: 'explode',
-        damage,
-        killed: true,
+        damage: 0,
+        killed: false,
         category: action.category,
       }));
     }

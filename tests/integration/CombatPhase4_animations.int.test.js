@@ -331,6 +331,59 @@ describe('_playFx — 개별 연출 분기', () => {
     expect(document.querySelector('.cv-player').classList.contains('motion-heal-pulse')).toBe(true);
   });
 
+  it('플레이어 회복 action은 지정한 동료에게 회복 모션과 수치를 표시한다', () => {
+    CombatUI._playFx({
+      kind: 'action',
+      actorId: 'player',
+      actorSide: 'ally',
+      actorIndex: 0,
+      targetId: 'npc_soldier',
+      targetSide: 'ally',
+      targetIndex: 1,
+      skillId: 'doctor_triage',
+      motionKey: 'support',
+      impactFx: 'heal',
+      damage: 0,
+      healing: 10,
+      crit: false,
+      miss: false,
+      killed: false,
+    });
+
+    const player = document.querySelector('.cv-player');
+    const target = document.querySelector('.cv-ally[data-companion-id="npc_soldier"]');
+    expect(player.classList.contains('glowing')).toBe(true);
+    expect(target.classList.contains('motion-heal-pulse')).toBe(true);
+    expect(target.querySelector('.dmg-popup.heal').textContent).toBe('+10');
+    expect(player.querySelector('.dmg-popup')).toBeNull();
+  });
+
+  it('플레이어 지원 action은 ITEM 문구 대신 지정한 적에게 debuff impact를 표시한다', () => {
+    CombatUI._playFx({
+      kind: 'action',
+      actorId: 'player',
+      actorSide: 'ally',
+      actorIndex: 0,
+      targetId: 'enemy:0',
+      targetSide: 'enemy',
+      targetIndex: 0,
+      skillId: 'doctor_diagnose',
+      motionKey: 'support',
+      impactFx: 'debuff',
+      damage: 0,
+      healing: 0,
+      crit: false,
+      miss: false,
+      killed: false,
+    });
+
+    const player = document.querySelector('.cv-player');
+    const target = document.querySelector('.cv-enemy-sprite[data-idx="0"]');
+    expect(player.classList.contains('motion-buff-pulse')).toBe(true);
+    expect(target.querySelector('.cv-fx-skill')).not.toBeNull();
+    expect(document.querySelector('.dmg-popup')).toBeNull();
+  });
+
   it('정규 heal action은 actor와 별개인 companion target에 회복 결과를 표시한다', () => {
     CombatUI._playFx({
       kind: 'action',
@@ -477,6 +530,32 @@ describe('_playFx — 개별 연출 분기', () => {
     expect(document.querySelector('.cv-enemy-sprite[data-idx="0"] .cv-fx-explode')).not.toBeNull();
     expect(document.querySelector('.combat-visual').classList.contains('shake')).toBe(true);
     expect(document.querySelector('.combat-visual').classList.contains('camera-impact-heavy')).toBe(true);
+  });
+
+  it('무피해 explode overlay는 플레이어 피해 모션과 수치를 중복 재생하지 않는다', () => {
+    CombatUI._playFx({
+      kind: 'action',
+      actorId: 'enemy:0',
+      actorSide: 'enemy',
+      actorIndex: 0,
+      targetId: 'enemy:0',
+      targetSide: 'enemy',
+      targetIndex: 0,
+      actionId: 'self_destruct',
+      motionKey: 'self_destruct',
+      impactFx: 'explode',
+      damage: 0,
+      healing: 0,
+      crit: false,
+      miss: false,
+      killed: false,
+    });
+
+    const player = document.querySelector('.cv-player');
+    expect(document.querySelector('.cv-enemy-sprite[data-idx="0"] .cv-fx-explode')).not.toBeNull();
+    expect(player.classList.contains('motion-hit-heavy')).toBe(false);
+    expect(player.classList.contains('motion-knockback')).toBe(false);
+    expect(player.querySelector('.dmg-popup')).toBeNull();
   });
 
   it('camera work exposes a shared active state and clears it after the animation', () => {
