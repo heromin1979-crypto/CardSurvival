@@ -390,7 +390,11 @@ const DebugPanel = {
 
   _getSearchIndex() {
     if (!this._searchIndex) {
-      this._searchIndex = Object.values(GameData.items).map(def => ({
+      // KAN-27: GameData.items에는 districts에서 파생된 장소·랜드마크 카드(type:'location')가
+      // 섞여 있음 — 아이템 사전/자동완성에서는 제외. (ID 직접 입력 지급은 계속 가능)
+      this._searchIndex = Object.values(GameData.items)
+        .filter(def => def.type !== 'location')
+        .map(def => ({
         id:      def.id,
         name:    (def.name ?? '').toLowerCase(),
         display: I18n.itemName(def.id, def.name),
