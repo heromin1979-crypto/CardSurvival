@@ -1,0 +1,738 @@
+{
+  "doctor_f": {
+    "src": "/assets/images/combat/spritesheets/doctor_f_sheet.png",
+    "cols": 6,
+    "rows": 4,
+    "motions": {
+      "idle": {
+        "row": 0,
+        "loop": true,
+        "durationMs": 900,
+        "locomotion": "stationary"
+      },
+      "basic_attack": {
+        "row": 1,
+        "loop": false,
+        "durationMs": 720,
+        "locomotion": "approach"
+      },
+      "hit": {
+        "row": 2,
+        "loop": false,
+        "durationMs": 420,
+        "locomotion": "stationary"
+      },
+      "death": {
+        "row": 3,
+        "loop": false,
+        "durationMs": 900,
+        "locomotion": "stationary",
+        "holdLast": true
+      }
+    }
+  },
+  "soldier_companion": {
+    "src": "/assets/images/combat/spritesheets/soldier_companion_sheet.png",
+    "cols": 6,
+    "rows": 4,
+    "motions": {
+      "idle": {
+        "row": 0,
+        "loop": true,
+        "durationMs": 900,
+        "locomotion": "stationary"
+      },
+      "basic_attack": {
+        "row": 1,
+        "loop": false,
+        "durationMs": 720,
+        "locomotion": "approach"
+      },
+      "hit": {
+        "row": 2,
+        "loop": false,
+        "durationMs": 420,
+        "locomotion": "stationary"
+      },
+      "death": {
+        "row": 3,
+        "loop": false,
+        "durationMs": 900,
+        "locomotion": "stationary",
+        "holdLast": true
+      }
+    }
+  },
+  "nurse_companion": {
+    "src": "/assets/images/combat/spritesheets/nurse_companion_sheet.png",
+    "cols": 6,
+    "rows": 4,
+    "motions": {
+      "idle": {
+        "row": 0,
+        "loop": true,
+        "durationMs": 900,
+        "locomotion": "stationary"
+      },
+      "basic_attack": {
+        "row": 1,
+        "loop": false,
+        "durationMs": 720,
+        "locomotion": "approach"
+      },
+      "hit": {
+        "row": 2,
+        "loop": false,
+        "durationMs": 420,
+        "locomotion": "stationary"
+      },
+      "death": {
+        "row": 3,
+        "loop": false,
+        "durationMs": 900,
+        "locomotion": "stationary",
+        "holdLast": true
+      }
+    }
+  },
+  "zombie_patient_dormant": {
+    "src": "/assets/images/combat/spritesheets/enemies/zombie_patient_dormant_sheet.png",
+    "cols": 6,
+    "rows": 4,
+    "motions": {
+      "idle": {
+        "row": 0,
+        "loop": true,
+        "durationMs": 900,
+        "locomotion": "stationary"
+      },
+      "basic_attack": {
+        "row": 1,
+        "loop": false,
+        "durationMs": 720,
+        "locomotion": "approach"
+      },
+      "hit": {
+        "row": 2,
+        "loop": false,
+        "durationMs": 420,
+        "locomotion": "stationary"
+      },
+      "death": {
+        "row": 3,
+        "loop": false,
+        "durationMs": 900,
+        "locomotion": "stationary",
+        "holdLast": true
+      }
+    }
+  },
+  "zombie_common": {
+    "src": "/assets/images/combat/spritesheets/enemies/zombie_common_sheet.png",
+    "cols": 6,
+    "rows": 4,
+    "motions": {
+      "idle": {
+        "row": 0,
+        "loop": true,
+        "durationMs": 900,
+        "locomotion": "stationary"
+      },
+      "basic_attack": {
+        "row": 1,
+        "loop": false,
+        "durationMs": 720,
+        "locomotion": "approach"
+      },
+      "hit": {
+        "row": 2,
+        "loop": false,
+        "durationMs": 420,
+        "locomotion": "stationary"
+      },
+      "death": {
+        "row": 3,
+        "loop": false,
+        "durationMs": 900,
+        "locomotion": "stationary",
+        "holdLast": true
+      }
+    }
+  },
+  "zombie_runner": {
+    "src": "/assets/images/combat/spritesheets/enemies/zombie_runner_sheet.png",
+    "cols": 6,
+    "rows": 4,
+    "motions": {
+      "idle": {
+        "row": 0,
+        "loop": true,
+        "durationMs": 900,
+        "locomotion": "stationary"
+      },
+      "basic_attack": {
+        "row": 1,
+        "loop": false,
+        "durationMs": 720,
+        "locomotion": "approach"
+      },
+      "hit": {
+        "row": 2,
+        "loop": false,
+        "durationMs": 420,
+        "locomotion": "stationary"
+      },
+      "death": {
+        "row": 3,
+        "loop": false,
+        "durationMs": 900,
+        "locomotion": "stationary",
+        "holdLast": true
+      }
+    }
+  },
+  "zombie_brute": {
+    "src": "/assets/images/combat/spritesheets/enemies/zombie_brute_sheet.png",
+    "cols": 6,
+    "rows": 4,
+    "motions": {
+      "idle": {
+        "row": 0,
+        "loop": true,
+        "durationMs": 900,
+        "locomotion": "stationary"
+      },
+      "basic_attack": {
+        "row": 1,
+        "loop": false,
+        "durationMs": 720,
+        "locomotion": "approach"
+      },
+      "hit": {
+        "row": 2,
+        "loop": false,
+        "durationMs": 420,
+        "locomotion": "stationary"
+      },
+      "death": {
+        "row": 3,
+        "loop": false,
+        "durationMs": 900,
+        "locomotion": "stationary",
+        "holdLast": true
+      }
+    }
+  },
+  "zombie_horde": {
+    "src": "/assets/images/combat/spritesheets/enemies/zombie_horde_sheet.png",
+    "cols": 6,
+    "rows": 4,
+    "motions": {
+      "idle": {
+        "row": 0,
+        "loop": true,
+        "durationMs": 900,
+        "locomotion": "stationary"
+      },
+      "basic_attack": {
+        "row": 1,
+        "loop": false,
+        "durationMs": 720,
+        "locomotion": "approach"
+      },
+      "hit": {
+        "row": 2,
+        "loop": false,
+        "durationMs": 420,
+        "locomotion": "stationary"
+      },
+      "death": {
+        "row": 3,
+        "loop": false,
+        "durationMs": 900,
+        "locomotion": "stationary",
+        "holdLast": true
+      }
+    }
+  },
+  "rabid_dog": {
+    "src": "/assets/images/combat/spritesheets/enemies/rabid_dog_sheet.png",
+    "cols": 6,
+    "rows": 4,
+    "motions": {
+      "idle": {
+        "row": 0,
+        "loop": true,
+        "durationMs": 900,
+        "locomotion": "stationary"
+      },
+      "basic_attack": {
+        "row": 1,
+        "loop": false,
+        "durationMs": 720,
+        "locomotion": "approach"
+      },
+      "hit": {
+        "row": 2,
+        "loop": false,
+        "durationMs": 420,
+        "locomotion": "stationary"
+      },
+      "death": {
+        "row": 3,
+        "loop": false,
+        "durationMs": 900,
+        "locomotion": "stationary",
+        "holdLast": true
+      }
+    }
+  },
+  "zombie_acid": {
+    "src": "/assets/images/combat/spritesheets/enemies/zombie_acid_sheet.png",
+    "cols": 6,
+    "rows": 4,
+    "motions": {
+      "idle": {
+        "row": 0,
+        "loop": true,
+        "durationMs": 900,
+        "locomotion": "stationary"
+      },
+      "basic_attack": {
+        "row": 1,
+        "loop": false,
+        "durationMs": 720,
+        "locomotion": "approach"
+      },
+      "hit": {
+        "row": 2,
+        "loop": false,
+        "durationMs": 420,
+        "locomotion": "stationary"
+      },
+      "death": {
+        "row": 3,
+        "loop": false,
+        "durationMs": 900,
+        "locomotion": "stationary",
+        "holdLast": true
+      }
+    }
+  },
+  "zombie_bloater": {
+    "src": "/assets/images/combat/spritesheets/enemies/zombie_bloater_sheet.png",
+    "cols": 6,
+    "rows": 4,
+    "motions": {
+      "idle": {
+        "row": 0,
+        "loop": true,
+        "durationMs": 900,
+        "locomotion": "stationary"
+      },
+      "basic_attack": {
+        "row": 1,
+        "loop": false,
+        "durationMs": 720,
+        "locomotion": "approach"
+      },
+      "hit": {
+        "row": 2,
+        "loop": false,
+        "durationMs": 420,
+        "locomotion": "stationary"
+      },
+      "death": {
+        "row": 3,
+        "loop": false,
+        "durationMs": 900,
+        "locomotion": "stationary",
+        "holdLast": true
+      }
+    }
+  },
+  "zombie_screamer": {
+    "src": "/assets/images/combat/spritesheets/enemies/zombie_screamer_sheet.png",
+    "cols": 6,
+    "rows": 4,
+    "motions": {
+      "idle": {
+        "row": 0,
+        "loop": true,
+        "durationMs": 900,
+        "locomotion": "stationary"
+      },
+      "basic_attack": {
+        "row": 1,
+        "loop": false,
+        "durationMs": 720,
+        "locomotion": "approach"
+      },
+      "hit": {
+        "row": 2,
+        "loop": false,
+        "durationMs": 420,
+        "locomotion": "stationary"
+      },
+      "death": {
+        "row": 3,
+        "loop": false,
+        "durationMs": 900,
+        "locomotion": "stationary",
+        "holdLast": true
+      }
+    }
+  },
+  "zombie_charger": {
+    "src": "/assets/images/combat/spritesheets/enemies/zombie_charger_sheet.png",
+    "cols": 6,
+    "rows": 4,
+    "motions": {
+      "idle": {
+        "row": 0,
+        "loop": true,
+        "durationMs": 900,
+        "locomotion": "stationary"
+      },
+      "basic_attack": {
+        "row": 1,
+        "loop": false,
+        "durationMs": 720,
+        "locomotion": "approach"
+      },
+      "hit": {
+        "row": 2,
+        "loop": false,
+        "durationMs": 420,
+        "locomotion": "stationary"
+      },
+      "death": {
+        "row": 3,
+        "loop": false,
+        "durationMs": 900,
+        "locomotion": "stationary",
+        "holdLast": true
+      }
+    }
+  },
+  "raider": {
+    "src": "/assets/images/combat/spritesheets/enemies/raider_sheet.png",
+    "cols": 6,
+    "rows": 4,
+    "motions": {
+      "idle": {
+        "row": 0,
+        "loop": true,
+        "durationMs": 900,
+        "locomotion": "stationary"
+      },
+      "basic_attack": {
+        "row": 1,
+        "loop": false,
+        "durationMs": 720,
+        "locomotion": "approach"
+      },
+      "hit": {
+        "row": 2,
+        "loop": false,
+        "durationMs": 420,
+        "locomotion": "stationary"
+      },
+      "death": {
+        "row": 3,
+        "loop": false,
+        "durationMs": 900,
+        "locomotion": "stationary",
+        "holdLast": true
+      }
+    }
+  },
+  "raider_elite": {
+    "src": "/assets/images/combat/spritesheets/enemies/raider_elite_sheet.png",
+    "cols": 6,
+    "rows": 4,
+    "motions": {
+      "idle": {
+        "row": 0,
+        "loop": true,
+        "durationMs": 900,
+        "locomotion": "stationary"
+      },
+      "basic_attack": {
+        "row": 1,
+        "loop": false,
+        "durationMs": 720,
+        "locomotion": "approach"
+      },
+      "hit": {
+        "row": 2,
+        "loop": false,
+        "durationMs": 420,
+        "locomotion": "stationary"
+      },
+      "death": {
+        "row": 3,
+        "loop": false,
+        "durationMs": 900,
+        "locomotion": "stationary",
+        "holdLast": true
+      }
+    }
+  },
+  "boss_horde_mother": {
+    "src": "/assets/images/combat/spritesheets/enemies/boss_horde_mother_sheet.png",
+    "cols": 6,
+    "rows": 4,
+    "motions": {
+      "idle": {
+        "row": 0,
+        "loop": true,
+        "durationMs": 900,
+        "locomotion": "stationary"
+      },
+      "basic_attack": {
+        "row": 1,
+        "loop": false,
+        "durationMs": 720,
+        "locomotion": "approach"
+      },
+      "hit": {
+        "row": 2,
+        "loop": false,
+        "durationMs": 420,
+        "locomotion": "stationary"
+      },
+      "death": {
+        "row": 3,
+        "loop": false,
+        "durationMs": 900,
+        "locomotion": "stationary",
+        "holdLast": true
+      }
+    }
+  },
+  "boss_raider_warlord": {
+    "src": "/assets/images/combat/spritesheets/enemies/boss_raider_warlord_sheet.png",
+    "cols": 6,
+    "rows": 4,
+    "motions": {
+      "idle": {
+        "row": 0,
+        "loop": true,
+        "durationMs": 900,
+        "locomotion": "stationary"
+      },
+      "basic_attack": {
+        "row": 1,
+        "loop": false,
+        "durationMs": 720,
+        "locomotion": "approach"
+      },
+      "hit": {
+        "row": 2,
+        "loop": false,
+        "durationMs": 420,
+        "locomotion": "stationary"
+      },
+      "death": {
+        "row": 3,
+        "loop": false,
+        "durationMs": 900,
+        "locomotion": "stationary",
+        "holdLast": true
+      }
+    }
+  },
+  "boss_feral_dog_alpha": {
+    "src": "/assets/images/combat/spritesheets/enemies/boss_feral_dog_alpha_sheet.png",
+    "cols": 6,
+    "rows": 4,
+    "motions": {
+      "idle": {
+        "row": 0,
+        "loop": true,
+        "durationMs": 900,
+        "locomotion": "stationary"
+      },
+      "basic_attack": {
+        "row": 1,
+        "loop": false,
+        "durationMs": 720,
+        "locomotion": "approach"
+      },
+      "hit": {
+        "row": 2,
+        "loop": false,
+        "durationMs": 420,
+        "locomotion": "stationary"
+      },
+      "death": {
+        "row": 3,
+        "loop": false,
+        "durationMs": 900,
+        "locomotion": "stationary",
+        "holdLast": true
+      }
+    }
+  },
+  "boss_penthouse_survivor": {
+    "src": "/assets/images/combat/spritesheets/enemies/boss_penthouse_survivor_sheet.png",
+    "cols": 6,
+    "rows": 4,
+    "motions": {
+      "idle": {
+        "row": 0,
+        "loop": true,
+        "durationMs": 900,
+        "locomotion": "stationary"
+      },
+      "basic_attack": {
+        "row": 1,
+        "loop": false,
+        "durationMs": 720,
+        "locomotion": "approach"
+      },
+      "hit": {
+        "row": 2,
+        "loop": false,
+        "durationMs": 420,
+        "locomotion": "stationary"
+      },
+      "death": {
+        "row": 3,
+        "loop": false,
+        "durationMs": 900,
+        "locomotion": "stationary",
+        "holdLast": true
+      }
+    }
+  },
+  "boss_soldier_nemesis": {
+    "src": "/assets/images/combat/spritesheets/enemies/boss_soldier_nemesis_sheet.png",
+    "cols": 6,
+    "rows": 4,
+    "motions": {
+      "idle": {
+        "row": 0,
+        "loop": true,
+        "durationMs": 900,
+        "locomotion": "stationary"
+      },
+      "basic_attack": {
+        "row": 1,
+        "loop": false,
+        "durationMs": 720,
+        "locomotion": "approach"
+      },
+      "hit": {
+        "row": 2,
+        "loop": false,
+        "durationMs": 420,
+        "locomotion": "stationary"
+      },
+      "death": {
+        "row": 3,
+        "loop": false,
+        "durationMs": 900,
+        "locomotion": "stationary",
+        "holdLast": true
+      }
+    }
+  },
+  "boss_homeless_nemesis": {
+    "src": "/assets/images/combat/spritesheets/enemies/boss_homeless_nemesis_sheet.png",
+    "cols": 6,
+    "rows": 4,
+    "motions": {
+      "idle": {
+        "row": 0,
+        "loop": true,
+        "durationMs": 900,
+        "locomotion": "stationary"
+      },
+      "basic_attack": {
+        "row": 1,
+        "loop": false,
+        "durationMs": 720,
+        "locomotion": "approach"
+      },
+      "hit": {
+        "row": 2,
+        "loop": false,
+        "durationMs": 420,
+        "locomotion": "stationary"
+      },
+      "death": {
+        "row": 3,
+        "loop": false,
+        "durationMs": 900,
+        "locomotion": "stationary",
+        "holdLast": true
+      }
+    }
+  },
+  "food_raider": {
+    "src": "/assets/images/combat/spritesheets/enemies/food_raider_sheet.png",
+    "cols": 6,
+    "rows": 4,
+    "motions": {
+      "idle": {
+        "row": 0,
+        "loop": true,
+        "durationMs": 900,
+        "locomotion": "stationary"
+      },
+      "basic_attack": {
+        "row": 1,
+        "loop": false,
+        "durationMs": 720,
+        "locomotion": "approach"
+      },
+      "hit": {
+        "row": 2,
+        "loop": false,
+        "durationMs": 420,
+        "locomotion": "stationary"
+      },
+      "death": {
+        "row": 3,
+        "loop": false,
+        "durationMs": 900,
+        "locomotion": "stationary",
+        "holdLast": true
+      }
+    }
+  },
+  "food_warlord": {
+    "src": "/assets/images/combat/spritesheets/enemies/food_warlord_sheet.png",
+    "cols": 6,
+    "rows": 4,
+    "motions": {
+      "idle": {
+        "row": 0,
+        "loop": true,
+        "durationMs": 900,
+        "locomotion": "stationary"
+      },
+      "basic_attack": {
+        "row": 1,
+        "loop": false,
+        "durationMs": 720,
+        "locomotion": "approach"
+      },
+      "hit": {
+        "row": 2,
+        "loop": false,
+        "durationMs": 420,
+        "locomotion": "stationary"
+      },
+      "death": {
+        "row": 3,
+        "loop": false,
+        "durationMs": 900,
+        "locomotion": "stationary",
+        "holdLast": true
+      }
+    }
+  }
+}

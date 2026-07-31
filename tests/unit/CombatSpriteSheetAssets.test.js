@@ -2,10 +2,20 @@ import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import zlib from 'node:zlib';
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
+import { COMBAT_MOTION_MANIFEST } from '../../js/data/combatMotionManifest.js';
 
 const ROOT = process.cwd();
 const SPRITE_ROOT = path.join(ROOT, 'assets', 'images', 'combat', 'spritesheets');
+const EXPORTED_MANIFEST_PATH = path.join(SPRITE_ROOT, 'manifest.json');
+const PYTHON_RUNTIME = 'C:/Users/USER/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/python.exe';
+const PREVIEW_SMOKE_DIR = path.join(
+  ROOT,
+  '.superpowers',
+  'sdd',
+  '2026-07-27-combat-motion-overhaul',
+  'task-5-smoke',
+);
 
 function walk(dir) {
   const entries = fs.readdirSync(dir, { withFileTypes: true });
@@ -21,6 +31,14 @@ function pngSize(filePath) {
     width: buffer.readUInt32BE(16),
     height: buffer.readUInt32BE(20),
   };
+}
+
+function manifestEntries() {
+  return Object.entries(COMBAT_MOTION_MANIFEST).map(([sheetKey, sheet]) => ({
+    sheetKey,
+    sheet,
+    filePath: path.join(ROOT, sheet.src.replace(/^\/+/, '')),
+  }));
 }
 
 function decodePngRgba(filePath) {
@@ -124,47 +142,126 @@ function countEdgeAlpha(image, x0, y0, width, height) {
 }
 
 describe('combat sprite sheet assets', () => {
-  it('keeps all displayed combat sprite sheets on the 6x4 256px cell contract', () => {
-    const files = walk(SPRITE_ROOT)
-      .filter((filePath) => /_sheet\.png$/.test(path.basename(filePath)))
-      .filter((filePath) => !/_src\.png$/.test(path.basename(filePath)));
+  it('keeps all displayed combat sprite sheets on their manifest grid contract', () => {
+    const entries = manifestEntries();
 
-    expect(files.length).toBeGreaterThan(0);
+    expect(entries.length).toBeGreaterThan(0);
 
-    const invalid = files
-      .map((filePath) => ({ filePath, ...pngSize(filePath) }))
-      .filter(({ width, height }) => width !== 1536 || height !== 1024);
+    const invalid = entries
+      .map(({ sheetKey, sheet, filePath }) => ({ sheetKey, sheet, filePath, ...pngSize(filePath) }))
+      .filter(({ sheet, width, height }) => (
+        width % sheet.cols !== 0
+        || height % sheet.rows !== 0
+        || width / sheet.cols !== height / sheet.rows
+      ));
 
     expect(invalid).toEqual([]);
   });
 
+  it('exports a byte-identical JSON manifest from the runtime source of truth', () => {
+    execFileSync(process.execPath, [
+      path.join(ROOT, 'tools', 'export_combat_motion_manifest.mjs'),
+    ], {
+      cwd: ROOT,
+      encoding: 'utf8',
+    });
+
+    const exportedText = fs.readFileSync(EXPORTED_MANIFEST_PATH, 'utf8');
+    expect(JSON.parse(exportedText)).toEqual(COMBAT_MOTION_MANIFEST);
+
+    const checkOutput = execFileSync(process.execPath, [
+      path.join(ROOT, 'tools', 'export_combat_motion_manifest.mjs'),
+      '--check',
+    ], {
+      cwd: ROOT,
+      encoding: 'utf8',
+    });
+    expect(checkOutput).toContain('up to date');
+
+    try {
+      const semanticDrift = structuredClone(COMBAT_MOTION_MANIFEST);
+      semanticDrift.doctor_f.cols += 1;
+      fs.writeFileSync(EXPORTED_MANIFEST_PATH, JSON.stringify(semanticDrift), 'utf8');
+      let result = spawnSync(process.execPath, [
+        path.join(ROOT, 'tools', 'export_combat_motion_manifest.mjs'),
+        '--check',
+      ], { cwd: ROOT, encoding: 'utf8' });
+      expect(result.status).toBe(1);
+      expect(result.stderr).toContain('semantic drift');
+
+      fs.writeFileSync(EXPORTED_MANIFEST_PATH, JSON.stringify(COMBAT_MOTION_MANIFEST), 'utf8');
+      result = spawnSync(process.execPath, [
+        path.join(ROOT, 'tools', 'export_combat_motion_manifest.mjs'),
+        '--check',
+      ], { cwd: ROOT, encoding: 'utf8' });
+      expect(result.status).toBe(1);
+      expect(result.stderr).toContain('byte drift');
+    } finally {
+      fs.writeFileSync(EXPORTED_MANIFEST_PATH, exportedText, 'utf8');
+    }
+  });
+
+  it.skipIf(!fs.existsSync(PYTHON_RUNTIME))(
+    'renders the monster preview from the authoritative exported sprite mapping',
+    () => {
+      const previewPath = path.join(PREVIEW_SMOKE_DIR, 'monster_motion_preview_active_sheets.png');
+      const auditPath = path.join(PREVIEW_SMOKE_DIR, 'monster_motion_audit.json');
+      const modulePath = path.join(ROOT, 'tools', 'render_monster_motion_preview.py');
+      const pythonScript = [
+        'import importlib.util',
+        'from pathlib import Path',
+        `spec = importlib.util.spec_from_file_location("combat_motion_preview", r"${modulePath.replaceAll('\\', '/')}")`,
+        'module = importlib.util.module_from_spec(spec)',
+        'spec.loader.exec_module(module)',
+        `module.OUT_DIR = Path(r"${PREVIEW_SMOKE_DIR.replaceAll('\\', '/')}")`,
+        `module.PREVIEW_PATH = Path(r"${previewPath.replaceAll('\\', '/')}")`,
+        `module.AUDIT_PATH = Path(r"${auditPath.replaceAll('\\', '/')}")`,
+        'module.main()',
+      ].join('\n');
+
+      execFileSync(PYTHON_RUNTIME, ['-c', pythonScript], {
+        cwd: ROOT,
+        encoding: 'utf8',
+      });
+
+      const audit = JSON.parse(fs.readFileSync(auditPath, 'utf8'));
+      expect(audit.activeUniqueSheetCount).toBeGreaterThan(0);
+      expect(audit.invalidDimensions).toEqual([]);
+      expect(audit.emptyRows).toEqual([]);
+      expect(fs.statSync(previewPath).size).toBeGreaterThan(0);
+    },
+  );
+
   it('keeps idle rows foot-anchored and every animation row populated', () => {
-    const files = walk(SPRITE_ROOT)
-      .filter((filePath) => /_sheet\.png$/.test(path.basename(filePath)))
-      .filter((filePath) => !/_src\.png$/.test(path.basename(filePath)));
+    const entries = manifestEntries();
 
     const invalidRows = [];
-    for (const filePath of files) {
+    for (const { sheetKey, sheet, filePath } of entries) {
       const image = decodePngRgba(filePath);
-      for (let row = 0; row < 4; row += 1) {
+      const frameWidth = image.width / sheet.cols;
+      const frameHeight = image.height / sheet.rows;
+      const motionRows = new Set(Object.values(sheet.motions).map(motion => motion.row));
+      for (const row of motionRows) {
         const bounds = [];
-        for (let col = 0; col < 6; col += 1) {
-          const cellBounds = alphaBounds(image, col * 256, row * 256, 256, 256);
+        for (let col = 0; col < sheet.cols; col += 1) {
+          const cellBounds = alphaBounds(image, col * frameWidth, row * frameHeight, frameWidth, frameHeight);
           if (cellBounds) bounds.push(cellBounds);
         }
-        if (bounds.length !== 6) {
+        if (bounds.length !== sheet.cols) {
           invalidRows.push({
+            sheetKey,
             file: path.relative(ROOT, filePath).replaceAll(path.sep, '/'),
             row,
-            reason: `expected 6 populated frames, got ${bounds.length}`,
+            reason: `expected ${sheet.cols} populated frames, got ${bounds.length}`,
           });
           continue;
         }
         const bottoms = bounds.map(({ bottom }) => bottom);
         const bottomSpread = Math.max(...bottoms) - Math.min(...bottoms);
 
-        if (row === 0 && bottomSpread > 4) {
+        if (row === sheet.motions.idle.row && bottomSpread > 4) {
           invalidRows.push({
+            sheetKey,
             file: path.relative(ROOT, filePath).replaceAll(path.sep, '/'),
             row,
             reason: 'idle row foot anchor drift',
@@ -178,9 +275,7 @@ describe('combat sprite sheet assets', () => {
   });
 
   it('does not leave opaque chroma-key green pixels in displayed sprite sheets', () => {
-    const files = walk(SPRITE_ROOT)
-      .filter((filePath) => /_sheet\.png$/.test(path.basename(filePath)))
-      .filter((filePath) => !/_src\.png$/.test(path.basename(filePath)));
+    const files = manifestEntries().map(({ filePath }) => filePath);
 
     const filesWithChromaKey = [];
     for (const filePath of files) {
@@ -205,18 +300,20 @@ describe('combat sprite sheet assets', () => {
   });
 
   it('keeps displayed sprite pixels away from frame edges to avoid animation clipping', () => {
-    const files = walk(SPRITE_ROOT)
-      .filter((filePath) => /_sheet\.png$/.test(path.basename(filePath)))
-      .filter((filePath) => !/_src\.png$/.test(path.basename(filePath)));
+    const entries = manifestEntries();
 
     const clippedFrames = [];
-    for (const filePath of files) {
+    for (const { sheetKey, sheet, filePath } of entries) {
       const image = decodePngRgba(filePath);
-      for (let row = 0; row < 4; row += 1) {
-        for (let col = 0; col < 6; col += 1) {
-          const edgePixels = countEdgeAlpha(image, col * 256, row * 256, 256, 256);
+      const frameWidth = image.width / sheet.cols;
+      const frameHeight = image.height / sheet.rows;
+      const motionRows = new Set(Object.values(sheet.motions).map(motion => motion.row));
+      for (const row of motionRows) {
+        for (let col = 0; col < sheet.cols; col += 1) {
+          const edgePixels = countEdgeAlpha(image, col * frameWidth, row * frameHeight, frameWidth, frameHeight);
           if (edgePixels > 0) {
             clippedFrames.push({
+              sheetKey,
               file: path.relative(ROOT, filePath).replaceAll(path.sep, '/'),
               row,
               col,
