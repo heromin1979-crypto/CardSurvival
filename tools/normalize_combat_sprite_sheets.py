@@ -4,6 +4,8 @@ import argparse
 import hashlib
 import io
 import json
+import os
+import posixpath
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
@@ -23,7 +25,11 @@ CHROMA_HUE_MAX = 162
 CHROMA_SATURATION_MIN = 0.72
 CHROMA_VALUE_MIN = 150
 ISOLATED_CHROMA_COMPONENT_AREA = 12
-CHROMA_COMPONENT_ALLOWLIST_PATH = SPRITE_ROOT / "chroma_component_allowlist.json"
+CHROMA_COMPONENT_ALLOWLIST_PATH = Path(os.environ.get("COMBAT_CHROMA_ALLOWLIST_PATH", SPRITE_ROOT / "chroma_component_allowlist.json"))
+ALLOWLIST_VERSION = 1
+ALLOWLIST_REQUIRED_FIELDS = {
+    "sheetKey", "path", "row", "col", "bbox", "pixelCount", "fingerprint", "reason",
+}
 
 
 @dataclass(frozen=True)
@@ -43,12 +49,30 @@ def display_sheets() -> list[Path]:
     return sorted(ROOT / sheet["src"].lstrip("/") for sheet in manifest.values())
 
 
-def grid_for(path: Path, image: Image.Image | None = None) -> Grid:
+def _normalized_asset_path(value: str) -> str:
+    if not isinstance(value, str) or not value.startswith("/") or "\\" in value:
+        raise ValueError("allowlist: schema mismatch (path)")
+    normalized = "/" + posixpath.normpath(value.lstrip("/"))
+    if normalized != value or normalized == "/." or value.startswith("//"):
+        raise ValueError("allowlist: schema mismatch (path)")
+    return normalized
+
+
+def manifest_sheet_entries() -> list[tuple[str, str, dict]]:
     manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
-    relative = "/" + path.relative_to(ROOT).as_posix()
-    sheet = next((entry for entry in manifest.values() if entry["src"] == relative), None)
-    if sheet is None:
-        raise ValueError(f"{relative} is not declared in {MANIFEST_PATH.relative_to(ROOT)}")
+    return [(key, _normalized_asset_path(entry["src"]), entry) for key, entry in manifest.items()]
+
+
+def sheet_identity_for_path(path: Path) -> tuple[str, str, dict]:
+    relative = _normalized_asset_path("/" + path.resolve().relative_to(ROOT.resolve()).as_posix())
+    matches = [(key, source, entry) for key, source, entry in manifest_sheet_entries() if source == relative]
+    if len(matches) != 1:
+        raise ValueError(f"{relative} must map to exactly one manifest sheet")
+    return matches[0]
+
+
+def grid_for(path: Path, image: Image.Image | None = None) -> Grid:
+    _, _, sheet = sheet_identity_for_path(path)
     source = image if image is not None else Image.open(path)
     width, height = source.size
     cols, rows = sheet["cols"], sheet["rows"]
@@ -168,22 +192,97 @@ def _component_spec_matches(component: dict, spec: dict) -> bool:
     )
 
 
+def _allowlist_location(spec: dict) -> tuple[str, str, int, int]:
+    return spec["sheetKey"], spec["path"], spec["row"], spec["col"]
+
+
+def _allowlist_descriptor(spec: dict) -> tuple[tuple[int, ...], int, str]:
+    return tuple(spec["bbox"]), spec["pixelCount"], spec["fingerprint"]
+
+
+def _validate_allowlist_schema(data: object) -> list[dict]:
+    if not isinstance(data, dict) or set(data) != {"version", "components"} or data["version"] != ALLOWLIST_VERSION or not isinstance(data["components"], list):
+        raise ValueError("allowlist: schema mismatch (root)")
+    components = data["components"]
+    for spec in components:
+        if not isinstance(spec, dict) or set(spec) != ALLOWLIST_REQUIRED_FIELDS:
+            raise ValueError("allowlist: schema mismatch (component fields)")
+        if not isinstance(spec["sheetKey"], str) or not spec["sheetKey"]:
+            raise ValueError("allowlist: schema mismatch (sheetKey)")
+        spec["path"] = _normalized_asset_path(spec["path"])
+        if not isinstance(spec["row"], int) or not isinstance(spec["col"], int) or spec["row"] < 0 or spec["col"] < 0:
+            raise ValueError("allowlist: schema mismatch (cell)")
+        if not isinstance(spec["bbox"], list) or len(spec["bbox"]) != 4 or any(not isinstance(value, int) or value < 0 for value in spec["bbox"]):
+            raise ValueError("allowlist: schema mismatch (bbox)")
+        if spec["bbox"][0] >= spec["bbox"][2] or spec["bbox"][1] >= spec["bbox"][3]:
+            raise ValueError("allowlist: schema mismatch (bbox)")
+        if not isinstance(spec["pixelCount"], int) or not 0 < spec["pixelCount"] <= ISOLATED_CHROMA_COMPONENT_AREA:
+            raise ValueError("allowlist: schema mismatch (pixelCount)")
+        if not isinstance(spec["fingerprint"], str) or len(spec["fingerprint"]) != 64 or any(char not in "0123456789abcdef" for char in spec["fingerprint"]):
+            raise ValueError("allowlist: schema mismatch (fingerprint)")
+        if not isinstance(spec["reason"], str) or not spec["reason"].strip():
+            raise ValueError("allowlist: schema mismatch (reason)")
+    return components
+
+
 def component_allowlist() -> list[dict]:
     if not CHROMA_COMPONENT_ALLOWLIST_PATH.exists():
-        return []
-    data = json.loads(CHROMA_COMPONENT_ALLOWLIST_PATH.read_text(encoding="utf-8"))
-    return data.get("components", [])
-
-
-def component_specs_for(path: Path, row: int = 0, col: int = 0) -> list[dict]:
+        raise ValueError("allowlist: missing")
     try:
-        relative = "/" + path.resolve().relative_to(ROOT.resolve()).as_posix()
-    except ValueError:
-        return []
+        data = json.loads(CHROMA_COMPONENT_ALLOWLIST_PATH.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise ValueError("allowlist: malformed JSON") from error
+    return _validate_allowlist_schema(data)
+
+
+def component_specs_for(sheet_key: str, path: Path, row: int, col: int, allowlist: list[dict]) -> list[dict]:
+    relative = _normalized_asset_path("/" + path.resolve().relative_to(ROOT.resolve()).as_posix())
     return [
-        entry for entry in component_allowlist()
-        if entry["path"] == relative and entry["row"] == row and entry["col"] == col
+        entry for entry in allowlist
+        if _allowlist_location(entry) == (sheet_key, relative, row, col)
     ]
+
+
+def allowlist_manifest_diagnostics(allowlist: list[dict]) -> list[dict]:
+    manifest = manifest_sheet_entries()
+    diagnostics: list[dict] = []
+    seen: set[tuple] = set()
+    for spec in allowlist:
+        identity = (*_allowlist_location(spec), *_allowlist_descriptor(spec))
+        location = ":".join(map(str, _allowlist_location(spec)))
+        if identity in seen:
+            diagnostics.append({"code": "duplicate", "location": location})
+            continue
+        seen.add(identity)
+        matches = [(key, source, entry) for key, source, entry in manifest if (key, source) == (spec["sheetKey"], spec["path"])]
+        if len(matches) != 1 or spec["row"] >= matches[0][2]["rows"] or spec["col"] >= matches[0][2]["cols"]:
+            diagnostics.append({"code": "orphan", "location": location})
+    return diagnostics
+
+
+def validate_component_allowlist() -> list[dict]:
+    allowlist = component_allowlist()
+    diagnostics = allowlist_manifest_diagnostics(allowlist)
+    if diagnostics:
+        return diagnostics
+    for spec in allowlist:
+        sheet_key, _, entry = next(item for item in manifest_sheet_entries() if (item[0], item[1]) == (spec["sheetKey"], spec["path"]))
+        image_path = ROOT / entry["src"].lstrip("/")
+        image = Image.open(image_path).convert("RGBA")
+        grid = grid_for(image_path, image)
+        box = _frame_boxes(image, grid.cols, grid.rows)[spec["row"] * grid.cols + spec["col"]]
+        components = _isolated_chroma_components(image.crop(box), _edge_connected_chroma(image.crop(box)))
+        if any(_component_spec_matches(component, spec) for component in components):
+            continue
+        diagnostics.append({"code": "stale" if components else "unconsumed", "location": ":".join(map(str, _allowlist_location(spec)))})
+    return diagnostics
+
+
+def allowlist_diagnostics_or_error() -> list[dict]:
+    try:
+        return validate_component_allowlist()
+    except ValueError as error:
+        return [{"code": "invalid", "location": str(error)}]
 
 
 def _partition_isolated_components(image: Image.Image, excluded: set[int], specs: list[dict]) -> tuple[list[dict], list[dict]]:
@@ -214,7 +313,7 @@ def _is_frame_edge(image: Image.Image, x: int, y: int) -> bool:
 
 
 def analyze_chroma(image: Image.Image, allowed_components: list[dict] | None = None) -> dict[str, int]:
-    """Return residual chroma-key artifacts without modifying the supplied image."""
+    """Return residual artifacts; ``removedComponents`` means components eligible for removal."""
     image = image.convert("RGBA")
     pixels = image.load()
     edge = _edge_connected_chroma(image)
@@ -316,9 +415,11 @@ def _frame_boxes(image: Image.Image, cols: int, rows: int) -> list[tuple[int, in
 
 def analyze_chroma_grid(image: Image.Image, cols: int = 1, rows: int = 1, path: Path | None = None) -> dict[str, int]:
     totals = {"opaqueGreen": 0, "fringeGreen": 0, "hiddenRgb": 0, "removedComponents": 0, "staleAllowlist": 0}
+    allowlist = component_allowlist() if path else []
+    sheet_key = sheet_identity_for_path(path)[0] if path else ""
     for index, box in enumerate(_frame_boxes(image, cols, rows)):
         row, col = divmod(index, cols)
-        result = analyze_chroma(image.crop(box), component_specs_for(path, row, col) if path else [])
+        result = analyze_chroma(image.crop(box), component_specs_for(sheet_key, path, row, col, allowlist) if path else [])
         for key, value in result.items():
             totals[key] += value
     return totals
@@ -328,9 +429,11 @@ def cleanup_chroma_grid(image: Image.Image, cols: int = 1, rows: int = 1, path: 
     """Normalize every animation cell independently so internal grid edges are true boundaries."""
     cleaned = Image.new("RGBA", image.size, (0, 0, 0, 0))
     removed_components = 0
+    allowlist = component_allowlist() if path else []
+    sheet_key = sheet_identity_for_path(path)[0] if path else ""
     for index, box in enumerate(_frame_boxes(image, cols, rows)):
         row, col = divmod(index, cols)
-        frame, result = cleanup_chroma(image.crop(box), component_specs_for(path, row, col) if path else [])
+        frame, result = cleanup_chroma(image.crop(box), component_specs_for(sheet_key, path, row, col, allowlist) if path else [])
         cleaned.alpha_composite(frame, box[:2])
         removed_components += result["removedComponents"]
     return cleaned, {"removedComponents": removed_components, "staleAllowlist": 0}
@@ -728,6 +831,8 @@ def normalize_sheet(path: Path, dry_run: bool, from_head: bool) -> dict:
     else:
         sheet = Image.open(path).convert("RGBA")
     grid = grid_for(path, sheet)
+    sheet_key, _, _ = sheet_identity_for_path(path)
+    allowlist = component_allowlist()
     original = sheet.copy()
     normalized = Image.new("RGBA", original.size, (0, 0, 0, 0))
     changed_frames = 0
@@ -739,7 +844,7 @@ def normalize_sheet(path: Path, dry_run: bool, from_head: bool) -> dict:
                 (col + 1) * grid.cell_width,
                 (row + 1) * grid.cell_height,
             )
-            frame, _ = cleanup_chroma(sheet.crop(box), component_specs_for(path, row, col))
+            frame, _ = cleanup_chroma(sheet.crop(box), component_specs_for(sheet_key, path, row, col, allowlist))
             normalized.alpha_composite(frame, (col * grid.cell_width, row * grid.cell_height))
             if original.crop(box).tobytes() != frame.tobytes():
                 changed_frames += 1
@@ -766,9 +871,21 @@ def main() -> None:
                         help="파일명에 이 문자열이 포함된 시트만 처리")
     parser.add_argument("--check-chroma", nargs="+", metavar="SHEET",
                         help="PNG 파일의 잔여 크로마 아티팩트를 JSON으로 검사")
+    parser.add_argument("--check-allowlist", action="store_true",
+                        help="등록된 크로마 컴포넌트 허용 목록을 전역 검증")
     args = parser.parse_args()
 
+    if args.check_allowlist:
+        diagnostics = allowlist_diagnostics_or_error()
+        print(json.dumps({"diagnostics": diagnostics}, ensure_ascii=False))
+        if diagnostics:
+            raise SystemExit(1)
+        return
+
     if args.check_chroma:
+        diagnostics = allowlist_diagnostics_or_error()
+        if diagnostics:
+            raise SystemExit(json.dumps({"diagnostics": diagnostics}, ensure_ascii=False))
         reports = []
         for value in args.check_chroma:
             path = Path(value)
@@ -776,11 +893,18 @@ def main() -> None:
             try:
                 grid = grid_for(path.resolve(), image)
                 stats = analyze_chroma_grid(image, grid.cols, grid.rows, path)
-            except ValueError:
+            except ValueError as error:
+                if "must map to exactly one manifest sheet" not in str(error):
+                    raise
                 stats = analyze_chroma(image)
             reports.append({"path": path.as_posix(), **stats})
         print(json.dumps(reports, ensure_ascii=False))
         return
+
+    if not args.from_src:
+        diagnostics = allowlist_diagnostics_or_error()
+        if diagnostics:
+            raise SystemExit(json.dumps({"diagnostics": diagnostics}, ensure_ascii=False))
 
     targets = [path for path in display_sheets() if not args.only or args.only in path.name]
     if args.from_src:

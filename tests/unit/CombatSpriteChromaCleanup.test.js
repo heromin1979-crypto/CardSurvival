@@ -127,7 +127,7 @@ describe('combat sprite chroma cleanup', () => {
     ], { cwd: ROOT, encoding: 'utf8' });
     const report = JSON.parse(output);
 
-    expect(report).toEqual([{ path: expect.stringMatching(/chroma-fringe\.png$/), opaqueGreen: expect.any(Number), fringeGreen: expect.any(Number), hiddenRgb: 1, removedComponents: 1, staleAllowlist: 0 }]);
+    expect(report).toEqual([{ path: expect.stringMatching(/chroma-fringe\.png$/), opaqueGreen: 124, fringeGreen: 4, hiddenRgb: 1, removedComponents: 1, staleAllowlist: 0 }]);
   });
 
   it('treats an internal manifest frame edge as a chroma boundary in both tools', async () => {
@@ -194,6 +194,62 @@ describe('combat sprite chroma cleanup', () => {
       componentSpecs: new Map([['0:0', [{ bbox: [1, 1, 2, 2], pixelCount: 1, fingerprint: '0'.repeat(64) }]]]),
     })).toMatchObject({ removedComponents: 1, staleAllowlist: 1 });
   });
+
+  it('gives Python and Node the same global allowlist diagnostics', () => {
+    const runtime = pythonRuntime();
+    const audit = path.join(ROOT, 'tools', 'audit_combat_sprites.mjs');
+    const source = JSON.parse(fs.readFileSync(path.join(ROOT, 'assets', 'images', 'combat', 'spritesheets', 'chroma_component_allowlist.json'), 'utf8'));
+    const temp = fs.mkdtempSync(path.join(ROOT, 'tmp-chroma-allowlist-'));
+    const write = (name, components) => {
+      const pathname = path.join(temp, `${name}.json`);
+      fs.writeFileSync(pathname, JSON.stringify({ version: 1, components }));
+      return pathname;
+    };
+    const check = (pathname, code) => {
+      const env = { ...process.env, COMBAT_CHROMA_ALLOWLIST_PATH: pathname };
+      const python = spawnSync(runtime.command, [...runtime.prefix, NORMALIZER, '--check-allowlist'], { cwd: ROOT, encoding: 'utf8', env });
+      const node = spawnSync(process.execPath, [audit, '--check-allowlist'], { cwd: ROOT, encoding: 'utf8', env });
+      expect(python.status).toBe(1);
+      expect(node.status).toBe(1);
+      expect(JSON.parse(python.stdout)).toEqual(JSON.parse(node.stdout));
+      expect(JSON.parse(python.stdout).diagnostics).toEqual([{ code, location: expect.any(String) }]);
+    };
+    try {
+      const [component] = source.components;
+      const empty = write('empty', []);
+      const emptyEnv = { ...process.env, COMBAT_CHROMA_ALLOWLIST_PATH: empty };
+      const emptyPython = spawnSync(runtime.command, [...runtime.prefix, NORMALIZER, '--check-allowlist'], { cwd: ROOT, encoding: 'utf8', env: emptyEnv });
+      const emptyNode = spawnSync(process.execPath, [audit, '--check-allowlist'], { cwd: ROOT, encoding: 'utf8', env: emptyEnv });
+      expect(emptyPython.status).toBe(0);
+      expect(emptyNode.status).toBe(0);
+      expect(JSON.parse(emptyPython.stdout)).toEqual({ diagnostics: [] });
+      expect(JSON.parse(emptyNode.stdout)).toEqual({ diagnostics: [] });
+      check(write('duplicate', [component, component]), 'duplicate');
+      check(write('orphan', [{ ...component, sheetKey: 'wrong_key' }]), 'orphan');
+      check(write('wrong-path', [{ ...component, path: '/assets/images/combat/spritesheets/enemies/zombie_bloater_sheet.png' }]), 'orphan');
+      check(write('wrong-row', [{ ...component, row: 0 }]), 'unconsumed');
+      check(write('wrong-col', [{ ...component, col: 0 }]), 'unconsumed');
+      check(write('stale-bbox', [{ ...component, bbox: [178, 120, 181, 121] }]), 'stale');
+      check(write('stale-count', [{ ...component, pixelCount: component.pixelCount + 1 }]), 'stale');
+      check(write('stale-fingerprint', [{ ...component, fingerprint: '0'.repeat(64) }]), 'stale');
+
+      const missing = path.join(temp, 'missing.json');
+      const malformed = path.join(temp, 'malformed.json');
+      fs.writeFileSync(malformed, JSON.stringify({ version: 1 }));
+      for (const pathname of [missing, malformed]) {
+        const env = { ...process.env, COMBAT_CHROMA_ALLOWLIST_PATH: pathname };
+        const python = spawnSync(runtime.command, [...runtime.prefix, NORMALIZER, '--check-allowlist'], { cwd: ROOT, encoding: 'utf8', env });
+        const node = spawnSync(process.execPath, [audit, '--check-allowlist'], { cwd: ROOT, encoding: 'utf8', env });
+        expect(python.status).toBe(1);
+        expect(node.status).toBe(1);
+        const expected = pathname === missing ? 'allowlist: missing' : 'allowlist: schema mismatch (root)';
+        expect(JSON.parse(python.stdout)).toEqual(JSON.parse(node.stdout));
+        expect(JSON.parse(python.stdout).diagnostics).toEqual([{ code: 'invalid', location: expected }]);
+      }
+    } finally {
+      fs.rmSync(temp, { recursive: true, force: true });
+    }
+  }, 30000);
 
   it('marks and saves a cleanup-only normalize_sheet change without moving foreground pixels', () => {
     const output = runPython([

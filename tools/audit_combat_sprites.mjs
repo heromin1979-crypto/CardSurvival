@@ -18,12 +18,56 @@ const CHROMA_HUE_MAX = 162;
 const CHROMA_SATURATION_MIN = 0.72;
 const CHROMA_VALUE_MIN = 150;
 const ISOLATED_CHROMA_COMPONENT_AREA = 12;
-const CHROMA_COMPONENT_ALLOWLIST_PATH = path.join(ROOT, 'assets', 'images', 'combat', 'spritesheets', 'chroma_component_allowlist.json');
-const CHROMA_COMPONENT_ALLOWLIST = JSON.parse(fs.readFileSync(CHROMA_COMPONENT_ALLOWLIST_PATH, 'utf8')).components;
+const ALLOWLIST_VERSION = 1;
+const ALLOWLIST_REQUIRED_FIELDS = new Set(['sheetKey', 'path', 'row', 'col', 'bbox', 'pixelCount', 'fingerprint', 'reason']);
+const CHROMA_COMPONENT_ALLOWLIST_PATH = process.env.COMBAT_CHROMA_ALLOWLIST_PATH
+  ?? path.join(ROOT, 'assets', 'images', 'combat', 'spritesheets', 'chroma_component_allowlist.json');
+
+function normalizedAssetPath(value) {
+  if (typeof value !== 'string' || !value.startsWith('/') || value.includes('\\')) throw new Error('allowlist: schema mismatch (path)');
+  const normalized = `/${path.posix.normalize(value.slice(1))}`;
+  if (normalized !== value || normalized === '/.' || value.startsWith('//')) throw new Error('allowlist: schema mismatch (path)');
+  return normalized;
+}
+
+function loadComponentAllowlist() {
+  if (!fs.existsSync(CHROMA_COMPONENT_ALLOWLIST_PATH)) throw new Error('allowlist: missing');
+  let data;
+  try {
+    data = JSON.parse(fs.readFileSync(CHROMA_COMPONENT_ALLOWLIST_PATH, 'utf8'));
+  } catch {
+    throw new Error('allowlist: malformed JSON');
+  }
+  if (!data || typeof data !== 'object' || Array.isArray(data)
+    || Object.keys(data).length !== 2 || !Object.hasOwn(data, 'version') || !Object.hasOwn(data, 'components')
+    || data.version !== ALLOWLIST_VERSION || !Array.isArray(data.components)) throw new Error('allowlist: schema mismatch (root)');
+  return data.components.map((entry) => {
+    if (!entry || typeof entry !== 'object' || Array.isArray(entry)
+      || Object.keys(entry).length !== ALLOWLIST_REQUIRED_FIELDS.size
+      || Object.keys(entry).some(key => !ALLOWLIST_REQUIRED_FIELDS.has(key))) throw new Error('allowlist: schema mismatch (component fields)');
+    if (typeof entry.sheetKey !== 'string' || !entry.sheetKey) throw new Error('allowlist: schema mismatch (sheetKey)');
+    const normalized = normalizedAssetPath(entry.path);
+    if (!Number.isInteger(entry.row) || !Number.isInteger(entry.col) || entry.row < 0 || entry.col < 0) throw new Error('allowlist: schema mismatch (cell)');
+    if (!Array.isArray(entry.bbox) || entry.bbox.length !== 4 || entry.bbox.some(value => !Number.isInteger(value) || value < 0)
+      || entry.bbox[0] >= entry.bbox[2] || entry.bbox[1] >= entry.bbox[3]) throw new Error('allowlist: schema mismatch (bbox)');
+    if (!Number.isInteger(entry.pixelCount) || entry.pixelCount <= 0 || entry.pixelCount > ISOLATED_CHROMA_COMPONENT_AREA) throw new Error('allowlist: schema mismatch (pixelCount)');
+    if (typeof entry.fingerprint !== 'string' || !/^[0-9a-f]{64}$/.test(entry.fingerprint)) throw new Error('allowlist: schema mismatch (fingerprint)');
+    if (typeof entry.reason !== 'string' || !entry.reason.trim()) throw new Error('allowlist: schema mismatch (reason)');
+    return { ...entry, path: normalized };
+  });
+}
+
+let CHROMA_COMPONENT_ALLOWLIST = [];
+let ALLOWLIST_LOAD_ERROR = null;
+try {
+  CHROMA_COMPONENT_ALLOWLIST = loadComponentAllowlist();
+} catch (error) {
+  ALLOWLIST_LOAD_ERROR = error;
+}
 
 function componentSpecsFor(sheetKey, row, col) {
   return CHROMA_COMPONENT_ALLOWLIST.filter((spec) => (
-    spec.sheetKey === sheetKey && spec.row === row && spec.col === col
+    spec.sheetKey === sheetKey && spec.path === normalizedAssetPath(COMBAT_MOTION_MANIFEST[sheetKey]?.src ?? '') && spec.row === row && spec.col === col
   ));
 }
 
@@ -106,6 +150,28 @@ function readPng(filePath) {
 
 function pixelOffset(image, x, y) {
   return (y * image.width + x) * 4;
+}
+
+function allowlistLocation(spec) {
+  return [spec.sheetKey, spec.path, spec.row, spec.col];
+}
+
+function allowlistManifestDiagnostics() {
+  const manifest = manifestSheets();
+  const diagnostics = [];
+  const seen = new Set();
+  for (const spec of CHROMA_COMPONENT_ALLOWLIST) {
+    const identity = JSON.stringify([...allowlistLocation(spec), spec.bbox, spec.pixelCount, spec.fingerprint]);
+    const location = allowlistLocation(spec).join(':');
+    if (seen.has(identity)) {
+      diagnostics.push({ code: 'duplicate', location });
+      continue;
+    }
+    seen.add(identity);
+    const matches = manifest.filter(({ sheetKey, sheet }) => sheetKey === spec.sheetKey && normalizedAssetPath(sheet.src) === spec.path);
+    if (matches.length !== 1 || spec.row >= matches[0].sheet.rows || spec.col >= matches[0].sheet.cols) diagnostics.push({ code: 'orphan', location });
+  }
+  return diagnostics;
 }
 
 function hueAndSaturation(r, g, b) {
@@ -246,6 +312,25 @@ function cropImage(image, x0, y0, width, height) {
     );
   }
   return { width, height, pixels };
+}
+
+function validateComponentAllowlist() {
+  if (ALLOWLIST_LOAD_ERROR) return [{ code: 'invalid', location: ALLOWLIST_LOAD_ERROR.message }];
+  const diagnostics = allowlistManifestDiagnostics();
+  if (diagnostics.length) return diagnostics;
+  const manifest = manifestSheets();
+  for (const spec of CHROMA_COMPONENT_ALLOWLIST) {
+    const target = manifest.find(({ sheetKey, sheet }) => sheetKey === spec.sheetKey && normalizedAssetPath(sheet.src) === spec.path);
+    const image = readPng(target.filePath);
+    const frameWidth = image.width / target.sheet.cols;
+    const frameHeight = image.height / target.sheet.rows;
+    const frame = cropImage(image, spec.col * frameWidth, spec.row * frameHeight, frameWidth, frameHeight);
+    const stats = chromaFrameArtifactStats(frame, [spec]);
+    if (stats.staleAllowlist > 0) {
+      diagnostics.push({ code: stats.removedComponents > 0 ? 'stale' : 'unconsumed', location: allowlistLocation(spec).join(':') });
+    }
+  }
+  return diagnostics;
 }
 
 export function chromaArtifactStats(image, grid = { cols: 1, rows: 1 }) {
@@ -450,7 +535,7 @@ Generated by \`node tools/audit_combat_sprites.mjs\` at ${new Date().toISOString
 - Each displayed sheet uses its own \`cols\`, \`rows\`, and \`motions\` from \`combatMotionManifest.js\`.
 - PNG dimensions must divide evenly into the declared grid; cells must be square.
 - Frame anchor is bottom-center. Idle row foot drift should stay within 4 px.
-- Transparent PNG is required. Edge-connected high-saturation chroma green, fringe spill, hidden transparent RGB, and isolated saturated green dots are failures. The explicit toxic-effect allowlist only preserves exact sheet/cell/component fingerprints; missing or changed entries fail as stale.
+- Transparent PNG is required. Edge-connected high-saturation chroma green, fringe spill, hidden transparent RGB, and isolated saturated green dots are failures. \`removedComponents\` is the number of isolated components that the normalizer would remove, not a post-cleanup deletion count. The explicit toxic-effect allowlist only preserves an exact \`sheetKey + normalized path + row + col + bbox + pixelCount + fingerprint\`; missing or changed entries fail as stale.
 
 ## Summary
 
@@ -474,6 +559,18 @@ ${rows}
 
 function main() {
   const checkOnly = process.argv.includes('--check');
+  const checkAllowlist = process.argv.includes('--check-allowlist');
+  const allowlistDiagnostics = validateComponentAllowlist();
+  if (checkAllowlist) {
+    console.log(JSON.stringify({ diagnostics: allowlistDiagnostics }));
+    if (allowlistDiagnostics.length) process.exitCode = 1;
+    return;
+  }
+  if (allowlistDiagnostics.length) {
+    console.error(JSON.stringify({ diagnostics: allowlistDiagnostics }));
+    process.exitCode = 1;
+    return;
+  }
   const sheets = manifestSheets().map(analyzeFile);
   const summary = {
     total: sheets.length,
