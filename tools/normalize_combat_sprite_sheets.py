@@ -16,6 +16,11 @@ MANIFEST_PATH = SPRITE_ROOT / "manifest.json"
 ALPHA_THRESHOLD = 12
 CHROMA_ALPHA_THRESHOLD = 200
 PADDING = 6
+CHROMA_HUE_MIN = 78
+CHROMA_HUE_MAX = 162
+CHROMA_SATURATION_MIN = 0.72
+CHROMA_VALUE_MIN = 150
+ISOLATED_CHROMA_COMPONENT_AREA = 12
 
 
 @dataclass(frozen=True)
@@ -49,51 +54,184 @@ def grid_for(path: Path, image: Image.Image | None = None) -> Grid:
     return Grid(cols, rows, width // cols, height // rows)
 
 
-def remove_chroma_key(image: Image.Image) -> Image.Image:
-    pixels = image.load()
-    width, height = image.size
-    for y in range(height):
-        for x in range(width):
-            r, g, b, a = pixels[x, y]
-            if a > CHROMA_ALPHA_THRESHOLD and g > 220 and r < 80 and b < 100:
-                pixels[x, y] = (r, g, b, 0)
-    return image
+def _hue_and_saturation(r: int, g: int, b: int) -> tuple[float, float, int]:
+    maximum = max(r, g, b)
+    minimum = min(r, g, b)
+    if maximum == 0:
+        return 0.0, 0.0, 0
+    chroma = maximum - minimum
+    saturation = chroma / maximum
+    if chroma == 0:
+        return 0.0, saturation, maximum
+    if maximum == r:
+        hue = 60 * (((g - b) / chroma) % 6)
+    elif maximum == g:
+        hue = 60 * (((b - r) / chroma) + 2)
+    else:
+        hue = 60 * (((r - g) / chroma) + 4)
+    return hue, saturation, maximum
 
 
 def is_green_screen_pixel(pixel: tuple[int, int, int, int]) -> bool:
     r, g, b, a = pixel
-    return a > ALPHA_THRESHOLD and g > 90 and g > r + 45 and g > b + 45
+    if a <= ALPHA_THRESHOLD:
+        return False
+    hue, saturation, value = _hue_and_saturation(r, g, b)
+    return CHROMA_HUE_MIN <= hue <= CHROMA_HUE_MAX and saturation >= CHROMA_SATURATION_MIN and value >= CHROMA_VALUE_MIN
 
 
-def remove_edge_connected_green(image: Image.Image) -> Image.Image:
+def _is_opaque_chroma(pixel: tuple[int, int, int, int]) -> bool:
+    return pixel[3] > CHROMA_ALPHA_THRESHOLD and is_green_screen_pixel(pixel)
+
+
+def _edge_connected_chroma(image: Image.Image) -> set[int]:
     width, height = image.size
     pixels = image.load()
-    visited = bytearray(width * height)
+    connected: set[int] = set()
     stack = []
-
     for x in range(width):
-        stack.append((x, 0))
-        stack.append((x, height - 1))
+        stack.extend(((x, 0), (x, height - 1)))
     for y in range(height):
-        stack.append((0, y))
-        stack.append((width - 1, y))
+        stack.extend(((0, y), (width - 1, y)))
 
     while stack:
         x, y = stack.pop()
-        idx = y * width + x
-        if visited[idx]:
+        index = y * width + x
+        if index in connected or not _is_opaque_chroma(pixels[x, y]):
             continue
-        visited[idx] = 1
-        if not is_green_screen_pixel(pixels[x, y]):
-            continue
-
-        r, g, b, _ = pixels[x, y]
-        pixels[x, y] = (r, g, b, 0)
+        connected.add(index)
         for nx, ny in ((x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)):
             if 0 <= nx < width and 0 <= ny < height:
                 stack.append((nx, ny))
+    return connected
 
-    return image
+
+def _isolated_chroma_components(image: Image.Image, excluded: set[int] | None = None) -> list[list[int]]:
+    width, height = image.size
+    pixels = image.load()
+    excluded = excluded or set()
+    seen: set[int] = set()
+    components: list[list[int]] = []
+    for y in range(height):
+        for x in range(width):
+            start = y * width + x
+            if start in seen or start in excluded or not _is_opaque_chroma(pixels[x, y]):
+                continue
+            seen.add(start)
+            component = []
+            stack = [(x, y)]
+            while stack:
+                cx, cy = stack.pop()
+                index = cy * width + cx
+                component.append(index)
+                for nx, ny in ((cx - 1, cy), (cx + 1, cy), (cx, cy - 1), (cx, cy + 1)):
+                    if not (0 <= nx < width and 0 <= ny < height):
+                        continue
+                    neighbor = ny * width + nx
+                    if neighbor in seen or neighbor in excluded or not _is_opaque_chroma(pixels[nx, ny]):
+                        continue
+                    seen.add(neighbor)
+                    stack.append((nx, ny))
+            if len(component) <= ISOLATED_CHROMA_COMPONENT_AREA:
+                components.append(component)
+    return components
+
+
+def _has_edge_chroma_neighbor(image: Image.Image, x: int, y: int, edge_chroma: set[int], radius: int = 2) -> bool:
+    for ny in range(max(0, y - radius), min(image.height, y + radius + 1)):
+        for nx in range(max(0, x - radius), min(image.width, x + radius + 1)):
+            if ny * image.width + nx in edge_chroma:
+                return True
+    return False
+
+
+def analyze_chroma(image: Image.Image) -> dict[str, int]:
+    """Return residual chroma-key artifacts without modifying the supplied image."""
+    image = image.convert("RGBA")
+    pixels = image.load()
+    edge = _edge_connected_chroma(image)
+    opaque_green = 0
+    fringe_green = 0
+    hidden_rgb = 0
+    for y in range(image.height):
+        for x in range(image.width):
+            pixel = pixels[x, y]
+            if pixel[3] == 0:
+                hidden_rgb += int(pixel[:3] != (0, 0, 0))
+            elif y * image.width + x in edge:
+                opaque_green += 1
+            elif is_green_screen_pixel(pixel) and _has_edge_chroma_neighbor(image, x, y, edge):
+                fringe_green += 1
+    components = _isolated_chroma_components(image, edge)
+    return {
+        "opaqueGreen": opaque_green,
+        "fringeGreen": fringe_green,
+        "hiddenRgb": hidden_rgb,
+        "removedComponents": len(components),
+    }
+
+
+def _decontaminate_fringe(image: Image.Image, removed: set[int]) -> None:
+    width, height = image.size
+    pixels = image.load()
+    for y in range(height):
+        for x in range(width):
+            index = y * width + x
+            pixel = pixels[x, y]
+            if index in removed or not is_green_screen_pixel(pixel) or pixel[3] > CHROMA_ALPHA_THRESHOLD:
+                continue
+            if not any(
+                ny * width + nx in removed
+                for ny in range(max(0, y - 2), min(height, y + 3))
+                for nx in range(max(0, x - 2), min(width, x + 3))
+            ):
+                continue
+            samples = []
+            for radius in (1, 2, 3):
+                for ny in range(max(0, y - radius), min(height, y + radius + 1)):
+                    for nx in range(max(0, x - radius), min(width, x + radius + 1)):
+                        neighbor_index = ny * width + nx
+                        neighbor = pixels[nx, ny]
+                        if neighbor_index not in removed and neighbor[3] > ALPHA_THRESHOLD and not is_green_screen_pixel(neighbor):
+                            samples.append(neighbor[:3])
+                if samples:
+                    break
+            if samples:
+                rgb = tuple(round(sum(color[channel] for color in samples) / len(samples)) for channel in range(3))
+            else:
+                value = round((pixel[0] + pixel[2]) / 2)
+                rgb = (value, value, value)
+            pixels[x, y] = (*rgb, pixel[3])
+
+
+def cleanup_chroma(image: Image.Image) -> tuple[Image.Image, dict[str, int]]:
+    """Remove chroma-key background artifacts while preserving real low-saturation greens."""
+    cleaned = image.convert("RGBA").copy()
+    width, height = cleaned.size
+    pixels = cleaned.load()
+    background = _edge_connected_chroma(cleaned)
+    isolated = _isolated_chroma_components(cleaned, background)
+    removed = set(background)
+    for component in isolated:
+        removed.update(component)
+    for index in removed:
+        x, y = index % width, index // width
+        pixels[x, y] = (0, 0, 0, 0)
+    _decontaminate_fringe(cleaned, removed)
+    for y in range(height):
+        for x in range(width):
+            r, g, b, a = pixels[x, y]
+            if a == 0 and (r, g, b) != (0, 0, 0):
+                pixels[x, y] = (0, 0, 0, 0)
+    return cleaned, {"removedComponents": len(isolated)}
+
+
+def remove_chroma_key(image: Image.Image) -> Image.Image:
+    return cleanup_chroma(image)[0]
+
+
+def remove_edge_connected_green(image: Image.Image) -> Image.Image:
+    return cleanup_chroma(image)[0]
 
 
 def alpha_bbox(image: Image.Image) -> tuple[int, int, int, int] | None:
@@ -494,7 +632,18 @@ def main() -> None:
                         help="_src 원본에서 성분 탐지로 재절단 (격자 걸침 프레임 복구)")
     parser.add_argument("--only", default=None,
                         help="파일명에 이 문자열이 포함된 시트만 처리")
+    parser.add_argument("--check-chroma", nargs="+", metavar="SHEET",
+                        help="PNG 파일의 잔여 크로마 아티팩트를 JSON으로 검사")
     args = parser.parse_args()
+
+    if args.check_chroma:
+        reports = []
+        for value in args.check_chroma:
+            path = Path(value)
+            image = Image.open(path).convert("RGBA")
+            reports.append({"path": path.as_posix(), **analyze_chroma(image)})
+        print(json.dumps(reports, ensure_ascii=False))
+        return
 
     targets = [path for path in display_sheets() if not args.only or args.only in path.name]
     if args.from_src:

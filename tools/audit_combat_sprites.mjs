@@ -10,6 +10,12 @@ const ROOT = process.cwd();
 const OUT_JSON = path.join(ROOT, 'output', 'combat', 'sprite_audit.json');
 const OUT_MD = path.join(ROOT, 'docs', 'analysis', 'COMBAT_SPRITE_AUDIT.md');
 const ALPHA_THRESHOLD = 12;
+const CHROMA_ALPHA_THRESHOLD = 200;
+const CHROMA_HUE_MIN = 78;
+const CHROMA_HUE_MAX = 162;
+const CHROMA_SATURATION_MIN = 0.72;
+const CHROMA_VALUE_MIN = 150;
+const ISOLATED_CHROMA_COMPONENT_AREA = 12;
 
 function normalizeAssetPath(assetPath) {
   return assetPath.replace(/^\/+/, '').replace(/^\.\//, '').replaceAll('/', path.sep);
@@ -92,6 +98,103 @@ function pixelOffset(image, x, y) {
   return (y * image.width + x) * 4;
 }
 
+function hueAndSaturation(r, g, b) {
+  const maximum = Math.max(r, g, b);
+  const minimum = Math.min(r, g, b);
+  if (maximum === 0) return { hue: 0, saturation: 0, value: 0 };
+  const chroma = maximum - minimum;
+  if (chroma === 0) return { hue: 0, saturation: 0, value: maximum };
+  let hue;
+  if (maximum === r) hue = 60 * (((g - b) / chroma) % 6);
+  else if (maximum === g) hue = 60 * (((b - r) / chroma) + 2);
+  else hue = 60 * (((r - g) / chroma) + 4);
+  return { hue, saturation: chroma / maximum, value: maximum };
+}
+
+function isGreenScreenPixel(pixel) {
+  const [r, g, b, a] = pixel;
+  if (a <= ALPHA_THRESHOLD) return false;
+  const { hue, saturation, value } = hueAndSaturation(r, g, b);
+  return hue >= CHROMA_HUE_MIN && hue <= CHROMA_HUE_MAX
+    && saturation >= CHROMA_SATURATION_MIN && value >= CHROMA_VALUE_MIN;
+}
+
+function isOpaqueChroma(pixel) {
+  return pixel[3] > CHROMA_ALPHA_THRESHOLD && isGreenScreenPixel(pixel);
+}
+
+function nearbyEdgeChroma(image, x, y, edge) {
+  for (let ny = Math.max(0, y - 2); ny <= Math.min(image.height - 1, y + 2); ny += 1) {
+    for (let nx = Math.max(0, x - 2); nx <= Math.min(image.width - 1, x + 2); nx += 1) {
+      if (edge[ny * image.width + nx]) return true;
+    }
+  }
+  return false;
+}
+
+export function chromaArtifactStats(image) {
+  const opaque = new Uint8Array(image.width * image.height);
+  let hiddenRgb = 0;
+  for (let y = 0; y < image.height; y += 1) {
+    for (let x = 0; x < image.width; x += 1) {
+      const index = y * image.width + x;
+      const pixel = image.pixels.subarray(pixelOffset(image, x, y), pixelOffset(image, x, y) + 4);
+      if (isOpaqueChroma(pixel)) opaque[index] = 1;
+      if (pixel[3] === 0 && (pixel[0] !== 0 || pixel[1] !== 0 || pixel[2] !== 0)) hiddenRgb += 1;
+    }
+  }
+  const edge = new Uint8Array(opaque.length);
+  const stack = [];
+  for (let x = 0; x < image.width; x += 1) stack.push([x, 0], [x, image.height - 1]);
+  for (let y = 0; y < image.height; y += 1) stack.push([0, y], [image.width - 1, y]);
+  while (stack.length) {
+    const [x, y] = stack.pop();
+    const index = y * image.width + x;
+    if (edge[index] || !opaque[index]) continue;
+    edge[index] = 1;
+    if (x > 0) stack.push([x - 1, y]);
+    if (x + 1 < image.width) stack.push([x + 1, y]);
+    if (y > 0) stack.push([x, y - 1]);
+    if (y + 1 < image.height) stack.push([x, y + 1]);
+  }
+  let opaqueGreen = 0;
+  let fringeGreen = 0;
+  for (let y = 0; y < image.height; y += 1) {
+    for (let x = 0; x < image.width; x += 1) {
+      const index = y * image.width + x;
+      const pixel = image.pixels.subarray(pixelOffset(image, x, y), pixelOffset(image, x, y) + 4);
+      if (edge[index]) {
+        opaqueGreen += 1;
+      } else if (isGreenScreenPixel(pixel) && nearbyEdgeChroma(image, x, y, edge)) {
+        fringeGreen += 1;
+      }
+    }
+  }
+
+  const seen = new Uint8Array(opaque.length);
+  let removedComponents = 0;
+  for (let start = 0; start < opaque.length; start += 1) {
+    if (!opaque[start] || edge[start] || seen[start]) continue;
+    const component = [start];
+    seen[start] = 1;
+    for (let cursor = 0; cursor < component.length; cursor += 1) {
+      const index = component[cursor];
+      const x = index % image.width;
+      const y = Math.floor(index / image.width);
+      for (const [nx, ny] of [[x - 1, y], [x + 1, y], [x, y - 1], [x, y + 1]]) {
+        if (nx < 0 || ny < 0 || nx >= image.width || ny >= image.height) continue;
+        const neighbor = ny * image.width + nx;
+        if (opaque[neighbor] && !edge[neighbor] && !seen[neighbor]) {
+          seen[neighbor] = 1;
+          component.push(neighbor);
+        }
+      }
+    }
+    if (component.length <= ISOLATED_CHROMA_COMPONENT_AREA) removedComponents += 1;
+  }
+  return { opaqueGreen, fringeGreen, hiddenRgb, removedComponents };
+}
+
 function frameBounds(image, frameX, frameY, frameW, frameH) {
   let minX = frameW;
   let minY = frameH;
@@ -137,13 +240,11 @@ function spread(values) {
 function analyzePixels(image, sheet, frameW, frameH) {
   let opaquePixels = 0;
   let whiteOpaquePixels = 0;
-  let chromaKeyPixels = 0;
   for (let offset = 0; offset < image.pixels.length; offset += 4) {
     const [r, g, b, a] = image.pixels.subarray(offset, offset + 4);
     if (a > ALPHA_THRESHOLD) {
       opaquePixels += 1;
       if (a > 200 && r > 235 && g > 235 && b > 235) whiteOpaquePixels += 1;
-      if (a > 200 && g > 220 && r < 80 && b < 100) chromaKeyPixels += 1;
     }
   }
 
@@ -176,7 +277,7 @@ function analyzePixels(image, sheet, frameW, frameH) {
   return {
     transparentPct: Number(((1 - opaquePixels / (image.width * image.height)) * 100).toFixed(2)),
     whiteOpaquePixels,
-    chromaKeyPixels,
+    ...chromaArtifactStats(image),
     rows,
   };
 }
@@ -226,7 +327,19 @@ function analyzeFile({ sheetKey, sheet, filePath }) {
     if (row.edgeOpaque > 0) issues.push({ level: 'warn', code: 'edge-touch', message: `${row.motionKeys.join(', ')} has ${row.edgeOpaque} edge pixels` });
   }
   if (pixelStats.whiteOpaquePixels > 500) issues.push({ level: 'warn', code: 'white-bg-risk', message: `${pixelStats.whiteOpaquePixels} opaque white pixels` });
-  if (pixelStats.chromaKeyPixels > 0) issues.push({ level: 'warn', code: 'chroma-key-green', message: `${pixelStats.chromaKeyPixels} chroma-key pixels` });
+  if (pixelStats.opaqueGreen > 0 || pixelStats.fringeGreen > 0) {
+    issues.push({
+      level: 'fail',
+      code: 'chroma-artifact',
+      message: `opaque=${pixelStats.opaqueGreen} fringe=${pixelStats.fringeGreen} hiddenRgb=${pixelStats.hiddenRgb} isolated=${pixelStats.removedComponents}`,
+    });
+  } else if (pixelStats.hiddenRgb > 0 || pixelStats.removedComponents > 0) {
+    issues.push({
+      level: 'warn',
+      code: 'chroma-review',
+      message: `hiddenRgb=${pixelStats.hiddenRgb} isolated=${pixelStats.removedComponents}; normalize only after visual confirmation`,
+    });
+  }
   return {
     sheetKey,
     path: toPosixRel(filePath),
@@ -261,7 +374,7 @@ Generated by \`node tools/audit_combat_sprites.mjs\` at ${new Date().toISOString
 - Each displayed sheet uses its own \`cols\`, \`rows\`, and \`motions\` from \`combatMotionManifest.js\`.
 - PNG dimensions must divide evenly into the declared grid; cells must be square.
 - Frame anchor is bottom-center. Idle row foot drift should stay within 4 px.
-- Transparent PNG is required. Opaque chroma-key green is a normalization warning.
+- Transparent PNG is required. Edge-connected high-saturation chroma green and fringe spill are failures. Hidden transparent RGB and isolated saturated green dots remain review warnings because they can also be intentional effects or anti-aliased asset metadata.
 
 ## Summary
 
