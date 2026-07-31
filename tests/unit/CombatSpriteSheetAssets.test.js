@@ -4,12 +4,29 @@ import os from 'node:os';
 import path from 'node:path';
 import zlib from 'node:zlib';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { COMBAT_MOTION_MANIFEST } from '../../js/data/combatMotionManifest.js';
-import { spriteGridIssue } from '../../tools/audit_combat_sprites.mjs';
+import {
+  COMBAT_MOTION_MANIFEST,
+  resolveCombatMotion,
+} from '../../js/data/combatMotionManifest.js';
+import { spriteGridIssue, whiteOpaqueRisk } from '../../tools/audit_combat_sprites.mjs';
 
 const ROOT = process.cwd();
 const SPRITE_ROOT = path.join(ROOT, 'assets', 'images', 'combat', 'spritesheets');
 const EXPORTED_MANIFEST_PATH = path.join(SPRITE_ROOT, 'manifest.json');
+const NORMAL_ENEMY_MOTION_CONTRACT = Object.freeze({
+  zombie_patient_dormant: ['dormant', 'wake', 'basic_attack', 'hit', 'death'],
+  zombie_common: ['idle', 'basic_attack', 'hit', 'death'],
+  zombie_runner: ['idle', 'basic_attack', 'telegraph', 'runner_rush', 'hit', 'death'],
+  zombie_brute: ['idle', 'basic_attack', 'telegraph', 'slam', 'hit', 'death'],
+  raider: ['idle', 'basic_attack', 'reload', 'hit', 'death'],
+  raider_elite: ['idle', 'basic_attack', 'aim', 'aimed_shot', 'hit', 'death'],
+  zombie_horde: ['idle', 'basic_attack', 'hit', 'death'],
+  rabid_dog: ['idle', 'basic_attack', 'hit', 'death'],
+  zombie_acid: ['idle', 'basic_attack', 'acid_lash', 'hit', 'death'],
+  zombie_bloater: ['idle', 'basic_attack', 'charge', 'self_destruct', 'hit', 'death'],
+  zombie_screamer: ['idle', 'basic_attack', 'charge', 'summon_horde', 'hit', 'death'],
+  zombie_charger: ['idle', 'basic_attack', 'charge', 'charge_strike', 'hit', 'death'],
+});
 
 function discoverPythonRuntime() {
   const candidates = [
@@ -180,6 +197,56 @@ describe('combat sprite sheet assets', () => {
     expect(invalid).toEqual([]);
   });
 
+  it('defines the complete 12-normal-enemy row, duration, loop, locomotion, and 256px cell contract', () => {
+    for (const [sheetKey, motionKeys] of Object.entries(NORMAL_ENEMY_MOTION_CONTRACT)) {
+      const sheet = COMBAT_MOTION_MANIFEST[sheetKey];
+      expect(sheet.cols).toBe(6);
+      expect(sheet.rows).toBe(motionKeys.length);
+      expect(Object.keys(sheet.motions)).toEqual(motionKeys);
+      expect(Object.values(sheet.motions).map(motion => motion.row))
+        .toEqual(motionKeys.map((_, index) => index));
+
+      const dimensions = pngSize(path.join(ROOT, sheet.src.replace(/^\/+/, '')));
+      expect(dimensions).toEqual({ width: 1536, height: motionKeys.length * 256 });
+
+      for (const [motionKey, motion] of Object.entries(sheet.motions)) {
+        const isRestMotion = motionKey === 'idle' || motionKey === 'dormant';
+        expect(motion.loop).toBe(isRestMotion);
+        expect(motion.durationMs).toBeGreaterThan(0);
+        expect(['stationary', 'approach', 'retreat']).toContain(motion.locomotion);
+      }
+    }
+
+    for (const [sheetKey, motionKey] of [
+      ['zombie_patient_dormant', 'wake'],
+      ['zombie_runner', 'telegraph'],
+      ['zombie_brute', 'telegraph'],
+      ['raider', 'basic_attack'],
+      ['raider', 'reload'],
+      ['raider_elite', 'basic_attack'],
+      ['raider_elite', 'aim'],
+      ['raider_elite', 'aimed_shot'],
+      ['zombie_acid', 'basic_attack'],
+      ['zombie_acid', 'acid_lash'],
+      ['zombie_bloater', 'charge'],
+      ['zombie_bloater', 'self_destruct'],
+      ['zombie_screamer', 'basic_attack'],
+      ['zombie_screamer', 'charge'],
+      ['zombie_screamer', 'summon_horde'],
+      ['zombie_charger', 'charge'],
+    ]) {
+      expect(COMBAT_MOTION_MANIFEST[sheetKey].motions[motionKey].locomotion).toBe('stationary');
+    }
+
+    for (const [sheetKey, motionKey] of [
+      ['zombie_runner', 'runner_rush'],
+      ['zombie_brute', 'slam'],
+      ['zombie_charger', 'charge_strike'],
+    ]) {
+      expect(COMBAT_MOTION_MANIFEST[sheetKey].motions[motionKey].locomotion).toBe('approach');
+    }
+  });
+
   it('checks the production manifest before testing isolated semantic and byte drift', () => {
     const productionText = fs.readFileSync(EXPORTED_MANIFEST_PATH, 'utf8');
     const checkOutput = execFileSync(process.execPath, [
@@ -260,7 +327,7 @@ describe('combat sprite sheet assets', () => {
         `module.OUT_DIR = Path(r"${smokeDir.replaceAll('\\', '/')}")`,
         `module.PREVIEW_PATH = Path(r"${previewPath.replaceAll('\\', '/')}")`,
         `module.AUDIT_PATH = Path(r"${auditPath.replaceAll('\\', '/')}")`,
-        'module.main()',
+        `module.main(["--group", "normal", "--out", r"${previewPath.replaceAll('\\', '/')}"])`,
       ].join('\n');
 
       try {
@@ -269,7 +336,9 @@ describe('combat sprite sheet assets', () => {
           encoding: 'utf8',
         });
         const audit = JSON.parse(fs.readFileSync(auditPath, 'utf8'));
-        expect(audit.activeUniqueSheetCount).toBeGreaterThan(0);
+        expect(audit.group).toBe('normal');
+        expect(audit.activeEnemyCount).toBe(12);
+        expect(audit.activeUniqueSheetCount).toBe(12);
         expect(audit.invalidDimensions).toEqual([]);
         expect(audit.emptyRows).toEqual([]);
         expect(fs.statSync(previewPath).size).toBeGreaterThan(0);
@@ -326,6 +395,29 @@ describe('combat sprite sheet assets', () => {
     expect(spriteGridIssue(1536, 1024, { cols: 6, rows: 4 })).toBeNull();
   });
 
+  it('scopes the elite-raider white-pixel exemption to inspected muzzle-flash rows', () => {
+    const inspectedRows = [
+      { row: 0, whiteOpaquePixels: 52 },
+      { row: 1, whiteOpaquePixels: 193 },
+      { row: 2, whiteOpaquePixels: 50 },
+      { row: 3, whiteOpaquePixels: 197 },
+      { row: 4, whiteOpaquePixels: 15 },
+      { row: 5, whiteOpaquePixels: 21 },
+    ];
+    expect(whiteOpaqueRisk('raider_elite', inspectedRows, 528)).toMatchObject({
+      exempted: true,
+      risky: false,
+      scopedRows: [1, 3],
+      scopedPixels: 390,
+      otherPixels: 138,
+    });
+    expect(whiteOpaqueRisk('zombie_common', inspectedRows, 528).risky).toBe(true);
+    expect(whiteOpaqueRisk('raider_elite', [
+      ...inspectedRows,
+      { row: 6, whiteOpaquePixels: 20 },
+    ], 548).risky).toBe(true);
+  });
+
   it('keeps idle rows foot-anchored and every animation row populated', () => {
     const entries = manifestEntries();
 
@@ -353,7 +445,7 @@ describe('combat sprite sheet assets', () => {
         const bottoms = bounds.map(({ bottom }) => bottom);
         const bottomSpread = Math.max(...bottoms) - Math.min(...bottoms);
 
-        if (row === sheet.motions.idle.row && bottomSpread > 4) {
+        if (row === resolveCombatMotion(sheetKey, 'idle')?.row && bottomSpread > 4) {
           invalidRows.push({
             sheetKey,
             file: path.relative(ROOT, filePath).replaceAll(path.sep, '/'),

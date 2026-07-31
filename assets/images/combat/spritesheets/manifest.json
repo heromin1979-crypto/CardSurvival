@@ -98,33 +98,43 @@
   "zombie_patient_dormant": {
     "src": "/assets/images/combat/spritesheets/enemies/zombie_patient_dormant_sheet.png",
     "cols": 6,
-    "rows": 4,
+    "rows": 5,
     "motions": {
-      "idle": {
+      "dormant": {
         "row": 0,
         "loop": true,
-        "durationMs": 900,
+        "durationMs": 1100,
+        "locomotion": "stationary"
+      },
+      "wake": {
+        "row": 1,
+        "loop": false,
+        "durationMs": 960,
         "locomotion": "stationary"
       },
       "basic_attack": {
-        "row": 1,
+        "row": 2,
         "loop": false,
         "durationMs": 720,
         "locomotion": "approach"
       },
       "hit": {
-        "row": 2,
+        "row": 3,
         "loop": false,
         "durationMs": 420,
         "locomotion": "stationary"
       },
       "death": {
-        "row": 3,
+        "row": 4,
         "loop": false,
         "durationMs": 900,
         "locomotion": "stationary",
         "holdLast": true
       }
+    },
+    "aliases": {
+      "idle": "dormant",
+      "startled_lunge": "basic_attack"
     }
   },
   "zombie_common": {
@@ -162,28 +172,40 @@
   "zombie_runner": {
     "src": "/assets/images/combat/spritesheets/enemies/zombie_runner_sheet.png",
     "cols": 6,
-    "rows": 4,
+    "rows": 6,
     "motions": {
       "idle": {
         "row": 0,
         "loop": true,
-        "durationMs": 900,
+        "durationMs": 820,
         "locomotion": "stationary"
       },
       "basic_attack": {
         "row": 1,
         "loop": false,
-        "durationMs": 720,
+        "durationMs": 650,
+        "locomotion": "approach"
+      },
+      "telegraph": {
+        "row": 2,
+        "loop": false,
+        "durationMs": 700,
+        "locomotion": "stationary"
+      },
+      "runner_rush": {
+        "row": 3,
+        "loop": false,
+        "durationMs": 760,
         "locomotion": "approach"
       },
       "hit": {
-        "row": 2,
+        "row": 4,
         "loop": false,
         "durationMs": 420,
         "locomotion": "stationary"
       },
       "death": {
-        "row": 3,
+        "row": 5,
         "loop": false,
         "durationMs": 900,
         "locomotion": "stationary",
@@ -194,30 +216,42 @@
   "zombie_brute": {
     "src": "/assets/images/combat/spritesheets/enemies/zombie_brute_sheet.png",
     "cols": 6,
-    "rows": 4,
+    "rows": 6,
     "motions": {
       "idle": {
         "row": 0,
         "loop": true,
-        "durationMs": 900,
+        "durationMs": 980,
         "locomotion": "stationary"
       },
       "basic_attack": {
         "row": 1,
         "loop": false,
-        "durationMs": 720,
+        "durationMs": 760,
         "locomotion": "approach"
       },
-      "hit": {
+      "telegraph": {
         "row": 2,
         "loop": false,
-        "durationMs": 420,
+        "durationMs": 820,
         "locomotion": "stationary"
       },
-      "death": {
+      "slam": {
         "row": 3,
         "loop": false,
         "durationMs": 900,
+        "locomotion": "approach"
+      },
+      "hit": {
+        "row": 4,
+        "loop": false,
+        "durationMs": 460,
+        "locomotion": "stationary"
+      },
+      "death": {
+        "row": 5,
+        "loop": false,
+        "durationMs": 980,
         "locomotion": "stationary",
         "holdLast": true
       }
@@ -290,30 +324,36 @@
   "zombie_acid": {
     "src": "/assets/images/combat/spritesheets/enemies/zombie_acid_sheet.png",
     "cols": 6,
-    "rows": 4,
+    "rows": 5,
     "motions": {
       "idle": {
         "row": 0,
         "loop": true,
-        "durationMs": 900,
+        "durationMs": 920,
         "locomotion": "stationary"
       },
       "basic_attack": {
         "row": 1,
         "loop": false,
-        "durationMs": 720,
-        "locomotion": "approach"
+        "durationMs": 700,
+        "locomotion": "stationary"
       },
-      "hit": {
+      "acid_lash": {
         "row": 2,
         "loop": false,
-        "durationMs": 420,
+        "durationMs": 820,
+        "locomotion": "stationary"
+      },
+      "hit": {
+        "row": 3,
+        "loop": false,
+        "durationMs": 440,
         "locomotion": "stationary"
       },
       "death": {
-        "row": 3,
+        "row": 4,
         "loop": false,
-        "durationMs": 900,
+        "durationMs": 920,
         "locomotion": "stationary",
         "holdLast": true
       }
@@ -322,30 +362,43 @@
   "zombie_bloater": {
     "src": "/assets/images/combat/spritesheets/enemies/zombie_bloater_sheet.png",
     "cols": 6,
-    "rows": 4,
+    "rows": 6,
     "motions": {
       "idle": {
         "row": 0,
         "loop": true,
-        "durationMs": 900,
+        "durationMs": 1050,
         "locomotion": "stationary"
       },
       "basic_attack": {
         "row": 1,
         "loop": false,
-        "durationMs": 720,
+        "durationMs": 760,
         "locomotion": "approach"
       },
-      "hit": {
+      "charge": {
         "row": 2,
         "loop": false,
-        "durationMs": 420,
+        "durationMs": 860,
+        "locomotion": "stationary"
+      },
+      "self_destruct": {
+        "row": 3,
+        "loop": false,
+        "durationMs": 1100,
+        "locomotion": "stationary",
+        "holdLast": true
+      },
+      "hit": {
+        "row": 4,
+        "loop": false,
+        "durationMs": 460,
         "locomotion": "stationary"
       },
       "death": {
-        "row": 3,
+        "row": 5,
         "loop": false,
-        "durationMs": 900,
+        "durationMs": 980,
         "locomotion": "stationary",
         "holdLast": true
       }
@@ -354,30 +407,42 @@
   "zombie_screamer": {
     "src": "/assets/images/combat/spritesheets/enemies/zombie_screamer_sheet.png",
     "cols": 6,
-    "rows": 4,
+    "rows": 6,
     "motions": {
       "idle": {
         "row": 0,
         "loop": true,
-        "durationMs": 900,
+        "durationMs": 920,
         "locomotion": "stationary"
       },
       "basic_attack": {
         "row": 1,
         "loop": false,
-        "durationMs": 720,
-        "locomotion": "approach"
+        "durationMs": 700,
+        "locomotion": "stationary"
       },
-      "hit": {
+      "charge": {
         "row": 2,
         "loop": false,
-        "durationMs": 420,
+        "durationMs": 860,
+        "locomotion": "stationary"
+      },
+      "summon_horde": {
+        "row": 3,
+        "loop": false,
+        "durationMs": 980,
+        "locomotion": "stationary"
+      },
+      "hit": {
+        "row": 4,
+        "loop": false,
+        "durationMs": 430,
         "locomotion": "stationary"
       },
       "death": {
-        "row": 3,
+        "row": 5,
         "loop": false,
-        "durationMs": 900,
+        "durationMs": 920,
         "locomotion": "stationary",
         "holdLast": true
       }
@@ -386,7 +451,7 @@
   "zombie_charger": {
     "src": "/assets/images/combat/spritesheets/enemies/zombie_charger_sheet.png",
     "cols": 6,
-    "rows": 4,
+    "rows": 6,
     "motions": {
       "idle": {
         "row": 0,
@@ -400,16 +465,28 @@
         "durationMs": 720,
         "locomotion": "approach"
       },
-      "hit": {
+      "charge": {
         "row": 2,
         "loop": false,
-        "durationMs": 420,
+        "durationMs": 820,
+        "locomotion": "stationary"
+      },
+      "charge_strike": {
+        "row": 3,
+        "loop": false,
+        "durationMs": 820,
+        "locomotion": "approach"
+      },
+      "hit": {
+        "row": 4,
+        "loop": false,
+        "durationMs": 440,
         "locomotion": "stationary"
       },
       "death": {
-        "row": 3,
+        "row": 5,
         "loop": false,
-        "durationMs": 900,
+        "durationMs": 940,
         "locomotion": "stationary",
         "holdLast": true
       }
@@ -418,28 +495,34 @@
   "raider": {
     "src": "/assets/images/combat/spritesheets/enemies/raider_sheet.png",
     "cols": 6,
-    "rows": 4,
+    "rows": 5,
     "motions": {
       "idle": {
         "row": 0,
         "loop": true,
-        "durationMs": 900,
+        "durationMs": 920,
         "locomotion": "stationary"
       },
       "basic_attack": {
         "row": 1,
         "loop": false,
-        "durationMs": 720,
-        "locomotion": "approach"
+        "durationMs": 620,
+        "locomotion": "stationary"
+      },
+      "reload": {
+        "row": 2,
+        "loop": false,
+        "durationMs": 900,
+        "locomotion": "stationary"
       },
       "hit": {
-        "row": 2,
+        "row": 3,
         "loop": false,
         "durationMs": 420,
         "locomotion": "stationary"
       },
       "death": {
-        "row": 3,
+        "row": 4,
         "loop": false,
         "durationMs": 900,
         "locomotion": "stationary",
@@ -450,30 +533,42 @@
   "raider_elite": {
     "src": "/assets/images/combat/spritesheets/enemies/raider_elite_sheet.png",
     "cols": 6,
-    "rows": 4,
+    "rows": 6,
     "motions": {
       "idle": {
         "row": 0,
         "loop": true,
-        "durationMs": 900,
+        "durationMs": 940,
         "locomotion": "stationary"
       },
       "basic_attack": {
         "row": 1,
         "loop": false,
-        "durationMs": 720,
-        "locomotion": "approach"
+        "durationMs": 620,
+        "locomotion": "stationary"
       },
-      "hit": {
+      "aim": {
         "row": 2,
         "loop": false,
-        "durationMs": 420,
+        "durationMs": 800,
+        "locomotion": "stationary"
+      },
+      "aimed_shot": {
+        "row": 3,
+        "loop": false,
+        "durationMs": 760,
+        "locomotion": "stationary"
+      },
+      "hit": {
+        "row": 4,
+        "loop": false,
+        "durationMs": 440,
         "locomotion": "stationary"
       },
       "death": {
-        "row": 3,
+        "row": 5,
         "loop": false,
-        "durationMs": 900,
+        "durationMs": 940,
         "locomotion": "stationary",
         "holdLast": true
       }

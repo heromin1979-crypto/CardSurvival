@@ -71,6 +71,14 @@ describe('일반 몬스터 committed action intent 통합', () => {
     CombatSystem._runSingleEnemyTurn(0);
     expect(GameState.player.hp.current).toBe(100);
     expect(combat.enemies[0]._nextIntent.actionId).toBe('runner_rush');
+    expect(combat.fxQueue).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        kind: 'status',
+        enemyIdx: 0,
+        statusId: 'telegraph',
+        motionKey: 'telegraph',
+      }),
+    ]));
 
     CombatSystem._runSingleEnemyTurn(0);
 
@@ -189,6 +197,9 @@ describe('일반 몬스터 committed action intent 통합', () => {
       expect(executeSpy.mock.calls[0][1]).toMatchObject(shownAction);
       expect(GameState.npcs.states.npc_nurse.hp).toBe(hpBefore - basicDamage);
       expect(enemy._chargeRemaining).toBe(2);
+      expect(combat.fxQueue).toEqual(expect.arrayContaining([
+        expect.objectContaining({ kind: 'enemyMotion', enemyIdx: 0, motionKey: 'charge' }),
+      ]));
       expect(enemy._enemyActionState.committedAction).toMatchObject({
         actionId: threatActionId,
         category: 'timed_threat',
@@ -196,6 +207,23 @@ describe('일반 몬스터 committed action intent 통합', () => {
       });
     },
   );
+
+  it('휴면 환자는 전투 중 wake 모션을 정확히 한 번만 큐에 넣는다', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.99);
+    const enemy = instantiateEnemy(ENEMIES.zombie_patient_dormant);
+    const combat = setupCombat(enemy);
+    enemy._dormantRemaining = 1;
+    enemy._wakeMotionPlayed = false;
+    combat.fxQueue = [];
+
+    CombatSystem._runSingleEnemyTurn(0);
+    expect(combat.fxQueue.filter(fx => fx.kind === 'enemyMotion' && fx.motionKey === 'wake'))
+      .toHaveLength(1);
+
+    CombatSystem._runSingleEnemyTurn(0);
+    expect(combat.fxQueue.filter(fx => fx.kind === 'enemyMotion' && fx.motionKey === 'wake'))
+      .toHaveLength(1);
+  });
 
   it('AI 후보에 실제 rank·방어/노출·heal effect 기반 healer 메타데이터를 제공한다', () => {
     const combat = setupCombat(instantiateEnemy(ENEMIES.zombie_common), {

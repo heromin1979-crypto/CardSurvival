@@ -340,7 +340,7 @@ describe('combat sprite chroma cleanup', () => {
       cwd: ROOT,
       encoding: 'utf8',
     });
-    expect(JSON.parse(output)).toMatchObject({ changedSheetCount: 20, unexpectedAlphaLoss: 0 });
+    expect(JSON.parse(output)).toMatchObject({ changedSheetCount: 23, unexpectedAlphaLoss: 0 });
   }, 30000);
 
   it('flags a non-chroma alpha loss in the provenance report metrics', () => {

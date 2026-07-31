@@ -101,8 +101,9 @@ describe('current combat motion registry', () => {
         motions: manifestSheet.motions,
       });
       expect(Object.keys(manifestSheet.motions)).toEqual(
-        expect.arrayContaining(['idle', 'hit', 'death']),
+        expect.arrayContaining(['hit', 'death']),
       );
+      expect(resolveCombatMotion(sheetKey, 'idle')).not.toBeNull();
     }
   });
 

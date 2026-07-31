@@ -96,7 +96,9 @@ export function validateCombatMotionManifest(manifest = COMBAT_MOTION_MANIFEST) 
       continue;
     }
     for (const requiredMotion of ['idle', 'hit', 'death']) {
-      if (!motions[requiredMotion]) errors.push(`${path}.motions.${requiredMotion} is required`);
+      if (!motions[requiredMotion] && !motions[sheet.aliases?.[requiredMotion]]) {
+        errors.push(`${path}.motions.${requiredMotion} is required`);
+      }
     }
     for (const [motionKey, motion] of Object.entries(motions)) {
       const motionPath = `${path}.motions.${motionKey}`;
@@ -109,8 +111,8 @@ export function validateCombatMotionManifest(manifest = COMBAT_MOTION_MANIFEST) 
       }
       if (typeof motion.loop !== 'boolean') {
         errors.push(`${motionPath}.loop must be a boolean`);
-      } else if (motion.loop && motionKey !== 'idle') {
-        errors.push(`${motionPath}.loop:true is only allowed for idle`);
+      } else if (motion.loop && motionKey !== 'idle' && sheet.aliases?.idle !== motionKey) {
+        errors.push(`${motionPath}.loop:true is only allowed for the idle motion`);
       }
       if (!Number.isFinite(motion.durationMs) || motion.durationMs <= 0) {
         errors.push(`${motionPath}.durationMs must be a positive number`);

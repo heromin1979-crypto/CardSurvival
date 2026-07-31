@@ -80,7 +80,7 @@ describe('combat FX motion routing', () => {
       });
 
       const sprite = enemy.querySelector('.combat-sprite-sheet');
-      expect(sprite.style.getPropertyValue('--sprite-row-y')).toBe('33.3333%');
+      expect(sprite.style.getPropertyValue('--sprite-row-y')).toBe('25.0000%');
       expect(enemy.classList.contains('motion-move-forward')).toBe(false);
       expect(enemy.classList.contains('lunging')).toBe(false);
     } finally {

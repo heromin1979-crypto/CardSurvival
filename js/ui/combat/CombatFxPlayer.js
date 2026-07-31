@@ -278,9 +278,24 @@ export const CombatFxPlayer = {
       }
       case 'status': {
         const target = this._combatantEl(fx.targetId) ?? this._actorEl(fx);
+        if (target && fx.target === 'enemy' && typeof fx.motionKey === 'string') {
+          const enemy = GameState.combat?.enemies?.[fx.enemyIdx];
+          this._playSpriteMotion(target, this._enemySpriteSheetKey(enemy), fx.motionKey, 760);
+        }
         this._spawnFxOverlay(target, `status-${fx.statusId ?? 'effect'}`);
         this._animate(target, 'glowing', 650);
         this._motion(target, this._statusTransientMotion(fx.statusId), 760);
+        break;
+      }
+      case 'enemyMotion': {
+        const enemyEl = this._enemySpriteEl(fx.enemyIdx);
+        const enemy = GameState.combat?.enemies?.[fx.enemyIdx];
+        this._playSpriteMotion(
+          enemyEl,
+          this._enemySpriteSheetKey(enemy),
+          fx.motionKey,
+          fx.durationMs ?? 760,
+        );
         break;
       }
       case 'companionBuff':
@@ -357,9 +372,28 @@ export const CombatFxPlayer = {
       }
       case 'explode': {
         const el = this._enemySpriteEl(fx.enemyIdx);
-        this._spawnFxOverlay(el, 'explode');
-        this._cameraWork('impact-heavy', 720);
-        this._shakeVisual();
+        const isSelfDestruct = fx.actionId === 'self_destruct'
+          || fx.motionKey === 'self_destruct';
+        if (isSelfDestruct) {
+          const enemy = GameState.combat?.enemies?.[fx.enemyIdx];
+          const motion = this._playSpriteMotion(
+            el,
+            this._enemySpriteSheetKey(enemy),
+            'self_destruct',
+            1100,
+          );
+          const bodyDuration = motion?.durationMs ?? 1100;
+          this._fxTimers.push(setTimeout(() => {
+            this._spawnFxOverlay(el, 'explode');
+            this._cameraWork('impact-heavy', 720);
+            this._shakeVisual();
+          }, Math.round(bodyDuration * 0.58)));
+          this._fxTimers.push(setTimeout(() => el?.remove(), bodyDuration + 180));
+        } else {
+          this._spawnFxOverlay(el, 'explode');
+          this._cameraWork('impact-heavy', 720);
+          this._shakeVisual();
+        }
         if (fx.dmg) {
           this._motion(this._playerSpriteEl(), ['motion-hit-heavy', 'motion-knockback'], 720);
           this._spawnFloatText(this._playerSpriteEl(), `-${fx.dmg}`, 'crit');
@@ -368,6 +402,13 @@ export const CombatFxPlayer = {
       }
       case 'summon': {
         const enemyEl = this._enemySpriteEl(fx.enemyIdx);
+        const enemy = GameState.combat?.enemies?.[fx.enemyIdx];
+        this._playSpriteMotion(
+          enemyEl,
+          this._enemySpriteSheetKey(enemy),
+          fx.motionKey ?? 'summon_horde',
+          980,
+        );
         this._spawnFxOverlay(enemyEl, 'scream');
         this._motion(enemyEl, 'motion-zombie-scream', 780);
         this._cameraWork('impact-heavy', 720);

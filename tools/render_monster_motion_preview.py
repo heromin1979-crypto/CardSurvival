@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import json
 import subprocess
 from pathlib import Path
@@ -22,6 +23,11 @@ REMOVED_ENEMIES = {
     "boss_train_conductor",
     "boss_military_ai",
     "boss_engineer_rival",
+}
+NORMAL_ENEMIES = {
+    "zombie_patient_dormant", "zombie_common", "zombie_runner", "zombie_brute",
+    "raider", "raider_elite", "zombie_horde", "rabid_dog", "zombie_acid",
+    "zombie_bloater", "zombie_screamer", "zombie_charger",
 }
 
 
@@ -93,8 +99,8 @@ def make_checker(width: int, height: int) -> Image.Image:
     return checker
 
 
-def render_preview(active_with_sheets: list[dict], manifest: dict[str, dict]) -> None:
-    OUT_DIR.mkdir(parents=True, exist_ok=True)
+def render_preview(active_with_sheets: list[dict], manifest: dict[str, dict], output_path: Path) -> None:
+    output_path.parent.mkdir(parents=True, exist_ok=True)
     font, small_font = load_font(20), load_font(14)
     label_w, row_h, sheet_w, pad = 330, 86, 768, 18
 
@@ -127,12 +133,27 @@ def render_preview(active_with_sheets: list[dict], manifest: dict[str, dict]) ->
             canvas.paste(checker, (label_w + pad * 2, ry))
             draw.rectangle((label_w + pad * 2, ry, label_w + pad * 2 + sheet_w, ry + row_h), outline=(40, 52, 56), width=1)
         y += block_h
-    canvas.save(PREVIEW_PATH)
+    canvas.save(output_path)
 
 
-def main() -> None:
+def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Render combat monster motion rows")
+    parser.add_argument("--group", choices=("all", "normal", "boss"), default="all")
+    parser.add_argument("--out", type=Path, default=None)
+    return parser.parse_args(argv)
+
+
+def main(argv: list[str] | None = None) -> None:
+    args = parse_args(argv)
+    preview_path = args.out if args.out is not None else PREVIEW_PATH
+    if not preview_path.is_absolute():
+        preview_path = ROOT / preview_path
     manifest = load_manifest()
     active = get_active_enemies()
+    if args.group == "normal":
+        active = [enemy for enemy in active if enemy["id"] in NORMAL_ENEMIES]
+    elif args.group == "boss":
+        active = [enemy for enemy in active if enemy["isBoss"]]
     enemy_keys = get_enemy_sprite_keys()
     active_ids = {enemy["id"] for enemy in active}
     active_with_sheets, missing_unique_sheets, invalid_dimensions, empty_rows = [], [], [], []
@@ -160,11 +181,12 @@ def main() -> None:
         {"enemyId": enemy_id, "sheetKey": sheet_key, "removedEnemy": enemy_id in REMOVED_ENEMIES}
         for enemy_id, sheet_key in enemy_keys.items() if enemy_id not in active_ids
     ]
-    render_preview(active_with_sheets, manifest)
+    render_preview(active_with_sheets, manifest, preview_path)
     audit = {
+        "group": args.group,
         "activeEnemyCount": len(active), "activeUniqueSheetCount": len(active_with_sheets),
         "missingUniqueSheetCount": len(missing_unique_sheets),
-        "previewPath": report_path(PREVIEW_PATH),
+        "previewPath": report_path(preview_path),
         "rowContract": {key: row_labels(sheet) for key, sheet in manifest.items()},
         "missingUniqueSheets": missing_unique_sheets, "invalidDimensions": invalid_dimensions,
         "emptyRows": empty_rows, "orphanEnemySpriteMappings": orphan_sheets,

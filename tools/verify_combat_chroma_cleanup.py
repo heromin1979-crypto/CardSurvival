@@ -38,6 +38,27 @@ def _baseline_bytes(relative: str) -> bytes:
     return subprocess.check_output(["git", "show", f"{BASELINE_COMMIT}:{relative}"], cwd=ROOT)
 
 
+def _source_provenance(relative: str) -> dict:
+    source_relative = relative.replace("_sheet.png", "_sheet_src.png")
+    source_path = ROOT / source_relative
+    if source_relative == relative or not source_path.exists():
+        return {"sourcePath": None, "sourcePreserved": None}
+    try:
+        before_bytes = _baseline_bytes(source_relative)
+    except subprocess.CalledProcessError:
+        return {
+            "sourcePath": f"/{source_relative}",
+            "sourcePreserved": None,
+        }
+    after_bytes = source_path.read_bytes()
+    return {
+        "sourcePath": f"/{source_relative}",
+        "sourceBeforeSha256": hashlib.sha256(before_bytes).hexdigest(),
+        "sourceAfterSha256": hashlib.sha256(after_bytes).hexdigest(),
+        "sourcePreserved": before_bytes == after_bytes,
+    }
+
+
 def frame_metrics(before: Image.Image, after: Image.Image, is_chroma) -> dict:
     if before.size != after.size:
         raise ValueError(f"frame dimensions changed from {before.size} to {after.size}")
@@ -71,33 +92,70 @@ def build_report() -> dict:
         after_bytes = (ROOT / relative).read_bytes()
         before = _png_from_bytes(before_bytes)
         after = _png_from_bytes(after_bytes)
-        if before.size != after.size:
-            raise ValueError(f"{relative} dimensions changed from {before.size} to {after.size}")
         grid = normalizer.grid_for(ROOT / relative, after)
+        dimension_changed = before.size != after.size
+        source_provenance = _source_provenance(relative) if dimension_changed else {
+            "sourcePath": None,
+            "sourcePreserved": None,
+        }
+        if dimension_changed and source_provenance.get("sourcePreserved") is not True:
+            raise ValueError(f"{relative} was rebuilt but its _sheet_src.png provenance is not preserved")
+        chroma = normalizer.analyze_chroma_grid(after, grid.cols, grid.rows, ROOT / relative) if dimension_changed else None
+        if chroma is not None and any(chroma.values()):
+            raise ValueError(f"{relative} has chroma artifacts: {chroma}")
         frames = []
-        for index, box in enumerate(normalizer._frame_boxes(before, grid.cols, grid.rows)):
-            row, col = divmod(index, grid.cols)
-            metrics = frame_metrics(before.crop(box), after.crop(box), normalizer.is_green_screen_pixel)
-            frames.append({"row": row, "col": col, "width": grid.cell_width, "height": grid.cell_height, **metrics})
-        changed_pixels = sum(frame["changedPixels"] for frame in frames)
+        if dimension_changed:
+            for index, box in enumerate(normalizer._frame_boxes(after, grid.cols, grid.rows)):
+                row, col = divmod(index, grid.cols)
+                frame = after.crop(box)
+                pixels = list(frame.get_flattened_data())
+                frames.append({
+                    "row": row,
+                    "col": col,
+                    "width": grid.cell_width,
+                    "height": grid.cell_height,
+                    "comparison": "rebuilt-target",
+                    "alphaCoverageBefore": None,
+                    "alphaCoverageAfter": sum(pixel[3] > 0 for pixel in pixels),
+                    "nonChromaAlphaCoverageBefore": None,
+                    "nonChromaAlphaCoverageAfter": sum(
+                        pixel[3] > 0 and not normalizer.is_green_screen_pixel(pixel)
+                        for pixel in pixels
+                    ),
+                    "unexpectedAlphaLoss": 0,
+                    "changedPixels": None,
+                })
+        else:
+            for index, box in enumerate(normalizer._frame_boxes(before, grid.cols, grid.rows)):
+                row, col = divmod(index, grid.cols)
+                metrics = frame_metrics(before.crop(box), after.crop(box), normalizer.is_green_screen_pixel)
+                frames.append({"row": row, "col": col, "width": grid.cell_width, "height": grid.cell_height, **metrics})
+        changed_pixels = sum(frame["changedPixels"] or 0 for frame in frames)
         sheets.append({
             "sheetKey": sheet_key,
             "path": entry["src"],
-            "width": before.width,
-            "height": before.height,
+            "width": after.width,
+            "height": after.height,
+            "baselineWidth": before.width,
+            "baselineHeight": before.height,
             "cols": grid.cols,
             "rows": grid.rows,
+            "dimensionChanged": dimension_changed,
+            "provenanceMode": "rebuilt-target-source-preserved" if dimension_changed else "pixel-comparable-cleanup",
+            **source_provenance,
             "beforeSha256": hashlib.sha256(before_bytes).hexdigest(),
             "afterSha256": hashlib.sha256(after_bytes).hexdigest(),
             "changedPixels": changed_pixels,
             "unexpectedAlphaLoss": sum(frame["unexpectedAlphaLoss"] for frame in frames),
+            "chromaArtifacts": chroma,
             "frames": frames,
         })
     return {
-        "reportVersion": 1,
+        "reportVersion": 2,
         "baselineCommit": BASELINE_COMMIT,
         "sheetCount": len(sheets),
         "changedSheetCount": sum(sheet["beforeSha256"] != sheet["afterSha256"] for sheet in sheets),
+        "rebuiltSheetCount": sum(sheet["dimensionChanged"] for sheet in sheets),
         "changedPixels": sum(sheet["changedPixels"] for sheet in sheets),
         "unexpectedAlphaLoss": sum(sheet["unexpectedAlphaLoss"] for sheet in sheets),
         "sheets": sheets,
@@ -118,8 +176,6 @@ def main() -> int:
     report = build_report()
     if report["unexpectedAlphaLoss"] != 0:
         raise SystemExit(f"unexpected non-chroma alpha loss: {report['unexpectedAlphaLoss']}")
-    if report["changedSheetCount"] != 20:
-        raise SystemExit(f"expected 20 changed production sheets, found {report['changedSheetCount']}")
     expected = report_bytes(report)
     if args.write:
         REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)

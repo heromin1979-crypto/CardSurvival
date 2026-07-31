@@ -49,7 +49,7 @@ export function validateCombatSpriteManifest(manifest) {
       continue;
     }
     for (const [motionKey, motion] of Object.entries(meta.motions)) {
-      if (motion?.loop === true && motionKey !== 'idle') {
+      if (motion?.loop === true && motionKey !== 'idle' && meta.aliases?.idle !== motionKey) {
         errors.push(
           `[combat sprite/${fileName}/${motionKey}] loop:true is unsupported; action motions must return to idle after durationMs`,
         );
@@ -232,11 +232,12 @@ export const FX_DURATIONS = {
   companionHeal: 480,
   companionBuff: 520,
   companionSkill: 560,
+  enemyMotion: 900,
   move: 360,
   rankSwap: 360,
   dodge: 320,
   advance: 480,
-  explode: 920,
+  explode: 1300,
   summon: 860,
   playerDeath: 1100,
   downed: 620,

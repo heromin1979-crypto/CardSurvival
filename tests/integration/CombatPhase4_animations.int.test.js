@@ -556,10 +556,42 @@ describe('_playFx — 개별 연출 분기', () => {
     });
 
     const player = document.querySelector('.cv-player');
-    expect(document.querySelector('.cv-enemy-sprite[data-idx="0"] .cv-fx-explode')).not.toBeNull();
+    expect(document.querySelector('.cv-enemy-sprite[data-idx="0"] .cv-fx-explode')).toBeNull();
     expect(player.classList.contains('motion-hit-heavy')).toBe(false);
     expect(player.classList.contains('motion-knockback')).toBe(false);
     expect(player.querySelector('.dmg-popup')).toBeNull();
+  });
+
+  it('self_destruct는 몸체 파열 행, 폭발 overlay, 몸체 제거 순서로 재생한다', () => {
+    vi.useFakeTimers();
+    GameState.combat.enemies[0] = { id: 'zombie_bloater' };
+
+    CombatUI._playFx({
+      kind: 'action',
+      actorId: 'enemy:0',
+      actorSide: 'enemy',
+      actorIndex: 0,
+      targetId: 'enemy:0',
+      targetSide: 'enemy',
+      targetIndex: 0,
+      actionId: 'self_destruct',
+      motionKey: 'self_destruct',
+      impactFx: 'explode',
+      damage: 0,
+    });
+
+    const enemy = document.querySelector('.cv-enemy-sprite[data-idx="0"]');
+    expect(enemy.querySelector('.combat-sprite-sheet').style.getPropertyValue('--sprite-row-y')).toBe('60.0000%');
+    expect(enemy.querySelector('.cv-fx-explode')).toBeNull();
+
+    vi.advanceTimersByTime(637);
+    expect(enemy.querySelector('.cv-fx-explode')).toBeNull();
+    vi.advanceTimersByTime(1);
+    expect(enemy.querySelector('.cv-fx-explode')).not.toBeNull();
+
+    vi.advanceTimersByTime(642);
+    expect(document.querySelector('.cv-enemy-sprite[data-idx="0"]')).toBeNull();
+    vi.useRealTimers();
   });
 
   it('camera work exposes a shared active state and clears it after the animation', () => {

@@ -640,6 +640,10 @@ export const CombatAiTurns = {
       ) {
         enemy._firstActionPendingId = enemy.dormant.firstActionId;
       }
+      if (enemy._dormantRemaining === 0 && enemy._wakeMotionPlayed !== true) {
+        enemy._wakeMotionPlayed = true;
+        this._fx({ kind: 'enemyMotion', enemyIdx, motionKey: 'wake' });
+      }
       enemy._nextIntent = this._decideNextIntent(enemy, gs.combat, gs) ?? null;
       return;
     }
@@ -701,6 +705,7 @@ export const CombatAiTurns = {
     // 타이밍 압박: 충전 중/발동 처리
     if (!isBossPattern && (enemy._chargeRemaining ?? null) !== null) {
       if (enemy._chargeRemaining > 0) {
+        this._fx({ kind: 'enemyMotion', enemyIdx, motionKey: 'charge' });
         if (enemy.timedThreat?.chargingAttacks) {
           let action = enemy._chargingActionState?.committedAction
             ?? this._commitChargingAction(enemy, gs.combat, gs);
@@ -821,6 +826,7 @@ export const CombatAiTurns = {
         target: 'enemy',
         enemyIdx,
         statusId: 'telegraph',
+        motionKey: action.actionId === 'aimed_shot' ? 'aim' : 'telegraph',
       });
       if (isBossPattern) {
         enemy._bossActionState = advanceBossAction({

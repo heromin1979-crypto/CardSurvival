@@ -20,6 +20,14 @@ const CHROMA_VALUE_MIN = 150;
 const ISOLATED_CHROMA_COMPONENT_AREA = 12;
 const ALLOWLIST_VERSION = 1;
 const ALLOWLIST_REQUIRED_FIELDS = new Set(['sheetKey', 'path', 'row', 'col', 'bbox', 'pixelCount', 'fingerprint', 'reason']);
+const WHITE_PIXEL_RISK_EXEMPTIONS = Object.freeze({
+  raider_elite: Object.freeze({
+    rows: Object.freeze([1, 3]),
+    maxScopedPixels: 420,
+    maxOtherPixels: 150,
+    reason: 'rows 1 and 3 contain the inspected pistol muzzle flash; all other rows remain below the white-background risk budget',
+  }),
+});
 const CHROMA_COMPONENT_ALLOWLIST_PATH = process.env.COMBAT_CHROMA_ALLOWLIST_PATH
   ?? path.join(ROOT, 'assets', 'images', 'combat', 'spritesheets', 'chroma_component_allowlist.json');
 
@@ -391,6 +399,18 @@ function countFrameEdgeOpaque(image, frameX, frameY, frameW, frameH) {
   return count;
 }
 
+function countWhiteOpaque(image, frameX, frameY, frameW, frameH) {
+  let count = 0;
+  for (let y = 0; y < frameH; y += 1) {
+    for (let x = 0; x < frameW; x += 1) {
+      const offset = pixelOffset(image, frameX + x, frameY + y);
+      const [r, g, b, a] = image.pixels.subarray(offset, offset + 4);
+      if (a > 200 && r > 235 && g > 235 && b > 235) count += 1;
+    }
+  }
+  return count;
+}
+
 function spread(values) {
   return values.length ? Math.max(...values) - Math.min(...values) : null;
 }
@@ -424,6 +444,7 @@ function analyzePixels(image, sheetKey, sheet, frameW, frameH) {
     rows.push({
       row,
       motionKeys,
+      whiteOpaquePixels: countWhiteOpaque(image, 0, row * frameH, image.width, frameH),
       populatedFrames: rowBounds.length,
       centerSpreadPx: spread(rowBounds.map(bounds => bounds.centerX)),
       bottomSpreadPx: spread(rowBounds.map(bounds => bounds.bottom)),
@@ -446,6 +467,26 @@ function analyzePixels(image, sheetKey, sheet, frameW, frameH) {
       ),
     }),
     rows,
+  };
+}
+
+export function whiteOpaqueRisk(sheetKey, rows, totalPixels) {
+  if (totalPixels <= 500) return { exempted: false, risky: false };
+  const exemption = WHITE_PIXEL_RISK_EXEMPTIONS[sheetKey];
+  if (!exemption) return { exempted: false, risky: true };
+  const scopedPixels = rows
+    .filter(row => exemption.rows.includes(row.row))
+    .reduce((sum, row) => sum + row.whiteOpaquePixels, 0);
+  const otherPixels = totalPixels - scopedPixels;
+  const exempted = scopedPixels <= exemption.maxScopedPixels
+    && otherPixels <= exemption.maxOtherPixels;
+  return {
+    exempted,
+    risky: !exempted,
+    scopedRows: exemption.rows,
+    scopedPixels,
+    otherPixels,
+    reason: exemption.reason,
   };
 }
 
@@ -483,17 +524,19 @@ function analyzeFile({ sheetKey, sheet, filePath }) {
   }
 
   const pixelStats = analyzePixels(image, sheetKey, sheet, frameW, frameH);
+  const idleMotion = sheet.motions.idle ?? sheet.motions[sheet.aliases?.idle];
   for (const row of pixelStats.rows) {
     if (row.populatedFrames !== sheet.cols) {
       issues.push({ level: 'fail', code: 'empty-frame', message: `${row.motionKeys.join(', ')} has ${row.populatedFrames}/${sheet.cols} frames` });
     }
-    if (row.row === sheet.motions.idle.row && row.bottomSpreadPx > 4) {
+    if (row.row === idleMotion?.row && row.bottomSpreadPx > 4) {
       issues.push({ level: 'fail', code: 'idle-foot-drift', message: `idle bottom spread ${row.bottomSpreadPx}px` });
     }
     if (row.centerSpreadPx > 34) issues.push({ level: 'warn', code: 'center-drift', message: `${row.motionKeys.join(', ')} center spread ${row.centerSpreadPx}px` });
     if (row.edgeOpaque > 0) issues.push({ level: 'warn', code: 'edge-touch', message: `${row.motionKeys.join(', ')} has ${row.edgeOpaque} edge pixels` });
   }
-  if (pixelStats.whiteOpaquePixels > 500) issues.push({ level: 'warn', code: 'white-bg-risk', message: `${pixelStats.whiteOpaquePixels} opaque white pixels` });
+  const whiteRisk = whiteOpaqueRisk(sheetKey, pixelStats.rows, pixelStats.whiteOpaquePixels);
+  if (whiteRisk.risky) issues.push({ level: 'warn', code: 'white-bg-risk', message: `${pixelStats.whiteOpaquePixels} opaque white pixels` });
   if (pixelStats.opaqueGreen > 0 || pixelStats.fringeGreen > 0 || pixelStats.hiddenRgb > 0 || pixelStats.removedComponents > 0 || pixelStats.staleAllowlist > 0) {
     issues.push({
       level: 'fail',
@@ -510,6 +553,7 @@ function analyzeFile({ sheetKey, sheet, filePath }) {
     frameW,
     frameH,
     ...pixelStats,
+    whiteRiskExemption: whiteRisk.exempted ? whiteRisk : null,
     issues,
     severity: severityFor(issues),
   };
