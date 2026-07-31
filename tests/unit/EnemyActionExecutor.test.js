@@ -393,6 +393,7 @@ describe('executeEnemyAction', () => {
       ['player', 'firearm', 1],
       ['npc_guard', 'firearm', 1],
     ]);
+    expect(result.executed).toBe(true);
     expect(result.resolvedEffects).toContainEqual({
       type: 'futureEffect',
       skipped: true,

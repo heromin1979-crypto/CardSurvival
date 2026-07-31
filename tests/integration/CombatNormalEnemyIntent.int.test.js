@@ -257,6 +257,29 @@ describe('일반 몬스터 committed action intent 통합', () => {
     }
   });
 
+  it('레이더의 기본 공격 executor가 대상을 찾지 못하면 사격 수와 reload 큐를 변경하지 않는다', () => {
+    const enemy = instantiateEnemy(ENEMIES.raider);
+    const combat = setupCombat(enemy);
+    enemy._shotsSinceReload = 2;
+    combat.fxQueue = [];
+
+    const result = CombatSystem._executeEnemyCommittedAction(enemy, {
+      actionId: 'basic_attack',
+      category: 'basic',
+      state: 'ready',
+      targetIds: [],
+      remainingTelegraphTurns: 0,
+      hitCount: 1,
+      motionKey: 'basic_attack',
+    }, 0);
+
+    expect(result).toBeUndefined();
+    expect(enemy._shotsSinceReload).toBe(2);
+    expect(combat.fxQueue).not.toEqual(expect.arrayContaining([
+      expect.objectContaining({ kind: 'enemyMotion', motionKey: 'reload' }),
+    ]));
+  });
+
   it('AI 후보에 실제 rank·방어/노출·heal effect 기반 healer 메타데이터를 제공한다', () => {
     const combat = setupCombat(instantiateEnemy(ENEMIES.zombie_common), {
       companionId: 'npc_student',

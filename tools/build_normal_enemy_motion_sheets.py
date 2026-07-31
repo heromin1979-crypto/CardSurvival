@@ -18,19 +18,21 @@ BASELINE_COMMIT = "1312cf9"
 CELL = 256
 COLS = 6
 ENEMY_DIR = ROOT / "assets/images/combat/spritesheets/enemies"
-SOURCE_DIR = ROOT / "assets/images/combat/spritesheets/sources/task7_normal"
+SOURCE_DIR = ROOT / "art_sources/combat/task7_normal"
 RECIPE_PATH = SOURCE_DIR / "assembly_recipe.json"
 NORMALIZER_PATH = ROOT / "tools/normalize_combat_sprite_sheets.py"
 
-SOURCE_FILES = (
-    "raider_generated_chroma.png",
+CANONICAL_SOURCE_FILES = (
     "raider_generated_alpha.png",
-    "raider_elite_generated_chroma.png",
     "raider_elite_generated_alpha.png",
-    "zombie_bloater_self_destruct_chroma.png",
     "zombie_bloater_self_destruct_alpha.png",
-    "zombie_screamer_spit_chroma.png",
     "zombie_screamer_spit_alpha.png",
+)
+ARCHIVAL_SOURCE_FILES = (
+    "raider_generated_chroma.png",
+    "raider_elite_generated_chroma.png",
+    "zombie_bloater_self_destruct_chroma.png",
+    "zombie_screamer_spit_chroma.png",
 )
 
 ROW_PROVENANCE = {
@@ -106,6 +108,21 @@ def text_sha256(path: Path) -> str:
     return hashlib.sha256(normalized.encode("utf-8")).hexdigest()
 
 
+def resolve_repo_path(repo_path: str) -> Path:
+    if not isinstance(repo_path, str) or not repo_path or repo_path.startswith("//"):
+        raise ValueError(f"invalid repository path: {repo_path!r}")
+    relative = repo_path[1:] if repo_path.startswith("/") else repo_path
+    relative_path = Path(relative)
+    if relative_path.is_absolute():
+        raise ValueError(f"repository path must be relative: {repo_path}")
+    candidate = (ROOT / relative_path).resolve()
+    try:
+        candidate.relative_to(ROOT.resolve())
+    except ValueError as exc:
+        raise ValueError(f"repository path escapes root: {repo_path}") from exc
+    return candidate
+
+
 def pixel_sha256(image: Image.Image) -> str:
     return hashlib.sha256(image.convert("RGBA").tobytes()).hexdigest()
 
@@ -169,7 +186,7 @@ def make_sheet(rows: list[list[Image.Image]]) -> Image.Image:
 def assemble_sheets() -> dict[str, Image.Image]:
     generated = {
         name: Image.open(SOURCE_DIR / name).convert("RGBA")
-        for name in SOURCE_FILES if name.endswith("_alpha.png")
+        for name in CANONICAL_SOURCE_FILES
     }
     baseline = {enemy_id: baseline_sheet(enemy_id) for enemy_id in ROW_PROVENANCE}
     sheets: dict[str, Image.Image] = {}
@@ -276,9 +293,13 @@ def validate_foreground_coverage(
 
 def recipe_document() -> dict:
     assembled = assemble_sheets()
-    sources = {
-        name: {"path": f"/assets/images/combat/spritesheets/sources/task7_normal/{name}", "sha256": file_sha256(SOURCE_DIR / name)}
-        for name in SOURCE_FILES
+    canonical_sources = {
+        name: {"path": f"/art_sources/combat/task7_normal/{name}", "sha256": file_sha256(SOURCE_DIR / name)}
+        for name in CANONICAL_SOURCE_FILES
+    }
+    archival_sources = {
+        name: {"path": f"/art_sources/combat/task7_normal/{name}", "sha256": file_sha256(SOURCE_DIR / name)}
+        for name in ARCHIVAL_SOURCE_FILES
     }
     targets = {}
     for enemy_id, image in assembled.items():
@@ -300,36 +321,40 @@ def recipe_document() -> dict:
             ],
         }
     return {
-        "version": 1,
+        "version": 2,
         "baselineCommit": BASELINE_COMMIT,
         "assemblyScript": "/tools/build_normal_enemy_motion_sheets.py",
         "assemblyScriptSha256": text_sha256(Path(__file__)),
-        "cleanup": {
-            "method": "remove_chroma_key.py then normalize_combat_sprite_sheets.cleanup_chroma_grid",
-            "generatedAndCleanedPairs": [
-                ["raider_generated_chroma.png", "raider_generated_alpha.png"],
-                ["raider_elite_generated_chroma.png", "raider_elite_generated_alpha.png"],
-                ["zombie_bloater_self_destruct_chroma.png", "zombie_bloater_self_destruct_alpha.png"],
-                ["zombie_screamer_spit_chroma.png", "zombie_screamer_spit_alpha.png"],
-            ],
+        "provenancePolicy": {
+            "canonical": "cleaned alpha PNGs are the sole deterministic assembly inputs",
+            "archival": "chroma PNGs are retained image-generation archives; no derivation relationship to canonical alpha PNGs is asserted",
         },
-        "sources": sources,
+        "canonicalSources": canonical_sources,
+        "archivalSources": archival_sources,
         "targets": targets,
     }
 
 
 def verify_recipe(recipe: dict) -> dict:
-    if recipe.get("version") != 1 or recipe.get("baselineCommit") != BASELINE_COMMIT:
+    if recipe.get("version") != 2 or recipe.get("baselineCommit") != BASELINE_COMMIT:
         raise ValueError("assembly recipe version or baseline mismatch")
     if text_sha256(Path(__file__)) != recipe["assemblyScriptSha256"]:
         raise ValueError("assembly script hash changed")
-    for source in recipe["sources"].values():
-        verify_source_hash(ROOT / source["path"].lstrip("/"), source["sha256"])
+    if set(recipe.get("canonicalSources", {})) != set(CANONICAL_SOURCE_FILES):
+        raise ValueError("canonical source inventory mismatch")
+    if set(recipe.get("archivalSources", {})) != set(ARCHIVAL_SOURCE_FILES):
+        raise ValueError("archival source inventory mismatch")
+    for source in recipe["canonicalSources"].values():
+        verify_source_hash(resolve_repo_path(source["path"]), source["sha256"])
+    for source in recipe["archivalSources"].values():
+        verify_source_hash(resolve_repo_path(source["path"]), source["sha256"])
 
     assembled = assemble_sheets()
+    if set(recipe.get("targets", {})) != set(assembled):
+        raise ValueError("target inventory mismatch")
     for enemy_id, expected in recipe["targets"].items():
         image = assembled[enemy_id]
-        target_path = ROOT / expected["path"].lstrip("/")
+        target_path = resolve_repo_path(expected["path"])
         actual = Image.open(target_path).convert("RGBA")
         if image.size != (expected["width"], expected["height"]):
             raise ValueError(f"assembled dimensions changed for {enemy_id}")
@@ -354,7 +379,11 @@ def verify_recipe(recipe: dict) -> dict:
         source_relative = f"assets/images/combat/spritesheets/enemies/{enemy_id}_sheet_src.png"
         if (ROOT / source_relative).read_bytes() != baseline_bytes(source_relative):
             raise ValueError(f"preserved source changed for {enemy_id}")
-    return {"verifiedTargets": len(assembled), "verifiedSources": len(recipe["sources"])}
+    return {
+        "verifiedTargets": len(assembled),
+        "verifiedCanonicalSources": len(recipe["canonicalSources"]),
+        "verifiedArchivalSources": len(recipe["archivalSources"]),
+    }
 
 
 def main() -> int:

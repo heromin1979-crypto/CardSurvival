@@ -19,8 +19,7 @@ REPORT_PATH = ROOT / "docs" / "analysis" / "COMBAT_CHROMA_CLEANUP_REPORT.json"
 NORMALIZER_PATH = ROOT / "tools" / "normalize_combat_sprite_sheets.py"
 ASSEMBLY_PATH = ROOT / "tools" / "build_normal_enemy_motion_sheets.py"
 ASSEMBLY_RECIPE_PATH = (
-    ROOT / "assets" / "images" / "combat" / "spritesheets" / "sources"
-    / "task7_normal" / "assembly_recipe.json"
+    ROOT / "art_sources" / "combat" / "task7_normal" / "assembly_recipe.json"
 )
 
 

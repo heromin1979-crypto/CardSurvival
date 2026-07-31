@@ -1142,7 +1142,9 @@ export const CombatAiTurns = {
         },
       },
     });
-    if (action.category === 'basic' && Number.isInteger(enemy.reloadAfterShots)) {
+    if (result?.executed === true
+        && action.category === 'basic'
+        && Number.isInteger(enemy.reloadAfterShots)) {
       enemy._shotsSinceReload = (enemy._shotsSinceReload ?? 0) + 1;
       if (enemy._shotsSinceReload >= enemy.reloadAfterShots) {
         enemy._shotsSinceReload = 0;

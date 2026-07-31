@@ -1,61 +1,46 @@
 {
-  "version": 1,
+  "version": 2,
   "baselineCommit": "1312cf9",
   "assemblyScript": "/tools/build_normal_enemy_motion_sheets.py",
-  "assemblyScriptSha256": "d7514dd9565c358beabbb93a7e8b6a65a596161153f3b4adf5c6a7afae350863",
-  "cleanup": {
-    "method": "remove_chroma_key.py then normalize_combat_sprite_sheets.cleanup_chroma_grid",
-    "generatedAndCleanedPairs": [
-      [
-        "raider_generated_chroma.png",
-        "raider_generated_alpha.png"
-      ],
-      [
-        "raider_elite_generated_chroma.png",
-        "raider_elite_generated_alpha.png"
-      ],
-      [
-        "zombie_bloater_self_destruct_chroma.png",
-        "zombie_bloater_self_destruct_alpha.png"
-      ],
-      [
-        "zombie_screamer_spit_chroma.png",
-        "zombie_screamer_spit_alpha.png"
-      ]
-    ]
+  "assemblyScriptSha256": "85243003f2391cfc20f9dfa9d1284f804785fec34312c6899ff4237a2ff76901",
+  "provenancePolicy": {
+    "canonical": "cleaned alpha PNGs are the sole deterministic assembly inputs",
+    "archival": "chroma PNGs are retained image-generation archives; no derivation relationship to canonical alpha PNGs is asserted"
   },
-  "sources": {
-    "raider_generated_chroma.png": {
-      "path": "/assets/images/combat/spritesheets/sources/task7_normal/raider_generated_chroma.png",
-      "sha256": "1cf99a920636d923d5f35d006162d2e5d2140dce33ac108bc437164da3bf695b"
-    },
+  "canonicalSources": {
     "raider_generated_alpha.png": {
-      "path": "/assets/images/combat/spritesheets/sources/task7_normal/raider_generated_alpha.png",
+      "path": "/art_sources/combat/task7_normal/raider_generated_alpha.png",
       "sha256": "d95831c850d44bc49451351c34087762bcc27c3114638996ed829b10d5918bcb"
     },
-    "raider_elite_generated_chroma.png": {
-      "path": "/assets/images/combat/spritesheets/sources/task7_normal/raider_elite_generated_chroma.png",
-      "sha256": "470606763dd0490ab53f7e51dc2263cfb5675f89d38285aeb9ec8d3e1607bae3"
-    },
     "raider_elite_generated_alpha.png": {
-      "path": "/assets/images/combat/spritesheets/sources/task7_normal/raider_elite_generated_alpha.png",
+      "path": "/art_sources/combat/task7_normal/raider_elite_generated_alpha.png",
       "sha256": "fa128a8db68b384c204c409e9a8d7e8666549850be12bcb302298589d69f879c"
     },
-    "zombie_bloater_self_destruct_chroma.png": {
-      "path": "/assets/images/combat/spritesheets/sources/task7_normal/zombie_bloater_self_destruct_chroma.png",
-      "sha256": "4f75b6647214445ca6cb973f32fa43e2bf9e964228ca01217025a68c8667abd3"
-    },
     "zombie_bloater_self_destruct_alpha.png": {
-      "path": "/assets/images/combat/spritesheets/sources/task7_normal/zombie_bloater_self_destruct_alpha.png",
+      "path": "/art_sources/combat/task7_normal/zombie_bloater_self_destruct_alpha.png",
       "sha256": "7ee433f5ef514f9097f4364a57e05e4774626bfba0de0c48fd5112313351d4f1"
     },
-    "zombie_screamer_spit_chroma.png": {
-      "path": "/assets/images/combat/spritesheets/sources/task7_normal/zombie_screamer_spit_chroma.png",
-      "sha256": "a52b62883c98149697a4aca0abbac7b9847013ad6432dffe59f9474d5db20b8a"
-    },
     "zombie_screamer_spit_alpha.png": {
-      "path": "/assets/images/combat/spritesheets/sources/task7_normal/zombie_screamer_spit_alpha.png",
+      "path": "/art_sources/combat/task7_normal/zombie_screamer_spit_alpha.png",
       "sha256": "35273066267713ad9082302bb9f56d8aa99883912f75aeeb4a295a3d3994ac2b"
+    }
+  },
+  "archivalSources": {
+    "raider_generated_chroma.png": {
+      "path": "/art_sources/combat/task7_normal/raider_generated_chroma.png",
+      "sha256": "1cf99a920636d923d5f35d006162d2e5d2140dce33ac108bc437164da3bf695b"
+    },
+    "raider_elite_generated_chroma.png": {
+      "path": "/art_sources/combat/task7_normal/raider_elite_generated_chroma.png",
+      "sha256": "470606763dd0490ab53f7e51dc2263cfb5675f89d38285aeb9ec8d3e1607bae3"
+    },
+    "zombie_bloater_self_destruct_chroma.png": {
+      "path": "/art_sources/combat/task7_normal/zombie_bloater_self_destruct_chroma.png",
+      "sha256": "4f75b6647214445ca6cb973f32fa43e2bf9e964228ca01217025a68c8667abd3"
+    },
+    "zombie_screamer_spit_chroma.png": {
+      "path": "/art_sources/combat/task7_normal/zombie_screamer_spit_chroma.png",
+      "sha256": "a52b62883c98149697a4aca0abbac7b9847013ad6432dffe59f9474d5db20b8a"
     }
   },
   "targets": {

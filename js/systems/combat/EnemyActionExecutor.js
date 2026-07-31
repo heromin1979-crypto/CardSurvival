@@ -565,7 +565,7 @@ export function executeEnemyAction({
     }
   }
 
-  return { affectedTargetIds, damageResults, resolvedEffects };
+  return { executed: true, affectedTargetIds, damageResults, resolvedEffects };
 }
 
 export function resolveEnemyDamageResponsePassives({

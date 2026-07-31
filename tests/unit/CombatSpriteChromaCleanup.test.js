@@ -8,6 +8,17 @@ const FIXTURE_ROOT = path.join(ROOT, 'tests', 'fixtures', 'combat-sprites');
 const NORMALIZER = path.join(ROOT, 'tools', 'normalize_combat_sprite_sheets.py');
 const REPORT_CHECKER = path.join(ROOT, 'tools', 'verify_combat_chroma_cleanup.py');
 const NORMAL_ENEMY_ASSEMBLER = path.join(ROOT, 'tools', 'build_normal_enemy_motion_sheets.py');
+const NORMAL_ENEMY_QA_CHECKER = path.join(ROOT, 'tools', 'verify_normal_enemy_motion_qa.py');
+const BUILD_ONLY_SOURCE_ROOT = path.join(ROOT, 'art_sources', 'combat', 'task7_normal');
+const RUNTIME_SOURCE_ROOT = path.join(
+  ROOT,
+  'assets',
+  'images',
+  'combat',
+  'spritesheets',
+  'sources',
+  'task7_normal',
+);
 
 function pythonRuntime() {
   const candidates = [
@@ -354,8 +365,68 @@ describe('combat sprite chroma cleanup', () => {
       cwd: ROOT,
       encoding: 'utf8',
     });
-    expect(JSON.parse(output)).toEqual({ verifiedTargets: 9, verifiedSources: 8 });
+    expect(JSON.parse(output)).toEqual({
+      verifiedTargets: 9,
+      verifiedCanonicalSources: 4,
+      verifiedArchivalSources: 4,
+    });
   }, 120000);
+
+  it('keeps canonical alpha inputs and unrelated chroma archives outside runtime assets', () => {
+    expect(fs.existsSync(BUILD_ONLY_SOURCE_ROOT)).toBe(true);
+    expect(fs.existsSync(RUNTIME_SOURCE_ROOT)).toBe(false);
+
+    const recipe = JSON.parse(fs.readFileSync(path.join(BUILD_ONLY_SOURCE_ROOT, 'assembly_recipe.json'), 'utf8'));
+    const canonicalNames = Object.keys(recipe.canonicalSources ?? {});
+    const archivalNames = Object.keys(recipe.archivalSources ?? {});
+    expect(canonicalNames).toHaveLength(4);
+    expect(canonicalNames.every(name => name.endsWith('_alpha.png'))).toBe(true);
+    expect(archivalNames).toHaveLength(4);
+    expect(archivalNames.every(name => name.endsWith('_chroma.png'))).toBe(true);
+    expect(recipe.provenancePolicy).toEqual({
+      canonical: 'cleaned alpha PNGs are the sole deterministic assembly inputs',
+      archival: 'chroma PNGs are retained image-generation archives; no derivation relationship to canonical alpha PNGs is asserted',
+    });
+
+    const packageConfig = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
+    expect(packageConfig.build.files.some(pattern => String(pattern).includes('art_sources'))).toBe(false);
+  });
+
+  it('rejects recipe source and target paths that escape the repository root', () => {
+    const output = runPython([
+      'import copy, importlib.util, json, sys',
+      `spec = importlib.util.spec_from_file_location('normal_enemy_assembler', r'${NORMAL_ENEMY_ASSEMBLER.replaceAll('\\', '/')}')`,
+      'module = importlib.util.module_from_spec(spec)',
+      'sys.modules[spec.name] = module',
+      'spec.loader.exec_module(module)',
+      "recipe = json.loads(module.RECIPE_PATH.read_text(encoding='utf-8'))",
+      'source_recipe = copy.deepcopy(recipe)',
+      "source_recipe['canonicalSources']['raider_generated_alpha.png']['path'] = '/../outside.png'",
+      'target_recipe = copy.deepcopy(recipe)',
+      "target_recipe['targets']['raider']['path'] = '../../outside.png'",
+      'rejected = []',
+      'for candidate in (source_recipe, target_recipe):',
+      '    try:',
+      '        module.verify_recipe(candidate)',
+      '        rejected.append(False)',
+      '    except ValueError:',
+      '        rejected.append(True)',
+      "print(json.dumps({'rejected': rejected}))",
+    ].join('\n'));
+    expect(JSON.parse(output)).toEqual({ rejected: [true, true] });
+  }, 60000);
+
+  it('cross-checks all 51 reviewed motion rows against the manifest and reviewed PNG hashes', () => {
+    const runtime = pythonRuntime();
+    const result = spawnSync(runtime.command, [
+      ...runtime.prefix,
+      NORMAL_ENEMY_QA_CHECKER,
+      '--check',
+    ], { cwd: ROOT, encoding: 'utf8' });
+
+    expect(result.status).toBe(0);
+    expect(JSON.parse(result.stdout)).toEqual({ verifiedSheets: 9, verifiedRows: 51 });
+  }, 30000);
 
   it('rejects source hash mutation and foreground loss in rebuilt motion rows', () => {
     const output = runPython([
@@ -368,9 +439,10 @@ describe('combat sprite chroma cleanup', () => {
       'spec.loader.exec_module(module)',
       'with tempfile.TemporaryDirectory() as directory:',
       "    source = Path(directory) / 'source.png'",
-      "    source.write_bytes(b'original')",
-      "    expected_hash = hashlib.sha256(b'original').hexdigest()",
-      "    source.write_bytes(b'mutated')",
+      "    canonical = module.SOURCE_DIR / 'raider_generated_alpha.png'",
+      '    source.write_bytes(canonical.read_bytes())',
+      '    expected_hash = module.file_sha256(canonical)',
+      '    mutated = bytearray(source.read_bytes()); mutated[-1] ^= 1; source.write_bytes(mutated)',
       '    try:',
       '        module.verify_source_hash(source, expected_hash)',
       '        hash_rejected = False',

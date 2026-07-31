@@ -2,11 +2,12 @@
   "reportVersion": 3,
   "baselineCommit": "50b75fb",
   "rebuiltBaselineCommit": "1312cf9",
-  "assemblyRecipePath": "/assets/images/combat/spritesheets/sources/task7_normal/assembly_recipe.json",
-  "assemblyRecipeSha256": "ef08c5900b279959de2a61f09601d1af5c7ecd0c9f51653d1c4da5dd2f6d96c5",
+  "assemblyRecipePath": "/art_sources/combat/task7_normal/assembly_recipe.json",
+  "assemblyRecipeSha256": "8d21cf5069b4995904c04a3a6363f430308aba865f1f78850e1845fe9cf3d1d5",
   "assemblyVerification": {
     "verifiedTargets": 9,
-    "verifiedSources": 8
+    "verifiedCanonicalSources": 4,
+    "verifiedArchivalSources": 4
   },
   "sheetCount": 23,
   "changedSheetCount": 23,
