@@ -15,12 +15,25 @@ SPRITE_ROOT = ROOT / "assets" / "images" / "combat" / "spritesheets"
 MANIFEST_PATH = SPRITE_ROOT / "manifest.json"
 ALPHA_THRESHOLD = 12
 CHROMA_ALPHA_THRESHOLD = 200
+CHROMA_ALPHA_MIN = 0
 PADDING = 6
 CHROMA_HUE_MIN = 78
 CHROMA_HUE_MAX = 162
 CHROMA_SATURATION_MIN = 0.72
 CHROMA_VALUE_MIN = 150
 ISOLATED_CHROMA_COMPONENT_AREA = 12
+# These rows intentionally depict toxic matter as part of the character, not a key-colour artifact.
+# The allowlist is deliberately sheet+row scoped: it never exempts hidden RGB or edge-connected spill.
+ISOLATED_CHROMA_ALLOWLIST = {
+    "assets/images/combat/spritesheets/enemies/zombie_acid_sheet.png": {
+        "rows": {0, 1, 2, 3},
+        "reason": "acid zombie skin corrosion and projectile splash",
+    },
+    "assets/images/combat/spritesheets/enemies/zombie_bloater_sheet.png": {
+        "rows": {0, 1, 2, 3},
+        "reason": "bloater bile spray and toxic residue",
+    },
+}
 
 
 @dataclass(frozen=True)
@@ -74,13 +87,14 @@ def _hue_and_saturation(r: int, g: int, b: int) -> tuple[float, float, int]:
 
 def is_green_screen_pixel(pixel: tuple[int, int, int, int]) -> bool:
     r, g, b, a = pixel
-    if a <= ALPHA_THRESHOLD:
+    if a <= CHROMA_ALPHA_MIN:
         return False
     hue, saturation, value = _hue_and_saturation(r, g, b)
     return CHROMA_HUE_MIN <= hue <= CHROMA_HUE_MAX and saturation >= CHROMA_SATURATION_MIN and value >= CHROMA_VALUE_MIN
 
 
 def _is_opaque_chroma(pixel: tuple[int, int, int, int]) -> bool:
+    """Background flood-fill starts from opaque key colour; low-alpha spill is decontaminated."""
     return pixel[3] > CHROMA_ALPHA_THRESHOLD and is_green_screen_pixel(pixel)
 
 
@@ -145,7 +159,11 @@ def _has_edge_chroma_neighbor(image: Image.Image, x: int, y: int, edge_chroma: s
     return False
 
 
-def analyze_chroma(image: Image.Image) -> dict[str, int]:
+def _is_frame_edge(image: Image.Image, x: int, y: int) -> bool:
+    return x == 0 or y == 0 or x == image.width - 1 or y == image.height - 1
+
+
+def analyze_chroma(image: Image.Image, allow_isolated_components: bool = False) -> dict[str, int]:
     """Return residual chroma-key artifacts without modifying the supplied image."""
     image = image.convert("RGBA")
     pixels = image.load()
@@ -159,10 +177,15 @@ def analyze_chroma(image: Image.Image) -> dict[str, int]:
             if pixel[3] == 0:
                 hidden_rgb += int(pixel[:3] != (0, 0, 0))
             elif y * image.width + x in edge:
-                opaque_green += 1
-            elif is_green_screen_pixel(pixel) and _has_edge_chroma_neighbor(image, x, y, edge):
+                if pixel[3] > CHROMA_ALPHA_THRESHOLD:
+                    opaque_green += 1
+                else:
+                    fringe_green += 1
+            elif is_green_screen_pixel(pixel) and (
+                _has_edge_chroma_neighbor(image, x, y, edge) or _is_frame_edge(image, x, y)
+            ):
                 fringe_green += 1
-    components = _isolated_chroma_components(image, edge)
+    components = [] if allow_isolated_components else _isolated_chroma_components(image, edge)
     return {
         "opaqueGreen": opaque_green,
         "fringeGreen": fringe_green,
@@ -180,11 +203,12 @@ def _decontaminate_fringe(image: Image.Image, removed: set[int]) -> None:
             pixel = pixels[x, y]
             if index in removed or not is_green_screen_pixel(pixel) or pixel[3] > CHROMA_ALPHA_THRESHOLD:
                 continue
-            if not any(
+            near_removed = any(
                 ny * width + nx in removed
                 for ny in range(max(0, y - 2), min(height, y + 3))
                 for nx in range(max(0, x - 2), min(width, x + 3))
-            ):
+            )
+            if not near_removed and not _is_frame_edge(image, x, y):
                 continue
             samples = []
             for radius in (1, 2, 3):
@@ -204,13 +228,13 @@ def _decontaminate_fringe(image: Image.Image, removed: set[int]) -> None:
             pixels[x, y] = (*rgb, pixel[3])
 
 
-def cleanup_chroma(image: Image.Image) -> tuple[Image.Image, dict[str, int]]:
+def cleanup_chroma(image: Image.Image, preserve_isolated_components: bool = False) -> tuple[Image.Image, dict[str, int]]:
     """Remove chroma-key background artifacts while preserving real low-saturation greens."""
     cleaned = image.convert("RGBA").copy()
     width, height = cleaned.size
     pixels = cleaned.load()
     background = _edge_connected_chroma(cleaned)
-    isolated = _isolated_chroma_components(cleaned, background)
+    isolated = [] if preserve_isolated_components else _isolated_chroma_components(cleaned, background)
     removed = set(background)
     for component in isolated:
         removed.update(component)
@@ -224,6 +248,72 @@ def cleanup_chroma(image: Image.Image) -> tuple[Image.Image, dict[str, int]]:
             if a == 0 and (r, g, b) != (0, 0, 0):
                 pixels[x, y] = (0, 0, 0, 0)
     return cleaned, {"removedComponents": len(isolated)}
+
+
+def _frame_boxes(image: Image.Image, cols: int, rows: int) -> list[tuple[int, int, int, int]]:
+    if image.width % cols or image.height % rows:
+        raise ValueError(f"{image.size} is not divisible by {cols}x{rows}")
+    frame_width, frame_height = image.width // cols, image.height // rows
+    return [
+        (col * frame_width, row * frame_height, (col + 1) * frame_width, (row + 1) * frame_height)
+        for row in range(rows)
+        for col in range(cols)
+    ]
+
+
+def analyze_chroma_grid(image: Image.Image, cols: int = 1, rows: int = 1, allowed_rows: set[int] | None = None) -> dict[str, int]:
+    totals = {"opaqueGreen": 0, "fringeGreen": 0, "hiddenRgb": 0, "removedComponents": 0}
+    allowed_rows = allowed_rows or set()
+    for index, box in enumerate(_frame_boxes(image, cols, rows)):
+        result = analyze_chroma(image.crop(box), allow_isolated_components=index // cols in allowed_rows)
+        for key, value in result.items():
+            totals[key] += value
+    return totals
+
+
+def cleanup_chroma_grid(image: Image.Image, cols: int = 1, rows: int = 1, allowed_rows: set[int] | None = None) -> tuple[Image.Image, dict[str, int]]:
+    """Normalize every animation cell independently so internal grid edges are true boundaries."""
+    cleaned = Image.new("RGBA", image.size, (0, 0, 0, 0))
+    removed_components = 0
+    allowed_rows = allowed_rows or set()
+    for index, box in enumerate(_frame_boxes(image, cols, rows)):
+        frame, result = cleanup_chroma(image.crop(box), preserve_isolated_components=index // cols in allowed_rows)
+        cleaned.alpha_composite(frame, box[:2])
+        removed_components += result["removedComponents"]
+    return cleaned, {"removedComponents": removed_components}
+
+
+def chroma_cleanup_integrity(before: Image.Image, after: Image.Image, cols: int, rows: int) -> dict[str, int]:
+    """Prove cleanup kept dimensions and never reduced alpha on non-chroma foreground."""
+    if before.size != after.size:
+        raise ValueError(f"cleanup changed size from {before.size} to {after.size}")
+    before = before.convert("RGBA")
+    after = after.convert("RGBA")
+    before_pixels, after_pixels = before.load(), after.load()
+    alpha_before = alpha_after = unexpected_alpha_loss = 0
+    for y in range(before.height):
+        for x in range(before.width):
+            original, cleaned = before_pixels[x, y], after_pixels[x, y]
+            alpha_before += int(original[3] > 0)
+            alpha_after += int(cleaned[3] > 0)
+            if cleaned[3] < original[3] and not is_green_screen_pixel(original):
+                unexpected_alpha_loss += 1
+    # Validate every grid cell is still addressable after cleanup.
+    _frame_boxes(after, cols, rows)
+    return {
+        "alphaCoverageBefore": alpha_before,
+        "alphaCoverageAfter": alpha_after,
+        "unexpectedAlphaLoss": unexpected_alpha_loss,
+    }
+
+
+def allowed_chroma_rows(path: Path) -> set[int]:
+    try:
+        relative = path.resolve().relative_to(ROOT.resolve()).as_posix()
+    except ValueError:
+        return set()
+    entry = ISOLATED_CHROMA_ALLOWLIST.get(relative)
+    return set(entry["rows"]) if entry else set()
 
 
 def remove_chroma_key(image: Image.Image) -> Image.Image:
@@ -594,9 +684,9 @@ def normalize_sheet(path: Path, dry_run: bool, from_head: bool) -> dict:
     else:
         sheet = Image.open(path).convert("RGBA")
     grid = grid_for(path, sheet)
-
-    sheet = remove_chroma_key(sheet)
-    normalized = Image.new("RGBA", sheet.size, (0, 0, 0, 0))
+    original = sheet.copy()
+    allowed_rows = allowed_chroma_rows(path)
+    normalized = Image.new("RGBA", original.size, (0, 0, 0, 0))
     changed_frames = 0
     for row in range(grid.rows):
         for col in range(grid.cols):
@@ -606,13 +696,12 @@ def normalize_sheet(path: Path, dry_run: bool, from_head: bool) -> dict:
                 (col + 1) * grid.cell_width,
                 (row + 1) * grid.cell_height,
             )
-            frame, changed = fit_frame(sheet.crop(box), grid)
+            frame, _ = cleanup_chroma(sheet.crop(box), preserve_isolated_components=row in allowed_rows)
             normalized.alpha_composite(frame, (col * grid.cell_width, row * grid.cell_height))
-            if changed:
+            if original.crop(box).tobytes() != frame.tobytes():
                 changed_frames += 1
 
-    normalized = remove_chroma_key(normalized)
-    changed = sheet.tobytes() != normalized.tobytes()
+    changed = original.tobytes() != normalized.tobytes()
     if changed and not dry_run:
         normalized.save(path)
 
@@ -641,7 +730,12 @@ def main() -> None:
         for value in args.check_chroma:
             path = Path(value)
             image = Image.open(path).convert("RGBA")
-            reports.append({"path": path.as_posix(), **analyze_chroma(image)})
+            try:
+                grid = grid_for(path.resolve(), image)
+                stats = analyze_chroma_grid(image, grid.cols, grid.rows, allowed_chroma_rows(path))
+            except ValueError:
+                stats = analyze_chroma(image)
+            reports.append({"path": path.as_posix(), **stats})
         print(json.dumps(reports, ensure_ascii=False))
         return
 

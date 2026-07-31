@@ -11,11 +11,18 @@ const OUT_JSON = path.join(ROOT, 'output', 'combat', 'sprite_audit.json');
 const OUT_MD = path.join(ROOT, 'docs', 'analysis', 'COMBAT_SPRITE_AUDIT.md');
 const ALPHA_THRESHOLD = 12;
 const CHROMA_ALPHA_THRESHOLD = 200;
+const CHROMA_ALPHA_MIN = 0;
 const CHROMA_HUE_MIN = 78;
 const CHROMA_HUE_MAX = 162;
 const CHROMA_SATURATION_MIN = 0.72;
 const CHROMA_VALUE_MIN = 150;
 const ISOLATED_CHROMA_COMPONENT_AREA = 12;
+// Toxic matter is a deliberate character effect in these rows, not chroma-key residue.
+// This never suppresses edge-connected background, fringe, or hidden-RGB failures.
+const ISOLATED_CHROMA_ALLOWLIST = new Map([
+  ['/assets/images/combat/spritesheets/enemies/zombie_acid_sheet.png', new Set([0, 1, 2, 3])],
+  ['/assets/images/combat/spritesheets/enemies/zombie_bloater_sheet.png', new Set([0, 1, 2, 3])],
+]);
 
 function normalizeAssetPath(assetPath) {
   return assetPath.replace(/^\/+/, '').replace(/^\.\//, '').replaceAll('/', path.sep);
@@ -113,7 +120,7 @@ function hueAndSaturation(r, g, b) {
 
 function isGreenScreenPixel(pixel) {
   const [r, g, b, a] = pixel;
-  if (a <= ALPHA_THRESHOLD) return false;
+  if (a <= CHROMA_ALPHA_MIN) return false;
   const { hue, saturation, value } = hueAndSaturation(r, g, b);
   return hue >= CHROMA_HUE_MIN && hue <= CHROMA_HUE_MAX
     && saturation >= CHROMA_SATURATION_MIN && value >= CHROMA_VALUE_MIN;
@@ -132,7 +139,11 @@ function nearbyEdgeChroma(image, x, y, edge) {
   return false;
 }
 
-export function chromaArtifactStats(image) {
+function isFrameEdge(image, x, y) {
+  return x === 0 || y === 0 || x === image.width - 1 || y === image.height - 1;
+}
+
+function chromaFrameArtifactStats(image, allowIsolatedComponents = false) {
   const opaque = new Uint8Array(image.width * image.height);
   let hiddenRgb = 0;
   for (let y = 0; y < image.height; y += 1) {
@@ -165,7 +176,7 @@ export function chromaArtifactStats(image) {
       const pixel = image.pixels.subarray(pixelOffset(image, x, y), pixelOffset(image, x, y) + 4);
       if (edge[index]) {
         opaqueGreen += 1;
-      } else if (isGreenScreenPixel(pixel) && nearbyEdgeChroma(image, x, y, edge)) {
+      } else if (isGreenScreenPixel(pixel) && (nearbyEdgeChroma(image, x, y, edge) || isFrameEdge(image, x, y))) {
         fringeGreen += 1;
       }
     }
@@ -190,9 +201,42 @@ export function chromaArtifactStats(image) {
         }
       }
     }
-    if (component.length <= ISOLATED_CHROMA_COMPONENT_AREA) removedComponents += 1;
+    if (!allowIsolatedComponents && component.length <= ISOLATED_CHROMA_COMPONENT_AREA) removedComponents += 1;
   }
   return { opaqueGreen, fringeGreen, hiddenRgb, removedComponents };
+}
+
+function cropImage(image, x0, y0, width, height) {
+  const pixels = Buffer.alloc(width * height * 4);
+  for (let y = 0; y < height; y += 1) {
+    image.pixels.copy(
+      pixels,
+      y * width * 4,
+      ((y0 + y) * image.width + x0) * 4,
+      ((y0 + y) * image.width + x0 + width) * 4,
+    );
+  }
+  return { width, height, pixels };
+}
+
+export function chromaArtifactStats(image, grid = { cols: 1, rows: 1 }) {
+  if (image.width % grid.cols || image.height % grid.rows) {
+    throw new Error(`chroma grid is not divisible by ${grid.cols}x${grid.rows}`);
+  }
+  const frameWidth = image.width / grid.cols;
+  const frameHeight = image.height / grid.rows;
+  const allowedRows = grid.allowedRows instanceof Set ? grid.allowedRows : new Set(grid.allowedRows ?? []);
+  const totals = { opaqueGreen: 0, fringeGreen: 0, hiddenRgb: 0, removedComponents: 0 };
+  for (let row = 0; row < grid.rows; row += 1) {
+    for (let col = 0; col < grid.cols; col += 1) {
+      const stats = chromaFrameArtifactStats(
+        cropImage(image, col * frameWidth, row * frameHeight, frameWidth, frameHeight),
+        allowedRows.has(row),
+      );
+      for (const [key, value] of Object.entries(stats)) totals[key] += value;
+    }
+  }
+  return totals;
 }
 
 function frameBounds(image, frameX, frameY, frameW, frameH) {
@@ -277,7 +321,10 @@ function analyzePixels(image, sheet, frameW, frameH) {
   return {
     transparentPct: Number(((1 - opaquePixels / (image.width * image.height)) * 100).toFixed(2)),
     whiteOpaquePixels,
-    ...chromaArtifactStats(image),
+    ...chromaArtifactStats(image, {
+      ...sheet,
+      allowedRows: ISOLATED_CHROMA_ALLOWLIST.get(sheet.src) ?? new Set(),
+    }),
     rows,
   };
 }
@@ -327,17 +374,11 @@ function analyzeFile({ sheetKey, sheet, filePath }) {
     if (row.edgeOpaque > 0) issues.push({ level: 'warn', code: 'edge-touch', message: `${row.motionKeys.join(', ')} has ${row.edgeOpaque} edge pixels` });
   }
   if (pixelStats.whiteOpaquePixels > 500) issues.push({ level: 'warn', code: 'white-bg-risk', message: `${pixelStats.whiteOpaquePixels} opaque white pixels` });
-  if (pixelStats.opaqueGreen > 0 || pixelStats.fringeGreen > 0) {
+  if (pixelStats.opaqueGreen > 0 || pixelStats.fringeGreen > 0 || pixelStats.hiddenRgb > 0 || pixelStats.removedComponents > 0) {
     issues.push({
       level: 'fail',
       code: 'chroma-artifact',
       message: `opaque=${pixelStats.opaqueGreen} fringe=${pixelStats.fringeGreen} hiddenRgb=${pixelStats.hiddenRgb} isolated=${pixelStats.removedComponents}`,
-    });
-  } else if (pixelStats.hiddenRgb > 0 || pixelStats.removedComponents > 0) {
-    issues.push({
-      level: 'warn',
-      code: 'chroma-review',
-      message: `hiddenRgb=${pixelStats.hiddenRgb} isolated=${pixelStats.removedComponents}; normalize only after visual confirmation`,
     });
   }
   return {
@@ -374,7 +415,7 @@ Generated by \`node tools/audit_combat_sprites.mjs\` at ${new Date().toISOString
 - Each displayed sheet uses its own \`cols\`, \`rows\`, and \`motions\` from \`combatMotionManifest.js\`.
 - PNG dimensions must divide evenly into the declared grid; cells must be square.
 - Frame anchor is bottom-center. Idle row foot drift should stay within 4 px.
-- Transparent PNG is required. Edge-connected high-saturation chroma green and fringe spill are failures. Hidden transparent RGB and isolated saturated green dots remain review warnings because they can also be intentional effects or anti-aliased asset metadata.
+- Transparent PNG is required. Edge-connected high-saturation chroma green, fringe spill, hidden transparent RGB, and isolated saturated green dots are failures. The two explicit toxic-effect row allowlists only preserve named in-character effects.
 
 ## Summary
 
