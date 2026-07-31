@@ -341,6 +341,8 @@ describe('combat sprite sheet assets', () => {
         expect(audit.activeUniqueSheetCount).toBe(12);
         expect(audit.invalidDimensions).toEqual([]);
         expect(audit.emptyRows).toEqual([]);
+        expect(audit.orphanEnemySpriteMappings.filter(entry => entry.removedEnemy !== true))
+          .toEqual([]);
         expect(fs.statSync(previewPath).size).toBeGreaterThan(0);
       } finally {
         fs.rmSync(smokeDir, { recursive: true, force: true });
@@ -550,5 +552,5 @@ describe('combat sprite sheet assets', () => {
     expect(summary.total).toBeGreaterThan(0);
     expect(summary.referenced).toBeGreaterThan(0);
     expect(summary.fail).toBe(0);
-  });
+  }, 30000);
 });

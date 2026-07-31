@@ -225,6 +225,38 @@ describe('일반 몬스터 committed action intent 통합', () => {
       .toHaveLength(1);
   });
 
+  it('레이더는 세 번째 권총 사격 직후 reload 모션을 큐에 넣고 탄창 카운트를 초기화한다', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.5);
+    const enemy = instantiateEnemy(ENEMIES.raider);
+    enemy.patternProfile = {
+      ...enemy.patternProfile,
+      defaultAction: {
+        ...enemy.patternProfile.defaultAction,
+        accuracy: 1,
+        effects: [{ type: 'damage', value: [1, 1] }],
+      },
+    };
+    const combat = setupCombat(enemy);
+
+    for (let shot = 1; shot <= 3; shot += 1) {
+      combat.fxQueue = [];
+      CombatSystem._runSingleEnemyTurn(0);
+      const actionIndex = combat.fxQueue.findIndex(fx => fx.kind === 'action');
+      const reloadIndex = combat.fxQueue.findIndex(
+        fx => fx.kind === 'enemyMotion' && fx.motionKey === 'reload',
+      );
+
+      expect(actionIndex).toBeGreaterThanOrEqual(0);
+      if (shot < 3) {
+        expect(reloadIndex).toBe(-1);
+        expect(enemy._shotsSinceReload).toBe(shot);
+      } else {
+        expect(reloadIndex).toBeGreaterThan(actionIndex);
+        expect(enemy._shotsSinceReload).toBe(0);
+      }
+    }
+  });
+
   it('AI 후보에 실제 rank·방어/노출·heal effect 기반 healer 메타데이터를 제공한다', () => {
     const combat = setupCombat(instantiateEnemy(ENEMIES.zombie_common), {
       companionId: 'npc_student',

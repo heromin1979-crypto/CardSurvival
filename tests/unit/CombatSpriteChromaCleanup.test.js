@@ -7,6 +7,7 @@ const ROOT = process.cwd();
 const FIXTURE_ROOT = path.join(ROOT, 'tests', 'fixtures', 'combat-sprites');
 const NORMALIZER = path.join(ROOT, 'tools', 'normalize_combat_sprite_sheets.py');
 const REPORT_CHECKER = path.join(ROOT, 'tools', 'verify_combat_chroma_cleanup.py');
+const NORMAL_ENEMY_ASSEMBLER = path.join(ROOT, 'tools', 'build_normal_enemy_motion_sheets.py');
 
 function pythonRuntime() {
   const candidates = [
@@ -340,8 +341,55 @@ describe('combat sprite chroma cleanup', () => {
       cwd: ROOT,
       encoding: 'utf8',
     });
-    expect(JSON.parse(output)).toMatchObject({ changedSheetCount: 23, unexpectedAlphaLoss: 0 });
-  }, 30000);
+    expect(JSON.parse(output)).toMatchObject({
+      changedSheetCount: 23,
+      unexpectedAlphaLoss: 0,
+      rebuiltVerificationMismatchPixels: 0,
+    });
+  }, 120000);
+
+  it('rebuilds all expanded normal-enemy sheets from hash-pinned sources', () => {
+    const runtime = pythonRuntime();
+    const output = execFileSync(runtime.command, [...runtime.prefix, NORMAL_ENEMY_ASSEMBLER, '--check'], {
+      cwd: ROOT,
+      encoding: 'utf8',
+    });
+    expect(JSON.parse(output)).toEqual({ verifiedTargets: 9, verifiedSources: 8 });
+  }, 120000);
+
+  it('rejects source hash mutation and foreground loss in rebuilt motion rows', () => {
+    const output = runPython([
+      'import hashlib, importlib.util, json, sys, tempfile',
+      'from pathlib import Path',
+      'from PIL import Image',
+      `spec = importlib.util.spec_from_file_location('normal_enemy_assembler', r'${NORMAL_ENEMY_ASSEMBLER.replaceAll('\\', '/')}')`,
+      'module = importlib.util.module_from_spec(spec)',
+      'sys.modules[spec.name] = module',
+      'spec.loader.exec_module(module)',
+      'with tempfile.TemporaryDirectory() as directory:',
+      "    source = Path(directory) / 'source.png'",
+      "    source.write_bytes(b'original')",
+      "    expected_hash = hashlib.sha256(b'original').hexdigest()",
+      "    source.write_bytes(b'mutated')",
+      '    try:',
+      '        module.verify_source_hash(source, expected_hash)',
+      '        hash_rejected = False',
+      '    except ValueError:',
+      '        hash_rejected = True',
+      "image = Image.new('RGBA', (module.COLS * module.CELL, module.CELL), (0, 0, 0, 0))",
+      'for col in range(module.COLS):',
+      '    image.putpixel((col * module.CELL + 1, 1), (150, 70, 40, 255))',
+      'expected = module.frame_foreground_coverage(image)',
+      "blanked = image.copy(); blanked.paste((0, 0, 0, 0), (module.CELL, 0, module.CELL * 2, module.CELL))",
+      'try:',
+      '    module.validate_foreground_coverage(module.frame_foreground_coverage(blanked), expected, [0])',
+      '    coverage_rejected = False',
+      'except ValueError:',
+      '    coverage_rejected = True',
+      "print(json.dumps({'hashRejected': hash_rejected, 'coverageRejected': coverage_rejected}))",
+    ].join('\n'));
+    expect(JSON.parse(output)).toEqual({ hashRejected: true, coverageRejected: true });
+  });
 
   it('flags a non-chroma alpha loss in the provenance report metrics', () => {
     const output = runPython([

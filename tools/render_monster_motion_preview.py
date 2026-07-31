@@ -149,13 +149,14 @@ def main(argv: list[str] | None = None) -> None:
     if not preview_path.is_absolute():
         preview_path = ROOT / preview_path
     manifest = load_manifest()
-    active = get_active_enemies()
+    all_active = get_active_enemies()
+    all_active_ids = {enemy["id"] for enemy in all_active}
+    active = all_active
     if args.group == "normal":
         active = [enemy for enemy in active if enemy["id"] in NORMAL_ENEMIES]
     elif args.group == "boss":
         active = [enemy for enemy in active if enemy["isBoss"]]
     enemy_keys = get_enemy_sprite_keys()
-    active_ids = {enemy["id"] for enemy in active}
     active_with_sheets, missing_unique_sheets, invalid_dimensions, empty_rows = [], [], [], []
     for enemy in active:
         sheet_key = enemy_keys.get(enemy["id"])
@@ -179,7 +180,7 @@ def main(argv: list[str] | None = None) -> None:
         active_with_sheets.append({**enemy, "sheetKey": sheet_key})
     orphan_sheets = [
         {"enemyId": enemy_id, "sheetKey": sheet_key, "removedEnemy": enemy_id in REMOVED_ENEMIES}
-        for enemy_id, sheet_key in enemy_keys.items() if enemy_id not in active_ids
+        for enemy_id, sheet_key in enemy_keys.items() if enemy_id not in all_active_ids
     ]
     render_preview(active_with_sheets, manifest, preview_path)
     audit = {

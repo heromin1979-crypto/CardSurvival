@@ -1,0 +1,832 @@
+{
+  "version": 1,
+  "baselineCommit": "1312cf9",
+  "assemblyScript": "/tools/build_normal_enemy_motion_sheets.py",
+  "assemblyScriptSha256": "d7514dd9565c358beabbb93a7e8b6a65a596161153f3b4adf5c6a7afae350863",
+  "cleanup": {
+    "method": "remove_chroma_key.py then normalize_combat_sprite_sheets.cleanup_chroma_grid",
+    "generatedAndCleanedPairs": [
+      [
+        "raider_generated_chroma.png",
+        "raider_generated_alpha.png"
+      ],
+      [
+        "raider_elite_generated_chroma.png",
+        "raider_elite_generated_alpha.png"
+      ],
+      [
+        "zombie_bloater_self_destruct_chroma.png",
+        "zombie_bloater_self_destruct_alpha.png"
+      ],
+      [
+        "zombie_screamer_spit_chroma.png",
+        "zombie_screamer_spit_alpha.png"
+      ]
+    ]
+  },
+  "sources": {
+    "raider_generated_chroma.png": {
+      "path": "/assets/images/combat/spritesheets/sources/task7_normal/raider_generated_chroma.png",
+      "sha256": "1cf99a920636d923d5f35d006162d2e5d2140dce33ac108bc437164da3bf695b"
+    },
+    "raider_generated_alpha.png": {
+      "path": "/assets/images/combat/spritesheets/sources/task7_normal/raider_generated_alpha.png",
+      "sha256": "d95831c850d44bc49451351c34087762bcc27c3114638996ed829b10d5918bcb"
+    },
+    "raider_elite_generated_chroma.png": {
+      "path": "/assets/images/combat/spritesheets/sources/task7_normal/raider_elite_generated_chroma.png",
+      "sha256": "470606763dd0490ab53f7e51dc2263cfb5675f89d38285aeb9ec8d3e1607bae3"
+    },
+    "raider_elite_generated_alpha.png": {
+      "path": "/assets/images/combat/spritesheets/sources/task7_normal/raider_elite_generated_alpha.png",
+      "sha256": "fa128a8db68b384c204c409e9a8d7e8666549850be12bcb302298589d69f879c"
+    },
+    "zombie_bloater_self_destruct_chroma.png": {
+      "path": "/assets/images/combat/spritesheets/sources/task7_normal/zombie_bloater_self_destruct_chroma.png",
+      "sha256": "4f75b6647214445ca6cb973f32fa43e2bf9e964228ca01217025a68c8667abd3"
+    },
+    "zombie_bloater_self_destruct_alpha.png": {
+      "path": "/assets/images/combat/spritesheets/sources/task7_normal/zombie_bloater_self_destruct_alpha.png",
+      "sha256": "7ee433f5ef514f9097f4364a57e05e4774626bfba0de0c48fd5112313351d4f1"
+    },
+    "zombie_screamer_spit_chroma.png": {
+      "path": "/assets/images/combat/spritesheets/sources/task7_normal/zombie_screamer_spit_chroma.png",
+      "sha256": "a52b62883c98149697a4aca0abbac7b9847013ad6432dffe59f9474d5db20b8a"
+    },
+    "zombie_screamer_spit_alpha.png": {
+      "path": "/assets/images/combat/spritesheets/sources/task7_normal/zombie_screamer_spit_alpha.png",
+      "sha256": "35273066267713ad9082302bb9f56d8aa99883912f75aeeb4a295a3d3994ac2b"
+    }
+  },
+  "targets": {
+    "zombie_patient_dormant": {
+      "path": "/assets/images/combat/spritesheets/enemies/zombie_patient_dormant_sheet.png",
+      "width": 1536,
+      "height": 1280,
+      "pixelSha256": "b3e3a3141598d044e52f0fde1375cccd903d2209b5df1bb8cb5ec10dd67f639d",
+      "fileSha256": "9d730cf6524e92e78d253644f6df9bb1102fcfdd56b16f8d11dee1058098bb6f",
+      "foregroundCoverage": [
+        [
+          12688,
+          11569,
+          12688,
+          11569,
+          12688,
+          11569
+        ],
+        [
+          12688,
+          11569,
+          13147,
+          14153,
+          14775,
+          14889
+        ],
+        [
+          16178,
+          14456,
+          13619,
+          14068,
+          14079,
+          14528
+        ],
+        [
+          16451,
+          15808,
+          16050,
+          16001,
+          15567,
+          14774
+        ],
+        [
+          15018,
+          13618,
+          11742,
+          9930,
+          9178,
+          7738
+        ]
+      ],
+      "retainedRows": [
+        {
+          "targetRow": 1,
+          "baselineRow": 0
+        },
+        {
+          "targetRow": 2,
+          "baselineRow": 1
+        },
+        {
+          "targetRow": 3,
+          "baselineRow": 2
+        },
+        {
+          "targetRow": 4,
+          "baselineRow": 3
+        }
+      ],
+      "newRows": [
+        {
+          "row": 0,
+          "sources": [
+            "baseline:zombie_patient_dormant:0"
+          ]
+        }
+      ]
+    },
+    "zombie_runner": {
+      "path": "/assets/images/combat/spritesheets/enemies/zombie_runner_sheet.png",
+      "width": 1536,
+      "height": 1536,
+      "pixelSha256": "99d86fd82dcb8d4df7c70bebaf588854e55d92022ac257fb8207aafc3a69eb40",
+      "fileSha256": "9eecf529f52ee23905d86a5b06a24c8779d0778668d150b7470923836b0b542b",
+      "foregroundCoverage": [
+        [
+          13595,
+          13459,
+          13579,
+          13751,
+          13603,
+          13525
+        ],
+        [
+          12792,
+          12792,
+          12968,
+          13626,
+          12710,
+          12792
+        ],
+        [
+          13595,
+          13459,
+          13579,
+          13751,
+          12792,
+          12792
+        ],
+        [
+          12792,
+          12968,
+          13626,
+          12710,
+          12347,
+          12297
+        ],
+        [
+          13914,
+          14014,
+          12925,
+          13776,
+          13666,
+          14327
+        ],
+        [
+          11868,
+          12121,
+          10718,
+          9793,
+          8657,
+          7957
+        ]
+      ],
+      "retainedRows": [
+        {
+          "targetRow": 0,
+          "baselineRow": 0
+        },
+        {
+          "targetRow": 3,
+          "baselineRow": 1
+        },
+        {
+          "targetRow": 4,
+          "baselineRow": 2
+        },
+        {
+          "targetRow": 5,
+          "baselineRow": 3
+        }
+      ],
+      "newRows": [
+        {
+          "row": 1,
+          "sources": [
+            "baseline:zombie_runner:1"
+          ]
+        },
+        {
+          "row": 2,
+          "sources": [
+            "baseline:zombie_runner:0",
+            "baseline:zombie_runner:1"
+          ]
+        }
+      ]
+    },
+    "zombie_brute": {
+      "path": "/assets/images/combat/spritesheets/enemies/zombie_brute_sheet.png",
+      "width": 1536,
+      "height": 1536,
+      "pixelSha256": "90ad4a419b864a049958c58a8d14708a3f3352ad5e212415f6f4cc19d25a28af",
+      "fileSha256": "e2ab679853b28c8b49a2786cee5bf817c65bbdfca2e0745e0fe4de5cb296c4ec",
+      "foregroundCoverage": [
+        [
+          22311,
+          21680,
+          21595,
+          21786,
+          21632,
+          21722
+        ],
+        [
+          19874,
+          18561,
+          18609,
+          19678,
+          19678,
+          19678
+        ],
+        [
+          21722,
+          19952,
+          19952,
+          20682,
+          20682,
+          19952
+        ],
+        [
+          19952,
+          20682,
+          19874,
+          18561,
+          18609,
+          19678
+        ],
+        [
+          18509,
+          18802,
+          18743,
+          19115,
+          17625,
+          18770
+        ],
+        [
+          19817,
+          15965,
+          14765,
+          13615,
+          11978,
+          9066
+        ]
+      ],
+      "retainedRows": [
+        {
+          "targetRow": 0,
+          "baselineRow": 0
+        },
+        {
+          "targetRow": 3,
+          "baselineRow": 1
+        },
+        {
+          "targetRow": 4,
+          "baselineRow": 2
+        },
+        {
+          "targetRow": 5,
+          "baselineRow": 3
+        }
+      ],
+      "newRows": [
+        {
+          "row": 1,
+          "sources": [
+            "baseline:zombie_brute:1"
+          ]
+        },
+        {
+          "row": 2,
+          "sources": [
+            "baseline:zombie_brute:0",
+            "baseline:zombie_brute:1"
+          ]
+        }
+      ]
+    },
+    "raider": {
+      "path": "/assets/images/combat/spritesheets/enemies/raider_sheet.png",
+      "width": 1536,
+      "height": 1280,
+      "pixelSha256": "0cf946757ccfc13d920f721fde33613eea327184484b30df87c342a07eb5fbe0",
+      "fileSha256": "605c1c5529dfac36c9f2cf60acb437683d10db2d212eaeb1e11f23c19da4bbb3",
+      "foregroundCoverage": [
+        [
+          18419,
+          18212,
+          18419,
+          18212,
+          18419,
+          18212
+        ],
+        [
+          18419,
+          18830,
+          18875,
+          19259,
+          18713,
+          18212
+        ],
+        [
+          17698,
+          17911,
+          18605,
+          18013,
+          18114,
+          17906
+        ],
+        [
+          13558,
+          14070,
+          13516,
+          13697,
+          12729,
+          12318
+        ],
+        [
+          11096,
+          11357,
+          9619,
+          9327,
+          7960,
+          7918
+        ]
+      ],
+      "retainedRows": [
+        {
+          "targetRow": 3,
+          "baselineRow": 2
+        },
+        {
+          "targetRow": 4,
+          "baselineRow": 3
+        }
+      ],
+      "newRows": [
+        {
+          "row": 0,
+          "sources": [
+            "raider_generated_alpha.png"
+          ]
+        },
+        {
+          "row": 1,
+          "sources": [
+            "raider_generated_alpha.png"
+          ]
+        },
+        {
+          "row": 2,
+          "sources": [
+            "raider_generated_alpha.png"
+          ]
+        }
+      ]
+    },
+    "raider_elite": {
+      "path": "/assets/images/combat/spritesheets/enemies/raider_elite_sheet.png",
+      "width": 1536,
+      "height": 1536,
+      "pixelSha256": "4928e0eb0b44056eb7c847322dd921aeb12754eea0e5e5a003dcf3275fdd2c73",
+      "fileSha256": "fa7beb0b207b411f1212c9cb522aa344cb20d1fc7ba3a215f578a16e9150237f",
+      "foregroundCoverage": [
+        [
+          13299,
+          13416,
+          13726,
+          12946,
+          13066,
+          13182
+        ],
+        [
+          15578,
+          14959,
+          15963,
+          15330,
+          14959,
+          15578
+        ],
+        [
+          15578,
+          14959,
+          15170,
+          15263,
+          15173,
+          15119
+        ],
+        [
+          15231,
+          15284,
+          15963,
+          15330,
+          15164,
+          15663
+        ],
+        [
+          14292,
+          14499,
+          14117,
+          14074,
+          13655,
+          14192
+        ],
+        [
+          13360,
+          13497,
+          12311,
+          10242,
+          9957,
+          8033
+        ]
+      ],
+      "retainedRows": [
+        {
+          "targetRow": 0,
+          "baselineRow": 0
+        },
+        {
+          "targetRow": 4,
+          "baselineRow": 2
+        },
+        {
+          "targetRow": 5,
+          "baselineRow": 3
+        }
+      ],
+      "newRows": [
+        {
+          "row": 1,
+          "sources": [
+            "raider_elite_generated_alpha.png"
+          ]
+        },
+        {
+          "row": 2,
+          "sources": [
+            "raider_elite_generated_alpha.png"
+          ]
+        },
+        {
+          "row": 3,
+          "sources": [
+            "raider_elite_generated_alpha.png"
+          ]
+        }
+      ]
+    },
+    "zombie_acid": {
+      "path": "/assets/images/combat/spritesheets/enemies/zombie_acid_sheet.png",
+      "width": 1536,
+      "height": 1280,
+      "pixelSha256": "d04173517fff08101602c8f5844dcfeee8bffc975a1948e226353f580ad9e352",
+      "fileSha256": "4427b5bc7ab79f939a9d7b5a102bd617fdf5bb0b2548f4dc3973a5cc66897986",
+      "foregroundCoverage": [
+        [
+          16994,
+          16201,
+          16599,
+          16077,
+          16650,
+          16379
+        ],
+        [
+          16426,
+          16002,
+          15445,
+          15892,
+          15445,
+          16002
+        ],
+        [
+          16426,
+          16002,
+          15445,
+          15892,
+          15645,
+          15158
+        ],
+        [
+          17290,
+          16658,
+          15433,
+          16128,
+          16295,
+          16065
+        ],
+        [
+          15486,
+          14700,
+          11509,
+          9557,
+          9615,
+          8763
+        ]
+      ],
+      "retainedRows": [
+        {
+          "targetRow": 0,
+          "baselineRow": 0
+        },
+        {
+          "targetRow": 2,
+          "baselineRow": 1
+        },
+        {
+          "targetRow": 3,
+          "baselineRow": 2
+        },
+        {
+          "targetRow": 4,
+          "baselineRow": 3
+        }
+      ],
+      "newRows": [
+        {
+          "row": 1,
+          "sources": [
+            "baseline:zombie_acid:1"
+          ]
+        }
+      ]
+    },
+    "zombie_bloater": {
+      "path": "/assets/images/combat/spritesheets/enemies/zombie_bloater_sheet.png",
+      "width": 1536,
+      "height": 1536,
+      "pixelSha256": "8f586e617909a63cb572e177a969eaebea5c7f19f7b18e2a9c54fade86f44308",
+      "fileSha256": "64280ce0678ad7a4474f0cb2528d9e6097937a6a51f1637dbc9ca45f360e7ea2",
+      "foregroundCoverage": [
+        [
+          17069,
+          17189,
+          17267,
+          17563,
+          17297,
+          17059
+        ],
+        [
+          16972,
+          17870,
+          17101,
+          18471,
+          19142,
+          19176
+        ],
+        [
+          23626,
+          23626,
+          23875,
+          23875,
+          25052,
+          25052
+        ],
+        [
+          23626,
+          23875,
+          25052,
+          27768,
+          32767,
+          32018
+        ],
+        [
+          15692,
+          15646,
+          15798,
+          15469,
+          14672,
+          14922
+        ],
+        [
+          14838,
+          15905,
+          14918,
+          12476,
+          12096,
+          9493
+        ]
+      ],
+      "retainedRows": [
+        {
+          "targetRow": 0,
+          "baselineRow": 0
+        },
+        {
+          "targetRow": 1,
+          "baselineRow": 1
+        },
+        {
+          "targetRow": 4,
+          "baselineRow": 2
+        },
+        {
+          "targetRow": 5,
+          "baselineRow": 3
+        }
+      ],
+      "newRows": [
+        {
+          "row": 2,
+          "sources": [
+            "zombie_bloater_self_destruct_alpha.png"
+          ]
+        },
+        {
+          "row": 3,
+          "sources": [
+            "zombie_bloater_self_destruct_alpha.png"
+          ]
+        }
+      ]
+    },
+    "zombie_screamer": {
+      "path": "/assets/images/combat/spritesheets/enemies/zombie_screamer_sheet.png",
+      "width": 1536,
+      "height": 1536,
+      "pixelSha256": "717801fd3533df322d0ba520d454ef2b6a81193051f1336eb0933054ff16914e",
+      "fileSha256": "1a3437b314b9ca8f189e96f19b32b1b36b46ab65d9b8a7b18c68137d50fb071f",
+      "foregroundCoverage": [
+        [
+          11316,
+          11479,
+          11272,
+          11387,
+          11341,
+          11466
+        ],
+        [
+          13813,
+          12757,
+          15195,
+          15242,
+          13429,
+          14224
+        ],
+        [
+          11316,
+          11479,
+          12327,
+          12806,
+          12621,
+          12621
+        ],
+        [
+          12327,
+          12806,
+          12621,
+          12619,
+          12644,
+          12151
+        ],
+        [
+          11118,
+          11202,
+          11402,
+          11344,
+          11085,
+          11669
+        ],
+        [
+          11978,
+          12017,
+          10501,
+          10037,
+          8344,
+          6794
+        ]
+      ],
+      "retainedRows": [
+        {
+          "targetRow": 0,
+          "baselineRow": 0
+        },
+        {
+          "targetRow": 3,
+          "baselineRow": 1
+        },
+        {
+          "targetRow": 4,
+          "baselineRow": 2
+        },
+        {
+          "targetRow": 5,
+          "baselineRow": 3
+        }
+      ],
+      "newRows": [
+        {
+          "row": 1,
+          "sources": [
+            "zombie_screamer_spit_alpha.png"
+          ]
+        },
+        {
+          "row": 2,
+          "sources": [
+            "baseline:zombie_screamer:0",
+            "baseline:zombie_screamer:1"
+          ]
+        }
+      ]
+    },
+    "zombie_charger": {
+      "path": "/assets/images/combat/spritesheets/enemies/zombie_charger_sheet.png",
+      "width": 1536,
+      "height": 1536,
+      "pixelSha256": "299cf161a8481aa5a9eb8c6699b9dabb6fc7f2ce906aafec57c18728c8836635",
+      "fileSha256": "792eafd95849f44b3288317f3a14661f802ad4f63087c8be9f742853e8e92862",
+      "foregroundCoverage": [
+        [
+          17855,
+          16737,
+          16876,
+          16608,
+          16674,
+          16940
+        ],
+        [
+          19408,
+          19408,
+          18475,
+          17940,
+          17940,
+          19408
+        ],
+        [
+          17855,
+          16737,
+          16876,
+          19408,
+          19408,
+          19408
+        ],
+        [
+          19408,
+          18475,
+          17940,
+          18326,
+          16610,
+          14735
+        ],
+        [
+          16747,
+          16920,
+          18132,
+          16238,
+          17084,
+          17405
+        ],
+        [
+          15518,
+          14949,
+          12984,
+          11023,
+          10696,
+          9277
+        ]
+      ],
+      "retainedRows": [
+        {
+          "targetRow": 0,
+          "baselineRow": 0
+        },
+        {
+          "targetRow": 3,
+          "baselineRow": 1
+        },
+        {
+          "targetRow": 4,
+          "baselineRow": 2
+        },
+        {
+          "targetRow": 5,
+          "baselineRow": 3
+        }
+      ],
+      "newRows": [
+        {
+          "row": 1,
+          "sources": [
+            "baseline:zombie_charger:1"
+          ]
+        },
+        {
+          "row": 2,
+          "sources": [
+            "baseline:zombie_charger:0",
+            "baseline:zombie_charger:1"
+          ]
+        }
+      ]
+    }
+  }
+}
