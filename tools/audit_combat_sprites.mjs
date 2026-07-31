@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import { createRequire } from 'node:module';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import zlib from 'node:zlib';
 
 const require = createRequire(import.meta.url);
@@ -186,19 +187,30 @@ function severityFor(issues) {
   return 'pass';
 }
 
+export function spriteGridIssue(width, height, sheet) {
+  const frameW = width / sheet.cols;
+  const frameH = height / sheet.rows;
+  if (!Number.isInteger(frameW) || !Number.isInteger(frameH)) {
+    return { code: 'bad-grid', message: `sheet is not divisible by ${sheet.cols}x${sheet.rows}` };
+  }
+  if (frameW !== frameH) {
+    return { code: 'bad-grid', message: `sheet cells must be square; got ${frameW}x${frameH}` };
+  }
+  return null;
+}
+
 function analyzeFile({ sheetKey, sheet, filePath }) {
   const issues = [];
   const image = readPng(filePath);
   const frameW = image.width / sheet.cols;
   const frameH = image.height / sheet.rows;
-  if (!Number.isInteger(frameW) || !Number.isInteger(frameH)) {
-    issues.push({ level: 'fail', code: 'bad-grid', message: `sheet is not divisible by ${sheet.cols}x${sheet.rows}` });
-  }
+  const gridIssue = spriteGridIssue(image.width, image.height, sheet);
+  if (gridIssue) issues.push({ level: 'fail', ...gridIssue });
   if (image.bitDepth !== 8 || image.colorType !== 6 || !image.pixels) {
     issues.push({ level: 'fail', code: 'unsupported-png', message: `bitDepth=${image.bitDepth} colorType=${image.colorType}` });
     return { sheetKey, path: toPosixRel(filePath), referenced: true, width: image.width, height: image.height, frameW, frameH, rows: [], issues, severity: severityFor(issues) };
   }
-  if (!Number.isInteger(frameW) || !Number.isInteger(frameH)) {
+  if (gridIssue) {
     return { sheetKey, path: toPosixRel(filePath), referenced: true, width: image.width, height: image.height, frameW, frameH, rows: [], issues, severity: severityFor(issues) };
   }
 
@@ -292,4 +304,6 @@ function main() {
   if (summary.fail > 0) process.exitCode = 1;
 }
 
-main();
+if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
+  main();
+}

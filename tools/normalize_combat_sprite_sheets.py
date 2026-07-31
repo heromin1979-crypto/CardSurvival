@@ -25,6 +25,10 @@ class Grid:
     cell_width: int
     cell_height: int
 
+    @property
+    def target_size(self) -> tuple[int, int]:
+        return self.cols * self.cell_width, self.rows * self.cell_height
+
 
 def display_sheets() -> list[Path]:
     manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
@@ -379,6 +383,29 @@ def _reslice_source_rows(source: Image.Image, grid: Grid) -> Image.Image:
     return normalized
 
 
+def fit_source_to_grid(source: Image.Image, grid: Grid) -> Image.Image:
+    target_width, target_height = grid.target_size
+    if source.size == grid.target_size:
+        return source.copy()
+
+    scale = min(target_width / source.width, target_height / source.height)
+    resized = source.resize(
+        (max(1, round(source.width * scale)), max(1, round(source.height * scale))),
+        Image.Resampling.LANCZOS,
+    )
+    canvas = Image.new("RGBA", grid.target_size, (0, 0, 0, 0))
+    canvas.alpha_composite(resized, ((target_width - resized.width) // 2, target_height - resized.height))
+    return canvas
+
+
+def normalize_source_for_grid(source: Image.Image, grid: Grid) -> Image.Image:
+    prepared = fit_source_to_grid(source, grid)
+    normalized = remove_chroma_key(reslice_source_sheet(prepared, grid))
+    if normalized.size != grid.target_size:
+        raise ValueError(f"normalized sheet is {normalized.size}, expected {grid.target_size}")
+    return normalized
+
+
 def reslice_sheet_from_src(path: Path, dry_run: bool) -> dict:
     # 고정 격자 절단은 격자선을 걸친 프레임을 두 셀로 쪼갠다 —
     # _src 원본에서 성분 탐지로 본체를 찾아 셀 중앙에 재배치해야 복구된다.
@@ -403,7 +430,7 @@ def reslice_sheet_from_src(path: Path, dry_run: bool) -> dict:
             Image.Resampling.LANCZOS,
         )
 
-    normalized = remove_chroma_key(reslice_source_sheet(source, grid))
+    normalized = normalize_source_for_grid(source, grid)
     changed = current.size != normalized.size or current.tobytes() != normalized.tobytes()
     if changed and not dry_run:
         normalized.save(path)

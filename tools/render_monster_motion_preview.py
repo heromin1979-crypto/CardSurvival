@@ -76,6 +76,13 @@ def row_has_content(sheet: Image.Image, row: int, cell_height: int) -> bool:
     return sheet.crop((0, row * cell_height, sheet.width, (row + 1) * cell_height)).getchannel("A").getbbox() is not None
 
 
+def report_path(path: Path) -> str:
+    try:
+        return path.relative_to(ROOT).as_posix()
+    except ValueError:
+        return path.as_posix()
+
+
 def make_checker(width: int, height: int) -> Image.Image:
     checker = Image.new("RGB", (width, height), (22, 26, 28))
     draw = ImageDraw.Draw(checker)
@@ -157,7 +164,7 @@ def main() -> None:
     audit = {
         "activeEnemyCount": len(active), "activeUniqueSheetCount": len(active_with_sheets),
         "missingUniqueSheetCount": len(missing_unique_sheets),
-        "previewPath": PREVIEW_PATH.relative_to(ROOT).as_posix(),
+        "previewPath": report_path(PREVIEW_PATH),
         "rowContract": {key: row_labels(sheet) for key, sheet in manifest.items()},
         "missingUniqueSheets": missing_unique_sheets, "invalidDimensions": invalid_dimensions,
         "emptyRows": empty_rows, "orphanEnemySpriteMappings": orphan_sheets,

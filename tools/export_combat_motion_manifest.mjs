@@ -5,8 +5,33 @@ import { fileURLToPath } from 'node:url';
 import { COMBAT_MOTION_MANIFEST } from '../js/data/combatMotionManifest.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const OUTPUT_PATH = path.join(ROOT, 'assets', 'images', 'combat', 'spritesheets', 'manifest.json');
+const DEFAULT_OUTPUT_PATH = path.join(ROOT, 'assets', 'images', 'combat', 'spritesheets', 'manifest.json');
 const expectedText = `${JSON.stringify(COMBAT_MOTION_MANIFEST, null, 2)}\n`;
+
+function argumentValue(flag) {
+  const index = process.argv.indexOf(flag);
+  if (index < 0) return null;
+  const value = process.argv[index + 1];
+  if (!value || value.startsWith('--')) throw new Error(`${flag} requires a path`);
+  return value;
+}
+
+function canonicalize(value) {
+  if (Array.isArray(value)) return value.map(canonicalize);
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.keys(value).sort().map(key => [key, canonicalize(value[key])]),
+    );
+  }
+  return value;
+}
+
+function semanticallyEqual(left, right) {
+  return JSON.stringify(canonicalize(left)) === JSON.stringify(canonicalize(right));
+}
+
+const outputArgument = argumentValue('--output');
+const OUTPUT_PATH = outputArgument ? path.resolve(ROOT, outputArgument) : DEFAULT_OUTPUT_PATH;
 
 function readCurrentManifest() {
   if (!fs.existsSync(OUTPUT_PATH)) return { text: null, parsed: null, parseError: null };
@@ -26,7 +51,7 @@ function checkManifest() {
     process.exitCode = 1;
     return;
   }
-  if (JSON.stringify(current.parsed) !== JSON.stringify(COMBAT_MOTION_MANIFEST)) {
+  if (!semanticallyEqual(current.parsed, COMBAT_MOTION_MANIFEST)) {
     console.error('combat motion manifest semantic drift detected; run the exporter to regenerate it.');
     process.exitCode = 1;
     return;

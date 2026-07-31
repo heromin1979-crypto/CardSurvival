@@ -1,28 +1,40 @@
 import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import zlib from 'node:zlib';
 import { execFileSync, spawnSync } from 'node:child_process';
 import { COMBAT_MOTION_MANIFEST } from '../../js/data/combatMotionManifest.js';
+import { spriteGridIssue } from '../../tools/audit_combat_sprites.mjs';
 
 const ROOT = process.cwd();
 const SPRITE_ROOT = path.join(ROOT, 'assets', 'images', 'combat', 'spritesheets');
 const EXPORTED_MANIFEST_PATH = path.join(SPRITE_ROOT, 'manifest.json');
-const PYTHON_RUNTIME = 'C:/Users/USER/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/python.exe';
-const PREVIEW_SMOKE_DIR = path.join(
-  ROOT,
-  '.superpowers',
-  'sdd',
-  '2026-07-27-combat-motion-overhaul',
-  'task-5-smoke',
-);
 
-function walk(dir) {
-  const entries = fs.readdirSync(dir, { withFileTypes: true });
-  return entries.flatMap((entry) => {
-    const fullPath = path.join(dir, entry.name);
-    return entry.isDirectory() ? walk(fullPath) : [fullPath];
-  });
+function discoverPythonRuntime() {
+  const candidates = [
+    process.env.CODEX_PYTHON,
+    process.env.PYTHON,
+    process.env.USERPROFILE && path.join(
+      process.env.USERPROFILE,
+      '.cache',
+      'codex-runtimes',
+      'codex-primary-runtime',
+      'dependencies',
+      'python',
+      'python.exe',
+    ),
+    process.platform === 'win32' ? 'py' : null,
+    'python3',
+    'python',
+  ].filter(Boolean);
+
+  for (const command of candidates) {
+    const prefix = path.basename(command).toLowerCase() === 'py.exe' || command === 'py' ? ['-3'] : [];
+    const result = spawnSync(command, [...prefix, '--version'], { encoding: 'utf8' });
+    if (result.status === 0) return { command, prefix };
+  }
+  throw new Error(`No executable Python runtime found. Tried: ${candidates.join(', ')}`);
 }
 
 function pngSize(filePath) {
@@ -39,6 +51,16 @@ function manifestEntries() {
     sheet,
     filePath: path.join(ROOT, sheet.src.replace(/^\/+/, '')),
   }));
+}
+
+function reverseObjectKeys(value) {
+  if (Array.isArray(value)) return value.map(reverseObjectKeys);
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value).reverse().map(([key, nested]) => [key, reverseObjectKeys(nested)]),
+    );
+  }
+  return value;
 }
 
 function decodePngRgba(filePath) {
@@ -158,17 +180,8 @@ describe('combat sprite sheet assets', () => {
     expect(invalid).toEqual([]);
   });
 
-  it('exports a byte-identical JSON manifest from the runtime source of truth', () => {
-    execFileSync(process.execPath, [
-      path.join(ROOT, 'tools', 'export_combat_motion_manifest.mjs'),
-    ], {
-      cwd: ROOT,
-      encoding: 'utf8',
-    });
-
-    const exportedText = fs.readFileSync(EXPORTED_MANIFEST_PATH, 'utf8');
-    expect(JSON.parse(exportedText)).toEqual(COMBAT_MOTION_MANIFEST);
-
+  it('checks the production manifest before testing isolated semantic and byte drift', () => {
+    const productionText = fs.readFileSync(EXPORTED_MANIFEST_PATH, 'utf8');
     const checkOutput = execFileSync(process.execPath, [
       path.join(ROOT, 'tools', 'export_combat_motion_manifest.mjs'),
       '--check',
@@ -178,59 +191,140 @@ describe('combat sprite sheet assets', () => {
     });
     expect(checkOutput).toContain('up to date');
 
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'combat-motion-export-'));
+    const tempManifestPath = path.join(tempDir, 'manifest.json');
     try {
-      const semanticDrift = structuredClone(COMBAT_MOTION_MANIFEST);
-      semanticDrift.doctor_f.cols += 1;
-      fs.writeFileSync(EXPORTED_MANIFEST_PATH, JSON.stringify(semanticDrift), 'utf8');
+      const reorderedManifest = reverseObjectKeys(COMBAT_MOTION_MANIFEST);
+      fs.writeFileSync(tempManifestPath, JSON.stringify(reorderedManifest, null, 4), 'utf8');
       let result = spawnSync(process.execPath, [
         path.join(ROOT, 'tools', 'export_combat_motion_manifest.mjs'),
         '--check',
+        '--output',
+        tempManifestPath,
+      ], { cwd: ROOT, encoding: 'utf8' });
+      expect(result.status).toBe(1);
+      expect(result.stderr).not.toContain('semantic drift');
+      expect(result.stderr).toContain('byte drift');
+
+      const semanticDrift = structuredClone(COMBAT_MOTION_MANIFEST);
+      semanticDrift.doctor_f.cols += 1;
+      fs.writeFileSync(tempManifestPath, JSON.stringify(semanticDrift), 'utf8');
+      result = spawnSync(process.execPath, [
+        path.join(ROOT, 'tools', 'export_combat_motion_manifest.mjs'),
+        '--check',
+        '--output',
+        tempManifestPath,
       ], { cwd: ROOT, encoding: 'utf8' });
       expect(result.status).toBe(1);
       expect(result.stderr).toContain('semantic drift');
 
-      fs.writeFileSync(EXPORTED_MANIFEST_PATH, JSON.stringify(COMBAT_MOTION_MANIFEST), 'utf8');
+      fs.writeFileSync(tempManifestPath, JSON.stringify(COMBAT_MOTION_MANIFEST), 'utf8');
       result = spawnSync(process.execPath, [
         path.join(ROOT, 'tools', 'export_combat_motion_manifest.mjs'),
         '--check',
+        '--output',
+        tempManifestPath,
       ], { cwd: ROOT, encoding: 'utf8' });
       expect(result.status).toBe(1);
       expect(result.stderr).toContain('byte drift');
     } finally {
-      fs.writeFileSync(EXPORTED_MANIFEST_PATH, exportedText, 'utf8');
+      fs.rmSync(tempDir, { recursive: true, force: true });
     }
+    expect(fs.readFileSync(EXPORTED_MANIFEST_PATH, 'utf8')).toBe(productionText);
   });
 
-  it.skipIf(!fs.existsSync(PYTHON_RUNTIME))(
-    'renders the monster preview from the authoritative exported sprite mapping',
-    () => {
-      const previewPath = path.join(PREVIEW_SMOKE_DIR, 'monster_motion_preview_active_sheets.png');
-      const auditPath = path.join(PREVIEW_SMOKE_DIR, 'monster_motion_audit.json');
+  it('discovers an executable Python runtime without a user-specific absolute path', () => {
+    const runtime = discoverPythonRuntime();
+    const version = spawnSync(runtime.command, [...runtime.prefix, '--version'], { encoding: 'utf8' });
+
+    expect(version.status).toBe(0);
+    expect(`${version.stdout}${version.stderr}`).toMatch(/Python \d+/);
+    const testSource = fs.readFileSync(import.meta.filename, 'utf8');
+    expect(testSource).not.toMatch(/[A-Za-z]:[\\/]Users[\\/][^'"\s]+[\\/].*python\.exe/i);
+    expect(testSource).not.toContain(['it', 'skipIf'].join('.'));
+  });
+
+  it('renders the monster preview from the authoritative exported sprite mapping', () => {
+      const runtime = discoverPythonRuntime();
+      const smokeDir = fs.mkdtempSync(path.join(os.tmpdir(), 'combat-motion-preview-'));
+      const previewPath = path.join(smokeDir, 'monster_motion_preview_active_sheets.png');
+      const auditPath = path.join(smokeDir, 'monster_motion_audit.json');
       const modulePath = path.join(ROOT, 'tools', 'render_monster_motion_preview.py');
       const pythonScript = [
-        'import importlib.util',
+        'import importlib.util, sys',
+        'sys.dont_write_bytecode = True',
         'from pathlib import Path',
         `spec = importlib.util.spec_from_file_location("combat_motion_preview", r"${modulePath.replaceAll('\\', '/')}")`,
         'module = importlib.util.module_from_spec(spec)',
         'spec.loader.exec_module(module)',
-        `module.OUT_DIR = Path(r"${PREVIEW_SMOKE_DIR.replaceAll('\\', '/')}")`,
+        `module.OUT_DIR = Path(r"${smokeDir.replaceAll('\\', '/')}")`,
         `module.PREVIEW_PATH = Path(r"${previewPath.replaceAll('\\', '/')}")`,
         `module.AUDIT_PATH = Path(r"${auditPath.replaceAll('\\', '/')}")`,
         'module.main()',
       ].join('\n');
 
-      execFileSync(PYTHON_RUNTIME, ['-c', pythonScript], {
+      try {
+        execFileSync(runtime.command, [...runtime.prefix, '-c', pythonScript], {
+          cwd: ROOT,
+          encoding: 'utf8',
+        });
+        const audit = JSON.parse(fs.readFileSync(auditPath, 'utf8'));
+        expect(audit.activeUniqueSheetCount).toBeGreaterThan(0);
+        expect(audit.invalidDimensions).toEqual([]);
+        expect(audit.emptyRows).toEqual([]);
+        expect(fs.statSync(previewPath).size).toBeGreaterThan(0);
+      } finally {
+        fs.rmSync(smokeDir, { recursive: true, force: true });
+      }
+  });
+
+  it('normalizes a mismatched source aspect ratio to the exact target grid size', () => {
+    const runtime = discoverPythonRuntime();
+    const smokeDir = fs.mkdtempSync(path.join(os.tmpdir(), 'combat-motion-normalize-'));
+    const modulePath = path.join(ROOT, 'tools', 'normalize_combat_sprite_sheets.py');
+      const pythonScript = [
+        'import importlib.util, json, sys',
+        'sys.dont_write_bytecode = True',
+      'from pathlib import Path',
+      'from PIL import Image',
+      `spec = importlib.util.spec_from_file_location("combat_sprite_normalizer", r"${modulePath.replaceAll('\\', '/')}")`,
+      'module = importlib.util.module_from_spec(spec)',
+      'sys.modules[spec.name] = module',
+      'spec.loader.exec_module(module)',
+      `root = Path(r"${smokeDir.replaceAll('\\', '/')}")`,
+      'sprite_root = root / "assets/images/combat/spritesheets"',
+      'sprite_root.mkdir(parents=True)',
+      'target = sprite_root / "fixture_sheet.png"',
+      'source = sprite_root / "fixture_sheet_src.png"',
+      'Image.new("RGBA", (192, 128), (0, 0, 0, 0)).save(target)',
+      'Image.new("RGBA", (300, 75), (255, 0, 0, 255)).save(source)',
+      'manifest_path = sprite_root / "manifest.json"',
+      'manifest_path.write_text(json.dumps({"fixture": {"src": "/assets/images/combat/spritesheets/fixture_sheet.png", "cols": 3, "rows": 2, "motions": {"idle": {"row": 0}, "hit": {"row": 1}}}}), encoding="utf-8")',
+      'module.ROOT = root',
+      'module.SPRITE_ROOT = sprite_root',
+      'module.MANIFEST_PATH = manifest_path',
+      'sys.argv = ["normalize_combat_sprite_sheets.py", "--from-src", "--only", "fixture"]',
+      'module.main()',
+      'assert Image.open(target).size == (192, 128), Image.open(target).size',
+    ].join('\n');
+
+    try {
+      execFileSync(runtime.command, [...runtime.prefix, '-c', pythonScript], {
         cwd: ROOT,
         encoding: 'utf8',
       });
+    } finally {
+      fs.rmSync(smokeDir, { recursive: true, force: true });
+    }
+  });
 
-      const audit = JSON.parse(fs.readFileSync(auditPath, 'utf8'));
-      expect(audit.activeUniqueSheetCount).toBeGreaterThan(0);
-      expect(audit.invalidDimensions).toEqual([]);
-      expect(audit.emptyRows).toEqual([]);
-      expect(fs.statSync(previewPath).size).toBeGreaterThan(0);
-    },
-  );
+  it('reports rectangular manifest cells as a bad grid', () => {
+    expect(spriteGridIssue(1536, 800, { cols: 6, rows: 4 })).toEqual({
+      code: 'bad-grid',
+      message: 'sheet cells must be square; got 256x200',
+    });
+    expect(spriteGridIssue(1536, 1024, { cols: 6, rows: 4 })).toBeNull();
+  });
 
   it('keeps idle rows foot-anchored and every animation row populated', () => {
     const entries = manifestEntries();
