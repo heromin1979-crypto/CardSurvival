@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import io
 import json
 import subprocess
@@ -22,18 +23,7 @@ CHROMA_HUE_MAX = 162
 CHROMA_SATURATION_MIN = 0.72
 CHROMA_VALUE_MIN = 150
 ISOLATED_CHROMA_COMPONENT_AREA = 12
-# These rows intentionally depict toxic matter as part of the character, not a key-colour artifact.
-# The allowlist is deliberately sheet+row scoped: it never exempts hidden RGB or edge-connected spill.
-ISOLATED_CHROMA_ALLOWLIST = {
-    "assets/images/combat/spritesheets/enemies/zombie_acid_sheet.png": {
-        "rows": {0, 1, 2, 3},
-        "reason": "acid zombie skin corrosion and projectile splash",
-    },
-    "assets/images/combat/spritesheets/enemies/zombie_bloater_sheet.png": {
-        "rows": {0, 1, 2, 3},
-        "reason": "bloater bile spray and toxic residue",
-    },
-}
+CHROMA_COMPONENT_ALLOWLIST_PATH = SPRITE_ROOT / "chroma_component_allowlist.json"
 
 
 @dataclass(frozen=True)
@@ -120,12 +110,23 @@ def _edge_connected_chroma(image: Image.Image) -> set[int]:
     return connected
 
 
-def _isolated_chroma_components(image: Image.Image, excluded: set[int] | None = None) -> list[list[int]]:
+def _component_fingerprint(image: Image.Image, indices: list[int], bbox: tuple[int, int, int, int]) -> str:
+    """Fingerprint an isolated component relative to its cell, including its source RGBA."""
+    pixels = image.load()
+    min_x, min_y, _, _ = bbox
+    digest = hashlib.sha256()
+    for index in sorted(indices):
+        x, y = index % image.width, index // image.width
+        digest.update(bytes((x - min_x, y - min_y, *pixels[x, y])))
+    return digest.hexdigest()
+
+
+def _isolated_chroma_components(image: Image.Image, excluded: set[int] | None = None) -> list[dict]:
     width, height = image.size
     pixels = image.load()
     excluded = excluded or set()
     seen: set[int] = set()
-    components: list[list[int]] = []
+    components: list[dict] = []
     for y in range(height):
         for x in range(width):
             start = y * width + x
@@ -147,8 +148,57 @@ def _isolated_chroma_components(image: Image.Image, excluded: set[int] | None = 
                     seen.add(neighbor)
                     stack.append((nx, ny))
             if len(component) <= ISOLATED_CHROMA_COMPONENT_AREA:
-                components.append(component)
+                xs = [index % width for index in component]
+                ys = [index // width for index in component]
+                bbox = (min(xs), min(ys), max(xs) + 1, max(ys) + 1)
+                components.append({
+                    "indices": component,
+                    "bbox": list(bbox),
+                    "pixelCount": len(component),
+                    "fingerprint": _component_fingerprint(image, component, bbox),
+                })
     return components
+
+
+def _component_spec_matches(component: dict, spec: dict) -> bool:
+    return (
+        component["bbox"] == spec["bbox"]
+        and component["pixelCount"] == spec["pixelCount"]
+        and component["fingerprint"] == spec["fingerprint"]
+    )
+
+
+def component_allowlist() -> list[dict]:
+    if not CHROMA_COMPONENT_ALLOWLIST_PATH.exists():
+        return []
+    data = json.loads(CHROMA_COMPONENT_ALLOWLIST_PATH.read_text(encoding="utf-8"))
+    return data.get("components", [])
+
+
+def component_specs_for(path: Path, row: int = 0, col: int = 0) -> list[dict]:
+    try:
+        relative = "/" + path.resolve().relative_to(ROOT.resolve()).as_posix()
+    except ValueError:
+        return []
+    return [
+        entry for entry in component_allowlist()
+        if entry["path"] == relative and entry["row"] == row and entry["col"] == col
+    ]
+
+
+def _partition_isolated_components(image: Image.Image, excluded: set[int], specs: list[dict]) -> tuple[list[dict], list[dict]]:
+    """Return removable components and stale allowlist entries. Each entry may match once only."""
+    remaining = _isolated_chroma_components(image, excluded)
+    matched_specs: set[int] = set()
+    removable: list[dict] = []
+    for component in remaining:
+        match = next((index for index, spec in enumerate(specs) if index not in matched_specs and _component_spec_matches(component, spec)), None)
+        if match is None:
+            removable.append(component)
+        else:
+            matched_specs.add(match)
+    stale = [spec for index, spec in enumerate(specs) if index not in matched_specs]
+    return removable, stale
 
 
 def _has_edge_chroma_neighbor(image: Image.Image, x: int, y: int, edge_chroma: set[int], radius: int = 2) -> bool:
@@ -163,7 +213,7 @@ def _is_frame_edge(image: Image.Image, x: int, y: int) -> bool:
     return x == 0 or y == 0 or x == image.width - 1 or y == image.height - 1
 
 
-def analyze_chroma(image: Image.Image, allow_isolated_components: bool = False) -> dict[str, int]:
+def analyze_chroma(image: Image.Image, allowed_components: list[dict] | None = None) -> dict[str, int]:
     """Return residual chroma-key artifacts without modifying the supplied image."""
     image = image.convert("RGBA")
     pixels = image.load()
@@ -185,12 +235,13 @@ def analyze_chroma(image: Image.Image, allow_isolated_components: bool = False) 
                 _has_edge_chroma_neighbor(image, x, y, edge) or _is_frame_edge(image, x, y)
             ):
                 fringe_green += 1
-    components = [] if allow_isolated_components else _isolated_chroma_components(image, edge)
+    components, stale = _partition_isolated_components(image, edge, allowed_components or [])
     return {
         "opaqueGreen": opaque_green,
         "fringeGreen": fringe_green,
         "hiddenRgb": hidden_rgb,
         "removedComponents": len(components),
+        "staleAllowlist": len(stale),
     }
 
 
@@ -228,16 +279,18 @@ def _decontaminate_fringe(image: Image.Image, removed: set[int]) -> None:
             pixels[x, y] = (*rgb, pixel[3])
 
 
-def cleanup_chroma(image: Image.Image, preserve_isolated_components: bool = False) -> tuple[Image.Image, dict[str, int]]:
+def cleanup_chroma(image: Image.Image, allowed_components: list[dict] | None = None) -> tuple[Image.Image, dict[str, int]]:
     """Remove chroma-key background artifacts while preserving real low-saturation greens."""
     cleaned = image.convert("RGBA").copy()
     width, height = cleaned.size
     pixels = cleaned.load()
     background = _edge_connected_chroma(cleaned)
-    isolated = [] if preserve_isolated_components else _isolated_chroma_components(cleaned, background)
+    isolated, stale = _partition_isolated_components(cleaned, background, allowed_components or [])
+    if stale:
+        raise ValueError(f"stale chroma component allowlist: {len(stale)} unmatched component(s)")
     removed = set(background)
     for component in isolated:
-        removed.update(component)
+        removed.update(component["indices"])
     for index in removed:
         x, y = index % width, index // width
         pixels[x, y] = (0, 0, 0, 0)
@@ -247,7 +300,7 @@ def cleanup_chroma(image: Image.Image, preserve_isolated_components: bool = Fals
             r, g, b, a = pixels[x, y]
             if a == 0 and (r, g, b) != (0, 0, 0):
                 pixels[x, y] = (0, 0, 0, 0)
-    return cleaned, {"removedComponents": len(isolated)}
+    return cleaned, {"removedComponents": len(isolated), "staleAllowlist": 0}
 
 
 def _frame_boxes(image: Image.Image, cols: int, rows: int) -> list[tuple[int, int, int, int]]:
@@ -261,26 +314,26 @@ def _frame_boxes(image: Image.Image, cols: int, rows: int) -> list[tuple[int, in
     ]
 
 
-def analyze_chroma_grid(image: Image.Image, cols: int = 1, rows: int = 1, allowed_rows: set[int] | None = None) -> dict[str, int]:
-    totals = {"opaqueGreen": 0, "fringeGreen": 0, "hiddenRgb": 0, "removedComponents": 0}
-    allowed_rows = allowed_rows or set()
+def analyze_chroma_grid(image: Image.Image, cols: int = 1, rows: int = 1, path: Path | None = None) -> dict[str, int]:
+    totals = {"opaqueGreen": 0, "fringeGreen": 0, "hiddenRgb": 0, "removedComponents": 0, "staleAllowlist": 0}
     for index, box in enumerate(_frame_boxes(image, cols, rows)):
-        result = analyze_chroma(image.crop(box), allow_isolated_components=index // cols in allowed_rows)
+        row, col = divmod(index, cols)
+        result = analyze_chroma(image.crop(box), component_specs_for(path, row, col) if path else [])
         for key, value in result.items():
             totals[key] += value
     return totals
 
 
-def cleanup_chroma_grid(image: Image.Image, cols: int = 1, rows: int = 1, allowed_rows: set[int] | None = None) -> tuple[Image.Image, dict[str, int]]:
+def cleanup_chroma_grid(image: Image.Image, cols: int = 1, rows: int = 1, path: Path | None = None) -> tuple[Image.Image, dict[str, int]]:
     """Normalize every animation cell independently so internal grid edges are true boundaries."""
     cleaned = Image.new("RGBA", image.size, (0, 0, 0, 0))
     removed_components = 0
-    allowed_rows = allowed_rows or set()
     for index, box in enumerate(_frame_boxes(image, cols, rows)):
-        frame, result = cleanup_chroma(image.crop(box), preserve_isolated_components=index // cols in allowed_rows)
+        row, col = divmod(index, cols)
+        frame, result = cleanup_chroma(image.crop(box), component_specs_for(path, row, col) if path else [])
         cleaned.alpha_composite(frame, box[:2])
         removed_components += result["removedComponents"]
-    return cleaned, {"removedComponents": removed_components}
+    return cleaned, {"removedComponents": removed_components, "staleAllowlist": 0}
 
 
 def chroma_cleanup_integrity(before: Image.Image, after: Image.Image, cols: int, rows: int) -> dict[str, int]:
@@ -305,15 +358,6 @@ def chroma_cleanup_integrity(before: Image.Image, after: Image.Image, cols: int,
         "alphaCoverageAfter": alpha_after,
         "unexpectedAlphaLoss": unexpected_alpha_loss,
     }
-
-
-def allowed_chroma_rows(path: Path) -> set[int]:
-    try:
-        relative = path.resolve().relative_to(ROOT.resolve()).as_posix()
-    except ValueError:
-        return set()
-    entry = ISOLATED_CHROMA_ALLOWLIST.get(relative)
-    return set(entry["rows"]) if entry else set()
 
 
 def remove_chroma_key(image: Image.Image) -> Image.Image:
@@ -685,7 +729,6 @@ def normalize_sheet(path: Path, dry_run: bool, from_head: bool) -> dict:
         sheet = Image.open(path).convert("RGBA")
     grid = grid_for(path, sheet)
     original = sheet.copy()
-    allowed_rows = allowed_chroma_rows(path)
     normalized = Image.new("RGBA", original.size, (0, 0, 0, 0))
     changed_frames = 0
     for row in range(grid.rows):
@@ -696,7 +739,7 @@ def normalize_sheet(path: Path, dry_run: bool, from_head: bool) -> dict:
                 (col + 1) * grid.cell_width,
                 (row + 1) * grid.cell_height,
             )
-            frame, _ = cleanup_chroma(sheet.crop(box), preserve_isolated_components=row in allowed_rows)
+            frame, _ = cleanup_chroma(sheet.crop(box), component_specs_for(path, row, col))
             normalized.alpha_composite(frame, (col * grid.cell_width, row * grid.cell_height))
             if original.crop(box).tobytes() != frame.tobytes():
                 changed_frames += 1
@@ -732,7 +775,7 @@ def main() -> None:
             image = Image.open(path).convert("RGBA")
             try:
                 grid = grid_for(path.resolve(), image)
-                stats = analyze_chroma_grid(image, grid.cols, grid.rows, allowed_chroma_rows(path))
+                stats = analyze_chroma_grid(image, grid.cols, grid.rows, path)
             except ValueError:
                 stats = analyze_chroma(image)
             reports.append({"path": path.as_posix(), **stats})

@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -17,12 +18,14 @@ const CHROMA_HUE_MAX = 162;
 const CHROMA_SATURATION_MIN = 0.72;
 const CHROMA_VALUE_MIN = 150;
 const ISOLATED_CHROMA_COMPONENT_AREA = 12;
-// Toxic matter is a deliberate character effect in these rows, not chroma-key residue.
-// This never suppresses edge-connected background, fringe, or hidden-RGB failures.
-const ISOLATED_CHROMA_ALLOWLIST = new Map([
-  ['/assets/images/combat/spritesheets/enemies/zombie_acid_sheet.png', new Set([0, 1, 2, 3])],
-  ['/assets/images/combat/spritesheets/enemies/zombie_bloater_sheet.png', new Set([0, 1, 2, 3])],
-]);
+const CHROMA_COMPONENT_ALLOWLIST_PATH = path.join(ROOT, 'assets', 'images', 'combat', 'spritesheets', 'chroma_component_allowlist.json');
+const CHROMA_COMPONENT_ALLOWLIST = JSON.parse(fs.readFileSync(CHROMA_COMPONENT_ALLOWLIST_PATH, 'utf8')).components;
+
+function componentSpecsFor(sheetKey, row, col) {
+  return CHROMA_COMPONENT_ALLOWLIST.filter((spec) => (
+    spec.sheetKey === sheetKey && spec.row === row && spec.col === col
+  ));
+}
 
 function normalizeAssetPath(assetPath) {
   return assetPath.replace(/^\/+/, '').replace(/^\.\//, '').replaceAll('/', path.sep);
@@ -143,7 +146,27 @@ function isFrameEdge(image, x, y) {
   return x === 0 || y === 0 || x === image.width - 1 || y === image.height - 1;
 }
 
-function chromaFrameArtifactStats(image, allowIsolatedComponents = false) {
+function componentDescriptor(image, component) {
+  const xs = component.map(index => index % image.width);
+  const ys = component.map(index => Math.floor(index / image.width));
+  const bbox = [Math.min(...xs), Math.min(...ys), Math.max(...xs) + 1, Math.max(...ys) + 1];
+  const hash = createHash('sha256');
+  for (const index of [...component].sort((a, b) => a - b)) {
+    const x = index % image.width;
+    const y = Math.floor(index / image.width);
+    const pixel = image.pixels.subarray(pixelOffset(image, x, y), pixelOffset(image, x, y) + 4);
+    hash.update(Buffer.from([x - bbox[0], y - bbox[1], ...pixel]));
+  }
+  return { bbox, pixelCount: component.length, fingerprint: hash.digest('hex') };
+}
+
+function sameComponent(component, spec) {
+  return component.pixelCount === spec.pixelCount
+    && component.fingerprint === spec.fingerprint
+    && component.bbox.every((value, index) => value === spec.bbox[index]);
+}
+
+function chromaFrameArtifactStats(image, allowedComponents = []) {
   const opaque = new Uint8Array(image.width * image.height);
   let hiddenRgb = 0;
   for (let y = 0; y < image.height; y += 1) {
@@ -184,6 +207,7 @@ function chromaFrameArtifactStats(image, allowIsolatedComponents = false) {
 
   const seen = new Uint8Array(opaque.length);
   let removedComponents = 0;
+  const matchedSpecs = new Set();
   for (let start = 0; start < opaque.length; start += 1) {
     if (!opaque[start] || edge[start] || seen[start]) continue;
     const component = [start];
@@ -201,9 +225,14 @@ function chromaFrameArtifactStats(image, allowIsolatedComponents = false) {
         }
       }
     }
-    if (!allowIsolatedComponents && component.length <= ISOLATED_CHROMA_COMPONENT_AREA) removedComponents += 1;
+    if (component.length <= ISOLATED_CHROMA_COMPONENT_AREA) {
+      const descriptor = componentDescriptor(image, component);
+      const match = allowedComponents.findIndex((spec, index) => !matchedSpecs.has(index) && sameComponent(descriptor, spec));
+      if (match === -1) removedComponents += 1;
+      else matchedSpecs.add(match);
+    }
   }
-  return { opaqueGreen, fringeGreen, hiddenRgb, removedComponents };
+  return { opaqueGreen, fringeGreen, hiddenRgb, removedComponents, staleAllowlist: allowedComponents.length - matchedSpecs.size };
 }
 
 function cropImage(image, x0, y0, width, height) {
@@ -225,13 +254,13 @@ export function chromaArtifactStats(image, grid = { cols: 1, rows: 1 }) {
   }
   const frameWidth = image.width / grid.cols;
   const frameHeight = image.height / grid.rows;
-  const allowedRows = grid.allowedRows instanceof Set ? grid.allowedRows : new Set(grid.allowedRows ?? []);
-  const totals = { opaqueGreen: 0, fringeGreen: 0, hiddenRgb: 0, removedComponents: 0 };
+  const componentSpecs = grid.componentSpecs ?? new Map();
+  const totals = { opaqueGreen: 0, fringeGreen: 0, hiddenRgb: 0, removedComponents: 0, staleAllowlist: 0 };
   for (let row = 0; row < grid.rows; row += 1) {
     for (let col = 0; col < grid.cols; col += 1) {
       const stats = chromaFrameArtifactStats(
         cropImage(image, col * frameWidth, row * frameHeight, frameWidth, frameHeight),
-        allowedRows.has(row),
+        componentSpecs.get(`${row}:${col}`) ?? [],
       );
       for (const [key, value] of Object.entries(stats)) totals[key] += value;
     }
@@ -281,7 +310,7 @@ function spread(values) {
   return values.length ? Math.max(...values) - Math.min(...values) : null;
 }
 
-function analyzePixels(image, sheet, frameW, frameH) {
+function analyzePixels(image, sheetKey, sheet, frameW, frameH) {
   let opaquePixels = 0;
   let whiteOpaquePixels = 0;
   for (let offset = 0; offset < image.pixels.length; offset += 4) {
@@ -323,7 +352,13 @@ function analyzePixels(image, sheet, frameW, frameH) {
     whiteOpaquePixels,
     ...chromaArtifactStats(image, {
       ...sheet,
-      allowedRows: ISOLATED_CHROMA_ALLOWLIST.get(sheet.src) ?? new Set(),
+      componentSpecs: new Map(
+        Array.from({ length: sheet.rows * sheet.cols }, (_, index) => {
+          const row = Math.floor(index / sheet.cols);
+          const col = index % sheet.cols;
+          return [`${row}:${col}`, componentSpecsFor(sheetKey, row, col)];
+        }),
+      ),
     }),
     rows,
   };
@@ -362,7 +397,7 @@ function analyzeFile({ sheetKey, sheet, filePath }) {
     return { sheetKey, path: toPosixRel(filePath), referenced: true, width: image.width, height: image.height, frameW, frameH, rows: [], issues, severity: severityFor(issues) };
   }
 
-  const pixelStats = analyzePixels(image, sheet, frameW, frameH);
+  const pixelStats = analyzePixels(image, sheetKey, sheet, frameW, frameH);
   for (const row of pixelStats.rows) {
     if (row.populatedFrames !== sheet.cols) {
       issues.push({ level: 'fail', code: 'empty-frame', message: `${row.motionKeys.join(', ')} has ${row.populatedFrames}/${sheet.cols} frames` });
@@ -374,11 +409,11 @@ function analyzeFile({ sheetKey, sheet, filePath }) {
     if (row.edgeOpaque > 0) issues.push({ level: 'warn', code: 'edge-touch', message: `${row.motionKeys.join(', ')} has ${row.edgeOpaque} edge pixels` });
   }
   if (pixelStats.whiteOpaquePixels > 500) issues.push({ level: 'warn', code: 'white-bg-risk', message: `${pixelStats.whiteOpaquePixels} opaque white pixels` });
-  if (pixelStats.opaqueGreen > 0 || pixelStats.fringeGreen > 0 || pixelStats.hiddenRgb > 0 || pixelStats.removedComponents > 0) {
+  if (pixelStats.opaqueGreen > 0 || pixelStats.fringeGreen > 0 || pixelStats.hiddenRgb > 0 || pixelStats.removedComponents > 0 || pixelStats.staleAllowlist > 0) {
     issues.push({
       level: 'fail',
       code: 'chroma-artifact',
-      message: `opaque=${pixelStats.opaqueGreen} fringe=${pixelStats.fringeGreen} hiddenRgb=${pixelStats.hiddenRgb} isolated=${pixelStats.removedComponents}`,
+      message: `opaque=${pixelStats.opaqueGreen} fringe=${pixelStats.fringeGreen} hiddenRgb=${pixelStats.hiddenRgb} isolated=${pixelStats.removedComponents} staleAllowlist=${pixelStats.staleAllowlist}`,
     });
   }
   return {
@@ -415,7 +450,7 @@ Generated by \`node tools/audit_combat_sprites.mjs\` at ${new Date().toISOString
 - Each displayed sheet uses its own \`cols\`, \`rows\`, and \`motions\` from \`combatMotionManifest.js\`.
 - PNG dimensions must divide evenly into the declared grid; cells must be square.
 - Frame anchor is bottom-center. Idle row foot drift should stay within 4 px.
-- Transparent PNG is required. Edge-connected high-saturation chroma green, fringe spill, hidden transparent RGB, and isolated saturated green dots are failures. The two explicit toxic-effect row allowlists only preserve named in-character effects.
+- Transparent PNG is required. Edge-connected high-saturation chroma green, fringe spill, hidden transparent RGB, and isolated saturated green dots are failures. The explicit toxic-effect allowlist only preserves exact sheet/cell/component fingerprints; missing or changed entries fail as stale.
 
 ## Summary
 
