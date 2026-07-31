@@ -200,8 +200,16 @@ def _allowlist_descriptor(spec: dict) -> tuple[tuple[int, ...], int, str]:
     return tuple(spec["bbox"]), spec["pixelCount"], spec["fingerprint"]
 
 
+def _is_json_integer(value: object) -> bool:
+    return isinstance(value, int) and not isinstance(value, bool)
+
+
 def _validate_allowlist_schema(data: object) -> list[dict]:
-    if not isinstance(data, dict) or set(data) != {"version", "components"} or data["version"] != ALLOWLIST_VERSION or not isinstance(data["components"], list):
+    if (not isinstance(data, dict)
+            or set(data) != {"version", "components"}
+            or not _is_json_integer(data["version"])
+            or data["version"] != ALLOWLIST_VERSION
+            or not isinstance(data["components"], list)):
         raise ValueError("allowlist: schema mismatch (root)")
     components = data["components"]
     for spec in components:
@@ -210,13 +218,13 @@ def _validate_allowlist_schema(data: object) -> list[dict]:
         if not isinstance(spec["sheetKey"], str) or not spec["sheetKey"]:
             raise ValueError("allowlist: schema mismatch (sheetKey)")
         spec["path"] = _normalized_asset_path(spec["path"])
-        if not isinstance(spec["row"], int) or not isinstance(spec["col"], int) or spec["row"] < 0 or spec["col"] < 0:
+        if not _is_json_integer(spec["row"]) or not _is_json_integer(spec["col"]) or spec["row"] < 0 or spec["col"] < 0:
             raise ValueError("allowlist: schema mismatch (cell)")
-        if not isinstance(spec["bbox"], list) or len(spec["bbox"]) != 4 or any(not isinstance(value, int) or value < 0 for value in spec["bbox"]):
+        if not isinstance(spec["bbox"], list) or len(spec["bbox"]) != 4 or any(not _is_json_integer(value) or value < 0 for value in spec["bbox"]):
             raise ValueError("allowlist: schema mismatch (bbox)")
         if spec["bbox"][0] >= spec["bbox"][2] or spec["bbox"][1] >= spec["bbox"][3]:
             raise ValueError("allowlist: schema mismatch (bbox)")
-        if not isinstance(spec["pixelCount"], int) or not 0 < spec["pixelCount"] <= ISOLATED_CHROMA_COMPONENT_AREA:
+        if not _is_json_integer(spec["pixelCount"]) or not 0 < spec["pixelCount"] <= ISOLATED_CHROMA_COMPONENT_AREA:
             raise ValueError("allowlist: schema mismatch (pixelCount)")
         if not isinstance(spec["fingerprint"], str) or len(spec["fingerprint"]) != 64 or any(char not in "0123456789abcdef" for char in spec["fingerprint"]):
             raise ValueError("allowlist: schema mismatch (fingerprint)")

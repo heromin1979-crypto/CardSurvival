@@ -200,9 +200,9 @@ describe('combat sprite chroma cleanup', () => {
     const audit = path.join(ROOT, 'tools', 'audit_combat_sprites.mjs');
     const source = JSON.parse(fs.readFileSync(path.join(ROOT, 'assets', 'images', 'combat', 'spritesheets', 'chroma_component_allowlist.json'), 'utf8'));
     const temp = fs.mkdtempSync(path.join(ROOT, 'tmp-chroma-allowlist-'));
-    const write = (name, components) => {
+    const write = (name, components, version = 1) => {
       const pathname = path.join(temp, `${name}.json`);
-      fs.writeFileSync(pathname, JSON.stringify({ version: 1, components }));
+      fs.writeFileSync(pathname, JSON.stringify({ version, components }));
       return pathname;
     };
     const check = (pathname, code) => {
@@ -232,6 +232,33 @@ describe('combat sprite chroma cleanup', () => {
       check(write('stale-bbox', [{ ...component, bbox: [178, 120, 181, 121] }]), 'stale');
       check(write('stale-count', [{ ...component, pixelCount: component.pixelCount + 1 }]), 'stale');
       check(write('stale-fingerprint', [{ ...component, fingerprint: '0'.repeat(64) }]), 'stale');
+
+      const booleanIntegerMutations = [
+        ['version-true', true, source.components, 'allowlist: schema mismatch (root)'],
+        ['version-false', false, source.components, 'allowlist: schema mismatch (root)'],
+        ['row-true', 1, [{ ...component, row: true }], 'allowlist: schema mismatch (cell)'],
+        ['row-false', 1, [{ ...component, row: false }], 'allowlist: schema mismatch (cell)'],
+        ['col-true', 1, [{ ...component, col: true }], 'allowlist: schema mismatch (cell)'],
+        ['col-false', 1, [{ ...component, col: false }], 'allowlist: schema mismatch (cell)'],
+        ['pixel-count-true', 1, [{ ...component, pixelCount: true }], 'allowlist: schema mismatch (pixelCount)'],
+        ['pixel-count-false', 1, [{ ...component, pixelCount: false }], 'allowlist: schema mismatch (pixelCount)'],
+        ...component.bbox.flatMap((_, index) => [true, false].map(value => [
+          `bbox-${index}-${value}`,
+          1,
+          [{ ...component, bbox: component.bbox.map((coordinate, coordinateIndex) => coordinateIndex === index ? value : coordinate) }],
+          'allowlist: schema mismatch (bbox)',
+        ])),
+      ];
+      for (const [name, version, components, location] of booleanIntegerMutations) {
+        const pathname = write(name, components, version);
+        const env = { ...process.env, COMBAT_CHROMA_ALLOWLIST_PATH: pathname };
+        const python = spawnSync(runtime.command, [...runtime.prefix, NORMALIZER, '--check-allowlist'], { cwd: ROOT, encoding: 'utf8', env });
+        const node = spawnSync(process.execPath, [audit, '--check-allowlist'], { cwd: ROOT, encoding: 'utf8', env });
+        expect(python.status, `${name}: Python exit status`).toBe(1);
+        expect(node.status, `${name}: Node exit status`).toBe(1);
+        expect(JSON.parse(python.stdout), `${name}: diagnostics parity`).toEqual(JSON.parse(node.stdout));
+        expect(JSON.parse(python.stdout).diagnostics, `${name}: exact diagnostic`).toEqual([{ code: 'invalid', location }]);
+      }
 
       const missing = path.join(temp, 'missing.json');
       const malformed = path.join(temp, 'malformed.json');
