@@ -118,7 +118,8 @@ def build_report() -> dict:
     assembly = _assembly()
     recipe = json.loads(ASSEMBLY_RECIPE_PATH.read_text(encoding="utf-8"))
     recipe_verification = assembly.verify_recipe(recipe)
-    assembled_targets = assembly.assemble_sheets()
+    validated_provenance = assembly.validate_recipe_contract(recipe)
+    assembled_targets = assembly.assemble_sheets(validated_provenance)
     manifest = json.loads(normalizer.MANIFEST_PATH.read_text(encoding="utf-8"))
     sheets = []
     for sheet_key, entry in sorted(manifest.items()):
@@ -148,7 +149,14 @@ def build_report() -> dict:
                 mapping["targetRow"]: mapping["baselineRow"]
                 for mapping in target_recipe["retainedRows"]
             }
-            new_rows = {entry["row"]: entry["sources"] for entry in target_recipe["newRows"]}
+            new_rows = {
+                entry["row"]: list(dict.fromkeys(
+                    f'{cell["source"]}:{cell["row"]}'
+                    if cell["source"].startswith("baseline:") else cell["source"]
+                    for cell in entry["cells"]
+                ))
+                for entry in target_recipe["newRows"]
+            }
             retained_baseline = _png_from_bytes(_baseline_bytes(relative, assembly.BASELINE_COMMIT))
             for index, box in enumerate(normalizer._frame_boxes(after, grid.cols, grid.rows)):
                 row, col = divmod(index, grid.cols)

@@ -2,7 +2,7 @@
   "version": 2,
   "baselineCommit": "1312cf9",
   "assemblyScript": "/tools/build_normal_enemy_motion_sheets.py",
-  "assemblyScriptSha256": "85243003f2391cfc20f9dfa9d1284f804785fec34312c6899ff4237a2ff76901",
+  "assemblyScriptSha256": "1eb7b81692c3274342a4d7030dda511b2cab535e4c05868690c8c53b6e64a3d9",
   "provenancePolicy": {
     "canonical": "cleaned alpha PNGs are the sole deterministic assembly inputs",
     "archival": "chroma PNGs are retained image-generation archives; no derivation relationship to canonical alpha PNGs is asserted"
@@ -95,26 +95,60 @@
       "retainedRows": [
         {
           "targetRow": 1,
-          "baselineRow": 0
+          "baselineRow": 0,
+          "motion": "wake"
         },
         {
           "targetRow": 2,
-          "baselineRow": 1
+          "baselineRow": 1,
+          "motion": "basic_attack"
         },
         {
           "targetRow": 3,
-          "baselineRow": 2
+          "baselineRow": 2,
+          "motion": "hit"
         },
         {
           "targetRow": 4,
-          "baselineRow": 3
+          "baselineRow": 3,
+          "motion": "death"
         }
       ],
       "newRows": [
         {
           "row": 0,
-          "sources": [
-            "baseline:zombie_patient_dormant:0"
+          "motion": "dormant",
+          "cells": [
+            {
+              "source": "baseline:zombie_patient_dormant",
+              "row": 0,
+              "column": 0
+            },
+            {
+              "source": "baseline:zombie_patient_dormant",
+              "row": 0,
+              "column": 1
+            },
+            {
+              "source": "baseline:zombie_patient_dormant",
+              "row": 0,
+              "column": 0
+            },
+            {
+              "source": "baseline:zombie_patient_dormant",
+              "row": 0,
+              "column": 1
+            },
+            {
+              "source": "baseline:zombie_patient_dormant",
+              "row": 0,
+              "column": 0
+            },
+            {
+              "source": "baseline:zombie_patient_dormant",
+              "row": 0,
+              "column": 1
+            }
           ]
         }
       ]
@@ -178,33 +212,96 @@
       "retainedRows": [
         {
           "targetRow": 0,
-          "baselineRow": 0
+          "baselineRow": 0,
+          "motion": "idle"
         },
         {
           "targetRow": 3,
-          "baselineRow": 1
+          "baselineRow": 1,
+          "motion": "runner_rush"
         },
         {
           "targetRow": 4,
-          "baselineRow": 2
+          "baselineRow": 2,
+          "motion": "hit"
         },
         {
           "targetRow": 5,
-          "baselineRow": 3
+          "baselineRow": 3,
+          "motion": "death"
         }
       ],
       "newRows": [
         {
           "row": 1,
-          "sources": [
-            "baseline:zombie_runner:1"
+          "motion": "basic_attack",
+          "cells": [
+            {
+              "source": "baseline:zombie_runner",
+              "row": 1,
+              "column": 0
+            },
+            {
+              "source": "baseline:zombie_runner",
+              "row": 1,
+              "column": 0
+            },
+            {
+              "source": "baseline:zombie_runner",
+              "row": 1,
+              "column": 1
+            },
+            {
+              "source": "baseline:zombie_runner",
+              "row": 1,
+              "column": 2
+            },
+            {
+              "source": "baseline:zombie_runner",
+              "row": 1,
+              "column": 3
+            },
+            {
+              "source": "baseline:zombie_runner",
+              "row": 1,
+              "column": 0
+            }
           ]
         },
         {
           "row": 2,
-          "sources": [
-            "baseline:zombie_runner:0",
-            "baseline:zombie_runner:1"
+          "motion": "telegraph",
+          "cells": [
+            {
+              "source": "baseline:zombie_runner",
+              "row": 0,
+              "column": 0
+            },
+            {
+              "source": "baseline:zombie_runner",
+              "row": 0,
+              "column": 1
+            },
+            {
+              "source": "baseline:zombie_runner",
+              "row": 0,
+              "column": 2
+            },
+            {
+              "source": "baseline:zombie_runner",
+              "row": 0,
+              "column": 3
+            },
+            {
+              "source": "baseline:zombie_runner",
+              "row": 1,
+              "column": 0
+            },
+            {
+              "source": "baseline:zombie_runner",
+              "row": 1,
+              "column": 0
+            }
           ]
         }
       ]
@@ -268,33 +365,96 @@
       "retainedRows": [
         {
           "targetRow": 0,
-          "baselineRow": 0
+          "baselineRow": 0,
+          "motion": "idle"
         },
         {
           "targetRow": 3,
-          "baselineRow": 1
+          "baselineRow": 1,
+          "motion": "slam"
         },
         {
           "targetRow": 4,
-          "baselineRow": 2
+          "baselineRow": 2,
+          "motion": "hit"
         },
         {
           "targetRow": 5,
-          "baselineRow": 3
+          "baselineRow": 3,
+          "motion": "death"
         }
       ],
       "newRows": [
         {
           "row": 1,
-          "sources": [
-            "baseline:zombie_brute:1"
+          "motion": "basic_attack",
+          "cells": [
+            {
+              "source": "baseline:zombie_brute",
+              "row": 1,
+              "column": 2
+            },
+            {
+              "source": "baseline:zombie_brute",
+              "row": 1,
+              "column": 3
+            },
+            {
+              "source": "baseline:zombie_brute",
+              "row": 1,
+              "column": 4
+            },
+            {
+              "source": "baseline:zombie_brute",
+              "row": 1,
+              "column": 5
+            },
+            {
+              "source": "baseline:zombie_brute",
+              "row": 1,
+              "column": 5
+            },
+            {
+              "source": "baseline:zombie_brute",
+              "row": 1,
+              "column": 5
+            }
           ]
         },
         {
           "row": 2,
-          "sources": [
-            "baseline:zombie_brute:0",
-            "baseline:zombie_brute:1"
+          "motion": "telegraph",
+          "cells": [
+            {
+              "source": "baseline:zombie_brute",
+              "row": 0,
+              "column": 5
+            },
+            {
+              "source": "baseline:zombie_brute",
+              "row": 1,
+              "column": 0
+            },
+            {
+              "source": "baseline:zombie_brute",
+              "row": 1,
+              "column": 0
+            },
+            {
+              "source": "baseline:zombie_brute",
+              "row": 1,
+              "column": 1
+            },
+            {
+              "source": "baseline:zombie_brute",
+              "row": 1,
+              "column": 1
+            },
+            {
+              "source": "baseline:zombie_brute",
+              "row": 1,
+              "column": 0
+            }
           ]
         }
       ]
@@ -350,30 +510,140 @@
       "retainedRows": [
         {
           "targetRow": 3,
-          "baselineRow": 2
+          "baselineRow": 2,
+          "motion": "hit"
         },
         {
           "targetRow": 4,
-          "baselineRow": 3
+          "baselineRow": 3,
+          "motion": "death"
         }
       ],
       "newRows": [
         {
           "row": 0,
-          "sources": [
-            "raider_generated_alpha.png"
+          "motion": "idle",
+          "cells": [
+            {
+              "source": "raider_generated_alpha.png",
+              "row": 0,
+              "column": 0,
+              "sourceRows": 2
+            },
+            {
+              "source": "raider_generated_alpha.png",
+              "row": 0,
+              "column": 5,
+              "sourceRows": 2
+            },
+            {
+              "source": "raider_generated_alpha.png",
+              "row": 0,
+              "column": 0,
+              "sourceRows": 2
+            },
+            {
+              "source": "raider_generated_alpha.png",
+              "row": 0,
+              "column": 5,
+              "sourceRows": 2
+            },
+            {
+              "source": "raider_generated_alpha.png",
+              "row": 0,
+              "column": 0,
+              "sourceRows": 2
+            },
+            {
+              "source": "raider_generated_alpha.png",
+              "row": 0,
+              "column": 5,
+              "sourceRows": 2
+            }
           ]
         },
         {
           "row": 1,
-          "sources": [
-            "raider_generated_alpha.png"
+          "motion": "basic_attack",
+          "cells": [
+            {
+              "source": "raider_generated_alpha.png",
+              "row": 0,
+              "column": 0,
+              "sourceRows": 2
+            },
+            {
+              "source": "raider_generated_alpha.png",
+              "row": 0,
+              "column": 1,
+              "sourceRows": 2
+            },
+            {
+              "source": "raider_generated_alpha.png",
+              "row": 0,
+              "column": 2,
+              "sourceRows": 2
+            },
+            {
+              "source": "raider_generated_alpha.png",
+              "row": 0,
+              "column": 3,
+              "sourceRows": 2
+            },
+            {
+              "source": "raider_generated_alpha.png",
+              "row": 0,
+              "column": 4,
+              "sourceRows": 2
+            },
+            {
+              "source": "raider_generated_alpha.png",
+              "row": 0,
+              "column": 5,
+              "sourceRows": 2
+            }
           ]
         },
         {
           "row": 2,
-          "sources": [
-            "raider_generated_alpha.png"
+          "motion": "reload",
+          "cells": [
+            {
+              "source": "raider_generated_alpha.png",
+              "row": 1,
+              "column": 0,
+              "sourceRows": 2
+            },
+            {
+              "source": "raider_generated_alpha.png",
+              "row": 1,
+              "column": 1,
+              "sourceRows": 2
+            },
+            {
+              "source": "raider_generated_alpha.png",
+              "row": 1,
+              "column": 2,
+              "sourceRows": 2
+            },
+            {
+              "source": "raider_generated_alpha.png",
+              "row": 1,
+              "column": 3,
+              "sourceRows": 2
+            },
+            {
+              "source": "raider_generated_alpha.png",
+              "row": 1,
+              "column": 4,
+              "sourceRows": 2
+            },
+            {
+              "source": "raider_generated_alpha.png",
+              "row": 1,
+              "column": 5,
+              "sourceRows": 2
+            }
           ]
         }
       ]
@@ -437,34 +707,145 @@
       "retainedRows": [
         {
           "targetRow": 0,
-          "baselineRow": 0
+          "baselineRow": 0,
+          "motion": "idle"
         },
         {
           "targetRow": 4,
-          "baselineRow": 2
+          "baselineRow": 2,
+          "motion": "hit"
         },
         {
           "targetRow": 5,
-          "baselineRow": 3
+          "baselineRow": 3,
+          "motion": "death"
         }
       ],
       "newRows": [
         {
           "row": 1,
-          "sources": [
-            "raider_elite_generated_alpha.png"
+          "motion": "basic_attack",
+          "cells": [
+            {
+              "source": "raider_elite_generated_alpha.png",
+              "row": 0,
+              "column": 0,
+              "sourceRows": 2
+            },
+            {
+              "source": "raider_elite_generated_alpha.png",
+              "row": 0,
+              "column": 1,
+              "sourceRows": 2
+            },
+            {
+              "source": "raider_elite_generated_alpha.png",
+              "row": 1,
+              "column": 2,
+              "sourceRows": 2
+            },
+            {
+              "source": "raider_elite_generated_alpha.png",
+              "row": 1,
+              "column": 3,
+              "sourceRows": 2
+            },
+            {
+              "source": "raider_elite_generated_alpha.png",
+              "row": 0,
+              "column": 1,
+              "sourceRows": 2
+            },
+            {
+              "source": "raider_elite_generated_alpha.png",
+              "row": 0,
+              "column": 0,
+              "sourceRows": 2
+            }
           ]
         },
         {
           "row": 2,
-          "sources": [
-            "raider_elite_generated_alpha.png"
+          "motion": "aim",
+          "cells": [
+            {
+              "source": "raider_elite_generated_alpha.png",
+              "row": 0,
+              "column": 0,
+              "sourceRows": 2
+            },
+            {
+              "source": "raider_elite_generated_alpha.png",
+              "row": 0,
+              "column": 1,
+              "sourceRows": 2
+            },
+            {
+              "source": "raider_elite_generated_alpha.png",
+              "row": 0,
+              "column": 2,
+              "sourceRows": 2
+            },
+            {
+              "source": "raider_elite_generated_alpha.png",
+              "row": 0,
+              "column": 3,
+              "sourceRows": 2
+            },
+            {
+              "source": "raider_elite_generated_alpha.png",
+              "row": 0,
+              "column": 4,
+              "sourceRows": 2
+            },
+            {
+              "source": "raider_elite_generated_alpha.png",
+              "row": 0,
+              "column": 5,
+              "sourceRows": 2
+            }
           ]
         },
         {
           "row": 3,
-          "sources": [
-            "raider_elite_generated_alpha.png"
+          "motion": "aimed_shot",
+          "cells": [
+            {
+              "source": "raider_elite_generated_alpha.png",
+              "row": 1,
+              "column": 0,
+              "sourceRows": 2
+            },
+            {
+              "source": "raider_elite_generated_alpha.png",
+              "row": 1,
+              "column": 1,
+              "sourceRows": 2
+            },
+            {
+              "source": "raider_elite_generated_alpha.png",
+              "row": 1,
+              "column": 2,
+              "sourceRows": 2
+            },
+            {
+              "source": "raider_elite_generated_alpha.png",
+              "row": 1,
+              "column": 3,
+              "sourceRows": 2
+            },
+            {
+              "source": "raider_elite_generated_alpha.png",
+              "row": 1,
+              "column": 4,
+              "sourceRows": 2
+            },
+            {
+              "source": "raider_elite_generated_alpha.png",
+              "row": 1,
+              "column": 5,
+              "sourceRows": 2
+            }
           ]
         }
       ]
@@ -520,26 +901,60 @@
       "retainedRows": [
         {
           "targetRow": 0,
-          "baselineRow": 0
+          "baselineRow": 0,
+          "motion": "idle"
         },
         {
           "targetRow": 2,
-          "baselineRow": 1
+          "baselineRow": 1,
+          "motion": "acid_lash"
         },
         {
           "targetRow": 3,
-          "baselineRow": 2
+          "baselineRow": 2,
+          "motion": "hit"
         },
         {
           "targetRow": 4,
-          "baselineRow": 3
+          "baselineRow": 3,
+          "motion": "death"
         }
       ],
       "newRows": [
         {
           "row": 1,
-          "sources": [
-            "baseline:zombie_acid:1"
+          "motion": "basic_attack",
+          "cells": [
+            {
+              "source": "baseline:zombie_acid",
+              "row": 1,
+              "column": 0
+            },
+            {
+              "source": "baseline:zombie_acid",
+              "row": 1,
+              "column": 1
+            },
+            {
+              "source": "baseline:zombie_acid",
+              "row": 1,
+              "column": 2
+            },
+            {
+              "source": "baseline:zombie_acid",
+              "row": 1,
+              "column": 3
+            },
+            {
+              "source": "baseline:zombie_acid",
+              "row": 1,
+              "column": 2
+            },
+            {
+              "source": "baseline:zombie_acid",
+              "row": 1,
+              "column": 1
+            }
           ]
         }
       ]
@@ -603,32 +1018,108 @@
       "retainedRows": [
         {
           "targetRow": 0,
-          "baselineRow": 0
+          "baselineRow": 0,
+          "motion": "idle"
         },
         {
           "targetRow": 1,
-          "baselineRow": 1
+          "baselineRow": 1,
+          "motion": "basic_attack"
         },
         {
           "targetRow": 4,
-          "baselineRow": 2
+          "baselineRow": 2,
+          "motion": "hit"
         },
         {
           "targetRow": 5,
-          "baselineRow": 3
+          "baselineRow": 3,
+          "motion": "death"
         }
       ],
       "newRows": [
         {
           "row": 2,
-          "sources": [
-            "zombie_bloater_self_destruct_alpha.png"
+          "motion": "charge",
+          "cells": [
+            {
+              "source": "zombie_bloater_self_destruct_alpha.png",
+              "row": 0,
+              "column": 0,
+              "sourceRows": 1
+            },
+            {
+              "source": "zombie_bloater_self_destruct_alpha.png",
+              "row": 0,
+              "column": 0,
+              "sourceRows": 1
+            },
+            {
+              "source": "zombie_bloater_self_destruct_alpha.png",
+              "row": 0,
+              "column": 1,
+              "sourceRows": 1
+            },
+            {
+              "source": "zombie_bloater_self_destruct_alpha.png",
+              "row": 0,
+              "column": 1,
+              "sourceRows": 1
+            },
+            {
+              "source": "zombie_bloater_self_destruct_alpha.png",
+              "row": 0,
+              "column": 2,
+              "sourceRows": 1
+            },
+            {
+              "source": "zombie_bloater_self_destruct_alpha.png",
+              "row": 0,
+              "column": 2,
+              "sourceRows": 1
+            }
           ]
         },
         {
           "row": 3,
-          "sources": [
-            "zombie_bloater_self_destruct_alpha.png"
+          "motion": "self_destruct",
+          "cells": [
+            {
+              "source": "zombie_bloater_self_destruct_alpha.png",
+              "row": 0,
+              "column": 0,
+              "sourceRows": 1
+            },
+            {
+              "source": "zombie_bloater_self_destruct_alpha.png",
+              "row": 0,
+              "column": 1,
+              "sourceRows": 1
+            },
+            {
+              "source": "zombie_bloater_self_destruct_alpha.png",
+              "row": 0,
+              "column": 2,
+              "sourceRows": 1
+            },
+            {
+              "source": "zombie_bloater_self_destruct_alpha.png",
+              "row": 0,
+              "column": 3,
+              "sourceRows": 1
+            },
+            {
+              "source": "zombie_bloater_self_destruct_alpha.png",
+              "row": 0,
+              "column": 4,
+              "sourceRows": 1
+            },
+            {
+              "source": "zombie_bloater_self_destruct_alpha.png",
+              "row": 0,
+              "column": 5,
+              "sourceRows": 1
+            }
           ]
         }
       ]
@@ -692,33 +1183,102 @@
       "retainedRows": [
         {
           "targetRow": 0,
-          "baselineRow": 0
+          "baselineRow": 0,
+          "motion": "idle"
         },
         {
           "targetRow": 3,
-          "baselineRow": 1
+          "baselineRow": 1,
+          "motion": "summon_horde"
         },
         {
           "targetRow": 4,
-          "baselineRow": 2
+          "baselineRow": 2,
+          "motion": "hit"
         },
         {
           "targetRow": 5,
-          "baselineRow": 3
+          "baselineRow": 3,
+          "motion": "death"
         }
       ],
       "newRows": [
         {
           "row": 1,
-          "sources": [
-            "zombie_screamer_spit_alpha.png"
+          "motion": "basic_attack",
+          "cells": [
+            {
+              "source": "zombie_screamer_spit_alpha.png",
+              "row": 0,
+              "column": 0,
+              "sourceRows": 1
+            },
+            {
+              "source": "zombie_screamer_spit_alpha.png",
+              "row": 0,
+              "column": 1,
+              "sourceRows": 1
+            },
+            {
+              "source": "zombie_screamer_spit_alpha.png",
+              "row": 0,
+              "column": 2,
+              "sourceRows": 1
+            },
+            {
+              "source": "zombie_screamer_spit_alpha.png",
+              "row": 0,
+              "column": 3,
+              "sourceRows": 1
+            },
+            {
+              "source": "zombie_screamer_spit_alpha.png",
+              "row": 0,
+              "column": 4,
+              "sourceRows": 1
+            },
+            {
+              "source": "zombie_screamer_spit_alpha.png",
+              "row": 0,
+              "column": 5,
+              "sourceRows": 1
+            }
           ]
         },
         {
           "row": 2,
-          "sources": [
-            "baseline:zombie_screamer:0",
-            "baseline:zombie_screamer:1"
+          "motion": "charge",
+          "cells": [
+            {
+              "source": "baseline:zombie_screamer",
+              "row": 0,
+              "column": 0
+            },
+            {
+              "source": "baseline:zombie_screamer",
+              "row": 0,
+              "column": 1
+            },
+            {
+              "source": "baseline:zombie_screamer",
+              "row": 1,
+              "column": 0
+            },
+            {
+              "source": "baseline:zombie_screamer",
+              "row": 1,
+              "column": 1
+            },
+            {
+              "source": "baseline:zombie_screamer",
+              "row": 1,
+              "column": 2
+            },
+            {
+              "source": "baseline:zombie_screamer",
+              "row": 1,
+              "column": 2
+            }
           ]
         }
       ]
@@ -782,33 +1342,96 @@
       "retainedRows": [
         {
           "targetRow": 0,
-          "baselineRow": 0
+          "baselineRow": 0,
+          "motion": "idle"
         },
         {
           "targetRow": 3,
-          "baselineRow": 1
+          "baselineRow": 1,
+          "motion": "charge_strike"
         },
         {
           "targetRow": 4,
-          "baselineRow": 2
+          "baselineRow": 2,
+          "motion": "hit"
         },
         {
           "targetRow": 5,
-          "baselineRow": 3
+          "baselineRow": 3,
+          "motion": "death"
         }
       ],
       "newRows": [
         {
           "row": 1,
-          "sources": [
-            "baseline:zombie_charger:1"
+          "motion": "basic_attack",
+          "cells": [
+            {
+              "source": "baseline:zombie_charger",
+              "row": 1,
+              "column": 0
+            },
+            {
+              "source": "baseline:zombie_charger",
+              "row": 1,
+              "column": 0
+            },
+            {
+              "source": "baseline:zombie_charger",
+              "row": 1,
+              "column": 1
+            },
+            {
+              "source": "baseline:zombie_charger",
+              "row": 1,
+              "column": 2
+            },
+            {
+              "source": "baseline:zombie_charger",
+              "row": 1,
+              "column": 2
+            },
+            {
+              "source": "baseline:zombie_charger",
+              "row": 1,
+              "column": 0
+            }
           ]
         },
         {
           "row": 2,
-          "sources": [
-            "baseline:zombie_charger:0",
-            "baseline:zombie_charger:1"
+          "motion": "charge",
+          "cells": [
+            {
+              "source": "baseline:zombie_charger",
+              "row": 0,
+              "column": 0
+            },
+            {
+              "source": "baseline:zombie_charger",
+              "row": 0,
+              "column": 1
+            },
+            {
+              "source": "baseline:zombie_charger",
+              "row": 0,
+              "column": 2
+            },
+            {
+              "source": "baseline:zombie_charger",
+              "row": 1,
+              "column": 0
+            },
+            {
+              "source": "baseline:zombie_charger",
+              "row": 1,
+              "column": 0
+            },
+            {
+              "source": "baseline:zombie_charger",
+              "row": 1,
+              "column": 0
+            }
           ]
         }
       ]

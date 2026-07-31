@@ -416,6 +416,91 @@ describe('combat sprite chroma cleanup', () => {
     expect(JSON.parse(output)).toEqual({ rejected: [true, true] });
   }, 60000);
 
+  it('rejects an unrelated in-repository file even when its hash matches the recipe source entry', () => {
+    const output = runPython([
+      'import copy, importlib.util, json, sys',
+      `spec = importlib.util.spec_from_file_location('normal_enemy_assembler', r'${NORMAL_ENEMY_ASSEMBLER.replaceAll('\\', '/')}')`,
+      'module = importlib.util.module_from_spec(spec)',
+      'sys.modules[spec.name] = module',
+      'spec.loader.exec_module(module)',
+      "recipe = json.loads(module.RECIPE_PATH.read_text(encoding='utf-8'))",
+      'candidate = copy.deepcopy(recipe)',
+      "replacement = recipe['canonicalSources']['raider_elite_generated_alpha.png']",
+      "candidate['canonicalSources']['raider_generated_alpha.png'] = copy.deepcopy(replacement)",
+      'try:',
+      '    module.verify_recipe(candidate)',
+      '    rejected = False',
+      'except ValueError:',
+      '    rejected = True',
+      "print(json.dumps({'rejected': rejected}))",
+    ].join('\n'));
+    expect(JSON.parse(output)).toEqual({ rejected: true });
+  }, 60000);
+
+  it('rejects deletion, addition, and field mutations in row provenance metadata', () => {
+    const output = runPython([
+      'import copy, importlib.util, json, sys',
+      `spec = importlib.util.spec_from_file_location('normal_enemy_assembler', r'${NORMAL_ENEMY_ASSEMBLER.replaceAll('\\', '/')}')`,
+      'module = importlib.util.module_from_spec(spec)',
+      'sys.modules[spec.name] = module',
+      'spec.loader.exec_module(module)',
+      "recipe = json.loads(module.RECIPE_PATH.read_text(encoding='utf-8'))",
+      'candidates = []',
+      'missing_retained = copy.deepcopy(recipe)',
+      "missing_retained['targets']['zombie_runner']['retainedRows'].pop()",
+      "candidates.append(('missingRetained', missing_retained))",
+      'missing_new = copy.deepcopy(recipe)',
+      "missing_new['targets']['zombie_runner']['newRows'].pop()",
+      "candidates.append(('missingNew', missing_new))",
+      'extra_row = copy.deepcopy(recipe)',
+      "extra_row['targets']['zombie_runner']['newRows'].append(copy.deepcopy(extra_row['targets']['zombie_runner']['newRows'][0]))",
+      "candidates.append(('extraRow', extra_row))",
+      'row_mutation = copy.deepcopy(recipe)',
+      "row_mutation['targets']['zombie_runner']['newRows'][0]['row'] = 0",
+      "candidates.append(('rowMutation', row_mutation))",
+      'source_mutation = copy.deepcopy(recipe)',
+      "source_row = source_mutation['targets']['zombie_runner']['newRows'][0]",
+      "if 'cells' in source_row:",
+      "    source_row['cells'][0]['source'] = 'baseline:zombie_brute'",
+      'else:',
+      "    source_row['sources'][0] = 'baseline:zombie_brute:1'",
+      "candidates.append(('sourceMutation', source_mutation))",
+      'cell_mutation = copy.deepcopy(recipe)',
+      "cell_row = cell_mutation['targets']['zombie_runner']['newRows'][0]",
+      "if 'cells' in cell_row:",
+      "    cell_row['cells'][0]['column'] = 5",
+      'else:',
+      "    cell_row['cells'] = [{'source': 'baseline:zombie_runner', 'row': 1, 'column': 5}]",
+      "candidates.append(('cellMutation', cell_mutation))",
+      'motion_mutation = copy.deepcopy(recipe)',
+      "motion_mutation['targets']['zombie_runner']['newRows'][0]['motion'] = 'idle'",
+      "candidates.append(('motionMutation', motion_mutation))",
+      "validator = getattr(module, 'validate_recipe_contract', None)",
+      'rejected = {}',
+      'for name, candidate in candidates:',
+      '    if validator is None:',
+      '        rejected[name] = False',
+      '        continue',
+      '    try:',
+      '        validator(candidate)',
+      '        rejected[name] = False',
+      '    except ValueError:',
+      '        rejected[name] = True',
+      "print(json.dumps({'rejected': rejected}))",
+    ].join('\n'));
+    expect(JSON.parse(output)).toEqual({
+      rejected: {
+        missingRetained: true,
+        missingNew: true,
+        extraRow: true,
+        rowMutation: true,
+        sourceMutation: true,
+        cellMutation: true,
+        motionMutation: true,
+      },
+    });
+  }, 60000);
+
   it('cross-checks all 51 reviewed motion rows against the manifest and reviewed PNG hashes', () => {
     const runtime = pythonRuntime();
     const result = spawnSync(runtime.command, [

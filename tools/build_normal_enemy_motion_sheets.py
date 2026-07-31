@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import copy
 import hashlib
 import importlib.util
 import io
@@ -22,69 +23,161 @@ SOURCE_DIR = ROOT / "art_sources/combat/task7_normal"
 RECIPE_PATH = SOURCE_DIR / "assembly_recipe.json"
 NORMALIZER_PATH = ROOT / "tools/normalize_combat_sprite_sheets.py"
 
-CANONICAL_SOURCE_FILES = (
-    "raider_generated_alpha.png",
-    "raider_elite_generated_alpha.png",
-    "zombie_bloater_self_destruct_alpha.png",
-    "zombie_screamer_spit_alpha.png",
-)
-ARCHIVAL_SOURCE_FILES = (
-    "raider_generated_chroma.png",
-    "raider_elite_generated_chroma.png",
-    "zombie_bloater_self_destruct_chroma.png",
-    "zombie_screamer_spit_chroma.png",
-)
+SOURCE_REPO_DIR = "/art_sources/combat/task7_normal"
+CANONICAL_SOURCE_PATHS = {
+    name: f"{SOURCE_REPO_DIR}/{name}"
+    for name in (
+        "raider_generated_alpha.png",
+        "raider_elite_generated_alpha.png",
+        "zombie_bloater_self_destruct_alpha.png",
+        "zombie_screamer_spit_alpha.png",
+    )
+}
+ARCHIVAL_SOURCE_PATHS = {
+    name: f"{SOURCE_REPO_DIR}/{name}"
+    for name in (
+        "raider_generated_chroma.png",
+        "raider_elite_generated_chroma.png",
+        "zombie_bloater_self_destruct_chroma.png",
+        "zombie_screamer_spit_chroma.png",
+    )
+}
+CANONICAL_SOURCE_FILES = tuple(CANONICAL_SOURCE_PATHS)
+ARCHIVAL_SOURCE_FILES = tuple(ARCHIVAL_SOURCE_PATHS)
+
+
+def _cells(source: str, row: int, columns: list[int], source_rows: int | None = None) -> list[dict]:
+    cells = [{"source": source, "row": row, "column": column} for column in columns]
+    if source_rows is not None:
+        for cell in cells:
+            cell["sourceRows"] = source_rows
+    return cells
 
 ROW_PROVENANCE = {
     "zombie_patient_dormant": {
-        "retained": {1: 0, 2: 1, 3: 2, 4: 3},
-        "new": {0: ["baseline:zombie_patient_dormant:0"]},
+        "retainedRows": [
+            {"targetRow": 1, "baselineRow": 0, "motion": "wake"},
+            {"targetRow": 2, "baselineRow": 1, "motion": "basic_attack"},
+            {"targetRow": 3, "baselineRow": 2, "motion": "hit"},
+            {"targetRow": 4, "baselineRow": 3, "motion": "death"},
+        ],
+        "newRows": [{
+            "row": 0,
+            "motion": "dormant",
+            "cells": _cells("baseline:zombie_patient_dormant", 0, [0, 1, 0, 1, 0, 1]),
+        }],
     },
     "zombie_runner": {
-        "retained": {0: 0, 3: 1, 4: 2, 5: 3},
-        "new": {1: ["baseline:zombie_runner:1"], 2: ["baseline:zombie_runner:0", "baseline:zombie_runner:1"]},
+        "retainedRows": [
+            {"targetRow": 0, "baselineRow": 0, "motion": "idle"},
+            {"targetRow": 3, "baselineRow": 1, "motion": "runner_rush"},
+            {"targetRow": 4, "baselineRow": 2, "motion": "hit"},
+            {"targetRow": 5, "baselineRow": 3, "motion": "death"},
+        ],
+        "newRows": [
+            {"row": 1, "motion": "basic_attack", "cells": _cells("baseline:zombie_runner", 1, [0, 0, 1, 2, 3, 0])},
+            {"row": 2, "motion": "telegraph", "cells": [
+                *_cells("baseline:zombie_runner", 0, [0, 1, 2, 3]),
+                *_cells("baseline:zombie_runner", 1, [0, 0]),
+            ]},
+        ],
     },
     "zombie_brute": {
-        "retained": {0: 0, 3: 1, 4: 2, 5: 3},
-        "new": {1: ["baseline:zombie_brute:1"], 2: ["baseline:zombie_brute:0", "baseline:zombie_brute:1"]},
+        "retainedRows": [
+            {"targetRow": 0, "baselineRow": 0, "motion": "idle"},
+            {"targetRow": 3, "baselineRow": 1, "motion": "slam"},
+            {"targetRow": 4, "baselineRow": 2, "motion": "hit"},
+            {"targetRow": 5, "baselineRow": 3, "motion": "death"},
+        ],
+        "newRows": [
+            {"row": 1, "motion": "basic_attack", "cells": _cells("baseline:zombie_brute", 1, [2, 3, 4, 5, 5, 5])},
+            {"row": 2, "motion": "telegraph", "cells": [
+                *_cells("baseline:zombie_brute", 0, [5]),
+                *_cells("baseline:zombie_brute", 1, [0, 0, 1, 1, 0]),
+            ]},
+        ],
     },
     "raider": {
-        "retained": {3: 2, 4: 3},
-        "new": {
-            0: ["raider_generated_alpha.png"],
-            1: ["raider_generated_alpha.png"],
-            2: ["raider_generated_alpha.png"],
-        },
+        "retainedRows": [
+            {"targetRow": 3, "baselineRow": 2, "motion": "hit"},
+            {"targetRow": 4, "baselineRow": 3, "motion": "death"},
+        ],
+        "newRows": [
+            {"row": 0, "motion": "idle", "cells": _cells("raider_generated_alpha.png", 0, [0, 5, 0, 5, 0, 5], 2)},
+            {"row": 1, "motion": "basic_attack", "cells": _cells("raider_generated_alpha.png", 0, list(range(COLS)), 2)},
+            {"row": 2, "motion": "reload", "cells": _cells("raider_generated_alpha.png", 1, list(range(COLS)), 2)},
+        ],
     },
     "raider_elite": {
-        "retained": {0: 0, 4: 2, 5: 3},
-        "new": {
-            1: ["raider_elite_generated_alpha.png"],
-            2: ["raider_elite_generated_alpha.png"],
-            3: ["raider_elite_generated_alpha.png"],
-        },
+        "retainedRows": [
+            {"targetRow": 0, "baselineRow": 0, "motion": "idle"},
+            {"targetRow": 4, "baselineRow": 2, "motion": "hit"},
+            {"targetRow": 5, "baselineRow": 3, "motion": "death"},
+        ],
+        "newRows": [
+            {"row": 1, "motion": "basic_attack", "cells": [
+                *_cells("raider_elite_generated_alpha.png", 0, [0, 1], 2),
+                *_cells("raider_elite_generated_alpha.png", 1, [2, 3], 2),
+                *_cells("raider_elite_generated_alpha.png", 0, [1, 0], 2),
+            ]},
+            {"row": 2, "motion": "aim", "cells": _cells("raider_elite_generated_alpha.png", 0, list(range(COLS)), 2)},
+            {"row": 3, "motion": "aimed_shot", "cells": _cells("raider_elite_generated_alpha.png", 1, list(range(COLS)), 2)},
+        ],
     },
     "zombie_acid": {
-        "retained": {0: 0, 2: 1, 3: 2, 4: 3},
-        "new": {1: ["baseline:zombie_acid:1"]},
+        "retainedRows": [
+            {"targetRow": 0, "baselineRow": 0, "motion": "idle"},
+            {"targetRow": 2, "baselineRow": 1, "motion": "acid_lash"},
+            {"targetRow": 3, "baselineRow": 2, "motion": "hit"},
+            {"targetRow": 4, "baselineRow": 3, "motion": "death"},
+        ],
+        "newRows": [{
+            "row": 1,
+            "motion": "basic_attack",
+            "cells": _cells("baseline:zombie_acid", 1, [0, 1, 2, 3, 2, 1]),
+        }],
     },
     "zombie_bloater": {
-        "retained": {0: 0, 1: 1, 4: 2, 5: 3},
-        "new": {
-            2: ["zombie_bloater_self_destruct_alpha.png"],
-            3: ["zombie_bloater_self_destruct_alpha.png"],
-        },
+        "retainedRows": [
+            {"targetRow": 0, "baselineRow": 0, "motion": "idle"},
+            {"targetRow": 1, "baselineRow": 1, "motion": "basic_attack"},
+            {"targetRow": 4, "baselineRow": 2, "motion": "hit"},
+            {"targetRow": 5, "baselineRow": 3, "motion": "death"},
+        ],
+        "newRows": [
+            {"row": 2, "motion": "charge", "cells": _cells("zombie_bloater_self_destruct_alpha.png", 0, [0, 0, 1, 1, 2, 2], 1)},
+            {"row": 3, "motion": "self_destruct", "cells": _cells("zombie_bloater_self_destruct_alpha.png", 0, list(range(COLS)), 1)},
+        ],
     },
     "zombie_screamer": {
-        "retained": {0: 0, 3: 1, 4: 2, 5: 3},
-        "new": {
-            1: ["zombie_screamer_spit_alpha.png"],
-            2: ["baseline:zombie_screamer:0", "baseline:zombie_screamer:1"],
-        },
+        "retainedRows": [
+            {"targetRow": 0, "baselineRow": 0, "motion": "idle"},
+            {"targetRow": 3, "baselineRow": 1, "motion": "summon_horde"},
+            {"targetRow": 4, "baselineRow": 2, "motion": "hit"},
+            {"targetRow": 5, "baselineRow": 3, "motion": "death"},
+        ],
+        "newRows": [
+            {"row": 1, "motion": "basic_attack", "cells": _cells("zombie_screamer_spit_alpha.png", 0, list(range(COLS)), 1)},
+            {"row": 2, "motion": "charge", "cells": [
+                *_cells("baseline:zombie_screamer", 0, [0, 1]),
+                *_cells("baseline:zombie_screamer", 1, [0, 1, 2, 2]),
+            ]},
+        ],
     },
     "zombie_charger": {
-        "retained": {0: 0, 3: 1, 4: 2, 5: 3},
-        "new": {1: ["baseline:zombie_charger:1"], 2: ["baseline:zombie_charger:0", "baseline:zombie_charger:1"]},
+        "retainedRows": [
+            {"targetRow": 0, "baselineRow": 0, "motion": "idle"},
+            {"targetRow": 3, "baselineRow": 1, "motion": "charge_strike"},
+            {"targetRow": 4, "baselineRow": 2, "motion": "hit"},
+            {"targetRow": 5, "baselineRow": 3, "motion": "death"},
+        ],
+        "newRows": [
+            {"row": 1, "motion": "basic_attack", "cells": _cells("baseline:zombie_charger", 1, [0, 0, 1, 2, 2, 0])},
+            {"row": 2, "motion": "charge", "cells": [
+                *_cells("baseline:zombie_charger", 0, [0, 1, 2]),
+                *_cells("baseline:zombie_charger", 1, [0, 0, 0]),
+            ]},
+        ],
     },
 }
 
@@ -166,13 +259,6 @@ def existing_row(sheet: Image.Image, row: int, cols: list[int] | None = None) ->
     return [existing_cell(sheet, row, col) for col in (cols if cols is not None else range(COLS))]
 
 
-def generated_row(sheet: Image.Image, row: int, rows: int, cols: list[int] | None = None) -> list[Image.Image]:
-    return [
-        fitted_generated_cell(sheet, row, col, rows)
-        for col in (cols if cols is not None else range(COLS))
-    ]
-
-
 def make_sheet(rows: list[list[Image.Image]]) -> Image.Image:
     output = Image.new("RGBA", (COLS * CELL, len(rows) * CELL), (0, 0, 0, 0))
     for row_index, frames in enumerate(rows):
@@ -183,83 +269,49 @@ def make_sheet(rows: list[list[Image.Image]]) -> Image.Image:
     return output
 
 
-def assemble_sheets() -> dict[str, Image.Image]:
+def _assemble_new_cell(
+    enemy_id: str,
+    cell: dict,
+    baseline: Image.Image,
+    generated: dict[str, Image.Image],
+) -> Image.Image:
+    source = cell["source"]
+    if source == f"baseline:{enemy_id}":
+        return existing_cell(baseline, cell["row"], cell["column"])
+    if source not in generated:
+        raise ValueError(f"unknown assembly source for {enemy_id}: {source}")
+    return fitted_generated_cell(
+        generated[source], cell["row"], cell["column"], cell["sourceRows"],
+    )
+
+
+def assemble_sheets(row_provenance: dict | None = None) -> dict[str, Image.Image]:
+    provenance = ROW_PROVENANCE if row_provenance is None else row_provenance
     generated = {
         name: Image.open(SOURCE_DIR / name).convert("RGBA")
         for name in CANONICAL_SOURCE_FILES
     }
-    baseline = {enemy_id: baseline_sheet(enemy_id) for enemy_id in ROW_PROVENANCE}
+    baseline = {enemy_id: baseline_sheet(enemy_id) for enemy_id in provenance}
     sheets: dict[str, Image.Image] = {}
-
-    old = baseline["zombie_patient_dormant"]
-    sheets["zombie_patient_dormant"] = make_sheet([
-        existing_row(old, 0, [0, 1, 0, 1, 0, 1]), existing_row(old, 0),
-        existing_row(old, 1), existing_row(old, 2), existing_row(old, 3),
-    ])
-
-    old = baseline["zombie_runner"]
-    sheets["zombie_runner"] = make_sheet([
-        existing_row(old, 0), existing_row(old, 1, [0, 0, 1, 2, 3, 0]),
-        [existing_cell(old, 0, 0), existing_cell(old, 0, 1), existing_cell(old, 0, 2),
-         existing_cell(old, 0, 3), existing_cell(old, 1, 0), existing_cell(old, 1, 0)],
-        existing_row(old, 1), existing_row(old, 2), existing_row(old, 3),
-    ])
-
-    old = baseline["zombie_brute"]
-    sheets["zombie_brute"] = make_sheet([
-        existing_row(old, 0), existing_row(old, 1, [2, 3, 4, 5, 5, 5]),
-        [existing_cell(old, 0, 5), existing_cell(old, 1, 0), existing_cell(old, 1, 0),
-         existing_cell(old, 1, 1), existing_cell(old, 1, 1), existing_cell(old, 1, 0)],
-        existing_row(old, 1), existing_row(old, 2), existing_row(old, 3),
-    ])
-
-    old = baseline["raider"]
-    new = generated["raider_generated_alpha.png"]
-    sheets["raider"] = make_sheet([
-        generated_row(new, 0, 2, [0, 5, 0, 5, 0, 5]), generated_row(new, 0, 2),
-        generated_row(new, 1, 2), existing_row(old, 2), existing_row(old, 3),
-    ])
-
-    old = baseline["raider_elite"]
-    new = generated["raider_elite_generated_alpha.png"]
-    sheets["raider_elite"] = make_sheet([
-        existing_row(old, 0),
-        [fitted_generated_cell(new, 0, 0, 2), fitted_generated_cell(new, 0, 1, 2),
-         fitted_generated_cell(new, 1, 2, 2), fitted_generated_cell(new, 1, 3, 2),
-         fitted_generated_cell(new, 0, 1, 2), fitted_generated_cell(new, 0, 0, 2)],
-        generated_row(new, 0, 2), generated_row(new, 1, 2),
-        existing_row(old, 2), existing_row(old, 3),
-    ])
-
-    old = baseline["zombie_acid"]
-    sheets["zombie_acid"] = make_sheet([
-        existing_row(old, 0), existing_row(old, 1, [0, 1, 2, 3, 2, 1]),
-        existing_row(old, 1), existing_row(old, 2), existing_row(old, 3),
-    ])
-
-    old = baseline["zombie_bloater"]
-    new = generated["zombie_bloater_self_destruct_alpha.png"]
-    sheets["zombie_bloater"] = make_sheet([
-        existing_row(old, 0), existing_row(old, 1), generated_row(new, 0, 1, [0, 0, 1, 1, 2, 2]),
-        generated_row(new, 0, 1), existing_row(old, 2), existing_row(old, 3),
-    ])
-
-    old = baseline["zombie_screamer"]
-    new = generated["zombie_screamer_spit_alpha.png"]
-    sheets["zombie_screamer"] = make_sheet([
-        existing_row(old, 0), generated_row(new, 0, 1),
-        [existing_cell(old, 0, 0), existing_cell(old, 0, 1), existing_cell(old, 1, 0),
-         existing_cell(old, 1, 1), existing_cell(old, 1, 2), existing_cell(old, 1, 2)],
-        existing_row(old, 1), existing_row(old, 2), existing_row(old, 3),
-    ])
-
-    old = baseline["zombie_charger"]
-    sheets["zombie_charger"] = make_sheet([
-        existing_row(old, 0), existing_row(old, 1, [0, 0, 1, 2, 2, 0]),
-        [existing_cell(old, 0, 0), existing_cell(old, 0, 1), existing_cell(old, 0, 2),
-         existing_cell(old, 1, 0), existing_cell(old, 1, 0), existing_cell(old, 1, 0)],
-        existing_row(old, 1), existing_row(old, 2), existing_row(old, 3),
-    ])
+    for enemy_id, metadata in provenance.items():
+        rows: dict[int, list[Image.Image]] = {}
+        for retained in metadata["retainedRows"]:
+            target_row = retained["targetRow"]
+            if target_row in rows:
+                raise ValueError(f"duplicate assembly row for {enemy_id}:{target_row}")
+            rows[target_row] = existing_row(baseline[enemy_id], retained["baselineRow"])
+        for new_row in metadata["newRows"]:
+            target_row = new_row["row"]
+            if target_row in rows:
+                raise ValueError(f"duplicate assembly row for {enemy_id}:{target_row}")
+            rows[target_row] = [
+                _assemble_new_cell(enemy_id, cell, baseline[enemy_id], generated)
+                for cell in new_row["cells"]
+            ]
+        expected_rows = list(range(len(rows)))
+        if sorted(rows) != expected_rows:
+            raise ValueError(f"assembly rows must be contiguous for {enemy_id}: {sorted(rows)}")
+        sheets[enemy_id] = make_sheet([rows[row] for row in expected_rows])
 
     normalizer = _normalizer()
     for enemy_id, sheet in list(sheets.items()):
@@ -294,12 +346,12 @@ def validate_foreground_coverage(
 def recipe_document() -> dict:
     assembled = assemble_sheets()
     canonical_sources = {
-        name: {"path": f"/art_sources/combat/task7_normal/{name}", "sha256": file_sha256(SOURCE_DIR / name)}
-        for name in CANONICAL_SOURCE_FILES
+        name: {"path": path, "sha256": file_sha256(SOURCE_DIR / name)}
+        for name, path in CANONICAL_SOURCE_PATHS.items()
     }
     archival_sources = {
-        name: {"path": f"/art_sources/combat/task7_normal/{name}", "sha256": file_sha256(SOURCE_DIR / name)}
-        for name in ARCHIVAL_SOURCE_FILES
+        name: {"path": path, "sha256": file_sha256(SOURCE_DIR / name)}
+        for name, path in ARCHIVAL_SOURCE_PATHS.items()
     }
     targets = {}
     for enemy_id, image in assembled.items():
@@ -311,14 +363,8 @@ def recipe_document() -> dict:
             "pixelSha256": pixel_sha256(image),
             "fileSha256": file_sha256(target_path),
             "foregroundCoverage": frame_foreground_coverage(image),
-            "retainedRows": [
-                {"targetRow": target_row, "baselineRow": baseline_row}
-                for target_row, baseline_row in sorted(ROW_PROVENANCE[enemy_id]["retained"].items())
-            ],
-            "newRows": [
-                {"row": row, "sources": source_names}
-                for row, source_names in sorted(ROW_PROVENANCE[enemy_id]["new"].items())
-            ],
+            "retainedRows": copy.deepcopy(ROW_PROVENANCE[enemy_id]["retainedRows"]),
+            "newRows": copy.deepcopy(ROW_PROVENANCE[enemy_id]["newRows"]),
         }
     return {
         "version": 2,
@@ -335,23 +381,61 @@ def recipe_document() -> dict:
     }
 
 
-def verify_recipe(recipe: dict) -> dict:
+def _validate_source_mapping(kind: str, actual: object, expected_paths: dict[str, str]) -> None:
+    if not isinstance(actual, dict) or list(actual) != list(expected_paths):
+        raise ValueError(f"{kind} source inventory mismatch")
+    for name, expected_path in expected_paths.items():
+        entry = actual[name]
+        if not isinstance(entry, dict) or set(entry) != {"path", "sha256"}:
+            raise ValueError(f"{kind} source schema mismatch for {name}")
+        source_path = resolve_repo_path(entry["path"])
+        if entry["path"] != expected_path:
+            raise ValueError(f"{kind} source path mismatch for {name}")
+        sha256 = entry["sha256"]
+        if not isinstance(sha256, str) or len(sha256) != 64:
+            raise ValueError(f"{kind} source hash schema mismatch for {name}")
+        verify_source_hash(source_path, sha256)
+
+
+def _normalized_json(value: object) -> object:
+    return json.loads(json.dumps(value, ensure_ascii=False))
+
+
+def validate_recipe_contract(recipe: dict) -> dict:
     if recipe.get("version") != 2 or recipe.get("baselineCommit") != BASELINE_COMMIT:
         raise ValueError("assembly recipe version or baseline mismatch")
+    if recipe.get("assemblyScript") != "/tools/build_normal_enemy_motion_sheets.py":
+        raise ValueError("assembly script path mismatch")
     if text_sha256(Path(__file__)) != recipe["assemblyScriptSha256"]:
         raise ValueError("assembly script hash changed")
-    if set(recipe.get("canonicalSources", {})) != set(CANONICAL_SOURCE_FILES):
-        raise ValueError("canonical source inventory mismatch")
-    if set(recipe.get("archivalSources", {})) != set(ARCHIVAL_SOURCE_FILES):
-        raise ValueError("archival source inventory mismatch")
-    for source in recipe["canonicalSources"].values():
-        verify_source_hash(resolve_repo_path(source["path"]), source["sha256"])
-    for source in recipe["archivalSources"].values():
-        verify_source_hash(resolve_repo_path(source["path"]), source["sha256"])
+    _validate_source_mapping("canonical", recipe.get("canonicalSources"), CANONICAL_SOURCE_PATHS)
+    _validate_source_mapping("archival", recipe.get("archivalSources"), ARCHIVAL_SOURCE_PATHS)
 
-    assembled = assemble_sheets()
-    if set(recipe.get("targets", {})) != set(assembled):
+    targets = recipe.get("targets")
+    if not isinstance(targets, dict) or list(targets) != list(ROW_PROVENANCE):
         raise ValueError("target inventory mismatch")
+    validated_provenance = {}
+    for enemy_id, authoritative in ROW_PROVENANCE.items():
+        target = targets[enemy_id]
+        target_path = target.get("path")
+        resolve_repo_path(target_path)
+        expected_target_path = f"/assets/images/combat/spritesheets/enemies/{enemy_id}_sheet.png"
+        if target_path != expected_target_path:
+            raise ValueError(f"target path mismatch for {enemy_id}")
+        actual_metadata = {
+            "retainedRows": target.get("retainedRows"),
+            "newRows": target.get("newRows"),
+        }
+        if _normalized_json(actual_metadata) != _normalized_json(authoritative):
+            raise ValueError(f"row provenance mismatch for {enemy_id}")
+        validated_provenance[enemy_id] = copy.deepcopy(actual_metadata)
+    return validated_provenance
+
+
+def verify_recipe(recipe: dict) -> dict:
+    validated_provenance = validate_recipe_contract(recipe)
+
+    assembled = assemble_sheets(validated_provenance)
     for enemy_id, expected in recipe["targets"].items():
         image = assembled[enemy_id]
         target_path = resolve_repo_path(expected["path"])
@@ -365,11 +449,11 @@ def verify_recipe(recipe: dict) -> dict:
         validate_foreground_coverage(
             frame_foreground_coverage(actual),
             expected["foregroundCoverage"],
-            [entry["row"] for entry in expected["newRows"]],
+            [entry["row"] for entry in validated_provenance[enemy_id]["newRows"]],
         )
 
         baseline = baseline_sheet(enemy_id)
-        for mapping in expected["retainedRows"]:
+        for mapping in validated_provenance[enemy_id]["retainedRows"]:
             target_row = mapping["targetRow"]
             baseline_row = mapping["baselineRow"]
             for col in range(COLS):

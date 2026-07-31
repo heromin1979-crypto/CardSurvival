@@ -3,7 +3,7 @@
   "baselineCommit": "50b75fb",
   "rebuiltBaselineCommit": "1312cf9",
   "assemblyRecipePath": "/art_sources/combat/task7_normal/assembly_recipe.json",
-  "assemblyRecipeSha256": "8d21cf5069b4995904c04a3a6363f430308aba865f1f78850e1845fe9cf3d1d5",
+  "assemblyRecipeSha256": "040179177c72a9cb9116a7a627400a2ae1208314d629df25c04ab85e8d9af745",
   "assemblyVerification": {
     "verifiedTargets": 9,
     "verifiedCanonicalSources": 4,
