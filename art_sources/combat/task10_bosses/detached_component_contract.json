@@ -1,0 +1,5319 @@
+{
+  "version": 1,
+  "policy": "Human-selected semantic effect rows. Each entry pins every detached source component by exact cell, union mask SHA-256, area, bbox, and component count.",
+  "selectionPath": "/art_sources/combat/task10_bosses/detached_component_selection.json",
+  "selectionSha256": "fe182e0f0a0e61712a97f046841b9004aec6d5a4990296bf7b382e5f5d0de0a2",
+  "rowContract": [
+    "idle",
+    "basic_a",
+    "basic_b",
+    "special",
+    "ultimate",
+    "hit",
+    "charge",
+    "death"
+  ],
+  "sources": {
+    "boss_patient_zero": "c1ffd5c5dc858b575f33748e4c3fa846a75edc93d6a5512dc820267c3567e16c",
+    "boss_radiation_colossus": "da2f42a38bc7e9f31a8d24ee2fac5d10fb1a12797ab7d1607a1a88ce68c3d6f6",
+    "boss_acid_queen": "607ac763759e5fdc11a6e71fa0fa89b79e5922945c1f9817eba52925467148fd",
+    "boss_horde_mother": "fb9414770bea141c01d387d56cfb1947947769d3c1e17fe3fd78ec2b476f3dfe",
+    "boss_frozen_giant": "3cfe83c080f891d7f83ac613055fddf780391bdc0660fdd3ed7bdea61b9d9e5f",
+    "boss_raider_warlord": "c83260d8b1a7d255d12a6aea0c43c82e2adea0ff3950e7ecf4c6630f8c0d650d",
+    "boss_phantom_sniper": "83383fa756563505ef162ebf07a42733317cea90df7a170cb25bcc60598a9e48",
+    "boss_cult_leader": "41e1c08ca9d9a0a053ff06bf5a34f52964b263d2fe00398328a365db5320e928",
+    "boss_mutant_alpha_tiger": "1f9090ad1990de811af0ed748d32cd2a2ce8d323014a2942e4de747c25d2802d",
+    "boss_sewer_king": "f28da21356dea6eee75cf37b844f511b57ff5968a5de8e8851d9756e1b8381b8",
+    "boss_swarm_queen_bee": "df5b9344d560b88d813f5978d5f0960ad06a421325dac0f7e75302cf533cda66",
+    "boss_feral_dog_alpha": "6ad6885d09b660c0199bee65e58f9473abdf10ff4c6fc2d7261c8df8eb94a190",
+    "boss_penthouse_survivor": "f6f29a020fdd73cd5fbd18760567e7a800c14a5521190f83814eefe5a42f8d81",
+    "boss_escaped_experiment": "afc9be09823e86c6cc43c4b2505d6008c572420f887656869b8b24e2c84adf02",
+    "boss_blizzard_wraith": "53338928cf07d63b49aa5874482c19ae5d64d3c7b045f301632f43869999a967",
+    "boss_soldier_nemesis": "b0ee5303a25d6f91d319c82f4d7916949b976c6be4c052f88329000c88d51b3a",
+    "boss_firefighter_nemesis": "46ed42b550835af0f8e9543b4807569cc255783f6da4b2859774417028668060",
+    "boss_homeless_nemesis": "3a0de6464adebd1a8d8020acf5ee2bcf167564c4f377b50bb15a1666749654c2",
+    "boss_chef_nemesis": "30354085bc4ac1f57f5bdf8319cf66eb4dc0a21eb30fb2df8dc3c97146415871",
+    "boss_doctor_nemesis": "d6525dcc364a4206238d2cec910ccf8628b0fe2cccefd4aa51cb0eca0ec88be5",
+    "food_warlord": "b65feae449792fc276987ef4cf9684788d9269d9e5af1e895af29db9c98179fb"
+  },
+  "frames": [
+    {
+      "bossId": "boss_patient_zero",
+      "motionKey": "basic_b",
+      "row": 2,
+      "col": 0,
+      "sourceColumns": 6,
+      "sourceCell": [
+        0,
+        362,
+        181,
+        543
+      ],
+      "detached": {
+        "componentCount": 15,
+        "bbox": [
+          22,
+          20,
+          130,
+          119
+        ],
+        "area": 46,
+        "maskSha256": "e62198ee2e4778878a465b0155128fe8f15aeb86263aeee97f493bde018b3899"
+      }
+    },
+    {
+      "bossId": "boss_patient_zero",
+      "motionKey": "basic_b",
+      "row": 2,
+      "col": 1,
+      "sourceColumns": 6,
+      "sourceCell": [
+        181,
+        362,
+        362,
+        543
+      ],
+      "detached": {
+        "componentCount": 16,
+        "bbox": [
+          191,
+          10,
+          304,
+          110
+        ],
+        "area": 56,
+        "maskSha256": "2a262aecf1d8edbe10961a4ec03b8530c474f11938764568bfb6134bc7aa9471"
+      }
+    },
+    {
+      "bossId": "boss_patient_zero",
+      "motionKey": "basic_b",
+      "row": 2,
+      "col": 2,
+      "sourceColumns": 6,
+      "sourceCell": [
+        362,
+        362,
+        543,
+        543
+      ],
+      "detached": {
+        "componentCount": 47,
+        "bbox": [
+          363,
+          8,
+          544,
+          119
+        ],
+        "area": 155,
+        "maskSha256": "7db16be016f657e517c29e9ba3b38c8d6a8115f99fa19ab38cba7100a3f53f38"
+      }
+    },
+    {
+      "bossId": "boss_patient_zero",
+      "motionKey": "basic_b",
+      "row": 2,
+      "col": 3,
+      "sourceColumns": 6,
+      "sourceCell": [
+        543,
+        362,
+        724,
+        543
+      ],
+      "detached": {
+        "componentCount": 20,
+        "bbox": [
+          542,
+          17,
+          671,
+          125
+        ],
+        "area": 62,
+        "maskSha256": "8923564c5b925c1a6054b9fafe553c62895167ae17f657c17ae9df51d0ac8220"
+      }
+    },
+    {
+      "bossId": "boss_patient_zero",
+      "motionKey": "basic_b",
+      "row": 2,
+      "col": 4,
+      "sourceColumns": 6,
+      "sourceCell": [
+        724,
+        362,
+        905,
+        543
+      ],
+      "detached": {
+        "componentCount": 30,
+        "bbox": [
+          750,
+          13,
+          868,
+          120
+        ],
+        "area": 136,
+        "maskSha256": "d23f9a3fd1a8852e0e5da7e6b87f9cb4bf9f59bb311eb089029f5c57b24e8482"
+      }
+    },
+    {
+      "bossId": "boss_patient_zero",
+      "motionKey": "basic_b",
+      "row": 2,
+      "col": 5,
+      "sourceColumns": 6,
+      "sourceCell": [
+        905,
+        362,
+        1086,
+        543
+      ],
+      "detached": {
+        "componentCount": 3,
+        "bbox": [
+          941,
+          81,
+          976,
+          107
+        ],
+        "area": 13,
+        "maskSha256": "67580f07541c181bafee08b66f077977c6980121c98cd7a7b8f24645cd9df1a8"
+      }
+    },
+    {
+      "bossId": "boss_patient_zero",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 0,
+      "sourceColumns": 6,
+      "sourceCell": [
+        0,
+        724,
+        181,
+        905
+      ],
+      "detached": {
+        "componentCount": 4,
+        "bbox": [
+          74,
+          18,
+          122,
+          131
+        ],
+        "area": 9,
+        "maskSha256": "1a935be39f84142e74501835ba0a17578b7ac644ea1ab65a7d2386f6536bcf12"
+      }
+    },
+    {
+      "bossId": "boss_patient_zero",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 1,
+      "sourceColumns": 6,
+      "sourceCell": [
+        181,
+        724,
+        362,
+        905
+      ],
+      "detached": {
+        "componentCount": 6,
+        "bbox": [
+          207,
+          67,
+          362,
+          150
+        ],
+        "area": 340,
+        "maskSha256": "663486e6acbbbbeceeeefbc2a9a0affa4af0d41351eae39e54e8d5f86e93920c"
+      }
+    },
+    {
+      "bossId": "boss_patient_zero",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 2,
+      "sourceColumns": 6,
+      "sourceCell": [
+        362,
+        724,
+        543,
+        905
+      ],
+      "detached": {
+        "componentCount": 4,
+        "bbox": [
+          376,
+          41,
+          543,
+          149
+        ],
+        "area": 506,
+        "maskSha256": "a98f8d54043298001fec5763136a16c8709594bbeabb395498ced5c9251e89c0"
+      }
+    },
+    {
+      "bossId": "boss_patient_zero",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 3,
+      "sourceColumns": 6,
+      "sourceCell": [
+        543,
+        724,
+        724,
+        905
+      ],
+      "detached": {
+        "componentCount": 11,
+        "bbox": [
+          564,
+          7,
+          724,
+          147
+        ],
+        "area": 84,
+        "maskSha256": "fddfd48dda887f14940dd10a20d840d059f8fbb305e9b8d0eb2d636099b4a52d"
+      }
+    },
+    {
+      "bossId": "boss_patient_zero",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 4,
+      "sourceColumns": 6,
+      "sourceCell": [
+        724,
+        724,
+        905,
+        905
+      ],
+      "detached": {
+        "componentCount": 4,
+        "bbox": [
+          724,
+          78,
+          862,
+          112
+        ],
+        "area": 15,
+        "maskSha256": "cc4f7bd21e5d3dac4d0edc649acd328b5a35f32359d3143f260caa50a677da33"
+      }
+    },
+    {
+      "bossId": "boss_patient_zero",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 5,
+      "sourceColumns": 6,
+      "sourceCell": [
+        905,
+        724,
+        1086,
+        905
+      ],
+      "detached": {
+        "componentCount": 5,
+        "bbox": [
+          905,
+          74,
+          977,
+          119
+        ],
+        "area": 483,
+        "maskSha256": "3c50050ebf294f01e4228b0d3186b3aae61460010b18f11748cc3b64106cd52a"
+      }
+    },
+    {
+      "bossId": "boss_radiation_colossus",
+      "motionKey": "special",
+      "row": 3,
+      "col": 0,
+      "sourceColumns": 6,
+      "sourceCell": [
+        0,
+        543,
+        181,
+        724
+      ],
+      "detached": {
+        "componentCount": 0,
+        "bbox": null,
+        "area": 0,
+        "maskSha256": null
+      }
+    },
+    {
+      "bossId": "boss_radiation_colossus",
+      "motionKey": "special",
+      "row": 3,
+      "col": 1,
+      "sourceColumns": 6,
+      "sourceCell": [
+        181,
+        543,
+        362,
+        724
+      ],
+      "detached": {
+        "componentCount": 0,
+        "bbox": null,
+        "area": 0,
+        "maskSha256": null
+      }
+    },
+    {
+      "bossId": "boss_radiation_colossus",
+      "motionKey": "special",
+      "row": 3,
+      "col": 2,
+      "sourceColumns": 6,
+      "sourceCell": [
+        362,
+        543,
+        543,
+        724
+      ],
+      "detached": {
+        "componentCount": 0,
+        "bbox": null,
+        "area": 0,
+        "maskSha256": null
+      }
+    },
+    {
+      "bossId": "boss_radiation_colossus",
+      "motionKey": "special",
+      "row": 3,
+      "col": 3,
+      "sourceColumns": 6,
+      "sourceCell": [
+        543,
+        543,
+        724,
+        724
+      ],
+      "detached": {
+        "componentCount": 23,
+        "bbox": [
+          544,
+          25,
+          720,
+          172
+        ],
+        "area": 122,
+        "maskSha256": "94eecc7f7600a4f70fc2a4b8bca0c7dbf8ecfc85165feadfa5ea537c20cb8efe"
+      }
+    },
+    {
+      "bossId": "boss_radiation_colossus",
+      "motionKey": "special",
+      "row": 3,
+      "col": 4,
+      "sourceColumns": 6,
+      "sourceCell": [
+        724,
+        543,
+        905,
+        724
+      ],
+      "detached": {
+        "componentCount": 51,
+        "bbox": [
+          726,
+          3,
+          903,
+          172
+        ],
+        "area": 299,
+        "maskSha256": "d29fa4191a50f9597e563f721401e330c2a30a5aa2bec1acf5ec54709934e66c"
+      }
+    },
+    {
+      "bossId": "boss_radiation_colossus",
+      "motionKey": "special",
+      "row": 3,
+      "col": 5,
+      "sourceColumns": 6,
+      "sourceCell": [
+        905,
+        543,
+        1086,
+        724
+      ],
+      "detached": {
+        "componentCount": 36,
+        "bbox": [
+          907,
+          0,
+          1082,
+          159
+        ],
+        "area": 163,
+        "maskSha256": "50261bf0dd2dd9825e053fcfb12467c4ef31244cec27ae9f5a4c6e98e7aedef7"
+      }
+    },
+    {
+      "bossId": "boss_radiation_colossus",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 0,
+      "sourceColumns": 6,
+      "sourceCell": [
+        0,
+        724,
+        181,
+        905
+      ],
+      "detached": {
+        "componentCount": 7,
+        "bbox": [
+          82,
+          162,
+          106,
+          177
+        ],
+        "area": 35,
+        "maskSha256": "f2c940605468d6c3b30f16e9f3cf7c6cb9715a38fa08db5c8676dee1a94b769e"
+      }
+    },
+    {
+      "bossId": "boss_radiation_colossus",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 1,
+      "sourceColumns": 6,
+      "sourceCell": [
+        181,
+        724,
+        362,
+        905
+      ],
+      "detached": {
+        "componentCount": 7,
+        "bbox": [
+          232,
+          118,
+          286,
+          177
+        ],
+        "area": 46,
+        "maskSha256": "1eaefe311141acc88bc148d5c450fd4f9fd398ed495867dc6f47afcad0d37d54"
+      }
+    },
+    {
+      "bossId": "boss_radiation_colossus",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 2,
+      "sourceColumns": 6,
+      "sourceCell": [
+        362,
+        724,
+        543,
+        905
+      ],
+      "detached": {
+        "componentCount": 4,
+        "bbox": [
+          448,
+          167,
+          470,
+          177
+        ],
+        "area": 19,
+        "maskSha256": "c3e2db2f34cc1a9e16186c813f8ab5448944340d27a823230c089b498c5e0ef8"
+      }
+    },
+    {
+      "bossId": "boss_radiation_colossus",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 3,
+      "sourceColumns": 6,
+      "sourceCell": [
+        543,
+        724,
+        724,
+        905
+      ],
+      "detached": {
+        "componentCount": 1,
+        "bbox": [
+          597,
+          18,
+          599,
+          20
+        ],
+        "area": 3,
+        "maskSha256": "f896c3a5f9841b6e1f0a22bd35a6a1bc5efb28aaa23b66301ec8098ce57cf99a"
+      }
+    },
+    {
+      "bossId": "boss_radiation_colossus",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 4,
+      "sourceColumns": 6,
+      "sourceCell": [
+        724,
+        724,
+        905,
+        905
+      ],
+      "detached": {
+        "componentCount": 0,
+        "bbox": null,
+        "area": 0,
+        "maskSha256": null
+      }
+    },
+    {
+      "bossId": "boss_radiation_colossus",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 5,
+      "sourceColumns": 6,
+      "sourceCell": [
+        905,
+        724,
+        1086,
+        905
+      ],
+      "detached": {
+        "componentCount": 3,
+        "bbox": [
+          978,
+          3,
+          1017,
+          171
+        ],
+        "area": 20,
+        "maskSha256": "d289fbdb6d5173b17ee8e1daa9ed9317d8a704eb74146522999b184d0e77f4c9"
+      }
+    },
+    {
+      "bossId": "boss_acid_queen",
+      "motionKey": "basic_a",
+      "row": 1,
+      "col": 0,
+      "sourceColumns": 6,
+      "sourceCell": [
+        0,
+        181,
+        181,
+        362
+      ],
+      "detached": {
+        "componentCount": 1,
+        "bbox": [
+          153,
+          120,
+          155,
+          122
+        ],
+        "area": 4,
+        "maskSha256": "27ecd0a598e76f8a2fd264d427df0a119903e8eae384e478902541756f089dd1"
+      }
+    },
+    {
+      "bossId": "boss_acid_queen",
+      "motionKey": "basic_a",
+      "row": 1,
+      "col": 1,
+      "sourceColumns": 6,
+      "sourceCell": [
+        181,
+        181,
+        362,
+        362
+      ],
+      "detached": {
+        "componentCount": 3,
+        "bbox": [
+          324,
+          7,
+          362,
+          156
+        ],
+        "area": 81,
+        "maskSha256": "a108129cec0611eda4f04b7d585d7cc4d7c0c7105cd7255e3d76c51cf9e37e9c"
+      }
+    },
+    {
+      "bossId": "boss_acid_queen",
+      "motionKey": "basic_a",
+      "row": 1,
+      "col": 2,
+      "sourceColumns": 6,
+      "sourceCell": [
+        362,
+        181,
+        543,
+        362
+      ],
+      "detached": {
+        "componentCount": 15,
+        "bbox": [
+          362,
+          27,
+          571,
+          122
+        ],
+        "area": 1589,
+        "maskSha256": "d61751f627abe234cf714dbdfa674db23748e002a23fc7029d567c3bf5ef07d1"
+      }
+    },
+    {
+      "bossId": "boss_acid_queen",
+      "motionKey": "basic_a",
+      "row": 1,
+      "col": 3,
+      "sourceColumns": 6,
+      "sourceCell": [
+        543,
+        181,
+        724,
+        362
+      ],
+      "detached": {
+        "componentCount": 17,
+        "bbox": [
+          543,
+          31,
+          724,
+          122
+        ],
+        "area": 536,
+        "maskSha256": "dc63721fc44cc697f1512f0f3b4634a168fcefe1c5d1c41abbc2fe347e5259a6"
+      }
+    },
+    {
+      "bossId": "boss_acid_queen",
+      "motionKey": "basic_a",
+      "row": 1,
+      "col": 4,
+      "sourceColumns": 6,
+      "sourceCell": [
+        724,
+        181,
+        905,
+        362
+      ],
+      "detached": {
+        "componentCount": 7,
+        "bbox": [
+          718,
+          40,
+          905,
+          158
+        ],
+        "area": 792,
+        "maskSha256": "7acfbd3231d047a7da026d5139f65ce12c4431d831b4ac360d658570a96e3786"
+      }
+    },
+    {
+      "bossId": "boss_acid_queen",
+      "motionKey": "basic_a",
+      "row": 1,
+      "col": 5,
+      "sourceColumns": 6,
+      "sourceCell": [
+        905,
+        181,
+        1086,
+        362
+      ],
+      "detached": {
+        "componentCount": 16,
+        "bbox": [
+          905,
+          3,
+          1066,
+          123
+        ],
+        "area": 189,
+        "maskSha256": "832774a762256ea20016dab6ad0f8c40c4c8702a6b180e3d2356c917ae685594"
+      }
+    },
+    {
+      "bossId": "boss_acid_queen",
+      "motionKey": "special",
+      "row": 3,
+      "col": 0,
+      "sourceColumns": 6,
+      "sourceCell": [
+        0,
+        543,
+        181,
+        724
+      ],
+      "detached": {
+        "componentCount": 7,
+        "bbox": [
+          81,
+          92,
+          131,
+          181
+        ],
+        "area": 46,
+        "maskSha256": "5f5d462b1737a9e2afab9ab7d583535a3cf5dbe366fda6659baa2834d8468b86"
+      }
+    },
+    {
+      "bossId": "boss_acid_queen",
+      "motionKey": "special",
+      "row": 3,
+      "col": 1,
+      "sourceColumns": 6,
+      "sourceCell": [
+        181,
+        543,
+        362,
+        724
+      ],
+      "detached": {
+        "componentCount": 9,
+        "bbox": [
+          252,
+          99,
+          342,
+          181
+        ],
+        "area": 116,
+        "maskSha256": "bfa9b535e1cb9d7f974a3227c2959a2faefa1b4b8c7cfeb5b62733493de1566f"
+      }
+    },
+    {
+      "bossId": "boss_acid_queen",
+      "motionKey": "special",
+      "row": 3,
+      "col": 2,
+      "sourceColumns": 6,
+      "sourceCell": [
+        362,
+        543,
+        543,
+        724
+      ],
+      "detached": {
+        "componentCount": 2,
+        "bbox": [
+          441,
+          175,
+          462,
+          181
+        ],
+        "area": 11,
+        "maskSha256": "ab7b37b1af8eebacacbf1a3974a7ff622dae48ea99a1caf0b27d8478133945d2"
+      }
+    },
+    {
+      "bossId": "boss_acid_queen",
+      "motionKey": "special",
+      "row": 3,
+      "col": 3,
+      "sourceColumns": 6,
+      "sourceCell": [
+        543,
+        543,
+        724,
+        724
+      ],
+      "detached": {
+        "componentCount": 18,
+        "bbox": [
+          621,
+          95,
+          715,
+          181
+        ],
+        "area": 99,
+        "maskSha256": "90db93edb672301770765310be3eeffe91d2d0a11d76460d87fef45d338b0021"
+      }
+    },
+    {
+      "bossId": "boss_acid_queen",
+      "motionKey": "special",
+      "row": 3,
+      "col": 4,
+      "sourceColumns": 6,
+      "sourceCell": [
+        724,
+        543,
+        905,
+        724
+      ],
+      "detached": {
+        "componentCount": 21,
+        "bbox": [
+          780,
+          89,
+          905,
+          181
+        ],
+        "area": 181,
+        "maskSha256": "9aa99fdeb7104797767e32dda59c5888e0c07de4881ba0c2de4959bd973c3d43"
+      }
+    },
+    {
+      "bossId": "boss_acid_queen",
+      "motionKey": "special",
+      "row": 3,
+      "col": 5,
+      "sourceColumns": 6,
+      "sourceCell": [
+        905,
+        543,
+        1086,
+        724
+      ],
+      "detached": {
+        "componentCount": 21,
+        "bbox": [
+          923,
+          95,
+          1072,
+          181
+        ],
+        "area": 86,
+        "maskSha256": "cd5a84176907bd57f71571426cec487e3cb3a738026050f82a4d610714ea0604"
+      }
+    },
+    {
+      "bossId": "boss_acid_queen",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 0,
+      "sourceColumns": 6,
+      "sourceCell": [
+        0,
+        724,
+        181,
+        905
+      ],
+      "detached": {
+        "componentCount": 10,
+        "bbox": [
+          50,
+          0,
+          131,
+          123
+        ],
+        "area": 50,
+        "maskSha256": "f4c4dd2134f5877e31ebc3aa3c2db4659413464d029827dcba31fe0b1271182e"
+      }
+    },
+    {
+      "bossId": "boss_acid_queen",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 1,
+      "sourceColumns": 6,
+      "sourceCell": [
+        181,
+        724,
+        362,
+        905
+      ],
+      "detached": {
+        "componentCount": 12,
+        "bbox": [
+          200,
+          0,
+          362,
+          154
+        ],
+        "area": 48,
+        "maskSha256": "64a05d43e2e2d94856a43698f8af889510703c1df1472c36df6bf320e0023b79"
+      }
+    },
+    {
+      "bossId": "boss_acid_queen",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 2,
+      "sourceColumns": 6,
+      "sourceCell": [
+        362,
+        724,
+        543,
+        905
+      ],
+      "detached": {
+        "componentCount": 12,
+        "bbox": [
+          373,
+          25,
+          514,
+          141
+        ],
+        "area": 42,
+        "maskSha256": "649115bf01568055cab879496f3748f3a111812707acb4103882f444bfe0b346"
+      }
+    },
+    {
+      "bossId": "boss_acid_queen",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 3,
+      "sourceColumns": 6,
+      "sourceCell": [
+        543,
+        724,
+        724,
+        905
+      ],
+      "detached": {
+        "componentCount": 24,
+        "bbox": [
+          557,
+          6,
+          724,
+          167
+        ],
+        "area": 99,
+        "maskSha256": "eab1b94e062232bde7b69581483c913cb4e45f6146845b0091c8414c3f6a1f0a"
+      }
+    },
+    {
+      "bossId": "boss_acid_queen",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 4,
+      "sourceColumns": 6,
+      "sourceCell": [
+        724,
+        724,
+        905,
+        905
+      ],
+      "detached": {
+        "componentCount": 26,
+        "bbox": [
+          727,
+          0,
+          905,
+          181
+        ],
+        "area": 1074,
+        "maskSha256": "9d72d341d62aacb065b1212dc872df43ca7d1df184d14914fc836d9b32864477"
+      }
+    },
+    {
+      "bossId": "boss_acid_queen",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 5,
+      "sourceColumns": 6,
+      "sourceCell": [
+        905,
+        724,
+        1086,
+        905
+      ],
+      "detached": {
+        "componentCount": 20,
+        "bbox": [
+          906,
+          0,
+          1060,
+          151
+        ],
+        "area": 199,
+        "maskSha256": "d4085432f7836af490128402f0c88806854e26013863be427b866b1ceabee76c"
+      }
+    },
+    {
+      "bossId": "boss_horde_mother",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 0,
+      "sourceColumns": 6,
+      "sourceCell": [
+        0,
+        724,
+        181,
+        905
+      ],
+      "detached": {
+        "componentCount": 4,
+        "bbox": [
+          43,
+          0,
+          148,
+          103
+        ],
+        "area": 371,
+        "maskSha256": "02359305aeaad4e978b67f913c22fe07a96505d078aad090c7764b9460d9aacd"
+      }
+    },
+    {
+      "bossId": "boss_horde_mother",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 1,
+      "sourceColumns": 6,
+      "sourceCell": [
+        181,
+        724,
+        362,
+        905
+      ],
+      "detached": {
+        "componentCount": 5,
+        "bbox": [
+          227,
+          0,
+          362,
+          82
+        ],
+        "area": 414,
+        "maskSha256": "0ab02862ff8466e05aec380d23ae181c6c80a8c60bf96f54219e102c2aea6db0"
+      }
+    },
+    {
+      "bossId": "boss_horde_mother",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 2,
+      "sourceColumns": 6,
+      "sourceCell": [
+        362,
+        724,
+        543,
+        905
+      ],
+      "detached": {
+        "componentCount": 3,
+        "bbox": [
+          395,
+          0,
+          543,
+          93
+        ],
+        "area": 584,
+        "maskSha256": "f1d762710e99097173c79af4cfce931683bf5d30b84c0164f082713912a81ba5"
+      }
+    },
+    {
+      "bossId": "boss_horde_mother",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 3,
+      "sourceColumns": 6,
+      "sourceCell": [
+        543,
+        724,
+        724,
+        905
+      ],
+      "detached": {
+        "componentCount": 3,
+        "bbox": [
+          574,
+          0,
+          724,
+          99
+        ],
+        "area": 562,
+        "maskSha256": "5ea43ab1273ae2b79d7c3377865e038ec1dd1711893c760426e788731bf41b25"
+      }
+    },
+    {
+      "bossId": "boss_horde_mother",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 4,
+      "sourceColumns": 6,
+      "sourceCell": [
+        724,
+        724,
+        905,
+        905
+      ],
+      "detached": {
+        "componentCount": 4,
+        "bbox": [
+          724,
+          0,
+          905,
+          97
+        ],
+        "area": 527,
+        "maskSha256": "d1aa7a6a1c2fbfde336eafa52f35cae74ba3cfaaa1d2a49c75d83436faeba27a"
+      }
+    },
+    {
+      "bossId": "boss_horde_mother",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 5,
+      "sourceColumns": 6,
+      "sourceCell": [
+        905,
+        724,
+        1086,
+        905
+      ],
+      "detached": {
+        "componentCount": 2,
+        "bbox": [
+          943,
+          0,
+          1013,
+          11
+        ],
+        "area": 251,
+        "maskSha256": "b82e45a8a3d2455edbbebc828c5f728276530350b99bba9cceab53ab447517ee"
+      }
+    },
+    {
+      "bossId": "boss_frozen_giant",
+      "motionKey": "basic_a",
+      "row": 1,
+      "col": 0,
+      "sourceColumns": 6,
+      "sourceCell": [
+        0,
+        181,
+        181,
+        362
+      ],
+      "detached": {
+        "componentCount": 3,
+        "bbox": [
+          33,
+          140,
+          129,
+          147
+        ],
+        "area": 4,
+        "maskSha256": "5a32af2cc63e54a1c00ecb096eeba1ed0ac58580a05c3f06b2edc42879886a8b"
+      }
+    },
+    {
+      "bossId": "boss_frozen_giant",
+      "motionKey": "basic_a",
+      "row": 1,
+      "col": 1,
+      "sourceColumns": 6,
+      "sourceCell": [
+        181,
+        181,
+        362,
+        362
+      ],
+      "detached": {
+        "componentCount": 4,
+        "bbox": [
+          314,
+          47,
+          357,
+          133
+        ],
+        "area": 23,
+        "maskSha256": "76ecc2535a44707e6cbf569d9ab728ec0763677132b1ecc45021aab862c764bd"
+      }
+    },
+    {
+      "bossId": "boss_frozen_giant",
+      "motionKey": "basic_a",
+      "row": 1,
+      "col": 2,
+      "sourceColumns": 6,
+      "sourceCell": [
+        362,
+        181,
+        543,
+        362
+      ],
+      "detached": {
+        "componentCount": 5,
+        "bbox": [
+          518,
+          47,
+          542,
+          96
+        ],
+        "area": 7,
+        "maskSha256": "b7d7a9a0f268a9958b5f17696cbfcec6fe63f9bbee69f5f017dace73dcfdc8d3"
+      }
+    },
+    {
+      "bossId": "boss_frozen_giant",
+      "motionKey": "basic_a",
+      "row": 1,
+      "col": 3,
+      "sourceColumns": 6,
+      "sourceCell": [
+        543,
+        181,
+        724,
+        362
+      ],
+      "detached": {
+        "componentCount": 3,
+        "bbox": [
+          576,
+          49,
+          709,
+          148
+        ],
+        "area": 6,
+        "maskSha256": "668a0b8b34329664316d26efa31ddbbede0b13360689a619c8e301d20afab258"
+      }
+    },
+    {
+      "bossId": "boss_frozen_giant",
+      "motionKey": "basic_a",
+      "row": 1,
+      "col": 4,
+      "sourceColumns": 6,
+      "sourceCell": [
+        724,
+        181,
+        905,
+        362
+      ],
+      "detached": {
+        "componentCount": 3,
+        "bbox": [
+          854,
+          92,
+          898,
+          130
+        ],
+        "area": 4,
+        "maskSha256": "78513dd7e8b6d2022c3cb218c0489b00fab851a060ea6d65bedcf50449277c4b"
+      }
+    },
+    {
+      "bossId": "boss_frozen_giant",
+      "motionKey": "basic_a",
+      "row": 1,
+      "col": 5,
+      "sourceColumns": 6,
+      "sourceCell": [
+        905,
+        181,
+        1086,
+        362
+      ],
+      "detached": {
+        "componentCount": 6,
+        "bbox": [
+          1069,
+          47,
+          1086,
+          93
+        ],
+        "area": 8,
+        "maskSha256": "0bb558e0732fe22f1106e78179180a365d850874b9de04c411ef75780bf57377"
+      }
+    },
+    {
+      "bossId": "boss_frozen_giant",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 0,
+      "sourceColumns": 6,
+      "sourceCell": [
+        0,
+        724,
+        181,
+        905
+      ],
+      "detached": {
+        "componentCount": 12,
+        "bbox": [
+          31,
+          7,
+          160,
+          174
+        ],
+        "area": 199,
+        "maskSha256": "07f237e32e3663eb57cab0c9e967fc660a8b303aee1febf9cb56b3ec4d5046af"
+      }
+    },
+    {
+      "bossId": "boss_frozen_giant",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 1,
+      "sourceColumns": 6,
+      "sourceCell": [
+        181,
+        724,
+        362,
+        905
+      ],
+      "detached": {
+        "componentCount": 12,
+        "bbox": [
+          214,
+          37,
+          341,
+          161
+        ],
+        "area": 87,
+        "maskSha256": "f9d78e636d22cf7a34d344e55a6e9ab9923e86683735b5d8e55edcea1e516be3"
+      }
+    },
+    {
+      "bossId": "boss_frozen_giant",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 2,
+      "sourceColumns": 6,
+      "sourceCell": [
+        362,
+        724,
+        543,
+        905
+      ],
+      "detached": {
+        "componentCount": 11,
+        "bbox": [
+          367,
+          32,
+          529,
+          138
+        ],
+        "area": 28,
+        "maskSha256": "5bf3024e8c810790f06f8c2dde73f5489c30c932ebf7a10488c81a3ee9ff8cbc"
+      }
+    },
+    {
+      "bossId": "boss_frozen_giant",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 3,
+      "sourceColumns": 6,
+      "sourceCell": [
+        543,
+        724,
+        724,
+        905
+      ],
+      "detached": {
+        "componentCount": 7,
+        "bbox": [
+          583,
+          42,
+          705,
+          127
+        ],
+        "area": 18,
+        "maskSha256": "9d07a925f0f334020326412961593e0a868f9590d27cbbca2b474366f2fa93f2"
+      }
+    },
+    {
+      "bossId": "boss_frozen_giant",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 4,
+      "sourceColumns": 6,
+      "sourceCell": [
+        724,
+        724,
+        905,
+        905
+      ],
+      "detached": {
+        "componentCount": 7,
+        "bbox": [
+          724,
+          91,
+          905,
+          167
+        ],
+        "area": 13,
+        "maskSha256": "191e09b4b6107b840a9be7d40965fdf0344ea9ca25aaa5eed9d79aec876f854c"
+      }
+    },
+    {
+      "bossId": "boss_frozen_giant",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 5,
+      "sourceColumns": 6,
+      "sourceCell": [
+        905,
+        724,
+        1086,
+        905
+      ],
+      "detached": {
+        "componentCount": 9,
+        "bbox": [
+          907,
+          6,
+          1073,
+          145
+        ],
+        "area": 47,
+        "maskSha256": "01fc7aad594736b15cee1a7af58b27cbb86a9b53c73fee6970223fdd6fa2826a"
+      }
+    },
+    {
+      "bossId": "boss_raider_warlord",
+      "motionKey": "basic_a",
+      "row": 1,
+      "col": 0,
+      "sourceColumns": 6,
+      "sourceCell": [
+        0,
+        181,
+        181,
+        362
+      ],
+      "detached": {
+        "componentCount": 0,
+        "bbox": null,
+        "area": 0,
+        "maskSha256": null
+      }
+    },
+    {
+      "bossId": "boss_raider_warlord",
+      "motionKey": "basic_a",
+      "row": 1,
+      "col": 1,
+      "sourceColumns": 6,
+      "sourceCell": [
+        181,
+        181,
+        362,
+        362
+      ],
+      "detached": {
+        "componentCount": 1,
+        "bbox": [
+          312,
+          0,
+          321,
+          1
+        ],
+        "area": 9,
+        "maskSha256": "040a5a009f9b9d5e4771742174142e74fa2d3e0aaa3df5717f01ade338d75d0e"
+      }
+    },
+    {
+      "bossId": "boss_raider_warlord",
+      "motionKey": "basic_a",
+      "row": 1,
+      "col": 2,
+      "sourceColumns": 6,
+      "sourceCell": [
+        362,
+        181,
+        543,
+        362
+      ],
+      "detached": {
+        "componentCount": 0,
+        "bbox": null,
+        "area": 0,
+        "maskSha256": null
+      }
+    },
+    {
+      "bossId": "boss_raider_warlord",
+      "motionKey": "basic_a",
+      "row": 1,
+      "col": 3,
+      "sourceColumns": 6,
+      "sourceCell": [
+        543,
+        181,
+        724,
+        362
+      ],
+      "detached": {
+        "componentCount": 2,
+        "bbox": [
+          664,
+          0,
+          724,
+          73
+        ],
+        "area": 8,
+        "maskSha256": "d84e1fbace2a980748606f952e48d84e2c0de2fdbb4f367b4407140b159281d5"
+      }
+    },
+    {
+      "bossId": "boss_raider_warlord",
+      "motionKey": "basic_a",
+      "row": 1,
+      "col": 4,
+      "sourceColumns": 6,
+      "sourceCell": [
+        724,
+        181,
+        905,
+        362
+      ],
+      "detached": {
+        "componentCount": 2,
+        "bbox": [
+          836,
+          0,
+          905,
+          76
+        ],
+        "area": 96,
+        "maskSha256": "e6cb6e6a9e57f1f692f0a7d3f9cd8fec0982ab54cfb122b6c2067d9bc6be6ebf"
+      }
+    },
+    {
+      "bossId": "boss_raider_warlord",
+      "motionKey": "basic_a",
+      "row": 1,
+      "col": 5,
+      "sourceColumns": 6,
+      "sourceCell": [
+        905,
+        181,
+        1086,
+        362
+      ],
+      "detached": {
+        "componentCount": 1,
+        "bbox": [
+          1014,
+          0,
+          1026,
+          1
+        ],
+        "area": 12,
+        "maskSha256": "3ee5f0d83bf791f0fb4d750a5719ce19d6d352ef7e5a4264e4b760f0f9c15014"
+      }
+    },
+    {
+      "bossId": "boss_raider_warlord",
+      "motionKey": "basic_b",
+      "row": 2,
+      "col": 0,
+      "sourceColumns": 6,
+      "sourceCell": [
+        0,
+        362,
+        181,
+        543
+      ],
+      "detached": {
+        "componentCount": 0,
+        "bbox": null,
+        "area": 0,
+        "maskSha256": null
+      }
+    },
+    {
+      "bossId": "boss_raider_warlord",
+      "motionKey": "basic_b",
+      "row": 2,
+      "col": 1,
+      "sourceColumns": 6,
+      "sourceCell": [
+        181,
+        362,
+        362,
+        543
+      ],
+      "detached": {
+        "componentCount": 3,
+        "bbox": [
+          239,
+          0,
+          362,
+          68
+        ],
+        "area": 130,
+        "maskSha256": "fef8e4dd9cd72e27e8d9f6edbadab506b01ba9f11e147a61b7d011083a9426df"
+      }
+    },
+    {
+      "bossId": "boss_raider_warlord",
+      "motionKey": "basic_b",
+      "row": 2,
+      "col": 2,
+      "sourceColumns": 6,
+      "sourceCell": [
+        362,
+        362,
+        543,
+        543
+      ],
+      "detached": {
+        "componentCount": 3,
+        "bbox": [
+          417,
+          0,
+          543,
+          71
+        ],
+        "area": 175,
+        "maskSha256": "d53a52a22d9405da588973da6f2ac6d127a6dc08095eafc6fe925ee526f7ad14"
+      }
+    },
+    {
+      "bossId": "boss_raider_warlord",
+      "motionKey": "basic_b",
+      "row": 2,
+      "col": 3,
+      "sourceColumns": 6,
+      "sourceCell": [
+        543,
+        362,
+        724,
+        543
+      ],
+      "detached": {
+        "componentCount": 3,
+        "bbox": [
+          589,
+          0,
+          724,
+          77
+        ],
+        "area": 381,
+        "maskSha256": "4ea931debc824aa82cc622b1b174e0be5956634b5f70f2b76f69179013198643"
+      }
+    },
+    {
+      "bossId": "boss_raider_warlord",
+      "motionKey": "basic_b",
+      "row": 2,
+      "col": 4,
+      "sourceColumns": 6,
+      "sourceCell": [
+        724,
+        362,
+        905,
+        543
+      ],
+      "detached": {
+        "componentCount": 3,
+        "bbox": [
+          765,
+          0,
+          905,
+          77
+        ],
+        "area": 428,
+        "maskSha256": "047d52d449a03917d1a4d44c26981fea8662cc6c5f3e238623a123c7e25d012c"
+      }
+    },
+    {
+      "bossId": "boss_raider_warlord",
+      "motionKey": "basic_b",
+      "row": 2,
+      "col": 5,
+      "sourceColumns": 6,
+      "sourceCell": [
+        905,
+        362,
+        1086,
+        543
+      ],
+      "detached": {
+        "componentCount": 2,
+        "bbox": [
+          939,
+          0,
+          1036,
+          2
+        ],
+        "area": 40,
+        "maskSha256": "865e953c4ec43d11b87a7c4edaa300ccffbf09b9b8ed8a232c1457c995453c30"
+      }
+    },
+    {
+      "bossId": "boss_raider_warlord",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 0,
+      "sourceColumns": 6,
+      "sourceCell": [
+        0,
+        724,
+        181,
+        905
+      ],
+      "detached": {
+        "componentCount": 3,
+        "bbox": [
+          57,
+          0,
+          181,
+          75
+        ],
+        "area": 534,
+        "maskSha256": "46a1055b60cf97041257068b2d9fb385186f105849daf29176efbaa4d949d42c"
+      }
+    },
+    {
+      "bossId": "boss_raider_warlord",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 1,
+      "sourceColumns": 6,
+      "sourceCell": [
+        181,
+        724,
+        362,
+        905
+      ],
+      "detached": {
+        "componentCount": 3,
+        "bbox": [
+          235,
+          0,
+          362,
+          65
+        ],
+        "area": 593,
+        "maskSha256": "53ee60011338251fadd879e03866ee4890203f7ac44c6636944b4bb03d69b6af"
+      }
+    },
+    {
+      "bossId": "boss_raider_warlord",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 2,
+      "sourceColumns": 6,
+      "sourceCell": [
+        362,
+        724,
+        543,
+        905
+      ],
+      "detached": {
+        "componentCount": 2,
+        "bbox": [
+          410,
+          0,
+          495,
+          10
+        ],
+        "area": 376,
+        "maskSha256": "ff7e28dec0b1a83d5cbc5cae780c72c4fcc1bb2777ea26c2043e7af549a4d447"
+      }
+    },
+    {
+      "bossId": "boss_raider_warlord",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 3,
+      "sourceColumns": 6,
+      "sourceCell": [
+        543,
+        724,
+        724,
+        905
+      ],
+      "detached": {
+        "componentCount": 3,
+        "bbox": [
+          584,
+          0,
+          724,
+          64
+        ],
+        "area": 562,
+        "maskSha256": "318866c6d252d04a923ed3a390479ab80896972fb24f78d4e4903455160ec0e9"
+      }
+    },
+    {
+      "bossId": "boss_raider_warlord",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 4,
+      "sourceColumns": 6,
+      "sourceCell": [
+        724,
+        724,
+        905,
+        905
+      ],
+      "detached": {
+        "componentCount": 2,
+        "bbox": [
+          757,
+          0,
+          845,
+          9
+        ],
+        "area": 337,
+        "maskSha256": "2b5677db0c85105f7e3d695a83761b0c3bdd66b54268fdfe890055663faac45d"
+      }
+    },
+    {
+      "bossId": "boss_raider_warlord",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 5,
+      "sourceColumns": 6,
+      "sourceCell": [
+        905,
+        724,
+        1086,
+        905
+      ],
+      "detached": {
+        "componentCount": 2,
+        "bbox": [
+          935,
+          0,
+          1020,
+          9
+        ],
+        "area": 330,
+        "maskSha256": "bba2af1b95e6c0589acaf796fdd09a48808d58d1bc2e4c08e0dfbc97f371c723"
+      }
+    },
+    {
+      "bossId": "boss_phantom_sniper",
+      "motionKey": "basic_a",
+      "row": 1,
+      "col": 0,
+      "sourceColumns": 7,
+      "sourceCell": [
+        0,
+        181,
+        155,
+        362
+      ],
+      "detached": {
+        "componentCount": 5,
+        "bbox": [
+          26,
+          117,
+          99,
+          157
+        ],
+        "area": 7,
+        "maskSha256": "958bb8389daedca05b414895e1c9c87eba72b8085a404f5d86713d9b53bbfbba"
+      }
+    },
+    {
+      "bossId": "boss_phantom_sniper",
+      "motionKey": "basic_a",
+      "row": 1,
+      "col": 1,
+      "sourceColumns": 7,
+      "sourceCell": [
+        155,
+        181,
+        310,
+        362
+      ],
+      "detached": {
+        "componentCount": 9,
+        "bbox": [
+          155,
+          56,
+          250,
+          157
+        ],
+        "area": 45,
+        "maskSha256": "fb4f17ef3bba0f67466dfa2887b5c8aec2782e16f9bfcc3f1284ec8855317964"
+      }
+    },
+    {
+      "bossId": "boss_phantom_sniper",
+      "motionKey": "basic_a",
+      "row": 1,
+      "col": 2,
+      "sourceColumns": 7,
+      "sourceCell": [
+        310,
+        181,
+        465,
+        362
+      ],
+      "detached": {
+        "componentCount": 8,
+        "bbox": [
+          310,
+          54,
+          400,
+          156
+        ],
+        "area": 33,
+        "maskSha256": "a5ebe421b734f5757a58e33083972eb3eca4cccb88546133bef92e30d2dbb950"
+      }
+    },
+    {
+      "bossId": "boss_phantom_sniper",
+      "motionKey": "basic_a",
+      "row": 1,
+      "col": 3,
+      "sourceColumns": 7,
+      "sourceCell": [
+        465,
+        181,
+        621,
+        362
+      ],
+      "detached": {
+        "componentCount": 5,
+        "bbox": [
+          503,
+          92,
+          554,
+          157
+        ],
+        "area": 10,
+        "maskSha256": "cd950fe1243084a411ddefc4ff85c5a288a67162ffe5f367fa33e59f6b5fb793"
+      }
+    },
+    {
+      "bossId": "boss_phantom_sniper",
+      "motionKey": "basic_a",
+      "row": 1,
+      "col": 4,
+      "sourceColumns": 7,
+      "sourceCell": [
+        621,
+        181,
+        776,
+        362
+      ],
+      "detached": {
+        "componentCount": 5,
+        "bbox": [
+          663,
+          98,
+          705,
+          156
+        ],
+        "area": 9,
+        "maskSha256": "7a12e5346f1d935dc06011b371fe5bc775cb74cb3e08485154332822c8a456d6"
+      }
+    },
+    {
+      "bossId": "boss_phantom_sniper",
+      "motionKey": "basic_a",
+      "row": 1,
+      "col": 5,
+      "sourceColumns": 7,
+      "sourceCell": [
+        776,
+        181,
+        931,
+        362
+      ],
+      "detached": {
+        "componentCount": 8,
+        "bbox": [
+          785,
+          87,
+          931,
+          153
+        ],
+        "area": 35,
+        "maskSha256": "8af19fdde189fea0c3dbc58bfa56ba0ebe5fa6d10c38eabf460985d319af664b"
+      }
+    },
+    {
+      "bossId": "boss_phantom_sniper",
+      "motionKey": "basic_b",
+      "row": 2,
+      "col": 0,
+      "sourceColumns": 7,
+      "sourceCell": [
+        0,
+        362,
+        155,
+        543
+      ],
+      "detached": {
+        "componentCount": 7,
+        "bbox": [
+          62,
+          64,
+          134,
+          158
+        ],
+        "area": 23,
+        "maskSha256": "a68d06f19603b43f1a231a0256c05ff17ef3751b5e81004646ebb5fd3ce670c0"
+      }
+    },
+    {
+      "bossId": "boss_phantom_sniper",
+      "motionKey": "basic_b",
+      "row": 2,
+      "col": 1,
+      "sourceColumns": 7,
+      "sourceCell": [
+        155,
+        362,
+        310,
+        543
+      ],
+      "detached": {
+        "componentCount": 6,
+        "bbox": [
+          155,
+          53,
+          309,
+          158
+        ],
+        "area": 80,
+        "maskSha256": "1b0a75231160be1bfe66cc411a9d48a42b0898173f04b3162ce4cadd41e4f28b"
+      }
+    },
+    {
+      "bossId": "boss_phantom_sniper",
+      "motionKey": "basic_b",
+      "row": 2,
+      "col": 2,
+      "sourceColumns": 7,
+      "sourceCell": [
+        310,
+        362,
+        465,
+        543
+      ],
+      "detached": {
+        "componentCount": 12,
+        "bbox": [
+          311,
+          53,
+          464,
+          162
+        ],
+        "area": 43,
+        "maskSha256": "e4ba9b6031032edd1a4b1a3921667800ca59248b631d830a8d0a276291b4cab3"
+      }
+    },
+    {
+      "bossId": "boss_phantom_sniper",
+      "motionKey": "basic_b",
+      "row": 2,
+      "col": 3,
+      "sourceColumns": 7,
+      "sourceCell": [
+        465,
+        362,
+        621,
+        543
+      ],
+      "detached": {
+        "componentCount": 6,
+        "bbox": [
+          465,
+          54,
+          622,
+          162
+        ],
+        "area": 34,
+        "maskSha256": "09bad54be407559e3b52bad938c415de5f845624cb69dd57ed6b847de3588f94"
+      }
+    },
+    {
+      "bossId": "boss_phantom_sniper",
+      "motionKey": "basic_b",
+      "row": 2,
+      "col": 4,
+      "sourceColumns": 7,
+      "sourceCell": [
+        621,
+        362,
+        776,
+        543
+      ],
+      "detached": {
+        "componentCount": 13,
+        "bbox": [
+          621,
+          52,
+          778,
+          145
+        ],
+        "area": 66,
+        "maskSha256": "7aafbba6d7731302db8325a8f838fd960a911f96acd49875afba0175de0cdbb0"
+      }
+    },
+    {
+      "bossId": "boss_phantom_sniper",
+      "motionKey": "basic_b",
+      "row": 2,
+      "col": 5,
+      "sourceColumns": 7,
+      "sourceCell": [
+        776,
+        362,
+        931,
+        543
+      ],
+      "detached": {
+        "componentCount": 9,
+        "bbox": [
+          776,
+          47,
+          929,
+          146
+        ],
+        "area": 41,
+        "maskSha256": "f64d65d5349edd7bf492a1006de0f54ad27ea96191e178880abb2fadae9b7fe6"
+      }
+    },
+    {
+      "bossId": "boss_phantom_sniper",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 0,
+      "sourceColumns": 7,
+      "sourceCell": [
+        0,
+        724,
+        155,
+        905
+      ],
+      "detached": {
+        "componentCount": 1,
+        "bbox": [
+          93,
+          144,
+          94,
+          146
+        ],
+        "area": 2,
+        "maskSha256": "9dcf97a184f32623d11a73124ceb99a5709b083721e878a16d78f596718ba7b2"
+      }
+    },
+    {
+      "bossId": "boss_phantom_sniper",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 1,
+      "sourceColumns": 7,
+      "sourceCell": [
+        155,
+        724,
+        310,
+        905
+      ],
+      "detached": {
+        "componentCount": 1,
+        "bbox": [
+          155,
+          63,
+          167,
+          69
+        ],
+        "area": 63,
+        "maskSha256": "d4b73e84b1ab68c91dc0ca5fea97dd053403098f81f189380b0a4615684f15b0"
+      }
+    },
+    {
+      "bossId": "boss_phantom_sniper",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 2,
+      "sourceColumns": 7,
+      "sourceCell": [
+        310,
+        724,
+        465,
+        905
+      ],
+      "detached": {
+        "componentCount": 1,
+        "bbox": [
+          310,
+          60,
+          352,
+          94
+        ],
+        "area": 325,
+        "maskSha256": "8c29cf366c603d7af139155207f6bd056f133f4aafef04a33eaefd3edff6b0af"
+      }
+    },
+    {
+      "bossId": "boss_phantom_sniper",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 3,
+      "sourceColumns": 7,
+      "sourceCell": [
+        465,
+        724,
+        621,
+        905
+      ],
+      "detached": {
+        "componentCount": 2,
+        "bbox": [
+          561,
+          59,
+          621,
+          161
+        ],
+        "area": 1973,
+        "maskSha256": "33a89aab4691441135a2eb29783f90d458a3bae232b8c5e624a6698e3a0785ed"
+      }
+    },
+    {
+      "bossId": "boss_phantom_sniper",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 4,
+      "sourceColumns": 7,
+      "sourceCell": [
+        621,
+        724,
+        776,
+        905
+      ],
+      "detached": {
+        "componentCount": 1,
+        "bbox": [
+          745,
+          137,
+          776,
+          161
+        ],
+        "area": 296,
+        "maskSha256": "b9186620048d5571b68373dd15a21348748d1541f2b3bb926a500d83de8763fa"
+      }
+    },
+    {
+      "bossId": "boss_phantom_sniper",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 5,
+      "sourceColumns": 7,
+      "sourceCell": [
+        776,
+        724,
+        931,
+        905
+      ],
+      "detached": {
+        "componentCount": 2,
+        "bbox": [
+          832,
+          135,
+          931,
+          161
+        ],
+        "area": 363,
+        "maskSha256": "e6d0479409568e43bdd1530a0863ea1b0b232dd66521f4afd762c2414050b75e"
+      }
+    },
+    {
+      "bossId": "boss_cult_leader",
+      "motionKey": "basic_b",
+      "row": 2,
+      "col": 0,
+      "sourceColumns": 6,
+      "sourceCell": [
+        0,
+        362,
+        181,
+        543
+      ],
+      "detached": {
+        "componentCount": 1,
+        "bbox": [
+          63,
+          176,
+          80,
+          181
+        ],
+        "area": 66,
+        "maskSha256": "344a7bf099fb34d4e998d322ef92c6abf490b6481a1779f9aefff70997995305"
+      }
+    },
+    {
+      "bossId": "boss_cult_leader",
+      "motionKey": "basic_b",
+      "row": 2,
+      "col": 1,
+      "sourceColumns": 6,
+      "sourceCell": [
+        181,
+        362,
+        362,
+        543
+      ],
+      "detached": {
+        "componentCount": 5,
+        "bbox": [
+          244,
+          124,
+          362,
+          181
+        ],
+        "area": 65,
+        "maskSha256": "a09d4ba17bbb20a073fa67ad64e42ab9c52c1a87e4e842079871b899c0b10208"
+      }
+    },
+    {
+      "bossId": "boss_cult_leader",
+      "motionKey": "basic_b",
+      "row": 2,
+      "col": 2,
+      "sourceColumns": 6,
+      "sourceCell": [
+        362,
+        362,
+        543,
+        543
+      ],
+      "detached": {
+        "componentCount": 5,
+        "bbox": [
+          427,
+          68,
+          543,
+          181
+        ],
+        "area": 374,
+        "maskSha256": "df7684a6ad7700a8c2bbe8a4481ec08075ec4f4a0a5853b3765362576cbcb496"
+      }
+    },
+    {
+      "bossId": "boss_cult_leader",
+      "motionKey": "basic_b",
+      "row": 2,
+      "col": 3,
+      "sourceColumns": 6,
+      "sourceCell": [
+        543,
+        362,
+        724,
+        543
+      ],
+      "detached": {
+        "componentCount": 5,
+        "bbox": [
+          610,
+          39,
+          724,
+          154
+        ],
+        "area": 1242,
+        "maskSha256": "2ab3dc69465111965f48bb1a1263dfc22d09034ff4559d9b380912d2a5fecd0b"
+      }
+    },
+    {
+      "bossId": "boss_cult_leader",
+      "motionKey": "basic_b",
+      "row": 2,
+      "col": 4,
+      "sourceColumns": 6,
+      "sourceCell": [
+        724,
+        362,
+        905,
+        543
+      ],
+      "detached": {
+        "componentCount": 6,
+        "bbox": [
+          792,
+          31,
+          905,
+          95
+        ],
+        "area": 260,
+        "maskSha256": "4bdcafd7dd5a472b1d0b5ff4e8657b3b1beb7a2237450689bc4d52f9de7bb219"
+      }
+    },
+    {
+      "bossId": "boss_cult_leader",
+      "motionKey": "basic_b",
+      "row": 2,
+      "col": 5,
+      "sourceColumns": 6,
+      "sourceCell": [
+        905,
+        362,
+        1086,
+        543
+      ],
+      "detached": {
+        "componentCount": 3,
+        "bbox": [
+          954,
+          32,
+          1064,
+          181
+        ],
+        "area": 311,
+        "maskSha256": "547e09f089d56e8a3d33a643664edee1e1dbc8169e818c76a032d663bb5abe14"
+      }
+    },
+    {
+      "bossId": "boss_cult_leader",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 0,
+      "sourceColumns": 6,
+      "sourceCell": [
+        0,
+        724,
+        181,
+        905
+      ],
+      "detached": {
+        "componentCount": 8,
+        "bbox": [
+          175,
+          52,
+          183,
+          144
+        ],
+        "area": 95,
+        "maskSha256": "1fd4d3041ff87397c8b953b0156a2b3e40cc0d36a45af2b4aef4a02dfaff6417"
+      }
+    },
+    {
+      "bossId": "boss_cult_leader",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 1,
+      "sourceColumns": 6,
+      "sourceCell": [
+        181,
+        724,
+        362,
+        905
+      ],
+      "detached": {
+        "componentCount": 18,
+        "bbox": [
+          179,
+          4,
+          362,
+          153
+        ],
+        "area": 301,
+        "maskSha256": "af3b901fe943838fd188be0c7f032aaa7124dcdcfb23ced3b3d42a1a9870e6b6"
+      }
+    },
+    {
+      "bossId": "boss_cult_leader",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 2,
+      "sourceColumns": 6,
+      "sourceCell": [
+        362,
+        724,
+        543,
+        905
+      ],
+      "detached": {
+        "componentCount": 25,
+        "bbox": [
+          366,
+          15,
+          543,
+          143
+        ],
+        "area": 519,
+        "maskSha256": "46f3d8c905abda7a5f4ad69fc2f5d89abb8d184b31706ff6b62a5c878d930617"
+      }
+    },
+    {
+      "bossId": "boss_cult_leader",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 3,
+      "sourceColumns": 6,
+      "sourceCell": [
+        543,
+        724,
+        724,
+        905
+      ],
+      "detached": {
+        "componentCount": 28,
+        "bbox": [
+          548,
+          4,
+          724,
+          154
+        ],
+        "area": 2086,
+        "maskSha256": "2324dc5a0e702d085d5c42c7aaa65e11d5a401a21a5df3abd5142f2328286075"
+      }
+    },
+    {
+      "bossId": "boss_cult_leader",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 4,
+      "sourceColumns": 6,
+      "sourceCell": [
+        724,
+        724,
+        905,
+        905
+      ],
+      "detached": {
+        "componentCount": 31,
+        "bbox": [
+          724,
+          3,
+          905,
+          154
+        ],
+        "area": 1194,
+        "maskSha256": "699f2452b5458d82f62574b174a4914f21688fb4281f01bb253f8738d4afad23"
+      }
+    },
+    {
+      "bossId": "boss_cult_leader",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 5,
+      "sourceColumns": 6,
+      "sourceCell": [
+        905,
+        724,
+        1086,
+        905
+      ],
+      "detached": {
+        "componentCount": 26,
+        "bbox": [
+          905,
+          0,
+          1071,
+          154
+        ],
+        "area": 173,
+        "maskSha256": "87b8ac2534f38d5ebfeb61c180971710b3dcda987c4589ad7069e7b711938096"
+      }
+    },
+    {
+      "bossId": "boss_sewer_king",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 0,
+      "sourceColumns": 6,
+      "sourceCell": [
+        0,
+        725,
+        181,
+        906
+      ],
+      "detached": {
+        "componentCount": 57,
+        "bbox": [
+          15,
+          67,
+          160,
+          181
+        ],
+        "area": 225,
+        "maskSha256": "e8287c3eeb02562ac1f14a19158475a8ea9581f2ae4e113ef8fd87d06aa6b35a"
+      }
+    },
+    {
+      "bossId": "boss_sewer_king",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 1,
+      "sourceColumns": 6,
+      "sourceCell": [
+        181,
+        725,
+        362,
+        906
+      ],
+      "detached": {
+        "componentCount": 43,
+        "bbox": [
+          197,
+          74,
+          342,
+          175
+        ],
+        "area": 221,
+        "maskSha256": "755ff6f02681ec06a5ecde6e07cc4efe682205132683ae419a9e9ea2ec153997"
+      }
+    },
+    {
+      "bossId": "boss_sewer_king",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 2,
+      "sourceColumns": 6,
+      "sourceCell": [
+        362,
+        725,
+        542,
+        906
+      ],
+      "detached": {
+        "componentCount": 49,
+        "bbox": [
+          377,
+          70,
+          526,
+          181
+        ],
+        "area": 246,
+        "maskSha256": "a3d5466611f7aea6f23501d3fe08077b370a83f9597c8a90b035ddfa6ab49004"
+      }
+    },
+    {
+      "bossId": "boss_sewer_king",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 3,
+      "sourceColumns": 6,
+      "sourceCell": [
+        542,
+        725,
+        723,
+        906
+      ],
+      "detached": {
+        "componentCount": 36,
+        "bbox": [
+          555,
+          73,
+          703,
+          181
+        ],
+        "area": 228,
+        "maskSha256": "cd19482589deff7c369b225f14d84ea0354a2fefee1478dd0a4cb64b90d556db"
+      }
+    },
+    {
+      "bossId": "boss_sewer_king",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 4,
+      "sourceColumns": 6,
+      "sourceCell": [
+        723,
+        725,
+        904,
+        906
+      ],
+      "detached": {
+        "componentCount": 15,
+        "bbox": [
+          738,
+          79,
+          883,
+          174
+        ],
+        "area": 52,
+        "maskSha256": "d24a979e2af9032dc886f759be64c08198c64f869b982383cf0d04ecbafdd796"
+      }
+    },
+    {
+      "bossId": "boss_sewer_king",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 5,
+      "sourceColumns": 6,
+      "sourceCell": [
+        904,
+        725,
+        1085,
+        906
+      ],
+      "detached": {
+        "componentCount": 0,
+        "bbox": null,
+        "area": 0,
+        "maskSha256": null
+      }
+    },
+    {
+      "bossId": "boss_swarm_queen_bee",
+      "motionKey": "basic_a",
+      "row": 1,
+      "col": 0,
+      "sourceColumns": 6,
+      "sourceCell": [
+        0,
+        181,
+        181,
+        362
+      ],
+      "detached": {
+        "componentCount": 2,
+        "bbox": [
+          147,
+          46,
+          160,
+          54
+        ],
+        "area": 30,
+        "maskSha256": "a2838e01f06d1e75848892bde298535c43317ed26ac0726fea90f253f9a54797"
+      }
+    },
+    {
+      "bossId": "boss_swarm_queen_bee",
+      "motionKey": "basic_a",
+      "row": 1,
+      "col": 1,
+      "sourceColumns": 6,
+      "sourceCell": [
+        181,
+        181,
+        362,
+        362
+      ],
+      "detached": {
+        "componentCount": 6,
+        "bbox": [
+          277,
+          44,
+          352,
+          181
+        ],
+        "area": 115,
+        "maskSha256": "58b109fb484c28b032ae83156d958a8321fe3f846d793356ecb2e1d94e169ac9"
+      }
+    },
+    {
+      "bossId": "boss_swarm_queen_bee",
+      "motionKey": "basic_a",
+      "row": 1,
+      "col": 2,
+      "sourceColumns": 6,
+      "sourceCell": [
+        362,
+        181,
+        543,
+        362
+      ],
+      "detached": {
+        "componentCount": 6,
+        "bbox": [
+          399,
+          0,
+          536,
+          181
+        ],
+        "area": 196,
+        "maskSha256": "5ffcef4d351c323a8549dc197cc0a08daff505d0f5492b47567a9a17566ac18c"
+      }
+    },
+    {
+      "bossId": "boss_swarm_queen_bee",
+      "motionKey": "basic_a",
+      "row": 1,
+      "col": 3,
+      "sourceColumns": 6,
+      "sourceCell": [
+        543,
+        181,
+        724,
+        362
+      ],
+      "detached": {
+        "componentCount": 4,
+        "bbox": [
+          659,
+          46,
+          713,
+          181
+        ],
+        "area": 177,
+        "maskSha256": "699273310fd44c491a95ffb2d619aea2cdab31085054046ddc784c5c293b3818"
+      }
+    },
+    {
+      "bossId": "boss_swarm_queen_bee",
+      "motionKey": "basic_a",
+      "row": 1,
+      "col": 4,
+      "sourceColumns": 6,
+      "sourceCell": [
+        724,
+        181,
+        905,
+        362
+      ],
+      "detached": {
+        "componentCount": 5,
+        "bbox": [
+          755,
+          0,
+          905,
+          181
+        ],
+        "area": 261,
+        "maskSha256": "a6d52d96e12a77330d9bec87aa96c2fa58273d1674d9364ce7b13aff93989537"
+      }
+    },
+    {
+      "bossId": "boss_swarm_queen_bee",
+      "motionKey": "basic_a",
+      "row": 1,
+      "col": 5,
+      "sourceColumns": 6,
+      "sourceCell": [
+        905,
+        181,
+        1086,
+        362
+      ],
+      "detached": {
+        "componentCount": 5,
+        "bbox": [
+          924,
+          0,
+          1058,
+          181
+        ],
+        "area": 208,
+        "maskSha256": "8d3cafe01671da08f58bdeb29d1f515818eec4c988cdbe2503d7ac5403a646ef"
+      }
+    },
+    {
+      "bossId": "boss_swarm_queen_bee",
+      "motionKey": "special",
+      "row": 3,
+      "col": 0,
+      "sourceColumns": 6,
+      "sourceCell": [
+        0,
+        543,
+        181,
+        724
+      ],
+      "detached": {
+        "componentCount": 9,
+        "bbox": [
+          70,
+          0,
+          181,
+          181
+        ],
+        "area": 112,
+        "maskSha256": "e072fe06bc17eea58f6881fd83532104091f84d81a19f878a6941e4d54d44007"
+      }
+    },
+    {
+      "bossId": "boss_swarm_queen_bee",
+      "motionKey": "special",
+      "row": 3,
+      "col": 1,
+      "sourceColumns": 6,
+      "sourceCell": [
+        181,
+        543,
+        362,
+        724
+      ],
+      "detached": {
+        "componentCount": 9,
+        "bbox": [
+          173,
+          0,
+          362,
+          101
+        ],
+        "area": 394,
+        "maskSha256": "f2043c98ba2b58c6e33df20a3448ccbc470872ca84ef40f6be9e64d185b1b5fa"
+      }
+    },
+    {
+      "bossId": "boss_swarm_queen_bee",
+      "motionKey": "special",
+      "row": 3,
+      "col": 2,
+      "sourceColumns": 6,
+      "sourceCell": [
+        362,
+        543,
+        543,
+        724
+      ],
+      "detached": {
+        "componentCount": 10,
+        "bbox": [
+          349,
+          0,
+          576,
+          64
+        ],
+        "area": 868,
+        "maskSha256": "e38199e80b01275ef509d7595f975e69c70413e7ac7ac3fe6e558e5d3de973fd"
+      }
+    },
+    {
+      "bossId": "boss_swarm_queen_bee",
+      "motionKey": "special",
+      "row": 3,
+      "col": 3,
+      "sourceColumns": 6,
+      "sourceCell": [
+        543,
+        543,
+        724,
+        724
+      ],
+      "detached": {
+        "componentCount": 10,
+        "bbox": [
+          542,
+          0,
+          700,
+          181
+        ],
+        "area": 259,
+        "maskSha256": "e8ed8d212b41e87e6ddeb96a9184413549a06181e36b1ecf97c4351094498476"
+      }
+    },
+    {
+      "bossId": "boss_swarm_queen_bee",
+      "motionKey": "special",
+      "row": 3,
+      "col": 4,
+      "sourceColumns": 6,
+      "sourceCell": [
+        724,
+        543,
+        905,
+        724
+      ],
+      "detached": {
+        "componentCount": 10,
+        "bbox": [
+          755,
+          0,
+          896,
+          181
+        ],
+        "area": 431,
+        "maskSha256": "62ffbff2397d93a0772b323cc681d153543ec97fe43b134b3ed2a7da9ef475ae"
+      }
+    },
+    {
+      "bossId": "boss_swarm_queen_bee",
+      "motionKey": "special",
+      "row": 3,
+      "col": 5,
+      "sourceColumns": 6,
+      "sourceCell": [
+        905,
+        543,
+        1086,
+        724
+      ],
+      "detached": {
+        "componentCount": 5,
+        "bbox": [
+          944,
+          0,
+          1067,
+          180
+        ],
+        "area": 427,
+        "maskSha256": "ea0940788d78f9e602459bd042b9fb6c68947bbceb4edd7f6579e03bd44072d6"
+      }
+    },
+    {
+      "bossId": "boss_swarm_queen_bee",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 0,
+      "sourceColumns": 6,
+      "sourceCell": [
+        0,
+        724,
+        181,
+        905
+      ],
+      "detached": {
+        "componentCount": 13,
+        "bbox": [
+          28,
+          0,
+          153,
+          181
+        ],
+        "area": 273,
+        "maskSha256": "1830cb49b3fa69f69890f942fcecd7547f62a215aac19ef340e23c5ee140e3cf"
+      }
+    },
+    {
+      "bossId": "boss_swarm_queen_bee",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 1,
+      "sourceColumns": 6,
+      "sourceCell": [
+        181,
+        724,
+        362,
+        905
+      ],
+      "detached": {
+        "componentCount": 16,
+        "bbox": [
+          203,
+          0,
+          331,
+          86
+        ],
+        "area": 303,
+        "maskSha256": "0af2a6399cdc82e15b5a122a151ba2b4e736b549a886bc2cc0a56cd561587064"
+      }
+    },
+    {
+      "bossId": "boss_swarm_queen_bee",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 2,
+      "sourceColumns": 6,
+      "sourceCell": [
+        362,
+        724,
+        543,
+        905
+      ],
+      "detached": {
+        "componentCount": 22,
+        "bbox": [
+          395,
+          0,
+          508,
+          75
+        ],
+        "area": 379,
+        "maskSha256": "f023b0b87361681946eeeba0cc63be144d73a4ee988c42458057a3bd882f110e"
+      }
+    },
+    {
+      "bossId": "boss_swarm_queen_bee",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 3,
+      "sourceColumns": 6,
+      "sourceCell": [
+        543,
+        724,
+        724,
+        905
+      ],
+      "detached": {
+        "componentCount": 24,
+        "bbox": [
+          555,
+          0,
+          724,
+          169
+        ],
+        "area": 485,
+        "maskSha256": "fad1352aa4a5d47f259e02c76d08fff0dc7155a6e1ee745b81d58b5eeeb20aed"
+      }
+    },
+    {
+      "bossId": "boss_swarm_queen_bee",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 4,
+      "sourceColumns": 6,
+      "sourceCell": [
+        724,
+        724,
+        905,
+        905
+      ],
+      "detached": {
+        "componentCount": 25,
+        "bbox": [
+          732,
+          0,
+          905,
+          176
+        ],
+        "area": 657,
+        "maskSha256": "1374588d224abd254de5e3bac771e241622026c44d14c47f55fc4f3e4208466b"
+      }
+    },
+    {
+      "bossId": "boss_swarm_queen_bee",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 5,
+      "sourceColumns": 6,
+      "sourceCell": [
+        905,
+        724,
+        1086,
+        905
+      ],
+      "detached": {
+        "componentCount": 22,
+        "bbox": [
+          913,
+          0,
+          1034,
+          75
+        ],
+        "area": 450,
+        "maskSha256": "3492f2b9e9265da10642e5f97bd7a5f50994b93bec45a2ac4cea0c1fb60742ad"
+      }
+    },
+    {
+      "bossId": "boss_penthouse_survivor",
+      "motionKey": "basic_a",
+      "row": 1,
+      "col": 0,
+      "sourceColumns": 6,
+      "sourceCell": [
+        0,
+        181,
+        181,
+        362
+      ],
+      "detached": {
+        "componentCount": 3,
+        "bbox": [
+          61,
+          0,
+          181,
+          39
+        ],
+        "area": 198,
+        "maskSha256": "4cc3ab2404853fa093827ac4cc213819bdba3057e929c721f9ec0091be9fda23"
+      }
+    },
+    {
+      "bossId": "boss_penthouse_survivor",
+      "motionKey": "basic_a",
+      "row": 1,
+      "col": 1,
+      "sourceColumns": 6,
+      "sourceCell": [
+        181,
+        181,
+        362,
+        362
+      ],
+      "detached": {
+        "componentCount": 3,
+        "bbox": [
+          230,
+          0,
+          362,
+          45
+        ],
+        "area": 296,
+        "maskSha256": "f30e76a30133233e2a62452bf4d8378cb11c267fdc53e2ba822ebda799b66a94"
+      }
+    },
+    {
+      "bossId": "boss_penthouse_survivor",
+      "motionKey": "basic_a",
+      "row": 1,
+      "col": 2,
+      "sourceColumns": 6,
+      "sourceCell": [
+        362,
+        181,
+        543,
+        362
+      ],
+      "detached": {
+        "componentCount": 3,
+        "bbox": [
+          408,
+          0,
+          543,
+          50
+        ],
+        "area": 276,
+        "maskSha256": "c7b72742a14d27e9a570f22b9835749a8bab289c33151ed88d6a4f1fcde3f2e8"
+      }
+    },
+    {
+      "bossId": "boss_penthouse_survivor",
+      "motionKey": "basic_a",
+      "row": 1,
+      "col": 3,
+      "sourceColumns": 6,
+      "sourceCell": [
+        543,
+        181,
+        724,
+        362
+      ],
+      "detached": {
+        "componentCount": 3,
+        "bbox": [
+          585,
+          0,
+          724,
+          54
+        ],
+        "area": 299,
+        "maskSha256": "473c6801d067019e6df79743e8a959edaefa2ac87abf574c2fe1e9b33152db5b"
+      }
+    },
+    {
+      "bossId": "boss_penthouse_survivor",
+      "motionKey": "basic_a",
+      "row": 1,
+      "col": 4,
+      "sourceColumns": 6,
+      "sourceCell": [
+        724,
+        181,
+        905,
+        362
+      ],
+      "detached": {
+        "componentCount": 3,
+        "bbox": [
+          766,
+          0,
+          905,
+          53
+        ],
+        "area": 405,
+        "maskSha256": "4b97b7196aa171aa2d266cded12528841ca2e51b9c58e5f85168334d3fce84ba"
+      }
+    },
+    {
+      "bossId": "boss_penthouse_survivor",
+      "motionKey": "basic_a",
+      "row": 1,
+      "col": 5,
+      "sourceColumns": 6,
+      "sourceCell": [
+        905,
+        181,
+        1086,
+        362
+      ],
+      "detached": {
+        "componentCount": 2,
+        "bbox": [
+          944,
+          0,
+          1005,
+          9
+        ],
+        "area": 213,
+        "maskSha256": "591f4dc42bc8baaec00d1140c31e8cc48199b26ed3b1a217352f62628764d1a9"
+      }
+    },
+    {
+      "bossId": "boss_penthouse_survivor",
+      "motionKey": "basic_b",
+      "row": 2,
+      "col": 0,
+      "sourceColumns": 6,
+      "sourceCell": [
+        0,
+        362,
+        181,
+        543
+      ],
+      "detached": {
+        "componentCount": 2,
+        "bbox": [
+          67,
+          0,
+          157,
+          11
+        ],
+        "area": 315,
+        "maskSha256": "d30816980439e8abb591fc550605e60b389a8c91321e10e05f5bf3946a45ee22"
+      }
+    },
+    {
+      "bossId": "boss_penthouse_survivor",
+      "motionKey": "basic_b",
+      "row": 2,
+      "col": 1,
+      "sourceColumns": 6,
+      "sourceCell": [
+        181,
+        362,
+        362,
+        543
+      ],
+      "detached": {
+        "componentCount": 3,
+        "bbox": [
+          233,
+          0,
+          362,
+          46
+        ],
+        "area": 348,
+        "maskSha256": "3c38bc88bf39e059ea765dc6259b260578448f3c06c8a5d905c1fab88688400b"
+      }
+    },
+    {
+      "bossId": "boss_penthouse_survivor",
+      "motionKey": "basic_b",
+      "row": 2,
+      "col": 2,
+      "sourceColumns": 6,
+      "sourceCell": [
+        362,
+        362,
+        543,
+        543
+      ],
+      "detached": {
+        "componentCount": 3,
+        "bbox": [
+          403,
+          0,
+          543,
+          54
+        ],
+        "area": 455,
+        "maskSha256": "562bcf3c4ece2e53c8237fccf7d1d874422b3e3aafc97827797b09ebc99e8a18"
+      }
+    },
+    {
+      "bossId": "boss_penthouse_survivor",
+      "motionKey": "basic_b",
+      "row": 2,
+      "col": 3,
+      "sourceColumns": 6,
+      "sourceCell": [
+        543,
+        362,
+        724,
+        543
+      ],
+      "detached": {
+        "componentCount": 3,
+        "bbox": [
+          586,
+          0,
+          724,
+          48
+        ],
+        "area": 372,
+        "maskSha256": "16ef391fba0773482f54f575f0962f2757b556e42f0d09cdab0af8e938207328"
+      }
+    },
+    {
+      "bossId": "boss_penthouse_survivor",
+      "motionKey": "basic_b",
+      "row": 2,
+      "col": 4,
+      "sourceColumns": 6,
+      "sourceCell": [
+        724,
+        362,
+        905,
+        543
+      ],
+      "detached": {
+        "componentCount": 3,
+        "bbox": [
+          766,
+          0,
+          905,
+          44
+        ],
+        "area": 379,
+        "maskSha256": "5553486c0ad33a576492c2535cad55107162582bac76ee9dfb5d6f7c348df629"
+      }
+    },
+    {
+      "bossId": "boss_penthouse_survivor",
+      "motionKey": "basic_b",
+      "row": 2,
+      "col": 5,
+      "sourceColumns": 6,
+      "sourceCell": [
+        905,
+        362,
+        1086,
+        543
+      ],
+      "detached": {
+        "componentCount": 2,
+        "bbox": [
+          957,
+          0,
+          1033,
+          11
+        ],
+        "area": 362,
+        "maskSha256": "1923abd18adf1ff0388314cb45afdcf5c41f685d573b386974e09ab12ffa9069"
+      }
+    },
+    {
+      "bossId": "boss_penthouse_survivor",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 0,
+      "sourceColumns": 6,
+      "sourceCell": [
+        0,
+        724,
+        181,
+        905
+      ],
+      "detached": {
+        "componentCount": 2,
+        "bbox": [
+          79,
+          0,
+          144,
+          11
+        ],
+        "area": 328,
+        "maskSha256": "20fe8a9656da8c9cbce06089fb76e1fbb9714f53b776308654a88f0751836bae"
+      }
+    },
+    {
+      "bossId": "boss_penthouse_survivor",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 1,
+      "sourceColumns": 6,
+      "sourceCell": [
+        181,
+        724,
+        362,
+        905
+      ],
+      "detached": {
+        "componentCount": 3,
+        "bbox": [
+          247,
+          0,
+          362,
+          38
+        ],
+        "area": 358,
+        "maskSha256": "a4204defe3bc43927691a696e832ccbb0ef9eec0b252a196a4440956ec163365"
+      }
+    },
+    {
+      "bossId": "boss_penthouse_survivor",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 2,
+      "sourceColumns": 6,
+      "sourceCell": [
+        362,
+        724,
+        543,
+        905
+      ],
+      "detached": {
+        "componentCount": 3,
+        "bbox": [
+          417,
+          0,
+          543,
+          40
+        ],
+        "area": 360,
+        "maskSha256": "7a65c2dc6710d6a2952df1d38eb648759e57d754ac12bb0a41191a957273716b"
+      }
+    },
+    {
+      "bossId": "boss_penthouse_survivor",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 3,
+      "sourceColumns": 6,
+      "sourceCell": [
+        543,
+        724,
+        724,
+        905
+      ],
+      "detached": {
+        "componentCount": 3,
+        "bbox": [
+          592,
+          0,
+          724,
+          47
+        ],
+        "area": 368,
+        "maskSha256": "21aa30cc75b8cf83c61e4f1f72fd6779ba3b0c6805c9d4ed146da6bf787ecdc1"
+      }
+    },
+    {
+      "bossId": "boss_penthouse_survivor",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 4,
+      "sourceColumns": 6,
+      "sourceCell": [
+        724,
+        724,
+        905,
+        905
+      ],
+      "detached": {
+        "componentCount": 2,
+        "bbox": [
+          771,
+          0,
+          838,
+          12
+        ],
+        "area": 356,
+        "maskSha256": "49b0eac8e578c24fdc530b3a50c75da3e0193ffb264947147b1081b49770b26f"
+      }
+    },
+    {
+      "bossId": "boss_penthouse_survivor",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 5,
+      "sourceColumns": 6,
+      "sourceCell": [
+        905,
+        724,
+        1086,
+        905
+      ],
+      "detached": {
+        "componentCount": 2,
+        "bbox": [
+          958,
+          0,
+          1024,
+          12
+        ],
+        "area": 353,
+        "maskSha256": "6edd7d1c43e92718af8ff0500d02db0cdb8b79201c41b9dfaf4d24cb0c5ebcf2"
+      }
+    },
+    {
+      "bossId": "boss_escaped_experiment",
+      "motionKey": "basic_b",
+      "row": 2,
+      "col": 0,
+      "sourceColumns": 6,
+      "sourceCell": [
+        0,
+        362,
+        181,
+        543
+      ],
+      "detached": {
+        "componentCount": 0,
+        "bbox": null,
+        "area": 0,
+        "maskSha256": null
+      }
+    },
+    {
+      "bossId": "boss_escaped_experiment",
+      "motionKey": "basic_b",
+      "row": 2,
+      "col": 1,
+      "sourceColumns": 6,
+      "sourceCell": [
+        181,
+        362,
+        362,
+        543
+      ],
+      "detached": {
+        "componentCount": 4,
+        "bbox": [
+          193,
+          59,
+          213,
+          77
+        ],
+        "area": 12,
+        "maskSha256": "a49c90f1a757aa7ef77db2f3f6adf28e685625e705d5e407dcc025b22f3565bb"
+      }
+    },
+    {
+      "bossId": "boss_escaped_experiment",
+      "motionKey": "basic_b",
+      "row": 2,
+      "col": 2,
+      "sourceColumns": 6,
+      "sourceCell": [
+        362,
+        362,
+        543,
+        543
+      ],
+      "detached": {
+        "componentCount": 0,
+        "bbox": null,
+        "area": 0,
+        "maskSha256": null
+      }
+    },
+    {
+      "bossId": "boss_escaped_experiment",
+      "motionKey": "basic_b",
+      "row": 2,
+      "col": 3,
+      "sourceColumns": 6,
+      "sourceCell": [
+        543,
+        362,
+        724,
+        543
+      ],
+      "detached": {
+        "componentCount": 3,
+        "bbox": [
+          550,
+          88,
+          669,
+          164
+        ],
+        "area": 4,
+        "maskSha256": "45870a7d5f4d62e3d4401a876d091db016aea7e1c764e4353c1b433d4d7081e9"
+      }
+    },
+    {
+      "bossId": "boss_escaped_experiment",
+      "motionKey": "basic_b",
+      "row": 2,
+      "col": 4,
+      "sourceColumns": 6,
+      "sourceCell": [
+        724,
+        362,
+        905,
+        543
+      ],
+      "detached": {
+        "componentCount": 2,
+        "bbox": [
+          724,
+          58,
+          738,
+          63
+        ],
+        "area": 9,
+        "maskSha256": "97f3ac22361267bb1299c8964b43fb3baa4496e35944134f72e91b047a698dba"
+      }
+    },
+    {
+      "bossId": "boss_escaped_experiment",
+      "motionKey": "basic_b",
+      "row": 2,
+      "col": 5,
+      "sourceColumns": 6,
+      "sourceCell": [
+        905,
+        362,
+        1086,
+        543
+      ],
+      "detached": {
+        "componentCount": 56,
+        "bbox": [
+          905,
+          41,
+          1061,
+          123
+        ],
+        "area": 319,
+        "maskSha256": "302052465bee3eb1f135eba9245d2a8c4fac4fa5778839f044683aab35293d46"
+      }
+    },
+    {
+      "bossId": "boss_escaped_experiment",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 0,
+      "sourceColumns": 6,
+      "sourceCell": [
+        0,
+        724,
+        181,
+        905
+      ],
+      "detached": {
+        "componentCount": 7,
+        "bbox": [
+          21,
+          16,
+          179,
+          132
+        ],
+        "area": 225,
+        "maskSha256": "13889a467624172f2befd1356da3d23442e7c8698a7cbce2b0e4d3f8915aacce"
+      }
+    },
+    {
+      "bossId": "boss_escaped_experiment",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 1,
+      "sourceColumns": 6,
+      "sourceCell": [
+        181,
+        724,
+        362,
+        905
+      ],
+      "detached": {
+        "componentCount": 8,
+        "bbox": [
+          203,
+          16,
+          360,
+          132
+        ],
+        "area": 236,
+        "maskSha256": "77d5dd0a3f37fc05b0b09e3f471893859b52ddd02374b2aa3971c32532cbbeb6"
+      }
+    },
+    {
+      "bossId": "boss_escaped_experiment",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 2,
+      "sourceColumns": 6,
+      "sourceCell": [
+        362,
+        724,
+        543,
+        905
+      ],
+      "detached": {
+        "componentCount": 10,
+        "bbox": [
+          385,
+          28,
+          541,
+          135
+        ],
+        "area": 294,
+        "maskSha256": "4f93c0b33645062f64e7bfd4eda7b5758e3c8777d3cff284ed2d60edac694231"
+      }
+    },
+    {
+      "bossId": "boss_escaped_experiment",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 3,
+      "sourceColumns": 6,
+      "sourceCell": [
+        543,
+        724,
+        724,
+        905
+      ],
+      "detached": {
+        "componentCount": 2,
+        "bbox": [
+          557,
+          102,
+          567,
+          123
+        ],
+        "area": 54,
+        "maskSha256": "a5d8cb6cc5bd0ac84d579292d47e394874dbc9f17ed5d4cb8ccc84aa89c9f99f"
+      }
+    },
+    {
+      "bossId": "boss_escaped_experiment",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 4,
+      "sourceColumns": 6,
+      "sourceCell": [
+        724,
+        724,
+        905,
+        905
+      ],
+      "detached": {
+        "componentCount": 4,
+        "bbox": [
+          747,
+          97,
+          843,
+          128
+        ],
+        "area": 61,
+        "maskSha256": "c10391b98013577067f5341620a8637c96b560985d60a8599ca159190b8b726b"
+      }
+    },
+    {
+      "bossId": "boss_escaped_experiment",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 5,
+      "sourceColumns": 6,
+      "sourceCell": [
+        905,
+        724,
+        1086,
+        905
+      ],
+      "detached": {
+        "componentCount": 1,
+        "bbox": [
+          905,
+          88,
+          909,
+          106
+        ],
+        "area": 40,
+        "maskSha256": "f3dcf70a3451fd98c05a578f49e0ffa9ce970821495484e59850c64ec39feda7"
+      }
+    },
+    {
+      "bossId": "boss_blizzard_wraith",
+      "motionKey": "basic_b",
+      "row": 2,
+      "col": 0,
+      "sourceColumns": 6,
+      "sourceCell": [
+        0,
+        362,
+        181,
+        543
+      ],
+      "detached": {
+        "componentCount": 4,
+        "bbox": [
+          39,
+          79,
+          117,
+          166
+        ],
+        "area": 33,
+        "maskSha256": "bba7508e7bc8f9866cd58d74954a03696cd74a5ebf6bf6a30e9e739d37cbe1ba"
+      }
+    },
+    {
+      "bossId": "boss_blizzard_wraith",
+      "motionKey": "basic_b",
+      "row": 2,
+      "col": 1,
+      "sourceColumns": 6,
+      "sourceCell": [
+        181,
+        362,
+        362,
+        543
+      ],
+      "detached": {
+        "componentCount": 5,
+        "bbox": [
+          197,
+          66,
+          324,
+          173
+        ],
+        "area": 29,
+        "maskSha256": "80d58785f5a45c9124f7d4d3bfdd8fce0b9b969ba2c4f0142fe0345579724d02"
+      }
+    },
+    {
+      "bossId": "boss_blizzard_wraith",
+      "motionKey": "basic_b",
+      "row": 2,
+      "col": 2,
+      "sourceColumns": 6,
+      "sourceCell": [
+        362,
+        362,
+        543,
+        543
+      ],
+      "detached": {
+        "componentCount": 10,
+        "bbox": [
+          388,
+          55,
+          533,
+          165
+        ],
+        "area": 324,
+        "maskSha256": "32ae482b17d3b78ff7eb97d84b59b0fec78b6017b1366f9b6135a2791e2a26d7"
+      }
+    },
+    {
+      "bossId": "boss_blizzard_wraith",
+      "motionKey": "basic_b",
+      "row": 2,
+      "col": 3,
+      "sourceColumns": 6,
+      "sourceCell": [
+        543,
+        362,
+        724,
+        543
+      ],
+      "detached": {
+        "componentCount": 9,
+        "bbox": [
+          555,
+          63,
+          703,
+          167
+        ],
+        "area": 225,
+        "maskSha256": "829f2f69d371eac891d04ce7c298b5c8e91051b6efea6e3dba477a40d5a1a41e"
+      }
+    },
+    {
+      "bossId": "boss_blizzard_wraith",
+      "motionKey": "basic_b",
+      "row": 2,
+      "col": 4,
+      "sourceColumns": 6,
+      "sourceCell": [
+        724,
+        362,
+        905,
+        543
+      ],
+      "detached": {
+        "componentCount": 10,
+        "bbox": [
+          735,
+          56,
+          906,
+          164
+        ],
+        "area": 594,
+        "maskSha256": "e5cb44eb48b59238aca22fa644cbfb59af98de4a71252c18d77bfcaa521f4aa9"
+      }
+    },
+    {
+      "bossId": "boss_blizzard_wraith",
+      "motionKey": "basic_b",
+      "row": 2,
+      "col": 5,
+      "sourceColumns": 6,
+      "sourceCell": [
+        905,
+        362,
+        1086,
+        543
+      ],
+      "detached": {
+        "componentCount": 12,
+        "bbox": [
+          905,
+          59,
+          1066,
+          165
+        ],
+        "area": 514,
+        "maskSha256": "b454e0f88e74ea05c5c5785f05019d26ad39bd96a72109961aed9bedd661bae0"
+      }
+    },
+    {
+      "bossId": "boss_blizzard_wraith",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 0,
+      "sourceColumns": 6,
+      "sourceCell": [
+        0,
+        724,
+        181,
+        905
+      ],
+      "detached": {
+        "componentCount": 19,
+        "bbox": [
+          31,
+          29,
+          140,
+          161
+        ],
+        "area": 90,
+        "maskSha256": "bc7afed7fd57a95e9e1ad362552abe27c7c4c1054dba7f559096b31bd9c24d24"
+      }
+    },
+    {
+      "bossId": "boss_blizzard_wraith",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 1,
+      "sourceColumns": 6,
+      "sourceCell": [
+        181,
+        724,
+        362,
+        905
+      ],
+      "detached": {
+        "componentCount": 23,
+        "bbox": [
+          189,
+          32,
+          362,
+          141
+        ],
+        "area": 299,
+        "maskSha256": "5b75c9b858225a69bc4dd06fdacb28e4bf5d1ecf1eb314e5136b139c39ec048b"
+      }
+    },
+    {
+      "bossId": "boss_blizzard_wraith",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 2,
+      "sourceColumns": 6,
+      "sourceCell": [
+        362,
+        724,
+        543,
+        905
+      ],
+      "detached": {
+        "componentCount": 28,
+        "bbox": [
+          361,
+          23,
+          544,
+          161
+        ],
+        "area": 433,
+        "maskSha256": "aa1b30c3b62ae14dc23a60e065579915544a842ac48e5590ebedb4190b3ddcbb"
+      }
+    },
+    {
+      "bossId": "boss_blizzard_wraith",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 3,
+      "sourceColumns": 6,
+      "sourceCell": [
+        543,
+        724,
+        724,
+        905
+      ],
+      "detached": {
+        "componentCount": 26,
+        "bbox": [
+          541,
+          23,
+          724,
+          153
+        ],
+        "area": 1094,
+        "maskSha256": "43e570b7f89fd3dbebe6047a792a9a033c86da0dd7edbc3254d4a1cfed5e87e6"
+      }
+    },
+    {
+      "bossId": "boss_blizzard_wraith",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 4,
+      "sourceColumns": 6,
+      "sourceCell": [
+        724,
+        724,
+        905,
+        905
+      ],
+      "detached": {
+        "componentCount": 26,
+        "bbox": [
+          720,
+          24,
+          905,
+          139
+        ],
+        "area": 776,
+        "maskSha256": "c5cf93abcc29cb99de2b081100dd3ee4c6188ea7456c612f18075c3ac9e3d718"
+      }
+    },
+    {
+      "bossId": "boss_blizzard_wraith",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 5,
+      "sourceColumns": 6,
+      "sourceCell": [
+        905,
+        724,
+        1086,
+        905
+      ],
+      "detached": {
+        "componentCount": 21,
+        "bbox": [
+          900,
+          25,
+          1043,
+          162
+        ],
+        "area": 251,
+        "maskSha256": "3ef7cdcbc97d90f9f81db4de29d6a33d659b0c3ac2e4dceb40804e7850e6f62b"
+      }
+    },
+    {
+      "bossId": "boss_soldier_nemesis",
+      "motionKey": "basic_b",
+      "row": 2,
+      "col": 0,
+      "sourceColumns": 6,
+      "sourceCell": [
+        0,
+        362,
+        181,
+        543
+      ],
+      "detached": {
+        "componentCount": 2,
+        "bbox": [
+          47,
+          0,
+          143,
+          21
+        ],
+        "area": 804,
+        "maskSha256": "fef5ec9b6192ff2556bd794a65efd079f02158bb7621456b77aee95b7c15d591"
+      }
+    },
+    {
+      "bossId": "boss_soldier_nemesis",
+      "motionKey": "basic_b",
+      "row": 2,
+      "col": 1,
+      "sourceColumns": 6,
+      "sourceCell": [
+        181,
+        362,
+        362,
+        543
+      ],
+      "detached": {
+        "componentCount": 3,
+        "bbox": [
+          221,
+          0,
+          362,
+          98
+        ],
+        "area": 835,
+        "maskSha256": "137fe8873c792a9d949a6c0da2576f2912ec571dca4df19eb97febe3fc305911"
+      }
+    },
+    {
+      "bossId": "boss_soldier_nemesis",
+      "motionKey": "basic_b",
+      "row": 2,
+      "col": 2,
+      "sourceColumns": 6,
+      "sourceCell": [
+        362,
+        362,
+        543,
+        543
+      ],
+      "detached": {
+        "componentCount": 2,
+        "bbox": [
+          395,
+          0,
+          489,
+          21
+        ],
+        "area": 802,
+        "maskSha256": "b387832bb8551580d03517c4571daa85fddf4650a94d917b3da83ac30f06b01c"
+      }
+    },
+    {
+      "bossId": "boss_soldier_nemesis",
+      "motionKey": "basic_b",
+      "row": 2,
+      "col": 3,
+      "sourceColumns": 6,
+      "sourceCell": [
+        543,
+        362,
+        724,
+        543
+      ],
+      "detached": {
+        "componentCount": 3,
+        "bbox": [
+          575,
+          0,
+          724,
+          93
+        ],
+        "area": 832,
+        "maskSha256": "fbe642a5ea43908d23ec7b0fb57ade2fa890be1254d5325675035c491ff67d68"
+      }
+    },
+    {
+      "bossId": "boss_soldier_nemesis",
+      "motionKey": "basic_b",
+      "row": 2,
+      "col": 4,
+      "sourceColumns": 6,
+      "sourceCell": [
+        724,
+        362,
+        905,
+        543
+      ],
+      "detached": {
+        "componentCount": 2,
+        "bbox": [
+          754,
+          0,
+          849,
+          21
+        ],
+        "area": 794,
+        "maskSha256": "500b32f45e26675e9667343125722145f04a0df6c7823dc1250f0eaf6b23cc22"
+      }
+    },
+    {
+      "bossId": "boss_soldier_nemesis",
+      "motionKey": "basic_b",
+      "row": 2,
+      "col": 5,
+      "sourceColumns": 6,
+      "sourceCell": [
+        905,
+        362,
+        1086,
+        543
+      ],
+      "detached": {
+        "componentCount": 2,
+        "bbox": [
+          932,
+          0,
+          1026,
+          21
+        ],
+        "area": 810,
+        "maskSha256": "3b769660983b745ab59da10c253f54ac8adbcf7fe7e0742ec457d34893cd610c"
+      }
+    },
+    {
+      "bossId": "boss_soldier_nemesis",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 0,
+      "sourceColumns": 6,
+      "sourceCell": [
+        0,
+        724,
+        181,
+        905
+      ],
+      "detached": {
+        "componentCount": 2,
+        "bbox": [
+          40,
+          0,
+          131,
+          52
+        ],
+        "area": 2111,
+        "maskSha256": "1a5424b648982666884f1389f4811dc26e7764e94fb598454ed5df920089de94"
+      }
+    },
+    {
+      "bossId": "boss_soldier_nemesis",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 1,
+      "sourceColumns": 6,
+      "sourceCell": [
+        181,
+        724,
+        362,
+        905
+      ],
+      "detached": {
+        "componentCount": 3,
+        "bbox": [
+          220,
+          0,
+          362,
+          105
+        ],
+        "area": 2148,
+        "maskSha256": "c99e90b90f4ba226eaf9e3875c5e97429d59f4d3adb7933891a1f263a0360f38"
+      }
+    },
+    {
+      "bossId": "boss_soldier_nemesis",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 2,
+      "sourceColumns": 6,
+      "sourceCell": [
+        362,
+        724,
+        543,
+        905
+      ],
+      "detached": {
+        "componentCount": 2,
+        "bbox": [
+          397,
+          0,
+          488,
+          52
+        ],
+        "area": 2134,
+        "maskSha256": "35ad6227a3f780a0cd57e6dee5043da869c706cba897b24a04882bb0b9a6401e"
+      }
+    },
+    {
+      "bossId": "boss_soldier_nemesis",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 3,
+      "sourceColumns": 6,
+      "sourceCell": [
+        543,
+        724,
+        724,
+        905
+      ],
+      "detached": {
+        "componentCount": 2,
+        "bbox": [
+          578,
+          0,
+          668,
+          52
+        ],
+        "area": 2127,
+        "maskSha256": "3e10cccdd9caa3377024e65e0089684902efd95c5921b7ee4873e5d29bbbcb68"
+      }
+    },
+    {
+      "bossId": "boss_soldier_nemesis",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 4,
+      "sourceColumns": 6,
+      "sourceCell": [
+        724,
+        724,
+        905,
+        905
+      ],
+      "detached": {
+        "componentCount": 2,
+        "bbox": [
+          754,
+          0,
+          844,
+          52
+        ],
+        "area": 2103,
+        "maskSha256": "dd3dbcf8193b2f55119cec5b8f608cefacf2226784ef6cf07f74791b7871d55f"
+      }
+    },
+    {
+      "bossId": "boss_soldier_nemesis",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 5,
+      "sourceColumns": 6,
+      "sourceCell": [
+        905,
+        724,
+        1086,
+        905
+      ],
+      "detached": {
+        "componentCount": 2,
+        "bbox": [
+          930,
+          0,
+          1020,
+          52
+        ],
+        "area": 2110,
+        "maskSha256": "a543c7d24ed9bd992056ff9468eb654c4ea92d560dd06e2502c502e4534c8d98"
+      }
+    },
+    {
+      "bossId": "boss_firefighter_nemesis",
+      "motionKey": "basic_b",
+      "row": 2,
+      "col": 0,
+      "sourceColumns": 7,
+      "sourceCell": [
+        0,
+        362,
+        155,
+        543
+      ],
+      "detached": {
+        "componentCount": 5,
+        "bbox": [
+          28,
+          33,
+          128,
+          89
+        ],
+        "area": 19,
+        "maskSha256": "a00f82e9a388054c7534f5887a8ac14029eb403a2f7495c50529e5b19cbe6695"
+      }
+    },
+    {
+      "bossId": "boss_firefighter_nemesis",
+      "motionKey": "basic_b",
+      "row": 2,
+      "col": 1,
+      "sourceColumns": 7,
+      "sourceCell": [
+        155,
+        362,
+        310,
+        543
+      ],
+      "detached": {
+        "componentCount": 12,
+        "bbox": [
+          181,
+          33,
+          275,
+          89
+        ],
+        "area": 43,
+        "maskSha256": "77db21fade5e1018fef3ec882cc0c274ea6b27d3c39db50d13165cc996038a49"
+      }
+    },
+    {
+      "bossId": "boss_firefighter_nemesis",
+      "motionKey": "basic_b",
+      "row": 2,
+      "col": 2,
+      "sourceColumns": 7,
+      "sourceCell": [
+        310,
+        362,
+        465,
+        543
+      ],
+      "detached": {
+        "componentCount": 16,
+        "bbox": [
+          340,
+          35,
+          439,
+          103
+        ],
+        "area": 82,
+        "maskSha256": "ef82fc16a95468d5250550f669400fdf79ab161addeeb38066b9c39fe9826faf"
+      }
+    },
+    {
+      "bossId": "boss_firefighter_nemesis",
+      "motionKey": "basic_b",
+      "row": 2,
+      "col": 3,
+      "sourceColumns": 7,
+      "sourceCell": [
+        465,
+        362,
+        621,
+        543
+      ],
+      "detached": {
+        "componentCount": 9,
+        "bbox": [
+          488,
+          33,
+          591,
+          113
+        ],
+        "area": 36,
+        "maskSha256": "4419cbe1e82e5abe3abf6d131387110274c7060f6da858133cf62b4a1013049f"
+      }
+    },
+    {
+      "bossId": "boss_firefighter_nemesis",
+      "motionKey": "basic_b",
+      "row": 2,
+      "col": 4,
+      "sourceColumns": 7,
+      "sourceCell": [
+        621,
+        362,
+        776,
+        543
+      ],
+      "detached": {
+        "componentCount": 17,
+        "bbox": [
+          645,
+          36,
+          776,
+          170
+        ],
+        "area": 171,
+        "maskSha256": "1a08249d687c76e40807a50971ebcec0ecb059684de7c682cdb96b02fe478fde"
+      }
+    },
+    {
+      "bossId": "boss_firefighter_nemesis",
+      "motionKey": "basic_b",
+      "row": 2,
+      "col": 5,
+      "sourceColumns": 7,
+      "sourceCell": [
+        776,
+        362,
+        931,
+        543
+      ],
+      "detached": {
+        "componentCount": 16,
+        "bbox": [
+          783,
+          36,
+          931,
+          178
+        ],
+        "area": 445,
+        "maskSha256": "10106876dba75fa0b078bc215bb48cde15b9824a7e36540a1a28b6f9d00dd229"
+      }
+    },
+    {
+      "bossId": "boss_firefighter_nemesis",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 0,
+      "sourceColumns": 7,
+      "sourceCell": [
+        0,
+        724,
+        155,
+        905
+      ],
+      "detached": {
+        "componentCount": 19,
+        "bbox": [
+          28,
+          53,
+          136,
+          170
+        ],
+        "area": 78,
+        "maskSha256": "a5b6926aa8d74cc172c3d114c096f526a841960ddda9d289dc9ee814c2399742"
+      }
+    },
+    {
+      "bossId": "boss_firefighter_nemesis",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 1,
+      "sourceColumns": 7,
+      "sourceCell": [
+        155,
+        724,
+        310,
+        905
+      ],
+      "detached": {
+        "componentCount": 23,
+        "bbox": [
+          182,
+          53,
+          289,
+          162
+        ],
+        "area": 91,
+        "maskSha256": "c0edfed13973140b1c56a02e4a6018dfaedc4bfef598002158df6fecbbc814f1"
+      }
+    },
+    {
+      "bossId": "boss_firefighter_nemesis",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 2,
+      "sourceColumns": 7,
+      "sourceCell": [
+        310,
+        724,
+        465,
+        905
+      ],
+      "detached": {
+        "componentCount": 17,
+        "bbox": [
+          335,
+          48,
+          444,
+          173
+        ],
+        "area": 61,
+        "maskSha256": "89076f2c4aa637866594e2d2c4c159a8ca69c6fde5defc30a0b7d6caa78a13e9"
+      }
+    },
+    {
+      "bossId": "boss_firefighter_nemesis",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 3,
+      "sourceColumns": 7,
+      "sourceCell": [
+        465,
+        724,
+        621,
+        905
+      ],
+      "detached": {
+        "componentCount": 18,
+        "bbox": [
+          492,
+          51,
+          603,
+          171
+        ],
+        "area": 78,
+        "maskSha256": "0b95cef06246aea99f998b8ef6f63059c21b7174d41f56beee78bf84de717c8a"
+      }
+    },
+    {
+      "bossId": "boss_firefighter_nemesis",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 4,
+      "sourceColumns": 7,
+      "sourceCell": [
+        621,
+        724,
+        776,
+        905
+      ],
+      "detached": {
+        "componentCount": 28,
+        "bbox": [
+          643,
+          59,
+          749,
+          170
+        ],
+        "area": 193,
+        "maskSha256": "88d47bdf2035ac3f4ebacd9dcaa4ccf1bc5e096a6f7d06a52eab6c4d5be61296"
+      }
+    },
+    {
+      "bossId": "boss_firefighter_nemesis",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 5,
+      "sourceColumns": 7,
+      "sourceCell": [
+        776,
+        724,
+        931,
+        905
+      ],
+      "detached": {
+        "componentCount": 24,
+        "bbox": [
+          785,
+          57,
+          896,
+          156
+        ],
+        "area": 189,
+        "maskSha256": "bdc7f9f14ba5085e3ea55e3caf16d552d793db2794c2e458d2bd31515ef8d427"
+      }
+    },
+    {
+      "bossId": "boss_chef_nemesis",
+      "motionKey": "special",
+      "row": 3,
+      "col": 0,
+      "sourceColumns": 6,
+      "sourceCell": [
+        0,
+        543,
+        181,
+        724
+      ],
+      "detached": {
+        "componentCount": 8,
+        "bbox": [
+          4,
+          0,
+          181,
+          181
+        ],
+        "area": 1098,
+        "maskSha256": "2df3232733715f989a045e1e4ced848c2d58f28bda896c7140c80ef7a73edd5e"
+      }
+    },
+    {
+      "bossId": "boss_chef_nemesis",
+      "motionKey": "special",
+      "row": 3,
+      "col": 1,
+      "sourceColumns": 6,
+      "sourceCell": [
+        181,
+        543,
+        362,
+        724
+      ],
+      "detached": {
+        "componentCount": 6,
+        "bbox": [
+          243,
+          0,
+          362,
+          181
+        ],
+        "area": 2989,
+        "maskSha256": "b349d49f16c62d387604280d51945cee31ed10ca5cadc074c1da66cf507bc6c5"
+      }
+    },
+    {
+      "bossId": "boss_chef_nemesis",
+      "motionKey": "special",
+      "row": 3,
+      "col": 2,
+      "sourceColumns": 6,
+      "sourceCell": [
+        362,
+        543,
+        543,
+        724
+      ],
+      "detached": {
+        "componentCount": 8,
+        "bbox": [
+          390,
+          0,
+          543,
+          181
+        ],
+        "area": 4344,
+        "maskSha256": "1de008ea4c3dbaaad9b029922fe5ae79d52fc6ab291c4d3e869187fb33b77bfa"
+      }
+    },
+    {
+      "bossId": "boss_chef_nemesis",
+      "motionKey": "special",
+      "row": 3,
+      "col": 3,
+      "sourceColumns": 6,
+      "sourceCell": [
+        543,
+        543,
+        724,
+        724
+      ],
+      "detached": {
+        "componentCount": 8,
+        "bbox": [
+          579,
+          0,
+          724,
+          181
+        ],
+        "area": 3406,
+        "maskSha256": "15f5401dea5d31ca5d7a0fa3cd8437c29cd6c9cd96e9eb79607e4a06c61e3f1b"
+      }
+    },
+    {
+      "bossId": "boss_chef_nemesis",
+      "motionKey": "special",
+      "row": 3,
+      "col": 4,
+      "sourceColumns": 6,
+      "sourceCell": [
+        724,
+        543,
+        905,
+        724
+      ],
+      "detached": {
+        "componentCount": 7,
+        "bbox": [
+          754,
+          0,
+          859,
+          181
+        ],
+        "area": 302,
+        "maskSha256": "3df59fa01720594b26072f78138ba5862f69407198c569caa6b885a356f4270c"
+      }
+    },
+    {
+      "bossId": "boss_chef_nemesis",
+      "motionKey": "special",
+      "row": 3,
+      "col": 5,
+      "sourceColumns": 6,
+      "sourceCell": [
+        905,
+        543,
+        1086,
+        724
+      ],
+      "detached": {
+        "componentCount": 6,
+        "bbox": [
+          930,
+          0,
+          1061,
+          181
+        ],
+        "area": 530,
+        "maskSha256": "0ca13fc195609fdac57185e6847240a8e24d6cf988a0592a589433b26f066763"
+      }
+    },
+    {
+      "bossId": "boss_chef_nemesis",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 0,
+      "sourceColumns": 6,
+      "sourceCell": [
+        0,
+        724,
+        181,
+        905
+      ],
+      "detached": {
+        "componentCount": 7,
+        "bbox": [
+          14,
+          0,
+          188,
+          136
+        ],
+        "area": 689,
+        "maskSha256": "e7037d47aa808f2bf9fadacccd9e54daba14915c8f98ced077a7929842697dc9"
+      }
+    },
+    {
+      "bossId": "boss_chef_nemesis",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 1,
+      "sourceColumns": 6,
+      "sourceCell": [
+        181,
+        724,
+        362,
+        905
+      ],
+      "detached": {
+        "componentCount": 18,
+        "bbox": [
+          181,
+          0,
+          362,
+          181
+        ],
+        "area": 1324,
+        "maskSha256": "082d5e2c442410fd7c7c453d111823a7d366a451e129ddd944c1f6addd0b4d95"
+      }
+    },
+    {
+      "bossId": "boss_chef_nemesis",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 2,
+      "sourceColumns": 6,
+      "sourceCell": [
+        362,
+        724,
+        543,
+        905
+      ],
+      "detached": {
+        "componentCount": 22,
+        "bbox": [
+          365,
+          0,
+          517,
+          170
+        ],
+        "area": 821,
+        "maskSha256": "178ce494a5eea1b8664f7dfa79537379d9e8619addb504d193365173cb8c961e"
+      }
+    },
+    {
+      "bossId": "boss_chef_nemesis",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 3,
+      "sourceColumns": 6,
+      "sourceCell": [
+        543,
+        724,
+        724,
+        905
+      ],
+      "detached": {
+        "componentCount": 39,
+        "bbox": [
+          556,
+          0,
+          728,
+          170
+        ],
+        "area": 2141,
+        "maskSha256": "1ed74e0947ecaff84bc0dab380cf082e9f9c44b2965f96d3985a885e2470d594"
+      }
+    },
+    {
+      "bossId": "boss_chef_nemesis",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 4,
+      "sourceColumns": 6,
+      "sourceCell": [
+        724,
+        724,
+        905,
+        905
+      ],
+      "detached": {
+        "componentCount": 41,
+        "bbox": [
+          724,
+          0,
+          875,
+          167
+        ],
+        "area": 990,
+        "maskSha256": "a94d36eb37c757623391f8143353286b442b0650aa0eff102aecee0eb8c8b5c6"
+      }
+    },
+    {
+      "bossId": "boss_chef_nemesis",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 5,
+      "sourceColumns": 6,
+      "sourceCell": [
+        905,
+        724,
+        1086,
+        905
+      ],
+      "detached": {
+        "componentCount": 27,
+        "bbox": [
+          918,
+          0,
+          1079,
+          161
+        ],
+        "area": 898,
+        "maskSha256": "a6a86f55923204955321b42607fde56670397206c30d2bea0a2894fce73f87a5"
+      }
+    },
+    {
+      "bossId": "boss_doctor_nemesis",
+      "motionKey": "basic_b",
+      "row": 2,
+      "col": 0,
+      "sourceColumns": 6,
+      "sourceCell": [
+        0,
+        362,
+        181,
+        543
+      ],
+      "detached": {
+        "componentCount": 1,
+        "bbox": [
+          23,
+          0,
+          36,
+          1
+        ],
+        "area": 13,
+        "maskSha256": "fc1df255dfe9a3d6d2d53746ade768d6cc6578c08b2a4bbc9d6c19153b673791"
+      }
+    },
+    {
+      "bossId": "boss_doctor_nemesis",
+      "motionKey": "basic_b",
+      "row": 2,
+      "col": 1,
+      "sourceColumns": 6,
+      "sourceCell": [
+        181,
+        362,
+        362,
+        543
+      ],
+      "detached": {
+        "componentCount": 3,
+        "bbox": [
+          181,
+          0,
+          252,
+          151
+        ],
+        "area": 35,
+        "maskSha256": "a18aef1ebe375b37e4e4a604732a0922354090732af1461792c8f0f2c8898130"
+      }
+    },
+    {
+      "bossId": "boss_doctor_nemesis",
+      "motionKey": "basic_b",
+      "row": 2,
+      "col": 2,
+      "sourceColumns": 6,
+      "sourceCell": [
+        362,
+        362,
+        543,
+        543
+      ],
+      "detached": {
+        "componentCount": 3,
+        "bbox": [
+          362,
+          0,
+          396,
+          78
+        ],
+        "area": 21,
+        "maskSha256": "3ca62d6d85babd808121a0744fe7cf927416a51d9d9df0a77cc6541267f75692"
+      }
+    },
+    {
+      "bossId": "boss_doctor_nemesis",
+      "motionKey": "basic_b",
+      "row": 2,
+      "col": 3,
+      "sourceColumns": 6,
+      "sourceCell": [
+        543,
+        362,
+        724,
+        543
+      ],
+      "detached": {
+        "componentCount": 3,
+        "bbox": [
+          543,
+          0,
+          724,
+          139
+        ],
+        "area": 39,
+        "maskSha256": "5e9446fb4a6c09cb1ec7eab5ae2d702178467e995bed3706e0db20d044060473"
+      }
+    },
+    {
+      "bossId": "boss_doctor_nemesis",
+      "motionKey": "basic_b",
+      "row": 2,
+      "col": 4,
+      "sourceColumns": 6,
+      "sourceCell": [
+        724,
+        362,
+        905,
+        543
+      ],
+      "detached": {
+        "componentCount": 4,
+        "bbox": [
+          732,
+          0,
+          905,
+          181
+        ],
+        "area": 262,
+        "maskSha256": "5583adae1d888d29923ad18a074e202331f828673c45522ef69b7255c86585aa"
+      }
+    },
+    {
+      "bossId": "boss_doctor_nemesis",
+      "motionKey": "basic_b",
+      "row": 2,
+      "col": 5,
+      "sourceColumns": 6,
+      "sourceCell": [
+        905,
+        362,
+        1086,
+        543
+      ],
+      "detached": {
+        "componentCount": 1,
+        "bbox": [
+          900,
+          0,
+          912,
+          1
+        ],
+        "area": 12,
+        "maskSha256": "3ee5f0d83bf791f0fb4d750a5719ce19d6d352ef7e5a4264e4b760f0f9c15014"
+      }
+    },
+    {
+      "bossId": "boss_doctor_nemesis",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 0,
+      "sourceColumns": 6,
+      "sourceCell": [
+        0,
+        724,
+        181,
+        905
+      ],
+      "detached": {
+        "componentCount": 8,
+        "bbox": [
+          16,
+          0,
+          181,
+          172
+        ],
+        "area": 784,
+        "maskSha256": "053d304bb50b7d608999d68e3ede5eb5bfeb5b929710cc5e147bd1cd6c17064d"
+      }
+    },
+    {
+      "bossId": "boss_doctor_nemesis",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 1,
+      "sourceColumns": 6,
+      "sourceCell": [
+        181,
+        724,
+        362,
+        905
+      ],
+      "detached": {
+        "componentCount": 14,
+        "bbox": [
+          188,
+          0,
+          362,
+          133
+        ],
+        "area": 803,
+        "maskSha256": "6c336dd5342b6ca6131a3d5fc11673024bb33fc5cc0336f69523a7db520ea13a"
+      }
+    },
+    {
+      "bossId": "boss_doctor_nemesis",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 2,
+      "sourceColumns": 6,
+      "sourceCell": [
+        362,
+        724,
+        543,
+        905
+      ],
+      "detached": {
+        "componentCount": 23,
+        "bbox": [
+          362,
+          0,
+          543,
+          181
+        ],
+        "area": 997,
+        "maskSha256": "4ae249629d10b28bbdeee7c562c36ec2caccacde5f6d6624626e389e0efb149a"
+      }
+    },
+    {
+      "bossId": "boss_doctor_nemesis",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 3,
+      "sourceColumns": 6,
+      "sourceCell": [
+        543,
+        724,
+        724,
+        905
+      ],
+      "detached": {
+        "componentCount": 12,
+        "bbox": [
+          548,
+          0,
+          724,
+          171
+        ],
+        "area": 860,
+        "maskSha256": "ca96d7d7f12b8fb4e10a2fcfbf9c64467b408c77dc54dce2b0b09e1e7f2be491"
+      }
+    },
+    {
+      "bossId": "boss_doctor_nemesis",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 4,
+      "sourceColumns": 6,
+      "sourceCell": [
+        724,
+        724,
+        905,
+        905
+      ],
+      "detached": {
+        "componentCount": 13,
+        "bbox": [
+          727,
+          0,
+          905,
+          172
+        ],
+        "area": 1061,
+        "maskSha256": "62bbb94b439a0af1fd6e4e337fd9b3391e4109ee01db30e39a81819ae75fb2a4"
+      }
+    },
+    {
+      "bossId": "boss_doctor_nemesis",
+      "motionKey": "ultimate",
+      "row": 4,
+      "col": 5,
+      "sourceColumns": 6,
+      "sourceCell": [
+        905,
+        724,
+        1086,
+        905
+      ],
+      "detached": {
+        "componentCount": 5,
+        "bbox": [
+          909,
+          0,
+          1008,
+          74
+        ],
+        "area": 831,
+        "maskSha256": "fa063bdea1c65a71635d2a581493bb14a07d2a6d0d4fd7c51bf229e8c6fbeaca"
+      }
+    }
+  ]
+}

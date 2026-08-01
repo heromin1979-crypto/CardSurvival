@@ -50,6 +50,27 @@ function companionSheet(src) {
   return playerSheet(src);
 }
 
+function bossSheet(src, actionKeys, locomotions) {
+  const [basicA, basicB, special, ultimate] = actionKeys;
+  const [basicALocomotion, basicBLocomotion, specialLocomotion, ultimateLocomotion] = locomotions;
+  return motionSheet(src, 8, {
+    idle: { row: 0, loop: true, durationMs: 980, locomotion: 'stationary' },
+    basic_a: { row: 1, loop: false, durationMs: 760, locomotion: basicALocomotion },
+    basic_b: { row: 2, loop: false, durationMs: 820, locomotion: basicBLocomotion },
+    special: { row: 3, loop: false, durationMs: 940, locomotion: specialLocomotion },
+    ultimate: { row: 4, loop: false, durationMs: 1120, locomotion: ultimateLocomotion },
+    hit: { row: 5, loop: false, durationMs: 460, locomotion: 'stationary' },
+    charge: { row: 6, loop: false, durationMs: 860, locomotion: 'stationary' },
+    death: { row: 7, loop: false, durationMs: 1100, locomotion: 'stationary', holdLast: true },
+  }, {
+    basic_attack: 'basic_a',
+    [basicA]: 'basic_a',
+    [basicB]: 'basic_b',
+    [special]: 'special',
+    [ultimate]: 'ultimate',
+  });
+}
+
 function motionSheet(src, rows, motions, aliases) {
   return Object.freeze({
     src,
@@ -167,14 +188,28 @@ export const COMBAT_MOTION_MANIFEST = Object.freeze({
     hit: { row: 4, loop: false, durationMs: 440, locomotion: 'stationary' },
     death: { row: 5, loop: false, durationMs: 940, locomotion: 'stationary', holdLast: true },
   }),
-  boss_horde_mother: fourRowSheet('/assets/images/combat/spritesheets/enemies/boss_horde_mother_sheet.png'),
-  boss_raider_warlord: fourRowSheet('/assets/images/combat/spritesheets/enemies/boss_raider_warlord_sheet.png'),
-  boss_feral_dog_alpha: fourRowSheet('/assets/images/combat/spritesheets/enemies/boss_feral_dog_alpha_sheet.png'),
-  boss_penthouse_survivor: fourRowSheet('/assets/images/combat/spritesheets/enemies/boss_penthouse_survivor_sheet.png'),
-  boss_soldier_nemesis: fourRowSheet('/assets/images/combat/spritesheets/enemies/boss_soldier_nemesis_sheet.png'),
-  boss_homeless_nemesis: fourRowSheet('/assets/images/combat/spritesheets/enemies/boss_homeless_nemesis_sheet.png'),
+  boss_patient_zero: bossSheet('/assets/images/combat/spritesheets/enemies/boss_patient_zero_sheet.png', ['infected_charge', 'viral_burst', 'mutation_regeneration', 'host_rampage'], ['approach', 'stationary', 'stationary', 'approach']),
+  boss_radiation_colossus: bossSheet('/assets/images/combat/spritesheets/enemies/boss_radiation_colossus_sheet.png', ['radioactive_fist', 'ground_slam', 'fallout_zone', 'critical_mass'], ['approach', 'stationary', 'stationary', 'stationary']),
+  boss_acid_queen: bossSheet('/assets/images/combat/spritesheets/enemies/boss_acid_queen_sheet.png', ['acid_spray', 'corrosive_tail_sweep', 'acid_pool', 'total_corrosion'], ['stationary', 'approach', 'stationary', 'stationary']),
+  boss_horde_mother: bossSheet('/assets/images/combat/spritesheets/enemies/boss_horde_mother_sheet.png', ['flesh_wall_shove', 'corpse_swing', 'summoning_scream', 'mother_feast'], ['approach', 'approach', 'stationary', 'stationary']),
+  boss_frozen_giant: bossSheet('/assets/images/combat/spritesheets/enemies/boss_frozen_giant_sheet.png', ['frost_breath', 'freezing_fist', 'ice_armor', 'ice_prison'], ['stationary', 'approach', 'stationary', 'stationary']),
+  boss_raider_warlord: bossSheet('/assets/images/combat/spritesheets/enemies/boss_raider_warlord_sheet.png', ['aimed_shot', 'suppressive_fire', 'call_reinforcements', 'execution_order'], ['stationary', 'stationary', 'stationary', 'stationary']),
+  boss_phantom_sniper: bossSheet('/assets/images/combat/spritesheets/enemies/boss_phantom_sniper_sheet.png', ['precision_shot', 'ricochet_shot', 'camouflage', 'headshot'], ['stationary', 'stationary', 'retreat', 'stationary']),
+  boss_cult_leader: bossSheet('/assets/images/combat/spritesheets/enemies/boss_cult_leader_sheet.png', ['ritual_dagger', 'cultist_bomb', 'sermon', 'blood_ritual'], ['approach', 'stationary', 'stationary', 'stationary']),
+  boss_mutant_alpha_tiger: bossSheet('/assets/images/combat/spritesheets/enemies/boss_mutant_alpha_tiger_sheet.png', ['pounce_assault', 'claw_flurry', 'roar', 'predator_hunt'], ['approach', 'approach', 'stationary', 'approach']),
+  boss_sewer_king: bossSheet('/assets/images/combat/spritesheets/enemies/boss_sewer_king_sheet.png', ['death_roll', 'tail_sweep', 'submerge', 'sewage_backflow'], ['approach', 'approach', 'retreat', 'stationary']),
+  boss_swarm_queen_bee: bossSheet('/assets/images/combat/spritesheets/enemies/boss_swarm_queen_bee_sheet.png', ['stinger_barrage', 'wing_blade', 'royal_jelly', 'royal_spawn'], ['stationary', 'approach', 'stationary', 'stationary']),
+  boss_feral_dog_alpha: bossSheet('/assets/images/combat/spritesheets/enemies/boss_feral_dog_alpha_sheet.png', ['neck_bite', 'frenzy_bite', 'pack_howl', 'alpha_hunt'], ['approach', 'approach', 'stationary', 'approach']),
+  boss_penthouse_survivor: bossSheet('/assets/images/combat/spritesheets/enemies/boss_penthouse_survivor_sheet.png', ['golden_pistol', 'explosive_round', 'call_bodyguard', 'bounty_sentence'], ['stationary', 'stationary', 'stationary', 'stationary']),
+  boss_escaped_experiment: bossSheet('/assets/images/combat/spritesheets/enemies/boss_escaped_experiment_sheet.png', ['mutant_claw', 'toxic_fluid_spray', 'adaptive_mutation', 'complete_adaptation'], ['approach', 'stationary', 'stationary', 'approach']),
+  boss_blizzard_wraith: bossSheet('/assets/images/combat/spritesheets/enemies/boss_blizzard_wraith_sheet.png', ['freezing_touch', 'ice_shard', 'blizzard_cloak', 'white_erasure'], ['approach', 'stationary', 'stationary', 'retreat']),
+  boss_soldier_nemesis: bossSheet('/assets/images/combat/spritesheets/enemies/boss_soldier_nemesis_sheet.png', ['rifle_burst', 'flashbang', 'call_deserters', 'crossfire'], ['stationary', 'stationary', 'stationary', 'stationary']),
+  boss_firefighter_nemesis: bossSheet('/assets/images/combat/spritesheets/enemies/boss_firefighter_nemesis_sheet.png', ['fire_axe', 'burning_charge', 'fireproof_stance', 'backdraft'], ['approach', 'approach', 'stationary', 'approach']),
+  boss_homeless_nemesis: bossSheet('/assets/images/combat/spritesheets/enemies/boss_homeless_nemesis_sheet.png', ['pipe_collection', 'threat_strike', 'call_thugs', 'forced_collection'], ['approach', 'approach', 'stationary', 'approach']),
+  boss_chef_nemesis: bossSheet('/assets/images/combat/spritesheets/enemies/boss_chef_nemesis_sheet.png', ['cleaver_flurry', 'meat_hook', 'boiling_oil_field', 'slaughter_time'], ['approach', 'approach', 'stationary', 'approach']),
+  boss_doctor_nemesis: bossSheet('/assets/images/combat/spritesheets/enemies/boss_doctor_nemesis_sheet.png', ['surgical_strike', 'virus_injection', 'malpractice', 'final_surgery'], ['approach', 'approach', 'stationary', 'approach']),
   food_raider: fourRowSheet('/assets/images/combat/spritesheets/enemies/food_raider_sheet.png'),
-  food_warlord: fourRowSheet('/assets/images/combat/spritesheets/enemies/food_warlord_sheet.png'),
+  food_warlord: bossSheet('/assets/images/combat/spritesheets/enemies/food_warlord_sheet.png', ['starvation_strike', 'hook_axe', 'call_raiders', 'hunger_domination'], ['approach', 'approach', 'stationary', 'stationary']),
 });
 
 export const DISPLAYED_COMBAT_SHEET_KEYS = Object.freeze(Object.keys(COMBAT_MOTION_MANIFEST));

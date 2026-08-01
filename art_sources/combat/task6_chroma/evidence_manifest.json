@@ -16,15 +16,15 @@
       "rows": 4,
       "beforeSha256": "f3683e674bf76850b41a37a7589d512b67bb6ebca69b4693523ec3c881c16e86",
       "task6AfterSha256": "614e25900e39a1b56dd74cc2d7bb9aa6c91ebea19f41975565f3fbb143f678d8",
-      "currentSha256": "614e25900e39a1b56dd74cc2d7bb9aa6c91ebea19f41975565f3fbb143f678d8",
+      "currentSha256": "6e09e8fd742884a81b8b9fc9613b4b49e1aead6323ce321638d600899b76c067",
       "changedPixels": 2,
       "beforeMaskEntry": "before_non_chroma/boss_feral_dog_alpha.png",
       "beforeMaskSha256": "818149f2796802a809552fd230c0dcb7e9474a35829e046fb9fcb57b1e5be0fb",
       "afterAlphaEntry": "after_alpha/boss_feral_dog_alpha.png",
       "afterAlphaSha256": "818149f2796802a809552fd230c0dcb7e9474a35829e046fb9fcb57b1e5be0fb",
-      "currentPolicy": "direct",
-      "supersededBy": null,
-      "supersededSource": null
+      "currentPolicy": "superseded",
+      "supersededBy": "task10-boss-motion",
+      "supersededSource": "/art_sources/combat/task10_bosses/boss_feral_dog_alpha_task6_after.png"
     },
     {
       "sheetKey": "boss_homeless_nemesis",
@@ -35,15 +35,15 @@
       "rows": 4,
       "beforeSha256": "33c65fe0ff0f40766586bd3acf2d71decf024da9c136c5304ec34905d83cc878",
       "task6AfterSha256": "051ed749b206d2ac12b7c81b74703bdd433c8316acd664d1bc138432c9086e82",
-      "currentSha256": "051ed749b206d2ac12b7c81b74703bdd433c8316acd664d1bc138432c9086e82",
+      "currentSha256": "3e9d665a045508a086b64f4f76c4f3160cbb0345216472d20754ebed33567108",
       "changedPixels": 9,
       "beforeMaskEntry": "before_non_chroma/boss_homeless_nemesis.png",
       "beforeMaskSha256": "6e186835f532d52d2d4854d708e9cd67255ac1449f9d81242720c6ec79c06eb3",
       "afterAlphaEntry": "after_alpha/boss_homeless_nemesis.png",
       "afterAlphaSha256": "6e186835f532d52d2d4854d708e9cd67255ac1449f9d81242720c6ec79c06eb3",
-      "currentPolicy": "direct",
-      "supersededBy": null,
-      "supersededSource": null
+      "currentPolicy": "superseded",
+      "supersededBy": "task10-boss-motion",
+      "supersededSource": "/art_sources/combat/task10_bosses/boss_homeless_nemesis_task6_after.png"
     },
     {
       "sheetKey": "boss_horde_mother",
@@ -54,15 +54,15 @@
       "rows": 4,
       "beforeSha256": "f5c711f4df713118ed9bd1a1a4b644fc76f26d5c2fd1ba26710379ecb8bd34d5",
       "task6AfterSha256": "229d402509e73f6672f099504bbf9600416fe12ccd44613f24987be221784b3b",
-      "currentSha256": "229d402509e73f6672f099504bbf9600416fe12ccd44613f24987be221784b3b",
+      "currentSha256": "ea85f24cbbc7fb4d304f644a611b8df1653ec0071bc0dfe7c661e016fcd1baf4",
       "changedPixels": 6,
       "beforeMaskEntry": "before_non_chroma/boss_horde_mother.png",
       "beforeMaskSha256": "03bb04861f82792f52e5fdf18c067ae1797fa8f0a50e25356817efe783affb91",
       "afterAlphaEntry": "after_alpha/boss_horde_mother.png",
       "afterAlphaSha256": "03bb04861f82792f52e5fdf18c067ae1797fa8f0a50e25356817efe783affb91",
-      "currentPolicy": "direct",
-      "supersededBy": null,
-      "supersededSource": null
+      "currentPolicy": "superseded",
+      "supersededBy": "task10-boss-motion",
+      "supersededSource": "/art_sources/combat/task10_bosses/boss_horde_mother_task6_after.png"
     },
     {
       "sheetKey": "boss_penthouse_survivor",
@@ -73,15 +73,15 @@
       "rows": 4,
       "beforeSha256": "3ff3656e267bec663e696555ff5c3566144985311624557e36d7612ccc919336",
       "task6AfterSha256": "1b18f829c304a19e90f9c5034f271da4e1c45781aea0cc7e8346a68c3b2a2174",
-      "currentSha256": "1b18f829c304a19e90f9c5034f271da4e1c45781aea0cc7e8346a68c3b2a2174",
+      "currentSha256": "b5a01b0ff33929d731adbcf6a362faaf2d785eed2bcc213e92b872b968f98f78",
       "changedPixels": 13,
       "beforeMaskEntry": "before_non_chroma/boss_penthouse_survivor.png",
       "beforeMaskSha256": "f7f11249527f1870017d185bd5a930436f64bce00ecd89adbf886ab02f87e1cb",
       "afterAlphaEntry": "after_alpha/boss_penthouse_survivor.png",
       "afterAlphaSha256": "f7f11249527f1870017d185bd5a930436f64bce00ecd89adbf886ab02f87e1cb",
-      "currentPolicy": "direct",
-      "supersededBy": null,
-      "supersededSource": null
+      "currentPolicy": "superseded",
+      "supersededBy": "task10-boss-motion",
+      "supersededSource": "/art_sources/combat/task10_bosses/boss_penthouse_survivor_task6_after.png"
     },
     {
       "sheetKey": "boss_raider_warlord",
@@ -92,15 +92,15 @@
       "rows": 4,
       "beforeSha256": "471621f04573ef6866ce9e7a73e8a3d224adcf5a3699b1d84b0f401f45cbf6d9",
       "task6AfterSha256": "a267365f137bebf873593a992abee7d2ed8915c61543b378c68dcda5013b19cb",
-      "currentSha256": "a267365f137bebf873593a992abee7d2ed8915c61543b378c68dcda5013b19cb",
+      "currentSha256": "d407af02db1fe5825710f9e21c4b6d6146e52eb430b77ae2b7ba3f07df36e883",
       "changedPixels": 27,
       "beforeMaskEntry": "before_non_chroma/boss_raider_warlord.png",
       "beforeMaskSha256": "8ed2b7508d7ddf71b4f0c008aee44a97de992c43206c359c0cebdc5e22d50b7c",
       "afterAlphaEntry": "after_alpha/boss_raider_warlord.png",
       "afterAlphaSha256": "9b37a1b06001dfc5c0c6d48db2dc7ddd37b3700ebff3944aa9424c79a7427059",
-      "currentPolicy": "direct",
-      "supersededBy": null,
-      "supersededSource": null
+      "currentPolicy": "superseded",
+      "supersededBy": "task10-boss-motion",
+      "supersededSource": "/art_sources/combat/task10_bosses/boss_raider_warlord_task6_after.png"
     },
     {
       "sheetKey": "boss_soldier_nemesis",
@@ -111,15 +111,15 @@
       "rows": 4,
       "beforeSha256": "0e711622c1605ce8ec14509a31ae1d8889d104cada040af7e2e09baf2e0ca3c1",
       "task6AfterSha256": "c614e19834ec93a6f637ec2a3c636b57bc7e4d9db055b691305b814de3f4278f",
-      "currentSha256": "c614e19834ec93a6f637ec2a3c636b57bc7e4d9db055b691305b814de3f4278f",
+      "currentSha256": "5514478e9744084845fc5eddf19270a8e8bbca31066700d7c331f185b28e47b2",
       "changedPixels": 6,
       "beforeMaskEntry": "before_non_chroma/boss_soldier_nemesis.png",
       "beforeMaskSha256": "e802922c7029eb58f7e3ac14d0b4c466cdf705fe6f86ff58ebf8461283500c1d",
       "afterAlphaEntry": "after_alpha/boss_soldier_nemesis.png",
       "afterAlphaSha256": "e802922c7029eb58f7e3ac14d0b4c466cdf705fe6f86ff58ebf8461283500c1d",
-      "currentPolicy": "direct",
-      "supersededBy": null,
-      "supersededSource": null
+      "currentPolicy": "superseded",
+      "supersededBy": "task10-boss-motion",
+      "supersededSource": "/art_sources/combat/task10_bosses/boss_soldier_nemesis_task6_after.png"
     },
     {
       "sheetKey": "doctor_f",
@@ -168,15 +168,15 @@
       "rows": 4,
       "beforeSha256": "261daa3f87fc21ea4722f247a746e42ad0efd6960d8e58ace1d72c81b178cbb0",
       "task6AfterSha256": "1ce66eda52412c8356a77f51174e0e1a027450008b6cf5be95c6b55c6dfc6d65",
-      "currentSha256": "1ce66eda52412c8356a77f51174e0e1a027450008b6cf5be95c6b55c6dfc6d65",
+      "currentSha256": "961abd60c566c38cc93180075e138442d77852dfe098d0d2f4f32a0b81221f88",
       "changedPixels": 15,
       "beforeMaskEntry": "before_non_chroma/food_warlord.png",
       "beforeMaskSha256": "19ce48572c3f86803f10f618e59fa7a2ec8851f9d7a73c996cd38d7d3a434000",
       "afterAlphaEntry": "after_alpha/food_warlord.png",
       "afterAlphaSha256": "19ce48572c3f86803f10f618e59fa7a2ec8851f9d7a73c996cd38d7d3a434000",
-      "currentPolicy": "direct",
-      "supersededBy": null,
-      "supersededSource": null
+      "currentPolicy": "superseded",
+      "supersededBy": "task10-boss-motion",
+      "supersededSource": "/art_sources/combat/task10_bosses/food_warlord_task6_after.png"
     },
     {
       "sheetKey": "nurse_companion",

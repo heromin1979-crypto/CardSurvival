@@ -9,12 +9,14 @@ import { validateCombatMotionManifest } from '../../js/data/validate.js';
 import { COMBAT_SPRITE_SHEETS } from '../../js/ui/combat/combatUiAssets.js';
 import {
   COMPANION_SPRITE_KEYS,
+  ENEMY_SPRITE_KEYS,
   PLAYER_SPRITE_KEYS,
 } from '../../js/ui/combat/combatUiAssets.js';
 import {
   COMBAT_SKILLS,
   COMPANION_COMBAT_LOADOUTS,
 } from '../../js/data/combatSkills.js';
+import { SECRET_ENEMIES } from '../../js/data/secretEnemies.js';
 
 const PLAYER_SHEET_KEYS = Object.freeze({
   'doctor:F': 'doctor_f',
@@ -81,6 +83,17 @@ const COMPANION_SHEET_KEYS = Object.freeze({
 });
 
 const COMPANION_MOTION_ROWS = PLAYER_MOTION_ROWS;
+
+const BOSS_MOTION_ROWS = Object.freeze([
+  'idle',
+  'basic_a',
+  'basic_b',
+  'special',
+  'ultimate',
+  'hit',
+  'charge',
+  'death',
+]);
 
 function motionFixture(overrides = {}) {
   return {
@@ -161,8 +174,8 @@ describe('current combat motion registry', () => {
       .toEqual(expect.arrayContaining([expect.stringContaining('missing_sheet.png')]));
   });
 
-  it('maps all 46 currently displayed sheets to synchronous manifest entries', () => {
-    expect(Object.keys(COMBAT_SPRITE_SHEETS)).toHaveLength(46);
+  it('maps all 60 currently displayed sheets to synchronous manifest entries', () => {
+    expect(Object.keys(COMBAT_SPRITE_SHEETS)).toHaveLength(60);
     expect(Object.keys(COMBAT_SPRITE_SHEETS).sort())
       .toEqual(Object.keys(COMBAT_MOTION_MANIFEST).sort());
 
@@ -275,6 +288,67 @@ describe('current combat motion registry', () => {
         expect(resolveCombatMotion(sheetKey, motionKey), `${npcId}/${skillId}`)
           .toMatchObject({ row: COMPANION_MOTION_ROWS.indexOf(motionKey) });
       }
+    }
+  });
+
+  it('maps the exact 21 named bosses to unique dedicated sprite sheets', () => {
+    const bossIds = Object.entries(SECRET_ENEMIES)
+      .filter(([, enemy]) => enemy.isBoss === true)
+      .map(([enemyId]) => enemyId)
+      .sort();
+    const mappedBossIds = Object.keys(ENEMY_SPRITE_KEYS)
+      .filter(enemyId => SECRET_ENEMIES[enemyId]?.isBoss === true)
+      .sort();
+
+    expect(bossIds).toHaveLength(21);
+    expect(mappedBossIds).toEqual(bossIds);
+    expect(new Set(bossIds.map(enemyId => ENEMY_SPRITE_KEYS[enemyId])).size).toBe(21);
+  });
+
+  it('defines the exact 6x8 semantic row contract for every named boss', () => {
+    for (const [enemyId, enemy] of Object.entries(SECRET_ENEMIES)) {
+      if (enemy.isBoss !== true) continue;
+      const sheetKey = ENEMY_SPRITE_KEYS[enemyId];
+      const sheet = COMBAT_MOTION_MANIFEST[sheetKey];
+
+      expect(sheet, enemyId).toBeDefined();
+      expect(sheet.cols, enemyId).toBe(6);
+      expect(sheet.rows, enemyId).toBe(8);
+      expect(Object.keys(sheet.motions), enemyId).toEqual(BOSS_MOTION_ROWS);
+      expect(Object.values(sheet.motions).map(motion => motion.row), enemyId)
+        .toEqual(BOSS_MOTION_ROWS.map((_, row) => row));
+      expect(sheet.motions.idle.loop, enemyId).toBe(true);
+      expect(sheet.motions.death.holdLast, enemyId).toBe(true);
+      for (const motionKey of BOSS_MOTION_ROWS.slice(1)) {
+        expect(sheet.motions[motionKey].loop, `${enemyId}/${motionKey}`).toBe(false);
+      }
+    }
+  });
+
+  it('binds each boss action key to its exact semantic row and movement contract', () => {
+    const expectedRows = ['basic_a', 'basic_b', 'special', 'ultimate'];
+    for (const [enemyId, enemy] of Object.entries(SECRET_ENEMIES)) {
+      if (enemy.isBoss !== true) continue;
+      const sheetKey = ENEMY_SPRITE_KEYS[enemyId];
+      const actions = [
+        ...enemy.bossPattern.basicAttacks,
+        enemy.bossPattern.specialSkill,
+        enemy.bossPattern.ultimate,
+      ];
+
+      expect(actions).toHaveLength(4);
+      actions.forEach((action, index) => {
+        const expectedMotion = expectedRows[index];
+        const resolved = resolveCombatMotion(sheetKey, action.motionKey);
+        expect(resolved, `${enemyId}/${action.id}`).toMatchObject({
+          row: BOSS_MOTION_ROWS.indexOf(expectedMotion),
+          locomotion: action.movement === 'retreat'
+            ? 'retreat'
+            : ['lunge', 'advance'].includes(action.movement) ? 'approach' : 'stationary',
+        });
+      });
+      expect(resolveCombatMotion(sheetKey, 'charge'), enemyId)
+        .toMatchObject({ row: 6, locomotion: 'stationary' });
     }
   });
 });

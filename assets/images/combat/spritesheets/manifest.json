@@ -2090,196 +2090,1264 @@
       }
     }
   },
-  "boss_horde_mother": {
-    "src": "/assets/images/combat/spritesheets/enemies/boss_horde_mother_sheet.png",
+  "boss_patient_zero": {
+    "src": "/assets/images/combat/spritesheets/enemies/boss_patient_zero_sheet.png",
     "cols": 6,
-    "rows": 4,
+    "rows": 8,
     "motions": {
       "idle": {
         "row": 0,
         "loop": true,
-        "durationMs": 900,
+        "durationMs": 980,
         "locomotion": "stationary"
       },
-      "basic_attack": {
+      "basic_a": {
         "row": 1,
         "loop": false,
-        "durationMs": 720,
+        "durationMs": 760,
+        "locomotion": "approach"
+      },
+      "basic_b": {
+        "row": 2,
+        "loop": false,
+        "durationMs": 820,
+        "locomotion": "stationary"
+      },
+      "special": {
+        "row": 3,
+        "loop": false,
+        "durationMs": 940,
+        "locomotion": "stationary"
+      },
+      "ultimate": {
+        "row": 4,
+        "loop": false,
+        "durationMs": 1120,
         "locomotion": "approach"
       },
       "hit": {
-        "row": 2,
+        "row": 5,
         "loop": false,
-        "durationMs": 420,
+        "durationMs": 460,
+        "locomotion": "stationary"
+      },
+      "charge": {
+        "row": 6,
+        "loop": false,
+        "durationMs": 860,
         "locomotion": "stationary"
       },
       "death": {
-        "row": 3,
+        "row": 7,
         "loop": false,
-        "durationMs": 900,
+        "durationMs": 1100,
         "locomotion": "stationary",
         "holdLast": true
       }
+    },
+    "aliases": {
+      "basic_attack": "basic_a",
+      "infected_charge": "basic_a",
+      "viral_burst": "basic_b",
+      "mutation_regeneration": "special",
+      "host_rampage": "ultimate"
+    }
+  },
+  "boss_radiation_colossus": {
+    "src": "/assets/images/combat/spritesheets/enemies/boss_radiation_colossus_sheet.png",
+    "cols": 6,
+    "rows": 8,
+    "motions": {
+      "idle": {
+        "row": 0,
+        "loop": true,
+        "durationMs": 980,
+        "locomotion": "stationary"
+      },
+      "basic_a": {
+        "row": 1,
+        "loop": false,
+        "durationMs": 760,
+        "locomotion": "approach"
+      },
+      "basic_b": {
+        "row": 2,
+        "loop": false,
+        "durationMs": 820,
+        "locomotion": "stationary"
+      },
+      "special": {
+        "row": 3,
+        "loop": false,
+        "durationMs": 940,
+        "locomotion": "stationary"
+      },
+      "ultimate": {
+        "row": 4,
+        "loop": false,
+        "durationMs": 1120,
+        "locomotion": "stationary"
+      },
+      "hit": {
+        "row": 5,
+        "loop": false,
+        "durationMs": 460,
+        "locomotion": "stationary"
+      },
+      "charge": {
+        "row": 6,
+        "loop": false,
+        "durationMs": 860,
+        "locomotion": "stationary"
+      },
+      "death": {
+        "row": 7,
+        "loop": false,
+        "durationMs": 1100,
+        "locomotion": "stationary",
+        "holdLast": true
+      }
+    },
+    "aliases": {
+      "basic_attack": "basic_a",
+      "radioactive_fist": "basic_a",
+      "ground_slam": "basic_b",
+      "fallout_zone": "special",
+      "critical_mass": "ultimate"
+    }
+  },
+  "boss_acid_queen": {
+    "src": "/assets/images/combat/spritesheets/enemies/boss_acid_queen_sheet.png",
+    "cols": 6,
+    "rows": 8,
+    "motions": {
+      "idle": {
+        "row": 0,
+        "loop": true,
+        "durationMs": 980,
+        "locomotion": "stationary"
+      },
+      "basic_a": {
+        "row": 1,
+        "loop": false,
+        "durationMs": 760,
+        "locomotion": "stationary"
+      },
+      "basic_b": {
+        "row": 2,
+        "loop": false,
+        "durationMs": 820,
+        "locomotion": "approach"
+      },
+      "special": {
+        "row": 3,
+        "loop": false,
+        "durationMs": 940,
+        "locomotion": "stationary"
+      },
+      "ultimate": {
+        "row": 4,
+        "loop": false,
+        "durationMs": 1120,
+        "locomotion": "stationary"
+      },
+      "hit": {
+        "row": 5,
+        "loop": false,
+        "durationMs": 460,
+        "locomotion": "stationary"
+      },
+      "charge": {
+        "row": 6,
+        "loop": false,
+        "durationMs": 860,
+        "locomotion": "stationary"
+      },
+      "death": {
+        "row": 7,
+        "loop": false,
+        "durationMs": 1100,
+        "locomotion": "stationary",
+        "holdLast": true
+      }
+    },
+    "aliases": {
+      "basic_attack": "basic_a",
+      "acid_spray": "basic_a",
+      "corrosive_tail_sweep": "basic_b",
+      "acid_pool": "special",
+      "total_corrosion": "ultimate"
+    }
+  },
+  "boss_horde_mother": {
+    "src": "/assets/images/combat/spritesheets/enemies/boss_horde_mother_sheet.png",
+    "cols": 6,
+    "rows": 8,
+    "motions": {
+      "idle": {
+        "row": 0,
+        "loop": true,
+        "durationMs": 980,
+        "locomotion": "stationary"
+      },
+      "basic_a": {
+        "row": 1,
+        "loop": false,
+        "durationMs": 760,
+        "locomotion": "approach"
+      },
+      "basic_b": {
+        "row": 2,
+        "loop": false,
+        "durationMs": 820,
+        "locomotion": "approach"
+      },
+      "special": {
+        "row": 3,
+        "loop": false,
+        "durationMs": 940,
+        "locomotion": "stationary"
+      },
+      "ultimate": {
+        "row": 4,
+        "loop": false,
+        "durationMs": 1120,
+        "locomotion": "stationary"
+      },
+      "hit": {
+        "row": 5,
+        "loop": false,
+        "durationMs": 460,
+        "locomotion": "stationary"
+      },
+      "charge": {
+        "row": 6,
+        "loop": false,
+        "durationMs": 860,
+        "locomotion": "stationary"
+      },
+      "death": {
+        "row": 7,
+        "loop": false,
+        "durationMs": 1100,
+        "locomotion": "stationary",
+        "holdLast": true
+      }
+    },
+    "aliases": {
+      "basic_attack": "basic_a",
+      "flesh_wall_shove": "basic_a",
+      "corpse_swing": "basic_b",
+      "summoning_scream": "special",
+      "mother_feast": "ultimate"
+    }
+  },
+  "boss_frozen_giant": {
+    "src": "/assets/images/combat/spritesheets/enemies/boss_frozen_giant_sheet.png",
+    "cols": 6,
+    "rows": 8,
+    "motions": {
+      "idle": {
+        "row": 0,
+        "loop": true,
+        "durationMs": 980,
+        "locomotion": "stationary"
+      },
+      "basic_a": {
+        "row": 1,
+        "loop": false,
+        "durationMs": 760,
+        "locomotion": "stationary"
+      },
+      "basic_b": {
+        "row": 2,
+        "loop": false,
+        "durationMs": 820,
+        "locomotion": "approach"
+      },
+      "special": {
+        "row": 3,
+        "loop": false,
+        "durationMs": 940,
+        "locomotion": "stationary"
+      },
+      "ultimate": {
+        "row": 4,
+        "loop": false,
+        "durationMs": 1120,
+        "locomotion": "stationary"
+      },
+      "hit": {
+        "row": 5,
+        "loop": false,
+        "durationMs": 460,
+        "locomotion": "stationary"
+      },
+      "charge": {
+        "row": 6,
+        "loop": false,
+        "durationMs": 860,
+        "locomotion": "stationary"
+      },
+      "death": {
+        "row": 7,
+        "loop": false,
+        "durationMs": 1100,
+        "locomotion": "stationary",
+        "holdLast": true
+      }
+    },
+    "aliases": {
+      "basic_attack": "basic_a",
+      "frost_breath": "basic_a",
+      "freezing_fist": "basic_b",
+      "ice_armor": "special",
+      "ice_prison": "ultimate"
     }
   },
   "boss_raider_warlord": {
     "src": "/assets/images/combat/spritesheets/enemies/boss_raider_warlord_sheet.png",
     "cols": 6,
-    "rows": 4,
+    "rows": 8,
     "motions": {
       "idle": {
         "row": 0,
         "loop": true,
-        "durationMs": 900,
+        "durationMs": 980,
         "locomotion": "stationary"
       },
-      "basic_attack": {
+      "basic_a": {
         "row": 1,
         "loop": false,
-        "durationMs": 720,
-        "locomotion": "approach"
+        "durationMs": 760,
+        "locomotion": "stationary"
       },
-      "hit": {
+      "basic_b": {
         "row": 2,
         "loop": false,
-        "durationMs": 420,
+        "durationMs": 820,
+        "locomotion": "stationary"
+      },
+      "special": {
+        "row": 3,
+        "loop": false,
+        "durationMs": 940,
+        "locomotion": "stationary"
+      },
+      "ultimate": {
+        "row": 4,
+        "loop": false,
+        "durationMs": 1120,
+        "locomotion": "stationary"
+      },
+      "hit": {
+        "row": 5,
+        "loop": false,
+        "durationMs": 460,
+        "locomotion": "stationary"
+      },
+      "charge": {
+        "row": 6,
+        "loop": false,
+        "durationMs": 860,
         "locomotion": "stationary"
       },
       "death": {
-        "row": 3,
+        "row": 7,
         "loop": false,
-        "durationMs": 900,
+        "durationMs": 1100,
         "locomotion": "stationary",
         "holdLast": true
       }
+    },
+    "aliases": {
+      "basic_attack": "basic_a",
+      "aimed_shot": "basic_a",
+      "suppressive_fire": "basic_b",
+      "call_reinforcements": "special",
+      "execution_order": "ultimate"
+    }
+  },
+  "boss_phantom_sniper": {
+    "src": "/assets/images/combat/spritesheets/enemies/boss_phantom_sniper_sheet.png",
+    "cols": 6,
+    "rows": 8,
+    "motions": {
+      "idle": {
+        "row": 0,
+        "loop": true,
+        "durationMs": 980,
+        "locomotion": "stationary"
+      },
+      "basic_a": {
+        "row": 1,
+        "loop": false,
+        "durationMs": 760,
+        "locomotion": "stationary"
+      },
+      "basic_b": {
+        "row": 2,
+        "loop": false,
+        "durationMs": 820,
+        "locomotion": "stationary"
+      },
+      "special": {
+        "row": 3,
+        "loop": false,
+        "durationMs": 940,
+        "locomotion": "retreat"
+      },
+      "ultimate": {
+        "row": 4,
+        "loop": false,
+        "durationMs": 1120,
+        "locomotion": "stationary"
+      },
+      "hit": {
+        "row": 5,
+        "loop": false,
+        "durationMs": 460,
+        "locomotion": "stationary"
+      },
+      "charge": {
+        "row": 6,
+        "loop": false,
+        "durationMs": 860,
+        "locomotion": "stationary"
+      },
+      "death": {
+        "row": 7,
+        "loop": false,
+        "durationMs": 1100,
+        "locomotion": "stationary",
+        "holdLast": true
+      }
+    },
+    "aliases": {
+      "basic_attack": "basic_a",
+      "precision_shot": "basic_a",
+      "ricochet_shot": "basic_b",
+      "camouflage": "special",
+      "headshot": "ultimate"
+    }
+  },
+  "boss_cult_leader": {
+    "src": "/assets/images/combat/spritesheets/enemies/boss_cult_leader_sheet.png",
+    "cols": 6,
+    "rows": 8,
+    "motions": {
+      "idle": {
+        "row": 0,
+        "loop": true,
+        "durationMs": 980,
+        "locomotion": "stationary"
+      },
+      "basic_a": {
+        "row": 1,
+        "loop": false,
+        "durationMs": 760,
+        "locomotion": "approach"
+      },
+      "basic_b": {
+        "row": 2,
+        "loop": false,
+        "durationMs": 820,
+        "locomotion": "stationary"
+      },
+      "special": {
+        "row": 3,
+        "loop": false,
+        "durationMs": 940,
+        "locomotion": "stationary"
+      },
+      "ultimate": {
+        "row": 4,
+        "loop": false,
+        "durationMs": 1120,
+        "locomotion": "stationary"
+      },
+      "hit": {
+        "row": 5,
+        "loop": false,
+        "durationMs": 460,
+        "locomotion": "stationary"
+      },
+      "charge": {
+        "row": 6,
+        "loop": false,
+        "durationMs": 860,
+        "locomotion": "stationary"
+      },
+      "death": {
+        "row": 7,
+        "loop": false,
+        "durationMs": 1100,
+        "locomotion": "stationary",
+        "holdLast": true
+      }
+    },
+    "aliases": {
+      "basic_attack": "basic_a",
+      "ritual_dagger": "basic_a",
+      "cultist_bomb": "basic_b",
+      "sermon": "special",
+      "blood_ritual": "ultimate"
+    }
+  },
+  "boss_mutant_alpha_tiger": {
+    "src": "/assets/images/combat/spritesheets/enemies/boss_mutant_alpha_tiger_sheet.png",
+    "cols": 6,
+    "rows": 8,
+    "motions": {
+      "idle": {
+        "row": 0,
+        "loop": true,
+        "durationMs": 980,
+        "locomotion": "stationary"
+      },
+      "basic_a": {
+        "row": 1,
+        "loop": false,
+        "durationMs": 760,
+        "locomotion": "approach"
+      },
+      "basic_b": {
+        "row": 2,
+        "loop": false,
+        "durationMs": 820,
+        "locomotion": "approach"
+      },
+      "special": {
+        "row": 3,
+        "loop": false,
+        "durationMs": 940,
+        "locomotion": "stationary"
+      },
+      "ultimate": {
+        "row": 4,
+        "loop": false,
+        "durationMs": 1120,
+        "locomotion": "approach"
+      },
+      "hit": {
+        "row": 5,
+        "loop": false,
+        "durationMs": 460,
+        "locomotion": "stationary"
+      },
+      "charge": {
+        "row": 6,
+        "loop": false,
+        "durationMs": 860,
+        "locomotion": "stationary"
+      },
+      "death": {
+        "row": 7,
+        "loop": false,
+        "durationMs": 1100,
+        "locomotion": "stationary",
+        "holdLast": true
+      }
+    },
+    "aliases": {
+      "basic_attack": "basic_a",
+      "pounce_assault": "basic_a",
+      "claw_flurry": "basic_b",
+      "roar": "special",
+      "predator_hunt": "ultimate"
+    }
+  },
+  "boss_sewer_king": {
+    "src": "/assets/images/combat/spritesheets/enemies/boss_sewer_king_sheet.png",
+    "cols": 6,
+    "rows": 8,
+    "motions": {
+      "idle": {
+        "row": 0,
+        "loop": true,
+        "durationMs": 980,
+        "locomotion": "stationary"
+      },
+      "basic_a": {
+        "row": 1,
+        "loop": false,
+        "durationMs": 760,
+        "locomotion": "approach"
+      },
+      "basic_b": {
+        "row": 2,
+        "loop": false,
+        "durationMs": 820,
+        "locomotion": "approach"
+      },
+      "special": {
+        "row": 3,
+        "loop": false,
+        "durationMs": 940,
+        "locomotion": "retreat"
+      },
+      "ultimate": {
+        "row": 4,
+        "loop": false,
+        "durationMs": 1120,
+        "locomotion": "stationary"
+      },
+      "hit": {
+        "row": 5,
+        "loop": false,
+        "durationMs": 460,
+        "locomotion": "stationary"
+      },
+      "charge": {
+        "row": 6,
+        "loop": false,
+        "durationMs": 860,
+        "locomotion": "stationary"
+      },
+      "death": {
+        "row": 7,
+        "loop": false,
+        "durationMs": 1100,
+        "locomotion": "stationary",
+        "holdLast": true
+      }
+    },
+    "aliases": {
+      "basic_attack": "basic_a",
+      "death_roll": "basic_a",
+      "tail_sweep": "basic_b",
+      "submerge": "special",
+      "sewage_backflow": "ultimate"
+    }
+  },
+  "boss_swarm_queen_bee": {
+    "src": "/assets/images/combat/spritesheets/enemies/boss_swarm_queen_bee_sheet.png",
+    "cols": 6,
+    "rows": 8,
+    "motions": {
+      "idle": {
+        "row": 0,
+        "loop": true,
+        "durationMs": 980,
+        "locomotion": "stationary"
+      },
+      "basic_a": {
+        "row": 1,
+        "loop": false,
+        "durationMs": 760,
+        "locomotion": "stationary"
+      },
+      "basic_b": {
+        "row": 2,
+        "loop": false,
+        "durationMs": 820,
+        "locomotion": "approach"
+      },
+      "special": {
+        "row": 3,
+        "loop": false,
+        "durationMs": 940,
+        "locomotion": "stationary"
+      },
+      "ultimate": {
+        "row": 4,
+        "loop": false,
+        "durationMs": 1120,
+        "locomotion": "stationary"
+      },
+      "hit": {
+        "row": 5,
+        "loop": false,
+        "durationMs": 460,
+        "locomotion": "stationary"
+      },
+      "charge": {
+        "row": 6,
+        "loop": false,
+        "durationMs": 860,
+        "locomotion": "stationary"
+      },
+      "death": {
+        "row": 7,
+        "loop": false,
+        "durationMs": 1100,
+        "locomotion": "stationary",
+        "holdLast": true
+      }
+    },
+    "aliases": {
+      "basic_attack": "basic_a",
+      "stinger_barrage": "basic_a",
+      "wing_blade": "basic_b",
+      "royal_jelly": "special",
+      "royal_spawn": "ultimate"
     }
   },
   "boss_feral_dog_alpha": {
     "src": "/assets/images/combat/spritesheets/enemies/boss_feral_dog_alpha_sheet.png",
     "cols": 6,
-    "rows": 4,
+    "rows": 8,
     "motions": {
       "idle": {
         "row": 0,
         "loop": true,
-        "durationMs": 900,
+        "durationMs": 980,
         "locomotion": "stationary"
       },
-      "basic_attack": {
+      "basic_a": {
         "row": 1,
         "loop": false,
-        "durationMs": 720,
+        "durationMs": 760,
+        "locomotion": "approach"
+      },
+      "basic_b": {
+        "row": 2,
+        "loop": false,
+        "durationMs": 820,
+        "locomotion": "approach"
+      },
+      "special": {
+        "row": 3,
+        "loop": false,
+        "durationMs": 940,
+        "locomotion": "stationary"
+      },
+      "ultimate": {
+        "row": 4,
+        "loop": false,
+        "durationMs": 1120,
         "locomotion": "approach"
       },
       "hit": {
-        "row": 2,
+        "row": 5,
         "loop": false,
-        "durationMs": 420,
+        "durationMs": 460,
+        "locomotion": "stationary"
+      },
+      "charge": {
+        "row": 6,
+        "loop": false,
+        "durationMs": 860,
         "locomotion": "stationary"
       },
       "death": {
-        "row": 3,
+        "row": 7,
         "loop": false,
-        "durationMs": 900,
+        "durationMs": 1100,
         "locomotion": "stationary",
         "holdLast": true
       }
+    },
+    "aliases": {
+      "basic_attack": "basic_a",
+      "neck_bite": "basic_a",
+      "frenzy_bite": "basic_b",
+      "pack_howl": "special",
+      "alpha_hunt": "ultimate"
     }
   },
   "boss_penthouse_survivor": {
     "src": "/assets/images/combat/spritesheets/enemies/boss_penthouse_survivor_sheet.png",
     "cols": 6,
-    "rows": 4,
+    "rows": 8,
     "motions": {
       "idle": {
         "row": 0,
         "loop": true,
-        "durationMs": 900,
+        "durationMs": 980,
         "locomotion": "stationary"
       },
-      "basic_attack": {
+      "basic_a": {
         "row": 1,
         "loop": false,
-        "durationMs": 720,
-        "locomotion": "approach"
+        "durationMs": 760,
+        "locomotion": "stationary"
       },
-      "hit": {
+      "basic_b": {
         "row": 2,
         "loop": false,
-        "durationMs": 420,
+        "durationMs": 820,
+        "locomotion": "stationary"
+      },
+      "special": {
+        "row": 3,
+        "loop": false,
+        "durationMs": 940,
+        "locomotion": "stationary"
+      },
+      "ultimate": {
+        "row": 4,
+        "loop": false,
+        "durationMs": 1120,
+        "locomotion": "stationary"
+      },
+      "hit": {
+        "row": 5,
+        "loop": false,
+        "durationMs": 460,
+        "locomotion": "stationary"
+      },
+      "charge": {
+        "row": 6,
+        "loop": false,
+        "durationMs": 860,
         "locomotion": "stationary"
       },
       "death": {
-        "row": 3,
+        "row": 7,
         "loop": false,
-        "durationMs": 900,
+        "durationMs": 1100,
         "locomotion": "stationary",
         "holdLast": true
       }
+    },
+    "aliases": {
+      "basic_attack": "basic_a",
+      "golden_pistol": "basic_a",
+      "explosive_round": "basic_b",
+      "call_bodyguard": "special",
+      "bounty_sentence": "ultimate"
+    }
+  },
+  "boss_escaped_experiment": {
+    "src": "/assets/images/combat/spritesheets/enemies/boss_escaped_experiment_sheet.png",
+    "cols": 6,
+    "rows": 8,
+    "motions": {
+      "idle": {
+        "row": 0,
+        "loop": true,
+        "durationMs": 980,
+        "locomotion": "stationary"
+      },
+      "basic_a": {
+        "row": 1,
+        "loop": false,
+        "durationMs": 760,
+        "locomotion": "approach"
+      },
+      "basic_b": {
+        "row": 2,
+        "loop": false,
+        "durationMs": 820,
+        "locomotion": "stationary"
+      },
+      "special": {
+        "row": 3,
+        "loop": false,
+        "durationMs": 940,
+        "locomotion": "stationary"
+      },
+      "ultimate": {
+        "row": 4,
+        "loop": false,
+        "durationMs": 1120,
+        "locomotion": "approach"
+      },
+      "hit": {
+        "row": 5,
+        "loop": false,
+        "durationMs": 460,
+        "locomotion": "stationary"
+      },
+      "charge": {
+        "row": 6,
+        "loop": false,
+        "durationMs": 860,
+        "locomotion": "stationary"
+      },
+      "death": {
+        "row": 7,
+        "loop": false,
+        "durationMs": 1100,
+        "locomotion": "stationary",
+        "holdLast": true
+      }
+    },
+    "aliases": {
+      "basic_attack": "basic_a",
+      "mutant_claw": "basic_a",
+      "toxic_fluid_spray": "basic_b",
+      "adaptive_mutation": "special",
+      "complete_adaptation": "ultimate"
+    }
+  },
+  "boss_blizzard_wraith": {
+    "src": "/assets/images/combat/spritesheets/enemies/boss_blizzard_wraith_sheet.png",
+    "cols": 6,
+    "rows": 8,
+    "motions": {
+      "idle": {
+        "row": 0,
+        "loop": true,
+        "durationMs": 980,
+        "locomotion": "stationary"
+      },
+      "basic_a": {
+        "row": 1,
+        "loop": false,
+        "durationMs": 760,
+        "locomotion": "approach"
+      },
+      "basic_b": {
+        "row": 2,
+        "loop": false,
+        "durationMs": 820,
+        "locomotion": "stationary"
+      },
+      "special": {
+        "row": 3,
+        "loop": false,
+        "durationMs": 940,
+        "locomotion": "stationary"
+      },
+      "ultimate": {
+        "row": 4,
+        "loop": false,
+        "durationMs": 1120,
+        "locomotion": "retreat"
+      },
+      "hit": {
+        "row": 5,
+        "loop": false,
+        "durationMs": 460,
+        "locomotion": "stationary"
+      },
+      "charge": {
+        "row": 6,
+        "loop": false,
+        "durationMs": 860,
+        "locomotion": "stationary"
+      },
+      "death": {
+        "row": 7,
+        "loop": false,
+        "durationMs": 1100,
+        "locomotion": "stationary",
+        "holdLast": true
+      }
+    },
+    "aliases": {
+      "basic_attack": "basic_a",
+      "freezing_touch": "basic_a",
+      "ice_shard": "basic_b",
+      "blizzard_cloak": "special",
+      "white_erasure": "ultimate"
     }
   },
   "boss_soldier_nemesis": {
     "src": "/assets/images/combat/spritesheets/enemies/boss_soldier_nemesis_sheet.png",
     "cols": 6,
-    "rows": 4,
+    "rows": 8,
     "motions": {
       "idle": {
         "row": 0,
         "loop": true,
-        "durationMs": 900,
+        "durationMs": 980,
         "locomotion": "stationary"
       },
-      "basic_attack": {
+      "basic_a": {
         "row": 1,
         "loop": false,
-        "durationMs": 720,
-        "locomotion": "approach"
+        "durationMs": 760,
+        "locomotion": "stationary"
       },
-      "hit": {
+      "basic_b": {
         "row": 2,
         "loop": false,
-        "durationMs": 420,
+        "durationMs": 820,
+        "locomotion": "stationary"
+      },
+      "special": {
+        "row": 3,
+        "loop": false,
+        "durationMs": 940,
+        "locomotion": "stationary"
+      },
+      "ultimate": {
+        "row": 4,
+        "loop": false,
+        "durationMs": 1120,
+        "locomotion": "stationary"
+      },
+      "hit": {
+        "row": 5,
+        "loop": false,
+        "durationMs": 460,
+        "locomotion": "stationary"
+      },
+      "charge": {
+        "row": 6,
+        "loop": false,
+        "durationMs": 860,
         "locomotion": "stationary"
       },
       "death": {
-        "row": 3,
+        "row": 7,
         "loop": false,
-        "durationMs": 900,
+        "durationMs": 1100,
         "locomotion": "stationary",
         "holdLast": true
       }
+    },
+    "aliases": {
+      "basic_attack": "basic_a",
+      "rifle_burst": "basic_a",
+      "flashbang": "basic_b",
+      "call_deserters": "special",
+      "crossfire": "ultimate"
+    }
+  },
+  "boss_firefighter_nemesis": {
+    "src": "/assets/images/combat/spritesheets/enemies/boss_firefighter_nemesis_sheet.png",
+    "cols": 6,
+    "rows": 8,
+    "motions": {
+      "idle": {
+        "row": 0,
+        "loop": true,
+        "durationMs": 980,
+        "locomotion": "stationary"
+      },
+      "basic_a": {
+        "row": 1,
+        "loop": false,
+        "durationMs": 760,
+        "locomotion": "approach"
+      },
+      "basic_b": {
+        "row": 2,
+        "loop": false,
+        "durationMs": 820,
+        "locomotion": "approach"
+      },
+      "special": {
+        "row": 3,
+        "loop": false,
+        "durationMs": 940,
+        "locomotion": "stationary"
+      },
+      "ultimate": {
+        "row": 4,
+        "loop": false,
+        "durationMs": 1120,
+        "locomotion": "approach"
+      },
+      "hit": {
+        "row": 5,
+        "loop": false,
+        "durationMs": 460,
+        "locomotion": "stationary"
+      },
+      "charge": {
+        "row": 6,
+        "loop": false,
+        "durationMs": 860,
+        "locomotion": "stationary"
+      },
+      "death": {
+        "row": 7,
+        "loop": false,
+        "durationMs": 1100,
+        "locomotion": "stationary",
+        "holdLast": true
+      }
+    },
+    "aliases": {
+      "basic_attack": "basic_a",
+      "fire_axe": "basic_a",
+      "burning_charge": "basic_b",
+      "fireproof_stance": "special",
+      "backdraft": "ultimate"
     }
   },
   "boss_homeless_nemesis": {
     "src": "/assets/images/combat/spritesheets/enemies/boss_homeless_nemesis_sheet.png",
     "cols": 6,
-    "rows": 4,
+    "rows": 8,
     "motions": {
       "idle": {
         "row": 0,
         "loop": true,
-        "durationMs": 900,
+        "durationMs": 980,
         "locomotion": "stationary"
       },
-      "basic_attack": {
+      "basic_a": {
         "row": 1,
         "loop": false,
-        "durationMs": 720,
+        "durationMs": 760,
+        "locomotion": "approach"
+      },
+      "basic_b": {
+        "row": 2,
+        "loop": false,
+        "durationMs": 820,
+        "locomotion": "approach"
+      },
+      "special": {
+        "row": 3,
+        "loop": false,
+        "durationMs": 940,
+        "locomotion": "stationary"
+      },
+      "ultimate": {
+        "row": 4,
+        "loop": false,
+        "durationMs": 1120,
         "locomotion": "approach"
       },
       "hit": {
-        "row": 2,
+        "row": 5,
         "loop": false,
-        "durationMs": 420,
+        "durationMs": 460,
+        "locomotion": "stationary"
+      },
+      "charge": {
+        "row": 6,
+        "loop": false,
+        "durationMs": 860,
         "locomotion": "stationary"
       },
       "death": {
-        "row": 3,
+        "row": 7,
         "loop": false,
-        "durationMs": 900,
+        "durationMs": 1100,
         "locomotion": "stationary",
         "holdLast": true
       }
+    },
+    "aliases": {
+      "basic_attack": "basic_a",
+      "pipe_collection": "basic_a",
+      "threat_strike": "basic_b",
+      "call_thugs": "special",
+      "forced_collection": "ultimate"
+    }
+  },
+  "boss_chef_nemesis": {
+    "src": "/assets/images/combat/spritesheets/enemies/boss_chef_nemesis_sheet.png",
+    "cols": 6,
+    "rows": 8,
+    "motions": {
+      "idle": {
+        "row": 0,
+        "loop": true,
+        "durationMs": 980,
+        "locomotion": "stationary"
+      },
+      "basic_a": {
+        "row": 1,
+        "loop": false,
+        "durationMs": 760,
+        "locomotion": "approach"
+      },
+      "basic_b": {
+        "row": 2,
+        "loop": false,
+        "durationMs": 820,
+        "locomotion": "approach"
+      },
+      "special": {
+        "row": 3,
+        "loop": false,
+        "durationMs": 940,
+        "locomotion": "stationary"
+      },
+      "ultimate": {
+        "row": 4,
+        "loop": false,
+        "durationMs": 1120,
+        "locomotion": "approach"
+      },
+      "hit": {
+        "row": 5,
+        "loop": false,
+        "durationMs": 460,
+        "locomotion": "stationary"
+      },
+      "charge": {
+        "row": 6,
+        "loop": false,
+        "durationMs": 860,
+        "locomotion": "stationary"
+      },
+      "death": {
+        "row": 7,
+        "loop": false,
+        "durationMs": 1100,
+        "locomotion": "stationary",
+        "holdLast": true
+      }
+    },
+    "aliases": {
+      "basic_attack": "basic_a",
+      "cleaver_flurry": "basic_a",
+      "meat_hook": "basic_b",
+      "boiling_oil_field": "special",
+      "slaughter_time": "ultimate"
+    }
+  },
+  "boss_doctor_nemesis": {
+    "src": "/assets/images/combat/spritesheets/enemies/boss_doctor_nemesis_sheet.png",
+    "cols": 6,
+    "rows": 8,
+    "motions": {
+      "idle": {
+        "row": 0,
+        "loop": true,
+        "durationMs": 980,
+        "locomotion": "stationary"
+      },
+      "basic_a": {
+        "row": 1,
+        "loop": false,
+        "durationMs": 760,
+        "locomotion": "approach"
+      },
+      "basic_b": {
+        "row": 2,
+        "loop": false,
+        "durationMs": 820,
+        "locomotion": "approach"
+      },
+      "special": {
+        "row": 3,
+        "loop": false,
+        "durationMs": 940,
+        "locomotion": "stationary"
+      },
+      "ultimate": {
+        "row": 4,
+        "loop": false,
+        "durationMs": 1120,
+        "locomotion": "approach"
+      },
+      "hit": {
+        "row": 5,
+        "loop": false,
+        "durationMs": 460,
+        "locomotion": "stationary"
+      },
+      "charge": {
+        "row": 6,
+        "loop": false,
+        "durationMs": 860,
+        "locomotion": "stationary"
+      },
+      "death": {
+        "row": 7,
+        "loop": false,
+        "durationMs": 1100,
+        "locomotion": "stationary",
+        "holdLast": true
+      }
+    },
+    "aliases": {
+      "basic_attack": "basic_a",
+      "surgical_strike": "basic_a",
+      "virus_injection": "basic_b",
+      "malpractice": "special",
+      "final_surgery": "ultimate"
     }
   },
   "food_raider": {
@@ -2317,33 +3385,64 @@
   "food_warlord": {
     "src": "/assets/images/combat/spritesheets/enemies/food_warlord_sheet.png",
     "cols": 6,
-    "rows": 4,
+    "rows": 8,
     "motions": {
       "idle": {
         "row": 0,
         "loop": true,
-        "durationMs": 900,
+        "durationMs": 980,
         "locomotion": "stationary"
       },
-      "basic_attack": {
+      "basic_a": {
         "row": 1,
         "loop": false,
-        "durationMs": 720,
+        "durationMs": 760,
         "locomotion": "approach"
       },
-      "hit": {
+      "basic_b": {
         "row": 2,
         "loop": false,
-        "durationMs": 420,
+        "durationMs": 820,
+        "locomotion": "approach"
+      },
+      "special": {
+        "row": 3,
+        "loop": false,
+        "durationMs": 940,
+        "locomotion": "stationary"
+      },
+      "ultimate": {
+        "row": 4,
+        "loop": false,
+        "durationMs": 1120,
+        "locomotion": "stationary"
+      },
+      "hit": {
+        "row": 5,
+        "loop": false,
+        "durationMs": 460,
+        "locomotion": "stationary"
+      },
+      "charge": {
+        "row": 6,
+        "loop": false,
+        "durationMs": 860,
         "locomotion": "stationary"
       },
       "death": {
-        "row": 3,
+        "row": 7,
         "loop": false,
-        "durationMs": 900,
+        "durationMs": 1100,
         "locomotion": "stationary",
         "holdLast": true
       }
+    },
+    "aliases": {
+      "basic_attack": "basic_a",
+      "starvation_strike": "basic_a",
+      "hook_axe": "basic_b",
+      "call_raiders": "special",
+      "hunger_domination": "ultimate"
     }
   }
 }
