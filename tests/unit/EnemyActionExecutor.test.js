@@ -1162,6 +1162,140 @@ describe('executeEnemyAction', () => {
   });
 });
 
+describe('CombatAiTurns motion presentation regressions', () => {
+  it('queues one presentation action for a zero-damage summon boss skill', () => {
+    const summon = vi.spyOn(CombatSystem, '_summonEnemyById').mockReturnValue(3);
+    const enemy = {
+      id: 'boss_feral_dog_alpha',
+      currentHp: 300,
+      maxHp: 300,
+      isBoss: true,
+      bossPattern: {
+        basicAttacks: [],
+        specialSkill: {
+          id: 'pack_howl',
+          category: 'special',
+          damage: [0, 0],
+          targetPolicy: 'player',
+          motionKey: 'pack_howl',
+          impactFx: 'summon',
+          movement: 'none',
+          effects: [{ type: 'summon', enemyId: 'rabid_dog', count: 3, row: 'front' }],
+        },
+        ultimate: null,
+      },
+    };
+    GameState.player.hp = { current: 100, max: 100 };
+    GameState.companions = [];
+    GameState.combat = {
+      active: true,
+      enemies: [enemy],
+      log: [],
+      fxQueue: [],
+      combatants: {
+        player: { id: 'player', side: 'ally', sourceType: 'player', hp: 100, maxHp: 100, dead: false },
+        'enemy:0': { id: 'enemy:0', side: 'enemy', sourceType: 'enemy', enemyIndex: 0, hp: 300, maxHp: 300 },
+      },
+    };
+
+    try {
+      CombatSystem._executeEnemyCommittedAction(enemy, readyAction({
+        actionId: 'pack_howl',
+        category: 'special',
+        targetIds: ['player'],
+        motionKey: 'pack_howl',
+      }));
+
+      expect(GameState.combat.fxQueue).toEqual([
+        expect.objectContaining({
+          kind: 'action',
+          actorId: 'enemy:0',
+          targetId: 'player',
+          actionId: 'pack_howl',
+          category: 'special',
+          motionKey: 'pack_howl',
+          impactFx: 'summon',
+          movement: 'none',
+        }),
+      ]);
+    } finally {
+      summon.mockRestore();
+    }
+  });
+
+  it('routes a boss telegraph through the stationary charge motion key', () => {
+    const enemy = {
+      id: 'boss_feral_dog_alpha',
+      name: 'Feral Alpha',
+      currentHp: 70,
+      maxHp: 300,
+      isBoss: true,
+      bossPattern: {
+        basicAttacks: [{
+          id: 'neck_bite',
+          category: 'basic',
+          damage: [25, 40],
+          targetPolicy: 'player',
+          motionKey: 'neck_bite',
+          effects: [{ type: 'damage', value: [25, 40] }],
+        }],
+        specialSkill: null,
+        ultimate: {
+          id: 'alpha_hunt',
+          category: 'ultimate',
+          damage: [20, 35],
+          targetPolicy: 'player',
+          telegraphTurns: 1,
+          motionKey: 'alpha_hunt',
+          effects: [{ type: 'damage', value: [20, 35] }],
+        },
+      },
+      _bossActionState: {
+        committedAction: {
+          actionId: 'alpha_hunt',
+          category: 'ultimate',
+          state: 'telegraphing',
+          targetIds: ['player'],
+          remainingTelegraphTurns: 1,
+          hitCount: 1,
+          motionKey: 'alpha_hunt',
+        },
+        ultimatePending: false,
+        ultimateUsed: true,
+        lastBasicActionId: null,
+      },
+      _skillCooldowns: {},
+      _statusEffects: [],
+    };
+    GameState.player.hp = { current: 100, max: 100 };
+    GameState.companions = [];
+    GameState.combat = {
+      active: true,
+      enemies: [enemy],
+      log: [],
+      fxQueue: [],
+      combatants: {
+        player: { id: 'player', side: 'ally', sourceType: 'player', hp: 100, maxHp: 100, dead: false, tokens: {} },
+        'enemy:0': { id: 'enemy:0', side: 'enemy', sourceType: 'enemy', enemyIndex: 0, hp: 70, maxHp: 300 },
+      },
+      formations: {
+        ally: [null, null, null, 'player'],
+        enemy: ['enemy:0', null, null, null],
+      },
+    };
+
+    CombatSystem._runSingleEnemyTurn(0);
+
+    expect(GameState.combat.fxQueue).toContainEqual(expect.objectContaining({
+      kind: 'status',
+      target: 'enemy',
+      enemyIdx: 0,
+      statusId: 'telegraph',
+      motionKey: 'charge',
+    }));
+  });
+});
+
 describe('resolveEnemyDamageResponsePassives', () => {
   function passiveEnemy() {
     return {

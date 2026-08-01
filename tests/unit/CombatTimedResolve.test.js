@@ -206,7 +206,16 @@ describe('_resolveTimedThreat', () => {
       readyTimedAction(enemy, ['player']),
     );
 
-    expect(summonSpy).toHaveBeenCalledWith('zombie_common', 1, 'front', enemy);
+    expect(summonSpy).toHaveBeenCalledWith(
+      'zombie_common',
+      1,
+      'front',
+      enemy,
+      expect.objectContaining({
+        action: expect.objectContaining({ actionId: 'summon_horde', motionKey: 'summon_horde' }),
+        definition: expect.objectContaining({ id: 'summon_horde', motionKey: 'summon_horde' }),
+      }),
+    );
     expect(noiseSpy).toHaveBeenCalledWith(25);
   });
 
@@ -251,7 +260,16 @@ describe('_resolveTimedThreat', () => {
     expect(eventSpy.mock.calls.filter(([eventName]) =>
       eventName === 'playerHit' || eventName === 'enemyAttackCompanion'
     )).toEqual([]);
-    expect(summonSpy).toHaveBeenCalledWith('zombie_common', 1, 'front', enemy);
+    expect(summonSpy).toHaveBeenCalledWith(
+      'zombie_common',
+      1,
+      'front',
+      enemy,
+      expect.objectContaining({
+        action: expect.objectContaining({ actionId: 'summon_horde', motionKey: 'summon_horde' }),
+        definition: expect.objectContaining({ id: 'summon_horde', motionKey: 'summon_horde' }),
+      }),
+    );
     expect(noiseSpy).toHaveBeenCalledWith(25);
   });
 

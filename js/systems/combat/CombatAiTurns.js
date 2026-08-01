@@ -826,7 +826,9 @@ export const CombatAiTurns = {
         target: 'enemy',
         enemyIdx,
         statusId: 'telegraph',
-        motionKey: action.actionId === 'aimed_shot' ? 'aim' : 'telegraph',
+        motionKey: isBossPattern
+          ? 'charge'
+          : action.actionId === 'aimed_shot' ? 'aim' : 'telegraph',
       });
       if (isBossPattern) {
         enemy._bossActionState = advanceBossAction({
@@ -1025,6 +1027,7 @@ export const CombatAiTurns = {
       return result;
     };
 
+    const queuedFxBefore = Array.isArray(combat?.fxQueue) ? combat.fxQueue.length : 0;
     const result = executeEnemyAction({
       enemy,
       action,
@@ -1065,7 +1068,10 @@ export const CombatAiTurns = {
           return true;
         },
         summonEnemy: (enemyId, count, row) => {
-          const spawned = this._summonEnemyById(enemyId, count, row, enemy);
+          const spawned = this._summonEnemyById(enemyId, count, row, enemy, {
+            action,
+            definition,
+          });
           if (spawned > 0) {
             combat.log.push(I18n.t('combatSys.screamerSummon', {
               enemy: I18n.enemyName(enemy.id, enemy.name),
@@ -1142,6 +1148,23 @@ export const CombatAiTurns = {
         },
       },
     });
+    if (result?.executed === true
+        && (combat?.fxQueue?.length ?? 0) === queuedFxBefore) {
+      const targetId = action.targetIds?.[0] ?? 'player';
+      const target = allyActionCombatant(combat, targetId);
+      this._fx(createActionFx({
+        actor: enemyActionCombatant(combat, enemy, enemyIdx),
+        actorIndex: enemyIdx,
+        target,
+        targetIndex: combatantActionIndex(target, gs.companions),
+        action,
+        motionKey: action.motionKey,
+        impactFx: definition?.impactFx ?? this._monsterImpactFx(enemy),
+        category: action.category,
+        movement: definition?.movement,
+        camera: definition?.camera,
+      }));
+    }
     if (result?.executed === true
         && action.category === 'basic'
         && Number.isInteger(enemy.reloadAfterShots)) {
@@ -1265,7 +1288,13 @@ export const CombatAiTurns = {
     return enemy;
   },
 
-  _summonEnemyById(enemyId, count = 1, row = 'front', sourceEnemy = null) {
+  _summonEnemyById(
+    enemyId,
+    count = 1,
+    row = 'front',
+    sourceEnemy = null,
+    presentation = null,
+  ) {
     const gs = GameState;
     const def = GameData?.enemies?.[enemyId];
     if (!def || count <= 0) return 0;
@@ -1285,9 +1314,15 @@ export const CombatAiTurns = {
         actorIndex: enemyIndex,
         target: actor,
         targetIndex: enemyIndex,
-        actionId: sourceEnemy?.timedThreat?.id ?? 'summon',
-        motionKey: 'summon',
-        impactFx: 'summon',
+        action: presentation?.action,
+        actionId: presentation?.action?.actionId
+          ?? sourceEnemy?.timedThreat?.id
+          ?? 'summon',
+        motionKey: presentation?.action?.motionKey ?? 'summon',
+        impactFx: presentation?.definition?.impactFx ?? 'summon',
+        category: presentation?.action?.category,
+        movement: presentation?.definition?.movement,
+        camera: presentation?.definition?.camera,
         count: spawned,
       }));
     }

@@ -1,7 +1,7 @@
 # 전투 모션 개편 최종 QA
 
 - 검증일: 2026-08-01
-- 기준 커밋: `99250c1 fix(combat): wire focused motion lifecycle`
+- 기준 커밋: `bd24e1a test(combat): verify complete motion roster` + Task 12 SDD 검토 수정
 - 환경: Windows 11, Node.js 25.8, Vite 8.0.5, Playwright 1.61 Chromium headless, Python bundled runtime + Pillow 12.2
 - 판정: **PASS** — 계획 대상 59종과 보조 소환수 1종을 합친 runtime sheet 60/60이 연결되며, 필수 테스트·감사·빌드·패키지 검증에서 실패가 없다.
 
@@ -55,12 +55,13 @@
 | 시나리오 | 실제 관찰값 | 판정 |
 | --- | --- | --- |
 | 원거리 플레이어 공격 | `doctor_f`, 6×8, row `28.5714%`, iteration `1`, fill 없음, `motion-move-forward` 없음; 종료 후 idle `0.0000%`/infinite 복귀 | PASS |
-| 간호사 근접/치료 분리 | `nurse_scalpel` row `14.2857%` + 접근, `nurse_triage` row `42.8571%` + 접근 없음 | PASS |
-| 피격/사망 분리 | `zombie_common` hit `66.6667%` 후 idle, death `100.0000%` + terminal `death` + fill `forwards` | PASS |
+| 간호사 근접/치료 분리 | 실제 `CombatSystem.selectSkill → selectTarget → confirmAction`에서 `nurse_scalpel` 정의/FX가 `melee` row `14.2857%` + 접근, `nurse_triage` 정의/FX가 `support` row `42.8571%` + 접근 없음으로 분리 | PASS |
+| 피격/사망 분리 | `zombie_common` hit `66.6667%` 종료 후 idle `0.0000%`/infinite 및 피격 class 제거를 먼저 확인한 뒤, death `100.0000%` + terminal `death` + fill `forwards` 확인 | PASS |
 | 휴면 환자 기상 | wake queue 1회, row `25.0000%`; 재평가 시 queued wake 0 | PASS |
 | bloater 자폭 순서 | self-destruct body row `60.0000%`, fill `forwards`; impact 시 body가 존재하고 이후 제거 | PASS |
-| feral alpha 5개 의미 동작 | `neck_bite` `14.2857%`, `frenzy_bite` `28.5714%`, `pack_howl` `42.8571%`, `alpha_hunt` `57.1429%`, `charge` `85.7143%`; howl/charge는 접근 class 없음 | PASS |
-| 배속·skip·소유권 | speed 2 finite lifetime 약 374 ms; skip 후 생존자는 idle, 사망/downed/victory/defeat는 terminal 유지, active actor/timer 0; same-root 재렌더와 detached screen의 stale callback 모두 폐기 | PASS |
+| feral alpha 5개 의미 동작 | 실제 `_runSingleEnemyTurn` action FX에서 `neck_bite` `14.2857%`, `frenzy_bite` `28.5714%`, `pack_howl` `42.8571%`, `alpha_hunt` `57.1429%`; 실제 boss telegraph status FX에서 `charge` `85.7143%`. howl/charge는 공격·접근 class 없음 | PASS |
+| 배속·skip·소유권 | 실제 `fxQueue → _playFxQueue`에서 speed 1 callback 약 108 ms/finite 약 722 ms, speed 2 callback 약 42 ms/finite 약 364 ms; skip 후 생존자는 idle, 사망/downed/victory/defeat는 terminal 유지, active actor/timer 0; same-root 재렌더와 detached screen의 stale callback 모두 폐기 | PASS |
+| 사용자 클릭·승패 종료 | skill/command와 전면 대상 상태 카드를 Playwright 실제 `locator.click()`으로 조작(`dispatchEvent`/`force`/`evaluate` 클릭 없음). 승리는 `combat_result`, 패배는 HP 0·`isAlive=false`·`outcome=defeat`·`combat → ending` 전환까지 확인 | PASS |
 
 전체 E2E 보고서는 **64 passed / 0 failed**이며 `tmp/combat-full-playwright/report.json`과 시나리오 screenshot은 검증 산출물로만 두고 커밋하지 않았다. `combat-screen`은 desktop과 mobile page 모두 console warning/error, pageerror, document/script/stylesheet request failure를 수집해 새 브라우저 오류가 있으면 실패한다.
 
@@ -68,8 +69,8 @@
 
 | 검증 | 결과 |
 | --- | --- |
-| 집중 Vitest 8개 파일 | 153 tests PASS |
-| 전체 `npm test` | 139 files, 1,666 tests PASS |
+| 집중 Vitest 9개 파일 | 186 tests PASS |
+| 전체 `npm test` | 139 files, 1,668 tests PASS |
 | manifest export | 최신 상태, drift 0 |
 | sprite audit | total 60, referenced 60, pass 57, warn 3, fail 0 |
 | chroma cleanup | 23 sheet pinned, historical unexpected alpha loss 0 |
@@ -101,7 +102,8 @@ Chroma 감사에서 opaque green, fringe green, hidden transparent RGB, 미허�
 
 실패는 없지만 아래 비차단 경고를 숨기지 않고 유지한다.
 
-- sprite audit `white-bg-risk` 3건: `boss_raider_warlord` 647 opaque white pixels, `boss_penthouse_survivor` 606, `boss_chef_nemesis` 503. 녹색 잔여·투명도·빈 프레임 문제는 아니며 현재 렌더링을 차단하지 않는다. 후속 아트 검수에서 흰색이 의도된 섬광/장식인지 확인하고, 배경 잔여라면 해당 frame만 정리한다.
+- sprite audit `white-bg-risk` 3건: `boss_raider_warlord` 647 opaque white pixels, `boss_penthouse_survivor` 606, `boss_chef_nemesis` 503. 동일한 현재 manifest·asset에서 `node tools/audit_combat_sprites.mjs --check`와 생성 모드가 모두 total 60/referenced 60/pass 57/warn 3/fail 0을 반환했으며, 생성 모드로 `COMBAT_SPRITE_AUDIT.md`와 JSON의 서로 달랐던 이전 결과를 동기화했다. 녹색 잔여·투명도·빈 프레임 문제는 아니며 현재 렌더링을 차단하지 않는다. 후속 아트 검수에서 흰색이 의도된 섬광/장식인지 확인하고, 배경 잔여라면 해당 frame만 정리한다.
+  - 재현 입력 hash: audit tool `03a2e9b`, manifest `e28aced`, raider `58258cb`, penthouse `7b0f0d4`, firefighter `0226546`, chef `0f9b1ef`. `--check`는 쓰기만 생략하며 분석 옵션과 임계값은 생성 모드와 같다.
 - 데이터 validator의 기존 `stackConfig` warning 215건: motion roster 오류가 아니며 errors 0이다. 아이템 데이터 정규화 작업으로 분리한다.
 - Vite의 기존 dynamic import 최적화 warning과 Electron package의 author 누락 warning: 빌드·패키지 생성에는 영향이 없다. 번들 구성과 package metadata 정리 작업으로 분리한다.
 - Node의 module type warning: 테스트 결과에는 영향이 없다. `package.json` 모듈 형식 정리는 별도 호환성 검토 후 진행한다.
