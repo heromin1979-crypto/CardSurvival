@@ -37,9 +37,15 @@ export const CombatFxPlayer = {
   },
 
   _scheduleFxTimer(callback, delay) {
+    const ownerScreen = this._screen;
+    const ownerContent = ownerScreen?.firstElementChild ?? null;
+    const requireConnected = ownerScreen?.isConnected === true;
     let timer = null;
     timer = setTimeout(() => {
       this._fxTimers = this._fxTimers.filter(activeTimer => activeTimer !== timer);
+      if (ownerScreen !== this._screen) return;
+      if (requireConnected && !ownerScreen?.isConnected) return;
+      if (ownerContent && ownerScreen?.firstElementChild !== ownerContent) return;
       callback();
     }, Math.max(0, Math.round(delay)));
     this._fxTimers.push(timer);
@@ -171,6 +177,34 @@ export const CombatFxPlayer = {
       return this._renderCombatSpriteSheet(sheetKey, 'cv-ally-icon combat-sprite-sheet cv-companion-sheet', label);
     }
     return `<span class="cv-ally-icon">${COMPANION_ICONS[npcId] ?? '?뫀'}</span>`;
+  },
+
+  _materializeCombatSpriteSheet(element, motion) {
+    if (!element || !motion?.sheetKey || !motion?.sheet) return null;
+    if (COMBAT_SPRITE_SHEETS[motion.sheetKey] !== motion.sheet) return null;
+    const style = this._spriteSheetStyle(motion.sheetKey);
+    if (!style) return null;
+
+    const existing = element.querySelector('.combat-sprite-sheet');
+    if (existing && existing.dataset.motionMaterialized !== 'true') return existing;
+    if (existing?.dataset.spriteSheetKey === motion.sheetKey) return existing;
+
+    const portrait = element.querySelector('.combatant-portrait');
+    if (!portrait) return null;
+    const sprite = existing ?? document.createElement('span');
+    const roleClass = element.matches?.('.cv-player')
+      ? 'cv-player-img cv-player-sheet'
+      : element.matches?.('.cv-ally')
+        ? 'cv-ally-icon cv-companion-sheet'
+        : 'cv-enemy-img cv-enemy-sheet';
+    sprite.className = `combat-sprite-sheet combat-motion-sheet ${roleClass}`;
+    sprite.dataset.motionMaterialized = 'true';
+    sprite.dataset.spriteSheetKey = motion.sheetKey;
+    sprite.setAttribute('role', 'img');
+    sprite.setAttribute('aria-hidden', 'true');
+    sprite.setAttribute('style', style);
+    if (!existing) portrait.insertBefore(sprite, portrait.firstChild);
+    return sprite;
   },
 
   _playFx(queuedFx) {
@@ -431,8 +465,7 @@ export const CombatFxPlayer = {
       }
       case 'defeat': {
         const player = this._playerSpriteEl();
-        this._enterTerminalMotion(player, 'death');
-        player?.classList.add('motion-defeat');
+        this._enterTerminalMotion(player, 'defeat');
         break;
       }
       case 'explode': {
@@ -583,10 +616,10 @@ export const CombatFxPlayer = {
     const enemy = Number.isNaN(enemyIdx) ? null : combat?.enemies?.[enemyIdx];
 
     if (isPlayer && combat?.outcome === 'victory') return 'victory';
+    if (isPlayer && combat?.outcome === 'defeat') return 'defeat';
     if (combatant?.deathsDoor === true || el.classList.contains('is-deaths-door')) return 'downed';
     const playerDead = isPlayer && (
-      combat?.outcome === 'defeat'
-      || combatant?.dead === true
+      combatant?.dead === true
       || GameState.player?.isAlive === false
     );
     const companionDowned = isCompanion && combatant?.dead === true;
@@ -656,6 +689,8 @@ export const CombatFxPlayer = {
       ? 'motion-victory'
       : terminalState === 'downed'
         ? 'motion-downed'
+        : terminalState === 'defeat'
+          ? 'motion-defeat'
         : el.matches?.('.cv-enemy-sprite')
           ? 'motion-zombie-death'
           : 'motion-player-death';
@@ -738,7 +773,8 @@ export const CombatFxPlayer = {
   },
 
   _playResolvedSpriteMotion(element, motion, dur, { allowTerminal = false } = {}) {
-    const sprite = element?.querySelector('.combat-sprite-sheet');
+    const sprite = element?.querySelector('.combat-sprite-sheet')
+      ?? this._materializeCombatSpriteSheet(element, motion);
     if (!sprite || !motion) return null;
     const record = this._actorMotionRecord(element);
     if (record.terminal && !allowTerminal) {

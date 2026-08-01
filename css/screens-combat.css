@@ -4420,6 +4420,16 @@
   filter: contrast(1.05) saturate(0.78) brightness(0.78) drop-shadow(0 22px 20px rgba(0, 0, 0, 0.92));
 }
 
+.combat-focused .combatant-portrait > .combat-motion-sheet {
+  width: min(180%, calc(var(--combat-sprite-w, 240px) * 1.08));
+  height: min(var(--combat-sprite-h, 320px), clamp(180px, 26vh, 340px));
+}
+
+.combat-focused .combatant-portrait > .combat-motion-sheet ~ img,
+.combat-focused .combatant-portrait > .combat-motion-sheet ~ .combatant-icon {
+  display: none;
+}
+
 .combat-focused .combatant-piece.enemy .combatant-portrait img {
   filter: contrast(1.15) saturate(0.55) brightness(0.68) sepia(0.18) drop-shadow(0 20px 18px rgba(0, 0, 0, 0.96));
 }
