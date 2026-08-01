@@ -361,7 +361,14 @@ export const CombatFxPlayer = {
         break;
       }
       case 'downed': {
-        this._motion(this._actorEl(fx) ?? this._playerSpriteEl(), 'motion-downed', 900);
+        const actor = this._actorEl(fx) ?? this._playerSpriteEl();
+        const player = this._playerSpriteEl();
+        const companionId = fx.npcId ?? (fx.target === 'ally' ? fx.targetId : null);
+        const sheetKey = actor === player
+          ? this._playerSpriteSheetKey()
+          : this._companionSpriteSheetKey(companionId);
+        this._playSpriteMotion(actor, sheetKey, 'downed', 900);
+        this._motion(actor, 'motion-downed', 900);
         break;
       }
       case 'playerDeath': {
@@ -540,7 +547,9 @@ export const CombatFxPlayer = {
     const resolved = this._resolveSpriteMotion(sheetKey, motionKey);
     const motion = motionKey === 'victory' && resolved
       ? { ...resolved, loop: false, holdLast: true, durationMs: dur || 900 }
-      : resolved;
+      : motionKey === 'downed' && resolved
+        ? { ...resolved, loop: false, holdLast: false, durationMs: dur || 900 }
+        : resolved;
     return this._playResolvedSpriteMotion(
       element,
       motion,

@@ -57,6 +57,7 @@
     "aliases": {
       "basic_attack": "melee",
       "reposition": "move",
+      "downed": "death",
       "victory": "idle"
     }
   },
@@ -118,6 +119,7 @@
     "aliases": {
       "basic_attack": "melee",
       "reposition": "move",
+      "downed": "death",
       "victory": "idle"
     }
   },
@@ -179,6 +181,7 @@
     "aliases": {
       "basic_attack": "melee",
       "reposition": "move",
+      "downed": "death",
       "victory": "idle"
     }
   },
@@ -240,6 +243,7 @@
     "aliases": {
       "basic_attack": "melee",
       "reposition": "move",
+      "downed": "death",
       "victory": "idle"
     }
   },
@@ -301,6 +305,7 @@
     "aliases": {
       "basic_attack": "melee",
       "reposition": "move",
+      "downed": "death",
       "victory": "idle"
     }
   },
@@ -362,6 +367,7 @@
     "aliases": {
       "basic_attack": "melee",
       "reposition": "move",
+      "downed": "death",
       "victory": "idle"
     }
   },
@@ -395,6 +401,9 @@
         "locomotion": "stationary",
         "holdLast": true
       }
+    },
+    "aliases": {
+      "downed": "death"
     }
   },
   "nurse_companion": {
@@ -427,6 +436,9 @@
         "locomotion": "stationary",
         "holdLast": true
       }
+    },
+    "aliases": {
+      "downed": "death"
     }
   },
   "zombie_patient_dormant": {

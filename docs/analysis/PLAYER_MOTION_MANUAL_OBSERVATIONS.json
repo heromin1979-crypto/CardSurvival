@@ -1,0 +1,103 @@
+{
+  "version": 2,
+  "authoredBy": "manual full-sheet inspection",
+  "motions": ["idle", "melee", "ranged", "support", "guard", "move", "hit", "death"],
+  "characters": [
+    {
+      "sheetKey": "doctor_f",
+      "imageSha256": "f2594367cc9dffec1db6e973c2ab729554e7d0358ca701a064a72849c4b4c9e3",
+      "status": "PASS",
+      "rework": null,
+      "rows": [
+        {"row": 0, "motion": "idle", "pose": "호흡 변화가 있는 중립 준비 자세", "weapon": "수술 도구를 안전하게 낮춤", "anchor": "발 기준선과 체격이 일정함", "clipping": "머리·손·발 잘림 없음", "chroma": "가장자리 초록 잔상 없음", "status": "PASS", "rework": null},
+        {"row": 1, "motion": "melee", "pose": "전진 절개와 회수 동작이 이어짐", "weapon": "메스 궤적이 손과 일치함", "anchor": "전진량이 셀 내부에 유지됨", "clipping": "도구 끝과 사지 잘림 없음", "chroma": "도구 가장자리 초록 잔상 없음", "status": "PASS", "rework": null},
+        {"row": 2, "motion": "ranged", "pose": "원거리 투척 준비와 팔로스루가 구분됨", "weapon": "소형 의료 투척 도구 표현", "anchor": "몸통 중심 흔들림이 과하지 않음", "clipping": "팔과 투사체 잘림 없음", "chroma": "투사체 주변 잔상 없음", "status": "PASS", "rework": null},
+        {"row": 3, "motion": "support", "pose": "진단·처치 손동작이 읽힘", "weapon": "의료 장비 사용으로 일관됨", "anchor": "서 있는 위치가 고정됨", "clipping": "장비와 손 잘림 없음", "chroma": "장비 경계 잔상 없음", "status": "PASS", "rework": null},
+        {"row": 4, "motion": "guard", "pose": "상체를 낮춘 방어 자세", "weapon": "도구를 몸 가까이 보호함", "anchor": "양발 접지가 안정적임", "clipping": "외곽 잘림 없음", "chroma": "실루엣 경계 깨끗함", "status": "PASS", "rework": null},
+        {"row": 5, "motion": "move", "pose": "전술 이동 보폭이 연속적임", "weapon": "도구를 이동 방향과 반대로 안전하게 듦", "anchor": "보폭 기준선이 일정함", "clipping": "전후 프레임 발 잘림 없음", "chroma": "이동 실루엣 잔상 없음", "status": "PASS", "rework": null},
+        {"row": 6, "motion": "hit", "pose": "충격 후 균형 회복이 읽힘", "weapon": "도구가 손에서 분리되지 않음", "anchor": "후퇴량이 셀 안에 머묾", "clipping": "후방 실루엣 잘림 없음", "chroma": "충격 외곽 잔상 없음", "status": "PASS", "rework": null},
+        {"row": 7, "motion": "death", "pose": "무릎 붕괴에서 눕는 순서가 자연스러움", "weapon": "도구가 신체와 함께 내려감", "anchor": "최종 시신 기준선이 일정함", "clipping": "누운 몸 전체가 보임", "chroma": "바닥 접점 잔상 없음", "status": "PASS", "rework": null}
+      ]
+    },
+    {
+      "sheetKey": "soldier_m",
+      "imageSha256": "831191417b78ebf1dd827ca6ab5729eb5faf58e47dcb7862266f09b616611aa3",
+      "status": "PASS",
+      "rework": null,
+      "rows": [
+        {"row": 0, "motion": "idle", "pose": "소총을 낮춘 경계 자세", "weapon": "총구 화염 없이 안전 방향 유지", "anchor": "직립 기준선 일정", "clipping": "소총과 전신 잘림 없음", "chroma": "군복의 저채도 녹색은 보존되고 키 잔상 없음", "status": "PASS", "rework": null},
+        {"row": 1, "motion": "melee", "pose": "접근·몸통 회전·개머리판 타격·회수가 명확함", "weapon": "소총은 개머리판 근접 타격에만 사용되고 발사 표현 없음", "anchor": "6프레임 크기와 발 기준선 일정", "clipping": "프레임 간 무기 조각·사지 잘림 없음", "chroma": "분리 경계와 무기 외곽 초록 잔상 없음", "status": "PASS", "rework": null},
+        {"row": 2, "motion": "ranged", "pose": "견착 사격 자세가 연속적임", "weapon": "소총 사격 전용 행으로 읽힘", "anchor": "반동 중 중심 유지", "clipping": "총구와 발 잘림 없음", "chroma": "총열 외곽 잔상 없음", "status": "PASS", "rework": null},
+        {"row": 3, "motion": "support", "pose": "장비 확인·전술 지원 동작", "weapon": "탄창과 소총 취급이 일관됨", "anchor": "정지 위치 유지", "clipping": "손·장비 잘림 없음", "chroma": "장비 틈 잔상 없음", "status": "PASS", "rework": null},
+        {"row": 4, "motion": "guard", "pose": "상체를 보호하는 방어 자세", "weapon": "소총을 몸 앞에 고정", "anchor": "양발 접지 일정", "clipping": "외곽 잘림 없음", "chroma": "방탄 장비 가장자리 깨끗함", "status": "PASS", "rework": null},
+        {"row": 5, "motion": "move", "pose": "소총을 낮춘 전술 전진", "weapon": "총구 화염 없는 이동 자세", "anchor": "보폭과 높이 일정", "clipping": "발과 총구 잘림 없음", "chroma": "이동 외곽 잔상 없음", "status": "PASS", "rework": null},
+        {"row": 6, "motion": "hit", "pose": "피격 반동과 후퇴가 읽힘", "weapon": "소총이 손과 함께 반동함", "anchor": "후퇴 폭이 셀 내부", "clipping": "기울어진 전신 잘림 없음", "chroma": "피격 외곽 잔상 없음", "status": "PASS", "rework": null},
+        {"row": 7, "motion": "death", "pose": "무릎에서 측면 낙하로 이어짐", "weapon": "소총이 최종 자세와 함께 내려감", "anchor": "시신 기준선 일관", "clipping": "누운 전신·소총 잘림 없음", "chroma": "바닥 접점 잔상 없음", "status": "PASS", "rework": null}
+      ]
+    },
+    {
+      "sheetKey": "firefighter_m",
+      "imageSha256": "bc89c75a9cd6bf492a87e6a1a0d07318ec1e088685fe598c6c1e07ed4c8f059d",
+      "status": "PASS",
+      "rework": null,
+      "rows": [
+        {"row": 0, "motion": "idle", "pose": "도끼를 든 대기 자세", "weapon": "소방 도끼 형태 유지", "anchor": "전신 높이 일정", "clipping": "헬멧·도끼·발 잘림 없음", "chroma": "반사띠와 배경 키가 구분됨", "status": "PASS", "rework": null},
+        {"row": 1, "motion": "melee", "pose": "도끼 준비·휘두름·회수 순서", "weapon": "도끼날 방향과 손 위치 일치", "anchor": "전진량 안정", "clipping": "도끼 궤적 잘림 없음", "chroma": "도끼 외곽 잔상 없음", "status": "PASS", "rework": null},
+        {"row": 2, "motion": "ranged", "pose": "원거리 장비 사용 자세", "weapon": "소방 장비를 겨냥하는 동작", "anchor": "상체 반동 중 발 고정", "clipping": "장비 끝 잘림 없음", "chroma": "장비 외곽 잔상 없음", "status": "PASS", "rework": null},
+        {"row": 3, "motion": "support", "pose": "구조 지원 손동작", "weapon": "도끼를 안전하게 제어", "anchor": "정지 위치 일정", "clipping": "손·장비 잘림 없음", "chroma": "반사 장비 주변 잔상 없음", "status": "PASS", "rework": null},
+        {"row": 4, "motion": "guard", "pose": "도끼 자루를 활용한 방어", "weapon": "도끼가 몸 앞에 위치", "anchor": "무게 중심 낮음", "clipping": "외곽 잘림 없음", "chroma": "실루엣 깨끗함", "status": "PASS", "rework": null},
+        {"row": 5, "motion": "move", "pose": "중장비 상태의 전진 보폭", "weapon": "도끼를 몸 가까이 듦", "anchor": "발 기준선 일관", "clipping": "발·도끼 잘림 없음", "chroma": "이동 외곽 잔상 없음", "status": "PASS", "rework": null},
+        {"row": 6, "motion": "hit", "pose": "중량감 있는 피격 반동", "weapon": "도끼가 손에 유지됨", "anchor": "후퇴량 안정", "clipping": "기울어진 전신 잘림 없음", "chroma": "피격 외곽 잔상 없음", "status": "PASS", "rework": null},
+        {"row": 7, "motion": "death", "pose": "장비 무게를 반영한 붕괴", "weapon": "도끼와 몸이 함께 내려감", "anchor": "최종 접지선 일정", "clipping": "누운 전신 잘림 없음", "chroma": "바닥 접점 잔상 없음", "status": "PASS", "rework": null}
+      ]
+    },
+    {
+      "sheetKey": "homeless_m",
+      "imageSha256": "7e26ffaab4b5097d997ee42255af47066dde968786e2e1f1e03cad60da7f18e2",
+      "status": "PASS",
+      "rework": null,
+      "rows": [
+        {"row": 0, "motion": "idle", "pose": "불규칙하지만 안정된 경계 자세", "weapon": "즉석 무기를 낮춤", "anchor": "전신 기준선 일정", "clipping": "머리·무기·발 잘림 없음", "chroma": "누더기 외곽 잔상 없음", "status": "PASS", "rework": null},
+        {"row": 1, "motion": "melee", "pose": "거친 접근과 타격 흐름", "weapon": "즉석 둔기와 손 위치 일치", "anchor": "전진량이 셀 안에 유지", "clipping": "무기 궤적 잘림 없음", "chroma": "무기 주변 잔상 없음", "status": "PASS", "rework": null},
+        {"row": 2, "motion": "ranged", "pose": "잔해 투척 준비와 팔로스루", "weapon": "투척물 표현이 분리됨", "anchor": "몸통 중심 안정", "clipping": "팔·투척물 잘림 없음", "chroma": "작은 투척물 주변 잔상 없음", "status": "PASS", "rework": null},
+        {"row": 3, "motion": "support", "pose": "주변 물품을 탐색하는 동작", "weapon": "즉석 장비 취급이 자연스러움", "anchor": "정지 위치 유지", "clipping": "손·소품 잘림 없음", "chroma": "소품 경계 잔상 없음", "status": "PASS", "rework": null},
+        {"row": 4, "motion": "guard", "pose": "몸을 웅크린 회피 방어", "weapon": "즉석 무기를 몸 앞에 둠", "anchor": "낮은 중심 일관", "clipping": "외곽 잘림 없음", "chroma": "실루엣 깨끗함", "status": "PASS", "rework": null},
+        {"row": 5, "motion": "move", "pose": "빠르게 빠져나가는 보폭", "weapon": "무기를 낮춰 이동함", "anchor": "발 기준선 일정", "clipping": "전후 발 잘림 없음", "chroma": "이동 외곽 잔상 없음", "status": "PASS", "rework": null},
+        {"row": 6, "motion": "hit", "pose": "가벼운 체격의 피격 반동", "weapon": "무기가 손과 함께 움직임", "anchor": "후퇴 폭 적정", "clipping": "기울어진 전신 잘림 없음", "chroma": "피격 외곽 잔상 없음", "status": "PASS", "rework": null},
+        {"row": 7, "motion": "death", "pose": "주저앉아 측면으로 눕는 흐름", "weapon": "무기가 신체 곁에 남음", "anchor": "최종 접지선 일관", "clipping": "누운 전신 잘림 없음", "chroma": "바닥 접점 잔상 없음", "status": "PASS", "rework": null}
+      ]
+    },
+    {
+      "sheetKey": "chef_m",
+      "imageSha256": "914fda87210ca0e9be4196bfa4c146ff7fc3a24d5b1ee995b320fba77e7b0cc1",
+      "status": "PASS",
+      "rework": null,
+      "rows": [
+        {"row": 0, "motion": "idle", "pose": "칼을 낮춘 주방 전투 준비", "weapon": "주방칼 형태 일관", "anchor": "전신 높이 일정", "clipping": "칼·머리·발 잘림 없음", "chroma": "앞치마 외곽 잔상 없음", "status": "PASS", "rework": null},
+        {"row": 1, "motion": "melee", "pose": "짧은 연속 칼질 흐름", "weapon": "칼날 방향과 손목이 일치", "anchor": "전진량 적정", "clipping": "칼 궤적 잘림 없음", "chroma": "칼날 주변 잔상 없음", "status": "PASS", "rework": null},
+        {"row": 2, "motion": "ranged", "pose": "도구 투척 준비와 회수", "weapon": "주방 도구 투척으로 읽힘", "anchor": "상체 회전 중 발 안정", "clipping": "도구·팔 잘림 없음", "chroma": "소형 도구 주변 잔상 없음", "status": "PASS", "rework": null},
+        {"row": 3, "motion": "support", "pose": "배식·보급 동작", "weapon": "칼을 안전하게 낮추고 식량 사용", "anchor": "정지 위치 유지", "clipping": "손·식량 잘림 없음", "chroma": "소품 가장자리 잔상 없음", "status": "PASS", "rework": null},
+        {"row": 4, "motion": "guard", "pose": "팬과 팔을 앞세운 방어", "weapon": "주방 도구가 몸 앞에 위치", "anchor": "양발 접지 안정", "clipping": "도구 외곽 잘림 없음", "chroma": "실루엣 깨끗함", "status": "PASS", "rework": null},
+        {"row": 5, "motion": "move", "pose": "도구를 든 빠른 이동", "weapon": "칼날을 몸 가까이 유지", "anchor": "보폭 기준선 일정", "clipping": "전후 발·도구 잘림 없음", "chroma": "이동 외곽 잔상 없음", "status": "PASS", "rework": null},
+        {"row": 6, "motion": "hit", "pose": "피격 후 상체 반동", "weapon": "칼이 손에서 분리되지 않음", "anchor": "후퇴량 셀 내부", "clipping": "기울어진 전신 잘림 없음", "chroma": "피격 외곽 잔상 없음", "status": "PASS", "rework": null},
+        {"row": 7, "motion": "death", "pose": "무릎 붕괴에서 눕는 흐름", "weapon": "주방 도구가 몸과 함께 내려감", "anchor": "최종 접지선 일정", "clipping": "누운 전신 잘림 없음", "chroma": "바닥 접점 잔상 없음", "status": "PASS", "rework": null}
+      ]
+    },
+    {
+      "sheetKey": "engineer_m",
+      "imageSha256": "7e50b5557c67ca22632baf957669380d53a982fabf79408881bcfb6777ccbc91",
+      "status": "PASS",
+      "rework": null,
+      "rows": [
+        {"row": 0, "motion": "idle", "pose": "공구를 든 경계 자세", "weapon": "렌치와 장비 형태 유지", "anchor": "전신 높이 일정", "clipping": "공구·머리·발 잘림 없음", "chroma": "작업복 외곽 잔상 없음", "status": "PASS", "rework": null},
+        {"row": 1, "motion": "melee", "pose": "렌치 준비·타격·회수", "weapon": "렌치 방향과 손 위치 일치", "anchor": "전진량 안정", "clipping": "렌치 궤적 잘림 없음", "chroma": "공구 외곽 잔상 없음", "status": "PASS", "rework": null},
+        {"row": 2, "motion": "ranged", "pose": "전기 장치를 겨냥·작동", "weapon": "장치가 손과 연결되어 있음", "anchor": "반동 중 발 접지", "clipping": "장치·케이블 잘림 없음", "chroma": "전기 장비 주변 잔상 없음", "status": "PASS", "rework": null},
+        {"row": 3, "motion": "support", "pose": "장치 설치·조정 동작", "weapon": "공구 사용 순서가 자연스러움", "anchor": "정지 위치 유지", "clipping": "손·장치 잘림 없음", "chroma": "소형 부품 주변 잔상 없음", "status": "PASS", "rework": null},
+        {"row": 4, "motion": "guard", "pose": "즉석 엄폐물을 세우는 방어", "weapon": "공구와 방호 장치 구분", "anchor": "낮은 중심 안정", "clipping": "엄폐물·전신 잘림 없음", "chroma": "장치 외곽 잔상 없음", "status": "PASS", "rework": null},
+        {"row": 5, "motion": "move", "pose": "공구를 든 전술 이동", "weapon": "공구를 몸 가까이 유지", "anchor": "보폭 기준선 일정", "clipping": "발·공구 잘림 없음", "chroma": "이동 외곽 잔상 없음", "status": "PASS", "rework": null},
+        {"row": 6, "motion": "hit", "pose": "중장비 작업자의 피격 반동", "weapon": "공구가 손에 유지됨", "anchor": "후퇴 폭 적정", "clipping": "기울어진 전신 잘림 없음", "chroma": "피격 외곽 잔상 없음", "status": "PASS", "rework": null},
+        {"row": 7, "motion": "death", "pose": "무릎에서 바닥으로 붕괴", "weapon": "공구가 신체와 함께 내려감", "anchor": "최종 접지선 일정", "clipping": "누운 전신 잘림 없음", "chroma": "바닥 접점 잔상 없음", "status": "PASS", "rework": null}
+      ]
+    }
+  ]
+}

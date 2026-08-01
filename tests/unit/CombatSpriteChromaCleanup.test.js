@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { execFileSync, spawnSync } from 'node:child_process';
 import { describe, expect, it } from 'vitest';
@@ -353,11 +354,61 @@ describe('combat sprite chroma cleanup', () => {
       encoding: 'utf8',
     });
     expect(JSON.parse(output)).toMatchObject({
-      changedSheetCount: 23,
-      unexpectedAlphaLoss: 0,
-      rebuiltVerificationMismatchPixels: 0,
+      sheetCount: 12,
+      recipeTargetCount: 9,
+      chromaArtifacts: {
+        opaqueGreen: 0,
+        fringeGreen: 0,
+        hiddenRgb: 0,
+        removedComponents: 0,
+        staleAllowlist: 0,
+      },
     });
   }, 120000);
+
+  it('verifies a no-git current-runtime subset, ignores later roster assets, and rejects mutation', () => {
+    const runtime = pythonRuntime();
+    const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'task7-current-runtime-'));
+    const copy = (relative) => {
+      const source = path.join(ROOT, relative);
+      const target = path.join(tempRoot, relative);
+      fs.mkdirSync(path.dirname(target), { recursive: true });
+      fs.cpSync(source, target, { recursive: true });
+    };
+    const manifest = JSON.parse(fs.readFileSync(
+      path.join(ROOT, 'assets', 'images', 'combat', 'spritesheets', 'manifest.json'),
+      'utf8',
+    ));
+    const roster = [
+      'zombie_patient_dormant', 'zombie_common', 'zombie_runner', 'zombie_brute',
+      'zombie_horde', 'rabid_dog', 'zombie_acid', 'zombie_bloater',
+      'zombie_screamer', 'zombie_charger', 'raider', 'raider_elite',
+    ];
+    try {
+      copy('tools/normalize_combat_sprite_sheets.py');
+      copy('tools/build_normal_enemy_motion_sheets.py');
+      copy('art_sources/combat/task7_normal');
+      copy('assets/images/combat/spritesheets/manifest.json');
+      copy('assets/images/combat/spritesheets/chroma_component_allowlist.json');
+      for (const key of roster) copy(manifest[key].src.replace(/^\//, ''));
+      expect(fs.existsSync(path.join(tempRoot, '.git'))).toBe(false);
+      expect(fs.existsSync(path.join(tempRoot, manifest.doctor_f.src.replace(/^\//, '')))).toBe(false);
+
+      const report = path.join(tempRoot, 'task7-report.json');
+      const written = execFileSync(runtime.command, [
+        ...runtime.prefix, REPORT_CHECKER, '--root', tempRoot, '--report', report, '--write',
+      ], { cwd: tempRoot, encoding: 'utf8' });
+      expect(JSON.parse(written)).toMatchObject({ sheetCount: 12, recipeTargetCount: 9 });
+
+      fs.appendFileSync(path.join(tempRoot, manifest.zombie_common.src.replace(/^\//, '')), Buffer.from([0]));
+      const mutated = spawnSync(runtime.command, [
+        ...runtime.prefix, REPORT_CHECKER, '--root', tempRoot, '--report', report, '--check',
+      ], { cwd: tempRoot, encoding: 'utf8' });
+      expect(mutated.status).not.toBe(0);
+    } finally {
+      fs.rmSync(tempRoot, { recursive: true, force: true });
+    }
+  }, 180000);
 
   it('rebuilds all expanded normal-enemy sheets from hash-pinned sources', () => {
     const runtime = pythonRuntime();

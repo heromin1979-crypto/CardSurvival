@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "generatedBy": "/tools/render_player_motion_preview.py",
   "preview": "/docs/analysis/generated/player_motion_preview.png",
   "motions": [
@@ -12,332 +12,2940 @@
     "hit",
     "death"
   ],
-  "openReworkCount": 0,
-  "rejectedGenerationCount": 1,
   "characters": [
     {
       "sheetKey": "doctor_f",
       "path": "/assets/images/combat/spritesheets/doctor_f_sheet.png",
       "width": 1536,
       "height": 2048,
-      "sha256": "f2594367cc9dffec1db6e973c2ab729554e7d0358ca701a064a72849c4b4c9e3",
+      "mode": "RGBA",
+      "fileSha256": "f2594367cc9dffec1db6e973c2ab729554e7d0358ca701a064a72849c4b4c9e3",
+      "chromaMetrics": {
+        "opaqueGreen": 0,
+        "fringeGreen": 0,
+        "hiddenRgb": 0,
+        "removedComponents": 0,
+        "staleAllowlist": 0
+      },
       "rows": [
         {
           "row": 0,
           "motion": "idle",
-          "verdict": "PASS"
+          "alphaCoverage": [
+            13642,
+            14406,
+            14119,
+            14269,
+            13935,
+            13263
+          ],
+          "boundingBoxes": [
+            [
+              68,
+              10,
+              188,
+              248
+            ],
+            [
+              68,
+              10,
+              188,
+              248
+            ],
+            [
+              69,
+              10,
+              187,
+              248
+            ],
+            [
+              69,
+              10,
+              187,
+              248
+            ],
+            [
+              64,
+              10,
+              191,
+              248
+            ],
+            [
+              72,
+              10,
+              184,
+              248
+            ]
+          ],
+          "framePixelSha256": [
+            "056627fd13bf3289082fc7cdabb9711b5dd3ccc33fe15feccf0ccb27a98d167c",
+            "ec25f3c7d98dcc19aff6750d9751ea99352bd13a80033baf2219330a2cbd522a",
+            "e0c7b053f7e82de0295c87515c626819fe5e87823b742f7da985e00d1ce59d83",
+            "bce948c0e8df265a5b045aeb61f637fede60417661137f9690fe7191726a798b",
+            "b193469d7482547189004feab807eeb8b229e1bb9c567ef8ee613ce178379a82",
+            "e4dcd0dd997f3405ab5ec8403d3c4b2352763bff107610ed9ddf924441e2dfd4"
+          ],
+          "distinctFrameCount": 6
         },
         {
           "row": 1,
           "motion": "melee",
-          "verdict": "PASS"
+          "alphaCoverage": [
+            17582,
+            17976,
+            19152,
+            17241,
+            19109,
+            15578
+          ],
+          "boundingBoxes": [
+            [
+              39,
+              10,
+              216,
+              248
+            ],
+            [
+              27,
+              10,
+              229,
+              248
+            ],
+            [
+              14,
+              10,
+              241,
+              248
+            ],
+            [
+              10,
+              26,
+              246,
+              248
+            ],
+            [
+              11,
+              10,
+              244,
+              248
+            ],
+            [
+              65,
+              10,
+              190,
+              248
+            ]
+          ],
+          "framePixelSha256": [
+            "b0c2be1e6357ace20f77d1c121bb438b0d88c5675e8893470971c7634386d5c0",
+            "c7b54f3c46ba5a0dc22d201af7492191c4fa50d00da9210f9fe41d6dfd83c0c0",
+            "0644ef246a5260610cfcfe126a0de85df8a02db9230370d9b6a9be06c5f3825e",
+            "0f8b0b761e8165db509c2389a6c41a8d957d4f3d16ff3d1f6feae79d534a24ae",
+            "7b8c794f57a8d4331d9edaaaacece526e92e3bb06a20a67d7961cdd4211b6571",
+            "51fa7af81576e49946aac84f7baafc646f51952d94d62df8c30215b52a8eb2ec"
+          ],
+          "distinctFrameCount": 6
         },
         {
           "row": 2,
           "motion": "ranged",
-          "verdict": "PASS"
+          "alphaCoverage": [
+            16767,
+            17110,
+            17040,
+            17084,
+            16179,
+            16011
+          ],
+          "boundingBoxes": [
+            [
+              58,
+              10,
+              197,
+              248
+            ],
+            [
+              48,
+              10,
+              207,
+              248
+            ],
+            [
+              29,
+              10,
+              226,
+              248
+            ],
+            [
+              32,
+              10,
+              224,
+              248
+            ],
+            [
+              31,
+              10,
+              225,
+              248
+            ],
+            [
+              64,
+              10,
+              192,
+              248
+            ]
+          ],
+          "framePixelSha256": [
+            "a49b446d64c61d755c04483799f03cc38d8d0b49f1721f4f61116b1e941b143a",
+            "9dafdfa6c479ead2f9d0e27463e96093696de9d629cab40eb2b146c3fba492ad",
+            "f61f3ae35133ec7dfd2251923d62a9a9b2c8f5d0293be76c8d25d0257029c4a0",
+            "0f1afc19eafdc7b62ab926b12bdbeb4f0bdd134cf1372bb56a40c4b0b6e28672",
+            "367cd3ad6c5687c940cf4496eef6a8d30fdc3c9d37b6ac0d239b01cbcce93dc0",
+            "3afa14d0052116abdb087b09dbd0d33fa971bf7be85d553a22746fa13fd76ac9"
+          ],
+          "distinctFrameCount": 6
         },
         {
           "row": 3,
           "motion": "support",
-          "verdict": "PASS"
+          "alphaCoverage": [
+            14394,
+            14476,
+            15333,
+            15052,
+            14528,
+            13962
+          ],
+          "boundingBoxes": [
+            [
+              70,
+              10,
+              186,
+              248
+            ],
+            [
+              67,
+              10,
+              189,
+              248
+            ],
+            [
+              68,
+              10,
+              188,
+              248
+            ],
+            [
+              66,
+              10,
+              189,
+              248
+            ],
+            [
+              67,
+              10,
+              188,
+              248
+            ],
+            [
+              71,
+              10,
+              184,
+              248
+            ]
+          ],
+          "framePixelSha256": [
+            "7553bcade03b2b2e596be064484b0107a99865c64d57b76162e45bb2671b506e",
+            "6b1d66ff2478b6db751c5b9e02198e2d21dff73db34a4e12f284fc0df936b0cd",
+            "702e21673168aa27bbac0bf4e4027fe9ed7dcc108b8e9ecd6b6b273c421e399c",
+            "76d46f188d12a962e20777ab3791e32b8e0e7565f507f03333d152f50dd2245d",
+            "bf36b3e88c40792172292cc2cc15594f54db4358e3156c4c9f31d1a64b5e5d93",
+            "d4dccb507fb7f12f1e4fdc594aa54bdbe0d45c48ec4f511a878ae40373c69f63"
+          ],
+          "distinctFrameCount": 6
         },
         {
           "row": 4,
           "motion": "guard",
-          "verdict": "PASS"
+          "alphaCoverage": [
+            22121,
+            22139,
+            22049,
+            21801,
+            21484,
+            18464
+          ],
+          "boundingBoxes": [
+            [
+              36,
+              10,
+              219,
+              248
+            ],
+            [
+              32,
+              10,
+              224,
+              248
+            ],
+            [
+              34,
+              10,
+              222,
+              248
+            ],
+            [
+              38,
+              10,
+              217,
+              248
+            ],
+            [
+              43,
+              10,
+              213,
+              248
+            ],
+            [
+              46,
+              10,
+              209,
+              248
+            ]
+          ],
+          "framePixelSha256": [
+            "cb585b2694c5ffc9a03a6550c7741ba2ececcbb699a13d1be206ec08aef9a1d2",
+            "a35acb92afe3226cb10ba5bcd8d30c8b898ca9455a09e6fdd6b83a22c600180b",
+            "8cdb9f7c28d713b71f0106e257b82c9be6c3bc1faf78c84cb1936790861c22db",
+            "a7af4948e2fcb42dbb567e6e0ce7cbea3a8ff4f1c84ef996ffeae4b65f37e5b3",
+            "052f27ff4fc82896301b738f4731486fc1aa2cec0cbf7d150eb216f4da7addaf",
+            "18db79ca93d576870e2334c54b61cf7e6ac79e3f6105aecb06668e277b21fa6b"
+          ],
+          "distinctFrameCount": 6
         },
         {
           "row": 5,
           "motion": "move",
-          "verdict": "PASS"
+          "alphaCoverage": [
+            18888,
+            20689,
+            21208,
+            22210,
+            21775,
+            20230
+          ],
+          "boundingBoxes": [
+            [
+              44,
+              10,
+              211,
+              248
+            ],
+            [
+              22,
+              10,
+              233,
+              248
+            ],
+            [
+              22,
+              10,
+              234,
+              248
+            ],
+            [
+              17,
+              10,
+              239,
+              248
+            ],
+            [
+              18,
+              10,
+              237,
+              248
+            ],
+            [
+              25,
+              10,
+              230,
+              248
+            ]
+          ],
+          "framePixelSha256": [
+            "6334c6a2b98eddd5061507e2488fbbe3fed68388d028fe61b5f9dbfc20a6212e",
+            "bdaf31bcd53c563c31d64bc09c9a25848d4525785e65b39edd87f142ad02ae4d",
+            "e9385ae18e7d7dbe82101edf9dae66aa258d422869623689f9395d71be3ac47f",
+            "6894b8489424c3064779d231bcab5a9964cde56da8ade5fdb73829c72939a115",
+            "8c458257511fa56404e0df4b8593bb1bd73fd379661c662f1f742638fb7158bf",
+            "70037052c69470948a2bd7f4d4cab315379f1bcad73d28c23b926728de1a6bae"
+          ],
+          "distinctFrameCount": 6
         },
         {
           "row": 6,
           "motion": "hit",
-          "verdict": "PASS"
+          "alphaCoverage": [
+            19729,
+            18285,
+            20449,
+            21753,
+            21900,
+            28055
+          ],
+          "boundingBoxes": [
+            [
+              56,
+              10,
+              200,
+              248
+            ],
+            [
+              59,
+              10,
+              196,
+              248
+            ],
+            [
+              53,
+              10,
+              202,
+              248
+            ],
+            [
+              49,
+              10,
+              207,
+              248
+            ],
+            [
+              41,
+              10,
+              214,
+              248
+            ],
+            [
+              10,
+              12,
+              246,
+              248
+            ]
+          ],
+          "framePixelSha256": [
+            "05441a070d5584feaa3abf77de9ac3c617374288d6acc6678fc112066895b4c8",
+            "47370c496cceda1daf4e4dfdc8c81d9b29027ba95677ce26b6d7fa060f41e140",
+            "f6dcc478de3ed92e662d145f0b687b16351689d2e93b314ce459f64fca30ad33",
+            "fb1f251e3db14d85452a57df0b7940d76da58c3d8312c048cc1c867cc8f3f704",
+            "7fddcb9877e55cf2ed2668b2e1f2466a4dc913a955f78eafb018f92923f2104b",
+            "9f24ff759eeceff36b8c5b348d039139d931d975f67846878b5f9ea7e85ac3f1"
+          ],
+          "distinctFrameCount": 6
         },
         {
           "row": 7,
           "motion": "death",
-          "verdict": "PASS"
+          "alphaCoverage": [
+            31364,
+            20100,
+            11887,
+            10954,
+            10857,
+            9746
+          ],
+          "boundingBoxes": [
+            [
+              10,
+              12,
+              246,
+              248
+            ],
+            [
+              10,
+              95,
+              246,
+              248
+            ],
+            [
+              10,
+              159,
+              246,
+              248
+            ],
+            [
+              10,
+              167,
+              246,
+              248
+            ],
+            [
+              10,
+              170,
+              246,
+              248
+            ],
+            [
+              10,
+              179,
+              246,
+              248
+            ]
+          ],
+          "framePixelSha256": [
+            "367851189e99fd2d4a7ea95dd13b94efba68b59c4c805081e3f8fa4e7b613868",
+            "52b4b03b922e7036ce9d7bb6da3a1be1ac848502568ab783784198ccc8b04e75",
+            "c651340398cb75df9a7438634211bf6c8b213d1af45e71999bc71f5eb5f8ec85",
+            "1d9dd1ef33f338ee80e36f9b55c0b3e6d24587dc1389e1c3c473736c7a7515e9",
+            "4151ec7fe1d8f7aeb36dab5d10970c6e40af1be44024a1ee5fb94a7fe9134cda",
+            "bf82cc6287f7bc8166797cffa71784282658a09ad791063745ffbc535be0d9b6"
+          ],
+          "distinctFrameCount": 6
         }
-      ],
-      "manualQa": {
-        "identity": "PASS",
-        "fullBody": "PASS",
-        "clipping": "PASS"
-      }
+      ]
     },
     {
       "sheetKey": "soldier_m",
       "path": "/assets/images/combat/spritesheets/soldier_m_sheet.png",
       "width": 1536,
       "height": 2048,
-      "sha256": "55228b248a7aa7d016a18c0f760a55015d47afc3f60d39cd80a7345dac8afe94",
+      "mode": "RGBA",
+      "fileSha256": "831191417b78ebf1dd827ca6ab5729eb5faf58e47dcb7862266f09b616611aa3",
+      "chromaMetrics": {
+        "opaqueGreen": 0,
+        "fringeGreen": 0,
+        "hiddenRgb": 0,
+        "removedComponents": 0,
+        "staleAllowlist": 0
+      },
       "rows": [
         {
           "row": 0,
           "motion": "idle",
-          "verdict": "PASS"
+          "alphaCoverage": [
+            13414,
+            13484,
+            13502,
+            13374,
+            13220,
+            13186
+          ],
+          "boundingBoxes": [
+            [
+              76,
+              10,
+              179,
+              248
+            ],
+            [
+              76,
+              10,
+              179,
+              248
+            ],
+            [
+              77,
+              10,
+              179,
+              248
+            ],
+            [
+              77,
+              10,
+              178,
+              248
+            ],
+            [
+              78,
+              10,
+              178,
+              248
+            ],
+            [
+              78,
+              10,
+              178,
+              248
+            ]
+          ],
+          "framePixelSha256": [
+            "3f6e7db7ec3f2b969738f76b147a9a149e56bba6f9ae328612e0bb3054f5b2b8",
+            "c656bddf5769e4589096bb634ed43074288f4c0f0f34d94db96301eb142beb33",
+            "390605d02d4eda5c3a5e60aa32cf5524f7fd597e9f2395e8676c606ebc842619",
+            "602fdc052e3e2423021bb7bf474e970117c21cb21efefc7a48ac655a5f8b52b8",
+            "db7935267226b73326cc65faf3e351da6d2edc5a1391b6e0d04ed7208b1f4c65",
+            "98b2d8f8077d79c692256566f58bb1b6d2bf5e34b2e08c75a27fa29d1ee15fe2"
+          ],
+          "distinctFrameCount": 6
         },
         {
           "row": 1,
           "motion": "melee",
-          "verdict": "PASS"
+          "alphaCoverage": [
+            13486,
+            13723,
+            15595,
+            16779,
+            16972,
+            13337
+          ],
+          "boundingBoxes": [
+            [
+              79,
+              10,
+              176,
+              248
+            ],
+            [
+              71,
+              10,
+              184,
+              248
+            ],
+            [
+              48,
+              10,
+              208,
+              248
+            ],
+            [
+              29,
+              10,
+              226,
+              248
+            ],
+            [
+              49,
+              10,
+              206,
+              248
+            ],
+            [
+              79,
+              10,
+              177,
+              248
+            ]
+          ],
+          "framePixelSha256": [
+            "1f9272c22b320d7038b3d6222b2a1ffa815ecbaf8a23b4c527635efeaa72ad08",
+            "a331ee94281ff57b006532429f7f96aced33aceac761a17a46bb3c670b1d947d",
+            "94699181b9e5020547ca81761a6972f0211cde9335f45d654e37182a910ec9a1",
+            "74775b1dc1ade13376eb9bd734e1ec9b16cf7f1d4dcfe198c1011416bda9a356",
+            "906fc8000a5303e8a69ee9316514e1b38b4931164b8a3b84e610ed83ea461e8f",
+            "6a23d114ea5105d72190d7ba0641fd8e60b46f9aafe9070e28efba7a49b8ea91"
+          ],
+          "distinctFrameCount": 6
         },
         {
           "row": 2,
           "motion": "ranged",
-          "verdict": "PASS"
+          "alphaCoverage": [
+            16606,
+            16305,
+            16457,
+            16084,
+            16231,
+            16301
+          ],
+          "boundingBoxes": [
+            [
+              48,
+              10,
+              208,
+              248
+            ],
+            [
+              51,
+              10,
+              205,
+              248
+            ],
+            [
+              50,
+              10,
+              206,
+              248
+            ],
+            [
+              53,
+              10,
+              203,
+              248
+            ],
+            [
+              52,
+              10,
+              203,
+              248
+            ],
+            [
+              52,
+              10,
+              204,
+              248
+            ]
+          ],
+          "framePixelSha256": [
+            "158d9e03588af8a77405479f5ead8dc828667d8e9ea750e59136825a00e00164",
+            "60b994bb7454b73ab8aa9b3e4526582a9102ffc55ddfbd7b93757249e64f0027",
+            "50c5c2b4512a9cda705ca6171e94fd116ca1c51e90609245924263c4422eb160",
+            "17d7b23bfc4815ff7d292b5564ff82fea8ac7aa863b8ab483231d0c6c135fd81",
+            "1bd4143a4574689f2a66aa064ed6d313cc8de2b9759c81dd56307302b7dae39e",
+            "5880df0179966988d0b78b6bbd3ef3cd642aea4dd91d496111889741a0e4ba32"
+          ],
+          "distinctFrameCount": 6
         },
         {
           "row": 3,
           "motion": "support",
-          "verdict": "PASS"
+          "alphaCoverage": [
+            14962,
+            15642,
+            15909,
+            15407,
+            14651,
+            14973
+          ],
+          "boundingBoxes": [
+            [
+              72,
+              10,
+              184,
+              248
+            ],
+            [
+              67,
+              10,
+              188,
+              248
+            ],
+            [
+              68,
+              10,
+              188,
+              248
+            ],
+            [
+              66,
+              10,
+              189,
+              248
+            ],
+            [
+              69,
+              10,
+              186,
+              248
+            ],
+            [
+              68,
+              10,
+              187,
+              248
+            ]
+          ],
+          "framePixelSha256": [
+            "0965a6e584c5c6686072f5424e343f22188b1c54acf7db99dea039d4fdb1e3f9",
+            "ab40482e9434a3262cbcb162e9a994664967629afb8d589f31172283eaa99b95",
+            "00af843e30f7d95fc74a27861cb1df2c0016711f34f367b195f84775f4f74687",
+            "de4356474f04621920a2b987500e36b1523983181524a8c023d78049691fbd79",
+            "91109045bafe2a2c62f107dd1f4c6d1726b53ebf2c5f401e623dc78929c24cdc",
+            "84a98cd8894ba45d4dd836f777df6d198cc9cde09fb575b570971884dd355b84"
+          ],
+          "distinctFrameCount": 6
         },
         {
           "row": 4,
           "motion": "guard",
-          "verdict": "PASS"
+          "alphaCoverage": [
+            15547,
+            15129,
+            16049,
+            15448,
+            15964,
+            15045
+          ],
+          "boundingBoxes": [
+            [
+              71,
+              10,
+              185,
+              248
+            ],
+            [
+              72,
+              10,
+              184,
+              248
+            ],
+            [
+              72,
+              10,
+              183,
+              248
+            ],
+            [
+              71,
+              10,
+              185,
+              248
+            ],
+            [
+              71,
+              10,
+              185,
+              248
+            ],
+            [
+              72,
+              10,
+              183,
+              248
+            ]
+          ],
+          "framePixelSha256": [
+            "35c4bd1958e03df93a045b1a35567336a59f4d65b7416d41c3d4dfb08a442f0e",
+            "af1779da88afe6a4eb3c63ad4c617ed4961e7b9578f21b9a56364f133c5de109",
+            "b4c7cbfa0a0ad7514f052ee5eaf87c0e669d845c0e97f884309fedbad8cac38a",
+            "ea5287187a223e6ba1073af58b1e1ca3ce6b85fcbd5f3a5e2759d25f43ac52da",
+            "19e5aaca69fe98420689de0d2c51958902694acef9596fb82e8faf0ea441d6ba",
+            "c07479c4d8e34488d8dc9c06c89ac7a78a368c7b89688bf12399036dc59daf52"
+          ],
+          "distinctFrameCount": 6
         },
         {
           "row": 5,
           "motion": "move",
-          "verdict": "PASS"
+          "alphaCoverage": [
+            16262,
+            16191,
+            15634,
+            15402,
+            15384,
+            15299
+          ],
+          "boundingBoxes": [
+            [
+              52,
+              10,
+              204,
+              248
+            ],
+            [
+              53,
+              10,
+              202,
+              248
+            ],
+            [
+              57,
+              10,
+              198,
+              248
+            ],
+            [
+              64,
+              10,
+              191,
+              248
+            ],
+            [
+              70,
+              10,
+              186,
+              248
+            ],
+            [
+              69,
+              10,
+              187,
+              248
+            ]
+          ],
+          "framePixelSha256": [
+            "a22e9e4f027037cf13b10463e2c0e7283d9eeb2979fd14018f4efeb223fd1f5b",
+            "b4706730fb4b7f9496dec21c4a5051d90f579a8de294a6282b3a58fa77f9f608",
+            "708a5db098663be7d74e8694db2424e84c5ce0907c4e922deee346d98983dfaf",
+            "e53e0cdaf679011d44cd042965a7f9b1682bf0687e73c75fccd3b5b20dc0b727",
+            "00a535ff66956e01d7fae77f07b6e7bcaeeaef375d1197b95dcd777cc941d8ec",
+            "9f591176a529e0c9e01552edb6d08dff82036aaf71a799e979cf96217d8963da"
+          ],
+          "distinctFrameCount": 6
         },
         {
           "row": 6,
           "motion": "hit",
-          "verdict": "PASS"
+          "alphaCoverage": [
+            16268,
+            16044,
+            14747,
+            17458,
+            16370,
+            19576
+          ],
+          "boundingBoxes": [
+            [
+              59,
+              10,
+              197,
+              248
+            ],
+            [
+              48,
+              10,
+              207,
+              248
+            ],
+            [
+              10,
+              89,
+              246,
+              248
+            ],
+            [
+              53,
+              10,
+              202,
+              248
+            ],
+            [
+              48,
+              10,
+              208,
+              248
+            ],
+            [
+              28,
+              10,
+              228,
+              248
+            ]
+          ],
+          "framePixelSha256": [
+            "4fc9f350087e5c6b2236b300b53746a63e4b57b850f2335d8bed3968e762b967",
+            "83b18922c4b5437f6b85d8bea468b3ed7befe743e2fefcfe14c3004e693cf277",
+            "05f6692b0e004e2fdcbd09d48ba4687c554b0c3f6a13daf606aacec381cb644d",
+            "1bc20dd75ce2c78589754a75f886fd65d2cc33d5118e05d9db74b22758fbc2ad",
+            "f75e557466660614e8452fd07bf50f9c903e91ba1df37a8e9c5c32e35345f385",
+            "f703b84492387b44a7abf595ef7677949c056c0aa070069d6855ee8281c49d38"
+          ],
+          "distinctFrameCount": 6
         },
         {
           "row": 7,
           "motion": "death",
-          "verdict": "PASS"
+          "alphaCoverage": [
+            25103,
+            23449,
+            16746,
+            12345,
+            8760,
+            8277
+          ],
+          "boundingBoxes": [
+            [
+              41,
+              10,
+              215,
+              248
+            ],
+            [
+              10,
+              70,
+              246,
+              248
+            ],
+            [
+              10,
+              127,
+              246,
+              248
+            ],
+            [
+              10,
+              158,
+              246,
+              248
+            ],
+            [
+              10,
+              182,
+              246,
+              248
+            ],
+            [
+              10,
+              186,
+              246,
+              248
+            ]
+          ],
+          "framePixelSha256": [
+            "1b6c6748e959dc81b79f8cd7c7a4093c97b1c16deed841483e88274b8444f9ed",
+            "f6744af1bb5fe5733593ecfe6d4b64d189fc52f7165aa2294162dfc061a8e4b5",
+            "2ba99956d8dfdd8ce0ea3e41e4107eaa06a914d94f9cc2a8521cf1b969f97268",
+            "f8b1c43b32dbb4dabf8fc35fc386c1bd0bf019edf62163fd5419d463db67773f",
+            "8113d0fe85347e39dc9135e97e07b34955a5cbbc073e1dd3ba4aa873279b994a",
+            "970c22313ae43c55bb495f46e304c6f5a484046a05d16dc276606f8fe6787bfc"
+          ],
+          "distinctFrameCount": 6
         }
-      ],
-      "manualQa": {
-        "identity": "PASS",
-        "fullBody": "PASS",
-        "clipping": "PASS"
-      }
+      ]
     },
     {
       "sheetKey": "firefighter_m",
       "path": "/assets/images/combat/spritesheets/firefighter_m_sheet.png",
       "width": 1536,
       "height": 2048,
-      "sha256": "bc89c75a9cd6bf492a87e6a1a0d07318ec1e088685fe598c6c1e07ed4c8f059d",
+      "mode": "RGBA",
+      "fileSha256": "bc89c75a9cd6bf492a87e6a1a0d07318ec1e088685fe598c6c1e07ed4c8f059d",
+      "chromaMetrics": {
+        "opaqueGreen": 0,
+        "fringeGreen": 0,
+        "hiddenRgb": 0,
+        "removedComponents": 0,
+        "staleAllowlist": 0
+      },
       "rows": [
         {
           "row": 0,
           "motion": "idle",
-          "verdict": "PASS"
+          "alphaCoverage": [
+            12881,
+            12808,
+            12622,
+            12655,
+            12930,
+            12817
+          ],
+          "boundingBoxes": [
+            [
+              85,
+              10,
+              171,
+              248
+            ],
+            [
+              86,
+              10,
+              170,
+              248
+            ],
+            [
+              86,
+              10,
+              170,
+              248
+            ],
+            [
+              85,
+              10,
+              170,
+              248
+            ],
+            [
+              81,
+              10,
+              175,
+              248
+            ],
+            [
+              83,
+              10,
+              172,
+              248
+            ]
+          ],
+          "framePixelSha256": [
+            "ae26e403cd2aea4d3006a601d44190c29111a124359bd3f7294f32e5de217edd",
+            "518a6f52f9cdc09526172d2a4e0c12e365dc906d68cab01c6faf5d618497b8f9",
+            "7c59f67751f52a7ac79bec500a4d55436086a590132c9d85903bd335b00e08b4",
+            "4ae5ecf56ef857d5637988bde14dd2cb53e59a65f20d297776830c146301d61d",
+            "a45805baea0f9aff91d2f3ca188dac0ee30fccba9b320e8b4dd65a6159a5da84",
+            "03d51a3381b2a2cfac2aafce815cfcd35baae21aeb2e2040d607a7eb463b2784"
+          ],
+          "distinctFrameCount": 6
         },
         {
           "row": 1,
           "motion": "melee",
-          "verdict": "PASS"
+          "alphaCoverage": [
+            14422,
+            14572,
+            9370,
+            17753,
+            16464,
+            14956
+          ],
+          "boundingBoxes": [
+            [
+              64,
+              10,
+              191,
+              248
+            ],
+            [
+              46,
+              10,
+              210,
+              248
+            ],
+            [
+              75,
+              10,
+              180,
+              248
+            ],
+            [
+              32,
+              10,
+              224,
+              248
+            ],
+            [
+              24,
+              10,
+              231,
+              248
+            ],
+            [
+              44,
+              10,
+              212,
+              248
+            ]
+          ],
+          "framePixelSha256": [
+            "6a26c1ccc323f796943d4057224b6b990ba891f8ce106c44914554291d301d13",
+            "a908eb126aeaa6aa13a4b3b451865c2362911e2aa969878e831b6e52272f87ab",
+            "50e2878dd3ed3ae70458895b0fe3fcc33ec3dc01becfce15169a62d09d9466f2",
+            "199757e495e30f22e8b7184af50cbffa81a75ce62bde2821c159ee749bf22795",
+            "6340f189a8b96680580939b79bcfc868b1a49656071a8d3bad5c3c42964dfcda",
+            "5ad1ca1205ed4d549d713019c40b092ad994bf59d2c0d1d08c36a4af17c657c4"
+          ],
+          "distinctFrameCount": 6
         },
         {
           "row": 2,
           "motion": "ranged",
-          "verdict": "PASS"
+          "alphaCoverage": [
+            14247,
+            15568,
+            16746,
+            13098,
+            11815,
+            14422
+          ],
+          "boundingBoxes": [
+            [
+              66,
+              10,
+              190,
+              248
+            ],
+            [
+              39,
+              10,
+              216,
+              248
+            ],
+            [
+              49,
+              10,
+              207,
+              248
+            ],
+            [
+              10,
+              37,
+              246,
+              248
+            ],
+            [
+              10,
+              50,
+              246,
+              248
+            ],
+            [
+              46,
+              10,
+              209,
+              248
+            ]
+          ],
+          "framePixelSha256": [
+            "254f67ce24729c231f9f10393ef4bde33b2d6a2a5edb4e779c6a4e3e55028608",
+            "bde730b15059977dfbed0617a14cdcd4384522a2114552ae9a59075eb414a6a1",
+            "b2e6577a8f89caf15c22b703e54e41ffdb0df86e6458cbf175be2cf5e9213646",
+            "33fa2e9a0c44673d41aa946f884c12b7ad59ba495864b6842a2f050b0c4d8c78",
+            "3493eec286ca6c9938a7ed7447bbdb260bb44cad50ec4f216f829b9e5fccce15",
+            "c6c9dd9350ed178d6d03ba636190aed6c019e198b5d5e90fd869dcc0f3cb33a7"
+          ],
+          "distinctFrameCount": 6
         },
         {
           "row": 3,
           "motion": "support",
-          "verdict": "PASS"
+          "alphaCoverage": [
+            22887,
+            21178,
+            17414,
+            17615,
+            16774,
+            14057
+          ],
+          "boundingBoxes": [
+            [
+              44,
+              10,
+              211,
+              248
+            ],
+            [
+              10,
+              27,
+              246,
+              248
+            ],
+            [
+              43,
+              10,
+              212,
+              248
+            ],
+            [
+              14,
+              10,
+              241,
+              248
+            ],
+            [
+              26,
+              10,
+              229,
+              248
+            ],
+            [
+              70,
+              10,
+              185,
+              248
+            ]
+          ],
+          "framePixelSha256": [
+            "2fdfd4dca74050dbcd239defbad3712dce356f973c35cf867442b8ef68e28be2",
+            "50f55dcc71b199236b678aee8c551f94f6110f21089d40b472781c4bbbab1329",
+            "583667c0c5ca999e1a4da323a610a0a29c12a78b1304f3707526af439180d2ca",
+            "fab20a3c64c658eeb8984c1cea355f02158f6f62640321cefd9666ddc1e2dff8",
+            "087c21c762c3547c4ca5f65861b02f20f3e8185f8e1812ef8c76065f9330a93c",
+            "776e5086b584e9df591a48e2b0d9a08d29025c6303e36bbb9c85a7265768c4f7"
+          ],
+          "distinctFrameCount": 6
         },
         {
           "row": 4,
           "motion": "guard",
-          "verdict": "PASS"
+          "alphaCoverage": [
+            17254,
+            17403,
+            16395,
+            17060,
+            16885,
+            18017
+          ],
+          "boundingBoxes": [
+            [
+              39,
+              10,
+              216,
+              248
+            ],
+            [
+              40,
+              10,
+              215,
+              248
+            ],
+            [
+              56,
+              10,
+              200,
+              248
+            ],
+            [
+              54,
+              10,
+              202,
+              248
+            ],
+            [
+              56,
+              10,
+              200,
+              248
+            ],
+            [
+              46,
+              10,
+              210,
+              248
+            ]
+          ],
+          "framePixelSha256": [
+            "612370035cc10ec34001d26f9ee8eec1bced7f43b36050926dccece80b8a120e",
+            "04ea4810ce799962b5eb6d2e0e87d56fc941a2a3089dc7e4d1cdea184056321e",
+            "6c1412c7437fd636267645a0134d1e422659f8657e3e617fdadeb4d73e85218c",
+            "87bd6b8fd3670d982d7f1c7ddd4645edaec08b9abeba89f47f97a59d41babead",
+            "96d558e50b1de12b8005281b51d712f6dbd6683f9d2350ca198be7a8d2138bf8",
+            "8d29782aad8c6af42f27aae147b3127137e9ecb2b8c92d40ad8f32891c9232de"
+          ],
+          "distinctFrameCount": 6
         },
         {
           "row": 5,
           "motion": "move",
-          "verdict": "PASS"
+          "alphaCoverage": [
+            17800,
+            16736,
+            16362,
+            17361,
+            16779,
+            16708
+          ],
+          "boundingBoxes": [
+            [
+              46,
+              10,
+              209,
+              248
+            ],
+            [
+              37,
+              10,
+              218,
+              248
+            ],
+            [
+              39,
+              10,
+              217,
+              248
+            ],
+            [
+              34,
+              10,
+              222,
+              248
+            ],
+            [
+              43,
+              10,
+              213,
+              248
+            ],
+            [
+              45,
+              10,
+              211,
+              248
+            ]
+          ],
+          "framePixelSha256": [
+            "2cacbc1a04efac26601188b7dbf3cd1347769c964526adb5963e7d42d15f156d",
+            "7d6746e0699b6ed3d5f29013155f04ea6138b90439eba4a34c0bbaf2c04ce8fe",
+            "9a5b60b847bf9b20d88f5b7cac38ae929b3ed9ce67e79b13c0c8c1d0f86c0715",
+            "5ba2023d53164cf16989848a659a07effe35ec95225e132d939c91e4183950eb",
+            "cf0b865fa3baca8d78086156b3bd3e7921b7ad8d911c5613cc5c38482d011243",
+            "2b61b66678a0695bfc624815bebd07fd7d414e5d2c1a2d9f76fbf272331c07bb"
+          ],
+          "distinctFrameCount": 6
         },
         {
           "row": 6,
           "motion": "hit",
-          "verdict": "PASS"
+          "alphaCoverage": [
+            18337,
+            19335,
+            18686,
+            19834,
+            21319,
+            24352
+          ],
+          "boundingBoxes": [
+            [
+              51,
+              10,
+              205,
+              248
+            ],
+            [
+              45,
+              10,
+              211,
+              248
+            ],
+            [
+              42,
+              10,
+              214,
+              248
+            ],
+            [
+              25,
+              10,
+              230,
+              248
+            ],
+            [
+              10,
+              41,
+              246,
+              248
+            ],
+            [
+              45,
+              10,
+              210,
+              248
+            ]
+          ],
+          "framePixelSha256": [
+            "5caac39ac5e09733aabda797bc1a83d7535361dbe1da8c8998ce899a0ca2b1a6",
+            "85fe7748043d84218f2787c238fb9973c870b1c563bbe1cf1c486cb4266f840a",
+            "0b6424d6714eba42fe6fae842c0f1b303be60e3a58f141c112226e8cc22fbff9",
+            "b28b66c56c3c73fc4e7a11d37e96b1751859b2ef527217caf85aeba6d2fdda14",
+            "655e7ca2338df850b3213b94faa935707dc679d8c5c8a92bcc163d0efd78ea7b",
+            "2fc095bcbbb8c1dd12fda5c7d4323b58fb72b50e7add70023b8eded2847ddf5a"
+          ],
+          "distinctFrameCount": 6
         },
         {
           "row": 7,
           "motion": "death",
-          "verdict": "PASS"
+          "alphaCoverage": [
+            15681,
+            27993,
+            24889,
+            16987,
+            11156,
+            9481
+          ],
+          "boundingBoxes": [
+            [
+              49,
+              10,
+              206,
+              248
+            ],
+            [
+              10,
+              13,
+              246,
+              248
+            ],
+            [
+              10,
+              60,
+              246,
+              248
+            ],
+            [
+              10,
+              137,
+              246,
+              248
+            ],
+            [
+              10,
+              172,
+              246,
+              248
+            ],
+            [
+              10,
+              185,
+              246,
+              248
+            ]
+          ],
+          "framePixelSha256": [
+            "bf9096a7b68512ac841420095e372b723f88d281828e1cbc8cb76b30bfd69dfa",
+            "c6f984f84491dcc756cc5aa69df1202667bc5ef990929dda33cbdb9ef60cc3e9",
+            "3678f613ef18758e05c51a508d93602af916ba228e6588a14fb2c0333209ffc8",
+            "25a7bce4cce2de79102b58c774cbf42bd6469c88148b95bfa5652b3a39aecc96",
+            "5726dacd27114650f1b05bcdda1df4de3fd7e3dd71c5d8e54e915d3d8c871216",
+            "6acf3def71bf6d859c644880688945729896946374e0878f24c800e6e7cd1292"
+          ],
+          "distinctFrameCount": 6
         }
-      ],
-      "manualQa": {
-        "identity": "PASS",
-        "fullBody": "PASS",
-        "clipping": "PASS"
-      }
+      ]
     },
     {
       "sheetKey": "homeless_m",
       "path": "/assets/images/combat/spritesheets/homeless_m_sheet.png",
       "width": 1536,
       "height": 2048,
-      "sha256": "7e26ffaab4b5097d997ee42255af47066dde968786e2e1f1e03cad60da7f18e2",
+      "mode": "RGBA",
+      "fileSha256": "7e26ffaab4b5097d997ee42255af47066dde968786e2e1f1e03cad60da7f18e2",
+      "chromaMetrics": {
+        "opaqueGreen": 0,
+        "fringeGreen": 0,
+        "hiddenRgb": 0,
+        "removedComponents": 0,
+        "staleAllowlist": 0
+      },
       "rows": [
         {
           "row": 0,
           "motion": "idle",
-          "verdict": "PASS"
+          "alphaCoverage": [
+            13275,
+            13124,
+            13145,
+            13160,
+            13196,
+            13074
+          ],
+          "boundingBoxes": [
+            [
+              81,
+              10,
+              175,
+              248
+            ],
+            [
+              81,
+              10,
+              174,
+              248
+            ],
+            [
+              82,
+              10,
+              174,
+              248
+            ],
+            [
+              82,
+              10,
+              174,
+              248
+            ],
+            [
+              82,
+              10,
+              174,
+              248
+            ],
+            [
+              81,
+              10,
+              175,
+              248
+            ]
+          ],
+          "framePixelSha256": [
+            "239215635783005063230004940b4906450e3be4527a6dc62385760891460d2e",
+            "15c6238a453126cf709e80c8ee840e7ebcf16a21a6c173d01dd61ae2dfe4c1ce",
+            "39d202e6b0960dd00412bfae75612b994fab7160d4cab2fa19ef8ff48f52b5e0",
+            "1e0696ce910cc5b83da4584a3ab262819caf34bc1a77f2d3ab2309f91b502ffb",
+            "b07be2a8ac3a0f6069589a490595ec3b480060e1c3f5586293d518c9b25f7fbb",
+            "3749027cc8786b86260633d2531ef57deaae4ce029333d2c9f2e6aca05f1658f"
+          ],
+          "distinctFrameCount": 6
         },
         {
           "row": 1,
           "motion": "melee",
-          "verdict": "PASS"
+          "alphaCoverage": [
+            14679,
+            11820,
+            15284,
+            15560,
+            16478,
+            14843
+          ],
+          "boundingBoxes": [
+            [
+              70,
+              10,
+              185,
+              248
+            ],
+            [
+              64,
+              10,
+              191,
+              248
+            ],
+            [
+              39,
+              10,
+              216,
+              248
+            ],
+            [
+              43,
+              10,
+              212,
+              248
+            ],
+            [
+              27,
+              10,
+              228,
+              248
+            ],
+            [
+              56,
+              10,
+              199,
+              248
+            ]
+          ],
+          "framePixelSha256": [
+            "59fb1632429a28abfc4f6533de71c906689cfcdfcc7660d1d858c43b570a8225",
+            "dcfcdd2bf60b22028059812f13d5970ef260a7562c02e14bf63e14934ae71cb9",
+            "18cb01c07ba5a0be6d6c9a3f070a03dbf1c90c233e06796274e4bcb449293bc2",
+            "aad50d48302c16b5fe42df2666ad17fb74e2d6a7e7af55e6c960365787e181d3",
+            "25cf044940d673dd8f8098cdebf48fb819f03302a0b6fe0b492061cddf94448b",
+            "270c2ae676bd11ada370d9557894bcec219161b9fc9fc4348bc02f4f46d4ba7e"
+          ],
+          "distinctFrameCount": 6
         },
         {
           "row": 2,
           "motion": "ranged",
-          "verdict": "PASS"
+          "alphaCoverage": [
+            15032,
+            16160,
+            15158,
+            15938,
+            15807,
+            14197
+          ],
+          "boundingBoxes": [
+            [
+              68,
+              10,
+              187,
+              248
+            ],
+            [
+              57,
+              10,
+              199,
+              248
+            ],
+            [
+              59,
+              10,
+              197,
+              248
+            ],
+            [
+              37,
+              10,
+              218,
+              248
+            ],
+            [
+              30,
+              10,
+              225,
+              248
+            ],
+            [
+              59,
+              10,
+              196,
+              248
+            ]
+          ],
+          "framePixelSha256": [
+            "94e3276c4e410b404519cbdfbbc62ded903dff3983c1aa1d457d1e0be88226a2",
+            "96c1507838b1ec057d4efd0f824fdd8d10b62f510868cab01f7a08781addb316",
+            "4c0f63805ad90c81b8862cc1251989035f7449d661240d38bbde6c833cbeb408",
+            "26f42e8df147021776532e1315a6c8a168eb8c1b9c4a5955edec8478e0b9675e",
+            "b956c4d30a8d402799e375aa76b85d31c43c00d9e6541c3d1e4e88ecd13d5a81",
+            "a686176030d058f46809425190f231ab9ccba66a9991bff5bfe2082ec68bc8a3"
+          ],
+          "distinctFrameCount": 6
         },
         {
           "row": 3,
           "motion": "support",
-          "verdict": "PASS"
+          "alphaCoverage": [
+            30480,
+            31247,
+            23497,
+            17115,
+            16999,
+            17542
+          ],
+          "boundingBoxes": [
+            [
+              40,
+              10,
+              216,
+              248
+            ],
+            [
+              29,
+              10,
+              227,
+              248
+            ],
+            [
+              44,
+              10,
+              211,
+              248
+            ],
+            [
+              58,
+              10,
+              197,
+              248
+            ],
+            [
+              64,
+              10,
+              192,
+              248
+            ],
+            [
+              52,
+              10,
+              204,
+              248
+            ]
+          ],
+          "framePixelSha256": [
+            "1f861bda2c0b92f35f000993591aa8e0b763d22f64fa797a91fda28d5b2d07e1",
+            "c10119bc1f46c2b0cd8e948ec94a87d6c76ff3df898a28a9f118aaf2f3f540f3",
+            "033446e99c88f80a70a38e2e0ca9b12b8f9bd03c8a530cdf8f8a0ff93e84976f",
+            "94f8e53d01356cedf15e173304311bf653944888f7e9a761a409e81188127a8a",
+            "4fee648657436a51e9faa63bcb2ba71da9f7528a5f7c91b3a94f155308d7c059",
+            "b6e71fe7c82ce23b2bba9b1878b625feff4aab0e5343de9cd1d0d5d999284abb"
+          ],
+          "distinctFrameCount": 6
         },
         {
           "row": 4,
           "motion": "guard",
-          "verdict": "PASS"
+          "alphaCoverage": [
+            20867,
+            20667,
+            19824,
+            20163,
+            18169,
+            16114
+          ],
+          "boundingBoxes": [
+            [
+              14,
+              10,
+              242,
+              248
+            ],
+            [
+              13,
+              10,
+              242,
+              248
+            ],
+            [
+              10,
+              22,
+              246,
+              248
+            ],
+            [
+              23,
+              10,
+              233,
+              248
+            ],
+            [
+              28,
+              10,
+              227,
+              248
+            ],
+            [
+              39,
+              10,
+              217,
+              248
+            ]
+          ],
+          "framePixelSha256": [
+            "7de62d9d62ac0e62752044364ab8522a7d761a1a6b84436360dc06f6f30691e8",
+            "999c7c6640d39869cc55be136a74e224d473fe735879757172738c3ae9b99e6e",
+            "ce6fde3f66f1022063d9a992e79dd35cfc9ed6a09a81758d60aa019973c76a2e",
+            "1c2ccc536b173b67b1c44a7d7c2c162c1ec00373ed56a7c4890b6e007202cd99",
+            "3515f39a59fd1a86200b174144ec65c713ba27d2cc4f5a94cce9cafe923fc92c",
+            "1f69ddc95891fb4ac45b44ee35a7898480c8c4d5d1eada98551e411eec909bca"
+          ],
+          "distinctFrameCount": 6
         },
         {
           "row": 5,
           "motion": "move",
-          "verdict": "PASS"
+          "alphaCoverage": [
+            22926,
+            19077,
+            17145,
+            17489,
+            19150,
+            17496
+          ],
+          "boundingBoxes": [
+            [
+              49,
+              10,
+              206,
+              248
+            ],
+            [
+              26,
+              10,
+              230,
+              248
+            ],
+            [
+              49,
+              10,
+              207,
+              248
+            ],
+            [
+              43,
+              10,
+              212,
+              248
+            ],
+            [
+              31,
+              10,
+              225,
+              248
+            ],
+            [
+              42,
+              10,
+              213,
+              248
+            ]
+          ],
+          "framePixelSha256": [
+            "5281181de8ce1417b6b0e8c383deaabbc1fed9e72fb4692c00e1755c72af31b1",
+            "4fc6341d08430d54e46299a5afae63976cea778d3445ece2f07450c94450adfb",
+            "655bf67f559e4316e748e21b6b6152b75c7e5cdb43eb0f81afe31d894095acb0",
+            "9b657d0f82148ab465d8e58d739854f343bea8d717cb0df1bfec62efedd3933d",
+            "a20aa095b0db360ce2d0936a85e459b08020e9722b7964a4f141d64fd95bd353",
+            "e5ef50c61497980c1588f6403a44d8376bd661604a47bdfe567eb8f7490f6338"
+          ],
+          "distinctFrameCount": 6
         },
         {
           "row": 6,
           "motion": "hit",
-          "verdict": "PASS"
+          "alphaCoverage": [
+            20289,
+            18746,
+            18040,
+            18028,
+            23985,
+            33102
+          ],
+          "boundingBoxes": [
+            [
+              30,
+              10,
+              225,
+              248
+            ],
+            [
+              43,
+              10,
+              212,
+              248
+            ],
+            [
+              41,
+              10,
+              214,
+              248
+            ],
+            [
+              45,
+              10,
+              210,
+              248
+            ],
+            [
+              37,
+              10,
+              219,
+              248
+            ],
+            [
+              10,
+              31,
+              246,
+              248
+            ]
+          ],
+          "framePixelSha256": [
+            "8df0742ba4eda11f8bb3d3981b37ce3c4519bdfc9d630f4783e09276b8ae741c",
+            "342155e39ed8e9a126348b973ff6390e90d576df809d8d886867b2a5b839699b",
+            "4e39dd7293d96a3b0b5c4c644df21dd37845dc13afa0b72538443b21763cdc34",
+            "bd47f814b3e069d7080836807dbf8a41922c76291f32c494beb7ece20d2e17bb",
+            "e687461fbc0b8a61e15bbf4c19f6bf82ed588397558f789522137244fb9bd348",
+            "95f51358d66ec6d2b7cc70483b7bfa64f7f33c7f15703ddb7a1fc3d06f26521d"
+          ],
+          "distinctFrameCount": 6
         },
         {
           "row": 7,
           "motion": "death",
-          "verdict": "PASS"
+          "alphaCoverage": [
+            15520,
+            17369,
+            24926,
+            22206,
+            17039,
+            12014
+          ],
+          "boundingBoxes": [
+            [
+              50,
+              10,
+              206,
+              248
+            ],
+            [
+              46,
+              10,
+              209,
+              248
+            ],
+            [
+              10,
+              13,
+              246,
+              248
+            ],
+            [
+              10,
+              60,
+              246,
+              248
+            ],
+            [
+              10,
+              108,
+              246,
+              248
+            ],
+            [
+              10,
+              142,
+              246,
+              248
+            ]
+          ],
+          "framePixelSha256": [
+            "2d7c2a8ba75caad56e6e628e95601f237cfaad3cfba48f2527d04aee96d6c100",
+            "018480e0363269072afec7cf9461995087b593ca5c268ae9e14b78c8fa6ca6d4",
+            "7b1c3804c8db37f2e33df7c716d0c2a0b12724263e16025f39ba4c9d403ddfaa",
+            "bd868b273d6b0da460f99456d7696cb157a5427c5588bb004e624f2ffb6b2c08",
+            "3f45255c72f82b83328e8b17d242cb3532910f6dafb35909cca0f053a0222ae7",
+            "f4fc7c698320a2ee4905885a1157cb6f14dedbb743bd2122cb948cf15771502d"
+          ],
+          "distinctFrameCount": 6
         }
-      ],
-      "manualQa": {
-        "identity": "PASS",
-        "fullBody": "PASS",
-        "clipping": "PASS"
-      }
+      ]
     },
     {
       "sheetKey": "chef_m",
       "path": "/assets/images/combat/spritesheets/chef_m_sheet.png",
       "width": 1536,
       "height": 2048,
-      "sha256": "914fda87210ca0e9be4196bfa4c146ff7fc3a24d5b1ee995b320fba77e7b0cc1",
+      "mode": "RGBA",
+      "fileSha256": "914fda87210ca0e9be4196bfa4c146ff7fc3a24d5b1ee995b320fba77e7b0cc1",
+      "chromaMetrics": {
+        "opaqueGreen": 0,
+        "fringeGreen": 0,
+        "hiddenRgb": 0,
+        "removedComponents": 0,
+        "staleAllowlist": 0
+      },
       "rows": [
         {
           "row": 0,
           "motion": "idle",
-          "verdict": "PASS"
+          "alphaCoverage": [
+            13830,
+            13769,
+            13848,
+            13940,
+            13794,
+            13817
+          ],
+          "boundingBoxes": [
+            [
+              76,
+              10,
+              179,
+              248
+            ],
+            [
+              78,
+              10,
+              178,
+              248
+            ],
+            [
+              77,
+              10,
+              178,
+              248
+            ],
+            [
+              76,
+              10,
+              179,
+              248
+            ],
+            [
+              77,
+              10,
+              179,
+              248
+            ],
+            [
+              77,
+              10,
+              178,
+              248
+            ]
+          ],
+          "framePixelSha256": [
+            "be98477343bf63f4af094779338a28b8c7c22195fe5f5a4938edf6da9c5ea2d1",
+            "c2da231b876d23e48c6618779ae5f7cba692a72d6d1c7c1981f334da0c79036b",
+            "8d9a8d749c42b8057d87e46584d6df00f3378b89ad1cb3404be0072e621a7acd",
+            "ea2d93467e2e9d0c9f24bccbcd118a7a6fa94fbe9993aca83559d92424483c59",
+            "f31ca7394755c0ce7fa44de3621e7c80e8ad1ed3280b853a68ed7c542012a3d6",
+            "3b40c899c85713d17f2bf9fbb284c84e753c4da34becf5e7a1aaa7177a16340d"
+          ],
+          "distinctFrameCount": 6
         },
         {
           "row": 1,
           "motion": "melee",
-          "verdict": "PASS"
+          "alphaCoverage": [
+            17910,
+            17639,
+            19722,
+            17836,
+            13625,
+            19021
+          ],
+          "boundingBoxes": [
+            [
+              40,
+              10,
+              215,
+              248
+            ],
+            [
+              31,
+              10,
+              224,
+              248
+            ],
+            [
+              32,
+              10,
+              224,
+              248
+            ],
+            [
+              10,
+              17,
+              246,
+              248
+            ],
+            [
+              10,
+              53,
+              246,
+              248
+            ],
+            [
+              10,
+              22,
+              246,
+              248
+            ]
+          ],
+          "framePixelSha256": [
+            "f4056c814c6900a3c4d02006966ec5884a18a9e0c784056f6ec9fdfe99450554",
+            "cdf7929e63ecb63d3142260065d315e1311d912239d27b7f6a06d581bfb9dbe1",
+            "da76a3e7b65340fb930232b653893f892552a947838933ed8fdb8e4782ed470d",
+            "30d01f06042a9bc3cb1af97e419cc906bf616753d47dcd0224679bf32c067974",
+            "f2d0ed5a1ea6baf46688da915ddf891ea20b1ce9c260b9aab6a96ca909ba076f",
+            "3abdba1cc07dddf03f597cdd491dcf92bb3990c1b732551f4aba60a1cbce92fb"
+          ],
+          "distinctFrameCount": 6
         },
         {
           "row": 2,
           "motion": "ranged",
-          "verdict": "PASS"
+          "alphaCoverage": [
+            16637,
+            18039,
+            17066,
+            19217,
+            15636,
+            15990
+          ],
+          "boundingBoxes": [
+            [
+              44,
+              10,
+              212,
+              248
+            ],
+            [
+              27,
+              10,
+              229,
+              248
+            ],
+            [
+              28,
+              10,
+              227,
+              248
+            ],
+            [
+              28,
+              10,
+              228,
+              248
+            ],
+            [
+              10,
+              35,
+              246,
+              248
+            ],
+            [
+              62,
+              10,
+              194,
+              248
+            ]
+          ],
+          "framePixelSha256": [
+            "9ada00b8a89eb6e58d9fc77d1f606c12a7c7a3516a22096cabd398f58eef2f04",
+            "8927e560f57911546e6c76cd204478efc596ef755e06577d2bed52b5269784f8",
+            "ef65731ef25a1961ccda63893a8af3bc21e1e6d433c33ac66f1e6c1352a0b249",
+            "fc6a3f2549f5a33a33a3bbb96a69cafec595a4e0fb96ebbfbe868b7dc6ee52d4",
+            "dc2c7ee68d036932074ade524584e70221afeb325826c5c574cd3270c07d8a12",
+            "6e0ec0d28726d5002a61d0c7ebea172f2bc0ea9e03ed1e59e04d748e8fd08e48"
+          ],
+          "distinctFrameCount": 6
         },
         {
           "row": 3,
           "motion": "support",
-          "verdict": "PASS"
+          "alphaCoverage": [
+            14557,
+            14432,
+            14809,
+            14968,
+            15190,
+            14006
+          ],
+          "boundingBoxes": [
+            [
+              78,
+              10,
+              177,
+              248
+            ],
+            [
+              73,
+              10,
+              182,
+              248
+            ],
+            [
+              64,
+              10,
+              191,
+              248
+            ],
+            [
+              54,
+              10,
+              201,
+              248
+            ],
+            [
+              49,
+              10,
+              206,
+              248
+            ],
+            [
+              79,
+              10,
+              177,
+              248
+            ]
+          ],
+          "framePixelSha256": [
+            "3549c0c4875e425d919eb34b5dd64025e646619430a91e2d5320c62fd8a8bdb9",
+            "4858be9f93c44a1d13bf685ed2b88ff46af73655e04012b52bd44cae79026476",
+            "0a21297efc564f719eeabce4a4f62c115b46745ba6e38dd2d668688f6f95e38c",
+            "9eab53524d044fb3a312f846ead8dcc1061c1711126d66f29ea44d87057349ef",
+            "720e4e9df576503fbafaf04c1aabbb64d4a5ca8feb2d0580c95bc721223e9d0f",
+            "68ac04481d4a7455d85987335357a414f78ecb12ba58483fa846633d3f016017"
+          ],
+          "distinctFrameCount": 6
         },
         {
           "row": 4,
           "motion": "guard",
-          "verdict": "PASS"
+          "alphaCoverage": [
+            15487,
+            14768,
+            15907,
+            15173,
+            15530,
+            16243
+          ],
+          "boundingBoxes": [
+            [
+              63,
+              10,
+              192,
+              248
+            ],
+            [
+              63,
+              10,
+              193,
+              248
+            ],
+            [
+              52,
+              10,
+              203,
+              248
+            ],
+            [
+              62,
+              10,
+              193,
+              248
+            ],
+            [
+              61,
+              10,
+              194,
+              248
+            ],
+            [
+              61,
+              10,
+              195,
+              248
+            ]
+          ],
+          "framePixelSha256": [
+            "83fd3aa08030a4136926b3fa2ee6df5d19fad899f67ede43e7ac82c2e85fce2f",
+            "c5fbedb4005a849dfaad40baf26d67f90d21712dd51c2ebb672aa7b6530e2781",
+            "5d794110b3859fcfeffe7563e89476b4ef355a54087a0c5c997f3b9da4f75003",
+            "b0b9a858501ffc02e5b82a1c478949b6addf4d03a1154ce72459d4340448f3ea",
+            "02ddcedbffbe8470d56b06916d608366129705dd1d74157eb2a2fd8324edc455",
+            "3320c18683195013c57ed942364474996a09c70cc7bb3f7f1d578f473624e09b"
+          ],
+          "distinctFrameCount": 6
         },
         {
           "row": 5,
           "motion": "move",
-          "verdict": "PASS"
+          "alphaCoverage": [
+            16521,
+            17043,
+            16899,
+            14778,
+            17944,
+            14534
+          ],
+          "boundingBoxes": [
+            [
+              50,
+              10,
+              205,
+              248
+            ],
+            [
+              39,
+              10,
+              216,
+              248
+            ],
+            [
+              20,
+              10,
+              236,
+              248
+            ],
+            [
+              70,
+              10,
+              185,
+              248
+            ],
+            [
+              41,
+              10,
+              214,
+              248
+            ],
+            [
+              65,
+              10,
+              191,
+              248
+            ]
+          ],
+          "framePixelSha256": [
+            "89b6c5bde8b44969e3de1b03da00bf8992181a2a4aeffc6738e263f3290acabd",
+            "dc96922a933438d3bab06e3ab926c04d5954a7cc05d11e191160941bca0fa401",
+            "ef7971ed16159d76feae48c0700500aecd9b0906736c3863c5e477e4d3a6a33e",
+            "0139e3323afe5daec217a8d0fa8e16f54ba41093a50b6f7950386a021a3653e2",
+            "92f435bc967f9fa99b6df935b708c7c40394defc03d0ff8606b46e0c21225132",
+            "39030ee4add313afc254455c1fd4b110e498ac265fcbd54983ab0480f30efe0f"
+          ],
+          "distinctFrameCount": 6
         },
         {
           "row": 6,
           "motion": "hit",
-          "verdict": "PASS"
+          "alphaCoverage": [
+            18795,
+            18229,
+            17838,
+            17592,
+            24696,
+            19593
+          ],
+          "boundingBoxes": [
+            [
+              49,
+              10,
+              207,
+              248
+            ],
+            [
+              40,
+              10,
+              216,
+              248
+            ],
+            [
+              34,
+              10,
+              221,
+              248
+            ],
+            [
+              48,
+              10,
+              208,
+              248
+            ],
+            [
+              32,
+              10,
+              223,
+              248
+            ],
+            [
+              10,
+              106,
+              246,
+              248
+            ]
+          ],
+          "framePixelSha256": [
+            "f0da455f50a4e478c4a1859818f8f734ddabb0446575b4b272ae472aebb3929b",
+            "f9f746847dbc061b2fb5f0218996adb8eb3210a5a53ca6c4b62cf026f2894474",
+            "1343604539eee3abce07d79054b17919e2d27327ccbe6ba56f180ee45e17a05f",
+            "21f214ce12e83820bf2216fad2226594b50823427377fd7ee3893d87fb1e2438",
+            "0e2b5f2c76839f5efa4f0fc46693bea82c099698c1ab9c5ca33d0a397c880814",
+            "37f745849b633e5b4b5ca27e9ae544cc2b21f614216c5d24311906108c87eee9"
+          ],
+          "distinctFrameCount": 6
         },
         {
           "row": 7,
           "motion": "death",
-          "verdict": "PASS"
+          "alphaCoverage": [
+            15248,
+            20212,
+            21226,
+            17308,
+            16051,
+            11699
+          ],
+          "boundingBoxes": [
+            [
+              57,
+              10,
+              199,
+              248
+            ],
+            [
+              45,
+              10,
+              211,
+              248
+            ],
+            [
+              10,
+              48,
+              246,
+              248
+            ],
+            [
+              10,
+              124,
+              246,
+              248
+            ],
+            [
+              10,
+              145,
+              246,
+              248
+            ],
+            [
+              10,
+              166,
+              246,
+              248
+            ]
+          ],
+          "framePixelSha256": [
+            "22122ae19782166984e79d9cd2016607e38089a68f67de2a8c9c949090ae2bd7",
+            "c26c62b90e964a72fe525894dc9484a67f56491b6fd144e321b817d2bdcc6078",
+            "d2be0f3ad317358efcd1bf25c3dc05f669d8c0c559ca5efc4ebc5626e254a31e",
+            "c7385130ed86b5281ce303c532c19383fc8473e56ba93594ece4184d35509b12",
+            "6ebdd85461b6fea009dff91665db8b6dbda5fad8f97ee407ed73418e2417babb",
+            "cd230cf710189f28b3268aa167cd4745ffd1cc374ad4888fde98b6e3dc15799f"
+          ],
+          "distinctFrameCount": 6
         }
-      ],
-      "manualQa": {
-        "identity": "PASS",
-        "fullBody": "PASS",
-        "clipping": "PASS"
-      }
+      ]
     },
     {
       "sheetKey": "engineer_m",
       "path": "/assets/images/combat/spritesheets/engineer_m_sheet.png",
       "width": 1536,
       "height": 2048,
-      "sha256": "7e50b5557c67ca22632baf957669380d53a982fabf79408881bcfb6777ccbc91",
+      "mode": "RGBA",
+      "fileSha256": "7e50b5557c67ca22632baf957669380d53a982fabf79408881bcfb6777ccbc91",
+      "chromaMetrics": {
+        "opaqueGreen": 0,
+        "fringeGreen": 0,
+        "hiddenRgb": 0,
+        "removedComponents": 0,
+        "staleAllowlist": 0
+      },
       "rows": [
         {
           "row": 0,
           "motion": "idle",
-          "verdict": "PASS"
+          "alphaCoverage": [
+            13684,
+            13668,
+            13701,
+            13348,
+            13408,
+            13205
+          ],
+          "boundingBoxes": [
+            [
+              82,
+              10,
+              174,
+              248
+            ],
+            [
+              81,
+              10,
+              174,
+              248
+            ],
+            [
+              80,
+              10,
+              176,
+              248
+            ],
+            [
+              82,
+              10,
+              173,
+              248
+            ],
+            [
+              82,
+              10,
+              173,
+              248
+            ],
+            [
+              81,
+              10,
+              175,
+              248
+            ]
+          ],
+          "framePixelSha256": [
+            "e7c4005d14874bc608e28d772df78d5829306007e0ad2aeb0692a1b7fa6ad308",
+            "68815dcc0548628dd991db750e19314ebfadfcb17c7f911d0cf3d6f18bb73601",
+            "6ce8b1b2674de61e946040c5d5195e65682f0dc474d7e39f11141ab8471650d4",
+            "02a97894db9658d9de2ac8d29b3dc73885a449e5901f1d4987a1e5977c0af440",
+            "bb0fc4c1bc82a7d2bcc0c9d1826d3841a666c3b5e28f6ebf8cca6011356fb5ec",
+            "f150e6f5db79cae33d490cc4cde1f239a9db2aba7250c2c548bf9b4fc88c877d"
+          ],
+          "distinctFrameCount": 6
         },
         {
           "row": 1,
           "motion": "melee",
-          "verdict": "PASS"
+          "alphaCoverage": [
+            18442,
+            17838,
+            18550,
+            16423,
+            15022,
+            14831
+          ],
+          "boundingBoxes": [
+            [
+              49,
+              10,
+              207,
+              248
+            ],
+            [
+              58,
+              10,
+              198,
+              248
+            ],
+            [
+              10,
+              12,
+              246,
+              248
+            ],
+            [
+              10,
+              38,
+              246,
+              248
+            ],
+            [
+              10,
+              48,
+              246,
+              248
+            ],
+            [
+              10,
+              57,
+              246,
+              248
+            ]
+          ],
+          "framePixelSha256": [
+            "3cc02020b6ce5d168b310520f64a61c74c2cf4e8f826e48b93fdb0fa8f66c638",
+            "0f80fd4b2134e0dc1185e277c26168ff42cba01540095452700bc21e6899574e",
+            "e824248be35eeb64b5f3296005538094338062a5df072258fb1fddaf1778dcdf",
+            "e9dd050bb76841c561412aab6225b72c3d771d37c9a7226e55f9d6e85a003055",
+            "3f42079f40e86a3fb10e697c9236424b1f2f77a354249c0bc53790c19e130a5b",
+            "628b8c0d73d9269290fee0f301d307d90893fdb51f6d764bb84a7803e2b95184"
+          ],
+          "distinctFrameCount": 6
         },
         {
           "row": 2,
           "motion": "ranged",
-          "verdict": "PASS"
+          "alphaCoverage": [
+            12575,
+            13263,
+            13347,
+            15151,
+            14312,
+            14092
+          ],
+          "boundingBoxes": [
+            [
+              75,
+              10,
+              181,
+              248
+            ],
+            [
+              67,
+              10,
+              189,
+              248
+            ],
+            [
+              59,
+              10,
+              197,
+              248
+            ],
+            [
+              38,
+              10,
+              217,
+              248
+            ],
+            [
+              41,
+              10,
+              215,
+              248
+            ],
+            [
+              70,
+              10,
+              186,
+              248
+            ]
+          ],
+          "framePixelSha256": [
+            "9d9da4ea47cf6bc059fe7835e2691b0ae6bc5dcf1dc4920062854eb1c8c919aa",
+            "1f1057b4f07176174dc740e975b5b02934c968eaa52307e884ec781e1abb30fd",
+            "bdd4ef5bd76156cf70da7d02f32a916dd4249624d862a332fb3928392306062c",
+            "9bbf82b43676e01787823b4676f4114b5056906aa8bd306a85ef4129f3d0a9f6",
+            "7fdbbfa8249a722a84224f5c467880e5427124a211913fefe0e1715b7636fa9f",
+            "004ffdf5f0b6dee4c16d224014210bbea8ab96c465e1abdaf5de8166004e00c8"
+          ],
+          "distinctFrameCount": 6
         },
         {
           "row": 3,
           "motion": "support",
-          "verdict": "PASS"
+          "alphaCoverage": [
+            27357,
+            23342,
+            25549,
+            23510,
+            28013,
+            15388
+          ],
+          "boundingBoxes": [
+            [
+              29,
+              10,
+              227,
+              248
+            ],
+            [
+              40,
+              10,
+              215,
+              248
+            ],
+            [
+              31,
+              10,
+              224,
+              248
+            ],
+            [
+              43,
+              10,
+              213,
+              248
+            ],
+            [
+              19,
+              10,
+              237,
+              248
+            ],
+            [
+              51,
+              10,
+              205,
+              248
+            ]
+          ],
+          "framePixelSha256": [
+            "dfb5267aa5f6e43f255a9defc485e4ff613e7ee0237367f55e33139233715ac9",
+            "1acd1a10f507179a2738bd2eba0c1cd280eccf2b7deb015d68a7aef57c660cc6",
+            "735ef945d947cac1ef70c9a7082b4e5e13129bf4c33d12f0548c0ebda24aa0b2",
+            "8d38802e43a4cf0bc8fec0afe0df0c18bcaf5cdfb7ce16f41a1c479725dc01f3",
+            "fa3f311149be291e176052874bcf93289140b51bb6e45e8c174cad34ad71b737",
+            "5f9f9704f034ba9754397c0334fd67d92e6f0e52f67931719425c5c2a945f803"
+          ],
+          "distinctFrameCount": 6
         },
         {
           "row": 4,
           "motion": "guard",
-          "verdict": "PASS"
+          "alphaCoverage": [
+            13314,
+            13035,
+            13446,
+            12873,
+            13039,
+            13524
+          ],
+          "boundingBoxes": [
+            [
+              73,
+              10,
+              182,
+              248
+            ],
+            [
+              73,
+              10,
+              182,
+              248
+            ],
+            [
+              68,
+              10,
+              188,
+              248
+            ],
+            [
+              76,
+              10,
+              179,
+              248
+            ],
+            [
+              69,
+              10,
+              186,
+              248
+            ],
+            [
+              53,
+              10,
+              203,
+              248
+            ]
+          ],
+          "framePixelSha256": [
+            "032e89ad60ffc7cfcc02ef25493390acb5ad523fd54a5581aabea9104d1423af",
+            "49d5a89f99cc0fd1554fbb40b6d07522aa430f1f0f2902696622e333d9b1fb63",
+            "37bc76691894241c2b81be1cc1019845a6f46299a93468904d61c9fdfb2583a3",
+            "c15c10240bcec4b1b50b0e47d53d084066249d6d9c90ffbcf33ea151043c8a46",
+            "bffc567760ed2c006ed5e9c14c68f917252c5265647e242d8fb4c317e7b092e8",
+            "9fffa7b20fff4bdccb5f8c46c6079778015a43d66d3d53aa99e1ecd72e3b0c94"
+          ],
+          "distinctFrameCount": 6
         },
         {
           "row": 5,
           "motion": "move",
-          "verdict": "PASS"
+          "alphaCoverage": [
+            13819,
+            14478,
+            14055,
+            14362,
+            14812,
+            13054
+          ],
+          "boundingBoxes": [
+            [
+              58,
+              10,
+              198,
+              248
+            ],
+            [
+              39,
+              10,
+              217,
+              248
+            ],
+            [
+              43,
+              10,
+              213,
+              248
+            ],
+            [
+              25,
+              10,
+              231,
+              248
+            ],
+            [
+              19,
+              10,
+              236,
+              248
+            ],
+            [
+              58,
+              10,
+              198,
+              248
+            ]
+          ],
+          "framePixelSha256": [
+            "4719258866f054a9f054b32c593bd57cae92ca832485799df8d6078068580e6f",
+            "94bfb09a8a528077e2eda9f164ac67efc92fd65125f5ba3e2f172e697239d15b",
+            "00d1300f8379df398a8bb755450bcfbde45464e40ae18048d1ce2e804405fd67",
+            "039b57266264f3d5ba2d6f9c47dd2309ba93a32762fc3c63bdf2bbaeaf9fbf9e",
+            "948353ff606406c2937e0661ffc6d53e720fcf88f162c5870fdf9e72b7b0f8bb",
+            "9dc468af57117f6e3c458ef90077568de5334d208b35eb5bb40ef5566669b63c"
+          ],
+          "distinctFrameCount": 6
         },
         {
           "row": 6,
           "motion": "hit",
-          "verdict": "PASS"
+          "alphaCoverage": [
+            15000,
+            17939,
+            15748,
+            15802,
+            24713,
+            13720
+          ],
+          "boundingBoxes": [
+            [
+              53,
+              10,
+              203,
+              248
+            ],
+            [
+              46,
+              10,
+              209,
+              248
+            ],
+            [
+              56,
+              10,
+              199,
+              248
+            ],
+            [
+              58,
+              10,
+              197,
+              248
+            ],
+            [
+              40,
+              10,
+              215,
+              248
+            ],
+            [
+              59,
+              10,
+              196,
+              248
+            ]
+          ],
+          "framePixelSha256": [
+            "ee0e029f67e739d53f05c52f216b119b708fea94424ce215ea3cf8a34493d5a3",
+            "f7da41ad0913ef4c8f1eba3655d309a520dfe93fc60a5fb05649436ccf793e74",
+            "048436ac6e966b94c2a3d886519bd34ee97040d6d7e611ceb832479737c03691",
+            "007d20e8050bad54b4d2313345ffd3e737036575070317f8963716d66562d63d",
+            "0582da18b671fab14e98a5100648a7387913e02234730750e2f779adef1bea45",
+            "d7cf3c60683269ca8de63fa7f21096b748173ae926be3562138f599a403e586a"
+          ],
+          "distinctFrameCount": 6
         },
         {
           "row": 7,
           "motion": "death",
-          "verdict": "PASS"
+          "alphaCoverage": [
+            16803,
+            26001,
+            23081,
+            15311,
+            11691,
+            10817
+          ],
+          "boundingBoxes": [
+            [
+              50,
+              10,
+              206,
+              248
+            ],
+            [
+              28,
+              10,
+              228,
+              248
+            ],
+            [
+              10,
+              65,
+              246,
+              248
+            ],
+            [
+              10,
+              131,
+              246,
+              248
+            ],
+            [
+              10,
+              167,
+              246,
+              248
+            ],
+            [
+              10,
+              176,
+              246,
+              248
+            ]
+          ],
+          "framePixelSha256": [
+            "720820f2c002ed1e05d04f5d520c41164aebd388b35916d53d01dcac30bdb083",
+            "714514e99aa5600542d9d3700e3f9f3987960c618b39586bbeeed1fef446ced1",
+            "36e5a013e3671ac1410ed1bcf059ec01dcc0d1a3507d00d7dbd13cfef697967e",
+            "badd75c5fb8888154cae488fb192e2c8a63b046090091cd203d7a02c27243f1d",
+            "059ab650d6a1ed5a96d7511437005a972a2f49399f55fe3cad7c9e1e808f6e56",
+            "0227ea498315be20464f9820986d996eb3eb2f33c3159a54e87c48fa460598a4"
+          ],
+          "distinctFrameCount": 6
         }
-      ],
-      "manualQa": {
-        "identity": "PASS",
-        "fullBody": "PASS",
-        "clipping": "PASS"
-      }
+      ]
     }
   ]
 }

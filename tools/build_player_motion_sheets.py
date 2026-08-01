@@ -28,6 +28,7 @@ SOURCE_GRIDS = {
     "doctor_f_existing_alpha": ("doctor_f_existing_alpha.png", 6, 4),
     "doctor_f_supplement_alpha": ("doctor_f_supplement_alpha.png", 6, 5),
     "soldier_m_generated_alpha": ("soldier_m_generated_alpha.png", 8, 8),
+    "soldier_m_melee_alpha": ("soldier_m_melee_alpha.png", 6, 1),
     "firefighter_m_generated_alpha": ("firefighter_m_generated_alpha.png", 6, 8),
     "homeless_m_generated_alpha": ("homeless_m_generated_alpha.png", 6, 7),
     "homeless_m_guard_alpha": ("homeless_m_guard_alpha.png", 6, 1),
@@ -62,6 +63,7 @@ SOURCE_ROW_FRAME_COUNTS = {
 }
 
 SIMPLE_ROW_SOURCES = {
+    "soldier_m_melee_alpha",
     "firefighter_m_death_alpha",
     "chef_m_death_alpha",
     "engineer_m_ranged_alpha",
@@ -99,7 +101,11 @@ ROW_RECIPES = {
         _row("doctor_f_supplement_alpha", 3),
         _row("doctor_f_supplement_alpha", 4),
     ],
-    "soldier_m": [_row("soldier_m_generated_alpha", row) for row in range(ROWS)],
+    "soldier_m": [
+        _row("soldier_m_generated_alpha", 0),
+        _row("soldier_m_melee_alpha", 0),
+        *[_row("soldier_m_generated_alpha", row) for row in range(2, ROWS)],
+    ],
     "firefighter_m": [
         _row("firefighter_m_generated_alpha", 0),
         _row("firefighter_m_melee_alpha", 0),

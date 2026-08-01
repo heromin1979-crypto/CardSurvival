@@ -20,6 +20,13 @@ function fourRowSheet(src) {
   });
 }
 
+function companionSheet(src) {
+  return Object.freeze({
+    ...fourRowSheet(src),
+    aliases: Object.freeze({ downed: 'death' }),
+  });
+}
+
 const PLAYER_MOTIONS = Object.freeze({
   idle: Object.freeze({ row: 0, loop: true, durationMs: 900, locomotion: 'stationary' }),
   melee: Object.freeze({ row: 1, loop: false, durationMs: 720, locomotion: 'approach' }),
@@ -37,7 +44,12 @@ function playerSheet(src) {
     cols: 6,
     rows: 8,
     motions: PLAYER_MOTIONS,
-    aliases: Object.freeze({ basic_attack: 'melee', reposition: 'move', victory: 'idle' }),
+    aliases: Object.freeze({
+      basic_attack: 'melee',
+      reposition: 'move',
+      downed: 'death',
+      victory: 'idle',
+    }),
   });
 }
 
@@ -62,8 +74,8 @@ export const COMBAT_MOTION_MANIFEST = Object.freeze({
   homeless_m: playerSheet('/assets/images/combat/spritesheets/homeless_m_sheet.png'),
   chef_m: playerSheet('/assets/images/combat/spritesheets/chef_m_sheet.png'),
   engineer_m: playerSheet('/assets/images/combat/spritesheets/engineer_m_sheet.png'),
-  soldier_companion: fourRowSheet('/assets/images/combat/spritesheets/soldier_companion_sheet.png'),
-  nurse_companion: fourRowSheet('/assets/images/combat/spritesheets/nurse_companion_sheet.png'),
+  soldier_companion: companionSheet('/assets/images/combat/spritesheets/soldier_companion_sheet.png'),
+  nurse_companion: companionSheet('/assets/images/combat/spritesheets/nurse_companion_sheet.png'),
   zombie_patient_dormant: motionSheet(
     '/assets/images/combat/spritesheets/enemies/zombie_patient_dormant_sheet.png',
     5,

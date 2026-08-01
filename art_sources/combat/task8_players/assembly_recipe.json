@@ -1,7 +1,7 @@
 {
   "version": 1,
   "assemblyScript": "/tools/build_player_motion_sheets.py",
-  "assemblyScriptSha256": "a1a00aad5dd60ce1a06f3a5139aab6ff00bde272d1e16455bf5faf9258a90ba9",
+  "assemblyScriptSha256": "6687ad060d831e6cec96c29d0eed447f65009f83a850d7a6aca473f9a0dd9ed8",
   "provenancePolicy": {
     "canonical": "cleaned alpha PNGs are the sole deterministic assembly inputs",
     "archival": "chroma PNGs are retained built-in image-generation archives"
@@ -24,6 +24,12 @@
       "sha256": "58ac9fe948c313b43c30070e813209c1d2402feebc87bf0d43193b1be1af53ca",
       "cols": 8,
       "rows": 8
+    },
+    "soldier_m_melee_alpha": {
+      "path": "/art_sources/combat/task8_players/soldier_m_melee_alpha.png",
+      "sha256": "3b95ccb10de9ce28fe3301a4cc5593340c3fdba145b680908a52b20a9de38bf7",
+      "cols": 6,
+      "rows": 1
     },
     "firefighter_m_generated_alpha": {
       "path": "/art_sources/combat/task8_players/firefighter_m_generated_alpha.png",
@@ -152,6 +158,12 @@
       "sha256": "f139e985d20e66965f44074ad4024617666a1bb1446a341015ae1179e12e5c6e",
       "cols": 8,
       "rows": 8
+    },
+    "soldier_m_melee_chroma": {
+      "path": "/art_sources/combat/task8_players/soldier_m_melee_chroma.png",
+      "sha256": "c05aa5c7fb5d30a90933bad80d3d4eb8859e2c423dc599c997865191e64cec62",
+      "cols": 6,
+      "rows": 1
     },
     "firefighter_m_generated_chroma": {
       "path": "/art_sources/combat/task8_players/firefighter_m_generated_chroma.png",
@@ -520,8 +532,8 @@
       "path": "/assets/images/combat/spritesheets/soldier_m_sheet.png",
       "width": 1536,
       "height": 2048,
-      "pixelSha256": "c9b05caebef06acb247180c5c55ef5371700300ee05c6cb0d8d46e64eacbb7cc",
-      "fileSha256": "55228b248a7aa7d016a18c0f760a55015d47afc3f60d39cd80a7345dac8afe94",
+      "pixelSha256": "f08d2b93911fd9d02e90c2a56fea9a044e183b79239e332e7b0348eb39539fe6",
+      "fileSha256": "831191417b78ebf1dd827ca6ab5729eb5faf58e47dcb7862266f09b616611aa3",
       "rows": [
         {
           "targetRow": 0,
@@ -540,8 +552,8 @@
         {
           "targetRow": 1,
           "motion": "melee",
-          "source": "soldier_m_generated_alpha",
-          "sourceRow": 1,
+          "source": "soldier_m_melee_alpha",
+          "sourceRow": 0,
           "sourceColumns": [
             0,
             1,
@@ -646,12 +658,12 @@
           13186
         ],
         [
-          16343,
-          16947,
-          16925,
-          17130,
-          17005,
-          16813
+          13486,
+          13723,
+          15595,
+          16779,
+          16972,
+          13337
         ],
         [
           16606,
@@ -712,12 +724,12 @@
           "98b2d8f8077d79c692256566f58bb1b6d2bf5e34b2e08c75a27fa29d1ee15fe2"
         ],
         [
-          "ed85636af1e1dca95615361b5ec5a687176f67f4119cb80ede79d7c6c88aacdd",
-          "0708bc19d221ef0ccbb50f29e086e0473a668c6db102b86080f37c471a7fbd88",
-          "d900cd7781b88728f74bdd8e4a16a21b6eccae19b998ce69257853040060c753",
-          "ff15c60566d79d50c2ba177092571a3160c2ad9b101be5eb1b4d2708388354a7",
-          "fa091f772f3628a3b91a21825605baabd77e3295e6e95e63842bc094564cd02c",
-          "20d76a71290634a8f77e7c01674ce9812fe3a926ae7a8c6eea9c5a802112d19a"
+          "1f9272c22b320d7038b3d6222b2a1ffa815ecbaf8a23b4c527635efeaa72ad08",
+          "a331ee94281ff57b006532429f7f96aced33aceac761a17a46bb3c670b1d947d",
+          "94699181b9e5020547ca81761a6972f0211cde9335f45d654e37182a910ec9a1",
+          "74775b1dc1ade13376eb9bd734e1ec9b16cf7f1d4dcfe198c1011416bda9a356",
+          "906fc8000a5303e8a69ee9316514e1b38b4931164b8a3b84e610ed83ea461e8f",
+          "6a23d114ea5105d72190d7ba0641fd8e60b46f9aafe9070e28efba7a49b8ea91"
         ],
         [
           "158d9e03588af8a77405479f5ead8dc828667d8e9ea750e59136825a00e00164",

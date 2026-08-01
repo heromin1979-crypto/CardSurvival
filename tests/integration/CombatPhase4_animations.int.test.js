@@ -609,6 +609,8 @@ describe('_playFx — 개별 연출 분기', () => {
 
     CombatUI._playFx({ kind: 'downed', target: 'player' });
     expect(player.classList.contains('motion-downed')).toBe(true);
+    expect(player.querySelector('.combat-sprite-sheet').style.getPropertyValue('--sprite-row-y'))
+      .toBe('100.0000%');
 
     CombatUI._playFx({ kind: 'victory' });
     expect(player.classList.contains('motion-victory')).toBe(true);

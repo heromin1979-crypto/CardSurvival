@@ -171,4 +171,47 @@ describe('combat FX motion routing', () => {
     expect(sprite.style.getPropertyValue('--sprite-row-y')).toBe('100.0000%');
     expect(sprite.style.animationFillMode).toBe('forwards');
   });
+
+  it('uses the death row temporarily for downed actors but preserves true player death', () => {
+    vi.useFakeTimers();
+    const player = document.querySelector('.cv-player');
+    const ally = document.querySelector('[data-companion-id="npc_nurse"]');
+    player.innerHTML = '<span class="combat-sprite-sheet"></span>';
+    ally.innerHTML = '<span class="combat-sprite-sheet"></span>';
+    GameState.player = { characterId: 'doctor', gender: 'F' };
+
+    CombatUI._playFx({ kind: 'downed', target: 'player' });
+    expect(player.querySelector('.combat-sprite-sheet').style.getPropertyValue('--sprite-row-y'))
+      .toBe('100.0000%');
+    expect(player.querySelector('.combat-sprite-sheet').style.animationFillMode).toBe('');
+
+    CombatUI._playFx({ kind: 'downed', target: 'ally', targetId: 'npc_nurse', npcId: 'npc_nurse' });
+    expect(ally.querySelector('.combat-sprite-sheet').style.getPropertyValue('--sprite-row-y'))
+      .toBe('100.0000%');
+
+    vi.advanceTimersByTime(900);
+    expect(player.querySelector('.combat-sprite-sheet').style.getPropertyValue('--sprite-row-y')).toBe('');
+    expect(ally.querySelector('.combat-sprite-sheet').style.getPropertyValue('--sprite-row-y')).toBe('');
+
+    CombatUI._playFx({ kind: 'playerDeath' });
+    vi.advanceTimersByTime(2200);
+    expect(player.querySelector('.combat-sprite-sheet').style.getPropertyValue('--sprite-row-y'))
+      .toBe('100.0000%');
+    expect(player.querySelector('.combat-sprite-sheet').style.animationFillMode).toBe('forwards');
+  });
+
+  it('replaces a temporary downed row with the idle victory row at combat end', () => {
+    vi.useFakeTimers();
+    const player = document.querySelector('.cv-player');
+    player.innerHTML = '<span class="combat-sprite-sheet"></span>';
+    GameState.player = { characterId: 'doctor', gender: 'F' };
+
+    CombatUI._playFx({ kind: 'downed', target: 'player' });
+    CombatUI._playFx({ kind: 'victory' });
+    vi.advanceTimersByTime(1800);
+
+    expect(player.querySelector('.combat-sprite-sheet').style.getPropertyValue('--sprite-row-y'))
+      .toBe('0.0000%');
+    expect(player.querySelector('.combat-sprite-sheet').style.animationFillMode).toBe('forwards');
+  });
 });
