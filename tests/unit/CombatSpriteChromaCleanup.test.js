@@ -7,7 +7,8 @@ import { describe, expect, it } from 'vitest';
 const ROOT = process.cwd();
 const FIXTURE_ROOT = path.join(ROOT, 'tests', 'fixtures', 'combat-sprites');
 const NORMALIZER = path.join(ROOT, 'tools', 'normalize_combat_sprite_sheets.py');
-const REPORT_CHECKER = path.join(ROOT, 'tools', 'verify_combat_chroma_cleanup.py');
+const TASK6_REPORT_CHECKER = path.join(ROOT, 'tools', 'verify_combat_chroma_cleanup.py');
+const TASK7_REPORT_CHECKER = path.join(ROOT, 'tools', 'verify_normal_enemy_chroma.py');
 const NORMAL_ENEMY_ASSEMBLER = path.join(ROOT, 'tools', 'build_normal_enemy_motion_sheets.py');
 const NORMAL_ENEMY_QA_CHECKER = path.join(ROOT, 'tools', 'verify_normal_enemy_motion_qa.py');
 const BUILD_ONLY_SOURCE_ROOT = path.join(ROOT, 'art_sources', 'combat', 'task7_normal');
@@ -349,22 +350,67 @@ describe('combat sprite chroma cleanup', () => {
 
   it('requires the committed chroma cleanup provenance report to recalculate exactly', () => {
     const runtime = pythonRuntime();
-    const output = execFileSync(runtime.command, [...runtime.prefix, REPORT_CHECKER, '--check'], {
+    const output = execFileSync(runtime.command, [...runtime.prefix, TASK6_REPORT_CHECKER, '--check'], {
       cwd: ROOT,
       encoding: 'utf8',
     });
     expect(JSON.parse(output)).toMatchObject({
-      sheetCount: 12,
-      recipeTargetCount: 9,
-      chromaArtifacts: {
-        opaqueGreen: 0,
-        fringeGreen: 0,
-        hiddenRgb: 0,
-        removedComponents: 0,
-        staleAllowlist: 0,
-      },
+      sheetCount: 23,
+      changedSheetCount: 20,
+      historicalUnexpectedAlphaLoss: 0,
+      currentPinnedSheets: 23,
     });
   }, 120000);
+
+  it('verifies Task 6 historical evidence without git and cannot bless a damaged runtime PNG', () => {
+    const runtime = pythonRuntime();
+    const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'task6-chroma-history-'));
+    const copy = (relative) => {
+      const source = path.join(ROOT, relative);
+      const target = path.join(tempRoot, relative);
+      fs.mkdirSync(path.dirname(target), { recursive: true });
+      fs.cpSync(source, target, { recursive: true });
+    };
+    try {
+      copy('tools/normalize_combat_sprite_sheets.py');
+      copy('tools/verify_combat_chroma_cleanup.py');
+      copy('art_sources/combat/task6_chroma');
+      copy('docs/analysis/COMBAT_CHROMA_TASK6_CLEANUP_REPORT.json');
+      copy('assets/images/combat/spritesheets/manifest.json');
+      copy('assets/images/combat/spritesheets/chroma_component_allowlist.json');
+      const evidence = JSON.parse(fs.readFileSync(
+        path.join(ROOT, 'art_sources/combat/task6_chroma/evidence_manifest.json'),
+        'utf8',
+      ));
+      for (const sheet of evidence.sheets) {
+        copy(sheet.path.replace(/^\//, ''));
+        if (sheet.supersededSource) copy(sheet.supersededSource.replace(/^\//, ''));
+      }
+      expect(fs.existsSync(path.join(tempRoot, '.git'))).toBe(false);
+
+      const checked = execFileSync(runtime.command, [
+        ...runtime.prefix, path.join(tempRoot, 'tools/verify_combat_chroma_cleanup.py'),
+        '--root', tempRoot, '--check',
+      ], { cwd: tempRoot, encoding: 'utf8' });
+      expect(JSON.parse(checked)).toMatchObject({ sheetCount: 23, historicalUnexpectedAlphaLoss: 0 });
+
+      const target = path.join(tempRoot, evidence.sheets[0].path.replace(/^\//, ''));
+      fs.appendFileSync(target, Buffer.from([0]));
+      const damaged = spawnSync(runtime.command, [
+        ...runtime.prefix, path.join(tempRoot, 'tools/verify_combat_chroma_cleanup.py'),
+        '--root', tempRoot, '--check',
+      ], { cwd: tempRoot, encoding: 'utf8' });
+      expect(damaged.status).not.toBe(0);
+
+      const writeAttempt = spawnSync(runtime.command, [
+        ...runtime.prefix, path.join(tempRoot, 'tools/verify_combat_chroma_cleanup.py'),
+        '--root', tempRoot, '--write',
+      ], { cwd: tempRoot, encoding: 'utf8' });
+      expect(writeAttempt.status).not.toBe(0);
+    } finally {
+      fs.rmSync(tempRoot, { recursive: true, force: true });
+    }
+  }, 180000);
 
   it('verifies a no-git current-runtime subset, ignores later roster assets, and rejects mutation', () => {
     const runtime = pythonRuntime();
@@ -391,20 +437,41 @@ describe('combat sprite chroma cleanup', () => {
       copy('assets/images/combat/spritesheets/manifest.json');
       copy('assets/images/combat/spritesheets/chroma_component_allowlist.json');
       for (const key of roster) copy(manifest[key].src.replace(/^\//, ''));
+      const task7Recipe = JSON.parse(fs.readFileSync(
+        path.join(ROOT, 'art_sources/combat/task7_normal/assembly_recipe.json'),
+        'utf8',
+      ));
+      for (const entry of Object.values(task7Recipe.preservedSources)) {
+        copy(entry.path.replace(/^\//, ''));
+      }
       expect(fs.existsSync(path.join(tempRoot, '.git'))).toBe(false);
       expect(fs.existsSync(path.join(tempRoot, manifest.doctor_f.src.replace(/^\//, '')))).toBe(false);
 
       const report = path.join(tempRoot, 'task7-report.json');
       const written = execFileSync(runtime.command, [
-        ...runtime.prefix, REPORT_CHECKER, '--root', tempRoot, '--report', report, '--write',
+        ...runtime.prefix, TASK7_REPORT_CHECKER, '--root', tempRoot, '--report', report, '--write',
       ], { cwd: tempRoot, encoding: 'utf8' });
       expect(JSON.parse(written)).toMatchObject({ sheetCount: 12, recipeTargetCount: 9 });
 
       fs.appendFileSync(path.join(tempRoot, manifest.zombie_common.src.replace(/^\//, '')), Buffer.from([0]));
       const mutated = spawnSync(runtime.command, [
-        ...runtime.prefix, REPORT_CHECKER, '--root', tempRoot, '--report', report, '--check',
+        ...runtime.prefix, TASK7_REPORT_CHECKER, '--root', tempRoot, '--report', report, '--check',
       ], { cwd: tempRoot, encoding: 'utf8' });
       expect(mutated.status).not.toBe(0);
+
+      fs.copyFileSync(
+        path.join(ROOT, manifest.zombie_common.src.replace(/^\//, '')),
+        path.join(tempRoot, manifest.zombie_common.src.replace(/^\//, '')),
+      );
+      const baselineSource = path.join(
+        tempRoot,
+        'art_sources/combat/task7_normal/baseline/zombie_runner_sheet.png',
+      );
+      fs.appendFileSync(baselineSource, Buffer.from([0]));
+      const sourceMutated = spawnSync(runtime.command, [
+        ...runtime.prefix, TASK7_REPORT_CHECKER, '--root', tempRoot, '--report', report, '--check',
+      ], { cwd: tempRoot, encoding: 'utf8' });
+      expect(sourceMutated.status).not.toBe(0);
     } finally {
       fs.rmSync(tempRoot, { recursive: true, force: true });
     }
@@ -419,6 +486,7 @@ describe('combat sprite chroma cleanup', () => {
     expect(JSON.parse(output)).toEqual({
       verifiedTargets: 9,
       verifiedCanonicalSources: 4,
+      verifiedBaselineSources: 9,
       verifiedArchivalSources: 4,
     });
   }, 120000);
@@ -429,9 +497,12 @@ describe('combat sprite chroma cleanup', () => {
 
     const recipe = JSON.parse(fs.readFileSync(path.join(BUILD_ONLY_SOURCE_ROOT, 'assembly_recipe.json'), 'utf8'));
     const canonicalNames = Object.keys(recipe.canonicalSources ?? {});
+    const baselineNames = Object.keys(recipe.baselineSources ?? {});
     const archivalNames = Object.keys(recipe.archivalSources ?? {});
     expect(canonicalNames).toHaveLength(4);
     expect(canonicalNames.every(name => name.endsWith('_alpha.png'))).toBe(true);
+    expect(baselineNames).toHaveLength(9);
+    expect(baselineNames.every(name => name.startsWith('baseline/'))).toBe(true);
     expect(archivalNames).toHaveLength(4);
     expect(archivalNames.every(name => name.endsWith('_chroma.png'))).toBe(true);
     expect(recipe.provenancePolicy).toEqual({
@@ -603,7 +674,7 @@ describe('combat sprite chroma cleanup', () => {
     const output = runPython([
       'import importlib.util, json, sys',
       'from PIL import Image',
-      `spec = importlib.util.spec_from_file_location('report_checker', r'${REPORT_CHECKER.replaceAll('\\', '/')}')`,
+      `spec = importlib.util.spec_from_file_location('report_checker', r'${TASK6_REPORT_CHECKER.replaceAll('\\', '/')}')`,
       'module = importlib.util.module_from_spec(spec)',
       'sys.modules[spec.name] = module',
       'spec.loader.exec_module(module)',

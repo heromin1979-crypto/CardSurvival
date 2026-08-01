@@ -1,22 +1,19 @@
-"""Verify the current Task 7 normal-enemy runtime roster without Git history."""
+"""Verify immutable Task 6 cleanup evidence and the current 23-sheet descendants."""
 from __future__ import annotations
 
 import argparse
 import hashlib
 import importlib.util
+import io
 import json
 import sys
+import zipfile
 from pathlib import Path
 
 from PIL import Image
 
 
 ROOT = Path(__file__).resolve().parents[1]
-TASK7_NORMAL_ROSTER = (
-    "zombie_patient_dormant", "zombie_common", "zombie_runner", "zombie_brute",
-    "zombie_horde", "rabid_dog", "zombie_acid", "zombie_bloater",
-    "zombie_screamer", "zombie_charger", "raider", "raider_elite",
-)
 ZERO_CHROMA = {
     "opaqueGreen": 0,
     "fringeGreen": 0,
@@ -30,22 +27,12 @@ def file_sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def text_sha256(path: Path) -> str:
-    text = path.read_text(encoding="utf-8").replace("\r\n", "\n").replace("\r", "\n")
-    return hashlib.sha256(text.encode("utf-8")).hexdigest()
-
-
-def pixel_sha256(image: Image.Image) -> str:
-    return hashlib.sha256(image.convert("RGBA").tobytes()).hexdigest()
-
-
-def canonical_json_sha256(value: object) -> str:
-    encoded = json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
-    return hashlib.sha256(encoded).hexdigest()
+def bytes_sha256(value: bytes) -> str:
+    return hashlib.sha256(value).hexdigest()
 
 
 def frame_metrics(before: Image.Image, after: Image.Image, is_chroma) -> dict:
-    """Retained public integrity helper used by chroma-cleanup fixture tests."""
+    """Retained public integrity helper used by cleanup fixture tests."""
     if before.size != after.size:
         raise ValueError(f"frame dimensions changed from {before.size} to {after.size}")
     alpha_before = alpha_after = unexpected_loss = changed_pixels = 0
@@ -79,7 +66,7 @@ def resolve_repo_path(root: Path, value: str) -> Path:
 
 def load_normalizer(root: Path):
     path = root / "tools/normalize_combat_sprite_sheets.py"
-    spec = importlib.util.spec_from_file_location("task7_current_chroma_normalizer", path)
+    spec = importlib.util.spec_from_file_location("task6_chroma_normalizer", path)
     if spec is None or spec.loader is None:
         raise RuntimeError(f"cannot load {path}")
     module = importlib.util.module_from_spec(spec)
@@ -88,78 +75,114 @@ def load_normalizer(root: Path):
     return module
 
 
-def validate_source_inventory(root: Path, inventory: object, label: str) -> int:
-    if not isinstance(inventory, dict) or not inventory:
-        raise ValueError(f"{label} source inventory missing")
-    for source_name, entry in inventory.items():
-        if not isinstance(entry, dict) or set(entry) != {"path", "sha256"}:
-            raise ValueError(f"{label} source schema mismatch: {source_name}")
-        path = resolve_repo_path(root, entry["path"])
-        if path.name != source_name or file_sha256(path) != entry["sha256"]:
-            raise ValueError(f"{label} source drift: {source_name}")
-    return len(inventory)
+def _mask_from_zip(archive: zipfile.ZipFile, entry: str, expected_sha256: str) -> Image.Image:
+    data = archive.read(entry)
+    if bytes_sha256(data) != expected_sha256:
+        raise ValueError(f"Task 6 alpha evidence drift: {entry}")
+    return Image.open(io.BytesIO(data)).convert("L")
 
 
 def build_report(root: Path) -> dict:
     root = root.resolve()
-    manifest_path = root / "assets/images/combat/spritesheets/manifest.json"
-    recipe_path = root / "art_sources/combat/task7_normal/assembly_recipe.json"
-    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    recipe = json.loads(recipe_path.read_text(encoding="utf-8"))
+    evidence_path = root / "art_sources/combat/task6_chroma/evidence_manifest.json"
+    evidence = json.loads(evidence_path.read_text(encoding="utf-8"))
+    if (evidence.get("version") != 1 or evidence.get("sheetCount") != 23
+            or len(evidence.get("sheets", [])) != 23):
+        raise ValueError("Task 6 evidence contract mismatch")
+    archive_path = resolve_repo_path(root, evidence["archive"])
+    if file_sha256(archive_path) != evidence["archiveSha256"]:
+        raise ValueError("Task 6 alpha evidence archive drift")
     normalizer = load_normalizer(root)
-    canonical_count = validate_source_inventory(root, recipe.get("canonicalSources"), "canonical")
-    archival_count = validate_source_inventory(root, recipe.get("archivalSources"), "archival")
-    assembly_path = resolve_repo_path(root, recipe.get("assemblyScript"))
-    if text_sha256(assembly_path) != recipe.get("assemblyScriptSha256"):
-        raise ValueError("Task 7 assembly script hash drift")
-    targets = recipe.get("targets")
-    if not isinstance(targets, dict) or set(targets) - set(TASK7_NORMAL_ROSTER):
-        raise ValueError("Task 7 recipe target scope mismatch")
     sheets = []
-    for key in TASK7_NORMAL_ROSTER:
-        entry = manifest.get(key)
-        if not isinstance(entry, dict):
-            raise ValueError(f"Task 7 roster missing from current manifest: {key}")
-        path = resolve_repo_path(root, entry.get("src"))
-        image = Image.open(path).convert("RGBA")
-        cols, rows = entry.get("cols"), entry.get("rows")
-        if not isinstance(cols, int) or not isinstance(rows, int) or cols <= 0 or rows <= 0:
-            raise ValueError(f"invalid current grid: {key}")
-        if image.width % cols or image.height % rows:
-            raise ValueError(f"current runtime sheet is not divisible by its grid: {key}")
-        chroma = normalizer.analyze_chroma_grid(image, cols, rows, path)
-        if chroma != ZERO_CHROMA:
-            raise ValueError(f"current runtime chroma residue: {key} {chroma}")
-        target = targets.get(key)
-        recipe_match = target is not None
-        if recipe_match:
-            if (target.get("path") != entry["src"]
-                    or target.get("width") != image.width
-                    or target.get("height") != image.height
-                    or target.get("fileSha256") != file_sha256(path)
-                    or target.get("pixelSha256") != pixel_sha256(image)):
-                raise ValueError(f"current Task 7 runtime differs from recipe: {key}")
-        sheets.append({
-            "sheetKey": key,
-            "path": entry["src"],
-            "cols": cols,
-            "rows": rows,
-            "width": image.width,
-            "height": image.height,
-            "fileSha256": file_sha256(path),
-            "pixelSha256": pixel_sha256(image),
-            "recipeTarget": recipe_match,
-            "chromaArtifacts": chroma,
-        })
+    with zipfile.ZipFile(archive_path) as archive:
+        for source in evidence["sheets"]:
+            current_path = resolve_repo_path(root, source["path"])
+            current_bytes = current_path.read_bytes()
+            if bytes_sha256(current_bytes) != source["currentSha256"]:
+                raise ValueError(f"current Task 6 descendant drift: {source['sheetKey']}")
+            current = Image.open(io.BytesIO(current_bytes)).convert("RGBA")
+            before_mask = _mask_from_zip(
+                archive, source["beforeMaskEntry"], source["beforeMaskSha256"],
+            )
+            after_alpha = _mask_from_zip(
+                archive, source["afterAlphaEntry"], source["afterAlphaSha256"],
+            )
+            expected_size = (source["width"], source["height"])
+            if before_mask.size != expected_size or after_alpha.size != expected_size:
+                raise ValueError(f"Task 6 mask dimensions drift: {source['sheetKey']}")
+            historical_loss = sum(
+                result < baseline
+                for baseline, result in zip(
+                    before_mask.get_flattened_data(), after_alpha.get_flattened_data(), strict=True,
+                )
+            )
+            direct = source["currentPolicy"] == "direct"
+            if direct:
+                if (current.size != expected_size or source.get("supersededBy") is not None
+                        or source.get("supersededSource") is not None):
+                    raise ValueError(f"Task 6 direct descendant contract mismatch: {source['sheetKey']}")
+                current_alpha = current.getchannel("A")
+                current_loss = sum(
+                    result < baseline
+                    for baseline, result in zip(
+                        before_mask.get_flattened_data(), current_alpha.get_flattened_data(), strict=True,
+                    )
+                )
+                if source["currentSha256"] != source["task6AfterSha256"]:
+                    raise ValueError(f"Task 6 direct descendant hash mismatch: {source['sheetKey']}")
+            elif source["currentPolicy"] == "superseded" and source.get("supersededBy"):
+                current_loss = None
+                superseded_source = resolve_repo_path(root, source["supersededSource"])
+                if file_sha256(superseded_source) != source["task6AfterSha256"]:
+                    raise ValueError(f"Task 6 superseded source lineage drift: {source['sheetKey']}")
+            else:
+                raise ValueError(f"Task 6 current policy mismatch: {source['sheetKey']}")
+            cols = source["cols"]
+            cell_width = current.width // cols
+            if current.width % cols or cell_width <= 0 or current.height % cell_width:
+                raise ValueError(f"current Task 6 descendant grid mismatch: {source['sheetKey']}")
+            current_rows = current.height // cell_width
+            chroma = normalizer.analyze_chroma_grid(current, cols, current_rows, current_path)
+            if chroma != ZERO_CHROMA:
+                raise ValueError(f"current Task 6 descendant chroma residue: {source['sheetKey']} {chroma}")
+            sheets.append({
+                "sheetKey": source["sheetKey"],
+                "path": source["path"],
+                "width": source["width"],
+                "height": source["height"],
+                "cols": source["cols"],
+                "rows": source["rows"],
+                "beforeSha256": source["beforeSha256"],
+                "task6AfterSha256": source["task6AfterSha256"],
+                "currentSha256": source["currentSha256"],
+                "changedPixels": source["changedPixels"],
+                "historicalUnexpectedAlphaLoss": historical_loss,
+                "currentUnexpectedAlphaLoss": current_loss,
+                "currentPolicy": source["currentPolicy"],
+                "supersededBy": source.get("supersededBy"),
+                "supersededSource": source.get("supersededSource"),
+                "currentChromaArtifacts": chroma,
+            })
+    historical_loss = sum(sheet["historicalUnexpectedAlphaLoss"] for sheet in sheets)
+    direct_loss = sum(sheet["currentUnexpectedAlphaLoss"] or 0 for sheet in sheets)
+    if historical_loss or direct_loss:
+        raise ValueError(
+            f"non-chroma alpha loss: historical={historical_loss}, currentDirect={direct_loss}"
+        )
     return {
-        "reportVersion": 4,
-        "scopePolicy": "explicit current-runtime Task 7 normal roster; later task additions are ignored",
-        "assemblyRecipePath": "/art_sources/combat/task7_normal/assembly_recipe.json",
-        "assemblyRecipeSha256": canonical_json_sha256(recipe),
+        "reportVersion": 1,
+        "scope": evidence["scope"],
+        "evidenceManifest": "/art_sources/combat/task6_chroma/evidence_manifest.json",
+        "evidenceManifestSha256": file_sha256(evidence_path),
+        "evidenceArchiveSha256": evidence["archiveSha256"],
         "sheetCount": len(sheets),
-        "recipeTargetCount": sum(sheet["recipeTarget"] for sheet in sheets),
-        "verifiedCanonicalSources": canonical_count,
-        "verifiedArchivalSources": archival_count,
+        "changedSheetCount": evidence["changedSheetCount"],
+        "changedPixels": evidence["changedPixels"],
+        "historicalUnexpectedAlphaLoss": historical_loss,
+        "currentDirectUnexpectedAlphaLoss": direct_loss,
+        "currentPinnedSheets": len(sheets),
+        "directDescendants": sum(sheet["currentPolicy"] == "direct" for sheet in sheets),
+        "supersededDescendants": sum(sheet["currentPolicy"] == "superseded" for sheet in sheets),
         "chromaArtifacts": dict(ZERO_CHROMA),
         "sheets": sheets,
     }
@@ -172,37 +195,24 @@ def report_bytes(report: dict) -> bytes:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--root", type=Path, default=ROOT)
-    parser.add_argument("--report", type=Path)
-    parser.add_argument("--write", action="store_true")
     parser.add_argument("--check", action="store_true")
     args = parser.parse_args()
-    if args.write == args.check:
-        parser.error("choose exactly one of --write or --check")
+    if not args.check:
+        parser.error("Task 6 evidence is immutable; choose --check")
     root = args.root.resolve()
-    report_path = args.report or (root / "docs/analysis/COMBAT_CHROMA_CLEANUP_REPORT.json")
-    if not report_path.is_absolute():
-        report_path = root / report_path
+    report_path = root / "docs/analysis/COMBAT_CHROMA_TASK6_CLEANUP_REPORT.json"
     try:
         report = build_report(root)
-    except (OSError, ValueError, KeyError, TypeError, json.JSONDecodeError) as error:
+    except (OSError, ValueError, KeyError, TypeError, json.JSONDecodeError, zipfile.BadZipFile) as error:
         raise SystemExit(str(error)) from error
-    expected = report_bytes(report)
-    if args.write:
-        report_path.parent.mkdir(parents=True, exist_ok=True)
-        report_path.write_bytes(expected)
-        print(json.dumps({
-            "written": report_path.relative_to(root).as_posix(),
-            "sheetCount": report["sheetCount"],
-            "recipeTargetCount": report["recipeTargetCount"],
-        }))
-        return 0
-    if not report_path.exists() or report_path.read_bytes() != expected:
-        raise SystemExit("combat chroma cleanup report is stale; run tools/verify_combat_chroma_cleanup.py --write")
+    if not report_path.exists() or report_path.read_bytes() != report_bytes(report):
+        raise SystemExit("Task 6 chroma cleanup report differs from immutable evidence")
     print(json.dumps({
         "checked": report_path.relative_to(root).as_posix(),
         "sheetCount": report["sheetCount"],
-        "recipeTargetCount": report["recipeTargetCount"],
-        "chromaArtifacts": report["chromaArtifacts"],
+        "changedSheetCount": report["changedSheetCount"],
+        "historicalUnexpectedAlphaLoss": report["historicalUnexpectedAlphaLoss"],
+        "currentPinnedSheets": report["currentPinnedSheets"],
     }))
     return 0
 

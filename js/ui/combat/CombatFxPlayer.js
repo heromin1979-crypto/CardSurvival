@@ -81,6 +81,14 @@ export const CombatFxPlayer = {
     return COMPANION_SPRITE_KEYS[npcId] ?? null;
   },
 
+  _companionId(fx) {
+    if (typeof fx?.npcId === 'string' && fx.npcId.length > 0) return fx.npcId;
+    if (fx?.target === 'ally' && typeof fx.targetId === 'string' && fx.targetId.length > 0) {
+      return fx.targetId;
+    }
+    return null;
+  },
+
   _enemySpriteSheetKey(enemy) {
     const id = String(enemy?.id ?? enemy?.definitionId ?? '');
     if (ENEMY_SPRITE_KEYS[id]) return ENEMY_SPRITE_KEYS[id];
@@ -363,7 +371,7 @@ export const CombatFxPlayer = {
       case 'downed': {
         const actor = this._actorEl(fx) ?? this._playerSpriteEl();
         const player = this._playerSpriteEl();
-        const companionId = fx.npcId ?? (fx.target === 'ally' ? fx.targetId : null);
+        const companionId = this._companionId(fx);
         const sheetKey = actor === player
           ? this._playerSpriteSheetKey()
           : this._companionSpriteSheetKey(companionId);
@@ -636,7 +644,8 @@ export const CombatFxPlayer = {
   _actorEl(fx) {
     if (!fx) return null;
     if (fx.target === 'enemy' || fx.enemyIdx != null) return this._enemySpriteEl(fx.enemyIdx ?? fx.targetIdx);
-    if (fx.target === 'ally' || fx.npcId) return this._allyEl(fx.npcId);
+    const companionId = this._companionId(fx);
+    if (companionId) return this._allyEl(companionId);
     return this._playerSpriteEl();
   },
 

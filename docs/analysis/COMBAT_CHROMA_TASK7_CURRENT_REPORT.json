@@ -1,11 +1,12 @@
 {
-  "reportVersion": 4,
+  "reportVersion": 1,
   "scopePolicy": "explicit current-runtime Task 7 normal roster; later task additions are ignored",
   "assemblyRecipePath": "/art_sources/combat/task7_normal/assembly_recipe.json",
-  "assemblyRecipeSha256": "040179177c72a9cb9116a7a627400a2ae1208314d629df25c04ab85e8d9af745",
+  "assemblyRecipeSha256": "24149cbbab35310a7c512aa75fd476d8981deaa3cdd162d41aa3c0b20df45ce2",
   "sheetCount": 12,
   "recipeTargetCount": 9,
   "verifiedCanonicalSources": 4,
+  "verifiedBaselineSources": 9,
   "verifiedArchivalSources": 4,
   "chromaArtifacts": {
     "opaqueGreen": 0,

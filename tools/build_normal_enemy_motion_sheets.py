@@ -5,9 +5,7 @@ import argparse
 import copy
 import hashlib
 import importlib.util
-import io
 import json
-import subprocess
 import sys
 from pathlib import Path
 
@@ -15,7 +13,6 @@ from PIL import Image
 
 
 ROOT = Path(__file__).resolve().parents[1]
-BASELINE_COMMIT = "1312cf9"
 CELL = 256
 COLS = 6
 ENEMY_DIR = ROOT / "assets/images/combat/spritesheets/enemies"
@@ -181,6 +178,16 @@ ROW_PROVENANCE = {
     },
 }
 
+BASELINE_SOURCE_PATHS = {
+    f"baseline/{enemy_id}_sheet.png": f"{SOURCE_REPO_DIR}/baseline/{enemy_id}_sheet.png"
+    for enemy_id in ROW_PROVENANCE
+}
+PRESERVED_SOURCE_PATHS = {
+    f"{enemy_id}_sheet_src.png":
+        f"/assets/images/combat/spritesheets/enemies/{enemy_id}_sheet_src.png"
+    for enemy_id in ROW_PROVENANCE
+}
+
 
 def _normalizer():
     spec = importlib.util.spec_from_file_location("task7_normalizer", NORMALIZER_PATH)
@@ -226,13 +233,8 @@ def verify_source_hash(path: Path, expected_sha256: str) -> None:
         raise ValueError(f"source hash changed: {path} expected {expected_sha256}, got {actual}")
 
 
-def baseline_bytes(relative: str, commit: str = BASELINE_COMMIT) -> bytes:
-    return subprocess.check_output(["git", "show", f"{commit}:{relative}"], cwd=ROOT)
-
-
 def baseline_sheet(enemy_id: str) -> Image.Image:
-    relative = f"assets/images/combat/spritesheets/enemies/{enemy_id}_sheet.png"
-    return Image.open(io.BytesIO(baseline_bytes(relative))).convert("RGBA")
+    return Image.open(SOURCE_DIR / "baseline" / f"{enemy_id}_sheet.png").convert("RGBA")
 
 
 def existing_cell(sheet: Image.Image, row: int, col: int) -> Image.Image:
@@ -353,6 +355,14 @@ def recipe_document() -> dict:
         name: {"path": path, "sha256": file_sha256(SOURCE_DIR / name)}
         for name, path in ARCHIVAL_SOURCE_PATHS.items()
     }
+    baseline_sources = {
+        name: {"path": path, "sha256": file_sha256(SOURCE_DIR / name)}
+        for name, path in BASELINE_SOURCE_PATHS.items()
+    }
+    preserved_sources = {
+        name: {"path": path, "sha256": file_sha256(resolve_repo_path(path))}
+        for name, path in PRESERVED_SOURCE_PATHS.items()
+    }
     targets = {}
     for enemy_id, image in assembled.items():
         target_path = ENEMY_DIR / f"{enemy_id}_sheet.png"
@@ -367,8 +377,8 @@ def recipe_document() -> dict:
             "newRows": copy.deepcopy(ROW_PROVENANCE[enemy_id]["newRows"]),
         }
     return {
-        "version": 2,
-        "baselineCommit": BASELINE_COMMIT,
+        "version": 3,
+        "baselineSourceSet": "build-only Task 7 source checkout",
         "assemblyScript": "/tools/build_normal_enemy_motion_sheets.py",
         "assemblyScriptSha256": text_sha256(Path(__file__)),
         "provenancePolicy": {
@@ -376,7 +386,9 @@ def recipe_document() -> dict:
             "archival": "chroma PNGs are retained image-generation archives; no derivation relationship to canonical alpha PNGs is asserted",
         },
         "canonicalSources": canonical_sources,
+        "baselineSources": baseline_sources,
         "archivalSources": archival_sources,
+        "preservedSources": preserved_sources,
         "targets": targets,
     }
 
@@ -402,14 +414,16 @@ def _normalized_json(value: object) -> object:
 
 
 def validate_recipe_contract(recipe: dict) -> dict:
-    if recipe.get("version") != 2 or recipe.get("baselineCommit") != BASELINE_COMMIT:
+    if recipe.get("version") != 3 or recipe.get("baselineSourceSet") != "build-only Task 7 source checkout":
         raise ValueError("assembly recipe version or baseline mismatch")
     if recipe.get("assemblyScript") != "/tools/build_normal_enemy_motion_sheets.py":
         raise ValueError("assembly script path mismatch")
     if text_sha256(Path(__file__)) != recipe["assemblyScriptSha256"]:
         raise ValueError("assembly script hash changed")
     _validate_source_mapping("canonical", recipe.get("canonicalSources"), CANONICAL_SOURCE_PATHS)
+    _validate_source_mapping("baseline", recipe.get("baselineSources"), BASELINE_SOURCE_PATHS)
     _validate_source_mapping("archival", recipe.get("archivalSources"), ARCHIVAL_SOURCE_PATHS)
+    _validate_source_mapping("preserved", recipe.get("preservedSources"), PRESERVED_SOURCE_PATHS)
 
     targets = recipe.get("targets")
     if not isinstance(targets, dict) or list(targets) != list(ROW_PROVENANCE):
@@ -460,12 +474,10 @@ def verify_recipe(recipe: dict) -> dict:
                 if existing_cell(actual, target_row, col).tobytes() != existing_cell(baseline, baseline_row, col).tobytes():
                     raise ValueError(f"retained baseline row changed for {enemy_id}:{target_row}:{col}")
 
-        source_relative = f"assets/images/combat/spritesheets/enemies/{enemy_id}_sheet_src.png"
-        if (ROOT / source_relative).read_bytes() != baseline_bytes(source_relative):
-            raise ValueError(f"preserved source changed for {enemy_id}")
     return {
         "verifiedTargets": len(assembled),
         "verifiedCanonicalSources": len(recipe["canonicalSources"]),
+        "verifiedBaselineSources": len(recipe["baselineSources"]),
         "verifiedArchivalSources": len(recipe["archivalSources"]),
     }
 

@@ -184,10 +184,14 @@ describe('combat FX motion routing', () => {
     expect(player.querySelector('.combat-sprite-sheet').style.getPropertyValue('--sprite-row-y'))
       .toBe('100.0000%');
     expect(player.querySelector('.combat-sprite-sheet').style.animationFillMode).toBe('');
+    vi.advanceTimersByTime(900);
+    expect(player.querySelector('.combat-sprite-sheet').style.getPropertyValue('--sprite-row-y')).toBe('');
 
-    CombatUI._playFx({ kind: 'downed', target: 'ally', targetId: 'npc_nurse', npcId: 'npc_nurse' });
+    CombatUI._playFx({ kind: 'downed', target: 'ally', targetId: 'npc_nurse' });
     expect(ally.querySelector('.combat-sprite-sheet').style.getPropertyValue('--sprite-row-y'))
       .toBe('100.0000%');
+    expect(player.querySelector('.combat-sprite-sheet').style.getPropertyValue('--sprite-row-y'))
+      .toBe('');
 
     vi.advanceTimersByTime(900);
     expect(player.querySelector('.combat-sprite-sheet').style.getPropertyValue('--sprite-row-y')).toBe('');

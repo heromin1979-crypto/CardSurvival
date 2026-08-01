@@ -1,8 +1,8 @@
 {
-  "version": 2,
-  "baselineCommit": "1312cf9",
+  "version": 3,
+  "baselineSourceSet": "build-only Task 7 source checkout",
   "assemblyScript": "/tools/build_normal_enemy_motion_sheets.py",
-  "assemblyScriptSha256": "1eb7b81692c3274342a4d7030dda511b2cab535e4c05868690c8c53b6e64a3d9",
+  "assemblyScriptSha256": "6e449640cffd2f990c10958b0edc9fbb5c3c600689522a7ba499288ebd70f635",
   "provenancePolicy": {
     "canonical": "cleaned alpha PNGs are the sole deterministic assembly inputs",
     "archival": "chroma PNGs are retained image-generation archives; no derivation relationship to canonical alpha PNGs is asserted"
@@ -25,6 +25,44 @@
       "sha256": "35273066267713ad9082302bb9f56d8aa99883912f75aeeb4a295a3d3994ac2b"
     }
   },
+  "baselineSources": {
+    "baseline/zombie_patient_dormant_sheet.png": {
+      "path": "/art_sources/combat/task7_normal/baseline/zombie_patient_dormant_sheet.png",
+      "sha256": "759355c0e074abf632cd4ee3ec616d2e0773c4fb8037fb3e80e65cdcbdb16e33"
+    },
+    "baseline/zombie_runner_sheet.png": {
+      "path": "/art_sources/combat/task7_normal/baseline/zombie_runner_sheet.png",
+      "sha256": "0019c8d73be2d4dacf405cd671140918f1241d1bb1b1d5befd6b9d9c8ce3ea1c"
+    },
+    "baseline/zombie_brute_sheet.png": {
+      "path": "/art_sources/combat/task7_normal/baseline/zombie_brute_sheet.png",
+      "sha256": "c53e460d19e00cbb9f6daaee8173a40d1f8b7e35ec1e872b67d8682480badc76"
+    },
+    "baseline/raider_sheet.png": {
+      "path": "/art_sources/combat/task7_normal/baseline/raider_sheet.png",
+      "sha256": "6ba31589b27d885dbd0a1a7332dbd5bb9d1eb47a7935963f644dcfa17044065d"
+    },
+    "baseline/raider_elite_sheet.png": {
+      "path": "/art_sources/combat/task7_normal/baseline/raider_elite_sheet.png",
+      "sha256": "b46995ed9ab2114e07fc9b52d2b21eaa1dc748853a2b0d3f640a54a50f67bbdf"
+    },
+    "baseline/zombie_acid_sheet.png": {
+      "path": "/art_sources/combat/task7_normal/baseline/zombie_acid_sheet.png",
+      "sha256": "bbdb523d81a5b38c6ae67e4ea489b5bca867706ed3f8bc3608133156e2cd491a"
+    },
+    "baseline/zombie_bloater_sheet.png": {
+      "path": "/art_sources/combat/task7_normal/baseline/zombie_bloater_sheet.png",
+      "sha256": "b78e09c5f03f07cad2bb0d8dfa61ada69706e9aa299fb00d69e8dd2c8c362d66"
+    },
+    "baseline/zombie_screamer_sheet.png": {
+      "path": "/art_sources/combat/task7_normal/baseline/zombie_screamer_sheet.png",
+      "sha256": "beca3bac1449e2ef7920e177a9183a8008a3766a074a4be118d0e8fc273496ac"
+    },
+    "baseline/zombie_charger_sheet.png": {
+      "path": "/art_sources/combat/task7_normal/baseline/zombie_charger_sheet.png",
+      "sha256": "a934c99e6c502879d455a7aa10d7a8a257f9a0ded7478b0fc8935381546382ed"
+    }
+  },
   "archivalSources": {
     "raider_generated_chroma.png": {
       "path": "/art_sources/combat/task7_normal/raider_generated_chroma.png",
@@ -41,6 +79,44 @@
     "zombie_screamer_spit_chroma.png": {
       "path": "/art_sources/combat/task7_normal/zombie_screamer_spit_chroma.png",
       "sha256": "a52b62883c98149697a4aca0abbac7b9847013ad6432dffe59f9474d5db20b8a"
+    }
+  },
+  "preservedSources": {
+    "zombie_patient_dormant_sheet_src.png": {
+      "path": "/assets/images/combat/spritesheets/enemies/zombie_patient_dormant_sheet_src.png",
+      "sha256": "c8cea817e03320371ad4e12ec0706b9e54e93857798c4ebd3b9a87c9f7dd84be"
+    },
+    "zombie_runner_sheet_src.png": {
+      "path": "/assets/images/combat/spritesheets/enemies/zombie_runner_sheet_src.png",
+      "sha256": "5a87abea55431d76bea4fc3171e356840d30e1fcd9785cabf7af64e2dea5f0e7"
+    },
+    "zombie_brute_sheet_src.png": {
+      "path": "/assets/images/combat/spritesheets/enemies/zombie_brute_sheet_src.png",
+      "sha256": "2a57b8869233a852ecd7e382fc7871925fefcad77c10911cb479db6a4a4cdc1d"
+    },
+    "raider_sheet_src.png": {
+      "path": "/assets/images/combat/spritesheets/enemies/raider_sheet_src.png",
+      "sha256": "7dbeef3cac742cc994a7f79d09d78b8164d46c1f19576d8007accef7eeecb82e"
+    },
+    "raider_elite_sheet_src.png": {
+      "path": "/assets/images/combat/spritesheets/enemies/raider_elite_sheet_src.png",
+      "sha256": "2c7f982fc82c929f22d54aaab08af71c733d40d95020fd67cb6001a82a37f659"
+    },
+    "zombie_acid_sheet_src.png": {
+      "path": "/assets/images/combat/spritesheets/enemies/zombie_acid_sheet_src.png",
+      "sha256": "027893a963379cd41f17f6fd3e20f16fb043680a634cec88ab8e34e576eafdcb"
+    },
+    "zombie_bloater_sheet_src.png": {
+      "path": "/assets/images/combat/spritesheets/enemies/zombie_bloater_sheet_src.png",
+      "sha256": "33eb554011ff07a5a40a84dcd403330c832928ae560a4ab08a1618bfc85fd6d5"
+    },
+    "zombie_screamer_sheet_src.png": {
+      "path": "/assets/images/combat/spritesheets/enemies/zombie_screamer_sheet_src.png",
+      "sha256": "7392cdb3e781a2a3cedba82e440ea3bf7b7a2d383eb35d573c96b49f2bb213a9"
+    },
+    "zombie_charger_sheet_src.png": {
+      "path": "/assets/images/combat/spritesheets/enemies/zombie_charger_sheet_src.png",
+      "sha256": "7dde624fbf7a57170977c74336a4fd1ec974955ccd6ba3f18e54cf67a6b1d162"
     }
   },
   "targets": {
