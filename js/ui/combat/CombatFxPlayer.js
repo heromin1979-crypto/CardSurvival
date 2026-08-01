@@ -28,7 +28,23 @@ export const CombatFxPlayer = {
 
   _fxSpeed: 1,
   _fxTimers: [],
-  _actionMotionToken: 0,
+  _actorMotionRecords: new WeakMap(),
+  _activeMotionActors: new Set(),
+
+  _effectiveFxDuration(duration) {
+    const speed = this._fxSpeed > 0 ? this._fxSpeed : 1;
+    return Math.max(0, Math.round((Number(duration) || 0) / speed));
+  },
+
+  _scheduleFxTimer(callback, delay) {
+    let timer = null;
+    timer = setTimeout(() => {
+      this._fxTimers = this._fxTimers.filter(activeTimer => activeTimer !== timer);
+      callback();
+    }, Math.max(0, Math.round(delay)));
+    this._fxTimers.push(timer);
+    return timer;
+  },
 
   _playFxQueue() {
     const combat = GameState.combat;
@@ -40,17 +56,34 @@ export const CombatFxPlayer = {
     for (const queuedFx of queue) {
       const fx = normalizeLegacyActionFx(queuedFx);
       const presentationKind = actionFxToPresentationFx(fx)?.kind;
-      this._fxTimers.push(setTimeout(() => this._playFx(fx), Math.round(delay / speed)));
+      this._scheduleFxTimer(() => this._playFx(fx), Math.round(delay / speed));
       delay += FX_DURATIONS[presentationKind] ?? 300;
     }
   },
 
   // 진행 중인 연출을 건너뛴다 — 상태는 이미 반영돼 있으므로 잔여 코스메틱만 취소
   skipFxQueue() {
-    if (this._fxTimers.length === 0) return false;
+    const actorElements = new Set(this._activeMotionActors);
+    this._screen?.querySelectorAll(
+      '.cv-player, .cv-ally, .cv-enemy-sprite, [data-combatant-id]',
+    ).forEach(element => actorElements.add(element));
+    const hadPending = this._fxTimers.length > 0 || [...actorElements].some(element => {
+      const record = this._actorMotionRecords.get(element);
+      return Boolean(record?.animate?.timer || record?.motionClass?.timer || record?.sprite?.timer);
+    });
     this._fxTimers.forEach(clearTimeout);
     this._fxTimers = [];
-    return true;
+    for (const element of actorElements) {
+      this._cancelActorMotionSlot(element, 'animate');
+      this._cancelActorMotionSlot(element, 'motionClass');
+      this._cancelActorMotionSlot(element, 'sprite');
+      this._restoreCurrentActorMotion(element);
+    }
+    this._screen?.querySelectorAll('.cv-fx, .dmg-popup').forEach(element => element.remove());
+    const visual = this._screen?.querySelector('.combat-visual');
+    visual?.classList.remove('hitstop', 'shake', 'crit-flash', 'skill-flash', ...CAMERA_CLASSES, 'camera-work-active');
+    if (visual?.dataset) delete visual.dataset.cameraWorkToken;
+    return hadPending;
   },
 
   toggleFxSpeed() {
@@ -171,6 +204,12 @@ export const CombatFxPlayer = {
           break;
         }
         this._spawnFxOverlay(target, fx.fx ?? 'blunt');
+        this._playSpriteMotion(
+          target,
+          this._enemySpriteSheetKey(GameState.combat?.enemies?.[fx.targetIdx]),
+          'hit',
+          560,
+        );
         this._motion(target, ['motion-zombie-hit', this._hitReactionMotion(fx)], 560);
         this._animate(target, 'hit');
         this._spawnFloatText(target, `-${fx.dmg}`, fx.crit ? 'crit' : 'dmg');
@@ -216,6 +255,7 @@ export const CombatFxPlayer = {
           break;
         }
         this._spawnFxOverlay(ally, fx.impactFx ?? fx.fx ?? 'claw');
+        this._playSpriteMotion(ally, this._companionSpriteSheetKey(fx.npcId), 'hit', 620);
         this._motion(ally, ['motion-player-hit', this._hitReactionMotion(fx)], 620);
         this._animate(ally, 'hit');
         this._spawnFloatText(ally, `-${fx.dmg}`, 'dmg');
@@ -239,6 +279,12 @@ export const CombatFxPlayer = {
           break;
         }
         this._spawnFxOverlay(target, fx.fx ?? 'slash');
+        this._playSpriteMotion(
+          target,
+          this._enemySpriteSheetKey(GameState.combat?.enemies?.[fx.targetIdx]),
+          'hit',
+          560,
+        );
         this._motion(target, ['motion-zombie-hit', this._hitReactionMotion(fx)], 560);
         this._animate(target, 'hit');
         this._spawnFloatText(target, `-${fx.dmg}`, fx.crit ? 'crit' : 'dmg');
@@ -370,29 +416,23 @@ export const CombatFxPlayer = {
       }
       case 'downed': {
         const actor = this._actorEl(fx) ?? this._playerSpriteEl();
-        const player = this._playerSpriteEl();
-        const companionId = this._companionId(fx);
-        const sheetKey = actor === player
-          ? this._playerSpriteSheetKey()
-          : this._companionSpriteSheetKey(companionId);
-        this._playSpriteMotion(actor, sheetKey, 'downed', 900);
-        this._motion(actor, 'motion-downed', 900);
+        this._enterTerminalMotion(actor, 'downed');
         break;
       }
       case 'playerDeath': {
         const player = this._playerSpriteEl();
-        this._playSpriteMotion(player, this._playerSpriteSheetKey(), 'death', 1100);
-        this._motion(player, 'motion-player-death', 1100);
+        this._enterTerminalMotion(player, 'death');
         break;
       }
       case 'victory': {
         const player = this._playerSpriteEl();
-        this._playSpriteMotion(player, this._playerSpriteSheetKey(), 'victory', 900);
-        this._motion(player, 'motion-victory', 900);
+        this._enterTerminalMotion(player, 'victory');
         break;
       }
       case 'defeat': {
-        this._motion(this._playerSpriteEl(), 'motion-defeat', 1000);
+        const player = this._playerSpriteEl();
+        this._enterTerminalMotion(player, 'death');
+        player?.classList.add('motion-defeat');
         break;
       }
       case 'explode': {
@@ -408,12 +448,12 @@ export const CombatFxPlayer = {
             1100,
           );
           const bodyDuration = motion?.durationMs ?? 1100;
-          this._fxTimers.push(setTimeout(() => {
+          this._scheduleFxTimer(() => {
             this._spawnFxOverlay(el, 'explode');
             this._cameraWork('impact-heavy', 720);
             this._shakeVisual();
-          }, Math.round(bodyDuration * 0.58)));
-          this._fxTimers.push(setTimeout(() => el?.remove(), bodyDuration + 180));
+          }, this._effectiveFxDuration(bodyDuration * 0.58));
+          this._scheduleFxTimer(() => el?.remove(), this._effectiveFxDuration(bodyDuration + 180));
         } else {
           this._spawnFxOverlay(el, 'explode');
           this._cameraWork('impact-heavy', 720);
@@ -448,7 +488,7 @@ export const CombatFxPlayer = {
     const visual = this._screen?.querySelector('.combat-visual');
     if (!visual) return;
     visual.classList.add('hitstop');
-    setTimeout(() => visual.classList.remove('hitstop'), ms);
+    this._scheduleFxTimer(() => visual.classList.remove('hitstop'), this._effectiveFxDuration(ms));
   },
 
   _critFlash() {
@@ -458,13 +498,185 @@ export const CombatFxPlayer = {
   // 사망 순간: 붕괴 모션 + 파편 파티클
   _deathBurst(el) {
     if (!el) return;
+    const terminal = this._currentActorTerminalState(el);
+    if (terminal === 'death') this._enterTerminalMotion(el, 'death');
     this._animate(el, 'just-died', 950);
     this._spawnFxOverlay(el, 'death-burst');
+  },
+
+  _actorMotionRecord(el) {
+    if (!el) return null;
+    let record = this._actorMotionRecords.get(el);
+    if (!record) {
+      record = { animate: null, motionClass: null, sprite: null, terminal: null };
+      this._actorMotionRecords.set(el, record);
+    }
+    return record;
+  },
+
+  _syncActiveMotionActor(el, record = this._actorMotionRecords.get(el)) {
+    const hasTimer = Boolean(record?.animate?.timer || record?.motionClass?.timer || record?.sprite?.timer);
+    if (hasTimer) this._activeMotionActors.add(el);
+    else this._activeMotionActors.delete(el);
+  },
+
+  _cancelActorMotionSlot(el, slotName, runCleanup = true) {
+    const record = this._actorMotionRecords.get(el);
+    const owner = record?.[slotName];
+    if (!owner) return false;
+    if (owner.timer != null) clearTimeout(owner.timer);
+    record[slotName] = null;
+    if (runCleanup) (owner.cancelCleanup ?? owner.cleanup)?.();
+    this._syncActiveMotionActor(el, record);
+    return true;
+  },
+
+  _scheduleActorMotionSlot(el, slotName, duration, cleanup, cancelCleanup = cleanup) {
+    const record = this._actorMotionRecord(el);
+    this._cancelActorMotionSlot(el, slotName);
+    const ownerScreen = this._screen;
+    const owner = { timer: null, cleanup, cancelCleanup };
+    owner.timer = setTimeout(() => {
+      const current = this._actorMotionRecords.get(el);
+      if (current?.[slotName] !== owner) return;
+      current[slotName] = null;
+      this._syncActiveMotionActor(el, current);
+      if (ownerScreen !== this._screen || !el.isConnected || !ownerScreen?.contains(el)) return;
+      cleanup?.();
+    }, this._effectiveFxDuration(duration));
+    record[slotName] = owner;
+    this._syncActiveMotionActor(el, record);
+    return owner;
+  },
+
+  _actorSheetKey(el) {
+    if (!el) return null;
+    if (el.matches?.('.cv-player')) return this._playerSpriteSheetKey();
+    const companionId = el.dataset?.companionId;
+    if (companionId) return this._companionSpriteSheetKey(companionId);
+    const enemyIdx = Number.parseInt(el.dataset?.idx, 10);
+    if (!Number.isNaN(enemyIdx)) {
+      return this._enemySpriteSheetKey(GameState.combat?.enemies?.[enemyIdx]);
+    }
+    return null;
+  },
+
+  _actorCombatant(el) {
+    const combat = GameState.combat;
+    if (!el || !combat) return null;
+    const combatantId = el.dataset?.combatantId;
+    if (combatantId && combat.combatants?.[combatantId]) return combat.combatants[combatantId];
+    const companionId = el.dataset?.companionId;
+    if (companionId && combat.combatants?.[companionId]) return combat.combatants[companionId];
+    const enemyIdx = Number.parseInt(el.dataset?.idx, 10);
+    if (!Number.isNaN(enemyIdx)) return combat.combatants?.[`enemy:${enemyIdx}`] ?? null;
+    return null;
+  },
+
+  _currentActorTerminalState(el) {
+    if (!el) return null;
+    const combat = GameState.combat;
+    const combatant = this._actorCombatant(el);
+    const isPlayer = el.matches?.('.cv-player');
+    const isCompanion = el.matches?.('.cv-ally');
+    const enemyIdx = Number.parseInt(el.dataset?.idx, 10);
+    const enemy = Number.isNaN(enemyIdx) ? null : combat?.enemies?.[enemyIdx];
+
+    if (isPlayer && combat?.outcome === 'victory') return 'victory';
+    if (combatant?.deathsDoor === true || el.classList.contains('is-deaths-door')) return 'downed';
+    const playerDead = isPlayer && (
+      combat?.outcome === 'defeat'
+      || combatant?.dead === true
+      || GameState.player?.isAlive === false
+    );
+    const companionDowned = isCompanion && combatant?.dead === true;
+    const enemyDead = enemy && (enemy.currentHp ?? 0) <= 0;
+    if (playerDead || enemyDead || (!isCompanion && combatant?.dead === true) || el.classList.contains('is-dead')) {
+      return 'death';
+    }
+    if (companionDowned) return 'downed';
+    return null;
+  },
+
+  _clearSpritePlayback(sprite) {
+    if (!sprite) return;
+    sprite.style.removeProperty('--sprite-row-y');
+    sprite.style.removeProperty('--sprite-duration');
+    sprite.style.removeProperty('animation-name');
+    sprite.style.removeProperty('animation-iteration-count');
+    sprite.style.removeProperty('animation-fill-mode');
+  },
+
+  _clearActorTerminal(el) {
+    const record = this._actorMotionRecord(el);
+    record.terminal = null;
+    if (el.dataset) delete el.dataset.motionTerminal;
+    el.classList.remove('motion-downed', 'motion-player-death', 'motion-victory', 'motion-defeat', 'motion-zombie-death');
+  },
+
+  _restoreActorIdle(el) {
+    if (!el || this._currentActorTerminalState(el)) return false;
+    this._clearActorTerminal(el);
+    if (el.dataset?.spriteId) this._setMotionState(el, 'idle');
+    const idle = this._resolveSpriteMotion(this._actorSheetKey(el), 'idle');
+    if (!idle) return false;
+    this._playResolvedSpriteMotion(el, idle, idle.durationMs, { allowTerminal: true });
+    return true;
+  },
+
+  _prepareActorTransientMotion(el) {
+    const record = this._actorMotionRecord(el);
+    if (!record?.terminal) return true;
+    if (this._currentActorTerminalState(el)) return false;
+    return this._restoreActorIdle(el);
+  },
+
+  _enterTerminalMotion(el, terminalState) {
+    if (!el) return false;
+    this._cancelActorMotionSlot(el, 'animate');
+    this._cancelActorMotionSlot(el, 'motionClass');
+    this._cancelActorMotionSlot(el, 'sprite');
+    this._clearActorTerminal(el);
+    const record = this._actorMotionRecord(el);
+    record.terminal = terminalState;
+    el.dataset.motionTerminal = terminalState;
+
+    const spriteMotionKey = terminalState === 'victory' ? 'idle' : 'death';
+    const resolved = this._resolveSpriteMotion(this._actorSheetKey(el), spriteMotionKey);
+    if (resolved) {
+      this._playResolvedSpriteMotion(el, {
+        ...resolved,
+        loop: false,
+        holdLast: true,
+      }, resolved.durationMs, { allowTerminal: true });
+    }
+    if (el.dataset?.spriteId) this._setMotionState(el, terminalState === 'victory' ? 'idle' : 'death');
+
+    const terminalClass = terminalState === 'victory'
+      ? 'motion-victory'
+      : terminalState === 'downed'
+        ? 'motion-downed'
+        : el.matches?.('.cv-enemy-sprite')
+          ? 'motion-zombie-death'
+          : 'motion-player-death';
+    el.classList.remove(...COMBAT_MOTION_CLASSES);
+    el.classList.add(terminalClass);
+    return true;
+  },
+
+  _restoreCurrentActorMotion(el) {
+    const terminalState = this._currentActorTerminalState(el);
+    if (terminalState) return this._enterTerminalMotion(el, terminalState);
+    this._clearActorTerminal(el);
+    el.classList.remove(...COMBAT_MOTION_CLASSES);
+    return this._restoreActorIdle(el);
   },
 
   // CSS 애니메이션 클래스 재시작 헬퍼
   _animate(el, cls, dur = 450) {
     if (!el) return;
+    const record = this._actorMotionRecord(el);
+    if (record.terminal && cls !== 'just-died' && !this._prepareActorTransientMotion(el)) return;
     if (cls === 'hit' && dur === 450) dur = 520;
     const motionState = {
       attacking: 'attack',
@@ -474,29 +686,32 @@ export const CombatFxPlayer = {
       'just-died': 'death',
     }[cls];
     if (motionState) this._setMotionState(el, motionState);
+    this._cancelActorMotionSlot(el, 'animate');
     el.classList.remove(cls);
     void el.offsetWidth;
     el.classList.add(cls);
-    setTimeout(() => {
+    this._scheduleActorMotionSlot(el, 'animate', dur, () => {
       el.classList.remove(cls);
-      if (motionState && el.dataset?.spriteId && !el.classList.contains('is-dead')) {
+      if (motionState && el.dataset?.spriteId && !this._currentActorTerminalState(el)) {
         this._setMotionState(el, 'idle');
       }
-    }, dur);
+    });
   },
 
   _motion(el, cls, dur = 560) {
     if (!el || !cls) return;
+    if (!this._prepareActorTransientMotion(el)) return;
     const classes = Array.isArray(cls) ? cls.filter(Boolean) : [cls];
     if (classes.length === 0) return;
     const persistentBefore = new Set(classes.filter(c => STATUS_MOTION_CLASSES.includes(c) && el.classList.contains(c)));
+    this._cancelActorMotionSlot(el, 'motionClass');
     el.classList.remove(...COMBAT_MOTION_CLASSES);
     void el.offsetWidth;
     el.classList.add(...classes);
-    setTimeout(() => {
+    this._scheduleActorMotionSlot(el, 'motionClass', dur, () => {
       const removable = classes.filter(c => !persistentBefore.has(c));
       if (removable.length) el.classList.remove(...removable);
-    }, dur);
+    });
   },
 
   _playerAttackMotion(fx) {
@@ -522,14 +737,20 @@ export const CombatFxPlayer = {
     return { ...motion, sheetKey, sheet, rowPercent };
   },
 
-  _playResolvedSpriteMotion(element, motion, dur) {
+  _playResolvedSpriteMotion(element, motion, dur, { allowTerminal = false } = {}) {
     const sprite = element?.querySelector('.combat-sprite-sheet');
     if (!sprite || !motion) return null;
-    const duration = Number.isFinite(motion.durationMs) && motion.durationMs > 0
+    const record = this._actorMotionRecord(element);
+    if (record.terminal && !allowTerminal) {
+      const terminalState = this._currentActorTerminalState(element);
+      if (terminalState) return null;
+      this._clearActorTerminal(element);
+    }
+    const sourceDuration = Number.isFinite(motion.durationMs) && motion.durationMs > 0
       ? motion.durationMs
       : dur;
-    const token = String(++this._actionMotionToken);
-    sprite.dataset.actionMotionToken = token;
+    const duration = this._effectiveFxDuration(sourceDuration);
+    this._cancelActorMotionSlot(element, 'sprite');
     sprite.style.setProperty('--sprite-row-y', `${motion.rowPercent.toFixed(4)}%`);
     sprite.style.setProperty('--sprite-duration', `${Math.round(duration)}ms`);
     const animationName = `var(--anim-r${motion.row}, combatSpriteSheetFrames)`;
@@ -538,26 +759,23 @@ export const CombatFxPlayer = {
     sprite.style.animationName = animationName;
     sprite.style.animationIterationCount = motion.loop === true ? 'infinite' : '1';
     sprite.style.animationFillMode = motion.holdLast === true ? 'forwards' : '';
-    if (motion.loop === true || motion.holdLast === true) return motion;
-    setTimeout(() => {
-      if (sprite.dataset.actionMotionToken !== token) return;
-      delete sprite.dataset.actionMotionToken;
-      sprite.style.removeProperty('--sprite-row-y');
-      sprite.style.removeProperty('--sprite-duration');
-      sprite.style.removeProperty('animation-name');
-      sprite.style.removeProperty('animation-iteration-count');
-      sprite.style.removeProperty('animation-fill-mode');
-    }, duration);
+    if (motion.loop === true || motion.holdLast === true) {
+      record.sprite = {
+        timer: null,
+        cleanup: () => this._clearSpritePlayback(sprite),
+      };
+      return motion;
+    }
+    this._scheduleActorMotionSlot(element, 'sprite', sourceDuration, () => {
+      this._clearSpritePlayback(sprite);
+      this._restoreActorIdle(element);
+    }, () => this._clearSpritePlayback(sprite));
     return motion;
   },
 
   _playSpriteMotion(element, sheetKey, motionKey, dur = 0) {
     const resolved = this._resolveSpriteMotion(sheetKey, motionKey);
-    const motion = motionKey === 'victory' && resolved
-      ? { ...resolved, loop: false, holdLast: true, durationMs: dur || 900 }
-      : motionKey === 'downed' && resolved
-        ? { ...resolved, loop: false, holdLast: false, durationMs: dur || 900 }
-        : resolved;
+    const motion = resolved;
     return this._playResolvedSpriteMotion(
       element,
       motion,
@@ -690,11 +908,11 @@ export const CombatFxPlayer = {
     void visual.offsetWidth;
     visual.dataset.cameraWorkToken = token;
     visual.classList.add('camera-work-active', cls);
-    setTimeout(() => {
+    this._scheduleFxTimer(() => {
       if (visual.dataset.cameraWorkToken !== token) return;
       visual.classList.remove(cls, 'camera-work-active');
       delete visual.dataset.cameraWorkToken;
-    }, dur);
+    }, this._effectiveFxDuration(dur));
   },
 
   _spawnFxOverlay(anchor, type) {
@@ -706,7 +924,7 @@ export const CombatFxPlayer = {
     const prevPos = getComputedStyle(anchor).position;
     if (prevPos === 'static') anchor.style.position = 'relative';
     anchor.appendChild(fx);
-    setTimeout(() => fx.remove(), 700);
+    this._scheduleFxTimer(() => fx.remove(), this._effectiveFxDuration(700));
   },
 
   // 헬퍼: 타겟 엘리먼트 위에 짧은 플로팅 텍스트 생성
@@ -719,6 +937,6 @@ export const CombatFxPlayer = {
     const prevPos = getComputedStyle(anchor).position;
     if (prevPos === 'static') anchor.style.position = 'relative';
     anchor.appendChild(popup);
-    setTimeout(() => popup.remove(), 900);
+    this._scheduleFxTimer(() => popup.remove(), this._effectiveFxDuration(900));
   },
 };

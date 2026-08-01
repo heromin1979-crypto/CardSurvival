@@ -172,7 +172,7 @@ describe('combat FX motion routing', () => {
     expect(sprite.style.animationFillMode).toBe('forwards');
   });
 
-  it('uses the death row temporarily for downed actors but preserves true player death', () => {
+  it('holds the death row for downed actors and preserves true player death', () => {
     vi.useFakeTimers();
     const player = document.querySelector('.cv-player');
     const ally = document.querySelector('[data-companion-id="npc_nurse"]');
@@ -183,19 +183,19 @@ describe('combat FX motion routing', () => {
     CombatUI._playFx({ kind: 'downed', target: 'player' });
     expect(player.querySelector('.combat-sprite-sheet').style.getPropertyValue('--sprite-row-y'))
       .toBe('100.0000%');
-    expect(player.querySelector('.combat-sprite-sheet').style.animationFillMode).toBe('');
+    expect(player.querySelector('.combat-sprite-sheet').style.animationFillMode).toBe('forwards');
     vi.advanceTimersByTime(900);
-    expect(player.querySelector('.combat-sprite-sheet').style.getPropertyValue('--sprite-row-y')).toBe('');
+    expect(player.querySelector('.combat-sprite-sheet').style.getPropertyValue('--sprite-row-y')).toBe('100.0000%');
 
     CombatUI._playFx({ kind: 'downed', target: 'ally', targetId: 'npc_nurse' });
     expect(ally.querySelector('.combat-sprite-sheet').style.getPropertyValue('--sprite-row-y'))
       .toBe('100.0000%');
     expect(player.querySelector('.combat-sprite-sheet').style.getPropertyValue('--sprite-row-y'))
-      .toBe('');
+      .toBe('100.0000%');
 
     vi.advanceTimersByTime(900);
-    expect(player.querySelector('.combat-sprite-sheet').style.getPropertyValue('--sprite-row-y')).toBe('');
-    expect(ally.querySelector('.combat-sprite-sheet').style.getPropertyValue('--sprite-row-y')).toBe('');
+    expect(player.querySelector('.combat-sprite-sheet').style.getPropertyValue('--sprite-row-y')).toBe('100.0000%');
+    expect(ally.querySelector('.combat-sprite-sheet').style.getPropertyValue('--sprite-row-y')).toBe('100.0000%');
 
     CombatUI._playFx({ kind: 'playerDeath' });
     vi.advanceTimersByTime(2200);

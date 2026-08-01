@@ -2019,7 +2019,7 @@
 
 .cv-player.motion-victory .cv-player-img,
 .cv-ally.motion-victory {
-  animation: playerVictoryPose 0.9s ease;
+  animation: playerVictoryPose 0.9s ease forwards;
 }
 
 .cv-player.motion-defeat .cv-player-img,
