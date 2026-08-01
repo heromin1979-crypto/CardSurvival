@@ -19,6 +19,7 @@ const QuestPanel = {
       EventBus.on('mainQuestCompleted',    () => this._render());
       EventBus.on('subObjectiveCompleted', () => this._render());
       EventBus.on('dayStarted',            () => this._render());
+      EventBus.on('questListChanged',      () => this._render());
       this._subscribed = true;
     }
   },
@@ -66,7 +67,10 @@ const QuestPanel = {
     const targetDist  = q.locationHint?.districtId ?? '';
     const onTarget    = targetDist && curDistrict === targetDist;
 
-    const objBar = totalCount === 0 ? this._objectiveProgress(q) : null;
+    // 진행 바는 완료 판정과 동일한 카운터(q._entry.progress)를 우선 표시.
+    // 체크리스트 개수 바는 objective가 단발성(count 1)이라 바로 쓸 숫자가 없을 때의 폴백.
+    const objBar = this._objectiveProgress(q);
+    const useObjBar = objBar && (totalCount === 0 || objBar.total > 1);
 
     return `
       <div class="quest-active" data-quest-id="${this._escape(q.id)}">
@@ -76,17 +80,16 @@ const QuestPanel = {
           ${left != null ? `<span class="quest-deadline ${dlClass}">D-${left}</span>` : ''}
         </div>
         <div class="quest-desc">${this._escape(q.actionHint ?? q.desc ?? '')}</div>
-        ${totalCount > 0 ? `
-          <div class="quest-progress">
-            <div class="quest-progress-bar"><div class="quest-progress-fill" style="width:${subPct}%"></div></div>
-            <span class="quest-progress-text">${doneCount}/${totalCount}</span>
-          </div>` : ''}
-        ${objBar ? `
+        ${useObjBar ? `
           <div class="quest-progress">
             <div class="quest-progress-bar"><div class="quest-progress-fill" style="width:${objBar.pct}%"></div></div>
             <span class="quest-progress-text">${objBar.cur}/${objBar.total}</span>
           </div>
-        ` : ''}
+        ` : totalCount > 0 ? `
+          <div class="quest-progress">
+            <div class="quest-progress-bar"><div class="quest-progress-fill" style="width:${subPct}%"></div></div>
+            <span class="quest-progress-text">${doneCount}/${totalCount}</span>
+          </div>` : ''}
         ${sos.length > 0 ? `
           <ul class="quest-subobjectives">
             ${sos.map(so => `
