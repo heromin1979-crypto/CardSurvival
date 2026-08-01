@@ -147,6 +147,7 @@ export function analyzeCompanionFrame(image, row, col) {
     component.size <= edgeFragmentThreshold
     && (component.minX <= 24 || component.minY <= 24 || component.maxX >= 231 || component.maxY >= 231)
   ));
+  const detachedComponents = components.slice(1);
   const smallFragments = components.slice(1).filter(component => component.size <= edgeFragmentThreshold);
   return {
     row,
@@ -157,6 +158,7 @@ export function analyzeCompanionFrame(image, row, col) {
     componentCount: components.length,
     componentAreas: components.map(component => component.size),
     componentDetails: components,
+    detachedComponents,
     edgeFragments,
     smallFragments,
     significantComponents: components.filter(component => component.size >= significantThreshold).length,
@@ -208,7 +210,7 @@ export function analyzeCompanionSheet(image, limits = COMPANION_FRAME_QUALITY_LI
         if (!Array.isArray(rangedFrameContract?.[frame.col])) {
           issues.push(`${prefix}: ranged detached component contract is missing`);
         } else {
-          const actual = frame.smallFragments.map((component) => component.fingerprint).sort();
+          const actual = frame.detachedComponents.map((component) => component.fingerprint).sort();
           const expected = rangedFrameContract[frame.col];
           if (JSON.stringify(actual) !== JSON.stringify(expected)) {
             issues.push(`${prefix}: ranged detached component fingerprint mismatch`);

@@ -103,3 +103,43 @@
 ### 남은 우려
 
 - Node의 기존 `MODULE_TYPELESS_PACKAGE_JSON`, Vite의 기존 dynamic import/plugin timing, `package.json` author 누락 경고가 남아 있다. 이번 수정의 테스트·검증·패키징 실패는 아니다.
+
+## 수정 라운드 3/5
+
+### ranged 대형 detached component 우회 제거
+
+- ranged 2행의 계약 비교 대상을 `smallFragments`가 아니라 각 셀의 주체 component를 제외한 `components.slice(1)` 전체로 변경했다. 면적이나 edge 여부와 관계없이 모든 detached non-major component가 exact contract 비교 대상이다.
+- contract entry의 정체성은 sheet key와 frame column의 구조적 위치, 그리고 bbox·area·local alpha mask SHA-256을 담은 fingerprint의 조합으로 고정된다. 정상 runtime 20종의 ranged 120셀을 다시 계수한 결과 detached component는 총 81개이고 기존 명시 계약 81개와 정확히 일치했다.
+- `ranged_component_contract.json`은 수정하거나 재생성하지 않았다. 고정 SHA-256 `df6a3f1eb29a37730bcbaccf645de474a9f6c372ffe3ca41adc7534ad4d9d2c7`과 recipe/verifier 결속을 유지하며, build/check 경로에는 계약 생성·갱신 동작이 없다.
+- builder의 ranged 행에서 `component.Area > fragmentLimit` 보존 우회를 제거했다. pre-save 표현 차이를 허용하는 기존 제한 후보에 일치하지 않는 ranged detached component는 삭제해서 숨기지 않고 즉시 실패하며, 저장 후 공용 validator가 exact mask와 stale contract entry를 다시 검사한다. support 및 다른 행의 기존 정리 정책은 변경하지 않았다.
+
+### TDD 증거
+
+- RED: nurse ranged 셀에 20×20, 40×40, 41×41, 45×45 정사각형을 edge/internal 위치에 주입했다. 기존 구현에서 22개 중 정확히 41×41·45×45 네 사례가 실패하여 1,600px 상한 우회를 재현했다.
+- GREEN: analyzer를 detached 전체 비교로 변경한 뒤 focused 22/22가 통과했다. 여덟 ranged 주입 모두 `ranged detached component fingerprint mismatch`로 거부되고, 동일 melee 주입, stale contract, contract mutation, no-git fixture 검증도 유지됐다.
+- 정상 runtime의 실제 projectile/prop 81개는 모두 통과했다. runtime PNG 20개는 재빌드 전후 Git diff 0건이므로 새 시각 판정이나 수동 PASS 재인증은 수행하지 않았다.
+
+### 검증 결과
+
+- `npm.cmd test -- tests/unit/CompanionMotionQuality.test.js`: 22/22 PASS.
+- `npm.cmd test`: 137 files / 1645 tests PASS.
+- `node tools/verify_companion_motion_qa.mjs --write`: 20 companions / 60 skills / 40 hit-death / 960 cells / quality issues 0 / open rework 0 / `linked-not-authenticated` / PASS.
+- `node tools/relink_companion_motion_manual_evidence.mjs`: `already-linked-unchanged`, 수동 PASS 변경 없음.
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools/build_companion_motion_sheets.ps1 -Check`: 20 deterministic targets verified.
+- `node tools/audit_combat_sprites.mjs --check`: 46 total / 46 referenced / 46 pass / 0 warn / 0 fail.
+- `python tools/verify_combat_chroma_cleanup.py --check`: 23 sheets / changed 20 / historical unexpected alpha loss 0 / current pinned 23.
+- `node js/data/validate.js`: errors 0 / 기존 stackConfig warnings 215 / ALL CLEAR.
+- `npm.cmd run build:web`: PASS, 264 modules transformed. Web package runtime 20/20, build-only leak 0.
+- `npm.cmd run build:dir`: PASS. Electron `app.asar` runtime 20/20, build-only leak 0.
+- Task 6 Python 검증이 다시 생성한 지정 agent `.pyc` 네 개만 제거했고, 다른 사용자 파일은 삭제하지 않았다.
+
+### Self-review
+
+- analyzer에서 ranged 계약 비교가 size threshold를 참조하는 경로는 없다. 1,600px 경계 바로 위와 더 큰 edge/internal component를 실제 decoded image 동작으로 검증했다.
+- builder는 ranged 미등록 component를 면적 기준으로 보존하거나 자동 계약화하지 않는다. 관측된 미등록 component는 build 중 실패하고, 관측되지 않은 contract entry는 저장 후 exact validator에서 실패한다.
+- runtime, preview, row hash와 사람이 작성한 note/status/reviewedAt은 변경하지 않았다. 도구 해시 변경으로 재생성된 recipe SHA만 수동 증거 상단에 연결했고 relinker가 변경 없는 증거 상태를 확인했다.
+- 수정 범위는 analyzer, builder, 회귀 테스트, recipe/QA hash 연결, 본 보고서로 제한하며 다른 dirty worktree는 stage하지 않는다.
+
+### 남은 우려
+
+- 기존 Node module type, Vite dynamic import/plugin timing, `package.json` author 누락 경고가 남아 있다. 이번 변경의 테스트·검증·패키징 실패는 아니다.

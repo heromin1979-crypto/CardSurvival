@@ -50,10 +50,10 @@ function relinker(root) {
   });
 }
 
-function withDetachedSquare(image, row, col, x0, y0) {
+function withDetachedSquare(image, row, col, x0, y0, size = 20) {
   const changed = { ...image, pixels: Uint8Array.from(image.pixels) };
-  for (let y = y0; y < y0 + 20; y += 1) {
-    for (let x = x0; x < x0 + 20; x += 1) {
+  for (let y = y0; y < y0 + size; y += 1) {
+    for (let x = x0; x < x0 + size; x += 1) {
       const offset = ((row * 256 + y) * changed.width + col * 256 + x) * 4;
       changed.pixels[offset] = 255;
       changed.pixels[offset + 1] = 0;
@@ -159,15 +159,21 @@ describe('Task 9 companion motion quality and immutable provenance', () => {
   }, 180000);
 
   it.each([
-    ['edge', 5, 5],
-    ['internal', 40, 120],
-  ])('rejects an arbitrary 20x20 %s fragment in a ranged frame', (_label, x, y) => {
+    [20, 'edge', 5, 100],
+    [20, 'internal', 25, 100],
+    [40, 'edge', 5, 100],
+    [40, 'internal', 25, 100],
+    [41, 'edge', 5, 100],
+    [41, 'internal', 25, 100],
+    [45, 'edge', 5, 100],
+    [45, 'internal', 25, 100],
+  ])('rejects an arbitrary %ipx square at the %s of a ranged frame', (size, _label, x, y) => {
     const image = readPng(path.join(ROOT, 'assets/images/combat/spritesheets/nurse_companion_sheet.png'));
-    const issues = analyzeCompanionSheet(withDetachedSquare(image, 2, 0, x, y), undefined, {
+    const issues = analyzeCompanionSheet(withDetachedSquare(image, 2, 0, x, y, size), undefined, {
       sheetKey: 'nurse_companion',
       rangedContract,
     }).issues;
-    expect(issues).not.toEqual([]);
+    expect(issues).toContain('row 2 col 0: ranged detached component fingerprint mismatch');
   });
 
   it('continues to reject the same detached fragment in a melee frame', () => {

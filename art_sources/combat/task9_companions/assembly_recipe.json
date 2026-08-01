@@ -1,9 +1,9 @@
 {
     "version":  2,
     "assemblyScript":  "/tools/build_companion_motion_sheets.ps1",
-    "assemblyScriptSha256":  "8bfdeb2e5d22924afc2f61a6de08f575ed71d7d361d3e73703dfb8c0c681b976",
+    "assemblyScriptSha256":  "f838f554bdbba65050f3692f3fe4d625165c66a612dbefae31d3d34b75875f0c",
     "qualityAnalyzerPath":  "/tools/companion_motion_quality.mjs",
-    "qualityAnalyzerSha256":  "7b3430b5b926f276a3421333dd1de8f5835769b751cd7e5c3f38df0e61e42d83",
+    "qualityAnalyzerSha256":  "f5e383919adb1a0b8d2be18f7031121a28f74f0135cec3ed830887bd83af18e5",
     "rangedValidatorPath":  "/tools/verify_companion_ranged_contract.mjs",
     "rangedValidatorSha256":  "c5fef89e611be0fe5b60e438c0e536d380334b6e97d66687045af98b1fc3d1f2",
     "rangedComponentContractPath":  "/art_sources/combat/task9_companions/ranged_component_contract.json",

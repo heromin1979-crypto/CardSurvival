@@ -550,7 +550,12 @@ public static class CompanionMotionSheetBuilder
                         bool touchesEdge = component.MinX <= 25 || component.MinY <= 25 || component.MaxX >= 230 || component.MaxY >= 230;
                         bool preserveInternalSupportProp = row == 3 && !touchesEdge;
                         bool allowedRangedComponent = row == 2 && IsAllowedRangedComponent(rangedAllowlist, col, component);
-                        if (allowedRangedComponent || preserveInternalSupportProp || component.Area > fragmentLimit) continue;
+                        if (row == 2)
+                        {
+                            if (allowedRangedComponent) continue;
+                            throw new InvalidDataException("Unregistered ranged detached component at col " + col + ": " + ComponentFingerprint(component));
+                        }
+                        if (preserveInternalSupportProp || component.Area > fragmentLimit) continue;
                         foreach (int local in component.Pixels)
                         {
                             int x = local % 256;
