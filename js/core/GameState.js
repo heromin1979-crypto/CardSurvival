@@ -744,6 +744,8 @@ const GameState = {
       subLocationStock:    this.subLocationStock ?? {},
       basecamp:            this.basecamp,
       quests:          this.quests,
+      subObjectiveProgress: this.subObjectiveProgress ?? {},
+      questProgress:        this.questProgress ?? null,
       ecology:         this.ecology ?? null,
       mental:          this.mental ?? null,
       discoveries:     this.discoveries ?? null,
@@ -970,6 +972,8 @@ const GameState = {
     }
     // 퀘스트 복원
     if (d.quests) Object.assign(this.quests, d.quests);
+    this.subObjectiveProgress = d.subObjectiveProgress ?? {};
+    this.questProgress        = d.questProgress ?? null;
     // 생태계 복원 (구버전 세이브 호환: EcologySystem.ensureInitialized()가 처리)
     if (d.ecology) this.ecology = d.ecology;
     // 심리 상태 복원 (구버전 세이브 호환: MentalSystem.ensureInitialized()가 처리)
