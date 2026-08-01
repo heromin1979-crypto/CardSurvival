@@ -128,6 +128,11 @@ _injectSpriteKeyframes();
 // 직업×성별 → 플레이어 스프라이트시트 키. 신규 시트 제작 시 여기만 추가하면 된다.
 export const PLAYER_SPRITE_KEYS = {
   'doctor:F': 'doctor_f',
+  'soldier:M': 'soldier_m',
+  'firefighter:M': 'firefighter_m',
+  'homeless:M': 'homeless_m',
+  'chef:M': 'chef_m',
+  'engineer:M': 'engineer_m',
 };
 
 export const COMPANION_SPRITE_KEYS = {

@@ -2,7 +2,7 @@
   "doctor_f": {
     "src": "/assets/images/combat/spritesheets/doctor_f_sheet.png",
     "cols": 6,
-    "rows": 4,
+    "rows": 8,
     "motions": {
       "idle": {
         "row": 0,
@@ -10,25 +10,359 @@
         "durationMs": 900,
         "locomotion": "stationary"
       },
-      "basic_attack": {
+      "melee": {
         "row": 1,
         "loop": false,
         "durationMs": 720,
         "locomotion": "approach"
       },
-      "hit": {
+      "ranged": {
         "row": 2,
         "loop": false,
-        "durationMs": 420,
+        "durationMs": 680,
+        "locomotion": "stationary"
+      },
+      "support": {
+        "row": 3,
+        "loop": false,
+        "durationMs": 760,
+        "locomotion": "stationary"
+      },
+      "guard": {
+        "row": 4,
+        "loop": false,
+        "durationMs": 640,
+        "locomotion": "stationary"
+      },
+      "move": {
+        "row": 5,
+        "loop": false,
+        "durationMs": 650,
+        "locomotion": "approach"
+      },
+      "hit": {
+        "row": 6,
+        "loop": false,
+        "durationMs": 500,
         "locomotion": "stationary"
       },
       "death": {
-        "row": 3,
+        "row": 7,
         "loop": false,
-        "durationMs": 900,
+        "durationMs": 1100,
         "locomotion": "stationary",
         "holdLast": true
       }
+    },
+    "aliases": {
+      "basic_attack": "melee",
+      "reposition": "move",
+      "victory": "idle"
+    }
+  },
+  "soldier_m": {
+    "src": "/assets/images/combat/spritesheets/soldier_m_sheet.png",
+    "cols": 6,
+    "rows": 8,
+    "motions": {
+      "idle": {
+        "row": 0,
+        "loop": true,
+        "durationMs": 900,
+        "locomotion": "stationary"
+      },
+      "melee": {
+        "row": 1,
+        "loop": false,
+        "durationMs": 720,
+        "locomotion": "approach"
+      },
+      "ranged": {
+        "row": 2,
+        "loop": false,
+        "durationMs": 680,
+        "locomotion": "stationary"
+      },
+      "support": {
+        "row": 3,
+        "loop": false,
+        "durationMs": 760,
+        "locomotion": "stationary"
+      },
+      "guard": {
+        "row": 4,
+        "loop": false,
+        "durationMs": 640,
+        "locomotion": "stationary"
+      },
+      "move": {
+        "row": 5,
+        "loop": false,
+        "durationMs": 650,
+        "locomotion": "approach"
+      },
+      "hit": {
+        "row": 6,
+        "loop": false,
+        "durationMs": 500,
+        "locomotion": "stationary"
+      },
+      "death": {
+        "row": 7,
+        "loop": false,
+        "durationMs": 1100,
+        "locomotion": "stationary",
+        "holdLast": true
+      }
+    },
+    "aliases": {
+      "basic_attack": "melee",
+      "reposition": "move",
+      "victory": "idle"
+    }
+  },
+  "firefighter_m": {
+    "src": "/assets/images/combat/spritesheets/firefighter_m_sheet.png",
+    "cols": 6,
+    "rows": 8,
+    "motions": {
+      "idle": {
+        "row": 0,
+        "loop": true,
+        "durationMs": 900,
+        "locomotion": "stationary"
+      },
+      "melee": {
+        "row": 1,
+        "loop": false,
+        "durationMs": 720,
+        "locomotion": "approach"
+      },
+      "ranged": {
+        "row": 2,
+        "loop": false,
+        "durationMs": 680,
+        "locomotion": "stationary"
+      },
+      "support": {
+        "row": 3,
+        "loop": false,
+        "durationMs": 760,
+        "locomotion": "stationary"
+      },
+      "guard": {
+        "row": 4,
+        "loop": false,
+        "durationMs": 640,
+        "locomotion": "stationary"
+      },
+      "move": {
+        "row": 5,
+        "loop": false,
+        "durationMs": 650,
+        "locomotion": "approach"
+      },
+      "hit": {
+        "row": 6,
+        "loop": false,
+        "durationMs": 500,
+        "locomotion": "stationary"
+      },
+      "death": {
+        "row": 7,
+        "loop": false,
+        "durationMs": 1100,
+        "locomotion": "stationary",
+        "holdLast": true
+      }
+    },
+    "aliases": {
+      "basic_attack": "melee",
+      "reposition": "move",
+      "victory": "idle"
+    }
+  },
+  "homeless_m": {
+    "src": "/assets/images/combat/spritesheets/homeless_m_sheet.png",
+    "cols": 6,
+    "rows": 8,
+    "motions": {
+      "idle": {
+        "row": 0,
+        "loop": true,
+        "durationMs": 900,
+        "locomotion": "stationary"
+      },
+      "melee": {
+        "row": 1,
+        "loop": false,
+        "durationMs": 720,
+        "locomotion": "approach"
+      },
+      "ranged": {
+        "row": 2,
+        "loop": false,
+        "durationMs": 680,
+        "locomotion": "stationary"
+      },
+      "support": {
+        "row": 3,
+        "loop": false,
+        "durationMs": 760,
+        "locomotion": "stationary"
+      },
+      "guard": {
+        "row": 4,
+        "loop": false,
+        "durationMs": 640,
+        "locomotion": "stationary"
+      },
+      "move": {
+        "row": 5,
+        "loop": false,
+        "durationMs": 650,
+        "locomotion": "approach"
+      },
+      "hit": {
+        "row": 6,
+        "loop": false,
+        "durationMs": 500,
+        "locomotion": "stationary"
+      },
+      "death": {
+        "row": 7,
+        "loop": false,
+        "durationMs": 1100,
+        "locomotion": "stationary",
+        "holdLast": true
+      }
+    },
+    "aliases": {
+      "basic_attack": "melee",
+      "reposition": "move",
+      "victory": "idle"
+    }
+  },
+  "chef_m": {
+    "src": "/assets/images/combat/spritesheets/chef_m_sheet.png",
+    "cols": 6,
+    "rows": 8,
+    "motions": {
+      "idle": {
+        "row": 0,
+        "loop": true,
+        "durationMs": 900,
+        "locomotion": "stationary"
+      },
+      "melee": {
+        "row": 1,
+        "loop": false,
+        "durationMs": 720,
+        "locomotion": "approach"
+      },
+      "ranged": {
+        "row": 2,
+        "loop": false,
+        "durationMs": 680,
+        "locomotion": "stationary"
+      },
+      "support": {
+        "row": 3,
+        "loop": false,
+        "durationMs": 760,
+        "locomotion": "stationary"
+      },
+      "guard": {
+        "row": 4,
+        "loop": false,
+        "durationMs": 640,
+        "locomotion": "stationary"
+      },
+      "move": {
+        "row": 5,
+        "loop": false,
+        "durationMs": 650,
+        "locomotion": "approach"
+      },
+      "hit": {
+        "row": 6,
+        "loop": false,
+        "durationMs": 500,
+        "locomotion": "stationary"
+      },
+      "death": {
+        "row": 7,
+        "loop": false,
+        "durationMs": 1100,
+        "locomotion": "stationary",
+        "holdLast": true
+      }
+    },
+    "aliases": {
+      "basic_attack": "melee",
+      "reposition": "move",
+      "victory": "idle"
+    }
+  },
+  "engineer_m": {
+    "src": "/assets/images/combat/spritesheets/engineer_m_sheet.png",
+    "cols": 6,
+    "rows": 8,
+    "motions": {
+      "idle": {
+        "row": 0,
+        "loop": true,
+        "durationMs": 900,
+        "locomotion": "stationary"
+      },
+      "melee": {
+        "row": 1,
+        "loop": false,
+        "durationMs": 720,
+        "locomotion": "approach"
+      },
+      "ranged": {
+        "row": 2,
+        "loop": false,
+        "durationMs": 680,
+        "locomotion": "stationary"
+      },
+      "support": {
+        "row": 3,
+        "loop": false,
+        "durationMs": 760,
+        "locomotion": "stationary"
+      },
+      "guard": {
+        "row": 4,
+        "loop": false,
+        "durationMs": 640,
+        "locomotion": "stationary"
+      },
+      "move": {
+        "row": 5,
+        "loop": false,
+        "durationMs": 650,
+        "locomotion": "approach"
+      },
+      "hit": {
+        "row": 6,
+        "loop": false,
+        "durationMs": 500,
+        "locomotion": "stationary"
+      },
+      "death": {
+        "row": 7,
+        "loop": false,
+        "durationMs": 1100,
+        "locomotion": "stationary",
+        "holdLast": true
+      }
+    },
+    "aliases": {
+      "basic_attack": "melee",
+      "reposition": "move",
+      "victory": "idle"
     }
   },
   "soldier_companion": {

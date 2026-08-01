@@ -140,7 +140,7 @@ describe('CombatUI rank lineup layout', () => {
 
   it('marks non-sheet player images as blended fallback assets', () => {
     GameState.player.characterId = 'soldier';
-    GameState.player.gender = 'M';
+    GameState.player.gender = 'F';
 
     CombatUI.render();
 
@@ -148,7 +148,7 @@ describe('CombatUI rank lineup layout', () => {
 
     expect(fallback).not.toBeNull();
     expect(fallback?.classList.contains('cv-player-img')).toBe(true);
-    expect(fallback?.getAttribute('src')).toContain('assets/images/combat/player_M_cutout.png');
+    expect(fallback?.getAttribute('src')).toContain('assets/images/combat/player_F_cutout.png');
   });
 
   it('renders generated enemy sprite sheets by enemy id and type fallback', () => {

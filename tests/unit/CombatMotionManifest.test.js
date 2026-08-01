@@ -7,6 +7,49 @@ import {
 } from '../../js/data/combatMotionManifest.js';
 import { validateCombatMotionManifest } from '../../js/data/validate.js';
 import { COMBAT_SPRITE_SHEETS } from '../../js/ui/combat/combatUiAssets.js';
+import { PLAYER_SPRITE_KEYS } from '../../js/ui/combat/combatUiAssets.js';
+import { COMBAT_SKILLS } from '../../js/data/combatSkills.js';
+
+const PLAYER_SHEET_KEYS = Object.freeze({
+  'doctor:F': 'doctor_f',
+  'soldier:M': 'soldier_m',
+  'firefighter:M': 'firefighter_m',
+  'homeless:M': 'homeless_m',
+  'chef:M': 'chef_m',
+  'engineer:M': 'engineer_m',
+});
+
+const PLAYER_MOTION_ROWS = Object.freeze([
+  'idle',
+  'melee',
+  'ranged',
+  'support',
+  'guard',
+  'move',
+  'hit',
+  'death',
+]);
+
+const PLAYER_SKILL_MOTIONS = Object.freeze({
+  doctor_precise_cut: 'melee',
+  doctor_triage: 'support',
+  doctor_diagnose: 'support',
+  soldier_burst_fire: 'ranged',
+  soldier_suppressive_fire: 'ranged',
+  soldier_tactical_shift: 'move',
+  firefighter_axe_swing: 'melee',
+  firefighter_rescue_guard: 'guard',
+  firefighter_force_advance: 'move',
+  homeless_dirty_fighting: 'melee',
+  homeless_slip_away: 'move',
+  homeless_scavenge_weapon: 'support',
+  chef_knife_flurry: 'melee',
+  chef_field_ration: 'support',
+  chef_hot_pan: 'melee',
+  engineer_wrench_strike: 'melee',
+  engineer_improvised_cover: 'guard',
+  engineer_shock_trap: 'support',
+});
 
 function motionFixture(overrides = {}) {
   return {
@@ -87,8 +130,8 @@ describe('current combat motion registry', () => {
       .toEqual(expect.arrayContaining([expect.stringContaining('missing_sheet.png')]));
   });
 
-  it('maps all 23 currently displayed sheets to synchronous manifest entries', () => {
-    expect(Object.keys(COMBAT_SPRITE_SHEETS)).toHaveLength(23);
+  it('maps all 28 currently displayed sheets to synchronous manifest entries', () => {
+    expect(Object.keys(COMBAT_SPRITE_SHEETS)).toHaveLength(28);
     expect(Object.keys(COMBAT_SPRITE_SHEETS).sort())
       .toEqual(Object.keys(COMBAT_MOTION_MANIFEST).sort());
 
@@ -129,6 +172,39 @@ describe('current combat motion registry', () => {
   it('calculates the CSS row position from the synchronous registry dimensions', () => {
     expect(spriteRowPercent(1, 4)).toBeCloseTo(33.3333, 4);
     expect(spriteRowPercent(0, 1)).toBe(0);
+  });
+
+  it('maps all six playable character identities to dedicated player sheets', () => {
+    expect(PLAYER_SPRITE_KEYS).toEqual(PLAYER_SHEET_KEYS);
+  });
+
+  it('defines the exact six-player 6x8 semantic row contract', () => {
+    for (const sheetKey of Object.values(PLAYER_SHEET_KEYS)) {
+      const sheet = COMBAT_MOTION_MANIFEST[sheetKey];
+      expect(sheet).toBeDefined();
+      expect(sheet.cols).toBe(6);
+      expect(sheet.rows).toBe(8);
+      expect(Object.keys(sheet.motions)).toEqual(PLAYER_MOTION_ROWS);
+      expect(Object.values(sheet.motions).map(motion => motion.row))
+        .toEqual(PLAYER_MOTION_ROWS.map((_, row) => row));
+      expect(sheet.motions.idle.loop).toBe(true);
+      for (const motionKey of PLAYER_MOTION_ROWS.slice(1)) {
+        expect(sheet.motions[motionKey].loop).toBe(false);
+      }
+      expect(resolveCombatMotion(sheetKey, 'victory')).toMatchObject({ row: 0 });
+    }
+  });
+
+  it('keeps all 18 unique player skills on their reviewed semantic rows', () => {
+    expect(Object.keys(PLAYER_SKILL_MOTIONS)).toHaveLength(18);
+    for (const [skillId, motionKey] of Object.entries(PLAYER_SKILL_MOTIONS)) {
+      expect(COMBAT_SKILLS[skillId]?.motionKey, skillId).toBe(motionKey);
+      const characterId = skillId.split('_')[0];
+      const gender = characterId === 'doctor' ? 'F' : 'M';
+      const sheetKey = PLAYER_SHEET_KEYS[`${characterId}:${gender}`];
+      expect(resolveCombatMotion(sheetKey, motionKey), `${skillId}/${sheetKey}`)
+        .toMatchObject({ row: PLAYER_MOTION_ROWS.indexOf(motionKey) });
+    }
   });
 });
 

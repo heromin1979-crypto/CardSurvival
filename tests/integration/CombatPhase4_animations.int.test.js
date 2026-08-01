@@ -10,6 +10,39 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import CombatUI  from '../../js/ui/CombatUI.js';
 import GameState from '../../js/core/GameState.js';
 import * as CombatUiAssets from '../../js/ui/combat/combatUiAssets.js';
+import { COMBAT_SKILLS } from '../../js/data/combatSkills.js';
+
+const PLAYER_SKILL_CASES = [
+  ['doctor', 'F', 'doctor_precise_cut'],
+  ['doctor', 'F', 'doctor_triage'],
+  ['doctor', 'F', 'doctor_diagnose'],
+  ['soldier', 'M', 'soldier_burst_fire'],
+  ['soldier', 'M', 'soldier_suppressive_fire'],
+  ['soldier', 'M', 'soldier_tactical_shift'],
+  ['firefighter', 'M', 'firefighter_axe_swing'],
+  ['firefighter', 'M', 'firefighter_rescue_guard'],
+  ['firefighter', 'M', 'firefighter_force_advance'],
+  ['homeless', 'M', 'homeless_dirty_fighting'],
+  ['homeless', 'M', 'homeless_slip_away'],
+  ['homeless', 'M', 'homeless_scavenge_weapon'],
+  ['chef', 'M', 'chef_knife_flurry'],
+  ['chef', 'M', 'chef_field_ration'],
+  ['chef', 'M', 'chef_hot_pan'],
+  ['engineer', 'M', 'engineer_wrench_strike'],
+  ['engineer', 'M', 'engineer_improvised_cover'],
+  ['engineer', 'M', 'engineer_shock_trap'],
+];
+
+const PLAYER_ROW_BY_MOTION = {
+  idle: 0,
+  melee: 1,
+  ranged: 2,
+  support: 3,
+  guard: 4,
+  move: 5,
+  hit: 6,
+  death: 7,
+};
 
 function setupDom() {
   document.body.innerHTML = `
@@ -124,6 +157,61 @@ describe('_playFx — 개별 연출 분기', () => {
     expect(player.classList.contains('hit')).toBe(true);
     expect(player.querySelector('.cv-fx-rupture')).not.toBeNull();
     expect(player.querySelector('.dmg-popup').textContent).toBe('-11');
+  });
+
+  it.each(PLAYER_SKILL_CASES)(
+    '%s:%s의 %s가 production action FX에서 검토된 전용 행을 재생한다',
+    (characterId, gender, skillId) => {
+      GameState.player = { characterId, gender };
+      const skill = COMBAT_SKILLS[skillId];
+      const damage = skill.effects.some(effect => effect.type === 'damage') ? 8 : 0;
+      const targetEnemy = damage > 0;
+      CombatUI._playFx({
+        kind: 'action',
+        actorId: 'player',
+        actorSide: 'ally',
+        actorIndex: 0,
+        targetId: targetEnemy ? 'enemy:0' : 'player',
+        targetSide: targetEnemy ? 'enemy' : 'ally',
+        targetIndex: 0,
+        skillId,
+        motionKey: skill.motionKey,
+        impactFx: targetEnemy ? (skill.motionKey === 'ranged' ? 'shot' : 'slash') : 'support',
+        damage,
+        healing: 0,
+        crit: false,
+        miss: false,
+        killed: false,
+      });
+
+      const row = PLAYER_ROW_BY_MOTION[skill.motionKey];
+      const expected = `${((row / 7) * 100).toFixed(4)}%`;
+      expect(document.querySelector('.cv-player .combat-sprite-sheet')
+        .style.getPropertyValue('--sprite-row-y')).toBe(expected);
+    },
+  );
+
+  it('routes player guard, reposition, hit, death, and victory through the dedicated sheet rows', () => {
+    GameState.player = { characterId: 'engineer', gender: 'M' };
+    const sprite = document.querySelector('.cv-player .combat-sprite-sheet');
+
+    CombatUI._playFx({ kind: 'guard', targetId: 'player' });
+    expect(sprite.style.getPropertyValue('--sprite-row-y')).toBe('57.1429%');
+
+    CombatUI._playFx({ kind: 'move', target: 'player', direction: 'forward' });
+    expect(sprite.style.getPropertyValue('--sprite-row-y')).toBe('71.4286%');
+
+    CombatUI._playFx({ kind: 'enemyAttack', enemyIdx: 0, fx: 'claw', dmg: 7 });
+    expect(sprite.style.getPropertyValue('--sprite-row-y')).toBe('85.7143%');
+
+    CombatUI._playFx({ kind: 'playerDeath' });
+    expect(sprite.style.getPropertyValue('--sprite-row-y')).toBe('100.0000%');
+    expect(sprite.style.animationFillMode).toBe('forwards');
+
+    CombatUI._playFx({ kind: 'victory' });
+    expect(sprite.style.getPropertyValue('--sprite-row-y')).toBe('0.0000%');
+    expect(sprite.style.animationIterationCount).toBe('1');
+    expect(sprite.style.animationFillMode).toBe('forwards');
   });
 
   it('motions 메타데이터가 있으면 실제 4행 범위의 motionKey 행과 고정 사격 이동을 사용한다', () => {

@@ -20,6 +20,27 @@ function fourRowSheet(src) {
   });
 }
 
+const PLAYER_MOTIONS = Object.freeze({
+  idle: Object.freeze({ row: 0, loop: true, durationMs: 900, locomotion: 'stationary' }),
+  melee: Object.freeze({ row: 1, loop: false, durationMs: 720, locomotion: 'approach' }),
+  ranged: Object.freeze({ row: 2, loop: false, durationMs: 680, locomotion: 'stationary' }),
+  support: Object.freeze({ row: 3, loop: false, durationMs: 760, locomotion: 'stationary' }),
+  guard: Object.freeze({ row: 4, loop: false, durationMs: 640, locomotion: 'stationary' }),
+  move: Object.freeze({ row: 5, loop: false, durationMs: 650, locomotion: 'approach' }),
+  hit: Object.freeze({ row: 6, loop: false, durationMs: 500, locomotion: 'stationary' }),
+  death: Object.freeze({ row: 7, loop: false, durationMs: 1100, locomotion: 'stationary', holdLast: true }),
+});
+
+function playerSheet(src) {
+  return Object.freeze({
+    src,
+    cols: 6,
+    rows: 8,
+    motions: PLAYER_MOTIONS,
+    aliases: Object.freeze({ basic_attack: 'melee', reposition: 'move', victory: 'idle' }),
+  });
+}
+
 function motionSheet(src, rows, motions, aliases) {
   return Object.freeze({
     src,
@@ -35,7 +56,12 @@ function motionSheet(src, rows, motions, aliases) {
 // 현재 전투 화면에서 실제로 표시하는 기존 6×4 시트만 선언한다.
 // 전용 roster 시트와 확장 모션은 해당 자산을 추가하는 후속 작업에서 함께 등록한다.
 export const COMBAT_MOTION_MANIFEST = Object.freeze({
-  doctor_f: fourRowSheet('/assets/images/combat/spritesheets/doctor_f_sheet.png'),
+  doctor_f: playerSheet('/assets/images/combat/spritesheets/doctor_f_sheet.png'),
+  soldier_m: playerSheet('/assets/images/combat/spritesheets/soldier_m_sheet.png'),
+  firefighter_m: playerSheet('/assets/images/combat/spritesheets/firefighter_m_sheet.png'),
+  homeless_m: playerSheet('/assets/images/combat/spritesheets/homeless_m_sheet.png'),
+  chef_m: playerSheet('/assets/images/combat/spritesheets/chef_m_sheet.png'),
+  engineer_m: playerSheet('/assets/images/combat/spritesheets/engineer_m_sheet.png'),
   soldier_companion: fourRowSheet('/assets/images/combat/spritesheets/soldier_companion_sheet.png'),
   nurse_companion: fourRowSheet('/assets/images/combat/spritesheets/nurse_companion_sheet.png'),
   zombie_patient_dormant: motionSheet(

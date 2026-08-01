@@ -1,0 +1,343 @@
+{
+  "version": 1,
+  "generatedBy": "/tools/render_player_motion_preview.py",
+  "preview": "/docs/analysis/generated/player_motion_preview.png",
+  "motions": [
+    "idle",
+    "melee",
+    "ranged",
+    "support",
+    "guard",
+    "move",
+    "hit",
+    "death"
+  ],
+  "openReworkCount": 0,
+  "rejectedGenerationCount": 1,
+  "characters": [
+    {
+      "sheetKey": "doctor_f",
+      "path": "/assets/images/combat/spritesheets/doctor_f_sheet.png",
+      "width": 1536,
+      "height": 2048,
+      "sha256": "f2594367cc9dffec1db6e973c2ab729554e7d0358ca701a064a72849c4b4c9e3",
+      "rows": [
+        {
+          "row": 0,
+          "motion": "idle",
+          "verdict": "PASS"
+        },
+        {
+          "row": 1,
+          "motion": "melee",
+          "verdict": "PASS"
+        },
+        {
+          "row": 2,
+          "motion": "ranged",
+          "verdict": "PASS"
+        },
+        {
+          "row": 3,
+          "motion": "support",
+          "verdict": "PASS"
+        },
+        {
+          "row": 4,
+          "motion": "guard",
+          "verdict": "PASS"
+        },
+        {
+          "row": 5,
+          "motion": "move",
+          "verdict": "PASS"
+        },
+        {
+          "row": 6,
+          "motion": "hit",
+          "verdict": "PASS"
+        },
+        {
+          "row": 7,
+          "motion": "death",
+          "verdict": "PASS"
+        }
+      ],
+      "manualQa": {
+        "identity": "PASS",
+        "fullBody": "PASS",
+        "clipping": "PASS"
+      }
+    },
+    {
+      "sheetKey": "soldier_m",
+      "path": "/assets/images/combat/spritesheets/soldier_m_sheet.png",
+      "width": 1536,
+      "height": 2048,
+      "sha256": "55228b248a7aa7d016a18c0f760a55015d47afc3f60d39cd80a7345dac8afe94",
+      "rows": [
+        {
+          "row": 0,
+          "motion": "idle",
+          "verdict": "PASS"
+        },
+        {
+          "row": 1,
+          "motion": "melee",
+          "verdict": "PASS"
+        },
+        {
+          "row": 2,
+          "motion": "ranged",
+          "verdict": "PASS"
+        },
+        {
+          "row": 3,
+          "motion": "support",
+          "verdict": "PASS"
+        },
+        {
+          "row": 4,
+          "motion": "guard",
+          "verdict": "PASS"
+        },
+        {
+          "row": 5,
+          "motion": "move",
+          "verdict": "PASS"
+        },
+        {
+          "row": 6,
+          "motion": "hit",
+          "verdict": "PASS"
+        },
+        {
+          "row": 7,
+          "motion": "death",
+          "verdict": "PASS"
+        }
+      ],
+      "manualQa": {
+        "identity": "PASS",
+        "fullBody": "PASS",
+        "clipping": "PASS"
+      }
+    },
+    {
+      "sheetKey": "firefighter_m",
+      "path": "/assets/images/combat/spritesheets/firefighter_m_sheet.png",
+      "width": 1536,
+      "height": 2048,
+      "sha256": "bc89c75a9cd6bf492a87e6a1a0d07318ec1e088685fe598c6c1e07ed4c8f059d",
+      "rows": [
+        {
+          "row": 0,
+          "motion": "idle",
+          "verdict": "PASS"
+        },
+        {
+          "row": 1,
+          "motion": "melee",
+          "verdict": "PASS"
+        },
+        {
+          "row": 2,
+          "motion": "ranged",
+          "verdict": "PASS"
+        },
+        {
+          "row": 3,
+          "motion": "support",
+          "verdict": "PASS"
+        },
+        {
+          "row": 4,
+          "motion": "guard",
+          "verdict": "PASS"
+        },
+        {
+          "row": 5,
+          "motion": "move",
+          "verdict": "PASS"
+        },
+        {
+          "row": 6,
+          "motion": "hit",
+          "verdict": "PASS"
+        },
+        {
+          "row": 7,
+          "motion": "death",
+          "verdict": "PASS"
+        }
+      ],
+      "manualQa": {
+        "identity": "PASS",
+        "fullBody": "PASS",
+        "clipping": "PASS"
+      }
+    },
+    {
+      "sheetKey": "homeless_m",
+      "path": "/assets/images/combat/spritesheets/homeless_m_sheet.png",
+      "width": 1536,
+      "height": 2048,
+      "sha256": "7e26ffaab4b5097d997ee42255af47066dde968786e2e1f1e03cad60da7f18e2",
+      "rows": [
+        {
+          "row": 0,
+          "motion": "idle",
+          "verdict": "PASS"
+        },
+        {
+          "row": 1,
+          "motion": "melee",
+          "verdict": "PASS"
+        },
+        {
+          "row": 2,
+          "motion": "ranged",
+          "verdict": "PASS"
+        },
+        {
+          "row": 3,
+          "motion": "support",
+          "verdict": "PASS"
+        },
+        {
+          "row": 4,
+          "motion": "guard",
+          "verdict": "PASS"
+        },
+        {
+          "row": 5,
+          "motion": "move",
+          "verdict": "PASS"
+        },
+        {
+          "row": 6,
+          "motion": "hit",
+          "verdict": "PASS"
+        },
+        {
+          "row": 7,
+          "motion": "death",
+          "verdict": "PASS"
+        }
+      ],
+      "manualQa": {
+        "identity": "PASS",
+        "fullBody": "PASS",
+        "clipping": "PASS"
+      }
+    },
+    {
+      "sheetKey": "chef_m",
+      "path": "/assets/images/combat/spritesheets/chef_m_sheet.png",
+      "width": 1536,
+      "height": 2048,
+      "sha256": "914fda87210ca0e9be4196bfa4c146ff7fc3a24d5b1ee995b320fba77e7b0cc1",
+      "rows": [
+        {
+          "row": 0,
+          "motion": "idle",
+          "verdict": "PASS"
+        },
+        {
+          "row": 1,
+          "motion": "melee",
+          "verdict": "PASS"
+        },
+        {
+          "row": 2,
+          "motion": "ranged",
+          "verdict": "PASS"
+        },
+        {
+          "row": 3,
+          "motion": "support",
+          "verdict": "PASS"
+        },
+        {
+          "row": 4,
+          "motion": "guard",
+          "verdict": "PASS"
+        },
+        {
+          "row": 5,
+          "motion": "move",
+          "verdict": "PASS"
+        },
+        {
+          "row": 6,
+          "motion": "hit",
+          "verdict": "PASS"
+        },
+        {
+          "row": 7,
+          "motion": "death",
+          "verdict": "PASS"
+        }
+      ],
+      "manualQa": {
+        "identity": "PASS",
+        "fullBody": "PASS",
+        "clipping": "PASS"
+      }
+    },
+    {
+      "sheetKey": "engineer_m",
+      "path": "/assets/images/combat/spritesheets/engineer_m_sheet.png",
+      "width": 1536,
+      "height": 2048,
+      "sha256": "7e50b5557c67ca22632baf957669380d53a982fabf79408881bcfb6777ccbc91",
+      "rows": [
+        {
+          "row": 0,
+          "motion": "idle",
+          "verdict": "PASS"
+        },
+        {
+          "row": 1,
+          "motion": "melee",
+          "verdict": "PASS"
+        },
+        {
+          "row": 2,
+          "motion": "ranged",
+          "verdict": "PASS"
+        },
+        {
+          "row": 3,
+          "motion": "support",
+          "verdict": "PASS"
+        },
+        {
+          "row": 4,
+          "motion": "guard",
+          "verdict": "PASS"
+        },
+        {
+          "row": 5,
+          "motion": "move",
+          "verdict": "PASS"
+        },
+        {
+          "row": 6,
+          "motion": "hit",
+          "verdict": "PASS"
+        },
+        {
+          "row": 7,
+          "motion": "death",
+          "verdict": "PASS"
+        }
+      ],
+      "manualQa": {
+        "identity": "PASS",
+        "fullBody": "PASS",
+        "clipping": "PASS"
+      }
+    }
+  ]
+}

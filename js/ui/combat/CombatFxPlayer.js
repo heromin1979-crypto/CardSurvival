@@ -186,6 +186,7 @@ export const CombatFxPlayer = {
           break;
         }
         this._spawnFxOverlay(player, fx.impactFx ?? fx.fx ?? 'claw');
+        this._playSpriteMotion(player, this._playerSpriteSheetKey(), 'hit', 620);
         this._motion(player, ['motion-player-hit', this._hitReactionMotion(fx)], 620);
         this._animate(player, 'hit');
         this._spawnFloatText(player, `-${fx.dmg}`, fx.crit ? 'crit' : 'dmg');
@@ -324,7 +325,9 @@ export const CombatFxPlayer = {
         break;
       }
       case 'guard': {
-        this._motion(this._playerSpriteEl(), 'motion-guard-brace', 640);
+        const player = this._playerSpriteEl();
+        this._playSpriteMotion(player, this._playerSpriteSheetKey(), 'guard', 640);
+        this._motion(player, 'motion-guard-brace', 640);
         break;
       }
       case 'useItem': {
@@ -347,6 +350,9 @@ export const CombatFxPlayer = {
           : fx.direction === 'back'
             ? 'motion-move-back'
             : 'motion-move-forward';
+        if (actor === this._playerSpriteEl()) {
+          this._playSpriteMotion(actor, this._playerSpriteSheetKey(), 'move', 650);
+        }
         this._motion(actor, motion, 650);
         break;
       }
@@ -359,11 +365,15 @@ export const CombatFxPlayer = {
         break;
       }
       case 'playerDeath': {
-        this._motion(this._playerSpriteEl(), 'motion-player-death', 1100);
+        const player = this._playerSpriteEl();
+        this._playSpriteMotion(player, this._playerSpriteSheetKey(), 'death', 1100);
+        this._motion(player, 'motion-player-death', 1100);
         break;
       }
       case 'victory': {
-        this._motion(this._playerSpriteEl(), 'motion-victory', 900);
+        const player = this._playerSpriteEl();
+        this._playSpriteMotion(player, this._playerSpriteSheetKey(), 'victory', 900);
+        this._motion(player, 'motion-victory', 900);
         break;
       }
       case 'defeat': {
@@ -527,9 +537,13 @@ export const CombatFxPlayer = {
   },
 
   _playSpriteMotion(element, sheetKey, motionKey, dur = 0) {
+    const resolved = this._resolveSpriteMotion(sheetKey, motionKey);
+    const motion = motionKey === 'victory' && resolved
+      ? { ...resolved, loop: false, holdLast: true, durationMs: dur || 900 }
+      : resolved;
     return this._playResolvedSpriteMotion(
       element,
-      this._resolveSpriteMotion(sheetKey, motionKey),
+      motion,
       dur,
     );
   },
@@ -553,10 +567,11 @@ export const CombatFxPlayer = {
   },
 
   _playActorActionMotion(element, sheetKey, fx, dur) {
-    const motionKey = fx?.motionKey === 'melee'
-      ? 'basic_attack'
-      : fx?.motionKey ?? 'basic_attack';
-    const motion = this._playSpriteMotion(element, sheetKey, motionKey, dur);
+    const requestedMotionKey = fx?.motionKey ?? 'basic_attack';
+    let motion = this._playSpriteMotion(element, sheetKey, requestedMotionKey, dur);
+    if (!motion && requestedMotionKey !== 'basic_attack') {
+      motion = this._playSpriteMotion(element, sheetKey, 'basic_attack', dur);
+    }
     return {
       motion,
       movementClass: motion?.locomotion === 'approach'

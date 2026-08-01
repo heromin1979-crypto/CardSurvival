@@ -15,6 +15,7 @@ from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
 BASELINE_COMMIT = "50b75fb"
+RESULT_COMMIT = "53daee2"
 REPORT_PATH = ROOT / "docs" / "analysis" / "COMBAT_CHROMA_CLEANUP_REPORT.json"
 NORMALIZER_PATH = ROOT / "tools" / "normalize_combat_sprite_sheets.py"
 ASSEMBLY_PATH = ROOT / "tools" / "build_normal_enemy_motion_sheets.py"
@@ -50,6 +51,11 @@ def _png_from_bytes(data: bytes) -> Image.Image:
 
 def _baseline_bytes(relative: str, commit: str = BASELINE_COMMIT) -> bytes:
     return subprocess.check_output(["git", "show", f"{commit}:{relative}"], cwd=ROOT)
+
+
+def _result_bytes(relative: str) -> bytes:
+    """Read the immutable Task 7 result instead of later task working-tree assets."""
+    return subprocess.check_output(["git", "show", f"{RESULT_COMMIT}:{relative}"], cwd=ROOT)
 
 
 def _source_provenance(relative: str) -> dict:
@@ -120,15 +126,18 @@ def build_report() -> dict:
     recipe_verification = assembly.verify_recipe(recipe)
     validated_provenance = assembly.validate_recipe_contract(recipe)
     assembled_targets = assembly.assemble_sheets(validated_provenance)
-    manifest = json.loads(normalizer.MANIFEST_PATH.read_text(encoding="utf-8"))
+    manifest = json.loads(_result_bytes(normalizer.MANIFEST_PATH.relative_to(ROOT).as_posix()))
     sheets = []
     for sheet_key, entry in sorted(manifest.items()):
         relative = entry["src"].lstrip("/")
         before_bytes = _baseline_bytes(relative)
-        after_bytes = (ROOT / relative).read_bytes()
+        after_bytes = _result_bytes(relative)
         before = _png_from_bytes(before_bytes)
         after = _png_from_bytes(after_bytes)
-        grid = normalizer.grid_for(ROOT / relative, after)
+        cols, rows = entry["cols"], entry["rows"]
+        if after.width % cols or after.height % rows:
+            raise ValueError(f"{relative} size {after.size} is not divisible by {cols}x{rows}")
+        grid = normalizer.Grid(cols, rows, after.width // cols, after.height // rows)
         dimension_changed = before.size != after.size
         source_provenance = _source_provenance(relative) if dimension_changed else {
             "sourcePath": None,

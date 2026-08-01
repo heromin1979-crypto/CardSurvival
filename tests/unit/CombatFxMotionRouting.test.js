@@ -97,7 +97,7 @@ describe('combat FX motion routing', () => {
       locomotion: 'approach',
     });
     expect(player.querySelector('.combat-sprite-sheet').style.getPropertyValue('--sprite-row-y'))
-      .toBe('33.3333%');
+      .toBe('14.2857%');
   });
 
   it('resolves a one-step runtime alias and rejects chained or circular aliases', () => {
@@ -108,7 +108,7 @@ describe('combat FX motion routing', () => {
 
     try {
       expect(applyCombatSpriteManifest({
-        'doctor_f_sheet.png': { aliases: { quick_strike: 'basic_attack' } },
+        'doctor_f_sheet.png': { aliases: { quick_strike: 'melee' } },
       })).toMatchObject({ ok: true });
       expect(CombatUI._playSpriteMotion(player, 'doctor_f', 'quick_strike')).toMatchObject({
         row: 1,
@@ -116,7 +116,7 @@ describe('combat FX motion routing', () => {
       });
 
       applyCombatSpriteManifest({
-        'doctor_f_sheet.png': { aliases: { quick_strike: 'strike', strike: 'basic_attack' } },
+        'doctor_f_sheet.png': { aliases: { quick_strike: 'strike', strike: 'melee' } },
       });
       expect(CombatUI._resolveSpriteMotion('doctor_f', 'quick_strike')).toBeNull();
 
@@ -150,7 +150,7 @@ describe('combat FX motion routing', () => {
     vi.advanceTimersByTime(360);
 
     expect(reflowCount).toBe(2);
-    expect(sprite.style.getPropertyValue('--sprite-row-y')).toBe('33.3333%');
+    expect(sprite.style.getPropertyValue('--sprite-row-y')).toBe('14.2857%');
     vi.advanceTimersByTime(360);
     expect(sprite.style.getPropertyValue('--sprite-row-y')).toBe('');
   });
