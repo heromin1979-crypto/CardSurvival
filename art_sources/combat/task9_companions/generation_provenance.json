@@ -38,11 +38,37 @@
     {"target":"yeongcheol_companion","row":"support","archive":"yeongcheol_support_chroma.png","prompt":"same veteran firefighter, exact six-frame full-body rally strip: plant, inhale, raise fist, sweep arm, point forward, settle"},
     {"target":"tower_doctor_companion","row":"support","archive":"tower_doctor_support_chroma.png","prompt":"same tower doctor alone, exact six-frame full-body case-open, dose-select, inspect, prepare, extend offscreen, close-and-ready strip"},
     {"target":"mechanic_companion","row":"guard","archive":"mechanic_guard_chroma.png","prompt":"same mechanic, exact six-frame full-body toolbox guard strip; no empty or prop-only frame"},
-    {"target":"kitchen_helper_companion","row":"hit","archive":"kitchen_helper_hit_chroma.png","prompt":"same kitchen helper, exact six-frame full-body non-graphic hit-reaction strip; no empty or prop-only frame"}
+    {"target":"kitchen_helper_companion","row":"hit","archive":"kitchen_helper_hit_chroma.png","prompt":"same kitchen helper, exact six-frame full-body non-graphic hit-reaction strip; no empty or prop-only frame"},
+    {"target":"old_survivor_companion","row":"hit","archive":"old_survivor_hit_chroma.png","prompt":"same elderly survivor, exact six complete hit-reaction frames on flat #00ff00 with wide gutters"},
+    {"target":"former_colleague_companion","row":"hit","archive":"former_colleague_hit_chroma.png","prompt":"same construction-worker survivor, exact six complete hit-reaction frames on flat #00ff00 with wide gutters"},
+    {"target":"sohee_companion","row":"hit","archive":"sohee_hit_chroma.png","prompt":"same pharmacist-marksman survivor, exact six complete hit-reaction frames on flat #00ff00 with wide gutters"},
+    {"target":"sous_chef_companion","row":"hit","archive":"sous_chef_hit_chroma.png","prompt":"same sous-chef survivor, exact six complete hit-reaction frames on flat #00ff00 with wide gutters"},
+    {"target":"tower_cook_companion","row":"hit","archive":"tower_cook_hit_chroma.png","prompt":"same tower cook survivor, exact six complete hit-reaction frames on flat #00ff00 with wide gutters"},
+    {"target":"nurse_companion","row":"ranged","archive":"nurse_ranged_chroma.png","prompt":"same nurse survivor, exact six complete improvised ranged frames on flat #00ff00 with wide gutters"},
+    {"target":"soldier_companion","row":"death","archive":"soldier_death_chroma.png","prompt":"same deserter soldier, exact six complete death/fall frames on flat #00ff00 with wide gutters"},
+    {"target":"daehan_companion","row":"ranged","archive":"daehan_ranged_chroma.png","prompt":"same tactical medic, exact six complete handgun frames on flat #00ff00 with wide gutters"},
+    {"target":"jisu_companion","row":"melee,hit,death","archive":"jisu_melee_hit_death_chroma.png","prompt":"same doctor survivor, exact 6x3 complete melee, hit and death rows on flat #00ff00 with wide gutters"},
+    {"target":"kitchen_helper_companion","row":"ranged,support,guard,move,death","archive":"kitchen_helper_supplement_chroma.png","prompt":"same kitchen helper, exact 6x5 complete semantic rows on flat #00ff00 with wide gutters"},
+    {"target":"mechanic_companion","row":"ranged,death","archive":"mechanic_ranged_support_death_rejected_support_chroma.png","selection":"rows 0 and 2 only; row 1 rejected because it depicted another person","prompt":"same mechanic, exact 6x3 ranged, support and death rows on flat #00ff00 with wide gutters"},
+    {"target":"mechanic_companion","row":"support","archive":"mechanic_support_chroma.png","prompt":"same mechanic alone, exact six complete repair/support frames on flat #00ff00 with wide gutters"},
+    {"target":"old_survivor_companion","row":"melee,death","archive":"old_survivor_melee_death_chroma.png","prompt":"same elderly survivor, exact 6x2 complete melee and death rows on flat #00ff00 with wide gutters"},
+    {"target":"student_companion","row":"melee,ranged,support","archive":"student_melee_ranged_support_chroma.png","prompt":"same student survivor, exact 6x3 complete melee, ranged and support rows on flat #00ff00 with wide gutters"},
+    {"target":"student_companion","row":"guard,move,hit,death","archive":"student_guard_move_hit_death_chroma.png","prompt":"same student survivor, exact 6x4 complete guard, move, hit and death rows on flat #00ff00 with wide gutters"},
+    {"target":"tower_doctor_companion","row":"ranged,guard,move,hit","archive":"tower_doctor_ranged_guard_move_hit_chroma.png","prompt":"same tower doctor, exact 6x4 complete ranged, guard, move and hit rows on flat #00ff00 with wide gutters"},
+    {"target":"minjun_companion","row":"death","archive":"minjun_death_chroma.png","prompt":"same tactical soldier Minjun, exact six complete death/fall frames on flat #00ff00 with wide gutters"},
+    {"target":"tower_engineer_companion","row":"death","archive":"tower_engineer_death_chroma.png","prompt":"same tower engineer, exact six complete death/fall frames on flat #00ff00 with wide gutters"},
+    {"target":"tower_merchant_companion","row":"death","archive":"tower_merchant_death_chroma.png","prompt":"same tower merchant, exact six complete death/fall frames on flat #00ff00 with wide gutters"},
+    {"target":"yeongcheol_companion","row":"death","archive":"yeongcheol_death_chroma.png","prompt":"same firefighter Yeongcheol, exact six complete death/fall frames on flat #00ff00 with wide gutters"},
+    {"target":"tower_cook_companion","row":"ranged","archive":"tower_cook_ranged_chroma.png","prompt":"same tower cook, exact six complete improvised ranged frames on flat #00ff00 with wide gutters"}
+    ,{"target":"tower_doctor_companion","row":"death","archive":"tower_doctor_death_chroma.png","prompt":"same tower doctor, exact six complete death/fall frames with full person and medical case in every frame on flat #00ff00 with wide gutters"}
+    ,{"target":"daehan_companion","row":"guard","archive":"daehan_guard_chroma.png","prompt":"same metalworker Daehan, exact six complete guard frames with full person, wrench and compact barrier in every frame on flat #00ff00 with wide gutters"}
+    ,{"target":"tower_engineer_companion","row":"guard","archive":"tower_engineer_guard_chroma.png","prompt":"same tower engineer, exact six complete guard frames with full person, pipe wrench and technical shield in every frame on flat #00ff00 with wide gutters"}
   ],
   "rejected": [
     {"archive":"soldier_companion_rejected_chroma.png","reason":"landscape reference caused an 8-column by 6-row layout; retained as archival provenance and accepted only through the separately named guard source copy"},
-    {"archive":"former_colleague_companion_rejected_chroma.png","reason":"support row contained waist-up crops; no frame from this archive is assembled"}
+    {"archive":"former_colleague_companion_rejected_chroma.png","reason":"support row contained waist-up crops; no frame from this archive is assembled"},
+    {"archive":"student_full_rebuild_rejected_not_archived.png","reason":"first corrective 6x8 attempt still produced five-frame rows and was not copied into the repository"},
+    {"archive":"mechanic_ranged_support_death_rejected_support_chroma.png","reason":"middle support row depicted another person; only ranged row 0 and death row 2 are assembled"}
   ],
   "historicalBaselines": [
     {"sheetKey":"nurse_companion","archive":"nurse_companion_task6_after.png","sha256":"536ded064acca2cdf38ff697c7ea621f2b98fed833d5d255c8b46960930b233b","purpose":"immutable Task 6 chroma-cleanup descendant preserved before Task 9 semantic 6x8 replacement"},

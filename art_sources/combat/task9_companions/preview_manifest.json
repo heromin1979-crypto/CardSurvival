@@ -1,0 +1,989 @@
+{
+    "version":  2,
+    "rendererPath":  "/tools/render_companion_motion_preview.ps1",
+    "rendererSha256":  "8a66c1de2b79080912e8d311323332851a8e91d7534381357d4ee63adbf9acb1",
+    "contactPath":  "/art_sources/combat/task9_companions/companion_motion_contact_sheet.png",
+    "contactSha256":  "67f5c1742ddc3a08b6aec38ee25dad0c6d5c66d79239486154d7dc1e50e1fc27",
+    "sheets":  [
+                   {
+                       "sheetKey":  "old_survivor_companion",
+                       "runtimePath":  "/assets/images/combat/spritesheets/companions/old_survivor_companion_sheet.png",
+                       "runtimeSha256":  "c4b17fe3ef7aeee3dbcd0b1dbf12282a376a5c64750070972b6e1c23a8c6fc5e",
+                       "previewPath":  "/art_sources/combat/task9_companions/review_previews/old_survivor_companion_review.png",
+                       "previewSha256":  "9573bb622ce6a819963d505f1be08cfaac2daff65ae4fde82b5a13fdf4253c96",
+                       "rows":  [
+                                    {
+                                        "motionKey":  "idle",
+                                        "row":  0,
+                                        "pixelSha256":  "2f100c150c5ac6b74bf33a3eda8522255f77a7e1bb34bed8c25c921f1839392e"
+                                    },
+                                    {
+                                        "motionKey":  "melee",
+                                        "row":  1,
+                                        "pixelSha256":  "79ce0ad9ee947ff808177870f2009b6b04dccdbab67841e25e4fa2429506949f"
+                                    },
+                                    {
+                                        "motionKey":  "ranged",
+                                        "row":  2,
+                                        "pixelSha256":  "d2079e884afa731cac986b855f6ca7bcac0c752b659e4138915ce3b92c054f54"
+                                    },
+                                    {
+                                        "motionKey":  "support",
+                                        "row":  3,
+                                        "pixelSha256":  "59708d184e09b9643032c0e968f6922cffcb2bc50853ab1bf29b7a5bf59d3691"
+                                    },
+                                    {
+                                        "motionKey":  "guard",
+                                        "row":  4,
+                                        "pixelSha256":  "bb0ee8aa6b3f1acf0730e8368824d55f0f3719afb45a9b27c5d14c4c85bbbd3e"
+                                    },
+                                    {
+                                        "motionKey":  "move",
+                                        "row":  5,
+                                        "pixelSha256":  "7cacf85ec9926ec08665e49ad3f02d52c7a675aea2c4d81040cb172f0e020508"
+                                    },
+                                    {
+                                        "motionKey":  "hit",
+                                        "row":  6,
+                                        "pixelSha256":  "e28b5d646cc1ca2d7677f5ecdf67267941227fd0fa4d5604b1ef614944778947"
+                                    },
+                                    {
+                                        "motionKey":  "death",
+                                        "row":  7,
+                                        "pixelSha256":  "f3fd3daa5b846e04b32c9485059156a2f6c7dd9d72f0280b1f01e9e54d7e49a4"
+                                    }
+                                ]
+                   },
+                   {
+                       "sheetKey":  "nurse_companion",
+                       "runtimePath":  "/assets/images/combat/spritesheets/nurse_companion_sheet.png",
+                       "runtimeSha256":  "b692c7073af5d86e3cca816045250fb3c426355d4eddd7d524a1becd7d708263",
+                       "previewPath":  "/art_sources/combat/task9_companions/review_previews/nurse_companion_review.png",
+                       "previewSha256":  "a054918b6b69841a1aaf59bc803f68b9821135e00e64b8bef6bed8dd83bfc191",
+                       "rows":  [
+                                    {
+                                        "motionKey":  "idle",
+                                        "row":  0,
+                                        "pixelSha256":  "2c05e86cefa71758704773ac9482fb0f5dd414ffdb0ce1f758b7402e794c7af5"
+                                    },
+                                    {
+                                        "motionKey":  "melee",
+                                        "row":  1,
+                                        "pixelSha256":  "b232236943c6cdd98d1d4db6a56da0c08a348d48c5c5e651c99b6e334f6a4501"
+                                    },
+                                    {
+                                        "motionKey":  "ranged",
+                                        "row":  2,
+                                        "pixelSha256":  "368b83f2e689d9e6e044374ad2523a38ed71a047d3b2379db5176853b42e15e4"
+                                    },
+                                    {
+                                        "motionKey":  "support",
+                                        "row":  3,
+                                        "pixelSha256":  "226c98087cfd7cdc952f34e590a37545b312453ddaece41482d53ca749637bab"
+                                    },
+                                    {
+                                        "motionKey":  "guard",
+                                        "row":  4,
+                                        "pixelSha256":  "b5f8e083e6252590091e7fcb6d4a7baff134db1dd53bd678a52cdaffef8531d8"
+                                    },
+                                    {
+                                        "motionKey":  "move",
+                                        "row":  5,
+                                        "pixelSha256":  "6c3d9e5e020e0980180a2cc4390bf9f61bd08d04a450c5eccee9e42c7a5a45f9"
+                                    },
+                                    {
+                                        "motionKey":  "hit",
+                                        "row":  6,
+                                        "pixelSha256":  "a971123501f22c626b7fb0c5dc4ffc08438e7e6b773022f71f409c63f9367bab"
+                                    },
+                                    {
+                                        "motionKey":  "death",
+                                        "row":  7,
+                                        "pixelSha256":  "98db1aee59f17b3a18e3e38461f17b176c02b15b537467b0a762a6b433549bda"
+                                    }
+                                ]
+                   },
+                   {
+                       "sheetKey":  "soldier_companion",
+                       "runtimePath":  "/assets/images/combat/spritesheets/soldier_companion_sheet.png",
+                       "runtimeSha256":  "a3979cf141b99757ec8c6fbdf077f0ee7b56fceb25358fab6a7bbff92d8b0234",
+                       "previewPath":  "/art_sources/combat/task9_companions/review_previews/soldier_companion_review.png",
+                       "previewSha256":  "29b2465dc8c7ad9ee90d1992165cea9b337e426b76c241ddf28683d6b3f42af5",
+                       "rows":  [
+                                    {
+                                        "motionKey":  "idle",
+                                        "row":  0,
+                                        "pixelSha256":  "f51a1871f1b53569078f9d59718a8fcf9b24f8fa5a1f8c9e3f55752226872a48"
+                                    },
+                                    {
+                                        "motionKey":  "melee",
+                                        "row":  1,
+                                        "pixelSha256":  "50b11c1ae5c8b1704a65c3751d75923abcfcae5aadf7e04ce25e81ec5bef33b6"
+                                    },
+                                    {
+                                        "motionKey":  "ranged",
+                                        "row":  2,
+                                        "pixelSha256":  "23bc50511b81cdaa9320e89634f60fd12662d8d34b8771c029bc15b679f6e4b1"
+                                    },
+                                    {
+                                        "motionKey":  "support",
+                                        "row":  3,
+                                        "pixelSha256":  "65928f7588cbf9723d0d232d81a96b19dc91303df0f9f744d29b034f9dc5d395"
+                                    },
+                                    {
+                                        "motionKey":  "guard",
+                                        "row":  4,
+                                        "pixelSha256":  "79817f86e0b33e065cec65510d620b6e7994875db289056b06c94bc5bd48c410"
+                                    },
+                                    {
+                                        "motionKey":  "move",
+                                        "row":  5,
+                                        "pixelSha256":  "28e80adad7a5ef3a8d287adbd9f29a50d3bdfc36a03b0f5d4bfb1a3f36a62d0f"
+                                    },
+                                    {
+                                        "motionKey":  "hit",
+                                        "row":  6,
+                                        "pixelSha256":  "f9ccaead95a1536461a9ba2e4904b0045ebf174f7f1b6e35f297cc2730a11c7b"
+                                    },
+                                    {
+                                        "motionKey":  "death",
+                                        "row":  7,
+                                        "pixelSha256":  "683d371c066e13a1c56e4b8fd4b26922b72f391a444269b43e4de191d463ff24"
+                                    }
+                                ]
+                   },
+                   {
+                       "sheetKey":  "child_companion",
+                       "runtimePath":  "/assets/images/combat/spritesheets/companions/child_companion_sheet.png",
+                       "runtimeSha256":  "edcf2003203363ee1890a2aaf0e6b8d4c9140dcf2cd0a1462ac0b6fa96e6c2f9",
+                       "previewPath":  "/art_sources/combat/task9_companions/review_previews/child_companion_review.png",
+                       "previewSha256":  "ca1d66a1ad1f3896f3f4c126233a210f33f71dd5f9811734413f09cc322a3833",
+                       "rows":  [
+                                    {
+                                        "motionKey":  "idle",
+                                        "row":  0,
+                                        "pixelSha256":  "38fe1728f50ed0796946172d91a549beb0458b18f5b8d8a1aa455e379b6ece2d"
+                                    },
+                                    {
+                                        "motionKey":  "melee",
+                                        "row":  1,
+                                        "pixelSha256":  "804ddccb7784884c1b2d2fda9bf1c17feae1af1418b4a2c28819a7f89f4ea398"
+                                    },
+                                    {
+                                        "motionKey":  "ranged",
+                                        "row":  2,
+                                        "pixelSha256":  "8028e61513d7ff7e7f2e195068a48fb70fa1761c7668fd57c35f5a126995ac2b"
+                                    },
+                                    {
+                                        "motionKey":  "support",
+                                        "row":  3,
+                                        "pixelSha256":  "883e437c1bd5c02f92b7dacd83f58361a95dfb10f5a4adbacef4f498f23cbf4d"
+                                    },
+                                    {
+                                        "motionKey":  "guard",
+                                        "row":  4,
+                                        "pixelSha256":  "818ebd6db1ebcecd80763cbda9e32eaeeca3c70627dd2ff668b53824d293de3f"
+                                    },
+                                    {
+                                        "motionKey":  "move",
+                                        "row":  5,
+                                        "pixelSha256":  "691bdb4de45fecdabb808c073d99b14c651be3bd6c888903db38aa7a69f4b154"
+                                    },
+                                    {
+                                        "motionKey":  "hit",
+                                        "row":  6,
+                                        "pixelSha256":  "bcfef966d4f0dedc041093bfc755d51242a040a682b94995e8496b2f5c06eea5"
+                                    },
+                                    {
+                                        "motionKey":  "death",
+                                        "row":  7,
+                                        "pixelSha256":  "aabd89adf184502499d2425d2123fc28439dc688efd75180f6f4cc4717a5e8ad"
+                                    }
+                                ]
+                   },
+                   {
+                       "sheetKey":  "mechanic_companion",
+                       "runtimePath":  "/assets/images/combat/spritesheets/companions/mechanic_companion_sheet.png",
+                       "runtimeSha256":  "6d2a2c7301f28125934089e7d685635ea2d8505b561b8928ae17c3a33890a5d9",
+                       "previewPath":  "/art_sources/combat/task9_companions/review_previews/mechanic_companion_review.png",
+                       "previewSha256":  "41495313e921850edd9492a4d5fc6aa43d511f4d00547f98fabcc38c59d100b8",
+                       "rows":  [
+                                    {
+                                        "motionKey":  "idle",
+                                        "row":  0,
+                                        "pixelSha256":  "6be8ceaba370615f02afd4bbe20e330bcf9f245ae908f8bf6719e09401736cf6"
+                                    },
+                                    {
+                                        "motionKey":  "melee",
+                                        "row":  1,
+                                        "pixelSha256":  "a38c8272625d1fdbd5c885a176b5eaa905fa59ace84a58df7b4514d04da65baf"
+                                    },
+                                    {
+                                        "motionKey":  "ranged",
+                                        "row":  2,
+                                        "pixelSha256":  "5b89b71319d015306b9211b0ebeafe2f3bcc0e992642bc0d179f74030fe6cdc4"
+                                    },
+                                    {
+                                        "motionKey":  "support",
+                                        "row":  3,
+                                        "pixelSha256":  "02a299b6fe87ef43a92eb41b048c91d31dd48937c9aa6b9e1e50767f3b989162"
+                                    },
+                                    {
+                                        "motionKey":  "guard",
+                                        "row":  4,
+                                        "pixelSha256":  "b794978749b73b626aca04e80efaf21478b4f00f558b1c65e705d4960080a0e0"
+                                    },
+                                    {
+                                        "motionKey":  "move",
+                                        "row":  5,
+                                        "pixelSha256":  "3a66f00434b0566c471f6feed9963082ade1d04a3c9e4ee4c9357ce844bde30f"
+                                    },
+                                    {
+                                        "motionKey":  "hit",
+                                        "row":  6,
+                                        "pixelSha256":  "4a9ab155aaeaf9c596e7fbb72d7487e404e11dcbef82813913f31cb7f02b6aab"
+                                    },
+                                    {
+                                        "motionKey":  "death",
+                                        "row":  7,
+                                        "pixelSha256":  "ece7f96c4cce5585eac74ff15aea2a2ee7b306225c9e54fb0bfa0b0c49ce083c"
+                                    }
+                                ]
+                   },
+                   {
+                       "sheetKey":  "student_companion",
+                       "runtimePath":  "/assets/images/combat/spritesheets/companions/student_companion_sheet.png",
+                       "runtimeSha256":  "8dde2e38302b6f0e11240cbaf9598a18c4ddb2a5f7292dcc3b62bfca69372511",
+                       "previewPath":  "/art_sources/combat/task9_companions/review_previews/student_companion_review.png",
+                       "previewSha256":  "c5a6e5ae3f2bb000c7beebf6211b3d2df527423b48e33f597b74ba6031d9f001",
+                       "rows":  [
+                                    {
+                                        "motionKey":  "idle",
+                                        "row":  0,
+                                        "pixelSha256":  "dea2e9d27b88bfb20d6ed6ebdd62f76548a0e97aa75085d8e3b1644d5043d4ca"
+                                    },
+                                    {
+                                        "motionKey":  "melee",
+                                        "row":  1,
+                                        "pixelSha256":  "a2e81084af9c89bf52e096c9507bbba2d21581a0ec71250e5bc521370e81e52e"
+                                    },
+                                    {
+                                        "motionKey":  "ranged",
+                                        "row":  2,
+                                        "pixelSha256":  "2776e9c2a5b48b4e8062dce437a0fee00bfafcf5b15d3995646a0f0ded8a1995"
+                                    },
+                                    {
+                                        "motionKey":  "support",
+                                        "row":  3,
+                                        "pixelSha256":  "33c9cc2f5a25c3ee3f91dcf788d7774be8bf49ccf00bc9c406fe48f42c082568"
+                                    },
+                                    {
+                                        "motionKey":  "guard",
+                                        "row":  4,
+                                        "pixelSha256":  "0f31453e2dd4769bf0fdbf74eb447757afcc63c69b8078dce6e3e20248e55ff7"
+                                    },
+                                    {
+                                        "motionKey":  "move",
+                                        "row":  5,
+                                        "pixelSha256":  "097785972ee8a2525b82facbfa82a1789cd8b0fbed0bfe7ca4643e7252735b3c"
+                                    },
+                                    {
+                                        "motionKey":  "hit",
+                                        "row":  6,
+                                        "pixelSha256":  "335743edbb147634187ed0d9f7378425e19456108ee0b1da9ea5f4e4d0604aca"
+                                    },
+                                    {
+                                        "motionKey":  "death",
+                                        "row":  7,
+                                        "pixelSha256":  "942eed7dc31ca69c8f0393e3054e4ce21ad26b6825199cb6568e88b80f862bd6"
+                                    }
+                                ]
+                   },
+                   {
+                       "sheetKey":  "dog_companion",
+                       "runtimePath":  "/assets/images/combat/spritesheets/companions/dog_companion_sheet.png",
+                       "runtimeSha256":  "86fe66142c9ddc0b36e7adef7cfd3c4ab4e3822defb1144ab086684ba76feb6e",
+                       "previewPath":  "/art_sources/combat/task9_companions/review_previews/dog_companion_review.png",
+                       "previewSha256":  "2b70752f7924079b77967d75bb7d3eb29a1d86bc9d8d4c61c228ec17977cf1ac",
+                       "rows":  [
+                                    {
+                                        "motionKey":  "idle",
+                                        "row":  0,
+                                        "pixelSha256":  "9fd46fde44f6d0c6575ab363c4d010e89b5b499b584cfe8c0d391d732ff494a6"
+                                    },
+                                    {
+                                        "motionKey":  "melee",
+                                        "row":  1,
+                                        "pixelSha256":  "3669c6fa5c765c5a4899fe4a96d36f877f99f8bfb1e8297e70070dfe2b1d88af"
+                                    },
+                                    {
+                                        "motionKey":  "ranged",
+                                        "row":  2,
+                                        "pixelSha256":  "e607e86d968f4e6768e7200f3860cccb394cd25e4c8f8e4f70b259eef69d03a7"
+                                    },
+                                    {
+                                        "motionKey":  "support",
+                                        "row":  3,
+                                        "pixelSha256":  "1c95331295233fb149f35aecac2bf7930a603bb536949dff934444111d6ed9c0"
+                                    },
+                                    {
+                                        "motionKey":  "guard",
+                                        "row":  4,
+                                        "pixelSha256":  "7e21ebe59f63fe2f2bdc94de6d3444f9b24aea165dbd8490649ec5654c8dc5bd"
+                                    },
+                                    {
+                                        "motionKey":  "move",
+                                        "row":  5,
+                                        "pixelSha256":  "93baf2af1dbf1e67df5d5b3c53c1d3b3dea5b08b44698ade8920e75acbfc4adc"
+                                    },
+                                    {
+                                        "motionKey":  "hit",
+                                        "row":  6,
+                                        "pixelSha256":  "0b473f3c70dd5dec17779bed979d2765218b7754aa798848d5c1fa832e2e437d"
+                                    },
+                                    {
+                                        "motionKey":  "death",
+                                        "row":  7,
+                                        "pixelSha256":  "4b69ee9bb78af04e6e46b614f9d7d2f32236e9e0bb18fe2e782a7cc6f43e96e3"
+                                    }
+                                ]
+                   },
+                   {
+                       "sheetKey":  "former_colleague_companion",
+                       "runtimePath":  "/assets/images/combat/spritesheets/companions/former_colleague_companion_sheet.png",
+                       "runtimeSha256":  "9e2bab6838cabf126ca482ac83149a5c9760e51c2b81510f417615223f08891e",
+                       "previewPath":  "/art_sources/combat/task9_companions/review_previews/former_colleague_companion_review.png",
+                       "previewSha256":  "8444d09920033a7266e71327d474ff14f64f1c5c2240509cf13561c53022a859",
+                       "rows":  [
+                                    {
+                                        "motionKey":  "idle",
+                                        "row":  0,
+                                        "pixelSha256":  "a416cd0fbdd1f7b053be6d3f206f46e0ba3f0246afec68a626ed30f3f8cc9262"
+                                    },
+                                    {
+                                        "motionKey":  "melee",
+                                        "row":  1,
+                                        "pixelSha256":  "51e1130dbcbaa4fbc41127899c95ec94eceef4a97a90d047ea4bb8d7440d1d42"
+                                    },
+                                    {
+                                        "motionKey":  "ranged",
+                                        "row":  2,
+                                        "pixelSha256":  "e286cc145ce493bd7bb85c2852afb0ba8cd471a7b6409d289fa6d4bdb5be9329"
+                                    },
+                                    {
+                                        "motionKey":  "support",
+                                        "row":  3,
+                                        "pixelSha256":  "42de6967bbea4a8fbd70aac83d9f3984f05b61b6ddd4c610ddb10c282a4b4772"
+                                    },
+                                    {
+                                        "motionKey":  "guard",
+                                        "row":  4,
+                                        "pixelSha256":  "22beaf47c77f04328027e566a746b1fa25787246447780ea5e93f700f33b5983"
+                                    },
+                                    {
+                                        "motionKey":  "move",
+                                        "row":  5,
+                                        "pixelSha256":  "c98a52fc145b7015d5c91e8f3f4ce1eaa5d6a6d6228c37fcd3233d8e212d6c66"
+                                    },
+                                    {
+                                        "motionKey":  "hit",
+                                        "row":  6,
+                                        "pixelSha256":  "9e88c1717cfec94002503ab726896c7d450e2dab0fc6a01f82677e23e830758d"
+                                    },
+                                    {
+                                        "motionKey":  "death",
+                                        "row":  7,
+                                        "pixelSha256":  "e4450949e5c5052ba74d45d85faf7c062447b6eb817f0ee138857235c948c4e2"
+                                    }
+                                ]
+                   },
+                   {
+                       "sheetKey":  "minjun_companion",
+                       "runtimePath":  "/assets/images/combat/spritesheets/companions/minjun_companion_sheet.png",
+                       "runtimeSha256":  "d92e60a972c7ce8fd1fa729453c7a96cadefc909c107a9e701a40c90ec690c07",
+                       "previewPath":  "/art_sources/combat/task9_companions/review_previews/minjun_companion_review.png",
+                       "previewSha256":  "70e6840da776f00662fab29fda322df9aa0e2c2418b6f1117532ac95443fb4ef",
+                       "rows":  [
+                                    {
+                                        "motionKey":  "idle",
+                                        "row":  0,
+                                        "pixelSha256":  "2508e24fa193d2cc5c08d4cfdef3691523e0a167e22136e8147a06640a01236c"
+                                    },
+                                    {
+                                        "motionKey":  "melee",
+                                        "row":  1,
+                                        "pixelSha256":  "c8eee0d0fc6d40fe87ba7bec773977800114d4ecd00d89db8700778554cdce52"
+                                    },
+                                    {
+                                        "motionKey":  "ranged",
+                                        "row":  2,
+                                        "pixelSha256":  "2e5067b128e5009486c3be82acacbce461ad37d6c235ea58ad4a0fe6d81598da"
+                                    },
+                                    {
+                                        "motionKey":  "support",
+                                        "row":  3,
+                                        "pixelSha256":  "126d6b61f2af3661a431bc56db79c1e3b106054b2cec767bb55d21f18d85d563"
+                                    },
+                                    {
+                                        "motionKey":  "guard",
+                                        "row":  4,
+                                        "pixelSha256":  "375c593cb01f634ed28f802acb6f3fa61dd7fedb8473b8c8d9039b0cf45091f4"
+                                    },
+                                    {
+                                        "motionKey":  "move",
+                                        "row":  5,
+                                        "pixelSha256":  "d59fa607c9922310f759d4dad4b9cb9487f2364cd8465e5f47fdb221c58ab683"
+                                    },
+                                    {
+                                        "motionKey":  "hit",
+                                        "row":  6,
+                                        "pixelSha256":  "4e5f9e5c3f5f3152fb51910c97b27e35ae4c377c00199ffc74dd4bab91db7aed"
+                                    },
+                                    {
+                                        "motionKey":  "death",
+                                        "row":  7,
+                                        "pixelSha256":  "99a6a908a9f0d1a6ffaa71d85c5b5cd44e857e9ed1680efc4839efa6e169ba0d"
+                                    }
+                                ]
+                   },
+                   {
+                       "sheetKey":  "sohee_companion",
+                       "runtimePath":  "/assets/images/combat/spritesheets/companions/sohee_companion_sheet.png",
+                       "runtimeSha256":  "29e3f314e83a53659d7edea9ecf4b239d70f440b948b682765a00db17dd75048",
+                       "previewPath":  "/art_sources/combat/task9_companions/review_previews/sohee_companion_review.png",
+                       "previewSha256":  "a253c70d0e126cc9edadf892a448fb49824dd5a0e2784ecc07614f7a36d6944e",
+                       "rows":  [
+                                    {
+                                        "motionKey":  "idle",
+                                        "row":  0,
+                                        "pixelSha256":  "7f6ef26284ce8a61a1da35b3918d091bf350c3efee3b03dffe62f25e19dba816"
+                                    },
+                                    {
+                                        "motionKey":  "melee",
+                                        "row":  1,
+                                        "pixelSha256":  "5e38ca95908e874c8b43530554a540a718a6265022a50fb8554f75e51ef6f27a"
+                                    },
+                                    {
+                                        "motionKey":  "ranged",
+                                        "row":  2,
+                                        "pixelSha256":  "fd7ea38b9fe69f3921b57cccccafdac316f27e0ab3a06be3fa0de4643489415c"
+                                    },
+                                    {
+                                        "motionKey":  "support",
+                                        "row":  3,
+                                        "pixelSha256":  "905b9af68f580f34a1c76ad0edd3037766330a3a067fa2acf5aa36f1f72f5789"
+                                    },
+                                    {
+                                        "motionKey":  "guard",
+                                        "row":  4,
+                                        "pixelSha256":  "9ef03da7c858149052322c61588ab2f07c14366c41785476580652aa891a6a90"
+                                    },
+                                    {
+                                        "motionKey":  "move",
+                                        "row":  5,
+                                        "pixelSha256":  "c0e367c498f74cd2c024918d5e6a7a5354b44111fc54f3690b5a62206d32dffa"
+                                    },
+                                    {
+                                        "motionKey":  "hit",
+                                        "row":  6,
+                                        "pixelSha256":  "cf652ee74d13339f27e33666d7453148148896eb326799f3a23bb5467ccc1502"
+                                    },
+                                    {
+                                        "motionKey":  "death",
+                                        "row":  7,
+                                        "pixelSha256":  "a202e72a63fcc16e6687a693ea47f69d92eb0acff122a526d08cef7856f94ed0"
+                                    }
+                                ]
+                   },
+                   {
+                       "sheetKey":  "jisu_companion",
+                       "runtimePath":  "/assets/images/combat/spritesheets/companions/jisu_companion_sheet.png",
+                       "runtimeSha256":  "84911d5f7b23d79dc66f344351a35201340de8cadf4c8ce187533338dcff7c25",
+                       "previewPath":  "/art_sources/combat/task9_companions/review_previews/jisu_companion_review.png",
+                       "previewSha256":  "1a6242fb31a17043f68919cb04d14157266b6677c0171bb851ff3538176846c6",
+                       "rows":  [
+                                    {
+                                        "motionKey":  "idle",
+                                        "row":  0,
+                                        "pixelSha256":  "8378bd1b0ab63dc817fdd942e6143a48e874b5ee4d95ba3ba6540f92a423d7fa"
+                                    },
+                                    {
+                                        "motionKey":  "melee",
+                                        "row":  1,
+                                        "pixelSha256":  "c99d74908452e293dfebc4d08671628523d8e41043f23dbd5c0d42c9aa7fd57a"
+                                    },
+                                    {
+                                        "motionKey":  "ranged",
+                                        "row":  2,
+                                        "pixelSha256":  "bfa523e403fc31a4dcdaa07decb1e1e67cb4f5de2f92862b21b4e1777c485fa9"
+                                    },
+                                    {
+                                        "motionKey":  "support",
+                                        "row":  3,
+                                        "pixelSha256":  "69302b3987ab391fbb1584594d138a70fdb34af8ca85648caef0a9a9bf2ab567"
+                                    },
+                                    {
+                                        "motionKey":  "guard",
+                                        "row":  4,
+                                        "pixelSha256":  "c04b51b0e4b8de0d6c0dafce209f9f6ce54f8d0d8ada4d43fe5f8f6c186e56a7"
+                                    },
+                                    {
+                                        "motionKey":  "move",
+                                        "row":  5,
+                                        "pixelSha256":  "1abdbd9b69e36ceacb332c032833cbe001327d9cf6b75c3de7db8f351a1f5043"
+                                    },
+                                    {
+                                        "motionKey":  "hit",
+                                        "row":  6,
+                                        "pixelSha256":  "642ba91483b81cc566712bfc351ae033a33045a813eba402806f0e6eb586b03f"
+                                    },
+                                    {
+                                        "motionKey":  "death",
+                                        "row":  7,
+                                        "pixelSha256":  "b091f6d865fc426dc791bf4eef6784a89bd2a97afc7cea207c0a07340d69d571"
+                                    }
+                                ]
+                   },
+                   {
+                       "sheetKey":  "yeongcheol_companion",
+                       "runtimePath":  "/assets/images/combat/spritesheets/companions/yeongcheol_companion_sheet.png",
+                       "runtimeSha256":  "08136ebf510509e90e15e8df25c15eea1fdad92bbe5751723cbd5efd069a0431",
+                       "previewPath":  "/art_sources/combat/task9_companions/review_previews/yeongcheol_companion_review.png",
+                       "previewSha256":  "c391afb3825a0eea62776ac5d37bd1b04a056cb577a3785320a81e45ae858131",
+                       "rows":  [
+                                    {
+                                        "motionKey":  "idle",
+                                        "row":  0,
+                                        "pixelSha256":  "2ca6b2ae04a33d46fd154f4b450f47a66c78312e619ae14d391e9ba46a555910"
+                                    },
+                                    {
+                                        "motionKey":  "melee",
+                                        "row":  1,
+                                        "pixelSha256":  "877abcf09546e698c59d69f91ddd09c96f98e6204fea8801c5c7a4afe2b4509e"
+                                    },
+                                    {
+                                        "motionKey":  "ranged",
+                                        "row":  2,
+                                        "pixelSha256":  "52b5ecc9d2ca2cd5003d67ccf38fe86e380d0d7ccf123236812b61bebd3f642d"
+                                    },
+                                    {
+                                        "motionKey":  "support",
+                                        "row":  3,
+                                        "pixelSha256":  "b409ef1bc353d5d0b958efec27c8703d6b41c488bbea3691a710e50ca4964ba8"
+                                    },
+                                    {
+                                        "motionKey":  "guard",
+                                        "row":  4,
+                                        "pixelSha256":  "3c69f329655f2e07065e6b4e933f27e4d0a464e529d14099acc2b4c4f2f26eba"
+                                    },
+                                    {
+                                        "motionKey":  "move",
+                                        "row":  5,
+                                        "pixelSha256":  "454ec84c95b6633d8b81eca58fcd6338055d6124765909244e1e99e615c8c928"
+                                    },
+                                    {
+                                        "motionKey":  "hit",
+                                        "row":  6,
+                                        "pixelSha256":  "9a9200e40dbf9c1c683cff6b0f2b7999957154de441ff0834c346d7c8f957740"
+                                    },
+                                    {
+                                        "motionKey":  "death",
+                                        "row":  7,
+                                        "pixelSha256":  "9e22bd3b93fe1267d9b0b1b8e94147edcdd9238883492b1594cf32408b3df0ca"
+                                    }
+                                ]
+                   },
+                   {
+                       "sheetKey":  "daehan_companion",
+                       "runtimePath":  "/assets/images/combat/spritesheets/companions/daehan_companion_sheet.png",
+                       "runtimeSha256":  "b5881faa233ffd54927d6a7e15393877c3abfdaf4597f7aeca5fd6e396f72f57",
+                       "previewPath":  "/art_sources/combat/task9_companions/review_previews/daehan_companion_review.png",
+                       "previewSha256":  "7e6f0fcbb8f573476aaaa979f57c5bcb9a4f35a614ba86a6d00a0b97b553fb0f",
+                       "rows":  [
+                                    {
+                                        "motionKey":  "idle",
+                                        "row":  0,
+                                        "pixelSha256":  "1f2f2d2d1068069d413e27f0c0c68a109ac7469cf25a9dc7994a1d817a04d54c"
+                                    },
+                                    {
+                                        "motionKey":  "melee",
+                                        "row":  1,
+                                        "pixelSha256":  "6b58827e83220bc97206e1c49f1479307b4618e8d3b10e49d57a9f70892d70f3"
+                                    },
+                                    {
+                                        "motionKey":  "ranged",
+                                        "row":  2,
+                                        "pixelSha256":  "1440e0fe822eec51f1e9233b4e6ef89808665003c30763172a02fb1c286a62db"
+                                    },
+                                    {
+                                        "motionKey":  "support",
+                                        "row":  3,
+                                        "pixelSha256":  "d493c96508c5230ee69b19370a6ca2c4c5d7edff3ca6f1c092cbc47e52375845"
+                                    },
+                                    {
+                                        "motionKey":  "guard",
+                                        "row":  4,
+                                        "pixelSha256":  "9919483e9a69c77a32db15acc35389b4a0d2f0e4b1eb0170272b8bea8f6eae01"
+                                    },
+                                    {
+                                        "motionKey":  "move",
+                                        "row":  5,
+                                        "pixelSha256":  "17d758a7e7a5eba957fd9e8cf403edfcc1a69e2fd288ecd1892b346d0aaf8449"
+                                    },
+                                    {
+                                        "motionKey":  "hit",
+                                        "row":  6,
+                                        "pixelSha256":  "efb62c9617b9a58b989567d04ae14592ea9060dc459397a49e2d0ef0a60444be"
+                                    },
+                                    {
+                                        "motionKey":  "death",
+                                        "row":  7,
+                                        "pixelSha256":  "e5c88d1317711565b7c3632cfd32b13ee1708620b8c6ffb5a63e502e87ce81b4"
+                                    }
+                                ]
+                   },
+                   {
+                       "sheetKey":  "tower_security_companion",
+                       "runtimePath":  "/assets/images/combat/spritesheets/companions/tower_security_companion_sheet.png",
+                       "runtimeSha256":  "e610a1b92af5fd6a9136867aa3c14307b311fe8f20dd1308fc028eaa4fa57d3b",
+                       "previewPath":  "/art_sources/combat/task9_companions/review_previews/tower_security_companion_review.png",
+                       "previewSha256":  "fc1d76ccd2ca02ba2d5adf6c24842a2e0aee3b988294cb9638aa91ff041a7cb6",
+                       "rows":  [
+                                    {
+                                        "motionKey":  "idle",
+                                        "row":  0,
+                                        "pixelSha256":  "6f03205fad07d0cde2f2e7a8ad235eb6be92e6fc7a68033c67ffd055dec9c87c"
+                                    },
+                                    {
+                                        "motionKey":  "melee",
+                                        "row":  1,
+                                        "pixelSha256":  "c4bbcf904c57a745f2a8a9657dc78ce050df000a417c5c0495fdcc175cb7ff1c"
+                                    },
+                                    {
+                                        "motionKey":  "ranged",
+                                        "row":  2,
+                                        "pixelSha256":  "f1178d5895b795bb9c72b9b8fcd2738e9b61754697d05b21b642b1ee8d92a0af"
+                                    },
+                                    {
+                                        "motionKey":  "support",
+                                        "row":  3,
+                                        "pixelSha256":  "c7ec03fd47b0f5717732963841033a7cb53963956403333c3aaf21ada4526880"
+                                    },
+                                    {
+                                        "motionKey":  "guard",
+                                        "row":  4,
+                                        "pixelSha256":  "6c8ea3b153a303ccd026f956ae92231537e3f8975bb7e1322804f3bc8b323c69"
+                                    },
+                                    {
+                                        "motionKey":  "move",
+                                        "row":  5,
+                                        "pixelSha256":  "e6abd58fa3e9dc9a41e245f9b8c00829f6648a3f4dfaedb25690bb89a27f7c35"
+                                    },
+                                    {
+                                        "motionKey":  "hit",
+                                        "row":  6,
+                                        "pixelSha256":  "df0b86900d34bbfc4f8151324bde65861c9b7903cb15cfc4f7d24de8748eb872"
+                                    },
+                                    {
+                                        "motionKey":  "death",
+                                        "row":  7,
+                                        "pixelSha256":  "35160cf46741d87f8718d5de181ba95e4cb1e891d9a212f38d20fec487a3663e"
+                                    }
+                                ]
+                   },
+                   {
+                       "sheetKey":  "tower_merchant_companion",
+                       "runtimePath":  "/assets/images/combat/spritesheets/companions/tower_merchant_companion_sheet.png",
+                       "runtimeSha256":  "537929e799b18eaf8e0c95d0bff93a1a650350d64548c09cb2136ace7fdfba77",
+                       "previewPath":  "/art_sources/combat/task9_companions/review_previews/tower_merchant_companion_review.png",
+                       "previewSha256":  "5d2f42e73fa5458d6c13c0fd5f019119faccc2512d62dd6cea22547072cc36c6",
+                       "rows":  [
+                                    {
+                                        "motionKey":  "idle",
+                                        "row":  0,
+                                        "pixelSha256":  "b09934c76af876adc1d577a48e0a1cc782e489ae7d72d246c0cbb8d58b38df65"
+                                    },
+                                    {
+                                        "motionKey":  "melee",
+                                        "row":  1,
+                                        "pixelSha256":  "2d555a36078408136dedad0d739905b5ee3cded7a0da8d98fed02bdf40458f1c"
+                                    },
+                                    {
+                                        "motionKey":  "ranged",
+                                        "row":  2,
+                                        "pixelSha256":  "ec6883d089b9a99ef45be70f95b073c8c6288bde7a5d6a2c315eb49ea306f4bc"
+                                    },
+                                    {
+                                        "motionKey":  "support",
+                                        "row":  3,
+                                        "pixelSha256":  "03d43d7fce4e05d1f58039c1dc5fecc1d4cf97f03e1248666617628aac86c33a"
+                                    },
+                                    {
+                                        "motionKey":  "guard",
+                                        "row":  4,
+                                        "pixelSha256":  "0fd702dd8b631e73df3fba06e5f16ec80f80e40f094116a6ad7d6407ff36ee30"
+                                    },
+                                    {
+                                        "motionKey":  "move",
+                                        "row":  5,
+                                        "pixelSha256":  "9495781795c060b7ff788852c4da8447d2f7748e3d609793ca83e4be83315e27"
+                                    },
+                                    {
+                                        "motionKey":  "hit",
+                                        "row":  6,
+                                        "pixelSha256":  "3c7186fc60f73eb0e53324dce0a058a08535ef3a8c81817c88a9e61686501727"
+                                    },
+                                    {
+                                        "motionKey":  "death",
+                                        "row":  7,
+                                        "pixelSha256":  "7449921d2d1cd6a093fcf1dca4c2ba5b4f1120116618045392d8b424e6516fa3"
+                                    }
+                                ]
+                   },
+                   {
+                       "sheetKey":  "tower_cook_companion",
+                       "runtimePath":  "/assets/images/combat/spritesheets/companions/tower_cook_companion_sheet.png",
+                       "runtimeSha256":  "c5fc94292b0702f6dec5b2f13fbfc295b6491385bd8cadf6694986f6d5d49bf8",
+                       "previewPath":  "/art_sources/combat/task9_companions/review_previews/tower_cook_companion_review.png",
+                       "previewSha256":  "61c5ed709942e0cdb0a1133c7f3ade9e8f1a5848aaeaff5cefce6c6b935163bb",
+                       "rows":  [
+                                    {
+                                        "motionKey":  "idle",
+                                        "row":  0,
+                                        "pixelSha256":  "359d56f98274fa23446f13fbf94a3035f94c965d0b107a01edb5b47b21b8c1e2"
+                                    },
+                                    {
+                                        "motionKey":  "melee",
+                                        "row":  1,
+                                        "pixelSha256":  "28269425abddc0a9f79d51f9b8f7ee38d24b781a9b1c86d48f8949db34fabb54"
+                                    },
+                                    {
+                                        "motionKey":  "ranged",
+                                        "row":  2,
+                                        "pixelSha256":  "422e4c8ecd888bf75afa57d72bd037228570fdd613fcd84cee66de859c5f8943"
+                                    },
+                                    {
+                                        "motionKey":  "support",
+                                        "row":  3,
+                                        "pixelSha256":  "41bea91249fcf4942d4ccf445dd60c692d8d8de98d28c19ba02fd698a1cb0dab"
+                                    },
+                                    {
+                                        "motionKey":  "guard",
+                                        "row":  4,
+                                        "pixelSha256":  "e0d740f58cca72461887ea4074f9239f1e1c1ab50dd81190d533c2c227ee8528"
+                                    },
+                                    {
+                                        "motionKey":  "move",
+                                        "row":  5,
+                                        "pixelSha256":  "bec48c4c2a639d0cee415e1d48eb27a0dbe30663d076f295d0a48b7d70928d72"
+                                    },
+                                    {
+                                        "motionKey":  "hit",
+                                        "row":  6,
+                                        "pixelSha256":  "82aabc0ebc63306d9e0bd3fda6b5c0fd4d054a33d91022e677088ce8ac47b6e6"
+                                    },
+                                    {
+                                        "motionKey":  "death",
+                                        "row":  7,
+                                        "pixelSha256":  "b42102eb132d61165800412da9615e52684d4cb9603bf8ff6fd0871f5df6d213"
+                                    }
+                                ]
+                   },
+                   {
+                       "sheetKey":  "tower_engineer_companion",
+                       "runtimePath":  "/assets/images/combat/spritesheets/companions/tower_engineer_companion_sheet.png",
+                       "runtimeSha256":  "ebe48c0f16d5bebb6001e073b6d2d0e786ad0133d0516b5c6cff289876b513c8",
+                       "previewPath":  "/art_sources/combat/task9_companions/review_previews/tower_engineer_companion_review.png",
+                       "previewSha256":  "9c1212f21e53a2b38a34b5157ef688b80c11eaa86ac7379a373d1c171920601c",
+                       "rows":  [
+                                    {
+                                        "motionKey":  "idle",
+                                        "row":  0,
+                                        "pixelSha256":  "f5fb3f6e9feceb8656c8f21c3cceef69229ad21b7ea37cd73ffe6721d96567c5"
+                                    },
+                                    {
+                                        "motionKey":  "melee",
+                                        "row":  1,
+                                        "pixelSha256":  "b2be998fc4b509cbe975215d26b5843262323713c6c5373b9a8058351a1bb116"
+                                    },
+                                    {
+                                        "motionKey":  "ranged",
+                                        "row":  2,
+                                        "pixelSha256":  "e136958cac411f49fb8865ad6ff40e98813ac9f77d3f21d4e13e2aa46ccefbda"
+                                    },
+                                    {
+                                        "motionKey":  "support",
+                                        "row":  3,
+                                        "pixelSha256":  "9b6c61682636fc0f0a21b0fbb9d71340cf4e2f95de8bb03018675afe342798c6"
+                                    },
+                                    {
+                                        "motionKey":  "guard",
+                                        "row":  4,
+                                        "pixelSha256":  "5fc73ad6ca4c36f28dcdc9e4d17c69ffe193b0c2265e0e81a39f0219b5c668c3"
+                                    },
+                                    {
+                                        "motionKey":  "move",
+                                        "row":  5,
+                                        "pixelSha256":  "24b47b6946a88f41be81a46032fa00b70243e24749af53be5b2ec4db7f7d5a5d"
+                                    },
+                                    {
+                                        "motionKey":  "hit",
+                                        "row":  6,
+                                        "pixelSha256":  "100c02095178ef60092fd31f93842aa580f7e53aae129efe49e92571b31af15d"
+                                    },
+                                    {
+                                        "motionKey":  "death",
+                                        "row":  7,
+                                        "pixelSha256":  "830c5b68b93a355c9745c434b5d8ecf2713d924748d313621d65c6dd32ada0cc"
+                                    }
+                                ]
+                   },
+                   {
+                       "sheetKey":  "tower_doctor_companion",
+                       "runtimePath":  "/assets/images/combat/spritesheets/companions/tower_doctor_companion_sheet.png",
+                       "runtimeSha256":  "e70c01d130cbd783dc5944a24b8e492513b80ea53feed31d5ec0f9040bc6f75e",
+                       "previewPath":  "/art_sources/combat/task9_companions/review_previews/tower_doctor_companion_review.png",
+                       "previewSha256":  "2c91095b5351ba98f966e1449080fe596637c2ae0b49828034e9ce70f3ae3b74",
+                       "rows":  [
+                                    {
+                                        "motionKey":  "idle",
+                                        "row":  0,
+                                        "pixelSha256":  "dac9d8412ff2c1b8d9e900fa755d2924b77885f887ecae7d0b30f65100a72472"
+                                    },
+                                    {
+                                        "motionKey":  "melee",
+                                        "row":  1,
+                                        "pixelSha256":  "1386ef06b612af6a3565e7fd0ae8273e9666b2a367640e9cfda0853eb9b0389d"
+                                    },
+                                    {
+                                        "motionKey":  "ranged",
+                                        "row":  2,
+                                        "pixelSha256":  "6d92a2aa43828af4b3152dc84609567b474cbb1c361fd6073543274b012a221e"
+                                    },
+                                    {
+                                        "motionKey":  "support",
+                                        "row":  3,
+                                        "pixelSha256":  "9afa3d839083591cb9aa3b6588326ede2ad87672cabda6be02e9aa940aae442b"
+                                    },
+                                    {
+                                        "motionKey":  "guard",
+                                        "row":  4,
+                                        "pixelSha256":  "da73d9ad2b4730d4739e8d6c54a863876c54f9e3e2ea70cacd5f2e37a8bca4f2"
+                                    },
+                                    {
+                                        "motionKey":  "move",
+                                        "row":  5,
+                                        "pixelSha256":  "8445f5e4345afa1980df3581c11549f4193e6958e9d5846067b6bb25805ccad8"
+                                    },
+                                    {
+                                        "motionKey":  "hit",
+                                        "row":  6,
+                                        "pixelSha256":  "d064c3993cfd41b9eff55d9b849eb49d8691ec749dd880d28136c134cb8af51e"
+                                    },
+                                    {
+                                        "motionKey":  "death",
+                                        "row":  7,
+                                        "pixelSha256":  "5a66aee45056e193f20e4e22f47685983f5a6b738a1c6d242e4e47b86b6e4482"
+                                    }
+                                ]
+                   },
+                   {
+                       "sheetKey":  "sous_chef_companion",
+                       "runtimePath":  "/assets/images/combat/spritesheets/companions/sous_chef_companion_sheet.png",
+                       "runtimeSha256":  "b453f8be0c7e7204acb96ae8261b58bbac5f00d5cec1d70be8b9153a9741e1bb",
+                       "previewPath":  "/art_sources/combat/task9_companions/review_previews/sous_chef_companion_review.png",
+                       "previewSha256":  "1423139404f8be5b8a545bbcfafc937cb4d827825e8f5ca0b5e9a2b7f0b4e75b",
+                       "rows":  [
+                                    {
+                                        "motionKey":  "idle",
+                                        "row":  0,
+                                        "pixelSha256":  "f2ef1d11866cc7ea457fddbe00fff2d766c14190e2d34995a6f641a47550f9ac"
+                                    },
+                                    {
+                                        "motionKey":  "melee",
+                                        "row":  1,
+                                        "pixelSha256":  "ffafda61d297f0adcf040ad83440feae282b12853edfc75b45ed4ac97f823eb4"
+                                    },
+                                    {
+                                        "motionKey":  "ranged",
+                                        "row":  2,
+                                        "pixelSha256":  "0783029693aed46c53bb7052806075f3873bd81516572172de0782cdc83bedbe"
+                                    },
+                                    {
+                                        "motionKey":  "support",
+                                        "row":  3,
+                                        "pixelSha256":  "9355fa4c13bd3ea8b923c33490125c3ebe051064fd69e3acb18d3df20114d39b"
+                                    },
+                                    {
+                                        "motionKey":  "guard",
+                                        "row":  4,
+                                        "pixelSha256":  "48a0f0fa60bd6fa4b924efcd2a5a372287b85c76db35c8cdeeac6be8e4e41b54"
+                                    },
+                                    {
+                                        "motionKey":  "move",
+                                        "row":  5,
+                                        "pixelSha256":  "aab294dd6afb14ede7920662e206c5ea66fb86836844b43015a7af5cebe0ba9e"
+                                    },
+                                    {
+                                        "motionKey":  "hit",
+                                        "row":  6,
+                                        "pixelSha256":  "1e6c65a6891540488661de0a4b8f77bcb291904f77d514e4d0cb2b108f0a6d11"
+                                    },
+                                    {
+                                        "motionKey":  "death",
+                                        "row":  7,
+                                        "pixelSha256":  "236e13f05f93271cf1ee354e39c919c63ff9d1709848779f8d3a2f62556f16eb"
+                                    }
+                                ]
+                   },
+                   {
+                       "sheetKey":  "kitchen_helper_companion",
+                       "runtimePath":  "/assets/images/combat/spritesheets/companions/kitchen_helper_companion_sheet.png",
+                       "runtimeSha256":  "0559c4e8eb07dfe605d436aa8eb511318ee89bb08d29ee4156b18b2cad1ce999",
+                       "previewPath":  "/art_sources/combat/task9_companions/review_previews/kitchen_helper_companion_review.png",
+                       "previewSha256":  "70ac720b4782695d2c67a5ad8e309076e101ef96b2a017bb78b411a251996b9a",
+                       "rows":  [
+                                    {
+                                        "motionKey":  "idle",
+                                        "row":  0,
+                                        "pixelSha256":  "342fd73a9ce76403b12e487062d8e933386d7b3b750a665427c77cf3138dd9bd"
+                                    },
+                                    {
+                                        "motionKey":  "melee",
+                                        "row":  1,
+                                        "pixelSha256":  "cefcd73cf0bb132ca10b894087c78c03a87fc6d40625dcfe349e551cdf44246f"
+                                    },
+                                    {
+                                        "motionKey":  "ranged",
+                                        "row":  2,
+                                        "pixelSha256":  "ab2124aac5ff65ae3ba770cfc70b4a5a9aadcd3d92c92b8cf5c636c8d93ed2f2"
+                                    },
+                                    {
+                                        "motionKey":  "support",
+                                        "row":  3,
+                                        "pixelSha256":  "a6dfcbcf5c45990861dddf2e6821279eac643f753b4f498b0b60711464daf25d"
+                                    },
+                                    {
+                                        "motionKey":  "guard",
+                                        "row":  4,
+                                        "pixelSha256":  "3d3e0dc300ae5deb8fa20d18691d02e40c966bf69799e1041308ad2f769f4160"
+                                    },
+                                    {
+                                        "motionKey":  "move",
+                                        "row":  5,
+                                        "pixelSha256":  "e2252ae75761a6e32f70bc056614bcf34fe3cc0e74d79f56ac76ba08e8113232"
+                                    },
+                                    {
+                                        "motionKey":  "hit",
+                                        "row":  6,
+                                        "pixelSha256":  "614297283aa70e8d79d505df73d619b54f7c2f0370dfe0ad4d012fc39e93d497"
+                                    },
+                                    {
+                                        "motionKey":  "death",
+                                        "row":  7,
+                                        "pixelSha256":  "fa163b01712430dc49b6630c8ee7e39bcf41be3f8257f1a6d25511a4d8ca4632"
+                                    }
+                                ]
+                   }
+               ]
+}

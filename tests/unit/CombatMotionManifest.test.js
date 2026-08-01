@@ -241,6 +241,8 @@ describe('current combat motion registry', () => {
   it('maps the exact 20 companion loadout IDs to 20 dedicated sprite keys', () => {
     expect(Object.keys(COMPANION_COMBAT_LOADOUTS).sort())
       .toEqual(Object.keys(COMPANION_SPRITE_KEYS).sort());
+    expect(Reflect.ownKeys(COMPANION_SPRITE_KEYS).sort())
+      .toEqual(Object.keys(COMPANION_COMBAT_LOADOUTS).sort());
     expect(COMPANION_SPRITE_KEYS).toEqual(COMPANION_SHEET_KEYS);
     expect(new Set(Object.values(COMPANION_SPRITE_KEYS)).size).toBe(20);
   });

@@ -1,7 +1,9 @@
 {
-    "version":  1,
+    "version":  2,
     "assemblyScript":  "/tools/build_companion_motion_sheets.ps1",
-    "assemblyScriptSha256":  "ecdce46f426a6e763a7d2557812bfbdff3a0546b77e5f31c31688773a2ca8ae1",
+    "assemblyScriptSha256":  "ad2d4ddbca103817e8a266f6e296a08e7a1da39aaf2686099bd796d6f8b504f0",
+    "provenancePath":  "/art_sources/combat/task9_companions/generation_provenance.json",
+    "provenanceSha256":  "3cb8f039b06bccf40ee8c98e1b17f0dd36ab6807e14fe0814e327475b81016d9",
     "rowContract":  [
                         "idle",
                         "melee",
@@ -19,9 +21,27 @@
                                                   "alphaPath":  "/art_sources/combat/task9_companions/old_survivor_companion_alpha.png",
                                                   "alphaSha256":  "bd18ea83379c07d841e0710bb428fc9f95a875567343fb0e517869712712801e",
                                                   "cols":  6,
-                                                  "rows":  8,
+                                                  "rows":  7,
                                                   "key":  "green"
                                               },
+                             "old_survivor_hit":  {
+                                                      "chromaPath":  "/art_sources/combat/task9_companions/old_survivor_hit_chroma.png",
+                                                      "chromaSha256":  "80465ca54099285387ec2dfcdb67ecc5c84d1d562889efa6370199eca02e8329",
+                                                      "alphaPath":  "/art_sources/combat/task9_companions/old_survivor_hit_alpha.png",
+                                                      "alphaSha256":  "027e10187af104ab29800dd9e9dfb46b3ba9b7e4c18ec6812a8d543a31383241",
+                                                      "cols":  6,
+                                                      "rows":  1,
+                                                      "key":  "green"
+                                                  },
+                             "old_survivor_melee_death":  {
+                                                              "chromaPath":  "/art_sources/combat/task9_companions/old_survivor_melee_death_chroma.png",
+                                                              "chromaSha256":  "9d39bfade254231558368021ee0d58ac8fc50aac9e30d412bf6b41ffc0868b34",
+                                                              "alphaPath":  "/art_sources/combat/task9_companions/old_survivor_melee_death_alpha.png",
+                                                              "alphaSha256":  "d9388e04efc72f0dc2819e1e0e8c4621fc1cca37b73a1899fdb7a2acf23737f6",
+                                                              "cols":  6,
+                                                              "rows":  2,
+                                                              "key":  "green"
+                                                          },
                              "nurse":  {
                                            "chromaPath":  "/art_sources/combat/task9_companions/nurse_companion_chroma.png",
                                            "chromaSha256":  "9dce98c302627ab016220d1710c79907bf6181a28af6359bb5fb3aa7fed6ff4f",
@@ -31,6 +51,15 @@
                                            "rows":  8,
                                            "key":  "green"
                                        },
+                             "nurse_ranged":  {
+                                                  "chromaPath":  "/art_sources/combat/task9_companions/nurse_ranged_chroma.png",
+                                                  "chromaSha256":  "0f20f4e0b7e50aeeba6b96dcf26b5805ac6b1f19e50b8e0e782227cc0acc3b8f",
+                                                  "alphaPath":  "/art_sources/combat/task9_companions/nurse_ranged_alpha.png",
+                                                  "alphaSha256":  "40bffae2fd654cfc9423beec1def594e2f14f651cdd1fdcddd55995a32fa4353",
+                                                  "cols":  6,
+                                                  "rows":  1,
+                                                  "key":  "green"
+                                              },
                              "soldier_base":  {
                                                   "chromaPath":  "/art_sources/combat/task9_companions/soldier_companion_7row_chroma.png",
                                                   "chromaSha256":  "b4f685009c714eb665bc8cc0b455e6298bf01f51b0d6f7bcaf08ab650a543949",
@@ -47,6 +76,15 @@
                                                    "alphaSha256":  "d15d11d3f41e8694c98dddc2f093cd2cba3c1283ac0304ca1e6519945df6ed94",
                                                    "cols":  8,
                                                    "rows":  6,
+                                                   "key":  "green"
+                                               },
+                             "soldier_death":  {
+                                                   "chromaPath":  "/art_sources/combat/task9_companions/soldier_death_chroma.png",
+                                                   "chromaSha256":  "0552c8efc6251fb521a4ba3da33cc65523c87d9d95e4c72f37939cd0672083e3",
+                                                   "alphaPath":  "/art_sources/combat/task9_companions/soldier_death_alpha.png",
+                                                   "alphaSha256":  "f6f7b5f5546e7606b01c793dd82d59f79dae71ea51655360c5d375777dd09b00",
+                                                   "cols":  6,
+                                                   "rows":  1,
                                                    "key":  "green"
                                                },
                              "child":  {
@@ -76,6 +114,24 @@
                                                     "rows":  1,
                                                     "key":  "green"
                                                 },
+                             "mechanic_ranged_death":  {
+                                                           "chromaPath":  "/art_sources/combat/task9_companions/mechanic_ranged_support_death_rejected_support_chroma.png",
+                                                           "chromaSha256":  "96858601d829c59948b8a18c2e246ba0a2a67cc6d9fe980cdbd2ef0462d24f30",
+                                                           "alphaPath":  "/art_sources/combat/task9_companions/mechanic_ranged_support_death_rejected_support_alpha.png",
+                                                           "alphaSha256":  "9c04a5d151e22841bddd7e8046bcc86a242c6bb702f1cb208c94290cacc80087",
+                                                           "cols":  6,
+                                                           "rows":  3,
+                                                           "key":  "green"
+                                                       },
+                             "mechanic_support":  {
+                                                      "chromaPath":  "/art_sources/combat/task9_companions/mechanic_support_chroma.png",
+                                                      "chromaSha256":  "80b4f17745b3de2accf4252ec787bd29145bebe632a4ecd6ffb92adfba7b574c",
+                                                      "alphaPath":  "/art_sources/combat/task9_companions/mechanic_support_alpha.png",
+                                                      "alphaSha256":  "4f75bfe75ff7e905a431637ec9f1b59da1785cb17486c753cb94864637d217e6",
+                                                      "cols":  6,
+                                                      "rows":  1,
+                                                      "key":  "green"
+                                                  },
                              "student":  {
                                              "chromaPath":  "/art_sources/combat/task9_companions/student_companion_chroma.png",
                                              "chromaSha256":  "329a79d7fb5ea0167e3a9a8f9eb8627e824628cfb420b2592d13aec3a64a9f14",
@@ -85,6 +141,24 @@
                                              "rows":  8,
                                              "key":  "green"
                                          },
+                             "student_melee_ranged_support":  {
+                                                                  "chromaPath":  "/art_sources/combat/task9_companions/student_melee_ranged_support_chroma.png",
+                                                                  "chromaSha256":  "7ae8a07f91560541fc0742059094f39ae5bf122a66710e19703a6853dc26f963",
+                                                                  "alphaPath":  "/art_sources/combat/task9_companions/student_melee_ranged_support_alpha.png",
+                                                                  "alphaSha256":  "9c8cc79888f91a9c88b466615e6af4fc87b69b8839c06ecf781c1e3f7448ce12",
+                                                                  "cols":  6,
+                                                                  "rows":  3,
+                                                                  "key":  "green"
+                                                              },
+                             "student_guard_move_hit_death":  {
+                                                                  "chromaPath":  "/art_sources/combat/task9_companions/student_guard_move_hit_death_chroma.png",
+                                                                  "chromaSha256":  "3efc01776705d5c0c0ea7402ed0c68c7b6f20cc204aafb727a8c828c9f2628e8",
+                                                                  "alphaPath":  "/art_sources/combat/task9_companions/student_guard_move_hit_death_alpha.png",
+                                                                  "alphaSha256":  "d946f06a65d09e856dd1d7f5bb0e67721e3f63721a77c0a16d9ddfccb8b50257",
+                                                                  "cols":  6,
+                                                                  "rows":  4,
+                                                                  "key":  "green"
+                                                              },
                              "dog":  {
                                          "chromaPath":  "/art_sources/combat/task9_companions/dog_companion_chroma.png",
                                          "chromaSha256":  "fbd0272bf75c9f93e3b74f75713fbf93193097118ce600d1e7c9f960c5ff3ef8",
@@ -100,9 +174,18 @@
                                                       "alphaPath":  "/art_sources/combat/task9_companions/former_colleague_companion_alpha.png",
                                                       "alphaSha256":  "d62f020aaa193226a75ff9435ae6c4d62310c870e1f0a3b121150731459a2f2e",
                                                       "cols":  6,
-                                                      "rows":  8,
+                                                      "rows":  7,
                                                       "key":  "green"
                                                   },
+                             "former_colleague_hit":  {
+                                                          "chromaPath":  "/art_sources/combat/task9_companions/former_colleague_hit_chroma.png",
+                                                          "chromaSha256":  "d0a1c2acaa81626c773fa74a4fe2afe5f1c70c0648f0b0809ba880c6426a6ca1",
+                                                          "alphaPath":  "/art_sources/combat/task9_companions/former_colleague_hit_alpha.png",
+                                                          "alphaSha256":  "c77f9af9cf04b3a81fcddf972ae2c96abc777805f6ab49ad504555149365c0e0",
+                                                          "cols":  6,
+                                                          "rows":  1,
+                                                          "key":  "green"
+                                                      },
                              "minjun":  {
                                             "chromaPath":  "/art_sources/combat/task9_companions/minjun_companion_chroma.png",
                                             "chromaSha256":  "c284e918a1a0f3733c2ee13f2649b43aa4d7bb0d1daa37da263d37a36663ada1",
@@ -112,15 +195,33 @@
                                             "rows":  8,
                                             "key":  "green"
                                         },
+                             "minjun_death":  {
+                                                  "chromaPath":  "/art_sources/combat/task9_companions/minjun_death_chroma.png",
+                                                  "chromaSha256":  "9a7a9957445a81917e0af602a1a5f050955c4aafe3f542ee2245d616cadcc1fe",
+                                                  "alphaPath":  "/art_sources/combat/task9_companions/minjun_death_alpha.png",
+                                                  "alphaSha256":  "90be439d9e5723ed3087f2425799017d14bac6f42426d3bdde116f631086862f",
+                                                  "cols":  6,
+                                                  "rows":  1,
+                                                  "key":  "green"
+                                              },
                              "sohee":  {
                                            "chromaPath":  "/art_sources/combat/task9_companions/sohee_companion_chroma.png",
                                            "chromaSha256":  "01ec64f414c053eaf7d2c2119757ee774369b7d8a3f7d101b0604f31345063fa",
                                            "alphaPath":  "/art_sources/combat/task9_companions/sohee_companion_alpha.png",
                                            "alphaSha256":  "81a66c4ad21e2ab972df65ddebb62bebd93428d04ca92299d3c78346813c35eb",
                                            "cols":  6,
-                                           "rows":  8,
+                                           "rows":  7,
                                            "key":  "green"
                                        },
+                             "sohee_hit":  {
+                                               "chromaPath":  "/art_sources/combat/task9_companions/sohee_hit_chroma.png",
+                                               "chromaSha256":  "0e0bf80f458b16d9fbd5aad5d02d5ee39226073acbfe129540787b7b7a1d8f12",
+                                               "alphaPath":  "/art_sources/combat/task9_companions/sohee_hit_alpha.png",
+                                               "alphaSha256":  "681810183e28d248260f6da59391e349f164da7d69623d599be3e3480890f1be",
+                                               "cols":  6,
+                                               "rows":  1,
+                                               "key":  "green"
+                                           },
                              "jisu":  {
                                           "chromaPath":  "/art_sources/combat/task9_companions/jisu_companion_chroma.png",
                                           "chromaSha256":  "47769b5158ae417ec3be492220d2c41361319188c75214c83f4406a857bc36a4",
@@ -130,6 +231,15 @@
                                           "rows":  8,
                                           "key":  "green"
                                       },
+                             "jisu_melee_hit_death":  {
+                                                          "chromaPath":  "/art_sources/combat/task9_companions/jisu_melee_hit_death_chroma.png",
+                                                          "chromaSha256":  "c6f4b7f3bbb8b30748720a1922e19d81dbc169ece8a14463dc5bab341085807e",
+                                                          "alphaPath":  "/art_sources/combat/task9_companions/jisu_melee_hit_death_alpha.png",
+                                                          "alphaSha256":  "417db53c327ed102eb9fe8d3a261840fbdbf4941ec7d4974b12b344d1da84a77",
+                                                          "cols":  6,
+                                                          "rows":  3,
+                                                          "key":  "green"
+                                                      },
                              "yeongcheol_base":  {
                                                      "chromaPath":  "/art_sources/combat/task9_companions/yeongcheol_companion_base_chroma.png",
                                                      "chromaSha256":  "f8fe8b6000f6358873db99f6f5a676e45ec384e8adeb72e57f437ce52b95bd2b",
@@ -157,6 +267,24 @@
                                             "rows":  8,
                                             "key":  "green"
                                         },
+                             "daehan_ranged":  {
+                                                   "chromaPath":  "/art_sources/combat/task9_companions/daehan_ranged_chroma.png",
+                                                   "chromaSha256":  "babeacd21b056380aaac56eb61f2a9a79341ffcd6bd4a5559bf7b5de31d3d771",
+                                                   "alphaPath":  "/art_sources/combat/task9_companions/daehan_ranged_alpha.png",
+                                                   "alphaSha256":  "8aa5493082563d09bc043bf91ea8b89dd1043bc0dca7b5b1061d54d4bb971b8f",
+                                                   "cols":  6,
+                                                   "rows":  1,
+                                                   "key":  "green"
+                                               },
+                             "daehan_guard":  {
+                                                  "chromaPath":  "/art_sources/combat/task9_companions/daehan_guard_chroma.png",
+                                                  "chromaSha256":  "17f5fda8de7c0b94de401dc9a6ba415ddf865dcc48695a50fea296db6e67c900",
+                                                  "alphaPath":  "/art_sources/combat/task9_companions/daehan_guard_alpha.png",
+                                                  "alphaSha256":  "097f8ccc40077955491e99cdec2979cc2a4f24245c647c004c2109264983f661",
+                                                  "cols":  6,
+                                                  "rows":  1,
+                                                  "key":  "green"
+                                              },
                              "tower_security":  {
                                                     "chromaPath":  "/art_sources/combat/task9_companions/tower_security_companion_chroma.png",
                                                     "chromaSha256":  "0a997c3b46cc88055af1f26bf77bbfbe5253601e06aa050e808f1cc2e410c26c",
@@ -175,15 +303,42 @@
                                                     "rows":  8,
                                                     "key":  "green"
                                                 },
+                             "tower_merchant_death":  {
+                                                          "chromaPath":  "/art_sources/combat/task9_companions/tower_merchant_death_chroma.png",
+                                                          "chromaSha256":  "5dcdee331256cc573a11f00ee1a52f410ba83e6499f7f87b1d70ca853daea955",
+                                                          "alphaPath":  "/art_sources/combat/task9_companions/tower_merchant_death_alpha.png",
+                                                          "alphaSha256":  "2771dd3d5f5e3efe44d64b516f560bc2329553ce5c278dbfba708e9aeb9f81ac",
+                                                          "cols":  6,
+                                                          "rows":  1,
+                                                          "key":  "green"
+                                                      },
                              "tower_cook":  {
                                                 "chromaPath":  "/art_sources/combat/task9_companions/tower_cook_companion_chroma.png",
                                                 "chromaSha256":  "8e290df27fa724bd9a907f8964ebb86ec1074aee96b890b5a291b9e69a750cf9",
                                                 "alphaPath":  "/art_sources/combat/task9_companions/tower_cook_companion_alpha.png",
                                                 "alphaSha256":  "b61c8d3b5828d4d788050b1ec8cf67bf57c3ef01213cc6b0c645bfbdfb0b5484",
                                                 "cols":  6,
-                                                "rows":  8,
+                                                "rows":  7,
                                                 "key":  "green"
                                             },
+                             "tower_cook_hit":  {
+                                                    "chromaPath":  "/art_sources/combat/task9_companions/tower_cook_hit_chroma.png",
+                                                    "chromaSha256":  "134bbec8e986a086fa8047c47ad80e643efa01901186679dd334676741bc8351",
+                                                    "alphaPath":  "/art_sources/combat/task9_companions/tower_cook_hit_alpha.png",
+                                                    "alphaSha256":  "f864e2feeea5fd45ef1bd1a35c8e59132f99740209158a38cedd6bdcd873eb5b",
+                                                    "cols":  6,
+                                                    "rows":  1,
+                                                    "key":  "green"
+                                                },
+                             "tower_cook_ranged":  {
+                                                       "chromaPath":  "/art_sources/combat/task9_companions/tower_cook_ranged_chroma.png",
+                                                       "chromaSha256":  "283f5f552640736fe34877330724d052fa299b14248bfdcd688668ec1bda3db0",
+                                                       "alphaPath":  "/art_sources/combat/task9_companions/tower_cook_ranged_alpha.png",
+                                                       "alphaSha256":  "4294168f68962c2860d68bb83193839b2f387b88524305c5bf6fc4f7078dd725",
+                                                       "cols":  6,
+                                                       "rows":  1,
+                                                       "key":  "green"
+                                                   },
                              "tower_engineer":  {
                                                     "chromaPath":  "/art_sources/combat/task9_companions/tower_engineer_companion_chroma.png",
                                                     "chromaSha256":  "5a3b0be26ccd3c7c84cdcd3e3444c2c1bf25d66989044e9820e49fef31605e8e",
@@ -193,6 +348,24 @@
                                                     "rows":  8,
                                                     "key":  "green"
                                                 },
+                             "tower_engineer_death":  {
+                                                          "chromaPath":  "/art_sources/combat/task9_companions/tower_engineer_death_chroma.png",
+                                                          "chromaSha256":  "dfcb716136173543268cdd57325595f953982960ca10d02cf10a9c1137bd2359",
+                                                          "alphaPath":  "/art_sources/combat/task9_companions/tower_engineer_death_alpha.png",
+                                                          "alphaSha256":  "3d871824d2382d510966aadec8d5e5de47e64e2d1187943993199a94a243f7de",
+                                                          "cols":  6,
+                                                          "rows":  1,
+                                                          "key":  "green"
+                                                      },
+                             "tower_engineer_guard":  {
+                                                          "chromaPath":  "/art_sources/combat/task9_companions/tower_engineer_guard_chroma.png",
+                                                          "chromaSha256":  "af2c60efa8219c419eb111a1fbdafea4f58a684cc32af3ddeb8b79ca6eb21014",
+                                                          "alphaPath":  "/art_sources/combat/task9_companions/tower_engineer_guard_alpha.png",
+                                                          "alphaSha256":  "ada853c8c3a9b890403dd5ac89ab62ffec0e30936ccd694e2d70ead6f8bb219f",
+                                                          "cols":  6,
+                                                          "rows":  1,
+                                                          "key":  "green"
+                                                      },
                              "tower_doctor_base":  {
                                                        "chromaPath":  "/art_sources/combat/task9_companions/tower_doctor_companion_base_chroma.png",
                                                        "chromaSha256":  "e08d2caac959905dd3919d5f31d564021a1861eb49ec201c256ae9353c98f045",
@@ -211,22 +384,49 @@
                                                           "rows":  1,
                                                           "key":  "green"
                                                       },
+                             "tower_doctor_ranged_guard_move_hit":  {
+                                                                        "chromaPath":  "/art_sources/combat/task9_companions/tower_doctor_ranged_guard_move_hit_chroma.png",
+                                                                        "chromaSha256":  "e5d9de18da777eb3a021b84f5dc5e7d429351593be4ec35ab7c39a7d86f01a97",
+                                                                        "alphaPath":  "/art_sources/combat/task9_companions/tower_doctor_ranged_guard_move_hit_alpha.png",
+                                                                        "alphaSha256":  "c9eb44e99144816cd7c67b444a51807f95a2f69a22c5a3ece64a64892e2fed90",
+                                                                        "cols":  6,
+                                                                        "rows":  4,
+                                                                        "key":  "green"
+                                                                    },
+                             "tower_doctor_death":  {
+                                                        "chromaPath":  "/art_sources/combat/task9_companions/tower_doctor_death_chroma.png",
+                                                        "chromaSha256":  "8569b42be99313de2876bc831cafbd739245883e0d538902aea0a999aa36a054",
+                                                        "alphaPath":  "/art_sources/combat/task9_companions/tower_doctor_death_alpha.png",
+                                                        "alphaSha256":  "fbc761391bb27eef75a738bc092bb8076f511363408277bc1aa76788cc97e169",
+                                                        "cols":  6,
+                                                        "rows":  1,
+                                                        "key":  "green"
+                                                    },
                              "sous_chef":  {
                                                "chromaPath":  "/art_sources/combat/task9_companions/sous_chef_companion_chroma.png",
                                                "chromaSha256":  "8ff6d387c0192a072d13c98c6bdc5790ef1648100cf5725a6c1bfe4efbf31e3c",
                                                "alphaPath":  "/art_sources/combat/task9_companions/sous_chef_companion_alpha.png",
                                                "alphaSha256":  "ec6cb6dcf88150718edce56d3a957a0895aa5a560afa206c59cf6dd6166a0dde",
                                                "cols":  6,
-                                               "rows":  8,
+                                               "rows":  7,
                                                "key":  "green"
                                            },
+                             "sous_chef_hit":  {
+                                                   "chromaPath":  "/art_sources/combat/task9_companions/sous_chef_hit_chroma.png",
+                                                   "chromaSha256":  "fc579be1f09a7ff217012e8faa9645f41c0057e16de5e20afbbbda66b7755095",
+                                                   "alphaPath":  "/art_sources/combat/task9_companions/sous_chef_hit_alpha.png",
+                                                   "alphaSha256":  "a5b06f2b4ea7db1428bc60762d5e66a36399aaed042782a077767bb19d24d559",
+                                                   "cols":  6,
+                                                   "rows":  1,
+                                                   "key":  "green"
+                                               },
                              "kitchen_helper":  {
                                                     "chromaPath":  "/art_sources/combat/task9_companions/kitchen_helper_companion_chroma.png",
                                                     "chromaSha256":  "262853cec8abcb46c073180d7c409a3930a7f636fd4d4fea7c3b6f294295bf1d",
                                                     "alphaPath":  "/art_sources/combat/task9_companions/kitchen_helper_companion_alpha.png",
                                                     "alphaSha256":  "285d1bba16a0bc988987c072bf388db9ef423e9ae59108dc19c9aab5f7aef367",
                                                     "cols":  6,
-                                                    "rows":  8,
+                                                    "rows":  7,
                                                     "key":  "green"
                                                 },
                              "kitchen_helper_hit":  {
@@ -237,14 +437,33 @@
                                                         "cols":  6,
                                                         "rows":  1,
                                                         "key":  "green"
-                                                    }
+                                                    },
+                             "kitchen_helper_supplement":  {
+                                                               "chromaPath":  "/art_sources/combat/task9_companions/kitchen_helper_supplement_chroma.png",
+                                                               "chromaSha256":  "7dfb47e11ee18ef3fa8d31fd6f04155be4761e03980c1038e75b09f14a0bf57e",
+                                                               "alphaPath":  "/art_sources/combat/task9_companions/kitchen_helper_supplement_alpha.png",
+                                                               "alphaSha256":  "e58e025066678134d2dbec5e6eb8b4d381ef9418721ed2b682199f07f8324579",
+                                                               "cols":  6,
+                                                               "rows":  5,
+                                                               "key":  "green"
+                                                           },
+                             "yeongcheol_death":  {
+                                                      "chromaPath":  "/art_sources/combat/task9_companions/yeongcheol_death_chroma.png",
+                                                      "chromaSha256":  "417a6d3a9352605acd7dc4a1d08170026f72d0aababa12708b2e74d21d0f2172",
+                                                      "alphaPath":  "/art_sources/combat/task9_companions/yeongcheol_death_alpha.png",
+                                                      "alphaSha256":  "e870c7d46c4e34676249d4ed86d4106f87a0f959b465e5b2924e992b498385cc",
+                                                      "cols":  6,
+                                                      "rows":  1,
+                                                      "key":  "green"
+                                                  }
                          },
     "targets":  {
                     "old_survivor_companion":  {
                                                    "path":  "/assets/images/combat/spritesheets/companions/old_survivor_companion_sheet.png",
                                                    "width":  1536,
                                                    "height":  2048,
-                                                   "fileSha256":  "559dadc91e3524af62645a93ae51900a819613f7ca2dcddeec7c47cc11d9d2ca",
+                                                   "fileSha256":  "c4b17fe3ef7aeee3dbcd0b1dbf12282a376a5c64750070972b6e1c23a8c6fc5e",
+                                                   "pixelSha256":  "4540f0a88974fe1ffe998e7b8d63ff9eedd525e6e8be1d9e47055c1d50a5c51b",
                                                    "rows":  [
                                                                 {
                                                                     "targetRow":  0,
@@ -261,8 +480,8 @@
                                                                 },
                                                                 {
                                                                     "targetRow":  1,
-                                                                    "source":  "old_survivor",
-                                                                    "sourceRow":  1,
+                                                                    "source":  "old_survivor_melee_death",
+                                                                    "sourceRow":  0,
                                                                     "sourceColumns":  [
                                                                                           0,
                                                                                           1,
@@ -326,8 +545,8 @@
                                                                 },
                                                                 {
                                                                     "targetRow":  6,
-                                                                    "source":  "old_survivor",
-                                                                    "sourceRow":  6,
+                                                                    "source":  "old_survivor_hit",
+                                                                    "sourceRow":  0,
                                                                     "sourceColumns":  [
                                                                                           0,
                                                                                           1,
@@ -339,8 +558,8 @@
                                                                 },
                                                                 {
                                                                     "targetRow":  7,
-                                                                    "source":  "old_survivor",
-                                                                    "sourceRow":  7,
+                                                                    "source":  "old_survivor_melee_death",
+                                                                    "sourceRow":  1,
                                                                     "sourceColumns":  [
                                                                                           0,
                                                                                           1,
@@ -356,7 +575,8 @@
                                             "path":  "/assets/images/combat/spritesheets/nurse_companion_sheet.png",
                                             "width":  1536,
                                             "height":  2048,
-                                            "fileSha256":  "b4efe7043a09a1e2dcf063f435fef0db37d49c9c1803dcf4272edf35ad081ca4",
+                                            "fileSha256":  "b692c7073af5d86e3cca816045250fb3c426355d4eddd7d524a1becd7d708263",
+                                            "pixelSha256":  "e111769977e210d7f18434d4139ec09edb681c4eb62c2bb23fbb9e33594cd738",
                                             "rows":  [
                                                          {
                                                              "targetRow":  0,
@@ -386,8 +606,8 @@
                                                          },
                                                          {
                                                              "targetRow":  2,
-                                                             "source":  "nurse",
-                                                             "sourceRow":  2,
+                                                             "source":  "nurse_ranged",
+                                                             "sourceRow":  0,
                                                              "sourceColumns":  [
                                                                                    0,
                                                                                    1,
@@ -468,7 +688,8 @@
                                               "path":  "/assets/images/combat/spritesheets/soldier_companion_sheet.png",
                                               "width":  1536,
                                               "height":  2048,
-                                              "fileSha256":  "77fa85bed1ed41942c08d1fc6a0a3f21a7e0f8e3b20ab400811daed87d38ef9b",
+                                              "fileSha256":  "a3979cf141b99757ec8c6fbdf077f0ee7b56fceb25358fab6a7bbff92d8b0234",
+                                              "pixelSha256":  "97cee43181d76b620f30c3528a08f6a60bb96222759d5fd57603da70fa30673b",
                                               "rows":  [
                                                            {
                                                                "targetRow":  0,
@@ -563,8 +784,8 @@
                                                            },
                                                            {
                                                                "targetRow":  7,
-                                                               "source":  "soldier_base",
-                                                               "sourceRow":  6,
+                                                               "source":  "soldier_death",
+                                                               "sourceRow":  0,
                                                                "sourceColumns":  [
                                                                                      0,
                                                                                      1,
@@ -580,7 +801,8 @@
                                             "path":  "/assets/images/combat/spritesheets/companions/child_companion_sheet.png",
                                             "width":  1536,
                                             "height":  2048,
-                                            "fileSha256":  "7f2f511cf4caf64774d002e67a00267672252c08d3c28578d4d5b65dc0c4da23",
+                                            "fileSha256":  "edcf2003203363ee1890a2aaf0e6b8d4c9140dcf2cd0a1462ac0b6fa96e6c2f9",
+                                            "pixelSha256":  "89e6ec55c1834f25623880c7d2cbdb4316e262b416b507373fde5684aee1a381",
                                             "rows":  [
                                                          {
                                                              "targetRow":  0,
@@ -692,7 +914,8 @@
                                                "path":  "/assets/images/combat/spritesheets/companions/mechanic_companion_sheet.png",
                                                "width":  1536,
                                                "height":  2048,
-                                               "fileSha256":  "a5af76229007a3d725009ad5074d56d5ee6b496581025b017c30fadb73c395dc",
+                                               "fileSha256":  "6d2a2c7301f28125934089e7d685635ea2d8505b561b8928ae17c3a33890a5d9",
+                                               "pixelSha256":  "2e14bbdcd5cedbb4709939c49adfad23fd093ff5e0902c35ed2415ed727fa456",
                                                "rows":  [
                                                             {
                                                                 "targetRow":  0,
@@ -722,8 +945,8 @@
                                                             },
                                                             {
                                                                 "targetRow":  2,
-                                                                "source":  "mechanic",
-                                                                "sourceRow":  2,
+                                                                "source":  "mechanic_ranged_death",
+                                                                "sourceRow":  0,
                                                                 "sourceColumns":  [
                                                                                       0,
                                                                                       1,
@@ -735,8 +958,8 @@
                                                             },
                                                             {
                                                                 "targetRow":  3,
-                                                                "source":  "mechanic",
-                                                                "sourceRow":  3,
+                                                                "source":  "mechanic_support",
+                                                                "sourceRow":  0,
                                                                 "sourceColumns":  [
                                                                                       0,
                                                                                       1,
@@ -787,8 +1010,8 @@
                                                             },
                                                             {
                                                                 "targetRow":  7,
-                                                                "source":  "mechanic",
-                                                                "sourceRow":  7,
+                                                                "source":  "mechanic_ranged_death",
+                                                                "sourceRow":  2,
                                                                 "sourceColumns":  [
                                                                                       0,
                                                                                       1,
@@ -804,7 +1027,8 @@
                                               "path":  "/assets/images/combat/spritesheets/companions/student_companion_sheet.png",
                                               "width":  1536,
                                               "height":  2048,
-                                              "fileSha256":  "a8a970a61f7be77cb1d94029f6328dcf95a22294c5865acd873bed4094f62567",
+                                              "fileSha256":  "8dde2e38302b6f0e11240cbaf9598a18c4ddb2a5f7292dcc3b62bfca69372511",
+                                              "pixelSha256":  "2035e389b486226d0920594694fe34728964f633afb3bce26aee8d8256cd6763",
                                               "rows":  [
                                                            {
                                                                "targetRow":  0,
@@ -821,8 +1045,8 @@
                                                            },
                                                            {
                                                                "targetRow":  1,
-                                                               "source":  "student",
-                                                               "sourceRow":  1,
+                                                               "source":  "student_melee_ranged_support",
+                                                               "sourceRow":  0,
                                                                "sourceColumns":  [
                                                                                      0,
                                                                                      1,
@@ -834,8 +1058,8 @@
                                                            },
                                                            {
                                                                "targetRow":  2,
-                                                               "source":  "student",
-                                                               "sourceRow":  2,
+                                                               "source":  "student_melee_ranged_support",
+                                                               "sourceRow":  1,
                                                                "sourceColumns":  [
                                                                                      0,
                                                                                      1,
@@ -847,8 +1071,8 @@
                                                            },
                                                            {
                                                                "targetRow":  3,
-                                                               "source":  "student",
-                                                               "sourceRow":  3,
+                                                               "source":  "student_melee_ranged_support",
+                                                               "sourceRow":  2,
                                                                "sourceColumns":  [
                                                                                      0,
                                                                                      1,
@@ -860,8 +1084,8 @@
                                                            },
                                                            {
                                                                "targetRow":  4,
-                                                               "source":  "student",
-                                                               "sourceRow":  4,
+                                                               "source":  "student_guard_move_hit_death",
+                                                               "sourceRow":  0,
                                                                "sourceColumns":  [
                                                                                      0,
                                                                                      1,
@@ -873,8 +1097,8 @@
                                                            },
                                                            {
                                                                "targetRow":  5,
-                                                               "source":  "student",
-                                                               "sourceRow":  5,
+                                                               "source":  "student_guard_move_hit_death",
+                                                               "sourceRow":  1,
                                                                "sourceColumns":  [
                                                                                      0,
                                                                                      1,
@@ -886,8 +1110,8 @@
                                                            },
                                                            {
                                                                "targetRow":  6,
-                                                               "source":  "student",
-                                                               "sourceRow":  6,
+                                                               "source":  "student_guard_move_hit_death",
+                                                               "sourceRow":  2,
                                                                "sourceColumns":  [
                                                                                      0,
                                                                                      1,
@@ -899,8 +1123,8 @@
                                                            },
                                                            {
                                                                "targetRow":  7,
-                                                               "source":  "student",
-                                                               "sourceRow":  7,
+                                                               "source":  "student_guard_move_hit_death",
+                                                               "sourceRow":  3,
                                                                "sourceColumns":  [
                                                                                      0,
                                                                                      1,
@@ -916,7 +1140,8 @@
                                           "path":  "/assets/images/combat/spritesheets/companions/dog_companion_sheet.png",
                                           "width":  1536,
                                           "height":  2048,
-                                          "fileSha256":  "65adc7ed1c5a58c3595df03a214450725147b9b88ca27bde3a902e2ab48be056",
+                                          "fileSha256":  "86fe66142c9ddc0b36e7adef7cfd3c4ab4e3822defb1144ab086684ba76feb6e",
+                                          "pixelSha256":  "d0352386c42ccf8496dee495fbccf911ecbab5286ed21c08153201d319fb378f",
                                           "rows":  [
                                                        {
                                                            "targetRow":  0,
@@ -1028,7 +1253,8 @@
                                                        "path":  "/assets/images/combat/spritesheets/companions/former_colleague_companion_sheet.png",
                                                        "width":  1536,
                                                        "height":  2048,
-                                                       "fileSha256":  "b8429724f6ce451621540d7f41f348a4a6cde3de570acc349a1f18e4fb23d83b",
+                                                       "fileSha256":  "9e2bab6838cabf126ca482ac83149a5c9760e51c2b81510f417615223f08891e",
+                                                       "pixelSha256":  "4aba8a2005d74a7fe4867dcd4dc0905d428646df2dd13743fe28ecd32f29e7c2",
                                                        "rows":  [
                                                                     {
                                                                         "targetRow":  0,
@@ -1110,8 +1336,8 @@
                                                                     },
                                                                     {
                                                                         "targetRow":  6,
-                                                                        "source":  "former_colleague",
-                                                                        "sourceRow":  6,
+                                                                        "source":  "former_colleague_hit",
+                                                                        "sourceRow":  0,
                                                                         "sourceColumns":  [
                                                                                               0,
                                                                                               1,
@@ -1124,7 +1350,7 @@
                                                                     {
                                                                         "targetRow":  7,
                                                                         "source":  "former_colleague",
-                                                                        "sourceRow":  7,
+                                                                        "sourceRow":  6,
                                                                         "sourceColumns":  [
                                                                                               0,
                                                                                               1,
@@ -1140,7 +1366,8 @@
                                              "path":  "/assets/images/combat/spritesheets/companions/minjun_companion_sheet.png",
                                              "width":  1536,
                                              "height":  2048,
-                                             "fileSha256":  "2b2385ff930daa61976af2a8a0dc875685547359b7b6c9d66356cb1e4c685efc",
+                                             "fileSha256":  "d92e60a972c7ce8fd1fa729453c7a96cadefc909c107a9e701a40c90ec690c07",
+                                             "pixelSha256":  "dc92f179771bde4acb2eeaefc610982ef92ee31c9e2f75dfe3f6f4adf84de00c",
                                              "rows":  [
                                                           {
                                                               "targetRow":  0,
@@ -1235,8 +1462,8 @@
                                                           },
                                                           {
                                                               "targetRow":  7,
-                                                              "source":  "minjun",
-                                                              "sourceRow":  7,
+                                                              "source":  "minjun_death",
+                                                              "sourceRow":  0,
                                                               "sourceColumns":  [
                                                                                     0,
                                                                                     1,
@@ -1252,7 +1479,8 @@
                                             "path":  "/assets/images/combat/spritesheets/companions/sohee_companion_sheet.png",
                                             "width":  1536,
                                             "height":  2048,
-                                            "fileSha256":  "8ce2ff6a6271ccb9b42c1ac07b3d742f44c55fb75a1fc1fdc6c2194e1e10705c",
+                                            "fileSha256":  "29e3f314e83a53659d7edea9ecf4b239d70f440b948b682765a00db17dd75048",
+                                            "pixelSha256":  "dd6b693178da30918252854e35a4ced2e49558b30efd98d4986f78e46f2d242a",
                                             "rows":  [
                                                          {
                                                              "targetRow":  0,
@@ -1334,8 +1562,8 @@
                                                          },
                                                          {
                                                              "targetRow":  6,
-                                                             "source":  "sohee",
-                                                             "sourceRow":  6,
+                                                             "source":  "sohee_hit",
+                                                             "sourceRow":  0,
                                                              "sourceColumns":  [
                                                                                    0,
                                                                                    1,
@@ -1348,7 +1576,7 @@
                                                          {
                                                              "targetRow":  7,
                                                              "source":  "sohee",
-                                                             "sourceRow":  7,
+                                                             "sourceRow":  6,
                                                              "sourceColumns":  [
                                                                                    0,
                                                                                    1,
@@ -1364,7 +1592,8 @@
                                            "path":  "/assets/images/combat/spritesheets/companions/jisu_companion_sheet.png",
                                            "width":  1536,
                                            "height":  2048,
-                                           "fileSha256":  "9ac13b992b9f93b10f3d9e8adcec68f2bc5d905cea142a79a762c92a1b762d56",
+                                           "fileSha256":  "84911d5f7b23d79dc66f344351a35201340de8cadf4c8ce187533338dcff7c25",
+                                           "pixelSha256":  "0bb85db55ed5f9204d1587392b4ff950fbe1ee90a3315b4b5f842d8e9082d775",
                                            "rows":  [
                                                         {
                                                             "targetRow":  0,
@@ -1381,8 +1610,8 @@
                                                         },
                                                         {
                                                             "targetRow":  1,
-                                                            "source":  "jisu",
-                                                            "sourceRow":  1,
+                                                            "source":  "jisu_melee_hit_death",
+                                                            "sourceRow":  0,
                                                             "sourceColumns":  [
                                                                                   0,
                                                                                   1,
@@ -1446,8 +1675,8 @@
                                                         },
                                                         {
                                                             "targetRow":  6,
-                                                            "source":  "jisu",
-                                                            "sourceRow":  6,
+                                                            "source":  "jisu_melee_hit_death",
+                                                            "sourceRow":  1,
                                                             "sourceColumns":  [
                                                                                   0,
                                                                                   1,
@@ -1459,8 +1688,8 @@
                                                         },
                                                         {
                                                             "targetRow":  7,
-                                                            "source":  "jisu",
-                                                            "sourceRow":  7,
+                                                            "source":  "jisu_melee_hit_death",
+                                                            "sourceRow":  2,
                                                             "sourceColumns":  [
                                                                                   0,
                                                                                   1,
@@ -1476,7 +1705,8 @@
                                                  "path":  "/assets/images/combat/spritesheets/companions/yeongcheol_companion_sheet.png",
                                                  "width":  1536,
                                                  "height":  2048,
-                                                 "fileSha256":  "a5a6760d2f09c5c4d534458de4a62f2ed6c604a82d94280bfd22b1cd66d66950",
+                                                 "fileSha256":  "08136ebf510509e90e15e8df25c15eea1fdad92bbe5751723cbd5efd069a0431",
+                                                 "pixelSha256":  "67802786880ede770f87a21e6f91e5f13faccf8d77270d7a45b451974bb2a323",
                                                  "rows":  [
                                                               {
                                                                   "targetRow":  0,
@@ -1571,8 +1801,8 @@
                                                               },
                                                               {
                                                                   "targetRow":  7,
-                                                                  "source":  "yeongcheol_base",
-                                                                  "sourceRow":  7,
+                                                                  "source":  "yeongcheol_death",
+                                                                  "sourceRow":  0,
                                                                   "sourceColumns":  [
                                                                                         0,
                                                                                         1,
@@ -1588,7 +1818,8 @@
                                              "path":  "/assets/images/combat/spritesheets/companions/daehan_companion_sheet.png",
                                              "width":  1536,
                                              "height":  2048,
-                                             "fileSha256":  "1ccda9e13c7454302035633866daa77f8aa5f5306ce1a58a475023b1c5337d1a",
+                                             "fileSha256":  "b5881faa233ffd54927d6a7e15393877c3abfdaf4597f7aeca5fd6e396f72f57",
+                                             "pixelSha256":  "21565a68dab86ffd66931d6226dc5dad557c8003af767995ef44b589163b013d",
                                              "rows":  [
                                                           {
                                                               "targetRow":  0,
@@ -1618,8 +1849,8 @@
                                                           },
                                                           {
                                                               "targetRow":  2,
-                                                              "source":  "daehan",
-                                                              "sourceRow":  2,
+                                                              "source":  "daehan_ranged",
+                                                              "sourceRow":  0,
                                                               "sourceColumns":  [
                                                                                     0,
                                                                                     1,
@@ -1644,8 +1875,8 @@
                                                           },
                                                           {
                                                               "targetRow":  4,
-                                                              "source":  "daehan",
-                                                              "sourceRow":  4,
+                                                              "source":  "daehan_guard",
+                                                              "sourceRow":  0,
                                                               "sourceColumns":  [
                                                                                     0,
                                                                                     1,
@@ -1700,7 +1931,8 @@
                                                      "path":  "/assets/images/combat/spritesheets/companions/tower_security_companion_sheet.png",
                                                      "width":  1536,
                                                      "height":  2048,
-                                                     "fileSha256":  "da961649b845958fe7f68d179c4ac270aa69dc66c99b89eb5ebffc83dc7825e3",
+                                                     "fileSha256":  "e610a1b92af5fd6a9136867aa3c14307b311fe8f20dd1308fc028eaa4fa57d3b",
+                                                     "pixelSha256":  "5f7c878eac5971c71b022f132cdcd78cac355a94a3d5a9f7373acfa7b020ce38",
                                                      "rows":  [
                                                                   {
                                                                       "targetRow":  0,
@@ -1812,7 +2044,8 @@
                                                      "path":  "/assets/images/combat/spritesheets/companions/tower_merchant_companion_sheet.png",
                                                      "width":  1536,
                                                      "height":  2048,
-                                                     "fileSha256":  "077994fb6ae0ae97191217cf1d827fd43799dc53c6cbd64b7160c598ac8b4e7a",
+                                                     "fileSha256":  "537929e799b18eaf8e0c95d0bff93a1a650350d64548c09cb2136ace7fdfba77",
+                                                     "pixelSha256":  "566f09e57bb57a7cdb7d37f298254dd38e6bd79430b96f7abaf2ea0f07974fda",
                                                      "rows":  [
                                                                   {
                                                                       "targetRow":  0,
@@ -1907,8 +2140,8 @@
                                                                   },
                                                                   {
                                                                       "targetRow":  7,
-                                                                      "source":  "tower_merchant",
-                                                                      "sourceRow":  7,
+                                                                      "source":  "tower_merchant_death",
+                                                                      "sourceRow":  0,
                                                                       "sourceColumns":  [
                                                                                             0,
                                                                                             1,
@@ -1924,7 +2157,8 @@
                                                  "path":  "/assets/images/combat/spritesheets/companions/tower_cook_companion_sheet.png",
                                                  "width":  1536,
                                                  "height":  2048,
-                                                 "fileSha256":  "d0623e95e5572d93999b290abce49ada55c0b330ff9a2d3ab6fa5a793d738e90",
+                                                 "fileSha256":  "c5fc94292b0702f6dec5b2f13fbfc295b6491385bd8cadf6694986f6d5d49bf8",
+                                                 "pixelSha256":  "977f6611b3a91435e4062d59f6bb9079e32eb6f3b8de0076f12355f6dacf8c66",
                                                  "rows":  [
                                                               {
                                                                   "targetRow":  0,
@@ -1954,8 +2188,8 @@
                                                               },
                                                               {
                                                                   "targetRow":  2,
-                                                                  "source":  "tower_cook",
-                                                                  "sourceRow":  2,
+                                                                  "source":  "tower_cook_ranged",
+                                                                  "sourceRow":  0,
                                                                   "sourceColumns":  [
                                                                                         0,
                                                                                         1,
@@ -2006,8 +2240,8 @@
                                                               },
                                                               {
                                                                   "targetRow":  6,
-                                                                  "source":  "tower_cook",
-                                                                  "sourceRow":  6,
+                                                                  "source":  "tower_cook_hit",
+                                                                  "sourceRow":  0,
                                                                   "sourceColumns":  [
                                                                                         0,
                                                                                         1,
@@ -2020,7 +2254,7 @@
                                                               {
                                                                   "targetRow":  7,
                                                                   "source":  "tower_cook",
-                                                                  "sourceRow":  7,
+                                                                  "sourceRow":  6,
                                                                   "sourceColumns":  [
                                                                                         0,
                                                                                         1,
@@ -2036,7 +2270,8 @@
                                                      "path":  "/assets/images/combat/spritesheets/companions/tower_engineer_companion_sheet.png",
                                                      "width":  1536,
                                                      "height":  2048,
-                                                     "fileSha256":  "4b22c9f6dca929d9f6a9f47438a7ff96e9d14bedd834769eac97bb58d7e25eea",
+                                                     "fileSha256":  "ebe48c0f16d5bebb6001e073b6d2d0e786ad0133d0516b5c6cff289876b513c8",
+                                                     "pixelSha256":  "33b06b90c913de17801ca444cf766973ef8a1ab3b1982c7d092a3a8e9f10ede2",
                                                      "rows":  [
                                                                   {
                                                                       "targetRow":  0,
@@ -2092,8 +2327,8 @@
                                                                   },
                                                                   {
                                                                       "targetRow":  4,
-                                                                      "source":  "tower_engineer",
-                                                                      "sourceRow":  4,
+                                                                      "source":  "tower_engineer_guard",
+                                                                      "sourceRow":  0,
                                                                       "sourceColumns":  [
                                                                                             0,
                                                                                             1,
@@ -2131,8 +2366,8 @@
                                                                   },
                                                                   {
                                                                       "targetRow":  7,
-                                                                      "source":  "tower_engineer",
-                                                                      "sourceRow":  7,
+                                                                      "source":  "tower_engineer_death",
+                                                                      "sourceRow":  0,
                                                                       "sourceColumns":  [
                                                                                             0,
                                                                                             1,
@@ -2148,7 +2383,8 @@
                                                    "path":  "/assets/images/combat/spritesheets/companions/tower_doctor_companion_sheet.png",
                                                    "width":  1536,
                                                    "height":  2048,
-                                                   "fileSha256":  "da0cc8a264c3f7a6b4d10e857d318420b9e604bdf6dd0f3fe14514def509a7dc",
+                                                   "fileSha256":  "e70c01d130cbd783dc5944a24b8e492513b80ea53feed31d5ec0f9040bc6f75e",
+                                                   "pixelSha256":  "4954ac2338d42f3971d794913071ce922e9a9700a18dfa419de41506a438f2cb",
                                                    "rows":  [
                                                                 {
                                                                     "targetRow":  0,
@@ -2178,8 +2414,8 @@
                                                                 },
                                                                 {
                                                                     "targetRow":  2,
-                                                                    "source":  "tower_doctor_base",
-                                                                    "sourceRow":  2,
+                                                                    "source":  "tower_doctor_ranged_guard_move_hit",
+                                                                    "sourceRow":  0,
                                                                     "sourceColumns":  [
                                                                                           0,
                                                                                           1,
@@ -2204,8 +2440,8 @@
                                                                 },
                                                                 {
                                                                     "targetRow":  4,
-                                                                    "source":  "tower_doctor_base",
-                                                                    "sourceRow":  4,
+                                                                    "source":  "tower_doctor_ranged_guard_move_hit",
+                                                                    "sourceRow":  1,
                                                                     "sourceColumns":  [
                                                                                           0,
                                                                                           1,
@@ -2217,8 +2453,8 @@
                                                                 },
                                                                 {
                                                                     "targetRow":  5,
-                                                                    "source":  "tower_doctor_base",
-                                                                    "sourceRow":  5,
+                                                                    "source":  "tower_doctor_ranged_guard_move_hit",
+                                                                    "sourceRow":  2,
                                                                     "sourceColumns":  [
                                                                                           0,
                                                                                           1,
@@ -2230,8 +2466,8 @@
                                                                 },
                                                                 {
                                                                     "targetRow":  6,
-                                                                    "source":  "tower_doctor_base",
-                                                                    "sourceRow":  6,
+                                                                    "source":  "tower_doctor_ranged_guard_move_hit",
+                                                                    "sourceRow":  3,
                                                                     "sourceColumns":  [
                                                                                           0,
                                                                                           1,
@@ -2243,8 +2479,8 @@
                                                                 },
                                                                 {
                                                                     "targetRow":  7,
-                                                                    "source":  "tower_doctor_base",
-                                                                    "sourceRow":  7,
+                                                                    "source":  "tower_doctor_death",
+                                                                    "sourceRow":  0,
                                                                     "sourceColumns":  [
                                                                                           0,
                                                                                           1,
@@ -2260,7 +2496,8 @@
                                                 "path":  "/assets/images/combat/spritesheets/companions/sous_chef_companion_sheet.png",
                                                 "width":  1536,
                                                 "height":  2048,
-                                                "fileSha256":  "5d7df6a00e5c88d76e9ca67752ed0e614bc09259deb1e6bd44e9dc6b3a8ebf4d",
+                                                "fileSha256":  "b453f8be0c7e7204acb96ae8261b58bbac5f00d5cec1d70be8b9153a9741e1bb",
+                                                "pixelSha256":  "34f38d03a664a5879420fa98f4d01a254a3c2c2e5ae32384c4ca318146236856",
                                                 "rows":  [
                                                              {
                                                                  "targetRow":  0,
@@ -2342,8 +2579,8 @@
                                                              },
                                                              {
                                                                  "targetRow":  6,
-                                                                 "source":  "sous_chef",
-                                                                 "sourceRow":  6,
+                                                                 "source":  "sous_chef_hit",
+                                                                 "sourceRow":  0,
                                                                  "sourceColumns":  [
                                                                                        0,
                                                                                        1,
@@ -2356,7 +2593,7 @@
                                                              {
                                                                  "targetRow":  7,
                                                                  "source":  "sous_chef",
-                                                                 "sourceRow":  7,
+                                                                 "sourceRow":  6,
                                                                  "sourceColumns":  [
                                                                                        0,
                                                                                        1,
@@ -2372,7 +2609,8 @@
                                                      "path":  "/assets/images/combat/spritesheets/companions/kitchen_helper_companion_sheet.png",
                                                      "width":  1536,
                                                      "height":  2048,
-                                                     "fileSha256":  "ee5bcdd1a66a00a83466ed14d2a8d460800bbf73c5778c5514e531cd92c628ab",
+                                                     "fileSha256":  "0559c4e8eb07dfe605d436aa8eb511318ee89bb08d29ee4156b18b2cad1ce999",
+                                                     "pixelSha256":  "f56b2c1621c406bead582c14c7fabc8d5f0dedc9d026a95801aad518c1bb26a3",
                                                      "rows":  [
                                                                   {
                                                                       "targetRow":  0,
@@ -2402,8 +2640,8 @@
                                                                   },
                                                                   {
                                                                       "targetRow":  2,
-                                                                      "source":  "kitchen_helper",
-                                                                      "sourceRow":  2,
+                                                                      "source":  "kitchen_helper_supplement",
+                                                                      "sourceRow":  0,
                                                                       "sourceColumns":  [
                                                                                             0,
                                                                                             1,
@@ -2415,8 +2653,8 @@
                                                                   },
                                                                   {
                                                                       "targetRow":  3,
-                                                                      "source":  "kitchen_helper",
-                                                                      "sourceRow":  3,
+                                                                      "source":  "kitchen_helper_supplement",
+                                                                      "sourceRow":  1,
                                                                       "sourceColumns":  [
                                                                                             0,
                                                                                             1,
@@ -2428,8 +2666,8 @@
                                                                   },
                                                                   {
                                                                       "targetRow":  4,
-                                                                      "source":  "kitchen_helper",
-                                                                      "sourceRow":  4,
+                                                                      "source":  "kitchen_helper_supplement",
+                                                                      "sourceRow":  2,
                                                                       "sourceColumns":  [
                                                                                             0,
                                                                                             1,
@@ -2441,8 +2679,8 @@
                                                                   },
                                                                   {
                                                                       "targetRow":  5,
-                                                                      "source":  "kitchen_helper",
-                                                                      "sourceRow":  5,
+                                                                      "source":  "kitchen_helper_supplement",
+                                                                      "sourceRow":  3,
                                                                       "sourceColumns":  [
                                                                                             0,
                                                                                             1,
@@ -2467,8 +2705,8 @@
                                                                   },
                                                                   {
                                                                       "targetRow":  7,
-                                                                      "source":  "kitchen_helper",
-                                                                      "sourceRow":  7,
+                                                                      "source":  "kitchen_helper_supplement",
+                                                                      "sourceRow":  4,
                                                                       "sourceColumns":  [
                                                                                             0,
                                                                                             1,

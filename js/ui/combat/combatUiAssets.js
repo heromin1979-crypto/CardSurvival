@@ -135,7 +135,8 @@ export const PLAYER_SPRITE_KEYS = {
   'engineer:M': 'engineer_m',
 };
 
-export const COMPANION_SPRITE_KEYS = Object.defineProperties({
+// 전용 전투 loadout을 가진 20종만 등록한다. 그 외 NPC는 CombatUI의 icon fallback을 사용한다.
+export const COMPANION_SPRITE_KEYS = {
   npc_old_survivor: 'old_survivor_companion',
   npc_nurse: 'nurse_companion',
   npc_soldier_deserter: 'soldier_companion',
@@ -156,10 +157,7 @@ export const COMPANION_SPRITE_KEYS = Object.defineProperties({
   npc_tower_doctor: 'tower_doctor_companion',
   npc_sous_chef: 'sous_chef_companion',
   npc_kitchen_helper: 'kitchen_helper_companion',
-}, {
-  npc_soldier: { value: 'soldier_companion', enumerable: false },
-  npc_wounded_soldier: { value: 'soldier_companion', enumerable: false },
-});
+};
 
 export const ENEMY_SPRITE_KEYS = {
   zombie_patient_dormant: 'zombie_patient_dormant',
