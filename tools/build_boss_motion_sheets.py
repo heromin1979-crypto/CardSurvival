@@ -3,9 +3,11 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import tempfile
 from collections import deque
 from pathlib import Path
+from statistics import median
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -58,7 +60,24 @@ HISTORICAL_IDS = {
 
 SOURCE_COLS_BY_BOSS = {
     "boss_phantom_sniper": 7,
-    "boss_firefighter_nemesis": 7,
+}
+
+ROW_SOURCE_OVERRIDES = {
+    ("boss_acid_queen", "charge"): SOURCE_ROOT / "boss_acid_queen_charge_alpha.png",
+    ("boss_acid_queen", "death"): SOURCE_ROOT / "boss_acid_queen_death_alpha.png",
+    ("boss_cult_leader", "charge"): SOURCE_ROOT / "boss_cult_leader_charge_alpha.png",
+    ("boss_phantom_sniper", "death"): SOURCE_ROOT / "boss_phantom_sniper_death_alpha.png",
+    ("boss_phantom_sniper", "ultimate"): SOURCE_ROOT / "boss_phantom_sniper_ultimate_alpha.png",
+    ("boss_mutant_alpha_tiger", "death"): SOURCE_ROOT / "boss_mutant_alpha_tiger_death_alpha.png",
+    ("boss_mutant_alpha_tiger", "ultimate"): SOURCE_ROOT / "boss_mutant_alpha_tiger_ultimate_alpha.png",
+    ("boss_soldier_nemesis", "special"): SOURCE_ROOT / "boss_soldier_nemesis_special_alpha.png",
+    ("boss_soldier_nemesis", "ultimate"): SOURCE_ROOT / "boss_soldier_nemesis_ultimate_alpha.png",
+    ("boss_firefighter_nemesis", "charge"): SOURCE_ROOT / "boss_firefighter_nemesis_charge_alpha.png",
+    ("boss_firefighter_nemesis", "hit"): SOURCE_ROOT / "boss_firefighter_nemesis_hit_alpha.png",
+    ("boss_chef_nemesis", "death"): SOURCE_ROOT / "boss_chef_nemesis_death_alpha.png",
+    ("boss_sewer_king", "hit"): SOURCE_ROOT / "boss_sewer_king_hit_alpha.png",
+    ("boss_swarm_queen_bee", "hit"): SOURCE_ROOT / "boss_swarm_queen_bee_hit_alpha.png",
+    ("boss_swarm_queen_bee", "ultimate"): SOURCE_ROOT / "boss_swarm_queen_bee_ultimate_alpha.png",
 }
 
 
@@ -106,39 +125,13 @@ def alpha_components(image: Image.Image) -> list[list[int]]:
     return components
 
 
-def detached_union_descriptor(cell: Image.Image, components: list[list[int]]) -> dict:
-    if not components:
-        return {
-            "componentCount": 0,
-            "bbox": None,
-            "area": 0,
-            "maskSha256": None,
-        }
-    width, _ = cell.size
-    indexes = [index for component in components for index in component]
-    xs = [index % width for index in indexes]
-    ys = [index // width for index in indexes]
-    bbox = (min(xs), min(ys), max(xs) + 1, max(ys) + 1)
-    mask_width = bbox[2] - bbox[0]
-    mask = bytearray(mask_width * (bbox[3] - bbox[1]))
-    for index in indexes:
-        x, y = index % width, index // width
-        mask[(y - bbox[1]) * mask_width + x - bbox[0]] = 1
-    return {
-        "componentCount": len(components),
-        "bbox": list(bbox),
-        "area": len(indexes),
-        "maskSha256": hashlib.sha256(mask).hexdigest(),
-    }
-
-
 def load_component_contract() -> tuple[dict[tuple[str, str, int], dict], dict]:
     if not CONTRACT_PATH.exists():
         raise FileNotFoundError(
             "missing immutable detached component contract; run the separate authoring tool"
         )
     contract = json.loads(CONTRACT_PATH.read_text(encoding="utf-8"))
-    if contract.get("version") != 1 or contract.get("rowContract") != list(ROWS):
+    if contract.get("version") != 2 or contract.get("rowContract") != list(ROWS):
         raise ValueError("detached component contract schema mismatch")
     if contract.get("selectionSha256") != sha256_file(SELECTION_PATH):
         raise ValueError("detached component selection drift")
@@ -158,18 +151,23 @@ def extract_selected_components(
     contract_entry: dict | None,
 ) -> tuple[Image.Image, dict]:
     rgba = row_image.convert("RGBA")
-    observed_detached = detached_union_descriptor(rgba, detached)
+    selected_detached: list[list[int]] = []
     if contract_entry is not None:
-        expected = contract_entry.get("detached")
-        if expected != observed_detached:
-            raise ValueError(
-                "detached component contract mismatch "
-                f"for {contract_entry.get('bossId')}:{contract_entry.get('motionKey')}:"
-                f"{contract_entry.get('col')}"
-            )
-        keep_components = [major, *detached]
-    else:
-        keep_components = [major]
+        observed_by_descriptor = {
+            json.dumps(component_descriptor(rgba, component), sort_keys=True): component
+            for component in detached
+        }
+        for expected in contract_entry.get("selectedDetachedComponents", []):
+            fingerprint = json.dumps(expected, sort_keys=True)
+            component = observed_by_descriptor.get(fingerprint)
+            if component is None:
+                raise ValueError(
+                    "detached component contract mismatch "
+                    f"for {contract_entry.get('bossId')}:{contract_entry.get('motionKey')}:"
+                    f"{contract_entry.get('col')}"
+                )
+            selected_detached.append(component)
+    keep_components = [major, *selected_detached]
     width, _ = rgba.size
     kept_indexes = [index for component in keep_components for index in component]
     xs = [index % width for index in kept_indexes]
@@ -189,8 +187,10 @@ def extract_selected_components(
     return isolated.crop(bbox), {
         "sourceBbox": list(bbox),
         "majorArea": len(major),
-        "preservedDetached": observed_detached if contract_entry is not None else None,
-        "removedDetachedComponents": 0 if contract_entry is not None else len(detached),
+        "preservedDetached": [
+            component_descriptor(rgba, component) for component in selected_detached
+        ],
+        "removedDetachedComponents": len(detached) - len(selected_detached),
     }
 
 
@@ -265,20 +265,89 @@ def source_cell_bounds(source: Image.Image, boss_id: str, row: int, col: int) ->
     return x0, y0, x1, y1
 
 
+def source_column_boundaries(source: Image.Image, boss_id: str) -> list[int]:
+    source_cols = SOURCE_COLS_BY_BOSS.get(boss_id, COLS)
+    idle_y1 = round(source.height / len(ROWS))
+    idle = source.crop((0, 0, source.width, idle_y1)).convert("RGBA")
+    components = alpha_components(idle)
+    if len(components) < source_cols:
+        raise ValueError(f"not enough idle anchors {boss_id}: {len(components)} < {source_cols}")
+
+    def center_x(component: list[int]) -> float:
+        xs = [index % idle.width for index in component]
+        return (min(xs) + max(xs) + 1) / 2
+
+    anchors = sorted(components[:source_cols], key=center_x)
+    centers = [center_x(component) for component in anchors]
+    minimum_spacing = source.width / source_cols * 0.45
+    if any(right - left < minimum_spacing for left, right in zip(centers, centers[1:])):
+        raise ValueError(f"idle anchor collision {boss_id}: {centers}")
+    boundaries = [0]
+    boundaries.extend(round((left + right) / 2) for left, right in zip(centers, centers[1:]))
+    boundaries.append(source.width)
+    return boundaries
+
+
+def row_column_boundaries(row_image: Image.Image, source_cols: int) -> list[int] | None:
+    components = alpha_components(row_image)
+    if len(components) < source_cols:
+        return None
+
+    def center_x(component: list[int]) -> float:
+        xs = [index % row_image.width for index in component]
+        return (min(xs) + max(xs) + 1) / 2
+
+    candidates = sorted(
+        (component for component in components if len(component) >= len(components[0]) * 0.015),
+        key=center_x,
+    )
+    minimum_spacing = row_image.width / source_cols * 0.42
+    states: list[list[tuple[float, tuple[int, ...]] | None]] = [
+        [None] * len(candidates) for _ in range(source_cols + 1)
+    ]
+    for index, component in enumerate(candidates):
+        states[1][index] = (math.log(len(component)), (index,))
+    for count in range(2, source_cols + 1):
+        for index, component in enumerate(candidates):
+            options = []
+            for previous in range(index):
+                state = states[count - 1][previous]
+                if (
+                    state is None
+                    or center_x(component) - center_x(candidates[previous]) < minimum_spacing
+                ):
+                    continue
+                options.append((state[0] + math.log(len(component)), state[1] + (index,)))
+            if options:
+                states[count][index] = max(options, key=lambda option: option[0])
+    completed = [state for state in states[source_cols] if state is not None]
+    if not completed:
+        return None
+    selected = max(completed, key=lambda option: option[0])[1]
+    centers = [center_x(candidates[index]) for index in selected]
+    boundaries = [0]
+    boundaries.extend(round((left + right) / 2) for left, right in zip(centers, centers[1:]))
+    boundaries.append(row_image.width)
+    return boundaries
+
+
 def source_row_groups(
     source: Image.Image,
     boss_id: str,
     row: int,
-) -> tuple[Image.Image, list[tuple[list[int], list[list[int]]]], int]:
+) -> tuple[
+    Image.Image,
+    list[tuple[list[int], list[list[int]]]],
+    list[tuple[int, int, int, int]],
+    int,
+]:
     source_cols = SOURCE_COLS_BY_BOSS.get(boss_id, COLS)
     y0 = round(row * source.height / len(ROWS))
     y1 = round((row + 1) * source.height / len(ROWS))
     row_image = source.crop((0, y0, source.width, y1)).convert("RGBA")
-    row_components = alpha_components(row_image)
-    component_by_index: dict[int, int] = {}
-    for component_id, component in enumerate(row_components):
-        for index in component:
-            component_by_index[index] = component_id
+    boundaries = row_column_boundaries(row_image, source_cols)
+    if boundaries is None:
+        boundaries = source_column_boundaries(source, boss_id)
 
     def mapped_component(local: list[int], cell_width: int, x0: int) -> list[int]:
         return [
@@ -286,73 +355,63 @@ def source_row_groups(
             for index in local
         ]
 
-    def expanded_component(mapped: list[int], x0: int, x1: int, main: bool) -> list[int]:
-        votes: dict[int, int] = {}
-        for index in mapped:
-            component_id = component_by_index.get(index)
-            if component_id is not None:
-                votes[component_id] = votes.get(component_id, 0) + 1
-        if not votes:
-            return mapped
-        candidate = row_components[max(votes, key=votes.get)]
-        xs = [index % row_image.width for index in candidate]
-        width = x1 - x0
-        center = (min(xs) + max(xs) + 1) / 2
-        max_width = width * (1.75 if main else 1.5)
-        center_margin = width * 0.35 if main else 0
-        if max(xs) + 1 - min(xs) > max_width:
-            return mapped
-        if center < x0 - center_margin or center > x1 + center_margin:
-            return mapped
-        return candidate
-
     groups: list[tuple[list[int], list[list[int]]]] = []
-    used_main: set[tuple[tuple[int, ...], str]] = set()
+    bounds: list[tuple[int, int, int, int]] = []
     for col in range(COLS):
-        x0 = round(col * source.width / source_cols)
-        x1 = round((col + 1) * source.width / source_cols)
+        x0, x1 = boundaries[col], boundaries[col + 1]
         cell = row_image.crop((x0, 0, x1, row_image.height))
         components = alpha_components(cell)
         if not components:
             raise ValueError(f"empty source cell {boss_id}:{ROWS[row]}:{col}")
-        mapped_major = mapped_component(components[0], cell.width, x0)
-        major = expanded_component(
-            mapped_major,
-            x0,
-            x1,
-            True,
-        )
-        expanded_descriptor = component_descriptor(row_image, major)
-        expanded_identity = (
-            tuple(expanded_descriptor["bbox"]),
-            expanded_descriptor["maskSha256"],
-        )
-        if expanded_identity in used_main:
-            major = mapped_major
-            expanded_descriptor = component_descriptor(row_image, major)
-            expanded_identity = (
-                tuple(expanded_descriptor["bbox"]),
-                expanded_descriptor["maskSha256"],
-            )
-        used_main.add(expanded_identity)
-        detached = []
-        major_descriptor = expanded_descriptor
-        seen = {(tuple(major_descriptor["bbox"]), major_descriptor["maskSha256"])}
-        for component in components[1:]:
-            candidate = expanded_component(
-                mapped_component(component, cell.width, x0),
-                x0,
-                x1,
-                False,
-            )
-            descriptor = component_descriptor(row_image, candidate)
-            fingerprint = (tuple(descriptor["bbox"]), descriptor["maskSha256"])
-            if fingerprint not in seen:
-                detached.append(candidate)
-                seen.add(fingerprint)
+        major = mapped_component(components[0], cell.width, x0)
+        detached = [
+            mapped_component(component, cell.width, x0)
+            for component in components[1:]
+        ]
         detached.sort(key=lambda component: (-len(component), component[0]))
         groups.append((major, detached))
-    return row_image, groups, y0
+        bounds.append((x0, y0, x1, y1))
+    return row_image, groups, bounds, y0
+
+
+def motion_row_groups(
+    source: Image.Image,
+    boss_id: str,
+    row: int,
+) -> tuple[
+    Image.Image,
+    list[tuple[list[int], list[list[int]]]],
+    list[tuple[int, int, int, int]],
+    int,
+]:
+    override = ROW_SOURCE_OVERRIDES.get((boss_id, ROWS[row]))
+    if override is None:
+        return source_row_groups(source, boss_id, row)
+    row_image = Image.open(override).convert("RGBA")
+    boundaries = row_column_boundaries(row_image, COLS)
+    if boundaries is None:
+        boundaries = [round(col * row_image.width / COLS) for col in range(COLS + 1)]
+
+    def mapped_component(local: list[int], cell_width: int, x0: int) -> list[int]:
+        return [
+            (index // cell_width) * row_image.width + x0 + index % cell_width
+            for index in local
+        ]
+
+    groups = []
+    bounds = []
+    for col in range(COLS):
+        x0, x1 = boundaries[col], boundaries[col + 1]
+        cell = row_image.crop((x0, 0, x1, row_image.height))
+        components = alpha_components(cell)
+        if not components:
+            raise ValueError(f"empty supplement cell {boss_id}:{ROWS[row]}:{col}")
+        groups.append((
+            mapped_component(components[0], cell.width, x0),
+            [mapped_component(component, cell.width, x0) for component in components[1:]],
+        ))
+        bounds.append((x0, 0, x1, row_image.height))
+    return row_image, groups, bounds, 0
 
 
 def source_cells(
@@ -362,9 +421,24 @@ def source_cells(
 ) -> list[tuple[Image.Image, dict]]:
     cells: list[tuple[Image.Image, dict]] = []
     for row in range(len(ROWS)):
-        row_image, groups, row_y0 = source_row_groups(source, boss_id, row)
+        row_image, groups, bounds, row_y0 = motion_row_groups(source, boss_id, row)
+        override = ROW_SOURCE_OVERRIDES.get((boss_id, ROWS[row]))
+        row_scale = 1.0
+        if override is not None:
+            idle_image, idle_groups, _, _ = source_row_groups(source, boss_id, 0)
+            idle_heights = [
+                component_descriptor(idle_image, primary)["bbox"][3]
+                - component_descriptor(idle_image, primary)["bbox"][1]
+                for primary, _ in idle_groups
+            ]
+            override_heights = [
+                component_descriptor(row_image, primary)["bbox"][3]
+                - component_descriptor(row_image, primary)["bbox"][1]
+                for primary, _ in groups
+            ]
+            row_scale = median(idle_heights) / median(override_heights)
         for col in range(COLS):
-            x0, y0, x1, y1 = source_cell_bounds(source, boss_id, row, col)
+            x0, y0, x1, y1 = bounds[col]
             entry = contract.get((boss_id, ROWS[row], col))
             major_component, detached_components = groups[col]
             major, evidence = extract_selected_components(
@@ -373,6 +447,19 @@ def source_cells(
                 detached_components,
                 entry,
             )
+            if override is not None:
+                major = major.resize(
+                    (
+                        max(1, round(major.width * row_scale)),
+                        max(1, round(major.height * row_scale)),
+                    ),
+                    Image.Resampling.LANCZOS,
+                )
+                evidence["rowSourceOverride"] = {
+                    "path": f"/art_sources/combat/task10_bosses/{override.name}",
+                    "sha256": sha256_file(override),
+                    "scale": row_scale,
+                }
             evidence["sourceBbox"][1] += row_y0
             evidence["sourceBbox"][3] += row_y0
             evidence.update({
@@ -387,13 +474,29 @@ def source_cells(
 
 
 def normalize_cells(cells: list[tuple[Image.Image, dict]]) -> tuple[Image.Image, list[dict]]:
-    max_width = max(image.width for image, _ in cells)
-    max_height = max(image.height for image, _ in cells)
-    scale = min(228 / max_width, 228 / max_height)
+    canonical = [image for image, evidence in cells if "rowSourceOverride" not in evidence]
+    if not canonical:
+        canonical = [image for image, _ in cells]
+    base_scale = min(
+        228 / max(image.width for image in canonical),
+        228 / max(image.height for image in canonical),
+    )
+    row_scales: dict[int, float] = {}
+    for row in range(len(ROWS)):
+        row_cells = cells[row * COLS:(row + 1) * COLS]
+        if any("rowSourceOverride" in evidence for _, evidence in row_cells):
+            row_scales[row] = min(
+                base_scale,
+                228 / max(image.width for image, _ in row_cells),
+                228 / max(image.height for image, _ in row_cells),
+            )
+        else:
+            row_scales[row] = base_scale
     sheet = Image.new("RGBA", (COLS * CELL, len(ROWS) * CELL), (0, 0, 0, 0))
     evidence_rows: list[dict] = []
     for index, (image, evidence) in enumerate(cells):
         row, col = divmod(index, COLS)
+        scale = row_scales[row]
         target_size = (
             max(1, round(image.width * scale)),
             max(1, round(image.height * scale)),
@@ -413,6 +516,7 @@ def normalize_cells(cells: list[tuple[Image.Image, dict]]) -> tuple[Image.Image,
         sheet.alpha_composite(normalized, (x, y))
         evidence_rows.append({
             **evidence,
+            "normalizationScale": scale,
             "targetBbox": [x - col * CELL, y - row * CELL, x - col * CELL + normalized.width, y - row * CELL + normalized.height],
         })
     sanitized = bytearray(sheet.tobytes())
@@ -437,6 +541,7 @@ def inspect_sheet(image: Image.Image) -> dict:
             strict_green += 1
     for row in range(len(ROWS)):
         row_hashes = []
+        row_primary = []
         for col in range(COLS):
             frame = image.crop((col * CELL, row * CELL, (col + 1) * CELL, (row + 1) * CELL))
             bounds = frame.getchannel("A").point(lambda value: 255 if value > ALPHA_THRESHOLD else 0).getbbox()
@@ -445,6 +550,10 @@ def inspect_sheet(image: Image.Image) -> dict:
             if bounds[0] == 0 or bounds[1] == 0 or bounds[2] == CELL or bounds[3] == CELL:
                 raise ValueError(f"runtime frame touches edge {row}:{col}: {bounds}")
             components = alpha_components(frame)
+            primary = component_descriptor(frame, components[0])
+            primary_width = primary["bbox"][2] - primary["bbox"][0]
+            primary_height = primary["bbox"][3] - primary["bbox"][1]
+            row_primary.append((primary["area"], primary_width, primary_height))
             row_hashes.append(sha256_pixels(frame))
             frames.append({
                 "row": row,
@@ -455,6 +564,26 @@ def inspect_sheet(image: Image.Image) -> dict:
             })
         if len(set(row_hashes)) != COLS:
             raise ValueError(f"duplicate frame in row {row}")
+        medians = [sorted(values)[len(values) // 2] for values in zip(*row_primary)]
+        for col, values in enumerate(row_primary):
+            area, width, height = values
+            area_ratio = 0.25 if ROWS[row] == "death" else 0.40
+            if area < medians[0] * area_ratio:
+                raise ValueError(
+                    f"primary body area discontinuity {ROWS[row]}:{col}: "
+                    f"{area} < {medians[0]} * {area_ratio:.2f}"
+                )
+            if ROWS[row] == "death":
+                bbox_discontinuous = (
+                    width < medians[1] * 0.35 and height < medians[2] * 0.35
+                ) or width * height < medians[1] * medians[2] * 0.25
+            else:
+                bbox_discontinuous = width < medians[1] * 0.35 or height < medians[2] * 0.35
+            if bbox_discontinuous:
+                raise ValueError(
+                    f"primary body bbox discontinuity {ROWS[row]}:{col}: "
+                    f"{width}x{height} vs median {medians[1]}x{medians[2]}"
+                )
     basic_a = sha256_pixels(image.crop((0, CELL, image.width, CELL * 2)))
     basic_b = sha256_pixels(image.crop((0, CELL * 2, image.width, CELL * 3)))
     if basic_a == basic_b:
@@ -535,17 +664,18 @@ def component_report() -> dict:
         source = Image.open(SOURCE_ROOT / f"{boss_id}_alpha.png").convert("RGBA")
         records = []
         for row in range(len(ROWS)):
-            y0 = round(row * source.height / len(ROWS))
-            y1 = round((row + 1) * source.height / len(ROWS))
+            row_image, groups, bounds, _ = motion_row_groups(source, boss_id, row)
             for col in range(COLS):
-                x0, y0, x1, y1 = source_cell_bounds(source, boss_id, row, col)
-                cell = source.crop((x0, y0, x1, y1))
-                components = alpha_components(cell)
+                primary, detached = groups[col]
                 records.append({
                     "row": row,
                     "motionKey": ROWS[row],
                     "col": col,
-                    "components": [component_descriptor(cell, component) for component in components],
+                    "sourceCell": list(bounds[col]),
+                    "components": [
+                        component_descriptor(row_image, component)
+                        for component in [primary, *detached]
+                    ],
                 })
         report["bosses"][boss_id] = {
             "sourceSha256": sha256_file(SOURCE_ROOT / f"{boss_id}_alpha.png"),
@@ -586,6 +716,14 @@ def build_outputs(destination_root: Path, review_root: Path) -> tuple[dict, list
             "sourceAlphaSha256": sha256_file(alpha_path),
             "sourceChromaPath": f"/art_sources/combat/task10_bosses/{boss_id}_chroma.png",
             "sourceChromaSha256": sha256_file(chroma_path),
+            "rowSourceOverrides": {
+                motion_key: {
+                    "path": f"/art_sources/combat/task10_bosses/{path.name}",
+                    "sha256": sha256_file(path),
+                }
+                for (override_boss, motion_key), path in ROW_SOURCE_OVERRIDES.items()
+                if override_boss == boss_id
+            },
             "assembly": assembly,
             "quality": quality,
         }
@@ -655,6 +793,8 @@ def check_recipe() -> None:
             for field in ("fileSha256", "pixelSha256", "sourceAlphaSha256", "sourceChromaSha256"):
                 if expected.get(field) != actual.get(field):
                     raise ValueError(f"{boss_id} {field} mismatch")
+            if expected.get("rowSourceOverrides") != actual.get("rowSourceOverrides"):
+                raise ValueError(f"{boss_id} rowSourceOverrides mismatch")
             runtime_path = RUNTIME_ROOT / f"{boss_id}_sheet.png"
             if not runtime_path.exists() or sha256_file(runtime_path) != expected["fileSha256"]:
                 raise ValueError(f"{boss_id} runtime drift")

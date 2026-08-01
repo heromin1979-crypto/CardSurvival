@@ -6,6 +6,7 @@ import { COMBAT_MOTION_MANIFEST } from '../js/data/combatMotionManifest.js';
 import { SECRET_ENEMIES } from '../js/data/secretEnemies.js';
 import { ENEMY_SPRITE_KEYS } from '../js/ui/combat/combatUiAssets.js';
 import { chromaArtifactStats, readPng } from './audit_combat_sprites.mjs';
+import { validateBossMotionSourceBindings } from './boss_motion_source_contract.mjs';
 
 const ROOT = path.resolve(process.argv.find(arg => arg.startsWith('--root='))?.slice(7) || process.cwd());
 const ART = 'art_sources/combat/task10_bosses';
@@ -84,6 +85,16 @@ function validateManifest(bossIds) {
   }
 }
 
+function validateSourceBindings(recipe, bossIds) {
+  const errors = validateBossMotionSourceBindings({
+    manifest: COMBAT_MOTION_MANIFEST,
+    spriteKeys: ENEMY_SPRITE_KEYS,
+    bossIds,
+    recipeTargets: recipe.targets,
+  });
+  invariant(errors.length === 0, `boss source binding errors: ${errors.join('; ')}`);
+}
+
 function validateProvenance(provenance, recipe, bossIds) {
   invariant(provenance.version === 1 && provenance.tool === 'built-in image_gen', 'generation provenance header mismatch');
   invariant(provenance.mode.includes('no CLI/API fallback'), 'generation provenance must reject CLI/API fallback');
@@ -98,6 +109,33 @@ function validateProvenance(provenance, recipe, bossIds) {
     const target = recipe.targets[item.sheetKey];
     invariant(target.sourceChromaSha256 === item.chromaSha256, `${item.sheetKey} recipe chroma hash mismatch`);
     invariant(target.sourceAlphaSha256 === item.alphaSha256, `${item.sheetKey} recipe alpha hash mismatch`);
+  }
+  const expectedSupplements = [];
+  for (const [sheetKey, target] of Object.entries(recipe.targets)) {
+    for (const row of Object.keys(target.rowSourceOverrides ?? {})) expectedSupplements.push(`${sheetKey}:${row}`);
+  }
+  exactSet(provenance.supplements.map(item => `${item.sheetKey}:${item.row}`), expectedSupplements, 'supplement provenance');
+  for (const item of provenance.supplements) {
+    invariant(typeof item.promptSummary === 'string' && item.promptSummary.length >= 20, `${item.sheetKey}:${item.row} supplement prompt missing`);
+    const chromaPath = fixedFile(`${ART}/${item.chroma}`, `${item.sheetKey}:${item.row} chroma supplement`);
+    const alphaPath = fixedFile(`${ART}/${item.alpha}`, `${item.sheetKey}:${item.row} alpha supplement`);
+    invariant(sha256(chromaPath) === item.chromaSha256, `${item.sheetKey}:${item.row} chroma supplement hash mismatch`);
+    invariant(sha256(alphaPath) === item.alphaSha256, `${item.sheetKey}:${item.row} alpha supplement hash mismatch`);
+    const override = recipe.targets[item.sheetKey].rowSourceOverrides[item.row];
+    invariant(override.path === `/${ART}/${item.alpha}`, `${item.sheetKey}:${item.row} supplement path mismatch`);
+    invariant(override.sha256 === item.alphaSha256, `${item.sheetKey}:${item.row} recipe supplement hash mismatch`);
+  }
+  invariant(Array.isArray(provenance.nonAssemblyArchives) && provenance.nonAssemblyArchives.length === 3, 'non-assembly archive count mismatch');
+  for (const archive of provenance.nonAssemblyArchives) {
+    invariant(archive.status === 'rejected' || archive.status === 'superseded', `${archive.sheetKey} invalid archive status`);
+    invariant(typeof archive.reason === 'string' && archive.reason.length >= 20, `${archive.sheetKey} archive reason missing`);
+    const archivePath = fixedFile(`${ART}/${archive.archive}`, `${archive.sheetKey} non-assembly archive`);
+    invariant(sha256(archivePath) === archive.sha256, `${archive.sheetKey} non-assembly archive hash mismatch`);
+    const target = recipe.targets[archive.sheetKey];
+    invariant(target.sourceChroma !== `/${ART}/${archive.archive}`, `${archive.sheetKey} archive must not be a canonical input`);
+    for (const override of Object.values(target.rowSourceOverrides ?? {})) {
+      invariant(override.path !== `/${ART}/${archive.archive}`, `${archive.sheetKey} archive must not be a row override input`);
+    }
   }
   invariant(provenance.historicalBaselines.length === 7, 'Task 6 baseline count mismatch');
   for (const baseline of provenance.historicalBaselines) {
@@ -158,6 +196,7 @@ function main() {
   const evidencePath = fixedFile(`${ART}/manual_review_evidence.json`);
   const evidence = JSON.parse(fs.readFileSync(evidencePath, 'utf8'));
 
+  validateSourceBindings(recipe, bossIds);
   validateManifest(bossIds);
   validateProvenance(provenance, recipe, bossIds);
   const inspectedCells = validateRuntime(recipe, bossIds);
