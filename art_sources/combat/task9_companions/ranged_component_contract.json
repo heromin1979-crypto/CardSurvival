@@ -1,0 +1,333 @@
+{
+  "version": 1,
+  "contract": "task9-ranged-detached-components-v1",
+  "sheets": {
+    "old_survivor_companion": {
+      "frames": [
+        [],
+        [],
+        [],
+        [
+          "v1:258:37,28,56,43:748b3a69fa25741e2442efa2d0d51f4e4cd705b3a83d02aafbcca253d7506d87"
+        ],
+        [
+          "v1:1:45,32,45,32:ba90755486411d72583c68cf4d68cae11e1608724e9b74f914088e5e38a02e0e",
+          "v1:1:45,38,45,38:1f5b94baaaa2a0048a684303f75a83faf7619a17561561563b1a1b2a9495b244"
+        ],
+        []
+      ]
+    },
+    "nurse_companion": {
+      "frames": [
+        [],
+        [],
+        [],
+        [],
+        [
+          "v1:11:50,44,54,46:587b813354c712ad3bd44c185bee3e3bb8ac2262b8614a16534cc93655baad67",
+          "v1:625:5,49,41,74:56cc075eee7dc6eccc565fd2e36b082cdf28014e92ce69ae088082aab63984f6",
+          "v1:7:47,55,49,57:c4a300a5230948178f657c5961dac56eb0eb7e547db61c407cef0b7c6f1103b0",
+          "v1:8:22,43,24,45:f7b2ced6d998fae45d091292d6cba5391a55b2dc18fe3fac8e1e326963b2f44a",
+          "v1:8:39,65,41,67:86770bc202942e8f2ecad8fa874a9e05b768069f1301b14ff466b7756b613c6b"
+        ],
+        []
+      ]
+    },
+    "soldier_companion": {
+      "frames": [
+        [],
+        [],
+        [],
+        [],
+        [],
+        []
+      ]
+    },
+    "child_companion": {
+      "frames": [
+        [],
+        [],
+        [],
+        [
+          "v1:7:216,65,218,67:752d4bab92e25d455e9d03e664c63adba890f752893d9be0f10540e33c67beed"
+        ],
+        [
+          "v1:14:188,128,191,131:e4d67727842504161b21990dbb317eb62cf593505ab48b0b0d4b4fb50224b19e",
+          "v1:285:34,32,56,46:94511b9a4f5f89efde3a858f913a8229403d6590120eb32dace0f57a96503382"
+        ],
+        [
+          "v1:17:127,131,131,134:5bffd60b50e3b6ec0164a8a0131e0b0631100f0c9eace25d2e210e6a2dc0f461",
+          "v1:221:222,79,243,91:94f7f3e6123768e87b7a209a2343cf98a18f087a0a06fa822c9d667dae3e0bf0"
+        ]
+      ]
+    },
+    "mechanic_companion": {
+      "frames": [
+        [],
+        [],
+        [],
+        [],
+        [
+          "v1:507:7,55,44,76:77a0d66bd05321a7c0692886adf2db0a245b36a143a141f4b0e8a574a21bcfd5"
+        ],
+        [
+          "v1:365:19,48,42,70:e277454033ccf253ce4537de9032baba6e704ff2999a8753b1ff10216d93c91f"
+        ]
+      ]
+    },
+    "student_companion": {
+      "frames": [
+        [],
+        [],
+        [],
+        [
+          "v1:14:82,65,85,68:4cba69bb8eb6b59d6d2979555c59b02d9ba451df1b1aed7bfd08f4715300d4b5",
+          "v1:17:246,86,248,95:d6d2b7a7b114524b7dffa36a58be78ce771359bc4aad22b994d0eecd37e014ab",
+          "v1:18:199,67,204,70:2b177d0509ca429ec7bc6004cdf33bae4cf2b72af7d96ea1ffa0a45f6d4d6c46",
+          "v1:20:228,50,233,55:062988f81503d72c3297a2bbb1cb01cf695e571163b594d0999651f7b6f32067",
+          "v1:41:239,57,247,63:8b090b0aaa30fe55d4c6d4fd62ad4c5a94751678e72f0222a5f4ad2fc5243132",
+          "v1:69:63,52,76,61:da978f18a212b8d05e8dd65d49e4d389d590a063ab476766cc7eb0d0f250ef8c"
+        ],
+        [
+          "v1:1263:5,58,48,103:084cccb384c2fbd5e87d97f002d16514f1c9ae6917e633a8f4998c62d211d90d",
+          "v1:16:39,56,46,60:eca3b5fbe242b7fdb806b3a9f5b4dd852609d2ea43cb28d1e158ab58bd876631",
+          "v1:192:69,52,82,80:d71deb79b7b28005cfc3932e0f999c6a8ebeefbca6971a84ad38ec4e8cbace31",
+          "v1:513:48,99,85,125:f8b867df5e4f437f01d452402ba75ac04e35411da10a2afc47c56f547d0091d1",
+          "v1:6:58,71,60,72:1352f1ca3837494d5104a793d059421ccf7964c52507f6d9094eaffe6a15413f",
+          "v1:9:36,45,40,47:d2b12e39adfd2fa80eb75c94bdd3bf65fb8c46aa9e4c7fc3e7fbafc5a14a833c"
+        ],
+        [
+          "v1:158:13,55,28,73:1f4ddb2e037dd4fa05a61c4e0051a287ac16e1ad28bece6bbc6668fa611e4ab7"
+        ]
+      ]
+    },
+    "dog_companion": {
+      "frames": [
+        [],
+        [],
+        [],
+        [
+          "v1:9:133,79,135,81:bddb2e01659d69666dd1ff95388eda8a7f0596cbe9c8aedbf23255b6ecea56d0"
+        ],
+        [
+          "v1:2:7,70,7,71:910a89d5dec6677e00da8b5928e078ccf04ef6f09754dc02eb53c15908ab1100",
+          "v1:72:223,61,237,72:b00be76416a521de42f581b76fae3ba0a32f66b12b1d9b3c898323bf0936edd0",
+          "v1:81:220,24,236,37:a447a4c0a4f1df2bfcbbecd589caadc91705b4fb77ec5c76c3fac83b8acdf96b",
+          "v1:89:227,45,247,50:39e55c436b703e6a8c8ffcf59babe055d324c6497754f89ab892ac3a59c9c3b0"
+        ],
+        [
+          "v1:66:217,57,231,67:8ec25ab27681afae9a9b5076d3643e3cb7b91b3eb81cfeae3f68b8ba60ce7846",
+          "v1:75:214,23,229,36:989fbf3098ca3a8d1b0b1d7e6dfa5d21c61f3a05738b39e5985df80d3c7e7849",
+          "v1:91:221,43,242,47:9b1cdcbe5c23752648bedac454846f8ae19323835369f88ad41ee5c4a339f767"
+        ]
+      ]
+    },
+    "former_colleague_companion": {
+      "frames": [
+        [],
+        [],
+        [],
+        [
+          "v1:53:37,41,42,52:f192b0fb85a500c76bec856325f8987ea0983a44a7ac00f76b70a4470dd3f3d5"
+        ],
+        [
+          "v1:95:43,51,60,58:fc00bbd3640f26ffa4ac71d57324c3fd8b516455897c513c83fa5d0991233a82"
+        ],
+        [
+          "v1:105:40,60,60,67:8cd5a2fbf66066d124a2032f8953d4a76ba57aad94e65b66b20995ba5fe5e9f7"
+        ]
+      ]
+    },
+    "minjun_companion": {
+      "frames": [
+        [],
+        [],
+        [
+          "v1:27:155,22,164,24:b4af2749a37697fe7fc16bbe219ed4722c997914f1e251e8ad846bcbb7ef58f3"
+        ],
+        [
+          "v1:25:169,21,176,26:f63f2261cc5f724f153babb5e18b5c28272480e8d3528a0ccd10c44e72b34360"
+        ],
+        [
+          "v1:34:163,24,172,28:bc9ca2d456cb0fc35124edeaa0d1ea60f88b8cf8f4de3e44c0cfadc46458ba6c"
+        ],
+        []
+      ]
+    },
+    "sohee_companion": {
+      "frames": [
+        [],
+        [],
+        [],
+        [
+          "v1:14:68,50,71,54:71f4007639e26d91bad9ee7966e0f75086ddd74d8e57bff4bb2f09d1fa971c65"
+        ],
+        [
+          "v1:18:65,51,68,55:94fa1d82fb1e02baedf32f7ee477081b86678694e75174c54de56db2166fc68c"
+        ],
+        [
+          "v1:4:49,40,50,41:56adb1bc3b97a2a6f9964d5563690e96846371a2d396c51f4e66d046c4a2228a"
+        ]
+      ]
+    },
+    "jisu_companion": {
+      "frames": [
+        [],
+        [],
+        [
+          "v1:47:72,35,79,45:ae708f03d8b0fe5f15ec9d7a2bda584ec45a33bcc9f425308d3c1f2673bd1d2d",
+          "v1:4:72,47,72,50:397d09d56e8b0dc3dc9977bab388639338fdbc8b8a5ed7e99c2b973188d661c5"
+        ],
+        [
+          "v1:104:62,33,79,47:659eda100ed0a095848be96fb560a8c9c89fbdacf6cbbe1fdbe7b43fa6054a3d"
+        ],
+        [
+          "v1:162:83,10,108,26:72c867962ba8115b2e55f83c876c1a3ffd3794734ac606936634f3508661f939"
+        ],
+        [
+          "v1:116:180,32,200,45:5dd3bdc09895b183c294824ff3484773060a21325c3c0323a19e75f6f192b512",
+          "v1:178:54,84,71,101:ddc8474c4000c6ec23acaf595e9bddec8c9de8e9ec9d967cbeb1bb70d27552bb"
+        ]
+      ]
+    },
+    "yeongcheol_companion": {
+      "frames": [
+        [],
+        [],
+        [
+          "v1:118:207,87,224,103:4cb6c1bb1257e9f53b17929de786e93b21cd6816aba9353a9bd5f740112f1f49",
+          "v1:4:103,249,106,249:ccefd8da01cd9965401a41f652baf7cf1713db2a7f2362027e9cb3e926f82045"
+        ],
+        [
+          "v1:25:105,248,120,249:692f64a793c39b7180d6189fdcad4eeca85983209a4537a365bf65358e64d4cc"
+        ],
+        [
+          "v1:114:31,40,45,63:71c100bda8631acf6ed1a034856f1f97314fa5aa685d7868664dc82a01e64302",
+          "v1:64:31,28,45,37:2ba17fa3c5acc52b245a4b83a7dc9d278846524c62880f3848338ee1db5acc78"
+        ],
+        [
+          "v1:118:6,96,32,106:3685f82c793c225c476340e8cf120c0d5a403debbb62a6ae2c90234a3c48de29",
+          "v1:4:70,249,73,249:768498a22ac6506a97054b67099e9db45215a9ad735bf7b9912e64f20df4738d"
+        ]
+      ]
+    },
+    "daehan_companion": {
+      "frames": [
+        [],
+        [],
+        [],
+        [
+          "v1:27:163,12,169,17:6cb75f5978a066a80c9ebae199422c96e68c8dbe7d3111374d80cf8bfa70a1d8"
+        ],
+        [],
+        []
+      ]
+    },
+    "tower_security_companion": {
+      "frames": [
+        [],
+        [],
+        [
+          "v1:422:31,39,66,61:17b09fd3a6c379a79da1f9d928badd379529bb26a4bd2d9a6e67c175446ed168",
+          "v1:6:217,56,219,57:74f685f837d4dbf5225fe2120dcb7a21ca6cb35decc78baea0fb07421afb8880"
+        ],
+        [],
+        [],
+        []
+      ]
+    },
+    "tower_merchant_companion": {
+      "frames": [
+        [],
+        [],
+        [],
+        [],
+        [],
+        [
+          "v1:595:21,53,47,85:6923471f86406d6269ba42ccba7bbca45154d14a63317819e8ee6ef40fc4ae11"
+        ]
+      ]
+    },
+    "tower_cook_companion": {
+      "frames": [
+        [],
+        [],
+        [],
+        [],
+        [
+          "v1:18:7,47,12,50:1a63944bf858ec6125ce0a9641ba843938812b4ea88a34ff7e3dbf6808aee258",
+          "v1:558:8,27,43,52:935a1d53d1e80ad9fda7a7b541a7688d2460034ee851fb4735678f30ddc43cd4"
+        ],
+        []
+      ]
+    },
+    "tower_engineer_companion": {
+      "frames": [
+        [],
+        [],
+        [
+          "v1:95:216,47,223,64:a01b5937596c94cac0d5a9039289d52099e870ff89207e9bbc41ced1ff2222ef"
+        ],
+        [
+          "v1:390:31,47,51,69:0a4f0d34c2a93ef7018aac02f486c0ab765375328c4f912ca6d7968a19fcf79d",
+          "v1:8:222,56,223,59:6d0bd549a690954794ca0cab1ab2aba87107aa1ae4b886ba59325048b009e4b0"
+        ],
+        [
+          "v1:575:43,14,73,37:701e091088968ac87f847fc79952f022de74a70aee191953322fda9669228901"
+        ],
+        []
+      ]
+    },
+    "tower_doctor_companion": {
+      "frames": [
+        [],
+        [],
+        [],
+        [
+          "v1:124:5,72,28,84:b8aecd60f49f2948dcde943e9a4242505946a444a88b6754f630b26c99f2fd80",
+          "v1:149:221,68,250,76:9ef43a3ef5e24de6ebfd02a7b66330ed0f147bcb77602880a3a2c77c0aeabe93"
+        ],
+        [],
+        [
+          "v1:204:22,44,59,54:4dc22a5bbe4f6e1e5121dea81c596ff40dc5208a69740b47ba9a6c7f16cb5ed9"
+        ]
+      ]
+    },
+    "sous_chef_companion": {
+      "frames": [
+        [],
+        [
+          "v1:21:79,42,83,46:9d23c87673f916a7747beab8c3cabd5d3d1434d0ed5396321fc94266347ed3fb",
+          "v1:41:69,48,79,59:4e53fc826a4112e1d300687b84e0c184036f66c34a9b42e98c7e95f1f80232c5"
+        ],
+        [
+          "v1:15:65,37,67,44:9b5fa70605dd0d2145c375f819d1c67970399aa57ac473e532ce30ff9652d932",
+          "v1:9:65,32,67,35:97d419f2abb86c35ed8daa271665d3453c1e2abcaa46bde1ac6a71c7704c14eb"
+        ],
+        [],
+        [
+          "v1:69:69,20,73,36:e92e8e346e794be06ad4c2742337fa970f542f1559f06be9e69316369c83430c"
+        ],
+        [
+          "v1:406:153,10,204,45:8c1817da8ff858b09ff4b4332893c621879680e98c102aef16b62590466df19c",
+          "v1:89:51,22,58,41:f047b1a8179dbdff5bfe59da9e0fe0b0d96096e18ea0439e50dde3b9baa9aa0f"
+        ]
+      ]
+    },
+    "kitchen_helper_companion": {
+      "frames": [
+        [],
+        [],
+        [
+          "v1:28:87,148,92,153:36b9f1c303d6f5a390d5459bc22f1611d1f864cef04d6df193a30f9ace9491f1"
+        ],
+        [],
+        [],
+        [
+          "v1:3:34,78,35,79:6549298937712dc73289c68e44770daa3e63a33d01ece9459cc160712aeb9308",
+          "v1:468:159,12,221,47:b80d9c49d8cc782ac298ff442482a50103a27062c706415c2fa40a108e01e175"
+        ]
+      ]
+    }
+  }
+}

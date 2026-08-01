@@ -9,10 +9,15 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { COMBAT_MOTION_MANIFEST } from '../../js/data/combatMotionManifest.js';
 import { COMPANION_SPRITE_KEYS } from '../../js/ui/combat/combatUiAssets.js';
 import { readPng } from '../../tools/audit_combat_sprites.mjs';
-import { analyzeCompanionSheet } from '../../tools/companion_motion_quality.mjs';
+import {
+  analyzeCompanionSheet,
+  loadRangedComponentContract,
+  RANGED_COMPONENT_CONTRACT_RELATIVE_PATH,
+} from '../../tools/companion_motion_quality.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..', '..');
 const VERIFIER = path.join(ROOT, 'tools', 'verify_companion_motion_qa.mjs');
+const RELINKER = path.join(ROOT, 'tools', 'relink_companion_motion_manual_evidence.mjs');
 const RECIPE_RELATIVE = 'art_sources/combat/task9_companions/assembly_recipe.json';
 const PREVIEW_RELATIVE = 'art_sources/combat/task9_companions/preview_manifest.json';
 const MANUAL_RELATIVE = 'docs/analysis/COMPANION_MOTION_MANUAL_OBSERVATIONS.json';
@@ -37,15 +42,39 @@ function verifier(root) {
   });
 }
 
+function relinker(root) {
+  return spawnSync(process.execPath, [RELINKER, '--root=' + root], {
+    cwd: root,
+    encoding: 'utf8',
+    timeout: 180000,
+  });
+}
+
+function withDetachedSquare(image, row, col, x0, y0) {
+  const changed = { ...image, pixels: Uint8Array.from(image.pixels) };
+  for (let y = y0; y < y0 + 20; y += 1) {
+    for (let x = x0; x < x0 + 20; x += 1) {
+      const offset = ((row * 256 + y) * changed.width + col * 256 + x) * 4;
+      changed.pixels[offset] = 255;
+      changed.pixels[offset + 1] = 0;
+      changed.pixels[offset + 2] = 255;
+      changed.pixels[offset + 3] = 255;
+    }
+  }
+  return changed;
+}
+
 describe('Task 9 companion motion quality and immutable provenance', () => {
   let fixtureRoot;
   let recipe;
   let preview;
+  let rangedContract;
 
   beforeAll(() => {
     fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'task9-companion-fixture-'));
     recipe = JSON.parse(fs.readFileSync(path.join(ROOT, RECIPE_RELATIVE), 'utf8'));
     preview = JSON.parse(fs.readFileSync(path.join(ROOT, PREVIEW_RELATIVE), 'utf8'));
+    rangedContract = loadRangedComponentContract(ROOT, preview.sheets.map((sheet) => sheet.sheetKey));
     const paths = new Set([
       RECIPE_RELATIVE,
       PREVIEW_RELATIVE,
@@ -53,6 +82,11 @@ describe('Task 9 companion motion quality and immutable provenance', () => {
       'art_sources/combat/task9_companions/companion_motion_contact_sheet.png',
       MANUAL_RELATIVE,
       BUILDER_RELATIVE,
+      RANGED_COMPONENT_CONTRACT_RELATIVE_PATH,
+      recipe.qualityAnalyzerPath.replace(/^\//, ''),
+      recipe.rangedValidatorPath.replace(/^\//, ''),
+      'tools/audit_combat_sprites.mjs',
+      'js/data/combatMotionManifest.js',
       'tools/render_companion_motion_preview.ps1',
     ]);
     for (const source of Object.values(recipe.canonicalSources)) {
@@ -73,7 +107,7 @@ describe('Task 9 companion motion quality and immutable provenance', () => {
     const failures = [];
     for (const sheetKey of Object.values(COMPANION_SPRITE_KEYS)) {
       const sheet = COMBAT_MOTION_MANIFEST[sheetKey];
-      const analysis = analyzeCompanionSheet(readPng(repoPath(ROOT, sheet.src)));
+      const analysis = analyzeCompanionSheet(readPng(repoPath(ROOT, sheet.src)), undefined, { sheetKey, rangedContract });
       cells += analysis.frames.length;
       failures.push(...analysis.issues.map(issue => sheetKey + ': ' + issue));
     }
@@ -84,9 +118,89 @@ describe('Task 9 companion motion quality and immutable provenance', () => {
   it('passes in a checkout fixture without .git', () => {
     expect(fs.existsSync(path.join(fixtureRoot, '.git'))).toBe(false);
     const result = verifier(fixtureRoot);
-    expect(result.status).toBe(0);
+    expect(result.status, result.stderr || result.stdout).toBe(0);
     expect(result.stdout).toContain('"status":"PASS"');
     expect(result.stdout).toContain('"inspectedCells":960');
+  }, 180000);
+
+  it('keeps already-linked manual evidence byte-for-byte unchanged', () => {
+    const manualPath = path.join(fixtureRoot, MANUAL_RELATIVE);
+    const original = fs.readFileSync(manualPath);
+    const result = relinker(fixtureRoot);
+    expect(result.status).toBe(0);
+    expect(fs.readFileSync(manualPath)).toEqual(original);
+  }, 180000);
+
+  it.each([
+    ['runtime content', () => repoPath(fixtureRoot, preview.sheets[0].runtimePath), 'append'],
+    ['preview content', () => repoPath(fixtureRoot, preview.sheets[0].previewPath), 'append'],
+    ['row content hash', () => path.join(fixtureRoot, PREVIEW_RELATIVE), 'row'],
+  ])('rejects changed %s without relinking stale PASS evidence', (_label, filePathFor, mutation) => {
+    const manualPath = path.join(fixtureRoot, MANUAL_RELATIVE);
+    const filePath = filePathFor();
+    const originalManual = fs.readFileSync(manualPath);
+    const originalChangedFile = fs.readFileSync(filePath);
+    try {
+      if (mutation === 'row') {
+        const changed = JSON.parse(originalChangedFile.toString('utf8'));
+        changed.sheets[0].rows[1].pixelSha256 = '0'.repeat(64);
+        fs.writeFileSync(filePath, JSON.stringify(changed, null, 2));
+      } else {
+        fs.appendFileSync(filePath, Buffer.from([0]));
+      }
+      const result = relinker(fixtureRoot);
+      expect(result.status).not.toBe(0);
+      expect(result.stderr).toContain('fresh manual review required');
+      expect(fs.readFileSync(manualPath)).toEqual(originalManual);
+    } finally {
+      fs.writeFileSync(filePath, originalChangedFile);
+      fs.writeFileSync(manualPath, originalManual);
+    }
+  }, 180000);
+
+  it.each([
+    ['edge', 5, 5],
+    ['internal', 40, 120],
+  ])('rejects an arbitrary 20x20 %s fragment in a ranged frame', (_label, x, y) => {
+    const image = readPng(path.join(ROOT, 'assets/images/combat/spritesheets/nurse_companion_sheet.png'));
+    const issues = analyzeCompanionSheet(withDetachedSquare(image, 2, 0, x, y), undefined, {
+      sheetKey: 'nurse_companion',
+      rangedContract,
+    }).issues;
+    expect(issues).not.toEqual([]);
+  });
+
+  it('continues to reject the same detached fragment in a melee frame', () => {
+    const image = readPng(path.join(ROOT, 'assets/images/combat/spritesheets/nurse_companion_sheet.png'));
+    const issues = analyzeCompanionSheet(withDetachedSquare(image, 1, 0, 5, 5), undefined, {
+      sheetKey: 'nurse_companion',
+      rangedContract,
+    }).issues;
+    expect(issues.some(issue => issue.includes('small disconnected'))).toBe(true);
+  });
+
+  it('rejects a stale ranged fingerprint entry that no current component satisfies', () => {
+    const staleContract = structuredClone(rangedContract);
+    staleContract.sheets.nurse_companion.frames[0].push(`v1:400:5,5,24,24:${'0'.repeat(64)}`);
+    const image = readPng(path.join(ROOT, 'assets/images/combat/spritesheets/nurse_companion_sheet.png'));
+    const issues = analyzeCompanionSheet(image, undefined, {
+      sheetKey: 'nurse_companion',
+      rangedContract: staleContract,
+    }).issues;
+    expect(issues).toContain('row 2 col 0: ranged detached component fingerprint mismatch');
+  });
+
+  it('rejects a committed ranged component contract mutation', () => {
+    const filePath = path.join(fixtureRoot, RANGED_COMPONENT_CONTRACT_RELATIVE_PATH);
+    const original = fs.readFileSync(filePath);
+    try {
+      fs.appendFileSync(filePath, Buffer.from(' '));
+      const result = verifier(fixtureRoot);
+      expect(result.status).not.toBe(0);
+      expect(result.stderr).toMatch(/ranged component contract .*SHA-256 mismatch/);
+    } finally {
+      fs.writeFileSync(filePath, original);
+    }
   }, 180000);
 
   it('rejects a canonical source mutation without relying on git', () => {

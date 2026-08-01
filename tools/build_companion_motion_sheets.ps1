@@ -13,6 +13,9 @@ $companionRoot = Join-Path $runtimeRoot 'companions'
 $recipePath = Join-Path $sourceRoot 'assembly_recipe.json'
 $provenancePath = Join-Path $sourceRoot 'generation_provenance.json'
 $assemblyScriptPath = Join-Path $root 'tools\build_companion_motion_sheets.ps1'
+$qualityAnalyzerPath = Join-Path $root 'tools\companion_motion_quality.mjs'
+$rangedValidatorPath = Join-Path $root 'tools\verify_companion_ranged_contract.mjs'
+$rangedContractPath = Join-Path $sourceRoot 'ranged_component_contract.json'
 
 Add-Type -ReferencedAssemblies System.Drawing -TypeDefinition @'
 using System;
@@ -156,7 +159,8 @@ public static class CompanionMotionSheetBuilder
         int[] sourceCols,
         int[] sourceRows,
         int[] selectedRows,
-        string[] selectedColumns)
+        string[] selectedColumns,
+        string[] allowedRangedFingerprints)
     {
         if (rowPaths.Length != 8 || sourceCols.Length != 8 || sourceRows.Length != 8 ||
             selectedRows.Length != 8 || selectedColumns.Length != 8)
@@ -203,7 +207,7 @@ public static class CompanionMotionSheetBuilder
             }
             using (var normalized = NormalizeCells(target))
             {
-                RemoveSmallEdgeFragments(normalized);
+                RemoveSmallEdgeFragments(normalized, allowedRangedFingerprints);
                 Sanitize(normalized, false);
                 Directory.CreateDirectory(Path.GetDirectoryName(output));
                 normalized.Save(output, ImageFormat.Png);
@@ -435,8 +439,47 @@ public static class CompanionMotionSheetBuilder
         return cuts;
     }
 
-    private static void RemoveSmallEdgeFragments(Bitmap image)
+    private static string ComponentFingerprint(CellPixelComponent component)
     {
+        var sorted = new List<int>(component.Pixels);
+        sorted.Sort();
+        byte[] bytes = new byte[sorted.Count * 4];
+        for (int index = 0; index < sorted.Count; index++)
+        {
+            int value = sorted[index];
+            bytes[index * 4] = (byte)(value & 255);
+            bytes[index * 4 + 1] = (byte)((value >> 8) & 255);
+            bytes[index * 4 + 2] = (byte)((value >> 16) & 255);
+            bytes[index * 4 + 3] = (byte)((value >> 24) & 255);
+        }
+        using (var sha = SHA256.Create())
+        {
+            string shape = BitConverter.ToString(sha.ComputeHash(bytes)).Replace("-", "").ToLowerInvariant();
+            return "v1:" + component.Area + ":" + component.MinX + "," + component.MinY + "," + component.MaxX + "," + component.MaxY + ":" + shape;
+        }
+    }
+
+    private static bool IsAllowedRangedComponent(HashSet<string> allowlist, int col, CellPixelComponent component)
+    {
+        string prefix = col + "|";
+        string exact = prefix + ComponentFingerprint(component);
+        if (allowlist.Contains(exact)) return true;
+        foreach (string entry in allowlist)
+        {
+            if (!entry.StartsWith(prefix + "v1:", StringComparison.Ordinal)) continue;
+            string[] parts = entry.Substring(prefix.Length).Split(':');
+            if (parts.Length != 4) continue;
+            int allowedArea;
+            if (!int.TryParse(parts[1], out allowedArea) || Math.Abs(allowedArea - component.Area) > 2) continue;
+            string bounds = component.MinX + "," + component.MinY + "," + component.MaxX + "," + component.MaxY;
+            if (parts[2] == bounds) return true;
+        }
+        return false;
+    }
+
+    private static void RemoveSmallEdgeFragments(Bitmap image, string[] allowedRangedFingerprints)
+    {
+        var rangedAllowlist = new HashSet<string>(allowedRangedFingerprints ?? new string[0], StringComparer.Ordinal);
         var data = image.LockBits(new Rectangle(0, 0, image.Width, image.Height), ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
         try
         {
@@ -505,9 +548,9 @@ public static class CompanionMotionSheetBuilder
                     {
                         CellPixelComponent component = components[index];
                         bool touchesEdge = component.MinX <= 25 || component.MinY <= 25 || component.MaxX >= 230 || component.MaxY >= 230;
-                        bool preserveRangedProjectile = row == 2;
                         bool preserveInternalSupportProp = row == 3 && !touchesEdge;
-                        if (preserveRangedProjectile || preserveInternalSupportProp || component.Area > fragmentLimit) continue;
+                        bool allowedRangedComponent = row == 2 && IsAllowedRangedComponent(rangedAllowlist, col, component);
+                        if (allowedRangedComponent || preserveInternalSupportProp || component.Area > fragmentLimit) continue;
                         foreach (int local in component.Pixels)
                         {
                             int x = local % 256;
@@ -659,6 +702,10 @@ $targets = [ordered]@{
   kitchen_helper_companion = @{ runtime = 'companions\kitchen_helper_companion_sheet.png'; rows = @('kitchen_helper','kitchen_helper','kitchen_helper_supplement','kitchen_helper_supplement','kitchen_helper_supplement','kitchen_helper_supplement','kitchen_helper_hit','kitchen_helper_supplement'); sourceRows = @(0,1,0,1,2,3,0,4) }
 }
 
+if (-not (Test-Path -LiteralPath $rangedContractPath)) { throw "Missing ranged component contract: $rangedContractPath" }
+$rangedContract = Get-Content -Raw -Encoding UTF8 $rangedContractPath | ConvertFrom-Json
+if ($rangedContract.version -ne 1 -or $rangedContract.contract -ne 'task9-ranged-detached-components-v1') { throw "Invalid ranged component contract: $rangedContractPath" }
+
 function Expand-TargetRows($target) {
   if ($target.rows.Count -eq 1) { return @($target.rows[0], $target.rows[0], $target.rows[0], $target.rows[0], $target.rows[0], $target.rows[0], $target.rows[0], $target.rows[0]) }
   return @($target.rows)
@@ -689,6 +736,12 @@ try {
     $rowRows = New-Object int[] 8
     $selectedRows = New-Object int[] 8
     $selectedColumns = New-Object string[] 8
+    $rangedSheetContract = $rangedContract.sheets.PSObject.Properties[$entry.Key].Value
+    if ($null -eq $rangedSheetContract -or @($rangedSheetContract.frames).Count -ne 6) { throw "Missing ranged component frames for $($entry.Key)" }
+    $allowedRangedFingerprints = @()
+    for ($col = 0; $col -lt 6; $col++) {
+      foreach ($fingerprint in @($rangedSheetContract.frames[$col])) { $allowedRangedFingerprints += ($col.ToString() + '|' + [string]$fingerprint) }
+    }
     $rowRecords = @()
     for ($row = 0; $row -lt 8; $row++) {
       $sourceKey = $rowKeys[$row]
@@ -702,7 +755,9 @@ try {
     }
     $runtimePath = Join-Path $runtimeRoot $target.runtime
     $outputPath = if ($Check) { Join-Path $workRoot $target.runtime } else { $runtimePath }
-    [CompanionMotionSheetBuilder]::Assemble($outputPath, $rowPaths, $rowCols, $rowRows, $selectedRows, $selectedColumns)
+    [CompanionMotionSheetBuilder]::Assemble($outputPath, $rowPaths, $rowCols, $rowRows, $selectedRows, $selectedColumns, $allowedRangedFingerprints)
+    $validationOutput = & node $rangedValidatorPath ("--root=" + $root) ("--allowed-root=" + $workRoot) ("--sheet=" + $entry.Key) ("--file=" + $outputPath) ("--expected=" + (($targets.Keys) -join ',')) 2>&1
+    if ($LASTEXITCODE -ne 0) { throw "Ranged component contract validation failed for $($entry.Key): $validationOutput" }
     if ($Check) {
       if (-not (Test-Path -LiteralPath $runtimePath)) { throw "Missing runtime target: $runtimePath" }
       $generatedFileSha = Get-Sha256 $outputPath
@@ -737,6 +792,12 @@ try {
     version = 2
     assemblyScript = '/tools/build_companion_motion_sheets.ps1'
     assemblyScriptSha256 = Get-Sha256 $assemblyScriptPath
+    qualityAnalyzerPath = '/tools/companion_motion_quality.mjs'
+    qualityAnalyzerSha256 = Get-Sha256 $qualityAnalyzerPath
+    rangedValidatorPath = '/tools/verify_companion_ranged_contract.mjs'
+    rangedValidatorSha256 = Get-Sha256 $rangedValidatorPath
+    rangedComponentContractPath = '/art_sources/combat/task9_companions/ranged_component_contract.json'
+    rangedComponentContractSha256 = Get-Sha256 $rangedContractPath
     provenancePath = '/art_sources/combat/task9_companions/generation_provenance.json'
     provenanceSha256 = Get-Sha256 $provenancePath
     rowContract = @('idle','melee','ranged','support','guard','move','hit','death')

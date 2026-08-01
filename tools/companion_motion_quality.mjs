@@ -1,4 +1,11 @@
+import fs from 'node:fs';
+import { createHash } from 'node:crypto';
+import path from 'node:path';
+
 const ALPHA_THRESHOLD = 12;
+
+export const RANGED_COMPONENT_CONTRACT_RELATIVE_PATH = 'art_sources/combat/task9_companions/ranged_component_contract.json';
+export const RANGED_COMPONENT_CONTRACT_SHA256 = 'df6a3f1eb29a37730bcbaccf645de474a9f6c372ffe3ca41adc7534ad4d9d2c7';
 
 export const COMPANION_FRAME_QUALITY_LIMITS = Object.freeze({
   minOpaquePixels: 3500,
@@ -21,6 +28,53 @@ function median(values) {
 
 function alphaAt(image, x, y) {
   return image.pixels[(y * image.width + x) * 4 + 3];
+}
+
+function componentFingerprint(component, pixelIndices) {
+  const sorted = [...pixelIndices].sort((a, b) => a - b);
+  const bytes = Buffer.alloc(sorted.length * 4);
+  for (let index = 0; index < sorted.length; index += 1) bytes.writeUInt32LE(sorted[index], index * 4);
+  const shapeSha256 = createHash('sha256').update(bytes).digest('hex');
+  return `v1:${component.size}:${component.minX},${component.minY},${component.maxX},${component.maxY}:${shapeSha256}`;
+}
+
+function exactKeys(value, expected) {
+  return JSON.stringify(Object.keys(value || {}).sort()) === JSON.stringify([...expected].sort());
+}
+
+export function validateRangedComponentContract(contract, expectedSheetKeys) {
+  if (!exactKeys(contract, ['contract', 'sheets', 'version']) || contract.version !== 1 || contract.contract !== 'task9-ranged-detached-components-v1') {
+    throw new Error('ranged component contract schema mismatch');
+  }
+  if (!exactKeys(contract.sheets, expectedSheetKeys)) throw new Error('ranged component contract sheet set mismatch');
+  for (const sheetKey of expectedSheetKeys) {
+    const sheet = contract.sheets[sheetKey];
+    if (!exactKeys(sheet, ['frames']) || !Array.isArray(sheet.frames) || sheet.frames.length !== 6) {
+      throw new Error(`${sheetKey} ranged component frame contract mismatch`);
+    }
+    for (let col = 0; col < 6; col += 1) {
+      const fingerprints = sheet.frames[col];
+      if (!Array.isArray(fingerprints) || new Set(fingerprints).size !== fingerprints.length) {
+        throw new Error(`${sheetKey} ranged component fingerprints are invalid at col ${col}`);
+      }
+      if (!fingerprints.every((fingerprint) => /^v1:\d+:\d+,\d+,\d+,\d+:[0-9a-f]{64}$/.test(fingerprint))) {
+        throw new Error(`${sheetKey} ranged component fingerprint is malformed at col ${col}`);
+      }
+      const sorted = [...fingerprints].sort();
+      if (JSON.stringify(sorted) !== JSON.stringify(fingerprints)) {
+        throw new Error(`${sheetKey} ranged component fingerprints are not canonical at col ${col}`);
+      }
+    }
+  }
+  return contract;
+}
+
+export function loadRangedComponentContract(root, expectedSheetKeys) {
+  const contractPath = path.resolve(root, RANGED_COMPONENT_CONTRACT_RELATIVE_PATH);
+  const buffer = fs.readFileSync(contractPath);
+  const actualSha256 = createHash('sha256').update(buffer).digest('hex');
+  if (actualSha256 !== RANGED_COMPONENT_CONTRACT_SHA256) throw new Error('ranged component contract SHA-256 mismatch');
+  return validateRangedComponentContract(JSON.parse(buffer), expectedSheetKeys);
 }
 
 export function analyzeCompanionFrame(image, row, col) {
@@ -51,6 +105,7 @@ export function analyzeCompanionFrame(image, row, col) {
     let head = 0;
     let tail = 0;
     let size = 0;
+    const pixelIndices = [];
     let componentMinX = 256;
     let componentMinY = 256;
     let componentMaxX = -1;
@@ -60,6 +115,7 @@ export function analyzeCompanionFrame(image, row, col) {
     while (head < tail) {
       const index = queue[head++];
       size += 1;
+      pixelIndices.push(index);
       const x = index % 256;
       const y = Math.floor(index / 256);
       componentMinX = Math.min(componentMinX, x);
@@ -79,7 +135,9 @@ export function analyzeCompanionFrame(image, row, col) {
         }
       }
     }
-    components.push({ size, minX: componentMinX, minY: componentMinY, maxX: componentMaxX, maxY: componentMaxY });
+    const component = { size, minX: componentMinX, minY: componentMinY, maxX: componentMaxX, maxY: componentMaxY };
+    component.fingerprint = componentFingerprint(component, pixelIndices);
+    components.push(component);
   }
   components.sort((a, b) => b.size - a.size);
   const majorPixels = components[0]?.size ?? 0;
@@ -115,12 +173,13 @@ export function analyzeCompanionFrame(image, row, col) {
   };
 }
 
-export function analyzeCompanionSheet(image, limits = COMPANION_FRAME_QUALITY_LIMITS) {
+export function analyzeCompanionSheet(image, limits = COMPANION_FRAME_QUALITY_LIMITS, context = {}) {
   if (image.width !== 1536 || image.height !== 2048 || !image.pixels) {
     throw new Error('companion quality analysis requires a decoded 1536x2048 RGBA image');
   }
   const frames = [];
   const issues = [];
+  const rangedFrameContract = context.rangedContract?.sheets?.[context.sheetKey]?.frames;
   for (let row = 0; row < 8; row += 1) {
     const rowFrames = [];
     for (let col = 0; col < 6; col += 1) rowFrames.push(analyzeCompanionFrame(image, row, col));
@@ -145,7 +204,17 @@ export function analyzeCompanionSheet(image, limits = COMPANION_FRAME_QUALITY_LI
       if (frame.significantComponents > limits.maxSignificantComponents) {
         issues.push(`${prefix}: significant components ${frame.significantComponents} > ${limits.maxSignificantComponents}`);
       }
-      if (row !== 2 && frame.edgeFragments.length > 0) {
+      if (row === 2) {
+        if (!Array.isArray(rangedFrameContract?.[frame.col])) {
+          issues.push(`${prefix}: ranged detached component contract is missing`);
+        } else {
+          const actual = frame.smallFragments.map((component) => component.fingerprint).sort();
+          const expected = rangedFrameContract[frame.col];
+          if (JSON.stringify(actual) !== JSON.stringify(expected)) {
+            issues.push(`${prefix}: ranged detached component fingerprint mismatch`);
+          }
+        }
+      } else if (frame.edgeFragments.length > 0) {
         issues.push(`${prefix}: ${frame.edgeFragments.length} small disconnected component(s) remain near a cell edge`);
       }
       if (row !== 2 && row !== 3 && frame.smallFragments.length > 0) {

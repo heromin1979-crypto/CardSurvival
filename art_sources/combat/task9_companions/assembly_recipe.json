@@ -1,7 +1,13 @@
 {
     "version":  2,
     "assemblyScript":  "/tools/build_companion_motion_sheets.ps1",
-    "assemblyScriptSha256":  "ad2d4ddbca103817e8a266f6e296a08e7a1da39aaf2686099bd796d6f8b504f0",
+    "assemblyScriptSha256":  "8bfdeb2e5d22924afc2f61a6de08f575ed71d7d361d3e73703dfb8c0c681b976",
+    "qualityAnalyzerPath":  "/tools/companion_motion_quality.mjs",
+    "qualityAnalyzerSha256":  "7b3430b5b926f276a3421333dd1de8f5835769b751cd7e5c3f38df0e61e42d83",
+    "rangedValidatorPath":  "/tools/verify_companion_ranged_contract.mjs",
+    "rangedValidatorSha256":  "c5fef89e611be0fe5b60e438c0e536d380334b6e97d66687045af98b1fc3d1f2",
+    "rangedComponentContractPath":  "/art_sources/combat/task9_companions/ranged_component_contract.json",
+    "rangedComponentContractSha256":  "df6a3f1eb29a37730bcbaccf645de474a9f6c372ffe3ca41adc7534ad4d9d2c7",
     "provenancePath":  "/art_sources/combat/task9_companions/generation_provenance.json",
     "provenanceSha256":  "3cb8f039b06bccf40ee8c98e1b17f0dd36ab6807e14fe0814e327475b81016d9",
     "rowContract":  [

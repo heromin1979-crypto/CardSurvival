@@ -13,7 +13,11 @@ import {
 } from '../js/data/combatSkills.js';
 import { COMPANION_SPRITE_KEYS } from '../js/ui/combat/combatUiAssets.js';
 import { chromaArtifactStats, readPng } from './audit_combat_sprites.mjs';
-import { analyzeCompanionSheet } from './companion_motion_quality.mjs';
+import {
+  analyzeCompanionSheet,
+  loadRangedComponentContract,
+  RANGED_COMPONENT_CONTRACT_RELATIVE_PATH,
+} from './companion_motion_quality.mjs';
 
 const rootArgument = process.argv.find(arg => arg.startsWith('--root='))?.slice('--root='.length);
 const ROOT = path.resolve(rootArgument || process.cwd());
@@ -31,6 +35,12 @@ const EXPECTED_RECIPE_KEYS = Object.freeze([
   'canonicalSources',
   'provenancePath',
   'provenanceSha256',
+  'qualityAnalyzerPath',
+  'qualityAnalyzerSha256',
+  'rangedComponentContractPath',
+  'rangedComponentContractSha256',
+  'rangedValidatorPath',
+  'rangedValidatorSha256',
   'rowContract',
   'targets',
   'version',
@@ -106,6 +116,17 @@ function validateRecipe(recipe, recipePath, expectedSheetKeys) {
   invariant(recipe.assemblyScript === '/tools/build_companion_motion_sheets.ps1', 'unexpected assembly script path');
   invariant(recipe.assemblyScriptSha256 === sha256(assemblyPath), 'assembly script SHA-256 mismatch');
 
+  const qualityAnalyzerPath = repoFile(recipe.qualityAnalyzerPath, 'quality analyzer');
+  invariant(recipe.qualityAnalyzerPath === '/tools/companion_motion_quality.mjs', 'unexpected quality analyzer path');
+  invariant(recipe.qualityAnalyzerSha256 === sha256(qualityAnalyzerPath), 'quality analyzer SHA-256 mismatch');
+  const rangedValidatorPath = repoFile(recipe.rangedValidatorPath, 'ranged contract validator');
+  invariant(recipe.rangedValidatorPath === '/tools/verify_companion_ranged_contract.mjs', 'unexpected ranged validator path');
+  invariant(recipe.rangedValidatorSha256 === sha256(rangedValidatorPath), 'ranged validator SHA-256 mismatch');
+  invariant(recipe.rangedComponentContractPath === '/' + RANGED_COMPONENT_CONTRACT_RELATIVE_PATH, 'unexpected ranged component contract path');
+  const rangedContractPath = repoFile(recipe.rangedComponentContractPath, 'ranged component contract');
+  invariant(recipe.rangedComponentContractSha256 === sha256(rangedContractPath), 'ranged component contract recipe SHA-256 mismatch');
+  const rangedContract = loadRangedComponentContract(ROOT, expectedSheetKeys);
+
   const provenancePath = repoFile(recipe.provenancePath, 'generation provenance');
   invariant(recipe.provenanceSha256 === sha256(provenancePath), 'generation provenance SHA-256 mismatch');
   invariant(path.resolve(recipePath) === fixedFile('art_sources/combat/task9_companions/assembly_recipe.json'), 'unexpected recipe location');
@@ -153,7 +174,7 @@ function validateRecipe(recipe, recipePath, expectedSheetKeys) {
     }
     exactSet(targetRows, [0, 1, 2, 3, 4, 5, 6, 7], sheetKey + ' target rows');
   }
-  return { provenancePath };
+  return { provenancePath, rangedContract };
 }
 
 function validateProvenance(provenance, recipe, expectedSheetKeys) {
@@ -275,7 +296,7 @@ function validateManual(manual, manualPath, recipePath, previewPath, previewByKe
   invariant(path.resolve(manualPath) === fixedFile('docs/analysis/COMPANION_MOTION_MANUAL_OBSERVATIONS.json'), 'unexpected manual evidence location');
 }
 
-function verifyRuntimeAndManifest(recipe, expectedNpcIds, expectedSheetKeys) {
+function verifyRuntimeAndManifest(recipe, expectedNpcIds, expectedSheetKeys, rangedContract) {
   const spriteKeys = Reflect.ownKeys(COMPANION_SPRITE_KEYS).filter(key => typeof key === 'string');
   exactSet(spriteKeys, expectedNpcIds, 'enumerable companion sprite roster');
   invariant(spriteKeys.length === 20, 'companion sprite roster must have exactly 20 own keys');
@@ -295,7 +316,7 @@ function verifyRuntimeAndManifest(recipe, expectedNpcIds, expectedSheetKeys) {
 
     const runtimePath = repoFile(sheet.src, sheetKey + ' manifest runtime');
     const image = readPng(runtimePath);
-    const quality = analyzeCompanionSheet(image);
+    const quality = analyzeCompanionSheet(image, undefined, { sheetKey, rangedContract });
     invariant(quality.frames.length === 48, sheetKey + ' quality frame count mismatch');
     invariant(quality.issues.length === 0, sheetKey + ' quality issues: ' + quality.issues.slice(0, 4).join('; '));
     const chroma = chromaArtifactStats(image, { cols: 6, rows: 8 });
@@ -329,11 +350,11 @@ function verify() {
   const previewPath = fixedFile('art_sources/combat/task9_companions/preview_manifest.json');
   const manualPath = fixedFile('docs/analysis/COMPANION_MOTION_MANUAL_OBSERVATIONS.json');
   const recipe = readJson(recipePath, 'assembly recipe');
-  const { provenancePath } = validateRecipe(recipe, recipePath, expectedSheetKeys);
+  const { provenancePath, rangedContract } = validateRecipe(recipe, recipePath, expectedSheetKeys);
   validateProvenance(readJson(provenancePath, 'generation provenance'), recipe, expectedSheetKeys);
   const preview = validatePreview(readJson(previewPath, 'preview manifest'), recipe, expectedSheetKeys);
   validateManual(readJson(manualPath, 'manual evidence'), manualPath, recipePath, previewPath, preview.byKey, expectedNpcIds);
-  const sheets = verifyRuntimeAndManifest(recipe, expectedNpcIds, expectedSheetKeys);
+  const sheets = verifyRuntimeAndManifest(recipe, expectedNpcIds, expectedSheetKeys, rangedContract);
   runBuilderCheck(recipe);
 
   return {

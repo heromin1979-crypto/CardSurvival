@@ -58,3 +58,48 @@
 ## 남은 우려
 
 - Node의 package `type` 미지정에 따른 `MODULE_TYPELESS_PACKAGE_JSON` 경고와 Vite의 기존 dynamic import/plugin timing 경고가 남아 있다. 이번 변경의 기능·테스트·패키징 실패는 아니다.
+
+## 수정 라운드 2/5
+
+### 수동 증거 재연결 fail-closed 전환
+
+- `tools/relink_companion_motion_manual_evidence.mjs`를 쓰기 도구에서 읽기 전용 검사기로 전환했다. runtime, preview, preview row, recipe, contact sheet 중 하나라도 기존 수동 PASS와 달라지면 `fresh manual review required`로 실패하며 수동 증거 파일은 수정하지 않는다.
+- 변경되지 않은 증거만 `already-linked-unchanged`로 통과한다. 실제 runtime 변경, 실제 preview 변경, row hash 변경을 각각 주입한 테스트에서 모두 비정상 종료했고, 각 실패 전후 `COMPANION_MOTION_MANUAL_OBSERVATIONS.json` 바이트가 동일함을 확인했다.
+- 자동 verifier의 경계는 계속 `manualEvidenceState: linked-not-authenticated`이다. 자동 도구는 PASS, note, `reviewedAt`을 만들거나 갱신하지 않는다.
+
+### ranged fragment 제한 계약
+
+- ranged 2행 전체를 작은 파편 검사에서 제외하던 예외를 제거했다. 대신 20개 sheet × 6개 ranged frame에서 현재 확인된 분리 투사체·총구 화염·비행 도구 81개만 local alpha mask fingerprint로 고정한 `art_sources/combat/task9_companions/ranged_component_contract.json`을 추가했다.
+- analyzer는 sheet, frame column, bbox, area, alpha mask가 계약과 정확히 일치하는 component만 허용한다. 계약 파일 자체도 고정 SHA-256과 exact sheet set으로 검증하므로 임의 항목 추가나 stale contract가 통과하지 않는다.
+- builder는 저장 전 System.Drawing 표현 차이를 수용하는 제한된 bbox/area 후보만 보존하고, 저장 직후 공용 Node validator로 exact mask fingerprint를 다시 검사한다. source/recipe 재빌드는 계약을 자동 생성하거나 갱신하지 않는다.
+- `nurse_companion` ranged 셀의 가장자리와 내부에 각각 임의 20×20 component를 주입한 테스트는 모두 실패했다. 같은 melee 주입도 실패했고, 실제 20개 runtime ranged 투사체는 모두 통과했다.
+
+### 증거와 자산 상태
+
+- runtime PNG 20개는 수정 라운드 1 이후 바이트 변경이 없다. 따라서 기존 수동 runtime, preview, row 관찰 해시와 사람의 note/status/reviewedAt을 그대로 유지했다.
+- 빌더·검증 계약이 강화되어 바뀐 `assembly_recipe.json` 해시만 사람이 수동 증거 상단에 연결했다. 그 뒤 읽기 전용 relinker와 verifier가 변경 없는 상태를 확인했다.
+- runtime 픽셀이 바뀌지 않았으므로 새 시각 판정이나 기존 PASS 자동 재인증은 수행하지 않았다.
+
+### 검증 결과
+
+- `tests/unit/CompanionMotionQuality.test.js`: 16/16 PASS. fail-closed 원자성, runtime/preview/row 변조, ranged edge/internal/melee 주입, stale/변조 contract, git 없는 복제 root를 포함한다.
+- `npm.cmd test`: 137 files / 1639 tests PASS.
+- `node tools/verify_companion_motion_qa.mjs --write`: 20 companions / 60 skills / 40 hit-death / 960 cells / quality issues 0 / open rework 0 / `linked-not-authenticated` / PASS.
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools/build_companion_motion_sheets.ps1 -Check`: 20 deterministic targets verified.
+- `node tools/audit_combat_sprites.mjs --check`: 46 total / 46 referenced / 46 pass / 0 warn / 0 fail.
+- `python tools/verify_combat_chroma_cleanup.py --check`: 23 sheets / changed 20 / current pinned 23 / historical unexpected alpha loss 0.
+- `node js/data/validate.js`: errors 0 / 기존 stackConfig warnings 215 / ALL CLEAR.
+- `npm.cmd run build:web`: PASS, 264 modules transformed. Web package runtime 20/20, build-only leak 0.
+- `npm.cmd run build:dir`: sandbox의 Electron cache 접근 제한 후 승인된 동일 명령으로 PASS. `app.asar` runtime 20/20, build-only leak 0.
+- 정확히 네 개의 agent 생성 `.pyc`만 제거했다: `build_normal_enemy_motion_sheets`, `normalize_combat_sprite_sheets`, `render_player_motion_preview`, `verify_combat_chroma_cleanup`의 Python 3.12 cache. 다른 사용자 파일은 삭제하지 않았다.
+
+### Self-review
+
+- relinker에는 파일 쓰기 경로가 없고, 모든 불일치는 첫 변경 전 실패한다. 수동 PASS를 최신 바이트에 자동 이식하는 경로가 남아 있지 않다.
+- ranged 허용은 행 번호만으로 결정하지 않고 pinned contract의 sheet/column/exact mask로 제한한다. builder와 analyzer가 동일한 사후 저장 validator를 사용해 해석 차이를 줄였다.
+- contract는 생성 입력이나 recipe에서 파생되지 않아 재빌드가 새 파편을 자동 승인하지 않는다. 변경하려면 사람이 계약 파일과 고정 SHA를 명시적으로 검토해야 한다.
+- runtime 자산은 변경되지 않았고, 수정 범위는 검증 도구·계약·recipe·QA 증거·테스트·본 보고서로 제한했다.
+
+### 남은 우려
+
+- Node의 기존 `MODULE_TYPELESS_PACKAGE_JSON`, Vite의 기존 dynamic import/plugin timing, `package.json` author 누락 경고가 남아 있다. 이번 수정의 테스트·검증·패키징 실패는 아니다.

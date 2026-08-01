@@ -19,9 +19,9 @@
     "removedComponents": 0,
     "staleAllowlist": 0
   },
-  "assemblyRecipeSha256": "1baf7970a8986cdae36c993718c7137a8471330957b549aa77f9ab05e3490027",
+  "assemblyRecipeSha256": "195a04c125c0baecbac43b85a0017525470917d18bfa4f4bdb6743fa57d6efa4",
   "previewManifestSha256": "96078d0620fc5217fa500c8b5dc8753a43a9f3ceb58691335ac5461869dff9c5",
-  "manualEvidenceSha256": "7a0cfe474f8961cbc44233e5d6fab209606558355f1ed53b025f008eb690511b",
+  "manualEvidenceSha256": "27cbfa4b0f41d931b0821b4d80f96fbf0bccaa1019e0c184b738f92b18f2a70b",
   "sheets": [
     {
       "npcId": "npc_old_survivor",
