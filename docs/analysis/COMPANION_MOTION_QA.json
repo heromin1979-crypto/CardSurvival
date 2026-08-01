@@ -1,0 +1,324 @@
+{
+  "version": 1,
+  "evidenceType": "automatic manifest/PNG/chroma/provenance verification",
+  "manualEvidence": "docs/analysis/COMPANION_MOTION_MANUAL_OBSERVATIONS.json",
+  "counts": {
+    "companions": 20,
+    "uniqueSheets": 20,
+    "skills": 60,
+    "hitDeath": 40,
+    "populatedCells": 960,
+    "transparentCornerCells": 960
+  },
+  "strictChromaTotals": {
+    "opaqueGreen": 0,
+    "fringeGreen": 0,
+    "hiddenRgb": 0,
+    "removedComponents": 0,
+    "staleAllowlist": 0
+  },
+  "contactSheetSha256": "d4402de5c83d37027f6eff2b0cd0d0364a9789f25fa65118a4627c5e0a4484a0",
+  "assemblyRecipeSha256": "831f149f8fe16130b43483691d6658710c72a8f6565716847ce4723e223af976",
+  "sheets": [
+    {
+      "npcId": "npc_old_survivor",
+      "sheetKey": "old_survivor_companion",
+      "path": "/assets/images/combat/spritesheets/companions/old_survivor_companion_sheet.png",
+      "populatedCells": 48,
+      "transparentCorners": 48,
+      "chroma": {
+        "opaqueGreen": 0,
+        "fringeGreen": 0,
+        "hiddenRgb": 0,
+        "removedComponents": 0,
+        "staleAllowlist": 0
+      },
+      "sha256": "559dadc91e3524af62645a93ae51900a819613f7ca2dcddeec7c47cc11d9d2ca"
+    },
+    {
+      "npcId": "npc_nurse",
+      "sheetKey": "nurse_companion",
+      "path": "/assets/images/combat/spritesheets/nurse_companion_sheet.png",
+      "populatedCells": 48,
+      "transparentCorners": 48,
+      "chroma": {
+        "opaqueGreen": 0,
+        "fringeGreen": 0,
+        "hiddenRgb": 0,
+        "removedComponents": 0,
+        "staleAllowlist": 0
+      },
+      "sha256": "b4efe7043a09a1e2dcf063f435fef0db37d49c9c1803dcf4272edf35ad081ca4"
+    },
+    {
+      "npcId": "npc_soldier_deserter",
+      "sheetKey": "soldier_companion",
+      "path": "/assets/images/combat/spritesheets/soldier_companion_sheet.png",
+      "populatedCells": 48,
+      "transparentCorners": 48,
+      "chroma": {
+        "opaqueGreen": 0,
+        "fringeGreen": 0,
+        "hiddenRgb": 0,
+        "removedComponents": 0,
+        "staleAllowlist": 0
+      },
+      "sha256": "77fa85bed1ed41942c08d1fc6a0a3f21a7e0f8e3b20ab400811daed87d38ef9b"
+    },
+    {
+      "npcId": "npc_child",
+      "sheetKey": "child_companion",
+      "path": "/assets/images/combat/spritesheets/companions/child_companion_sheet.png",
+      "populatedCells": 48,
+      "transparentCorners": 48,
+      "chroma": {
+        "opaqueGreen": 0,
+        "fringeGreen": 0,
+        "hiddenRgb": 0,
+        "removedComponents": 0,
+        "staleAllowlist": 0
+      },
+      "sha256": "7f2f511cf4caf64774d002e67a00267672252c08d3c28578d4d5b65dc0c4da23"
+    },
+    {
+      "npcId": "npc_mechanic",
+      "sheetKey": "mechanic_companion",
+      "path": "/assets/images/combat/spritesheets/companions/mechanic_companion_sheet.png",
+      "populatedCells": 48,
+      "transparentCorners": 48,
+      "chroma": {
+        "opaqueGreen": 0,
+        "fringeGreen": 0,
+        "hiddenRgb": 0,
+        "removedComponents": 0,
+        "staleAllowlist": 0
+      },
+      "sha256": "a5af76229007a3d725009ad5074d56d5ee6b496581025b017c30fadb73c395dc"
+    },
+    {
+      "npcId": "npc_student",
+      "sheetKey": "student_companion",
+      "path": "/assets/images/combat/spritesheets/companions/student_companion_sheet.png",
+      "populatedCells": 48,
+      "transparentCorners": 48,
+      "chroma": {
+        "opaqueGreen": 0,
+        "fringeGreen": 0,
+        "hiddenRgb": 0,
+        "removedComponents": 0,
+        "staleAllowlist": 0
+      },
+      "sha256": "a8a970a61f7be77cb1d94029f6328dcf95a22294c5865acd873bed4094f62567"
+    },
+    {
+      "npcId": "npc_dog",
+      "sheetKey": "dog_companion",
+      "path": "/assets/images/combat/spritesheets/companions/dog_companion_sheet.png",
+      "populatedCells": 48,
+      "transparentCorners": 48,
+      "chroma": {
+        "opaqueGreen": 0,
+        "fringeGreen": 0,
+        "hiddenRgb": 0,
+        "removedComponents": 0,
+        "staleAllowlist": 0
+      },
+      "sha256": "65adc7ed1c5a58c3595df03a214450725147b9b88ca27bde3a902e2ab48be056"
+    },
+    {
+      "npcId": "npc_former_colleague",
+      "sheetKey": "former_colleague_companion",
+      "path": "/assets/images/combat/spritesheets/companions/former_colleague_companion_sheet.png",
+      "populatedCells": 48,
+      "transparentCorners": 48,
+      "chroma": {
+        "opaqueGreen": 0,
+        "fringeGreen": 0,
+        "hiddenRgb": 0,
+        "removedComponents": 0,
+        "staleAllowlist": 0
+      },
+      "sha256": "b8429724f6ce451621540d7f41f348a4a6cde3de570acc349a1f18e4fb23d83b"
+    },
+    {
+      "npcId": "npc_minjun",
+      "sheetKey": "minjun_companion",
+      "path": "/assets/images/combat/spritesheets/companions/minjun_companion_sheet.png",
+      "populatedCells": 48,
+      "transparentCorners": 48,
+      "chroma": {
+        "opaqueGreen": 0,
+        "fringeGreen": 0,
+        "hiddenRgb": 0,
+        "removedComponents": 0,
+        "staleAllowlist": 0
+      },
+      "sha256": "2b2385ff930daa61976af2a8a0dc875685547359b7b6c9d66356cb1e4c685efc"
+    },
+    {
+      "npcId": "npc_sohee",
+      "sheetKey": "sohee_companion",
+      "path": "/assets/images/combat/spritesheets/companions/sohee_companion_sheet.png",
+      "populatedCells": 48,
+      "transparentCorners": 48,
+      "chroma": {
+        "opaqueGreen": 0,
+        "fringeGreen": 0,
+        "hiddenRgb": 0,
+        "removedComponents": 0,
+        "staleAllowlist": 0
+      },
+      "sha256": "8ce2ff6a6271ccb9b42c1ac07b3d742f44c55fb75a1fc1fdc6c2194e1e10705c"
+    },
+    {
+      "npcId": "npc_jisu",
+      "sheetKey": "jisu_companion",
+      "path": "/assets/images/combat/spritesheets/companions/jisu_companion_sheet.png",
+      "populatedCells": 48,
+      "transparentCorners": 48,
+      "chroma": {
+        "opaqueGreen": 0,
+        "fringeGreen": 0,
+        "hiddenRgb": 0,
+        "removedComponents": 0,
+        "staleAllowlist": 0
+      },
+      "sha256": "9ac13b992b9f93b10f3d9e8adcec68f2bc5d905cea142a79a762c92a1b762d56"
+    },
+    {
+      "npcId": "npc_yeongcheol",
+      "sheetKey": "yeongcheol_companion",
+      "path": "/assets/images/combat/spritesheets/companions/yeongcheol_companion_sheet.png",
+      "populatedCells": 48,
+      "transparentCorners": 48,
+      "chroma": {
+        "opaqueGreen": 0,
+        "fringeGreen": 0,
+        "hiddenRgb": 0,
+        "removedComponents": 0,
+        "staleAllowlist": 0
+      },
+      "sha256": "a5a6760d2f09c5c4d534458de4a62f2ed6c604a82d94280bfd22b1cd66d66950"
+    },
+    {
+      "npcId": "npc_daehan",
+      "sheetKey": "daehan_companion",
+      "path": "/assets/images/combat/spritesheets/companions/daehan_companion_sheet.png",
+      "populatedCells": 48,
+      "transparentCorners": 48,
+      "chroma": {
+        "opaqueGreen": 0,
+        "fringeGreen": 0,
+        "hiddenRgb": 0,
+        "removedComponents": 0,
+        "staleAllowlist": 0
+      },
+      "sha256": "1ccda9e13c7454302035633866daa77f8aa5f5306ce1a58a475023b1c5337d1a"
+    },
+    {
+      "npcId": "npc_tower_security",
+      "sheetKey": "tower_security_companion",
+      "path": "/assets/images/combat/spritesheets/companions/tower_security_companion_sheet.png",
+      "populatedCells": 48,
+      "transparentCorners": 48,
+      "chroma": {
+        "opaqueGreen": 0,
+        "fringeGreen": 0,
+        "hiddenRgb": 0,
+        "removedComponents": 0,
+        "staleAllowlist": 0
+      },
+      "sha256": "da961649b845958fe7f68d179c4ac270aa69dc66c99b89eb5ebffc83dc7825e3"
+    },
+    {
+      "npcId": "npc_tower_merchant",
+      "sheetKey": "tower_merchant_companion",
+      "path": "/assets/images/combat/spritesheets/companions/tower_merchant_companion_sheet.png",
+      "populatedCells": 48,
+      "transparentCorners": 48,
+      "chroma": {
+        "opaqueGreen": 0,
+        "fringeGreen": 0,
+        "hiddenRgb": 0,
+        "removedComponents": 0,
+        "staleAllowlist": 0
+      },
+      "sha256": "077994fb6ae0ae97191217cf1d827fd43799dc53c6cbd64b7160c598ac8b4e7a"
+    },
+    {
+      "npcId": "npc_tower_cook",
+      "sheetKey": "tower_cook_companion",
+      "path": "/assets/images/combat/spritesheets/companions/tower_cook_companion_sheet.png",
+      "populatedCells": 48,
+      "transparentCorners": 48,
+      "chroma": {
+        "opaqueGreen": 0,
+        "fringeGreen": 0,
+        "hiddenRgb": 0,
+        "removedComponents": 0,
+        "staleAllowlist": 0
+      },
+      "sha256": "d0623e95e5572d93999b290abce49ada55c0b330ff9a2d3ab6fa5a793d738e90"
+    },
+    {
+      "npcId": "npc_tower_engineer",
+      "sheetKey": "tower_engineer_companion",
+      "path": "/assets/images/combat/spritesheets/companions/tower_engineer_companion_sheet.png",
+      "populatedCells": 48,
+      "transparentCorners": 48,
+      "chroma": {
+        "opaqueGreen": 0,
+        "fringeGreen": 0,
+        "hiddenRgb": 0,
+        "removedComponents": 0,
+        "staleAllowlist": 0
+      },
+      "sha256": "4b22c9f6dca929d9f6a9f47438a7ff96e9d14bedd834769eac97bb58d7e25eea"
+    },
+    {
+      "npcId": "npc_tower_doctor",
+      "sheetKey": "tower_doctor_companion",
+      "path": "/assets/images/combat/spritesheets/companions/tower_doctor_companion_sheet.png",
+      "populatedCells": 48,
+      "transparentCorners": 48,
+      "chroma": {
+        "opaqueGreen": 0,
+        "fringeGreen": 0,
+        "hiddenRgb": 0,
+        "removedComponents": 0,
+        "staleAllowlist": 0
+      },
+      "sha256": "da0cc8a264c3f7a6b4d10e857d318420b9e604bdf6dd0f3fe14514def509a7dc"
+    },
+    {
+      "npcId": "npc_sous_chef",
+      "sheetKey": "sous_chef_companion",
+      "path": "/assets/images/combat/spritesheets/companions/sous_chef_companion_sheet.png",
+      "populatedCells": 48,
+      "transparentCorners": 48,
+      "chroma": {
+        "opaqueGreen": 0,
+        "fringeGreen": 0,
+        "hiddenRgb": 0,
+        "removedComponents": 0,
+        "staleAllowlist": 0
+      },
+      "sha256": "5d7df6a00e5c88d76e9ca67752ed0e614bc09259deb1e6bd44e9dc6b3a8ebf4d"
+    },
+    {
+      "npcId": "npc_kitchen_helper",
+      "sheetKey": "kitchen_helper_companion",
+      "path": "/assets/images/combat/spritesheets/companions/kitchen_helper_companion_sheet.png",
+      "populatedCells": 48,
+      "transparentCorners": 48,
+      "chroma": {
+        "opaqueGreen": 0,
+        "fringeGreen": 0,
+        "hiddenRgb": 0,
+        "removedComponents": 0,
+        "staleAllowlist": 0
+      },
+      "sha256": "ee5bcdd1a66a00a83466ed14d2a8d460800bbf73c5778c5514e531cd92c628ab"
+    }
+  ]
+}

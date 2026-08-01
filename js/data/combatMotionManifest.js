@@ -20,13 +20,6 @@ function fourRowSheet(src) {
   });
 }
 
-function companionSheet(src) {
-  return Object.freeze({
-    ...fourRowSheet(src),
-    aliases: Object.freeze({ downed: 'death' }),
-  });
-}
-
 const PLAYER_MOTIONS = Object.freeze({
   idle: Object.freeze({ row: 0, loop: true, durationMs: 900, locomotion: 'stationary' }),
   melee: Object.freeze({ row: 1, loop: false, durationMs: 720, locomotion: 'approach' }),
@@ -53,6 +46,10 @@ function playerSheet(src) {
   });
 }
 
+function companionSheet(src) {
+  return playerSheet(src);
+}
+
 function motionSheet(src, rows, motions, aliases) {
   return Object.freeze({
     src,
@@ -65,8 +62,7 @@ function motionSheet(src, rows, motions, aliases) {
   });
 }
 
-// 현재 전투 화면에서 실제로 표시하는 기존 6×4 시트만 선언한다.
-// 전용 roster 시트와 확장 모션은 해당 자산을 추가하는 후속 작업에서 함께 등록한다.
+// 전투 화면에 표시되는 플레이어·동료 전용 6×8 시트와 적 시트를 단일 registry로 선언한다.
 export const COMBAT_MOTION_MANIFEST = Object.freeze({
   doctor_f: playerSheet('/assets/images/combat/spritesheets/doctor_f_sheet.png'),
   soldier_m: playerSheet('/assets/images/combat/spritesheets/soldier_m_sheet.png'),
@@ -74,8 +70,26 @@ export const COMBAT_MOTION_MANIFEST = Object.freeze({
   homeless_m: playerSheet('/assets/images/combat/spritesheets/homeless_m_sheet.png'),
   chef_m: playerSheet('/assets/images/combat/spritesheets/chef_m_sheet.png'),
   engineer_m: playerSheet('/assets/images/combat/spritesheets/engineer_m_sheet.png'),
+  old_survivor_companion: companionSheet('/assets/images/combat/spritesheets/companions/old_survivor_companion_sheet.png'),
   soldier_companion: companionSheet('/assets/images/combat/spritesheets/soldier_companion_sheet.png'),
   nurse_companion: companionSheet('/assets/images/combat/spritesheets/nurse_companion_sheet.png'),
+  child_companion: companionSheet('/assets/images/combat/spritesheets/companions/child_companion_sheet.png'),
+  mechanic_companion: companionSheet('/assets/images/combat/spritesheets/companions/mechanic_companion_sheet.png'),
+  student_companion: companionSheet('/assets/images/combat/spritesheets/companions/student_companion_sheet.png'),
+  dog_companion: companionSheet('/assets/images/combat/spritesheets/companions/dog_companion_sheet.png'),
+  former_colleague_companion: companionSheet('/assets/images/combat/spritesheets/companions/former_colleague_companion_sheet.png'),
+  minjun_companion: companionSheet('/assets/images/combat/spritesheets/companions/minjun_companion_sheet.png'),
+  sohee_companion: companionSheet('/assets/images/combat/spritesheets/companions/sohee_companion_sheet.png'),
+  jisu_companion: companionSheet('/assets/images/combat/spritesheets/companions/jisu_companion_sheet.png'),
+  yeongcheol_companion: companionSheet('/assets/images/combat/spritesheets/companions/yeongcheol_companion_sheet.png'),
+  daehan_companion: companionSheet('/assets/images/combat/spritesheets/companions/daehan_companion_sheet.png'),
+  tower_security_companion: companionSheet('/assets/images/combat/spritesheets/companions/tower_security_companion_sheet.png'),
+  tower_merchant_companion: companionSheet('/assets/images/combat/spritesheets/companions/tower_merchant_companion_sheet.png'),
+  tower_cook_companion: companionSheet('/assets/images/combat/spritesheets/companions/tower_cook_companion_sheet.png'),
+  tower_engineer_companion: companionSheet('/assets/images/combat/spritesheets/companions/tower_engineer_companion_sheet.png'),
+  tower_doctor_companion: companionSheet('/assets/images/combat/spritesheets/companions/tower_doctor_companion_sheet.png'),
+  sous_chef_companion: companionSheet('/assets/images/combat/spritesheets/companions/sous_chef_companion_sheet.png'),
+  kitchen_helper_companion: companionSheet('/assets/images/combat/spritesheets/companions/kitchen_helper_companion_sheet.png'),
   zombie_patient_dormant: motionSheet(
     '/assets/images/combat/spritesheets/enemies/zombie_patient_dormant_sheet.png',
     5,

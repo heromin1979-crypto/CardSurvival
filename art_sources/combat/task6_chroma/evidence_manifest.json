@@ -187,15 +187,15 @@
       "rows": 4,
       "beforeSha256": "bbb15966f04ff13a1402973646e078bb98a0318fb218b89a2575be3b257a256d",
       "task6AfterSha256": "536ded064acca2cdf38ff697c7ea621f2b98fed833d5d255c8b46960930b233b",
-      "currentSha256": "536ded064acca2cdf38ff697c7ea621f2b98fed833d5d255c8b46960930b233b",
+      "currentSha256": "b4efe7043a09a1e2dcf063f435fef0db37d49c9c1803dcf4272edf35ad081ca4",
       "changedPixels": 4,
       "beforeMaskEntry": "before_non_chroma/nurse_companion.png",
       "beforeMaskSha256": "3ae084c9c15bcfdd3d678341ef8ae188eb758cf680a787e145056694128897bb",
       "afterAlphaEntry": "after_alpha/nurse_companion.png",
       "afterAlphaSha256": "3ae084c9c15bcfdd3d678341ef8ae188eb758cf680a787e145056694128897bb",
-      "currentPolicy": "direct",
-      "supersededBy": null,
-      "supersededSource": null
+      "currentPolicy": "superseded",
+      "supersededBy": "task9-companion-motion",
+      "supersededSource": "/art_sources/combat/task9_companions/nurse_companion_task6_after.png"
     },
     {
       "sheetKey": "rabid_dog",
@@ -263,15 +263,15 @@
       "rows": 4,
       "beforeSha256": "3496953628b4315f115a3dad8a0f04d98c871196e78c14cf4bf9c5427a23a98a",
       "task6AfterSha256": "88b7008c9616936c2823e22075ea3f338521313fba7b18a72531f88366c04620",
-      "currentSha256": "88b7008c9616936c2823e22075ea3f338521313fba7b18a72531f88366c04620",
+      "currentSha256": "77fa85bed1ed41942c08d1fc6a0a3f21a7e0f8e3b20ab400811daed87d38ef9b",
       "changedPixels": 12,
       "beforeMaskEntry": "before_non_chroma/soldier_companion.png",
       "beforeMaskSha256": "8d9bad08570218246ebc1dfec9be15226c16155c087fe70a7691b7b85f383ae6",
       "afterAlphaEntry": "after_alpha/soldier_companion.png",
       "afterAlphaSha256": "8d9bad08570218246ebc1dfec9be15226c16155c087fe70a7691b7b85f383ae6",
-      "currentPolicy": "direct",
-      "supersededBy": null,
-      "supersededSource": null
+      "currentPolicy": "superseded",
+      "supersededBy": "task9-companion-motion",
+      "supersededSource": "/art_sources/combat/task9_companions/soldier_companion_task6_after.png"
     },
     {
       "sheetKey": "zombie_acid",

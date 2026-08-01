@@ -19,6 +19,8 @@ from PIL import Image
 
 SUPERSEDED_BY = {
     "doctor_f": "task8-player-motion",
+    "nurse_companion": "task9-companion-motion",
+    "soldier_companion": "task9-companion-motion",
     "raider": "task7-normal-motion",
     "raider_elite": "task7-normal-motion",
     "zombie_acid": "task7-normal-motion",
@@ -34,6 +36,8 @@ SUPERSEDED_BY = {
 def superseded_source(sheet_key: str) -> str | None:
     if sheet_key == "doctor_f":
         return "/art_sources/combat/task8_players/doctor_f_existing_alpha.png"
+    if sheet_key in {"nurse_companion", "soldier_companion"}:
+        return f"/art_sources/combat/task9_companions/{sheet_key}_task6_after.png"
     if SUPERSEDED_BY.get(sheet_key) == "task7-normal-motion":
         return f"/art_sources/combat/task7_normal/baseline/{sheet_key}_sheet.png"
     return None

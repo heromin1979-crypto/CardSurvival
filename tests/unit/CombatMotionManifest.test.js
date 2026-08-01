@@ -7,8 +7,14 @@ import {
 } from '../../js/data/combatMotionManifest.js';
 import { validateCombatMotionManifest } from '../../js/data/validate.js';
 import { COMBAT_SPRITE_SHEETS } from '../../js/ui/combat/combatUiAssets.js';
-import { PLAYER_SPRITE_KEYS } from '../../js/ui/combat/combatUiAssets.js';
-import { COMBAT_SKILLS } from '../../js/data/combatSkills.js';
+import {
+  COMPANION_SPRITE_KEYS,
+  PLAYER_SPRITE_KEYS,
+} from '../../js/ui/combat/combatUiAssets.js';
+import {
+  COMBAT_SKILLS,
+  COMPANION_COMBAT_LOADOUTS,
+} from '../../js/data/combatSkills.js';
 
 const PLAYER_SHEET_KEYS = Object.freeze({
   'doctor:F': 'doctor_f',
@@ -50,6 +56,31 @@ const PLAYER_SKILL_MOTIONS = Object.freeze({
   engineer_improvised_cover: 'guard',
   engineer_shock_trap: 'support',
 });
+
+const COMPANION_SHEET_KEYS = Object.freeze({
+  npc_old_survivor: 'old_survivor_companion',
+  npc_nurse: 'nurse_companion',
+  npc_soldier_deserter: 'soldier_companion',
+  npc_child: 'child_companion',
+  npc_mechanic: 'mechanic_companion',
+  npc_student: 'student_companion',
+  npc_dog: 'dog_companion',
+  npc_former_colleague: 'former_colleague_companion',
+  npc_minjun: 'minjun_companion',
+  npc_sohee: 'sohee_companion',
+  npc_jisu: 'jisu_companion',
+  npc_yeongcheol: 'yeongcheol_companion',
+  npc_daehan: 'daehan_companion',
+  npc_tower_security: 'tower_security_companion',
+  npc_tower_merchant: 'tower_merchant_companion',
+  npc_tower_cook: 'tower_cook_companion',
+  npc_tower_engineer: 'tower_engineer_companion',
+  npc_tower_doctor: 'tower_doctor_companion',
+  npc_sous_chef: 'sous_chef_companion',
+  npc_kitchen_helper: 'kitchen_helper_companion',
+});
+
+const COMPANION_MOTION_ROWS = PLAYER_MOTION_ROWS;
 
 function motionFixture(overrides = {}) {
   return {
@@ -130,8 +161,8 @@ describe('current combat motion registry', () => {
       .toEqual(expect.arrayContaining([expect.stringContaining('missing_sheet.png')]));
   });
 
-  it('maps all 28 currently displayed sheets to synchronous manifest entries', () => {
-    expect(Object.keys(COMBAT_SPRITE_SHEETS)).toHaveLength(28);
+  it('maps all 46 currently displayed sheets to synchronous manifest entries', () => {
+    expect(Object.keys(COMBAT_SPRITE_SHEETS)).toHaveLength(46);
     expect(Object.keys(COMBAT_SPRITE_SHEETS).sort())
       .toEqual(Object.keys(COMBAT_MOTION_MANIFEST).sort());
 
@@ -204,6 +235,44 @@ describe('current combat motion registry', () => {
       const sheetKey = PLAYER_SHEET_KEYS[`${characterId}:${gender}`];
       expect(resolveCombatMotion(sheetKey, motionKey), `${skillId}/${sheetKey}`)
         .toMatchObject({ row: PLAYER_MOTION_ROWS.indexOf(motionKey) });
+    }
+  });
+
+  it('maps the exact 20 companion loadout IDs to 20 dedicated sprite keys', () => {
+    expect(Object.keys(COMPANION_COMBAT_LOADOUTS).sort())
+      .toEqual(Object.keys(COMPANION_SPRITE_KEYS).sort());
+    expect(COMPANION_SPRITE_KEYS).toEqual(COMPANION_SHEET_KEYS);
+    expect(new Set(Object.values(COMPANION_SPRITE_KEYS)).size).toBe(20);
+  });
+
+  it('defines a dedicated 6x8 semantic sheet for every companion', () => {
+    const sources = [];
+    for (const [npcId, sheetKey] of Object.entries(COMPANION_SPRITE_KEYS)) {
+      const sheet = COMBAT_MOTION_MANIFEST[sheetKey];
+      expect(sheet, npcId).toBeDefined();
+      expect(sheet.cols, npcId).toBe(6);
+      expect(sheet.rows, npcId).toBe(8);
+      expect(Object.keys(sheet.motions), npcId).toEqual(COMPANION_MOTION_ROWS);
+      expect(Object.values(sheet.motions).map(motion => motion.row), npcId)
+        .toEqual(COMPANION_MOTION_ROWS.map((_, row) => row));
+      expect(sheet.src, npcId).toMatch(/\/assets\/images\/combat\/spritesheets\/(?:companions\/)?[^/]+_sheet\.png$/);
+      sources.push(sheet.src);
+    }
+    expect(new Set(sources).size).toBe(20);
+  });
+
+  it('keeps all 60 companion skills on their reviewed semantic rows', () => {
+    const loadoutEntries = Object.entries(COMPANION_COMBAT_LOADOUTS);
+    expect(loadoutEntries.flatMap(([, skillIds]) => skillIds)).toHaveLength(60);
+
+    for (const [npcId, skillIds] of loadoutEntries) {
+      const sheetKey = COMPANION_SPRITE_KEYS[npcId];
+      for (const skillId of skillIds) {
+        const motionKey = COMBAT_SKILLS[skillId]?.motionKey;
+        expect(COMPANION_MOTION_ROWS, skillId).toContain(motionKey);
+        expect(resolveCombatMotion(sheetKey, motionKey), `${npcId}/${skillId}`)
+          .toMatchObject({ row: COMPANION_MOTION_ROWS.indexOf(motionKey) });
+      }
     }
   });
 });

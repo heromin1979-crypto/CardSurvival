@@ -135,12 +135,31 @@ export const PLAYER_SPRITE_KEYS = {
   'engineer:M': 'engineer_m',
 };
 
-export const COMPANION_SPRITE_KEYS = {
+export const COMPANION_SPRITE_KEYS = Object.defineProperties({
+  npc_old_survivor: 'old_survivor_companion',
   npc_nurse: 'nurse_companion',
-  npc_soldier: 'soldier_companion',
-  npc_wounded_soldier: 'soldier_companion',
   npc_soldier_deserter: 'soldier_companion',
-};
+  npc_child: 'child_companion',
+  npc_mechanic: 'mechanic_companion',
+  npc_student: 'student_companion',
+  npc_dog: 'dog_companion',
+  npc_former_colleague: 'former_colleague_companion',
+  npc_minjun: 'minjun_companion',
+  npc_sohee: 'sohee_companion',
+  npc_jisu: 'jisu_companion',
+  npc_yeongcheol: 'yeongcheol_companion',
+  npc_daehan: 'daehan_companion',
+  npc_tower_security: 'tower_security_companion',
+  npc_tower_merchant: 'tower_merchant_companion',
+  npc_tower_cook: 'tower_cook_companion',
+  npc_tower_engineer: 'tower_engineer_companion',
+  npc_tower_doctor: 'tower_doctor_companion',
+  npc_sous_chef: 'sous_chef_companion',
+  npc_kitchen_helper: 'kitchen_helper_companion',
+}, {
+  npc_soldier: { value: 'soldier_companion', enumerable: false },
+  npc_wounded_soldier: { value: 'soldier_companion', enumerable: false },
+});
 
 export const ENEMY_SPRITE_KEYS = {
   zombie_patient_dormant: 'zombie_patient_dormant',

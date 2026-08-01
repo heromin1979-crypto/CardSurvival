@@ -95,7 +95,7 @@ function manifestSheets() {
   }));
 }
 
-function readPng(filePath) {
+export function readPng(filePath) {
   const buffer = fs.readFileSync(filePath);
   if (buffer.toString('ascii', 1, 4) !== 'PNG') throw new Error(`${filePath} is not a PNG file`);
 

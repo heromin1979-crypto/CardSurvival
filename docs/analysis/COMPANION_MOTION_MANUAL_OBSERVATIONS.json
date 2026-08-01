@@ -1,0 +1,150 @@
+{
+  "version": 1,
+  "evidenceType": "manual visual observation",
+  "reviewedArtifact": "/art_sources/combat/task9_companions/companion_motion_contact_sheet.png",
+  "contactSheetSha256": "d4402de5c83d37027f6eff2b0cd0d0364a9789f25fa65118a4627c5e0a4484a0",
+  "assemblyRecipeSha256": "831f149f8fe16130b43483691d6658710c72a8f6565716847ce4723e223af976",
+  "method": "20개 contact tile을 확대해 identity, weapon, 8행 의미, 6프레임 연속성, 잘림, slide, 행 재사용을 직접 관찰했다. 자동 renderer나 verifier가 판정을 생성하지 않았다.",
+  "companions": [
+    {
+      "npcId":"npc_old_survivor","sheetKey":"old_survivor_companion","identity":"회색 머리·누빈 검은 코트·나무 지팡이가 48프레임에서 유지됨","weapon":"지팡이 타격과 경고 손짓이 구분됨","continuity":"대기-타격-회수, 피격-낙상이 순차적이며 셀 잘림 없음","skills":[
+        {"skillId":"old_survivor_cane_strike","motionKey":"melee","status":"PASS","observation":"지팡이 준비·횡타·회수로 근접 공격이 읽힘"},
+        {"skillId":"old_survivor_warning","motionKey":"support","status":"PASS","observation":"손을 들어 경고하고 전방을 지시하는 제자리 지원"},
+        {"skillId":"old_survivor_hold_line","motionKey":"guard","status":"PASS","observation":"지팡이를 몸 앞에 수평으로 고정해 전선을 지킴"}],
+      "hit":{"status":"PASS","observation":"상체 충격과 한 발 후퇴가 사망과 구분됨"},"death":{"status":"PASS","observation":"무릎 붕괴 후 측면으로 완전히 눕고 마지막 프레임이 정지 자세임"}
+    },
+    {
+      "npcId":"npc_nurse","sheetKey":"nurse_companion","identity":"검은 묶음머리·남색 스크럽·베이지 의료 조끼·구급 가방 유지","weapon":"메스 공격과 의료 처치 도구 사용이 별도 행","continuity":"모든 행 6프레임이 채워지고 의료 가방·발 잘림 없음","skills":[
+        {"skillId":"nurse_scalpel","motionKey":"melee","status":"PASS","observation":"치료 동작이 아닌 낮은 자세의 메스 찌르기와 회수"},
+        {"skillId":"nurse_triage","motionKey":"support","status":"PASS","observation":"구급함을 열고 처치 도구를 선택하는 제자리 모션"},
+        {"skillId":"nurse_encourage","motionKey":"support","status":"PASS","observation":"처치 뒤 손바닥을 들어 아군을 격려하는 마무리"}],
+      "hit":{"status":"PASS","observation":"가슴을 움켜쥐는 피격 반동이 공격 행과 다름"},"death":{"status":"PASS","observation":"구급 가방과 함께 엎드려 눕는 유한 낙상"}
+    },
+    {
+      "npcId":"npc_soldier_deserter","sheetKey":"soldier_companion","identity":"거친 얼굴·차콜 전술복·붕대 팔·검은 소총 유지","weapon":"개머리판 타격, 총격, 엄호, 재배치에서 소총 용도가 분리됨","continuity":"7행 base와 별도 guard source가 한 인물로 연결되고 총구·발 잘림 없음","skills":[
+        {"skillId":"deserter_rifle_shot","motionKey":"ranged","status":"PASS","observation":"견착·조준·단발 반동이 제자리 총격으로 읽힘"},
+        {"skillId":"deserter_covering_fire","motionKey":"ranged","status":"PASS","observation":"연속 총구 반동이 동일 ranged 행에서 자연스럽게 연결됨"},
+        {"skillId":"deserter_reposition","motionKey":"move","status":"PASS","observation":"총구 화염 없이 소총을 낮춘 전술 이동"}],
+      "hit":{"status":"PASS","observation":"소총을 놓지 않은 채 상체가 뒤로 젖혀짐"},"death":{"status":"PASS","observation":"무릎에서 옆으로 쓰러져 소총과 함께 완전 정지"}
+    },
+    {
+      "npcId":"npc_child","sheetKey":"child_companion","identity":"노란 우비·붉은 목도리·남색 학교 가방의 아동 체형 유지","weapon":"짧은 막대와 돌멩이, 가방 방어가 명확히 다름","continuity":"성인 비율·과장 없이 6프레임씩 이어지고 비그래픽 낙상","skills":[
+        {"skillId":"child_throw_debris","motionKey":"ranged","status":"PASS","observation":"돌 준비·투척·팔로스루가 제자리에서 진행됨"},
+        {"skillId":"child_hide","motionKey":"guard","status":"PASS","observation":"가방 뒤로 웅크려 머리를 보호함"},
+        {"skillId":"child_warning","motionKey":"support","status":"PASS","observation":"입을 벌려 경고하며 전방을 손가락으로 지시"}],
+      "hit":{"status":"PASS","observation":"뒤로 휘청이는 비그래픽 충격"},"death":{"status":"PASS","observation":"옆으로 내려앉아 웅크린 downed 자세로 종료"}
+    },
+    {
+      "npcId":"npc_mechanic","sheetKey":"mechanic_companion","identity":"고글·기름 묻은 작업복·주황 셔츠·대형 렌치 유지","weapon":"렌치 공격, tripwire, 공구함 방어가 분리됨","continuity":"보충 guard 6프레임 포함 모든 셀이 인물 전신으로 채워짐","skills":[
+        {"skillId":"mechanic_wrench","motionKey":"melee","status":"PASS","observation":"렌치 횡타의 준비·궤적·회수 흐름"},
+        {"skillId":"mechanic_field_repair","motionKey":"support","status":"PASS","observation":"무릎을 꿇고 공구함을 열어 수리"},
+        {"skillId":"mechanic_tripwire","motionKey":"support","status":"PASS","observation":"릴과 말뚝을 펼치는 설치 동작으로 총격과 혼동 없음"}],
+      "hit":{"status":"PASS","observation":"렌치를 든 채 충격으로 상체가 뒤로 이동"},"death":{"status":"PASS","observation":"무릎 붕괴 후 렌치와 함께 엎드림"}
+    },
+    {
+      "npcId":"npc_student","sheetKey":"student_companion","identity":"단발·안경·남색 대학 재킷·우산·백팩 유지","weapon":"우산 타격, 책 투척, 응급 처치가 구분됨","continuity":"빠른 회피와 피격·사망 실루엣이 서로 다르고 외곽 잘림 없음","skills":[
+        {"skillId":"student_improvised_strike","motionKey":"melee","status":"PASS","observation":"접은 우산을 양손으로 휘두르고 회수"},
+        {"skillId":"student_first_aid","motionKey":"support","status":"PASS","observation":"작은 응급 파우치를 열고 붕대를 준비"},
+        {"skillId":"student_quick_step","motionKey":"move","status":"PASS","observation":"가방을 멘 채 낮게 빠지는 연속 보폭"}],
+      "hit":{"status":"PASS","observation":"등가방과 함께 뒤로 휘청이나 서 있음"},"death":{"status":"PASS","observation":"무릎에서 엎드려 완전히 눕는 종결"}
+    },
+    {
+      "npcId":"npc_dog","sheetKey":"dog_companion","identity":"크림·황갈색 진돗개 체형과 파란 구조 하네스 유지; 상처·감염 없음","weapon":"물기, 짖기, 추적, 경계 자세가 개 동작으로 구분됨","continuity":"꼬리·귀·발이 셀 안에 있고 적 rabid dog 외형을 재사용하지 않음","skills":[
+        {"skillId":"dog_bite","motionKey":"melee","status":"PASS","observation":"몸을 낮춰 도약하고 입을 벌려 물기"},
+        {"skillId":"dog_guard","motionKey":"guard","status":"PASS","observation":"다리를 벌리고 머리를 낮춘 보호 경계"},
+        {"skillId":"dog_track_weakness","motionKey":"support","status":"PASS","observation":"바닥 냄새를 따라 코로 약점을 지시"}],
+      "hit":{"status":"PASS","observation":"비그래픽으로 뒷다리를 접으며 충격 반응"},"death":{"status":"PASS","observation":"옆으로 누워 하네스와 함께 정지"}
+    },
+    {
+      "npcId":"npc_former_colleague","sheetKey":"former_colleague_companion","identity":"노란 안전모·주황 조끼·무릎 보호대·망치 유지","weapon":"망치 타격, 볼트 투척, 폐판 방어가 구분됨","continuity":"재생성본은 support 포함 전신 6프레임이며 crop 원본은 미사용","skills":[
+        {"skillId":"colleague_hammer","motionKey":"melee","status":"PASS","observation":"망치를 머리 위로 들고 내려치는 중량감"},
+        {"skillId":"colleague_brace","motionKey":"guard","status":"PASS","observation":"폐목재 판 뒤에 무릎을 굽혀 버팀"},
+        {"skillId":"colleague_teamwork","motionKey":"support","status":"PASS","observation":"전신 상태에서 손바닥·엄지·지시 신호가 이어짐"}],
+      "hit":{"status":"PASS","observation":"안전모와 망치를 유지한 충격 반동"},"death":{"status":"PASS","observation":"옆으로 쓰러져 망치가 곁에 놓임"}
+    },
+    {
+      "npcId":"npc_minjun","sheetKey":"minjun_companion","identity":"강민준의 삭발·올리브 군의관 장비·태극기 패치 유지","weapon":"칼, 권총, 의료 가방의 역할이 분명함","continuity":"플레이어 soldier/doctor와 다른 얼굴·장비의 전용 시트","skills":[
+        {"skillId":"minjun_pistol","motionKey":"ranged","status":"PASS","observation":"권총 양손 조준과 발사 반동"},
+        {"skillId":"minjun_combat_medicine","motionKey":"support","status":"PASS","observation":"의료 가방을 열고 약제를 준비"},
+        {"skillId":"minjun_command","motionKey":"support","status":"PASS","observation":"주먹·정지·전진 손 신호가 이어짐"}],
+      "hit":{"status":"PASS","observation":"방탄 장비 무게를 반영한 후방 반동"},"death":{"status":"PASS","observation":"측면으로 누워 권총과 의료 장비가 함께 정지"}
+    },
+    {
+      "npcId":"npc_sohee","sheetKey":"sohee_companion","identity":"안경·보랏빛 코트·약품 가방·소형 조준 소총 유지","weapon":"칼 방어와 정밀 사격, 약품 집중이 분리됨","continuity":"한소희 전용 색·실루엣이며 모든 프레임 전신 유지","skills":[
+        {"skillId":"sohee_precise_shot","motionKey":"ranged","status":"PASS","observation":"조준경 견착 뒤 마지막 프레임에만 총구 화염"},
+        {"skillId":"sohee_silent_cover","motionKey":"guard","status":"PASS","observation":"의료 가방을 엄폐로 삼아 낮게 엎드림"},
+        {"skillId":"sohee_focus","motionKey":"support","status":"PASS","observation":"약병 확인과 호흡 조절 후 재조준"}],
+      "hit":{"status":"PASS","observation":"소총을 든 채 어깨가 뒤로 밀림"},"death":{"status":"PASS","observation":"보랏빛 코트 실루엣이 옆으로 접혀 정지"}
+    },
+    {
+      "npcId":"npc_jisu","sheetKey":"jisu_companion","identity":"단발·청록 스크럽·짧은 흰 진료복·붉은 trauma belt 유지","weapon":"메스, injector, 진단 도구와 trauma bag 분리","continuity":"이지수 전용 외형으로 8행 모두 서로 다른 자세","skills":[
+        {"skillId":"jisu_scalpel","motionKey":"melee","status":"PASS","observation":"메스 횡절과 회수가 치료 행과 구분됨"},
+        {"skillId":"jisu_emergency_care","motionKey":"support","status":"PASS","observation":"약제와 trauma 도구를 차례로 준비"},
+        {"skillId":"jisu_diagnose","motionKey":"support","status":"PASS","observation":"청진기·검사 도구를 확인하는 제자리 진단"}],
+      "hit":{"status":"PASS","observation":"진료복이 뒤로 날리며 피격 반동"},"death":{"status":"PASS","observation":"trauma bag과 함께 옆으로 완전히 누움"}
+    },
+    {
+      "npcId":"npc_yeongcheol","sheetKey":"yeongcheol_companion","identity":"콧수염·그을린 남색 방화복·황색 반사띠·구조 도끼 유지","weapon":"도끼, 구조 로프, 방패와 rally 손짓이 분명함","continuity":"crop support를 폐기하고 full-body rally strip으로 교체","skills":[
+        {"skillId":"yeongcheol_axe","motionKey":"melee","status":"PASS","observation":"양손 구조 도끼를 크게 휘두르고 회수"},
+        {"skillId":"yeongcheol_rescue","motionKey":"guard","status":"PASS","observation":"소형 구조 방패와 도끼를 함께 들어 보호"},
+        {"skillId":"yeongcheol_rally","motionKey":"support","status":"PASS","observation":"전신 상태에서 주먹을 들고 전방을 지시"}],
+      "hit":{"status":"PASS","observation":"중장비 착용자의 무거운 후방 반동"},"death":{"status":"PASS","observation":"도끼를 놓으며 무릎에서 엎드림"}
+    },
+    {
+      "npcId":"npc_daehan","sheetKey":"daehan_companion","identity":"정대한의 고글·회색 작업복·갈색 앞치마·대형 렌치 유지","weapon":"렌치, 전기 셀, 과충전 장치와 금속 바리케이드 분리","continuity":"플레이어 engineer와 다른 참조 얼굴·앞치마 실루엣","skills":[
+        {"skillId":"daehan_wrench","motionKey":"melee","status":"PASS","observation":"대형 렌치를 머리 위에서 내려침"},
+        {"skillId":"daehan_barricade","motionKey":"guard","status":"PASS","observation":"접힌 금속판을 펼쳐 전신 앞에 세움"},
+        {"skillId":"daehan_overcharge","motionKey":"support","status":"PASS","observation":"코일 장치를 조정해 청색 전기를 활성화"}],
+      "hit":{"status":"PASS","observation":"공구를 쥔 채 몸통이 뒤로 젖혀짐"},"death":{"status":"PASS","observation":"대형 체격이 바로 누운 뒤 옆으로 정지"}
+    },
+    {
+      "npcId":"npc_tower_security","sheetKey":"tower_security_companion","identity":"짧은 머리·검은 경비복·무전기·봉·진압 방패 유지","weapon":"봉 타격, 손전등, 도발, 방패 방어 분리","continuity":"군인 소총 없이 민간 경비대장 실루엣 유지","skills":[
+        {"skillId":"security_baton","motionKey":"melee","status":"PASS","observation":"telescopic baton을 전방으로 뻗고 회수"},
+        {"skillId":"security_guard","motionKey":"guard","status":"PASS","observation":"긁힌 방패 뒤로 몸을 낮춰 방어"},
+        {"skillId":"security_taunt","motionKey":"support","status":"PASS","observation":"손짓·정지 신호·고함으로 주의를 끎"}],
+      "hit":{"status":"PASS","observation":"봉을 든 상태로 무릎이 꺾이는 피격"},"death":{"status":"PASS","observation":"봉을 곁에 두고 측면으로 완전히 눕음"}
+    },
+    {
+      "npcId":"npc_tower_merchant","sheetKey":"tower_merchant_companion","identity":"수염·낙타색 코트·거대 거래 배낭·숨은 칼 유지","weapon":"칼, 보급 주머니, 협상 손짓과 pack guard 분리","continuity":"7열 원본 중 서로 다른 6프레임만 사용하고 전신 연속성 유지","skills":[
+        {"skillId":"merchant_hidden_blade","motionKey":"melee","status":"PASS","observation":"코트 안 칼을 꺼내 짧게 베고 감춤"},
+        {"skillId":"merchant_supply","motionKey":"support","status":"PASS","observation":"작은 보급 주머니를 꺼내 건네는 동작"},
+        {"skillId":"merchant_bargain","motionKey":"support","status":"PASS","observation":"양손 협상·계산·제안 손짓"}],
+      "hit":{"status":"PASS","observation":"큰 배낭 무게와 함께 뒤로 휘청임"},"death":{"status":"PASS","observation":"배낭을 멘 채 옆으로 말려 누움"}
+    },
+    {
+      "npcId":"npc_tower_cook","sheetKey":"tower_cook_companion","identity":"중년 여성·버건디 조리복·베이지 앞치마·칼·주철 팬 유지","weapon":"칼/팬 타격, 향신료 투척, 식사 지원 분리","continuity":"다른 chef 2종과 성별·연령·색상·도구 조합이 다름","skills":[
+        {"skillId":"tower_cook_knife","motionKey":"melee","status":"PASS","observation":"큰 주방칼 횡베기가 분명함"},
+        {"skillId":"tower_cook_meal","motionKey":"support","status":"PASS","observation":"냄비에서 접시에 배식하는 제자리 지원"},
+        {"skillId":"tower_cook_burn","motionKey":"melee","status":"PASS","observation":"주철 팬을 전방으로 밀어 뜨거운 근접 타격"}],
+      "hit":{"status":"PASS","observation":"칼을 낮추며 상체가 뒤로 밀림"},"death":{"status":"PASS","observation":"팬과 칼을 놓고 엎드려 정지"}
+    },
+    {
+      "npcId":"npc_tower_engineer","sheetKey":"tower_engineer_companion","identity":"젊은 남성·남색 설비복·청록 배관·주황 공구대·pipe wrench 유지","weapon":"렌치, 센서 함정, 설치, 접이 엄폐 분리","continuity":"mechanic/Daehan과 다른 체형·복장·설비 장비","skills":[
+        {"skillId":"tower_engineer_wrench","motionKey":"melee","status":"PASS","observation":"붉은 pipe wrench를 좌우로 휘두름"},
+        {"skillId":"tower_engineer_cover","motionKey":"guard","status":"PASS","observation":"접이식 설비 패널을 펼쳐 몸 앞에 고정"},
+        {"skillId":"tower_engineer_trap","motionKey":"support","status":"PASS","observation":"소형 센서 함정을 던지고 무릎 꿇어 설치"}],
+      "hit":{"status":"PASS","observation":"공구대가 흔들리는 피격 반동"},"death":{"status":"PASS","observation":"설비복 실루엣이 옆으로 접혀 정지"}
+    },
+    {
+      "npcId":"npc_tower_doctor","sheetKey":"tower_doctor_companion","identity":"낮은 땋은 머리·slate scrubs·차콜 shell·은색 의료 case 유지","weapon":"메스, injector, 단독 처치, case guard 분리","continuity":"환자 포함 base support를 폐기하고 의사 단독 strip 사용","skills":[
+        {"skillId":"tower_doctor_scalpel","motionKey":"melee","status":"PASS","observation":"메스 준비·횡베기·회수"},
+        {"skillId":"tower_doctor_triage","motionKey":"support","status":"PASS","observation":"case를 열어 약제를 선택하고 offscreen 아군에게 준비"},
+        {"skillId":"tower_doctor_stimulant","motionKey":"support","status":"PASS","observation":"injector 용량 확인·준비·전달 뒤 ready 신호"}],
+      "hit":{"status":"PASS","observation":"case를 든 채 상체가 뒤로 꺾임"},"death":{"status":"PASS","observation":"case를 내려놓고 옆으로 완전히 누움"}
+    },
+    {
+      "npcId":"npc_sous_chef","sheetKey":"sous_chef_companion","identity":"젊은 남성·초록 chef jacket·검은 줄무늬 앞치마·cleaver 유지","weapon":"cleaver, utensil, ration/intimidate, board guard 분리","continuity":"플레이어 chef와 tower cook, helper와 전용 외형이 겹치지 않음","skills":[
+        {"skillId":"sous_chef_cleaver","motionKey":"melee","status":"PASS","observation":"cleaver를 양손으로 높이 들어 내려침"},
+        {"skillId":"sous_chef_ration","motionKey":"support","status":"PASS","observation":"묶은 ration pouch를 들어 전달"},
+        {"skillId":"sous_chef_intimidate","motionKey":"support","status":"PASS","observation":"주먹·지시·정지 손짓으로 위압"}],
+      "hit":{"status":"PASS","observation":"cleaver를 낮춘 채 가슴 충격 반동"},"death":{"status":"PASS","observation":"cleaver 옆으로 무릎에서 엎드림"}
+    },
+    {
+      "npcId":"npc_kitchen_helper","sheetKey":"kitchen_helper_companion","identity":"젊은 여성·높은 ponytail·크림 셔츠·denim apron·붉은 목수건·팬 유지","weapon":"팬, 국자, assist handoff, duck 이동 분리","continuity":"보충 hit strip 포함 48셀 모두 전신이 있고 helper 전용 실루엣 유지","skills":[
+        {"skillId":"kitchen_helper_pan","motionKey":"melee","status":"PASS","observation":"팬을 양손으로 휘두르고 회수"},
+        {"skillId":"kitchen_helper_assist","motionKey":"support","status":"PASS","observation":"그릇과 도구를 offscreen 아군에게 내미는 지원"},
+        {"skillId":"kitchen_helper_duck","motionKey":"move","status":"PASS","observation":"팬을 몸 가까이 들고 낮게 빠지는 duck step"}],
+      "hit":{"status":"PASS","observation":"여섯 distinct 전신 프레임에서 놀람·후퇴·균형 회복"},"death":{"status":"PASS","observation":"팬을 놓고 옆으로 완전히 누워 정지"}
+    }
+  ]
+}
