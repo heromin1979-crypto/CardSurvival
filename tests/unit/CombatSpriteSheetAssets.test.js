@@ -247,7 +247,7 @@ describe('combat sprite sheet assets', () => {
     }
   });
 
-  it('checks the production manifest before testing isolated semantic and byte drift', () => {
+  it('checks the production manifest with canonical JSON semantics across formatting and EOL drift', () => {
     const productionText = fs.readFileSync(EXPORTED_MANIFEST_PATH, 'utf8');
     const checkOutput = execFileSync(process.execPath, [
       path.join(ROOT, 'tools', 'export_combat_motion_manifest.mjs'),
@@ -269,9 +269,7 @@ describe('combat sprite sheet assets', () => {
         '--output',
         tempManifestPath,
       ], { cwd: ROOT, encoding: 'utf8' });
-      expect(result.status).toBe(1);
-      expect(result.stderr).not.toContain('semantic drift');
-      expect(result.stderr).toContain('byte drift');
+      expect(result.status, result.stderr).toBe(0);
 
       const semanticDrift = structuredClone(COMBAT_MOTION_MANIFEST);
       semanticDrift.doctor_f.cols += 1;
@@ -285,15 +283,18 @@ describe('combat sprite sheet assets', () => {
       expect(result.status).toBe(1);
       expect(result.stderr).toContain('semantic drift');
 
-      fs.writeFileSync(tempManifestPath, JSON.stringify(COMBAT_MOTION_MANIFEST), 'utf8');
+      fs.writeFileSync(
+        tempManifestPath,
+        JSON.stringify(COMBAT_MOTION_MANIFEST, null, 2).replaceAll('\n', '\r\n'),
+        'utf8',
+      );
       result = spawnSync(process.execPath, [
         path.join(ROOT, 'tools', 'export_combat_motion_manifest.mjs'),
         '--check',
         '--output',
         tempManifestPath,
       ], { cwd: ROOT, encoding: 'utf8' });
-      expect(result.status).toBe(1);
-      expect(result.stderr).toContain('byte drift');
+      expect(result.status, result.stderr).toBe(0);
     } finally {
       fs.rmSync(tempDir, { recursive: true, force: true });
     }

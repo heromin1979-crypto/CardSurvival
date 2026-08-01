@@ -1,5 +1,6 @@
 {
-  "version": 1,
+  "version": 2,
+  "hashScheme": "combat-provenance-sha256-v2",
   "scope": "Task 6 historical 23 displayed-sheet chroma cleanup",
   "archive": "/art_sources/combat/task6_chroma/alpha_evidence.zip",
   "archiveSha256": "27caa57ff48fdfcbab667c80f577c50f0185e62df920200bca5df986085d4432",
@@ -16,7 +17,7 @@
       "rows": 4,
       "beforeSha256": "f3683e674bf76850b41a37a7589d512b67bb6ebca69b4693523ec3c881c16e86",
       "task6AfterSha256": "614e25900e39a1b56dd74cc2d7bb9aa6c91ebea19f41975565f3fbb143f678d8",
-      "currentSha256": "0b3b04511d6dd1f0abf15bd283688e238a0dc9131816d30a0575df44b6b5e0f1",
+      "currentSha256": "ad660317bd69b13e682d5661ef6f643da8636c0c26a713d41f3aa0bc624b90c8",
       "changedPixels": 2,
       "beforeMaskEntry": "before_non_chroma/boss_feral_dog_alpha.png",
       "beforeMaskSha256": "818149f2796802a809552fd230c0dcb7e9474a35829e046fb9fcb57b1e5be0fb",

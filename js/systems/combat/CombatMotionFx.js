@@ -28,6 +28,32 @@ export function combatantActionIndex(entity, companionIds = []) {
   return entityIndex(entity);
 }
 
+const ENEMY_SELF_EFFECTS = new Set([
+  'selfHeal',
+  'selfStatus',
+  'summon',
+  'consumeSummons',
+]);
+
+export function resolveEnemyActionPresentationTarget({ actor, target, definition, action } = {}) {
+  const effects = definition?.effects ?? action?.effects ?? [];
+  const hasSelfEffect = effects.some(effect => ENEMY_SELF_EFFECTS.has(effect?.type));
+  const hasTargetEffect = effects.some(effect => [
+    'damage',
+    'partyDamage',
+    'targetStatus',
+    'forcedMove',
+    'resource',
+    'weaponLock',
+  ].includes(effect?.type));
+  if (hasSelfEffect && !hasTargetEffect) return actor;
+  if ((definition?.damage?.[1] ?? action?.damage?.[1] ?? 0) === 0
+      && ['heal', 'buff', 'summon'].includes(definition?.impactFx ?? action?.impactFx)) {
+    return actor;
+  }
+  return target;
+}
+
 function actionIdentity({ skill, action, skillId, actionId }) {
   const resolvedSkillId = skillId ?? skill?.id ?? null;
   if (resolvedSkillId) return { skillId: resolvedSkillId };
@@ -56,6 +82,7 @@ export function createActionFx({
   movement,
   camera,
   count,
+  presentation,
 } = {}) {
   return {
     kind: 'action',
@@ -77,6 +104,7 @@ export function createActionFx({
     ...(movement !== undefined ? { movement } : {}),
     ...(camera !== undefined ? { camera } : {}),
     ...(count !== undefined ? { count } : {}),
+    ...(presentation !== undefined ? { presentation } : {}),
   };
 }
 
@@ -257,6 +285,13 @@ export function actionFxToPresentationFx(fx) {
       return {
         ...shared,
         kind: 'summon',
+        enemyIdx: fx.actorIndex,
+      };
+    }
+    if (fx.targetSide === 'enemy' && fx.targetId === fx.actorId) {
+      return {
+        ...shared,
+        kind: 'enemySkill',
         enemyIdx: fx.actorIndex,
       };
     }

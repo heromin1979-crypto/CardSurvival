@@ -12,19 +12,23 @@ from pathlib import Path
 
 from PIL import Image
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from provenance_hash import PROVENANCE_HASH_SCHEME, provenance_sha256
+
 
 ROOT = Path(__file__).resolve().parents[1]
 ZERO_CHROMA = {
     "opaqueGreen": 0,
     "fringeGreen": 0,
     "hiddenRgb": 0,
+    "boundaryGreen": 0,
     "removedComponents": 0,
     "staleAllowlist": 0,
 }
 
 
 def file_sha256(path: Path) -> str:
-    return hashlib.sha256(path.read_bytes()).hexdigest()
+    return provenance_sha256(path)
 
 
 def bytes_sha256(value: bytes) -> str:
@@ -86,7 +90,8 @@ def build_report(root: Path) -> dict:
     root = root.resolve()
     evidence_path = root / "art_sources/combat/task6_chroma/evidence_manifest.json"
     evidence = json.loads(evidence_path.read_text(encoding="utf-8"))
-    if (evidence.get("version") != 1 or evidence.get("sheetCount") != 23
+    if (evidence.get("version") != 2 or evidence.get("hashScheme") != PROVENANCE_HASH_SCHEME
+            or evidence.get("sheetCount") != 23
             or len(evidence.get("sheets", [])) != 23):
         raise ValueError("Task 6 evidence contract mismatch")
     archive_path = resolve_repo_path(root, evidence["archive"])
@@ -170,7 +175,8 @@ def build_report(root: Path) -> dict:
             f"non-chroma alpha loss: historical={historical_loss}, currentDirect={direct_loss}"
         )
     return {
-        "reportVersion": 1,
+        "reportVersion": 2,
+        "hashScheme": PROVENANCE_HASH_SCHEME,
         "scope": evidence["scope"],
         "evidenceManifest": "/art_sources/combat/task6_chroma/evidence_manifest.json",
         "evidenceManifestSha256": file_sha256(evidence_path),
@@ -205,7 +211,11 @@ def main() -> int:
         report = build_report(root)
     except (OSError, ValueError, KeyError, TypeError, json.JSONDecodeError, zipfile.BadZipFile) as error:
         raise SystemExit(str(error)) from error
-    if not report_path.exists() or report_path.read_bytes() != report_bytes(report):
+    try:
+        committed_report = json.loads(report_path.read_text(encoding="utf-8-sig"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise SystemExit("Task 6 chroma cleanup report is missing or malformed") from error
+    if committed_report != report:
         raise SystemExit("Task 6 chroma cleanup report differs from immutable evidence")
     print(json.dumps({
         "checked": report_path.relative_to(root).as_posix(),

@@ -54,11 +54,12 @@
 
 ## 고정 증거 SHA-256
 
-- `assembly_recipe.json`: `a085b1343437ae8822f42d0c19624f47d97824136c3227b92221acb035251c8d`
-- `detached_component_contract.json`: `68495c2a7d364dbf0cd2698c12e55cd3f8d8c844afbf858a729fb1b6d1f24f0b`
-- `generation_provenance.json`: `99094f9dfc4d97b779baf80f39f09d51ed0f899f800d0f662e02d83b6e34e44a`
-- `manual_review_evidence.json`: `77398803fc38308cb143aaaa41438bd3c7560b52b669ae70fba78031511f3b06`
-- `boss_motion_contact_sheet.png`: `9a3bfb8d04ea93cc7fb897466f8ebe61b04d0f3a374025856cd013e275eee38c`
+- hash scheme: `combat-provenance-sha256-v2` (JSON canonical serialization, text LF normalization, binary raw bytes)
+- `assembly_recipe.json`: `d56d52e0114f44da3fb18315417c307d5d8f7df9d33860499701dfcfd6a0b8c2`
+- `detached_component_contract.json`: `b4d88013072763f4c4730cd2a9c6a0c0829b47dc179e5ea5a44d98a8486d3d40`
+- `generation_provenance.json`: `f898a76f6e6e01bdc2eb371a3a18cc205af35cc5ada50983953510caf13d20ae`
+- `manual_review_evidence.json`: `f459f7c870eb4e956deddf72f5f5ef5499f2a677590af1c80071d5e6739aafde`
+- `boss_motion_contact_sheet.png`: `2e833e0f630ab83520d75dc9b50125135ae994586776f6f9440b67eae2a86acf`
 
 ## 실행 검증
 

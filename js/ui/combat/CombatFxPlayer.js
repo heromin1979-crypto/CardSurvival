@@ -339,6 +339,19 @@ export const CombatFxPlayer = {
         this._spawnFloatText(target, `+${fx.amount}`, 'heal');
         break;
       }
+      case 'enemySkill': {
+        const enemyEl = this._enemySpriteEl(fx.enemyIdx);
+        this._playEnemyActionMotion(enemyEl, fx, 780);
+        this._cameraWork(this._enemyActionCamera(fx), 650);
+        this._motion(
+          enemyEl,
+          fx.impactFx === 'heal' ? 'motion-heal-pulse' : 'motion-buff-pulse',
+          760,
+        );
+        if (fx.impactFx) this._spawnFxOverlay(enemyEl, fx.impactFx);
+        if (fx.healing > 0) this._spawnFloatText(enemyEl, `+${fx.healing}`, 'heal');
+        break;
+      }
       case 'playerSkill': {
         const player = this._playerSpriteEl();
         const target = this._combatantEl(fx.targetId)

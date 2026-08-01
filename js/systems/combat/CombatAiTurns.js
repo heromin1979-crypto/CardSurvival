@@ -42,6 +42,7 @@ import {
 import {
   combatantActionIndex,
   createActionFx,
+  resolveEnemyActionPresentationTarget,
 } from './CombatMotionFx.js';
 
 function enemyActionCombatant(combat, enemy, enemyIndex) {
@@ -1150,10 +1151,17 @@ export const CombatAiTurns = {
     });
     if (result?.executed === true
         && (combat?.fxQueue?.length ?? 0) === queuedFxBefore) {
-      const targetId = action.targetIds?.[0] ?? 'player';
-      const target = allyActionCombatant(combat, targetId);
+      const actor = enemyActionCombatant(combat, enemy, enemyIdx);
+      const requestedTargetId = action.targetIds?.[0] ?? 'player';
+      const requestedTarget = allyActionCombatant(combat, requestedTargetId);
+      const target = resolveEnemyActionPresentationTarget({
+        actor,
+        target: requestedTarget,
+        definition,
+        action,
+      });
       this._fx(createActionFx({
-        actor: enemyActionCombatant(combat, enemy, enemyIdx),
+        actor,
         actorIndex: enemyIdx,
         target,
         targetIndex: combatantActionIndex(target, gs.companions),
@@ -1163,6 +1171,7 @@ export const CombatAiTurns = {
         category: action.category,
         movement: definition?.movement,
         camera: definition?.camera,
+        presentation: target === actor ? 'self' : 'target',
       }));
     }
     if (result?.executed === true

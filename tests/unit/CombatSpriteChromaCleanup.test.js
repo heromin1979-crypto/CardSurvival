@@ -81,7 +81,7 @@ describe('combat sprite chroma cleanup', () => {
     expect(result.before.opaqueGreen).toBeGreaterThan(0);
     expect(result.before.fringeGreen).toBeGreaterThan(0);
     expect(result.result.removedComponents).toBe(1);
-    expect(result.after).toEqual({ opaqueGreen: 0, fringeGreen: 0, hiddenRgb: 0, removedComponents: 0, staleAllowlist: 0 });
+    expect(result.after).toEqual({ opaqueGreen: 0, fringeGreen: 0, hiddenRgb: 0, boundaryGreen: 0, removedComponents: 0, staleAllowlist: 0 });
     expect(result.fringe[3]).toBe(180);
     expect(result.fringe[1]).toBeLessThanOrEqual(result.fringe[0] + 8);
     expect(result.lowAlpha).toEqual([[132, 68, 38, 1], [132, 68, 38, 12]]);
@@ -105,7 +105,36 @@ describe('combat sprite chroma cleanup', () => {
 
     expect(result.center).toEqual([78, 120, 72, 255]);
     expect(result.result.removedComponents).toBe(0);
-    expect(result.stats).toEqual({ opaqueGreen: 0, fringeGreen: 0, hiddenRgb: 0, removedComponents: 0, staleAllowlist: 0 });
+    expect(result.stats).toEqual({ opaqueGreen: 0, fringeGreen: 0, hiddenRgb: 0, boundaryGreen: 0, removedComponents: 0, staleAllowlist: 0 });
+  });
+
+  it('detects and neutralizes sub-threshold green spill attached to a transparent silhouette boundary', async () => {
+    const output = runPython([
+      'import importlib.util, json, sys',
+      'from PIL import Image',
+      `spec = importlib.util.spec_from_file_location('normalizer', r'${NORMALIZER.replaceAll('\\', '/')}')`,
+      'module = importlib.util.module_from_spec(spec)',
+      'sys.modules[spec.name] = module',
+      'spec.loader.exec_module(module)',
+      "image = Image.new('RGBA', (5, 5), (0, 0, 0, 0))",
+      "image.paste((90, 55, 40, 255), (1, 1, 4, 4))",
+      "image.putpixel((1, 2), (55, 165, 48, 255))",
+      'cleaned, _ = module.cleanup_chroma(image, strict_boundary=True)',
+      "print(json.dumps({'before': module.analyze_chroma(image, strict_boundary=True), 'after': module.analyze_chroma(cleaned, strict_boundary=True), 'pixel': cleaned.getpixel((1, 2))}))",
+    ].join('\n'));
+    const python = JSON.parse(output);
+    expect(python.before.boundaryGreen).toBe(1);
+    expect(python.after.boundaryGreen).toBe(0);
+    expect(python.pixel[3]).toBe(255);
+    expect(python.pixel[1]).toBeLessThanOrEqual(Math.max(python.pixel[0], python.pixel[2]) + 8);
+
+    const { chromaArtifactStats } = await import('../../tools/audit_combat_sprites.mjs');
+    const rgba = Buffer.alloc(5 * 5 * 4);
+    for (let y = 1; y < 4; y += 1) {
+      for (let x = 1; x < 4; x += 1) rgba.set([90, 55, 40, 255], (y * 5 + x) * 4);
+    }
+    rgba.set([55, 165, 48, 255], (2 * 5 + 1) * 4);
+    expect(chromaArtifactStats({ width: 5, height: 5, pixels: rgba }, { cols: 1, rows: 1, strictBoundary: true })).toMatchObject({ boundaryGreen: 1 });
   });
 
   it('detects and decontaminates alpha-1 frame-edge green without relying on visual bbox alpha', async () => {
@@ -122,7 +151,7 @@ describe('combat sprite chroma cleanup', () => {
     ].join('\n'));
     const python = JSON.parse(output);
     expect(python.before.fringeGreen).toBe(1);
-    expect(python.after).toEqual({ opaqueGreen: 0, fringeGreen: 0, hiddenRgb: 0, removedComponents: 0, staleAllowlist: 0 });
+    expect(python.after).toEqual({ opaqueGreen: 0, fringeGreen: 0, hiddenRgb: 0, boundaryGreen: 0, removedComponents: 0, staleAllowlist: 0 });
     expect(python.pixel).toEqual([0, 0, 0, 1]);
 
     const { chromaArtifactStats } = await import('../../tools/audit_combat_sprites.mjs');
@@ -141,7 +170,7 @@ describe('combat sprite chroma cleanup', () => {
     ], { cwd: ROOT, encoding: 'utf8' });
     const report = JSON.parse(output);
 
-    expect(report).toEqual([{ path: expect.stringMatching(/chroma-fringe\.png$/), opaqueGreen: 124, fringeGreen: 4, hiddenRgb: 1, removedComponents: 1, staleAllowlist: 0 }]);
+    expect(report).toEqual([{ path: expect.stringMatching(/chroma-fringe\.png$/), opaqueGreen: 124, fringeGreen: 4, hiddenRgb: 1, boundaryGreen: 0, removedComponents: 1, staleAllowlist: 0 }]);
   });
 
   it('treats an internal manifest frame edge as a chroma boundary in both tools', async () => {
@@ -158,7 +187,7 @@ describe('combat sprite chroma cleanup', () => {
     ].join('\n'));
     const python = JSON.parse(output);
     expect(python.result.removedComponents).toBe(0);
-    expect(python.stats).toEqual({ opaqueGreen: 0, fringeGreen: 0, hiddenRgb: 0, removedComponents: 0, staleAllowlist: 0 });
+    expect(python.stats).toEqual({ opaqueGreen: 0, fringeGreen: 0, hiddenRgb: 0, boundaryGreen: 0, removedComponents: 0, staleAllowlist: 0 });
     expect(python.inside).toEqual([0, 0, 0, 0]);
 
     const { chromaArtifactStats } = await import('../../tools/audit_combat_sprites.mjs');
@@ -167,7 +196,7 @@ describe('combat sprite chroma cleanup', () => {
       for (let x = 6; x < 9; x += 1) rgba.set([0, 255, 0, 255], (y * 12 + x) * 4);
     }
     expect(chromaArtifactStats({ width: 12, height: 6, pixels: rgba }, { cols: 2, rows: 1 }))
-      .toEqual({ opaqueGreen: 15, fringeGreen: 0, hiddenRgb: 0, removedComponents: 0, staleAllowlist: 0 });
+      .toEqual({ opaqueGreen: 15, fringeGreen: 0, hiddenRgb: 0, boundaryGreen: 0, removedComponents: 0, staleAllowlist: 0 });
   });
 
   it('allows only the fingerprinted toxic component and rejects a stale component entry', () => {
@@ -317,7 +346,7 @@ describe('combat sprite chroma cleanup', () => {
     expect(result.dry).toMatchObject({ changed: true, changedFrames: 1 });
     expect(result.saved).toMatchObject({ changed: true, changedFrames: 1 });
     expect(result.foreground).toEqual([150, 70, 40, 255]);
-    expect(result.stats).toEqual({ opaqueGreen: 0, fringeGreen: 0, hiddenRgb: 0, removedComponents: 0, staleAllowlist: 0 });
+    expect(result.stats).toEqual({ opaqueGreen: 0, fringeGreen: 0, hiddenRgb: 0, boundaryGreen: 0, removedComponents: 0, staleAllowlist: 0 });
     expect(result.integrity).toEqual({ alphaCoverageBefore: 2, alphaCoverageAfter: 1, unexpectedAlphaLoss: 0 });
   });
 
@@ -374,6 +403,7 @@ describe('combat sprite chroma cleanup', () => {
     try {
       copy('tools/normalize_combat_sprite_sheets.py');
       copy('tools/verify_combat_chroma_cleanup.py');
+      copy('tools/provenance_hash.py');
       copy('art_sources/combat/task6_chroma');
       copy('docs/analysis/COMBAT_CHROMA_TASK6_CLEANUP_REPORT.json');
       copy('assets/images/combat/spritesheets/manifest.json');
@@ -385,6 +415,13 @@ describe('combat sprite chroma cleanup', () => {
       for (const sheet of evidence.sheets) {
         copy(sheet.path.replace(/^\//, ''));
         if (sheet.supersededSource) copy(sheet.supersededSource.replace(/^\//, ''));
+      }
+      for (const relative of [
+        'art_sources/combat/task6_chroma/evidence_manifest.json',
+        'docs/analysis/COMBAT_CHROMA_TASK6_CLEANUP_REPORT.json',
+      ]) {
+        const target = path.join(tempRoot, relative);
+        fs.writeFileSync(target, fs.readFileSync(target, 'utf8').replaceAll('\r\n', '\n'), 'utf8');
       }
       expect(fs.existsSync(path.join(tempRoot, '.git'))).toBe(false);
 

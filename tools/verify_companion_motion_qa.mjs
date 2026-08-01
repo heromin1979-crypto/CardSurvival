@@ -18,6 +18,7 @@ import {
   loadRangedComponentContract,
   RANGED_COMPONENT_CONTRACT_RELATIVE_PATH,
 } from './companion_motion_quality.mjs';
+import { PROVENANCE_HASH_SCHEME, provenanceSha256 } from './provenance_hash.mjs';
 
 const rootArgument = process.argv.find(arg => arg.startsWith('--root='))?.slice('--root='.length);
 const ROOT = path.resolve(rootArgument || process.cwd());
@@ -26,12 +27,14 @@ const ZERO_CHROMA = Object.freeze({
   opaqueGreen: 0,
   fringeGreen: 0,
   hiddenRgb: 0,
+  boundaryGreen: 0,
   removedComponents: 0,
   staleAllowlist: 0,
 });
 const EXPECTED_RECIPE_KEYS = Object.freeze([
   'assemblyScript',
   'assemblyScriptSha256',
+  'hashScheme',
   'canonicalSources',
   'provenancePath',
   'provenanceSha256',
@@ -56,7 +59,7 @@ function readJson(filePath, label) {
 }
 
 function sha256(filePath) {
-  return createHash('sha256').update(fs.readFileSync(filePath)).digest('hex');
+  return provenanceSha256(filePath);
 }
 
 function bgraBytes(image, startY = 0, height = image.height) {
@@ -109,6 +112,7 @@ function fixedFile(relative) {
 
 function validateRecipe(recipe, recipePath, expectedSheetKeys) {
   exactKeys(recipe, EXPECTED_RECIPE_KEYS, 'assembly recipe');
+  invariant(recipe.hashScheme === PROVENANCE_HASH_SCHEME, 'recipe provenance hash scheme mismatch');
   invariant(recipe.version === 2, 'assembly recipe version must be 2');
   invariant(JSON.stringify(recipe.rowContract) === JSON.stringify(ROWS), 'assembly recipe row contract mismatch');
 
@@ -240,7 +244,8 @@ function validatePreview(preview, recipe, expectedSheetKeys) {
 }
 
 function validateManual(manual, manualPath, recipePath, previewPath, previewByKey, expectedNpcIds) {
-  exactKeys(manual, ['assemblyRecipePath', 'assemblyRecipeSha256', 'companions', 'contactPath', 'contactSha256', 'evidenceType', 'openRework', 'previewManifestPath', 'previewManifestSha256', 'reviewStatus', 'reviewedAt', 'reviewedCounts', 'reviewerMethod', 'version'], 'manual evidence');
+  exactKeys(manual, ['assemblyRecipePath', 'assemblyRecipeSha256', 'companions', 'contactPath', 'contactSha256', 'evidenceType', 'hashScheme', 'openRework', 'previewManifestPath', 'previewManifestSha256', 'reviewStatus', 'reviewedAt', 'reviewedCounts', 'reviewerMethod', 'version'], 'manual evidence');
+  invariant(manual.hashScheme === PROVENANCE_HASH_SCHEME, 'manual evidence hash scheme mismatch');
   invariant(manual.version === 2, 'manual evidence version must be 2');
   invariant(manual.evidenceType === 'human manual visual observation', 'manual evidence must identify human/manual observation');
   invariant(manual.reviewStatus === 'PASS', 'manual review status is not PASS');

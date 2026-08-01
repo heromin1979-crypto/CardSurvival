@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "hashScheme": "combat-provenance-sha256-v2",
   "evidenceType": "human manual visual observation",
   "reviewStatus": "PASS",
   "reviewedAt": "2026-08-01",
@@ -12,11 +13,11 @@
   },
   "openRework": [],
   "previewManifestPath": "/art_sources/combat/task9_companions/preview_manifest.json",
-  "previewManifestSha256": "96078d0620fc5217fa500c8b5dc8753a43a9f3ceb58691335ac5461869dff9c5",
+  "previewManifestSha256": "388e8c24a54df142235ed2e8ae7893d4e3ae6908d8fd5b1806363db1cd475d92",
   "contactPath": "/art_sources/combat/task9_companions/companion_motion_contact_sheet.png",
   "contactSha256": "67f5c1742ddc3a08b6aec38ee25dad0c6d5c66d79239486154d7dc1e50e1fc27",
   "assemblyRecipePath": "/art_sources/combat/task9_companions/assembly_recipe.json",
-  "assemblyRecipeSha256": "bd8cc1baefb631466acaa434c34c98a8f02e976d6ef84511c3e3b1d682b0c454",
+  "assemblyRecipeSha256": "67edfb48e67fe55a3db5aa9aecbc2966d2fd3e9b984be2413627114cb9fc5df3",
   "companions": [
     {
       "npcId": "npc_old_survivor",

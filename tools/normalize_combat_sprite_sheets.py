@@ -24,6 +24,9 @@ CHROMA_HUE_MIN = 78
 CHROMA_HUE_MAX = 162
 CHROMA_SATURATION_MIN = 0.72
 CHROMA_VALUE_MIN = 150
+BOUNDARY_GREEN_SATURATION_MIN = 0.35
+BOUNDARY_GREEN_VALUE_MIN = 80
+STRICT_BOUNDARY_SHEETS = {"boss_feral_dog_alpha", "boss_chef_nemesis"}
 ISOLATED_CHROMA_COMPONENT_AREA = 12
 CHROMA_COMPONENT_ALLOWLIST_PATH = Path(os.environ.get("COMBAT_CHROMA_ALLOWLIST_PATH", SPRITE_ROOT / "chroma_component_allowlist.json"))
 ALLOWLIST_VERSION = 1
@@ -320,7 +323,62 @@ def _is_frame_edge(image: Image.Image, x: int, y: int) -> bool:
     return x == 0 or y == 0 or x == image.width - 1 or y == image.height - 1
 
 
-def analyze_chroma(image: Image.Image, allowed_components: list[dict] | None = None) -> dict[str, int]:
+def _is_boundary_green(image: Image.Image, x: int, y: int) -> bool:
+    pixel = image.getpixel((x, y))
+    if pixel[3] <= 0:
+        return False
+    hue, saturation, value = _hue_and_saturation(*pixel[:3])
+    if not (CHROMA_HUE_MIN <= hue <= CHROMA_HUE_MAX
+            and saturation >= BOUNDARY_GREEN_SATURATION_MIN
+            and value >= BOUNDARY_GREEN_VALUE_MIN):
+        return False
+    transparent = False
+    for ny in range(max(0, y - 2), min(image.height, y + 3)):
+        for nx in range(max(0, x - 2), min(image.width, x + 3)):
+            if nx == x and ny == y:
+                continue
+            neighbor = image.getpixel((nx, ny))
+            if abs(nx - x) <= 1 and abs(ny - y) <= 1:
+                transparent = transparent or neighbor[3] == 0
+    return transparent
+
+
+def neutralize_boundary_green(image: Image.Image) -> tuple[Image.Image, int]:
+    cleaned = image.convert("RGBA").copy()
+    boundary = [(x, y) for y in range(cleaned.height) for x in range(cleaned.width) if _is_boundary_green(cleaned, x, y)]
+    for x, y in boundary:
+        r, _, b, a = cleaned.getpixel((x, y))
+        cleaned.putpixel((x, y), (r, max(r, b), b, a))
+    return cleaned, len(boundary)
+
+
+def neutralize_boundary_green_grid(image: Image.Image, cols: int, rows: int) -> tuple[Image.Image, int]:
+    cleaned = Image.new("RGBA", image.size, (0, 0, 0, 0))
+    changed = 0
+    for box in _frame_boxes(image, cols, rows):
+        frame, count = neutralize_boundary_green(image.crop(box))
+        cleaned.alpha_composite(frame, box[:2])
+        changed += count
+    return cleaned, changed
+
+
+def neutralize_strict_green_grid(image: Image.Image, cols: int, rows: int) -> tuple[Image.Image, int]:
+    cleaned = image.convert("RGBA").copy()
+    changed = 0
+    pixels = cleaned.load()
+    for box in _frame_boxes(cleaned, cols, rows):
+        for y in range(box[1], box[3]):
+            for x in range(box[0], box[2]):
+                r, g, b, a = pixels[x, y]
+                hue, saturation, value = _hue_and_saturation(r, g, b)
+                if (a > 0 and CHROMA_HUE_MIN <= hue <= CHROMA_HUE_MAX
+                        and saturation >= 0.25 and value >= 50):
+                    pixels[x, y] = (r, max(r, b), b, a)
+                    changed += 1
+    return cleaned, changed
+
+
+def analyze_chroma(image: Image.Image, allowed_components: list[dict] | None = None, strict_boundary: bool = False) -> dict[str, int]:
     """Return residual artifacts; ``removedComponents`` means components eligible for removal."""
     image = image.convert("RGBA")
     pixels = image.load()
@@ -328,9 +386,12 @@ def analyze_chroma(image: Image.Image, allowed_components: list[dict] | None = N
     opaque_green = 0
     fringe_green = 0
     hidden_rgb = 0
+    boundary_green = 0
     for y in range(image.height):
         for x in range(image.width):
             pixel = pixels[x, y]
+            if strict_boundary and _is_boundary_green(image, x, y):
+                boundary_green += 1
             if pixel[3] == 0:
                 hidden_rgb += int(pixel[:3] != (0, 0, 0))
             elif y * image.width + x in edge:
@@ -347,6 +408,7 @@ def analyze_chroma(image: Image.Image, allowed_components: list[dict] | None = N
         "opaqueGreen": opaque_green,
         "fringeGreen": fringe_green,
         "hiddenRgb": hidden_rgb,
+        "boundaryGreen": boundary_green,
         "removedComponents": len(components),
         "staleAllowlist": len(stale),
     }
@@ -386,7 +448,7 @@ def _decontaminate_fringe(image: Image.Image, removed: set[int]) -> None:
             pixels[x, y] = (*rgb, pixel[3])
 
 
-def cleanup_chroma(image: Image.Image, allowed_components: list[dict] | None = None) -> tuple[Image.Image, dict[str, int]]:
+def cleanup_chroma(image: Image.Image, allowed_components: list[dict] | None = None, strict_boundary: bool = False) -> tuple[Image.Image, dict[str, int]]:
     """Remove chroma-key background artifacts while preserving real low-saturation greens."""
     cleaned = image.convert("RGBA").copy()
     width, height = cleaned.size
@@ -402,6 +464,8 @@ def cleanup_chroma(image: Image.Image, allowed_components: list[dict] | None = N
         x, y = index % width, index // width
         pixels[x, y] = (0, 0, 0, 0)
     _decontaminate_fringe(cleaned, removed)
+    if strict_boundary:
+        cleaned, _ = neutralize_boundary_green(cleaned)
     for y in range(height):
         for x in range(width):
             r, g, b, a = pixels[x, y]
@@ -422,12 +486,16 @@ def _frame_boxes(image: Image.Image, cols: int, rows: int) -> list[tuple[int, in
 
 
 def analyze_chroma_grid(image: Image.Image, cols: int = 1, rows: int = 1, path: Path | None = None) -> dict[str, int]:
-    totals = {"opaqueGreen": 0, "fringeGreen": 0, "hiddenRgb": 0, "removedComponents": 0, "staleAllowlist": 0}
+    totals = {"opaqueGreen": 0, "fringeGreen": 0, "hiddenRgb": 0, "boundaryGreen": 0, "removedComponents": 0, "staleAllowlist": 0}
     allowlist = component_allowlist() if path else []
     sheet_key = sheet_identity_for_path(path)[0] if path else ""
     for index, box in enumerate(_frame_boxes(image, cols, rows)):
         row, col = divmod(index, cols)
-        result = analyze_chroma(image.crop(box), component_specs_for(sheet_key, path, row, col, allowlist) if path else [])
+        result = analyze_chroma(
+            image.crop(box),
+            component_specs_for(sheet_key, path, row, col, allowlist) if path else [],
+            strict_boundary=sheet_key in STRICT_BOUNDARY_SHEETS if path else False,
+        )
         for key, value in result.items():
             totals[key] += value
     return totals
@@ -441,7 +509,11 @@ def cleanup_chroma_grid(image: Image.Image, cols: int = 1, rows: int = 1, path: 
     sheet_key = sheet_identity_for_path(path)[0] if path else ""
     for index, box in enumerate(_frame_boxes(image, cols, rows)):
         row, col = divmod(index, cols)
-        frame, result = cleanup_chroma(image.crop(box), component_specs_for(sheet_key, path, row, col, allowlist) if path else [])
+        frame, result = cleanup_chroma(
+            image.crop(box),
+            component_specs_for(sheet_key, path, row, col, allowlist) if path else [],
+            strict_boundary=sheet_key in STRICT_BOUNDARY_SHEETS if path else False,
+        )
         cleaned.alpha_composite(frame, box[:2])
         removed_components += result["removedComponents"]
     return cleaned, {"removedComponents": removed_components, "staleAllowlist": 0}
@@ -852,7 +924,11 @@ def normalize_sheet(path: Path, dry_run: bool, from_head: bool) -> dict:
                 (col + 1) * grid.cell_width,
                 (row + 1) * grid.cell_height,
             )
-            frame, _ = cleanup_chroma(sheet.crop(box), component_specs_for(sheet_key, path, row, col, allowlist))
+            frame, _ = cleanup_chroma(
+                sheet.crop(box),
+                component_specs_for(sheet_key, path, row, col, allowlist),
+                strict_boundary=sheet_key in STRICT_BOUNDARY_SHEETS,
+            )
             normalized.alpha_composite(frame, (col * grid.cell_width, row * grid.cell_height))
             if original.crop(box).tobytes() != frame.tobytes():
                 changed_frames += 1
@@ -881,7 +957,26 @@ def main() -> None:
                         help="PNG 파일의 잔여 크로마 아티팩트를 JSON으로 검사")
     parser.add_argument("--check-allowlist", action="store_true",
                         help="등록된 크로마 컴포넌트 허용 목록을 전역 검증")
+    parser.add_argument(
+        "--neutralize-boundary",
+        nargs=3,
+        action="append",
+        metavar=("SHEET", "COLS", "ROWS"),
+        help="Neutralize attached green spill per animation cell while preserving alpha",
+    )
     args = parser.parse_args()
+
+    if args.neutralize_boundary:
+        reports = []
+        for pathname, cols, rows in args.neutralize_boundary:
+            path = Path(pathname)
+            source = Image.open(path).convert("RGBA")
+            cleaned, changed = neutralize_boundary_green_grid(source, int(cols), int(rows))
+            if not args.dry_run and cleaned.tobytes() != source.tobytes():
+                cleaned.save(path)
+            reports.append({"path": path.as_posix(), "changedPixels": changed})
+        print(json.dumps(reports, ensure_ascii=False))
+        return
 
     if args.check_allowlist:
         diagnostics = allowlist_diagnostics_or_error()

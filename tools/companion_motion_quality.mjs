@@ -1,11 +1,12 @@
 import fs from 'node:fs';
 import { createHash } from 'node:crypto';
 import path from 'node:path';
+import { provenanceSha256 } from './provenance_hash.mjs';
 
 const ALPHA_THRESHOLD = 12;
 
 export const RANGED_COMPONENT_CONTRACT_RELATIVE_PATH = 'art_sources/combat/task9_companions/ranged_component_contract.json';
-export const RANGED_COMPONENT_CONTRACT_SHA256 = 'df6a3f1eb29a37730bcbaccf645de474a9f6c372ffe3ca41adc7534ad4d9d2c7';
+export const RANGED_COMPONENT_CONTRACT_SHA256 = '24e76c90729763d6ec839cd9ca141bc4eb55d20671c56f0b5eda469a257032c1';
 
 export const COMPANION_FRAME_QUALITY_LIMITS = Object.freeze({
   minOpaquePixels: 3500,
@@ -72,7 +73,7 @@ export function validateRangedComponentContract(contract, expectedSheetKeys) {
 export function loadRangedComponentContract(root, expectedSheetKeys) {
   const contractPath = path.resolve(root, RANGED_COMPONENT_CONTRACT_RELATIVE_PATH);
   const buffer = fs.readFileSync(contractPath);
-  const actualSha256 = createHash('sha256').update(buffer).digest('hex');
+  const actualSha256 = provenanceSha256(contractPath);
   if (actualSha256 !== RANGED_COMPONENT_CONTRACT_SHA256) throw new Error('ranged component contract SHA-256 mismatch');
   return validateRangedComponentContract(JSON.parse(buffer), expectedSheetKeys);
 }

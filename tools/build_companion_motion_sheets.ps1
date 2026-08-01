@@ -16,6 +16,7 @@ $assemblyScriptPath = Join-Path $root 'tools\build_companion_motion_sheets.ps1'
 $qualityAnalyzerPath = Join-Path $root 'tools\companion_motion_quality.mjs'
 $rangedValidatorPath = Join-Path $root 'tools\verify_companion_ranged_contract.mjs'
 $rangedContractPath = Join-Path $sourceRoot 'ranged_component_contract.json'
+$provenanceHashPath = Join-Path $root 'tools\provenance_hash.mjs'
 
 Add-Type -ReferencedAssemblies System.Drawing -TypeDefinition @'
 using System;
@@ -717,6 +718,12 @@ function Expand-TargetRows($target) {
 }
 
 function Get-Sha256([string]$path) {
+  $extension = [System.IO.Path]::GetExtension($path).ToLowerInvariant()
+  if (@('.bat','.css','.html','.js','.json','.md','.mjs','.ps1','.py','.sh','.txt') -contains $extension) {
+    $hash = & node $provenanceHashPath $path
+    if ($LASTEXITCODE -ne 0) { throw "Canonical provenance hashing failed: $path" }
+    return ([string]$hash).Trim()
+  }
   return (Get-FileHash -Algorithm SHA256 -LiteralPath $path).Hash.ToLowerInvariant()
 }
 
@@ -795,6 +802,7 @@ try {
   if (-not (Test-Path -LiteralPath $assemblyScriptPath)) { throw "Missing assembly script: $assemblyScriptPath" }
   $computedRecipe = [ordered]@{
     version = 2
+    hashScheme = 'combat-provenance-sha256-v2'
     assemblyScript = '/tools/build_companion_motion_sheets.ps1'
     assemblyScriptSha256 = Get-Sha256 $assemblyScriptPath
     qualityAnalyzerPath = '/tools/companion_motion_quality.mjs'

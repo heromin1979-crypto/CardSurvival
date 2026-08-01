@@ -7,6 +7,8 @@ import CombatSystem from '../../js/systems/CombatSystem.js';
 import GameState from '../../js/core/GameState.js';
 import SystemRegistry from '../../js/core/SystemRegistry.js';
 import ENEMIES from '../../js/data/enemies.js';
+import { SECRET_ENEMIES } from '../../js/data/secretEnemies.js';
+import { actionFxToPresentationFx } from '../../js/systems/combat/CombatMotionFx.js';
 
 function createServices() {
   const events = [];
@@ -1163,6 +1165,58 @@ describe('executeEnemyAction', () => {
 });
 
 describe('CombatAiTurns motion presentation regressions', () => {
+  it.each([
+    ['boss_patient_zero', 'mutation_regeneration'],
+    ['boss_swarm_queen_bee', 'royal_jelly'],
+  ])('routes real self-heal utility %s/%s to the enemy actor instead of the player', (enemyId, actionId) => {
+    const definition = structuredClone(SECRET_ENEMIES[enemyId].bossPattern.specialSkill);
+    const enemy = {
+      id: enemyId,
+      currentHp: 100,
+      maxHp: 300,
+      isBoss: true,
+      bossPattern: { basicAttacks: [], specialSkill: definition, ultimate: null },
+    };
+    GameState.player.hp = { current: 100, max: 100 };
+    GameState.companions = [];
+    GameState.combat = {
+      active: true,
+      enemies: [enemy],
+      log: [],
+      fxQueue: [],
+      combatants: {
+        player: { id: 'player', side: 'ally', sourceType: 'player', hp: 100, maxHp: 100, dead: false },
+        'enemy:0': { id: 'enemy:0', side: 'enemy', sourceType: 'enemy', enemyIndex: 0, hp: 100, maxHp: 300 },
+      },
+    };
+
+    CombatSystem._executeEnemyCommittedAction(enemy, readyAction({
+      actionId,
+      category: 'special',
+      targetIds: ['player'],
+      motionKey: actionId,
+    }));
+
+    expect(GameState.combat.fxQueue).toEqual([
+      expect.objectContaining({
+        kind: 'action',
+        actorId: 'enemy:0',
+        targetId: 'enemy:0',
+        targetSide: 'enemy',
+        actionId,
+        impactFx: 'heal',
+        damage: 0,
+      }),
+    ]);
+    expect(actionFxToPresentationFx(GameState.combat.fxQueue[0])).toEqual(
+      expect.objectContaining({
+        kind: 'enemySkill',
+        targetId: 'enemy:0',
+        amount: definition.heal ?? definition.healing ?? 0,
+      }),
+    );
+  });
+
   it('queues one presentation action for a zero-damage summon boss skill', () => {
     const summon = vi.spyOn(CombatSystem, '_summonEnemyById').mockReturnValue(3);
     const enemy = {
@@ -1210,7 +1264,8 @@ describe('CombatAiTurns motion presentation regressions', () => {
         expect.objectContaining({
           kind: 'action',
           actorId: 'enemy:0',
-          targetId: 'player',
+          targetId: 'enemy:0',
+          targetSide: 'enemy',
           actionId: 'pack_howl',
           category: 'special',
           motionKey: 'pack_howl',

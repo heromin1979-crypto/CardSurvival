@@ -1,8 +1,9 @@
 {
   "version": 2,
+  "hashScheme": "combat-provenance-sha256-v2",
   "policy": "Human-selected semantic projectile/effect components. Each frame entry pins only the approved detached masks by exact cell, mask SHA-256, area, and bbox.",
   "selectionPath": "/art_sources/combat/task10_bosses/detached_component_selection.json",
-  "selectionSha256": "34eda7cf2352c1079381147945d6ca7dabdc4b6bc433410122a148bb03c79f1d",
+  "selectionSha256": "e0b00a3e7aed77a5c8137a11fdd9813ac54420b4461b3b0e17af3d5c0901c82f",
   "rowContract": [
     "idle",
     "basic_a",
@@ -25,14 +26,14 @@
     "boss_mutant_alpha_tiger": "1f9090ad1990de811af0ed748d32cd2a2ce8d323014a2942e4de747c25d2802d",
     "boss_sewer_king": "f28da21356dea6eee75cf37b844f511b57ff5968a5de8e8851d9756e1b8381b8",
     "boss_swarm_queen_bee": "df5b9344d560b88d813f5978d5f0960ad06a421325dac0f7e75302cf533cda66",
-    "boss_feral_dog_alpha": "df5b08af33e500445b0ec99eba9f91ab798344b8d73cc5a4fce72594445558c2",
+    "boss_feral_dog_alpha": "923ff78ddf0de667dd850938be586c8199452178b68dbb3c126e41d91970027a",
     "boss_penthouse_survivor": "f6f29a020fdd73cd5fbd18760567e7a800c14a5521190f83814eefe5a42f8d81",
     "boss_escaped_experiment": "aefc6317944c2e90948c4df6774e7174154186f13799f4d06efb557b683ffd94",
     "boss_blizzard_wraith": "53338928cf07d63b49aa5874482c19ae5d64d3c7b045f301632f43869999a967",
     "boss_soldier_nemesis": "b0ee5303a25d6f91d319c82f4d7916949b976c6be4c052f88329000c88d51b3a",
     "boss_firefighter_nemesis": "e158f764c90268a26a5b6df56a090b92e356d04b684c68279339ea5b2631fda4",
     "boss_homeless_nemesis": "3a0de6464adebd1a8d8020acf5ee2bcf167564c4f377b50bb15a1666749654c2",
-    "boss_chef_nemesis": "30354085bc4ac1f57f5bdf8319cf66eb4dc0a21eb30fb2df8dc3c97146415871",
+    "boss_chef_nemesis": "cf5e55ab248f8e84e81f19c57b7a37911609790be51c62b82e573f0319a0459b",
     "boss_doctor_nemesis": "d6525dcc364a4206238d2cec910ccf8628b0fe2cccefd4aa51cb0eca0ec88be5",
     "food_warlord": "b65feae449792fc276987ef4cf9684788d9269d9e5af1e895af29db9c98179fb"
   },

@@ -14,6 +14,7 @@ import {
   loadRangedComponentContract,
   RANGED_COMPONENT_CONTRACT_RELATIVE_PATH,
 } from '../../tools/companion_motion_quality.mjs';
+import { canonicalJsonBytes } from '../../tools/provenance_hash.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..', '..');
 const VERIFIER = path.join(ROOT, 'tools', 'verify_companion_motion_qa.mjs');
@@ -88,6 +89,7 @@ describe('Task 9 companion motion quality and immutable provenance', () => {
       'tools/audit_combat_sprites.mjs',
       'js/data/combatMotionManifest.js',
       'tools/render_companion_motion_preview.ps1',
+      'tools/provenance_hash.mjs',
     ]);
     for (const source of Object.values(recipe.canonicalSources)) {
       paths.add(source.chromaPath.replace(/^\//, ''));
@@ -121,6 +123,22 @@ describe('Task 9 companion motion quality and immutable provenance', () => {
     expect(result.status, result.stderr || result.stdout).toBe(0);
     expect(result.stdout).toContain('"status":"PASS"');
     expect(result.stdout).toContain('"inspectedCells":960');
+  }, 180000);
+
+  it('keeps provenance valid when a tracked JSON contract is checked out with CRLF instead of LF', () => {
+    const contractPath = path.join(fixtureRoot, RANGED_COMPONENT_CONTRACT_RELATIVE_PATH);
+    const original = fs.readFileSync(contractPath);
+    try {
+      fs.writeFileSync(
+        contractPath,
+        original.toString('utf8').replaceAll('\r\n', '\n').replaceAll('\n', '\r\n'),
+        'utf8',
+      );
+      const result = verifier(fixtureRoot);
+      expect(result.status, result.stderr || result.stdout).toBe(0);
+    } finally {
+      fs.writeFileSync(contractPath, original);
+    }
   }, 180000);
 
   it('keeps already-linked manual evidence byte-for-byte unchanged', () => {
@@ -200,7 +218,9 @@ describe('Task 9 companion motion quality and immutable provenance', () => {
     const filePath = path.join(fixtureRoot, RANGED_COMPONENT_CONTRACT_RELATIVE_PATH);
     const original = fs.readFileSync(filePath);
     try {
-      fs.appendFileSync(filePath, Buffer.from(' '));
+      const changed = JSON.parse(original.toString('utf8'));
+      changed.contract = `${changed.contract}-mutated`;
+      fs.writeFileSync(filePath, JSON.stringify(changed, null, 2));
       const result = verifier(fixtureRoot);
       expect(result.status).not.toBe(0);
       expect(result.stderr).toMatch(/ranged component contract .*SHA-256 mismatch/);
@@ -246,7 +266,7 @@ describe('Task 9 companion motion quality and immutable provenance', () => {
       firstTarget.rows[0].sourceColumns = [1, 0, 2, 3, 4, 5];
       fs.writeFileSync(filePath, JSON.stringify(changed, null, 2));
       const manual = JSON.parse(originalManual.toString('utf8'));
-      manual.assemblyRecipeSha256 = createHash('sha256').update(fs.readFileSync(filePath)).digest('hex');
+      manual.assemblyRecipeSha256 = createHash('sha256').update(canonicalJsonBytes(changed)).digest('hex');
       fs.writeFileSync(manualPath, JSON.stringify(manual, null, 2));
       const result = verifier(fixtureRoot);
       expect(result.status).not.toBe(0);
@@ -261,7 +281,7 @@ describe('Task 9 companion motion quality and immutable provenance', () => {
     const filePath = path.join(fixtureRoot, BUILDER_RELATIVE);
     const original = fs.readFileSync(filePath);
     try {
-      fs.appendFileSync(filePath, Buffer.from('\r\n'));
+      fs.appendFileSync(filePath, Buffer.from('\n# semantic mutation\n'));
       const result = verifier(fixtureRoot);
       expect(result.status).not.toBe(0);
       expect(result.stderr).toContain('assembly script SHA-256 mismatch');

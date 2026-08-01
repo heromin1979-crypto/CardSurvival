@@ -11,6 +11,9 @@ from statistics import median
 
 from PIL import Image, ImageDraw, ImageFont
 
+from provenance_hash import PROVENANCE_HASH_SCHEME, provenance_sha256
+from normalize_combat_sprite_sheets import neutralize_strict_green_grid
+
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE_ROOT = ROOT / "art_sources" / "combat" / "task10_bosses"
@@ -82,11 +85,7 @@ ROW_SOURCE_OVERRIDES = {
 
 
 def sha256_file(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for block in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(block)
-    return digest.hexdigest()
+    return provenance_sha256(path)
 
 
 def sha256_pixels(image: Image.Image) -> str:
@@ -698,6 +697,11 @@ def build_outputs(destination_root: Path, review_root: Path) -> tuple[dict, list
             raise ValueError(f"{boss_id} source hash differs from detached component contract")
         try:
             sheet, assembly = normalize_cells(source_cells(source, boss_id, contract_lookup))
+            if boss_id in {"boss_feral_dog_alpha", "boss_chef_nemesis"}:
+                alpha_before_cleanup = sheet.getchannel("A").tobytes()
+                sheet, _ = neutralize_strict_green_grid(sheet, COLS, len(ROWS))
+                if sheet.getchannel("A").tobytes() != alpha_before_cleanup:
+                    raise ValueError("strict green cleanup changed the alpha channel")
             quality = inspect_sheet(sheet)
         except ValueError as error:
             raise ValueError(f"{boss_id}: {error}") from error
@@ -743,6 +747,7 @@ def recipe_for(targets: dict, contact_path: Path, previews: list[tuple[str, Path
         })
     return {
         "version": 1,
+        "hashScheme": PROVENANCE_HASH_SCHEME,
         "mode": "built-in image_gen chroma-key sources; no CLI/API fallback",
         "assemblyScript": "/tools/build_boss_motion_sheets.py",
         "assemblyScriptSha256": sha256_file(script_path),
@@ -773,6 +778,8 @@ def recipe_for(targets: dict, contact_path: Path, previews: list[tuple[str, Path
 
 def check_recipe() -> None:
     recipe = json.loads(RECIPE_PATH.read_text(encoding="utf-8"))
+    if recipe.get("hashScheme") != PROVENANCE_HASH_SCHEME:
+        raise ValueError("recipe provenance hash scheme mismatch")
     if recipe.get("bossIds") != list(BOSS_IDS) or recipe.get("rowContract") != list(ROWS):
         raise ValueError("recipe roster/row contract mismatch")
     if recipe.get("assemblyScriptSha256") != sha256_file(Path(__file__).resolve()):

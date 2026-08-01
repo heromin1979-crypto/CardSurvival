@@ -19,6 +19,7 @@ ZERO_CHROMA = {
     "opaqueGreen": 0,
     "fringeGreen": 0,
     "hiddenRgb": 0,
+    "boundaryGreen": 0,
     "removedComponents": 0,
     "staleAllowlist": 0,
 }

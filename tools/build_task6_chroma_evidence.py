@@ -16,6 +16,8 @@ from pathlib import Path
 
 from PIL import Image
 
+from provenance_hash import PROVENANCE_HASH_SCHEME
+
 
 SUPERSEDED_BY = {
     "doctor_f": "task8-player-motion",
@@ -131,7 +133,8 @@ def main() -> int:
 
     archive_hash = sha256_bytes(archive_path.read_bytes())
     manifest = {
-        "version": 1,
+        "version": 2,
+        "hashScheme": PROVENANCE_HASH_SCHEME,
         "scope": "Task 6 historical 23 displayed-sheet chroma cleanup",
         "archive": "/art_sources/combat/task6_chroma/alpha_evidence.zip",
         "archiveSha256": archive_hash,

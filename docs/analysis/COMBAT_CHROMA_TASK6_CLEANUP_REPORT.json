@@ -1,8 +1,9 @@
 {
-  "reportVersion": 1,
+  "reportVersion": 2,
+  "hashScheme": "combat-provenance-sha256-v2",
   "scope": "Task 6 historical 23 displayed-sheet chroma cleanup",
   "evidenceManifest": "/art_sources/combat/task6_chroma/evidence_manifest.json",
-  "evidenceManifestSha256": "af65b568ed033b4653f9ad6985178656fe12508bf43092deb77b2f35332a6df9",
+  "evidenceManifestSha256": "bd4647a38146509213ba1ef4aaa99a08d30e8887249e3cfff7f3c2feb3d00c27",
   "evidenceArchiveSha256": "27caa57ff48fdfcbab667c80f577c50f0185e62df920200bca5df986085d4432",
   "sheetCount": 23,
   "changedSheetCount": 20,
@@ -16,6 +17,7 @@
     "opaqueGreen": 0,
     "fringeGreen": 0,
     "hiddenRgb": 0,
+    "boundaryGreen": 0,
     "removedComponents": 0,
     "staleAllowlist": 0
   },
@@ -29,7 +31,7 @@
       "rows": 4,
       "beforeSha256": "f3683e674bf76850b41a37a7589d512b67bb6ebca69b4693523ec3c881c16e86",
       "task6AfterSha256": "614e25900e39a1b56dd74cc2d7bb9aa6c91ebea19f41975565f3fbb143f678d8",
-      "currentSha256": "0b3b04511d6dd1f0abf15bd283688e238a0dc9131816d30a0575df44b6b5e0f1",
+      "currentSha256": "ad660317bd69b13e682d5661ef6f643da8636c0c26a713d41f3aa0bc624b90c8",
       "changedPixels": 2,
       "historicalUnexpectedAlphaLoss": 0,
       "currentUnexpectedAlphaLoss": null,
@@ -40,6 +42,7 @@
         "opaqueGreen": 0,
         "fringeGreen": 0,
         "hiddenRgb": 0,
+        "boundaryGreen": 0,
         "removedComponents": 0,
         "staleAllowlist": 0
       }
@@ -64,6 +67,7 @@
         "opaqueGreen": 0,
         "fringeGreen": 0,
         "hiddenRgb": 0,
+        "boundaryGreen": 0,
         "removedComponents": 0,
         "staleAllowlist": 0
       }
@@ -88,6 +92,7 @@
         "opaqueGreen": 0,
         "fringeGreen": 0,
         "hiddenRgb": 0,
+        "boundaryGreen": 0,
         "removedComponents": 0,
         "staleAllowlist": 0
       }
@@ -112,6 +117,7 @@
         "opaqueGreen": 0,
         "fringeGreen": 0,
         "hiddenRgb": 0,
+        "boundaryGreen": 0,
         "removedComponents": 0,
         "staleAllowlist": 0
       }
@@ -136,6 +142,7 @@
         "opaqueGreen": 0,
         "fringeGreen": 0,
         "hiddenRgb": 0,
+        "boundaryGreen": 0,
         "removedComponents": 0,
         "staleAllowlist": 0
       }
@@ -160,6 +167,7 @@
         "opaqueGreen": 0,
         "fringeGreen": 0,
         "hiddenRgb": 0,
+        "boundaryGreen": 0,
         "removedComponents": 0,
         "staleAllowlist": 0
       }
@@ -184,6 +192,7 @@
         "opaqueGreen": 0,
         "fringeGreen": 0,
         "hiddenRgb": 0,
+        "boundaryGreen": 0,
         "removedComponents": 0,
         "staleAllowlist": 0
       }
@@ -208,6 +217,7 @@
         "opaqueGreen": 0,
         "fringeGreen": 0,
         "hiddenRgb": 0,
+        "boundaryGreen": 0,
         "removedComponents": 0,
         "staleAllowlist": 0
       }
@@ -232,6 +242,7 @@
         "opaqueGreen": 0,
         "fringeGreen": 0,
         "hiddenRgb": 0,
+        "boundaryGreen": 0,
         "removedComponents": 0,
         "staleAllowlist": 0
       }
@@ -256,6 +267,7 @@
         "opaqueGreen": 0,
         "fringeGreen": 0,
         "hiddenRgb": 0,
+        "boundaryGreen": 0,
         "removedComponents": 0,
         "staleAllowlist": 0
       }
@@ -280,6 +292,7 @@
         "opaqueGreen": 0,
         "fringeGreen": 0,
         "hiddenRgb": 0,
+        "boundaryGreen": 0,
         "removedComponents": 0,
         "staleAllowlist": 0
       }
@@ -304,6 +317,7 @@
         "opaqueGreen": 0,
         "fringeGreen": 0,
         "hiddenRgb": 0,
+        "boundaryGreen": 0,
         "removedComponents": 0,
         "staleAllowlist": 0
       }
@@ -328,6 +342,7 @@
         "opaqueGreen": 0,
         "fringeGreen": 0,
         "hiddenRgb": 0,
+        "boundaryGreen": 0,
         "removedComponents": 0,
         "staleAllowlist": 0
       }
@@ -352,6 +367,7 @@
         "opaqueGreen": 0,
         "fringeGreen": 0,
         "hiddenRgb": 0,
+        "boundaryGreen": 0,
         "removedComponents": 0,
         "staleAllowlist": 0
       }
@@ -376,6 +392,7 @@
         "opaqueGreen": 0,
         "fringeGreen": 0,
         "hiddenRgb": 0,
+        "boundaryGreen": 0,
         "removedComponents": 0,
         "staleAllowlist": 0
       }
@@ -400,6 +417,7 @@
         "opaqueGreen": 0,
         "fringeGreen": 0,
         "hiddenRgb": 0,
+        "boundaryGreen": 0,
         "removedComponents": 0,
         "staleAllowlist": 0
       }
@@ -424,6 +442,7 @@
         "opaqueGreen": 0,
         "fringeGreen": 0,
         "hiddenRgb": 0,
+        "boundaryGreen": 0,
         "removedComponents": 0,
         "staleAllowlist": 0
       }
@@ -448,6 +467,7 @@
         "opaqueGreen": 0,
         "fringeGreen": 0,
         "hiddenRgb": 0,
+        "boundaryGreen": 0,
         "removedComponents": 0,
         "staleAllowlist": 0
       }
@@ -472,6 +492,7 @@
         "opaqueGreen": 0,
         "fringeGreen": 0,
         "hiddenRgb": 0,
+        "boundaryGreen": 0,
         "removedComponents": 0,
         "staleAllowlist": 0
       }
@@ -496,6 +517,7 @@
         "opaqueGreen": 0,
         "fringeGreen": 0,
         "hiddenRgb": 0,
+        "boundaryGreen": 0,
         "removedComponents": 0,
         "staleAllowlist": 0
       }
@@ -520,6 +542,7 @@
         "opaqueGreen": 0,
         "fringeGreen": 0,
         "hiddenRgb": 0,
+        "boundaryGreen": 0,
         "removedComponents": 0,
         "staleAllowlist": 0
       }
@@ -544,6 +567,7 @@
         "opaqueGreen": 0,
         "fringeGreen": 0,
         "hiddenRgb": 0,
+        "boundaryGreen": 0,
         "removedComponents": 0,
         "staleAllowlist": 0
       }
@@ -568,6 +592,7 @@
         "opaqueGreen": 0,
         "fringeGreen": 0,
         "hiddenRgb": 0,
+        "boundaryGreen": 0,
         "removedComponents": 0,
         "staleAllowlist": 0
       }

@@ -1,14 +1,12 @@
-import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
+import { PROVENANCE_HASH_SCHEME, provenanceSha256 } from './provenance_hash.mjs';
 
 const rootArgument = process.argv.find((argument) => argument.startsWith('--root='))?.slice('--root='.length);
 const root = resolve(rootArgument || process.cwd());
 const manualPath = resolve(root, 'docs/analysis/COMPANION_MOTION_MANUAL_OBSERVATIONS.json');
 const previewManifestPath = resolve(root, 'art_sources/combat/task9_companions/preview_manifest.json');
 const assemblyRecipePath = resolve(root, 'art_sources/combat/task9_companions/assembly_recipe.json');
-
-const sha256 = (buffer) => createHash('sha256').update(buffer).digest('hex');
 
 function requireFreshReview(condition, detail) {
   if (!condition) throw new Error(`fresh manual review required: ${detail}`);
@@ -39,11 +37,13 @@ if (manual.companions.length !== 20 || previewManifest.sheets.length !== 20) {
   throw new Error('Task 9 evidence relinking requires exactly 20 companion records.');
 }
 
-requireFreshReview(manual.previewManifestSha256 === sha256(previewBuffer), 'preview manifest hash changed');
-requireFreshReview(manual.assemblyRecipeSha256 === sha256(assemblyBuffer), 'assembly recipe hash changed');
+requireFreshReview(manual.previewManifestSha256 === await provenanceSha256(previewManifestPath), 'preview manifest hash changed');
+requireFreshReview(manual.assemblyRecipeSha256 === await provenanceSha256(assemblyRecipePath), 'assembly recipe hash changed');
+requireFreshReview(manual.hashScheme === PROVENANCE_HASH_SCHEME, 'manual evidence hash scheme changed');
+requireFreshReview(assemblyRecipe.hashScheme === PROVENANCE_HASH_SCHEME, 'assembly recipe hash scheme changed');
 requireFreshReview(manual.contactPath === previewManifest.contactPath, 'contact sheet path changed');
 requireFreshReview(manual.contactSha256 === previewManifest.contactSha256, 'contact sheet hash changed');
-requireFreshReview(manual.contactSha256 === sha256(await readFile(repoPath(manual.contactPath))), 'contact sheet content changed');
+requireFreshReview(manual.contactSha256 === await provenanceSha256(repoPath(manual.contactPath)), 'contact sheet content changed');
 
 const previewByKey = new Map(previewManifest.sheets.map((sheet) => [sheet.sheetKey, sheet]));
 for (const companion of manual.companions) {
@@ -62,8 +62,8 @@ for (const companion of manual.companions) {
   const rowsByMotion = new Map(preview.rows.map((row) => [row.motionKey, row]));
   requireFreshReview(companion.previewSha256 === preview.previewSha256, `${companion.sheetKey} preview hash changed`);
   requireFreshReview(companion.runtimeSha256 === preview.runtimeSha256, `${companion.sheetKey} runtime hash changed`);
-  requireFreshReview(preview.previewSha256 === sha256(await readFile(repoPath(preview.previewPath))), `${companion.sheetKey} preview content changed`);
-  requireFreshReview(preview.runtimeSha256 === sha256(await readFile(repoPath(preview.runtimePath))), `${companion.sheetKey} runtime content changed`);
+  requireFreshReview(preview.previewSha256 === await provenanceSha256(repoPath(preview.previewPath)), `${companion.sheetKey} preview content changed`);
+  requireFreshReview(preview.runtimeSha256 === await provenanceSha256(repoPath(preview.runtimePath)), `${companion.sheetKey} runtime content changed`);
   for (const skill of companion.skills) {
     const row = rowsByMotion.get(skill.motionKey);
     if (!row) {

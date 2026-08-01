@@ -7,6 +7,7 @@ import { SECRET_ENEMIES } from '../js/data/secretEnemies.js';
 import { ENEMY_SPRITE_KEYS } from '../js/ui/combat/combatUiAssets.js';
 import { chromaArtifactStats, readPng } from './audit_combat_sprites.mjs';
 import { validateBossMotionSourceBindings } from './boss_motion_source_contract.mjs';
+import { PROVENANCE_HASH_SCHEME, provenanceSha256 } from './provenance_hash.mjs';
 
 const ROOT = path.resolve(process.argv.find(arg => arg.startsWith('--root='))?.slice(7) || process.cwd());
 const ART = 'art_sources/combat/task10_bosses';
@@ -36,7 +37,7 @@ function readJson(relative) {
 }
 
 function sha256(filePath) {
-  return createHash('sha256').update(fs.readFileSync(filePath)).digest('hex');
+  return provenanceSha256(filePath);
 }
 
 function exactSet(actual, expected, label) {
@@ -96,6 +97,7 @@ function validateSourceBindings(recipe, bossIds) {
 }
 
 function validateProvenance(provenance, recipe, bossIds) {
+  invariant(provenance.hashScheme === PROVENANCE_HASH_SCHEME, 'generation provenance hash scheme mismatch');
   invariant(provenance.version === 1 && provenance.tool === 'built-in image_gen', 'generation provenance header mismatch');
   invariant(provenance.mode.includes('no CLI/API fallback'), 'generation provenance must reject CLI/API fallback');
   exactSet(provenance.generations.map(item => item.sheetKey), bossIds, 'generation provenance');
@@ -159,7 +161,11 @@ function validateRuntime(recipe, bossIds) {
     invariant(sha256(runtimePath) === target.fileSha256, `${bossId} runtime hash mismatch`);
     const image = readPng(runtimePath);
     invariant(image.width === 1536 && image.height === 2048 && image.bitDepth === 8 && image.colorType === 6 && image.pixels, `${bossId} must be 1536x2048 RGBA`);
-    const chroma = chromaArtifactStats(image, { cols: 6, rows: 8 });
+    const chroma = chromaArtifactStats(image, {
+      cols: 6,
+      rows: 8,
+      strictBoundary: bossId === 'boss_feral_dog_alpha' || bossId === 'boss_chef_nemesis',
+    });
     for (const [key, value] of Object.entries(chroma)) invariant(value === 0, `${bossId} ${key} must be zero, got ${value}`);
     for (let row = 0; row < 8; row += 1) {
       const hashes = [];
@@ -176,6 +182,7 @@ function validateRuntime(recipe, bossIds) {
 }
 
 function validateManualEvidence(evidence, bossIds) {
+  invariant(evidence.hashScheme === PROVENANCE_HASH_SCHEME, 'manual evidence hash scheme mismatch');
   invariant(evidence.evidenceType === 'human-authored full-resolution visual observation', 'manual evidence type mismatch');
   invariant(JSON.stringify(evidence.reviewContract.semanticRows) === JSON.stringify(REVIEWED_ROWS), 'manual row contract mismatch');
   exactSet(evidence.reviews.map(item => item.sheetKey), bossIds, 'manual reviews');
@@ -192,6 +199,7 @@ function main() {
   const bossIds = Object.values(SECRET_ENEMIES).filter(enemy => enemy.isBoss).map(enemy => enemy.id);
   invariant(bossIds.length === 21, `expected 21 bosses, got ${bossIds.length}`);
   const recipe = readJson(`${ART}/assembly_recipe.json`);
+  invariant(recipe.hashScheme === PROVENANCE_HASH_SCHEME, 'recipe provenance hash scheme mismatch');
   const provenance = readJson(`${ART}/generation_provenance.json`);
   const evidencePath = fixedFile(`${ART}/manual_review_evidence.json`);
   const evidence = JSON.parse(fs.readFileSync(evidencePath, 'utf8'));

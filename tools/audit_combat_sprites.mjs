@@ -17,6 +17,9 @@ const CHROMA_HUE_MIN = 78;
 const CHROMA_HUE_MAX = 162;
 const CHROMA_SATURATION_MIN = 0.72;
 const CHROMA_VALUE_MIN = 150;
+const BOUNDARY_GREEN_SATURATION_MIN = 0.35;
+const BOUNDARY_GREEN_VALUE_MIN = 80;
+const STRICT_BOUNDARY_SHEETS = new Set(['boss_feral_dog_alpha', 'boss_chef_nemesis']);
 const ISOLATED_CHROMA_COMPONENT_AREA = 12;
 const ALLOWLIST_VERSION = 1;
 const ALLOWLIST_REQUIRED_FIELDS = new Set(['sheetKey', 'path', 'row', 'col', 'bbox', 'pixelCount', 'fingerprint', 'reason']);
@@ -220,6 +223,23 @@ function isFrameEdge(image, x, y) {
   return x === 0 || y === 0 || x === image.width - 1 || y === image.height - 1;
 }
 
+function isBoundaryGreen(image, x, y) {
+  const pixel = image.pixels.subarray(pixelOffset(image, x, y), pixelOffset(image, x, y) + 4);
+  if (pixel[3] === 0) return false;
+  const { hue, saturation, value } = hueAndSaturation(pixel[0], pixel[1], pixel[2]);
+  if (hue < CHROMA_HUE_MIN || hue > CHROMA_HUE_MAX
+      || saturation < BOUNDARY_GREEN_SATURATION_MIN || value < BOUNDARY_GREEN_VALUE_MIN) return false;
+  let transparent = false;
+  for (let ny = Math.max(0, y - 2); ny <= Math.min(image.height - 1, y + 2); ny += 1) {
+    for (let nx = Math.max(0, x - 2); nx <= Math.min(image.width - 1, x + 2); nx += 1) {
+      if (nx === x && ny === y) continue;
+      const neighbor = image.pixels.subarray(pixelOffset(image, nx, ny), pixelOffset(image, nx, ny) + 4);
+      if (Math.abs(nx - x) <= 1 && Math.abs(ny - y) <= 1) transparent ||= neighbor[3] === 0;
+    }
+  }
+  return transparent;
+}
+
 function componentDescriptor(image, component) {
   const xs = component.map(index => index % image.width);
   const ys = component.map(index => Math.floor(index / image.width));
@@ -240,7 +260,7 @@ function sameComponent(component, spec) {
     && component.bbox.every((value, index) => value === spec.bbox[index]);
 }
 
-function chromaFrameArtifactStats(image, allowedComponents = []) {
+function chromaFrameArtifactStats(image, allowedComponents = [], strictBoundary = false) {
   const opaque = new Uint8Array(image.width * image.height);
   let hiddenRgb = 0;
   for (let y = 0; y < image.height; y += 1) {
@@ -267,10 +287,12 @@ function chromaFrameArtifactStats(image, allowedComponents = []) {
   }
   let opaqueGreen = 0;
   let fringeGreen = 0;
+  let boundaryGreen = 0;
   for (let y = 0; y < image.height; y += 1) {
     for (let x = 0; x < image.width; x += 1) {
       const index = y * image.width + x;
       const pixel = image.pixels.subarray(pixelOffset(image, x, y), pixelOffset(image, x, y) + 4);
+      if (strictBoundary && isBoundaryGreen(image, x, y)) boundaryGreen += 1;
       if (edge[index]) {
         opaqueGreen += 1;
       } else if (isGreenScreenPixel(pixel) && (nearbyEdgeChroma(image, x, y, edge) || isFrameEdge(image, x, y))) {
@@ -306,7 +328,7 @@ function chromaFrameArtifactStats(image, allowedComponents = []) {
       else matchedSpecs.add(match);
     }
   }
-  return { opaqueGreen, fringeGreen, hiddenRgb, removedComponents, staleAllowlist: allowedComponents.length - matchedSpecs.size };
+  return { opaqueGreen, fringeGreen, hiddenRgb, boundaryGreen, removedComponents, staleAllowlist: allowedComponents.length - matchedSpecs.size };
 }
 
 function cropImage(image, x0, y0, width, height) {
@@ -348,12 +370,13 @@ export function chromaArtifactStats(image, grid = { cols: 1, rows: 1 }) {
   const frameWidth = image.width / grid.cols;
   const frameHeight = image.height / grid.rows;
   const componentSpecs = grid.componentSpecs ?? new Map();
-  const totals = { opaqueGreen: 0, fringeGreen: 0, hiddenRgb: 0, removedComponents: 0, staleAllowlist: 0 };
+  const totals = { opaqueGreen: 0, fringeGreen: 0, hiddenRgb: 0, boundaryGreen: 0, removedComponents: 0, staleAllowlist: 0 };
   for (let row = 0; row < grid.rows; row += 1) {
     for (let col = 0; col < grid.cols; col += 1) {
       const stats = chromaFrameArtifactStats(
         cropImage(image, col * frameWidth, row * frameHeight, frameWidth, frameHeight),
         componentSpecs.get(`${row}:${col}`) ?? [],
+        grid.strictBoundary === true,
       );
       for (const [key, value] of Object.entries(stats)) totals[key] += value;
     }
@@ -458,6 +481,7 @@ function analyzePixels(image, sheetKey, sheet, frameW, frameH) {
     whiteOpaquePixels,
     ...chromaArtifactStats(image, {
       ...sheet,
+      strictBoundary: STRICT_BOUNDARY_SHEETS.has(sheetKey),
       componentSpecs: new Map(
         Array.from({ length: sheet.rows * sheet.cols }, (_, index) => {
           const row = Math.floor(index / sheet.cols);

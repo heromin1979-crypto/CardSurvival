@@ -24,6 +24,10 @@ function bossIds() {
 }
 
 describe('named boss motion asset contract', () => {
+  it('declares the canonical provenance hash scheme explicitly', () => {
+    expect(RECIPE.hashScheme).toBe('combat-provenance-sha256-v2');
+  });
+
   it('binds every boss to its own exact canonical manifest and recipe path', () => {
     expect(validateBossMotionSourceBindings({
       manifest: COMBAT_MOTION_MANIFEST,

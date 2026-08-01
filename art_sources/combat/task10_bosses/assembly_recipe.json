@@ -1,13 +1,14 @@
 {
   "version": 1,
+  "hashScheme": "combat-provenance-sha256-v2",
   "mode": "built-in image_gen chroma-key sources; no CLI/API fallback",
   "assemblyScript": "/tools/build_boss_motion_sheets.py",
-  "assemblyScriptSha256": "08de67ef3fb62adb89659fa2081fa7449516ca3391370f3feeb94f76518d0f26",
+  "assemblyScriptSha256": "0cd5b41bec25b8f188e114ffa303662d7824719de9beb66fde86b4d386f3befd",
   "detachedComponentContract": {
     "path": "/art_sources/combat/task10_bosses/detached_component_contract.json",
-    "sha256": "68495c2a7d364dbf0cd2698c12e55cd3f8d8c844afbf858a729fb1b6d1f24f0b",
+    "sha256": "b4d88013072763f4c4730cd2a9c6a0c0829b47dc179e5ea5a44d98a8486d3d40",
     "selectionPath": "/art_sources/combat/task10_bosses/detached_component_selection.json",
-    "selectionSha256": "34eda7cf2352c1079381147945d6ca7dabdc4b6bc433410122a148bb03c79f1d"
+    "selectionSha256": "e0b00a3e7aed77a5c8137a11fdd9813ac54420b4461b3b0e17af3d5c0901c82f"
   },
   "rowContract": [
     "idle",
@@ -45843,10 +45844,10 @@
       "path": "/assets/images/combat/spritesheets/enemies/boss_feral_dog_alpha_sheet.png",
       "width": 1536,
       "height": 2048,
-      "fileSha256": "0b3b04511d6dd1f0abf15bd283688e238a0dc9131816d30a0575df44b6b5e0f1",
-      "pixelSha256": "2e6baf5d897a64129741627049cb192d990b538bd2a56b9a9d6a93ccd47bb04f",
+      "fileSha256": "ad660317bd69b13e682d5661ef6f643da8636c0c26a713d41f3aa0bc624b90c8",
+      "pixelSha256": "275853be4389b9555443936d1e492a000994bf435c5f7dc6f929456d29af7d37",
       "sourceAlphaPath": "/art_sources/combat/task10_bosses/boss_feral_dog_alpha_alpha.png",
-      "sourceAlphaSha256": "df5b08af33e500445b0ec99eba9f91ab798344b8d73cc5a4fce72594445558c2",
+      "sourceAlphaSha256": "923ff78ddf0de667dd850938be586c8199452178b68dbb3c126e41d91970027a",
       "sourceChromaPath": "/art_sources/combat/task10_bosses/boss_feral_dog_alpha_chroma.png",
       "sourceChromaSha256": "f8c063a55d88cd1159972f07d7ff7b51f8bd90b654cd4518a2460d3b8069dcda",
       "rowSourceOverrides": {},
@@ -47207,7 +47208,7 @@
               221,
               244
             ],
-            "pixelSha256": "6780347a380368a6d14867ac1b53deaef70737396944f6781be291d04997ba5e",
+            "pixelSha256": "464689f55341ef23934d25fefd21d0c243a7c3573e21b94c68cc98e239aa73c0",
             "components": [
               {
                 "bbox": [
@@ -47216,18 +47217,8 @@
                   221,
                   244
                 ],
-                "area": 13907,
-                "maskSha256": "9e4f970e11bd76e13a1a9dd0bb2fda76ab802f9c0bc0c1ba9a229ec51147128f"
-              },
-              {
-                "bbox": [
-                  146,
-                  121,
-                  147,
-                  122
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
+                "area": 14190,
+                "maskSha256": "0a164cc2e2cb5ee6f67ccc3f494389a1c728837eae24f063b16af5c4cdd57476"
               },
               {
                 "bbox": [
@@ -47258,16 +47249,6 @@
                 ],
                 "area": 1,
                 "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  85,
-                  225,
-                  86,
-                  226
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
               }
             ]
           },
@@ -47280,7 +47261,7 @@
               221,
               244
             ],
-            "pixelSha256": "a64ac97e1d43c809e6f0381568f3485a1149ba7389db0313ca81b49097c39fee",
+            "pixelSha256": "f9de3315e121221d24ef63e01260851e2c1bde9c8133acbdbad0ff77229490a7",
             "components": [
               {
                 "bbox": [
@@ -47289,8 +47270,8 @@
                   221,
                   244
                 ],
-                "area": 14064,
-                "maskSha256": "216187b710f2488b8193c47e0f179a2b50e2a93e18acca16a66ba779cd4b5179"
+                "area": 14306,
+                "maskSha256": "f681e441eb9387fcd0b6c071a4636518fccddcae568499ef8cf0dc6b76811bff"
               },
               {
                 "bbox": [
@@ -47304,16 +47285,6 @@
               },
               {
                 "bbox": [
-                  77,
-                  87,
-                  78,
-                  88
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
                   171,
                   133,
                   172,
@@ -47324,50 +47295,10 @@
               },
               {
                 "bbox": [
-                  59,
-                  139,
-                  60,
-                  140
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  161,
-                  181,
-                  162,
-                  182
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
                   119,
                   186,
                   120,
                   187
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  144,
-                  204,
-                  145,
-                  205
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  183,
-                  204,
-                  184,
-                  205
                 ],
                 "area": 1,
                 "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
@@ -47383,7 +47314,7 @@
               222,
               244
             ],
-            "pixelSha256": "7df733a0ccb7af2de069a9b0c2327e23cda4359798c5135dfe388401f3ad0375",
+            "pixelSha256": "a71ee8f1dc1d0c449aec163973ce1a2d7d2ff7a5f83f358880d512e56dccecc1",
             "components": [
               {
                 "bbox": [
@@ -47392,18 +47323,8 @@
                   222,
                   244
                 ],
-                "area": 13994,
-                "maskSha256": "64acf5753bd69ccb2b1a7b7907fb00374c785ec634e444eb550f8284ae0fd096"
-              },
-              {
-                "bbox": [
-                  58,
-                  90,
-                  59,
-                  91
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
+                "area": 14229,
+                "maskSha256": "1d3b3820ca8a56184b5345d9627cdc100e9e0fa4c4b925bdd6e6e1b3a6fc2cb6"
               },
               {
                 "bbox": [
@@ -47436,7 +47357,7 @@
               220,
               244
             ],
-            "pixelSha256": "7faff838739d2fa1b54c49892b59f235c936386fcb26f02ee97cd4ea21128737",
+            "pixelSha256": "b4b11b44b6c5916a6c05257b25521cc10d9342fdf0b4669bc44224a857a65737",
             "components": [
               {
                 "bbox": [
@@ -47445,8 +47366,8 @@
                   220,
                   244
                 ],
-                "area": 13951,
-                "maskSha256": "bf6da250deba581b83ad7ab028821a7053f5f99745f1bc1424a5f0ad85b1ceb8"
+                "area": 14216,
+                "maskSha256": "92a776793b3f368ebc6a12bafaa391b1b83d326ee4f2d1a5e9938cc4b01d965f"
               },
               {
                 "bbox": [
@@ -47454,26 +47375,6 @@
                   112,
                   128,
                   113
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  175,
-                  138,
-                  176,
-                  139
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  100,
-                  182,
-                  101,
-                  183
                 ],
                 "area": 1,
                 "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
@@ -47509,7 +47410,7 @@
               225,
               244
             ],
-            "pixelSha256": "f85aa230c1efd28231925110e402e7952b509537f2c93aea1e9451d608277d05",
+            "pixelSha256": "c14ac9f876d10b9a71d0ad43cae5593428c5561186a3c4113faf4784198e6f01",
             "components": [
               {
                 "bbox": [
@@ -47518,28 +47419,8 @@
                   225,
                   244
                 ],
-                "area": 13967,
-                "maskSha256": "64c15643bfb7cca1e343d859ea4e807bbbc1734338ff20bd9d4bcd12c9b86955"
-              },
-              {
-                "bbox": [
-                  72,
-                  94,
-                  73,
-                  95
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  162,
-                  137,
-                  163,
-                  138
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
+                "area": 14186,
+                "maskSha256": "121397b5ea9884739b31f0ef5c6acd30e0082de0e046ec0e2bf460e2c7543bc4"
               },
               {
                 "bbox": [
@@ -47547,16 +47428,6 @@
                   143,
                   57,
                   144
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  206,
-                  180,
-                  207,
-                  181
                 ],
                 "area": 1,
                 "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
@@ -47573,30 +47444,10 @@
               },
               {
                 "bbox": [
-                  200,
-                  195,
-                  201,
-                  196
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
                   144,
                   208,
                   145,
                   209
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  70,
-                  228,
-                  71,
-                  229
                 ],
                 "area": 1,
                 "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
@@ -47612,7 +47463,7 @@
               222,
               244
             ],
-            "pixelSha256": "5a00266e2016676a3cc85e102b41b7668eb8accc75d49df97fc05e1fc505af3d",
+            "pixelSha256": "19ffe46d719a35c666352fa78abc04503700f75ec293eadd58f40fc37157638c",
             "components": [
               {
                 "bbox": [
@@ -47621,8 +47472,8 @@
                   222,
                   244
                 ],
-                "area": 14644,
-                "maskSha256": "ea522acecd5efcfa9b6d733a07c55324fcb310fc4fa2de7eff56c3d1e00fadda"
+                "area": 14853,
+                "maskSha256": "a5c947831a3b5751085ccc175bdd9f0e4ea0cddd97e0540db175c1499d18e728"
               },
               {
                 "bbox": [
@@ -47655,7 +47506,7 @@
               227,
               244
             ],
-            "pixelSha256": "a625fd363abffa8b480a06e374e500353a797a8464b8cebbc5f326b37b4c246b",
+            "pixelSha256": "5d0d57388ebe63cb3345d4112231aaa72dbeee0a68ca26d521a9912bd41d0ef5",
             "components": [
               {
                 "bbox": [
@@ -47664,28 +47515,8 @@
                   227,
                   244
                 ],
-                "area": 12445,
-                "maskSha256": "c0f982f173b72335cfe8a01463f8e7dad11708593b2f400742ff3813b554a3f9"
-              },
-              {
-                "bbox": [
-                  86,
-                  133,
-                  87,
-                  134
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  77,
-                  137,
-                  78,
-                  138
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
+                "area": 12648,
+                "maskSha256": "d801e6e75108849e4a609d8b0b0747cd93af0b5a9b31350498c9e27ee3d51c50"
               },
               {
                 "bbox": [
@@ -47693,26 +47524,6 @@
                   138,
                   97,
                   139
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  43,
-                  160,
-                  44,
-                  161
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  176,
-                  208,
-                  177,
-                  209
                 ],
                 "area": 1,
                 "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
@@ -47738,7 +47549,7 @@
               235,
               244
             ],
-            "pixelSha256": "3132b65bb97a810f56dc7ce4a98320db61184ceb7fc52773853e68e816986df7",
+            "pixelSha256": "a318b4ca5cc893cd582af3a39226b46513986c40d3dcc00aacb93701eb57516a",
             "components": [
               {
                 "bbox": [
@@ -47747,28 +47558,8 @@
                   235,
                   244
                 ],
-                "area": 13919,
-                "maskSha256": "8c54dbf99a8ab17ab82335a05711deda6900fd1b2084a886b9e9e97572c9e0b9"
-              },
-              {
-                "bbox": [
-                  207,
-                  163,
-                  208,
-                  164
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  62,
-                  182,
-                  63,
-                  183
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
+                "area": 14141,
+                "maskSha256": "482635ce97db3eccf002b308ba5878346c1eb9cef4c54480bac3afe0e459b49c"
               },
               {
                 "bbox": [
@@ -47776,16 +47567,6 @@
                   186,
                   58,
                   187
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  199,
-                  198,
-                  200,
-                  199
                 ],
                 "area": 1,
                 "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
@@ -47821,7 +47602,7 @@
               228,
               244
             ],
-            "pixelSha256": "564b432ed1d661788ef422de4bf65b142245534ace7631f70f0c1d2a1d3286b2",
+            "pixelSha256": "03b7d35f81430f22670a82059872de3458e4ee33bf8d32b5dfdc157317e915f1",
             "components": [
               {
                 "bbox": [
@@ -47830,18 +47611,8 @@
                   228,
                   244
                 ],
-                "area": 13110,
-                "maskSha256": "b6dfd9694334880438b399308537ba07de1564f362403be78e2c1ecaf90ed6db"
-              },
-              {
-                "bbox": [
-                  35,
-                  130,
-                  36,
-                  131
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
+                "area": 13315,
+                "maskSha256": "8b43c53df209d31d01b9d822ba08d05f83871e73e55cb5fcf1225cee7a121570"
               },
               {
                 "bbox": [
@@ -47874,7 +47645,7 @@
               234,
               244
             ],
-            "pixelSha256": "6f72c46cd9df4dbf99002e9c0b0e422ab3f92987965db655598750724a4ef499",
+            "pixelSha256": "29fed69645c4b28f2fb0512665b081b06f2bcf7995ca89e98e450c3ad1e3888a",
             "components": [
               {
                 "bbox": [
@@ -47883,8 +47654,8 @@
                   234,
                   244
                 ],
-                "area": 13696,
-                "maskSha256": "d755360b33538eb2cc5a3f17688a68d8f023a30e43693813cc689f937c7c5dea"
+                "area": 13896,
+                "maskSha256": "ef385da33d1fa40e435714be74095c790a274c9cc8933b2b42daa86efd9779d9"
               },
               {
                 "bbox": [
@@ -47898,20 +47669,10 @@
               },
               {
                 "bbox": [
-                  66,
-                  187,
-                  67,
-                  188
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  66,
-                  197,
-                  67,
-                  198
+                  133,
+                  154,
+                  134,
+                  155
                 ],
                 "area": 1,
                 "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
@@ -47935,6 +47696,16 @@
                 ],
                 "area": 1,
                 "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
+              },
+              {
+                "bbox": [
+                  111,
+                  238,
+                  112,
+                  239
+                ],
+                "area": 1,
+                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
               }
             ]
           },
@@ -47947,7 +47718,7 @@
               231,
               244
             ],
-            "pixelSha256": "e0872ae0ce81de2b9e2f5bb5cbf93a832968ede6972f72c3dfefd13f4af750b7",
+            "pixelSha256": "b7df13342ea37ea3fec7a8deb9916eaca3f7cd64d677bd2ee7db90e60999ecff",
             "components": [
               {
                 "bbox": [
@@ -47956,58 +47727,8 @@
                   231,
                   244
                 ],
-                "area": 13787,
-                "maskSha256": "2e4a782ce858d98db36d768a38416a9db45dfc90b9b210882822e5d179ae09c6"
-              },
-              {
-                "bbox": [
-                  87,
-                  142,
-                  88,
-                  143
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  101,
-                  143,
-                  102,
-                  144
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  34,
-                  166,
-                  35,
-                  167
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  202,
-                  195,
-                  203,
-                  196
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  168,
-                  200,
-                  169,
-                  201
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
+                "area": 14001,
+                "maskSha256": "9ecb5e28fdb08e1606b223f30a2583d39f977237b46847fa0ae9f758de462832"
               },
               {
                 "bbox": [
@@ -48030,7 +47751,7 @@
               233,
               244
             ],
-            "pixelSha256": "e6e5a7a5cf4bc651c4b73361fd7c0d05fe412259e3e8c14da0225cfe323866a6",
+            "pixelSha256": "bc802889fd740fe0096c13b948cdf3ec33dd10622b71255f3078b12aec5d399e",
             "components": [
               {
                 "bbox": [
@@ -48039,18 +47760,8 @@
                   233,
                   244
                 ],
-                "area": 13686,
-                "maskSha256": "78b7f05295a22ab85ed9cbab3fd3e3627ae913364c9b0ca4efd952f0647b5f0b"
-              },
-              {
-                "bbox": [
-                  227,
-                  187,
-                  228,
-                  188
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
+                "area": 13898,
+                "maskSha256": "22211e20b3c3cb6d7b04ede2a398d4f3dc01e28656f0060e50780f88de22df76"
               },
               {
                 "bbox": [
@@ -48071,26 +47782,6 @@
                 ],
                 "area": 1,
                 "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  152,
-                  223,
-                  153,
-                  224
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  80,
-                  227,
-                  81,
-                  228
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
               }
             ]
           },
@@ -48101,19 +47792,19 @@
               31,
               81,
               225,
-              243
+              244
             ],
-            "pixelSha256": "2bcd4f5ab2e3d731a3a0ccf0c88b7f07098c3be2be8d1b1417c5668a7d103a10",
+            "pixelSha256": "374121d50ee516c0f3730f5e526b5c6f3c127e2a836f59d5ca8e915340b6634c",
             "components": [
               {
                 "bbox": [
                   31,
                   81,
                   225,
-                  243
+                  244
                 ],
-                "area": 14324,
-                "maskSha256": "9bc85db72bb2bb317f598392903612bbcf5a0fdcb4a862f98cecba1cd939e216"
+                "area": 14575,
+                "maskSha256": "5f474c1479bd8638638a0accf3206700a52cab22e83b4a9079c15f457e8b19e4"
               },
               {
                 "bbox": [
@@ -48137,40 +47828,10 @@
               },
               {
                 "bbox": [
-                  40,
-                  116,
-                  41,
-                  117
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
                   59,
                   165,
                   60,
                   166
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  196,
-                  191,
-                  197,
-                  192
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  214,
-                  191,
-                  215,
-                  192
                 ],
                 "area": 1,
                 "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
@@ -48194,26 +47855,6 @@
                 ],
                 "area": 1,
                 "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  187,
-                  208,
-                  188,
-                  209
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  109,
-                  227,
-                  110,
-                  228
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
               }
             ]
           },
@@ -48226,7 +47867,7 @@
               233,
               244
             ],
-            "pixelSha256": "2ce415fc0aa6b69b497d46e752f41df96652e93cc0f5684ee78ab3b897f54b7e",
+            "pixelSha256": "bc7320d6238d336294a89fbcbc6a64eb048973b27c5399bd7ce7e67d01593128",
             "components": [
               {
                 "bbox": [
@@ -48235,18 +47876,8 @@
                   233,
                   244
                 ],
-                "area": 14221,
-                "maskSha256": "38e42371155a274633122bf80b5197460bb66c742bf3a5ed0f513f3d412ebd22"
-              },
-              {
-                "bbox": [
-                  102,
-                  102,
-                  103,
-                  103
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
+                "area": 14460,
+                "maskSha256": "f2f339221d68e85a937e5368dc72980734092c69266b79a9d73ce2f4d9540992"
               },
               {
                 "bbox": [
@@ -48260,20 +47891,10 @@
               },
               {
                 "bbox": [
-                  69,
-                  152,
-                  70,
-                  153
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  227,
-                  191,
-                  228,
-                  192
+                  174,
+                  194,
+                  175,
+                  195
                 ],
                 "area": 1,
                 "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
@@ -48299,7 +47920,7 @@
               220,
               244
             ],
-            "pixelSha256": "7fea0ed506215fe9df56e65d09d0dae5b3c52a188e462d8ec2804e53d0c1ad6f",
+            "pixelSha256": "bd1ff43d9b4e019c15e078b53b47b4f3c209cdd6b9ce68e8629cd4cf300d3f5f",
             "components": [
               {
                 "bbox": [
@@ -48308,38 +47929,8 @@
                   220,
                   244
                 ],
-                "area": 13076,
-                "maskSha256": "cdd33de9dd7d7f10db927d79e4f390cd486ed34b53a9a3655e6aef82d6f02a18"
-              },
-              {
-                "bbox": [
-                  141,
-                  113,
-                  142,
-                  114
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  70,
-                  122,
-                  71,
-                  123
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  84,
-                  140,
-                  85,
-                  141
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
+                "area": 13285,
+                "maskSha256": "b470c5eb69a57e544e623a6a80084067de3de8b0ae632b5ba0a1b9fc861d6fed"
               },
               {
                 "bbox": [
@@ -48382,7 +47973,7 @@
               214,
               244
             ],
-            "pixelSha256": "a3e8b49eaeaa2a98e44fd676e65cff5fc5a8a0917a99e167235afed63fc0e289",
+            "pixelSha256": "f880d3627ad6f76d829b7a837ae407b9d52c7a2dd8fdf1177128c1f423ee9660",
             "components": [
               {
                 "bbox": [
@@ -48391,38 +47982,8 @@
                   214,
                   244
                 ],
-                "area": 11959,
-                "maskSha256": "79447440faefb3d0d415f18d90bfa75375d43631d3d9782891b68a33ea1d8e3e"
-              },
-              {
-                "bbox": [
-                  125,
-                  90,
-                  126,
-                  91
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  77,
-                  153,
-                  78,
-                  154
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  169,
-                  176,
-                  170,
-                  177
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
+                "area": 12155,
+                "maskSha256": "d1369a6ddfff14202b9dd592d46086d291d01fd0750b607969c9246c2222b971"
               },
               {
                 "bbox": [
@@ -48430,16 +47991,6 @@
                   195,
                   62,
                   196
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  68,
-                  200,
-                  69,
-                  201
                 ],
                 "area": 1,
                 "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
@@ -48465,7 +48016,7 @@
               215,
               244
             ],
-            "pixelSha256": "4d809006ebd299320b5f8c4856aa5a1a09dc163242a4b33c13440f2fa4ba2b77",
+            "pixelSha256": "1e359488ccfb2311bad0082726f0430e4d6fc8fc458e29de8e0c5bad6daaa81a",
             "components": [
               {
                 "bbox": [
@@ -48474,8 +48025,8 @@
                   215,
                   244
                 ],
-                "area": 12480,
-                "maskSha256": "c70ec36641ed4d2090734383fa0f2c4aea0507f8ecf0813928d3b8f2bfb2876a"
+                "area": 12674,
+                "maskSha256": "5f7558c9d2eaf6a9ffc208485ee8150d6260a25de4cf946d18fc6942821f7aab"
               },
               {
                 "bbox": [
@@ -48499,16 +48050,6 @@
               },
               {
                 "bbox": [
-                  107,
-                  104,
-                  108,
-                  105
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
                   63,
                   131,
                   64,
@@ -48519,30 +48060,10 @@
               },
               {
                 "bbox": [
-                  171,
-                  159,
-                  172,
-                  160
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
                   93,
                   212,
                   94,
                   213
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  154,
-                  225,
-                  155,
-                  226
                 ],
                 "area": 1,
                 "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
@@ -48558,7 +48079,7 @@
               218,
               244
             ],
-            "pixelSha256": "c9bdc478c851afd0dda1e4430f93eab7bf0f728c1995fbebdc0eb971f6a6a1d3",
+            "pixelSha256": "dfbd0270023103a8f1a2a167d3877675c7108933fe420c8aafcbee2f39d22c97",
             "components": [
               {
                 "bbox": [
@@ -48567,8 +48088,8 @@
                   218,
                   244
                 ],
-                "area": 13411,
-                "maskSha256": "bd4ee4f9b5b82654f43e24ab1702548da698dc0ed1e4728308a31b3bf3abf51f"
+                "area": 13645,
+                "maskSha256": "184c5c9825728260ef4a5811c803768b1f5ff8110f2446b6a938bee4f9fd74e0"
               },
               {
                 "bbox": [
@@ -48576,16 +48097,6 @@
                   85,
                   109,
                   86
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  47,
-                  108,
-                  48,
-                  109
                 ],
                 "area": 1,
                 "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
@@ -48631,7 +48142,7 @@
               227,
               244
             ],
-            "pixelSha256": "0134f5521ac818f58a64bf1d7a8cf68e7993b485c3c3b5ede1dc2a9244f31fc3",
+            "pixelSha256": "293fd4edc98a96791fb292824185ab9f657ac647a3fbe9b364f36d89509227cb",
             "components": [
               {
                 "bbox": [
@@ -48640,18 +48151,8 @@
                   227,
                   244
                 ],
-                "area": 14638,
-                "maskSha256": "92e7a46eb11a3328dea00015032d485d4c4848487584ee55f60ea38a9fc8ac56"
-              },
-              {
-                "bbox": [
-                  40,
-                  147,
-                  43,
-                  148
-                ],
-                "area": 3,
-                "maskSha256": "75c8fd04ad916aec3e3d5cb76a452b116b3d4d0912a0a485e9fb8e3d240e210c"
+                "area": 14889,
+                "maskSha256": "f1eb4904cba3bbf54c50a25b3024ca1e25a401285b43098fb41019f9a0f23b9b"
               },
               {
                 "bbox": [
@@ -48672,26 +48173,6 @@
                 ],
                 "area": 1,
                 "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  63,
-                  115,
-                  64,
-                  116
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  122,
-                  199,
-                  123,
-                  200
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
               }
             ]
           },
@@ -48704,7 +48185,7 @@
               224,
               244
             ],
-            "pixelSha256": "5db035078d0cad1b3b6cb0d45ab7dde38fa78e749dce6d5fbf08c829e2f9ea80",
+            "pixelSha256": "affc287ba77a32ed33ba9c87839ed4469a220e823b030c71e4862a19314834b0",
             "components": [
               {
                 "bbox": [
@@ -48713,38 +48194,8 @@
                   224,
                   244
                 ],
-                "area": 15131,
-                "maskSha256": "22d84cb3053936a6e77b3ee4b84a1ee7103327d51fb1aa4b166ee538d7e552c7"
-              },
-              {
-                "bbox": [
-                  61,
-                  104,
-                  62,
-                  105
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  58,
-                  139,
-                  59,
-                  140
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  42,
-                  198,
-                  43,
-                  199
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
+                "area": 15389,
+                "maskSha256": "ad310b7215ab4d062b4249490133e3be56cd9e4859231c9048c278adf2104fd7"
               },
               {
                 "bbox": [
@@ -48767,7 +48218,7 @@
               222,
               244
             ],
-            "pixelSha256": "321f5c0f019e06d02fb6ec1e094017a9a648f153b24b77c9b9d1f71e2dab0fcc",
+            "pixelSha256": "86c0eff651fad5e47cd54086dfe0f7624267998a4bc3e18ece45809049c99a06",
             "components": [
               {
                 "bbox": [
@@ -48776,8 +48227,8 @@
                   222,
                   244
                 ],
-                "area": 15199,
-                "maskSha256": "6128b0c8c98dee269607060fba1c8526e7d91fad80affaac28f0ce83877b5d0a"
+                "area": 15432,
+                "maskSha256": "2c1346dbbd847d381643ba497d9a010572c4180b47dbbe221ecf3ed706541245"
               },
               {
                 "bbox": [
@@ -48785,16 +48236,6 @@
                   69,
                   69,
                   70
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  134,
-                  125,
-                  135,
-                  126
                 ],
                 "area": 1,
                 "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
@@ -48811,20 +48252,20 @@
               },
               {
                 "bbox": [
-                  199,
-                  180,
-                  200,
-                  181
+                  103,
+                  190,
+                  104,
+                  191
                 ],
                 "area": 1,
                 "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
               },
               {
                 "bbox": [
-                  103,
-                  190,
-                  104,
-                  191
+                  121,
+                  203,
+                  122,
+                  204
                 ],
                 "area": 1,
                 "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
@@ -48850,7 +48291,7 @@
               227,
               244
             ],
-            "pixelSha256": "55a72a85ad9c9723e9db7e2c2823df4badbd28441ba47fb180559efac7decfb9",
+            "pixelSha256": "d154d4342b7591c5bcd89d2e52407fc62ed05703b084b34c7aaff4d4d4010931",
             "components": [
               {
                 "bbox": [
@@ -48859,28 +48300,8 @@
                   227,
                   244
                 ],
-                "area": 15425,
-                "maskSha256": "ec1ed179de29ead04b7f0ab79eea064d309a40c2f45636bdf381a1b21ddcae6e"
-              },
-              {
-                "bbox": [
-                  195,
-                  198,
-                  197,
-                  199
-                ],
-                "area": 2,
-                "maskSha256": "9dcf97a184f32623d11a73124ceb99a5709b083721e878a16d78f596718ba7b2"
-              },
-              {
-                "bbox": [
-                  88,
-                  55,
-                  89,
-                  56
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
+                "area": 15704,
+                "maskSha256": "5a0210d377bf96798fe094dd2a81bca1244278d5c64cc75fa50505640afaf40c"
               },
               {
                 "bbox": [
@@ -49003,7 +48424,7 @@
               227,
               244
             ],
-            "pixelSha256": "cc82d707f73070a2f1b02d8aed5decf3732ef91e4da381eecffe2116994e9c7d",
+            "pixelSha256": "d4fc27661d35c2d60052d677cda7e206ad5c928bfd0a9f8a903da7e068240f33",
             "components": [
               {
                 "bbox": [
@@ -49012,8 +48433,8 @@
                   227,
                   244
                 ],
-                "area": 15690,
-                "maskSha256": "0b9a902b8e5c05933b0b4162c6bee495fda93a797911e482e9a5a0c364075406"
+                "area": 15926,
+                "maskSha256": "27920deca560c970615f450d4f41cf69f7e04a5ca86b3557299043921c4d8997"
               },
               {
                 "bbox": [
@@ -49037,40 +48458,10 @@
               },
               {
                 "bbox": [
-                  57,
-                  138,
-                  58,
-                  139
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  52,
-                  144,
-                  53,
-                  145
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
                   129,
                   194,
                   130,
                   195
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  217,
-                  195,
-                  218,
-                  196
                 ],
                 "area": 1,
                 "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
@@ -49097,30 +48488,10 @@
               },
               {
                 "bbox": [
-                  146,
-                  212,
-                  147,
-                  213
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
                   193,
                   215,
                   194,
                   216
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  57,
-                  225,
-                  58,
-                  226
                 ],
                 "area": 1,
                 "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
@@ -49136,7 +48507,7 @@
               226,
               244
             ],
-            "pixelSha256": "a306e3e121576c04e7ab52b40107eea0450c110432288d2ffd347c4218de3fd6",
+            "pixelSha256": "1b24a551ae08df2502458a535d6b866265388d69428a2c89be540ba364ed0ca9",
             "components": [
               {
                 "bbox": [
@@ -49145,8 +48516,8 @@
                   226,
                   244
                 ],
-                "area": 15537,
-                "maskSha256": "8ae1dddad0a368620e52f65e83a38caac363b5cb6a6feb751000336cc2c06c59"
+                "area": 15787,
+                "maskSha256": "0fad29948530736c25388b5bf400b38f6842fc2dc887cc49b4d11b68bb866cee"
               },
               {
                 "bbox": [
@@ -49164,16 +48535,6 @@
                   64,
                   66,
                   65
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  126,
-                  111,
-                  127,
-                  112
                 ],
                 "area": 1,
                 "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
@@ -49200,16 +48561,6 @@
               },
               {
                 "bbox": [
-                  188,
-                  212,
-                  189,
-                  213
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
                   129,
                   232,
                   130,
@@ -49229,7 +48580,7 @@
               205,
               244
             ],
-            "pixelSha256": "ace924dbf0dc7eb61616933578cef7acd08e38eb208ebf29dcdec6174d83cb10",
+            "pixelSha256": "257464e4bc8939246fe2b80b6bf22b3014d55f031c17a9b1b9031952a7270c80",
             "components": [
               {
                 "bbox": [
@@ -49238,18 +48589,8 @@
                   205,
                   244
                 ],
-                "area": 11355,
-                "maskSha256": "ab311fc21e9e38e5631a4288657593c1da0b9e379204d0177415d03a7b5151cb"
-              },
-              {
-                "bbox": [
-                  103,
-                  199,
-                  104,
-                  200
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
+                "area": 11512,
+                "maskSha256": "0db7f5596c67d515922fce9653f6104e36e61c8b9e8a16b4e0baf63804a2e1cf"
               },
               {
                 "bbox": [
@@ -49272,7 +48613,7 @@
               234,
               244
             ],
-            "pixelSha256": "d0e424f9e3da6933278bb9c11b6a0d66820bb3165d930c5173029a7833d33cb3",
+            "pixelSha256": "949908595fa0f5f932b15da88cb2d5ff3cbad4085a37082e8c10a4627c74f195",
             "components": [
               {
                 "bbox": [
@@ -49281,8 +48622,8 @@
                   234,
                   244
                 ],
-                "area": 14112,
-                "maskSha256": "2522781f0e6ff3449b96fcf0ab71cd265f8142e248dc8e409e049a2617d8d609"
+                "area": 14298,
+                "maskSha256": "5c9452cbdbd6f79def68cb3bc1e1f77b8194cff202e639a3df1f3395d6a33fe8"
               },
               {
                 "bbox": [
@@ -49300,16 +48641,6 @@
                   185,
                   211,
                   186
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  59,
-                  234,
-                  60,
-                  235
                 ],
                 "area": 1,
                 "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
@@ -49345,7 +48676,7 @@
               239,
               244
             ],
-            "pixelSha256": "7ca8e116b57ee9b74aa05f31d7397be223301636df8a4f780b0d2e9fabdd531a",
+            "pixelSha256": "6ce3fae79465c7121c3903445c9ba4a4c9d4030c595f2cf984bb139c5779dbce",
             "components": [
               {
                 "bbox": [
@@ -49354,18 +48685,8 @@
                   239,
                   244
                 ],
-                "area": 11808,
-                "maskSha256": "3b1d94a98c6d8f46a7587bcedb25025c99404cd77707878601f65045db187c6f"
-              },
-              {
-                "bbox": [
-                  138,
-                  149,
-                  139,
-                  150
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
+                "area": 12011,
+                "maskSha256": "0e5f3d825473ff075155a56e4592f717550a79214a827eddf30d2783fd84903e"
               },
               {
                 "bbox": [
@@ -49373,56 +48694,6 @@
                   172,
                   66,
                   173
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  90,
-                  198,
-                  91,
-                  199
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  57,
-                  199,
-                  58,
-                  200
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  49,
-                  203,
-                  50,
-                  204
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  224,
-                  207,
-                  225,
-                  208
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  154,
-                  212,
-                  155,
-                  213
                 ],
                 "area": 1,
                 "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
@@ -49448,7 +48719,7 @@
               229,
               244
             ],
-            "pixelSha256": "16629554c2efdc0f7a3f76ad12569a7a03adbe4347dfb6ce6f61b11ec2cc2e7c",
+            "pixelSha256": "4a90a1b0471f0b7a0b86356d0c43fd79498b4a4c2bd42c1557b6f8e72c52d908",
             "components": [
               {
                 "bbox": [
@@ -49457,28 +48728,8 @@
                   229,
                   244
                 ],
-                "area": 12090,
-                "maskSha256": "3ca184206ea5827ce5346e8f7751865e32b61b7843ed1421b00d58a0922f79fb"
-              },
-              {
-                "bbox": [
-                  48,
-                  143,
-                  49,
-                  144
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  193,
-                  176,
-                  194,
-                  177
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
+                "area": 12262,
+                "maskSha256": "099884ad917749cf73dcaca1e9876a8fe6e7afe7483166343d51ccca6264c9a5"
               },
               {
                 "bbox": [
@@ -49526,22 +48777,22 @@
             "row": 4,
             "col": 4,
             "bbox": [
-              17,
+              16,
               141,
               239,
               244
             ],
-            "pixelSha256": "dcae5e40f4bb30c284e6a6041f6d85ba6484d5e77a35dcdd64f5037fb79b1415",
+            "pixelSha256": "cfbaa3f1ba70be1637b96e16ab7b4aca60ab742c460c06b694f43eba2256dcb7",
             "components": [
               {
                 "bbox": [
-                  17,
+                  16,
                   141,
                   239,
                   244
                 ],
-                "area": 12720,
-                "maskSha256": "ffa3fa939a29869993a9024d1f1fd5ec602d59d01204930e6c8f9a1e765101a8"
+                "area": 12916,
+                "maskSha256": "b593fa628a7270cff40ee63f2f58fd09a74a56e179ce95c5d4257c8284175cfb"
               },
               {
                 "bbox": [
@@ -49549,16 +48800,6 @@
                   146,
                   83,
                   147
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  68,
-                  155,
-                  69,
-                  156
                 ],
                 "area": 1,
                 "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
@@ -49575,30 +48816,10 @@
               },
               {
                 "bbox": [
-                  207,
-                  206,
-                  208,
-                  207
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
                   172,
                   208,
                   173,
                   209
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  197,
-                  216,
-                  198,
-                  217
                 ],
                 "area": 1,
                 "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
@@ -49634,7 +48855,7 @@
               242,
               244
             ],
-            "pixelSha256": "e65f7fa5f0aabea63e9c9dc897c4eda8e26e3ee90d088505551db5202b1ffe7c",
+            "pixelSha256": "44b17224a09e9c394a3a33940462b64be839faddd1137a665d67f099395c8290",
             "components": [
               {
                 "bbox": [
@@ -49643,8 +48864,8 @@
                   242,
                   244
                 ],
-                "area": 12447,
-                "maskSha256": "6cbb7d403504490f7062c5d16ec4fc84e3fda95908fef94208af29bb6665290c"
+                "area": 12658,
+                "maskSha256": "d4b3e2bd511e5b0542e93bf6c6bc3ae743b794cbb0733522a66807c7e64643c1"
               },
               {
                 "bbox": [
@@ -49662,16 +48883,6 @@
                   216,
                   210,
                   217
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  76,
-                  219,
-                  77,
-                  220
                 ],
                 "area": 1,
                 "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
@@ -49697,7 +48908,7 @@
               231,
               244
             ],
-            "pixelSha256": "dc0bc0bb9078d045ff59d5ae1137d068502f6ba32e5251b00a9ce856a6932aca",
+            "pixelSha256": "569434664674ff7f80f87bdfc2f89bc9f1766d1d0b914ecca36f3d9decb489a9",
             "components": [
               {
                 "bbox": [
@@ -49706,28 +48917,8 @@
                   231,
                   244
                 ],
-                "area": 14603,
-                "maskSha256": "ccbcbbb030239b30279ae29dae0cbb2b683bffc2b94709ea45085b00cedc8148"
-              },
-              {
-                "bbox": [
-                  220,
-                  201,
-                  221,
-                  202
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  168,
-                  208,
-                  169,
-                  209
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
+                "area": 14765,
+                "maskSha256": "739ab9b7e8a1139178be38ad57077aac32a0282252049d7b21d48080680d2b25"
               },
               {
                 "bbox": [
@@ -49735,16 +48926,6 @@
                   224,
                   186,
                   225
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  71,
-                  225,
-                  72,
-                  226
                 ],
                 "area": 1,
                 "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
@@ -49760,7 +48941,7 @@
               231,
               244
             ],
-            "pixelSha256": "4be1f5f5987c01e202f1139bf9f638acf32e6b35fd6f59bd3cfd05a6bb6dde4d",
+            "pixelSha256": "dc3d3e8b00ca4343e03427c27c20b1876d4bba701a3f30c43598e56d2cdcb343",
             "components": [
               {
                 "bbox": [
@@ -49769,28 +48950,8 @@
                   231,
                   244
                 ],
-                "area": 14835,
-                "maskSha256": "33f878cefa3ad66cad857dfa69b90f413400fc3c611d4d0dd5c009f017b6f97a"
-              },
-              {
-                "bbox": [
-                  147,
-                  199,
-                  148,
-                  200
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  184,
-                  224,
-                  185,
-                  225
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
+                "area": 15028,
+                "maskSha256": "621c859506eca096e40c57e8d76c2f027cba71f9a70a31207179e022b9b6e151"
               },
               {
                 "bbox": [
@@ -49823,7 +48984,7 @@
               231,
               244
             ],
-            "pixelSha256": "8c711ceddc9f96af64132b8238575d077200b8c8cb5b745f766f871462159ce8",
+            "pixelSha256": "cf58d287f0eb01b889ab03e6cad60a8df8e2a9c8211700aafce80935db29b65a",
             "components": [
               {
                 "bbox": [
@@ -49832,48 +48993,8 @@
                   231,
                   244
                 ],
-                "area": 14431,
-                "maskSha256": "c142fed5ec27929aab77bf784bf6c0fba254253c304e8814df0c8c81e2751059"
-              },
-              {
-                "bbox": [
-                  82,
-                  137,
-                  83,
-                  138
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  100,
-                  215,
-                  101,
-                  216
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  189,
-                  224,
-                  190,
-                  225
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  57,
-                  234,
-                  58,
-                  235
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
+                "area": 14596,
+                "maskSha256": "d3e64d839999ed8a83357519571a4a23c123cf7e838b2aff39e9d15704814190"
               }
             ]
           },
@@ -49886,7 +49007,7 @@
               227,
               244
             ],
-            "pixelSha256": "11b1f0ae954ad68564b32fbb985c4fe52dee49bdb01b540f7127fd17967e3c46",
+            "pixelSha256": "d5ceafba2e52c5141a4da8ab0f11e64ecac5a991754284c8dc5fed186ab5c3b9",
             "components": [
               {
                 "bbox": [
@@ -49895,8 +49016,8 @@
                   227,
                   244
                 ],
-                "area": 14326,
-                "maskSha256": "ad6e755e29863acf63775eccc598348916607dba4909bf4f4c72b9e170447fb0"
+                "area": 14518,
+                "maskSha256": "9db459cece53acec2f351769fe8c7cc0edd33f164a97321a325ae2937ed9eee0"
               },
               {
                 "bbox": [
@@ -49904,16 +49025,6 @@
                   228,
                   122,
                   229
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  62,
-                  234,
-                  63,
-                  235
                 ],
                 "area": 1,
                 "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
@@ -49929,7 +49040,7 @@
               229,
               244
             ],
-            "pixelSha256": "ef3f8dec633cbc2b37ff377a26ea6b55221838419b87823719c3523dec874525",
+            "pixelSha256": "fc8fcd27270037c8f72ac1ba7b6723f164aea10fbfec16c49621822f67b1f143",
             "components": [
               {
                 "bbox": [
@@ -49938,18 +49049,8 @@
                   229,
                   244
                 ],
-                "area": 14059,
-                "maskSha256": "cc378c24f9e0de767cd0daa8cf6390751c6064fb8dd790afc60de5ceb07682b0"
-              },
-              {
-                "bbox": [
-                  162,
-                  191,
-                  163,
-                  192
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
+                "area": 14225,
+                "maskSha256": "e495ba89006b7ad0e7d575eb5103eb6ef1d224eabeeca23bd402731c3f49ef77"
               },
               {
                 "bbox": [
@@ -49957,16 +49058,6 @@
                   215,
                   192,
                   216
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  59,
-                  234,
-                  60,
-                  235
                 ],
                 "area": 1,
                 "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
@@ -49992,7 +49083,7 @@
               228,
               244
             ],
-            "pixelSha256": "c341a5aef440216259176ce2905c5ff2cd4d7b2e7e520c769156b95711d26e8b",
+            "pixelSha256": "b7fcd4ba4386f2203a336fcec5a313105866684051049d06a1f90f32ad442882",
             "components": [
               {
                 "bbox": [
@@ -50001,44 +49092,14 @@
                   228,
                   244
                 ],
-                "area": 14079,
-                "maskSha256": "abaf744fde8b0e3c2e47f07b1ef4de34070610374244267c07f2a8f3d6fea525"
+                "area": 14247,
+                "maskSha256": "2bc5414cc0351cb453935873f2e5026a150c2f8d4e631a4410661aba443c78c9"
               },
               {
                 "bbox": [
-                  183,
-                  145,
-                  184,
-                  146
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  187,
-                  149,
-                  188,
-                  150
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  213,
-                  180,
-                  214,
-                  181
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  158,
+                  165,
                   199,
-                  159,
+                  166,
                   200
                 ],
                 "area": 1,
@@ -50075,7 +49136,7 @@
               224,
               244
             ],
-            "pixelSha256": "0b88420411863e95bc7c1a257d0ac62175a0121984002d7ba3ca44642a754f1f",
+            "pixelSha256": "c52258b60e85b588aff36cccf0c55d668bbfdb0282e0e90da7052d0ce1e687b0",
             "components": [
               {
                 "bbox": [
@@ -50084,8 +49145,8 @@
                   224,
                   244
                 ],
-                "area": 13035,
-                "maskSha256": "800a48066ae8706c755757feec1cb39804c10bd7eac35842103a5103b84efa33"
+                "area": 13217,
+                "maskSha256": "0b4c86ed177ed975ffac7f2d05f5b6c76a8c557b15370001db184ce590396cc9"
               },
               {
                 "bbox": [
@@ -50103,6 +49164,16 @@
                   190,
                   158,
                   191
+                ],
+                "area": 1,
+                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
+              },
+              {
+                "bbox": [
+                  165,
+                  203,
+                  166,
+                  204
                 ],
                 "area": 1,
                 "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
@@ -50138,7 +49209,7 @@
               226,
               244
             ],
-            "pixelSha256": "1c19dd275fbb8d774987a06bdb3089c2913374e8bd1c6ae568222ddc6c7e7ccd",
+            "pixelSha256": "b80619f90ee0df6d42be1202740e1ef743028b8e4d69c5959c845dcc1b353892",
             "components": [
               {
                 "bbox": [
@@ -50147,28 +49218,8 @@
                   226,
                   244
                 ],
-                "area": 12513,
-                "maskSha256": "2870e3f0705abbeb3b97c069d4392b1467011a53553ad244266e9e70d4f70747"
-              },
-              {
-                "bbox": [
-                  181,
-                  144,
-                  182,
-                  145
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  70,
-                  162,
-                  71,
-                  163
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
+                "area": 12691,
+                "maskSha256": "632e4c6fc8360d79bf00c08e612447eb008d39c562aadb071cc8be0846a6ff06"
               },
               {
                 "bbox": [
@@ -50176,16 +49227,6 @@
                   190,
                   167,
                   191
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  203,
-                  197,
-                  204,
-                  198
                 ],
                 "area": 1,
                 "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
@@ -50237,21 +49278,21 @@
             "col": 2,
             "bbox": [
               25,
-              137,
+              136,
               230,
               244
             ],
-            "pixelSha256": "c182be4b656afb48c56bfb6f9c03331a45bc03566f8cdcd9b40fe9d5af3dc4c3",
+            "pixelSha256": "101e19175d420038cae1296edca2e1192dc34b376b349b8c1167191712d89078",
             "components": [
               {
                 "bbox": [
                   25,
-                  137,
+                  136,
                   230,
                   244
                 ],
-                "area": 13372,
-                "maskSha256": "f2e88ad815e5cd7a45ca26c19561cfe965753ea0b1f7e0afe84d64229dd860ac"
+                "area": 13556,
+                "maskSha256": "2c185715242276cfad7f5a06dc6cf0b416ec2f49dc3e106865898cb033fd5a5e"
               },
               {
                 "bbox": [
@@ -50259,26 +49300,6 @@
                   225,
                   74,
                   226
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  193,
-                  227,
-                  194,
-                  228
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  104,
-                  238,
-                  105,
-                  239
                 ],
                 "area": 1,
                 "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
@@ -50294,7 +49315,7 @@
               230,
               244
             ],
-            "pixelSha256": "fd9ef85d251977c2e78b3e25fe814388c75ae5f999d80fba0b22c1efc0c1d927",
+            "pixelSha256": "ea98882210cbaee9d1eb9fa36fe35bbe7a96ef2ef0b8e9658b850d9cfcdd7f5c",
             "components": [
               {
                 "bbox": [
@@ -50303,8 +49324,8 @@
                   230,
                   244
                 ],
-                "area": 12352,
-                "maskSha256": "4ed975437c06841652c4f2e37e533d8b78049560541595ee7f3009ee45734cf0"
+                "area": 12518,
+                "maskSha256": "5edb0739a3a02909a85495339c0f46d83c88550e1aee3fe9122a46f86bc61e71"
               },
               {
                 "bbox": [
@@ -50318,20 +49339,20 @@
               },
               {
                 "bbox": [
-                  77,
-                  154,
-                  78,
-                  155
+                  194,
+                  191,
+                  195,
+                  192
                 ],
                 "area": 1,
                 "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
               },
               {
                 "bbox": [
-                  194,
-                  191,
-                  195,
-                  192
+                  83,
+                  220,
+                  84,
+                  221
                 ],
                 "area": 1,
                 "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
@@ -50352,22 +49373,22 @@
             "row": 6,
             "col": 4,
             "bbox": [
-              30,
+              29,
               133,
               226,
-              243
+              244
             ],
-            "pixelSha256": "f906a3af4bf5df0c0e0b378e087a18221cfac18404434c9ddf7cefe157ce7305",
+            "pixelSha256": "666088b3c924fec64b11ef4f54925840a80ddfeaa669e9b09699190680b2a347",
             "components": [
               {
                 "bbox": [
-                  30,
+                  29,
                   133,
                   226,
-                  243
+                  244
                 ],
-                "area": 13137,
-                "maskSha256": "feb04fe78add1d2d362c5bb17827b5675ad21f5fde6b4888a7dd5eb91897f324"
+                "area": 13341,
+                "maskSha256": "15c01bcad74a7de81e82dfab79f5c7d7527dbc82dc2312ad476ae8bc79e28d66"
               },
               {
                 "bbox": [
@@ -50381,30 +49402,10 @@
               },
               {
                 "bbox": [
-                  106,
-                  216,
-                  107,
-                  217
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
                   129,
                   221,
                   130,
                   222
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  70,
-                  229,
-                  71,
-                  230
                 ],
                 "area": 1,
                 "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
@@ -50430,7 +49431,7 @@
               227,
               244
             ],
-            "pixelSha256": "7cfb63b4abb7ad5980e132d98e3e89b5b7a3ad29ff574b837c61fdaecc1cb9d1",
+            "pixelSha256": "9c154c0490412338fd9063de59e4de48c7c69cac7ddcb661006120beb7f8d742",
             "components": [
               {
                 "bbox": [
@@ -50439,18 +49440,8 @@
                   227,
                   244
                 ],
-                "area": 12655,
-                "maskSha256": "08287dce0aeb410d4608be778a12f6230092f87026122d8edf39860020f89025"
-              },
-              {
-                "bbox": [
-                  73,
-                  155,
-                  74,
-                  156
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
+                "area": 12838,
+                "maskSha256": "40aa7e12fe68be1861f1c82f483af73d29df83da69f0acb472a670d3d12fefb2"
               },
               {
                 "bbox": [
@@ -50481,36 +49472,6 @@
                 ],
                 "area": 1,
                 "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  152,
-                  225,
-                  153,
-                  226
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  93,
-                  227,
-                  94,
-                  228
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  62,
-                  234,
-                  63,
-                  235
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
               }
             ]
           },
@@ -50523,7 +49484,7 @@
               224,
               244
             ],
-            "pixelSha256": "7b7af21ddf50674f9e97d64809ed995c310304ecea2a8d5f791121cbc64feac9",
+            "pixelSha256": "353424b22658fe3fa4c929dcdd5ecd7df551002b79292fb140bc6932e4fab455",
             "components": [
               {
                 "bbox": [
@@ -50532,8 +49493,8 @@
                   224,
                   244
                 ],
-                "area": 13923,
-                "maskSha256": "13d7f8ffda858f294fc7136637c6a72baafd0f995a148de5f7bde09817e99c4a"
+                "area": 14131,
+                "maskSha256": "ced0d8a870524823e9139d43c098d9d8d2e9cf2586fdd06e02045973580bf793"
               },
               {
                 "bbox": [
@@ -50567,50 +49528,10 @@
               },
               {
                 "bbox": [
-                  46,
-                  221,
-                  47,
-                  222
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  102,
-                  221,
-                  103,
-                  222
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  76,
-                  227,
-                  77,
-                  228
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
                   94,
                   230,
                   95,
                   231
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  90,
-                  238,
-                  91,
-                  239
                 ],
                 "area": 1,
                 "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
@@ -50621,22 +49542,22 @@
             "row": 7,
             "col": 1,
             "bbox": [
-              24,
-              142,
+              23,
+              141,
               233,
               244
             ],
-            "pixelSha256": "b0dc409bc07e169bead367daeab983c515b8644ae63cde4c7987e3d88aa1fea2",
+            "pixelSha256": "8c258824422c9ab58b42ebf6452a705ed52a336bb7ab3be5133d8a4f6ba2c612",
             "components": [
               {
                 "bbox": [
-                  24,
-                  142,
+                  23,
+                  141,
                   233,
                   244
                 ],
-                "area": 13275,
-                "maskSha256": "b825977db689783e48b56c05e185465312bd64f3650585639374867a2072c10a"
+                "area": 13485,
+                "maskSha256": "7870d42e8c9c4aaac39a08b9839fb88151de5df646724a1085496e45b6a0a258"
               },
               {
                 "bbox": [
@@ -50647,16 +49568,6 @@
                 ],
                 "area": 2,
                 "maskSha256": "9dcf97a184f32623d11a73124ceb99a5709b083721e878a16d78f596718ba7b2"
-              },
-              {
-                "bbox": [
-                  227,
-                  200,
-                  228,
-                  201
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
               },
               {
                 "bbox": [
@@ -50674,26 +49585,6 @@
                   208,
                   176,
                   209
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  195,
-                  217,
-                  196,
-                  218
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  132,
-                  221,
-                  133,
-                  222
                 ],
                 "area": 1,
                 "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
@@ -50719,7 +49610,7 @@
               227,
               244
             ],
-            "pixelSha256": "ad11716ccca26d0a5466f869535c59553aa3756304a9e3cdb3f64260e636ed55",
+            "pixelSha256": "ddaa9c3a3ff1e5e4d8af82d86d629f12757a0af605ded98dd8f0c71d4ac63e0e",
             "components": [
               {
                 "bbox": [
@@ -50728,28 +49619,8 @@
                   227,
                   244
                 ],
-                "area": 11184,
-                "maskSha256": "b65859dcf71fde5a529b405e4fc389d733069c1bf3c7d973470cc342a95445be"
-              },
-              {
-                "bbox": [
-                  172,
-                  221,
-                  173,
-                  222
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  189,
-                  228,
-                  190,
-                  229
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
+                "area": 11304,
+                "maskSha256": "8ecccf6e6f74071bf553b256e2940f0637a73995aaf96aaafbc75e8476d82dde"
               }
             ]
           },
@@ -50762,7 +49633,7 @@
               242,
               244
             ],
-            "pixelSha256": "09c00fa575266eb8a6a6d1cd5ebc36f562a45d54e1d73c81b526f9ebcd8adf96",
+            "pixelSha256": "caf88be628ef0e3080ca59fbce8b301889f195a9ea43eda91af646e259ca98ac",
             "components": [
               {
                 "bbox": [
@@ -50771,28 +49642,8 @@
                   242,
                   244
                 ],
-                "area": 11774,
-                "maskSha256": "7302f063a7dc6e6a28c4198f418505e95d1577f1c188c794299de6ee80b12724"
-              },
-              {
-                "bbox": [
-                  103,
-                  167,
-                  104,
-                  168
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  158,
-                  172,
-                  159,
-                  173
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
+                "area": 11901,
+                "maskSha256": "63850f0b59250174457a06743487e3ccf83dcc5d27a2f0bf5cf7c60a96c8bac4"
               }
             ]
           },
@@ -50803,29 +49654,19 @@
               24,
               167,
               232,
-              243
+              244
             ],
-            "pixelSha256": "b8599eef6691f3ec6af22effd7872b8a206221786aed45d91ecf42354b089c09",
+            "pixelSha256": "7b1330319f27dd13f297184afe220a506864f86dd9ebb46c4f863cdf357156ee",
             "components": [
               {
                 "bbox": [
                   24,
                   167,
                   232,
-                  243
+                  244
                 ],
-                "area": 10124,
-                "maskSha256": "19af9aa0023a34f7eeaaa16537731b73035795f11ad70df5fc151a0baf3fd6b5"
-              },
-              {
-                "bbox": [
-                  61,
-                  186,
-                  62,
-                  187
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
+                "area": 10237,
+                "maskSha256": "f46d941698bb6cc8f644398b5e082f1a8a592be4e9c2c67afe49e1248c0004f7"
               }
             ]
           },
@@ -50838,7 +49679,7 @@
               238,
               244
             ],
-            "pixelSha256": "b6f45c671e508265103b36cf2b6573c8e4e1ea4222153ff666478786311c7dc8",
+            "pixelSha256": "7ab28d0292c2697244f3f08b6609e382654c7b1b242ea03d4c77eade32c4beb7",
             "components": [
               {
                 "bbox": [
@@ -50847,8 +49688,8 @@
                   238,
                   244
                 ],
-                "area": 9467,
-                "maskSha256": "031201cdece439f4ccf6826113fa3bfd607eacec056f78ef0321d217f120f8d5"
+                "area": 9565,
+                "maskSha256": "fb92875f62cd5dd5f33d5ce5032bfbc72af138d9dbac9a495337e324a519d08a"
               },
               {
                 "bbox": [
@@ -50856,36 +49697,6 @@
                   190,
                   63,
                   191
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  188,
-                  198,
-                  189,
-                  199
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  35,
-                  206,
-                  36,
-                  207
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  214,
-                  211,
-                  215,
-                  212
                 ],
                 "area": 1,
                 "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
@@ -73717,10 +72528,10 @@
       "path": "/assets/images/combat/spritesheets/enemies/boss_chef_nemesis_sheet.png",
       "width": 1536,
       "height": 2048,
-      "fileSha256": "8d53e99d5e1500d3e2edb02a39a65ac61cb9ae2c77d472cf69fb2026c614d25e",
-      "pixelSha256": "5f98e1d30dd6e5fae7c0658d5f7206da8d3dc80985a9e37780011adb8f3eb937",
+      "fileSha256": "ec13506c619efc8feb7acd210d1e91966afa0ff3c4a5609d4441c9dee49bde49",
+      "pixelSha256": "c8107972240c93d201cfe676265d2828818bbacefd3657baf500437eacd2ef50",
       "sourceAlphaPath": "/art_sources/combat/task10_bosses/boss_chef_nemesis_alpha.png",
-      "sourceAlphaSha256": "30354085bc4ac1f57f5bdf8319cf66eb4dc0a21eb30fb2df8dc3c97146415871",
+      "sourceAlphaSha256": "cf5e55ab248f8e84e81f19c57b7a37911609790be51c62b82e573f0319a0459b",
       "sourceChromaPath": "/art_sources/combat/task10_bosses/boss_chef_nemesis_chroma.png",
       "sourceChromaSha256": "adaba69dedbb4385f5c1affbf1858bfc609fda9d60c4ec40d03cd78f5f1bcc43",
       "rowSourceOverrides": {
@@ -75116,7 +73927,7 @@
               201,
               244
             ],
-            "pixelSha256": "8b6f61de673c811f768f489a21e8c954de9ef57f456eacbddfbf6c054d4596bf",
+            "pixelSha256": "3741acc4f0ff304908bfc531e854bf2a7d652b4e7d7e9ab388b3e2eeb01db6f2",
             "components": [
               {
                 "bbox": [
@@ -75125,38 +73936,8 @@
                   201,
                   244
                 ],
-                "area": 13597,
-                "maskSha256": "1314fde99d55f2977b07a45ca29058f6bf5d343618a8043c43b9aa82a01dd079"
-              },
-              {
-                "bbox": [
-                  193,
-                  138,
-                  194,
-                  139
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  60,
-                  163,
-                  61,
-                  164
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  158,
-                  184,
-                  159,
-                  185
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
+                "area": 13741,
+                "maskSha256": "ba3ec232479eb00b58087d2eda38f3f907ad72f16d6e52094dcb9af2c108b3fd"
               },
               {
                 "bbox": [
@@ -75179,7 +73960,7 @@
               197,
               244
             ],
-            "pixelSha256": "85bf27b5f125644fcef36bfcba8488c23e762ca129ff537f915490cb59dd0d1e",
+            "pixelSha256": "c66dc316e6a7aebda047ad027fd3f64b77d1038a669bb9be69655adae1adfa77",
             "components": [
               {
                 "bbox": [
@@ -75188,8 +73969,8 @@
                   197,
                   244
                 ],
-                "area": 13349,
-                "maskSha256": "47e5168c5b647d2d9bb817b66ffc71422ac3a31cf4d3ef05efe4952473cd419a"
+                "area": 13466,
+                "maskSha256": "7a602f987d78cc93352438d4514381fca2e0a7b703adefba9b87d9c13c5d7f37"
               },
               {
                 "bbox": [
@@ -75197,16 +73978,6 @@
                   155,
                   173,
                   156
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  121,
-                  232,
-                  122,
-                  233
                 ],
                 "area": 1,
                 "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
@@ -75222,7 +73993,7 @@
               199,
               244
             ],
-            "pixelSha256": "6e47e9dfe26028af55b68fa53457e7728da11f71137062fc6b8b0048b13120f5",
+            "pixelSha256": "41d437668980eb9ee8166dc8e1c691d25f232f233e4f892be7baad5873d79e66",
             "components": [
               {
                 "bbox": [
@@ -75231,18 +74002,8 @@
                   199,
                   244
                 ],
-                "area": 14118,
-                "maskSha256": "f4cad025b0c6bb301bcafc82e54a5f90a133ecc0507cc59294c3c2c43a4fba2a"
-              },
-              {
-                "bbox": [
-                  174,
-                  152,
-                  175,
-                  153
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
+                "area": 14246,
+                "maskSha256": "da5888ab5ffcb5bb2dc8092f8310baa26092ad498ea1d90a057ebe14bd10f7b1"
               }
             ]
           },
@@ -75255,7 +74016,7 @@
               199,
               244
             ],
-            "pixelSha256": "09c7bb53a40daa97183a789d2bef0a90e52df2fd7a5432927b374f5fca3b609c",
+            "pixelSha256": "0d338ec0cd1b3246642f87e72ec775b7839c56ca3b5fdafd8ed0009cca5a19cd",
             "components": [
               {
                 "bbox": [
@@ -75264,38 +74025,8 @@
                   199,
                   244
                 ],
-                "area": 14054,
-                "maskSha256": "ec04e78309d8de4a499c70d6599f13ca13585fa6c753d06b4c8c58e9a2c04452"
-              },
-              {
-                "bbox": [
-                  146,
-                  165,
-                  147,
-                  166
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  158,
-                  184,
-                  159,
-                  185
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  134,
-                  231,
-                  135,
-                  232
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
+                "area": 14185,
+                "maskSha256": "341da0e5fee052d4d13beece8ab3d989e8858780831aac9e6db0b586df728adc"
               }
             ]
           },
@@ -75308,7 +74039,7 @@
               200,
               244
             ],
-            "pixelSha256": "f496b00e9d7e5cb4007c7839706b356ed9a62411883b078f39b32242661c88ef",
+            "pixelSha256": "753bc0c701095c027fab53219a840572c8ffca4a418043e796ab3d453ebe41e7",
             "components": [
               {
                 "bbox": [
@@ -75317,8 +74048,8 @@
                   200,
                   244
                 ],
-                "area": 13844,
-                "maskSha256": "73d0875d33689ea37b54b9c58ae92aedbf868bb0d988da894923f2374cb02ae2"
+                "area": 13953,
+                "maskSha256": "0a1df15c540002a0a836371344c88e282267904968974a38c993106c039c91ff"
               },
               {
                 "bbox": [
@@ -75326,16 +74057,6 @@
                   70,
                   141,
                   71
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  175,
-                  154,
-                  176,
-                  155
                 ],
                 "area": 1,
                 "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
@@ -75351,7 +74072,7 @@
               196,
               244
             ],
-            "pixelSha256": "20d91f7126a5f8914e2afb6ab5d6ff0a597f45f96ca141c8d30f4cc6b4aaf3e7",
+            "pixelSha256": "489ad2afbd76a55766f1e2475d856388347dcb2a2189806e5f441a1e84f08f9a",
             "components": [
               {
                 "bbox": [
@@ -75360,28 +74081,8 @@
                   196,
                   244
                 ],
-                "area": 13276,
-                "maskSha256": "e1ef7b21473b69bec1117c3f0898fa163424ec8d3934b10bb98d935ec0c484c5"
-              },
-              {
-                "bbox": [
-                  142,
-                  105,
-                  143,
-                  106
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  170,
-                  153,
-                  171,
-                  154
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
+                "area": 13402,
+                "maskSha256": "983bb99ff6e87b6f788b6de19b594b95e02145d29c48da4b12b933921073c3a2"
               }
             ]
           },
@@ -75394,7 +74095,7 @@
               215,
               244
             ],
-            "pixelSha256": "53fc987326e6e68d30850121b827db33184a2f6e86a26a65de8a708094f5c6e9",
+            "pixelSha256": "6572a084cf6cb5e9e44b960fa478d648a1f27bfb424125ff88e16bb07d7c5a33",
             "components": [
               {
                 "bbox": [
@@ -75403,8 +74104,8 @@
                   215,
                   244
                 ],
-                "area": 13504,
-                "maskSha256": "6f8388d451343f8365814278279c1b9d857e8d9e8f2eca8377b56fb5f639bcfb"
+                "area": 13644,
+                "maskSha256": "65cf6f3d39c8f5f7dfc2b997afc7357bb8626a09553811d2b7e58150295e0df7"
               },
               {
                 "bbox": [
@@ -75437,7 +74138,7 @@
               210,
               244
             ],
-            "pixelSha256": "b7dc5429260d5df283e712128b36b8047a503bb07af865689f8c3724fd290a64",
+            "pixelSha256": "fdc8ad11868f2088d1eb2b0ce2623ea488fc743d409174ccd622f0dac36852c2",
             "components": [
               {
                 "bbox": [
@@ -75446,28 +74147,8 @@
                   210,
                   244
                 ],
-                "area": 12369,
-                "maskSha256": "a1f4ab28cc60bd103a98a19335dbcf0099c90553d2a9f8bd86820920ee46ab11"
-              },
-              {
-                "bbox": [
-                  174,
-                  145,
-                  175,
-                  146
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  158,
-                  156,
-                  159,
-                  157
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
+                "area": 12501,
+                "maskSha256": "03495b56a85a3ba4b17f0899b48747ba58f7cf9275775551002b6776d329598e"
               }
             ]
           },
@@ -75480,7 +74161,7 @@
               221,
               244
             ],
-            "pixelSha256": "98e2a51f3df8d5fc804fdb723fcff46f888e8034cd7f576abb64347bd82eb55d",
+            "pixelSha256": "7d8cfa9447e7696d486120d1d3a065279562aaecd44562789f2b40e43a6edef0",
             "components": [
               {
                 "bbox": [
@@ -75489,8 +74170,8 @@
                   221,
                   244
                 ],
-                "area": 14782,
-                "maskSha256": "435119ed9e22c09e651166535107890d6853964b04a539b11d278dac296110da"
+                "area": 14910,
+                "maskSha256": "1600005ec5274145e97d09a63c83d424b45474e6f1b4b26373d9c60afd03658b"
               },
               {
                 "bbox": [
@@ -75513,7 +74194,7 @@
               222,
               244
             ],
-            "pixelSha256": "58db655f04af5eb2a8827e820adc745451da9fa78e998a7df261c60223e9b7a6",
+            "pixelSha256": "2dd4e230de76cbf4baf7e98e07460df8c566ac80107729fc2f703e4d877b3a48",
             "components": [
               {
                 "bbox": [
@@ -75522,18 +74203,8 @@
                   222,
                   244
                 ],
-                "area": 14449,
-                "maskSha256": "274f31647d808a3bbd2036757ec59db5b5c1fb528cb8839bb00d5fdfa67e9e46"
-              },
-              {
-                "bbox": [
-                  54,
-                  191,
-                  55,
-                  192
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
+                "area": 14618,
+                "maskSha256": "eb4dcee1988cb64d4aeb35edefc23fcfba4f6246f639262e39a4562cc18d040a"
               },
               {
                 "bbox": [
@@ -75556,7 +74227,7 @@
               214,
               244
             ],
-            "pixelSha256": "f55acb3392470941dababd63a5dd021a742eac1a950f3cdb342e24de1d13eeab",
+            "pixelSha256": "f3bba102282d4e31c5cc11a9eff40da4e029be33b0607e048b311e534a4927e5",
             "components": [
               {
                 "bbox": [
@@ -75565,28 +74236,8 @@
                   214,
                   244
                 ],
-                "area": 13363,
-                "maskSha256": "aca55eab71b353825beaa5fd118ba2c610e200a5824532259c5fc5a2843d6a7e"
-              },
-              {
-                "bbox": [
-                  153,
-                  200,
-                  154,
-                  201
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  61,
-                  210,
-                  62,
-                  211
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
+                "area": 13502,
+                "maskSha256": "89d7ffb64b78fa6b4a33818416951c165942513ce0dc32c6308250a4e8ca646f"
               }
             ]
           },
@@ -75599,7 +74250,7 @@
               196,
               244
             ],
-            "pixelSha256": "4186bfe2572047ca346839478906f53075337a3061e86028cb8142a63eb5c4e0",
+            "pixelSha256": "9c129711807e240812d9297e189259d3253a979e20c33512e9a6dce5b83b9179",
             "components": [
               {
                 "bbox": [
@@ -75608,28 +74259,8 @@
                   196,
                   244
                 ],
-                "area": 12125,
-                "maskSha256": "8154c6180555c3adda15a31d6412e0f10aefcc1bd1fef1045845468d9bdbd3a5"
-              },
-              {
-                "bbox": [
-                  115,
-                  121,
-                  116,
-                  122
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  131,
-                  121,
-                  132,
-                  122
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
+                "area": 12237,
+                "maskSha256": "d9461e2b5891a097482dfb290278221bb942379e659e52c9ec6d8e233efa9920"
               },
               {
                 "bbox": [
@@ -75652,7 +74283,7 @@
               218,
               244
             ],
-            "pixelSha256": "a61c39e54f650fe4e8e455cf4994447189c5a1f649a2a5c2f86834e53827b94c",
+            "pixelSha256": "298701c0ff011e55ce02ed9c6d84e1db1554d6c693c61abb7e9f21ac7cffd6ea",
             "components": [
               {
                 "bbox": [
@@ -75661,18 +74292,8 @@
                   218,
                   244
                 ],
-                "area": 13001,
-                "maskSha256": "bb1c895f660710096a077ff70e563b1e467250b88f847d2214cf59f9125dac19"
-              },
-              {
-                "bbox": [
-                  148,
-                  124,
-                  149,
-                  125
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
+                "area": 13166,
+                "maskSha256": "216b54da8b8e66fd7e3a11705ea1d2bdc39f1dd7f3d38cf0fec33133ec4e0955"
               },
               {
                 "bbox": [
@@ -75695,7 +74316,7 @@
               215,
               244
             ],
-            "pixelSha256": "db45d94887613aeaaacbe19230e39afbf6acbb49fe14f186f912406830a59dab",
+            "pixelSha256": "14814229f593dbc6693a0667eeba73e5ff2a0476933d7fa7cbb0d471f363d0d9",
             "components": [
               {
                 "bbox": [
@@ -75704,8 +74325,8 @@
                   215,
                   244
                 ],
-                "area": 11327,
-                "maskSha256": "0a8827db7b92879c7c4124866084f0ed35a28adc6fc3a2deaa4b89702b34384b"
+                "area": 11437,
+                "maskSha256": "f5fdfd3c0aaeff3a526e60697eaf49aa6eac93539d22d6984d23a26cbcf3092e"
               }
             ]
           },
@@ -75718,7 +74339,7 @@
               225,
               244
             ],
-            "pixelSha256": "c02ce163f96caa648369e117133ee66e86c4f7045e7468fc0f1d577b457f09a1",
+            "pixelSha256": "17e4cb5a3992e53617e8d07f5207e04f70882e67c12ac6e2ac92e5d97b1d061b",
             "components": [
               {
                 "bbox": [
@@ -75727,28 +74348,8 @@
                   225,
                   244
                 ],
-                "area": 11237,
-                "maskSha256": "ff35c90ea8161bc4d3bb7b984b43ecd750c3314de24a7809909b7b041c611222"
-              },
-              {
-                "bbox": [
-                  35,
-                  207,
-                  36,
-                  208
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  57,
-                  232,
-                  58,
-                  233
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
+                "area": 11370,
+                "maskSha256": "d87d8eef6f45d63d09ec9b4ca769b0102cd74bfcad0cdb6da066b7e2909a0bd8"
               }
             ]
           },
@@ -75761,7 +74362,7 @@
               235,
               244
             ],
-            "pixelSha256": "6b979a978fc52aac065108a1b61666c5f7e5bd460bbf6bd53dd27904845581bf",
+            "pixelSha256": "487c33c74bcf4029d4b4228193d89bab6f35cb150b04606386ac2793a6f0997c",
             "components": [
               {
                 "bbox": [
@@ -75770,18 +74371,8 @@
                   235,
                   244
                 ],
-                "area": 12238,
-                "maskSha256": "5ac76b98e0b0c9a4eac4441c3b7b2743aaccdb0a942de1902624ff4ec3913d5a"
-              },
-              {
-                "bbox": [
-                  117,
-                  115,
-                  118,
-                  116
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
+                "area": 12375,
+                "maskSha256": "ad19ea1b011649c970e43f3d4e6bd7cae4b6511badbe2236da51a936c5e23e5e"
               }
             ]
           },
@@ -75794,7 +74385,7 @@
               242,
               244
             ],
-            "pixelSha256": "de9c614c848ee44a27956d7885cfaa902fa76f89b7676eb9459b51e9215d184a",
+            "pixelSha256": "64e44a408d1831200f9c51d60ae7c92fb71c1c9fa41580fc1c15bfe09f899ee1",
             "components": [
               {
                 "bbox": [
@@ -75803,28 +74394,8 @@
                   242,
                   244
                 ],
-                "area": 10553,
-                "maskSha256": "2366541bbfe88879314bb03ba3ecc82f570c5750b0883b5633660dd97e963255"
-              },
-              {
-                "bbox": [
-                  74,
-                  115,
-                  75,
-                  116
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  15,
-                  191,
-                  16,
-                  192
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
+                "area": 10733,
+                "maskSha256": "e85705296632a05b0061b85a43e6011be72a76e3dee5733e2f6ac2b29686dc76"
               },
               {
                 "bbox": [
@@ -75857,7 +74428,7 @@
               201,
               244
             ],
-            "pixelSha256": "c90bf5e7e2c39b88c88ada15ed6db2751584ff15cb56d7bbb5fa9ad1946b6736",
+            "pixelSha256": "5c9d3a1882d844b2fabcb34f630c0d85b2bc141ed4e7265b063dceaf42c3ec04",
             "components": [
               {
                 "bbox": [
@@ -75866,28 +74437,8 @@
                   201,
                   244
                 ],
-                "area": 10392,
-                "maskSha256": "db5b335abdd2b96f187aeb7debf46d7e1b6eee4bf6950097cab784c88ebb9ef2"
-              },
-              {
-                "bbox": [
-                  166,
-                  151,
-                  167,
-                  152
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  81,
-                  241,
-                  82,
-                  242
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
+                "area": 10527,
+                "maskSha256": "4baa6d9738be96a0fb6dee5c466de9d7ef3734cc59a98d5013647e53463d0905"
               }
             ]
           },
@@ -75900,7 +74451,7 @@
               204,
               244
             ],
-            "pixelSha256": "0041458557cacb0a59f207d3ef5e5061a40203e04dfb15cf61f9ea149a1ec7a8",
+            "pixelSha256": "298ad7cceeedc317af2a62291fe1426ac137c4deba2d899b622a311908f4c9b2",
             "components": [
               {
                 "bbox": [
@@ -75909,28 +74460,8 @@
                   204,
                   244
                 ],
-                "area": 11534,
-                "maskSha256": "31edd38ba64edbc1700929c78116fc346bc4466ea4e4036386040b0c903e81f0"
-              },
-              {
-                "bbox": [
-                  124,
-                  90,
-                  125,
-                  91
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  171,
-                  142,
-                  172,
-                  143
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
+                "area": 11659,
+                "maskSha256": "892c1e06b74890fcabbcfa818c84b5a73191c32b9f976eff565790ede9d20de7"
               },
               {
                 "bbox": [
@@ -75938,16 +74469,6 @@
                   163,
                   64,
                   164
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  104,
-                  232,
-                  105,
-                  233
                 ],
                 "area": 1,
                 "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
@@ -75963,7 +74484,7 @@
               202,
               244
             ],
-            "pixelSha256": "cfc821e33aece9eec19c8ec53bf83cfec1f78c98e65018f13b40ae4624740133",
+            "pixelSha256": "132a7b0cfc7834d70e34cafd82bd62aaaeb72c9970b7a5ae7650a5befb1ba0ef",
             "components": [
               {
                 "bbox": [
@@ -75972,8 +74493,8 @@
                   202,
                   244
                 ],
-                "area": 11261,
-                "maskSha256": "37b2134bf166cce89ab6724beea0cb725ffeb84401d7b5d808199d880c912829"
+                "area": 11398,
+                "maskSha256": "b321e6d2eb6a6775aa2def7844fb6663ac084bcf1f085474a014c37f1319ff78"
               },
               {
                 "bbox": [
@@ -76004,16 +74525,6 @@
                 ],
                 "area": 1,
                 "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  87,
-                  233,
-                  88,
-                  234
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
               }
             ]
           },
@@ -76026,7 +74537,7 @@
               200,
               244
             ],
-            "pixelSha256": "5027f01d4888c975022f3e372c712e5aa71145365c391f30ef8f7b13eea5f474",
+            "pixelSha256": "cf7c8fed511aae50d969758791d2c728b4f5e931955790618a385b04bb179e21",
             "components": [
               {
                 "bbox": [
@@ -76035,8 +74546,8 @@
                   200,
                   244
                 ],
-                "area": 10954,
-                "maskSha256": "a907df991ea1f5e798595e15e340d7ec0cc8552626f424ace9800caeeb5dd93f"
+                "area": 11075,
+                "maskSha256": "164d35c285bd7013d67c25fa47e70ba14386dc07f14d8510bf78fade98f52d45"
               },
               {
                 "bbox": [
@@ -76067,16 +74578,6 @@
                 ],
                 "area": 1,
                 "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  124,
-                  239,
-                  125,
-                  240
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
               }
             ]
           },
@@ -76085,21 +74586,21 @@
             "col": 3,
             "bbox": [
               48,
-              80,
-              206,
+              79,
+              207,
               244
             ],
-            "pixelSha256": "61dc851a67b4c31c2b0f2886e48dab65218a2b97a8de51465da867e021b6dbd7",
+            "pixelSha256": "9fd07b074065a93e39bef65fbd29113ea74ca36c8664286414f57114408c7804",
             "components": [
               {
                 "bbox": [
                   48,
-                  80,
-                  206,
+                  79,
+                  207,
                   244
                 ],
-                "area": 11217,
-                "maskSha256": "19958a3b01130a4688990ef8d05cc7f1e790f5e673b610481f5b06ccaba36f31"
+                "area": 11350,
+                "maskSha256": "758fa24f58eccd355b2b03dc58c765f238af9f7eca1f7598f234e68478867fd2"
               }
             ]
           },
@@ -76112,7 +74613,7 @@
               210,
               244
             ],
-            "pixelSha256": "31027fb7d2537364e6aa4168d72e3a8b3de9d0ff77749d8875232f855b56b1ec",
+            "pixelSha256": "835126937490bab6709c20d8721149ee68be9681fc94fa423815a0402b0fb930",
             "components": [
               {
                 "bbox": [
@@ -76121,18 +74622,8 @@
                   210,
                   244
                 ],
-                "area": 11842,
-                "maskSha256": "cbaf4e6f49358d329aac4c86b925cb05554eeebb57eb4a8cb7c4b63f3f502f7b"
-              },
-              {
-                "bbox": [
-                  115,
-                  239,
-                  116,
-                  240
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
+                "area": 11963,
+                "maskSha256": "a1d5e5d4d9e19b45f96d2006ae1ff165fa1d2d5dfc8888b5ffde13e0b39eba69"
               }
             ]
           },
@@ -76145,7 +74636,7 @@
               200,
               244
             ],
-            "pixelSha256": "461f362a6410997be2fa6aa5da652e3bd8daab92106a113f3a80bcd059fb06e0",
+            "pixelSha256": "5173cffa7ef1239c79e1239f462fa1b2226b8ae4c4ec04ed0b91bf21a9941a64",
             "components": [
               {
                 "bbox": [
@@ -76154,8 +74645,8 @@
                   200,
                   244
                 ],
-                "area": 11613,
-                "maskSha256": "c3421a40f9803e7f82ea5d7b89c3a6668b6b9f6ec28e926378e746da3fae0711"
+                "area": 11733,
+                "maskSha256": "fa18a88382eeb4332ea5d0eaa80bb9697f3019a11e1a31ef5a00b282d4d492a3"
               },
               {
                 "bbox": [
@@ -76163,16 +74654,6 @@
                   186,
                   198,
                   187
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  88,
-                  230,
-                  89,
-                  231
                 ],
                 "area": 1,
                 "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
@@ -76184,21 +74665,21 @@
             "col": 0,
             "bbox": [
               42,
-              89,
+              88,
               213,
               244
             ],
-            "pixelSha256": "55a4b72ca8005a52b89f8b1e69df2b64125a7a1f99b2081fc224c58451af0751",
+            "pixelSha256": "677e60f4093b265a4a2bf65707d4e32793c2e51c7e71342a245e2a15c5c22b07",
             "components": [
               {
                 "bbox": [
                   42,
-                  89,
+                  88,
                   213,
                   244
                 ],
-                "area": 13071,
-                "maskSha256": "dc9f5bca9fe1097199c94b5e87c2c11695dba481a36dc32124b6af66db431220"
+                "area": 13193,
+                "maskSha256": "aa2d79f52b9415c0756f7afdfc125bf7a922bb56df858ad255a42dfdfd0191c4"
               },
               {
                 "bbox": [
@@ -76212,16 +74693,6 @@
               },
               {
                 "bbox": [
-                  200,
-                  171,
-                  201,
-                  173
-                ],
-                "area": 2,
-                "maskSha256": "9dcf97a184f32623d11a73124ceb99a5709b083721e878a16d78f596718ba7b2"
-              },
-              {
-                "bbox": [
                   70,
                   180,
                   72,
@@ -76229,46 +74700,6 @@
                 ],
                 "area": 2,
                 "maskSha256": "afa7518106309c22d325df6d2663249d158d2f36f1976269d6d4104d9198a108"
-              },
-              {
-                "bbox": [
-                  55,
-                  148,
-                  56,
-                  149
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  200,
-                  160,
-                  201,
-                  161
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  206,
-                  167,
-                  207,
-                  168
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  82,
-                  228,
-                  83,
-                  229
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
               }
             ]
           },
@@ -76281,7 +74712,7 @@
               202,
               244
             ],
-            "pixelSha256": "b456d4d6aca0cc14d5fc41b0edf10461760a97511766b95f36863d4832f33d4d",
+            "pixelSha256": "e64975ed188b520656d2e36f5cf8cd85047775d1916be52e30299159eab6a276",
             "components": [
               {
                 "bbox": [
@@ -76290,28 +74721,8 @@
                   202,
                   244
                 ],
-                "area": 12193,
-                "maskSha256": "107eeffcebe85e503772ef30c3371a28649e1f83acb9a43fc57a10df1bf2185a"
-              },
-              {
-                "bbox": [
-                  150,
-                  126,
-                  151,
-                  127
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  142,
-                  144,
-                  143,
-                  145
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
+                "area": 12345,
+                "maskSha256": "e24844f7d9278f26b506eec3734b25cdae2bd363970f66c433c817242a1167fb"
               },
               {
                 "bbox": [
@@ -76334,7 +74745,7 @@
               219,
               244
             ],
-            "pixelSha256": "38b0b83aa4bb0a31748a538e6416e7ae9e91c794ae817868734c7189865c89ee",
+            "pixelSha256": "004958c015b839f5007fb88a8db1f7be3fc4b81a1ddf4b20eb3f9cd90dc47fa3",
             "components": [
               {
                 "bbox": [
@@ -76343,18 +74754,8 @@
                   219,
                   244
                 ],
-                "area": 13887,
-                "maskSha256": "bc18f33c48c5b92f507c232153780a95dacf4befbe40215161cf4c5a8edcd62c"
-              },
-              {
-                "bbox": [
-                  80,
-                  120,
-                  81,
-                  122
-                ],
-                "area": 2,
-                "maskSha256": "9dcf97a184f32623d11a73124ceb99a5709b083721e878a16d78f596718ba7b2"
+                "area": 14094,
+                "maskSha256": "f7c9af5bacc21f25cb50aaea590273611511e7f15dae55a7bc7ccd6c6636ddff"
               },
               {
                 "bbox": [
@@ -76362,16 +74763,6 @@
                   129,
                   108,
                   130
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  192,
-                  159,
-                  193,
-                  160
                 ],
                 "area": 1,
                 "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
@@ -76388,40 +74779,10 @@
               },
               {
                 "bbox": [
-                  163,
-                  200,
-                  164,
-                  201
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  168,
-                  209,
-                  169,
-                  210
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
                   68,
                   212,
                   69,
                   213
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  69,
-                  218,
-                  70,
-                  219
                 ],
                 "area": 1,
                 "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
@@ -76437,7 +74798,7 @@
               194,
               244
             ],
-            "pixelSha256": "0977fd82cb5f4fc50f5ef87d6f20df027dfe2fbd5ffc40b0180287bc20389467",
+            "pixelSha256": "daa8b04d9c9fed43f38b5523f9bbd23f84d986e7e2a42b2c59e405b124376c5d",
             "components": [
               {
                 "bbox": [
@@ -76446,38 +74807,8 @@
                   194,
                   244
                 ],
-                "area": 11135,
-                "maskSha256": "0c3fcf90954723e8f4233600c5d8f07086c4919c369541d679d9aed7d20f059d"
-              },
-              {
-                "bbox": [
-                  86,
-                  183,
-                  89,
-                  187
-                ],
-                "area": 7,
-                "maskSha256": "5751da4322517c9a5aea05b0b610524bf512049da9c993469faf670a2eec4eda"
-              },
-              {
-                "bbox": [
-                  149,
-                  145,
-                  150,
-                  146
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  171,
-                  182,
-                  172,
-                  183
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
+                "area": 11285,
+                "maskSha256": "4c2ec30e0853cb661c53ff66a15f7ab1c7d1db629ccdeead33cdc4a173a54a8a"
               }
             ]
           },
@@ -76490,7 +74821,7 @@
               228,
               244
             ],
-            "pixelSha256": "8ffe43655955cbd36775c09ce404f9e1763866dbc256cb63ec69240bc4df2b04",
+            "pixelSha256": "389c00dfa0ceac67cf4b11c7b3832b5a65e85c74581fc9dc8b14eb399d45f0d9",
             "components": [
               {
                 "bbox": [
@@ -76499,48 +74830,8 @@
                   228,
                   244
                 ],
-                "area": 14051,
-                "maskSha256": "25f54b163ec1fb661a40c7309fcee9a64bc53b4373f93d7de913dfbe65d30f17"
-              },
-              {
-                "bbox": [
-                  190,
-                  112,
-                  198,
-                  116
-                ],
-                "area": 16,
-                "maskSha256": "aaf6d75c26e635288f9155584c67a644515ff3e191920793b423e3ad7fd0cfdf"
-              },
-              {
-                "bbox": [
-                  61,
-                  114,
-                  62,
-                  116
-                ],
-                "area": 2,
-                "maskSha256": "9dcf97a184f32623d11a73124ceb99a5709b083721e878a16d78f596718ba7b2"
-              },
-              {
-                "bbox": [
-                  30,
-                  222,
-                  31,
-                  224
-                ],
-                "area": 2,
-                "maskSha256": "9dcf97a184f32623d11a73124ceb99a5709b083721e878a16d78f596718ba7b2"
-              },
-              {
-                "bbox": [
-                  110,
-                  107,
-                  111,
-                  108
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
+                "area": 14430,
+                "maskSha256": "2f1fe70f7dd8bcc4100f3bee6923e02cea81264234337dd2aba8a6ccb11d76a1"
               },
               {
                 "bbox": [
@@ -76554,60 +74845,10 @@
               },
               {
                 "bbox": [
-                  58,
-                  153,
-                  59,
-                  154
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  145,
-                  181,
-                  146,
-                  182
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
                   69,
                   192,
                   70,
                   193
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  53,
-                  199,
-                  54,
-                  200
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  157,
-                  200,
-                  158,
-                  201
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  58,
-                  226,
-                  59,
-                  227
                 ],
                 "area": 1,
                 "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
@@ -76623,7 +74864,7 @@
               208,
               244
             ],
-            "pixelSha256": "133f54de749b88962e0335afb09fac1c2c616dc993bd8c21032a1c10dece8eeb",
+            "pixelSha256": "cb50c2f8172a70f195b50e5f619418fd709eb29ff73adbfae75950f1c0183a5a",
             "components": [
               {
                 "bbox": [
@@ -76632,48 +74873,8 @@
                   208,
                   244
                 ],
-                "area": 13406,
-                "maskSha256": "f0ae69c422d1b4f60b9651d250e8ad09a454c38c2d19193926f27d8301fab9a0"
-              },
-              {
-                "bbox": [
-                  184,
-                  192,
-                  186,
-                  194
-                ],
-                "area": 4,
-                "maskSha256": "27ecd0a598e76f8a2fd264d427df0a119903e8eae384e478902541756f089dd1"
-              },
-              {
-                "bbox": [
-                  88,
-                  198,
-                  90,
-                  200
-                ],
-                "area": 3,
-                "maskSha256": "cbd95ae5ef8810691e3fc7efb7c39ef9ffb661135d858aa0ccc81fc74a0160ae"
-              },
-              {
-                "bbox": [
-                  180,
-                  164,
-                  182,
-                  165
-                ],
-                "area": 2,
-                "maskSha256": "9dcf97a184f32623d11a73124ceb99a5709b083721e878a16d78f596718ba7b2"
-              },
-              {
-                "bbox": [
-                  148,
-                  88,
-                  149,
-                  89
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
+                "area": 13666,
+                "maskSha256": "61350e482f209dc8f4871d5cfaddc84124f29161c1f4a0ffe950f4d58e6d771a"
               },
               {
                 "bbox": [
@@ -76701,56 +74902,6 @@
                   156,
                   72,
                   157
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  193,
-                  160,
-                  194,
-                  161
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  184,
-                  171,
-                  185,
-                  172
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  80,
-                  179,
-                  81,
-                  180
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  79,
-                  185,
-                  80,
-                  186
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  80,
-                  188,
-                  81,
-                  189
                 ],
                 "area": 1,
                 "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
@@ -76786,7 +74937,7 @@
               188,
               244
             ],
-            "pixelSha256": "b5dd6512ed24d30202a48401ae77a55ab279df337f8a533a64e84acea9477132",
+            "pixelSha256": "dacc73236873b2bee4b8da03a3d5087fbe5ce7ba6c8c699cf5f261df5d25880f",
             "components": [
               {
                 "bbox": [
@@ -76795,18 +74946,8 @@
                   188,
                   244
                 ],
-                "area": 9623,
-                "maskSha256": "7901f0b2687efdf04576b1f5a41b30ff4e074121381ce9f3b67c0f0470b9cd29"
-              },
-              {
-                "bbox": [
-                  139,
-                  189,
-                  144,
-                  192
-                ],
-                "area": 11,
-                "maskSha256": "fdf9c84be9011825be00da3e8c9a5e7770e67f00488ffdad4b72596e61efb9f5"
+                "area": 9776,
+                "maskSha256": "2950fc3607e07fdb6eb7491aef5da2a4ab0efa9cf9c19fbd99233c9cf22e6b9e"
               },
               {
                 "bbox": [
@@ -76814,26 +74955,6 @@
                   141,
                   144,
                   142
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  184,
-                  180,
-                  185,
-                  181
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  78,
-                  193,
-                  79,
-                  194
                 ],
                 "area": 1,
                 "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
@@ -76859,7 +74980,7 @@
               191,
               244
             ],
-            "pixelSha256": "2a5ec821fa5e04889ae1540508cbd593acd9a0ef3a5faea36e3d4b1407e0d984",
+            "pixelSha256": "a411c20e1bed9c268f203ba3bde3df1076f57d4f3df64510ea63a0f6af9734cf",
             "components": [
               {
                 "bbox": [
@@ -76868,18 +74989,8 @@
                   191,
                   244
                 ],
-                "area": 10931,
-                "maskSha256": "28ce9b2562d047e8ea2401d6fe08719ceca0a50812cde0972b0582da255726bb"
-              },
-              {
-                "bbox": [
-                  85,
-                  150,
-                  86,
-                  151
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
+                "area": 11031,
+                "maskSha256": "978f80dc49ee828ad0f2accd4abe848f5c25631463a9130d8e348904fdccd6cb"
               },
               {
                 "bbox": [
@@ -76887,16 +74998,6 @@
                   163,
                   158,
                   164
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  178,
-                  193,
-                  179,
-                  194
                 ],
                 "area": 1,
                 "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
@@ -76918,21 +75019,21 @@
             "col": 2,
             "bbox": [
               53,
-              97,
+              96,
               203,
               244
             ],
-            "pixelSha256": "eb14eb5caedd828a0a5ac0c19fb5c553a9089d1150af07059a18d8ebd944eec8",
+            "pixelSha256": "c1aeae25aa70b553e96bf3fed92ecf0f1377d938f93a3bde42546f4086a4da63",
             "components": [
               {
                 "bbox": [
                   53,
-                  97,
+                  96,
                   203,
                   244
                 ],
-                "area": 11570,
-                "maskSha256": "52c4b4e8bcab663cef081d396ab4e43ab3e7a988e4f098f0d97d1cfe81daffaf"
+                "area": 11691,
+                "maskSha256": "84bd5b8521aefddae59deed3414a1c72e268171389dce03aa490750ca55388dc"
               },
               {
                 "bbox": [
@@ -76965,7 +75066,7 @@
               182,
               244
             ],
-            "pixelSha256": "5228f89b00678918d2e13a09e994dd25402a6682197fe474d7bba0ed78d47dde",
+            "pixelSha256": "559b5b29a61b7c95cc7bbdbbdf8dc4686f4805ee962fda834004247751b86d56",
             "components": [
               {
                 "bbox": [
@@ -76974,28 +75075,8 @@
                   182,
                   244
                 ],
-                "area": 9688,
-                "maskSha256": "973e79a8fabaf58c7e9e18dd47cc6354cd7227b0b76a274a5467464aeae5d669"
-              },
-              {
-                "bbox": [
-                  97,
-                  180,
-                  98,
-                  181
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  170,
-                  209,
-                  171,
-                  210
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
+                "area": 9772,
+                "maskSha256": "82e3e7fe94701b163de4934e7c5e39069974dcf92efe8df2d9428daa53f69e89"
               }
             ]
           },
@@ -77005,30 +75086,20 @@
             "bbox": [
               76,
               105,
-              179,
+              180,
               244
             ],
-            "pixelSha256": "68bc0b3246782d15a5c4f17dca35c9b5e30e3606a6cf596b20e138f3e8a63320",
+            "pixelSha256": "380811e95cfa834cd53409433314cf0e6aa50b0a251b94b1c48a698a1ac85014",
             "components": [
               {
                 "bbox": [
                   76,
                   105,
-                  179,
+                  180,
                   244
                 ],
-                "area": 8780,
-                "maskSha256": "7cc964f4703c69f76691af814aac783e50857dacb10a7295f2ffa60558452c10"
-              },
-              {
-                "bbox": [
-                  135,
-                  113,
-                  139,
-                  117
-                ],
-                "area": 9,
-                "maskSha256": "a6c0b821b154c34e9719d0fdd827b35c7fc10106a67bf90ea6289689f1e8f8f9"
+                "area": 8874,
+                "maskSha256": "3a4ddcf42887c2b27e746c99ca31e9477f0aecc839788768459ca42b3f6129f3"
               },
               {
                 "bbox": [
@@ -77051,7 +75122,7 @@
               191,
               244
             ],
-            "pixelSha256": "ea7830b76890bbcf5a432655429c69e50da78db28809280732b076590607359b",
+            "pixelSha256": "5eb94273fb213dfa8bf141c43df3683ac5cf1b50ee99176e58483a2194f5cd9c",
             "components": [
               {
                 "bbox": [
@@ -77060,8 +75131,8 @@
                   191,
                   244
                 ],
-                "area": 9065,
-                "maskSha256": "1786f7cf04949040ab4de87179985e8754be608da9a7e47a7db2ee280d25d047"
+                "area": 9161,
+                "maskSha256": "d158206fc8ddc6126a65f1b78649f554e78f2a563de3bb2c6c0244fadfdbe3ac"
               }
             ]
           },
@@ -77074,7 +75145,7 @@
               207,
               244
             ],
-            "pixelSha256": "9cd2031529f8166982df4b2dbf144549b82a7e7fdc38e0a21e5db020e629b7b6",
+            "pixelSha256": "f56b046bbb76330f82cb01e097dbb989918ffc8e2ffdab3bbd2f20d153a82f84",
             "components": [
               {
                 "bbox": [
@@ -77083,38 +75154,8 @@
                   207,
                   244
                 ],
-                "area": 12507,
-                "maskSha256": "b544c160e8af57fc37274e6b2cc8309a925add6f27098e62b0ec75715548b73a"
-              },
-              {
-                "bbox": [
-                  57,
-                  153,
-                  60,
-                  155
-                ],
-                "area": 5,
-                "maskSha256": "d029ad93978df7e6ee64f4f3b5e5be70df48ce3cbee6d56fd5651ff4bcfa7323"
-              },
-              {
-                "bbox": [
-                  78,
-                  120,
-                  79,
-                  122
-                ],
-                "area": 2,
-                "maskSha256": "9dcf97a184f32623d11a73124ceb99a5709b083721e878a16d78f596718ba7b2"
-              },
-              {
-                "bbox": [
-                  133,
-                  128,
-                  134,
-                  129
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
+                "area": 12702,
+                "maskSha256": "2ae4d5ead04566f8d69ebea1bd7a92386ee9b10378cfe065dc5eb9a2d4ca6574"
               },
               {
                 "bbox": [
@@ -77137,7 +75178,7 @@
               195,
               244
             ],
-            "pixelSha256": "74dabe99d0cee8c45ae2d86c67cc15b59db4ef0dbafde6752d894dff3ff26305",
+            "pixelSha256": "5b5c6891ca6c8cde8185e0fc3e48ca47973152d48bfe8356e430703a514c3009",
             "components": [
               {
                 "bbox": [
@@ -77146,18 +75187,8 @@
                   195,
                   244
                 ],
-                "area": 12331,
-                "maskSha256": "b4f2e9ab7f2269ac25677fade58ce03faf00a9a8bd78f6e424390a15253906ea"
-              },
-              {
-                "bbox": [
-                  173,
-                  222,
-                  174,
-                  223
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
+                "area": 12472,
+                "maskSha256": "dc62828d82dbcb0529b48f526c428ff2cc538ecceb79abebf938fa19946a5663"
               }
             ]
           },
@@ -77170,7 +75201,7 @@
               203,
               244
             ],
-            "pixelSha256": "282fb8c4b18e2b697c012bca2f994ac4050aaa7a8ac80a5f1305d4327733a73e",
+            "pixelSha256": "1ad528a69647f83b06861f46655d1cbdfda3009ff5201cf559b604698add2863",
             "components": [
               {
                 "bbox": [
@@ -77179,48 +75210,8 @@
                   203,
                   244
                 ],
-                "area": 12842,
-                "maskSha256": "72460fedb82efa8547c63d3686550acad400fcfdc2a6a1365a88a8d225e4d9e2"
-              },
-              {
-                "bbox": [
-                  88,
-                  112,
-                  91,
-                  115
-                ],
-                "area": 6,
-                "maskSha256": "77f06055e40532f668a3f9f5292ce8f8cba54ea541a0591fd2a56082d039f0d5"
-              },
-              {
-                "bbox": [
-                  151,
-                  182,
-                  153,
-                  184
-                ],
-                "area": 4,
-                "maskSha256": "27ecd0a598e76f8a2fd264d427df0a119903e8eae384e478902541756f089dd1"
-              },
-              {
-                "bbox": [
-                  62,
-                  134,
-                  63,
-                  135
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  152,
-                  161,
-                  153,
-                  162
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
+                "area": 13040,
+                "maskSha256": "4fe354facc5fee12a7819f8337c9f4f0ad0f72b508f0a618f74edd80fa2a8cf3"
               },
               {
                 "bbox": [
@@ -77243,7 +75234,7 @@
               194,
               244
             ],
-            "pixelSha256": "0358fdca78d969b4267d1cb44d761d6679e1f0f5a2b4881d4034066b50337315",
+            "pixelSha256": "ec10fa070a4996375fe21208b9942a63bb486d3406f4765e8e3de387971ac563",
             "components": [
               {
                 "bbox": [
@@ -77252,18 +75243,8 @@
                   194,
                   244
                 ],
-                "area": 11642,
-                "maskSha256": "32d057cd9f3f04b6df4da14d61af1fbedef7ee6b007616dbd6a7ec775e467a06"
-              },
-              {
-                "bbox": [
-                  186,
-                  131,
-                  187,
-                  132
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
+                "area": 11792,
+                "maskSha256": "9fa60398988a16f3974c5d9babb3e6f94e0d797fa68da8af4e1e4c9d73f9b6df"
               }
             ]
           },
@@ -77273,60 +75254,20 @@
             "bbox": [
               32,
               98,
-              222,
+              223,
               244
             ],
-            "pixelSha256": "3b01a246248f160ed7e40dca73f7dc3381a5db61ce320a962724f1ed8ab750c6",
+            "pixelSha256": "d3b242cd7fc650bfe391b00e8283f98adf255b6b82e4b3dace86c89bb51c8e11",
             "components": [
               {
                 "bbox": [
                   32,
                   98,
-                  222,
+                  223,
                   244
                 ],
-                "area": 13116,
-                "maskSha256": "95cd9aad702f7059ddb26b86a006c427f504e2e120b529fd0ab1425cd999729a"
-              },
-              {
-                "bbox": [
-                  158,
-                  129,
-                  159,
-                  132
-                ],
-                "area": 3,
-                "maskSha256": "75c8fd04ad916aec3e3d5cb76a452b116b3d4d0912a0a485e9fb8e3d240e210c"
-              },
-              {
-                "bbox": [
-                  86,
-                  239,
-                  87,
-                  242
-                ],
-                "area": 3,
-                "maskSha256": "75c8fd04ad916aec3e3d5cb76a452b116b3d4d0912a0a485e9fb8e3d240e210c"
-              },
-              {
-                "bbox": [
-                  34,
-                  106,
-                  35,
-                  107
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
-              },
-              {
-                "bbox": [
-                  115,
-                  133,
-                  116,
-                  134
-                ],
-                "area": 1,
-                "maskSha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
+                "area": 13331,
+                "maskSha256": "c6a4208bb225173ba40e3fbad372d5201c4941cfe84eb89fb95d8ee0812d2653"
               }
             ]
           },
@@ -77339,7 +75280,7 @@
               205,
               244
             ],
-            "pixelSha256": "7072b96af974851df6037229a034e86f581745483f22b5883c934cbfc212105d",
+            "pixelSha256": "28d0a66729fc5d6410138622197baa629d27da00d96b90a75bc569280e072ae5",
             "components": [
               {
                 "bbox": [
@@ -77348,28 +75289,8 @@
                   205,
                   244
                 ],
-                "area": 11977,
-                "maskSha256": "66e72ba6f61211fa7a9778778475429008e551f48b8f5ec3d0dc72f9c71776a0"
-              },
-              {
-                "bbox": [
-                  166,
-                  191,
-                  169,
-                  195
-                ],
-                "area": 7,
-                "maskSha256": "27e8089601b808b80339e43d30c4af4bdb8f534c0c393f40c77ce918dce857c2"
-              },
-              {
-                "bbox": [
-                  178,
-                  210,
-                  179,
-                  212
-                ],
-                "area": 2,
-                "maskSha256": "9dcf97a184f32623d11a73124ceb99a5709b083721e878a16d78f596718ba7b2"
+                "area": 12164,
+                "maskSha256": "c71ceb164ceb73c3f2ca9c829e84d677504f335965932bce0893a4c3b7430775"
               },
               {
                 "bbox": [
@@ -77392,7 +75313,7 @@
               195,
               244
             ],
-            "pixelSha256": "791643b4e5f24f2dbb1c6ed5753f7fbe0397ef09e9738d1e21a7dcba1c18ac16",
+            "pixelSha256": "18acda3c1132276d9cf8d928cf855d0ffae9fb9572c4ceb3b4c1bc9342cf309b",
             "components": [
               {
                 "bbox": [
@@ -77415,7 +75336,7 @@
               207,
               244
             ],
-            "pixelSha256": "0b9742dbd270642eb8650449fa7ad237bebfaa9ee77dc769d209ba85ef1bad3c",
+            "pixelSha256": "93959ba7d6ada4289df8be497cf4ac1dfa535bb468cf1034213de69b25ac6875",
             "components": [
               {
                 "bbox": [
@@ -77438,7 +75359,7 @@
               212,
               244
             ],
-            "pixelSha256": "7d1a7d338de6cfa1360eb701754f60c2ebd862842284d46fdd7226802793e4ae",
+            "pixelSha256": "85fb6db30b6e5282e8e0a842d2242597f7d1e5965a83c162c7c7f113b81030ac",
             "components": [
               {
                 "bbox": [
@@ -77481,7 +75402,7 @@
               226,
               244
             ],
-            "pixelSha256": "06cddf7d72920427b704ed37816a87fafb160cfd6a9ce63fe0879af8dc1fdb4b",
+            "pixelSha256": "5825e82bc8af2bd661fb10cde3e783887929608213f39c27e76876043094e040",
             "components": [
               {
                 "bbox": [
@@ -77514,7 +75435,7 @@
               242,
               244
             ],
-            "pixelSha256": "ca3847a4142e48ede8940c7c99931b84b581664cbd5ffb2888442c6df8f99660",
+            "pixelSha256": "8b4582f73e61447ba39b4c7ff664e12ca75cbe44c984f62c4967d840c42731d8",
             "components": [
               {
                 "bbox": [
@@ -77537,7 +75458,7 @@
               235,
               244
             ],
-            "pixelSha256": "355d6d11e2394e7d43949f7806181ddb945b63be326e3b361686c6b9789f444a",
+            "pixelSha256": "ec3d739900afda01b832cc3348ffa2aa621554584984dc199828d313c1e69a96",
             "components": [
               {
                 "bbox": [
@@ -82832,7 +80753,7 @@
     {
       "bossId": "boss_feral_dog_alpha",
       "path": "/art_sources/combat/task10_bosses/review_previews/boss_feral_dog_alpha_review.png",
-      "sha256": "9270210eeab4cd4f636325b2ce606cb3c829e6ba29621b929a64b0c77b7243b9"
+      "sha256": "d99648ceee9041a1650ab5ec4f173b986682fa18681905c13e6c46250a4df8a9"
     },
     {
       "bossId": "boss_penthouse_survivor",
@@ -82867,7 +80788,7 @@
     {
       "bossId": "boss_chef_nemesis",
       "path": "/art_sources/combat/task10_bosses/review_previews/boss_chef_nemesis_review.png",
-      "sha256": "5d362da68c9fdacd7b6bc4856bb60f9d6205d1576e9fb7099241b8e9445516da"
+      "sha256": "f47af1a9f202b36060250e7649f83416fa8d6db66565bbbac3c5a2e53e57172e"
     },
     {
       "bossId": "boss_doctor_nemesis",
@@ -82882,6 +80803,6 @@
   ],
   "contact": {
     "path": "/art_sources/combat/task10_bosses/boss_motion_contact_sheet.png",
-    "sha256": "9a3bfb8d04ea93cc7fb897466f8ebe61b04d0f3a374025856cd013e275eee38c"
+    "sha256": "2e833e0f630ab83520d75dc9b50125135ae994586776f6f9440b67eae2a86acf"
   }
 }
