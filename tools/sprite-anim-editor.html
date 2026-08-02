@@ -220,9 +220,10 @@
       <div class="row"><button id="saveServer" class="primary" style="flex:1">정렬 시트 저장 (서버)</button></div>
       <div class="hint" id="saveTargetInfo" style="margin:-2px 0 8px">저장 대상: —</div>
       <div class="row"><button id="downloadPng" style="flex:1">PNG 다운로드</button><button id="copyCss" style="flex:1">타이밍 CSS</button></div>
+      <div class="row"><button id="saveLib" style="flex:1">라이브러리 저장</button></div>
       <div class="row"><button id="saveProj" class="ghost" style="flex:1">프로젝트 저장</button><button id="loadProj" class="ghost" style="flex:1">불러오기</button></div>
       <input type="file" id="projInput" accept="application/json,.json" hidden />
-      <div class="hint">‘서버 저장’은 원본을 <code>_src.png</code>로 자동 백업 후 게임 시트에 덮어씁니다. 재배치 + 배경 투명이 함께 반영됩니다.</div>
+      <div class="hint">‘서버 저장’은 원본을 <code>_src.png</code>로 자동 백업 후 게임 시트에 덮어씁니다. 재배치 + 배경 투명이 함께 반영됩니다. ‘라이브러리 저장’은 작업본(.anim.json)을 저장소 <code>art_sources/combat/anim_projects/</code>에 보관하며, 같은 시트를 다시 선택하면 자동 복원됩니다.</div>
     </div>
   </div>
 </main>
@@ -256,6 +257,7 @@ const S = {
   saveTargetPath: null, saveName: 'sheet.png',
   serverOn: false, sheets: [], picking: false, rowMove: false, showRaw: false,
   layers: [], activeLayer: null,  // overlay images: { name, dataUrl, img, frame, x, y, scale, rot }
+  pendingProject: null,  // 시트 선택 시 라이브러리에서 미리 받아둔 프로젝트 (onImageReady에서 적용)
 };
 
 // ── per-frame timing helpers ────────────────────────────────
@@ -397,6 +399,11 @@ function onImageReady(img, name, savePath) {
   buildRowTabs();
   detectFrames();          // auto-detect immediately on load
   selectFrame(0);
+  if (S.pendingProject && S.pendingProject.path === S.saveTargetPath) {
+    const p = S.pendingProject; S.pendingProject = null;
+    applyProject(p);
+    toast('라이브러리 프로젝트 자동 복원: ' + (p.src || S.saveName));
+  }
 }
 
 function rebuildFrames(reset) {
@@ -869,13 +876,24 @@ function copyCss() {
   const txt = S.rowDur.slice(0, S.rows).map((d, i) => `/* 행 ${i} ${ROW_PRESETS[i] ? ROW_PRESETS[i].name : ''} */ --sprite-duration: ${d}ms;`).join('\n');
   navigator.clipboard?.writeText(txt).then(() => toast('타이밍 CSS 복사됨'), () => toast(txt));
 }
-function saveProject() {
+function buildProjectJson() {
   const frames = S.frames.map(f => ({ box: f.box || null, dx: f.dx | 0, dy: f.dy | 0, rot: +f.rot || 0, scale: f.scale > 0 ? +f.scale : 1 }));
   const layers = S.layers.map(L => ({ name: L.name, dataUrl: L.dataUrl, frame: L.frame, x: L.x, y: L.y, scale: L.scale, rot: L.rot }));
-  const proj = { v: 3, src: S.saveName, path: S.saveTargetPath, cols: S.cols, rows: S.rows, rowDur: S.rowDur, frameDur: S.frameDur, bg: S.bg, removeBg: S.removeBg, isolate: S.isolate, anchorMode: S.anchorMode, frames, layers };
+  return { v: 3, src: S.saveName, path: S.saveTargetPath, cols: S.cols, rows: S.rows, rowDur: S.rowDur, frameDur: S.frameDur, bg: S.bg, removeBg: S.removeBg, isolate: S.isolate, anchorMode: S.anchorMode, frames, layers };
+}
+function saveProject() {
   const a = document.createElement('a');
   a.download = S.saveName.replace(/\.png$/i, '') + '.anim.json';
-  a.href = URL.createObjectURL(new Blob([JSON.stringify(proj, null, 2)], { type: 'application/json' })); a.click();
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(buildProjectJson(), null, 2)], { type: 'application/json' })); a.click();
+}
+async function saveToLibrary() {
+  if (!S.serverOn) { toast('서버 미연결 — 프로젝트 저장(다운로드)을 사용하세요'); return; }
+  if (!S.saveTargetPath) { toast('저장 대상 경로 없음 — 파일 열기로 로드한 시트는 라이브러리 저장 불가'); return; }
+  const name = S.saveTargetPath.split('/').pop().replace(/\.png$/i, '.anim.json');
+  try {
+    const j = await fetch('/api/save-anim-project', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, project: buildProjectJson() }) }).then(r => r.json());
+    toast(j.ok ? `라이브러리 저장됨: ${name}` : '저장 실패: ' + (j.error || ''));
+  } catch (e) { toast('저장 오류: ' + e.message); }
 }
 function applyProject(p) {
   S.cols = p.cols || 6; S.rows = p.rows || 4; $('cols').value = S.cols; $('rows').value = S.rows;
@@ -915,11 +933,19 @@ function populateSheetSelect() {
     const o = document.createElement('option'); o.value = s.path; o.textContent = s.path.replace('/assets/images/combat/spritesheets/', ''); sel.appendChild(o);
   }
 }
-function selectedSheetLoad(basePath) {
+async function selectedSheetLoad(basePath) {
   if (!basePath) return;
   const srcPath = basePath.replace(/\.png$/i, '_src.png');
   const hasSrc = S.sheets.some(s => s.path === srcPath);
   const loadPath = ($('preferSrc').checked && hasSrc) ? srcPath : basePath;
+  S.pendingProject = null;
+  if (S.serverOn) {
+    const name = basePath.split('/').pop().replace(/\.png$/i, '.anim.json');
+    try {
+      const r = await fetch('/api/anim-project?name=' + encodeURIComponent(name));
+      if (r.ok) { const j = await r.json(); if (j.ok && j.project) S.pendingProject = j.project; }
+    } catch (e) { /* 라이브러리 미존재 — 신규 작업으로 진행 */ }
+  }
   loadFromUrl(loadPath, basePath.split('/').pop(), basePath);
 }
 
@@ -978,6 +1004,7 @@ $('lrot').oninput = (e) => { const L = activeLayerObj(); if (L) { L.rot = parseF
 $('saveServer').onclick = saveToServer;
 $('downloadPng').onclick = downloadPng;
 $('copyCss').onclick = copyCss;
+$('saveLib').onclick = saveToLibrary;
 $('saveProj').onclick = saveProject;
 $('loadProj').onclick = () => $('projInput').click();
 $('projInput').onchange = (e) => { const f = e.target.files[0]; if (!f) return; const fr = new FileReader(); fr.onload = () => { try { applyProject(JSON.parse(fr.result)); } catch (err) { toast('JSON 파싱 실패'); } }; fr.readAsText(f); };
