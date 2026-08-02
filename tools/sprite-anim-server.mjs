@@ -12,6 +12,7 @@ import { dirname, join, resolve, extname, relative, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { exec } from 'node:child_process';
 import { mergeMotionLibrary } from './motionLibraryStore.cjs';
+import { listProjects, readProject, writeProject } from './animProjectStore.cjs';
 
 const PORT = parseInt(process.env.SPRITE_ANIM_PORT || '7333', 10);
 const HOST = '127.0.0.1';
@@ -216,6 +217,27 @@ const server = createServer(async (req, res) => {
     if (req.method === 'GET' && p === '/api/sheets') { await handleListSheets(req, res); return; }
     if (req.method === 'POST' && p === '/api/save-sheet') { await handleSaveSheet(req, res); return; }
     if (req.method === 'POST' && p === '/api/reveal') { await handleReveal(req, res); return; }
+    if (req.method === 'GET' && p === '/api/anim-projects') {
+      try { sendJson(res, 200, { ok: true, projects: listProjects(ROOT) }); }
+      catch (err) { sendJson(res, 500, { error: String(err.message || err) }); }
+      return;
+    }
+    if (req.method === 'GET' && p === '/api/anim-project') {
+      try {
+        const project = readProject(ROOT, url.searchParams.get('name'));
+        if (!project) { sendJson(res, 404, { error: '프로젝트 없음' }); return; }
+        sendJson(res, 200, { ok: true, project });
+      } catch (err) { sendJson(res, 500, { error: String(err.message || err) }); }
+      return;
+    }
+    if (req.method === 'POST' && p === '/api/save-anim-project') {
+      try {
+        const body = await readJsonBody(req);
+        const saved = writeProject(ROOT, body?.name, body?.project);
+        sendJson(res, 200, { ok: true, name: saved.name });
+      } catch (err) { sendJson(res, 400, { error: String(err.message || err) }); }
+      return;
+    }
 
     if (req.method === 'GET') {
       if (p === '/' || p === '/index.html') {

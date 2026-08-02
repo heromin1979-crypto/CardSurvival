@@ -12,6 +12,7 @@ const fs   = require('fs');
 const path = require('path');
 const { exec, execFile } = require('child_process');
 const { mergeMotionLibrary } = require('./tools/motionLibraryStore.cjs');
+const animProjects = require('./tools/animProjectStore.cjs');
 
 const PORT = 8080;
 const ROOT = __dirname;
@@ -202,6 +203,21 @@ async function handleApi(req, res, urlPath) {
       sendJSON(res, 200, { ok: true, sheets: out });
       return;
     }
+    if (urlPath === '/api/anim-projects') {
+      // 스프라이트 애니 에디터 — 프로젝트 라이브러리 목록
+      try { sendJSON(res, 200, { ok: true, projects: animProjects.listProjects(ROOT) }); }
+      catch (e) { sendJSON(res, 500, { error: e.message }); }
+      return;
+    }
+    if (urlPath === '/api/anim-project') {
+      const q = new URLSearchParams(req.url.split('?')[1] || '');
+      try {
+        const project = animProjects.readProject(ROOT, q.get('name'));
+        if (!project) { sendJSON(res, 404, { error: '프로젝트 없음' }); return; }
+        sendJSON(res, 200, { ok: true, project });
+      } catch (e) { sendJSON(res, 500, { error: e.message }); }
+      return;
+    }
     sendJSON(res, 404, { error: 'unknown api' });
     return;
   }
@@ -318,6 +334,17 @@ async function handleApi(req, res, urlPath) {
     } catch (e) {
       sendJSON(res, 500, { error: `기록 실패: ${e.message}` });
     }
+    return;
+  }
+
+  if (urlPath === '/api/save-anim-project') {
+    // 스프라이트 애니 에디터 — 프로젝트 라이브러리 저장
+    let body;
+    try { body = await readBody(req); } catch (e) { sendJSON(res, 400, { error: `잘못된 요청: ${e.message}` }); return; }
+    try {
+      const saved = animProjects.writeProject(ROOT, body.name, body.project);
+      sendJSON(res, 200, { ok: true, name: saved.name });
+    } catch (e) { sendJSON(res, 400, { error: e.message }); }
     return;
   }
 
