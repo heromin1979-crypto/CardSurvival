@@ -11,6 +11,7 @@ const http = require('http');
 const fs   = require('fs');
 const path = require('path');
 const { exec, execFile } = require('child_process');
+const { mergeMotionLibrary } = require('./tools/motionLibraryStore.cjs');
 
 const PORT = 8080;
 const ROOT = __dirname;
@@ -311,19 +312,8 @@ async function handleApi(req, res, urlPath) {
       }
       fs.writeFileSync(target, buf);
       let manifestWritten = false;
-      if (body.meta && Number(body.meta.cols) > 0) {
-        const manifestPath = path.join(sheetDir, 'manifest.json');
-        let manifest = {};
-        try { manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8')); } catch (e) { /* new */ }
-        const name = path.basename(target).replace(/_src\.png$/i, '.png');
-        manifest[name] = {
-          cols: Number(body.meta.cols),
-          rows: Number(body.meta.rows) || 4,
-          ...(Array.isArray(body.meta.rowFrames) ? { rowFrames: body.meta.rowFrames } : {}),
-        };
-        fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
-        manifestWritten = true;
-      }
+      try { manifestWritten = !!mergeMotionLibrary(sheetDir, target, body.meta); }
+      catch (e) { /* 라이브러리 기록 실패가 시트 저장을 막지 않도록 */ }
       sendJSON(res, 200, { ok: true, bytes: buf.length, path: '/' + path.relative(ROOT, target).split(path.sep).join('/'), manifest: manifestWritten });
     } catch (e) {
       sendJSON(res, 500, { error: `기록 실패: ${e.message}` });

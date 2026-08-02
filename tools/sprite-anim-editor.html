@@ -187,7 +187,7 @@
           <input type="number" id="frameDur" min="20" max="4000" step="10" value="153" style="width:80px" /> <span class="hint">ms</span>
           <span class="hint" style="margin-left:auto">프레임 <span id="fdIdx">0</span> · 행 합계 <span id="rowTotal">920</span>ms</span>
         </div>
-        <div class="hint"><b>프레임별로 다른 시간</b> 지정 가능(예: 특정 포즈를 오래). 저장 시 <code>manifest.frameDur</code>로 기록돼 게임이 그 완급대로 재생합니다. ‘전체’ 슬라이더/‘행 균등’은 현재 행을 균등으로 리셋.</div>
+        <div class="hint"><b>프레임별로 다른 시간</b> 지정 가능(예: 특정 포즈를 오래). 저장 시 <code>motionLibrary.json</code>에 기록돼 게임이 그 완급대로 재생합니다. ‘전체’ 슬라이더/‘행 균등’은 현재 행을 균등으로 리셋.</div>
       </div>
 
       <div class="card" style="width:100%; max-width:460px">
@@ -857,7 +857,7 @@ async function saveToServer() {
   }
   try {
     const j = await fetch('/api/save-sheet', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: S.saveTargetPath, dataUrl, meta }) }).then(r => r.json());
-    toast(j.ok ? `저장됨: ${j.path} (cols ${S.cols}${j.manifest ? ', manifest 갱신' : ''})` : '저장 실패: ' + (j.error || ''));
+    toast(j.ok ? `저장됨: ${j.path} (cols ${S.cols}${j.manifest ? ', 라이브러리 갱신' : ''})` : '저장 실패: ' + (j.error || ''));
   } catch (e) { toast('저장 오류: ' + e.message); }
 }
 function downloadPng() {
