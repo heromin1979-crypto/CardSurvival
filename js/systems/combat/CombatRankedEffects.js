@@ -9,7 +9,13 @@ import StatSystem     from '../StatSystem.js';
 import SkillSystem    from '../SkillSystem.js';
 import NightSystem    from '../NightSystem.js';
 import BALANCE        from '../../data/gameBalance.js';
-import { addStress, addToken, applyDamage, healCombatant } from './CombatStatusSystem.js';
+import {
+  addStress,
+  addToken,
+  applyDamage,
+  consumeEnemyDamageShield,
+  enemyStatusModifiers,
+} from './CombatStatusSystem.js';
 import {
   composeAccuracy,
   modifyIncomingDamage,
@@ -20,6 +26,20 @@ import {
 } from './CombatResolution.js';
 import { getRank, moveCombatant } from './FormationSystem.js';
 import { consumeRound } from '../WeaponAmmoSystem.js';
+import {
+  normalizeBossActionState,
+  reserveUltimateAfterDamage,
+} from './BossPatternController.js';
+import { resolveEnemyDamageResponsePassives } from './EnemyActionExecutor.js';
+import { createEnemyActionState } from './EnemyActionPlanner.js';
+import {
+  combatantActionIndex,
+  createActionFx,
+} from './CombatMotionFx.js';
+
+const PENDING_BOSS_COUNTERS = Symbol('pendingBossCounters');
+const RANKED_ACTION_SCOPE = Symbol('rankedActionScope');
+const ACTIVE_RANKED_ACTION_SCOPE = Symbol('activeRankedActionScope');
 
 export const CombatRankedEffects = {
   _consumeRankedCosts(actor, skill) {
@@ -247,25 +267,67 @@ export const CombatRankedEffects = {
     };
   },
 
+  _rankedActionScopeFor() {
+    const combat = GameState.combat;
+    if (!combat) return null;
+    let scope = combat[ACTIVE_RANKED_ACTION_SCOPE];
+    if (!scope || scope.completed === true) {
+      scope = {
+        pendingCounters: [],
+        completed: false,
+      };
+      combat[ACTIVE_RANKED_ACTION_SCOPE] = scope;
+    }
+    return scope;
+  },
+
+  _attachRankedActionScope(hitInfo) {
+    const scope = this._rankedActionScopeFor();
+    if (!scope || !hitInfo) return hitInfo;
+    Object.defineProperty(hitInfo, RANKED_ACTION_SCOPE, {
+      value: scope,
+      configurable: true,
+    });
+    return hitInfo;
+  },
+
   // 랭크 스킬 명중/치명타 판정 — 레거시 _attackAction의 보정 체계를 단일 파이프라인으로 통합
   _resolveRankedHit(actor, target, skill, random = Math.random) {
     // 아군 대상 스킬(힐/버프/이동)은 판정 없이 성공 — 회피/명중 토큰을 소모하지 않는다
     if (actor?.side && target?.side && actor.side === target.side) {
-      return { hit: true, dodged: false, crit: false, skill };
+      return this._attachRankedActionScope({
+        hit: true,
+        dodged: false,
+        crit: false,
+        skill,
+      });
     }
 
     let { accuracy, critChance, critMultiplier, weaponDef } = this._rankedAimProfile(actor, skill);
 
     // 레거시 보스 회피 버프(phantom_sniper 등)는 명중률 배율로 유지
     const legacyEnemy = this._legacyEnemyFor(target);
-    const evasion = legacyEnemy?._combatBuffs?.evasion;
-    if (evasion && (evasion.duration ?? 0) > 0) {
-      accuracy = Math.max(0.05, accuracy * (1 - (evasion.value ?? 0)));
+    const legacyEvasion = legacyEnemy?._combatBuffs?.evasion;
+    const typedEvasion = enemyStatusModifiers(legacyEnemy).evasionIncrease;
+    const evasion = Math.max(
+      typedEvasion,
+      legacyEvasion && (legacyEvasion.duration ?? 0) > 0
+        ? legacyEvasion.value ?? 0
+        : 0,
+    );
+    if (evasion > 0) {
+      accuracy = Math.max(0.05, accuracy * (1 - evasion));
     }
 
     const hitRoll = resolveHitRoll({ attacker: actor, defender: target, accuracy, random });
     if (!hitRoll.hit) {
-      return { hit: false, dodged: hitRoll.dodged, crit: false, skill, weaponDef };
+      return this._attachRankedActionScope({
+        hit: false,
+        dodged: hitRoll.dodged || evasion > 0,
+        crit: false,
+        skill,
+        weaponDef,
+      });
     }
 
     const dealsDamage = (skill?.effects ?? []).some(effect => effect?.type === 'damage');
@@ -273,30 +335,145 @@ export const CombatRankedEffects = {
       ? rollCrit({ attacker: actor, critChance, critMultiplier, random })
       : { crit: false, multiplier: critMultiplier };
 
-    return {
+    return this._attachRankedActionScope({
       hit: true,
       dodged: false,
       crit: critRoll.crit,
       critMultiplier: critRoll.multiplier,
       skill,
       weaponDef,
+    });
+  },
+
+  _rankedEffectHasRemaining(effect, hitInfo) {
+    const effects = hitInfo?.skill?.effects;
+    if (!Array.isArray(effects)) return false;
+    const effectIndex = effects.indexOf(effect);
+    return effectIndex >= 0 && effectIndex < effects.length - 1;
+  },
+
+  _executeBossCounterAction({
+    enemy,
+    actionId,
+    attackerId,
+    maxPerRound,
+  }) {
+    const combat = GameState.combat;
+    const rankedEnemy = this._rankCombatantForEnemy(enemy);
+    if (!enemy
+        || (enemy.currentHp ?? 0) <= 0
+        || rankedEnemy?.dead === true
+        || (rankedEnemy && (rankedEnemy.hp ?? 0) <= 0)) {
+      return false;
+    }
+    const attacker = combat?.combatants?.[attackerId];
+    if (!attacker || attacker.dead === true || (attacker.hp ?? 0) <= 0) return false;
+
+    const definition = this._bossActionDefinition(enemy, actionId);
+    const category = this._bossActionCategory(enemy, actionId);
+    if (!definition || !category) return false;
+
+    const currentRound = combat?.roundNumber ?? 1;
+    const limit = Number.isFinite(maxPerRound)
+      ? Math.max(0, Math.floor(maxPerRound))
+      : 1;
+    const counterState = enemy._counterActionState?.round === currentRound
+      ? enemy._counterActionState
+      : { round: currentRound, counts: {} };
+    const count = counterState.counts?.[actionId] ?? 0;
+    if (count >= limit) {
+      enemy._counterActionState = counterState;
+      return false;
+    }
+
+    counterState.counts = {
+      ...(counterState.counts ?? {}),
+      [actionId]: count + 1,
     };
+    enemy._counterActionState = counterState;
+    this._executeEnemyCommittedAction(enemy, {
+      actionId,
+      category,
+      state: 'ready',
+      targetIds: [attackerId],
+      remainingTelegraphTurns: 0,
+      hitCount: Number.isFinite(definition.hitCount)
+        ? Math.max(1, Math.floor(definition.hitCount))
+        : 1,
+      motionKey: definition.motionKey ?? actionId,
+      isCounter: true,
+    });
+    return true;
+  },
+
+  _flushBossCounterActionScope(scope) {
+    if (!scope || scope.completed === true) return;
+    scope.completed = true;
+    const combat = GameState.combat;
+    if (combat?.[ACTIVE_RANKED_ACTION_SCOPE] === scope) {
+      delete combat[ACTIVE_RANKED_ACTION_SCOPE];
+    }
+    const pending = [...scope.pendingCounters];
+    scope.pendingCounters.length = 0;
+    for (const entry of pending) this._executeBossCounterAction(entry);
+  },
+
+  _finalizeRankedCommand(result = null, actorId = null) {
+    const scope = GameState.combat?.[ACTIVE_RANKED_ACTION_SCOPE];
+    if (scope) this._flushBossCounterActionScope(scope);
+    const actor = GameState.combat?.combatants?.[actorId];
+    const completedPlayerCommand = result?.turnConsumed === true
+      && actor?.sourceType === 'player'
+      && this._completePlayerCommand(actor);
+    return Boolean(scope || completedPlayerCommand);
+  },
+
+  _queueOrExecuteBossCounterAction(entry, effect, hitInfo) {
+    const actionScope = hitInfo?.[RANKED_ACTION_SCOPE];
+    if (actionScope) {
+      actionScope.pendingCounters.push(entry);
+      return true;
+    }
+    if (hitInfo && this._rankedEffectHasRemaining(effect, hitInfo)) {
+      hitInfo[PENDING_BOSS_COUNTERS] = hitInfo[PENDING_BOSS_COUNTERS] ?? [];
+      hitInfo[PENDING_BOSS_COUNTERS].push(entry);
+      return true;
+    }
+    return this._executeBossCounterAction(entry);
+  },
+
+  _flushPendingBossCounterActions(effect, hitInfo) {
+    if (hitInfo?.[RANKED_ACTION_SCOPE]) return;
+    if (!hitInfo || this._rankedEffectHasRemaining(effect, hitInfo)) return;
+    const pending = hitInfo[PENDING_BOSS_COUNTERS];
+    if (!Array.isArray(pending) || pending.length === 0) return;
+    delete hitInfo[PENDING_BOSS_COUNTERS];
+    for (const entry of pending) this._executeBossCounterAction(entry);
   },
 
   _applyRankedEffect(effect, actor, target, random = Math.random, hitInfo = null) {
-    switch (effect?.type) {
+    const result = (() => {
+      switch (effect?.type) {
       case 'damage':
         return this._applyRankedDamageEffect(effect, actor, target, random, hitInfo);
       case 'heal': {
-        const healResult = healCombatant(target, this._rollRange(effect.value, random));
+        const healResult = this._healCombatant(
+          target,
+          this._rollRange(effect.value, random),
+        );
         this._removeRankedStatuses(target, effect.removeStatus);
         this._syncRankedTargetToLegacy(target);
         if (healResult.healed > 0) {
-          if (target.sourceType === 'companion') {
-            this._fx({ kind: 'companionHeal', npcId: target.sourceId, amount: healResult.healed });
-          } else {
-            this._fx({ kind: 'useItem', fx: 'heal', label: `+${healResult.healed}` });
-          }
+          this._fx(createActionFx({
+            actor,
+            actorIndex: combatantActionIndex(actor, GameState.companions),
+            target,
+            targetIndex: combatantActionIndex(target, GameState.companions),
+            skill: hitInfo?.skill,
+            motionKey: hitInfo?.skill?.motionKey ?? 'support',
+            impactFx: 'heal',
+            healing: healResult.healed,
+          }));
         }
         if (healResult.deathsDoorCleared) {
           this._pushCombatLog(`${this._rankedCombatantLabel(target)}이(가) 죽음의 문턱에서 벗어났다.`);
@@ -358,7 +535,10 @@ export const CombatRankedEffects = {
         return { ok: true };
       default:
         return { ok: false, reason: 'invalid_effect' };
-    }
+      }
+    })();
+    this._flushPendingBossCounterActions(effect, hitInfo);
+    return result;
   },
 
   // 공용 이동(distance 'auto')의 방향 결정 — 현재 랭크에서 잠긴 공격 스킬이
@@ -378,11 +558,41 @@ export const CombatRankedEffects = {
     return 1;
   },
 
+  _bossActionAcceptsCounterWindowDamage(enemy, action = null) {
+    const committedAction = enemy?._bossActionState?.committedAction ?? null;
+    if (
+      enemy?.isBoss !== true
+      || !committedAction
+      || (action && committedAction !== action)
+    ) {
+      return false;
+    }
+    return committedAction.state === 'telegraphing'
+      || committedAction.state === 'ready';
+  },
+
   // 랭크 피해 파이프라인: 치명타 → 공격측 배율(플레이어 스위트+토큰) → 약점/저항 → 방어 → 피격측 토큰 → 적용
   _applyRankedDamageEffect(effect, actor, target, random = Math.random, hitInfo = null) {
     const gs = GameState;
     const skill = hitInfo?.skill ?? null;
     const weaponDef = hitInfo?.weaponDef ?? this._rankedSkillWeaponDef(skill);
+    const legacyEnemy = this._legacyEnemyFor(target);
+    const legacyHpBefore = legacyEnemy?.currentHp;
+    const isPatternBoss = legacyEnemy?.isBoss === true && !!legacyEnemy?.bossPattern;
+    const bossActionBeforeDamage = isPatternBoss
+      ? normalizeBossActionState(legacyEnemy._bossActionState).committedAction
+      : null;
+    const bossActionHadTelegraph = !!bossActionBeforeDamage && (
+      bossActionBeforeDamage.state === 'telegraphing'
+      || (
+        bossActionBeforeDamage.state === 'ready'
+        && legacyEnemy._telegraph?.skillId === bossActionBeforeDamage.actionId
+      )
+    );
+    const damageType = effect?.damageType
+      ?? skill?.damageType
+      ?? weaponDef?.weaponType
+      ?? null;
 
     let damage = this._rollRange(effect.value, random);
 
@@ -420,8 +630,19 @@ export const CombatRankedEffects = {
 
     damage = modifyOutgoingDamage(damage, actor);
 
-    const legacyEnemy = this._legacyEnemyFor(target);
+    if (legacyEnemy?._resistanceShift) {
+      const shift = legacyEnemy._resistanceShift;
+      const currentRound = gs.combat?.roundNumber ?? 1;
+      if (Number.isFinite(shift.untilRound) && currentRound > shift.untilRound) {
+        delete legacyEnemy._resistanceShift;
+      } else if (damageType && shift.damageType === damageType && Number.isFinite(shift.value)) {
+        const reduction = Math.max(0, Math.min(1, shift.value));
+        damage = Math.floor(damage * (1 - reduction));
+      }
+    }
+
     if (legacyEnemy) {
+      const statusModifiers = enemyStatusModifiers(legacyEnemy);
       const affinity = weaponAffinityMult(weaponDef?.weaponType, legacyEnemy);
       if (affinity > 1) {
         damage = Math.floor(damage * affinity);
@@ -433,11 +654,27 @@ export const CombatRankedEffects = {
         damage = Math.floor(damage * affinity);
         this._pushCombatLog(I18n.t('combatSys.resistance', { type: weaponDef.weaponType }));
       }
-      damage = this._applyEnemyDefense(damage, legacyEnemy.defense);
-      if ((legacyEnemy._combatBuffs?.invulnerable?.duration ?? 0) > 0) damage = 0;
+      damage = this._applyEnemyDefense(
+        damage,
+        (legacyEnemy.defense ?? 0) + statusModifiers.defenseIncrease,
+      );
+      if (statusModifiers.incomingDamageReduction > 0) {
+        damage = Math.floor(damage * (1 - statusModifiers.incomingDamageReduction));
+      }
+      if (
+        statusModifiers.invulnerable
+        || (legacyEnemy._combatBuffs?.invulnerable?.duration ?? 0) > 0
+      ) {
+        damage = 0;
+      }
     }
 
     damage = modifyIncomingDamage(damage, target);
+    if (legacyEnemy && damage > 0) {
+      const shieldResult = consumeEnemyDamageShield(legacyEnemy, damage);
+      damage = shieldResult.damage;
+      target.statusEffects = legacyEnemy._statusEffects;
+    }
 
     // 사망 후처리(_onEnemyKilled)가 참조할 처치 무기 정보 — 적용 전에 기록
     if (legacyEnemy) {
@@ -450,15 +687,84 @@ export const CombatRankedEffects = {
 
     const result = applyDamage(target, damage, random);
     this._syncRankedTargetToLegacy(target);
+    const actualHpDamage = Math.max(0, result.hpBefore - result.hpAfter);
+
+    if (
+      this._bossActionAcceptsCounterWindowDamage(
+        legacyEnemy,
+        bossActionBeforeDamage,
+      )
+      && actualHpDamage > 0
+      && this._bossActionDefinition(
+        legacyEnemy,
+        bossActionBeforeDamage.actionId,
+        bossActionBeforeDamage.category,
+      )?.telegraphDamageThreshold
+    ) {
+      bossActionBeforeDamage.telegraphDamageTaken = Math.max(
+        0,
+        bossActionBeforeDamage.telegraphDamageTaken ?? 0,
+      ) + actualHpDamage;
+    }
+
+    if (isPatternBoss) {
+      if (legacyEnemy.currentHp > 0) {
+        legacyEnemy._bossActionState = reserveUltimateAfterDamage({
+          state: normalizeBossActionState(legacyEnemy._bossActionState),
+          hpBefore: legacyHpBefore,
+          hpAfter: legacyEnemy.currentHp,
+          maxHp: legacyEnemy.maxHp,
+          threshold: legacyEnemy.bossPattern.ultimate?.hpThreshold ?? 0.3,
+        });
+        if (legacyEnemy._bossActionState.ultimatePending
+            && !legacyEnemy._bossActionState.committedAction
+            && bossActionHadTelegraph) {
+          legacyEnemy._bossActionState = {
+            ...legacyEnemy._bossActionState,
+            committedAction: bossActionBeforeDamage,
+          };
+        }
+        if (legacyEnemy._bossActionState.ultimatePending
+            && !legacyEnemy._bossActionState.committedAction) {
+          legacyEnemy._nextIntent = this._decideNextIntent(legacyEnemy, gs.combat, gs) ?? null;
+        }
+      } else {
+        legacyEnemy._nextIntent = null;
+      }
+    }
 
     // 조준형 예고(cancelOnHit)는 피격으로 흐트러진다 — 저격수를 때리는 것이 카운터
-    if (legacyEnemy?._telegraph && result.damage > 0) {
-      const tgSkill = (legacyEnemy.specialSkills ?? [])
-        .find(s => s.id === legacyEnemy._telegraph.skillId);
+    const activeBossTelegraph = isPatternBoss && bossActionHadTelegraph
+      ? bossActionBeforeDamage
+      : null;
+    if ((activeBossTelegraph || (!isPatternBoss && legacyEnemy?._telegraph))
+        && result.damage > 0) {
+      const tgSkill = isPatternBoss
+        ? this._bossActionDefinition(
+            legacyEnemy,
+            activeBossTelegraph.actionId,
+            activeBossTelegraph.category,
+          )
+        : (legacyEnemy.specialSkills ?? [])
+          .find(s => s.id === legacyEnemy._telegraph.skillId);
       if (tgSkill?.telegraph?.cancelOnHit) {
         legacyEnemy._telegraph = null;
-        if (!legacyEnemy._skillCooldowns) legacyEnemy._skillCooldowns = {};
-        legacyEnemy._skillCooldowns[tgSkill.id] = tgSkill.cooldown;
+        const cancelledUltimate = activeBossTelegraph?.category === 'ultimate';
+        if (activeBossTelegraph) {
+          legacyEnemy._bossActionState = {
+            ...normalizeBossActionState(legacyEnemy._bossActionState),
+            committedAction: null,
+            ...(cancelledUltimate
+              ? { ultimatePending: false, ultimateUsed: true }
+              : {}),
+          };
+        } else if (!isPatternBoss) {
+          legacyEnemy._enemyActionState = createEnemyActionState();
+        }
+        if (Number.isFinite(tgSkill.cooldown)) {
+          if (!legacyEnemy._skillCooldowns) legacyEnemy._skillCooldowns = {};
+          legacyEnemy._skillCooldowns[tgSkill.id] = tgSkill.cooldown;
+        }
         this._pushCombatLog(I18n.t('combatSys.telegraphCancelled', {
           enemy: I18n.enemyName(legacyEnemy.id, legacyEnemy.name),
           skill: tgSkill.name ?? tgSkill.id,
@@ -484,20 +790,60 @@ export const CombatRankedEffects = {
         isCrit: crit,
         enemyIndex: target.enemyIndex,
       };
-      this._fx({
-        kind: actor?.sourceType === 'companion' ? 'companionAttack' : 'playerAttack',
-        npcId: actor?.sourceType === 'companion' ? actor.sourceId : undefined,
-        fx: weaponDef ? this._weaponFx(weaponDef) : (skill?.icon === 'shot' ? 'shot' : 'slash'),
-        targetIdx: target.enemyIndex,
-        dmg: result.damage,
+      this._fx(createActionFx({
+        actor,
+        actorIndex: combatantActionIndex(actor, gs.companions),
+        target,
+        targetIndex: combatantActionIndex(target, gs.companions),
+        skill,
+        impactFx: weaponDef ? this._weaponFx(weaponDef) : (skill?.icon === 'shot' ? 'shot' : 'slash'),
+        damage: result.damage,
         crit,
         killed: target.dead === true,
-      });
+      }));
     }
 
     if (result.deathsDoorEntered) {
       this._pushCombatLog(`${this._rankedCombatantLabel(target)}이(가) 죽음의 문턱에 몰렸다!`);
       this._fx({ kind: 'status', targetId: target.id, statusId: 'deaths_door' });
+    }
+
+    if (legacyEnemy?.isBoss === true
+        && legacyEnemy.bossPattern
+        && legacyEnemy.currentHp > 0
+        && result.damage > 0) {
+      const currentRound = gs.combat?.roundNumber ?? 1;
+      resolveEnemyDamageResponsePassives({
+        enemy: legacyEnemy,
+        attackerId: actor?.id ?? null,
+        damageType,
+        isCounter: hitInfo?.isCounter === true
+          || skill?.isCounter === true
+          || effect?.isCounter === true,
+        services: {
+          queueCounterAction: (actionId, attackerId, maxPerRound) => (
+            this._queueOrExecuteBossCounterAction({
+              enemy: legacyEnemy,
+              actionId,
+              attackerId,
+              maxPerRound,
+            }, effect, hitInfo)
+          ),
+          setResistanceShift: (nextDamageType, duration, value) => {
+            if (!nextDamageType || !Number.isFinite(value)) return false;
+            const safeDuration = Number.isFinite(duration)
+              ? Math.max(1, Math.floor(duration))
+              : 1;
+            legacyEnemy._resistanceShift = {
+              damageType: nextDamageType,
+              duration: safeDuration,
+              value: Math.max(0, Math.min(1, value)),
+              untilRound: currentRound + safeDuration - 1,
+            };
+            return true;
+          },
+        },
+      });
     }
 
     return { ok: true };
@@ -578,7 +924,7 @@ export const CombatRankedEffects = {
         ? this._getMedicalHealMultiplier(def)
         : 1.0;
       const healed = Math.round(hp * healMult);
-      const healResult = healCombatant(actor, healed);
+      const healResult = this._healCombatant(actor, healed);
       this._syncRankedTargetToLegacy(actor);
       effects.push({ type: 'heal', amount: healResult.healed });
       this._pushCombatLog(I18n.t('combatSys.hpHeal', { val: healResult.healed }));

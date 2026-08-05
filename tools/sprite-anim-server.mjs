@@ -11,6 +11,8 @@ import { existsSync } from 'node:fs';
 import { dirname, join, resolve, extname, relative, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { exec } from 'node:child_process';
+import { mergeMotionLibrary } from './motionLibraryStore.cjs';
+import { listProjects, readProject, writeProject } from './animProjectStore.cjs';
 
 const PORT = parseInt(process.env.SPRITE_ANIM_PORT || '7333', 10);
 const HOST = '127.0.0.1';
@@ -163,22 +165,12 @@ async function handleSaveSheet(req, res) {
     await rename(tmp, target);
     console.log(`[sprite-anim] saved: ${relative(ROOT, target)} (${buf.length} bytes)`);
 
-    // Merge frame-count metadata into the manifest the game reads (keyed by in-game basename).
-    let manifestPath = null;
-    if (body?.meta && Number(body.meta.cols) > 0) {
-      manifestPath = join(SHEET_DIR, 'manifest.json');
-      let manifest = {};
-      try { manifest = JSON.parse(await readFile(manifestPath, 'utf8')); } catch { /* new manifest */ }
-      const name = basename(target).replace(/_src\.png$/i, '.png');
-      manifest[name] = {
-        cols: Number(body.meta.cols),
-        rows: Number(body.meta.rows) || 4,
-        ...(Array.isArray(body.meta.rowFrames) ? { rowFrames: body.meta.rowFrames } : {}),
-      };
-      await writeFile(manifestPath, JSON.stringify(manifest, null, 2));
-      console.log(`[sprite-anim] manifest: ${name} → cols ${manifest[name].cols}`);
-    }
-    sendJson(res, 200, { ok: true, bytes: buf.length, path: '/' + relative(ROOT, target).split('\\').join('/'), manifest: manifestPath ? true : false });
+    let libraryWritten = false;
+    try {
+      const merged = mergeMotionLibrary(SHEET_DIR, target, body?.meta);
+      if (merged) { libraryWritten = true; console.log(`[sprite-anim] library: ${merged.name} → cols ${merged.entry.cols}`); }
+    } catch (e) { console.warn('[sprite-anim] library write failed:', e.message); }
+    sendJson(res, 200, { ok: true, bytes: buf.length, path: '/' + relative(ROOT, target).split('\\').join('/'), manifest: libraryWritten });
   } catch (err) {
     console.error('[sprite-anim] save failed:', err);
     sendJson(res, 500, { error: String(err.message || err) });
@@ -225,6 +217,27 @@ const server = createServer(async (req, res) => {
     if (req.method === 'GET' && p === '/api/sheets') { await handleListSheets(req, res); return; }
     if (req.method === 'POST' && p === '/api/save-sheet') { await handleSaveSheet(req, res); return; }
     if (req.method === 'POST' && p === '/api/reveal') { await handleReveal(req, res); return; }
+    if (req.method === 'GET' && p === '/api/anim-projects') {
+      try { sendJson(res, 200, { ok: true, projects: listProjects(ROOT) }); }
+      catch (err) { sendJson(res, 500, { error: String(err.message || err) }); }
+      return;
+    }
+    if (req.method === 'GET' && p === '/api/anim-project') {
+      try {
+        const project = readProject(ROOT, url.searchParams.get('name'));
+        if (!project) { sendJson(res, 404, { error: '프로젝트 없음' }); return; }
+        sendJson(res, 200, { ok: true, project });
+      } catch (err) { sendJson(res, 500, { error: String(err.message || err) }); }
+      return;
+    }
+    if (req.method === 'POST' && p === '/api/save-anim-project') {
+      try {
+        const body = await readJsonBody(req);
+        const saved = writeProject(ROOT, body?.name, body?.project);
+        sendJson(res, 200, { ok: true, name: saved.name });
+      } catch (err) { sendJson(res, 400, { error: String(err.message || err) }); }
+      return;
+    }
 
     if (req.method === 'GET') {
       if (p === '/' || p === '/index.html') {

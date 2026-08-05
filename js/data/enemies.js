@@ -234,6 +234,7 @@ const ENEMIES = {
     infectionChance: 0,
     aiPattern: 'opportunist',
     attackType: 'ranged',
+    reloadAfterShots: 3,
     patternProfile: {
       role: 'opportunist',
       targetPolicy: 'opportunist',

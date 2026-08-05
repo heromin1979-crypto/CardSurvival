@@ -42,6 +42,24 @@ async function waitForServer(timeoutMs = 15000) {
   throw new Error(`Timed out waiting for ${baseUrl}`);
 }
 
+function captureBrowserDiagnostics(page, browserErrors) {
+  page.on('pageerror', err => browserErrors.push({ type: 'pageerror', message: err.message }));
+  page.on('console', msg => {
+    if (['error', 'warning'].includes(msg.type())) {
+      browserErrors.push({ type: msg.type(), message: msg.text() });
+    }
+  });
+  page.on('requestfailed', request => {
+    if (['document', 'script', 'stylesheet'].includes(request.resourceType())) {
+      browserErrors.push({
+        type: 'requestfailed',
+        url: request.url(),
+        failure: request.failure()?.errorText ?? '',
+      });
+    }
+  });
+}
+
 async function main() {
   const { chromium } = await loadPlaywright();
   const server = startServer();
@@ -51,10 +69,73 @@ async function main() {
     browser = await chromium.launch();
     // 게임은 1920×1080 고정 해상도(Scale 방식) — 설계 해상도로 검증
     const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
+    const browserErrors = [];
+    captureBrowserDiagnostics(page, browserErrors);
     await page.goto(`${baseUrl}/combat-test.html`, { waitUntil: 'networkidle' });
     // focused(랭크) 레이아웃 기준 검증 — 진형 라인업 + 커맨드 덱
     await page.waitForSelector('.combat-focused-lineup');
     await page.waitForSelector('.combat-command-deck');
+
+    // 실제 focused portrait는 정적 span을 미리 심지 않고 첫 semantic motion에서 동적 materialize한다.
+    const initialFocusedSpriteCount = await page.locator('.combatant-piece[data-combatant-id="player"] .combat-sprite-sheet').count();
+    await page.evaluate(async () => {
+      const [{ default: CombatUI }, { default: GameState }] = await Promise.all([
+        import('/js/ui/CombatUI.js'),
+        import('/js/core/GameState.js'),
+      ]);
+      GameState.player.characterId = 'doctor';
+      GameState.player.gender = 'F';
+      CombatUI.render();
+      CombatUI._playFx({
+        kind: 'playerAttack',
+        targetIdx: 0,
+        motionKey: 'ranged',
+        fx: 'shot',
+        miss: true,
+      });
+    });
+    await page.waitForFunction(() => (
+      document.querySelector('[data-combatant-id="player"] .combat-sprite-sheet')
+        ?.style.getPropertyValue('--sprite-row-y') === '28.5714%'
+    ));
+    const focusedSpriteContract = await page.locator('.combatant-piece[data-combatant-id="player"]').evaluate(actor => {
+      const sprite = actor.querySelector('.combat-sprite-sheet');
+      return {
+        count: actor.querySelectorAll('.combat-sprite-sheet').length,
+        materialized: sprite?.dataset.motionMaterialized ?? null,
+        sheetKey: sprite?.dataset.spriteSheetKey ?? null,
+        spriteUrl: sprite?.style.getPropertyValue('--sprite-url') ?? '',
+        cols: sprite?.style.getPropertyValue('--sprite-cols') ?? '',
+        rows: sprite?.style.getPropertyValue('--sprite-rows') ?? '',
+        rowY: sprite?.style.getPropertyValue('--sprite-row-y') ?? '',
+        iteration: sprite?.style.animationIterationCount ?? '',
+        fill: sprite?.style.animationFillMode ?? '',
+        movedForward: actor.classList.contains('motion-move-forward'),
+      };
+    });
+    if (
+      initialFocusedSpriteCount !== 0
+      || focusedSpriteContract.count !== 1
+      || focusedSpriteContract.materialized !== 'true'
+      || focusedSpriteContract.sheetKey !== 'doctor_f'
+      || !focusedSpriteContract.spriteUrl.includes('doctor_f_sheet.png')
+      || focusedSpriteContract.cols !== '6'
+      || focusedSpriteContract.rows !== '8'
+      || focusedSpriteContract.rowY !== '28.5714%'
+      || focusedSpriteContract.iteration !== '1'
+      || focusedSpriteContract.fill !== ''
+      || focusedSpriteContract.movedForward
+    ) {
+      throw new Error(`Focused ranged sprite contract failed: ${JSON.stringify({ initialFocusedSpriteCount, focusedSpriteContract })}`);
+    }
+    await page.waitForFunction(() => {
+      const actor = document.querySelector('[data-combatant-id="player"]');
+      const sprite = actor?.querySelector('.combat-sprite-sheet');
+      return sprite?.style.getPropertyValue('--sprite-row-y') === '0.0000%'
+        && sprite.style.animationIterationCount === 'infinite'
+        && !actor.classList.contains('motion-move-forward');
+    });
+    console.log(`combat-focused-motion:ok ${JSON.stringify(focusedSpriteContract)}`);
 
     const computedBackdrop = await page.locator('.combat-battlefield').evaluate(element => (
       getComputedStyle(element).backgroundImage
@@ -186,6 +267,7 @@ async function main() {
     }, hpBefore);
 
     const mobilePage = await browser.newPage({ viewport: { width: 390, height: 844 } });
+    captureBrowserDiagnostics(mobilePage, browserErrors);
     await mobilePage.goto(`${baseUrl}/index.html`, { waitUntil: 'networkidle' });
     await mobilePage.waitForSelector('#loading-overlay', { state: 'detached' });
     await mobilePage.evaluate(async () => {
@@ -230,6 +312,10 @@ async function main() {
     await mobilePage.waitForTimeout(1500);
     await mobilePage.screenshot({ path: mobileResultScreenshotPath, fullPage: true });
     await mobilePage.close();
+
+    if (browserErrors.length > 0) {
+      throw new Error(`Browser diagnostics failed: ${JSON.stringify(browserErrors)}`);
+    }
 
     console.log(`combat-screen:ok default=${defaultScreenshotPath} selected=${selectedScreenshotPath}`);
     console.log(`combat-result-mobile:ok screenshot=${mobileResultScreenshotPath}`);

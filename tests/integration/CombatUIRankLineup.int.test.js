@@ -118,7 +118,7 @@ describe('CombatUI rank lineup layout', () => {
     expect(enemyLine.querySelectorAll('.cv-enemy-sprite').length).toBe(3);
   });
 
-  it('renders generated combat sprite sheets for the doctor starter party', () => {
+  it('uses the dedicated nurse sheet and explicit fallback for the non-roster wounded soldier', () => {
     GameState.player.characterId = 'doctor';
     GameState.player.gender = 'F';
     GameState.companions = ['npc_nurse', 'npc_wounded_soldier'];
@@ -131,16 +131,18 @@ describe('CombatUI rank lineup layout', () => {
 
     const playerSheet = document.querySelector('.cv-player .cv-player-sheet');
     const nurseSheet = document.querySelector('[data-companion-id="npc_nurse"] .cv-companion-sheet');
-    const soldierSheet = document.querySelector('[data-companion-id="npc_wounded_soldier"] .cv-companion-sheet');
+    const soldierUnit = document.querySelector('[data-companion-id="npc_wounded_soldier"]');
+    const soldierSheet = soldierUnit?.querySelector('.cv-companion-sheet');
 
     expect(playerSheet?.getAttribute('style')).toContain('doctor_f_sheet.png');
     expect(nurseSheet?.getAttribute('style')).toContain('nurse_companion_sheet.png');
-    expect(soldierSheet?.getAttribute('style')).toContain('soldier_companion_sheet.png');
+    expect(soldierSheet).toBeNull();
+    expect(soldierUnit?.querySelector('.cv-ally-icon')).not.toBeNull();
   });
 
   it('marks non-sheet player images as blended fallback assets', () => {
     GameState.player.characterId = 'soldier';
-    GameState.player.gender = 'M';
+    GameState.player.gender = 'F';
 
     CombatUI.render();
 
@@ -148,7 +150,7 @@ describe('CombatUI rank lineup layout', () => {
 
     expect(fallback).not.toBeNull();
     expect(fallback?.classList.contains('cv-player-img')).toBe(true);
-    expect(fallback?.getAttribute('src')).toContain('assets/images/combat/player_M_cutout.png');
+    expect(fallback?.getAttribute('src')).toContain('assets/images/combat/player_F_cutout.png');
   });
 
   it('renders generated enemy sprite sheets by enemy id and type fallback', () => {

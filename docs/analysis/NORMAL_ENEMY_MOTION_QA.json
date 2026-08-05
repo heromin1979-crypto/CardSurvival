@@ -1,0 +1,102 @@
+{
+  "version": 1,
+  "reviewedPreview": "output/combat/normal_enemy_motion_preview.png",
+  "sheets": {
+    "zombie_patient_dormant": {
+      "reviewedPixelSha256": "b3e3a3141598d044e52f0fde1375cccd903d2209b5df1bb8cb5ec10dd67f639d",
+      "rows": [
+        { "row": 0, "motion": "dormant", "locomotion": "stationary", "pose": "바닥에 웅크린 환자가 같은 낮은 자세로 호흡한다.", "anchor": "무릎과 손의 하단 접점이 유지되고 잘림이 없다." },
+        { "row": 1, "motion": "wake", "locomotion": "stationary", "pose": "엎드린 자세에서 상체를 들어 무릎을 세운 자세까지 기상한다.", "anchor": "기상 중 손·무릎이 셀 내부에 있고 완전 기립으로 과장하지 않는다." },
+        { "row": 2, "motion": "basic_attack", "locomotion": "approach", "pose": "무릎을 댄 상태에서 양팔과 상체를 앞으로 길게 뻗는다.", "anchor": "긴 팔과 무릎이 셀 안에 있으며 컨테이너 접근 이동과 결합한다." },
+        { "row": 3, "motion": "hit", "locomotion": "stationary", "pose": "웅크림에서 상체를 크게 뒤로 젖혀 피격 반동을 보인다.", "anchor": "양발 접점과 머리 여백이 셀 안에 유지된다." },
+        { "row": 4, "motion": "death", "locomotion": "stationary", "pose": "무릎 자세에서 엎드려 바닥에 완전히 쓰러진다.", "anchor": "시체 전장이 하단과 좌우 경계 안에 수용된다." }
+      ]
+    },
+    "zombie_runner": {
+      "reviewedPixelSha256": "99d86fd82dcb8d4df7c70bebaf588854e55d92022ac257fb8207aafc3a69eb40",
+      "rows": [
+        { "row": 0, "motion": "idle", "locomotion": "stationary", "pose": "마른 기립 자세의 미세한 호흡을 반복한다.", "anchor": "양발 접점과 머리 여백이 안정적이다." },
+        { "row": 1, "motion": "basic_attack", "locomotion": "approach", "pose": "양팔을 뻗은 달리기형 돌진 자세가 연속된다.", "anchor": "전방 손끝과 뒷발이 셀 안에 있으며 접근 이동과 결합한다." },
+        { "row": 2, "motion": "telegraph", "locomotion": "stationary", "pose": "기립 경계 뒤 마지막 두 프레임에서 돌진 자세를 예고한다.", "anchor": "예고 전환 중 발 높이와 좌우 여백이 유지된다." },
+        { "row": 3, "motion": "runner_rush", "locomotion": "approach", "pose": "팔을 뻗고 보폭을 바꾸며 전방 질주를 이어간다.", "anchor": "달리기 실루엣이 셀 안에 있고 접근 이동과 결합한다." },
+        { "row": 4, "motion": "hit", "locomotion": "stationary", "pose": "기립 자세에서 흉곽과 머리를 뒤로 젖힌다.", "anchor": "양발 접지와 상단 여백이 유지된다." },
+        { "row": 5, "motion": "death", "locomotion": "stationary", "pose": "무릎을 꿇은 뒤 앞으로 엎드려 쓰러진다.", "anchor": "시체가 하단 기준선과 좌우 경계 안에 놓인다." }
+      ]
+    },
+    "zombie_brute": {
+      "reviewedPixelSha256": "90ad4a419b864a049958c58a8d14708a3f3352ad5e212415f6f4cc19d25a28af",
+      "rows": [
+        { "row": 0, "motion": "idle", "locomotion": "stationary", "pose": "거대한 상체를 세운 자세로 호흡한다.", "anchor": "넓은 양발 접점과 머리 여백이 안정적이다." },
+        { "row": 1, "motion": "basic_attack", "locomotion": "approach", "pose": "상체를 낮춰 양손으로 지면을 찍고 다시 몸을 든다.", "anchor": "손과 발이 셀 내부에 있고 접근 이동과 결합한다." },
+        { "row": 2, "motion": "telegraph", "locomotion": "stationary", "pose": "기립에서 양주먹을 머리 위로 들어 강타를 예고한다.", "anchor": "들어 올린 주먹과 머리가 상단 경계를 넘지 않는다." },
+        { "row": 3, "motion": "slam", "locomotion": "approach", "pose": "양주먹을 든 뒤 지면을 내려찍고 상체를 회수한다.", "anchor": "상하 동작 전 구간이 셀 안에 있고 접근 이동과 결합한다." },
+        { "row": 4, "motion": "hit", "locomotion": "stationary", "pose": "가슴을 열고 큰 상체를 뒤로 젖혀 반동한다.", "anchor": "양발 접지와 어깨 여백이 유지된다." },
+        { "row": 5, "motion": "death", "locomotion": "stationary", "pose": "무릎과 양손을 짚은 뒤 옆으로 무너진다.", "anchor": "큰 시체 실루엣이 하단과 좌우 경계 안에 있다." }
+      ]
+    },
+    "raider": {
+      "reviewedPixelSha256": "0cf946757ccfc13d920f721fde33613eea327184484b30df87c342a07eb5fbe0",
+      "rows": [
+        { "row": 0, "motion": "idle", "locomotion": "stationary", "pose": "후드를 쓴 권총 사수가 저준비 자세를 유지한다.", "anchor": "양발 접점과 권총 여백이 안정적이다." },
+        { "row": 1, "motion": "basic_attack", "locomotion": "stationary", "pose": "권총을 양손으로 들어 발사 섬광과 반동 뒤 내린다.", "anchor": "총구 섬광과 팔이 셀 안에 있고 하체가 고정된다." },
+        { "row": 2, "motion": "reload", "locomotion": "stationary", "pose": "권총을 내리고 허리 탄창을 조작한 뒤 준비 자세로 돌아온다.", "anchor": "손·권총 조작 중 양발 접점이 유지된다." },
+        { "row": 3, "motion": "hit", "locomotion": "stationary", "pose": "상체가 뒤로 꺾이고 피격 흔적 뒤 몸을 숙인다.", "anchor": "발 접지와 배낭·팔 여백이 셀 안에 있다." },
+        { "row": 4, "motion": "death", "locomotion": "stationary", "pose": "무릎을 짚고 앞으로 엎드려 바닥에 눕는다.", "anchor": "시체와 권총이 하단과 좌우 경계 안에 있다." }
+      ]
+    },
+    "raider_elite": {
+      "reviewedPixelSha256": "4928e0eb0b44056eb7c847322dd921aeb12754eea0e5e5a003dcf3275fdd2c73",
+      "rows": [
+        { "row": 0, "motion": "idle", "locomotion": "stationary", "pose": "중장갑 권총 사수가 한손 저준비와 경계 자세를 오간다.", "anchor": "양발 접점과 권총·헬멧 여백이 안정적이다." },
+        { "row": 1, "motion": "basic_attack", "locomotion": "stationary", "pose": "권총을 양손 견착해 발사 섬광과 반동 뒤 내린다.", "anchor": "총구 섬광과 팔이 셀 안에 있고 하체가 고정된다." },
+        { "row": 2, "motion": "aim", "locomotion": "stationary", "pose": "권총을 들어 양손 조준 자세를 단계적으로 고정한다.", "anchor": "권총 전방 여백과 양발 접지가 유지된다." },
+        { "row": 3, "motion": "aimed_shot", "locomotion": "stationary", "pose": "권총 정조준을 유지하며 발사 섬광과 반동을 거친다.", "anchor": "섬광과 권총이 셀 안에 있고 발 위치가 고정된다." },
+        { "row": 4, "motion": "hit", "locomotion": "stationary", "pose": "중장갑 상체를 뒤로 크게 젖혀 피격 반동한다.", "anchor": "부츠 접지와 헬멧·팔 여백이 유지된다." },
+        { "row": 5, "motion": "death", "locomotion": "stationary", "pose": "권총을 든 채 무릎을 꿇고 앞으로 쓰러진다.", "anchor": "시체와 권총이 하단 및 좌우 경계 안에 있다." }
+      ]
+    },
+    "zombie_acid": {
+      "reviewedPixelSha256": "d04173517fff08101602c8f5844dcfeee8bffc975a1948e226353f580ad9e352",
+      "rows": [
+        { "row": 0, "motion": "idle", "locomotion": "stationary", "pose": "산성 점액에 덮인 기립 자세로 호흡한다.", "anchor": "양발 접점과 후드 여백이 안정적이다." },
+        { "row": 1, "motion": "basic_attack", "locomotion": "stationary", "pose": "몸을 낮추고 입에서 산성 비말을 짧게 분사한 뒤 회수한다.", "anchor": "분사 입자와 팔·발이 셀 내부에 있다." },
+        { "row": 2, "motion": "acid_lash", "locomotion": "stationary", "pose": "몸을 낮춰 더 긴 산성 투사체를 뿜고 다시 선다.", "anchor": "긴 산성 궤적이 좌우 경계를 넘지 않고 발 위치가 고정된다." },
+        { "row": 3, "motion": "hit", "locomotion": "stationary", "pose": "상체와 머리를 뒤로 젖혀 피격 반동한다.", "anchor": "발 접지와 손끝 여백이 유지된다." },
+        { "row": 4, "motion": "death", "locomotion": "stationary", "pose": "무릎을 꿇고 점액 웅덩이 위로 쓰러진다.", "anchor": "시체와 점액이 하단 및 좌우 경계 안에 있다." }
+      ]
+    },
+    "zombie_bloater": {
+      "reviewedPixelSha256": "8f586e617909a63cb572e177a969eaebea5c7f19f7b18e2a9c54fade86f44308",
+      "rows": [
+        { "row": 0, "motion": "idle", "locomotion": "stationary", "pose": "팽창한 복부의 느린 호흡과 팔 흔들림을 반복한다.", "anchor": "양발 접점과 큰 복부·머리 여백이 안정적이다." },
+        { "row": 1, "motion": "basic_attack", "locomotion": "approach", "pose": "입의 산성 구토에서 복부 분출로 이어지는 공격을 보인다.", "anchor": "구토 궤적과 복부 분출이 셀 안에 있고 접근 이동과 결합한다." },
+        { "row": 2, "motion": "charge", "locomotion": "stationary", "pose": "양손으로 배를 감싸고 복부를 부풀려 자폭을 충전한다.", "anchor": "부피 증가에도 머리·복부·발이 셀 안에 있다." },
+        { "row": 3, "motion": "self_destruct", "locomotion": "stationary", "pose": "복부 팽창에서 파열과 장기 노출, 주저앉음으로 이어진다.", "anchor": "최대 파열 프레임과 잔해가 셀 경계를 넘지 않는다." },
+        { "row": 4, "motion": "hit", "locomotion": "stationary", "pose": "큰 몸통과 머리를 뒤로 젖혀 피격 반동한다.", "anchor": "양발 접지와 팔·복부 여백이 유지된다." },
+        { "row": 5, "motion": "death", "locomotion": "stationary", "pose": "무릎을 꿇고 앞으로 쓰러져 바닥에 눕는다.", "anchor": "넓은 시체가 하단과 좌우 경계 안에 있다." }
+      ]
+    },
+    "zombie_screamer": {
+      "reviewedPixelSha256": "717801fd3533df322d0ba520d454ef2b6a81193051f1336eb0933054ff16914e",
+      "rows": [
+        { "row": 0, "motion": "idle", "locomotion": "stationary", "pose": "입을 벌린 마른 기립 자세로 호흡한다.", "anchor": "맨발 접점과 머리 여백이 안정적이다." },
+        { "row": 1, "motion": "basic_attack", "locomotion": "stationary", "pose": "상체를 숙여 입을 벌리고 황색 구강 투사체를 전방으로 뿜는다.", "anchor": "투사체 궤적과 발이 셀 내부에 있다." },
+        { "row": 2, "motion": "charge", "locomotion": "stationary", "pose": "기립에서 양팔을 벌리고 들어 포효 직전 자세를 고정한다.", "anchor": "들어 올린 손과 머리가 상단 경계 안에 있다." },
+        { "row": 3, "motion": "summon_horde", "locomotion": "stationary", "pose": "양팔을 든 포효 자세에서 팔 방향을 바꾸며 신호한다.", "anchor": "넓게 편 팔과 양발이 셀 경계 안에 있다." },
+        { "row": 4, "motion": "hit", "locomotion": "stationary", "pose": "목과 가슴을 움켜쥐며 머리를 뒤로 젖혀 반동한다.", "anchor": "발 접지와 뒤로 젖힌 머리 여백이 유지된다." },
+        { "row": 5, "motion": "death", "locomotion": "stationary", "pose": "무릎과 손을 짚은 뒤 옆으로 길게 쓰러진다.", "anchor": "시체 전장이 하단과 좌우 경계 안에 있다." }
+      ]
+    },
+    "zombie_charger": {
+      "reviewedPixelSha256": "299cf161a8481aa5a9eb8c6699b9dabb6fc7f2ce906aafec57c18728c8836635",
+      "rows": [
+        { "row": 0, "motion": "idle", "locomotion": "stationary", "pose": "한쪽 팔이 비대해진 거대 인간형 돌연변이가 전경 자세로 호흡한다.", "anchor": "두 부츠 접점과 큰 어깨·머리 여백이 안정적이다." },
+        { "row": 1, "motion": "basic_attack", "locomotion": "approach", "pose": "몸을 낮추고 비대한 팔을 앞세워 달리는 돌진 타격을 한다.", "anchor": "주먹과 뒷발이 셀 안에 있고 접근 이동과 결합한다." },
+        { "row": 2, "motion": "charge", "locomotion": "stationary", "pose": "기립 경계에서 달리기 자세로 전환해 돌진을 예고한다.", "anchor": "전환 중 양발 높이와 큰 팔의 좌우 여백이 유지된다." },
+        { "row": 3, "motion": "charge_strike", "locomotion": "approach", "pose": "비대한 팔을 앞세운 저중심 질주 자세가 연속된다.", "anchor": "긴 달리기 실루엣이 셀 안에 있고 접근 이동과 결합한다." },
+        { "row": 4, "motion": "hit", "locomotion": "stationary", "pose": "거대한 상체와 머리를 뒤로 젖혀 피격 반동한다.", "anchor": "부츠 접지와 큰 팔·어깨 여백이 유지된다." },
+        { "row": 5, "motion": "death", "locomotion": "stationary", "pose": "무릎과 비대한 팔을 짚은 뒤 앞으로 쓰러진다.", "anchor": "큰 시체가 하단과 좌우 경계 안에 수용된다." }
+      ]
+    }
+  }
+}

@@ -77,6 +77,7 @@ import StatRenderer  from './ui/StatRenderer.js';
 import ModalManager  from './ui/ModalManager.js';
 import CraftUI       from './ui/CraftUI.js';
 import CombatUI      from './ui/CombatUI.js';
+import { loadCombatMotionLibrary } from './ui/combat/motionLibraryLoader.js';
 import ExploreUI     from './ui/ExploreUI.js';
 import CardFactory      from './ui/CardFactory.js';
 import CardContextMenu  from './ui/CardContextMenu.js';
@@ -692,6 +693,7 @@ if (document.readyState === 'loading') {
     try {
       await initMobileAdapter();
       await initPurchaseManager();
+      await loadCombatMotionLibrary();
       init();
       _hideLoadingOverlay();
     } catch (e) {
@@ -704,6 +706,7 @@ if (document.readyState === 'loading') {
     try {
       await initMobileAdapter();
       await initPurchaseManager();
+      await loadCombatMotionLibrary();
       init();
       _hideLoadingOverlay();
     } catch (e) {

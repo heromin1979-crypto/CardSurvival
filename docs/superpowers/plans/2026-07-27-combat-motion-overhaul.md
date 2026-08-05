@@ -19,7 +19,8 @@
 - 기존 이미지 파일을 직접 덮기 전에 `_src.png` 또는 생성 출력물을 보존하고, 표시용 파일만 정규화 파이프라인으로 승격한다.
 - 완전 투명 픽셀의 RGB도 0으로 정리하고, 반투명 가장자리의 녹색 번짐까지 검사한다.
 - 캐릭터 정체성이 다른 NPC끼리 전용 시트를 공유하지 않는다. 같은 인물임이 데이터에서 확인된 경우에만 명시적 별칭을 허용한다.
-- 보스 21종의 행 계약은 승인된 8행 구조를 사용한다.
+- 보스 21종의 행 계약은 최신 전투 패턴과 일치하는 승인된 8행 구조를 사용한다. 기본공격과 일반공격은 같은 개념이며 별도 `normal_*` 행을 만들지 않는다.
+- `loop: true`는 `idle`에만 허용한다. 공격·지원·피격·충전·사망 같은 비-idle 행동은 유한 재생 후 idle 또는 hold-last 상태로 복귀한다.
 
 ---
 
@@ -71,12 +72,12 @@
 | 행 | 키 | 용도 |
 |---:|---|---|
 | 0 | `idle` | 대기 |
-| 1 | `basic_attack` | 기본공격 |
-| 2 | `normal_1` | 일반공격 1 |
-| 3 | `normal_2` | 일반공격 2, 없으면 명시적 별칭 |
-| 4 | `special` | 소환·버프·특수공격 |
-| 5 | `ultimate` | HP 30% 필살기 |
-| 6 | `hit` | 피격 |
+| 1 | `basic_a` | 첫 번째 기본공격 |
+| 2 | `basic_b` | 두 번째 기본공격 |
+| 3 | `special` | 소환·버프·특수공격 |
+| 4 | `ultimate` | HP 30% 필살기 |
+| 5 | `hit` | 피격 |
+| 6 | `charge` | 예고·집중·필살기 준비 |
 | 7 | `death` | 사망 |
 
 ### 2.2 플레이어·동료 6×8 기본 계약
@@ -170,23 +171,25 @@
 - Modify: `js/data/validate.js`
 - Modify: `js/ui/combat/combatUiAssets.js`
 
-- [ ] **Step 1: 현재 누락과 4행 고정을 드러내는 실패 테스트 작성**
+- [ ] **Step 1: fixture와 현재 표시 자산으로 동기 registry 계약 실패 테스트 작성**
 
 검사 대상:
 
-- 일반 몬스터 12종 전부 `ENEMY_SPRITE_KEYS`에 존재
-- 보스 21종 전부 전용 `sheetKey` 존재
-- 플레이어 6종 전부 `PLAYER_SPRITE_KEYS`에 존재
-- 동료 20종 전부 `COMPANION_SPRITE_KEYS`에 존재
-- 모든 매핑이 실제 매니페스트 키를 가리킴
-- 모든 시트에 `idle`, `hit`, `death` 존재
-- 모든 스킬의 `motionKey`가 해당 배우 시트에서 해석 가능
+- fixture의 행 범위, `cols`, `rows`, `durationMs`, `locomotion`, idle 전용 loop 계약
+- fixture의 1단계 별칭 해석과 순환·2단계 별칭 거부
+- 현재 `COMBAT_SPRITE_SHEETS`에 표시 중인 23개 시트가 실제 매니페스트 키를 가리킴
+- 현재 시트에 `idle`, `hit`, `death` 존재
+- `combatUiAssets.js`가 비동기 fetch 없이 같은 동기 registry 객체에서 파생됨
+
+전체 일반 몬스터 12종, 플레이어 6종, 동료 20종, 보스 21종의 전용
+파일·mapping·skill motion 완전성은 아직 존재하지 않는 자산 경로를 production에
+노출하지 않도록 Task 7~10의 각 roster 구현 단계에서 검사한다.
 
 - [ ] **Step 2: 실패 확인**
 
 Run: `npx vitest run tests/unit/CombatMotionManifest.test.js`
 
-Expected: 플레이어 5종, 동료 18종, 보스 14종 전용 매핑 누락으로 실패.
+Expected: 동기 registry 모듈과 fixture validator 부재로 실패.
 
 - [ ] **Step 3: 동기식 레지스트리 구현**
 
@@ -215,7 +218,10 @@ export function spriteRowPercent(row, rows) {}
 
 앱 시작 시 fetch 경합을 없애기 위해 `combatUiAssets.js`가 `COMBAT_MOTION_MANIFEST`를 동기 import하여 `COMBAT_SPRITE_SHEETS`를 생성하게 한다.
 
-- [ ] **Step 5: 데이터 검증기에 행·별칭·파일 경로 검사 추가**
+- [ ] **Step 5: 데이터 검증기에 fixture 행·별칭·파일 경로 검사 추가**
+
+이 단계의 파일 경로 검사는 현재 표시 중인 시트만 대상으로 한다. 전체 roster
+전용 파일 존재 검사는 Task 7~10에서 각 그룹의 데이터 구현과 함께 추가한다.
 
 - [ ] **Step 6: 통과 확인**
 
@@ -690,17 +696,25 @@ git commit -m "feat(assets): add dedicated companion combat motions"
 
 - [ ] **Step 1: 보스 계획의 21종 `motionKey`와 8행 계약 일치 테스트**
 
-- [ ] **Step 2: 기존 7종 시트를 6×8로 확장**
+각 보스의 `basicAttacks[0]`은 `basic_a`, `basicAttacks[1]`은 `basic_b`,
+`specialSkill`은 `special`, `ultimate`은 `ultimate` 행으로 해석되어야 한다.
+예고 중에는 `charge`, 피격은 `hit`, 사망은 `death`를 사용한다.
 
-`boss_feral_dog_alpha`는 현재 포효 행을 `special`로 이동하고, `basic_attack`에는 직접 물기/할퀴기, `normal_1`에는 도약 공격, `ultimate`에는 사냥 돌진을 별도로 제작한다.
+- [ ] **Step 2: 기존 전용 시트를 6×8로 확장**
+
+`boss_feral_dog_alpha`는 현재 포효 행을 `special`로 이동하고, `basic_a`에는
+직접 물기, `basic_b`에는 할퀴기/도약, `ultimate`에는 사냥 돌진,
+`charge`에는 돌진 준비를 별도로 제작한다.
 
 - [ ] **Step 3: 누락된 14종 전용 시트 제작**
 
 타입별 `zombie_common`, `raider`, `rabid_dog` 폴백을 사용하지 않는다.
 
-- [ ] **Step 4: 일반공격이 하나뿐인 보스의 행 처리**
+- [ ] **Step 4: 두 기본공격의 시각 차이 검증**
 
-`normal_2`를 빈 그림이나 다른 의미로 채우지 않고 매니페스트 별칭으로 `normal_1`을 가리킨다.
+모든 보스는 데이터의 두 기본공격 차이와 대응하는 `basic_a`, `basic_b` 행을
+각각 가진다. 빈 그림, 동일 프레임 복제, 다른 의미 행의 별칭으로 두 행을
+채우지 않는다.
 
 - [ ] **Step 5: 자동 검사와 21종 프리뷰**
 
@@ -710,7 +724,7 @@ Run: `python tools/render_monster_motion_preview.py --group boss --out output/co
 
 - [ ] **Step 6: 기술별 수동 판정**
 
-기본공격, 일반 1, 일반 2, 특수기, 필살기, 피격, 사망을 `BOSS_MOTION_QA.md`에 기록한다.
+기본공격 A/B, 특수기, 필살기, 피격, 충전, 사망을 `BOSS_MOTION_QA.md`에 기록한다.
 
 - [ ] **Step 7: 통과 확인**
 
@@ -783,7 +797,7 @@ git commit -m "fix(combat): stabilize sprite motion lifecycle"
 - 일반 피격과 사망이 다른 행
 - `zombie_patient_dormant` wake 1회
 - `zombie_bloater` 자폭 본체 모션
-- `boss_feral_dog_alpha` 기본 물기와 포효/필살기가 다른 행
+- `boss_feral_dog_alpha` 기본 물기 A·도약/할퀴기 B·포효·필살기가 모두 다른 행
 - 모션 속도 2배와 건너뛰기 후 상태 복구
 
 - [ ] **Step 2: 핵심 단위·통합 테스트**

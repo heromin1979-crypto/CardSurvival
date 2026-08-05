@@ -1,9 +1,14 @@
 import { describe, expect, it, vi } from 'vitest';
-import { executeEnemyAction } from '../../js/systems/combat/EnemyActionExecutor.js';
+import {
+  executeEnemyAction,
+  resolveEnemyDamageResponsePassives,
+} from '../../js/systems/combat/EnemyActionExecutor.js';
 import CombatSystem from '../../js/systems/CombatSystem.js';
 import GameState from '../../js/core/GameState.js';
 import SystemRegistry from '../../js/core/SystemRegistry.js';
 import ENEMIES from '../../js/data/enemies.js';
+import { SECRET_ENEMIES } from '../../js/data/secretEnemies.js';
+import { actionFxToPresentationFx } from '../../js/systems/combat/CombatMotionFx.js';
 
 function createServices() {
   const events = [];
@@ -40,6 +45,629 @@ function readyAction(overrides = {}) {
 }
 
 describe('executeEnemyAction', () => {
+  it('총기 행동의 시각 의미를 플레이어와 동료 enemyAction payload에 보존한다', () => {
+    const recorder = createServices();
+    const enemy = {
+      id: 'boss_soldier_nemesis',
+      bossPattern: {
+        basicAttacks: [{
+          id: 'rifle_burst',
+          damage: [12, 12],
+          accuracy: 1,
+          impactFx: 'shot',
+          movement: 'none',
+          camera: 'enemy-strike',
+        }],
+        specialSkill: null,
+        ultimate: null,
+      },
+    };
+
+    executeEnemyAction({
+      enemy,
+      action: readyAction({
+        actionId: 'rifle_burst',
+        targetIds: ['player', 'npc_soldier'],
+        motionKey: 'rifle_burst',
+      }),
+      services: recorder.services,
+      random: () => 0,
+    });
+
+    expect(recorder.services.emitFx.mock.calls.map(([fx]) => fx)).toEqual([
+      expect.objectContaining({
+        kind: 'enemyAction',
+        targetId: 'player',
+        actionId: 'rifle_burst',
+        category: 'basic',
+        motionKey: 'rifle_burst',
+        impactFx: 'shot',
+        movement: 'none',
+        camera: 'enemy-strike',
+      }),
+      expect.objectContaining({
+        kind: 'enemyAction',
+        targetId: 'npc_soldier',
+        actionId: 'rifle_burst',
+        category: 'basic',
+        motionKey: 'rifle_burst',
+        impactFx: 'shot',
+        movement: 'none',
+        camera: 'enemy-strike',
+      }),
+    ]);
+  });
+
+  it('CombatAiTurns가 플레이어와 동료 UI 큐에도 행동의 시각 의미를 보존한다', () => {
+    const enemy = {
+      id: 'boss_soldier_nemesis',
+      name: '탈영병 네메시스',
+      currentHp: 100,
+      maxHp: 100,
+      bossPattern: {
+        basicAttacks: [{
+          id: 'rifle_burst',
+          damage: [12, 12],
+          accuracy: 1,
+          impactFx: 'shot',
+          movement: 'none',
+          camera: 'enemy-strike',
+        }],
+        specialSkill: null,
+        ultimate: null,
+      },
+    };
+    GameState.player.hp = { current: 100, max: 100 };
+    GameState.npcs = {
+      states: {
+        npc_soldier: {
+          hp: 80,
+          maxHp: 80,
+          isCompanion: true,
+          statusEffects: [],
+        },
+      },
+    };
+    GameState.combat = {
+      enemies: [enemy],
+      log: [],
+      fxQueue: [],
+      combatants: {
+        player: {
+          id: 'player',
+          side: 'ally',
+          hp: 100,
+          maxHp: 100,
+          tokens: {},
+          statusEffects: [],
+          dead: false,
+        },
+        npc_soldier: {
+          id: 'npc_soldier',
+          side: 'ally',
+          sourceType: 'companion',
+          sourceId: 'npc_soldier',
+          hp: 80,
+          maxHp: 80,
+          tokens: {},
+          statusEffects: [],
+          dead: false,
+        },
+      },
+    };
+    const damage = vi.spyOn(CombatSystem, '_dealDamageToAlly')
+      .mockReturnValue({ dodged: false, damage: 12, dead: false, blocked: false });
+
+    try {
+      CombatSystem._executeEnemyCommittedAction(enemy, readyAction({
+        actionId: 'rifle_burst',
+        targetIds: ['player', 'npc_soldier'],
+        motionKey: 'rifle_burst',
+      }));
+
+      expect(damage).toHaveBeenCalledTimes(2);
+      expect(GameState.combat.fxQueue).toEqual([
+        expect.objectContaining({
+          kind: 'action',
+          actorId: 'enemy:0',
+          targetId: 'player',
+          actionId: 'rifle_burst',
+          category: 'basic',
+          motionKey: 'rifle_burst',
+          impactFx: 'shot',
+          movement: 'none',
+          camera: 'enemy-strike',
+        }),
+        expect.objectContaining({
+          kind: 'action',
+          actorId: 'enemy:0',
+          targetId: 'npc_soldier',
+          actionId: 'rifle_burst',
+          category: 'basic',
+          motionKey: 'rifle_burst',
+          impactFx: 'shot',
+          movement: 'none',
+          camera: 'enemy-strike',
+        }),
+      ]);
+    } finally {
+      damage.mockRestore();
+    }
+  });
+
+  it('CombatAiTurns는 impactFx가 없을 때만 몬스터 FX fallback을 호출한다', () => {
+    const damage = vi.spyOn(CombatSystem, '_dealDamageToAlly')
+      .mockReturnValue({ dodged: false, damage: 12, dead: false, blocked: false });
+    const fallback = vi.spyOn(CombatSystem, '_monsterImpactFx')
+      .mockReturnValue('claw');
+
+    const execute = (impactFx) => {
+      const definition = {
+        id: 'rifle_burst',
+        damage: [12, 12],
+        accuracy: 1,
+        movement: 'none',
+        ...(impactFx === undefined ? {} : { impactFx }),
+      };
+      const enemy = {
+        id: 'boss_soldier_nemesis',
+        name: '탈영병 네메시스',
+        currentHp: 100,
+        maxHp: 100,
+        bossPattern: {
+          basicAttacks: [definition],
+          specialSkill: null,
+          ultimate: null,
+        },
+      };
+      GameState.npcs = {
+        states: {
+          npc_soldier: {
+            hp: 80,
+            maxHp: 80,
+            isCompanion: true,
+            statusEffects: [],
+          },
+        },
+      };
+      GameState.combat = {
+        enemies: [enemy],
+        log: [],
+        fxQueue: [],
+        combatants: {
+          npc_soldier: {
+            id: 'npc_soldier',
+            side: 'ally',
+            sourceType: 'companion',
+            sourceId: 'npc_soldier',
+            hp: 80,
+            maxHp: 80,
+            tokens: {},
+            statusEffects: [],
+            dead: false,
+          },
+        },
+      };
+
+      CombatSystem._executeEnemyCommittedAction(enemy, readyAction({
+        actionId: 'rifle_burst',
+        targetIds: ['npc_soldier'],
+        motionKey: 'rifle_burst',
+      }));
+      return GameState.combat.fxQueue[0];
+    };
+
+    try {
+      const explicitFx = execute('shot');
+      expect(fallback).not.toHaveBeenCalled();
+      expect(explicitFx).toMatchObject({
+        impactFx: 'shot',
+      });
+
+      fallback.mockClear();
+      const inferredFx = execute(undefined);
+      expect(fallback).toHaveBeenCalledTimes(1);
+      expect(inferredFx).toMatchObject({
+        impactFx: 'claw',
+      });
+    } finally {
+      fallback.mockRestore();
+      damage.mockRestore();
+    }
+  });
+
+  it.each([
+    ['basic', 'boss_jab', 11],
+    ['special', 'boss_roar', 22],
+    ['ultimate', 'boss_end', 33],
+  ])('보스 %s 행동은 bossPattern의 %s 정의를 실행한다', (category, actionId, damage) => {
+    const recorder = createServices();
+    const enemy = {
+      attack: { damage: [99, 99], accuracy: 1 },
+      specialSkills: [{ id: actionId, damage: [88, 88], accuracy: 1 }],
+      bossPattern: {
+        basicAttacks: [
+          { id: 'boss_jab', damage: [11, 11], accuracy: 1 },
+          { id: 'boss_sweep', damage: [12, 12], accuracy: 1 },
+        ],
+        specialSkill: { id: 'boss_roar', damage: [22, 22], accuracy: 1 },
+        ultimate: { id: 'boss_end', damage: [33, 33], accuracy: 1 },
+      },
+    };
+
+    executeEnemyAction({
+      enemy,
+      action: readyAction({ actionId, category }),
+      services: recorder.services,
+      random: () => 0,
+    });
+
+    expect(recorder.services.damageTarget).toHaveBeenCalledWith(
+      'player',
+      damage,
+      expect.objectContaining({ actionId, category }),
+    );
+  });
+
+  it('0 피해 보스 행동은 공격 판정 없이 typed effect service를 실행한다', () => {
+    const recorder = createServices();
+    Object.assign(recorder.services, {
+      healSelf: vi.fn(),
+      addSelfStatus: vi.fn(),
+      summonEnemy: vi.fn(() => 1),
+      damageParty: vi.fn(() => [
+        { targetId: 'player', result: { dodged: false, damage: 5 } },
+        { targetId: 'npc_guard', result: { dodged: false, damage: 5 } },
+      ]),
+      setBattlefieldStatus: vi.fn(),
+      modifyResource: vi.fn(),
+      lockWeapon: vi.fn(),
+    });
+    const enemy = {
+      bossPattern: {
+        basicAttacks: [],
+        specialSkill: {
+          id: 'boss_control',
+          damage: [0, 0],
+          accuracy: 1,
+          effects: [
+            { type: 'selfHeal', value: [8, 12] },
+            { type: 'selfStatus', id: 'defense_up', duration: 2, value: 0.25 },
+            { type: 'summon', enemyId: 'zombie_common', count: [1, 2], row: 'front' },
+            { type: 'partyDamage', value: [5, 7] },
+            { type: 'targetStatus', id: 'stun', duration: 1, chance: 0.5 },
+            { type: 'battlefieldStatus', id: 'acid_pool', duration: 2, value: 4 },
+            { type: 'forcedMove', distance: 1 },
+            { type: 'resource', resource: 'morale', value: -15 },
+            { type: 'weaponLock', tag: 'firearm', duration: 1 },
+            { type: 'futureEffect', value: 1 },
+          ],
+        },
+        ultimate: null,
+      },
+    };
+
+    const result = executeEnemyAction({
+      enemy,
+      action: readyAction({
+        actionId: 'boss_control',
+        category: 'special',
+        targetIds: ['player', 'npc_guard'],
+      }),
+      services: recorder.services,
+      random: () => 0,
+    });
+
+    expect(recorder.services.damageTarget).not.toHaveBeenCalled();
+    expect(recorder.services.emitFx).toHaveBeenCalledTimes(2);
+    expect(recorder.services.addLog).not.toHaveBeenCalled();
+    expect(recorder.services.healSelf).toHaveBeenCalledOnce();
+    expect(recorder.services.healSelf).toHaveBeenCalledWith(8);
+    expect(recorder.services.addSelfStatus).toHaveBeenCalledWith(expect.objectContaining({
+      id: 'defense_up',
+      duration: 2,
+      value: 0.25,
+    }));
+    expect(recorder.services.summonEnemy)
+      .toHaveBeenCalledWith('zombie_common', 1, 'front');
+    expect(recorder.services.damageParty).toHaveBeenCalledWith(
+      5,
+      expect.objectContaining({ actionId: 'boss_control', category: 'special' }),
+    );
+    expect(recorder.services.setBattlefieldStatus).toHaveBeenCalledWith(expect.objectContaining({
+      id: 'acid_pool',
+      duration: 2,
+      value: 4,
+    }));
+    expect(recorder.services.addStatus.mock.calls).toEqual([
+      ['player', expect.objectContaining({ id: 'stun', duration: 1, chance: 0.5 })],
+      ['npc_guard', expect.objectContaining({ id: 'stun', duration: 1, chance: 0.5 })],
+    ]);
+    expect(recorder.services.moveTarget.mock.calls).toEqual([
+      ['player', 1],
+      ['npc_guard', 1],
+    ]);
+    expect(recorder.services.modifyResource.mock.calls).toEqual([
+      ['player', 'morale', -15],
+      ['npc_guard', 'morale', -15],
+    ]);
+    expect(recorder.services.lockWeapon.mock.calls).toEqual([
+      ['player', 'firearm', 1],
+      ['npc_guard', 'firearm', 1],
+    ]);
+    expect(result.executed).toBe(true);
+    expect(result.resolvedEffects).toContainEqual({
+      type: 'futureEffect',
+      skipped: true,
+      reason: 'unsupported',
+    });
+  });
+
+  it.each([
+    {
+      label: '전원 명중',
+      partyResults: [
+        { targetId: 'player', result: { dodged: false, damage: 6 } },
+        { targetId: 'npc_guard', result: { dodged: false, damage: 6 } },
+      ],
+      expectedTargetIds: ['player', 'npc_guard'],
+    },
+    {
+      label: '일부 회피',
+      partyResults: [
+        { targetId: 'player', result: { dodged: true, damage: 0 } },
+        { targetId: 'npc_guard', result: { dodged: false, damage: 6 } },
+      ],
+      expectedTargetIds: ['npc_guard'],
+    },
+    {
+      label: '전원 회피',
+      partyResults: [
+        { targetId: 'player', result: { dodged: true, damage: 0 } },
+        { targetId: 'npc_guard', result: { missed: true, damage: 0 } },
+      ],
+      expectedTargetIds: [],
+    },
+  ])('partyDamage $label 시 실제 명중 대상에게만 후속 target effect를 적용한다', ({
+    partyResults,
+    expectedTargetIds,
+  }) => {
+    const recorder = createServices();
+    Object.assign(recorder.services, {
+      damageParty: vi.fn(() => partyResults),
+      modifyResource: vi.fn(),
+      lockWeapon: vi.fn(),
+    });
+    const enemy = {
+      bossPattern: {
+        basicAttacks: [],
+        specialSkill: {
+          id: 'party_control',
+          damage: [0, 0],
+          effects: [
+            { type: 'partyDamage', value: [6, 6] },
+            { type: 'targetStatus', id: 'shocked', duration: 2 },
+            { type: 'forcedMove', distance: -1 },
+            { type: 'resource', resource: 'morale', value: -4 },
+            { type: 'weaponLock', tag: 'firearm', duration: 1 },
+          ],
+        },
+        ultimate: null,
+      },
+    };
+
+    const result = executeEnemyAction({
+      enemy,
+      action: readyAction({
+        actionId: 'party_control',
+        category: 'special',
+        targetIds: ['player'],
+      }),
+      services: recorder.services,
+      random: () => 0,
+    });
+
+    expect(result.affectedTargetIds).toEqual(expectedTargetIds);
+    expect(recorder.services.addStatus.mock.calls.map(([targetId]) => targetId))
+      .toEqual(expectedTargetIds);
+    expect(recorder.services.moveTarget.mock.calls.map(([targetId]) => targetId))
+      .toEqual(expectedTargetIds);
+    expect(recorder.services.modifyResource.mock.calls.map(([targetId]) => targetId))
+      .toEqual(expectedTargetIds);
+    expect(recorder.services.lockWeapon.mock.calls.map(([targetId]) => targetId))
+      .toEqual(expectedTargetIds);
+    expect(recorder.services.emitFx.mock.calls.map(([payload]) => ({
+      targetId: payload.targetId,
+      miss: payload.miss,
+    }))).toEqual(partyResults.map(outcome => ({
+      targetId: outcome.targetId,
+      miss: outcome.result.dodged === true || outcome.result.missed === true,
+    })));
+  });
+
+  it('실제 피해를 주는 partyDamage는 명중 대상에게만 enemy 기본 감염을 적용한다', () => {
+    const recorder = createServices();
+    recorder.services.damageParty = vi.fn(() => [
+      { targetId: 'player', result: { dodged: false, damage: 6 } },
+      { targetId: 'npc_guard', result: { dodged: true, damage: 0 } },
+    ]);
+    const enemy = {
+      infectionChance: 1,
+      bossPattern: {
+        basicAttacks: [],
+        specialSkill: {
+          id: 'infectious_party_hit',
+          damage: [0, 0],
+          effects: [{ type: 'partyDamage', value: [6, 6] }],
+        },
+        ultimate: null,
+      },
+    };
+
+    const result = executeEnemyAction({
+      enemy,
+      action: readyAction({
+        actionId: 'infectious_party_hit',
+        category: 'special',
+        targetIds: ['player'],
+      }),
+      services: recorder.services,
+      random: () => 0,
+    });
+
+    expect(result.affectedTargetIds).toEqual(['player']);
+    expect(recorder.services.addStatus).toHaveBeenCalledTimes(1);
+    expect(recorder.services.addStatus).toHaveBeenCalledWith(
+      'player',
+      expect.objectContaining({ id: 'infection' }),
+    );
+  });
+
+  it('partyDamage가 없는 명시적 0 피해 targetStatus는 기존 action 대상을 유지한다', () => {
+    const recorder = createServices();
+    Object.assign(recorder.services, {
+      modifyResource: vi.fn(),
+      lockWeapon: vi.fn(),
+    });
+    const enemy = {
+      infectionChance: 1,
+      onHitEffect: { infection: 5 },
+      statusInflict: {
+        id: 'legacy_burn',
+        name: '레거시 화상',
+        duration: 2,
+        effect: { hpLossPerRound: 3 },
+      },
+      bossPattern: {
+        basicAttacks: [],
+        specialSkill: {
+          id: 'zero_damage_control',
+          damage: [0, 0],
+          effects: [
+            { type: 'targetStatus', id: 'marked', duration: 2 },
+            { type: 'forcedMove', distance: 1 },
+            { type: 'resource', resource: 'morale', value: -2 },
+            { type: 'weaponLock', tag: 'melee', duration: 1 },
+          ],
+        },
+        ultimate: null,
+      },
+    };
+
+    const result = executeEnemyAction({
+      enemy,
+      action: readyAction({
+        actionId: 'zero_damage_control',
+        category: 'special',
+        targetIds: ['player', 'npc_guard'],
+      }),
+      services: recorder.services,
+      random: () => 0,
+    });
+
+    expect(result.affectedTargetIds).toEqual(['player', 'npc_guard']);
+    expect(recorder.services.addStatus.mock.calls).toEqual([
+      ['player', expect.objectContaining({ id: 'marked' })],
+      ['npc_guard', expect.objectContaining({ id: 'marked' })],
+    ]);
+    expect(recorder.services.moveTarget.mock.calls.map(([targetId]) => targetId))
+      .toEqual(['player', 'npc_guard']);
+    expect(recorder.services.modifyResource.mock.calls.map(([targetId]) => targetId))
+      .toEqual(['player', 'npc_guard']);
+    expect(recorder.services.lockWeapon.mock.calls.map(([targetId]) => targetId))
+      .toEqual(['player', 'npc_guard']);
+  });
+
+  it('피해 공격이 빗나가면 대상 effect를 건너뛰고 자기·전장 effect는 한 번씩 실행한다', () => {
+    const recorder = createServices();
+    Object.assign(recorder.services, {
+      healSelf: vi.fn(),
+      addSelfStatus: vi.fn(),
+      setBattlefieldStatus: vi.fn(),
+      modifyResource: vi.fn(),
+      lockWeapon: vi.fn(),
+    });
+    const enemy = {
+      bossPattern: {
+        basicAttacks: [{
+          id: 'boss_miss',
+          damage: [4, 4],
+          accuracy: 0,
+          effects: [
+            { type: 'selfHeal', value: 3 },
+            { type: 'selfStatus', id: 'guarded', duration: 1, value: 0.2 },
+            { type: 'battlefieldStatus', id: 'smoke', duration: 1, value: 1 },
+            { type: 'targetStatus', id: 'stun', duration: 1 },
+            { type: 'forcedMove', distance: -1 },
+            { type: 'resource', resource: 'morale', value: -5 },
+            { type: 'weaponLock', tag: 'melee', duration: 1 },
+          ],
+        }],
+        specialSkill: null,
+        ultimate: null,
+      },
+    };
+
+    executeEnemyAction({
+      enemy,
+      action: readyAction({ actionId: 'boss_miss', targetIds: ['player'] }),
+      services: recorder.services,
+      random: () => 0,
+    });
+
+    expect(recorder.services.damageTarget).not.toHaveBeenCalled();
+    expect(recorder.services.addStatus).not.toHaveBeenCalled();
+    expect(recorder.services.moveTarget).not.toHaveBeenCalled();
+    expect(recorder.services.modifyResource).not.toHaveBeenCalled();
+    expect(recorder.services.lockWeapon).not.toHaveBeenCalled();
+    expect(recorder.services.healSelf).toHaveBeenCalledTimes(1);
+    expect(recorder.services.addSelfStatus).toHaveBeenCalledTimes(1);
+    expect(recorder.services.setBattlefieldStatus).toHaveBeenCalledTimes(1);
+  });
+
+  it('damage effect는 범위가 보정된 armorPiercing과 execute modifier를 피해 service에 전달한다', () => {
+    const recorder = createServices();
+    const enemy = {
+      bossPattern: {
+        basicAttacks: [{
+          id: 'boss_execute',
+          accuracy: 1,
+          armorPiercing: 1.5,
+          executeThreshold: -0.25,
+          executeBonusMultiplier: 2,
+          damageType: 'chemical',
+          effects: [{ type: 'damage', value: [10, 10] }],
+        }],
+        specialSkill: null,
+        ultimate: null,
+      },
+    };
+
+    const result = executeEnemyAction({
+      enemy,
+      action: readyAction({ actionId: 'boss_execute' }),
+      services: recorder.services,
+      random: () => 0,
+    });
+
+    expect(recorder.services.damageTarget).toHaveBeenCalledWith('player', 10, {
+      actionId: 'boss_execute',
+      category: 'basic',
+      motionKey: 'basic_attack',
+      hitIndex: 0,
+      hitCount: 1,
+      armorPiercing: 1,
+      executeThreshold: 0,
+      executeBonusMultiplier: 2,
+      damageType: 'chemical',
+    });
+    expect(result.damageResults[0].amount).toBe(10);
+    expect(result.resolvedEffects).toContainEqual(expect.objectContaining({
+      type: 'damage',
+      skipped: false,
+    }));
+  });
+
   it('같은 산성 기술을 플레이어와 동료에게 동일한 피해·상태·강제 이동 규칙으로 적용한다', () => {
     const enemy = {
       attack: { damage: [8, 8], accuracy: 1 },
@@ -533,5 +1161,277 @@ describe('executeEnemyAction', () => {
     expect(damageCompanion).toHaveBeenCalledTimes(2);
     expect(GameState.npcs.states.npc_soldier.hp).toBe(24);
     expect(GameState.npcs.states.npc_soldier.statusEffects).toHaveLength(1);
+  });
+});
+
+describe('CombatAiTurns motion presentation regressions', () => {
+  it.each([
+    ['boss_patient_zero', 'mutation_regeneration'],
+    ['boss_swarm_queen_bee', 'royal_jelly'],
+  ])('routes real self-heal utility %s/%s to the enemy actor instead of the player', (enemyId, actionId) => {
+    const definition = structuredClone(SECRET_ENEMIES[enemyId].bossPattern.specialSkill);
+    const enemy = {
+      id: enemyId,
+      currentHp: 100,
+      maxHp: 300,
+      isBoss: true,
+      bossPattern: { basicAttacks: [], specialSkill: definition, ultimate: null },
+    };
+    GameState.player.hp = { current: 100, max: 100 };
+    GameState.companions = [];
+    GameState.combat = {
+      active: true,
+      enemies: [enemy],
+      log: [],
+      fxQueue: [],
+      combatants: {
+        player: { id: 'player', side: 'ally', sourceType: 'player', hp: 100, maxHp: 100, dead: false },
+        'enemy:0': { id: 'enemy:0', side: 'enemy', sourceType: 'enemy', enemyIndex: 0, hp: 100, maxHp: 300 },
+      },
+    };
+
+    CombatSystem._executeEnemyCommittedAction(enemy, readyAction({
+      actionId,
+      category: 'special',
+      targetIds: ['player'],
+      motionKey: actionId,
+    }));
+
+    expect(GameState.combat.fxQueue).toEqual([
+      expect.objectContaining({
+        kind: 'action',
+        actorId: 'enemy:0',
+        targetId: 'enemy:0',
+        targetSide: 'enemy',
+        actionId,
+        impactFx: 'heal',
+        damage: 0,
+      }),
+    ]);
+    expect(actionFxToPresentationFx(GameState.combat.fxQueue[0])).toEqual(
+      expect.objectContaining({
+        kind: 'enemySkill',
+        targetId: 'enemy:0',
+        amount: definition.heal ?? definition.healing ?? 0,
+      }),
+    );
+  });
+
+  it('queues one presentation action for a zero-damage summon boss skill', () => {
+    const summon = vi.spyOn(CombatSystem, '_summonEnemyById').mockReturnValue(3);
+    const enemy = {
+      id: 'boss_feral_dog_alpha',
+      currentHp: 300,
+      maxHp: 300,
+      isBoss: true,
+      bossPattern: {
+        basicAttacks: [],
+        specialSkill: {
+          id: 'pack_howl',
+          category: 'special',
+          damage: [0, 0],
+          targetPolicy: 'player',
+          motionKey: 'pack_howl',
+          impactFx: 'summon',
+          movement: 'none',
+          effects: [{ type: 'summon', enemyId: 'rabid_dog', count: 3, row: 'front' }],
+        },
+        ultimate: null,
+      },
+    };
+    GameState.player.hp = { current: 100, max: 100 };
+    GameState.companions = [];
+    GameState.combat = {
+      active: true,
+      enemies: [enemy],
+      log: [],
+      fxQueue: [],
+      combatants: {
+        player: { id: 'player', side: 'ally', sourceType: 'player', hp: 100, maxHp: 100, dead: false },
+        'enemy:0': { id: 'enemy:0', side: 'enemy', sourceType: 'enemy', enemyIndex: 0, hp: 300, maxHp: 300 },
+      },
+    };
+
+    try {
+      CombatSystem._executeEnemyCommittedAction(enemy, readyAction({
+        actionId: 'pack_howl',
+        category: 'special',
+        targetIds: ['player'],
+        motionKey: 'pack_howl',
+      }));
+
+      expect(GameState.combat.fxQueue).toEqual([
+        expect.objectContaining({
+          kind: 'action',
+          actorId: 'enemy:0',
+          targetId: 'enemy:0',
+          targetSide: 'enemy',
+          actionId: 'pack_howl',
+          category: 'special',
+          motionKey: 'pack_howl',
+          impactFx: 'summon',
+          movement: 'none',
+        }),
+      ]);
+    } finally {
+      summon.mockRestore();
+    }
+  });
+
+  it('routes a boss telegraph through the stationary charge motion key', () => {
+    const enemy = {
+      id: 'boss_feral_dog_alpha',
+      name: 'Feral Alpha',
+      currentHp: 70,
+      maxHp: 300,
+      isBoss: true,
+      bossPattern: {
+        basicAttacks: [{
+          id: 'neck_bite',
+          category: 'basic',
+          damage: [25, 40],
+          targetPolicy: 'player',
+          motionKey: 'neck_bite',
+          effects: [{ type: 'damage', value: [25, 40] }],
+        }],
+        specialSkill: null,
+        ultimate: {
+          id: 'alpha_hunt',
+          category: 'ultimate',
+          damage: [20, 35],
+          targetPolicy: 'player',
+          telegraphTurns: 1,
+          motionKey: 'alpha_hunt',
+          effects: [{ type: 'damage', value: [20, 35] }],
+        },
+      },
+      _bossActionState: {
+        committedAction: {
+          actionId: 'alpha_hunt',
+          category: 'ultimate',
+          state: 'telegraphing',
+          targetIds: ['player'],
+          remainingTelegraphTurns: 1,
+          hitCount: 1,
+          motionKey: 'alpha_hunt',
+        },
+        ultimatePending: false,
+        ultimateUsed: true,
+        lastBasicActionId: null,
+      },
+      _skillCooldowns: {},
+      _statusEffects: [],
+    };
+    GameState.player.hp = { current: 100, max: 100 };
+    GameState.companions = [];
+    GameState.combat = {
+      active: true,
+      enemies: [enemy],
+      log: [],
+      fxQueue: [],
+      combatants: {
+        player: { id: 'player', side: 'ally', sourceType: 'player', hp: 100, maxHp: 100, dead: false, tokens: {} },
+        'enemy:0': { id: 'enemy:0', side: 'enemy', sourceType: 'enemy', enemyIndex: 0, hp: 70, maxHp: 300 },
+      },
+      formations: {
+        ally: [null, null, null, 'player'],
+        enemy: ['enemy:0', null, null, null],
+      },
+    };
+
+    CombatSystem._runSingleEnemyTurn(0);
+
+    expect(GameState.combat.fxQueue).toContainEqual(expect.objectContaining({
+      kind: 'status',
+      target: 'enemy',
+      enemyIdx: 0,
+      statusId: 'telegraph',
+      motionKey: 'charge',
+    }));
+  });
+});
+
+describe('resolveEnemyDamageResponsePassives', () => {
+  function passiveEnemy() {
+    return {
+      bossPattern: {
+        passives: [
+          { type: 'counterAttack', actionId: 'toxic_blood_counter', maxPerRound: 1 },
+          {
+            type: 'resistanceShift',
+            source: 'lastDamageType',
+            duration: 2,
+            value: 0.5,
+          },
+        ],
+      },
+    };
+  }
+
+  it('반격 횟수 상태를 소유하지 않고 service에 제한값과 최근 피해 속성을 전달한다', () => {
+    const services = {
+      queueCounterAction: vi.fn(),
+      setResistanceShift: vi.fn(),
+    };
+
+    const result = resolveEnemyDamageResponsePassives({
+      enemy: passiveEnemy(),
+      attackerId: 'player',
+      damageType: 'chemical',
+      services,
+    });
+
+    expect(services.queueCounterAction)
+      .toHaveBeenCalledWith('toxic_blood_counter', 'player', 1);
+    expect(services.setResistanceShift).toHaveBeenCalledWith('chemical', 2, 0.5);
+    expect(result.resolvedPassives).toEqual([
+      {
+        type: 'counterAttack',
+        actionId: 'toxic_blood_counter',
+        attackerId: 'player',
+        maxPerRound: 1,
+      },
+      {
+        type: 'resistanceShift',
+        damageType: 'chemical',
+        duration: 2,
+        value: 0.5,
+      },
+    ]);
+  });
+
+  it('반격에서 재귀 반격을 건너뛰되 피해 속성이 있으면 저항 전환은 유지한다', () => {
+    const services = {
+      queueCounterAction: vi.fn(),
+      setResistanceShift: vi.fn(),
+    };
+
+    resolveEnemyDamageResponsePassives({
+      enemy: passiveEnemy(),
+      attackerId: 'player',
+      damageType: 'fire',
+      isCounter: true,
+      services,
+    });
+
+    expect(services.queueCounterAction).not.toHaveBeenCalled();
+    expect(services.setResistanceShift).toHaveBeenCalledWith('fire', 2, 0.5);
+  });
+
+  it('피해 속성이 없으면 저항 전환을 건너뛰되 반격 예약은 유지한다', () => {
+    const services = {
+      queueCounterAction: vi.fn(),
+      setResistanceShift: vi.fn(),
+    };
+
+    resolveEnemyDamageResponsePassives({
+      enemy: passiveEnemy(),
+      attackerId: 'npc_guard',
+      services,
+    });
+
+    expect(services.queueCounterAction)
+      .toHaveBeenCalledWith('toxic_blood_counter', 'npc_guard', 1);
+    expect(services.setResistanceShift).not.toHaveBeenCalled();
   });
 });

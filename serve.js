@@ -11,6 +11,8 @@ const http = require('http');
 const fs   = require('fs');
 const path = require('path');
 const { exec, execFile } = require('child_process');
+const { mergeMotionLibrary } = require('./tools/motionLibraryStore.cjs');
+const animProjects = require('./tools/animProjectStore.cjs');
 
 const PORT = 8080;
 const ROOT = __dirname;
@@ -201,6 +203,21 @@ async function handleApi(req, res, urlPath) {
       sendJSON(res, 200, { ok: true, sheets: out });
       return;
     }
+    if (urlPath === '/api/anim-projects') {
+      // 스프라이트 애니 에디터 — 프로젝트 라이브러리 목록
+      try { sendJSON(res, 200, { ok: true, projects: animProjects.listProjects(ROOT) }); }
+      catch (e) { sendJSON(res, 500, { error: e.message }); }
+      return;
+    }
+    if (urlPath === '/api/anim-project') {
+      const q = new URLSearchParams(req.url.split('?')[1] || '');
+      try {
+        const project = animProjects.readProject(ROOT, q.get('name'));
+        if (!project) { sendJSON(res, 404, { error: '프로젝트 없음' }); return; }
+        sendJSON(res, 200, { ok: true, project });
+      } catch (e) { sendJSON(res, 500, { error: e.message }); }
+      return;
+    }
     sendJSON(res, 404, { error: 'unknown api' });
     return;
   }
@@ -311,23 +328,23 @@ async function handleApi(req, res, urlPath) {
       }
       fs.writeFileSync(target, buf);
       let manifestWritten = false;
-      if (body.meta && Number(body.meta.cols) > 0) {
-        const manifestPath = path.join(sheetDir, 'manifest.json');
-        let manifest = {};
-        try { manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8')); } catch (e) { /* new */ }
-        const name = path.basename(target).replace(/_src\.png$/i, '.png');
-        manifest[name] = {
-          cols: Number(body.meta.cols),
-          rows: Number(body.meta.rows) || 4,
-          ...(Array.isArray(body.meta.rowFrames) ? { rowFrames: body.meta.rowFrames } : {}),
-        };
-        fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
-        manifestWritten = true;
-      }
+      try { manifestWritten = !!mergeMotionLibrary(sheetDir, target, body.meta); }
+      catch (e) { /* 라이브러리 기록 실패가 시트 저장을 막지 않도록 */ }
       sendJSON(res, 200, { ok: true, bytes: buf.length, path: '/' + path.relative(ROOT, target).split(path.sep).join('/'), manifest: manifestWritten });
     } catch (e) {
       sendJSON(res, 500, { error: `기록 실패: ${e.message}` });
     }
+    return;
+  }
+
+  if (urlPath === '/api/save-anim-project') {
+    // 스프라이트 애니 에디터 — 프로젝트 라이브러리 저장
+    let body;
+    try { body = await readBody(req); } catch (e) { sendJSON(res, 400, { error: `잘못된 요청: ${e.message}` }); return; }
+    try {
+      const saved = animProjects.writeProject(ROOT, body.name, body.project);
+      sendJSON(res, 200, { ok: true, name: saved.name });
+    } catch (e) { sendJSON(res, 400, { error: e.message }); }
     return;
   }
 

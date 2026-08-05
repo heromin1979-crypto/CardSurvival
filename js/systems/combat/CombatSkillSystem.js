@@ -63,6 +63,23 @@ function postCostFailure(reason, effectsApplied) {
   };
 }
 
+function executeWithCommandFinalizer(context, execute) {
+  let result;
+  try {
+    result = execute();
+  } catch {
+    result = postCostFailure('execution_error', 0);
+  }
+
+  if (typeof context.finalizeCommand !== 'function') return result;
+  try {
+    context.finalizeCommand(result);
+  } catch {
+    return postCostFailure('execution_error', result?.effectsApplied ?? 0);
+  }
+  return result;
+}
+
 function lookupById(collection, id) {
   if (typeof id !== 'string' || id.length === 0) return null;
   if (!collection) return null;
@@ -437,6 +454,17 @@ export function validateSkillCommand(context, command) {
   if (!skill) {
     return commandFailure('invalid_skill');
   }
+  if (typeof ctx.validateEligibility === 'function') {
+    let eligibility;
+    try {
+      eligibility = ctx.validateEligibility(actor, skill);
+    } catch {
+      return commandFailure('invalid_context');
+    }
+    if (!eligibility?.ok) {
+      return commandFailure(eligibility?.reason ?? 'invalid_skill');
+    }
+  }
   if (skill?.target?.selfOnly === true && cmd.targetId !== cmd.actorId) {
     return commandFailure('invalid_target');
   }
@@ -526,79 +554,81 @@ export function executeSkillCommand(context, command, random = Math.random) {
   // resolveHit 주입 시 판정(명중 보정·회피/치명 토큰)을 호출자에게 위임한다.
   // 미주입 컨텍스트는 기존 단일 명중 굴림 계약을 그대로 유지한다.
   const usePipeline = typeof context.resolveHit === 'function';
-  if (targets.length > 1) {
-    return executeMultiTargetEffects({
-      context,
-      actor,
-      targets,
-      skill,
-      effects,
-      randomFn,
-      usePipeline,
-    });
-  }
-
-  let hitInfo = null;
-  if (usePipeline) {
-    try {
-      hitInfo = context.resolveHit(actor, target, skill, randomFn);
-    } catch {
-      return postCostFailure('execution_error', 0);
+  return executeWithCommandFinalizer(context, () => {
+    if (targets.length > 1) {
+      return executeMultiTargetEffects({
+        context,
+        actor,
+        targets,
+        skill,
+        effects,
+        randomFn,
+        usePipeline,
+      });
     }
-  } else {
-    let roll;
-    try {
-      roll = normalizeRoll(randomFn());
-    } catch {
-      return postCostFailure('execution_error', 0);
-    }
-    hitInfo = { hit: roll !== null && roll < normalizeAccuracy(skill.accuracy) };
-  }
 
-  if (hitInfo?.hit !== true) {
-    const missResult = {
+    let hitInfo = null;
+    if (usePipeline) {
+      try {
+        hitInfo = context.resolveHit(actor, target, skill, randomFn);
+      } catch {
+        return postCostFailure('execution_error', 0);
+      }
+    } else {
+      let roll;
+      try {
+        roll = normalizeRoll(randomFn());
+      } catch {
+        return postCostFailure('execution_error', 0);
+      }
+      hitInfo = { hit: roll !== null && roll < normalizeAccuracy(skill.accuracy) };
+    }
+
+    if (hitInfo?.hit !== true) {
+      const missResult = {
+        ok: true,
+        hit: false,
+        turnConsumed: true,
+        costsConsumed: true,
+        effectsApplied: 0,
+        partialApplied: false,
+      };
+      if (usePipeline) missResult.dodged = hitInfo?.dodged === true;
+      return missResult;
+    }
+
+    let effectsApplied = 0;
+    for (const effect of effects) {
+      let effectResult;
+      try {
+        effectResult = usePipeline
+          ? context.applyEffect(effect, actor, target, randomFn, hitInfo)
+          : context.applyEffect(effect, actor, target, randomFn);
+      } catch {
+        return postCostFailure('execution_error', effectsApplied);
+      }
+
+      if (effectResult?.ok === false) {
+        return postCostFailure(effectResult.reason ?? 'execution_error', effectsApplied);
+      }
+
+      effectsApplied++;
+    }
+
+    const hitResult = {
       ok: true,
-      hit: false,
+      hit: true,
       turnConsumed: true,
       costsConsumed: true,
-      effectsApplied: 0,
+      effectsApplied,
       partialApplied: false,
     };
-    if (usePipeline) missResult.dodged = hitInfo?.dodged === true;
-    return missResult;
-  }
-
-  let effectsApplied = 0;
-  for (const effect of effects) {
-    let effectResult;
-    try {
-      effectResult = usePipeline
-        ? context.applyEffect(effect, actor, target, randomFn, hitInfo)
-        : context.applyEffect(effect, actor, target, randomFn);
-    } catch {
-      return postCostFailure('execution_error', effectsApplied);
+    if (usePipeline) {
+      hitResult.dodged = false;
+      hitResult.crit = hitInfo?.crit === true;
     }
-
-    if (effectResult?.ok === false) {
-      return postCostFailure(effectResult.reason ?? 'execution_error', effectsApplied);
-    }
-
-    effectsApplied++;
-  }
-
-  const hitResult = {
-    ok: true,
-    hit: true,
-    turnConsumed: true,
-    costsConsumed: true,
-    effectsApplied,
-    partialApplied: false,
-  };
-  if (usePipeline) {
-    hitResult.dodged = false;
-    hitResult.crit = hitInfo?.crit === true;
-  }
-  return hitResult;
+    return hitResult;
+  });
 }
 
 export function useCombatItem(context, actorId, itemInstanceId) {

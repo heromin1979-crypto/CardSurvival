@@ -22,6 +22,18 @@ const DEFAULT_SEED = 20260727;
 const SKILLS_PER_COMPANION = 3;
 const HARNESS_HP = 1_000_000;
 const MAX_ENEMY_STEPS = 10;
+const USAGE = 'Usage: node tools/simulate_companion_monster_patterns.mjs --runs <positive integer> --seed <positive integer> --out <path>';
+
+function parsePositiveInteger(value, flag) {
+  if (typeof value !== 'string' || !/^[0-9]+$/.test(value)) {
+    throw new Error(`${flag} must be a positive integer: ${value}`);
+  }
+  const number = Number(value);
+  if (!Number.isSafeInteger(number) || number <= 0) {
+    throw new Error(`${flag} must be a positive integer: ${value}`);
+  }
+  return number;
+}
 
 const EXPECTED_COMPANION_IDS = Object.freeze([
   'npc_old_survivor',
@@ -133,13 +145,16 @@ function parseArgs(argv) {
       options.out = value;
       continue;
     }
-    const number = Number.parseInt(value, 10);
+    const number = parsePositiveInteger(value, flag);
     if (!Number.isSafeInteger(number) || number <= 0) {
       throw new Error(`${flag}는 1 이상의 정수여야 합니다: ${value}`);
     }
     options[flag.slice(2)] = number;
   }
 
+  if (options.out.trim().length === 0) {
+    throw new Error('--out must be a non-empty path');
+  }
   return options;
 }
 
@@ -1310,5 +1325,6 @@ async function main() {
 
 main().catch(error => {
   console.error(error?.stack ?? error);
+  console.error(USAGE);
   process.exitCode = 1;
 });

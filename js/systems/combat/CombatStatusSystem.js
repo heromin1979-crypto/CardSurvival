@@ -73,6 +73,288 @@ function shouldKeepUnprocessedStatus(status) {
   return !(Number.isFinite(status.duration) && status.duration <= 0);
 }
 
+function healingReceivedReductionFor(target) {
+  const statuses = new Set([
+    ...(Array.isArray(target?.statusEffects) ? target.statusEffects : []),
+    ...(Array.isArray(target?._statusEffects) ? target._statusEffects : []),
+  ]);
+  let strongestReduction = 0;
+
+  for (const status of statuses) {
+    if (status?.id !== 'healing_received_down'
+      || (Number.isFinite(status.duration) && status.duration <= 0)
+      || !Number.isFinite(status.value)) {
+      continue;
+    }
+    strongestReduction = Math.max(strongestReduction, status.value);
+  }
+
+  return clamp(strongestReduction, 0, 1);
+}
+
+function timedStatusIsActive(status, clock = 'remainingRounds') {
+  if (!isObject(status)) return false;
+  const remaining = Number.isFinite(status?.[clock])
+    ? status[clock]
+    : status?.duration;
+  return !Number.isFinite(remaining) || remaining > 0;
+}
+
+function mergeEffectPreservingStrength(existingEffect, incomingEffect) {
+  const merged = { ...(existingEffect ?? {}) };
+  for (const [key, incomingValue] of Object.entries(incomingEffect ?? {})) {
+    const existingValue = merged[key];
+    if (Number.isFinite(incomingValue)) {
+      merged[key] = Number.isFinite(existingValue)
+        ? Math.max(existingValue, incomingValue)
+        : incomingValue;
+    } else if (incomingValue === true || incomingValue === false) {
+      merged[key] = existingValue === true || incomingValue === true;
+    } else if (isObject(incomingValue)) {
+      merged[key] = mergeEffectPreservingStrength(
+        isObject(existingValue) ? existingValue : {},
+        incomingValue,
+      );
+    } else if (existingValue === undefined) {
+      merged[key] = incomingValue;
+    }
+  }
+  return merged;
+}
+
+function normalizedTimedStatus(status, clock) {
+  if (!isObject(status) || typeof status.id !== 'string' || status.id.length === 0) {
+    return null;
+  }
+  const fallbackRemaining = Number.isFinite(status.duration)
+    ? status.duration
+    : 1;
+  const remaining = Number.isFinite(status[clock])
+    ? status[clock]
+    : fallbackRemaining;
+  return {
+    ...status,
+    [clock]: Math.max(1, Math.floor(remaining)),
+    ...(clock === 'remainingRounds' && Number.isFinite(status.duration)
+      ? { duration: Math.max(1, Math.floor(remaining)) }
+      : {}),
+    effect: { ...(status.effect ?? {}) },
+  };
+}
+
+function addOrRefreshTimedStatus(statuses, status, clock) {
+  if (!Array.isArray(statuses)) return null;
+  const incoming = normalizedTimedStatus(status, clock);
+  if (!incoming) return null;
+
+  const incomingSource = incoming.sourceEnemyId ?? null;
+  const existing = statuses.find(entry => (
+    entry?.id === incoming.id
+    && (entry.sourceEnemyId ?? null) === incomingSource
+  ));
+  if (!existing) {
+    statuses.push(incoming);
+    return incoming;
+  }
+
+  existing[clock] = Math.max(
+    Number.isFinite(existing[clock]) ? existing[clock] : existing.duration ?? 0,
+    incoming[clock],
+  );
+  if (clock === 'remainingRounds' && Number.isFinite(incoming.duration)) {
+    existing.duration = existing[clock];
+  }
+  existing.effect = mergeEffectPreservingStrength(existing.effect, incoming.effect);
+  if (incoming.name) existing.name = incoming.name;
+  if (incoming._skipNextRoundTick === true) existing._skipNextRoundTick = true;
+  return existing;
+}
+
+export function addOrRefreshEnemyStatus(enemy, status) {
+  if (!isObject(enemy)) return null;
+  if (!Array.isArray(enemy._statusEffects)) enemy._statusEffects = [];
+  return addOrRefreshTimedStatus(enemy._statusEffects, status, 'remainingRounds');
+}
+
+export function enemyStatusModifiers(enemy) {
+  const modifiers = {
+    defenseIncrease: 0,
+    evasionIncrease: 0,
+    incomingDamageReduction: 0,
+    outgoingDamageIncrease: 0,
+    invulnerable: false,
+  };
+
+  const strongestById = new Map();
+  for (const status of enemy?._statusEffects ?? []) {
+    if (!timedStatusIsActive(status, 'remainingRounds')) continue;
+    const effect = status?.effect ?? {};
+    const key = status?.id ?? status;
+    const strongest = strongestById.get(key) ?? {
+      defenseIncrease: 0,
+      evasionIncrease: 0,
+      incomingDamageReduction: 0,
+      outgoingDamageIncrease: 0,
+      invulnerable: false,
+    };
+    if (Number.isFinite(effect.defenseIncrease)) {
+      strongest.defenseIncrease = Math.max(
+        strongest.defenseIncrease,
+        Math.max(0, effect.defenseIncrease),
+      );
+    }
+    if (Number.isFinite(effect.evasionIncrease)) {
+      strongest.evasionIncrease = Math.max(
+        strongest.evasionIncrease,
+        Math.max(0, effect.evasionIncrease),
+      );
+    }
+    if (Number.isFinite(effect.incomingDamageReduction)) {
+      strongest.incomingDamageReduction = Math.max(
+        strongest.incomingDamageReduction,
+        Math.max(0, effect.incomingDamageReduction),
+      );
+    }
+    if (Number.isFinite(effect.outgoingDamageIncrease)) {
+      strongest.outgoingDamageIncrease = Math.max(
+        strongest.outgoingDamageIncrease,
+        Math.max(0, effect.outgoingDamageIncrease),
+      );
+    }
+    if (effect.invulnerable === true) strongest.invulnerable = true;
+    strongestById.set(key, strongest);
+  }
+
+  for (const strongest of strongestById.values()) {
+    modifiers.defenseIncrease += strongest.defenseIncrease;
+    modifiers.evasionIncrease += strongest.evasionIncrease;
+    modifiers.incomingDamageReduction += strongest.incomingDamageReduction;
+    modifiers.outgoingDamageIncrease += strongest.outgoingDamageIncrease;
+    if (strongest.invulnerable) modifiers.invulnerable = true;
+  }
+
+  modifiers.evasionIncrease = clamp(modifiers.evasionIncrease, 0, 0.95);
+  modifiers.incomingDamageReduction = clamp(modifiers.incomingDamageReduction, 0, 1);
+  return modifiers;
+}
+
+export function addEnemyDamageShield(
+  enemy,
+  {
+    sourceEnemyId,
+    amount,
+    remainingRounds = 1,
+    id = 'temporary_damage_shield',
+    name = id,
+    skipNextRoundTick = false,
+  } = {},
+) {
+  const shieldAmount = Math.max(0, Math.floor(Number.isFinite(amount) ? amount : 0));
+  if (!isObject(enemy) || shieldAmount <= 0) return null;
+  if (!Array.isArray(enemy._statusEffects)) enemy._statusEffects = [];
+
+  const existing = enemy._statusEffects.find(status => (
+    status?.id === id && status?.sourceEnemyId === sourceEnemyId
+  ));
+  if (existing) {
+    existing.remainingRounds = Math.max(
+      existing.remainingRounds ?? existing.duration ?? 0,
+      Math.max(1, Math.floor(remainingRounds)),
+    );
+    existing.effect = {
+      ...(existing.effect ?? {}),
+      damageShield: Math.max(0, existing.effect?.damageShield ?? 0) + shieldAmount,
+    };
+    if (skipNextRoundTick) existing._skipNextRoundTick = true;
+    return existing;
+  }
+
+  const status = {
+    id,
+    name,
+    sourceEnemyId: sourceEnemyId ?? enemy.id ?? null,
+    remainingRounds: Math.max(1, Math.floor(remainingRounds)),
+    effect: { damageShield: shieldAmount },
+    ...(skipNextRoundTick ? { _skipNextRoundTick: true } : {}),
+  };
+  enemy._statusEffects.push(status);
+  return status;
+}
+
+export function consumeEnemyDamageShield(enemy, rawDamage) {
+  let remainingDamage = normalizeNonnegative(rawDamage);
+  let absorbed = 0;
+  if (!isObject(enemy) || remainingDamage <= 0) {
+    return { damage: remainingDamage, absorbed };
+  }
+
+  for (const status of enemy._statusEffects ?? []) {
+    if (!timedStatusIsActive(status, 'remainingRounds')) continue;
+    const available = Math.max(0, Math.floor(status?.effect?.damageShield ?? 0));
+    if (available <= 0) continue;
+    const used = Math.min(available, remainingDamage);
+    status.effect.damageShield = available - used;
+    remainingDamage -= used;
+    absorbed += used;
+    if (remainingDamage <= 0) break;
+  }
+  enemy._statusEffects = (enemy._statusEffects ?? []).filter(status => (
+    !Object.hasOwn(status?.effect ?? {}, 'damageShield')
+    || (status.effect.damageShield ?? 0) > 0
+  ));
+  return { damage: remainingDamage, absorbed };
+}
+
+export function addOrRefreshBattlefieldStatus(combat, status) {
+  if (!isObject(combat)) return null;
+  if (!Array.isArray(combat.battlefieldStatuses)) combat.battlefieldStatuses = [];
+  const clock = Number.isFinite(status?.remainingPlayerTurns)
+    ? 'remainingPlayerTurns'
+    : 'remainingRounds';
+  return addOrRefreshTimedStatus(combat.battlefieldStatuses, status, clock);
+}
+
+export function tickPlayerActionStatuses(statuses) {
+  if (!Array.isArray(statuses)) return [];
+  const expired = [];
+  for (const status of statuses) {
+    if (!Number.isFinite(status?.remainingPlayerTurns)) continue;
+    status.remainingPlayerTurns -= 1;
+    if (status.remainingPlayerTurns <= 0) expired.push(status);
+  }
+  for (let index = statuses.length - 1; index >= 0; index--) {
+    if (Number.isFinite(statuses[index]?.remainingPlayerTurns)
+        && statuses[index].remainingPlayerTurns <= 0) {
+      statuses.splice(index, 1);
+    }
+  }
+  return expired;
+}
+
+function battlefieldHealingInterference(options, target) {
+  const statuses = Array.isArray(options?.battlefieldStatuses)
+    ? options.battlefieldStatuses
+    : [];
+  let strongest = null;
+  for (const status of statuses) {
+    if (!timedStatusIsActive(status, 'remainingPlayerTurns')) continue;
+    const baseReduction = status?.effect?.healingReduction;
+    if (!Number.isFinite(baseReduction)) continue;
+    const guardedReduction = status?.effect?.guardedHealingReduction;
+    const reduction = options?.guarded === true && Number.isFinite(guardedReduction)
+      ? guardedReduction
+      : baseReduction;
+    if (!strongest || reduction > strongest.reduction) {
+      strongest = {
+        reduction: clamp(reduction, 0, 1),
+        status,
+        sourceEnemyId: status.sourceEnemyId ?? null,
+      };
+    }
+  }
+  return strongest;
+}
+
 export function addToken(target, tokenId, stacks = 1) {
   const tokens = ensureTokenBag(target);
   const amount = normalizeStacks(stacks);
@@ -189,22 +471,44 @@ export function applyDamage(target, rawDamage, random = Math.random) {
   return result;
 }
 
-export function healCombatant(target, amount) {
+export function healCombatant(target, amount, options = {}) {
+  const rawAmount = normalizeNonnegative(amount);
+  const localReduction = isObject(target)
+    ? healingReceivedReductionFor(target)
+    : 0;
+  const battlefieldInterference = battlefieldHealingInterference(options, target);
+  const battlefieldReduction = battlefieldInterference?.reduction ?? 0;
+  const strongestReduction = Math.max(localReduction, battlefieldReduction);
+  const activeInterference = battlefieldReduction >= localReduction
+    ? battlefieldInterference
+    : null;
+  const multiplier = clamp(1 - strongestReduction, 0, 1);
+  const effectiveAmount = rawAmount * multiplier;
+  const hpBefore = isObject(target) ? currentHpFor(target) : 0;
+  const maxHp = isObject(target) ? maxHpFor(target) : 0;
+  const missingHp = Math.max(0, maxHp - hpBefore);
+  const prevented = Math.max(
+    0,
+    Math.min(rawAmount, missingHp) - Math.min(effectiveAmount, missingHp),
+  );
   const result = {
     ok: isObject(target),
-    amount: normalizeNonnegative(amount),
+    amount: rawAmount,
+    rawAmount,
+    multiplier,
+    prevented,
     healed: 0,
-    hpBefore: isObject(target) ? currentHpFor(target) : 0,
-    hpAfter: isObject(target) ? currentHpFor(target) : 0,
+    hpBefore,
+    hpAfter: hpBefore,
     deathsDoorCleared: false,
     dead: Boolean(target?.dead),
+    interferenceSourceEnemyId: activeInterference?.sourceEnemyId ?? null,
   };
 
   if (!isObject(target) || target.dead === true) return result;
 
-  const maxHp = maxHpFor(target);
-  const nextRaw = Math.min(maxHp, result.hpBefore + result.amount);
-  target.hp = result.amount > 0 && nextRaw > 0
+  const nextRaw = Math.min(maxHp, result.hpBefore + effectiveAmount);
+  target.hp = effectiveAmount > 0 && nextRaw > 0
     ? Math.max(1, nextRaw)
     : nextRaw;
 
@@ -215,6 +519,18 @@ export function healCombatant(target, amount) {
 
   result.hpAfter = target.hp;
   result.healed = Math.max(0, result.hpAfter - result.hpBefore);
+  if (
+    result.prevented > 0
+    && activeInterference
+    && typeof options?.onHealingPrevented === 'function'
+  ) {
+    options.onHealingPrevented({
+      prevented: result.prevented,
+      status: activeInterference.status,
+      sourceEnemyId: activeInterference.sourceEnemyId,
+      target,
+    });
+  }
   return result;
 }
 

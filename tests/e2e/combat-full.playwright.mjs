@@ -63,7 +63,7 @@ async function newCombatPage(browser, viewport = { width: 1280, height: 820 }) {
   });
   await page.goto(`${baseUrl}/combat-test.html`, { waitUntil: 'networkidle' });
   try {
-    await page.waitForSelector('.combat-stage-lineup', { timeout: 10000 });
+    await page.waitForSelector('.combat-focused-lineup', { timeout: 10000 });
   } catch (err) {
     const diagnostics = {
       title: await page.title().catch(() => ''),
@@ -124,17 +124,17 @@ async function checkSelector(page, name, selector, expectedMin = 1) {
 
 async function scenarioInitialLayout(browser) {
   const page = await newCombatPage(browser);
-  await checkSelector(page, 'initial: combat stage visible', '.combat-stage-lineup');
+  await checkSelector(page, 'initial: focused combat stage visible', '.combat-focused-lineup');
   await checkSelector(page, 'initial: initiative visible', '.initiative-bar .init-slot', 2);
   await checkSelector(page, 'initial: player visible', '.cv-player');
   await checkSelector(page, 'initial: enemy visible', '.cv-enemy-sprite');
-  await checkSelector(page, 'initial: enemy intent visible', '.cv-intent');
-  await checkSelector(page, 'initial: attack card visible', '.action-card.primary[data-action]');
-  await checkSelector(page, 'initial: guard card visible', '.action-card[data-action="guard"]');
-  await checkSelector(page, 'initial: move card enabled', '.action-card.move[data-action="move"]');
-  await checkSelector(page, 'initial: flee card visible', '.action-card.flee[data-action="flee"]');
+  await checkSelector(page, 'initial: enemy intent visible', '.combat-intent');
+  await checkSelector(page, 'initial: attack skill visible', '.combat-skill-button[data-command="attack"]');
+  await checkSelector(page, 'initial: guard skill visible', '.combat-skill-button[data-skill-id="guard"]');
+  await checkSelector(page, 'initial: move command enabled', '.combat-common-command[data-command="move"]:not([disabled])');
+  await checkSelector(page, 'initial: flee command visible', '.combat-common-command[data-command="flee"]');
   const overflowDetails = await page.evaluate(() => {
-    const nodes = [...document.querySelectorAll('.action-card, .sec-btn, .cv-unit-plate, .cv-hp-overlay')];
+    const nodes = [...document.querySelectorAll('.combat-action-card, .combat-status-card')];
     return nodes
       .filter(el => el.scrollWidth > el.clientWidth + 2 || el.scrollHeight > el.clientHeight + 2)
       .map(el => ({
@@ -154,15 +154,16 @@ async function scenarioInitialLayout(browser) {
 
 async function scenarioMove(browser) {
   const page = await newCombatPage(browser);
-  await page.locator('.action-card.move').click();
-  await page.waitForSelector('.cv-player.player-rank-back', { timeout: 5000 });
-  const state = await page.evaluate(() => ({
-    playerRank: window.GameState.combat.playerRank,
+  await page.locator('.combat-common-command[data-command="move"]:not([disabled])').click();
+  await page.waitForFunction(() => window.GameState.combat.formations.ally.indexOf('player') === 2);
+  const state = await page.evaluate(async () => ({
+    playerRank: (await import('/js/systems/combat/FormationSystem.js'))
+      .getRank(window.GameState.combat.formations, 'player'),
     lastLog: window.GameState.combat.log.at(-1),
     logs: [...window.GameState.combat.log],
   }));
-  record('move: playerRank toggles to back', state.playerRank === 'back', JSON.stringify(state));
-  record('move: combat log records movement', state.logs.some(log => /\[Move\]|\[이동\]|후열|Back/.test(log ?? '')), JSON.stringify(state.logs.slice(-3)));
+  record('move: player advances from rank 1 to rank 2', state.playerRank === 2, JSON.stringify(state));
+  record('move: combat log records movement', state.logs.some(log => /\[Move\]|\[이동\]|후열|Back|위치 변경|위치 이동/.test(log ?? '')), JSON.stringify(state.logs.slice(-3)));
   const file = await screenshot(page, '02-move-back');
   record('move: screenshot captured', true, file);
   await page.close();
@@ -172,8 +173,8 @@ async function scenarioRanksAndTargets(browser) {
   const page = await newCombatPage(browser);
   await page.locator('#btn-form-screamer').click();
   await page.waitForFunction(() => window.GameState.combat?.enemies?.length === 3);
-  await checkSelector(page, 'rank: back-row badge visible', '.cv-row-badge');
-  await checkSelector(page, 'rank: enemy intent remains visible', '.cv-intent');
+  await checkSelector(page, 'rank: combatant rank badges visible', '.combatant-rank-badge', 4);
+  await checkSelector(page, 'rank: enemy intent remains visible', '.combat-intent');
 
   const meleeBlock = await page.evaluate(() => {
     const backIdx = window.GameState.combat.enemies.findIndex(e => window.CombatSystem.rowOf(e) === 'back');
@@ -184,6 +185,15 @@ async function scenarioRanksAndTargets(browser) {
   record('rank: melee cannot target guarded back row', meleeBlock.backIdx >= 0 && meleeBlock.result === false && meleeBlock.after === meleeBlock.before, JSON.stringify(meleeBlock));
 
   await page.locator('#btn-gun').click();
+  await page.evaluate(async () => {
+    const { default: CombatUI } = await import('/js/ui/CombatUI.js');
+    const pistol = Object.values(window.GameState.cards).find(card => card.definitionId === 'pistol');
+    if (!pistol) throw new Error('Test pistol was not created');
+    window.GameState.player.equipped ??= {};
+    window.GameState.player.equipped.weapon_main = pistol.instanceId;
+    window.CombatSystem.reloadActiveWeapon(pistol.instanceId);
+    CombatUI.render();
+  });
   const rangedReach = await page.evaluate(() => {
     const backIdx = window.GameState.combat.enemies.findIndex(e => window.CombatSystem.rowOf(e) === 'back');
     const isRanged = window.CombatSystem.isPlayerWeaponRanged();
@@ -205,8 +215,13 @@ async function scenarioActionsAndStatus(browser) {
     enemy.maxHp = 999;
   });
   const hpBefore = await page.evaluate(() => window.GameState.combat.enemies[0].currentHp);
-  await page.locator('.action-card.primary').click();
-  await page.waitForTimeout(250);
+  await page.locator('.combat-skill-button[data-command="attack"]:not([disabled])').first().click();
+  await page.locator('.combat-status-card.enemy[data-combatant-id="enemy:0"]').click();
+  await page.waitForFunction(previous => {
+    const enemy = window.GameState.combat.enemies[0];
+    return enemy.currentHp < previous
+      || window.GameState.combat.log.some(log => /빗나감|miss/i.test(log));
+  }, hpBefore);
   const attackState = await page.evaluate(hpBeforeFromNode => {
     const enemy = window.GameState.combat.enemies[0];
     return {
@@ -236,14 +251,16 @@ async function scenarioActionsAndStatus(browser) {
       effect: { hpPerRound: -4 },
     }, 0);
   });
-  await page.locator('.action-card[data-action="guard"]').click();
-  await page.waitForSelector('.status-badge.enemy', { timeout: 5000 });
+  await page.locator('.combat-skill-button[data-skill-id="guard"]:not([disabled])').click();
+  const guardTarget = page.locator('.combat-status-card.ally[data-combatant-id="player"]');
+  if (await guardTarget.count()) await guardTarget.click();
+  await page.waitForSelector('.combatant-piece[data-combatant-id="enemy:0"] .combat-status-orbs i', { timeout: 5000 });
   const statusState = await page.evaluate(() => {
     const enemy = window.GameState.combat.enemies[0];
     const bleed = enemy._statusEffects?.find(s => s.id === 'bleed');
     return {
       bleed,
-      badgeText: document.querySelector('.status-badge.enemy')?.textContent ?? '',
+      badgeText: document.querySelector('.combatant-piece[data-combatant-id="enemy:0"] .combat-status-orbs')?.textContent ?? '',
       guardActive: !!window.GameState.combat.playerGuard?.active,
       guardMotion: document.querySelector('.cv-player')?.className ?? '',
       logs: [...window.GameState.combat.log],
@@ -258,27 +275,741 @@ async function scenarioActionsAndStatus(browser) {
 
 async function scenarioCompanionStance(browser) {
   const page = await newCombatPage(browser);
-  await page.evaluate(() => {
-    window.GameState.companions = ['npc_dog'];
-    window.GameState.npcs ??= { states: {} };
-    window.GameState.npcs.states ??= {};
-    window.GameState.npcs.states.npc_dog = {
-      hp: 42,
-      maxHp: 50,
-      isCompanion: true,
-      name: 'Dog',
-      stance: 'attack',
-    };
+  await setupFocusedMotionCombat(page, {
+    enemyIds: ['zombie_common'],
+    companionIds: ['npc_dog'],
   });
-  await page.locator('.action-card.move').click();
-  await page.waitForTimeout(200);
   const stanceButtons = await page.locator('.stance-btn').count();
   record('companion: stance buttons removed for manual combat UI', stanceButtons === 0, `count=${stanceButtons}`);
-  const companionPlate = await page.locator('[data-companion-id="npc_dog"] .cv-unit-plate').count();
-  record('companion: simplified name and HP plate remains visible', companionPlate > 0, `count=${companionPlate}`);
+  const companionPlate = await page.locator('.combatant-piece[data-companion-id="npc_dog"] .combatant-name, .combatant-piece[data-companion-id="npc_dog"] .combatant-hp').count();
+  record('companion: name and HP remain visible', companionPlate === 2, `count=${companionPlate}`);
   const file = await screenshot(page, '05-companion-stance');
   record('companion: screenshot captured', true, file);
   await page.close();
+}
+
+async function setupFocusedMotionCombat(page, {
+  enemyIds = ['zombie_common'],
+  companionIds = [],
+  characterId = 'doctor',
+  gender = 'F',
+} = {}) {
+  const setup = await page.evaluate(async config => {
+    const [
+      { ENEMIES, instantiateEnemy },
+      { SECRET_ENEMIES },
+      { default: CombatUI },
+      { default: CombatSystem },
+      { default: GameState },
+    ] = await Promise.all([
+      import('/js/data/enemies.js'),
+      import('/js/data/secretEnemies.js'),
+      import('/js/ui/CombatUI.js'),
+      import('/js/systems/CombatSystem.js'),
+      import('/js/core/GameState.js'),
+    ]);
+
+    CombatUI.skipFxQueue();
+    CombatUI._fxSpeed = 1;
+    CombatUI._screen = document.getElementById('screen-combat');
+    GameState.player.characterId = config.characterId;
+    GameState.player.gender = config.gender;
+    GameState.player.hp = { current: 100, max: 100 };
+    GameState.player.isAlive = true;
+    GameState.companions = [...config.companionIds];
+    GameState.npcs ??= { states: {} };
+    GameState.npcs.states ??= {};
+    for (const id of config.companionIds) {
+      GameState.npcs.states[id] = {
+        hp: 50,
+        maxHp: 50,
+        isCompanion: true,
+        name: id,
+        statusEffects: [],
+        skillCooldowns: {},
+      };
+    }
+
+    const enemies = config.enemyIds.map(id => {
+      const definition = ENEMIES[id] ?? SECRET_ENEMIES[id];
+      if (!definition) throw new Error(`Unknown focused motion enemy: ${id}`);
+      const enemy = instantiateEnemy(definition);
+      enemy.lootTable = [];
+      enemy.infectionChance = 0;
+      return enemy;
+    });
+    CombatSystem._setupCombat({
+      enemies,
+      dangerLevel: 3,
+      nodeId: 'motion-e2e',
+    });
+    CombatUI.render();
+    window.__motionE2E = { CombatUI, CombatSystem, GameState };
+    return {
+      enemyIds: enemies.map(enemy => enemy.id),
+      companionIds: [...config.companionIds],
+      focused: CombatUI._screen?.querySelector('.combat-focused') != null,
+    };
+  }, { enemyIds, companionIds, characterId, gender });
+  await page.waitForSelector('.combat-focused-lineup');
+  return setup;
+}
+
+async function motionSnapshot(page, selector) {
+  return page.locator(`.combatant-piece${selector}`).evaluate(element => {
+    const sprite = element.querySelector('.combat-sprite-sheet');
+    return {
+      actorClasses: [...element.classList],
+      terminal: element.dataset.motionTerminal ?? null,
+      spriteCount: element.querySelectorAll('.combat-sprite-sheet').length,
+      materialized: sprite?.dataset.motionMaterialized ?? null,
+      sheetKey: sprite?.dataset.spriteSheetKey ?? null,
+      spriteUrl: sprite?.style.getPropertyValue('--sprite-url') ?? '',
+      cols: sprite?.style.getPropertyValue('--sprite-cols') ?? '',
+      rows: sprite?.style.getPropertyValue('--sprite-rows') ?? '',
+      rowY: sprite?.style.getPropertyValue('--sprite-row-y') ?? '',
+      duration: sprite?.style.getPropertyValue('--sprite-duration') ?? '',
+      animationName: sprite?.style.animationName ?? '',
+      iteration: sprite?.style.animationIterationCount ?? '',
+      fill: sprite?.style.animationFillMode ?? '',
+    };
+  });
+}
+
+async function playFocusedCompanionSkill(page, skillId, targetId, expectedRowY) {
+  const production = await page.evaluate(({ requestedSkillId, requestedTargetId }) => {
+    const { CombatUI, CombatSystem, GameState } = window.__motionE2E;
+    CombatUI.skipFxQueue();
+    const combat = GameState.combat;
+    const nurseTurnIndex = combat.turnQueue.findIndex(entry => (
+      entry.type === 'companion' && entry.id === 'npc_nurse'
+    ));
+    if (nurseTurnIndex < 0) throw new Error('Nurse turn was not present in the production turn queue');
+
+    combat.activeIdx = nurseTurnIndex;
+    combat.activeTurnIndex = nurseTurnIndex;
+    combat.activeCombatantId = 'npc_nurse';
+    combat.phase = 'await_ally_input';
+    combat.fxQueue = [];
+    const enemy = combat.enemies[0];
+    enemy.currentHp = Math.max(enemy.currentHp, 999);
+    enemy.maxHp = Math.max(enemy.maxHp, 999);
+    combat.combatants['enemy:0'].hp = enemy.currentHp;
+    combat.combatants['enemy:0'].maxHp = enemy.maxHp;
+    if (requestedSkillId === 'nurse_triage') {
+      GameState.player.hp.current = 40;
+      combat.combatants.player.hp = 40;
+    }
+    Math.random = () => 0;
+
+    const definition = combat.skillsById[requestedSkillId];
+    const selected = CombatSystem.selectSkill(requestedSkillId);
+    const targeted = selected && CombatSystem.selectTarget(requestedTargetId);
+    const result = targeted ? CombatSystem.confirmAction() : { ok: false, reason: 'selection_failed' };
+    const emitted = combat.fxQueue.find(fx => (
+      fx.kind === 'action'
+      && fx.actorId === 'npc_nurse'
+      && fx.skillId === requestedSkillId
+    ));
+    combat.fxQueue = emitted ? [emitted] : [];
+    CombatUI.render();
+    return {
+      selected,
+      targeted,
+      result: { ok: result.ok, reason: result.reason ?? null },
+      definition: definition ? { id: definition.id, motionKey: definition.motionKey } : null,
+      emitted: emitted ? {
+        kind: emitted.kind,
+        actorId: emitted.actorId,
+        targetId: emitted.targetId,
+        skillId: emitted.skillId,
+        motionKey: emitted.motionKey,
+        impactFx: emitted.impactFx,
+      } : null,
+    };
+  }, { requestedSkillId: skillId, requestedTargetId: targetId });
+  await page.waitForFunction(rowY => (
+    document.querySelector('[data-combatant-id="npc_nurse"] .combat-sprite-sheet')
+      ?.style.getPropertyValue('--sprite-row-y') === rowY
+  ), expectedRowY);
+  const snapshot = await motionSnapshot(page, '[data-combatant-id="npc_nurse"]');
+  await page.waitForFunction(() => {
+    const actor = document.querySelector('[data-combatant-id="npc_nurse"]');
+    const sprite = actor?.querySelector('.combat-sprite-sheet');
+    return sprite?.style.getPropertyValue('--sprite-row-y') === '0.0000%'
+      && sprite.style.animationIterationCount === 'infinite';
+  });
+  return { production, snapshot };
+}
+
+async function scenarioFocusedRangedAndNurseMotions(browser) {
+  const page = await newCombatPage(browser);
+  const setup = await setupFocusedMotionCombat(page, {
+    enemyIds: ['zombie_common'],
+    companionIds: ['npc_nurse'],
+  });
+  record('motion focused: production combat renderer is active', setup.focused, JSON.stringify(setup));
+
+  await page.evaluate(() => {
+    window.__motionE2E.CombatUI._playFx({
+      kind: 'playerAttack',
+      targetIdx: 0,
+      motionKey: 'ranged',
+      fx: 'shot',
+      miss: true,
+    });
+  });
+  await page.waitForFunction(() => (
+    document.querySelector('[data-combatant-id="player"] .combat-sprite-sheet')
+      ?.style.getPropertyValue('--sprite-row-y') === '28.5714%'
+  ));
+  const ranged = await motionSnapshot(page, '[data-combatant-id="player"]');
+  record(
+    'motion: ranged player attack uses row 2 without approach',
+    ranged.materialized === 'true'
+      && ranged.sheetKey === 'doctor_f'
+      && ranged.spriteUrl.includes('doctor_f_sheet.png')
+      && ranged.cols === '6'
+      && ranged.rows === '8'
+      && ranged.rowY === '28.5714%'
+      && ranged.iteration === '1'
+      && ranged.fill === ''
+      && !ranged.actorClasses.includes('motion-move-forward'),
+    JSON.stringify(ranged),
+  );
+  await page.waitForFunction(() => {
+    const actor = document.querySelector('[data-combatant-id="player"]');
+    const sprite = actor?.querySelector('.combat-sprite-sheet');
+    return sprite?.style.getPropertyValue('--sprite-row-y') === '0.0000%'
+      && sprite.style.animationIterationCount === 'infinite'
+      && !actor.classList.contains('motion-move-forward');
+  });
+
+  const nurseMeleeResult = await playFocusedCompanionSkill(
+    page,
+    'nurse_scalpel',
+    'enemy:0',
+    '14.2857%',
+  );
+  const nurseSupportResult = await playFocusedCompanionSkill(
+    page,
+    'nurse_triage',
+    'player',
+    '42.8571%',
+  );
+  const nurseMelee = nurseMeleeResult.snapshot;
+  const nurseSupport = nurseSupportResult.snapshot;
+  record(
+    'motion: nurse skill definitions and CombatSystem FX select distinct semantic rows',
+    nurseMeleeResult.production.selected
+      && nurseMeleeResult.production.targeted
+      && nurseMeleeResult.production.result.ok
+      && nurseMeleeResult.production.definition?.id === 'nurse_scalpel'
+      && nurseMeleeResult.production.definition?.motionKey === 'melee'
+      && nurseMeleeResult.production.emitted?.kind === 'action'
+      && nurseMeleeResult.production.emitted?.skillId === 'nurse_scalpel'
+      && nurseMeleeResult.production.emitted?.motionKey === 'melee'
+      && nurseSupportResult.production.selected
+      && nurseSupportResult.production.targeted
+      && nurseSupportResult.production.result.ok
+      && nurseSupportResult.production.definition?.id === 'nurse_triage'
+      && nurseSupportResult.production.definition?.motionKey === 'support'
+      && nurseSupportResult.production.emitted?.kind === 'action'
+      && nurseSupportResult.production.emitted?.skillId === 'nurse_triage'
+      && nurseSupportResult.production.emitted?.motionKey === 'support'
+      && nurseMelee.sheetKey === 'nurse_companion'
+      && nurseMelee.rowY === '14.2857%'
+      && nurseMelee.actorClasses.includes('motion-move-forward')
+      && nurseSupport.sheetKey === 'nurse_companion'
+      && nurseSupport.rowY === '42.8571%'
+      && nurseSupport.iteration === '1'
+      && !nurseSupport.actorClasses.includes('motion-move-forward')
+      && !nurseSupport.actorClasses.includes('attacking'),
+    JSON.stringify({ nurseMeleeResult, nurseSupportResult }),
+  );
+  await screenshot(page, '16-motion-ranged-nurse');
+  await page.close();
+}
+
+async function scenarioFocusedHitDeathAndDormantWake(browser) {
+  const hitPage = await newCombatPage(browser);
+  await setupFocusedMotionCombat(hitPage, { enemyIds: ['zombie_common'] });
+  await hitPage.evaluate(() => {
+    const { CombatUI } = window.__motionE2E;
+    CombatUI._playSpriteMotion(
+      document.querySelector('[data-combatant-id="enemy:0"]'),
+      'zombie_common',
+      'hit',
+    );
+  });
+  await hitPage.waitForFunction(() => (
+    document.querySelector('[data-combatant-id="enemy:0"] .combat-sprite-sheet')
+      ?.style.getPropertyValue('--sprite-row-y') === '66.6667%'
+  ));
+  const hit = await motionSnapshot(hitPage, '[data-combatant-id="enemy:0"]');
+  await hitPage.waitForFunction(() => {
+    const actor = document.querySelector('[data-combatant-id="enemy:0"]');
+    const sprite = actor?.querySelector('.combat-sprite-sheet');
+    const transientClasses = [
+      'hit',
+      'motion-zombie-hit',
+      'motion-hit-light',
+      'motion-hit-heavy',
+    ];
+    return sprite?.style.getPropertyValue('--sprite-row-y') === '0.0000%'
+      && sprite.style.animationIterationCount === 'infinite'
+      && sprite.style.animationFillMode === ''
+      && transientClasses.every(className => !actor.classList.contains(className));
+  });
+  const hitIdle = await motionSnapshot(hitPage, '[data-combatant-id="enemy:0"]');
+  await hitPage.evaluate(() => {
+    const { CombatUI, GameState } = window.__motionE2E;
+    const actor = document.querySelector('[data-combatant-id="enemy:0"]');
+    GameState.combat.enemies[0].currentHp = 0;
+    Object.assign(GameState.combat.combatants['enemy:0'], { hp: 0, dead: true });
+    actor.classList.add('is-dead');
+    CombatUI._deathBurst(actor);
+  });
+  await hitPage.waitForFunction(() => (
+    document.querySelector('[data-combatant-id="enemy:0"]')?.dataset.motionTerminal === 'death'
+  ));
+  const death = await motionSnapshot(hitPage, '[data-combatant-id="enemy:0"]');
+  record(
+    'motion: enemy hit returns a distinct terminal death row',
+    hit.rowY === '66.6667%'
+      && hit.iteration === '1'
+      && hitIdle.rowY === '0.0000%'
+      && hitIdle.iteration === 'infinite'
+      && hitIdle.fill === ''
+      && !hitIdle.actorClasses.includes('hit')
+      && !hitIdle.actorClasses.includes('motion-zombie-hit')
+      && !hitIdle.actorClasses.includes('motion-hit-light')
+      && !hitIdle.actorClasses.includes('motion-hit-heavy')
+      && death.rowY === '100.0000%'
+      && death.iteration === '1'
+      && death.fill === 'forwards'
+      && death.terminal === 'death',
+    JSON.stringify({ hit, hitIdle, death }),
+  );
+  await hitPage.close();
+
+  const wakePage = await newCombatPage(browser);
+  await setupFocusedMotionCombat(wakePage, { enemyIds: ['zombie_patient_dormant'] });
+  const wakeQueue = await wakePage.evaluate(() => {
+    const { CombatSystem, GameState } = window.__motionE2E;
+    CombatSystem._runSingleEnemyTurn(0);
+    const wakeFx = GameState.combat.fxQueue.filter(fx => (
+      fx.kind === 'enemyMotion' && fx.motionKey === 'wake'
+    ));
+    GameState.combat.fxQueue = [];
+    return wakeFx;
+  });
+  await wakePage.evaluate(fx => window.__motionE2E.CombatUI._playFx(fx), wakeQueue[0]);
+  await wakePage.waitForFunction(() => (
+    document.querySelector('[data-combatant-id="enemy:0"] .combat-sprite-sheet')
+      ?.style.getPropertyValue('--sprite-row-y') === '25.0000%'
+  ));
+  const wake = await motionSnapshot(wakePage, '[data-combatant-id="enemy:0"]');
+  const wakeReplay = await wakePage.evaluate(() => {
+    const { CombatSystem, GameState } = window.__motionE2E;
+    CombatSystem._runSingleEnemyTurn(0);
+    return {
+      wakeMotionPlayed: GameState.combat.enemies[0]._wakeMotionPlayed,
+      queuedWakeCount: GameState.combat.fxQueue.filter(fx => (
+        fx.kind === 'enemyMotion' && fx.motionKey === 'wake'
+      )).length,
+    };
+  });
+  record(
+    'motion: dormant patient queues and plays wake exactly once',
+    wakeQueue.length === 1
+      && wake.sheetKey === 'zombie_patient_dormant'
+      && wake.rowY === '25.0000%'
+      && wake.iteration === '1'
+      && wake.fill === ''
+      && wakeReplay.wakeMotionPlayed === true
+      && wakeReplay.queuedWakeCount === 0,
+    JSON.stringify({ wakeQueue, wake, wakeReplay }),
+  );
+  await wakePage.close();
+}
+
+async function scenarioFocusedBloaterAndFeralBoss(browser) {
+  const bloaterPage = await newCombatPage(browser);
+  await setupFocusedMotionCombat(bloaterPage, { enemyIds: ['zombie_bloater'] });
+  await bloaterPage.evaluate(() => {
+    window.__motionE2E.CombatUI._playFx({
+      kind: 'explode',
+      enemyIdx: 0,
+      actionId: 'self_destruct',
+      motionKey: 'self_destruct',
+      dmg: 0,
+    });
+  });
+  await bloaterPage.waitForFunction(() => (
+    document.querySelector('[data-combatant-id="enemy:0"] .combat-sprite-sheet')
+      ?.style.getPropertyValue('--sprite-row-y') === '60.0000%'
+  ));
+  const bloaterBody = await motionSnapshot(bloaterPage, '[data-combatant-id="enemy:0"]');
+  const overlayBefore = await bloaterPage.locator('.combatant-piece[data-combatant-id="enemy:0"] .cv-fx-explode').count();
+  await bloaterPage.waitForSelector('.combatant-piece[data-combatant-id="enemy:0"] .cv-fx-explode');
+  const bodyDuringImpact = await bloaterPage.locator('.combatant-piece[data-combatant-id="enemy:0"]').count();
+  await bloaterPage.waitForSelector('.combatant-piece[data-combatant-id="enemy:0"]', { state: 'detached' });
+  record(
+    'motion: bloater self-destruct plays body row before impact and removal',
+    bloaterBody.sheetKey === 'zombie_bloater'
+      && bloaterBody.rowY === '60.0000%'
+      && bloaterBody.iteration === '1'
+      && bloaterBody.fill === 'forwards'
+      && overlayBefore === 0
+      && bodyDuringImpact === 1,
+    JSON.stringify({ bloaterBody, overlayBefore, bodyDuringImpact }),
+  );
+  await bloaterPage.close();
+
+  const bossPage = await newCombatPage(browser);
+  const feralCases = [
+    ['neck_bite', '14.2857%', true, 'basic'],
+    ['frenzy_bite', '28.5714%', true, 'basic'],
+    ['pack_howl', '42.8571%', false, 'special'],
+    ['alpha_hunt', '57.1429%', true, 'ultimate'],
+    ['charge', '85.7143%', false, 'telegraph'],
+  ];
+  const feralObserved = [];
+  for (const [motionKey, rowY, approaches, category] of feralCases) {
+    await setupFocusedMotionCombat(bossPage, { enemyIds: ['boss_feral_dog_alpha'] });
+    const productionFx = await bossPage.evaluate(({ requestedMotionKey, requestedCategory }) => {
+      const { CombatUI, CombatSystem, GameState } = window.__motionE2E;
+      const combat = GameState.combat;
+      const enemy = combat.enemies[0];
+      combat.fxQueue = [];
+      GameState.player.hp = { current: 9999, max: 9999 };
+      Object.assign(combat.combatants.player, { hp: 9999, maxHp: 9999, dead: false });
+      Math.random = () => 0;
+
+      let sourceAction;
+      if (requestedCategory === 'telegraph') {
+        enemy.currentHp = Math.max(1, Math.floor(enemy.maxHp * 0.25));
+        combat.combatants['enemy:0'].hp = enemy.currentHp;
+        enemy._bossActionState = {
+          committedAction: null,
+          ultimatePending: true,
+          ultimateUsed: false,
+          lastBasicActionId: null,
+        };
+        enemy._nextIntent = CombatSystem._decideNextIntent(enemy, combat, GameState);
+        sourceAction = enemy._bossActionState.committedAction;
+      } else {
+        const definition = requestedCategory === 'basic'
+          ? enemy.bossPattern.basicAttacks.find(action => action.id === requestedMotionKey)
+          : requestedCategory === 'special'
+            ? enemy.bossPattern.specialSkill
+            : enemy.bossPattern.ultimate;
+        sourceAction = {
+          actionId: definition.id,
+          category: definition.category,
+          state: 'ready',
+          targetIds: ['player'],
+          remainingTelegraphTurns: 0,
+          hitCount: definition.hitCount ?? 1,
+          motionKey: definition.motionKey,
+        };
+        enemy._bossActionState = {
+          committedAction: sourceAction,
+          ultimatePending: false,
+          ultimateUsed: requestedCategory === 'ultimate',
+          lastBasicActionId: requestedCategory === 'basic' ? definition.id : null,
+        };
+      }
+
+      CombatSystem._runSingleEnemyTurn(0);
+      const emitted = requestedCategory === 'telegraph'
+        ? combat.fxQueue.find(fx => fx.kind === 'status' && fx.statusId === 'telegraph')
+        : combat.fxQueue.find(fx => fx.kind === 'action' && fx.actionId === requestedMotionKey);
+      CombatUI.render();
+      return {
+        sourceAction: sourceAction ? {
+          actionId: sourceAction.actionId,
+          category: sourceAction.category,
+          state: sourceAction.state,
+          motionKey: sourceAction.motionKey,
+        } : null,
+        emitted: emitted ? {
+          kind: emitted.kind,
+          actionId: emitted.actionId ?? null,
+          statusId: emitted.statusId ?? null,
+          motionKey: emitted.motionKey ?? null,
+        } : null,
+      };
+    }, { requestedMotionKey: motionKey, requestedCategory: category });
+    await bossPage.waitForFunction(expected => (
+      document.querySelector('[data-combatant-id="enemy:0"] .combat-sprite-sheet')
+        ?.style.getPropertyValue('--sprite-row-y') === expected
+    ), rowY, { timeout: 4000 });
+    const snapshot = await motionSnapshot(bossPage, '[data-combatant-id="enemy:0"]');
+    feralObserved.push({ motionKey, rowY, approaches, category, productionFx, snapshot });
+    await bossPage.waitForFunction(() => (
+      document.querySelector('[data-combatant-id="enemy:0"] .combat-sprite-sheet')
+        ?.style.getPropertyValue('--sprite-row-y') === '0.0000%'
+    ));
+  }
+  record(
+    'motion: feral alpha production actions and telegraph charge map five semantic rows',
+    feralObserved.every(({ motionKey, rowY, approaches, category, productionFx, snapshot }) => (
+      snapshot.sheetKey === 'boss_feral_dog_alpha'
+      && snapshot.spriteUrl.includes('boss_feral_dog_alpha_sheet.png')
+      && snapshot.cols === '6'
+      && snapshot.rows === '8'
+      && snapshot.rowY === rowY
+      && snapshot.iteration === '1'
+      && snapshot.fill === ''
+      && snapshot.actorClasses.includes('motion-move-forward') === approaches
+      && productionFx.sourceAction?.motionKey === (category === 'telegraph' ? 'alpha_hunt' : motionKey)
+      && productionFx.emitted?.motionKey === motionKey
+      && (category === 'telegraph'
+        ? productionFx.emitted?.kind === 'status'
+          && productionFx.emitted?.statusId === 'telegraph'
+          && [
+            'attacking',
+            'attacking-stationary',
+            'lunging',
+            'motion-whiff',
+            'motion-melee-strike',
+            'motion-knife-slash',
+            'motion-blunt-strike',
+            'motion-firearm-shot',
+            'motion-zombie-lunge',
+            'motion-zombie-heavy',
+            'motion-zombie-spit',
+            'motion-move-forward',
+            'motion-move-back',
+          ].every(className => !snapshot.actorClasses.includes(className))
+        : productionFx.emitted?.kind === 'action'
+          && productionFx.emitted?.actionId === motionKey)
+    )),
+    JSON.stringify(feralObserved),
+  );
+  await screenshot(bossPage, '17-motion-feral-alpha');
+  await bossPage.close();
+}
+
+async function scenarioFocusedSpeedSkipAndOwnership(browser) {
+  const page = await newCombatPage(browser);
+  await setupFocusedMotionCombat(page, {
+    enemyIds: ['zombie_common', 'zombie_common'],
+    companionIds: ['npc_nurse'],
+  });
+  const speedTiming = await page.evaluate(async () => {
+    const { CombatUI, GameState } = window.__motionE2E;
+    const waitUntil = async (predicate, timeoutMs = 2500) => {
+      const started = performance.now();
+      while (!predicate()) {
+        if (performance.now() - started > timeoutMs) throw new Error('Timed out observing queued motion');
+        await new Promise(resolve => setTimeout(resolve, 4));
+      }
+    };
+    const runQueuedMotion = async speed => {
+      CombatUI.skipFxQueue();
+      CombatUI._fxSpeed = speed;
+      const player = document.querySelector('[data-combatant-id="player"]');
+      const originalPlayFx = CombatUI._playFx;
+      let callbackStartedAt = null;
+      CombatUI._playFx = function observedPlayFx(fx) {
+        callbackStartedAt = performance.now();
+        return originalPlayFx.call(this, fx);
+      };
+      GameState.combat.fxQueue = [{
+        kind: 'action',
+        actorId: 'player',
+        actorSide: 'ally',
+        actorIndex: 0,
+        targetId: 'enemy:0',
+        targetSide: 'enemy',
+        targetIndex: 0,
+        actionId: 'basic_strike',
+        motionKey: 'melee',
+        impactFx: 'slash',
+        damage: 0,
+        miss: true,
+      }];
+      const queueStartedAt = performance.now();
+      CombatUI._playFxQueue();
+      await waitUntil(() => callbackStartedAt !== null);
+      await waitUntil(() => (
+        player.querySelector('.combat-sprite-sheet')
+          ?.style.getPropertyValue('--sprite-row-y') === '14.2857%'
+      ));
+      const sprite = player.querySelector('.combat-sprite-sheet');
+      const motionStartedAt = performance.now();
+      const spriteDuration = sprite.style.getPropertyValue('--sprite-duration');
+      await waitUntil(() => (
+        sprite.style.getPropertyValue('--sprite-row-y') === '0.0000%'
+        && sprite.style.animationIterationCount === 'infinite'
+        && !player.classList.contains('attacking')
+        && !player.classList.contains('motion-move-forward')
+        && !player.classList.contains('motion-whiff')
+      ));
+      const idleAt = performance.now();
+      CombatUI._playFx = originalPlayFx;
+      return {
+        speed,
+        callbackDelayMs: callbackStartedAt - queueStartedAt,
+        finiteLifetimeMs: idleAt - motionStartedAt,
+        totalMs: idleAt - queueStartedAt,
+        spriteDuration,
+      };
+    };
+    return {
+      speed1: await runQueuedMotion(1),
+      speed2: await runQueuedMotion(2),
+    };
+  });
+  record(
+    'motion lifecycle: queued speed 2 shortens callback delay and finite actor lifetime',
+    speedTiming.speed1.spriteDuration === '720ms'
+      && speedTiming.speed2.spriteDuration === '360ms'
+      && speedTiming.speed1.callbackDelayMs >= 55
+      && speedTiming.speed2.callbackDelayMs >= 20
+      && speedTiming.speed2.callbackDelayMs < speedTiming.speed1.callbackDelayMs * 0.8
+      && speedTiming.speed1.finiteLifetimeMs >= 650
+      && speedTiming.speed2.finiteLifetimeMs >= 300
+      && speedTiming.speed2.finiteLifetimeMs < speedTiming.speed1.finiteLifetimeMs * 0.7
+      && speedTiming.speed2.totalMs < speedTiming.speed1.totalMs * 0.7,
+    JSON.stringify(speedTiming),
+  );
+
+  const skipResult = await page.evaluate(() => {
+    const { CombatUI, GameState } = window.__motionE2E;
+    const player = document.querySelector('[data-combatant-id="player"]');
+    const ally = document.querySelector('[data-combatant-id="npc_nurse"]');
+    const deadEnemy = document.querySelector('[data-combatant-id="enemy:0"]');
+    const aliveEnemy = document.querySelector('[data-combatant-id="enemy:1"]');
+    CombatUI._playSpriteMotion(aliveEnemy, 'zombie_common', 'basic_attack');
+    CombatUI._motion(aliveEnemy, 'motion-zombie-lunge', 720);
+    Object.assign(GameState.combat.combatants['enemy:0'], { hp: 0, dead: true });
+    GameState.combat.enemies[0].currentHp = 0;
+    deadEnemy.classList.add('is-dead');
+    CombatUI._deathBurst(deadEnemy);
+    Object.assign(GameState.combat.combatants.npc_nurse, { hp: 0, deathsDoor: true });
+    GameState.npcs.states.npc_nurse.hp = 0;
+    CombatUI._playFx({ kind: 'downed', target: 'ally', targetId: 'npc_nurse' });
+    GameState.combat.active = false;
+    GameState.combat.outcome = 'victory';
+    CombatUI._playFx({ kind: 'victory' });
+    const hadPending = CombatUI.skipFxQueue();
+    const snapshot = element => {
+      const sprite = element.querySelector('.combat-sprite-sheet');
+      return {
+        rowY: sprite?.style.getPropertyValue('--sprite-row-y') ?? '',
+        fill: sprite?.style.animationFillMode ?? '',
+        iteration: sprite?.style.animationIterationCount ?? '',
+        terminal: element.dataset.motionTerminal ?? null,
+        classes: [...element.classList],
+      };
+    };
+    return {
+      hadPending,
+      player: snapshot(player),
+      ally: snapshot(ally),
+      deadEnemy: snapshot(deadEnemy),
+      aliveEnemy: snapshot(aliveEnemy),
+      activeActors: CombatUI._activeMotionActors.size,
+      fxTimers: CombatUI._fxTimers.length,
+    };
+  });
+  record(
+    'motion lifecycle: skip restores alive idle and preserves terminal actors',
+    skipResult.hadPending
+      && skipResult.aliveEnemy.rowY === '0.0000%'
+      && skipResult.aliveEnemy.iteration === 'infinite'
+      && skipResult.aliveEnemy.terminal === null
+      && skipResult.deadEnemy.rowY === '100.0000%'
+      && skipResult.deadEnemy.fill === 'forwards'
+      && skipResult.deadEnemy.terminal === 'death'
+      && skipResult.ally.rowY === '100.0000%'
+      && skipResult.ally.terminal === 'downed'
+      && skipResult.player.rowY === '0.0000%'
+      && skipResult.player.terminal === 'victory'
+      && skipResult.activeActors === 0
+      && skipResult.fxTimers === 0,
+    JSON.stringify(skipResult),
+  );
+
+  const defeat = await page.evaluate(() => {
+    const { CombatUI, GameState } = window.__motionE2E;
+    const player = document.querySelector('[data-combatant-id="player"]');
+    GameState.combat.outcome = 'defeat';
+    Object.assign(GameState.combat.combatants.player, { hp: 0, dead: true });
+    GameState.player.isAlive = false;
+    CombatUI._playFx({ kind: 'defeat' });
+    CombatUI.skipFxQueue();
+    const sprite = player.querySelector('.combat-sprite-sheet');
+    return {
+      terminal: player.dataset.motionTerminal ?? null,
+      rowY: sprite?.style.getPropertyValue('--sprite-row-y') ?? '',
+      fill: sprite?.style.animationFillMode ?? '',
+      classes: [...player.classList],
+    };
+  });
+  record(
+    'motion lifecycle: defeat remains a terminal death-row state',
+    defeat.terminal === 'defeat'
+      && defeat.rowY === '100.0000%'
+      && defeat.fill === 'forwards'
+      && defeat.classes.includes('motion-defeat'),
+    JSON.stringify(defeat),
+  );
+  await page.close();
+
+  const ownershipPage = await newCombatPage(browser);
+  await setupFocusedMotionCombat(ownershipPage, { enemyIds: ['zombie_common'] });
+  const sameRoot = await ownershipPage.evaluate(async () => {
+    const { CombatUI, GameState } = window.__motionE2E;
+    GameState.combat.fxQueue = [{
+      kind: 'playerAttack', targetIdx: 0, motionKey: 'melee', fx: 'slash', miss: true,
+    }];
+    CombatUI._playFxQueue();
+    CombatUI.render();
+    await new Promise(resolve => setTimeout(resolve, 180));
+    const player = document.querySelector('[data-combatant-id="player"]');
+    return {
+      spriteCount: player?.querySelectorAll('.combat-sprite-sheet').length ?? -1,
+      attacking: player?.classList.contains('attacking') ?? true,
+      fxTimers: CombatUI._fxTimers.length,
+    };
+  });
+  record(
+    'motion lifecycle: same-root rerender drops stale queued callback',
+    sameRoot.spriteCount === 0 && !sameRoot.attacking && sameRoot.fxTimers === 0,
+    JSON.stringify(sameRoot),
+  );
+  const replacedScreen = await ownershipPage.evaluate(async () => {
+    const { CombatUI, GameState } = window.__motionE2E;
+    GameState.combat.fxQueue = [{
+      kind: 'playerAttack', targetIdx: 0, motionKey: 'melee', fx: 'slash', miss: true,
+    }];
+    CombatUI._playFxQueue();
+    const oldScreen = CombatUI._screen;
+    const replacement = oldScreen.cloneNode(false);
+    replacement.id = 'screen-combat-replacement';
+    replacement.innerHTML = '<div class="combat-focused replacement-focused"></div>';
+    oldScreen.replaceWith(replacement);
+    CombatUI._screen = replacement;
+    await new Promise(resolve => setTimeout(resolve, 180));
+    return {
+      replacementMutated: replacement.querySelector('.combat-sprite-sheet, .attacking') != null,
+      fxTimers: CombatUI._fxTimers.length,
+      activeActors: CombatUI._activeMotionActors.size,
+    };
+  });
+  record(
+    'motion lifecycle: detached-screen callback cannot mutate replacement screen',
+    !replacedScreen.replacementMutated
+      && replacedScreen.fxTimers === 0
+      && replacedScreen.activeActors === 0,
+    JSON.stringify(replacedScreen),
+  );
+  await ownershipPage.close();
 }
 
 async function setupPatternCombat(page, {
@@ -814,9 +1545,11 @@ async function scenarioOutcomes(browser) {
   const victoryPage = await newCombatPage(browser);
   await victoryPage.evaluate(() => {
     window.GameState.combat.enemies[0].currentHp = 1;
+    window.GameState.combat.combatants['enemy:0'].hp = 1;
     Math.random = () => 0;
   });
-  await victoryPage.locator('.action-card.primary').click();
+  await victoryPage.locator('.combat-skill-button[data-command="attack"]:not([disabled])').first().click();
+  await victoryPage.locator('.combat-status-card.enemy[data-combatant-id="enemy:0"]').click();
   await victoryPage.waitForFunction(() => !window.GameState.combat.active || window.GameState.combat.outcome === 'victory', null, { timeout: 5000 });
   const victory = await victoryPage.evaluate(() => ({
     active: window.GameState.combat.active,
@@ -828,27 +1561,63 @@ async function scenarioOutcomes(browser) {
   await victoryPage.close();
 
   const defeatPage = await newCombatPage(browser);
-  await defeatPage.evaluate(() => {
+  await defeatPage.evaluate(async () => {
+    const { default: EventBus } = await import('/js/core/EventBus.js');
+    window.__defeatTransitions = [];
+    EventBus.on('stateTransition', transition => {
+      window.__defeatTransitions.push({ from: transition.from, to: transition.to });
+    });
     window.GameState.player.hp.current = 1;
+    Object.assign(window.GameState.combat.combatants.player, {
+      hp: 1,
+      deathsDoor: true,
+      deathResist: 0.05,
+      dead: false,
+    });
     const enemy = window.GameState.combat.enemies[0];
+    enemy.currentHp = 999;
+    enemy.maxHp = 999;
+    Object.assign(window.GameState.combat.combatants['enemy:0'], { hp: 999, maxHp: 999 });
     enemy.attack = { damage: [100, 100], accuracy: 1 };
-    Math.random = () => 0.99;
+    Math.random = () => 0.5;
   });
-  await defeatPage.locator('.action-card.primary').click();
-  await defeatPage.waitForFunction(() => window.GameState.player.hp.current <= 0 || document.querySelector('#screen-game-over.active'), null, { timeout: 5000 });
+  await defeatPage.locator('.combat-skill-button[data-command="attack"]:not([disabled])').first().click();
+  await defeatPage.locator('.combat-status-card.enemy[data-combatant-id="enemy:0"]').click();
+  await defeatPage.waitForFunction(() => (
+    window.GameState.combat.outcome === 'defeat'
+    && window.GameState.combat.active === false
+    && window.GameState.player.isAlive === false
+    && window.__defeatTransitions.some(transition => (
+      transition.to === 'ending' || transition.to === 'game_over' || transition.to === 'combat_result'
+    ))
+  ), null, { timeout: 5000 });
   const defeat = await defeatPage.evaluate(() => ({
     playerHp: window.GameState.player.hp.current,
+    isAlive: window.GameState.player.isAlive,
     active: window.GameState.combat.active,
     outcome: window.GameState.combat.outcome,
+    uiState: window.GameState.ui.currentState,
     activeScreen: document.querySelector('.screen.active')?.id ?? '',
+    transitions: [...window.__defeatTransitions],
   }));
-  record('outcome: defeat/game over path is reachable', defeat.playerHp <= 0 || defeat.activeScreen === 'screen-game-over' || defeat.outcome === 'defeat', JSON.stringify(defeat));
+  record(
+    'outcome: production defeat resolves and transitions out of combat',
+    defeat.playerHp === 0
+      && defeat.isAlive === false
+      && defeat.active === false
+      && defeat.outcome === 'defeat'
+      && ['ending', 'game_over', 'combat_result'].includes(defeat.uiState)
+      && defeat.transitions.some(transition => (
+        transition.to === 'ending' || transition.to === 'game_over' || transition.to === 'combat_result'
+      )),
+    JSON.stringify(defeat),
+  );
   await screenshot(defeatPage, '07-defeat');
   await defeatPage.close();
 
   const fleePage = await newCombatPage(browser);
   await fleePage.evaluate(() => { Math.random = () => 0; });
-  await fleePage.locator('.action-card.flee').dispatchEvent('click');
+  await fleePage.locator('.combat-common-command[data-command="flee"]:not([disabled])').click();
   await fleePage.waitForFunction(
     () => !window.GameState.combat.active || window.GameState.combat.outcome === 'fled',
     null,
@@ -872,8 +1641,8 @@ async function scenarioResponsive(browser) {
     ['mobile', { width: 390, height: 844 }],
   ]) {
     const page = await newCombatPage(browser, viewport);
-    const visible = await page.locator('.combat-stage-lineup').isVisible();
-    const actionVisible = await page.locator('.combat-action-bar').isVisible();
+    const visible = await page.locator('.combat-focused-lineup').isVisible();
+    const actionVisible = await page.locator('.combat-command-deck').isVisible();
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 8);
     record(`responsive: ${name} stage/action visible`, visible && actionVisible, `viewport=${viewport.width}x${viewport.height}`);
     record(`responsive: ${name} no horizontal page overflow`, !overflow, `scrollWidth=${await page.evaluate(() => document.documentElement.scrollWidth)} innerWidth=${viewport.width}`);
@@ -892,6 +1661,10 @@ async function main() {
   try {
     await waitForServer();
     browser = await chromium.launch();
+    await scenarioFocusedRangedAndNurseMotions(browser);
+    await scenarioFocusedHitDeathAndDormantWake(browser);
+    await scenarioFocusedBloaterAndFeralBoss(browser);
+    await scenarioFocusedSpeedSkipAndOwnership(browser);
     await scenarioCompanionMonsterPatterns(browser);
     if (!patternOnly) {
       await scenarioInitialLayout(browser);

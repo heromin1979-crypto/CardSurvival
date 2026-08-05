@@ -1,0 +1,236 @@
+const FOUR_ROW_MOTIONS = Object.freeze({
+  idle: Object.freeze({ row: 0, loop: true, durationMs: 900, locomotion: 'stationary' }),
+  basic_attack: Object.freeze({ row: 1, loop: false, durationMs: 720, locomotion: 'approach' }),
+  hit: Object.freeze({ row: 2, loop: false, durationMs: 420, locomotion: 'stationary' }),
+  death: Object.freeze({
+    row: 3,
+    loop: false,
+    durationMs: 900,
+    locomotion: 'stationary',
+    holdLast: true,
+  }),
+});
+
+function fourRowSheet(src) {
+  return Object.freeze({
+    src,
+    cols: 6,
+    rows: 4,
+    motions: FOUR_ROW_MOTIONS,
+  });
+}
+
+const PLAYER_MOTIONS = Object.freeze({
+  idle: Object.freeze({ row: 0, loop: true, durationMs: 900, locomotion: 'stationary' }),
+  melee: Object.freeze({ row: 1, loop: false, durationMs: 720, locomotion: 'approach' }),
+  ranged: Object.freeze({ row: 2, loop: false, durationMs: 680, locomotion: 'stationary' }),
+  support: Object.freeze({ row: 3, loop: false, durationMs: 760, locomotion: 'stationary' }),
+  guard: Object.freeze({ row: 4, loop: false, durationMs: 640, locomotion: 'stationary' }),
+  move: Object.freeze({ row: 5, loop: false, durationMs: 650, locomotion: 'approach' }),
+  hit: Object.freeze({ row: 6, loop: false, durationMs: 500, locomotion: 'stationary' }),
+  death: Object.freeze({ row: 7, loop: false, durationMs: 1100, locomotion: 'stationary', holdLast: true }),
+});
+
+function playerSheet(src) {
+  return Object.freeze({
+    src,
+    cols: 6,
+    rows: 8,
+    motions: PLAYER_MOTIONS,
+    aliases: Object.freeze({
+      basic_attack: 'melee',
+      reposition: 'move',
+      downed: 'death',
+      victory: 'idle',
+    }),
+  });
+}
+
+function companionSheet(src) {
+  return playerSheet(src);
+}
+
+function bossSheet(src, actionKeys, locomotions) {
+  const [basicA, basicB, special, ultimate] = actionKeys;
+  const [basicALocomotion, basicBLocomotion, specialLocomotion, ultimateLocomotion] = locomotions;
+  return motionSheet(src, 8, {
+    idle: { row: 0, loop: true, durationMs: 980, locomotion: 'stationary' },
+    basic_a: { row: 1, loop: false, durationMs: 760, locomotion: basicALocomotion },
+    basic_b: { row: 2, loop: false, durationMs: 820, locomotion: basicBLocomotion },
+    special: { row: 3, loop: false, durationMs: 940, locomotion: specialLocomotion },
+    ultimate: { row: 4, loop: false, durationMs: 1120, locomotion: ultimateLocomotion },
+    hit: { row: 5, loop: false, durationMs: 460, locomotion: 'stationary' },
+    charge: { row: 6, loop: false, durationMs: 860, locomotion: 'stationary' },
+    death: { row: 7, loop: false, durationMs: 1100, locomotion: 'stationary', holdLast: true },
+  }, {
+    basic_attack: 'basic_a',
+    [basicA]: 'basic_a',
+    [basicB]: 'basic_b',
+    [special]: 'special',
+    [ultimate]: 'ultimate',
+  });
+}
+
+function motionSheet(src, rows, motions, aliases) {
+  return Object.freeze({
+    src,
+    cols: 6,
+    rows,
+    motions: Object.freeze(Object.fromEntries(
+      Object.entries(motions).map(([key, value]) => [key, Object.freeze(value)]),
+    )),
+    ...(aliases ? { aliases: Object.freeze({ ...aliases }) } : {}),
+  });
+}
+
+// 전투 화면에 표시되는 플레이어·동료 전용 6×8 시트와 적 시트를 단일 registry로 선언한다.
+export const COMBAT_MOTION_MANIFEST = Object.freeze({
+  doctor_f: playerSheet('/assets/images/combat/spritesheets/doctor_f_sheet.png'),
+  soldier_m: playerSheet('/assets/images/combat/spritesheets/soldier_m_sheet.png'),
+  firefighter_m: playerSheet('/assets/images/combat/spritesheets/firefighter_m_sheet.png'),
+  homeless_m: playerSheet('/assets/images/combat/spritesheets/homeless_m_sheet.png'),
+  chef_m: playerSheet('/assets/images/combat/spritesheets/chef_m_sheet.png'),
+  engineer_m: playerSheet('/assets/images/combat/spritesheets/engineer_m_sheet.png'),
+  old_survivor_companion: companionSheet('/assets/images/combat/spritesheets/companions/old_survivor_companion_sheet.png'),
+  soldier_companion: companionSheet('/assets/images/combat/spritesheets/soldier_companion_sheet.png'),
+  nurse_companion: companionSheet('/assets/images/combat/spritesheets/nurse_companion_sheet.png'),
+  child_companion: companionSheet('/assets/images/combat/spritesheets/companions/child_companion_sheet.png'),
+  mechanic_companion: companionSheet('/assets/images/combat/spritesheets/companions/mechanic_companion_sheet.png'),
+  student_companion: companionSheet('/assets/images/combat/spritesheets/companions/student_companion_sheet.png'),
+  dog_companion: companionSheet('/assets/images/combat/spritesheets/companions/dog_companion_sheet.png'),
+  former_colleague_companion: companionSheet('/assets/images/combat/spritesheets/companions/former_colleague_companion_sheet.png'),
+  minjun_companion: companionSheet('/assets/images/combat/spritesheets/companions/minjun_companion_sheet.png'),
+  sohee_companion: companionSheet('/assets/images/combat/spritesheets/companions/sohee_companion_sheet.png'),
+  jisu_companion: companionSheet('/assets/images/combat/spritesheets/companions/jisu_companion_sheet.png'),
+  yeongcheol_companion: companionSheet('/assets/images/combat/spritesheets/companions/yeongcheol_companion_sheet.png'),
+  daehan_companion: companionSheet('/assets/images/combat/spritesheets/companions/daehan_companion_sheet.png'),
+  tower_security_companion: companionSheet('/assets/images/combat/spritesheets/companions/tower_security_companion_sheet.png'),
+  tower_merchant_companion: companionSheet('/assets/images/combat/spritesheets/companions/tower_merchant_companion_sheet.png'),
+  tower_cook_companion: companionSheet('/assets/images/combat/spritesheets/companions/tower_cook_companion_sheet.png'),
+  tower_engineer_companion: companionSheet('/assets/images/combat/spritesheets/companions/tower_engineer_companion_sheet.png'),
+  tower_doctor_companion: companionSheet('/assets/images/combat/spritesheets/companions/tower_doctor_companion_sheet.png'),
+  sous_chef_companion: companionSheet('/assets/images/combat/spritesheets/companions/sous_chef_companion_sheet.png'),
+  kitchen_helper_companion: companionSheet('/assets/images/combat/spritesheets/companions/kitchen_helper_companion_sheet.png'),
+  zombie_patient_dormant: motionSheet(
+    '/assets/images/combat/spritesheets/enemies/zombie_patient_dormant_sheet.png',
+    5,
+    {
+      dormant: { row: 0, loop: true, durationMs: 1100, locomotion: 'stationary' },
+      wake: { row: 1, loop: false, durationMs: 960, locomotion: 'stationary' },
+      basic_attack: { row: 2, loop: false, durationMs: 720, locomotion: 'approach' },
+      hit: { row: 3, loop: false, durationMs: 420, locomotion: 'stationary' },
+      death: { row: 4, loop: false, durationMs: 900, locomotion: 'stationary', holdLast: true },
+    },
+    { idle: 'dormant', startled_lunge: 'basic_attack' },
+  ),
+  zombie_common: fourRowSheet('/assets/images/combat/spritesheets/enemies/zombie_common_sheet.png'),
+  zombie_runner: motionSheet('/assets/images/combat/spritesheets/enemies/zombie_runner_sheet.png', 6, {
+    idle: { row: 0, loop: true, durationMs: 820, locomotion: 'stationary' },
+    basic_attack: { row: 1, loop: false, durationMs: 650, locomotion: 'approach' },
+    telegraph: { row: 2, loop: false, durationMs: 700, locomotion: 'stationary' },
+    runner_rush: { row: 3, loop: false, durationMs: 760, locomotion: 'approach' },
+    hit: { row: 4, loop: false, durationMs: 420, locomotion: 'stationary' },
+    death: { row: 5, loop: false, durationMs: 900, locomotion: 'stationary', holdLast: true },
+  }),
+  zombie_brute: motionSheet('/assets/images/combat/spritesheets/enemies/zombie_brute_sheet.png', 6, {
+    idle: { row: 0, loop: true, durationMs: 980, locomotion: 'stationary' },
+    basic_attack: { row: 1, loop: false, durationMs: 760, locomotion: 'approach' },
+    telegraph: { row: 2, loop: false, durationMs: 820, locomotion: 'stationary' },
+    slam: { row: 3, loop: false, durationMs: 900, locomotion: 'approach' },
+    hit: { row: 4, loop: false, durationMs: 460, locomotion: 'stationary' },
+    death: { row: 5, loop: false, durationMs: 980, locomotion: 'stationary', holdLast: true },
+  }),
+  zombie_horde: fourRowSheet('/assets/images/combat/spritesheets/enemies/zombie_horde_sheet.png'),
+  rabid_dog: fourRowSheet('/assets/images/combat/spritesheets/enemies/rabid_dog_sheet.png'),
+  zombie_acid: motionSheet('/assets/images/combat/spritesheets/enemies/zombie_acid_sheet.png', 5, {
+    idle: { row: 0, loop: true, durationMs: 920, locomotion: 'stationary' },
+    basic_attack: { row: 1, loop: false, durationMs: 700, locomotion: 'stationary' },
+    acid_lash: { row: 2, loop: false, durationMs: 820, locomotion: 'stationary' },
+    hit: { row: 3, loop: false, durationMs: 440, locomotion: 'stationary' },
+    death: { row: 4, loop: false, durationMs: 920, locomotion: 'stationary', holdLast: true },
+  }),
+  zombie_bloater: motionSheet('/assets/images/combat/spritesheets/enemies/zombie_bloater_sheet.png', 6, {
+    idle: { row: 0, loop: true, durationMs: 1050, locomotion: 'stationary' },
+    basic_attack: { row: 1, loop: false, durationMs: 760, locomotion: 'approach' },
+    charge: { row: 2, loop: false, durationMs: 860, locomotion: 'stationary' },
+    self_destruct: { row: 3, loop: false, durationMs: 1100, locomotion: 'stationary', holdLast: true },
+    hit: { row: 4, loop: false, durationMs: 460, locomotion: 'stationary' },
+    death: { row: 5, loop: false, durationMs: 980, locomotion: 'stationary', holdLast: true },
+  }),
+  zombie_screamer: motionSheet('/assets/images/combat/spritesheets/enemies/zombie_screamer_sheet.png', 6, {
+    idle: { row: 0, loop: true, durationMs: 920, locomotion: 'stationary' },
+    basic_attack: { row: 1, loop: false, durationMs: 700, locomotion: 'stationary' },
+    charge: { row: 2, loop: false, durationMs: 860, locomotion: 'stationary' },
+    summon_horde: { row: 3, loop: false, durationMs: 980, locomotion: 'stationary' },
+    hit: { row: 4, loop: false, durationMs: 430, locomotion: 'stationary' },
+    death: { row: 5, loop: false, durationMs: 920, locomotion: 'stationary', holdLast: true },
+  }),
+  zombie_charger: motionSheet('/assets/images/combat/spritesheets/enemies/zombie_charger_sheet.png', 6, {
+    idle: { row: 0, loop: true, durationMs: 900, locomotion: 'stationary' },
+    basic_attack: { row: 1, loop: false, durationMs: 720, locomotion: 'approach' },
+    charge: { row: 2, loop: false, durationMs: 820, locomotion: 'stationary' },
+    charge_strike: { row: 3, loop: false, durationMs: 820, locomotion: 'approach' },
+    hit: { row: 4, loop: false, durationMs: 440, locomotion: 'stationary' },
+    death: { row: 5, loop: false, durationMs: 940, locomotion: 'stationary', holdLast: true },
+  }),
+  raider: motionSheet('/assets/images/combat/spritesheets/enemies/raider_sheet.png', 5, {
+    idle: { row: 0, loop: true, durationMs: 920, locomotion: 'stationary' },
+    basic_attack: { row: 1, loop: false, durationMs: 620, locomotion: 'stationary' },
+    reload: { row: 2, loop: false, durationMs: 900, locomotion: 'stationary' },
+    hit: { row: 3, loop: false, durationMs: 420, locomotion: 'stationary' },
+    death: { row: 4, loop: false, durationMs: 900, locomotion: 'stationary', holdLast: true },
+  }),
+  raider_elite: motionSheet('/assets/images/combat/spritesheets/enemies/raider_elite_sheet.png', 6, {
+    idle: { row: 0, loop: true, durationMs: 940, locomotion: 'stationary' },
+    basic_attack: { row: 1, loop: false, durationMs: 620, locomotion: 'stationary' },
+    aim: { row: 2, loop: false, durationMs: 800, locomotion: 'stationary' },
+    aimed_shot: { row: 3, loop: false, durationMs: 760, locomotion: 'stationary' },
+    hit: { row: 4, loop: false, durationMs: 440, locomotion: 'stationary' },
+    death: { row: 5, loop: false, durationMs: 940, locomotion: 'stationary', holdLast: true },
+  }),
+  boss_patient_zero: bossSheet('/assets/images/combat/spritesheets/enemies/boss_patient_zero_sheet.png', ['infected_charge', 'viral_burst', 'mutation_regeneration', 'host_rampage'], ['approach', 'stationary', 'stationary', 'approach']),
+  boss_radiation_colossus: bossSheet('/assets/images/combat/spritesheets/enemies/boss_radiation_colossus_sheet.png', ['radioactive_fist', 'ground_slam', 'fallout_zone', 'critical_mass'], ['approach', 'stationary', 'stationary', 'stationary']),
+  boss_acid_queen: bossSheet('/assets/images/combat/spritesheets/enemies/boss_acid_queen_sheet.png', ['acid_spray', 'corrosive_tail_sweep', 'acid_pool', 'total_corrosion'], ['stationary', 'approach', 'stationary', 'stationary']),
+  boss_horde_mother: bossSheet('/assets/images/combat/spritesheets/enemies/boss_horde_mother_sheet.png', ['flesh_wall_shove', 'corpse_swing', 'summoning_scream', 'mother_feast'], ['approach', 'approach', 'stationary', 'stationary']),
+  boss_frozen_giant: bossSheet('/assets/images/combat/spritesheets/enemies/boss_frozen_giant_sheet.png', ['frost_breath', 'freezing_fist', 'ice_armor', 'ice_prison'], ['stationary', 'approach', 'stationary', 'stationary']),
+  boss_raider_warlord: bossSheet('/assets/images/combat/spritesheets/enemies/boss_raider_warlord_sheet.png', ['aimed_shot', 'suppressive_fire', 'call_reinforcements', 'execution_order'], ['stationary', 'stationary', 'stationary', 'stationary']),
+  boss_phantom_sniper: bossSheet('/assets/images/combat/spritesheets/enemies/boss_phantom_sniper_sheet.png', ['precision_shot', 'ricochet_shot', 'camouflage', 'headshot'], ['stationary', 'stationary', 'retreat', 'stationary']),
+  boss_cult_leader: bossSheet('/assets/images/combat/spritesheets/enemies/boss_cult_leader_sheet.png', ['ritual_dagger', 'cultist_bomb', 'sermon', 'blood_ritual'], ['approach', 'stationary', 'stationary', 'stationary']),
+  boss_mutant_alpha_tiger: bossSheet('/assets/images/combat/spritesheets/enemies/boss_mutant_alpha_tiger_sheet.png', ['pounce_assault', 'claw_flurry', 'roar', 'predator_hunt'], ['approach', 'approach', 'stationary', 'approach']),
+  boss_sewer_king: bossSheet('/assets/images/combat/spritesheets/enemies/boss_sewer_king_sheet.png', ['death_roll', 'tail_sweep', 'submerge', 'sewage_backflow'], ['approach', 'approach', 'retreat', 'stationary']),
+  boss_swarm_queen_bee: bossSheet('/assets/images/combat/spritesheets/enemies/boss_swarm_queen_bee_sheet.png', ['stinger_barrage', 'wing_blade', 'royal_jelly', 'royal_spawn'], ['stationary', 'approach', 'stationary', 'stationary']),
+  boss_feral_dog_alpha: bossSheet('/assets/images/combat/spritesheets/enemies/boss_feral_dog_alpha_sheet.png', ['neck_bite', 'frenzy_bite', 'pack_howl', 'alpha_hunt'], ['approach', 'approach', 'stationary', 'approach']),
+  boss_penthouse_survivor: bossSheet('/assets/images/combat/spritesheets/enemies/boss_penthouse_survivor_sheet.png', ['golden_pistol', 'explosive_round', 'call_bodyguard', 'bounty_sentence'], ['stationary', 'stationary', 'stationary', 'stationary']),
+  boss_escaped_experiment: bossSheet('/assets/images/combat/spritesheets/enemies/boss_escaped_experiment_sheet.png', ['mutant_claw', 'toxic_fluid_spray', 'adaptive_mutation', 'complete_adaptation'], ['approach', 'stationary', 'stationary', 'approach']),
+  boss_blizzard_wraith: bossSheet('/assets/images/combat/spritesheets/enemies/boss_blizzard_wraith_sheet.png', ['freezing_touch', 'ice_shard', 'blizzard_cloak', 'white_erasure'], ['approach', 'stationary', 'stationary', 'retreat']),
+  boss_soldier_nemesis: bossSheet('/assets/images/combat/spritesheets/enemies/boss_soldier_nemesis_sheet.png', ['rifle_burst', 'flashbang', 'call_deserters', 'crossfire'], ['stationary', 'stationary', 'stationary', 'stationary']),
+  boss_firefighter_nemesis: bossSheet('/assets/images/combat/spritesheets/enemies/boss_firefighter_nemesis_sheet.png', ['fire_axe', 'burning_charge', 'fireproof_stance', 'backdraft'], ['approach', 'approach', 'stationary', 'approach']),
+  boss_homeless_nemesis: bossSheet('/assets/images/combat/spritesheets/enemies/boss_homeless_nemesis_sheet.png', ['pipe_collection', 'threat_strike', 'call_thugs', 'forced_collection'], ['approach', 'approach', 'stationary', 'approach']),
+  boss_chef_nemesis: bossSheet('/assets/images/combat/spritesheets/enemies/boss_chef_nemesis_sheet.png', ['cleaver_flurry', 'meat_hook', 'boiling_oil_field', 'slaughter_time'], ['approach', 'approach', 'stationary', 'approach']),
+  boss_doctor_nemesis: bossSheet('/assets/images/combat/spritesheets/enemies/boss_doctor_nemesis_sheet.png', ['surgical_strike', 'virus_injection', 'malpractice', 'final_surgery'], ['approach', 'approach', 'stationary', 'approach']),
+  food_raider: fourRowSheet('/assets/images/combat/spritesheets/enemies/food_raider_sheet.png'),
+  food_warlord: bossSheet('/assets/images/combat/spritesheets/enemies/food_warlord_sheet.png', ['starvation_strike', 'hook_axe', 'call_raiders', 'hunger_domination'], ['approach', 'approach', 'stationary', 'stationary']),
+});
+
+export const DISPLAYED_COMBAT_SHEET_KEYS = Object.freeze(Object.keys(COMBAT_MOTION_MANIFEST));
+
+export function resolveCombatMotion(sheetKey, motionKey, manifest = COMBAT_MOTION_MANIFEST) {
+  const sheet = manifest?.[sheetKey];
+  if (!sheet || typeof motionKey !== 'string' || motionKey.length === 0) return null;
+
+  const directMotion = sheet.motions?.[motionKey];
+  if (directMotion) return directMotion;
+
+  const aliasTarget = sheet.aliases?.[motionKey];
+  if (typeof aliasTarget !== 'string' || aliasTarget.length === 0) return null;
+  if (sheet.aliases?.[aliasTarget]) return null;
+
+  return sheet.motions?.[aliasTarget] ?? null;
+}
+
+export function spriteRowPercent(row, rows) {
+  if (!Number.isInteger(row) || !Number.isInteger(rows) || rows <= 0 || row < 0 || row >= rows) {
+    return null;
+  }
+  return rows === 1 ? 0 : (row / (rows - 1)) * 100;
+}

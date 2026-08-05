@@ -1,0 +1,172 @@
+{
+  "version": 2,
+  "hashScheme": "combat-provenance-sha256-v2",
+  "policy": "Human-selected semantic projectile/effect components. Each frame entry pins only the approved detached masks by exact cell, mask SHA-256, area, and bbox.",
+  "selectionPath": "/art_sources/combat/task10_bosses/detached_component_selection.json",
+  "selectionSha256": "e0b00a3e7aed77a5c8137a11fdd9813ac54420b4461b3b0e17af3d5c0901c82f",
+  "rowContract": [
+    "idle",
+    "basic_a",
+    "basic_b",
+    "special",
+    "ultimate",
+    "hit",
+    "charge",
+    "death"
+  ],
+  "sources": {
+    "boss_patient_zero": "c1ffd5c5dc858b575f33748e4c3fa846a75edc93d6a5512dc820267c3567e16c",
+    "boss_radiation_colossus": "da2f42a38bc7e9f31a8d24ee2fac5d10fb1a12797ab7d1607a1a88ce68c3d6f6",
+    "boss_acid_queen": "607ac763759e5fdc11a6e71fa0fa89b79e5922945c1f9817eba52925467148fd",
+    "boss_horde_mother": "fb9414770bea141c01d387d56cfb1947947769d3c1e17fe3fd78ec2b476f3dfe",
+    "boss_frozen_giant": "3cfe83c080f891d7f83ac613055fddf780391bdc0660fdd3ed7bdea61b9d9e5f",
+    "boss_raider_warlord": "c83260d8b1a7d255d12a6aea0c43c82e2adea0ff3950e7ecf4c6630f8c0d650d",
+    "boss_phantom_sniper": "83383fa756563505ef162ebf07a42733317cea90df7a170cb25bcc60598a9e48",
+    "boss_cult_leader": "41e1c08ca9d9a0a053ff06bf5a34f52964b263d2fe00398328a365db5320e928",
+    "boss_mutant_alpha_tiger": "1f9090ad1990de811af0ed748d32cd2a2ce8d323014a2942e4de747c25d2802d",
+    "boss_sewer_king": "f28da21356dea6eee75cf37b844f511b57ff5968a5de8e8851d9756e1b8381b8",
+    "boss_swarm_queen_bee": "df5b9344d560b88d813f5978d5f0960ad06a421325dac0f7e75302cf533cda66",
+    "boss_feral_dog_alpha": "923ff78ddf0de667dd850938be586c8199452178b68dbb3c126e41d91970027a",
+    "boss_penthouse_survivor": "f6f29a020fdd73cd5fbd18760567e7a800c14a5521190f83814eefe5a42f8d81",
+    "boss_escaped_experiment": "aefc6317944c2e90948c4df6774e7174154186f13799f4d06efb557b683ffd94",
+    "boss_blizzard_wraith": "53338928cf07d63b49aa5874482c19ae5d64d3c7b045f301632f43869999a967",
+    "boss_soldier_nemesis": "b0ee5303a25d6f91d319c82f4d7916949b976c6be4c052f88329000c88d51b3a",
+    "boss_firefighter_nemesis": "e158f764c90268a26a5b6df56a090b92e356d04b684c68279339ea5b2631fda4",
+    "boss_homeless_nemesis": "3a0de6464adebd1a8d8020acf5ee2bcf167564c4f377b50bb15a1666749654c2",
+    "boss_chef_nemesis": "cf5e55ab248f8e84e81f19c57b7a37911609790be51c62b82e573f0319a0459b",
+    "boss_doctor_nemesis": "d6525dcc364a4206238d2cec910ccf8628b0fe2cccefd4aa51cb0eca0ec88be5",
+    "food_warlord": "b65feae449792fc276987ef4cf9684788d9269d9e5af1e895af29db9c98179fb"
+  },
+  "frames": [
+    {
+      "bossId": "boss_acid_queen",
+      "motionKey": "basic_a",
+      "row": 1,
+      "col": 2,
+      "sourceColumns": 6,
+      "sourceCell": [
+        372,
+        181,
+        530,
+        362
+      ],
+      "selectedDetachedComponents": [
+        {
+          "bbox": [
+            493,
+            36,
+            530,
+            48
+          ],
+          "area": 129,
+          "maskSha256": "6101888b951ffe3ca2301fdbbe30d4900eacccfa7e1463a2094badb7d58a07b9"
+        }
+      ],
+      "rationale": "The reviewed second detached mask is the forward acid glob; the first is neighboring-frame residue."
+    },
+    {
+      "bossId": "boss_acid_queen",
+      "motionKey": "basic_a",
+      "row": 1,
+      "col": 3,
+      "sourceColumns": 6,
+      "sourceCell": [
+        530,
+        181,
+        720,
+        362
+      ],
+      "selectedDetachedComponents": [
+        {
+          "bbox": [
+            530,
+            31,
+            571,
+            71
+          ],
+          "area": 605,
+          "maskSha256": "dbdeb855770a08d30a3b825a06756e098b81bec7fecd3f7840bde338055fbc97"
+        }
+      ],
+      "rationale": "The reviewed detached mask is the mid-flight acid glob."
+    },
+    {
+      "bossId": "boss_acid_queen",
+      "motionKey": "basic_a",
+      "row": 1,
+      "col": 4,
+      "sourceColumns": 6,
+      "sourceCell": [
+        720,
+        181,
+        899,
+        362
+      ],
+      "selectedDetachedComponents": [
+        {
+          "bbox": [
+            720,
+            40,
+            767,
+            94
+          ],
+          "area": 683,
+          "maskSha256": "6e2bf3b23d68c8b0f4e010af0197d795596cbcfcdcf12d12ac1d4ed99b41a649"
+        }
+      ],
+      "rationale": "The reviewed detached mask is the late acid-spit glob and drip."
+    },
+    {
+      "bossId": "boss_acid_queen",
+      "motionKey": "basic_a",
+      "row": 1,
+      "col": 5,
+      "sourceColumns": 6,
+      "sourceCell": [
+        899,
+        181,
+        1086,
+        362
+      ],
+      "selectedDetachedComponents": [
+        {
+          "bbox": [
+            1054,
+            45,
+            1066,
+            80
+          ],
+          "area": 97,
+          "maskSha256": "12d30698d45a7ece80cbfe3335737aa05d04243f5b1775c5ac2e3503244726c6"
+        }
+      ],
+      "rationale": "The reviewed detached mask is the final contained acid-spit residue."
+    },
+    {
+      "bossId": "boss_cult_leader",
+      "motionKey": "basic_b",
+      "row": 2,
+      "col": 5,
+      "sourceColumns": 6,
+      "sourceCell": [
+        862,
+        362,
+        1086,
+        543
+      ],
+      "selectedDetachedComponents": [
+        {
+          "bbox": [
+            1041,
+            32,
+            1064,
+            51
+          ],
+          "area": 243,
+          "maskSha256": "78520018f72097d21b1a49c0fc7d6b14e621803d0a17c85b5a4a045c81d66191"
+        }
+      ],
+      "rationale": "The reviewed detached mask is the far-right thrown ritual bomb; the second candidate belongs to the neighboring frame."
+    }
+  ]
+}

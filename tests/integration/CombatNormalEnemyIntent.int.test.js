@@ -71,6 +71,14 @@ describe('일반 몬스터 committed action intent 통합', () => {
     CombatSystem._runSingleEnemyTurn(0);
     expect(GameState.player.hp.current).toBe(100);
     expect(combat.enemies[0]._nextIntent.actionId).toBe('runner_rush');
+    expect(combat.fxQueue).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        kind: 'status',
+        enemyIdx: 0,
+        statusId: 'telegraph',
+        motionKey: 'telegraph',
+      }),
+    ]));
 
     CombatSystem._runSingleEnemyTurn(0);
 
@@ -189,6 +197,9 @@ describe('일반 몬스터 committed action intent 통합', () => {
       expect(executeSpy.mock.calls[0][1]).toMatchObject(shownAction);
       expect(GameState.npcs.states.npc_nurse.hp).toBe(hpBefore - basicDamage);
       expect(enemy._chargeRemaining).toBe(2);
+      expect(combat.fxQueue).toEqual(expect.arrayContaining([
+        expect.objectContaining({ kind: 'enemyMotion', enemyIdx: 0, motionKey: 'charge' }),
+      ]));
       expect(enemy._enemyActionState.committedAction).toMatchObject({
         actionId: threatActionId,
         category: 'timed_threat',
@@ -196,6 +207,78 @@ describe('일반 몬스터 committed action intent 통합', () => {
       });
     },
   );
+
+  it('휴면 환자는 전투 중 wake 모션을 정확히 한 번만 큐에 넣는다', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.99);
+    const enemy = instantiateEnemy(ENEMIES.zombie_patient_dormant);
+    const combat = setupCombat(enemy);
+    enemy._dormantRemaining = 1;
+    enemy._wakeMotionPlayed = false;
+    combat.fxQueue = [];
+
+    CombatSystem._runSingleEnemyTurn(0);
+    expect(combat.fxQueue.filter(fx => fx.kind === 'enemyMotion' && fx.motionKey === 'wake'))
+      .toHaveLength(1);
+
+    CombatSystem._runSingleEnemyTurn(0);
+    expect(combat.fxQueue.filter(fx => fx.kind === 'enemyMotion' && fx.motionKey === 'wake'))
+      .toHaveLength(1);
+  });
+
+  it('레이더는 세 번째 권총 사격 직후 reload 모션을 큐에 넣고 탄창 카운트를 초기화한다', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.5);
+    const enemy = instantiateEnemy(ENEMIES.raider);
+    enemy.patternProfile = {
+      ...enemy.patternProfile,
+      defaultAction: {
+        ...enemy.patternProfile.defaultAction,
+        accuracy: 1,
+        effects: [{ type: 'damage', value: [1, 1] }],
+      },
+    };
+    const combat = setupCombat(enemy);
+
+    for (let shot = 1; shot <= 3; shot += 1) {
+      combat.fxQueue = [];
+      CombatSystem._runSingleEnemyTurn(0);
+      const actionIndex = combat.fxQueue.findIndex(fx => fx.kind === 'action');
+      const reloadIndex = combat.fxQueue.findIndex(
+        fx => fx.kind === 'enemyMotion' && fx.motionKey === 'reload',
+      );
+
+      expect(actionIndex).toBeGreaterThanOrEqual(0);
+      if (shot < 3) {
+        expect(reloadIndex).toBe(-1);
+        expect(enemy._shotsSinceReload).toBe(shot);
+      } else {
+        expect(reloadIndex).toBeGreaterThan(actionIndex);
+        expect(enemy._shotsSinceReload).toBe(0);
+      }
+    }
+  });
+
+  it('레이더의 기본 공격 executor가 대상을 찾지 못하면 사격 수와 reload 큐를 변경하지 않는다', () => {
+    const enemy = instantiateEnemy(ENEMIES.raider);
+    const combat = setupCombat(enemy);
+    enemy._shotsSinceReload = 2;
+    combat.fxQueue = [];
+
+    const result = CombatSystem._executeEnemyCommittedAction(enemy, {
+      actionId: 'basic_attack',
+      category: 'basic',
+      state: 'ready',
+      targetIds: [],
+      remainingTelegraphTurns: 0,
+      hitCount: 1,
+      motionKey: 'basic_attack',
+    }, 0);
+
+    expect(result).toBeUndefined();
+    expect(enemy._shotsSinceReload).toBe(2);
+    expect(combat.fxQueue).not.toEqual(expect.arrayContaining([
+      expect.objectContaining({ kind: 'enemyMotion', motionKey: 'reload' }),
+    ]));
+  });
 
   it('AI 후보에 실제 rank·방어/노출·heal effect 기반 healer 메타데이터를 제공한다', () => {
     const combat = setupCombat(instantiateEnemy(ENEMIES.zombie_common), {

@@ -165,8 +165,9 @@ describe('_applyRankedDamageEffect', () => {
     expect(target.hp).toBe(30 - 23);
     expect(combat.enemies[0].currentHp).toBe(30 - 23);
     expect(target.tokens.vulnerable).toBe(0);
-    const fx = combat.fxQueue.find(f => f.kind === 'playerAttack');
-    expect(fx).toMatchObject({ dmg: 23, crit: true, killed: false });
+    const fx = combat.fxQueue.find(f =>
+      f.kind === 'action' && f.actorId === 'player' && f.targetId === 'enemy:0');
+    expect(fx).toMatchObject({ damage: 23, crit: true, killed: false });
   });
 
   it('처치 시 _lastKillContext를 기록하고 killed fx를 남긴다', () => {
@@ -186,7 +187,12 @@ describe('_applyRankedDamageEffect', () => {
     expect(target.dead).toBe(true);
     expect(combat.enemies[0].currentHp).toBe(0);
     expect(combat._lastKillContext).toMatchObject({ weaponType: 'unarmed', isMelee: true });
-    expect(combat.fxQueue.at(-1)).toMatchObject({ kind: 'playerAttack', killed: true });
+    expect(combat.fxQueue.at(-1)).toMatchObject({
+      kind: 'action',
+      actorId: 'player',
+      targetId: 'enemy:0',
+      killed: true,
+    });
   });
 });
 

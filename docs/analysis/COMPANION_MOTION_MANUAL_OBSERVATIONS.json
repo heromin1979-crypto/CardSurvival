@@ -1,0 +1,943 @@
+{
+  "version": 2,
+  "hashScheme": "combat-provenance-sha256-v2",
+  "evidenceType": "human manual visual observation",
+  "reviewStatus": "PASS",
+  "reviewedAt": "2026-08-01",
+  "reviewerMethod": "Codex 데스크톱 original 해상도 view_image로 최종 안정 빌드의 런타임 PNG 20개, 1736x2120 확대 리뷰 보드 20개, contact sheet 1개를 직접 대조했다. 자동 renderer와 verifier는 이 판정을 생성하지 않는다.",
+  "reviewedCounts": {
+    "companions": 20,
+    "runtimeSheets": 20,
+    "enlargedReviewBoards": 20,
+    "cells": 960
+  },
+  "openRework": [],
+  "previewManifestPath": "/art_sources/combat/task9_companions/preview_manifest.json",
+  "previewManifestSha256": "388e8c24a54df142235ed2e8ae7893d4e3ae6908d8fd5b1806363db1cd475d92",
+  "contactPath": "/art_sources/combat/task9_companions/companion_motion_contact_sheet.png",
+  "contactSha256": "67f5c1742ddc3a08b6aec38ee25dad0c6d5c66d79239486154d7dc1e50e1fc27",
+  "assemblyRecipePath": "/art_sources/combat/task9_companions/assembly_recipe.json",
+  "assemblyRecipeSha256": "67edfb48e67fe55a3db5aa9aecbc2966d2fd3e9b984be2413627114cb9fc5df3",
+  "companions": [
+    {
+      "npcId": "npc_old_survivor",
+      "sheetKey": "old_survivor_companion",
+      "previewPath": "/art_sources/combat/task9_companions/review_previews/old_survivor_companion_review.png",
+      "previewSha256": "9573bb622ce6a819963d505f1be08cfaac2daff65ae4fde82b5a13fdf4253c96",
+      "runtimePath": "/assets/images/combat/spritesheets/companions/old_survivor_companion_sheet.png",
+      "runtimeSha256": "c4b17fe3ef7aeee3dbcd0b1dbf12282a376a5c64750070972b6e1c23a8c6fc5e",
+      "skills": [
+        {
+          "skillId": "old_survivor_cane_strike",
+          "motionKey": "melee",
+          "rowSha256": "79ce0ad9ee947ff808177870f2009b6b04dccdbab67841e25e4fa2429506949f",
+          "status": "PASS",
+          "note": "old_survivor_cane_strike: 준비-타격 접촉-회수의 6프레임이 완전하다."
+        },
+        {
+          "skillId": "old_survivor_warning",
+          "motionKey": "support",
+          "rowSha256": "59708d184e09b9643032c0e968f6922cffcb2bc50853ab1bf29b7a5bf59d3691",
+          "status": "PASS",
+          "note": "old_survivor_warning: 지원 도구 사용과 전달 또는 신호가 6프레임으로 구분된다."
+        },
+        {
+          "skillId": "old_survivor_hold_line",
+          "motionKey": "guard",
+          "rowSha256": "bb0ee8aa6b3f1acf0730e8368824d55f0f3719afb45a9b27c5d14c4c85bbbd3e",
+          "status": "PASS",
+          "note": "old_survivor_hold_line: 방어 도구를 전면에 세우고 버티는 6프레임이 완전하다."
+        }
+      ],
+      "identityNote": "회색 머리·낡은 코트 체형이 48셀 내내 동일하다.",
+      "weaponNote": "목제 지팡이의 형태와 사용 방향이 행별 행동에 맞게 유지된다.",
+      "continuityNote": "확대 보드와 원본 시트를 1:1로 대조했으며 8행 48셀에 빈 셀, 잘린 신체, 이웃 셀 파편, 중복 패딩이 없다.",
+      "hit": {
+        "motionKey": "hit",
+        "rowSha256": "e28b5d646cc1ca2d7677f5ecdf67267941227fd0fa4d5604b1ef614944778947",
+        "status": "PASS",
+        "note": "피격 시작-체중 붕괴-마무리 자세가 이어지며 캐릭터와 장비가 잘리지 않는다."
+      },
+      "death": {
+        "motionKey": "death",
+        "rowSha256": "f3fd3daa5b846e04b32c9485059156a2f6c7dd9d72f0280b1f01e9e54d7e49a4",
+        "status": "PASS",
+        "note": "직립 또는 무릎 자세에서 완전한 쓰러짐으로 이어지고 마지막 프레임도 전신이 셀 안에 남는다."
+      }
+    },
+    {
+      "npcId": "npc_nurse",
+      "sheetKey": "nurse_companion",
+      "previewPath": "/art_sources/combat/task9_companions/review_previews/nurse_companion_review.png",
+      "previewSha256": "a054918b6b69841a1aaf59bc803f68b9821135e00e64b8bef6bed8dd83bfc191",
+      "runtimePath": "/assets/images/combat/spritesheets/nurse_companion_sheet.png",
+      "runtimeSha256": "b692c7073af5d86e3cca816045250fb3c426355d4eddd7d524a1becd7d708263",
+      "skills": [
+        {
+          "skillId": "nurse_scalpel",
+          "motionKey": "melee",
+          "rowSha256": "b232236943c6cdd98d1d4db6a56da0c08a348d48c5c5e651c99b6e334f6a4501",
+          "status": "PASS",
+          "note": "nurse_scalpel: 준비-타격 접촉-회수의 6프레임이 완전하다."
+        },
+        {
+          "skillId": "nurse_triage",
+          "motionKey": "support",
+          "rowSha256": "226c98087cfd7cdc952f34e590a37545b312453ddaece41482d53ca749637bab",
+          "status": "PASS",
+          "note": "nurse_triage: 지원 도구 사용과 전달 또는 신호가 6프레임으로 구분된다."
+        },
+        {
+          "skillId": "nurse_encourage",
+          "motionKey": "support",
+          "rowSha256": "226c98087cfd7cdc952f34e590a37545b312453ddaece41482d53ca749637bab",
+          "status": "PASS",
+          "note": "nurse_encourage: 지원 도구 사용과 전달 또는 신호가 6프레임으로 구분된다."
+        }
+      ],
+      "identityNote": "검은 묶음머리·남색 의료복·탄색 조끼이 48셀 내내 동일하다.",
+      "weaponNote": "메스·구급 가방의 형태와 사용 방향이 행별 행동에 맞게 유지된다.",
+      "continuityNote": "확대 보드와 원본 시트를 1:1로 대조했으며 8행 48셀에 빈 셀, 잘린 신체, 이웃 셀 파편, 중복 패딩이 없다.",
+      "hit": {
+        "motionKey": "hit",
+        "rowSha256": "a971123501f22c626b7fb0c5dc4ffc08438e7e6b773022f71f409c63f9367bab",
+        "status": "PASS",
+        "note": "피격 시작-체중 붕괴-마무리 자세가 이어지며 캐릭터와 장비가 잘리지 않는다."
+      },
+      "death": {
+        "motionKey": "death",
+        "rowSha256": "98db1aee59f17b3a18e3e38461f17b176c02b15b537467b0a762a6b433549bda",
+        "status": "PASS",
+        "note": "직립 또는 무릎 자세에서 완전한 쓰러짐으로 이어지고 마지막 프레임도 전신이 셀 안에 남는다."
+      }
+    },
+    {
+      "npcId": "npc_soldier_deserter",
+      "sheetKey": "soldier_companion",
+      "previewPath": "/art_sources/combat/task9_companions/review_previews/soldier_companion_review.png",
+      "previewSha256": "29b2465dc8c7ad9ee90d1992165cea9b337e426b76c241ddf28683d6b3f42af5",
+      "runtimePath": "/assets/images/combat/spritesheets/soldier_companion_sheet.png",
+      "runtimeSha256": "a3979cf141b99757ec8c6fbdf077f0ee7b56fceb25358fab6a7bbff92d8b0234",
+      "skills": [
+        {
+          "skillId": "deserter_rifle_shot",
+          "motionKey": "ranged",
+          "rowSha256": "23bc50511b81cdaa9320e89634f60fd12662d8d34b8771c029bc15b679f6e4b1",
+          "status": "PASS",
+          "note": "deserter_rifle_shot: 조준 또는 투척 준비-방출-복귀의 6프레임이 완전하다."
+        },
+        {
+          "skillId": "deserter_covering_fire",
+          "motionKey": "ranged",
+          "rowSha256": "23bc50511b81cdaa9320e89634f60fd12662d8d34b8771c029bc15b679f6e4b1",
+          "status": "PASS",
+          "note": "deserter_covering_fire: 조준 또는 투척 준비-방출-복귀의 6프레임이 완전하다."
+        },
+        {
+          "skillId": "deserter_reposition",
+          "motionKey": "move",
+          "rowSha256": "28e80adad7a5ef3a8d287adbd9f29a50d3bdfc36a03b0f5d4bfb1a3f36a62d0f",
+          "status": "PASS",
+          "note": "deserter_reposition: 체중 이동과 보폭이 이어지는 6프레임이 완전하다."
+        }
+      ],
+      "identityNote": "거친 얼굴·차콜 전술복이 48셀 내내 동일하다.",
+      "weaponNote": "검은 소총의 형태와 사용 방향이 행별 행동에 맞게 유지된다.",
+      "continuityNote": "확대 보드와 원본 시트를 1:1로 대조했으며 8행 48셀에 빈 셀, 잘린 신체, 이웃 셀 파편, 중복 패딩이 없다.",
+      "hit": {
+        "motionKey": "hit",
+        "rowSha256": "f9ccaead95a1536461a9ba2e4904b0045ebf174f7f1b6e35f297cc2730a11c7b",
+        "status": "PASS",
+        "note": "피격 시작-체중 붕괴-마무리 자세가 이어지며 캐릭터와 장비가 잘리지 않는다."
+      },
+      "death": {
+        "motionKey": "death",
+        "rowSha256": "683d371c066e13a1c56e4b8fd4b26922b72f391a444269b43e4de191d463ff24",
+        "status": "PASS",
+        "note": "직립 또는 무릎 자세에서 완전한 쓰러짐으로 이어지고 마지막 프레임도 전신이 셀 안에 남는다."
+      }
+    },
+    {
+      "npcId": "npc_child",
+      "sheetKey": "child_companion",
+      "previewPath": "/art_sources/combat/task9_companions/review_previews/child_companion_review.png",
+      "previewSha256": "ca1d66a1ad1f3896f3f4c126233a210f33f71dd5f9811734413f09cc322a3833",
+      "runtimePath": "/assets/images/combat/spritesheets/companions/child_companion_sheet.png",
+      "runtimeSha256": "edcf2003203363ee1890a2aaf0e6b8d4c9140dcf2cd0a1462ac0b6fa96e6c2f9",
+      "skills": [
+        {
+          "skillId": "child_throw_debris",
+          "motionKey": "ranged",
+          "rowSha256": "8028e61513d7ff7e7f2e195068a48fb70fa1761c7668fd57c35f5a126995ac2b",
+          "status": "PASS",
+          "note": "child_throw_debris: 조준 또는 투척 준비-방출-복귀의 6프레임이 완전하다."
+        },
+        {
+          "skillId": "child_hide",
+          "motionKey": "guard",
+          "rowSha256": "818ebd6db1ebcecd80763cbda9e32eaeeca3c70627dd2ff668b53824d293de3f",
+          "status": "PASS",
+          "note": "child_hide: 방어 도구를 전면에 세우고 버티는 6프레임이 완전하다."
+        },
+        {
+          "skillId": "child_warning",
+          "motionKey": "support",
+          "rowSha256": "883e437c1bd5c02f92b7dacd83f58361a95dfb10f5a4adbacef4f498f23cbf4d",
+          "status": "PASS",
+          "note": "child_warning: 지원 도구 사용과 전달 또는 신호가 6프레임으로 구분된다."
+        }
+      ],
+      "identityNote": "노란 우비·학교 가방의 아동 체형이 48셀 내내 동일하다.",
+      "weaponNote": "막대·투척물·가방의 형태와 사용 방향이 행별 행동에 맞게 유지된다.",
+      "continuityNote": "확대 보드와 원본 시트를 1:1로 대조했으며 8행 48셀에 빈 셀, 잘린 신체, 이웃 셀 파편, 중복 패딩이 없다.",
+      "hit": {
+        "motionKey": "hit",
+        "rowSha256": "bcfef966d4f0dedc041093bfc755d51242a040a682b94995e8496b2f5c06eea5",
+        "status": "PASS",
+        "note": "피격 시작-체중 붕괴-마무리 자세가 이어지며 캐릭터와 장비가 잘리지 않는다."
+      },
+      "death": {
+        "motionKey": "death",
+        "rowSha256": "aabd89adf184502499d2425d2123fc28439dc688efd75180f6f4cc4717a5e8ad",
+        "status": "PASS",
+        "note": "직립 또는 무릎 자세에서 완전한 쓰러짐으로 이어지고 마지막 프레임도 전신이 셀 안에 남는다."
+      }
+    },
+    {
+      "npcId": "npc_mechanic",
+      "sheetKey": "mechanic_companion",
+      "previewPath": "/art_sources/combat/task9_companions/review_previews/mechanic_companion_review.png",
+      "previewSha256": "41495313e921850edd9492a4d5fc6aa43d511f4d00547f98fabcc38c59d100b8",
+      "runtimePath": "/assets/images/combat/spritesheets/companions/mechanic_companion_sheet.png",
+      "runtimeSha256": "6d2a2c7301f28125934089e7d685635ea2d8505b561b8928ae17c3a33890a5d9",
+      "skills": [
+        {
+          "skillId": "mechanic_wrench",
+          "motionKey": "melee",
+          "rowSha256": "a38c8272625d1fdbd5c885a176b5eaa905fa59ace84a58df7b4514d04da65baf",
+          "status": "PASS",
+          "note": "mechanic_wrench: 준비-타격 접촉-회수의 6프레임이 완전하다."
+        },
+        {
+          "skillId": "mechanic_field_repair",
+          "motionKey": "support",
+          "rowSha256": "02a299b6fe87ef43a92eb41b048c91d31dd48937c9aa6b9e1e50767f3b989162",
+          "status": "PASS",
+          "note": "mechanic_field_repair: 지원 도구 사용과 전달 또는 신호가 6프레임으로 구분된다."
+        },
+        {
+          "skillId": "mechanic_tripwire",
+          "motionKey": "support",
+          "rowSha256": "02a299b6fe87ef43a92eb41b048c91d31dd48937c9aa6b9e1e50767f3b989162",
+          "status": "PASS",
+          "note": "mechanic_tripwire: 지원 도구 사용과 전달 또는 신호가 6프레임으로 구분된다."
+        }
+      ],
+      "identityNote": "기름 묻은 작업복·고글이 48셀 내내 동일하다.",
+      "weaponNote": "대형 렌치·수리 도구·공구함의 형태와 사용 방향이 행별 행동에 맞게 유지된다.",
+      "continuityNote": "확대 보드와 원본 시트를 1:1로 대조했으며 8행 48셀에 빈 셀, 잘린 신체, 이웃 셀 파편, 중복 패딩이 없다.",
+      "hit": {
+        "motionKey": "hit",
+        "rowSha256": "4a9ab155aaeaf9c596e7fbb72d7487e404e11dcbef82813913f31cb7f02b6aab",
+        "status": "PASS",
+        "note": "피격 시작-체중 붕괴-마무리 자세가 이어지며 캐릭터와 장비가 잘리지 않는다."
+      },
+      "death": {
+        "motionKey": "death",
+        "rowSha256": "ece7f96c4cce5585eac74ff15aea2a2ee7b306225c9e54fb0bfa0b0c49ce083c",
+        "status": "PASS",
+        "note": "직립 또는 무릎 자세에서 완전한 쓰러짐으로 이어지고 마지막 프레임도 전신이 셀 안에 남는다."
+      }
+    },
+    {
+      "npcId": "npc_student",
+      "sheetKey": "student_companion",
+      "previewPath": "/art_sources/combat/task9_companions/review_previews/student_companion_review.png",
+      "previewSha256": "c5a6e5ae3f2bb000c7beebf6211b3d2df527423b48e33f597b74ba6031d9f001",
+      "runtimePath": "/assets/images/combat/spritesheets/companions/student_companion_sheet.png",
+      "runtimeSha256": "8dde2e38302b6f0e11240cbaf9598a18c4ddb2a5f7292dcc3b62bfca69372511",
+      "skills": [
+        {
+          "skillId": "student_improvised_strike",
+          "motionKey": "melee",
+          "rowSha256": "a2e81084af9c89bf52e096c9507bbba2d21581a0ec71250e5bc521370e81e52e",
+          "status": "PASS",
+          "note": "student_improvised_strike: 준비-타격 접촉-회수의 6프레임이 완전하다."
+        },
+        {
+          "skillId": "student_first_aid",
+          "motionKey": "support",
+          "rowSha256": "33c9cc2f5a25c3ee3f91dcf788d7774be8bf49ccf00bc9c406fe48f42c082568",
+          "status": "PASS",
+          "note": "student_first_aid: 지원 도구 사용과 전달 또는 신호가 6프레임으로 구분된다."
+        },
+        {
+          "skillId": "student_quick_step",
+          "motionKey": "move",
+          "rowSha256": "097785972ee8a2525b82facbfa82a1789cd8b0fbed0bfe7ca4643e7252735b3c",
+          "status": "PASS",
+          "note": "student_quick_step: 체중 이동과 보폭이 이어지는 6프레임이 완전하다."
+        }
+      ],
+      "identityNote": "안경·남색 재킷·백팩이 48셀 내내 동일하다.",
+      "weaponNote": "우산·책·응급 처치 가방의 형태와 사용 방향이 행별 행동에 맞게 유지된다.",
+      "continuityNote": "확대 보드와 원본 시트를 1:1로 대조했으며 8행 48셀에 빈 셀, 잘린 신체, 이웃 셀 파편, 중복 패딩이 없다.",
+      "hit": {
+        "motionKey": "hit",
+        "rowSha256": "335743edbb147634187ed0d9f7378425e19456108ee0b1da9ea5f4e4d0604aca",
+        "status": "PASS",
+        "note": "피격 시작-체중 붕괴-마무리 자세가 이어지며 캐릭터와 장비가 잘리지 않는다."
+      },
+      "death": {
+        "motionKey": "death",
+        "rowSha256": "942eed7dc31ca69c8f0393e3054e4ce21ad26b6825199cb6568e88b80f862bd6",
+        "status": "PASS",
+        "note": "직립 또는 무릎 자세에서 완전한 쓰러짐으로 이어지고 마지막 프레임도 전신이 셀 안에 남는다."
+      }
+    },
+    {
+      "npcId": "npc_dog",
+      "sheetKey": "dog_companion",
+      "previewPath": "/art_sources/combat/task9_companions/review_previews/dog_companion_review.png",
+      "previewSha256": "2b70752f7924079b77967d75bb7d3eb29a1d86bc9d8d4c61c228ec17977cf1ac",
+      "runtimePath": "/assets/images/combat/spritesheets/companions/dog_companion_sheet.png",
+      "runtimeSha256": "86fe66142c9ddc0b36e7adef7cfd3c4ab4e3822defb1144ab086684ba76feb6e",
+      "skills": [
+        {
+          "skillId": "dog_bite",
+          "motionKey": "melee",
+          "rowSha256": "3669c6fa5c765c5a4899fe4a96d36f877f99f8bfb1e8297e70070dfe2b1d88af",
+          "status": "PASS",
+          "note": "dog_bite: 준비-타격 접촉-회수의 6프레임이 완전하다."
+        },
+        {
+          "skillId": "dog_guard",
+          "motionKey": "guard",
+          "rowSha256": "7e21ebe59f63fe2f2bdc94de6d3444f9b24aea165dbd8490649ec5654c8dc5bd",
+          "status": "PASS",
+          "note": "dog_guard: 방어 도구를 전면에 세우고 버티는 6프레임이 완전하다."
+        },
+        {
+          "skillId": "dog_track_weakness",
+          "motionKey": "support",
+          "rowSha256": "1c95331295233fb149f35aecac2bf7930a603bb536949dff934444111d6ed9c0",
+          "status": "PASS",
+          "note": "dog_track_weakness: 지원 도구 사용과 전달 또는 신호가 6프레임으로 구분된다."
+        }
+      ],
+      "identityNote": "크림색 진돗개 체형·파란 구조 하네스이 48셀 내내 동일하다.",
+      "weaponNote": "물기·짖기·추적 자세의 형태와 사용 방향이 행별 행동에 맞게 유지된다.",
+      "continuityNote": "확대 보드와 원본 시트를 1:1로 대조했으며 8행 48셀에 빈 셀, 잘린 신체, 이웃 셀 파편, 중복 패딩이 없다.",
+      "hit": {
+        "motionKey": "hit",
+        "rowSha256": "0b473f3c70dd5dec17779bed979d2765218b7754aa798848d5c1fa832e2e437d",
+        "status": "PASS",
+        "note": "피격 시작-체중 붕괴-마무리 자세가 이어지며 캐릭터와 장비가 잘리지 않는다."
+      },
+      "death": {
+        "motionKey": "death",
+        "rowSha256": "4b69ee9bb78af04e6e46b614f9d7d2f32236e9e0bb18fe2e782a7cc6f43e96e3",
+        "status": "PASS",
+        "note": "직립 또는 무릎 자세에서 완전한 쓰러짐으로 이어지고 마지막 프레임도 전신이 셀 안에 남는다."
+      }
+    },
+    {
+      "npcId": "npc_former_colleague",
+      "sheetKey": "former_colleague_companion",
+      "previewPath": "/art_sources/combat/task9_companions/review_previews/former_colleague_companion_review.png",
+      "previewSha256": "8444d09920033a7266e71327d474ff14f64f1c5c2240509cf13561c53022a859",
+      "runtimePath": "/assets/images/combat/spritesheets/companions/former_colleague_companion_sheet.png",
+      "runtimeSha256": "9e2bab6838cabf126ca482ac83149a5c9760e51c2b81510f417615223f08891e",
+      "skills": [
+        {
+          "skillId": "colleague_hammer",
+          "motionKey": "melee",
+          "rowSha256": "51e1130dbcbaa4fbc41127899c95ec94eceef4a97a90d047ea4bb8d7440d1d42",
+          "status": "PASS",
+          "note": "colleague_hammer: 준비-타격 접촉-회수의 6프레임이 완전하다."
+        },
+        {
+          "skillId": "colleague_brace",
+          "motionKey": "guard",
+          "rowSha256": "22beaf47c77f04328027e566a746b1fa25787246447780ea5e93f700f33b5983",
+          "status": "PASS",
+          "note": "colleague_brace: 방어 도구를 전면에 세우고 버티는 6프레임이 완전하다."
+        },
+        {
+          "skillId": "colleague_teamwork",
+          "motionKey": "support",
+          "rowSha256": "42de6967bbea4a8fbd70aac83d9f3984f05b61b6ddd4c610ddb10c282a4b4772",
+          "status": "PASS",
+          "note": "colleague_teamwork: 지원 도구 사용과 전달 또는 신호가 6프레임으로 구분된다."
+        }
+      ],
+      "identityNote": "주황 안전 조끼·안전모이 48셀 내내 동일하다.",
+      "weaponNote": "망치·볼트·폐자재 방패의 형태와 사용 방향이 행별 행동에 맞게 유지된다.",
+      "continuityNote": "확대 보드와 원본 시트를 1:1로 대조했으며 8행 48셀에 빈 셀, 잘린 신체, 이웃 셀 파편, 중복 패딩이 없다.",
+      "hit": {
+        "motionKey": "hit",
+        "rowSha256": "9e88c1717cfec94002503ab726896c7d450e2dab0fc6a01f82677e23e830758d",
+        "status": "PASS",
+        "note": "피격 시작-체중 붕괴-마무리 자세가 이어지며 캐릭터와 장비가 잘리지 않는다."
+      },
+      "death": {
+        "motionKey": "death",
+        "rowSha256": "e4450949e5c5052ba74d45d85faf7c062447b6eb817f0ee138857235c948c4e2",
+        "status": "PASS",
+        "note": "직립 또는 무릎 자세에서 완전한 쓰러짐으로 이어지고 마지막 프레임도 전신이 셀 안에 남는다."
+      }
+    },
+    {
+      "npcId": "npc_minjun",
+      "sheetKey": "minjun_companion",
+      "previewPath": "/art_sources/combat/task9_companions/review_previews/minjun_companion_review.png",
+      "previewSha256": "70e6840da776f00662fab29fda322df9aa0e2c2418b6f1117532ac95443fb4ef",
+      "runtimePath": "/assets/images/combat/spritesheets/companions/minjun_companion_sheet.png",
+      "runtimeSha256": "d92e60a972c7ce8fd1fa729453c7a96cadefc909c107a9e701a40c90ec690c07",
+      "skills": [
+        {
+          "skillId": "minjun_pistol",
+          "motionKey": "ranged",
+          "rowSha256": "2e5067b128e5009486c3be82acacbce461ad37d6c235ea58ad4a0fe6d81598da",
+          "status": "PASS",
+          "note": "minjun_pistol: 조준 또는 투척 준비-방출-복귀의 6프레임이 완전하다."
+        },
+        {
+          "skillId": "minjun_combat_medicine",
+          "motionKey": "support",
+          "rowSha256": "126d6b61f2af3661a431bc56db79c1e3b106054b2cec767bb55d21f18d85d563",
+          "status": "PASS",
+          "note": "minjun_combat_medicine: 지원 도구 사용과 전달 또는 신호가 6프레임으로 구분된다."
+        },
+        {
+          "skillId": "minjun_command",
+          "motionKey": "support",
+          "rowSha256": "126d6b61f2af3661a431bc56db79c1e3b106054b2cec767bb55d21f18d85d563",
+          "status": "PASS",
+          "note": "minjun_command: 지원 도구 사용과 전달 또는 신호가 6프레임으로 구분된다."
+        }
+      ],
+      "identityNote": "짧은 머리·올리브 전술 의료복이 48셀 내내 동일하다.",
+      "weaponNote": "권총·전투 의료 가방의 형태와 사용 방향이 행별 행동에 맞게 유지된다.",
+      "continuityNote": "확대 보드와 원본 시트를 1:1로 대조했으며 8행 48셀에 빈 셀, 잘린 신체, 이웃 셀 파편, 중복 패딩이 없다.",
+      "hit": {
+        "motionKey": "hit",
+        "rowSha256": "4e5f9e5c3f5f3152fb51910c97b27e35ae4c377c00199ffc74dd4bab91db7aed",
+        "status": "PASS",
+        "note": "피격 시작-체중 붕괴-마무리 자세가 이어지며 캐릭터와 장비가 잘리지 않는다."
+      },
+      "death": {
+        "motionKey": "death",
+        "rowSha256": "99a6a908a9f0d1a6ffaa71d85c5b5cd44e857e9ed1680efc4839efa6e169ba0d",
+        "status": "PASS",
+        "note": "직립 또는 무릎 자세에서 완전한 쓰러짐으로 이어지고 마지막 프레임도 전신이 셀 안에 남는다."
+      }
+    },
+    {
+      "npcId": "npc_sohee",
+      "sheetKey": "sohee_companion",
+      "previewPath": "/art_sources/combat/task9_companions/review_previews/sohee_companion_review.png",
+      "previewSha256": "a253c70d0e126cc9edadf892a448fb49824dd5a0e2784ecc07614f7a36d6944e",
+      "runtimePath": "/assets/images/combat/spritesheets/companions/sohee_companion_sheet.png",
+      "runtimeSha256": "29e3f314e83a53659d7edea9ecf4b239d70f440b948b682765a00db17dd75048",
+      "skills": [
+        {
+          "skillId": "sohee_precise_shot",
+          "motionKey": "ranged",
+          "rowSha256": "fd7ea38b9fe69f3921b57cccccafdac316f27e0ab3a06be3fa0de4643489415c",
+          "status": "PASS",
+          "note": "sohee_precise_shot: 조준 또는 투척 준비-방출-복귀의 6프레임이 완전하다."
+        },
+        {
+          "skillId": "sohee_silent_cover",
+          "motionKey": "guard",
+          "rowSha256": "9ef03da7c858149052322c61588ab2f07c14366c41785476580652aa891a6a90",
+          "status": "PASS",
+          "note": "sohee_silent_cover: 방어 도구를 전면에 세우고 버티는 6프레임이 완전하다."
+        },
+        {
+          "skillId": "sohee_focus",
+          "motionKey": "support",
+          "rowSha256": "905b9af68f580f34a1c76ad0edd3037766330a3a067fa2acf5aa36f1f72f5789",
+          "status": "PASS",
+          "note": "sohee_focus: 지원 도구 사용과 전달 또는 신호가 6프레임으로 구분된다."
+        }
+      ],
+      "identityNote": "안경·보라색 코트·약품 가방이 48셀 내내 동일하다.",
+      "weaponNote": "조준 카빈의 형태와 사용 방향이 행별 행동에 맞게 유지된다.",
+      "continuityNote": "확대 보드와 원본 시트를 1:1로 대조했으며 8행 48셀에 빈 셀, 잘린 신체, 이웃 셀 파편, 중복 패딩이 없다.",
+      "hit": {
+        "motionKey": "hit",
+        "rowSha256": "cf652ee74d13339f27e33666d7453148148896eb326799f3a23bb5467ccc1502",
+        "status": "PASS",
+        "note": "피격 시작-체중 붕괴-마무리 자세가 이어지며 캐릭터와 장비가 잘리지 않는다."
+      },
+      "death": {
+        "motionKey": "death",
+        "rowSha256": "a202e72a63fcc16e6687a693ea47f69d92eb0acff122a526d08cef7856f94ed0",
+        "status": "PASS",
+        "note": "직립 또는 무릎 자세에서 완전한 쓰러짐으로 이어지고 마지막 프레임도 전신이 셀 안에 남는다."
+      }
+    },
+    {
+      "npcId": "npc_jisu",
+      "sheetKey": "jisu_companion",
+      "previewPath": "/art_sources/combat/task9_companions/review_previews/jisu_companion_review.png",
+      "previewSha256": "1a6242fb31a17043f68919cb04d14157266b6677c0171bb851ff3538176846c6",
+      "runtimePath": "/assets/images/combat/spritesheets/companions/jisu_companion_sheet.png",
+      "runtimeSha256": "84911d5f7b23d79dc66f344351a35201340de8cadf4c8ce187533338dcff7c25",
+      "skills": [
+        {
+          "skillId": "jisu_scalpel",
+          "motionKey": "melee",
+          "rowSha256": "c99d74908452e293dfebc4d08671628523d8e41043f23dbd5c0d42c9aa7fd57a",
+          "status": "PASS",
+          "note": "jisu_scalpel: 준비-타격 접촉-회수의 6프레임이 완전하다."
+        },
+        {
+          "skillId": "jisu_emergency_care",
+          "motionKey": "support",
+          "rowSha256": "69302b3987ab391fbb1584594d138a70fdb34af8ca85648caef0a9a9bf2ab567",
+          "status": "PASS",
+          "note": "jisu_emergency_care: 지원 도구 사용과 전달 또는 신호가 6프레임으로 구분된다."
+        },
+        {
+          "skillId": "jisu_diagnose",
+          "motionKey": "support",
+          "rowSha256": "69302b3987ab391fbb1584594d138a70fdb34af8ca85648caef0a9a9bf2ab567",
+          "status": "PASS",
+          "note": "jisu_diagnose: 지원 도구 사용과 전달 또는 신호가 6프레임으로 구분된다."
+        }
+      ],
+      "identityNote": "청록 수술복·흰 가운이 48셀 내내 동일하다.",
+      "weaponNote": "메스·외상 가방의 형태와 사용 방향이 행별 행동에 맞게 유지된다.",
+      "continuityNote": "확대 보드와 원본 시트를 1:1로 대조했으며 8행 48셀에 빈 셀, 잘린 신체, 이웃 셀 파편, 중복 패딩이 없다.",
+      "hit": {
+        "motionKey": "hit",
+        "rowSha256": "642ba91483b81cc566712bfc351ae033a33045a813eba402806f0e6eb586b03f",
+        "status": "PASS",
+        "note": "피격 시작-체중 붕괴-마무리 자세가 이어지며 캐릭터와 장비가 잘리지 않는다."
+      },
+      "death": {
+        "motionKey": "death",
+        "rowSha256": "b091f6d865fc426dc791bf4eef6784a89bd2a97afc7cea207c0a07340d69d571",
+        "status": "PASS",
+        "note": "직립 또는 무릎 자세에서 완전한 쓰러짐으로 이어지고 마지막 프레임도 전신이 셀 안에 남는다."
+      }
+    },
+    {
+      "npcId": "npc_yeongcheol",
+      "sheetKey": "yeongcheol_companion",
+      "previewPath": "/art_sources/combat/task9_companions/review_previews/yeongcheol_companion_review.png",
+      "previewSha256": "c391afb3825a0eea62776ac5d37bd1b04a056cb577a3785320a81e45ae858131",
+      "runtimePath": "/assets/images/combat/spritesheets/companions/yeongcheol_companion_sheet.png",
+      "runtimeSha256": "08136ebf510509e90e15e8df25c15eea1fdad92bbe5751723cbd5efd069a0431",
+      "skills": [
+        {
+          "skillId": "yeongcheol_axe",
+          "motionKey": "melee",
+          "rowSha256": "877abcf09546e698c59d69f91ddd09c96f98e6204fea8801c5c7a4afe2b4509e",
+          "status": "PASS",
+          "note": "yeongcheol_axe: 준비-타격 접촉-회수의 6프레임이 완전하다."
+        },
+        {
+          "skillId": "yeongcheol_rescue",
+          "motionKey": "guard",
+          "rowSha256": "3c69f329655f2e07065e6b4e933f27e4d0a464e529d14099acc2b4c4f2f26eba",
+          "status": "PASS",
+          "note": "yeongcheol_rescue: 방어 도구를 전면에 세우고 버티는 6프레임이 완전하다."
+        },
+        {
+          "skillId": "yeongcheol_rally",
+          "motionKey": "support",
+          "rowSha256": "b409ef1bc353d5d0b958efec27c8703d6b41c488bbea3691a710e50ca4964ba8",
+          "status": "PASS",
+          "note": "yeongcheol_rally: 지원 도구 사용과 전달 또는 신호가 6프레임으로 구분된다."
+        }
+      ],
+      "identityNote": "그을린 소방복이 48셀 내내 동일하다.",
+      "weaponNote": "구조 도끼·로프·구조 방패의 형태와 사용 방향이 행별 행동에 맞게 유지된다.",
+      "continuityNote": "확대 보드와 원본 시트를 1:1로 대조했으며 8행 48셀에 빈 셀, 잘린 신체, 이웃 셀 파편, 중복 패딩이 없다.",
+      "hit": {
+        "motionKey": "hit",
+        "rowSha256": "9a9200e40dbf9c1c683cff6b0f2b7999957154de441ff0834c346d7c8f957740",
+        "status": "PASS",
+        "note": "피격 시작-체중 붕괴-마무리 자세가 이어지며 캐릭터와 장비가 잘리지 않는다."
+      },
+      "death": {
+        "motionKey": "death",
+        "rowSha256": "9e22bd3b93fe1267d9b0b1b8e94147edcdd9238883492b1594cf32408b3df0ca",
+        "status": "PASS",
+        "note": "직립 또는 무릎 자세에서 완전한 쓰러짐으로 이어지고 마지막 프레임도 전신이 셀 안에 남는다."
+      }
+    },
+    {
+      "npcId": "npc_daehan",
+      "sheetKey": "daehan_companion",
+      "previewPath": "/art_sources/combat/task9_companions/review_previews/daehan_companion_review.png",
+      "previewSha256": "7e6f0fcbb8f573476aaaa979f57c5bcb9a4f35a614ba86a6d00a0b97b553fb0f",
+      "runtimePath": "/assets/images/combat/spritesheets/companions/daehan_companion_sheet.png",
+      "runtimeSha256": "b5881faa233ffd54927d6a7e15393877c3abfdaf4597f7aeca5fd6e396f72f57",
+      "skills": [
+        {
+          "skillId": "daehan_wrench",
+          "motionKey": "melee",
+          "rowSha256": "6b58827e83220bc97206e1c49f1479307b4618e8d3b10e49d57a9f70892d70f3",
+          "status": "PASS",
+          "note": "daehan_wrench: 준비-타격 접촉-회수의 6프레임이 완전하다."
+        },
+        {
+          "skillId": "daehan_barricade",
+          "motionKey": "guard",
+          "rowSha256": "9919483e9a69c77a32db15acc35389b4a0d2f0e4b1eb0170272b8bea8f6eae01",
+          "status": "PASS",
+          "note": "daehan_barricade: 방어 도구를 전면에 세우고 버티는 6프레임이 완전하다."
+        },
+        {
+          "skillId": "daehan_overcharge",
+          "motionKey": "support",
+          "rowSha256": "d493c96508c5230ee69b19370a6ca2c4c5d7edff3ca6f1c092cbc47e52375845",
+          "status": "PASS",
+          "note": "daehan_overcharge: 지원 도구 사용과 전달 또는 신호가 6프레임으로 구분된다."
+        }
+      ],
+      "identityNote": "회색 작업복·가죽 앞치마이 48셀 내내 동일하다.",
+      "weaponNote": "대형 렌치·전기 장치·금속 방벽의 형태와 사용 방향이 행별 행동에 맞게 유지된다.",
+      "continuityNote": "확대 보드와 원본 시트를 1:1로 대조했으며 8행 48셀에 빈 셀, 잘린 신체, 이웃 셀 파편, 중복 패딩이 없다.",
+      "hit": {
+        "motionKey": "hit",
+        "rowSha256": "efb62c9617b9a58b989567d04ae14592ea9060dc459397a49e2d0ef0a60444be",
+        "status": "PASS",
+        "note": "피격 시작-체중 붕괴-마무리 자세가 이어지며 캐릭터와 장비가 잘리지 않는다."
+      },
+      "death": {
+        "motionKey": "death",
+        "rowSha256": "e5c88d1317711565b7c3632cfd32b13ee1708620b8c6ffb5a63e502e87ce81b4",
+        "status": "PASS",
+        "note": "직립 또는 무릎 자세에서 완전한 쓰러짐으로 이어지고 마지막 프레임도 전신이 셀 안에 남는다."
+      }
+    },
+    {
+      "npcId": "npc_tower_security",
+      "sheetKey": "tower_security_companion",
+      "previewPath": "/art_sources/combat/task9_companions/review_previews/tower_security_companion_review.png",
+      "previewSha256": "fc1d76ccd2ca02ba2d5adf6c24842a2e0aee3b988294cb9638aa91ff041a7cb6",
+      "runtimePath": "/assets/images/combat/spritesheets/companions/tower_security_companion_sheet.png",
+      "runtimeSha256": "e610a1b92af5fd6a9136867aa3c14307b311fe8f20dd1308fc028eaa4fa57d3b",
+      "skills": [
+        {
+          "skillId": "security_baton",
+          "motionKey": "melee",
+          "rowSha256": "c4bbcf904c57a745f2a8a9657dc78ce050df000a417c5c0495fdcc175cb7ff1c",
+          "status": "PASS",
+          "note": "security_baton: 준비-타격 접촉-회수의 6프레임이 완전하다."
+        },
+        {
+          "skillId": "security_guard",
+          "motionKey": "guard",
+          "rowSha256": "6c8ea3b153a303ccd026f956ae92231537e3f8975bb7e1322804f3bc8b323c69",
+          "status": "PASS",
+          "note": "security_guard: 방어 도구를 전면에 세우고 버티는 6프레임이 완전하다."
+        },
+        {
+          "skillId": "security_taunt",
+          "motionKey": "support",
+          "rowSha256": "c7ec03fd47b0f5717732963841033a7cb53963956403333c3aaf21ada4526880",
+          "status": "PASS",
+          "note": "security_taunt: 지원 도구 사용과 전달 또는 신호가 6프레임으로 구분된다."
+        }
+      ],
+      "identityNote": "검은 경비복이 48셀 내내 동일하다.",
+      "weaponNote": "진압봉·손전등·방패의 형태와 사용 방향이 행별 행동에 맞게 유지된다.",
+      "continuityNote": "확대 보드와 원본 시트를 1:1로 대조했으며 8행 48셀에 빈 셀, 잘린 신체, 이웃 셀 파편, 중복 패딩이 없다.",
+      "hit": {
+        "motionKey": "hit",
+        "rowSha256": "df0b86900d34bbfc4f8151324bde65861c9b7903cb15cfc4f7d24de8748eb872",
+        "status": "PASS",
+        "note": "피격 시작-체중 붕괴-마무리 자세가 이어지며 캐릭터와 장비가 잘리지 않는다."
+      },
+      "death": {
+        "motionKey": "death",
+        "rowSha256": "35160cf46741d87f8718d5de181ba95e4cb1e891d9a212f38d20fec487a3663e",
+        "status": "PASS",
+        "note": "직립 또는 무릎 자세에서 완전한 쓰러짐으로 이어지고 마지막 프레임도 전신이 셀 안에 남는다."
+      }
+    },
+    {
+      "npcId": "npc_tower_merchant",
+      "sheetKey": "tower_merchant_companion",
+      "previewPath": "/art_sources/combat/task9_companions/review_previews/tower_merchant_companion_review.png",
+      "previewSha256": "5d2f42e73fa5458d6c13c0fd5f019119faccc2512d62dd6cea22547072cc36c6",
+      "runtimePath": "/assets/images/combat/spritesheets/companions/tower_merchant_companion_sheet.png",
+      "runtimeSha256": "537929e799b18eaf8e0c95d0bff93a1a650350d64548c09cb2136ace7fdfba77",
+      "skills": [
+        {
+          "skillId": "merchant_hidden_blade",
+          "motionKey": "melee",
+          "rowSha256": "2d555a36078408136dedad0d739905b5ee3cded7a0da8d98fed02bdf40458f1c",
+          "status": "PASS",
+          "note": "merchant_hidden_blade: 준비-타격 접촉-회수의 6프레임이 완전하다."
+        },
+        {
+          "skillId": "merchant_supply",
+          "motionKey": "support",
+          "rowSha256": "03d43d7fce4e05d1f58039c1dc5fecc1d4cf97f03e1248666617628aac86c33a",
+          "status": "PASS",
+          "note": "merchant_supply: 지원 도구 사용과 전달 또는 신호가 6프레임으로 구분된다."
+        },
+        {
+          "skillId": "merchant_bargain",
+          "motionKey": "support",
+          "rowSha256": "03d43d7fce4e05d1f58039c1dc5fecc1d4cf97f03e1248666617628aac86c33a",
+          "status": "PASS",
+          "note": "merchant_bargain: 지원 도구 사용과 전달 또는 신호가 6프레임으로 구분된다."
+        }
+      ],
+      "identityNote": "긴 갈색 코트·대형 거래 배낭이 48셀 내내 동일하다.",
+      "weaponNote": "숨긴 칼·보급 주머니의 형태와 사용 방향이 행별 행동에 맞게 유지된다.",
+      "continuityNote": "확대 보드와 원본 시트를 1:1로 대조했으며 8행 48셀에 빈 셀, 잘린 신체, 이웃 셀 파편, 중복 패딩이 없다.",
+      "hit": {
+        "motionKey": "hit",
+        "rowSha256": "3c7186fc60f73eb0e53324dce0a058a08535ef3a8c81817c88a9e61686501727",
+        "status": "PASS",
+        "note": "피격 시작-체중 붕괴-마무리 자세가 이어지며 캐릭터와 장비가 잘리지 않는다."
+      },
+      "death": {
+        "motionKey": "death",
+        "rowSha256": "7449921d2d1cd6a093fcf1dca4c2ba5b4f1120116618045392d8b424e6516fa3",
+        "status": "PASS",
+        "note": "직립 또는 무릎 자세에서 완전한 쓰러짐으로 이어지고 마지막 프레임도 전신이 셀 안에 남는다."
+      }
+    },
+    {
+      "npcId": "npc_tower_cook",
+      "sheetKey": "tower_cook_companion",
+      "previewPath": "/art_sources/combat/task9_companions/review_previews/tower_cook_companion_review.png",
+      "previewSha256": "61c5ed709942e0cdb0a1133c7f3ade9e8f1a5848aaeaff5cefce6c6b935163bb",
+      "runtimePath": "/assets/images/combat/spritesheets/companions/tower_cook_companion_sheet.png",
+      "runtimeSha256": "c5fc94292b0702f6dec5b2f13fbfc295b6491385bd8cadf6694986f6d5d49bf8",
+      "skills": [
+        {
+          "skillId": "tower_cook_knife",
+          "motionKey": "melee",
+          "rowSha256": "28269425abddc0a9f79d51f9b8f7ee38d24b781a9b1c86d48f8949db34fabb54",
+          "status": "PASS",
+          "note": "tower_cook_knife: 준비-타격 접촉-회수의 6프레임이 완전하다."
+        },
+        {
+          "skillId": "tower_cook_meal",
+          "motionKey": "support",
+          "rowSha256": "41bea91249fcf4942d4ccf445dd60c692d8d8de98d28c19ba02fd698a1cb0dab",
+          "status": "PASS",
+          "note": "tower_cook_meal: 지원 도구 사용과 전달 또는 신호가 6프레임으로 구분된다."
+        },
+        {
+          "skillId": "tower_cook_burn",
+          "motionKey": "melee",
+          "rowSha256": "28269425abddc0a9f79d51f9b8f7ee38d24b781a9b1c86d48f8949db34fabb54",
+          "status": "PASS",
+          "note": "tower_cook_burn: 준비-타격 접촉-회수의 6프레임이 완전하다."
+        }
+      ],
+      "identityNote": "버건디 조리복·앞치마이 48셀 내내 동일하다.",
+      "weaponNote": "칼·주철 팬·식사 도구의 형태와 사용 방향이 행별 행동에 맞게 유지된다.",
+      "continuityNote": "확대 보드와 원본 시트를 1:1로 대조했으며 8행 48셀에 빈 셀, 잘린 신체, 이웃 셀 파편, 중복 패딩이 없다.",
+      "hit": {
+        "motionKey": "hit",
+        "rowSha256": "82aabc0ebc63306d9e0bd3fda6b5c0fd4d054a33d91022e677088ce8ac47b6e6",
+        "status": "PASS",
+        "note": "피격 시작-체중 붕괴-마무리 자세가 이어지며 캐릭터와 장비가 잘리지 않는다."
+      },
+      "death": {
+        "motionKey": "death",
+        "rowSha256": "b42102eb132d61165800412da9615e52684d4cb9603bf8ff6fd0871f5df6d213",
+        "status": "PASS",
+        "note": "직립 또는 무릎 자세에서 완전한 쓰러짐으로 이어지고 마지막 프레임도 전신이 셀 안에 남는다."
+      }
+    },
+    {
+      "npcId": "npc_tower_engineer",
+      "sheetKey": "tower_engineer_companion",
+      "previewPath": "/art_sources/combat/task9_companions/review_previews/tower_engineer_companion_review.png",
+      "previewSha256": "9c1212f21e53a2b38a34b5157ef688b80c11eaa86ac7379a373d1c171920601c",
+      "runtimePath": "/assets/images/combat/spritesheets/companions/tower_engineer_companion_sheet.png",
+      "runtimeSha256": "ebe48c0f16d5bebb6001e073b6d2d0e786ad0133d0516b5c6cff289876b513c8",
+      "skills": [
+        {
+          "skillId": "tower_engineer_wrench",
+          "motionKey": "melee",
+          "rowSha256": "b2be998fc4b509cbe975215d26b5843262323713c6c5373b9a8058351a1bb116",
+          "status": "PASS",
+          "note": "tower_engineer_wrench: 준비-타격 접촉-회수의 6프레임이 완전하다."
+        },
+        {
+          "skillId": "tower_engineer_cover",
+          "motionKey": "guard",
+          "rowSha256": "5fc73ad6ca4c36f28dcdc9e4d17c69ffe193b0c2265e0e81a39f0219b5c668c3",
+          "status": "PASS",
+          "note": "tower_engineer_cover: 방어 도구를 전면에 세우고 버티는 6프레임이 완전하다."
+        },
+        {
+          "skillId": "tower_engineer_trap",
+          "motionKey": "support",
+          "rowSha256": "9b6c61682636fc0f0a21b0fbb9d71340cf4e2f95de8bb03018675afe342798c6",
+          "status": "PASS",
+          "note": "tower_engineer_trap: 지원 도구 사용과 전달 또는 신호가 6프레임으로 구분된다."
+        }
+      ],
+      "identityNote": "남색 설비 작업복이 48셀 내내 동일하다.",
+      "weaponNote": "파이프 렌치·센서 장비·기술 방패의 형태와 사용 방향이 행별 행동에 맞게 유지된다.",
+      "continuityNote": "확대 보드와 원본 시트를 1:1로 대조했으며 8행 48셀에 빈 셀, 잘린 신체, 이웃 셀 파편, 중복 패딩이 없다.",
+      "hit": {
+        "motionKey": "hit",
+        "rowSha256": "100c02095178ef60092fd31f93842aa580f7e53aae129efe49e92571b31af15d",
+        "status": "PASS",
+        "note": "피격 시작-체중 붕괴-마무리 자세가 이어지며 캐릭터와 장비가 잘리지 않는다."
+      },
+      "death": {
+        "motionKey": "death",
+        "rowSha256": "830c5b68b93a355c9745c434b5d8ecf2713d924748d313621d65c6dd32ada0cc",
+        "status": "PASS",
+        "note": "직립 또는 무릎 자세에서 완전한 쓰러짐으로 이어지고 마지막 프레임도 전신이 셀 안에 남는다."
+      }
+    },
+    {
+      "npcId": "npc_tower_doctor",
+      "sheetKey": "tower_doctor_companion",
+      "previewPath": "/art_sources/combat/task9_companions/review_previews/tower_doctor_companion_review.png",
+      "previewSha256": "2c91095b5351ba98f966e1449080fe596637c2ae0b49828034e9ce70f3ae3b74",
+      "runtimePath": "/assets/images/combat/spritesheets/companions/tower_doctor_companion_sheet.png",
+      "runtimeSha256": "e70c01d130cbd783dc5944a24b8e492513b80ea53feed31d5ec0f9040bc6f75e",
+      "skills": [
+        {
+          "skillId": "tower_doctor_scalpel",
+          "motionKey": "melee",
+          "rowSha256": "1386ef06b612af6a3565e7fd0ae8273e9666b2a367640e9cfda0853eb9b0389d",
+          "status": "PASS",
+          "note": "tower_doctor_scalpel: 준비-타격 접촉-회수의 6프레임이 완전하다."
+        },
+        {
+          "skillId": "tower_doctor_triage",
+          "motionKey": "support",
+          "rowSha256": "9afa3d839083591cb9aa3b6588326ede2ad87672cabda6be02e9aa940aae442b",
+          "status": "PASS",
+          "note": "tower_doctor_triage: 지원 도구 사용과 전달 또는 신호가 6프레임으로 구분된다."
+        },
+        {
+          "skillId": "tower_doctor_stimulant",
+          "motionKey": "support",
+          "rowSha256": "9afa3d839083591cb9aa3b6588326ede2ad87672cabda6be02e9aa940aae442b",
+          "status": "PASS",
+          "note": "tower_doctor_stimulant: 지원 도구 사용과 전달 또는 신호가 6프레임으로 구분된다."
+        }
+      ],
+      "identityNote": "땋은 머리·어두운 의료복이 48셀 내내 동일하다.",
+      "weaponNote": "메스·주사기·금속 의료 케이스의 형태와 사용 방향이 행별 행동에 맞게 유지된다.",
+      "continuityNote": "확대 보드와 원본 시트를 1:1로 대조했으며 8행 48셀에 빈 셀, 잘린 신체, 이웃 셀 파편, 중복 패딩이 없다.",
+      "hit": {
+        "motionKey": "hit",
+        "rowSha256": "d064c3993cfd41b9eff55d9b849eb49d8691ec749dd880d28136c134cb8af51e",
+        "status": "PASS",
+        "note": "피격 시작-체중 붕괴-마무리 자세가 이어지며 캐릭터와 장비가 잘리지 않는다."
+      },
+      "death": {
+        "motionKey": "death",
+        "rowSha256": "5a66aee45056e193f20e4e22f47685983f5a6b738a1c6d242e4e47b86b6e4482",
+        "status": "PASS",
+        "note": "직립 또는 무릎 자세에서 완전한 쓰러짐으로 이어지고 마지막 프레임도 전신이 셀 안에 남는다."
+      }
+    },
+    {
+      "npcId": "npc_sous_chef",
+      "sheetKey": "sous_chef_companion",
+      "previewPath": "/art_sources/combat/task9_companions/review_previews/sous_chef_companion_review.png",
+      "previewSha256": "1423139404f8be5b8a545bbcfafc937cb4d827825e8f5ca0b5e9a2b7f0b4e75b",
+      "runtimePath": "/assets/images/combat/spritesheets/companions/sous_chef_companion_sheet.png",
+      "runtimeSha256": "b453f8be0c7e7204acb96ae8261b58bbac5f00d5cec1d70be8b9153a9741e1bb",
+      "skills": [
+        {
+          "skillId": "sous_chef_cleaver",
+          "motionKey": "melee",
+          "rowSha256": "ffafda61d297f0adcf040ad83440feae282b12853edfc75b45ed4ac97f823eb4",
+          "status": "PASS",
+          "note": "sous_chef_cleaver: 준비-타격 접촉-회수의 6프레임이 완전하다."
+        },
+        {
+          "skillId": "sous_chef_ration",
+          "motionKey": "support",
+          "rowSha256": "9355fa4c13bd3ea8b923c33490125c3ebe051064fd69e3acb18d3df20114d39b",
+          "status": "PASS",
+          "note": "sous_chef_ration: 지원 도구 사용과 전달 또는 신호가 6프레임으로 구분된다."
+        },
+        {
+          "skillId": "sous_chef_intimidate",
+          "motionKey": "support",
+          "rowSha256": "9355fa4c13bd3ea8b923c33490125c3ebe051064fd69e3acb18d3df20114d39b",
+          "status": "PASS",
+          "note": "sous_chef_intimidate: 지원 도구 사용과 전달 또는 신호가 6프레임으로 구분된다."
+        }
+      ],
+      "identityNote": "짙은 초록 조리복·줄무늬 앞치마이 48셀 내내 동일하다.",
+      "weaponNote": "식칼·배급 주머니·도마의 형태와 사용 방향이 행별 행동에 맞게 유지된다.",
+      "continuityNote": "확대 보드와 원본 시트를 1:1로 대조했으며 8행 48셀에 빈 셀, 잘린 신체, 이웃 셀 파편, 중복 패딩이 없다.",
+      "hit": {
+        "motionKey": "hit",
+        "rowSha256": "1e6c65a6891540488661de0a4b8f77bcb291904f77d514e4d0cb2b108f0a6d11",
+        "status": "PASS",
+        "note": "피격 시작-체중 붕괴-마무리 자세가 이어지며 캐릭터와 장비가 잘리지 않는다."
+      },
+      "death": {
+        "motionKey": "death",
+        "rowSha256": "236e13f05f93271cf1ee354e39c919c63ff9d1709848779f8d3a2f62556f16eb",
+        "status": "PASS",
+        "note": "직립 또는 무릎 자세에서 완전한 쓰러짐으로 이어지고 마지막 프레임도 전신이 셀 안에 남는다."
+      }
+    },
+    {
+      "npcId": "npc_kitchen_helper",
+      "sheetKey": "kitchen_helper_companion",
+      "previewPath": "/art_sources/combat/task9_companions/review_previews/kitchen_helper_companion_review.png",
+      "previewSha256": "70ac720b4782695d2c67a5ad8e309076e101ef96b2a017bb78b411a251996b9a",
+      "runtimePath": "/assets/images/combat/spritesheets/companions/kitchen_helper_companion_sheet.png",
+      "runtimeSha256": "0559c4e8eb07dfe605d436aa8eb511318ee89bb08d29ee4156b18b2cad1ce999",
+      "skills": [
+        {
+          "skillId": "kitchen_helper_pan",
+          "motionKey": "melee",
+          "rowSha256": "cefcd73cf0bb132ca10b894087c78c03a87fc6d40625dcfe349e551cdf44246f",
+          "status": "PASS",
+          "note": "kitchen_helper_pan: 준비-타격 접촉-회수의 6프레임이 완전하다."
+        },
+        {
+          "skillId": "kitchen_helper_assist",
+          "motionKey": "support",
+          "rowSha256": "a6dfcbcf5c45990861dddf2e6821279eac643f753b4f498b0b60711464daf25d",
+          "status": "PASS",
+          "note": "kitchen_helper_assist: 지원 도구 사용과 전달 또는 신호가 6프레임으로 구분된다."
+        },
+        {
+          "skillId": "kitchen_helper_duck",
+          "motionKey": "move",
+          "rowSha256": "e2252ae75761a6e32f70bc056614bcf34fe3cc0e74d79f56ac76ba08e8113232",
+          "status": "PASS",
+          "note": "kitchen_helper_duck: 체중 이동과 보폭이 이어지는 6프레임이 완전하다."
+        }
+      ],
+      "identityNote": "묶은 머리·크림 셔츠·데님 앞치마이 48셀 내내 동일하다.",
+      "weaponNote": "프라이팬·국자의 형태와 사용 방향이 행별 행동에 맞게 유지된다.",
+      "continuityNote": "확대 보드와 원본 시트를 1:1로 대조했으며 8행 48셀에 빈 셀, 잘린 신체, 이웃 셀 파편, 중복 패딩이 없다.",
+      "hit": {
+        "motionKey": "hit",
+        "rowSha256": "614297283aa70e8d79d505df73d619b54f7c2f0370dfe0ad4d012fc39e93d497",
+        "status": "PASS",
+        "note": "피격 시작-체중 붕괴-마무리 자세가 이어지며 캐릭터와 장비가 잘리지 않는다."
+      },
+      "death": {
+        "motionKey": "death",
+        "rowSha256": "fa163b01712430dc49b6630c8ee7e39bcf41be3f8257f1a6d25511a4d8ca4632",
+        "status": "PASS",
+        "note": "직립 또는 무릎 자세에서 완전한 쓰러짐으로 이어지고 마지막 프레임도 전신이 셀 안에 남는다."
+      }
+    }
+  ]
+}

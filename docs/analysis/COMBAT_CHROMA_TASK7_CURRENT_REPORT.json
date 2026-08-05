@@ -1,0 +1,236 @@
+{
+  "reportVersion": 1,
+  "scopePolicy": "explicit current-runtime Task 7 normal roster; later task additions are ignored",
+  "assemblyRecipePath": "/art_sources/combat/task7_normal/assembly_recipe.json",
+  "assemblyRecipeSha256": "24149cbbab35310a7c512aa75fd476d8981deaa3cdd162d41aa3c0b20df45ce2",
+  "sheetCount": 12,
+  "recipeTargetCount": 9,
+  "verifiedCanonicalSources": 4,
+  "verifiedBaselineSources": 9,
+  "verifiedArchivalSources": 4,
+  "chromaArtifacts": {
+    "opaqueGreen": 0,
+    "fringeGreen": 0,
+    "hiddenRgb": 0,
+    "removedComponents": 0,
+    "staleAllowlist": 0
+  },
+  "sheets": [
+    {
+      "sheetKey": "zombie_patient_dormant",
+      "path": "/assets/images/combat/spritesheets/enemies/zombie_patient_dormant_sheet.png",
+      "cols": 6,
+      "rows": 5,
+      "width": 1536,
+      "height": 1280,
+      "fileSha256": "9d730cf6524e92e78d253644f6df9bb1102fcfdd56b16f8d11dee1058098bb6f",
+      "pixelSha256": "b3e3a3141598d044e52f0fde1375cccd903d2209b5df1bb8cb5ec10dd67f639d",
+      "recipeTarget": true,
+      "chromaArtifacts": {
+        "opaqueGreen": 0,
+        "fringeGreen": 0,
+        "hiddenRgb": 0,
+        "removedComponents": 0,
+        "staleAllowlist": 0
+      }
+    },
+    {
+      "sheetKey": "zombie_common",
+      "path": "/assets/images/combat/spritesheets/enemies/zombie_common_sheet.png",
+      "cols": 6,
+      "rows": 4,
+      "width": 1536,
+      "height": 1024,
+      "fileSha256": "4b1f6d0f50799efb309577a9dcdf31755f06c3e9cd0ad9747df5c4e80d6bb7d9",
+      "pixelSha256": "2bffea1b36bf3451ed263397345b3a30d59cc6e762c201332d5e58c2d4be1854",
+      "recipeTarget": false,
+      "chromaArtifacts": {
+        "opaqueGreen": 0,
+        "fringeGreen": 0,
+        "hiddenRgb": 0,
+        "removedComponents": 0,
+        "staleAllowlist": 0
+      }
+    },
+    {
+      "sheetKey": "zombie_runner",
+      "path": "/assets/images/combat/spritesheets/enemies/zombie_runner_sheet.png",
+      "cols": 6,
+      "rows": 6,
+      "width": 1536,
+      "height": 1536,
+      "fileSha256": "9eecf529f52ee23905d86a5b06a24c8779d0778668d150b7470923836b0b542b",
+      "pixelSha256": "99d86fd82dcb8d4df7c70bebaf588854e55d92022ac257fb8207aafc3a69eb40",
+      "recipeTarget": true,
+      "chromaArtifacts": {
+        "opaqueGreen": 0,
+        "fringeGreen": 0,
+        "hiddenRgb": 0,
+        "removedComponents": 0,
+        "staleAllowlist": 0
+      }
+    },
+    {
+      "sheetKey": "zombie_brute",
+      "path": "/assets/images/combat/spritesheets/enemies/zombie_brute_sheet.png",
+      "cols": 6,
+      "rows": 6,
+      "width": 1536,
+      "height": 1536,
+      "fileSha256": "e2ab679853b28c8b49a2786cee5bf817c65bbdfca2e0745e0fe4de5cb296c4ec",
+      "pixelSha256": "90ad4a419b864a049958c58a8d14708a3f3352ad5e212415f6f4cc19d25a28af",
+      "recipeTarget": true,
+      "chromaArtifacts": {
+        "opaqueGreen": 0,
+        "fringeGreen": 0,
+        "hiddenRgb": 0,
+        "removedComponents": 0,
+        "staleAllowlist": 0
+      }
+    },
+    {
+      "sheetKey": "zombie_horde",
+      "path": "/assets/images/combat/spritesheets/enemies/zombie_horde_sheet.png",
+      "cols": 6,
+      "rows": 4,
+      "width": 1536,
+      "height": 1024,
+      "fileSha256": "afe979927a501e546d98ffee79b5c7ba261a4361af17058fbf693dbc97bd953e",
+      "pixelSha256": "b18976da19bff7edee4dd1426abf63ba91fa80aa0f26026ae527577e1998f135",
+      "recipeTarget": false,
+      "chromaArtifacts": {
+        "opaqueGreen": 0,
+        "fringeGreen": 0,
+        "hiddenRgb": 0,
+        "removedComponents": 0,
+        "staleAllowlist": 0
+      }
+    },
+    {
+      "sheetKey": "rabid_dog",
+      "path": "/assets/images/combat/spritesheets/enemies/rabid_dog_sheet.png",
+      "cols": 6,
+      "rows": 4,
+      "width": 1536,
+      "height": 1024,
+      "fileSha256": "74f59c41e3e7f95e877d98d18285445d5a364bd1093b389012803b0eb888b477",
+      "pixelSha256": "03bf619277c1012bae2e8458f071c680649b97f9930c5eee43406c318bfacb0b",
+      "recipeTarget": false,
+      "chromaArtifacts": {
+        "opaqueGreen": 0,
+        "fringeGreen": 0,
+        "hiddenRgb": 0,
+        "removedComponents": 0,
+        "staleAllowlist": 0
+      }
+    },
+    {
+      "sheetKey": "zombie_acid",
+      "path": "/assets/images/combat/spritesheets/enemies/zombie_acid_sheet.png",
+      "cols": 6,
+      "rows": 5,
+      "width": 1536,
+      "height": 1280,
+      "fileSha256": "4427b5bc7ab79f939a9d7b5a102bd617fdf5bb0b2548f4dc3973a5cc66897986",
+      "pixelSha256": "d04173517fff08101602c8f5844dcfeee8bffc975a1948e226353f580ad9e352",
+      "recipeTarget": true,
+      "chromaArtifacts": {
+        "opaqueGreen": 0,
+        "fringeGreen": 0,
+        "hiddenRgb": 0,
+        "removedComponents": 0,
+        "staleAllowlist": 0
+      }
+    },
+    {
+      "sheetKey": "zombie_bloater",
+      "path": "/assets/images/combat/spritesheets/enemies/zombie_bloater_sheet.png",
+      "cols": 6,
+      "rows": 6,
+      "width": 1536,
+      "height": 1536,
+      "fileSha256": "64280ce0678ad7a4474f0cb2528d9e6097937a6a51f1637dbc9ca45f360e7ea2",
+      "pixelSha256": "8f586e617909a63cb572e177a969eaebea5c7f19f7b18e2a9c54fade86f44308",
+      "recipeTarget": true,
+      "chromaArtifacts": {
+        "opaqueGreen": 0,
+        "fringeGreen": 0,
+        "hiddenRgb": 0,
+        "removedComponents": 0,
+        "staleAllowlist": 0
+      }
+    },
+    {
+      "sheetKey": "zombie_screamer",
+      "path": "/assets/images/combat/spritesheets/enemies/zombie_screamer_sheet.png",
+      "cols": 6,
+      "rows": 6,
+      "width": 1536,
+      "height": 1536,
+      "fileSha256": "1a3437b314b9ca8f189e96f19b32b1b36b46ab65d9b8a7b18c68137d50fb071f",
+      "pixelSha256": "717801fd3533df322d0ba520d454ef2b6a81193051f1336eb0933054ff16914e",
+      "recipeTarget": true,
+      "chromaArtifacts": {
+        "opaqueGreen": 0,
+        "fringeGreen": 0,
+        "hiddenRgb": 0,
+        "removedComponents": 0,
+        "staleAllowlist": 0
+      }
+    },
+    {
+      "sheetKey": "zombie_charger",
+      "path": "/assets/images/combat/spritesheets/enemies/zombie_charger_sheet.png",
+      "cols": 6,
+      "rows": 6,
+      "width": 1536,
+      "height": 1536,
+      "fileSha256": "792eafd95849f44b3288317f3a14661f802ad4f63087c8be9f742853e8e92862",
+      "pixelSha256": "299cf161a8481aa5a9eb8c6699b9dabb6fc7f2ce906aafec57c18728c8836635",
+      "recipeTarget": true,
+      "chromaArtifacts": {
+        "opaqueGreen": 0,
+        "fringeGreen": 0,
+        "hiddenRgb": 0,
+        "removedComponents": 0,
+        "staleAllowlist": 0
+      }
+    },
+    {
+      "sheetKey": "raider",
+      "path": "/assets/images/combat/spritesheets/enemies/raider_sheet.png",
+      "cols": 6,
+      "rows": 5,
+      "width": 1536,
+      "height": 1280,
+      "fileSha256": "605c1c5529dfac36c9f2cf60acb437683d10db2d212eaeb1e11f23c19da4bbb3",
+      "pixelSha256": "0cf946757ccfc13d920f721fde33613eea327184484b30df87c342a07eb5fbe0",
+      "recipeTarget": true,
+      "chromaArtifacts": {
+        "opaqueGreen": 0,
+        "fringeGreen": 0,
+        "hiddenRgb": 0,
+        "removedComponents": 0,
+        "staleAllowlist": 0
+      }
+    },
+    {
+      "sheetKey": "raider_elite",
+      "path": "/assets/images/combat/spritesheets/enemies/raider_elite_sheet.png",
+      "cols": 6,
+      "rows": 6,
+      "width": 1536,
+      "height": 1536,
+      "fileSha256": "fa7beb0b207b411f1212c9cb522aa344cb20d1fc7ba3a215f578a16e9150237f",
+      "pixelSha256": "4928e0eb0b44056eb7c847322dd921aeb12754eea0e5e5a003dcf3275fdd2c73",
+      "recipeTarget": true,
+      "chromaArtifacts": {
+        "opaqueGreen": 0,
+        "fringeGreen": 0,
+        "hiddenRgb": 0,
+        "removedComponents": 0,
+        "staleAllowlist": 0
+      }
+    }
+  ]
+}

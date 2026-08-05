@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   advanceEnemyAction,
   commitEnemyAction,
+  commitEnemyActionDefinition,
   commitTimedThreatAction,
   createEnemyActionState,
   retargetCommittedAction,
@@ -23,6 +24,33 @@ const runnerEnemy = {
 };
 
 describe('EnemyActionPlanner', () => {
+  it('주입한 행동 정의를 기존 예약 행동 형태로 정규화한다', () => {
+    const state = commitEnemyActionDefinition({
+      enemy: { patternProfile: { targetPolicy: 'ally' } },
+      definition: {
+        id: 'boss_sweep',
+        targetPolicy: 'all',
+        targetCount: 2,
+        telegraphTurns: 2,
+        hitCount: 3,
+        motionKey: 'boss_sweep_motion',
+      },
+      category: 'special',
+      candidates,
+      random: () => 0,
+    });
+
+    expect(state.committedAction).toEqual({
+      actionId: 'boss_sweep',
+      category: 'special',
+      state: 'telegraphing',
+      targetIds: ['player', 'npc_nurse'],
+      remainingTelegraphTurns: 2,
+      hitCount: 3,
+      motionKey: 'boss_sweep_motion',
+    });
+  });
+
   it('빈 행동 상태를 만든다', () => {
     expect(createEnemyActionState()).toEqual({ committedAction: null });
   });

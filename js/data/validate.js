@@ -1,6 +1,8 @@
 // === DATA INTEGRITY VALIDATOR ===
 // Run: node js/data/validate.js
 
+import { existsSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 import {
@@ -10,6 +12,12 @@ import {
 } from './combatSkills.js';
 import { COMPANION_TACTICS } from './companionTactics.js';
 import { ENEMIES } from './enemies.js';
+import { SECRET_ENEMIES } from './secretEnemies.js';
+import {
+  COMBAT_MOTION_MANIFEST,
+  DISPLAYED_COMBAT_SHEET_KEYS,
+} from './combatMotionManifest.js';
+import { isResolvableImpactFx } from '../ui/combat/combatUiAssets.js';
 import {
   COMPANION_STANCE_ROLES,
   COMPANION_TACTIC_WHEN,
@@ -27,6 +35,412 @@ const VALID_COMBAT_EFFECTS = new Set([
   'guard',
   'flee',
 ]);
+
+const VALID_BOSS_MOVEMENTS = new Set(['none', 'lunge', 'advance', 'retreat']);
+const VALID_BOSS_EFFECTS = new Set([
+  'damage',
+  'status',
+  'targetStatus',
+  'move',
+  'forcedMove',
+  'selfHeal',
+  'selfStatus',
+  'summon',
+  'consumeSummons',
+  'partyDamage',
+  'battlefieldStatus',
+  'resource',
+  'weaponLock',
+  'noise',
+]);
+const VALID_ENEMY_STATUS_EFFECT_KEYS = new Set([
+  'defenseIncrease',
+  'evasionIncrease',
+  'invulnerable',
+  'incomingDamageReduction',
+  'outgoingDamageIncrease',
+]);
+const VALID_BATTLEFIELD_EFFECT_KEYS = new Set([
+  'radiationPerTurn',
+  'hpLossPerRound',
+  'status',
+  'healingReduction',
+  'guardedHealingReduction',
+  'preventedHealingShieldConversion',
+  'shieldDurationRounds',
+]);
+const VALID_COMBAT_MOTION_LOCOMOTION = new Set(['stationary', 'approach', 'retreat']);
+const PROJECT_ROOT = process.cwd();
+
+export function validateCombatMotionManifest(manifest = COMBAT_MOTION_MANIFEST) {
+  const errors = [];
+  if (!manifest || typeof manifest !== 'object' || Array.isArray(manifest)) {
+    return ['[combat motion] manifest must be an object'];
+  }
+
+  for (const [sheetKey, sheet] of Object.entries(manifest)) {
+    const path = `[combat motion/${sheetKey}]`;
+    if (!sheet || typeof sheet !== 'object' || Array.isArray(sheet)) {
+      errors.push(`${path} must be an object`);
+      continue;
+    }
+    if (typeof sheet.src !== 'string' || !sheet.src.startsWith('/assets/')) {
+      errors.push(`${path}.src must be an /assets path`);
+    }
+    if (!positiveInteger(sheet.cols)) errors.push(`${path}.cols must be a positive integer`);
+    if (!positiveInteger(sheet.rows)) errors.push(`${path}.rows must be a positive integer`);
+
+    const motions = sheet.motions;
+    if (!motions || typeof motions !== 'object' || Array.isArray(motions)) {
+      errors.push(`${path}.motions must be an object`);
+      continue;
+    }
+    for (const requiredMotion of ['idle', 'hit', 'death']) {
+      if (!motions[requiredMotion] && !motions[sheet.aliases?.[requiredMotion]]) {
+        errors.push(`${path}.motions.${requiredMotion} is required`);
+      }
+    }
+    for (const [motionKey, motion] of Object.entries(motions)) {
+      const motionPath = `${path}.motions.${motionKey}`;
+      if (!motion || typeof motion !== 'object' || Array.isArray(motion)) {
+        errors.push(`${motionPath} must be an object`);
+        continue;
+      }
+      if (!Number.isInteger(motion.row) || motion.row < 0 || motion.row >= sheet.rows) {
+        errors.push(`${motionPath}.row must be within 0..${Math.max((sheet.rows ?? 0) - 1, 0)}`);
+      }
+      if (typeof motion.loop !== 'boolean') {
+        errors.push(`${motionPath}.loop must be a boolean`);
+      } else if (motion.loop && motionKey !== 'idle' && sheet.aliases?.idle !== motionKey) {
+        errors.push(`${motionPath}.loop:true is only allowed for the idle motion`);
+      }
+      if (!Number.isFinite(motion.durationMs) || motion.durationMs <= 0) {
+        errors.push(`${motionPath}.durationMs must be a positive number`);
+      }
+      if (!VALID_COMBAT_MOTION_LOCOMOTION.has(motion.locomotion)) {
+        errors.push(`${motionPath}.locomotion must be stationary, approach, or retreat`);
+      }
+    }
+
+    if (sheet.aliases !== undefined) {
+      if (!sheet.aliases || typeof sheet.aliases !== 'object' || Array.isArray(sheet.aliases)) {
+        errors.push(`${path}.aliases must be an object`);
+      } else {
+        for (const [aliasKey, targetKey] of Object.entries(sheet.aliases)) {
+          const aliasPath = `${path}.aliases.${aliasKey}`;
+          if (typeof targetKey !== 'string' || targetKey.length === 0) {
+            errors.push(`${aliasPath} must target a motion key`);
+          } else if (sheet.aliases[targetKey]) {
+            errors.push(`${aliasPath} must resolve in one alias step`);
+          } else if (!motions[targetKey]) {
+            errors.push(`${aliasPath} targets unknown motion "${targetKey}"`);
+          }
+        }
+      }
+    }
+  }
+
+  const validatesDisplayedSheets = DISPLAYED_COMBAT_SHEET_KEYS.every(key => manifest[key]);
+  if (validatesDisplayedSheets) {
+    for (const sheetKey of DISPLAYED_COMBAT_SHEET_KEYS) {
+      const src = manifest[sheetKey]?.src;
+      if (typeof src !== 'string' || !src.startsWith('/assets/')) continue;
+      const assetPath = resolve(PROJECT_ROOT, src.slice(1));
+      if (!existsSync(assetPath)) {
+        errors.push(`[combat motion/${sheetKey}] asset not found: ${src}`);
+      }
+    }
+  }
+
+  return errors;
+}
+
+function nonemptyObject(value) {
+  return value !== null
+    && typeof value === 'object'
+    && !Array.isArray(value)
+    && Object.keys(value).length > 0;
+}
+
+function positiveInteger(value) {
+  return Number.isSafeInteger(value) && value > 0;
+}
+
+function validateBossEffect(effect, path) {
+  const errors = [];
+  if (!VALID_BOSS_EFFECTS.has(effect?.type)) {
+    errors.push(`${path}.type "${effect?.type}" is unsupported`);
+    return errors;
+  }
+
+  if (effect.type === 'selfStatus') {
+    if (typeof effect.id !== 'string' || effect.id.length === 0) {
+      errors.push(`${path}.id is required`);
+    }
+    if (!positiveInteger(effect.duration)) {
+      errors.push(`${path}.duration must be a positive integer`);
+    }
+    if (!nonemptyObject(effect.effect)) {
+      errors.push(`${path}.effect must be a non-empty typed object`);
+    } else {
+      for (const [key, value] of Object.entries(effect.effect)) {
+        if (!VALID_ENEMY_STATUS_EFFECT_KEYS.has(key)) {
+          errors.push(`${path}.effect.${key} is unsupported`);
+        } else if (key === 'invulnerable' ? value !== true : !Number.isFinite(value)) {
+          errors.push(`${path}.effect.${key} has an invalid value`);
+        }
+      }
+    }
+  }
+
+  if (effect.type === 'battlefieldStatus') {
+    if (typeof effect.id !== 'string' || effect.id.length === 0) {
+      errors.push(`${path}.id is required`);
+    }
+    const hasRoundDuration = effect.duration !== undefined;
+    const hasPlayerDuration = effect.remainingPlayerTurns !== undefined;
+    if (hasRoundDuration === hasPlayerDuration) {
+      errors.push(`${path} must declare exactly one duration clock`);
+    } else {
+      const duration = hasRoundDuration ? effect.duration : effect.remainingPlayerTurns;
+      if (!positiveInteger(duration)) {
+        errors.push(`${path} duration must be a positive integer`);
+      }
+    }
+    if (!nonemptyObject(effect.effect)) {
+      errors.push(`${path}.effect must be a non-empty typed object`);
+    } else {
+      for (const [key, value] of Object.entries(effect.effect)) {
+        if (!VALID_BATTLEFIELD_EFFECT_KEYS.has(key)) {
+          errors.push(`${path}.effect.${key} is unsupported`);
+        } else if (key === 'status') {
+          if (!nonemptyObject(value) || typeof value.id !== 'string') {
+            errors.push(`${path}.effect.status must declare an id`);
+          }
+        } else if (key === 'shieldDurationRounds') {
+          if (!positiveInteger(value)) {
+            errors.push(`${path}.effect.shieldDurationRounds must be a positive integer`);
+          }
+        } else if (!Number.isFinite(value) || value < 0) {
+          errors.push(`${path}.effect.${key} must be a nonnegative number`);
+        } else if (
+          [
+            'healingReduction',
+            'guardedHealingReduction',
+            'preventedHealingShieldConversion',
+          ].includes(key)
+          && value > 1
+        ) {
+          errors.push(`${path}.effect.${key} must be at most 1`);
+        }
+      }
+    }
+  }
+
+  if (effect.type === 'weaponLock') {
+    if (typeof effect.tag !== 'string' || effect.tag.length === 0) {
+      errors.push(`${path}.tag is required`);
+    }
+    if (!positiveInteger(effect.duration)) {
+      errors.push(`${path}.duration must be a positive integer`);
+    }
+  }
+
+  if (effect.type === 'consumeSummons') {
+    if (typeof effect.enemyId !== 'string' || effect.enemyId.length === 0) {
+      errors.push(`${path}.enemyId is required`);
+    }
+    for (const key of ['healPerSummon', 'strengthPerSummon']) {
+      if (!Number.isFinite(effect[key]) || effect[key] < 0) {
+        errors.push(`${path}.${key} must be a nonnegative number`);
+      }
+    }
+    if (
+      !nonemptyObject(effect.strengthStatus)
+      || typeof effect.strengthStatus.id !== 'string'
+      || effect.strengthStatus.id.length === 0
+      || !positiveInteger(effect.strengthStatus.duration)
+    ) {
+      errors.push(`${path}.strengthStatus must declare id and positive duration`);
+    }
+  }
+
+  return errors;
+}
+
+function validateTelegraphDamageThreshold(threshold, path) {
+  if (threshold === undefined) return [];
+  const errors = [];
+  if (!nonemptyObject(threshold)) {
+    return [`${path} must be an object`];
+  }
+  if (!Number.isFinite(threshold.amount) || threshold.amount <= 0) {
+    errors.push(`${path}.amount must be positive`);
+  }
+  if (
+    !Number.isFinite(threshold.resolutionMultiplier)
+    || threshold.resolutionMultiplier <= 0
+    || threshold.resolutionMultiplier > 1
+  ) {
+    errors.push(`${path}.resolutionMultiplier must be greater than 0 and at most 1`);
+  }
+  if (
+    !Array.isArray(threshold.statusMagnitudeKeys)
+    || threshold.statusMagnitudeKeys.length === 0
+    || threshold.statusMagnitudeKeys.some(key => typeof key !== 'string' || key.length === 0)
+  ) {
+    errors.push(`${path}.statusMagnitudeKeys must contain strings`);
+  }
+  return errors;
+}
+
+function validateHitCountRule(rule, action, path) {
+  if (rule === undefined) return [];
+  const errors = [];
+  if (!nonemptyObject(rule)) return [`${path} must be an object`];
+  if (rule.type !== 'livingMinions') {
+    errors.push(`${path}.type must be "livingMinions"`);
+  }
+  if (typeof rule.enemyId !== 'string' || rule.enemyId.length === 0) {
+    errors.push(`${path}.enemyId is required`);
+  }
+  for (const key of ['base', 'perMinion', 'min', 'max']) {
+    if (!Number.isSafeInteger(rule[key])) {
+      errors.push(`${path}.${key} must be a safe integer`);
+    }
+  }
+  if (Number.isSafeInteger(rule.base) && rule.base < 0) {
+    errors.push(`${path}.base must be nonnegative`);
+  }
+  if (Number.isSafeInteger(rule.perMinion) && rule.perMinion < 0) {
+    errors.push(`${path}.perMinion must be nonnegative`);
+  }
+  if (Number.isSafeInteger(rule.min) && rule.min < 1) {
+    errors.push(`${path}.min must be at least 1`);
+  }
+  if (
+    Number.isSafeInteger(rule.min)
+    && Number.isSafeInteger(rule.max)
+    && rule.max < rule.min
+  ) {
+    errors.push(`${path}.max must be at least min`);
+  }
+  if (Object.hasOwn(action ?? {}, 'hitCount')) {
+    errors.push(`${path} cannot be combined with fixed hitCount`);
+  }
+  return errors;
+}
+
+function validateBossAction(action, expectedCategory, path) {
+  const errors = [];
+
+  if (typeof action?.id !== 'string' || action.id.trim().length === 0) {
+    errors.push(`${path}.id is required`);
+  }
+  if (action?.category !== expectedCategory) {
+    errors.push(`${path}.category must be "${expectedCategory}"`);
+  }
+  if (typeof action?.motionKey !== 'string' || action.motionKey.trim().length === 0) {
+    errors.push(`${path}.motionKey is required`);
+  }
+  if (typeof action?.impactFx !== 'string' || action.impactFx.trim().length === 0) {
+    errors.push(`${path}.impactFx is required`);
+  } else if (!isResolvableImpactFx(action.impactFx)) {
+    errors.push(`${path}.impactFx "${action.impactFx}" cannot resolve to a displayable UI asset`);
+  }
+  if (!VALID_BOSS_MOVEMENTS.has(action?.movement)) {
+    errors.push(`${path}.movement must be none, lunge, advance, or retreat`);
+  }
+  if (!Array.isArray(action?.effects)) {
+    errors.push(`${path}.effects must be an array`);
+  } else {
+    for (const [index, effect] of action.effects.entries()) {
+      errors.push(...validateBossEffect(effect, `${path}.effects[${index}]`));
+    }
+  }
+  if (action?.damage !== undefined) {
+    const hasAscendingDamageRange = Array.isArray(action.damage)
+      && action.damage.length === 2
+      && Number.isFinite(action.damage[0])
+      && Number.isFinite(action.damage[1])
+      && action.damage[0] <= action.damage[1];
+    if (!hasAscendingDamageRange) {
+      errors.push(`${path}.damage must be an ascending [minimum, maximum] range`);
+    }
+  }
+  errors.push(...validateTelegraphDamageThreshold(
+    action?.telegraphDamageThreshold,
+    `${path}.telegraphDamageThreshold`,
+  ));
+  errors.push(...validateHitCountRule(
+    action?.hitCountRule,
+    action,
+    `${path}.hitCountRule`,
+  ));
+
+  return errors;
+}
+
+function basicIdentitySignature(action) {
+  const safeAction = action ?? {};
+  const effects = Array.isArray(safeAction.effects) ? safeAction.effects : [];
+
+  return JSON.stringify({
+    targetPolicy: safeAction.targetPolicy ?? 'frontmost',
+    targetCount: safeAction.targetCount ?? 1,
+    hitCount: safeAction.hitCount ?? 1,
+    statusEffects: effects
+      .filter(effect => effect?.type === 'targetStatus')
+      .map(effect => effect.id)
+      .sort(),
+    forcedMoves: effects
+      .filter(effect => effect?.type === 'forcedMove')
+      .map(effect => effect.distance),
+  });
+}
+
+export function validateBossPatternSchema(bosses = {}) {
+  const errors = [];
+
+  for (const [bossId, boss] of Object.entries(bosses)) {
+    const path = `[boss/${bossId}] bossPattern`;
+    const pattern = boss?.bossPattern;
+    const basicAttacks = pattern?.basicAttacks;
+
+    if (!Array.isArray(basicAttacks) || basicAttacks.length !== 2) {
+      errors.push(`${path}.basicAttacks must contain exactly two actions`);
+    } else {
+      for (const [index, action] of basicAttacks.entries()) {
+        errors.push(...validateBossAction(action, 'basic', `${path}.basicAttacks[${index}]`));
+      }
+      if (basicIdentitySignature(basicAttacks[0]) === basicIdentitySignature(basicAttacks[1])) {
+        errors.push(`${path}.basicAttacks must have distinct combat identities`);
+      }
+    }
+
+    if (Object.hasOwn(pattern ?? {}, 'normalSkills')) {
+      errors.push(`${path}.normalSkills is not supported`);
+    }
+
+    errors.push(...validateBossAction(pattern?.specialSkill, 'special', `${path}.specialSkill`));
+    errors.push(...validateBossAction(pattern?.ultimate, 'ultimate', `${path}.ultimate`));
+
+    if (pattern?.specialSkill?.chance !== 0.3) {
+      errors.push(`${path}.specialSkill.chance must be 0.3`);
+    }
+    if (pattern?.ultimate?.hpThreshold !== 0.3) {
+      errors.push(`${path}.ultimate.hpThreshold must be 0.3`);
+    }
+    if (pattern?.ultimate?.telegraphTurns !== 1) {
+      errors.push(`${path}.ultimate.telegraphTurns must be 1`);
+    }
+    if (pattern?.ultimate?.oncePerCombat !== true) {
+      errors.push(`${path}.ultimate.oncePerCombat must be true`);
+    }
+  }
+
+  return errors;
+}
 
 export function validateCompanionPatternData({
   loadouts = {},
@@ -1046,7 +1460,34 @@ async function validate() {
     `  Enemies: ${Object.keys(ENEMIES).length}, errors: ${enemyCombatReport.errors.length}`,
   );
 
-  // 14. 숨은 장소(hiddenLocations) — 구 참조·보상/루팅 아이템 참조 검증
+  // 15. Final boss roster and boss pattern contracts
+  console.log('\n=== BOSS PATTERN CHECK ===');
+  const finalBosses = Object.values(SECRET_ENEMIES).filter(enemy => enemy?.isBoss === true);
+  if (finalBosses.length !== 21) {
+    console.log(`ERROR [boss roster] expected 21 final bosses, found ${finalBosses.length}`);
+    errors++;
+  }
+  const bossPatternErrors = validateBossPatternSchema(SECRET_ENEMIES);
+  for (const error of bossPatternErrors) {
+    console.log(`ERROR ${error}`);
+    errors++;
+  }
+  console.log(
+    `  Bosses: ${finalBosses.length}, errors: ${bossPatternErrors.length + (finalBosses.length === 21 ? 0 : 1)}`,
+  );
+
+  // 16. 현재 전투 화면에 표시되는 sprite sheet의 모션·자산 계약
+  console.log('\n=== COMBAT MOTION MANIFEST CHECK ===');
+  const combatMotionErrors = validateCombatMotionManifest();
+  for (const error of combatMotionErrors) {
+    console.log(`ERROR ${error}`);
+    errors++;
+  }
+  console.log(
+    `  Displayed sheets: ${DISPLAYED_COMBAT_SHEET_KEYS.length}, errors: ${combatMotionErrors.length}`,
+  );
+
+  // 17. 숨은 장소(hiddenLocations) — 구 참조·보상/루팅 아이템 참조 검증
   console.log('\n=== HIDDEN LOCATIONS CHECK ===');
   let hlChecked = 0, hlBad = 0;
   try {

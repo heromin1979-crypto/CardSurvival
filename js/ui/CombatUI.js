@@ -84,6 +84,7 @@ const CombatUI = {
 
       let intentIcon = '';
       let intentLabel = '';
+      let intentCategory = '';
       let reservedIntentIcon = '';
       let reservedIntentLabel = '';
       let countdown = null;
@@ -103,10 +104,12 @@ const CombatUI = {
           if (!dead && e._nextIntent) {
             intentIcon = e._nextIntent.iconEmoji ?? '';
             intentLabel = e._nextIntent.label ?? '';
+            intentCategory = e._nextIntent.category ?? '';
             const reservedThreat = this._reservedThreatIntent(e);
             reservedIntentIcon = reservedThreat?.iconEmoji ?? '';
             reservedIntentLabel = reservedThreat?.label ?? '';
-            countdown = reservedThreat?.countdown ?? e._nextIntent.countdown ?? null;
+            countdown = this._intentCountdown(reservedThreat)
+              ?? this._intentCountdown(e._nextIntent);
           }
         }
       } else if (entry.type === 'companion') {
@@ -130,7 +133,7 @@ const CombatUI = {
       if (countdown != null && countdown <= 1) cls.push('charging');
 
       const intentHtml = intentIcon
-        ? `<span class="init-intent" data-intent-role="current-action" title="${this._escape(intentLabel)}">${intentIcon}</span>`
+        ? `<span class="init-intent" data-intent-role="current-action" data-intent-category="${this._escape(intentCategory)}" title="${this._escape(intentLabel)}">${intentIcon}</span>`
         : '';
       const reservedIntentHtml = reservedIntentIcon
         ? `<span class="init-intent reserved-threat" data-intent-role="reserved-threat" title="${this._escape(reservedIntentLabel)}">${reservedIntentIcon}</span>`
@@ -173,6 +176,15 @@ const CombatUI = {
       .replace(/"/g, '&quot;');
   },
 
+  _intentCountdown(intent) {
+    if (!intent) return null;
+    if (intent.state === 'telegraphing'
+        && Number.isFinite(intent.remainingTelegraphTurns)) {
+      return intent.remainingTelegraphTurns;
+    }
+    return intent.countdown ?? null;
+  },
+
   _renderIntentMeta(intent, classPrefix = 'intent') {
     const targetNames = Array.isArray(intent?.targetNames)
       ? intent.targetNames.filter(Boolean)
@@ -203,12 +215,14 @@ const CombatUI = {
 
   _renderCombatIntentBadge(intent, role) {
     if (!intent) return '';
-    const countdownHtml = intent.countdown != null
-      ? `<span class="intent-count">${this._escape(intent.countdown)}</span>`
+    const countdown = this._intentCountdown(intent);
+    const category = intent.category ?? '';
+    const countdownHtml = countdown != null
+      ? `<span class="intent-count">${this._escape(countdown)}</span>`
       : '';
     return `
-      <div class="combat-intent${intent.countdown != null && intent.countdown <= 1 ? ' imminent' : ''}"
-           data-intent-role="${role}" title="${this._escape(intent.label ?? '')}">
+      <div class="combat-intent${countdown != null && countdown <= 1 ? ' imminent' : ''}${category ? ` category-${this._escape(category)}` : ''}"
+           data-intent-role="${role}" data-intent-category="${this._escape(category)}" title="${this._escape(intent.label ?? '')}">
         <span class="intent-icon">${intent.iconEmoji ?? '🗡'}</span>${countdownHtml}
         ${this._renderIntentMeta(intent)}
       </div>`;
@@ -216,8 +230,10 @@ const CombatUI = {
 
   _renderVisualIntentBadge(intent, role) {
     if (!intent) return '';
-    const countdownHtml = intent.countdown != null
-      ? `<b class="cvi-cd">${this._escape(intent.countdown)}</b>`
+    const countdown = this._intentCountdown(intent);
+    const category = intent.category ?? '';
+    const countdownHtml = countdown != null
+      ? `<b class="cvi-cd">${this._escape(countdown)}</b>`
       : '';
     const targetIcon = intent.targetType === 'companion'
       ? (COMPANION_ICONS[intent.targetId] ?? '🤝')
@@ -225,10 +241,10 @@ const CombatUI = {
     const linkHtml = intent.action === 'advance'
       ? ''
       : `<span class="cvi-arrow">➤</span><span class="cvi-target">${targetIcon}</span>`;
-    const imminent = intent.countdown != null && intent.countdown <= 1;
+    const imminent = countdown != null && countdown <= 1;
     return `
-      <div class="cv-intent${imminent ? ' imminent' : ''}"
-           data-intent-role="${role}" title="${this._escape(intent.label ?? '')}">
+      <div class="cv-intent${imminent ? ' imminent' : ''}${category ? ` category-${this._escape(category)}` : ''}"
+           data-intent-role="${role}" data-intent-category="${this._escape(category)}" title="${this._escape(intent.label ?? '')}">
         <span class="cvi-icon">${intent.iconEmoji ?? '🗡'}</span>${countdownHtml}${linkHtml}
         ${this._renderIntentMeta(intent, 'cvi')}
       </div>`;

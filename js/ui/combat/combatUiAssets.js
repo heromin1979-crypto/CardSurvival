@@ -1,3 +1,5 @@
+import { COMBAT_MOTION_MANIFEST } from '../../data/combatMotionManifest.js';
+
 // CombatUI 공용 상수 — 스프라이트시트/아이콘/모션·연출 클래스 테이블.
 // CombatUI 본체와 CombatFxPlayer 믹스인이 공유한다.
 // Combat Overhaul Phase 1 — 턴 큐 HUD 아이콘/라벨 매핑
@@ -15,59 +17,75 @@ export const COMPANION_ICONS = {
 };
 
 // FX 오버레이 이모지 (cv-fx-* 클래스와 페어)
-export const spriteSheet = (src, cols = 6, rows = 4) => ({ src, cols, rows });
+function deriveCombatSpriteSheets(manifest) {
+  return Object.fromEntries(Object.entries(manifest).map(([sheetKey, sheet]) => {
+    const derivedSheet = {
+      src: sheet.src,
+      cols: sheet.cols,
+      rows: sheet.rows,
+      motions: { ...sheet.motions },
+    };
+    if (sheet.aliases && typeof sheet.aliases === 'object' && !Array.isArray(sheet.aliases)) {
+      derivedSheet.aliases = { ...sheet.aliases };
+    }
+    if (Array.isArray(sheet.frameDur)) {
+      derivedSheet.frameDur = sheet.frameDur.map(row => (Array.isArray(row) ? [...row] : row));
+    }
+    return [sheetKey, derivedSheet];
+  }));
+}
 
-export const COMBAT_SPRITE_SHEETS = {
-  doctor_f: spriteSheet('/assets/images/combat/spritesheets/doctor_f_sheet.png'),
-  soldier_companion: spriteSheet('/assets/images/combat/spritesheets/soldier_companion_sheet.png'),
-  nurse_companion: spriteSheet('/assets/images/combat/spritesheets/nurse_companion_sheet.png'),
-  zombie_patient_dormant: spriteSheet('/assets/images/combat/spritesheets/enemies/zombie_patient_dormant_sheet.png'),
-  zombie_common: spriteSheet('/assets/images/combat/spritesheets/enemies/zombie_common_sheet.png'),
-  zombie_runner: spriteSheet('/assets/images/combat/spritesheets/enemies/zombie_runner_sheet.png'),
-  zombie_brute: spriteSheet('/assets/images/combat/spritesheets/enemies/zombie_brute_sheet.png'),
-  zombie_horde: spriteSheet('/assets/images/combat/spritesheets/enemies/zombie_horde_sheet.png'),
-  rabid_dog: spriteSheet('/assets/images/combat/spritesheets/enemies/rabid_dog_sheet.png'),
-  zombie_acid: spriteSheet('/assets/images/combat/spritesheets/enemies/zombie_acid_sheet.png'),
-  zombie_bloater: spriteSheet('/assets/images/combat/spritesheets/enemies/zombie_bloater_sheet.png'),
-  zombie_screamer: spriteSheet('/assets/images/combat/spritesheets/enemies/zombie_screamer_sheet.png'),
-  zombie_charger: spriteSheet('/assets/images/combat/spritesheets/enemies/zombie_charger_sheet.png'),
-  raider: spriteSheet('/assets/images/combat/spritesheets/enemies/raider_sheet.png'),
-  raider_elite: spriteSheet('/assets/images/combat/spritesheets/enemies/raider_elite_sheet.png'),
-  boss_horde_mother: spriteSheet('/assets/images/combat/spritesheets/enemies/boss_horde_mother_sheet.png'),
-  boss_raider_warlord: spriteSheet('/assets/images/combat/spritesheets/enemies/boss_raider_warlord_sheet.png'),
-  boss_feral_dog_alpha: spriteSheet('/assets/images/combat/spritesheets/enemies/boss_feral_dog_alpha_sheet.png'),
-  boss_penthouse_survivor: spriteSheet('/assets/images/combat/spritesheets/enemies/boss_penthouse_survivor_sheet.png'),
-  boss_soldier_nemesis: spriteSheet('/assets/images/combat/spritesheets/enemies/boss_soldier_nemesis_sheet.png'),
-  boss_homeless_nemesis: spriteSheet('/assets/images/combat/spritesheets/enemies/boss_homeless_nemesis_sheet.png'),
-  food_warlord: spriteSheet('/assets/images/combat/spritesheets/enemies/food_warlord_sheet.png'),
-};
+export const COMBAT_SPRITE_SHEETS = deriveCombatSpriteSheets(COMBAT_MOTION_MANIFEST);
 
-// Per-sheet frame counts (cols) live in a manifest the sprite-anim-editor tool writes.
-// If absent, every sheet stays the legacy 6×4 — so this is a zero-regression enhancement.
-async function _loadSpriteManifest() {
-  // vitest(jsdom)에는 정적 서버가 없어 상대 경로 fetch가 실제 소켓 연결(ECONNREFUSED 노이즈)을
-  // 시도한다. 매니페스트는 선택적 리소스이므로 테스트에서는 6×4 기본값을 그대로 쓴다.
-  if (typeof process !== 'undefined' && process.env?.VITEST) return;
-  try {
-    const res = await fetch('/assets/images/combat/spritesheets/manifest.json', { cache: 'no-store' });
-    if (!res.ok) return;
-    const manifest = await res.json();
-    for (const key in COMBAT_SPRITE_SHEETS) {
-      const sheet = COMBAT_SPRITE_SHEETS[key];
-      const meta = manifest[sheet.src.split('/').pop()];
-      if (meta && meta.cols) {
-        sheet.cols = meta.cols | 0;
-        if (meta.rows) sheet.rows = meta.rows | 0;
-        if (Array.isArray(meta.frameDur) && meta.frameDur.length) {
-          sheet.frameDur = meta.frameDur;
-        }
+export function validateCombatSpriteManifest(manifest) {
+  const errors = [];
+  if (!manifest || typeof manifest !== 'object' || Array.isArray(manifest)) {
+    return ['[combat sprite] manifest must be an object'];
+  }
+
+  for (const [fileName, meta] of Object.entries(manifest)) {
+    if (!meta || typeof meta !== 'object' || Array.isArray(meta)) continue;
+    if (!meta.motions || typeof meta.motions !== 'object' || Array.isArray(meta.motions)) {
+      continue;
+    }
+    for (const [motionKey, motion] of Object.entries(meta.motions)) {
+      if (motion?.loop === true && motionKey !== 'idle' && meta.aliases?.idle !== motionKey) {
+        errors.push(
+          `[combat sprite/${fileName}/${motionKey}] loop:true is unsupported; action motions must return to idle after durationMs`,
+        );
       }
     }
-    _injectSpriteKeyframes();
-  } catch (e) { /* manifest optional → keep 6×4 defaults */ }
+  }
+  return errors;
+}
+
+export function applyCombatSpriteManifest(manifest) {
+  const errors = validateCombatSpriteManifest(manifest);
+  if (errors.length > 0) return { ok: false, errors };
+
+  for (const key in COMBAT_SPRITE_SHEETS) {
+    const sheet = COMBAT_SPRITE_SHEETS[key];
+    const meta = manifest[sheet.src.split('/').pop()];
+    if (!meta || typeof meta !== 'object') continue;
+
+    if (Number.isInteger(meta.cols) && meta.cols > 0) sheet.cols = meta.cols;
+    if (Number.isInteger(meta.rows) && meta.rows > 0) sheet.rows = meta.rows;
+    if (Array.isArray(meta.frameDur) && meta.frameDur.length) {
+      sheet.frameDur = meta.frameDur;
+    }
+    if (meta.motions && typeof meta.motions === 'object' && !Array.isArray(meta.motions)) {
+      sheet.motions = { ...meta.motions };
+    }
+    if (meta.aliases && typeof meta.aliases === 'object' && !Array.isArray(meta.aliases)) {
+      sheet.aliases = { ...meta.aliases };
+    }
+  }
+  _injectSpriteKeyframes();
+  return { ok: true, errors: [] };
 }
 
 function _injectSpriteKeyframes() {
+  if (typeof document === 'undefined') return;
   let css = '';
   for (const key in COMBAT_SPRITE_SHEETS) {
     const sheet = COMBAT_SPRITE_SHEETS[key];
@@ -105,18 +123,40 @@ function _injectSpriteKeyframes() {
   style.textContent = css;
 }
 
-_loadSpriteManifest();
+_injectSpriteKeyframes();
 
 // 직업×성별 → 플레이어 스프라이트시트 키. 신규 시트 제작 시 여기만 추가하면 된다.
 export const PLAYER_SPRITE_KEYS = {
   'doctor:F': 'doctor_f',
+  'soldier:M': 'soldier_m',
+  'firefighter:M': 'firefighter_m',
+  'homeless:M': 'homeless_m',
+  'chef:M': 'chef_m',
+  'engineer:M': 'engineer_m',
 };
 
+// 전용 전투 loadout을 가진 20종만 등록한다. 그 외 NPC는 CombatUI의 icon fallback을 사용한다.
 export const COMPANION_SPRITE_KEYS = {
+  npc_old_survivor: 'old_survivor_companion',
   npc_nurse: 'nurse_companion',
-  npc_soldier: 'soldier_companion',
-  npc_wounded_soldier: 'soldier_companion',
   npc_soldier_deserter: 'soldier_companion',
+  npc_child: 'child_companion',
+  npc_mechanic: 'mechanic_companion',
+  npc_student: 'student_companion',
+  npc_dog: 'dog_companion',
+  npc_former_colleague: 'former_colleague_companion',
+  npc_minjun: 'minjun_companion',
+  npc_sohee: 'sohee_companion',
+  npc_jisu: 'jisu_companion',
+  npc_yeongcheol: 'yeongcheol_companion',
+  npc_daehan: 'daehan_companion',
+  npc_tower_security: 'tower_security_companion',
+  npc_tower_merchant: 'tower_merchant_companion',
+  npc_tower_cook: 'tower_cook_companion',
+  npc_tower_engineer: 'tower_engineer_companion',
+  npc_tower_doctor: 'tower_doctor_companion',
+  npc_sous_chef: 'sous_chef_companion',
+  npc_kitchen_helper: 'kitchen_helper_companion',
 };
 
 export const ENEMY_SPRITE_KEYS = {
@@ -132,14 +172,83 @@ export const ENEMY_SPRITE_KEYS = {
   zombie_charger: 'zombie_charger',
   raider: 'raider',
   raider_elite: 'raider_elite',
+  boss_patient_zero: 'boss_patient_zero',
+  boss_radiation_colossus: 'boss_radiation_colossus',
+  boss_acid_queen: 'boss_acid_queen',
   boss_horde_mother: 'boss_horde_mother',
+  boss_frozen_giant: 'boss_frozen_giant',
   boss_raider_warlord: 'boss_raider_warlord',
+  boss_phantom_sniper: 'boss_phantom_sniper',
+  boss_cult_leader: 'boss_cult_leader',
+  boss_mutant_alpha_tiger: 'boss_mutant_alpha_tiger',
+  boss_sewer_king: 'boss_sewer_king',
+  boss_swarm_queen_bee: 'boss_swarm_queen_bee',
   boss_feral_dog_alpha: 'boss_feral_dog_alpha',
   boss_penthouse_survivor: 'boss_penthouse_survivor',
+  boss_escaped_experiment: 'boss_escaped_experiment',
+  boss_blizzard_wraith: 'boss_blizzard_wraith',
   boss_soldier_nemesis: 'boss_soldier_nemesis',
+  boss_firefighter_nemesis: 'boss_firefighter_nemesis',
   boss_homeless_nemesis: 'boss_homeless_nemesis',
+  boss_chef_nemesis: 'boss_chef_nemesis',
+  boss_doctor_nemesis: 'boss_doctor_nemesis',
   food_warlord: 'food_warlord',
 };
+
+// 실제 CSS/emoji 자산으로 표시 가능한 impact FX 키와 의미 보존 alias.
+// 데이터 validator와 renderer가 이 단일 계약을 공유한다.
+export const IMPACT_FX_KEYS = new Set([
+  'acid',
+  'blast',
+  'blunt',
+  'claw',
+  'fire',
+  'punch',
+  'rupture',
+  'scream',
+  'shock',
+  'shot',
+  'skill',
+  'slam',
+  'slash',
+  'spark',
+]);
+
+export const IMPACT_FX_ALIASES = Object.freeze({
+  buff: 'skill',
+  debuff: 'skill',
+  frost: 'skill',
+  heal: 'skill',
+  radiation: 'rupture',
+  shockwave: 'shock',
+  summon: 'scream',
+  toxic: 'acid',
+});
+
+export function isResolvableImpactFx(value) {
+  if (typeof value !== 'string' || value.trim().length === 0) return false;
+  const key = value.trim();
+  const resolved = IMPACT_FX_ALIASES[key] ?? key;
+  return IMPACT_FX_KEYS.has(resolved);
+}
+
+export function normalizeImpactFx(value, fallback = 'skill') {
+  const key = typeof value === 'string' ? value.trim() : '';
+  const resolved = IMPACT_FX_ALIASES[key] ?? key;
+  if (IMPACT_FX_KEYS.has(resolved)) return resolved;
+
+  const fallbackKey = typeof fallback === 'string' ? fallback.trim() : 'skill';
+  const resolvedFallback = IMPACT_FX_ALIASES[fallbackKey] ?? fallbackKey;
+  return IMPACT_FX_KEYS.has(resolvedFallback) ? resolvedFallback : 'skill';
+}
+
+const NON_IMPACT_OVERLAY_KEYS = new Set(['death-burst', 'explode', 'muzzle']);
+
+export function normalizeFxOverlay(value) {
+  const key = typeof value === 'string' ? value.trim() : '';
+  if (key.startsWith('status-') || NON_IMPACT_OVERLAY_KEYS.has(key)) return key;
+  return normalizeImpactFx(key);
+}
 
 export const FX_EMOJI = {
   blunt: '💥', fire: '🔥', spark: '⚡', blast: '💥', punch: '👊',
@@ -155,14 +264,16 @@ export const FX_DURATIONS = {
   status: 420,
   guard: 320,
   useItem: 420,
+  playerSkill: 560,
   companionHeal: 480,
   companionBuff: 520,
   companionSkill: 560,
+  enemyMotion: 900,
   move: 360,
   rankSwap: 360,
   dodge: 320,
   advance: 480,
-  explode: 920,
+  explode: 1300,
   summon: 860,
   playerDeath: 1100,
   downed: 620,

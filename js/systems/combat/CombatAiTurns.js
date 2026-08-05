@@ -12,10 +12,21 @@ import BodySystem     from '../BodySystem.js';
 import { NPC_ITEMS }  from '../../data/npcs.js';
 import BALANCE        from '../../data/gameBalance.js';
 import GameData       from '../../data/GameData.js';
-import { applyDamage, consumeToken } from './CombatStatusSystem.js';
+import {
+  applyDamage,
+  consumeToken,
+  enemyStatusModifiers,
+  healCombatant,
+} from './CombatStatusSystem.js';
 import { modifyIncomingDamage, modifyOutgoingDamage } from './CombatResolution.js';
 import { buildEnemyProfile } from './EnemyCombatAdapter.js';
 import { executeEnemyAction } from './EnemyActionExecutor.js';
+import {
+  advanceBossAction,
+  commitNextBossAction,
+  completeBossAction,
+  normalizeBossActionState,
+} from './BossPatternController.js';
 import {
   advanceEnemyAction,
   commitEnemyAction,
@@ -28,8 +39,95 @@ import {
   COMPANION_COMBAT_LOADOUTS,
   getCombatSkill,
 } from '../../data/combatSkills.js';
+import {
+  combatantActionIndex,
+  createActionFx,
+  resolveEnemyActionPresentationTarget,
+} from './CombatMotionFx.js';
+
+function enemyActionCombatant(combat, enemy, enemyIndex) {
+  return combat?.combatants?.[`enemy:${enemyIndex}`] ?? {
+    id: `enemy:${enemyIndex}`,
+    side: 'enemy',
+    sourceType: 'enemy',
+    sourceId: enemy?.id ?? enemy?.definitionId ?? null,
+    enemyIndex,
+  };
+}
+
+function allyActionCombatant(combat, targetId) {
+  return combat?.combatants?.[targetId] ?? {
+    id: targetId,
+    side: 'ally',
+    sourceType: targetId === 'player' ? 'player' : 'companion',
+    sourceId: targetId,
+  };
+}
 
 export const CombatAiTurns = {
+  _isBossPatternEnemy(enemy) {
+    return enemy?.isBoss === true && !!enemy?.bossPattern;
+  },
+
+  _ensureBossActionState(enemy) {
+    if (!this._isBossPatternEnemy(enemy)) return null;
+    enemy._bossActionState = normalizeBossActionState(
+      enemy._bossActionState,
+      { enemy },
+    );
+    return enemy._bossActionState;
+  },
+
+  _bossActionDefinition(enemy, actionId, category = null) {
+    const pattern = enemy?.bossPattern;
+    if (!pattern || typeof actionId !== 'string') return null;
+    if (!category || category === 'basic') {
+      const basic = (pattern.basicAttacks ?? []).find(definition =>
+        (definition?.actionId ?? definition?.id) === actionId);
+      if (basic) return basic;
+    }
+    if (!category || category === 'special') {
+      const special = pattern.specialSkill;
+      if (special && (special.actionId ?? special.id) === actionId) return special;
+    }
+    if (!category || category === 'ultimate') {
+      const ultimate = pattern.ultimate;
+      if (ultimate && (ultimate.actionId ?? ultimate.id) === actionId) return ultimate;
+    }
+    return null;
+  },
+
+  _bossActionCategory(enemy, actionId) {
+    const pattern = enemy?.bossPattern;
+    if ((pattern?.basicAttacks ?? []).some(definition =>
+      (definition?.actionId ?? definition?.id) === actionId)) {
+      return 'basic';
+    }
+    if ((pattern?.specialSkill?.actionId ?? pattern?.specialSkill?.id) === actionId) {
+      return 'special';
+    }
+    if ((pattern?.ultimate?.actionId ?? pattern?.ultimate?.id) === actionId) {
+      return 'ultimate';
+    }
+    return null;
+  },
+
+  _committedActionDefinition(enemy, action) {
+    if (!action) return null;
+    if (this._isBossPatternEnemy(enemy)) {
+      return this._bossActionDefinition(enemy, action.actionId, action.category);
+    }
+    if (action.category === 'special') {
+      return (enemy?.specialSkills ?? []).find(skill =>
+        (skill?.actionId ?? skill?.id) === action.actionId) ?? null;
+    }
+    if (action.category === 'timed_threat') return enemy?.timedThreat ?? null;
+    return enemy?.patternProfile?.defaultAction
+      ?? enemy?.defaultAction
+      ?? enemy?.attack
+      ?? null;
+  },
+
   _companionTurnKey(npcId) {
     const combat = GameState.combat;
     return `${combat?.roundNumber ?? 1}:${combat?.activeIdx ?? 0}:${npcId}`;
@@ -248,6 +346,41 @@ export const CombatAiTurns = {
     return enemy._enemyActionState.committedAction;
   },
 
+  _commitBossAction(enemy, combat, gs) {
+    const currentState = this._ensureBossActionState(enemy);
+    if (!currentState) return null;
+
+    const targets = this._getEligibleTargets(combat, gs);
+    const taunted = this._tauntedTargetOf(targets, combat);
+    const hadCommittedAction = !!currentState.committedAction;
+    enemy._bossActionState = commitNextBossAction({
+      state: currentState,
+      enemy,
+      candidates: targets,
+      context: {
+        activeSummons: (combat?.enemies ?? []).filter(candidate =>
+          candidate !== enemy && (candidate?.currentHp ?? 0) > 0).length,
+      },
+      cooldowns: enemy._skillCooldowns,
+      random: Math.random,
+    });
+
+    const action = enemy._bossActionState.committedAction;
+    if (!hadCommittedAction && action && taunted) {
+      const definition = this._bossActionDefinition(enemy, action.actionId, action.category);
+      if ((definition?.targetPolicy ?? 'ally') !== 'all') {
+        enemy._bossActionState = {
+          ...enemy._bossActionState,
+          committedAction: {
+            ...action,
+            targetIds: [taunted.id],
+          },
+        };
+      }
+    }
+    return enemy._bossActionState.committedAction;
+  },
+
   _commitChargingAction(enemy, combat, gs) {
     const committedAction = enemy._chargingActionState?.committedAction;
     if (committedAction?.category === 'basic') return committedAction;
@@ -286,15 +419,16 @@ export const CombatAiTurns = {
       : primaryTargetId
         ? 'companion'
         : null;
-    const definition = action.category === 'special'
-      ? (enemy.specialSkills ?? []).find(skill =>
-          (skill.actionId ?? skill.id) === action.actionId)
-      : enemy.patternProfile?.defaultAction ?? enemy.defaultAction ?? enemy.attack;
+    const definition = this._committedActionDefinition(enemy, action);
     const actionName = definition?.name ?? action.actionId;
-    const compatibilityTelegraph = action.category === 'special' && enemy._telegraph;
+    const compatibilityTelegraph = !this._isBossPatternEnemy(enemy)
+      && action.category === 'special'
+      && enemy._telegraph;
     const isTelegraphing = action.state === 'telegraphing' || compatibilityTelegraph;
     const countdown = isTelegraphing
-      ? (enemy._telegraph?.remaining ?? action.remainingTelegraphTurns)
+      ? (compatibilityTelegraph
+          ? enemy._telegraph?.remaining ?? action.remainingTelegraphTurns
+          : action.remainingTelegraphTurns)
       : null;
     const targetLabel = targetNames.join(', ');
     const detailLabels = [];
@@ -307,9 +441,14 @@ export const CombatAiTurns = {
     }
     detailLabels.push(I18n.t(isTelegraphing ? 'combat.intent.charging' : 'combat.intent.ready'));
 
-    const baseLabel = action.category === 'special'
-      ? `${targetLabel}에 ${actionName} 사용`
-      : `${targetLabel} 공격`;
+    const baseLabel = action.category === 'ultimate'
+      ? I18n.t('combat.intent.ultimate', {
+          target: targetLabel,
+          action: actionName,
+        })
+      : action.category === 'special'
+        ? `${targetLabel}에 ${actionName} 사용`
+        : `${targetLabel} 공격`;
     const wavering = enemy.type === 'human'
       && enemy.currentMorale != null
       && (enemy.currentHp / (enemy.maxHp || 1)) <= 0.5;
@@ -323,13 +462,25 @@ export const CombatAiTurns = {
       remainingTelegraphTurns: action.remainingTelegraphTurns,
       hitCount: action.hitCount,
       motionKey: action.motionKey,
-      action: compatibilityTelegraph ? 'telegraph' : action.category === 'special' ? 'skill' : 'attack',
+      action: compatibilityTelegraph
+        ? 'telegraph'
+        : action.category === 'ultimate'
+          ? 'ultimate'
+          : action.category === 'special'
+            ? 'skill'
+            : 'attack',
       targetType,
       targetId: targetType === 'companion' ? primaryTargetId : null,
       targetNames,
-      skillId: action.category === 'special' ? action.actionId : null,
+      skillId: ['special', 'ultimate'].includes(action.category) ? action.actionId : null,
       countdown,
-      iconEmoji: isTelegraphing ? '⚠️' : action.category === 'special' ? '💢' : '🗡',
+      iconEmoji: action.category === 'ultimate'
+        ? '☠️'
+        : isTelegraphing
+          ? '⚠️'
+          : action.category === 'special'
+            ? '💢'
+            : '🗡',
       label: `${baseLabel} · ${detailLabels.join(' · ')}${wavering ? ' · 동요' : ''}`,
       pattern: enemy.aiPattern ?? 'normal',
       viaTaunt: !!taunted && targetIds.includes(taunted.id),
@@ -357,6 +508,12 @@ export const CombatAiTurns = {
         label: `${I18n.t('combat.intent.wake')} — ${enemy._dormantRemaining}`,
         pattern,
       };
+    }
+
+    if (this._isBossPatternEnemy(enemy)) {
+      const action = this._ensureBossActionState(enemy)?.committedAction
+        ?? this._commitBossAction(enemy, combat, gs);
+      return this._intentFromCommittedAction(enemy, action, combat, gs);
     }
 
     // 기존 저장 데이터의 예고 상태는 committed action으로 이행되기 전까지만 호환한다.
@@ -469,6 +626,7 @@ export const CombatAiTurns = {
     const gs = GameState;
     const enemy = gs.combat.enemies?.[enemyIdx];
     if (!enemy || enemy.currentHp <= 0) return;
+    const isBossPattern = this._isBossPatternEnemy(enemy);
 
     // 잠복 상태: 깨어나기 전에는 행동하지 않는다 — 이 사이 처치하면 기습 무효
     if ((enemy._dormantRemaining ?? 0) > 0) {
@@ -482,6 +640,10 @@ export const CombatAiTurns = {
         && typeof enemy.dormant?.firstActionId === 'string'
       ) {
         enemy._firstActionPendingId = enemy.dormant.firstActionId;
+      }
+      if (enemy._dormantRemaining === 0 && enemy._wakeMotionPlayed !== true) {
+        enemy._wakeMotionPlayed = true;
+        this._fx({ kind: 'enemyMotion', enemyIdx, motionKey: 'wake' });
       }
       enemy._nextIntent = this._decideNextIntent(enemy, gs.combat, gs) ?? null;
       return;
@@ -504,7 +666,12 @@ export const CombatAiTurns = {
       const enemyName = I18n.enemyName(enemy.id, enemy.name);
       gs.combat.log.push(`${enemyName}은(는) ${stun?.name ?? I18n.t('combatSys.stun')} 상태라 행동하지 못했다.`);
       this._fx({ kind: 'status', target: 'enemy', enemyIdx, statusId: 'stun' });
-      if (enemy._enemyActionState?.committedAction) {
+      if (isBossPattern && this._ensureBossActionState(enemy)?.committedAction) {
+        enemy._bossActionState = advanceBossAction({
+          state: enemy._bossActionState,
+          stunned: true,
+        });
+      } else if (enemy._enemyActionState?.committedAction) {
         enemy._enemyActionState = advanceEnemyAction({
           state: enemy._enemyActionState,
           stunned: true,
@@ -526,7 +693,9 @@ export const CombatAiTurns = {
     }
 
     // 후열 근접 적: 공격 대신 전열로 전진 (1턴 소모)
-    if (this.rowOf(enemy) === 'back' && (enemy.attackType ?? 'melee') === 'melee') {
+    if (!isBossPattern
+        && this.rowOf(enemy) === 'back'
+        && (enemy.attackType ?? 'melee') === 'melee') {
       enemy.row = 'front';
       gs.combat.log.push(I18n.t('combatSys.enemyAdvance', { enemy: I18n.enemyName(enemy.id, enemy.name) }));
       this._fx({ kind: 'advance', enemyIdx });
@@ -535,8 +704,9 @@ export const CombatAiTurns = {
     }
 
     // 타이밍 압박: 충전 중/발동 처리
-    if ((enemy._chargeRemaining ?? null) !== null) {
+    if (!isBossPattern && (enemy._chargeRemaining ?? null) !== null) {
       if (enemy._chargeRemaining > 0) {
+        this._fx({ kind: 'enemyMotion', enemyIdx, motionKey: 'charge' });
         if (enemy.timedThreat?.chargingAttacks) {
           let action = enemy._chargingActionState?.committedAction
             ?? this._commitChargingAction(enemy, gs.combat, gs);
@@ -586,8 +756,10 @@ export const CombatAiTurns = {
       return;
     }
 
-    let action = enemy._enemyActionState?.committedAction;
-    if (!action && enemy._nextIntent) {
+    let action = isBossPattern
+      ? this._ensureBossActionState(enemy)?.committedAction
+      : enemy._enemyActionState?.committedAction;
+    if (!isBossPattern && !action && enemy._nextIntent) {
       const legacySkillId = enemy._telegraph?.skillId ?? enemy._nextIntent.skillId;
       const legacySkill = (enemy.specialSkills ?? []).find(candidate =>
         (candidate.actionId ?? candidate.id) === legacySkillId);
@@ -618,13 +790,25 @@ export const CombatAiTurns = {
     }
     if (!action) {
       this._decideNextIntent(enemy, gs.combat, gs);
-      action = enemy._enemyActionState?.committedAction;
+      action = isBossPattern
+        ? enemy._bossActionState?.committedAction
+        : enemy._enemyActionState?.committedAction;
     }
     if (!action) return;
 
+    if (isBossPattern
+        && action.category === 'ultimate'
+        && enemy._bossActionState?.ultimatePending === true
+        && enemy._bossActionState?.ultimateUsed !== true) {
+      enemy._bossActionState = {
+        ...enemy._bossActionState,
+        ultimatePending: false,
+        ultimateUsed: true,
+      };
+    }
+
     if (action.state === 'telegraphing') {
-      const skill = (enemy.specialSkills ?? []).find(candidate =>
-        (candidate.actionId ?? candidate.id) === action.actionId);
+      const skill = this._committedActionDefinition(enemy, action);
       enemy._telegraph = {
         skillId: action.actionId,
         remaining: action.remainingTelegraphTurns,
@@ -643,10 +827,19 @@ export const CombatAiTurns = {
         target: 'enemy',
         enemyIdx,
         statusId: 'telegraph',
+        motionKey: isBossPattern
+          ? 'charge'
+          : action.actionId === 'aimed_shot' ? 'aim' : 'telegraph',
       });
-      enemy._enemyActionState = advanceEnemyAction({
-        state: enemy._enemyActionState,
-      });
+      if (isBossPattern) {
+        enemy._bossActionState = advanceBossAction({
+          state: enemy._bossActionState,
+        });
+      } else {
+        enemy._enemyActionState = advanceEnemyAction({
+          state: enemy._enemyActionState,
+        });
+      }
       enemy._nextIntent = this._decideNextIntent(enemy, gs.combat, gs) ?? null;
       return;
     }
@@ -655,10 +848,16 @@ export const CombatAiTurns = {
       action,
       candidates: this._getEligibleTargets(gs.combat, gs),
     });
-    enemy._enemyActionState = { committedAction: action };
-    const skill = action.category === 'special'
-      ? (enemy.specialSkills ?? []).find(candidate =>
-          (candidate.actionId ?? candidate.id) === action.actionId)
+    if (isBossPattern) {
+      enemy._bossActionState = {
+        ...enemy._bossActionState,
+        committedAction: action,
+      };
+    } else {
+      enemy._enemyActionState = { committedAction: action };
+    }
+    const skill = ['special', 'ultimate'].includes(action.category)
+      ? this._committedActionDefinition(enemy, action)
       : null;
     const telegraph = skill?.telegraph;
     const cancelledByHit = telegraph?.cancelOnHit === true
@@ -690,24 +889,47 @@ export const CombatAiTurns = {
         enemy: I18n.enemyName(enemy.id, enemy.name),
         skill: skill?.name ?? action.actionId,
       }));
-      this._fx({ kind: 'enemyAttack', enemyIdx, miss: true });
+      const targetId = movedTarget ?? action.targetIds?.[0] ?? 'player';
+      const target = allyActionCombatant(gs.combat, targetId);
+      this._fx(createActionFx({
+        actor: enemyActionCombatant(gs.combat, enemy, enemyIdx),
+        actorIndex: enemyIdx,
+        target,
+        targetIndex: combatantActionIndex(target, gs.companions),
+        action,
+        motionKey: action.motionKey,
+        impactFx: skill?.impactFx ?? this._monsterImpactFx(enemy),
+        miss: true,
+        category: action.category,
+        movement: skill?.movement,
+        camera: skill?.camera,
+      }));
     } else if (!cancelledByHit) {
       this._executeEnemyCommittedAction(enemy, action);
     }
 
     if (enemy._skillCooldowns) {
-      for (const candidate of (enemy.specialSkills ?? [])) {
+      const specialCandidates = isBossPattern
+        ? [enemy.bossPattern?.specialSkill].filter(Boolean)
+        : (enemy.specialSkills ?? []);
+      for (const candidate of specialCandidates) {
         if ((enemy._skillCooldowns[candidate.id] ?? 0) > 0) {
           enemy._skillCooldowns[candidate.id] -= 1;
         }
       }
     }
-    if (skill) {
+    if (skill && action.category === 'special') {
       enemy._skillCooldowns = enemy._skillCooldowns ?? {};
       enemy._skillCooldowns[skill.id] = skill.cooldown ?? 0;
     }
     enemy._telegraph = null;
-    enemy._enemyActionState = createEnemyActionState();
+    if (isBossPattern) {
+      enemy._bossActionState = completeBossAction({
+        state: enemy._bossActionState,
+      });
+    } else {
+      enemy._enemyActionState = createEnemyActionState();
+    }
     if (
       enemy.dormant?.consumeFirstAction === true
       && enemy._firstActionPendingId === action.actionId
@@ -727,58 +949,92 @@ export const CombatAiTurns = {
     const gs = GameState;
     const combat = gs.combat;
     const enemyIdx = combat?.enemies?.indexOf(enemy) ?? -1;
-    const impactFx = this._monsterImpactFx(enemy);
-    const definition = action?.category === 'special'
-      ? (enemy?.specialSkills ?? []).find(skill =>
-          (skill?.actionId ?? skill?.id) === action.actionId)
-      : action?.category === 'timed_threat'
-        ? enemy?.timedThreat
-      : null;
+    const definition = this._committedActionDefinition(enemy, action);
     const blockedTargets = new Set();
 
-    return executeEnemyAction({
+    const defenseReductionFor = (targetId) => {
+      const combatant = combat?.combatants?.[targetId];
+      if (targetId === 'player') {
+        const armor = StatSystem.getArmorEffects?.() ?? {};
+        const defSkillBonus = SkillSystem.getBonus('defense', 'damageReduction');
+        return Math.min(
+          BALANCE.armor.damageReductionCap,
+          Math.max(0, (armor.damageReduction ?? 0) + (defSkillBonus ?? 0)),
+        );
+      }
+      const companionState = gs.npcs?.states?.[targetId];
+      const reduction = combatant?.damageReduction
+        ?? companionState?.damageReduction
+        ?? companionState?.combatDamageReduction
+        ?? 0;
+      return Math.min(
+        BALANCE.armor.damageReductionCap,
+        Math.max(0, Number.isFinite(reduction) ? reduction : 0),
+      );
+    };
+
+    const damageTarget = (targetId, amount, metadata = {}) => {
+      const npcId = targetId === 'player' ? null : targetId;
+      const target = combat?.combatants?.[targetId] ?? null;
+      let damage = modifyOutgoingDamage(amount, this._rankCombatantForEnemy(enemy));
+      const outgoingIncrease = enemyStatusModifiers(enemy).outgoingDamageIncrease;
+      if (outgoingIncrease > 0) {
+        damage = Math.floor(damage * (1 + outgoingIncrease));
+      }
+
+      const threshold = Number.isFinite(metadata.executeThreshold)
+        ? Math.max(0, Math.min(1, metadata.executeThreshold))
+        : null;
+      const hpRatio = target && Number.isFinite(target.maxHp) && target.maxHp > 0
+        ? (target.hp ?? 0) / target.maxHp
+        : null;
+      if (threshold !== null
+          && hpRatio !== null
+          && hpRatio <= threshold
+          && Number.isFinite(metadata.executeBonusMultiplier)) {
+        damage = Math.floor(damage * Math.max(0, metadata.executeBonusMultiplier));
+      }
+
+      const armorPiercing = Number.isFinite(metadata.armorPiercing)
+        ? Math.max(0, Math.min(1, metadata.armorPiercing))
+        : 0;
+      const effectiveReduction = defenseReductionFor(targetId) * (1 - armorPiercing);
+      if (effectiveReduction > 0 && damage > 0) {
+        damage = Math.max(1, Math.floor(damage * (1 - effectiveReduction)));
+      }
+      if (!npcId && combat?.playerGuard?.active) {
+        damage = Math.max(1, Math.floor(damage * (1 - combat.playerGuard.damageReduce)));
+      }
+
+      const result = this._dealDamageToAlly({
+        npcId,
+        rawDamage: damage,
+        canBeDodged: !(action.category === 'timed_threat'
+          && action.actionId === 'self_destruct'),
+      });
+      if (result.blocked) blockedTargets.add(targetId);
+      if (result.dodged) return result;
+
+      if (npcId) {
+        combat.lastHit = { target: 'companion', damage: result.damage, npcId, isCrit: false };
+        EventBus.emit('enemyAttackCompanion', { enemyId: enemy.id, npcId, damage: result.damage });
+      } else {
+        combat.lastHit = { target: 'player', damage: result.damage, isCrit: false };
+        EventBus.emit('playerHit', { damage: result.damage });
+        DiseaseSystem.checkCombatInjury(result.damage, gs);
+        BodySystem.onCombatHit(result.damage, enemy);
+        if (action.category === 'basic') SkillSystem.gainXp('defense', 1);
+      }
+      return result;
+    };
+
+    const queuedFxBefore = Array.isArray(combat?.fxQueue) ? combat.fxQueue.length : 0;
+    const result = executeEnemyAction({
       enemy,
       action,
       random: Math.random,
       services: {
-        damageTarget: (targetId, amount) => {
-          const npcId = targetId === 'player' ? null : targetId;
-          let damage = modifyOutgoingDamage(amount, this._rankCombatantForEnemy(enemy));
-
-          if (!npcId) {
-            const armor = StatSystem.getArmorEffects();
-            const defSkillBonus = SkillSystem.getBonus('defense', 'damageReduction');
-            const totalReduct = Math.min(
-              BALANCE.armor.damageReductionCap,
-              armor.damageReduction + defSkillBonus,
-            );
-            if (totalReduct > 0) damage = Math.max(1, Math.floor(damage * (1 - totalReduct)));
-            if (combat?.playerGuard?.active) {
-              damage = Math.max(1, Math.floor(damage * (1 - combat.playerGuard.damageReduce)));
-            }
-          }
-
-          const result = this._dealDamageToAlly({
-            npcId,
-            rawDamage: damage,
-            canBeDodged: !(action.category === 'timed_threat'
-              && action.actionId === 'self_destruct'),
-          });
-          if (result.blocked) blockedTargets.add(targetId);
-          if (result.dodged) return result;
-
-          if (npcId) {
-            combat.lastHit = { target: 'companion', damage: result.damage, npcId, isCrit: false };
-            EventBus.emit('enemyAttackCompanion', { enemyId: enemy.id, npcId, damage: result.damage });
-          } else {
-            combat.lastHit = { target: 'player', damage: result.damage, isCrit: false };
-            EventBus.emit('playerHit', { damage: result.damage });
-            DiseaseSystem.checkCombatInjury(result.damage, gs);
-            BodySystem.onCombatHit(result.damage, enemy);
-            if (action.category === 'basic') SkillSystem.gainXp('defense', 1);
-          }
-          return result;
-        },
+        damageTarget,
         addStatus: (targetId, status) => {
           if (status?.id === 'stun'
               && definition?.telegraph?.blockNegatesStun === true
@@ -788,8 +1044,35 @@ export const CombatAiTurns = {
           return this._addAllyStatus(targetId, status);
         },
         moveTarget: (targetId, distance) => this._forceMoveAlly(targetId, distance, enemy),
+        healSelf: (amount) => {
+          const rankedEnemy = this._rankCombatantForEnemy(enemy);
+          if (rankedEnemy) {
+            const result = healCombatant(rankedEnemy, amount);
+            this._syncRankedTargetToLegacy(rankedEnemy);
+            return result.healed;
+          }
+          const before = enemy.currentHp ?? 0;
+          enemy.currentHp = Math.min(enemy.maxHp ?? before, before + Math.max(0, amount));
+          return enemy.currentHp - before;
+        },
+        addSelfStatus: (status) => {
+          if (!status?.id) return false;
+          this._applyEnemyStatusInflict(enemy, {
+            ...status,
+            sourceEnemyId: status.sourceEnemyId ?? enemy.id,
+            remainingRounds: status.remainingRounds ?? status.duration ?? 1,
+            _skipNextRoundTick: combat?._legacyAiTurnProcessing !== true
+              && !this._hasLivingAllyActionBeforeWrap(combat),
+          }, enemyIdx);
+          const rankedEnemy = this._rankCombatantForEnemy(enemy);
+          if (rankedEnemy) rankedEnemy.statusEffects = enemy._statusEffects ?? [];
+          return true;
+        },
         summonEnemy: (enemyId, count, row) => {
-          const spawned = this._summonEnemyById(enemyId, count, row, enemy);
+          const spawned = this._summonEnemyById(enemyId, count, row, enemy, {
+            action,
+            definition,
+          });
           if (spawned > 0) {
             combat.log.push(I18n.t('combatSys.screamerSummon', {
               enemy: I18n.enemyName(enemy.id, enemy.name),
@@ -798,23 +1081,109 @@ export const CombatAiTurns = {
           }
           return spawned;
         },
+        consumeSummons: enemyId => this._consumeSummonedEnemies(enemy, enemyId),
+        countLivingEnemies: enemyId => (
+          (combat?.enemies ?? []).filter(candidate => (
+            candidate?.id === enemyId
+            && candidate?._consumed !== true
+            && (candidate?.currentHp ?? 0) > 0
+          )).length
+        ),
+        damageParty: (amount, metadata = {}) => (
+          this._getEligibleTargets(combat, gs).map(target => ({
+            targetId: target.id,
+            result: damageTarget(target.id, amount, metadata),
+          }))
+        ),
+        setBattlefieldStatus: (status) => {
+          return Boolean(this._addBattlefieldStatus({
+            ...status,
+            sourceEnemyId: status.sourceEnemyId ?? enemy.id,
+            ...(Number.isFinite(status.remainingPlayerTurns)
+              ? { remainingPlayerTurns: status.remainingPlayerTurns }
+              : { remainingRounds: status.remainingRounds ?? status.duration ?? 1 }),
+          }));
+        },
+        modifyResource: (targetId, resource, value) => {
+          if (!Number.isFinite(value) || typeof resource !== 'string') return false;
+          if (targetId === 'player' && gs.stats?.[resource]) {
+            const stat = gs.stats[resource];
+            stat.current = Math.max(0, Math.min(stat.max ?? Infinity, (stat.current ?? 0) + value));
+            return true;
+          }
+          const combatant = combat?.combatants?.[targetId];
+          if (!combatant) return false;
+          combatant.resources = combatant.resources ?? {};
+          combatant.resources[resource] = (combatant.resources[resource] ?? 0) + value;
+          return true;
+        },
+        lockWeapon: (targetId, tag, duration) => this._addAllyStatus(targetId, {
+          id: `weapon_lock_${tag}`,
+          name: tag,
+          sourceEnemyId: enemy.id,
+          remainingPlayerTurns: duration ?? 1,
+          effect: { weaponLock: tag },
+        }),
         addNoise: amount => NoiseSystem.addNoise(amount),
         emitFx: payload => {
-          const companionTarget = payload.targetId !== 'player';
-          this._fx({
-            kind: companionTarget ? 'enemyAttackCompanion' : 'enemyAttack',
-            enemyIdx,
-            ...(companionTarget ? { npcId: payload.targetId } : {}),
-            fx: impactFx,
-            dmg: payload.damage,
+          const impactFx = payload.impactFx ?? this._monsterImpactFx(enemy);
+          const target = allyActionCombatant(combat, payload.targetId);
+          this._fx(createActionFx({
+            actor: enemyActionCombatant(combat, enemy, enemyIdx),
+            actorIndex: enemyIdx,
+            target,
+            targetIndex: combatantActionIndex(target, gs.companions),
+            actionId: payload.actionId,
+            category: payload.category,
+            motionKey: payload.motionKey,
+            impactFx,
+            movement: payload.movement,
+            camera: payload.camera,
+            damage: payload.damage,
             miss: payload.miss,
-          });
+            killed: target.dead === true,
+          }));
         },
         addLog: message => {
           if (Array.isArray(combat?.log)) combat.log.push(message);
         },
       },
     });
+    if (result?.executed === true
+        && (combat?.fxQueue?.length ?? 0) === queuedFxBefore) {
+      const actor = enemyActionCombatant(combat, enemy, enemyIdx);
+      const requestedTargetId = action.targetIds?.[0] ?? 'player';
+      const requestedTarget = allyActionCombatant(combat, requestedTargetId);
+      const target = resolveEnemyActionPresentationTarget({
+        actor,
+        target: requestedTarget,
+        definition,
+        action,
+      });
+      this._fx(createActionFx({
+        actor,
+        actorIndex: enemyIdx,
+        target,
+        targetIndex: combatantActionIndex(target, gs.companions),
+        action,
+        motionKey: action.motionKey,
+        impactFx: definition?.impactFx ?? this._monsterImpactFx(enemy),
+        category: action.category,
+        movement: definition?.movement,
+        camera: definition?.camera,
+        presentation: target === actor ? 'self' : 'target',
+      }));
+    }
+    if (result?.executed === true
+        && action.category === 'basic'
+        && Number.isInteger(enemy.reloadAfterShots)) {
+      enemy._shotsSinceReload = (enemy._shotsSinceReload ?? 0) + 1;
+      if (enemy._shotsSinceReload >= enemy.reloadAfterShots) {
+        enemy._shotsSinceReload = 0;
+        this._fx({ kind: 'enemyMotion', enemyIdx, motionKey: 'reload' });
+      }
+    }
+    return result;
   },
 
   _enemyAttackCompanion(enemy, npcId, { hitCount = enemy?.attacksPerRound ?? 1 } = {}) {
@@ -857,17 +1226,35 @@ export const CombatAiTurns = {
     const statuses = isPlayer ? combat.playerStatus : combatant.statusEffects;
     const existing = statuses.find(s => s.id === status.id);
     if (existing) {
-      existing.duration = Math.max(existing.duration ?? 0, status.duration ?? 1);
+      if (Number.isFinite(status.remainingPlayerTurns)) {
+        existing.remainingPlayerTurns = Math.max(
+          existing.remainingPlayerTurns ?? 0,
+          status.remainingPlayerTurns,
+        );
+      } else {
+        existing.duration = Math.max(existing.duration ?? 0, status.duration ?? 1);
+      }
       existing.effect = { ...(existing.effect ?? {}), ...(status.effect ?? {}) };
+      if (status.sourceEnemyId) existing.sourceEnemyId = status.sourceEnemyId;
+      if (Number.isFinite(status.value)) existing.value = status.value;
     } else {
       statuses.push({
         id: status.id,
         name: status.name ?? status.id,
-        duration: status.duration ?? 1,
+        ...(Number.isFinite(status.remainingPlayerTurns)
+          ? { remainingPlayerTurns: Math.max(1, Math.floor(status.remainingPlayerTurns)) }
+          : { duration: status.duration ?? 1 }),
+        ...(status.sourceEnemyId ? { sourceEnemyId: status.sourceEnemyId } : {}),
         effect: { ...(status.effect ?? {}) },
+        ...(Number.isFinite(status.value) ? { value: status.value } : {}),
       });
     }
-    if (!isPlayer) {
+    if (isPlayer && combatant) {
+      combatant.statusEffects = statuses.map(entry => ({
+        ...entry,
+        effect: { ...(entry.effect ?? {}) },
+      }));
+    } else if (!isPlayer) {
       const state = gs.npcs?.states?.[targetId];
       if (state) {
         state.statusEffects = statuses.map(entry => ({
@@ -893,7 +1280,7 @@ export const CombatAiTurns = {
     if (!def) return null;
     const hpDef = def.hp ?? { min: def.maxHp ?? 1, max: def.maxHp ?? 1 };
     const hp = hpDef.min + Math.floor(Math.random() * (hpDef.max - hpDef.min + 1));
-    return {
+    const enemy = {
       ...def,
       currentHp: hp,
       maxHp: hp,
@@ -904,9 +1291,19 @@ export const CombatAiTurns = {
       _dormantRemaining: def.dormant?.wakeTurns ?? null,
       currentMorale: def.type === 'human' ? (def.morale?.max ?? 100) : null,
     };
+    if (def.isBoss === true && def.bossPattern) {
+      enemy._bossActionState = normalizeBossActionState(def._bossActionState);
+    }
+    return enemy;
   },
 
-  _summonEnemyById(enemyId, count = 1, row = 'front', sourceEnemy = null) {
+  _summonEnemyById(
+    enemyId,
+    count = 1,
+    row = 'front',
+    sourceEnemy = null,
+    presentation = null,
+  ) {
     const gs = GameState;
     const def = GameData?.enemies?.[enemyId];
     if (!def || count <= 0) return 0;
@@ -914,17 +1311,87 @@ export const CombatAiTurns = {
     for (let i = 0; i < count; i++) {
       const add = this._instantiateEnemyFromDefinition(def);
       if (!add) continue;
+      if (sourceEnemy?.id) add._summonedByEnemyId = sourceEnemy.id;
       if (!this._spawnEnemyMidCombat(add, row)) break;
       spawned++;
     }
     if (spawned > 0) {
-      this._fx({
-        kind: 'summon',
-        enemyIdx: sourceEnemy ? gs.combat.enemies.indexOf(sourceEnemy) : -1,
+      const enemyIndex = sourceEnemy ? gs.combat.enemies.indexOf(sourceEnemy) : -1;
+      const actor = enemyActionCombatant(gs.combat, sourceEnemy, enemyIndex);
+      this._fx(createActionFx({
+        actor,
+        actorIndex: enemyIndex,
+        target: actor,
+        targetIndex: enemyIndex,
+        action: presentation?.action,
+        actionId: presentation?.action?.actionId
+          ?? sourceEnemy?.timedThreat?.id
+          ?? 'summon',
+        motionKey: presentation?.action?.motionKey ?? 'summon',
+        impactFx: presentation?.definition?.impactFx ?? 'summon',
+        category: presentation?.action?.category,
+        movement: presentation?.definition?.movement,
+        camera: presentation?.definition?.camera,
         count: spawned,
-      });
+      }));
     }
     return spawned;
+  },
+
+  _consumeSummonedEnemies(sourceEnemy, enemyId) {
+    const combat = GameState.combat;
+    if (!combat || !sourceEnemy?.id || typeof enemyId !== 'string') return 0;
+    const sourceEnemyIndex = (combat.enemies ?? []).indexOf(sourceEnemy);
+    const sourceCombatantId = sourceEnemyIndex >= 0
+      ? `enemy:${sourceEnemyIndex}`
+      : combat.activeCombatantId;
+    let consumed = 0;
+
+    for (const [enemyIndex, candidate] of (combat.enemies ?? []).entries()) {
+      if (
+        candidate?.id !== enemyId
+        || candidate?._summonedByEnemyId !== sourceEnemy.id
+        || candidate?._consumed === true
+        || (candidate?.currentHp ?? 0) <= 0
+      ) {
+        continue;
+      }
+
+      consumed++;
+      candidate.currentHp = 0;
+      candidate._consumed = true;
+      candidate._killProcessed = true;
+      const combatantId = `enemy:${enemyIndex}`;
+      const ranked = combat.combatants?.[combatantId];
+      if (ranked) {
+        ranked.hp = 0;
+        ranked.dead = true;
+      }
+      for (const side of ['enemy', 'ally']) {
+        if (!Array.isArray(combat.formations?.[side])) continue;
+        combat.formations[side] = combat.formations[side].map(id => (
+          id === combatantId ? null : id
+        ));
+      }
+      if (Array.isArray(combat.turnQueue)) {
+        combat.turnQueue = combat.turnQueue.filter(entry => (
+          entry?.enemyIdx !== enemyIndex && entry?.combatantId !== combatantId
+        ));
+      }
+    }
+
+    if (consumed > 0) {
+      this._compactRankedEnemyFormation();
+      const sourceQueueIndex = (combat.turnQueue ?? []).findIndex(entry => (
+        this._combatantIdForEntry(entry) === sourceCombatantId
+      ));
+      if (sourceQueueIndex >= 0) {
+        combat.activeIdx = sourceQueueIndex;
+        combat.activeTurnIndex = sourceQueueIndex;
+        combat.activeCombatantId = sourceCombatantId;
+      }
+    }
+    return consumed;
   },
 
   // 전투 중 적 증원의 단일 진입점 — 레거시 enemies/turnQueue와 랭크 combatants/formations를
@@ -1023,25 +1490,54 @@ export const CombatAiTurns = {
     if (!aoeAttack || Math.random() >= (aoeAttack.chance ?? 1)) return 0;
     const gs = GameState;
     const [dMin, dMax] = aoeAttack.damage ?? [0, 0];
-    const struck = this._dealDamageToAlly({
+    const playerResult = this._dealDamageToAlly({
       rawDamage: dMin + Math.floor(Math.random() * (dMax - dMin + 1)),
       canBeDodged: false,
     });
-    const dmg = struck.damage;
+    const dmg = playerResult.damage;
     gs.combat.lastHit = { target: 'player', damage: dmg, isCrit: false };
     EventBus.emit('playerHit', { damage: dmg });
 
+    const results = [{ targetId: 'player', result: playerResult }];
     for (const id of (gs.companions ?? [])) {
       const st = gs.npcs?.states?.[id];
       if (st && (st.hp ?? 0) > 0) {
-        this._dealDamageToAlly({ npcId: id, rawDamage: dmg, canBeDodged: false });
+        results.push({
+          targetId: id,
+          result: this._dealDamageToAlly({
+            npcId: id,
+            rawDamage: dmg,
+            canBeDodged: false,
+          }),
+        });
       }
     }
 
     if (aoeAttack.effect) {
       this._applyEnemySkillEffect(enemy, { id: 'aoe_attack', effect: aoeAttack.effect }, dmg);
     }
-    this._fx({ kind: 'enemyAttack', enemyIdx: gs.combat.enemies.indexOf(enemy), fx: 'skill', dmg, crit: true });
+    const enemyIndex = gs.combat.enemies.indexOf(enemy);
+    for (const { targetId, result } of results) {
+      this._fx(createActionFx({
+        actor: enemyActionCombatant(gs.combat, enemy, enemyIndex),
+        actorIndex: enemyIndex,
+        target: allyActionCombatant(gs.combat, targetId),
+        targetIndex: targetId === 'player'
+          ? 0
+          : combatantActionIndex(
+              allyActionCombatant(gs.combat, targetId),
+              gs.companions ?? [],
+            ),
+        actionId: 'aoe_attack',
+        motionKey: 'aoe_attack',
+        impactFx: 'skill',
+        damage: result.damage,
+        crit: false,
+        miss: result.dodged === true,
+        killed: result.dead === true,
+        camera: 'impact-heavy',
+      }));
+    }
     return dmg;
   },
 
@@ -1279,7 +1775,17 @@ export const CombatAiTurns = {
         enemy: I18n.enemyName(enemy.id, enemy.name),
         skill: skill.name ?? skill.id,
       }));
-      this._fx({ kind: 'enemyAttack', enemyIdx: gs.combat.enemies.indexOf(enemy), miss: true });
+      const enemyIndex = gs.combat.enemies.indexOf(enemy);
+      this._fx(createActionFx({
+        actor: enemyActionCombatant(gs.combat, enemy, enemyIndex),
+        actorIndex: enemyIndex,
+        target: allyActionCombatant(gs.combat, 'player'),
+        targetIndex: 0,
+        action: skill,
+        motionKey: skill.motionKey,
+        impactFx: skill.impactFx ?? this._monsterImpactFx(enemy),
+        miss: true,
+      }));
       return logs;
     }
 
@@ -1317,13 +1823,20 @@ export const CombatAiTurns = {
     dmg = struck.damage;
     gs.combat.lastHit = { target: 'player', damage: dmg, isCrit: false };
     EventBus.emit('playerHit', { damage: dmg });
-    this._fx({
-      kind:     'enemyAttack',
-      enemyIdx: gs.combat.enemies.indexOf(enemy),
-      fx:       'skill',
-      dmg,
-      crit:     true,
-    });
+    const enemyIndex = gs.combat.enemies.indexOf(enemy);
+    this._fx(createActionFx({
+      actor: enemyActionCombatant(gs.combat, enemy, enemyIndex),
+      actorIndex: enemyIndex,
+      target: allyActionCombatant(gs.combat, 'player'),
+      targetIndex: 0,
+      action: skill,
+      motionKey: skill.motionKey,
+      impactFx: skill.impactFx ?? 'skill',
+      damage: dmg,
+      crit: false,
+      movement: skill.movement,
+      camera: skill.camera ?? 'impact-heavy',
+    }));
     DiseaseSystem.checkCombatInjury(dmg, gs);
     BodySystem.onCombatHit(dmg, enemy);
     // 예고를 블록으로 받아냈다면 기절은 통하지 않는다
@@ -1364,11 +1877,20 @@ export const CombatAiTurns = {
         enemy: I18n.enemyName(enemy.id, enemy.name),
         dmg: damage,
       }));
-      this._fx({
-        kind: 'explode',
-        enemyIdx: gs.combat.enemies.indexOf(enemy),
-        dmg: damage,
-      });
+      const enemyIndex = gs.combat.enemies.indexOf(enemy);
+      const actor = enemyActionCombatant(gs.combat, enemy, enemyIndex);
+      this._fx(createActionFx({
+        actor,
+        actorIndex: enemyIndex,
+        target: actor,
+        targetIndex: enemyIndex,
+        action,
+        motionKey: action.motionKey ?? 'self_destruct',
+        impactFx: 'explode',
+        damage: 0,
+        killed: false,
+        category: action.category,
+      }));
     }
     return result;
 
@@ -1479,13 +2001,18 @@ export const CombatAiTurns = {
         const tauntChance = nurseDef?.companion?.tauntChance ?? 0;
         if (tauntChance > 0 && Math.random() < tauntChance) {
           npcSysRef.damageCompanion('npc_nurse', damage);
-          this._fx({
-            kind: 'enemyAttackCompanion',
-            enemyIdx: gs.combat.enemies.indexOf(enemy),
-            npcId: 'npc_nurse',
-            fx: this._monsterImpactFx(enemy),
-            dmg: damage,
-          });
+          const enemyIndex = gs.combat.enemies.indexOf(enemy);
+          const target = allyActionCombatant(gs.combat, 'npc_nurse');
+          this._fx(createActionFx({
+            actor: enemyActionCombatant(gs.combat, enemy, enemyIndex),
+            actorIndex: enemyIndex,
+            target,
+            targetIndex: combatantActionIndex(target, gs.companions),
+            actionId: 'basic_attack',
+            motionKey: 'basic_attack',
+            impactFx: this._monsterImpactFx(enemy),
+            damage,
+          }));
           const npcName = I18n.itemName('npc_nurse', GameData?.items?.npc_nurse?.name);
           return I18n.t('npc.hitInstead', { name: npcName, dmg: damage });
         }
@@ -1504,36 +2031,54 @@ export const CombatAiTurns = {
         if (redirect.dodged) {
           return I18n.t('combatSys.enemyDodge', { enemy: I18n.enemyName(enemy.id, enemy.name) });
         }
-        this._fx({
-          kind: 'enemyAttackCompanion',
-          enemyIdx: gs.combat.enemies.indexOf(enemy),
-          npcId: targetNpcId,
-          fx: this._monsterImpactFx(enemy),
-          dmg: redirect.damage,
-        });
+        const enemyIndex = gs.combat.enemies.indexOf(enemy);
+        const target = allyActionCombatant(gs.combat, targetNpcId);
+        this._fx(createActionFx({
+          actor: enemyActionCombatant(gs.combat, enemy, enemyIndex),
+          actorIndex: enemyIndex,
+          target,
+          targetIndex: combatantActionIndex(target, gs.companions),
+          actionId: 'basic_attack',
+          motionKey: 'basic_attack',
+          impactFx: this._monsterImpactFx(enemy),
+          damage: redirect.damage,
+          killed: target.dead === true,
+        }));
         const npcName = I18n.itemName(targetNpcId, GameData?.items?.[targetNpcId]?.name);
         return I18n.t('npc.hitInstead', { name: npcName, dmg: redirect.damage });
       }
 
       const struck = this._dealDamageToAlly({ rawDamage: damage });
       if (struck.dodged) {
-        this._fx({
-          kind:     'enemyAttack',
-          enemyIdx: gs.combat.enemies.indexOf(enemy),
-          fx:       this._monsterImpactFx(enemy),
-          miss:     true,
-        });
+        const enemyIndex = gs.combat.enemies.indexOf(enemy);
+        this._fx(createActionFx({
+          actor: enemyActionCombatant(gs.combat, enemy, enemyIndex),
+          actorIndex: enemyIndex,
+          target: allyActionCombatant(gs.combat, 'player'),
+          targetIndex: 0,
+          actionId: 'basic_attack',
+          motionKey: 'basic_attack',
+          impactFx: this._monsterImpactFx(enemy),
+          miss: true,
+        }));
         return I18n.t('combatSys.enemyDodge', { enemy: I18n.enemyName(enemy.id, enemy.name) });
       }
       damage = struck.damage;
       gs.combat.lastHit    = { target: 'player', damage, isCrit: false };
       EventBus.emit('playerHit', { damage });
-      this._fx({
-        kind:     'enemyAttack',
-        enemyIdx: gs.combat.enemies.indexOf(enemy),
-        fx:       this._monsterImpactFx(enemy),
-        dmg:      damage,
-      });
+      const enemyIndex = gs.combat.enemies.indexOf(enemy);
+      const playerTarget = allyActionCombatant(gs.combat, 'player');
+      this._fx(createActionFx({
+        actor: enemyActionCombatant(gs.combat, enemy, enemyIndex),
+        actorIndex: enemyIndex,
+        target: playerTarget,
+        targetIndex: 0,
+        actionId: 'basic_attack',
+        motionKey: 'basic_attack',
+        impactFx: this._monsterImpactFx(enemy),
+        damage,
+        killed: playerTarget.dead === true,
+      }));
 
       // 전투 부상 체크 (출혈, 열상, 골절, 뇌진탕)
       DiseaseSystem.checkCombatInjury(damage, gs);
@@ -1579,12 +2124,17 @@ export const CombatAiTurns = {
       }
       return I18n.t('combatSys.enemyAtk', { enemy: I18n.enemyName(enemy.id, enemy.name), dmg: damage, hp: gs.player.hp.current });
     }
-    this._fx({
-      kind:     'enemyAttack',
-      enemyIdx: gs.combat.enemies.indexOf(enemy),
-      fx:       this._monsterImpactFx(enemy),
-      miss:     true,
-    });
+    const enemyIndex = gs.combat.enemies.indexOf(enemy);
+    this._fx(createActionFx({
+      actor: enemyActionCombatant(gs.combat, enemy, enemyIndex),
+      actorIndex: enemyIndex,
+      target: allyActionCombatant(gs.combat, 'player'),
+      targetIndex: 0,
+      actionId: 'basic_attack',
+      motionKey: 'basic_attack',
+      impactFx: this._monsterImpactFx(enemy),
+      miss: true,
+    }));
     return I18n.t('combatSys.enemyDodge', { enemy: I18n.enemyName(enemy.id, enemy.name) });
   },
 

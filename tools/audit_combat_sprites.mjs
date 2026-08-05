@@ -1,54 +1,106 @@
 import fs from 'node:fs';
+import { createHash } from 'node:crypto';
+import { createRequire } from 'node:module';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import zlib from 'node:zlib';
 
+const require = createRequire(import.meta.url);
+const { COMBAT_MOTION_MANIFEST } = require('../js/data/combatMotionManifest.js');
 const ROOT = process.cwd();
-const SPRITE_ROOT = path.join(ROOT, 'assets', 'images', 'combat', 'spritesheets');
-// 시트 참조 테이블이 combatUiAssets.js로 분리됨 — 두 파일 모두 스캔해 하위호환 유지
-const COMBAT_UI_PATHS = [
-  path.join(ROOT, 'js', 'ui', 'combat', 'combatUiAssets.js'),
-  path.join(ROOT, 'js', 'ui', 'CombatUI.js'),
-];
 const OUT_JSON = path.join(ROOT, 'output', 'combat', 'sprite_audit.json');
 const OUT_MD = path.join(ROOT, 'docs', 'analysis', 'COMBAT_SPRITE_AUDIT.md');
-
-const COLS = 6;
-const ROWS = 4;
-const FRAME_SIZE = 256;
 const ALPHA_THRESHOLD = 12;
+const CHROMA_ALPHA_THRESHOLD = 200;
+const CHROMA_ALPHA_MIN = 0;
+const CHROMA_HUE_MIN = 78;
+const CHROMA_HUE_MAX = 162;
+const CHROMA_SATURATION_MIN = 0.72;
+const CHROMA_VALUE_MIN = 150;
+const BOUNDARY_GREEN_SATURATION_MIN = 0.35;
+const BOUNDARY_GREEN_VALUE_MIN = 80;
+const STRICT_BOUNDARY_SHEETS = new Set(['boss_feral_dog_alpha', 'boss_chef_nemesis']);
+const ISOLATED_CHROMA_COMPONENT_AREA = 12;
+const ALLOWLIST_VERSION = 1;
+const ALLOWLIST_REQUIRED_FIELDS = new Set(['sheetKey', 'path', 'row', 'col', 'bbox', 'pixelCount', 'fingerprint', 'reason']);
+const WHITE_PIXEL_RISK_EXEMPTIONS = Object.freeze({
+  raider_elite: Object.freeze({
+    rows: Object.freeze([1, 3]),
+    maxScopedPixels: 420,
+    maxOtherPixels: 150,
+    reason: 'rows 1 and 3 contain the inspected pistol muzzle flash; all other rows remain below the white-background risk budget',
+  }),
+});
+const CHROMA_COMPONENT_ALLOWLIST_PATH = process.env.COMBAT_CHROMA_ALLOWLIST_PATH
+  ?? path.join(ROOT, 'assets', 'images', 'combat', 'spritesheets', 'chroma_component_allowlist.json');
 
-function walk(dir) {
-  return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
-    const fullPath = path.join(dir, entry.name);
-    return entry.isDirectory() ? walk(fullPath) : [fullPath];
+function normalizedAssetPath(value) {
+  if (typeof value !== 'string' || !value.startsWith('/') || value.includes('\\')) throw new Error('allowlist: schema mismatch (path)');
+  const normalized = `/${path.posix.normalize(value.slice(1))}`;
+  if (normalized !== value || normalized === '/.' || value.startsWith('//')) throw new Error('allowlist: schema mismatch (path)');
+  return normalized;
+}
+
+function loadComponentAllowlist() {
+  if (!fs.existsSync(CHROMA_COMPONENT_ALLOWLIST_PATH)) throw new Error('allowlist: missing');
+  let data;
+  try {
+    data = JSON.parse(fs.readFileSync(CHROMA_COMPONENT_ALLOWLIST_PATH, 'utf8'));
+  } catch {
+    throw new Error('allowlist: malformed JSON');
+  }
+  if (!data || typeof data !== 'object' || Array.isArray(data)
+    || Object.keys(data).length !== 2 || !Object.hasOwn(data, 'version') || !Object.hasOwn(data, 'components')
+    || data.version !== ALLOWLIST_VERSION || !Array.isArray(data.components)) throw new Error('allowlist: schema mismatch (root)');
+  return data.components.map((entry) => {
+    if (!entry || typeof entry !== 'object' || Array.isArray(entry)
+      || Object.keys(entry).length !== ALLOWLIST_REQUIRED_FIELDS.size
+      || Object.keys(entry).some(key => !ALLOWLIST_REQUIRED_FIELDS.has(key))) throw new Error('allowlist: schema mismatch (component fields)');
+    if (typeof entry.sheetKey !== 'string' || !entry.sheetKey) throw new Error('allowlist: schema mismatch (sheetKey)');
+    const normalized = normalizedAssetPath(entry.path);
+    if (!Number.isInteger(entry.row) || !Number.isInteger(entry.col) || entry.row < 0 || entry.col < 0) throw new Error('allowlist: schema mismatch (cell)');
+    if (!Array.isArray(entry.bbox) || entry.bbox.length !== 4 || entry.bbox.some(value => !Number.isInteger(value) || value < 0)
+      || entry.bbox[0] >= entry.bbox[2] || entry.bbox[1] >= entry.bbox[3]) throw new Error('allowlist: schema mismatch (bbox)');
+    if (!Number.isInteger(entry.pixelCount) || entry.pixelCount <= 0 || entry.pixelCount > ISOLATED_CHROMA_COMPONENT_AREA) throw new Error('allowlist: schema mismatch (pixelCount)');
+    if (typeof entry.fingerprint !== 'string' || !/^[0-9a-f]{64}$/.test(entry.fingerprint)) throw new Error('allowlist: schema mismatch (fingerprint)');
+    if (typeof entry.reason !== 'string' || !entry.reason.trim()) throw new Error('allowlist: schema mismatch (reason)');
+    return { ...entry, path: normalized };
   });
 }
 
-function toPosixRel(filePath) {
-  return path.relative(ROOT, filePath).replaceAll(path.sep, '/');
+let CHROMA_COMPONENT_ALLOWLIST = [];
+let ALLOWLIST_LOAD_ERROR = null;
+try {
+  CHROMA_COMPONENT_ALLOWLIST = loadComponentAllowlist();
+} catch (error) {
+  ALLOWLIST_LOAD_ERROR = error;
+}
+
+function componentSpecsFor(sheetKey, row, col) {
+  return CHROMA_COMPONENT_ALLOWLIST.filter((spec) => (
+    spec.sheetKey === sheetKey && spec.path === normalizedAssetPath(COMBAT_MOTION_MANIFEST[sheetKey]?.src ?? '') && spec.row === row && spec.col === col
+  ));
 }
 
 function normalizeAssetPath(assetPath) {
   return assetPath.replace(/^\/+/, '').replace(/^\.\//, '').replaceAll('/', path.sep);
 }
 
-function referencedSpritePaths() {
-  const paths = new Set();
-  for (const sourcePath of COMBAT_UI_PATHS) {
-    if (!fs.existsSync(sourcePath)) continue;
-    const js = fs.readFileSync(sourcePath, 'utf8');
-    for (const match of js.matchAll(/spriteSheet\('([^']+\.png)'\)/g)) {
-      paths.add(path.normalize(path.join(ROOT, normalizeAssetPath(match[1]))));
-    }
-  }
-  return paths;
+function toPosixRel(filePath) {
+  return path.relative(ROOT, filePath).replaceAll(path.sep, '/');
 }
 
-function readPng(filePath) {
+function manifestSheets() {
+  return Object.entries(COMBAT_MOTION_MANIFEST).map(([sheetKey, sheet]) => ({
+    sheetKey,
+    sheet,
+    filePath: path.normalize(path.join(ROOT, normalizeAssetPath(sheet.src))),
+  }));
+}
+
+export function readPng(filePath) {
   const buffer = fs.readFileSync(filePath);
-  if (buffer.toString('ascii', 1, 4) !== 'PNG') {
-    throw new Error(`${filePath} is not a PNG file`);
-  }
+  if (buffer.toString('ascii', 1, 4) !== 'PNG') throw new Error(`${filePath} is not a PNG file`);
 
   let offset = 8;
   let width = 0;
@@ -56,7 +108,6 @@ function readPng(filePath) {
   let bitDepth = 0;
   let colorType = 0;
   const idat = [];
-
   while (offset < buffer.length) {
     const length = buffer.readUInt32BE(offset);
     const type = buffer.toString('ascii', offset + 4, offset + 8);
@@ -67,24 +118,17 @@ function readPng(filePath) {
       height = buffer.readUInt32BE(dataStart + 4);
       bitDepth = buffer[dataStart + 8];
       colorType = buffer[dataStart + 9];
-    } else if (type === 'IDAT') {
-      idat.push(buffer.subarray(dataStart, dataEnd));
-    } else if (type === 'IEND') {
-      break;
-    }
+    } else if (type === 'IDAT') idat.push(buffer.subarray(dataStart, dataEnd));
+    else if (type === 'IEND') break;
     offset = dataEnd + 4;
   }
-
-  if (bitDepth !== 8 || colorType !== 6) {
-    return { width, height, bitDepth, colorType, pixels: null };
-  }
+  if (bitDepth !== 8 || colorType !== 6) return { width, height, bitDepth, colorType, pixels: null };
 
   const bytesPerPixel = 4;
   const stride = width * bytesPerPixel;
   const inflated = zlib.inflateSync(Buffer.concat(idat));
   const pixels = Buffer.alloc(height * stride);
-  let src = 0;
-
+  let sourceOffset = 0;
   const paeth = (a, b, c) => {
     const p = a + b - c;
     const pa = Math.abs(p - a);
@@ -93,15 +137,13 @@ function readPng(filePath) {
     if (pa <= pb && pa <= pc) return a;
     return pb <= pc ? b : c;
   };
-
   for (let y = 0; y < height; y += 1) {
-    const filter = inflated[src];
-    src += 1;
+    const filter = inflated[sourceOffset];
+    sourceOffset += 1;
     const rowStart = y * stride;
     const prevRowStart = rowStart - stride;
-
     for (let x = 0; x < stride; x += 1) {
-      const raw = inflated[src + x];
+      const raw = inflated[sourceOffset + x];
       const left = x >= bytesPerPixel ? pixels[rowStart + x - bytesPerPixel] : 0;
       const up = y > 0 ? pixels[prevRowStart + x] : 0;
       const upLeft = y > 0 && x >= bytesPerPixel ? pixels[prevRowStart + x - bytesPerPixel] : 0;
@@ -112,9 +154,8 @@ function readPng(filePath) {
       else if (filter === 4) value = raw + paeth(left, up, upLeft);
       pixels[rowStart + x] = value & 0xff;
     }
-    src += stride;
+    sourceOffset += stride;
   }
-
   return { width, height, bitDepth, colorType, pixels };
 }
 
@@ -122,16 +163,235 @@ function pixelOffset(image, x, y) {
   return (y * image.width + x) * 4;
 }
 
+function allowlistLocation(spec) {
+  return [spec.sheetKey, spec.path, spec.row, spec.col];
+}
+
+function allowlistManifestDiagnostics() {
+  const manifest = manifestSheets();
+  const diagnostics = [];
+  const seen = new Set();
+  for (const spec of CHROMA_COMPONENT_ALLOWLIST) {
+    const identity = JSON.stringify([...allowlistLocation(spec), spec.bbox, spec.pixelCount, spec.fingerprint]);
+    const location = allowlistLocation(spec).join(':');
+    if (seen.has(identity)) {
+      diagnostics.push({ code: 'duplicate', location });
+      continue;
+    }
+    seen.add(identity);
+    const matches = manifest.filter(({ sheetKey, sheet }) => sheetKey === spec.sheetKey && normalizedAssetPath(sheet.src) === spec.path);
+    if (matches.length !== 1 || spec.row >= matches[0].sheet.rows || spec.col >= matches[0].sheet.cols) diagnostics.push({ code: 'orphan', location });
+  }
+  return diagnostics;
+}
+
+function hueAndSaturation(r, g, b) {
+  const maximum = Math.max(r, g, b);
+  const minimum = Math.min(r, g, b);
+  if (maximum === 0) return { hue: 0, saturation: 0, value: 0 };
+  const chroma = maximum - minimum;
+  if (chroma === 0) return { hue: 0, saturation: 0, value: maximum };
+  let hue;
+  if (maximum === r) hue = 60 * (((g - b) / chroma) % 6);
+  else if (maximum === g) hue = 60 * (((b - r) / chroma) + 2);
+  else hue = 60 * (((r - g) / chroma) + 4);
+  return { hue, saturation: chroma / maximum, value: maximum };
+}
+
+function isGreenScreenPixel(pixel) {
+  const [r, g, b, a] = pixel;
+  if (a <= CHROMA_ALPHA_MIN) return false;
+  const { hue, saturation, value } = hueAndSaturation(r, g, b);
+  return hue >= CHROMA_HUE_MIN && hue <= CHROMA_HUE_MAX
+    && saturation >= CHROMA_SATURATION_MIN && value >= CHROMA_VALUE_MIN;
+}
+
+function isOpaqueChroma(pixel) {
+  return pixel[3] > CHROMA_ALPHA_THRESHOLD && isGreenScreenPixel(pixel);
+}
+
+function nearbyEdgeChroma(image, x, y, edge) {
+  for (let ny = Math.max(0, y - 2); ny <= Math.min(image.height - 1, y + 2); ny += 1) {
+    for (let nx = Math.max(0, x - 2); nx <= Math.min(image.width - 1, x + 2); nx += 1) {
+      if (edge[ny * image.width + nx]) return true;
+    }
+  }
+  return false;
+}
+
+function isFrameEdge(image, x, y) {
+  return x === 0 || y === 0 || x === image.width - 1 || y === image.height - 1;
+}
+
+function isBoundaryGreen(image, x, y) {
+  const pixel = image.pixels.subarray(pixelOffset(image, x, y), pixelOffset(image, x, y) + 4);
+  if (pixel[3] === 0) return false;
+  const { hue, saturation, value } = hueAndSaturation(pixel[0], pixel[1], pixel[2]);
+  if (hue < CHROMA_HUE_MIN || hue > CHROMA_HUE_MAX
+      || saturation < BOUNDARY_GREEN_SATURATION_MIN || value < BOUNDARY_GREEN_VALUE_MIN) return false;
+  let transparent = false;
+  for (let ny = Math.max(0, y - 2); ny <= Math.min(image.height - 1, y + 2); ny += 1) {
+    for (let nx = Math.max(0, x - 2); nx <= Math.min(image.width - 1, x + 2); nx += 1) {
+      if (nx === x && ny === y) continue;
+      const neighbor = image.pixels.subarray(pixelOffset(image, nx, ny), pixelOffset(image, nx, ny) + 4);
+      if (Math.abs(nx - x) <= 1 && Math.abs(ny - y) <= 1) transparent ||= neighbor[3] === 0;
+    }
+  }
+  return transparent;
+}
+
+function componentDescriptor(image, component) {
+  const xs = component.map(index => index % image.width);
+  const ys = component.map(index => Math.floor(index / image.width));
+  const bbox = [Math.min(...xs), Math.min(...ys), Math.max(...xs) + 1, Math.max(...ys) + 1];
+  const hash = createHash('sha256');
+  for (const index of [...component].sort((a, b) => a - b)) {
+    const x = index % image.width;
+    const y = Math.floor(index / image.width);
+    const pixel = image.pixels.subarray(pixelOffset(image, x, y), pixelOffset(image, x, y) + 4);
+    hash.update(Buffer.from([x - bbox[0], y - bbox[1], ...pixel]));
+  }
+  return { bbox, pixelCount: component.length, fingerprint: hash.digest('hex') };
+}
+
+function sameComponent(component, spec) {
+  return component.pixelCount === spec.pixelCount
+    && component.fingerprint === spec.fingerprint
+    && component.bbox.every((value, index) => value === spec.bbox[index]);
+}
+
+function chromaFrameArtifactStats(image, allowedComponents = [], strictBoundary = false) {
+  const opaque = new Uint8Array(image.width * image.height);
+  let hiddenRgb = 0;
+  for (let y = 0; y < image.height; y += 1) {
+    for (let x = 0; x < image.width; x += 1) {
+      const index = y * image.width + x;
+      const pixel = image.pixels.subarray(pixelOffset(image, x, y), pixelOffset(image, x, y) + 4);
+      if (isOpaqueChroma(pixel)) opaque[index] = 1;
+      if (pixel[3] === 0 && (pixel[0] !== 0 || pixel[1] !== 0 || pixel[2] !== 0)) hiddenRgb += 1;
+    }
+  }
+  const edge = new Uint8Array(opaque.length);
+  const stack = [];
+  for (let x = 0; x < image.width; x += 1) stack.push([x, 0], [x, image.height - 1]);
+  for (let y = 0; y < image.height; y += 1) stack.push([0, y], [image.width - 1, y]);
+  while (stack.length) {
+    const [x, y] = stack.pop();
+    const index = y * image.width + x;
+    if (edge[index] || !opaque[index]) continue;
+    edge[index] = 1;
+    if (x > 0) stack.push([x - 1, y]);
+    if (x + 1 < image.width) stack.push([x + 1, y]);
+    if (y > 0) stack.push([x, y - 1]);
+    if (y + 1 < image.height) stack.push([x, y + 1]);
+  }
+  let opaqueGreen = 0;
+  let fringeGreen = 0;
+  let boundaryGreen = 0;
+  for (let y = 0; y < image.height; y += 1) {
+    for (let x = 0; x < image.width; x += 1) {
+      const index = y * image.width + x;
+      const pixel = image.pixels.subarray(pixelOffset(image, x, y), pixelOffset(image, x, y) + 4);
+      if (strictBoundary && isBoundaryGreen(image, x, y)) boundaryGreen += 1;
+      if (edge[index]) {
+        opaqueGreen += 1;
+      } else if (isGreenScreenPixel(pixel) && (nearbyEdgeChroma(image, x, y, edge) || isFrameEdge(image, x, y))) {
+        fringeGreen += 1;
+      }
+    }
+  }
+
+  const seen = new Uint8Array(opaque.length);
+  let removedComponents = 0;
+  const matchedSpecs = new Set();
+  for (let start = 0; start < opaque.length; start += 1) {
+    if (!opaque[start] || edge[start] || seen[start]) continue;
+    const component = [start];
+    seen[start] = 1;
+    for (let cursor = 0; cursor < component.length; cursor += 1) {
+      const index = component[cursor];
+      const x = index % image.width;
+      const y = Math.floor(index / image.width);
+      for (const [nx, ny] of [[x - 1, y], [x + 1, y], [x, y - 1], [x, y + 1]]) {
+        if (nx < 0 || ny < 0 || nx >= image.width || ny >= image.height) continue;
+        const neighbor = ny * image.width + nx;
+        if (opaque[neighbor] && !edge[neighbor] && !seen[neighbor]) {
+          seen[neighbor] = 1;
+          component.push(neighbor);
+        }
+      }
+    }
+    if (component.length <= ISOLATED_CHROMA_COMPONENT_AREA) {
+      const descriptor = componentDescriptor(image, component);
+      const match = allowedComponents.findIndex((spec, index) => !matchedSpecs.has(index) && sameComponent(descriptor, spec));
+      if (match === -1) removedComponents += 1;
+      else matchedSpecs.add(match);
+    }
+  }
+  return { opaqueGreen, fringeGreen, hiddenRgb, boundaryGreen, removedComponents, staleAllowlist: allowedComponents.length - matchedSpecs.size };
+}
+
+function cropImage(image, x0, y0, width, height) {
+  const pixels = Buffer.alloc(width * height * 4);
+  for (let y = 0; y < height; y += 1) {
+    image.pixels.copy(
+      pixels,
+      y * width * 4,
+      ((y0 + y) * image.width + x0) * 4,
+      ((y0 + y) * image.width + x0 + width) * 4,
+    );
+  }
+  return { width, height, pixels };
+}
+
+function validateComponentAllowlist() {
+  if (ALLOWLIST_LOAD_ERROR) return [{ code: 'invalid', location: ALLOWLIST_LOAD_ERROR.message }];
+  const diagnostics = allowlistManifestDiagnostics();
+  if (diagnostics.length) return diagnostics;
+  const manifest = manifestSheets();
+  for (const spec of CHROMA_COMPONENT_ALLOWLIST) {
+    const target = manifest.find(({ sheetKey, sheet }) => sheetKey === spec.sheetKey && normalizedAssetPath(sheet.src) === spec.path);
+    const image = readPng(target.filePath);
+    const frameWidth = image.width / target.sheet.cols;
+    const frameHeight = image.height / target.sheet.rows;
+    const frame = cropImage(image, spec.col * frameWidth, spec.row * frameHeight, frameWidth, frameHeight);
+    const stats = chromaFrameArtifactStats(frame, [spec]);
+    if (stats.staleAllowlist > 0) {
+      diagnostics.push({ code: stats.removedComponents > 0 ? 'stale' : 'unconsumed', location: allowlistLocation(spec).join(':') });
+    }
+  }
+  return diagnostics;
+}
+
+export function chromaArtifactStats(image, grid = { cols: 1, rows: 1 }) {
+  if (image.width % grid.cols || image.height % grid.rows) {
+    throw new Error(`chroma grid is not divisible by ${grid.cols}x${grid.rows}`);
+  }
+  const frameWidth = image.width / grid.cols;
+  const frameHeight = image.height / grid.rows;
+  const componentSpecs = grid.componentSpecs ?? new Map();
+  const totals = { opaqueGreen: 0, fringeGreen: 0, hiddenRgb: 0, boundaryGreen: 0, removedComponents: 0, staleAllowlist: 0 };
+  for (let row = 0; row < grid.rows; row += 1) {
+    for (let col = 0; col < grid.cols; col += 1) {
+      const stats = chromaFrameArtifactStats(
+        cropImage(image, col * frameWidth, row * frameHeight, frameWidth, frameHeight),
+        componentSpecs.get(`${row}:${col}`) ?? [],
+        grid.strictBoundary === true,
+      );
+      for (const [key, value] of Object.entries(stats)) totals[key] += value;
+    }
+  }
+  return totals;
+}
+
 function frameBounds(image, frameX, frameY, frameW, frameH) {
   let minX = frameW;
   let minY = frameH;
   let maxX = -1;
   let maxY = -1;
-
   for (let y = 0; y < frameH; y += 1) {
     for (let x = 0; x < frameW; x += 1) {
-      const alpha = image.pixels[pixelOffset(image, frameX + x, frameY + y) + 3];
-      if (alpha > ALPHA_THRESHOLD) {
+      if (image.pixels[pixelOffset(image, frameX + x, frameY + y) + 3] > ALPHA_THRESHOLD) {
         minX = Math.min(minX, x);
         minY = Math.min(minY, y);
         maxX = Math.max(maxX, x);
@@ -139,18 +399,13 @@ function frameBounds(image, frameX, frameY, frameW, frameH) {
       }
     }
   }
-
   if (maxX < 0) return null;
   return {
-    minX,
-    minY,
-    maxX,
-    maxY,
+    minX, minY, maxX, maxY,
     width: maxX - minX + 1,
     height: maxY - minY + 1,
     centerX: (minX + maxX) / 2,
     bottom: maxY,
-    bottomMargin: frameH - 1 - maxY,
   };
 }
 
@@ -167,225 +422,242 @@ function countFrameEdgeOpaque(image, frameX, frameY, frameW, frameH) {
   return count;
 }
 
-function analyzePixels(image, frameW, frameH) {
+function countWhiteOpaque(image, frameX, frameY, frameW, frameH) {
+  let count = 0;
+  for (let y = 0; y < frameH; y += 1) {
+    for (let x = 0; x < frameW; x += 1) {
+      const offset = pixelOffset(image, frameX + x, frameY + y);
+      const [r, g, b, a] = image.pixels.subarray(offset, offset + 4);
+      if (a > 200 && r > 235 && g > 235 && b > 235) count += 1;
+    }
+  }
+  return count;
+}
+
+function spread(values) {
+  return values.length ? Math.max(...values) - Math.min(...values) : null;
+}
+
+function analyzePixels(image, sheetKey, sheet, frameW, frameH) {
   let opaquePixels = 0;
   let whiteOpaquePixels = 0;
-  let chromaKeyPixels = 0;
-  const frames = [];
-  const rows = [];
-
   for (let offset = 0; offset < image.pixels.length; offset += 4) {
-    const r = image.pixels[offset];
-    const g = image.pixels[offset + 1];
-    const b = image.pixels[offset + 2];
-    const a = image.pixels[offset + 3];
+    const [r, g, b, a] = image.pixels.subarray(offset, offset + 4);
     if (a > ALPHA_THRESHOLD) {
       opaquePixels += 1;
       if (a > 200 && r > 235 && g > 235 && b > 235) whiteOpaquePixels += 1;
-      if (a > 200 && g > 220 && r < 80 && b < 100) chromaKeyPixels += 1;
     }
   }
 
-  for (let row = 0; row < ROWS; row += 1) {
+  const motionKeysByRow = new Map();
+  for (const [motionKey, motion] of Object.entries(sheet.motions)) {
+    const current = motionKeysByRow.get(motion.row) ?? [];
+    current.push(motionKey);
+    motionKeysByRow.set(motion.row, current);
+  }
+  const rows = [];
+  for (const [row, motionKeys] of [...motionKeysByRow.entries()].sort(([a], [b]) => a - b)) {
     const rowBounds = [];
-    let rowEdgeOpaque = 0;
-    for (let col = 0; col < COLS; col += 1) {
-      const frameX = col * frameW;
-      const frameY = row * frameH;
-      const bounds = frameBounds(image, frameX, frameY, frameW, frameH);
-      const edgeOpaque = countFrameEdgeOpaque(image, frameX, frameY, frameW, frameH);
-      rowEdgeOpaque += edgeOpaque;
-      frames.push({ row, col, bounds, edgeOpaque });
+    let edgeOpaque = 0;
+    for (let col = 0; col < sheet.cols; col += 1) {
+      const bounds = frameBounds(image, col * frameW, row * frameH, frameW, frameH);
+      edgeOpaque += countFrameEdgeOpaque(image, col * frameW, row * frameH, frameW, frameH);
       if (bounds) rowBounds.push(bounds);
     }
-
-    const centers = rowBounds.map((bounds) => bounds.centerX);
-    const bottoms = rowBounds.map((bounds) => bounds.bottom);
-    const heights = rowBounds.map((bounds) => bounds.height);
-    const widths = rowBounds.map((bounds) => bounds.width);
-    const spread = (values) => values.length ? Math.max(...values) - Math.min(...values) : null;
     rows.push({
       row,
+      motionKeys,
+      whiteOpaquePixels: countWhiteOpaque(image, 0, row * frameH, image.width, frameH),
       populatedFrames: rowBounds.length,
-      centerSpreadPx: spread(centers),
-      bottomSpreadPx: spread(bottoms),
-      heightSpreadPx: spread(heights),
-      widthSpreadPx: spread(widths),
-      edgeOpaque: rowEdgeOpaque,
+      centerSpreadPx: spread(rowBounds.map(bounds => bounds.centerX)),
+      bottomSpreadPx: spread(rowBounds.map(bounds => bounds.bottom)),
+      heightSpreadPx: spread(rowBounds.map(bounds => bounds.height)),
+      widthSpreadPx: spread(rowBounds.map(bounds => bounds.width)),
+      edgeOpaque,
     });
   }
-
   return {
-    opaquePixels,
     transparentPct: Number(((1 - opaquePixels / (image.width * image.height)) * 100).toFixed(2)),
     whiteOpaquePixels,
-    chromaKeyPixels,
-    frames,
+    ...chromaArtifactStats(image, {
+      ...sheet,
+      strictBoundary: STRICT_BOUNDARY_SHEETS.has(sheetKey),
+      componentSpecs: new Map(
+        Array.from({ length: sheet.rows * sheet.cols }, (_, index) => {
+          const row = Math.floor(index / sheet.cols);
+          const col = index % sheet.cols;
+          return [`${row}:${col}`, componentSpecsFor(sheetKey, row, col)];
+        }),
+      ),
+    }),
     rows,
   };
 }
 
+export function whiteOpaqueRisk(sheetKey, rows, totalPixels) {
+  if (totalPixels <= 500) return { exempted: false, risky: false };
+  const exemption = WHITE_PIXEL_RISK_EXEMPTIONS[sheetKey];
+  if (!exemption) return { exempted: false, risky: true };
+  const scopedPixels = rows
+    .filter(row => exemption.rows.includes(row.row))
+    .reduce((sum, row) => sum + row.whiteOpaquePixels, 0);
+  const otherPixels = totalPixels - scopedPixels;
+  const exempted = scopedPixels <= exemption.maxScopedPixels
+    && otherPixels <= exemption.maxOtherPixels;
+  return {
+    exempted,
+    risky: !exempted,
+    scopedRows: exemption.rows,
+    scopedPixels,
+    otherPixels,
+    reason: exemption.reason,
+  };
+}
+
 function severityFor(issues) {
-  if (issues.some((issue) => issue.level === 'fail')) return 'fail';
-  if (issues.some((issue) => issue.level === 'warn')) return 'warn';
+  if (issues.some(issue => issue.level === 'fail')) return 'fail';
+  if (issues.some(issue => issue.level === 'warn')) return 'warn';
   return 'pass';
 }
 
-function analyzeFile(filePath, referenced) {
-  const issues = [];
-  const relPath = toPosixRel(filePath);
-  const image = readPng(filePath);
-  const expectedWidth = COLS * FRAME_SIZE;
-  const expectedHeight = ROWS * FRAME_SIZE;
-  const frameW = image.width / COLS;
-  const frameH = image.height / ROWS;
-
-  if (image.width !== expectedWidth || image.height !== expectedHeight) {
-    issues.push({ level: 'fail', code: 'bad-size', message: `expected ${expectedWidth}x${expectedHeight}` });
-  }
+export function spriteGridIssue(width, height, sheet) {
+  const frameW = width / sheet.cols;
+  const frameH = height / sheet.rows;
   if (!Number.isInteger(frameW) || !Number.isInteger(frameH)) {
-    issues.push({ level: 'fail', code: 'bad-grid', message: 'sheet is not divisible by 6x4' });
+    return { code: 'bad-grid', message: `sheet is not divisible by ${sheet.cols}x${sheet.rows}` };
   }
+  if (frameW !== frameH) {
+    return { code: 'bad-grid', message: `sheet cells must be square; got ${frameW}x${frameH}` };
+  }
+  return null;
+}
+
+function analyzeFile({ sheetKey, sheet, filePath }) {
+  const issues = [];
+  const image = readPng(filePath);
+  const frameW = image.width / sheet.cols;
+  const frameH = image.height / sheet.rows;
+  const gridIssue = spriteGridIssue(image.width, image.height, sheet);
+  if (gridIssue) issues.push({ level: 'fail', ...gridIssue });
   if (image.bitDepth !== 8 || image.colorType !== 6 || !image.pixels) {
     issues.push({ level: 'fail', code: 'unsupported-png', message: `bitDepth=${image.bitDepth} colorType=${image.colorType}` });
-    return {
-      path: relPath,
-      referenced,
-      width: image.width,
-      height: image.height,
-      frameW,
-      frameH,
-      transparentPct: null,
-      whiteOpaquePixels: null,
-      chromaKeyPixels: null,
-      rows: [],
-      issues,
-      severity: severityFor(issues),
-    };
+    return { sheetKey, path: toPosixRel(filePath), referenced: true, width: image.width, height: image.height, frameW, frameH, rows: [], issues, severity: severityFor(issues) };
+  }
+  if (gridIssue) {
+    return { sheetKey, path: toPosixRel(filePath), referenced: true, width: image.width, height: image.height, frameW, frameH, rows: [], issues, severity: severityFor(issues) };
   }
 
-  const pixelStats = analyzePixels(image, frameW, frameH);
+  const pixelStats = analyzePixels(image, sheetKey, sheet, frameW, frameH);
+  const idleMotion = sheet.motions.idle ?? sheet.motions[sheet.aliases?.idle];
   for (const row of pixelStats.rows) {
-    if (row.populatedFrames !== COLS) {
-      issues.push({ level: 'fail', code: 'empty-frame', message: `row ${row.row} has ${row.populatedFrames}/${COLS} frames` });
+    if (row.populatedFrames !== sheet.cols) {
+      issues.push({ level: 'fail', code: 'empty-frame', message: `${row.motionKeys.join(', ')} has ${row.populatedFrames}/${sheet.cols} frames` });
     }
-    if (row.row === 0 && row.bottomSpreadPx > 4) {
+    if (row.row === idleMotion?.row && row.bottomSpreadPx > 4) {
       issues.push({ level: 'fail', code: 'idle-foot-drift', message: `idle bottom spread ${row.bottomSpreadPx}px` });
     }
-    if (row.centerSpreadPx > 34) {
-      issues.push({ level: 'warn', code: 'center-drift', message: `row ${row.row} center spread ${row.centerSpreadPx}px` });
-    }
-    if (row.edgeOpaque > 0) {
-      issues.push({ level: 'warn', code: 'edge-touch', message: `row ${row.row} has ${row.edgeOpaque} edge pixels` });
-    }
+    if (row.centerSpreadPx > 34) issues.push({ level: 'warn', code: 'center-drift', message: `${row.motionKeys.join(', ')} center spread ${row.centerSpreadPx}px` });
+    if (row.edgeOpaque > 0) issues.push({ level: 'warn', code: 'edge-touch', message: `${row.motionKeys.join(', ')} has ${row.edgeOpaque} edge pixels` });
   }
-  if (pixelStats.whiteOpaquePixels > 500) {
-    issues.push({ level: 'warn', code: 'white-bg-risk', message: `${pixelStats.whiteOpaquePixels} opaque white pixels` });
+  const whiteRisk = whiteOpaqueRisk(sheetKey, pixelStats.rows, pixelStats.whiteOpaquePixels);
+  if (whiteRisk.risky) issues.push({ level: 'warn', code: 'white-bg-risk', message: `${pixelStats.whiteOpaquePixels} opaque white pixels` });
+  if (pixelStats.opaqueGreen > 0 || pixelStats.fringeGreen > 0 || pixelStats.hiddenRgb > 0 || pixelStats.removedComponents > 0 || pixelStats.staleAllowlist > 0) {
+    issues.push({
+      level: 'fail',
+      code: 'chroma-artifact',
+      message: `opaque=${pixelStats.opaqueGreen} fringe=${pixelStats.fringeGreen} hiddenRgb=${pixelStats.hiddenRgb} isolated=${pixelStats.removedComponents} staleAllowlist=${pixelStats.staleAllowlist}`,
+    });
   }
-  if (pixelStats.chromaKeyPixels > 0) {
-    issues.push({ level: 'warn', code: 'chroma-key-green', message: `${pixelStats.chromaKeyPixels} chroma-key pixels` });
-  }
-
   return {
-    path: relPath,
-    referenced,
+    sheetKey,
+    path: toPosixRel(filePath),
+    referenced: true,
     width: image.width,
     height: image.height,
     frameW,
     frameH,
-    transparentPct: pixelStats.transparentPct,
-    whiteOpaquePixels: pixelStats.whiteOpaquePixels,
-    chromaKeyPixels: pixelStats.chromaKeyPixels,
-    rows: pixelStats.rows,
+    ...pixelStats,
+    whiteRiskExemption: whiteRisk.exempted ? whiteRisk : null,
     issues,
     severity: severityFor(issues),
   };
 }
 
-function renderMarkdown(audit) {
-  const generatedAt = new Date().toISOString();
+export function renderMarkdown(audit) {
   const rows = audit.sheets.map((sheet) => {
-    const idle = sheet.rows.find((row) => row.row === 0) ?? {};
-    const maxCenter = Math.max(...sheet.rows.map((row) => row.centerSpreadPx ?? 0));
+    const idle = sheet.rows.find(row => row.motionKeys?.includes('idle')) ?? {};
+    const maxCenter = Math.max(...sheet.rows.map(row => row.centerSpreadPx ?? 0), 0);
     const maxEdge = sheet.rows.reduce((sum, row) => sum + (row.edgeOpaque ?? 0), 0);
-    const issues = sheet.issues.length ? sheet.issues.map((issue) => issue.code).join(', ') : 'none';
-    return `| ${sheet.severity} | ${sheet.referenced ? 'yes' : 'no'} | \`${sheet.path}\` | ${sheet.width}x${sheet.height} | ${sheet.frameW}x${sheet.frameH} | ${sheet.transparentPct ?? 'n/a'} | ${idle.bottomSpreadPx ?? 'n/a'} | ${maxCenter} | ${maxEdge} | ${issues} |`;
+    const issues = sheet.issues.length ? sheet.issues.map(issue => issue.code).join(', ') : 'none';
+    return `| ${sheet.severity} | \`${sheet.sheetKey}\` | \`${sheet.path}\` | ${sheet.width}x${sheet.height} | ${sheet.frameW}x${sheet.frameH} | ${sheet.transparentPct ?? 'n/a'} | ${idle.bottomSpreadPx ?? 'n/a'} | ${maxCenter} | ${maxEdge} | ${issues} |`;
   }).join('\n');
-
-  const failList = audit.sheets
-    .filter((sheet) => sheet.severity !== 'pass')
-    .map((sheet) => {
-      const issues = sheet.issues.map((issue) => `${issue.code}: ${issue.message}`).join('; ');
-      return `- \`${sheet.path}\` - ${issues}`;
-    })
-    .join('\n') || '- none';
-
+  const issues = audit.sheets.filter(sheet => sheet.severity !== 'pass').map((sheet) => (
+    `- \`${sheet.path}\` - ${sheet.issues.map(issue => `${issue.code}: ${issue.message}`).join('; ')}`
+  )).join('\n') || '- none';
   return `# Combat Sprite Audit
 
-Generated by \`node tools/audit_combat_sprites.mjs\` at ${generatedAt}.
+Generated by \`node tools/audit_combat_sprites.mjs\` from the current repository assets.
 
 ## Contract
 
-- Displayed combat sheets use a 6x4 grid.
-- Each cell is 256x256 px, for a full sheet size of 1536x1024 px.
+- Each displayed sheet uses its own \`cols\`, \`rows\`, and \`motions\` from \`combatMotionManifest.js\`.
+- PNG dimensions must divide evenly into the declared grid; cells must be square.
 - Frame anchor is bottom-center. Idle row foot drift should stay within 4 px.
-- Transparent PNG is required. Opaque chroma-key green is a normalization warning.
-- Edge-touching pixels are warnings because they can cause visible clipping during CSS animation.
+- Transparent PNG is required. Edge-connected high-saturation chroma green, fringe spill, hidden transparent RGB, and isolated saturated green dots are failures. \`removedComponents\` is the number of isolated components that the normalizer would remove, not a post-cleanup deletion count. The explicit toxic-effect allowlist only preserves an exact \`sheetKey + normalized path + row + col + bbox + pixelCount + fingerprint\`; missing or changed entries fail as stale.
 
 ## Summary
 
 - Sheets scanned: ${audit.summary.total}
-- Referenced by \`CombatUI.js\`: ${audit.summary.referenced}
+- Referenced by the combat motion registry: ${audit.summary.referenced}
 - Pass: ${audit.summary.pass}
 - Warn: ${audit.summary.warn}
 - Fail: ${audit.summary.fail}
 
 ## Issues
 
-${failList}
+${issues}
 
 ## Sheet Metrics
 
-| Status | Referenced | Path | Sheet | Cell | Transparent % | Idle bottom spread | Max center spread | Edge pixels | Issues |
+| Status | Key | Path | Sheet | Cell | Transparent % | Idle bottom spread | Max center spread | Edge pixels | Issues |
 | --- | --- | --- | --- | --- | ---: | ---: | ---: | ---: | --- |
 ${rows}
-
-## Next Use
-
-Use this report before Phase 2 baseline tuning. Any sheet with \`bad-size\` or
-\`idle-foot-drift\` must be fixed before layout tuning. Sheets with
-\`chroma-key-green\`, \`center-drift\`, or high \`edge-touch\` should be
-normalized or regenerated before CSS scale values are treated as final.
 `;
 }
 
 function main() {
   const checkOnly = process.argv.includes('--check');
-  const refs = referencedSpritePaths();
-  const files = walk(SPRITE_ROOT)
-    .filter((filePath) => /_sheet\.png$/.test(path.basename(filePath)))
-    .filter((filePath) => !/_src\.png$/.test(path.basename(filePath)))
-    .sort();
-
-  const sheets = files.map((filePath) => analyzeFile(filePath, refs.has(path.normalize(filePath))));
+  const checkAllowlist = process.argv.includes('--check-allowlist');
+  const allowlistDiagnostics = validateComponentAllowlist();
+  if (checkAllowlist) {
+    console.log(JSON.stringify({ diagnostics: allowlistDiagnostics }));
+    if (allowlistDiagnostics.length) process.exitCode = 1;
+    return;
+  }
+  if (allowlistDiagnostics.length) {
+    console.error(JSON.stringify({ diagnostics: allowlistDiagnostics }));
+    process.exitCode = 1;
+    return;
+  }
+  const sheets = manifestSheets().map(analyzeFile);
   const summary = {
     total: sheets.length,
-    referenced: sheets.filter((sheet) => sheet.referenced).length,
-    pass: sheets.filter((sheet) => sheet.severity === 'pass').length,
-    warn: sheets.filter((sheet) => sheet.severity === 'warn').length,
-    fail: sheets.filter((sheet) => sheet.severity === 'fail').length,
+    referenced: sheets.length,
+    pass: sheets.filter(sheet => sheet.severity === 'pass').length,
+    warn: sheets.filter(sheet => sheet.severity === 'warn').length,
+    fail: sheets.filter(sheet => sheet.severity === 'fail').length,
   };
   const audit = { summary, sheets };
-
   if (!checkOnly) {
     fs.mkdirSync(path.dirname(OUT_JSON), { recursive: true });
     fs.mkdirSync(path.dirname(OUT_MD), { recursive: true });
     fs.writeFileSync(OUT_JSON, `${JSON.stringify(audit, null, 2)}\n`, 'utf8');
     fs.writeFileSync(OUT_MD, renderMarkdown(audit), 'utf8');
   }
-
   console.log(JSON.stringify(summary));
   if (summary.fail > 0) process.exitCode = 1;
 }
 
-main();
+if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
+  main();
+}
