@@ -646,7 +646,8 @@ const QuestSystem = {
     for (const q of GameState.quests.active) {
       const qDef = _getQuestDef(q.id);
       if (!qDef) continue;
-      if (qDef.objective.type === 'equip_slot' && qDef.objective.slot === slotId) {
+      const targetSlots = qDef.objective.slots ?? [qDef.objective.slot];
+      if (qDef.objective.type === 'equip_slot' && targetSlots.includes(slotId)) {
         q.progress = 1;
         this._checkCompletion(q, qDef);
       }
