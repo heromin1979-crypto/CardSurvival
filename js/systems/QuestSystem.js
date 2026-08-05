@@ -591,6 +591,12 @@ const QuestSystem = {
     EventBus.emit('questStarted', { questId, def });
     const title = def.titleKey ? I18n.t(def.titleKey) : def.title;
     EventBus.emit('notify', { message: I18n.t('quest.newQuest', { icon: def.icon, title }), type: 'info' });
+
+    // 수집형 퀘스트: 시작 시점 보유분을 즉시 진행도에 반영 —
+    // 0/N으로 보이다가 다음 획득에 한꺼번에 점프해 완료되는 표시 혼란 방지
+    if (def.objective?.type === 'collect_item' || def.objective?.type === 'collect_item_type') {
+      this._syncCollectProgress(entry, def);
+    }
     EventBus.emit('questListChanged', {});
   },
 
@@ -876,10 +882,7 @@ const QuestSystem = {
         q.progress  = Math.min(obj.count, count);
         this._checkCompletion(q, qDef);
       } else if (obj.type === 'collect_item_type') {
-        const count = GameState.getBoardCards().filter(c => {
-          const def = GameState.getCardDef(c.instanceId);
-          return def?.tags?.includes(obj.itemType) || def?.subtype === obj.itemType;
-        }).reduce((s, c) => s + (c.quantity ?? 1), 0);
+        const count = this._countBoardByType(obj.itemType);
         q.progress = Math.min(obj.count, count);
         this._checkCompletion(q, qDef);
       } else if (obj.type === 'visit_district') {
@@ -916,16 +919,31 @@ const QuestSystem = {
       const obj = qDef.objective;
       if (obj.type !== 'collect_item_type') continue;
       if (!itemDef.tags?.includes(obj.itemType) && itemDef.subtype !== obj.itemType) continue;
-      const count = GameState.getBoardCards()
-        .filter(c => {
-          const d = GameState.getCardDef(c.instanceId);
-          return d?.tags?.includes(obj.itemType) || d?.subtype === obj.itemType;
-        })
-        .reduce((s, c) => s + (c.quantity ?? 1), 0);
+      const count = this._countBoardByType(obj.itemType);
       q.progress = Math.min(obj.count, count);
       this._checkCompletion(q, qDef);
     }
     EventBus.emit('questListChanged', {});
+  },
+
+  /** 수집형 퀘스트 1건의 진행도를 현재 보드 보유량으로 갱신 (시작 시 소급 반영용) */
+  _syncCollectProgress(q, qDef) {
+    const obj = qDef.objective;
+    const count = obj.type === 'collect_item'
+      ? GameState.countOnBoard(obj.definitionId)
+      : this._countBoardByType(obj.itemType);
+    q.progress = Math.min(obj.count, count);
+    this._checkCompletion(q, qDef);
+  },
+
+  /** 보드 위 subtype/tags가 itemType과 일치하는 카드의 수량 합 */
+  _countBoardByType(itemType) {
+    return GameState.getBoardCards()
+      .filter(c => {
+        const d = GameState.getCardDef(c.instanceId);
+        return d?.tags?.includes(itemType) || d?.subtype === itemType;
+      })
+      .reduce((s, c) => s + (c.quantity ?? 1), 0);
   },
 
   // ── 완료 처리 ─────────────────────────────────────────────────
