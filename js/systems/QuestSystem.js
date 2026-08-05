@@ -128,6 +128,10 @@ const QuestSystem = {
     // 아이템 획득 추적 (collect_item + collect_item_type 모두 처리)
     EventBus.on('cardPlaced',     ({ instanceId }) => this._onItemGained(instanceId));
 
+    // 바닥→휴대 드래그/스택 병합은 cardPlaced가 발생하지 않으므로 별도 재계산
+    EventBus.on('cardMoved',      () => this._recountCollectQuests());
+    EventBus.on('boardChanged',   () => this._recountCollectQuests());
+
     // 제작 완료 추적
     EventBus.on('craftComplete',  ({ blueprintId }) => this._onCraft(blueprintId));
 
@@ -873,18 +877,12 @@ const QuestSystem = {
   // ── 진행 체크 ─────────────────────────────────────────────────
 
   _checkAllProgress() {
-    for (const q of GameState.quests.active) {
+    for (const q of [...GameState.quests.active]) {
       const qDef = _getQuestDef(q.id);
       if (!qDef) continue;
       const obj = qDef.objective;
-      if (obj.type === 'collect_item') {
-        const count = GameState.countOnBoard(obj.definitionId);
-        q.progress  = Math.min(obj.count, count);
-        this._checkCompletion(q, qDef);
-      } else if (obj.type === 'collect_item_type') {
-        const count = this._countBoardByType(obj.itemType);
-        q.progress = Math.min(obj.count, count);
-        this._checkCompletion(q, qDef);
+      if (obj.type === 'collect_item' || obj.type === 'collect_item_type') {
+        this._syncCollectProgress(q, qDef);
       } else if (obj.type === 'visit_district') {
         // visit_district: 이미 방문한 곳이면 즉시 완료
         if (GameState.location.districtsVisited?.includes(obj.districtId)) {
@@ -897,12 +895,12 @@ const QuestSystem = {
   },
 
   _updateCollectQuests(itemDef) {
-    for (const q of GameState.quests.active) {
+    for (const q of [...GameState.quests.active]) {
       const qDef = _getQuestDef(q.id);
       if (!qDef) continue;
       const obj  = qDef.objective;
       if (obj.type === 'collect_item' && itemDef.id === obj.definitionId) {
-        const count = GameState.countOnBoard(obj.definitionId);
+        const count = this._countInventoryById(obj.definitionId);
         q.progress  = Math.min(obj.count, count);
         this._checkCompletion(q, qDef);
       }
@@ -913,36 +911,64 @@ const QuestSystem = {
   _updateCollectTypeQuests(itemDef) {
     const hasMatch = itemDef.tags || itemDef.subtype;
     if (!hasMatch) return;
-    for (const q of GameState.quests.active) {
+    for (const q of [...GameState.quests.active]) {
       const qDef = _getQuestDef(q.id);
       if (!qDef) continue;
       const obj = qDef.objective;
       if (obj.type !== 'collect_item_type') continue;
       if (!itemDef.tags?.includes(obj.itemType) && itemDef.subtype !== obj.itemType) continue;
-      const count = this._countBoardByType(obj.itemType);
+      const count = this._countInventoryByType(obj.itemType);
       q.progress = Math.min(obj.count, count);
       this._checkCompletion(q, qDef);
     }
     EventBus.emit('questListChanged', {});
   },
 
-  /** 수집형 퀘스트 1건의 진행도를 현재 보드 보유량으로 갱신 (시작 시 소급 반영용) */
+  /** 수집형 퀘스트 1건의 진행도를 현재 인벤토리 보유량으로 갱신 (시작 시 소급 반영용) */
   _syncCollectProgress(q, qDef) {
     const obj = qDef.objective;
     const count = obj.type === 'collect_item'
-      ? GameState.countOnBoard(obj.definitionId)
-      : this._countBoardByType(obj.itemType);
+      ? this._countInventoryById(obj.definitionId)
+      : this._countInventoryByType(obj.itemType);
     q.progress = Math.min(obj.count, count);
     this._checkCompletion(q, qDef);
   },
 
-  /** 보드 위 subtype/tags가 itemType과 일치하는 카드의 수량 합 */
-  _countBoardByType(itemType) {
-    return GameState.getBoardCards()
+  /** 이동/병합 등 cardPlaced 없는 보드 변화 후 수집형 퀘스트 진행도 재계산 */
+  _recountCollectQuests() {
+    let changed = false;
+    for (const q of [...GameState.quests.active]) {
+      const qDef = _getQuestDef(q.id);
+      const type = qDef?.objective?.type;
+      if (type !== 'collect_item' && type !== 'collect_item_type') continue;
+      const before = q.progress;
+      this._syncCollectProgress(q, qDef);
+      if (q.progress !== before || !GameState.quests.active.includes(q)) changed = true;
+    }
+    if (changed) EventBus.emit('questListChanged', {});
+  },
+
+  /** 휴대(인벤토리) 행의 카드 목록 — 바닥에 놓인 미획득 아이템은 집계에서 제외 */
+  _getInventoryCards() {
+    return (GameState.board.bottom ?? [])
+      .map(id => id && GameState.cards[id])
+      .filter(c => c && !c._crafting);
+  },
+
+  /** 인벤토리에서 subtype/tags가 itemType과 일치하는 카드의 수량 합 */
+  _countInventoryByType(itemType) {
+    return this._getInventoryCards()
       .filter(c => {
-        const d = GameState.getCardDef(c.instanceId);
+        const d = GameData?.items[c.definitionId];
         return d?.tags?.includes(itemType) || d?.subtype === itemType;
       })
+      .reduce((s, c) => s + (c.quantity ?? 1), 0);
+  },
+
+  /** 인벤토리에서 특정 definitionId 카드의 수량 합 */
+  _countInventoryById(definitionId) {
+    return this._getInventoryCards()
+      .filter(c => c.definitionId === definitionId)
       .reduce((s, c) => s + (c.quantity ?? 1), 0);
   },
 
