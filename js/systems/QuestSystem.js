@@ -140,8 +140,12 @@ const QuestSystem = {
     // 지역 이동 시 visit_district 퀘스트 체크
     EventBus.on('districtChanged', ({ districtId }) => this._onDistrictChanged(districtId));
 
-    // 세이브 로드 시 진행도 재계산
-    EventBus.on('loaded', () => this._checkAllProgress());
+    // 세이브 로드 시 누적 카운터 복원 후 진행도 재계산
+    EventBus.on('loaded', () => {
+      this._restoreProgressFromSave();
+      this._checkAllProgress();
+      this._reevaluateSubObjectives();
+    });
 
     // 베이스캠프 진입 시 즉시 메인 퀘스트 트리거 체크 (Day 1 포함)
     EventBus.on('stateTransition', ({ to }) => {
@@ -180,11 +184,18 @@ const QuestSystem = {
    *  - use_item           { definitionId, count? }
    *  - treat_npc          { npcId? | count? }
    *  - build_structure    { structureId }
+   *  - objective_progress { value }  — 소속 퀘스트의 상위 objective 진행도(q.progress) ≥ value.
+   *                                    survive_* 등 이벤트 카운터로 표현 불가한 단계에 사용.
+   *  - entry_flag         { key }    — 활성 entry의 불리언 플래그 (예: prescriptionMatched)
    */
-  _matchSubObjective(so, state = {}) {
+  _matchSubObjective(so, state = {}, entry = null) {
     const m = so?.match;
     if (!m) return false;
     switch (m.type) {
+      case 'objective_progress':
+        return (entry?.progress ?? 0) >= (m.value ?? 1);
+      case 'entry_flag':
+        return entry?.[m.key] === true;
       case 'collect_item': {
         const have = state.collected?.[m.definitionId] ?? 0;
         return have >= (m.count ?? 1);
@@ -346,7 +357,7 @@ const QuestSystem = {
 
       for (const so of def.subObjectives) {
         const wasComplete = gs.subObjectiveProgress[q.id][so.id] === true;
-        const nowComplete = this._matchSubObjective(so, this._progress);
+        const nowComplete = this._matchSubObjective(so, this._progress, q);
         if (nowComplete && !wasComplete) {
           gs.subObjectiveProgress[q.id][so.id] = true;
           EventBus.emit('subObjectiveCompleted', { questId: q.id, subObjectiveId: so.id, text: so.text });
@@ -354,16 +365,34 @@ const QuestSystem = {
       }
     }
 
+    // Set → 배열로 미러링 — GameState.serialize에 실려 세이브 로드 후에도 누적 카운터가 복원되게 한다
     gs.questProgress = {
       collected:              { ...this._progress.collected },
       collectedByTypeOrTag:   { ...this._progress.collectedByTypeOrTag },
       craftedRecipes:         [...this._progress.craftedRecipes],
       craftedCategoryCounts:  { ...this._progress.craftedCategoryCounts },
-      visitedDistricts:       new Set(this._progress.visitedDistricts),
+      visitedDistricts:       [...this._progress.visitedDistricts],
       usedItemCounts:         { ...this._progress.usedItemCounts },
-      treatedNpcs:            new Set(this._progress.treatedNpcs),
+      treatedNpcs:            [...this._progress.treatedNpcs],
       treatedNpcCount:        this._progress.treatedNpcCount,
-      builtStructures:        new Set(this._progress.builtStructures),
+      builtStructures:        [...this._progress.builtStructures],
+    };
+  },
+
+  /** 세이브에 실려온 questProgress 미러로 세션 내부 누적 카운터를 복원 */
+  _restoreProgressFromSave() {
+    const saved = GameState.questProgress;
+    if (!saved) return;
+    this._progress = {
+      collected:              { ...(saved.collected ?? {}) },
+      collectedByTypeOrTag:   { ...(saved.collectedByTypeOrTag ?? {}) },
+      craftedRecipes:         [...(saved.craftedRecipes ?? [])],
+      craftedCategoryCounts:  { ...(saved.craftedCategoryCounts ?? {}) },
+      visitedDistricts:       new Set(saved.visitedDistricts ?? []),
+      usedItemCounts:         { ...(saved.usedItemCounts ?? {}) },
+      treatedNpcs:            new Set(saved.treatedNpcs ?? []),
+      treatedNpcCount:        saved.treatedNpcCount ?? 0,
+      builtStructures:        new Set(saved.builtStructures ?? []),
     };
   },
 
@@ -901,6 +930,9 @@ const QuestSystem = {
   // ── 완료 처리 ─────────────────────────────────────────────────
 
   _checkCompletion(q, qDef) {
+    // 모든 q.progress 갱신 지점이 이 함수를 거치므로, objective_progress 매처의 단일 재평가 지점
+    this._reevaluateSubObjectives();
+
     if (q.progress < qDef.objective.count) return;
     const gs  = GameState;
     const idx = gs.quests.active.indexOf(q);
@@ -909,6 +941,13 @@ const QuestSystem = {
     gs.quests.active.splice(idx, 1);
     gs.quests.completed.push(q.id);
     delete this._warnedDeadlines[q.id];
+
+    // 완료된 퀘스트의 체크리스트는 전부 체크 처리 — 미체크 잔여로 인한 표시 불일치 제거
+    if (qDef.subObjectives?.length) {
+      if (!gs.subObjectiveProgress) gs.subObjectiveProgress = {};
+      const flags = gs.subObjectiveProgress[q.id] ?? (gs.subObjectiveProgress[q.id] = {});
+      for (const so of qDef.subObjectives) flags[so.id] = true;
+    }
 
     // 보상 지급
     const r = qDef.reward;
