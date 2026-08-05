@@ -51,8 +51,8 @@ export const CHARACTERS = [
         id: 'medical_supply',
         name: '의료 물자',
         icon: '🎒',
-        desc: '붕대 4개, 소독약, 청진기, 메스, 통조림 2개, 에너지바 2개 추가 지급',
-        effect: { startingItems: ['bandage', 'bandage', 'bandage', 'bandage', 'antiseptic', 'stethoscope', 'combat_scalpel', 'canned_food', 'canned_food', 'energy_bar', 'energy_bar', 'instant_noodles', 'contaminated_water'] },
+        desc: '붕대 4개, 소독약, 청진기, 메스, 통조림, 에너지바 추가 지급',
+        effect: { startingItems: ['bandage', 'bandage', 'bandage', 'bandage', 'antiseptic', 'stethoscope', 'combat_scalpel', 'canned_food', 'energy_bar', 'instant_noodles', 'contaminated_water'] },
       },
     ],
     combatIdentity: {
@@ -384,10 +384,10 @@ export const CHARACTERS = [
         id: 'knife_mastery',
         name: '칼 다루기',
         icon: '🔪',
-        desc: '나이프/칼 무기 데미지 +25%, 시작 시 주방 칼·식재료 지급',
+        desc: '나이프/칼 무기 데미지 +25%, 시작 시 주방 칼 지급',
         effect: {
           knifeDmgBonus: 1.25,
-          startingItems: ['knife', 'canned_food', 'canned_food', 'preserved_ration', 'instant_noodles', 'instant_noodles', 'contaminated_water'],
+          startingItems: ['knife', 'contaminated_water'],
         },
       },
       {
@@ -405,7 +405,7 @@ export const CHARACTERS = [
         effect: {
           moraleRecoveryBonus: 1.6,
           lowMoraleRecoveryFatigueBonus: -3,
-          startingItems: ['chef_journal', 'spice_blend', 'spice_blend', 'chef_meal_kit', 'hearty_stew'],
+          startingItems: ['chef_journal', 'spice_blend', 'chef_meal_kit', 'hearty_stew'],
         },
       },
     ],
