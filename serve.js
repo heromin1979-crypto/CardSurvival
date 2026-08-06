@@ -301,7 +301,10 @@ async function handleApi(req, res, urlPath) {
     if (!abs.startsWith(ROOT) || !fs.existsSync(abs)) { sendJSON(res, 404, { error: '파일 없음' }); return; }
     const cmd = process.platform === 'darwin' ? 'open' : (process.platform === 'win32' ? 'explorer' : 'xdg-open');
     const args = process.platform === 'darwin' ? ['-R', abs] : (process.platform === 'win32' ? ['/select,', abs] : [path.dirname(abs)]);
-    execFile(cmd, args, () => { /* best-effort */ });
+    execFile(cmd, args, () => {
+      // macOS: reveal opens the Finder window BEHIND the frontmost app — bring it forward
+      if (process.platform === 'darwin') execFile('osascript', ['-e', 'tell application "Finder" to activate'], () => {});
+    });
     sendJSON(res, 200, { ok: true, path: '/' + path.relative(ROOT, abs).split(path.sep).join('/') });
     return;
   }
