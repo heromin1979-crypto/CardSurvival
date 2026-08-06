@@ -184,7 +184,8 @@ async function handleReveal(req, res) {
     if (clean.includes('..')) { sendJson(res, 400, { error: 'bad path' }); return; }
     const abs = resolve(ROOT, clean);
     if (!abs.startsWith(ROOT) || !existsSync(abs)) { sendJson(res, 404, { error: '파일 없음' }); return; }
-    const cmd = process.platform === 'darwin' ? `open -R "${abs}"`
+    // macOS: reveal opens the Finder window BEHIND the frontmost app — activate to bring it forward
+    const cmd = process.platform === 'darwin' ? `open -R "${abs}" && osascript -e 'tell application "Finder" to activate'`
       : process.platform === 'win32' ? `explorer /select,"${abs}"` : `xdg-open "${dirname(abs)}"`;
     exec(cmd, () => { /* best-effort */ });
     sendJson(res, 200, { ok: true });
