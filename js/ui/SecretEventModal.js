@@ -18,10 +18,15 @@ const SecretEventModal = {
     if (!this._el || this._initialized) return;
     this._initialized = true;
 
-    this._el.addEventListener('click', e => {
-      if (e.target === this._el) return;   // 바깥 클릭 닫기 금지 — 반드시 선택해야 함
+    // 선택지 클릭 — document 레벨로 등록 (Main._onEnter가 매번 _buildLayout으로
+    // #secret-event-modal을 통째로 재생성하므로, 엘리먼트에 직접 바인딩하면 두 번째
+    // 진입부터 죽은 노드를 붙잡게 된다. LandmarkModal의 배경 클릭 패턴과 동일)
+    document.addEventListener('click', e => {
+      const el = document.getElementById('secret-event-modal');
+      if (!el || !el.classList.contains('open')) return;
+      if (e.target === el) return;   // 바깥 클릭 닫기 금지 — 반드시 선택해야 함
       const pickEl = e.target.closest?.('[data-choice-index]');
-      if (!pickEl || pickEl.dataset.locked === '1') return;
+      if (!pickEl || !el.contains(pickEl) || pickEl.dataset.locked === '1') return;
       this._pick(parseInt(pickEl.dataset.choiceIndex, 10));
     });
 
