@@ -35,11 +35,15 @@ const CraftDiscovery = {
         s.requiredItems.map(r => r.definitionId)
       );
 
-      // src와 tgt가 모두 이 레시피의 재료에 포함되는지 확인
-      const srcNeeded = allRequired.includes(srcDefId);
-      const tgtNeeded = allRequired.includes(tgtDefId);
+      // 재료뿐 아니라 requiredTools도 매칭 대상 — 재료를 도구(건조대·조리솥 등)에
+      // 드래그하는 조합을 발견으로 인정한다. 단 도구×도구는 재료가 없어 제외.
+      const tools = bp.requiredTools ?? [];
+      const srcIsItem = allRequired.includes(srcDefId);
+      const tgtIsItem = allRequired.includes(tgtDefId);
+      const srcNeeded = srcIsItem || tools.includes(srcDefId);
+      const tgtNeeded = tgtIsItem || tools.includes(tgtDefId);
 
-      if (srcNeeded && tgtNeeded) {
+      if (srcNeeded && tgtNeeded && (srcIsItem || tgtIsItem)) {
         const missing = this._getMissingItems(bp, srcDefId, tgtDefId);
         const canStart = this._canStartNow(bp.id);
 

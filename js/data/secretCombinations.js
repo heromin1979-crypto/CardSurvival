@@ -103,7 +103,7 @@ const SECRET_COMBINATIONS = [
     source: { id: 'painkiller' },
     target: { id: 'sports_drink' },
     hint: '진통제를 스포츠 음료에 섞으면...',
-    discoveryMsg: '💡 강력 진통제! 트라우마 -10, 고통 무시 4시간.',
+    discoveryMsg: '💡 강력 진통제! 사기 +15, 피로 -10.',
     xpReward: { skill: 'medicine', amount: 12 },
     result: {
       spawnItem: 'strong_painkiller',
@@ -261,11 +261,11 @@ const SECRET_COMBINATIONS = [
   },
   {
     id: 'sc_sling',
-    name: '슬링(투석기)',
+    name: '삼각건',
     source: { id: 'cloth' },
     target: { id: 'rope' },
-    hint: '천과 로프로 원시 무기를...',
-    discoveryMsg: '💡 슬링! 원거리 비무장 무기.',
+    hint: '천과 로프로 다친 팔을 받칠 무언가를...',
+    discoveryMsg: '💡 삼각건! 팔을 고정해 골절 심각도를 2단계 낮춘다.',
     xpReward: { skill: 'weaponcraft', amount: 10 },
     result: {
       spawnItem: 'sling',
@@ -402,11 +402,11 @@ const SECRET_COMBINATIONS = [
 
   {
     id: 'sc_natural_antibiotic',
-    name: '천연 항생 연고',
+    name: '천연 소독약',
     source: { id: 'wild_garlic' },
     target: { id: 'herb' },
     hint: '마늘의 항균 성분과 약초를 섞으면...',
-    discoveryMsg: '💡 천연 항생 연고! 소독제 2개를 만들 수 있다.',
+    discoveryMsg: '💡 천연 소독약! 소독약 2개를 만들 수 있다. 감염 -20, HP +5.',
     xpReward: { skill: 'medicine', amount: 15 },
     requiredSkill: { medicine: 2 },
     result: {
@@ -435,11 +435,11 @@ const SECRET_COMBINATIONS = [
 
   {
     id: 'sc_honey_medicine',
-    name: '꿀 약초 연고',
+    name: '꿀 약초 진통제',
     source: { id: 'honey' },
     target: { id: 'herb_powder' },
-    hint: '꿀의 항균력과 약초 가루를 섞으면 강력한 치료제가...',
-    discoveryMsg: '💡 꿀 약초 연고! 감염 -25, HP 회복. 일반 소독제보다 효과가 좋다.',
+    hint: '꿀과 약초 가루를 섞으면 통증을 눌러주는 약이...',
+    discoveryMsg: '💡 강력 진통제! 사기 +15, 피로 -10. 통증을 눌러 다시 움직이게 한다.',
     xpReward: { skill: 'medicine', amount: 18 },
     requiredSkill: { medicine: 3 },
     result: {

@@ -1597,6 +1597,180 @@ const HIDDEN_RECIPES = {
     ],
   },
 
+  // ─── 보스 드롭 전설 장비 (5) ────────────────────────────────
+  // 각 아이템의 dismantle 산출물이 곧 재료 구성이다 (제작 ↔ 해체 대칭).
+
+  forge_crocodile_scale_armor: {
+    id: 'forge_crocodile_scale_armor', name: '악어 비늘 갑옷 제작', category: 'armor',
+    description: '하수도의 왕에게서 벗겨낸 비늘을 가죽 판에 겹쳐 박는다. 물이 스미지 않는 중갑.',
+    hidden: true,
+    rarity: 'legendary',
+    output: [{ definitionId: 'crocodile_scale_armor', qty: 1 }],
+    requiredTools: ['tanning_rack'],
+    requiredSkills: { armorcraft: 8, crafting: 4 },
+    stages: [
+      {
+        stageIndex: 0, label: '비늘 무두질', tpCost: 4,
+        requiredItems: [
+          { definitionId: 'sewer_scale', qty: 2 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '가죽 바탕 결합', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'leather', qty: 3 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+    unlockConditions: {
+      hiddenLocationId: null,
+      bossKillId: 'boss_sewer_king',
+      requiredCharacter: null,
+      minDay: 0,
+      minCraftLevel: 0,
+      requiredItems: [],
+      customUnlock: null,
+    },
+  },
+
+  weave_acid_resistant_cloak: {
+    id: 'weave_acid_resistant_cloak', name: '내산성 망토 제작', category: 'armor',
+    description: '산성 결정을 녹여 천에 먹이고 고무로 밀봉한다. 산성비와 산성 공격을 흘려보낸다.',
+    hidden: true,
+    rarity: 'legendary',
+    output: [{ definitionId: 'acid_resistant_cloak', qty: 1 }],
+    requiredTools: ['chemistry_bench'],
+    requiredSkills: { armorcraft: 6, crafting: 5 },
+    stages: [
+      {
+        stageIndex: 0, label: '결정 용해', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'acid_crystal', qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '천 코팅·밀봉', tpCost: 4,
+        requiredItems: [
+          { definitionId: 'cloth',  qty: 3 },
+          { definitionId: 'rubber', qty: 2 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+    unlockConditions: {
+      hiddenLocationId: null,
+      bossKillId: 'boss_acid_queen',
+      requiredCharacter: null,
+      minDay: 0,
+      minCraftLevel: 0,
+      requiredItems: [],
+      customUnlock: null,
+    },
+  },
+
+  craft_tiger_fang_necklace: {
+    id: 'craft_tiger_fang_necklace', name: '호랑이 이빨 목걸이 제작', category: 'armor',
+    description: '변이 호랑이의 송곳니를 로프에 꿰어 목에 건다. 사냥꾼의 증표.',
+    hidden: true,
+    rarity: 'legendary',
+    output: [{ definitionId: 'tiger_fang_necklace', qty: 1 }],
+    requiredTools: [],
+    requiredSkills: { crafting: 6 },
+    stages: [
+      {
+        stageIndex: 0, label: '송곳니 꿰기', tpCost: 2,
+        requiredItems: [
+          { definitionId: 'tiger_fang', qty: 2 },
+          { definitionId: 'rope',       qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+    unlockConditions: {
+      hiddenLocationId: null,
+      bossKillId: 'boss_mutant_alpha_tiger',
+      requiredCharacter: null,
+      minDay: 0,
+      minCraftLevel: 0,
+      requiredItems: [],
+      customUnlock: null,
+    },
+  },
+
+  forge_frost_blade: {
+    id: 'forge_frost_blade', name: '냉각 합금 나이프 단조', category: 'weapon',
+    description: '얼어붙은 거인의 냉동 핵을 날에 박아 넣는다. 베인 자리가 얼어붙는다.',
+    hidden: true,
+    rarity: 'legendary',
+    output: [{ definitionId: 'frost_blade', qty: 1 }],
+    requiredTools: ['field_forge'],
+    requiredSkills: { weaponcraft: 8, crafting: 4 },
+    stages: [
+      {
+        stageIndex: 0, label: '날 단조', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'sharp_blade', qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '냉동 핵 삽입', tpCost: 4,
+        requiredItems: [
+          { definitionId: 'cryo_core', qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+    unlockConditions: {
+      hiddenLocationId: null,
+      bossKillId: 'boss_frozen_giant',
+      requiredCharacter: null,
+      minDay: 0,
+      minCraftLevel: 0,
+      requiredItems: [],
+      customUnlock: null,
+    },
+  },
+
+  assemble_warlord_rifle: {
+    id: 'assemble_warlord_rifle', name: '두목의 소총 조립', category: 'weapon',
+    description: '약탈자 두목의 훈장을 개머리판에 박아 넣고 총열을 다시 짠다. 빼앗은 자의 상징.',
+    hidden: true,
+    rarity: 'legendary',
+    output: [{ definitionId: 'warlord_rifle', qty: 1 }],
+    requiredTools: ['workbench', 'field_forge'],
+    requiredSkills: { weaponcraft: 10, crafting: 6 },
+    stages: [
+      {
+        stageIndex: 0, label: '총열·기관부 성형', tpCost: 4,
+        requiredItems: [
+          { definitionId: 'scrap_metal', qty: 4 },
+          { definitionId: 'spring',      qty: 2 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '훈장 각인', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'warlord_medal', qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+    unlockConditions: {
+      hiddenLocationId: null,
+      bossKillId: 'boss_raider_warlord',
+      requiredCharacter: null,
+      minDay: 0,
+      minCraftLevel: 0,
+      requiredItems: [],
+      customUnlock: null,
+    },
+  },
+
 };
 
 export default HIDDEN_RECIPES;
