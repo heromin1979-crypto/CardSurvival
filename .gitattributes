@@ -1,0 +1,3 @@
+# 자동 생성 QA 리포트는 도구가 항상 LF로 기록한다.
+# core.autocrlf 환경에서 CRLF로 체크아웃되면 바이트 단위 비교 테스트가 깨진다.
+docs/analysis/COMPANION_MOTION_QA.json text eol=lf

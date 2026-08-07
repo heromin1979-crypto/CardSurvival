@@ -13,3 +13,6 @@ screen-main.png
 tmp/
 output/
 outputs/
+.superpowers/
+__pycache__/
+*.pyc
