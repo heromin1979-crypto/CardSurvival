@@ -161,32 +161,44 @@ const HiddenElementSystem = {
       type: 'good',
     });
 
-    // 보상 아이템 지급
-    if (loc.rewards?.length) {
-      for (const reward of loc.rewards) {
-        const inst = gs.createCardInstance(reward.definitionId, { quantity: reward.qty ?? 1 });
-        if (inst) {
-          gs.placeCardInRow(inst.instanceId, 'middle');
-          const def = GameData?.items?.[reward.definitionId];
-          if (def) {
-            EventBus.emit('notify', {
-              message: I18n.t('hidden.reward', { icon: def.icon ?? '📦', name: I18n.itemName(def.id, def.name) }),
-              type: 'good',
-            });
-          }
-          // 전설 아이템 추적
-          if (def?.rarity === 'legendary' || def?.legendary) {
-            if (!gs.flags.legendaryItemsFound.includes(reward.definitionId)) {
-              gs.flags.legendaryItemsFound.push(reward.definitionId);
+    if (loc.cinematicId) {
+      EventBus.emit('showCinematic', { sceneId: loc.cinematicId });
+    }
+
+    // 세부 장소가 연결된 장소는 진입 시 firstEnterReward로 지급하므로 여기서는 위치만 안내한다
+    if (loc.subLocationId) {
+      EventBus.emit('notify', {
+        message: `🚪 ${loc.name}에 진입할 수 있게 되었다. 해당 랜드마크에서 찾아보자.`,
+        type: 'info',
+      });
+    } else {
+      // 보상 아이템 지급
+      if (loc.rewards?.length) {
+        for (const reward of loc.rewards) {
+          const inst = gs.createCardInstance(reward.definitionId, { quantity: reward.qty ?? 1 });
+          if (inst) {
+            gs.placeCardInRow(inst.instanceId, 'middle');
+            const def = GameData?.items?.[reward.definitionId];
+            if (def) {
+              EventBus.emit('notify', {
+                message: I18n.t('hidden.reward', { icon: def.icon ?? '📦', name: I18n.itemName(def.id, def.name) }),
+                type: 'good',
+              });
+            }
+            // 전설 아이템 추적
+            if (def?.rarity === 'legendary' || def?.legendary) {
+              if (!gs.flags.legendaryItemsFound.includes(reward.definitionId)) {
+                gs.flags.legendaryItemsFound.push(reward.definitionId);
+              }
             }
           }
         }
       }
-    }
 
-    // 추가 랜덤 루트
-    if (loc.lootTable?.length) {
-      this._rollAndPlaceLoot(loc.lootTable, 2);
+      // 추가 랜덤 루트
+      if (loc.lootTable?.length) {
+        this._rollAndPlaceLoot(loc.lootTable, 2);
+      }
     }
 
     // 보스 전투 트리거
