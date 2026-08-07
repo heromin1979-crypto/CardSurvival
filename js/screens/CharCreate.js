@@ -616,6 +616,7 @@ const CharCreate = {
         ],
         globalPenalty: '선택 시 패널티: 사기 -10, 박상훈 하사는 응급실에 남겨진다.',
         onChoose: (choice) => {
+          EventBus.emit('openingChoice', { characterId: 'doctor', choice });
           if (choice === 'escape') {
             gs.flags.abandoned_soldier = true;
             gs.stats.morale.current = Math.max(0, gs.stats.morale.current - 10);
@@ -625,13 +626,8 @@ const CharCreate = {
             });
             // 응급실 탈출 → 동작구 베이스캠프로
             ExploreSystem.exitLandmark();
-          } else {
-            // 치료 선택: 응급실에 머무름. 플레이어가 붕대를 박상훈에게 드래그하여 치료
-            EventBus.emit('notify', {
-              message: '붕대를 박상훈 하사 카드에 드래그해 치료하세요. 완치 시 퀘스트가 완료됩니다.',
-              type: 'info',
-            });
           }
+          // 치료 선택 시 응급실 잔류 — 붕대 드래그 안내는 OnboardingSystem이 openingChoice로 처리
         },
       });
     });

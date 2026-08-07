@@ -273,6 +273,8 @@ const BAL_HELP = {
   survivalRateTargetMin: '밸런스 목표 — 100일 생존율 하한(0~1).',
   survivalRateTargetMax: '밸런스 목표 — 100일 생존율 상한(0~1).',
   // stats
+  weightWarnPct: '무게 경고 온보딩 힌트 발화 비율(0~1) — 과적 전 선제 안내.',
+  warnLevel: '소음 경고 온보딩 힌트 발화 레벨 — 유입 임계 전 선제 안내.',
   hydrationDecayPerTP: 'TP당 수분 감소량.',
   nutritionDecayPerTP: 'TP당 포만감(영양) 감소량.',
   moraleDecayPerTP: 'TP당 사기 자연 감소량.',
@@ -634,6 +636,8 @@ const ITEM_HELP = {
   critMultiplier: '치명타 피해 배율.',
   critBonus: '치명타 확률/피해 보너스.',
   critMultiplierBonus: '치명타 배율 보너스.',
+  unarmedDmgBonus: '장착 중 맨손 공격 데미지 증가량(고정치).',
+  preservesContents: '가방으로 장착 시 가방 페이지 칸의 식량 부패(오염 누적)를 정지.',
   noiseOnUse: '사용 시 발생하는 소음.',
   noiseOnAttack: '공격 시 발생하는 소음.',
   durabilityLoss: '사용 시 잃는 내구도.',

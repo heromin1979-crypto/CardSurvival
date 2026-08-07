@@ -18,6 +18,8 @@ const BALANCE = {
     moraleDecayPerTP:     0.2,
     fatigueGainPerTP:     0.8,
     staminaRegenPerTP:    1.2,   // (기존 1.5 → 1.2로 완화)
+    // 무게 경고 온보딩 힌트 발화 비율 — 과적 페널티(100%) 전에 미리 안내
+    weightWarnPct: 0.75,
     // 무게 비율(weightPct)별 스태미나 소모 배율 (max 이하이면 해당 mult)
     // 과적(>100%)에서만 페널티를 부여하고 그 이하 무게는 배율 없음
     weightMultipliers: [
@@ -50,6 +52,7 @@ const BALANCE = {
     max:              100,
     baseDecayPerTP:   1.0,
     influxThreshold:  60,
+    warnLevel:        40,   // 소음 경고 온보딩 힌트 발화 레벨 — 유입 임계 전 선제 안내
     flushReductionMult: 0.5,   // 소음 플러시 시 influxThreshold 대비 잔존 비율
     // 소음 레벨에 따른 추가 감소 (스파이럴 방지)
     scaledDecayBreakpoints: [
@@ -264,7 +267,7 @@ const BALANCE = {
   // ── 부패 (Phase 4) — 음식 유기물만, 일 1회 contamination 누적 ───
   spoilage: {
     // subtype별 기본 부패 일수(이 일수에 걸쳐 contamination 0→100). 아이템 spoilDays로 개별 덮어쓰기.
-    daysBySubtype: { food_raw: 2, carcass: 1, food: 5, drink: 7 },
+    daysBySubtype: { food_raw: 2, carcass: 2, food: 5, drink: 7 },
     defaultDays: 5,                       // subtype 미해당 음식 기본
     seasonMult: { spring: 1.0, summer: 2.0, autumn: 1.0, winter: 0.5 }, // 여름 빨리, 겨울 느리게
   },
