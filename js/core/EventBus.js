@@ -25,6 +25,10 @@ const EventBus = {
     const wrapper = (data) => { cb(data); this.off(event, wrapper); };
     this.on(event, wrapper);
   },
+
+  hasListener(event) {
+    return (this._listeners[event]?.length ?? 0) > 0;
+  },
 };
 
 // Known event channels:
@@ -45,6 +49,7 @@ const EventBus = {
 // hiddenLocationDiscovered { locationId, location }
 // bossKilled               { bossId, boss }
 // secretEventTriggered     { event }
+// showCinematic            { sceneId, onComplete }
 // recipeUnlocked           { recipeId, recipe }
 // structureDamage          { damagePercent }
 // npcSpawned               { npcId }
