@@ -555,6 +555,51 @@ describe('combat sprite sheet assets', () => {
     expect(summary.fail).toBe(0);
   }, 30000);
 
+  it('fails the audit CLI when a copied strict boss sheet has attached low-saturation green pixels', () => {
+    const runtime = discoverPythonRuntime();
+    const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'combat-audit-boundary-'));
+    const source = path.join(SPRITE_ROOT, 'enemies', 'boss_feral_dog_alpha_sheet.png');
+    const mutated = path.join(tempRoot, 'boss_feral_dog_alpha_sheet.png');
+    try {
+      const script = [
+        'from PIL import Image',
+        `image = Image.open(r'${source.replaceAll('\\', '/')}').convert('RGBA')`,
+        'pixels = image.load()',
+        'chosen = []',
+        'for y in range(1, image.height - 1):',
+        '    for x in range(1, image.width - 1):',
+        '        if pixels[x, y][3] != 0:',
+        '            continue',
+        '        neighbors = [pixels[x - 1, y][3], pixels[x + 1, y][3], pixels[x, y - 1][3], pixels[x, y + 1][3]]',
+        '        if max(neighbors) == 0 or any(abs(x - px) + abs(y - py) <= 2 for px, py in chosen):',
+        '            continue',
+        '        chosen.append((x, y))',
+        '        if len(chosen) == 20:',
+        '            break',
+        '    if len(chosen) == 20:',
+        '        break',
+        'assert len(chosen) == 20',
+        'for x, y in chosen:',
+        '    pixels[x, y] = (55, 165, 48, 255)',
+        `image.save(r'${mutated.replaceAll('\\', '/')}', format='PNG')`,
+      ].join('\n');
+      execFileSync(runtime.command, [...runtime.prefix, '-c', script], { cwd: ROOT });
+
+      const result = spawnSync(process.execPath, [
+        path.join(ROOT, 'tools', 'audit_combat_sprites.mjs'),
+        '--check',
+        '--sheet-key=boss_feral_dog_alpha',
+        `--sheet-path=${mutated}`,
+      ], { cwd: ROOT, encoding: 'utf8' });
+
+      expect(result.status).toBe(1);
+      expect(JSON.parse(result.stdout)).toMatchObject({ total: 1, fail: 1 });
+      expect(result.stderr).toContain('boundary=20');
+    } finally {
+      fs.rmSync(tempRoot, { recursive: true, force: true });
+    }
+  }, 30000);
+
   it('renders the combat sprite audit without a wall-clock timestamp', () => {
     const markdown = renderMarkdown({
       summary: { total: 0, referenced: 0, pass: 0, warn: 0, fail: 0 },

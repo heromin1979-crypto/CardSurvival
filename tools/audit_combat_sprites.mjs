@@ -561,11 +561,11 @@ function analyzeFile({ sheetKey, sheet, filePath }) {
   }
   const whiteRisk = whiteOpaqueRisk(sheetKey, pixelStats.rows, pixelStats.whiteOpaquePixels);
   if (whiteRisk.risky) issues.push({ level: 'warn', code: 'white-bg-risk', message: `${pixelStats.whiteOpaquePixels} opaque white pixels` });
-  if (pixelStats.opaqueGreen > 0 || pixelStats.fringeGreen > 0 || pixelStats.hiddenRgb > 0 || pixelStats.removedComponents > 0 || pixelStats.staleAllowlist > 0) {
+  if (pixelStats.opaqueGreen > 0 || pixelStats.fringeGreen > 0 || pixelStats.hiddenRgb > 0 || pixelStats.boundaryGreen > 0 || pixelStats.removedComponents > 0 || pixelStats.staleAllowlist > 0) {
     issues.push({
       level: 'fail',
       code: 'chroma-artifact',
-      message: `opaque=${pixelStats.opaqueGreen} fringe=${pixelStats.fringeGreen} hiddenRgb=${pixelStats.hiddenRgb} isolated=${pixelStats.removedComponents} staleAllowlist=${pixelStats.staleAllowlist}`,
+      message: `opaque=${pixelStats.opaqueGreen} fringe=${pixelStats.fringeGreen} hiddenRgb=${pixelStats.hiddenRgb} boundary=${pixelStats.boundaryGreen} isolated=${pixelStats.removedComponents} staleAllowlist=${pixelStats.staleAllowlist}`,
     });
   }
   return {
@@ -628,6 +628,14 @@ ${rows}
 function main() {
   const checkOnly = process.argv.includes('--check');
   const checkAllowlist = process.argv.includes('--check-allowlist');
+  const sheetKey = process.argv.find(argument => argument.startsWith('--sheet-key='))?.slice('--sheet-key='.length);
+  const sheetPath = process.argv.find(argument => argument.startsWith('--sheet-path='))?.slice('--sheet-path='.length);
+  if (Boolean(sheetKey) !== Boolean(sheetPath)) {
+    throw new Error('--sheet-key and --sheet-path must be provided together');
+  }
+  if (sheetKey && !checkOnly) {
+    throw new Error('single-sheet audit is only available with --check');
+  }
   const allowlistDiagnostics = validateComponentAllowlist();
   if (checkAllowlist) {
     console.log(JSON.stringify({ diagnostics: allowlistDiagnostics }));
@@ -639,7 +647,11 @@ function main() {
     process.exitCode = 1;
     return;
   }
-  const sheets = manifestSheets().map(analyzeFile);
+  const inputs = sheetKey
+    ? [{ sheetKey, sheet: COMBAT_MOTION_MANIFEST[sheetKey], filePath: path.resolve(sheetPath) }]
+    : manifestSheets();
+  if (sheetKey && !inputs[0].sheet) throw new Error(`unknown combat sprite sheet: ${sheetKey}`);
+  const sheets = inputs.map(analyzeFile);
   const summary = {
     total: sheets.length,
     referenced: sheets.length,
@@ -655,7 +667,14 @@ function main() {
     fs.writeFileSync(OUT_MD, renderMarkdown(audit), 'utf8');
   }
   console.log(JSON.stringify(summary));
-  if (summary.fail > 0) process.exitCode = 1;
+  if (summary.fail > 0) {
+    console.error(JSON.stringify({
+      failures: sheets
+        .filter(sheet => sheet.severity === 'fail')
+        .map(sheet => ({ sheetKey: sheet.sheetKey, issues: sheet.issues })),
+    }));
+    process.exitCode = 1;
+  }
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {

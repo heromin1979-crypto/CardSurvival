@@ -22,6 +22,7 @@ const RELINKER = path.join(ROOT, 'tools', 'relink_companion_motion_manual_eviden
 const RECIPE_RELATIVE = 'art_sources/combat/task9_companions/assembly_recipe.json';
 const PREVIEW_RELATIVE = 'art_sources/combat/task9_companions/preview_manifest.json';
 const MANUAL_RELATIVE = 'docs/analysis/COMPANION_MOTION_MANUAL_OBSERVATIONS.json';
+const QA_REPORT_RELATIVE = 'docs/analysis/COMPANION_MOTION_QA.json';
 const BUILDER_RELATIVE = 'tools/build_companion_motion_sheets.ps1';
 
 function repoPath(root, value) {
@@ -35,8 +36,36 @@ function copyFile(root, relative) {
   fs.copyFileSync(source, target);
 }
 
-function verifier(root) {
-  return spawnSync(process.execPath, [VERIFIER, '--root=' + root], {
+function hardlinkTree(source, destination) {
+  fs.mkdirSync(destination, { recursive: true });
+  for (const entry of fs.readdirSync(source, { withFileTypes: true })) {
+    const from = path.join(source, entry.name);
+    const to = path.join(destination, entry.name);
+    if (entry.isDirectory()) hardlinkTree(from, to);
+    else fs.linkSync(from, to);
+  }
+}
+
+function rewriteTextTree(root, eol) {
+  const textExtensions = new Set(['.bat', '.css', '.html', '.js', '.json', '.md', '.mjs', '.ps1', '.py', '.sh', '.txt']);
+  for (const entry of fs.readdirSync(root, { withFileTypes: true })) {
+    const pathname = path.join(root, entry.name);
+    if (entry.isDirectory()) {
+      rewriteTextTree(pathname, eol);
+    } else if (textExtensions.has(path.extname(entry.name).toLowerCase())) {
+      const normalized = fs.readFileSync(pathname, 'utf8')
+        .replace(/^\uFEFF/, '')
+        .replaceAll('\r\n', '\n')
+        .replaceAll('\r', '\n')
+        .replaceAll('\n', eol);
+      fs.unlinkSync(pathname);
+      fs.writeFileSync(pathname, normalized, 'utf8');
+    }
+  }
+}
+
+function verifier(root, args = []) {
+  return spawnSync(process.execPath, [VERIFIER, '--root=' + root, ...args], {
     cwd: ROOT,
     encoding: 'utf8',
     timeout: 180000,
@@ -147,6 +176,56 @@ describe('Task 9 companion motion quality and immutable provenance', () => {
     const result = relinker(fixtureRoot);
     expect(result.status).toBe(0);
     expect(fs.readFileSync(manualPath)).toEqual(original);
+  }, 180000);
+
+  it('writes the same repository-relative QA report through two checkout paths', () => {
+    const linkContainer = fs.mkdtempSync(path.join(os.tmpdir(), 'task9-companion-root-alias-'));
+    const lfRoot = path.join(linkContainer, 'checkout-lf');
+    const crlfRoot = path.join(linkContainer, 'checkout-crlf');
+    hardlinkTree(fixtureRoot, lfRoot);
+    hardlinkTree(fixtureRoot, crlfRoot);
+    rewriteTextTree(lfRoot, '\n');
+    rewriteTextTree(crlfRoot, '\r\n');
+    try {
+      const first = verifier(lfRoot, ['--write']);
+      expect(first.status, first.stderr || first.stdout).toBe(0);
+      const reportPath = path.join(lfRoot, QA_REPORT_RELATIVE);
+      const firstBytes = fs.readFileSync(reportPath);
+
+      const second = verifier(crlfRoot, ['--write']);
+      expect(second.status, second.stderr || second.stdout).toBe(0);
+      const secondReportPath = path.join(crlfRoot, QA_REPORT_RELATIVE);
+      const secondBytes = fs.readFileSync(secondReportPath);
+      const report = JSON.parse(secondBytes.toString('utf8'));
+
+      expect(secondBytes).toEqual(firstBytes);
+      expect(report).not.toHaveProperty('root');
+      expect(JSON.stringify(report)).not.toContain(lfRoot);
+      expect(JSON.stringify(report)).not.toContain(crlfRoot);
+      expect(report.manualEvidenceState).toBe('linked-not-authenticated');
+      expect(report.strictChromaTotals).toEqual({
+        opaqueGreen: 0,
+        fringeGreen: 0,
+        hiddenRgb: 0,
+        boundaryGreen: 0,
+        removedComponents: 0,
+        staleAllowlist: 0,
+      });
+      expect(secondBytes).toEqual(fs.readFileSync(path.join(ROOT, QA_REPORT_RELATIVE)));
+
+      const manualPath = path.join(crlfRoot, MANUAL_RELATIVE);
+      const manualBytes = fs.readFileSync(manualPath);
+      const linked = relinker(crlfRoot);
+      expect(linked.status, linked.stderr || linked.stdout).toBe(0);
+      expect(fs.readFileSync(manualPath)).toEqual(manualBytes);
+      expect(fs.readFileSync(secondReportPath)).toEqual(secondBytes);
+
+      const repeated = verifier(crlfRoot, ['--write']);
+      expect(repeated.status, repeated.stderr || repeated.stdout).toBe(0);
+      expect(fs.readFileSync(secondReportPath)).toEqual(secondBytes);
+    } finally {
+      fs.rmSync(linkContainer, { recursive: true, force: true });
+    }
   }, 180000);
 
   it.each([
