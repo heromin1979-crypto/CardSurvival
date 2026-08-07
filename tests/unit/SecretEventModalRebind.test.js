@@ -20,12 +20,15 @@ function rebuildScreen() {
 
 describe('SecretEventModal — DOM 재빌드 이후 선택지 클릭', () => {
   beforeEach(() => {
-    document.body.innerHTML = '<main id="screen-main"></main>';
+    // 기존 테스트들은 "이미 main 화면에 재진입한" 상태를 재현하므로 active를 켜둔다 —
+    // Renderer.activateScreen이 stateTransition마다 실제로 붙이는 클래스와 동일하다
+    document.body.innerHTML = '<main id="screen-main" class="screen active"></main>';
     EventBus._listeners = {};
     SecretEventModal._initialized = false;
     SecretEventModal._el = null;
     SecretEventModal._box = null;
     SecretEventModal._event = null;
+    SecretEventModal._queue = [];
   });
 
   it('두 번째 init() 이후에도 선택지 클릭이 resolveSecretEventChoice를 호출한다', () => {
@@ -122,5 +125,91 @@ describe('SecretEventModal — DOM 재빌드 이후 선택지 클릭', () => {
     expect(activeSpy).not.toHaveBeenCalled();
 
     activeSpy.mockRestore();
+  });
+});
+
+// Rest.js:91의 skipTP는 여전히 Rest 화면이 활성인 상태에서 tpAdvance를 여러 번 발생시킨다.
+// 그 사이 트리거된 비밀 이벤트는 #screen-main이 display:none 서브트리에 있으므로 즉시
+// 표시할 수 없다 — 큐에 쌓아두고, main 재진입(active 부착 + init 재호출) 시점에 순서대로
+// 소진해야 소실 없이 전달된다.
+describe('SecretEventModal — main 화면이 아닐 때 이벤트 큐잉', () => {
+  function rebuildScreen() {
+    document.getElementById('screen-main').innerHTML = MODAL_MARKUP;
+  }
+
+  beforeEach(() => {
+    // active 클래스 없음 — Rest 등 다른 화면이 활성인 동안을 재현
+    document.body.innerHTML = '<main id="screen-main" class="screen"></main>';
+    EventBus._listeners = {};
+    SecretEventModal._initialized = false;
+    SecretEventModal._el = null;
+    SecretEventModal._box = null;
+    SecretEventModal._event = null;
+    SecretEventModal._queue = [];
+  });
+
+  it('active가 없는 동안 트리거된 이벤트는 표시되지도, 소비되지도 않는다', () => {
+    const eventA = SECRET_EVENTS.find(e => e.id === 'event_radio_whisper');
+    const eventB = SECRET_EVENTS.find(e => e.id === 'event_abandoned_cart');
+    expect(eventA).toBeTruthy();
+    expect(eventB).toBeTruthy();
+
+    const resolveSpy = vi.spyOn(HiddenElementSystem, 'resolveSecretEventChoice')
+      .mockReturnValue(true);
+
+    rebuildScreen();
+    SecretEventModal.init();
+
+    EventBus.emit('secretEventTriggered', { event: eventA });
+    EventBus.emit('secretEventTriggered', { event: eventB });
+
+    const modal = document.getElementById('secret-event-modal');
+    expect(modal.classList.contains('open')).toBe(false);
+    expect(resolveSpy).not.toHaveBeenCalled();
+
+    resolveSpy.mockRestore();
+  });
+
+  it('main으로 복귀해 init()이 재호출되면 큐의 첫 이벤트가 표시된다', () => {
+    const eventA = SECRET_EVENTS.find(e => e.id === 'event_radio_whisper');
+    const eventB = SECRET_EVENTS.find(e => e.id === 'event_abandoned_cart');
+
+    vi.spyOn(HiddenElementSystem, 'resolveSecretEventChoice').mockReturnValue(true);
+
+    rebuildScreen();
+    SecretEventModal.init();
+    EventBus.emit('secretEventTriggered', { event: eventA });
+    EventBus.emit('secretEventTriggered', { event: eventB });
+
+    // Renderer.activateScreen이 stateTransition 처리 중 가장 먼저 붙이는 클래스를 재현
+    document.getElementById('screen-main').classList.add('active');
+    SecretEventModal.init();
+
+    const modal = document.getElementById('secret-event-modal');
+    expect(modal.classList.contains('open')).toBe(true);
+    expect(modal.querySelector('.er-header h2')?.textContent).toContain(eventA.name);
+  });
+
+  it('선택을 마치면 큐의 두 번째 이벤트가 이어서 표시된다', () => {
+    const eventA = SECRET_EVENTS.find(e => e.id === 'event_radio_whisper');
+    const eventB = SECRET_EVENTS.find(e => e.id === 'event_abandoned_cart');
+
+    vi.spyOn(HiddenElementSystem, 'resolveSecretEventChoice').mockReturnValue(true);
+
+    rebuildScreen();
+    SecretEventModal.init();
+    EventBus.emit('secretEventTriggered', { event: eventA });
+    EventBus.emit('secretEventTriggered', { event: eventB });
+
+    document.getElementById('screen-main').classList.add('active');
+    SecretEventModal.init();
+
+    const modal = document.getElementById('secret-event-modal');
+    const choiceEl = modal.querySelector('[data-choice-index="0"]');
+    expect(choiceEl).toBeTruthy();
+    choiceEl.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+
+    expect(modal.classList.contains('open')).toBe(true);
+    expect(modal.querySelector('.er-header h2')?.textContent).toContain(eventB.name);
   });
 });

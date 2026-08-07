@@ -11,10 +11,14 @@ const SecretEventModal = {
   _box: null,
   _initialized: false,
   _event: null,
+  _queue: [],
 
   init() {
     this._el  = document.getElementById('secret-event-modal');
     this._box = this._el?.querySelector('.er-modal-box');
+    // Rest 등 다른 화면에서 트리거된 이벤트가 큐에 쌓여있을 수 있다 —
+    // main 재진입(_onEnter → _buildLayout → init) 시점에 바로 드레인 시도
+    this._presentNext();
     if (!this._el || this._initialized) return;
     this._initialized = true;
 
@@ -36,7 +40,18 @@ const SecretEventModal = {
 
   _open(event) {
     if (!event?.choices?.length) return;
-    this._event = event;
+    this._queue.push(event);
+    this._presentNext();
+  },
+
+  // 큐 선두를 표시한다 — main 화면이 실제로 보이는 상태가 아니면(Rest/Explore 등
+  // 다른 화면이 활성인 동안) 표시를 미루고 큐는 그대로 둔다. 그렇지 않으면
+  // #screen-main이 display:none인 서브트리에 .open을 붙이는 셈이라 아무것도
+  // 보이지 않는데 이벤트는 이미 소비 처리된 상태가 된다.
+  _presentNext() {
+    if (this._event || !this._queue.length) return;
+    if (!document.getElementById('screen-main')?.classList.contains('active')) return;
+    this._event = this._queue.shift();
     this.render();
     this._el?.classList.add('open');
   },
@@ -47,6 +62,7 @@ const SecretEventModal = {
     this._event = null;
     this._el?.classList.remove('open');
     HiddenElementSystem.resolveSecretEventChoice(eventId, index);
+    this._presentNext();
   },
 
   _itemName(id) {
