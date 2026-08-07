@@ -677,7 +677,6 @@ const ExploreSystem = {
   _updateTopRowForLandmark(landmarkKey) {
     const gs    = GameState;
     const items = GameData?.items ?? {};
-    const lmData = getLandmarkData(landmarkKey);
 
     // 기존 top row 위치 카드 모두 제거
     for (let i = 0; i < gs.board.top.length; i++) {
