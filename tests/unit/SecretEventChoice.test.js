@@ -90,3 +90,32 @@ describe('UI 부재 시 자동 폴백', () => {
     expect(GameState.getBoardCards().length).toBe(before);
   });
 });
+
+describe('선택지 조건과 실제 소모량 정합성', () => {
+  it('조건에 명시된 수량이 결과의 최대 소모량 이상이다', () => {
+    const gaps = [];
+    for (const ev of SECRET_EVENTS) {
+      for (const ch of ev.choices ?? []) {
+        const need = new Map();
+        for (const id of ch.conditions?.requiredItems ?? []) need.set(id, 1);
+        for (const { id, qty } of ch.conditions?.requiredItemQty ?? []) {
+          need.set(id, Math.max(need.get(id) ?? 0, qty ?? 1));
+        }
+        if (need.size === 0) continue;
+
+        const spend = new Map();
+        for (const out of ch.outcomes ?? []) {
+          for (const r of out.effects?.removeItems ?? []) {
+            spend.set(r.id, Math.max(spend.get(r.id) ?? 0, r.qty ?? 1));
+          }
+        }
+        for (const [id, max] of spend) {
+          if ((need.get(id) ?? 0) < max) {
+            gaps.push(`${ev.id}/${ch.id}: ${id} 조건 ${need.get(id) ?? 0} < 소모 ${max}`);
+          }
+        }
+      }
+    }
+    expect(gaps).toEqual([]);
+  });
+});
