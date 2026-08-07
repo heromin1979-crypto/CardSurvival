@@ -65,8 +65,11 @@ const SecretEventModal = {
     // ESC로 pause → main 복귀하면 _buildLayout()이 모달 노드를 갈아치워 .open이
     // 사라진다 — 처리 중이던 이벤트를 잃지 않도록 큐를 건드리지 않고 다시 띄운다
     if (this._event) {
-      this.render();
-      this._el?.classList.add('open');
+      // 이미 떠 있는 모달을 다시 그리면 읽던 스크롤 위치와 진행 중인 클릭이 날아간다
+      if (!this._el?.classList.contains('open')) {
+        this.render();
+        this._el?.classList.add('open');
+      }
       return;
     }
     if (!this._queue.length || !this._el || !this._box) return;

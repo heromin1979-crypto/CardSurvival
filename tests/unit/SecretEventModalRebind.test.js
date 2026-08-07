@@ -174,7 +174,7 @@ describe('SecretEventModal — main 화면이 아닐 때 이벤트 큐잉', () =
     const eventA = SECRET_EVENTS.find(e => e.id === 'event_radio_whisper');
     const eventB = SECRET_EVENTS.find(e => e.id === 'event_abandoned_cart');
 
-    vi.spyOn(HiddenElementSystem, 'resolveSecretEventChoice').mockReturnValue(true);
+    const resolveSpy = vi.spyOn(HiddenElementSystem, 'resolveSecretEventChoice').mockReturnValue(true);
 
     rebuildScreen();
     SecretEventModal.init();
@@ -188,13 +188,15 @@ describe('SecretEventModal — main 화면이 아닐 때 이벤트 큐잉', () =
     const modal = document.getElementById('secret-event-modal');
     expect(modal.classList.contains('open')).toBe(true);
     expect(modal.querySelector('.er-header h2')?.textContent).toContain(eventA.name);
+
+    resolveSpy.mockRestore();
   });
 
   it('선택을 마치면 큐의 두 번째 이벤트가 이어서 표시된다', () => {
     const eventA = SECRET_EVENTS.find(e => e.id === 'event_radio_whisper');
     const eventB = SECRET_EVENTS.find(e => e.id === 'event_abandoned_cart');
 
-    vi.spyOn(HiddenElementSystem, 'resolveSecretEventChoice').mockReturnValue(true);
+    const resolveSpy = vi.spyOn(HiddenElementSystem, 'resolveSecretEventChoice').mockReturnValue(true);
 
     rebuildScreen();
     SecretEventModal.init();
@@ -211,6 +213,8 @@ describe('SecretEventModal — main 화면이 아닐 때 이벤트 큐잉', () =
 
     expect(modal.classList.contains('open')).toBe(true);
     expect(modal.querySelector('.er-header h2')?.textContent).toContain(eventB.name);
+
+    resolveSpy.mockRestore();
   });
 });
 
@@ -275,6 +279,63 @@ describe('SecretEventModal — 화면 재빌드로 소실된 표시 복구', () 
 
     expect(resolveSpy).toHaveBeenCalledWith('event_radio_whisper', 0);
     modal = document.getElementById('secret-event-modal');
+    expect(modal.classList.contains('open')).toBe(true);
+    expect(modal.querySelector('.er-header h2')?.textContent).toContain(eventB.name);
+
+    resolveSpy.mockRestore();
+  });
+});
+
+// HiddenElementSystem._checkSecretEvents()는 매 3TP마다 실행된다 — 플레이어가 첫
+// 이벤트의 모달을 읽는 도중 두 번째 이벤트가 트리거될 수 있다. _open()이 곧바로
+// _presentNext()를 호출하므로, 이미 떠 있는 모달을 그 자리에서 다시 그려버리면
+// (er-modal.css의 .er-body { overflow-y: auto }) 읽던 스크롤 위치와 클릭 중이던
+// 선택지가 사라진다 — 큐에만 쌓이고 화면은 그대로여야 한다.
+describe('SecretEventModal — 모달이 열려 있는 동안 새 이벤트가 트리거돼도 재렌더링하지 않는다', () => {
+  beforeEach(() => {
+    document.body.innerHTML = '<main id="screen-main" class="screen active"></main>';
+    EventBus._listeners = {};
+    SecretEventModal._initialized = false;
+    SecretEventModal._el = null;
+    SecretEventModal._box = null;
+    SecretEventModal._event = null;
+    SecretEventModal._queue = [];
+  });
+
+  it('열려 있는 모달은 다시 그려지지 않고, 새 이벤트는 큐에 쌓였다가 순서대로 표시된다', () => {
+    const eventA = SECRET_EVENTS.find(e => e.id === 'event_radio_whisper');
+    const eventB = SECRET_EVENTS.find(e => e.id === 'event_child_crying');
+    expect(eventA).toBeTruthy();
+    expect(eventB).toBeTruthy();
+
+    const resolveSpy = vi.spyOn(HiddenElementSystem, 'resolveSecretEventChoice')
+      .mockReturnValue(true);
+
+    rebuildScreen();
+    SecretEventModal.init();
+    EventBus.emit('secretEventTriggered', { event: eventA });
+
+    const modal = document.getElementById('secret-event-modal');
+    expect(modal.classList.contains('open')).toBe(true);
+
+    // render()가 다시 실행되면 er-body의 innerHTML이 통째로 교체되어 이 커스텀
+    // 프로퍼티(=같은 DOM 노드라는 증거)가 사라진다
+    const choiceElBefore = modal.querySelector('[data-choice-index="0"]');
+    expect(choiceElBefore).toBeTruthy();
+    choiceElBefore._untouchedMarker = 'kept';
+
+    EventBus.emit('secretEventTriggered', { event: eventB });
+
+    const choiceElAfter = modal.querySelector('[data-choice-index="0"]');
+    expect(choiceElAfter).toBe(choiceElBefore);
+    expect(choiceElAfter._untouchedMarker).toBe('kept');
+    expect(modal.querySelector('.er-header h2')?.textContent).toContain(eventA.name);
+    expect(SecretEventModal._queue.map(e => e.id)).toEqual([eventB.id]);
+
+    // eventA를 해결하면 큐에 쌓여 있던 eventB가 이어서 표시되어야 한다
+    choiceElAfter.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+
+    expect(resolveSpy).toHaveBeenCalledWith('event_radio_whisper', 0);
     expect(modal.classList.contains('open')).toBe(true);
     expect(modal.querySelector('.er-header h2')?.textContent).toContain(eventB.name);
 
