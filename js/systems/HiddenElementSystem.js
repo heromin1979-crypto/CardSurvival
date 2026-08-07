@@ -427,6 +427,44 @@ const HiddenElementSystem = {
     return true;
   },
 
+  /**
+   * 선택지의 필요 물품 충족 여부를 판정한다.
+   * UI가 잠금 표시에 쓰고, UI가 없는 환경의 자동 폴백도 같은 규칙을 공유한다.
+   * @returns {{ ok: boolean, missing: Array<{id:string, need:number, have:number}> }}
+   */
+  evaluateChoiceConditions(choice) {
+    const cond = choice?.conditions;
+    if (!cond) return { ok: true, missing: [] };
+
+    const missing = [];
+    for (const itemId of cond.requiredItems ?? []) {
+      const have = GameState.countOnBoard(itemId);
+      if (have < 1) missing.push({ id: itemId, need: 1, have });
+    }
+    for (const { id, qty } of cond.requiredItemQty ?? []) {
+      const need = qty ?? 1;
+      const have = GameState.countOnBoard(id);
+      if (have < need) missing.push({ id, need, have });
+    }
+    return { ok: missing.length === 0, missing };
+  },
+
+  /** 플레이어가 고른 비밀 이벤트 선택지를 실행한다. UI에서 호출한다. */
+  resolveSecretEventChoice(eventId, choiceIndex) {
+    const event  = SECRET_EVENTS.find(e => e.id === eventId);
+    const choice = event?.choices?.[choiceIndex];
+    if (!choice) return false;
+    if (!this.evaluateChoiceConditions(choice).ok) return false;
+
+    const outcome = this._rollOutcome(choice.outcomes ?? []);
+    if (outcome) {
+      EventBus.emit('notify', { message: outcome.text, type: 'info' });
+      this._applyEventOutcome(outcome);
+    }
+    EventBus.emit('boardChanged', {});
+    return true;
+  },
+
   _triggerSecretEvent(event) {
     const gs = GameState;
     gs.flags.secretEventsTriggered.push(event.id);
@@ -439,11 +477,13 @@ const HiddenElementSystem = {
     // 이벤트 선택지 UI 표시를 위해 이벤트 발행
     EventBus.emit('secretEventTriggered', { event });
 
-    // 선택지가 없는 이벤트는 첫 번째 선택지의 첫 결과 자동 적용
     if (!event.choices?.length) return;
 
-    // UI가 없는 경우 자동 처리 (첫 선택지, 가중치 기반 결과)
-    const choice = event.choices[0];
+    // UI가 붙어 있으면 플레이어 선택을 기다린다
+    if (EventBus.hasListener('secretEventTriggered')) return;
+
+    // UI가 없는 환경(테스트·시뮬레이션) 폴백 — 조건을 만족하는 첫 선택지
+    const choice = event.choices.find(c => this.evaluateChoiceConditions(c).ok) ?? event.choices[0];
     if (choice?.outcomes?.length) {
       const outcome = this._rollOutcome(choice.outcomes);
       if (outcome) {
