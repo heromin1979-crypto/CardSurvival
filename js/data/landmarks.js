@@ -6083,6 +6083,21 @@ export function getLandmarkData(key) {
 }
 
 /**
+ * 랜드마크의 세부 장소 중 현재 플레이어에게 노출해야 할 것만 반환한다.
+ * `requiresHiddenLocation`이 지정된 세부 장소는 해당 숨겨진 장소를 발견한 뒤에만 나타난다.
+ * 본 모듈은 GameState를 import하지 않으므로(순환 의존 방지) 발견 목록을 인자로 받는다.
+ * @param {string} key - 랜드마크 아이템 ID 또는 LANDMARK_DATA 키
+ * @param {string[]} discoveredLocationIds - GameState.flags.hiddenLocationsDiscovered
+ * @returns {Array<object>} 노출 대상 세부 장소 배열
+ */
+export function getVisibleSubLocations(key, discoveredLocationIds = []) {
+  const subs = getLandmarkData(key)?.subLocations ?? [];
+  return subs.filter(sub =>
+    !sub.requiresHiddenLocation || discoveredLocationIds.includes(sub.requiresHiddenLocation)
+  );
+}
+
+/**
  * 주어진 랜드마크 키에서 낚시/통발 사용이 가능한지 판정한다 (hasFishing 플래그).
  * `lm_` 접두사 폴백을 포함하므로 아이템 ID를 그대로 전달해도 동작한다.
  */

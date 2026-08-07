@@ -7,7 +7,7 @@ import TickEngine  from '../core/TickEngine.js';
 import { NODES, DISTRICTS, generateRouteCards } from '../data/nodes.js';
 import { getAdjacentDistricts } from '../data/districts.js';
 import { rollEnemyGroup, ENEMIES } from '../data/enemies.js';
-import { LANDMARK_DATA, getLandmarkData } from '../data/landmarks.js';
+import { LANDMARK_DATA, getLandmarkData, getVisibleSubLocations } from '../data/landmarks.js';
 import NoiseSystem   from './NoiseSystem.js';
 import TraitSystem   from './TraitSystem.js';
 import StatSystem    from './StatSystem.js';
@@ -705,7 +705,7 @@ const ExploreSystem = {
 
     // 세부 장소 카드 → top[1..N]
     let slot = 1;
-    for (const sub of lmData?.subLocations ?? []) {
+    for (const sub of getVisibleSubLocations(landmarkKey, gs.flags?.hiddenLocationsDiscovered ?? [])) {
       if (slot >= gs.board.top.length) break;
       const slDefId = `sl_${sub.id}`;
       if (items[slDefId]) {
@@ -728,7 +728,8 @@ const ExploreSystem = {
     if (gs.location.currentSubLocation === subLocationId) return;
 
     const lmData = getLandmarkData(districtId);
-    const sub    = lmData?.subLocations?.find(s => s.id === subLocationId);
+    const sub    = getVisibleSubLocations(districtId, GameState.flags?.hiddenLocationsDiscovered ?? [])
+      .find(s => s.id === subLocationId);
     if (!sub) return;
 
     // 이전 세부 장소 바닥 저장 & 새 바닥 로드
