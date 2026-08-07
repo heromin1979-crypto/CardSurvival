@@ -94,8 +94,11 @@ describe('UI 부재 시 자동 폴백', () => {
     GameState.flags.trader_robbed = false;
     const ev = SECRET_EVENTS.find(e => e.id === 'event_wandering_trader');
     HiddenElementSystem.setChoiceResolverActive(true);
-    HiddenElementSystem._triggerSecretEvent(ev);
-    HiddenElementSystem.setChoiceResolverActive(false);
+    try {
+      HiddenElementSystem._triggerSecretEvent(ev);
+    } finally {
+      HiddenElementSystem.setChoiceResolverActive(false);
+    }
     expect(GameState.flags.trader_robbed).toBe(false);
   });
 
@@ -109,6 +112,7 @@ describe('UI 부재 시 자동 폴백', () => {
     off();
     expect(log).toContain('event_wandering_trader');
     expect(GameState.flags.trader_robbed).toBe(true);
+    GameState.flags.trader_robbed = false;
   });
 });
 
