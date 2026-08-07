@@ -727,8 +727,7 @@ const ExploreSystem = {
     // 이미 현재 위치한 세부 장소면 무시
     if (gs.location.currentSubLocation === subLocationId) return;
 
-    const lmData = getLandmarkData(districtId);
-    const sub    = getVisibleSubLocations(districtId, GameState.flags?.hiddenLocationsDiscovered ?? [])
+    const sub = getVisibleSubLocations(districtId, GameState.flags?.hiddenLocationsDiscovered ?? [])
       .find(s => s.id === subLocationId);
     if (!sub) return;
 
