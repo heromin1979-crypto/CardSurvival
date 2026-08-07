@@ -195,6 +195,8 @@ const FIELD_HELP = {
   repeatable: '재방문 가능 여부. true면 쿨다운 후 재탐색 가능.',
   repeatCooldownDays: '재방문 가능까지의 쿨다운 일수(repeatable=true일 때).',
   discoveryMessage: '발견 순간 표시되는 메시지.',
+  cinematicId:      '발견 시 재생할 컷씬 장면 ID.',
+  subLocationId:    '보상 지급을 위임할 세부 장소 ID. 지정하면 발견 즉시 지급을 건너뜁니다.',
   seasons: '제철 — 켠 계절에만 추첨된다. 기본은 4계절 전부 켜짐(사철). 전부 끄면 어느 계절에도 안 나온다.',
   harvest: '텃밭 자동 수확 설정 — itemId(산출 작물)·harvestDays(수확 주기 일)·qty(수확량). GardenSystem이 주기마다 자동 산출.',
   itemId: '산출/대상 아이템의 ID. (📦 아이템 탭에서 검색해 확인)',
@@ -220,6 +222,7 @@ const FIELD_HELP = {
   // 랜드마크
   dangerMod: '이 세부장소의 추가 위험도 보정값(클수록 위험).',
   lootCount: '탐색 1회에 나오는 아이템 개수 범위 [최소, 최대].',
+  requiresHiddenLocation: '이 숨겨진 장소를 발견해야 노출되는 세부 장소입니다.',
   // 퀘스트 기본
   title: '퀘스트 제목(화면에 표시되는 이름).',
   icon: '아이콘(이모지).',
