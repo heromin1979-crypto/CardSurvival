@@ -25,11 +25,6 @@ const EventBus = {
     const wrapper = (data) => { cb(data); this.off(event, wrapper); };
     this.on(event, wrapper);
   },
-
-  hasListener(event) {
-    if (!Object.prototype.hasOwnProperty.call(this._listeners, event)) return false;
-    return this._listeners[event].length > 0;
-  },
 };
 
 // Known event channels:

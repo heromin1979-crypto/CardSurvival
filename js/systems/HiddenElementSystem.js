@@ -493,8 +493,9 @@ const HiddenElementSystem = {
     if (this._choiceResolverActive) return;
 
     // UI가 없는 환경(테스트·시뮬레이션) 폴백 — 조건을 만족하는 첫 선택지
-    const choice = event.choices.find(c => this.evaluateChoiceConditions(c).ok) ?? event.choices[0];
-    if (choice?.outcomes?.length) {
+    const choice = event.choices.find(c => this.evaluateChoiceConditions(c).ok);
+    if (!choice) return;
+    if (choice.outcomes?.length) {
       const outcome = this._rollOutcome(choice.outcomes);
       if (outcome) {
         this._applyEventOutcome(outcome);

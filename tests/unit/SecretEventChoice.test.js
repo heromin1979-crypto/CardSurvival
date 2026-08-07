@@ -4,25 +4,6 @@ import GameState from '../../js/core/GameState.js';
 import HiddenElementSystem from '../../js/systems/HiddenElementSystem.js';
 import SECRET_EVENTS from '../../js/data/secretEvents.js';
 
-describe('EventBus.hasListener', () => {
-  it('수신자가 없으면 false', () => {
-    expect(EventBus.hasListener('__no_such_channel__')).toBe(false);
-  });
-
-  it('구독하면 true, 해제하면 false', () => {
-    const off = EventBus.on('__probe__', () => {});
-    expect(EventBus.hasListener('__probe__')).toBe(true);
-    off();
-    expect(EventBus.hasListener('__probe__')).toBe(false);
-  });
-
-  it('프로토타입 상속 키를 리스너로 오인하지 않는다', () => {
-    for (const key of ['constructor', 'hasOwnProperty', 'toString', 'valueOf']) {
-      expect(EventBus.hasListener(key), key).toBe(false);
-    }
-  });
-});
-
 describe('선택지 조건 판정', () => {
   it('조건이 없으면 항상 통과', () => {
     const r = HiddenElementSystem.evaluateChoiceConditions({ id: 'x' });
@@ -105,6 +86,7 @@ describe('UI 부재 시 자동 폴백', () => {
   it('로깅 전용 구독자는 자동 처리를 막지 않는다', () => {
     GameState.flags.secretEventsTriggered = [];
     GameState.flags.trader_robbed = false;
+    const initialBoardIds = GameState.getBoardCards().map(c => c.instanceId);
     const ev = SECRET_EVENTS.find(e => e.id === 'event_wandering_trader');
     const log = [];
     const off = EventBus.on('secretEventTriggered', d => log.push(d.event.id));
@@ -113,6 +95,12 @@ describe('UI 부재 시 자동 폴백', () => {
     expect(log).toContain('event_wandering_trader');
     expect(GameState.flags.trader_robbed).toBe(true);
     GameState.flags.trader_robbed = false;
+    const finalBoardIds = GameState.getBoardCards().map(c => c.instanceId);
+    for (const id of finalBoardIds) {
+      if (!initialBoardIds.includes(id)) {
+        GameState.removeCardInstance(id);
+      }
+    }
   });
 });
 

@@ -2311,7 +2311,7 @@ export const SECRET_EVENTS = [
         outcomes: [
           {
             weight: 100,
-            text: '12TP 동안 하늘이 어둡다. 좀비 -80%, 레이더 +100%. 기록을 남긴다.',
+            text: '해가 가려진 동안 거리가 조용해졌다. 관측한 것을 수첩에 옮겨 적는다.',
             effects: {
               morale: 10,
               flags: { eclipse_observed: true },
