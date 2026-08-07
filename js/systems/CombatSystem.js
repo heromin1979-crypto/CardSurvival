@@ -6,6 +6,7 @@ import StateMachine    from '../core/StateMachine.js';
 import SystemRegistry  from '../core/SystemRegistry.js';
 import NoiseSystem  from './NoiseSystem.js';
 import StatSystem   from './StatSystem.js';
+import { formatInstanceName } from './ItemEffectSystem.js';
 import EndingSystem from './EndingSystem.js';
 import SkillSystem  from './SkillSystem.js';
 import NPCSystem     from './NPCSystem.js';
@@ -1911,7 +1912,7 @@ const CombatSystem = {
         durLoss        = def.combat.durabilityLoss ?? 0;
         critChance     = def.combat.critChance     ?? 0;
         critMultiplier = def.combat.critMultiplier ?? (BALANCE.combat.defaultCritMultiplier ?? 1.5);
-        weaponName     = I18n.itemName(def.id, def.name);
+        weaponName     = formatInstanceName(weaponInst, def);
         isRanged       = !!(def.combat.requiresAmmo);
         skillId        = isRanged ? 'ranged' : 'melee';
 
@@ -1943,10 +1944,18 @@ const CombatSystem = {
         }
       }
     } else {
-      // 맨손: BALANCE 기반 데미지 + 스킬 dmgMult 적용
+      // 맨손: BALANCE 기반 데미지 + 스킬 dmgMult + 장갑류(hands) unarmedDmgBonus 적용
       const unarmedMult = SkillSystem.getBonus('unarmed', 'dmgMult');
       const [uMin, uMax] = BALANCE.combat.unarmedBaseDmg;
-      damage = Math.floor((uMin + Math.floor(Math.random() * (uMax - uMin + 1))) * unarmedMult);
+      const handsId  = gs.player.equipped?.hands;
+      const handsDef = handsId ? gs.getCardDef(handsId) : null;
+      const handsBonus = handsDef?.onWear?.unarmedDmgBonus ?? 0;
+      damage = Math.floor((uMin + Math.floor(Math.random() * (uMax - uMin + 1))) * unarmedMult) + handsBonus;
+    }
+
+    // 전투 자극제: 지속시간(totalTP 기준) 내 공격력 배율 적용
+    if (damage > 0 && (gs.player.attackBoostUntilTP ?? 0) > Math.floor(gs.time.totalTP ?? 0)) {
+      damage = Math.round(damage * (1 + (gs.player.attackBoostMult ?? 0)));
     }
 
     NoiseSystem.addNoise(noise);
@@ -2167,8 +2176,18 @@ const CombatSystem = {
     const def = gs.getCardDef(itemId);
     if (!def?.onConsume) return I18n.t('combatSys.itemNoEffect');
 
-    const { hp, infection, morale } = def.onConsume;
+    const { hp, infection, morale, temporaryStaminaBoost, temporaryAttackBoost, duration } = def.onConsume;
     const msgs = [];
+    if (temporaryStaminaBoost) {
+      gs.modStat('stamina', temporaryStaminaBoost);
+      msgs.push(I18n.t('combatSys.staminaUp', { val: temporaryStaminaBoost }));
+    }
+    if (temporaryAttackBoost && duration) {
+      const now = Math.floor(gs.time.totalTP ?? 0);
+      gs.player.attackBoostMult    = temporaryAttackBoost;
+      gs.player.attackBoostUntilTP = Math.max(gs.player.attackBoostUntilTP ?? 0, now + Math.max(1, Math.floor(duration)));
+      msgs.push(I18n.t('combatSys.attackBoost', { pct: Math.round(temporaryAttackBoost * 100), dur: duration }));
+    }
     let healedAmount = 0;
     if (hp) {
       const healMult = this._getMedicalHealMultiplier(def);

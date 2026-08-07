@@ -736,11 +736,12 @@ const ITEMS_COMBAT = {
   },
 
   combat_gloves: {
-    id: 'combat_gloves', name: '전투 장갑', type: 'consumable', subtype: 'enhancement',
+    id: 'combat_gloves', name: '전투 장갑', type: 'armor', subtype: 'hands',
     rarity: 'uncommon', weight: 0.3,
     defaultDurability: 100, defaultContamination: 0,
-    icon: '🧤', description: '강화 천으로 만든 전투용 장갑.',
+    icon: '🧤', description: '강화 천으로 만든 전투용 장갑. 장착하면 맨손 공격이 강해진다.',
     tags: ['enhancement', 'unarmed'],
+    onWear: { unarmedDmgBonus: 2 },
     dismantle: [
       { definitionId: 'cloth', qty: 1, chance: 0.7 },
       { definitionId: 'leather', qty: 1, chance: 0.5 },
@@ -748,11 +749,12 @@ const ITEMS_COMBAT = {
   },
 
   iron_gauntlet: {
-    id: 'iron_gauntlet', name: '철권 건틀릿', type: 'consumable', subtype: 'enhancement',
+    id: 'iron_gauntlet', name: '철권 건틀릿', type: 'armor', subtype: 'hands',
     rarity: 'rare', weight: 0.8,
     defaultDurability: 100, defaultContamination: 0,
     icon: '🤜', description: '금속으로 보강한 전투 장갑. 주먹이 흉기가 된다.',
     tags: ['enhancement', 'unarmed'],
+    onWear: { unarmedDmgBonus: 5 },
     dismantle: [
       { definitionId: 'scrap_metal', qty: 2, chance: 0.8 },
       { definitionId: 'leather', qty: 1, chance: 0.6 },

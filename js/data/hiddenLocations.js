@@ -831,6 +831,7 @@ export const HIDDEN_LOCATIONS = {
     },
     rewards: [
       { definitionId: 'river_boat', qty: 1 },
+      { definitionId: 'waterproof_container', qty: 1 },
     ],
     lootTable: [
       { definitionId: 'rope', weight: 25, minQty: 2, maxQty: 4 },

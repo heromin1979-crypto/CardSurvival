@@ -131,9 +131,9 @@ describe('GameState 장착 무기 슬롯 저장 마이그레이션', () => {
     const save = JSON.parse(GameState.serialize());
     const fillerIds = Array.from({ length: 40 }, (_, index) => `filler_${index}`);
     save.cards = Object.fromEntries([
-      ['shield_old', {
-        instanceId: 'shield_old',
-        definitionId: 'reinforced_shield',
+      ['molotov_old', {
+        instanceId: 'molotov_old',
+        definitionId: 'molotov_cocktail',
         quantity: 1,
       }],
       ...fillerIds.map(instanceId => [instanceId, {
@@ -142,7 +142,7 @@ describe('GameState 장착 무기 슬롯 저장 마이그레이션', () => {
         quantity: 1,
       }]),
     ]);
-    save.player.equipped.weapon_sub = 'shield_old';
+    save.player.equipped.weapon_sub = 'molotov_old';
     save.board.middle = fillerIds.slice(0, 20);
     save.board.bottom = fillerIds.slice(20, 40);
     save.pendingLoot = [];
@@ -153,7 +153,7 @@ describe('GameState 장착 무기 슬롯 저장 마이그레이션', () => {
 
     expect(GameState.player.equipped.weapon_sub).toBeNull();
     expect(GameState.pendingLoot).toEqual(expect.arrayContaining([
-      expect.objectContaining({ definitionId: 'reinforced_shield', quantity: 1 }),
+      expect.objectContaining({ definitionId: 'molotov_cocktail', quantity: 1 }),
     ]));
   });
 });

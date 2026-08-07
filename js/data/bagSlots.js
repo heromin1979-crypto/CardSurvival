@@ -1,6 +1,10 @@
 // 가방 아이템별 휴대 2페이지 슬롯 수
 // 페이지 단위 휴대 구조에서 page2 길이를 결정.
 // EquipmentSystem._applyBagEffect와 GameState.deserialize 마이그레이션이 공유한다.
+
+// 휴대(bottom) 1페이지 크기 — 이 인덱스부터가 가방(2페이지) 칸
+export const BOTTOM_PAGE1_SIZE = 20;
+
 export const BAG_EXTRA_SLOTS = {
   small_bag:     8,
   messenger_bag: 11,

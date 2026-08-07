@@ -30,9 +30,14 @@ describe('플레이어 무기 슬롯 정책', () => {
     expect(EquipmentSystem.canEquip('knife_1', 'weapon_sub').ok).toBe(true);
   });
 
-  it.each(['shield_1', 'molotov_1'])('%s은 무기 슬롯 모두에서 거부된다', id => {
-    expect(EquipmentSystem.getSlotsForDef(GameState.getCardDef(id)))
+  it('몰로토프는 무기 슬롯 모두에서 거부된다', () => {
+    expect(EquipmentSystem.getSlotsForDef(GameState.getCardDef('molotov_1')))
       .not.toEqual(expect.arrayContaining(['weapon_main', 'weapon_sub']));
+  });
+
+  it('방패는 근접 보조무기(offhand) 슬롯에 들어간다', () => {
+    expect(EquipmentSystem.canEquip('shield_1', 'weapon_main').ok).toBe(false);
+    expect(EquipmentSystem.canEquip('shield_1', 'weapon_sub').ok).toBe(true);
   });
 
   it('구버전 반대 슬롯 장착은 올바른 슬롯으로 교환하고 탄창을 초기화한다', () => {
@@ -54,7 +59,7 @@ describe('플레이어 무기 슬롯 정책', () => {
     expect(GameState.cards.pistol_old.loadedAmmo).toBe(0);
   });
 
-  it('부적합 방패를 장착 해제해 보드로 복구한다', () => {
+  it('weapon_sub에 장착된 방패는 저장 로드 후에도 유지된다', () => {
     const save = JSON.parse(GameState.serialize());
     save.cards = {
       shield_old: { instanceId: 'shield_old', definitionId: 'reinforced_shield', durability: 75 },
@@ -65,17 +70,16 @@ describe('플레이어 무기 슬롯 정책', () => {
 
     GameState.deserialize(JSON.stringify(save));
 
-    expect(GameState.player.equipped.weapon_sub).toBeNull();
-    expect(GameState.getBoardCards().map(card => card.instanceId)).toContain('shield_old');
+    expect(GameState.player.equipped.weapon_sub).toBe('shield_old');
   });
 
   it('보드가 가득 차면 부적합 장비를 pendingLoot으로 보존한다', () => {
     const save = JSON.parse(GameState.serialize());
     const fillerIds = Array.from({ length: 40 }, (_, index) => `filler_${index}`);
     save.cards = Object.fromEntries([
-      ['shield_old', {
-        instanceId: 'shield_old',
-        definitionId: 'reinforced_shield',
+      ['molotov_old', {
+        instanceId: 'molotov_old',
+        definitionId: 'molotov_cocktail',
         durability: 75,
       }],
       ...fillerIds.map(instanceId => [instanceId, {
@@ -84,7 +88,7 @@ describe('플레이어 무기 슬롯 정책', () => {
         quantity: 1,
       }]),
     ]);
-    save.player.equipped.weapon_sub = 'shield_old';
+    save.player.equipped.weapon_sub = 'molotov_old';
     save.board.middle = fillerIds.slice(0, 20);
     save.board.bottom = fillerIds.slice(20, 40);
     save.pendingLoot = [];
@@ -93,7 +97,7 @@ describe('플레이어 무기 슬롯 정책', () => {
 
     expect(GameState.player.equipped.weapon_sub).toBeNull();
     expect(GameState.pendingLoot).toEqual(expect.arrayContaining([
-      expect.objectContaining({ definitionId: 'reinforced_shield', quantity: 1 }),
+      expect.objectContaining({ definitionId: 'molotov_cocktail', quantity: 1 }),
     ]));
   });
 

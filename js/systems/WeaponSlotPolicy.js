@@ -2,7 +2,9 @@ import { isMagazineWeapon } from './WeaponAmmoSystem.js';
 
 export function weaponSlotForDefinition(definition) {
   if (isMagazineWeapon(definition)) return 'weapon_main';
-  if (definition?.type === 'weapon' && definition?.subtype === 'melee') return 'weapon_sub';
+  if (definition?.type !== 'weapon') return null;
+  // weapon_sub는 보조 무기 + offhand 겸용 슬롯 — 방패도 여기에 장착한다
+  if (definition.subtype === 'melee' || definition.subtype === 'shield') return 'weapon_sub';
   return null;
 }
 

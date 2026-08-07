@@ -11,6 +11,7 @@ import BALANCE       from '../data/gameBalance.js';
 import CharDialogue  from '../data/charDialogues.js';
 import GameData      from '../data/GameData.js';
 import { consumeEffectMultiplier, getConsumableEffect, normalizeConsumeEffect } from './ItemEffectSystem.js';
+import { BOTTOM_PAGE1_SIZE } from '../data/bagSlots.js';
 
 const StatSystem = {
   init() {
@@ -294,7 +295,15 @@ const StatSystem = {
     const seasonId = gs.season?.current ?? SeasonSystem.getCurrentSeason?.(gs.time?.day ?? 1)?.id ?? 'spring';
     const seasonMult = SP.seasonMult?.[seasonId] ?? 1;
 
+    // 밀폐 보관 가방(방수 컨테이너 등) 장착 시: 가방 페이지(2페이지) 칸의 식량은 부패 대상 제외
+    const backpackId  = gs.player?.equipped?.backpack;
+    const backpackDef = backpackId ? gs.getCardDef(backpackId) : null;
+    const sealedIds   = backpackDef?.preservesContents
+      ? new Set((gs.board.bottom ?? []).slice(BOTTOM_PAGE1_SIZE).filter(Boolean))
+      : null;
+
     for (const card of gs.getBoardCards()) {
+      if (sealedIds?.has(card.instanceId)) continue;
       const def = gs.getCardDef(card.instanceId);
       if (!def || def.type !== 'consumable' || !PERISHABLE_SUB.has(def.subtype)) continue;
       // 가공 보존품 — 부패 안 함: 명시 preserved 플래그 또는 preserved/fermented 태그(건조·훈연·발효·절임·통조림)
@@ -709,6 +718,12 @@ const StatSystem = {
       const until = now + Math.max(1, Math.floor(eff.zombieRepelTP));
       gs.player.zombieRepelUntilTP = Math.max(gs.player.zombieRepelUntilTP ?? 0, until);
       EventBus.emit('notify', { message: `좀비 회피 효과가 ${eff.zombieRepelTP}TP 동안 지속됩니다.`, type: 'good' });
+    }
+    if (eff.temporaryAttackBoost && eff.duration) {
+      const now = Math.floor(gs.time.totalTP ?? 0);
+      gs.player.attackBoostMult    = eff.temporaryAttackBoost;
+      gs.player.attackBoostUntilTP = Math.max(gs.player.attackBoostUntilTP ?? 0, now + Math.max(1, Math.floor(eff.duration)));
+      EventBus.emit('notify', { message: `💊 공격력 +${Math.round(eff.temporaryAttackBoost * 100)}% 효과가 ${eff.duration}TP 동안 지속됩니다.`, type: 'good' });
     }
     if (eff.hp) {
       // 의사 능력: 붕대 사용 시 bandageHpBonus 추가 회복
