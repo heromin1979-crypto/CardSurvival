@@ -26,6 +26,7 @@ const SecretEventModal = {
     });
 
     EventBus.on('secretEventTriggered', ({ event }) => this._open(event));
+    HiddenElementSystem.setChoiceResolverActive(true);
   },
 
   _open(event) {

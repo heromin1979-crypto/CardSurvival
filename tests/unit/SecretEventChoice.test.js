@@ -80,14 +80,26 @@ describe('UI 부재 시 자동 폴백', () => {
     expect(picked.id).not.toBe('trade');
   });
 
-  it('UI 리스너가 있으면 자동 처리를 건너뛴다', () => {
+  it('선택 처리 주체가 등록되면 자동 처리를 건너뛴다', () => {
     GameState.flags.secretEventsTriggered = [];
+    GameState.flags.trader_robbed = false;
     const ev = SECRET_EVENTS.find(e => e.id === 'event_wandering_trader');
-    const off = EventBus.on('secretEventTriggered', () => {});
-    const before = GameState.getBoardCards().length;
+    HiddenElementSystem.setChoiceResolverActive(true);
+    HiddenElementSystem._triggerSecretEvent(ev);
+    HiddenElementSystem.setChoiceResolverActive(false);
+    expect(GameState.flags.trader_robbed).toBe(false);
+  });
+
+  it('로깅 전용 구독자는 자동 처리를 막지 않는다', () => {
+    GameState.flags.secretEventsTriggered = [];
+    GameState.flags.trader_robbed = false;
+    const ev = SECRET_EVENTS.find(e => e.id === 'event_wandering_trader');
+    const log = [];
+    const off = EventBus.on('secretEventTriggered', d => log.push(d.event.id));
     HiddenElementSystem._triggerSecretEvent(ev);
     off();
-    expect(GameState.getBoardCards().length).toBe(before);
+    expect(log).toContain('event_wandering_trader');
+    expect(GameState.flags.trader_robbed).toBe(true);
   });
 });
 

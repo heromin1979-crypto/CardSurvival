@@ -428,6 +428,16 @@ const HiddenElementSystem = {
   },
 
   /**
+   * 비밀 이벤트 선택지를 플레이어에게 물어 처리할 주체가 있는지 여부.
+   * 로깅·통계 목적의 구독자와 구분하기 위해 채널 수신자 수가 아니라 명시적 등록으로 판정한다.
+   */
+  _choiceResolverActive: false,
+
+  setChoiceResolverActive(active) {
+    this._choiceResolverActive = !!active;
+  },
+
+  /**
    * 선택지의 필요 물품 충족 여부를 판정한다.
    * UI가 잠금 표시에 쓰고, UI가 없는 환경의 자동 폴백도 같은 규칙을 공유한다.
    * @returns {{ ok: boolean, missing: Array<{id:string, need:number, have:number}> }}
@@ -479,8 +489,8 @@ const HiddenElementSystem = {
 
     if (!event.choices?.length) return;
 
-    // UI가 붙어 있으면 플레이어 선택을 기다린다
-    if (EventBus.hasListener('secretEventTriggered')) return;
+    // 선택 처리 주체가 등록돼 있으면 플레이어 선택을 기다린다
+    if (this._choiceResolverActive) return;
 
     // UI가 없는 환경(테스트·시뮬레이션) 폴백 — 조건을 만족하는 첫 선택지
     const choice = event.choices.find(c => this.evaluateChoiceConditions(c).ok) ?? event.choices[0];
