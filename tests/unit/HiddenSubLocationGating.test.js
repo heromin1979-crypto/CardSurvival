@@ -116,4 +116,31 @@ describe('발견 시 보상 위임', () => {
     HiddenElementSystem._discoverHiddenLocation('hidden_junggoo_city_hall_safe', loc);
     expect(GameState.getBoardCards().length).toBeGreaterThan(before);
   });
+
+  it('위임 경로에서도 히든 레시피 해금 검사가 실행된다', () => {
+    freshFlags();
+    const prevLevel = GameState.player.skills.building.level;
+    GameState.player.skills.building.level = 8;
+    HiddenElementSystem._discoverHiddenLocation(
+      'hidden_dongjak_cemetery_vault',
+      HIDDEN_LOCATIONS.hidden_dongjak_cemetery_vault,
+    );
+    GameState.player.skills.building.level = prevLevel;
+    expect(GameState.flags.hiddenRecipesUnlocked).toContain('reinforced_shelter');
+  });
+
+  it('위임 경로에서도 발견·보드변경 이벤트가 발행된다', () => {
+    freshFlags();
+    const seen = [];
+    const offA = EventBus.on('hiddenLocationDiscovered', p => seen.push(`discovered:${p.locationId}`));
+    const offB = EventBus.on('boardChanged', () => seen.push('boardChanged'));
+    HiddenElementSystem._discoverHiddenLocation(
+      'hidden_dongjak_cemetery_vault',
+      HIDDEN_LOCATIONS.hidden_dongjak_cemetery_vault,
+    );
+    offA();
+    offB();
+    expect(seen).toContain('discovered:hidden_dongjak_cemetery_vault');
+    expect(seen).toContain('boardChanged');
+  });
 });
