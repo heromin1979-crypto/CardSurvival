@@ -27,7 +27,8 @@ const EventBus = {
   },
 
   hasListener(event) {
-    return (this._listeners[event]?.length ?? 0) > 0;
+    if (!Object.prototype.hasOwnProperty.call(this._listeners, event)) return false;
+    return this._listeners[event].length > 0;
   },
 };
 

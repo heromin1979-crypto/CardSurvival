@@ -15,6 +15,12 @@ describe('EventBus.hasListener', () => {
     off();
     expect(EventBus.hasListener('__probe__')).toBe(false);
   });
+
+  it('프로토타입 상속 키를 리스너로 오인하지 않는다', () => {
+    for (const key of ['constructor', 'hasOwnProperty', 'toString', 'valueOf']) {
+      expect(EventBus.hasListener(key), key).toBe(false);
+    }
+  });
 });
 
 describe('선택지 조건 판정', () => {
