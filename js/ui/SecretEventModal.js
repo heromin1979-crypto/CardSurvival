@@ -35,6 +35,18 @@ const SecretEventModal = {
     });
 
     EventBus.on('secretEventTriggered', ({ event }) => this._open(event));
+    // 런이 끝나거나(사망/엔딩 → main_menu) 다른 세이브를 불러오면 이전 런의 큐가
+    // 새 캐릭터에게 그대로 전달되어 버린다 — 싱글턴 모듈 상태이므로 여기서 끊는다
+    EventBus.on('stateTransition', ({ to }) => {
+      if (to === 'main_menu') {
+        this._queue = [];
+        this._event = null;
+      }
+    });
+    EventBus.on('loaded', () => {
+      this._queue = [];
+      this._event = null;
+    });
     HiddenElementSystem.setChoiceResolverActive(true);
   },
 
@@ -49,8 +61,15 @@ const SecretEventModal = {
   // #screen-main이 display:none인 서브트리에 .open을 붙이는 셈이라 아무것도
   // 보이지 않는데 이벤트는 이미 소비 처리된 상태가 된다.
   _presentNext() {
-    if (this._event || !this._queue.length) return;
     if (!document.getElementById('screen-main')?.classList.contains('active')) return;
+    // ESC로 pause → main 복귀하면 _buildLayout()이 모달 노드를 갈아치워 .open이
+    // 사라진다 — 처리 중이던 이벤트를 잃지 않도록 큐를 건드리지 않고 다시 띄운다
+    if (this._event) {
+      this.render();
+      this._el?.classList.add('open');
+      return;
+    }
+    if (!this._queue.length || !this._el || !this._box) return;
     this._event = this._queue.shift();
     this.render();
     this._el?.classList.add('open');

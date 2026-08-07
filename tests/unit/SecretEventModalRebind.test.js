@@ -213,3 +213,132 @@ describe('SecretEventModal — main 화면이 아닐 때 이벤트 큐잉', () =
     expect(modal.querySelector('.er-header h2')?.textContent).toContain(eventB.name);
   });
 });
+
+// ESC로 main → pause → main을 왕복하면 Basecamp._onEnter가 _buildLayout()으로
+// #screen-main.innerHTML을 통째로 갈아치운다 — 처리 중이던 이벤트를 담고 있던
+// _event는 그대로인데 새 DOM에는 .open이 붙지 않은 죽은 상태가 된다. 큐 이후에
+// 추가된 "재표시" 로직이 이 상태를 복구하는지 검증한다.
+describe('SecretEventModal — 화면 재빌드로 소실된 표시 복구', () => {
+  beforeEach(() => {
+    document.body.innerHTML = '<main id="screen-main" class="screen active"></main>';
+    EventBus._listeners = {};
+    SecretEventModal._initialized = false;
+    SecretEventModal._el = null;
+    SecretEventModal._box = null;
+    SecretEventModal._event = null;
+    SecretEventModal._queue = [];
+  });
+
+  it('ESC로 main 재진입해 DOM이 재생성돼도 처리 중이던 이벤트가 다시 표시된다', () => {
+    const eventA = SECRET_EVENTS.find(e => e.id === 'event_radio_whisper');
+    vi.spyOn(HiddenElementSystem, 'resolveSecretEventChoice').mockReturnValue(true);
+
+    rebuildScreen();
+    SecretEventModal.init();
+    EventBus.emit('secretEventTriggered', { event: eventA });
+
+    let modal = document.getElementById('secret-event-modal');
+    expect(modal.classList.contains('open')).toBe(true);
+
+    // Pause.js: main → pause → main. pause 전이에서는 active가 잠시 빠지고,
+    // Basecamp._onEnter의 _buildLayout()이 모달 노드를 파괴·재생성한다.
+    document.getElementById('screen-main').classList.remove('active');
+    rebuildScreen();
+    document.getElementById('screen-main').classList.add('active');
+    SecretEventModal.init();
+
+    modal = document.getElementById('secret-event-modal');
+    expect(modal.classList.contains('open')).toBe(true);
+    expect(modal.querySelector('.er-header h2')?.textContent).toContain(eventA.name);
+    expect(modal.querySelector('[data-choice-index="0"]')).toBeTruthy();
+  });
+
+  it('재표시 이후에도 선택지 클릭이 정상 동작하고, 다음 큐 이벤트가 이어서 표시된다', () => {
+    const eventA = SECRET_EVENTS.find(e => e.id === 'event_radio_whisper');
+    const eventB = SECRET_EVENTS.find(e => e.id === 'event_abandoned_cart');
+    const resolveSpy = vi.spyOn(HiddenElementSystem, 'resolveSecretEventChoice').mockReturnValue(true);
+
+    rebuildScreen();
+    SecretEventModal.init();
+    EventBus.emit('secretEventTriggered', { event: eventA });
+    EventBus.emit('secretEventTriggered', { event: eventB });
+
+    document.getElementById('screen-main').classList.remove('active');
+    rebuildScreen();
+    document.getElementById('screen-main').classList.add('active');
+    SecretEventModal.init();
+
+    let modal = document.getElementById('secret-event-modal');
+    const choiceEl = modal.querySelector('[data-choice-index="0"]');
+    expect(choiceEl).toBeTruthy();
+    choiceEl.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+
+    expect(resolveSpy).toHaveBeenCalledWith('event_radio_whisper', 0);
+    modal = document.getElementById('secret-event-modal');
+    expect(modal.classList.contains('open')).toBe(true);
+    expect(modal.querySelector('.er-header h2')?.textContent).toContain(eventB.name);
+
+    resolveSpy.mockRestore();
+  });
+});
+
+// 사망/엔딩으로 런이 끝나거나 다른 세이브를 불러오면 SecretEventModal의 싱글턴
+// 상태(_queue/_event)가 새 캐릭터로 그대로 넘어가서는 안 된다.
+describe('SecretEventModal — 런 종료/로드 시 큐 초기화', () => {
+  beforeEach(() => {
+    document.body.innerHTML = '<main id="screen-main" class="screen"></main>';
+    EventBus._listeners = {};
+    SecretEventModal._initialized = false;
+    SecretEventModal._el = null;
+    SecretEventModal._box = null;
+    SecretEventModal._event = null;
+    SecretEventModal._queue = [];
+  });
+
+  it('stateTransition to: main_menu 발생 시 큐가 비워지고 새 런에 전달되지 않는다', () => {
+    const eventA = SECRET_EVENTS.find(e => e.id === 'event_radio_whisper');
+    const resolveSpy = vi.spyOn(HiddenElementSystem, 'resolveSecretEventChoice').mockReturnValue(true);
+
+    rebuildScreen();
+    SecretEventModal.init();
+    EventBus.emit('secretEventTriggered', { event: eventA });
+
+    expect(SecretEventModal._queue.length).toBe(1);
+
+    // game_over/ending → main_menu: 런 종료
+    EventBus.emit('stateTransition', { from: 'game_over', to: 'main_menu', data: {} });
+
+    document.getElementById('screen-main').classList.add('active');
+    rebuildScreen();
+    SecretEventModal.init();
+
+    const modal = document.getElementById('secret-event-modal');
+    expect(modal.classList.contains('open')).toBe(false);
+    expect(resolveSpy).not.toHaveBeenCalled();
+
+    resolveSpy.mockRestore();
+  });
+
+  it('loaded 이벤트 발생 시 큐가 비워지고 이전 세이브의 이벤트가 전달되지 않는다', () => {
+    const eventA = SECRET_EVENTS.find(e => e.id === 'event_radio_whisper');
+    const resolveSpy = vi.spyOn(HiddenElementSystem, 'resolveSecretEventChoice').mockReturnValue(true);
+
+    rebuildScreen();
+    SecretEventModal.init();
+    EventBus.emit('secretEventTriggered', { event: eventA });
+
+    expect(SecretEventModal._queue.length).toBe(1);
+
+    EventBus.emit('loaded', { slot: 0 });
+
+    document.getElementById('screen-main').classList.add('active');
+    rebuildScreen();
+    SecretEventModal.init();
+
+    const modal = document.getElementById('secret-event-modal');
+    expect(modal.classList.contains('open')).toBe(false);
+    expect(resolveSpy).not.toHaveBeenCalled();
+
+    resolveSpy.mockRestore();
+  });
+});
