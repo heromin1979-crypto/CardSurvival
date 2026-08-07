@@ -66,9 +66,18 @@ describe('선택지 해결', () => {
   });
 
   it('조건 없는 선택지는 실행된다', () => {
+    const initialBoardIds = GameState.getBoardCards().map(c => c.instanceId);
+    const initialTraderMet = GameState.flags.trader_met;
     const ev = SECRET_EVENTS.find(e => e.id === 'event_wandering_trader');
     const idx = ev.choices.findIndex(c => c.id === 'chat_trader');
     expect(HiddenElementSystem.resolveSecretEventChoice(ev.id, idx)).toBe(true);
+    const finalBoardIds = GameState.getBoardCards().map(c => c.instanceId);
+    for (const id of finalBoardIds) {
+      if (!initialBoardIds.includes(id)) {
+        GameState.removeCardInstance(id);
+      }
+    }
+    GameState.flags.trader_met = initialTraderMet;
   });
 });
 
