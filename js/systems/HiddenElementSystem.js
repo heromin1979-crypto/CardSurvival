@@ -722,6 +722,9 @@ const HiddenElementSystem = {
       if (craftLevel < cond.minCraftLevel) return false;
     }
 
+    // 연구 시설 보유 필요 (분석실 등)
+    if (cond.requiredStructure && gs.countOnBoard(cond.requiredStructure) < 1) return false;
+
     // 필수 아이템 발견
     if (cond.requiredItems?.length) {
       for (const itemId of cond.requiredItems) {

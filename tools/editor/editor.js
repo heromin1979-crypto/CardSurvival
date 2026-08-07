@@ -186,6 +186,7 @@ const FIELD_HELP = {
   weather: '특정 날씨에서만 발견(예: rainy). null이면 날씨 제한 없음.',
   season: '특정 계절에서만 발견(spring/summer/autumn/winter). null이면 계절 제한 없음.',
   minCraftLevel: '최소 제작 숙련도.',
+  requiredStructure: '보드에 이 구조물이 있어야 해금(예: analysis_lab). 히든 레시피 unlockConditions 전용.',
   maxNoise: '소음이 이 값 이하일 때만(은신 조건). null이면 제한 없음.',
   minDistrictsVisited: '방문한 구 수 최소치.',
   minItemsFound: '누적 발견 아이템 수 최소치.',
@@ -200,7 +201,7 @@ const FIELD_HELP = {
   seasons: '제철 — 켠 계절에만 추첨된다. 기본은 4계절 전부 켜짐(사철). 전부 끄면 어느 계절에도 안 나온다.',
   harvest: '텃밭 자동 수확 설정 — itemId(산출 작물)·harvestDays(수확 주기 일)·qty(수확량). GardenSystem이 주기마다 자동 산출.',
   itemId: '산출/대상 아이템의 ID. (📦 아이템 탭에서 검색해 확인)',
-  harvestDays: '수확 주기(일). 이 일수마다 작물 1회 자동 산출(계절 배율 적용, 겨울 정지).',
+  harvestDays: '수확 주기(일). 이 일수마다 1회 자동 산출(계절 배율 적용, 겨울 정지). 단 medical_structure 시설은 계절 영향을 받지 않는다.',
   forage: '살살 채취(부분·재생) 설정 — regrowDays(재생 일)·yieldMult(수율 배율). 분해(뿌리째·소멸) 대신 노드를 남기고 일부만 거둔다. dismantle 테이블을 산출원으로 사용.',
   regrowDays: '살살 채취 후 다시 채취 가능해질 때까지의 일수.',
   yieldMult: '살살 채취 수율 배율(분해 대비). 예: 0.5 = 절반만 거둠.',
@@ -492,6 +493,7 @@ const BAL_HELP = {
   lightDrainPerTP: '야간 광원 카드 내구도 감소(/TP).',
   // medicalStation
   durabilityDecayPerTP: '의료 구조물 내구도 감소(/TP).',
+  infectionResistCap: '방역 시설 중첩 시 감염 증가 감소율 상한.',
   // fishing
   tpCostPerCast: '낚시 1회 TP 비용.',
   baseCatchChance: '기본 어획 확률(Lv.0).',
@@ -716,6 +718,8 @@ const ITEM_HELP = {
   permanentInfectionResist: '영구 감염 저항.',
   purifyRate: '정수 속도/효율.',
   restHealMult: '휴식 시 회복 배율.',
+  surgeryHealMult: 'surgery 태그 아이템(수술키트 등) 효과 배율.',
+  toolProvides: '이 카드가 대신할 수 있는 도구 ID 목록. 청사진 requiredTools 판정에서 id 일치와 동등하게 취급된다.',
   revealAllHiddenLocations: '모든 숨은 장소 공개.',
   revealHiddenLocations: '숨은 장소 공개.',
   severityMin: '효과가 적용되는 최소 심각도.',

@@ -9,6 +9,7 @@ import EndingSystem from './EndingSystem.js';
 import SeasonSystem from './SeasonSystem.js';
 import DISEASES    from '../data/diseases.js';
 import BALANCE     from '../data/gameBalance.js';
+import StructureEffectSystem from './StructureEffectSystem.js';
 import { getConsumableEffect } from './ItemEffectSystem.js';
 
 // ── 내부 노출 추적 카운터 (세이브 불필요 — 런타임 상태) ─────
@@ -45,6 +46,18 @@ const DiseaseSystem = {
 
     this._checkEnvironmentContraction(gs);
     this._progressDiseases(gs);
+
+    // 진단 시설이 있으면 잠복기가 끝난 질병을 스스로 찾아낸다 (진단 도구 소모 불필요)
+    if (StructureEffectSystem.get(gs).detectHiddenDisease) {
+      const revealed = this.diagnoseByFilter(gs, null);
+      if (revealed.length > 0) {
+        EventBus.emit('notify', {
+          message: `🔬 진단 시설이 이상을 감지했다: ${revealed.join(', ')}`,
+          type: 'warn',
+        });
+      }
+    }
+
     this._updateDiseaseHUD(gs);
   },
 
@@ -363,6 +376,11 @@ const DiseaseSystem = {
     if (!def) return;
     if (INFECTIOUS_DISEASE_IDS.has(diseaseId) && gs.player?.permanentInfectionImmunity) {
       EventBus.emit('notify', { message: '감염 면역으로 질병 발병을 막았습니다.', type: 'good' });
+      return;
+    }
+    if (INFECTIOUS_DISEASE_IDS.has(diseaseId)
+        && StructureEffectSystem.get(gs).infectionSpreadBlock) {
+      EventBus.emit('notify', { message: '격리 시설이 감염 확산을 차단했습니다.', type: 'good' });
       return;
     }
     const diseaseResist = gs.player?.permanentDiseaseResist ?? 0;

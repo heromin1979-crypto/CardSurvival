@@ -1,7 +1,9 @@
 import TraitSystem from './TraitSystem.js';
 import SkillSystem from './SkillSystem.js';
+import StructureEffectSystem from './StructureEffectSystem.js';
 import NPCSystem from './NPCSystem.js';
 import GameState from '../core/GameState.js';
+import GameData from '../data/GameData.js';
 import I18n from '../core/I18n.js';
 
 // 인스턴스 개조 상태(소음기 부착 등)를 카드 표시 이름에 반영
@@ -65,16 +67,19 @@ export function consumeEffectMultiplier(def, inst = {}) {
   const isMedical = def?.tags?.includes('medical') ?? false;
   const isFood = def?.subtype === 'food' || def?.subtype === 'drink';
   const isCrafted = inst?._crafted ?? false;
+  const isSurgery = def?.tags?.includes('surgery') ?? false;
   const traitMult = isMedical ? (TraitSystem.getTraitEffect('medic', 'healMultiplier') ?? 1.0) : 1.0;
   const medSkill = isMedical ? SkillSystem.getBonus('medicine', 'healMult') : 1.0;
   const compHeal = isMedical ? NPCSystem.getCompanionHealBonus() : 1.0;
   const cookSkill = isFood ? SkillSystem.getBonus('cooking', 'foodEffectMult') : 1.0;
+  // 수술대 등 정밀 시술 시설은 수술 도구에만 배율을 준다
+  const surgeryMult = isSurgery ? StructureEffectSystem.get().surgeryHealMult : 1.0;
 
   return {
     isMedical,
     isFood,
     isCrafted,
-    healMult: traitMult * compHeal * (isMedical ? medSkill : (isFood ? cookSkill : 1.0)),
+    healMult: traitMult * compHeal * surgeryMult * (isMedical ? medSkill : (isFood ? cookSkill : 1.0)),
   };
 }
 
@@ -132,6 +137,8 @@ export function formatCardEffectEntries(def, inst = {}) {
       cls: entry.cls,
     })),
     ...formatSpecialConsumeEffectParts(def).map(value => ({ label: '특수 효과', value })),
+    ...formatStructureEffectParts(def).map(value => ({ label: '시설 효과', value })),
+    ...formatStructureUtilityParts(def).map(value => ({ label: '시설 기능', value })),
     ...formatTreatmentEffectParts(def).map(value => ({ label: '치료 효과', value })),
     ...formatUtilityEffectParts(def).map(value => ({ label: '활용', value })),
     ...formatEquipmentEffectParts(def).map(value => ({ label: '장착 효과', value })),
@@ -151,6 +158,8 @@ export function formatCardEffectParts(def, inst = {}) {
   const parts = [
     ...formatConsumeEffectParts(def, inst),
     ...formatSpecialConsumeEffectParts(def),
+    ...formatStructureEffectParts(def),
+    ...formatStructureUtilityParts(def),
     ...formatTreatmentEffectParts(def),
     ...formatUtilityEffectParts(def),
     ...formatEquipmentEffectParts(def),
@@ -200,6 +209,38 @@ function formatSpecialConsumeEffectParts(def) {
     parts.push(`감염 저항 +${formatPercent(amount)}${duration ? ` ${duration}TP` : ''}`);
   } else if (effect.infectionResist) {
     parts.push(`감염 저항 +${formatPercent(effect.infectionResist)}${effect.infectionResistDuration ? ` ${effect.infectionResistDuration}TP` : ''}`);
+  }
+  return parts;
+}
+
+// 구조물 지속 효과(def.effect) — StructureEffectSystem이 집계해 적용하는 값
+function formatStructureEffectParts(def) {
+  const effect = def?.effect;
+  if (!effect) return [];
+
+  const parts = [];
+  if (effect.infectionResist) parts.push(`감염 증가 -${formatPercent(effect.infectionResist)}`);
+  if (effect.restHealMult)    parts.push(`휴식 회복 ×${effect.restHealMult}`);
+  if (effect.surgeryHealMult) parts.push(`수술 도구 효과 ×${effect.surgeryHealMult}`);
+  if (effect.infectionSpreadBlock) parts.push('전염성 질병 발병 차단');
+  if (effect.detectHiddenDisease)  parts.push('잠복 질병 자동 진단');
+  return parts;
+}
+
+// 시설이 대신 짊어지거나 주기적으로 산출하는 것 — effect와 별도 필드로 선언된다
+function formatStructureUtilityParts(def) {
+  const parts = [];
+  if (typeof def?.storageCapacity === 'number') {
+    parts.push(`의료품 ${def.storageCapacity}개 무게 면제`);
+  }
+  if (def?.toolProvides?.length) {
+    const names = def.toolProvides.map(id => I18n.itemName(id, GameData.items[id]?.name ?? id));
+    parts.push(`${names.join(', ')} 역할 대체`);
+  }
+  if (def?.harvest?.itemId) {
+    const h = def.harvest;
+    const cropName = I18n.itemName(h.itemId, GameData.items[h.itemId]?.name ?? h.itemId);
+    parts.push(`${cropName} ×${h.qty ?? 1} / ${h.harvestDays ?? 5}일 산출`);
   }
   return parts;
 }

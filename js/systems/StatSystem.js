@@ -7,11 +7,15 @@ import SeasonSystem  from './SeasonSystem.js';
 import DiseaseSystem from './DiseaseSystem.js';
 import SkillSystem   from './SkillSystem.js';
 import NPCSystem     from './NPCSystem.js';
+import StructureEffectSystem from './StructureEffectSystem.js';
 import BALANCE       from '../data/gameBalance.js';
 import CharDialogue  from '../data/charDialogues.js';
 import GameData      from '../data/GameData.js';
 import { consumeEffectMultiplier, getConsumableEffect, normalizeConsumeEffect } from './ItemEffectSystem.js';
 import { BOTTOM_PAGE1_SIZE } from '../data/bagSlots.js';
+
+// 내구도가 닳는 의료 시설 — onTick 계열('medical')과 지속 효과 계열('medical_structure')
+const MEDICAL_STRUCTURE_SUBTYPES = new Set(['medical', 'medical_structure']);
 
 const StatSystem = {
   init() {
@@ -94,6 +98,9 @@ const StatSystem = {
     const gs = GameState;
     let encounterReduction = 0;
 
+    // 지속 효과 집계 — 이벤트 구독만으로는 놓칠 수 있어 TP마다 기준점을 다시 잡는다
+    StructureEffectSystem.refresh(gs);
+
     // ── 구역 고정 구조물 효과 (현재 구역에 설치된 구조물) ──
     const currentDistrict = gs.location.currentDistrict;
     const installed = gs.location.installedStructures?.[currentDistrict];
@@ -137,11 +144,11 @@ const StatSystem = {
     // ── 보드 카드 구조물 효과 (바리케이드, 의무거점 등) ──
     for (const card of gs.getBoardCards()) {
       const def  = gs.getCardDef(card.instanceId);
-      const tick = def?.onTick;
-      if (!tick) continue;
+      if (!def) continue;
+      const tick = def.onTick;
 
       // HP 재생 (medical_station 등)
-      if (tick.hp && tick.hp > 0) {
+      if (tick?.hp && tick.hp > 0) {
         const healed = Math.min(tick.hp, gs.player.hp.max - gs.player.hp.current);
         if (healed > 0) {
           gs.player.hp.current += healed;
@@ -150,27 +157,27 @@ const StatSystem = {
       }
 
       // 감염 감소 (medical_station)
-      if (tick.infection && tick.infection < 0) {
+      if (tick?.infection && tick.infection < 0) {
         gs.modStat('infection', tick.infection);
       }
 
       // 사기 증가 (medical_ward, field_hospital 등)
-      if (tick.morale && tick.morale > 0) {
+      if (tick?.morale && tick.morale > 0) {
         gs.modStat('morale', tick.morale);
       }
 
       // 피로 감소 (field_hospital)
-      if (tick.fatigue && tick.fatigue < 0) {
+      if (tick?.fatigue && tick.fatigue < 0) {
         gs.modStat('fatigue', tick.fatigue);
       }
 
       // 조우 확률 감소 (barricade)
-      if (tick.encounterReduction && tick.encounterReduction > 0) {
+      if (tick?.encounterReduction && tick.encounterReduction > 0) {
         encounterReduction += tick.encounterReduction;
       }
 
-      // 의료 구조물 내구도 감소
-      if (def.subtype === 'medical' && def.type === 'structure') {
+      // 의료 구조물 내구도 감소 — onTick이 없는 지속 효과 시설도 대상이다
+      if (MEDICAL_STRUCTURE_SUBTYPES.has(def.subtype) && def.type === 'structure') {
         const inst = gs.cards[card.instanceId];
         if (inst && (inst.durability ?? 0) > 0) {
           inst.durability = Math.max(0, inst.durability - BALANCE.medicalStation.durabilityDecayPerTP);
@@ -280,6 +287,9 @@ const StatSystem = {
 
     // encounterRateReduct을 player에 저장 (ExploreSystem에서 참조)
     gs.player.encounterRateReduct = Math.min(BALANCE.encounter.structureReductCap, encounterReduction);
+
+    // 이번 TP에 붕괴한 시설이 있으면 집계값이 낡는다 — 같은 TP 안에서 바로잡는다
+    StructureEffectSystem.refresh(gs);
   },
 
   // ── 식량 부패 (여름 계절 효과) ──────────────────────────────────

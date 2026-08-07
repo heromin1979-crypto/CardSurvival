@@ -1195,6 +1195,7 @@ const HIDDEN_RECIPES = {
     hidden: true,
     rarity: 'legendary',
     output: [{ definitionId: 'synthetic_antibiotics', qty: 1 }],
+    unlockConditions: { requiredStructure: 'analysis_lab' },
     requiredTools: ['workbench'],
     requiredSkills: { medicine: 10 },
     stages: [
@@ -1216,6 +1217,7 @@ const HIDDEN_RECIPES = {
     hidden: true,
     rarity: 'legendary',
     output: [{ definitionId: 'surgical_anesthetic', qty: 1 }],
+    unlockConditions: { requiredStructure: 'analysis_lab' },
     requiredTools: ['workbench'],
     requiredSkills: { medicine: 8 },
     stages: [
@@ -1301,6 +1303,7 @@ const HIDDEN_RECIPES = {
     hidden: true,
     rarity: 'legendary',
     output: [{ definitionId: 'universal_cure', qty: 1 }],
+    unlockConditions: { requiredStructure: 'analysis_lab' },
     requiredTools: ['workbench'],
     requiredSkills: { medicine: 15 },
     stages: [

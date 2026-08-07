@@ -2631,7 +2631,10 @@ const ITEMS_MISC = {
       'medical',
       'advanced',
     ],
-    craftingTool: true,
+    toolProvides: ['medical_station'],
+    effect: {
+      surgeryHealMult: 1.4,
+    },
     dismantle: [
       {
         definitionId: 'scrap_metal',
@@ -2744,12 +2747,13 @@ const ITEMS_MISC = {
     defaultDurability: 100,
     defaultContamination: 0,
     icon: '🩸',
-    description: 'IV용 혈액 저장·사용.',
+    description: '혈액을 보관·정제해 6일마다 야전 수혈 키트를 산출한다.',
     tags: [
       'structure',
       'medical',
       'advanced',
     ],
+    harvest: { itemId: 'field_transfusion_kit', harvestDays: 6, qty: 1 },
     dismantle: [
       {
         definitionId: 'electronic_parts',
@@ -2826,11 +2830,12 @@ const ITEMS_MISC = {
     defaultDurability: 100,
     defaultContamination: 0,
     icon: '🍼',
-    description: '섬세한 샘플 보존.',
+    description: '샘플을 보존·배양해 8일마다 감염 혈액 표본을 산출한다.',
     tags: [
       'structure',
       'medical',
     ],
+    harvest: { itemId: 'infected_blood_sample', harvestDays: 8, qty: 1 },
     dismantle: [
       {
         definitionId: 'electronic_parts',
@@ -2860,7 +2865,6 @@ const ITEMS_MISC = {
       'medical',
       'research',
     ],
-    craftingTool: true,
     dismantle: [
       {
         definitionId: 'electronic_parts',

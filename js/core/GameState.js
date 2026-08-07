@@ -608,11 +608,14 @@ const GameState = {
       const isAccumulator = stat === 'radiation' || stat === 'infection' || stat === 'fatigue';
       if (isAccumulator ? delta > 0 : delta < 0) return;
     }
-    // 감염 증가분에 한해 rateMultiplier 적용 (의사 -35% 등)
+    // 감염 증가분에 한해 rateMultiplier(의사 -35% 등) + 방역 구조물 저항 적용.
+    // structureEffects는 StructureEffectSystem이 갱신하는 파생값 — 여기서 보드를
+    // 훑으면 전투 루프마다 전수 스캔이 발생하므로 캐시된 값만 읽는다.
     let d = delta;
     if (stat === 'infection' && d > 0) {
       const mult = s.rateMultiplier ?? 1.0;
-      d = d * mult;
+      const structureResist = this.player?.structureEffects?.infectionResist ?? 0;
+      d = d * mult * (1 - structureResist);
     }
     this.setStat(stat, s.current + d);
   },
@@ -703,12 +706,21 @@ const GameState = {
       ...this.board.bottom.filter(Boolean),
       ...Object.values(this.player.equipped ?? {}).filter(Boolean),
     ]);
+    // 약품 보관장은 의료품을 대신 짊어진다 — 용량만큼 적재 계산에서 제외한다.
+    let medicalFreeSlots = this.player.structureEffects?.medicalStorageSlots ?? 0;
     let total = 0;
     for (const id of carriedIds) {
       const c = this.cards[id];
       if (!c) continue;
       const def = GameData?.items[c.definitionId];
-      total += (def?.weight ?? 0) * (c.quantity ?? 1);
+      const qty = c.quantity ?? 1;
+      let billableQty = qty;
+      if (medicalFreeSlots > 0 && def?.tags?.includes('medical')) {
+        const exempt = Math.min(medicalFreeSlots, qty);
+        medicalFreeSlots -= exempt;
+        billableQty = qty - exempt;
+      }
+      total += (def?.weight ?? 0) * billableQty;
     }
     const enc = this.player.encumbrance;
     enc.current   = parseFloat(total.toFixed(2));

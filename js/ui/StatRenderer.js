@@ -340,6 +340,12 @@ const StatRenderer = {
     if (tick.infection) parts.push(`감염${tick.infection}`);
     if (tick.morale)    parts.push(`사기+${tick.morale}`);
     if (tick.fatigue)   parts.push(`피로${tick.fatigue}`);
+    const effect = def.effect ?? {};
+    if (effect.infectionResist)      parts.push(`감염↓${Math.round(effect.infectionResist * 100)}%`);
+    if (effect.restHealMult)         parts.push(`휴식×${effect.restHealMult}`);
+    if (effect.surgeryHealMult)      parts.push(`수술×${effect.surgeryHealMult}`);
+    if (effect.infectionSpreadBlock) parts.push('발병 차단');
+    if (effect.detectHiddenDisease)  parts.push('자동 진단');
     const effectText = parts.length > 0 ? ` (${parts.join(', ')})` : '';
 
     const dur = Math.max(0, installed.durability);
