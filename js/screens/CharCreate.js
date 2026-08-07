@@ -1,6 +1,6 @@
 // === CHARACTER CREATION SCREEN ===
 import EventBus        from '../core/EventBus.js';
-import GameState       from '../core/GameState.js';
+import GameState, { createDefaultFlags } from '../core/GameState.js';
 import StateMachine    from '../core/StateMachine.js';
 import I18n            from '../core/I18n.js';
 import { DISTRICTS, getAdjacentDistricts } from '../data/districts.js';
@@ -350,16 +350,7 @@ const CharCreate = {
     gs.player.middlePage3Unlocked = false;
     gs.ui.bottomPage = 0;
     gs.ui.middlePage = 0;
-    gs.flags = {
-      tutorialSeen: false, firstBlood: false,
-      totalKills: 0, totalItemsFound: 0, totalCrafted: 0,
-      totalMedicalCrafted: 0, totalFoodCrafted: 0, structuresBuilt: 0,
-      despairTicks: 0, nukeZoneEntered: 0, lastEnemyCount: 0,
-      yeongdeungpoVisited: false, seodaemunVisited: false,
-      songpaVisited: false, jongnoVisited: false,
-      infectionCured: false, collapseCount: 0,
-      survivedSummer: false, diseaseDeathId: null,
-    };
+    gs.flags = createDefaultFlags();
 
     // ── 캐릭터별 시작 조건 및 스토리 플래그 ────────────────────
     const charStartConditions = {
