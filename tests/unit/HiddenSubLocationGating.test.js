@@ -26,4 +26,19 @@ describe('세부장소 가시성 필터', () => {
     expect(getVisibleSubLocations('lm_gangnam', []).length)
       .toBe(getVisibleSubLocations('gangnam', []).length);
   });
+
+  it('지하 벙커는 발견 전 노출되지 않는다', () => {
+    const ids = getVisibleSubLocations('lm_dongjak', []).map(s => s.id);
+    expect(ids).not.toContain('dongjak_bunker');
+  });
+
+  it('지하 벙커는 벙커를 발견한 뒤 노출된다', () => {
+    const ids = getVisibleSubLocations('lm_dongjak', ['hidden_dongjak_cemetery_vault']).map(s => s.id);
+    expect(ids).toContain('dongjak_bunker');
+  });
+
+  it('무관한 장소를 발견해도 지하 벙커는 잠긴 채다', () => {
+    const ids = getVisibleSubLocations('lm_dongjak', ['hidden_jongno_royal_vault']).map(s => s.id);
+    expect(ids).not.toContain('dongjak_bunker');
+  });
 });

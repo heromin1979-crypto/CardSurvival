@@ -3481,6 +3481,42 @@ export const LANDMARK_DATA = {
           4,
         ],
       },
+      {
+        id: 'dongjak_bunker',
+        name: '지하 벙커',
+        icon: '🚪',
+        desc: '관리 창고 뒤편 철문 아래. 군용 통신 장비가 남아 있는 비상 벙커.',
+        dangerMod: 0.15,
+        requiresHiddenLocation: 'hidden_dongjak_cemetery_vault',
+        firstEnterReward: {
+          claimKey: 'dongjak_bunker_first',
+          items: [
+            { id: 'military_radio_kit', qty: 1 },
+          ],
+        },
+        lootTable: [
+          {
+            id: 'pistol_ammo',
+            weight: 4,
+          },
+          {
+            id: 'military_ration',
+            weight: 4,
+          },
+          {
+            id: 'bandage',
+            weight: 4,
+          },
+          {
+            id: 'radio',
+            weight: 2,
+          },
+        ],
+        lootCount: [
+          2,
+          3,
+        ],
+      },
     ],
   },
   gwanak: {
