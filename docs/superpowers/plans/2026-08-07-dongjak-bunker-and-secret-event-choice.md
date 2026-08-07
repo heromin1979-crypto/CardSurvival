@@ -86,12 +86,17 @@ describe('세부장소 가시성 필터', () => {
     expect(getVisibleSubLocations(null, [])).toEqual([]);
   });
 
-  it('lm_ 접두사 없는 키로도 조회된다', () => {
-    expect(getVisibleSubLocations('dongjak', []).length)
-      .toBe(getVisibleSubLocations('lm_dongjak', []).length);
+  it('district-keyed 랜드마크는 lm_ 접두사를 붙여도 조회된다', () => {
+    expect(getVisibleSubLocations('gangnam', []).length).toBeGreaterThan(0);
+    expect(getVisibleSubLocations('lm_gangnam', []).length)
+      .toBe(getVisibleSubLocations('gangnam', []).length);
   });
 });
 ```
+
+**`getLandmarkData`의 폴백은 한 방향뿐이다.** `LANDMARK_DATA` 키 43개 중 8개(`lm_dongjak`, `lm_boramae_hospital` 등)는 키 자체에 `lm_` 접두사를 포함하고, 나머지는 구 이름 그대로다. `getLandmarkData`는 접두사를 **제거하는** 폴백만 갖는다(`lm_gangnam` → `gangnam`). 붙이는 방향은 없으므로 `'dongjak'`으로는 조회되지 않는다.
+
+실제 호출부는 전부 접두사가 붙은 키를 넘기므로 이 비대칭은 문제가 되지 않는다 — 랜드마크 카드 클릭은 `landmarkRequest { districtId: def.id }`(`CardFactory.js:890`)로 `lm_dongjak`을, 세부장소 카드 클릭은 `sublocationRequest { districtId: def.districtId }`(`CardFactory.js:845`)로 `registerSubLocationItems`가 넣은 `LANDMARK_DATA` 키를 그대로 넘긴다. **`getLandmarkData`에 반대 방향 폴백을 추가하지 않는다** — 필요로 하는 호출부가 없고, 오타로 잘못된 키를 넘겨도 조용히 성공해 버그를 가린다.
 
 - [ ] **Step 2: 테스트 실패 확인**
 
@@ -150,12 +155,13 @@ import { LANDMARK_DATA, getLandmarkData, getVisibleSubLocations } from '../data/
 다음으로 교체:
 
 ```js
-    const lmData = getLandmarkData(districtId);
-    const sub    = getVisibleSubLocations(districtId, GameState.flags?.hiddenLocationsDiscovered ?? [])
+    const sub = getVisibleSubLocations(districtId, GameState.flags?.hiddenLocationsDiscovered ?? [])
       .find(s => s.id === subLocationId);
 ```
 
-`lmData`는 같은 함수 뒤쪽에서 계속 쓰이므로 남겨둔다. 잠긴 세부장소는 `sub`가 `undefined`가 되어 기존 `if (!sub) return;` 가드에 걸린다.
+`lmData` 선언을 함께 지운다. `enterSubLocation`(722-862행) 안에서 `lmData`를 참조하는 곳은 교체 대상이던 그 한 줄뿐이라, 남겨두면 이 변경이 만들어낸 미사용 변수가 된다. 자기 변경이 만든 고아를 정리하는 것은 Surgical Changes 원칙에 부합한다. `getLandmarkData` import는 같은 파일의 다른 곳(`:502` 등)에서 계속 쓰이므로 유지한다.
+
+잠긴 세부장소는 `sub`가 `undefined`가 되어 기존 `if (!sub) return;` 가드에 걸린다.
 
 - [ ] **Step 6: `LandmarkModal` 호출부 교체**
 
@@ -1225,10 +1231,12 @@ HES._checkHiddenLocations('dongjak');
 
 - [ ] **Step 3: 벙커 진입 확인**
 
-국립현충원으로 이동 → 랜드마크 창을 연다.
+국립현충원 랜드마크 카드를 클릭해 진입한 뒤 **상단 장소 행**을 본다.
+
+`LandmarkModal`은 현재 도달 불가능하다 — `openLandmarkModal` 이벤트를 발행하는 코드가 프로젝트에 없고(`LandmarkModal.js:41`에 수신자만 존재), 랜드마크 진입은 전부 상단 카드 경로(`CardFactory.js:890` → `landmarkRequest` → `enterLandmark`)로 처리된다. 따라서 랜드마크 창이 아니라 상단 카드로 확인한다. 모달을 되살리는 일은 이번 범위 밖이며, 나중에 살아났을 때 벙커가 잠금 없이 노출되지 않도록 Task 1에서 필터는 미리 넣어 둔다.
 
 확인 항목:
-- 🚪 지하 벙커 카드가 목록에 보인다 (발견 전에는 없어야 한다 — 새 게임으로 재확인)
+- 🚪 지하 벙커 카드가 상단 행에 보인다 (발견 전에는 없어야 한다 — 새 게임으로 재확인)
 - 진입하면 「군용 통신 키트」가 지급된다
 - 나갔다 다시 들어오면 통신 키트는 다시 주지 않고 일반 전리품만 나온다
 
