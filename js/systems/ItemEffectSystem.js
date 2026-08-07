@@ -2,6 +2,14 @@ import TraitSystem from './TraitSystem.js';
 import SkillSystem from './SkillSystem.js';
 import NPCSystem from './NPCSystem.js';
 import GameState from '../core/GameState.js';
+import I18n from '../core/I18n.js';
+
+// 인스턴스 개조 상태(소음기 부착 등)를 카드 표시 이름에 반영
+export function formatInstanceName(inst, def) {
+  const base = I18n.itemName(def?.id ?? inst?.definitionId, def?.name ?? inst?.definitionId ?? '');
+  if (inst?._suppressor) return `${base} (${I18n.t('item.suppressorTag')})`;
+  return base;
+}
 
 const EFFECT_LABELS = {
   hydration: '수분',
@@ -45,6 +53,9 @@ export function normalizeConsumeEffect(rawEffect) {
   }
   if (typeof effect.warmth === 'number') {
     effect.temperature = (effect.temperature ?? 0) + effect.warmth;
+  }
+  if (typeof effect.temporaryStaminaBoost === 'number') {
+    effect.stamina = (effect.stamina ?? 0) + effect.temporaryStaminaBoost;
   }
 
   return effect;
@@ -173,6 +184,7 @@ function formatSpecialConsumeEffectParts(def) {
 
   const parts = [];
   if (effect.zombieRepelTP) parts.push(`좀비 회피 ${effect.zombieRepelTP}TP`);
+  if (effect.temporaryAttackBoost) parts.push(`공격 +${formatPercent(effect.temporaryAttackBoost)} ${effect.duration ?? 0}TP`);
   if (effect.guaranteedStun) parts.push(`기절 ${effect.guaranteedStun}턴`);
   if (effect.permanentInfectionImmunity) parts.push('감염 면역 영구');
   if (effect.permanentDiseaseResist) parts.push(`질병 저항 +${formatPercent(effect.permanentDiseaseResist)} 영구`);
@@ -236,6 +248,8 @@ function formatEquipmentEffectParts(def) {
   if (wear?.hpRegenPerTP) parts.push(`HP +${wear.hpRegenPerTP}/TP 장착 중`);
   if (wear?.critBonus) parts.push(`치명 +${formatPercent(wear.critBonus)} 장착 중`);
   if (wear?.critMultiplierBonus) parts.push(`치명 피해 +${formatPercent(wear.critMultiplierBonus)} 장착 중`);
+  if (wear?.unarmedDmgBonus) parts.push(`맨손 피해 +${wear.unarmedDmgBonus} 장착 중`);
+  if (def.preservesContents) parts.push('가방 칸 식량 부패 정지 장착 중');
   return parts;
 }
 

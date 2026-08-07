@@ -822,11 +822,12 @@ const ITEMS_STRUCTURES = {
     id: 'bee_hive', name: '벌통', type: 'structure', subtype: 'food',
     rarity: 'rare', weight: 2.0,
     defaultDurability: 80, defaultContamination: 0,
-    icon: '🐝', description: '나무 판자로 만든 벌통. 매 턴 소량의 꿀을 생산한다. 발효식품 촉진재이자 의료 재료.',
-    tags: ['structure', 'crafted', 'food'],
-    onTick: { honey: 0.05 },
+    icon: '🐝', description: '나무 판자로 만든 벌통. 바닥에 고정해 4일마다 꿀을 자동 수확한다. 해체하면 벌집에 남은 꿀을 한 번에 거둔다.',
+    tags: ['structure', 'crafted', 'food', 'immovable'],   // immovable: 바닥 고정 — 드래그/배낭/스왑 불가 (분해는 클릭)
+    harvest: { itemId: 'honey', harvestDays: 4, qty: 1 },
     dismantleTP: 2,
     dismantle: [
+      { definitionId: 'honey',      qty: 5, chance: 1.0 },
       { definitionId: 'wood_plank', qty: 3, chance: 0.7 },
       { definitionId: 'rope',       qty: 1, chance: 0.5 },
     ],

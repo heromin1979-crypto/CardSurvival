@@ -126,7 +126,7 @@ const ITEMS_BASE = {
   hide: {
     id: 'hide', name: '생가죽', type: 'material', subtype: 'natural',
     rarity: 'uncommon', weight: 0.4,
-    defaultDurability: 100, defaultContamination: 30,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🐾', description: '동물에게서 벗겨낸 생가죽. 무두질하면 가죽이 된다.',
     tags: ['material', 'organic'],
     dismantle: [],
@@ -551,7 +551,7 @@ const ITEMS_BASE = {
   rat_carcass: {
     id: 'rat_carcass', name: '쥐 시체', type: 'consumable', subtype: 'carcass',
     rarity: 'common', weight: 0.3,
-    defaultDurability: 100, defaultContamination: 30,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🩸', description: '도살한 쥐. 분해하면 고기와 뼈를 얻는다.',
     tags: ['organic', 'carcass'],
     dismantle: [],
@@ -560,7 +560,7 @@ const ITEMS_BASE = {
   pigeon_carcass: {
     id: 'pigeon_carcass', name: '비둘기 시체', type: 'consumable', subtype: 'carcass',
     rarity: 'common', weight: 0.2,
-    defaultDurability: 100, defaultContamination: 15,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🩸', description: '도살한 비둘기. 분해하면 고기와 가벼운 뼈를 얻는다.',
     tags: ['organic', 'carcass'],
     dismantle: [],
@@ -569,7 +569,7 @@ const ITEMS_BASE = {
   stray_animal_carcass: {
     id: 'stray_animal_carcass', name: '떠돌이 동물 시체', type: 'consumable', subtype: 'carcass',
     rarity: 'uncommon', weight: 7.0,
-    defaultDurability: 100, defaultContamination: 35,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🩸', description: '도살한 떠돌이 동물. 분해하면 고기·생가죽·뼈를 풍부하게 얻는다.',
     tags: ['organic', 'carcass'],
     dismantle: [],
@@ -844,7 +844,7 @@ const ITEMS_BASE = {
     defaultDurability: 20, defaultContamination: 0,
     icon: '🫐', description: '산야에서 자라는 야생 베리. 날것으로 먹으면 감염 위험이 있다. 잼이나 발효주 재료.',
     tags: ['material', 'natural', 'food_raw'],
-    onUse: { nutrition: 8, infection: 5 },
+    onConsume: { nutrition: 8, infection: 5 },
     dismantle: [],
   },
 
@@ -854,7 +854,7 @@ const ITEMS_BASE = {
     defaultDurability: 15, defaultContamination: 0,
     icon: '🍄', description: '먹을 수 있는 버섯. 반드시 익혀 먹어야 안전하다. 날것은 감염 위험.',
     tags: ['material', 'natural', 'food_raw'],
-    onUse: { nutrition: 10, infection: 15 },
+    onConsume: { nutrition: 10, infection: 7 },
     dismantle: [],
   },
 
@@ -946,7 +946,7 @@ const ITEMS_BASE = {
     defaultDurability: 20, defaultContamination: 0,
     icon: '🥩', description: '칼로 손질한 얇은 고기 조각. 그대로 먹거나 건조·조리에 사용.',
     tags: ['material', 'food_raw'],
-    onUse: { nutrition: 15, infection: 20 },
+    onConsume: { nutrition: 15, infection: 8 },
     dismantle: [],
   },
 
@@ -1217,7 +1217,7 @@ const ITEMS_BASE = {
     defaultDurability: 15, defaultContamination: 0,
     icon: '🐟', description: '강이나 통발에서 잡은 날생선. 반드시 손질 후 조리해야 한다.',
     tags: ['material', 'food_raw'],
-    onUse: { nutrition: 10, infection: 30 },
+    onConsume: { nutrition: 10, infection: 10 },
     dismantle: [],
   },
 
@@ -1225,9 +1225,9 @@ const ITEMS_BASE = {
     id: 'honey', name: '꿀', type: 'material', subtype: 'natural',
     rarity: 'rare', weight: 0.3,
     defaultDurability: 100, defaultContamination: 0,
-    icon: '🍯', description: '벌통에서 채취한 꿀. 발효 촉진재로 쓰이거나 약초와 섞으면 치유 효과가 있다.',
+    icon: '🍯', description: '벌통에서 채취한 꿀. 그대로 먹으면 기운이 돌고, 발효 촉진재나 약초와 섞는 재료로도 쓴다.',
     tags: ['material', 'natural', 'medical'],
-    onUse: { nutrition: 15, morale: 8 },
+    onConsume: { morale: 15, fatigue: -5 },
     dismantle: [],
   },
   // ═══ 건축·가공 재료 확장 (13) ══════════════════════════════════

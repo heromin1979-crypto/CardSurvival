@@ -3,7 +3,7 @@ import EventBus        from '../core/EventBus.js';
 import GameState       from '../core/GameState.js';
 import I18n            from '../core/I18n.js';
 import EquipmentSystem from '../systems/EquipmentSystem.js';
-import { formatCardEffectEntries } from '../systems/ItemEffectSystem.js';
+import { formatCardEffectEntries, formatInstanceName, getConsumableEffect } from '../systems/ItemEffectSystem.js';
 import CardFactory     from './CardFactory.js';
 import GameData        from '../data/GameData.js';
 import NPCSystem       from '../systems/NPCSystem.js';
@@ -302,7 +302,8 @@ const ModalManager = {
       </div>`
     ).join('');
 
-    const canConsume   = def.type === 'consumable' && def.onConsume;
+    // StatSystem.consumeCard와 동일 판정 — 재료여도 onConsume이 있으면 섭취 가능 (야생 베리 생식 등)
+    const canConsume   = !!getConsumableEffect(def);
     const canDismantle = Array.isArray(def.dismantle) && def.dismantle.length > 0;
     const canForage    = !!def.forage;  // 살살 채취(부분·재생) 가능 노드
     const canNest      = inst._stolenLoot?.length > 0;  // 동물 둥지 — 도난물 회수 가능
@@ -465,7 +466,7 @@ const ModalManager = {
       <div class="card-inspect">
         ${inspectArt}
         <div class="card-inspect-info">
-          <div class="card-inspect-name">${I18n.itemName(inst.definitionId, def.name)}</div>
+          <div class="card-inspect-name">${formatInstanceName(inst, def)}</div>
           <div class="card-inspect-type">${def.type} · ${def.rarity}</div>
           <p style="font-size:11px;color:var(--text-secondary);margin:8px 0;">${def.description ?? ''}</p>
           <div class="card-inspect-stats">${statsHtml}</div>

@@ -34,6 +34,7 @@ const STACK_ROWS = [
   ['herb'                    , true, 10 ],
   ['wild_berry'              , true, 10 ],
   ['vegetable'               , true, 10 ],
+  ['mushroom_edible'         , true, 10 ],
 
   // ── 가공 재료 ─────────────────────────────────────────────────
   ['sharp_blade'             , true,  5 ],
@@ -67,6 +68,9 @@ const STACK_ROWS = [
   ['rice'                    , true,  8 ],
   ['cooked_rice'             , true,  5 ],
   ['dried_meat'              , true,  8 ],
+  ['dried_fish'              , true,  8 ],
+  ['dried_mushroom'          , true,  8 ],
+  ['dried_berry'             , true,  8 ],
   ['military_ration'         , true,  5 ],
   ['vitamins'                , true, 15 ],
   ['salt'                    , true, 10 ],
