@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import GameState, { createDefaultFlags } from '../../js/core/GameState.js';
+import { readFile } from 'node:fs/promises';
+import { createDefaultFlags } from '../../js/core/GameState.js';
 
 // 시스템이 진입 가드로 검사하는 필드들. 하나라도 빠지면 해당 시스템이 통째로 죽는다.
 const GUARDED = [
@@ -31,8 +32,13 @@ describe('새 게임 flags 기본값', () => {
     expect(b.hiddenLocationsDiscovered).toEqual([]);
   });
 
-  it('GameState의 초기 flags와 키 집합이 일치한다', () => {
-    expect(Object.keys(createDefaultFlags()).sort())
-      .toEqual(Object.keys(GameState.flags).sort());
+  it('CharCreate가 flags를 직접 만들지 않고 기본값 함수를 쓴다', async () => {
+    const src = await readFile(
+      new URL('../../js/screens/CharCreate.js', import.meta.url),
+      'utf8',
+    );
+    expect(src).toMatch(/gs\.flags\s*=\s*createDefaultFlags\(\)/);
+    // 손으로 나열한 객체 리터럴로 되돌아가면 필드가 다시 누락된다
+    expect(src).not.toMatch(/gs\.flags\s*=\s*\{/);
   });
 });
