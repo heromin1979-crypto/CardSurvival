@@ -3,7 +3,7 @@
     "rendererPath":  "/tools/render_companion_motion_preview.ps1",
     "rendererSha256":  "8a66c1de2b79080912e8d311323332851a8e91d7534381357d4ee63adbf9acb1",
     "contactPath":  "/art_sources/combat/task9_companions/companion_motion_contact_sheet.png",
-    "contactSha256":  "19c634c9b022130037459e429b83c21a2643ce94860f9b6c667b436bbceb9e7b",
+    "contactSha256":  "6cf54788c0a318cc9434b71436b11fcff388edd462db5c661e9c6f54634d82e7",
     "sheets":  [
                    {
                        "sheetKey":  "old_survivor_companion",
@@ -155,9 +155,9 @@
                    {
                        "sheetKey":  "child_companion",
                        "runtimePath":  "/assets/images/combat/spritesheets/companions/child_companion_sheet.png",
-                       "runtimeSha256":  "edcf2003203363ee1890a2aaf0e6b8d4c9140dcf2cd0a1462ac0b6fa96e6c2f9",
+                       "runtimeSha256":  "ccbcf6c1cca48a74b1068e8e5bd134b5fe499448f97fd68e7fc21ac8088d1529",
                        "previewPath":  "/art_sources/combat/task9_companions/review_previews/child_companion_review.png",
-                       "previewSha256":  "ca1d66a1ad1f3896f3f4c126233a210f33f71dd5f9811734413f09cc322a3833",
+                       "previewSha256":  "0e5fce4656bdd2339a07229039bf60ac2cec4de24cf8b4eb6697db12411cec35",
                        "rows":  [
                                     {
                                         "motionKey":  "idle",
@@ -192,7 +192,7 @@
                                     {
                                         "motionKey":  "hit",
                                         "row":  6,
-                                        "pixelSha256":  "bcfef966d4f0dedc041093bfc755d51242a040a682b94995e8496b2f5c06eea5"
+                                        "pixelSha256":  "0f5d0c3e7b49f78906284fdd286269718a1b98e19c45f2dad753e166885d022c"
                                     },
                                     {
                                         "motionKey":  "death",
@@ -302,9 +302,9 @@
                    {
                        "sheetKey":  "dog_companion",
                        "runtimePath":  "/assets/images/combat/spritesheets/companions/dog_companion_sheet.png",
-                       "runtimeSha256":  "86fe66142c9ddc0b36e7adef7cfd3c4ab4e3822defb1144ab086684ba76feb6e",
+                       "runtimeSha256":  "e794c70b8f6bece89fe3d862218a45684a11173485bea4fbcc3b800235797b41",
                        "previewPath":  "/art_sources/combat/task9_companions/review_previews/dog_companion_review.png",
-                       "previewSha256":  "2b70752f7924079b77967d75bb7d3eb29a1d86bc9d8d4c61c228ec17977cf1ac",
+                       "previewSha256":  "06a5cd5efb41505c6919858050965a71acbd6c96aa6c17d87e07e7012d6dd360",
                        "rows":  [
                                     {
                                         "motionKey":  "idle",
@@ -339,12 +339,12 @@
                                     {
                                         "motionKey":  "hit",
                                         "row":  6,
-                                        "pixelSha256":  "0b473f3c70dd5dec17779bed979d2765218b7754aa798848d5c1fa832e2e437d"
+                                        "pixelSha256":  "0708101315485f134ce87444ffa137ab87de466121fb3ca518e91ca65978cf58"
                                     },
                                     {
                                         "motionKey":  "death",
                                         "row":  7,
-                                        "pixelSha256":  "4b69ee9bb78af04e6e46b614f9d7d2f32236e9e0bb18fe2e782a7cc6f43e96e3"
+                                        "pixelSha256":  "2d1d5f2cc8c2fa2b5a87b756ee2fa016e6bc592f6c6dce243e4919b0812c7cdb"
                                     }
                                 ]
                    },
@@ -400,9 +400,9 @@
                    {
                        "sheetKey":  "minjun_companion",
                        "runtimePath":  "/assets/images/combat/spritesheets/companions/minjun_companion_sheet.png",
-                       "runtimeSha256":  "d92e60a972c7ce8fd1fa729453c7a96cadefc909c107a9e701a40c90ec690c07",
+                       "runtimeSha256":  "4aaf59910eca600aea301635138f498f24e57435d0d086fafe310de0844def8f",
                        "previewPath":  "/art_sources/combat/task9_companions/review_previews/minjun_companion_review.png",
-                       "previewSha256":  "70e6840da776f00662fab29fda322df9aa0e2c2418b6f1117532ac95443fb4ef",
+                       "previewSha256":  "9ef463c98a0c87bed1b35cb45c51488ee65bd71eb8632bb59ce8481652617fbe",
                        "rows":  [
                                     {
                                         "motionKey":  "idle",
@@ -437,7 +437,7 @@
                                     {
                                         "motionKey":  "hit",
                                         "row":  6,
-                                        "pixelSha256":  "4e5f9e5c3f5f3152fb51910c97b27e35ae4c377c00199ffc74dd4bab91db7aed"
+                                        "pixelSha256":  "a0a9e9bd88987206e65460ed20e5d34d6cfb35fec10f4170e7b071feb261f543"
                                     },
                                     {
                                         "motionKey":  "death",
@@ -547,9 +547,9 @@
                    {
                        "sheetKey":  "yeongcheol_companion",
                        "runtimePath":  "/assets/images/combat/spritesheets/companions/yeongcheol_companion_sheet.png",
-                       "runtimeSha256":  "08136ebf510509e90e15e8df25c15eea1fdad92bbe5751723cbd5efd069a0431",
+                       "runtimeSha256":  "71497f531f62110789a421f4ad12878806bd4b93cef3d436e5d51cc496de6e88",
                        "previewPath":  "/art_sources/combat/task9_companions/review_previews/yeongcheol_companion_review.png",
-                       "previewSha256":  "c391afb3825a0eea62776ac5d37bd1b04a056cb577a3785320a81e45ae858131",
+                       "previewSha256":  "542046db4bf4b16a0b77431eb66d411c2984ca7950db01b724c67e8cd2fa24cc",
                        "rows":  [
                                     {
                                         "motionKey":  "idle",
@@ -584,7 +584,7 @@
                                     {
                                         "motionKey":  "hit",
                                         "row":  6,
-                                        "pixelSha256":  "9a9200e40dbf9c1c683cff6b0f2b7999957154de441ff0834c346d7c8f957740"
+                                        "pixelSha256":  "dec7c66f6eabf12f9db0bdb7fe6ceb3e497caed6f59cc82b68b4f17023df0502"
                                     },
                                     {
                                         "motionKey":  "death",
@@ -841,9 +841,9 @@
                    {
                        "sheetKey":  "tower_doctor_companion",
                        "runtimePath":  "/assets/images/combat/spritesheets/companions/tower_doctor_companion_sheet.png",
-                       "runtimeSha256":  "e70c01d130cbd783dc5944a24b8e492513b80ea53feed31d5ec0f9040bc6f75e",
+                       "runtimeSha256":  "78547458686c6795633c44f4d15f0e0774b990f74295ce4e46860d5df21d0caa",
                        "previewPath":  "/art_sources/combat/task9_companions/review_previews/tower_doctor_companion_review.png",
-                       "previewSha256":  "2c91095b5351ba98f966e1449080fe596637c2ae0b49828034e9ce70f3ae3b74",
+                       "previewSha256":  "894e5fe79b2d601fa4ff8f21f5675fc778052215f9069a0a5e80587dcfadc140",
                        "rows":  [
                                     {
                                         "motionKey":  "idle",
@@ -878,7 +878,7 @@
                                     {
                                         "motionKey":  "hit",
                                         "row":  6,
-                                        "pixelSha256":  "d064c3993cfd41b9eff55d9b849eb49d8691ec749dd880d28136c134cb8af51e"
+                                        "pixelSha256":  "dd0bfb673addfc5bc932d2e482606cb3e19bccc1523c1641f5bd4573c2e4268d"
                                     },
                                     {
                                         "motionKey":  "death",

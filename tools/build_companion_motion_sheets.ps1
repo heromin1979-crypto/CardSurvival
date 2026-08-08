@@ -644,6 +644,7 @@ $sourceSpecs = [ordered]@{
   soldier_guard = @{ file = 'soldier_companion_guard_source_chroma.png'; cols = 8; rows = 6; key = 'green' }
   soldier_death = @{ file = 'soldier_death_chroma.png'; cols = 6; rows = 1; key = 'green' }
   child = @{ file = 'child_companion_chroma.png'; cols = 6; rows = 8; key = 'green' }
+  child_hit_rework = @{ file = 'child_hit_rework_chroma.png'; cols = 6; rows = 1; key = 'green' }
   mechanic = @{ file = 'mechanic_companion_chroma.png'; cols = 6; rows = 8; key = 'green' }
   mechanic_guard = @{ file = 'mechanic_guard_chroma.png'; cols = 6; rows = 1; key = 'green' }
   mechanic_ranged_death = @{ file = 'mechanic_ranged_support_death_rejected_support_chroma.png'; cols = 6; rows = 3; key = 'green' }
@@ -652,9 +653,11 @@ $sourceSpecs = [ordered]@{
   student_melee_ranged_support = @{ file = 'student_melee_ranged_support_chroma.png'; cols = 6; rows = 3; key = 'green' }
   student_guard_move_hit_death = @{ file = 'student_guard_move_hit_death_chroma.png'; cols = 6; rows = 4; key = 'green' }
   dog = @{ file = 'dog_companion_chroma.png'; cols = 6; rows = 8; key = 'magenta' }
+  dog_hit_death_rework = @{ file = 'dog_hit_death_rework_chroma.png'; cols = 6; rows = 2; key = 'green' }
   former_colleague = @{ file = 'former_colleague_companion_chroma.png'; cols = 6; rows = 7; key = 'green' }
   former_colleague_hit = @{ file = 'former_colleague_hit_chroma.png'; cols = 6; rows = 1; key = 'green' }
   minjun = @{ file = 'minjun_companion_chroma.png'; cols = 6; rows = 8; key = 'green' }
+  minjun_hit_rework = @{ file = 'minjun_hit_rework_chroma.png'; cols = 6; rows = 1; key = 'green' }
   minjun_death = @{ file = 'minjun_death_chroma.png'; cols = 6; rows = 1; key = 'green' }
   sohee = @{ file = 'sohee_companion_chroma.png'; cols = 6; rows = 7; key = 'green' }
   sohee_hit = @{ file = 'sohee_hit_chroma.png'; cols = 6; rows = 1; key = 'green' }
@@ -662,6 +665,7 @@ $sourceSpecs = [ordered]@{
   jisu = @{ file = 'jisu_companion_chroma.png'; cols = 6; rows = 8; key = 'green' }
   jisu_melee_hit_death = @{ file = 'jisu_melee_hit_death_chroma.png'; cols = 6; rows = 3; key = 'green' }
   yeongcheol_base = @{ file = 'yeongcheol_companion_base_chroma.png'; cols = 6; rows = 8; key = 'green' }
+  yeongcheol_hit_rework = @{ file = 'yeongcheol_hit_rework_chroma.png'; cols = 6; rows = 1; key = 'green' }
   yeongcheol_support = @{ file = 'yeongcheol_support_chroma.png'; cols = 6; rows = 1; key = 'green' }
   daehan = @{ file = 'daehan_companion_chroma.png'; cols = 6; rows = 8; key = 'green' }
   daehan_ranged = @{ file = 'daehan_ranged_chroma.png'; cols = 6; rows = 1; key = 'green' }
@@ -677,6 +681,7 @@ $sourceSpecs = [ordered]@{
   tower_engineer_death = @{ file = 'tower_engineer_death_chroma.png'; cols = 6; rows = 1; key = 'green' }
   tower_engineer_guard = @{ file = 'tower_engineer_guard_chroma.png'; cols = 6; rows = 1; key = 'green' }
   tower_doctor_base = @{ file = 'tower_doctor_companion_base_chroma.png'; cols = 6; rows = 8; key = 'green' }
+  tower_doctor_hit_rework = @{ file = 'tower_doctor_hit_rework_chroma.png'; cols = 6; rows = 1; key = 'green' }
   tower_doctor_support = @{ file = 'tower_doctor_support_chroma.png'; cols = 6; rows = 1; key = 'green' }
   tower_doctor_ranged_guard_move_hit = @{ file = 'tower_doctor_ranged_guard_move_hit_chroma.png'; cols = 6; rows = 4; key = 'green' }
   tower_doctor_death = @{ file = 'tower_doctor_death_chroma.png'; cols = 6; rows = 1; key = 'green' }
@@ -693,21 +698,21 @@ $targets = [ordered]@{
   old_survivor_companion = @{ runtime = 'companions\old_survivor_companion_sheet.png'; rows = @('old_survivor','old_survivor_melee_death','old_survivor','old_survivor','old_survivor','old_survivor_move_rework','old_survivor_hit','old_survivor_melee_death'); sourceRows = @(0,0,2,3,4,0,0,1) }
   nurse_companion = @{ runtime = 'nurse_companion_sheet.png'; rows = @('nurse','nurse','nurse_ranged','nurse','nurse','nurse','nurse','nurse'); sourceRows = @(0,1,0,3,4,5,6,7) }
   soldier_companion = @{ runtime = 'soldier_companion_sheet.png'; rows = @('soldier_base','soldier_base','soldier_base','soldier_base','soldier_guard','soldier_base','soldier_base','soldier_death'); sourceRows = @(0,1,2,3,3,4,5,0); sourceColumns = @('0,1,2,3,4,5','0,1,2,3,4,5','0,1,2,3,4,5','0,1,2,3,4,5','0,1,2,3,4,5','0,1,2,3,4,5','0,1,2,3,4,5','0,1,2,3,4,5') }
-  child_companion = @{ runtime = 'companions\child_companion_sheet.png'; rows = @('child') }
+  child_companion = @{ runtime = 'companions\child_companion_sheet.png'; rows = @('child','child','child','child','child','child','child_hit_rework','child'); sourceRows = @(0,1,2,3,4,5,0,7) }
   mechanic_companion = @{ runtime = 'companions\mechanic_companion_sheet.png'; rows = @('mechanic','mechanic','mechanic_ranged_death','mechanic_support','mechanic_guard','mechanic','mechanic','mechanic_ranged_death'); sourceRows = @(0,1,0,0,0,5,6,2) }
   student_companion = @{ runtime = 'companions\student_companion_sheet.png'; rows = @('student','student_melee_ranged_support','student_melee_ranged_support','student_melee_ranged_support','student_guard_move_hit_death','student_guard_move_hit_death','student_guard_move_hit_death','student_guard_move_hit_death'); sourceRows = @(0,0,1,2,0,1,2,3) }
-  dog_companion = @{ runtime = 'companions\dog_companion_sheet.png'; rows = @('dog') }
+  dog_companion = @{ runtime = 'companions\dog_companion_sheet.png'; rows = @('dog','dog','dog','dog','dog','dog','dog_hit_death_rework','dog_hit_death_rework'); sourceRows = @(0,1,2,3,4,5,0,1) }
   former_colleague_companion = @{ runtime = 'companions\former_colleague_companion_sheet.png'; rows = @('former_colleague','former_colleague','former_colleague','former_colleague','former_colleague','former_colleague','former_colleague_hit','former_colleague'); sourceRows = @(0,1,2,3,4,5,0,6) }
-  minjun_companion = @{ runtime = 'companions\minjun_companion_sheet.png'; rows = @('minjun','minjun','minjun','minjun','minjun','minjun','minjun','minjun_death'); sourceRows = @(0,1,2,3,4,5,6,0) }
+  minjun_companion = @{ runtime = 'companions\minjun_companion_sheet.png'; rows = @('minjun','minjun','minjun','minjun','minjun','minjun','minjun_hit_rework','minjun_death'); sourceRows = @(0,1,2,3,4,5,0,0) }
   sohee_companion = @{ runtime = 'companions\sohee_companion_sheet.png'; rows = @('sohee','sohee','sohee','sohee_support_move_hit_death_rework','sohee','sohee_support_move_hit_death_rework','sohee_support_move_hit_death_rework','sohee_support_move_hit_death_rework'); sourceRows = @(0,1,2,0,4,1,2,3) }
   jisu_companion = @{ runtime = 'companions\jisu_companion_sheet.png'; rows = @('jisu','jisu_melee_hit_death','jisu','jisu','jisu','jisu','jisu_melee_hit_death','jisu_melee_hit_death'); sourceRows = @(0,0,2,3,4,5,1,2) }
-  yeongcheol_companion = @{ runtime = 'companions\yeongcheol_companion_sheet.png'; rows = @('yeongcheol_base','yeongcheol_base','yeongcheol_base','yeongcheol_support','yeongcheol_base','yeongcheol_base','yeongcheol_base','yeongcheol_death'); sourceRows = @(0,1,2,0,4,5,6,0) }
+  yeongcheol_companion = @{ runtime = 'companions\yeongcheol_companion_sheet.png'; rows = @('yeongcheol_base','yeongcheol_base','yeongcheol_base','yeongcheol_support','yeongcheol_base','yeongcheol_base','yeongcheol_hit_rework','yeongcheol_death'); sourceRows = @(0,1,2,0,4,5,0,0) }
   daehan_companion = @{ runtime = 'companions\daehan_companion_sheet.png'; rows = @('daehan','daehan','daehan_ranged_hit_death_rework','daehan','daehan_guard','daehan','daehan_ranged_hit_death_rework','daehan_ranged_hit_death_rework'); sourceRows = @(0,1,0,3,0,5,1,2) }
   tower_security_companion = @{ runtime = 'companions\tower_security_companion_sheet.png'; rows = @('tower_security') }
   tower_merchant_companion = @{ runtime = 'companions\tower_merchant_companion_sheet.png'; rows = @('tower_merchant','tower_merchant','tower_merchant','tower_merchant','tower_merchant','tower_merchant','tower_merchant','tower_merchant_death'); sourceRows = @(0,1,2,3,4,5,6,0); sourceColumns = @('0,1,2,3,4,5','0,1,2,3,4,5','0,1,2,3,4,5','0,1,2,3,4,5','0,1,2,3,4,5','0,1,2,3,4,5','0,1,2,3,4,5','0,1,2,3,4,5') }
   tower_cook_companion = @{ runtime = 'companions\tower_cook_companion_sheet.png'; rows = @('tower_cook','tower_cook','tower_cook_ranged','tower_cook','tower_cook','tower_cook','tower_cook_hit','tower_cook'); sourceRows = @(0,1,0,3,4,5,0,6) }
   tower_engineer_companion = @{ runtime = 'companions\tower_engineer_companion_sheet.png'; rows = @('tower_engineer','tower_engineer','tower_engineer','tower_engineer','tower_engineer_guard','tower_engineer','tower_engineer','tower_engineer_death'); sourceRows = @(0,1,2,3,0,5,6,0) }
-  tower_doctor_companion = @{ runtime = 'companions\tower_doctor_companion_sheet.png'; rows = @('tower_doctor_base','tower_doctor_base','tower_doctor_ranged_guard_move_hit','tower_doctor_support','tower_doctor_ranged_guard_move_hit','tower_doctor_ranged_guard_move_hit','tower_doctor_ranged_guard_move_hit','tower_doctor_death'); sourceRows = @(0,1,0,0,1,2,3,0) }
+  tower_doctor_companion = @{ runtime = 'companions\tower_doctor_companion_sheet.png'; rows = @('tower_doctor_base','tower_doctor_base','tower_doctor_ranged_guard_move_hit','tower_doctor_support','tower_doctor_ranged_guard_move_hit','tower_doctor_ranged_guard_move_hit','tower_doctor_hit_rework','tower_doctor_death'); sourceRows = @(0,1,0,0,1,2,0,0) }
   sous_chef_companion = @{ runtime = 'companions\sous_chef_companion_sheet.png'; rows = @('sous_chef','sous_chef','sous_chef','sous_chef','sous_chef','sous_chef_move_rework','sous_chef_hit','sous_chef'); sourceRows = @(0,1,2,3,4,0,0,6) }
   kitchen_helper_companion = @{ runtime = 'companions\kitchen_helper_companion_sheet.png'; rows = @('kitchen_helper','kitchen_helper','kitchen_helper_supplement','kitchen_helper_supplement','kitchen_helper_supplement','kitchen_helper_supplement','kitchen_helper_hit','kitchen_helper_supplement'); sourceRows = @(0,1,0,1,2,3,0,4) }
 }
