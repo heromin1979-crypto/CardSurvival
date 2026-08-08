@@ -1129,6 +1129,7 @@ export const ko = {
   'slot.cantPlaceOnLocation':'장소 행에는 아이템을 놓을 수 없습니다.',
   'slot.stackMerge':        '{name} 스택: {qty}/{max}',
   'slot.fireUnlit':         '불이 꺼져 있다. 먼저 다시 붙여야 한다.',
+  'slot.cantCarrySalvage':  '🏚 잔해는 짊어질 수 없습니다. 바닥에 둔 채 분해하세요.',
 
   // ── SaveManager ─────────────────────────────────────────────
   'save.saved':      '💾 저장 완료 — Day {day}',
@@ -2116,6 +2117,7 @@ export const en = {
   'slot.cantPlaceOnLocation':'Cannot place items on location row.',
   'slot.stackMerge':         '{name} stacked: {qty}/{max}',
   'slot.fireUnlit':          'The fire is out. Relight it first.',
+  'slot.cantCarrySalvage':   '🏚 Wreckage is too bulky to carry. Dismantle it where it lies.',
 
   // ── SaveManager ─────────────────────────────────────────────
   'save.saved':      '💾 Saved — Day {day}',

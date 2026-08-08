@@ -15,6 +15,13 @@ export function isImmovable(def) {
   return !!(def && (def.immovable === true || def.tags?.includes('immovable')));
 }
 
+// 휴대 불가 판정 — 잔해(subtype:'salvage')는 분해해서 자재를 뜯어내는 노드지 소지품이 아니다.
+// 태그가 아니라 subtype으로 보는 이유는 신규 잔해가 추가돼도 규칙이 자동으로 따라붙게 하기 위함.
+// 바닥(middle) 안에서의 이동은 막지 않는다 — 배낭(bottom) 진입만 차단한다.
+export function isUncarriable(def) {
+  return def?.type === 'structure' && def.subtype === 'salvage';
+}
+
 // 꺼진 화기는 열을 쓰는 상호작용(조리·가열·건조)에 참여할 수 없다.
 // 재점화·연료 보충·수리는 꺼진 불이 바로 그 대상이므로 규칙 쪽에서 allowUnlit로 면제한다.
 function blocksOnUnlitFire(srcInst, tgtInst) {
@@ -49,6 +56,11 @@ const SlotResolver = {
       return { valid: false, reason: I18n.t('slot.cantPlaceOnEnvironment') };
     }
 
+    // 잔해: 배낭 수납 불가 (바닥에 둔 채 분해해야 한다)
+    if (toRow === 'bottom' && isUncarriable(def)) {
+      return { valid: false, reason: I18n.t('slot.cantCarrySalvage') };
+    }
+
     // ✅ 휴대(bottom) → 바닥(middle): 허용 (아이템을 바닥에 버리기)
     // ✅ 바닥(middle) → 휴대(bottom): 허용 (아이템 줍기)
     // 장소 이동 시 바닥(middle) 아이템은 _clearFloor()에 의해 제거됨
@@ -75,6 +87,12 @@ const SlotResolver = {
       const tgtDef = GameState.getCardDef(targetId);
       if (isImmovable(tgtDef)) {
         EventBus.emit('notify', { message: I18n.t('slot.cantDisplaceImmovable'), type: 'warn' });
+        return false;
+      }
+      // 스왑은 목적지 카드를 드래그 원본 자리로 보낸다. 휴대 칸에서 끌어온 카드를
+      // 잔해 위에 떨어뜨리면 잔해가 배낭으로 밀려 들어가므로 그 경로도 막는다.
+      if (isUncarriable(tgtDef) && BoardManager.findCard(instanceId)?.row === 'bottom') {
+        EventBus.emit('notify', { message: I18n.t('slot.cantCarrySalvage'), type: 'warn' });
         return false;
       }
       if (this._tryStack(instanceId, targetId)) {
