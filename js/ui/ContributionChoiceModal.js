@@ -26,13 +26,16 @@ const ContributionChoiceModal = {
     if (!this._el || this._initialized) return;
     this._initialized = true;
 
-    this._el.addEventListener('click', e => {
-      if (e.target === this._el) return;   // 바깥 클릭 닫기 금지 — 반드시 선택해야 함
+    // 선택지 클릭 — document 레벨로 등록 (Main._onEnter가 매번 _buildLayout으로
+    // #contribution-choice-modal을 통째로 재생성하므로, 엘리먼트에 직접 바인딩하면
+    // 두 번째 진입부터 죽은 노드를 붙잡게 된다. SecretEventModal과 동일 패턴)
+    document.addEventListener('click', e => {
+      const el = document.getElementById('contribution-choice-modal');
+      if (!el || !el.classList.contains('open')) return;
+      if (e.target === el) return;   // 바깥 클릭 닫기 금지 — 반드시 선택해야 함
       const pickEl = e.target.closest?.('[data-pick-index]');
-      if (pickEl) {
-        const idx = parseInt(pickEl.dataset.pickIndex, 10);
-        this._pick(idx);
-      }
+      if (!pickEl || !el.contains(pickEl)) return;
+      this._pick(parseInt(pickEl.dataset.pickIndex, 10));
     });
 
     EventBus.on('contributionChoiceNeeded', (payload) => this._onChoiceNeeded(payload));

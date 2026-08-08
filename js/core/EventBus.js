@@ -45,6 +45,7 @@ const EventBus = {
 // hiddenLocationDiscovered { locationId, location }
 // bossKilled               { bossId, boss }
 // secretEventTriggered     { event }
+// showCinematic            { sceneId, onComplete }
 // recipeUnlocked           { recipeId, recipe }
 // structureDamage          { damagePercent }
 // npcSpawned               { npcId }

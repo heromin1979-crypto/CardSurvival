@@ -3,6 +3,7 @@
 // TP는 이동·제작·대기 등 명시적 행동으로만 소모된다.
 import EventBus  from './EventBus.js';
 import GameState from './GameState.js';
+import I18n      from './I18n.js';
 
 // n ≤ CHUNK_THRESHOLD: 동기 처리 (일반 게임플레이, 테스트)
 // n >  CHUNK_THRESHOLD: CHUNK_SIZE TP씩 비동기 분할 (30일 스킵 등 대용량)
@@ -38,12 +39,19 @@ const TickEngine = {
   },
 
   _postSkip(n, reason) {
-    EventBus.emit('notify', { message: `⏩ ${n} TP skipped${reason ? ': ' + reason : ''}`, type: 'info' });
+    EventBus.emit('notify', {
+      message: reason
+        ? I18n.t('tick.tpSkippedReason', { n, reason })
+        : I18n.t('tick.tpSkipped', { n }),
+      type: 'info',
+    });
+    // 남은 행동력 안내는 새벽 2~5시에 걸린다. 행동은 자정을 넘길 수 있으므로
+    // 차단 경고가 아니라 "곧 날이 바뀐다"는 정보로 알린다.
     const remaining = 72 - GameState.time.tpInDay;
     if (remaining <= 6 && remaining > 0) {
-      EventBus.emit('notify', { message: `🌙 오늘 남은 행동력: ${remaining} TP — 곧 날이 저뭅니다.`, type: 'warn' });
+      EventBus.emit('notify', { message: I18n.t('tick.remainingWarn', { remain: remaining }), type: 'info' });
     } else if (remaining <= 12 && remaining > 6) {
-      EventBus.emit('notify', { message: `⏳ 오늘 남은 행동력: ${remaining} TP`, type: 'info' });
+      EventBus.emit('notify', { message: I18n.t('tick.remaining', { remain: remaining }), type: 'info' });
     }
   },
 

@@ -346,7 +346,7 @@ const ITEMS_MEDICAL = {
   infected_blood_sample: {
     id: 'infected_blood_sample', name: '감염 혈액 표본', type: 'material', subtype: 'medical',
     rarity: 'rare', weight: 0.1,
-    defaultDurability: 100, defaultContamination: 30,
+    defaultDurability: 100, defaultContamination: 0,
     icon: '🩸', description: '감염자에게서 채취한 혈액 표본. 백신·치료제 합성의 핵심 원료.',
     tags: ['medical', 'sample', 'research'],
     dismantle: [],

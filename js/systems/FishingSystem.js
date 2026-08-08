@@ -5,6 +5,7 @@ import EventBus    from '../core/EventBus.js';
 import GameState   from '../core/GameState.js';
 import SkillSystem from './SkillSystem.js';
 import TickEngine  from '../core/TickEngine.js';
+import I18n        from '../core/I18n.js';
 import { SKILL_DEFS } from '../data/skillDefs.js';
 import BALANCE     from '../data/gameBalance.js';
 import GameData    from '../data/GameData.js';
@@ -125,7 +126,7 @@ const FishingSystem = {
     const pct = Math.round(catchChance * 100);
 
     // TP 소비
-    TickEngine.skipTP(B.tpCostPerCast, '낚시');
+    TickEngine.skipTP(B.tpCostPerCast, I18n.t('tick.reasonFishing'));
 
     // 낚시 XP (시도 자체)
     SkillSystem.gainXp('fishing', B.xpPerCast);

@@ -6,6 +6,7 @@ import I18n            from '../core/I18n.js';
 import SystemRegistry  from '../core/SystemRegistry.js';
 import StatRenderer    from './StatRenderer.js';
 import { getMagazineState } from '../systems/WeaponAmmoSystem.js';
+import { formatInstanceName } from '../systems/ItemEffectSystem.js';
 
 // ── 부상 타입 → 이모지 매핑 ────────────────────────────────────
 const INJURY_ICONS = {
@@ -352,7 +353,7 @@ const EquipmentModal = {
     const def = GameState.getCardDef(instanceId);
     return `
       <div class="equip-slot-menu">
-        <div style="font-size:9px;color:var(--text-dim);margin-bottom:2px;">${def ? I18n.itemName(def.id ?? instanceId, def.name) : I18n.t('equip.equipped')}</div>
+        <div style="font-size:9px;color:var(--text-dim);margin-bottom:2px;">${def ? formatInstanceName(GameState.cards[instanceId], def) : I18n.t('equip.equipped')}</div>
         <button class="equip-slot-menu-btn danger" data-action="unequip" data-slot="${slotId}">${I18n.t('equip.unequip')}</button>
         <button class="equip-slot-menu-btn" data-action="cancel-menu">${I18n.t('equip.cancel')}</button>
       </div>
@@ -373,7 +374,7 @@ const EquipmentModal = {
     return `
       <div class="equip-mini-card">
         <div class="equip-mini-icon">${def.icon ?? '?'}</div>
-        <div class="equip-mini-name">${I18n.itemName(def.id ?? inst.definitionId, def.name)}</div>
+        <div class="equip-mini-name">${formatInstanceName(inst, def)}</div>
         ${ammoHtml}
         ${durPct ? `<div class="equip-mini-dur">${durPct}</div>` : ''}
       </div>
@@ -588,7 +589,7 @@ const EquipmentModal = {
       <div class="equip-inv-row${isSelected ? ' selected' : ''}${opts.isInventory ? ' inv-item' : ''}" data-inv-id="${instanceId}">
         <div class="equip-inv-icon">${def.icon ?? '?'}</div>
         <div class="equip-inv-info">
-          <div class="equip-inv-name">${I18n.itemName(def.id ?? inst.definitionId, def.name)}${qtyStr}</div>
+          <div class="equip-inv-name">${formatInstanceName(inst, def)}${qtyStr}</div>
           <div class="equip-inv-sub">${subLabel}${durStr}</div>
         </div>
       </div>

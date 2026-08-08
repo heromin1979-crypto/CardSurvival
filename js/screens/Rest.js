@@ -7,6 +7,7 @@ import TickEngine   from '../core/TickEngine.js';
 import NightSystem  from '../systems/NightSystem.js';
 import MentalSystem from '../systems/MentalSystem.js';
 import SeasonSystem from '../systems/SeasonSystem.js';
+import StructureEffectSystem from '../systems/StructureEffectSystem.js';
 import BALANCE      from '../data/gameBalance.js';
 
 const REST_OPTIONS = [
@@ -93,8 +94,9 @@ const Rest = {
     // ── 수면 품질 판정 ──────────────────────────────────────
     const sleepQ = NightSystem.getSleepQuality();
 
-    // Apply effects (fatigue 회복에 수면 품질 반영)
-    for (const [key, val] of Object.entries(opt.effect)) {
+    // Apply effects (의료 침대 배율 → 수면 품질 순으로 반영)
+    const effect = StructureEffectSystem.scaleRestRecovery(opt.effect, gs);
+    for (const [key, val] of Object.entries(effect)) {
       if (key === 'hp') {
         gs.player.hp.current = Math.min(gs.player.hp.max, gs.player.hp.current + val);
       } else if (key === 'fatigue') {

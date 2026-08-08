@@ -332,13 +332,13 @@ const LEGENDARY_ITEMS = {
   },
 
   waterproof_container: {
-    id: 'waterproof_container', name: '방수 컨테이너', type: 'tool', subtype: 'storage',
+    id: 'waterproof_container', name: '방수 컨테이너', type: 'tool', subtype: 'bag',
     rarity: 'legendary', legendary: true, weight: 1.0,
     defaultDurability: 200, defaultContamination: 0,
-    icon: '📦', description: '군용 방수 컨테이너. 추가 8슬롯 확보, 내부 아이템 오염 면역.',
-    tags: ['tool', 'legendary'],
+    icon: '📦', description: '군용 방수 컨테이너. 장착 시 휴대 8칸 확장, 가방 칸의 식량은 밀폐 보관되어 부패하지 않는다.',
+    tags: ['tool', 'legendary', 'bag'],
     bagSlots: 8,
-    onUse: { contaminationImmunity: true },
+    preservesContents: true,
     dismantle: [
       { definitionId: 'rubber', qty: 3, chance: 0.8 },
       { definitionId: 'scrap_metal', qty: 2, chance: 0.7 },
@@ -430,7 +430,7 @@ const LEGENDARY_ITEMS = {
   },
 
   sewer_scale: {
-    id: 'sewer_scale', name: '하수도 비늘', type: 'material', subtype: 'boss_drop',
+    id: 'sewer_scale', name: '하수도 악어 비늘', type: 'material', subtype: 'boss_drop',
     rarity: 'rare', weight: 0.5,
     defaultDurability: 100, defaultContamination: 0,
     icon: '🐊', description: '하수도 악어에서 벗겨낸 단단한 비늘. 악어 비늘 갑옷 제작에 필요.',
@@ -643,7 +643,7 @@ const LEGENDARY_ITEMS = {
     id: 'sound_dampener', name: '소음 감쇠기', type: 'tool', subtype: 'utility',
     rarity: 'legendary', legendary: true, weight: 0.5,
     defaultDurability: 100, defaultContamination: 0,
-    icon: '🔇', description: '군용 소음 감쇠 장치. 장착 시 모든 행동의 소음이 50% 감소한다.',
+    icon: '🔇', description: '군용 소음 감쇠 장치. 소지하면 모든 행동의 소음이 50% 감소한다.',
     tags: ['tool', 'legendary'],
     onUse: { noiseReduction: 0.50 },
     dismantle: [],

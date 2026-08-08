@@ -7,6 +7,8 @@ import TickEngine  from '../core/TickEngine.js';
 import SkillSystem  from './SkillSystem.js';
 import NightSystem  from './NightSystem.js';
 
+const TP_PER_DAY = 72;
+
 const DismantleSystem = {
 
   /**
@@ -57,17 +59,14 @@ const DismantleSystem = {
       return { success: false, gained: [], count: 0 };
     }
 
-    // TP 비용 체크 (count 배)
-    const tpPerUnit = def.dismantleTP ?? 0;
-    const tpCost    = tpPerUnit * actualCount;
+    // TP 소비 — 남은 TP를 초과하면 자정을 넘겨 다음 날로 이어진다 (제작과 동일)
+    const { cost: tpCost } = this.getTpStatus(instanceId, actualCount);
     if (tpCost > 0) {
-      const remainTP = 72 - GameState.time.tpInDay;
-      if (remainTP < tpCost) {
-        EventBus.emit('notify', { message: I18n.t('dismantle.tpShort', { cost: tpCost, remain: remainTP }), type: 'warn' });
-        return { success: false, gained: [], count: 0 };
-      }
-      TickEngine.skipTP(tpCost, `${def.name} 해체 ×${actualCount}`);
+      TickEngine.skipTP(tpCost, I18n.t('tick.reasonDismantle', { name: I18n.itemName(def.id, def.name), count: actualCount }));
     }
+
+    // 시간이 흐르는 동안 굶주림·질병으로 사망할 수 있다. 사망 후 재료를 배치하지 않는다.
+    if (!GameState.player.isAlive) return { success: false, gained: [], count: 0 };
 
     const gained = [];
 
@@ -188,16 +187,12 @@ const DismantleSystem = {
       return { success: false, gained: [] };
     }
 
-    // TP 비용
+    // TP 소비 — 분해와 동일하게 자정을 넘길 수 있다
     const tpCost = def.dismantleTP ?? 0;
     if (tpCost > 0) {
-      const remainTP = 72 - gs.time.tpInDay;
-      if (remainTP < tpCost) {
-        EventBus.emit('notify', { message: `시간이 부족합니다. (필요 ${tpCost} TP, 남은 ${remainTP} TP)`, type: 'warn' });
-        return { success: false, gained: [] };
-      }
-      TickEngine.skipTP(tpCost, `${def.name} 채취`);
+      TickEngine.skipTP(tpCost, I18n.t('tick.reasonForage', { name: I18n.itemName(def.id, def.name) }));
     }
+    if (!gs.player.isAlive) return { success: false, gained: [] };
 
     const yieldMult = def.forage.yieldMult ?? 0.5;
     const gained = [];
@@ -236,6 +231,24 @@ const DismantleSystem = {
   canDismantle(instanceId) {
     const def = GameState.getCardDef(instanceId);
     return !!(def?.dismantle?.length);
+  },
+
+  /**
+   * 분해 TP 비용과 자정 이월 여부. 분해 버튼을 그리는 모든 UI가 이 판정을 쓴다.
+   * 제작·이동과 마찬가지로 분해도 자정을 넘길 수 있다. 다만 하루가 넘어가는 것을
+   * 모르고 지나치지 않도록 UI가 crossesMidnight일 때 확인을 받는다.
+   * @returns {{ cost: number, remainTP: number, canDismantle: boolean, crossesMidnight: boolean }}
+   */
+  getTpStatus(instanceId, count = 1) {
+    const def      = GameState.getCardDef(instanceId);
+    const remainTP = TP_PER_DAY - (GameState.time?.tpInDay ?? 0);
+    const cost     = (def?.dismantleTP ?? 0) * Math.max(1, count | 0);
+    return {
+      cost,
+      remainTP,
+      canDismantle: this.canDismantle(instanceId),
+      crossesMidnight: cost > remainTP,
+    };
   },
 };
 

@@ -82,18 +82,11 @@ const HospitalSiegeSystem = {
     this._checkSchedule(day);
   },
 
-  // W2-2: Day 7 예고 (한 번만)
+  // Day 7 예고 — 안내 문구·1회 표시는 OnboardingSystem이 siegeWarningDue 구독으로 처리
   _checkTutorialWarning(day) {
     const warnDay = BALANCE.hospitalSiege?.tutorialWarningDay;
     if (!warnDay || day !== warnDay) return;
-    if (GameState.flags.siegeTutorialWarned) return;
-    GameState.flags.siegeTutorialWarned = true;
-
-    EventBus.emit('notify', {
-      message: '⚠️ 병원 밖에서 발소리가 들린다. 사흘 내로 약탈자들이 응급실을 찾아올 것 같다. — 환자를 치료해 수비대를 확보하라.',
-      type: 'warning',
-      persistent: true,
-    });
+    EventBus.emit('siegeWarningDue', { day });
   },
 
   // ── 스케줄 체크 ───────────────────────────────────

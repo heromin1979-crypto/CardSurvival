@@ -1049,6 +1049,7 @@ const HIDDEN_RECIPES = {
     rarity: 'legendary',
     output: [{ definitionId: 'alloy_ingot', qty: 1 }],
     requiredTools: ['brick_furnace'],
+    unlockConditions: { minSkillLevel: { crafting: 12 } },
     requiredSkills: { crafting: 12 },
     stages: [
       {
@@ -1070,6 +1071,7 @@ const HIDDEN_RECIPES = {
     rarity: 'legendary',
     output: [{ definitionId: 'master_blade', qty: 1 }],
     requiredTools: ['field_forge'],
+    unlockConditions: { minSkillLevel: { weaponcraft: 12 } },
     requiredSkills: { weaponcraft: 12 },
     stages: [
       {
@@ -1090,6 +1092,7 @@ const HIDDEN_RECIPES = {
     rarity: 'legendary',
     output: [{ definitionId: 'katana', qty: 1 }],
     requiredTools: ['field_forge'],
+    unlockConditions: { minSkillLevel: { weaponcraft: 15 } },
     requiredSkills: { weaponcraft: 15 },
     stages: [
       {
@@ -1117,6 +1120,7 @@ const HIDDEN_RECIPES = {
     rarity: 'legendary',
     output: [{ definitionId: 'alloy_armor_plate', qty: 1 }],
     requiredTools: ['field_forge'],
+    unlockConditions: { minSkillLevel: { armorcraft: 12 } },
     requiredSkills: { armorcraft: 12 },
     stages: [
       {
@@ -1137,6 +1141,7 @@ const HIDDEN_RECIPES = {
     rarity: 'legendary',
     output: [{ definitionId: 'watchtower', qty: 1 }],
     requiredTools: [],
+    unlockConditions: { minSkillLevel: { building: 12, crafting: 5 } },
     requiredSkills: { building: 12, crafting: 5 },
     stages: [
       {
@@ -1164,6 +1169,7 @@ const HIDDEN_RECIPES = {
     rarity: 'legendary',
     output: [{ definitionId: 'portable_generator', qty: 1 }],
     requiredTools: ['field_forge'],
+    unlockConditions: { minSkillLevel: { building: 10, crafting: 8 } },
     requiredSkills: { building: 10, crafting: 8 },
     stages: [
       {
@@ -1195,6 +1201,7 @@ const HIDDEN_RECIPES = {
     hidden: true,
     rarity: 'legendary',
     output: [{ definitionId: 'synthetic_antibiotics', qty: 1 }],
+    unlockConditions: { requiredStructure: 'analysis_lab' },
     requiredTools: ['workbench'],
     requiredSkills: { medicine: 10 },
     stages: [
@@ -1216,6 +1223,7 @@ const HIDDEN_RECIPES = {
     hidden: true,
     rarity: 'legendary',
     output: [{ definitionId: 'surgical_anesthetic', qty: 1 }],
+    unlockConditions: { requiredStructure: 'analysis_lab' },
     requiredTools: ['workbench'],
     requiredSkills: { medicine: 8 },
     stages: [
@@ -1237,6 +1245,7 @@ const HIDDEN_RECIPES = {
     rarity: 'legendary',
     output: [{ definitionId: 'field_surgery_station', qty: 1 }],
     requiredTools: [],
+    unlockConditions: { minSkillLevel: { medicine: 10, building: 6 } },
     requiredSkills: { medicine: 10, building: 6 },
     stages: [
       {
@@ -1301,6 +1310,7 @@ const HIDDEN_RECIPES = {
     hidden: true,
     rarity: 'legendary',
     output: [{ definitionId: 'universal_cure', qty: 1 }],
+    unlockConditions: { requiredStructure: 'analysis_lab' },
     requiredTools: ['workbench'],
     requiredSkills: { medicine: 15 },
     stages: [
@@ -1333,6 +1343,7 @@ const HIDDEN_RECIPES = {
     rarity: 'legendary',
     output: [{ definitionId: 'solar_panel', qty: 1 }],
     requiredTools: ['workbench'],
+    unlockConditions: { minSkillLevel: { crafting: 12, building: 8 } },
     requiredSkills: { crafting: 12, building: 8 },
     stages: [
       {
@@ -1354,6 +1365,7 @@ const HIDDEN_RECIPES = {
     rarity: 'legendary',
     output: [{ definitionId: 'solar_charger', qty: 1 }],
     requiredTools: [],
+    unlockConditions: { minSkillLevel: { building: 12 } },
     requiredSkills: { building: 12 },
     stages: [
       {
@@ -1375,6 +1387,7 @@ const HIDDEN_RECIPES = {
     rarity: 'legendary',
     output: [{ definitionId: 'powered_drill', qty: 1 }],
     requiredTools: ['workbench'],
+    unlockConditions: { minSkillLevel: { crafting: 12 } },
     requiredSkills: { crafting: 12 },
     stages: [
       {
@@ -1396,6 +1409,7 @@ const HIDDEN_RECIPES = {
     rarity: 'legendary',
     output: [{ definitionId: 'electric_fence', qty: 1 }],
     requiredTools: [],
+    unlockConditions: { minSkillLevel: { building: 15, crafting: 10 } },
     requiredSkills: { building: 15, crafting: 10 },
     stages: [
       {
@@ -1423,6 +1437,7 @@ const HIDDEN_RECIPES = {
     rarity: 'legendary',
     output: [{ definitionId: 'water_recycler', qty: 1 }],
     requiredTools: [],
+    unlockConditions: { minSkillLevel: { building: 12 } },
     requiredSkills: { building: 12 },
     stages: [
       {
@@ -1448,6 +1463,7 @@ const HIDDEN_RECIPES = {
     rarity: 'legendary',
     output: [{ definitionId: 'composite_armor', qty: 1 }],
     requiredTools: ['workbench'],
+    unlockConditions: { minSkillLevel: { armorcraft: 10 } },
     requiredSkills: { armorcraft: 10 },
     stages: [
       {
@@ -1469,6 +1485,7 @@ const HIDDEN_RECIPES = {
     rarity: 'legendary',
     output: [{ definitionId: 'powered_exosuit', qty: 1 }],
     requiredTools: ['field_forge'],
+    unlockConditions: { minSkillLevel: { armorcraft: 15, crafting: 12 } },
     requiredSkills: { armorcraft: 15, crafting: 12 },
     stages: [
       {
@@ -1497,6 +1514,7 @@ const HIDDEN_RECIPES = {
     rarity: 'legendary',
     output: [{ definitionId: 'night_vision_goggles', qty: 1 }],
     requiredTools: ['workbench'],
+    unlockConditions: { minSkillLevel: { crafting: 15 } },
     requiredSkills: { crafting: 15 },
     stages: [
       {
@@ -1518,6 +1536,7 @@ const HIDDEN_RECIPES = {
     rarity: 'legendary',
     output: [{ definitionId: 'electronic_lockpick', qty: 1 }],
     requiredTools: ['workbench'],
+    unlockConditions: { minSkillLevel: { crafting: 10 } },
     requiredSkills: { crafting: 10 },
     stages: [
       {
@@ -1539,6 +1558,7 @@ const HIDDEN_RECIPES = {
     rarity: 'legendary',
     output: [{ definitionId: 'master_wrench', qty: 1 }],
     requiredTools: ['field_forge'],
+    unlockConditions: { minSkillLevel: { crafting: 12 } },
     requiredSkills: { crafting: 12 },
     stages: [
       {
@@ -1563,6 +1583,7 @@ const HIDDEN_RECIPES = {
     rarity: 'legendary',
     output: [{ definitionId: 'automated_fish_trap', qty: 1 }],
     requiredTools: ['workbench'],
+    unlockConditions: { minSkillLevel: { fishing: 12 } },
     requiredSkills: { fishing: 12 },
     stages: [
       {
@@ -1584,6 +1605,7 @@ const HIDDEN_RECIPES = {
     rarity: 'legendary',
     output: [{ definitionId: 'master_angler_lure', qty: 1 }],
     requiredTools: ['field_forge'],
+    unlockConditions: { minSkillLevel: { fishing: 15 } },
     requiredSkills: { fishing: 15 },
     stages: [
       {
@@ -1595,6 +1617,180 @@ const HIDDEN_RECIPES = {
         consumeAt: 'start',
       },
     ],
+  },
+
+  // ─── 보스 드롭 전설 장비 (5) ────────────────────────────────
+  // 각 아이템의 dismantle 산출물이 곧 재료 구성이다 (제작 ↔ 해체 대칭).
+
+  forge_crocodile_scale_armor: {
+    id: 'forge_crocodile_scale_armor', name: '악어 비늘 갑옷 제작', category: 'armor',
+    description: '하수도의 왕에게서 벗겨낸 비늘을 가죽 판에 겹쳐 박는다. 물이 스미지 않는 중갑.',
+    hidden: true,
+    rarity: 'legendary',
+    output: [{ definitionId: 'crocodile_scale_armor', qty: 1 }],
+    requiredTools: ['tanning_rack'],
+    requiredSkills: { armorcraft: 8, crafting: 4 },
+    stages: [
+      {
+        stageIndex: 0, label: '비늘 무두질', tpCost: 4,
+        requiredItems: [
+          { definitionId: 'sewer_scale', qty: 2 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '가죽 바탕 결합', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'leather', qty: 3 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+    unlockConditions: {
+      hiddenLocationId: null,
+      bossKillId: 'boss_sewer_king',
+      requiredCharacter: null,
+      minDay: 0,
+      minCraftLevel: 0,
+      requiredItems: [],
+      customUnlock: null,
+    },
+  },
+
+  weave_acid_resistant_cloak: {
+    id: 'weave_acid_resistant_cloak', name: '내산성 망토 제작', category: 'armor',
+    description: '산성 결정을 녹여 천에 먹이고 고무로 밀봉한다. 산성비와 산성 공격을 흘려보낸다.',
+    hidden: true,
+    rarity: 'legendary',
+    output: [{ definitionId: 'acid_resistant_cloak', qty: 1 }],
+    requiredTools: ['chemistry_bench'],
+    requiredSkills: { armorcraft: 6, crafting: 5 },
+    stages: [
+      {
+        stageIndex: 0, label: '결정 용해', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'acid_crystal', qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '천 코팅·밀봉', tpCost: 4,
+        requiredItems: [
+          { definitionId: 'cloth',  qty: 3 },
+          { definitionId: 'rubber', qty: 2 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+    unlockConditions: {
+      hiddenLocationId: null,
+      bossKillId: 'boss_acid_queen',
+      requiredCharacter: null,
+      minDay: 0,
+      minCraftLevel: 0,
+      requiredItems: [],
+      customUnlock: null,
+    },
+  },
+
+  craft_tiger_fang_necklace: {
+    id: 'craft_tiger_fang_necklace', name: '호랑이 이빨 목걸이 제작', category: 'armor',
+    description: '변이 호랑이의 송곳니를 로프에 꿰어 목에 건다. 사냥꾼의 증표.',
+    hidden: true,
+    rarity: 'legendary',
+    output: [{ definitionId: 'tiger_fang_necklace', qty: 1 }],
+    requiredTools: [],
+    requiredSkills: { crafting: 6 },
+    stages: [
+      {
+        stageIndex: 0, label: '송곳니 꿰기', tpCost: 2,
+        requiredItems: [
+          { definitionId: 'tiger_fang', qty: 2 },
+          { definitionId: 'rope',       qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+    unlockConditions: {
+      hiddenLocationId: null,
+      bossKillId: 'boss_mutant_alpha_tiger',
+      requiredCharacter: null,
+      minDay: 0,
+      minCraftLevel: 0,
+      requiredItems: [],
+      customUnlock: null,
+    },
+  },
+
+  forge_frost_blade: {
+    id: 'forge_frost_blade', name: '냉각 합금 나이프 단조', category: 'weapon',
+    description: '얼어붙은 거인의 냉동 핵을 날에 박아 넣는다. 베인 자리가 얼어붙는다.',
+    hidden: true,
+    rarity: 'legendary',
+    output: [{ definitionId: 'frost_blade', qty: 1 }],
+    requiredTools: ['field_forge'],
+    requiredSkills: { weaponcraft: 8, crafting: 4 },
+    stages: [
+      {
+        stageIndex: 0, label: '날 단조', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'sharp_blade', qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '냉동 핵 삽입', tpCost: 4,
+        requiredItems: [
+          { definitionId: 'cryo_core', qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+    unlockConditions: {
+      hiddenLocationId: null,
+      bossKillId: 'boss_frozen_giant',
+      requiredCharacter: null,
+      minDay: 0,
+      minCraftLevel: 0,
+      requiredItems: [],
+      customUnlock: null,
+    },
+  },
+
+  assemble_warlord_rifle: {
+    id: 'assemble_warlord_rifle', name: '두목의 소총 조립', category: 'weapon',
+    description: '약탈자 두목의 훈장을 개머리판에 박아 넣고 총열을 다시 짠다. 빼앗은 자의 상징.',
+    hidden: true,
+    rarity: 'legendary',
+    output: [{ definitionId: 'warlord_rifle', qty: 1 }],
+    requiredTools: ['workbench', 'field_forge'],
+    requiredSkills: { weaponcraft: 10, crafting: 6 },
+    stages: [
+      {
+        stageIndex: 0, label: '총열·기관부 성형', tpCost: 4,
+        requiredItems: [
+          { definitionId: 'scrap_metal', qty: 4 },
+          { definitionId: 'spring',      qty: 2 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '훈장 각인', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'warlord_medal', qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+    unlockConditions: {
+      hiddenLocationId: null,
+      bossKillId: 'boss_raider_warlord',
+      requiredCharacter: null,
+      minDay: 0,
+      minCraftLevel: 0,
+      requiredItems: [],
+      customUnlock: null,
+    },
   },
 
 };

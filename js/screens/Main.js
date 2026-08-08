@@ -18,6 +18,7 @@ import BasecampModal  from '../ui/BasecampModal.js';
 import DoctorPatientModal from '../ui/DoctorPatientModal.js';
 import EmergencyRoomModal      from '../ui/EmergencyRoomModal.js';
 import ContributionChoiceModal from '../ui/ContributionChoiceModal.js';
+import SecretEventModal from '../ui/SecretEventModal.js';
 import ExploreSystem  from '../systems/ExploreSystem.js';
 import SeasonSystem    from '../systems/SeasonSystem.js';
 import WeatherSystem   from '../systems/WeatherSystem.js';
@@ -101,6 +102,7 @@ const Basecamp = {
     DoctorPatientModal.init();
     EmergencyRoomModal.init();
     ContributionChoiceModal.init();
+    SecretEventModal.init();
     // 계절 배지 초기화
     const seasonInfo = SeasonSystem.getSeasonInfo();
     const seasonBadge = document.getElementById('season-badge');
@@ -237,6 +239,11 @@ const Basecamp = {
 
       <!-- W3-1: Contribution Choice modal -->
       <div class="modal-overlay" id="contribution-choice-modal">
+        <div class="er-modal-box"></div>
+      </div>
+
+      <!-- Secret event choice modal -->
+      <div class="modal-overlay" id="secret-event-modal">
         <div class="er-modal-box"></div>
       </div>
 

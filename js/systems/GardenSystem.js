@@ -39,12 +39,15 @@ const GardenSystem = {
       const inst = gs.cards[card.instanceId];
       if (!inst) continue;
 
+      // 실내 의료 시설은 계절·날씨의 영향을 받지 않는다 (겨울에 혈액 정제가 멈출 이유가 없다)
+      const growthMult = def.subtype === 'medical_structure' ? 1 : yieldMult;
+
       // 경과 보정: 마지막 처리 이후 흐른 TP만큼 성장 누적 (정지 계절이면 누적 0)
       const last = inst._lastGrowTP ?? totalTP;
       const elapsed = Math.max(0, totalTP - last);
       inst._lastGrowTP = totalTP;
       if (inst._growthTp == null) inst._growthTp = 0;
-      if (yieldMult > 0 && elapsed > 0) inst._growthTp += elapsed * yieldMult;
+      if (growthMult > 0 && elapsed > 0) inst._growthTp += elapsed * growthMult;
 
       const harvestTp = (h.harvestDays ?? 5) * TP_PER_DAY;
       if (harvestTp <= 0) continue;

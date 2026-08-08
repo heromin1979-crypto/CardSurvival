@@ -8,6 +8,7 @@ import BLUEPRINTS_ADV  from '../data/blueprints_advanced.js';
 import HIDDEN_RECIPES  from '../data/hiddenRecipes.js';
 import I18n            from '../core/I18n.js';
 import GameData        from '../data/GameData.js';
+import { providesTool } from './toolProvision.js';
 
 // CraftSystem과 동일한 3중 병합 — advanced 누락 시 드래그 힌트에서 62종이 사라진다
 const ALL_BPS = { ...BLUEPRINTS_BASE, ...BLUEPRINTS_ADV, ...HIDDEN_RECIPES };
@@ -35,11 +36,15 @@ const CraftDiscovery = {
         s.requiredItems.map(r => r.definitionId)
       );
 
-      // src와 tgt가 모두 이 레시피의 재료에 포함되는지 확인
-      const srcNeeded = allRequired.includes(srcDefId);
-      const tgtNeeded = allRequired.includes(tgtDefId);
+      // 재료뿐 아니라 requiredTools도 매칭 대상 — 재료를 도구(건조대·조리솥 등)에
+      // 드래그하는 조합을 발견으로 인정한다. 단 도구×도구는 재료가 없어 제외.
+      const tools = bp.requiredTools ?? [];
+      const srcIsItem = allRequired.includes(srcDefId);
+      const tgtIsItem = allRequired.includes(tgtDefId);
+      const srcNeeded = srcIsItem || tools.includes(srcDefId);
+      const tgtNeeded = tgtIsItem || tools.includes(tgtDefId);
 
-      if (srcNeeded && tgtNeeded) {
+      if (srcNeeded && tgtNeeded && (srcIsItem || tgtIsItem)) {
         const missing = this._getMissingItems(bp, srcDefId, tgtDefId);
         const canStart = this._canStartNow(bp.id);
 
@@ -144,7 +149,7 @@ const CraftDiscovery = {
     // 도구 확인
     if (bp.requiredTools?.length) {
       for (const toolId of bp.requiredTools) {
-        if (!gs.getBoardCards().some(c => c.definitionId === toolId)) return false;
+        if (!gs.getBoardCards().some(c => providesTool(c.definitionId, toolId))) return false;
       }
     }
 

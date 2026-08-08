@@ -7,10 +7,15 @@ import SeasonSystem  from './SeasonSystem.js';
 import DiseaseSystem from './DiseaseSystem.js';
 import SkillSystem   from './SkillSystem.js';
 import NPCSystem     from './NPCSystem.js';
+import StructureEffectSystem from './StructureEffectSystem.js';
 import BALANCE       from '../data/gameBalance.js';
 import CharDialogue  from '../data/charDialogues.js';
 import GameData      from '../data/GameData.js';
 import { consumeEffectMultiplier, getConsumableEffect, normalizeConsumeEffect } from './ItemEffectSystem.js';
+import { BOTTOM_PAGE1_SIZE } from '../data/bagSlots.js';
+
+// 내구도가 닳는 의료 시설 — onTick 계열('medical')과 지속 효과 계열('medical_structure')
+const MEDICAL_STRUCTURE_SUBTYPES = new Set(['medical', 'medical_structure']);
 
 const StatSystem = {
   init() {
@@ -93,6 +98,9 @@ const StatSystem = {
     const gs = GameState;
     let encounterReduction = 0;
 
+    // 지속 효과 집계 — 이벤트 구독만으로는 놓칠 수 있어 TP마다 기준점을 다시 잡는다
+    StructureEffectSystem.refresh(gs);
+
     // ── 구역 고정 구조물 효과 (현재 구역에 설치된 구조물) ──
     const currentDistrict = gs.location.currentDistrict;
     const installed = gs.location.installedStructures?.[currentDistrict];
@@ -136,11 +144,11 @@ const StatSystem = {
     // ── 보드 카드 구조물 효과 (바리케이드, 의무거점 등) ──
     for (const card of gs.getBoardCards()) {
       const def  = gs.getCardDef(card.instanceId);
-      const tick = def?.onTick;
-      if (!tick) continue;
+      if (!def) continue;
+      const tick = def.onTick;
 
       // HP 재생 (medical_station 등)
-      if (tick.hp && tick.hp > 0) {
+      if (tick?.hp && tick.hp > 0) {
         const healed = Math.min(tick.hp, gs.player.hp.max - gs.player.hp.current);
         if (healed > 0) {
           gs.player.hp.current += healed;
@@ -149,27 +157,27 @@ const StatSystem = {
       }
 
       // 감염 감소 (medical_station)
-      if (tick.infection && tick.infection < 0) {
+      if (tick?.infection && tick.infection < 0) {
         gs.modStat('infection', tick.infection);
       }
 
       // 사기 증가 (medical_ward, field_hospital 등)
-      if (tick.morale && tick.morale > 0) {
+      if (tick?.morale && tick.morale > 0) {
         gs.modStat('morale', tick.morale);
       }
 
       // 피로 감소 (field_hospital)
-      if (tick.fatigue && tick.fatigue < 0) {
+      if (tick?.fatigue && tick.fatigue < 0) {
         gs.modStat('fatigue', tick.fatigue);
       }
 
       // 조우 확률 감소 (barricade)
-      if (tick.encounterReduction && tick.encounterReduction > 0) {
+      if (tick?.encounterReduction && tick.encounterReduction > 0) {
         encounterReduction += tick.encounterReduction;
       }
 
-      // 의료 구조물 내구도 감소
-      if (def.subtype === 'medical' && def.type === 'structure') {
+      // 의료 구조물 내구도 감소 — onTick이 없는 지속 효과 시설도 대상이다
+      if (MEDICAL_STRUCTURE_SUBTYPES.has(def.subtype) && def.type === 'structure') {
         const inst = gs.cards[card.instanceId];
         if (inst && (inst.durability ?? 0) > 0) {
           inst.durability = Math.max(0, inst.durability - BALANCE.medicalStation.durabilityDecayPerTP);
@@ -279,6 +287,9 @@ const StatSystem = {
 
     // encounterRateReduct을 player에 저장 (ExploreSystem에서 참조)
     gs.player.encounterRateReduct = Math.min(BALANCE.encounter.structureReductCap, encounterReduction);
+
+    // 이번 TP에 붕괴한 시설이 있으면 집계값이 낡는다 — 같은 TP 안에서 바로잡는다
+    StructureEffectSystem.refresh(gs);
   },
 
   // ── 식량 부패 (여름 계절 효과) ──────────────────────────────────
@@ -294,7 +305,15 @@ const StatSystem = {
     const seasonId = gs.season?.current ?? SeasonSystem.getCurrentSeason?.(gs.time?.day ?? 1)?.id ?? 'spring';
     const seasonMult = SP.seasonMult?.[seasonId] ?? 1;
 
+    // 밀폐 보관 가방(방수 컨테이너 등) 장착 시: 가방 페이지(2페이지) 칸의 식량은 부패 대상 제외
+    const backpackId  = gs.player?.equipped?.backpack;
+    const backpackDef = backpackId ? gs.getCardDef(backpackId) : null;
+    const sealedIds   = backpackDef?.preservesContents
+      ? new Set((gs.board.bottom ?? []).slice(BOTTOM_PAGE1_SIZE).filter(Boolean))
+      : null;
+
     for (const card of gs.getBoardCards()) {
+      if (sealedIds?.has(card.instanceId)) continue;
       const def = gs.getCardDef(card.instanceId);
       if (!def || def.type !== 'consumable' || !PERISHABLE_SUB.has(def.subtype)) continue;
       // 가공 보존품 — 부패 안 함: 명시 preserved 플래그 또는 preserved/fermented 태그(건조·훈연·발효·절임·통조림)
@@ -709,6 +728,12 @@ const StatSystem = {
       const until = now + Math.max(1, Math.floor(eff.zombieRepelTP));
       gs.player.zombieRepelUntilTP = Math.max(gs.player.zombieRepelUntilTP ?? 0, until);
       EventBus.emit('notify', { message: `좀비 회피 효과가 ${eff.zombieRepelTP}TP 동안 지속됩니다.`, type: 'good' });
+    }
+    if (eff.temporaryAttackBoost && eff.duration) {
+      const now = Math.floor(gs.time.totalTP ?? 0);
+      gs.player.attackBoostMult    = eff.temporaryAttackBoost;
+      gs.player.attackBoostUntilTP = Math.max(gs.player.attackBoostUntilTP ?? 0, now + Math.max(1, Math.floor(eff.duration)));
+      EventBus.emit('notify', { message: `💊 공격력 +${Math.round(eff.temporaryAttackBoost * 100)}% 효과가 ${eff.duration}TP 동안 지속됩니다.`, type: 'good' });
     }
     if (eff.hp) {
       // 의사 능력: 붕대 사용 시 bandageHpBonus 추가 회복

@@ -366,7 +366,6 @@ function verify() {
     version: 2,
     evidenceType: 'automatic immutable manifest/source/runtime/preview linkage verification',
     manualEvidenceState: 'linked-not-authenticated',
-    root: ROOT,
     counts: {
       companions: 20,
       uniqueSheets: 20,

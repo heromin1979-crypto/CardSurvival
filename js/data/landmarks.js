@@ -3481,6 +3481,42 @@ export const LANDMARK_DATA = {
           4,
         ],
       },
+      {
+        id: 'dongjak_bunker',
+        name: '지하 벙커',
+        icon: '🚪',
+        desc: '관리 창고 뒤편 철문 아래. 군용 통신 장비가 남아 있는 비상 벙커.',
+        dangerMod: 0.15,
+        requiresHiddenLocation: 'hidden_dongjak_cemetery_vault',
+        firstEnterReward: {
+          claimKey: 'dongjak_bunker_first',
+          items: [
+            { id: 'military_radio_kit', qty: 1 },
+          ],
+        },
+        lootTable: [
+          {
+            id: 'pistol_ammo',
+            weight: 4,
+          },
+          {
+            id: 'military_ration',
+            weight: 4,
+          },
+          {
+            id: 'bandage',
+            weight: 4,
+          },
+          {
+            id: 'radio',
+            weight: 2,
+          },
+        ],
+        lootCount: [
+          2,
+          3,
+        ],
+      },
     ],
   },
   gwanak: {
@@ -6080,6 +6116,21 @@ export function getLandmarkData(key) {
   if (LANDMARK_DATA[key]) return LANDMARK_DATA[key];
   const stripped = key.replace(/^lm_/, '');
   return LANDMARK_DATA[stripped] ?? null;
+}
+
+/**
+ * 랜드마크의 세부 장소 중 현재 플레이어에게 노출해야 할 것만 반환한다.
+ * `requiresHiddenLocation`이 지정된 세부 장소는 해당 숨겨진 장소를 발견한 뒤에만 나타난다.
+ * 본 모듈은 GameState를 import하지 않으므로(순환 의존 방지) 발견 목록을 인자로 받는다.
+ * @param {string} key - 랜드마크 아이템 ID 또는 LANDMARK_DATA 키
+ * @param {string[]} discoveredLocationIds - GameState.flags.hiddenLocationsDiscovered
+ * @returns {Array<object>} 노출 대상 세부 장소 배열
+ */
+export function getVisibleSubLocations(key, discoveredLocationIds = []) {
+  const subs = getLandmarkData(key)?.subLocations ?? [];
+  return subs.filter(sub =>
+    !sub.requiresHiddenLocation || discoveredLocationIds.includes(sub.requiresHiddenLocation)
+  );
 }
 
 /**

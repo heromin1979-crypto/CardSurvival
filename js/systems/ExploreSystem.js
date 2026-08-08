@@ -7,7 +7,7 @@ import TickEngine  from '../core/TickEngine.js';
 import { NODES, DISTRICTS, generateRouteCards } from '../data/nodes.js';
 import { getAdjacentDistricts } from '../data/districts.js';
 import { rollEnemyGroup, ENEMIES } from '../data/enemies.js';
-import { LANDMARK_DATA, getLandmarkData } from '../data/landmarks.js';
+import { LANDMARK_DATA, getLandmarkData, getVisibleSubLocations } from '../data/landmarks.js';
 import NoiseSystem   from './NoiseSystem.js';
 import TraitSystem   from './TraitSystem.js';
 import StatSystem    from './StatSystem.js';
@@ -211,7 +211,7 @@ const ExploreSystem = {
     const costTP = EncumbranceSystem.applyCost(
       Math.ceil((district.travelCostTP ?? 2) * NightSystem.getNightTravelCostMult()),
     );
-    if (costTP > 0) TickEngine.skipTP(costTP, `${district.name}(으)로 이동`);
+    if (costTP > 0) TickEngine.skipTP(costTP, I18n.t('tick.reasonTravel', { name: district.name }));
 
     // 방사선 (방어구 radiationMult 적용)
     if (district.radiation > 0) {
@@ -309,7 +309,7 @@ const ExploreSystem = {
       EventBus.emit('notify', { message: I18n.t('exploreSys.lowStamina'), type: 'warn' });
     }
 
-    TickEngine.skipTP(EncumbranceSystem.applyCost(1), `${district.name} 탐색`);
+    TickEngine.skipTP(EncumbranceSystem.applyCost(1), I18n.t('tick.reasonExplore', { name: district.name }));
 
     // ── 탐색 스태미나 소모 (이동의 절반) ────────────────────
     const expWeightMult   = StatSystem._getWeightMult(wPctExp);
@@ -677,7 +677,6 @@ const ExploreSystem = {
   _updateTopRowForLandmark(landmarkKey) {
     const gs    = GameState;
     const items = GameData?.items ?? {};
-    const lmData = getLandmarkData(landmarkKey);
 
     // 기존 top row 위치 카드 모두 제거
     for (let i = 0; i < gs.board.top.length; i++) {
@@ -705,7 +704,7 @@ const ExploreSystem = {
 
     // 세부 장소 카드 → top[1..N]
     let slot = 1;
-    for (const sub of lmData?.subLocations ?? []) {
+    for (const sub of getVisibleSubLocations(landmarkKey, gs.flags?.hiddenLocationsDiscovered ?? [])) {
       if (slot >= gs.board.top.length) break;
       const slDefId = `sl_${sub.id}`;
       if (items[slDefId]) {
@@ -727,8 +726,8 @@ const ExploreSystem = {
     // 이미 현재 위치한 세부 장소면 무시
     if (gs.location.currentSubLocation === subLocationId) return;
 
-    const lmData = getLandmarkData(districtId);
-    const sub    = lmData?.subLocations?.find(s => s.id === subLocationId);
+    const sub = getVisibleSubLocations(districtId, GameState.flags?.hiddenLocationsDiscovered ?? [])
+      .find(s => s.id === subLocationId);
     if (!sub) return;
 
     // 이전 세부 장소 바닥 저장 & 새 바닥 로드
@@ -771,7 +770,7 @@ const ExploreSystem = {
     }
 
     // 1 TP 소비 (과적 배율 적용)
-    TickEngine.skipTP(EncumbranceSystem.applyCost(1), `${sub.name} 탐색`);
+    TickEngine.skipTP(EncumbranceSystem.applyCost(1), I18n.t('tick.reasonExplore', { name: sub.name }));
 
     // 소음 생성 — districtId 파라미터는 랜드마크 키일 수 있으므로
     // 실제 구 레벨 스탯(소음/조우/위험도/방사선)은 플레이어의 currentDistrict 기준으로 조회

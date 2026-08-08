@@ -423,7 +423,9 @@ export const HIDDEN_LOCATIONS = {
     bossId: null,
     repeatable: false,
     repeatCooldownDays: 0,
-    discoveryMessage: '⭐ 국립현충원 참배로 아래에서 군사 벙커를 발견했다!',
+    subLocationId: 'dongjak_bunker',
+    cinematicId: 'cin_discover_dongjak_bunker',
+    discoveryMessage: '⭐ 동작구를 꼼꼼히 뒤진 끝에, 국립현충원 안에서 비밀스러운 군사 벙커를 찾아냈다.',
   },
 
   // ── 13. 관악구 ───────────────────────────────────────────────
@@ -831,6 +833,7 @@ export const HIDDEN_LOCATIONS = {
     },
     rewards: [
       { definitionId: 'river_boat', qty: 1 },
+      { definitionId: 'waterproof_container', qty: 1 },
     ],
     lootTable: [
       { definitionId: 'rope', weight: 25, minQty: 2, maxQty: 4 },

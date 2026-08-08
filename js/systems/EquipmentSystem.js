@@ -2,10 +2,8 @@
 import EventBus  from '../core/EventBus.js';
 import GameState from '../core/GameState.js';
 import I18n      from '../core/I18n.js';
-import { lookupBagExtraSlots } from '../data/bagSlots.js';
+import { lookupBagExtraSlots, BOTTOM_PAGE1_SIZE } from '../data/bagSlots.js';
 import { weaponSlotForDefinition } from './WeaponSlotPolicy.js';
-
-const BOTTOM_PAGE1_SIZE = 20;
 
 // 슬롯별 장착 규칙 테이블
 const SLOT_RULES = {

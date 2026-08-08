@@ -9,6 +9,56 @@ import { normalizeEquippedWeaponSlots } from '../systems/WeaponSlotPolicy.js';
 const MIDDLE_PAGE_SIZE = 10;
 const BOTTOM_PAGE1_SIZE = 20;
 
+/**
+ * 새 게임 시작 시 사용할 flags 기본값을 생성한다.
+ * 목록이 두 곳에 손으로 적히면 한쪽만 갱신되어 조용히 필드가 누락되므로
+ * GameState 초기값과 CharCreate의 새 게임 리셋이 이 함수를 공유한다.
+ */
+export function createDefaultFlags() {
+  return {
+    tutorialSeen:         false,
+    firstBlood:           false,
+    firstNightHintShown:  false,
+    // ── 엔딩 추적 ──────────────────────────────────────
+    totalKills:          0,    // 누적 처치 수
+    totalItemsFound:     0,    // 누적 발견 아이템 수
+    totalCrafted:        0,    // 누적 제작 횟수
+    totalMedicalCrafted: 0,    // 의료 카테고리 제작 횟수
+    totalFoodCrafted:    0,    // 음식 카테고리 제작 횟수
+    structuresBuilt:     0,    // 구조물 카테고리 제작 횟수
+    despairTicks:        0,    // 사기 0 연속 TP 수
+    nukeZoneEntered:     0,    // 방사선 구역 진입 횟수
+    lastEnemyCount:      0,    // 마지막 전투 적 수 (군중사 판별용)
+    yeongdeungpoVisited: false, // 영등포구 방문 여부 (KBS 거점)
+    seodaemunVisited:    false, // 서대문구 방문 여부 (세브란스 병원)
+    songpaVisited:       false, // 송파구 방문 여부 (롯데타워)
+    jongnoVisited:       false, // 종로구 방문 여부 (광화문)
+    infectionCured:      false, // 감염이 50 이상에서 0으로 회복된 이력
+    collapseCount:       0,    // 피로 붕괴 횟수 (2회째 → 사망)
+    survivedSummer:      false, // Day 180 이후 생존 플래그 (여름 생존 엔딩)
+    diseaseDeathId:      null,  // 질병 사망 시 질병 ID (엔딩 선택용)
+    // ── 서울 지도 조각 ────────────────────────────────
+    mapFragments:  [],     // 수집한 조각 ['north','center','south']
+    mapUnlocked:   false,  // 3개 완성 시 true → 전체 지도 해금
+    // ── 숨겨진 요소 추적 ──────────────────────────────
+    hiddenLocationsDiscovered: [],  // 발견한 히든 장소 ID 배열
+    bossesKilled:              [],  // 처치한 보스 ID 배열
+    legendaryItemsFound:       [],  // 획득한 전설 아이템 ID 배열
+    secretEventsTriggered:     [],  // 발생한 비밀 이벤트 ID 배열
+    hiddenRecipesUnlocked:     [],  // 해금한 레시피 ID 배열
+    eventChainProgress:        {},  // { chainId: stepNumber }
+    stealthKills:              0,   // 무소음 무기 크리킬 카운터
+    diseaseCured:              0,   // 질병 치료 카운터
+    meleeKills:                0,   // 근접무기 킬 카운터
+    // ── 보라매병원 습격 스케줄 ────────────────────────
+    nextSiegeDay:              null, // 다음 습격 예정일 (null = 초기화 대기)
+    siegeCount:                0,    // 누적 습격 횟수
+    // ── sublocation 1회 한정 자동 보상 수령 이력 ──────
+    // 'districtId:subLocationId' 키 배열. ExploreSystem._grantFirstEnterReward 참조.
+    firstEnterRewardsClaimed:  [],
+  };
+}
+
 const GameState = {
   // ── time ──────────────────────────────────────────────
   time: {
@@ -249,48 +299,7 @@ const GameState = {
   },
 
   // ── flags ─────────────────────────────────────────────
-  flags: {
-    tutorialSeen:         false,
-    firstBlood:           false,
-    firstNightHintShown:  false,
-    // ── 엔딩 추적 ──────────────────────────────────────
-    totalKills:          0,    // 누적 처치 수
-    totalItemsFound:     0,    // 누적 발견 아이템 수
-    totalCrafted:        0,    // 누적 제작 횟수
-    totalMedicalCrafted: 0,    // 의료 카테고리 제작 횟수
-    totalFoodCrafted:    0,    // 음식 카테고리 제작 횟수
-    structuresBuilt:     0,    // 구조물 카테고리 제작 횟수
-    despairTicks:        0,    // 사기 0 연속 TP 수
-    nukeZoneEntered:     0,    // 방사선 구역 진입 횟수
-    lastEnemyCount:      0,    // 마지막 전투 적 수 (군중사 판별용)
-    yeongdeungpoVisited: false, // 영등포구 방문 여부 (KBS 거점)
-    seodaemunVisited:    false, // 서대문구 방문 여부 (세브란스 병원)
-    songpaVisited:       false, // 송파구 방문 여부 (롯데타워)
-    jongnoVisited:       false, // 종로구 방문 여부 (광화문)
-    infectionCured:      false, // 감염이 50 이상에서 0으로 회복된 이력
-    collapseCount:       0,    // 피로 붕괴 횟수 (2회째 → 사망)
-    survivedSummer:      false, // Day 180 이후 생존 플래그 (여름 생존 엔딩)
-    diseaseDeathId:      null,  // 질병 사망 시 질병 ID (엔딩 선택용)
-    // ── 서울 지도 조각 ────────────────────────────────
-    mapFragments:  [],     // 수집한 조각 ['north','center','south']
-    mapUnlocked:   false,  // 3개 완성 시 true → 전체 지도 해금
-    // ── 숨겨진 요소 추적 ──────────────────────────────
-    hiddenLocationsDiscovered: [],  // 발견한 히든 장소 ID 배열
-    bossesKilled:              [],  // 처치한 보스 ID 배열
-    legendaryItemsFound:       [],  // 획득한 전설 아이템 ID 배열
-    secretEventsTriggered:     [],  // 발생한 비밀 이벤트 ID 배열
-    hiddenRecipesUnlocked:     [],  // 해금한 레시피 ID 배열
-    eventChainProgress:        {},  // { chainId: stepNumber }
-    stealthKills:              0,   // 무소음 무기 크리킬 카운터
-    diseaseCured:              0,   // 질병 치료 카운터
-    meleeKills:                0,   // 근접무기 킬 카운터
-    // ── 보라매병원 습격 스케줄 ────────────────────────
-    nextSiegeDay:              null, // 다음 습격 예정일 (null = 초기화 대기)
-    siegeCount:                0,    // 누적 습격 횟수
-    // ── sublocation 1회 한정 자동 보상 수령 이력 ──────
-    // 'districtId:subLocationId' 키 배열. ExploreSystem._grantFirstEnterReward 참조.
-    firstEnterRewardsClaimed:  [],
-  },
+  flags: createDefaultFlags(),
 
   // ── 런타임 랜드마크 오버라이드 ────────────────────────
   // { [landmarkId]: { [subLocationId]: { dangerModDelta: number } } }
@@ -599,11 +608,14 @@ const GameState = {
       const isAccumulator = stat === 'radiation' || stat === 'infection' || stat === 'fatigue';
       if (isAccumulator ? delta > 0 : delta < 0) return;
     }
-    // 감염 증가분에 한해 rateMultiplier 적용 (의사 -35% 등)
+    // 감염 증가분에 한해 rateMultiplier(의사 -35% 등) + 방역 구조물 저항 적용.
+    // structureEffects는 StructureEffectSystem이 갱신하는 파생값 — 여기서 보드를
+    // 훑으면 전투 루프마다 전수 스캔이 발생하므로 캐시된 값만 읽는다.
     let d = delta;
     if (stat === 'infection' && d > 0) {
       const mult = s.rateMultiplier ?? 1.0;
-      d = d * mult;
+      const structureResist = this.player?.structureEffects?.infectionResist ?? 0;
+      d = d * mult * (1 - structureResist);
     }
     this.setStat(stat, s.current + d);
   },
@@ -694,12 +706,21 @@ const GameState = {
       ...this.board.bottom.filter(Boolean),
       ...Object.values(this.player.equipped ?? {}).filter(Boolean),
     ]);
+    // 약품 보관장은 의료품을 대신 짊어진다 — 용량만큼 적재 계산에서 제외한다.
+    let medicalFreeSlots = this.player.structureEffects?.medicalStorageSlots ?? 0;
     let total = 0;
     for (const id of carriedIds) {
       const c = this.cards[id];
       if (!c) continue;
       const def = GameData?.items[c.definitionId];
-      total += (def?.weight ?? 0) * (c.quantity ?? 1);
+      const qty = c.quantity ?? 1;
+      let billableQty = qty;
+      if (medicalFreeSlots > 0 && def?.tags?.includes('medical')) {
+        const exempt = Math.min(medicalFreeSlots, qty);
+        medicalFreeSlots -= exempt;
+        billableQty = qty - exempt;
+      }
+      total += (def?.weight ?? 0) * billableQty;
     }
     const enc = this.player.encumbrance;
     enc.current   = parseFloat(total.toFixed(2));

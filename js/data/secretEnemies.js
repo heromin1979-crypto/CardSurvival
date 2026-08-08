@@ -1798,6 +1798,7 @@ export const SECRET_ENEMIES = {
     ],
     dropGuaranteed: [
       { definitionId: 'zero_strain', qty: 1 },
+      { definitionId: 'infected_blood_sample', qty: 1 },
     ],
     infectionChance: 0.60,
     aiPattern: 'aggressive',
@@ -1869,7 +1870,8 @@ export const SECRET_ENEMIES = {
       { definitionId: 'antibiotics',      weight: 20, minQty: 1, maxQty: 2 },
     ],
     dropGuaranteed: [
-      { definitionId: 'acid_gland', qty: 1 },
+      { definitionId: 'acid_gland',   qty: 1 },
+      { definitionId: 'acid_crystal', qty: 1 },
     ],
     infectionChance: 0.45,
     aiPattern: 'aggressive',

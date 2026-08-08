@@ -5,6 +5,8 @@ import EventBus       from '../core/EventBus.js';
 import GameState      from '../core/GameState.js';
 import DismantleSystem from '../systems/DismantleSystem.js';
 import NPCSystem       from '../systems/NPCSystem.js';
+import ModalManager    from './ModalManager.js';
+import { playDismantleFx } from './dismantleFx.js';
 import I18n           from '../core/I18n.js';
 import GameData       from '../data/GameData.js';
 
@@ -105,8 +107,6 @@ const CardContextMenu = {
     menu.appendChild(title);
 
     // 분해 버튼 — 스택(quantity>1)이면 "1개 분해 / 전부 분해" 2버튼
-    const tpPerUnit = def.dismantleTP ?? 0;
-    const remainTP  = 72 - GameState.time.tpInDay;
     const stackQty  = GameState.cards[instanceId]?.quantity ?? 1;
     const preview   = canDismantle
       ? def.dismantle.map(d => {
@@ -118,24 +118,30 @@ const CardContextMenu = {
 
     const makeDismantleBtn = (labelKey, labelParams, count) => {
       const btn   = document.createElement('button');
-      const cost  = tpPerUnit * count;
+      const { cost, remainTP, crossesMidnight } = DismantleSystem.getTpStatus(instanceId, count);
       const label = I18n.t(labelKey, labelParams);
       const tpTag = cost > 0 ? ` (${cost}TP)` : '';
-      const tpLow = cost > 0 && remainTP < cost;
-      btn.className = `ctx-btn${canDismantle && !tpLow ? '' : ' disabled'}`;
+      btn.className = `ctx-btn${canDismantle ? '' : ' disabled'}`;
       btn.innerHTML = `${label}${tpTag}`;
       if (!canDismantle) {
         btn.disabled = true;
         btn.title = I18n.t('cardMenu.cantDismantle');
-      } else if (tpLow) {
-        btn.disabled = true;
-        btn.title = I18n.t('cardMenu.tpShort', { need: cost, remain: remainTP });
       } else {
-        btn.title = preview;
+        btn.title = crossesMidnight
+          ? I18n.t('dismantle.crossMidnightHint', { remain: remainTP })
+          : preview;
         btn.addEventListener('click', () => {
           this._close();
-          DismantleSystem.dismantle(instanceId, count);
-          EventBus.emit('boardChanged', {});
+          const run = () => playDismantleFx(instanceId).then(() => {
+            DismantleSystem.dismantle(instanceId, count);
+            EventBus.emit('boardChanged', {});
+          });
+          // 하루가 넘어가는 것은 되돌릴 수 없으므로 미리 알린다
+          if (crossesMidnight) {
+            ModalManager.confirm(I18n.t('dismantle.crossMidnight', { cost, remain: remainTP }), run);
+          } else {
+            run();
+          }
         });
       }
       return btn;

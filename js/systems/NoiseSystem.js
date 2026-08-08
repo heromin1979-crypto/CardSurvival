@@ -314,8 +314,25 @@ const NoiseSystem = {
     if (amount <= 0) return;
     // silent 특성: 소음 발생량 40% 감소
     const noiseMult = TraitSystem.getTraitEffect('silent', 'noiseMult') ?? 1.0;
-    const actual    = amount * noiseMult;
+    const itemMult  = 1 - this._itemNoiseReduction();
+    const actual    = amount * noiseMult * itemMult;
     GameState.noise.level = Math.min(BALANCE.noise.max, GameState.noise.level + actual);
+  },
+
+  // 소지(보드) onUse.noiseReduction + 장착 onWear.noiseReduction 중 최댓값 하나만 적용
+  // (소음 감쇠기·스텔스 슈트 등 — 중첩 시 소음 0 고정을 막기 위해 합산하지 않음)
+  _itemNoiseReduction() {
+    let best = 0;
+    for (const card of GameState.getBoardCards()) {
+      const r = GameState.getCardDef(card.instanceId)?.onUse?.noiseReduction ?? 0;
+      if (r > best) best = r;
+    }
+    for (const id of Object.values(GameState.player?.equipped ?? {})) {
+      if (!id) continue;
+      const r = GameState.getCardDef(id)?.onWear?.noiseReduction ?? 0;
+      if (r > best) best = r;
+    }
+    return Math.min(1, best);
   },
 
   _triggerInflux() {

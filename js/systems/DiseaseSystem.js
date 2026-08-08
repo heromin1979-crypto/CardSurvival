@@ -9,11 +9,13 @@ import EndingSystem from './EndingSystem.js';
 import SeasonSystem from './SeasonSystem.js';
 import DISEASES    from '../data/diseases.js';
 import BALANCE     from '../data/gameBalance.js';
+import StructureEffectSystem from './StructureEffectSystem.js';
+import { getConsumableEffect } from './ItemEffectSystem.js';
 
 // ── 내부 노출 추적 카운터 (세이브 불필요 — 런타임 상태) ─────
 let _coldExposureTicks  = 0;  // temp < 20 연속 TP
 let _heatExposureTicks  = 0;  // temp > 85 연속 TP
-let _highInfectTicks    = 0;  // infection > 70 연속 TP
+let _highInfectTicks    = 0;  // infection > 60 연속 TP
 const INFECTIOUS_DISEASE_IDS = new Set(['common_cold', 'influenza', 'sepsis', 'cholera', 'dysentery']);
 
 const DiseaseSystem = {
@@ -44,6 +46,18 @@ const DiseaseSystem = {
 
     this._checkEnvironmentContraction(gs);
     this._progressDiseases(gs);
+
+    // 진단 시설이 있으면 잠복기가 끝난 질병을 스스로 찾아낸다 (진단 도구 소모 불필요)
+    if (StructureEffectSystem.get(gs).detectHiddenDisease) {
+      const revealed = this.diagnoseByFilter(gs, null);
+      if (revealed.length > 0) {
+        EventBus.emit('notify', {
+          message: `🔬 진단 시설이 이상을 감지했다: ${revealed.join(', ')}`,
+          type: 'warn',
+        });
+      }
+    }
+
     this._updateDiseaseHUD(gs);
   },
 
@@ -135,10 +149,14 @@ const DiseaseSystem = {
 
   checkContaminatedConsume(def, contamination, gs) {
     if (!contamination || contamination <= 0) return;
-    if (!def || def.type !== 'consumable') return;
+    // 섭취 가능 판정은 StatSystem.consumeCard와 동일 기준 —
+    // 생식 재료(야생 베리·날생선 등 material + onConsume)도 질병 판정 대상
+    if (!def || !getConsumableEffect(def)) return;
 
     const isWater = def.subtype === 'drink';
-    const isFood  = def.subtype === 'food';
+    const isFood  = def.subtype === 'food'
+      || def.subtype === 'food_raw'
+      || def.subtype === 'natural';
 
     if (!isWater && !isFood) return;
 
@@ -249,16 +267,7 @@ const DiseaseSystem = {
             message: '🩺 몸이 이상하다... 증상이 나타나기 시작한다. 진단이 필요하다.',
             type: 'warn',
           });
-          // 최초 1회: 진단 도구 사용법 상세 안내
-          if (!gs.flags.diseaseIncubationGuideShown) {
-            gs.flags.diseaseIncubationGuideShown = true;
-            setTimeout(() => {
-              EventBus.emit('notify', {
-                message: '💡 진단 도구(체온계·청진기·진단 키트)를 사용해 정확한 병명을 확인하세요. 미진단 상태에서는 HUD에 "???"로 표시됩니다.',
-                type: 'info',
-              });
-            }, 400);
-          }
+          // 진단 도구 사용법 안내는 OnboardingSystem이 diseaseContracted 구독으로 처리
           EventBus.emit('diseaseChanged', { diseases: gs.player.diseases });
         }
         continue;
@@ -369,6 +378,11 @@ const DiseaseSystem = {
       EventBus.emit('notify', { message: '감염 면역으로 질병 발병을 막았습니다.', type: 'good' });
       return;
     }
+    if (INFECTIOUS_DISEASE_IDS.has(diseaseId)
+        && StructureEffectSystem.get(gs).infectionSpreadBlock) {
+      EventBus.emit('notify', { message: '격리 시설이 감염 확산을 차단했습니다.', type: 'good' });
+      return;
+    }
     const diseaseResist = gs.player?.permanentDiseaseResist ?? 0;
     if (INFECTIOUS_DISEASE_IDS.has(diseaseId) && diseaseResist > 0 && Math.random() < diseaseResist) {
       EventBus.emit('notify', { message: '질병 저항으로 발병을 막았습니다.', type: 'good' });
@@ -402,25 +416,7 @@ const DiseaseSystem = {
       type: 'danger',
     });
 
-    // 최초 출혈/감염 발생 시 치료 가이드 — 처음 보는 플레이어를 위한 안내
-    if (diseaseId === 'bleeding' && !gs.flags.bleedingGuideShown) {
-      gs.flags.bleedingGuideShown = true;
-      setTimeout(() => {
-        EventBus.emit('notify', {
-          message: '💡 치료법: 붕대(🩹) 또는 알코올 솜(🧴)을 사용하면 출혈을 멈출 수 있습니다.',
-          type: 'info',
-        });
-      }, 300);
-    }
-    if ((diseaseId === 'deep_laceration' || gs.stats?.infection?.current > 20) && !gs.flags.infectionGuideShown) {
-      gs.flags.infectionGuideShown = true;
-      setTimeout(() => {
-        EventBus.emit('notify', {
-          message: '💡 감염 경고: 소독약(🧪) 또는 알코올 솜(🧴)으로 감염 수치를 낮추세요. 70 이상이면 패혈증 위험!',
-          type: 'warn',
-        });
-      }, 600);
-    }
+    // 최초 출혈/감염 치료 가이드는 OnboardingSystem이 diseaseContracted 구독으로 처리
 
     // 중증(3) 질환은 즉시 치료 경고
     if (def.severity >= 3) {

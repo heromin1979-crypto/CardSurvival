@@ -547,6 +547,22 @@ const CINEMATIC_SCENES = {
     ],
     displayMs: 0,
   },
+
+  // ── 숨겨진 장소 발견 ─────────────────────────────────────────────
+
+  cin_discover_dongjak_bunker: {
+    id: 'cin_discover_dongjak_bunker',
+    image: null,
+    gradient: 'linear-gradient(160deg,#060a08 0%,#101812 60%,#070b09 100%)',
+    title: '잊힌 지하',
+    subtitle: '국립현충원 · 동작구',
+    lines: [
+      '동작구를 며칠에 걸쳐 샅샅이 뒤졌다.',
+      '관리 창고 뒤편, 낙엽에 덮인 철문이 드러난다.',
+      '손에 쥔 지도 조각의 도면과 정확히 겹친다.',
+    ],
+    displayMs: 0,
+  },
 };
 
 // ── 엔딩 ID → 시네마틱 장면 ID 매핑 ─────────────────────────────

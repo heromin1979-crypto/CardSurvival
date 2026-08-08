@@ -10,6 +10,7 @@ import { NPC_ITEMS }  from '../data/npcs.js';
 import { combatAssetManifest } from '../data/combatAssets.js';
 import { getRank }   from '../systems/combat/FormationSystem.js';
 import { canReload, getMagazineState } from '../systems/WeaponAmmoSystem.js';
+import { formatInstanceName } from '../systems/ItemEffectSystem.js';
 import { CombatFxPlayer } from './combat/CombatFxPlayer.js';
 import { COMPANION_ICONS, INIT_TYPE_ICONS } from './combat/combatUiAssets.js';
 
@@ -1113,7 +1114,7 @@ const CombatUI = {
     const extraWeaponBtns = weapons.slice(1).map(w => {
       const def = gs.getCardDef(w.instanceId);
       return `<button class="sec-btn" data-action="attack" data-weapon="${w.instanceId}">
-        ${def?.icon ?? '⚔'} ${I18n.itemName(def?.id ?? w.definitionId, def?.name ?? '')}
+        ${def?.icon ?? '⚔'} ${formatInstanceName(w, def)}
       </button>`;
     }).join('');
 
@@ -1216,7 +1217,7 @@ const CombatUI = {
             <div class="ac-header">
               <span class="ac-icon">${weaponDef?.icon ?? '👊'}</span>
               <div class="ac-title-group">
-                <span class="ac-name">${weaponDef ? I18n.itemName(weaponDef.id, weaponDef.name) : '맨손'}</span>
+                <span class="ac-name">${weaponDef ? formatInstanceName(weaponCard, weaponDef) : '맨손'}</span>
                 <span class="ac-sub">ATTACK</span>
               </div>
             </div>

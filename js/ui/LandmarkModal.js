@@ -7,7 +7,7 @@ import SystemRegistry  from '../core/SystemRegistry.js';
 import TickEngine    from '../core/TickEngine.js';
 import StateMachine  from '../core/StateMachine.js';
 import { rollEnemyGroup } from '../data/enemies.js';
-import LANDMARK_DATA, { rollLoot, getLandmarkData } from '../data/landmarks.js';
+import LANDMARK_DATA, { rollLoot, getLandmarkData, getVisibleSubLocations } from '../data/landmarks.js';
 import GameData from '../data/GameData.js';
 import BALANCE  from '../data/gameBalance.js';
 import EncumbranceSystem from '../systems/EncumbranceSystem.js';
@@ -66,7 +66,8 @@ const LandmarkModal = {
       return;
     }
 
-    const subLocHtml = data.subLocations.map(loc => this._renderSubLoc(loc)).join('');
+    const visibleSubs = getVisibleSubLocations(this._districtId, GameState.flags?.hiddenLocationsDiscovered ?? []);
+    const subLocHtml = visibleSubs.map(loc => this._renderSubLoc(loc)).join('');
 
     box.innerHTML = `
       <div class="lm-modal-header">

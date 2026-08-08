@@ -161,32 +161,44 @@ const HiddenElementSystem = {
       type: 'good',
     });
 
-    // 보상 아이템 지급
-    if (loc.rewards?.length) {
-      for (const reward of loc.rewards) {
-        const inst = gs.createCardInstance(reward.definitionId, { quantity: reward.qty ?? 1 });
-        if (inst) {
-          gs.placeCardInRow(inst.instanceId, 'middle');
-          const def = GameData?.items?.[reward.definitionId];
-          if (def) {
-            EventBus.emit('notify', {
-              message: I18n.t('hidden.reward', { icon: def.icon ?? '📦', name: I18n.itemName(def.id, def.name) }),
-              type: 'good',
-            });
-          }
-          // 전설 아이템 추적
-          if (def?.rarity === 'legendary' || def?.legendary) {
-            if (!gs.flags.legendaryItemsFound.includes(reward.definitionId)) {
-              gs.flags.legendaryItemsFound.push(reward.definitionId);
+    if (loc.cinematicId) {
+      EventBus.emit('showCinematic', { sceneId: loc.cinematicId });
+    }
+
+    // 세부 장소가 연결된 장소는 진입 시 firstEnterReward로 지급하므로 여기서는 위치만 안내한다
+    if (loc.subLocationId) {
+      EventBus.emit('notify', {
+        message: `🚪 ${loc.name}에 진입할 수 있게 되었다. 해당 랜드마크에서 찾아보자.`,
+        type: 'info',
+      });
+    } else {
+      // 보상 아이템 지급
+      if (loc.rewards?.length) {
+        for (const reward of loc.rewards) {
+          const inst = gs.createCardInstance(reward.definitionId, { quantity: reward.qty ?? 1 });
+          if (inst) {
+            gs.placeCardInRow(inst.instanceId, 'middle');
+            const def = GameData?.items?.[reward.definitionId];
+            if (def) {
+              EventBus.emit('notify', {
+                message: I18n.t('hidden.reward', { icon: def.icon ?? '📦', name: I18n.itemName(def.id, def.name) }),
+                type: 'good',
+              });
+            }
+            // 전설 아이템 추적
+            if (def?.rarity === 'legendary' || def?.legendary) {
+              if (!gs.flags.legendaryItemsFound.includes(reward.definitionId)) {
+                gs.flags.legendaryItemsFound.push(reward.definitionId);
+              }
             }
           }
         }
       }
-    }
 
-    // 추가 랜덤 루트
-    if (loc.lootTable?.length) {
-      this._rollAndPlaceLoot(loc.lootTable, 2);
+      // 추가 랜덤 루트
+      if (loc.lootTable?.length) {
+        this._rollAndPlaceLoot(loc.lootTable, 2);
+      }
     }
 
     // 보스 전투 트리거
@@ -415,6 +427,54 @@ const HiddenElementSystem = {
     return true;
   },
 
+  /**
+   * 비밀 이벤트 선택지를 플레이어에게 물어 처리할 주체가 있는지 여부.
+   * 로깅·통계 목적의 구독자와 구분하기 위해 채널 수신자 수가 아니라 명시적 등록으로 판정한다.
+   */
+  _choiceResolverActive: false,
+
+  setChoiceResolverActive(active) {
+    this._choiceResolverActive = !!active;
+  },
+
+  /**
+   * 선택지의 필요 물품 충족 여부를 판정한다.
+   * UI가 잠금 표시에 쓰고, UI가 없는 환경의 자동 폴백도 같은 규칙을 공유한다.
+   * @returns {{ ok: boolean, missing: Array<{id:string, need:number, have:number}> }}
+   */
+  evaluateChoiceConditions(choice) {
+    const cond = choice?.conditions;
+    if (!cond) return { ok: true, missing: [] };
+
+    const missing = [];
+    for (const itemId of cond.requiredItems ?? []) {
+      const have = GameState.countOnBoard(itemId);
+      if (have < 1) missing.push({ id: itemId, need: 1, have });
+    }
+    for (const { id, qty } of cond.requiredItemQty ?? []) {
+      const need = qty ?? 1;
+      const have = GameState.countOnBoard(id);
+      if (have < need) missing.push({ id, need, have });
+    }
+    return { ok: missing.length === 0, missing };
+  },
+
+  /** 플레이어가 고른 비밀 이벤트 선택지를 실행한다. UI에서 호출한다. */
+  resolveSecretEventChoice(eventId, choiceIndex) {
+    const event  = SECRET_EVENTS.find(e => e.id === eventId);
+    const choice = event?.choices?.[choiceIndex];
+    if (!choice) return false;
+    if (!this.evaluateChoiceConditions(choice).ok) return false;
+
+    const outcome = this._rollOutcome(choice.outcomes ?? []);
+    if (outcome) {
+      EventBus.emit('notify', { message: outcome.text, type: 'info' });
+      this._applyEventOutcome(outcome);
+    }
+    EventBus.emit('boardChanged', {});
+    return true;
+  },
+
   _triggerSecretEvent(event) {
     const gs = GameState;
     gs.flags.secretEventsTriggered.push(event.id);
@@ -427,12 +487,15 @@ const HiddenElementSystem = {
     // 이벤트 선택지 UI 표시를 위해 이벤트 발행
     EventBus.emit('secretEventTriggered', { event });
 
-    // 선택지가 없는 이벤트는 첫 번째 선택지의 첫 결과 자동 적용
     if (!event.choices?.length) return;
 
-    // UI가 없는 경우 자동 처리 (첫 선택지, 가중치 기반 결과)
-    const choice = event.choices[0];
-    if (choice?.outcomes?.length) {
+    // 선택 처리 주체가 등록돼 있으면 플레이어 선택을 기다린다
+    if (this._choiceResolverActive) return;
+
+    // UI가 없는 환경(테스트·시뮬레이션) 폴백 — 조건을 만족하는 첫 선택지
+    const choice = event.choices.find(c => this.evaluateChoiceConditions(c).ok);
+    if (!choice) return;
+    if (choice.outcomes?.length) {
       const outcome = this._rollOutcome(choice.outcomes);
       if (outcome) {
         this._applyEventOutcome(outcome);
@@ -658,6 +721,9 @@ const HiddenElementSystem = {
       const craftLevel = gs.player.skills?.crafting?.level ?? 0;
       if (craftLevel < cond.minCraftLevel) return false;
     }
+
+    // 연구 시설 보유 필요 (분석실 등)
+    if (cond.requiredStructure && gs.countOnBoard(cond.requiredStructure) < 1) return false;
 
     // 필수 아이템 발견
     if (cond.requiredItems?.length) {

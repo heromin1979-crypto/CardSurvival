@@ -14,12 +14,12 @@ const ITEMS_MISC = {
     defaultDurability: 100,
     defaultContamination: 0,
     icon: '👜',
-    description: '소형 가방. 장착 시 인벤토리 3칸 확장.',
+    description: '소형 가방. 장착 시 인벤토리 8칸 확장.',
     tags: [
       'tool',
       'bag',
     ],
-    bagSlots: 3,
+    bagSlots: 8,
     dismantle: [
       {
         definitionId: 'cloth',
@@ -43,12 +43,12 @@ const ITEMS_MISC = {
     defaultDurability: 100,
     defaultContamination: 0,
     icon: '💼',
-    description: '어깨에 메는 가방. 장착 시 인벤토리 4칸 확장.',
+    description: '어깨에 메는 가방. 장착 시 인벤토리 11칸 확장.',
     tags: [
       'tool',
       'bag',
     ],
-    bagSlots: 4,
+    bagSlots: 11,
     dismantle: [
       {
         definitionId: 'leather',
@@ -72,13 +72,13 @@ const ITEMS_MISC = {
     defaultDurability: 100,
     defaultContamination: 0,
     icon: '🎒',
-    description: '든든한 배낭. 장착 시 인벤토리 5칸 확장.',
+    description: '든든한 배낭. 장착 시 인벤토리 14칸 확장.',
     tags: [
       'tool',
       'bag',
       'crafted',
     ],
-    bagSlots: 5,
+    bagSlots: 14,
     dismantle: [
       {
         definitionId: 'cloth',
@@ -107,13 +107,13 @@ const ITEMS_MISC = {
     defaultDurability: 100,
     defaultContamination: 0,
     icon: '🧳',
-    description: '대형 더플백. 장착 시 인벤토리 6칸 확장.',
+    description: '대형 더플백. 장착 시 인벤토리 17칸 확장.',
     tags: [
       'tool',
       'bag',
       'crafted',
     ],
-    bagSlots: 6,
+    bagSlots: 17,
     dismantle: [
       {
         definitionId: 'cloth',
@@ -142,12 +142,12 @@ const ITEMS_MISC = {
     defaultDurability: 100,
     defaultContamination: 0,
     icon: '🪖',
-    description: '군용 전술 배낭. 장착 시 인벤토리 7칸 확장.',
+    description: '군용 전술 배낭. 장착 시 인벤토리 20칸 확장.',
     tags: [
       'tool',
       'bag',
     ],
-    bagSlots: 7,
+    bagSlots: 20,
     dismantle: [
       {
         definitionId: 'cloth',
@@ -338,6 +338,7 @@ const ITEMS_MISC = {
       defense: 25,
       noiseOnAttack: 1,
     },
+    onWear: { damageReduction: 0.25, critReduction: 0.12 },
     tags: [
       'shield',
       'defense',
@@ -451,6 +452,7 @@ const ITEMS_MISC = {
       defense: 12,
       noiseOnAttack: 2,
     },
+    onWear: { damageReduction: 0.12, critReduction: 0.06 },
     tags: [
       'shield',
       'defense',
@@ -541,7 +543,7 @@ const ITEMS_MISC = {
     defaultContamination: 0,
     icon: '🗺️',
     fragmentOf: 'south',
-    description: '강남·서초·송파·강동 일대 군용 지도. 군 보급창고 위치에 붉은 X 표시가 남아있다.',
+    description: '강남·서초·송파·강동 일대 군용 지도. 좌표 격자가 인쇄된 제식 지도라 지형이 정확하다.',
     tags: [
       'document',
       'map',
@@ -1341,7 +1343,7 @@ const ITEMS_MISC = {
     id: 'broken_bottle',
     name: '깨진 유리병',
     type: 'weapon',
-    subtype: 'knife',
+    subtype: 'melee',
     rarity: 'common',
     weight: 0.2,
     defaultDurability: 100,
@@ -1351,13 +1353,19 @@ const ITEMS_MISC = {
     tags: [
       'weapon',
       'blade',
+      'knife',
       'homeless',
       'disposable',
     ],
-    damage: [
-      3,
-      6,
-    ],
+    combat: {
+      damage: [
+        3,
+        6,
+      ],
+      accuracy: 0.75,
+      noiseOnUse: 2,
+      durabilityLoss: 50,
+    },
     bleedChance: 0.25,
     dismantle: [
       {
@@ -2623,7 +2631,10 @@ const ITEMS_MISC = {
       'medical',
       'advanced',
     ],
-    craftingTool: true,
+    toolProvides: ['medical_station'],
+    effect: {
+      surgeryHealMult: 1.4,
+    },
     dismantle: [
       {
         definitionId: 'scrap_metal',
@@ -2694,38 +2705,6 @@ const ITEMS_MISC = {
       },
     ],
   },
-  water_purifier: {
-    id: 'water_purifier',
-    name: '정수 시설',
-    type: 'structure',
-    subtype: 'medical_structure',
-    rarity: 'uncommon',
-    weight: 0,
-    defaultDurability: 100,
-    defaultContamination: 0,
-    icon: '💧',
-    description: 'TP당 정수된 물 1개 자동 생산.',
-    tags: [
-      'structure',
-      'medical',
-      'generator',
-    ],
-    effect: {
-      waterPerTP: 1,
-    },
-    dismantle: [
-      {
-        definitionId: 'scrap_metal',
-        qty: 3,
-        chance: 0.7,
-      },
-      {
-        definitionId: 'charcoal_filter',
-        qty: 1,
-        chance: 0.5,
-      },
-    ],
-  },
   blood_bank: {
     id: 'blood_bank',
     name: '혈액 은행',
@@ -2736,12 +2715,13 @@ const ITEMS_MISC = {
     defaultDurability: 100,
     defaultContamination: 0,
     icon: '🩸',
-    description: 'IV용 혈액 저장·사용.',
+    description: '혈액을 보관·정제해 6일마다 야전 수혈 키트를 산출한다.',
     tags: [
       'structure',
       'medical',
       'advanced',
     ],
+    harvest: { itemId: 'field_transfusion_kit', harvestDays: 6, qty: 1 },
     dismantle: [
       {
         definitionId: 'electronic_parts',
@@ -2818,11 +2798,12 @@ const ITEMS_MISC = {
     defaultDurability: 100,
     defaultContamination: 0,
     icon: '🍼',
-    description: '섬세한 샘플 보존.',
+    description: '샘플을 보존·배양해 8일마다 감염 혈액 표본을 산출한다.',
     tags: [
       'structure',
       'medical',
     ],
+    harvest: { itemId: 'infected_blood_sample', harvestDays: 8, qty: 1 },
     dismantle: [
       {
         definitionId: 'electronic_parts',
@@ -2852,7 +2833,6 @@ const ITEMS_MISC = {
       'medical',
       'research',
     ],
-    craftingTool: true,
     dismantle: [
       {
         definitionId: 'electronic_parts',

@@ -34,6 +34,7 @@ const STACK_ROWS = [
   ['herb'                    , true, 10 ],
   ['wild_berry'              , true, 10 ],
   ['vegetable'               , true, 10 ],
+  ['mushroom_edible'         , true, 10 ],
 
   // ── 가공 재료 ─────────────────────────────────────────────────
   ['sharp_blade'             , true,  5 ],
@@ -67,6 +68,9 @@ const STACK_ROWS = [
   ['rice'                    , true,  8 ],
   ['cooked_rice'             , true,  5 ],
   ['dried_meat'              , true,  8 ],
+  ['dried_fish'              , true,  8 ],
+  ['dried_mushroom'          , true,  8 ],
+  ['dried_berry'             , true,  8 ],
   ['military_ration'         , true,  5 ],
   ['vitamins'                , true, 15 ],
   ['salt'                    , true, 10 ],
@@ -205,7 +209,6 @@ const STACK_ROWS = [
   ['vinegar'                   , true,  5 ],
   ['pickled_food'              , true,  5 ],
   ['meat_stew'                 , true,  5 ],
-  ['bibimbap'                  , true,  5 ],
   ['salted_meat'               , true,  5 ],
   ['smoked_meat'               , true,  5 ],
   ['preserved_ration'          , true,  5 ],
@@ -315,7 +318,6 @@ const STACK_ROWS = [
   ['surgical_table'            , false, 1 ],
   ['isolation_ward'            , false, 1 ],
   ['medical_cabinet'           , false, 1 ],
-  ['water_purifier'            , false, 1 ],
   ['blood_bank'                , false, 1 ],
   ['quarantine_station'        , false, 1 ],
   ['xray_station'              , false, 1 ],

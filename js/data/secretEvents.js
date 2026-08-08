@@ -425,7 +425,7 @@ export const SECRET_EVENTS = [
       {
         id: 'trade',
         text: '통조림 3개로 의약품을 교환한다',
-        conditions: { requiredItems: ['canned_food'] },
+        conditions: { requiredItemQty: [{ id: 'canned_food', qty: 3 }] },
         outcomes: [
           {
             weight: 75,
@@ -565,7 +565,7 @@ export const SECRET_EVENTS = [
       {
         id: 'trade_food',
         text: '식량을 교환한다',
-        conditions: { requiredItems: ['canned_food'] },
+        conditions: { requiredItemQty: [{ id: 'canned_food', qty: 2 }] },
         outcomes: [
           {
             weight: 100,
@@ -847,7 +847,7 @@ export const SECRET_EVENTS = [
       {
         id: 'pay_toll',
         text: '통행료를 지불한다 (식량 3개)',
-        conditions: { requiredItems: ['canned_food'] },
+        conditions: { requiredItemQty: [{ id: 'canned_food', qty: 3 }] },
         outcomes: [
           {
             weight: 75,
@@ -1506,7 +1506,7 @@ export const SECRET_EVENTS = [
       {
         id: 'offer_supplies',
         text: '물자를 선물하며 신뢰를 쌓는다',
-        conditions: { requiredItems: ['canned_food'] },
+        conditions: { requiredItemQty: [{ id: 'canned_food', qty: 3 }] },
         outcomes: [
           {
             weight: 100,
@@ -2311,7 +2311,7 @@ export const SECRET_EVENTS = [
         outcomes: [
           {
             weight: 100,
-            text: '12TP 동안 하늘이 어둡다. 좀비 -80%, 레이더 +100%. 기록을 남긴다.',
+            text: '해가 가려진 동안 거리가 조용해졌다. 관측한 것을 수첩에 옮겨 적는다.',
             effects: {
               morale: 10,
               flags: { eclipse_observed: true },
@@ -2767,7 +2767,7 @@ export const SECRET_EVENTS = [
       {
         id: 'build_prototype',
         text: '설계도대로 바로 제작을 시도한다',
-        conditions: { requiredItems: ['scrap_metal'] },
+        conditions: { requiredItemQty: [{ id: 'scrap_metal', qty: 2 }] },
         outcomes: [
           {
             weight: 60,

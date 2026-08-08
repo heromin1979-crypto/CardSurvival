@@ -2,7 +2,6 @@
   "version": 2,
   "evidenceType": "automatic immutable manifest/source/runtime/preview linkage verification",
   "manualEvidenceState": "linked-not-authenticated",
-  "root": "D:\\Projects\\CardSurvival",
   "counts": {
     "companions": 20,
     "uniqueSheets": 20,
@@ -16,12 +15,13 @@
     "opaqueGreen": 0,
     "fringeGreen": 0,
     "hiddenRgb": 0,
+    "boundaryGreen": 0,
     "removedComponents": 0,
     "staleAllowlist": 0
   },
-  "assemblyRecipeSha256": "bd8cc1baefb631466acaa434c34c98a8f02e976d6ef84511c3e3b1d682b0c454",
-  "previewManifestSha256": "96078d0620fc5217fa500c8b5dc8753a43a9f3ceb58691335ac5461869dff9c5",
-  "manualEvidenceSha256": "52e55a95f0534160066d7447432a594b556bce01002277ce1d83d0f0b999c00e",
+  "assemblyRecipeSha256": "67edfb48e67fe55a3db5aa9aecbc2966d2fd3e9b984be2413627114cb9fc5df3",
+  "previewManifestSha256": "388e8c24a54df142235ed2e8ae7893d4e3ae6908d8fd5b1806363db1cd475d92",
+  "manualEvidenceSha256": "bfef6594e25335f6ce448da465b90de989b34c47b8b8942b17c3c5c3aee8b16c",
   "sheets": [
     {
       "npcId": "npc_old_survivor",

@@ -315,27 +315,28 @@ describe('HospitalSiegeSystem — W1-1 연승 보너스 (streakBonus)', () => {
 });
 
 describe('HospitalSiegeSystem — W2-2 튜토리얼 습격 + Day7 예고', () => {
-  it('Day 7 도달 시 siegeTutorialWarned 플래그 + notify 발행', () => {
+  it('Day 7 도달 시 siegeWarningDue 발행 (안내 표시는 OnboardingSystem 담당)', () => {
     HospitalSiegeSystem.init();
     const spy = vi.fn();
-    EventBus.on('notify', spy);
+    EventBus.on('siegeWarningDue', spy);
 
     advanceToDay(BALANCE.hospitalSiege.tutorialWarningDay, 0);
 
-    expect(GameState.flags.siegeTutorialWarned).toBe(true);
-    expect(spy).toHaveBeenCalled();
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect(spy).toHaveBeenCalledWith(
+      expect.objectContaining({ day: BALANCE.hospitalSiege.tutorialWarningDay }),
+    );
   });
 
-  it('Day 7 예고는 한 번만 발행', () => {
+  it('Day 7 이후에는 siegeWarningDue를 다시 발행하지 않음', () => {
     HospitalSiegeSystem.init();
     const spy = vi.fn();
-    EventBus.on('notify', spy);
+    EventBus.on('siegeWarningDue', spy);
 
     advanceToDay(7, 0);
     advanceToDay(8, 0);   // 다음 날
 
-    // Day 7 예고 notify만 카운트 (다른 notify가 섞일 수 있으므로 호출 전체가 아니라 플래그만 검증)
-    expect(GameState.flags.siegeTutorialWarned).toBe(true);
+    expect(spy).toHaveBeenCalledTimes(1);
   });
 
   it('튜토리얼 패배: 환자 사망 없음 + 구조물 피해 없음 + dangerMod 증가 없음', () => {

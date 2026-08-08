@@ -24,6 +24,7 @@ import NPCS from './data/npcs.js';
 // Systems
 import EndingSystem         from './systems/EndingSystem.js';
 import StatSystem           from './systems/StatSystem.js';
+import StructureEffectSystem from './systems/StructureEffectSystem.js';
 import TelemetrySystem      from './systems/TelemetrySystem.js';
 import SeasonSystem         from './systems/SeasonSystem.js';
 import DiseaseSystem        from './systems/DiseaseSystem.js';
@@ -124,6 +125,7 @@ function init() {
 
   // Systems
   EndingSystem.init();
+  StructureEffectSystem.init();  // StatSystem·DiseaseSystem이 집계값을 읽으므로 먼저
   StatSystem.init();
   SeasonSystem.init();
   DiseaseSystem.init();
