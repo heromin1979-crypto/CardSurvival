@@ -637,6 +637,7 @@ $sourceSpecs = [ordered]@{
   old_survivor = @{ file = 'old_survivor_companion_chroma.png'; cols = 6; rows = 7; key = 'green' }
   old_survivor_hit = @{ file = 'old_survivor_hit_chroma.png'; cols = 6; rows = 1; key = 'green' }
   old_survivor_melee_death = @{ file = 'old_survivor_melee_death_chroma.png'; cols = 6; rows = 2; key = 'green' }
+  old_survivor_move_rework = @{ file = 'old_survivor_move_rework_chroma.png'; cols = 6; rows = 1; key = 'green' }
   nurse = @{ file = 'nurse_companion_chroma.png'; cols = 6; rows = 8; key = 'green' }
   nurse_ranged = @{ file = 'nurse_ranged_chroma.png'; cols = 6; rows = 1; key = 'green' }
   soldier_base = @{ file = 'soldier_companion_7row_chroma.png'; cols = 6; rows = 7; key = 'green' }
@@ -679,6 +680,7 @@ $sourceSpecs = [ordered]@{
   tower_doctor_death = @{ file = 'tower_doctor_death_chroma.png'; cols = 6; rows = 1; key = 'green' }
   sous_chef = @{ file = 'sous_chef_companion_chroma.png'; cols = 6; rows = 7; key = 'green' }
   sous_chef_hit = @{ file = 'sous_chef_hit_chroma.png'; cols = 6; rows = 1; key = 'green' }
+  sous_chef_move_rework = @{ file = 'sous_chef_move_rework_chroma.png'; cols = 6; rows = 1; key = 'green' }
   kitchen_helper = @{ file = 'kitchen_helper_companion_chroma.png'; cols = 6; rows = 7; key = 'green' }
   kitchen_helper_hit = @{ file = 'kitchen_helper_hit_chroma.png'; cols = 6; rows = 1; key = 'green' }
   kitchen_helper_supplement = @{ file = 'kitchen_helper_supplement_chroma.png'; cols = 6; rows = 5; key = 'green' }
@@ -686,7 +688,7 @@ $sourceSpecs = [ordered]@{
 }
 
 $targets = [ordered]@{
-  old_survivor_companion = @{ runtime = 'companions\old_survivor_companion_sheet.png'; rows = @('old_survivor','old_survivor_melee_death','old_survivor','old_survivor','old_survivor','old_survivor','old_survivor_hit','old_survivor_melee_death'); sourceRows = @(0,0,2,3,4,5,0,1) }
+  old_survivor_companion = @{ runtime = 'companions\old_survivor_companion_sheet.png'; rows = @('old_survivor','old_survivor_melee_death','old_survivor','old_survivor','old_survivor','old_survivor_move_rework','old_survivor_hit','old_survivor_melee_death'); sourceRows = @(0,0,2,3,4,0,0,1) }
   nurse_companion = @{ runtime = 'nurse_companion_sheet.png'; rows = @('nurse','nurse','nurse_ranged','nurse','nurse','nurse','nurse','nurse'); sourceRows = @(0,1,0,3,4,5,6,7) }
   soldier_companion = @{ runtime = 'soldier_companion_sheet.png'; rows = @('soldier_base','soldier_base','soldier_base','soldier_base','soldier_guard','soldier_base','soldier_base','soldier_death'); sourceRows = @(0,1,2,3,3,4,5,0); sourceColumns = @('0,1,2,3,4,5','0,1,2,3,4,5','0,1,2,3,4,5','0,1,2,3,4,5','0,1,2,3,4,5','0,1,2,3,4,5','0,1,2,3,4,5','0,1,2,3,4,5') }
   child_companion = @{ runtime = 'companions\child_companion_sheet.png'; rows = @('child') }
@@ -704,7 +706,7 @@ $targets = [ordered]@{
   tower_cook_companion = @{ runtime = 'companions\tower_cook_companion_sheet.png'; rows = @('tower_cook','tower_cook','tower_cook_ranged','tower_cook','tower_cook','tower_cook','tower_cook_hit','tower_cook'); sourceRows = @(0,1,0,3,4,5,0,6) }
   tower_engineer_companion = @{ runtime = 'companions\tower_engineer_companion_sheet.png'; rows = @('tower_engineer','tower_engineer','tower_engineer','tower_engineer','tower_engineer_guard','tower_engineer','tower_engineer','tower_engineer_death'); sourceRows = @(0,1,2,3,0,5,6,0) }
   tower_doctor_companion = @{ runtime = 'companions\tower_doctor_companion_sheet.png'; rows = @('tower_doctor_base','tower_doctor_base','tower_doctor_ranged_guard_move_hit','tower_doctor_support','tower_doctor_ranged_guard_move_hit','tower_doctor_ranged_guard_move_hit','tower_doctor_ranged_guard_move_hit','tower_doctor_death'); sourceRows = @(0,1,0,0,1,2,3,0) }
-  sous_chef_companion = @{ runtime = 'companions\sous_chef_companion_sheet.png'; rows = @('sous_chef','sous_chef','sous_chef','sous_chef','sous_chef','sous_chef','sous_chef_hit','sous_chef'); sourceRows = @(0,1,2,3,4,5,0,6) }
+  sous_chef_companion = @{ runtime = 'companions\sous_chef_companion_sheet.png'; rows = @('sous_chef','sous_chef','sous_chef','sous_chef','sous_chef','sous_chef_move_rework','sous_chef_hit','sous_chef'); sourceRows = @(0,1,2,3,4,0,0,6) }
   kitchen_helper_companion = @{ runtime = 'companions\kitchen_helper_companion_sheet.png'; rows = @('kitchen_helper','kitchen_helper','kitchen_helper_supplement','kitchen_helper_supplement','kitchen_helper_supplement','kitchen_helper_supplement','kitchen_helper_hit','kitchen_helper_supplement'); sourceRows = @(0,1,0,1,2,3,0,4) }
 }
 

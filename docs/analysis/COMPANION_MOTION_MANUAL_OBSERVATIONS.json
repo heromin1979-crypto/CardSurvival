@@ -3,8 +3,8 @@
   "hashScheme": "combat-provenance-sha256-v2",
   "evidenceType": "human manual visual observation",
   "reviewStatus": "PASS",
-  "reviewedAt": "2026-08-01",
-  "reviewerMethod": "Codex 데스크톱 original 해상도 view_image로 최종 안정 빌드의 런타임 PNG 20개, 1736x2120 확대 리뷰 보드 20개, contact sheet 1개를 직접 대조했다. 자동 renderer와 verifier는 이 판정을 생성하지 않는다.",
+  "reviewedAt": "2026-08-08",
+  "reviewerMethod": "기존 18개 동료 PASS 증거를 보존하고, Codex 데스크톱 original 해상도 view_image로 변경된 런타임 PNG 2개와 1736x2120 확대 리뷰 보드 2개를 다시 대조한 뒤 20개 전체 contact sheet를 확인했다. 자동 renderer와 verifier는 이 판정을 생성하지 않는다.",
   "reviewedCounts": {
     "companions": 20,
     "runtimeSheets": 20,
@@ -13,19 +13,19 @@
   },
   "openRework": [],
   "previewManifestPath": "/art_sources/combat/task9_companions/preview_manifest.json",
-  "previewManifestSha256": "388e8c24a54df142235ed2e8ae7893d4e3ae6908d8fd5b1806363db1cd475d92",
+  "previewManifestSha256": "1e35e2554e5008a7a2da28232f2a44395c18d8883a3acdb04934d1e645e95c4a",
   "contactPath": "/art_sources/combat/task9_companions/companion_motion_contact_sheet.png",
-  "contactSha256": "67f5c1742ddc3a08b6aec38ee25dad0c6d5c66d79239486154d7dc1e50e1fc27",
+  "contactSha256": "67043e4b853d6488bb150eae127fe00531ac3c261c183992140185850c3365e2",
   "assemblyRecipePath": "/art_sources/combat/task9_companions/assembly_recipe.json",
-  "assemblyRecipeSha256": "67edfb48e67fe55a3db5aa9aecbc2966d2fd3e9b984be2413627114cb9fc5df3",
+  "assemblyRecipeSha256": "0238626d4349b939a6dc22d20da4e2cde4796dd38904ddb9f0de8a1d7b1b3305",
   "companions": [
     {
       "npcId": "npc_old_survivor",
       "sheetKey": "old_survivor_companion",
       "previewPath": "/art_sources/combat/task9_companions/review_previews/old_survivor_companion_review.png",
-      "previewSha256": "9573bb622ce6a819963d505f1be08cfaac2daff65ae4fde82b5a13fdf4253c96",
+      "previewSha256": "dbb9a316184ac86dadacb1eaf80fd2d997f91692f853dc52c4ef7079d837504a",
       "runtimePath": "/assets/images/combat/spritesheets/companions/old_survivor_companion_sheet.png",
-      "runtimeSha256": "c4b17fe3ef7aeee3dbcd0b1dbf12282a376a5c64750070972b6e1c23a8c6fc5e",
+      "runtimeSha256": "0e9e462f3599722cb075c22f29096ef049a8d9428091343f767e2e958e410492",
       "skills": [
         {
           "skillId": "old_survivor_cane_strike",
@@ -51,7 +51,7 @@
       ],
       "identityNote": "회색 머리·낡은 코트 체형이 48셀 내내 동일하다.",
       "weaponNote": "목제 지팡이의 형태와 사용 방향이 행별 행동에 맞게 유지된다.",
-      "continuityNote": "확대 보드와 원본 시트를 1:1로 대조했으며 8행 48셀에 빈 셀, 잘린 신체, 이웃 셀 파편, 중복 패딩이 없다.",
+      "continuityNote": "확대 보드와 원본 시트를 1:1로 재대조했으며 이동 r5는 지팡이를 유지한 좌우 교대 보행 6프레임으로 이어진다. 8행 48셀에 빈 셀, 잘린 신체, 이웃 셀 파편, 중복 패딩이 없다.",
       "hit": {
         "motionKey": "hit",
         "rowSha256": "e28b5d646cc1ca2d7677f5ecdf67267941227fd0fa4d5604b1ef614944778947",
@@ -851,9 +851,9 @@
       "npcId": "npc_sous_chef",
       "sheetKey": "sous_chef_companion",
       "previewPath": "/art_sources/combat/task9_companions/review_previews/sous_chef_companion_review.png",
-      "previewSha256": "1423139404f8be5b8a545bbcfafc937cb4d827825e8f5ca0b5e9a2b7f0b4e75b",
+      "previewSha256": "dd92b178445467204620872dc0e2391726ab564a0b9e6268efc60cb886efe9e0",
       "runtimePath": "/assets/images/combat/spritesheets/companions/sous_chef_companion_sheet.png",
-      "runtimeSha256": "b453f8be0c7e7204acb96ae8261b58bbac5f00d5cec1d70be8b9153a9741e1bb",
+      "runtimeSha256": "037932d3259e99b39c5374c14877e238a9c9b0fff74ef1f60d7983f3e7bedc9e",
       "skills": [
         {
           "skillId": "sous_chef_cleaver",
@@ -879,7 +879,7 @@
       ],
       "identityNote": "짙은 초록 조리복·줄무늬 앞치마이 48셀 내내 동일하다.",
       "weaponNote": "식칼·배급 주머니·도마의 형태와 사용 방향이 행별 행동에 맞게 유지된다.",
-      "continuityNote": "확대 보드와 원본 시트를 1:1로 대조했으며 8행 48셀에 빈 셀, 잘린 신체, 이웃 셀 파편, 중복 패딩이 없다.",
+      "continuityNote": "확대 보드와 원본 시트를 1:1로 재대조했으며 이동 r5는 식칼을 낮게 유지한 좌우 교대 보행 6프레임으로 이어진다. 8행 48셀에 빈 셀, 잘린 신체, 이웃 셀 파편, 중복 패딩이 없다.",
       "hit": {
         "motionKey": "hit",
         "rowSha256": "1e6c65a6891540488661de0a4b8f77bcb291904f77d514e4d0cb2b108f0a6d11",

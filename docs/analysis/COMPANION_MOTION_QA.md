@@ -10,6 +10,8 @@
 
 수동 판정은 contact sheet에서 동료별 identity, 무기, 8개 의미 행, 6프레임 연속성, 잘림·슬라이드·잘못된 행 재사용 여부를 직접 관찰한 결과다. 자동 verifier는 이 판정을 만들지 않으며, 별도 관찰 데이터의 ID/해시를 manifest, loadout, runtime PNG, recipe와 교차 검증한다.
 
+2026-08-08 선택적 재검토에서는 `old_survivor_companion`과 `sous_chef_companion`의 이동 r5만 새 소스로 교체했다. original 해상도 runtime·개별 확대 보드·20종 contact sheet를 대조해 노년 생존자의 지팡이 보조 교대 보행과 부주방장의 낮게 든 식칼 교대 보행이 각각 6프레임으로 이어지고, 다른 188개 비대상 행은 기준선과 동일함을 확인했다.
+
 ## 60개 스킬 수동 판정
 
 각 셀의 세 스킬은 모두 개별 `PASS`다. 상세 관찰 문장은 수동 관찰 원본에 스킬 ID별로 보존한다.
@@ -68,7 +70,7 @@
 - 스킬: 60개 고유 ID, `COMBAT_SKILLS.motionKey`와 8행 의미 계약 일치
 - PNG: 20개 모두 1536×2048, 8-bit RGBA, 6×8, 셀 256×256
 - 셀: 960/960 populated, 960/960 transparent corners
-- strict chroma: `opaqueGreen=0`, `fringeGreen=0`, `hiddenRgb=0`, `removedComponents=0`, `staleAllowlist=0`
+- strict chroma: 새 alpha 2종과 runtime r5 2행에서 각각 `opaqueGreen=0`, `fringeGreen=0`, `hiddenRgb=0`, `boundaryGreen=0`, `removedComponents=0`, `staleAllowlist=0`
 - 수동 증거: 스킬 60/60 PASS, hit/death 40/40 PASS
 
 ## 종합 판정
