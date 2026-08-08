@@ -19,9 +19,9 @@
     "removedComponents": 0,
     "staleAllowlist": 0
   },
-  "assemblyRecipeSha256": "99b2881cb05cb3f747ff12628f647e955a0fc41006d5c39827310ed7296e794b",
-  "previewManifestSha256": "aed14836f3f459e40d3ec75ba8a81e366afde995678e5b9eb7a1ed4b3c1c98c4",
-  "manualEvidenceSha256": "72491628f9d0b3e75c45fad67c9e4831d542e0f7df9249c6576f94357a854e1c",
+  "assemblyRecipeSha256": "b18ae2a7a852d7f0a20b5c9bf4fd652c6cc98a73e93df7f599e579335bbff7cf",
+  "previewManifestSha256": "95aa6bfe34b8b98f77e3ffecdfb3e0dd87b96382445cdb10fae9e4aa831c674e",
+  "manualEvidenceSha256": "a13344c46dfcbf407b70047410776fb92e68167ac6ca640482485fa876cdbee3",
   "sheets": [
     {
       "npcId": "npc_old_survivor",
@@ -68,8 +68,8 @@
       "sheetKey": "student_companion",
       "path": "/assets/images/combat/spritesheets/companions/student_companion_sheet.png",
       "cells": 48,
-      "fileSha256": "11cdf666730d0bf54b53e4032bc8ef2f5523f6a9beca5ff83c1b84c803b1f829",
-      "pixelSha256": "c30d23cb46b7c4e6369bb6c01230b93d8123188f858b558196ee387e8d69c304"
+      "fileSha256": "3b8298b3f80303a220e63c007606245b107c2311d443a56c8e584d5331c7ce9f",
+      "pixelSha256": "abb53181d00c2879628215f407081385027b28b717c4c6784effbfaa72fa4b2a"
     },
     {
       "npcId": "npc_dog",

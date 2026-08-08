@@ -3,7 +3,7 @@
     "rendererPath":  "/tools/render_companion_motion_preview.ps1",
     "rendererSha256":  "8a66c1de2b79080912e8d311323332851a8e91d7534381357d4ee63adbf9acb1",
     "contactPath":  "/art_sources/combat/task9_companions/companion_motion_contact_sheet.png",
-    "contactSha256":  "030e7440fc56c6499dddd7bdbad19b6d58ccfe84832b227715a59023f5de7a6a",
+    "contactSha256":  "c95a34d36046f2f7a4ffe7bba26ee1b5ca4a6ed004cb621ebad75bae91fb3a8b",
     "sheets":  [
                    {
                        "sheetKey":  "old_survivor_companion",
@@ -253,9 +253,9 @@
                    {
                        "sheetKey":  "student_companion",
                        "runtimePath":  "/assets/images/combat/spritesheets/companions/student_companion_sheet.png",
-                       "runtimeSha256":  "11cdf666730d0bf54b53e4032bc8ef2f5523f6a9beca5ff83c1b84c803b1f829",
+                       "runtimeSha256":  "3b8298b3f80303a220e63c007606245b107c2311d443a56c8e584d5331c7ce9f",
                        "previewPath":  "/art_sources/combat/task9_companions/review_previews/student_companion_review.png",
-                       "previewSha256":  "16f473b7aebca9116a1502af9b3d5eda96623f5bc4c39593972a48068e28b66c",
+                       "previewSha256":  "f578f0ae50c9acf1c15f7fe13ce577b4b21e03ba0428508fd39b419b11f43200",
                        "rows":  [
                                     {
                                         "motionKey":  "idle",
@@ -280,7 +280,7 @@
                                     {
                                         "motionKey":  "guard",
                                         "row":  4,
-                                        "pixelSha256":  "9c51d9b7fb2fa3504d49178e7429310748442577c3e71e07daf493dfd5eae2f5"
+                                        "pixelSha256":  "0cb1a1c4eb26b0b9b7b1881fb5dd70081ebce788d58d1a310260a194dab7cac1"
                                     },
                                     {
                                         "motionKey":  "move",

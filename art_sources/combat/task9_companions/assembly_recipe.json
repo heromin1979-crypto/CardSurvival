@@ -10,7 +10,7 @@
     "rangedComponentContractPath":  "/art_sources/combat/task9_companions/ranged_component_contract.json",
     "rangedComponentContractSha256":  "cc2c60b6ef6df174a039c9456cbc9c26a28f5e8a3b592c7776a5166d804053a5",
     "provenancePath":  "/art_sources/combat/task9_companions/generation_provenance.json",
-    "provenanceSha256":  "7bcfadced08157bef49dc49eb79b3884084e8d802694c7bcd9711f54a8be7492",
+    "provenanceSha256":  "7146559f1c6cb2a089d527c40703c12779dc877da5b9e3adda0ac7acfc1d0501",
     "rowContract":  [
                         "idle",
                         "melee",
@@ -186,9 +186,9 @@
                                          },
                              "student_guard_rework":  {
                                                           "chromaPath":  "/art_sources/combat/task9_companions/student_guard_rework_chroma.png",
-                                                          "chromaSha256":  "7a4cef0d678819810aa9915d37ae11f28ae125a5951d72cd0885974387ba96c8",
+                                                          "chromaSha256":  "1893e6790e38fe2d1f3e73497b187ab8445c01f825a5d0faa314ddcabe784454",
                                                           "alphaPath":  "/art_sources/combat/task9_companions/student_guard_rework_alpha.png",
-                                                          "alphaSha256":  "f5d4b251b0f7bc85b18240a9881db1c274b2c48ace19ec105c01284e85c989e8",
+                                                          "alphaSha256":  "d64880de82a93bee38801ea8d66e42efd1ee35d4466bf0b9188e8f83d4c21a2a",
                                                           "cols":  6,
                                                           "rows":  1,
                                                           "key":  "green"
@@ -1142,8 +1142,8 @@
                                               "path":  "/assets/images/combat/spritesheets/companions/student_companion_sheet.png",
                                               "width":  1536,
                                               "height":  2048,
-                                              "fileSha256":  "11cdf666730d0bf54b53e4032bc8ef2f5523f6a9beca5ff83c1b84c803b1f829",
-                                              "pixelSha256":  "0fe13647e399bd2ac58c364cce31e5cec0139da43e6e3194b58b5f5df727300e",
+                                              "fileSha256":  "3b8298b3f80303a220e63c007606245b107c2311d443a56c8e584d5331c7ce9f",
+                                              "pixelSha256":  "bee8c5889a21e03b52cb403b44197754b02052793519d68399276b24ff67a783",
                                               "rows":  [
                                                            {
                                                                "targetRow":  0,

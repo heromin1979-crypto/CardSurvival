@@ -4,7 +4,7 @@
   "evidenceType": "human manual visual observation",
   "reviewStatus": "PASS",
   "reviewedAt": "2026-08-09",
-  "reviewerMethod": "기존 20개 동료 PASS 증거를 보존하면서 Task 7 대상인 soldier ranged, mechanic melee/guard, student guard를 canonical source alpha, runtime PNG, full-size review board 원본 해상도로 side-by-side 재검수했다. soldier는 보존 행의 각진 얼굴·짧은 검은 머리·차콜 전술복·plate carrier·동일 black assault rifle을 기준으로 shoulder→aim→muzzle-attached fire→controlled recoil→settle→ready와 기존 detached-component 빈 배열 계약을 확인했다. mechanic은 좁은 얼굴·고글·grease-dark coveralls·tool belt와 동일 대형 adjustable wrench, 직사각 red metal toolbox를 기준으로 melee ready→wind-up→strike→follow-through→recover→ready와 guard lift→torso brace→impact absorb→stable guard를 확인했다. student는 glasses·dark bob·navy jacket·gray hoodie·jeans·sneakers·navy backpack을 기준으로 backpack을 shoulder에서 chest로 가져와 brace/absorb/guard하는 흐름을 확인했다. 세 source 모두 3/4-right, 저채도 realistic hand-painted 표면, source gutter 40px 이상, body 6/6 또는 12/12, boundary/cross 0, strict chroma 6종 0이며 glossy 3D·red/magenta rim·identity drift·prop morph가 없다. 비대상 row hash는 actor verifier와 base 직접 비교로 대조했다.",
+  "reviewerMethod": "기존 20개 동료 PASS 증거를 보존하면서 Task 7 fix round 1의 student guard r4를 보존 runtime idle r0/move r5, canonical student source, 새 canonical alpha/runtime, full-size review board 원본 해상도로 side-by-side 재검수했다. 최초 r4 f2-f6의 큰 흰 medical cross와 부푼 직사각 support medical kit morph를 확인하고 폐기했다. 수정본은 r0/r5와 같은 compact dark-navy school backpack의 둥근 soft-bag 외곽, 작은 무표식 전면 포켓, straps와 zipper seams를 f1 shoulder부터 f6 chest guard까지 유지한다. shoulder reach→chest 이동→torso brace→impact absorb→protected stabilize→stable guard 흐름과 glasses·dark bob·navy jacket·gray hoodie·jeans·sneakers, 저채도 realistic hand-painted 표면, 3/4-right 방향이 유지된다. 흰 medical cross, first-aid icon, broad medical panel, extra bag, drop, umbrella, attack, prop morph는 없다. 새 source는 gutter 54px 이상, body 6/6, boundary/cross 0, strict chroma 6종 0이다. soldier r2와 mechanic r1/r4는 승인된 runtime/source를 byte-pixel 보존했으며 student 비대상 7행도 actor/base 직접 비교로 보존을 확인했다.",
   "reviewedCounts": {
     "companions": 20,
     "runtimeSheets": 20,
@@ -13,11 +13,11 @@
   },
   "openRework": [],
   "previewManifestPath": "/art_sources/combat/task9_companions/preview_manifest.json",
-  "previewManifestSha256": "aed14836f3f459e40d3ec75ba8a81e366afde995678e5b9eb7a1ed4b3c1c98c4",
+  "previewManifestSha256": "95aa6bfe34b8b98f77e3ffecdfb3e0dd87b96382445cdb10fae9e4aa831c674e",
   "contactPath": "/art_sources/combat/task9_companions/companion_motion_contact_sheet.png",
-  "contactSha256": "030e7440fc56c6499dddd7bdbad19b6d58ccfe84832b227715a59023f5de7a6a",
+  "contactSha256": "c95a34d36046f2f7a4ffe7bba26ee1b5ca4a6ed004cb621ebad75bae91fb3a8b",
   "assemblyRecipePath": "/art_sources/combat/task9_companions/assembly_recipe.json",
-  "assemblyRecipeSha256": "99b2881cb05cb3f747ff12628f647e955a0fc41006d5c39827310ed7296e794b",
+  "assemblyRecipeSha256": "b18ae2a7a852d7f0a20b5c9bf4fd652c6cc98a73e93df7f599e579335bbff7cf",
   "companions": [
     {
       "npcId": "npc_old_survivor",
@@ -253,9 +253,9 @@
       "npcId": "npc_student",
       "sheetKey": "student_companion",
       "previewPath": "/art_sources/combat/task9_companions/review_previews/student_companion_review.png",
-      "previewSha256": "16f473b7aebca9116a1502af9b3d5eda96623f5bc4c39593972a48068e28b66c",
+      "previewSha256": "f578f0ae50c9acf1c15f7fe13ce577b4b21e03ba0428508fd39b419b11f43200",
       "runtimePath": "/assets/images/combat/spritesheets/companions/student_companion_sheet.png",
-      "runtimeSha256": "11cdf666730d0bf54b53e4032bc8ef2f5523f6a9beca5ff83c1b84c803b1f829",
+      "runtimeSha256": "3b8298b3f80303a220e63c007606245b107c2311d443a56c8e584d5331c7ce9f",
       "skills": [
         {
           "skillId": "student_improvised_strike",
@@ -279,9 +279,9 @@
           "note": "student_quick_step: 체중 이동과 보폭이 이어지는 6프레임이 완전하다."
         }
       ],
-      "identityNote": "round glasses, dark bob, navy school jacket, gray hoodie, faded jeans, sneakers와 navy backpack이 보존 행과 새 guard 6프레임에서 동일하다.",
-      "weaponNote": "동일한 navy backpack 하나만 shoulder에서 chest로 이동해 방어 도구로 유지되며 umbrella·공격 도구·추가 가방·drop·morph가 없다.",
-      "continuityNote": "guard f1 shoulder reach, f2 chest 이동, f3 torso brace, f4 impact absorb, f5 protected stabilize, f6 stable chest guard가 구분되고 마지막까지 upright guarded stance를 유지한다.",
+      "identityNote": "round glasses, dark bob, navy school jacket, gray hoodie, faded jeans와 black-and-white sneakers가 보존 r0/r5와 새 guard 6프레임에서 동일하다.",
+      "weaponNote": "r0/r5의 동일한 compact dark-navy school backpack 하나가 작은 무표식 전면 포켓, straps, zipper seams와 둥근 school-bag silhouette를 유지한 채 shoulder에서 chest로 회전한다. 흰 medical cross, first-aid icon, support kit 형태, extra bag, drop, growth, morph가 없다.",
+      "continuityNote": "guard f1 shoulder reach, f2 chest 이동, f3 torso brace, f4 impact absorb, f5 protected stabilize, f6 stable chest guard가 구분되며 backpack의 장비 범주·크기·표면 특징이 r0/r5와 일치한다.",
       "hit": {
         "motionKey": "hit",
         "rowSha256": "335743edbb147634187ed0d9f7378425e19456108ee0b1da9ea5f4e4d0604aca",
