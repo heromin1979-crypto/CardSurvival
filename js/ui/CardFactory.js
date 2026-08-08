@@ -249,10 +249,7 @@ const CARD_IMAGES = {
   immunity_serum:        'assets/images/medical/immunity_serum.png',
   vaccine:               'assets/images/medical/vaccine.png',
   alcohol_swab:          'assets/images/medical/alcohol_swab.png',
-  thermometer:           'assets/images/medical/vitamins.png',
-  // 이슈 #4 — stethoscope 전용 이미지 부재. 매핑 제거 (CARD_IMAGES[id] 없으면 이미지 없이 렌더)
   diagnostic_kit:        'assets/images/medical/surgical_grade_kit.png',
-  sling:                 'assets/images/medical/splint.png',
   head_bandage:          'assets/images/medical/bandage.png',
   tourniquet:            'assets/images/medical/bandage.png',
   stimulant:             'assets/images/medical/stimulant.png',
@@ -260,7 +257,6 @@ const CARD_IMAGES = {
 
   // 무기
   wooden_sword:          'assets/images/weapons/knife.png',
-  combat_scalpel:        'assets/images/tools/scalpel.png',
   knife:                 'assets/images/weapons/knife.png',
   combat_knife:          'assets/images/weapons/knife.png',
   sharpened_knife:       'assets/images/weapons/sharpened_knife.png',
@@ -316,7 +312,6 @@ const CARD_IMAGES = {
   medical_bed:           'assets/images/structures/medical_station.png',
   surgical_table:        'assets/images/structures/medical_station.png',
   isolation_ward:        'assets/images/structures/medical_station.png',
-  medical_cabinet:       'assets/images/structures/storage_box.png',
   blood_bank:            'assets/images/structures/medical_station.png',
   quarantine_station:    'assets/images/structures/medical_station.png',
   xray_station:          'assets/images/structures/medical_station.png',
@@ -324,70 +319,18 @@ const CARD_IMAGES = {
   analysis_lab:          'assets/images/structures/medical_station.png',
 
   // 확장 요리 (Phase 4)
-  kimchi_stew:           'assets/images/materials/raw_meat.png',
-  soybean_stew:          'assets/images/materials/raw_meat.png',
-  galbi_jjim:            'assets/images/materials/raw_meat.png',
-  bibimbap:              'assets/images/materials/canned_food.png',
-  cold_noodles:          'assets/images/materials/canned_food.png',
-  tomato_pasta:          'assets/images/materials/canned_food.png',
-  grilled_steak:         'assets/images/materials/raw_meat.png',
-  cream_soup:            'assets/images/materials/canned_food.png',
-  garden_salad:          'assets/images/materials/herb.png',
-  mushroom_risotto:      'assets/images/materials/canned_food.png',
-  hard_bread:            'assets/images/materials/canned_food.png',
-  honey_cookies:         'assets/images/materials/canned_food.png',
-  sponge_cake:           'assets/images/materials/canned_food.png',
-  pudding:               'assets/images/materials/canned_food.png',
-  dark_chocolate:        'assets/images/materials/charcoal.png',
-  recovery_stew:         'assets/images/materials/raw_meat.png',
-  hangover_soup:         'assets/images/materials/raw_meat.png',
-  fish_cake_stew:        'assets/images/materials/raw_meat.png',
-  hot_pot:               'assets/images/materials/raw_meat.png',
-  rice_porridge:         'assets/images/materials/canned_food.png',
 
   // 노숙자 전용 아이템
-  battered_can:          'assets/images/materials/empty_can.png',
-  old_blanket:           'assets/images/materials/cloth.png',
-  newspaper_bundle:      'assets/images/materials/cloth_scrap.png',
-  box_cutter:            'assets/images/weapons/knife.png',
-  worn_photo:            'assets/images/materials/cloth_scrap.png',
-  sketch_notebook:       'assets/images/materials/cloth_scrap.png',
-  broken_bottle:         'assets/images/materials/glass_shard.png',
 
   // 4직업 Tier-2 keepsake + 셰프 보존식 (PR14·PR16)
-  chef_journal:          'assets/images/materials/cloth_scrap.png',
-  spice_blend:           'assets/images/food/dried_mushroom.png',
-  family_photo:          'assets/images/materials/cloth_scrap.png',
-  dog_tag:               'assets/images/materials/cloth_scrap.png',
 
   // 셰프 전용 high-nutrition 자원 (PR17 트랙 B)
-  chef_meal_kit:         'assets/images/food/canned_food.png',
-  hearty_stew:           'assets/images/food/cooked_noodles.png',
 
   // 셰프 전용 희귀 식재료 (윤재혁)
-  truffle:               'assets/images/food/dried_mushroom.png',
-  korean_beef_premium:   'assets/images/food/raw_meat.png',
-  matsutake_mushroom:    'assets/images/food/mushroom_edible.png',
-  abalone:               'assets/images/food/raw_fish.png',
-  king_crab:             'assets/images/food/raw_fish.png',
-  ginseng_6years:        'assets/images/food/wild_root.png',
-  wild_honey:            'assets/images/food/honey.png',
-  caviar_local:          'assets/images/food/canned_food.png',
-  wagyu_scrap:           'assets/images/food/raw_meat.png',
-  saffron_dried:         'assets/images/food/wild_garlic.png',
 
   // 셰프 특별 요리 결과물
-  gourmet_steak:         'assets/images/food/cooked_meat.png',
-  traditional_feast:     'assets/images/food/survivors_feast.png',
-  truffle_risotto:       'assets/images/food/cooked_rice.png',
-  seafood_platter:       'assets/images/food/grilled_fish.png',
-  special_soup:          'assets/images/food/mushroom_soup.png',
 
   // 개조된 장비 (15 items) — 기존 이미지 재사용
-  iron_pipe_reinforced:  'assets/images/weapons/iron_pipe.png',
-  sharpened_knife_plus:  'assets/images/weapons/sharpened_knife.png',
-  reinforced_bat_plus:   'assets/images/weapons/reinforced_bat.png',
-  machete_plus:          'assets/images/weapons/machete.png',
   spear_plus:            'assets/images/weapons/spear.png',
   crossbow_plus:         'assets/images/weapons/crossbow.png',
   tactical_vest_plus:    'assets/images/armor/tactical_vest.png',

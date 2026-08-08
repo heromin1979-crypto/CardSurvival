@@ -209,7 +209,6 @@ const STACK_ROWS = [
   ['vinegar'                   , true,  5 ],
   ['pickled_food'              , true,  5 ],
   ['meat_stew'                 , true,  5 ],
-  ['bibimbap'                  , true,  5 ],
   ['salted_meat'               , true,  5 ],
   ['smoked_meat'               , true,  5 ],
   ['preserved_ration'          , true,  5 ],
