@@ -120,7 +120,7 @@ const FishingSystem = {
     if (rodId === 'fishing_rod_improved') catchChance += B.rodImprovedBonus;
     catchChance += baitBonus;
 
-    const weather = gs.weather?.current ?? 'sunny';
+    const weather = gs.weather?.id ?? 'sunny';
     catchChance  += WEATHER_MOD[weather] ?? 0;
     catchChance   = Math.min(0.90, Math.max(0.05, catchChance));
     const pct = Math.round(catchChance * 100);
@@ -242,10 +242,10 @@ const FishingSystem = {
     }
 
     // 어획 확률 계산
-    const weather    = gs.weather?.current ?? 'sunny';
+    const weather    = gs.weather?.id ?? 'sunny';
     let baseChance   = B.trapBaseCatch;
     baseChance      += WEATHER_MOD[weather] ?? 0;
-    baseChance       = Math.min(0.80, Math.max(0.10, baseChance));
+    baseChance       = Math.min(B.trapMaxCatch, Math.max(0.10, baseChance));
 
     if (Math.random() < baseChance) {
       const fishId = Math.random() < (BALANCE.fishing.trapMediumChance ?? 0.3) ? 'fish_medium' : 'fish_small';
