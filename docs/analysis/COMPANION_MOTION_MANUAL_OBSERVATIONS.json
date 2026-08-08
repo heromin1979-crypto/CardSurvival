@@ -4,7 +4,7 @@
   "evidenceType": "human manual visual observation",
   "reviewStatus": "PASS",
   "reviewedAt": "2026-08-08",
-  "reviewerMethod": "기존 19개 동료 PASS 증거와 Sohee support·hit·death raw source pixels를 보존하고, Task 4 fix round 1에서 move 6×1만 imagegen으로 다시 편집한 뒤 canonical alpha, 런타임 PNG, 확대 리뷰 보드를 Codex 데스크톱 original 해상도 view_image로 재대조했다. 여섯 move 셀의 toe-up/flat sole, boot 크기·명도, shin occlusion, passing/contact, neutral return을 각각 비교하고 위치 정규화 하체 IoU, source/runtime cell gutter와 strict chroma도 확인했으며, 20개 전체 contact sheet에서 Sohee 보드를 다시 확인했다. 자동 renderer와 verifier는 이 판정을 생성하지 않는다.",
+  "reviewerMethod": "기존 19개 동료 PASS 증거를 보존하고, Task 5에서 Daehan ranged·hit·death 6×3 source를 built-in imagegen으로 재제작한 뒤 canonical alpha, runtime PNG, 확대 리뷰 보드를 Codex 데스크톱 original 해상도로 재대조했다. ranged의 장치 준비·조준·투척·복귀, hit의 충격·반동·렌치 brace·전투 준비 복귀, death의 직립 부상·무릎 약화·측면 낙상·prone hold를 프레임별로 판정했고 source gutter, boundary alpha, cross-cell component, strict chroma와 비대상 행 hash를 확인했다. 20개 전체 동료 contact sheet에서 대한 보드와 나머지 보존 보드도 다시 확인했으며 자동 renderer와 verifier는 이 판정을 생성하지 않는다.",
   "reviewedCounts": {
     "companions": 20,
     "runtimeSheets": 20,
@@ -13,11 +13,11 @@
   },
   "openRework": [],
   "previewManifestPath": "/art_sources/combat/task9_companions/preview_manifest.json",
-  "previewManifestSha256": "a9fbb2d652fd4c56e6db7b8b72123d0e54e3dc71ba2a49616310f793cd1fd170",
+  "previewManifestSha256": "8484edd7e3cd3103df222c84301756bce9dfb55ae98e1df693d464ce25e55aeb",
   "contactPath": "/art_sources/combat/task9_companions/companion_motion_contact_sheet.png",
-  "contactSha256": "891643f4333570f10501578815d5e0f96b5044d239094a0b5129dbc994a791f8",
+  "contactSha256": "21285402ea6b3f054de218b90b3d2eaeeb7c09130056ec13581ea609565f10f5",
   "assemblyRecipePath": "/art_sources/combat/task9_companions/assembly_recipe.json",
-  "assemblyRecipeSha256": "39bcc840d6ccd22c29bb810f310dbc1a26305da38b424cc622fa473df2d4bfa0",
+  "assemblyRecipeSha256": "68dad35dd17632a2b4ef87c7c8b94199c707371d32a2a6c0f0cc7318b8768f14",
   "companions": [
     {
       "npcId": "npc_old_survivor",
@@ -575,9 +575,9 @@
       "npcId": "npc_daehan",
       "sheetKey": "daehan_companion",
       "previewPath": "/art_sources/combat/task9_companions/review_previews/daehan_companion_review.png",
-      "previewSha256": "7e6f0fcbb8f573476aaaa979f57c5bcb9a4f35a614ba86a6d00a0b97b553fb0f",
+      "previewSha256": "545b375994e93d4556e3e2f60cdd17de34e419e6db7f17e851403f5deafb1250",
       "runtimePath": "/assets/images/combat/spritesheets/companions/daehan_companion_sheet.png",
-      "runtimeSha256": "b5881faa233ffd54927d6a7e15393877c3abfdaf4597f7aeca5fd6e396f72f57",
+      "runtimeSha256": "bcfaf1a2e93189945b55ccb746b6deedcd7425e99d57a7ca580d1e6a744c1c68",
       "skills": [
         {
           "skillId": "daehan_wrench",
@@ -601,20 +601,20 @@
           "note": "daehan_overcharge: 지원 도구 사용과 전달 또는 신호가 6프레임으로 구분된다."
         }
       ],
-      "identityNote": "회색 작업복·가죽 앞치마이 48셀 내내 동일하다.",
-      "weaponNote": "대형 렌치·전기 장치·금속 방벽의 형태와 사용 방향이 행별 행동에 맞게 유지된다.",
-      "continuityNote": "확대 보드와 원본 시트를 1:1로 대조했으며 8행 48셀에 빈 셀, 잘린 신체, 이웃 셀 파편, 중복 패딩이 없다.",
+      "identityNote": "좁은 얼굴·짧은 검은 머리·보안경·회색 작업복·갈색 가죽 앞치마·공구 벨트가 재작업 3행과 보존 5행에서 동일하다.",
+      "weaponNote": "대형 렌치는 18개 재작업 프레임에서 유지되고 ranged f1-f4의 소형 전기 장치는 준비·활성화·우측 투척과 파란 방전으로 읽힌다. 권총·소총·군복·의료 장비는 없다.",
+      "continuityNote": "ranged는 장치 준비→활성화→조준→파란 방전 투척→팔로스루→렌치 ready, hit는 upright→충격→최대 반동→렌치 brace→균형 회복→전투 ready, death는 직립 부상→약화→무릎→측면 낙상→prone settle→prone hold로 구분된다. canonical source 최소 좌우 gutter 40px, boundary alpha 0, cross-cell component 0이며 runtime 48셀에 빈 셀이나 이웃 셀 파편이 없다.",
       "hit": {
         "motionKey": "hit",
-        "rowSha256": "efb62c9617b9a58b989567d04ae14592ea9060dc459397a49e2d0ef0a60444be",
+        "rowSha256": "949ff69cb1802de26c7bf23a3fc0a03110f6edac7cfb16ae633f61fea5eb9c18",
         "status": "PASS",
-        "note": "피격 시작-체중 붕괴-마무리 자세가 이어지며 캐릭터와 장비가 잘리지 않는다."
+        "note": "직립 준비에서 몸통 충격·최대 반동을 거쳐 동일 렌치로 버틴 뒤 마지막 프레임에 전투 가능한 자세로 복귀한다."
       },
       "death": {
         "motionKey": "death",
-        "rowSha256": "e5c88d1317711565b7c3632cfd32b13ee1708620b8c6ffb5a63e502e87ce81b4",
+        "rowSha256": "822415e2557dad8ce21bb74cba3354d399bbd3698f9dfe3bde8eb29126abc8af",
         "status": "PASS",
-        "note": "직립 또는 무릎 자세에서 완전한 쓰러짐으로 이어지고 마지막 프레임도 전신이 셀 안에 남는다."
+        "note": "직립 부상에서 무릎 약화·측면 낙상을 거쳐 마지막 두 프레임이 구분되는 prone settle과 안정된 prone hold로 끝난다."
       }
     },
     {

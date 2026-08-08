@@ -2,15 +2,15 @@
     "version":  2,
     "hashScheme":  "combat-provenance-sha256-v2",
     "assemblyScript":  "/tools/build_companion_motion_sheets.ps1",
-    "assemblyScriptSha256":  "241cd90033edfd27f6401e9a64d320ba71496e95806b00ff08d3befac118cea1",
+    "assemblyScriptSha256":  "58176b7e5e586d52be9914f777fb9c7450380c0bf9ebec482f0808d0c1919191",
     "qualityAnalyzerPath":  "/tools/companion_motion_quality.mjs",
-    "qualityAnalyzerSha256":  "a1e94c4a1f91f386484de90c186cfb94b9d9f1349fcbadf523102a18363b397d",
+    "qualityAnalyzerSha256":  "11fe05b4f51a25b017dc17cd59eef98bbea205b3db9bd20478cd17627445ae3b",
     "rangedValidatorPath":  "/tools/verify_companion_ranged_contract.mjs",
     "rangedValidatorSha256":  "c5fef89e611be0fe5b60e438c0e536d380334b6e97d66687045af98b1fc3d1f2",
     "rangedComponentContractPath":  "/art_sources/combat/task9_companions/ranged_component_contract.json",
-    "rangedComponentContractSha256":  "24e76c90729763d6ec839cd9ca141bc4eb55d20671c56f0b5eda469a257032c1",
+    "rangedComponentContractSha256":  "ec449ed362956eee43235856cf72a0ef599d4195d681bb1b7d84e577369b3ef3",
     "provenancePath":  "/art_sources/combat/task9_companions/generation_provenance.json",
-    "provenanceSha256":  "5b75f3f3ebf995456ebd4f48d83db0bc93279e04e436e3efcf1c4b532060ee37",
+    "provenanceSha256":  "1c55ef581cdd6bf081611759ee5a174f40fe97c0a2027c2ebde8a97511997092",
     "rowContract":  [
                         "idle",
                         "melee",
@@ -301,6 +301,15 @@
                                                    "rows":  1,
                                                    "key":  "green"
                                                },
+                             "daehan_ranged_hit_death_rework":  {
+                                                                    "chromaPath":  "/art_sources/combat/task9_companions/daehan_ranged_hit_death_rework_chroma.png",
+                                                                    "chromaSha256":  "132c2d8f7e2b1fe52d6d143de3eddfb0881a2965df8b91ed89bee2023ae0f9eb",
+                                                                    "alphaPath":  "/art_sources/combat/task9_companions/daehan_ranged_hit_death_rework_alpha.png",
+                                                                    "alphaSha256":  "9f6f849480a2a6122bddee7c755f224622157f67831f8f835fef163059a1fa31",
+                                                                    "cols":  6,
+                                                                    "rows":  3,
+                                                                    "key":  "green"
+                                                                },
                              "daehan_guard":  {
                                                   "chromaPath":  "/art_sources/combat/task9_companions/daehan_guard_chroma.png",
                                                   "chromaSha256":  "17f5fda8de7c0b94de401dc9a6ba415ddf865dcc48695a50fea296db6e67c900",
@@ -1852,8 +1861,8 @@
                                              "path":  "/assets/images/combat/spritesheets/companions/daehan_companion_sheet.png",
                                              "width":  1536,
                                              "height":  2048,
-                                             "fileSha256":  "b5881faa233ffd54927d6a7e15393877c3abfdaf4597f7aeca5fd6e396f72f57",
-                                             "pixelSha256":  "21565a68dab86ffd66931d6226dc5dad557c8003af767995ef44b589163b013d",
+                                             "fileSha256":  "bcfaf1a2e93189945b55ccb746b6deedcd7425e99d57a7ca580d1e6a744c1c68",
+                                             "pixelSha256":  "c695b8bfadd015171f56daee8adc995ef1022adfe3614f67395d63241b2fd130",
                                              "rows":  [
                                                           {
                                                               "targetRow":  0,
@@ -1883,7 +1892,7 @@
                                                           },
                                                           {
                                                               "targetRow":  2,
-                                                              "source":  "daehan_ranged",
+                                                              "source":  "daehan_ranged_hit_death_rework",
                                                               "sourceRow":  0,
                                                               "sourceColumns":  [
                                                                                     0,
@@ -1935,8 +1944,8 @@
                                                           },
                                                           {
                                                               "targetRow":  6,
-                                                              "source":  "daehan",
-                                                              "sourceRow":  6,
+                                                              "source":  "daehan_ranged_hit_death_rework",
+                                                              "sourceRow":  1,
                                                               "sourceColumns":  [
                                                                                     0,
                                                                                     1,
@@ -1948,8 +1957,8 @@
                                                           },
                                                           {
                                                               "targetRow":  7,
-                                                              "source":  "daehan",
-                                                              "sourceRow":  7,
+                                                              "source":  "daehan_ranged_hit_death_rework",
+                                                              "sourceRow":  2,
                                                               "sourceColumns":  [
                                                                                     0,
                                                                                     1,

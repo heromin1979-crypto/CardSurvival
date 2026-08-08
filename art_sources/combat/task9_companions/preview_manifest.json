@@ -3,7 +3,7 @@
     "rendererPath":  "/tools/render_companion_motion_preview.ps1",
     "rendererSha256":  "8a66c1de2b79080912e8d311323332851a8e91d7534381357d4ee63adbf9acb1",
     "contactPath":  "/art_sources/combat/task9_companions/companion_motion_contact_sheet.png",
-    "contactSha256":  "891643f4333570f10501578815d5e0f96b5044d239094a0b5129dbc994a791f8",
+    "contactSha256":  "21285402ea6b3f054de218b90b3d2eaeeb7c09130056ec13581ea609565f10f5",
     "sheets":  [
                    {
                        "sheetKey":  "old_survivor_companion",
@@ -596,9 +596,9 @@
                    {
                        "sheetKey":  "daehan_companion",
                        "runtimePath":  "/assets/images/combat/spritesheets/companions/daehan_companion_sheet.png",
-                       "runtimeSha256":  "b5881faa233ffd54927d6a7e15393877c3abfdaf4597f7aeca5fd6e396f72f57",
+                       "runtimeSha256":  "bcfaf1a2e93189945b55ccb746b6deedcd7425e99d57a7ca580d1e6a744c1c68",
                        "previewPath":  "/art_sources/combat/task9_companions/review_previews/daehan_companion_review.png",
-                       "previewSha256":  "7e6f0fcbb8f573476aaaa979f57c5bcb9a4f35a614ba86a6d00a0b97b553fb0f",
+                       "previewSha256":  "545b375994e93d4556e3e2f60cdd17de34e419e6db7f17e851403f5deafb1250",
                        "rows":  [
                                     {
                                         "motionKey":  "idle",
@@ -613,7 +613,7 @@
                                     {
                                         "motionKey":  "ranged",
                                         "row":  2,
-                                        "pixelSha256":  "1440e0fe822eec51f1e9233b4e6ef89808665003c30763172a02fb1c286a62db"
+                                        "pixelSha256":  "9824ef8b5d7862c67cb37ea7e6a28b70baa6f97013ef4d8c9c6a62af92fa4dcd"
                                     },
                                     {
                                         "motionKey":  "support",
@@ -633,12 +633,12 @@
                                     {
                                         "motionKey":  "hit",
                                         "row":  6,
-                                        "pixelSha256":  "efb62c9617b9a58b989567d04ae14592ea9060dc459397a49e2d0ef0a60444be"
+                                        "pixelSha256":  "949ff69cb1802de26c7bf23a3fc0a03110f6edac7cfb16ae633f61fea5eb9c18"
                                     },
                                     {
                                         "motionKey":  "death",
                                         "row":  7,
-                                        "pixelSha256":  "e5c88d1317711565b7c3632cfd32b13ee1708620b8c6ffb5a63e502e87ce81b4"
+                                        "pixelSha256":  "822415e2557dad8ce21bb74cba3354d399bbd3698f9dfe3bde8eb29126abc8af"
                                     }
                                 ]
                    },

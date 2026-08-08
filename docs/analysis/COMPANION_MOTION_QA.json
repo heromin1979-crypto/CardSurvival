@@ -19,9 +19,9 @@
     "removedComponents": 0,
     "staleAllowlist": 0
   },
-  "assemblyRecipeSha256": "39bcc840d6ccd22c29bb810f310dbc1a26305da38b424cc622fa473df2d4bfa0",
-  "previewManifestSha256": "a9fbb2d652fd4c56e6db7b8b72123d0e54e3dc71ba2a49616310f793cd1fd170",
-  "manualEvidenceSha256": "91923a1776795bddfb570b025c6f29762b0022169241f783a0891ba4428d781f",
+  "assemblyRecipeSha256": "68dad35dd17632a2b4ef87c7c8b94199c707371d32a2a6c0f0cc7318b8768f14",
+  "previewManifestSha256": "8484edd7e3cd3103df222c84301756bce9dfb55ae98e1df693d464ce25e55aeb",
+  "manualEvidenceSha256": "c993e5913ff99ccbccbf7a0b2180fdc3999111f964b77c995ad8e3a091cf0b2e",
   "sheets": [
     {
       "npcId": "npc_old_survivor",
@@ -124,8 +124,8 @@
       "sheetKey": "daehan_companion",
       "path": "/assets/images/combat/spritesheets/companions/daehan_companion_sheet.png",
       "cells": 48,
-      "fileSha256": "b5881faa233ffd54927d6a7e15393877c3abfdaf4597f7aeca5fd6e396f72f57",
-      "pixelSha256": "51e563295d2cfa1779ae67b9a3e6f009604973e5c7b1d8a4766837ba187d2726"
+      "fileSha256": "bcfaf1a2e93189945b55ccb746b6deedcd7425e99d57a7ca580d1e6a744c1c68",
+      "pixelSha256": "0f34346a9ce7c11a9bdce80ef53bfa19481960f0e04550d2d593201064b0a6cb"
     },
     {
       "npcId": "npc_tower_security",
