@@ -4,7 +4,7 @@
   "evidenceType": "human manual visual observation",
   "reviewStatus": "PASS",
   "reviewedAt": "2026-08-09",
-  "reviewerMethod": "기존 20개 동료 PASS 증거를 보존하면서 Task 6 fix round 1 대상인 Minjun과 child를 canonical source alpha, runtime PNG, full-size review board 원본 해상도로 다시 side-by-side 검수했다. Minjun은 보존 source/runtime/full portrait의 buzz cut·올리브 medic 복장·Korean patch·vest·큰 rolled olive field backpack·black pistol을 기준으로 새 hit 6프레임 모두에서 backpack의 어깨 위 roll과 등 뒤 외곽 실루엣이 실제 보이는지 확인했다. impact→recoil→brace→standing pistol-ready recovery의 의미, 3/4-right 방향, 저채도 hand-painted 표면을 확인했고 rifle·fall·death·피·gore·glossy 3D·red/magenta rim은 없다. child는 hit f3의 검토된 113px 분리 alpha island만 제거됐고 본체·네이비 백팩·tassel 부착부와 나머지 5프레임이 보존됨을 전후 원본으로 확인했다. source gutter, body component, boundary alpha, cross-cell component, strict chroma와 비대상 row hash는 자동 verifier 결과와 함께 대조했다.",
+  "reviewerMethod": "기존 20개 동료 PASS 증거를 보존하면서 Task 7 대상인 soldier ranged, mechanic melee/guard, student guard를 canonical source alpha, runtime PNG, full-size review board 원본 해상도로 side-by-side 재검수했다. soldier는 보존 행의 각진 얼굴·짧은 검은 머리·차콜 전술복·plate carrier·동일 black assault rifle을 기준으로 shoulder→aim→muzzle-attached fire→controlled recoil→settle→ready와 기존 detached-component 빈 배열 계약을 확인했다. mechanic은 좁은 얼굴·고글·grease-dark coveralls·tool belt와 동일 대형 adjustable wrench, 직사각 red metal toolbox를 기준으로 melee ready→wind-up→strike→follow-through→recover→ready와 guard lift→torso brace→impact absorb→stable guard를 확인했다. student는 glasses·dark bob·navy jacket·gray hoodie·jeans·sneakers·navy backpack을 기준으로 backpack을 shoulder에서 chest로 가져와 brace/absorb/guard하는 흐름을 확인했다. 세 source 모두 3/4-right, 저채도 realistic hand-painted 표면, source gutter 40px 이상, body 6/6 또는 12/12, boundary/cross 0, strict chroma 6종 0이며 glossy 3D·red/magenta rim·identity drift·prop morph가 없다. 비대상 row hash는 actor verifier와 base 직접 비교로 대조했다.",
   "reviewedCounts": {
     "companions": 20,
     "runtimeSheets": 20,
@@ -13,11 +13,11 @@
   },
   "openRework": [],
   "previewManifestPath": "/art_sources/combat/task9_companions/preview_manifest.json",
-  "previewManifestSha256": "b15096bad9bf4c92f7f24b8a8fd09d77896cf7c96cb4e1465cee36271da1fe20",
+  "previewManifestSha256": "aed14836f3f459e40d3ec75ba8a81e366afde995678e5b9eb7a1ed4b3c1c98c4",
   "contactPath": "/art_sources/combat/task9_companions/companion_motion_contact_sheet.png",
-  "contactSha256": "be7a30af1f5bdcb60e94bdc263a89ab2c5b2d91278b64275dd0bf70260c84fa2",
+  "contactSha256": "030e7440fc56c6499dddd7bdbad19b6d58ccfe84832b227715a59023f5de7a6a",
   "assemblyRecipePath": "/art_sources/combat/task9_companions/assembly_recipe.json",
-  "assemblyRecipeSha256": "3416b5e4fc351a4ba24c606b4417b60c089c0715cf5d4323316c9bbc9c3ad2b3",
+  "assemblyRecipeSha256": "99b2881cb05cb3f747ff12628f647e955a0fc41006d5c39827310ed7296e794b",
   "companions": [
     {
       "npcId": "npc_old_survivor",
@@ -115,21 +115,21 @@
       "npcId": "npc_soldier_deserter",
       "sheetKey": "soldier_companion",
       "previewPath": "/art_sources/combat/task9_companions/review_previews/soldier_companion_review.png",
-      "previewSha256": "29b2465dc8c7ad9ee90d1992165cea9b337e426b76c241ddf28683d6b3f42af5",
+      "previewSha256": "80e8bb1476fa26c5325f5d2b0ad045c7beb0b83ea62ea3f2f2c42f63bf5487b9",
       "runtimePath": "/assets/images/combat/spritesheets/soldier_companion_sheet.png",
-      "runtimeSha256": "a3979cf141b99757ec8c6fbdf077f0ee7b56fceb25358fab6a7bbff92d8b0234",
+      "runtimeSha256": "9980a92c5d13cbd7a70f64d0eb27ab50fa8c6d71d53bfab9f5c171c9cf0f388e",
       "skills": [
         {
           "skillId": "deserter_rifle_shot",
           "motionKey": "ranged",
-          "rowSha256": "23bc50511b81cdaa9320e89634f60fd12662d8d34b8771c029bc15b679f6e4b1",
+          "rowSha256": "a8d4f839d512e611332e33fb97d03b0bc8c750e9d85372a3d9bf21bbddbd9077",
           "status": "PASS",
           "note": "deserter_rifle_shot: 조준 또는 투척 준비-방출-복귀의 6프레임이 완전하다."
         },
         {
           "skillId": "deserter_covering_fire",
           "motionKey": "ranged",
-          "rowSha256": "23bc50511b81cdaa9320e89634f60fd12662d8d34b8771c029bc15b679f6e4b1",
+          "rowSha256": "a8d4f839d512e611332e33fb97d03b0bc8c750e9d85372a3d9bf21bbddbd9077",
           "status": "PASS",
           "note": "deserter_covering_fire: 조준 또는 투척 준비-방출-복귀의 6프레임이 완전하다."
         },
@@ -141,9 +141,9 @@
           "note": "deserter_reposition: 체중 이동과 보폭이 이어지는 6프레임이 완전하다."
         }
       ],
-      "identityNote": "거친 얼굴·차콜 전술복이 48셀 내내 동일하다.",
-      "weaponNote": "검은 소총의 형태와 사용 방향이 행별 행동에 맞게 유지된다.",
-      "continuityNote": "확대 보드와 원본 시트를 1:1로 대조했으며 8행 48셀에 빈 셀, 잘린 신체, 이웃 셀 파편, 중복 패딩이 없다.",
+      "identityNote": "각진 거친 한국인 얼굴, 짧은 검은 머리, 차콜 전술복과 plate carrier가 보존 행과 새 ranged 6프레임에서 동일하다.",
+      "weaponNote": "동일한 검은 assault rifle의 stock·receiver·magazine·barrel과 양손 grip이 6프레임 내내 유지되며 f3의 작은 muzzle flash는 총구에 물리적으로 붙어 있다.",
+      "continuityNote": "ranged f1 shoulder, f2 aim, f3 muzzle-attached fire, f4 controlled recoil, f5 sight settle, f6 ready가 구분된다. 반복 조준·추가 총기·weapon morph·detached debris가 없다.",
       "hit": {
         "motionKey": "hit",
         "rowSha256": "f9ccaead95a1536461a9ba2e4904b0045ebf174f7f1b6e35f297cc2730a11c7b",
@@ -207,14 +207,14 @@
       "npcId": "npc_mechanic",
       "sheetKey": "mechanic_companion",
       "previewPath": "/art_sources/combat/task9_companions/review_previews/mechanic_companion_review.png",
-      "previewSha256": "41495313e921850edd9492a4d5fc6aa43d511f4d00547f98fabcc38c59d100b8",
+      "previewSha256": "31c7386250e024b8fd55a50f25dd7b0d18d42beb41765976e81c36d6188d2c45",
       "runtimePath": "/assets/images/combat/spritesheets/companions/mechanic_companion_sheet.png",
-      "runtimeSha256": "6d2a2c7301f28125934089e7d685635ea2d8505b561b8928ae17c3a33890a5d9",
+      "runtimeSha256": "cc13f9915d1bdfbf29210edbe07ee529973f1eb765a6b1a3e0454bc16c6c49cb",
       "skills": [
         {
           "skillId": "mechanic_wrench",
           "motionKey": "melee",
-          "rowSha256": "a38c8272625d1fdbd5c885a176b5eaa905fa59ace84a58df7b4514d04da65baf",
+          "rowSha256": "84f7f5d22c29fc855265276261ecf39e3f32c1de74d1ad80076d705e59c4175a",
           "status": "PASS",
           "note": "mechanic_wrench: 준비-타격 접촉-회수의 6프레임이 완전하다."
         },
@@ -233,9 +233,9 @@
           "note": "mechanic_tripwire: 지원 도구 사용과 전달 또는 신호가 6프레임으로 구분된다."
         }
       ],
-      "identityNote": "기름 묻은 작업복·고글이 48셀 내내 동일하다.",
-      "weaponNote": "대형 렌치·수리 도구·공구함의 형태와 사용 방향이 행별 행동에 맞게 유지된다.",
-      "continuityNote": "확대 보드와 원본 시트를 1:1로 대조했으며 8행 48셀에 빈 셀, 잘린 신체, 이웃 셀 파편, 중복 패딩이 없다.",
+      "identityNote": "좁은 중년 한국인 얼굴, 짧은 검은 머리, 이마의 goggles, grease-dark coveralls, tool belt와 boots가 보존 행과 새 melee/guard 12프레임에서 동일하다.",
+      "weaponNote": "melee의 동일 대형 silver adjustable wrench와 guard의 동일 직사각 red metal toolbox가 각 6프레임에서 일정한 형상·크기로 유지되고 손에서 이탈하거나 shield로 변하지 않는다.",
+      "continuityNote": "melee는 ready→wind-up→strike→follow-through→recover→ready, guard는 toolbox lift→torso brace→impact absorb→lower/stabilize→stable guard로 이어지며 두 prop 의미가 섞이지 않는다.",
       "hit": {
         "motionKey": "hit",
         "rowSha256": "4a9ab155aaeaf9c596e7fbb72d7487e404e11dcbef82813913f31cb7f02b6aab",
@@ -253,9 +253,9 @@
       "npcId": "npc_student",
       "sheetKey": "student_companion",
       "previewPath": "/art_sources/combat/task9_companions/review_previews/student_companion_review.png",
-      "previewSha256": "c5a6e5ae3f2bb000c7beebf6211b3d2df527423b48e33f597b74ba6031d9f001",
+      "previewSha256": "16f473b7aebca9116a1502af9b3d5eda96623f5bc4c39593972a48068e28b66c",
       "runtimePath": "/assets/images/combat/spritesheets/companions/student_companion_sheet.png",
-      "runtimeSha256": "8dde2e38302b6f0e11240cbaf9598a18c4ddb2a5f7292dcc3b62bfca69372511",
+      "runtimeSha256": "11cdf666730d0bf54b53e4032bc8ef2f5523f6a9beca5ff83c1b84c803b1f829",
       "skills": [
         {
           "skillId": "student_improvised_strike",
@@ -279,9 +279,9 @@
           "note": "student_quick_step: 체중 이동과 보폭이 이어지는 6프레임이 완전하다."
         }
       ],
-      "identityNote": "안경·남색 재킷·백팩이 48셀 내내 동일하다.",
-      "weaponNote": "우산·책·응급 처치 가방의 형태와 사용 방향이 행별 행동에 맞게 유지된다.",
-      "continuityNote": "확대 보드와 원본 시트를 1:1로 대조했으며 8행 48셀에 빈 셀, 잘린 신체, 이웃 셀 파편, 중복 패딩이 없다.",
+      "identityNote": "round glasses, dark bob, navy school jacket, gray hoodie, faded jeans, sneakers와 navy backpack이 보존 행과 새 guard 6프레임에서 동일하다.",
+      "weaponNote": "동일한 navy backpack 하나만 shoulder에서 chest로 이동해 방어 도구로 유지되며 umbrella·공격 도구·추가 가방·drop·morph가 없다.",
+      "continuityNote": "guard f1 shoulder reach, f2 chest 이동, f3 torso brace, f4 impact absorb, f5 protected stabilize, f6 stable chest guard가 구분되고 마지막까지 upright guarded stance를 유지한다.",
       "hit": {
         "motionKey": "hit",
         "rowSha256": "335743edbb147634187ed0d9f7378425e19456108ee0b1da9ea5f4e4d0604aca",

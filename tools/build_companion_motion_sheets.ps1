@@ -641,15 +641,18 @@ $sourceSpecs = [ordered]@{
   nurse = @{ file = 'nurse_companion_chroma.png'; cols = 6; rows = 8; key = 'green' }
   nurse_ranged = @{ file = 'nurse_ranged_chroma.png'; cols = 6; rows = 1; key = 'green' }
   soldier_base = @{ file = 'soldier_companion_7row_chroma.png'; cols = 6; rows = 7; key = 'green' }
+  soldier_ranged_rework = @{ file = 'soldier_ranged_rework_chroma.png'; cols = 6; rows = 1; key = 'green' }
   soldier_guard = @{ file = 'soldier_companion_guard_source_chroma.png'; cols = 8; rows = 6; key = 'green' }
   soldier_death = @{ file = 'soldier_death_chroma.png'; cols = 6; rows = 1; key = 'green' }
   child = @{ file = 'child_companion_chroma.png'; cols = 6; rows = 8; key = 'green' }
   child_hit_rework = @{ file = 'child_hit_rework_chroma.png'; cols = 6; rows = 1; key = 'green' }
   mechanic = @{ file = 'mechanic_companion_chroma.png'; cols = 6; rows = 8; key = 'green' }
+  mechanic_melee_guard_rework = @{ file = 'mechanic_melee_guard_rework_chroma.png'; cols = 6; rows = 2; key = 'green' }
   mechanic_guard = @{ file = 'mechanic_guard_chroma.png'; cols = 6; rows = 1; key = 'green' }
   mechanic_ranged_death = @{ file = 'mechanic_ranged_support_death_rejected_support_chroma.png'; cols = 6; rows = 3; key = 'green' }
   mechanic_support = @{ file = 'mechanic_support_chroma.png'; cols = 6; rows = 1; key = 'green' }
   student = @{ file = 'student_companion_chroma.png'; cols = 6; rows = 8; key = 'green' }
+  student_guard_rework = @{ file = 'student_guard_rework_chroma.png'; cols = 6; rows = 1; key = 'green' }
   student_melee_ranged_support = @{ file = 'student_melee_ranged_support_chroma.png'; cols = 6; rows = 3; key = 'green' }
   student_guard_move_hit_death = @{ file = 'student_guard_move_hit_death_chroma.png'; cols = 6; rows = 4; key = 'green' }
   dog = @{ file = 'dog_companion_chroma.png'; cols = 6; rows = 8; key = 'magenta' }
@@ -697,10 +700,10 @@ $sourceSpecs = [ordered]@{
 $targets = [ordered]@{
   old_survivor_companion = @{ runtime = 'companions\old_survivor_companion_sheet.png'; rows = @('old_survivor','old_survivor_melee_death','old_survivor','old_survivor','old_survivor','old_survivor_move_rework','old_survivor_hit','old_survivor_melee_death'); sourceRows = @(0,0,2,3,4,0,0,1) }
   nurse_companion = @{ runtime = 'nurse_companion_sheet.png'; rows = @('nurse','nurse','nurse_ranged','nurse','nurse','nurse','nurse','nurse'); sourceRows = @(0,1,0,3,4,5,6,7) }
-  soldier_companion = @{ runtime = 'soldier_companion_sheet.png'; rows = @('soldier_base','soldier_base','soldier_base','soldier_base','soldier_guard','soldier_base','soldier_base','soldier_death'); sourceRows = @(0,1,2,3,3,4,5,0); sourceColumns = @('0,1,2,3,4,5','0,1,2,3,4,5','0,1,2,3,4,5','0,1,2,3,4,5','0,1,2,3,4,5','0,1,2,3,4,5','0,1,2,3,4,5','0,1,2,3,4,5') }
+  soldier_companion = @{ runtime = 'soldier_companion_sheet.png'; rows = @('soldier_base','soldier_base','soldier_ranged_rework','soldier_base','soldier_guard','soldier_base','soldier_base','soldier_death'); sourceRows = @(0,1,0,3,3,4,5,0); sourceColumns = @('0,1,2,3,4,5','0,1,2,3,4,5','0,1,2,3,4,5','0,1,2,3,4,5','0,1,2,3,4,5','0,1,2,3,4,5','0,1,2,3,4,5','0,1,2,3,4,5') }
   child_companion = @{ runtime = 'companions\child_companion_sheet.png'; rows = @('child','child','child','child','child','child','child_hit_rework','child'); sourceRows = @(0,1,2,3,4,5,0,7) }
-  mechanic_companion = @{ runtime = 'companions\mechanic_companion_sheet.png'; rows = @('mechanic','mechanic','mechanic_ranged_death','mechanic_support','mechanic_guard','mechanic','mechanic','mechanic_ranged_death'); sourceRows = @(0,1,0,0,0,5,6,2) }
-  student_companion = @{ runtime = 'companions\student_companion_sheet.png'; rows = @('student','student_melee_ranged_support','student_melee_ranged_support','student_melee_ranged_support','student_guard_move_hit_death','student_guard_move_hit_death','student_guard_move_hit_death','student_guard_move_hit_death'); sourceRows = @(0,0,1,2,0,1,2,3) }
+  mechanic_companion = @{ runtime = 'companions\mechanic_companion_sheet.png'; rows = @('mechanic','mechanic_melee_guard_rework','mechanic_ranged_death','mechanic_support','mechanic_melee_guard_rework','mechanic','mechanic','mechanic_ranged_death'); sourceRows = @(0,0,0,0,1,5,6,2) }
+  student_companion = @{ runtime = 'companions\student_companion_sheet.png'; rows = @('student','student_melee_ranged_support','student_melee_ranged_support','student_melee_ranged_support','student_guard_rework','student_guard_move_hit_death','student_guard_move_hit_death','student_guard_move_hit_death'); sourceRows = @(0,0,1,2,0,1,2,3) }
   dog_companion = @{ runtime = 'companions\dog_companion_sheet.png'; rows = @('dog','dog','dog','dog','dog','dog','dog_hit_death_rework','dog_hit_death_rework'); sourceRows = @(0,1,2,3,4,5,0,1) }
   former_colleague_companion = @{ runtime = 'companions\former_colleague_companion_sheet.png'; rows = @('former_colleague','former_colleague','former_colleague','former_colleague','former_colleague','former_colleague','former_colleague_hit','former_colleague'); sourceRows = @(0,1,2,3,4,5,0,6) }
   minjun_companion = @{ runtime = 'companions\minjun_companion_sheet.png'; rows = @('minjun','minjun','minjun','minjun','minjun','minjun','minjun_hit_rework','minjun_death'); sourceRows = @(0,1,2,3,4,5,0,0) }

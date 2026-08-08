@@ -2,7 +2,7 @@
     "version":  2,
     "hashScheme":  "combat-provenance-sha256-v2",
     "assemblyScript":  "/tools/build_companion_motion_sheets.ps1",
-    "assemblyScriptSha256":  "508818823ee95a1b4a1955e758b4571c8c413d13a51ea180304839b8d4742f51",
+    "assemblyScriptSha256":  "bbf9ce3f75db12ba13beab7cbc177780a235233333c06d5836d8c13c661b4e65",
     "qualityAnalyzerPath":  "/tools/companion_motion_quality.mjs",
     "qualityAnalyzerSha256":  "f5a328e959655154b2547da7b0dd019f387706974d9c323e96ac654fc1d4be26",
     "rangedValidatorPath":  "/tools/verify_companion_ranged_contract.mjs",
@@ -10,7 +10,7 @@
     "rangedComponentContractPath":  "/art_sources/combat/task9_companions/ranged_component_contract.json",
     "rangedComponentContractSha256":  "cc2c60b6ef6df174a039c9456cbc9c26a28f5e8a3b592c7776a5166d804053a5",
     "provenancePath":  "/art_sources/combat/task9_companions/generation_provenance.json",
-    "provenanceSha256":  "a24576440bc27ca1e088e5682be53b3ca71104e5602fc69d8d76de3f33531ad9",
+    "provenanceSha256":  "7bcfadced08157bef49dc49eb79b3884084e8d802694c7bcd9711f54a8be7492",
     "rowContract":  [
                         "idle",
                         "melee",
@@ -85,6 +85,15 @@
                                                   "rows":  7,
                                                   "key":  "green"
                                               },
+                             "soldier_ranged_rework":  {
+                                                           "chromaPath":  "/art_sources/combat/task9_companions/soldier_ranged_rework_chroma.png",
+                                                           "chromaSha256":  "39c0c81eb27a6fb6eec3b0b6a7c7b0166e041de6af0cf04f2c440e635dffe86b",
+                                                           "alphaPath":  "/art_sources/combat/task9_companions/soldier_ranged_rework_alpha.png",
+                                                           "alphaSha256":  "decd1dc93edc65d37a175d346b65610c3c1564fefeefd15a1fe78385f75aab0f",
+                                                           "cols":  6,
+                                                           "rows":  1,
+                                                           "key":  "green"
+                                                       },
                              "soldier_guard":  {
                                                    "chromaPath":  "/art_sources/combat/task9_companions/soldier_companion_guard_source_chroma.png",
                                                    "chromaSha256":  "a6b13737137c45616ab468dab3e994624b769d5349b533334e269c894c57628f",
@@ -130,6 +139,15 @@
                                               "rows":  8,
                                               "key":  "green"
                                           },
+                             "mechanic_melee_guard_rework":  {
+                                                                 "chromaPath":  "/art_sources/combat/task9_companions/mechanic_melee_guard_rework_chroma.png",
+                                                                 "chromaSha256":  "a413538a6799ae3e859dcf3b532f26c93f72c6717d314c2ecd80d46d23b7c17e",
+                                                                 "alphaPath":  "/art_sources/combat/task9_companions/mechanic_melee_guard_rework_alpha.png",
+                                                                 "alphaSha256":  "a3ed66073b08cc554ff52bba558019d06615a0cd41839645b616887cc412e66c",
+                                                                 "cols":  6,
+                                                                 "rows":  2,
+                                                                 "key":  "green"
+                                                             },
                              "mechanic_guard":  {
                                                     "chromaPath":  "/art_sources/combat/task9_companions/mechanic_guard_chroma.png",
                                                     "chromaSha256":  "ffbacd43f79045eb07cb9ca7a36793d19ab4fbe84ee40a4442b910e7f9b9771d",
@@ -166,6 +184,15 @@
                                              "rows":  8,
                                              "key":  "green"
                                          },
+                             "student_guard_rework":  {
+                                                          "chromaPath":  "/art_sources/combat/task9_companions/student_guard_rework_chroma.png",
+                                                          "chromaSha256":  "7a4cef0d678819810aa9915d37ae11f28ae125a5951d72cd0885974387ba96c8",
+                                                          "alphaPath":  "/art_sources/combat/task9_companions/student_guard_rework_alpha.png",
+                                                          "alphaSha256":  "f5d4b251b0f7bc85b18240a9881db1c274b2c48ace19ec105c01284e85c989e8",
+                                                          "cols":  6,
+                                                          "rows":  1,
+                                                          "key":  "green"
+                                                      },
                              "student_melee_ranged_support":  {
                                                                   "chromaPath":  "/art_sources/combat/task9_companions/student_melee_ranged_support_chroma.png",
                                                                   "chromaSha256":  "7ae8a07f91560541fc0742059094f39ae5bf122a66710e19703a6853dc26f963",
@@ -776,8 +803,8 @@
                                               "path":  "/assets/images/combat/spritesheets/soldier_companion_sheet.png",
                                               "width":  1536,
                                               "height":  2048,
-                                              "fileSha256":  "a3979cf141b99757ec8c6fbdf077f0ee7b56fceb25358fab6a7bbff92d8b0234",
-                                              "pixelSha256":  "97cee43181d76b620f30c3528a08f6a60bb96222759d5fd57603da70fa30673b",
+                                              "fileSha256":  "9980a92c5d13cbd7a70f64d0eb27ab50fa8c6d71d53bfab9f5c171c9cf0f388e",
+                                              "pixelSha256":  "6d3f303cd35b0580d04e1b3edaf42593dde89d13da9ec48340c412040afa1417",
                                               "rows":  [
                                                            {
                                                                "targetRow":  0,
@@ -807,8 +834,8 @@
                                                            },
                                                            {
                                                                "targetRow":  2,
-                                                               "source":  "soldier_base",
-                                                               "sourceRow":  2,
+                                                               "source":  "soldier_ranged_rework",
+                                                               "sourceRow":  0,
                                                                "sourceColumns":  [
                                                                                      0,
                                                                                      1,
@@ -1002,8 +1029,8 @@
                                                "path":  "/assets/images/combat/spritesheets/companions/mechanic_companion_sheet.png",
                                                "width":  1536,
                                                "height":  2048,
-                                               "fileSha256":  "6d2a2c7301f28125934089e7d685635ea2d8505b561b8928ae17c3a33890a5d9",
-                                               "pixelSha256":  "2e14bbdcd5cedbb4709939c49adfad23fd093ff5e0902c35ed2415ed727fa456",
+                                               "fileSha256":  "cc13f9915d1bdfbf29210edbe07ee529973f1eb765a6b1a3e0454bc16c6c49cb",
+                                               "pixelSha256":  "08b953a066d5516008693050964ebf817f2850ae154eff6ac4d6009a153df7fd",
                                                "rows":  [
                                                             {
                                                                 "targetRow":  0,
@@ -1020,8 +1047,8 @@
                                                             },
                                                             {
                                                                 "targetRow":  1,
-                                                                "source":  "mechanic",
-                                                                "sourceRow":  1,
+                                                                "source":  "mechanic_melee_guard_rework",
+                                                                "sourceRow":  0,
                                                                 "sourceColumns":  [
                                                                                       0,
                                                                                       1,
@@ -1059,8 +1086,8 @@
                                                             },
                                                             {
                                                                 "targetRow":  4,
-                                                                "source":  "mechanic_guard",
-                                                                "sourceRow":  0,
+                                                                "source":  "mechanic_melee_guard_rework",
+                                                                "sourceRow":  1,
                                                                 "sourceColumns":  [
                                                                                       0,
                                                                                       1,
@@ -1115,8 +1142,8 @@
                                               "path":  "/assets/images/combat/spritesheets/companions/student_companion_sheet.png",
                                               "width":  1536,
                                               "height":  2048,
-                                              "fileSha256":  "8dde2e38302b6f0e11240cbaf9598a18c4ddb2a5f7292dcc3b62bfca69372511",
-                                              "pixelSha256":  "2035e389b486226d0920594694fe34728964f633afb3bce26aee8d8256cd6763",
+                                              "fileSha256":  "11cdf666730d0bf54b53e4032bc8ef2f5523f6a9beca5ff83c1b84c803b1f829",
+                                              "pixelSha256":  "0fe13647e399bd2ac58c364cce31e5cec0139da43e6e3194b58b5f5df727300e",
                                               "rows":  [
                                                            {
                                                                "targetRow":  0,
@@ -1172,7 +1199,7 @@
                                                            },
                                                            {
                                                                "targetRow":  4,
-                                                               "source":  "student_guard_move_hit_death",
+                                                               "source":  "student_guard_rework",
                                                                "sourceRow":  0,
                                                                "sourceColumns":  [
                                                                                      0,

@@ -19,9 +19,9 @@
     "removedComponents": 0,
     "staleAllowlist": 0
   },
-  "assemblyRecipeSha256": "3416b5e4fc351a4ba24c606b4417b60c089c0715cf5d4323316c9bbc9c3ad2b3",
-  "previewManifestSha256": "b15096bad9bf4c92f7f24b8a8fd09d77896cf7c96cb4e1465cee36271da1fe20",
-  "manualEvidenceSha256": "c3c667fe29c9e2c85931f5bd7f3d23eee9d14784fd240b7dfab1d569a8b323df",
+  "assemblyRecipeSha256": "99b2881cb05cb3f747ff12628f647e955a0fc41006d5c39827310ed7296e794b",
+  "previewManifestSha256": "aed14836f3f459e40d3ec75ba8a81e366afde995678e5b9eb7a1ed4b3c1c98c4",
+  "manualEvidenceSha256": "72491628f9d0b3e75c45fad67c9e4831d542e0f7df9249c6576f94357a854e1c",
   "sheets": [
     {
       "npcId": "npc_old_survivor",
@@ -44,8 +44,8 @@
       "sheetKey": "soldier_companion",
       "path": "/assets/images/combat/spritesheets/soldier_companion_sheet.png",
       "cells": 48,
-      "fileSha256": "a3979cf141b99757ec8c6fbdf077f0ee7b56fceb25358fab6a7bbff92d8b0234",
-      "pixelSha256": "3f26bbf972a8116542f88ff91f74307dd2566c23b495fb184ab91d0198e789ff"
+      "fileSha256": "9980a92c5d13cbd7a70f64d0eb27ab50fa8c6d71d53bfab9f5c171c9cf0f388e",
+      "pixelSha256": "f4ac77985f11ad69c75ffe84707857671f7452673522b19a60c2085498078e83"
     },
     {
       "npcId": "npc_child",
@@ -60,16 +60,16 @@
       "sheetKey": "mechanic_companion",
       "path": "/assets/images/combat/spritesheets/companions/mechanic_companion_sheet.png",
       "cells": 48,
-      "fileSha256": "6d2a2c7301f28125934089e7d685635ea2d8505b561b8928ae17c3a33890a5d9",
-      "pixelSha256": "1c605daa716ea827ea4e02cfa3e7f8760d7770628c7ec8129b467a1c6bf71158"
+      "fileSha256": "cc13f9915d1bdfbf29210edbe07ee529973f1eb765a6b1a3e0454bc16c6c49cb",
+      "pixelSha256": "a2edbf4501d157c722d068ce4c65f6523192819b0f99f443f265146699ffd4ec"
     },
     {
       "npcId": "npc_student",
       "sheetKey": "student_companion",
       "path": "/assets/images/combat/spritesheets/companions/student_companion_sheet.png",
       "cells": 48,
-      "fileSha256": "8dde2e38302b6f0e11240cbaf9598a18c4ddb2a5f7292dcc3b62bfca69372511",
-      "pixelSha256": "098059189275c91b1668eb49b96476965c06cdc229061f05924e505b1ca85491"
+      "fileSha256": "11cdf666730d0bf54b53e4032bc8ef2f5523f6a9beca5ff83c1b84c803b1f829",
+      "pixelSha256": "c30d23cb46b7c4e6369bb6c01230b93d8123188f858b558196ee387e8d69c304"
     },
     {
       "npcId": "npc_dog",
