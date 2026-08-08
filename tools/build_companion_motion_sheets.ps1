@@ -658,6 +658,7 @@ $sourceSpecs = [ordered]@{
   minjun_death = @{ file = 'minjun_death_chroma.png'; cols = 6; rows = 1; key = 'green' }
   sohee = @{ file = 'sohee_companion_chroma.png'; cols = 6; rows = 7; key = 'green' }
   sohee_hit = @{ file = 'sohee_hit_chroma.png'; cols = 6; rows = 1; key = 'green' }
+  sohee_support_move_hit_death_rework = @{ file = 'sohee_support_move_hit_death_rework_chroma.png'; cols = 6; rows = 4; key = 'green' }
   jisu = @{ file = 'jisu_companion_chroma.png'; cols = 6; rows = 8; key = 'green' }
   jisu_melee_hit_death = @{ file = 'jisu_melee_hit_death_chroma.png'; cols = 6; rows = 3; key = 'green' }
   yeongcheol_base = @{ file = 'yeongcheol_companion_base_chroma.png'; cols = 6; rows = 8; key = 'green' }
@@ -697,7 +698,7 @@ $targets = [ordered]@{
   dog_companion = @{ runtime = 'companions\dog_companion_sheet.png'; rows = @('dog') }
   former_colleague_companion = @{ runtime = 'companions\former_colleague_companion_sheet.png'; rows = @('former_colleague','former_colleague','former_colleague','former_colleague','former_colleague','former_colleague','former_colleague_hit','former_colleague'); sourceRows = @(0,1,2,3,4,5,0,6) }
   minjun_companion = @{ runtime = 'companions\minjun_companion_sheet.png'; rows = @('minjun','minjun','minjun','minjun','minjun','minjun','minjun','minjun_death'); sourceRows = @(0,1,2,3,4,5,6,0) }
-  sohee_companion = @{ runtime = 'companions\sohee_companion_sheet.png'; rows = @('sohee','sohee','sohee','sohee','sohee','sohee','sohee_hit','sohee'); sourceRows = @(0,1,2,3,4,5,0,6) }
+  sohee_companion = @{ runtime = 'companions\sohee_companion_sheet.png'; rows = @('sohee','sohee','sohee','sohee_support_move_hit_death_rework','sohee','sohee_support_move_hit_death_rework','sohee_support_move_hit_death_rework','sohee_support_move_hit_death_rework'); sourceRows = @(0,1,2,0,4,1,2,3) }
   jisu_companion = @{ runtime = 'companions\jisu_companion_sheet.png'; rows = @('jisu','jisu_melee_hit_death','jisu','jisu','jisu','jisu','jisu_melee_hit_death','jisu_melee_hit_death'); sourceRows = @(0,0,2,3,4,5,1,2) }
   yeongcheol_companion = @{ runtime = 'companions\yeongcheol_companion_sheet.png'; rows = @('yeongcheol_base','yeongcheol_base','yeongcheol_base','yeongcheol_support','yeongcheol_base','yeongcheol_base','yeongcheol_base','yeongcheol_death'); sourceRows = @(0,1,2,0,4,5,6,0) }
   daehan_companion = @{ runtime = 'companions\daehan_companion_sheet.png'; rows = @('daehan','daehan','daehan_ranged','daehan','daehan_guard','daehan','daehan','daehan'); sourceRows = @(0,1,0,3,0,5,6,7) }

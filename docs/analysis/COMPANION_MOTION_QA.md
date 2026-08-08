@@ -12,6 +12,8 @@
 
 2026-08-08 fix round 2 선택적 재검토에서는 `old_survivor_companion`과 `sous_chef_companion`의 이동 r5를 다시 교체하고 original 해상도 source alpha·runtime·개별 확대 보드를 셀별로 대조했다. 노년 생존자의 승인된 발/지팡이 phase는 유지됐고 source 여섯 셀의 좌우 gutter가 모두 49px 이상이다. 부주방장은 f1 큰·밝은 near boot toe-up contact → f2 두 발 close true passing → f3 작은·어두운 far boot flat contact와 반대 occlusion → f4 opposite close passing → f5 lowered-pelvis near-leg wide contact → f6 close neutral return으로 읽힌다. runtime normalized lower-alpha IoU는 f1/f6 `0.369`, f2/f5 `0.333`, f1/f3 `0.568`이며 이전 반복 실루엣 수치보다 낮다. 두 source/runtime 모두 셀 경계 alpha와 cross-cell component가 0이고 source 최소 gutter는 각각 49px/33px이며, 다른 188개 비대상 행은 기준선과 동일하다.
 
+2026-08-08 Task 4 선택적 재검토에서는 `sohee_companion`의 support r3, move r5, hit r6, death r7을 교체하고 original 해상도 source alpha·runtime·개별 확대 보드를 셀별로 대조했다. support는 약병 확인-계량 복용-호흡 집중-ready, move는 큰·밝은 near shoe toe-up 접지-close passing-작은 far shoe flat 접지와 반대 depth occlusion-opposite passing-굽힌 무릎 push-off-balanced return, hit는 충격-최대 recoil-전방 굴곡-전투 ready 복귀, death는 직립 부상-무릎 약화-한쪽 무릎 접지-측면 낙상-prone 정지로 읽힌다. 24개 source cell은 362×362이고 최소 좌우 gutter 33px, boundary alpha 0, cross-cell component 0이며, 비대상 188개 행은 기준선과 동일하다.
+
 ## 60개 스킬 수동 판정
 
 각 셀의 세 스킬은 모두 개별 `PASS`다. 상세 관찰 문장은 수동 관찰 원본에 스킬 ID별로 보존한다.
@@ -70,7 +72,7 @@
 - 스킬: 60개 고유 ID, `COMBAT_SKILLS.motionKey`와 8행 의미 계약 일치
 - PNG: 20개 모두 1536×2048, 8-bit RGBA, 6×8, 셀 256×256
 - 셀: 960/960 populated, 960/960 transparent corners
-- strict chroma: 새 alpha 2종과 runtime r5 2행에서 각각 `opaqueGreen=0`, `fringeGreen=0`, `hiddenRgb=0`, `boundaryGreen=0`, `removedComponents=0`, `staleAllowlist=0`
+- strict chroma: Task 3 alpha 2종/runtime r5 2행과 Task 4 Sohee canonical alpha/runtime target 4행에서 각각 `opaqueGreen=0`, `fringeGreen=0`, `hiddenRgb=0`, `boundaryGreen=0`, `removedComponents=0`, `staleAllowlist=0`
 - 수동 증거: 스킬 60/60 PASS, hit/death 40/40 PASS
 
 ## 종합 판정

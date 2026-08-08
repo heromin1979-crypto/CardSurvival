@@ -4,7 +4,7 @@
   "evidenceType": "human manual visual observation",
   "reviewStatus": "PASS",
   "reviewedAt": "2026-08-08",
-  "reviewerMethod": "기존 18개 동료 PASS 증거를 보존하고, fix round 2에서 imagegen으로 다시 편집한 두 source chroma와 canonical alpha, 런타임 PNG, 1736x2120 확대 리뷰 보드를 Codex 데스크톱 original 해상도 view_image로 재대조했다. 두 이동 행은 여섯 셀의 발 접지·passing·깊이 occlusion과 장비 위치를 각각 비교하고 source/runtime 하체 normalized alpha IoU 및 셀 gutter도 함께 확인했으며, 20개 전체 contact sheet를 다시 확인했다. 자동 renderer와 verifier는 이 판정을 생성하지 않는다.",
+  "reviewerMethod": "기존 19개 동료 PASS 증거를 보존하고, Task 4에서 imagegen으로 다시 편집한 Sohee source chroma와 canonical alpha, 런타임 PNG, 확대 리뷰 보드를 Codex 데스크톱 original 해상도 view_image로 재대조했다. support·move·hit·death 각 여섯 셀의 도구 사용, 발 접지와 passing, 피격 후 복귀, 직립-무릎-측면 낙상-최종 prone 진행 및 장비 위치를 비교하고 source/runtime cell gutter와 strict chroma도 확인했으며, 20개 전체 contact sheet에서 Sohee 보드를 다시 확인했다. 자동 renderer와 verifier는 이 판정을 생성하지 않는다.",
   "reviewedCounts": {
     "companions": 20,
     "runtimeSheets": 20,
@@ -13,11 +13,11 @@
   },
   "openRework": [],
   "previewManifestPath": "/art_sources/combat/task9_companions/preview_manifest.json",
-  "previewManifestSha256": "1ecdd6bb419ad7cc53b560b8a89d50f155b4e5bb80dca528b44ebf23c1658c44",
+  "previewManifestSha256": "67d44fd36ec466265fe926530523c7e7299a2c9ba9dfeb26f41bfe93a7c9253b",
   "contactPath": "/art_sources/combat/task9_companions/companion_motion_contact_sheet.png",
-  "contactSha256": "53719e59f0fdebb87274581911a50613b6d5c5140e62c36d45804a06bf51b4ff",
+  "contactSha256": "ecd70fb7abfdeeeb67f1defe3716fdc042beb7f049abf7c0e697fd6211ed12c0",
   "assemblyRecipePath": "/art_sources/combat/task9_companions/assembly_recipe.json",
-  "assemblyRecipeSha256": "d88c451406857947535e91a21f7a6f4447667790ef50af518fdcae7501490e94",
+  "assemblyRecipeSha256": "ff08346dd5e938c6010d81ee22809d75adb06d9d0caca9501f2de1513c844a95",
   "companions": [
     {
       "npcId": "npc_old_survivor",
@@ -437,9 +437,9 @@
       "npcId": "npc_sohee",
       "sheetKey": "sohee_companion",
       "previewPath": "/art_sources/combat/task9_companions/review_previews/sohee_companion_review.png",
-      "previewSha256": "a253c70d0e126cc9edadf892a448fb49824dd5a0e2784ecc07614f7a36d6944e",
+      "previewSha256": "6e7e999b15b7bb626c2b909b7e2817bd2385f98111cd24d361c284397da20880",
       "runtimePath": "/assets/images/combat/spritesheets/companions/sohee_companion_sheet.png",
-      "runtimeSha256": "29e3f314e83a53659d7edea9ecf4b239d70f440b948b682765a00db17dd75048",
+      "runtimeSha256": "e7c91c20bd5cff78c09943b2822db58156165f7313171667c3c160065568edf8",
       "skills": [
         {
           "skillId": "sohee_precise_shot",
@@ -458,25 +458,25 @@
         {
           "skillId": "sohee_focus",
           "motionKey": "support",
-          "rowSha256": "905b9af68f580f34a1c76ad0edd3037766330a3a067fa2acf5aa36f1f72f5789",
+          "rowSha256": "f6477f1b231b8facccf782cffdb84779e9d1644036a3d45e59f91616a0b58968",
           "status": "PASS",
-          "note": "sohee_focus: 지원 도구 사용과 전달 또는 신호가 6프레임으로 구분된다."
+          "note": "sohee_focus: 약병 확인-계량 복용-호흡 집중-소총을 낮춘 ready 복귀가 6프레임으로 구분되며 조준·발사가 없다."
         }
       ],
-      "identityNote": "안경·보라색 코트·약품 가방이 48셀 내내 동일하다.",
-      "weaponNote": "조준 카빈의 형태와 사용 방향이 행별 행동에 맞게 유지된다.",
-      "continuityNote": "확대 보드와 원본 시트를 1:1로 대조했으며 8행 48셀에 빈 셀, 잘린 신체, 이웃 셀 파편, 중복 패딩이 없다.",
+      "identityNote": "안경·묶은 검은 머리·보라색 코트·회색 바지·흰 운동화·올리브 약품 가방이 48셀 내내 동일하다.",
+      "weaponNote": "검은 소총은 support에서 낮게 유지되고 move·hit·death에서도 보존되며 기존 ranged·guard 행은 변경되지 않았다.",
+      "continuityNote": "Task 4 확대 보드와 원본 시트를 1:1로 대조했다. move는 큰·밝은 near shoe toe-up 접지-close passing-작은 far shoe flat 접지와 반대 depth occlusion-opposite passing-굽힌 무릎 push-off-balanced return으로 구분되고, source 최소 좌우 gutter는 33px이며 셀 경계 alpha와 cross-cell component가 0이다.",
       "hit": {
         "motionKey": "hit",
-        "rowSha256": "cf652ee74d13339f27e33666d7453148148896eb326799f3a23bb5467ccc1502",
+        "rowSha256": "6a1d7c6cc4e4787f1026c4af552a3517b3b7c303ae624a9c6b8ed51ffb5d637b",
         "status": "PASS",
-        "note": "피격 시작-체중 붕괴-마무리 자세가 이어지며 캐릭터와 장비가 잘리지 않는다."
+        "note": "갑작스러운 상체 충격-최대 후방 recoil-전방 굴곡-발 고정-전투 ready 복귀가 이어지며 붕괴·사망으로 섞이지 않는다."
       },
       "death": {
         "motionKey": "death",
-        "rowSha256": "a202e72a63fcc16e6687a693ea47f69d92eb0acff122a526d08cef7856f94ed0",
+        "rowSha256": "8d2a9b66b489854b95f5b487064a132a79e9192abdd5c2c4aa744fcfcf633388",
         "status": "PASS",
-        "note": "직립 또는 무릎 자세에서 완전한 쓰러짐으로 이어지고 마지막 프레임도 전신이 셀 안에 남는다."
+        "note": "직립 부상-무릎 약화-한쪽 무릎 접지-측면 낙상-누운 전환-최종 prone 정지로 진행하며 마지막 전신이 셀 안에 남는다."
       }
     },
     {

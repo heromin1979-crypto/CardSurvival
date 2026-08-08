@@ -3,7 +3,7 @@
     "rendererPath":  "/tools/render_companion_motion_preview.ps1",
     "rendererSha256":  "8a66c1de2b79080912e8d311323332851a8e91d7534381357d4ee63adbf9acb1",
     "contactPath":  "/art_sources/combat/task9_companions/companion_motion_contact_sheet.png",
-    "contactSha256":  "53719e59f0fdebb87274581911a50613b6d5c5140e62c36d45804a06bf51b4ff",
+    "contactSha256":  "ecd70fb7abfdeeeb67f1defe3716fdc042beb7f049abf7c0e697fd6211ed12c0",
     "sheets":  [
                    {
                        "sheetKey":  "old_survivor_companion",
@@ -449,9 +449,9 @@
                    {
                        "sheetKey":  "sohee_companion",
                        "runtimePath":  "/assets/images/combat/spritesheets/companions/sohee_companion_sheet.png",
-                       "runtimeSha256":  "29e3f314e83a53659d7edea9ecf4b239d70f440b948b682765a00db17dd75048",
+                       "runtimeSha256":  "e7c91c20bd5cff78c09943b2822db58156165f7313171667c3c160065568edf8",
                        "previewPath":  "/art_sources/combat/task9_companions/review_previews/sohee_companion_review.png",
-                       "previewSha256":  "a253c70d0e126cc9edadf892a448fb49824dd5a0e2784ecc07614f7a36d6944e",
+                       "previewSha256":  "6e7e999b15b7bb626c2b909b7e2817bd2385f98111cd24d361c284397da20880",
                        "rows":  [
                                     {
                                         "motionKey":  "idle",
@@ -471,7 +471,7 @@
                                     {
                                         "motionKey":  "support",
                                         "row":  3,
-                                        "pixelSha256":  "905b9af68f580f34a1c76ad0edd3037766330a3a067fa2acf5aa36f1f72f5789"
+                                        "pixelSha256":  "f6477f1b231b8facccf782cffdb84779e9d1644036a3d45e59f91616a0b58968"
                                     },
                                     {
                                         "motionKey":  "guard",
@@ -481,17 +481,17 @@
                                     {
                                         "motionKey":  "move",
                                         "row":  5,
-                                        "pixelSha256":  "c0e367c498f74cd2c024918d5e6a7a5354b44111fc54f3690b5a62206d32dffa"
+                                        "pixelSha256":  "1ed1cc6c179905ba91cbc81a9953ed5c85d5cb4d313cc36eaf7441fec2c53569"
                                     },
                                     {
                                         "motionKey":  "hit",
                                         "row":  6,
-                                        "pixelSha256":  "cf652ee74d13339f27e33666d7453148148896eb326799f3a23bb5467ccc1502"
+                                        "pixelSha256":  "6a1d7c6cc4e4787f1026c4af552a3517b3b7c303ae624a9c6b8ed51ffb5d637b"
                                     },
                                     {
                                         "motionKey":  "death",
                                         "row":  7,
-                                        "pixelSha256":  "a202e72a63fcc16e6687a693ea47f69d92eb0acff122a526d08cef7856f94ed0"
+                                        "pixelSha256":  "8d2a9b66b489854b95f5b487064a132a79e9192abdd5c2c4aa744fcfcf633388"
                                     }
                                 ]
                    },

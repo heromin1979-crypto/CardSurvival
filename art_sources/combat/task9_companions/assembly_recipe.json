@@ -2,7 +2,7 @@
     "version":  2,
     "hashScheme":  "combat-provenance-sha256-v2",
     "assemblyScript":  "/tools/build_companion_motion_sheets.ps1",
-    "assemblyScriptSha256":  "5f9218a2e62bc5f5809245c4e0bc25725a9331715fac3aa89882b6d8777e048c",
+    "assemblyScriptSha256":  "241cd90033edfd27f6401e9a64d320ba71496e95806b00ff08d3befac118cea1",
     "qualityAnalyzerPath":  "/tools/companion_motion_quality.mjs",
     "qualityAnalyzerSha256":  "a1e94c4a1f91f386484de90c186cfb94b9d9f1349fcbadf523102a18363b397d",
     "rangedValidatorPath":  "/tools/verify_companion_ranged_contract.mjs",
@@ -10,7 +10,7 @@
     "rangedComponentContractPath":  "/art_sources/combat/task9_companions/ranged_component_contract.json",
     "rangedComponentContractSha256":  "24e76c90729763d6ec839cd9ca141bc4eb55d20671c56f0b5eda469a257032c1",
     "provenancePath":  "/art_sources/combat/task9_companions/generation_provenance.json",
-    "provenanceSha256":  "e50d7d3b178bf3a07c433c9f367f2ac881ee28771e02c018c5f3772666056f88",
+    "provenanceSha256":  "7e83c7e9bfeb3fc512fd0a4fa3bcc6160b6b1b808c2f0a072059f6b8e5c2e50d",
     "rowContract":  [
                         "idle",
                         "melee",
@@ -238,6 +238,15 @@
                                                "rows":  1,
                                                "key":  "green"
                                            },
+                             "sohee_support_move_hit_death_rework":  {
+                                                                         "chromaPath":  "/art_sources/combat/task9_companions/sohee_support_move_hit_death_rework_chroma.png",
+                                                                         "chromaSha256":  "713be6e5dcbc74e90a62104aeb56f920a81c7b547d483689efa9235ad3543046",
+                                                                         "alphaPath":  "/art_sources/combat/task9_companions/sohee_support_move_hit_death_rework_alpha.png",
+                                                                         "alphaSha256":  "010cc8a136a15d432a070cdc3f180b8b03ee71f7b10e112d5a1a917a01e0321b",
+                                                                         "cols":  6,
+                                                                         "rows":  4,
+                                                                         "key":  "green"
+                                                                     },
                              "jisu":  {
                                           "chromaPath":  "/art_sources/combat/task9_companions/jisu_companion_chroma.png",
                                           "chromaSha256":  "47769b5158ae417ec3be492220d2c41361319188c75214c83f4406a857bc36a4",
@@ -1504,8 +1513,8 @@
                                             "path":  "/assets/images/combat/spritesheets/companions/sohee_companion_sheet.png",
                                             "width":  1536,
                                             "height":  2048,
-                                            "fileSha256":  "29e3f314e83a53659d7edea9ecf4b239d70f440b948b682765a00db17dd75048",
-                                            "pixelSha256":  "dd6b693178da30918252854e35a4ced2e49558b30efd98d4986f78e46f2d242a",
+                                            "fileSha256":  "e7c91c20bd5cff78c09943b2822db58156165f7313171667c3c160065568edf8",
+                                            "pixelSha256":  "170ccbfac107fca2ed4d9ddd76736c2798ce1a25a053606d3274a43136ecfa4b",
                                             "rows":  [
                                                          {
                                                              "targetRow":  0,
@@ -1548,8 +1557,8 @@
                                                          },
                                                          {
                                                              "targetRow":  3,
-                                                             "source":  "sohee",
-                                                             "sourceRow":  3,
+                                                             "source":  "sohee_support_move_hit_death_rework",
+                                                             "sourceRow":  0,
                                                              "sourceColumns":  [
                                                                                    0,
                                                                                    1,
@@ -1574,8 +1583,8 @@
                                                          },
                                                          {
                                                              "targetRow":  5,
-                                                             "source":  "sohee",
-                                                             "sourceRow":  5,
+                                                             "source":  "sohee_support_move_hit_death_rework",
+                                                             "sourceRow":  1,
                                                              "sourceColumns":  [
                                                                                    0,
                                                                                    1,
@@ -1587,8 +1596,8 @@
                                                          },
                                                          {
                                                              "targetRow":  6,
-                                                             "source":  "sohee_hit",
-                                                             "sourceRow":  0,
+                                                             "source":  "sohee_support_move_hit_death_rework",
+                                                             "sourceRow":  2,
                                                              "sourceColumns":  [
                                                                                    0,
                                                                                    1,
@@ -1600,8 +1609,8 @@
                                                          },
                                                          {
                                                              "targetRow":  7,
-                                                             "source":  "sohee",
-                                                             "sourceRow":  6,
+                                                             "source":  "sohee_support_move_hit_death_rework",
+                                                             "sourceRow":  3,
                                                              "sourceColumns":  [
                                                                                    0,
                                                                                    1,
