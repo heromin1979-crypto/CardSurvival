@@ -307,7 +307,9 @@ const ModalManager = {
     // StatSystem.consumeCard와 동일 판정 — 재료여도 onConsume이 있으면 섭취 가능 (야생 베리 생식 등)
     const canConsume   = !!getConsumableEffect(def);
     const canDismantle = Array.isArray(def.dismantle) && def.dismantle.length > 0;
-    const canForage    = !!def.forage;  // 살살 채취(부분·재생) 가능 노드
+    // 살살 채취(부분·재생) 가능 노드 — 재생 대기 중이면 버튼을 잠근다
+    const canForage      = !!def.forage;
+    const forageStatus   = canForage ? DismantleSystem.canForage(instanceId) : { ok: false, reason: '' };
     const canNest      = inst._stolenLoot?.length > 0;  // 동물 둥지 — 도난물 회수 가능
     const stackQty     = inst.quantity ?? 1;
     const equipSlots   = EquipmentSystem.getSlotsForDef(def);
@@ -357,10 +359,13 @@ const ModalManager = {
 
     // 분해 버튼 — 컨텍스트 메뉴와 같은 판정을 써서 비용 표기를 맞춘다
     const dismantleBtnHtml = (id, label, count) => {
-      const { cost, remainTP, crossesMidnight } = DismantleSystem.getTpStatus(instanceId, count);
+      const { cost, remainTP, crossesMidnight, blocked, blockReason } = DismantleSystem.getTpStatus(instanceId, count);
       const tpTag = cost > 0 ? ` (${cost}TP)` : '';
-      const hint  = crossesMidnight ? I18n.t('dismantle.crossMidnightHint', { remain: remainTP }) : '';
-      return `<button class="card-action-btn dismantle" id="${id}" title="${hint}">${label}${tpTag}</button>`;
+      const hint  = blocked ? blockReason
+                  : crossesMidnight ? I18n.t('dismantle.crossMidnightHint', { remain: remainTP })
+                  : '';
+      return `<button class="card-action-btn dismantle${blocked ? ' disabled' : ''}"
+        id="${id}" ${blocked ? 'disabled' : ''} title="${hint}">${label}${tpTag}</button>`;
     };
 
     // 분해 재료 미리보기
@@ -496,7 +501,9 @@ const ModalManager = {
               : canDismantle
                 ? dismantleBtnHtml(`modal-dismantle-${instanceId}`, I18n.t('modal.dismantle'), 1)
                 : ''}
-            ${canForage ? `<button class="card-action-btn" id="modal-forage-${instanceId}">🌿 살살 채취</button>` : ''}
+            ${canForage ? `<button class="card-action-btn${forageStatus.ok ? '' : ' disabled'}"
+              id="modal-forage-${instanceId}" ${forageStatus.ok ? '' : 'disabled'}
+              title="${forageStatus.reason}">🌿 살살 채취</button>` : ''}
             ${canNest ? `<button class="card-action-btn" id="modal-nest-${instanceId}">🪺 둥지 뒤지기</button>` : ''}
             ${fishBtnHtml}
             ${weatherBtnsHtml}
@@ -618,7 +625,7 @@ const ModalManager = {
       });
     }
 
-    if (canDismantle) {
+    if (canDismantle && !DismantleSystem.getTpStatus(instanceId, 1).blocked) {
       const bindDismantle = (elId, count) => {
         document.getElementById(elId)?.addEventListener('click', () => {
           const { cost, remainTP, crossesMidnight } = DismantleSystem.getTpStatus(instanceId, count);
@@ -641,7 +648,7 @@ const ModalManager = {
       }
     }
 
-    if (canForage) {
+    if (canForage && forageStatus.ok) {
       document.getElementById(`modal-forage-${instanceId}`)?.addEventListener('click', () => {
         this.close();
         import('../systems/DismantleSystem.js').then(m => m.default.forage(instanceId));

@@ -219,6 +219,9 @@
   background: rgba(91, 184, 245, 0.1);
   color: #5bb8f5;
 }
+/* 잠긴 액션 버튼 — 낚시 외에 수리·기상 행동·살살 채취도 같은 잠금 표현을 쓴다 */
+.card-action-btn.disabled,
+.card-action-btn:disabled,
 .card-action-btn.fish-btn.disabled,
 .card-action-btn.fish-btn:disabled {
   border-color: #333;

@@ -446,6 +446,8 @@ export const ko = {
   // skipTP의 사유 문구 — 알림에 "{n} TP 경과 — {reason}"으로 붙는다
   'tick.reasonDismantle': '{name} 해체 ×{count}',
   'tick.reasonForage':    '{name} 채취',
+  'forage.notForageable': '이 자원은 살살 채취할 수 없습니다.',
+  'forage.regrowing':     '🌱 아직 다시 자라지 않았습니다. (약 {days}일 후)',
   'tick.reasonTravel':    '{name}(으)로 이동',
   'tick.reasonExplore':   '{name} 탐색',
   'tick.reasonFishing':   '낚시',
@@ -1430,6 +1432,8 @@ export const en = {
   'tick.remainingWarn':   '🌙 Action points left today: {remain} TP — the day turns soon.',
   'tick.reasonDismantle': 'Dismantling {name} ×{count}',
   'tick.reasonForage':    'Foraging {name}',
+  'forage.notForageable': 'This resource cannot be foraged.',
+  'forage.regrowing':     '🌱 Not regrown yet. (about {days} more day(s))',
   'tick.reasonTravel':    'Traveling to {name}',
   'tick.reasonExplore':   'Exploring {name}',
   'tick.reasonFishing':   'Fishing',

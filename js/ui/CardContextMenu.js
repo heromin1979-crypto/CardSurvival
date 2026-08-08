@@ -118,14 +118,14 @@ const CardContextMenu = {
 
     const makeDismantleBtn = (labelKey, labelParams, count) => {
       const btn   = document.createElement('button');
-      const { cost, remainTP, crossesMidnight } = DismantleSystem.getTpStatus(instanceId, count);
+      const { cost, remainTP, crossesMidnight, blocked, blockReason } = DismantleSystem.getTpStatus(instanceId, count);
       const label = I18n.t(labelKey, labelParams);
       const tpTag = cost > 0 ? ` (${cost}TP)` : '';
-      btn.className = `ctx-btn${canDismantle ? '' : ' disabled'}`;
+      btn.className = `ctx-btn${blocked ? ' disabled' : ''}`;
       btn.innerHTML = `${label}${tpTag}`;
-      if (!canDismantle) {
+      if (blocked) {
         btn.disabled = true;
-        btn.title = I18n.t('cardMenu.cantDismantle');
+        btn.title = canDismantle ? blockReason : I18n.t('cardMenu.cantDismantle');
       } else {
         btn.title = crossesMidnight
           ? I18n.t('dismantle.crossMidnightHint', { remain: remainTP })
