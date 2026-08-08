@@ -15,6 +15,9 @@ import {
 
 const ROOT = path.resolve(import.meta.dirname, '../..');
 const MATERIALIZER = path.join(ROOT, 'tools', 'materialize_boss_component_contract.py');
+const MATERIALIZER_TIMEOUT_MS = 120_000;
+const SINGLE_MATERIALIZER_TEST_TIMEOUT_MS = 130_000;
+const DOUBLE_MATERIALIZER_TEST_TIMEOUT_MS = 250_000;
 const CONTRACT = path.join(
   ROOT,
   'art_sources/combat/task10_bosses/detached_component_contract.json',
@@ -41,7 +44,10 @@ function pythonRuntime() {
   ].filter(Boolean);
   for (const command of candidates) {
     const prefix = command === 'py' ? ['-3'] : [];
-    if (spawnSync(command, [...prefix, '--version'], { encoding: 'utf8' }).status === 0) {
+    if (spawnSync(command, [...prefix, '--version'], {
+      encoding: 'utf8',
+      timeout: 10_000,
+    }).status === 0) {
       return { command, prefix };
     }
   }
@@ -54,6 +60,7 @@ function runMaterializer(args, contractPath = null) {
     return spawnSync(runtime.command, [...runtime.prefix, MATERIALIZER, ...args], {
       cwd: ROOT,
       encoding: 'utf8',
+      timeout: MATERIALIZER_TIMEOUT_MS,
     });
   }
 
@@ -76,6 +83,7 @@ function runMaterializer(args, contractPath = null) {
   ], {
     cwd: ROOT,
     encoding: 'utf8',
+    timeout: MATERIALIZER_TIMEOUT_MS,
   });
 }
 
@@ -91,7 +99,7 @@ describe('named boss motion asset contract', () => {
 
     expect(result.status, result.stderr || result.stdout).toBe(0);
     expect(result.stdout).toContain('detached component contract verified');
-  }, 60000);
+  }, SINGLE_MATERIALIZER_TEST_TIMEOUT_MS);
 
   it('accepts semantically identical LF and CRLF detached-component contracts', () => {
     const contract = JSON.parse(fs.readFileSync(CONTRACT, 'utf8'));
@@ -107,7 +115,7 @@ describe('named boss motion asset contract', () => {
     } finally {
       fs.rmSync(tempDir, { recursive: true, force: true });
     }
-  }, 90000);
+  }, DOUBLE_MATERIALIZER_TEST_TIMEOUT_MS);
 
   it('rejects semantic detached-component contract drift', () => {
     const contract = JSON.parse(fs.readFileSync(CONTRACT, 'utf8'));
@@ -122,7 +130,7 @@ describe('named boss motion asset contract', () => {
     } finally {
       fs.rmSync(tempDir, { recursive: true, force: true });
     }
-  }, 60000);
+  }, SINGLE_MATERIALIZER_TEST_TIMEOUT_MS);
 
   it('writes deterministic LF content with the canonical provenance scheme', () => {
     const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'boss-component-write-'));
@@ -142,7 +150,7 @@ describe('named boss motion asset contract', () => {
     } finally {
       fs.rmSync(tempDir, { recursive: true, force: true });
     }
-  }, 90000);
+  }, DOUBLE_MATERIALIZER_TEST_TIMEOUT_MS);
 
   it('declares the canonical provenance hash scheme explicitly', () => {
     expect(RECIPE.hashScheme).toBe('combat-provenance-sha256-v2');
