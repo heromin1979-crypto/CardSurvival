@@ -10,7 +10,7 @@
     "rangedComponentContractPath":  "/art_sources/combat/task9_companions/ranged_component_contract.json",
     "rangedComponentContractSha256":  "24e76c90729763d6ec839cd9ca141bc4eb55d20671c56f0b5eda469a257032c1",
     "provenancePath":  "/art_sources/combat/task9_companions/generation_provenance.json",
-    "provenanceSha256":  "7e83c7e9bfeb3fc512fd0a4fa3bcc6160b6b1b808c2f0a072059f6b8e5c2e50d",
+    "provenanceSha256":  "5b75f3f3ebf995456ebd4f48d83db0bc93279e04e436e3efcf1c4b532060ee37",
     "rowContract":  [
                         "idle",
                         "melee",
@@ -240,9 +240,9 @@
                                            },
                              "sohee_support_move_hit_death_rework":  {
                                                                          "chromaPath":  "/art_sources/combat/task9_companions/sohee_support_move_hit_death_rework_chroma.png",
-                                                                         "chromaSha256":  "713be6e5dcbc74e90a62104aeb56f920a81c7b547d483689efa9235ad3543046",
+                                                                         "chromaSha256":  "ef41b8f865a09049b69004afe1f38783490212118f3c3e0e5a525eb12b0090c7",
                                                                          "alphaPath":  "/art_sources/combat/task9_companions/sohee_support_move_hit_death_rework_alpha.png",
-                                                                         "alphaSha256":  "010cc8a136a15d432a070cdc3f180b8b03ee71f7b10e112d5a1a917a01e0321b",
+                                                                         "alphaSha256":  "f1af8a79f5d7f019c944fc395cf86e4d5903fb2ae598c8cd2d286bfc0e2cd4b2",
                                                                          "cols":  6,
                                                                          "rows":  4,
                                                                          "key":  "green"
@@ -1513,8 +1513,8 @@
                                             "path":  "/assets/images/combat/spritesheets/companions/sohee_companion_sheet.png",
                                             "width":  1536,
                                             "height":  2048,
-                                            "fileSha256":  "e7c91c20bd5cff78c09943b2822db58156165f7313171667c3c160065568edf8",
-                                            "pixelSha256":  "170ccbfac107fca2ed4d9ddd76736c2798ce1a25a053606d3274a43136ecfa4b",
+                                            "fileSha256":  "2ec0b8f938724a407c5ddf8eba46d69a3b197dce852e024a20d967ee7631cbfe",
+                                            "pixelSha256":  "ad3dcb7cda6c7334ecfff2d0825a814e08ca9aac804930a4a6021854a1267468",
                                             "rows":  [
                                                          {
                                                              "targetRow":  0,

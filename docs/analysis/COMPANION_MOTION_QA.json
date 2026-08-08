@@ -19,9 +19,9 @@
     "removedComponents": 0,
     "staleAllowlist": 0
   },
-  "assemblyRecipeSha256": "ff08346dd5e938c6010d81ee22809d75adb06d9d0caca9501f2de1513c844a95",
-  "previewManifestSha256": "67d44fd36ec466265fe926530523c7e7299a2c9ba9dfeb26f41bfe93a7c9253b",
-  "manualEvidenceSha256": "84561ed94848871ac7451cd5a40c12f18beb3b75afdef93b0a5f4e92c8f9a6fd",
+  "assemblyRecipeSha256": "39bcc840d6ccd22c29bb810f310dbc1a26305da38b424cc622fa473df2d4bfa0",
+  "previewManifestSha256": "a9fbb2d652fd4c56e6db7b8b72123d0e54e3dc71ba2a49616310f793cd1fd170",
+  "manualEvidenceSha256": "91923a1776795bddfb570b025c6f29762b0022169241f783a0891ba4428d781f",
   "sheets": [
     {
       "npcId": "npc_old_survivor",
@@ -100,8 +100,8 @@
       "sheetKey": "sohee_companion",
       "path": "/assets/images/combat/spritesheets/companions/sohee_companion_sheet.png",
       "cells": 48,
-      "fileSha256": "e7c91c20bd5cff78c09943b2822db58156165f7313171667c3c160065568edf8",
-      "pixelSha256": "15f49eb8c23a30f18e24fa786de593583ffa652dd7bf9a325eb0f2fef3440a75"
+      "fileSha256": "2ec0b8f938724a407c5ddf8eba46d69a3b197dce852e024a20d967ee7631cbfe",
+      "pixelSha256": "afcba57705a8a9a44a31d8e45968467a5ee0a03db20e4593ee240bec7f64fa56"
     },
     {
       "npcId": "npc_jisu",

@@ -12,7 +12,7 @@
 
 2026-08-08 fix round 2 선택적 재검토에서는 `old_survivor_companion`과 `sous_chef_companion`의 이동 r5를 다시 교체하고 original 해상도 source alpha·runtime·개별 확대 보드를 셀별로 대조했다. 노년 생존자의 승인된 발/지팡이 phase는 유지됐고 source 여섯 셀의 좌우 gutter가 모두 49px 이상이다. 부주방장은 f1 큰·밝은 near boot toe-up contact → f2 두 발 close true passing → f3 작은·어두운 far boot flat contact와 반대 occlusion → f4 opposite close passing → f5 lowered-pelvis near-leg wide contact → f6 close neutral return으로 읽힌다. runtime normalized lower-alpha IoU는 f1/f6 `0.369`, f2/f5 `0.333`, f1/f3 `0.568`이며 이전 반복 실루엣 수치보다 낮다. 두 source/runtime 모두 셀 경계 alpha와 cross-cell component가 0이고 source 최소 gutter는 각각 49px/33px이며, 다른 188개 비대상 행은 기준선과 동일하다.
 
-2026-08-08 Task 4 선택적 재검토에서는 `sohee_companion`의 support r3, move r5, hit r6, death r7을 교체하고 original 해상도 source alpha·runtime·개별 확대 보드를 셀별로 대조했다. support는 약병 확인-계량 복용-호흡 집중-ready, move는 큰·밝은 near shoe toe-up 접지-close passing-작은 far shoe flat 접지와 반대 depth occlusion-opposite passing-굽힌 무릎 push-off-balanced return, hit는 충격-최대 recoil-전방 굴곡-전투 ready 복귀, death는 직립 부상-무릎 약화-한쪽 무릎 접지-측면 낙상-prone 정지로 읽힌다. 24개 source cell은 362×362이고 최소 좌우 gutter 33px, boundary alpha 0, cross-cell component 0이며, 비대상 188개 행은 기준선과 동일하다.
+2026-08-08 Task 4 fix round 1에서는 `sohee_companion`의 move r5만 다시 교체하고 support r3, hit r6, death r7 raw source pixels를 보존했다. original source/runtime/review에서 move f1은 큰·밝은 screen-right near boot toe-up contact, f2는 두 발 close true passing, f3은 작은·어두운 screen-right far boot flat plant와 큰 screen-left near boot trailing으로 sole·depth·occlusion이 반대, f4는 opposite close passing, f5는 낮은 골반·굽힌 무릎의 별도 near push-off/contact, f6은 두 발 side-by-side balanced neutral로 읽힌다. move source 여섯 셀의 최소 좌우 gutter는 118px, boundary alpha 0, cross-cell component 0이며, 비대상 188개 행은 기준선과 동일하다.
 
 ## 60개 스킬 수동 판정
 

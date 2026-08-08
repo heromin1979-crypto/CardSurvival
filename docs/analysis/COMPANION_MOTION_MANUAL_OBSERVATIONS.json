@@ -4,7 +4,7 @@
   "evidenceType": "human manual visual observation",
   "reviewStatus": "PASS",
   "reviewedAt": "2026-08-08",
-  "reviewerMethod": "기존 19개 동료 PASS 증거를 보존하고, Task 4에서 imagegen으로 다시 편집한 Sohee source chroma와 canonical alpha, 런타임 PNG, 확대 리뷰 보드를 Codex 데스크톱 original 해상도 view_image로 재대조했다. support·move·hit·death 각 여섯 셀의 도구 사용, 발 접지와 passing, 피격 후 복귀, 직립-무릎-측면 낙상-최종 prone 진행 및 장비 위치를 비교하고 source/runtime cell gutter와 strict chroma도 확인했으며, 20개 전체 contact sheet에서 Sohee 보드를 다시 확인했다. 자동 renderer와 verifier는 이 판정을 생성하지 않는다.",
+  "reviewerMethod": "기존 19개 동료 PASS 증거와 Sohee support·hit·death raw source pixels를 보존하고, Task 4 fix round 1에서 move 6×1만 imagegen으로 다시 편집한 뒤 canonical alpha, 런타임 PNG, 확대 리뷰 보드를 Codex 데스크톱 original 해상도 view_image로 재대조했다. 여섯 move 셀의 toe-up/flat sole, boot 크기·명도, shin occlusion, passing/contact, neutral return을 각각 비교하고 위치 정규화 하체 IoU, source/runtime cell gutter와 strict chroma도 확인했으며, 20개 전체 contact sheet에서 Sohee 보드를 다시 확인했다. 자동 renderer와 verifier는 이 판정을 생성하지 않는다.",
   "reviewedCounts": {
     "companions": 20,
     "runtimeSheets": 20,
@@ -13,11 +13,11 @@
   },
   "openRework": [],
   "previewManifestPath": "/art_sources/combat/task9_companions/preview_manifest.json",
-  "previewManifestSha256": "67d44fd36ec466265fe926530523c7e7299a2c9ba9dfeb26f41bfe93a7c9253b",
+  "previewManifestSha256": "a9fbb2d652fd4c56e6db7b8b72123d0e54e3dc71ba2a49616310f793cd1fd170",
   "contactPath": "/art_sources/combat/task9_companions/companion_motion_contact_sheet.png",
-  "contactSha256": "ecd70fb7abfdeeeb67f1defe3716fdc042beb7f049abf7c0e697fd6211ed12c0",
+  "contactSha256": "891643f4333570f10501578815d5e0f96b5044d239094a0b5129dbc994a791f8",
   "assemblyRecipePath": "/art_sources/combat/task9_companions/assembly_recipe.json",
-  "assemblyRecipeSha256": "ff08346dd5e938c6010d81ee22809d75adb06d9d0caca9501f2de1513c844a95",
+  "assemblyRecipeSha256": "39bcc840d6ccd22c29bb810f310dbc1a26305da38b424cc622fa473df2d4bfa0",
   "companions": [
     {
       "npcId": "npc_old_survivor",
@@ -437,9 +437,9 @@
       "npcId": "npc_sohee",
       "sheetKey": "sohee_companion",
       "previewPath": "/art_sources/combat/task9_companions/review_previews/sohee_companion_review.png",
-      "previewSha256": "6e7e999b15b7bb626c2b909b7e2817bd2385f98111cd24d361c284397da20880",
+      "previewSha256": "333c967662e9346561fa6f9513a92eb1fa3c75adf93443e8bd431479c85065e2",
       "runtimePath": "/assets/images/combat/spritesheets/companions/sohee_companion_sheet.png",
-      "runtimeSha256": "e7c91c20bd5cff78c09943b2822db58156165f7313171667c3c160065568edf8",
+      "runtimeSha256": "2ec0b8f938724a407c5ddf8eba46d69a3b197dce852e024a20d967ee7631cbfe",
       "skills": [
         {
           "skillId": "sohee_precise_shot",
@@ -465,7 +465,7 @@
       ],
       "identityNote": "안경·묶은 검은 머리·보라색 코트·회색 바지·흰 운동화·올리브 약품 가방이 48셀 내내 동일하다.",
       "weaponNote": "검은 소총은 support에서 낮게 유지되고 move·hit·death에서도 보존되며 기존 ranged·guard 행은 변경되지 않았다.",
-      "continuityNote": "Task 4 확대 보드와 원본 시트를 1:1로 대조했다. move는 큰·밝은 near shoe toe-up 접지-close passing-작은 far shoe flat 접지와 반대 depth occlusion-opposite passing-굽힌 무릎 push-off-balanced return으로 구분되고, source 최소 좌우 gutter는 33px이며 셀 경계 alpha와 cross-cell component가 0이다.",
+      "continuityNote": "Task 4 fix round 1 확대 보드와 원본 시트를 1:1로 대조했다. move f1은 큰·밝은 screen-right near boot의 toe-up contact, f2는 두 발 close passing, f3은 작은·어두운 screen-right far boot의 flat plant와 큰 screen-left near boot trailing로 sole·depth가 반대, f4는 opposite close passing, f5는 낮은 골반과 굽힌 무릎의 별도 near push-off/contact, f6은 두 발 side-by-side balanced neutral이다. source 최소 좌우 gutter는 118px이며 셀 경계 alpha와 cross-cell component가 0이다.",
       "hit": {
         "motionKey": "hit",
         "rowSha256": "6a1d7c6cc4e4787f1026c4af552a3517b3b7c303ae624a9c6b8ed51ffb5d637b",
