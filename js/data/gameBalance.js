@@ -239,8 +239,9 @@ const BALANCE = {
   // ── 캠프파이어 ──────────────────────────────────────
   campfire: {
     tempBoostPerTP:     2,
-    fuelConsumePerTP:   0.5,   // 내구도 0.5/TP 소모
+    fuelConsumePerTP:   0.5,   // 내구도 0.5/TP 소모 (아이템 def.fuelConsumePerTP 미지정 시 기본값)
     noFuelTempBoost:    0,
+    weatherDouseChancePerTP: 0.02,  // 비·눈에 화기가 꺼질 TP당 확률
   },
 
   // ── 탐색 루팅 ───────────────────────────────────────

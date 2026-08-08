@@ -1021,7 +1021,8 @@ export const ko = {
   'statSys.acidRainGarden':    '☢ 산성비로 텃밭이 오염되었다! 비가 그칠 때까지 수확 불가.',
   'statSys.gardenFrozen':      '❄ 혹한으로 텃밭이 얼었다! 수확이 불가능하다.',
   'statSys.foodSpoiled':       '🤢 {name}이(가) 완전히 부패했다!',
-  'statSys.campfireEmpty':     '캠프파이어의 연료가 다 떨어졌다!',
+  'statSys.fireBurnedOut':     '{name}의 연료가 다 떨어졌다!',
+  'statSys.fireDoused':        '{name}이(가) 궂은 날씨에 꺼졌다!',
   'statSys.deathDespair':      '절망',
   'statSys.deathDehydration':  '탈수',
   'statSys.deathStarvation':   '아사',
@@ -1125,6 +1126,7 @@ export const ko = {
   'slot.cantDisplaceImmovable': '🔥 고정된 구조물이 있어 옮길 수 없습니다.',
   'slot.cantPlaceOnLocation':'장소 행에는 아이템을 놓을 수 없습니다.',
   'slot.stackMerge':        '{name} 스택: {qty}/{max}',
+  'slot.fireUnlit':         '불이 꺼져 있다. 먼저 다시 붙여야 한다.',
 
   // ── SaveManager ─────────────────────────────────────────────
   'save.saved':      '💾 저장 완료 — Day {day}',
@@ -2004,7 +2006,8 @@ export const en = {
   'statSys.acidRainGarden':    '☢ Acid rain contaminated garden! No harvest until rain stops.',
   'statSys.gardenFrozen':      '❄ Garden frozen! Cannot harvest.',
   'statSys.foodSpoiled':       '🤢 {name} completely spoiled!',
-  'statSys.campfireEmpty':     'Campfire ran out of fuel!',
+  'statSys.fireBurnedOut':     '{name} ran out of fuel!',
+  'statSys.fireDoused':        '{name} was put out by the weather!',
   'statSys.deathDespair':      'Despair',
   'statSys.deathDehydration':  'Dehydration',
   'statSys.deathStarvation':   'Starvation',
@@ -2108,6 +2111,7 @@ export const en = {
   'slot.cantDisplaceImmovable': '🔥 A fixed structure is in the way and cannot be displaced.',
   'slot.cantPlaceOnLocation':'Cannot place items on location row.',
   'slot.stackMerge':         '{name} stacked: {qty}/{max}',
+  'slot.fireUnlit':          'The fire is out. Relight it first.',
 
   // ── SaveManager ─────────────────────────────────────────────
   'save.saved':      '💾 Saved — Day {day}',

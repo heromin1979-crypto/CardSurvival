@@ -17,6 +17,9 @@ import { BOTTOM_PAGE1_SIZE } from '../data/bagSlots.js';
 // 내구도가 닳는 의료 시설 — onTick 계열('medical')과 지속 효과 계열('medical_structure')
 const MEDICAL_STRUCTURE_SUBTYPES = new Set(['medical', 'medical_structure']);
 
+// 화기를 꺼뜨리는 날씨 — 비·눈 계열. 'weather_resistant' 태그 구조물은 면역.
+const FIRE_DOUSING_WEATHER = new Set(['rainy', 'storm', 'monsoon', 'acid_rain', 'snow', 'blizzard']);
+
 const StatSystem = {
   init() {
     EventBus.on('tpAdvance', () => this.onTP());
@@ -366,18 +369,7 @@ const StatSystem = {
     const gs = GameState;
     const temp = gs.stats.temperature.current;
 
-    // Structures on board affect temp — 연료(내구도) 소모
-    const campfireCard = GameState.getBoardCards().find(c => c.definitionId === 'campfire');
-    if (campfireCard && gs.cards[campfireCard.instanceId]) {
-      const inst = gs.cards[campfireCard.instanceId];
-      if ((inst.durability ?? 0) > 0) {
-        gs.modStat('temperature', BALANCE.campfire.tempBoostPerTP);
-        inst.durability = Math.max(0, inst.durability - BALANCE.campfire.fuelConsumePerTP);
-        if (inst.durability <= 0) {
-          EventBus.emit('notify', { message: I18n.t('statSys.campfireEmpty'), type: 'warn' });
-        }
-      }
-    }
+    this._tickHeatStructures(gs);
 
     // Cold: morale drop if temp low (severe first)
     if (temp < 10) {
@@ -390,6 +382,49 @@ const StatSystem = {
     if (temp <= 0) {
       gs.modStat('hydration', -5); // hypothermia increases dehydration sim
     }
+  },
+
+  // 화기 구조물(subtype:'heat') 전체의 체온 회복·연료 소모·날씨 소화를 한 번에 처리한다.
+  // 화기별 소모율은 아이템 def.fuelConsumePerTP가 우선이며, 내구도와 짝을 이뤄 수명을 정한다
+  // (임시 화톳불 15 / 5 = 3TP).
+  _tickHeatStructures(gs) {
+    const dousing = FIRE_DOUSING_WEATHER.has(gs.weather?.id);
+
+    for (const card of gs.getBoardCards()) {
+      const def = gs.getCardDef(card.instanceId);
+      if (def?.type !== 'structure' || def.subtype !== 'heat') continue;
+
+      const inst = gs.cards[card.instanceId];
+      if (!inst || (inst.durability ?? 0) <= 0) continue;
+
+      const tags = def.tags ?? [];
+      if (dousing && !tags.includes('weather_resistant')
+          && (tags.includes('temp') || Math.random() < BALANCE.campfire.weatherDouseChancePerTP)) {
+        this._extinguishFire(gs, inst, def, 'statSys.fireDoused');
+        continue;
+      }
+
+      gs.modStat('temperature', def.onTick?.temperature ?? BALANCE.campfire.tempBoostPerTP);
+      inst.durability = Math.max(0, inst.durability
+        - (def.fuelConsumePerTP ?? BALANCE.campfire.fuelConsumePerTP));
+      if (inst.durability <= 0) {
+        this._extinguishFire(gs, inst, def, 'statSys.fireBurnedOut');
+      }
+    }
+  },
+
+  // 'temp' 화기는 급조물이라 꺼지면 잔해가 남지 않아 카드까지 제거한다.
+  // 그 외 화기는 재점화(relight_fire)·연료 보충(refuel_campfire) 대상이므로 내구도만 0으로 둔다.
+  _extinguishFire(gs, inst, def, messageKey) {
+    inst.durability = 0;
+    if (def.tags?.includes('temp')) {
+      gs.removeCardInstance(inst.instanceId);
+      EventBus.emit('cardRemoved', { instanceId: inst.instanceId });
+    }
+    EventBus.emit('notify', {
+      message: I18n.t(messageKey, { name: I18n.itemName(def.id, def.name) }),
+      type: 'warn',
+    });
   },
 
   _checkDeaths() {

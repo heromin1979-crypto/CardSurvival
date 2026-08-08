@@ -8,10 +8,18 @@ import NoiseSystem             from '../systems/NoiseSystem.js';
 import { findInteraction }     from '../data/interactions.js';
 import SecretCombinationSystem from '../systems/SecretCombinationSystem.js';
 import GameData                from '../data/GameData.js';
+import { isUnlitFire }         from '../systems/toolProvision.js';
 
 // 이동 불가 판정 — 태그 'immovable' 기본 + 필드 immovable:true 하위호환 (preserved 패턴)
 export function isImmovable(def) {
   return !!(def && (def.immovable === true || def.tags?.includes('immovable')));
+}
+
+// 꺼진 화기는 열을 쓰는 상호작용(조리·가열·건조)에 참여할 수 없다.
+// 재점화·연료 보충·수리는 꺼진 불이 바로 그 대상이므로 규칙 쪽에서 allowUnlit로 면제한다.
+function blocksOnUnlitFire(srcInst, tgtInst) {
+  return isUnlitFire(srcInst.definitionId, srcInst.durability)
+      || isUnlitFire(tgtInst.definitionId, tgtInst.durability);
 }
 
 const SlotResolver = {
@@ -141,6 +149,11 @@ const SlotResolver = {
     const tgtInst = gs.cards[targetId];
     if (!srcInst || !tgtInst) return false;
 
+    if (!rule.allowUnlit && blocksOnUnlitFire(srcInst, tgtInst)) {
+      EventBus.emit('notify', { message: I18n.t('slot.fireUnlit'), type: 'warn' });
+      return true;
+    }
+
     // 적용 가능 여부 확인
     const check = rule.canApply(srcInst, tgtInst);
     if (!check.ok) {
@@ -216,6 +229,11 @@ const SlotResolver = {
     const srcInst = gs.cards[sourceId];
     const tgtInst = gs.cards[targetId];
     if (!srcInst || !tgtInst) return false;
+
+    if (blocksOnUnlitFire(srcInst, tgtInst)) {
+      EventBus.emit('notify', { message: I18n.t('slot.fireUnlit'), type: 'warn' });
+      return true;
+    }
 
     const result = SecretCombinationSystem.applyCombination(check.combo, srcInst, tgtInst);
 

@@ -8,7 +8,7 @@ import BLUEPRINTS_ADV  from '../data/blueprints_advanced.js';
 import HIDDEN_RECIPES  from '../data/hiddenRecipes.js';
 import I18n            from '../core/I18n.js';
 import GameData        from '../data/GameData.js';
-import { providesTool } from './toolProvision.js';
+import { providesTool, isUnlitFire } from './toolProvision.js';
 
 // CraftSystem과 동일한 3중 병합 — advanced 누락 시 드래그 힌트에서 62종이 사라진다
 const ALL_BPS = { ...BLUEPRINTS_BASE, ...BLUEPRINTS_ADV, ...HIDDEN_RECIPES };
@@ -149,7 +149,8 @@ const CraftDiscovery = {
     // 도구 확인
     if (bp.requiredTools?.length) {
       for (const toolId of bp.requiredTools) {
-        if (!gs.getBoardCards().some(c => providesTool(c.definitionId, toolId))) return false;
+        if (!gs.getBoardCards().some(c =>
+          providesTool(c.definitionId, toolId) && !isUnlitFire(c.definitionId, c.durability))) return false;
       }
     }
 

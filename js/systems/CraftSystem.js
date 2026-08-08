@@ -13,7 +13,7 @@ import BALANCE         from '../data/gameBalance.js';
 import NightSystem     from './NightSystem.js';
 import TickEngine      from '../core/TickEngine.js';
 import GameData from '../data/GameData.js';
-import { providesTool } from './toolProvision.js';
+import { providesTool, isUnlitFire } from './toolProvision.js';
 
 // 히든 레시피 포함 전체 레시피
 const BLUEPRINTS = { ...BLUEPRINTS_BASE, ...BLUEPRINTS_ADV, ...HIDDEN_RECIPES };
@@ -73,9 +73,12 @@ const CraftSystem = {
     const bp = BLUEPRINTS[bpId];
     if (bp?.requiredTools?.length) {
       for (const toolId of bp.requiredTools) {
-        const onBoard = gs.getBoardCards().some(c => providesTool(c.definitionId, toolId));
+        const onBoard = gs.getBoardCards().some(c =>
+          providesTool(c.definitionId, toolId) && !isUnlitFire(c.definitionId, c.durability));
         const installed = gs.location.installedStructures?.[gs.location.currentDistrict];
-        const isInstalled = installed?.id ? providesTool(installed.id, toolId) : false;
+        const isInstalled = installed?.id
+          ? providesTool(installed.id, toolId) && !isUnlitFire(installed.id, installed.durability)
+          : false;
         if (!onBoard && !isInstalled) {
           const def = GameData.items[toolId];
           return { ok: false, reason: I18n.t('craftSys.toolReq', { name: I18n.itemName(toolId, def?.name) }) };
