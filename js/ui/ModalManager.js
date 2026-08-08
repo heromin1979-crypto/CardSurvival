@@ -10,6 +10,7 @@ import CardFactory     from './CardFactory.js';
 import GameData        from '../data/GameData.js';
 import NPCSystem       from '../systems/NPCSystem.js';
 import { landmarkHasFishing } from '../data/landmarks.js';
+import { isFishingRod as isRod } from '../systems/FishingSystem.js';
 import { getMagazineState, isMagazineAmmoPack } from '../systems/WeaponAmmoSystem.js';
 
 const FOCUSABLE = 'button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
@@ -316,7 +317,7 @@ const ModalManager = {
     const canEquip     = equipSlots.length > 0;
 
     // 낚싯대 여부
-    const isFishingRod = def.subtype === 'fishing' && def.id !== 'fish_trap';
+    const isFishingRod = isRod(def);
     let fishBtnHtml = '';
     let fishBtnReason = '';
     if (isFishingRod) {

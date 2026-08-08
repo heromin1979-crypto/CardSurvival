@@ -503,6 +503,7 @@ const BAL_HELP = {
   baitInsectBonus: '곤충 미끼 어획률 보너스.',
   rodBasicBonus: '기본 낚싯대 어획률 보너스.',
   rodImprovedBonus: '개량 낚싯대 어획률 보너스.',
+  rodAdvancedBonus: '강화 낚싯대 어획률 보너스.',
   rareFishChanceMax: 'Lv.20 희귀어 확률.',
   nonRareSmallChance: '희귀어 아닐 때 소형어 확률(아니면 중형).',
   trapMediumChance: '통발 수확 시 중형어 확률(아니면 소형).',

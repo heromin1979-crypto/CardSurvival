@@ -141,7 +141,7 @@ const ITEMS_TOOLS = {
     rarity: 'uncommon', weight: 1.5, stackable: false, maxStack: 1,
     defaultDurability: 100, defaultContamination: 0,
     icon: '🎣', description: '즉석 낚싯대. 한강 인접 구역에서 물고기를 잡을 수 있다.',
-    tags: ['tool'], dismantle: [{ definitionId: 'rope', qty: 1, chance: 0.5 }],
+    tags: ['tool', 'rod'], dismantle: [{ definitionId: 'rope', qty: 1, chance: 0.5 }],
   },
   torch: {
     id: 'torch', name: '횃불', type: 'tool', subtype: 'tool',
@@ -238,7 +238,7 @@ const ITEMS_TOOLS = {
     defaultDurability: 100, defaultContamination: 0,
     icon: '🎣', stackable: false,
     description: '나뭇가지와 노끈으로 만든 간이 낚싯대.',
-    tags: ['tool', 'fishing'],
+    tags: ['tool', 'fishing', 'rod'],
     dismantle: [
       { definitionId: 'wood',  qty: 1, chance: 0.8 },
       { definitionId: 'cloth', qty: 1, chance: 0.6 },
@@ -251,7 +251,7 @@ const ITEMS_TOOLS = {
     defaultDurability: 150, defaultContamination: 0,
     icon: '🎣', stackable: false,
     description: '철사와 낚싯바늘로 보강한 낚싯대. 명중률 +15%.',
-    tags: ['tool', 'fishing'],
+    tags: ['tool', 'fishing', 'rod'],
     dismantle: [
       { definitionId: 'wood',       qty: 1, chance: 0.8 },
       { definitionId: 'wire',       qty: 1, chance: 0.6 },
@@ -260,11 +260,11 @@ const ITEMS_TOOLS = {
   },
 
   fishing_rod_advanced: {
-    id: 'fishing_rod_advanced', name: '개량 낚싯대', type: 'tool', subtype: 'fishing',
+    id: 'fishing_rod_advanced', name: '강화 낚싯대', type: 'tool', subtype: 'fishing',
     rarity: 'uncommon', weight: 1.2,
-    defaultDurability: 120, defaultContamination: 0,
-    icon: '🎣', description: '강철판과 스프링으로 보강한 낚싯대. 큰 물고기도 견딘다.',
-    tags: ['tool', 'fishing', 'crafted'],
+    defaultDurability: 200, defaultContamination: 0,
+    icon: '🎣', description: '강철판과 스프링으로 보강한 낚싯대. 명중률 +25%. 큰 물고기도 견딘다.',
+    tags: ['tool', 'fishing', 'rod', 'crafted'],
     dismantle: [
       { definitionId: 'steel_plate', qty: 1, chance: 0.6 },
       { definitionId: 'spring', qty: 1, chance: 0.5 },

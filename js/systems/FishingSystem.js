@@ -49,18 +49,21 @@ function _findBaitInBoard() {
   return null;
 }
 
-/** 낚싯대 definitionId 반환 (개량 > 기본 우선, 미장착 포함) */
-function _getRodId() {
-  const gs = GameState;
-  for (const row of [gs.board?.bottom ?? [], gs.board?.middle ?? []]) {
-    for (const instId of row) {
-      if (!instId) continue;
-      const inst = gs.cards?.[instId];
-      const def  = GameData?.items?.[inst?.definitionId];
-      if (def?.subtype === 'fishing' && def.id !== 'fish_trap') return def.id;
-    }
-  }
-  return null;
+// 티어별 어획 보너스. 하드코딩 분기 대신 표로 두어 신규 낚싯대가 추가돼도
+// 여기 한 줄만 늘리면 된다.
+const ROD_BONUS = {
+  fishing_rod:          B.rodBasicBonus,   // 즉석 낚싯대 — 기본과 동급
+  fishing_rod_basic:    B.rodBasicBonus,
+  fishing_rod_improved: B.rodImprovedBonus,
+  fishing_rod_advanced: B.rodAdvancedBonus,
+};
+
+/**
+ * 낚싯대 판정. subtype:'fishing'은 통발·투망·게 통발·루어까지 포함하는 낚시 도구
+ * 전체라서 낚싯대를 가려낼 수 없다. 명시적인 'rod' 태그로 본다.
+ */
+export function isFishingRod(def) {
+  return !!def?.tags?.includes('rod');
 }
 
 /** board.middle에서 설치된 통발 인스턴스 반환 */
@@ -76,6 +79,32 @@ function _findInstalledTrap() {
 
 const FishingSystem = {
 
+  /**
+   * 보유 중인 낚싯대 중 어획 보너스가 가장 높은 것의 definitionId.
+   * 먼저 찾은 것을 쓰면 배치 순서에 따라 즉석 낚싯대(0%)가 강화 낚싯대(25%)를
+   * 밀어내므로 전부 훑어 최고 티어를 고른다.
+   */
+  getRodId() {
+    const gs = GameState;
+    let bestId = null;
+    let bestBonus = -Infinity;
+    for (const row of [gs.board?.bottom ?? [], gs.board?.middle ?? []]) {
+      for (const instId of row) {
+        if (!instId) continue;
+        const def = GameData?.items?.[gs.cards?.[instId]?.definitionId];
+        if (!isFishingRod(def)) continue;
+        const bonus = this.getRodBonus(def.id);
+        if (bonus > bestBonus) { bestBonus = bonus; bestId = def.id; }
+      }
+    }
+    return bestId;
+  },
+
+  /** 낚싯대 티어별 어획률 보너스 */
+  getRodBonus(rodId) {
+    return ROD_BONUS[rodId] ?? 0;
+  },
+
   /** 낚시 가능 여부 확인 (hasFishing 랜드마크 내부) */
   canFish() {
     if (!_isInFishingLandmark()) {
@@ -90,7 +119,7 @@ const FishingSystem = {
     if (!this.canFish()) return;
 
     const gs        = GameState;
-    const rodId     = _getRodId();
+    const rodId     = this.getRodId();
     const baitEntry = _findBaitInBoard();
 
     // 미끼 필수 확인
@@ -100,7 +129,8 @@ const FishingSystem = {
     }
 
     // 낚싯대 종류 알림
-    const rodName = rodId === 'fishing_rod_improved' ? '개량 낚싯대' : (rodId ? '기본 낚싯대' : '맨손');
+    const rodDef  = rodId ? GameData?.items?.[rodId] : null;
+    const rodName = rodDef ? I18n.itemName(rodDef.id, rodDef.name) : '맨손';
     const baitName = baitEntry.def.id === 'bait_worm' ? '지렁이' : '벌레';
 
     // 미끼 소비
@@ -117,7 +147,7 @@ const FishingSystem = {
     const bonuses      = SKILL_DEFS.fishing?.getBonuses?.(fishingLevel) ?? { catchChance: B.baseCatchChance, rareFishChance: 0, catchQtyBonus: 0 };
     let catchChance    = bonuses.catchChance;
 
-    if (rodId === 'fishing_rod_improved') catchChance += B.rodImprovedBonus;
+    catchChance += this.getRodBonus(rodId);
     catchChance += baitBonus;
 
     const weather = gs.weather?.id ?? 'sunny';
