@@ -77,6 +77,10 @@ const WEATHER_TEMP_ADJ = {
   acid_rain: -4,
 };
 
+// 마른 개울을 다시 채우는 비 계열 날씨. setWeather·_changeWeather 양쪽이 같은 목록을
+// 봐야 하므로 상수로 둔다 (각자 리터럴을 들고 있다가 한쪽 id가 어긋난 적이 있다).
+const RAINY_WEATHER_IDS = ['rainy', 'storm', 'monsoon'];
+
 // ── WeatherSystem ──────────────────────────────────────────────
 
 const WeatherSystem = {
@@ -111,8 +115,9 @@ const WeatherSystem = {
     this._updateWeatherHUD(gs.weather);
     this._updateTemperatureHUD(this.getOutdoorTemperature());
     this._renderWeatherWidget(gs);
-    const rainyIds = ['rainy', 'storm', 'monsoon'];
-    if (rainyIds.includes(weatherId) && !rainyIds.includes(prev)) this._refillDryStreams(gs);
+    if (RAINY_WEATHER_IDS.includes(weatherId) && !RAINY_WEATHER_IDS.includes(prev)) {
+      this._refillDryStreams(gs);
+    }
     EventBus.emit('notify', { message: `🌤 [GM] 날씨 → ${def.icon} ${def.name}`, type: 'info' });
     return true;
   },
@@ -227,7 +232,7 @@ const WeatherSystem = {
     EventBus.emit('weatherChanged', { weather: gs.weather });
     this._updateWeatherHUD(gs.weather);
     this._updateTemperatureHUD(this.getOutdoorTemperature());
-    if (['rain', 'storm', 'monsoon'].includes(w.id) && !['rain', 'storm', 'monsoon'].includes(prev)) {
+    if (RAINY_WEATHER_IDS.includes(w.id) && !RAINY_WEATHER_IDS.includes(prev)) {
       this._refillDryStreams(gs);
     }
   },
