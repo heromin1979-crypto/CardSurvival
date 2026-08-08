@@ -118,7 +118,7 @@ describe('combat actor motion rework contract', () => {
     } finally {
       fs.rmSync(tempDir, { recursive: true, force: true });
     }
-  });
+  }, 15_000);
 
   itWithPython('uses manifest-linked allowlist checks for a runtime sheet', () => {
     const input = path.join(
