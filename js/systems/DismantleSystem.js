@@ -62,7 +62,7 @@ const DismantleSystem = {
     // TP 소비 — 남은 TP를 초과하면 자정을 넘겨 다음 날로 이어진다 (제작과 동일)
     const { cost: tpCost } = this.getTpStatus(instanceId, actualCount);
     if (tpCost > 0) {
-      TickEngine.skipTP(tpCost, `${def.name} 해체 ×${actualCount}`);
+      TickEngine.skipTP(tpCost, I18n.t('tick.reasonDismantle', { name: I18n.itemName(def.id, def.name), count: actualCount }));
     }
 
     // 시간이 흐르는 동안 굶주림·질병으로 사망할 수 있다. 사망 후 재료를 배치하지 않는다.
@@ -190,7 +190,7 @@ const DismantleSystem = {
     // TP 소비 — 분해와 동일하게 자정을 넘길 수 있다
     const tpCost = def.dismantleTP ?? 0;
     if (tpCost > 0) {
-      TickEngine.skipTP(tpCost, `${def.name} 채취`);
+      TickEngine.skipTP(tpCost, I18n.t('tick.reasonForage', { name: I18n.itemName(def.id, def.name) }));
     }
     if (!gs.player.isAlive) return { success: false, gained: [] };
 

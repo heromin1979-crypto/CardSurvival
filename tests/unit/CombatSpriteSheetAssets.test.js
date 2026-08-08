@@ -461,7 +461,9 @@ describe('combat sprite sheet assets', () => {
     }
 
     expect(invalidRows).toEqual([]);
-  });
+    // 모든 스프라이트 시트를 zlib으로 풀어 픽셀을 훑는다. 단독 실행에도 3초가 걸려
+    // 기본 5초로는 전체 스위트 병렬 부하에서 간헐적으로 타임아웃한다.
+  }, 30000);
 
   it('does not leave opaque chroma-key green pixels in displayed sprite sheets', () => {
     const files = manifestEntries().map(({ filePath }) => filePath);

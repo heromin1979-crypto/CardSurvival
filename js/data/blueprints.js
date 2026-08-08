@@ -4090,19 +4090,6 @@ const BLUEPRINTS = {
       ], consumeAt: 'start',
     }],
   },
-  build_water_purifier: {
-    id: 'build_water_purifier', name: '정수 시설 제작', category: 'structure',
-    description: '자동 정수 시설.',
-    output: [{ definitionId: 'water_purifier', qty: 1 }],
-    requiredTools: ['workbench'], requiredSkills: { building: 4, crafting: 3 },
-    stages: [{ stageIndex: 0, label: '설비 조립', tpCost: 6,
-      requiredItems: [
-        { definitionId: 'scrap_metal',      qty: 4 },
-        { definitionId: 'charcoal_filter',  qty: 2 },
-        { definitionId: 'empty_bottle',     qty: 3 },
-      ], consumeAt: 'start',
-    }],
-  },
   build_blood_bank: {
     id: 'build_blood_bank', name: '혈액 은행 제작', category: 'structure',
     description: 'IV 혈액 저장·관리.',

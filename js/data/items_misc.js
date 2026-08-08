@@ -2705,38 +2705,6 @@ const ITEMS_MISC = {
       },
     ],
   },
-  water_purifier: {
-    id: 'water_purifier',
-    name: '정수 시설',
-    type: 'structure',
-    subtype: 'medical_structure',
-    rarity: 'uncommon',
-    weight: 0,
-    defaultDurability: 100,
-    defaultContamination: 0,
-    icon: '💧',
-    description: 'TP당 정수된 물 1개 자동 생산.',
-    tags: [
-      'structure',
-      'medical',
-      'generator',
-    ],
-    effect: {
-      waterPerTP: 1,
-    },
-    dismantle: [
-      {
-        definitionId: 'scrap_metal',
-        qty: 3,
-        chance: 0.7,
-      },
-      {
-        definitionId: 'charcoal_filter',
-        qty: 1,
-        chance: 0.5,
-      },
-    ],
-  },
   blood_bank: {
     id: 'blood_bank',
     name: '혈액 은행',

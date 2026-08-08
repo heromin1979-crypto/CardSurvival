@@ -211,7 +211,7 @@ const ExploreSystem = {
     const costTP = EncumbranceSystem.applyCost(
       Math.ceil((district.travelCostTP ?? 2) * NightSystem.getNightTravelCostMult()),
     );
-    if (costTP > 0) TickEngine.skipTP(costTP, `${district.name}(으)로 이동`);
+    if (costTP > 0) TickEngine.skipTP(costTP, I18n.t('tick.reasonTravel', { name: district.name }));
 
     // 방사선 (방어구 radiationMult 적용)
     if (district.radiation > 0) {
@@ -309,7 +309,7 @@ const ExploreSystem = {
       EventBus.emit('notify', { message: I18n.t('exploreSys.lowStamina'), type: 'warn' });
     }
 
-    TickEngine.skipTP(EncumbranceSystem.applyCost(1), `${district.name} 탐색`);
+    TickEngine.skipTP(EncumbranceSystem.applyCost(1), I18n.t('tick.reasonExplore', { name: district.name }));
 
     // ── 탐색 스태미나 소모 (이동의 절반) ────────────────────
     const expWeightMult   = StatSystem._getWeightMult(wPctExp);
@@ -770,7 +770,7 @@ const ExploreSystem = {
     }
 
     // 1 TP 소비 (과적 배율 적용)
-    TickEngine.skipTP(EncumbranceSystem.applyCost(1), `${sub.name} 탐색`);
+    TickEngine.skipTP(EncumbranceSystem.applyCost(1), I18n.t('tick.reasonExplore', { name: sub.name }));
 
     // 소음 생성 — districtId 파라미터는 랜드마크 키일 수 있으므로
     // 실제 구 레벨 스탯(소음/조우/위험도/방사선)은 플레이어의 currentDistrict 기준으로 조회

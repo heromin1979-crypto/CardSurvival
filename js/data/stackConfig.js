@@ -319,7 +319,6 @@ const STACK_ROWS = [
   ['surgical_table'            , false, 1 ],
   ['isolation_ward'            , false, 1 ],
   ['medical_cabinet'           , false, 1 ],
-  ['water_purifier'            , false, 1 ],
   ['blood_bank'                , false, 1 ],
   ['quarantine_station'        , false, 1 ],
   ['xray_station'              , false, 1 ],

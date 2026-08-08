@@ -317,7 +317,6 @@ const CARD_IMAGES = {
   surgical_table:        'assets/images/structures/medical_station.png',
   isolation_ward:        'assets/images/structures/medical_station.png',
   medical_cabinet:       'assets/images/structures/storage_box.png',
-  water_purifier:        'assets/images/structures/medical_station.png',
   blood_bank:            'assets/images/structures/medical_station.png',
   quarantine_station:    'assets/images/structures/medical_station.png',
   xray_station:          'assets/images/structures/medical_station.png',

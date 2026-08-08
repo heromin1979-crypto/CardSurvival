@@ -437,6 +437,19 @@ export const ko = {
   'combatResult.returnTo':  '📍 {name} 복귀',
 
   // ── Rest ────────────────────────────────────────────────────
+  // 시간 경과 알림 — 하루는 06시에 시작해 다음날 05시대에 끝난다.
+  // 남은 행동력 알림은 새벽 2~5시에 뜨므로 '해가 진다'가 아니라 '날이 바뀐다'가 맞다.
+  'tick.tpSkipped':       '⏩ {n} TP 경과',
+  'tick.tpSkippedReason': '⏩ {n} TP 경과 — {reason}',
+  'tick.remaining':       '⏳ 오늘 남은 행동력: {remain} TP',
+  'tick.remainingWarn':   '🌙 오늘 남은 행동력: {remain} TP — 곧 날이 바뀝니다.',
+  // skipTP의 사유 문구 — 알림에 "{n} TP 경과 — {reason}"으로 붙는다
+  'tick.reasonDismantle': '{name} 해체 ×{count}',
+  'tick.reasonForage':    '{name} 채취',
+  'tick.reasonTravel':    '{name}(으)로 이동',
+  'tick.reasonExplore':   '{name} 탐색',
+  'tick.reasonFishing':   '낚시',
+
   'rest.title':        '휴식',
   'rest.forced':       '극도의 피로! 즉시 휴식 필요.',
   'rest.cancel':       '← 취소',
@@ -1408,6 +1421,17 @@ export const en = {
   'combatResult.loot':     'Loot',
   'combatResult.returnTo': '📍 Return to {name}',
 
+  // ── Time skip ───────────────────────────────────────────────
+  'tick.tpSkipped':       '⏩ {n} TP elapsed',
+  'tick.tpSkippedReason': '⏩ {n} TP elapsed — {reason}',
+  'tick.remaining':       '⏳ Action points left today: {remain} TP',
+  'tick.remainingWarn':   '🌙 Action points left today: {remain} TP — the day turns soon.',
+  'tick.reasonDismantle': 'Dismantling {name} ×{count}',
+  'tick.reasonForage':    'Foraging {name}',
+  'tick.reasonTravel':    'Traveling to {name}',
+  'tick.reasonExplore':   'Exploring {name}',
+  'tick.reasonFishing':   'Fishing',
+
   // ── Rest ────────────────────────────────────────────────────
   'rest.title':        'Rest',
   'rest.forced':       'Extreme fatigue! Rest immediately.',
@@ -2329,7 +2353,7 @@ export const en = {
 
   // ── Blueprints ──────────────────────────────────────────────
   '_blueprint.make_campfire':        'Campfire',
-  '_blueprint.make_water_purifier':  'Water Purifier',
+  '_blueprint.water_purifier':       'Water Purifier',
   '_blueprint.make_barricade':       'Barricade',
   '_blueprint.make_alarm_trap':      'Alarm Trap',
   '_blueprint.make_spike_trap':      'Spike Trap',
