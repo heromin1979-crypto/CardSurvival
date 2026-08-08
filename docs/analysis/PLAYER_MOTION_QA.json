@@ -20,6 +20,7 @@
       "height": 2048,
       "mode": "RGBA",
       "fileSha256": "f2594367cc9dffec1db6e973c2ab729554e7d0358ca701a064a72849c4b4c9e3",
+      "strictBoundaryRows": [],
       "chromaMetrics": {
         "opaqueGreen": 0,
         "fringeGreen": 0,
@@ -510,6 +511,7 @@
       "height": 2048,
       "mode": "RGBA",
       "fileSha256": "831191417b78ebf1dd827ca6ab5729eb5faf58e47dcb7862266f09b616611aa3",
+      "strictBoundaryRows": [],
       "chromaMetrics": {
         "opaqueGreen": 0,
         "fringeGreen": 0,
@@ -999,7 +1001,10 @@
       "width": 1536,
       "height": 2048,
       "mode": "RGBA",
-      "fileSha256": "743cf7d826e478c4854f2267a2f784d84e259e37812129547d927937d121a8fc",
+      "fileSha256": "763166c2e263395a11d831dad19296d22555087a1c6a9bf80395344b831906bb",
+      "strictBoundaryRows": [
+        2
+      ],
       "chromaMetrics": {
         "opaqueGreen": 0,
         "fringeGreen": 0,
@@ -1132,10 +1137,10 @@
           "motion": "ranged",
           "alphaCoverage": [
             16629,
-            16845,
-            17034,
-            17232,
-            16887,
+            16852,
+            17045,
+            17240,
+            16898,
             16515
           ],
           "boundingBoxes": [
@@ -1177,12 +1182,12 @@
             ]
           ],
           "framePixelSha256": [
-            "759eb57eed6c01ca6200b62ee60dcf4003f6f28200ce7801decbf602f7a198b6",
-            "c722490deffaeab920405e85244914b9f4fff283531e62e814565f5182eae208",
-            "b6ce0300d3ad85e7469208981d845a518aecae8485ae009b96a2c58dc980f2f9",
-            "45b488302742f30e44588e6ee221a4d120a707ff30e53c6d0314ba9b65c81fdc",
-            "273b7729172f78c9beeb774d3edae12b19b065cddfe5abde1d410a7e8a8e676b",
-            "9f243f2c720e96621c042e10610ca29925d1586d90dcf38ba6545ae19d3c3892"
+            "cb8146bad14eab0d8e8b8d3b157ca7f5b7abb51cd2a0d6a57ee05cc2b387ca05",
+            "10b7c26583f3059a99fd5e83a4e2c876b821f9a492bae54beaf48b24334a39b8",
+            "48a7d9843beecf91106a515000352c2bb13f222534359c2165c660688492104f",
+            "b693cce8cddf829de812a5e09eea31e3534d0028c09dd1aec3e965397a2994eb",
+            "de0e20b83141b6951648d7207589f71bc5d6a6804651a9bec11785d94612760f",
+            "9d8e86114fe112fbc0caae8785186b8f58809e8e4a73dd6a909ba2e99e795e01"
           ],
           "distinctFrameCount": 6
         },
@@ -1490,6 +1495,7 @@
       "height": 2048,
       "mode": "RGBA",
       "fileSha256": "7e26ffaab4b5097d997ee42255af47066dde968786e2e1f1e03cad60da7f18e2",
+      "strictBoundaryRows": [],
       "chromaMetrics": {
         "opaqueGreen": 0,
         "fringeGreen": 0,
@@ -1980,6 +1986,7 @@
       "height": 2048,
       "mode": "RGBA",
       "fileSha256": "914fda87210ca0e9be4196bfa4c146ff7fc3a24d5b1ee995b320fba77e7b0cc1",
+      "strictBoundaryRows": [],
       "chromaMetrics": {
         "opaqueGreen": 0,
         "fringeGreen": 0,
@@ -2470,6 +2477,7 @@
       "height": 2048,
       "mode": "RGBA",
       "fileSha256": "7e50b5557c67ca22632baf957669380d53a982fabf79408881bcfb6777ccbc91",
+      "strictBoundaryRows": [],
       "chromaMetrics": {
         "opaqueGreen": 0,
         "fringeGreen": 0,

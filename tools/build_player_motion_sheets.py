@@ -11,7 +11,7 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 
-from normalize_combat_sprite_sheets import cleanup_chroma
+from normalize_combat_sprite_sheets import analyze_chroma, neutralize_strict_green_grid
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -83,6 +83,13 @@ SIMPLE_ROW_SOURCES = {
 EXPLICIT_ROW_BOUNDS = {
     "firefighter_m_death_alpha": (0, 350, 690, 1029, 1368, 1739, 2172),
     "homeless_m_death_alpha": (0, 350, 679, 1034, 1395, 1750, 2172),
+}
+
+FITTED_CELL_POSTPROCESS = {
+    "firefighter_m_ranged_rework_alpha": {
+        "operation": "neutralize_strict_green",
+        "expectedAlphaPixelsRemoved": 0,
+    },
 }
 
 
@@ -395,6 +402,35 @@ def fit_cell(cell: Image.Image) -> Image.Image:
     return output
 
 
+def postprocess_fitted_cell(source_key: str, fitted: Image.Image) -> tuple[Image.Image, dict]:
+    specification = FITTED_CELL_POSTPROCESS.get(source_key)
+    if specification is None:
+        return fitted, {"operation": "none", "changedPixels": 0, "alphaPixelsRemoved": 0}
+    if specification["operation"] != "neutralize_strict_green":
+        raise ValueError(f"unknown fitted-cell postprocess: {source_key}")
+    before_alpha = fitted.getchannel("A")
+    processed, changed_pixels = neutralize_strict_green_grid(fitted, 1, 1)
+    after_alpha = processed.getchannel("A")
+    alpha_pixels_removed = sum(
+        after < before
+        for before, after in zip(
+            before_alpha.get_flattened_data(), after_alpha.get_flattened_data(), strict=True
+        )
+    )
+    if before_alpha.tobytes() != after_alpha.tobytes():
+        raise ValueError(f"fitted-cell postprocess changed alpha: {source_key}")
+    if alpha_pixels_removed != specification["expectedAlphaPixelsRemoved"]:
+        raise ValueError(f"fitted-cell postprocess alpha removal mismatch: {source_key}")
+    metrics = analyze_chroma(processed, strict_boundary=True)
+    if any(metrics.values()):
+        raise ValueError(f"fitted-cell postprocess left chroma residue: {source_key} {metrics}")
+    return processed, {
+        "operation": specification["operation"],
+        "changedPixels": changed_pixels,
+        "alphaPixelsRemoved": alpha_pixels_removed,
+    }
+
+
 def load_sources() -> dict[str, Image.Image]:
     sources = {}
     for key, (filename, _cols, _rows) in SOURCE_GRIDS.items():
@@ -452,7 +488,9 @@ def assemble_sheets(row_recipes: dict | None = None) -> dict[str, Image.Image]:
                 raise ValueError(f"{sheet_key}/{target_row} must select canonical columns 0..5")
             for target_col, source_col in enumerate(columns):
                 raw = source_cells[source_key][row_spec["sourceRow"]][source_col]
-                fitted, _ = cleanup_chroma(fit_cell(raw))
+                fitted, diagnostic = postprocess_fitted_cell(source_key, fit_cell(raw))
+                if diagnostic["alphaPixelsRemoved"] != 0:
+                    raise ValueError(f"assembled fitted cell lost alpha: {source_key}/{source_col}")
                 output.alpha_composite(fitted, (target_col * CELL, target_row * CELL))
         outputs[sheet_key] = output
     return outputs

@@ -13,6 +13,7 @@ from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
 EXPECTED = ("doctor_f", "soldier_m", "firefighter_m", "homeless_m", "chef_m", "engineer_m")
+EXPECTED_STRICT_BOUNDARY_ROWS = {"firefighter_m": [2]}
 MOTIONS = ("idle", "melee", "ranged", "support", "guard", "move", "hit", "death")
 NOTE_FIELDS = ("pose", "weapon", "anchor", "clipping", "chroma")
 ZERO_CHROMA = {
@@ -100,8 +101,13 @@ def markdown(metrics: dict, observations: dict) -> str:
         "| Sheet | Motion | Status | Pose / weapon observation | Chroma metrics |", "|---|---|---|---|---|",
     ]
     for character in observations["characters"]:
-        chroma = metric_by_key[character["sheetKey"]]["chromaMetrics"]
-        chroma_text = ", ".join(f"{key}={value}" for key, value in chroma.items())
+        automatic = metric_by_key[character["sheetKey"]]
+        chroma = automatic["chromaMetrics"]
+        strict_rows = automatic["strictBoundaryRows"]
+        strict_text = ",".join(map(str, strict_rows)) if strict_rows else "none"
+        chroma_text = f"strictBoundaryRows={strict_text}; " + ", ".join(
+            f"{key}={value}" for key, value in chroma.items()
+        )
         for row in character["rows"]:
             lines.append(
                 f"| `{character['sheetKey']}` | `{row['motion']}` | {row['status']} | "
@@ -141,6 +147,8 @@ def main() -> int:
             actual = renderer.image_metrics(key, path, image, normalizer)
             if metric != actual:
                 raise ValueError(f"automatic image metrics drift: {key}")
+            if metric["strictBoundaryRows"] != EXPECTED_STRICT_BOUNDARY_ROWS.get(key, []):
+                raise ValueError(f"strict boundary row policy mismatch: {key}")
             if metric["chromaMetrics"] != ZERO_CHROMA:
                 raise ValueError(f"strict chroma residue: {key} {metric['chromaMetrics']}")
             if any(row["distinctFrameCount"] < 2 or any(value <= 0 for value in row["alphaCoverage"])

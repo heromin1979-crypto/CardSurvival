@@ -16,6 +16,7 @@ SHEETS = ("doctor_f", "soldier_m", "firefighter_m", "homeless_m", "chef_m", "eng
 MOTIONS = ("idle", "melee", "ranged", "support", "guard", "move", "hit", "death")
 SHEET_DIR = ROOT / "assets/images/combat/spritesheets"
 NORMALIZER_PATH = ROOT / "tools/normalize_combat_sprite_sheets.py"
+STRICT_BOUNDARY_ROWS = {"firefighter_m": (2,)}
 
 
 def sha256(path: Path) -> str:
@@ -37,6 +38,10 @@ def load_normalizer():
 
 
 def image_metrics(key: str, path: Path, image: Image.Image, normalizer) -> dict:
+    strict_boundary_rows = STRICT_BOUNDARY_ROWS.get(key, ())
+    strict_boundary_cells = {
+        (row, col) for row in strict_boundary_rows for col in range(6)
+    }
     rows = []
     for row, motion in enumerate(MOTIONS):
         frames = [image.crop((col * 256, row * 256, (col + 1) * 256, (row + 1) * 256))
@@ -57,7 +62,10 @@ def image_metrics(key: str, path: Path, image: Image.Image, normalizer) -> dict:
         "height": image.height,
         "mode": image.mode,
         "fileSha256": sha256(path),
-        "chromaMetrics": normalizer.analyze_chroma_grid(image, 6, 8, path),
+        "strictBoundaryRows": list(strict_boundary_rows),
+        "chromaMetrics": normalizer.analyze_chroma_grid(
+            image, 6, 8, path, strict_boundary_cells=strict_boundary_cells
+        ),
         "rows": rows,
     }
 

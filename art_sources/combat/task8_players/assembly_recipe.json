@@ -1,7 +1,7 @@
 {
   "version": 1,
   "assemblyScript": "/tools/build_player_motion_sheets.py",
-  "assemblyScriptSha256": "a6123f930b5deb718fe0a5235e8790418b697ecb19b2898a55e8054793a66354",
+  "assemblyScriptSha256": "de72ffcc302c5d97772e1dd3cce14d1445cef873abad5ac02fc5f72f5b453a09",
   "provenancePolicy": {
     "canonical": "cleaned alpha PNGs are the sole deterministic assembly inputs",
     "archival": "chroma PNGs are retained built-in image-generation archives"
@@ -797,8 +797,8 @@
       "path": "/assets/images/combat/spritesheets/firefighter_m_sheet.png",
       "width": 1536,
       "height": 2048,
-      "pixelSha256": "7cfa24ecc90f02c61e19037c9980fe343fdf9f92c2e43b8bd5fb213139f6e4a8",
-      "fileSha256": "743cf7d826e478c4854f2267a2f784d84e259e37812129547d927937d121a8fc",
+      "pixelSha256": "b0a889feb8b2a498e531bfe432e42ecaacf4c64f248f98cd97fd03e7a4412564",
+      "fileSha256": "763166c2e263395a11d831dad19296d22555087a1c6a9bf80395344b831906bb",
       "rows": [
         {
           "targetRow": 0,
@@ -932,10 +932,10 @@
         ],
         [
           16629,
-          16845,
-          17034,
-          17232,
-          16887,
+          16852,
+          17045,
+          17240,
+          16898,
           16515
         ],
         [
@@ -997,12 +997,12 @@
           "5ad1ca1205ed4d549d713019c40b092ad994bf59d2c0d1d08c36a4af17c657c4"
         ],
         [
-          "759eb57eed6c01ca6200b62ee60dcf4003f6f28200ce7801decbf602f7a198b6",
-          "c722490deffaeab920405e85244914b9f4fff283531e62e814565f5182eae208",
-          "b6ce0300d3ad85e7469208981d845a518aecae8485ae009b96a2c58dc980f2f9",
-          "45b488302742f30e44588e6ee221a4d120a707ff30e53c6d0314ba9b65c81fdc",
-          "273b7729172f78c9beeb774d3edae12b19b065cddfe5abde1d410a7e8a8e676b",
-          "9f243f2c720e96621c042e10610ca29925d1586d90dcf38ba6545ae19d3c3892"
+          "cb8146bad14eab0d8e8b8d3b157ca7f5b7abb51cd2a0d6a57ee05cc2b387ca05",
+          "10b7c26583f3059a99fd5e83a4e2c876b821f9a492bae54beaf48b24334a39b8",
+          "48a7d9843beecf91106a515000352c2bb13f222534359c2165c660688492104f",
+          "b693cce8cddf829de812a5e09eea31e3534d0028c09dd1aec3e965397a2994eb",
+          "de0e20b83141b6951648d7207589f71bc5d6a6804651a9bec11785d94612760f",
+          "9d8e86114fe112fbc0caae8785186b8f58809e8e4a73dd6a909ba2e99e795e01"
         ],
         [
           "2fdfd4dca74050dbcd239defbad3712dce356f973c35cf867442b8ef68e28be2",
