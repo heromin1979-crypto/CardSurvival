@@ -51,6 +51,12 @@ function runQaVerifier(args) {
 }
 
 describe('Task 8 player motion assembly provenance', () => {
+  it('accepts the committed automatic metrics and manual observations', () => {
+    const result = runQaVerifier([]);
+    expect(result.status, result.stderr || result.stdout).toBe(0);
+    expect(result.stdout).toContain('verified 6 player motion QA records with 48 manual row observations');
+  }, 60000);
+
   it('verifies all six canonical 6x8 outputs deterministically', () => {
     const result = runBuilder(['--check']);
     expect(result.status, result.stderr || result.stdout).toBe(0);
@@ -82,19 +88,29 @@ describe('Task 8 player motion assembly provenance', () => {
   it('rejects missing manual rows and forged PASS observations', () => {
     const observations = JSON.parse(fs.readFileSync(MANUAL_OBSERVATIONS, 'utf8'));
     const mutations = [
-      draft => { draft.characters[0].rows.pop(); },
-      draft => { draft.characters[1].imageSha256 = '0'.repeat(64); },
-      draft => { draft.characters[2].rows[1].rework = 'weapon clipping remains'; },
+      {
+        mutate: draft => { draft.characters[0].rows.pop(); },
+        expectedError: 'manual row count mismatch: doctor_f',
+      },
+      {
+        mutate: draft => { draft.characters[1].imageSha256 = '0'.repeat(64); },
+        expectedError: 'manual image hash drift: soldier_m',
+      },
+      {
+        mutate: draft => { draft.characters[2].rows[1].rework = 'weapon clipping remains'; },
+        expectedError: 'manual row remains open: firefighter_m/melee',
+      },
     ];
     const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'task8-player-manual-qa-'));
     try {
-      for (const [index, mutate] of mutations.entries()) {
+      for (const [index, { mutate, expectedError }] of mutations.entries()) {
         const draft = structuredClone(observations);
         mutate(draft);
         const tempObservations = path.join(tempDir, `observations-${index}.json`);
         fs.writeFileSync(tempObservations, JSON.stringify(draft), 'utf8');
         const result = runQaVerifier(['--observations', tempObservations]);
         expect(result.status, `manual QA mutation ${index}`).not.toBe(0);
+        expect(result.stderr.trim(), `manual QA mutation ${index}`).toBe(expectedError);
       }
     } finally {
       fs.rmSync(tempDir, { recursive: true, force: true });
