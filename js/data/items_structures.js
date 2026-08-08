@@ -517,12 +517,12 @@ const ITEMS_STRUCTURES = {
   },
 
   destroyed_kiosk: {
-    id: 'destroyed_kiosk', name: '파괴된 매점', type: 'structure', subtype: 'salvage',
-    rarity: 'rare', weight: 20.0,
+    id: 'destroyed_kiosk', name: '매점 잔해', type: 'structure', subtype: 'salvage',
+    rarity: 'rare', weight: 15.0,
     defaultDurability: 100, defaultContamination: 0,
-    icon: '🏪', description: '편의점 잔해. 진열대와 간판에서 재료를 얻는다.',
+    icon: '🏪', description: '길가에 놓였던 부스형 가판. 산산조각 난 유리장과 목재 진열대가 그대로 남아 뜯어낼 게 많다.',
     tags: ['structure', 'salvage'],
-    dismantleTP: 4,
+    dismantleTP: 3,
     dismantle: [
       { definitionId: 'wood', qty: 4, chance: 0.8 },
       { definitionId: 'scrap_metal', qty: 3, chance: 0.7 },

@@ -2753,7 +2753,7 @@ export const en = {
   '_item.subway_gate':             'Subway Turnstile',
   '_item.telephone_booth':         'Telephone Booth',
   '_item.wrecked_bus':             'Wrecked Bus',
-  '_item.destroyed_kiosk':         'Destroyed Kiosk',
+  '_item.destroyed_kiosk':         'Wrecked Kiosk',
   '_item.field_forge':             'Field Forge',
   '_item.coal_furnace':            'Coal Furnace',
   '_item.chemistry_bench':         'Chemistry Bench',
