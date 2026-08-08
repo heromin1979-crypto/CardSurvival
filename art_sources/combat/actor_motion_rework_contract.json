@@ -1,0 +1,1074 @@
+{
+  "sheets": [
+    {
+      "sheetKey": "doctor_f",
+      "path": "/assets/images/combat/spritesheets/doctor_f_sheet.png",
+      "rows": [
+        {
+          "row": 0,
+          "rowPixelSha256": "3b0bfe8458e0d8c6d8317a710ce9ea3ed82607f6e0799744984630c1b1651aac"
+        },
+        {
+          "row": 1,
+          "rowPixelSha256": "a412f0d23dbc90372da039740cf1bbbffbba594cef9857f0f239f3bc0e1ea9a7"
+        },
+        {
+          "row": 2,
+          "rowPixelSha256": "10348487b6a8deed075483240bd4860eb9103d1b5184b6d84127d2186fa64def"
+        },
+        {
+          "row": 3,
+          "rowPixelSha256": "0c4a71009d27ffd1580ba7f93fc4e88ccafe53378ad784f6f5fd318618c0c26c"
+        },
+        {
+          "row": 4,
+          "rowPixelSha256": "60183a84e1cd18b2df45b5e519c9ebfbf945ab6e249dd8e4d0a45ab393d2d8b6"
+        },
+        {
+          "row": 5,
+          "rowPixelSha256": "a4f7e022c771d27f149673b4cff6c68c83f21eb83ef63f91a60a716750c5bb23"
+        },
+        {
+          "row": 6,
+          "rowPixelSha256": "995af786f321b87b98caa3a2157a986b272dcdd397db684912fe429940e706da"
+        },
+        {
+          "row": 7,
+          "rowPixelSha256": "58b90ac7f1ea6bca08abbd3b8cc3572741eac6facb501e608822492ec6fb3ed0"
+        }
+      ]
+    },
+    {
+      "sheetKey": "soldier_m",
+      "path": "/assets/images/combat/spritesheets/soldier_m_sheet.png",
+      "rows": [
+        {
+          "row": 0,
+          "rowPixelSha256": "957c2e3500bfe03ec6dd1c229c3d6cd441a1a35c3a7921d6a0ba98a70fc13e44"
+        },
+        {
+          "row": 1,
+          "rowPixelSha256": "53fdd5cdf0d5b403e24137dd3ab243ceadb95b31d08cc47084062197ada284eb"
+        },
+        {
+          "row": 2,
+          "rowPixelSha256": "5081f3e62c9fa5dd7718822cb07794ff4428885688d946c4a1f5d6fa1ba5e535"
+        },
+        {
+          "row": 3,
+          "rowPixelSha256": "2ec1b97d7139711560ac97258df82e62a429ad3fc05d807211ba92b25af798b9"
+        },
+        {
+          "row": 4,
+          "rowPixelSha256": "99761cab8d5d5a9ad6524c32f48fe71e5f4be20841bcacbfc565f484bb9eabb5"
+        },
+        {
+          "row": 5,
+          "rowPixelSha256": "fe679e29a6f2c4c6ab6680610b2be94897b3eac30db1985e8861eb219c6f090e"
+        },
+        {
+          "row": 6,
+          "rowPixelSha256": "1c418b0bf437ce82f687e207a3df09efe6c18dcd85ee884541bfdfe60e3e62d6"
+        },
+        {
+          "row": 7,
+          "rowPixelSha256": "5085dd79a66aa879ddda0b406417dfb63fe6952e98c45d1afbcbe24ce6672ac5"
+        }
+      ]
+    },
+    {
+      "sheetKey": "firefighter_m",
+      "path": "/assets/images/combat/spritesheets/firefighter_m_sheet.png",
+      "rows": [
+        {
+          "row": 0,
+          "rowPixelSha256": "5744c6415abf1ae420f80ba50d7db24af9c93c28a5ef815f4e43508d0083709f"
+        },
+        {
+          "row": 1,
+          "rowPixelSha256": "f158941927728705bc784496e50a01404bc271e00b574d9b2002a931fc49e0b5"
+        },
+        {
+          "row": 2,
+          "rowPixelSha256": "de33c590f4d8c8058ed84bbeb2ab51c4b7d4704403fd8833dbad35f81eeb02b2"
+        },
+        {
+          "row": 3,
+          "rowPixelSha256": "90d2138fa0d5ebced233cfacbc2bac8aaa802dee399012763df99c88487256f4"
+        },
+        {
+          "row": 4,
+          "rowPixelSha256": "5ce1fc9fac354ec54903a4f165becbb51eeef17221cd58b17a77e8147aedb9cf"
+        },
+        {
+          "row": 5,
+          "rowPixelSha256": "20b1afdff3bd24dd5fc77edcc27aa20edee9b8a8bc7e64f6fcde19aa8fa2a4aa"
+        },
+        {
+          "row": 6,
+          "rowPixelSha256": "ca9073822741e3c3e5bb1fbd1c81df4bdbb6a4da058cc5be9a14f19b3f054a4b"
+        },
+        {
+          "row": 7,
+          "rowPixelSha256": "5a3305c596272f26f1cacd5e52f108acd2d07b55c3785eb8f60c26147b3d66c7"
+        }
+      ]
+    },
+    {
+      "sheetKey": "homeless_m",
+      "path": "/assets/images/combat/spritesheets/homeless_m_sheet.png",
+      "rows": [
+        {
+          "row": 0,
+          "rowPixelSha256": "fdd6f4ce5b1630f191cfc34852e64fbc0bebdf543189d2335fe7643f8c4efa16"
+        },
+        {
+          "row": 1,
+          "rowPixelSha256": "2d13ff448b58c83e0acfaecc10af5936e4d52f893f58534c2b0c47fa75f16989"
+        },
+        {
+          "row": 2,
+          "rowPixelSha256": "7513b50c2f1fd812337d890a446becf4b909cd55a5c5cb22803e4334acfbfa4a"
+        },
+        {
+          "row": 3,
+          "rowPixelSha256": "82ebc2d50f0fbb205988d29b46f734af7640a72dc390709ea499281b9997bd84"
+        },
+        {
+          "row": 4,
+          "rowPixelSha256": "01b65937a6c79c526800d94195c951779828d3138f11c83f253f594c7e60a330"
+        },
+        {
+          "row": 5,
+          "rowPixelSha256": "bd0894baa81e703bc3881de2daa800c0f7c20a5113b93407a654243175693c74"
+        },
+        {
+          "row": 6,
+          "rowPixelSha256": "b4966912257cb5f2017997ab6bad35f4c0454659e25a5dc794aa7c5fee954ea9"
+        },
+        {
+          "row": 7,
+          "rowPixelSha256": "97151a823f28e7fffd4960b47dd9cfefcebe02d2a7e656205daade44831f35cb"
+        }
+      ]
+    },
+    {
+      "sheetKey": "chef_m",
+      "path": "/assets/images/combat/spritesheets/chef_m_sheet.png",
+      "rows": [
+        {
+          "row": 0,
+          "rowPixelSha256": "c86e00d682efeb06093ec8f119979f38811c91603c4d21815b9efbffcf7cbc61"
+        },
+        {
+          "row": 1,
+          "rowPixelSha256": "cd83f01f767d161049c588a647b1751cfbd21f1d18ce3bd26fd83a7c8d763f29"
+        },
+        {
+          "row": 2,
+          "rowPixelSha256": "c481efd7b1b2c0a79585a7662ffbdf64e20c5a1419203848ca81c0c3107d8cb5"
+        },
+        {
+          "row": 3,
+          "rowPixelSha256": "335b99aa9fecd72a43ce7403f0fae44f3fed0399359fd955cf6089de87b21610"
+        },
+        {
+          "row": 4,
+          "rowPixelSha256": "f54f274a2d9c3179ed02f3955e774073cd11ccf289797387a2f5ffe54576499d"
+        },
+        {
+          "row": 5,
+          "rowPixelSha256": "231451718d0f1ae9a819d7ebf6f495abc3e860b18a8d988680f209a9e95e7a96"
+        },
+        {
+          "row": 6,
+          "rowPixelSha256": "f7484e894100e0667a192868613cb9073673dc27d33cc39597aaa14be2e3a7c3"
+        },
+        {
+          "row": 7,
+          "rowPixelSha256": "21c7f03e6fc58c6583397cc3a80ceae4328bcc255ef0b597eeefca2de402e0e3"
+        }
+      ]
+    },
+    {
+      "sheetKey": "engineer_m",
+      "path": "/assets/images/combat/spritesheets/engineer_m_sheet.png",
+      "rows": [
+        {
+          "row": 0,
+          "rowPixelSha256": "fcebd943407541ff5dd945a73a5e2d4d092f55365968ea24854ea86aefc4c9cd"
+        },
+        {
+          "row": 1,
+          "rowPixelSha256": "4acfd917d99ba9f26ef8289cc89554e4306828ca8b01245cec370c847d71d992"
+        },
+        {
+          "row": 2,
+          "rowPixelSha256": "1db4b3689ab45b699ab876cb1d4e34fcd847c098df22eb0322e98e1aca935504"
+        },
+        {
+          "row": 3,
+          "rowPixelSha256": "2429707e08230d4483ec2fc37aff66281897dc80424f1fb8dee524dd90a810a4"
+        },
+        {
+          "row": 4,
+          "rowPixelSha256": "da8c8ac65723dbea1839e07c5e500fc5728f9398f8306dc9b97d97c1c69beb18"
+        },
+        {
+          "row": 5,
+          "rowPixelSha256": "e83a1cdc7e87cb7a502d06b0f602c84c9e8fbc4758c212ff38ea9b14f3a5972d"
+        },
+        {
+          "row": 6,
+          "rowPixelSha256": "7c80cb734c44cdd3281cf252be79081fb05f49343ce04665c616580aa1538706"
+        },
+        {
+          "row": 7,
+          "rowPixelSha256": "5bfb4341263c5056f92fcd555e8ada6b60faf1de09867d6bb52488bd7eae90d1"
+        }
+      ]
+    },
+    {
+      "sheetKey": "old_survivor_companion",
+      "path": "/assets/images/combat/spritesheets/companions/old_survivor_companion_sheet.png",
+      "rows": [
+        {
+          "row": 0,
+          "rowPixelSha256": "baf31c32459ce92be7312fd867340df50121e835f699e34c884cd57f2e5fb1c0"
+        },
+        {
+          "row": 1,
+          "rowPixelSha256": "ce61c176e461562b3993ee380730cb335fbe805598cc01418273396c5ea6e482"
+        },
+        {
+          "row": 2,
+          "rowPixelSha256": "4d3f02d3f1194b56dd445d965221027f159c25781939b4e95f3e263f631a6784"
+        },
+        {
+          "row": 3,
+          "rowPixelSha256": "42f510b7994994733883e03d02797ba9d3f36d0c3c7313e8cc876f44ddc1c728"
+        },
+        {
+          "row": 4,
+          "rowPixelSha256": "e06e29426ac1fc959d32648ee1f7d9b79520c98ed6382881c151c58a0473d03e"
+        },
+        {
+          "row": 5,
+          "rowPixelSha256": "2d4e1440b3cc5b87a687c0c522df460feebfcef343cea49cc928f5174c92ef1b"
+        },
+        {
+          "row": 6,
+          "rowPixelSha256": "a69f8a6cff607a81bb4724878092cc665485bcf6266e3912793fcac6054af81d"
+        },
+        {
+          "row": 7,
+          "rowPixelSha256": "794f8d934447d1501689331ee0a2b59fdf34a5c0016e6916b5e4ae2f851db457"
+        }
+      ]
+    },
+    {
+      "sheetKey": "soldier_companion",
+      "path": "/assets/images/combat/spritesheets/soldier_companion_sheet.png",
+      "rows": [
+        {
+          "row": 0,
+          "rowPixelSha256": "46039b4410e8deda3e03bf08e6f61dc715e8c296ad092b0dff42f3cc3d4bfd53"
+        },
+        {
+          "row": 1,
+          "rowPixelSha256": "e67b29a3d3783937f06441ecd1329caaed0713705246d403123d5117d4fdd835"
+        },
+        {
+          "row": 2,
+          "rowPixelSha256": "3bc5f957b8ec623b3a5474a2f56d75df926ebfa3e8bc1497ba6ae6f087492622"
+        },
+        {
+          "row": 3,
+          "rowPixelSha256": "ac256c994656f825c12b1893ad2ecea45f36153945dc7a1e33ee0b4cbd5fd2e1"
+        },
+        {
+          "row": 4,
+          "rowPixelSha256": "bcccc7bf4f23d1bf5a5832d93dbbe5a0722ac0b99a05b6690f9bff486d4b67ec"
+        },
+        {
+          "row": 5,
+          "rowPixelSha256": "ebe9832b0bcd3e20abb0d9d8bed43df182ef3f1c6ecde4e44a749821c7c4fa47"
+        },
+        {
+          "row": 6,
+          "rowPixelSha256": "0fb10fb6d33f0ad9faf83775916b8b9cc890e76b5868f0b78f231ab39c42cf3a"
+        },
+        {
+          "row": 7,
+          "rowPixelSha256": "2696b091ff6509c506c18c448bc6930427edd717738adb9aebf223904f696d24"
+        }
+      ]
+    },
+    {
+      "sheetKey": "nurse_companion",
+      "path": "/assets/images/combat/spritesheets/nurse_companion_sheet.png",
+      "rows": [
+        {
+          "row": 0,
+          "rowPixelSha256": "603f56a8f97999472eb0e5fce54d1aeb81ced9a2d30a78f0dbd36f060d5f9b4c"
+        },
+        {
+          "row": 1,
+          "rowPixelSha256": "e705e75997519a46faba5e8cfd449943444a96e56f349e36ac749f4e20c82e64"
+        },
+        {
+          "row": 2,
+          "rowPixelSha256": "75a8ff592abba8cfdc221bcd3646cead6a1a26e8eb0d7ef185c48d0279dfffc1"
+        },
+        {
+          "row": 3,
+          "rowPixelSha256": "db710ad699bbc27263fab92b9af35f0dce20cfc46b4f2d9f5170ce44df027c5a"
+        },
+        {
+          "row": 4,
+          "rowPixelSha256": "d5fa22563ece3e5cda24c494a2fae4a8fd06caf14b9722f280a3ed00c066ceb9"
+        },
+        {
+          "row": 5,
+          "rowPixelSha256": "29c9569447fa07d465b817258e6fe7b59b754a55caac76a096c211d862f379c7"
+        },
+        {
+          "row": 6,
+          "rowPixelSha256": "fabd044224e7b98835cc22853f3321a0abbfe2f79a12a7988a907270ba3b5742"
+        },
+        {
+          "row": 7,
+          "rowPixelSha256": "b3695d7de71e689a16af89a024b20013dab3a064a715eacbc0736f92ecfc344b"
+        }
+      ]
+    },
+    {
+      "sheetKey": "child_companion",
+      "path": "/assets/images/combat/spritesheets/companions/child_companion_sheet.png",
+      "rows": [
+        {
+          "row": 0,
+          "rowPixelSha256": "cf103c9402f2f76f7104b8a6a38bdfcfabdb43d23347f85d923694292a563886"
+        },
+        {
+          "row": 1,
+          "rowPixelSha256": "6aaeed76605d4c25b7de0f9c33533ee594a833d1fed3e00e7515bafb78a8ed16"
+        },
+        {
+          "row": 2,
+          "rowPixelSha256": "77141b10fa80febd7052a9902a6b864c4be441805cb1b9bfafd69d8a42b1407e"
+        },
+        {
+          "row": 3,
+          "rowPixelSha256": "c958bf442d75b155f61f51be39a4be72186ee31e23e406cf66c80ccba82763f0"
+        },
+        {
+          "row": 4,
+          "rowPixelSha256": "e49ca4df70d7f0ec7eced6cf7dd06797383b29bd1e494a44d064203b99d9a3b6"
+        },
+        {
+          "row": 5,
+          "rowPixelSha256": "cfba10a3e4088ac775221983e002ab1b0c2f0df13fb49d3ffed607faca9b1d89"
+        },
+        {
+          "row": 6,
+          "rowPixelSha256": "3a0b2a5db4c7263cf9bce7d1acc1b6df8275806d14b9ca609a29c1d68b906830"
+        },
+        {
+          "row": 7,
+          "rowPixelSha256": "cbc9f6a730582f85f0d8504f75095340b448a38415b44e69d4bf1a9345fbcd50"
+        }
+      ]
+    },
+    {
+      "sheetKey": "mechanic_companion",
+      "path": "/assets/images/combat/spritesheets/companions/mechanic_companion_sheet.png",
+      "rows": [
+        {
+          "row": 0,
+          "rowPixelSha256": "b7926dda51376e64af27e00ae4f753691b9756b6e48e6295b609f41380ac6076"
+        },
+        {
+          "row": 1,
+          "rowPixelSha256": "9743d8575059c0aa73eeb4e05f289bb65d886530ec0f6b7122a9ec8cb71ebeff"
+        },
+        {
+          "row": 2,
+          "rowPixelSha256": "57762e98c43171da3342e354d3fb3f3a9fa86b0d45687681c348ee4ceb4ba504"
+        },
+        {
+          "row": 3,
+          "rowPixelSha256": "88da7c504f645f8e70c9998aed9c4f248f10f50abc10add24500c986f9539836"
+        },
+        {
+          "row": 4,
+          "rowPixelSha256": "392e06edc2cecdcefdc8827c207f25901d9c221f7bd7d843661efa6c19a21891"
+        },
+        {
+          "row": 5,
+          "rowPixelSha256": "69ea24409f7ad1240d75ae3db7c0814e772cf03067f1dc11a9ac9b8d7eebaa3b"
+        },
+        {
+          "row": 6,
+          "rowPixelSha256": "7aad76d3da7d6c5e1808a6d1b57513a2ba8a6dda27ee5dd10433d1e5792667bd"
+        },
+        {
+          "row": 7,
+          "rowPixelSha256": "1fb0bf037ebebfb3f48a5f3f7163a9edc8657d34b345606c108c93c048a04e00"
+        }
+      ]
+    },
+    {
+      "sheetKey": "student_companion",
+      "path": "/assets/images/combat/spritesheets/companions/student_companion_sheet.png",
+      "rows": [
+        {
+          "row": 0,
+          "rowPixelSha256": "7d42670920ed435ff5b7684b900c9d75c15378f0ac53670b672fcb316f3f87cb"
+        },
+        {
+          "row": 1,
+          "rowPixelSha256": "42b583fab14b7df2ccc13123dc707e1bcdf27b63819a70be5ad5583a91e8399a"
+        },
+        {
+          "row": 2,
+          "rowPixelSha256": "fd28440c886270bb325adab9fc3e2a1e77aa378677a5c0d5d68f5a9fbab6949f"
+        },
+        {
+          "row": 3,
+          "rowPixelSha256": "d2dc84e868b60ba99088ea99dffac77ae1fb30ae44d80d9236e7470439bcad33"
+        },
+        {
+          "row": 4,
+          "rowPixelSha256": "1a2e3d7027d6cc78cd19af34a688f0c3d113cbb80e3a4a98bb3ae72d2a135b2c"
+        },
+        {
+          "row": 5,
+          "rowPixelSha256": "00df7fed05990087179a91a22211165b6c2b407de18088f4a6aad7d1cb9596c5"
+        },
+        {
+          "row": 6,
+          "rowPixelSha256": "ddb971a70f4dea4e34fad2dbb278e9b29620c96fd24fc95ec6e746e5c1b17f73"
+        },
+        {
+          "row": 7,
+          "rowPixelSha256": "b1d1b4a1fa6d14e79e98d4e3a62acd8b5297863a7da48a0239cadb0408a162aa"
+        }
+      ]
+    },
+    {
+      "sheetKey": "dog_companion",
+      "path": "/assets/images/combat/spritesheets/companions/dog_companion_sheet.png",
+      "rows": [
+        {
+          "row": 0,
+          "rowPixelSha256": "f2994d97703363137ef0a7e070047a76bd57b88d80533a444ea9204584ecddb4"
+        },
+        {
+          "row": 1,
+          "rowPixelSha256": "a677399816503cc12b2897ff00336c9b9d27390cc3a559a6fb003da555e7930b"
+        },
+        {
+          "row": 2,
+          "rowPixelSha256": "54eaaa4747fca8dc3e2d53ef601b8275fe754af1601a8a331190d96809b8fd8a"
+        },
+        {
+          "row": 3,
+          "rowPixelSha256": "feec49db7913f6ec588c940ea8dc2d01c8a665dd7b3fd7c98f0a83b125ee64b8"
+        },
+        {
+          "row": 4,
+          "rowPixelSha256": "3ffa08be76eda36d8991a6caeea54b3bdc963f223b98886c0bb7d16dcedb7f06"
+        },
+        {
+          "row": 5,
+          "rowPixelSha256": "a2b0823aa3ea5f41d83ea448c8861ce5fe9bd1e53f191250189415ed7e2b95dc"
+        },
+        {
+          "row": 6,
+          "rowPixelSha256": "3b1dde71e9fdbe19602af428dd7ada11c8592d68794a946fa4146e5404b86b82"
+        },
+        {
+          "row": 7,
+          "rowPixelSha256": "38ba7333e542f7f5957a0f929bb1379d2e31927e5e7f6b6c7428cedb23808568"
+        }
+      ]
+    },
+    {
+      "sheetKey": "former_colleague_companion",
+      "path": "/assets/images/combat/spritesheets/companions/former_colleague_companion_sheet.png",
+      "rows": [
+        {
+          "row": 0,
+          "rowPixelSha256": "611a2ba6016699ac7e2a3f4f9ad7c6ff1a3f1a5fdf2c6b204fa93aed6b2300fa"
+        },
+        {
+          "row": 1,
+          "rowPixelSha256": "61aa8221e482ced891667b8bb52479a9761d94d18fa88c24d0001b481dbb7c0f"
+        },
+        {
+          "row": 2,
+          "rowPixelSha256": "bdfb6b2d6d48b14a66c6edbf46c1efdbb21d20ef9653077deb1dc736445f0895"
+        },
+        {
+          "row": 3,
+          "rowPixelSha256": "f7dba0aeb4f08a6dabda27973e76c94ebbae3151e79640338430567ed4a34290"
+        },
+        {
+          "row": 4,
+          "rowPixelSha256": "69285c4b25224ec6737f550b0f86e1bb53570817aa2e68bff944cca1cead8758"
+        },
+        {
+          "row": 5,
+          "rowPixelSha256": "790e9707863937ce960cb157aeb7c518683ef5cf28fa5a20042197cf8f7d5c43"
+        },
+        {
+          "row": 6,
+          "rowPixelSha256": "8d5d9634c366a1fd28c8ae951723e1246f152a0d59eee64149c2e6f5b62d0ec2"
+        },
+        {
+          "row": 7,
+          "rowPixelSha256": "5610b8a953c32d2681f0f70ddf5ec8139c29b083b06dc44778664d710b10a4d4"
+        }
+      ]
+    },
+    {
+      "sheetKey": "minjun_companion",
+      "path": "/assets/images/combat/spritesheets/companions/minjun_companion_sheet.png",
+      "rows": [
+        {
+          "row": 0,
+          "rowPixelSha256": "ba8aa1bf7c782028085442f8f1a2bac3e7a9f722e9f01fb8e771c854da37d840"
+        },
+        {
+          "row": 1,
+          "rowPixelSha256": "af9d1bd9a7a212c6122147505e5cf6f43725a3d784325e1568728dcb6061ddf9"
+        },
+        {
+          "row": 2,
+          "rowPixelSha256": "6c444247684c77ad7b4e0633c0295d26bddc787b3b116ef4c9e257eea3aea52b"
+        },
+        {
+          "row": 3,
+          "rowPixelSha256": "5635ef66e47dd8ea57f5bbd1545ebb349ca2845dfb68a0882b0af4122895f7e0"
+        },
+        {
+          "row": 4,
+          "rowPixelSha256": "f5ed19fb1f1ab05c0bc6e606da828c6e8284ad18562dbef72c272a67f6ff27b4"
+        },
+        {
+          "row": 5,
+          "rowPixelSha256": "68eb46b30aa4efcbdfa0fb9dff3a3024bb3a541413ebca32d8b55f9cee6126c8"
+        },
+        {
+          "row": 6,
+          "rowPixelSha256": "8591fdc4acf380694cfadd643726275514fb0a0406e85a000a53d9f2df481f5a"
+        },
+        {
+          "row": 7,
+          "rowPixelSha256": "d588fc2f11fb47ec8ca41f038d9371a8da88add0d5c55029ae302cbf9f75322a"
+        }
+      ]
+    },
+    {
+      "sheetKey": "sohee_companion",
+      "path": "/assets/images/combat/spritesheets/companions/sohee_companion_sheet.png",
+      "rows": [
+        {
+          "row": 0,
+          "rowPixelSha256": "0a46fa5ceafc4026c5d9c36f211a07dd4cad7bda7f2ff30299daf4a0ab0af5db"
+        },
+        {
+          "row": 1,
+          "rowPixelSha256": "56c4706ba93fcd1669ce259f0f1d9bb6f45ab11efa1fb412e45cf21449a3b647"
+        },
+        {
+          "row": 2,
+          "rowPixelSha256": "f1172aaf1f93fc5754b6f76e4ed5f0051116601fa7cc4df01d98e5fd71af84a5"
+        },
+        {
+          "row": 3,
+          "rowPixelSha256": "ca0c09816e4d6ab42cce3e380823b5429a3760978f0566ff97f11a8cc4cf08bb"
+        },
+        {
+          "row": 4,
+          "rowPixelSha256": "33bb2773e7527603b7423687c92c90e020e2a1ccf9801a38bec859e885d464bf"
+        },
+        {
+          "row": 5,
+          "rowPixelSha256": "cbe0fd1ce4f3a64bad4514f01ad419bd50285b32ee7f7257fd0846088e5483ca"
+        },
+        {
+          "row": 6,
+          "rowPixelSha256": "bc69d02d15473ce770acef003a4253c462555c5225e77214c421158233b79333"
+        },
+        {
+          "row": 7,
+          "rowPixelSha256": "6ab359b80e8d1e4a02cf2b4d30bfd352cf4ed10fdc7fcd1e88574c283ad3ab78"
+        }
+      ]
+    },
+    {
+      "sheetKey": "jisu_companion",
+      "path": "/assets/images/combat/spritesheets/companions/jisu_companion_sheet.png",
+      "rows": [
+        {
+          "row": 0,
+          "rowPixelSha256": "b2784640b9f9ef1c49da8e23df455168cf295dec633637fbb61431438c8ad9ad"
+        },
+        {
+          "row": 1,
+          "rowPixelSha256": "4f11742791da300bcfd4d7a2250b7230e2ba032d7fa58f8b1e77cee82a0a2527"
+        },
+        {
+          "row": 2,
+          "rowPixelSha256": "8db39dd83135da152259b886f81bcabb590f93253b45861296543546e15a74cb"
+        },
+        {
+          "row": 3,
+          "rowPixelSha256": "37d91fdb5ba6156340c86e0a1dd07583143082c5e23fb4369ddee40198c71bc7"
+        },
+        {
+          "row": 4,
+          "rowPixelSha256": "12ec898a14b00bb9132a66a52c42b038dd302326c5a1dd668aa4c7d00d64d56d"
+        },
+        {
+          "row": 5,
+          "rowPixelSha256": "ba071a018a005aada4cfb08aa00a5934303f9faf00951ce8f581bf2e99edd845"
+        },
+        {
+          "row": 6,
+          "rowPixelSha256": "9071efcd94768a9ea3f21c5f78b9f7b2017b3158e85c9b3d98d9757b38ea35c2"
+        },
+        {
+          "row": 7,
+          "rowPixelSha256": "7b75bf819e906b47a899fef7193b0553f097984c6d35949f568f6ca3dfba87b9"
+        }
+      ]
+    },
+    {
+      "sheetKey": "yeongcheol_companion",
+      "path": "/assets/images/combat/spritesheets/companions/yeongcheol_companion_sheet.png",
+      "rows": [
+        {
+          "row": 0,
+          "rowPixelSha256": "f2fb9fcea67c225782368793c1ea480bbb47d15ce3c096724f8f020508560790"
+        },
+        {
+          "row": 1,
+          "rowPixelSha256": "3467fb30595c0075c75ba360010938b1e4f9928921e2db06ccedc847b59e5d5b"
+        },
+        {
+          "row": 2,
+          "rowPixelSha256": "6f477fcf2989c246a2063031bdb95ec766ee13a424eb79d560c6475ab94145ef"
+        },
+        {
+          "row": 3,
+          "rowPixelSha256": "a08471649bd620ad39bc447d26ce6508f714ce72d6735d0576684c6c7a2bc296"
+        },
+        {
+          "row": 4,
+          "rowPixelSha256": "7dc968d73f37580aeaa4d7b694eaccbc4609a8390ac670493025a236e015ab04"
+        },
+        {
+          "row": 5,
+          "rowPixelSha256": "0d20bb3e0f34845cabe7feee95a142ed030c64897fc74b95fe43e539e56575c1"
+        },
+        {
+          "row": 6,
+          "rowPixelSha256": "51c4c73dadfaaad189c254c29dd17693228b1bdfc85652f52f3b6e9cd5179c91"
+        },
+        {
+          "row": 7,
+          "rowPixelSha256": "606e45be83e900f17359e323084376510dd28c414bae2d0cbd1e39eccb503226"
+        }
+      ]
+    },
+    {
+      "sheetKey": "daehan_companion",
+      "path": "/assets/images/combat/spritesheets/companions/daehan_companion_sheet.png",
+      "rows": [
+        {
+          "row": 0,
+          "rowPixelSha256": "9926ad6cd3d053a0c540976b6489bc7f79d3393edd6cb106b725396a298911ec"
+        },
+        {
+          "row": 1,
+          "rowPixelSha256": "8cb6fb958127c220817536bf75a8c6a2a89dbb5d631930237095c1c2bdaba762"
+        },
+        {
+          "row": 2,
+          "rowPixelSha256": "5c36971a1362f809649718e08ddb605b77444190667b713b11705b2713adfa7d"
+        },
+        {
+          "row": 3,
+          "rowPixelSha256": "83e76a5f115e60dc1d047ac0463c30ff54795a6f188e8938fbdb817c53147942"
+        },
+        {
+          "row": 4,
+          "rowPixelSha256": "091e78dcddb8a003d72e6a5444271e373d6829b07c0c1899279800d6db0bd09c"
+        },
+        {
+          "row": 5,
+          "rowPixelSha256": "11878186f943dc8360aad712e537fc78a64bf66123e4222d685b986aed3f2dbf"
+        },
+        {
+          "row": 6,
+          "rowPixelSha256": "e3999a47db833b5138758fa69b211ff0ac30818549ebef50471953801172a997"
+        },
+        {
+          "row": 7,
+          "rowPixelSha256": "a9d8a1b3604f0eb1f6e69a184ae5a5063f6443d18cb9b5ebdabf38a0db1d2f5f"
+        }
+      ]
+    },
+    {
+      "sheetKey": "tower_security_companion",
+      "path": "/assets/images/combat/spritesheets/companions/tower_security_companion_sheet.png",
+      "rows": [
+        {
+          "row": 0,
+          "rowPixelSha256": "661f831f5a4106ffcfa3adf80270e6ce7638c09b1866179aeeaaae2386b7ff10"
+        },
+        {
+          "row": 1,
+          "rowPixelSha256": "330704f75df85128aa5f7377fda00e2feee9459771af7c63d525f73b6cc6f77c"
+        },
+        {
+          "row": 2,
+          "rowPixelSha256": "7183b5df298c3e0650431188e9a7d6e8a9acc8968058cc1cbfc6d818e80e8be4"
+        },
+        {
+          "row": 3,
+          "rowPixelSha256": "56a30bddb444f983c0987862e58d2b2685131a7c38df8718be76e8638b7af9b8"
+        },
+        {
+          "row": 4,
+          "rowPixelSha256": "7127baa813ec25fd94bca6ef77fa0cc66f339a5acacafa6645ad323081d0f326"
+        },
+        {
+          "row": 5,
+          "rowPixelSha256": "e59969869cd5d890f7843a676c27937a910f17c94f5cc05ae033edef7adeb698"
+        },
+        {
+          "row": 6,
+          "rowPixelSha256": "be79b5b886370e1e5fbf3f6460f9cdc682c653d4899fc14c1f54cb1b750ae628"
+        },
+        {
+          "row": 7,
+          "rowPixelSha256": "6b6fac871a8ed33775c08cf1a9ca70c79e8268e7aa92fb8e5b609d24ae5712a0"
+        }
+      ]
+    },
+    {
+      "sheetKey": "tower_merchant_companion",
+      "path": "/assets/images/combat/spritesheets/companions/tower_merchant_companion_sheet.png",
+      "rows": [
+        {
+          "row": 0,
+          "rowPixelSha256": "82ad494eab9e62cc25ff6f7e9edbb63e8bd49084465b95e5393d9713859831cb"
+        },
+        {
+          "row": 1,
+          "rowPixelSha256": "fece5ba2707ed79c2dce0b71840f96e4b20b9390a54712f9c30a338dd546bdc9"
+        },
+        {
+          "row": 2,
+          "rowPixelSha256": "08f5da4c3affecd23d6b60e9caf46331f53bc9a088ddcddf2df48b6621d76def"
+        },
+        {
+          "row": 3,
+          "rowPixelSha256": "04dce2273264d6ba5651903d59d5f7be586d81add49fa51c740c80144bbeab35"
+        },
+        {
+          "row": 4,
+          "rowPixelSha256": "d8a884f62cc8a71cbe1916e4362eb518a3308939cc2fb512dfd2004358558ada"
+        },
+        {
+          "row": 5,
+          "rowPixelSha256": "ee94525cfcecb91bfcf77fc4ae5e89e78698bc887ab42ae5424b269277df6c0d"
+        },
+        {
+          "row": 6,
+          "rowPixelSha256": "8fa6089005c4d3b940b84355c0e3a13a5e07d18eb54542ea105154e5186eeadf"
+        },
+        {
+          "row": 7,
+          "rowPixelSha256": "6840dc1855bc9766c1cb338c9234517b9f876e6cad7dd90b541c3aa042f2f6b7"
+        }
+      ]
+    },
+    {
+      "sheetKey": "tower_cook_companion",
+      "path": "/assets/images/combat/spritesheets/companions/tower_cook_companion_sheet.png",
+      "rows": [
+        {
+          "row": 0,
+          "rowPixelSha256": "042c3af0c7e2f37bb54b0aaf5b0190f740eb33646d12b8be6e156f99d8c9b586"
+        },
+        {
+          "row": 1,
+          "rowPixelSha256": "40f91dbc09e5231772f2ae87c2ff3deb6a97b1ac010843efdad30dfb327541d0"
+        },
+        {
+          "row": 2,
+          "rowPixelSha256": "cf7aeb4715fc78b8126fa8af349fddc3e1a1b529ca1491962f59e21ee6caf6c3"
+        },
+        {
+          "row": 3,
+          "rowPixelSha256": "46a5b29913f7d5c71502f53e94c6475eb7bec86126b34850cc20c2a977902c76"
+        },
+        {
+          "row": 4,
+          "rowPixelSha256": "b649812ef1c815859bfa54bc00fda98a4a9f7c1a4cabc6f41f99f4d179f124bb"
+        },
+        {
+          "row": 5,
+          "rowPixelSha256": "5b0d5f4eb48e7ea86f3bc490f9b5b677b024223b2b70a92c7f261c5a22d108f1"
+        },
+        {
+          "row": 6,
+          "rowPixelSha256": "a915098999234f6fef44e3870edc4969e334828bf51a733f8894a78876ad18f3"
+        },
+        {
+          "row": 7,
+          "rowPixelSha256": "05d3fcbd529a4b320f6a13dcb7c3072cb9696b495e9abf9519a68747a18719bf"
+        }
+      ]
+    },
+    {
+      "sheetKey": "tower_engineer_companion",
+      "path": "/assets/images/combat/spritesheets/companions/tower_engineer_companion_sheet.png",
+      "rows": [
+        {
+          "row": 0,
+          "rowPixelSha256": "0805a9e49719bc179913b9e8bd3cb921e0ed0d520768d0271d76a1feb9b26f51"
+        },
+        {
+          "row": 1,
+          "rowPixelSha256": "69a90ca86569b601cfea07e22efe6bbe76474bcb73beaff16ae2b8c6992494f3"
+        },
+        {
+          "row": 2,
+          "rowPixelSha256": "2ff233a08c6d8b6fb4e0d6055049ddd7e26158d529af1833b173bfaa16206294"
+        },
+        {
+          "row": 3,
+          "rowPixelSha256": "f8901dd6f81f975e31f11caab018e532351158689d1819da205eecfdf30a7be5"
+        },
+        {
+          "row": 4,
+          "rowPixelSha256": "d979f125854ad9019f9649ebd721e5743ccaad336a97e566e5661862d63958dd"
+        },
+        {
+          "row": 5,
+          "rowPixelSha256": "f2aada2b0b57ce8da536cdf2712130cf52de095428903e391b34d882d1c6b848"
+        },
+        {
+          "row": 6,
+          "rowPixelSha256": "b88b90511786d2c3e7690d1a5ea83d78843962ded0e1665500636152d58eb7dd"
+        },
+        {
+          "row": 7,
+          "rowPixelSha256": "91506c00b2bb800f6ba1e246eb9327d9e3507208ddd9dd42da6202145994b066"
+        }
+      ]
+    },
+    {
+      "sheetKey": "tower_doctor_companion",
+      "path": "/assets/images/combat/spritesheets/companions/tower_doctor_companion_sheet.png",
+      "rows": [
+        {
+          "row": 0,
+          "rowPixelSha256": "d95efcf4512faf37f6e22a85254fe4fa212c5434794d843ff9cb1daf43cad3c8"
+        },
+        {
+          "row": 1,
+          "rowPixelSha256": "f47091f39dbc373692d6a2c51562cc4ee15f71b518ec809bee149634d58da311"
+        },
+        {
+          "row": 2,
+          "rowPixelSha256": "4a1808b18d02dd78836a3a635981ad5cba3037e480d9c42097e6486f9fbfaac4"
+        },
+        {
+          "row": 3,
+          "rowPixelSha256": "4a94a77fb0dcbd94c2a3d04afafcaf0e63c1ef711adb8420423c4c355e3476e3"
+        },
+        {
+          "row": 4,
+          "rowPixelSha256": "910b185b2b29a14c1aea3e2d7befe3fe758e4d39b3e05ca26aca7068c65af42c"
+        },
+        {
+          "row": 5,
+          "rowPixelSha256": "382b32ce2741b4e2c656aae196df83ac381943e25544e8d5b8626a070b5ab337"
+        },
+        {
+          "row": 6,
+          "rowPixelSha256": "32be240a00646402ad3efc1395ae450259d45051d95e72a6a8aa081586fe1a95"
+        },
+        {
+          "row": 7,
+          "rowPixelSha256": "232d3bd2a16f9b41e336413d89a6cd7f7015abf970da330e85321662dfaebd7b"
+        }
+      ]
+    },
+    {
+      "sheetKey": "sous_chef_companion",
+      "path": "/assets/images/combat/spritesheets/companions/sous_chef_companion_sheet.png",
+      "rows": [
+        {
+          "row": 0,
+          "rowPixelSha256": "021ba585937e0f22ed2b6214490a2d2fe4babcd57968cd7bc0cef59fbcd393fb"
+        },
+        {
+          "row": 1,
+          "rowPixelSha256": "dc7419afa2f8f5946d63fc2c7804b4d9c80d786e95a0d85ea6e07e9a59146963"
+        },
+        {
+          "row": 2,
+          "rowPixelSha256": "09989c01531497b56e4716fb796e18dbcd4b56a639464661224603bc499a71e3"
+        },
+        {
+          "row": 3,
+          "rowPixelSha256": "787b1383e6d3b7b81346c21f4cc5b1ffdd33392bcabb90e85176daaa92e62320"
+        },
+        {
+          "row": 4,
+          "rowPixelSha256": "bb6a15efd5b6d54664c906204c69a541060348ed20d0be2c473e3342d25f5613"
+        },
+        {
+          "row": 5,
+          "rowPixelSha256": "24b30ec08443f9f5658e87dc5080f99288d58d3edcaa8e14ca565b12083fe52b"
+        },
+        {
+          "row": 6,
+          "rowPixelSha256": "5acae4c0a6da00635cf140195f514eb0d8704664ccf968f4d6d0d35b2977cf6d"
+        },
+        {
+          "row": 7,
+          "rowPixelSha256": "3f17dd2b0ac8e477654a4dd40d46c15393a2bc75d74dbb98153002389cbe4d29"
+        }
+      ]
+    },
+    {
+      "sheetKey": "kitchen_helper_companion",
+      "path": "/assets/images/combat/spritesheets/companions/kitchen_helper_companion_sheet.png",
+      "rows": [
+        {
+          "row": 0,
+          "rowPixelSha256": "96bb97a14b1fb2ef8dc27cebbc086dab03bd0fcee4226aaab72bb24977924d34"
+        },
+        {
+          "row": 1,
+          "rowPixelSha256": "278483bdfb4b137885d378c2d63f8d7c82a4cf871a383c1397899b796aaf6b78"
+        },
+        {
+          "row": 2,
+          "rowPixelSha256": "dade6bef602e961b64023b94c013c40515f999541d9dbcf88e4595ecc32b35d3"
+        },
+        {
+          "row": 3,
+          "rowPixelSha256": "157484972837f98dbfa75a720b9133f4262fd850251b9f657a6517e6a91d1a2d"
+        },
+        {
+          "row": 4,
+          "rowPixelSha256": "61ac72dbe710b4a0695fb64b433ab911c4c0ae31efcff38c5246127e9abc662b"
+        },
+        {
+          "row": 5,
+          "rowPixelSha256": "f02c5dd097d49474c8c38ae3e0bbf7c6c2fda2786ecf140456902103f38de713"
+        },
+        {
+          "row": 6,
+          "rowPixelSha256": "85745566d709bf9abd689ecddb081b1cf7c8f00f1f0d44262d27e2f487459a97"
+        },
+        {
+          "row": 7,
+          "rowPixelSha256": "8a220373713b32cc5006b22faafc68f8a9c68eb0823ea002b99e4ea4b54976ac"
+        }
+      ]
+    }
+  ],
+  "targets": [
+    {
+      "sheetKey": "firefighter_m",
+      "row": 2
+    },
+    {
+      "sheetKey": "old_survivor_companion",
+      "row": 5
+    },
+    {
+      "sheetKey": "soldier_companion",
+      "row": 2
+    },
+    {
+      "sheetKey": "child_companion",
+      "row": 6
+    },
+    {
+      "sheetKey": "mechanic_companion",
+      "row": 1
+    },
+    {
+      "sheetKey": "mechanic_companion",
+      "row": 4
+    },
+    {
+      "sheetKey": "student_companion",
+      "row": 4
+    },
+    {
+      "sheetKey": "dog_companion",
+      "row": 6
+    },
+    {
+      "sheetKey": "dog_companion",
+      "row": 7
+    },
+    {
+      "sheetKey": "minjun_companion",
+      "row": 6
+    },
+    {
+      "sheetKey": "sohee_companion",
+      "row": 3
+    },
+    {
+      "sheetKey": "sohee_companion",
+      "row": 5
+    },
+    {
+      "sheetKey": "sohee_companion",
+      "row": 6
+    },
+    {
+      "sheetKey": "sohee_companion",
+      "row": 7
+    },
+    {
+      "sheetKey": "yeongcheol_companion",
+      "row": 6
+    },
+    {
+      "sheetKey": "daehan_companion",
+      "row": 2
+    },
+    {
+      "sheetKey": "daehan_companion",
+      "row": 6
+    },
+    {
+      "sheetKey": "daehan_companion",
+      "row": 7
+    },
+    {
+      "sheetKey": "tower_doctor_companion",
+      "row": 6
+    },
+    {
+      "sheetKey": "sous_chef_companion",
+      "row": 5
+    }
+  ]
+}
