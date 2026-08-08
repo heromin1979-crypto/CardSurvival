@@ -956,6 +956,8 @@ export const ko = {
   // ── DismantleSystem ─────────────────────────────────────────
   'dismantle.cantDismantle': '{name}은(는) 분해할 수 없습니다.',
   'dismantle.tpShort':       '해체에 {cost} TP 필요 (남은 TP: {remain})',
+  'dismantle.crossMidnight': '{cost} TP가 필요한데 오늘 {remain} TP만 남았습니다. 작업이 다음 날까지 이어집니다. 계속할까요?',
+  'dismantle.crossMidnightHint': '다음 날로 이어집니다 (남은 {remain} TP)',
   'dismantle.boardFull':     '보드 공간 부족으로 일부 재료를 배치하지 못했습니다.',
   'dismantle.noSpace':       '분해하려면 빈 슬롯 {need}칸이 필요합니다. (현재 {have}칸)',
   'dismantle.success':       '[분해] {name} → {materials}',
@@ -1926,6 +1928,8 @@ export const en = {
   // ── DismantleSystem ─────────────────────────────────────────
   'dismantle.cantDismantle': '{name} cannot be dismantled.',
   'dismantle.tpShort':       'Dismantling requires {cost} TP (Remaining: {remain})',
+  'dismantle.crossMidnight': 'This needs {cost} TP but only {remain} TP remain today. The work will continue into the next day. Proceed?',
+  'dismantle.crossMidnightHint': 'Continues into the next day ({remain} TP left)',
   'dismantle.boardFull':     'Not enough board space for some materials.',
   'dismantle.noSpace':       'Need {need} empty slots to dismantle. (Currently {have})',
   'dismantle.success':       '[Dismantle] {name} → {materials}',

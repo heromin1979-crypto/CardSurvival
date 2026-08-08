@@ -3,6 +3,8 @@ import EventBus        from '../core/EventBus.js';
 import GameState       from '../core/GameState.js';
 import I18n            from '../core/I18n.js';
 import EquipmentSystem from '../systems/EquipmentSystem.js';
+import DismantleSystem from '../systems/DismantleSystem.js';
+import { playDismantleFx } from './dismantleFx.js';
 import { formatCardEffectEntries, formatInstanceName, getConsumableEffect } from '../systems/ItemEffectSystem.js';
 import CardFactory     from './CardFactory.js';
 import GameData        from '../data/GameData.js';
@@ -353,6 +355,14 @@ const ModalManager = {
         </div>`;
     }
 
+    // 분해 버튼 — 컨텍스트 메뉴와 같은 판정을 써서 비용 표기를 맞춘다
+    const dismantleBtnHtml = (id, label, count) => {
+      const { cost, remainTP, crossesMidnight } = DismantleSystem.getTpStatus(instanceId, count);
+      const tpTag = cost > 0 ? ` (${cost}TP)` : '';
+      const hint  = crossesMidnight ? I18n.t('dismantle.crossMidnightHint', { remain: remainTP }) : '';
+      return `<button class="card-action-btn dismantle" id="${id}" title="${hint}">${label}${tpTag}</button>`;
+    };
+
     // 분해 재료 미리보기
     let dismantleHtml = '';
     if (canDismantle) {
@@ -481,10 +491,10 @@ const ModalManager = {
             ${tapeRepairBtnHtml}
             ${repairBtnHtml}
             ${canDismantle && stackQty > 1
-              ? `<button class="card-action-btn dismantle" id="modal-dismantle-one-${instanceId}">${I18n.t('cardMenu.dismantleOne')}</button>
-                 <button class="card-action-btn dismantle" id="modal-dismantle-all-${instanceId}">${I18n.t('cardMenu.dismantleAll', { count: stackQty })}</button>`
+              ? `${dismantleBtnHtml(`modal-dismantle-one-${instanceId}`, I18n.t('cardMenu.dismantleOne'), 1)}
+                 ${dismantleBtnHtml(`modal-dismantle-all-${instanceId}`, I18n.t('cardMenu.dismantleAll', { count: stackQty }), stackQty)}`
               : canDismantle
-                ? `<button class="card-action-btn dismantle" id="modal-dismantle-${instanceId}">${I18n.t('modal.dismantle')}</button>`
+                ? dismantleBtnHtml(`modal-dismantle-${instanceId}`, I18n.t('modal.dismantle'), 1)
                 : ''}
             ${canForage ? `<button class="card-action-btn" id="modal-forage-${instanceId}">🌿 살살 채취</button>` : ''}
             ${canNest ? `<button class="card-action-btn" id="modal-nest-${instanceId}">🪺 둥지 뒤지기</button>` : ''}
@@ -611,10 +621,16 @@ const ModalManager = {
     if (canDismantle) {
       const bindDismantle = (elId, count) => {
         document.getElementById(elId)?.addEventListener('click', () => {
+          const { cost, remainTP, crossesMidnight } = DismantleSystem.getTpStatus(instanceId, count);
+          const run = () => playDismantleFx(instanceId)
+            .then(() => DismantleSystem.dismantle(instanceId, count));
           this.close();
-          import('../systems/DismantleSystem.js').then(m => {
-            m.default.dismantle(instanceId, count);
-          });
+          // 하루가 넘어가는 것은 되돌릴 수 없으므로 미리 알린다
+          if (crossesMidnight) {
+            this.confirm(I18n.t('dismantle.crossMidnight', { cost, remain: remainTP }), run);
+          } else {
+            run();
+          }
         });
       };
       if (stackQty > 1) {

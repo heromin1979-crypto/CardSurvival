@@ -695,6 +695,23 @@
   z-index: auto !important;
 }
 
+/* ── 분해 진행 카드 ── */
+.card.dismantling {
+  pointer-events: none;
+  animation: card-dismantle 0.38s ease-in forwards;
+}
+@keyframes card-dismantle {
+  0%   { transform: translateX(0)    rotate(0deg);    opacity: 1; }
+  20%  { transform: translateX(-3px) rotate(-1.5deg); }
+  40%  { transform: translateX(3px)  rotate(1.5deg);  opacity: 0.85; }
+  60%  { transform: translateX(-2px) rotate(-1deg); }
+  80%  { transform: translateX(2px)  rotate(0.75deg); opacity: 0.6; }
+  100% { transform: translateX(0)    rotate(0deg) scale(0.94); opacity: 0.3; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .card.dismantling { animation-duration: 0.01s; }
+}
+
 /* ── 제작 진행 카드 ── */
 .card.crafting-card {
   border-color: var(--accent-primary);
