@@ -39,7 +39,7 @@
 - Sublocation 1회 한정 보상: `landmarks.js`의 `firstEnterReward`(claimKey + items) → `ExploreSystem._grantFirstEnterReward`가 `GameState.flags.firstEnterRewardsClaimed`로 중복 차단
 - 구조물 지속 효과 `def.effect`(감염 저항·휴식 배율·차단 플래그)는 `onTick`과 경로가 다르다. `StructureEffectSystem`이 집계해 `player.structureEffects`에 캐시하고 소비처가 읽는다 — **집계·소비 배선 없이 `effect`만 선언하면 아무 동작도 하지 않는다**
 - 도구 역할 대체: `def.toolProvides: ['medical_station']` → 청사진 `requiredTools` 판정에서 id 일치와 동등 (`toolProvision.js`, CraftSystem·CraftDiscovery 양쪽 반영 필수)
-- 현재 날씨는 **`GameState.weather.id`**, 현재 계절은 **`GameState.season.current`** — 필드명이 서로 다르다. 날씨를 `.current`/`.currentWeather`로 읽으면 `?? 'sunny'` 폴백에 조용히 걸려 보정이 통째로 죽는다 (에러도 로그도 없음). 값도 `'rain'`이 아니라 **`'rainy'`**다. 비 계열 판정은 `WeatherSystem`의 `RAINY_WEATHER_IDS` 상수를 쓴다
+- 현재 날씨는 **`GameState.weather.id`**, 현재 계절은 **`GameState.season.current`** — 필드명이 서로 다르다. 날씨를 `.current`/`.currentWeather`로 읽으면 `?? 'sunny'` 폴백에 조용히 걸려 보정이 통째로 죽는다 (에러도 로그도 없음). 값도 `'rain'`이 아니라 **`'rainy'`**다. 비 계열 판정은 리터럴을 새로 쓰지 말고 `WeatherSystem`이 export하는 `isRainyWeather(id)` / `RAINY_WEATHER_IDS`를 쓴다
 - **조용히 실패하는 배선 누락 주의**: 데이터에 필드·태그를 선언해도 읽는 코드가 없으면 아무 일도 일어나지 않고 경고도 없다. 신규 필드 추가 시 소비처를 grep으로 확인할 것 (실제 사례: `tags:'temp'` 3턴 소멸, `def.effect` 지속 효과, `toolProvides` 요리 도구 — 셋 다 선언만 있고 배선이 없었다)
 
 ## 5. 디자인 시스템

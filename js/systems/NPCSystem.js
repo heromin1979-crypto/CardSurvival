@@ -12,6 +12,7 @@ import NPCS, { NPC_ITEMS }    from '../data/npcs.js';
 import { NPC_CHEMISTRY }       from '../data/npcChemistry.js';
 import BALANCE                 from '../data/gameBalance.js';
 import GameData from '../data/GameData.js';
+import { isRainyWeather }      from './WeatherSystem.js';
 
 // ── NPC → Secret Combination Hint Mapping ─────────────────────
 // When trust reaches the threshold, the NPC reveals hints about specific combos.
@@ -1138,7 +1139,7 @@ const NPCSystem = {
     const gs         = GameState;
     const hpRatio    = (gs.player?.hp?.current ?? 100) / (gs.player?.hp?.max ?? 100);
     const nutrition  = gs.stats?.nutrition?.current ?? 100;
-    const isRaining  = gs.weather?.currentWeather === 'rain';
+    const isRaining  = isRainyWeather(gs.weather?.id);
     const infection  = gs.stats?.infection?.current ?? 0;
     const infMult    = gs.stats?.infection?.rateMultiplier ?? 1.0;
     const isDoctor   = gs.player?.characterId === 'doctor';
