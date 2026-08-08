@@ -26,8 +26,10 @@ const RECIPE = JSON.parse(fs.readFileSync(
   path.join(ROOT, 'art_sources/combat/task10_bosses/assembly_recipe.json'),
   'utf8',
 ));
+let pythonRuntimeResolutionCount = 0;
 
-function pythonRuntime() {
+function resolvePythonRuntime() {
+  pythonRuntimeResolutionCount += 1;
   const candidates = [
     process.env.CODEX_PYTHON,
     process.env.USERPROFILE && path.join(
@@ -54,10 +56,11 @@ function pythonRuntime() {
   throw new Error('Python runtime not found');
 }
 
+const PYTHON_RUNTIME = resolvePythonRuntime();
+
 function runMaterializer(args, contractPath = null) {
-  const runtime = pythonRuntime();
   if (contractPath === null) {
-    return spawnSync(runtime.command, [...runtime.prefix, MATERIALIZER, ...args], {
+    return spawnSync(PYTHON_RUNTIME.command, [...PYTHON_RUNTIME.prefix, MATERIALIZER, ...args], {
       cwd: ROOT,
       encoding: 'utf8',
       timeout: MATERIALIZER_TIMEOUT_MS,
@@ -73,8 +76,8 @@ function runMaterializer(args, contractPath = null) {
     'sys.argv = ["materialize_boss_component_contract.py", *sys.argv[3:]]',
     'tool.main()',
   ].join('; ');
-  return spawnSync(runtime.command, [
-    ...runtime.prefix,
+  return spawnSync(PYTHON_RUNTIME.command, [
+    ...PYTHON_RUNTIME.prefix,
     '-c',
     source,
     path.join(ROOT, 'tools'),
@@ -112,6 +115,7 @@ describe('named boss motion asset contract', () => {
         const result = runMaterializer(['--check'], contractPath);
         expect(result.status, `${name}: ${result.stderr || result.stdout}`).toBe(0);
       }
+      expect(pythonRuntimeResolutionCount).toBe(1);
     } finally {
       fs.rmSync(tempDir, { recursive: true, force: true });
     }
