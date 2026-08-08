@@ -15,8 +15,8 @@ def main() -> int:
     parser.add_argument("--rows", type=int, required=True)
     args = parser.parse_args()
     source = Image.open(args.input).convert("RGBA")
-    cleaned, _ = cleanup_chroma_grid(source, cols=args.cols, rows=args.rows, path=args.input)
-    metrics = analyze_chroma_grid(cleaned, cols=args.cols, rows=args.rows, path=args.output)
+    cleaned, _ = cleanup_chroma_grid(source, cols=args.cols, rows=args.rows)
+    metrics = analyze_chroma_grid(cleaned, cols=args.cols, rows=args.rows)
     if any(metrics.values()):
         raise SystemExit(f"strict chroma residue: {metrics}")
     args.output.parent.mkdir(parents=True, exist_ok=True)

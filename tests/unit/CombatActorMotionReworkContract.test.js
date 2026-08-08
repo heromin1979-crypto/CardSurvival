@@ -1,11 +1,23 @@
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
+import { spawnSync } from 'node:child_process';
 import { describe, expect, it } from 'vitest';
 
 import { verifyActorMotionRework } from '../../tools/verify_actor_motion_rework.mjs';
 
 const ROOT = process.cwd();
 const CONTRACT = path.join(ROOT, 'art_sources', 'combat', 'actor_motion_rework_contract.json');
+const CLEANER = path.join(ROOT, 'tools', 'clean_combat_chroma_source.py');
+const BUNDLED_PYTHON = path.join(
+  process.env.USERPROFILE ?? '',
+  '.cache',
+  'codex-runtimes',
+  'codex-primary-runtime',
+  'dependencies',
+  'python',
+  'python.exe',
+);
 
 const EXPECTED_TARGETS = [
   ['firefighter_m', 2],
@@ -38,5 +50,34 @@ describe('combat actor motion rework contract', () => {
     expect(contract.targets.map(({ sheetKey, row }) => [sheetKey, row])).toEqual(EXPECTED_TARGETS);
     const result = verifyActorMotionRework(ROOT, contract);
     expect(result).toMatchObject({ sheets: 26, rows: 208, targets: 20, unchangedRows: 188 });
+  });
+
+  it('cleans an unmapped art-source chroma grid without requiring a runtime manifest sheet', () => {
+    const input = path.join(ROOT, 'art_sources', 'combat', 'task8_players', 'firefighter_m_ranged_chroma.png');
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'combat-chroma-cleaner-'));
+    const output = path.join(tempDir, 'firefighter_m_ranged_clean.png');
+    try {
+      expect(fs.existsSync(BUNDLED_PYTHON)).toBe(true);
+      const result = spawnSync(BUNDLED_PYTHON, [
+        CLEANER,
+        input,
+        output,
+        '--cols', '6',
+        '--rows', '2',
+      ], { cwd: ROOT, encoding: 'utf8' });
+
+      expect(result.status, result.stderr).toBe(0);
+      expect(JSON.parse(result.stdout.trim())).toEqual({
+        boundaryGreen: 0,
+        fringeGreen: 0,
+        hiddenRgb: 0,
+        opaqueGreen: 0,
+        removedComponents: 0,
+        staleAllowlist: 0,
+      });
+      expect(fs.existsSync(output)).toBe(true);
+    } finally {
+      fs.rmSync(tempDir, { recursive: true, force: true });
+    }
   });
 });
