@@ -405,7 +405,7 @@ const ITEMS_TOOLS = {
     id: 'rat_trap', name: '쥐덫', type: 'tool', subtype: 'trap',
     rarity: 'common', weight: 0.5,
     defaultDurability: 100, defaultContamination: 0,
-    icon: '🪤', description: '쥐를 산 채로 잡는 덫. 같은 행에 곡물 미끼를 놓으면 작동한다.',
+    icon: '🪤', description: '쥐를 산 채로 잡는 덫. 같은 행에 음식을 놓아두면 8TP 후 작동한다.',
     tags: ['tool', 'trap', 'small'],
     trapData: {
       targetCard: 'live_rat',
@@ -423,7 +423,7 @@ const ITEMS_TOOLS = {
     id: 'pigeon_snare', name: '비둘기 올가미', type: 'tool', subtype: 'trap',
     rarity: 'common', weight: 0.3,
     defaultDurability: 100, defaultContamination: 0,
-    icon: '🪢', description: '비둘기를 잡는 올가미. 곡물 미끼 필요.',
+    icon: '🪢', description: '비둘기를 잡는 올가미. 같은 행에 음식을 놓아두면 6TP 후 작동한다.',
     tags: ['tool', 'trap', 'small'],
     trapData: {
       targetCard: 'live_pigeon',
@@ -440,7 +440,7 @@ const ITEMS_TOOLS = {
     id: 'alley_pit_trap', name: '골목 함정', type: 'tool', subtype: 'trap',
     rarity: 'uncommon', weight: 2.0,
     defaultDurability: 100, defaultContamination: 0,
-    icon: '🕳️', description: '떠돌이 동물(개·고양이)을 잡는 함정. 고기 미끼 필요.',
+    icon: '🕳️', description: '떠돌이 동물(개·고양이)을 잡는 함정. 같은 행에 음식을 놓아두면 12TP 후 작동한다.',
     tags: ['tool', 'trap', 'large'],
     trapData: {
       targetCard: 'live_stray_animal',
