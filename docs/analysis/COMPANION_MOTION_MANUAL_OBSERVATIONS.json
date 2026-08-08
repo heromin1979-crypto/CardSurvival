@@ -4,7 +4,7 @@
   "evidenceType": "human manual visual observation",
   "reviewStatus": "PASS",
   "reviewedAt": "2026-08-08",
-  "reviewerMethod": "기존 19개 동료 PASS 증거를 보존하고, Task 5에서 Daehan ranged·hit·death 6×3 source를 built-in imagegen으로 재제작한 뒤 canonical alpha, runtime PNG, 확대 리뷰 보드를 Codex 데스크톱 original 해상도로 재대조했다. ranged의 장치 준비·조준·투척·복귀, hit의 충격·반동·렌치 brace·전투 준비 복귀, death의 직립 부상·무릎 약화·측면 낙상·prone hold를 프레임별로 판정했고 source gutter, boundary alpha, cross-cell component, strict chroma와 비대상 행 hash를 확인했다. 20개 전체 동료 contact sheet에서 대한 보드와 나머지 보존 보드도 다시 확인했으며 자동 renderer와 verifier는 이 판정을 생성하지 않는다.",
+  "reviewerMethod": "기존 19개 동료 PASS 증거를 보존했다. Task 5 fix round 1에서는 최초 결과의 매끈한 3D 표면, 적색·자홍 rim light, 둥근 젊은 얼굴과 작은 도구를 Important 불일치로 판정해 기존 수동 PASS 문장을 무효화했다. 실제 daehan_companion_chroma.png, jeong_daehan_full.png, 보존 runtime r0/r1/r3/r4/r5를 identity·스타일·장비 기준으로 사용한 built-in imagegen 결과를 canonical alpha, runtime PNG, 확대 review board에서 original 해상도로 side-by-side 재검수했다. 새 r2/r6/r7의 각진 얼굴, 짧은 검은 머리, 거친 표면 밀도, 저채도 회녹 작업복·갈색 앞치마, 18프레임의 대형 렌치, r2 f4의 분리 장치와 짧은 청색 arc, r6 f4의 렌치 brace, r7의 낙상·prone 진행을 실제 보이는 범위에서 판정했다. source gutter, boundary alpha, cross-cell component, strict chroma, 비대상 행 hash와 20개 전체 contact sheet도 확인했으며 자동 renderer와 verifier는 이 수동 판정을 생성하지 않는다.",
   "reviewedCounts": {
     "companions": 20,
     "runtimeSheets": 20,
@@ -13,11 +13,11 @@
   },
   "openRework": [],
   "previewManifestPath": "/art_sources/combat/task9_companions/preview_manifest.json",
-  "previewManifestSha256": "8484edd7e3cd3103df222c84301756bce9dfb55ae98e1df693d464ce25e55aeb",
+  "previewManifestSha256": "352d7dd575c23e06b090361d4025a383e538f76af7e4498255789c47763e9f90",
   "contactPath": "/art_sources/combat/task9_companions/companion_motion_contact_sheet.png",
-  "contactSha256": "21285402ea6b3f054de218b90b3d2eaeeb7c09130056ec13581ea609565f10f5",
+  "contactSha256": "19c634c9b022130037459e429b83c21a2643ce94860f9b6c667b436bbceb9e7b",
   "assemblyRecipePath": "/art_sources/combat/task9_companions/assembly_recipe.json",
-  "assemblyRecipeSha256": "68dad35dd17632a2b4ef87c7c8b94199c707371d32a2a6c0f0cc7318b8768f14",
+  "assemblyRecipeSha256": "0a87ee38e2ac0c0c77f8e227981d8cba0126e9a67fe48dab1fb1aedf0b7ff280",
   "companions": [
     {
       "npcId": "npc_old_survivor",
@@ -575,9 +575,9 @@
       "npcId": "npc_daehan",
       "sheetKey": "daehan_companion",
       "previewPath": "/art_sources/combat/task9_companions/review_previews/daehan_companion_review.png",
-      "previewSha256": "545b375994e93d4556e3e2f60cdd17de34e419e6db7f17e851403f5deafb1250",
+      "previewSha256": "7161bf61d778f35139f71a5a5a2e2d23da02b02a708f5423526a2be7e4ac1d5c",
       "runtimePath": "/assets/images/combat/spritesheets/companions/daehan_companion_sheet.png",
-      "runtimeSha256": "bcfaf1a2e93189945b55ccb746b6deedcd7425e99d57a7ca580d1e6a744c1c68",
+      "runtimeSha256": "cfe836131c1ca015b9397580b25ef84c66e3cc8e06e8e667c4ff848cb90c865b",
       "skills": [
         {
           "skillId": "daehan_wrench",
@@ -601,20 +601,20 @@
           "note": "daehan_overcharge: 지원 도구 사용과 전달 또는 신호가 6프레임으로 구분된다."
         }
       ],
-      "identityNote": "좁은 얼굴·짧은 검은 머리·보안경·회색 작업복·갈색 가죽 앞치마·공구 벨트가 재작업 3행과 보존 5행에서 동일하다.",
-      "weaponNote": "대형 렌치는 18개 재작업 프레임에서 유지되고 ranged f1-f4의 소형 전기 장치는 준비·활성화·우측 투척과 파란 방전으로 읽힌다. 권총·소총·군복·의료 장비는 없다.",
-      "continuityNote": "ranged는 장치 준비→활성화→조준→파란 방전 투척→팔로스루→렌치 ready, hit는 upright→충격→최대 반동→렌치 brace→균형 회복→전투 ready, death는 직립 부상→약화→무릎→측면 낙상→prone settle→prone hold로 구분된다. canonical source 최소 좌우 gutter 40px, boundary alpha 0, cross-cell component 0이며 runtime 48셀에 빈 셀이나 이웃 셀 파편이 없다.",
+      "identityNote": "fix round 1 review board에서 새 3행은 보존 5행과 함께 각진 중년 얼굴, 짧은 검은 머리, 거친 붓질과 표면 마모, 저채도 회녹 작업복, 낡은 갈색 앞치마·공구 벨트로 읽힌다. 최초 결과의 적색·자홍 rim light, 보라 색온도와 매끈한 3D 표면은 보이지 않는다.",
+      "weaponNote": "같은 형태의 대형 steel adjustable wrench가 새 18프레임 모두에서 손, 허리·등 또는 몸 옆에 보인다. ranged f4에는 본체와 떨어진 소형 장치와 짧은 cyan-blue arc가 보이고, hit f4는 양손의 대형 렌치로 recoil을 버티며, death f5/f6에는 렌치가 prone 신체 옆에 놓인다. 권총·소총·군복·의료 장비는 보이지 않는다.",
+      "continuityNote": "ranged는 장치 준비→활성화→우측 조준→분리 장치와 짧은 청색 arc release→팔로스루→렌치 ready, hit는 upright→충격→최대 recoil→대형 렌치 brace→균형 회복→전투 ready, death는 직립 부상→약화→무릎→측면 낙상→prone settle→prone hold로 구분된다. canonical source 최소 좌/우 gutter는 32/33px, boundary alpha 0, cross-cell component 0이며 runtime 48셀에 빈 셀이나 이웃 셀 파편이 없다.",
       "hit": {
         "motionKey": "hit",
-        "rowSha256": "949ff69cb1802de26c7bf23a3fc0a03110f6edac7cfb16ae633f61fea5eb9c18",
+        "rowSha256": "e84f28c0546de0422f4294472f64df21b23d31134e08b01b9bf31bb347f6b29b",
         "status": "PASS",
-        "note": "직립 준비에서 몸통 충격·최대 반동을 거쳐 동일 렌치로 버틴 뒤 마지막 프레임에 전투 가능한 자세로 복귀한다."
+        "note": "직립 준비에서 몸통 충격·최대 recoil을 거쳐 f4에서 양손으로 대형 렌치를 세워 버틴 뒤 마지막 프레임에 전투 자세로 복귀한다."
       },
       "death": {
         "motionKey": "death",
-        "rowSha256": "822415e2557dad8ce21bb74cba3354d399bbd3698f9dfe3bde8eb29126abc8af",
+        "rowSha256": "16c4fa5ae6b135c4d279dadc93ba7def1da32ce5d3d3f6b984db33929b51f108",
         "status": "PASS",
-        "note": "직립 부상에서 무릎 약화·측면 낙상을 거쳐 마지막 두 프레임이 구분되는 prone settle과 안정된 prone hold로 끝난다."
+        "note": "직립 부상에서 무릎 약화·측면 낙상을 거쳐 마지막 두 프레임이 prone settle과 prone hold로 끝나며 대형 렌치가 몸 옆에 남는다."
       }
     },
     {

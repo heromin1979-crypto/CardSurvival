@@ -4,13 +4,13 @@
     "assemblyScript":  "/tools/build_companion_motion_sheets.ps1",
     "assemblyScriptSha256":  "58176b7e5e586d52be9914f777fb9c7450380c0bf9ebec482f0808d0c1919191",
     "qualityAnalyzerPath":  "/tools/companion_motion_quality.mjs",
-    "qualityAnalyzerSha256":  "11fe05b4f51a25b017dc17cd59eef98bbea205b3db9bd20478cd17627445ae3b",
+    "qualityAnalyzerSha256":  "f5a328e959655154b2547da7b0dd019f387706974d9c323e96ac654fc1d4be26",
     "rangedValidatorPath":  "/tools/verify_companion_ranged_contract.mjs",
     "rangedValidatorSha256":  "c5fef89e611be0fe5b60e438c0e536d380334b6e97d66687045af98b1fc3d1f2",
     "rangedComponentContractPath":  "/art_sources/combat/task9_companions/ranged_component_contract.json",
-    "rangedComponentContractSha256":  "ec449ed362956eee43235856cf72a0ef599d4195d681bb1b7d84e577369b3ef3",
+    "rangedComponentContractSha256":  "cc2c60b6ef6df174a039c9456cbc9c26a28f5e8a3b592c7776a5166d804053a5",
     "provenancePath":  "/art_sources/combat/task9_companions/generation_provenance.json",
-    "provenanceSha256":  "1c55ef581cdd6bf081611759ee5a174f40fe97c0a2027c2ebde8a97511997092",
+    "provenanceSha256":  "0f03679a9ac52ad3ad0504e43bba547d876dd697f4b02e19d459143fd2ad42b4",
     "rowContract":  [
                         "idle",
                         "melee",
@@ -303,9 +303,9 @@
                                                },
                              "daehan_ranged_hit_death_rework":  {
                                                                     "chromaPath":  "/art_sources/combat/task9_companions/daehan_ranged_hit_death_rework_chroma.png",
-                                                                    "chromaSha256":  "132c2d8f7e2b1fe52d6d143de3eddfb0881a2965df8b91ed89bee2023ae0f9eb",
+                                                                    "chromaSha256":  "7e6da7ce1573f98e95e140609739408b7f582764969e433c03c7a1421d5a7a09",
                                                                     "alphaPath":  "/art_sources/combat/task9_companions/daehan_ranged_hit_death_rework_alpha.png",
-                                                                    "alphaSha256":  "9f6f849480a2a6122bddee7c755f224622157f67831f8f835fef163059a1fa31",
+                                                                    "alphaSha256":  "fc1cb723196be4b3fd6d86b04f3bbac501ec521b385a0a1b976c7afd9c225351",
                                                                     "cols":  6,
                                                                     "rows":  3,
                                                                     "key":  "green"
@@ -1861,8 +1861,8 @@
                                              "path":  "/assets/images/combat/spritesheets/companions/daehan_companion_sheet.png",
                                              "width":  1536,
                                              "height":  2048,
-                                             "fileSha256":  "bcfaf1a2e93189945b55ccb746b6deedcd7425e99d57a7ca580d1e6a744c1c68",
-                                             "pixelSha256":  "c695b8bfadd015171f56daee8adc995ef1022adfe3614f67395d63241b2fd130",
+                                             "fileSha256":  "cfe836131c1ca015b9397580b25ef84c66e3cc8e06e8e667c4ff848cb90c865b",
+                                             "pixelSha256":  "eb08d85fd21b4c0c8c487ccaf08abccbe2afb7df42836c82d43ffe77efe2e29a",
                                              "rows":  [
                                                           {
                                                               "targetRow":  0,
