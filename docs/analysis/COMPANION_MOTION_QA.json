@@ -19,17 +19,17 @@
     "removedComponents": 0,
     "staleAllowlist": 0
   },
-  "assemblyRecipeSha256": "0238626d4349b939a6dc22d20da4e2cde4796dd38904ddb9f0de8a1d7b1b3305",
-  "previewManifestSha256": "1e35e2554e5008a7a2da28232f2a44395c18d8883a3acdb04934d1e645e95c4a",
-  "manualEvidenceSha256": "6c11d2c04b7d3685eb94f7f055a4dad6c59c95fa1aa1b6be4ab249079e5798e1",
+  "assemblyRecipeSha256": "c72f4738eb8b0d9a5bb3a1212e8209ae9ea5e38d283f5bbc6a5c20484974a9d8",
+  "previewManifestSha256": "a2ca59ecb4661787c885e466f8634f5dddd923c4fb704b370d9800cd2a8a0737",
+  "manualEvidenceSha256": "d235c0360e6a95b5b64dcf3f5d399d3de9a5389745b428e5cb6f3d5ae3a69368",
   "sheets": [
     {
       "npcId": "npc_old_survivor",
       "sheetKey": "old_survivor_companion",
       "path": "/assets/images/combat/spritesheets/companions/old_survivor_companion_sheet.png",
       "cells": 48,
-      "fileSha256": "0e9e462f3599722cb075c22f29096ef049a8d9428091343f767e2e958e410492",
-      "pixelSha256": "be3d5b974922daf00b09ecb945aab34ea41f6dd611bca87ae7a50579c2684176"
+      "fileSha256": "18f4c498ab7833e7f3787c51deacd7c69d6ff24654c9f5ca2b14abe65dde0d3a",
+      "pixelSha256": "95f033ee71448aaf08eb247731e38287dab04e8a1abf9592dadf348f91c68982"
     },
     {
       "npcId": "npc_nurse",
@@ -172,8 +172,8 @@
       "sheetKey": "sous_chef_companion",
       "path": "/assets/images/combat/spritesheets/companions/sous_chef_companion_sheet.png",
       "cells": 48,
-      "fileSha256": "037932d3259e99b39c5374c14877e238a9c9b0fff74ef1f60d7983f3e7bedc9e",
-      "pixelSha256": "7d46afbebde741856e653d8c2c4b7633ff2e6d21d26777c98666c573c8b3b032"
+      "fileSha256": "d99a61a320c3e155e8499ad1e78ee268f02b9e8f4d30adcaebec54f955aaef4f",
+      "pixelSha256": "0c96838c1ddd75032d1e2221fef0780f0fbb641866deb30c4278a30212a0b546"
     },
     {
       "npcId": "npc_kitchen_helper",

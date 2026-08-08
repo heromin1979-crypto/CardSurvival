@@ -10,7 +10,7 @@
 
 수동 판정은 contact sheet에서 동료별 identity, 무기, 8개 의미 행, 6프레임 연속성, 잘림·슬라이드·잘못된 행 재사용 여부를 직접 관찰한 결과다. 자동 verifier는 이 판정을 만들지 않으며, 별도 관찰 데이터의 ID/해시를 manifest, loadout, runtime PNG, recipe와 교차 검증한다.
 
-2026-08-08 선택적 재검토에서는 `old_survivor_companion`과 `sous_chef_companion`의 이동 r5만 새 소스로 교체했다. original 해상도 runtime·개별 확대 보드·20종 contact sheet를 대조해 노년 생존자의 지팡이 보조 교대 보행과 부주방장의 낮게 든 식칼 교대 보행이 각각 6프레임으로 이어지고, 다른 188개 비대상 행은 기준선과 동일함을 확인했다.
+2026-08-08 fix round 1 선택적 재검토에서는 `old_survivor_companion`과 `sous_chef_companion`의 이동 r5 생성 결과를 모두 다시 교체했다. original 해상도 source alpha·runtime·개별 확대 보드·20종 contact sheet를 셀별로 대조했다. 노년 생존자는 f1 가까운 다리 전진/지팡이 지지 → f2 passing → f3 반대 다리 전진/지팡이 advance → f4 반대 passing → f5 가까운 다리 high-knee/앞쪽 재접지 → f6 중립 복귀가 구분된다. 부주방장은 f1 접지 → f2 passing → f3 반대 다리 high-knee → f4 반대 passing/지지 → f5 다시 바뀐 접지 → f6 복귀가 무릎·골반·어깨 변화로 구분되고 식칼은 낮게 유지된다. source/runtime 모두 셀 경계 alpha와 cross-cell component가 0이며, 다른 188개 비대상 행은 기준선과 동일함을 확인했다.
 
 ## 60개 스킬 수동 판정
 

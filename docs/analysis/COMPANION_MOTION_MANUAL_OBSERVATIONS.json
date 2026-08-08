@@ -4,7 +4,7 @@
   "evidenceType": "human manual visual observation",
   "reviewStatus": "PASS",
   "reviewedAt": "2026-08-08",
-  "reviewerMethod": "기존 18개 동료 PASS 증거를 보존하고, Codex 데스크톱 original 해상도 view_image로 변경된 런타임 PNG 2개와 1736x2120 확대 리뷰 보드 2개를 다시 대조한 뒤 20개 전체 contact sheet를 확인했다. 자동 renderer와 verifier는 이 판정을 생성하지 않는다.",
+  "reviewerMethod": "기존 18개 동료 PASS 증거를 보존하고, fix round 1에서 재생성한 두 source chroma와 canonical alpha, 런타임 PNG, 1736x2120 확대 리뷰 보드를 Codex 데스크톱 original 해상도 view_image로 재대조했다. 두 이동 행은 여섯 셀을 각각 비교해 실제 발 교대와 장비 연속성을 확인했고, 20개 전체 contact sheet도 다시 확인했다. 자동 renderer와 verifier는 이 판정을 생성하지 않는다.",
   "reviewedCounts": {
     "companions": 20,
     "runtimeSheets": 20,
@@ -13,19 +13,19 @@
   },
   "openRework": [],
   "previewManifestPath": "/art_sources/combat/task9_companions/preview_manifest.json",
-  "previewManifestSha256": "1e35e2554e5008a7a2da28232f2a44395c18d8883a3acdb04934d1e645e95c4a",
+  "previewManifestSha256": "a2ca59ecb4661787c885e466f8634f5dddd923c4fb704b370d9800cd2a8a0737",
   "contactPath": "/art_sources/combat/task9_companions/companion_motion_contact_sheet.png",
-  "contactSha256": "67043e4b853d6488bb150eae127fe00531ac3c261c183992140185850c3365e2",
+  "contactSha256": "998ee8deab863ec10a03a13e9e8640c570e6f71a7273b335b5bdf5e92f3ac325",
   "assemblyRecipePath": "/art_sources/combat/task9_companions/assembly_recipe.json",
-  "assemblyRecipeSha256": "0238626d4349b939a6dc22d20da4e2cde4796dd38904ddb9f0de8a1d7b1b3305",
+  "assemblyRecipeSha256": "c72f4738eb8b0d9a5bb3a1212e8209ae9ea5e38d283f5bbc6a5c20484974a9d8",
   "companions": [
     {
       "npcId": "npc_old_survivor",
       "sheetKey": "old_survivor_companion",
       "previewPath": "/art_sources/combat/task9_companions/review_previews/old_survivor_companion_review.png",
-      "previewSha256": "dbb9a316184ac86dadacb1eaf80fd2d997f91692f853dc52c4ef7079d837504a",
+      "previewSha256": "6b977254989c286cea2ed9651b47fa34b6229153d0ef8a1fce29fec71242110a",
       "runtimePath": "/assets/images/combat/spritesheets/companions/old_survivor_companion_sheet.png",
-      "runtimeSha256": "0e9e462f3599722cb075c22f29096ef049a8d9428091343f767e2e958e410492",
+      "runtimeSha256": "18f4c498ab7833e7f3787c51deacd7c69d6ff24654c9f5ca2b14abe65dde0d3a",
       "skills": [
         {
           "skillId": "old_survivor_cane_strike",
@@ -51,7 +51,7 @@
       ],
       "identityNote": "회색 머리·낡은 코트 체형이 48셀 내내 동일하다.",
       "weaponNote": "목제 지팡이의 형태와 사용 방향이 행별 행동에 맞게 유지된다.",
-      "continuityNote": "확대 보드와 원본 시트를 1:1로 재대조했으며 이동 r5는 지팡이를 유지한 좌우 교대 보행 6프레임으로 이어진다. 8행 48셀에 빈 셀, 잘린 신체, 이웃 셀 파편, 중복 패딩이 없다.",
+      "continuityNote": "fix round 1 원본 alpha·runtime·확대 보드를 셀별로 재대조했다. 이동 r5는 f1 파란 패치의 화면 가까운 다리 전진과 지팡이 지지, f2 passing, f3 올리브 패치의 반대 다리 전진, f4 반대 passing과 지팡이 재배치, f5 파란 패치 다리의 높은 무릎 전진과 앞쪽 지팡이 재접지, f6 중립 복귀가 구분된다. source/runtime 모두 셀 경계 alpha와 cross-cell component가 0이며 빈 셀·잘린 신체·이웃 파편이 없다.",
       "hit": {
         "motionKey": "hit",
         "rowSha256": "e28b5d646cc1ca2d7677f5ecdf67267941227fd0fa4d5604b1ef614944778947",
@@ -851,9 +851,9 @@
       "npcId": "npc_sous_chef",
       "sheetKey": "sous_chef_companion",
       "previewPath": "/art_sources/combat/task9_companions/review_previews/sous_chef_companion_review.png",
-      "previewSha256": "dd92b178445467204620872dc0e2391726ab564a0b9e6268efc60cb886efe9e0",
+      "previewSha256": "8f045cd933a5f63035046742f03078b972d68c3640013dd6792362fdd54b3eb0",
       "runtimePath": "/assets/images/combat/spritesheets/companions/sous_chef_companion_sheet.png",
-      "runtimeSha256": "037932d3259e99b39c5374c14877e238a9c9b0fff74ef1f60d7983f3e7bedc9e",
+      "runtimeSha256": "d99a61a320c3e155e8499ad1e78ee268f02b9e8f4d30adcaebec54f955aaef4f",
       "skills": [
         {
           "skillId": "sous_chef_cleaver",
@@ -879,7 +879,7 @@
       ],
       "identityNote": "짙은 초록 조리복·줄무늬 앞치마이 48셀 내내 동일하다.",
       "weaponNote": "식칼·배급 주머니·도마의 형태와 사용 방향이 행별 행동에 맞게 유지된다.",
-      "continuityNote": "확대 보드와 원본 시트를 1:1로 재대조했으며 이동 r5는 식칼을 낮게 유지한 좌우 교대 보행 6프레임으로 이어진다. 8행 48셀에 빈 셀, 잘린 신체, 이웃 셀 파편, 중복 패딩이 없다.",
+      "continuityNote": "fix round 1 원본 alpha·runtime·확대 보드를 셀별로 재대조했다. 이동 r5는 f1 접지 보폭, f2 passing, f3 반대 다리의 높은 무릎 전진, f4 뒤쪽으로 접히는 반대 passing·지지, f5 다시 바뀐 접지 보폭, f6 loop-compatible 복귀가 무릎 굽힘과 골반·어깨 체중 이동으로 구분된다. 식칼은 여섯 프레임 모두 낮게 유지되며 source/runtime의 셀 경계 alpha와 cross-cell component가 0이고 이웃 부츠 파편이 없다.",
       "hit": {
         "motionKey": "hit",
         "rowSha256": "1e6c65a6891540488661de0a4b8f77bcb291904f77d514e4d0cb2b108f0a6d11",

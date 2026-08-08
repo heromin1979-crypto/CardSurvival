@@ -10,7 +10,7 @@
     "rangedComponentContractPath":  "/art_sources/combat/task9_companions/ranged_component_contract.json",
     "rangedComponentContractSha256":  "24e76c90729763d6ec839cd9ca141bc4eb55d20671c56f0b5eda469a257032c1",
     "provenancePath":  "/art_sources/combat/task9_companions/generation_provenance.json",
-    "provenanceSha256":  "feacfa4a815d1cdcc5ffe08b9d3aa57799def93cc02b9093ad0569ac6b656672",
+    "provenanceSha256":  "d88340edf32d244031ac21a86d3cd3087d0a9218133a528e47fe864108f93301",
     "rowContract":  [
                         "idle",
                         "melee",
@@ -51,9 +51,9 @@
                                                           },
                              "old_survivor_move_rework":  {
                                                               "chromaPath":  "/art_sources/combat/task9_companions/old_survivor_move_rework_chroma.png",
-                                                              "chromaSha256":  "21a3f91149350c19cb0deafc793c973fd4472a097976be51b28e686875c92a71",
+                                                              "chromaSha256":  "d105b3e1fee2ce20eae1b9dee90717caaa0d20087a6d0c87e7bc0db34f48e58d",
                                                               "alphaPath":  "/art_sources/combat/task9_companions/old_survivor_move_rework_alpha.png",
-                                                              "alphaSha256":  "0d5b07b64753132fee1ffd3bb1169a92a3b18abfcb8864f7132d073a5e445c31",
+                                                              "alphaSha256":  "f16f721187f60e0384e072c05fa0a627bc697200ebe78ce15abba3718280435f",
                                                               "cols":  6,
                                                               "rows":  1,
                                                               "key":  "green"
@@ -438,9 +438,9 @@
                                                },
                              "sous_chef_move_rework":  {
                                                            "chromaPath":  "/art_sources/combat/task9_companions/sous_chef_move_rework_chroma.png",
-                                                           "chromaSha256":  "67882a4011996334addbc5c72e06e3ef90ba053e9fbb3fab3181f20f9808667e",
+                                                           "chromaSha256":  "8dca902b61e1a8ceb4fb8a59804645300067976329158a2a0e5790f3013fccfa",
                                                            "alphaPath":  "/art_sources/combat/task9_companions/sous_chef_move_rework_alpha.png",
-                                                           "alphaSha256":  "8eb32078442269ac97261a8192400bcffd620cfa1f28b16f721681a640d955c2",
+                                                           "alphaSha256":  "9d57d84c245f0c857922bc1bd7f470f07f78b59c0ea1bb58e2e6035365ef69f0",
                                                            "cols":  6,
                                                            "rows":  1,
                                                            "key":  "green"
@@ -487,8 +487,8 @@
                                                    "path":  "/assets/images/combat/spritesheets/companions/old_survivor_companion_sheet.png",
                                                    "width":  1536,
                                                    "height":  2048,
-                                                   "fileSha256":  "0e9e462f3599722cb075c22f29096ef049a8d9428091343f767e2e958e410492",
-                                                   "pixelSha256":  "76d2cd6274315a89d64a46a084586d2c0f044a41464381e40c9963776f7b572d",
+                                                   "fileSha256":  "18f4c498ab7833e7f3787c51deacd7c69d6ff24654c9f5ca2b14abe65dde0d3a",
+                                                   "pixelSha256":  "d798e853e7db14c450cf7a2488c7db615554500a0d495ee1239f7f50f63ef2fb",
                                                    "rows":  [
                                                                 {
                                                                     "targetRow":  0,
@@ -2521,8 +2521,8 @@
                                                 "path":  "/assets/images/combat/spritesheets/companions/sous_chef_companion_sheet.png",
                                                 "width":  1536,
                                                 "height":  2048,
-                                                "fileSha256":  "037932d3259e99b39c5374c14877e238a9c9b0fff74ef1f60d7983f3e7bedc9e",
-                                                "pixelSha256":  "b7ee8c0400d70addcc083446c8243468290999cd1ea1a89c300819979505f16d",
+                                                "fileSha256":  "d99a61a320c3e155e8499ad1e78ee268f02b9e8f4d30adcaebec54f955aaef4f",
+                                                "pixelSha256":  "aa8d085826a89421acbd7727d2e443e0b7fb826aba06217a1e430bd935397328",
                                                 "rows":  [
                                                              {
                                                                  "targetRow":  0,
