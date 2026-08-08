@@ -3,14 +3,14 @@
     "rendererPath":  "/tools/render_companion_motion_preview.ps1",
     "rendererSha256":  "8a66c1de2b79080912e8d311323332851a8e91d7534381357d4ee63adbf9acb1",
     "contactPath":  "/art_sources/combat/task9_companions/companion_motion_contact_sheet.png",
-    "contactSha256":  "998ee8deab863ec10a03a13e9e8640c570e6f71a7273b335b5bdf5e92f3ac325",
+    "contactSha256":  "53719e59f0fdebb87274581911a50613b6d5c5140e62c36d45804a06bf51b4ff",
     "sheets":  [
                    {
                        "sheetKey":  "old_survivor_companion",
                        "runtimePath":  "/assets/images/combat/spritesheets/companions/old_survivor_companion_sheet.png",
-                       "runtimeSha256":  "18f4c498ab7833e7f3787c51deacd7c69d6ff24654c9f5ca2b14abe65dde0d3a",
+                       "runtimeSha256":  "2d6728f188c47fac0a028fa2338c98def481ef083ecd3d3db41f44ce125eb363",
                        "previewPath":  "/art_sources/combat/task9_companions/review_previews/old_survivor_companion_review.png",
-                       "previewSha256":  "6b977254989c286cea2ed9651b47fa34b6229153d0ef8a1fce29fec71242110a",
+                       "previewSha256":  "c17678467f8839a78735e01dee55dd14073eb46278aa6c20ed17617b20683922",
                        "rows":  [
                                     {
                                         "motionKey":  "idle",
@@ -40,7 +40,7 @@
                                     {
                                         "motionKey":  "move",
                                         "row":  5,
-                                        "pixelSha256":  "70b431313fe659749a55ad453e7fbd9446355ad71215b5c4b1c6eb7a83af7361"
+                                        "pixelSha256":  "0246f5831183e2f59da503c3867a0e8435e067b455c6f6380665db6f0436ec96"
                                     },
                                     {
                                         "motionKey":  "hit",
@@ -890,9 +890,9 @@
                    {
                        "sheetKey":  "sous_chef_companion",
                        "runtimePath":  "/assets/images/combat/spritesheets/companions/sous_chef_companion_sheet.png",
-                       "runtimeSha256":  "d99a61a320c3e155e8499ad1e78ee268f02b9e8f4d30adcaebec54f955aaef4f",
+                       "runtimeSha256":  "12d4f7e91ce7773af5f3555988f2b052ddbac156e346ba90662c5501ad3e51ad",
                        "previewPath":  "/art_sources/combat/task9_companions/review_previews/sous_chef_companion_review.png",
-                       "previewSha256":  "8f045cd933a5f63035046742f03078b972d68c3640013dd6792362fdd54b3eb0",
+                       "previewSha256":  "5e1582ecec88065f747e24bd23c63f952bfe4870fcd8d99182f426b62e430477",
                        "rows":  [
                                     {
                                         "motionKey":  "idle",
@@ -922,7 +922,7 @@
                                     {
                                         "motionKey":  "move",
                                         "row":  5,
-                                        "pixelSha256":  "23a4aed454af042a7de2f8fe6fbc65c28634a85fc746a87c23e79d956c937046"
+                                        "pixelSha256":  "5400806f55a9803de7694a31b586668769fb92cba1e32e12f05d426c76828863"
                                     },
                                     {
                                         "motionKey":  "hit",
