@@ -17,6 +17,7 @@ from build_boss_motion_sheets import (
     sha256_file,
     motion_row_groups,
 )
+from provenance_hash import PROVENANCE_HASH_SCHEME
 
 
 def materialize() -> dict:
@@ -79,6 +80,7 @@ def materialize() -> dict:
 
     return {
         "version": 2,
+        "hashScheme": PROVENANCE_HASH_SCHEME,
         "policy": (
             "Human-selected semantic projectile/effect components. Each frame entry pins only "
             "the approved detached masks by exact cell, mask SHA-256, area, and bbox."
@@ -102,10 +104,15 @@ def main() -> None:
 
     expected = json.dumps(materialize(), ensure_ascii=False, indent=2) + "\n"
     if args.write:
-        CONTRACT_PATH.write_text(expected, encoding="utf-8")
+        CONTRACT_PATH.write_text(expected, encoding="utf-8", newline="\n")
         print(f"wrote {CONTRACT_PATH}")
         return
-    if not CONTRACT_PATH.exists() or CONTRACT_PATH.read_text(encoding="utf-8") != expected:
+    actual = (
+        CONTRACT_PATH.read_bytes().decode("utf-8").replace("\r\n", "\n").replace("\r", "\n")
+        if CONTRACT_PATH.exists()
+        else None
+    )
+    if actual != expected:
         raise ValueError("detached component contract drift")
     print("detached component contract verified")
 

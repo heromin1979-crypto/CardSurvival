@@ -25,8 +25,9 @@ const DismantleSystem = {
     const def = GameState.getCardDef(instanceId);
     if (!def) return { success: false, gained: [], count: 0 };
 
-    if (!def.dismantle?.length) {
-      EventBus.emit('notify', { message: I18n.t('dismantle.cantDismantle', { name: I18n.itemName(def.id, def.name) }), type: 'warn' });
+    const status = this.canDismantleNow(instanceId);
+    if (!status.ok) {
+      EventBus.emit('notify', { message: status.reason, type: status.type });
       return { success: false, gained: [], count: 0 };
     }
 
@@ -34,13 +35,6 @@ const DismantleSystem = {
     const stackQty = inst.quantity ?? 1;
     const actualCount = Math.max(1, Math.min(count | 0, stackQty));
     const willRemoveOriginal = actualCount >= stackQty;
-
-    // ── 야간 광원 체크 ──────────────────────────────────────
-    const nightCheck = NightSystem.canActAtNight('dismantle');
-    if (!nightCheck.allowed) {
-      EventBus.emit('notify', { message: nightCheck.reason, type: 'danger' });
-      return { success: false, gained: [], count: 0 };
-    }
 
     // 빈 슬롯 체크: 분해 결과물이 들어갈 공간이 있는지 확인
     // 원본 카드가 소진되어야만 해당 슬롯이 비는 점을 감안.
@@ -157,6 +151,57 @@ const DismantleSystem = {
   },
 
   /**
+   * 살살 채취 가능 여부. 버튼 활성 판정과 실제 실행 판정이 갈리지 않도록
+   * UI와 forage()가 같은 함수를 본다.
+   * @returns {{ ok: boolean, reason: string, daysLeft: number }}
+   */
+  canForage(instanceId) {
+    const gs   = GameState;
+    const inst = gs.cards[instanceId];
+    const def  = gs.getCardDef(instanceId);
+    if (!inst || !def?.forage) {
+      return { ok: false, reason: I18n.t('forage.notForageable'), type: 'warn', daysLeft: 0 };
+    }
+
+    // 재생 대기가 먼저다 — 광원을 구해와도 이 노드는 여전히 못 거둔다
+    const totalTP  = gs.time?.totalTP ?? 0;
+    const cooldown = inst._forageCooldownTp ?? 0;
+    if (cooldown > totalTP) {
+      const daysLeft = Math.ceil((cooldown - totalTP) / TP_PER_DAY);
+      return { ok: false, reason: I18n.t('forage.regrowing', { days: daysLeft }), type: 'warn', daysLeft };
+    }
+
+    const nightCheck = NightSystem.canActAtNight('dismantle');
+    if (!nightCheck.allowed) {
+      return { ok: false, reason: nightCheck.reason, type: 'danger', daysLeft: 0 };
+    }
+    return { ok: true, reason: '', type: 'info', daysLeft: 0 };
+  },
+
+  /**
+   * 지금 분해할 수 있는지. 버튼 활성 판정과 dismantle() 실행 판정이 갈리지 않도록
+   * UI와 dismantle()이 같은 함수를 본다. 슬롯 여유·스택 수량은 실행 시점 조건이라
+   * 여기서 보지 않는다.
+   * @returns {{ ok: boolean, reason: string, type: string }}
+   */
+  canDismantleNow(instanceId) {
+    const def = GameState.getCardDef(instanceId);
+    if (!def?.dismantle?.length) {
+      return {
+        ok: false,
+        reason: I18n.t('dismantle.cantDismantle', { name: I18n.itemName(def?.id, def?.name) }),
+        type: 'warn',
+      };
+    }
+
+    const nightCheck = NightSystem.canActAtNight('dismantle');
+    if (!nightCheck.allowed) {
+      return { ok: false, reason: nightCheck.reason, type: 'danger' };
+    }
+    return { ok: true, reason: '', type: 'info' };
+  },
+
+  /**
    * 살살 채취(부분 채집) — 노드 카드를 소멸시키지 않고 일부만 거둔 뒤 재생 쿨다운을 건다.
    * def.forage = { regrowDays, yieldMult } 가 있어야 가능. 수율은 dismantle 테이블을 yieldMult로 축소.
    * 분해(dismantle)가 "뿌리째(전량·소멸)"라면 본 메서드는 "살살(일부·재생)"에 해당한다.
@@ -167,26 +212,15 @@ const DismantleSystem = {
     const inst = gs.cards[instanceId];
     if (!inst) return { success: false, gained: [] };
     const def = gs.getCardDef(instanceId);
-    if (!def?.forage) {
-      EventBus.emit('notify', { message: '이 자원은 살살 채취할 수 없습니다.', type: 'warn' });
-      return { success: false, gained: [] };
-    }
 
-    const totalTP = gs.time?.totalTP ?? 0;
-    // 재생 쿨다운 — 아직 다시 자라지 않음
-    if ((inst._forageCooldownTp ?? 0) > totalTP) {
-      const days = Math.ceil((inst._forageCooldownTp - totalTP) / 72);
-      EventBus.emit('notify', { message: `🌱 아직 다시 자라지 않았습니다. (약 ${days}일 후)`, type: 'warn' });
+    const status = this.canForage(instanceId);
+    if (!status.ok) {
+      EventBus.emit('notify', { message: status.reason, type: status.type });
       return { success: false, gained: [] };
     }
+    const totalTP = gs.time?.totalTP ?? 0;
 
     // 야간 광원 체크
-    const nightCheck = NightSystem.canActAtNight('dismantle');
-    if (!nightCheck.allowed) {
-      EventBus.emit('notify', { message: nightCheck.reason, type: 'danger' });
-      return { success: false, gained: [] };
-    }
-
     // TP 소비 — 분해와 동일하게 자정을 넘길 수 있다
     const tpCost = def.dismantleTP ?? 0;
     if (tpCost > 0) {
@@ -243,11 +277,14 @@ const DismantleSystem = {
     const def      = GameState.getCardDef(instanceId);
     const remainTP = TP_PER_DAY - (GameState.time?.tpInDay ?? 0);
     const cost     = (def?.dismantleTP ?? 0) * Math.max(1, count | 0);
+    const status   = this.canDismantleNow(instanceId);
     return {
       cost,
       remainTP,
       canDismantle: this.canDismantle(instanceId),
       crossesMidnight: cost > remainTP,
+      blocked: !status.ok,
+      blockReason: status.reason,
     };
   },
 };

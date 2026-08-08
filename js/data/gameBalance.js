@@ -239,8 +239,9 @@ const BALANCE = {
   // ── 캠프파이어 ──────────────────────────────────────
   campfire: {
     tempBoostPerTP:     2,
-    fuelConsumePerTP:   0.5,   // 내구도 0.5/TP 소모
+    fuelConsumePerTP:   0.5,   // 내구도 0.5/TP 소모 (아이템 def.fuelConsumePerTP 미지정 시 기본값)
     noFuelTempBoost:    0,
+    weatherDouseChancePerTP: 0.02,  // 비·눈에 화기가 꺼질 TP당 확률
   },
 
   // ── 탐색 루팅 ───────────────────────────────────────
@@ -535,6 +536,7 @@ const BALANCE = {
     baitInsectBonus:      0.05,  // 곤충 미끼 어획률 보너스
     rodBasicBonus:        0.00,  // 기본 낚싯대 추가 보너스 없음
     rodImprovedBonus:     0.15,  // 개량 낚싯대 어획률 보너스
+    rodAdvancedBonus:     0.25,  // 강화 낚싯대 어획률 보너스
     rareFishChanceMax:    0.15,  // Lv.20 희귀어 확률
     nonRareSmallChance:   0.45,  // 희귀어 아닐 때 소형어 확률(아니면 중형)
     trapMediumChance:     0.3,   // 통발 수확 시 중형어 확률(아니면 소형)

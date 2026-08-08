@@ -2,15 +2,15 @@
     "version":  2,
     "hashScheme":  "combat-provenance-sha256-v2",
     "assemblyScript":  "/tools/build_companion_motion_sheets.ps1",
-    "assemblyScriptSha256":  "016a29937dbacef1ba81b1347aeda3f555d875007cee3df961189e16767e2063",
+    "assemblyScriptSha256":  "bbf9ce3f75db12ba13beab7cbc177780a235233333c06d5836d8c13c661b4e65",
     "qualityAnalyzerPath":  "/tools/companion_motion_quality.mjs",
-    "qualityAnalyzerSha256":  "a1e94c4a1f91f386484de90c186cfb94b9d9f1349fcbadf523102a18363b397d",
+    "qualityAnalyzerSha256":  "f5a328e959655154b2547da7b0dd019f387706974d9c323e96ac654fc1d4be26",
     "rangedValidatorPath":  "/tools/verify_companion_ranged_contract.mjs",
     "rangedValidatorSha256":  "c5fef89e611be0fe5b60e438c0e536d380334b6e97d66687045af98b1fc3d1f2",
     "rangedComponentContractPath":  "/art_sources/combat/task9_companions/ranged_component_contract.json",
-    "rangedComponentContractSha256":  "24e76c90729763d6ec839cd9ca141bc4eb55d20671c56f0b5eda469a257032c1",
+    "rangedComponentContractSha256":  "cc2c60b6ef6df174a039c9456cbc9c26a28f5e8a3b592c7776a5166d804053a5",
     "provenancePath":  "/art_sources/combat/task9_companions/generation_provenance.json",
-    "provenanceSha256":  "63588c6b7eb6eafb09dcbb98ad8f5696c2443bf52cbca92919efb666d3482fee",
+    "provenanceSha256":  "7146559f1c6cb2a089d527c40703c12779dc877da5b9e3adda0ac7acfc1d0501",
     "rowContract":  [
                         "idle",
                         "melee",
@@ -49,6 +49,15 @@
                                                               "rows":  2,
                                                               "key":  "green"
                                                           },
+                             "old_survivor_move_rework":  {
+                                                              "chromaPath":  "/art_sources/combat/task9_companions/old_survivor_move_rework_chroma.png",
+                                                              "chromaSha256":  "18a76e6f7e8aadf98d82df6e6172e09a322b637276b2ba989bfce59a32b31930",
+                                                              "alphaPath":  "/art_sources/combat/task9_companions/old_survivor_move_rework_alpha.png",
+                                                              "alphaSha256":  "ac073c5b451563d85134e988df65e8f573028523f7925ff20d30d0282ab51cb1",
+                                                              "cols":  6,
+                                                              "rows":  1,
+                                                              "key":  "green"
+                                                          },
                              "nurse":  {
                                            "chromaPath":  "/art_sources/combat/task9_companions/nurse_companion_chroma.png",
                                            "chromaSha256":  "9dce98c302627ab016220d1710c79907bf6181a28af6359bb5fb3aa7fed6ff4f",
@@ -76,6 +85,15 @@
                                                   "rows":  7,
                                                   "key":  "green"
                                               },
+                             "soldier_ranged_rework":  {
+                                                           "chromaPath":  "/art_sources/combat/task9_companions/soldier_ranged_rework_chroma.png",
+                                                           "chromaSha256":  "39c0c81eb27a6fb6eec3b0b6a7c7b0166e041de6af0cf04f2c440e635dffe86b",
+                                                           "alphaPath":  "/art_sources/combat/task9_companions/soldier_ranged_rework_alpha.png",
+                                                           "alphaSha256":  "decd1dc93edc65d37a175d346b65610c3c1564fefeefd15a1fe78385f75aab0f",
+                                                           "cols":  6,
+                                                           "rows":  1,
+                                                           "key":  "green"
+                                                       },
                              "soldier_guard":  {
                                                    "chromaPath":  "/art_sources/combat/task9_companions/soldier_companion_guard_source_chroma.png",
                                                    "chromaSha256":  "a6b13737137c45616ab468dab3e994624b769d5349b533334e269c894c57628f",
@@ -103,6 +121,15 @@
                                            "rows":  8,
                                            "key":  "green"
                                        },
+                             "child_hit_rework":  {
+                                                      "chromaPath":  "/art_sources/combat/task9_companions/child_hit_rework_chroma.png",
+                                                      "chromaSha256":  "e686eba383042125fe90fdf95b665f1bdc43bb1e720eb1ab27f8b8fd05b18838",
+                                                      "alphaPath":  "/art_sources/combat/task9_companions/child_hit_rework_alpha.png",
+                                                      "alphaSha256":  "ebb3abe610ad114d597ec65fb67d3cadd1e1b392a85ee674a7e094ca0f700684",
+                                                      "cols":  6,
+                                                      "rows":  1,
+                                                      "key":  "green"
+                                                  },
                              "mechanic":  {
                                               "chromaPath":  "/art_sources/combat/task9_companions/mechanic_companion_chroma.png",
                                               "chromaSha256":  "410d9a9e61e4c5adfba8cf6da9afee68a1b2f7b938a5958892e6c7035699ac46",
@@ -112,6 +139,15 @@
                                               "rows":  8,
                                               "key":  "green"
                                           },
+                             "mechanic_melee_guard_rework":  {
+                                                                 "chromaPath":  "/art_sources/combat/task9_companions/mechanic_melee_guard_rework_chroma.png",
+                                                                 "chromaSha256":  "a413538a6799ae3e859dcf3b532f26c93f72c6717d314c2ecd80d46d23b7c17e",
+                                                                 "alphaPath":  "/art_sources/combat/task9_companions/mechanic_melee_guard_rework_alpha.png",
+                                                                 "alphaSha256":  "a3ed66073b08cc554ff52bba558019d06615a0cd41839645b616887cc412e66c",
+                                                                 "cols":  6,
+                                                                 "rows":  2,
+                                                                 "key":  "green"
+                                                             },
                              "mechanic_guard":  {
                                                     "chromaPath":  "/art_sources/combat/task9_companions/mechanic_guard_chroma.png",
                                                     "chromaSha256":  "ffbacd43f79045eb07cb9ca7a36793d19ab4fbe84ee40a4442b910e7f9b9771d",
@@ -148,6 +184,15 @@
                                              "rows":  8,
                                              "key":  "green"
                                          },
+                             "student_guard_rework":  {
+                                                          "chromaPath":  "/art_sources/combat/task9_companions/student_guard_rework_chroma.png",
+                                                          "chromaSha256":  "1893e6790e38fe2d1f3e73497b187ab8445c01f825a5d0faa314ddcabe784454",
+                                                          "alphaPath":  "/art_sources/combat/task9_companions/student_guard_rework_alpha.png",
+                                                          "alphaSha256":  "d64880de82a93bee38801ea8d66e42efd1ee35d4466bf0b9188e8f83d4c21a2a",
+                                                          "cols":  6,
+                                                          "rows":  1,
+                                                          "key":  "green"
+                                                      },
                              "student_melee_ranged_support":  {
                                                                   "chromaPath":  "/art_sources/combat/task9_companions/student_melee_ranged_support_chroma.png",
                                                                   "chromaSha256":  "7ae8a07f91560541fc0742059094f39ae5bf122a66710e19703a6853dc26f963",
@@ -175,6 +220,15 @@
                                          "rows":  8,
                                          "key":  "magenta"
                                      },
+                             "dog_hit_death_rework":  {
+                                                          "chromaPath":  "/art_sources/combat/task9_companions/dog_hit_death_rework_chroma.png",
+                                                          "chromaSha256":  "3be892f2254ebd5166f8750c7c7d17ab11db7be24a482a83237a37592b4d1a7e",
+                                                          "alphaPath":  "/art_sources/combat/task9_companions/dog_hit_death_rework_alpha.png",
+                                                          "alphaSha256":  "9433afea8e6078e19d96839a8eb2753ed56c3fc665fd2cc5330bed5b44ba8931",
+                                                          "cols":  6,
+                                                          "rows":  2,
+                                                          "key":  "green"
+                                                      },
                              "former_colleague":  {
                                                       "chromaPath":  "/art_sources/combat/task9_companions/former_colleague_companion_chroma.png",
                                                       "chromaSha256":  "59e031961512e64f26826fa1ca7bd779c0d3444b95fa0b862d9818350169bb17",
@@ -202,6 +256,15 @@
                                             "rows":  8,
                                             "key":  "green"
                                         },
+                             "minjun_hit_rework":  {
+                                                       "chromaPath":  "/art_sources/combat/task9_companions/minjun_hit_rework_chroma.png",
+                                                       "chromaSha256":  "87f9cadcda7b672fd2ada8fee764d4637534ca322383e7cc290e381377790a35",
+                                                       "alphaPath":  "/art_sources/combat/task9_companions/minjun_hit_rework_alpha.png",
+                                                       "alphaSha256":  "1ce421e051774cd1a742598eb563cb0752c304a0af2bc2f1eada361a22a97cb7",
+                                                       "cols":  6,
+                                                       "rows":  1,
+                                                       "key":  "green"
+                                                   },
                              "minjun_death":  {
                                                   "chromaPath":  "/art_sources/combat/task9_companions/minjun_death_chroma.png",
                                                   "chromaSha256":  "9a7a9957445a81917e0af602a1a5f050955c4aafe3f542ee2245d616cadcc1fe",
@@ -229,6 +292,15 @@
                                                "rows":  1,
                                                "key":  "green"
                                            },
+                             "sohee_support_move_hit_death_rework":  {
+                                                                         "chromaPath":  "/art_sources/combat/task9_companions/sohee_support_move_hit_death_rework_chroma.png",
+                                                                         "chromaSha256":  "ef41b8f865a09049b69004afe1f38783490212118f3c3e0e5a525eb12b0090c7",
+                                                                         "alphaPath":  "/art_sources/combat/task9_companions/sohee_support_move_hit_death_rework_alpha.png",
+                                                                         "alphaSha256":  "f1af8a79f5d7f019c944fc395cf86e4d5903fb2ae598c8cd2d286bfc0e2cd4b2",
+                                                                         "cols":  6,
+                                                                         "rows":  4,
+                                                                         "key":  "green"
+                                                                     },
                              "jisu":  {
                                           "chromaPath":  "/art_sources/combat/task9_companions/jisu_companion_chroma.png",
                                           "chromaSha256":  "47769b5158ae417ec3be492220d2c41361319188c75214c83f4406a857bc36a4",
@@ -256,6 +328,15 @@
                                                      "rows":  8,
                                                      "key":  "green"
                                                  },
+                             "yeongcheol_hit_rework":  {
+                                                           "chromaPath":  "/art_sources/combat/task9_companions/yeongcheol_hit_rework_chroma.png",
+                                                           "chromaSha256":  "ddea590629b1ac1b36b37513f7b417013543b558265a6e5cfd1eb5e0e356e261",
+                                                           "alphaPath":  "/art_sources/combat/task9_companions/yeongcheol_hit_rework_alpha.png",
+                                                           "alphaSha256":  "fb49210d6b93ed03eb59396493f396a361a5679e863835cd819877f3752806d8",
+                                                           "cols":  6,
+                                                           "rows":  1,
+                                                           "key":  "green"
+                                                       },
                              "yeongcheol_support":  {
                                                         "chromaPath":  "/art_sources/combat/task9_companions/yeongcheol_support_chroma.png",
                                                         "chromaSha256":  "ab559337a4eba11570e27bd55677d99025668d279bf0c9e69652228a40ae2938",
@@ -283,6 +364,15 @@
                                                    "rows":  1,
                                                    "key":  "green"
                                                },
+                             "daehan_ranged_hit_death_rework":  {
+                                                                    "chromaPath":  "/art_sources/combat/task9_companions/daehan_ranged_hit_death_rework_chroma.png",
+                                                                    "chromaSha256":  "7e6da7ce1573f98e95e140609739408b7f582764969e433c03c7a1421d5a7a09",
+                                                                    "alphaPath":  "/art_sources/combat/task9_companions/daehan_ranged_hit_death_rework_alpha.png",
+                                                                    "alphaSha256":  "fc1cb723196be4b3fd6d86b04f3bbac501ec521b385a0a1b976c7afd9c225351",
+                                                                    "cols":  6,
+                                                                    "rows":  3,
+                                                                    "key":  "green"
+                                                                },
                              "daehan_guard":  {
                                                   "chromaPath":  "/art_sources/combat/task9_companions/daehan_guard_chroma.png",
                                                   "chromaSha256":  "17f5fda8de7c0b94de401dc9a6ba415ddf865dcc48695a50fea296db6e67c900",
@@ -382,6 +472,15 @@
                                                        "rows":  8,
                                                        "key":  "green"
                                                    },
+                             "tower_doctor_hit_rework":  {
+                                                             "chromaPath":  "/art_sources/combat/task9_companions/tower_doctor_hit_rework_chroma.png",
+                                                             "chromaSha256":  "6239347eef195aca1ee4567514a851f2661c250b17226719be01ec1659f57ddb",
+                                                             "alphaPath":  "/art_sources/combat/task9_companions/tower_doctor_hit_rework_alpha.png",
+                                                             "alphaSha256":  "5a2bacb8fdc106f135f920c3f503385a2a9224b752499c11eec3779bc9ee1c5c",
+                                                             "cols":  6,
+                                                             "rows":  1,
+                                                             "key":  "green"
+                                                         },
                              "tower_doctor_support":  {
                                                           "chromaPath":  "/art_sources/combat/task9_companions/tower_doctor_support_chroma.png",
                                                           "chromaSha256":  "7ee7615d2242484340cfe9398b63a3a24bc2e9792d05f465b65a842885822c4d",
@@ -427,6 +526,15 @@
                                                    "rows":  1,
                                                    "key":  "green"
                                                },
+                             "sous_chef_move_rework":  {
+                                                           "chromaPath":  "/art_sources/combat/task9_companions/sous_chef_move_rework_chroma.png",
+                                                           "chromaSha256":  "7db9bad66d0b8d03775e24187e6266d61e2346107972c7782cd26a369900b1d3",
+                                                           "alphaPath":  "/art_sources/combat/task9_companions/sous_chef_move_rework_alpha.png",
+                                                           "alphaSha256":  "508119658bb4a2eb1a5fe394aab38f67994c3acf5d8d093c10b73348c9b2a3b7",
+                                                           "cols":  6,
+                                                           "rows":  1,
+                                                           "key":  "green"
+                                                       },
                              "kitchen_helper":  {
                                                     "chromaPath":  "/art_sources/combat/task9_companions/kitchen_helper_companion_chroma.png",
                                                     "chromaSha256":  "262853cec8abcb46c073180d7c409a3930a7f636fd4d4fea7c3b6f294295bf1d",
@@ -469,8 +577,8 @@
                                                    "path":  "/assets/images/combat/spritesheets/companions/old_survivor_companion_sheet.png",
                                                    "width":  1536,
                                                    "height":  2048,
-                                                   "fileSha256":  "c4b17fe3ef7aeee3dbcd0b1dbf12282a376a5c64750070972b6e1c23a8c6fc5e",
-                                                   "pixelSha256":  "4540f0a88974fe1ffe998e7b8d63ff9eedd525e6e8be1d9e47055c1d50a5c51b",
+                                                   "fileSha256":  "2d6728f188c47fac0a028fa2338c98def481ef083ecd3d3db41f44ce125eb363",
+                                                   "pixelSha256":  "2c514b0eb1229e20fe1883d036c37d7378af5ad283574d06ccca1a04a8144fb7",
                                                    "rows":  [
                                                                 {
                                                                     "targetRow":  0,
@@ -539,8 +647,8 @@
                                                                 },
                                                                 {
                                                                     "targetRow":  5,
-                                                                    "source":  "old_survivor",
-                                                                    "sourceRow":  5,
+                                                                    "source":  "old_survivor_move_rework",
+                                                                    "sourceRow":  0,
                                                                     "sourceColumns":  [
                                                                                           0,
                                                                                           1,
@@ -695,8 +803,8 @@
                                               "path":  "/assets/images/combat/spritesheets/soldier_companion_sheet.png",
                                               "width":  1536,
                                               "height":  2048,
-                                              "fileSha256":  "a3979cf141b99757ec8c6fbdf077f0ee7b56fceb25358fab6a7bbff92d8b0234",
-                                              "pixelSha256":  "97cee43181d76b620f30c3528a08f6a60bb96222759d5fd57603da70fa30673b",
+                                              "fileSha256":  "9980a92c5d13cbd7a70f64d0eb27ab50fa8c6d71d53bfab9f5c171c9cf0f388e",
+                                              "pixelSha256":  "6d3f303cd35b0580d04e1b3edaf42593dde89d13da9ec48340c412040afa1417",
                                               "rows":  [
                                                            {
                                                                "targetRow":  0,
@@ -726,8 +834,8 @@
                                                            },
                                                            {
                                                                "targetRow":  2,
-                                                               "source":  "soldier_base",
-                                                               "sourceRow":  2,
+                                                               "source":  "soldier_ranged_rework",
+                                                               "sourceRow":  0,
                                                                "sourceColumns":  [
                                                                                      0,
                                                                                      1,
@@ -808,8 +916,8 @@
                                             "path":  "/assets/images/combat/spritesheets/companions/child_companion_sheet.png",
                                             "width":  1536,
                                             "height":  2048,
-                                            "fileSha256":  "edcf2003203363ee1890a2aaf0e6b8d4c9140dcf2cd0a1462ac0b6fa96e6c2f9",
-                                            "pixelSha256":  "89e6ec55c1834f25623880c7d2cbdb4316e262b416b507373fde5684aee1a381",
+                                            "fileSha256":  "1625ea335e35563133c33e30de76b6e8a5d2a1b6e1b843e7f2bebea41123d4fa",
+                                            "pixelSha256":  "3e886cf0f2b2239e1b05a708dae1e3402f03334f73d334e69a4fe8dca807c9a2",
                                             "rows":  [
                                                          {
                                                              "targetRow":  0,
@@ -891,8 +999,8 @@
                                                          },
                                                          {
                                                              "targetRow":  6,
-                                                             "source":  "child",
-                                                             "sourceRow":  6,
+                                                             "source":  "child_hit_rework",
+                                                             "sourceRow":  0,
                                                              "sourceColumns":  [
                                                                                    0,
                                                                                    1,
@@ -921,8 +1029,8 @@
                                                "path":  "/assets/images/combat/spritesheets/companions/mechanic_companion_sheet.png",
                                                "width":  1536,
                                                "height":  2048,
-                                               "fileSha256":  "6d2a2c7301f28125934089e7d685635ea2d8505b561b8928ae17c3a33890a5d9",
-                                               "pixelSha256":  "2e14bbdcd5cedbb4709939c49adfad23fd093ff5e0902c35ed2415ed727fa456",
+                                               "fileSha256":  "cc13f9915d1bdfbf29210edbe07ee529973f1eb765a6b1a3e0454bc16c6c49cb",
+                                               "pixelSha256":  "08b953a066d5516008693050964ebf817f2850ae154eff6ac4d6009a153df7fd",
                                                "rows":  [
                                                             {
                                                                 "targetRow":  0,
@@ -939,8 +1047,8 @@
                                                             },
                                                             {
                                                                 "targetRow":  1,
-                                                                "source":  "mechanic",
-                                                                "sourceRow":  1,
+                                                                "source":  "mechanic_melee_guard_rework",
+                                                                "sourceRow":  0,
                                                                 "sourceColumns":  [
                                                                                       0,
                                                                                       1,
@@ -978,8 +1086,8 @@
                                                             },
                                                             {
                                                                 "targetRow":  4,
-                                                                "source":  "mechanic_guard",
-                                                                "sourceRow":  0,
+                                                                "source":  "mechanic_melee_guard_rework",
+                                                                "sourceRow":  1,
                                                                 "sourceColumns":  [
                                                                                       0,
                                                                                       1,
@@ -1034,8 +1142,8 @@
                                               "path":  "/assets/images/combat/spritesheets/companions/student_companion_sheet.png",
                                               "width":  1536,
                                               "height":  2048,
-                                              "fileSha256":  "8dde2e38302b6f0e11240cbaf9598a18c4ddb2a5f7292dcc3b62bfca69372511",
-                                              "pixelSha256":  "2035e389b486226d0920594694fe34728964f633afb3bce26aee8d8256cd6763",
+                                              "fileSha256":  "3b8298b3f80303a220e63c007606245b107c2311d443a56c8e584d5331c7ce9f",
+                                              "pixelSha256":  "bee8c5889a21e03b52cb403b44197754b02052793519d68399276b24ff67a783",
                                               "rows":  [
                                                            {
                                                                "targetRow":  0,
@@ -1091,7 +1199,7 @@
                                                            },
                                                            {
                                                                "targetRow":  4,
-                                                               "source":  "student_guard_move_hit_death",
+                                                               "source":  "student_guard_rework",
                                                                "sourceRow":  0,
                                                                "sourceColumns":  [
                                                                                      0,
@@ -1147,8 +1255,8 @@
                                           "path":  "/assets/images/combat/spritesheets/companions/dog_companion_sheet.png",
                                           "width":  1536,
                                           "height":  2048,
-                                          "fileSha256":  "86fe66142c9ddc0b36e7adef7cfd3c4ab4e3822defb1144ab086684ba76feb6e",
-                                          "pixelSha256":  "d0352386c42ccf8496dee495fbccf911ecbab5286ed21c08153201d319fb378f",
+                                          "fileSha256":  "e794c70b8f6bece89fe3d862218a45684a11173485bea4fbcc3b800235797b41",
+                                          "pixelSha256":  "a7508fa11f2886738d416e7a41ea2dd5c82be8f1f8dc227d1d585e07b4809982",
                                           "rows":  [
                                                        {
                                                            "targetRow":  0,
@@ -1230,8 +1338,8 @@
                                                        },
                                                        {
                                                            "targetRow":  6,
-                                                           "source":  "dog",
-                                                           "sourceRow":  6,
+                                                           "source":  "dog_hit_death_rework",
+                                                           "sourceRow":  0,
                                                            "sourceColumns":  [
                                                                                  0,
                                                                                  1,
@@ -1243,8 +1351,8 @@
                                                        },
                                                        {
                                                            "targetRow":  7,
-                                                           "source":  "dog",
-                                                           "sourceRow":  7,
+                                                           "source":  "dog_hit_death_rework",
+                                                           "sourceRow":  1,
                                                            "sourceColumns":  [
                                                                                  0,
                                                                                  1,
@@ -1373,8 +1481,8 @@
                                              "path":  "/assets/images/combat/spritesheets/companions/minjun_companion_sheet.png",
                                              "width":  1536,
                                              "height":  2048,
-                                             "fileSha256":  "d92e60a972c7ce8fd1fa729453c7a96cadefc909c107a9e701a40c90ec690c07",
-                                             "pixelSha256":  "dc92f179771bde4acb2eeaefc610982ef92ee31c9e2f75dfe3f6f4adf84de00c",
+                                             "fileSha256":  "67e5104718c26d0968aebc676d29bb42632daf10a1afcf3ea7f802091c5be2a8",
+                                             "pixelSha256":  "53e46e50418561cc198de452fa62e0de191154df8b231be11940064260168894",
                                              "rows":  [
                                                           {
                                                               "targetRow":  0,
@@ -1456,8 +1564,8 @@
                                                           },
                                                           {
                                                               "targetRow":  6,
-                                                              "source":  "minjun",
-                                                              "sourceRow":  6,
+                                                              "source":  "minjun_hit_rework",
+                                                              "sourceRow":  0,
                                                               "sourceColumns":  [
                                                                                     0,
                                                                                     1,
@@ -1486,8 +1594,8 @@
                                             "path":  "/assets/images/combat/spritesheets/companions/sohee_companion_sheet.png",
                                             "width":  1536,
                                             "height":  2048,
-                                            "fileSha256":  "29e3f314e83a53659d7edea9ecf4b239d70f440b948b682765a00db17dd75048",
-                                            "pixelSha256":  "dd6b693178da30918252854e35a4ced2e49558b30efd98d4986f78e46f2d242a",
+                                            "fileSha256":  "2ec0b8f938724a407c5ddf8eba46d69a3b197dce852e024a20d967ee7631cbfe",
+                                            "pixelSha256":  "ad3dcb7cda6c7334ecfff2d0825a814e08ca9aac804930a4a6021854a1267468",
                                             "rows":  [
                                                          {
                                                              "targetRow":  0,
@@ -1530,8 +1638,8 @@
                                                          },
                                                          {
                                                              "targetRow":  3,
-                                                             "source":  "sohee",
-                                                             "sourceRow":  3,
+                                                             "source":  "sohee_support_move_hit_death_rework",
+                                                             "sourceRow":  0,
                                                              "sourceColumns":  [
                                                                                    0,
                                                                                    1,
@@ -1556,8 +1664,8 @@
                                                          },
                                                          {
                                                              "targetRow":  5,
-                                                             "source":  "sohee",
-                                                             "sourceRow":  5,
+                                                             "source":  "sohee_support_move_hit_death_rework",
+                                                             "sourceRow":  1,
                                                              "sourceColumns":  [
                                                                                    0,
                                                                                    1,
@@ -1569,8 +1677,8 @@
                                                          },
                                                          {
                                                              "targetRow":  6,
-                                                             "source":  "sohee_hit",
-                                                             "sourceRow":  0,
+                                                             "source":  "sohee_support_move_hit_death_rework",
+                                                             "sourceRow":  2,
                                                              "sourceColumns":  [
                                                                                    0,
                                                                                    1,
@@ -1582,8 +1690,8 @@
                                                          },
                                                          {
                                                              "targetRow":  7,
-                                                             "source":  "sohee",
-                                                             "sourceRow":  6,
+                                                             "source":  "sohee_support_move_hit_death_rework",
+                                                             "sourceRow":  3,
                                                              "sourceColumns":  [
                                                                                    0,
                                                                                    1,
@@ -1712,8 +1820,8 @@
                                                  "path":  "/assets/images/combat/spritesheets/companions/yeongcheol_companion_sheet.png",
                                                  "width":  1536,
                                                  "height":  2048,
-                                                 "fileSha256":  "08136ebf510509e90e15e8df25c15eea1fdad92bbe5751723cbd5efd069a0431",
-                                                 "pixelSha256":  "67802786880ede770f87a21e6f91e5f13faccf8d77270d7a45b451974bb2a323",
+                                                 "fileSha256":  "71497f531f62110789a421f4ad12878806bd4b93cef3d436e5d51cc496de6e88",
+                                                 "pixelSha256":  "29e123a632cb57ee8dee15508538d588392b47bbf1c7d04af8f03d1287039dd7",
                                                  "rows":  [
                                                               {
                                                                   "targetRow":  0,
@@ -1795,8 +1903,8 @@
                                                               },
                                                               {
                                                                   "targetRow":  6,
-                                                                  "source":  "yeongcheol_base",
-                                                                  "sourceRow":  6,
+                                                                  "source":  "yeongcheol_hit_rework",
+                                                                  "sourceRow":  0,
                                                                   "sourceColumns":  [
                                                                                         0,
                                                                                         1,
@@ -1825,8 +1933,8 @@
                                              "path":  "/assets/images/combat/spritesheets/companions/daehan_companion_sheet.png",
                                              "width":  1536,
                                              "height":  2048,
-                                             "fileSha256":  "b5881faa233ffd54927d6a7e15393877c3abfdaf4597f7aeca5fd6e396f72f57",
-                                             "pixelSha256":  "21565a68dab86ffd66931d6226dc5dad557c8003af767995ef44b589163b013d",
+                                             "fileSha256":  "cfe836131c1ca015b9397580b25ef84c66e3cc8e06e8e667c4ff848cb90c865b",
+                                             "pixelSha256":  "eb08d85fd21b4c0c8c487ccaf08abccbe2afb7df42836c82d43ffe77efe2e29a",
                                              "rows":  [
                                                           {
                                                               "targetRow":  0,
@@ -1856,7 +1964,7 @@
                                                           },
                                                           {
                                                               "targetRow":  2,
-                                                              "source":  "daehan_ranged",
+                                                              "source":  "daehan_ranged_hit_death_rework",
                                                               "sourceRow":  0,
                                                               "sourceColumns":  [
                                                                                     0,
@@ -1908,8 +2016,8 @@
                                                           },
                                                           {
                                                               "targetRow":  6,
-                                                              "source":  "daehan",
-                                                              "sourceRow":  6,
+                                                              "source":  "daehan_ranged_hit_death_rework",
+                                                              "sourceRow":  1,
                                                               "sourceColumns":  [
                                                                                     0,
                                                                                     1,
@@ -1921,8 +2029,8 @@
                                                           },
                                                           {
                                                               "targetRow":  7,
-                                                              "source":  "daehan",
-                                                              "sourceRow":  7,
+                                                              "source":  "daehan_ranged_hit_death_rework",
+                                                              "sourceRow":  2,
                                                               "sourceColumns":  [
                                                                                     0,
                                                                                     1,
@@ -2390,8 +2498,8 @@
                                                    "path":  "/assets/images/combat/spritesheets/companions/tower_doctor_companion_sheet.png",
                                                    "width":  1536,
                                                    "height":  2048,
-                                                   "fileSha256":  "e70c01d130cbd783dc5944a24b8e492513b80ea53feed31d5ec0f9040bc6f75e",
-                                                   "pixelSha256":  "4954ac2338d42f3971d794913071ce922e9a9700a18dfa419de41506a438f2cb",
+                                                   "fileSha256":  "78547458686c6795633c44f4d15f0e0774b990f74295ce4e46860d5df21d0caa",
+                                                   "pixelSha256":  "5acdc131a945c6643037a960cbd6e57f83f85c9b08a23eff549c55b8cf9b2710",
                                                    "rows":  [
                                                                 {
                                                                     "targetRow":  0,
@@ -2473,8 +2581,8 @@
                                                                 },
                                                                 {
                                                                     "targetRow":  6,
-                                                                    "source":  "tower_doctor_ranged_guard_move_hit",
-                                                                    "sourceRow":  3,
+                                                                    "source":  "tower_doctor_hit_rework",
+                                                                    "sourceRow":  0,
                                                                     "sourceColumns":  [
                                                                                           0,
                                                                                           1,
@@ -2503,8 +2611,8 @@
                                                 "path":  "/assets/images/combat/spritesheets/companions/sous_chef_companion_sheet.png",
                                                 "width":  1536,
                                                 "height":  2048,
-                                                "fileSha256":  "b453f8be0c7e7204acb96ae8261b58bbac5f00d5cec1d70be8b9153a9741e1bb",
-                                                "pixelSha256":  "34f38d03a664a5879420fa98f4d01a254a3c2c2e5ae32384c4ca318146236856",
+                                                "fileSha256":  "12d4f7e91ce7773af5f3555988f2b052ddbac156e346ba90662c5501ad3e51ad",
+                                                "pixelSha256":  "75e4efdf4f001b56e197b8d512335df5b12a07e7acbbc980dfaefd4ded642caf",
                                                 "rows":  [
                                                              {
                                                                  "targetRow":  0,
@@ -2573,8 +2681,8 @@
                                                              },
                                                              {
                                                                  "targetRow":  5,
-                                                                 "source":  "sous_chef",
-                                                                 "sourceRow":  5,
+                                                                 "source":  "sous_chef_move_rework",
+                                                                 "sourceRow":  0,
                                                                  "sourceColumns":  [
                                                                                        0,
                                                                                        1,

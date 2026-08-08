@@ -425,6 +425,7 @@ const BAL_HELP = {
   tempBoostPerTP: 'TP당 체온 상승량.',
   fuelConsumePerTP: 'TP당 연료(내구도) 소모.',
   noFuelTempBoost: '연료 없을 때 체온 상승량.',
+  weatherDouseChancePerTP: '비·눈에 화기가 꺼질 TP당 확률(0~1). weather_resistant 태그 구조물은 면역.',
   // encounter
   reductionCap: '조우 확률 감소 상한(0~1).',
   structureReductCap: '구조물 조우 감소 상한(0~1).',
@@ -502,6 +503,7 @@ const BAL_HELP = {
   baitInsectBonus: '곤충 미끼 어획률 보너스.',
   rodBasicBonus: '기본 낚싯대 어획률 보너스.',
   rodImprovedBonus: '개량 낚싯대 어획률 보너스.',
+  rodAdvancedBonus: '강화 낚싯대 어획률 보너스.',
   rareFishChanceMax: 'Lv.20 희귀어 확률.',
   nonRareSmallChance: '희귀어 아닐 때 소형어 확률(아니면 중형).',
   trapMediumChance: '통발 수확 시 중형어 확률(아니면 소형).',
@@ -738,6 +740,7 @@ const ITEM_HELP = {
   weight: '아이템 1개의 무게(kg). 소지 무게 한도에 영향을 줍니다.',
   tags: '분류 태그. 검색·필터·레시피 조건 등에 사용됩니다.',
   defaultDurability: '기본 내구도. 사용·장비하면 닳습니다.',
+  fuelConsumePerTP: '화기(subtype:heat)가 TP당 태우는 연료(내구도). 미지정 시 밸런스 campfire 기본값. 내구도 ÷ 이 값 = 지속 TP.',
   defaultContamination: '기본 오염도(0 = 깨끗).',
   dismantle: '분해 시 얻는 산출물 목록.',
   containedItems: '아이템 상자 내용물 목록. 카드 보기 → "획득하기"로 전부 수령하며 상자는 사라진다. (definitionId·qty)',

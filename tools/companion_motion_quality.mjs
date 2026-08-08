@@ -6,7 +6,7 @@ import { provenanceSha256 } from './provenance_hash.mjs';
 const ALPHA_THRESHOLD = 12;
 
 export const RANGED_COMPONENT_CONTRACT_RELATIVE_PATH = 'art_sources/combat/task9_companions/ranged_component_contract.json';
-export const RANGED_COMPONENT_CONTRACT_SHA256 = '24e76c90729763d6ec839cd9ca141bc4eb55d20671c56f0b5eda469a257032c1';
+export const RANGED_COMPONENT_CONTRACT_SHA256 = 'cc2c60b6ef6df174a039c9456cbc9c26a28f5e8a3b592c7776a5166d804053a5';
 
 export const COMPANION_FRAME_QUALITY_LIMITS = Object.freeze({
   minOpaquePixels: 3500,

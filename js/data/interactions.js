@@ -661,7 +661,7 @@ const INTERACTION_RULES = [
   },
 
   // B10. 덕테이프 + 구조물 → 수리 (+25)
-  { id: 'repair_structure_tape', source: { id: 'duct_tape' }, target: { type: 'structure' },
+  { id: 'repair_structure_tape', allowUnlit: true, source: { id: 'duct_tape' }, target: { type: 'structure' },
     hint: '덕테이프로 구조물 수리 (+25)',
     canApply(s, t) {
       const max = GameData?.items[t.definitionId]?.defaultDurability ?? 100;
@@ -674,7 +674,7 @@ const INTERACTION_RULES = [
       return { message: '덕테이프로 구조물을 수리했다.', consumeSrc: s.quantity <= 0, consumeTgt: false };
     },
   },
-  { id: 'repair_structure_tape_rev', source: { type: 'structure' }, target: { id: 'duct_tape' },
+  { id: 'repair_structure_tape_rev', allowUnlit: true, source: { type: 'structure' }, target: { id: 'duct_tape' },
     hint: '덕테이프로 구조물 수리 (+25)',
     canApply(s) {
       const max = GameData?.items[s.definitionId]?.defaultDurability ?? 100;
@@ -689,12 +689,12 @@ const INTERACTION_RULES = [
   },
 
   // B11. 연료통 + 캠프파이어 → 캠프파이어 완전 수리
-  { id: 'refuel_campfire', source: { id: 'fuel_can' }, target: { id: 'campfire' },
+  { id: 'refuel_campfire', allowUnlit: true, source: { id: 'fuel_can' }, target: { id: 'campfire' },
     hint: '연료 보충 → 캠프파이어 완전 수리',
     canApply(s, t) { return (t.durability ?? 50) >= 50 ? { ok: false, reason: '캠프파이어가 이미 최대 상태다.' } : { ok: true }; },
     apply(s, t) { t.durability = 50; return { message: '연료를 부어 캠프파이어를 보충했다.', consumeSrc: true, consumeTgt: false, noise: 2 }; },
   },
-  { id: 'refuel_campfire_rev', source: { id: 'campfire' }, target: { id: 'fuel_can' },
+  { id: 'refuel_campfire_rev', allowUnlit: true, source: { id: 'campfire' }, target: { id: 'fuel_can' },
     hint: '연료 보충 → 캠프파이어 완전 수리',
     canApply(s) { return (s.durability ?? 50) >= 50 ? { ok: false, reason: '캠프파이어가 이미 최대 상태다.' } : { ok: true }; },
     apply(s) { s.durability = 50; return { message: '연료를 부어 캠프파이어를 보충했다.', consumeSrc: false, consumeTgt: true, noise: 2 }; },
@@ -1251,7 +1251,7 @@ const INTERACTION_RULES = [
   },
 
   // H40. 라이터 + 캠프파이어 → 재점화 (+20)
-  { id: 'relight_fire', source: { id: 'lighter' }, target: { id: 'campfire' },
+  { id: 'relight_fire', allowUnlit: true, source: { id: 'lighter' }, target: { id: 'campfire' },
     hint: '라이터로 캠프파이어 재점화 (+20)',
     canApply(s, t) { return (t.durability ?? 50) >= 50 ? { ok: false, reason: '캠프파이어가 잘 타고 있다.' } : { ok: true }; },
     apply(s, t) {
@@ -1260,7 +1260,7 @@ const INTERACTION_RULES = [
       return { message: '라이터로 캠프파이어를 되살렸다.', consumeSrc: (s.durability ?? 0) <= 0, consumeTgt: false };
     },
   },
-  { id: 'relight_fire_rev', source: { id: 'campfire' }, target: { id: 'lighter' },
+  { id: 'relight_fire_rev', allowUnlit: true, source: { id: 'campfire' }, target: { id: 'lighter' },
     hint: '라이터로 캠프파이어 재점화 (+20)',
     canApply(s) { return (s.durability ?? 50) >= 50 ? { ok: false, reason: '캠프파이어가 잘 타고 있다.' } : { ok: true }; },
     apply(s, t) {

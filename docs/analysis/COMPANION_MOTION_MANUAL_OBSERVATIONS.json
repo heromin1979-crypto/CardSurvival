@@ -3,8 +3,8 @@
   "hashScheme": "combat-provenance-sha256-v2",
   "evidenceType": "human manual visual observation",
   "reviewStatus": "PASS",
-  "reviewedAt": "2026-08-01",
-  "reviewerMethod": "Codex 데스크톱 original 해상도 view_image로 최종 안정 빌드의 런타임 PNG 20개, 1736x2120 확대 리뷰 보드 20개, contact sheet 1개를 직접 대조했다. 자동 renderer와 verifier는 이 판정을 생성하지 않는다.",
+  "reviewedAt": "2026-08-09",
+  "reviewerMethod": "기존 20개 동료 PASS 증거를 보존하면서 Task 7 fix round 1의 student guard r4를 보존 runtime idle r0/move r5, canonical student source, 새 canonical alpha/runtime, full-size review board 원본 해상도로 side-by-side 재검수했다. 최초 r4 f2-f6의 큰 흰 medical cross와 부푼 직사각 support medical kit morph를 확인하고 폐기했다. 수정본은 r0/r5와 같은 compact dark-navy school backpack의 둥근 soft-bag 외곽, 작은 무표식 전면 포켓, straps와 zipper seams를 f1 shoulder부터 f6 chest guard까지 유지한다. shoulder reach→chest 이동→torso brace→impact absorb→protected stabilize→stable guard 흐름과 glasses·dark bob·navy jacket·gray hoodie·jeans·sneakers, 저채도 realistic hand-painted 표면, 3/4-right 방향이 유지된다. 흰 medical cross, first-aid icon, broad medical panel, extra bag, drop, umbrella, attack, prop morph는 없다. 새 source는 gutter 54px 이상, body 6/6, boundary/cross 0, strict chroma 6종 0이다. soldier r2와 mechanic r1/r4는 승인된 runtime/source를 byte-pixel 보존했으며 student 비대상 7행도 actor/base 직접 비교로 보존을 확인했다.",
   "reviewedCounts": {
     "companions": 20,
     "runtimeSheets": 20,
@@ -13,19 +13,19 @@
   },
   "openRework": [],
   "previewManifestPath": "/art_sources/combat/task9_companions/preview_manifest.json",
-  "previewManifestSha256": "388e8c24a54df142235ed2e8ae7893d4e3ae6908d8fd5b1806363db1cd475d92",
+  "previewManifestSha256": "95aa6bfe34b8b98f77e3ffecdfb3e0dd87b96382445cdb10fae9e4aa831c674e",
   "contactPath": "/art_sources/combat/task9_companions/companion_motion_contact_sheet.png",
-  "contactSha256": "67f5c1742ddc3a08b6aec38ee25dad0c6d5c66d79239486154d7dc1e50e1fc27",
+  "contactSha256": "c95a34d36046f2f7a4ffe7bba26ee1b5ca4a6ed004cb621ebad75bae91fb3a8b",
   "assemblyRecipePath": "/art_sources/combat/task9_companions/assembly_recipe.json",
-  "assemblyRecipeSha256": "67edfb48e67fe55a3db5aa9aecbc2966d2fd3e9b984be2413627114cb9fc5df3",
+  "assemblyRecipeSha256": "b18ae2a7a852d7f0a20b5c9bf4fd652c6cc98a73e93df7f599e579335bbff7cf",
   "companions": [
     {
       "npcId": "npc_old_survivor",
       "sheetKey": "old_survivor_companion",
       "previewPath": "/art_sources/combat/task9_companions/review_previews/old_survivor_companion_review.png",
-      "previewSha256": "9573bb622ce6a819963d505f1be08cfaac2daff65ae4fde82b5a13fdf4253c96",
+      "previewSha256": "c17678467f8839a78735e01dee55dd14073eb46278aa6c20ed17617b20683922",
       "runtimePath": "/assets/images/combat/spritesheets/companions/old_survivor_companion_sheet.png",
-      "runtimeSha256": "c4b17fe3ef7aeee3dbcd0b1dbf12282a376a5c64750070972b6e1c23a8c6fc5e",
+      "runtimeSha256": "2d6728f188c47fac0a028fa2338c98def481ef083ecd3d3db41f44ce125eb363",
       "skills": [
         {
           "skillId": "old_survivor_cane_strike",
@@ -51,7 +51,7 @@
       ],
       "identityNote": "회색 머리·낡은 코트 체형이 48셀 내내 동일하다.",
       "weaponNote": "목제 지팡이의 형태와 사용 방향이 행별 행동에 맞게 유지된다.",
-      "continuityNote": "확대 보드와 원본 시트를 1:1로 대조했으며 8행 48셀에 빈 셀, 잘린 신체, 이웃 셀 파편, 중복 패딩이 없다.",
+      "continuityNote": "fix round 2 원본 source alpha·runtime·확대 보드를 셀별로 재대조했다. 승인된 f1 파란 패치 가까운 다리 전진/지팡이 지지, f2 close passing, f3 올리브 패치 반대 다리 전진/지팡이 advance, f4 반대 passing, f5 파란 패치 high-knee/앞쪽 재접지, f6 중립 복귀가 축소·재중앙화 뒤에도 유지된다. source 여섯 셀의 최소 좌우 gutter는 49px이고 경계 alpha·cross-cell component는 0이다.",
       "hit": {
         "motionKey": "hit",
         "rowSha256": "e28b5d646cc1ca2d7677f5ecdf67267941227fd0fa4d5604b1ef614944778947",
@@ -115,21 +115,21 @@
       "npcId": "npc_soldier_deserter",
       "sheetKey": "soldier_companion",
       "previewPath": "/art_sources/combat/task9_companions/review_previews/soldier_companion_review.png",
-      "previewSha256": "29b2465dc8c7ad9ee90d1992165cea9b337e426b76c241ddf28683d6b3f42af5",
+      "previewSha256": "80e8bb1476fa26c5325f5d2b0ad045c7beb0b83ea62ea3f2f2c42f63bf5487b9",
       "runtimePath": "/assets/images/combat/spritesheets/soldier_companion_sheet.png",
-      "runtimeSha256": "a3979cf141b99757ec8c6fbdf077f0ee7b56fceb25358fab6a7bbff92d8b0234",
+      "runtimeSha256": "9980a92c5d13cbd7a70f64d0eb27ab50fa8c6d71d53bfab9f5c171c9cf0f388e",
       "skills": [
         {
           "skillId": "deserter_rifle_shot",
           "motionKey": "ranged",
-          "rowSha256": "23bc50511b81cdaa9320e89634f60fd12662d8d34b8771c029bc15b679f6e4b1",
+          "rowSha256": "a8d4f839d512e611332e33fb97d03b0bc8c750e9d85372a3d9bf21bbddbd9077",
           "status": "PASS",
           "note": "deserter_rifle_shot: 조준 또는 투척 준비-방출-복귀의 6프레임이 완전하다."
         },
         {
           "skillId": "deserter_covering_fire",
           "motionKey": "ranged",
-          "rowSha256": "23bc50511b81cdaa9320e89634f60fd12662d8d34b8771c029bc15b679f6e4b1",
+          "rowSha256": "a8d4f839d512e611332e33fb97d03b0bc8c750e9d85372a3d9bf21bbddbd9077",
           "status": "PASS",
           "note": "deserter_covering_fire: 조준 또는 투척 준비-방출-복귀의 6프레임이 완전하다."
         },
@@ -141,9 +141,9 @@
           "note": "deserter_reposition: 체중 이동과 보폭이 이어지는 6프레임이 완전하다."
         }
       ],
-      "identityNote": "거친 얼굴·차콜 전술복이 48셀 내내 동일하다.",
-      "weaponNote": "검은 소총의 형태와 사용 방향이 행별 행동에 맞게 유지된다.",
-      "continuityNote": "확대 보드와 원본 시트를 1:1로 대조했으며 8행 48셀에 빈 셀, 잘린 신체, 이웃 셀 파편, 중복 패딩이 없다.",
+      "identityNote": "각진 거친 한국인 얼굴, 짧은 검은 머리, 차콜 전술복과 plate carrier가 보존 행과 새 ranged 6프레임에서 동일하다.",
+      "weaponNote": "동일한 검은 assault rifle의 stock·receiver·magazine·barrel과 양손 grip이 6프레임 내내 유지되며 f3의 작은 muzzle flash는 총구에 물리적으로 붙어 있다.",
+      "continuityNote": "ranged f1 shoulder, f2 aim, f3 muzzle-attached fire, f4 controlled recoil, f5 sight settle, f6 ready가 구분된다. 반복 조준·추가 총기·weapon morph·detached debris가 없다.",
       "hit": {
         "motionKey": "hit",
         "rowSha256": "f9ccaead95a1536461a9ba2e4904b0045ebf174f7f1b6e35f297cc2730a11c7b",
@@ -161,9 +161,9 @@
       "npcId": "npc_child",
       "sheetKey": "child_companion",
       "previewPath": "/art_sources/combat/task9_companions/review_previews/child_companion_review.png",
-      "previewSha256": "ca1d66a1ad1f3896f3f4c126233a210f33f71dd5f9811734413f09cc322a3833",
+      "previewSha256": "5cd8819b14a218ed3ca3825bbfeba4d802a21488ad18c6686809bbf1f01a2e87",
       "runtimePath": "/assets/images/combat/spritesheets/companions/child_companion_sheet.png",
-      "runtimeSha256": "edcf2003203363ee1890a2aaf0e6b8d4c9140dcf2cd0a1462ac0b6fa96e6c2f9",
+      "runtimeSha256": "1625ea335e35563133c33e30de76b6e8a5d2a1b6e1b843e7f2bebea41123d4fa",
       "skills": [
         {
           "skillId": "child_throw_debris",
@@ -187,14 +187,14 @@
           "note": "child_warning: 지원 도구 사용과 전달 또는 신호가 6프레임으로 구분된다."
         }
       ],
-      "identityNote": "노란 우비·학교 가방의 아동 체형이 48셀 내내 동일하다.",
-      "weaponNote": "막대·투척물·가방의 형태와 사용 방향이 행별 행동에 맞게 유지된다.",
-      "continuityNote": "확대 보드와 원본 시트를 1:1로 대조했으며 8행 48셀에 빈 셀, 잘린 신체, 이웃 셀 파편, 중복 패딩이 없다.",
+      "identityNote": "11세 아동 체형, 노란 우비, 빨간 스카프, 네이비 백팩이 보존 행과 새 hit 6프레임에서 동일하다.",
+      "weaponNote": "새 hit 행에서도 네이비 백팩과 스카프가 몸에 유지되고 별도 무기나 성인 체형이 추가되지 않는다.",
+      "continuityNote": "hit f1 충격, f2-f3 recoil, f4-f5 균형 회복, f6 upright ready가 명확하다. fix round 1에서 f3의 검토된 113px 분리 island만 제거했고 본체·네이비 백팩과 다른 5프레임은 보존했다.",
       "hit": {
         "motionKey": "hit",
-        "rowSha256": "bcfef966d4f0dedc041093bfc755d51242a040a682b94995e8496b2f5c06eea5",
+        "rowSha256": "2cdf14090924dcd889a99fb856c9d966f183f6a1897d10302ff2d7e639f170b3",
         "status": "PASS",
-        "note": "피격 시작-체중 붕괴-마무리 자세가 이어지며 캐릭터와 장비가 잘리지 않는다."
+        "note": "충격→recoil→균형 회복→서 있는 ready의 6프레임이며 마지막 프레임은 death로 읽히지 않는다."
       },
       "death": {
         "motionKey": "death",
@@ -207,14 +207,14 @@
       "npcId": "npc_mechanic",
       "sheetKey": "mechanic_companion",
       "previewPath": "/art_sources/combat/task9_companions/review_previews/mechanic_companion_review.png",
-      "previewSha256": "41495313e921850edd9492a4d5fc6aa43d511f4d00547f98fabcc38c59d100b8",
+      "previewSha256": "31c7386250e024b8fd55a50f25dd7b0d18d42beb41765976e81c36d6188d2c45",
       "runtimePath": "/assets/images/combat/spritesheets/companions/mechanic_companion_sheet.png",
-      "runtimeSha256": "6d2a2c7301f28125934089e7d685635ea2d8505b561b8928ae17c3a33890a5d9",
+      "runtimeSha256": "cc13f9915d1bdfbf29210edbe07ee529973f1eb765a6b1a3e0454bc16c6c49cb",
       "skills": [
         {
           "skillId": "mechanic_wrench",
           "motionKey": "melee",
-          "rowSha256": "a38c8272625d1fdbd5c885a176b5eaa905fa59ace84a58df7b4514d04da65baf",
+          "rowSha256": "84f7f5d22c29fc855265276261ecf39e3f32c1de74d1ad80076d705e59c4175a",
           "status": "PASS",
           "note": "mechanic_wrench: 준비-타격 접촉-회수의 6프레임이 완전하다."
         },
@@ -233,9 +233,9 @@
           "note": "mechanic_tripwire: 지원 도구 사용과 전달 또는 신호가 6프레임으로 구분된다."
         }
       ],
-      "identityNote": "기름 묻은 작업복·고글이 48셀 내내 동일하다.",
-      "weaponNote": "대형 렌치·수리 도구·공구함의 형태와 사용 방향이 행별 행동에 맞게 유지된다.",
-      "continuityNote": "확대 보드와 원본 시트를 1:1로 대조했으며 8행 48셀에 빈 셀, 잘린 신체, 이웃 셀 파편, 중복 패딩이 없다.",
+      "identityNote": "좁은 중년 한국인 얼굴, 짧은 검은 머리, 이마의 goggles, grease-dark coveralls, tool belt와 boots가 보존 행과 새 melee/guard 12프레임에서 동일하다.",
+      "weaponNote": "melee의 동일 대형 silver adjustable wrench와 guard의 동일 직사각 red metal toolbox가 각 6프레임에서 일정한 형상·크기로 유지되고 손에서 이탈하거나 shield로 변하지 않는다.",
+      "continuityNote": "melee는 ready→wind-up→strike→follow-through→recover→ready, guard는 toolbox lift→torso brace→impact absorb→lower/stabilize→stable guard로 이어지며 두 prop 의미가 섞이지 않는다.",
       "hit": {
         "motionKey": "hit",
         "rowSha256": "4a9ab155aaeaf9c596e7fbb72d7487e404e11dcbef82813913f31cb7f02b6aab",
@@ -253,9 +253,9 @@
       "npcId": "npc_student",
       "sheetKey": "student_companion",
       "previewPath": "/art_sources/combat/task9_companions/review_previews/student_companion_review.png",
-      "previewSha256": "c5a6e5ae3f2bb000c7beebf6211b3d2df527423b48e33f597b74ba6031d9f001",
+      "previewSha256": "f578f0ae50c9acf1c15f7fe13ce577b4b21e03ba0428508fd39b419b11f43200",
       "runtimePath": "/assets/images/combat/spritesheets/companions/student_companion_sheet.png",
-      "runtimeSha256": "8dde2e38302b6f0e11240cbaf9598a18c4ddb2a5f7292dcc3b62bfca69372511",
+      "runtimeSha256": "3b8298b3f80303a220e63c007606245b107c2311d443a56c8e584d5331c7ce9f",
       "skills": [
         {
           "skillId": "student_improvised_strike",
@@ -279,9 +279,9 @@
           "note": "student_quick_step: 체중 이동과 보폭이 이어지는 6프레임이 완전하다."
         }
       ],
-      "identityNote": "안경·남색 재킷·백팩이 48셀 내내 동일하다.",
-      "weaponNote": "우산·책·응급 처치 가방의 형태와 사용 방향이 행별 행동에 맞게 유지된다.",
-      "continuityNote": "확대 보드와 원본 시트를 1:1로 대조했으며 8행 48셀에 빈 셀, 잘린 신체, 이웃 셀 파편, 중복 패딩이 없다.",
+      "identityNote": "round glasses, dark bob, navy school jacket, gray hoodie, faded jeans와 black-and-white sneakers가 보존 r0/r5와 새 guard 6프레임에서 동일하다.",
+      "weaponNote": "r0/r5의 동일한 compact dark-navy school backpack 하나가 작은 무표식 전면 포켓, straps, zipper seams와 둥근 school-bag silhouette를 유지한 채 shoulder에서 chest로 회전한다. 흰 medical cross, first-aid icon, support kit 형태, extra bag, drop, growth, morph가 없다.",
+      "continuityNote": "guard f1 shoulder reach, f2 chest 이동, f3 torso brace, f4 impact absorb, f5 protected stabilize, f6 stable chest guard가 구분되며 backpack의 장비 범주·크기·표면 특징이 r0/r5와 일치한다.",
       "hit": {
         "motionKey": "hit",
         "rowSha256": "335743edbb147634187ed0d9f7378425e19456108ee0b1da9ea5f4e4d0604aca",
@@ -299,9 +299,9 @@
       "npcId": "npc_dog",
       "sheetKey": "dog_companion",
       "previewPath": "/art_sources/combat/task9_companions/review_previews/dog_companion_review.png",
-      "previewSha256": "2b70752f7924079b77967d75bb7d3eb29a1d86bc9d8d4c61c228ec17977cf1ac",
+      "previewSha256": "06a5cd5efb41505c6919858050965a71acbd6c96aa6c17d87e07e7012d6dd360",
       "runtimePath": "/assets/images/combat/spritesheets/companions/dog_companion_sheet.png",
-      "runtimeSha256": "86fe66142c9ddc0b36e7adef7cfd3c4ab4e3822defb1144ab086684ba76feb6e",
+      "runtimeSha256": "e794c70b8f6bece89fe3d862218a45684a11173485bea4fbcc3b800235797b41",
       "skills": [
         {
           "skillId": "dog_bite",
@@ -325,20 +325,20 @@
           "note": "dog_track_weakness: 지원 도구 사용과 전달 또는 신호가 6프레임으로 구분된다."
         }
       ],
-      "identityNote": "크림색 진돗개 체형·파란 구조 하네스이 48셀 내내 동일하다.",
-      "weaponNote": "물기·짖기·추적 자세의 형태와 사용 방향이 행별 행동에 맞게 유지된다.",
-      "continuityNote": "확대 보드와 원본 시트를 1:1로 대조했으며 8행 48셀에 빈 셀, 잘린 신체, 이웃 셀 파편, 중복 패딩이 없다.",
+      "identityNote": "크림색 진돗개 체형과 파란 구조 하네스가 보존 행, hit 6프레임, death 6프레임에서 동일하다.",
+      "weaponNote": "파란 하네스가 모든 새 프레임에서 몸에 붙어 유지되고 추가 장비나 품종 변화가 없다.",
+      "continuityNote": "hit는 충격 후 네 발 alert로 복귀하고, death만 standing→약화→side lower→lying hold로 끝난다. 피·gore 없이 두 행의 의미가 분리된다.",
       "hit": {
         "motionKey": "hit",
-        "rowSha256": "0b473f3c70dd5dec17779bed979d2765218b7754aa798848d5c1fa832e2e437d",
+        "rowSha256": "0708101315485f134ce87444ffa137ab87de466121fb3ca518e91ca65978cf58",
         "status": "PASS",
-        "note": "피격 시작-체중 붕괴-마무리 자세가 이어지며 캐릭터와 장비가 잘리지 않는다."
+        "note": "충격→recoil→균형 회복→네 발 alert의 6프레임이며 쓰러짐으로 끝나지 않는다."
       },
       "death": {
         "motionKey": "death",
-        "rowSha256": "4b69ee9bb78af04e6e46b614f9d7d2f32236e9e0bb18fe2e782a7cc6f43e96e3",
+        "rowSha256": "2d1d5f2cc8c2fa2b5a87b756ee2fa016e6bc592f6c6dce243e4919b0812c7cdb",
         "status": "PASS",
-        "note": "직립 또는 무릎 자세에서 완전한 쓰러짐으로 이어지고 마지막 프레임도 전신이 셀 안에 남는다."
+        "note": "standing→약화→side lower→lying hold의 6프레임이며 마지막 두 프레임의 측면 누운 자세가 유지된다."
       }
     },
     {
@@ -391,9 +391,9 @@
       "npcId": "npc_minjun",
       "sheetKey": "minjun_companion",
       "previewPath": "/art_sources/combat/task9_companions/review_previews/minjun_companion_review.png",
-      "previewSha256": "70e6840da776f00662fab29fda322df9aa0e2c2418b6f1117532ac95443fb4ef",
+      "previewSha256": "8e7a011a4db201fe85fa36e4a2954e4be88191fb966417de8b95f833f23e5d69",
       "runtimePath": "/assets/images/combat/spritesheets/companions/minjun_companion_sheet.png",
-      "runtimeSha256": "d92e60a972c7ce8fd1fa729453c7a96cadefc909c107a9e701a40c90ec690c07",
+      "runtimeSha256": "67e5104718c26d0968aebc676d29bb42632daf10a1afcf3ea7f802091c5be2a8",
       "skills": [
         {
           "skillId": "minjun_pistol",
@@ -417,14 +417,14 @@
           "note": "minjun_command: 지원 도구 사용과 전달 또는 신호가 6프레임으로 구분된다."
         }
       ],
-      "identityNote": "짧은 머리·올리브 전술 의료복이 48셀 내내 동일하다.",
-      "weaponNote": "권총·전투 의료 가방의 형태와 사용 방향이 행별 행동에 맞게 유지된다.",
-      "continuityNote": "확대 보드와 원본 시트를 1:1로 대조했으며 8행 48셀에 빈 셀, 잘린 신체, 이웃 셀 파편, 중복 패딩이 없다.",
+      "identityNote": "buzz cut, 올리브 medic 복장, Korean patch, vest와 어깨 위 roll·등 뒤 외곽이 보이는 큰 olive field backpack이 보존 행과 새 hit 6프레임에서 동일하다.",
+      "weaponNote": "큰 olive field backpack과 검은 권총이 6프레임 모두 명확히 유지되며 recoil 뒤 upright pistol-ready로 복귀한다.",
+      "continuityNote": "hit f1 upright impact, f2-f3 recoil, f4-f5 planted brace/recovery, f6 fully upright ready가 이어지고 backpack 소실·rifle·fall·death·피·gore가 없다.",
       "hit": {
         "motionKey": "hit",
-        "rowSha256": "4e5f9e5c3f5f3152fb51910c97b27e35ae4c377c00199ffc74dd4bab91db7aed",
+        "rowSha256": "1eda7772b3151cd61b8273e5c03f2e6d154ad2f46840cc27cd5557df2dbed68c",
         "status": "PASS",
-        "note": "피격 시작-체중 붕괴-마무리 자세가 이어지며 캐릭터와 장비가 잘리지 않는다."
+        "note": "권총과 의료 장비를 유지한 충격→recoil→균형 회복→upright ready의 6프레임이다."
       },
       "death": {
         "motionKey": "death",
@@ -437,9 +437,9 @@
       "npcId": "npc_sohee",
       "sheetKey": "sohee_companion",
       "previewPath": "/art_sources/combat/task9_companions/review_previews/sohee_companion_review.png",
-      "previewSha256": "a253c70d0e126cc9edadf892a448fb49824dd5a0e2784ecc07614f7a36d6944e",
+      "previewSha256": "333c967662e9346561fa6f9513a92eb1fa3c75adf93443e8bd431479c85065e2",
       "runtimePath": "/assets/images/combat/spritesheets/companions/sohee_companion_sheet.png",
-      "runtimeSha256": "29e3f314e83a53659d7edea9ecf4b239d70f440b948b682765a00db17dd75048",
+      "runtimeSha256": "2ec0b8f938724a407c5ddf8eba46d69a3b197dce852e024a20d967ee7631cbfe",
       "skills": [
         {
           "skillId": "sohee_precise_shot",
@@ -458,25 +458,25 @@
         {
           "skillId": "sohee_focus",
           "motionKey": "support",
-          "rowSha256": "905b9af68f580f34a1c76ad0edd3037766330a3a067fa2acf5aa36f1f72f5789",
+          "rowSha256": "f6477f1b231b8facccf782cffdb84779e9d1644036a3d45e59f91616a0b58968",
           "status": "PASS",
-          "note": "sohee_focus: 지원 도구 사용과 전달 또는 신호가 6프레임으로 구분된다."
+          "note": "sohee_focus: 약병 확인-계량 복용-호흡 집중-소총을 낮춘 ready 복귀가 6프레임으로 구분되며 조준·발사가 없다."
         }
       ],
-      "identityNote": "안경·보라색 코트·약품 가방이 48셀 내내 동일하다.",
-      "weaponNote": "조준 카빈의 형태와 사용 방향이 행별 행동에 맞게 유지된다.",
-      "continuityNote": "확대 보드와 원본 시트를 1:1로 대조했으며 8행 48셀에 빈 셀, 잘린 신체, 이웃 셀 파편, 중복 패딩이 없다.",
+      "identityNote": "안경·묶은 검은 머리·보라색 코트·회색 바지·흰 운동화·올리브 약품 가방이 48셀 내내 동일하다.",
+      "weaponNote": "검은 소총은 support에서 낮게 유지되고 move·hit·death에서도 보존되며 기존 ranged·guard 행은 변경되지 않았다.",
+      "continuityNote": "Task 4 fix round 1 확대 보드와 원본 시트를 1:1로 대조했다. move f1은 큰·밝은 screen-right near boot의 toe-up contact, f2는 두 발 close passing, f3은 작은·어두운 screen-right far boot의 flat plant와 큰 screen-left near boot trailing로 sole·depth가 반대, f4는 opposite close passing, f5는 낮은 골반과 굽힌 무릎의 별도 near push-off/contact, f6은 두 발 side-by-side balanced neutral이다. source 최소 좌우 gutter는 118px이며 셀 경계 alpha와 cross-cell component가 0이다.",
       "hit": {
         "motionKey": "hit",
-        "rowSha256": "cf652ee74d13339f27e33666d7453148148896eb326799f3a23bb5467ccc1502",
+        "rowSha256": "6a1d7c6cc4e4787f1026c4af552a3517b3b7c303ae624a9c6b8ed51ffb5d637b",
         "status": "PASS",
-        "note": "피격 시작-체중 붕괴-마무리 자세가 이어지며 캐릭터와 장비가 잘리지 않는다."
+        "note": "갑작스러운 상체 충격-최대 후방 recoil-전방 굴곡-발 고정-전투 ready 복귀가 이어지며 붕괴·사망으로 섞이지 않는다."
       },
       "death": {
         "motionKey": "death",
-        "rowSha256": "a202e72a63fcc16e6687a693ea47f69d92eb0acff122a526d08cef7856f94ed0",
+        "rowSha256": "8d2a9b66b489854b95f5b487064a132a79e9192abdd5c2c4aa744fcfcf633388",
         "status": "PASS",
-        "note": "직립 또는 무릎 자세에서 완전한 쓰러짐으로 이어지고 마지막 프레임도 전신이 셀 안에 남는다."
+        "note": "직립 부상-무릎 약화-한쪽 무릎 접지-측면 낙상-누운 전환-최종 prone 정지로 진행하며 마지막 전신이 셀 안에 남는다."
       }
     },
     {
@@ -529,9 +529,9 @@
       "npcId": "npc_yeongcheol",
       "sheetKey": "yeongcheol_companion",
       "previewPath": "/art_sources/combat/task9_companions/review_previews/yeongcheol_companion_review.png",
-      "previewSha256": "c391afb3825a0eea62776ac5d37bd1b04a056cb577a3785320a81e45ae858131",
+      "previewSha256": "542046db4bf4b16a0b77431eb66d411c2984ca7950db01b724c67e8cd2fa24cc",
       "runtimePath": "/assets/images/combat/spritesheets/companions/yeongcheol_companion_sheet.png",
-      "runtimeSha256": "08136ebf510509e90e15e8df25c15eea1fdad92bbe5751723cbd5efd069a0431",
+      "runtimeSha256": "71497f531f62110789a421f4ad12878806bd4b93cef3d436e5d51cc496de6e88",
       "skills": [
         {
           "skillId": "yeongcheol_axe",
@@ -555,14 +555,14 @@
           "note": "yeongcheol_rally: 지원 도구 사용과 전달 또는 신호가 6프레임으로 구분된다."
         }
       ],
-      "identityNote": "그을린 소방복이 48셀 내내 동일하다.",
-      "weaponNote": "구조 도끼·로프·구조 방패의 형태와 사용 방향이 행별 행동에 맞게 유지된다.",
-      "continuityNote": "확대 보드와 원본 시트를 1:1로 대조했으며 8행 48셀에 빈 셀, 잘린 신체, 이웃 셀 파편, 중복 패딩이 없다.",
+      "identityNote": "stocky 체형, moustache, 그을린 turnout reflective 복장, red helmet가 보존 행과 새 hit 6프레임에서 동일하다.",
+      "weaponNote": "구조 도끼와 red helmet가 6프레임 모두 유지되고 recoil 뒤 도끼를 든 upright ready로 복귀한다.",
+      "continuityNote": "hit f1 충격, f2-f3 heavy recoil, f4-f5 planted brace/recovery, f6 upright ready가 이어지며 fall·death·피·gore가 없다.",
       "hit": {
         "motionKey": "hit",
-        "rowSha256": "9a9200e40dbf9c1c683cff6b0f2b7999957154de441ff0834c346d7c8f957740",
+        "rowSha256": "dec7c66f6eabf12f9db0bdb7fe6ceb3e497caed6f59cc82b68b4f17023df0502",
         "status": "PASS",
-        "note": "피격 시작-체중 붕괴-마무리 자세가 이어지며 캐릭터와 장비가 잘리지 않는다."
+        "note": "구조 도끼를 유지한 충격→heavy recoil→brace/recovery→upright ready의 6프레임이다."
       },
       "death": {
         "motionKey": "death",
@@ -575,9 +575,9 @@
       "npcId": "npc_daehan",
       "sheetKey": "daehan_companion",
       "previewPath": "/art_sources/combat/task9_companions/review_previews/daehan_companion_review.png",
-      "previewSha256": "7e6f0fcbb8f573476aaaa979f57c5bcb9a4f35a614ba86a6d00a0b97b553fb0f",
+      "previewSha256": "7161bf61d778f35139f71a5a5a2e2d23da02b02a708f5423526a2be7e4ac1d5c",
       "runtimePath": "/assets/images/combat/spritesheets/companions/daehan_companion_sheet.png",
-      "runtimeSha256": "b5881faa233ffd54927d6a7e15393877c3abfdaf4597f7aeca5fd6e396f72f57",
+      "runtimeSha256": "cfe836131c1ca015b9397580b25ef84c66e3cc8e06e8e667c4ff848cb90c865b",
       "skills": [
         {
           "skillId": "daehan_wrench",
@@ -601,20 +601,20 @@
           "note": "daehan_overcharge: 지원 도구 사용과 전달 또는 신호가 6프레임으로 구분된다."
         }
       ],
-      "identityNote": "회색 작업복·가죽 앞치마이 48셀 내내 동일하다.",
-      "weaponNote": "대형 렌치·전기 장치·금속 방벽의 형태와 사용 방향이 행별 행동에 맞게 유지된다.",
-      "continuityNote": "확대 보드와 원본 시트를 1:1로 대조했으며 8행 48셀에 빈 셀, 잘린 신체, 이웃 셀 파편, 중복 패딩이 없다.",
+      "identityNote": "fix round 1 review board에서 새 3행은 보존 5행과 함께 각진 중년 얼굴, 짧은 검은 머리, 거친 붓질과 표면 마모, 저채도 회녹 작업복, 낡은 갈색 앞치마·공구 벨트로 읽힌다. 최초 결과의 적색·자홍 rim light, 보라 색온도와 매끈한 3D 표면은 보이지 않는다.",
+      "weaponNote": "같은 형태의 대형 steel adjustable wrench가 새 18프레임 모두에서 손, 허리·등 또는 몸 옆에 보인다. ranged f4에는 본체와 떨어진 소형 장치와 짧은 cyan-blue arc가 보이고, hit f4는 양손의 대형 렌치로 recoil을 버티며, death f5/f6에는 렌치가 prone 신체 옆에 놓인다. 권총·소총·군복·의료 장비는 보이지 않는다.",
+      "continuityNote": "ranged는 장치 준비→활성화→우측 조준→분리 장치와 짧은 청색 arc release→팔로스루→렌치 ready, hit는 upright→충격→최대 recoil→대형 렌치 brace→균형 회복→전투 ready, death는 직립 부상→약화→무릎→측면 낙상→prone settle→prone hold로 구분된다. canonical source 최소 좌/우 gutter는 32/33px, boundary alpha 0, cross-cell component 0이며 runtime 48셀에 빈 셀이나 이웃 셀 파편이 없다.",
       "hit": {
         "motionKey": "hit",
-        "rowSha256": "efb62c9617b9a58b989567d04ae14592ea9060dc459397a49e2d0ef0a60444be",
+        "rowSha256": "e84f28c0546de0422f4294472f64df21b23d31134e08b01b9bf31bb347f6b29b",
         "status": "PASS",
-        "note": "피격 시작-체중 붕괴-마무리 자세가 이어지며 캐릭터와 장비가 잘리지 않는다."
+        "note": "직립 준비에서 몸통 충격·최대 recoil을 거쳐 f4에서 양손으로 대형 렌치를 세워 버틴 뒤 마지막 프레임에 전투 자세로 복귀한다."
       },
       "death": {
         "motionKey": "death",
-        "rowSha256": "e5c88d1317711565b7c3632cfd32b13ee1708620b8c6ffb5a63e502e87ce81b4",
+        "rowSha256": "16c4fa5ae6b135c4d279dadc93ba7def1da32ce5d3d3f6b984db33929b51f108",
         "status": "PASS",
-        "note": "직립 또는 무릎 자세에서 완전한 쓰러짐으로 이어지고 마지막 프레임도 전신이 셀 안에 남는다."
+        "note": "직립 부상에서 무릎 약화·측면 낙상을 거쳐 마지막 두 프레임이 prone settle과 prone hold로 끝나며 대형 렌치가 몸 옆에 남는다."
       }
     },
     {
@@ -805,9 +805,9 @@
       "npcId": "npc_tower_doctor",
       "sheetKey": "tower_doctor_companion",
       "previewPath": "/art_sources/combat/task9_companions/review_previews/tower_doctor_companion_review.png",
-      "previewSha256": "2c91095b5351ba98f966e1449080fe596637c2ae0b49828034e9ce70f3ae3b74",
+      "previewSha256": "894e5fe79b2d601fa4ff8f21f5675fc778052215f9069a0a5e80587dcfadc140",
       "runtimePath": "/assets/images/combat/spritesheets/companions/tower_doctor_companion_sheet.png",
-      "runtimeSha256": "e70c01d130cbd783dc5944a24b8e492513b80ea53feed31d5ec0f9040bc6f75e",
+      "runtimeSha256": "78547458686c6795633c44f4d15f0e0774b990f74295ce4e46860d5df21d0caa",
       "skills": [
         {
           "skillId": "tower_doctor_scalpel",
@@ -831,14 +831,14 @@
           "note": "tower_doctor_stimulant: 지원 도구 사용과 전달 또는 신호가 6프레임으로 구분된다."
         }
       ],
-      "identityNote": "땋은 머리·어두운 의료복이 48셀 내내 동일하다.",
-      "weaponNote": "메스·주사기·금속 의료 케이스의 형태와 사용 방향이 행별 행동에 맞게 유지된다.",
-      "continuityNote": "확대 보드와 원본 시트를 1:1로 대조했으며 8행 48셀에 빈 셀, 잘린 신체, 이웃 셀 파편, 중복 패딩이 없다.",
+      "identityNote": "묶은 머리, 검은 현장 의료복, gray medical case가 보존 행과 새 hit 6프레임에서 동일하다.",
+      "weaponNote": "gray medical case가 6프레임 모두 유지되고 충격 때 흔들린 뒤 upright ready에서 다시 안정된다.",
+      "continuityNote": "hit f1 충격, f2-f3 recoil, f4-f5 case swing과 균형 회복, f6 upright ready가 이어지며 fall·death·피·gore가 없다.",
       "hit": {
         "motionKey": "hit",
-        "rowSha256": "d064c3993cfd41b9eff55d9b849eb49d8691ec749dd880d28136c134cb8af51e",
+        "rowSha256": "dd0bfb673addfc5bc932d2e482606cb3e19bccc1523c1641f5bd4573c2e4268d",
         "status": "PASS",
-        "note": "피격 시작-체중 붕괴-마무리 자세가 이어지며 캐릭터와 장비가 잘리지 않는다."
+        "note": "gray case를 유지한 충격→recoil→균형 회복→upright ready의 6프레임이다."
       },
       "death": {
         "motionKey": "death",
@@ -851,9 +851,9 @@
       "npcId": "npc_sous_chef",
       "sheetKey": "sous_chef_companion",
       "previewPath": "/art_sources/combat/task9_companions/review_previews/sous_chef_companion_review.png",
-      "previewSha256": "1423139404f8be5b8a545bbcfafc937cb4d827825e8f5ca0b5e9a2b7f0b4e75b",
+      "previewSha256": "5e1582ecec88065f747e24bd23c63f952bfe4870fcd8d99182f426b62e430477",
       "runtimePath": "/assets/images/combat/spritesheets/companions/sous_chef_companion_sheet.png",
-      "runtimeSha256": "b453f8be0c7e7204acb96ae8261b58bbac5f00d5cec1d70be8b9153a9741e1bb",
+      "runtimeSha256": "12d4f7e91ce7773af5f3555988f2b052ddbac156e346ba90662c5501ad3e51ad",
       "skills": [
         {
           "skillId": "sous_chef_cleaver",
@@ -879,7 +879,7 @@
       ],
       "identityNote": "짙은 초록 조리복·줄무늬 앞치마이 48셀 내내 동일하다.",
       "weaponNote": "식칼·배급 주머니·도마의 형태와 사용 방향이 행별 행동에 맞게 유지된다.",
-      "continuityNote": "확대 보드와 원본 시트를 1:1로 대조했으며 8행 48셀에 빈 셀, 잘린 신체, 이웃 셀 파편, 중복 패딩이 없다.",
+      "continuityNote": "fix round 2 원본 source alpha·runtime·확대 보드를 셀별로 재대조했다. 이동 r5는 f1 큰·밝은 near boot toe-up contact, f2 두 발이 골반 아래 모인 true passing, f3 작은·어두운 far boot의 flat contact와 반대 occlusion, f4 다른 무릎이 앞을 지나는 close passing, f5 더 낮은 골반의 distinct near-leg wide contact, f6 두 발 close neutral return으로 읽힌다. runtime normalized lower-alpha IoU는 f1/f6 0.369, f2/f5 0.333, f1/f3 0.568이다. 식칼은 계속 낮고 동일하며 source 최소 gutter 33px, 경계 alpha·cross-cell component 0이다.",
       "hit": {
         "motionKey": "hit",
         "rowSha256": "1e6c65a6891540488661de0a4b8f77bcb291904f77d514e4d0cb2b108f0a6d11",

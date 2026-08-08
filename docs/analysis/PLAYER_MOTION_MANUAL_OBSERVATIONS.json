@@ -37,13 +37,13 @@
     },
     {
       "sheetKey": "firefighter_m",
-      "imageSha256": "bc89c75a9cd6bf492a87e6a1a0d07318ec1e088685fe598c6c1e07ed4c8f059d",
+      "imageSha256": "763166c2e263395a11d831dad19296d22555087a1c6a9bf80395344b831906bb",
       "status": "PASS",
       "rework": null,
       "rows": [
         {"row": 0, "motion": "idle", "pose": "도끼를 든 대기 자세", "weapon": "소방 도끼 형태 유지", "anchor": "전신 높이 일정", "clipping": "헬멧·도끼·발 잘림 없음", "chroma": "반사띠와 배경 키가 구분됨", "status": "PASS", "rework": null},
         {"row": 1, "motion": "melee", "pose": "도끼 준비·휘두름·회수 순서", "weapon": "도끼날 방향과 손 위치 일치", "anchor": "전진량 안정", "clipping": "도끼 궤적 잘림 없음", "chroma": "도끼 외곽 잔상 없음", "status": "PASS", "rework": null},
-        {"row": 2, "motion": "ranged", "pose": "원거리 장비 사용 자세", "weapon": "소방 장비를 겨냥하는 동작", "anchor": "상체 반동 중 발 고정", "clipping": "장비 끝 잘림 없음", "chroma": "장비 외곽 잔상 없음", "status": "PASS", "rework": null},
+        {"row": 2, "motion": "ranged", "pose": "flare launcher 준비·조준·발사·반동·복귀가 순차적으로 구분됨", "weapon": "동일한 소형 적색 flare launcher가 여섯 프레임에서 형태와 크기를 유지함", "anchor": "전신 크기와 양발 기준선이 셀 안에서 안정적으로 유지됨", "clipping": "전신·발사기·muzzle spark·진행 flare 잘림이나 프레임 겹침 없음", "chroma": "strict boundary 검사에서 발사기·반사띠 외곽 초록 잔상 없음", "status": "PASS", "rework": null},
         {"row": 3, "motion": "support", "pose": "구조 지원 손동작", "weapon": "도끼를 안전하게 제어", "anchor": "정지 위치 일정", "clipping": "손·장비 잘림 없음", "chroma": "반사 장비 주변 잔상 없음", "status": "PASS", "rework": null},
         {"row": 4, "motion": "guard", "pose": "도끼 자루를 활용한 방어", "weapon": "도끼가 몸 앞에 위치", "anchor": "무게 중심 낮음", "clipping": "외곽 잘림 없음", "chroma": "실루엣 깨끗함", "status": "PASS", "rework": null},
         {"row": 5, "motion": "move", "pose": "중장비 상태의 전진 보폭", "weapon": "도끼를 몸 가까이 듦", "anchor": "발 기준선 일관", "clipping": "발·도끼 잘림 없음", "chroma": "이동 외곽 잔상 없음", "status": "PASS", "rework": null},

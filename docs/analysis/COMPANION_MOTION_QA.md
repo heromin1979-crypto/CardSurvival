@@ -10,6 +10,10 @@
 
 수동 판정은 contact sheet에서 동료별 identity, 무기, 8개 의미 행, 6프레임 연속성, 잘림·슬라이드·잘못된 행 재사용 여부를 직접 관찰한 결과다. 자동 verifier는 이 판정을 만들지 않으며, 별도 관찰 데이터의 ID/해시를 manifest, loadout, runtime PNG, recipe와 교차 검증한다.
 
+2026-08-08 fix round 2 선택적 재검토에서는 `old_survivor_companion`과 `sous_chef_companion`의 이동 r5를 다시 교체하고 original 해상도 source alpha·runtime·개별 확대 보드를 셀별로 대조했다. 노년 생존자의 승인된 발/지팡이 phase는 유지됐고 source 여섯 셀의 좌우 gutter가 모두 49px 이상이다. 부주방장은 f1 큰·밝은 near boot toe-up contact → f2 두 발 close true passing → f3 작은·어두운 far boot flat contact와 반대 occlusion → f4 opposite close passing → f5 lowered-pelvis near-leg wide contact → f6 close neutral return으로 읽힌다. runtime normalized lower-alpha IoU는 f1/f6 `0.369`, f2/f5 `0.333`, f1/f3 `0.568`이며 이전 반복 실루엣 수치보다 낮다. 두 source/runtime 모두 셀 경계 alpha와 cross-cell component가 0이고 source 최소 gutter는 각각 49px/33px이며, 다른 188개 비대상 행은 기준선과 동일하다.
+
+2026-08-08 Task 4 fix round 1에서는 `sohee_companion`의 move r5만 다시 교체하고 support r3, hit r6, death r7 raw source pixels를 보존했다. original source/runtime/review에서 move f1은 큰·밝은 screen-right near boot toe-up contact, f2는 두 발 close true passing, f3은 작은·어두운 screen-right far boot flat plant와 큰 screen-left near boot trailing으로 sole·depth·occlusion이 반대, f4는 opposite close passing, f5는 낮은 골반·굽힌 무릎의 별도 near push-off/contact, f6은 두 발 side-by-side balanced neutral로 읽힌다. move source 여섯 셀의 최소 좌우 gutter는 118px, boundary alpha 0, cross-cell component 0이며, 비대상 188개 행은 기준선과 동일하다.
+
 ## 60개 스킬 수동 판정
 
 각 셀의 세 스킬은 모두 개별 `PASS`다. 상세 관찰 문장은 수동 관찰 원본에 스킬 ID별로 보존한다.
@@ -68,7 +72,7 @@
 - 스킬: 60개 고유 ID, `COMBAT_SKILLS.motionKey`와 8행 의미 계약 일치
 - PNG: 20개 모두 1536×2048, 8-bit RGBA, 6×8, 셀 256×256
 - 셀: 960/960 populated, 960/960 transparent corners
-- strict chroma: `opaqueGreen=0`, `fringeGreen=0`, `hiddenRgb=0`, `removedComponents=0`, `staleAllowlist=0`
+- strict chroma: Task 3 alpha 2종/runtime r5 2행과 Task 4 Sohee canonical alpha/runtime target 4행에서 각각 `opaqueGreen=0`, `fringeGreen=0`, `hiddenRgb=0`, `boundaryGreen=0`, `removedComponents=0`, `staleAllowlist=0`
 - 수동 증거: 스킬 60/60 PASS, hit/death 40/40 PASS
 
 ## 종합 판정

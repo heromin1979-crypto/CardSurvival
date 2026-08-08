@@ -667,7 +667,7 @@ const ITEMS_MISC = {
   },
   fish_cooked: {
     id: 'fish_cooked',
-    name: '구운 생선',
+    name: '익힌 생선',
     type: 'consumable',
     subtype: 'food',
     rarity: 'common',

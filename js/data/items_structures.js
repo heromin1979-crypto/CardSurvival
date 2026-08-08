@@ -28,6 +28,8 @@ const ITEMS_STRUCTURES = {
     icon: '🔥', description: '긴급 상황에서 급조한 화톳불. 3턴만 지속되며 비·눈에 바로 꺼진다. 요리 가능.',
     tags: ['structure', 'heat', 'temp'],
     onTick: { temperature: 1, noise: 2 },
+    fuelConsumePerTP: 5,        // 내구도 15 → 3TP 소진
+    toolProvides: ['campfire'],
     dismantleTP: 0,
     dismantle: [
       { definitionId: 'kindling', qty: 1, chance: 0.4 },
@@ -41,6 +43,8 @@ const ITEMS_STRUCTURES = {
     icon: '♨️', description: '고철과 돌로 만든 방풍 화로. 비·눈에도 꺼지지 않으며 연료 소모가 적다. 요리·숯 생산 가능.',
     tags: ['structure', 'heat', 'crafted', 'weather_resistant'],
     onTick: { temperature: 2, noise: 2 },
+    fuelConsumePerTP: 0.3,      // 방풍 구조로 캠프파이어(0.5)보다 연료 효율이 높다
+    toolProvides: ['campfire'],
     dismantleTP: 2,
     dismantle: [
       { definitionId: 'scrap_metal', qty: 2, chance: 0.8 },
@@ -513,12 +517,12 @@ const ITEMS_STRUCTURES = {
   },
 
   destroyed_kiosk: {
-    id: 'destroyed_kiosk', name: '파괴된 매점', type: 'structure', subtype: 'salvage',
-    rarity: 'rare', weight: 20.0,
+    id: 'destroyed_kiosk', name: '매점 잔해', type: 'structure', subtype: 'salvage',
+    rarity: 'rare', weight: 15.0,
     defaultDurability: 100, defaultContamination: 0,
-    icon: '🏪', description: '편의점 잔해. 진열대와 간판에서 재료를 얻는다.',
+    icon: '🏪', description: '길가에 놓였던 부스형 가판. 산산조각 난 유리장과 목재 진열대가 그대로 남아 뜯어낼 게 많다.',
     tags: ['structure', 'salvage'],
-    dismantleTP: 4,
+    dismantleTP: 3,
     dismantle: [
       { definitionId: 'wood', qty: 4, chance: 0.8 },
       { definitionId: 'scrap_metal', qty: 3, chance: 0.7 },

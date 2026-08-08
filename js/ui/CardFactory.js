@@ -381,7 +381,6 @@ const CARD_IMAGES = {
   // 도구
   bait_insect:           'assets/images/tools/bait_insect.png',
   bait_worm:             'assets/images/tools/bait_worm.png',
-  fishing_rod_basic:     'assets/images/tools/fishing_rod_basic.png',
   fishing_rod_improved:  'assets/images/tools/fishing_rod_improved.png',
   kitchen_knife:         'assets/images/tools/kitchen_knife.png',
   mortar_pestle:         'assets/images/tools/mortar_pestle.png',

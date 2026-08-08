@@ -485,7 +485,14 @@ def _frame_boxes(image: Image.Image, cols: int, rows: int) -> list[tuple[int, in
     ]
 
 
-def analyze_chroma_grid(image: Image.Image, cols: int = 1, rows: int = 1, path: Path | None = None) -> dict[str, int]:
+def analyze_chroma_grid(
+    image: Image.Image,
+    cols: int = 1,
+    rows: int = 1,
+    path: Path | None = None,
+    strict_boundary_cells: set[tuple[int, int]] | frozenset[tuple[int, int]] | None = None,
+) -> dict[str, int]:
+    """Analyze each cell; an explicit cell set overrides the sheet-level strict policy."""
     totals = {"opaqueGreen": 0, "fringeGreen": 0, "hiddenRgb": 0, "boundaryGreen": 0, "removedComponents": 0, "staleAllowlist": 0}
     allowlist = component_allowlist() if path else []
     sheet_key = sheet_identity_for_path(path)[0] if path else ""
@@ -494,7 +501,11 @@ def analyze_chroma_grid(image: Image.Image, cols: int = 1, rows: int = 1, path: 
         result = analyze_chroma(
             image.crop(box),
             component_specs_for(sheet_key, path, row, col, allowlist) if path else [],
-            strict_boundary=sheet_key in STRICT_BOUNDARY_SHEETS if path else False,
+            strict_boundary=(
+                (row, col) in strict_boundary_cells
+                if strict_boundary_cells is not None
+                else sheet_key in STRICT_BOUNDARY_SHEETS if path else False
+            ),
         )
         for key, value in result.items():
             totals[key] += value

@@ -9,3 +9,12 @@ export function providesTool(definitionId, toolId) {
   if (definitionId === toolId) return true;
   return GameData.items[definitionId]?.toolProvides?.includes(toolId) ?? false;
 }
+
+// 연료가 바닥난 화기는 꺼진 상태다. 카드 자체는 재점화·연료 보충 대상으로 보드에
+// 남기 때문에 존재 여부만으로는 불이 붙었는지 알 수 없어 내구도까지 봐야 한다.
+// 구역 설치 구조물은 인스턴스 형태가 달라(id/durability) 값 두 개를 직접 받는다.
+export function isUnlitFire(definitionId, durability) {
+  const def = GameData.items[definitionId];
+  if (def?.type !== 'structure' || def.subtype !== 'heat') return false;
+  return (durability ?? 0) <= 0;
+}

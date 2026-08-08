@@ -1,7 +1,7 @@
 {
   "version": 1,
   "assemblyScript": "/tools/build_player_motion_sheets.py",
-  "assemblyScriptSha256": "6687ad060d831e6cec96c29d0eed447f65009f83a850d7a6aca473f9a0dd9ed8",
+  "assemblyScriptSha256": "de72ffcc302c5d97772e1dd3cce14d1445cef873abad5ac02fc5f72f5b453a09",
   "provenancePolicy": {
     "canonical": "cleaned alpha PNGs are the sole deterministic assembly inputs",
     "archival": "chroma PNGs are retained built-in image-generation archives"
@@ -118,6 +118,12 @@
     "firefighter_m_ranged_alpha": {
       "path": "/art_sources/combat/task8_players/firefighter_m_ranged_alpha.png",
       "sha256": "9db1741cc7c0202a4b1861be24e93cd34c5a6b827928773e5d7d6504b535793d",
+      "cols": 6,
+      "rows": 1
+    },
+    "firefighter_m_ranged_rework_alpha": {
+      "path": "/art_sources/combat/task8_players/firefighter_m_ranged_rework_alpha.png",
+      "sha256": "e5fbe125d282eeb40f59a94c2264200c673414411b805117233aeff34753538b",
       "cols": 6,
       "rows": 1
     },
@@ -252,6 +258,12 @@
     "firefighter_m_ranged_chroma": {
       "path": "/art_sources/combat/task8_players/firefighter_m_ranged_chroma.png",
       "sha256": "7dd00f32468e063c83b00bd95c333ee9d13218d0607428bb39f0a3205140d59a",
+      "cols": 6,
+      "rows": 1
+    },
+    "firefighter_m_ranged_rework_chroma": {
+      "path": "/art_sources/combat/task8_players/firefighter_m_ranged_rework_chroma.png",
+      "sha256": "4553900400ede53e9c0c8c4e9636558e6e25c4a261602f6a34621a3030259974",
       "cols": 6,
       "rows": 1
     },
@@ -785,8 +797,8 @@
       "path": "/assets/images/combat/spritesheets/firefighter_m_sheet.png",
       "width": 1536,
       "height": 2048,
-      "pixelSha256": "2a6801943df14b7a341766bdadaee617fcb9f010c216ccbbac7399ef14309d8b",
-      "fileSha256": "bc89c75a9cd6bf492a87e6a1a0d07318ec1e088685fe598c6c1e07ed4c8f059d",
+      "pixelSha256": "b0a889feb8b2a498e531bfe432e42ecaacf4c64f248f98cd97fd03e7a4412564",
+      "fileSha256": "763166c2e263395a11d831dad19296d22555087a1c6a9bf80395344b831906bb",
       "rows": [
         {
           "targetRow": 0,
@@ -819,7 +831,7 @@
         {
           "targetRow": 2,
           "motion": "ranged",
-          "source": "firefighter_m_ranged_alpha",
+          "source": "firefighter_m_ranged_rework_alpha",
           "sourceRow": 0,
           "sourceColumns": [
             0,
@@ -919,12 +931,12 @@
           14956
         ],
         [
-          14247,
-          15568,
-          16746,
-          13098,
-          11815,
-          14422
+          16629,
+          16852,
+          17045,
+          17240,
+          16898,
+          16515
         ],
         [
           22887,
@@ -985,12 +997,12 @@
           "5ad1ca1205ed4d549d713019c40b092ad994bf59d2c0d1d08c36a4af17c657c4"
         ],
         [
-          "254f67ce24729c231f9f10393ef4bde33b2d6a2a5edb4e779c6a4e3e55028608",
-          "bde730b15059977dfbed0617a14cdcd4384522a2114552ae9a59075eb414a6a1",
-          "b2e6577a8f89caf15c22b703e54e41ffdb0df86e6458cbf175be2cf5e9213646",
-          "33fa2e9a0c44673d41aa946f884c12b7ad59ba495864b6842a2f050b0c4d8c78",
-          "3493eec286ca6c9938a7ed7447bbdb260bb44cad50ec4f216f829b9e5fccce15",
-          "c6c9dd9350ed178d6d03ba636190aed6c019e198b5d5e90fd869dcc0f3cb33a7"
+          "cb8146bad14eab0d8e8b8d3b157ca7f5b7abb51cd2a0d6a57ee05cc2b387ca05",
+          "10b7c26583f3059a99fd5e83a4e2c876b821f9a492bae54beaf48b24334a39b8",
+          "48a7d9843beecf91106a515000352c2bb13f222534359c2165c660688492104f",
+          "b693cce8cddf829de812a5e09eea31e3534d0028c09dd1aec3e965397a2994eb",
+          "de0e20b83141b6951648d7207589f71bc5d6a6804651a9bec11785d94612760f",
+          "9d8e86114fe112fbc0caae8785186b8f58809e8e4a73dd6a909ba2e99e795e01"
         ],
         [
           "2fdfd4dca74050dbcd239defbad3712dce356f973c35cf867442b8ef68e28be2",

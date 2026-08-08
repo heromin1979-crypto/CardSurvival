@@ -77,6 +77,15 @@ const WEATHER_TEMP_ADJ = {
   acid_rain: -4,
 };
 
+// 비 계열 날씨 id. 마른 개울 재충수, NPC 비 대사 등 여러 곳이 같은 목록을 봐야 하므로
+// 상수로 두고 export한다 (각자 리터럴을 들고 있다가 'rain'/'rainy'로 어긋난 적이 있다).
+export const RAINY_WEATHER_IDS = ['rainy', 'storm', 'monsoon'];
+
+/** 주어진 날씨 id가 비 계열인지. 소비처가 필드명·값을 직접 다루지 않게 한다. */
+export function isRainyWeather(weatherId) {
+  return RAINY_WEATHER_IDS.includes(weatherId);
+}
+
 // ── WeatherSystem ──────────────────────────────────────────────
 
 const WeatherSystem = {
@@ -111,8 +120,9 @@ const WeatherSystem = {
     this._updateWeatherHUD(gs.weather);
     this._updateTemperatureHUD(this.getOutdoorTemperature());
     this._renderWeatherWidget(gs);
-    const rainyIds = ['rainy', 'storm', 'monsoon'];
-    if (rainyIds.includes(weatherId) && !rainyIds.includes(prev)) this._refillDryStreams(gs);
+    if (isRainyWeather(weatherId) && !isRainyWeather(prev)) {
+      this._refillDryStreams(gs);
+    }
     EventBus.emit('notify', { message: `🌤 [GM] 날씨 → ${def.icon} ${def.name}`, type: 'info' });
     return true;
   },
@@ -122,7 +132,7 @@ const WeatherSystem = {
   _fillBuckets(gs) {
     const w = gs.weather;
     const isAcid    = w?.gardenKill === true || w?.id === 'acid_rain';
-    const isRainy   = ['rainy', 'storm', 'monsoon'].includes(w?.id);
+    const isRainy   = isRainyWeather(w?.id);
     if (!isRainy && !isAcid) return;
     const fillContam = isAcid ? 80 : 30;
 
@@ -227,7 +237,7 @@ const WeatherSystem = {
     EventBus.emit('weatherChanged', { weather: gs.weather });
     this._updateWeatherHUD(gs.weather);
     this._updateTemperatureHUD(this.getOutdoorTemperature());
-    if (['rain', 'storm', 'monsoon'].includes(w.id) && !['rain', 'storm', 'monsoon'].includes(prev)) {
+    if (isRainyWeather(w.id) && !isRainyWeather(prev)) {
       this._refillDryStreams(gs);
     }
   },
