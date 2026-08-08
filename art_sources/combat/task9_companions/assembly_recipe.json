@@ -10,7 +10,7 @@
     "rangedComponentContractPath":  "/art_sources/combat/task9_companions/ranged_component_contract.json",
     "rangedComponentContractSha256":  "cc2c60b6ef6df174a039c9456cbc9c26a28f5e8a3b592c7776a5166d804053a5",
     "provenancePath":  "/art_sources/combat/task9_companions/generation_provenance.json",
-    "provenanceSha256":  "3eb95758dfdded6f16d03838463e15e2016ba065d2f5f428e21fa9a5c92e8369",
+    "provenanceSha256":  "a24576440bc27ca1e088e5682be53b3ca71104e5602fc69d8d76de3f33531ad9",
     "rowContract":  [
                         "idle",
                         "melee",
@@ -114,9 +114,9 @@
                                        },
                              "child_hit_rework":  {
                                                       "chromaPath":  "/art_sources/combat/task9_companions/child_hit_rework_chroma.png",
-                                                      "chromaSha256":  "1b430957664584db486d5fc6dacc622607bd9329610690ce0fada60e9b04afd0",
+                                                      "chromaSha256":  "e686eba383042125fe90fdf95b665f1bdc43bb1e720eb1ab27f8b8fd05b18838",
                                                       "alphaPath":  "/art_sources/combat/task9_companions/child_hit_rework_alpha.png",
-                                                      "alphaSha256":  "4013e9ec65ef0f385938701a9eb1ba91eb81ff14d08aa5231c3950ef7d79ed3d",
+                                                      "alphaSha256":  "ebb3abe610ad114d597ec65fb67d3cadd1e1b392a85ee674a7e094ca0f700684",
                                                       "cols":  6,
                                                       "rows":  1,
                                                       "key":  "green"
@@ -231,9 +231,9 @@
                                         },
                              "minjun_hit_rework":  {
                                                        "chromaPath":  "/art_sources/combat/task9_companions/minjun_hit_rework_chroma.png",
-                                                       "chromaSha256":  "bc523d59fd04551c9ae983afeb2d64bfc0f0f9ee092611f3210618ab6868ac8b",
+                                                       "chromaSha256":  "87f9cadcda7b672fd2ada8fee764d4637534ca322383e7cc290e381377790a35",
                                                        "alphaPath":  "/art_sources/combat/task9_companions/minjun_hit_rework_alpha.png",
-                                                       "alphaSha256":  "dfe4ade614059fb498f1614bad92820a9e41ec0fff9193e490dbc650a60ebd26",
+                                                       "alphaSha256":  "1ce421e051774cd1a742598eb563cb0752c304a0af2bc2f1eada361a22a97cb7",
                                                        "cols":  6,
                                                        "rows":  1,
                                                        "key":  "green"
@@ -889,8 +889,8 @@
                                             "path":  "/assets/images/combat/spritesheets/companions/child_companion_sheet.png",
                                             "width":  1536,
                                             "height":  2048,
-                                            "fileSha256":  "ccbcf6c1cca48a74b1068e8e5bd134b5fe499448f97fd68e7fc21ac8088d1529",
-                                            "pixelSha256":  "2963ee89d6274352222df1d06415187f05514584051bf8318b5062e22f5b87f7",
+                                            "fileSha256":  "1625ea335e35563133c33e30de76b6e8a5d2a1b6e1b843e7f2bebea41123d4fa",
+                                            "pixelSha256":  "3e886cf0f2b2239e1b05a708dae1e3402f03334f73d334e69a4fe8dca807c9a2",
                                             "rows":  [
                                                          {
                                                              "targetRow":  0,
@@ -1454,8 +1454,8 @@
                                              "path":  "/assets/images/combat/spritesheets/companions/minjun_companion_sheet.png",
                                              "width":  1536,
                                              "height":  2048,
-                                             "fileSha256":  "4aaf59910eca600aea301635138f498f24e57435d0d086fafe310de0844def8f",
-                                             "pixelSha256":  "d277c494aa7907b926115cb617a4cb6b3a47fbae81405d1df4f68554e82f48bd",
+                                             "fileSha256":  "67e5104718c26d0968aebc676d29bb42632daf10a1afcf3ea7f802091c5be2a8",
+                                             "pixelSha256":  "53e46e50418561cc198de452fa62e0de191154df8b231be11940064260168894",
                                              "rows":  [
                                                           {
                                                               "targetRow":  0,

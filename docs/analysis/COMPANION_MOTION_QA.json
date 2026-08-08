@@ -19,9 +19,9 @@
     "removedComponents": 0,
     "staleAllowlist": 0
   },
-  "assemblyRecipeSha256": "32aaddc06c3f346f2d1c270c6e967d797bcfc4aa77cc9d180cab9a2da22a2632",
-  "previewManifestSha256": "0c759ea776a67f64577ec3ca3012c875d686bcffb2f43f01d1452048ede9d531",
-  "manualEvidenceSha256": "760fc6b1f8bd4e0dc9ab6441db22442412ef8d71d84fbbe09dcdefdd87c61547",
+  "assemblyRecipeSha256": "3416b5e4fc351a4ba24c606b4417b60c089c0715cf5d4323316c9bbc9c3ad2b3",
+  "previewManifestSha256": "b15096bad9bf4c92f7f24b8a8fd09d77896cf7c96cb4e1465cee36271da1fe20",
+  "manualEvidenceSha256": "c3c667fe29c9e2c85931f5bd7f3d23eee9d14784fd240b7dfab1d569a8b323df",
   "sheets": [
     {
       "npcId": "npc_old_survivor",
@@ -52,8 +52,8 @@
       "sheetKey": "child_companion",
       "path": "/assets/images/combat/spritesheets/companions/child_companion_sheet.png",
       "cells": 48,
-      "fileSha256": "ccbcf6c1cca48a74b1068e8e5bd134b5fe499448f97fd68e7fc21ac8088d1529",
-      "pixelSha256": "bfa46c3f7f02efacc7cb22325ade0faf6e08723b6a71dfd32eb31d31b30bcf0c"
+      "fileSha256": "1625ea335e35563133c33e30de76b6e8a5d2a1b6e1b843e7f2bebea41123d4fa",
+      "pixelSha256": "c9dd0a7e72425acf99ad6683ffd2ee4fc1bb2d0b80b259dd1d6ba8a166ce064c"
     },
     {
       "npcId": "npc_mechanic",
@@ -92,8 +92,8 @@
       "sheetKey": "minjun_companion",
       "path": "/assets/images/combat/spritesheets/companions/minjun_companion_sheet.png",
       "cells": 48,
-      "fileSha256": "4aaf59910eca600aea301635138f498f24e57435d0d086fafe310de0844def8f",
-      "pixelSha256": "6de1a7125cd09a6ad0af7666ed61d8240f18270549f6c6fe9178f0f5b0ebbffa"
+      "fileSha256": "67e5104718c26d0968aebc676d29bb42632daf10a1afcf3ea7f802091c5be2a8",
+      "pixelSha256": "0eeb36a5aca613842dd77e9dec34cb4f4ce16e18a6f88a270b98514c6cff7495"
     },
     {
       "npcId": "npc_sohee",

@@ -4,7 +4,7 @@
   "evidenceType": "human manual visual observation",
   "reviewStatus": "PASS",
   "reviewedAt": "2026-08-09",
-  "reviewerMethod": "기존 20개 동료 PASS 증거를 보존하면서 Task 6 대상 5개 캐릭터의 canonical source alpha, runtime PNG, full-size review board를 원본 해상도로 side-by-side 재검수했다. 보존 runtime/source/review의 얼굴·체형·복장·장비·3/4 방향·저채도 hand-painted 색온도를 기준으로 새 hit/death 행의 6프레임 의미와 마지막 자세를 확인했다. child/minjun/yeongcheol/tower doctor hit는 충격→recoil→균형 회복→서 있는 ready로 끝나며 death로 읽히지 않고, dog hit는 네 발 alert로 복귀하며 dog death만 standing→약화→side lower→lying hold로 끝난다. 피·gore·glossy 3D·red/magenta rim은 없으며 source gutter, body component, boundary alpha, cross-cell component, strict chroma와 비대상 row hash를 자동 verifier 결과와 함께 대조했다.",
+  "reviewerMethod": "기존 20개 동료 PASS 증거를 보존하면서 Task 6 fix round 1 대상인 Minjun과 child를 canonical source alpha, runtime PNG, full-size review board 원본 해상도로 다시 side-by-side 검수했다. Minjun은 보존 source/runtime/full portrait의 buzz cut·올리브 medic 복장·Korean patch·vest·큰 rolled olive field backpack·black pistol을 기준으로 새 hit 6프레임 모두에서 backpack의 어깨 위 roll과 등 뒤 외곽 실루엣이 실제 보이는지 확인했다. impact→recoil→brace→standing pistol-ready recovery의 의미, 3/4-right 방향, 저채도 hand-painted 표면을 확인했고 rifle·fall·death·피·gore·glossy 3D·red/magenta rim은 없다. child는 hit f3의 검토된 113px 분리 alpha island만 제거됐고 본체·네이비 백팩·tassel 부착부와 나머지 5프레임이 보존됨을 전후 원본으로 확인했다. source gutter, body component, boundary alpha, cross-cell component, strict chroma와 비대상 row hash는 자동 verifier 결과와 함께 대조했다.",
   "reviewedCounts": {
     "companions": 20,
     "runtimeSheets": 20,
@@ -13,11 +13,11 @@
   },
   "openRework": [],
   "previewManifestPath": "/art_sources/combat/task9_companions/preview_manifest.json",
-  "previewManifestSha256": "0c759ea776a67f64577ec3ca3012c875d686bcffb2f43f01d1452048ede9d531",
+  "previewManifestSha256": "b15096bad9bf4c92f7f24b8a8fd09d77896cf7c96cb4e1465cee36271da1fe20",
   "contactPath": "/art_sources/combat/task9_companions/companion_motion_contact_sheet.png",
-  "contactSha256": "6cf54788c0a318cc9434b71436b11fcff388edd462db5c661e9c6f54634d82e7",
+  "contactSha256": "be7a30af1f5bdcb60e94bdc263a89ab2c5b2d91278b64275dd0bf70260c84fa2",
   "assemblyRecipePath": "/art_sources/combat/task9_companions/assembly_recipe.json",
-  "assemblyRecipeSha256": "32aaddc06c3f346f2d1c270c6e967d797bcfc4aa77cc9d180cab9a2da22a2632",
+  "assemblyRecipeSha256": "3416b5e4fc351a4ba24c606b4417b60c089c0715cf5d4323316c9bbc9c3ad2b3",
   "companions": [
     {
       "npcId": "npc_old_survivor",
@@ -161,9 +161,9 @@
       "npcId": "npc_child",
       "sheetKey": "child_companion",
       "previewPath": "/art_sources/combat/task9_companions/review_previews/child_companion_review.png",
-      "previewSha256": "0e5fce4656bdd2339a07229039bf60ac2cec4de24cf8b4eb6697db12411cec35",
+      "previewSha256": "5cd8819b14a218ed3ca3825bbfeba4d802a21488ad18c6686809bbf1f01a2e87",
       "runtimePath": "/assets/images/combat/spritesheets/companions/child_companion_sheet.png",
-      "runtimeSha256": "ccbcf6c1cca48a74b1068e8e5bd134b5fe499448f97fd68e7fc21ac8088d1529",
+      "runtimeSha256": "1625ea335e35563133c33e30de76b6e8a5d2a1b6e1b843e7f2bebea41123d4fa",
       "skills": [
         {
           "skillId": "child_throw_debris",
@@ -189,10 +189,10 @@
       ],
       "identityNote": "11세 아동 체형, 노란 우비, 빨간 스카프, 네이비 백팩이 보존 행과 새 hit 6프레임에서 동일하다.",
       "weaponNote": "새 hit 행에서도 네이비 백팩과 스카프가 몸에 유지되고 별도 무기나 성인 체형이 추가되지 않는다.",
-      "continuityNote": "hit f1 충격, f2-f3 recoil, f4-f5 균형 회복, f6 upright ready가 명확하며 넘어짐·death·피·gore 없이 셀 안에서 완결된다.",
+      "continuityNote": "hit f1 충격, f2-f3 recoil, f4-f5 균형 회복, f6 upright ready가 명확하다. fix round 1에서 f3의 검토된 113px 분리 island만 제거했고 본체·네이비 백팩과 다른 5프레임은 보존했다.",
       "hit": {
         "motionKey": "hit",
-        "rowSha256": "0f5d0c3e7b49f78906284fdd286269718a1b98e19c45f2dad753e166885d022c",
+        "rowSha256": "2cdf14090924dcd889a99fb856c9d966f183f6a1897d10302ff2d7e639f170b3",
         "status": "PASS",
         "note": "충격→recoil→균형 회복→서 있는 ready의 6프레임이며 마지막 프레임은 death로 읽히지 않는다."
       },
@@ -391,9 +391,9 @@
       "npcId": "npc_minjun",
       "sheetKey": "minjun_companion",
       "previewPath": "/art_sources/combat/task9_companions/review_previews/minjun_companion_review.png",
-      "previewSha256": "9ef463c98a0c87bed1b35cb45c51488ee65bd71eb8632bb59ce8481652617fbe",
+      "previewSha256": "8e7a011a4db201fe85fa36e4a2954e4be88191fb966417de8b95f833f23e5d69",
       "runtimePath": "/assets/images/combat/spritesheets/companions/minjun_companion_sheet.png",
-      "runtimeSha256": "4aaf59910eca600aea301635138f498f24e57435d0d086fafe310de0844def8f",
+      "runtimeSha256": "67e5104718c26d0968aebc676d29bb42632daf10a1afcf3ea7f802091c5be2a8",
       "skills": [
         {
           "skillId": "minjun_pistol",
@@ -417,12 +417,12 @@
           "note": "minjun_command: 지원 도구 사용과 전달 또는 신호가 6프레임으로 구분된다."
         }
       ],
-      "identityNote": "buzz cut, 올리브 medic 복장, Korean patch, vest, backpack이 보존 행과 새 hit 6프레임에서 동일하다.",
-      "weaponNote": "검은 권총이 6프레임 모두 손에 유지되며 recoil 뒤 upright pistol-ready로 복귀한다.",
-      "continuityNote": "hit f1 충격, f2-f3 recoil, f4-f5 brace/recovery, f6 upright ready가 이어지고 fall·death·피·gore가 없다.",
+      "identityNote": "buzz cut, 올리브 medic 복장, Korean patch, vest와 어깨 위 roll·등 뒤 외곽이 보이는 큰 olive field backpack이 보존 행과 새 hit 6프레임에서 동일하다.",
+      "weaponNote": "큰 olive field backpack과 검은 권총이 6프레임 모두 명확히 유지되며 recoil 뒤 upright pistol-ready로 복귀한다.",
+      "continuityNote": "hit f1 upright impact, f2-f3 recoil, f4-f5 planted brace/recovery, f6 fully upright ready가 이어지고 backpack 소실·rifle·fall·death·피·gore가 없다.",
       "hit": {
         "motionKey": "hit",
-        "rowSha256": "a0a9e9bd88987206e65460ed20e5d34d6cfb35fec10f4170e7b071feb261f543",
+        "rowSha256": "1eda7772b3151cd61b8273e5c03f2e6d154ad2f46840cc27cd5557df2dbed68c",
         "status": "PASS",
         "note": "권총과 의료 장비를 유지한 충격→recoil→균형 회복→upright ready의 6프레임이다."
       },
