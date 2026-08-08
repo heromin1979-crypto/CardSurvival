@@ -1,0 +1,247 @@
+{
+  "version": 1,
+  "rubric": {
+    "source": "docs/superpowers/specs/2026-08-08-character-npc-motion-selective-rework-design.md",
+    "dimensions": { "readability": 25, "continuity": 25, "identity": 20, "equipment": 15, "technical": 15 },
+    "scoringUnit": "각 sheet는 8개 row 전체를, target row는 해당 6-frame sequence를 같은 100점 rubric으로 직접 판정한다. technical은 1536x2048 RGBA, 256x256 cell, 6x8 layout, alpha/contract 검증을 포함한다.",
+    "contracts": { "minimumTargetSheetScore": 80, "minimumOverallAverage": 88 }
+  },
+  "before": {
+    "documentedAggregate": {
+      "source": "docs/superpowers/specs/2026-08-08-character-npc-motion-selective-rework-design.md",
+      "playerAverage": 86.0,
+      "companionAverage": 80.8,
+      "overallAverage": 82.0,
+      "individualScoresAvailable": false
+    },
+    "rescoredFromCommit": "cdd905a406b7fe4986d221f83aaf5bcdc86964b2",
+    "method": "기존 원본 감사 자료에는 26종 개별 점수가 없어 이를 추정하거나 aggregate에서 역산하지 않았다. cdd905a의 runtime PNG 26종을 git archive로 추출하여 원본 해상도로 다시 보고 동일 rubric으로 직접 재채점했다. byte-identical 13종은 SHA-256 일치를 확인한 뒤 before/after 점수를 동일하게 유지했다.",
+    "playerAverage": 86.0,
+    "companionAverage": 79.75,
+    "overallAverage": 81.192
+  },
+  "after": {
+    "scoredAtCommit": "8cb24f0a8fde88b324a009d4707358ebcdb7fab5",
+    "method": "current runtime 26종과 review preview를 원본 해상도로 판정했다. 20개 target row는 current runtime, canonical source alpha, review preview를 모두 대조했고 SHA-256을 기록했다.",
+    "playerAverage": 87.833,
+    "companionAverage": 88.3,
+    "overallAverage": 88.192,
+    "minimumTargetSheetScore": 88,
+    "targetRows": 20,
+    "changedSheets": 13,
+    "unchangedSheets": 13,
+    "contractsSatisfied": true
+  },
+  "characters": [
+    {
+      "sheetKey": "doctor_f", "category": "player", "beforeScore": 88, "afterScore": 88,
+      "beforeBreakdown": { "readability": 22, "continuity": 20, "identity": 18, "equipment": 13, "technical": 15 },
+      "afterBreakdown": { "readability": 22, "continuity": 20, "identity": 18, "equipment": 13, "technical": 15 },
+      "evidence": { "runtimePath": "assets/images/combat/spritesheets/doctor_f_sheet.png", "baselineSha256": "f2594367cc9dffec1db6e973c2ab729554e7d0358ca701a064a72849c4b4c9e3", "runtimeSha256": "f2594367cc9dffec1db6e973c2ab729554e7d0358ca701a064a72849c4b4c9e3", "byteIdentical": true, "reviewPreviewPath": "docs/analysis/generated/player_motion_preview.png" },
+      "rows": [], "remainingIssues": ["일부 idle/guard 중간 phase의 silhouette 변화가 작다."]
+    },
+    {
+      "sheetKey": "soldier_m", "category": "player", "beforeScore": 89, "afterScore": 89,
+      "beforeBreakdown": { "readability": 22, "continuity": 20, "identity": 18, "equipment": 14, "technical": 15 },
+      "afterBreakdown": { "readability": 22, "continuity": 20, "identity": 18, "equipment": 14, "technical": 15 },
+      "evidence": { "runtimePath": "assets/images/combat/spritesheets/soldier_m_sheet.png", "baselineSha256": "831191417b78ebf1dd827ca6ab5729eb5faf58e47dcb7862266f09b616611aa3", "runtimeSha256": "831191417b78ebf1dd827ca6ab5729eb5faf58e47dcb7862266f09b616611aa3", "byteIdentical": true, "reviewPreviewPath": "docs/analysis/generated/player_motion_preview.png" },
+      "rows": [], "remainingIssues": ["몇몇 recovery phase가 정지 자세와 가깝다."]
+    },
+    {
+      "sheetKey": "firefighter_m", "category": "player", "beforeScore": 81, "afterScore": 92,
+      "beforeBreakdown": { "readability": 18, "continuity": 15, "identity": 19, "equipment": 14, "technical": 15 },
+      "afterBreakdown": { "readability": 23, "continuity": 21, "identity": 19, "equipment": 14, "technical": 15 },
+      "evidence": { "runtimePath": "assets/images/combat/spritesheets/firefighter_m_sheet.png", "baselineSha256": "bc89c75a9cd6bf492a87e6a1a0d07318ec1e088685fe598c6c1e07ed4c8f059d", "runtimeSha256": "763166c2e263395a11d831dad19296d22555087a1c6a9bf80395344b831906bb", "byteIdentical": false, "sourceAlphaPath": "art_sources/combat/task8_players/firefighter_m_ranged_rework_alpha.png", "sourceAlphaSha256": "e5fbe125d282eeb40f59a94c2264200c673414411b805117233aeff34753538b", "reviewPreviewPath": "docs/analysis/generated/player_motion_preview.png", "reviewPreviewSha256": "a6a197c700b9e9da1d04e47094bb84dcea48583e99025ba793c3b041d9e552a2" },
+      "rows": [{ "row": 2, "motion": "ranged", "before": { "readability": 12, "continuity": 11, "identity": 18, "equipment": 14, "technical": 15, "total": 70 }, "after": { "readability": 24, "continuity": 21, "identity": 19, "equipment": 14, "technical": 15, "total": 93 }, "beforeObservation": "baseline은 도끼 찌르기로 보여 ranged 의미가 성립하지 않는다.", "afterObservation": "붉은 flare launcher 준비, 조준, 발사/투사체, 회수 phase가 명확하다." }],
+      "remainingIssues": ["발사 전 f2-f3의 자세 차이는 작다."]
+    },
+    {
+      "sheetKey": "homeless_m", "category": "player", "beforeScore": 85, "afterScore": 85,
+      "beforeBreakdown": { "readability": 21, "continuity": 19, "identity": 18, "equipment": 12, "technical": 15 },
+      "afterBreakdown": { "readability": 21, "continuity": 19, "identity": 18, "equipment": 12, "technical": 15 },
+      "evidence": { "runtimePath": "assets/images/combat/spritesheets/homeless_m_sheet.png", "baselineSha256": "7e26ffaab4b5097d997ee42255af47066dde968786e2e1f1e03cad60da7f18e2", "runtimeSha256": "7e26ffaab4b5097d997ee42255af47066dde968786e2e1f1e03cad60da7f18e2", "byteIdentical": true, "reviewPreviewPath": "docs/analysis/generated/player_motion_preview.png" },
+      "rows": [], "remainingIssues": ["일부 소품의 frame 간 크기 변화가 보인다."]
+    },
+    {
+      "sheetKey": "chef_m", "category": "player", "beforeScore": 87, "afterScore": 87,
+      "beforeBreakdown": { "readability": 22, "continuity": 19, "identity": 18, "equipment": 13, "technical": 15 },
+      "afterBreakdown": { "readability": 22, "continuity": 19, "identity": 18, "equipment": 13, "technical": 15 },
+      "evidence": { "runtimePath": "assets/images/combat/spritesheets/chef_m_sheet.png", "baselineSha256": "914fda87210ca0e9be4196bfa4c146ff7fc3a24d5b1ee995b320fba77e7b0cc1", "runtimeSha256": "914fda87210ca0e9be4196bfa4c146ff7fc3a24d5b1ee995b320fba77e7b0cc1", "byteIdentical": true, "reviewPreviewPath": "docs/analysis/generated/player_motion_preview.png" },
+      "rows": [], "remainingIssues": ["몇몇 move phase의 보폭 차이가 작다."]
+    },
+    {
+      "sheetKey": "engineer_m", "category": "player", "beforeScore": 86, "afterScore": 86,
+      "beforeBreakdown": { "readability": 21, "continuity": 19, "identity": 18, "equipment": 13, "technical": 15 },
+      "afterBreakdown": { "readability": 21, "continuity": 19, "identity": 18, "equipment": 13, "technical": 15 },
+      "evidence": { "runtimePath": "assets/images/combat/spritesheets/engineer_m_sheet.png", "baselineSha256": "7e50b5557c67ca22632baf957669380d53a982fabf79408881bcfb6777ccbc91", "runtimeSha256": "7e50b5557c67ca22632baf957669380d53a982fabf79408881bcfb6777ccbc91", "byteIdentical": true, "reviewPreviewPath": "docs/analysis/generated/player_motion_preview.png" },
+      "rows": [], "remainingIssues": ["support/guard 중 일부 자세가 반복적으로 보인다."]
+    },
+    {
+      "sheetKey": "old_survivor_companion", "category": "companion", "beforeScore": 76, "afterScore": 89,
+      "beforeBreakdown": { "readability": 18, "continuity": 14, "identity": 18, "equipment": 11, "technical": 15 },
+      "afterBreakdown": { "readability": 22, "continuity": 19, "identity": 19, "equipment": 14, "technical": 15 },
+      "evidence": { "runtimePath": "assets/images/combat/spritesheets/companions/old_survivor_companion_sheet.png", "baselineSha256": "c4b17fe3ef7aeee3dbcd0b1dbf12282a376a5c64750070972b6e1c23a8c6fc5e", "runtimeSha256": "2d6728f188c47fac0a028fa2338c98def481ef083ecd3d3db41f44ce125eb363", "byteIdentical": false, "sourceAlphaPath": "art_sources/combat/task9_companions/old_survivor_move_rework_alpha.png", "sourceAlphaSha256": "ac073c5b451563d85134e988df65e8f573028523f7925ff20d30d0282ab51cb1", "reviewPreviewPath": "art_sources/combat/task9_companions/review_previews/old_survivor_companion_review.png", "reviewPreviewSha256": "c17678467f8839a78735e01dee55dd14073eb46278aa6c20ed17617b20683922" },
+      "rows": [{ "row": 5, "motion": "move", "before": { "readability": 14, "continuity": 10, "identity": 17, "equipment": 9, "technical": 15, "total": 65 }, "after": { "readability": 23, "continuity": 18, "identity": 19, "equipment": 14, "technical": 15, "total": 89 }, "beforeObservation": "마지막 phase가 낙상처럼 끝나고 지팡이가 손에서 이탈한다.", "afterObservation": "직립 이동과 교대 보폭이 유지되고 지팡이를 전 phase에서 보유한다." }],
+      "remainingIssues": ["높은 무릎 동작이 다소 과장되고 일부 phase 간 보폭 변화가 크다."]
+    },
+    {
+      "sheetKey": "soldier_companion", "category": "companion", "beforeScore": 83, "afterScore": 92,
+      "beforeBreakdown": { "readability": 20, "continuity": 17, "identity": 18, "equipment": 13, "technical": 15 },
+      "afterBreakdown": { "readability": 23, "continuity": 21, "identity": 19, "equipment": 14, "technical": 15 },
+      "evidence": { "runtimePath": "assets/images/combat/spritesheets/soldier_companion_sheet.png", "baselineSha256": "a3979cf141b99757ec8c6fbdf077f0ee7b56fceb25358fab6a7bbff92d8b0234", "runtimeSha256": "9980a92c5d13cbd7a70f64d0eb27ab50fa8c6d71d53bfab9f5c171c9cf0f388e", "byteIdentical": false, "sourceAlphaPath": "art_sources/combat/task9_companions/soldier_ranged_rework_alpha.png", "sourceAlphaSha256": "decd1dc93edc65d37a175d346b65610c3c1564fefeefd15a1fe78385f75aab0f", "reviewPreviewPath": "art_sources/combat/task9_companions/review_previews/soldier_companion_review.png", "reviewPreviewSha256": "80e8bb1476fa26c5325f5d2b0ad045c7beb0b83ea62ea3f2f2c42f63bf5487b9" },
+      "rows": [{ "row": 2, "motion": "ranged", "before": { "readability": 16, "continuity": 13, "identity": 18, "equipment": 13, "technical": 15, "total": 75 }, "after": { "readability": 24, "continuity": 20, "identity": 19, "equipment": 14, "technical": 15, "total": 92 }, "beforeObservation": "조준 자세 반복 위주라 발사 사건과 recoil이 약하다.", "afterObservation": "ready, aim, muzzle flash, recoil/settle, ready가 구분된다." }],
+      "remainingIssues": ["중간 조준 phase 두 장은 silhouette 차이가 작다."]
+    },
+    {
+      "sheetKey": "nurse_companion", "category": "companion", "beforeScore": 88, "afterScore": 88,
+      "beforeBreakdown": { "readability": 22, "continuity": 20, "identity": 18, "equipment": 13, "technical": 15 },
+      "afterBreakdown": { "readability": 22, "continuity": 20, "identity": 18, "equipment": 13, "technical": 15 },
+      "evidence": { "runtimePath": "assets/images/combat/spritesheets/nurse_companion_sheet.png", "baselineSha256": "b692c7073af5d86e3cca816045250fb3c426355d4eddd7d524a1becd7d708263", "runtimeSha256": "b692c7073af5d86e3cca816045250fb3c426355d4eddd7d524a1becd7d708263", "byteIdentical": true, "reviewPreviewPath": "art_sources/combat/task9_companions/review_previews/nurse_companion_review.png" },
+      "rows": [], "remainingIssues": ["move row의 보폭 변화가 비교적 작다."]
+    },
+    {
+      "sheetKey": "child_companion", "category": "companion", "beforeScore": 80, "afterScore": 92,
+      "beforeBreakdown": { "readability": 19, "continuity": 15, "identity": 18, "equipment": 13, "technical": 15 },
+      "afterBreakdown": { "readability": 23, "continuity": 21, "identity": 19, "equipment": 14, "technical": 15 },
+      "evidence": { "runtimePath": "assets/images/combat/spritesheets/companions/child_companion_sheet.png", "baselineSha256": "edcf2003203363ee1890a2aaf0e6b8d4c9140dcf2cd0a1462ac0b6fa96e6c2f9", "runtimeSha256": "1625ea335e35563133c33e30de76b6e8a5d2a1b6e1b843e7f2bebea41123d4fa", "byteIdentical": false, "sourceAlphaPath": "art_sources/combat/task9_companions/child_hit_rework_alpha.png", "sourceAlphaSha256": "ebb3abe610ad114d597ec65fb67d3cadd1e1b392a85ee674a7e094ca0f700684", "reviewPreviewPath": "art_sources/combat/task9_companions/review_previews/child_companion_review.png", "reviewPreviewSha256": "5cd8819b14a218ed3ca3825bbfeba4d802a21488ad18c6686809bbf1f01a2e87" },
+      "rows": [{ "row": 6, "motion": "hit", "before": { "readability": 15, "continuity": 13, "identity": 18, "equipment": 13, "technical": 15, "total": 74 }, "after": { "readability": 23, "continuity": 21, "identity": 19, "equipment": 14, "technical": 15, "total": 92 }, "beforeObservation": "뒤로 기운 자세가 반복되어 impact와 recovery 경계가 약하다.", "afterObservation": "impact, recoil, 직립 recovery가 보이고 남색 backpack이 유지된다." }],
+      "remainingIssues": ["recovery 마지막 두 phase의 차이는 작다."]
+    },
+    {
+      "sheetKey": "mechanic_companion", "category": "companion", "beforeScore": 74, "afterScore": 88,
+      "beforeBreakdown": { "readability": 17, "continuity": 14, "identity": 17, "equipment": 11, "technical": 15 },
+      "afterBreakdown": { "readability": 21, "continuity": 19, "identity": 19, "equipment": 14, "technical": 15 },
+      "evidence": { "runtimePath": "assets/images/combat/spritesheets/companions/mechanic_companion_sheet.png", "baselineSha256": "6d2a2c7301f28125934089e7d685635ea2d8505b561b8928ae17c3a33890a5d9", "runtimeSha256": "cc13f9915d1bdfbf29210edbe07ee529973f1eb765a6b1a3e0454bc16c6c49cb", "byteIdentical": false, "sourceAlphaPath": "art_sources/combat/task9_companions/mechanic_melee_guard_rework_alpha.png", "sourceAlphaSha256": "a3ed66073b08cc554ff52bba558019d06615a0cd41839645b616887cc412e66c", "reviewPreviewPath": "art_sources/combat/task9_companions/review_previews/mechanic_companion_review.png", "reviewPreviewSha256": "31c7386250e024b8fd55a50f25dd7b0d18d42beb41765976e81c36d6188d2c45" },
+      "rows": [
+        { "row": 1, "motion": "melee", "before": { "readability": 16, "continuity": 13, "identity": 17, "equipment": 11, "technical": 15, "total": 72 }, "after": { "readability": 23, "continuity": 20, "identity": 19, "equipment": 13, "technical": 15, "total": 90 }, "beforeObservation": "wrench 크기와 위치가 frame마다 흔들려 타격 arc가 끊긴다.", "afterObservation": "동일 wrench로 준비부터 휘두름과 회수가 읽힌다." },
+        { "row": 4, "motion": "guard", "before": { "readability": 14, "continuity": 12, "identity": 17, "equipment": 10, "technical": 15, "total": 68 }, "after": { "readability": 22, "continuity": 18, "identity": 19, "equipment": 12, "technical": 15, "total": 86 }, "beforeObservation": "toolbox 크기 점프와 자세 불연속이 방어 동작을 흐린다.", "afterObservation": "붉은 toolbox를 들어 막고 내려오는 sequence가 유지된다." }
+      ],
+      "remainingIssues": ["guard toolbox의 원근상 크기 변화가 아직 눈에 띈다."]
+    },
+    {
+      "sheetKey": "student_companion", "category": "companion", "beforeScore": 77, "afterScore": 89,
+      "beforeBreakdown": { "readability": 18, "continuity": 15, "identity": 17, "equipment": 12, "technical": 15 },
+      "afterBreakdown": { "readability": 22, "continuity": 19, "identity": 19, "equipment": 14, "technical": 15 },
+      "evidence": { "runtimePath": "assets/images/combat/spritesheets/companions/student_companion_sheet.png", "baselineSha256": "8dde2e38302b6f0e11240cbaf9598a18c4ddb2a5f7292dcc3b62bfca69372511", "runtimeSha256": "3b8298b3f80303a220e63c007606245b107c2311d443a56c8e584d5331c7ce9f", "byteIdentical": false, "sourceAlphaPath": "art_sources/combat/task9_companions/student_guard_rework_alpha.png", "sourceAlphaSha256": "d64880de82a93bee38801ea8d66e42efd1ee35d4466bf0b9188e8f83d4c21a2a", "reviewPreviewPath": "art_sources/combat/task9_companions/review_previews/student_companion_review.png", "reviewPreviewSha256": "f578f0ae50c9acf1c15f7fe13ce577b4b21e03ba0428508fd39b419b11f43200" },
+      "rows": [{ "row": 4, "motion": "guard", "before": { "readability": 15, "continuity": 12, "identity": 17, "equipment": 10, "technical": 15, "total": 69 }, "after": { "readability": 22, "continuity": 19, "identity": 19, "equipment": 14, "technical": 15, "total": 89 }, "beforeObservation": "backpack 정체성이 umbrella 공격으로 바뀌어 guard 목적이 어긋난다.", "afterObservation": "등의 backpack을 앞으로 옮겨 양손으로 방어하는 흐름이 보인다." }],
+      "remainingIssues": ["방어 유지 구간 f3-f6의 자세 변화가 작다."]
+    },
+    {
+      "sheetKey": "dog_companion", "category": "companion", "beforeScore": 76, "afterScore": 91,
+      "beforeBreakdown": { "readability": 18, "continuity": 14, "identity": 18, "equipment": 11, "technical": 15 },
+      "afterBreakdown": { "readability": 23, "continuity": 20, "identity": 19, "equipment": 14, "technical": 15 },
+      "evidence": { "runtimePath": "assets/images/combat/spritesheets/companions/dog_companion_sheet.png", "baselineSha256": "86fe66142c9ddc0b36e7adef7cfd3c4ab4e3822defb1144ab086684ba76feb6e", "runtimeSha256": "e794c70b8f6bece89fe3d862218a45684a11173485bea4fbcc3b800235797b41", "byteIdentical": false, "sourceAlphaPath": "art_sources/combat/task9_companions/dog_hit_death_rework_alpha.png", "sourceAlphaSha256": "9433afea8e6078e19d96839a8eb2753ed56c3fc665fd2cc5330bed5b44ba8931", "reviewPreviewPath": "art_sources/combat/task9_companions/review_previews/dog_companion_review.png", "reviewPreviewSha256": "06a5cd5efb41505c6919858050965a71acbd6c96aa6c17d87e07e7012d6dd360" },
+      "rows": [
+        { "row": 6, "motion": "hit", "before": { "readability": 14, "continuity": 11, "identity": 17, "equipment": 9, "technical": 15, "total": 66 }, "after": { "readability": 22, "continuity": 20, "identity": 19, "equipment": 14, "technical": 15, "total": 90 }, "beforeObservation": "피격이 앉기/주저앉기처럼 보여 reaction 후 회복이 없다.", "afterObservation": "네 발 자세에서 flinch 후 다시 일어서는 흐름이며 harness가 유지된다." },
+        { "row": 7, "motion": "death", "before": { "readability": 15, "continuity": 12, "identity": 17, "equipment": 11, "technical": 15, "total": 70 }, "after": { "readability": 24, "continuity": 20, "identity": 19, "equipment": 14, "technical": 15, "total": 92 }, "beforeObservation": "초기부터 낮은 자세라 붕괴 사건과 terminal hold 구분이 약하다.", "afterObservation": "직립, crouch, 측면 낙하, 바닥 hold가 순차적으로 읽힌다." }
+      ],
+      "remainingIssues": ["death의 마지막 두 hold frame은 의도적으로 거의 동일하다."]
+    },
+    {
+      "sheetKey": "former_colleague_companion", "category": "companion", "beforeScore": 84, "afterScore": 84,
+      "beforeBreakdown": { "readability": 21, "continuity": 18, "identity": 18, "equipment": 12, "technical": 15 },
+      "afterBreakdown": { "readability": 21, "continuity": 18, "identity": 18, "equipment": 12, "technical": 15 },
+      "evidence": { "runtimePath": "assets/images/combat/spritesheets/companions/former_colleague_companion_sheet.png", "baselineSha256": "9e2bab6838cabf126ca482ac83149a5c9760e51c2b81510f417615223f08891e", "runtimeSha256": "9e2bab6838cabf126ca482ac83149a5c9760e51c2b81510f417615223f08891e", "byteIdentical": true, "reviewPreviewPath": "art_sources/combat/task9_companions/review_previews/former_colleague_companion_review.png" },
+      "rows": [], "remainingIssues": ["guard가 장시간 같은 판자 자세를 유지하고 death 마지막 frame의 낙하 연결이 짧다."]
+    },
+    {
+      "sheetKey": "minjun_companion", "category": "companion", "beforeScore": 81, "afterScore": 90,
+      "beforeBreakdown": { "readability": 19, "continuity": 16, "identity": 18, "equipment": 13, "technical": 15 },
+      "afterBreakdown": { "readability": 22, "continuity": 20, "identity": 19, "equipment": 14, "technical": 15 },
+      "evidence": { "runtimePath": "assets/images/combat/spritesheets/companions/minjun_companion_sheet.png", "baselineSha256": "d92e60a972c7ce8fd1fa729453c7a96cadefc909c107a9e701a40c90ec690c07", "runtimeSha256": "67e5104718c26d0968aebc676d29bb42632daf10a1afcf3ea7f802091c5be2a8", "byteIdentical": false, "sourceAlphaPath": "art_sources/combat/task9_companions/minjun_hit_rework_alpha.png", "sourceAlphaSha256": "1ce421e051774cd1a742598eb563cb0752c304a0af2bc2f1eada361a22a97cb7", "reviewPreviewPath": "art_sources/combat/task9_companions/review_previews/minjun_companion_review.png", "reviewPreviewSha256": "8e7a011a4db201fe85fa36e4a2954e4be88191fb966417de8b95f833f23e5d69" },
+      "rows": [{ "row": 6, "motion": "hit", "before": { "readability": 15, "continuity": 13, "identity": 18, "equipment": 13, "technical": 15, "total": 74 }, "after": { "readability": 22, "continuity": 19, "identity": 20, "equipment": 14, "technical": 15, "total": 90 }, "beforeObservation": "반복된 후방 기울기와 큰 backpack 소실로 reaction과 정체성이 약하다.", "afterObservation": "backpack과 pistol을 유지하며 impact, recoil, recovery를 마친다." }],
+      "remainingIssues": ["피격 강도의 frame 간 변화가 비교적 미세하다."]
+    },
+    {
+      "sheetKey": "sohee_companion", "category": "companion", "beforeScore": 67, "afterScore": 91,
+      "beforeBreakdown": { "readability": 15, "continuity": 11, "identity": 16, "equipment": 10, "technical": 15 },
+      "afterBreakdown": { "readability": 23, "continuity": 20, "identity": 19, "equipment": 14, "technical": 15 },
+      "evidence": { "runtimePath": "assets/images/combat/spritesheets/companions/sohee_companion_sheet.png", "baselineSha256": "29e3f314e83a53659d7edea9ecf4b239d70f440b948b682765a00db17dd75048", "runtimeSha256": "2ec0b8f938724a407c5ddf8eba46d69a3b197dce852e024a20d967ee7631cbfe", "byteIdentical": false, "sourceAlphaPath": "art_sources/combat/task9_companions/sohee_support_move_hit_death_rework_alpha.png", "sourceAlphaSha256": "f1af8a79f5d7f019c944fc395cf86e4d5903fb2ae598c8cd2d286bfc0e2cd4b2", "reviewPreviewPath": "art_sources/combat/task9_companions/review_previews/sohee_companion_review.png", "reviewPreviewSha256": "333c967662e9346561fa6f9513a92eb1fa3c75adf93443e8bd431479c85065e2" },
+      "rows": [
+        { "row": 3, "motion": "support", "before": { "readability": 10, "continuity": 8, "identity": 15, "equipment": 7, "technical": 15, "total": 55 }, "after": { "readability": 24, "continuity": 20, "identity": 19, "equipment": 14, "technical": 15, "total": 92 }, "beforeObservation": "지원 중 총격 동작으로 전환되어 role과 action이 충돌한다.", "afterObservation": "가방과 의약품을 사용하며 firearm 공격 없이 처치를 마친다." },
+        { "row": 5, "motion": "move", "before": { "readability": 12, "continuity": 8, "identity": 15, "equipment": 8, "technical": 15, "total": 58 }, "after": { "readability": 22, "continuity": 18, "identity": 19, "equipment": 14, "technical": 15, "total": 88 }, "beforeObservation": "혈흔/피격 같은 자세가 섞여 이동 의미가 끊긴다.", "afterObservation": "낮춘 rifle과 bag을 유지한 전진 보행으로 정리됐다." },
+        { "row": 6, "motion": "hit", "before": { "readability": 12, "continuity": 10, "identity": 16, "equipment": 8, "technical": 15, "total": 61 }, "after": { "readability": 23, "continuity": 19, "identity": 19, "equipment": 14, "technical": 15, "total": 90 }, "beforeObservation": "약한 기울기 반복이라 impact와 회복 경계가 희미하다.", "afterObservation": "impact, 굽힘, 직립 recovery가 구별된다." },
+        { "row": 7, "motion": "death", "before": { "readability": 13, "continuity": 11, "identity": 16, "equipment": 9, "technical": 15, "total": 64 }, "after": { "readability": 24, "continuity": 22, "identity": 19, "equipment": 14, "technical": 15, "total": 94 }, "beforeObservation": "초기부터 몸을 웅크려 시작하여 쓰러짐의 onset이 약하다.", "afterObservation": "직립에서 무릎, 측면 낙하, 바닥 hold까지 완결된다." }
+      ],
+      "remainingIssues": ["move의 중간 보폭 두 장은 유사하다."]
+    },
+    {
+      "sheetKey": "jisu_companion", "category": "companion", "beforeScore": 87, "afterScore": 87,
+      "beforeBreakdown": { "readability": 22, "continuity": 19, "identity": 18, "equipment": 13, "technical": 15 },
+      "afterBreakdown": { "readability": 22, "continuity": 19, "identity": 18, "equipment": 13, "technical": 15 },
+      "evidence": { "runtimePath": "assets/images/combat/spritesheets/companions/jisu_companion_sheet.png", "baselineSha256": "84911d5f7b23d79dc66f344351a35201340de8cadf4c8ce187533338dcff7c25", "runtimeSha256": "84911d5f7b23d79dc66f344351a35201340de8cadf4c8ce187533338dcff7c25", "byteIdentical": true, "reviewPreviewPath": "art_sources/combat/task9_companions/review_previews/jisu_companion_review.png" },
+      "rows": [], "remainingIssues": ["hit 후반이 kneel 상태에서 끝나 death와 약간 가까워 보인다."]
+    },
+    {
+      "sheetKey": "yeongcheol_companion", "category": "companion", "beforeScore": 80, "afterScore": 91,
+      "beforeBreakdown": { "readability": 19, "continuity": 15, "identity": 18, "equipment": 13, "technical": 15 },
+      "afterBreakdown": { "readability": 23, "continuity": 20, "identity": 19, "equipment": 14, "technical": 15 },
+      "evidence": { "runtimePath": "assets/images/combat/spritesheets/companions/yeongcheol_companion_sheet.png", "baselineSha256": "08136ebf510509e90e15e8df25c15eea1fdad92bbe5751723cbd5efd069a0431", "runtimeSha256": "71497f531f62110789a421f4ad12878806bd4b93cef3d436e5d51cc496de6e88", "byteIdentical": false, "sourceAlphaPath": "art_sources/combat/task9_companions/yeongcheol_hit_rework_alpha.png", "sourceAlphaSha256": "fb49210d6b93ed03eb59396493f396a361a5679e863835cd819877f3752806d8", "reviewPreviewPath": "art_sources/combat/task9_companions/review_previews/yeongcheol_companion_review.png", "reviewPreviewSha256": "542046db4bf4b16a0b77431eb66d411c2984ca7950db01b724c67e8cd2fa24cc" },
+      "rows": [{ "row": 6, "motion": "hit", "before": { "readability": 14, "continuity": 12, "identity": 17, "equipment": 12, "technical": 15, "total": 70 }, "after": { "readability": 23, "continuity": 20, "identity": 19, "equipment": 14, "technical": 15, "total": 91 }, "beforeObservation": "공중에 뜬 듯한 후방 기울기가 반복되어 무게와 recovery가 약하다.", "afterObservation": "중량감 있는 impact, 도끼를 짚은 brace, 직립 회복이 연결된다." }],
+      "remainingIssues": ["중간 brace frame은 hit보다 guard로도 읽힐 여지가 있다."]
+    },
+    {
+      "sheetKey": "daehan_companion", "category": "companion", "beforeScore": 62, "afterScore": 90,
+      "beforeBreakdown": { "readability": 13, "continuity": 10, "identity": 14, "equipment": 10, "technical": 15 },
+      "afterBreakdown": { "readability": 22, "continuity": 20, "identity": 19, "equipment": 14, "technical": 15 },
+      "evidence": { "runtimePath": "assets/images/combat/spritesheets/companions/daehan_companion_sheet.png", "baselineSha256": "b5881faa233ffd54927d6a7e15393877c3abfdaf4597f7aeca5fd6e396f72f57", "runtimeSha256": "cfe836131c1ca015b9397580b25ef84c66e3cc8e06e8e667c4ff848cb90c865b", "byteIdentical": false, "sourceAlphaPath": "art_sources/combat/task9_companions/daehan_ranged_hit_death_rework_alpha.png", "sourceAlphaSha256": "fc1cb723196be4b3fd6d86b04f3bbac501ec521b385a0a1b976c7afd9c225351", "reviewPreviewPath": "art_sources/combat/task9_companions/review_previews/daehan_companion_review.png", "reviewPreviewSha256": "7161bf61d778f35139f71a5a5a2e2d23da02b02a708f5423526a2be7e4ac1d5c" },
+      "rows": [
+        { "row": 2, "motion": "ranged", "before": { "readability": 7, "continuity": 6, "identity": 10, "equipment": 4, "technical": 15, "total": 42 }, "after": { "readability": 23, "continuity": 20, "identity": 19, "equipment": 13, "technical": 15, "total": 90 }, "beforeObservation": "baseline ranged는 별도 군인 외형과 권총으로 바뀌어 대한의 얼굴, 복장, wrench 정체성이 끊긴다.", "afterObservation": "대한 외형과 허리 wrench를 유지하며 장치를 들어 투사하고 회수한다." },
+        { "row": 6, "motion": "hit", "before": { "readability": 11, "continuity": 9, "identity": 14, "equipment": 9, "technical": 15, "total": 58 }, "after": { "readability": 22, "continuity": 19, "identity": 19, "equipment": 14, "technical": 15, "total": 89 }, "beforeObservation": "동일한 후방 낙하 자세가 반복되고 원래 wrench 외형으로 복귀하지 않는다.", "afterObservation": "wrench를 유지한 직립 impact와 단계적 recovery가 보인다." },
+        { "row": 7, "motion": "death", "before": { "readability": 10, "continuity": 8, "identity": 14, "equipment": 8, "technical": 15, "total": 55 }, "after": { "readability": 23, "continuity": 20, "identity": 19, "equipment": 14, "technical": 15, "total": 91 }, "beforeObservation": "서로 다른 외형과 이미 누운 phase가 섞여 onset과 identity가 불명확하다.", "afterObservation": "부상, 무릎, 손 짚기, 측면 낙하, terminal hold로 이어진다." }
+      ],
+      "remainingIssues": ["ranged 장치의 작은 투사체는 축소 표시에서 식별력이 낮을 수 있다."]
+    },
+    {
+      "sheetKey": "tower_security_companion", "category": "companion", "beforeScore": 85, "afterScore": 85,
+      "beforeBreakdown": { "readability": 21, "continuity": 19, "identity": 18, "equipment": 12, "technical": 15 },
+      "afterBreakdown": { "readability": 21, "continuity": 19, "identity": 18, "equipment": 12, "technical": 15 },
+      "evidence": { "runtimePath": "assets/images/combat/spritesheets/companions/tower_security_companion_sheet.png", "baselineSha256": "e610a1b92af5fd6a9136867aa3c14307b311fe8f20dd1308fc028eaa4fa57d3b", "runtimeSha256": "e610a1b92af5fd6a9136867aa3c14307b311fe8f20dd1308fc028eaa4fa57d3b", "byteIdentical": true, "reviewPreviewPath": "art_sources/combat/task9_companions/review_previews/tower_security_companion_review.png" },
+      "rows": [], "remainingIssues": ["ranged flashlight beam의 크기 변화가 크고 death row가 6개 모두 채워지지 않는다."]
+    },
+    {
+      "sheetKey": "tower_merchant_companion", "category": "companion", "beforeScore": 84, "afterScore": 84,
+      "beforeBreakdown": { "readability": 21, "continuity": 18, "identity": 18, "equipment": 12, "technical": 15 },
+      "afterBreakdown": { "readability": 21, "continuity": 18, "identity": 18, "equipment": 12, "technical": 15 },
+      "evidence": { "runtimePath": "assets/images/combat/spritesheets/companions/tower_merchant_companion_sheet.png", "baselineSha256": "537929e799b18eaf8e0c95d0bff93a1a650350d64548c09cb2136ace7fdfba77", "runtimeSha256": "537929e799b18eaf8e0c95d0bff93a1a650350d64548c09cb2136ace7fdfba77", "byteIdentical": true, "reviewPreviewPath": "art_sources/combat/task9_companions/review_previews/tower_merchant_companion_review.png" },
+      "rows": [], "remainingIssues": ["hit row가 recovery 없이 낙하로 이어져 death와 의미가 가깝다."]
+    },
+    {
+      "sheetKey": "tower_cook_companion", "category": "companion", "beforeScore": 85, "afterScore": 85,
+      "beforeBreakdown": { "readability": 21, "continuity": 19, "identity": 18, "equipment": 12, "technical": 15 },
+      "afterBreakdown": { "readability": 21, "continuity": 19, "identity": 18, "equipment": 12, "technical": 15 },
+      "evidence": { "runtimePath": "assets/images/combat/spritesheets/companions/tower_cook_companion_sheet.png", "baselineSha256": "c5fc94292b0702f6dec5b2f13fbfc295b6491385bd8cadf6694986f6d5d49bf8", "runtimeSha256": "c5fc94292b0702f6dec5b2f13fbfc295b6491385bd8cadf6694986f6d5d49bf8", "byteIdentical": true, "reviewPreviewPath": "art_sources/combat/task9_companions/review_previews/tower_cook_companion_review.png" },
+      "rows": [], "remainingIssues": ["move 마지막 phase가 피격 자세에 가까워 보인다."]
+    },
+    {
+      "sheetKey": "tower_engineer_companion", "category": "companion", "beforeScore": 86, "afterScore": 86,
+      "beforeBreakdown": { "readability": 21, "continuity": 19, "identity": 18, "equipment": 13, "technical": 15 },
+      "afterBreakdown": { "readability": 21, "continuity": 19, "identity": 18, "equipment": 13, "technical": 15 },
+      "evidence": { "runtimePath": "assets/images/combat/spritesheets/companions/tower_engineer_companion_sheet.png", "baselineSha256": "ebe48c0f16d5bebb6001e073b6d2d0e786ad0133d0516b5c6cff289876b513c8", "runtimeSha256": "ebe48c0f16d5bebb6001e073b6d2d0e786ad0133d0516b5c6cff289876b513c8", "byteIdentical": true, "reviewPreviewPath": "art_sources/combat/task9_companions/review_previews/tower_engineer_companion_review.png" },
+      "rows": [], "remainingIssues": ["hit 마지막이 완전한 직립 recovery가 아니라 바닥 자세로 끝난다."]
+    },
+    {
+      "sheetKey": "tower_doctor_companion", "category": "companion", "beforeScore": 81, "afterScore": 91,
+      "beforeBreakdown": { "readability": 19, "continuity": 16, "identity": 18, "equipment": 13, "technical": 15 },
+      "afterBreakdown": { "readability": 23, "continuity": 20, "identity": 19, "equipment": 14, "technical": 15 },
+      "evidence": { "runtimePath": "assets/images/combat/spritesheets/companions/tower_doctor_companion_sheet.png", "baselineSha256": "e70c01d130cbd783dc5944a24b8e492513b80ea53feed31d5ec0f9040bc6f75e", "runtimeSha256": "78547458686c6795633c44f4d15f0e0774b990f74295ce4e46860d5df21d0caa", "byteIdentical": false, "sourceAlphaPath": "art_sources/combat/task9_companions/tower_doctor_hit_rework_alpha.png", "sourceAlphaSha256": "5a2bacb8fdc106f135f920c3f503385a2a9224b752499c11eec3779bc9ee1c5c", "reviewPreviewPath": "art_sources/combat/task9_companions/review_previews/tower_doctor_companion_review.png", "reviewPreviewSha256": "894e5fe79b2d601fa4ff8f21f5675fc778052215f9069a0a5e80587dcfadc140" },
+      "rows": [{ "row": 6, "motion": "hit", "before": { "readability": 14, "continuity": 12, "identity": 17, "equipment": 12, "technical": 15, "total": 70 }, "after": { "readability": 23, "continuity": 20, "identity": 19, "equipment": 14, "technical": 15, "total": 91 }, "beforeObservation": "피격이 큰 후방 낙하로 이어져 death와 구분이 약하고 recovery가 없다.", "afterObservation": "case를 유지한 짧은 flinch 후 원래 직립 자세로 회복한다." }],
+      "remainingIssues": ["의도된 짧은 피격이라 중간 phase의 변위가 작다."]
+    },
+    {
+      "sheetKey": "sous_chef_companion", "category": "companion", "beforeScore": 75, "afterScore": 89,
+      "beforeBreakdown": { "readability": 17, "continuity": 14, "identity": 17, "equipment": 12, "technical": 15 },
+      "afterBreakdown": { "readability": 22, "continuity": 19, "identity": 19, "equipment": 14, "technical": 15 },
+      "evidence": { "runtimePath": "assets/images/combat/spritesheets/companions/sous_chef_companion_sheet.png", "baselineSha256": "b453f8be0c7e7204acb96ae8261b58bbac5f00d5cec1d70be8b9153a9741e1bb", "runtimeSha256": "12d4f7e91ce7773af5f3555988f2b052ddbac156e346ba90662c5501ad3e51ad", "byteIdentical": false, "sourceAlphaPath": "art_sources/combat/task9_companions/sous_chef_move_rework_alpha.png", "sourceAlphaSha256": "508119658bb4a2eb1a5fe394aab38f67994c3acf5d8d093c10b73348c9b2a3b7", "reviewPreviewPath": "art_sources/combat/task9_companions/review_previews/sous_chef_companion_review.png", "reviewPreviewSha256": "5e1582ecec88065f747e24bd23c63f952bfe4870fcd8d99182f426b62e430477" },
+      "rows": [{ "row": 5, "motion": "move", "before": { "readability": 13, "continuity": 11, "identity": 17, "equipment": 9, "technical": 15, "total": 65 }, "after": { "readability": 22, "continuity": 19, "identity": 19, "equipment": 14, "technical": 15, "total": 89 }, "beforeObservation": "마지막이 피격 자세로 끝나고 보행 cycle이 유지되지 않는다.", "afterObservation": "cleaver를 낮춰 든 채 교대 보폭으로 이동하고 직립으로 돌아온다." }],
+      "remainingIssues": ["move row의 붉은 조명이 다른 row보다 강하고 f2/f4가 유사하다."]
+    },
+    {
+      "sheetKey": "kitchen_helper_companion", "category": "companion", "beforeScore": 84, "afterScore": 84,
+      "beforeBreakdown": { "readability": 21, "continuity": 18, "identity": 18, "equipment": 12, "technical": 15 },
+      "afterBreakdown": { "readability": 21, "continuity": 18, "identity": 18, "equipment": 12, "technical": 15 },
+      "evidence": { "runtimePath": "assets/images/combat/spritesheets/companions/kitchen_helper_companion_sheet.png", "baselineSha256": "0559c4e8eb07dfe605d436aa8eb511318ee89bb08d29ee4156b18b2cad1ce999", "runtimeSha256": "0559c4e8eb07dfe605d436aa8eb511318ee89bb08d29ee4156b18b2cad1ce999", "byteIdentical": true, "reviewPreviewPath": "art_sources/combat/task9_companions/review_previews/kitchen_helper_companion_review.png" },
+      "rows": [], "remainingIssues": ["guard에서 pan/ladle 위치가 여러 번 바뀌고 hit의 recovery가 약하다."]
+    }
+  ]
+}
