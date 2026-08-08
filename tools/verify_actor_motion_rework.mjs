@@ -17,8 +17,10 @@ export const TARGET_ROWS = Object.freeze([
 ]);
 
 const CONTRACT_PATH = path.join('art_sources', 'combat', 'actor_motion_rework_contract.json');
-const ACTOR_SHEETS = Object.freeze(Object.entries(COMBAT_MOTION_MANIFEST)
-  .filter(([, sheet]) => !sheet.src.includes('/enemies/')));
+const ACTOR_MOTION_ROWS = Object.freeze([
+  ['idle', 0], ['melee', 1], ['ranged', 2], ['support', 3],
+  ['guard', 4], ['move', 5], ['hit', 6], ['death', 7],
+]);
 
 function invariant(condition, message) {
   if (!condition) throw new Error(message);
@@ -31,6 +33,39 @@ function rowSha256(image, row) {
   return createHash('sha256').update(bytes).digest('hex');
 }
 
+export function validateActorMotionManifest(manifest = COMBAT_MOTION_MANIFEST) {
+  const actorSheets = Object.entries(manifest)
+    .filter(([, sheet]) => !sheet.src.includes('/enemies/'));
+  invariant(actorSheets.length === 26, `expected 26 actor sheets, got ${actorSheets.length}`);
+  for (const [sheetKey, sheet] of actorSheets) {
+    invariant(sheet.cols === 6 && sheet.rows === 8, `${sheetKey} must use a 6x8 grid`);
+    const actualRows = Object.entries(sheet.motions ?? {}).map(([motion, value]) => [motion, value.row]);
+    invariant(JSON.stringify(actualRows) === JSON.stringify(ACTOR_MOTION_ROWS),
+      `${sheetKey} motion row mapping drift`);
+  }
+  return actorSheets;
+}
+
+function validateContractAgainstManifest(contract, actorSheets) {
+  invariant(Array.isArray(contract.sheets) && contract.sheets.length === actorSheets.length,
+    `expected ${actorSheets.length} contract sheets`);
+  const manifestSheets = new Map(actorSheets);
+  const contractKeys = new Set();
+  for (const sheet of contract.sheets) {
+    invariant(!contractKeys.has(sheet.sheetKey), `duplicate contract sheet: ${sheet.sheetKey}`);
+    contractKeys.add(sheet.sheetKey);
+    const manifestSheet = manifestSheets.get(sheet.sheetKey);
+    invariant(manifestSheet, `contract sheet missing from manifest: ${sheet.sheetKey}`);
+    invariant(sheet.path === manifestSheet.src, `contract path drift: ${sheet.sheetKey}`);
+    invariant(Array.isArray(sheet.rows) && sheet.rows.length === manifestSheet.rows,
+      `contract row count drift: ${sheet.sheetKey}`);
+    sheet.rows.forEach((baseline, row) => {
+      invariant(baseline.row === row, `contract row order drift: ${sheet.sheetKey}:${row}`);
+    });
+  }
+  invariant(contractKeys.size === manifestSheets.size, 'contract sheet set drift');
+}
+
 function imageForSheet(root, sheet) {
   const filePath = path.join(root, sheet.path.replace(/^\//, ''));
   const image = readPng(filePath);
@@ -40,8 +75,8 @@ function imageForSheet(root, sheet) {
 }
 
 function capturedContract(root) {
-  invariant(ACTOR_SHEETS.length === 26, `expected 26 actor sheets, got ${ACTOR_SHEETS.length}`);
-  const sheets = ACTOR_SHEETS.map(([sheetKey, manifestSheet]) => {
+  const actorSheets = validateActorMotionManifest();
+  const sheets = actorSheets.map(([sheetKey, manifestSheet]) => {
     const image = readPng(path.join(root, manifestSheet.src.replace(/^\//, '')));
     invariant(image.width === 1536 && image.height === manifestSheet.rows * 256 && image.pixels,
       `invalid actor sheet: ${sheetKey}`);
@@ -63,6 +98,8 @@ function capturedContract(root) {
 }
 
 export function verifyActorMotionRework(root, contract, options = {}) {
+  const actorSheets = validateActorMotionManifest();
+  validateContractAgainstManifest(contract, actorSheets);
   const targetSet = new Set(contract.targets.map(entry => `${entry.sheetKey}:${entry.row}`));
   let changedTargets = 0;
   let unchangedRows = 0;
@@ -83,6 +120,7 @@ export function verifyActorMotionRework(root, contract, options = {}) {
   if (options.requireTargetsChanged && changedTargets !== contract.targets.length) {
     throw new Error(`target rows changed ${changedTargets}/${contract.targets.length}`);
   }
+  invariant(rows === 208, `expected 208 actor rows, got ${rows}`);
   return {
     sheets: contract.sheets.length,
     rows,
