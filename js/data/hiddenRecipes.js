@@ -1049,6 +1049,7 @@ const HIDDEN_RECIPES = {
     rarity: 'legendary',
     output: [{ definitionId: 'alloy_ingot', qty: 1 }],
     requiredTools: ['brick_furnace'],
+    unlockConditions: { minSkillLevel: { crafting: 12 } },
     requiredSkills: { crafting: 12 },
     stages: [
       {
@@ -1070,6 +1071,7 @@ const HIDDEN_RECIPES = {
     rarity: 'legendary',
     output: [{ definitionId: 'master_blade', qty: 1 }],
     requiredTools: ['field_forge'],
+    unlockConditions: { minSkillLevel: { weaponcraft: 12 } },
     requiredSkills: { weaponcraft: 12 },
     stages: [
       {
@@ -1090,6 +1092,7 @@ const HIDDEN_RECIPES = {
     rarity: 'legendary',
     output: [{ definitionId: 'katana', qty: 1 }],
     requiredTools: ['field_forge'],
+    unlockConditions: { minSkillLevel: { weaponcraft: 15 } },
     requiredSkills: { weaponcraft: 15 },
     stages: [
       {
@@ -1117,6 +1120,7 @@ const HIDDEN_RECIPES = {
     rarity: 'legendary',
     output: [{ definitionId: 'alloy_armor_plate', qty: 1 }],
     requiredTools: ['field_forge'],
+    unlockConditions: { minSkillLevel: { armorcraft: 12 } },
     requiredSkills: { armorcraft: 12 },
     stages: [
       {
@@ -1137,6 +1141,7 @@ const HIDDEN_RECIPES = {
     rarity: 'legendary',
     output: [{ definitionId: 'watchtower', qty: 1 }],
     requiredTools: [],
+    unlockConditions: { minSkillLevel: { building: 12, crafting: 5 } },
     requiredSkills: { building: 12, crafting: 5 },
     stages: [
       {
@@ -1164,6 +1169,7 @@ const HIDDEN_RECIPES = {
     rarity: 'legendary',
     output: [{ definitionId: 'portable_generator', qty: 1 }],
     requiredTools: ['field_forge'],
+    unlockConditions: { minSkillLevel: { building: 10, crafting: 8 } },
     requiredSkills: { building: 10, crafting: 8 },
     stages: [
       {
@@ -1239,6 +1245,7 @@ const HIDDEN_RECIPES = {
     rarity: 'legendary',
     output: [{ definitionId: 'field_surgery_station', qty: 1 }],
     requiredTools: [],
+    unlockConditions: { minSkillLevel: { medicine: 10, building: 6 } },
     requiredSkills: { medicine: 10, building: 6 },
     stages: [
       {
@@ -1336,6 +1343,7 @@ const HIDDEN_RECIPES = {
     rarity: 'legendary',
     output: [{ definitionId: 'solar_panel', qty: 1 }],
     requiredTools: ['workbench'],
+    unlockConditions: { minSkillLevel: { crafting: 12, building: 8 } },
     requiredSkills: { crafting: 12, building: 8 },
     stages: [
       {
@@ -1357,6 +1365,7 @@ const HIDDEN_RECIPES = {
     rarity: 'legendary',
     output: [{ definitionId: 'solar_charger', qty: 1 }],
     requiredTools: [],
+    unlockConditions: { minSkillLevel: { building: 12 } },
     requiredSkills: { building: 12 },
     stages: [
       {
@@ -1378,6 +1387,7 @@ const HIDDEN_RECIPES = {
     rarity: 'legendary',
     output: [{ definitionId: 'powered_drill', qty: 1 }],
     requiredTools: ['workbench'],
+    unlockConditions: { minSkillLevel: { crafting: 12 } },
     requiredSkills: { crafting: 12 },
     stages: [
       {
@@ -1399,6 +1409,7 @@ const HIDDEN_RECIPES = {
     rarity: 'legendary',
     output: [{ definitionId: 'electric_fence', qty: 1 }],
     requiredTools: [],
+    unlockConditions: { minSkillLevel: { building: 15, crafting: 10 } },
     requiredSkills: { building: 15, crafting: 10 },
     stages: [
       {
@@ -1426,6 +1437,7 @@ const HIDDEN_RECIPES = {
     rarity: 'legendary',
     output: [{ definitionId: 'water_recycler', qty: 1 }],
     requiredTools: [],
+    unlockConditions: { minSkillLevel: { building: 12 } },
     requiredSkills: { building: 12 },
     stages: [
       {
@@ -1451,6 +1463,7 @@ const HIDDEN_RECIPES = {
     rarity: 'legendary',
     output: [{ definitionId: 'composite_armor', qty: 1 }],
     requiredTools: ['workbench'],
+    unlockConditions: { minSkillLevel: { armorcraft: 10 } },
     requiredSkills: { armorcraft: 10 },
     stages: [
       {
@@ -1472,6 +1485,7 @@ const HIDDEN_RECIPES = {
     rarity: 'legendary',
     output: [{ definitionId: 'powered_exosuit', qty: 1 }],
     requiredTools: ['field_forge'],
+    unlockConditions: { minSkillLevel: { armorcraft: 15, crafting: 12 } },
     requiredSkills: { armorcraft: 15, crafting: 12 },
     stages: [
       {
@@ -1500,6 +1514,7 @@ const HIDDEN_RECIPES = {
     rarity: 'legendary',
     output: [{ definitionId: 'night_vision_goggles', qty: 1 }],
     requiredTools: ['workbench'],
+    unlockConditions: { minSkillLevel: { crafting: 15 } },
     requiredSkills: { crafting: 15 },
     stages: [
       {
@@ -1521,6 +1536,7 @@ const HIDDEN_RECIPES = {
     rarity: 'legendary',
     output: [{ definitionId: 'electronic_lockpick', qty: 1 }],
     requiredTools: ['workbench'],
+    unlockConditions: { minSkillLevel: { crafting: 10 } },
     requiredSkills: { crafting: 10 },
     stages: [
       {
@@ -1542,6 +1558,7 @@ const HIDDEN_RECIPES = {
     rarity: 'legendary',
     output: [{ definitionId: 'master_wrench', qty: 1 }],
     requiredTools: ['field_forge'],
+    unlockConditions: { minSkillLevel: { crafting: 12 } },
     requiredSkills: { crafting: 12 },
     stages: [
       {
@@ -1566,6 +1583,7 @@ const HIDDEN_RECIPES = {
     rarity: 'legendary',
     output: [{ definitionId: 'automated_fish_trap', qty: 1 }],
     requiredTools: ['workbench'],
+    unlockConditions: { minSkillLevel: { fishing: 12 } },
     requiredSkills: { fishing: 12 },
     stages: [
       {
@@ -1587,6 +1605,7 @@ const HIDDEN_RECIPES = {
     rarity: 'legendary',
     output: [{ definitionId: 'master_angler_lure', qty: 1 }],
     requiredTools: ['field_forge'],
+    unlockConditions: { minSkillLevel: { fishing: 15 } },
     requiredSkills: { fishing: 15 },
     stages: [
       {
