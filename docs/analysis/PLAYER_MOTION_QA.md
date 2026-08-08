@@ -22,7 +22,7 @@ Generated from automatic PNG metrics plus independently authored row observation
 | `soldier_m` | `death` | PASS | 무릎에서 측면 낙하로 이어짐 / 소총이 최종 자세와 함께 내려감 | opaqueGreen=0, fringeGreen=0, hiddenRgb=0, boundaryGreen=0, removedComponents=0, staleAllowlist=0 |
 | `firefighter_m` | `idle` | PASS | 도끼를 든 대기 자세 / 소방 도끼 형태 유지 | opaqueGreen=0, fringeGreen=0, hiddenRgb=0, boundaryGreen=0, removedComponents=0, staleAllowlist=0 |
 | `firefighter_m` | `melee` | PASS | 도끼 준비·휘두름·회수 순서 / 도끼날 방향과 손 위치 일치 | opaqueGreen=0, fringeGreen=0, hiddenRgb=0, boundaryGreen=0, removedComponents=0, staleAllowlist=0 |
-| `firefighter_m` | `ranged` | PASS | 원거리 장비 사용 자세 / 소방 장비를 겨냥하는 동작 | opaqueGreen=0, fringeGreen=0, hiddenRgb=0, boundaryGreen=0, removedComponents=0, staleAllowlist=0 |
+| `firefighter_m` | `ranged` | PASS | flare launcher 준비·조준·발사·반동·복귀가 순차적으로 구분됨 / 동일한 소형 적색 flare launcher가 여섯 프레임에서 형태와 크기를 유지함 | opaqueGreen=0, fringeGreen=0, hiddenRgb=0, boundaryGreen=0, removedComponents=0, staleAllowlist=0 |
 | `firefighter_m` | `support` | PASS | 구조 지원 손동작 / 도끼를 안전하게 제어 | opaqueGreen=0, fringeGreen=0, hiddenRgb=0, boundaryGreen=0, removedComponents=0, staleAllowlist=0 |
 | `firefighter_m` | `guard` | PASS | 도끼 자루를 활용한 방어 / 도끼가 몸 앞에 위치 | opaqueGreen=0, fringeGreen=0, hiddenRgb=0, boundaryGreen=0, removedComponents=0, staleAllowlist=0 |
 | `firefighter_m` | `move` | PASS | 중장비 상태의 전진 보폭 / 도끼를 몸 가까이 듦 | opaqueGreen=0, fringeGreen=0, hiddenRgb=0, boundaryGreen=0, removedComponents=0, staleAllowlist=0 |

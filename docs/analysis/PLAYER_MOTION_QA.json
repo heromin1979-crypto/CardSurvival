@@ -999,7 +999,7 @@
       "width": 1536,
       "height": 2048,
       "mode": "RGBA",
-      "fileSha256": "bc89c75a9cd6bf492a87e6a1a0d07318ec1e088685fe598c6c1e07ed4c8f059d",
+      "fileSha256": "743cf7d826e478c4854f2267a2f784d84e259e37812129547d927937d121a8fc",
       "chromaMetrics": {
         "opaqueGreen": 0,
         "fringeGreen": 0,
@@ -1131,18 +1131,24 @@
           "row": 2,
           "motion": "ranged",
           "alphaCoverage": [
-            14247,
-            15568,
-            16746,
-            13098,
-            11815,
-            14422
+            16629,
+            16845,
+            17034,
+            17232,
+            16887,
+            16515
           ],
           "boundingBoxes": [
             [
-              66,
+              57,
               10,
-              190,
+              199,
+              248
+            ],
+            [
+              43,
+              10,
+              213,
               248
             ],
             [
@@ -1152,37 +1158,31 @@
               248
             ],
             [
-              49,
+              24,
               10,
-              207,
+              231,
               248
             ],
             [
+              24,
               10,
-              37,
-              246,
+              231,
               248
             ],
             [
+              56,
               10,
-              50,
-              246,
-              248
-            ],
-            [
-              46,
-              10,
-              209,
+              200,
               248
             ]
           ],
           "framePixelSha256": [
-            "254f67ce24729c231f9f10393ef4bde33b2d6a2a5edb4e779c6a4e3e55028608",
-            "bde730b15059977dfbed0617a14cdcd4384522a2114552ae9a59075eb414a6a1",
-            "b2e6577a8f89caf15c22b703e54e41ffdb0df86e6458cbf175be2cf5e9213646",
-            "33fa2e9a0c44673d41aa946f884c12b7ad59ba495864b6842a2f050b0c4d8c78",
-            "3493eec286ca6c9938a7ed7447bbdb260bb44cad50ec4f216f829b9e5fccce15",
-            "c6c9dd9350ed178d6d03ba636190aed6c019e198b5d5e90fd869dcc0f3cb33a7"
+            "759eb57eed6c01ca6200b62ee60dcf4003f6f28200ce7801decbf602f7a198b6",
+            "c722490deffaeab920405e85244914b9f4fff283531e62e814565f5182eae208",
+            "b6ce0300d3ad85e7469208981d845a518aecae8485ae009b96a2c58dc980f2f9",
+            "45b488302742f30e44588e6ee221a4d120a707ff30e53c6d0314ba9b65c81fdc",
+            "273b7729172f78c9beeb774d3edae12b19b065cddfe5abde1d410a7e8a8e676b",
+            "9f243f2c720e96621c042e10610ca29925d1586d90dcf38ba6545ae19d3c3892"
           ],
           "distinctFrameCount": 6
         },

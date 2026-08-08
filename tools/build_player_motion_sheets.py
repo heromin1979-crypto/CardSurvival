@@ -11,6 +11,8 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 
+from normalize_combat_sprite_sheets import cleanup_chroma
+
 
 ROOT = Path(__file__).resolve().parents[1]
 CELL = 256
@@ -44,6 +46,7 @@ SOURCE_GRIDS = {
     "engineer_m_death_alpha": ("engineer_m_death_alpha.png", 6, 1),
     "firefighter_m_melee_alpha": ("firefighter_m_melee_alpha.png", 6, 1),
     "firefighter_m_ranged_alpha": ("firefighter_m_ranged_alpha.png", 6, 1),
+    "firefighter_m_ranged_rework_alpha": ("firefighter_m_ranged_rework_alpha.png", 6, 1),
     "homeless_m_melee_alpha": ("homeless_m_melee_alpha.png", 6, 1),
     "homeless_m_ranged_alpha": ("homeless_m_ranged_alpha.png", 6, 1),
     "homeless_m_death_alpha": ("homeless_m_death_alpha.png", 6, 1),
@@ -71,6 +74,7 @@ SIMPLE_ROW_SOURCES = {
     "engineer_m_death_alpha",
     "firefighter_m_melee_alpha",
     "firefighter_m_ranged_alpha",
+    "firefighter_m_ranged_rework_alpha",
     "homeless_m_melee_alpha",
     "homeless_m_ranged_alpha",
     "homeless_m_death_alpha",
@@ -109,7 +113,7 @@ ROW_RECIPES = {
     "firefighter_m": [
         _row("firefighter_m_generated_alpha", 0),
         _row("firefighter_m_melee_alpha", 0),
-        _row("firefighter_m_ranged_alpha", 0),
+        _row("firefighter_m_ranged_rework_alpha", 0),
         *[_row("firefighter_m_generated_alpha", row) for row in range(3, ROWS - 1)],
         _row("firefighter_m_death_alpha", 0),
     ],
@@ -448,7 +452,8 @@ def assemble_sheets(row_recipes: dict | None = None) -> dict[str, Image.Image]:
                 raise ValueError(f"{sheet_key}/{target_row} must select canonical columns 0..5")
             for target_col, source_col in enumerate(columns):
                 raw = source_cells[source_key][row_spec["sourceRow"]][source_col]
-                output.alpha_composite(fit_cell(raw), (target_col * CELL, target_row * CELL))
+                fitted, _ = cleanup_chroma(fit_cell(raw))
+                output.alpha_composite(fitted, (target_col * CELL, target_row * CELL))
         outputs[sheet_key] = output
     return outputs
 
