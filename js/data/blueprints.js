@@ -2131,7 +2131,7 @@ const BLUEPRINTS = {
   },
 
   craft_improved_fishing_rod: {
-    id: 'craft_improved_fishing_rod', name: '개선 낚싯대 제작', category: 'tool',
+    id: 'craft_improved_fishing_rod', name: '낚싯대 제작', category: 'tool',
     hidden: true, unlockConditions: { minSkillLevel: { crafting: 2 } },
     description: '목공 작업대로 만든 튼튼한 낚싯대. 어획 확률 증가.',
     output: [{ definitionId: 'fishing_rod', qty: 1 }],
@@ -3186,24 +3186,8 @@ const BLUEPRINTS = {
     }],
   },
 
-  fishing_rod_basic: {
-    id: 'fishing_rod_basic', name: '기본 낚싯대', category: 'tool',
-    description: '나뭇가지와 천 조각으로 만든 낚싯대.',
-    output: [{ definitionId: 'fishing_rod_basic', qty: 1 }],
-    requiredTools: [],
-    stages: [{
-      stageIndex: 0, label: '낚싯대 제작', tpCost: 1,
-      requiredItems: [
-        { definitionId: 'wood', qty: 1 },
-        { definitionId: 'cloth', qty: 1 },
-        { definitionId: 'nail', qty: 1 },
-      ],
-      consumeAt: 'start',
-    }],
-  },
-
   fishing_rod_improved: {
-    id: 'fishing_rod_improved', name: '개량 낚싯대', category: 'tool',
+    id: 'fishing_rod_improved', name: '고급 낚싯대', category: 'tool',
     hidden: true, unlockConditions: { minSkillLevel: { crafting: 2, fishing: 3 } },
     description: '철사와 낚싯바늘로 보강한 개량 낚싯대. 명중률 +15%.',
     output: [{ definitionId: 'fishing_rod_improved', qty: 1 }],

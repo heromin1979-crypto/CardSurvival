@@ -10,8 +10,8 @@ import ITEMS from '../../js/data/items.js';
 import BALANCE from '../../js/data/gameBalance.js';
 
 const B = BALANCE.fishing;
-const RODS = ['fishing_rod', 'fishing_rod_basic', 'fishing_rod_improved', 'fishing_rod_advanced'];
-const TIERED_RODS = ['fishing_rod_basic', 'fishing_rod_improved', 'fishing_rod_advanced'];
+const RODS = ['fishing_rod', 'fishing_rod_improved', 'fishing_rod_advanced'];
+const TIERED_RODS = RODS;
 const NOT_RODS = ['fish_trap', 'automated_fish_trap', 'fishing_net', 'crab_trap', 'master_angler_lure'];
 
 function resetWorld() {
@@ -50,7 +50,7 @@ describe('낚싯대 데이터 — 이름·수치 티어', () => {
 
   it('상위 티어일수록 내구도가 높다', () => {
     expect(ITEMS.fishing_rod_improved.defaultDurability)
-      .toBeGreaterThan(ITEMS.fishing_rod_basic.defaultDurability);
+      .toBeGreaterThan(ITEMS.fishing_rod.defaultDurability);
     expect(ITEMS.fishing_rod_advanced.defaultDurability)
       .toBeGreaterThan(ITEMS.fishing_rod_improved.defaultDurability);
   });
@@ -62,6 +62,20 @@ describe('낚싯대 데이터 — 이름·수치 티어', () => {
   it('접미사 없는 낚싯대도 설명대로 낚시에 쓸 수 있다', () => {
     expect(ITEMS.fishing_rod.description).toContain('물고기를 잡을 수 있다');
     expect(isFishingRod(ITEMS.fishing_rod)).toBe(true);
+  });
+
+  it('기본 낚싯대(fishing_rod_basic)는 제거되어 낚싯대로 통일됐다', () => {
+    expect(ITEMS.fishing_rod_basic).toBeUndefined();
+  });
+
+  it('이름이 낚싯대 → 고급 → 전설 순으로 붙는다', () => {
+    expect(ITEMS.fishing_rod.name).toBe('낚싯대');
+    expect(ITEMS.fishing_rod_improved.name).toBe('고급 낚싯대');
+    expect(ITEMS.fishing_rod_advanced.name).toBe('전설 낚싯대');
+  });
+
+  it('전설 낚싯대는 등급도 legendary다', () => {
+    expect(ITEMS.fishing_rod_advanced.rarity).toBe('legendary');
   });
 
   it('낚시 도구지만 낚싯대가 아닌 것에는 rod 태그가 없다', () => {
@@ -80,8 +94,8 @@ describe('isFishingRod — 판정 범위', () => {
 });
 
 describe('어획 보너스 — 티어별 상승', () => {
-  it('기본은 보너스가 없다', () => {
-    expect(FishingSystem.getRodBonus('fishing_rod_basic')).toBe(0);
+  it('1티어 낚싯대는 보너스가 없다', () => {
+    expect(FishingSystem.getRodBonus('fishing_rod')).toBe(0);
   });
 
   it('개량은 밸런스 상수만큼 준다', () => {
@@ -95,10 +109,6 @@ describe('어획 보너스 — 티어별 상승', () => {
 
   it('낚싯대가 없으면 0이다', () => {
     expect(FishingSystem.getRodBonus(null)).toBe(0);
-  });
-
-  it('즉석 낚싯대는 기본과 같은 0이다', () => {
-    expect(FishingSystem.getRodBonus('fishing_rod')).toBe(0);
   });
 
   it('티어가 오를수록 보너스가 커진다', () => {
@@ -137,7 +147,7 @@ describe('getRodId — 보유 낚싯대 탐색', () => {
     expect(FishingSystem.getRodId()).toBe('fishing_rod_improved');
   });
 
-  it('접미사 없는 낚싯대도 인식한다', () => {
+  it('낚싯대를 인식한다', () => {
     carry('fishing_rod');
     expect(FishingSystem.getRodId()).toBe('fishing_rod');
   });

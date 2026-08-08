@@ -841,7 +841,7 @@ const ExploreSystem = {
     SkillSystem.gainXp('scavenging', 3);
     EventBus.emit('notify', { message: I18n.t('exploreSys.subComplete', { name: locationPathText() }), type: 'info' });
 
-    // 캐릭터당 1회 한정 자동 보상 (한강 낚시터 진입 시 fishing_rod_basic 등)
+    // 캐릭터당 1회 한정 자동 보상 (한강 낚시터 진입 시 fishing_rod 등)
     this._grantFirstEnterReward(sub, subKey);
 
     // 보라매 응급실 잔류 환자 이벤트 (이지수 전용, Day 2~7)

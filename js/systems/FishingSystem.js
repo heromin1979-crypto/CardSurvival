@@ -52,8 +52,7 @@ function _findBaitInBoard() {
 // 티어별 어획 보너스. 하드코딩 분기 대신 표로 두어 신규 낚싯대가 추가돼도
 // 여기 한 줄만 늘리면 된다.
 const ROD_BONUS = {
-  fishing_rod:          B.rodBasicBonus,   // 즉석 낚싯대 — 기본과 동급
-  fishing_rod_basic:    B.rodBasicBonus,
+  fishing_rod:          B.rodBasicBonus,
   fishing_rod_improved: B.rodImprovedBonus,
   fishing_rod_advanced: B.rodAdvancedBonus,
 };

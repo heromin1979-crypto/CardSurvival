@@ -1047,7 +1047,7 @@ const BLUEPRINTS_ADVANCED = {
   },
 
   make_fishing_rod_advanced: {
-    id: 'make_fishing_rod_advanced', name: '강화 낚싯대 제작', category: 'tool',
+    id: 'make_fishing_rod_advanced', name: '전설 낚싯대 제작', category: 'tool',
     hidden: true, unlockConditions: { minSkillLevel: { fishing: 8 } },
     description: '낚싯대를 강철과 스프링으로 보강한다.',
     output: [{ definitionId: 'fishing_rod_advanced', qty: 1 }],

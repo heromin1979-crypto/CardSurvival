@@ -109,7 +109,7 @@ const FOOD_BLUEPRINTS = (() => {
 })();
 
 // PR7: 낚싯대 후보 (우선 순위: improved > basic > 구형)
-const ROD_IDS = ['fishing_rod_improved', 'fishing_rod_basic', 'fishing_rod'];
+const ROD_IDS = ['fishing_rod_advanced', 'fishing_rod_improved', 'fishing_rod'];
 
 function dec(inv, id, n = 1) {
   if ((inv[id] ?? 0) >= n) {
@@ -673,12 +673,12 @@ function actFish(simInv) {
     if ((simInv[id] ?? 0) > 0) { rodId = id; break; }
   }
   // PR9 옵션 C-a 시뮬 모방: hangang sublocation 진입 보상을 모델링하지 않으므로
-  // hasFishing 구역 도달 + rod 미보유 시 1회 한정 fishing_rod_basic 자동 지급.
+  // hasFishing 구역 도달 + rod 미보유 시 1회 한정 fishing_rod 자동 지급.
   // (게임 본체: ExploreSystem._grantFirstEnterReward + landmarks.js firstEnterReward)
   if (!rodId && !simInv.__hangangRodGranted) {
-    simInv.fishing_rod_basic = (simInv.fishing_rod_basic ?? 0) + 1;
+    simInv.fishing_rod = (simInv.fishing_rod ?? 0) + 1;
     simInv.__hangangRodGranted = true;
-    rodId = 'fishing_rod_basic';
+    rodId = 'fishing_rod';
   }
   if (!rodId) return null;
   const fishingLv = GameState.player?.skills?.fishing?.level ?? GameState.player?.skills?.fishing ?? 0;

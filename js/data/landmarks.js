@@ -4411,7 +4411,7 @@ export const LANDMARK_DATA = {
           claimKey: 'hangang_rod',
           items: [
             {
-              id: 'fishing_rod_basic',
+              id: 'fishing_rod',
               qty: 1,
             },
           ],
@@ -4450,7 +4450,7 @@ export const LANDMARK_DATA = {
           claimKey: 'hangang_rod',
           items: [
             {
-              id: 'fishing_rod_basic',
+              id: 'fishing_rod',
               qty: 1,
             },
           ],
@@ -4502,7 +4502,7 @@ export const LANDMARK_DATA = {
           claimKey: 'hangang_rod',
           items: [
             {
-              id: 'fishing_rod_basic',
+              id: 'fishing_rod',
               qty: 1,
             },
           ],
@@ -4541,7 +4541,7 @@ export const LANDMARK_DATA = {
           claimKey: 'hangang_rod',
           items: [
             {
-              id: 'fishing_rod_basic',
+              id: 'fishing_rod',
               qty: 1,
             },
           ],
@@ -4593,7 +4593,7 @@ export const LANDMARK_DATA = {
           claimKey: 'hangang_rod',
           items: [
             {
-              id: 'fishing_rod_basic',
+              id: 'fishing_rod',
               qty: 1,
             },
           ],
@@ -4632,7 +4632,7 @@ export const LANDMARK_DATA = {
           claimKey: 'hangang_rod',
           items: [
             {
-              id: 'fishing_rod_basic',
+              id: 'fishing_rod',
               qty: 1,
             },
           ],
@@ -4684,7 +4684,7 @@ export const LANDMARK_DATA = {
           claimKey: 'hangang_rod',
           items: [
             {
-              id: 'fishing_rod_basic',
+              id: 'fishing_rod',
               qty: 1,
             },
           ],
@@ -4723,7 +4723,7 @@ export const LANDMARK_DATA = {
           claimKey: 'hangang_rod',
           items: [
             {
-              id: 'fishing_rod_basic',
+              id: 'fishing_rod',
               qty: 1,
             },
           ],
@@ -4775,7 +4775,7 @@ export const LANDMARK_DATA = {
           claimKey: 'hangang_rod',
           items: [
             {
-              id: 'fishing_rod_basic',
+              id: 'fishing_rod',
               qty: 1,
             },
           ],
@@ -4814,7 +4814,7 @@ export const LANDMARK_DATA = {
           claimKey: 'hangang_rod',
           items: [
             {
-              id: 'fishing_rod_basic',
+              id: 'fishing_rod',
               qty: 1,
             },
           ],
@@ -4866,7 +4866,7 @@ export const LANDMARK_DATA = {
           claimKey: 'hangang_rod',
           items: [
             {
-              id: 'fishing_rod_basic',
+              id: 'fishing_rod',
               qty: 1,
             },
           ],
@@ -4905,7 +4905,7 @@ export const LANDMARK_DATA = {
           claimKey: 'hangang_rod',
           items: [
             {
-              id: 'fishing_rod_basic',
+              id: 'fishing_rod',
               qty: 1,
             },
           ],
@@ -4956,7 +4956,7 @@ export const LANDMARK_DATA = {
           claimKey: 'hangang_rod',
           items: [
             {
-              id: 'fishing_rod_basic',
+              id: 'fishing_rod',
               qty: 1,
             },
           ],
@@ -4995,7 +4995,7 @@ export const LANDMARK_DATA = {
           claimKey: 'hangang_rod',
           items: [
             {
-              id: 'fishing_rod_basic',
+              id: 'fishing_rod',
               qty: 1,
             },
           ],
@@ -5048,7 +5048,7 @@ export const LANDMARK_DATA = {
           claimKey: 'hangang_rod',
           items: [
             {
-              id: 'fishing_rod_basic',
+              id: 'fishing_rod',
               qty: 1,
             },
           ],
@@ -5087,7 +5087,7 @@ export const LANDMARK_DATA = {
           claimKey: 'hangang_rod',
           items: [
             {
-              id: 'fishing_rod_basic',
+              id: 'fishing_rod',
               qty: 1,
             },
           ],
@@ -5139,7 +5139,7 @@ export const LANDMARK_DATA = {
           claimKey: 'hangang_rod',
           items: [
             {
-              id: 'fishing_rod_basic',
+              id: 'fishing_rod',
               qty: 1,
             },
           ],
@@ -5178,7 +5178,7 @@ export const LANDMARK_DATA = {
           claimKey: 'hangang_rod',
           items: [
             {
-              id: 'fishing_rod_basic',
+              id: 'fishing_rod',
               qty: 1,
             },
           ],
@@ -5230,7 +5230,7 @@ export const LANDMARK_DATA = {
           claimKey: 'hangang_rod',
           items: [
             {
-              id: 'fishing_rod_basic',
+              id: 'fishing_rod',
               qty: 1,
             },
           ],
@@ -5269,7 +5269,7 @@ export const LANDMARK_DATA = {
           claimKey: 'hangang_rod',
           items: [
             {
-              id: 'fishing_rod_basic',
+              id: 'fishing_rod',
               qty: 1,
             },
           ],

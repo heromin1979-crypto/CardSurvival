@@ -30,7 +30,6 @@ const FILES = [
   { dir: 'tools', name: 'bait_insect.png',        url: 'https://www.genspark.ai/api/files/s/jcfJQDoc?cache_control=3600' },
   { dir: 'tools', name: 'bait_worm.png',           url: 'https://www.genspark.ai/api/files/s/sWCDYSfz?cache_control=3600' },
   { dir: 'tools', name: 'fishing_hook.png',         url: 'https://www.genspark.ai/api/files/s/Opak7gSs?cache_control=3600' },
-  { dir: 'tools', name: 'fishing_rod_basic.png',    url: 'https://www.genspark.ai/api/files/s/TM6daHab?cache_control=3600' },
   { dir: 'tools', name: 'fishing_rod_improved.png', url: 'https://www.genspark.ai/api/files/s/YC2mX0s1?cache_control=3600' },
   { dir: 'tools', name: 'kitchen_knife.png',        url: 'https://www.genspark.ai/api/files/s/XSpoCPCa?cache_control=3600' },
   { dir: 'tools', name: 'mortar_pestle.png',        url: 'https://www.genspark.ai/api/files/s/GsufinkA?cache_control=3600' },

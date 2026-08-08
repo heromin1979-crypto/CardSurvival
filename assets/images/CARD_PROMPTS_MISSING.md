@@ -513,12 +513,6 @@ fishing bait, classic worm bait, earthy dark tones, dark background
 ### `fishing_hook.png` ← materials 그룹으로 이미 작성 (tools 경로로 저장)
 > **저장 경로:** `assets/images/tools/fishing_hook.png`
 
-### `fishing_rod_basic.png`
-```
-simple bamboo fishing rod with string and hook tied at end,
-primitive handmade fishing tool, natural bamboo color, dark background
-```
-
 ### `fishing_rod_improved.png`
 ```
 improved fishing rod with wooden handle and wrapped grip, metal guides on rod,
