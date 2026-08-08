@@ -14,7 +14,7 @@
       "overallAverage": 82.0,
       "individualScoresAvailable": false
     },
-    "rescoredFromCommit": "cdd905a406b7fe4986d221f83aaf5bcdc86964b2",
+    "rescoredFromCommit": "cdd905a406b7fe7d09d8efeab9d780be33eca22c",
     "method": "기존 원본 감사 자료에는 26종 개별 점수가 없어 이를 추정하거나 aggregate에서 역산하지 않았다. cdd905a의 runtime PNG 26종을 git archive로 추출하여 원본 해상도로 다시 보고 동일 rubric으로 직접 재채점했다. byte-identical 13종은 SHA-256 일치를 확인한 뒤 before/after 점수를 동일하게 유지했다.",
     "playerAverage": 86.0,
     "companionAverage": 79.75,

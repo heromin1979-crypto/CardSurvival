@@ -7,7 +7,7 @@
 - rubric: readability 25, continuity 25, identity 20, equipment 15, technical 15, 합계 100.
 - 계약: 교체 대상 sheet 각각 80점 이상, 26종 전체 평균 88점 이상.
 - 기존 설계 문서에 남은 aggregate는 player 86.0, companion 80.8, overall 82.0이며 개별 원본 점수는 없다.
-- 개별 `beforeScore`는 aggregate에서 추정하거나 역산하지 않았다. commit `cdd905a406b7fe4986d221f83aaf5bcdc86964b2`의 runtime PNG 26종을 추출해 같은 rubric으로 원본 해상도 재채점했다.
+- 개별 `beforeScore`는 aggregate에서 추정하거나 역산하지 않았다. commit `cdd905a406b7fe7d09d8efeab9d780be33eca22c`의 runtime PNG 26종을 추출해 같은 rubric으로 원본 해상도 재채점했다.
 - 재채점 baseline은 player 86.000, companion 79.750, overall 81.192다. 문서 aggregate 82.0과의 -0.808 차이는 개별 원본 부재로 인한 독립 재채점 차이며 두 값을 모두 보존한다.
 - current는 runtime 26종과 review preview를 원본 해상도로 판정했다. 20 target row는 current runtime, canonical source alpha, review preview를 대조했다. 각 파일 SHA-256은 JSON `evidence`에 있다.
 - baseline/current가 byte-identical인 13종은 SHA-256 일치 확인 후 같은 점수를 재사용했다. 나머지 13종은 서로 다른 SHA-256과 target row 실물을 직접 비교했다.
