@@ -8,6 +8,79 @@
 const IMG = 'assets/images/cinematic/';
 
 const CINEMATIC_SCENES = {
+  // ── 장인의 유산 (5개) — 히든 장소 발견 연출 ─────────────────────
+  // 배경 이미지 미제작. image를 두지 않으면 그라디언트만 표시된다.
+
+  cin_hidden_dongdaemun_workshop: {
+    id: 'cin_hidden_dongdaemun_workshop',
+    gradient: 'linear-gradient(160deg,#1a1216 0%,#2c1e26 60%,#120c10 100%)',
+    title: '재단사의 마지막 원단',
+    subtitle: '동대문 비밀 공방',
+    lines: [
+      '재봉틀 앞에 앉은 채로 굳은 자세. 손은 아직 원단을 잡고 있었다.',
+      '작업대 위 메모 — "3월 12일. 방탄 시제품 7벌. 나머지는 못 만들 것 같다."',
+      '완성된 일곱 벌은 없다. 누군가 가져갔다는 뜻이다.',
+      '남은 것은 재단하다 만 케블라 한 필뿐.',
+    ],
+    displayMs: 0,
+  },
+
+  cin_hidden_guro_forge: {
+    id: 'cin_hidden_guro_forge',
+    gradient: 'linear-gradient(160deg,#1c1410 0%,#2e1f14 60%,#120c08 100%)',
+    title: '꺼지지 않은 불',
+    subtitle: '구로 디지털단지 비밀 대장간',
+    lines: [
+      '데이터센터 지하 기계실. 서버는 죽고 용광로가 살아 있었다.',
+      '누군가 냉각 배관을 뜯어 송풍구로 개조했다. 손으로.',
+      '벽에 분필로 적힌 배합비. 고철과 숯의 비율이 열두 번 고쳐져 있다.',
+      '마지막 줄만 지워지지 않았다. 정답을 찾은 것이다.',
+    ],
+    displayMs: 0,
+  },
+
+  cin_hidden_jongno_vault: {
+    id: 'cin_hidden_jongno_vault',
+    gradient: 'linear-gradient(160deg,#101418 0%,#1d2630 60%,#0a0d10 100%)',
+    title: '근정전 아래',
+    subtitle: '경복궁 지하 왕실 금고',
+    lines: [
+      '박석을 들어내자 계단이 나왔다. 도면에 없는 계단이다.',
+      '항온항습 설비가 여태 돌고 있었다. 비상 전력이 이곳만 살렸다.',
+      '유물 목록표에 붉은 줄이 그어져 있다. 반출 완료 표시.',
+      '한 칸만 줄이 없다. 너무 무거워 두고 간 것.',
+    ],
+    displayMs: 0,
+  },
+
+  cin_hidden_seocho_evidence: {
+    id: 'cin_hidden_seocho_evidence',
+    gradient: 'linear-gradient(160deg,#12151a 0%,#1e242c 60%,#0b0e12 100%)',
+    title: '봉인은 지켜졌다',
+    subtitle: '서초 법원 증거물 보관소',
+    lines: [
+      '철제 캐비닛 300여 개. 봉인 테이프가 하나도 뜯겨 있지 않다.',
+      '입구 책상에 서기관 명패와 출입 대장. 마지막 서명은 1월 16일.',
+      '"반출 요청 — 불허. 절차대로 처리할 것." 그날도 그렇게 적었다.',
+      '도시가 무너지는 동안 누군가는 끝까지 규칙을 지켰다.',
+    ],
+    displayMs: 0,
+  },
+
+  cin_hidden_songpa_penthouse: {
+    id: 'cin_hidden_songpa_penthouse',
+    gradient: 'linear-gradient(160deg,#0d1116 0%,#1a222c 60%,#080b0e 100%)',
+    title: '123층에서 내려다본 것',
+    subtitle: '롯데타워 펜트하우스',
+    lines: [
+      '계단 123층. 먼저 올라온 사람이 있었다.',
+      '통유리 앞에 망원경과 지도. 서울 전역에 압정이 꽂혀 있다.',
+      '압정마다 날짜가 적혀 있다. 불빛이 꺼진 순서였다.',
+      '그는 도시가 죽어가는 것을 여기서 전부 지켜봤다.',
+    ],
+    displayMs: 0,
+  },
+
 
   // ── 사망 장면 (11개) ─────────────────────────────────────────────
 

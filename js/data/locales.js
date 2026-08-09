@@ -2994,6 +2994,7 @@ export const en = {
   '_item.mothers_necklace':        "Mother's Necklace",
 
   // ── Landmark cards: event & Hangang (missing batch) ─────────────
+  '_item.lm_63_building':          '63 Building',
   '_item.lm_boramae_hospital':     'Boramae Hospital',
   '_item.lm_raider_camp_small':    'Small Raider Camp',
   '_item.lm_raider_camp_medium':   'Medium Raider Outpost',

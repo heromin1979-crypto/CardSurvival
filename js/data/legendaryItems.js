@@ -719,12 +719,11 @@ const LEGENDARY_ITEMS = {
   },
 
   seoul_emergency_plan: {
-    id: 'seoul_emergency_plan', name: '서울시 비상 대응 계획서', type: 'consumable', subtype: 'special',
+    id: 'seoul_emergency_plan', name: '서울시 비상 대응 계획서', type: 'material', subtype: 'document',
     rarity: 'legendary', legendary: true, weight: 0.2,
     defaultDurability: 100, defaultContamination: 0,
-    icon: '🗺️', description: '서울시 비상 대응 계획서. 사용하면 모든 미발견 히든 장소가 지도에 표시된다.',
+    icon: '🗺️', description: '재난 대비 3급 기밀. 대피소·정수 계통·군수 하청 목록이 좌표까지 적혀 있다. 지니고 다니면 그 시설들을 알아볼 수 있다.',
     tags: ['key_item', 'legendary'],
-    onConsume: { revealAllHiddenLocations: true },
     dismantle: [],
   },
 

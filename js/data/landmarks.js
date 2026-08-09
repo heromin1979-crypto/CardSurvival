@@ -40,6 +40,26 @@ export const LANDMARK_DATA = {
     icon: '🏯',
     subLocations: [
       {
+        id: 'sl_jongno_royal_vault',
+        name: '지하 왕실 금고',
+        icon: '👑',
+        desc: '근정전 박석 아래 도면에 없는 계단. 항온항습 설비가 여태 돌고 있다.',
+        dangerMod: 0.18,
+        noSceneImage: true,
+        requiresHiddenLocation: 'hidden_jongno_royal_vault',
+        firstEnterReward: {
+          claimKey: 'jongno_vault_first',
+          items: [
+            { id: 'royal_katana', qty: 1 },
+          ],
+        },
+        lootTable: [
+          { id: 'cloth', weight: 4 },
+          { id: 'map_fragment', weight: 2 },
+          { id: 'antiseptic', weight: 3 },
+        ],
+      },
+      {
         id: 'jongno_geunjeongjeon',
         name: '근정전',
         icon: '🏛️',
@@ -199,6 +219,26 @@ export const LANDMARK_DATA = {
     desc: '서울 최대 재래시장. 식료품, 의류, 잡화 등 온갖 생존 물자가 있을 수 있다.',
     icon: '🏪',
     subLocations: [
+      {
+        id: 'sl_junggoo_city_hall_safe',
+        name: '시장실 금고',
+        icon: '🏛️',
+        desc: '시장 북쪽 태평로 건너 시청 본관. 시장실 벽 뒤에 금고가 통째로 박혀 있다.',
+        dangerMod: 0.3,
+        noSceneImage: true,
+        requiresHiddenLocation: 'hidden_junggoo_city_hall_safe',
+        firstEnterReward: {
+          claimKey: 'city_hall_safe_first',
+          items: [
+            { id: 'seoul_emergency_plan', qty: 1 },
+          ],
+        },
+        lootTable: [
+          { id: 'survivor_note', weight: 6 },
+          { id: 'map_fragment', weight: 5 },
+          { id: 'emergency_kit', weight: 3 },
+        ],
+      },
       {
         id: 'junggu_food',
         name: '식료품 구역',
@@ -672,6 +712,26 @@ export const LANDMARK_DATA = {
     icon: '🎡',
     subLocations: [
       {
+        id: 'sl_gwangjin_zoo_lab',
+        name: '동물 연구소',
+        icon: '🐯',
+        desc: '사육사 구역 안쪽 검역동. 우리 문이 안에서 뜯겨 있다.',
+        dangerMod: 0.2,
+        noSceneImage: true,
+        requiresHiddenLocation: 'hidden_gwangjin_zoo_laboratory',
+        firstEnterReward: {
+          claimKey: 'gwangjin_zoolab_first',
+          items: [
+            { id: 'veterinary_tranquilizer', qty: 1 },
+          ],
+        },
+        lootTable: [
+          { id: 'antiseptic', weight: 4 },
+          { id: 'hide', weight: 5 },
+          { id: 'bone', weight: 5 },
+        ],
+      },
+      {
         id: 'gwangjin_zoo',
         name: '동물원 구역',
         icon: '🦁',
@@ -823,6 +883,26 @@ export const LANDMARK_DATA = {
     desc: '대형 종합병원. 의약품과 의료 장비의 보고지만 감염 위험이 높다.',
     icon: '🏥',
     subLocations: [
+      {
+        id: 'sl_dongdaemun_workshop',
+        name: '재단사의 공방',
+        icon: '🧵',
+        desc: '의료원 뒤편 봉제골목 안쪽. 셔터가 반쯤 내려간 작업실에 재봉틀 여섯 대가 그대로 있다.',
+        dangerMod: 0.08,
+        noSceneImage: true,
+        requiresHiddenLocation: 'hidden_dongdaemun_secret_workshop',
+        firstEnterReward: {
+          claimKey: 'dongdaemun_workshop_first',
+          items: [
+            { id: 'kevlar_fabric', qty: 1 },
+          ],
+        },
+        lootTable: [
+          { id: 'cloth', weight: 6 },
+          { id: 'thread', weight: 6 },
+          { id: 'large_cloth', weight: 3 },
+        ],
+      },
       {
         id: 'dongdaemun_er',
         name: '응급실',
@@ -1009,6 +1089,26 @@ export const LANDMARK_DATA = {
     icon: '🎠',
     subLocations: [
       {
+        id: 'sl_jungrang_water_control',
+        name: '정수장 컨트롤룸',
+        icon: '💧',
+        desc: '용마산 능선 너머 배수지 계통의 중앙 제어실. 급수 도면이 벽 전체를 덮고 있다.',
+        dangerMod: 0.15,
+        noSceneImage: true,
+        requiresHiddenLocation: 'hidden_jungrang_water_treatment',
+        firstEnterReward: {
+          claimKey: 'jungrang_control_first',
+          items: [
+            { id: 'industrial_purifier', qty: 1 },
+          ],
+        },
+        lootTable: [
+          { id: 'purified_water', weight: 8 },
+          { id: 'water_filter', weight: 5 },
+          { id: 'electronic_parts', weight: 4 },
+        ],
+      },
+      {
         id: 'jungnang_ferris',
         name: '관람차 주변',
         icon: '🎡',
@@ -1160,6 +1260,26 @@ export const LANDMARK_DATA = {
     desc: '명문 대학 캠퍼스. 법학·의학·체육 시설이 혼재하며 물자가 다양하다.',
     icon: '🎓',
     subLocations: [
+      {
+        id: 'sl_seongbuk_research_bunker',
+        name: '지하 연구 벙커',
+        icon: '🔬',
+        desc: '이공대 건물 아래 봉인된 실험실. 배양기 전원이 아직 들어와 있다.',
+        dangerMod: 0.12,
+        noSceneImage: true,
+        requiresHiddenLocation: 'hidden_seongbuk_university_bunker',
+        firstEnterReward: {
+          claimKey: 'seongbuk_bunker_first',
+          items: [
+            { id: 'experimental_antiviral', qty: 1 },
+          ],
+        },
+        lootTable: [
+          { id: 'antibiotics', weight: 4 },
+          { id: 'antiseptic', weight: 5 },
+          { id: 'electronic_parts', weight: 4 },
+        ],
+      },
       {
         id: 'seongbuk_medschool',
         name: '의과대학',
@@ -1317,6 +1437,25 @@ export const LANDMARK_DATA = {
     icon: '🏔️',
     subLocations: [
       {
+        id: 'sl_gangbuk_hidden_spring',
+        name: '숨겨진 샘',
+        icon: '💧',
+        desc: '비가 와야 물길이 드러나는 바위 아래 샘. 마르면 흔적도 남지 않는다.',
+        dangerMod: 0.0,
+        noSceneImage: true,
+        requiresHiddenLocation: 'hidden_gangbuk_mountain_spring',
+        firstEnterReward: {
+          claimKey: 'gangbuk_spring_first',
+          items: [
+            { id: 'pristine_spring_water', qty: 1 },
+          ],
+        },
+        lootTable: [
+          { id: 'purified_water', weight: 8 },
+          { id: 'mountain_water', weight: 6 },
+        ],
+      },
+      {
         id: 'gangbuk_gate',
         name: '성문',
         icon: '🚪',
@@ -1469,6 +1608,26 @@ export const LANDMARK_DATA = {
     icon: '⛰️',
     subLocations: [
       {
+        id: 'sl_dobong_hermit_cave',
+        name: '은자의 동굴',
+        icon: '🕯',
+        desc: '등산로에서 벗어난 바위 틈. 마른 약초 다발과 손때 묻은 절구가 그대로 놓여 있다.',
+        dangerMod: 0.05,
+        noSceneImage: true,
+        requiresHiddenLocation: 'hidden_dobong_hermit_cave',
+        firstEnterReward: {
+          claimKey: 'dobong_hermit_first',
+          items: [
+            { id: 'hermit_elixir', qty: 1 },
+          ],
+        },
+        lootTable: [
+          { id: 'herb', weight: 6 },
+          { id: 'herbal_tea', weight: 4 },
+          { id: 'cloth', weight: 3 },
+        ],
+      },
+      {
         id: 'dobong_entrance',
         name: '등산 초입부',
         icon: '🌲',
@@ -1616,6 +1775,26 @@ export const LANDMARK_DATA = {
     desc: '1966년 설립된 국가 대표 엘리트 훈련 기지. 폐허가 됐지만 시설이 견고하다.',
     icon: '🏅',
     subLocations: [
+      {
+        id: 'sl_nowon_hidden_depot',
+        name: '지하 비축 창고',
+        icon: '🔐',
+        desc: '선수촌 지하 통로가 노원역 상가까지 이어진다. 누군가 이 끝에 물자를 차곡차곡 쌓아두었다.',
+        dangerMod: 0.05,
+        noSceneImage: true,
+        requiresHiddenLocation: 'hidden_nowon_underground_mall',
+        firstEnterReward: {
+          claimKey: 'nowon_depot_first',
+          items: [
+            { id: 'survivors_cache', qty: 1 },
+          ],
+        },
+        lootTable: [
+          { id: 'canned_food', weight: 5 },
+          { id: 'water_bottle', weight: 5 },
+          { id: 'bandage', weight: 4 },
+        ],
+      },
       {
         id: 'nowon_gym',
         name: '실내 체육관',
@@ -2139,6 +2318,26 @@ export const LANDMARK_DATA = {
     icon: '🎵',
     subLocations: [
       {
+        id: 'sl_mapo_club_basement',
+        name: '라이브클럽 지하',
+        icon: '🎸',
+        desc: '방음벽이 두 겹인 지하 공연장. 바깥 소리가 들어오지 않고, 안쪽 소리도 새어나가지 않는다.',
+        dangerMod: 0.08,
+        noSceneImage: true,
+        requiresHiddenLocation: 'hidden_mapo_hongdae_basement',
+        firstEnterReward: {
+          claimKey: 'mapo_club_first',
+          items: [
+            { id: 'sound_dampener', qty: 1 },
+          ],
+        },
+        lootTable: [
+          { id: 'electronic_parts', weight: 5 },
+          { id: 'wire', weight: 5 },
+          { id: 'cloth', weight: 4 },
+        ],
+      },
+      {
         id: 'mapo_club',
         name: '클럽 내부',
         icon: '🎶',
@@ -2294,6 +2493,26 @@ export const LANDMARK_DATA = {
     desc: '서울 서부의 종합 스포츠 경기장. 의무실과 기계실이 있다.',
     icon: '🏟️',
     subLocations: [
+      {
+        id: 'sl_yangcheon_civil_shelter',
+        name: '민방위 대피소',
+        icon: '🛡️',
+        desc: '경기장 맞은편 아파트 단지 지하. 계획서에 적힌 비축 규격 그대로 쌓여 있다.',
+        dangerMod: 0.05,
+        noSceneImage: true,
+        requiresHiddenLocation: 'hidden_yangcheon_mokdong_bunker',
+        firstEnterReward: {
+          claimKey: 'mokdong_shelter_first',
+          items: [
+            { id: 'civil_defense_cache', qty: 1 },
+          ],
+        },
+        lootTable: [
+          { id: 'canned_food', weight: 8 },
+          { id: 'water_bottle', weight: 7 },
+          { id: 'bandage', weight: 5 },
+        ],
+      },
       {
         id: 'yangcheon_stands',
         name: '관중석',
@@ -2636,6 +2855,26 @@ export const LANDMARK_DATA = {
     icon: '💻',
     subLocations: [
       {
+        id: 'sl_guro_secret_forge',
+        name: '비밀 대장간',
+        icon: '🔥',
+        desc: '데이터센터 지하 기계실을 개조한 대장간. 송풍구에서 아직 열기가 올라온다.',
+        dangerMod: 0.1,
+        noSceneImage: true,
+        requiresHiddenLocation: 'hidden_guro_factory_forge',
+        firstEnterReward: {
+          claimKey: 'guro_forge_first',
+          items: [
+            { id: 'master_forge', qty: 1 },
+          ],
+        },
+        lootTable: [
+          { id: 'scrap_metal', weight: 6 },
+          { id: 'charcoal', weight: 5 },
+          { id: 'sharp_blade', weight: 3 },
+        ],
+      },
+      {
         id: 'guro_office',
         name: 'IT 사무실',
         icon: '🖥️',
@@ -2783,6 +3022,26 @@ export const LANDMARK_DATA = {
     desc: '중공업 공장들이 밀집한 산업 단지. 금속과 화학 물자가 풍부하다.',
     icon: '🏗️',
     subLocations: [
+      {
+        id: 'sl_geumcheon_secret_factory',
+        name: '지하 군수 라인',
+        icon: '⚙️',
+        desc: '계획서에 폐쇄로 적힌 하청 공장. 지하 2층에서 탄약 압착기가 아직 기름칠된 채로 서 있다.',
+        dangerMod: 0.35,
+        noSceneImage: true,
+        requiresHiddenLocation: 'hidden_geumcheon_underground_factory',
+        firstEnterReward: {
+          claimKey: 'geumcheon_line_first',
+          items: [
+            { id: 'ammo_press', qty: 1 },
+          ],
+        },
+        lootTable: [
+          { id: 'pistol_ammo', weight: 7 },
+          { id: 'gunpowder', weight: 5 },
+          { id: 'scrap_metal', weight: 6 },
+        ],
+      },
       {
         id: 'geumcheon_metal',
         name: '금속 공장',
@@ -3111,6 +3370,66 @@ export const LANDMARK_DATA = {
       },
     ],
   },
+  // 여의도 63빌딩 — 강민준의 방송(KBS)과 탈출(헬리패드)이 같은 구에서 이어진다.
+  // 옥상 헬리패드는 hidden_yeongdeungpo_63_helipad를 발견해야 나타난다.
+  lm_63_building: {
+    name: '63빌딩',
+    desc: '여의도 63빌딩. 금빛 외벽이 그을렸지만 구조물은 성하다. 상층에서 한강 이남까지 내려다보인다.',
+    icon: '🏢',
+    districts: [
+      'yeongdeungpo',
+    ],
+    subLocations: [
+      {
+        id: 'sl_63_lobby',
+        name: '1층 로비',
+        icon: '🛎',
+        desc: '대리석 로비. 관광객 안내 데스크와 기념품 매대가 뒤집혀 있다.',
+        dangerMod: 0.05,
+        noSceneImage: true,
+        lootTable: [
+          { id: 'cloth', weight: 5 },
+          { id: 'plastic', weight: 4 },
+          { id: 'glass_shard', weight: 4 },
+          { id: 'canned_food', weight: 3 },
+        ],
+      },
+      {
+        id: 'sl_63_observatory',
+        name: '60층 전망대',
+        icon: '🔭',
+        desc: '통유리 전망대. 서울 서남부가 한눈에 들어온다. 망원경 거치대가 남아 있다.',
+        dangerMod: 0.10,
+        noSceneImage: true,
+        lootTable: [
+          { id: 'binoculars', weight: 4 },
+          { id: 'electronic_parts', weight: 4 },
+          { id: 'glass_shard', weight: 5 },
+        ],
+      },
+      {
+        id: 'sl_63_helipad',
+        name: '옥상 헬리패드',
+        icon: '🚁',
+        desc: '기체는 없지만 포장과 H 도색은 멀짱하다. 유도등만 살리면 구조기가 내려앉을 수 있다.',
+        dangerMod: 0.15,
+        noSceneImage: true,
+        requiresHiddenLocation: 'hidden_yeongdeungpo_63_helipad',
+        firstEnterReward: {
+          claimKey: 'yeongdeungpo_63_helipad_first',
+          items: [
+            { id: 'military_radio_kit', qty: 1 },
+          ],
+        },
+        lootTable: [
+          { id: 'battery', weight: 4 },
+          { id: 'electronic_parts', weight: 4 },
+          { id: 'wire', weight: 5 },
+        ],
+      },
+    ],
+  },
+
   lm_boramae_hospital: {
     name: '보라매병원',
     desc: '서울시립 보라매병원. 응급실·수술실·약품 창고가 남아있고 감염 위험은 비교적 낮다.',
@@ -3710,6 +4029,26 @@ export const LANDMARK_DATA = {
     icon: '🎭',
     subLocations: [
       {
+        id: 'sl_seocho_evidence_vault',
+        name: '법원 증거물 보관소',
+        icon: '⚖',
+        desc: '예술의전당 건너편 법조타운 지하. 봉인 테이프가 하나도 뜯기지 않은 캐비닛 300여 개.',
+        dangerMod: 0.12,
+        noSceneImage: true,
+        requiresHiddenLocation: 'hidden_seocho_courthouse_vault',
+        firstEnterReward: {
+          claimKey: 'seocho_evidence_first',
+          items: [
+            { id: 'confiscated_sniper', qty: 1 },
+          ],
+        },
+        lootTable: [
+          { id: 'pistol_ammo', weight: 6 },
+          { id: 'lockpick', weight: 4 },
+          { id: 'survivor_note', weight: 4 },
+        ],
+      },
+      {
         id: 'seocho_opera',
         name: '오페라하우스',
         icon: '🎼',
@@ -4047,6 +4386,27 @@ export const LANDMARK_DATA = {
     icon: '🏙️',
     subLocations: [
       {
+        id: 'sl_songpa_penthouse',
+        name: '123층 펜트하우스',
+        icon: '🏙',
+        desc: '계단 123층 끝. 통유리 앞에 망원경과 압정 꽂힌 서울 지도가 놓여 있다.',
+        dangerMod: 0.2,
+        noSceneImage: true,
+        requiresHiddenLocation: 'hidden_songpa_lotte_penthouse',
+        firstEnterReward: {
+          claimKey: 'songpa_penthouse_first',
+          items: [
+            { id: 'father_schematic', qty: 1 },
+            { id: 'binoculars_pro', qty: 1 },
+          ],
+        },
+        lootTable: [
+          { id: 'premium_ration', weight: 4 },
+          { id: 'first_aid_kit', weight: 4 },
+          { id: 'stimulant', weight: 3 },
+        ],
+      },
+      {
         id: 'songpa_lobby',
         name: '로비',
         icon: '🏛️',
@@ -4239,6 +4599,27 @@ export const LANDMARK_DATA = {
     desc: '신석기 시대 움집 복원 유적지. 한강변에 위치해 물을 구하기 쉽다.',
     icon: '🏺',
     subLocations: [
+      {
+        id: 'sl_gangdong_secret_dock',
+        name: '비밀 선착장',
+        icon: '⛴',
+        desc: '선사유적지 강변 끝, 갈대에 가려진 콘크리트 경사로. 계류 고리에 밧줄 자국이 선명하다.',
+        dangerMod: 0.05,
+        noSceneImage: true,
+        requiresHiddenLocation: 'hidden_gangdong_river_dock',
+        firstEnterReward: {
+          claimKey: 'gangdong_dock_first',
+          items: [
+            { id: 'river_boat', qty: 1 },
+            { id: 'waterproof_container', qty: 1 },
+          ],
+        },
+        lootTable: [
+          { id: 'rope', weight: 6 },
+          { id: 'plastic', weight: 5 },
+          { id: 'fuel_can', weight: 3 },
+        ],
+      },
       {
         id: 'gangdong_pithouses',
         name: '움집 복원지',
