@@ -44,6 +44,7 @@ const MIGRATED = {
   hidden_yangcheon_mokdong_bunker:  'yangcheon',
   hidden_jungrang_water_treatment:  'jungrang',
   hidden_geumcheon_underground_factory:'geumcheon',
+  hidden_jamsil_lotte_tower_lobby:  'songpa',
   hidden_dongjak_cemetery_vault:    'lm_dongjak',
 };
 
@@ -132,7 +133,7 @@ describe('배선 현황 — 남은 부채를 기록한다', () => {
   it('미배선 장소가 늘어나지 않는다', () => {
     // 신규 히든 장소를 배선 없이 추가하면 여기서 걸린다.
     // 이관이 진행되면 이 숫자를 낮춰간다.
-    expect(unwired.length).toBeLessThanOrEqual(12);
+    expect(unwired.length).toBeLessThanOrEqual(11);
   });
 
   it('미배선 장소는 여전히 발견 즉시 지급 경로다 (기능 유지)', () => {
@@ -218,5 +219,46 @@ describe('비상 계획 — 계획서가 나머지 셋의 열쇠다', () => {
     for (const id of [START, ...FOLLOWERS]) {
       expect(HIDDEN_LOCATIONS[id].rewards ?? []).toEqual([]);
     }
+  });
+});
+
+describe('롯데월드타워 — 한 건물에 두 층', () => {
+  const FORT = 'hidden_jamsil_lotte_tower_lobby';
+  const PENT = 'hidden_songpa_lotte_penthouse';
+
+  it('저층 요새와 최상층 펜트하우스가 같은 랜드마크에 붙는다', () => {
+    const ids = getLandmarkData('songpa').subLocations.map(s => s.id);
+    expect(ids).toContain('sl_songpa_survivor_fort');
+    expect(ids).toContain('sl_songpa_penthouse');
+  });
+
+  it('요새는 노숙인 전용을 유지한다', () => {
+    expect(HIDDEN_LOCATIONS[FORT].unlockConditions.requiredCharacter).toBe('homeless');
+  });
+
+  it('펜트하우스는 직업 제한이 없다', () => {
+    expect(HIDDEN_LOCATIONS[PENT].unlockConditions.requiredCharacter).toBeFalsy();
+  });
+
+  it('요새는 district 필드를 쓴다 — districtId로는 발견 판정에 걸리지 않는다', () => {
+    // _checkHiddenLocations는 loc.district만 본다. districtId로 적혀 있던 동안
+    // 이 장소는 조건을 다 만족해도 영원히 발견되지 않았다.
+    expect(HIDDEN_LOCATIONS[FORT].district).toBe('songpa');
+    expect(HIDDEN_LOCATIONS[FORT].districtId).toBeUndefined();
+  });
+
+  it('요새의 반복 재지급이 꺼져 있다', () => {
+    // repeatable이 켜져 있으면 _checkRepeatableLocation이 쿨다운마다 rewards를
+    // 다시 뿌려 firstEnterReward와 겹친다. 재방문 가치는 세부장소 lootTable이 맡는다.
+    expect(HIDDEN_LOCATIONS[FORT].repeatable).toBe(false);
+    expect(HIDDEN_LOCATIONS[FORT].rewards).toEqual([]);
+    expect(subFor('songpa', FORT).lootTable.length).toBeGreaterThan(0);
+  });
+
+  it('공개된 로비와 별개 공간이다', () => {
+    // songpa_lobby는 좀비가 집결한 누구나 뒤지는 구역이고, 요새는 그 안쪽이다.
+    const lobby = getLandmarkData('songpa').subLocations.find(s => s.id === 'songpa_lobby');
+    expect(lobby.requiresHiddenLocation).toBeUndefined();
+    expect(subFor('songpa', FORT).dangerMod).toBeLessThan(lobby.dangerMod);
   });
 });

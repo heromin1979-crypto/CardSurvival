@@ -981,8 +981,11 @@ export const HIDDEN_LOCATIONS = {
 
   hidden_jamsil_lotte_tower_lobby: {
     id: 'hidden_jamsil_lotte_tower_lobby',
+    subLocationId: 'sl_songpa_survivor_fort',
     name: '잠실 롯데타워 생존자 요새',
-    districtId: 'songpa',
+    // district(발견 판정이 읽는 필드)가 아니라 districtId로 적혀 있어
+    // _checkHiddenLocations의 구 대조에 걸리지 않았다 — 발견 자체가 불가능했다.
+    district: 'songpa',
     description: '롯데타워 저층부를 점거한 생존자 집단. 노숙인의 거리 생존 노하우를 이미 소문으로 들었다고 한다.',
     icon: '🏢',
     unlockConditions: {
@@ -996,11 +999,7 @@ export const HIDDEN_LOCATIONS = {
       minCraftLevel: 0,
       customCheck: '노숙인 캐릭터 + D20+ 도달',
     },
-    rewards: [
-      { definitionId: 'battle_ration', qty: 3 },
-      { definitionId: 'first_aid_kit', qty: 2 },
-      { definitionId: 'debt_ledger', qty: 1 },
-    ],
+    rewards: [],
     lootTable: [
       { definitionId: 'canned_food', weight: 25, minQty: 2, maxQty: 4 },
       { definitionId: 'bandage', weight: 20, minQty: 2, maxQty: 4 },
@@ -1012,8 +1011,10 @@ export const HIDDEN_LOCATIONS = {
     dangerLevel: 2,
     encounterChance: 0.2,
     bossId: null,
-    repeatable: true,
-    repeatCooldownDays: 10,
+    // 10일 쿨다운 재지급은 세부장소 재진입으로 대체한다. repeatable을 남기면
+    // _checkRepeatableLocation이 rewards를 다시 뿌려 최초 진입 보상과 겹친다.
+    repeatable: false,
+    repeatCooldownDays: 0,
     discoveryMessage: '🏢 롯데타워 로비. 생존자들이 손을 흔든다. "오셨군요, 형식 씨."',
   },
 
