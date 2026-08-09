@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { DISTRICTS } from '../../js/data/districts.js';
 import { getVisibleSubLocations } from '../../js/data/landmarks.js';
 import { HIDDEN_LOCATIONS } from '../../js/data/hiddenLocations.js';
 import CINEMATIC_SCENES from '../../js/data/cinematicScenes.js';
@@ -65,7 +66,13 @@ describe('숨겨진 장소의 세부장소 · 컷씬 연결', () => {
   it('연결된 세부장소가 실제로 존재하고 잠겨 있다', () => {
     for (const loc of Object.values(HIDDEN_LOCATIONS)) {
       if (!loc.subLocationId) continue;
-      const sub = getVisibleSubLocations(`lm_${loc.district}`, [loc.id])
+      // 한 구가 랜드마크를 여럿 가질 수 있다(예: 영등포 = 타임스퀘어 + 63빌딩).
+      // 진입 지점이 대표 랜드마크에 있다고 가정하지 않고 구 전체를 훑는다.
+      const dist = DISTRICTS[loc.district];
+      const keys = Array.isArray(dist?.landmarks) ? dist.landmarks
+                 : (dist?.landmark ? [dist.landmark] : []);
+      const sub = [...keys, loc.district, `lm_${loc.district}`]
+        .flatMap(k => getVisibleSubLocations(k, [loc.id]))
         .find(s => s.id === loc.subLocationId);
       expect(sub, loc.id).toBeDefined();
       expect(sub.requiresHiddenLocation, loc.id).toBe(loc.id);
@@ -109,11 +116,14 @@ describe('발견 시 보상 위임', () => {
   });
 
   it('세부장소가 없는 장소는 기존대로 보상을 지급한다', () => {
+    // 이관이 진행 중이라 특정 장소를 박아두면 그 장소가 이관될 때마다 깨진다.
+    // 아직 이관되지 않은 아무 장소나 골라 즉시 지급 경로가 살아 있는지만 본다.
+    const [id, loc] = Object.entries(HIDDEN_LOCATIONS)
+      .find(([, l]) => !l.subLocationId && l.rewards?.length) ?? [];
+    expect(id, '미이관 장소가 하나도 없다면 이 경로 자체를 제거해야 한다').toBeDefined();
     freshFlags();
-    const loc = HIDDEN_LOCATIONS.hidden_junggoo_city_hall_safe;
-    expect(loc.subLocationId).toBeUndefined();
     const before = GameState.getBoardCards().length;
-    HiddenElementSystem._discoverHiddenLocation('hidden_junggoo_city_hall_safe', loc);
+    HiddenElementSystem._discoverHiddenLocation(id, loc);
     expect(GameState.getBoardCards().length).toBeGreaterThan(before);
   });
 

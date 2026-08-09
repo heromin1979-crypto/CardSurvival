@@ -344,6 +344,19 @@ export const LANDMARK_CARD_META = {
     "landmarkBonus": "이 구역 조우 확률 -10%p",
     "districtId": null
   },
+  "lm_63_building": {
+    "name": "63빌딩",
+    "subtype": "landmark",
+    "rarity": "uncommon",
+    "tags": [
+      "location",
+      "landmark"
+    ],
+    "icon": "🏢",
+    "description": "여의도 63빌딩. 구조물은 성하고 상층에서 한강 이남까지 보인다.",
+    "landmarkBonus": "고층 탐색 가능",
+    "districtId": "yeongdeungpo"
+  },
   "lm_boramae_hospital": {
     "name": "보라매병원",
     "subtype": "landmark",

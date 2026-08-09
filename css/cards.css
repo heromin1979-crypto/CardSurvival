@@ -538,6 +538,15 @@
   justify-content: center;
 }
 
+/* 배경 이미지가 없는 세부장소의 아이콘 폴백 — 빈 씬 대신 장소 아이콘을 보여준다 */
+.lc-scene-icon {
+  position: relative;
+  z-index: 1;
+  font-size: 22px;
+  line-height: 1;
+  opacity: 0.75;
+}
+
 .lc-scene--sublocation::after {
   content: '';
   position: absolute;

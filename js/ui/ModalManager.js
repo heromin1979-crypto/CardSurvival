@@ -4,6 +4,8 @@ import GameState       from '../core/GameState.js';
 import I18n            from '../core/I18n.js';
 import EquipmentSystem from '../systems/EquipmentSystem.js';
 import DismantleSystem from '../systems/DismantleSystem.js';
+import MentalSystem    from '../systems/MentalSystem.js';
+import HelicopterSystem from '../systems/HelicopterSystem.js';
 import { playDismantleFx } from './dismantleFx.js';
 import { formatCardEffectEntries, formatInstanceName, getConsumableEffect } from '../systems/ItemEffectSystem.js';
 import CardFactory     from './CardFactory.js';
@@ -311,6 +313,12 @@ const ModalManager = {
     // 살살 채취(부분·재생) 가능 노드 — 재생 대기 중이면 버튼을 잠근다
     const canForage      = !!def.forage;
     const forageStatus   = canForage ? DismantleSystem.canForage(instanceId) : { ok: false, reason: '' };
+    // 하루 1회 사용 도구(생존 일지 등) — 오늘 이미 썼으면 잠근다
+    const canDailyUse    = !!def.dailyUse;
+    const dailyUseStatus = canDailyUse ? MentalSystem.canUseDaily(instanceId) : { ok: false, reason: '' };
+    // 비행체 — 연료·시동 열쇠가 갖춰져야 이륙 버튼이 열린다
+    const canFly       = !!def.flight;
+    const flightStatus = canFly ? HelicopterSystem.canTakeOff(instanceId) : { ok: false, reason: '' };
     const canNest      = inst._stolenLoot?.length > 0;  // 동물 둥지 — 도난물 회수 가능
     const stackQty     = inst.quantity ?? 1;
     const equipSlots   = EquipmentSystem.getSlotsForDef(def);
@@ -457,7 +465,7 @@ const ModalManager = {
       </button>`
     ).join('');
 
-    const hasActions = canConsume || canDismantle || canForage || canNest || canEquip || isFishingRod || isMedicalStructure || isTapeRepairable || canOpenBox || weatherActions.length > 0;
+    const hasActions = canConsume || canDismantle || canForage || canDailyUse || canFly || canNest || canEquip || isFishingRod || isMedicalStructure || isTapeRepairable || canOpenBox || weatherActions.length > 0;
 
     // 장착 슬롯 버튼 목록 (슬롯이 여럿이면 각각 버튼 생성)
     const slotLabels = {
@@ -505,6 +513,12 @@ const ModalManager = {
             ${canForage ? `<button class="card-action-btn${forageStatus.ok ? '' : ' disabled'}"
               id="modal-forage-${instanceId}" ${forageStatus.ok ? '' : 'disabled'}
               title="${forageStatus.reason}">🌿 살살 채취</button>` : ''}
+            ${canDailyUse ? `<button class="card-action-btn${dailyUseStatus.ok ? '' : ' disabled'}"
+              id="modal-dailyuse-${instanceId}" ${dailyUseStatus.ok ? '' : 'disabled'}
+              title="${dailyUseStatus.reason}">📓 오늘 기록하기${def.dailyUse.tpCost > 0 ? ` (${def.dailyUse.tpCost}TP)` : ''}</button>` : ''}
+            ${canFly ? `<button class="card-action-btn${flightStatus.ok ? '' : ' disabled'}"
+              id="modal-takeoff-${instanceId}" ${flightStatus.ok ? '' : 'disabled'}
+              title="${flightStatus.reason}">${I18n.t('heli.actionLabel')}</button>` : ''}
             ${canNest ? `<button class="card-action-btn" id="modal-nest-${instanceId}">🪺 둥지 뒤지기</button>` : ''}
             ${fishBtnHtml}
             ${weatherBtnsHtml}
@@ -647,6 +661,20 @@ const ModalManager = {
       } else {
         bindDismantle(`modal-dismantle-${instanceId}`, 1);
       }
+    }
+
+    if (canFly && flightStatus.ok) {
+      document.getElementById(`modal-takeoff-${instanceId}`)?.addEventListener('click', () => {
+        this.close();
+        HelicopterSystem.takeOff(instanceId);
+      });
+    }
+
+    if (canDailyUse && dailyUseStatus.ok) {
+      document.getElementById(`modal-dailyuse-${instanceId}`)?.addEventListener('click', () => {
+        this.close();
+        MentalSystem.useDailyItem(instanceId);
+      });
     }
 
     if (canForage && forageStatus.ok) {

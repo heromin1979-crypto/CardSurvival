@@ -68,9 +68,9 @@ const ITEMS_TOOLS = {
     id: 'binoculars', name: '쌍안경', type: 'tool', subtype: 'utility',
     rarity: 'uncommon', weight: 0.4,
     defaultDurability: 100, defaultContamination: 0,
-    icon: '🔭', description: '먼 거리 정찰. 위험도를 미리 파악 가능.',
+    icon: '🔭', description: '먼 거리를 살핀다. 위험을 미리 보고 돌아가 조우 확률 8% 감소.',
     tags: ['tool', 'utility', 'scouting'],
-    onUse: { scoutBonus: 1 },
+    onUse: { encounterReduction: 0.08 },
     dismantle: [
       { definitionId: 'glass_shard', qty: 2, chance: 0.7 },
       { definitionId: 'plastic', qty: 1, chance: 0.8 },
@@ -154,8 +154,11 @@ const ITEMS_TOOLS = {
     id: 'survival_journal', name: '생존 일지', type: 'tool', subtype: 'tool',
     rarity: 'uncommon', weight: 0.3, stackable: false, maxStack: 1,
     defaultDurability: 100, defaultContamination: 0,
-    icon: '📓', description: '기록은 생존의 증거. 매일 사용하면 트라우마·외로움 감소.',
+    icon: '📓', description: '기록은 생존의 증거. 하루 1회 1TP를 들여 쓰면 트라우마 -2, 외로움 -3. 닳지 않는다.',
     tags: ['tool', 'mental'], dismantle: [],
+    // 외로움 -3은 라디오 패시브(-0.05/TP = 하루 -3.6)를 넘지 않게 잡았다.
+    // 트라우마 -2는 자연 회복(-0.02/TP = 하루 -1.44)을 하루치 앞당기는 규모.
+    dailyUse: { trauma: -2, loneliness: -3, tpCost: 1 },
   },
   oil_lamp: {
     id: 'oil_lamp', name: '기름 램프', type: 'tool', subtype: 'tool',
@@ -405,7 +408,7 @@ const ITEMS_TOOLS = {
     id: 'rat_trap', name: '쥐덫', type: 'tool', subtype: 'trap',
     rarity: 'common', weight: 0.5,
     defaultDurability: 100, defaultContamination: 0,
-    icon: '🪤', description: '쥐를 산 채로 잡는 덫. 같은 행에 곡물 미끼를 놓으면 작동한다.',
+    icon: '🪤', description: '쥐를 산 채로 잡는 덫. 같은 행에 음식을 놓아두면 8TP 후 작동한다.',
     tags: ['tool', 'trap', 'small'],
     trapData: {
       targetCard: 'live_rat',
@@ -423,7 +426,7 @@ const ITEMS_TOOLS = {
     id: 'pigeon_snare', name: '비둘기 올가미', type: 'tool', subtype: 'trap',
     rarity: 'common', weight: 0.3,
     defaultDurability: 100, defaultContamination: 0,
-    icon: '🪢', description: '비둘기를 잡는 올가미. 곡물 미끼 필요.',
+    icon: '🪢', description: '비둘기를 잡는 올가미. 같은 행에 음식을 놓아두면 6TP 후 작동한다.',
     tags: ['tool', 'trap', 'small'],
     trapData: {
       targetCard: 'live_pigeon',
@@ -440,7 +443,7 @@ const ITEMS_TOOLS = {
     id: 'alley_pit_trap', name: '골목 함정', type: 'tool', subtype: 'trap',
     rarity: 'uncommon', weight: 2.0,
     defaultDurability: 100, defaultContamination: 0,
-    icon: '🕳️', description: '떠돌이 동물(개·고양이)을 잡는 함정. 고기 미끼 필요.',
+    icon: '🕳️', description: '떠돌이 동물(개·고양이)을 잡는 함정. 같은 행에 음식을 놓아두면 12TP 후 작동한다.',
     tags: ['tool', 'trap', 'large'],
     trapData: {
       targetCard: 'live_stray_animal',

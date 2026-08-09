@@ -669,14 +669,6 @@ const LEGENDARY_ITEMS = {
     dismantle: [],
   },
 
-  helicopter_key: {
-    id: 'helicopter_key', name: '헬리콥터 열쇠', type: 'tool', subtype: 'key',
-    rarity: 'legendary', legendary: true, weight: 0.1,
-    defaultDurability: Infinity, defaultContamination: 0,
-    icon: '🔑', description: '롯데타워 옥상 헬리콥터의 시동 열쇠. 탈출 엔딩의 핵심 아이템.',
-    tags: ['key_item', 'legendary'],
-    dismantle: [],
-  },
 
   broadcast_equipment: {
     id: 'broadcast_equipment', name: '방송 장비', type: 'tool', subtype: 'structure',
@@ -727,12 +719,11 @@ const LEGENDARY_ITEMS = {
   },
 
   seoul_emergency_plan: {
-    id: 'seoul_emergency_plan', name: '서울시 비상 대응 계획서', type: 'consumable', subtype: 'special',
+    id: 'seoul_emergency_plan', name: '서울시 비상 대응 계획서', type: 'material', subtype: 'document',
     rarity: 'legendary', legendary: true, weight: 0.2,
     defaultDurability: 100, defaultContamination: 0,
-    icon: '🗺️', description: '서울시 비상 대응 계획서. 사용하면 모든 미발견 히든 장소가 지도에 표시된다.',
+    icon: '🗺️', description: '재난 대비 3급 기밀. 대피소·정수 계통·군수 하청 목록이 좌표까지 적혀 있다. 지니고 다니면 그 시설들을 알아볼 수 있다.',
     tags: ['key_item', 'legendary'],
-    onConsume: { revealAllHiddenLocations: true },
     dismantle: [],
   },
 

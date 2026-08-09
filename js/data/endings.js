@@ -220,21 +220,40 @@ export const ENDINGS = {
     ],
   },
 
+  // 강민준 전용. 원래 부제가 'KBS 방송 성공'이고 조건도 여의도였던 만큼 처음부터
+  // 군인의 이야기였다. id는 시네마틱(cin_escape)·갤러리 힌트가 참조하므로 유지한다.
   escape_helicopter: {
-    id: 'escape_helicopter', category: 'escape',
-    title: '마지막 헬기',           subtitle: 'KBS 방송 성공',
+    id: 'escape_helicopter', category: 'escape', characterId: 'soldier',
+    title: '마지막 헬기',           subtitle: 'KBS 방송 · 63빌딩 유도 착륙',
     gradient: 'linear-gradient(160deg,#001020 0%,#001830 60%,#000818 100%)',
     condition: (gs) => {
-      return gs.time.day >= 180
-          && (gs.flags.yeongdeungpoVisited ?? false)
-          && (gs.flags.totalKills ?? 0) >= 50;
+      return gs.player.characterId === 'soldier'
+          && (gs.flags.mainQuestComplete_soldier ?? false)
+          && gs.flags.soldier_ending === 'b2_helicopter'
+          && gs.time.day >= 100;
     },
     narrative: [
-      'KBS에서 방송이 나갔다. 좌표와 함께.',
-      '72시간을 기다렸다. 기대하지 않으려 했다.',
-      '세 번째 날 새벽, 소리가 들렸다. 프로펠러 소리.',
-      '옥상으로 뛰어올라갔다. 손을 흔들었다. 목이 터지도록 소리쳤다.',
-      '헬기가 내려왔다. 살았다.',
+      'KBS에서 같은 문장을 사흘 내리 송출했다. 좌표와 함께.',
+      '63빌딩 옥상. 네 모서리에 유도등을 세웠다. 배터리 넷이 전부였다.',
+      '사흘째 새벽, 강 건너에서 프로펠러 소리가 들렸다.',
+      '어둠 속에서 사각형이 떠올랐다. 기체가 그 안으로 내려앉는다.',
+      '"강민준 하사님? 방송 들었습니다." 마이크를 마지막으로 껐다.',
+    ],
+  },
+
+  // 이륙 액션으로만 발동한다. condition을 두지 않아 EndingSystem의 일일 검사에서
+  // 제외된다(typeof condition !== 'function'이면 건너뛴다). 직업 전용 헬기 엔딩
+  // 조건을 통과하지 못한 플레이어가 기체를 띄웠을 때의 귀결.
+  escape_helicopter_pilot: {
+    id: 'escape_helicopter_pilot', category: 'escape',
+    title: '직접 띄우다',            subtitle: '자력 조립 헬기 탈출',
+    gradient: 'linear-gradient(160deg,#00131f 0%,#062033 60%,#000a12 100%)',
+    narrative: [
+      '연료를 붓고 열쇠를 꽂았다. 계기판에 불이 들어온다.',
+      '스타터. 엔진이 기침하듯 돌더니 리듬을 잡는다.',
+      '로터가 그림자를 그리며 빨라진다. 기체가 떨린다.',
+      '콜렉티브를 당겼다. 옥상이 아래로 내려간다.',
+      '누가 가르쳐준 것도 아니었다. 그저 살고 싶었을 뿐이다.',
     ],
   },
 
@@ -426,8 +445,10 @@ export const ENDINGS = {
     title: '강민준: 서울 집결 좌표',   subtitle: 'KBS 방송 수신 확인',
     gradient: 'linear-gradient(160deg,#100a00 0%,#201800 60%,#0a0800 100%)',
     condition: (gs) => {
+      // b2(63빌딩 구조 유도)는 escape_helicopter가 맡는다.
       return gs.player.characterId === 'soldier'
           && (gs.flags.mainQuestComplete_soldier ?? false)
+          && gs.flags.soldier_ending !== 'b2_helicopter'
           && gs.time.day >= 100;
     },
     narrative: [

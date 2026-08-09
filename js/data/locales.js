@@ -677,6 +677,14 @@ export const ko = {
   'mental.hallucination':'👻 뭔가가 보인 것 같다... 환각인가?',
   'mental.anxietyWarn':  '😟 불안감이 심해지고 있다.',
   'mental.lonelyWarn':   '😔 외로움이 깊어지고 있다.',
+  'heli.notFlyable':      '이 카드는 이륙할 수 없습니다.',
+  'heli.needFuel':        '연료가 부족하다. 항공 가솔린 {have}/{need} 드럼.',
+  'heli.needKey':         '시동 열쇠가 없다. 조종석 스위치가 비어 있다.',
+  'heli.takeOff':         '🚁 로터가 돌기 시작한다. 기체가 떠오른다.',
+  'heli.actionLabel':     '🛫 이륙',
+  'mental.notDailyUsable': '이 아이템은 사용할 수 없습니다.',
+  'mental.alreadyUsedToday': '오늘은 이미 기록했다. 내일 다시 펼쳐보자.',
+  'mental.dailyUseDone': '📓 {name}에 오늘을 기록했다. 마음이 조금 가라앉는다.',
 
   // ── Night ──────────────────────────────────────────
   'night.noLightExplore':  '🌙 어둠 속에서는 탐색할 수 없다. 광원이 필요하다.',
@@ -1661,6 +1669,14 @@ export const en = {
   'mental.anxiety':      'Anxiety',
   'mental.loneliness':   'Loneliness',
   'mental.trauma':       'Trauma',
+  'heli.notFlyable':      'This card cannot take off.',
+  'heli.needFuel':        'Not enough fuel. Avgas {have}/{need} drums.',
+  'heli.needKey':         'No ignition key. The switch is empty.',
+  'heli.takeOff':         '🚁 The rotor spins up. The airframe lifts.',
+  'heli.actionLabel':     '🛫 Take Off',
+  'mental.notDailyUsable': 'This item cannot be used.',
+  'mental.alreadyUsedToday': 'Already written today. Try again tomorrow.',
+  'mental.dailyUseDone': '📓 Wrote about today in the {name}. Your mind settles a little.',
   'mental.nightmare':    '😰 Nightmares... Fatigue +3, Anxiety +5',
   'mental.hallucination':'👻 You see something... A hallucination?',
   'mental.anxietyWarn':  '😟 Anxiety is getting worse.',
@@ -2253,6 +2269,8 @@ export const en = {
 
   // ── Items: Structures ───────────────────────────────────────
   '_item.campfire':        'Campfire',
+  '_item.helicopter':      'Helicopter',
+  '_item.father_schematic': "Father's Schematic",
   '_item.water_purifier':  'Water Purifier',
   '_item.barricade':       'Barricade',
   '_item.alarm_trap':      'Alarm Trap',
@@ -2947,7 +2965,6 @@ export const en = {
   '_item.sound_dampener':          'Sound Dampener',
   '_item.military_radio_kit':      'Military Radio Kit',
   '_item.master_forge':            "Master's Forge",
-  '_item.helicopter_key':          'Helicopter Key',
   '_item.broadcast_equipment':     'Broadcast Equipment',
   '_item.aircraft_parts':          'Aircraft Parts',
   '_item.civil_defense_cache':     'Civil Defense Cache',
@@ -2977,6 +2994,7 @@ export const en = {
   '_item.mothers_necklace':        "Mother's Necklace",
 
   // ── Landmark cards: event & Hangang (missing batch) ─────────────
+  '_item.lm_63_building':          '63 Building',
   '_item.lm_boramae_hospital':     'Boramae Hospital',
   '_item.lm_raider_camp_small':    'Small Raider Camp',
   '_item.lm_raider_camp_medium':   'Medium Raider Outpost',

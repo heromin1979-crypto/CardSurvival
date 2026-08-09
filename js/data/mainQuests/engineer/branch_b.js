@@ -195,7 +195,7 @@ const ENGINEER_BRANCH_B = {
     icon: '📐', characterId: 'engineer', dayTrigger: 205,
     prerequisite: 'mq_eng_b_15', requiresFlag: 'eng_end_b3',
     objective: { type: 'visit_district', districtId: 'seongdong', count: 1 },
-    reward: { morale: 12, items: [{ definitionId: 'electronic_parts', qty: 2 }] },
+    reward: { morale: 12, items: [{ definitionId: 'father_schematic', qty: 1 }, { definitionId: 'electronic_parts', qty: 2 }] },
     failPenalty: { morale: -5 }, deadlineDays: Infinity,
     narrative: {
       start: '인프라 복구는 한계에 부딪혔다. 박영철도 말했다. "이 도시는 너무 크게 부서졌어요." 정대한은 아버지의 옛 메모를 다시 펼쳤다. "대한아, 공장 서랍 가장 아래... 그건 내가 정말 만들고 싶었던 것." 성수 공장으로 돌아가야 한다.',
@@ -275,10 +275,10 @@ const ENGINEER_BRANCH_B = {
 
   mq_eng_b3_7: {
     id: 'mq_eng_b3_7', title: '최종 조립',
-    desc: '모든 부품을 결합하라. 구조물 3개를 제작한다.',
+    desc: '모든 부품을 결합해 헬기 1대를 완성하라. 작업대에서 최종 조립한다.',
     icon: '🚁', characterId: 'engineer', dayTrigger: 290,
     prerequisite: 'mq_eng_b3_6', requiresFlag: 'eng_end_b3',
-    objective: { type: 'craft_item', category: 'structure', count: 3 },
+    objective: { type: 'collect_item', definitionId: 'helicopter', count: 1 },
     reward: { morale: 18, items: [{ definitionId: 'duct_tape', qty: 5 }, { definitionId: 'rubber', qty: 3 }] },
     failPenalty: { morale: -8 }, deadlineDays: Infinity,
     narrative: {

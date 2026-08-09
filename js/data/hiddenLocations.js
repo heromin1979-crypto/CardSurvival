@@ -10,6 +10,7 @@ export const HIDDEN_LOCATIONS = {
   // ── 1. 도봉구 ────────────────────────────────────────────────
   hidden_dobong_hermit_cave: {
     id: 'hidden_dobong_hermit_cave',
+    subLocationId: 'sl_dobong_hermit_cave',
     name: '도봉산 은자의 동굴',
     icon: '🕯️',
     district: 'dobong',
@@ -45,6 +46,7 @@ export const HIDDEN_LOCATIONS = {
   // ── 2. 노원구 ────────────────────────────────────────────────
   hidden_nowon_underground_mall: {
     id: 'hidden_nowon_underground_mall',
+    subLocationId: 'sl_nowon_hidden_depot',
     name: '노원 지하상가 비밀 창고',
     icon: '🔐',
     district: 'nowon',
@@ -80,6 +82,7 @@ export const HIDDEN_LOCATIONS = {
   // ── 3. 강북구 ────────────────────────────────────────────────
   hidden_gangbuk_mountain_spring: {
     id: 'hidden_gangbuk_mountain_spring',
+    subLocationId: 'sl_gangbuk_hidden_spring',
     name: '북한산 숨겨진 샘',
     icon: '💧',
     district: 'gangbuk',
@@ -149,6 +152,8 @@ export const HIDDEN_LOCATIONS = {
   // ── 5. 종로구 ────────────────────────────────────────────────
   hidden_jongno_royal_vault: {
     id: 'hidden_jongno_royal_vault',
+    subLocationId: 'sl_jongno_royal_vault',
+    cinematicId: 'cin_hidden_jongno_vault',
     name: '경복궁 지하 왕실 금고',
     icon: '👑',
     district: 'jongno',
@@ -184,6 +189,7 @@ export const HIDDEN_LOCATIONS = {
   // ── 6. 성북구 ────────────────────────────────────────────────
   hidden_seongbuk_university_bunker: {
     id: 'hidden_seongbuk_university_bunker',
+    subLocationId: 'sl_seongbuk_research_bunker',
     name: '고려대 지하 연구 벙커',
     icon: '🔬',
     district: 'seongbuk',
@@ -219,6 +225,8 @@ export const HIDDEN_LOCATIONS = {
   // ── 7. 동대문구 ──────────────────────────────────────────────
   hidden_dongdaemun_secret_workshop: {
     id: 'hidden_dongdaemun_secret_workshop',
+    subLocationId: 'sl_dongdaemun_workshop',
+    cinematicId: 'cin_hidden_dongdaemun_workshop',
     name: '동대문 비밀 공방',
     icon: '🧵',
     district: 'dongdaemun',
@@ -289,6 +297,7 @@ export const HIDDEN_LOCATIONS = {
   // ── 9. 마포구 ────────────────────────────────────────────────
   hidden_mapo_hongdae_basement: {
     id: 'hidden_mapo_hongdae_basement',
+    subLocationId: 'sl_mapo_club_basement',
     name: '홍대 라이브클럽 지하',
     icon: '🎸',
     district: 'mapo',
@@ -466,6 +475,8 @@ export const HIDDEN_LOCATIONS = {
   // ── 14. 구로구 ───────────────────────────────────────────────
   hidden_guro_factory_forge: {
     id: 'hidden_guro_factory_forge',
+    subLocationId: 'sl_guro_secret_forge',
+    cinematicId: 'cin_hidden_guro_forge',
     name: '구로 디지털단지 비밀 대장간',
     icon: '🔨',
     district: 'guro',
@@ -498,13 +509,55 @@ export const HIDDEN_LOCATIONS = {
     discoveryMessage: '🔨 구로 디지털단지 폐공장에서 비밀 대장간을 발견했다!',
   },
 
+  // ── 15-1. 영등포구(여의도) ──────────────────────────────────
+  // 강민준의 목표가 여의도 KBS이고 escape_helicopter 엔딩도 yeongdeungpoVisited를
+  // 본다. 헬리패드를 같은 구에 두어 방송 → 탈출 동선을 한 지역으로 묶는다.
+  // (롯데월드타워에는 실제로 헬리패드가 없어 63스퀘어로 옮겼다)
+  hidden_yeongdeungpo_63_helipad: {
+    id: 'hidden_yeongdeungpo_63_helipad',
+    name: '63빌딩 옥상 헬리패드',
+    icon: '🚁',
+    district: 'yeongdeungpo',
+    description: '여의도 63빌딩 옥상 헬리패드. 구조 헬기가 내려앉을 수 있는 서울 서남부 유일한 지점.',
+    noSceneImage: true,   // 배경 미제작 — 아이콘으로 표시 (이미지 추가 시 이 줄 제거)
+    unlockConditions: {
+      minVisits: 0,
+      minDay: 90,
+      requiredItems: ['rope_ladder'],
+      requiredCharacter: null,
+      minKills: 0,
+      weather: null,
+      season: null,
+      minCraftLevel: 0,
+      customCheck: 'rope_ladder 소지 + D90+ + 영등포 방문 이력',
+    },
+    // subLocationId가 있으면 발견 시 보상·루팅을 지급하지 않고 위치만 안내한다.
+    // 실제 지급은 lm_63_building의 sl_63_helipad firstEnterReward가 담당한다.
+    subLocationId: 'sl_63_helipad',
+    rewards: [],
+    lootTable: [
+      { definitionId: 'avgas_drum', weight: 12, minQty: 1, maxQty: 1 },
+      { definitionId: 'aviation_alloy', weight: 15, minQty: 1, maxQty: 2 },
+      { definitionId: 'electronic_parts', weight: 20, minQty: 1, maxQty: 2 },
+      { definitionId: 'premium_ration', weight: 15, minQty: 1, maxQty: 1 },
+    ],
+    dangerLevel: 4,
+    encounterChance: 0.35,
+    bossId: null,
+    repeatable: false,
+    repeatCooldownDays: 0,
+    discoveryMessage: '🚁 63빌딩 옥상 헬리패드를 확보했다! 좌표를 송출하면 구조기가 닿을 수 있다.',
+  },
+
   // ── 15. 송파구 ───────────────────────────────────────────────
   hidden_songpa_lotte_penthouse: {
     id: 'hidden_songpa_lotte_penthouse',
+    subLocationId: 'sl_songpa_penthouse',
+    cinematicId: 'cin_hidden_songpa_penthouse',
     name: '롯데타워 123층 펜트하우스',
-    icon: '🚁',
+    icon: '🏙',
     district: 'songpa',
-    description: '롯데타워 최상층 펜트하우스. 옥상에 헬리콥터가 남아있다는 소문이 있다.',
+    description: '롯데타워 최상층 펜트하우스. 서울 전역이 내려다보인다. 먼저 올라온 생존자가 모아둔 자료가 쌓여 있다.',
     unlockConditions: {
       minVisits: 0,
       minDay: 90,
@@ -516,8 +569,11 @@ export const HIDDEN_LOCATIONS = {
       minCraftLevel: 0,
       customCheck: 'rope_ladder 소지 + D90+ + 보유 아이템 총 100개 이상',
     },
+    // 정대한이 아니어도 이 도면에 닿을 수 있는 유일한 경로. 보스를 넘어야 한다.
+    // (엔지니어는 mq_eng_b3_1 '아버지의 마지막 설계도'로 확정 획득)
     rewards: [
-      { definitionId: 'helicopter_key', qty: 1 },
+      { definitionId: 'father_schematic', qty: 1 },
+      { definitionId: 'binoculars_pro', qty: 1 },
     ],
     lootTable: [
       { definitionId: 'premium_ration', weight: 15, minQty: 1, maxQty: 2 },
@@ -530,12 +586,14 @@ export const HIDDEN_LOCATIONS = {
     bossId: 'boss_penthouse_survivor',
     repeatable: false,
     repeatCooldownDays: 0,
-    discoveryMessage: '🚁 롯데타워 123층에 도달했다! 옥상에 헬리콥터가 보인다!',
+    discoveryMessage: '🏙 롯데타워 123층에 도달했다! 서울 전역이 발 아래 펼쳐진다.',
   },
 
   // ── 16. 서초구 ───────────────────────────────────────────────
   hidden_seocho_courthouse_vault: {
     id: 'hidden_seocho_courthouse_vault',
+    subLocationId: 'sl_seocho_evidence_vault',
+    cinematicId: 'cin_hidden_seocho_evidence',
     name: '서초 법원 증거물 보관소',
     icon: '⚖️',
     district: 'seocho',
@@ -641,6 +699,7 @@ export const HIDDEN_LOCATIONS = {
   // ── 19. 양천구 ───────────────────────────────────────────────
   hidden_yangcheon_mokdong_bunker: {
     id: 'hidden_yangcheon_mokdong_bunker',
+    subLocationId: 'sl_yangcheon_civil_shelter',
     name: '목동 아파트 민방위 대피소',
     icon: '🏠',
     district: 'yangcheon',
@@ -648,17 +707,15 @@ export const HIDDEN_LOCATIONS = {
     unlockConditions: {
       minVisits: 0,
       minDay: 20,
-      requiredItems: ['flashlight'],
+      requiredItems: ['flashlight', 'seoul_emergency_plan'],
       requiredCharacter: null,
       minKills: 0,
       weather: null,
       season: null,
       minCraftLevel: 0,
-      customCheck: null,
+      customCheck: '비상 계획서에 적힌 대피소 목록 중 한 곳',
     },
-    rewards: [
-      { definitionId: 'civil_defense_cache', qty: 1 },
-    ],
+    rewards: [],
     lootTable: [
       { definitionId: 'canned_food', weight: 25, minQty: 3, maxQty: 6 },
       { definitionId: 'water_bottle', weight: 25, minQty: 2, maxQty: 4 },
@@ -676,6 +733,7 @@ export const HIDDEN_LOCATIONS = {
   // ── 20. 광진구 ───────────────────────────────────────────────
   hidden_gwangjin_zoo_laboratory: {
     id: 'hidden_gwangjin_zoo_laboratory',
+    subLocationId: 'sl_gwangjin_zoo_lab',
     name: '어린이대공원 동물 연구소',
     icon: '🐾',
     district: 'gwangjin',
@@ -746,6 +804,7 @@ export const HIDDEN_LOCATIONS = {
   // ── 22. 중랑구 ───────────────────────────────────────────────
   hidden_jungrang_water_treatment: {
     id: 'hidden_jungrang_water_treatment',
+    subLocationId: 'sl_jungrang_water_control',
     name: '중랑 정수장 컨트롤룸',
     icon: '🚰',
     district: 'jungrang',
@@ -753,17 +812,15 @@ export const HIDDEN_LOCATIONS = {
     unlockConditions: {
       minVisits: 0,
       minDay: 40,
-      requiredItems: ['electronic_parts', 'electronic_parts', 'pipe_wrench'],
+      requiredItems: ['electronic_parts', 'electronic_parts', 'pipe_wrench', 'seoul_emergency_plan'],
       requiredCharacter: null,
       minKills: 0,
       weather: null,
       season: null,
       minCraftLevel: 0,
-      customCheck: 'electronic_parts x2 + pipe_wrench 소지 필요',
+      customCheck: 'electronic_parts x2 + pipe_wrench + 비상 계획서 소지 필요',
     },
-    rewards: [
-      { definitionId: 'industrial_purifier', qty: 1 },
-    ],
+    rewards: [],
     lootTable: [
       { definitionId: 'water_filter', weight: 20, minQty: 1, maxQty: 2 },
       { definitionId: 'purified_water', weight: 25, minQty: 2, maxQty: 4 },
@@ -781,6 +838,7 @@ export const HIDDEN_LOCATIONS = {
   // ── 23. 금천구 ───────────────────────────────────────────────
   hidden_geumcheon_underground_factory: {
     id: 'hidden_geumcheon_underground_factory',
+    subLocationId: 'sl_geumcheon_secret_factory',
     name: '금천 비밀 지하 공장',
     icon: '🏭',
     district: 'geumcheon',
@@ -788,17 +846,15 @@ export const HIDDEN_LOCATIONS = {
     unlockConditions: {
       minVisits: 0,
       minDay: 80,
-      requiredItems: ['hazmat_suit'],
+      requiredItems: ['hazmat_suit', 'seoul_emergency_plan'],
       requiredCharacter: null,
       minKills: 30,
       weather: null,
       season: null,
       minCraftLevel: 0,
-      customCheck: null,
+      customCheck: '계획서에는 폐쇄로 적힌 하청 공장 — 실제로는 가동 중이었다',
     },
-    rewards: [
-      { definitionId: 'ammo_press', qty: 1 },
-    ],
+    rewards: [],
     lootTable: [
       { definitionId: 'pistol_ammo', weight: 25, minQty: 5, maxQty: 10 },
       { definitionId: 'shotgun_ammo', weight: 15, minQty: 3, maxQty: 6 },
@@ -816,6 +872,7 @@ export const HIDDEN_LOCATIONS = {
   // ── 24. 강동구 ───────────────────────────────────────────────
   hidden_gangdong_river_dock: {
     id: 'hidden_gangdong_river_dock',
+    subLocationId: 'sl_gangdong_secret_dock',
     name: '강동 한강 비밀 선착장',
     icon: '⛵',
     district: 'gangdong',
@@ -852,24 +909,23 @@ export const HIDDEN_LOCATIONS = {
   // ── 25. 중구 ─────────────────────────────────────────────────
   hidden_junggoo_city_hall_safe: {
     id: 'hidden_junggoo_city_hall_safe',
+    subLocationId: 'sl_junggoo_city_hall_safe',
     name: '서울시청 시장실 금고',
     icon: '🏛️',
     district: 'junggoo',
     description: '서울시청 시장실에 있는 초대형 금고. 서울 비상 대응 계획이 봉인되어 있다.',
     unlockConditions: {
       minVisits: 0,
-      minDay: 100,
+      minDay: 30,
       requiredItems: ['lockpick', 'crowbar', 'flashlight'],
       requiredCharacter: null,
       minKills: 0,
       weather: null,
       season: null,
       minCraftLevel: 0,
-      customCheck: null,
+      customCheck: '자물쇠따개 + 쇠지렛대 + 손전등 소지 — 비상 계획 체인의 출발점',
     },
-    rewards: [
-      { definitionId: 'seoul_emergency_plan', qty: 1 },
-    ],
+    rewards: [],
     lootTable: [
       { definitionId: 'map_fragment', weight: 15, minQty: 1, maxQty: 2 },
       { definitionId: 'survivor_note', weight: 20, minQty: 1, maxQty: 3 },

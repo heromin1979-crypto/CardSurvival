@@ -505,7 +505,6 @@ const CARD_IMAGES = {
   aircraft_parts:        'assets/images/special/aircraft_parts.png',
   river_boat:            'assets/images/special/river_boat.png',
   survivors_cache:       'assets/images/special/survivors_cache.png',
-  helicopter_key:        'assets/images/special/helicopter_key.png',
   conductor_key:         'assets/images/special/conductor_key.png',
   gold_watch:            'assets/images/special/gold_watch.png',
   gold_watch_raw:        'assets/images/special/gold_watch_raw.png',
@@ -736,7 +735,10 @@ const CARD_IMAGES = {
   thermometer:           'assets/images/medical/thermometer.png',
 };
 
+// 경로를 무조건 만들면 배경 이미지가 없는 세부장소는 404 + 빈 카드가 된다.
+// noSceneImage를 선언한 장소는 경로를 만들지 않고 아이콘 폴백으로 넘긴다.
 function subLocationImage(def) {
+  if (def?.noSceneImage) return null;
   const key = def?.subLocationId ?? def?.id?.replace(/^sl_/, '');
   return key ? `assets/images/sublocations/${key}.png` : null;
 }
@@ -1108,7 +1110,7 @@ const CardFactory = {
       <div class="lc-header">
         <span class="lm-badge">${I18n.t('card.interior')}</span>
       </div>
-      <div class="lc-scene lc-scene--sublocation" ${subBg}></div>
+      <div class="lc-scene lc-scene--sublocation" ${subBg}>${subImg ? '' : `<span class="lc-scene-icon">${def.icon ?? '📍'}</span>`}</div>
       <div class="lc-name">${I18n.itemName(def.id ?? def.subLocationId, def.name)}</div>
       <div class="lc-danger" style="color:${dangerColor}; font-size:9px; margin-top:2px;">
         ${dangerPct > 0 ? I18n.t('card.dangerHigh', { pct: dangerPct }) : I18n.t('card.dangerLow')}

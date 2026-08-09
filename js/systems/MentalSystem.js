@@ -7,12 +7,12 @@ import GameState from '../core/GameState.js';
 import I18n      from '../core/I18n.js';
 import { DISTRICTS } from '../data/districts.js';
 import NightSystem   from './NightSystem.js';
+import TickEngine    from '../core/TickEngine.js';
 
 // ── 캐릭터별 심리 특성 ───────────────────────────────────────
 const MENTAL_TRAITS = {
   doctor:      { anxietyResist: 0.8,  traumaRecovery: 1.5, lonelinessBase: 1.0, ability: 'self_therapy' },
   soldier:     { anxietyResist: 0.5,  traumaRecovery: 0.7, lonelinessBase: 0.8, ability: 'battle_calm' },
-  chef:        { anxietyResist: 1.0,  traumaRecovery: 1.0, lonelinessBase: 1.3, ability: 'comfort_food' },
   teacher:     { anxietyResist: 1.2,  traumaRecovery: 1.0, lonelinessBase: 1.5, ability: 'journaling' },
   student:     { anxietyResist: 1.5,  traumaRecovery: 1.3, lonelinessBase: 1.8, ability: 'adaptability' },
   engineer:    { anxietyResist: 0.9,  traumaRecovery: 0.8, lonelinessBase: 0.7, ability: 'problem_solving' },
@@ -216,6 +216,67 @@ const MentalSystem = {
     } else {
       m.trauma = Math.min(100, m.trauma + 3);
     }
+  },
+
+  // ── 일일 사용 도구 (생존 일지 등) ─────────────────────────────
+
+  /**
+   * 하루 1회 사용 도구를 지금 쓸 수 있는지. 버튼 활성 판정과 useDailyItem의
+   * 실행 판정이 갈리지 않도록 UI와 시스템이 같은 함수를 본다.
+   * @returns {{ ok: boolean, reason: string }}
+   */
+  canUseDaily(instanceId) {
+    const gs   = GameState;
+    const inst = gs.cards?.[instanceId];
+    const def  = gs.getCardDef?.(instanceId);
+    if (!inst || !def?.dailyUse) {
+      return { ok: false, reason: I18n.t('mental.notDailyUsable') };
+    }
+    if (inst._lastDailyUseDay === (gs.time?.day ?? 0)) {
+      return { ok: false, reason: I18n.t('mental.alreadyUsedToday') };
+    }
+    return { ok: true, reason: '' };
+  },
+
+  /**
+   * 일일 사용 도구 사용. def.dailyUse에 선언된 만큼 심리 수치를 낮춘다.
+   * 소모품이 아니라 도구이므로 카드도 내구도도 건드리지 않는다.
+   * @returns {{ ok: boolean, applied: object }}
+   */
+  useDailyItem(instanceId) {
+    const status = this.canUseDaily(instanceId);
+    if (!status.ok) {
+      EventBus.emit('notify', { message: status.reason, type: 'warn' });
+      return { ok: false, applied: {} };
+    }
+
+    this.ensureInitialized();
+    const gs   = GameState;
+    const inst = gs.cards[instanceId];
+    const def  = gs.getCardDef(instanceId);
+    const cfg  = def.dailyUse;
+
+    const applied = {};
+    for (const key of ['anxiety', 'loneliness', 'trauma']) {
+      if (typeof cfg[key] !== 'number') continue;
+      const before = gs.mental[key];
+      gs.mental[key] = Math.max(0, Math.min(100, before + cfg[key]));
+      applied[key] = gs.mental[key] - before;
+    }
+
+    // 같은 날 재사용 차단 — 날짜로 기록해 세이브에도 그대로 남는다
+    inst._lastDailyUseDay = gs.time?.day ?? 0;
+
+    if (cfg.tpCost > 0) {
+      TickEngine.skipTP(cfg.tpCost, I18n.itemName(def.id, def.name));
+    }
+
+    EventBus.emit('notify', {
+      message: I18n.t('mental.dailyUseDone', { name: I18n.itemName(def.id, def.name) }),
+      type: 'good',
+    });
+    EventBus.emit('boardChanged', {});
+    return { ok: true, applied };
   },
 
   // ── 공개 API ─────────────────────────────────────────────────

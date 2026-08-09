@@ -79,6 +79,11 @@ const SOLDIER_BRANCH_B = {
         setsFlag: 'soldier_end_b1',
       },
       {
+        label: '63빌딩 구조 유도',
+        desc: '옥상 헬리패드를 확보하고 유도등을 밝혀 구조기를 불러들인다.',
+        setsFlag: 'soldier_end_b2',
+      },
+      {
         label: '방송 후 수원 이동',
         desc: '마지막 방송을 마치고 수원으로 직접 이동한다.',
         setsFlag: 'soldier_end_b3',
@@ -103,6 +108,38 @@ const SOLDIER_BRANCH_B = {
     narrative: {
       start: '수원, 인천, 부산에서 신호가 잡혔다. 증폭기만 더 있으면 전국망이 완성된다.',
       complete: 'D+90. 전국 통신망 가동. 서울-수원-인천-부산. "여기는 KBS 서울. 전국 생존자 여러분, 응답해주십시오." 응답이 쏟아졌다. 박상현, 임무 완수다.',
+    },
+  },
+
+  // ── B2 엔딩: 63빌딩 구조 유도 ────────────────────────────────
+  // 강민준은 정대한처럼 기체를 만들지도, 조종하지도 않는다. 그의 무기는 방송이다.
+  // 좌표를 송출하고 착륙장을 밝혀 구조기를 불러들인다.
+
+  mq_soldier_end_b2_1: {
+    id: 'mq_soldier_end_b2_1', title: '착륙장 확보',
+    desc: '63빌딩 옥상 헬리패드를 찾아내라. 고층 진입에 로프사다리가 필요하다.',
+    icon: '🛬', characterId: 'soldier', dayTrigger: 185,
+    prerequisite: 'mq_soldier_b_15', requiresFlag: 'soldier_end_b2',
+    objective: { type: 'collect_item', definitionId: 'military_radio_kit', count: 1 },
+    reward: { morale: 18, items: [{ definitionId: 'rope', qty: 3 }] },
+    failPenalty: { morale: -8 }, deadlineDays: Infinity,
+    narrative: {
+      start: '좌표를 읽는 것만으로는 부족하다. 구조기가 온다 해도 내려앉을 자리가 있어야 한다. 여의도에서 헬기가 앉을 수 있는 곳은 하나뿐 — 63빌딩 옥상. 로프사다리를 챙겼다.',
+      complete: '옥상. 바람이 세다. 포장은 갈라졌지만 H 도색은 아직 읽힌다. 관제 캐비닛에서 군용 통신 키트가 나왔다. 1월 16일 이후 아무도 손대지 않은 채였다. 주파수를 맞췄다.',
+    },
+  },
+
+  mq_soldier_end_b2: {
+    id: 'mq_soldier_end_b2', title: '유도 착륙',
+    desc: '유도등을 밝히고 좌표를 송출하라. 배터리 4개로 착륙 유도등을 세운다.',
+    icon: '🚁', characterId: 'soldier', dayTrigger: 205,
+    prerequisite: 'mq_soldier_end_b2_1', requiresFlag: 'soldier_end_b2',
+    objective: { type: 'collect_item', definitionId: 'battery', count: 4 },
+    reward: { morale: 25, items: [{ definitionId: 'stimulant', qty: 1 }], flags: { mainQuestComplete_soldier: true, soldier_ending: 'b2_helicopter' } },
+    failPenalty: { morale: -10 }, deadlineDays: Infinity,
+    narrative: {
+      start: '착륙장은 확보했다. 이제 밤에도 보이게 만들어야 한다. 옥상 네 모서리에 유도등. 배터리 넷. KBS에서는 같은 문장을 반복 송출한다. "여의도 63빌딩 옥상. 유도등 점등. 착륙 가능."',
+      complete: '사흘째 새벽, 프로펠러 소리가 강 건너에서 들려왔다. 유도등 네 개가 어둠 속에서 사각형을 그렸다. 기체가 고도를 낮춘다. 문이 열리고 누군가 손을 내밀었다. "강민준 하사님? 방송 들었습니다." 마이크를 마지막으로 껐다.',
     },
   },
 
