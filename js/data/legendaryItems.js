@@ -669,14 +669,6 @@ const LEGENDARY_ITEMS = {
     dismantle: [],
   },
 
-  helicopter_key: {
-    id: 'helicopter_key', name: '헬리콥터 열쇠', type: 'tool', subtype: 'key',
-    rarity: 'legendary', legendary: true, weight: 0.1,
-    defaultDurability: Infinity, defaultContamination: 0,
-    icon: '🔑', description: '롯데타워 옥상 헬리콥터의 시동 열쇠. 탈출 엔딩의 핵심 아이템.',
-    tags: ['key_item', 'legendary'],
-    dismantle: [],
-  },
 
   broadcast_equipment: {
     id: 'broadcast_equipment', name: '방송 장비', type: 'tool', subtype: 'structure',

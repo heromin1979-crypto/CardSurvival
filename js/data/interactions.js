@@ -1580,6 +1580,52 @@ const INTERACTION_RULES = [
     },
   },
 
+  // ── 항공 가솔린 → 헬기 ────────────────────────────────────
+  // 가동 상태는 카드 변환이 아니라 인스턴스 플래그(_fuelDrums/_keyed)로 둔다.
+  // 통발의 _baitCharges와 같은 방식이라 아이템·이미지가 늘지 않는다.
+  {
+    id: 'avgas_to_helicopter',
+    source: { id: 'avgas_drum' },
+    target: { id: 'helicopter' },
+    hint: '헬기에 항공 가솔린을 주입합니다',
+    canApply(srcInst, tgtInst) {
+      const need = GameData?.items?.[tgtInst.definitionId]?.flight?.fuelDrums ?? 2;
+      if ((tgtInst._fuelDrums ?? 0) >= need) {
+        return { ok: false, reason: '연료 탱크가 이미 가득 찼다.' };
+      }
+      return { ok: true };
+    },
+    apply(srcInst, tgtInst) {
+      const need = GameData?.items?.[tgtInst.definitionId]?.flight?.fuelDrums ?? 2;
+      tgtInst._fuelDrums = (tgtInst._fuelDrums ?? 0) + 1;
+      return {
+        message: `연료 주입 ${tgtInst._fuelDrums}/${need} 드럼.`,
+        consumeSrc: true, consumeTgt: false, noise: 1,
+      };
+    },
+  },
+  {
+    id: 'avgas_to_helicopter_rev',
+    source: { id: 'helicopter' },
+    target: { id: 'avgas_drum' },
+    hint: '헬기에 항공 가솔린을 주입합니다',
+    canApply(srcInst) {
+      const need = GameData?.items?.[srcInst.definitionId]?.flight?.fuelDrums ?? 2;
+      if ((srcInst._fuelDrums ?? 0) >= need) {
+        return { ok: false, reason: '연료 탱크가 이미 가득 찼다.' };
+      }
+      return { ok: true };
+    },
+    apply(srcInst) {
+      const need = GameData?.items?.[srcInst.definitionId]?.flight?.fuelDrums ?? 2;
+      srcInst._fuelDrums = (srcInst._fuelDrums ?? 0) + 1;
+      return {
+        message: `연료 주입 ${srcInst._fuelDrums}/${need} 드럼.`,
+        consumeSrc: false, consumeTgt: true, noise: 1,
+      };
+    },
+  },
+
   // ── 미끼 → 통발 ───────────────────────────────────────────
   {
     id: 'bait_to_fish_trap',

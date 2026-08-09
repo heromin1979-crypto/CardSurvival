@@ -5,6 +5,7 @@ import I18n            from '../core/I18n.js';
 import EquipmentSystem from '../systems/EquipmentSystem.js';
 import DismantleSystem from '../systems/DismantleSystem.js';
 import MentalSystem    from '../systems/MentalSystem.js';
+import HelicopterSystem from '../systems/HelicopterSystem.js';
 import { playDismantleFx } from './dismantleFx.js';
 import { formatCardEffectEntries, formatInstanceName, getConsumableEffect } from '../systems/ItemEffectSystem.js';
 import CardFactory     from './CardFactory.js';
@@ -315,6 +316,9 @@ const ModalManager = {
     // 하루 1회 사용 도구(생존 일지 등) — 오늘 이미 썼으면 잠근다
     const canDailyUse    = !!def.dailyUse;
     const dailyUseStatus = canDailyUse ? MentalSystem.canUseDaily(instanceId) : { ok: false, reason: '' };
+    // 비행체 — 연료·시동 열쇠가 갖춰져야 이륙 버튼이 열린다
+    const canFly       = !!def.flight;
+    const flightStatus = canFly ? HelicopterSystem.canTakeOff(instanceId) : { ok: false, reason: '' };
     const canNest      = inst._stolenLoot?.length > 0;  // 동물 둥지 — 도난물 회수 가능
     const stackQty     = inst.quantity ?? 1;
     const equipSlots   = EquipmentSystem.getSlotsForDef(def);
@@ -461,7 +465,7 @@ const ModalManager = {
       </button>`
     ).join('');
 
-    const hasActions = canConsume || canDismantle || canForage || canDailyUse || canNest || canEquip || isFishingRod || isMedicalStructure || isTapeRepairable || canOpenBox || weatherActions.length > 0;
+    const hasActions = canConsume || canDismantle || canForage || canDailyUse || canFly || canNest || canEquip || isFishingRod || isMedicalStructure || isTapeRepairable || canOpenBox || weatherActions.length > 0;
 
     // 장착 슬롯 버튼 목록 (슬롯이 여럿이면 각각 버튼 생성)
     const slotLabels = {
@@ -512,6 +516,9 @@ const ModalManager = {
             ${canDailyUse ? `<button class="card-action-btn${dailyUseStatus.ok ? '' : ' disabled'}"
               id="modal-dailyuse-${instanceId}" ${dailyUseStatus.ok ? '' : 'disabled'}
               title="${dailyUseStatus.reason}">📓 오늘 기록하기${def.dailyUse.tpCost > 0 ? ` (${def.dailyUse.tpCost}TP)` : ''}</button>` : ''}
+            ${canFly ? `<button class="card-action-btn${flightStatus.ok ? '' : ' disabled'}"
+              id="modal-takeoff-${instanceId}" ${flightStatus.ok ? '' : 'disabled'}
+              title="${flightStatus.reason}">${I18n.t('heli.actionLabel')}</button>` : ''}
             ${canNest ? `<button class="card-action-btn" id="modal-nest-${instanceId}">🪺 둥지 뒤지기</button>` : ''}
             ${fishBtnHtml}
             ${weatherBtnsHtml}
@@ -654,6 +661,13 @@ const ModalManager = {
       } else {
         bindDismantle(`modal-dismantle-${instanceId}`, 1);
       }
+    }
+
+    if (canFly && flightStatus.ok) {
+      document.getElementById(`modal-takeoff-${instanceId}`)?.addEventListener('click', () => {
+        this.close();
+        HelicopterSystem.takeOff(instanceId);
+      });
     }
 
     if (canDailyUse && dailyUseStatus.ok) {

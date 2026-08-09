@@ -815,6 +815,11 @@ const GameState = {
     for (const inst of Object.values(this.cards ?? {})) {
       if (inst?.definitionId === 'fishing_rod_basic') inst.definitionId = 'fishing_rod';
     }
+    // 구버전 세이브 호환: 헬리콥터 열쇠는 구조 방식 개편으로 제거됐다.
+    // 정의가 없는 id가 남으면 getCardDef가 undefined를 돌려줘 카드가 깨진다.
+    for (const [id, inst] of Object.entries(this.cards ?? {})) {
+      if (inst?.definitionId === 'helicopter_key') delete this.cards[id];
+    }
     // 구버전 세이브 호환: top 행 10칸으로 확장
     if (d.board?.top && d.board.top.length < 10) while (d.board.top.length < 10) d.board.top.push(null);
     // 페이지 단위 마이그레이션: middle 길이 10 → 20 (+ page3 해금 시 30)

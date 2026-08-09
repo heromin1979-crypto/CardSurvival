@@ -3377,6 +3377,25 @@ const ITEMS_MISC = {
     },
     dismantle: [],
   },
+  // 헬기 조립의 관문. 정대한은 아버지에게서 물려받고, 다른 직업은 히든 장소에서
+  // 발굴해야 한다. 소모품인 sketch_notebook(사기 회복)과는 별개 아이템이다.
+  father_schematic: {
+    id: 'father_schematic',
+    name: '아버지의 설계도',
+    type: 'material',
+    subtype: 'document',
+    rarity: 'legendary',
+    weight: 0.2,
+    defaultDurability: 100,
+    defaultContamination: 0,
+    icon: '📐',
+    stackable: false,
+    maxStack: 1,
+    description: '20년 전 서랍에 넣어둔 경량 회전익기 설계도. 도면 여백에 계산이 빼곡하다. 이것 없이는 부품이 있어도 기체가 되지 않는다.',
+    tags: ['material', 'document', 'blueprint'],
+    dismantle: [],
+  },
+
   aviation_alloy: {
     id: 'aviation_alloy',
     name: '항공용 합금',

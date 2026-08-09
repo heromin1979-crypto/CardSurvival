@@ -152,6 +152,7 @@ const STACK_ROWS = [
 
   // ── 구조물 (내구도 있음 → 스택 불가) ────────────────────────────
   ['campfire'                , false, 1 ],
+  ['helicopter'              , false, 1 ],
   ['water_purifier'          , false, 1 ],
   ['barricade'               , false, 1 ],
   ['alarm_trap'              , false, 1 ],
@@ -348,6 +349,7 @@ const STACK_ROWS = [
 
   // — 헬기 제작 전용 부품 (기계공 B3 엔딩) —
   ['aviation_alloy'            , true,  5 ],
+  ['father_schematic'          , false, 1 ],
   ['rotor_blade'               , false, 1 ],
   ['piston_engine'             , false, 1 ],
   ['avionics_module'           , false, 1 ],

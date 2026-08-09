@@ -36,6 +36,26 @@ const ITEMS_STRUCTURES = {
     ],
   },
 
+  // 조립·발견 양쪽 경로가 같은 카드를 쓴다. 가동 여부는 카드 변환이 아니라
+  // 인스턴스 플래그(_fueled/_keyed)로 둔다 — 통발의 _isInstalled와 같은 방식.
+  // 이미지 미제작 상태라 CARD_IMAGES에 등록하지 않는다(icon 폴백).
+  helicopter: {
+    id: 'helicopter', name: '헬리콥터', type: 'structure', subtype: 'vehicle',
+    rarity: 'legendary', weight: 400,
+    defaultDurability: 100, defaultContamination: 0,
+    icon: '🚁', stackable: false, maxStack: 1,
+    description: '직접 조립한 소형 헬기. 항공 가솔린 드럼 2개를 넣으면 이륙할 수 있다.',
+    tags: ['structure', 'vehicle', 'immovable'],   // immovable: 바닥 고정 — 배낭 수납 불가
+    dismantleTP: 6,
+    dismantle: [
+      { definitionId: 'aviation_alloy', qty: 3, chance: 0.7 },
+      { definitionId: 'scrap_metal',    qty: 5, chance: 0.8 },
+      { definitionId: 'electronic_parts', qty: 2, chance: 0.6 },
+    ],
+    // 이륙에 필요한 조건. HelicopterSystem이 읽는다.
+    flight: { fuelDrums: 2 },
+  },
+
   wind_stove: {
     id: 'wind_stove', name: '방풍 화로', type: 'structure', subtype: 'heat',
     rarity: 'uncommon', weight: 3.0,

@@ -3500,6 +3500,53 @@ const BLUEPRINTS = {
     ],
   },
 
+  // 부품 5종을 실제로 소비해 헬기 카드를 만든다. 이 청사진이 없던 동안 부품들은
+  // 소비처가 없어 퀘스트 완료 후에도 인벤토리에 영구히 남았다.
+  assemble_helicopter: {
+    id: 'assemble_helicopter', name: '헬기 최종 조립', category: 'structure',
+    // 스킬 성장 곡선은 12개 스킬이 공유하므로 건드리지 않는다. 대신 야전 대장간·
+    // 후반부 제한·관문 재료로 벽을 세운다. 엔지니어는 B3 라인이 이 셋을 자연히
+    // 밟게 안내하고, 다른 직업은 스스로 알아내야 한다.
+    hidden: true,
+    unlockConditions: {
+      minSkillLevel: { crafting: 8, building: 6 },
+      requiredStructure: 'field_forge',
+      minDay: 200,
+    },
+    description: '동체에 엔진·로터·전자 모듈을 결합해 비행 가능한 기체를 완성한다. 아버지의 설계도가 있어야 도면대로 맞출 수 있다.',
+    output: [{ definitionId: 'helicopter', qty: 1 }],
+    requiredTools: ['workbench'],
+    requiredSkills: { crafting: 8, building: 6 },
+    stages: [
+      {
+        stageIndex: 0, label: '도면 대조·엔진 안착', tpCost: 8,
+        requiredItems: [
+          { definitionId: 'father_schematic', qty: 1 },
+          { definitionId: 'fuselage_frame',   qty: 1 },
+          { definitionId: 'piston_engine',    qty: 1 },
+          { definitionId: 'duct_tape',        qty: 5 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '로터 장착', tpCost: 6,
+        requiredItems: [
+          { definitionId: 'rotor_blade',         qty: 4 },
+          { definitionId: 'tail_rotor_assembly', qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 2, label: '조종석 배선', tpCost: 5,
+        requiredItems: [
+          { definitionId: 'avionics_module', qty: 1 },
+          { definitionId: 'wire',            qty: 4 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+  },
+
   refine_avgas: {
     id: 'refine_avgas', name: '항공 가솔린 정제', category: 'material',
     description: '자동차 연료통 5개를 증류·첨가제 혼합해 100LL 항공 가솔린으로 정제한다.',
