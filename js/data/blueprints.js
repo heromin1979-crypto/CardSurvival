@@ -3920,7 +3920,7 @@ const BLUEPRINTS = {
 
   upgrade_binoculars: {
     id: 'upgrade_binoculars', name: '프로 쌍안경 개조', category: 'upgrade',
-    description: '렌즈를 정밀 연마하고 배율 보정. 조우 예측 +1회.',
+    description: '렌즈를 정밀 연마하고 배율 보정. 조우 회피율이 8% → 15%로 오른다.',
     output: [{ definitionId: 'binoculars_pro', qty: 1 }],
     requiredTools: ['workbench'],
     requiredSkills: { crafting: 4 },

@@ -612,7 +612,7 @@ const ExploreSystem = {
   // ── 도구 효과 집산 ───────────────────────────────────────
 
   _collectToolEffects() {
-    const result = { exploreBonus: 0, encounterReduction: 0, noiseMult: 0, scoutBonus: 0 };
+    const result = { exploreBonus: 0, encounterReduction: 0, noiseMult: 0 };
     for (const card of GameState.getBoardCards()) {
       const def = GameState.getCardDef(card.instanceId);
       const u   = def?.onUse;
@@ -620,7 +620,6 @@ const ExploreSystem = {
       if (u.exploreBonus)       result.exploreBonus       += u.exploreBonus;
       if (u.encounterReduction) result.encounterReduction += u.encounterReduction;
       if (u.noiseMult)          result.noiseMult          += u.noiseMult;
-      if (u.scoutBonus)         result.scoutBonus         += u.scoutBonus;
     }
     return result;
   },

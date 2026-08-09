@@ -2327,7 +2327,7 @@ const ITEMS_MISC = {
     defaultDurability: 100,
     defaultContamination: 0,
     icon: '🔭',
-    description: '정밀 연마된 고배율 쌍안경. 조우 예측 +1회 추가.',
+    description: '정밀 연마된 고배율 쌍안경. 멀리서 지형을 읽어 조우 확률 15% 감소.',
     tags: [
       'tool',
       'utility',
@@ -2335,7 +2335,7 @@ const ITEMS_MISC = {
       'upgraded',
     ],
     onUse: {
-      scoutBonus: 2,
+      encounterReduction: 0.15,
     },
     dismantle: [
       {

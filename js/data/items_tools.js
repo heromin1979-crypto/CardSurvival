@@ -68,9 +68,9 @@ const ITEMS_TOOLS = {
     id: 'binoculars', name: '쌍안경', type: 'tool', subtype: 'utility',
     rarity: 'uncommon', weight: 0.4,
     defaultDurability: 100, defaultContamination: 0,
-    icon: '🔭', description: '먼 거리 정찰. 위험도를 미리 파악 가능.',
+    icon: '🔭', description: '먼 거리를 살핀다. 위험을 미리 보고 돌아가 조우 확률 8% 감소.',
     tags: ['tool', 'utility', 'scouting'],
-    onUse: { scoutBonus: 1 },
+    onUse: { encounterReduction: 0.08 },
     dismantle: [
       { definitionId: 'glass_shard', qty: 2, chance: 0.7 },
       { definitionId: 'plastic', qty: 1, chance: 0.8 },
