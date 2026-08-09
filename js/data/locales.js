@@ -677,6 +677,9 @@ export const ko = {
   'mental.hallucination':'👻 뭔가가 보인 것 같다... 환각인가?',
   'mental.anxietyWarn':  '😟 불안감이 심해지고 있다.',
   'mental.lonelyWarn':   '😔 외로움이 깊어지고 있다.',
+  'mental.notDailyUsable': '이 아이템은 사용할 수 없습니다.',
+  'mental.alreadyUsedToday': '오늘은 이미 기록했다. 내일 다시 펼쳐보자.',
+  'mental.dailyUseDone': '📓 {name}에 오늘을 기록했다. 마음이 조금 가라앉는다.',
 
   // ── Night ──────────────────────────────────────────
   'night.noLightExplore':  '🌙 어둠 속에서는 탐색할 수 없다. 광원이 필요하다.',
@@ -1661,6 +1664,9 @@ export const en = {
   'mental.anxiety':      'Anxiety',
   'mental.loneliness':   'Loneliness',
   'mental.trauma':       'Trauma',
+  'mental.notDailyUsable': 'This item cannot be used.',
+  'mental.alreadyUsedToday': 'Already written today. Try again tomorrow.',
+  'mental.dailyUseDone': '📓 Wrote about today in the {name}. Your mind settles a little.',
   'mental.nightmare':    '😰 Nightmares... Fatigue +3, Anxiety +5',
   'mental.hallucination':'👻 You see something... A hallucination?',
   'mental.anxietyWarn':  '😟 Anxiety is getting worse.',

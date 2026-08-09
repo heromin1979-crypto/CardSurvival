@@ -154,8 +154,11 @@ const ITEMS_TOOLS = {
     id: 'survival_journal', name: '생존 일지', type: 'tool', subtype: 'tool',
     rarity: 'uncommon', weight: 0.3, stackable: false, maxStack: 1,
     defaultDurability: 100, defaultContamination: 0,
-    icon: '📓', description: '기록은 생존의 증거. 매일 사용하면 트라우마·외로움 감소.',
+    icon: '📓', description: '기록은 생존의 증거. 하루 1회 1TP를 들여 쓰면 트라우마 -2, 외로움 -3. 닳지 않는다.',
     tags: ['tool', 'mental'], dismantle: [],
+    // 외로움 -3은 라디오 패시브(-0.05/TP = 하루 -3.6)를 넘지 않게 잡았다.
+    // 트라우마 -2는 자연 회복(-0.02/TP = 하루 -1.44)을 하루치 앞당기는 규모.
+    dailyUse: { trauma: -2, loneliness: -3, tpCost: 1 },
   },
   oil_lamp: {
     id: 'oil_lamp', name: '기름 램프', type: 'tool', subtype: 'tool',
