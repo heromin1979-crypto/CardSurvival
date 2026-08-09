@@ -4386,6 +4386,29 @@ export const LANDMARK_DATA = {
     icon: '🏙️',
     subLocations: [
       {
+        id: 'sl_songpa_survivor_fort',
+        name: '생존자 요새',
+        icon: '🏢',
+        desc: '좀비가 들어찬 로비 너머, 아케이드를 바리케이드로 막아 만든 구역. 여기서는 사람이 산다.',
+        dangerMod: 0.05,
+        noSceneImage: true,
+        requiresHiddenLocation: 'hidden_jamsil_lotte_tower_lobby',
+        firstEnterReward: {
+          claimKey: 'songpa_fort_first',
+          items: [
+            { id: 'battle_ration', qty: 3 },
+            { id: 'first_aid_kit', qty: 2 },
+            { id: 'debt_ledger',   qty: 1 },
+          ],
+        },
+        lootTable: [
+          { id: 'canned_food', weight: 7 },
+          { id: 'bandage',     weight: 6 },
+          { id: 'battery',     weight: 4 },
+          { id: 'rope',        weight: 4 },
+        ],
+      },
+      {
         id: 'sl_songpa_penthouse',
         name: '123층 펜트하우스',
         icon: '🏙',
