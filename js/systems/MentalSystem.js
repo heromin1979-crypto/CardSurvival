@@ -13,7 +13,6 @@ import TickEngine    from '../core/TickEngine.js';
 const MENTAL_TRAITS = {
   doctor:      { anxietyResist: 0.8,  traumaRecovery: 1.5, lonelinessBase: 1.0, ability: 'self_therapy' },
   soldier:     { anxietyResist: 0.5,  traumaRecovery: 0.7, lonelinessBase: 0.8, ability: 'battle_calm' },
-  chef:        { anxietyResist: 1.0,  traumaRecovery: 1.0, lonelinessBase: 1.3, ability: 'comfort_food' },
   teacher:     { anxietyResist: 1.2,  traumaRecovery: 1.0, lonelinessBase: 1.5, ability: 'journaling' },
   student:     { anxietyResist: 1.5,  traumaRecovery: 1.3, lonelinessBase: 1.8, ability: 'adaptability' },
   engineer:    { anxietyResist: 0.9,  traumaRecovery: 0.8, lonelinessBase: 0.7, ability: 'problem_solving' },
