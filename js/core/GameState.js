@@ -56,6 +56,7 @@ export function createDefaultFlags() {
     // ── sublocation 1회 한정 자동 보상 수령 이력 ──────
     // 'districtId:subLocationId' 키 배열. ExploreSystem._grantFirstEnterReward 참조.
     firstEnterRewardsClaimed:  [],
+  hiddenBossesSpawned:       [],
   };
 }
 

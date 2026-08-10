@@ -877,7 +877,7 @@ const CombatUI = {
     const combatFallbackImg = gs.player.gender === 'F' ? PLAYER_COMBAT_FALLBACK_F : PLAYER_COMBAT_FALLBACK_M;
     const playerImg  = playerSpriteSheetKey ? (charDef.portraitFull ?? combatFallbackImg) : combatFallbackImg;
     const portraitImg = charDef.portraitSmall ?? genderImg;
-    const battleBg = this._combatScene().backdrop ?? './assets/images/subway_ruined.jpg';
+    const battleBg = this._combatScene().backdrop ?? './assets/images/combat_jongno_subway_clean_v2.png';
 
     // ── 장착 무기 (미장착 시 보드 첫 무기로 폴백 — 주 공격 카드와 일치) ──
     const equippedId = gs.player.equipped?.weapon_main ?? gs.player.equipped?.weapon_sub;

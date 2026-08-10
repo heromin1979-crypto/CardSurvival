@@ -344,6 +344,19 @@ export const LANDMARK_CARD_META = {
     "landmarkBonus": "이 구역 조우 확률 -10%p",
     "districtId": null
   },
+  "lm_kbs": {
+    "name": "KBS 본관",
+    "subtype": "landmark",
+    "rarity": "uncommon",
+    "tags": [
+      "location",
+      "landmark"
+    ],
+    "icon": "📺",
+    "description": "여의도 방송국. 송신탑이 아직 서 있고, 지하에 비상 송출 계통이 남아 있다.",
+    "landmarkBonus": "전자부품 수급",
+    "districtId": "yeongdeungpo"
+  },
   "lm_63_building": {
     "name": "63빌딩",
     "subtype": "landmark",

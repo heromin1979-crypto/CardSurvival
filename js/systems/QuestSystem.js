@@ -15,6 +15,7 @@ import { QUEST_TO_FLASHBACK } from '../data/cinematicScenes.js';
 // objective: { type, target, count }
 //   type: 'collect_item' | 'collect_item_type' | 'craft_item' | 'kill_enemies' | 'survive_days' | 'equip_slot'
 //       | 'survive_infection' | 'npc_quest_complete' | 'treat_npc' | 'track_infected' | 'rescue_npc' | 'visit_district'
+//       | 'discover_location'
 //       | 'trigger_combo' (comboId 또는 comboIds 배열)
 // reward: { morale?, hp? }
 const QUEST_DEFS = {
@@ -144,6 +145,9 @@ const QuestSystem = {
     // 지역 이동 시 visit_district 퀘스트 체크
     EventBus.on('districtChanged', ({ districtId }) => this._onDistrictChanged(districtId));
 
+    // 히든 장소 발견 추적 — 발견 조건 자체는 HiddenElementSystem이 판정한다
+    EventBus.on('hiddenLocationDiscovered', ({ locationId }) => this._onLocationDiscovered(locationId));
+
     // 세이브 로드 시 누적 카운터 복원 후 진행도 재계산
     EventBus.on('loaded', () => {
       this._restoreProgressFromSave();
@@ -185,6 +189,7 @@ const QuestSystem = {
    *  - collect_item_type  { itemType, count? }       — itemType은 top-level type 또는 tag
    *  - craft_item         { definitionId? | category?, count? }
    *  - visit_district     { districtId }
+   *  - discover_location  { locationId }
    *  - use_item           { definitionId, count? }
    *  - treat_npc          { npcId? | count? }
    *  - build_structure    { structureId }
@@ -220,6 +225,8 @@ const QuestSystem = {
       }
       case 'visit_district':
         return (state.visitedDistricts ?? new Set()).has(m.districtId);
+      case 'discover_location':
+        return (state.discoveredLocations ?? new Set()).has(m.locationId);
       case 'use_item': {
         const have = state.usedItemCounts?.[m.definitionId] ?? 0;
         return have >= (m.count ?? 1);
@@ -681,6 +688,22 @@ const QuestSystem = {
     if (changed) EventBus.emit('questListChanged', {});
   },
 
+  /** 히든 장소 발견 시 discover_location 목표 체크 */
+  _onLocationDiscovered(locationId) {
+    if (!locationId) return;
+    let changed = false;
+    for (const q of [...GameState.quests.active]) {
+      const qDef = _getQuestDef(q.id);
+      if (!qDef) continue;
+      if (qDef.objective.type === 'discover_location' && qDef.objective.locationId === locationId) {
+        q.progress = 1;
+        this._checkCompletion(q, qDef);
+        changed = true;
+      }
+    }
+    if (changed) EventBus.emit('questListChanged', {});
+  },
+
   _onTpAdvance() {
     const gs  = GameState;
     const day = gs.time.day;
@@ -886,6 +909,12 @@ const QuestSystem = {
       } else if (obj.type === 'visit_district') {
         // visit_district: 이미 방문한 곳이면 즉시 완료
         if (GameState.location.districtsVisited?.includes(obj.districtId)) {
+          q.progress = 1;
+          this._checkCompletion(q, qDef);
+        }
+      } else if (obj.type === 'discover_location') {
+        // 퀘스트를 받기 전에 우연히 발견했을 수 있다
+        if (GameState.flags.hiddenLocationsDiscovered?.includes(obj.locationId)) {
           q.progress = 1;
           this._checkCompletion(q, qDef);
         }

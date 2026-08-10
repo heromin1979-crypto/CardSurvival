@@ -201,8 +201,11 @@ const HiddenElementSystem = {
       }
     }
 
-    // 보스 전투 트리거
-    if (loc.bossId && SECRET_ENEMIES[loc.bossId]) {
+    // 보스 전투 트리거.
+    // 세부장소가 연결된 장소는 여기서 띄우지 않는다. 발견은 구 경계를 넘는
+    // 순간 일어나므로, 이동 중에 준비 없이 보스전에 끌려들어간다.
+    // 배선된 장소는 ExploreSystem이 세부장소 진입 시 스폰한다.
+    if (!loc.subLocationId && loc.bossId && SECRET_ENEMIES[loc.bossId]) {
       this._spawnBoss(loc.bossId);
     }
 
@@ -265,6 +268,17 @@ const HiddenElementSystem = {
         isBossEncounter: true,
       });
     }
+  },
+
+  /** 세부장소 진입 시 히든 보스 스폰 — 장소당 1회 */
+  spawnSubLocationBoss(bossId, claimKey) {
+    const gs = GameState;
+    if (!bossId || !SECRET_ENEMIES[bossId]) return false;
+    if (!gs.flags.hiddenBossesSpawned) gs.flags.hiddenBossesSpawned = [];
+    if (gs.flags.hiddenBossesSpawned.includes(claimKey)) return false;
+    gs.flags.hiddenBossesSpawned.push(claimKey);
+    this._spawnBoss(bossId);
+    return true;
   },
 
   /** 일반 탐색 중 보스 스폰 체크 (확률 기반) */

@@ -440,15 +440,78 @@ export const ENDINGS = {
     ],
   },
 
+  // 강민준의 분기는 넷(a1/b1/b2/b3)인데 엔딩은 둘뿐이었다. mq_soldier가
+  // soldier_ending !== 'b2_helicopter'로 나머지 셋을 통째로 받아, 수원까지
+  // 걸어간 플레이어와 전국 통신망을 세운 플레이어가 같은 화면을 봤다.
+  // 분기마다 엔딩을 붙이고 mq_soldier는 플래그 없는 예외 경로만 맡는다.
+
+  mq_soldier_rescue: {
+    id: 'mq_soldier_rescue', category: 'character', characterId: 'soldier',
+    title: '강민준: 서울 구조망',     subtitle: '전역 구조 신호 완성',
+    gradient: 'linear-gradient(160deg,#0a1018 0%,#152535 60%,#060a10 100%)',
+    condition: (gs) => {
+      return gs.player.characterId === 'soldier'
+          && (gs.flags.mainQuestComplete_soldier ?? false)
+          && gs.flags.soldier_ending === 'a1_rescue'
+          && gs.time.day >= 100;
+    },
+    narrative: [
+      '서울 전역에 구조 신호가 깔렸다. 스물다섯 개 구, 스물다섯 개 좌표.',
+      '무전기를 켜면 어디서든 누군가 응답한다.',
+      '박영철이 손을 내밀었다. "우리가 해냈어요."',
+      '"같이 해냈습니다." 강민준은 그 손을 잡았다.',
+      '박상현, 들었냐. 이번엔 아무도 두고 오지 않았다.',
+    ],
+  },
+
+  mq_soldier_network: {
+    id: 'mq_soldier_network', category: 'character', characterId: 'soldier',
+    title: '강민준: 전국 통신망',     subtitle: '서울-수원-인천-부산 연결',
+    gradient: 'linear-gradient(160deg,#100a00 0%,#201800 60%,#0a0800 100%)',
+    condition: (gs) => {
+      return gs.player.characterId === 'soldier'
+          && (gs.flags.mainQuestComplete_soldier ?? false)
+          && gs.flags.soldier_ending === 'b1_network'
+          && gs.time.day >= 100;
+    },
+    narrative: [
+      '마지막 증폭기를 물렸다. 계기 바늘이 끝까지 올라간다.',
+      '"여기는 KBS 서울. 전국 생존자 여러분, 응답해주십시오."',
+      '수원. 인천. 부산. 응답이 쏟아졌다.',
+      '강민준은 마이크를 놓지 않았다. 밤새 좌표를 받아 적었다.',
+      '박상현, 임무 완수다. 이번엔 신호를 놓치지 않았다.',
+    ],
+  },
+
+  mq_soldier_suwon: {
+    id: 'mq_soldier_suwon', category: 'character', characterId: 'soldier',
+    title: '강민준: 남쪽으로',        subtitle: '마지막 방송 후 수원 이동',
+    gradient: 'linear-gradient(160deg,#12100a 0%,#282010 60%,#0c0a06 100%)',
+    condition: (gs) => {
+      return gs.player.characterId === 'soldier'
+          && (gs.flags.mainQuestComplete_soldier ?? false)
+          && gs.flags.soldier_ending === 'b3_suwon'
+          && gs.time.day >= 100;
+    },
+    narrative: [
+      '마지막 송출. "여기는 서울 KBS. 이것이 마지막 방송입니다."',
+      '스튜디오 불을 끄고 남쪽으로 걸었다. 혼자 걸을 생각이었다.',
+      '수원 외곽에서 뒤를 돌아봤을 때, 발소리가 하나가 아니었다.',
+      '방송을 듣고 길에서 합류한 사람들이었다. 전투 식량을 나눴다.',
+      '박상현, 나는 혼자가 아니야.',
+    ],
+  },
+
+  // 분기 플래그 없이 메인 퀘스트만 완료한 예외 경로 (구버전 세이브 포함).
   mq_soldier: {
     id: 'mq_soldier', category: 'character', characterId: 'soldier',
     title: '강민준: 서울 집결 좌표',   subtitle: 'KBS 방송 수신 확인',
     gradient: 'linear-gradient(160deg,#100a00 0%,#201800 60%,#0a0800 100%)',
     condition: (gs) => {
-      // b2(63빌딩 구조 유도)는 escape_helicopter가 맡는다.
+      const branch = gs.flags.soldier_ending;
       return gs.player.characterId === 'soldier'
           && (gs.flags.mainQuestComplete_soldier ?? false)
-          && gs.flags.soldier_ending !== 'b2_helicopter'
+          && !branch
           && gs.time.day >= 100;
     },
     narrative: [

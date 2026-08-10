@@ -1,3 +1,25 @@
+.ui-icon {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  flex: 0 0 auto;
+  vertical-align: -0.125em;
+  background-color: currentColor;
+  -webkit-mask: center / contain no-repeat;
+  mask: center / contain no-repeat;
+}
+
+.ui-icon--location { -webkit-mask-image: url('../assets/images/ui/icons/location.svg'); mask-image: url('../assets/images/ui/icons/location.svg'); }
+.ui-icon--map { -webkit-mask-image: url('../assets/images/ui/icons/map.svg'); mask-image: url('../assets/images/ui/icons/map.svg'); }
+.ui-icon--season { -webkit-mask-image: url('../assets/images/ui/icons/season.svg'); mask-image: url('../assets/images/ui/icons/season.svg'); }
+.ui-icon--temperature { -webkit-mask-image: url('../assets/images/ui/icons/temperature.svg'); mask-image: url('../assets/images/ui/icons/temperature.svg'); }
+.ui-icon--explore { -webkit-mask-image: url('../assets/images/ui/icons/explore.svg'); mask-image: url('../assets/images/ui/icons/explore.svg'); }
+.ui-icon--quest { -webkit-mask-image: url('../assets/images/ui/icons/quest.svg'); mask-image: url('../assets/images/ui/icons/quest.svg'); }
+.ui-icon--basecamp { -webkit-mask-image: url('../assets/images/ui/icons/basecamp.svg'); mask-image: url('../assets/images/ui/icons/basecamp.svg'); }
+.ui-icon--weather { -webkit-mask-image: url('../assets/images/ui/icons/weather.svg'); mask-image: url('../assets/images/ui/icons/weather.svg'); }
+.ui-icon--item { -webkit-mask-image: url('../assets/images/ui/icons/item.svg'); mask-image: url('../assets/images/ui/icons/item.svg'); }
+.ui-icon--injury { -webkit-mask-image: url('../assets/images/ui/icons/injury.svg'); mask-image: url('../assets/images/ui/icons/injury.svg'); }
+
 /* === HUD === */
 .hud-area {
   flex-wrap: wrap;

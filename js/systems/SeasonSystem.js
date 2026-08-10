@@ -9,6 +9,7 @@ import SEASONAL_EVENTS from '../data/seasonalEvents.js';
 import SystemRegistry  from '../core/SystemRegistry.js';
 import GameData from '../data/GameData.js';
 import BALANCE from '../data/gameBalance.js';
+import { uiIcon } from '../ui/UiIcon.js';
 
 // ── 계절 정의 ──────────────────────────────────────────────────
 
@@ -304,7 +305,7 @@ const SeasonSystem = {
   _updateSeasonBadge(season) {
     const badge = document.getElementById('season-badge');
     if (!badge) return;
-    badge.textContent = `${season.icon} ${season.name}`;
+    badge.innerHTML = `${uiIcon('season')} ${season.name}`;
     badge.dataset.season = season.id;
   },
 };

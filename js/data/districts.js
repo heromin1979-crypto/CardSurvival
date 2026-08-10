@@ -3017,6 +3017,7 @@ const DISTRICTS = {
     landmarks: [
       'lm_yeongdeungpo',
       'lm_63_building',
+      'lm_kbs',
       'lm_hangang_yeongdeungpo',
     ],
   },

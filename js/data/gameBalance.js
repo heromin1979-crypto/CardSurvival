@@ -531,7 +531,9 @@ const BALANCE = {
   fishing: {
     tpCostPerCast:        2,     // 낚시 1회 TP 비용
     baseCatchChance:      0.50,  // 기본 어획 확률 (fishing Lv.0) — PR12 v8 진입 트리거
-    maxCatchChance:       0.70,  // 최대 어획 확률 (fishing Lv.20)
+    skillCatchChanceCap:  0.70,  // 스킬 곡선 도달점 (fishing Lv.20, 장비·미끼 제외)
+    hardCatchChanceCap:   0.90,  // 장비·미끼·날씨까지 더한 최종 상한
+    minCatchChance:       0.05,  // 하한 — 악천후에도 완전히 0이 되지는 않는다
     baitWormBonus:        0.10,  // 지렁이 미끼 어획률 보너스
     baitInsectBonus:      0.05,  // 곤충 미끼 어획률 보너스
     rodBasicBonus:        0.00,  // 기본 낚싯대 추가 보너스 없음

@@ -16,6 +16,12 @@ const VICTORY_CATEGORIES = ['character', 'escape', 'milestone'];
 const EndingSystem = {
   _lastCheckDay: 0,
 
+  getCharacterEndingCode(characterId, flags) {
+    if (!characterId) return null;
+    const flagKey = characterId === 'firefighter' ? 'fire_ending' : `${characterId}_ending`;
+    return flags?.[flagKey] ?? null;
+  },
+
   init() {
     // Daily victory check (once per game-day boundary)
     EventBus.on('tpAdvance', () => {
@@ -212,7 +218,7 @@ const EndingSystem = {
       if (!meta[id]) {
         const ending    = ENDINGS[id];
         const charId    = ending?.characterId;
-        const subEnding = charId ? (gameState?.flags?.[charId + '_ending'] ?? null) : null;
+        const subEnding = this.getCharacterEndingCode(charId, gameState?.flags);
         meta[id] = { day: gameState?.time?.day ?? 1, subEnding };
         localStorage.setItem(STORAGE_META_KEY, JSON.stringify(meta));
       }

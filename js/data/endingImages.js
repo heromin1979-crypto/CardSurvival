@@ -3,7 +3,7 @@
 // prompt: 나노 바나나 생성 프롬프트 (한국어 포스트아포칼립스 웹툰 스타일)
 // alt: 화면 낭독기용 대체 텍스트
 
-export const ENDING_IMAGES = {
+const LEGACY_ENDING_IMAGES = {
 
   // ── 군인 강민준 (soldier) — 올리브그린, 군사 팔레트 ──────────────
 
@@ -45,7 +45,7 @@ export const ENDING_IMAGES = {
 
   // ── 의사 이지수 (doctor) — 의료 청색, 병원 흰색 ──────────────────
 
-  a1_vaccine: {
+  doctor_a1_vaccine: {
     src: 'assets/endings/doctor_a1_vaccine.png',
     alt: '이지수가 연구실에서 백신 앰풀을 들어올리고 있다',
     prompt: '한국 포스트아포칼립스 웹툰 스타일, 30대 여성 의사가 폐허가 된 삼성병원 임시 연구실에서 빛나는 앰풀을 양손으로 들어올리고 있다, 파란 형광 실험 장비, 주변에 연구 노트와 바이러스 데이터, 의료 청색과 흰색 팔레트, 극적인 업라이팅, 완성의 순간, 고해상도',
@@ -95,7 +95,7 @@ export const ENDING_IMAGES = {
     prompt: '한국 포스트아포칼립스 웹툰 스타일, 소방관이 폐허가 된 소방서 앞에 세운 추모비 앞에 서 있다, "이재훈 소방관을 기억하며"라 새긴 나무 비, 앞에 소방 헬멧과 꽃, 석양빛, 슬프지만 경건하고 따뜻한 분위기, 앰버와 어두운 오렌지 팔레트, 고해상도',
   },
 
-  b3_escape: {
+  firefighter_b3_escape: {
     src: 'assets/endings/firefighter_b3_escape.png',
     alt: '박영철과 정대한이 서울 외곽 도로를 나란히 걷고 있다',
     prompt: '한국 포스트아포칼립스 웹툰 스타일, 소방관과 기계공 두 사람이 서울 외곽 도로를 나란히 걷고 있다, 멀리 서울 스카이라인, 새벽 첫빛이 지평선을 물들이고 있다, 두 사람의 우정과 새 출발, 앰버 오렌지와 차가운 회색 팔레트, 고해상도',
@@ -123,14 +123,14 @@ export const ENDING_IMAGES = {
 
   // ── 셰프 윤재혁 (chef) — 웜 오렌지, 주방/급식소 ───────────────────
 
-  a1_vaccine: {
-    src: 'assets/endings/chef_a1_feast.png',
+  chef_a1_network: {
+    src: 'assets/endings/chef_a1_network.png',
     alt: '윤재혁이 남대문시장 급식소에서 생존자들에게 따뜻한 식사를 나눠주고 있다',
     prompt: '한국 포스트아포칼립스 웹툰 스타일, 남성 셰프가 남대문시장 임시 급식소에서 생존자들에게 김이 모락모락 나는 국밥을 배식하고 있다, 감사하는 얼굴들, 셰프의 따뜻한 미소, 웜 오렌지와 따뜻한 낮빛 팔레트, 희망의 한 끼, 고해상도',
   },
 
-  a2_distribute: {
-    src: 'assets/endings/chef_a2_distribute.png',
+  chef_a2_farm: {
+    src: 'assets/endings/chef_a2_farm.png',
     alt: '윤재혁이 서울 각지의 생존자 구역에 식량 보급품을 전달하고 있다',
     prompt: '한국 포스트아포칼립스 웹툰 스타일, 남성 셰프가 보온 용기에 음식을 담아 서울 폐허 거리에서 생존자들에게 배달하고 있다, 자전거에 실린 보급 상자들, 따뜻한 낮빛, 웜 오렌지 팔레트, 지역사회 급식, 고해상도',
   },
@@ -141,8 +141,8 @@ export const ENDING_IMAGES = {
     prompt: '한국 포스트아포칼립스 웹툰 스타일, 남성 셰프가 두꺼운 레시피 노트를 정리하고 있다, "누구나 만들 수 있는 생존 요리"라 적힌 표지, 주방 배경, 결연하고 희망찬 표정, 웜 오렌지 팔레트, 기록의 무게감, 고해상도',
   },
 
-  b1_production: {
-    src: 'assets/endings/chef_b1_production.png',
+  chef_b1_ascension: {
+    src: 'assets/endings/chef_b1_ascension.png',
     alt: '윤재혁과 정대한이 남대문시장에서 대규모 급식 시설을 구축하고 있다',
     prompt: '한국 포스트아포칼립스 웹툰 스타일, 남대문시장이 대규모 급식 시설로 변환, 남성 셰프와 기계공 남성이 조리 라인을 함께 점검하고 있다, 대형 솥과 조리 장비의 결합, 웜 오렌지와 산업 회색 팔레트, 체계적인 분위기, 고해상도',
   },
@@ -201,6 +201,53 @@ export const ENDING_IMAGES = {
 // ── 엔딩 코드 별칭 (신규 플래그 값 → 기존 이미지 키) ─────────────────
 // 퀘스트 재구성으로 chef_ending / engineer_ending 값이 바뀌었지만
 // 기존 이미지 에셋을 재사용하기 위해 매핑을 유지한다.
+export const ENDING_IMAGES = {
+  soldier: {
+    a1_rescue: LEGACY_ENDING_IMAGES.a1_rescue,
+    a2_defend: LEGACY_ENDING_IMAGES.a2_defend,
+    a3_escape: LEGACY_ENDING_IMAGES.a3_escape,
+    b1_network: LEGACY_ENDING_IMAGES.b1_network,
+    b2_rally: LEGACY_ENDING_IMAGES.b2_rally,
+    b3_suwon: LEGACY_ENDING_IMAGES.b3_suwon,
+  },
+  doctor: {
+    a1_vaccine: LEGACY_ENDING_IMAGES.doctor_a1_vaccine,
+    a2_treatment: LEGACY_ENDING_IMAGES.a2_treatment,
+    a3_data: LEGACY_ENDING_IMAGES.a3_data,
+    b1_military_hub: LEGACY_ENDING_IMAGES.b1_military_hub,
+    b2_frontline: LEGACY_ENDING_IMAGES.b2_frontline,
+    b3_civilian: LEGACY_ENDING_IMAGES.b3_civilian,
+  },
+  firefighter: {
+    a1_shelter: LEGACY_ENDING_IMAGES.a1_shelter,
+    a3_memorial: LEGACY_ENDING_IMAGES.a3_memorial,
+    b3_escape: LEGACY_ENDING_IMAGES.firefighter_b3_escape,
+  },
+  homeless: {
+    a3_journey: LEGACY_ENDING_IMAGES.a3_journey,
+    b1_kingdom: LEGACY_ENDING_IMAGES.b1_kingdom,
+    b3_network: LEGACY_ENDING_IMAGES.b3_wanderer,
+    b3_wanderer: LEGACY_ENDING_IMAGES.b3_wanderer,
+  },
+  chef: {
+    a1_network: LEGACY_ENDING_IMAGES.chef_a1_network,
+    a2_farm: LEGACY_ENDING_IMAGES.chef_a2_farm,
+    a3_document: LEGACY_ENDING_IMAGES.a3_document,
+    b1_ascension: LEGACY_ENDING_IMAGES.chef_b1_ascension,
+    b2_small_dist: LEGACY_ENDING_IMAGES.b2_small_dist,
+    b3_escape: LEGACY_ENDING_IMAGES.b3_escape,
+  },
+  engineer: {
+    a1_escape: LEGACY_ENDING_IMAGES.a1_escape,
+    a2_test: LEGACY_ENDING_IMAGES.a2_test,
+    a3_base: LEGACY_ENDING_IMAGES.a3_base,
+    b1_rebuild: LEGACY_ENDING_IMAGES.b1_rebuild,
+    b2_generator: LEGACY_ENDING_IMAGES.b2_generator,
+    b3_late_escape: LEGACY_ENDING_IMAGES.b3_late_escape,
+    b3_heli_escape: LEGACY_ENDING_IMAGES.b3_late_escape,
+  },
+};
+
 const ENDING_IMAGE_ALIASES = {
   // chef — Expansion / Settle / Ascension
   'a1_network':   'a1_vaccine',       // 강남 대형마트 네트워크 → 급식소 배식
@@ -215,8 +262,7 @@ const ENDING_IMAGE_ALIASES = {
  * @param {string} subEndingCode - e.g. 'a1_rescue', 'b2_rally'
  * @returns {{ src, alt, prompt } | null}
  */
-export function getEndingImage(subEndingCode) {
-  if (!subEndingCode) return null;
-  const resolved = ENDING_IMAGE_ALIASES[subEndingCode] ?? subEndingCode;
-  return ENDING_IMAGES[resolved] ?? null;
+export function getEndingImage(characterId, subEndingCode) {
+  if (!characterId || !subEndingCode) return null;
+  return ENDING_IMAGES[characterId]?.[subEndingCode] ?? null;
 }

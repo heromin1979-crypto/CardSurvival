@@ -45,7 +45,6 @@ export const LANDMARK_DATA = {
         icon: '👑',
         desc: '근정전 박석 아래 도면에 없는 계단. 항온항습 설비가 여태 돌고 있다.',
         dangerMod: 0.18,
-        noSceneImage: true,
         requiresHiddenLocation: 'hidden_jongno_royal_vault',
         firstEnterReward: {
           claimKey: 'jongno_vault_first',
@@ -219,6 +218,55 @@ export const LANDMARK_DATA = {
     desc: '서울 최대 재래시장. 식료품, 의류, 잡화 등 온갖 생존 물자가 있을 수 있다.',
     icon: '🏪',
     subLocations: [
+      {
+        id: 'sl_junggoo_cold_storage',
+        name: '냉동 창고',
+        icon: '❄️',
+        desc: '시장 지하 대형 냉동고. 발전기가 아직 돌아 안쪽만 영하로 남아 있다.',
+        dangerMod: 0.3,
+        noSceneImage: true,
+        bossId: 'boss_chef_nemesis',
+        requiresHiddenLocation: 'hidden_namdaemun_cold_storage',
+        firstEnterReward: {
+          claimKey: 'cold_storage_first',
+          items: [
+            { id: 'virus_sample',          qty: 1 },
+            { id: 'immunity_serum',        qty: 1 },
+          ],
+        },
+        lootTable: [
+          { id: 'antidote',            weight: 5 },
+          { id: 'rad_blocker',         weight: 4 },
+          { id: 'surgery_kit',         weight: 4 },
+          { id: 'antibiotics',         weight: 5 },
+          { id: 'stimulant',           weight: 3 },
+        ],
+      },
+      {
+        id: 'sl_junggoo_hotel_pantry',
+        name: '호텔 주방 저장고',
+        icon: '🍳',
+        desc: '장충동 호텔 지하. 출입 코드를 아는 사람만 들어간다. 선반에 재고 목록이 손 글씨로 붙어 있다.',
+        dangerMod: 0.1,
+        noSceneImage: true,
+        requiresHiddenLocation: 'hidden_junggoo_hotel_kitchen',
+        firstEnterReward: {
+          claimKey: 'sofitel_pantry_first',
+          items: [
+            { id: 'canned_food',    qty: 4 },
+            { id: 'purified_water', qty: 3 },
+            { id: 'herb',           qty: 3 },
+            { id: 'salt',           qty: 2 },
+          ],
+        },
+        lootTable: [
+          { id: 'herb',             weight: 6 },
+          { id: 'salt',             weight: 6 },
+          { id: 'vitamins',         weight: 4 },
+          { id: 'alcohol_solution', weight: 4 },
+          { id: 'canned_food',      weight: 3 },
+        ],
+      },
       {
         id: 'sl_junggoo_city_hall_safe',
         name: '시장실 금고',
@@ -396,6 +444,26 @@ export const LANDMARK_DATA = {
     icon: '🪖',
     subLocations: [
       {
+        id: 'sl_yongsan_armory',
+        name: '미군기지 무기고',
+        icon: '🔫',
+        desc: '기념관 담장 너머 옛 기지 구역. 전자식 잠금이 예비 전원으로 버티고 있다.',
+        dangerMod: 0.35,
+        requiresHiddenLocation: 'hidden_yongsan_us_armory',
+        firstEnterReward: {
+          claimKey: 'yongsan_armory_first',
+          items: [
+            { id: 'm4_carbine',            qty: 1 },
+          ],
+        },
+        lootTable: [
+          { id: 'pistol_ammo',         weight: 6 },
+          { id: 'shotgun_ammo',        weight: 4 },
+          { id: 'military_ration',     weight: 4 },
+          { id: 'flashbang',           weight: 3 },
+        ],
+      },
+      {
         id: 'yongsan_outdoor',
         name: '야외 전시장',
         icon: '⚓',
@@ -560,6 +628,51 @@ export const LANDMARK_DATA = {
     icon: '🏭',
     subLocations: [
       {
+        id: 'sl_seongdong_master_workshop',
+        name: '장인의 작업실',
+        icon: '🔨',
+        desc: '공장지대 안쪽 3층. 문패 없이 공구만 벽 한 면을 채운 방.',
+        dangerMod: 0.15,
+        noSceneImage: true,
+        requiresHiddenLocation: 'hidden_seongdong_forge_master',
+        firstEnterReward: {
+          claimKey: 'master_workshop_first',
+          items: [
+            { id: 'master_toolkit',        qty: 1 },
+          ],
+        },
+        lootTable: [
+          { id: 'scrap_metal',         weight: 5 },
+          { id: 'pipe_wrench',         weight: 4 },
+          { id: 'duct_tape',           weight: 5 },
+          { id: 'spring',              weight: 4 },
+        ],
+      },
+      {
+        id: 'sl_seongdong_bridge_shelter',
+        name: '다리 아래 은신처',
+        icon: '🌉',
+        desc: '공장지대 서쪽 강변길 끝, 동호대교 교각 사이. 플라스틱 박스와 낡은 침낭이 2년치 자리를 지키고 있다.',
+        dangerMod: 0.05,
+        noSceneImage: true,
+        requiresHiddenLocation: 'hidden_yangcheon_dongho_bridge',
+        firstEnterReward: {
+          claimKey: 'dongho_shelter_first',
+          items: [
+            { id: 'survival_journal', qty: 1 },
+            { id: 'canned_food',      qty: 3 },
+            { id: 'rope',             qty: 2 },
+          ],
+        },
+        lootTable: [
+          { id: 'scrap_metal',   weight: 7 },
+          { id: 'cloth',         weight: 6 },
+          { id: 'empty_bottle',  weight: 6 },
+          { id: 'rope',          weight: 4 },
+          { id: 'survivor_note', weight: 3 },
+        ],
+      },
+      {
         id: 'seongdong_metal',
         name: '금속 가공 공장',
         icon: '⚙️',
@@ -717,7 +830,7 @@ export const LANDMARK_DATA = {
         icon: '🐯',
         desc: '사육사 구역 안쪽 검역동. 우리 문이 안에서 뜯겨 있다.',
         dangerMod: 0.2,
-        noSceneImage: true,
+        bossId: 'boss_mutant_alpha_tiger',
         requiresHiddenLocation: 'hidden_gwangjin_zoo_laboratory',
         firstEnterReward: {
           claimKey: 'gwangjin_zoolab_first',
@@ -1985,6 +2098,31 @@ export const LANDMARK_DATA = {
     icon: '⛩️',
     subLocations: [
       {
+        id: 'sl_eunpyeong_fire_station',
+        name: '불광 소방서',
+        icon: '🚒',
+        desc: '진관사에서 내려오는 길목, 불광동 초입. 차고 문이 반쯤 열린 채 멈춰 있다.',
+        dangerMod: 0.15,
+        noSceneImage: true,
+        requiresHiddenLocation: 'hidden_eunpyeong_fire_station',
+        firstEnterReward: {
+          claimKey: 'eunpyeong_station_first',
+          items: [
+            { id: 'rope_ladder',       qty: 1 },
+            { id: 'crowbar',           qty: 1 },
+            { id: 'first_aid_kit',     qty: 2 },
+            { id: 'firefighter_badge', qty: 1 },
+          ],
+        },
+        lootTable: [
+          { id: 'rope',        weight: 7 },
+          { id: 'wire',        weight: 6 },
+          { id: 'scrap_metal', weight: 6 },
+          { id: 'bandage',     weight: 4 },
+          { id: 'fuel_can',    weight: 3 },
+        ],
+      },
+      {
         id: 'eunpyeong_main_hall',
         name: '대웅전',
         icon: '🏯',
@@ -2132,6 +2270,26 @@ export const LANDMARK_DATA = {
     desc: '연세대 부속 종합병원. 감염 위험이 높으나 의약품이 풍부하다.',
     icon: '🏥',
     subLocations: [
+      {
+        id: 'sl_seodaemun_p4_lab',
+        name: 'P4 연구실',
+        icon: '🧫',
+        desc: '본관 지하 4층, 이중 기밀문 안쪽. 음압 경보가 아직 낮게 울리고 있다.',
+        dangerMod: 0.3,
+        requiresHiddenLocation: 'hidden_seodaemun_severance_lab',
+        firstEnterReward: {
+          claimKey: 'p4_lab_first',
+          items: [
+            { id: 'virus_sample',          qty: 1 },
+          ],
+        },
+        lootTable: [
+          { id: 'antibiotics',         weight: 5 },
+          { id: 'rad_blocker',         weight: 4 },
+          { id: 'first_aid_kit',       weight: 5 },
+          { id: 'antiseptic',          weight: 5 },
+        ],
+      },
       {
         id: 'seodaemun_er',
         name: '응급실',
@@ -2669,6 +2827,26 @@ export const LANDMARK_DATA = {
     desc: '국내선 공항. 화물터미널과 격납고에 다양한 물자가 있을 수 있다.',
     icon: '✈️',
     subLocations: [
+      {
+        id: 'sl_gangseo_hangar',
+        name: '격납고',
+        icon: '✈️',
+        desc: '활주로 끝 정비 격납고. 반쯤 분해된 기체가 잭에 올라간 채 멈춰 있다.',
+        dangerMod: 0.25,
+        requiresHiddenLocation: 'hidden_gangseo_airport_hangar',
+        firstEnterReward: {
+          claimKey: 'gimpo_hangar_first',
+          items: [
+            { id: 'aircraft_parts',        qty: 1 },
+          ],
+        },
+        lootTable: [
+          { id: 'scrap_metal',         weight: 6 },
+          { id: 'electronic_parts',    weight: 5 },
+          { id: 'rope',                weight: 4 },
+          { id: 'fuel_can',            weight: 3 },
+        ],
+      },
       {
         id: 'gangseo_departure',
         name: '출국장',
@@ -3372,6 +3550,76 @@ export const LANDMARK_DATA = {
   },
   // 여의도 63빌딩 — 강민준의 방송(KBS)과 탈출(헬리패드)이 같은 구에서 이어진다.
   // 옥상 헬리패드는 hidden_yeongdeungpo_63_helipad를 발견해야 나타난다.
+  // 여의도 KBS 본관. 강민준의 서사가 방송(KBS)에서 시작해 탈출(63빌딩)로
+  // 끝나므로 두 건물을 같은 섬의 별개 랜드마크로 둔다.
+  lm_kbs: {
+    name: 'KBS 본관',
+    desc: '여의도 방송국. 로비 전광판이 마지막 자막에서 멈춰 있다. 송신탑은 아직 서 있다.',
+    icon: '📺',
+    districts: [
+      'yeongdeungpo',
+    ],
+    subLocations: [
+      {
+        id: 'sl_yeongdeungpo_kbs_studio',
+        name: 'KBS 비밀 방송실',
+        icon: '📡',
+        desc: '본관 지하 3층 비상 스튜디오. 정규 계통과 분리된 송출 설비가 예비 전원으로 살아 있다.',
+        dangerMod: 0.15,
+        noSceneImage: true,
+        requiresHiddenLocation: 'hidden_yeongdeungpo_kbs_broadcast',
+        firstEnterReward: {
+          claimKey: 'kbs_studio_first',
+          items: [
+            { id: 'broadcast_equipment',   qty: 1 },
+          ],
+        },
+        lootTable: [
+          { id: 'electronic_parts',    weight: 6 },
+          { id: 'wire',                weight: 5 },
+          { id: 'radio',               weight: 3 },
+          { id: 'flashlight',          weight: 4 },
+        ],
+      },
+      {
+        id: 'sl_kbs_lobby',
+        name: '로비·분장실',
+        icon: '🎬',
+        desc: '출입증이 바닥에 흩어져 있다. 분장실 거울 앞 의자가 아직 돌아간 채다.',
+        dangerMod: 0.1,
+        lootTable: [
+          { id: 'cloth',      weight: 6 },
+          { id: 'battery',    weight: 5 },
+          { id: 'flashlight', weight: 3 },
+        ],
+      },
+      {
+        id: 'sl_kbs_newsroom',
+        name: '보도국',
+        icon: '🗞',
+        desc: '모니터 수십 대가 꺼진 채 늘어서 있다. 화이트보드에 마지막 큐시트가 남아 있다.',
+        dangerMod: 0.15,
+        lootTable: [
+          { id: 'survivor_note',    weight: 6 },
+          { id: 'electronic_parts', weight: 4 },
+          { id: 'paper',            weight: 4 },
+        ],
+      },
+      {
+        id: 'sl_kbs_antenna',
+        name: '송신탑 기저부',
+        icon: '📶',
+        desc: '옥상으로 이어지는 철제 계단. 급전선이 아직 팽팽하다.',
+        dangerMod: 0.2,
+        lootTable: [
+          { id: 'wire',        weight: 7 },
+          { id: 'scrap_metal', weight: 5 },
+          { id: 'copper_wire', weight: 3 },
+        ],
+      },
+    ],
+  },
+
   lm_63_building: {
     name: '63빌딩',
     desc: '여의도 63빌딩. 금빛 외벽이 그을렸지만 구조물은 성하다. 상층에서 한강 이남까지 내려다보인다.',
@@ -3413,7 +3661,6 @@ export const LANDMARK_DATA = {
         icon: '🚁',
         desc: '기체는 없지만 포장과 H 도색은 멀짱하다. 유도등만 살리면 구조기가 내려앉을 수 있다.',
         dangerMod: 0.15,
-        noSceneImage: true,
         requiresHiddenLocation: 'hidden_yeongdeungpo_63_helipad',
         firstEnterReward: {
           claimKey: 'yeongdeungpo_63_helipad_first',
@@ -3845,6 +4092,26 @@ export const LANDMARK_DATA = {
     icon: '🎓',
     subLocations: [
       {
+        id: 'sl_gwanak_reactor',
+        name: '연구용 원자로',
+        icon: '☢️',
+        desc: '공대 뒤편 격납 건물. 노심은 정지했지만 계기판에는 아직 불이 들어온다.',
+        dangerMod: 0.35,
+        requiresHiddenLocation: 'hidden_gwanak_snu_reactor',
+        firstEnterReward: {
+          claimKey: 'snu_reactor_first',
+          items: [
+            { id: 'nuclear_battery',       qty: 1 },
+          ],
+        },
+        lootTable: [
+          { id: 'electronic_parts',    weight: 6 },
+          { id: 'rad_blocker',         weight: 4 },
+          { id: 'scrap_metal',         weight: 5 },
+          { id: 'wire',                weight: 4 },
+        ],
+      },
+      {
         id: 'gwanak_medschool',
         name: '의과대학',
         icon: '🏥',
@@ -4202,6 +4469,27 @@ export const LANDMARK_DATA = {
     icon: '🏥',
     subLocations: [
       {
+        id: 'sl_gangnam_sealed_pharmacy',
+        name: '봉인 약제실',
+        icon: '💊',
+        desc: '마약류 관리 구역. 셔터가 안에서 잠겼고 봉인 스티커가 그대로다.',
+        dangerMod: 0.2,
+        noSceneImage: true,
+        requiresHiddenLocation: 'hidden_gangnam_samsung_pharmacy',
+        firstEnterReward: {
+          claimKey: 'sealed_pharmacy_first',
+          items: [
+            { id: 'surgical_grade_kit',    qty: 1 },
+          ],
+        },
+        lootTable: [
+          { id: 'first_aid_kit',       weight: 5 },
+          { id: 'antibiotics',         weight: 4 },
+          { id: 'surgery_kit',         weight: 3 },
+          { id: 'painkiller',          weight: 5 },
+        ],
+      },
+      {
         id: 'gangnam_er',
         name: '응급실',
         icon: '🚨',
@@ -4415,7 +4703,7 @@ export const LANDMARK_DATA = {
         icon: '🏙',
         desc: '계단 123층 끝. 통유리 앞에 망원경과 압정 꽂힌 서울 지도가 놓여 있다.',
         dangerMod: 0.2,
-        noSceneImage: true,
+        bossId: 'boss_penthouse_survivor',
         requiresHiddenLocation: 'hidden_songpa_lotte_penthouse',
         firstEnterReward: {
           claimKey: 'songpa_penthouse_first',

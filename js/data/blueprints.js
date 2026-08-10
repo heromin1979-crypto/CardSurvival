@@ -3508,6 +3508,12 @@ const BLUEPRINTS = {
     // 후반부 제한·관문 재료로 벽을 세운다. 엔지니어는 B3 라인이 이 셋을 자연히
     // 밟게 안내하고, 다른 직업은 스스로 알아내야 한다.
     hidden: true,
+    // requiredCharacter는 일부러 두지 않는다. 넣으면 롯데타워 123층
+    // 펜트하우스(비엔지니어의 유일한 설계도 획득 경로)가 사문이 되고,
+    // escape_helicopter_pilot 엔딩("누가 가르쳐준 것도 아니었다")도
+    // 엔지니어 전용이 되어 대사와 어긋난다.
+    // 격차는 차단이 아니라 정도로 만든다 — 엔지니어는 specialtySkills로
+    // crafting/building XP를 1.5배 받고, B3 라인이 설계도를 확정 지급한다.
     unlockConditions: {
       minSkillLevel: { crafting: 8, building: 6 },
       requiredStructure: 'field_forge',

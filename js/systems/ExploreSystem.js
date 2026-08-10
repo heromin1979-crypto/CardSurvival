@@ -843,6 +843,9 @@ const ExploreSystem = {
     // 캐릭터당 1회 한정 자동 보상 (한강 낚시터 진입 시 fishing_rod 등)
     this._grantFirstEnterReward(sub, subKey);
 
+    // 히든 보스는 문을 연 순간 마주친다. 보상을 먼저 주고 전투로 넘긴다.
+    if (sub.bossId && HiddenElementSystem.spawnSubLocationBoss(sub.bossId, subKey)) return;
+
     // 보라매 응급실 잔류 환자 이벤트 (이지수 전용, Day 2~7)
     this._tryBoramaePatientSpawn(gs);
     // 마포 원정 부상 시민 이벤트 (이지수 전용, Day 15+)
