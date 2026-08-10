@@ -3805,6 +3805,7 @@ export const LANDMARK_DATA = {
         name: '지하 벙커',
         icon: '🚪',
         desc: '관리 창고 뒤편 철문 아래. 군용 통신 장비가 남아 있는 비상 벙커.',
+        noSceneImage: true,
         dangerMod: 0.15,
         requiresHiddenLocation: 'hidden_dongjak_cemetery_vault',
         firstEnterReward: {
@@ -6580,6 +6581,7 @@ export function registerSubLocationItems(items) {
         dangerMod:             sub.dangerMod ?? 0,
         lootTable:             sub.lootTable,
         lootCount:             sub.lootCount,
+        noSceneImage:          sub.noSceneImage,
       };
     }
   }
