@@ -264,5 +264,13 @@ const ENDING_IMAGE_ALIASES = {
  */
 export function getEndingImage(characterId, subEndingCode) {
   if (!characterId || !subEndingCode) return null;
-  return ENDING_IMAGES[characterId]?.[subEndingCode] ?? null;
+  if (!Object.hasOwn(ENDING_IMAGES, characterId)) return null;
+
+  const characterImages = ENDING_IMAGES[characterId];
+  if (!Object.hasOwn(characterImages, subEndingCode)) return null;
+
+  const image = characterImages[subEndingCode];
+  if (typeof image?.src !== 'string' || image.src.length === 0
+    || typeof image?.alt !== 'string' || image.alt.length === 0) return null;
+  return image;
 }

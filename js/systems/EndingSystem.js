@@ -14,7 +14,11 @@ const STORAGE_META_KEY = 'CARD_SURVIVAL_ENDINGS_v1_meta';
 // Victory check priority: character > escape > milestone
 const VICTORY_CATEGORIES = ['character', 'escape', 'milestone'];
 
-function endingAcceptsCurrentBranch(ending, gameState) {
+function characterEndingFlagKey(characterId) {
+  return characterId === 'firefighter' ? 'fire_ending' : `${characterId}_ending`;
+}
+
+function endingAcceptsSubEnding(ending, subEnding, gameState) {
   if (!ending?.characterId || typeof ending.condition !== 'function') return false;
 
   const characterId = ending.characterId;
@@ -24,6 +28,7 @@ function endingAcceptsCurrentBranch(ending, gameState) {
     flags: {
       ...gameState?.flags,
       [`mainQuestComplete_${characterId}`]: true,
+      [characterEndingFlagKey(characterId)]: subEnding,
     },
     time: { ...gameState?.time, day: Number.MAX_SAFE_INTEGER },
   };
@@ -40,8 +45,7 @@ const EndingSystem = {
 
   getCharacterEndingCode(characterId, flags) {
     if (!characterId) return null;
-    const flagKey = characterId === 'firefighter' ? 'fire_ending' : `${characterId}_ending`;
-    return flags?.[flagKey] ?? null;
+    return flags?.[characterEndingFlagKey(characterId)] ?? null;
   },
 
   init() {
@@ -265,19 +269,23 @@ const EndingSystem = {
 
   resolveEndingSubCode(id, gs = GameState) {
     const meta = this.getUnlockMeta();
-    const savedSubEnding = meta[id]?.subEnding;
-    if (savedSubEnding != null) return savedSubEnding;
-
     const ending = ENDINGS[id];
-    const subEnding = this.getCharacterEndingCode(ending?.characterId, gs?.flags);
-    if (!getEndingImage(ending?.characterId, subEnding)
-      || !endingAcceptsCurrentBranch(ending, gs)) return null;
+    const characterId = ending?.characterId;
+    const savedSubEnding = meta[id]?.subEnding;
+    const savedIsValid = getEndingImage(characterId, savedSubEnding)
+      && endingAcceptsSubEnding(ending, savedSubEnding, gs);
+    if (savedIsValid) return savedSubEnding;
 
-    if (meta[id]) {
-      meta[id] = { ...meta[id], subEnding };
+    const currentSubEnding = this.getCharacterEndingCode(characterId, gs?.flags);
+    const currentIsValid = getEndingImage(characterId, currentSubEnding)
+      && endingAcceptsSubEnding(ending, currentSubEnding, gs);
+    const resolvedSubEnding = currentIsValid ? currentSubEnding : null;
+
+    if (meta[id] && (savedSubEnding != null || resolvedSubEnding != null)) {
+      meta[id] = { ...meta[id], subEnding: resolvedSubEnding };
       try { localStorage.setItem(STORAGE_META_KEY, JSON.stringify(meta)); } catch { /* ignore */ }
     }
-    return subEnding;
+    return resolvedSubEnding;
   },
 
   getAllWithStatus() {

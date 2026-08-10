@@ -86,3 +86,14 @@ npm.cmd test
 - GREEN: `tests/unit/EndingImages.test.js` 13개 전부 통과.
 - 지정 검증: 4개 파일, 288개 테스트 통과. 전체 suite는 187개 파일, 2,452개 테스트 통과 및 3개 skipped.
 - 별도 커밋 메시지: `fix: validate gallery ending metadata migration`
+
+## 이미지 lookup 및 저장 메타 최종 검증
+
+- `constructor`, `toString`, `__proto__` lookup과 malformed own mapping, 저장된 mismatch/prototype 코드를 실제 갤러리 경로로 재현하는 테스트를 추가했다.
+- RED: `tests/unit/EndingImages.test.js` 22개 중 9개 실패. prototype/malformed 데이터가 반환됐고 stale 저장값이 표시되거나 남았다.
+- `getEndingImage()`는 캐릭터와 서브코드 양쪽 모두 own mapping만 허용하고, `src`/`alt`가 비어 있지 않은 문자열인 데이터만 반환한다.
+- resolver는 저장 후보도 실제 이미지 매핑과 해당 `ENDINGS[id].condition`으로 검증한다.
+- stale 저장값은 현재 matching 코드가 있으면 교체하고, 없으면 `null`로 정리한다. 올바른 저장값과 `day`는 보존한다.
+- GREEN: `tests/unit/EndingImages.test.js` 22개 전부 통과.
+- 지정 검증: 4개 파일, 297개 테스트 통과. 전체 suite는 187개 파일, 2,461개 테스트 통과 및 3개 skipped.
+- 별도 커밋 메시지: `fix: harden ending image metadata resolution`

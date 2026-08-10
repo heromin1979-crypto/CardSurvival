@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { getEndingImage } from '../../js/data/endingImages.js';
+import { ENDING_IMAGES, getEndingImage } from '../../js/data/endingImages.js';
 import FIREFIGHTER_BRANCH_A from '../../js/data/mainQuests/firefighter/branch_a.js';
 import FIREFIGHTER_BRANCH_B from '../../js/data/mainQuests/firefighter/branch_b.js';
 import HOMELESS_BRANCH_B from '../../js/data/mainQuests/homeless/branch_b.js';
@@ -49,6 +49,22 @@ describe('character ending image lookup', () => {
     expect(getEndingImage('chef', 'a1_network')?.src).toBe('assets/endings/chef_a1_network.png');
     expect(getEndingImage('chef', 'a2_farm')?.src).toBe('assets/endings/chef_a2_farm.png');
     expect(getEndingImage('chef', 'b1_ascension')?.src).toBe('assets/endings/chef_b1_ascension.png');
+  });
+
+  it.each(['constructor', 'toString', '__proto__'])(
+    'rejects the prototype image key %s', (key) => {
+      expect(getEndingImage('firefighter', key)).toBeNull();
+      expect(getEndingImage(key, 'b3_escape')).toBeNull();
+    },
+  );
+
+  it('rejects an own image mapping with an invalid data shape', () => {
+    ENDING_IMAGES.firefighter.malformed = { src: 'assets/endings/malformed.png', alt: null };
+    try {
+      expect(getEndingImage('firefighter', 'malformed')).toBeNull();
+    } finally {
+      delete ENDING_IMAGES.firefighter.malformed;
+    }
   });
 
   it('renders the image selected by the firefighter quest fire_ending flag', () => {
@@ -104,16 +120,16 @@ describe('character ending image lookup', () => {
 
   it('does not overwrite a valid existing gallery subEnding', () => {
     localStorage.setItem('CARD_SURVIVAL_ENDINGS_v1_meta', JSON.stringify({
-      mq_firefighter_b3: { day: 42, subEnding: 'a1_shelter' },
+      mq_firefighter_b3: { day: 42, subEnding: 'b3_escape' },
     }));
 
     EndingSystem.unlockEnding('mq_firefighter_b3', {
-      flags: { fire_ending: 'b3_escape' },
+      flags: { fire_ending: 'a1_shelter' },
       time: { day: 99 },
     });
 
     expect(EndingSystem.getUnlockMeta().mq_firefighter_b3)
-      .toEqual({ day: 42, subEnding: 'a1_shelter' });
+      .toEqual({ day: 42, subEnding: 'b3_escape' });
   });
 
   it('repairs and renders a legacy firefighter gallery entry without unlocking again', () => {
@@ -159,6 +175,35 @@ describe('character ending image lookup', () => {
     expect(EndingSystem.getUnlockMeta().mq_firefighter_b3)
       .toEqual({ day: 42, subEnding: 'b3_escape' });
   });
+
+  it('replaces a persisted mismatched branch with the current matching branch', () => {
+    localStorage.setItem('CARD_SURVIVAL_ENDINGS_v1_meta', JSON.stringify({
+      mq_firefighter_b3: { day: 42, subEnding: 'a1_shelter' },
+    }));
+    GameState.flags = { fire_ending: 'b3_escape' };
+
+    const card = EndingGallery._buildCard(ENDINGS.mq_firefighter_b3, true, 42);
+
+    expect(card.querySelector('.eg-card-thumb')?.getAttribute('src'))
+      .toBe('assets/endings/firefighter_b3_escape.png');
+    expect(EndingSystem.getUnlockMeta().mq_firefighter_b3)
+      .toEqual({ day: 42, subEnding: 'b3_escape' });
+  });
+
+  it.each(['a1_shelter', 'constructor', 'toString', '__proto__'])(
+    'clears the stale persisted B3 subEnding %s when no matching current branch exists', (savedSubEnding) => {
+      localStorage.setItem('CARD_SURVIVAL_ENDINGS_v1_meta', JSON.stringify({
+        mq_firefighter_b3: { day: 42, subEnding: savedSubEnding },
+      }));
+      GameState.flags = { fire_ending: 'not_an_ending' };
+
+      const card = EndingGallery._buildCard(ENDINGS.mq_firefighter_b3, true, 42);
+
+      expect(card.querySelector('.eg-card-thumb')).toBeNull();
+      expect(EndingSystem.getUnlockMeta().mq_firefighter_b3)
+        .toEqual({ day: 42, subEnding: null });
+    },
+  );
 
   it('resolves every active firefighter branch code through its real storage key', () => {
     const branchCodes = [
