@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import { LANDMARK_DATA } from '../../js/data/landmarks.js';
+import CardFactory from '../../js/ui/CardFactory.js';
 
 const ROOT = process.cwd();
 const TARGET_IDS = [
@@ -32,5 +33,27 @@ describe('우선 서브 로케이션 장면 자산', () => {
   it.each(targetSubLocations)('$id 장면 파일이 명명 규칙 경로에 존재한다', ({ id }) => {
     const imagePath = path.join(ROOT, 'assets', 'images', 'sublocations', `${id}.png`);
     expect(fs.existsSync(imagePath), imagePath).toBe(true);
+  });
+
+  it('preserves a dynamic icon when a sublocation has no scene image', () => {
+    const html = CardFactory._buildSubLocationInner({
+      id: 'sl_dynamic_fallback',
+      name: 'Dynamic fallback',
+      icon: '🧭',
+      noSceneImage: true,
+    });
+
+    expect(html).toContain('<span class="lc-scene-icon">🧭</span>');
+    expect(html).not.toContain('ui-icon--location');
+  });
+
+  it('uses the semantic location icon only when a sublocation icon is absent', () => {
+    const html = CardFactory._buildSubLocationInner({
+      id: 'sl_semantic_fallback',
+      name: 'Semantic fallback',
+      noSceneImage: true,
+    });
+
+    expect(html).toContain('ui-icon--location');
   });
 });

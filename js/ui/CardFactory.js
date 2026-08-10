@@ -1111,7 +1111,7 @@ const CardFactory = {
       <div class="lc-header">
         <span class="lm-badge">${I18n.t('card.interior')}</span>
       </div>
-      <div class="lc-scene lc-scene--sublocation" ${subBg}>${subImg ? '' : `<span class="lc-scene-icon">${uiIcon('location')}</span>`}</div>
+      <div class="lc-scene lc-scene--sublocation" ${subBg}>${subImg ? '' : `<span class="lc-scene-icon">${def.icon ?? uiIcon('location')}</span>`}</div>
       <div class="lc-name">${I18n.itemName(def.id ?? def.subLocationId, def.name)}</div>
       <div class="lc-danger" style="color:${dangerColor}; font-size:9px; margin-top:2px;">
         ${dangerPct > 0 ? I18n.t('card.dangerHigh', { pct: dangerPct }) : I18n.t('card.dangerLow')}

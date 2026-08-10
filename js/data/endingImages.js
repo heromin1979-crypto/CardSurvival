@@ -226,6 +226,7 @@ export const ENDING_IMAGES = {
   homeless: {
     a3_journey: LEGACY_ENDING_IMAGES.a3_journey,
     b1_kingdom: LEGACY_ENDING_IMAGES.b1_kingdom,
+    b3_network: LEGACY_ENDING_IMAGES.b3_wanderer,
     b3_wanderer: LEGACY_ENDING_IMAGES.b3_wanderer,
   },
   chef: {
