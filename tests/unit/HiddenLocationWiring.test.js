@@ -97,6 +97,14 @@ describe('이관된 세부장소 — 데이터 정합성', () => {
     'sl_songpa_penthouse',
     'sl_63_helipad',
     'sl_gangseo_hangar',
+    'sl_junggoo_cold_storage',
+    'sl_junggoo_hotel_pantry',
+    'sl_junggoo_city_hall_safe',
+    'sl_seongdong_master_workshop',
+    'sl_seongdong_bridge_shelter',
+    'sl_dongdaemun_workshop',
+    'sl_jungrang_water_control',
+    'sl_seongbuk_research_bunker',
   ]);
 
   it.each(subs)('%s 보상·루팅이 실존 아이템을 가리킨다', (_h, sub) => {

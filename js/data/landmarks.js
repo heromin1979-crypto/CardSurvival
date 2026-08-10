@@ -224,7 +224,6 @@ export const LANDMARK_DATA = {
         icon: '❄️',
         desc: '시장 지하 대형 냉동고. 발전기가 아직 돌아 안쪽만 영하로 남아 있다.',
         dangerMod: 0.3,
-        noSceneImage: true,
         bossId: 'boss_chef_nemesis',
         requiresHiddenLocation: 'hidden_namdaemun_cold_storage',
         firstEnterReward: {
@@ -248,7 +247,6 @@ export const LANDMARK_DATA = {
         icon: '🍳',
         desc: '장충동 호텔 지하. 출입 코드를 아는 사람만 들어간다. 선반에 재고 목록이 손 글씨로 붙어 있다.',
         dangerMod: 0.1,
-        noSceneImage: true,
         requiresHiddenLocation: 'hidden_junggoo_hotel_kitchen',
         firstEnterReward: {
           claimKey: 'sofitel_pantry_first',
@@ -273,7 +271,6 @@ export const LANDMARK_DATA = {
         icon: '🏛️',
         desc: '시장 북쪽 태평로 건너 시청 본관. 시장실 벽 뒤에 금고가 통째로 박혀 있다.',
         dangerMod: 0.3,
-        noSceneImage: true,
         requiresHiddenLocation: 'hidden_junggoo_city_hall_safe',
         firstEnterReward: {
           claimKey: 'city_hall_safe_first',
@@ -633,7 +630,6 @@ export const LANDMARK_DATA = {
         icon: '🔨',
         desc: '공장지대 안쪽 3층. 문패 없이 공구만 벽 한 면을 채운 방.',
         dangerMod: 0.15,
-        noSceneImage: true,
         requiresHiddenLocation: 'hidden_seongdong_forge_master',
         firstEnterReward: {
           claimKey: 'master_workshop_first',
@@ -654,7 +650,6 @@ export const LANDMARK_DATA = {
         icon: '🌉',
         desc: '공장지대 서쪽 강변길 끝, 동호대교 교각 사이. 플라스틱 박스와 낡은 침낭이 2년치 자리를 지키고 있다.',
         dangerMod: 0.05,
-        noSceneImage: true,
         requiresHiddenLocation: 'hidden_yangcheon_dongho_bridge',
         firstEnterReward: {
           claimKey: 'dongho_shelter_first',
@@ -1002,7 +997,6 @@ export const LANDMARK_DATA = {
         icon: '🧵',
         desc: '의료원 뒤편 봉제골목 안쪽. 셔터가 반쯤 내려간 작업실에 재봉틀 여섯 대가 그대로 있다.',
         dangerMod: 0.08,
-        noSceneImage: true,
         requiresHiddenLocation: 'hidden_dongdaemun_secret_workshop',
         firstEnterReward: {
           claimKey: 'dongdaemun_workshop_first',
@@ -1207,7 +1201,6 @@ export const LANDMARK_DATA = {
         icon: '💧',
         desc: '용마산 능선 너머 배수지 계통의 중앙 제어실. 급수 도면이 벽 전체를 덮고 있다.',
         dangerMod: 0.15,
-        noSceneImage: true,
         requiresHiddenLocation: 'hidden_jungrang_water_treatment',
         firstEnterReward: {
           claimKey: 'jungrang_control_first',
@@ -1379,7 +1372,6 @@ export const LANDMARK_DATA = {
         icon: '🔬',
         desc: '이공대 건물 아래 봉인된 실험실. 배양기 전원이 아직 들어와 있다.',
         dangerMod: 0.12,
-        noSceneImage: true,
         requiresHiddenLocation: 'hidden_seongbuk_university_bunker',
         firstEnterReward: {
           claimKey: 'seongbuk_bunker_first',
