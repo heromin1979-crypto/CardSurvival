@@ -88,6 +88,16 @@ describe('중복 지급 차단', () => {
 
 describe('이관된 세부장소 — 데이터 정합성', () => {
   const subs = Object.entries(MIGRATED).map(([h, lm]) => [h, subFor(lm, h)]);
+  const withSceneImage = new Set([
+    'sl_jongno_royal_vault',
+    'sl_yongsan_armory',
+    'sl_gwangjin_zoo_lab',
+    'sl_seodaemun_p4_lab',
+    'sl_gwanak_reactor',
+    'sl_songpa_penthouse',
+    'sl_63_helipad',
+    'sl_gangseo_hangar',
+  ]);
 
   it.each(subs)('%s 보상·루팅이 실존 아이템을 가리킨다', (_h, sub) => {
     for (const it of sub.firstEnterReward?.items ?? []) {
@@ -98,9 +108,10 @@ describe('이관된 세부장소 — 데이터 정합성', () => {
     }
   });
 
-  // 이번 라운드 이관분만 아이콘 폴백을 쓴다. 동작구 벙커는 먼저 이관돼
-  // 배경 이미지 정책이 정해지기 전에 만들어졌다.
-  it.each(subs.filter(([h]) => h !== 'hidden_dongjak_cemetery_vault'))(
+  // 장면 이미지가 아직 없는 이관 장소만 아이콘 폴백을 쓴다.
+  // 동작구 벙커는 배경 이미지 정책이 정해지기 전에 먼저 이관됐다.
+  it.each(subs.filter(([h, sub]) =>
+    h !== 'hidden_dongjak_cemetery_vault' && !withSceneImage.has(sub.id)))(
     '%s 는 배경 이미지 미제작이라 아이콘 폴백을 쓴다', (_h, sub) => {
     expect(sub.noSceneImage).toBe(true);
     expect(sub.icon).toBeTruthy();

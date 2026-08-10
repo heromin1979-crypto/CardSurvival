@@ -45,7 +45,6 @@ export const LANDMARK_DATA = {
         icon: '👑',
         desc: '근정전 박석 아래 도면에 없는 계단. 항온항습 설비가 여태 돌고 있다.',
         dangerMod: 0.18,
-        noSceneImage: true,
         requiresHiddenLocation: 'hidden_jongno_royal_vault',
         firstEnterReward: {
           claimKey: 'jongno_vault_first',
@@ -450,7 +449,6 @@ export const LANDMARK_DATA = {
         icon: '🔫',
         desc: '기념관 담장 너머 옛 기지 구역. 전자식 잠금이 예비 전원으로 버티고 있다.',
         dangerMod: 0.35,
-        noSceneImage: true,
         requiresHiddenLocation: 'hidden_yongsan_us_armory',
         firstEnterReward: {
           claimKey: 'yongsan_armory_first',
@@ -832,7 +830,6 @@ export const LANDMARK_DATA = {
         icon: '🐯',
         desc: '사육사 구역 안쪽 검역동. 우리 문이 안에서 뜯겨 있다.',
         dangerMod: 0.2,
-        noSceneImage: true,
         bossId: 'boss_mutant_alpha_tiger',
         requiresHiddenLocation: 'hidden_gwangjin_zoo_laboratory',
         firstEnterReward: {
@@ -2279,7 +2276,6 @@ export const LANDMARK_DATA = {
         icon: '🧫',
         desc: '본관 지하 4층, 이중 기밀문 안쪽. 음압 경보가 아직 낮게 울리고 있다.',
         dangerMod: 0.3,
-        noSceneImage: true,
         requiresHiddenLocation: 'hidden_seodaemun_severance_lab',
         firstEnterReward: {
           claimKey: 'p4_lab_first',
@@ -2837,7 +2833,6 @@ export const LANDMARK_DATA = {
         icon: '✈️',
         desc: '활주로 끝 정비 격납고. 반쯤 분해된 기체가 잭에 올라간 채 멈춰 있다.',
         dangerMod: 0.25,
-        noSceneImage: true,
         requiresHiddenLocation: 'hidden_gangseo_airport_hangar',
         firstEnterReward: {
           claimKey: 'gimpo_hangar_first',
@@ -3666,7 +3661,6 @@ export const LANDMARK_DATA = {
         icon: '🚁',
         desc: '기체는 없지만 포장과 H 도색은 멀짱하다. 유도등만 살리면 구조기가 내려앉을 수 있다.',
         dangerMod: 0.15,
-        noSceneImage: true,
         requiresHiddenLocation: 'hidden_yeongdeungpo_63_helipad',
         firstEnterReward: {
           claimKey: 'yeongdeungpo_63_helipad_first',
@@ -4103,7 +4097,6 @@ export const LANDMARK_DATA = {
         icon: '☢️',
         desc: '공대 뒤편 격납 건물. 노심은 정지했지만 계기판에는 아직 불이 들어온다.',
         dangerMod: 0.35,
-        noSceneImage: true,
         requiresHiddenLocation: 'hidden_gwanak_snu_reactor',
         firstEnterReward: {
           claimKey: 'snu_reactor_first',
@@ -4710,7 +4703,6 @@ export const LANDMARK_DATA = {
         icon: '🏙',
         desc: '계단 123층 끝. 통유리 앞에 망원경과 압정 꽂힌 서울 지도가 놓여 있다.',
         dangerMod: 0.2,
-        noSceneImage: true,
         bossId: 'boss_penthouse_survivor',
         requiresHiddenLocation: 'hidden_songpa_lotte_penthouse',
         firstEnterReward: {
