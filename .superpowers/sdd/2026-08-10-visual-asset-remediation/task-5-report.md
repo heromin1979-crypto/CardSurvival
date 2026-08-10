@@ -27,3 +27,9 @@
 ## 커밋
 
 `feat: add first-pass board ui icons`
+
+## 보안 후속 수정
+
+- 리뷰에서 확인된 저장 데이터 기반 XSS 회귀를 수정했다. `WeatherSystem._updateWeatherHUD()`와 `Basecamp._onEnter()`는 이제 아이콘 span만 `innerHTML`로 삽입하고, 날씨명과 구역명은 `append()`로 텍스트 노드로 추가한다.
+- `tests/unit/WeatherHudEscaping.test.js`는 저장된 날씨명이 `<img src=x onerror=alert(1)>`일 때 태그가 DOM으로 파싱되지 않고 텍스트로 표시되는지 검증한다. 구현 전에는 실제 `img` 노드가 생성되어 예상대로 RED 실패했고, 수정 후 `UiIcon` 테스트와 함께 5/5 통과했다.
+- 수정 파일 `js/systems/WeatherSystem.js`, `js/screens/Basecamp.js`는 `node --check`를 통과했고, `git diff --check`도 통과했다.

@@ -64,7 +64,8 @@ const Basecamp = {
     if (districtEl) {
       const distId = GameState.location.currentDistrict ?? 'mapo';
       const node   = GameData?.nodes?.[distId];
-      districtEl.innerHTML = `${uiIcon('location')} ${I18n.districtName(distId, node?.name ?? distId)}`;
+      districtEl.innerHTML = uiIcon('location');
+      districtEl.append(` ${I18n.districtName(distId, node?.name ?? distId)}`);
     }
     CraftUI.init();
     EquipmentModal.init();

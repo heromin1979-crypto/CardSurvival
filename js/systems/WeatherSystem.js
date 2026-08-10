@@ -274,7 +274,8 @@ const WeatherSystem = {
   _updateWeatherHUD(weather) {
     const el = document.getElementById('weather-display');
     if (!el) return;
-    el.innerHTML = `${uiIcon('weather')} ${weather.name}`;
+    el.innerHTML = uiIcon('weather');
+    el.append(` ${weather.name}`);
     el.dataset.weather = weather.id;
   },
 
