@@ -5,6 +5,7 @@
 import EventBus  from '../core/EventBus.js';
 import GameState from '../core/GameState.js';
 import GameData from '../data/GameData.js';
+import { uiIcon } from '../ui/UiIcon.js';
 
 // ── 계절별 날씨 테이블 ─────────────────────────────────────────
 
@@ -273,7 +274,7 @@ const WeatherSystem = {
   _updateWeatherHUD(weather) {
     const el = document.getElementById('weather-display');
     if (!el) return;
-    el.textContent = `${weather.icon} ${weather.name}`;
+    el.innerHTML = `${uiIcon('weather')} ${weather.name}`;
     el.dataset.weather = weather.id;
   },
 
@@ -306,7 +307,7 @@ const WeatherSystem = {
   _updateTemperatureHUD(temp) {
     const el = document.getElementById('outdoor-temp');
     if (!el) return;
-    el.textContent = `🌡 ${temp}°C`;
+    el.innerHTML = `${uiIcon('temperature')} ${temp}°C`;
 
     let cls = 'bc-temp-display';
     if      (temp <= -5) cls += ' temp-very-cold';

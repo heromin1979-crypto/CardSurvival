@@ -26,6 +26,7 @@ import SeoulMapModal   from '../ui/SeoulMapModal.js';
 import QuestPanel      from '../ui/QuestPanel.js';
 import GameData        from '../data/GameData.js';
 import { breadcrumbHTML } from '../ui/locationPath.js';
+import { uiIcon } from '../ui/UiIcon.js';
 
 const Basecamp = {
   _el: null,
@@ -78,7 +79,7 @@ const Basecamp = {
   // 사이드바 위치 표시 갱신 — 📍 구 › 랜드마크 › 세부장소
   _updateLocation() {
     const el = document.getElementById('bc-district-name');
-    if (el) el.innerHTML = `📍 ${breadcrumbHTML()}`;
+    if (el) el.innerHTML = `${uiIcon('location')} ${breadcrumbHTML()}`;
   },
 
   _onEnter() {
@@ -107,7 +108,7 @@ const Basecamp = {
     const seasonInfo = SeasonSystem.getSeasonInfo();
     const seasonBadge = document.getElementById('season-badge');
     if (seasonBadge) {
-      seasonBadge.textContent = `${seasonInfo.icon} ${seasonInfo.name}`;
+      seasonBadge.innerHTML = `${uiIcon('season')} ${seasonInfo.name}`;
       seasonBadge.dataset.season = seasonInfo.id;
     }
     // 날씨 표시 갱신
@@ -126,7 +127,7 @@ const Basecamp = {
         <!-- Minimap -->
         <div class="bc-minimap" data-action="open-seoul-map" title="${I18n.t('basecamp.viewMap')}">
           <div class="bc-minimap-header">
-            <span>🗺</span>
+            ${uiIcon('map')}
             <span class="bc-minimap-label">${I18n.t('basecamp.cityMap')}</span>
             <span id="map-fragment-badge" class="bc-map-fragment-badge"></span>
           </div>
@@ -149,11 +150,11 @@ const Basecamp = {
           </div>
           <!-- 계절 + 날씨 행 -->
           <div class="bc-season-weather-row">
-            <div id="season-badge" class="bc-season-badge" data-season="spring">🌸 봄</div>
-            <div id="weather-display" class="bc-weather-badge" data-weather="sunny">☀️ 맑음</div>
+            <div id="season-badge" class="bc-season-badge" data-season="spring">${uiIcon('season')} 봄</div>
+            <div id="weather-display" class="bc-weather-badge" data-weather="sunny">${uiIcon('weather')} 맑음</div>
           </div>
           <!-- 온도 표시 -->
-          <div id="outdoor-temp" class="bc-temp-display temp-normal">🌡 --°C</div>
+          <div id="outdoor-temp" class="bc-temp-display temp-normal">${uiIcon('temperature')} --°C</div>
           <!-- 날씨 위젯 (힌트·이벤트) -->
           <div id="weather-widget" class="bc-weather-widget"></div>
         </div>
@@ -163,7 +164,7 @@ const Basecamp = {
           <div class="bc-avatar">👤</div>
           <div class="bc-char-info">
             <div class="bc-char-name" id="bc-char-name">${I18n.t('basecamp.survivor')}</div>
-            <div class="bc-char-sub" id="bc-district-name">📍 마포구</div>
+            <div class="bc-char-sub" id="bc-district-name">${uiIcon('location')} 마포구</div>
           </div>
           <!-- 위험 stat 경고 아이콘 (사이드바 축약 표시) -->
           <div class="bc-char-danger-icons" id="bc-danger-icons"></div>
@@ -266,7 +267,7 @@ const Basecamp = {
       <!-- Quest modal -->
       <div class="modal-overlay" id="quest-modal">
         <div class="modal-box" style="max-width:520px;max-height:85vh;">
-          <div class="modal-title">📋 퀘스트</div>
+          <div class="modal-title">${uiIcon('quest')} 퀘스트</div>
           <div id="quest-modal-mount" style="flex:1;overflow-y:auto;padding:4px 0;"></div>
           <div class="modal-actions">
             <button class="modal-btn" id="btn-quest-close">닫기</button>
@@ -292,7 +293,7 @@ const Basecamp = {
         ? `<button class="toolbar-btn" id="btn-bc-er">🏥 응급실</button>`
         : '';
       section.innerHTML = `
-        <div class="bc-toolbar-label">🏕 베이스캠프</div>
+        <div class="bc-toolbar-label">${uiIcon('basecamp')} 베이스캠프</div>
         <button class="toolbar-btn primary" id="btn-bc-manage">🔧 거점 관리</button>
         <button class="toolbar-btn" id="btn-bc-companions">👥 동료 (${(GameState.companions ?? []).length})</button>
         <button class="toolbar-btn" id="btn-bc-craft">제작</button>
@@ -319,7 +320,7 @@ const Basecamp = {
       const buildSection = GameState.basecamp.built
         ? ''
         : GameState.time.day >= 10
-          ? `<div class="bc-toolbar-label bc-toolbar-label--camp">🏕 안전 가옥</div>
+          ? `<div class="bc-toolbar-label bc-toolbar-label--camp">${uiIcon('basecamp')} 안전 가옥</div>
              <button class="toolbar-btn btn-build-highlight" id="btn-build-base">${I18n.t('basecamp.buildBase')}</button>`
           : '';
       const erBtn = EmergencyRoomModal.isAvailable()
@@ -327,8 +328,8 @@ const Basecamp = {
         : '';
       section.innerHTML = `
         <div class="bc-toolbar-label">⚡ 행동</div>
-        <button class="toolbar-btn primary" id="btn-explore">🔍 탐색</button>
-        <button class="toolbar-btn" id="btn-quest">📋 퀘스트</button>
+        <button class="toolbar-btn primary" id="btn-explore">${uiIcon('explore')} 탐색</button>
+        <button class="toolbar-btn" id="btn-quest">${uiIcon('quest')} 퀘스트</button>
         <button class="toolbar-btn" id="btn-companions">👥 동료 (${(GameState.companions ?? []).length})</button>
         <button class="toolbar-btn" id="btn-craft">${I18n.t('basecamp.craft')}</button>
         <button class="toolbar-btn" id="btn-skills">${I18n.t('basecamp.skills')}</button>
