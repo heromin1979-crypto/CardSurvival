@@ -3555,10 +3555,12 @@ export const LANDMARK_DATA = {
   },
   // 여의도 63빌딩 — 강민준의 방송(KBS)과 탈출(헬리패드)이 같은 구에서 이어진다.
   // 옥상 헬리패드는 hidden_yeongdeungpo_63_helipad를 발견해야 나타난다.
-  lm_63_building: {
-    name: '63빌딩',
-    desc: '여의도 63빌딩. 금빛 외벽이 그을렸지만 구조물은 성하다. 상층에서 한강 이남까지 내려다보인다.',
-    icon: '🏢',
+  // 여의도 KBS 본관. 강민준의 서사가 방송(KBS)에서 시작해 탈출(63빌딩)로
+  // 끝나므로 두 건물을 같은 섬의 별개 랜드마크로 둔다.
+  lm_kbs: {
+    name: 'KBS 본관',
+    desc: '여의도 방송국. 로비 전광판이 마지막 자막에서 멈춰 있다. 송신탑은 아직 서 있다.',
+    icon: '📺',
     districts: [
       'yeongdeungpo',
     ],
@@ -3567,7 +3569,7 @@ export const LANDMARK_DATA = {
         id: 'sl_yeongdeungpo_kbs_studio',
         name: 'KBS 비밀 방송실',
         icon: '📡',
-        desc: '같은 여의도, 강 건너 방송국 지하. 비상 송출 계통이 따로 살아 있다.',
+        desc: '본관 지하 3층 비상 스튜디오. 정규 계통과 분리된 송출 설비가 예비 전원으로 살아 있다.',
         dangerMod: 0.15,
         noSceneImage: true,
         requiresHiddenLocation: 'hidden_yeongdeungpo_kbs_broadcast',
@@ -3584,6 +3586,53 @@ export const LANDMARK_DATA = {
           { id: 'flashlight',          weight: 4 },
         ],
       },
+      {
+        id: 'sl_kbs_lobby',
+        name: '로비·분장실',
+        icon: '🎬',
+        desc: '출입증이 바닥에 흩어져 있다. 분장실 거울 앞 의자가 아직 돌아간 채다.',
+        dangerMod: 0.1,
+        lootTable: [
+          { id: 'cloth',      weight: 6 },
+          { id: 'battery',    weight: 5 },
+          { id: 'flashlight', weight: 3 },
+        ],
+      },
+      {
+        id: 'sl_kbs_newsroom',
+        name: '보도국',
+        icon: '🗞',
+        desc: '모니터 수십 대가 꺼진 채 늘어서 있다. 화이트보드에 마지막 큐시트가 남아 있다.',
+        dangerMod: 0.15,
+        lootTable: [
+          { id: 'survivor_note',    weight: 6 },
+          { id: 'electronic_parts', weight: 4 },
+          { id: 'paper',            weight: 4 },
+        ],
+      },
+      {
+        id: 'sl_kbs_antenna',
+        name: '송신탑 기저부',
+        icon: '📶',
+        desc: '옥상으로 이어지는 철제 계단. 급전선이 아직 팽팽하다.',
+        dangerMod: 0.2,
+        lootTable: [
+          { id: 'wire',        weight: 7 },
+          { id: 'scrap_metal', weight: 5 },
+          { id: 'copper_wire', weight: 3 },
+        ],
+      },
+    ],
+  },
+
+  lm_63_building: {
+    name: '63빌딩',
+    desc: '여의도 63빌딩. 금빛 외벽이 그을렸지만 구조물은 성하다. 상층에서 한강 이남까지 내려다보인다.',
+    icon: '🏢',
+    districts: [
+      'yeongdeungpo',
+    ],
+    subLocations: [
       {
         id: 'sl_63_lobby',
         name: '1층 로비',
