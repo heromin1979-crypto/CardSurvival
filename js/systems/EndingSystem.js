@@ -241,6 +241,22 @@ const EndingSystem = {
     }
   },
 
+  resolveEndingSubCode(id, gs = GameState) {
+    const meta = this.getUnlockMeta();
+    const savedSubEnding = meta[id]?.subEnding;
+    if (savedSubEnding != null) return savedSubEnding;
+
+    const ending = ENDINGS[id];
+    const subEnding = this.getCharacterEndingCode(ending?.characterId, gs?.flags);
+    if (subEnding == null) return null;
+
+    if (meta[id]) {
+      meta[id] = { ...meta[id], subEnding };
+      try { localStorage.setItem(STORAGE_META_KEY, JSON.stringify(meta)); } catch { /* ignore */ }
+    }
+    return subEnding;
+  },
+
   getAllWithStatus() {
     const unlocked = this.getUnlocked();
     return Object.values(ENDINGS).map(e => ({ ...e, unlocked: unlocked.includes(e.id) }));

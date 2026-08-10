@@ -4,9 +4,11 @@ import { getEndingImage } from '../../js/data/endingImages.js';
 import FIREFIGHTER_BRANCH_A from '../../js/data/mainQuests/firefighter/branch_a.js';
 import FIREFIGHTER_BRANCH_B from '../../js/data/mainQuests/firefighter/branch_b.js';
 import HOMELESS_BRANCH_B from '../../js/data/mainQuests/homeless/branch_b.js';
+import ENDINGS from '../../js/data/endings.js';
 import GameState from '../../js/core/GameState.js';
 import EndingSystem from '../../js/systems/EndingSystem.js';
 import Ending from '../../js/screens/Ending.js';
+import EndingGallery from '../../js/screens/EndingGallery.js';
 
 let originalFlags;
 
@@ -112,6 +114,20 @@ describe('character ending image lookup', () => {
 
     expect(EndingSystem.getUnlockMeta().mq_firefighter_b3)
       .toEqual({ day: 42, subEnding: 'a1_shelter' });
+  });
+
+  it('repairs and renders a legacy firefighter gallery entry without unlocking again', () => {
+    localStorage.setItem('CARD_SURVIVAL_ENDINGS_v1_meta', JSON.stringify({
+      mq_firefighter_b3: { day: 42, subEnding: null },
+    }));
+    GameState.flags = { fire_ending: 'b3_escape' };
+
+    const card = EndingGallery._buildCard(ENDINGS.mq_firefighter_b3, true, 42);
+
+    expect(card.querySelector('.eg-card-thumb')?.getAttribute('src'))
+      .toBe('assets/endings/firefighter_b3_escape.png');
+    expect(EndingSystem.getUnlockMeta().mq_firefighter_b3)
+      .toEqual({ day: 42, subEnding: 'b3_escape' });
   });
 
   it('resolves every active firefighter branch code through its real storage key', () => {

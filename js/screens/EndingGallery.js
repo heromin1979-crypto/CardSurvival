@@ -193,8 +193,7 @@ const EndingGallery = {
       // 캐릭터 엔딩이면 서브엔딩 이미지 썸네일 표시
       let thumbHtml = '';
       if (ending.category === 'character' && ending.characterId) {
-        const unlockMeta  = EndingSystem.getUnlockMeta();
-        const subEndCode  = unlockMeta[ending.id]?.subEnding ?? null;
+        const subEndCode  = EndingSystem.resolveEndingSubCode(ending.id);
         const imgData     = subEndCode ? getEndingImage(ending.characterId, subEndCode) : null;
         if (imgData) {
           thumbHtml = `<img class="eg-card-thumb" src="${imgData.src}" alt="${imgData.alt}" loading="lazy">`;
@@ -246,8 +245,7 @@ const EndingGallery = {
     if (!isUnlocked) return;
 
     const meta        = CATEGORY_META[ending.category] ?? { color: '#8e44ad', bg: 'rgba(142,68,173,0.08)', icon: '👤', labelKey: ending.category };
-    const unlockMeta  = EndingSystem.getUnlockMeta();
-    const subEndCode  = unlockMeta[ending.id]?.subEnding ?? null;
+    const subEndCode  = EndingSystem.resolveEndingSubCode(ending.id);
     const imgData     = subEndCode ? getEndingImage(ending.characterId, subEndCode) : null;
     const preview     = ending.narrative ?? [];
 

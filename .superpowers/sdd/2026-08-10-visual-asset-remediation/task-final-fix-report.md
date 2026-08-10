@@ -64,3 +64,14 @@ npm.cmd test
 - GREEN: `tests/unit/EndingImages.test.js` 9개 전부 통과.
 - 지정 검증: 4개 파일, 284개 테스트 통과. 전체 suite는 187개 파일, 2,448개 테스트 통과 및 3개 skipped.
 - 별도 커밋 메시지: `fix: backfill missing ending gallery metadata`
+
+## 최종 재검토: 갤러리 read-path lazy migration
+
+- `unlockEnding()` 재호출 없이 기존 `{ day: 42, subEnding: null }` 저장을 `EndingGallery._buildCard()`로 직접 렌더링하는 회귀 테스트를 추가했다.
+- RED: `tests/unit/EndingImages.test.js` 10개 중 1개 실패. 실제 갤러리 카드의 이미지 `src`가 `undefined`였다.
+- `EndingSystem.resolveEndingSubCode()`는 저장된 유효 코드를 우선 사용하고, nullish인 경우에만 현재 `GameState.flags`의 실제 키로 해석한다.
+- 기존 메타 항목이 있으면 `subEnding`만 lazy backfill하며 `day`와 유효한 기존 코드는 보존한다.
+- 갤러리 카드와 lightbox가 동일한 resolution API를 사용한다.
+- GREEN: `tests/unit/EndingImages.test.js` 10개 전부 통과.
+- 지정 검증: 4개 파일, 285개 테스트 통과. 전체 suite는 187개 파일, 2,449개 테스트 통과 및 3개 skipped.
+- 별도 커밋 메시지: `fix: migrate ending metadata on gallery read`
