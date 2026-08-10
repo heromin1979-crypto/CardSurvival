@@ -19,6 +19,16 @@
 .ui-icon--weather { -webkit-mask-image: url('../assets/images/ui/icons/weather.svg'); mask-image: url('../assets/images/ui/icons/weather.svg'); }
 .ui-icon--item { -webkit-mask-image: url('../assets/images/ui/icons/item.svg'); mask-image: url('../assets/images/ui/icons/item.svg'); }
 .ui-icon--injury { -webkit-mask-image: url('../assets/images/ui/icons/injury.svg'); mask-image: url('../assets/images/ui/icons/injury.svg'); }
+.ui-icon--action { -webkit-mask-image: url('../assets/images/ui/icons/action.svg'); mask-image: url('../assets/images/ui/icons/action.svg'); }
+.ui-icon--manage { -webkit-mask-image: url('../assets/images/ui/icons/manage.svg'); mask-image: url('../assets/images/ui/icons/manage.svg'); }
+.ui-icon--companion { -webkit-mask-image: url('../assets/images/ui/icons/companion.svg'); mask-image: url('../assets/images/ui/icons/companion.svg'); }
+.ui-icon--craft { -webkit-mask-image: url('../assets/images/ui/icons/craft.svg'); mask-image: url('../assets/images/ui/icons/craft.svg'); }
+.ui-icon--skills { -webkit-mask-image: url('../assets/images/ui/icons/skills.svg'); mask-image: url('../assets/images/ui/icons/skills.svg'); }
+.ui-icon--rest { -webkit-mask-image: url('../assets/images/ui/icons/rest.svg'); mask-image: url('../assets/images/ui/icons/rest.svg'); }
+.ui-icon--health { -webkit-mask-image: url('../assets/images/ui/icons/health.svg'); mask-image: url('../assets/images/ui/icons/health.svg'); }
+.ui-icon--build { -webkit-mask-image: url('../assets/images/ui/icons/build.svg'); mask-image: url('../assets/images/ui/icons/build.svg'); }
+.ui-icon--warning { -webkit-mask-image: url('../assets/images/ui/icons/warning.svg'); mask-image: url('../assets/images/ui/icons/warning.svg'); }
+.ui-icon--lock { -webkit-mask-image: url('../assets/images/ui/icons/lock.svg'); mask-image: url('../assets/images/ui/icons/lock.svg'); }
 
 .data-icon {
   display: inline-block;

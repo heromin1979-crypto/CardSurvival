@@ -9,6 +9,16 @@ const ICON_NAMES = new Set([
   'weather',
   'item',
   'injury',
+  'action',
+  'manage',
+  'companion',
+  'craft',
+  'skills',
+  'rest',
+  'health',
+  'build',
+  'warning',
+  'lock',
 ]);
 
 function escapeHtml(value) {

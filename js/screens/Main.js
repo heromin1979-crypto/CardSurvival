@@ -294,12 +294,12 @@ const Basecamp = {
         : '';
       section.innerHTML = `
         <div class="bc-toolbar-label">${uiIcon('basecamp')} 베이스캠프</div>
-        <button class="toolbar-btn primary" id="btn-bc-manage">🔧 거점 관리</button>
-        <button class="toolbar-btn" id="btn-bc-companions">👥 동료 (${(GameState.companions ?? []).length})</button>
-        <button class="toolbar-btn" id="btn-bc-craft">제작</button>
-        <button class="toolbar-btn" id="btn-bc-skills">숙련도</button>
+        <button class="toolbar-btn primary" id="btn-bc-manage">${uiIcon('manage')} 거점 관리</button>
+        <button class="toolbar-btn" id="btn-bc-companions">${uiIcon('companion')} 동료 (${(GameState.companions ?? []).length})</button>
+        <button class="toolbar-btn" id="btn-bc-craft">${uiIcon('craft')} 제작</button>
+        <button class="toolbar-btn" id="btn-bc-skills">${uiIcon('skills')} 숙련도</button>
         ${bcErBtn}
-        <button class="toolbar-btn" id="btn-bc-rest">휴식</button>
+        <button class="toolbar-btn" id="btn-bc-rest">${uiIcon('rest')} 휴식</button>
         <button class="toolbar-btn" id="btn-bc-exit">나가기</button>
       `;
       section.querySelector('#btn-bc-manage')?.addEventListener('click', () => BasecampModal.open());
@@ -321,20 +321,20 @@ const Basecamp = {
         ? ''
         : GameState.time.day >= 10
           ? `<div class="bc-toolbar-label bc-toolbar-label--camp">${uiIcon('basecamp')} 안전 가옥</div>
-             <button class="toolbar-btn btn-build-highlight" id="btn-build-base">${I18n.t('basecamp.buildBase')}</button>`
+             <button class="toolbar-btn btn-build-highlight" id="btn-build-base">${uiIcon('build')} ${I18n.t('basecamp.buildBase')}</button>`
           : '';
       const erBtn = EmergencyRoomModal.isAvailable()
         ? `<button class="toolbar-btn" id="btn-er">🏥 응급실</button>`
         : '';
       section.innerHTML = `
-        <div class="bc-toolbar-label">⚡ 행동</div>
+        <div class="bc-toolbar-label">${uiIcon('action')} 행동</div>
         <button class="toolbar-btn primary" id="btn-explore">${uiIcon('explore')} 탐색</button>
         <button class="toolbar-btn" id="btn-quest">${uiIcon('quest')} 퀘스트</button>
-        <button class="toolbar-btn" id="btn-companions">👥 동료 (${(GameState.companions ?? []).length})</button>
-        <button class="toolbar-btn" id="btn-craft">${I18n.t('basecamp.craft')}</button>
-        <button class="toolbar-btn" id="btn-skills">${I18n.t('basecamp.skills')}</button>
+        <button class="toolbar-btn" id="btn-companions">${uiIcon('companion')} 동료 (${(GameState.companions ?? []).length})</button>
+        <button class="toolbar-btn" id="btn-craft">${uiIcon('craft')} ${I18n.t('basecamp.craft')}</button>
+        <button class="toolbar-btn" id="btn-skills">${uiIcon('skills')} ${I18n.t('basecamp.skills')}</button>
         ${erBtn}
-        <button class="toolbar-btn" id="btn-rest">${I18n.t('basecamp.rest')}</button>
+        <button class="toolbar-btn" id="btn-rest">${uiIcon('rest')} ${I18n.t('basecamp.rest')}</button>
         ${buildSection}
       `;
       section.querySelector('#btn-explore')?.addEventListener('click', () => ExploreSystem.exploreCurrentDistrict());
