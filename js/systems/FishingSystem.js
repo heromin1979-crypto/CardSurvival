@@ -151,7 +151,10 @@ const FishingSystem = {
 
     const weather = gs.weather?.id ?? 'sunny';
     catchChance  += WEATHER_MOD[weather] ?? 0;
-    catchChance   = Math.min(0.90, Math.max(0.05, catchChance));
+    // 상한은 두 개다. B.skillCatchChanceCap(0.70)은 스킬 곡선이 Lv.20에
+    // 도달하는 값이고, 여기서 쓰는 것은 장비·미끼·날씨까지 더한 최종 상한이다.
+    // 0.70으로 자르면 Lv.20 이후 낚싯대와 미끼가 통째로 무의미해진다.
+    catchChance   = Math.min(B.hardCatchChanceCap, Math.max(B.minCatchChance, catchChance));
     const pct = Math.round(catchChance * 100);
 
     // TP 소비

@@ -498,7 +498,9 @@ const BAL_HELP = {
   // fishing
   tpCostPerCast: '낚시 1회 TP 비용.',
   baseCatchChance: '기본 어획 확률(Lv.0).',
-  maxCatchChance: '최대 어획 확률(Lv.20).',
+  skillCatchChanceCap: '스킬 곡선이 Lv.20에 도달하는 어획 확률. 장비·미끼·날씨 보정은 포함하지 않는다 — 실제 상한은 hardCatchChanceCap이다.',
+  hardCatchChanceCap: '장비·미끼·날씨를 모두 더한 뒤 적용하는 최종 어획 확률 상한. 이 값을 스킬 도달점까지 낮추면 상위 낚싯대와 미끼가 무의미해진다.',
+  minCatchChance: '어획 확률 하한. 악천후·맨손이어도 이 아래로는 내려가지 않는다.',
   baitWormBonus: '지렁이 미끼 어획률 보너스.',
   baitInsectBonus: '곤충 미끼 어획률 보너스.',
   rodBasicBonus: '기본 낚싯대 어획률 보너스.',
