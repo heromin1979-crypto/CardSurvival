@@ -287,10 +287,8 @@ describe('district 필드명 — 오기는 장소를 통째로 죽인다', () =>
     }
   });
 
-  it('오기가 늘어나지 않는다', () => {
-    // 남은 부채: 남대문시장 냉동 창고. 보스(boss_chef_nemesis)가 붙어 있어
-    // 필드명만 고치면 발견 즉시 보스전이 시작되므로 배선과 함께 처리한다.
-    expect(withTypo.map(l => l.id)).toEqual(['hidden_namdaemun_cold_storage']);
+  it('오기를 쓰는 장소가 하나도 없다', () => {
+    expect(withTypo.map(l => l.id)).toEqual([]);
   });
 });
 

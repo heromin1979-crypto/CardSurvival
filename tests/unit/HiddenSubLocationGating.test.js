@@ -116,14 +116,17 @@ describe('발견 시 보상 위임', () => {
   });
 
   it('세부장소가 없는 장소는 기존대로 보상을 지급한다', () => {
-    // 이관이 진행 중이라 특정 장소를 박아두면 그 장소가 이관될 때마다 깨진다.
-    // 아직 이관되지 않은 아무 장소나 골라 즉시 지급 경로가 살아 있는지만 본다.
-    const [id, loc] = Object.entries(HIDDEN_LOCATIONS)
-      .find(([, l]) => !l.subLocationId && l.rewards?.length) ?? [];
-    expect(id, '미이관 장소가 하나도 없다면 이 경로 자체를 제거해야 한다').toBeDefined();
+    // 30곳 모두 이관돼 실제 데이터에는 이 경로를 타는 장소가 없다. 코드는
+    // 남아 있으므로 합성 장소로 즉시 지급 분기가 살아 있는지 확인한다.
     freshFlags();
+    const synthetic = {
+      id: 'test_legacy_location', name: '테스트 즉시지급 장소',
+      district: 'junggoo', unlockConditions: {},
+      rewards: [{ definitionId: 'bandage', qty: 1 }],
+      lootTable: [], bossId: null,
+    };
     const before = GameState.getBoardCards().length;
-    HiddenElementSystem._discoverHiddenLocation(id, loc);
+    HiddenElementSystem._discoverHiddenLocation(synthetic.id, synthetic);
     expect(GameState.getBoardCards().length).toBeGreaterThan(before);
   });
 

@@ -220,6 +220,30 @@ export const LANDMARK_DATA = {
     icon: '🏪',
     subLocations: [
       {
+        id: 'sl_junggoo_cold_storage',
+        name: '냉동 창고',
+        icon: '❄️',
+        desc: '시장 지하 대형 냉동고. 발전기가 아직 돌아 안쪽만 영하로 남아 있다.',
+        dangerMod: 0.3,
+        noSceneImage: true,
+        bossId: 'boss_chef_nemesis',
+        requiresHiddenLocation: 'hidden_namdaemun_cold_storage',
+        firstEnterReward: {
+          claimKey: 'cold_storage_first',
+          items: [
+            { id: 'virus_sample',          qty: 1 },
+            { id: 'immunity_serum',        qty: 1 },
+          ],
+        },
+        lootTable: [
+          { id: 'antidote',            weight: 5 },
+          { id: 'rad_blocker',         weight: 4 },
+          { id: 'surgery_kit',         weight: 4 },
+          { id: 'antibiotics',         weight: 5 },
+          { id: 'stimulant',           weight: 3 },
+        ],
+      },
+      {
         id: 'sl_junggoo_hotel_pantry',
         name: '호텔 주방 저장고',
         icon: '🍳',
@@ -421,6 +445,27 @@ export const LANDMARK_DATA = {
     icon: '🪖',
     subLocations: [
       {
+        id: 'sl_yongsan_armory',
+        name: '미군기지 무기고',
+        icon: '🔫',
+        desc: '기념관 담장 너머 옛 기지 구역. 전자식 잠금이 예비 전원으로 버티고 있다.',
+        dangerMod: 0.35,
+        noSceneImage: true,
+        requiresHiddenLocation: 'hidden_yongsan_us_armory',
+        firstEnterReward: {
+          claimKey: 'yongsan_armory_first',
+          items: [
+            { id: 'm4_carbine',            qty: 1 },
+          ],
+        },
+        lootTable: [
+          { id: 'pistol_ammo',         weight: 6 },
+          { id: 'shotgun_ammo',        weight: 4 },
+          { id: 'military_ration',     weight: 4 },
+          { id: 'flashbang',           weight: 3 },
+        ],
+      },
+      {
         id: 'yongsan_outdoor',
         name: '야외 전시장',
         icon: '⚓',
@@ -584,6 +629,27 @@ export const LANDMARK_DATA = {
     desc: '서울의 산업 심장부. 가죽 공방, 금속 가공소 등이 밀집해 있다.',
     icon: '🏭',
     subLocations: [
+      {
+        id: 'sl_seongdong_master_workshop',
+        name: '장인의 작업실',
+        icon: '🔨',
+        desc: '공장지대 안쪽 3층. 문패 없이 공구만 벽 한 면을 채운 방.',
+        dangerMod: 0.15,
+        noSceneImage: true,
+        requiresHiddenLocation: 'hidden_seongdong_forge_master',
+        firstEnterReward: {
+          claimKey: 'master_workshop_first',
+          items: [
+            { id: 'master_toolkit',        qty: 1 },
+          ],
+        },
+        lootTable: [
+          { id: 'scrap_metal',         weight: 5 },
+          { id: 'pipe_wrench',         weight: 4 },
+          { id: 'duct_tape',           weight: 5 },
+          { id: 'spring',              weight: 4 },
+        ],
+      },
       {
         id: 'sl_seongdong_bridge_shelter',
         name: '다리 아래 은신처',
@@ -2208,6 +2274,27 @@ export const LANDMARK_DATA = {
     icon: '🏥',
     subLocations: [
       {
+        id: 'sl_seodaemun_p4_lab',
+        name: 'P4 연구실',
+        icon: '🧫',
+        desc: '본관 지하 4층, 이중 기밀문 안쪽. 음압 경보가 아직 낮게 울리고 있다.',
+        dangerMod: 0.3,
+        noSceneImage: true,
+        requiresHiddenLocation: 'hidden_seodaemun_severance_lab',
+        firstEnterReward: {
+          claimKey: 'p4_lab_first',
+          items: [
+            { id: 'virus_sample',          qty: 1 },
+          ],
+        },
+        lootTable: [
+          { id: 'antibiotics',         weight: 5 },
+          { id: 'rad_blocker',         weight: 4 },
+          { id: 'first_aid_kit',       weight: 5 },
+          { id: 'antiseptic',          weight: 5 },
+        ],
+      },
+      {
         id: 'seodaemun_er',
         name: '응급실',
         icon: '🚨',
@@ -2744,6 +2831,27 @@ export const LANDMARK_DATA = {
     desc: '국내선 공항. 화물터미널과 격납고에 다양한 물자가 있을 수 있다.',
     icon: '✈️',
     subLocations: [
+      {
+        id: 'sl_gangseo_hangar',
+        name: '격납고',
+        icon: '✈️',
+        desc: '활주로 끝 정비 격납고. 반쯤 분해된 기체가 잭에 올라간 채 멈춰 있다.',
+        dangerMod: 0.25,
+        noSceneImage: true,
+        requiresHiddenLocation: 'hidden_gangseo_airport_hangar',
+        firstEnterReward: {
+          claimKey: 'gimpo_hangar_first',
+          items: [
+            { id: 'aircraft_parts',        qty: 1 },
+          ],
+        },
+        lootTable: [
+          { id: 'scrap_metal',         weight: 6 },
+          { id: 'electronic_parts',    weight: 5 },
+          { id: 'rope',                weight: 4 },
+          { id: 'fuel_can',            weight: 3 },
+        ],
+      },
       {
         id: 'gangseo_departure',
         name: '출국장',
@@ -3456,6 +3564,27 @@ export const LANDMARK_DATA = {
     ],
     subLocations: [
       {
+        id: 'sl_yeongdeungpo_kbs_studio',
+        name: 'KBS 비밀 방송실',
+        icon: '📡',
+        desc: '같은 여의도, 강 건너 방송국 지하. 비상 송출 계통이 따로 살아 있다.',
+        dangerMod: 0.15,
+        noSceneImage: true,
+        requiresHiddenLocation: 'hidden_yeongdeungpo_kbs_broadcast',
+        firstEnterReward: {
+          claimKey: 'kbs_studio_first',
+          items: [
+            { id: 'broadcast_equipment',   qty: 1 },
+          ],
+        },
+        lootTable: [
+          { id: 'electronic_parts',    weight: 6 },
+          { id: 'wire',                weight: 5 },
+          { id: 'radio',               weight: 3 },
+          { id: 'flashlight',          weight: 4 },
+        ],
+      },
+      {
         id: 'sl_63_lobby',
         name: '1층 로비',
         icon: '🛎',
@@ -3920,6 +4049,27 @@ export const LANDMARK_DATA = {
     icon: '🎓',
     subLocations: [
       {
+        id: 'sl_gwanak_reactor',
+        name: '연구용 원자로',
+        icon: '☢️',
+        desc: '공대 뒤편 격납 건물. 노심은 정지했지만 계기판에는 아직 불이 들어온다.',
+        dangerMod: 0.35,
+        noSceneImage: true,
+        requiresHiddenLocation: 'hidden_gwanak_snu_reactor',
+        firstEnterReward: {
+          claimKey: 'snu_reactor_first',
+          items: [
+            { id: 'nuclear_battery',       qty: 1 },
+          ],
+        },
+        lootTable: [
+          { id: 'electronic_parts',    weight: 6 },
+          { id: 'rad_blocker',         weight: 4 },
+          { id: 'scrap_metal',         weight: 5 },
+          { id: 'wire',                weight: 4 },
+        ],
+      },
+      {
         id: 'gwanak_medschool',
         name: '의과대학',
         icon: '🏥',
@@ -4276,6 +4426,27 @@ export const LANDMARK_DATA = {
     desc: '강남 최대 병원. 최신 의료 시설과 대형 약품 창고가 있다.',
     icon: '🏥',
     subLocations: [
+      {
+        id: 'sl_gangnam_sealed_pharmacy',
+        name: '봉인 약제실',
+        icon: '💊',
+        desc: '마약류 관리 구역. 셔터가 안에서 잠겼고 봉인 스티커가 그대로다.',
+        dangerMod: 0.2,
+        noSceneImage: true,
+        requiresHiddenLocation: 'hidden_gangnam_samsung_pharmacy',
+        firstEnterReward: {
+          claimKey: 'sealed_pharmacy_first',
+          items: [
+            { id: 'surgical_grade_kit',    qty: 1 },
+          ],
+        },
+        lootTable: [
+          { id: 'first_aid_kit',       weight: 5 },
+          { id: 'antibiotics',         weight: 4 },
+          { id: 'surgery_kit',         weight: 3 },
+          { id: 'painkiller',          weight: 5 },
+        ],
+      },
       {
         id: 'gangnam_er',
         name: '응급실',

@@ -228,6 +228,7 @@ export const HIDDEN_LOCATIONS = {
 
   // ── 8. 서대문구 ──────────────────────────────────────────────
   hidden_seodaemun_severance_lab: {
+    subLocationId: 'sl_seodaemun_p4_lab',
     id: 'hidden_seodaemun_severance_lab',
     name: '세브란스 P4 연구실',
     icon: '🧫',
@@ -244,15 +245,10 @@ export const HIDDEN_LOCATIONS = {
       minCraftLevel: 0,
       customCheck: 'doctor 또는 chef 캐릭터 + D50+ + hazmat_suit 소지',
     },
-    rewards: [
-      { definitionId: 'virus_sample', qty: 1 },
-    ],
-    lootTable: [
-      { definitionId: 'antibiotics', weight: 20, minQty: 1, maxQty: 2 },
-      { definitionId: 'rad_blocker', weight: 15, minQty: 1, maxQty: 1 },
-      { definitionId: 'first_aid_kit', weight: 20, minQty: 1, maxQty: 2 },
-      { definitionId: 'antiseptic', weight: 20, minQty: 2, maxQty: 3 },
-    ],
+    // 지급은 세부장소 firstEnterReward가 맡는다 (배선 후 읽히지 않는다)
+    rewards: [],
+    // 루팅은 세부장소 lootTable이 맡는다 (배선 후 읽히지 않는다)
+    lootTable: [],
     dangerLevel: 4,
     encounterChance: 0.3,
     bossId: null,
@@ -294,6 +290,7 @@ export const HIDDEN_LOCATIONS = {
 
   // ── 10. 용산구 ───────────────────────────────────────────────
   hidden_yongsan_us_armory: {
+    subLocationId: 'sl_yongsan_armory',
     id: 'hidden_yongsan_us_armory',
     name: '용산 미군기지 무기고',
     icon: '🎖️',
@@ -310,15 +307,10 @@ export const HIDDEN_LOCATIONS = {
       minCraftLevel: 0,
       customCheck: '(soldier + 킬20+) 또는 (D80+ + electronic_parts x3)',
     },
-    rewards: [
-      { definitionId: 'm4_carbine', qty: 1 },
-    ],
-    lootTable: [
-      { definitionId: 'pistol_ammo', weight: 25, minQty: 5, maxQty: 10 },
-      { definitionId: 'shotgun_ammo', weight: 15, minQty: 3, maxQty: 6 },
-      { definitionId: 'military_ration', weight: 15, minQty: 1, maxQty: 2 },
-      { definitionId: 'flashbang', weight: 10, minQty: 1, maxQty: 2 },
-    ],
+    // 지급은 세부장소 firstEnterReward가 맡는다 (배선 후 읽히지 않는다)
+    rewards: [],
+    // 루팅은 세부장소 lootTable이 맡는다 (배선 후 읽히지 않는다)
+    lootTable: [],
     dangerLevel: 4,
     encounterChance: 0.35,
     bossId: null,
@@ -329,6 +321,7 @@ export const HIDDEN_LOCATIONS = {
 
   // ── 11. 강남구 ───────────────────────────────────────────────
   hidden_gangnam_samsung_pharmacy: {
+    subLocationId: 'sl_gangnam_sealed_pharmacy',
     id: 'hidden_gangnam_samsung_pharmacy',
     name: '삼성병원 봉인 약제실',
     icon: '💊',
@@ -345,15 +338,10 @@ export const HIDDEN_LOCATIONS = {
       minCraftLevel: 0,
       customCheck: 'doctor 캐릭터 또는 (crowbar + D30+)',
     },
-    rewards: [
-      { definitionId: 'surgical_grade_kit', qty: 1 },
-    ],
-    lootTable: [
-      { definitionId: 'first_aid_kit', weight: 20, minQty: 1, maxQty: 2 },
-      { definitionId: 'antibiotics', weight: 15, minQty: 1, maxQty: 2 },
-      { definitionId: 'surgery_kit', weight: 10, minQty: 1, maxQty: 1 },
-      { definitionId: 'painkiller', weight: 20, minQty: 2, maxQty: 3 },
-    ],
+    // 지급은 세부장소 firstEnterReward가 맡는다 (배선 후 읽히지 않는다)
+    rewards: [],
+    // 루팅은 세부장소 lootTable이 맡는다 (배선 후 읽히지 않는다)
+    lootTable: [],
     dangerLevel: 3,
     encounterChance: 0.25,
     bossId: null,
@@ -396,6 +384,7 @@ export const HIDDEN_LOCATIONS = {
 
   // ── 13. 관악구 ───────────────────────────────────────────────
   hidden_gwanak_snu_reactor: {
+    subLocationId: 'sl_gwanak_reactor',
     id: 'hidden_gwanak_snu_reactor',
     name: '서울대 연구용 원자로',
     icon: '☢️',
@@ -412,15 +401,10 @@ export const HIDDEN_LOCATIONS = {
       minCraftLevel: 0,
       customCheck: 'engineer 캐릭터 또는 (D70+ + hazmat_suit 소지)',
     },
-    rewards: [
-      { definitionId: 'nuclear_battery', qty: 1 },
-    ],
-    lootTable: [
-      { definitionId: 'electronic_parts', weight: 25, minQty: 2, maxQty: 4 },
-      { definitionId: 'rad_blocker', weight: 15, minQty: 1, maxQty: 2 },
-      { definitionId: 'scrap_metal', weight: 20, minQty: 2, maxQty: 4 },
-      { definitionId: 'wire', weight: 15, minQty: 2, maxQty: 3 },
-    ],
+    // 지급은 세부장소 firstEnterReward가 맡는다 (배선 후 읽히지 않는다)
+    rewards: [],
+    // 루팅은 세부장소 lootTable이 맡는다 (배선 후 읽히지 않는다)
+    lootTable: [],
     dangerLevel: 4,
     encounterChance: 0.25,
     bossId: null,
@@ -565,6 +549,7 @@ export const HIDDEN_LOCATIONS = {
 
   // ── 17. 영등포구 ─────────────────────────────────────────────
   hidden_yeongdeungpo_kbs_broadcast: {
+    subLocationId: 'sl_yeongdeungpo_kbs_studio',
     id: 'hidden_yeongdeungpo_kbs_broadcast',
     name: 'KBS 비밀 방송실',
     icon: '📡',
@@ -581,15 +566,10 @@ export const HIDDEN_LOCATIONS = {
       minCraftLevel: 0,
       customCheck: '(soldier + D50+) 또는 (D100+ + radio 소지)',
     },
-    rewards: [
-      { definitionId: 'broadcast_equipment', qty: 1 },
-    ],
-    lootTable: [
-      { definitionId: 'electronic_parts', weight: 25, minQty: 2, maxQty: 4 },
-      { definitionId: 'wire', weight: 20, minQty: 2, maxQty: 4 },
-      { definitionId: 'radio', weight: 10, minQty: 1, maxQty: 1 },
-      { definitionId: 'flashlight', weight: 15, minQty: 1, maxQty: 2 },
-    ],
+    // 지급은 세부장소 firstEnterReward가 맡는다 (배선 후 읽히지 않는다)
+    rewards: [],
+    // 루팅은 세부장소 lootTable이 맡는다 (배선 후 읽히지 않는다)
+    lootTable: [],
     dangerLevel: 3,
     encounterChance: 0.3,
     bossId: null,
@@ -600,6 +580,7 @@ export const HIDDEN_LOCATIONS = {
 
   // ── 18. 강서구 ───────────────────────────────────────────────
   hidden_gangseo_airport_hangar: {
+    subLocationId: 'sl_gangseo_hangar',
     id: 'hidden_gangseo_airport_hangar',
     name: '김포공항 격납고',
     icon: '✈️',
@@ -616,15 +597,10 @@ export const HIDDEN_LOCATIONS = {
       minCraftLevel: 20,
       customCheck: 'D120+ + engineer 캐릭터 + 제작 레벨 20+',
     },
-    rewards: [
-      { definitionId: 'aircraft_parts', qty: 1 },
-    ],
-    lootTable: [
-      { definitionId: 'scrap_metal', weight: 25, minQty: 4, maxQty: 8 },
-      { definitionId: 'electronic_parts', weight: 20, minQty: 2, maxQty: 4 },
-      { definitionId: 'rope', weight: 15, minQty: 2, maxQty: 3 },
-      { definitionId: 'fuel_can', weight: 10, minQty: 1, maxQty: 2 },
-    ],
+    // 지급은 세부장소 firstEnterReward가 맡는다 (배선 후 읽히지 않는다)
+    rewards: [],
+    // 루팅은 세부장소 lootTable이 맡는다 (배선 후 읽히지 않는다)
+    lootTable: [],
     dangerLevel: 3,
     encounterChance: 0.25,
     bossId: null,
@@ -696,6 +672,7 @@ export const HIDDEN_LOCATIONS = {
 
   // ── 21. 성동구 ───────────────────────────────────────────────
   hidden_seongdong_forge_master: {
+    subLocationId: 'sl_seongdong_master_workshop',
     id: 'hidden_seongdong_forge_master',
     name: '성수 장인의 비밀 작업실',
     icon: '🔧',
@@ -712,15 +689,10 @@ export const HIDDEN_LOCATIONS = {
       minCraftLevel: 0,
       customCheck: null,
     },
-    rewards: [
-      { definitionId: 'master_toolkit', qty: 1 },
-    ],
-    lootTable: [
-      { definitionId: 'scrap_metal', weight: 20, minQty: 3, maxQty: 5 },
-      { definitionId: 'pipe_wrench', weight: 15, minQty: 1, maxQty: 1 },
-      { definitionId: 'duct_tape', weight: 20, minQty: 2, maxQty: 3 },
-      { definitionId: 'spring', weight: 15, minQty: 1, maxQty: 2 },
-    ],
+    // 지급은 세부장소 firstEnterReward가 맡는다 (배선 후 읽히지 않는다)
+    rewards: [],
+    // 루팅은 세부장소 lootTable이 맡는다 (배선 후 읽히지 않는다)
+    lootTable: [],
     dangerLevel: 2,
     encounterChance: 0.1,
     bossId: null,
@@ -944,9 +916,12 @@ export const HIDDEN_LOCATIONS = {
   },
 
   hidden_namdaemun_cold_storage: {
+    subLocationId: 'sl_junggoo_cold_storage',
     id: 'hidden_namdaemun_cold_storage',
     name: '남대문시장 냉동 창고',
-    districtId: 'junggoo',
+    // 발견 판정은 district만 읽는다. districtId로 적혀 있어 조건을 다 만족해도
+    // 구 대조에서 걸러졌다 — 한 번도 발견된 적이 없다.
+    district: 'junggoo',
     description: '남대문시장 지하 대형 냉동 창고. 비상 발전기 덕분에 냉동 식재료가 아직 보존되어 있다.',
     icon: '🏪',
     unlockConditions: {
@@ -960,18 +935,10 @@ export const HIDDEN_LOCATIONS = {
       minCraftLevel: 3,
       customCheck: '셰프 + D30+ + gas_mask 소지 + 킬5+',
     },
-    rewards: [
-      { definitionId: 'virus_sample', qty: 1 },
-      { definitionId: 'immunity_serum', qty: 1 },
-    ],
-    lootTable: [
-      { definitionId: 'antidote', weight: 20, minQty: 1, maxQty: 2 },
-      { definitionId: 'rad_blocker', weight: 15, minQty: 1, maxQty: 2 },
-      { definitionId: 'surgery_kit', weight: 15, minQty: 1, maxQty: 1 },
-      { definitionId: 'antibiotics', weight: 20, minQty: 2, maxQty: 4 },
-      { definitionId: 'stimulant', weight: 10, minQty: 1, maxQty: 2 },
-      { definitionId: 'alcohol_solution', weight: 20, minQty: 2, maxQty: 3 },
-    ],
+    // 지급은 세부장소 firstEnterReward가 맡는다 (배선 후 읽히지 않는다)
+    rewards: [],
+    // 루팅은 세부장소 lootTable이 맡는다 (배선 후 읽히지 않는다)
+    lootTable: [],
     dangerLevel: 4,
     encounterChance: 0.5,
     bossId: 'boss_chef_nemesis',
