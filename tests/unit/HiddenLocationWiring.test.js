@@ -322,3 +322,25 @@ describe('직업 전용 거점 — 반복 재지급을 세부장소로 옮겼다
     expect(sub.lootTable.map(l => l.id)).not.toContain('survival_journal');
   });
 });
+
+describe('배선된 장소 — 죽은 데이터를 남기지 않는다', () => {
+  // _discoverHiddenLocation은 subLocationId가 있으면 지급 분기를 통째로 건너뛴다
+  // (HiddenElementSystem.js:169). 배선 후에도 rewards·lootTable을 채워두면
+  // 읽히지 않는 데이터가 남아, 나중에 보상 경로를 오해하게 만든다.
+  const wiredLocs = Object.values(HIDDEN_LOCATIONS).filter(l => WIRED.has(l.id));
+
+  it.each(wiredLocs.map(l => [l.id, l]))('%s 는 rewards가 비어 있다', (_id, loc) => {
+    expect(loc.rewards ?? []).toEqual([]);
+  });
+
+  it.each(wiredLocs.map(l => [l.id, l]))('%s 는 lootTable이 비어 있다', (_id, loc) => {
+    expect(loc.lootTable ?? []).toEqual([]);
+  });
+
+  it('대신 세부장소가 루팅을 가진다', () => {
+    for (const [hiddenId, lmKey] of Object.entries(MIGRATED)) {
+      expect(subFor(lmKey, hiddenId).lootTable?.length,
+        `${hiddenId}: 세부장소 루팅이 비면 빈 방이 된다`).toBeGreaterThan(0);
+    }
+  });
+});

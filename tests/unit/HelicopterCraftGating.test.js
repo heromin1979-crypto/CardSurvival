@@ -73,9 +73,13 @@ describe('엔지니어 경로 — 확정 획득', () => {
 
 describe('비엔지니어 경로 — 존재하되 극악', () => {
   it('설계도를 얻을 다른 경로가 하나는 있다', async () => {
-    const { HIDDEN_LOCATIONS } = await import('../../js/data/hiddenLocations.js');
-    const src = JSON.stringify(Object.values(HIDDEN_LOCATIONS));
-    expect(src).toContain(GATE_ITEM);
+    // 히든 장소는 진입 지점만 열어주고, 지급은 세부장소 firstEnterReward가 맡는다.
+    // 롯데타워 123층 — 보스를 넘어야 닿는다.
+    const LANDMARKS = (await import('../../js/data/landmarks.js')).default;
+    const givers = Object.values(LANDMARKS).flatMap(lm => lm.subLocations ?? [])
+      .filter(s => (s.firstEnterReward?.items ?? []).some(i => i.id === GATE_ITEM));
+    expect(givers.length).toBeGreaterThan(0);
+    expect(givers.every(s => s.requiresHiddenLocation)).toBe(true);
   });
 
   it('일반 루팅으로는 나오지 않는다', async () => {

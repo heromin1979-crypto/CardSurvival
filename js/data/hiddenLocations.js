@@ -26,15 +26,10 @@ export const HIDDEN_LOCATIONS = {
       minCraftLevel: 0,
       customCheck: null,
     },
-    rewards: [
-      { definitionId: 'hermit_elixir', qty: 1 },
-    ],
-    lootTable: [
-      { definitionId: 'bandage', weight: 20, minQty: 1, maxQty: 2 },
-      { definitionId: 'antiseptic', weight: 15, minQty: 1, maxQty: 1 },
-      { definitionId: 'herbal_tea', weight: 25, minQty: 1, maxQty: 2 },
-      { definitionId: 'cloth', weight: 20, minQty: 1, maxQty: 3 },
-    ],
+    // 지급은 세부장소 firstEnterReward가 맡는다 (배선 후 읽히지 않는다)
+    rewards: [],
+    // 루팅은 세부장소 lootTable이 맡는다 (배선 후 읽히지 않는다)
+    lootTable: [],
     dangerLevel: 2,
     encounterChance: 0.1,
     bossId: null,
@@ -62,15 +57,10 @@ export const HIDDEN_LOCATIONS = {
       minCraftLevel: 0,
       customCheck: null,
     },
-    rewards: [
-      { definitionId: 'survivors_cache', qty: 1 },
-    ],
-    lootTable: [
-      { definitionId: 'canned_food', weight: 25, minQty: 2, maxQty: 4 },
-      { definitionId: 'water_bottle', weight: 25, minQty: 1, maxQty: 2 },
-      { definitionId: 'bandage', weight: 20, minQty: 2, maxQty: 3 },
-      { definitionId: 'energy_bar', weight: 15, minQty: 1, maxQty: 2 },
-    ],
+    // 지급은 세부장소 firstEnterReward가 맡는다 (배선 후 읽히지 않는다)
+    rewards: [],
+    // 루팅은 세부장소 lootTable이 맡는다 (배선 후 읽히지 않는다)
+    lootTable: [],
     dangerLevel: 1,
     encounterChance: 0.05,
     bossId: null,
@@ -99,11 +89,8 @@ export const HIDDEN_LOCATIONS = {
       customCheck: null,
     },
     rewards: [],
-    lootTable: [
-      { definitionId: 'purified_water', weight: 30, minQty: 2, maxQty: 4 },
-      { definitionId: 'water_bottle', weight: 25, minQty: 1, maxQty: 3 },
-      { definitionId: 'herbal_tea', weight: 20, minQty: 1, maxQty: 2 },
-    ],
+    // 루팅은 세부장소 lootTable이 맡는다 (배선 후 읽히지 않는다)
+    lootTable: [],
     dangerLevel: 1,
     encounterChance: 0.0,
     bossId: null,
@@ -132,15 +119,10 @@ export const HIDDEN_LOCATIONS = {
       minCraftLevel: 0,
       customCheck: 'firefighter 캐릭터 또는 (D20+ AND crowbar 소지)',
     },
-    rewards: [
-      { definitionId: 'fireproof_suit', qty: 1 },
-    ],
-    lootTable: [
-      { definitionId: 'first_aid_kit', weight: 20, minQty: 1, maxQty: 2 },
-      { definitionId: 'rope', weight: 25, minQty: 2, maxQty: 3 },
-      { definitionId: 'flashlight', weight: 20, minQty: 1, maxQty: 2 },
-      { definitionId: 'bandage', weight: 15, minQty: 2, maxQty: 4 },
-    ],
+    // 지급은 세부장소 firstEnterReward가 맡는다 (배선 후 읽히지 않는다)
+    rewards: [],
+    // 루팅은 세부장소 lootTable이 맡는다 (배선 후 읽히지 않는다)
+    lootTable: [],
     dangerLevel: 2,
     encounterChance: 0.1,
     bossId: null,
@@ -169,15 +151,10 @@ export const HIDDEN_LOCATIONS = {
       minCraftLevel: 0,
       customCheck: null,
     },
-    rewards: [
-      { definitionId: 'royal_katana', qty: 1 },
-    ],
-    lootTable: [
-      { definitionId: 'cloth', weight: 20, minQty: 3, maxQty: 5 },
-      { definitionId: 'antiseptic', weight: 15, minQty: 1, maxQty: 2 },
-      { definitionId: 'map_fragment', weight: 10, minQty: 1, maxQty: 1 },
-      { definitionId: 'energy_bar', weight: 15, minQty: 1, maxQty: 2 },
-    ],
+    // 지급은 세부장소 firstEnterReward가 맡는다 (배선 후 읽히지 않는다)
+    rewards: [],
+    // 루팅은 세부장소 lootTable이 맡는다 (배선 후 읽히지 않는다)
+    lootTable: [],
     dangerLevel: 4,
     encounterChance: 0.35,
     bossId: null,
@@ -205,15 +182,10 @@ export const HIDDEN_LOCATIONS = {
       minCraftLevel: 5,
       customCheck: null,
     },
-    rewards: [
-      { definitionId: 'experimental_antiviral', qty: 1 },
-    ],
-    lootTable: [
-      { definitionId: 'antibiotics', weight: 20, minQty: 1, maxQty: 2 },
-      { definitionId: 'antiseptic', weight: 20, minQty: 1, maxQty: 2 },
-      { definitionId: 'electronic_parts', weight: 15, minQty: 1, maxQty: 2 },
-      { definitionId: 'first_aid_kit', weight: 10, minQty: 1, maxQty: 1 },
-    ],
+    // 지급은 세부장소 firstEnterReward가 맡는다 (배선 후 읽히지 않는다)
+    rewards: [],
+    // 루팅은 세부장소 lootTable이 맡는다 (배선 후 읽히지 않는다)
+    lootTable: [],
     dangerLevel: 3,
     encounterChance: 0.2,
     bossId: null,
@@ -242,15 +214,10 @@ export const HIDDEN_LOCATIONS = {
       minCraftLevel: 0,
       customCheck: 'cloth x5 소지 필요',
     },
-    rewards: [
-      { definitionId: 'kevlar_fabric', qty: 1 },
-    ],
-    lootTable: [
-      { definitionId: 'cloth', weight: 30, minQty: 3, maxQty: 6 },
-      { definitionId: 'leather', weight: 20, minQty: 1, maxQty: 2 },
-      { definitionId: 'thread', weight: 20, minQty: 2, maxQty: 4 },
-      { definitionId: 'duct_tape', weight: 15, minQty: 1, maxQty: 2 },
-    ],
+    // 지급은 세부장소 firstEnterReward가 맡는다 (배선 후 읽히지 않는다)
+    rewards: [],
+    // 루팅은 세부장소 lootTable이 맡는다 (배선 후 읽히지 않는다)
+    lootTable: [],
     dangerLevel: 2,
     encounterChance: 0.15,
     bossId: null,
@@ -313,15 +280,10 @@ export const HIDDEN_LOCATIONS = {
       minCraftLevel: 0,
       customCheck: '현재 소음 수치 20 미만일 때 발견 가능',
     },
-    rewards: [
-      { definitionId: 'sound_dampener', qty: 1 },
-    ],
-    lootTable: [
-      { definitionId: 'electronic_parts', weight: 20, minQty: 1, maxQty: 2 },
-      { definitionId: 'cloth', weight: 25, minQty: 2, maxQty: 4 },
-      { definitionId: 'duct_tape', weight: 20, minQty: 1, maxQty: 2 },
-      { definitionId: 'wire', weight: 15, minQty: 1, maxQty: 3 },
-    ],
+    // 지급은 세부장소 firstEnterReward가 맡는다 (배선 후 읽히지 않는다)
+    rewards: [],
+    // 루팅은 세부장소 lootTable이 맡는다 (배선 후 읽히지 않는다)
+    lootTable: [],
     dangerLevel: 2,
     encounterChance: 0.1,
     bossId: null,
@@ -418,15 +380,10 @@ export const HIDDEN_LOCATIONS = {
       minCraftLevel: 0,
       customCheck: null,
     },
-    rewards: [
-      { definitionId: 'military_radio_kit', qty: 1 },
-    ],
-    lootTable: [
-      { definitionId: 'pistol_ammo', weight: 20, minQty: 3, maxQty: 8 },
-      { definitionId: 'military_ration', weight: 20, minQty: 1, maxQty: 2 },
-      { definitionId: 'radio', weight: 10, minQty: 1, maxQty: 1 },
-      { definitionId: 'bandage', weight: 20, minQty: 2, maxQty: 4 },
-    ],
+    // 지급은 세부장소 firstEnterReward가 맡는다 (배선 후 읽히지 않는다)
+    rewards: [],
+    // 루팅은 세부장소 lootTable이 맡는다 (배선 후 읽히지 않는다)
+    lootTable: [],
     dangerLevel: 3,
     encounterChance: 0.2,
     bossId: null,
@@ -492,15 +449,10 @@ export const HIDDEN_LOCATIONS = {
       minCraftLevel: 0,
       customCheck: 'pipe_wrench + scrap_metal x5 소지 필요',
     },
-    rewards: [
-      { definitionId: 'master_forge', qty: 1 },
-    ],
-    lootTable: [
-      { definitionId: 'scrap_metal', weight: 25, minQty: 3, maxQty: 6 },
-      { definitionId: 'nail', weight: 20, minQty: 5, maxQty: 10 },
-      { definitionId: 'spring', weight: 15, minQty: 1, maxQty: 2 },
-      { definitionId: 'sharp_blade', weight: 15, minQty: 1, maxQty: 2 },
-    ],
+    // 지급은 세부장소 firstEnterReward가 맡는다 (배선 후 읽히지 않는다)
+    rewards: [],
+    // 루팅은 세부장소 lootTable이 맡는다 (배선 후 읽히지 않는다)
+    lootTable: [],
     dangerLevel: 2,
     encounterChance: 0.15,
     bossId: null,
@@ -535,12 +487,8 @@ export const HIDDEN_LOCATIONS = {
     // 실제 지급은 lm_63_building의 sl_63_helipad firstEnterReward가 담당한다.
     subLocationId: 'sl_63_helipad',
     rewards: [],
-    lootTable: [
-      { definitionId: 'avgas_drum', weight: 12, minQty: 1, maxQty: 1 },
-      { definitionId: 'aviation_alloy', weight: 15, minQty: 1, maxQty: 2 },
-      { definitionId: 'electronic_parts', weight: 20, minQty: 1, maxQty: 2 },
-      { definitionId: 'premium_ration', weight: 15, minQty: 1, maxQty: 1 },
-    ],
+    // 루팅은 세부장소 lootTable이 맡는다 (배선 후 읽히지 않는다)
+    lootTable: [],
     dangerLevel: 4,
     encounterChance: 0.35,
     bossId: null,
@@ -571,16 +519,10 @@ export const HIDDEN_LOCATIONS = {
     },
     // 정대한이 아니어도 이 도면에 닿을 수 있는 유일한 경로. 보스를 넘어야 한다.
     // (엔지니어는 mq_eng_b3_1 '아버지의 마지막 설계도'로 확정 획득)
-    rewards: [
-      { definitionId: 'father_schematic', qty: 1 },
-      { definitionId: 'binoculars_pro', qty: 1 },
-    ],
-    lootTable: [
-      { definitionId: 'premium_ration', weight: 15, minQty: 1, maxQty: 2 },
-      { definitionId: 'first_aid_kit', weight: 20, minQty: 1, maxQty: 2 },
-      { definitionId: 'stimulant', weight: 15, minQty: 1, maxQty: 1 },
-      { definitionId: 'binoculars', weight: 10, minQty: 1, maxQty: 1 },
-    ],
+    // 지급은 세부장소 firstEnterReward가 맡는다 (배선 후 읽히지 않는다)
+    rewards: [],
+    // 루팅은 세부장소 lootTable이 맡는다 (배선 후 읽히지 않는다)
+    lootTable: [],
     dangerLevel: 4,
     encounterChance: 0.4,
     bossId: 'boss_penthouse_survivor',
@@ -609,15 +551,10 @@ export const HIDDEN_LOCATIONS = {
       minCraftLevel: 0,
       customCheck: null,
     },
-    rewards: [
-      { definitionId: 'confiscated_sniper', qty: 1 },
-    ],
-    lootTable: [
-      { definitionId: 'pistol_ammo', weight: 25, minQty: 3, maxQty: 8 },
-      { definitionId: 'knife', weight: 15, minQty: 1, maxQty: 1 },
-      { definitionId: 'lockpick', weight: 10, minQty: 1, maxQty: 2 },
-      { definitionId: 'flashbang', weight: 10, minQty: 1, maxQty: 1 },
-    ],
+    // 지급은 세부장소 firstEnterReward가 맡는다 (배선 후 읽히지 않는다)
+    rewards: [],
+    // 루팅은 세부장소 lootTable이 맡는다 (배선 후 읽히지 않는다)
+    lootTable: [],
     dangerLevel: 3,
     encounterChance: 0.25,
     bossId: null,
@@ -716,12 +653,8 @@ export const HIDDEN_LOCATIONS = {
       customCheck: '비상 계획서에 적힌 대피소 목록 중 한 곳',
     },
     rewards: [],
-    lootTable: [
-      { definitionId: 'canned_food', weight: 25, minQty: 3, maxQty: 6 },
-      { definitionId: 'water_bottle', weight: 25, minQty: 2, maxQty: 4 },
-      { definitionId: 'bandage', weight: 20, minQty: 2, maxQty: 4 },
-      { definitionId: 'flashlight', weight: 10, minQty: 1, maxQty: 1 },
-    ],
+    // 루팅은 세부장소 lootTable이 맡는다 (배선 후 읽히지 않는다)
+    lootTable: [],
     dangerLevel: 1,
     encounterChance: 0.05,
     bossId: null,
@@ -749,15 +682,10 @@ export const HIDDEN_LOCATIONS = {
       minCraftLevel: 0,
       customCheck: null,
     },
-    rewards: [
-      { definitionId: 'veterinary_tranquilizer', qty: 1 },
-    ],
-    lootTable: [
-      { definitionId: 'antibiotics', weight: 15, minQty: 1, maxQty: 2 },
-      { definitionId: 'antidote', weight: 15, minQty: 1, maxQty: 1 },
-      { definitionId: 'antiseptic', weight: 20, minQty: 1, maxQty: 2 },
-      { definitionId: 'bandage', weight: 20, minQty: 2, maxQty: 3 },
-    ],
+    // 지급은 세부장소 firstEnterReward가 맡는다 (배선 후 읽히지 않는다)
+    rewards: [],
+    // 루팅은 세부장소 lootTable이 맡는다 (배선 후 읽히지 않는다)
+    lootTable: [],
     dangerLevel: 4,
     encounterChance: 0.4,
     bossId: 'boss_mutant_alpha_tiger',
@@ -821,12 +749,8 @@ export const HIDDEN_LOCATIONS = {
       customCheck: 'electronic_parts x2 + pipe_wrench + 비상 계획서 소지 필요',
     },
     rewards: [],
-    lootTable: [
-      { definitionId: 'water_filter', weight: 20, minQty: 1, maxQty: 2 },
-      { definitionId: 'purified_water', weight: 25, minQty: 2, maxQty: 4 },
-      { definitionId: 'electronic_parts', weight: 15, minQty: 1, maxQty: 2 },
-      { definitionId: 'scrap_metal', weight: 20, minQty: 2, maxQty: 3 },
-    ],
+    // 루팅은 세부장소 lootTable이 맡는다 (배선 후 읽히지 않는다)
+    lootTable: [],
     dangerLevel: 2,
     encounterChance: 0.15,
     bossId: null,
@@ -855,12 +779,8 @@ export const HIDDEN_LOCATIONS = {
       customCheck: '계획서에는 폐쇄로 적힌 하청 공장 — 실제로는 가동 중이었다',
     },
     rewards: [],
-    lootTable: [
-      { definitionId: 'pistol_ammo', weight: 25, minQty: 5, maxQty: 10 },
-      { definitionId: 'shotgun_ammo', weight: 15, minQty: 3, maxQty: 6 },
-      { definitionId: 'gunpowder', weight: 15, minQty: 2, maxQty: 3 },
-      { definitionId: 'scrap_metal', weight: 20, minQty: 3, maxQty: 5 },
-    ],
+    // 루팅은 세부장소 lootTable이 맡는다 (배선 후 읽히지 않는다)
+    lootTable: [],
     dangerLevel: 4,
     encounterChance: 0.35,
     bossId: null,
@@ -888,16 +808,10 @@ export const HIDDEN_LOCATIONS = {
       minCraftLevel: 0,
       customCheck: 'D150+ + 방문한 구역 15개 이상',
     },
-    rewards: [
-      { definitionId: 'river_boat', qty: 1 },
-      { definitionId: 'waterproof_container', qty: 1 },
-    ],
-    lootTable: [
-      { definitionId: 'rope', weight: 25, minQty: 2, maxQty: 4 },
-      { definitionId: 'fuel_can', weight: 15, minQty: 1, maxQty: 2 },
-      { definitionId: 'canned_food', weight: 20, minQty: 2, maxQty: 4 },
-      { definitionId: 'water_bottle', weight: 20, minQty: 2, maxQty: 3 },
-    ],
+    // 지급은 세부장소 firstEnterReward가 맡는다 (배선 후 읽히지 않는다)
+    rewards: [],
+    // 루팅은 세부장소 lootTable이 맡는다 (배선 후 읽히지 않는다)
+    lootTable: [],
     dangerLevel: 2,
     encounterChance: 0.15,
     bossId: null,
@@ -926,12 +840,8 @@ export const HIDDEN_LOCATIONS = {
       customCheck: '자물쇠따개 + 쇠지렛대 + 손전등 소지 — 비상 계획 체인의 출발점',
     },
     rewards: [],
-    lootTable: [
-      { definitionId: 'map_fragment', weight: 15, minQty: 1, maxQty: 2 },
-      { definitionId: 'survivor_note', weight: 20, minQty: 1, maxQty: 3 },
-      { definitionId: 'emergency_kit', weight: 15, minQty: 1, maxQty: 1 },
-      { definitionId: 'premium_ration', weight: 10, minQty: 1, maxQty: 1 },
-    ],
+    // 루팅은 세부장소 lootTable이 맡는다 (배선 후 읽히지 않는다)
+    lootTable: [],
     dangerLevel: 3,
     encounterChance: 0.3,
     bossId: null,
@@ -960,14 +870,8 @@ export const HIDDEN_LOCATIONS = {
       customCheck: '노숙인(최형식) 캐릭터 전용 시작 거점',
     },
     rewards: [],
-    lootTable: [
-      { definitionId: 'scrap_metal', weight: 25, minQty: 2, maxQty: 4 },
-      { definitionId: 'cloth', weight: 20, minQty: 2, maxQty: 3 },
-      { definitionId: 'empty_bottle', weight: 20, minQty: 1, maxQty: 3 },
-      { definitionId: 'rope', weight: 15, minQty: 1, maxQty: 2 },
-      { definitionId: 'survivor_note', weight: 10, minQty: 1, maxQty: 1 },
-      { definitionId: 'canned_food', weight: 10, minQty: 1, maxQty: 2 },
-    ],
+    // 루팅은 세부장소 lootTable이 맡는다 (배선 후 읽히지 않는다)
+    lootTable: [],
     dangerLevel: 1,
     encounterChance: 0.1,
     bossId: null,
@@ -997,14 +901,8 @@ export const HIDDEN_LOCATIONS = {
       customCheck: '노숙인 캐릭터 + D20+ 도달',
     },
     rewards: [],
-    lootTable: [
-      { definitionId: 'canned_food', weight: 25, minQty: 2, maxQty: 4 },
-      { definitionId: 'bandage', weight: 20, minQty: 2, maxQty: 4 },
-      { definitionId: 'battery', weight: 15, minQty: 1, maxQty: 2 },
-      { definitionId: 'rope', weight: 15, minQty: 1, maxQty: 2 },
-      { definitionId: 'scrap_metal', weight: 15, minQty: 2, maxQty: 3 },
-      { definitionId: 'wire', weight: 10, minQty: 1, maxQty: 2 },
-    ],
+    // 루팅은 세부장소 lootTable이 맡는다 (배선 후 읽히지 않는다)
+    lootTable: [],
     dangerLevel: 2,
     encounterChance: 0.2,
     bossId: null,
@@ -1035,14 +933,8 @@ export const HIDDEN_LOCATIONS = {
       customCheck: '셰프(윤재혁) 캐릭터 전용',
     },
     rewards: [],
-    lootTable: [
-      { definitionId: 'canned_food', weight: 20, minQty: 2, maxQty: 4 },
-      { definitionId: 'purified_water', weight: 20, minQty: 2, maxQty: 3 },
-      { definitionId: 'herb', weight: 15, minQty: 2, maxQty: 3 },
-      { definitionId: 'salt', weight: 15, minQty: 1, maxQty: 2 },
-      { definitionId: 'vitamins', weight: 15, minQty: 1, maxQty: 2 },
-      { definitionId: 'alcohol_solution', weight: 15, minQty: 1, maxQty: 2 },
-    ],
+    // 루팅은 세부장소 lootTable이 맡는다 (배선 후 읽히지 않는다)
+    lootTable: [],
     dangerLevel: 1,
     encounterChance: 0.15,
     bossId: null,
@@ -1108,14 +1000,8 @@ export const HIDDEN_LOCATIONS = {
       customCheck: '소방관(박영철) 캐릭터 전용',
     },
     rewards: [],
-    lootTable: [
-      { definitionId: 'rope', weight: 25, minQty: 2, maxQty: 4 },
-      { definitionId: 'wire', weight: 20, minQty: 2, maxQty: 3 },
-      { definitionId: 'scrap_metal', weight: 20, minQty: 2, maxQty: 4 },
-      { definitionId: 'bandage', weight: 15, minQty: 2, maxQty: 3 },
-      { definitionId: 'crowbar', weight: 10, minQty: 1, maxQty: 1 },
-      { definitionId: 'fuel_can', weight: 10, minQty: 1, maxQty: 2 },
-    ],
+    // 루팅은 세부장소 lootTable이 맡는다 (배선 후 읽히지 않는다)
+    lootTable: [],
     dangerLevel: 2,
     encounterChance: 0.2,
     bossId: null,
