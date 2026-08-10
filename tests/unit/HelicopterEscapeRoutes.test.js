@@ -110,10 +110,12 @@ describe('엔딩 우선순위 — 가로채기 방지', () => {
     expect(ENDINGS.mq_soldier.condition(s)).toBe(false);
   });
 
-  it('다른 분기에서는 기본 군인 엔딩이 그대로 발동한다', () => {
+  it('다른 분기를 헬기 엔딩이 가로채지 않는다', () => {
+    // 분기마다 전용 엔딩이 생겼다(mq_soldier_network 등). 여기서 볼 것은
+    // 63빌딩 분기가 아닌 경우 escape_helicopter가 끼어들지 않는다는 점이다.
     const s = gs({ flags: { mainQuestComplete_soldier: true, soldier_ending: 'b1_network' } });
-    expect(ENDINGS.mq_soldier.condition(s)).toBe(true);
     expect(ENDINGS.escape_helicopter.condition(s)).toBe(false);
+    expect(ENDINGS.mq_soldier_network.condition(s)).toBe(true);
   });
 
 });
