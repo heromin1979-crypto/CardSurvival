@@ -1547,7 +1547,6 @@ export const LANDMARK_DATA = {
         icon: '💧',
         desc: '비가 와야 물길이 드러나는 바위 아래 샘. 마르면 흔적도 남지 않는다.',
         dangerMod: 0.0,
-        noSceneImage: true,
         requiresHiddenLocation: 'hidden_gangbuk_mountain_spring',
         firstEnterReward: {
           claimKey: 'gangbuk_spring_first',
@@ -1718,7 +1717,6 @@ export const LANDMARK_DATA = {
         icon: '🕯',
         desc: '등산로에서 벗어난 바위 틈. 마른 약초 다발과 손때 묻은 절구가 그대로 놓여 있다.',
         dangerMod: 0.05,
-        noSceneImage: true,
         requiresHiddenLocation: 'hidden_dobong_hermit_cave',
         firstEnterReward: {
           claimKey: 'dobong_hermit_first',
@@ -1886,7 +1884,6 @@ export const LANDMARK_DATA = {
         icon: '🔐',
         desc: '선수촌 지하 통로가 노원역 상가까지 이어진다. 누군가 이 끝에 물자를 차곡차곡 쌓아두었다.',
         dangerMod: 0.05,
-        noSceneImage: true,
         requiresHiddenLocation: 'hidden_nowon_underground_mall',
         firstEnterReward: {
           claimKey: 'nowon_depot_first',
@@ -2095,7 +2092,6 @@ export const LANDMARK_DATA = {
         icon: '🚒',
         desc: '진관사에서 내려오는 길목, 불광동 초입. 차고 문이 반쯤 열린 채 멈춰 있다.',
         dangerMod: 0.15,
-        noSceneImage: true,
         requiresHiddenLocation: 'hidden_eunpyeong_fire_station',
         firstEnterReward: {
           claimKey: 'eunpyeong_station_first',
@@ -2473,7 +2469,6 @@ export const LANDMARK_DATA = {
         icon: '🎸',
         desc: '방음벽이 두 겹인 지하 공연장. 바깥 소리가 들어오지 않고, 안쪽 소리도 새어나가지 않는다.',
         dangerMod: 0.08,
-        noSceneImage: true,
         requiresHiddenLocation: 'hidden_mapo_hongdae_basement',
         firstEnterReward: {
           claimKey: 'mapo_club_first',
@@ -2649,7 +2644,6 @@ export const LANDMARK_DATA = {
         icon: '🛡️',
         desc: '경기장 맞은편 아파트 단지 지하. 계획서에 적힌 비축 규격 그대로 쌓여 있다.',
         dangerMod: 0.05,
-        noSceneImage: true,
         requiresHiddenLocation: 'hidden_yangcheon_mokdong_bunker',
         firstEnterReward: {
           claimKey: 'mokdong_shelter_first',
@@ -3030,7 +3024,6 @@ export const LANDMARK_DATA = {
         icon: '🔥',
         desc: '데이터센터 지하 기계실을 개조한 대장간. 송풍구에서 아직 열기가 올라온다.',
         dangerMod: 0.1,
-        noSceneImage: true,
         requiresHiddenLocation: 'hidden_guro_factory_forge',
         firstEnterReward: {
           claimKey: 'guro_forge_first',
@@ -3198,7 +3191,6 @@ export const LANDMARK_DATA = {
         icon: '⚙️',
         desc: '계획서에 폐쇄로 적힌 하청 공장. 지하 2층에서 탄약 압착기가 아직 기름칠된 채로 서 있다.',
         dangerMod: 0.35,
-        noSceneImage: true,
         requiresHiddenLocation: 'hidden_geumcheon_underground_factory',
         firstEnterReward: {
           claimKey: 'geumcheon_line_first',

@@ -13,17 +13,25 @@ const TARGET_IDS = [
   'sl_dongdaemun_workshop',
   'sl_jungrang_water_control',
   'sl_seongbuk_research_bunker',
+  'sl_gangbuk_hidden_spring',
+  'sl_dobong_hermit_cave',
+  'sl_nowon_hidden_depot',
+  'sl_eunpyeong_fire_station',
+  'sl_mapo_club_basement',
+  'sl_yangcheon_civil_shelter',
+  'sl_guro_secret_forge',
+  'sl_geumcheon_secret_factory',
 ];
 
 const targetSubLocations = Object.values(LANDMARK_DATA)
   .flatMap(landmark => landmark.subLocations ?? [])
   .filter(subLocation => TARGET_IDS.includes(subLocation.id));
 
-describe('남은 중심·동부 숨김 서브 로케이션 장면 자산', () => {
-  it('대상 id 8개가 LANDMARK_DATA의 실제 세부장소와 일치한다', () => {
-    expect(TARGET_IDS).toHaveLength(8);
+describe('남은 중심·동부·북부·서부 숨김 서브 로케이션 장면 자산', () => {
+  it('대상 id 16개가 LANDMARK_DATA의 실제 세부장소와 일치한다', () => {
+    expect(TARGET_IDS).toHaveLength(16);
     expect(targetSubLocations.map(({ id }) => id).sort()).toEqual([...TARGET_IDS].sort());
-    expect(targetSubLocations).toHaveLength(8);
+    expect(targetSubLocations).toHaveLength(16);
   });
 
   it.each(targetSubLocations)('$id는 아이콘 폴백 대신 장면 이미지를 사용한다', subLocation => {

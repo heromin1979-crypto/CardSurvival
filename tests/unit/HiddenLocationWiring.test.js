@@ -105,6 +105,14 @@ describe('이관된 세부장소 — 데이터 정합성', () => {
     'sl_dongdaemun_workshop',
     'sl_jungrang_water_control',
     'sl_seongbuk_research_bunker',
+    'sl_gangbuk_hidden_spring',
+    'sl_dobong_hermit_cave',
+    'sl_nowon_hidden_depot',
+    'sl_eunpyeong_fire_station',
+    'sl_mapo_club_basement',
+    'sl_yangcheon_civil_shelter',
+    'sl_guro_secret_forge',
+    'sl_geumcheon_secret_factory',
   ]);
 
   it.each(subs)('%s 보상·루팅이 실존 아이템을 가리킨다', (_h, sub) => {
