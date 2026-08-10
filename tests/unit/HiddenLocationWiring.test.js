@@ -45,6 +45,9 @@ const MIGRATED = {
   hidden_jungrang_water_treatment:  'jungrang',
   hidden_geumcheon_underground_factory:'geumcheon',
   hidden_jamsil_lotte_tower_lobby:  'songpa',
+  hidden_eunpyeong_fire_station:    'eunpyeong',
+  hidden_yangcheon_dongho_bridge:   'seongdong',
+  hidden_junggoo_hotel_kitchen:     'junggoo',
   hidden_dongjak_cemetery_vault:    'lm_dongjak',
 };
 
@@ -133,7 +136,7 @@ describe('배선 현황 — 남은 부채를 기록한다', () => {
   it('미배선 장소가 늘어나지 않는다', () => {
     // 신규 히든 장소를 배선 없이 추가하면 여기서 걸린다.
     // 이관이 진행되면 이 숫자를 낮춰간다.
-    expect(unwired.length).toBeLessThanOrEqual(11);
+    expect(unwired.length).toBeLessThanOrEqual(8);
   });
 
   it('미배선 장소는 여전히 발견 즉시 지급 경로다 (기능 유지)', () => {
@@ -260,5 +263,62 @@ describe('롯데월드타워 — 한 건물에 두 층', () => {
     const lobby = getLandmarkData('songpa').subLocations.find(s => s.id === 'songpa_lobby');
     expect(lobby.requiresHiddenLocation).toBeUndefined();
     expect(subFor('songpa', FORT).dangerMod).toBeLessThan(lobby.dangerMod);
+  });
+});
+
+describe('district 필드명 — 오기는 장소를 통째로 죽인다', () => {
+  // _checkHiddenLocations(HiddenElementSystem.js:53)는 loc.district만 대조한다.
+  // districtId로 적힌 장소는 undefined !== '<현재구>'로 매번 걸러져,
+  // 조건을 모두 만족해도 영원히 발견되지 않는다. 에러도 로그도 없다.
+  const withTypo = Object.values(HIDDEN_LOCATIONS).filter(l => l.districtId !== undefined);
+
+  it('배선된 장소는 districtId를 쓰지 않는다', () => {
+    for (const id of Object.keys(MIGRATED)) {
+      expect(HIDDEN_LOCATIONS[id].districtId, `${id}: districtId 오기`).toBeUndefined();
+      expect(HIDDEN_LOCATIONS[id].district, `${id}: district 누락`).toBeTruthy();
+    }
+  });
+
+  it('오기가 남지 않은 장소는 모두 district를 가진다', () => {
+    // district도 districtId도 없는 장소가 새로 들어오는 것을 막는다.
+    for (const l of Object.values(HIDDEN_LOCATIONS)) {
+      if (l.districtId !== undefined) continue;   // 아래 부채 목록에서 따로 검사
+      expect(l.district, `${l.id}: 어느 구에서도 발견되지 않는다`).toBeTruthy();
+    }
+  });
+
+  it('오기가 늘어나지 않는다', () => {
+    // 남은 부채: 남대문시장 냉동 창고. 보스(boss_chef_nemesis)가 붙어 있어
+    // 필드명만 고치면 발견 즉시 보스전이 시작되므로 배선과 함께 처리한다.
+    expect(withTypo.map(l => l.id)).toEqual(['hidden_namdaemun_cold_storage']);
+  });
+});
+
+describe('직업 전용 거점 — 반복 재지급을 세부장소로 옮겼다', () => {
+  const PERSONAL = [
+    'hidden_eunpyeong_fire_station',
+    'hidden_yangcheon_dongho_bridge',
+    'hidden_junggoo_hotel_kitchen',
+    'hidden_jamsil_lotte_tower_lobby',
+  ];
+
+  it.each(PERSONAL)('%s 는 쿨다운 재지급이 꺼져 있다', (id) => {
+    // repeatable을 켜둔 채 배선하면 _checkRepeatableLocation이 쿨다운마다
+    // rewards를 통째로 다시 뿌린다. 구에 다시 들어오기만 하면 되고
+    // 조건 재검사도 TP 비용도 없다 — 최초 진입 보상과 이중으로 겹친다.
+    expect(HIDDEN_LOCATIONS[id].repeatable).toBe(false);
+    expect(HIDDEN_LOCATIONS[id].rewards).toEqual([]);
+  });
+
+  it.each(PERSONAL)('%s 는 직업 조건을 유지한다', (id) => {
+    expect(HIDDEN_LOCATIONS[id].unlockConditions.requiredCharacter).toBeTruthy();
+  });
+
+  it('생존 일지는 최초 진입 1회만 지급된다', () => {
+    // firstEnterReward는 claimKey를 flags.firstEnterRewardsClaimed에 기록해
+    // 재진입을 차단한다(ExploreSystem.js:868). 재방문 루팅 풀에는 넣지 않는다.
+    const sub = subFor('seongdong', 'hidden_yangcheon_dongho_bridge');
+    expect(sub.firstEnterReward.items.map(i => i.id)).toContain('survival_journal');
+    expect(sub.lootTable.map(l => l.id)).not.toContain('survival_journal');
   });
 });

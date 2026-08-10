@@ -944,7 +944,8 @@ export const HIDDEN_LOCATIONS = {
   hidden_yangcheon_dongho_bridge: {
     id: 'hidden_yangcheon_dongho_bridge',
     name: '동호대교 아래 은신처',
-    districtId: 'yangcheon',
+    subLocationId: 'sl_seongdong_bridge_shelter',
+    district: 'seongdong',
     description: '최형식이 2년을 살았던 곳. 다리 교각 사이에 플라스틱 박스와 낡은 침낭, 숨겨진 잡동사니들이 있다.',
     icon: '🌉',
     unlockConditions: {
@@ -958,11 +959,7 @@ export const HIDDEN_LOCATIONS = {
       minCraftLevel: 0,
       customCheck: '노숙인(최형식) 캐릭터 전용 시작 거점',
     },
-    rewards: [
-      { definitionId: 'survival_journal', qty: 1 },
-      { definitionId: 'canned_food', qty: 3 },
-      { definitionId: 'rope', qty: 2 },
-    ],
+    rewards: [],
     lootTable: [
       { definitionId: 'scrap_metal', weight: 25, minQty: 2, maxQty: 4 },
       { definitionId: 'cloth', weight: 20, minQty: 2, maxQty: 3 },
@@ -974,8 +971,8 @@ export const HIDDEN_LOCATIONS = {
     dangerLevel: 1,
     encounterChance: 0.1,
     bossId: null,
-    repeatable: true,
-    repeatCooldownDays: 5,
+    repeatable: false,
+    repeatCooldownDays: 0,
     discoveryMessage: '🌉 동호대교 아래, 2년간의 흔적이 고스란히 남아있다. 여기라면 안전하다.',
   },
 
@@ -1022,7 +1019,8 @@ export const HIDDEN_LOCATIONS = {
   hidden_junggoo_hotel_kitchen: {
     id: 'hidden_junggoo_hotel_kitchen',
     name: '소피텔 호텔 주방 저장고',
-    districtId: 'junggoo',
+    subLocationId: 'sl_junggoo_hotel_pantry',
+    district: 'junggoo',
     description: '윤재혁이 근무하던 호텔 지하 식품 저장고. 비상용으로 쌓아둔 식재료가 아직 남아있다. 출입 코드는 그만 안다.',
     icon: '🍳',
     unlockConditions: {
@@ -1036,12 +1034,7 @@ export const HIDDEN_LOCATIONS = {
       minCraftLevel: 0,
       customCheck: '셰프(윤재혁) 캐릭터 전용',
     },
-    rewards: [
-      { definitionId: 'canned_food', qty: 4 },
-      { definitionId: 'purified_water', qty: 3 },
-      { definitionId: 'herb', qty: 3 },
-      { definitionId: 'salt', qty: 2 },
-    ],
+    rewards: [],
     lootTable: [
       { definitionId: 'canned_food', weight: 20, minQty: 2, maxQty: 4 },
       { definitionId: 'purified_water', weight: 20, minQty: 2, maxQty: 3 },
@@ -1053,8 +1046,8 @@ export const HIDDEN_LOCATIONS = {
     dangerLevel: 1,
     encounterChance: 0.15,
     bossId: null,
-    repeatable: true,
-    repeatCooldownDays: 7,
+    repeatable: false,
+    repeatCooldownDays: 0,
     discoveryMessage: '🍳 익숙한 주방 냄새. 재혁의 손 글씨로 적힌 재고 목록. 여기라면 당분간 버틸 수 있다.',
   },
 
@@ -1099,7 +1092,8 @@ export const HIDDEN_LOCATIONS = {
   hidden_eunpyeong_fire_station: {
     id: 'hidden_eunpyeong_fire_station',
     name: '은평구 불광 소방서',
-    districtId: 'eunpyeong',
+    subLocationId: 'sl_eunpyeong_fire_station',
+    district: 'eunpyeong',
     description: '박영철의 근무지. 동료들의 흔적이 남아있고, 소방 장비 창고가 잠긴 채로 있다.',
     icon: '🚒',
     unlockConditions: {
@@ -1113,12 +1107,7 @@ export const HIDDEN_LOCATIONS = {
       minCraftLevel: 0,
       customCheck: '소방관(박영철) 캐릭터 전용',
     },
-    rewards: [
-      { definitionId: 'rope_ladder', qty: 1 },
-      { definitionId: 'crowbar', qty: 1 },
-      { definitionId: 'first_aid_kit', qty: 2 },
-      { definitionId: 'firefighter_badge', qty: 1 },
-    ],
+    rewards: [],
     lootTable: [
       { definitionId: 'rope', weight: 25, minQty: 2, maxQty: 4 },
       { definitionId: 'wire', weight: 20, minQty: 2, maxQty: 3 },
@@ -1130,8 +1119,8 @@ export const HIDDEN_LOCATIONS = {
     dangerLevel: 2,
     encounterChance: 0.2,
     bossId: null,
-    repeatable: true,
-    repeatCooldownDays: 8,
+    repeatable: false,
+    repeatCooldownDays: 0,
     discoveryMessage: '🚒 소방서 문이 반쯤 열려있다. 이재훈의 사물함이 그대로다. 영철은 잠시 멈춘다.',
   },
 

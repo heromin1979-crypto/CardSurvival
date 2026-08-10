@@ -220,6 +220,31 @@ export const LANDMARK_DATA = {
     icon: '🏪',
     subLocations: [
       {
+        id: 'sl_junggoo_hotel_pantry',
+        name: '호텔 주방 저장고',
+        icon: '🍳',
+        desc: '장충동 호텔 지하. 출입 코드를 아는 사람만 들어간다. 선반에 재고 목록이 손 글씨로 붙어 있다.',
+        dangerMod: 0.1,
+        noSceneImage: true,
+        requiresHiddenLocation: 'hidden_junggoo_hotel_kitchen',
+        firstEnterReward: {
+          claimKey: 'sofitel_pantry_first',
+          items: [
+            { id: 'canned_food',    qty: 4 },
+            { id: 'purified_water', qty: 3 },
+            { id: 'herb',           qty: 3 },
+            { id: 'salt',           qty: 2 },
+          ],
+        },
+        lootTable: [
+          { id: 'herb',             weight: 6 },
+          { id: 'salt',             weight: 6 },
+          { id: 'vitamins',         weight: 4 },
+          { id: 'alcohol_solution', weight: 4 },
+          { id: 'canned_food',      weight: 3 },
+        ],
+      },
+      {
         id: 'sl_junggoo_city_hall_safe',
         name: '시장실 금고',
         icon: '🏛️',
@@ -559,6 +584,30 @@ export const LANDMARK_DATA = {
     desc: '서울의 산업 심장부. 가죽 공방, 금속 가공소 등이 밀집해 있다.',
     icon: '🏭',
     subLocations: [
+      {
+        id: 'sl_seongdong_bridge_shelter',
+        name: '다리 아래 은신처',
+        icon: '🌉',
+        desc: '공장지대 서쪽 강변길 끝, 동호대교 교각 사이. 플라스틱 박스와 낡은 침낭이 2년치 자리를 지키고 있다.',
+        dangerMod: 0.05,
+        noSceneImage: true,
+        requiresHiddenLocation: 'hidden_yangcheon_dongho_bridge',
+        firstEnterReward: {
+          claimKey: 'dongho_shelter_first',
+          items: [
+            { id: 'survival_journal', qty: 1 },
+            { id: 'canned_food',      qty: 3 },
+            { id: 'rope',             qty: 2 },
+          ],
+        },
+        lootTable: [
+          { id: 'scrap_metal',   weight: 7 },
+          { id: 'cloth',         weight: 6 },
+          { id: 'empty_bottle',  weight: 6 },
+          { id: 'rope',          weight: 4 },
+          { id: 'survivor_note', weight: 3 },
+        ],
+      },
       {
         id: 'seongdong_metal',
         name: '금속 가공 공장',
@@ -1984,6 +2033,31 @@ export const LANDMARK_DATA = {
     desc: '북한산 자락의 천년 고찰. 고요하고 약초원이 잘 보존돼 있다.',
     icon: '⛩️',
     subLocations: [
+      {
+        id: 'sl_eunpyeong_fire_station',
+        name: '불광 소방서',
+        icon: '🚒',
+        desc: '진관사에서 내려오는 길목, 불광동 초입. 차고 문이 반쯤 열린 채 멈춰 있다.',
+        dangerMod: 0.15,
+        noSceneImage: true,
+        requiresHiddenLocation: 'hidden_eunpyeong_fire_station',
+        firstEnterReward: {
+          claimKey: 'eunpyeong_station_first',
+          items: [
+            { id: 'rope_ladder',       qty: 1 },
+            { id: 'crowbar',           qty: 1 },
+            { id: 'first_aid_kit',     qty: 2 },
+            { id: 'firefighter_badge', qty: 1 },
+          ],
+        },
+        lootTable: [
+          { id: 'rope',        weight: 7 },
+          { id: 'wire',        weight: 6 },
+          { id: 'scrap_metal', weight: 6 },
+          { id: 'bandage',     weight: 4 },
+          { id: 'fuel_can',    weight: 3 },
+        ],
+      },
       {
         id: 'eunpyeong_main_hall',
         name: '대웅전',
