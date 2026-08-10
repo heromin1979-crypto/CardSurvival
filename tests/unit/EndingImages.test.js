@@ -130,6 +130,36 @@ describe('character ending image lookup', () => {
       .toEqual({ day: 42, subEnding: 'b3_escape' });
   });
 
+  it.each([
+    ['a mismatched branch code', 'a1_shelter'],
+    ['a bogus code', 'not_an_ending'],
+  ])('does not backfill %s while rendering the firefighter B3 gallery entry', (_label, fireEnding) => {
+    localStorage.setItem('CARD_SURVIVAL_ENDINGS_v1_meta', JSON.stringify({
+      mq_firefighter_b3: { day: 42, subEnding: null },
+    }));
+    GameState.flags = { fire_ending: fireEnding };
+
+    const card = EndingGallery._buildCard(ENDINGS.mq_firefighter_b3, true, 42);
+
+    expect(card.querySelector('.eg-card-thumb')).toBeNull();
+    expect(EndingSystem.getUnlockMeta().mq_firefighter_b3)
+      .toEqual({ day: 42, subEnding: null });
+  });
+
+  it('preserves a valid saved subEnding while rendering the gallery', () => {
+    localStorage.setItem('CARD_SURVIVAL_ENDINGS_v1_meta', JSON.stringify({
+      mq_firefighter_b3: { day: 42, subEnding: 'b3_escape' },
+    }));
+    GameState.flags = { fire_ending: 'a1_shelter' };
+
+    const card = EndingGallery._buildCard(ENDINGS.mq_firefighter_b3, true, 42);
+
+    expect(card.querySelector('.eg-card-thumb')?.getAttribute('src'))
+      .toBe('assets/endings/firefighter_b3_escape.png');
+    expect(EndingSystem.getUnlockMeta().mq_firefighter_b3)
+      .toEqual({ day: 42, subEnding: 'b3_escape' });
+  });
+
   it('resolves every active firefighter branch code through its real storage key', () => {
     const branchCodes = [
       FIREFIGHTER_BRANCH_A.mq_fire_end_a1.reward.flags.fire_ending,

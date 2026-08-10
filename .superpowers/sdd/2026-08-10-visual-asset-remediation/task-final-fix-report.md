@@ -75,3 +75,14 @@ npm.cmd test
 - GREEN: `tests/unit/EndingImages.test.js` 10개 전부 통과.
 - 지정 검증: 4개 파일, 285개 테스트 통과. 전체 suite는 187개 파일, 2,449개 테스트 통과 및 3개 skipped.
 - 별도 커밋 메시지: `fix: migrate ending metadata on gallery read`
+
+## 갤러리 migration 분기 검증 보완
+
+- legacy B3 메타에 현재 `fire_ending: 'a1_shelter'` 또는 bogus 코드를 주입하고 실제 갤러리 렌더링 경로를 실행하는 회귀 테스트를 추가했다.
+- RED: `tests/unit/EndingImages.test.js` 13개 중 2개 실패. mismatch는 A1 이미지를 B3 카드에 표시했고 bogus 코드는 메타에 영속됐다.
+- 후보 코드는 `getEndingImage()`의 실제 매핑으로 유효성을 확인하고, `ENDINGS[id].condition`의 실제 분기 조건으로 엔딩 ID와의 연관성을 확인한다.
+- 새 하드코딩 ID↔코드 목록은 추가하지 않았다.
+- 올바른 B3 코드는 계속 복구되고, 유효한 기존 메타는 현재 플래그와 달라도 보존된다.
+- GREEN: `tests/unit/EndingImages.test.js` 13개 전부 통과.
+- 지정 검증: 4개 파일, 288개 테스트 통과. 전체 suite는 187개 파일, 2,452개 테스트 통과 및 3개 skipped.
+- 별도 커밋 메시지: `fix: validate gallery ending metadata migration`

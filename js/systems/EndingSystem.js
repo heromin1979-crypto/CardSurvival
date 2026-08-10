@@ -6,12 +6,34 @@ import ENDINGS         from '../data/endings.js';
 import SystemRegistry  from '../core/SystemRegistry.js';
 import { ENDING_TO_CINEMATIC } from '../data/cinematicScenes.js';
 import GameData from '../data/GameData.js';
+import { getEndingImage } from '../data/endingImages.js';
 
 const STORAGE_KEY      = 'CARD_SURVIVAL_ENDINGS_v1';
 const STORAGE_META_KEY = 'CARD_SURVIVAL_ENDINGS_v1_meta';
 
 // Victory check priority: character > escape > milestone
 const VICTORY_CATEGORIES = ['character', 'escape', 'milestone'];
+
+function endingAcceptsCurrentBranch(ending, gameState) {
+  if (!ending?.characterId || typeof ending.condition !== 'function') return false;
+
+  const characterId = ending.characterId;
+  const state = {
+    ...gameState,
+    player: { ...gameState?.player, characterId },
+    flags: {
+      ...gameState?.flags,
+      [`mainQuestComplete_${characterId}`]: true,
+    },
+    time: { ...gameState?.time, day: Number.MAX_SAFE_INTEGER },
+  };
+
+  try {
+    return ending.condition(state);
+  } catch {
+    return false;
+  }
+}
 
 const EndingSystem = {
   _lastCheckDay: 0,
@@ -248,7 +270,8 @@ const EndingSystem = {
 
     const ending = ENDINGS[id];
     const subEnding = this.getCharacterEndingCode(ending?.characterId, gs?.flags);
-    if (subEnding == null) return null;
+    if (!getEndingImage(ending?.characterId, subEnding)
+      || !endingAcceptsCurrentBranch(ending, gs)) return null;
 
     if (meta[id]) {
       meta[id] = { ...meta[id], subEnding };
