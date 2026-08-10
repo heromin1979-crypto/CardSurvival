@@ -813,13 +813,15 @@ const GameState = {
     if (this.player.encumbrance.weightPct === undefined) this.player.encumbrance.weightPct = 0;
     // 구버전 세이브 호환: 기본 낚싯대(fishing_rod_basic)는 낚싯대로 통합됐다.
     // 정의가 사라진 id를 그대로 두면 getCardDef가 undefined를 돌려줘 카드가 깨진다.
-    for (const inst of Object.values(this.cards ?? {})) {
+    // this.cards는 아래에서 d.cards로 교체되기 전이므로 반드시 d.cards를 순회한다.
+    for (const inst of Object.values(d.cards ?? {})) {
       if (inst?.definitionId === 'fishing_rod_basic') inst.definitionId = 'fishing_rod';
     }
     // 구버전 세이브 호환: 헬리콥터 열쇠는 구조 방식 개편으로 제거됐다.
     // 정의가 없는 id가 남으면 getCardDef가 undefined를 돌려줘 카드가 깨진다.
-    for (const [id, inst] of Object.entries(this.cards ?? {})) {
-      if (inst?.definitionId === 'helicopter_key') delete this.cards[id];
+    // board에 남는 잔여 참조는 대입 직후의 _compactRow orphan 필터가 정리한다.
+    for (const [id, inst] of Object.entries(d.cards ?? {})) {
+      if (inst?.definitionId === 'helicopter_key') delete d.cards[id];
     }
     // 구버전 세이브 호환: top 행 10칸으로 확장
     if (d.board?.top && d.board.top.length < 10) while (d.board.top.length < 10) d.board.top.push(null);
