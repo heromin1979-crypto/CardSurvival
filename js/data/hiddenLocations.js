@@ -98,9 +98,7 @@ export const HIDDEN_LOCATIONS = {
       minCraftLevel: 0,
       customCheck: null,
     },
-    rewards: [
-      { definitionId: 'pristine_spring_water', qty: 1 },
-    ],
+    rewards: [],
     lootTable: [
       { definitionId: 'purified_water', weight: 30, minQty: 2, maxQty: 4 },
       { definitionId: 'water_bottle', weight: 25, minQty: 1, maxQty: 3 },
@@ -109,8 +107,10 @@ export const HIDDEN_LOCATIONS = {
     dangerLevel: 1,
     encounterChance: 0.0,
     bossId: null,
-    repeatable: true,
-    repeatCooldownDays: 30,
+    // 재방문은 세부장소 재진입으로 대신한다. repeatable을 켜두면
+    // _checkRepeatableLocation이 30일마다 전설 샘물을 다시 지급한다.
+    repeatable: false,
+    repeatCooldownDays: 0,
     discoveryMessage: '💧 빗소리를 따라가니 북한산 깊은 곳에 맑은 샘물이 솟아나고 있다!',
   },
 
