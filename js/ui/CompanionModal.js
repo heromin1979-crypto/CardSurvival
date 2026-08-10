@@ -13,6 +13,7 @@ import { NPC_ITEMS }  from '../data/npcs.js';
 import { COMPANION_COMBAT_LOADOUTS, getCombatSkill } from '../data/combatSkills.js';
 import { combatAssetManifest } from '../data/combatAssets.js';
 import { SKILL_DEFS } from '../data/skillDefs.js';
+import { dataIcon } from './DataIcon.js';
 
 const PERSONALITY_LABELS = {
   cautious:     '신중',
@@ -179,7 +180,7 @@ const CompanionModal = {
     const selected = npcId === this._selectedNpcId ? ' selected' : '';
     return `
       <button class="npcd-roster-item${selected}" data-npc-id="${npcId}">
-        <span class="npcd-roster-icon">${itemDef.icon ?? '👤'}</span>
+        <span class="npcd-roster-icon">${dataIcon(itemDef.icon ?? '👤')}</span>
         <span class="npcd-roster-info">
           <span class="npcd-roster-name">${name}</span>
           <span class="npcd-roster-hp"><span class="npcd-roster-hp-fill ${hpCls}" style="width:${hpPct}%"></span></span>
@@ -225,7 +226,7 @@ const CompanionModal = {
           <span class="npcd-corner bl"></span>
           <span class="npcd-corner br"></span>
           <span class="npcd-portrait-scan"></span>
-          <span class="npcd-portrait-icon">${itemDef.icon ?? '👤'}</span>
+          <span class="npcd-portrait-icon">${dataIcon(itemDef.icon ?? '👤')}</span>
         </div>
         <div class="npcd-identity">
           <div class="npcd-name">${name}</div>
@@ -404,7 +405,7 @@ const CompanionModal = {
       const imgSrc  = getCardImage(entry.id);
       const visual  = imgSrc
         ? `<img class="npcd-inv-img" src="${imgSrc}" alt="">`
-        : `<span class="npcd-inv-icon">${itemDef.icon ?? '📦'}</span>`;
+        : `<span class="npcd-inv-icon">${dataIcon(itemDef.icon ?? '📦')}</span>`;
       return `
         <div class="npcd-inv-slot filled" title="${this._gearTooltip(name, itemDef)}">
           ${qty > 1 ? `<span class="npcd-inv-qty">×${qty}</span>` : ''}

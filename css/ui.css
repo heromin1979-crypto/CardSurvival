@@ -20,6 +20,67 @@
 .ui-icon--item { -webkit-mask-image: url('../assets/images/ui/icons/item.svg'); mask-image: url('../assets/images/ui/icons/item.svg'); }
 .ui-icon--injury { -webkit-mask-image: url('../assets/images/ui/icons/injury.svg'); mask-image: url('../assets/images/ui/icons/injury.svg'); }
 
+.data-icon {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.125em;
+  background-color: currentColor;
+  -webkit-mask: center / contain no-repeat;
+  mask: center / contain no-repeat;
+}
+
+.data-icon--glyph {
+  background-color: transparent;
+  -webkit-mask: none;
+  mask: none;
+  line-height: 1;
+}
+
+.data-icon--herb { -webkit-mask-image: url('../assets/images/ui/icons/herb.svg'); mask-image: url('../assets/images/ui/icons/herb.svg'); }
+.data-icon--syringe { -webkit-mask-image: url('../assets/images/ui/icons/syringe.svg'); mask-image: url('../assets/images/ui/icons/syringe.svg'); }
+.data-icon--water { -webkit-mask-image: url('../assets/images/ui/icons/water.svg'); mask-image: url('../assets/images/ui/icons/water.svg'); }
+.data-icon--grain { -webkit-mask-image: url('../assets/images/ui/icons/grain.svg'); mask-image: url('../assets/images/ui/icons/grain.svg'); }
+.data-icon--fire { -webkit-mask-image: url('../assets/images/ui/icons/fire.svg'); mask-image: url('../assets/images/ui/icons/fire.svg'); }
+.data-icon--medical { -webkit-mask-image: url('../assets/images/ui/icons/medical.svg'); mask-image: url('../assets/images/ui/icons/medical.svg'); }
+.data-icon--vial { -webkit-mask-image: url('../assets/images/ui/icons/vial.svg'); mask-image: url('../assets/images/ui/icons/vial.svg'); }
+.data-icon--pill { -webkit-mask-image: url('../assets/images/ui/icons/pill.svg'); mask-image: url('../assets/images/ui/icons/pill.svg'); }
+.data-icon--power { -webkit-mask-image: url('../assets/images/ui/icons/power.svg'); mask-image: url('../assets/images/ui/icons/power.svg'); }
+.data-icon--gear { -webkit-mask-image: url('../assets/images/ui/icons/gear.svg'); mask-image: url('../assets/images/ui/icons/gear.svg'); }
+.data-icon--blade { -webkit-mask-image: url('../assets/images/ui/icons/blade.svg'); mask-image: url('../assets/images/ui/icons/blade.svg'); }
+.data-icon--jar { -webkit-mask-image: url('../assets/images/ui/icons/jar.svg'); mask-image: url('../assets/images/ui/icons/jar.svg'); }
+.data-icon--meal { -webkit-mask-image: url('../assets/images/ui/icons/meal.svg'); mask-image: url('../assets/images/ui/icons/meal.svg'); }
+.data-icon--meat { -webkit-mask-image: url('../assets/images/ui/icons/meat.svg'); mask-image: url('../assets/images/ui/icons/meat.svg'); }
+.data-icon--fish { -webkit-mask-image: url('../assets/images/ui/icons/fish.svg'); mask-image: url('../assets/images/ui/icons/fish.svg'); }
+.data-icon--shield { -webkit-mask-image: url('../assets/images/ui/icons/shield.svg'); mask-image: url('../assets/images/ui/icons/shield.svg'); }
+.data-icon--wrench { -webkit-mask-image: url('../assets/images/ui/icons/wrench.svg'); mask-image: url('../assets/images/ui/icons/wrench.svg'); }
+.data-icon--box { -webkit-mask-image: url('../assets/images/ui/icons/box.svg'); mask-image: url('../assets/images/ui/icons/box.svg'); }
+.data-icon--blood { -webkit-mask-image: url('../assets/images/ui/icons/blood.svg'); mask-image: url('../assets/images/ui/icons/blood.svg'); }
+.data-icon--knife { -webkit-mask-image: url('../assets/images/ui/icons/knife.svg'); mask-image: url('../assets/images/ui/icons/knife.svg'); }
+.data-icon--rock { -webkit-mask-image: url('../assets/images/ui/icons/rock.svg'); mask-image: url('../assets/images/ui/icons/rock.svg'); }
+.data-icon--microscope { -webkit-mask-image: url('../assets/images/ui/icons/microscope.svg'); mask-image: url('../assets/images/ui/icons/microscope.svg'); }
+.data-icon--can { -webkit-mask-image: url('../assets/images/ui/icons/can.svg'); mask-image: url('../assets/images/ui/icons/can.svg'); }
+.data-icon--thread { -webkit-mask-image: url('../assets/images/ui/icons/thread.svg'); mask-image: url('../assets/images/ui/icons/thread.svg'); }
+.data-icon--tree { -webkit-mask-image: url('../assets/images/ui/icons/tree.svg'); mask-image: url('../assets/images/ui/icons/tree.svg'); }
+.data-icon--bolt { -webkit-mask-image: url('../assets/images/ui/icons/bolt.svg'); mask-image: url('../assets/images/ui/icons/bolt.svg'); }
+.data-icon--rod { -webkit-mask-image: url('../assets/images/ui/icons/rod.svg'); mask-image: url('../assets/images/ui/icons/rod.svg'); }
+.data-icon--mushroom { -webkit-mask-image: url('../assets/images/ui/icons/mushroom.svg'); mask-image: url('../assets/images/ui/icons/mushroom.svg'); }
+.data-icon--sprout { -webkit-mask-image: url('../assets/images/ui/icons/sprout.svg'); mask-image: url('../assets/images/ui/icons/sprout.svg'); }
+.data-icon--brick { -webkit-mask-image: url('../assets/images/ui/icons/brick.svg'); mask-image: url('../assets/images/ui/icons/brick.svg'); }
+.data-icon--gun { -webkit-mask-image: url('../assets/images/ui/icons/gun.svg'); mask-image: url('../assets/images/ui/icons/gun.svg'); }
+.data-icon--vest { -webkit-mask-image: url('../assets/images/ui/icons/vest.svg'); mask-image: url('../assets/images/ui/icons/vest.svg'); }
+.data-icon--radiation { -webkit-mask-image: url('../assets/images/ui/icons/radiation.svg'); mask-image: url('../assets/images/ui/icons/radiation.svg'); }
+.data-icon--antenna { -webkit-mask-image: url('../assets/images/ui/icons/antenna.svg'); mask-image: url('../assets/images/ui/icons/antenna.svg'); }
+.data-icon--wood { -webkit-mask-image: url('../assets/images/ui/icons/wood.svg'); mask-image: url('../assets/images/ui/icons/wood.svg'); }
+.data-icon--person { -webkit-mask-image: url('../assets/images/ui/icons/person.svg'); mask-image: url('../assets/images/ui/icons/person.svg'); }
+.data-icon--nurse { -webkit-mask-image: url('../assets/images/ui/icons/nurse.svg'); mask-image: url('../assets/images/ui/icons/nurse.svg'); }
+.data-icon--soldier { -webkit-mask-image: url('../assets/images/ui/icons/soldier.svg'); mask-image: url('../assets/images/ui/icons/soldier.svg'); }
+.data-icon--child { -webkit-mask-image: url('../assets/images/ui/icons/child.svg'); mask-image: url('../assets/images/ui/icons/child.svg'); }
+.data-icon--mechanic { -webkit-mask-image: url('../assets/images/ui/icons/mechanic.svg'); mask-image: url('../assets/images/ui/icons/mechanic.svg'); }
+.data-icon--trader { -webkit-mask-image: url('../assets/images/ui/icons/trader.svg'); mask-image: url('../assets/images/ui/icons/trader.svg'); }
+.data-icon--student { -webkit-mask-image: url('../assets/images/ui/icons/student.svg'); mask-image: url('../assets/images/ui/icons/student.svg'); }
+.data-icon--dog { -webkit-mask-image: url('../assets/images/ui/icons/dog.svg'); mask-image: url('../assets/images/ui/icons/dog.svg'); }
+
 /* === HUD === */
 .hud-area {
   flex-wrap: wrap;

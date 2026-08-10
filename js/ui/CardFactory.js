@@ -10,6 +10,7 @@ import { HANGANG_DISTRICTS } from '../data/landmarks.js';
 import { getMagazineState } from '../systems/WeaponAmmoSystem.js';
 import { formatInstanceName } from '../systems/ItemEffectSystem.js';
 import { uiIcon } from './UiIcon.js';
+import { dataIcon } from './DataIcon.js';
 
 // 위험도 색상
 const DANGER_COLORS = ['#449944', '#889933', '#cc8822', '#cc3333', '#881111'];
@@ -997,7 +998,7 @@ const CardFactory = {
         const art = cardImg.closest('.card-art--img');
         if (art) {
           art.className = 'card-art';
-          art.textContent = def.icon ?? '📦';
+          art.innerHTML = dataIcon(def.icon ?? '📦');
         }
       };
     }
@@ -1111,7 +1112,7 @@ const CardFactory = {
       <div class="lc-header">
         <span class="lm-badge">${I18n.t('card.interior')}</span>
       </div>
-      <div class="lc-scene lc-scene--sublocation" ${subBg}>${subImg ? '' : `<span class="lc-scene-icon">${def.icon ?? uiIcon('location')}</span>`}</div>
+      <div class="lc-scene lc-scene--sublocation" ${subBg}>${subImg ? '' : `<span class="lc-scene-icon">${def.icon ? dataIcon(def.icon) : uiIcon('location')}</span>`}</div>
       <div class="lc-name">${I18n.itemName(def.id ?? def.subLocationId, def.name)}</div>
       <div class="lc-danger" style="color:${dangerColor}; font-size:9px; margin-top:2px;">
         ${dangerPct > 0 ? I18n.t('card.dangerHigh', { pct: dangerPct }) : I18n.t('card.dangerLow')}
@@ -1209,7 +1210,7 @@ const CardFactory = {
         <span class="npc-type-badge">${I18n.t('npc.badge')}</span>
         ${isCompanion ? `<span class="npc-companion-tag">${I18n.t('npc.companionBadge')}</span>` : ''}
       </div>
-      <div class="npc-card-icon">${def.icon ?? '👤'}</div>
+      <div class="npc-card-icon">${dataIcon(def.icon ?? '👤')}</div>
       <div class="npc-card-name">${displayName}</div>
       ${showTrust ? `<div class="npc-card-trust">${trustStars}</div>` : ''}
       ${hpBar}
@@ -1304,7 +1305,7 @@ const CardFactory = {
     const imgSrc = CARD_IMAGES[inst.definitionId] ?? null;
     const artHtml = imgSrc
       ? `<div class="card-art card-art--img"><img class="card-img" src="${imgSrc}" alt="${def.name ?? ''}"></div>`
-      : `<div class="card-art">${def.icon ?? '📦'}</div>`;
+      : `<div class="card-art">${dataIcon(def.icon ?? '📦')}</div>`;
 
     // CST 통합 — 신규 subtype 시각 신호
     let subtypeBadge = '';
@@ -1341,7 +1342,7 @@ const CardFactory = {
 
     return `
       <div class="card-header">
-        <span class="card-icon">${def.icon ?? '📦'}</span>
+        <span class="card-icon">${dataIcon(def.icon ?? '📦')}</span>
         <span class="card-name">${formatInstanceName(inst, def)}${nameRemainder ? ' ' : ''}${nameRemainder}</span>
         ${ammoBadge}${qualityBadge}${contamBadge}${subtypeBadge}
       </div>
@@ -1382,7 +1383,7 @@ const CardFactory = {
       </div>
       <div class="card-body">
         <span class="card-type-badge">${I18n.t('card.crafting')}</span>
-        <div class="card-art">${def?.icon ?? '📦'}</div>
+        <div class="card-art">${dataIcon(def?.icon ?? '📦')}</div>
         <div class="crafting-stage-label">${stageInfo}</div>
         <div class="craft-progress-percent">${Math.round(overallPct)}%</div>
         <div class="craft-progress-track">
