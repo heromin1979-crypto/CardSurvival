@@ -113,6 +113,12 @@ describe('이관된 세부장소 — 데이터 정합성', () => {
     'sl_yangcheon_civil_shelter',
     'sl_guro_secret_forge',
     'sl_geumcheon_secret_factory',
+    'sl_yeongdeungpo_kbs_studio',
+    'dongjak_bunker',
+    'sl_seocho_evidence_vault',
+    'sl_gangnam_sealed_pharmacy',
+    'sl_songpa_survivor_fort',
+    'sl_gangdong_secret_dock',
   ]);
 
   it.each(subs)('%s 보상·루팅이 실존 아이템을 가리킨다', (_h, sub) => {

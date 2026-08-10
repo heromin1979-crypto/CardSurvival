@@ -3550,7 +3550,6 @@ export const LANDMARK_DATA = {
         icon: '📡',
         desc: '본관 지하 3층 비상 스튜디오. 정규 계통과 분리된 송출 설비가 예비 전원으로 살아 있다.',
         dangerMod: 0.15,
-        noSceneImage: true,
         requiresHiddenLocation: 'hidden_yeongdeungpo_kbs_broadcast',
         firstEnterReward: {
           claimKey: 'kbs_studio_first',
@@ -3618,7 +3617,6 @@ export const LANDMARK_DATA = {
         icon: '🛎',
         desc: '대리석 로비. 관광객 안내 데스크와 기념품 매대가 뒤집혀 있다.',
         dangerMod: 0.05,
-        noSceneImage: true,
         lootTable: [
           { id: 'cloth', weight: 5 },
           { id: 'plastic', weight: 4 },
@@ -3632,7 +3630,6 @@ export const LANDMARK_DATA = {
         icon: '🔭',
         desc: '통유리 전망대. 서울 서남부가 한눈에 들어온다. 망원경 거치대가 남아 있다.',
         dangerMod: 0.10,
-        noSceneImage: true,
         lootTable: [
           { id: 'binoculars', weight: 4 },
           { id: 'electronic_parts', weight: 4 },
@@ -4036,7 +4033,6 @@ export const LANDMARK_DATA = {
         name: '지하 벙커',
         icon: '🚪',
         desc: '관리 창고 뒤편 철문 아래. 군용 통신 장비가 남아 있는 비상 벙커.',
-        noSceneImage: true,
         dangerMod: 0.15,
         requiresHiddenLocation: 'hidden_dongjak_cemetery_vault',
         firstEnterReward: {
@@ -4286,7 +4282,6 @@ export const LANDMARK_DATA = {
         icon: '⚖',
         desc: '예술의전당 건너편 법조타운 지하. 봉인 테이프가 하나도 뜯기지 않은 캐비닛 300여 개.',
         dangerMod: 0.12,
-        noSceneImage: true,
         requiresHiddenLocation: 'hidden_seocho_courthouse_vault',
         firstEnterReward: {
           claimKey: 'seocho_evidence_first',
@@ -4458,7 +4453,6 @@ export const LANDMARK_DATA = {
         icon: '💊',
         desc: '마약류 관리 구역. 셔터가 안에서 잠겼고 봉인 스티커가 그대로다.',
         dangerMod: 0.2,
-        noSceneImage: true,
         requiresHiddenLocation: 'hidden_gangnam_samsung_pharmacy',
         firstEnterReward: {
           claimKey: 'sealed_pharmacy_first',
@@ -4664,7 +4658,6 @@ export const LANDMARK_DATA = {
         icon: '🏢',
         desc: '좀비가 들어찬 로비 너머, 아케이드를 바리케이드로 막아 만든 구역. 여기서는 사람이 산다.',
         dangerMod: 0.05,
-        noSceneImage: true,
         requiresHiddenLocation: 'hidden_jamsil_lotte_tower_lobby',
         firstEnterReward: {
           claimKey: 'songpa_fort_first',
@@ -4901,7 +4894,6 @@ export const LANDMARK_DATA = {
         icon: '⛴',
         desc: '선사유적지 강변 끝, 갈대에 가려진 콘크리트 경사로. 계류 고리에 밧줄 자국이 선명하다.',
         dangerMod: 0.05,
-        noSceneImage: true,
         requiresHiddenLocation: 'hidden_gangdong_river_dock',
         firstEnterReward: {
           claimKey: 'gangdong_dock_first',

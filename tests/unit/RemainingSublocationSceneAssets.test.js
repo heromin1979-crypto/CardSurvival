@@ -23,9 +23,24 @@ const TARGET_IDS = [
   'sl_geumcheon_secret_factory',
 ];
 
+const SOUTHERN_LANDMARK_TARGET_IDS = [
+  'sl_yeongdeungpo_kbs_studio',
+  'sl_63_lobby',
+  'sl_63_observatory',
+  'dongjak_bunker',
+  'sl_seocho_evidence_vault',
+  'sl_gangnam_sealed_pharmacy',
+  'sl_songpa_survivor_fort',
+  'sl_gangdong_secret_dock',
+];
+
 const targetSubLocations = Object.values(LANDMARK_DATA)
   .flatMap(landmark => landmark.subLocations ?? [])
   .filter(subLocation => TARGET_IDS.includes(subLocation.id));
+
+const southernLandmarkSubLocations = Object.values(LANDMARK_DATA)
+  .flatMap(landmark => landmark.subLocations ?? [])
+  .filter(subLocation => SOUTHERN_LANDMARK_TARGET_IDS.includes(subLocation.id));
 
 describe('남은 중심·동부·북부·서부 숨김 서브 로케이션 장면 자산', () => {
   it('대상 id 16개가 LANDMARK_DATA의 실제 세부장소와 일치한다', () => {
@@ -39,6 +54,24 @@ describe('남은 중심·동부·북부·서부 숨김 서브 로케이션 장�
   });
 
   it.each(targetSubLocations)('$id 장면 파일이 명명 규칙 경로에 존재한다', ({ id }) => {
+    const imagePath = path.join(ROOT, 'assets', 'images', 'sublocations', `${id}.png`);
+    expect(fs.existsSync(imagePath), imagePath).toBe(true);
+  });
+});
+
+describe('남부·랜드마크 서브 로케이션 장면 자산', () => {
+  it('대상 id 8개가 LANDMARK_DATA의 실제 세부장소와 일치한다', () => {
+    expect(SOUTHERN_LANDMARK_TARGET_IDS).toHaveLength(8);
+    expect(southernLandmarkSubLocations.map(({ id }) => id).sort())
+      .toEqual([...SOUTHERN_LANDMARK_TARGET_IDS].sort());
+    expect(southernLandmarkSubLocations).toHaveLength(8);
+  });
+
+  it.each(southernLandmarkSubLocations)('$id는 아이콘 폴백 대신 장면 이미지를 사용한다', subLocation => {
+    expect(subLocation.noSceneImage).not.toBe(true);
+  });
+
+  it.each(southernLandmarkSubLocations)('$id 장면 파일이 명명 규칙 경로에 존재한다', ({ id }) => {
     const imagePath = path.join(ROOT, 'assets', 'images', 'sublocations', `${id}.png`);
     expect(fs.existsSync(imagePath), imagePath).toBe(true);
   });
