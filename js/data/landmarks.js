@@ -767,6 +767,7 @@ export const LANDMARK_DATA = {
         desc: '사육사 구역 안쪽 검역동. 우리 문이 안에서 뜯겨 있다.',
         dangerMod: 0.2,
         noSceneImage: true,
+        bossId: 'boss_mutant_alpha_tiger',
         requiresHiddenLocation: 'hidden_gwangjin_zoo_laboratory',
         firstEnterReward: {
           claimKey: 'gwangjin_zoolab_first',
@@ -4489,6 +4490,7 @@ export const LANDMARK_DATA = {
         desc: '계단 123층 끝. 통유리 앞에 망원경과 압정 꽂힌 서울 지도가 놓여 있다.',
         dangerMod: 0.2,
         noSceneImage: true,
+        bossId: 'boss_penthouse_survivor',
         requiresHiddenLocation: 'hidden_songpa_lotte_penthouse',
         firstEnterReward: {
           claimKey: 'songpa_penthouse_first',
