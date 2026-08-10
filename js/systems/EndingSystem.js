@@ -215,11 +215,14 @@ const EndingSystem = {
     try {
       const meta    = this.getUnlockMeta();
       const gameState = gs ?? ((typeof GameState !== 'undefined') ? GameState : null);
+      const ending    = ENDINGS[id];
+      const charId    = ending?.characterId;
+      const subEnding = this.getCharacterEndingCode(charId, gameState?.flags);
       if (!meta[id]) {
-        const ending    = ENDINGS[id];
-        const charId    = ending?.characterId;
-        const subEnding = this.getCharacterEndingCode(charId, gameState?.flags);
         meta[id] = { day: gameState?.time?.day ?? 1, subEnding };
+        localStorage.setItem(STORAGE_META_KEY, JSON.stringify(meta));
+      } else if (meta[id].subEnding == null && subEnding != null) {
+        meta[id] = { ...meta[id], subEnding };
         localStorage.setItem(STORAGE_META_KEY, JSON.stringify(meta));
       }
     } catch { /* ignore */ }

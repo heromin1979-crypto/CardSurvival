@@ -54,3 +54,13 @@ npm.cmd test
 
 - 메시지: `fix: align ending image keys and fallback icons`
 - 이 보고서를 포함한 커밋 해시는 최종 완료 보고에 기록한다.
+
+## 재검토 후속: 기존 갤러리 메타 복구
+
+- 기존 저장에 `{ day: 42, subEnding: null }`을 seed한 뒤 `unlockEnding()`을 다시 호출하는 회귀 테스트를 먼저 추가했다.
+- RED: `tests/unit/EndingImages.test.js` 9개 중 1개 실패. 기존 `subEnding: null`이 복구되지 않았다.
+- `unlockEnding()`은 기존 메타의 `subEnding`이 nullish이고 현재 캐릭터 플래그에서 유효 코드가 확인될 때만 해당 필드를 backfill한다.
+- 기존 `day` 및 유효한 `subEnding`은 덮어쓰지 않는다.
+- GREEN: `tests/unit/EndingImages.test.js` 9개 전부 통과.
+- 지정 검증: 4개 파일, 284개 테스트 통과. 전체 suite는 187개 파일, 2,448개 테스트 통과 및 3개 skipped.
+- 별도 커밋 메시지: `fix: backfill missing ending gallery metadata`

@@ -84,6 +84,36 @@ describe('character ending image lookup', () => {
       .toEqual({ day: 42, subEnding: 'b3_escape' });
   });
 
+  it('repairs a legacy firefighter gallery entry with a null subEnding', () => {
+    localStorage.setItem('CARD_SURVIVAL_ENDINGS_v1_meta', JSON.stringify({
+      mq_firefighter_b3: { day: 42, subEnding: null },
+    }));
+
+    EndingSystem.unlockEnding('mq_firefighter_b3', {
+      flags: { fire_ending: 'b3_escape' },
+      time: { day: 99 },
+    });
+
+    const repaired = EndingSystem.getUnlockMeta().mq_firefighter_b3;
+    expect(repaired).toEqual({ day: 42, subEnding: 'b3_escape' });
+    expect(getEndingImage('firefighter', repaired.subEnding)?.src)
+      .toBe('assets/endings/firefighter_b3_escape.png');
+  });
+
+  it('does not overwrite a valid existing gallery subEnding', () => {
+    localStorage.setItem('CARD_SURVIVAL_ENDINGS_v1_meta', JSON.stringify({
+      mq_firefighter_b3: { day: 42, subEnding: 'a1_shelter' },
+    }));
+
+    EndingSystem.unlockEnding('mq_firefighter_b3', {
+      flags: { fire_ending: 'b3_escape' },
+      time: { day: 99 },
+    });
+
+    expect(EndingSystem.getUnlockMeta().mq_firefighter_b3)
+      .toEqual({ day: 42, subEnding: 'a1_shelter' });
+  });
+
   it('resolves every active firefighter branch code through its real storage key', () => {
     const branchCodes = [
       FIREFIGHTER_BRANCH_A.mq_fire_end_a1.reward.flags.fire_ending,
