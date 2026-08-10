@@ -96,3 +96,40 @@ describe('스킬 성장 곡선은 건드리지 않았다', () => {
     expect(LEVEL_XP_TABLE.length).toBe(21);
   });
 });
+
+describe('직업 차단이 아니라 정도 차이로 둔다', () => {
+  // _meetsRecipeConditions(HiddenElementSystem.js)는 unlockConditions의
+  // requiredCharacter를 지원한다. 넣지 않은 것은 누락이 아니라 결정이다.
+  it('조립 청사진에 직업 제한이 없다', () => {
+    expect(ASSEMBLE().unlockConditions.requiredCharacter).toBeUndefined();
+    expect(ASSEMBLE().requiredCharacter).toBeUndefined();
+  });
+
+  it('엔지니어는 특기 스킬로 앞선다', async () => {
+    const CHARACTERS = (await import('../../js/data/characters.js')).default;
+    const list = Array.isArray(CHARACTERS) ? CHARACTERS : Object.values(CHARACTERS);
+    const eng = list.find(c => c.id === 'engineer');
+    expect(eng.specialtySkills).toEqual(expect.arrayContaining(['crafting', 'building']));
+    for (const skill of Object.keys(ASSEMBLE().requiredSkills)) {
+      expect(eng.specialtySkills, `${skill}: 관문 스킬이 엔지니어 특기가 아니다`).toContain(skill);
+    }
+  });
+
+  it('비엔지니어 경로가 살아 있다 — 직업 제한 없는 장소가 설계도를 준다', async () => {
+    // 조립에 requiredCharacter를 붙이면 이 경로 전체가 사문이 된다.
+    const { HIDDEN_LOCATIONS } = await import('../../js/data/hiddenLocations.js');
+    const LANDMARKS = (await import('../../js/data/landmarks.js')).default;
+    const subs = Object.values(LANDMARKS).flatMap(lm => lm.subLocations ?? [])
+      .filter(s => (s.firstEnterReward?.items ?? []).some(i => i.id === GATE_ITEM));
+    const open = subs.filter(s => {
+      const loc = HIDDEN_LOCATIONS[s.requiresHiddenLocation];
+      return loc && !loc.unlockConditions?.requiredCharacter;
+    });
+    expect(open.length, '설계도를 주는 장소가 전부 직업 전용이다').toBeGreaterThan(0);
+  });
+
+  it('자력 탈출 엔딩도 직업을 가리지 않는다', async () => {
+    const { ENDINGS } = await import('../../js/data/endings.js');
+    expect(ENDINGS.escape_helicopter_pilot.characterId).toBeUndefined();
+  });
+});
