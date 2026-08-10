@@ -73,7 +73,7 @@ const Ending = {
 
     // ── Character ending image ─────────────────────────────────
     if (ending.category === 'character' && ending.characterId) {
-      const subCode  = EndingSystem.getCharacterEndingCode(ending.characterId, gs.flags);
+      const subCode  = EndingSystem.resolveEndingSubCode(endingId, gs);
       const imgData  = subCode ? getEndingImage(ending.characterId, subCode) : null;
       if (imgData) {
         const imgWrap = document.createElement('div');

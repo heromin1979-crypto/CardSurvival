@@ -97,3 +97,15 @@ npm.cmd test
 - GREEN: `tests/unit/EndingImages.test.js` 22개 전부 통과.
 - 지정 검증: 4개 파일, 297개 테스트 통과. 전체 suite는 187개 파일, 2,461개 테스트 통과 및 3개 skipped.
 - 별도 커밋 메시지: `fix: harden ending image metadata resolution`
+
+## 과거 분기 검증 및 최초 엔딩 경로 통일
+
+- sparse 현재 상태에서 과거 `mq_engineer_rebuild / b1_rebuild`를 읽는 테스트와 fresh 소방관 B3의 mismatch/valid 최초 저장·렌더링 테스트를 추가했다.
+- RED 1: `tests/unit/EndingImages.test.js` 25개 중 2개 실패. 엔지니어 B1 과거 기록이 제거됐고 fresh B3에 A1 코드가 저장됐다.
+- RED 2: 명시적 stale-false 인프라 플래그를 추가하자 26개 중 1개 실패해 현재 런의 false 값에도 의존함을 확인했다.
+- 분기 검증은 후보 branch key를 명시하고, 과거 런에서 사라질 수 있는 그 외 진행 플래그는 permissive truthy 값으로 제공한다.
+- `unlockEnding()`, gallery resolver, `Ending._onEnter()`가 동일한 branch-code validator/resolver를 사용한다.
+- 과거 엔지니어 B1은 현재 인프라 플래그가 없거나 false여도 유지되며, fresh B3 mismatch는 저장·표시되지 않고 올바른 B3는 저장·표시된다.
+- GREEN: `tests/unit/EndingImages.test.js` 26개 전부 통과.
+- 지정 검증: 4개 파일, 301개 테스트 통과. 전체 suite는 187개 파일, 2,465개 테스트 통과 및 3개 skipped.
+- 별도 커밋 메시지: `fix: share exact ending branch validation`

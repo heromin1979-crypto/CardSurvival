@@ -22,14 +22,18 @@ function endingAcceptsSubEnding(ending, subEnding, gameState) {
   if (!ending?.characterId || typeof ending.condition !== 'function') return false;
 
   const characterId = ending.characterId;
+  const explicitFlags = {
+    [`mainQuestComplete_${characterId}`]: true,
+    [characterEndingFlagKey(characterId)]: subEnding,
+  };
   const state = {
     ...gameState,
     player: { ...gameState?.player, characterId },
-    flags: {
-      ...gameState?.flags,
-      [`mainQuestComplete_${characterId}`]: true,
-      [characterEndingFlagKey(characterId)]: subEnding,
-    },
+    flags: new Proxy(explicitFlags, {
+      get(target, key, receiver) {
+        return Reflect.has(target, key) ? Reflect.get(target, key, receiver) : true;
+      },
+    }),
     time: { ...gameState?.time, day: Number.MAX_SAFE_INTEGER },
   };
 
@@ -38,6 +42,11 @@ function endingAcceptsSubEnding(ending, subEnding, gameState) {
   } catch {
     return false;
   }
+}
+
+function isValidEndingSubCode(ending, subEnding, gameState) {
+  return Boolean(getEndingImage(ending?.characterId, subEnding)
+    && endingAcceptsSubEnding(ending, subEnding, gameState));
 }
 
 const EndingSystem = {
@@ -243,7 +252,8 @@ const EndingSystem = {
       const gameState = gs ?? ((typeof GameState !== 'undefined') ? GameState : null);
       const ending    = ENDINGS[id];
       const charId    = ending?.characterId;
-      const subEnding = this.getCharacterEndingCode(charId, gameState?.flags);
+      const candidate = this.getCharacterEndingCode(charId, gameState?.flags);
+      const subEnding = isValidEndingSubCode(ending, candidate, gameState) ? candidate : null;
       if (!meta[id]) {
         meta[id] = { day: gameState?.time?.day ?? 1, subEnding };
         localStorage.setItem(STORAGE_META_KEY, JSON.stringify(meta));
@@ -272,13 +282,11 @@ const EndingSystem = {
     const ending = ENDINGS[id];
     const characterId = ending?.characterId;
     const savedSubEnding = meta[id]?.subEnding;
-    const savedIsValid = getEndingImage(characterId, savedSubEnding)
-      && endingAcceptsSubEnding(ending, savedSubEnding, gs);
+    const savedIsValid = isValidEndingSubCode(ending, savedSubEnding, gs);
     if (savedIsValid) return savedSubEnding;
 
     const currentSubEnding = this.getCharacterEndingCode(characterId, gs?.flags);
-    const currentIsValid = getEndingImage(characterId, currentSubEnding)
-      && endingAcceptsSubEnding(ending, currentSubEnding, gs);
+    const currentIsValid = isValidEndingSubCode(ending, currentSubEnding, gs);
     const resolvedSubEnding = currentIsValid ? currentSubEnding : null;
 
     if (meta[id] && (savedSubEnding != null || resolvedSubEnding != null)) {
