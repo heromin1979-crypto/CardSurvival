@@ -422,20 +422,104 @@ export const ENDINGS = {
 
   // ── 메인 퀘스트 엔딩 (6) ───────────────────────────────────────
 
+  // 이지수의 분기는 넷(a1_vaccine / a3_data / b1_military_hub / c_vaccine)인데
+  // mq_doctor 하나가 전부를 받았다. 백신을 완성한 결말과 군 의료본부를 세운
+  // 결말이 같은 문장을 읽었다. 서술문은 docs/story/STORY_doctor.md의 해당
+  // 절에서 가져오고, docs/story/VOICE_GUIDE.md의 규칙을 따른다.
+
+  mq_doctor_vaccine: {
+    id: 'mq_doctor_vaccine', category: 'character', characterId: 'doctor',
+    title: '이지수: 치료의 빛',       subtitle: '한소희와 함께 · 백신 프로토타입 32세트',
+    gradient: 'linear-gradient(160deg,#00212a 0%,#00465a 60%,#00121a 100%)',
+    condition: (gs) => {
+      return gs.player.characterId === 'doctor'
+          && (gs.flags.mainQuestComplete_doctor ?? false)
+          && gs.flags.doctor_ending === 'a1_vaccine'
+          && gs.time.day >= 100;
+    },
+    narrative: [
+      '48시간을 이어 붙였다. 잠을 약으로 대신하고, 비커를 채우고 비웠다.',
+      '한소희가 마지막 병의 마개를 닫았다. "됐어요. 진짜 됐어요."',
+      '첫 번째 감염자에게 투여했다. 열이 내렸다.',
+      '이지수는 메모지에 적었다. "치료법 확인."',
+      '유리병 서른두 개가 선반에서 빛을 머금었다.',
+      '누구의 것도 아니었다. 두 사람의 손이 함께 만든 것이었다.',
+    ],
+  },
+
+  mq_doctor_data: {
+    id: 'mq_doctor_data', category: 'character', characterId: 'doctor',
+    title: '이지수: 다음 사람에게',    subtitle: '백신 미완 · 연구 노트 세 권 배포',
+    gradient: 'linear-gradient(160deg,#0d1c20 0%,#1e3840 60%,#070f12 100%)',
+    condition: (gs) => {
+      return gs.player.characterId === 'doctor'
+          && (gs.flags.mainQuestComplete_doctor ?? false)
+          && gs.flags.doctor_ending === 'a3_data'
+          && gs.time.day >= 100;
+    },
+    narrative: [
+      '끝내 닫히지 않았다. 백신은 그녀들의 손에서 완성되지 않았다.',
+      '대신 노트 세 권이 남았다. 감염 패턴, 실패한 배합, 다음에 볼 곳.',
+      '한소희가 말했다. "이게 더 중요한 것일 수도 있어요."',
+      '이지수는 마지막 장에 적었다. "여기까지 확인함."',
+      '한 사람이 끝내지 못한 일을, 여럿이 이어 끝내는 쪽으로 두 사람은 걸었다.',
+    ],
+  },
+
+  mq_doctor_military: {
+    id: 'mq_doctor_military', category: 'character', characterId: 'doctor',
+    title: '이지수: 멈추지 않는 것',   subtitle: '용산 군 의료본부 · 하루 15명',
+    gradient: 'linear-gradient(160deg,#0a1a16 0%,#163028 60%,#050e0b 100%)',
+    condition: (gs) => {
+      return gs.player.characterId === 'doctor'
+          && (gs.flags.mainQuestComplete_doctor ?? false)
+          && gs.flags.doctor_ending === 'b1_military_hub'
+          && gs.time.day >= 100;
+    },
+    narrative: [
+      '병상 회전율, 보급선, 외곽 감염 압력. 세 지표가 맞아떨어졌다.',
+      '야전병원과 수술대와 약품 보관장이 한 건물 안에 섰다.',
+      '하루 열다섯 명이 들어와 열다섯 명이 걸어 나간다.',
+      '백신은 없었다. 역병의 원인은 여전히 도시 어딘가에 있다.',
+      '끝낸 것은 없다. 대신 멈추지 않는 것을 하나 세웠다.',
+    ],
+  },
+
+  mq_doctor_plague_end: {
+    id: 'mq_doctor_plague_end', category: 'character', characterId: 'doctor',
+    title: '이지수: 역병의 종결',      subtitle: '보라매 단독 연구 · 0번 환자 역설계',
+    gradient: 'linear-gradient(160deg,#001418 0%,#00332f 60%,#000a0c 100%)',
+    condition: (gs) => {
+      return gs.player.characterId === 'doctor'
+          && (gs.flags.mainQuestComplete_doctor ?? false)
+          && gs.flags.doctor_ending === 'c_vaccine'
+          && gs.time.day >= 55;
+    },
+    narrative: [
+      '두 사람의 무전에 답하지 않았다. 그날로 협력자도 보급도 경계도 없어졌다.',
+      '남은 것은 임상 지식과 두 손이었다.',
+      '소굴로 혼자 들어가 0번 환자의 심장 조직을 채취했다. 손이 떨렸다.',
+      '현미경 너머로 항원 구조가 드러났다. 인간이 만든 것이 아니었다.',
+      '광범위 항생제와 농축 혈청, 감염 혈액 표본. 마지막 단계였다.',
+      '자기 팔에 주사했다. 손끝의 떨림이 멎었다.',
+      '아무도 이 이름을 모를 것이다. 그래도 원인을 끊은 것은 이 손이었다.',
+    ],
+  },
+
+  // 분기 플래그 없이 메인 퀘스트만 완료한 예외 경로 (구버전 세이브 포함).
   mq_doctor: {
     id: 'mq_doctor', category: 'character', characterId: 'doctor',
-    title: '이지수: 100일의 기록',   subtitle: '치료 프로토콜 송출 성공',
+    title: '이지수: 기록은 남는다',   subtitle: '치료 프로토콜 송출 성공',
     gradient: 'linear-gradient(160deg,#001a20 0%,#003040 60%,#001018 100%)',
     condition: (gs) => {
       return gs.player.characterId === 'doctor'
           && (gs.flags.mainQuestComplete_doctor ?? false)
+          && !gs.flags.doctor_ending
           && gs.time.day >= 100;
     },
     narrative: [
-      '100일. 무전에서 첫 번째 응답이 들렸다.',
-      '"프로토콜을 받았습니다. 효과가 있습니다."',
-      '이지수는 메모지에 적었다. "D+100. 치료법 확인."',
-      '삼성병원 약품 창고에서 시작해, KBS 마이크 앞까지.',
+      '무전에서 첫 번째 응답이 들렸다. "프로토콜을 받았습니다. 효과가 있습니다."',
+      '이지수는 메모지에 적었다. "치료법 확인."',
       '그녀의 기록은 이제 서울 밖으로 퍼져나가고 있었다.',
     ],
   },
@@ -580,19 +664,82 @@ export const ENDINGS = {
     ],
   },
 
+  // 최형식의 분기는 셋(a3_journey / b1_kingdom / b3_network)인데 mq_homeless
+  // 하나가 전부를 받았다. 서술문은 docs/story/STORY_homeless.md의 각 결말 절에서
+  // 가져오고, docs/story/VOICE_GUIDE.md의 회계 어휘 규칙을 따른다.
+
+  mq_homeless_journey: {
+    id: 'mq_homeless_journey', category: 'character', characterId: 'homeless',
+    title: '최형식: 길동무',          subtitle: '이지수와 함께 강남을 떠나다',
+    gradient: 'linear-gradient(160deg,#141a0a 0%,#2c3818 60%,#0a0e05 100%)',
+    condition: (gs) => {
+      return gs.player.characterId === 'homeless'
+          && (gs.flags.mainQuestComplete_homeless ?? false)
+          && gs.flags.homeless_ending === 'a3_journey'
+          && gs.time.day >= 100;
+    },
+    narrative: [
+      '통조림을 배낭 바닥에 깔고 위에 약품을 얹었다. 무거운 것이 아래로.',
+      '뒤에는 둘이 세운 마을이 남았고, 앞은 목록에 없는 길이었다.',
+      '다리 아래에서 2년. 혼자 정수하고, 혼자 불을 피우고, 혼자 잠들었다.',
+      '그것이 거리 생존의 기본값이었다.',
+      '규모를 좇다 사람을 잃었던 사람이, 사람을 택했더니 길동무가 남았다.',
+    ],
+  },
+
+  mq_homeless_kingdom: {
+    id: 'mq_homeless_kingdom', category: 'character', characterId: 'homeless',
+    title: '최형식: 두 번째 제국',    subtitle: '롯데타워 자치 커뮤니티 · 거주 55명',
+    gradient: 'linear-gradient(160deg,#141400 0%,#2e2a06 60%,#0a0a00 100%)',
+    condition: (gs) => {
+      return gs.player.characterId === 'homeless'
+          && (gs.flags.mainQuestComplete_homeless ?? false)
+          && gs.flags.homeless_ending === 'b1_kingdom'
+          && gs.time.day >= 100;
+    },
+    narrative: [
+      '장부를 다시 폈다. 거주 55명, 공급망 5개 구역, 부채 0.',
+      '첫 번째 회사를 무너뜨린 것은 종이 한 장이었다.',
+      '그를 무너뜨릴 종이는 이제 이 세상에 없다.',
+      '쇠지렛대와 로프 사다리로 타워를 요새로 바꿨다.',
+      '사업 미팅을 다니며 올려다보던 건물의 창 앞에 섰다.',
+      '한 번 다 잃어본 자만 같은 실수를 두 번 하지 않는다.',
+    ],
+  },
+
+  mq_homeless_broker: {
+    id: 'mq_homeless_broker', category: 'character', characterId: 'homeless',
+    title: '최형식: 서울 중개자',     subtitle: '광화문 거점 · 구역 간 물자 중개',
+    gradient: 'linear-gradient(160deg,#0c1408 0%,#1e2e22 60%,#060c07 100%)',
+    condition: (gs) => {
+      return gs.player.characterId === 'homeless'
+          && (gs.flags.mainQuestComplete_homeless ?? false)
+          && gs.flags.homeless_ending === 'b3_network'
+          && gs.time.day >= 100;
+    },
+    narrative: [
+      '타워에 남지 않기로 했다. 한곳에 전부를 걸면 그곳이 무너질 때 전부를 잃는다.',
+      '첫 번째 회사가 정확히 그렇게 무너졌다.',
+      '광화문 광장. 나침반과 쌍안경, 그리고 어깨에 멘 교환 목록.',
+      '광진 낚시꾼, 강남 의사, 서대문 소방관. 누가 무엇을 갖고 무엇이 없는지.',
+      '그 목록이 자산이었다. 창고도 담보도 필요 없는 자산.',
+      '가장 높은 자리도 가장 안전한 자리도 아닌, 가장 많이 연결된 자리를 샀다.',
+    ],
+  },
+
+  // 분기 플래그 없이 메인 퀘스트만 완료한 예외 경로 (구버전 세이브 포함).
   mq_homeless: {
     id: 'mq_homeless', category: 'character', characterId: 'homeless',
-    title: '최형식: 새 집',           subtitle: '롯데타워 거점 확보',
+    title: '최형식: 집이 생겼다',     subtitle: '롯데타워 거점 확보',
     gradient: 'linear-gradient(160deg,#0a1000 0%,#141c00 60%,#080c00 100%)',
     condition: (gs) => {
       return gs.player.characterId === 'homeless'
           && (gs.flags.mainQuestComplete_homeless ?? false)
+          && !gs.flags.homeless_ending
           && gs.time.day >= 100;
     },
     narrative: [
-      '100일. 롯데타워 42층.',
       '창밖으로 서울이 보였다. 다리 아래에서 올려다보던 그 도시.',
-      '처음으로 집이 생겼다.',
       '최형식은 커피를 한 모금 마셨다. 인스턴트지만, 따뜻했다.',
       '아무것도 없던 사람이 집을 얻었다. 세상이 끝난 덕분에.',
     ],
