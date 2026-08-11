@@ -147,6 +147,7 @@ const CHEF_SHARED = {
     objective: { type: 'collect_item_type', itemType: 'food', count: 5 },
     reward: { morale: 12, items: [{ definitionId: 'herbal_tea', qty: 2 }, { definitionId: 'salt', qty: 1 }] },
     failPenalty: { morale: -3 }, deadlineDays: 40,
+    cinematicId: 'cin_branch_chef',
     isBranchPoint: true,
     branchOptions: [
       {

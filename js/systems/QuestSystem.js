@@ -1084,9 +1084,20 @@ const QuestSystem = {
     // 플래시백 트리거 (엔지니어 아버지 회상 — 각 1회성)
     this._triggerFlashbackIfAny(q.id);
 
-    // 분기 선택 이벤트 (완료 후 발화)
-    if (qDef.isBranchPoint && qDef.branchOptions) {
-      EventBus.emit('branchChoice', { options: qDef.branchOptions, questId: q.id });
+    // 퀘스트 전용 연출 → 분기 선택 순서로 발화한다.
+    // 분기점이면 연출이 끝난 뒤 선택 모달이 열려야 한다. 동시에 띄우면
+    // 시네마틱 위에 모달이 겹친다.
+    const openBranchChoice = () => {
+      if (qDef.isBranchPoint && qDef.branchOptions) {
+        EventBus.emit('branchChoice', { options: qDef.branchOptions, questId: q.id });
+      }
+    };
+    const cinKey = qDef.cinematicId ? `_cin_${qDef.cinematicId}_played` : null;
+    if (cinKey && !GameState.flags[cinKey]) {
+      GameState.flags = { ...GameState.flags, [cinKey]: true };
+      EventBus.emit('showCinematic', { sceneId: qDef.cinematicId, onComplete: openBranchChoice });
+    } else {
+      openBranchChoice();
     }
   },
 
