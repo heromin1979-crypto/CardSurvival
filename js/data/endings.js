@@ -150,11 +150,10 @@ export const ENDINGS = {
           && board.some(c => c.definitionId === 'campfire');
     },
     narrative: [
-      '반년이 지났다. 그 사이 이곳은 달라졌다.',
       '방벽이 세워지고, 물이 정화되고, 불이 꺼지지 않는 공간.',
       '완벽하지 않았다. 부족한 것도 많았다. 하지만 여기는 안전했다.',
-      '처음 이 도시를 살아남을 수 있을까 생각했던 그 날이 기억났다.',
-      '대답은 이미 나왔다.',
+      '이 도시에서 살아남을 수 있을까 생각했던 첫날이 떠올랐다.',
+      '대답은 이미 나와 있었다.',
     ],
   },
 
@@ -164,11 +163,10 @@ export const ENDINGS = {
     gradient: 'linear-gradient(160deg,#0a0a20 0%,#10102a 60%,#080818 100%)',
     condition: (gs) => gs.time.day >= 365,
     narrative: [
-      '100일이 지났다. 서울이 무너진 그 날부터.',
-      '사계절이 돌았다. 폭염과 혹한을 모두 넘겼다.',
+      '사계절이 한 바퀴 돌았다. 서울이 무너진 그 날부터 365일.',
+      '폭염과 혹한을 모두 넘겼다.',
       '혼자가 아니었다면 더 좋았을까. 아니면 혼자였기에 살아남은 것일까.',
       '내년도 살 것이다. 그것만큼은 확신할 수 있었다.',
-      '이 도시는 아직 끝나지 않았다.',
     ],
   },
 
@@ -179,7 +177,6 @@ export const ENDINGS = {
     condition: (gs) => gs.time.day >= 180 && (gs.flags.totalItemsFound ?? 0) >= 200,
     narrative: [
       '2백 개. 폐허에서 찾아낸 물건들의 수.',
-      '필요한 것을 어디서 찾는지 감이 생겼다. 도시의 냄새를 알게 됐다.',
       '약국, 편의점, 주유소, 아파트 창고. 각각 다른 것들이 있었다.',
       '이 지식이 목숨을 구했다. 한 번이 아니라 수십 번.',
       '이제 이 도시가 낯설지 않다.',
@@ -194,8 +191,7 @@ export const ENDINGS = {
     narrative: [
       '백 개. 이 도시에서 쓰러뜨린 것들의 수.',
       '처음엔 두려웠다. 그다음엔 익숙해졌다. 이제는.',
-      '전투는 달라졌다. 더 조용해졌다. 더 효율적이 됐다.',
-      '이것이 자랑스러운 일인지는 모른다. 그러나 여기까지 데려온 것은 사실이다.',
+      '자랑스러운 일인지는 모른다. 여기까지 데려온 것은 사실이다.',
       '살아 있다. 그것으로 충분하다.',
     ],
   },
@@ -225,7 +221,7 @@ export const ENDINGS = {
   escape_helicopter: {
     id: 'escape_helicopter', category: 'escape', characterId: 'soldier',
     title: '마지막 헬기',           subtitle: 'KBS 방송 · 63빌딩 유도 착륙',
-    gradient: 'linear-gradient(160deg,#001020 0%,#001830 60%,#000818 100%)',
+    gradient: 'linear-gradient(160deg,#111504 0%,#1c2407 60%,#0b0d03 100%)',
     condition: (gs) => {
       return gs.player.characterId === 'soldier'
           && (gs.flags.mainQuestComplete_soldier ?? false)
@@ -296,8 +292,10 @@ export const ENDINGS = {
 
   char_doctor: {
     id: 'char_doctor', category: 'character', characterId: 'doctor',
-    title: '이지수: 치료의 빛',     subtitle: '감염 해독 프로토콜 완성',
-    gradient: 'linear-gradient(160deg,#001a20 0%,#00252f 60%,#001018 100%)',
+    // char_*는 메인 퀘스트를 밟지 않고 도달한 결말이다. 성취가 아니라
+    // 우연의 톤으로 정규 엔딩과 갈라야 한다 (docs/story/VOICE_GUIDE.md).
+    title: '이지수: 우연한 처방',   subtitle: '혼자 도달한 감염 해독',
+    gradient: 'linear-gradient(160deg,#000606 0%,#000a0a 60%,#000404 100%)',
     condition: (gs) => {
       return gs.player.characterId === 'doctor'
           && !(gs.flags.mainQuestComplete_doctor ?? false)
@@ -307,18 +305,17 @@ export const ENDINGS = {
           && (gs.flags.infectionCured ?? false);
     },
     narrative: [
-      '이지수는 메모를 꺼냈다. "신촌 세브란스. 바이러스 연구팀."',
-      '그 팀은 없었다. 하지만 데이터가 있었다. 감염 패턴, 샘플, 메모.',
-      '반년의 임상 관찰과 결합했다. 프로토콜이 만들어졌다.',
-      '첫 번째 감염자에게 투여했을 때, 열이 내렸다.',
-      '이지수는 메모지에 적었다. "D+180. 치료법 확인."',
+      '계획은 없었다. 눈앞의 환자를 처치하다 보니 반년이 지났다.',
+      '서대문의 빈 연구동. 남이 쓰다 만 배양기가 전원이 꽂힌 채 있었다.',
+      '배합은 세 번째에 맞았다. 왜 맞았는지는 아직 모른다.',
+      '수첩에 날짜도 없이 한 줄을 적었다. "일단 듣는다."',
     ],
   },
 
   char_soldier: {
     id: 'char_soldier', category: 'character', characterId: 'soldier',
     title: '강민준: 방송의 시작',   subtitle: 'KBS 방송 재개',
-    gradient: 'linear-gradient(160deg,#100a00 0%,#1a1200 60%,#0a0800 100%)',
+    gradient: 'linear-gradient(160deg,#040501 0%,#070901 60%,#030300 100%)',
     condition: (gs) => {
       return gs.player.characterId === 'soldier'
           && !(gs.flags.mainQuestComplete_soldier ?? false)
@@ -329,17 +326,16 @@ export const ENDINGS = {
     },
     narrative: [
       '여의도 KBS. 잡음뿐이던 무전기가 말했던 곳.',
-      '30명을 뚫고 들어갔다. 건물 안은 조용했다.',
-      '방송 장비는 살아 있었다. 발전기도.',
-      '강민준은 마이크 앞에 앉았다. 한 번 심호흡.',
-      '"여기는 서울 KBS. 생존자분들, 들려드릴 말씀이 있습니다."',
+      '서른을 뚫고 들어갔다. 건물 안은 조용했다.',
+      '방송 장비도 발전기도 살아 있었다. 아무도 손대지 않아서.',
+      '"여기는 서울 KBS." 명령도 임무도 없이, 그냥 눌렀다.',
     ],
   },
 
   char_firefighter: {
     id: 'char_firefighter', category: 'character', characterId: 'firefighter',
     title: '박영철: 귀향',           subtitle: '은평 가족 재회',
-    gradient: 'linear-gradient(160deg,#1a0800 0%,#251000 60%,#140600 100%)',
+    gradient: 'linear-gradient(160deg,#0f0201 0%,#190302 60%,#0a0101 100%)',
     condition: (gs) => {
       return gs.player.characterId === 'firefighter'
           && !(gs.flags.mainQuestComplete_firefighter ?? false)
@@ -352,15 +348,14 @@ export const ENDINGS = {
       '불광동. 이름만 생각해도 가슴이 조여왔다.',
       '반년이 지나서야 도달했다. 아파트 3층, 빨간 현관문.',
       '노크를 했다. 아무 소리가 없었다. 다시 두드렸다.',
-      '문 안에서 발소리가 들렸다. 멈추는 소리.',
-      '"영철이야?" 아내의 목소리였다.',
+      '"영철이야?" 문 안에서 아내의 목소리가 났다.',
     ],
   },
 
   char_homeless: {
     id: 'char_homeless', category: 'character', characterId: 'homeless',
     title: '최형식: 새 집',          subtitle: '한강 이남 생존자 거점',
-    gradient: 'linear-gradient(160deg,#0a1000 0%,#121800 60%,#080c00 100%)',
+    gradient: 'linear-gradient(160deg,#010603 0%,#020a04 60%,#010402 100%)',
     condition: (gs) => {
       return gs.player.characterId === 'homeless'
           && !(gs.flags.mainQuestComplete_homeless ?? false)
@@ -371,18 +366,17 @@ export const ENDINGS = {
           && (gs.flags.totalItemsFound ?? 0) >= 50;
     },
     narrative: [
-      '강을 건넜다. 강 이남 어딘가, 불이 켜진 건물이 보였다.',
-      '동호대교 아래에서 2년을 살았다. 아무것도 없이.',
-      '건물 입구에서 소리가 났다. 사람들. 살아있는 사람들.',
+      '강을 건넜다. 강 이남 어딘가에 불이 켜진 건물이 있었다.',
+      '들어갈 명분은 없었다. 다만 다리 아래보다 따뜻해 보였을 뿐이다.',
       '"올라오세요. 자리 있어요." 누군가 말했다.',
-      '최형식은 처음으로 웃었다. 집이 생겼다.',
+      '장부에 적을 것도 없이, 자리가 하나 생겼다.',
     ],
   },
 
   char_chef: {
     id: 'char_chef', category: 'character', characterId: 'chef',
     title: '윤재혁: 희망의 한 끼',      subtitle: '급식소 운영 성공',
-    gradient: 'linear-gradient(160deg,#1a0a00 0%,#2a1400 60%,#100800 100%)',
+    gradient: 'linear-gradient(160deg,#070400 0%,#0b0700 60%,#040300 100%)',
     condition: (gs) => {
       return gs.player.characterId === 'chef'
           && !(gs.flags.mainQuestComplete_chef ?? false)
@@ -391,18 +385,17 @@ export const ENDINGS = {
           && (gs.flags.totalFoodCrafted ?? 0) >= 20;
     },
     narrative: [
-      '남대문시장의 한쪽 골목. 임시 조리대 위에 냄비가 올려져 있다.',
-      '윤재혁의 손은 멈추지 않았다. 호텔 주방에서처럼.',
-      '줄이 길어졌다. 굶주린 사람들.',
-      '"한 그릇 더 있어요." 재혁이 말했다.',
-      '따뜻한 한 끼. 그것이 희망의 시작이었다.',
+      '남대문시장 골목. 주운 냄비를 벽돌 두 장 위에 올렸다.',
+      '메뉴랄 것이 없었다. 있는 것을 넣고 간만 맞췄다.',
+      '줄이 길어졌다. 세어보니 마흔 몇 명이었다.',
+      '"한 그릇 더 있어요." 그 말을 하려고 계속 저었다.',
     ],
   },
 
   char_engineer: {
     id: 'char_engineer', category: 'character', characterId: 'engineer',
     title: '정대한: 탈출 기계',      subtitle: '이동수단 제작 · 서울 탈출',
-    gradient: 'linear-gradient(160deg,#0a0a00 0%,#141400 60%,#080800 100%)',
+    gradient: 'linear-gradient(160deg,#01050c 0%,#020815 60%,#010308 100%)',
     condition: (gs) => {
       return gs.player.characterId === 'engineer'
           && !(gs.flags.mainQuestComplete_engineer ?? false)
@@ -412,11 +405,10 @@ export const ENDINGS = {
           && gs.location.districtsVisited.includes('seongdong');
     },
     narrative: [
-      '도면이 완성됐다. 고철과 로프로 만든 간이 이동수단.',
-      '공학적으로는 조잡했다. 정대한은 그것을 알고 있었다.',
-      '하지만 달렸다. 서울의 도로를 따라, 달렸다.',
-      '한강 다리를 건넜다. 이후 도로는 막혀 있었다.',
-      '경사면을 오르며, 처음으로 서울 외곽을 봤다.',
+      '도면이랄 것이 없었다. 고철과 로프로 붙인 물건에 도면은 사치였다.',
+      '용접 자리 열두 군데. 그중 다섯은 두 번 붙였다.',
+      '그래도 굴러갔다. 시속 삼십. 그 이상은 무리였다.',
+      '아버지에게 보여줄 물건은 아니었다. 나가기엔 충분했다.',
     ],
   },
 
@@ -430,7 +422,7 @@ export const ENDINGS = {
   mq_doctor_vaccine: {
     id: 'mq_doctor_vaccine', category: 'character', characterId: 'doctor',
     title: '이지수: 치료의 빛',       subtitle: '한소희와 함께 · 백신 프로토타입 32세트',
-    gradient: 'linear-gradient(160deg,#00212a 0%,#00465a 60%,#00121a 100%)',
+    gradient: 'linear-gradient(160deg,#03181a 0%,#05272b 60%,#020f10 100%)',
     condition: (gs) => {
       return gs.player.characterId === 'doctor'
           && (gs.flags.mainQuestComplete_doctor ?? false)
@@ -450,7 +442,7 @@ export const ENDINGS = {
   mq_doctor_data: {
     id: 'mq_doctor_data', category: 'character', characterId: 'doctor',
     title: '이지수: 다음 사람에게',    subtitle: '백신 미완 · 연구 노트 세 권 배포',
-    gradient: 'linear-gradient(160deg,#0d1c20 0%,#1e3840 60%,#070f12 100%)',
+    gradient: 'linear-gradient(160deg,#030f10 0%,#04191b 60%,#020a0a 100%)',
     condition: (gs) => {
       return gs.player.characterId === 'doctor'
           && (gs.flags.mainQuestComplete_doctor ?? false)
@@ -469,7 +461,7 @@ export const ENDINGS = {
   mq_doctor_military: {
     id: 'mq_doctor_military', category: 'character', characterId: 'doctor',
     title: '이지수: 멈추지 않는 것',   subtitle: '용산 군 의료본부 · 하루 15명',
-    gradient: 'linear-gradient(160deg,#0a1a16 0%,#163028 60%,#050e0b 100%)',
+    gradient: 'linear-gradient(160deg,#011416 0%,#022124 60%,#010c0e 100%)',
     condition: (gs) => {
       return gs.player.characterId === 'doctor'
           && (gs.flags.mainQuestComplete_doctor ?? false)
@@ -488,7 +480,7 @@ export const ENDINGS = {
   mq_doctor_plague_end: {
     id: 'mq_doctor_plague_end', category: 'character', characterId: 'doctor',
     title: '이지수: 역병의 종결',      subtitle: '보라매 단독 연구 · 0번 환자 역설계',
-    gradient: 'linear-gradient(160deg,#001418 0%,#00332f 60%,#000a0c 100%)',
+    gradient: 'linear-gradient(160deg,#000c0d 0%,#011416 60%,#000709 100%)',
     condition: (gs) => {
       return gs.player.characterId === 'doctor'
           && (gs.flags.mainQuestComplete_doctor ?? false)
@@ -510,7 +502,7 @@ export const ENDINGS = {
   mq_doctor: {
     id: 'mq_doctor', category: 'character', characterId: 'doctor',
     title: '이지수: 기록은 남는다',   subtitle: '치료 프로토콜 송출 성공',
-    gradient: 'linear-gradient(160deg,#001a20 0%,#003040 60%,#001018 100%)',
+    gradient: 'linear-gradient(160deg,#010808 0%,#010e0e 60%,#000505 100%)',
     condition: (gs) => {
       return gs.player.characterId === 'doctor'
           && (gs.flags.mainQuestComplete_doctor ?? false)
@@ -519,7 +511,7 @@ export const ENDINGS = {
     },
     narrative: [
       '무전에서 첫 번째 응답이 들렸다. "프로토콜을 받았습니다. 효과가 있습니다."',
-      '이지수는 메모지에 적었다. "치료법 확인."',
+      '이지수는 메모지 맨 아래에 한 줄을 더했다. "확인함."',
       '그녀의 기록은 이제 서울 밖으로 퍼져나가고 있었다.',
     ],
   },
@@ -532,7 +524,7 @@ export const ENDINGS = {
   mq_soldier_rescue: {
     id: 'mq_soldier_rescue', category: 'character', characterId: 'soldier',
     title: '강민준: 서울 구조망',     subtitle: '전역 구조 신호 완성',
-    gradient: 'linear-gradient(160deg,#0a1018 0%,#152535 60%,#060a10 100%)',
+    gradient: 'linear-gradient(160deg,#0b0d03 0%,#131606 60%,#070902 100%)',
     condition: (gs) => {
       return gs.player.characterId === 'soldier'
           && (gs.flags.mainQuestComplete_soldier ?? false)
@@ -551,7 +543,7 @@ export const ENDINGS = {
   mq_soldier_network: {
     id: 'mq_soldier_network', category: 'character', characterId: 'soldier',
     title: '강민준: 전국 통신망',     subtitle: '서울-수원-인천-부산 연결',
-    gradient: 'linear-gradient(160deg,#100a00 0%,#201800 60%,#0a0800 100%)',
+    gradient: 'linear-gradient(160deg,#080b01 0%,#0d1202 60%,#050701 100%)',
     condition: (gs) => {
       return gs.player.characterId === 'soldier'
           && (gs.flags.mainQuestComplete_soldier ?? false)
@@ -570,7 +562,7 @@ export const ENDINGS = {
   mq_soldier_suwon: {
     id: 'mq_soldier_suwon', category: 'character', characterId: 'soldier',
     title: '강민준: 남쪽으로',        subtitle: '마지막 방송 후 수원 이동',
-    gradient: 'linear-gradient(160deg,#12100a 0%,#282010 60%,#0c0a06 100%)',
+    gradient: 'linear-gradient(160deg,#0e1203 0%,#171e05 60%,#090b02 100%)',
     condition: (gs) => {
       return gs.player.characterId === 'soldier'
           && (gs.flags.mainQuestComplete_soldier ?? false)
@@ -590,7 +582,7 @@ export const ENDINGS = {
   mq_soldier: {
     id: 'mq_soldier', category: 'character', characterId: 'soldier',
     title: '강민준: 서울 집결 좌표',   subtitle: 'KBS 방송 수신 확인',
-    gradient: 'linear-gradient(160deg,#100a00 0%,#201800 60%,#0a0800 100%)',
+    gradient: 'linear-gradient(160deg,#060801 0%,#0a0d02 60%,#040501 100%)',
     condition: (gs) => {
       const branch = gs.flags.soldier_ending;
       return gs.player.characterId === 'soldier'
@@ -599,18 +591,16 @@ export const ENDINGS = {
           && gs.time.day >= 100;
     },
     narrative: [
-      '100일. 무전에서 신호가 들린다.',
-      '경기도 수원에서 첫 번째 응답. "KBS 수신했습니다. 이동 중입니다."',
-      '강민준은 마이크를 다시 잡았다.',
-      '"여기는 서울 KBS. 반복합니다. 서울 집결 좌표를 전송합니다."',
-      '서울은 다시 시작되고 있었다.',
+      '경기도 수원에서 응답이 들어왔다. "KBS 수신했습니다. 이동 중입니다."',
+      '강민준은 마이크를 다시 잡고 집결 좌표를 읽었다.',
+      '박상현, 신호는 갔다.',
     ],
   },
 
   mq_firefighter: {
     id: 'mq_firefighter', category: 'character', characterId: 'firefighter',
     title: '박영철: 은평의 수호자',   subtitle: '가족과 함께 100일 생존',
-    gradient: 'linear-gradient(160deg,#1a0800 0%,#301000 60%,#140600 100%)',
+    gradient: 'linear-gradient(160deg,#140303 0%,#210504 60%,#0d0202 100%)',
     condition: (gs) => {
       return gs.player.characterId === 'firefighter'
           && (gs.flags.mainQuestComplete_firefighter ?? false)
@@ -618,18 +608,16 @@ export const ENDINGS = {
           && gs.time.day >= 100;
     },
     narrative: [
-      '100일. 가족과 함께 버텼다.',
-      '아내가 아침을 차렸다. 아이들이 뛰어다녔다.',
       '방벽 위에서 은평구를 내려다봤다. 조용했다.',
-      '이 곳이 새로운 집이다.',
-      '박영철은 소방관이 아닌, 아버지로 서 있었다.',
+      '아내가 아침을 차리는 소리, 아이들이 뛰는 소리가 등 뒤에 있었다.',
+      '박영철은 소방관이 아니라 아버지로 서 있었다.',
     ],
   },
 
   mq_firefighter_b3: {
     id: 'mq_firefighter_b3', category: 'character', characterId: 'firefighter',
     title: '박영철: 떠나는 사람',     subtitle: '대피소를 남기고 서울 밖으로',
-    gradient: 'linear-gradient(160deg,#1a0800 0%,#2a1208 60%,#140600 100%)',
+    gradient: 'linear-gradient(160deg,#200706 0%,#360c0b 60%,#140504 100%)',
     condition: (gs) => {
       return gs.player.characterId === 'firefighter'
           && (gs.flags.mainQuestComplete_firefighter ?? false)
@@ -637,18 +625,18 @@ export const ENDINGS = {
           && gs.time.day >= 100;
     },
     narrative: [
-      '100일. 성수동 공장은 수십 명의 대피소가 됐다.',
+      '성수동 공장은 수십 명의 대피소가 됐다.',
       '영철은 그곳을 생존자들에게 맡기고 정대한과 길을 나섰다.',
       '한 번도 가보지 못한 은평이 등 뒤로 멀어졌다.',
       '많은 사람을 살렸다. 대신 가족의 생사는 끝내 모른 채로 남았다.',
-      '"길이 안전해지면, 그때 불광동으로 갑니다." 영철은 북쪽을 한 번 더 봤다.',
+      '"길이 안전해지면, 그때 불광동으로 갑니다." 북쪽을 한 번 더 봤다.',
     ],
   },
 
   mq_firefighter_a3: {
     id: 'mq_firefighter_a3', category: 'character', characterId: 'firefighter',
     title: '박영철: 이재훈의 이름으로',  subtitle: '추모로 세운 은평 대피소',
-    gradient: 'linear-gradient(160deg,#140600 0%,#241006 60%,#0e0400 100%)',
+    gradient: 'linear-gradient(160deg,#1b0502 0%,#2e0803 60%,#110301 100%)',
     condition: (gs) => {
       return gs.player.characterId === 'firefighter'
           && (gs.flags.mainQuestComplete_firefighter ?? false)
@@ -656,7 +644,7 @@ export const ENDINGS = {
           && gs.time.day >= 100;
     },
     narrative: [
-      '100일. 대피소 입구에 작은 돌 하나가 섰다.',
+      '대피소 입구에 작은 돌 하나가 섰다.',
       '"이재훈 (1985–2026). 끝까지 동료였다."',
       '영철은 그가 남긴 로프로 아파트 동들을 이었다.',
       '가족은 살렸다. 함께 불 속에 뛰어든 동료는 그러지 못했다.',
@@ -671,7 +659,7 @@ export const ENDINGS = {
   mq_homeless_journey: {
     id: 'mq_homeless_journey', category: 'character', characterId: 'homeless',
     title: '최형식: 길동무',          subtitle: '이지수와 함께 강남을 떠나다',
-    gradient: 'linear-gradient(160deg,#141a0a 0%,#2c3818 60%,#0a0e05 100%)',
+    gradient: 'linear-gradient(160deg,#040f08 0%,#071a0d 60%,#030a05 100%)',
     condition: (gs) => {
       return gs.player.characterId === 'homeless'
           && (gs.flags.mainQuestComplete_homeless ?? false)
@@ -690,7 +678,7 @@ export const ENDINGS = {
   mq_homeless_kingdom: {
     id: 'mq_homeless_kingdom', category: 'character', characterId: 'homeless',
     title: '최형식: 두 번째 제국',    subtitle: '롯데타워 자치 커뮤니티 · 거주 55명',
-    gradient: 'linear-gradient(160deg,#141400 0%,#2e2a06 60%,#0a0a00 100%)',
+    gradient: 'linear-gradient(160deg,#04140a 0%,#072111 60%,#030d06 100%)',
     condition: (gs) => {
       return gs.player.characterId === 'homeless'
           && (gs.flags.mainQuestComplete_homeless ?? false)
@@ -710,7 +698,7 @@ export const ENDINGS = {
   mq_homeless_broker: {
     id: 'mq_homeless_broker', category: 'character', characterId: 'homeless',
     title: '최형식: 서울 중개자',     subtitle: '광화문 거점 · 구역 간 물자 중개',
-    gradient: 'linear-gradient(160deg,#0c1408 0%,#1e2e22 60%,#060c07 100%)',
+    gradient: 'linear-gradient(160deg,#020c06 0%,#031309 60%,#010704 100%)',
     condition: (gs) => {
       return gs.player.characterId === 'homeless'
           && (gs.flags.mainQuestComplete_homeless ?? false)
@@ -731,7 +719,7 @@ export const ENDINGS = {
   mq_homeless: {
     id: 'mq_homeless', category: 'character', characterId: 'homeless',
     title: '최형식: 집이 생겼다',     subtitle: '롯데타워 거점 확보',
-    gradient: 'linear-gradient(160deg,#0a1000 0%,#141c00 60%,#080c00 100%)',
+    gradient: 'linear-gradient(160deg,#020804 0%,#030e06 60%,#010502 100%)',
     condition: (gs) => {
       return gs.player.characterId === 'homeless'
           && (gs.flags.mainQuestComplete_homeless ?? false)
@@ -750,7 +738,7 @@ export const ENDINGS = {
   mq_chef_network: {
     id: 'mq_chef_network', category: 'character', characterId: 'chef',
     title: '윤재혁: 한강 이남 식량 네트워크',  subtitle: '강남 대형마트 보급망 완성',
-    gradient: 'linear-gradient(160deg,#1a0a00 0%,#2a1800 60%,#100800 100%)',
+    gradient: 'linear-gradient(160deg,#110c03 0%,#1d1405 60%,#0b0802 100%)',
     condition: (gs) => {
       return gs.player.characterId === 'chef'
           && (gs.flags.mainQuestComplete_chef ?? false)
@@ -760,16 +748,18 @@ export const ENDINGS = {
     narrative: [
       '남대문에서 시작한 급식소가 강남·잠실·반포로 뻗어나갔다.',
       '매일 순회 보급 트럭이 4개 마트를 돈다. 하루 87명분.',
+      '한 끼 열량 620킬로칼로리. 그 선을 넘기려고 넉 달을 고쳤다.',
       '윤재혁은 지도 위에 붉은 선으로 보급 루트를 그렸다.',
       '"한 사람의 주방이 도시의 식탁이 됐다."',
-      '직접 기르지는 못했다. 흩어진 식량을 모아 흐르게 했다. 그것으로 충분했다.',
+      '직접 기르지는 못했다. 흩어진 식량을 모아 흐르게 했을 뿐이다.',
+      '그래도 오늘 저녁, 여든일곱 명이 굶지 않는다.',
     ],
   },
 
   mq_chef_farm: {
     id: 'mq_chef_farm', category: 'character', characterId: 'chef',
     title: '윤재혁: 가락 자급 급식소',    subtitle: '옥상 농장 + 남대문 정착',
-    gradient: 'linear-gradient(160deg,#0a1400 0%,#142800 60%,#081000 100%)',
+    gradient: 'linear-gradient(160deg,#0d0901 0%,#151001 60%,#080600 100%)',
     condition: (gs) => {
       return gs.player.characterId === 'chef'
           && (gs.flags.mainQuestComplete_chef ?? false)
@@ -779,8 +769,10 @@ export const ENDINGS = {
     narrative: [
       '가락시장 옥상. 허브와 잎채소가 바람에 흔들린다.',
       '폐허가 된 도시에서 처음으로, 음식을 직접 길렀다.',
-      '남대문 급식소는 외부 보급에 의지하지 않는다.',
+      '파종에서 수확까지 마흔이레. 세 번째 이랑에서야 맞았다.',
+      '남대문 급식소는 이제 외부 보급에 의지하지 않는다.',
       '윤재혁은 흙 묻은 손을 앞치마에 닦았다.',
+      '주방장의 손이 아니라 농부의 손이 됐다.',
       '"정착이란 이런 것이다. 심고, 기다리고, 수확하는 일."',
     ],
   },
@@ -788,7 +780,7 @@ export const ENDINGS = {
   mq_chef_ascension: {
     id: 'mq_chef_ascension', category: 'character', characterId: 'chef',
     title: '윤재혁: 용산 미식 복원',       subtitle: '종말 이후 다시 태어난 요리',
-    gradient: 'linear-gradient(160deg,#200a00 0%,#331000 60%,#140800 100%)',
+    gradient: 'linear-gradient(160deg,#0a0601 0%,#100b02 60%,#060401 100%)',
     condition: (gs) => {
       return gs.player.characterId === 'chef'
           && (gs.flags.mainQuestComplete_chef ?? false)
@@ -797,17 +789,19 @@ export const ENDINGS = {
     },
     narrative: [
       '용산의 작은 식당. 저녁마다 풀코스가 나간다.',
-      '수프. 메인. 허브차. 소피텔 동료 박민호가 옆에서 플레이팅을 맞춘다.',
+      '수프는 65도, 메인은 접시째 데워 62도. 온도부터 맞춘다.',
+      '소피텔 동료 박민호가 옆에서 플레이팅을 맞춘다.',
+      '하루 열두 석. 예약도 값도 없이, 순서만 있다.',
       '"요리가 사치가 아니라 존엄이라는 걸, 여기서 증명했다."',
       '윤재혁은 마지막 접시에 허브 소금을 뿌렸다.',
-      '종말 속에서도 미식은 되살아난다. 셰프의 정점이다.',
+      '칼끝에서 시작해 칼끝에서 끝나는 하루가 돌아왔다.',
     ],
   },
 
   mq_engineer_heli: {
     id: 'mq_engineer_heli', category: 'character', characterId: 'engineer',
     title: '정대한: 하늘로',          subtitle: '아버지의 설계도 · 헬기 탈출',
-    gradient: 'linear-gradient(160deg,#000a14 0%,#001e32 60%,#000810 100%)',
+    gradient: 'linear-gradient(160deg,#061028 0%,#0a1b43 60%,#040a19 100%)',
     condition: (gs) => {
       return gs.player.characterId === 'engineer'
           && (gs.flags.mainQuestComplete_engineer ?? false)
@@ -816,8 +810,10 @@ export const ENDINGS = {
     },
     narrative: [
       '이륙. 로터가 굉음을 낸다. 동체가 흔들리며 상승.',
+      '회전수 390. 진동은 허용치 안. 계기가 전부 초록이다.',
       '10미터. 30미터. 100미터. 서울이 발 밑에 펼쳐진다.',
-      '아버지가 평생 보지 못했던 각도. 20년 전 서랍에 넣은 설계도가 하늘을 난다.',
+      '스물다섯 개 구가 한 화면에 들어왔다. 삼백이십오 일 만이다.',
+      '아버지가 평생 보지 못했던 각도. 서랍 속 설계도가 하늘을 난다.',
       '박영철이 지상에서 손을 흔든다. 점점 작아진다.',
       '한강을 넘었다. 남쪽으로. 아버지, 이제 하늘로 갑니다.',
     ],
@@ -828,7 +824,7 @@ export const ENDINGS = {
   mq_engineer_escape: {
     id: 'mq_engineer_escape', category: 'character', characterId: 'engineer',
     title: '정대한: 탈출 차량',       subtitle: '아버지 설계도로 서울 탈출',
-    gradient: 'linear-gradient(160deg,#0a0a00 0%,#181800 60%,#080800 100%)',
+    gradient: 'linear-gradient(160deg,#03091a 0%,#05102b 60%,#020610 100%)',
     condition: (gs) => {
       return gs.player.characterId === 'engineer'
           && (gs.flags.mainQuestComplete_engineer ?? false)
@@ -837,9 +833,10 @@ export const ENDINGS = {
     },
     narrative: [
       '구로 국도. 시동이 걸렸다. 전기 모터가 부드럽게 돈다.',
+      '적재 240킬로, 항속 여든. 계산대로 나왔다.',
       '아버지의 20년 전 설계도가 실물이 되어 달리고 있다.',
-      '한강 다리를 건넜다. 경사면을 오르며.',
-      '처음으로 서울 외곽을 봤다. 하늘이 달랐다.',
+      '한강 다리를 건넜다. 경사면을 오르며 속도를 줄였다.',
+      '차창 밖 하늘이 달랐다. 서울 안에서는 본 적 없는 색이었다.',
       '"아버지, 설계도대로 됐어요. 이제 남쪽으로 갑니다."',
     ],
   },
@@ -847,7 +844,7 @@ export const ENDINGS = {
   mq_engineer_base: {
     id: 'mq_engineer_base', category: 'character', characterId: 'engineer',
     title: '정대한: 구로 기술 거점',   subtitle: '차량 기술로 서울에 남다',
-    gradient: 'linear-gradient(160deg,#100a00 0%,#1c1400 60%,#0a0600 100%)',
+    gradient: 'linear-gradient(160deg,#02070e 0%,#040b17 60%,#020409 100%)',
     condition: (gs) => {
       return gs.player.characterId === 'engineer'
           && (gs.flags.mainQuestComplete_engineer ?? false)
@@ -856,17 +853,18 @@ export const ENDINGS = {
     },
     narrative: [
       '구로 공장. 작업장, 정비소, 방벽이 섰다.',
-      '탈출 차량은 보급 차량이 됐다. 물자를 운반한다.',
+      '탈출 차량은 보급 차량이 됐다. 짐칸을 뜯고 적재함을 다시 짰다.',
+      '주행거리 계기가 이천을 넘겼다. 서울 안에서만.',
       '"아버지 설계도는 여기서 서울을 살리는 데 쓰입니다."',
       '정대한은 공구함을 닫았다. 떠나지 않기로 했다.',
-      '재건의 중심. 엔지니어가 지키는 거점.',
+      '나가는 기계를 만들었는데, 남는 데 썼다. 후회는 없었다.',
     ],
   },
 
   mq_engineer_rebuild: {
     id: 'mq_engineer_rebuild', category: 'character', characterId: 'engineer',
     title: '정대한: 도시 인프라 복구',  subtitle: '전기·수도·통신 복원',
-    gradient: 'linear-gradient(160deg,#000a14 0%,#001828 60%,#000810 100%)',
+    gradient: 'linear-gradient(160deg,#060d19 0%,#0a1629 60%,#040810 100%)',
     condition: (gs) => {
       return gs.player.characterId === 'engineer'
           && (gs.flags.mainQuestComplete_engineer ?? false)
@@ -879,9 +877,10 @@ export const ENDINGS = {
     narrative: [
       '은평구 밤. 가로등이 하나씩 켜지기 시작했다.',
       '전기, 수도, 통신. 세 가지가 돌아간다.',
+      '발전 출력 320킬로와트. 급수 계통 압력 정상. 송신 반경 12킬로.',
       '박영철이 옆에서 옅게 웃었다. "대한씨, 도시가 살아나요."',
       '정대한은 안테나 아래에서 서울 지도를 펼쳤다.',
-      '"아버지가 만들려 했던 것과 다르지 않았어요." 엔지니어의 재건.',
+      '"아버지가 만들려 했던 것과 다르지 않았어요."',
     ],
   },
 
@@ -938,7 +937,6 @@ export const ENDINGS = {
     },
     narrative: [
       '영하 20도의 겨울이 지나고, 이번엔 35도를 넘는 여름이었다.',
-      '물이 없으면 하루를 버티기도 힘들었다.',
       '폐허가 된 도시의 여름은 산 자보다 죽은 자에게 더 친절했다.',
       '그러나 당신은 버텼다. 물을 찾고, 그늘을 찾고, 하루씩.',
       '가을바람이 불어왔다. 살아있다는 것이 실감났다.',
@@ -955,7 +953,6 @@ export const ENDINGS = {
     },
     narrative: [
       '영하의 서울. 캠프파이어 하나가 전부였다.',
-      '식량이 떨어질 때마다, 조금 더 멀리 나갔다.',
       '좀비들도 추위를 피했다. 오직 당신만이 거리에 있었다.',
       '봄이 올 거라 믿었다. 믿지 않으면 버틸 수 없었기 때문에.',
       '눈이 녹기 시작했다. 겨울을 이겼다.',
@@ -971,9 +968,8 @@ export const ENDINGS = {
           && gs.player.isAlive;
     },
     narrative: [
-      '봄에는 꽃이 피었다. 폐허 사이로.',
-      '여름엔 모든 것이 타오를 것 같았다. 그래도 버텼다.',
-      '가을엔 홀로 낙엽을 밟았다. 소리가 너무 크게 들렸다.',
+      '봄에는 폐허 사이로 꽃이 피었다.',
+      '여름엔 모든 것이 타오를 것 같았다. 가을엔 홀로 낙엽을 밟았다.',
       '겨울엔 다 끝날 것이라 생각했다. 틀렸다.',
       '1년이 지났다. 서울은 여전히 폐허지만, 당신은 살아 있다.',
     ],
