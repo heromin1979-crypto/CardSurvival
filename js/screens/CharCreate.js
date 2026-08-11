@@ -211,6 +211,11 @@ const CharCreate = {
     const char       = this._selectedChar;
     const districtId = this._selectedDistrict;
 
+    // ── 이전 게임 상태 제거 ──────────────────────────────────
+    // 사망 후 새로고침 없이 새 게임을 시작하면 모듈 싱글톤인 GameState와 각 시스템에
+    // 이전 게임 값이 남는다. 아래 캐릭터별 초기화가 덮지 않는 필드를 먼저 되돌린다.
+    gs.resetForNewGame();
+
     // ── 플레이어 초기화 ──────────────────────────────────────
     gs.player.name        = name;
     gs.player.characterId = char.id;

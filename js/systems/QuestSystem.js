@@ -102,11 +102,10 @@ function _getQuestDef(questId) {
   return QUEST_DEFS[questId] ?? MAIN_QUESTS[questId] ?? null;
 }
 
-// ── 시스템 ────────────────────────────────────────────────────────
-const QuestSystem = {
-  // subObjective 진행도 누적 — 이벤트로 갱신, _matchSubObjective의 비교 대상.
-  // GameState에 직접 쓰지 않는 이유: 매 이벤트마다 GameState 직렬화 비용 회피 + 시스템 외부에서 임의 수정 차단.
-  _progress: {
+// 진행도 누적 구조의 단일 정의처. 초기값·세이브 복원·새 게임 리셋이 모두 이 함수를 쓴다
+// (필드 목록이 여러 곳에 손으로 적히면 한쪽만 갱신되어 조용히 누락된다).
+function createEmptyQuestProgress() {
+  return {
     collected:              {},
     collectedByTypeOrTag:   {},
     craftedRecipes:         [],
@@ -116,13 +115,29 @@ const QuestSystem = {
     treatedNpcs:            new Set(),
     treatedNpcCount:        0,
     builtStructures:        new Set(),
-  },
+  };
+}
+
+// ── 시스템 ────────────────────────────────────────────────────────
+const QuestSystem = {
+  // subObjective 진행도 누적 — 이벤트로 갱신, _matchSubObjective의 비교 대상.
+  // GameState에 직접 쓰지 않는 이유: 매 이벤트마다 GameState 직렬화 비용 회피 + 시스템 외부에서 임의 수정 차단.
+  _progress: createEmptyQuestProgress(),
 
   // 메인 퀘스트별 데드라인 경고 토스트 발화 이력 — 단계별 1회만 알림
   _warnedDeadlines: {},
   _lastDeadlineCheckDay: -1,
 
+  // 새 게임 시작 시 이전 게임 상태 제거 — GameState.resetForNewGame이 발행하는
+  // newGameStarted를 init에서 구독한다. 구독 핸들·초기화 플래그는 건드리지 않는다.
+  resetForNewGame() {
+    this._progress             = createEmptyQuestProgress();
+    this._warnedDeadlines      = {};
+    this._lastDeadlineCheckDay = -1;
+  },
+
   init() {
+    EventBus.on('newGameStarted', () => this.resetForNewGame());
     // 계절 이벤트 발생 시 연결된 퀘스트 자동 시작
     EventBus.on('seasonalEvent', ({ eventId }) => this._onSeasonalEvent(eventId));
 
@@ -393,7 +408,9 @@ const QuestSystem = {
   /** 세이브에 실려온 questProgress 미러로 세션 내부 누적 카운터를 복원 */
   _restoreProgressFromSave() {
     const saved = GameState.questProgress;
-    if (!saved) return;
+    // 저장된 진행도가 없으면(신규·구버전 세이브) 빈 상태로 시작한다. 조기 return이던 탓에
+    // 직전 게임의 _progress가 그대로 남아 로드 후에도 진행도가 이어져 보였다.
+    if (!saved) { this._progress = createEmptyQuestProgress(); return; }
     this._progress = {
       collected:              { ...(saved.collected ?? {}) },
       collectedByTypeOrTag:   { ...(saved.collectedByTypeOrTag ?? {}) },

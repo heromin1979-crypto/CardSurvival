@@ -41,6 +41,13 @@ const SlotResolver = {
       return { valid: false, reason: I18n.t('slot.cantMoveLocation') };
     }
 
+    // 환경물(개울 등): 그 자리에 존재하는 자연 노드지 소지품이 아니다.
+    // 급수·집수 상호작용은 resolveInteraction/_tryFillBucketFromSource가 executeDrop보다
+    // 먼저 처리하고 return하므로, 여기서 막아도 물 뜨기는 그대로 동작한다.
+    if (def.type === 'environment') {
+      return { valid: false, reason: I18n.t('slot.cantMoveEnvironment') };
+    }
+
     // 이동 불가 구조물(캠프파이어 등): 바닥 고정 — 드래그 이동/배낭 수납 불가 (분해는 클릭)
     if (isImmovable(def)) {
       return { valid: false, reason: I18n.t('slot.cantMoveImmovable') };

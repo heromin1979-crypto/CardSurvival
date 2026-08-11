@@ -55,7 +55,14 @@ const ECO = {
 const EcologySystem = {
   _lastMigrationDay: 0,
 
+  // 새 게임 시작 시 이전 게임 상태 제거 — GameState.resetForNewGame이 발행하는
+  // newGameStarted를 init에서 구독한다. 구독 핸들·초기화 플래그는 건드리지 않는다.
+  resetForNewGame() {
+    this._lastMigrationDay = 0;
+  },
+
   init() {
+    EventBus.on('newGameStarted', () => this.resetForNewGame());
     EventBus.on('tpAdvance', () => this._onTP());
     // 전투 처치 시 좀비 밀도 감소
     EventBus.on('enemyKilled', ({ districtId }) => {

@@ -14,6 +14,27 @@ const BOTTOM_PAGE1_SIZE = 20;
  * 목록이 두 곳에 손으로 적히면 한쪽만 갱신되어 조용히 필드가 누락되므로
  * GameState 초기값과 CharCreate의 새 게임 리셋이 이 함수를 공유한다.
  */
+/**
+ * 새 게임 시작 시 초기값으로 되돌릴 GameState 최상위 필드 목록.
+ * CharCreate가 직접 다루는 필드(time·stats·player·board·cards·location·noise·crafting·
+ * ui·pendingLoot·weather·season·flags)는 여기 넣지 않는다 — 캐릭터별 시작값을 덮어쓰기 때문.
+ * 필드를 새로 추가하면 이 목록이나 CharCreate 중 한 곳에 반드시 들어가야 한다
+ * (tests/unit/NewGameReset.test.js의 완전성 가드가 검사).
+ */
+export const NEW_GAME_RESET_KEYS = [
+  'quests',
+  'subObjectiveProgress',
+  'questProgress',
+  'basecamp',
+  'locationFloors',
+  'landmarkHistory',
+  'subwayStationVisits',
+  'subLocationStock',
+  'landmarkOverrides',
+  'combat',
+  'combatRespawn',
+];
+
 export function createDefaultFlags() {
   return {
     tutorialSeen:         false,
@@ -56,6 +77,9 @@ export function createDefaultFlags() {
     // ── sublocation 1회 한정 자동 보상 수령 이력 ──────
     // 'districtId:subLocationId' 키 배열. ExploreSystem._grantFirstEnterReward 참조.
     firstEnterRewardsClaimed:  [],
+    // ── 구별 1회 획득 자원 수령 이력 ──────────────────
+    // 'districtId:definitionId' 키 배열. districtOnceLoot.js 참조.
+    districtOnceLoot:          [],
   hiddenBossesSpawned:       [],
   };
 }
@@ -1053,6 +1077,26 @@ const GameState = {
     }
     this._updateEncumbrance();
   },
+};
+
+// 모듈 로드 시점(= 게임 시작 전) 초기값 스냅샷.
+// 필드별 초기값을 resetForNewGame에 다시 적으면 필드가 늘어날 때 한쪽만 갱신되어
+// 조용히 누락된다 — quests가 정확히 그렇게 빠져 사망 후 새 게임에 진행도가 남았다.
+const _pristineNewGameState = structuredClone(
+  Object.fromEntries(NEW_GAME_RESET_KEYS.map(key => [key, GameState[key]]))
+);
+
+/**
+ * 새 게임 시작 시 이전 게임 상태를 지운다.
+ * GameState 필드는 스냅샷으로 복원하고, 모듈 싱글톤 상태를 들고 있는 시스템에는
+ * `newGameStarted` 이벤트로 알린다(각 시스템의 resetForNewGame이 구독).
+ * CharCreate가 다루는 필드(time·stats·player·board·location·flags 등)는 대상이 아니다.
+ */
+GameState.resetForNewGame = function resetForNewGame() {
+  for (const key of NEW_GAME_RESET_KEYS) {
+    this[key] = structuredClone(_pristineNewGameState[key]);
+  }
+  EventBus.emit('newGameStarted', {});
 };
 
 export default GameState;

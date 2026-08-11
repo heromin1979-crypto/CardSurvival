@@ -253,13 +253,17 @@ const BoardRenderer = {
     this.render();
   },
 
-  // 카드가 현재 페이지 외부에 배치되면 해당 페이지로 자동 전환
+  // 카드가 현재 페이지보다 뒤 페이지에 배치되면 그 페이지로 자동 전환한다.
+  // 앞 페이지로는 되돌리지 않는다 — 시스템 자동 배치는 빈 슬롯을 page1부터 채우고
+  // (findEmptySlot) 스택도 앞 슬롯부터 합산하므로(placeCardInRow), 그대로 따라가면
+  // 탐색을 누를 때마다 뒤 페이지를 보던 화면이 page1로 끌려간다.
+  // 뒤 페이지 전환만 남겨도 "앞이 만차라 뒤에 쌓인 카드"는 여전히 보여준다.
   _autoSwitchPage(rowKey, slot) {
     if (rowKey !== 'middle' && rowKey !== 'bottom') return;
     const pages = GameState._getPageRanges(rowKey) ?? [];
     const targetPage = pages.findIndex(p => slot >= p.start && slot < p.start + p.size);
     if (targetPage < 0) return;
-    if (targetPage === this._currentPage(rowKey)) return;
+    if (targetPage <= this._currentPage(rowKey)) return;
     this._setCurrentPage(rowKey, targetPage);
     if (this._container) this._refreshPagedRow(rowKey);
   },

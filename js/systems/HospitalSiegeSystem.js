@@ -48,8 +48,16 @@ const HospitalSiegeSystem = {
   _unsubscribeResolved: null,
   _activeSiegeId:       null,
 
+  // 새 게임 시작 시 이전 게임 상태 제거 — GameState.resetForNewGame이 발행하는
+  // newGameStarted를 init에서 구독한다. 구독 핸들·초기화 플래그는 건드리지 않는다.
+  resetForNewGame() {
+    this._activeSiegeId = null;
+    this._currentDay = -Infinity;
+  },
+
   // ── 초기화 ─────────────────────────────────────────
   init() {
+    EventBus.on('newGameStarted', () => this.resetForNewGame());
     this._unsubscribeAll();
     this._currentDay  = -Infinity;   // 첫 tpAdvance가 반드시 처리되도록
     this._initialized = true;
