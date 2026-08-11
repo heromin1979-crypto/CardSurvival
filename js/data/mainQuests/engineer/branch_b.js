@@ -24,7 +24,7 @@ const ENGINEER_BRANCH_B = {
   mq_eng_b_12: {
     id: 'mq_eng_b_12', title: '발전기 자재',
     desc: '고철 6개를 수집하라. 발전기를 설치하기 위한 자재다.',
-    icon: '🔩', characterId: 'engineer', dayTrigger: 95,
+    icon: '🔩', characterId: 'engineer', dayTrigger: 81,
     prerequisite: 'mq_eng_b_11', requiresFlag: 'eng_branch_b',
     objective: { type: 'collect_item', definitionId: 'scrap_metal', count: 6 },
     reward: { morale: 10, items: [{ definitionId: 'wire', qty: 3 }, { definitionId: 'electronic_parts', qty: 2 }] },
@@ -38,7 +38,7 @@ const ENGINEER_BRANCH_B = {
   mq_eng_b_13: {
     id: 'mq_eng_b_13', title: '발전기 설치',
     desc: '구조물 2개를 제작하라. 발전기 설치와 배전 시스템을 구축한다.',
-    icon: '⚡', characterId: 'engineer', dayTrigger: 125,
+    icon: '⚡', characterId: 'engineer', dayTrigger: 97,
     prerequisite: 'mq_eng_b_12', requiresFlag: 'eng_branch_b',
     objective: { type: 'craft_item', category: 'structure', count: 2 },
     reward: { morale: 12, items: [{ definitionId: 'flashlight', qty: 2 }] },
@@ -52,7 +52,7 @@ const ENGINEER_BRANCH_B = {
   mq_eng_b_14: {
     id: 'mq_eng_b_14', title: '수도 복구',
     desc: '전자부품 4개를 수집하라. 펌프 시스템 복구에 필요하다.',
-    icon: '💧', characterId: 'engineer', dayTrigger: 155,
+    icon: '💧', characterId: 'engineer', dayTrigger: 113,
     prerequisite: 'mq_eng_b_13', requiresFlag: 'eng_branch_b',
     objective: { type: 'collect_item', definitionId: 'electronic_parts', count: 4 },
     reward: { morale: 10, items: [{ definitionId: 'water_filter', qty: 1 }] },
@@ -66,7 +66,7 @@ const ENGINEER_BRANCH_B = {
   mq_eng_b_15: {
     id: 'mq_eng_b_15', title: '재건 방향 결정',
     desc: '100일 이상 생존하라. 도시 재건의 방향을 결정해야 한다.',
-    icon: '⚖️', characterId: 'engineer', dayTrigger: 180,
+    icon: '⚖️', characterId: 'engineer', dayTrigger: 127,
     prerequisite: 'mq_eng_b_14', requiresFlag: 'eng_branch_b',
     objective: { type: 'survive_days', count: 100 },
     reward: { morale: 8, items: [{ definitionId: 'pipe_wrench', qty: 1 }] },
@@ -105,7 +105,7 @@ const ENGINEER_BRANCH_B = {
   mq_eng_b1_power: {
     id: 'mq_eng_b1_power', title: '구로 발전소 탈환',
     desc: '구로 발전소를 탈환하라. 약탈자들을 몰아내고 발전 터빈을 재가동해 서울 서남부 전력을 복구한다.',
-    icon: '⚡', characterId: 'engineer', dayTrigger: 205,
+    icon: '⚡', characterId: 'engineer', dayTrigger: 140,
     prerequisite: 'mq_eng_b_15', requiresFlag: 'eng_end_b1',
     objective: { type: 'rescue_npc', landmarkId: 'lm_power_station', count: 1 },
     reward: {
@@ -127,7 +127,7 @@ const ENGINEER_BRANCH_B = {
   mq_eng_b1_water: {
     id: 'mq_eng_b1_water', title: '은평 정수장 복구',
     desc: '은평 정수장을 복구하라. 펌프·배관·약품 시스템을 수리해 상수도 공급을 재개한다.',
-    icon: '💧', characterId: 'engineer', dayTrigger: 210,
+    icon: '💧', characterId: 'engineer', dayTrigger: 143,
     prerequisite: 'mq_eng_b_15', requiresFlag: 'eng_end_b1',
     objective: { type: 'rescue_npc', landmarkId: 'lm_water_plant', count: 1 },
     reward: {
@@ -149,7 +149,7 @@ const ENGINEER_BRANCH_B = {
   mq_eng_b1_comms: {
     id: 'mq_eng_b1_comms', title: 'N서울타워 통신 복구',
     desc: '남산 N서울타워 안테나룸을 탈환하라. 송신 모듈을 복구해 서울 전역 통신망을 재가동한다.',
-    icon: '📡', characterId: 'engineer', dayTrigger: 215,
+    icon: '📡', characterId: 'engineer', dayTrigger: 146,
     prerequisite: 'mq_eng_b_15', requiresFlag: 'eng_end_b1',
     objective: { type: 'rescue_npc', landmarkId: 'lm_comms_tower', count: 1 },
     reward: {
@@ -171,7 +171,7 @@ const ENGINEER_BRANCH_B = {
   mq_eng_end_b1: {
     id: 'mq_eng_end_b1', title: '도시 재건 완성',
     desc: '전기·수도·통신 3대 인프라가 복구됐다. 마지막으로 구조물 4개를 제작해 서울 재건의 핵심 시설을 완성한다.',
-    icon: '🏙️', characterId: 'engineer', dayTrigger: 230,
+    icon: '🏙️', characterId: 'engineer', dayTrigger: 154,
     prerequisite: 'mq_eng_b1_comms',
     requiresFlag: 'eng_end_b1',
     requiresAllFlags: ['power_station_cleared', 'water_plant_restored', 'comms_tower_active'],
@@ -192,7 +192,7 @@ const ENGINEER_BRANCH_B = {
   mq_eng_b3_1: {
     id: 'mq_eng_b3_1', title: '아버지의 마지막 설계도',
     desc: '성동구 성수 공장으로 돌아가 숨겨진 설계도를 찾아라.',
-    icon: '📐', characterId: 'engineer', dayTrigger: 205,
+    icon: '📐', characterId: 'engineer', dayTrigger: 140,
     prerequisite: 'mq_eng_b_15', requiresFlag: 'eng_end_b3',
     objective: { type: 'visit_district', districtId: 'seongdong', count: 1 },
     reward: { morale: 12, items: [{ definitionId: 'father_schematic', qty: 1 }, { definitionId: 'electronic_parts', qty: 2 }] },
@@ -206,7 +206,7 @@ const ENGINEER_BRANCH_B = {
   mq_eng_b3_2: {
     id: 'mq_eng_b3_2', title: '항공용 합금 단조',
     desc: '헬기 부품의 기초 소재. 항공용 합금(aviation_alloy) 8개를 확보하라.',
-    icon: '🛩️', characterId: 'engineer', dayTrigger: 215,
+    icon: '🛩️', characterId: 'engineer', dayTrigger: 146,
     prerequisite: 'mq_eng_b3_1', requiresFlag: 'eng_end_b3',
     objective: { type: 'collect_item', definitionId: 'aviation_alloy', count: 8 },
     reward: { morale: 10, items: [{ definitionId: 'charcoal', qty: 5 }, { definitionId: 'sharp_blade', qty: 2 }] },
@@ -220,7 +220,7 @@ const ENGINEER_BRANCH_B = {
   mq_eng_b3_3: {
     id: 'mq_eng_b3_3', title: '로터 블레이드',
     desc: '주회전익(rotor_blade) 4개를 확보하라. 작업대에서 직접 깎는다. 대칭 정밀도가 생명이다.',
-    icon: '🌀', characterId: 'engineer', dayTrigger: 230,
+    icon: '🌀', characterId: 'engineer', dayTrigger: 154,
     prerequisite: 'mq_eng_b3_2', requiresFlag: 'eng_end_b3',
     objective: { type: 'collect_item', definitionId: 'rotor_blade', count: 4 },
     reward: { morale: 15, items: [{ definitionId: 'duct_tape', qty: 5 }] },
@@ -234,7 +234,7 @@ const ENGINEER_BRANCH_B = {
   mq_eng_b3_4: {
     id: 'mq_eng_b3_4', title: '피스톤 엔진 조립',
     desc: '4기통 피스톤 엔진(piston_engine) 1기를 확보하라. 작업대에서 가솔린 연소식으로 조립한다.',
-    icon: '⚙️', characterId: 'engineer', dayTrigger: 245,
+    icon: '⚙️', characterId: 'engineer', dayTrigger: 162,
     prerequisite: 'mq_eng_b3_3', requiresFlag: 'eng_end_b3',
     objective: { type: 'collect_item', definitionId: 'piston_engine', count: 1 },
     reward: { morale: 20, items: [{ definitionId: 'wire', qty: 5 }, { definitionId: 'rubber', qty: 3 }] },
@@ -248,7 +248,7 @@ const ENGINEER_BRANCH_B = {
   mq_eng_b3_5: {
     id: 'mq_eng_b3_5', title: '꼬리 로터와 항공 전자',
     desc: '꼬리 로터 조립체(tail_rotor_assembly)와 항공 전자 모듈(avionics_module)을 각 1개 확보하라. 작업대에서 조립한다.',
-    icon: '📟', characterId: 'engineer', dayTrigger: 260,
+    icon: '📟', characterId: 'engineer', dayTrigger: 170,
     prerequisite: 'mq_eng_b3_4', requiresFlag: 'eng_end_b3',
     objective: { type: 'collect_item', definitionId: 'avionics_module', count: 1 },
     reward: { morale: 15, items: [{ definitionId: 'tail_rotor_assembly', qty: 1 }, { definitionId: 'glass_shard', qty: 3 }] },
@@ -262,7 +262,7 @@ const ENGINEER_BRANCH_B = {
   mq_eng_b3_6: {
     id: 'mq_eng_b3_6', title: '동체 프레임',
     desc: '조종석+엔진 베드+꼬리 빔 통합 프레임(fuselage_frame) 1개를 확보하라. 가장 큰 단일 부품. 작업대에서 용접·조립한다.',
-    icon: '🛸', characterId: 'engineer', dayTrigger: 275,
+    icon: '🛸', characterId: 'engineer', dayTrigger: 178,
     prerequisite: 'mq_eng_b3_5', requiresFlag: 'eng_end_b3',
     objective: { type: 'collect_item', definitionId: 'fuselage_frame', count: 1 },
     reward: { morale: 20, items: [{ definitionId: 'nail', qty: 10 }, { definitionId: 'rope', qty: 3 }] },
@@ -276,7 +276,7 @@ const ENGINEER_BRANCH_B = {
   mq_eng_b3_7: {
     id: 'mq_eng_b3_7', title: '최종 조립',
     desc: '모든 부품을 결합해 헬기 1대를 완성하라. 작업대에서 최종 조립한다.',
-    icon: '🚁', characterId: 'engineer', dayTrigger: 290,
+    icon: '🚁', characterId: 'engineer', dayTrigger: 186,
     prerequisite: 'mq_eng_b3_6', requiresFlag: 'eng_end_b3',
     objective: { type: 'collect_item', definitionId: 'helicopter', count: 1 },
     reward: { morale: 18, items: [{ definitionId: 'duct_tape', qty: 5 }, { definitionId: 'rubber', qty: 3 }] },
@@ -290,7 +290,7 @@ const ENGINEER_BRANCH_B = {
   mq_eng_b3_8: {
     id: 'mq_eng_b3_8', title: '항공 가솔린 정제',
     desc: '항공 가솔린 드럼(avgas_drum) 2개를 정제하라. 자동차 연료 10통이 필요하다.',
-    icon: '🛢️', characterId: 'engineer', dayTrigger: 305,
+    icon: '🛢️', characterId: 'engineer', dayTrigger: 194,
     prerequisite: 'mq_eng_b3_7', requiresFlag: 'eng_end_b3',
     objective: { type: 'collect_item', definitionId: 'avgas_drum', count: 2 },
     reward: { morale: 25, items: [{ definitionId: 'charcoal_filter', qty: 2 }] },
@@ -304,7 +304,7 @@ const ENGINEER_BRANCH_B = {
   mq_eng_b3_9: {
     id: 'mq_eng_b3_9', title: '호버링 테스트',
     desc: '엔진 점화·호버링 시험. 전자부품 4개로 시동 배터리 팩을 완성한다.',
-    icon: '🔋', characterId: 'engineer', dayTrigger: 315,
+    icon: '🔋', characterId: 'engineer', dayTrigger: 200,
     prerequisite: 'mq_eng_b3_8', requiresFlag: 'eng_end_b3',
     objective: { type: 'collect_item', definitionId: 'electronic_parts', count: 4 },
     reward: { morale: 22, items: [{ definitionId: 'binoculars', qty: 1 }, { definitionId: 'compass', qty: 1 }] },
@@ -318,7 +318,7 @@ const ENGINEER_BRANCH_B = {
   mq_eng_end_b3: {
     id: 'mq_eng_end_b3', title: '하늘로 탈출',
     desc: '탈출 식량 10개를 비축하고 헬기로 서울을 떠나라.',
-    icon: '🚁', characterId: 'engineer', dayTrigger: 325,
+    icon: '🚁', characterId: 'engineer', dayTrigger: 205,
     prerequisite: 'mq_eng_b3_9', requiresFlag: 'eng_end_b3',
     objective: { type: 'collect_item_type', itemType: 'food', count: 10 },
     reward: { morale: 30, items: [{ definitionId: 'battle_ration', qty: 5 }, { definitionId: 'flashlight', qty: 2 }], flags: { mainQuestComplete_engineer: true, engineer_ending: 'b3_heli_escape' } },
