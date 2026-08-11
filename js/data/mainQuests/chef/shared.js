@@ -147,6 +147,7 @@ const CHEF_SHARED = {
     objective: { type: 'collect_item_type', itemType: 'food', count: 5 },
     reward: { morale: 12, items: [{ definitionId: 'herbal_tea', qty: 2 }, { definitionId: 'salt', qty: 1 }] },
     failPenalty: { morale: -3 }, deadlineDays: 40,
+    cinematicId: 'cin_branch_chef',
     isBranchPoint: true,
     branchOptions: [
       {
@@ -224,7 +225,7 @@ const CHEF_SHARED = {
   mq_chef_side_05: {
     id: 'mq_chef_side_05', title: '암시장 보스 대면',
     desc: '중구 가락시장 뒷골목을 장악한 식량 군벌을 처단하라.',
-    icon: '👑', characterId: 'chef', dayTrigger: 70, prerequisite: 'mq_chef_side_03',
+    icon: '👑', characterId: 'chef', dayTrigger: 68, prerequisite: 'mq_chef_side_03',
     objective: { type: 'track_infected', enemyId: 'food_warlord', count: 1 },
     reward: { morale: 20, items: [{ definitionId: 'king_crab', qty: 2 }, { definitionId: 'ginseng_6years', qty: 1 }, { definitionId: 'truffle', qty: 1 }] },
     failPenalty: { morale: -12 }, deadlineDays: 90,
@@ -237,7 +238,7 @@ const CHEF_SHARED = {
   mq_chef_side_06: {
     id: 'mq_chef_side_06', title: '주방 팀 구성',
     desc: '요리 10가지를 제작해 팀 동료들의 신뢰와 사기를 쌓아라.',
-    icon: '🧑‍🍳', characterId: 'chef', dayTrigger: 50, prerequisite: 'mq_chef_side_04',
+    icon: '🧑‍🍳', characterId: 'chef', dayTrigger: 60, prerequisite: 'mq_chef_side_04',
     objective: { type: 'craft_item', category: 'food', count: 10 },
     reward: { morale: 15, items: [{ definitionId: 'wagyu_scrap', qty: 2 }, { definitionId: 'wild_honey', qty: 2 }], flags: { chef_team_assembled: true } },
     failPenalty: { morale: -5 }, deadlineDays: 85,

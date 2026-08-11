@@ -177,6 +177,7 @@ const FIREFIGHTER_SHARED = {
     reward: { morale: 10, items: [{ definitionId: 'splint', qty: 1 }, { definitionId: 'painkiller', qty: 2 }] },
     failPenalty: { morale: -5 },
     deadlineDays: 45,
+    cinematicId: 'cin_branch_firefighter',
     isBranchPoint: true,
     branchOptions: [
       {

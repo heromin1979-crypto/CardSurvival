@@ -22,7 +22,7 @@ const CHEF_BRANCH_B = {
   mq_chef_b_12: {
     id: 'mq_chef_b_12', title: '주방 설비 수집',
     desc: '고철 5개를 수집하라. 박민호와 전문 주방 설비를 만든다.',
-    icon: '🔩', characterId: 'chef', dayTrigger: 95,
+    icon: '🔩', characterId: 'chef', dayTrigger: 81,
     prerequisite: 'mq_chef_b_11', requiresFlag: 'chef_branch_b',
     objective: { type: 'collect_item', definitionId: 'scrap_metal', count: 5 },
     reward: { morale: 12, items: [{ definitionId: 'wood', qty: 2 }] },
@@ -36,7 +36,7 @@ const CHEF_BRANCH_B = {
   mq_chef_b_13: {
     id: 'mq_chef_b_13', title: '전문 주방 건설',
     desc: '구조물 2개를 제작하라. 호텔급 주방을 만든다.',
-    icon: '🏗️', characterId: 'chef', dayTrigger: 120,
+    icon: '🏗️', characterId: 'chef', dayTrigger: 95,
     prerequisite: 'mq_chef_b_12', requiresFlag: 'chef_branch_b',
     objective: { type: 'craft_item', category: 'structure', count: 2 },
     reward: { morale: 12, items: [{ definitionId: 'salt', qty: 2 }] },
@@ -50,7 +50,7 @@ const CHEF_BRANCH_B = {
   mq_chef_b_14: {
     id: 'mq_chef_b_14', title: '고급 식재료',
     desc: '식량 8개를 수집하라. 미식 복원에 쓸 엄선된 재료가 필요하다.',
-    icon: '🛒', characterId: 'chef', dayTrigger: 140,
+    icon: '🛒', characterId: 'chef', dayTrigger: 106,
     prerequisite: 'mq_chef_b_13', requiresFlag: 'chef_branch_b',
     objective: { type: 'collect_item_type', itemType: 'food', count: 8 },
     reward: { morale: 10, items: [{ definitionId: 'canned_food', qty: 2 }] },
@@ -64,7 +64,7 @@ const CHEF_BRANCH_B = {
   mq_chef_b_15: {
     id: 'mq_chef_b_15', title: '셰프 특선 메뉴',
     desc: '음식 아이템 3개를 제작하라. 전문 주방에서 본격적인 요리를 시작한다.',
-    icon: '👨‍🍳', characterId: 'chef', dayTrigger: 160,
+    icon: '👨‍🍳', characterId: 'chef', dayTrigger: 117,
     prerequisite: 'mq_chef_b_14', requiresFlag: 'chef_branch_b',
     objective: { type: 'craft_item', category: 'food', count: 3 },
     reward: { morale: 12, items: [{ definitionId: 'herbal_tea', qty: 2 }] },
@@ -78,7 +78,7 @@ const CHEF_BRANCH_B = {
   mq_chef_b_16: {
     id: 'mq_chef_b_16', title: '식수 확보 체계',
     desc: '깨끗한 물 5개를 확보하라. 섬세한 조리에 안정적 식수가 필수다.',
-    icon: '💧', characterId: 'chef', dayTrigger: 180,
+    icon: '💧', characterId: 'chef', dayTrigger: 128,
     prerequisite: 'mq_chef_b_15', requiresFlag: 'chef_branch_b',
     objective: { type: 'collect_item_type', itemType: 'clean', count: 5 },
     reward: { morale: 10, items: [{ definitionId: 'water_filter', qty: 1 }] },
@@ -92,7 +92,7 @@ const CHEF_BRANCH_B = {
   mq_chef_b_17: {
     id: 'mq_chef_b_17', title: '조미료 비축',
     desc: '소금 5개를 수집하라. 정교한 간 조절에 양질의 소금이 필요하다.',
-    icon: '🧂', characterId: 'chef', dayTrigger: 200,
+    icon: '🧂', characterId: 'chef', dayTrigger: 139,
     prerequisite: 'mq_chef_b_16', requiresFlag: 'chef_branch_b',
     objective: { type: 'collect_item', definitionId: 'salt', count: 5 },
     reward: { morale: 10, items: [{ definitionId: 'salt', qty: 1 }] },
@@ -106,7 +106,7 @@ const CHEF_BRANCH_B = {
   mq_chef_b_18: {
     id: 'mq_chef_b_18', title: '다이닝 공간',
     desc: '구조물 2개를 추가 제작하라. 식사 자체를 경험으로 만든다.',
-    icon: '🍽️', characterId: 'chef', dayTrigger: 230,
+    icon: '🍽️', characterId: 'chef', dayTrigger: 156,
     prerequisite: 'mq_chef_b_17', requiresFlag: 'chef_branch_b',
     objective: { type: 'craft_item', category: 'structure', count: 2 },
     reward: { morale: 12, items: [{ definitionId: 'cloth', qty: 2 }] },
@@ -120,7 +120,7 @@ const CHEF_BRANCH_B = {
   mq_chef_b_19: {
     id: 'mq_chef_b_19', title: '허브 정원',
     desc: '약초 6개를 수집하라. 신선 허브 없이 미식은 완성되지 않는다.',
-    icon: '🌿', characterId: 'chef', dayTrigger: 260,
+    icon: '🌿', characterId: 'chef', dayTrigger: 172,
     prerequisite: 'mq_chef_b_18', requiresFlag: 'chef_branch_b',
     objective: { type: 'collect_item', definitionId: 'herb', count: 6 },
     reward: { morale: 12, items: [{ definitionId: 'herbal_tea', qty: 2 }] },
@@ -134,7 +134,7 @@ const CHEF_BRANCH_B = {
   mq_chef_end_b1: {
     id: 'mq_chef_end_b1', title: '용산 미식 복원',
     desc: '365일을 생존하라. 두 셰프의 주방이 종말 이후 최고의 요리를 되살린다.',
-    icon: '⭐', characterId: 'chef', dayTrigger: 300,
+    icon: '⭐', characterId: 'chef', dayTrigger: 194,
     prerequisite: 'mq_chef_b_19', requiresFlag: 'chef_branch_b',
     objective: { type: 'survive_days', count: 365 },
     reward: { morale: 25, items: [{ definitionId: 'canned_food', qty: 3 }, { definitionId: 'herbal_tea', qty: 3 }], flags: { mainQuestComplete_chef: true, chef_ending: 'b1_ascension' } },

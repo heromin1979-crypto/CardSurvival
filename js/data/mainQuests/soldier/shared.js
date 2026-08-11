@@ -177,6 +177,7 @@ const SOLDIER_SHARED = {
     reward: { morale: 8, items: [{ definitionId: 'binoculars', qty: 1 }] },
     failPenalty: { morale: -3 },
     deadlineDays: 46,
+    cinematicId: 'cin_branch_soldier',
     isBranchPoint: true,
     branchOptions: [
       {

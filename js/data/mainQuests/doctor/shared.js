@@ -425,6 +425,7 @@ const DOCTOR_SHARED = {
     objective: { type: 'craft_item', category: 'medical', count: 1 },
     reward: { morale: 8, items: [{ definitionId: 'antiseptic', qty: 1 }, { definitionId: 'stimulant', qty: 1 }] },
     failPenalty: { morale: -3 }, deadlineDays: 22,
+    cinematicId: 'cin_branch_doctor',
     isBranchPoint: true,
     branchOptions: [
       {

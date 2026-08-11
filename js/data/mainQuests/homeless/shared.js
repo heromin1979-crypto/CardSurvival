@@ -129,6 +129,7 @@ const HOMELESS_SHARED = {
     objective: { type: 'collect_item_type', itemType: 'medical', count: 3 },
     reward: { morale: 8, items: [{ definitionId: 'painkiller', qty: 2 }, { definitionId: 'bandage', qty: 2 }] },
     failPenalty: { morale: -3 }, deadlineDays: 38,
+    cinematicId: 'cin_branch_homeless',
     isBranchPoint: true,
     branchOptions: [
       {

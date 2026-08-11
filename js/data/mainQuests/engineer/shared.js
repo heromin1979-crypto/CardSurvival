@@ -127,6 +127,7 @@ const ENGINEER_SHARED = {
     objective: { type: 'collect_item', definitionId: 'scrap_metal', count: 3 },
     reward: { morale: 8, items: [{ definitionId: 'pipe_wrench', qty: 1 }] },
     failPenalty: { morale: -5 }, deadlineDays: 42,
+    cinematicId: 'cin_branch_engineer',
     isBranchPoint: true,
     branchOptions: [
       {
