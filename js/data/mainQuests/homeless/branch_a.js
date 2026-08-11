@@ -64,23 +64,21 @@ const HOMELESS_BRANCH_A = {
   },
 
   mq_homeless_a_15: {
-    id: 'mq_homeless_a_15', title: '커뮤니티 분기점',
-    desc: '100일 이상 생존하라. 커뮤니티의 방향을 결정할 시간이다.',
-    icon: '⚖️', characterId: 'homeless', dayTrigger: 185,
+    id: 'mq_homeless_a_15', title: '마을을 넘기다',
+    desc: '100일 이상 생존하라. 거점을 남은 사람들에게 넘기고 이지수와 떠날 준비를 한다.',
+    icon: '🤝', characterId: 'homeless', dayTrigger: 185,
     prerequisite: 'mq_homeless_a_14', requiresFlag: 'homeless_branch_a',
     objective: { type: 'survive_days', count: 100 },
-    reward: { morale: 8, items: [{ definitionId: 'first_aid_kit', qty: 1 }] },
+    // 선택지가 하나뿐인 분기점이었다. 버튼이 하나면 선택이 아니라 확인
+    // 절차가 되므로, 다른 A-15/B-15처럼 reward.flags로 플래그를 심는다.
+    reward: {
+      morale: 8,
+      items: [{ definitionId: 'first_aid_kit', qty: 1 }],
+      flags: { homeless_end_a3: true },
+    },
     failPenalty: null, deadlineDays: Infinity,
-    isBranchPoint: true,
-    branchOptions: [
-      {
-        label: '이지수와 함께 떠나기',
-        desc: '더 좋은 곳을 찾아 함께 이동한다.',
-        setsFlag: 'homeless_end_a3',
-      },
-    ],
     narrative: {
-      start: '100일. 거점에 38명이 모였다. 치료소는 이지수가, 마을은 내가 세웠다. 이제 방향을 정한다.',
+      start: '100일. 거점에 38명이 모였다. 치료소는 이지수가, 마을은 내가 세웠다. 남길 것과 가져갈 것을 나눌 때다.',
       complete: '이지수가 구급키트를 건넸다. "최 대표님, 여기 정리하고 더 좋은 곳을 같이 찾아볼까요? 결정은 대표님이 하세요." 오래 생각했다.',
     },
   },

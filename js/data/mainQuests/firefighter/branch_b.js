@@ -64,23 +64,23 @@ const FIREFIGHTER_BRANCH_B = {
   },
 
   mq_fire_b_15: {
-    id: 'mq_fire_b_15', title: '대피소 방향 결정',
-    desc: '100일 이상 생존하라. 대형 대피소의 운영 방향을 결정한다.',
-    icon: '⚖️', characterId: 'firefighter', dayTrigger: 185,
+    id: 'mq_fire_b_15', title: '대피소를 맡기다',
+    desc: '100일 이상 생존하라. 대피소를 생존자들에게 넘기고 떠날 준비를 한다.',
+    icon: '🤝', characterId: 'firefighter', dayTrigger: 185,
     prerequisite: 'mq_fire_b_14', requiresFlag: 'fire_branch_b',
     objective: { type: 'survive_days', count: 100 },
-    reward: { morale: 8, items: [{ definitionId: 'stamina_tonic', qty: 1 }] },
+    // 선택지가 하나뿐인 분기점이었다. isBranchPoint는 "⚡ 선택의 갈림길 —
+    // 이 선택은 이후 스토리를 결정합니다" 모달을 닫을 수 없게 띄우는데,
+    // 버튼이 하나면 선택이 아니라 확인 절차가 된다. 다른 A-15/B-15처럼
+    // reward.flags로 진행 플래그를 심는다.
+    reward: {
+      morale: 8,
+      items: [{ definitionId: 'stamina_tonic', qty: 1 }],
+      flags: { fire_end_b3: true },
+    },
     failPenalty: null, deadlineDays: Infinity,
-    isBranchPoint: true,
-    branchOptions: [
-      {
-        label: '정대한과 탈출',
-        desc: '대피소를 생존자들에게 맡기고 함께 더 안전한 곳으로.',
-        setsFlag: 'fire_end_b3',
-      },
-    ],
     narrative: {
-      start: '100일. 정대한과 함께 공장이 대피소로 변했다.',
+      start: '100일. 정대한과 함께 공장이 대피소로 변했다. 이제 여기를 누구에게 넘길지 정할 때다.',
       complete: '정대한이 강장제를 건넸다. "박 소방관, 여기는 생존자들에게 맡기고, 우리는 더 안전한 곳으로 갑시다." 함께 떠날 길이 보인다.',
     },
   },
