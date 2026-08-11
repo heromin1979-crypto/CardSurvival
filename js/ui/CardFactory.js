@@ -9,6 +9,7 @@ import GameData  from '../data/GameData.js';
 import { HANGANG_DISTRICTS } from '../data/landmarks.js';
 import { getMagazineState } from '../systems/WeaponAmmoSystem.js';
 import { formatInstanceName } from '../systems/ItemEffectSystem.js';
+import { canCollectWater, isWaterSource } from '../systems/waterSource.js';
 import { uiIcon } from './UiIcon.js';
 import { dataIcon } from './DataIcon.js';
 
@@ -1143,8 +1144,9 @@ const CardFactory = {
 
     // 날씨 카드: 인터랙션 힌트
     const hintTags = [];
-    if (def.tags?.includes('water_source')) hintTags.push(I18n.t('env.waterCollect'));
-    if (def.tags?.includes('heat'))         hintTags.push(I18n.t('env.heatWarning'));
+    if (canCollectWater(def, inst))          hintTags.push(I18n.t('env.waterCollect'));
+    else if (isWaterSource(def))             hintTags.push(I18n.t('env.waterDry'));
+    if (def.tags?.includes('heat'))          hintTags.push(I18n.t('env.heatWarning'));
     if (def.tags?.includes('cold'))         hintTags.push(I18n.t('env.coldWarning'));
     if (def.tags?.includes('contamination')) hintTags.push(I18n.t('env.contamWarning'));
 

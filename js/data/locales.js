@@ -663,6 +663,7 @@ export const ko = {
   'env.event':          '이벤트',
   'env.daysLeft':       '일 남음',
   'env.waterCollect':   '💧 수집 가능',
+  'env.waterDry':       '🌧 비가 오면 회복',
   'env.heatWarning':    '🌡️ 더위 주의',
   'env.coldWarning':    '❄️ 추위 주의',
   'env.contamWarning':  '☣️ 오염 주의',
@@ -1132,6 +1133,7 @@ export const ko = {
   // ── SlotResolver ────────────────────────────────────────────
   'slot.unknownCard':       '알 수 없는 카드',
   'slot.cantMoveLocation':  '장소 카드는 이동할 수 없습니다.',
+  'slot.cantMoveEnvironment':'🏞️ 자연 환경은 옮길 수 없습니다. 빈 용기를 가져가 물을 담으세요.',
   'slot.cantMoveImmovable': '바닥에 고정된 구조물은 옮길 수 없습니다. (분해는 카드를 눌러서)',
   'slot.cantDisplaceImmovable': '🔥 고정된 구조물이 있어 옮길 수 없습니다.',
   'slot.cantPlaceOnLocation':'장소 행에는 아이템을 놓을 수 없습니다.',
@@ -1659,6 +1661,7 @@ export const en = {
   'env.event':          'Event',
   'env.daysLeft':       'd left',
   'env.waterCollect':   '💧 Collect',
+  'env.waterDry':       '🌧 Refills in rain',
   'env.heatWarning':    '🌡️ Heat',
   'env.coldWarning':    '❄️ Cold',
   'env.contamWarning':  '☣️ Contam.',
@@ -2128,6 +2131,7 @@ export const en = {
   // ── SlotResolver ────────────────────────────────────────────
   'slot.unknownCard':        'Unknown card',
   'slot.cantMoveLocation':   'Location cards cannot be moved.',
+  'slot.cantMoveEnvironment':'🏞️ Natural features cannot be moved. Bring an empty container to collect water.',
   'slot.cantMoveImmovable':  'Structures fixed to the ground cannot be moved. (Tap the card to dismantle.)',
   'slot.cantDisplaceImmovable': '🔥 A fixed structure is in the way and cannot be displaced.',
   'slot.cantPlaceOnLocation':'Cannot place items on location row.',

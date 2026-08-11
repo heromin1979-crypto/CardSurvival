@@ -489,7 +489,8 @@ const STACK_ROWS = [
   ['honey'                   , true,  5 ],
 
   // ── 환경 오브젝트 ──────────────────────────────────────────────
-  ['stream_spring'           , true,  10],
+  // quantity가 물 잔량이므로(fill_bottle_stream·_refillDryStreams) 스택 병합이 곧 물 리필이 된다
+  ['stream_spring'           , false, 1 ],
   ['dry_stream'              , false, 1 ],
   ['animal_nest'             , false, 1 ],  // 도난 둥지 (Phase 4) — 단일 슬롯
 

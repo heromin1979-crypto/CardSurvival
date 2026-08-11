@@ -13,7 +13,14 @@ import BLUEPRINTS            from '../data/blueprints.js';
 import GameData from '../data/GameData.js';
 
 const HiddenElementSystem = {
+  // 새 게임 시작 시 이전 게임 상태 제거 — GameState.resetForNewGame이 발행하는
+  // newGameStarted를 init에서 구독한다. 구독 핸들·초기화 플래그는 건드리지 않는다.
+  resetForNewGame() {
+    this._choiceResolverActive = false;
+  },
+
   init() {
+    EventBus.on('newGameStarted', () => this.resetForNewGame());
     // 탐색 시 히든 장소 체크
     EventBus.on('locationChanged', ({ nodeId }) => {
       this._checkHiddenLocations(nodeId);

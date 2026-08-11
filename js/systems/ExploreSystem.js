@@ -16,6 +16,7 @@ import SkillSystem      from './SkillSystem.js';
 import EcologySystem    from './EcologySystem.js';
 import BasecampSystem   from './BasecampSystem.js';
 import BALANCE          from '../data/gameBalance.js';
+import { filterDistrictOnceLoot } from './districtOnceLoot.js';
 import HiddenElementSystem from './HiddenElementSystem.js';
 import NightSystem         from './NightSystem.js';
 import EncumbranceSystem   from './EncumbranceSystem.js';
@@ -37,7 +38,14 @@ const ExploreSystem = {
     return true;
   },
 
+  // 새 게임 시작 시 이전 게임 상태 제거 — GameState.resetForNewGame이 발행하는
+  // newGameStarted를 init에서 구독한다. 구독 핸들·초기화 플래그는 건드리지 않는다.
+  resetForNewGame() {
+    this._currentDayForDecay = -Infinity;
+  },
+
   init() {
+    EventBus.on('newGameStarted', () => this.resetForNewGame());
     // 베이스캠프 화면에서 보드 위 위치 카드 클릭 시 이동
     EventBus.on('travelRequest', ({ nodeId }) => {
       const screen = document.getElementById('screen-main');
@@ -418,6 +426,13 @@ const ExploreSystem = {
             loot.push({ definitionId: item.definitionId, quantity: item.quantity });
           }
         }
+        // 바닥에 남는 자원(환경물·잔해)은 구별 1회만 — 보너스 픽이 원본을 복제하므로
+        // 모든 보너스가 붙은 뒤에 걸러야 복제분까지 잡힌다.
+        if (!gs.flags.districtOnceLoot) gs.flags.districtOnceLoot = [];
+        const onceFiltered = filterDistrictOnceLoot(
+          loot, districtId, gs.flags.districtOnceLoot, id => GameData?.items[id]);
+        loot = onceFiltered.loot;
+        gs.flags.districtOnceLoot.push(...onceFiltered.newKeys);
         this._placeLoot(loot);
       } else {
         // 표면 고갈 → 이번엔 거둘 게 없음

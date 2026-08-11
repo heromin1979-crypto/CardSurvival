@@ -32,7 +32,14 @@ const SubwaySystem = {
   /** Pending multi-station travel state (subway) */
   _pendingTravel: null,
 
+  // 새 게임 시작 시 이전 게임 상태 제거 — GameState.resetForNewGame이 발행하는
+  // newGameStarted를 init에서 구독한다. 구독 핸들·초기화 플래그는 건드리지 않는다.
+  resetForNewGame() {
+    this._pendingTravel = null;
+  },
+
   init() {
+    EventBus.on('newGameStarted', () => this.resetForNewGame());
     // After combat, resume pending subway travel (if any).
     // Flow: CombatSystem emits combatEnd → this handler fires synchronously
     // → _arriveAtStation / _continueTravel transitions to 'main'

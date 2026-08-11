@@ -5,6 +5,7 @@ import GameState       from '../core/GameState.js';
 import EventBus        from '../core/EventBus.js';
 import SystemRegistry  from '../core/SystemRegistry.js';
 import { findInteraction } from '../data/interactions.js';
+import { canCollectWater } from '../systems/waterSource.js';
 import CraftDiscovery  from '../systems/CraftDiscovery.js';
 import CraftSystem     from '../systems/CraftSystem.js';
 import HiddenElementSystem from '../systems/HiddenElementSystem.js';
@@ -370,11 +371,10 @@ const DragDrop = {
     if (!a || !b) return false;
     const aDef = GameState.getCardDef(aId), bDef = GameState.getCardDef(bId);
     if (!aDef || !bDef) return false;
-    const isBucket   = d => d.id === 'empty_bucket' || d.id === 'water_bucket';
-    const isWaterSrc = d => d.subtype === 'water_source' && !(d.tags || []).includes('dry');
+    const isBucket = d => d.id === 'empty_bucket' || d.id === 'water_bucket';
     let bucket, srcInst, srcDef;
-    if (isBucket(aDef) && isWaterSrc(bDef))      { bucket = a; srcInst = b; srcDef = bDef; }
-    else if (isWaterSrc(aDef) && isBucket(bDef)) { bucket = b; srcInst = a; srcDef = aDef; }
+    if (isBucket(aDef) && canCollectWater(bDef, b))      { bucket = a; srcInst = b; srcDef = bDef; }
+    else if (canCollectWater(aDef, a) && isBucket(bDef)) { bucket = b; srcInst = a; srcDef = aDef; }
     else return false;
 
     if (bucket.definitionId === 'water_bucket' && (bucket._fillLevel ?? 1) >= 4) {
