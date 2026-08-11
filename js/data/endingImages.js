@@ -13,17 +13,7 @@ const LEGACY_ENDING_IMAGES = {
     prompt: '한국 포스트아포칼립스 웹툰 스타일, 30대 남성 군인이 폐허가 된 KBS 방송국 스튜디오에서 낡은 마이크 앞에 서 있다, 창밖으로 불타는 서울 야경, 무전기 초록빛 표시등이 켜진 어두운 스튜디오, 올리브그린과 차가운 회색 팔레트, 드라마틱한 사이드 라이팅, 시네마틱 구도, 고해상도',
   },
 
-  a2_defend: {
-    src: 'assets/endings/soldier_a2_defend.png',
-    alt: '강민준이 바리케이드 위에서 생존자들을 지키고 있다',
-    prompt: '한국 포스트아포칼립스 웹툰 스타일, 군인 남성이 용산 철로 옆 바리케이드 위에 서서 뒤의 생존자 집단을 지키는 자세, 황혼빛 하늘, 결연한 눈빛, 올리브그린 군복과 낡은 방어 장비, 드라마틱한 역광, 고해상도',
-  },
 
-  a3_escape: {
-    src: 'assets/endings/soldier_a3_escape.png',
-    alt: '강민준이 군용 트럭으로 서울을 탈출하고 있다',
-    prompt: '한국 포스트아포칼립스 웹툰 스타일, 군용 트럭이 서울 외곽 도로를 달리고 있다, 조수석 창문으로 멀어지는 서울 스카이라인이 보임, 황혼빛 하늘, 군인의 측면 실루엣, 올리브그린과 어두운 오렌지 팔레트, 속도감, 고해상도',
-  },
 
   b1_network: {
     src: 'assets/endings/soldier_b1_network.png',
@@ -31,11 +21,6 @@ const LEGACY_ENDING_IMAGES = {
     prompt: '한국 포스트아포칼립스 웹툰 스타일, 군인이 서울 지도 위에 여러 생존자 구역을 붉은 선으로 연결하고 있다, 주변에 각 지역 생존자 대표들, 녹색 형광 랜턴빛, 전략적 분위기, 올리브그린과 어두운 군청색 팔레트, 고해상도',
   },
 
-  b2_rally: {
-    src: 'assets/endings/soldier_b2_rally.png',
-    alt: '강민준이 광화문 광장에서 수백 명의 생존자들에게 연설하고 있다',
-    prompt: '한국 포스트아포칼립스 웹툰 스타일, 광화문 광장에 수백 명의 생존자들이 집결해 있다, 군인이 높은 단 위에서 연설, 광화문 폐허 배경, 횃불과 깃발들, 황금빛 불빛과 올리브그린 팔레트, 희망과 단결의 분위기, 넓은 광각 구도, 고해상도',
-  },
 
   b3_suwon: {
     src: 'assets/endings/soldier_b3_suwon.png',
@@ -51,11 +36,6 @@ const LEGACY_ENDING_IMAGES = {
     prompt: '한국 포스트아포칼립스 웹툰 스타일, 30대 여성 의사가 폐허가 된 삼성병원 임시 연구실에서 빛나는 앰풀을 양손으로 들어올리고 있다, 파란 형광 실험 장비, 주변에 연구 노트와 바이러스 데이터, 의료 청색과 흰색 팔레트, 극적인 업라이팅, 완성의 순간, 고해상도',
   },
 
-  a2_treatment: {
-    src: 'assets/endings/doctor_a2_treatment.png',
-    alt: '이지수가 환자들이 가득한 임시 병원에서 치료 중이다',
-    prompt: '한국 포스트아포칼립스 웹툰 스타일, 여성 의사가 여러 환자들로 가득 찬 임시 병원 복도에서 치료 중, 촛불과 랜턴의 따뜻한 빛, 흰색 가운, 헌신적이고 차분한 표정, 의료 청색과 따뜻한 황금빛의 대비, 고해상도',
-  },
 
   a3_data: {
     src: 'assets/endings/doctor_a3_data.png',
@@ -69,17 +49,7 @@ const LEGACY_ENDING_IMAGES = {
     prompt: '한국 포스트아포칼립스 웹툰 스타일, 군사 캠프 안의 의료 텐트, 여성 의사와 올리브 군복의 군인 의료진이 함께 환자를 치료, 조직적이고 체계적인 분위기, 올리브그린과 의료 청색 팔레트, 낮빛, 고해상도',
   },
 
-  b2_frontline: {
-    src: 'assets/endings/doctor_b2_frontline.png',
-    alt: '이지수가 전투 소리가 들리는 폐허 속에서 부상자를 치료하고 있다',
-    prompt: '한국 포스트아포칼립스 웹툰 스타일, 여성 의사가 무너진 건물 벽 뒤에서 부상한 생존자를 치료하고 있다, 멀리서 들리는 전투의 화염빛, 긴장감, 흰 가운과 붉은 십자 표시, 의료 청색과 위급한 오렌지빛, 고해상도',
-  },
 
-  b3_civilian: {
-    src: 'assets/endings/doctor_b3_civilian.png',
-    alt: '이지수가 마포 골목 임시 진료소에서 아이를 치료하고 있다',
-    prompt: '한국 포스트아포칼립스 웹툰 스타일, 여성 의사가 마포구 골목 임시 진료소에서 어린아이를 진찰하고 있다, 밖에 줄 서 있는 마을 사람들, 촛불의 따뜻한 빛, 의료 청색과 따뜻한 황금빛, 지역사회 치유의 분위기, 고해상도',
-  },
 
   // ── 소방관 박영철 (firefighter) — 앰버 오렌지, 소방 빨강 ──────────
 
@@ -135,11 +105,6 @@ const LEGACY_ENDING_IMAGES = {
     prompt: '한국 포스트아포칼립스 웹툰 스타일, 남성 셰프가 보온 용기에 음식을 담아 서울 폐허 거리에서 생존자들에게 배달하고 있다, 자전거에 실린 보급 상자들, 따뜻한 낮빛, 웜 오렌지 팔레트, 지역사회 급식, 고해상도',
   },
 
-  a3_document: {
-    src: 'assets/endings/chef_a3_document.png',
-    alt: '윤재혁이 생존 레시피북을 정리하고 있다',
-    prompt: '한국 포스트아포칼립스 웹툰 스타일, 남성 셰프가 두꺼운 레시피 노트를 정리하고 있다, "누구나 만들 수 있는 생존 요리"라 적힌 표지, 주방 배경, 결연하고 희망찬 표정, 웜 오렌지 팔레트, 기록의 무게감, 고해상도',
-  },
 
   chef_b1_ascension: {
     src: 'assets/endings/chef_b1_ascension.png',
@@ -147,17 +112,7 @@ const LEGACY_ENDING_IMAGES = {
     prompt: '한국 포스트아포칼립스 웹툰 스타일, 남대문시장이 대규모 급식 시설로 변환, 남성 셰프와 기계공 남성이 조리 라인을 함께 점검하고 있다, 대형 솥과 조리 장비의 결합, 웜 오렌지와 산업 회색 팔레트, 체계적인 분위기, 고해상도',
   },
 
-  b2_small_dist: {
-    src: 'assets/endings/chef_b2_small_dist.png',
-    alt: '윤재혁이 자전거에 보온 도시락을 싣고 서울 구역을 순회하고 있다',
-    prompt: '한국 포스트아포칼립스 웹툰 스타일, 남성 셰프가 보온 도시락 상자를 자전거에 싣고 서울 폐허 거리를 달리고 있다, 손으로 그린 배달 지도, 따뜻한 낮빛, 혼자서도 당당한 분위기, 웜 오렌지 팔레트, 고해상도',
-  },
 
-  b3_escape: {
-    src: 'assets/endings/chef_b3_escape.png',
-    alt: '윤재혁이 칼 가방과 레시피북을 들고 서울 외곽에서 새로운 정착지를 향해 걷고 있다',
-    prompt: '한국 포스트아포칼립스 웹툰 스타일, 남성 셰프가 칼 가방과 레시피북을 들고 서울 외곽에서 지평선을 바라보고 있다, 뒤로 희뿌연 서울이 보임, 새벽의 첫빛, 웜 오렌지와 희뿌연 하늘 팔레트, 새로운 시작의 분위기, 고해상도',
-  },
 
   // ── 기계공 정대한 (engineer) — 스틸 그레이, 공장 ─────────────────
 
@@ -167,11 +122,6 @@ const LEGACY_ENDING_IMAGES = {
     prompt: '한국 포스트아포칼립스 웹툰 스타일, 35세 기계공 남성이 성수동 공장에서 완성된 자작 전기 차량 앞에 서 있다, 한 손에 오래된 설계도, 차량 위에 붉은 노을, 성취감과 아버지에 대한 그리움이 교차하는 표정, 스틸 그레이와 따뜻한 노을빛 팔레트, 고해상도',
   },
 
-  a2_test: {
-    src: 'assets/endings/engineer_a2_test.png',
-    alt: '정대한이 폐허가 된 서울 도로에서 자작 전기차를 시험 운행하고 있다',
-    prompt: '한국 포스트아포칼립스 웹툰 스타일, 기계공이 서울의 폐허가 된 도로에서 자작 전기차를 처음 시험 운행, 창밖으로 흘러가는 폐허, 계기판의 전기 파란빛, 속도감과 흥분, 스틸 그레이와 전기 파란빛 팔레트, 시네마틱 와이드샷, 고해상도',
-  },
 
   a3_base: {
     src: 'assets/endings/engineer_a3_base.png',
@@ -185,11 +135,6 @@ const LEGACY_ENDING_IMAGES = {
     prompt: '한국 포스트아포칼립스 웹툰 스타일, 기계공과 소방관이 전신주 위에서 전력망 수리 작업을 하고 있다, 아래 서울 거리에 가로등이 하나씩 켜지기 시작, 감동적인 장면, 스틸 그레이와 따뜻한 전구빛 팔레트, 고해상도',
   },
 
-  b2_generator: {
-    src: 'assets/endings/engineer_b2_generator.png',
-    alt: '정대한이 완성된 발전기 앞에서 서울 거리에 가로등이 켜지는 것을 바라보고 있다',
-    prompt: '한국 포스트아포칼립스 웹툰 스타일, 기계공이 완성된 대형 발전기 앞에 서 있다, 배경으로 서울 거리 가로등이 하나씩 켜지는 장면, 발전기의 전기 파란빛과 가로등의 황금빛이 도시를 밝힘, 스틸 그레이와 전구 황금빛 팔레트, 고해상도',
-  },
 
   b3_late_escape: {
     src: 'assets/endings/engineer_b3_late_escape.png',
@@ -198,25 +143,22 @@ const LEGACY_ENDING_IMAGES = {
   },
 };
 
-// ── 엔딩 코드 별칭 (신규 플래그 값 → 기존 이미지 키) ─────────────────
-// 퀘스트 재구성으로 chef_ending / engineer_ending 값이 바뀌었지만
-// 기존 이미지 에셋을 재사용하기 위해 매핑을 유지한다.
+// ── 분기 플래그 → 이미지 ─────────────────────────────────────────
+// 키는 반드시 mainQuests가 실제로 심는 <직업>_ending 값이어야 한다.
+// 원래 직업당 6분기(a1~a3 / b1~b3) 설계였으나 내용이 겹치거나 완성도가
+// 낮은 분기를 통합·삭제했다. 남아 있던 13개 고아 키를 접었다 —
+// 존재하지 않는 분기의 이미지 키는 "왜 이 엔딩이 없지?"라는 오해만 만든다.
+// 삭제된 분기의 아트는 assets/endings/_unused/ 로 옮겼다.
 export const ENDING_IMAGES = {
   soldier: {
     a1_rescue: LEGACY_ENDING_IMAGES.a1_rescue,
-    a2_defend: LEGACY_ENDING_IMAGES.a2_defend,
-    a3_escape: LEGACY_ENDING_IMAGES.a3_escape,
     b1_network: LEGACY_ENDING_IMAGES.b1_network,
-    b2_rally: LEGACY_ENDING_IMAGES.b2_rally,
     b3_suwon: LEGACY_ENDING_IMAGES.b3_suwon,
   },
   doctor: {
     a1_vaccine: LEGACY_ENDING_IMAGES.doctor_a1_vaccine,
-    a2_treatment: LEGACY_ENDING_IMAGES.a2_treatment,
     a3_data: LEGACY_ENDING_IMAGES.a3_data,
     b1_military_hub: LEGACY_ENDING_IMAGES.b1_military_hub,
-    b2_frontline: LEGACY_ENDING_IMAGES.b2_frontline,
-    b3_civilian: LEGACY_ENDING_IMAGES.b3_civilian,
   },
   firefighter: {
     a1_shelter: LEGACY_ENDING_IMAGES.a1_shelter,
@@ -227,35 +169,20 @@ export const ENDING_IMAGES = {
     a3_journey: LEGACY_ENDING_IMAGES.a3_journey,
     b1_kingdom: LEGACY_ENDING_IMAGES.b1_kingdom,
     b3_network: LEGACY_ENDING_IMAGES.b3_wanderer,
-    b3_wanderer: LEGACY_ENDING_IMAGES.b3_wanderer,
   },
   chef: {
     a1_network: LEGACY_ENDING_IMAGES.chef_a1_network,
     a2_farm: LEGACY_ENDING_IMAGES.chef_a2_farm,
-    a3_document: LEGACY_ENDING_IMAGES.a3_document,
     b1_ascension: LEGACY_ENDING_IMAGES.chef_b1_ascension,
-    b2_small_dist: LEGACY_ENDING_IMAGES.b2_small_dist,
-    b3_escape: LEGACY_ENDING_IMAGES.b3_escape,
   },
   engineer: {
     a1_escape: LEGACY_ENDING_IMAGES.a1_escape,
-    a2_test: LEGACY_ENDING_IMAGES.a2_test,
     a3_base: LEGACY_ENDING_IMAGES.a3_base,
     b1_rebuild: LEGACY_ENDING_IMAGES.b1_rebuild,
-    b2_generator: LEGACY_ENDING_IMAGES.b2_generator,
-    b3_late_escape: LEGACY_ENDING_IMAGES.b3_late_escape,
     b3_heli_escape: LEGACY_ENDING_IMAGES.b3_late_escape,
   },
 };
 
-const ENDING_IMAGE_ALIASES = {
-  // chef — Expansion / Settle / Ascension
-  'a1_network':   'a1_vaccine',       // 강남 대형마트 네트워크 → 급식소 배식
-  'a2_farm':      'a2_distribute',    // 가락 자급 급식소 → 보급
-  'b1_ascension': 'b1_production',    // 용산 미식 복원 → 주방
-  // engineer — 기존 값 유지되므로 매핑 불필요 (a1_escape, a3_base, b1_rebuild, b3_heli_escape→b3_late_escape)
-  'b3_heli_escape': 'b3_late_escape',
-};
 
 /**
  * 캐릭터 ID + 서브엔딩 코드로 이미지 데이터를 반환한다.
@@ -264,5 +191,13 @@ const ENDING_IMAGE_ALIASES = {
  */
 export function getEndingImage(characterId, subEndingCode) {
   if (!characterId || !subEndingCode) return null;
-  return ENDING_IMAGES[characterId]?.[subEndingCode] ?? null;
+  if (!Object.hasOwn(ENDING_IMAGES, characterId)) return null;
+
+  const characterImages = ENDING_IMAGES[characterId];
+  if (!Object.hasOwn(characterImages, subEndingCode)) return null;
+
+  const image = characterImages[subEndingCode];
+  if (typeof image?.src !== 'string' || image.src.length === 0
+    || typeof image?.alt !== 'string' || image.alt.length === 0) return null;
+  return image;
 }

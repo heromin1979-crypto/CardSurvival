@@ -6,6 +6,7 @@ import ENDINGS         from '../data/endings.js';
 import SystemRegistry  from '../core/SystemRegistry.js';
 import { ENDING_TO_CINEMATIC } from '../data/cinematicScenes.js';
 import GameData from '../data/GameData.js';
+import { getEndingImage } from '../data/endingImages.js';
 
 const STORAGE_KEY      = 'CARD_SURVIVAL_ENDINGS_v1';
 const STORAGE_META_KEY = 'CARD_SURVIVAL_ENDINGS_v1_meta';
@@ -13,13 +14,47 @@ const STORAGE_META_KEY = 'CARD_SURVIVAL_ENDINGS_v1_meta';
 // Victory check priority: character > escape > milestone
 const VICTORY_CATEGORIES = ['character', 'escape', 'milestone'];
 
+function characterEndingFlagKey(characterId) {
+  return characterId === 'firefighter' ? 'fire_ending' : `${characterId}_ending`;
+}
+
+function endingAcceptsSubEnding(ending, subEnding, gameState) {
+  if (!ending?.characterId || typeof ending.condition !== 'function') return false;
+
+  const characterId = ending.characterId;
+  const explicitFlags = {
+    [`mainQuestComplete_${characterId}`]: true,
+    [characterEndingFlagKey(characterId)]: subEnding,
+  };
+  const state = {
+    ...gameState,
+    player: { ...gameState?.player, characterId },
+    flags: new Proxy(explicitFlags, {
+      get(target, key, receiver) {
+        return Reflect.has(target, key) ? Reflect.get(target, key, receiver) : true;
+      },
+    }),
+    time: { ...gameState?.time, day: Number.MAX_SAFE_INTEGER },
+  };
+
+  try {
+    return ending.condition(state);
+  } catch {
+    return false;
+  }
+}
+
+function isValidEndingSubCode(ending, subEnding, gameState) {
+  return Boolean(getEndingImage(ending?.characterId, subEnding)
+    && endingAcceptsSubEnding(ending, subEnding, gameState));
+}
+
 const EndingSystem = {
   _lastCheckDay: 0,
 
   getCharacterEndingCode(characterId, flags) {
     if (!characterId) return null;
-    const flagKey = characterId === 'firefighter' ? 'fire_ending' : `${characterId}_ending`;
-    return flags?.[flagKey] ?? null;
+    return flags?.[characterEndingFlagKey(characterId)] ?? null;
   },
 
   init() {
@@ -215,11 +250,15 @@ const EndingSystem = {
     try {
       const meta    = this.getUnlockMeta();
       const gameState = gs ?? ((typeof GameState !== 'undefined') ? GameState : null);
+      const ending    = ENDINGS[id];
+      const charId    = ending?.characterId;
+      const candidate = this.getCharacterEndingCode(charId, gameState?.flags);
+      const subEnding = isValidEndingSubCode(ending, candidate, gameState) ? candidate : null;
       if (!meta[id]) {
-        const ending    = ENDINGS[id];
-        const charId    = ending?.characterId;
-        const subEnding = this.getCharacterEndingCode(charId, gameState?.flags);
         meta[id] = { day: gameState?.time?.day ?? 1, subEnding };
+        localStorage.setItem(STORAGE_META_KEY, JSON.stringify(meta));
+      } else if (meta[id].subEnding == null && subEnding != null) {
+        meta[id] = { ...meta[id], subEnding };
         localStorage.setItem(STORAGE_META_KEY, JSON.stringify(meta));
       }
     } catch { /* ignore */ }
@@ -236,6 +275,25 @@ const EndingSystem = {
     } catch {
       return {};
     }
+  },
+
+  resolveEndingSubCode(id, gs = GameState) {
+    const meta = this.getUnlockMeta();
+    const ending = ENDINGS[id];
+    const characterId = ending?.characterId;
+    const savedSubEnding = meta[id]?.subEnding;
+    const savedIsValid = isValidEndingSubCode(ending, savedSubEnding, gs);
+    if (savedIsValid) return savedSubEnding;
+
+    const currentSubEnding = this.getCharacterEndingCode(characterId, gs?.flags);
+    const currentIsValid = isValidEndingSubCode(ending, currentSubEnding, gs);
+    const resolvedSubEnding = currentIsValid ? currentSubEnding : null;
+
+    if (meta[id] && (savedSubEnding != null || resolvedSubEnding != null)) {
+      meta[id] = { ...meta[id], subEnding: resolvedSubEnding };
+      try { localStorage.setItem(STORAGE_META_KEY, JSON.stringify(meta)); } catch { /* ignore */ }
+    }
+    return resolvedSubEnding;
   },
 
   getAllWithStatus() {

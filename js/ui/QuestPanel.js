@@ -5,6 +5,7 @@
 import EventBus   from '../core/EventBus.js';
 import GameState  from '../core/GameState.js';
 import MAIN_QUESTS from '../data/mainQuests/index.js';
+import { uiIcon } from './UiIcon.js';
 
 const QuestPanel = {
   _root: null,
@@ -137,7 +138,7 @@ const QuestPanel = {
     return `
       <div class="quest-locked-row">
         <span>${q.icon ?? '·'} ${this._escape(q.title)}</span>
-        <span class="quest-locked-reason">🔒 ${this._escape(reason)}</span>
+        <span class="quest-locked-reason">${uiIcon('lock')} ${this._escape(reason)}</span>
       </div>
     `;
   },

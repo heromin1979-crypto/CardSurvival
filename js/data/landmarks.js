@@ -224,7 +224,6 @@ export const LANDMARK_DATA = {
         icon: '❄️',
         desc: '시장 지하 대형 냉동고. 발전기가 아직 돌아 안쪽만 영하로 남아 있다.',
         dangerMod: 0.3,
-        noSceneImage: true,
         bossId: 'boss_chef_nemesis',
         requiresHiddenLocation: 'hidden_namdaemun_cold_storage',
         firstEnterReward: {
@@ -248,7 +247,6 @@ export const LANDMARK_DATA = {
         icon: '🍳',
         desc: '장충동 호텔 지하. 출입 코드를 아는 사람만 들어간다. 선반에 재고 목록이 손 글씨로 붙어 있다.',
         dangerMod: 0.1,
-        noSceneImage: true,
         requiresHiddenLocation: 'hidden_junggoo_hotel_kitchen',
         firstEnterReward: {
           claimKey: 'sofitel_pantry_first',
@@ -273,7 +271,6 @@ export const LANDMARK_DATA = {
         icon: '🏛️',
         desc: '시장 북쪽 태평로 건너 시청 본관. 시장실 벽 뒤에 금고가 통째로 박혀 있다.',
         dangerMod: 0.3,
-        noSceneImage: true,
         requiresHiddenLocation: 'hidden_junggoo_city_hall_safe',
         firstEnterReward: {
           claimKey: 'city_hall_safe_first',
@@ -633,7 +630,6 @@ export const LANDMARK_DATA = {
         icon: '🔨',
         desc: '공장지대 안쪽 3층. 문패 없이 공구만 벽 한 면을 채운 방.',
         dangerMod: 0.15,
-        noSceneImage: true,
         requiresHiddenLocation: 'hidden_seongdong_forge_master',
         firstEnterReward: {
           claimKey: 'master_workshop_first',
@@ -654,7 +650,6 @@ export const LANDMARK_DATA = {
         icon: '🌉',
         desc: '공장지대 서쪽 강변길 끝, 동호대교 교각 사이. 플라스틱 박스와 낡은 침낭이 2년치 자리를 지키고 있다.',
         dangerMod: 0.05,
-        noSceneImage: true,
         requiresHiddenLocation: 'hidden_yangcheon_dongho_bridge',
         firstEnterReward: {
           claimKey: 'dongho_shelter_first',
@@ -1002,7 +997,6 @@ export const LANDMARK_DATA = {
         icon: '🧵',
         desc: '의료원 뒤편 봉제골목 안쪽. 셔터가 반쯤 내려간 작업실에 재봉틀 여섯 대가 그대로 있다.',
         dangerMod: 0.08,
-        noSceneImage: true,
         requiresHiddenLocation: 'hidden_dongdaemun_secret_workshop',
         firstEnterReward: {
           claimKey: 'dongdaemun_workshop_first',
@@ -1207,7 +1201,6 @@ export const LANDMARK_DATA = {
         icon: '💧',
         desc: '용마산 능선 너머 배수지 계통의 중앙 제어실. 급수 도면이 벽 전체를 덮고 있다.',
         dangerMod: 0.15,
-        noSceneImage: true,
         requiresHiddenLocation: 'hidden_jungrang_water_treatment',
         firstEnterReward: {
           claimKey: 'jungrang_control_first',
@@ -1379,7 +1372,6 @@ export const LANDMARK_DATA = {
         icon: '🔬',
         desc: '이공대 건물 아래 봉인된 실험실. 배양기 전원이 아직 들어와 있다.',
         dangerMod: 0.12,
-        noSceneImage: true,
         requiresHiddenLocation: 'hidden_seongbuk_university_bunker',
         firstEnterReward: {
           claimKey: 'seongbuk_bunker_first',
@@ -1555,7 +1547,6 @@ export const LANDMARK_DATA = {
         icon: '💧',
         desc: '비가 와야 물길이 드러나는 바위 아래 샘. 마르면 흔적도 남지 않는다.',
         dangerMod: 0.0,
-        noSceneImage: true,
         requiresHiddenLocation: 'hidden_gangbuk_mountain_spring',
         firstEnterReward: {
           claimKey: 'gangbuk_spring_first',
@@ -1726,7 +1717,6 @@ export const LANDMARK_DATA = {
         icon: '🕯',
         desc: '등산로에서 벗어난 바위 틈. 마른 약초 다발과 손때 묻은 절구가 그대로 놓여 있다.',
         dangerMod: 0.05,
-        noSceneImage: true,
         requiresHiddenLocation: 'hidden_dobong_hermit_cave',
         firstEnterReward: {
           claimKey: 'dobong_hermit_first',
@@ -1894,7 +1884,6 @@ export const LANDMARK_DATA = {
         icon: '🔐',
         desc: '선수촌 지하 통로가 노원역 상가까지 이어진다. 누군가 이 끝에 물자를 차곡차곡 쌓아두었다.',
         dangerMod: 0.05,
-        noSceneImage: true,
         requiresHiddenLocation: 'hidden_nowon_underground_mall',
         firstEnterReward: {
           claimKey: 'nowon_depot_first',
@@ -2103,7 +2092,6 @@ export const LANDMARK_DATA = {
         icon: '🚒',
         desc: '진관사에서 내려오는 길목, 불광동 초입. 차고 문이 반쯤 열린 채 멈춰 있다.',
         dangerMod: 0.15,
-        noSceneImage: true,
         requiresHiddenLocation: 'hidden_eunpyeong_fire_station',
         firstEnterReward: {
           claimKey: 'eunpyeong_station_first',
@@ -2481,7 +2469,6 @@ export const LANDMARK_DATA = {
         icon: '🎸',
         desc: '방음벽이 두 겹인 지하 공연장. 바깥 소리가 들어오지 않고, 안쪽 소리도 새어나가지 않는다.',
         dangerMod: 0.08,
-        noSceneImage: true,
         requiresHiddenLocation: 'hidden_mapo_hongdae_basement',
         firstEnterReward: {
           claimKey: 'mapo_club_first',
@@ -2657,7 +2644,6 @@ export const LANDMARK_DATA = {
         icon: '🛡️',
         desc: '경기장 맞은편 아파트 단지 지하. 계획서에 적힌 비축 규격 그대로 쌓여 있다.',
         dangerMod: 0.05,
-        noSceneImage: true,
         requiresHiddenLocation: 'hidden_yangcheon_mokdong_bunker',
         firstEnterReward: {
           claimKey: 'mokdong_shelter_first',
@@ -3038,7 +3024,6 @@ export const LANDMARK_DATA = {
         icon: '🔥',
         desc: '데이터센터 지하 기계실을 개조한 대장간. 송풍구에서 아직 열기가 올라온다.',
         dangerMod: 0.1,
-        noSceneImage: true,
         requiresHiddenLocation: 'hidden_guro_factory_forge',
         firstEnterReward: {
           claimKey: 'guro_forge_first',
@@ -3206,7 +3191,6 @@ export const LANDMARK_DATA = {
         icon: '⚙️',
         desc: '계획서에 폐쇄로 적힌 하청 공장. 지하 2층에서 탄약 압착기가 아직 기름칠된 채로 서 있다.',
         dangerMod: 0.35,
-        noSceneImage: true,
         requiresHiddenLocation: 'hidden_geumcheon_underground_factory',
         firstEnterReward: {
           claimKey: 'geumcheon_line_first',
@@ -3566,7 +3550,6 @@ export const LANDMARK_DATA = {
         icon: '📡',
         desc: '본관 지하 3층 비상 스튜디오. 정규 계통과 분리된 송출 설비가 예비 전원으로 살아 있다.',
         dangerMod: 0.15,
-        noSceneImage: true,
         requiresHiddenLocation: 'hidden_yeongdeungpo_kbs_broadcast',
         firstEnterReward: {
           claimKey: 'kbs_studio_first',
@@ -3634,7 +3617,6 @@ export const LANDMARK_DATA = {
         icon: '🛎',
         desc: '대리석 로비. 관광객 안내 데스크와 기념품 매대가 뒤집혀 있다.',
         dangerMod: 0.05,
-        noSceneImage: true,
         lootTable: [
           { id: 'cloth', weight: 5 },
           { id: 'plastic', weight: 4 },
@@ -3648,7 +3630,6 @@ export const LANDMARK_DATA = {
         icon: '🔭',
         desc: '통유리 전망대. 서울 서남부가 한눈에 들어온다. 망원경 거치대가 남아 있다.',
         dangerMod: 0.10,
-        noSceneImage: true,
         lootTable: [
           { id: 'binoculars', weight: 4 },
           { id: 'electronic_parts', weight: 4 },
@@ -4052,7 +4033,6 @@ export const LANDMARK_DATA = {
         name: '지하 벙커',
         icon: '🚪',
         desc: '관리 창고 뒤편 철문 아래. 군용 통신 장비가 남아 있는 비상 벙커.',
-        noSceneImage: true,
         dangerMod: 0.15,
         requiresHiddenLocation: 'hidden_dongjak_cemetery_vault',
         firstEnterReward: {
@@ -4302,7 +4282,6 @@ export const LANDMARK_DATA = {
         icon: '⚖',
         desc: '예술의전당 건너편 법조타운 지하. 봉인 테이프가 하나도 뜯기지 않은 캐비닛 300여 개.',
         dangerMod: 0.12,
-        noSceneImage: true,
         requiresHiddenLocation: 'hidden_seocho_courthouse_vault',
         firstEnterReward: {
           claimKey: 'seocho_evidence_first',
@@ -4474,7 +4453,6 @@ export const LANDMARK_DATA = {
         icon: '💊',
         desc: '마약류 관리 구역. 셔터가 안에서 잠겼고 봉인 스티커가 그대로다.',
         dangerMod: 0.2,
-        noSceneImage: true,
         requiresHiddenLocation: 'hidden_gangnam_samsung_pharmacy',
         firstEnterReward: {
           claimKey: 'sealed_pharmacy_first',
@@ -4680,7 +4658,6 @@ export const LANDMARK_DATA = {
         icon: '🏢',
         desc: '좀비가 들어찬 로비 너머, 아케이드를 바리케이드로 막아 만든 구역. 여기서는 사람이 산다.',
         dangerMod: 0.05,
-        noSceneImage: true,
         requiresHiddenLocation: 'hidden_jamsil_lotte_tower_lobby',
         firstEnterReward: {
           claimKey: 'songpa_fort_first',
@@ -4917,7 +4894,6 @@ export const LANDMARK_DATA = {
         icon: '⛴',
         desc: '선사유적지 강변 끝, 갈대에 가려진 콘크리트 경사로. 계류 고리에 밧줄 자국이 선명하다.',
         dangerMod: 0.05,
-        noSceneImage: true,
         requiresHiddenLocation: 'hidden_gangdong_river_dock',
         firstEnterReward: {
           claimKey: 'gangdong_dock_first',

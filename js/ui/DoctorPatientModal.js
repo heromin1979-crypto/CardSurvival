@@ -4,6 +4,7 @@ import EventBus     from '../core/EventBus.js';
 import GameState    from '../core/GameState.js';
 import { NPC_ITEMS } from '../data/npcs.js';
 import QuestSystem  from '../systems/QuestSystem.js';
+import { dataIcon } from './DataIcon.js';
 
 const MILESTONES = [
   { at: 5,  icon: '📖', label: '첫 페이지',   hint: '첫 다섯 명의 이름이 기록되었다.' },
@@ -79,7 +80,7 @@ const DoctorPatientModal = {
           const def = NPC_ITEMS[npcId];
           const name = def?.name ?? npcId;
           const icon = def?.icon ?? '👤';
-          return `<div class="dp-roster-row"><span class="dp-roster-idx">${String(i + 1).padStart(2, '0')}</span><span class="dp-roster-icon">${icon}</span><span class="dp-roster-name">${name}</span></div>`;
+          return `<div class="dp-roster-row"><span class="dp-roster-idx">${String(i + 1).padStart(2, '0')}</span><span class="dp-roster-icon">${dataIcon(icon)}</span><span class="dp-roster-name">${name}</span></div>`;
         }).join('');
 
     const progressHtml = nextMs

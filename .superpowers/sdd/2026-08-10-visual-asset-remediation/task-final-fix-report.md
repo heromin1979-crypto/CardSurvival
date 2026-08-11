@@ -54,3 +54,58 @@ npm.cmd test
 
 - 메시지: `fix: align ending image keys and fallback icons`
 - 이 보고서를 포함한 커밋 해시는 최종 완료 보고에 기록한다.
+
+## 재검토 후속: 기존 갤러리 메타 복구
+
+- 기존 저장에 `{ day: 42, subEnding: null }`을 seed한 뒤 `unlockEnding()`을 다시 호출하는 회귀 테스트를 먼저 추가했다.
+- RED: `tests/unit/EndingImages.test.js` 9개 중 1개 실패. 기존 `subEnding: null`이 복구되지 않았다.
+- `unlockEnding()`은 기존 메타의 `subEnding`이 nullish이고 현재 캐릭터 플래그에서 유효 코드가 확인될 때만 해당 필드를 backfill한다.
+- 기존 `day` 및 유효한 `subEnding`은 덮어쓰지 않는다.
+- GREEN: `tests/unit/EndingImages.test.js` 9개 전부 통과.
+- 지정 검증: 4개 파일, 284개 테스트 통과. 전체 suite는 187개 파일, 2,448개 테스트 통과 및 3개 skipped.
+- 별도 커밋 메시지: `fix: backfill missing ending gallery metadata`
+
+## 최종 재검토: 갤러리 read-path lazy migration
+
+- `unlockEnding()` 재호출 없이 기존 `{ day: 42, subEnding: null }` 저장을 `EndingGallery._buildCard()`로 직접 렌더링하는 회귀 테스트를 추가했다.
+- RED: `tests/unit/EndingImages.test.js` 10개 중 1개 실패. 실제 갤러리 카드의 이미지 `src`가 `undefined`였다.
+- `EndingSystem.resolveEndingSubCode()`는 저장된 유효 코드를 우선 사용하고, nullish인 경우에만 현재 `GameState.flags`의 실제 키로 해석한다.
+- 기존 메타 항목이 있으면 `subEnding`만 lazy backfill하며 `day`와 유효한 기존 코드는 보존한다.
+- 갤러리 카드와 lightbox가 동일한 resolution API를 사용한다.
+- GREEN: `tests/unit/EndingImages.test.js` 10개 전부 통과.
+- 지정 검증: 4개 파일, 285개 테스트 통과. 전체 suite는 187개 파일, 2,449개 테스트 통과 및 3개 skipped.
+- 별도 커밋 메시지: `fix: migrate ending metadata on gallery read`
+
+## 갤러리 migration 분기 검증 보완
+
+- legacy B3 메타에 현재 `fire_ending: 'a1_shelter'` 또는 bogus 코드를 주입하고 실제 갤러리 렌더링 경로를 실행하는 회귀 테스트를 추가했다.
+- RED: `tests/unit/EndingImages.test.js` 13개 중 2개 실패. mismatch는 A1 이미지를 B3 카드에 표시했고 bogus 코드는 메타에 영속됐다.
+- 후보 코드는 `getEndingImage()`의 실제 매핑으로 유효성을 확인하고, `ENDINGS[id].condition`의 실제 분기 조건으로 엔딩 ID와의 연관성을 확인한다.
+- 새 하드코딩 ID↔코드 목록은 추가하지 않았다.
+- 올바른 B3 코드는 계속 복구되고, 유효한 기존 메타는 현재 플래그와 달라도 보존된다.
+- GREEN: `tests/unit/EndingImages.test.js` 13개 전부 통과.
+- 지정 검증: 4개 파일, 288개 테스트 통과. 전체 suite는 187개 파일, 2,452개 테스트 통과 및 3개 skipped.
+- 별도 커밋 메시지: `fix: validate gallery ending metadata migration`
+
+## 이미지 lookup 및 저장 메타 최종 검증
+
+- `constructor`, `toString`, `__proto__` lookup과 malformed own mapping, 저장된 mismatch/prototype 코드를 실제 갤러리 경로로 재현하는 테스트를 추가했다.
+- RED: `tests/unit/EndingImages.test.js` 22개 중 9개 실패. prototype/malformed 데이터가 반환됐고 stale 저장값이 표시되거나 남았다.
+- `getEndingImage()`는 캐릭터와 서브코드 양쪽 모두 own mapping만 허용하고, `src`/`alt`가 비어 있지 않은 문자열인 데이터만 반환한다.
+- resolver는 저장 후보도 실제 이미지 매핑과 해당 `ENDINGS[id].condition`으로 검증한다.
+- stale 저장값은 현재 matching 코드가 있으면 교체하고, 없으면 `null`로 정리한다. 올바른 저장값과 `day`는 보존한다.
+- GREEN: `tests/unit/EndingImages.test.js` 22개 전부 통과.
+- 지정 검증: 4개 파일, 297개 테스트 통과. 전체 suite는 187개 파일, 2,461개 테스트 통과 및 3개 skipped.
+- 별도 커밋 메시지: `fix: harden ending image metadata resolution`
+
+## 과거 분기 검증 및 최초 엔딩 경로 통일
+
+- sparse 현재 상태에서 과거 `mq_engineer_rebuild / b1_rebuild`를 읽는 테스트와 fresh 소방관 B3의 mismatch/valid 최초 저장·렌더링 테스트를 추가했다.
+- RED 1: `tests/unit/EndingImages.test.js` 25개 중 2개 실패. 엔지니어 B1 과거 기록이 제거됐고 fresh B3에 A1 코드가 저장됐다.
+- RED 2: 명시적 stale-false 인프라 플래그를 추가하자 26개 중 1개 실패해 현재 런의 false 값에도 의존함을 확인했다.
+- 분기 검증은 후보 branch key를 명시하고, 과거 런에서 사라질 수 있는 그 외 진행 플래그는 permissive truthy 값으로 제공한다.
+- `unlockEnding()`, gallery resolver, `Ending._onEnter()`가 동일한 branch-code validator/resolver를 사용한다.
+- 과거 엔지니어 B1은 현재 인프라 플래그가 없거나 false여도 유지되며, fresh B3 mismatch는 저장·표시되지 않고 올바른 B3는 저장·표시된다.
+- GREEN: `tests/unit/EndingImages.test.js` 26개 전부 통과.
+- 지정 검증: 4개 파일, 301개 테스트 통과. 전체 suite는 187개 파일, 2,465개 테스트 통과 및 3개 skipped.
+- 별도 커밋 메시지: `fix: share exact ending branch validation`

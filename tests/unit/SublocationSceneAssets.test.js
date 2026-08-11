@@ -43,7 +43,7 @@ describe('우선 서브 로케이션 장면 자산', () => {
       noSceneImage: true,
     });
 
-    expect(html).toContain('<span class="lc-scene-icon">🧭</span>');
+    expect(html).toContain('<span class="lc-scene-icon"><span class="data-icon data-icon--glyph" aria-hidden="true">🧭</span></span>');
     expect(html).not.toContain('ui-icon--location');
   });
 
