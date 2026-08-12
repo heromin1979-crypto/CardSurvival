@@ -7,7 +7,7 @@ import SystemRegistry  from '../core/SystemRegistry.js';
 import GameState       from '../core/GameState.js';
 import I18n            from '../core/I18n.js';
 import NPCSystem       from '../systems/NPCSystem.js';
-import NPCQuestSystem  from '../systems/NPCQuestSystem.js';
+import NPCQuestSystem, { isNpcQuestStepComplete } from '../systems/NPCQuestSystem.js';
 import SkillSystem     from '../systems/SkillSystem.js';
 import { NPC_ITEMS }   from '../data/npcs.js';
 import GameData        from '../data/GameData.js';
@@ -143,21 +143,21 @@ const NPCDialogueModal = {
     let questHtml = '';
     if (activeQuest) {
       const stepDescs = activeQuest.steps.map(s => {
+        const done = isNpcQuestStepComplete(s);
+        const mark = done ? '✅' : '⬜';
+        const cls  = done ? 'done' : '';
         if (s.type === 'collect' || s.type === 'offer_item') {
           const have = GameState.countOnBoard?.(s.itemId) ?? 0;
           const itemDef = GameData?.items[s.itemId];
           const iname   = I18n.itemName(s.itemId, itemDef?.name);
-          if (s.type === 'offer_item') {
-            return `<div class="npc-quest-step ${have >= s.qty ? 'done' : ''}">${have >= s.qty ? '✅' : '⬜'} ${iname} ${have}/${s.qty} 건네기 — <em>${s.hint}</em></div>`;
-          }
-          return `<div class="npc-quest-step ${have >= s.qty ? 'done' : ''}">${have >= s.qty ? '✅' : '⬜'} ${iname} ${have}/${s.qty} — <em>${s.hint}</em></div>`;
+          const suffix  = s.type === 'offer_item' ? ' 건네기' : '';
+          return `<div class="npc-quest-step ${cls}">${mark} ${iname} ${have}/${s.qty}${suffix} — <em>${s.hint}</em></div>`;
         }
         if (s.type === 'visit') {
-          const targetId   = s.districtId ?? s.locationId;
-          const visited    = GameState.location?.districtsVisited?.includes(targetId) ?? false;
+          const targetId    = s.districtId ?? s.locationId;
           const districtDef = GameData?.districts?.[targetId];
           const label       = I18n.districtName(targetId, districtDef?.name ?? targetId);
-          return `<div class="npc-quest-step ${visited ? 'done' : ''}">${visited ? '✅' : '⬜'} ${label} 방문 — <em>${s.hint}</em></div>`;
+          return `<div class="npc-quest-step ${cls}">${mark} ${label} 방문 — <em>${s.hint}</em></div>`;
         }
         return '';
       }).join('');

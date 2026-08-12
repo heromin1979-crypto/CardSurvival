@@ -256,9 +256,7 @@ const SubwaySystem = {
     // Update location
     gs.location.currentDistrict = districtId;
     gs.location.currentNode     = districtId;
-    if (!gs.location.districtsVisited.includes(districtId)) {
-      gs.location.districtsVisited.push(districtId);
-    }
+    gs.recordDistrictArrival(districtId);
 
     // Special visit flags
     if (districtId === 'yeongdeungpo') gs.flags.yeongdeungpoVisited = true;

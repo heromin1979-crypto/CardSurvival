@@ -1077,10 +1077,18 @@ async function validate() {
     if (lmData) knownLandmarks = new Set(Object.keys(lmData));
   } catch { /* landmarks.js \uBBF8\uC874\uC7AC/\uD3EC\uB9F7 \uBCC0\uACBD \uC2DC ID \uAC80\uC99D\uC740 \uAC74\uB108\uB700 */ }
 
+  const npcsMod = await import('./npcs.js');
+  const npcQuestStepCounts = {};
+  for (const [npcId, npcDef] of Object.entries(npcsMod.default ?? {})) {
+    for (const nq of npcDef?.quests ?? []) {
+      npcQuestStepCounts[`${npcId}:${nq.id}`] = (nq.steps ?? []).length;
+    }
+  }
+
   let mqChecked = 0;
   let mqItemRefBad = 0;
   for (const [id, q] of Object.entries(MAIN_QUESTS)) {
-    const r = validateMainQuestSchema({ ...q, id }, { knownDistricts, knownLandmarks });
+    const r = validateMainQuestSchema({ ...q, id }, { knownDistricts, knownLandmarks, npcQuestStepCounts });
     for (const e of r.errors) {
       console.log(`\u274C [main quest] ${e}`);
       errors++;
@@ -1535,7 +1543,28 @@ async function validate() {
 // locationHint: districtId/landmarkId\uAC00 ctx\uC5D0 \uC8FC\uC5B4\uC9C4 Set\uC5D0 \uC874\uC7AC\uD558\uB294\uC9C0 \uD655\uC778 (Set \uBBF8\uC8FC\uC785 \uC2DC \uAC80\uC99D \uC0DD\uB7B5)
 export function validateMainQuestSchema(quest, ctx = {}) {
   const errors = [];
-  const { knownDistricts = null, knownLandmarks = null } = ctx;
+  const { knownDistricts = null, knownLandmarks = null, npcQuestStepCounts = null } = ctx;
+
+  // 랜드마크 키는 두 표기가 공존한다: 런타임 진입 키는 항상 카드 아이템 ID(`lm_*`)이고
+  // LANDMARK_DATA는 45개 중 35개가 접두사 없는 구 키다. getLandmarkData가 `lm_`를 벗겨
+  // 폴백하므로 게임은 양쪽을 같은 랜드마크로 본다 — 검증도 같은 규칙이어야 한다.
+  const landmarkKnown = id =>
+    !knownLandmarks || knownLandmarks.has(id) || knownLandmarks.has(String(id ?? '').replace(/^lm_/, ''));
+
+  // 크로스오버 퀘스트의 체크리스트는 대상 NPC 의뢰 step을 미러링한다.
+  // npcStep이 실제 step 범위를 벗어나면 그 줄은 영원히 미완료로 남는다.
+  const crossover = quest.objective?.type === 'npc_quest_complete';
+  const stepCount = crossover && npcQuestStepCounts
+    ? npcQuestStepCounts[`${quest.objective.npcId}:${quest.objective.questId}`]
+    : null;
+  if (crossover && npcQuestStepCounts && stepCount == null) {
+    errors.push(`${quest.id}: objective npc quest "${quest.objective.npcId}/${quest.objective.questId}" unknown`);
+  }
+
+  // visit_landmark는 랜드마크 키 오타가 나면 목표가 영원히 달성되지 않는다 (경고 없이 조용히 실패)
+  if (quest.objective?.type === 'visit_landmark' && !landmarkKnown(quest.objective.landmarkId)) {
+    errors.push(`${quest.id}: objective.landmarkId "${quest.objective.landmarkId}" unknown`);
+  }
 
   if (quest.subObjectives !== undefined) {
     if (!Array.isArray(quest.subObjectives)) {
@@ -1549,6 +1578,23 @@ export function validateMainQuestSchema(quest, ctx = {}) {
           errors.push(`${quest.id}: subObjectives[${i}] duplicate id "${so.id}"`);
         }
         if (so.id) seenIds.add(so.id);
+
+        if (so.match?.type === 'visit_landmark' && !landmarkKnown(so.match.landmarkId)) {
+          errors.push(`${quest.id}: subObjectives[${i}].match.landmarkId "${so.match.landmarkId}" unknown`);
+        }
+
+        if (so.npcStep != null) {
+          if (!crossover) {
+            errors.push(`${quest.id}: subObjectives[${i}].npcStep requires objective.type "npc_quest_complete"`);
+          } else if (!Number.isInteger(so.npcStep) || so.npcStep < 0) {
+            errors.push(`${quest.id}: subObjectives[${i}].npcStep must be a non-negative integer`);
+          } else if (stepCount != null && so.npcStep >= stepCount) {
+            errors.push(`${quest.id}: subObjectives[${i}].npcStep ${so.npcStep} out of range (steps: ${stepCount})`);
+          }
+          if (so.match) {
+            errors.push(`${quest.id}: subObjectives[${i}] has both npcStep and match — pick one`);
+          }
+        }
       });
     }
   }
@@ -1558,7 +1604,7 @@ export function validateMainQuestSchema(quest, ctx = {}) {
     if (knownDistricts && lh.districtId && !knownDistricts.has(lh.districtId)) {
       errors.push(`${quest.id}: locationHint.districtId "${lh.districtId}" unknown`);
     }
-    if (knownLandmarks && lh.landmarkId && !knownLandmarks.has(lh.landmarkId)) {
+    if (lh.landmarkId && !landmarkKnown(lh.landmarkId)) {
       errors.push(`${quest.id}: locationHint.landmarkId "${lh.landmarkId}" unknown`);
     }
   }

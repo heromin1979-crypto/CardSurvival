@@ -7,6 +7,33 @@ import GameState from '../core/GameState.js';
 import I18n      from '../core/I18n.js';
 import NPCS, { NPC_ITEMS } from '../data/npcs.js';
 
+/**
+ * 의뢰 step 1건의 달성 여부를 판정하는 단일 원천.
+ * 의뢰 완료 판정, 대화창 체크리스트, 메인 퀘스트 크로스오버 체크리스트가 모두 이 함수만 본다 —
+ * 소비처가 각자 조건을 다시 쓰면 같은 줄이 창마다 다르게 표시된다.
+ * 판정 로직이 없는 step 타입(craft/recruit/survive)은 기존 완료 판정과 같이 통과시킨다.
+ */
+export function isNpcQuestStepComplete(step) {
+  if (!step) return false;
+  switch (step.type) {
+    case 'collect':
+    case 'offer_item':
+      return (GameState.countOnBoard?.(step.itemId) ?? 0) >= step.qty;
+    case 'visit': {
+      const targetId = step.districtId ?? step.locationId;
+      return GameState.location?.districtsVisited?.includes(targetId) ?? false;
+    }
+    case 'day':
+      return (GameState.time?.day ?? 0) >= step.minDay;
+    case 'treat_npc': {
+      const targetState = GameState.npcs?.states?.[step.npcId];
+      return !!targetState && (targetState.woundLevel ?? 0) <= 0;
+    }
+    default:
+      return true;
+  }
+}
+
 const NPCQuestSystem = {
 
   init() {
@@ -77,25 +104,16 @@ const NPCQuestSystem = {
   },
 
   _isQuestComplete(quest) {
-    for (const step of quest.steps) {
-      if (this._isItemDeliveryStep(step)) {
-        const qty = GameState.countOnBoard?.(step.itemId) ?? 0;
-        if (qty < step.qty) return false;
-      }
-      if (step.type === 'visit') {
-        const targetId = step.districtId ?? step.locationId;
-        const visited  = GameState.location?.districtsVisited?.includes(targetId) ?? false;
-        if (!visited) return false;
-      }
-      if (step.type === 'day') {
-        if ((GameState.time?.day ?? 0) < step.minDay) return false;
-      }
-      if (step.type === 'treat_npc') {
-        const targetState = GameState.npcs?.states?.[step.npcId];
-        if (!targetState || (targetState.woundLevel ?? 0) > 0) return false;
-      }
-    }
-    return true;
+    return quest.steps.every(step => isNpcQuestStepComplete(step));
+  },
+
+  /**
+   * 의뢰 step 1건의 달성 여부 — 메인 퀘스트 크로스오버 체크리스트가 참조한다.
+   * 존재하지 않는 인덱스는 false (데이터 불일치를 완료로 오인하지 않는다).
+   */
+  isStepComplete(npcId, questId, stepIndex) {
+    const quest = NPCS[npcId]?.quests?.find(q => q.id === questId);
+    return isNpcQuestStepComplete(quest?.steps?.[stepIndex]);
   },
 
   _completeQuest(npcId, quest) {

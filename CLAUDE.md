@@ -40,6 +40,11 @@
 - 구조물 지속 효과 `def.effect`(감염 저항·휴식 배율·차단 플래그)는 `onTick`과 경로가 다르다. `StructureEffectSystem`이 집계해 `player.structureEffects`에 캐시하고 소비처가 읽는다 — **집계·소비 배선 없이 `effect`만 선언하면 아무 동작도 하지 않는다**
 - 도구 역할 대체: `def.toolProvides: ['medical_station']` → 청사진 `requiredTools` 판정에서 id 일치와 동등 (`toolProvision.js`, CraftSystem·CraftDiscovery 양쪽 반영 필수)
 - 현재 날씨는 **`GameState.weather.id`**, 현재 계절은 **`GameState.season.current`** — 필드명이 서로 다르다. 날씨를 `.current`/`.currentWeather`로 읽으면 `?? 'sunny'` 폴백에 조용히 걸려 보정이 통째로 죽는다 (에러도 로그도 없음). 값도 `'rain'`이 아니라 **`'rainy'`**다. 비 계열 판정은 리터럴을 새로 쓰지 말고 `WeatherSystem`이 export하는 `isRainyWeather(id)` / `RAINY_WEATHER_IDS`를 쓴다
+- 크로스오버 메인 퀘스트(`objective.type: 'npc_quest_complete'`)의 `subObjectives`는 **`npcStep: <index>`로 대상 NPC 의뢰 steps에 묶는다**. 자체 `match`를 쓰면 완료 게이트(NPC 의뢰)와 표시(체크리스트)가 서로 다른 카운터를 보게 되어 "대화창 미완료 / 퀘스트창 완료"로 갈린다 (`validate.js`가 범위·중복 선언 차단, `tests/unit/QuestNpcCrossoverSync.test.js`가 판정 동기화 검사)
+- 구 이동은 **`GameState.recordDistrictArrival(districtId)` 하나로만 기록한다** (`ExploreSystem`·`SubwaySystem` 도착 지점). 이 함수가 `districtsVisited`(생애 누적)와 `districtArrivals`(최근 도착 TP)를 함께 남긴다 — 시스템마다 카운터를 따로 들면 시작 구가 한쪽에만 잡혀 판정이 갈린다
+- **한 구에 랜드마크가 둘 이상이면 `visit_district` 대신 `visit_landmark`(`landmarkId`)를 쓴다** (동작구 = 보라매병원 + 국립현충원, 광진구 = 어린이대공원 + 한강). 구 단위로 잡으면 엉뚱한 랜드마크에 있어도 목표가 달성된다. 진입 기록은 `ExploreSystem.enterLandmark` → `GameState.recordLandmarkArrival` + `landmarkEntered` 이벤트. `landmarkArrivals`는 `location` 소속이라 `NEW_GAME_RESET_KEYS`가 아닌 **`CharCreate._startGame`에서 직접 비운다**
+- 랜드마크 키는 **두 표기가 공존한다**: 런타임 진입 키는 항상 카드 아이템 ID(`lm_*`), `LANDMARK_DATA`는 45개 중 35개가 접두사 없는 구 키(`hangang_gwangjin`, `gwangjin`…). `getLandmarkData`가 `lm_`를 벗겨 폴백하므로 게임은 같은 랜드마크로 본다 — **키를 저장·비교할 때는 반드시 `normalizeLandmarkKey()`를 거친다**. 안 거치면 표기 차이로 조용히 미완료가 된다
+- 메인 퀘스트 `visit_district`/`visit_landmark`(objective·subObjective 모두)는 **`도착시각[대상] > quest.startTp`**로 판정한다. `districtsVisited`는 비워지지 않는 생애 목록이라 그걸로 판정하면 예전에 스쳐간 구·시작 구까지 "가라" 조건을 충족시킨다 (`tests/unit/QuestVisitDistrictArrival.test.js`가 차단). 단 **NPC 의뢰의 `visit` step은 여전히 `districtsVisited`(생애 누적) 기준**이다 — 의뢰에는 시작 시각 개념이 없다
 - **조용히 실패하는 배선 누락 주의**: 데이터에 필드·태그를 선언해도 읽는 코드가 없으면 아무 일도 일어나지 않고 경고도 없다. 신규 필드 추가 시 소비처를 grep으로 확인할 것 (실제 사례: `tags:'temp'` 3턴 소멸, `def.effect` 지속 효과, `toolProvides` 요리 도구 — 셋 다 선언만 있고 배선이 없었다)
 
 ## 5. 디자인 시스템

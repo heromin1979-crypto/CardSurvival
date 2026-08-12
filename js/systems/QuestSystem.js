@@ -7,14 +7,16 @@ import MAIN_QUESTS from '../data/mainQuests/index.js';
 import GameData   from '../data/GameData.js';
 import BALANCE    from '../data/gameBalance.js';
 import NPCSystem  from './NPCSystem.js';
-import { getLandmarkData } from '../data/landmarks.js';
+import NPCQuestSystem from './NPCQuestSystem.js';
+import { getLandmarkData, normalizeLandmarkKey } from '../data/landmarks.js';
 import { QUEST_TO_FLASHBACK } from '../data/cinematicScenes.js';
 
 // ── 계절 퀘스트 정의 ────────────────────────────────────────────────
 // trigger: 연결된 seasonalEvent id (해당 이벤트 발생 시 자동 시작)
 // objective: { type, target, count }
 //   type: 'collect_item' | 'collect_item_type' | 'craft_item' | 'kill_enemies' | 'survive_days' | 'equip_slot'
-//       | 'survive_infection' | 'npc_quest_complete' | 'treat_npc' | 'track_infected' | 'rescue_npc' | 'visit_district'
+//       | 'survive_infection' | 'npc_quest_complete' | 'treat_npc' | 'track_infected' | 'rescue_npc'
+//       | 'visit_district' | 'visit_landmark'
 //       | 'discover_location'
 //       | 'trigger_combo' (comboId 또는 comboIds 배열)
 // reward: { morale?, hp? }
@@ -110,7 +112,6 @@ function createEmptyQuestProgress() {
     collectedByTypeOrTag:   {},
     craftedRecipes:         [],
     craftedCategoryCounts:  {},
-    visitedDistricts:       new Set(),
     usedItemCounts:         {},
     treatedNpcs:            new Set(),
     treatedNpcCount:        0,
@@ -160,6 +161,9 @@ const QuestSystem = {
     // 지역 이동 시 visit_district 퀘스트 체크
     EventBus.on('districtChanged', ({ districtId }) => this._onDistrictChanged(districtId));
 
+    // 랜드마크 진입 시 visit_landmark 퀘스트 체크
+    EventBus.on('landmarkEntered', ({ landmarkId }) => this._onLandmarkEntered(landmarkId));
+
     // 히든 장소 발견 추적 — 발견 조건 자체는 HiddenElementSystem이 판정한다
     EventBus.on('hiddenLocationDiscovered', ({ locationId }) => this._onLocationDiscovered(locationId));
 
@@ -203,8 +207,9 @@ const QuestSystem = {
    *  - collect_item       { definitionId, count? }
    *  - collect_item_type  { itemType, count? }       — itemType은 top-level type 또는 tag
    *  - craft_item         { definitionId? | category?, count? }
-   *  - visit_district     { districtId }
-   *  - discover_location  { locationId }
+   *  - visit_district     { districtId }        — entry.startTp 이후의 도착만 인정
+   *  - visit_landmark     { landmarkId }        — 한 구에 랜드마크가 둘 이상일 때 쓴다. 동일 규칙
+   *  - discover_location  { locationId }        — flags.hiddenLocationsDiscovered 기준(생애 누적)
    *  - use_item           { definitionId, count? }
    *  - treat_npc          { npcId? | count? }
    *  - build_structure    { structureId }
@@ -238,8 +243,16 @@ const QuestSystem = {
         }
         return false;
       }
-      case 'visit_district':
-        return (state.visitedDistricts ?? new Set()).has(m.districtId);
+      case 'visit_district': {
+        // 퀘스트 시작 이후의 도착만 인정한다. districtsVisited는 생애 누적이라
+        // 예전에 스쳐간 구까지 "가라" 조건을 충족시킨다.
+        const arrival = state.districtArrivals?.[m.districtId];
+        return arrival != null && arrival > (entry?.startTp ?? -Infinity);
+      }
+      case 'visit_landmark': {
+        const arrival = state.landmarkArrivals?.[normalizeLandmarkKey(m.landmarkId)];
+        return arrival != null && arrival > (entry?.startTp ?? -Infinity);
+      }
       case 'discover_location':
         return (state.discoveredLocations ?? new Set()).has(m.locationId);
       case 'use_item': {
@@ -285,10 +298,7 @@ const QuestSystem = {
       }
       this._reevaluateSubObjectives();
     });
-    EventBus.on('districtVisited', ({ districtId } = {}) => {
-      if (districtId) this._progress.visitedDistricts.add(districtId);
-      this._reevaluateSubObjectives();
-    });
+    EventBus.on('districtVisited', () => this._reevaluateSubObjectives());
     EventBus.on('itemUsed', ({ definitionId, qty = 1 } = {}) => {
       if (definitionId) {
         this._progress.usedItemCounts[definitionId] = (this._progress.usedItemCounts[definitionId] ?? 0) + qty;
@@ -331,12 +341,10 @@ const QuestSystem = {
       this._reevaluateSubObjectives();
     });
 
-    // districtChanged({districtId}) → districtVisited
-    // 주의: 위에서 `districtVisited` 직접 구독이 이미 있으므로, 외부 시스템이 둘 다 emit해도 Set 멱등으로 안전.
-    EventBus.on('districtChanged', ({ districtId } = {}) => {
-      if (districtId) this._progress.visitedDistricts.add(districtId);
-      this._reevaluateSubObjectives();
-    });
+    // 도착 기록은 ExploreSystem/SubwaySystem이 GameState.recordDistrictArrival로 남긴다.
+    // 여기서는 재평가만 걸어 이동 직후 체크리스트가 갱신되게 한다.
+    EventBus.on('districtChanged', () => this._reevaluateSubObjectives());
+    EventBus.on('landmarkEntered', () => this._reevaluateSubObjectives());
 
     // cardPlaced({instanceId}) → itemCollected
     // 기존 _onItemGained가 collect_item / collect_item_type 보드 카운트로 이미 사용 중인 이벤트.
@@ -368,13 +376,42 @@ const QuestSystem = {
   },
 
   /**
+   * 매처 입력. 구 이동 판정의 원천은 GameState.location.districtArrivals 하나다 —
+   * 시스템마다 카운터를 따로 들면 시작 구가 한쪽에만 잡혀 두 판정이 갈린다.
+   */
+  _matchState() {
+    return {
+      ...this._progress,
+      districtArrivals:    GameState.location?.districtArrivals ?? {},
+      landmarkArrivals:    GameState.location?.landmarkArrivals ?? {},
+      // 히든 장소는 objective 판정(_checkAllProgress)과 같은 flags 배열을 원천으로 쓴다.
+      // 발견은 영구 기록이라 퀘스트를 받기 전에 찾았어도 인정한다.
+      discoveredLocations: new Set(GameState.flags?.hiddenLocationsDiscovered ?? []),
+    };
+  },
+
+  /**
+   * subObjective 1건의 완료 판정.
+   * 크로스오버 퀘스트(objective.type === 'npc_quest_complete')의 체크리스트는 자체 카운터 대신
+   * 대상 NPC 의뢰의 step 판정을 그대로 미러링한다 — 완료 게이트와 표시가 같은 값을 보게 한다.
+   */
+  _isSubObjectiveComplete(def, so, state, entry) {
+    const obj = def.objective;
+    if (obj?.type === 'npc_quest_complete' && so.npcStep != null) {
+      return NPCQuestSystem.isStepComplete(obj.npcId, obj.questId, so.npcStep);
+    }
+    return this._matchSubObjective(so, state, entry);
+  },
+
+  /**
    * 활성 메인 퀘스트의 subObjective를 재평가 → 완료 전이 시 1회만 이벤트 발화.
-   * GameState.subObjectiveProgress: { [questId]: { [subId]: true } } — 완료 플래그 영속화.
+   * GameState.subObjectiveProgress: { [questId]: { [subId]: boolean } } — 완료 플래그 영속화.
    * GameState.questProgress: 외부 시스템(DailyFocus 등) 참조용 진행도 미러.
    */
   _reevaluateSubObjectives() {
     const gs = GameState;
     if (!gs.subObjectiveProgress) gs.subObjectiveProgress = {};
+    const state = this._matchState();
 
     for (const q of (gs.quests?.active ?? [])) {
       const def = MAIN_QUESTS[q.id];
@@ -383,9 +420,12 @@ const QuestSystem = {
 
       for (const so of def.subObjectives) {
         const wasComplete = gs.subObjectiveProgress[q.id][so.id] === true;
-        const nowComplete = this._matchSubObjective(so, this._progress, q);
-        if (nowComplete && !wasComplete) {
-          gs.subObjectiveProgress[q.id][so.id] = true;
+        const nowComplete = this._isSubObjectiveComplete(def, so, state, q);
+        // 완료 플래그는 양방향이다. 조건이 다시 깨지면(아이템 소모 등) 체크도 풀려야
+        // 퀘스트창이 대화창과 같은 현재 상태를 보여준다. 알림은 미완료→완료 전이에서만.
+        if (nowComplete === wasComplete) continue;
+        gs.subObjectiveProgress[q.id][so.id] = nowComplete;
+        if (nowComplete) {
           EventBus.emit('subObjectiveCompleted', { questId: q.id, subObjectiveId: so.id, text: so.text });
         }
       }
@@ -397,7 +437,6 @@ const QuestSystem = {
       collectedByTypeOrTag:   { ...this._progress.collectedByTypeOrTag },
       craftedRecipes:         [...this._progress.craftedRecipes],
       craftedCategoryCounts:  { ...this._progress.craftedCategoryCounts },
-      visitedDistricts:       [...this._progress.visitedDistricts],
       usedItemCounts:         { ...this._progress.usedItemCounts },
       treatedNpcs:            [...this._progress.treatedNpcs],
       treatedNpcCount:        this._progress.treatedNpcCount,
@@ -416,7 +455,6 @@ const QuestSystem = {
       collectedByTypeOrTag:   { ...(saved.collectedByTypeOrTag ?? {}) },
       craftedRecipes:         [...(saved.craftedRecipes ?? [])],
       craftedCategoryCounts:  { ...(saved.craftedCategoryCounts ?? {}) },
-      visitedDistricts:       new Set(saved.visitedDistricts ?? []),
       usedItemCounts:         { ...(saved.usedItemCounts ?? {}) },
       treatedNpcs:            new Set(saved.treatedNpcs ?? []),
       treatedNpcCount:        saved.treatedNpcCount ?? 0,
@@ -705,6 +743,23 @@ const QuestSystem = {
     if (changed) EventBus.emit('questListChanged', {});
   },
 
+  /** 랜드마크 진입 시 visit_landmark 목표 체크 */
+  _onLandmarkEntered(landmarkId) {
+    if (!landmarkId) return;
+    let changed = false;
+    for (const q of [...GameState.quests.active]) {
+      const qDef = _getQuestDef(q.id);
+      if (!qDef) continue;
+      if (qDef.objective.type === 'visit_landmark'
+          && normalizeLandmarkKey(qDef.objective.landmarkId) === normalizeLandmarkKey(landmarkId)) {
+        q.progress = 1;
+        this._checkCompletion(q, qDef);
+        changed = true;
+      }
+    }
+    if (changed) EventBus.emit('questListChanged', {});
+  },
+
   /** 히든 장소 발견 시 discover_location 목표 체크 */
   _onLocationDiscovered(locationId) {
     if (!locationId) return;
@@ -924,8 +979,16 @@ const QuestSystem = {
       if (obj.type === 'collect_item' || obj.type === 'collect_item_type') {
         this._syncCollectProgress(q, qDef);
       } else if (obj.type === 'visit_district') {
-        // visit_district: 이미 방문한 곳이면 즉시 완료
-        if (GameState.location.districtsVisited?.includes(obj.districtId)) {
+        // 퀘스트 시작 이후 도착한 경우만 완료. 생애 방문 이력으로 판정하던 시절에는
+        // 시작 구가 목표인 퀘스트가 세이브 로드만으로 완료됐다.
+        const arrival = GameState.location.districtArrivals?.[obj.districtId];
+        if (arrival != null && arrival > (q.startTp ?? 0)) {
+          q.progress = 1;
+          this._checkCompletion(q, qDef);
+        }
+      } else if (obj.type === 'visit_landmark') {
+        const arrival = GameState.location.landmarkArrivals?.[normalizeLandmarkKey(obj.landmarkId)];
+        if (arrival != null && arrival > (q.startTp ?? 0)) {
           q.progress = 1;
           this._checkCompletion(q, qDef);
         }
@@ -1032,13 +1095,6 @@ const QuestSystem = {
     gs.quests.active.splice(idx, 1);
     gs.quests.completed.push(q.id);
     delete this._warnedDeadlines[q.id];
-
-    // 완료된 퀘스트의 체크리스트는 전부 체크 처리 — 미체크 잔여로 인한 표시 불일치 제거
-    if (qDef.subObjectives?.length) {
-      if (!gs.subObjectiveProgress) gs.subObjectiveProgress = {};
-      const flags = gs.subObjectiveProgress[q.id] ?? (gs.subObjectiveProgress[q.id] = {});
-      for (const so of qDef.subObjectives) flags[so.id] = true;
-    }
 
     // 보상 지급
     const r = qDef.reward;

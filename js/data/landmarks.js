@@ -6788,6 +6788,17 @@ export function getLandmarkData(key) {
 }
 
 /**
+ * 랜드마크 키를 비교·저장용 단일 표기로 정규화한다.
+ * 런타임 진입 키는 카드 아이템 ID(`lm_*`)인데 LANDMARK_DATA는 대부분 접두사 없는 구 키라
+ * 같은 랜드마크가 두 문자열로 돌아다닌다. getLandmarkData와 같은 규칙(`lm_` 제거)을 쓴다.
+ * @param {string} key - 랜드마크 아이템 ID 또는 LANDMARK_DATA 키
+ * @returns {string} 정규화된 키 ('' if falsy)
+ */
+export function normalizeLandmarkKey(key) {
+  return key ? String(key).replace(/^lm_/, '') : '';
+}
+
+/**
  * 랜드마크의 세부 장소 중 현재 플레이어에게 노출해야 할 것만 반환한다.
  * `requiresHiddenLocation`이 지정된 세부 장소는 해당 숨겨진 장소를 발견한 뒤에만 나타난다.
  * 본 모듈은 GameState를 import하지 않으므로(순환 의존 방지) 발견 목록을 인자로 받는다.

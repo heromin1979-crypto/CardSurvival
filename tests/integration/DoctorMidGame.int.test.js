@@ -22,19 +22,12 @@ function resetAll() {
   GameState.questProgress = null;
   GameState.flags = {};
 
-  QuestSystem._warnedDeadlines = {};
-  QuestSystem._lastDeadlineCheckDay = -1;
-  QuestSystem._progress = {
-    collected:             {},
-    collectedByTypeOrTag:  {},
-    craftedRecipes:        [],
-    craftedCategoryCounts: {},
-    visitedDistricts:      new Set(),
-    usedItemCounts:        {},
-    treatedNpcs:           new Set(),
-    treatedNpcCount:       0,
-    builtStructures:       new Set(),
-  };
+  // 시작 구는 CharCreate가 여기에만 시딩한다 — visit 판정의 유일한 원천
+  GameState.location.currentDistrict  = 'dongjak';
+  GameState.location.districtsVisited = ['dongjak'];
+
+  // 진행도 필드 목록은 createEmptyQuestProgress 한 곳에만 둔다
+  QuestSystem.resetForNewGame();
 
   // 매 테스트마다 listeners 새로 등록 — _listeners를 비웠으므로 중복 누적 없음.
   QuestSystem.init();
@@ -54,14 +47,12 @@ describe('Doctor mid-game engagement — 데이터 노출', () => {
     expect(q.actionHintEn).toBeTruthy();
   });
 
-  it('mq_doctor_02 subObjectives에 collect_item(bandage 5) match가 포함되어 있다', () => {
+  it('mq_doctor_02 subObjectives는 간호사 의뢰 step에 묶여 있다 (자체 match 금지)', () => {
     const q = MAIN_QUESTS.mq_doctor_02;
-    expect(q.subObjectives.length).toBeGreaterThanOrEqual(1);
-    const bandageSO = q.subObjectives.find(
-      so => so.match?.type === 'collect_item' && so.match?.definitionId === 'bandage'
-    );
-    expect(bandageSO).toBeTruthy();
-    expect(bandageSO.match.count).toBe(5);
+    expect(q.objective.type).toBe('npc_quest_complete');
+    expect(q.subObjectives.length).toBe(3);
+    expect(q.subObjectives.map(so => so.npcStep)).toEqual([0, 1, 2]);
+    expect(q.subObjectives.every(so => so.match === undefined)).toBe(true);
   });
 
   it('mq_doctor_07 subObjectives에 craft_item(category=medical) match가 포함되어 있다', () => {
@@ -103,14 +94,14 @@ describe('Doctor mid-game engagement — 이벤트 → subObjective 자동 체�
     expect(GameState.quests.completed).toContain('mq_doctor_03');
   });
 
-  it('itemCollected(bandage) 5회 누적 → mq_doctor_02.so_d02_01 자동 완료', () => {
-    GameState.quests.active = [{ id: 'mq_doctor_02', startDay: 2, deadline: 9, progress: 0 }];
+  it('itemCollected(herb) 3회 누적 → mq_doctor_06.so_d06_02 자동 완료', () => {
+    GameState.quests.active = [{ id: 'mq_doctor_06', startDay: 10, deadline: 30, progress: 0 }];
 
-    for (let i = 0; i < 5; i++) {
-      EventBus.emit('itemCollected', { definitionId: 'bandage', qty: 1 });
+    for (let i = 0; i < 3; i++) {
+      EventBus.emit('itemCollected', { definitionId: 'herb', qty: 1 });
     }
 
-    expect(GameState.subObjectiveProgress?.mq_doctor_02?.so_d02_01).toBe(true);
+    expect(GameState.subObjectiveProgress?.mq_doctor_06?.so_d06_02).toBe(true);
   });
 
   it('itemCrafted(category=medical) → mq_doctor_07 craft_item match 자동 완료', () => {
@@ -123,12 +114,18 @@ describe('Doctor mid-game engagement — 이벤트 → subObjective 자동 체�
     expect(matchedCount).toBeGreaterThanOrEqual(1);
   });
 
-  it('districtVisited(dongjak) → mq_doctor_02.so_d02_03 자동 완료', () => {
-    GameState.quests.active = [{ id: 'mq_doctor_02', startDay: 2, deadline: 9, progress: 0 }];
+  it('마포 도착 → mq_doctor_09.so_d09_02 자동 완료 (판정 원천은 도착 시각)', () => {
+    GameState.time.totalTP = 200;
+    GameState.quests.active = [{ id: 'mq_doctor_09', startDay: 18, startTp: 200, deadline: 38, progress: 0 }];
 
-    EventBus.emit('districtVisited', { districtId: 'dongjak' });
+    EventBus.emit('districtVisited', { districtId: 'mapo' });
+    expect(GameState.subObjectiveProgress?.mq_doctor_09?.so_d09_02).not.toBe(true);
 
-    expect(GameState.subObjectiveProgress?.mq_doctor_02?.so_d02_03).toBe(true);
+    // ExploreSystem/SubwaySystem이 도착을 먼저 기록하고 이벤트를 쏜다
+    GameState.time.totalTP = 260;
+    GameState.recordDistrictArrival('mapo');
+    EventBus.emit('districtVisited', { districtId: 'mapo' });
+    expect(GameState.subObjectiveProgress?.mq_doctor_09?.so_d09_02).toBe(true);
   });
 });
 

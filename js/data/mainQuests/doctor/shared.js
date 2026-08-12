@@ -75,24 +75,26 @@ const DOCTOR_SHARED = {
       note: '보라매병원에서 간호사 의뢰 수령 → 동작구 현장 동행',
       noteEn: 'Take the nurse\'s request at Boramae Hospital, then accompany her into Dongjak',
     },
+    // npcStep: objective가 가리키는 NPC 의뢰 steps의 인덱스.
+    // 완료 게이트가 그 의뢰이므로 체크리스트도 같은 판정을 미러링한다 (match 자체 판정 금지).
     subObjectives: [
       {
         id: 'so_d02_01',
         text: '붕대 5개 마련',
         textEn: 'Stock 5 bandages',
-        match: { type: 'collect_item', definitionId: 'bandage', count: 5 },
+        npcStep: 0,
       },
       {
         id: 'so_d02_02',
         text: '구급키트 2개 마련',
         textEn: 'Stock 2 first aid kits',
-        match: { type: 'collect_item', definitionId: 'first_aid_kit', count: 2 },
+        npcStep: 1,
       },
       {
         id: 'so_d02_03',
         text: '간호사와 동작구 현장 동행',
         textEn: 'Visit Dongjak with the nurse',
-        match: { type: 'visit_district', districtId: 'dongjak' },
+        npcStep: 2,
       },
     ],
     actionHint: '응급실에서 보급품을 모아 동작구로 출동. 간호사 의뢰서를 카드로 확인할 것.',
@@ -489,7 +491,9 @@ const DOCTOR_SHARED = {
     id: 'mq_doctor_side_soldier', title: '박상훈 하사와 현충원',
     desc: '회복한 박상훈 하사와 함께 동작구 국립현충원을 방문해 소대원의 흔적을 찾아라.',
     icon: '🎖️', characterId: 'doctor', dayTrigger: 7, prerequisite: 'mq_doctor_01',
-    objective: { type: 'visit_district', districtId: 'dongjak', count: 1 },
+    // 목표는 동작구가 아니라 국립현충원이다 — 동작구는 의사의 시작 구이자 보라매병원이 있는 곳이라
+    // 구 단위로 잡으면 병원에 머무는 것만으로 소대원 흔적을 찾은 것이 된다.
+    objective: { type: 'visit_landmark', landmarkId: 'lm_dongjak', count: 1 },
     reward: { morale: 12, items: [{ definitionId: 'first_aid_kit', qty: 1 }, { definitionId: 'stimulant', qty: 1 }], flags: { minjun_radio_received: true } },
     failPenalty: { morale: -5 }, deadlineDays: 14,
     narrative: {
@@ -514,7 +518,7 @@ const DOCTOR_SHARED = {
         id: 'so_dss_02',
         text: '동작구 국립현충원 진입',
         textEn: 'Enter Dongjak — Seoul National Cemetery',
-        match: { type: 'visit_district', districtId: 'dongjak' },
+        match: { type: 'visit_landmark', landmarkId: 'lm_dongjak' },
       },
       {
         id: 'so_dss_03',
