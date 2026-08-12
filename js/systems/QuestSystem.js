@@ -204,7 +204,7 @@ const QuestSystem = {
    *  - collect_item_type  { itemType, count? }       — itemType은 top-level type 또는 tag
    *  - craft_item         { definitionId? | category?, count? }
    *  - visit_district     { districtId }        — entry.startTp 이후의 도착만 인정
-   *  - discover_location  { locationId }
+   *  - discover_location  { locationId }        — flags.hiddenLocationsDiscovered 기준(생애 누적)
    *  - use_item           { definitionId, count? }
    *  - treat_npc          { npcId? | count? }
    *  - build_structure    { structureId }
@@ -372,7 +372,10 @@ const QuestSystem = {
   _matchState() {
     return {
       ...this._progress,
-      districtArrivals: GameState.location?.districtArrivals ?? {},
+      districtArrivals:    GameState.location?.districtArrivals ?? {},
+      // 히든 장소는 objective 판정(_checkAllProgress)과 같은 flags 배열을 원천으로 쓴다.
+      // 발견은 영구 기록이라 퀘스트를 받기 전에 찾았어도 인정한다.
+      discoveredLocations: new Set(GameState.flags?.hiddenLocationsDiscovered ?? []),
     };
   },
 
