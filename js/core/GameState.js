@@ -199,6 +199,7 @@ const GameState = {
     nodesVisited:       [],
     districtsVisited:   [],      // 방문한 구 목록 (생애 누적, 비워지지 않음)
     districtArrivals:   {},      // { districtId: totalTP } — 최근 도착 시각. 퀘스트 "가라" 판정용
+    landmarkArrivals:   {},      // { landmarkKey: totalTP } — 랜드마크 단위 "가라" 판정용
     districtsLooted:    [],      // 루팅 완료한 구 목록 (재방문 시 희귀 리스폰)
     currentLandmark:    null,    // 랜드마크 내부 진입 시 districtId (null = 랜드마크 밖)
     currentSubLocation: null,    // 현재 세부 장소 ID (null = 랜드마크 로비 또는 밖)
@@ -611,6 +612,16 @@ const GameState = {
       this.location.districtsVisited.push(districtId);
     }
     this.location.districtArrivals[districtId] = this.time?.totalTP ?? 0;
+  },
+
+  /**
+   * 랜드마크 진입 기록. 구 단위보다 좁은 "특정 장소로 가라" 목표의 판정 원천이다 —
+   * 한 구에 랜드마크가 둘 이상이면(동작구: 보라매병원·국립현충원) 구 도착만으로는 구분되지 않는다.
+   */
+  recordLandmarkArrival(landmarkKey) {
+    if (!landmarkKey) return;
+    if (!this.location.landmarkArrivals) this.location.landmarkArrivals = {};
+    this.location.landmarkArrivals[landmarkKey] = this.time?.totalTP ?? 0;
   },
 
   // count total quantity of a def on the board
@@ -1071,6 +1082,7 @@ const GameState = {
     // 구버전 세이브에는 도착 시각이 없다. 빈 맵으로 두면 "가라" 퀘스트는
     // 다음 실제 이동에서 완료된다 — 과거 이력으로 소급 완료되는 것보다 안전하다.
     if (!this.location.districtArrivals) this.location.districtArrivals = {};
+    if (!this.location.landmarkArrivals) this.location.landmarkArrivals = {};
     if (!this.location.districtsLooted)  this.location.districtsLooted  = [];
     // 구버전 세이브 호환: 랜드마크 진입 상태 필드
     if (this.location.currentLandmark    === undefined) this.location.currentLandmark    = null;

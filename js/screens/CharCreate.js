@@ -392,6 +392,9 @@ const CharCreate = {
     // 시작 구의 도착 시각은 0 — 이후 시작되는 퀘스트(startTp ≥ 0)의 "가라" 조건을
     // 시작 지점만으로 충족시키지 않는다
     gs.location.districtArrivals   = { [districtId]: 0 };
+    // location은 NEW_GAME_RESET_KEYS 대상이 아니라 여기서 직접 비운다 —
+    // 남겨두면 이전 게임의 랜드마크 진입 기록으로 새 게임 퀘스트가 완료된다
+    gs.location.landmarkArrivals   = {};
     gs.location.districtsLooted    = [];
     gs.location.installedStructures = {};
 

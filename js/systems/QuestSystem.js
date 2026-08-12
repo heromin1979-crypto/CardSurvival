@@ -15,7 +15,8 @@ import { QUEST_TO_FLASHBACK } from '../data/cinematicScenes.js';
 // trigger: 연결된 seasonalEvent id (해당 이벤트 발생 시 자동 시작)
 // objective: { type, target, count }
 //   type: 'collect_item' | 'collect_item_type' | 'craft_item' | 'kill_enemies' | 'survive_days' | 'equip_slot'
-//       | 'survive_infection' | 'npc_quest_complete' | 'treat_npc' | 'track_infected' | 'rescue_npc' | 'visit_district'
+//       | 'survive_infection' | 'npc_quest_complete' | 'treat_npc' | 'track_infected' | 'rescue_npc'
+//       | 'visit_district' | 'visit_landmark'
 //       | 'discover_location'
 //       | 'trigger_combo' (comboId 또는 comboIds 배열)
 // reward: { morale?, hp? }
@@ -160,6 +161,9 @@ const QuestSystem = {
     // 지역 이동 시 visit_district 퀘스트 체크
     EventBus.on('districtChanged', ({ districtId }) => this._onDistrictChanged(districtId));
 
+    // 랜드마크 진입 시 visit_landmark 퀘스트 체크
+    EventBus.on('landmarkEntered', ({ landmarkId }) => this._onLandmarkEntered(landmarkId));
+
     // 히든 장소 발견 추적 — 발견 조건 자체는 HiddenElementSystem이 판정한다
     EventBus.on('hiddenLocationDiscovered', ({ locationId }) => this._onLocationDiscovered(locationId));
 
@@ -204,6 +208,7 @@ const QuestSystem = {
    *  - collect_item_type  { itemType, count? }       — itemType은 top-level type 또는 tag
    *  - craft_item         { definitionId? | category?, count? }
    *  - visit_district     { districtId }        — entry.startTp 이후의 도착만 인정
+   *  - visit_landmark     { landmarkId }        — 한 구에 랜드마크가 둘 이상일 때 쓴다. 동일 규칙
    *  - discover_location  { locationId }        — flags.hiddenLocationsDiscovered 기준(생애 누적)
    *  - use_item           { definitionId, count? }
    *  - treat_npc          { npcId? | count? }
@@ -242,6 +247,10 @@ const QuestSystem = {
         // 퀘스트 시작 이후의 도착만 인정한다. districtsVisited는 생애 누적이라
         // 예전에 스쳐간 구까지 "가라" 조건을 충족시킨다.
         const arrival = state.districtArrivals?.[m.districtId];
+        return arrival != null && arrival > (entry?.startTp ?? -Infinity);
+      }
+      case 'visit_landmark': {
+        const arrival = state.landmarkArrivals?.[m.landmarkId];
         return arrival != null && arrival > (entry?.startTp ?? -Infinity);
       }
       case 'discover_location':
@@ -335,6 +344,7 @@ const QuestSystem = {
     // 도착 기록은 ExploreSystem/SubwaySystem이 GameState.recordDistrictArrival로 남긴다.
     // 여기서는 재평가만 걸어 이동 직후 체크리스트가 갱신되게 한다.
     EventBus.on('districtChanged', () => this._reevaluateSubObjectives());
+    EventBus.on('landmarkEntered', () => this._reevaluateSubObjectives());
 
     // cardPlaced({instanceId}) → itemCollected
     // 기존 _onItemGained가 collect_item / collect_item_type 보드 카운트로 이미 사용 중인 이벤트.
@@ -373,6 +383,7 @@ const QuestSystem = {
     return {
       ...this._progress,
       districtArrivals:    GameState.location?.districtArrivals ?? {},
+      landmarkArrivals:    GameState.location?.landmarkArrivals ?? {},
       // 히든 장소는 objective 판정(_checkAllProgress)과 같은 flags 배열을 원천으로 쓴다.
       // 발견은 영구 기록이라 퀘스트를 받기 전에 찾았어도 인정한다.
       discoveredLocations: new Set(GameState.flags?.hiddenLocationsDiscovered ?? []),
@@ -732,6 +743,22 @@ const QuestSystem = {
     if (changed) EventBus.emit('questListChanged', {});
   },
 
+  /** 랜드마크 진입 시 visit_landmark 목표 체크 */
+  _onLandmarkEntered(landmarkId) {
+    if (!landmarkId) return;
+    let changed = false;
+    for (const q of [...GameState.quests.active]) {
+      const qDef = _getQuestDef(q.id);
+      if (!qDef) continue;
+      if (qDef.objective.type === 'visit_landmark' && qDef.objective.landmarkId === landmarkId) {
+        q.progress = 1;
+        this._checkCompletion(q, qDef);
+        changed = true;
+      }
+    }
+    if (changed) EventBus.emit('questListChanged', {});
+  },
+
   /** 히든 장소 발견 시 discover_location 목표 체크 */
   _onLocationDiscovered(locationId) {
     if (!locationId) return;
@@ -954,6 +981,12 @@ const QuestSystem = {
         // 퀘스트 시작 이후 도착한 경우만 완료. 생애 방문 이력으로 판정하던 시절에는
         // 시작 구가 목표인 퀘스트가 세이브 로드만으로 완료됐다.
         const arrival = GameState.location.districtArrivals?.[obj.districtId];
+        if (arrival != null && arrival > (q.startTp ?? 0)) {
+          q.progress = 1;
+          this._checkCompletion(q, qDef);
+        }
+      } else if (obj.type === 'visit_landmark') {
+        const arrival = GameState.location.landmarkArrivals?.[obj.landmarkId];
         if (arrival != null && arrival > (q.startTp ?? 0)) {
           q.progress = 1;
           this._checkCompletion(q, qDef);

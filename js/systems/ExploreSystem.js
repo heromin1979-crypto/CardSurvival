@@ -660,6 +660,7 @@ const ExploreSystem = {
     gs.location.currentSubLocation = null;
     // 귀환 구역 명시 저장 — exitLandmark에서 확실한 복귀 구역으로 사용
     gs.location._lmReturnDistrict  = gs.location.currentDistrict;
+    gs.recordLandmarkArrival(landmarkKey);
 
     // 구 바닥 저장 → 랜드마크 로비는 빈 바닥
     // 키는 landmarkKey 기준 (exitLandmark의 복원 키와 일치)
@@ -670,6 +671,7 @@ const ExploreSystem = {
     this._updateTopRowForLandmark(landmarkKey);
     EventBus.emit('notify', { message: I18n.t('exploreSys.landmarkEnter', { name: lmData.name }), type: 'info' });
     EventBus.emit('boardChanged', {});
+    EventBus.emit('landmarkEntered', { landmarkId: landmarkKey });
 
     // ── 로비 제거: 첫 세부장소로 자동 진입 ──────────────────────
     // basecamp(거점) 및 명시적 skip 제외. 상단에 방금 배치된 첫 세부장소 카드의

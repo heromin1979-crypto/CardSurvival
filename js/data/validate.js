@@ -1555,6 +1555,12 @@ export function validateMainQuestSchema(quest, ctx = {}) {
     errors.push(`${quest.id}: objective npc quest "${quest.objective.npcId}/${quest.objective.questId}" unknown`);
   }
 
+  // visit_landmark는 랜드마크 키 오타가 나면 목표가 영원히 달성되지 않는다 (경고 없이 조용히 실패)
+  if (knownLandmarks && quest.objective?.type === 'visit_landmark'
+      && !knownLandmarks.has(quest.objective.landmarkId)) {
+    errors.push(`${quest.id}: objective.landmarkId "${quest.objective.landmarkId}" unknown`);
+  }
+
   if (quest.subObjectives !== undefined) {
     if (!Array.isArray(quest.subObjectives)) {
       errors.push(`${quest.id}: subObjectives must be array`);
@@ -1567,6 +1573,11 @@ export function validateMainQuestSchema(quest, ctx = {}) {
           errors.push(`${quest.id}: subObjectives[${i}] duplicate id "${so.id}"`);
         }
         if (so.id) seenIds.add(so.id);
+
+        if (knownLandmarks && so.match?.type === 'visit_landmark'
+            && !knownLandmarks.has(so.match.landmarkId)) {
+          errors.push(`${quest.id}: subObjectives[${i}].match.landmarkId "${so.match.landmarkId}" unknown`);
+        }
 
         if (so.npcStep != null) {
           if (!crossover) {
