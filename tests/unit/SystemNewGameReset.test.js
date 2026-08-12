@@ -28,7 +28,6 @@ const CASES = [
   ['QuestSystem', 'QuestSystem', QuestSystem,
     s => {
       s._progress.collected = { herb: 5 };
-      s._progress.visitedDistricts.add('dobong');
       s._progress.treatedNpcs.add('npc_x');
       s._progress.treatedNpcCount = 3;
       s._progress.craftedRecipes.push('bp_x');
@@ -37,7 +36,6 @@ const CASES = [
     },
     s => {
       expect(s._progress.collected).toEqual({});
-      expect(s._progress.visitedDistricts.size).toBe(0);
       expect(s._progress.treatedNpcs.size).toBe(0);
       expect(s._progress.treatedNpcCount).toBe(0);
       expect(s._progress.craftedRecipes).toEqual([]);

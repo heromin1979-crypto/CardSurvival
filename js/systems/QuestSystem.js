@@ -7,6 +7,7 @@ import MAIN_QUESTS from '../data/mainQuests/index.js';
 import GameData   from '../data/GameData.js';
 import BALANCE    from '../data/gameBalance.js';
 import NPCSystem  from './NPCSystem.js';
+import NPCQuestSystem from './NPCQuestSystem.js';
 import { getLandmarkData } from '../data/landmarks.js';
 import { QUEST_TO_FLASHBACK } from '../data/cinematicScenes.js';
 
@@ -110,7 +111,6 @@ function createEmptyQuestProgress() {
     collectedByTypeOrTag:   {},
     craftedRecipes:         [],
     craftedCategoryCounts:  {},
-    visitedDistricts:       new Set(),
     usedItemCounts:         {},
     treatedNpcs:            new Set(),
     treatedNpcCount:        0,
@@ -285,10 +285,7 @@ const QuestSystem = {
       }
       this._reevaluateSubObjectives();
     });
-    EventBus.on('districtVisited', ({ districtId } = {}) => {
-      if (districtId) this._progress.visitedDistricts.add(districtId);
-      this._reevaluateSubObjectives();
-    });
+    EventBus.on('districtVisited', () => this._reevaluateSubObjectives());
     EventBus.on('itemUsed', ({ definitionId, qty = 1 } = {}) => {
       if (definitionId) {
         this._progress.usedItemCounts[definitionId] = (this._progress.usedItemCounts[definitionId] ?? 0) + qty;
@@ -331,12 +328,9 @@ const QuestSystem = {
       this._reevaluateSubObjectives();
     });
 
-    // districtChanged({districtId}) → districtVisited
-    // 주의: 위에서 `districtVisited` 직접 구독이 이미 있으므로, 외부 시스템이 둘 다 emit해도 Set 멱등으로 안전.
-    EventBus.on('districtChanged', ({ districtId } = {}) => {
-      if (districtId) this._progress.visitedDistricts.add(districtId);
-      this._reevaluateSubObjectives();
-    });
+    // 방문 구는 ExploreSystem/SubwaySystem이 GameState.location.districtsVisited에 직접 쌓는다.
+    // 여기서는 재평가만 걸어 이동 직후 체크리스트가 갱신되게 한다.
+    EventBus.on('districtChanged', () => this._reevaluateSubObjectives());
 
     // cardPlaced({instanceId}) → itemCollected
     // 기존 _onItemGained가 collect_item / collect_item_type 보드 카운트로 이미 사용 중인 이벤트.
@@ -368,13 +362,38 @@ const QuestSystem = {
   },
 
   /**
+   * 매처 입력. 방문 구는 GameState.location.districtsVisited가 유일한 원천이다 —
+   * 시작 구는 CharCreate가 이 배열에만 시딩하므로 별도 카운터를 두면 두 판정이 갈린다.
+   */
+  _matchState() {
+    return {
+      ...this._progress,
+      visitedDistricts: new Set(GameState.location?.districtsVisited ?? []),
+    };
+  },
+
+  /**
+   * subObjective 1건의 완료 판정.
+   * 크로스오버 퀘스트(objective.type === 'npc_quest_complete')의 체크리스트는 자체 카운터 대신
+   * 대상 NPC 의뢰의 step 판정을 그대로 미러링한다 — 완료 게이트와 표시가 같은 값을 보게 한다.
+   */
+  _isSubObjectiveComplete(def, so, state, entry) {
+    const obj = def.objective;
+    if (obj?.type === 'npc_quest_complete' && so.npcStep != null) {
+      return NPCQuestSystem.isStepComplete(obj.npcId, obj.questId, so.npcStep);
+    }
+    return this._matchSubObjective(so, state, entry);
+  },
+
+  /**
    * 활성 메인 퀘스트의 subObjective를 재평가 → 완료 전이 시 1회만 이벤트 발화.
-   * GameState.subObjectiveProgress: { [questId]: { [subId]: true } } — 완료 플래그 영속화.
+   * GameState.subObjectiveProgress: { [questId]: { [subId]: boolean } } — 완료 플래그 영속화.
    * GameState.questProgress: 외부 시스템(DailyFocus 등) 참조용 진행도 미러.
    */
   _reevaluateSubObjectives() {
     const gs = GameState;
     if (!gs.subObjectiveProgress) gs.subObjectiveProgress = {};
+    const state = this._matchState();
 
     for (const q of (gs.quests?.active ?? [])) {
       const def = MAIN_QUESTS[q.id];
@@ -383,9 +402,12 @@ const QuestSystem = {
 
       for (const so of def.subObjectives) {
         const wasComplete = gs.subObjectiveProgress[q.id][so.id] === true;
-        const nowComplete = this._matchSubObjective(so, this._progress, q);
-        if (nowComplete && !wasComplete) {
-          gs.subObjectiveProgress[q.id][so.id] = true;
+        const nowComplete = this._isSubObjectiveComplete(def, so, state, q);
+        // 완료 플래그는 양방향이다. 조건이 다시 깨지면(아이템 소모 등) 체크도 풀려야
+        // 퀘스트창이 대화창과 같은 현재 상태를 보여준다. 알림은 미완료→완료 전이에서만.
+        if (nowComplete === wasComplete) continue;
+        gs.subObjectiveProgress[q.id][so.id] = nowComplete;
+        if (nowComplete) {
           EventBus.emit('subObjectiveCompleted', { questId: q.id, subObjectiveId: so.id, text: so.text });
         }
       }
@@ -397,7 +419,6 @@ const QuestSystem = {
       collectedByTypeOrTag:   { ...this._progress.collectedByTypeOrTag },
       craftedRecipes:         [...this._progress.craftedRecipes],
       craftedCategoryCounts:  { ...this._progress.craftedCategoryCounts },
-      visitedDistricts:       [...this._progress.visitedDistricts],
       usedItemCounts:         { ...this._progress.usedItemCounts },
       treatedNpcs:            [...this._progress.treatedNpcs],
       treatedNpcCount:        this._progress.treatedNpcCount,
@@ -416,7 +437,6 @@ const QuestSystem = {
       collectedByTypeOrTag:   { ...(saved.collectedByTypeOrTag ?? {}) },
       craftedRecipes:         [...(saved.craftedRecipes ?? [])],
       craftedCategoryCounts:  { ...(saved.craftedCategoryCounts ?? {}) },
-      visitedDistricts:       new Set(saved.visitedDistricts ?? []),
       usedItemCounts:         { ...(saved.usedItemCounts ?? {}) },
       treatedNpcs:            new Set(saved.treatedNpcs ?? []),
       treatedNpcCount:        saved.treatedNpcCount ?? 0,
@@ -1032,13 +1052,6 @@ const QuestSystem = {
     gs.quests.active.splice(idx, 1);
     gs.quests.completed.push(q.id);
     delete this._warnedDeadlines[q.id];
-
-    // 완료된 퀘스트의 체크리스트는 전부 체크 처리 — 미체크 잔여로 인한 표시 불일치 제거
-    if (qDef.subObjectives?.length) {
-      if (!gs.subObjectiveProgress) gs.subObjectiveProgress = {};
-      const flags = gs.subObjectiveProgress[q.id] ?? (gs.subObjectiveProgress[q.id] = {});
-      for (const so of qDef.subObjectives) flags[so.id] = true;
-    }
 
     // 보상 지급
     const r = qDef.reward;

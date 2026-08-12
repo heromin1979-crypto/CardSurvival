@@ -75,24 +75,26 @@ const DOCTOR_SHARED = {
       note: '보라매병원에서 간호사 의뢰 수령 → 동작구 현장 동행',
       noteEn: 'Take the nurse\'s request at Boramae Hospital, then accompany her into Dongjak',
     },
+    // npcStep: objective가 가리키는 NPC 의뢰 steps의 인덱스.
+    // 완료 게이트가 그 의뢰이므로 체크리스트도 같은 판정을 미러링한다 (match 자체 판정 금지).
     subObjectives: [
       {
         id: 'so_d02_01',
         text: '붕대 5개 마련',
         textEn: 'Stock 5 bandages',
-        match: { type: 'collect_item', definitionId: 'bandage', count: 5 },
+        npcStep: 0,
       },
       {
         id: 'so_d02_02',
         text: '구급키트 2개 마련',
         textEn: 'Stock 2 first aid kits',
-        match: { type: 'collect_item', definitionId: 'first_aid_kit', count: 2 },
+        npcStep: 1,
       },
       {
         id: 'so_d02_03',
         text: '간호사와 동작구 현장 동행',
         textEn: 'Visit Dongjak with the nurse',
-        match: { type: 'visit_district', districtId: 'dongjak' },
+        npcStep: 2,
       },
     ],
     actionHint: '응급실에서 보급품을 모아 동작구로 출동. 간호사 의뢰서를 카드로 확인할 것.',
