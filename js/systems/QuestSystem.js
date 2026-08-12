@@ -8,7 +8,7 @@ import GameData   from '../data/GameData.js';
 import BALANCE    from '../data/gameBalance.js';
 import NPCSystem  from './NPCSystem.js';
 import NPCQuestSystem from './NPCQuestSystem.js';
-import { getLandmarkData } from '../data/landmarks.js';
+import { getLandmarkData, normalizeLandmarkKey } from '../data/landmarks.js';
 import { QUEST_TO_FLASHBACK } from '../data/cinematicScenes.js';
 
 // ── 계절 퀘스트 정의 ────────────────────────────────────────────────
@@ -250,7 +250,7 @@ const QuestSystem = {
         return arrival != null && arrival > (entry?.startTp ?? -Infinity);
       }
       case 'visit_landmark': {
-        const arrival = state.landmarkArrivals?.[m.landmarkId];
+        const arrival = state.landmarkArrivals?.[normalizeLandmarkKey(m.landmarkId)];
         return arrival != null && arrival > (entry?.startTp ?? -Infinity);
       }
       case 'discover_location':
@@ -750,7 +750,8 @@ const QuestSystem = {
     for (const q of [...GameState.quests.active]) {
       const qDef = _getQuestDef(q.id);
       if (!qDef) continue;
-      if (qDef.objective.type === 'visit_landmark' && qDef.objective.landmarkId === landmarkId) {
+      if (qDef.objective.type === 'visit_landmark'
+          && normalizeLandmarkKey(qDef.objective.landmarkId) === normalizeLandmarkKey(landmarkId)) {
         q.progress = 1;
         this._checkCompletion(q, qDef);
         changed = true;
@@ -986,7 +987,7 @@ const QuestSystem = {
           this._checkCompletion(q, qDef);
         }
       } else if (obj.type === 'visit_landmark') {
-        const arrival = GameState.location.landmarkArrivals?.[obj.landmarkId];
+        const arrival = GameState.location.landmarkArrivals?.[normalizeLandmarkKey(obj.landmarkId)];
         if (arrival != null && arrival > (q.startTp ?? 0)) {
           q.progress = 1;
           this._checkCompletion(q, qDef);

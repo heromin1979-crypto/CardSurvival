@@ -9,6 +9,7 @@ import QuestSystem from '../../js/systems/QuestSystem.js';
 import ExploreSystem from '../../js/systems/ExploreSystem.js';
 import { validateMainQuestSchema } from '../../js/data/validate.js';
 import MAIN_QUESTS from '../../js/data/mainQuests/index.js';
+import { normalizeLandmarkKey } from '../../js/data/landmarks.js';
 
 function resetWorld() {
   EventBus._listeners = {};
@@ -135,6 +136,80 @@ describe('visit_landmark — 박상훈 하사와 현충원 (mq_doctor_side_soldi
   });
 });
 
+describe('visit_landmark — 광진 낚시 거점 (mq_homeless_05)', () => {
+  beforeEach(() => {
+    resetWorld();
+    GameState.location.currentDistrict  = 'gwangjin';
+    GameState.location.districtsVisited = ['gwangjin'];
+    GameState.location.districtArrivals = { gwangjin: 0 };
+  });
+
+  function startFishingQuest(atTp = 300) {
+    GameState.time.totalTP = atTp;
+    GameState.quests.completed = ['mq_homeless_04'];
+    QuestSystem.startQuest('mq_homeless_05');
+  }
+
+  it('목표가 광진구가 아니라 한강(lm_hangang_gwangjin)이다', () => {
+    const q = MAIN_QUESTS.mq_homeless_05;
+    expect(q.objective).toMatchObject({ type: 'visit_landmark', landmarkId: 'lm_hangang_gwangjin' });
+    expect(q.locationHint).toMatchObject({ districtId: 'gwangjin', landmarkId: 'lm_hangang_gwangjin' });
+  });
+
+  it('광진구에 머무는 것만으로는 완료되지 않는다', () => {
+    startFishingQuest();
+    EventBus.emit('loaded', {});
+    GameState.recordDistrictArrival('gwangjin');
+    EventBus.emit('districtChanged', { districtId: 'gwangjin' });
+
+    expect(GameState.quests.completed).not.toContain('mq_homeless_05');
+  });
+
+  it('어린이대공원 진입으로는 완료되지 않는다', () => {
+    startFishingQuest();
+    enterLandmark('lm_gwangjin', 320);
+    expect(GameState.quests.completed).not.toContain('mq_homeless_05');
+  });
+
+  it('한강에 진입하면 완료된다', () => {
+    startFishingQuest();
+    enterLandmark('lm_hangang_gwangjin', 320);
+    expect(GameState.quests.completed).toContain('mq_homeless_05');
+  });
+});
+
+describe('랜드마크 키 정규화 — lm_ 접두사 유무가 판정을 가르지 않는다', () => {
+  beforeEach(resetWorld);
+
+  it('LANDMARK_DATA 키(접두사 없음)와 카드 아이템 ID(lm_)는 같은 랜드마크로 취급된다', () => {
+    // 런타임 진입 키는 항상 카드 아이템 ID(lm_*)인데 LANDMARK_DATA는 hangang_gwangjin으로 저장한다.
+    // 정규화가 없으면 퀘스트 데이터 표기에 따라 조용히 미완료로 남는다.
+    expect(normalizeLandmarkKey('lm_hangang_gwangjin')).toBe('hangang_gwangjin');
+    expect(normalizeLandmarkKey('hangang_gwangjin')).toBe('hangang_gwangjin');
+    expect(normalizeLandmarkKey('basecamp')).toBe('basecamp');
+
+    GameState.time.totalTP = 200;
+    GameState.recordLandmarkArrival('lm_hangang_gwangjin');   // 런타임 표기로 기록
+
+    const entry = { startTp: 100 };
+    for (const id of ['lm_hangang_gwangjin', 'hangang_gwangjin']) {
+      const so = { id: 'so_x', match: { type: 'visit_landmark', landmarkId: id } };
+      expect(QuestSystem._matchSubObjective(so, QuestSystem._matchState(), entry)).toBe(true);
+    }
+  });
+
+  it('검증기는 두 표기를 모두 알려진 랜드마크로 인정한다', () => {
+    const known = new Set(['hangang_gwangjin']);   // LANDMARK_DATA 형태
+    for (const id of ['hangang_gwangjin', 'lm_hangang_gwangjin']) {
+      const r = validateMainQuestSchema(
+        { id: 'mq_x', objective: { type: 'visit_landmark', landmarkId: id } },
+        { knownLandmarks: known },
+      );
+      expect(r.ok).toBe(true);
+    }
+  });
+});
+
 describe('ExploreSystem.enterLandmark 배선', () => {
   beforeEach(resetWorld);
 
@@ -158,7 +233,8 @@ describe('ExploreSystem.enterLandmark 배선', () => {
     }
 
     expect(seen).toEqual(['lm_dongjak']);
-    expect(GameState.location.landmarkArrivals.lm_dongjak).toBe(420);
+    // 저장 키는 정규화된 형태 — 이벤트 payload는 런타임 표기 그대로 흘린다
+    expect(GameState.location.landmarkArrivals[normalizeLandmarkKey('lm_dongjak')]).toBe(420);
   });
 });
 

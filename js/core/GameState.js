@@ -2,6 +2,7 @@
 import EventBus  from './EventBus.js';
 import GameData  from '../data/GameData.js';
 import { lookupBagExtraSlots } from '../data/bagSlots.js';
+import { normalizeLandmarkKey } from '../data/landmarks.js';
 import { isMagazineWeapon, normalizeMagazineCards } from '../systems/WeaponAmmoSystem.js';
 import { normalizeEquippedWeaponSlots } from '../systems/WeaponSlotPolicy.js';
 
@@ -619,9 +620,10 @@ const GameState = {
    * 한 구에 랜드마크가 둘 이상이면(동작구: 보라매병원·국립현충원) 구 도착만으로는 구분되지 않는다.
    */
   recordLandmarkArrival(landmarkKey) {
-    if (!landmarkKey) return;
+    const key = normalizeLandmarkKey(landmarkKey);
+    if (!key) return;
     if (!this.location.landmarkArrivals) this.location.landmarkArrivals = {};
-    this.location.landmarkArrivals[landmarkKey] = this.time?.totalTP ?? 0;
+    this.location.landmarkArrivals[key] = this.time?.totalTP ?? 0;
   },
 
   // count total quantity of a def on the board

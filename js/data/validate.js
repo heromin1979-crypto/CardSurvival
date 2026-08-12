@@ -1545,6 +1545,12 @@ export function validateMainQuestSchema(quest, ctx = {}) {
   const errors = [];
   const { knownDistricts = null, knownLandmarks = null, npcQuestStepCounts = null } = ctx;
 
+  // 랜드마크 키는 두 표기가 공존한다: 런타임 진입 키는 항상 카드 아이템 ID(`lm_*`)이고
+  // LANDMARK_DATA는 45개 중 35개가 접두사 없는 구 키다. getLandmarkData가 `lm_`를 벗겨
+  // 폴백하므로 게임은 양쪽을 같은 랜드마크로 본다 — 검증도 같은 규칙이어야 한다.
+  const landmarkKnown = id =>
+    !knownLandmarks || knownLandmarks.has(id) || knownLandmarks.has(String(id ?? '').replace(/^lm_/, ''));
+
   // 크로스오버 퀘스트의 체크리스트는 대상 NPC 의뢰 step을 미러링한다.
   // npcStep이 실제 step 범위를 벗어나면 그 줄은 영원히 미완료로 남는다.
   const crossover = quest.objective?.type === 'npc_quest_complete';
@@ -1556,8 +1562,7 @@ export function validateMainQuestSchema(quest, ctx = {}) {
   }
 
   // visit_landmark는 랜드마크 키 오타가 나면 목표가 영원히 달성되지 않는다 (경고 없이 조용히 실패)
-  if (knownLandmarks && quest.objective?.type === 'visit_landmark'
-      && !knownLandmarks.has(quest.objective.landmarkId)) {
+  if (quest.objective?.type === 'visit_landmark' && !landmarkKnown(quest.objective.landmarkId)) {
     errors.push(`${quest.id}: objective.landmarkId "${quest.objective.landmarkId}" unknown`);
   }
 
@@ -1574,8 +1579,7 @@ export function validateMainQuestSchema(quest, ctx = {}) {
         }
         if (so.id) seenIds.add(so.id);
 
-        if (knownLandmarks && so.match?.type === 'visit_landmark'
-            && !knownLandmarks.has(so.match.landmarkId)) {
+        if (so.match?.type === 'visit_landmark' && !landmarkKnown(so.match.landmarkId)) {
           errors.push(`${quest.id}: subObjectives[${i}].match.landmarkId "${so.match.landmarkId}" unknown`);
         }
 
@@ -1600,7 +1604,7 @@ export function validateMainQuestSchema(quest, ctx = {}) {
     if (knownDistricts && lh.districtId && !knownDistricts.has(lh.districtId)) {
       errors.push(`${quest.id}: locationHint.districtId "${lh.districtId}" unknown`);
     }
-    if (knownLandmarks && lh.landmarkId && !knownLandmarks.has(lh.landmarkId)) {
+    if (lh.landmarkId && !landmarkKnown(lh.landmarkId)) {
       errors.push(`${quest.id}: locationHint.landmarkId "${lh.landmarkId}" unknown`);
     }
   }

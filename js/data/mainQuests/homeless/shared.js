@@ -61,12 +61,20 @@ const HOMELESS_SHARED = {
     id: 'mq_homeless_05', title: '광진 낚시 거점',
     desc: '광진구로 이동하라. 한강 상류에 2년간 알고 지낸 낚시꾼 집단이 있다.',
     icon: '🎣', characterId: 'homeless', dayTrigger: 8, prerequisite: 'mq_homeless_04',
-    objective: { type: 'visit_district', districtId: 'gwangjin', count: 1 },
+    // 목표는 광진구가 아니라 한강이다 — 광진구는 노숙자의 시작 구라 구 단위로 잡으면
+    // 어린이대공원에 있어도, 시작 지점에 머물러도 낚시꾼을 만난 것이 된다.
+    objective: { type: 'visit_landmark', landmarkId: 'lm_hangang_gwangjin', count: 1 },
     reward: { morale: 8, items: [{ definitionId: 'canned_food', qty: 2 }, { definitionId: 'rope', qty: 1 }] },
     failPenalty: { morale: -3 }, deadlineDays: 22,
     narrative: {
       start: '다리 아래서 2년 동안 한강을 거슬러 올라가며 생존자들과 네트워크를 만들었다. 광진 어귀에 낚시꾼 집단이 있다. 그들이 식량 정보를 갖고 있다.',
       complete: '광진 낚시 집단. 4명이 강가에 텐트를 치고 있었다. "최 형, 아직 살아 있었어요?" 거리의 인맥은 끊기지 않았다. 통조림과 로프를 얻었다.',
+    },
+    locationHint: {
+      districtId: 'gwangjin',
+      landmarkId: 'lm_hangang_gwangjin',
+      note: '광진구 한강 — 낚시터 라인',
+      noteEn: 'Gwangjin — the Han River fishing spot',
     },
   },
 
