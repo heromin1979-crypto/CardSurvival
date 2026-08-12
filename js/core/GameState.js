@@ -197,7 +197,8 @@ const GameState = {
     isExploring:        false,
     travelCostTP:       0,
     nodesVisited:       [],
-    districtsVisited:   [],      // 방문한 구 목록
+    districtsVisited:   [],      // 방문한 구 목록 (생애 누적, 비워지지 않음)
+    districtArrivals:   {},      // { districtId: totalTP } — 최근 도착 시각. 퀘스트 "가라" 판정용
     districtsLooted:    [],      // 루팅 완료한 구 목록 (재방문 시 희귀 리스폰)
     currentLandmark:    null,    // 랜드마크 내부 진입 시 districtId (null = 랜드마크 밖)
     currentSubLocation: null,    // 현재 세부 장소 ID (null = 랜드마크 로비 또는 밖)
@@ -595,6 +596,21 @@ const GameState = {
   // find instances by definition id
   findByDef(definitionId) {
     return Object.values(this.cards).filter(c => c.definitionId === definitionId);
+  },
+
+  /**
+   * 구 도착 기록 — 방문 이력(생애 누적)과 최근 도착 시각을 함께 남긴다.
+   * 이동 시스템이 각자 배열만 push하던 것을 여기로 모은다: 도착 시각이 빠지면
+   * "그 구로 가라" 퀘스트가 과거 방문 이력만 보고 즉시 완료된다.
+   */
+  recordDistrictArrival(districtId) {
+    if (!districtId) return;
+    if (!this.location.districtsVisited) this.location.districtsVisited = [];
+    if (!this.location.districtArrivals) this.location.districtArrivals = {};
+    if (!this.location.districtsVisited.includes(districtId)) {
+      this.location.districtsVisited.push(districtId);
+    }
+    this.location.districtArrivals[districtId] = this.time?.totalTP ?? 0;
   },
 
   // count total quantity of a def on the board
@@ -1052,6 +1068,9 @@ const GameState = {
     if (!this.location.currentDistrict)  this.location.currentDistrict  = 'mapo';
     if (!this.location.currentNode)      this.location.currentNode      = this.location.currentDistrict;
     if (!this.location.districtsVisited) this.location.districtsVisited = [];
+    // 구버전 세이브에는 도착 시각이 없다. 빈 맵으로 두면 "가라" 퀘스트는
+    // 다음 실제 이동에서 완료된다 — 과거 이력으로 소급 완료되는 것보다 안전하다.
+    if (!this.location.districtArrivals) this.location.districtArrivals = {};
     if (!this.location.districtsLooted)  this.location.districtsLooted  = [];
     // 구버전 세이브 호환: 랜드마크 진입 상태 필드
     if (this.location.currentLandmark    === undefined) this.location.currentLandmark    = null;

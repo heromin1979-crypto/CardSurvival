@@ -32,10 +32,14 @@ describe('QuestSystem._matchSubObjective', () => {
     expect(QuestSystem._matchSubObjective(so, { craftedCategoryCounts: { medical: 0 } })).toBe(false);
   });
 
-  it("visit_district: visitedDistricts에 districtId 포함 시 true", () => {
+  it("visit_district: 퀘스트 시작 이후 도착한 경우만 true", () => {
     const so = { id: 'so_v', match: { type: 'visit_district', districtId: 'mapo' } };
-    expect(QuestSystem._matchSubObjective(so, { visitedDistricts: new Set(['mapo']) })).toBe(true);
-    expect(QuestSystem._matchSubObjective(so, { visitedDistricts: new Set(['gangnam']) })).toBe(false);
+    const entry = { startTp: 100 };
+    expect(QuestSystem._matchSubObjective(so, { districtArrivals: { mapo: 150 } }, entry)).toBe(true);
+    // 퀘스트를 받기 전에 지나간 이력은 인정하지 않는다
+    expect(QuestSystem._matchSubObjective(so, { districtArrivals: { mapo: 50 } }, entry)).toBe(false);
+    expect(QuestSystem._matchSubObjective(so, { districtArrivals: { gangnam: 150 } }, entry)).toBe(false);
+    expect(QuestSystem._matchSubObjective(so, { districtArrivals: {} }, entry)).toBe(false);
   });
 
   it("use_item: usedItemCounts ≥ count 시 true", () => {

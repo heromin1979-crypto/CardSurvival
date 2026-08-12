@@ -203,7 +203,7 @@ const QuestSystem = {
    *  - collect_item       { definitionId, count? }
    *  - collect_item_type  { itemType, count? }       — itemType은 top-level type 또는 tag
    *  - craft_item         { definitionId? | category?, count? }
-   *  - visit_district     { districtId }
+   *  - visit_district     { districtId }        — entry.startTp 이후의 도착만 인정
    *  - discover_location  { locationId }
    *  - use_item           { definitionId, count? }
    *  - treat_npc          { npcId? | count? }
@@ -238,8 +238,12 @@ const QuestSystem = {
         }
         return false;
       }
-      case 'visit_district':
-        return (state.visitedDistricts ?? new Set()).has(m.districtId);
+      case 'visit_district': {
+        // 퀘스트 시작 이후의 도착만 인정한다. districtsVisited는 생애 누적이라
+        // 예전에 스쳐간 구까지 "가라" 조건을 충족시킨다.
+        const arrival = state.districtArrivals?.[m.districtId];
+        return arrival != null && arrival > (entry?.startTp ?? -Infinity);
+      }
       case 'discover_location':
         return (state.discoveredLocations ?? new Set()).has(m.locationId);
       case 'use_item': {
@@ -328,7 +332,7 @@ const QuestSystem = {
       this._reevaluateSubObjectives();
     });
 
-    // 방문 구는 ExploreSystem/SubwaySystem이 GameState.location.districtsVisited에 직접 쌓는다.
+    // 도착 기록은 ExploreSystem/SubwaySystem이 GameState.recordDistrictArrival로 남긴다.
     // 여기서는 재평가만 걸어 이동 직후 체크리스트가 갱신되게 한다.
     EventBus.on('districtChanged', () => this._reevaluateSubObjectives());
 
@@ -362,13 +366,13 @@ const QuestSystem = {
   },
 
   /**
-   * 매처 입력. 방문 구는 GameState.location.districtsVisited가 유일한 원천이다 —
-   * 시작 구는 CharCreate가 이 배열에만 시딩하므로 별도 카운터를 두면 두 판정이 갈린다.
+   * 매처 입력. 구 이동 판정의 원천은 GameState.location.districtArrivals 하나다 —
+   * 시스템마다 카운터를 따로 들면 시작 구가 한쪽에만 잡혀 두 판정이 갈린다.
    */
   _matchState() {
     return {
       ...this._progress,
-      visitedDistricts: new Set(GameState.location?.districtsVisited ?? []),
+      districtArrivals: GameState.location?.districtArrivals ?? {},
     };
   },
 
@@ -944,8 +948,10 @@ const QuestSystem = {
       if (obj.type === 'collect_item' || obj.type === 'collect_item_type') {
         this._syncCollectProgress(q, qDef);
       } else if (obj.type === 'visit_district') {
-        // visit_district: 이미 방문한 곳이면 즉시 완료
-        if (GameState.location.districtsVisited?.includes(obj.districtId)) {
+        // 퀘스트 시작 이후 도착한 경우만 완료. 생애 방문 이력으로 판정하던 시절에는
+        // 시작 구가 목표인 퀘스트가 세이브 로드만으로 완료됐다.
+        const arrival = GameState.location.districtArrivals?.[obj.districtId];
+        if (arrival != null && arrival > (q.startTp ?? 0)) {
           q.progress = 1;
           this._checkCompletion(q, qDef);
         }

@@ -389,6 +389,9 @@ const CharCreate = {
     gs.location.currentNode        = districtId;
     gs.location.nodesVisited       = [districtId];
     gs.location.districtsVisited   = [districtId];
+    // 시작 구의 도착 시각은 0 — 이후 시작되는 퀘스트(startTp ≥ 0)의 "가라" 조건을
+    // 시작 지점만으로 충족시키지 않는다
+    gs.location.districtArrivals   = { [districtId]: 0 };
     gs.location.districtsLooted    = [];
     gs.location.installedStructures = {};
 

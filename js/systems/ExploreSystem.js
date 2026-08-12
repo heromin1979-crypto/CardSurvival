@@ -253,9 +253,7 @@ const ExploreSystem = {
     // 상태 갱신
     gs.location.currentDistrict = districtId;
     gs.location.currentNode     = districtId;
-    if (!gs.location.districtsVisited.includes(districtId)) {
-      gs.location.districtsVisited.push(districtId);
-    }
+    gs.recordDistrictArrival(districtId);
 
     // 특수 방문 플래그
     if (districtId === 'yeongdeungpo') gs.flags.yeongdeungpoVisited = true;

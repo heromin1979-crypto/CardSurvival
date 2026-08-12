@@ -26,9 +26,11 @@ function resetWorld() {
   GameState.quests = { active: [], completed: ['mq_doctor_01'], failed: [] };
   GameState.subObjectiveProgress = {};
   GameState.questProgress = null;
-  // 의사는 characters.js homeDist가 dongjak — CharCreate가 시작 구를 여기에만 시딩한다
+  // 의사는 characters.js homeDist가 dongjak — CharCreate가 시작 구를 시딩한다
+  GameState.time = { day: 1, totalTP: 0, tpInDay: 0, hour: 6, isPaused: false };
   GameState.location.currentDistrict  = 'dongjak';
   GameState.location.districtsVisited = ['dongjak'];
+  GameState.location.districtArrivals = { dongjak: 0 };
   GameState.npcs = {
     states: {
       npc_nurse: { spawned: true, dismissed: false, trust: 2, activeQuest: 'nurse_quest_emergency' },
@@ -112,12 +114,16 @@ describe('visit_district 판정 원천', () => {
 
   it('QuestSystem은 별도 방문 카운터를 들지 않는다', () => {
     expect(QuestSystem._progress.visitedDistricts).toBeUndefined();
-    expect([...QuestSystem._matchState().visitedDistricts]).toEqual(['dongjak']);
+    expect(QuestSystem._matchState().districtArrivals).toBe(GameState.location.districtArrivals);
   });
 
-  it('이동으로 추가된 구도 매처 입력에 반영된다', () => {
-    GameState.location.districtsVisited.push('mapo');
+  it('실제 도착이 매처 입력에 반영된다', () => {
+    GameState.time.totalTP = 120;
+    GameState.recordDistrictArrival('mapo');
+
     const so = { id: 'so_x', match: { type: 'visit_district', districtId: 'mapo' } };
-    expect(QuestSystem._matchSubObjective(so, QuestSystem._matchState(), {})).toBe(true);
+    expect(GameState.location.districtsVisited).toContain('mapo');
+    expect(QuestSystem._matchSubObjective(so, QuestSystem._matchState(), { startTp: 100 })).toBe(true);
+    expect(QuestSystem._matchSubObjective(so, QuestSystem._matchState(), { startTp: 130 })).toBe(false);
   });
 });

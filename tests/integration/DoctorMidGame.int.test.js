@@ -114,14 +114,16 @@ describe('Doctor mid-game engagement — 이벤트 → subObjective 자동 체�
     expect(matchedCount).toBeGreaterThanOrEqual(1);
   });
 
-  it('마포 도착 → mq_doctor_09.so_d09_02 자동 완료 (판정 원천은 districtsVisited)', () => {
-    GameState.quests.active = [{ id: 'mq_doctor_09', startDay: 18, deadline: 38, progress: 0 }];
+  it('마포 도착 → mq_doctor_09.so_d09_02 자동 완료 (판정 원천은 도착 시각)', () => {
+    GameState.time.totalTP = 200;
+    GameState.quests.active = [{ id: 'mq_doctor_09', startDay: 18, startTp: 200, deadline: 38, progress: 0 }];
 
     EventBus.emit('districtVisited', { districtId: 'mapo' });
     expect(GameState.subObjectiveProgress?.mq_doctor_09?.so_d09_02).not.toBe(true);
 
-    // ExploreSystem/SubwaySystem이 배열에 먼저 쌓고 이벤트를 쏜다
-    GameState.location.districtsVisited.push('mapo');
+    // ExploreSystem/SubwaySystem이 도착을 먼저 기록하고 이벤트를 쏜다
+    GameState.time.totalTP = 260;
+    GameState.recordDistrictArrival('mapo');
     EventBus.emit('districtVisited', { districtId: 'mapo' });
     expect(GameState.subObjectiveProgress?.mq_doctor_09?.so_d09_02).toBe(true);
   });
