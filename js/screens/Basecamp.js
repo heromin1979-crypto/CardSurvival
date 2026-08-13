@@ -236,12 +236,8 @@ const Basecamp = {
 
       <!-- Quest modal -->
       <div class="modal-overlay" id="quest-modal">
-        <div class="modal-box" style="max-width:520px;max-height:85vh;">
-          <div class="modal-title">${uiIcon('quest')} 퀘스트</div>
-          <div id="quest-modal-mount" style="flex:1;overflow-y:auto;padding:4px 0;"></div>
-          <div class="modal-actions">
-            <button class="modal-btn" id="btn-quest-close">닫기</button>
-          </div>
+        <div class="modal-box quest-modal-box">
+          <div id="quest-modal-mount" class="quest-modal-mount"></div>
         </div>
       </div>
     `;
@@ -317,12 +313,7 @@ const Basecamp = {
       document.getElementById('quest-modal')?.classList.add('open');
     });
 
-    // Quest modal close (button)
-    this._el.querySelector('#btn-quest-close')?.addEventListener('click', () => {
-      document.getElementById('quest-modal')?.classList.remove('open');
-    });
-
-    // Quest modal close (overlay click)
+    // Quest modal close (overlay click) — 닫기 버튼은 QuestPanel이 렌더·처리한다
     this._el.querySelector('#quest-modal')?.addEventListener('click', (e) => {
       if (e.target === document.getElementById('quest-modal')) {
         document.getElementById('quest-modal')?.classList.remove('open');
