@@ -265,12 +265,11 @@ const QuestPanel = {
           ` : ''}
         </div>
       </div>
-      <div class="fmd-actions">
-        ${q.location?.districtId && q.category !== 'done'
-          ? `<button type="button" class="fmd-btn primary" data-action="open-seoul-map">🗺 지도에서 보기</button>`
-          : ''}
-        <button type="button" class="fmd-btn" data-quest-action="close">닫기</button>
-      </div>
+      ${q.location?.districtId && q.category !== 'done' ? `
+        <div class="fmd-actions">
+          <button type="button" class="fmd-btn primary" data-action="open-seoul-map">🗺 지도에서 보기</button>
+        </div>
+      ` : ''}
     `;
   },
 
