@@ -134,4 +134,41 @@
   --skill-zone-status-h:   56px;
   --skill-card-h:          78px;
   --locked-gray:           #6B6B75;
+
+  /* ─── 퀘스트 모달 시맨틱 (QUEST_UI_DESIGN.md 부록 A, 2026-08) ─── */
+  /* 붉은색(위기) → 황금색(성취) → 녹색(달성)의 감정 곡선을 카테고리에 매핑 */
+  --quest-urgent:      #ff8060;
+  --quest-urgent-bg:   #2a1a18;
+  --quest-urgent-br:   #6a2020;
+  --quest-urgent-deep: #4a1a1a;
+
+  --quest-main:        #d4a04c;
+  --quest-main-bg:     #2a2418;
+  --quest-main-br:     #5a4a2a;
+
+  --quest-side:        #7ab8c8;
+  --quest-side-bg:     #1a2a34;
+  --quest-side-br:     #2a4a54;
+
+  --quest-done:        #80c890;
+  --quest-done-bg:     #1e3a2a;
+  --quest-done-br:     #2e5a3a;
+
+  --quest-hidden:      #b878c8;
+  --quest-hidden-bg:   #2a1a3a;
+  --quest-hidden-br:   #4a2a5a;
+
+  --quest-grad-main:   linear-gradient(90deg, #a07a3a, #c8a060);
+  --quest-grad-urgent: linear-gradient(90deg, #8a3a2a, #d47a5a);
+  --quest-grad-side:   linear-gradient(90deg, #3a7a9a, #7ab8c8);
+  --quest-grad-done:   linear-gradient(90deg, #4a6a4a, #6a8a6a);
+
+  /* 스펙의 758px/250px는 9~11px 타입 기준. 이 프로젝트는 DESIGN.md 스케일
+     (최소 14px)을 쓰므로 폭도 동일 비율(×1.5)로 환산해야 줄바꿈이 안 깨진다. */
+  --quest-modal-w:  1140px;
+  --quest-modal-h:  820px;   /* 상세 2열이 스크롤 없이 들어가는 최소 높이 (실측) */
+  --quest-list-w:   360px;
+
+  --transition-quest-item: 150ms ease;
+  --transition-quest-bar:  400ms ease;
 }
