@@ -839,9 +839,6 @@
 
 .fmd-btn.primary:hover { background: linear-gradient(180deg, #e0ac58 0%, #d4ac6c 100%); color: var(--bg-raised); }
 
-/* 주 액션이 없는 상세(완료 등)에서는 닫기만 남으므로 우측으로 민다. */
-.fmd-actions .fmd-btn:only-child { margin-left: auto; }
-
 /* ── 상세 빈 상태 ─────────────────────────────────────── */
 
 .fmd-empty {
