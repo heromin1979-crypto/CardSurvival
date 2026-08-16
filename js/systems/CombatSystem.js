@@ -1922,7 +1922,8 @@ const CombatSystem = {
         const qualityMult = BALANCE.quality.tiers[weaponInst?._quality]?.mult ?? 1.0;
         damage         = Math.round(rawDmg * qualityMult) + mods.damageBonus;
         accuracy       = def.combat.accuracy + mods.accuracyBonus;
-        noise          = def.combat.noiseOnUse;
+        // 폭발 화살처럼 장전 탄약이 소음을 규정하면 그 값을 쓴다
+        noise          = mods.noiseOverride ?? def.combat.noiseOnUse;
         durLoss        = def.combat.durabilityLoss ?? 0;
         critChance     = def.combat.critChance     ?? 0;
         critMultiplier = def.combat.critMultiplier ?? (BALANCE.combat.defaultCritMultiplier ?? 1.5);
@@ -2105,10 +2106,12 @@ const CombatSystem = {
       // 다중 타겟 (창/산탄총)
       if (weaponId && gs.cards[weaponId]) {
         const mDef = gs.getCardDef(weaponId);
-        if (mDef?.multiTarget > 1) {
+        // 폭발 화살을 장전하면 무기 정의보다 넓은 폭으로 휩쓴다
+        const spread = mods.multiTarget > 0 ? mods.multiTarget : (mDef?.multiTarget ?? 1);
+        if (spread > 1) {
           const extraLogs = applyMultiTarget(
             finalDmg,
-            mDef,
+            { ...mDef, multiTarget: spread },
             gs.combat.targetIndex,
             this,
             isRanged,

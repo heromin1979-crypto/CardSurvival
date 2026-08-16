@@ -2028,9 +2028,9 @@ const BLUEPRINTS = {
   },
 
   forge_bolt_tip: {
-    id: 'forge_bolt_tip', name: '볼트 촉 제작', category: 'material',
+    id: 'forge_bolt_tip', name: '화살촉 제작', category: 'material',
     hidden: true, unlockConditions: { minSkillLevel: { weaponcraft: 2 } },
-    description: '고철을 단조해 날카로운 볼트 촉을 5개 만든다.',
+    description: '고철을 단조해 날카로운 화살촉을 5개 만든다.',
     output: [{ definitionId: 'bolt_tip', qty: 5 }],
     requiredTools: ['field_forge'],
     requiredSkills: { weaponcraft: 2 },
@@ -2149,9 +2149,9 @@ const BLUEPRINTS = {
   },
 
   craft_bolt_shaft: {
-    id: 'craft_bolt_shaft', name: '볼트 샤프트 제작', category: 'material',
+    id: 'craft_bolt_shaft', name: '화살대 제작', category: 'material',
     hidden: true, unlockConditions: { minSkillLevel: { weaponcraft: 2 } },
-    description: '나무 막대를 다듬어 볼트 샤프트 5개를 만든다.',
+    description: '나무 막대를 다듬어 화살대 5개를 만든다.',
     output: [{ definitionId: 'bolt_shaft', qty: 5 }],
     requiredTools: ['carpentry_bench'],
     requiredSkills: { weaponcraft: 2 },
@@ -2165,14 +2165,14 @@ const BLUEPRINTS = {
   },
 
   craft_improved_crossbow_bolt: {
-    id: 'craft_improved_crossbow_bolt', name: '개선 석궁 볼트 제작', category: 'weapon',
+    id: 'craft_improved_crossbow_bolt', name: '강화 석궁 화살 제작', category: 'weapon',
     hidden: true, unlockConditions: { minSkillLevel: { weaponcraft: 3 } },
-    description: '단조 촉을 달아 관통력을 높인 석궁 볼트 5개.',
+    description: '단조 촉을 달아 관통력을 높인 석궁 화살 5개.',
     output: [{ definitionId: 'improved_crossbow_bolt', qty: 5 }],
     requiredTools: ['carpentry_bench'],
     requiredSkills: { weaponcraft: 3 },
     stages: [{
-      stageIndex: 0, label: '볼트 조립', tpCost: 3,
+      stageIndex: 0, label: '화살 조립', tpCost: 3,
       requiredItems: [
         { definitionId: 'bolt_shaft', qty: 5 },
         { definitionId: 'bolt_tip',   qty: 5 },
@@ -2327,14 +2327,14 @@ const BLUEPRINTS = {
   },
 
   craft_improved_crossbow_bolt_ammo: {
-    id: 'craft_improved_crossbow_bolt_ammo', name: '개선 볼트 탄약 조립', category: 'weapon',
+    id: 'craft_improved_crossbow_bolt_ammo', name: '강화 화살 탄약 조립', category: 'weapon',
     hidden: true, unlockConditions: { minSkillLevel: { weaponcraft: 3 } },
-    description: '탄약 제조대에서 볼트 촉을 정밀 연마해 개선 볼트 5발을 만든다.',
+    description: '탄약 제조대에서 화살촉을 정밀 연마해 강화 석궁 화살 5발을 만든다.',
     output: [{ definitionId: 'improved_crossbow_bolt', qty: 5 }],
     requiredTools: ['ammo_bench'],
     requiredSkills: { weaponcraft: 3 },
     stages: [{
-      stageIndex: 0, label: '볼트 정밀 조립', tpCost: 3,
+      stageIndex: 0, label: '화살 정밀 조립', tpCost: 3,
       requiredItems: [
         { definitionId: 'bolt_shaft', qty: 5 },
         { definitionId: 'bolt_tip',   qty: 5 },

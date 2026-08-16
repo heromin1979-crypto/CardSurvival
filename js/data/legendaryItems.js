@@ -733,11 +733,10 @@ const LEGENDARY_ITEMS = {
     id: 'explosive_bolt', name: '폭발 석궁 화살', type: 'consumable', subtype: 'ammo',
     rarity: 'legendary', legendary: true, weight: 0.15,
     defaultDurability: 100, defaultContamination: 0,
-    icon: '💥', description: '착탄 시 폭발하여 광역 피해를 입히는 석궁 화살.',
+    icon: '💥', description: '착탄 시 폭발하는 석궁 화살. 장전하면 피해 +15, 주변 적 2명까지 휩쓴다.',
+    ammoType: 'crossbow_bolt', roundsPerPack: 4,
+    ammoEffect: { damageBonus: 15, multiTarget: 3, noiseOnUse: 25 },
     tags: ['ammo', 'legendary'],
-    combat: {
-      damage: [40, 60], accuracy: 0.70, noiseOnUse: 25, aoe: true,
-    },
     dismantle: [],
   },
 

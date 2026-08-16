@@ -12,6 +12,8 @@ const EMPTY = {
   noiseReduction: 0,
   durabilitySave: 0,
   statusInflict: null,
+  multiTarget: 0,
+  noiseOverride: null,
 };
 
 describe('getWeaponModifiers — 빈 입력', () => {

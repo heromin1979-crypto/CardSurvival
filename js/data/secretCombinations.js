@@ -149,8 +149,8 @@ const SECRET_COMBINATIONS = [
     name: '화살 화염 강화',
     source: { id: 'crossbow_bolt' },
     target: { id: 'campfire' },
-    hint: '볼트를 불에 담그면...',
-    discoveryMsg: '💡 화염 볼트! 추가 화상 데미지.',
+    hint: '화살을 불에 담그면...',
+    discoveryMsg: '💡 화염 화살! 장전하면 적중 시 화상을 입힌다.',
     xpReward: { skill: 'weaponcraft', amount: 10 },
     result: {
       spawnItem: 'fire_bolt',

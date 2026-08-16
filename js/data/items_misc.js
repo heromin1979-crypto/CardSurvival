@@ -354,7 +354,7 @@ const ITEMS_MISC = {
   },
   fire_bolt: {
     id: 'fire_bolt',
-    name: '화염 볼트',
+    name: '화염 화살',
     type: 'consumable',
     subtype: 'ammo',
     rarity: 'uncommon',
@@ -364,7 +364,12 @@ const ITEMS_MISC = {
     defaultDurability: 100,
     defaultContamination: 0,
     icon: '🔥',
-    description: '불에 담근 크로스보우 볼트. 추가 화상 데미지.',
+    description: '불에 담근 석궁 화살. 장전하면 적중 시 화상을 입힌다.',
+    ammoType: 'crossbow_bolt',
+    roundsPerPack: 8,
+    ammoEffect: {
+      statusInflict: { id: 'burn', name: '화상', duration: 2, effect: { hpPerRound: -3 }, chance: 0.40 },
+    },
     tags: [
       'ammo',
       'ranged',
@@ -528,7 +533,7 @@ const ITEMS_MISC = {
     icon: '🪱',
     stackable: true,
     maxStack: 10,
-    description: '땅을 파서 구한 지렁이. 낚시 확률 +10%.',
+    description: '땅을 파서 구한 지렁이. 낚싯대에 걸어 물고기를 낚거나 통발에 넣어 쓴다. 낚시 확률 +10%.',
     tags: [
       'bait',
       'fishing',
@@ -547,7 +552,7 @@ const ITEMS_MISC = {
     icon: '🦗',
     stackable: true,
     maxStack: 10,
-    description: '잡은 곤충. 낚시 확률 +5%.',
+    description: '잡은 곤충. 낚싯대에 걸어 물고기를 낚거나 통발에 넣어 쓴다. 낚시 확률 +5%.',
     tags: [
       'bait',
       'fishing',

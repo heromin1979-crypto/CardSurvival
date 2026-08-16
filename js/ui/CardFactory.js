@@ -573,8 +573,6 @@ const CARD_IMAGES = {
   wild_wheat:            'assets/images/materials/wild_wheat.png',
   flour:                 'assets/images/materials/flour.png',
   bread_dough:           'assets/images/materials/bread_dough.png',
-  worm:                  'assets/images/materials/worm.png',
-  fishing_bait:          'assets/images/materials/fishing_bait.png',
 
   // 신규 음식
   baked_bread:           'assets/images/food/baked_bread.png',

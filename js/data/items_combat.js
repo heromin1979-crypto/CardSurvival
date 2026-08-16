@@ -253,7 +253,8 @@ const ITEMS_COMBAT = {
     id: 'crossbow_bolt', name: '석궁 화살', type: 'consumable', subtype: 'ammo',
     rarity: 'common', weight: 0.05,
     defaultDurability: 100, defaultContamination: 0,
-    icon: '➡️', description: '석궁 사격에 사용하는 20발 볼트 팩. 카드 1장으로 빈 탄창을 가득 채운다.',
+    icon: '➡️', description: '석궁 사격에 사용하는 20발 화살 팩. 카드 1장으로 빈 탄창을 가득 채운다.',
+    ammoType: 'crossbow_bolt',
     tags: ['ammo', 'craftable'],
     dismantle: [{ definitionId: 'scrap_metal', qty: 1, chance: 0.6 }],
   },
@@ -507,10 +508,12 @@ const ITEMS_COMBAT = {
   },
 
   improved_crossbow_bolt: {
-    id: 'improved_crossbow_bolt', name: '개선 석궁 볼트', type: 'consumable', subtype: 'ammo',
+    id: 'improved_crossbow_bolt', name: '강화 석궁 화살', type: 'consumable', subtype: 'ammo',
     rarity: 'uncommon', weight: 0.06,
     defaultDurability: 100, defaultContamination: 0,
-    icon: '🎯', description: '단조 촉을 달아 관통력이 높아진 석궁 볼트. 기본 볼트보다 데미지 +5.',
+    icon: '🎯', description: '단조 촉을 달아 관통력을 높인 석궁 화살. 장전하면 피해 +5.',
+    ammoType: 'crossbow_bolt', roundsPerPack: 12,
+    ammoEffect: { damageBonus: 5 },
     tags: ['ammo', 'craftable'],
     dismantle: [
       { definitionId: 'bolt_tip', qty: 1, chance: 0.5 },

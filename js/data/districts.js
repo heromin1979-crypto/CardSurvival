@@ -448,7 +448,7 @@ const DISTRICTS = {
         maxQty: 2,
       },
       {
-        definitionId: 'worm',
+        definitionId: 'bait_worm',
         weight: 8,
         minQty: 1,
         maxQty: 3,
@@ -737,7 +737,7 @@ const DISTRICTS = {
         maxQty: 2,
       },
       {
-        definitionId: 'worm',
+        definitionId: 'bait_worm',
         weight: 8,
         minQty: 1,
         maxQty: 3,
@@ -891,7 +891,7 @@ const DISTRICTS = {
         maxQty: 3,
       },
       {
-        definitionId: 'worm',
+        definitionId: 'bait_worm',
         weight: 8,
         minQty: 1,
         maxQty: 3,
@@ -1376,7 +1376,7 @@ const DISTRICTS = {
         maxQty: 2,
       },
       {
-        definitionId: 'worm',
+        definitionId: 'bait_worm',
         weight: 8,
         minQty: 1,
         maxQty: 3,
@@ -1639,7 +1639,7 @@ const DISTRICTS = {
         maxQty: 2,
       },
       {
-        definitionId: 'worm',
+        definitionId: 'bait_worm',
         weight: 8,
         minQty: 1,
         maxQty: 3,
@@ -3358,7 +3358,7 @@ const DISTRICTS = {
         maxQty: 2,
       },
       {
-        definitionId: 'worm',
+        definitionId: 'bait_worm',
         weight: 8,
         minQty: 1,
         maxQty: 3,
@@ -3778,7 +3778,7 @@ const DISTRICTS = {
         maxQty: 2,
       },
       {
-        definitionId: 'worm',
+        definitionId: 'bait_worm',
         weight: 8,
         minQty: 1,
         maxQty: 3,

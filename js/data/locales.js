@@ -798,7 +798,7 @@ export const ko = {
   'modal.loadedAmmo':      '장전 탄약',
   'modal.compatibleAmmo':  '호환 탄약',
   'modal.ammoPackSize':    '탄약 팩',
-  'modal.twentyRounds':    '1팩 = 20발',
+  'modal.roundsPerPack':   '1팩 = {rounds}발',
 
   // ── ExploreUI ───────────────────────────────────────────────
   'explore.hud':          '🗺 탐색 — Day {day} {time}',
@@ -1805,7 +1805,7 @@ export const en = {
   'modal.loadedAmmo':      'Loaded Ammo',
   'modal.compatibleAmmo':  'Compatible Ammo',
   'modal.ammoPackSize':    'Ammo Pack',
-  'modal.twentyRounds':    '1 pack = 20 rounds',
+  'modal.roundsPerPack':   '1 pack = {rounds} rounds',
 
   // ── ExploreUI ───────────────────────────────────────────────
   'explore.hud':          '🗺 Explore — Day {day} {time}',
@@ -2659,8 +2659,6 @@ export const en = {
   '_item.wild_wheat':        'Wild Wheat',
   '_item.flour':             'Flour',
   '_item.bread_dough':       'Bread Dough',
-  '_item.worm':              'Earthworm',
-  '_item.fishing_bait':      'Fishing Bait',
   '_item.baked_bread':       'Baked Bread',
   '_item.sandwich':          'Sandwich',
   '_item.rice_wine':         'Makgeolli (Rice Wine)',

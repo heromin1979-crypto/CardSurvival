@@ -13,7 +13,7 @@ import GameData        from '../data/GameData.js';
 import NPCSystem       from '../systems/NPCSystem.js';
 import { landmarkHasFishing } from '../data/landmarks.js';
 import { isFishingRod as isRod } from '../systems/FishingSystem.js';
-import { getMagazineState, isMagazineAmmoPack } from '../systems/WeaponAmmoSystem.js';
+import { MAGAZINE_CAPACITY, getMagazineState, isMagazineAmmoPack } from '../systems/WeaponAmmoSystem.js';
 
 const FOCUSABLE = 'button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
@@ -297,7 +297,11 @@ const ModalManager = {
       ]);
     }
     if (isMagazineAmmoPack(def, GameData.items)) {
-      stats.push([I18n.t('modal.ammoPackSize'), I18n.t('modal.twentyRounds')]);
+      // 특수 화살은 팩마다 채우는 발수가 다르다 — 선언이 없으면 탄창 가득
+      stats.push([
+        I18n.t('modal.ammoPackSize'),
+        I18n.t('modal.roundsPerPack', { rounds: def.roundsPerPack ?? MAGAZINE_CAPACITY }),
+      ]);
     }
 
     const statsHtml = stats.map(([k, v, cls]) =>

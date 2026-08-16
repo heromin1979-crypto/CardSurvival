@@ -5,6 +5,7 @@ import {
   getCombatSkill,
 } from '../../data/combatSkills.js';
 import { weaponSlotForDefinition } from '../WeaponSlotPolicy.js';
+import { getWeaponModifiers } from '../WeaponModifiers.js';
 
 function cloneValue(value) {
   if (Array.isArray(value)) return value.map(cloneValue);
@@ -293,9 +294,11 @@ export function buildEquipmentSkill(instanceId, definition, instance = null) {
     value: normalizeDamage(combat.damage),
   }];
 
-  // 부착물(톱니 개조 키트)이 심은 값이 정의값을 이긴다 — 상태이상은 하나만 실린다
-  const statusInflict = isPlainObject(instance?._statusInflict)
-    ? instance._statusInflict
+  // 장전 화살 > 부착물 > 무기 정의 순으로 이긴다 — 상태이상은 하나만 실린다
+  const mods = getWeaponModifiers(instance);
+  const ammoMultiTarget = mods.multiTarget > 0 ? mods.multiTarget : null;
+  const statusInflict = isPlainObject(mods.statusInflict)
+    ? mods.statusInflict
     : combat.statusInflict;
   if (isPlainObject(statusInflict)) {
     effects.push({
@@ -319,10 +322,11 @@ export function buildEquipmentSkill(instanceId, definition, instance = null) {
     target: {
       side: 'enemy',
       ranks: ranged ? [1, 2, 3, 4] : [1, 2],
-      count: Number.isInteger(definition.multiTarget)
-        && definition.multiTarget > 0
-        ? definition.multiTarget
-        : 1,
+      // 장전 화살(폭발 화살)이 광역 폭을 넓힌다 — 없으면 무기 정의값
+      count: ammoMultiTarget
+        ?? (Number.isInteger(definition.multiTarget) && definition.multiTarget > 0
+          ? definition.multiTarget
+          : 1),
     },
     costs: {
       magazineRound: ranged ? 1 : 0,
