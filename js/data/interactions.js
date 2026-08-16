@@ -70,6 +70,47 @@ function _attachAmmoMod(weaponInst) {
   };
 }
 
+const WHETSTONE_WEAR      = 15;   // 1회 사용당 숫돌이 닳는 양
+const WHETSTONE_REPAIR    = 30;   // 날붙이 내구도 회복량 (덕테이프 +25보다 높다)
+const WHETSTONE_SHARP_DMG = 3;    // 첫 연마에만 붙는 데미지 보너스
+
+// 숫돌 대상은 날붙이만. 둔기에 숫돌을 대는 그림은 어색하고, 둔기 수리는 덕테이프가 맡는다.
+function _isBladeWeapon(inst) {
+  const def = _defFor(inst);
+  return def?.type === 'weapon' && def.weaponType === 'blade';
+}
+
+function _checkSharpenTarget(stoneInst, bladeInst) {
+  if (!_isBladeWeapon(bladeInst)) return { ok: false, reason: '숫돌은 날붙이 무기에만 쓸 수 있습니다.' };
+  if ((stoneInst.durability ?? 100) < WHETSTONE_WEAR) return { ok: false, reason: '숫돌이 너무 닳았다.' };
+  const atFullDurability = (bladeInst.durability ?? 100) >= 100;
+  if (bladeInst.sharpened && atFullDurability) {
+    return { ok: false, reason: '이미 연마했고 날도 멀쩡하다.' };
+  }
+  return { ok: true };
+}
+
+// 연마와 수리를 한 번에 처리한다. 데미지 보너스는 첫 연마에만 붙고, 수리는 몇 번이든 된다.
+function _applySharpen(stoneInst, bladeInst, { stoneIsSrc }) {
+  const firstSharpen = !bladeInst.sharpened;
+  if (firstSharpen) {
+    bladeInst.sharpened = true;
+    bladeInst.damageBonus = (bladeInst.damageBonus ?? 0) + WHETSTONE_SHARP_DMG;
+  }
+  bladeInst.durability = Math.min(100, (bladeInst.durability ?? 100) + WHETSTONE_REPAIR);
+  stoneInst.durability = Math.max(0, (stoneInst.durability ?? 100) - WHETSTONE_WEAR);
+
+  const stoneSpent = (stoneInst.durability ?? 0) <= 0;
+  return {
+    message: firstSharpen
+      ? `숫돌로 날을 세웠다. 내구도 +${WHETSTONE_REPAIR}, 데미지 +${WHETSTONE_SHARP_DMG}.`
+      : `숫돌로 날을 다시 세웠다. 내구도 +${WHETSTONE_REPAIR}.`,
+    consumeSrc: stoneIsSrc ? stoneSpent : false,
+    consumeTgt: stoneIsSrc ? false : stoneSpent,
+    noise: 2,
+  };
+}
+
 const WEAPON_OIL_DURABILITY_SAVE = 0.15;
 const KNUCKLE_WRAP_UNARMED_BONUS = 2;
 // 무기 정의의 combat.statusInflict와 같은 표기 — _normalizeStatusInflict가 hpPerRound를 정규화한다
@@ -1038,31 +1079,19 @@ const INTERACTION_RULES = [
   },
 
   // D23. 숫돌 + 근접무기 → 데미지 +3 (연마)
-  { id: 'sharpen_melee', source: { id: 'whetstone' }, target: { tag: 'melee' },
-    hint: '숫돌로 무기 연마 → 데미지 +3',
-    canApply(s, t) {
-      if (t.sharpened) return { ok: false, reason: '이미 연마된 무기다.' };
-      if ((s.durability ?? 100) < 15) return { ok: false, reason: '숫돌이 너무 닳았다.' };
-      return { ok: true };
-    },
-    apply(s, t) {
-      t.sharpened = true; t.damageBonus = (t.damageBonus ?? 0) + 3;
-      s.durability = Math.max(0, (s.durability ?? 100) - 15);
-      return { message: '숫돌로 무기를 연마했다. 데미지 +3.', consumeSrc: (s.durability ?? 0) <= 0, consumeTgt: false, noise: 2 };
-    },
+  // D23. 숫돌 + 날붙이 → 내구도 회복 + 첫 연마 시 데미지 +3
+  // 예전에는 '연마(근접 전체)'와 '칼갈이(knife 한정)' 두 규칙이 따로 있었는데,
+  // findInteraction이 먼저 매칭된 하나만 돌려주는 탓에 칼갈이가 사실상 도달 불가였다.
+  // 하나로 합치고 대상을 날붙이(weaponType:'blade') 전체로 넓힌다.
+  { id: 'sharpen_blade', source: { id: 'whetstone' }, target: { type: 'weapon' },
+    hint: '숫돌로 날 세우기 → 내구도 +30, 첫 연마 시 데미지 +3',
+    canApply(s, t) { return _checkSharpenTarget(s, t); },
+    apply(s, t) { return _applySharpen(s, t, { stoneIsSrc: true }); },
   },
-  { id: 'sharpen_melee_rev', source: { tag: 'melee' }, target: { id: 'whetstone' },
-    hint: '숫돌로 무기 연마 → 데미지 +3',
-    canApply(s, t) {
-      if (s.sharpened) return { ok: false, reason: '이미 연마된 무기다.' };
-      if ((t.durability ?? 100) < 15) return { ok: false, reason: '숫돌이 너무 닳았다.' };
-      return { ok: true };
-    },
-    apply(s, t) {
-      s.sharpened = true; s.damageBonus = (s.damageBonus ?? 0) + 3;
-      t.durability = Math.max(0, (t.durability ?? 100) - 15);
-      return { message: '숫돌로 무기를 연마했다. 데미지 +3.', consumeSrc: false, consumeTgt: (t.durability ?? 0) <= 0, noise: 2 };
-    },
+  { id: 'sharpen_blade_rev', source: { type: 'weapon' }, target: { id: 'whetstone' },
+    hint: '숫돌로 날 세우기 → 내구도 +30, 첫 연마 시 데미지 +3',
+    canApply(s, t) { return _checkSharpenTarget(t, s); },
+    apply(s, t) { return _applySharpen(t, s, { stoneIsSrc: false }); },
   },
 
   // D24. 고철 + 방어구 → 내구도 +20 (소음)
@@ -1085,33 +1114,6 @@ const INTERACTION_RULES = [
     },
   },
 
-  // D25. 숫돌 + 칼 → 칼 내구도 완전 복원
-  { id: 'sharpen_knife', source: { id: 'whetstone' }, target: { id: 'knife' },
-    hint: '숫돌로 칼갈이 → 내구도 완전 복원',
-    canApply(s, t) {
-      if ((t.durability ?? 100) >= 70) return { ok: false, reason: '칼이 아직 충분히 날카롭다.' };
-      if ((s.durability ?? 100) < 20) return { ok: false, reason: '숫돌이 너무 닳았다.' };
-      return { ok: true };
-    },
-    apply(s, t) {
-      t.durability = 70;
-      s.durability = Math.max(0, (s.durability ?? 100) - 20);
-      return { message: '숫돌로 칼을 날카롭게 갈았다.', consumeSrc: (s.durability ?? 0) <= 0, consumeTgt: false, noise: 1 };
-    },
-  },
-  { id: 'sharpen_knife_rev', source: { id: 'knife' }, target: { id: 'whetstone' },
-    hint: '숫돌로 칼갈이 → 내구도 완전 복원',
-    canApply(s, t) {
-      if ((s.durability ?? 100) >= 70) return { ok: false, reason: '칼이 아직 충분히 날카롭다.' };
-      if ((t.durability ?? 100) < 20) return { ok: false, reason: '숫돌이 너무 닳았다.' };
-      return { ok: true };
-    },
-    apply(s, t) {
-      s.durability = 70;
-      t.durability = Math.max(0, (t.durability ?? 100) - 20);
-      return { message: '숫돌로 칼을 날카롭게 갈았다.', consumeSrc: false, consumeTgt: (t.durability ?? 0) <= 0, noise: 1 };
-    },
-  },
 
   // ── E. 음식 가공 (3종) ──────────────────────────────────
 

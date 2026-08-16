@@ -599,7 +599,15 @@ const ITEMS_BASE = {
     id: 'dry_grass', name: '마른 풀 뭉치', type: 'material', subtype: 'natural',
     rarity: 'common', weight: 0.05,
     defaultDurability: 100, defaultContamination: 0,
-    icon: '🌾', description: '황폐한 땅에서 채집한 마른 풀. 불쏘시개로 매우 유용하다.',
+    icon: '🌾', description: '황폐한 땅에서 채집한 마른 풀. 뒤져서 미끼를 찾거나 불쏘시개로 쓴다.',
+    gather: {
+      uses: 3,
+      tpCost: 1,
+      yields: [
+        { definitionId: 'bait_worm',   qty: 1, weight: 60 },
+        { definitionId: 'bait_insect', qty: 1, weight: 40 },
+      ],
+    },
     tags: ['material', 'natural', 'fire'],
     dismantle: [],
   },

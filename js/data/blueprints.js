@@ -3204,41 +3204,6 @@ const BLUEPRINTS = {
     }],
   },
 
-  bait_worm: {
-    id: 'bait_worm', name: '지렁이 미끼', category: 'tool',
-    description: '흙을 파서 지렁이를 잡아 미끼로 만든다. 낚시·통발에 사용.',
-    output: [{ definitionId: 'bait_worm', qty: 2 }],
-    requiredTools: [],
-    requiredSkills: {},
-    stages: [{
-      stageIndex: 0, label: '미끼 준비', tpCost: 1,
-      requiredItems: [
-        { definitionId: 'dry_grass', qty: 1 },
-      ],
-      consumeAt: 'start',
-    }],
-  },
-
-  bait_insect: {
-    id: 'bait_insect', name: '곤충 미끼', category: 'tool',
-    description: '풀밭에서 잡은 곤충으로 만든 미끼. 지렁이 미끼보다 효과가 좋다.',
-    output: [{ definitionId: 'bait_insect', qty: 2 }],
-    requiredTools: [],
-    requiredSkills: { fishing: 2 },
-    stages: [{
-      stageIndex: 0, label: '곤충 채집', tpCost: 1,
-      requiredItems: [
-        { definitionId: 'dry_grass', qty: 1 },
-        { definitionId: 'herb',      qty: 1 },
-      ],
-      consumeAt: 'start',
-    }],
-  },
-
-  // ══════════════════════════════════════════════════════════════
-  //  훈련용 아이템 (Training Items) — skillOverride로 특정 스킬 XP 부여
-  // ══════════════════════════════════════════════════════════════
-
   practice_bandage: {
     id: 'practice_bandage', name: '연습용 붕대', category: 'medical',
     description: '약초와 천 조각으로 만든 간이 붕대. 의료 스킬 훈련에 좋다.',

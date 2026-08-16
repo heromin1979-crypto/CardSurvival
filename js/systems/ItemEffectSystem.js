@@ -181,6 +181,9 @@ export function formatCardEffectParts(def, inst = {}) {
 
 function formatAppliedModifierParts(inst = {}) {
   const parts = [];
+  // 숫돌 연마·못 박기·유리 박기·가죽 그립이 남기는 값 — 지금까지 카드에 드러나지 않았다
+  if (inst.damageBonus)   parts.push(`피해 +${inst.damageBonus}`);
+  if (inst.accuracyBonus && !inst._scope) parts.push(`명중 +${formatPercent(inst.accuracyBonus)}`);
   if (inst._poisonDamage) parts.push(`독 피해 +${inst._poisonDamage} 적중 시`);
   if (inst._suppressor) parts.push(`소음 -${formatPercent(inst._noiseReduction ?? 0.5)} 공격 시`);
   if (inst._scope) parts.push(`명중 +${formatPercent(inst.accuracyBonus ?? 0.1)} 공격 시`);

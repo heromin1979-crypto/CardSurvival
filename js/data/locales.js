@@ -799,6 +799,14 @@ export const ko = {
   'modal.compatibleAmmo':  '호환 탄약',
   'modal.ammoPackSize':    '탄약 팩',
   'modal.roundsPerPack':   '1팩 = {rounds}발',
+  'gather.notForageable':  '채집할 수 없는 카드입니다.',
+  'gather.exhausted':      '더 뒤질 것이 없습니다.',
+  'gather.noRoom':         '자리가 없습니다. 가방이나 바닥을 비워주세요.',
+  'gather.tickReason':     '채집',
+  'gather.gained':         '🌾 {item} ×{qty}을(를) 찾았습니다.',
+  'gather.depleted':       '{item}을(를) 다 뒤졌습니다.',
+  'gather.button':         '🌾 채집하기',
+  'gather.usesLeft':       '남은 채집',
 
   // ── ExploreUI ───────────────────────────────────────────────
   'explore.hud':          '🗺 탐색 — Day {day} {time}',
@@ -1806,6 +1814,14 @@ export const en = {
   'modal.compatibleAmmo':  'Compatible Ammo',
   'modal.ammoPackSize':    'Ammo Pack',
   'modal.roundsPerPack':   '1 pack = {rounds} rounds',
+  'gather.notForageable':  'This card cannot be foraged.',
+  'gather.exhausted':      'Nothing left to search.',
+  'gather.noRoom':         'No space. Clear a slot first.',
+  'gather.tickReason':     'Foraging',
+  'gather.gained':         '🌾 Found {item} ×{qty}.',
+  'gather.depleted':       '{item} is used up.',
+  'gather.button':         '🌾 Forage',
+  'gather.usesLeft':       'Forages left',
 
   // ── ExploreUI ───────────────────────────────────────────────
   'explore.hud':          '🗺 Explore — Day {day} {time}',
