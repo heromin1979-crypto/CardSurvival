@@ -974,6 +974,7 @@ export const CombatAiTurns = {
     };
 
     const damageTarget = (targetId, amount, metadata = {}) => {
+      let critHit = false;
       const npcId = targetId === 'player' ? null : targetId;
       const target = combat?.combatants?.[targetId] ?? null;
       let damage = modifyOutgoingDamage(amount, this._rankCombatantForEnemy(enemy));
@@ -981,6 +982,8 @@ export const CombatAiTurns = {
       if (outgoingIncrease > 0) {
         damage = Math.floor(damage * (1 + outgoingIncrease));
       }
+      // 치명타는 방어구 감소 이전에 굴린다 — 플레이어 공격과 순서를 맞춘다
+      ({ damage, isCrit: critHit } = this._rollEnemyCrit(damage));
 
       const threshold = Number.isFinite(metadata.executeThreshold)
         ? Math.max(0, Math.min(1, metadata.executeThreshold))
@@ -1016,10 +1019,10 @@ export const CombatAiTurns = {
       if (result.dodged) return result;
 
       if (npcId) {
-        combat.lastHit = { target: 'companion', damage: result.damage, npcId, isCrit: false };
+        combat.lastHit = { target: 'companion', damage: result.damage, npcId, isCrit: critHit };
         EventBus.emit('enemyAttackCompanion', { enemyId: enemy.id, npcId, damage: result.damage });
       } else {
-        combat.lastHit = { target: 'player', damage: result.damage, isCrit: false };
+        combat.lastHit = { target: 'player', damage: result.damage, isCrit: critHit };
         EventBus.emit('playerHit', { damage: result.damage });
         DiseaseSystem.checkCombatInjury(result.damage, gs);
         BodySystem.onCombatHit(result.damage, enemy);
@@ -1802,6 +1805,10 @@ export const CombatAiTurns = {
     let dmg = dMin + Math.floor(Math.random() * (dMax - dMin + 1));
 
     // 방어구 효과: 피해 감소 + 방어술 스킬 보너스
+    const specialCrit = this._rollEnemyCrit(dmg);
+    dmg = specialCrit.damage;
+    if (specialCrit.isCrit) gs.combat.log.push(I18n.t('combatSys.enemyCrit'));
+
     const armor         = StatSystem.getArmorEffects();
     const defSkillBonus = SkillSystem.getBonus('defense', 'damageReduction');
     const totalReduct   = Math.min(BALANCE.armor.specialDmgReductCap, armor.damageReduction + defSkillBonus);
@@ -1821,7 +1828,7 @@ export const CombatAiTurns = {
       return logs;
     }
     dmg = struck.damage;
-    gs.combat.lastHit = { target: 'player', damage: dmg, isCrit: false };
+    gs.combat.lastHit = { target: 'player', damage: dmg, isCrit: specialCrit.isCrit };
     EventBus.emit('playerHit', { damage: dmg });
     const enemyIndex = gs.combat.enemies.indexOf(enemy);
     this._fx(createActionFx({
@@ -1894,6 +1901,20 @@ export const CombatAiTurns = {
     }
     return result;
 
+  },
+
+  // 적 치명타 유효 확률 — 방어구 critReduction이 비례로 깎는다
+  _enemyCritChance() {
+    const armor = StatSystem.getArmorEffects();
+    const base = BALANCE.combat.enemyCritChance ?? 0;
+    return Math.max(0, base * (1 - Math.min(1, armor.critReduction ?? 0)));
+  },
+
+  _rollEnemyCrit(damage) {
+    if (damage <= 0) return { damage, isCrit: false };
+    if (Math.random() >= this._enemyCritChance()) return { damage, isCrit: false };
+    const mult = BALANCE.combat.enemyCritMultiplier ?? 1.5;
+    return { damage: Math.floor(damage * mult), isCrit: true };
   },
 
   _rankCombatantForEnemy(enemy) {
@@ -1975,6 +1996,10 @@ export const CombatAiTurns = {
     if (hit) {
       // 적 자신의 토큰(hesitation/strength 등) — 랭크 combatant에 기록된 것을 소비
       damage = modifyOutgoingDamage(damage, this._rankCombatantForEnemy(enemy));
+
+      const critRoll = this._rollEnemyCrit(damage);
+      damage = critRoll.damage;
+      if (critRoll.isCrit) gs.combat.log.push(I18n.t('combatSys.enemyCrit'));
 
       // 방어구 효과 + 방어술 스킬 감소
       const armor         = StatSystem.getArmorEffects();
@@ -2064,7 +2089,7 @@ export const CombatAiTurns = {
         return I18n.t('combatSys.enemyDodge', { enemy: I18n.enemyName(enemy.id, enemy.name) });
       }
       damage = struck.damage;
-      gs.combat.lastHit    = { target: 'player', damage, isCrit: false };
+      gs.combat.lastHit    = { target: 'player', damage, isCrit: critRoll.isCrit };
       EventBus.emit('playerHit', { damage });
       const enemyIndex = gs.combat.enemies.indexOf(enemy);
       const playerTarget = allyActionCombatant(gs.combat, 'player');

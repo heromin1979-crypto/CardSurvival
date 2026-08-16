@@ -371,40 +371,6 @@ const ITEMS_MISC = {
     ],
     dismantle: [],
   },
-  sling: {
-    id: 'sling',
-    name: '슬링',
-    type: 'weapon',
-    subtype: 'ranged',
-    rarity: 'common',
-    weight: 0.3,
-    stackable: false,
-    maxStack: 1,
-    defaultDurability: 100,
-    defaultContamination: 0,
-    icon: '🪢',
-    description: '천과 로프로 만든 원시 투석기.',
-    combat: {
-      damage: [
-        3,
-        8,
-      ],
-      accuracy: 0.55,
-      noiseOnAttack: 2,
-    },
-    tags: [
-      'ranged',
-      'weapon',
-    ],
-    equipSlot: 'weapon_sub',
-    dismantle: [
-      {
-        definitionId: 'cloth',
-        qty: 1,
-        chance: 0.5,
-      },
-    ],
-  },
   thorn_wire: {
     id: 'thorn_wire',
     name: '가시 철사',
@@ -916,7 +882,8 @@ const ITEMS_MISC = {
     defaultDurability: 100,
     defaultContamination: 0,
     icon: '🛡️',
-    description: '가죽끈과 로프로 만든 방어 보조 키트. 사용 시 가드 효율이 일시적으로 상승한다.',
+    description: '가죽끈과 로프로 만든 방어 보조 키트. 사용하면 다음 방어의 피해 감소가 올라간다.',
+    onConsume: { guardBoost: 0.15 },
     tags: [
       'enhancement',
       'defense',
@@ -1365,8 +1332,8 @@ const ITEMS_MISC = {
       accuracy: 0.75,
       noiseOnUse: 2,
       durabilityLoss: 50,
+      statusInflict: { id: 'bleed', name: '출혈', duration: 2, effect: { hpPerRound: -3 }, chance: 0.25 },
     },
-    bleedChance: 0.25,
     dismantle: [
       {
         definitionId: 'glass_shard',

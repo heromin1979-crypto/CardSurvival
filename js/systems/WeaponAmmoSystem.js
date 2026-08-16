@@ -14,8 +14,14 @@ export function isMagazineAmmoPack(definition, itemDefinitions) {
     item?.combat?.requiresAmmo === definition.id);
 }
 
-export function getMagazineCapacity(definition) {
-  return isMagazineWeapon(definition) ? MAGAZINE_CAPACITY : 0;
+// 탄창 용량은 기본 상수에 카드별 보정(_ammoCapacityBonus)을 더해 계산한다.
+// 부착물이 인스턴스에 남긴 값이라 같은 총기라도 카드마다 다르다.
+function capacityFor(instance) {
+  return MAGAZINE_CAPACITY + Math.max(0, instance?._ammoCapacityBonus ?? 0);
+}
+
+export function getMagazineCapacity(definition, instance = null) {
+  return isMagazineWeapon(definition) ? capacityFor(instance) : 0;
 }
 
 function failure(reason, state = {}) {
@@ -24,7 +30,7 @@ function failure(reason, state = {}) {
 
 function normalizedLoadedAmmo(instance) {
   const raw = Number.isFinite(instance?.loadedAmmo) ? Math.trunc(instance.loadedAmmo) : 0;
-  return Math.min(MAGAZINE_CAPACITY, Math.max(0, raw));
+  return Math.min(capacityFor(instance), Math.max(0, raw));
 }
 
 export function getLoadedAmmo(gameState, weaponInstanceId) {
@@ -51,7 +57,7 @@ export function getMagazineState(gameState, weaponInstanceId) {
     ok: true,
     reason: null,
     loadedAmmo: normalizedLoadedAmmo(instance),
-    capacity: MAGAZINE_CAPACITY,
+    capacity: capacityFor(instance),
     ammoDefinitionId: definition.combat.requiresAmmo,
   };
 }
@@ -84,7 +90,7 @@ export function reload(gameState, weaponInstanceId) {
   if (!check.ok) return check;
   const ammoPack = check.ammoPack;
   const nextQuantity = (ammoPack.quantity ?? 1) - 1;
-  gameState.cards[weaponInstanceId].loadedAmmo = MAGAZINE_CAPACITY;
+  gameState.cards[weaponInstanceId].loadedAmmo = capacityFor(gameState.cards[weaponInstanceId]);
   if (nextQuantity <= 0) {
     gameState.removeCardInstance(ammoPack.instanceId);
     EventBus.emit('cardRemoved', { instanceId: ammoPack.instanceId });

@@ -736,6 +736,7 @@ const ITEM_HELP = {
   temperatureImmunity: '온도(체온) 피해 면역.',
   temperatureMin: '효과 적용 최소 온도.',
   temporaryAttackBoost: '일시 공격력 상승.',
+  guardBoost: '사용 시 다음 방어 1회의 피해 감소율에 더해지는 값 (0~1). 방어 후 소모된다.',
   temporaryStaminaBoost: '일시 스태미나 상승.',
   travelCostReduction: '이동 비용(TP) 감소.',
   waterproof: '방수 여부.',

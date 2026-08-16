@@ -266,7 +266,9 @@ function executeMultiTargetEffects({
   return result;
 }
 
-export function buildEquipmentSkill(instanceId, definition) {
+// instance를 함께 받는 이유: 부착물이 남긴 개조 효과는 카드 인스턴스에 있어
+// 정의만 보면 조준경·톱니 개조 같은 효과가 랭크 스킬 경로에서 통째로 사라진다.
+export function buildEquipmentSkill(instanceId, definition, instance = null) {
   if (
     typeof instanceId !== 'string'
     || instanceId.length === 0
@@ -291,10 +293,14 @@ export function buildEquipmentSkill(instanceId, definition) {
     value: normalizeDamage(combat.damage),
   }];
 
-  if (isPlainObject(combat.statusInflict)) {
+  // 부착물(톱니 개조 키트)이 심은 값이 정의값을 이긴다 — 상태이상은 하나만 실린다
+  const statusInflict = isPlainObject(instance?._statusInflict)
+    ? instance._statusInflict
+    : combat.statusInflict;
+  if (isPlainObject(statusInflict)) {
     effects.push({
       type: 'status',
-      status: cloneValue(combat.statusInflict),
+      status: cloneValue(statusInflict),
     });
   }
 
@@ -371,11 +377,11 @@ function buildPlayerAttackSkills(gs) {
 
   const attacks = [];
   if (weaponSlotForDefinition(mainDefinition) === 'weapon_main') {
-    const ranged = buildEquipmentSkill(mainId, mainDefinition);
+    const ranged = buildEquipmentSkill(mainId, mainDefinition, gs?.cards?.[mainId]);
     if (ranged) attacks.push(ranged);
   }
   if (weaponSlotForDefinition(subDefinition) === 'weapon_sub') {
-    const melee = buildEquipmentSkill(subId, subDefinition);
+    const melee = buildEquipmentSkill(subId, subDefinition, gs?.cards?.[subId]);
     if (melee) attacks.push(melee);
   } else {
     const unarmed = getCombatSkill('basic_strike');

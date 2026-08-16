@@ -20,6 +20,104 @@ function _isSuppressorTarget(inst) {
   return def?.type === 'weapon' && !!def.combat?.requiresAmmo;
 }
 
+// 조준경·탄약 개조 키트 장착 대상. 석궁류도 탄약을 쓰지만 화약 총기가 아니라 제외한다
+// (석궁의 조준 장치 교체는 '정밀 석궁' 제작 청사진이 담당).
+function _isFirearmTarget(inst) {
+  const def = _defFor(inst);
+  return def?.type === 'weapon' && def.subtype === 'firearm';
+}
+
+// 근접무기 부착 대상 — 독 바르기와 동일한 판정 기준을 쓴다
+function _isMeleeAttachTarget(inst) {
+  return _isPoisonableWeapon(inst);
+}
+
+// 너클 랩 부착 대상 — 주먹에 감는 물건이라 hands 슬롯 방어구에만 붙는다
+function _isHandsArmor(inst) {
+  const def = _defFor(inst);
+  return def?.type === 'armor' && def.subtype === 'hands';
+}
+
+const SCOPE_ACCURACY_BONUS   = 0.10;
+const AMMO_MOD_DEFENSE_PIERCE = 3;
+const AMMO_MOD_CAPACITY_BONUS = 3;
+
+function _checkScopeTarget(inst) {
+  if (!_isFirearmTarget(inst)) return { ok: false, reason: '조준경은 화약 총기에만 장착할 수 있습니다.' };
+  if (inst._scope) return { ok: false, reason: '이미 조준경이 장착된 무기입니다.' };
+  return { ok: true };
+}
+
+// 명중률은 CombatSystem이 무기 인스턴스의 accuracyBonus를 읽어 반영한다 (가죽 그립과 동일 필드)
+function _attachScope(weaponInst) {
+  weaponInst._scope = true;
+  weaponInst.accuracyBonus = (weaponInst.accuracyBonus ?? 0) + SCOPE_ACCURACY_BONUS;
+  return { message: `총기에 조준경을 장착했습니다. 명중률 +${Math.round(SCOPE_ACCURACY_BONUS * 100)}%.` };
+}
+
+function _checkAmmoModTarget(inst) {
+  if (!_isFirearmTarget(inst)) return { ok: false, reason: '탄약 개조 키트는 화약 총기에만 장착할 수 있습니다.' };
+  if (inst._ammoMod) return { ok: false, reason: '이미 탄약이 개조된 무기입니다.' };
+  return { ok: true };
+}
+
+function _attachAmmoMod(weaponInst) {
+  weaponInst._ammoMod = true;
+  weaponInst._defensePierce     = (weaponInst._defensePierce ?? 0) + AMMO_MOD_DEFENSE_PIERCE;
+  weaponInst._ammoCapacityBonus = (weaponInst._ammoCapacityBonus ?? 0) + AMMO_MOD_CAPACITY_BONUS;
+  return {
+    message: `총기 탄약을 개조했습니다. 적 방어 무시 +${AMMO_MOD_DEFENSE_PIERCE}, 탄창 +${AMMO_MOD_CAPACITY_BONUS}.`,
+  };
+}
+
+const WEAPON_OIL_DURABILITY_SAVE = 0.15;
+const KNUCKLE_WRAP_UNARMED_BONUS = 2;
+// 무기 정의의 combat.statusInflict와 같은 표기 — _normalizeStatusInflict가 hpPerRound를 정규화한다
+const SERRATED_BLEED = Object.freeze({
+  id: 'bleed', name: '출혈', duration: 2, effect: { hpPerRound: -3 }, chance: 0.25,
+});
+
+function _checkWeaponOilTarget(inst) {
+  if (!_isMeleeAttachTarget(inst)) return { ok: false, reason: '무기 정비유는 근접무기에만 바를 수 있습니다.' };
+  if (inst._weaponOil) return { ok: false, reason: '이미 정비유를 바른 무기입니다.' };
+  return { ok: true };
+}
+
+// 내구도 절약은 CombatSystem·CombatRankedEffects의 durSaveChance 굴림에 가산된다
+function _attachWeaponOil(weaponInst) {
+  weaponInst._weaponOil = true;
+  weaponInst._durabilitySave = (weaponInst._durabilitySave ?? 0) + WEAPON_OIL_DURABILITY_SAVE;
+  return {
+    message: `무기에 정비유를 발랐습니다. 내구도 절약 +${Math.round(WEAPON_OIL_DURABILITY_SAVE * 100)}%.`,
+  };
+}
+
+function _checkSerratedModTarget(inst) {
+  if (!_isMeleeAttachTarget(inst)) return { ok: false, reason: '톱니 개조 키트는 근접무기에만 장착할 수 있습니다.' };
+  if (inst._serratedMod) return { ok: false, reason: '이미 톱니를 단 무기입니다.' };
+  return { ok: true };
+}
+
+function _attachSerratedMod(weaponInst) {
+  weaponInst._serratedMod = true;
+  weaponInst._statusInflict = { ...SERRATED_BLEED, effect: { ...SERRATED_BLEED.effect } };
+  return {
+    message: `무기 날에 톱니를 달았습니다. 적중 시 ${Math.round(SERRATED_BLEED.chance * 100)}% 확률로 출혈.`,
+  };
+}
+
+function _checkKnuckleWrapTarget(inst) {
+  if (!_isHandsArmor(inst)) return { ok: false, reason: '너클 랩은 장갑류에만 감을 수 있습니다.' };
+  if (inst._knuckleWrap) return { ok: false, reason: '이미 너클 랩을 감은 장갑입니다.' };
+  return { ok: true };
+}
+
+function _attachKnuckleWrap(glovesInst) {
+  glovesInst._knuckleWrap = true;
+  glovesInst._unarmedDmgBonus = (glovesInst._unarmedDmgBonus ?? 0) + KNUCKLE_WRAP_UNARMED_BONUS;
+  return { message: `장갑에 너클 랩을 감았습니다. 맨손 피해 +${KNUCKLE_WRAP_UNARMED_BONUS}.` };
+}
+
 // === CARD INTERACTION RULES ===
 // 카드를 다른 카드 위에 드랍할 때 발생하는 상호작용 규칙 테이블.
 //
@@ -1796,6 +1894,126 @@ const INTERACTION_RULES = [
         consumeSrc: false,
         consumeTgt: true,
       };
+    },
+  },
+  {
+    id: 'apply_scope',
+    source: { id: 'weapon_scope' },
+    target: { type: 'weapon' },
+    hint: '총기에 조준경 장착',
+    canApply(srcInst, tgtInst) {
+      return _checkScopeTarget(tgtInst);
+    },
+    apply(srcInst, tgtInst) {
+      return { ...(_attachScope(tgtInst)), consumeSrc: true, consumeTgt: false };
+    },
+  },
+  {
+    id: 'apply_scope_rev',
+    source: { type: 'weapon' },
+    target: { id: 'weapon_scope' },
+    hint: '총기에 조준경 장착',
+    canApply(srcInst) {
+      return _checkScopeTarget(srcInst);
+    },
+    apply(srcInst) {
+      return { ...(_attachScope(srcInst)), consumeSrc: false, consumeTgt: true };
+    },
+  },
+  {
+    id: 'apply_ammo_mod',
+    source: { id: 'ammo_mod' },
+    target: { type: 'weapon' },
+    hint: '총기에 탄약 개조 키트 장착',
+    canApply(srcInst, tgtInst) {
+      return _checkAmmoModTarget(tgtInst);
+    },
+    apply(srcInst, tgtInst) {
+      return { ...(_attachAmmoMod(tgtInst)), consumeSrc: true, consumeTgt: false };
+    },
+  },
+  {
+    id: 'apply_ammo_mod_rev',
+    source: { type: 'weapon' },
+    target: { id: 'ammo_mod' },
+    hint: '총기에 탄약 개조 키트 장착',
+    canApply(srcInst) {
+      return _checkAmmoModTarget(srcInst);
+    },
+    apply(srcInst) {
+      return { ...(_attachAmmoMod(srcInst)), consumeSrc: false, consumeTgt: true };
+    },
+  },
+  {
+    id: 'apply_weapon_oil',
+    source: { id: 'weapon_oil' },
+    target: { type: 'weapon' },
+    hint: '근접무기에 정비유 바르기',
+    canApply(srcInst, tgtInst) {
+      return _checkWeaponOilTarget(tgtInst);
+    },
+    apply(srcInst, tgtInst) {
+      return { ...(_attachWeaponOil(tgtInst)), consumeSrc: true, consumeTgt: false };
+    },
+  },
+  {
+    id: 'apply_weapon_oil_rev',
+    source: { type: 'weapon' },
+    target: { id: 'weapon_oil' },
+    hint: '근접무기에 정비유 바르기',
+    canApply(srcInst) {
+      return _checkWeaponOilTarget(srcInst);
+    },
+    apply(srcInst) {
+      return { ...(_attachWeaponOil(srcInst)), consumeSrc: false, consumeTgt: true };
+    },
+  },
+  {
+    id: 'apply_serrated_mod',
+    source: { id: 'serrated_mod' },
+    target: { type: 'weapon' },
+    hint: '근접무기에 톱니 장착',
+    canApply(srcInst, tgtInst) {
+      return _checkSerratedModTarget(tgtInst);
+    },
+    apply(srcInst, tgtInst) {
+      return { ...(_attachSerratedMod(tgtInst)), consumeSrc: true, consumeTgt: false };
+    },
+  },
+  {
+    id: 'apply_serrated_mod_rev',
+    source: { type: 'weapon' },
+    target: { id: 'serrated_mod' },
+    hint: '근접무기에 톱니 장착',
+    canApply(srcInst) {
+      return _checkSerratedModTarget(srcInst);
+    },
+    apply(srcInst) {
+      return { ...(_attachSerratedMod(srcInst)), consumeSrc: false, consumeTgt: true };
+    },
+  },
+  {
+    id: 'apply_knuckle_wrap',
+    source: { id: 'knuckle_wrap' },
+    target: { type: 'armor' },
+    hint: '장갑에 너클 랩 감기',
+    canApply(srcInst, tgtInst) {
+      return _checkKnuckleWrapTarget(tgtInst);
+    },
+    apply(srcInst, tgtInst) {
+      return { ...(_attachKnuckleWrap(tgtInst)), consumeSrc: true, consumeTgt: false };
+    },
+  },
+  {
+    id: 'apply_knuckle_wrap_rev',
+    source: { type: 'armor' },
+    target: { id: 'knuckle_wrap' },
+    hint: '장갑에 너클 랩 감기',
+    canApply(srcInst) {
+      return _checkKnuckleWrapTarget(srcInst);
+    },
+    apply(srcInst) {
+      return { ...(_attachKnuckleWrap(srcInst)), consumeSrc: false, consumeTgt: true };
     },
   },
 ];

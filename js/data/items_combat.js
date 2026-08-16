@@ -162,7 +162,7 @@ const ITEMS_COMBAT = {
     combat: {
       damage: [14, 26], accuracy: 0.75, noiseOnUse: 2, durabilityLoss: 6,
       critChance: 0.15, critMultiplier: 1.5,
-      statusInflict: { id: 'stun', name: '기절', duration: 1, effect: { skipTurn: true }, chance: 0.35 },
+      statusInflict: { id: 'stun', name: '기절', duration: 1, effect: { skipTurn: true }, chance: 0.18 },
     },
     dismantle: [
       { definitionId: 'electronic_parts', qty: 2, chance: 0.7 },
@@ -497,7 +497,7 @@ const ITEMS_COMBAT = {
     weaponType: 'blunt',
     combat: {
       damage: [16, 26], accuracy: 0.72, noiseOnUse: 7, durabilityLoss: 2, critChance: 0.15, critMultiplier: 1.8,
-      statusInflict: { id: 'stun', name: '기절', duration: 1, effect: { skipTurn: true }, chance: 0.20 },
+      statusInflict: { id: 'stun', name: '기절', duration: 1, effect: { skipTurn: true }, chance: 0.10 },
     },
     onUse: { buildingBonus: -1 },
     dismantle: [
@@ -762,7 +762,7 @@ const ITEMS_COMBAT = {
   },
 
   weapon_oil: {
-    id: 'weapon_oil', name: '검유', type: 'consumable', subtype: 'enhancement',
+    id: 'weapon_oil', name: '무기 정비유', type: 'consumable', subtype: 'enhancement',
     rarity: 'common', weight: 0.2,
     defaultDurability: 100, defaultContamination: 0,
     icon: '🫙', description: '무기에 바르는 기름. 근접무기 성능 향상.',
@@ -794,7 +794,7 @@ const ITEMS_COMBAT = {
     id: 'ammo_mod', name: '탄약 개조 키트', type: 'consumable', subtype: 'enhancement',
     rarity: 'uncommon', weight: 0.3,
     defaultDurability: 100, defaultContamination: 0,
-    icon: '🔫', description: '탄약을 개조하여 관통력을 높이는 키트.',
+    icon: '🔫', description: '화약 총기에 장착하는 탄약 개조 키트. 관통력과 장탄수가 오른다.',
     tags: ['enhancement', 'ranged'],
     dismantle: [
       { definitionId: 'scrap_metal', qty: 1, chance: 0.6 },
@@ -805,7 +805,7 @@ const ITEMS_COMBAT = {
     id: 'weapon_scope', name: '조준경', type: 'consumable', subtype: 'enhancement',
     rarity: 'rare', weight: 0.4,
     defaultDurability: 100, defaultContamination: 0,
-    icon: '🔭', description: '원거리 무기에 장착하는 조준 보조 장치.',
+    icon: '🔭', description: '화약 총기에 장착하는 조준 보조 장치. 명중률이 오른다.',
     tags: ['enhancement', 'ranged'],
     dismantle: [
       { definitionId: 'glass_shard', qty: 1, chance: 0.7 },
