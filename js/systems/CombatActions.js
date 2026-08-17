@@ -12,13 +12,31 @@ import { createActionFx } from './combat/CombatMotionFx.js';
 
 // ── 방어(Guard) 행동 ────────────────────────────────────────────
 
-export function guardAction() {
+// 방어 자세 키트가 남긴 1회성 보정. 미리보기(previewGuardEffect)는 읽기만 하고 여기서만 소모한다.
+function pendingGuardBoost() {
+  const raw = GameState.player?.pendingGuardBoost;
+  return Number.isFinite(raw) && raw > 0 ? raw : 0;
+}
+
+// 방어 수치 조회 — guardAction과 UI가 같은 계산을 보도록 분리했다
+export function previewGuardEffect() {
   const gs = GameState;
   const effects = getCharacterCombatEffects(gs.player?.characterId);
+  return {
+    damageReduce: Math.min(0.85,
+      BALANCE.combat.guardDamageReduction + (effects.guardDamageReduceBonus ?? 0) + pendingGuardBoost()),
+    counterBonus: BALANCE.combat.guardCounterBonus + (effects.guardCounterBonus ?? 0),
+  };
+}
+
+export function guardAction() {
+  const gs = GameState;
+  const { damageReduce, counterBonus } = previewGuardEffect();
+  if (gs.player) gs.player.pendingGuardBoost = 0;
   gs.combat.playerGuard = {
     active:       true,
-    damageReduce: Math.min(0.85, BALANCE.combat.guardDamageReduction + (effects.guardDamageReduceBonus ?? 0)),
-    counterBonus: BALANCE.combat.guardCounterBonus + (effects.guardCounterBonus ?? 0),
+    damageReduce,
+    counterBonus,
     duration:     BALANCE.combat.guardDuration,
   };
 }

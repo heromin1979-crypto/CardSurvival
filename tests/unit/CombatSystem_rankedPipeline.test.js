@@ -12,6 +12,11 @@ import BALANCE from '../../js/data/gameBalance.js';
 import { COMBAT_SKILLS } from '../../js/data/combatSkills.js';
 import { getRank } from '../../js/systems/combat/FormationSystem.js';
 
+
+// 이 파일은 적 치명타를 검증하지 않는다. 치명타는 확률 요소라 고정 피해 검증을 흔들므로
+// 여기서는 비활성으로 고정한다 — 치명타 자체는 EnemyCriticalAndDisplay.test.js가 다룬다.
+CombatSystem._rollEnemyCrit = damage => ({ damage, isCrit: false });
+
 function makeEnemy(overrides = {}) {
   return {
     id: 'test_zombie',

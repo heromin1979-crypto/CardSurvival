@@ -122,6 +122,11 @@ const STACK_ROWS = [
   ['pistol_ammo'             , true, 20 ],
   ['shotgun_ammo'            , true, 15 ],
   ['crossbow_bolt'           , true, 20 ],
+  ['bait_worm'               , true, 10 ],
+  ['bait_insect'             , true, 10 ],
+  ['improved_crossbow_bolt'  , true, 20 ],
+  ['fire_bolt'               , true, 10 ],
+  ['explosive_bolt'          , true,  6 ],
   ['molotov_cocktail'        , true,  5 ],
   ['nail_bomb'               , true,  3 ],
   ['smoke_bomb'              , true,  5 ],
@@ -199,8 +204,6 @@ const STACK_ROWS = [
   ['wild_wheat'                , true, 10 ],
   ['flour'                     , true, 10 ],
   ['bread_dough'               , true, 10 ],
-  ['worm'                      , true, 10 ],
-  ['fishing_bait'              , true, 10 ],
   ['microchip'                 , true, 10 ],
 
   // — 식량 (stackable, maxStack 5) —

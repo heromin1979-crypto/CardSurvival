@@ -116,7 +116,7 @@ const ITEMS_TOOLS = {
     id: 'whetstone', name: '숫돌', type: 'tool', subtype: 'utility',
     rarity: 'uncommon', weight: 0.5,
     defaultDurability: 100, defaultContamination: 0,
-    icon: '🪨', description: '무기의 날을 세운다. 근접무기 데미지 강화에 사용.',
+    icon: '🪨', description: '날붙이 무기의 날을 세운다. 내구도 +30, 첫 연마 시 피해 +3. 6번 쓰면 닳아 없어진다.',
     tags: ['tool', 'utility'],
     dismantle: [],
   },

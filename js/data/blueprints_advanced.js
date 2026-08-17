@@ -1068,23 +1068,6 @@ const BLUEPRINTS_ADVANCED = {
   //  Phase 2G: 낚시 체인 (fishing Lv1→Lv10)
   // ══════════════════════════════════════════════════════════════
 
-  prep_bait: {
-    id: 'prep_bait', name: '낚시 미끼 준비', category: 'material',
-    hidden: true, unlockConditions: { minSkillLevel: { fishing: 1 } },
-    description: '약초와 지렁이로 물고기를 유인하는 미끼를 만든다.',
-    output: [{ definitionId: 'fishing_bait', qty: 2 }],
-    requiredTools: [],
-    requiredSkills: { fishing: 1 },
-    stages: [{
-      stageIndex: 0, label: '미끼 준비', tpCost: 1,
-      requiredItems: [
-        { definitionId: 'herb', qty: 1 },
-        { definitionId: 'worm', qty: 1 },
-      ],
-      consumeAt: 'start',
-    }],
-  },
-
   make_fishing_net: {
     id: 'make_fishing_net', name: '투망 제작', category: 'tool',
     hidden: true, unlockConditions: { minSkillLevel: { fishing: 6 } },

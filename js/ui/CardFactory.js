@@ -268,7 +268,7 @@ const CARD_IMAGES = {
   spear:                 'assets/images/weapons/spear.png',
   iron_pipe:             'assets/images/weapons/iron_pipe.png',
   spiked_pipe:           'assets/images/weapons/spiked_pipe.png',
-  sling:                 'assets/images/weapons/sling.png',
+  sling:                 'assets/images/medical/splint.png',   // 삼각건 — 원거리 무기 슬링은 중복 키로 제거됨
   crossbow:              'assets/images/weapons/crossbow.png',
   crossbow_bolt:         'assets/images/weapons/crossbow_bolt.png',
   explosive_bolt:        'assets/images/weapons/explosive_bolt.png',
@@ -573,8 +573,6 @@ const CARD_IMAGES = {
   wild_wheat:            'assets/images/materials/wild_wheat.png',
   flour:                 'assets/images/materials/flour.png',
   bread_dough:           'assets/images/materials/bread_dough.png',
-  worm:                  'assets/images/materials/worm.png',
-  fishing_bait:          'assets/images/materials/fishing_bait.png',
 
   // 신규 음식
   baked_bread:           'assets/images/food/baked_bread.png',

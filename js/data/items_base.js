@@ -599,7 +599,15 @@ const ITEMS_BASE = {
     id: 'dry_grass', name: '마른 풀 뭉치', type: 'material', subtype: 'natural',
     rarity: 'common', weight: 0.05,
     defaultDurability: 100, defaultContamination: 0,
-    icon: '🌾', description: '황폐한 땅에서 채집한 마른 풀. 불쏘시개로 매우 유용하다.',
+    icon: '🌾', description: '황폐한 땅에서 채집한 마른 풀. 뒤져서 미끼를 찾거나 불쏘시개로 쓴다.',
+    gather: {
+      uses: 3,
+      tpCost: 1,
+      yields: [
+        { definitionId: 'bait_worm',   qty: 1, weight: 60 },
+        { definitionId: 'bait_insect', qty: 1, weight: 40 },
+      ],
+    },
     tags: ['material', 'natural', 'fire'],
     dismantle: [],
   },
@@ -819,19 +827,19 @@ const ITEMS_BASE = {
   },
 
   bolt_shaft: {
-    id: 'bolt_shaft', name: '볼트 샤프트', type: 'material', subtype: 'natural',
+    id: 'bolt_shaft', name: '화살대', type: 'material', subtype: 'natural',
     rarity: 'common', weight: 0.05,
     defaultDurability: 100, defaultContamination: 0,
-    icon: '➡️', description: '다듬은 나무 막대. 볼트 촉과 조합하면 개선된 석궁 볼트가 된다.',
+    icon: '➡️', description: '다듬은 나무 막대. 화살촉과 조합하면 강화 석궁 화살이 된다.',
     tags: ['material', 'wood', 'crafted'],
     dismantle: [],
   },
 
   bolt_tip: {
-    id: 'bolt_tip', name: '볼트 촉', type: 'material', subtype: 'metal',
+    id: 'bolt_tip', name: '화살촉', type: 'material', subtype: 'metal',
     rarity: 'common', weight: 0.03,
     defaultDurability: 100, defaultContamination: 0,
-    icon: '🔺', description: '야전 대장간에서 만든 날카로운 볼트 촉. 일반 볼트보다 관통력이 높다.',
+    icon: '🔺', description: '야전 대장간에서 만든 날카로운 화살촉. 일반 화살보다 관통력이 높다.',
     tags: ['material', 'metal', 'crafted'],
     dismantle: [{ definitionId: 'scrap_metal', qty: 1, chance: 0.4 }],
   },
@@ -1328,24 +1336,6 @@ const ITEMS_BASE = {
     defaultDurability: 100, defaultContamination: 0,
     icon: '🫓', description: '밀가루와 물로 만든 반죽. 구우면 빵이 된다.',
     tags: ['material', 'food_raw', 'crafted'],
-    dismantle: [],
-  },
-
-  worm: {
-    id: 'worm', name: '지렁이', type: 'material', subtype: 'natural',
-    rarity: 'common', weight: 0.05,
-    defaultDurability: 100, defaultContamination: 0,
-    icon: '🪱', description: '땅에서 파낸 지렁이. 낚시 미끼로 최적.',
-    tags: ['material', 'natural'],
-    dismantle: [],
-  },
-
-  fishing_bait: {
-    id: 'fishing_bait', name: '낚시 미끼', type: 'material', subtype: 'misc',
-    rarity: 'common', weight: 0.1,
-    defaultDurability: 100, defaultContamination: 0,
-    icon: '🎣', description: '약초와 지렁이로 만든 미끼. 물고기 유인 효과가 뛰어나다.',
-    tags: ['material', 'misc', 'crafted'],
     dismantle: [],
   },
 
