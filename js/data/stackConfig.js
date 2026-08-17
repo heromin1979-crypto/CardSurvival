@@ -160,7 +160,6 @@ const STACK_ROWS = [
   ['helicopter'              , false, 1 ],
   ['water_purifier'          , false, 1 ],
   ['barricade'               , false, 1 ],
-  ['alarm_trap'              , false, 1 ],
   ['spike_trap'              , false, 1 ],
   ['medical_station'         , false, 1 ],
   ['workbench'               , false, 1 ],

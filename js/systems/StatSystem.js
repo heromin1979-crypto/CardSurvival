@@ -811,6 +811,9 @@ const StatSystem = {
       }
     }
 
+    // 독성 물질 섭취 → 중독 발병 체크 (오염도와 무관하게 아이템 정의가 지정)
+    DiseaseSystem.checkToxicConsume(def, gs);
+
     // 아이템 사용 → 질병 치료 체크
     DiseaseSystem.onConsume(def, gs);
 

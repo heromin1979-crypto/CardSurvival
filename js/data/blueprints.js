@@ -131,24 +131,6 @@ const BLUEPRINTS = {
     ],
   },
 
-  alarm_trap: {
-    id: 'alarm_trap', name: '경보 트랩', category: 'structure',
-    hidden: true, unlockConditions: { minSkillLevel: { building: 2, crafting: 1 } },
-    description: '적 접근 시 경보를 울린다.',
-    output: [{ definitionId: 'alarm_trap', qty: 1 }],
-    requiredTools: [],
-    requiredSkills: { building: 2, crafting: 1 },
-    stages: [{
-      stageIndex: 0, label: '트랩 조립', tpCost: 3,
-      requiredItems: [
-        { definitionId: 'electronic_parts', qty: 1 },
-        { definitionId: 'wire', qty: 1 },
-        { definitionId: 'empty_can', qty: 1 },
-      ],
-      consumeAt: 'start',
-    }],
-  },
-
   spike_trap: {
     id: 'spike_trap', name: '가시 트랩', category: 'structure',
     hidden: true, unlockConditions: { minSkillLevel: { building: 3, weaponcraft: 1 } },

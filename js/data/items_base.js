@@ -873,6 +873,7 @@ const ITEMS_BASE = {
     icon: '🍄', description: '먹으면 안 되는 독버섯. 식용 버섯과 비슷하게 생겼다. 독 추출 재료로 활용 가능.',
     tags: ['material', 'natural', 'toxic'],
     onConsume: { hp: -20 },
+    contractsDisease: { id: 'poisoning', chance: 1.0 },
     dismantle: [],
   },
 

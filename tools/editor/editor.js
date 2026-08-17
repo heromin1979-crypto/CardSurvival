@@ -764,6 +764,7 @@ const ITEM_HELP = {
   stackable: '같은 칸에 여러 개를 겹쳐 보관할 수 있는지 여부.',
   maxStack: '한 칸에 겹칠 수 있는 최대 수량.',
   onConsume: '먹기/소비할 때 발생하는 효과.',
+  contractsDisease: '섭취 시 걸리는 질병 { id, chance }. 오염도와 무관하게 발병한다 (독버섯 → 중독). 의학 스킬의 독 저항이 적용된다.',
   onUse: '사용할 때 발생하는 효과.',
   onWear: '착용할 때 적용되는 효과.',
   onTick: '시간이 흐를 때(TP마다) 적용되는 효과.',

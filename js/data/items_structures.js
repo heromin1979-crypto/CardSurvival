@@ -101,21 +101,6 @@ const ITEMS_STRUCTURES = {
     ],
   },
 
-  alarm_trap: {
-    id: 'alarm_trap', name: '경보 트랩', type: 'structure', subtype: 'trap',
-    rarity: 'uncommon', weight: 0.5,
-    defaultDurability: 60, defaultContamination: 0,
-    icon: '🔔', description: '적 접근 시 경보 발생. 기습 방지.',
-    tags: ['structure', 'trap', 'crafted'],
-    onTrigger: { earlyWarning: true, noise: 20 },
-    dismantleTP: 1,
-    dismantle: [
-      { definitionId: 'electronic_parts', qty: 1, chance: 0.7 },
-      { definitionId: 'wire', qty: 1, chance: 0.8 },
-      { definitionId: 'empty_can', qty: 1, chance: 0.9 },
-    ],
-  },
-
   spike_trap: {
     id: 'spike_trap', name: '가시 트랩', type: 'structure', subtype: 'trap',
     rarity: 'uncommon', weight: 1.5,
