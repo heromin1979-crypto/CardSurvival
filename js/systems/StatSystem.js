@@ -779,8 +779,11 @@ const StatSystem = {
       const isBandage = def.tags?.includes('bandage') ?? false;
       const bandageBonus = (isBandage && isMedical) ? (gs.player.bandageHpBonus ?? 0) : 0;
       const healed = Math.round(eff.hp * healMult) + bandageBonus;
-      gs.player.hp.current = Math.min(gs.player.hp.max, gs.player.hp.current + healed);
-      EventBus.emit('statChanged', { stat: 'hp', oldVal: gs.player.hp.current - healed, newVal: gs.player.hp.current });
+      // 독버섯·쐐기풀 생식처럼 hp가 음수인 섭취물이 있다. 사망 판정은 _checkDeaths가
+      // 다음 TP에 처리하므로, 그때까지 음수 HP가 노출되지 않도록 0에서 멈춘다.
+      const before = gs.player.hp.current;
+      gs.player.hp.current = Math.max(0, Math.min(gs.player.hp.max, before + healed));
+      EventBus.emit('statChanged', { stat: 'hp', oldVal: before, newVal: gs.player.hp.current });
     }
 
     // 감염/방사능 증가 — 카드 표기 수치(eff)를 오염도와 무관하게 그대로 적용.
@@ -807,6 +810,9 @@ const StatSystem = {
         DiseaseSystem.checkContaminatedConsume(def, inst.contamination, gs);
       }
     }
+
+    // 독성 물질 섭취 → 중독 발병 체크 (오염도와 무관하게 아이템 정의가 지정)
+    DiseaseSystem.checkToxicConsume(def, gs);
 
     // 아이템 사용 → 질병 치료 체크
     DiseaseSystem.onConsume(def, gs);

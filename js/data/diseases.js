@@ -194,6 +194,26 @@ export const DISEASES = {
     deathCause: '방사선 질환',
   },
 
+  // ── 중독 (Poisoning) ────────────────────────────────────────
+  // 독성 식물을 조리 없이 섭취해 발생. 섭취 즉시 오는 피해(독버섯 HP -20)와 별개로
+  // 며칠간 HP가 빠진다. 감염성이 아니므로 감염 면역·격리 시설로는 막히지 않는다.
+  poisoning: {
+    id:        'poisoning',
+    name:      '중독',
+    icon:      '☠️',
+    severity:  2,
+    description: '독성 식물을 날것으로 먹어 발생. HP가 지속 감소하고 구역질로 영양이 빠진다. 의학 숙련이 높으면 저항한다.',
+    incubationTp: 0,   // 먹은 직후 증상 — 잠복 없음
+    durationDays: [2, 3],
+    symptoms: {
+      hpPerTP:             -0.5,
+      nutritionDecayExtra:  0.3,
+      moralePerTP:         -0.3,
+    },
+    treatmentTags: ['antibiotic', 'antiseptic'],
+    treatmentItemIds: ['first_aid_kit', 'antiseptic'],
+  },
+
   // ══════════════════════════════════════════════════════════════
   //  전투 부상 질병 (Combat Injuries)
   // ══════════════════════════════════════════════════════════════
