@@ -359,6 +359,18 @@ const GameState = {
     return instance;
   },
 
+  // 스택 카드를 낱개로 소모한다. 마지막 1개는 건드리지 않고 false를 돌려주므로
+  // 호출자가 인스턴스 제거와 이벤트 발행을 자기 방식대로 처리할 수 있다.
+  consumeCardUnit(instanceId) {
+    const inst = this.cards[instanceId];
+    if (!inst) return false;
+    const qty = inst.quantity ?? 1;
+    if (qty <= 1) return false;
+    inst.quantity = qty - 1;
+    this._updateEncumbrance();
+    return true;
+  },
+
   removeCardInstance(instanceId) {
     delete this.cards[instanceId];
     // remove from board if present

@@ -872,7 +872,7 @@ const ITEMS_BASE = {
     defaultDurability: 15, defaultContamination: 0,
     icon: '🍄', description: '먹으면 안 되는 독버섯. 식용 버섯과 비슷하게 생겼다. 독 추출 재료로 활용 가능.',
     tags: ['material', 'natural', 'toxic'],
-    onUse: { hp: -20, poisonDamage: 3 },
+    onConsume: { hp: -20 },
     dismantle: [],
   },
 
@@ -880,9 +880,9 @@ const ITEMS_BASE = {
     id: 'acorn', name: '도토리', type: 'material', subtype: 'natural',
     rarity: 'common', weight: 0.1,
     defaultDurability: 60, defaultContamination: 0,
-    icon: '🌰', description: '참나무에서 떨어진 도토리. 날것은 쓴맛이 강하다. 갈아서 가루로 만들면 묵·죽 재료.',
+    icon: '🌰', description: '참나무에서 떨어진 도토리. 날것은 쓴맛이 강하다. 갈아서 가루로 만들면 묵 재료.',
     tags: ['material', 'natural', 'food_raw'],
-    onUse: { nutrition: 5, morale: -3 },
+    onConsume: { nutrition: 5, morale: -3 },
     dismantle: [],
   },
 
@@ -892,7 +892,7 @@ const ITEMS_BASE = {
     defaultDurability: 30, defaultContamination: 0,
     icon: '🌿', description: '땅속에서 캔 야생 뿌리채소. 날것으로도 먹을 수 있으나 조리하면 영양가가 높아진다.',
     tags: ['material', 'natural', 'food_raw'],
-    onUse: { nutrition: 8, stamina: -5 },
+    onConsume: { nutrition: 8, stamina: -5 },
     dismantle: [],
   },
 
@@ -902,7 +902,7 @@ const ITEMS_BASE = {
     defaultDurability: 10, defaultContamination: 0,
     icon: '🌼', description: '도시 어디서나 자라는 잡초. 잎은 식용, 뿌리는 커피 대용으로 끓일 수 있다.',
     tags: ['material', 'natural', 'food_raw'],
-    onUse: { nutrition: 3, infection: -2 },
+    onConsume: { nutrition: 3, infection: -2 },
     dismantle: [],
   },
 
@@ -912,7 +912,7 @@ const ITEMS_BASE = {
     defaultDurability: 30, defaultContamination: 0,
     icon: '🧄', description: '산에서 자라는 야생 마늘. 강한 항균 효과가 있다. 요리 향신료 및 의료 재료.',
     tags: ['material', 'natural', 'food_raw', 'medical'],
-    onUse: { nutrition: 5, infection: -8 },
+    onConsume: { nutrition: 5, infection: -8 },
     dismantle: [],
   },
 
@@ -922,7 +922,7 @@ const ITEMS_BASE = {
     defaultDurability: 10, defaultContamination: 0,
     icon: '🌱', description: '강변이나 습지에서 자라는 쐐기풀. 날것은 독성이 있어 반드시 조리해야 한다. 섬유 추출도 가능.',
     tags: ['material', 'natural', 'toxic_raw'],
-    onUse: { hp: -5, infection: 10 },
+    onConsume: { hp: -5, infection: 10 },
     dismantle: [],
   },
 
@@ -932,7 +932,7 @@ const ITEMS_BASE = {
     defaultDurability: 10, defaultContamination: 0,
     icon: '🌲', description: '소나무에서 채취한 솔잎. 비타민 C가 풍부하다. 솔잎차로 끓이면 감염 억제에 탁월.',
     tags: ['material', 'natural', 'medical'],
-    onUse: { nutrition: 2, infection: -5 },
+    onConsume: { nutrition: 2, infection: -5 },
     dismantle: [],
   },
 
@@ -942,7 +942,7 @@ const ITEMS_BASE = {
     defaultDurability: 20, defaultContamination: 0,
     icon: '🎋', description: '대나무에서 돋아난 죽순. 영양가가 높고 날것으로도 먹을 수 있다. 조리하면 더 맛있다.',
     tags: ['material', 'natural', 'food_raw'],
-    onUse: { nutrition: 10, morale: 3 },
+    onConsume: { nutrition: 10, morale: 3 },
     dismantle: [],
   },
 
@@ -964,7 +964,7 @@ const ITEMS_BASE = {
     defaultDurability: 15, defaultContamination: 0,
     icon: '🐟', description: '손질된 생선살. 날것은 감염 위험. 구우면 영양이 높아진다.',
     tags: ['material', 'food_raw'],
-    onUse: { nutrition: 15, infection: 25 },
+    onConsume: { nutrition: 15, infection: 25 },
     dismantle: [],
   },
 
@@ -972,7 +972,7 @@ const ITEMS_BASE = {
     id: 'acorn_flour', name: '도토리 가루', type: 'material', subtype: 'food_raw',
     rarity: 'common', weight: 0.15,
     defaultDurability: 60, defaultContamination: 0,
-    icon: '🌾', description: '절구에 갈아 만든 도토리 가루. 도토리묵이나 도토리죽의 핵심 재료.',
+    icon: '🌾', description: '절구에 갈아 만든 도토리 가루. 도토리묵의 핵심 재료.',
     tags: ['material', 'food_raw'],
     dismantle: [],
   },
@@ -1195,7 +1195,7 @@ const ITEMS_BASE = {
     defaultDurability: 25, defaultContamination: 0,
     icon: '🥬', description: '텃밭에서 수확한 신선한 채소. 야채 스튜나 김치의 핵심 재료.',
     tags: ['material', 'food_raw', 'natural'],
-    onUse: { nutrition: 12, infection: -2 },
+    onConsume: { nutrition: 12, infection: -2 },
     dismantle: [],
   },
 

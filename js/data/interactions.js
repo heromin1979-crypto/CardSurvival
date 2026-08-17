@@ -1,8 +1,25 @@
 import GameData from './GameData.js';
 import EventBus from '../core/EventBus.js';
+import BALANCE  from './gameBalance.js';
 
 function _defFor(inst) {
   return inst ? GameData.items?.[inst.definitionId] : null;
+}
+
+// 추출한 독은 extractedMax까지 겹쳐 바를 수 있다. 독버섯 직접 도포(rawMax)보다 상한이
+// 높은 것이 절구·의학 비용에 대한 보상이다 — 상한 판정은 gameBalance.combat.poisonCoating.
+function _canCoatPoison(weaponInst) {
+  const { extractedMax } = BALANCE.combat.poisonCoating;
+  if ((weaponInst._poisonDamage ?? 0) >= extractedMax) {
+    return { ok: false, reason: `이미 독 피해 ${extractedMax} 상한까지 발라진 무기입니다.` };
+  }
+  return { ok: true };
+}
+
+function _coatPoison(weaponInst) {
+  const { perApply, extractedMax } = BALANCE.combat.poisonCoating;
+  weaponInst._poisonDamage = Math.min(extractedMax, (weaponInst._poisonDamage ?? 0) + perApply);
+  return weaponInst._poisonDamage;
 }
 
 function _isPoisonableWeapon(inst) {
@@ -1763,13 +1780,12 @@ const INTERACTION_RULES = [
     hint: '독을 근접 무기에 바르기',
     canApply(srcInst, tgtInst) {
       if (!_isPoisonableWeapon(tgtInst)) return { ok: false, reason: '독은 칼날이 있는 근접 무기에만 바를 수 있습니다.' };
-      if ((tgtInst._poisonDamage ?? 0) > 0) return { ok: false, reason: '이미 독이 발라진 무기입니다.' };
-      return { ok: true };
+      return _canCoatPoison(tgtInst);
     },
     apply(srcInst, tgtInst) {
-      tgtInst._poisonDamage = 3;
+      const total = _coatPoison(tgtInst);
       return {
-        message: '무기에 독을 발랐습니다. 공격 적중 시 독 피해 +3.',
+        message: `무기에 독을 발랐습니다. 공격 적중 시 독 피해 +${total}.`,
         consumeSrc: true,
         consumeTgt: false,
       };
@@ -1794,13 +1810,12 @@ const INTERACTION_RULES = [
     hint: '독을 근접 무기에 바르기',
     canApply(srcInst, tgtInst) {
       if (!_isPoisonableWeapon(srcInst)) return { ok: false, reason: '독은 칼날이 있는 근접 무기에만 바를 수 있습니다.' };
-      if ((srcInst._poisonDamage ?? 0) > 0) return { ok: false, reason: '이미 독이 발라진 무기입니다.' };
-      return { ok: true };
+      return _canCoatPoison(srcInst);
     },
     apply(srcInst, tgtInst) {
-      srcInst._poisonDamage = 3;
+      const total = _coatPoison(srcInst);
       return {
-        message: '무기에 독을 발랐습니다. 공격 적중 시 독 피해 +3.',
+        message: `무기에 독을 발랐습니다. 공격 적중 시 독 피해 +${total}.`,
         consumeSrc: false,
         consumeTgt: true,
       };

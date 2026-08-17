@@ -175,6 +175,15 @@ const BALANCE = {
     unarmedBaseDmg:     [3, 7],
     unarmedStunChance:  0.10,
     unarmedStunDmg:     5,
+    // ── 무기 독 도포 상한 ──
+    // 독 피해는 bonusAfterDefense로 들어가 적 방어를 우회하므로 상한이 필요하다.
+    // 값싼 경로(독버섯 직접)를 rawMax로 묶고, 절구·의학이 드는 추출 독에만
+    // extractedMax까지 허용해 비용과 효과의 순서를 맞춘다.
+    poisonCoating: {
+      perApply:     3,  // 1회 도포로 오르는 독 피해
+      rawMax:       3,  // 독버섯 직접 도포(sc_poison_blade) 상한
+      extractedMax: 9,  // 추출한 독(poison) 도포 상한
+    },
     masteryCounterChance: 0.15,
     masteryCounterDmg:   5,
     ammoSaveChance:     0.20,

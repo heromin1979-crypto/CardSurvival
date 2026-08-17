@@ -702,6 +702,7 @@ export const ko = {
   'night.firstNightHint':  '🌙 밤이 됐다. 광원(손전등, 캠프파이어)이 없으면 행동이 제한된다. 위험도 2배.',
 
   'secret.cooldown':     '아직 다시 사용할 수 없다.',
+  'secret.poisonCapRaw': '생버섯으로는 독 피해 {cap}까지만 올릴 수 있다. 더 강하게 바르려면 추출한 독이 필요하다.',
   'secret.galleryTitle': '비밀 조합 갤러리',
   'secret.progress':     '발견: {found}/{total}',
   'secret.discovered':   '발견됨',
@@ -714,6 +715,7 @@ export const ko = {
   'hint.fromNPC':      '{name}에게서 힌트를 얻었다.',
   'hint.fromLocation': '이 장소에서 힌트를 발견했다.',
   'hint.fromSkill':    '{skill} 숙련도가 올라 영감을 얻었다.',
+  'hint.fromSkillSync': '지금까지 쌓은 숙련으로 조합 힌트 {count}건이 떠올랐다.',
 
   // ── EquipmentModal ──────────────────────────────────────────
   'equip.head':        '머리',
@@ -1718,6 +1720,7 @@ export const en = {
   'night.firstNightHint':  '🌙 Night has fallen. Without a light source, actions are restricted. Danger doubled.',
 
   'secret.cooldown':     'Not ready yet.',
+  'secret.poisonCapRaw': 'Raw mushrooms only reach {cap} poison damage. Extracted poison is needed to coat it further.',
   'secret.galleryTitle': 'Secret Combinations',
   'secret.progress':     'Discovered: {found}/{total}',
   'secret.discovered':   'Found',
@@ -1730,6 +1733,7 @@ export const en = {
   'hint.fromNPC':      '{name} shared a useful hint.',
   'hint.fromLocation': 'You found a hint at this location.',
   'hint.fromSkill':    'Your {skill} expertise gives you an idea.',
+  'hint.fromSkillSync': 'Your accumulated expertise brings {count} combination hints to mind.',
 
   // ── EquipmentModal ──────────────────────────────────────────
   'equip.head':        'Head',
