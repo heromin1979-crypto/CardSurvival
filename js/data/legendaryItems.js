@@ -615,7 +615,7 @@ const LEGENDARY_ITEMS = {
     defaultDurability: 100, defaultContamination: 0,
     icon: '📦', description: '은신처에 숨겨진 생존자의 비축물자. 식량·물·붕대가 한 묶음으로 들어 있다.',
     tags: ['consumable', 'legendary'],
-    onConsume: { hp: 30, hunger: -30, thirst: -30 },
+    onConsume: { hp: 30, nutrition: 30, hydration: 30 },
     dismantle: [],
   },
 
@@ -625,7 +625,7 @@ const LEGENDARY_ITEMS = {
     defaultDurability: 100, defaultContamination: 0,
     icon: '💧', description: '오염되지 않은 산속 원시 샘물. 마시면 감염이 줄고 갈증이 완전히 해소된다.',
     tags: ['consumable', 'legendary'],
-    onConsume: { hp: 20, infection: -15, thirst: -100 },
+    onConsume: { hp: 20, infection: -15, hydration: 100 },
     dismantle: [],
   },
 
@@ -695,7 +695,7 @@ const LEGENDARY_ITEMS = {
     defaultDurability: 100, defaultContamination: 0,
     icon: '🏠', description: '민방위 대피소에 비축된 대량의 비상 물자. 체력·배고픔·갈증을 크게 회복.',
     tags: ['consumable', 'legendary'],
-    onConsume: { hp: 40, hunger: -40, thirst: -40 },
+    onConsume: { hp: 40, nutrition: 40, hydration: 40 },
     dismantle: [],
   },
 
@@ -846,7 +846,7 @@ const LEGENDARY_ITEMS = {
     defaultDurability: 100, defaultContamination: 0,
     icon: '🍖', description: '종말 이후 최고의 만찬. 모든 스탯을 완전히 회복시킨다.',
     tags: ['food', 'legendary'],
-    onConsume: { hp: 100, hunger: -100, thirst: -100, fatigue: -100, morale: 30, infection: -20 },
+    onConsume: { hp: 100, nutrition: 100, hydration: 100, fatigue: -100, morale: 30, infection: -20 },
     dismantle: [],
   },
 

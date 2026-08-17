@@ -1994,6 +1994,11 @@ export const CombatAiTurns = {
     const hit    = Math.random() < this._getEnemyAccuracyAgainstPlayer(enemy.attack.accuracy);
 
     if (hit) {
+      // 적 공격도 소음을 낸다 — 전투가 길어질수록 추가 조우 압박이 커진다.
+      // 특수스킬 소음은 EnemyActionExecutor가 따로 처리하므로 여기서는 기본 공격만 본다.
+      const attackNoise = enemy.attack?.noiseOnAttack ?? 0;
+      if (attackNoise > 0) NoiseSystem.addNoise(attackNoise);
+
       // 적 자신의 토큰(hesitation/strength 등) — 랭크 combatant에 기록된 것을 소비
       damage = modifyOutgoingDamage(damage, this._rankCombatantForEnemy(enemy));
 
