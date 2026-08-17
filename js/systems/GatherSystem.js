@@ -91,15 +91,20 @@ const GatherSystem = {
       type: 'good',
     });
 
+    // 채집 횟수는 스택 1개분이다. 스택이 남았으면 낱개만 소모하고 다음 개체의 횟수를 새로 준다.
     if (remaining <= 0) {
-      gs.removeCardInstance(instanceId);
-      EventBus.emit('cardRemoved', { instanceId });
-      EventBus.emit('notify', {
-        message: I18n.t('gather.depleted', {
-          item: I18n.itemName(def.id, def.name),
-        }),
-        type: 'info',
-      });
+      if (gs.consumeCardUnit(instanceId)) {
+        inst._gatherUses = rule.uses ?? 0;
+      } else {
+        gs.removeCardInstance(instanceId);
+        EventBus.emit('cardRemoved', { instanceId });
+        EventBus.emit('notify', {
+          message: I18n.t('gather.depleted', {
+            item: I18n.itemName(def.id, def.name),
+          }),
+          type: 'info',
+        });
+      }
     }
 
     EventBus.emit('boardChanged', {});

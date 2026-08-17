@@ -869,7 +869,7 @@ const ITEMS_MISC = {
     defaultDurability: 100,
     defaultContamination: 0,
     icon: '☠️',
-    description: '독버섯에서 추출한 독. 무기에 바르거나 함정에 사용할 수 있다.',
+    description: '독버섯이나 약초에서 추출한 독. 근접 무기에 바르면 적중 시 독 피해를 준다.',
     tags: [
       'consumable',
       'poison',

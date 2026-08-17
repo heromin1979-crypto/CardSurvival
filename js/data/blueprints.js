@@ -131,24 +131,6 @@ const BLUEPRINTS = {
     ],
   },
 
-  alarm_trap: {
-    id: 'alarm_trap', name: '경보 트랩', category: 'structure',
-    hidden: true, unlockConditions: { minSkillLevel: { building: 2, crafting: 1 } },
-    description: '적 접근 시 경보를 울린다.',
-    output: [{ definitionId: 'alarm_trap', qty: 1 }],
-    requiredTools: [],
-    requiredSkills: { building: 2, crafting: 1 },
-    stages: [{
-      stageIndex: 0, label: '트랩 조립', tpCost: 3,
-      requiredItems: [
-        { definitionId: 'electronic_parts', qty: 1 },
-        { definitionId: 'wire', qty: 1 },
-        { definitionId: 'empty_can', qty: 1 },
-      ],
-      consumeAt: 'start',
-    }],
-  },
-
   spike_trap: {
     id: 'spike_trap', name: '가시 트랩', category: 'structure',
     hidden: true, unlockConditions: { minSkillLevel: { building: 3, weaponcraft: 1 } },
@@ -2224,8 +2206,8 @@ const BLUEPRINTS = {
   synthesize_poison: {
     id: 'synthesize_poison', name: '독 추출물 합성', category: 'material',
     hidden: true, unlockConditions: { minDay: 20, minSkillLevel: { medicine: 3 } },
-    description: '약초에서 독성 성분을 추출한다. 무기 도포 또는 함정에 사용.',
-    output: [{ definitionId: 'antiseptic', qty: 2 }],
+    description: '약초에서 독성 성분을 농축해 독을 만든다. 근접 무기에 겹쳐 바를 수 있다.',
+    output: [{ definitionId: 'poison', qty: 1 }],
     requiredTools: ['chemistry_bench'],
     requiredSkills: { medicine: 3 },
     stages: [{
@@ -2787,7 +2769,7 @@ const BLUEPRINTS = {
 
   grind_acorn: {
     id: 'grind_acorn', name: '도토리 빻기', category: 'food',
-    description: '절구로 도토리를 빻아 가루로 만든다. 도토리묵·죽의 핵심 재료.',
+    description: '절구로 도토리를 빻아 가루로 만든다. 도토리묵의 핵심 재료.',
     output: [{ definitionId: 'acorn_flour', qty: 1 }],
     requiredTools: ['mortar_pestle'],
     requiredSkills: {},

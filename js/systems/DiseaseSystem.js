@@ -10,6 +10,7 @@ import SeasonSystem from './SeasonSystem.js';
 import DISEASES    from '../data/diseases.js';
 import BALANCE     from '../data/gameBalance.js';
 import StructureEffectSystem from './StructureEffectSystem.js';
+import SkillSystem  from './SkillSystem.js';
 import { getConsumableEffect } from './ItemEffectSystem.js';
 
 // ── 내부 노출 추적 카운터 (세이브 불필요 — 런타임 상태) ─────
@@ -171,6 +172,28 @@ const DiseaseSystem = {
       // 오염된 음식/물 → 이질 위험
       if (Math.random() < (BALANCE.disease.dysenteryChanceContamFood ?? 0.40)) this._contract(gs, 'dysentery');
     }
+  },
+
+  // ── 독성 물질 섭취 시 발병 체크 ───────────────────────────────
+  // StatSystem.consumeCard()에서 호출됨.
+  // checkContaminatedConsume은 contamination > 0에서만 동작하므로 오염도 0인 독성물
+  // (독버섯 등)은 그쪽에 걸리지 않는다. 아이템 정의가 contractsDisease로 직접 지정한다.
+
+  checkToxicConsume(def, gs) {
+    const spec = def?.contractsDisease;
+    if (!spec?.id) return;
+    if (!getConsumableEffect(def)) return;
+
+    // 오염 섭취와 같은 기준으로 의학 숙련의 독 저항을 적용한다 (Lv15 50% · Lv20 면역)
+    if (SkillSystem.getBonus('medicine', 'poisonImmune')) {
+      EventBus.emit('notify', { message: I18n.t('disease.poisonImmune'), type: 'good' });
+      return;
+    }
+    const resist = SkillSystem.getBonus('medicine', 'poisonResist') ?? 0;
+    const chance = (spec.chance ?? 1) * (1 - resist);
+    if (Math.random() >= chance) return;
+
+    this._contract(gs, spec.id);
   },
 
   // ── 아이템 사용 시 치료 ───────────────────────────────────────

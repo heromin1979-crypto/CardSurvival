@@ -297,7 +297,6 @@ const CARD_IMAGES = {
   acid_crystal:          'assets/images/weapons/acid_crystal.png',
   royal_katana:          'assets/images/weapons/royal_katana.png',
   spike_trap:            'assets/images/weapons/spike_trap.png',
-  alarm_trap:            'assets/images/weapons/alarm_trap.png',
 
   // 확장 의료 (Phase 4)
   reinforced_bandage:    'assets/images/medical/bandage.png',

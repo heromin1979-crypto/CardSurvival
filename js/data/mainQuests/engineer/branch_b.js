@@ -176,7 +176,7 @@ const ENGINEER_BRANCH_B = {
     requiresFlag: 'eng_end_b1',
     requiresAllFlags: ['power_station_cleared', 'water_plant_restored', 'comms_tower_active'],
     objective: { type: 'craft_item', category: 'structure', count: 4 },
-    reward: { morale: 20, items: [{ definitionId: 'rope_ladder', qty: 1 }, { definitionId: 'alarm_trap', qty: 1 }], flags: { mainQuestComplete_engineer: true, engineer_ending: 'b1_rebuild' } },
+    reward: { morale: 20, items: [{ definitionId: 'rope_ladder', qty: 1 }, { definitionId: 'spike_trap', qty: 1 }], flags: { mainQuestComplete_engineer: true, engineer_ending: 'b1_rebuild' } },
     failPenalty: { morale: -10 }, deadlineDays: Infinity,
     narrative: {
       start: '마지막 단계. 발전소, 정수장, 통신 타워 모두 살아났다. 이제 세 시스템을 연결할 변전 구조물과 중앙 관제 시설을 세운다. 구조물 4개 — 대용량 배전 패널, 수도 분기 허브, 통신 중계기, 중앙 관제대.',

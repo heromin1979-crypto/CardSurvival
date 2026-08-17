@@ -27,7 +27,7 @@ const SOLDIER_BRANCH_B = {
     icon: '🏕️', characterId: 'soldier', dayTrigger: 95,
     prerequisite: 'mq_soldier_b_11', requiresFlag: 'soldier_branch_b',
     objective: { type: 'craft_item', category: 'structure', count: 2 },
-    reward: { morale: 8, items: [{ definitionId: 'alarm_trap', qty: 1 }] },
+    reward: { morale: 8, items: [{ definitionId: 'spike_trap', qty: 1 }] },
     failPenalty: { morale: -5 }, deadlineDays: 150,
     narrative: {
       start: '여의도까지 직선 거리 3km. 중간 거점을 확보해야 한다. 진지 구축 표준 절차.',
