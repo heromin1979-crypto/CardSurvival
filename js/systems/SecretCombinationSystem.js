@@ -9,6 +9,18 @@ import SkillSystem         from './SkillSystem.js';
 import SECRET_COMBINATIONS from '../data/secretCombinations.js';
 import GameData            from '../data/GameData.js';
 
+// 스킬 레벨 달성 시 힌트를 여는 조합 목록 — 존재하지 않는 조합을 가리키면 힌트가 조용히 죽는다
+export const SKILL_HINTS = {
+  medicine:    { 3: ['sc_herbal_medicine'],                5: ['sc_field_surgery_kit'] },
+  weaponcraft: { 3: ['sc_poison_blade'],                   4: ['sc_fire_arrow'] },
+  crafting:    { 3: ['sc_torch', 'sc_oil_lamp'],           5: ['sc_water_trap'] },
+  building:    { 3: ['sc_thorn_wire'],                     4: ['sc_signal_fire'] },
+  defense:     { 1: ['sc_defense_salve'], 4: ['sc_shield_mod'], 6: ['sc_guard_stance_kit'], 11: ['sc_fortress_mod'] },
+  unarmed:     { 2: ['sc_knuckle_wrap'],  4: ['sc_combat_gloves'], 7: ['sc_iron_gauntlet'] },
+  melee:       { 1: ['sc_sharpen_blade'], 3: ['sc_weapon_oil'], 5: ['sc_serrated_mod'], 7: ['sc_quench_blade'] },
+  ranged:      { 2: ['sc_ammo_mod'],      4: ['sc_weapon_scope'], 6: ['sc_suppressor'] },
+};
+
 // interactions.js의 매칭 로직과 동일
 function _matchesCriteria(def, criteria) {
   if (!def || !criteria) return false;
@@ -38,7 +50,8 @@ const SecretCombinationSystem = {
 
   /**
    * 두 카드 정의로 비밀 조합 매칭.
-   * @returns {{ found: boolean, combo?, isNew?: boolean, reason?: string }}
+   * reversed=true면 드래그한 카드가 조합의 target, 드랍 대상이 source에 해당한다.
+   * @returns {{ found: boolean, combo?, isNew?: boolean, reversed?: boolean, reason?: string }}
    */
   checkCombination(srcDef, tgtDef) {
     this._ensureState();
@@ -50,6 +63,7 @@ const SecretCombinationSystem = {
       const matchForward  = _matchesCriteria(srcDef, combo.source) && _matchesCriteria(tgtDef, combo.target);
       const matchReverse  = _matchesCriteria(srcDef, combo.target) && _matchesCriteria(tgtDef, combo.source);
       if (!matchForward && !matchReverse) continue;
+      const reversed = !matchForward;
 
       // 스킬 요구
       if (combo.requiredSkill) {
@@ -69,7 +83,7 @@ const SecretCombinationSystem = {
       if (combo.cooldown) {
         const lastUsed = gs.discoveries.lastCooldowns[combo.id] ?? 0;
         if (gs.time.totalTP - lastUsed < combo.cooldown) {
-          return { found: true, combo, isNew: false, reason: I18n.t('secret.cooldown') };
+          return { found: true, combo, isNew: false, reversed, reason: I18n.t('secret.cooldown') };
         }
       }
 
@@ -78,13 +92,13 @@ const SecretCombinationSystem = {
         for (const req of combo.additionalReq) {
           if (gs.countOnBoard(req.id) < req.qty) {
             const def = GameData?.items[req.id];
-            return { found: true, combo, isNew: false, reason: `${I18n.itemName(req.id, def?.name)} ×${req.qty} 필요` };
+            return { found: true, combo, isNew: false, reversed, reason: `${I18n.itemName(req.id, def?.name)} ×${req.qty} 필요` };
           }
         }
       }
 
       const isNew = !gs.discoveries.foundCombinations.includes(combo.id);
-      return { found: true, combo, isNew };
+      return { found: true, combo, isNew, reversed };
     }
 
     return { found: false };
@@ -92,12 +106,19 @@ const SecretCombinationSystem = {
 
   /**
    * 비밀 조합 실행.
-   * @returns {{ message: string, consumeSrc, consumeTgt }}
+   * 조합 정의의 source/target은 카드를 어느 방향으로 끌었는지와 무관하므로,
+   * reversed일 때 정의 기준으로 맞춰 적용하고 소모 플래그는 다시 드래그/드랍 기준으로 돌려준다.
+   * @param {boolean} reversed - checkCombination이 알려준 매칭 방향
+   * @returns {{ message: string, consumeSrc, consumeTgt }} 드래그한 카드/드랍 대상 카드 기준
    */
-  applyCombination(combo, srcInst, tgtInst) {
+  applyCombination(combo, srcInst, tgtInst, reversed = false) {
     this._ensureState();
     const gs = GameState;
     const r  = combo.result;
+
+    // 이하 comboSrc/comboTgt는 조합 정의의 source/target에 대응한다
+    const comboSrc = reversed ? tgtInst : srcInst;
+    const comboTgt = reversed ? srcInst : tgtInst;
 
     // 발견 기록
     if (!gs.discoveries.foundCombinations.includes(combo.id)) {
@@ -143,7 +164,7 @@ const SecretCombinationSystem = {
     // 무기 효과 추가
     if (r.addEffect && !r.consumeTgt) {
       if (r.addEffect.poisonDamage) {
-        tgtInst._poisonDamage = (tgtInst._poisonDamage ?? 0) + r.addEffect.poisonDamage;
+        comboTgt._poisonDamage = (comboTgt._poisonDamage ?? 0) + r.addEffect.poisonDamage;
       }
     }
 
@@ -172,20 +193,22 @@ const SecretCombinationSystem = {
     }
 
     // 원본/대상 카드 변환 (wet_cloth → cloth 등)
-    if (r.transformSrc && srcInst && !r.consumeSrc) {
-      srcInst.definitionId = r.transformSrc;
+    if (r.transformSrc && comboSrc && !r.consumeSrc) {
+      comboSrc.definitionId = r.transformSrc;
     }
-    if (r.transformTgt && tgtInst && !r.consumeTgt) {
-      tgtInst.definitionId = r.transformTgt;
+    if (r.transformTgt && comboTgt && !r.consumeTgt) {
+      comboTgt.definitionId = r.transformTgt;
     }
 
     // 퀘스트 trigger_combo 타입 추적 — 최초 발견이 아니어도 매 적용마다 발화
     EventBus.emit('comboApplied', { comboId: combo.id });
 
+    const consumeComboSrc = r.consumeSrc ?? false;
+    const consumeComboTgt = r.consumeTgt ?? false;
     return {
       message: combo.discoveryMsg,
-      consumeSrc: r.consumeSrc ?? false,
-      consumeTgt: r.consumeTgt ?? false,
+      consumeSrc: reversed ? consumeComboTgt : consumeComboSrc,
+      consumeTgt: reversed ? consumeComboSrc : consumeComboTgt,
     };
   },
 
@@ -288,17 +311,6 @@ const SecretCombinationSystem = {
     });
 
     // ── Skill Level Hints ──────────────────────────────────────
-    const SKILL_HINTS = {
-      medicine:    { 3: ['sc_herbal_medicine'],                5: ['sc_field_surgery_kit'] },
-      weaponcraft: { 3: ['sc_poison_blade'],                   4: ['sc_fire_arrow'] },
-      crafting:    { 3: ['sc_torch', 'sc_oil_lamp'],           5: ['sc_water_trap'] },
-      building:    { 3: ['sc_thorn_wire'],                     4: ['sc_signal_fire'] },
-      defense:     { 1: ['sc_defense_salve'], 4: ['sc_shield_mod'], 6: ['sc_guard_stance_kit'], 11: ['sc_fortress_mod'] },
-      unarmed:     { 2: ['sc_knuckle_wrap'],  4: ['sc_combat_gloves'], 7: ['sc_iron_gauntlet'] },
-      melee:       { 1: ['sc_sharpen_blade'], 3: ['sc_weapon_oil'], 5: ['sc_serrated_mod'], 7: ['sc_quench_blade'] },
-      ranged:      { 2: ['sc_ammo_mod'],      4: ['sc_weapon_scope'], 6: ['sc_suppressor'], 11: ['sc_extended_mag'] },
-    };
-
     EventBus.on('skillLevelUp', ({ skillId, newLevel, skillName }) => {
       const tierMap = SKILL_HINTS[skillId];
       if (!tierMap) return;

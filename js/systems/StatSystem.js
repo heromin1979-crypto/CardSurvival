@@ -770,6 +770,10 @@ const StatSystem = {
       gs.player.attackBoostUntilTP = Math.max(gs.player.attackBoostUntilTP ?? 0, now + Math.max(1, Math.floor(eff.duration)));
       EventBus.emit('notify', { message: `💊 공격력 +${Math.round(eff.temporaryAttackBoost * 100)}% 효과가 ${eff.duration}TP 동안 지속됩니다.`, type: 'good' });
     }
+    if (eff.guardBoost) {
+      gs.player.pendingGuardBoost = Math.max(gs.player.pendingGuardBoost ?? 0, eff.guardBoost);
+      EventBus.emit('notify', { message: `🛡️ 다음 방어의 피해 감소가 +${Math.round(eff.guardBoost * 100)}% 상승합니다.`, type: 'good' });
+    }
     if (eff.hp) {
       // 의사 능력: 붕대 사용 시 bandageHpBonus 추가 회복
       const isBandage = def.tags?.includes('bandage') ?? false;

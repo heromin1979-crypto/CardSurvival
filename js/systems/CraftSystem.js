@@ -117,6 +117,38 @@ const CraftSystem = {
 
   // 한 스테이지 실행: 야간/재료 확인 → 재료 소모 → 시간 즉시 소비 → 완성 또는 다음 단계 대기.
   // 시간·재료 소모 전에 모든 차단 조건을 검사하므로, 실패 시 부작용이 없다.
+  /**
+   * 청사진이 요구한 도구를 보드에서 찾아 durabilityPerUse만큼 닳린다.
+   * 구역 설치 구조물은 제외한다 — 들고 다니는 도구만 소모되고, 설치물을 쓰는 쪽이 이득이다.
+   * @returns {number} 실제로 닳은 도구 수
+   */
+  _wearRequiredTools(toolIds) {
+    const gs = GameState;
+    let worn = 0;
+    for (const toolId of toolIds ?? []) {
+      const card = (gs.getBoardCards?.() ?? []).find(c =>
+        providesTool(c.definitionId, toolId) && !isUnlitFire(c.definitionId, c.durability));
+      if (!card) continue;                       // 설치 구조물로 충족된 경우
+
+      const def  = GameData.items[card.definitionId];
+      const wear = def?.onUse?.durabilityPerUse ?? 0;
+      if (wear <= 0) continue;
+
+      card.durability = Math.max(0, (card.durability ?? 100) - wear);
+      worn++;
+      if (card.durability <= 0) {
+        EventBus.emit('notify', {
+          message: I18n.t('craftSys.toolWornOut', { name: I18n.itemName(def.id, def.name) }),
+          type: 'warn',
+        });
+        gs.removeCardInstance(card.instanceId);
+        EventBus.emit('cardRemoved', { instanceId: card.instanceId });
+      }
+    }
+    if (worn > 0) EventBus.emit('boardChanged', {});
+    return worn;
+  },
+
   _runStage(entry, stageIndex, isFirstStage = false) {
     const bp     = BLUEPRINTS[entry.blueprintId];
     const stage  = bp.stages[stageIndex];
@@ -137,6 +169,8 @@ const CraftSystem = {
 
     // 재료 소모 (소방관 craftSave는 첫 단계에만 적용 — 기존 동작 보존)
     this._consumeStageItems(stage, isFirstStage);
+    // 단계를 하나 끝낼 때마다 요구 도구가 닳는다
+    this._wearRequiredTools(bp.requiredTools);
     // 시간 즉시 소비 — 야간이어도 광원이 있으면 흐른다
     TickEngine.skipTP(stage.tpCost, `${bpName} — ${stage.label}`);
     entry.stageIndex = stageIndex;

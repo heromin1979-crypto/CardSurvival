@@ -13,7 +13,8 @@ import GameData        from '../data/GameData.js';
 import NPCSystem       from '../systems/NPCSystem.js';
 import { landmarkHasFishing } from '../data/landmarks.js';
 import { isFishingRod as isRod } from '../systems/FishingSystem.js';
-import { getMagazineState, isMagazineAmmoPack } from '../systems/WeaponAmmoSystem.js';
+import { MAGAZINE_CAPACITY, getMagazineState, isMagazineAmmoPack } from '../systems/WeaponAmmoSystem.js';
+import GatherSystem    from '../systems/GatherSystem.js';
 
 const FOCUSABLE = 'button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
@@ -297,7 +298,11 @@ const ModalManager = {
       ]);
     }
     if (isMagazineAmmoPack(def, GameData.items)) {
-      stats.push([I18n.t('modal.ammoPackSize'), I18n.t('modal.twentyRounds')]);
+      // 특수 화살은 팩마다 채우는 발수가 다르다 — 선언이 없으면 탄창 가득
+      stats.push([
+        I18n.t('modal.ammoPackSize'),
+        I18n.t('modal.roundsPerPack', { rounds: def.roundsPerPack ?? MAGAZINE_CAPACITY }),
+      ]);
     }
 
     const statsHtml = stats.map(([k, v, cls]) =>
@@ -311,7 +316,7 @@ const ModalManager = {
     const canConsume   = !!getConsumableEffect(def);
     const canDismantle = Array.isArray(def.dismantle) && def.dismantle.length > 0;
     // 살살 채취(부분·재생) 가능 노드 — 재생 대기 중이면 버튼을 잠근다
-    const canForage      = !!def.forage;
+    const canForage      = !!def.gather;
     const forageStatus   = canForage ? DismantleSystem.canForage(instanceId) : { ok: false, reason: '' };
     // 하루 1회 사용 도구(생존 일지 등) — 오늘 이미 썼으면 잠근다
     const canDailyUse    = !!def.dailyUse;
@@ -395,6 +400,20 @@ const ModalManager = {
           <div class="card-inspect-dismantle-title">${I18n.t('modal.dismantleResult')}</div>
           ${rows}
         </div>`;
+    }
+
+    // 채집 가능 카드 (마른 풀 등) — 남은 횟수를 버튼에 함께 보여준다
+    let gatherBtnHtml = '';
+    if (def.gather) {
+      const remaining = GatherSystem.remainingUses(instanceId);
+      const { ok, reason } = GatherSystem.canForage(instanceId);
+      const tp = def.gather.tpCost ?? 0;
+      gatherBtnHtml = `
+        <button class="card-action-btn${ok ? '' : ' disabled'}"
+          id="modal-gather-${instanceId}" ${ok ? '' : 'disabled'}
+          title="${ok ? '' : reason}">
+          ${I18n.t('gather.button')}${tp > 0 ? ` (${tp}TP)` : ''} · ${remaining}/${def.gather.uses}
+        </button>`;
     }
 
     // 덕테이프 수리 가능 카드 (무기/도구/방어구) — interactions.js 룰과 동일 동작
@@ -511,7 +530,7 @@ const ModalManager = {
                 ? dismantleBtnHtml(`modal-dismantle-${instanceId}`, I18n.t('modal.dismantle'), 1)
                 : ''}
             ${canForage ? `<button class="card-action-btn${forageStatus.ok ? '' : ' disabled'}"
-              id="modal-forage-${instanceId}" ${forageStatus.ok ? '' : 'disabled'}
+              id="modal-gather-${instanceId}" ${forageStatus.ok ? '' : 'disabled'}
               title="${forageStatus.reason}">🌿 살살 채취</button>` : ''}
             ${canDailyUse ? `<button class="card-action-btn${dailyUseStatus.ok ? '' : ' disabled'}"
               id="modal-dailyuse-${instanceId}" ${dailyUseStatus.ok ? '' : 'disabled'}
@@ -521,6 +540,7 @@ const ModalManager = {
               title="${flightStatus.reason}">${I18n.t('heli.actionLabel')}</button>` : ''}
             ${canNest ? `<button class="card-action-btn" id="modal-nest-${instanceId}">🪺 둥지 뒤지기</button>` : ''}
             ${fishBtnHtml}
+            ${gatherBtnHtml}
             ${weatherBtnsHtml}
           </div>` : ''}
         </div>
@@ -678,7 +698,7 @@ const ModalManager = {
     }
 
     if (canForage && forageStatus.ok) {
-      document.getElementById(`modal-forage-${instanceId}`)?.addEventListener('click', () => {
+      document.getElementById(`modal-gather-${instanceId}`)?.addEventListener('click', () => {
         this.close();
         import('../systems/DismantleSystem.js').then(m => m.default.forage(instanceId));
       });
@@ -695,6 +715,15 @@ const ModalManager = {
       document.getElementById(`modal-fish-${instanceId}`)?.addEventListener('click', () => {
         this.close();
         EventBus.emit('fishAction', { rodInstanceId: instanceId });
+      });
+    }
+
+    if (def.gather) {
+      document.getElementById(`modal-gather-${instanceId}`)?.addEventListener('click', () => {
+        const result = GatherSystem.forage(instanceId);
+        // 카드가 남아 있으면 남은 횟수를 갱신해 다시 보여준다
+        if (result.ok && GameState.cards[instanceId]) this.showCardInspect(instanceId);
+        else this.close();
       });
     }
 

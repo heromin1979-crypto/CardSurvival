@@ -197,6 +197,10 @@ const BALANCE = {
     critBonusXp:        2,
     defenseXp:          1,
     combatLogMaxEntries: 50,
+    // ── 적 치명타 ──
+    // 방어구의 critReduction이 확률을 낮춘다 (캡: armor.critReductionCap)
+    enemyCritChance:     0.10,   // 적 공격의 기본 치명타 확률
+    enemyCritMultiplier: 1.5,    // 적 치명타 피해 배율
     // ── 방어 ──
     guardDamageReduction: 0.40,  // 방어 시 피해 40% 감소
     guardCounterBonus:    0.25,  // 방어 후 반격 데미지 +25%

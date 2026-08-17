@@ -4,6 +4,7 @@ import GameState     from '../core/GameState.js';
 import CombatSystem  from '../systems/CombatSystem.js';
 import I18n          from '../core/I18n.js';
 import NightSystem   from '../systems/NightSystem.js';
+import { previewGuardEffect } from '../systems/CombatActions.js';
 import { CHARACTERS } from '../data/characters.js';
 import { DISTRICTS }  from '../data/districts.js';
 import { NPC_ITEMS }  from '../data/npcs.js';
@@ -1098,6 +1099,8 @@ const CombatUI = {
     const throwables = CombatSystem.getAvailableThrowables();
     const weapons    = CombatSystem.getAvailableWeapons();
     const guardActive = !!combat.playerGuard?.active;
+    // 하드코딩 대신 실제 계산을 쓴다 — 캐릭터 보정과 방어 자세 키트가 반영된다
+    const guardPreview = previewGuardEffect();
     const canPlayerAct = CombatSystem.canPlayerAct(combat);
 
     const medBtnsHtml = medicals.length > 0
@@ -1240,8 +1243,8 @@ const CombatUI = {
               </div>
             </div>
             <div class="ac-preview">
-              <div class="ac-row"><span>피해 감소</span><strong>-55%</strong></div>
-              <div class="ac-row"><span>반격 보너스</span><strong>+30%</strong></div>
+              <div class="ac-row"><span>피해 감소</span><strong>-${Math.round(guardPreview.damageReduce * 100)}%</strong></div>
+              <div class="ac-row"><span>반격 보너스</span><strong>+${Math.round(guardPreview.counterBonus * 100)}%</strong></div>
               ${guardActive ? '<div class="ac-row good"><span>상태</span><strong>방어 중</strong></div>' : ''}
             </div>
           </div>

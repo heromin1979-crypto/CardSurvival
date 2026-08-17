@@ -260,7 +260,7 @@ const SlotResolver = {
       return true;
     }
 
-    const result = SecretCombinationSystem.applyCombination(check.combo, srcInst, tgtInst);
+    const result = SecretCombinationSystem.applyCombination(check.combo, srcInst, tgtInst, check.reversed);
 
     if (result.consumeSrc) {
       BoardManager.removeCard(sourceId);
