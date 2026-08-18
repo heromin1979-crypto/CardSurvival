@@ -165,7 +165,7 @@ const ITEMS_STRUCTURES = {
     id: 'workbench', name: '작업대', type: 'structure', subtype: 'craft',
     rarity: 'uncommon', weight: 5.0,
     defaultDurability: 100, defaultContamination: 0,
-    icon: '🪚', description: '복잡한 제작을 가능하게 한다. 일부 레시피 필수.',
+    icon: '🪚', description: '바이스와 공구가 갖춰진 작업대. 맨손으로는 엄두가 안 나던 작업이 가능해진다.',
     tags: ['structure', 'crafted'],
     requiredForBlueprints: true,
     dismantleTP: 2,

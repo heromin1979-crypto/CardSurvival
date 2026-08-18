@@ -217,7 +217,9 @@ const ExploreSystem = {
 
     // TP 소비 (야간 1.5배 × 과적 배율)
     const costTP = EncumbranceSystem.applyCost(
-      Math.ceil((district.travelCostTP ?? 2) * NightSystem.getNightTravelCostMult()),
+      StatSystem.applyTravelCost(
+        Math.ceil((district.travelCostTP ?? 2) * NightSystem.getNightTravelCostMult()),
+      ),
     );
     if (costTP > 0) TickEngine.skipTP(costTP, I18n.t('tick.reasonTravel', { name: district.name }));
 
@@ -342,7 +344,8 @@ const ExploreSystem = {
 
     // 조우 체크 (거점 효과 + 계절 encounterMult 포함)
     const basecampReduct  = BasecampSystem.getEffects().encounterReduct;
-    const baseReduction   = (gs.player.encounterRateReduct ?? 0) + (toolEffects.encounterReduction ?? 0) + basecampReduct;
+    const armorReduct     = StatSystem.getArmorEffects().encounterReduction;
+    const baseReduction   = (gs.player.encounterRateReduct ?? 0) + (toolEffects.encounterReduction ?? 0) + basecampReduct + armorReduct;
     const seasonMod       = SeasonSystem.getModifiers();
     const earlyMult = gs.time.day <= BALANCE.encounter.earlyGameGraceDays
       ? BALANCE.encounter.earlyGameEncounterMult

@@ -172,7 +172,7 @@ const CraftSystem = {
     // 단계를 하나 끝낼 때마다 요구 도구가 닳는다
     this._wearRequiredTools(bp.requiredTools);
     // 시간 즉시 소비 — 야간이어도 광원이 있으면 흐른다
-    TickEngine.skipTP(stage.tpCost, `${bpName} — ${stage.label}`);
+    TickEngine.skipTP(StatSystem.applyCraftTime(stage.tpCost), `${bpName} — ${stage.label}`);
     entry.stageIndex = stageIndex;
 
     // 마지막 단계면 산출, 아니면 다음 단계 대기
@@ -334,7 +334,9 @@ const CraftSystem = {
     };
     const relevantSkill = craftSkillMap[bp.category] ?? 'crafting';
     const skillReduction = SkillSystem.getBonus(relevantSkill, 'craftSuccessBonus') ?? 0;
-    const charBonus = GameState.player.craftSuccessBonus ?? 0;
+    const charBonus = (GameState.player.craftSuccessBonus ?? 0)
+      + StatSystem.getArmorEffects().craftSuccessBonus
+      + StatSystem.getToolEffects().craftSuccessBonus;
     // 사기 구간별 제작 실패율 배율
     const moraleTier = StatSystem.getMoraleTier();
     const failChance = Math.max(

@@ -161,6 +161,7 @@ const STACK_ROWS = [
   ['water_purifier'          , false, 1 ],
   ['barricade'               , false, 1 ],
   ['spike_trap'              , false, 1 ],
+  ['deployed_mine'          , false, 1 ],
   ['medical_station'         , false, 1 ],
   ['workbench'               , false, 1 ],
   ['storage_box'             , false, 1 ],
@@ -375,6 +376,7 @@ const STACK_ROWS = [
   ['ballistic_weave'           , false, 1 ],
   ['camo_cloth'                , false, 1 ],
   ['ghillie_suit'              , false, 1 ],
+  ['warding_charm'             , false, 1 ],
 
   // — 레전더리 의료 (non-stackable) —
   ['synthetic_antibiotics'     , false, 1 ],

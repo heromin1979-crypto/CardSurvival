@@ -454,7 +454,7 @@ const ITEMS_MISC = {
     defaultDurability: 100,
     defaultContamination: 0,
     icon: '🔋',
-    description: '아직 충전이 남아있는 배터리.',
+    description: '아직 충전이 남아있는 배터리. 전자 장비를 깨우기도 하고, 껍데기를 벗기면 묵직한 금속이 나온다.',
     tags: [
       'material',
       'electronic',
@@ -2271,7 +2271,7 @@ const ITEMS_MISC = {
     defaultDurability: 100,
     defaultContamination: 0,
     icon: '🧭',
-    description: '자기장 센서가 결합된 나침반. 숨겨진 장소 2곳을 드러내고 조우 확률을 줄인다.',
+    description: '자기장 센서가 결합된 나침반. 사람이 다닌 길과 그렇지 않은 길이 구분돼 마주칠 일이 줄어든다.',
     tags: [
       'tool',
       'navigation',
@@ -2279,7 +2279,6 @@ const ITEMS_MISC = {
     ],
     onUse: {
       encounterReduction: 0.15,
-      revealHiddenLocations: 2,
     },
     dismantle: [
       {
@@ -2597,7 +2596,7 @@ const ITEMS_MISC = {
     defaultDurability: 120,
     defaultContamination: 0,
     icon: '🔬',
-    description: '정밀 수술 가능. 고급 의료 제작에 필요.',
+    description: '조명과 기구대를 갖춘 수술대. 여기 눕히면 손댈 수 있는 처치의 범위가 달라진다.',
     tags: [
       'structure',
       'medical',
@@ -2799,7 +2798,7 @@ const ITEMS_MISC = {
     defaultDurability: 120,
     defaultContamination: 0,
     icon: '🧪',
-    description: '고급 연구 시설. 히든 의료 레시피 해금.',
+    description: '현미경과 배양 설비를 갖춘 연구 시설. 여기서라야 손댈 수 있는 의료 기술이 있다.',
     tags: [
       'structure',
       'medical',

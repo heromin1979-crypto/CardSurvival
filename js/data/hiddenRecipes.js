@@ -215,6 +215,7 @@ const HIDDEN_RECIPES = {
         requiredItems: [
           { definitionId: 'mutant_heart', qty: 1 },
           { definitionId: 'kevlar_fabric', qty: 1 },
+          { definitionId: 'colossus_core', qty: 1 },
         ],
         consumeAt: 'start',
       },
@@ -1785,6 +1786,259 @@ const HIDDEN_RECIPES = {
     unlockConditions: {
       hiddenLocationId: null,
       bossKillId: 'boss_raider_warlord',
+      requiredCharacter: null,
+      minDay: 0,
+      minCraftLevel: 0,
+      requiredItems: [],
+      customUnlock: null,
+    },
+  },
+
+  // ─── 보스 드롭 활용 레시피 (6) ──────────────────────────────
+  // 아래 6종은 설명문이 용도를 약속했으나 소비처가 없던 보스 드롭을 실제로 쓰게 한다.
+  // 산출물은 모두 이미 정의돼 있던 아이템으로, 그동안 획득 경로가 없었다.
+
+  queen_pheromone: {
+    id: 'queen_pheromone', name: '여왕 페로몬 추출', category: 'medical',
+    description: '무리 지배자의 뼈관에서 배어나온 분비물을 알코올에 녹여 병에 담는다. 좀비가 제 여왕으로 착각한다.',
+    hidden: true,
+    rarity: 'legendary',
+    output: [{ definitionId: 'queen_pheromone', qty: 1 }],
+    requiredTools: ['chemistry_bench'],
+    requiredSkills: { medicine: 5 },
+    stages: [
+      {
+        stageIndex: 0, label: '뼈관 침출', tpCost: 4,
+        requiredItems: [
+          { definitionId: 'horde_crown',      qty: 1 },
+          { definitionId: 'alcohol_solution', qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '병입', tpCost: 2,
+        requiredItems: [
+          { definitionId: 'empty_bottle', qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+    unlockConditions: {
+      hiddenLocationId: null,
+      bossKillId: 'boss_horde_mother',
+      requiredCharacter: null,
+      minDay: 0,
+      minCraftLevel: 0,
+      requiredItems: [],
+      customUnlock: null,
+    },
+  },
+
+  surgical_grade_kit: {
+    id: 'surgical_grade_kit', name: '외과전문 수술키트 조립', category: 'medical',
+    description: '군의관의 배지에 딸려 있던 규격에 맞춰 기구를 갖춘다. 야전에서 낼 수 있는 최고 수준의 처치.',
+    hidden: true,
+    rarity: 'legendary',
+    output: [{ definitionId: 'surgical_grade_kit', qty: 1 }],
+    requiredTools: ['medical_station'],
+    requiredSkills: { medicine: 7 },
+    stages: [
+      {
+        stageIndex: 0, label: '기구 규격 대조', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'doctor_badge', qty: 1 },
+          { definitionId: 'surgery_kit',  qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '멸균·포장', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'antiseptic', qty: 2 },
+          { definitionId: 'gauze',      qty: 2 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+    unlockConditions: {
+      hiddenLocationId: null,
+      bossKillId: 'boss_doctor_nemesis',
+      requiredCharacter: null,
+      minDay: 0,
+      minCraftLevel: 0,
+      requiredItems: [],
+      customUnlock: null,
+    },
+  },
+
+  fireproof_suit: {
+    id: 'fireproof_suit', name: '내열 방호복 제작', category: 'armor',
+    description: '식지 않는 핵을 안감에 봉해 열을 흘려보낸다. 불길 속에서도 안쪽 온도가 오르지 않는다.',
+    hidden: true,
+    rarity: 'legendary',
+    output: [{ definitionId: 'fireproof_suit', qty: 1 }],
+    requiredTools: ['tanning_rack'],
+    requiredSkills: { armorcraft: 6, crafting: 3 },
+    stages: [
+      {
+        stageIndex: 0, label: '내열 안감', tpCost: 4,
+        requiredItems: [
+          { definitionId: 'inferno_core', qty: 1 },
+          { definitionId: 'rubber',       qty: 3 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '외피 봉제', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'cloth',   qty: 2 },
+          { definitionId: 'leather', qty: 2 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+    unlockConditions: {
+      hiddenLocationId: null,
+      bossKillId: 'boss_firefighter_nemesis',
+      requiredCharacter: null,
+      minDay: 0,
+      minCraftLevel: 0,
+      requiredItems: [],
+      customUnlock: null,
+    },
+  },
+
+  master_toolkit: {
+    id: 'master_toolkit', name: '장인의 도구 세트 조립', category: 'tool',
+    description: '공병대 장비의 눈금을 기준 삼아 손에 익은 공구를 하나씩 맞춰 넣는다.',
+    hidden: true,
+    rarity: 'legendary',
+    output: [{ definitionId: 'master_toolkit', qty: 1 }],
+    requiredTools: ['workbench'],
+    requiredSkills: { crafting: 7 },
+    stages: [
+      {
+        stageIndex: 0, label: '기준 공구 선별', tpCost: 4,
+        requiredItems: [
+          { definitionId: 'engineer_gear', qty: 1 },
+          { definitionId: 'pipe_wrench',   qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '보조 공구 단조', tpCost: 4,
+        requiredItems: [
+          { definitionId: 'refined_metal', qty: 2 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+    unlockConditions: {
+      hiddenLocationId: null,
+      bossKillId: 'boss_soldier_nemesis',
+      requiredCharacter: null,
+      minDay: 0,
+      minCraftLevel: 0,
+      requiredItems: [],
+      customUnlock: null,
+    },
+  },
+
+  crew_pass: {
+    id: 'crew_pass', name: '승무원 통행증 위조', category: 'tool',
+    description: '차장의 마스터키에 찍힌 각인을 본떠 통행증을 만든다. 승무원 통로가 열리면 걷는 거리가 줄어든다.',
+    hidden: true,
+    rarity: 'legendary',
+    output: [{ definitionId: 'crew_pass', qty: 1 }],
+    requiredTools: ['workbench'],
+    requiredSkills: { crafting: 3 },
+    stages: [
+      {
+        stageIndex: 0, label: '각인 본뜨기', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'conductor_key', qty: 1 },
+          { definitionId: 'leather',       qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '마감 박음질', tpCost: 2,
+        requiredItems: [
+          { definitionId: 'thread', qty: 2 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+    unlockConditions: {
+      hiddenLocationId: null,
+      bossKillId: 'boss_sewer_king',
+      requiredCharacter: null,
+      minDay: 0,
+      minCraftLevel: 0,
+      requiredItems: [],
+      customUnlock: null,
+    },
+  },
+
+  warding_charm: {
+    id: 'warding_charm', name: '수호 부적 엮기', category: 'tool',
+    description: '교주의 부적을 풀어 실과 가죽으로 다시 엮는다. 문양이 무슨 뜻인지는 알 수 없지만 효과는 있다.',
+    hidden: true,
+    rarity: 'rare',
+    output: [{ definitionId: 'warding_charm', qty: 1 }],
+    requiredTools: [],
+    requiredSkills: { crafting: 4 },
+    stages: [
+      {
+        stageIndex: 0, label: '문양 되엮기', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'cult_talisman', qty: 1 },
+          { definitionId: 'thread',        qty: 2 },
+          { definitionId: 'leather',       qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+    unlockConditions: {
+      hiddenLocationId: null,
+      bossKillId: 'boss_cult_leader',
+      requiredCharacter: null,
+      minDay: 0,
+      minCraftLevel: 0,
+      requiredItems: [],
+      customUnlock: null,
+    },
+  },
+
+  military_radio_kit: {
+    id: 'military_radio_kit', name: '군용 통신 키트 조립', category: 'tool',
+    description: '드론에서 뜯어낸 연산 칩을 무전 회로에 물린다. 민간 대역 너머의 주파수가 잡히기 시작한다.',
+    hidden: true,
+    rarity: 'legendary',
+    output: [{ definitionId: 'military_radio_kit', qty: 1 }],
+    requiredTools: ['workbench'],
+    requiredSkills: { crafting: 6 },
+    stages: [
+      {
+        stageIndex: 0, label: '연산부 결선', tpCost: 4,
+        requiredItems: [
+          { definitionId: 'ai_chip',        qty: 1 },
+          { definitionId: 'circuit_module', qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '급전·배선', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'copper_wire', qty: 3 },
+          { definitionId: 'battery',     qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+    unlockConditions: {
+      hiddenLocationId: null,
+      bossKillId: 'boss_phantom_sniper',
       requiredCharacter: null,
       minDay: 0,
       minCraftLevel: 0,
