@@ -75,11 +75,76 @@ describe('구 — 1회 자원은 지역색을 갖는다', () => {
     expect(new Set(keys).size).toBe(keys.length);
   });
 
+  it('잔해 가치가 위험도를 따라 오른다', () => {
+    // regression: 강서구(dl2) 41 > 종로구(dl5) 45에 근접하고, 양천구(dl1) 27이
+    // 강남구(dl3) 26보다 높았다. 안전한 구만 돌아도 이득인 구조였다.
+    const MAT_TIER = {
+      scrap_metal: 1, wood: 1, cloth: 1, cloth_scrap: 1, plastic: 1, nail: 1, glass_shard: 1,
+      pebble: 1, rope: 1, brick: 1, soil_bag: 1, dry_grass: 1, dry_leaves: 1, kindling: 1,
+      wire: 2, spring: 2, leather: 2, rubber: 2, duct_tape: 2, charcoal: 2,
+      electronic_parts: 3, refined_metal: 3, battery: 3,
+    };
+    const value = (id) => (items[id]?.dismantle ?? [])
+      .reduce((sum, e) => sum + e.qty * (e.chance ?? 1) * (MAT_TIER[e.definitionId] ?? 2), 0);
+
+    const byDanger = {};
+    for (const d of Object.values(DISTRICTS)) {
+      const total = onceOf(d).reduce((sum, id) => sum + value(id), 0);
+      (byDanger[d.dangerLevel] ??= []).push(total);
+    }
+    const avg = (a) => a.reduce((x, y) => x + y, 0) / a.length;
+    const levels = Object.keys(byDanger).map(Number).sort((a, b) => a - b);
+    const means = levels.map(dl => avg(byDanger[dl]));
+    for (let i = 1; i < means.length; i++) {
+      expect(means[i], `dl${levels[i]} 평균 ${means[i].toFixed(1)} ≤ dl${levels[i - 1]} ${means[i - 1].toFixed(1)}`)
+        .toBeGreaterThan(means[i - 1]);
+    }
+  });
+
+  it('저위험 구에는 고급 잔해(가치 8 초과)를 두지 않는다', () => {
+    const MAT_TIER = {
+      scrap_metal: 1, wood: 1, cloth: 1, cloth_scrap: 1, plastic: 1, nail: 1, glass_shard: 1,
+      pebble: 1, rope: 1, brick: 1, soil_bag: 1, dry_grass: 1, dry_leaves: 1, kindling: 1,
+      wire: 2, spring: 2, leather: 2, rubber: 2, duct_tape: 2, charcoal: 2,
+      electronic_parts: 3, refined_metal: 3, battery: 3,
+    };
+    const value = (id) => (items[id]?.dismantle ?? [])
+      .reduce((sum, e) => sum + e.qty * (e.chance ?? 1) * (MAT_TIER[e.definitionId] ?? 2), 0);
+    for (const [id, d] of Object.entries(DISTRICTS)) {
+      if (d.dangerLevel > 1) continue;
+      const rich = onceOf(d).filter(x => value(x) > 8);
+      expect(rich, `${id}(dl1)에 고급 잔해`).toEqual([]);
+    }
+  });
+
   it('산·계곡 구는 물 공급원(산개울)을 유지한다', () => {
     // stream_spring을 빼면 그 구의 식수 확보 경로가 통째로 사라진다
     for (const id of ['gangbuk', 'gwanak', 'nowon', 'dobong']) {
       expect(onceOf(DISTRICTS[id]), `${id}`).toContain('stream_spring');
     }
+  });
+});
+
+describe('구 — 수요 상위 재료의 공급', () => {
+  // regression: 청사진 353개의 요구량은 고철 207 · 못 152 · 철사 88 · 로프 67인데,
+  // 공급은 못 2개 구 · 로프 3개 구뿐이고 천은 13개 구에 깔려 있었다. 고무는
+  // 반복 공급이 아예 0이라 잔해 해체로만 얻을 수 있었다.
+  const districtCount = (defId) => Object.values(DISTRICTS)
+    .filter(d => (d.lootTable ?? []).some(e => e.definitionId === defId)).length;
+
+  it('수요가 큰 기초 재료는 4개 구 이상에서 나온다', () => {
+    for (const id of ['scrap_metal', 'nail', 'wire', 'wood', 'rope']) {
+      expect(districtCount(id), `${id} ${districtCount(id)}개 구`).toBeGreaterThanOrEqual(4);
+    }
+  });
+
+  it('고무는 반복 드랍 경로를 갖는다', () => {
+    expect(districtCount('rubber')).toBeGreaterThan(0);
+  });
+
+  it('천은 과잉 공급되지 않는다', () => {
+    // 수요 69로 고철의 3분의 1인데 한때 13개 구에 깔려 있었다
+    expect(districtCount('cloth')).toBeLessThanOrEqual(11);
   });
 });
 

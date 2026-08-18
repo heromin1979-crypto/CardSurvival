@@ -33,7 +33,7 @@ const DISTRICTS = {
     lootTable: [
       {
         definitionId: 'cloth',
-        weight: 30,
+        weight: 25,
         minQty: 2,
         maxQty: 4,
       },
@@ -50,19 +50,13 @@ const DISTRICTS = {
         maxQty: 2,
       },
       {
-        definitionId: 'plastic',
+        definitionId: 'nail',
         weight: 25,
         minQty: 2,
         maxQty: 4,
       },
       {
-        definitionId: 'vending_machine',
-        weight: 5,
-        minQty: 1,
-        maxQty: 1,
-      },
-      {
-        definitionId: 'old_ac_unit',
+        definitionId: 'old_fire_extinguisher',
         weight: 5,
         minQty: 1,
         maxQty: 1,
@@ -74,7 +68,13 @@ const DISTRICTS = {
         maxQty: 1,
       },
       {
-        definitionId: 'old_fire_extinguisher',
+        definitionId: 'traffic_light',
+        weight: 5,
+        minQty: 1,
+        maxQty: 1,
+      },
+      {
+        definitionId: 'old_ac_unit',
         weight: 5,
         minQty: 1,
         maxQty: 1,
@@ -138,7 +138,7 @@ const DISTRICTS = {
     lootTable: [
       {
         definitionId: 'cloth',
-        weight: 30,
+        weight: 25,
         minQty: 2,
         maxQty: 4,
       },
@@ -156,9 +156,21 @@ const DISTRICTS = {
       },
       {
         definitionId: 'plastic',
-        weight: 25,
+        weight: 20,
         minQty: 2,
         maxQty: 4,
+      },
+      {
+        definitionId: 'broken_lamp',
+        weight: 5,
+        minQty: 1,
+        maxQty: 1,
+      },
+      {
+        definitionId: 'rusted_toolbox',
+        weight: 5,
+        minQty: 1,
+        maxQty: 1,
       },
       {
         definitionId: 'abandoned_fridge',
@@ -167,19 +179,7 @@ const DISTRICTS = {
         maxQty: 1,
       },
       {
-        definitionId: 'old_mailbox',
-        weight: 5,
-        minQty: 1,
-        maxQty: 1,
-      },
-      {
         definitionId: 'wrecked_bicycle',
-        weight: 5,
-        minQty: 1,
-        maxQty: 1,
-      },
-      {
-        definitionId: 'broken_lamp',
         weight: 5,
         minQty: 1,
         maxQty: 1,
@@ -243,7 +243,7 @@ const DISTRICTS = {
     lootTable: [
       {
         definitionId: 'wood',
-        weight: 30,
+        weight: 35,
         minQty: 2,
         maxQty: 4,
       },
@@ -272,6 +272,12 @@ const DISTRICTS = {
         maxQty: 3,
       },
       {
+        definitionId: 'stream_spring',
+        weight: 12,
+        minQty: 1,
+        maxQty: 1,
+      },
+      {
         definitionId: 'old_mailbox',
         weight: 5,
         minQty: 1,
@@ -284,14 +290,8 @@ const DISTRICTS = {
         maxQty: 1,
       },
       {
-        definitionId: 'stream_spring',
-        weight: 12,
-        minQty: 1,
-        maxQty: 1,
-      },
-      {
-        definitionId: 'collapsed_guard_post',
-        weight: 5,
+        definitionId: 'tree_env',
+        weight: 10,
         minQty: 1,
         maxQty: 1,
       },
@@ -348,13 +348,13 @@ const DISTRICTS = {
     lootTable: [
       {
         definitionId: 'scrap_metal',
-        weight: 35,
+        weight: 40,
         minQty: 2,
         maxQty: 4,
       },
       {
         definitionId: 'wire',
-        weight: 25,
+        weight: 30,
         minQty: 1,
         maxQty: 3,
       },
@@ -366,18 +366,12 @@ const DISTRICTS = {
       },
       {
         definitionId: 'rope',
-        weight: 20,
+        weight: 25,
         minQty: 1,
         maxQty: 3,
       },
       {
-        definitionId: 'wrecked_bus',
-        weight: 5,
-        minQty: 1,
-        maxQty: 1,
-      },
-      {
-        definitionId: 'wrecked_car',
+        definitionId: 'old_fire_extinguisher',
         weight: 5,
         minQty: 1,
         maxQty: 1,
@@ -389,7 +383,13 @@ const DISTRICTS = {
         maxQty: 1,
       },
       {
-        definitionId: 'collapsed_scaffold',
+        definitionId: 'broken_washing_machine',
+        weight: 5,
+        minQty: 1,
+        maxQty: 1,
+      },
+      {
+        definitionId: 'wrecked_bicycle',
         weight: 5,
         minQty: 1,
         maxQty: 1,
@@ -460,7 +460,7 @@ const DISTRICTS = {
       },
       {
         definitionId: 'plastic',
-        weight: 25,
+        weight: 20,
         minQty: 2,
         maxQty: 4,
       },
@@ -477,19 +477,13 @@ const DISTRICTS = {
         maxQty: 3,
       },
       {
-        definitionId: 'wrecked_bicycle',
-        weight: 5,
+        definitionId: 'stream_spring',
+        weight: 12,
         minQty: 1,
         maxQty: 1,
       },
       {
         definitionId: 'broken_chair',
-        weight: 5,
-        minQty: 1,
-        maxQty: 1,
-      },
-      {
-        definitionId: 'old_generator',
         weight: 5,
         minQty: 1,
         maxQty: 1,
@@ -501,8 +495,8 @@ const DISTRICTS = {
         maxQty: 1,
       },
       {
-        definitionId: 'stream_spring',
-        weight: 12,
+        definitionId: 'withered_tree',
+        weight: 10,
         minQty: 1,
         maxQty: 1,
       },
@@ -560,7 +554,7 @@ const DISTRICTS = {
     lootTable: [
       {
         definitionId: 'cloth',
-        weight: 30,
+        weight: 25,
         minQty: 2,
         maxQty: 4,
       },
@@ -578,7 +572,7 @@ const DISTRICTS = {
       },
       {
         definitionId: 'rope',
-        weight: 20,
+        weight: 25,
         minQty: 1,
         maxQty: 3,
       },
@@ -595,8 +589,8 @@ const DISTRICTS = {
         maxQty: 1,
       },
       {
-        definitionId: 'wrecked_bus',
-        weight: 5,
+        definitionId: 'weed_patch',
+        weight: 10,
         minQty: 1,
         maxQty: 1,
       },
@@ -670,7 +664,7 @@ const DISTRICTS = {
     lootTable: [
       {
         definitionId: 'scrap_metal',
-        weight: 30,
+        weight: 35,
         minQty: 2,
         maxQty: 4,
       },
@@ -682,27 +676,15 @@ const DISTRICTS = {
       },
       {
         definitionId: 'wire',
-        weight: 25,
+        weight: 30,
         minQty: 1,
         maxQty: 3,
       },
       {
-        definitionId: 'plastic',
-        weight: 20,
-        minQty: 2,
-        maxQty: 4,
-      },
-      {
-        definitionId: 'old_ac_unit',
-        weight: 5,
+        definitionId: 'rubber',
+        weight: 18,
         minQty: 1,
-        maxQty: 1,
-      },
-      {
-        definitionId: 'collapsed_scaffold',
-        weight: 5,
-        minQty: 1,
-        maxQty: 1,
+        maxQty: 3,
       },
       {
         definitionId: 'broken_radio',
@@ -711,7 +693,19 @@ const DISTRICTS = {
         maxQty: 1,
       },
       {
-        definitionId: 'old_generator',
+        definitionId: 'rusted_toolbox',
+        weight: 5,
+        minQty: 1,
+        maxQty: 1,
+      },
+      {
+        definitionId: 'vending_machine',
+        weight: 5,
+        minQty: 1,
+        maxQty: 1,
+      },
+      {
+        definitionId: 'broken_washing_machine',
         weight: 5,
         minQty: 1,
         maxQty: 1,
@@ -769,19 +763,19 @@ const DISTRICTS = {
     lootTable: [
       {
         definitionId: 'scrap_metal',
-        weight: 35,
+        weight: 40,
         minQty: 2,
         maxQty: 4,
       },
       {
         definitionId: 'nail',
-        weight: 25,
+        weight: 30,
         minQty: 2,
         maxQty: 4,
       },
       {
         definitionId: 'wire',
-        weight: 25,
+        weight: 30,
         minQty: 1,
         maxQty: 3,
       },
@@ -792,14 +786,8 @@ const DISTRICTS = {
         maxQty: 2,
       },
       {
-        definitionId: 'old_generator',
-        weight: 5,
-        minQty: 1,
-        maxQty: 1,
-      },
-      {
-        definitionId: 'old_ac_unit',
-        weight: 5,
+        definitionId: 'gravel_pile',
+        weight: 10,
         minQty: 1,
         maxQty: 1,
       },
@@ -810,8 +798,14 @@ const DISTRICTS = {
         maxQty: 1,
       },
       {
-        definitionId: 'gravel_pile',
-        weight: 10,
+        definitionId: 'vending_machine',
+        weight: 5,
+        minQty: 1,
+        maxQty: 1,
+      },
+      {
+        definitionId: 'collapsed_shelf',
+        weight: 5,
         minQty: 1,
         maxQty: 1,
       },
@@ -868,7 +862,7 @@ const DISTRICTS = {
     lootTable: [
       {
         definitionId: 'cloth',
-        weight: 30,
+        weight: 25,
         minQty: 2,
         maxQty: 4,
       },
@@ -897,7 +891,19 @@ const DISTRICTS = {
         maxQty: 3,
       },
       {
+        definitionId: 'stream_spring',
+        weight: 12,
+        minQty: 1,
+        maxQty: 1,
+      },
+      {
         definitionId: 'broken_lamp',
+        weight: 5,
+        minQty: 1,
+        maxQty: 1,
+      },
+      {
+        definitionId: 'old_mailbox',
         weight: 5,
         minQty: 1,
         maxQty: 1,
@@ -905,18 +911,6 @@ const DISTRICTS = {
       {
         definitionId: 'abandoned_fridge',
         weight: 5,
-        minQty: 1,
-        maxQty: 1,
-      },
-      {
-        definitionId: 'broken_washing_machine',
-        weight: 5,
-        minQty: 1,
-        maxQty: 1,
-      },
-      {
-        definitionId: 'stream_spring',
-        weight: 12,
         minQty: 1,
         maxQty: 1,
       },
@@ -973,7 +967,7 @@ const DISTRICTS = {
     lootTable: [
       {
         definitionId: 'wood',
-        weight: 30,
+        weight: 35,
         minQty: 2,
         maxQty: 4,
       },
@@ -1002,14 +996,8 @@ const DISTRICTS = {
         maxQty: 3,
       },
       {
-        definitionId: 'withered_tree',
-        weight: 10,
-        minQty: 1,
-        maxQty: 1,
-      },
-      {
-        definitionId: 'weed_patch',
-        weight: 10,
+        definitionId: 'stream_spring',
+        weight: 12,
         minQty: 1,
         maxQty: 1,
       },
@@ -1020,8 +1008,14 @@ const DISTRICTS = {
         maxQty: 1,
       },
       {
-        definitionId: 'stream_spring',
-        weight: 12,
+        definitionId: 'rusted_toolbox',
+        weight: 5,
+        minQty: 1,
+        maxQty: 1,
+      },
+      {
+        definitionId: 'tree_env',
+        weight: 10,
         minQty: 1,
         maxQty: 1,
       },
@@ -1080,7 +1074,7 @@ const DISTRICTS = {
     lootTable: [
       {
         definitionId: 'cloth',
-        weight: 40,
+        weight: 35,
         minQty: 2,
         maxQty: 4,
       },
@@ -1109,19 +1103,19 @@ const DISTRICTS = {
         maxQty: 1,
       },
       {
-        definitionId: 'collapsed_shelf',
-        weight: 5,
-        minQty: 1,
-        maxQty: 1,
-      },
-      {
         definitionId: 'broken_lamp',
         weight: 5,
         minQty: 1,
         maxQty: 1,
       },
       {
-        definitionId: 'rusted_toolbox',
+        definitionId: 'collapsed_shelf',
+        weight: 5,
+        minQty: 1,
+        maxQty: 1,
+      },
+      {
+        definitionId: 'telephone_booth',
         weight: 5,
         minQty: 1,
         maxQty: 1,
@@ -1183,7 +1177,7 @@ const DISTRICTS = {
     lootTable: [
       {
         definitionId: 'cloth',
-        weight: 30,
+        weight: 25,
         minQty: 2,
         maxQty: 4,
       },
@@ -1201,12 +1195,24 @@ const DISTRICTS = {
       },
       {
         definitionId: 'wood',
-        weight: 20,
+        weight: 25,
         minQty: 2,
         maxQty: 4,
       },
       {
-        definitionId: 'old_mailbox',
+        definitionId: 'broken_lamp',
+        weight: 5,
+        minQty: 1,
+        maxQty: 1,
+      },
+      {
+        definitionId: 'broken_radio',
+        weight: 5,
+        minQty: 1,
+        maxQty: 1,
+      },
+      {
+        definitionId: 'old_fire_extinguisher',
         weight: 5,
         minQty: 1,
         maxQty: 1,
@@ -1214,18 +1220,6 @@ const DISTRICTS = {
       {
         definitionId: 'tree_env',
         weight: 10,
-        minQty: 1,
-        maxQty: 1,
-      },
-      {
-        definitionId: 'collapsed_guard_post',
-        weight: 5,
-        minQty: 1,
-        maxQty: 1,
-      },
-      {
-        definitionId: 'broken_chair',
-        weight: 5,
         minQty: 1,
         maxQty: 1,
       },
@@ -1284,7 +1278,7 @@ const DISTRICTS = {
     lootTable: [
       {
         definitionId: 'cloth',
-        weight: 25,
+        weight: 20,
         minQty: 2,
         maxQty: 4,
       },
@@ -1295,22 +1289,16 @@ const DISTRICTS = {
         maxQty: 4,
       },
       {
-        definitionId: 'plastic',
-        weight: 25,
-        minQty: 2,
-        maxQty: 4,
-      },
-      {
-        definitionId: 'wire',
+        definitionId: 'rubber',
         weight: 20,
         minQty: 1,
         maxQty: 3,
       },
       {
-        definitionId: 'broken_radio',
-        weight: 5,
+        definitionId: 'wire',
+        weight: 25,
         minQty: 1,
-        maxQty: 1,
+        maxQty: 3,
       },
       {
         definitionId: 'street_vendor_cart',
@@ -1319,13 +1307,19 @@ const DISTRICTS = {
         maxQty: 1,
       },
       {
-        definitionId: 'collapsed_shelf',
+        definitionId: 'vending_machine',
         weight: 5,
         minQty: 1,
         maxQty: 1,
       },
       {
-        definitionId: 'wrecked_bicycle',
+        definitionId: 'abandoned_fridge',
+        weight: 5,
+        minQty: 1,
+        maxQty: 1,
+      },
+      {
+        definitionId: 'destroyed_kiosk',
         weight: 5,
         minQty: 1,
         maxQty: 1,
@@ -1417,19 +1411,19 @@ const DISTRICTS = {
         maxQty: 1,
       },
       {
-        definitionId: 'old_fire_extinguisher',
-        weight: 5,
-        minQty: 1,
-        maxQty: 1,
-      },
-      {
-        definitionId: 'broken_chair',
+        definitionId: 'broken_washing_machine',
         weight: 5,
         minQty: 1,
         maxQty: 1,
       },
       {
         definitionId: 'old_generator',
+        weight: 5,
+        minQty: 1,
+        maxQty: 1,
+      },
+      {
+        definitionId: 'old_ac_unit',
         weight: 5,
         minQty: 1,
         maxQty: 1,
@@ -1488,19 +1482,19 @@ const DISTRICTS = {
     lootTable: [
       {
         definitionId: 'scrap_metal',
-        weight: 30,
+        weight: 35,
         minQty: 2,
         maxQty: 4,
       },
       {
         definitionId: 'cloth',
-        weight: 25,
+        weight: 20,
         minQty: 2,
         maxQty: 4,
       },
       {
         definitionId: 'rope',
-        weight: 20,
+        weight: 25,
         minQty: 1,
         maxQty: 3,
       },
@@ -1517,6 +1511,12 @@ const DISTRICTS = {
         maxQty: 1,
       },
       {
+        definitionId: 'telephone_booth',
+        weight: 5,
+        minQty: 1,
+        maxQty: 1,
+      },
+      {
         definitionId: 'destroyed_kiosk',
         weight: 5,
         minQty: 1,
@@ -1524,12 +1524,6 @@ const DISTRICTS = {
       },
       {
         definitionId: 'wrecked_car',
-        weight: 5,
-        minQty: 1,
-        maxQty: 1,
-      },
-      {
-        definitionId: 'telephone_booth',
         weight: 5,
         minQty: 1,
         maxQty: 1,
@@ -1593,19 +1587,19 @@ const DISTRICTS = {
     lootTable: [
       {
         definitionId: 'scrap_metal',
-        weight: 35,
+        weight: 40,
         minQty: 2,
         maxQty: 4,
       },
       {
         definitionId: 'wire',
-        weight: 25,
+        weight: 30,
         minQty: 1,
         maxQty: 3,
       },
       {
         definitionId: 'nail',
-        weight: 25,
+        weight: 30,
         minQty: 2,
         maxQty: 4,
       },
@@ -1616,25 +1610,25 @@ const DISTRICTS = {
         maxQty: 2,
       },
       {
+        definitionId: 'gravel_pile',
+        weight: 10,
+        minQty: 1,
+        maxQty: 1,
+      },
+      {
+        definitionId: 'broken_washing_machine',
+        weight: 5,
+        minQty: 1,
+        maxQty: 1,
+      },
+      {
+        definitionId: 'traffic_light',
+        weight: 5,
+        minQty: 1,
+        maxQty: 1,
+      },
+      {
         definitionId: 'old_generator',
-        weight: 5,
-        minQty: 1,
-        maxQty: 1,
-      },
-      {
-        definitionId: 'collapsed_scaffold',
-        weight: 5,
-        minQty: 1,
-        maxQty: 1,
-      },
-      {
-        definitionId: 'rusted_toolbox',
-        weight: 5,
-        minQty: 1,
-        maxQty: 1,
-      },
-      {
-        definitionId: 'vending_machine',
         weight: 5,
         minQty: 1,
         maxQty: 1,
@@ -1697,15 +1691,15 @@ const DISTRICTS = {
     lootTable: [
       {
         definitionId: 'cloth',
-        weight: 30,
+        weight: 25,
         minQty: 2,
         maxQty: 4,
       },
       {
-        definitionId: 'plastic',
+        definitionId: 'rope',
         weight: 25,
-        minQty: 2,
-        maxQty: 4,
+        minQty: 1,
+        maxQty: 3,
       },
       {
         definitionId: 'canned_food',
@@ -1720,13 +1714,13 @@ const DISTRICTS = {
         maxQty: 3,
       },
       {
-        definitionId: 'broken_lamp',
+        definitionId: 'broken_chair',
         weight: 5,
         minQty: 1,
         maxQty: 1,
       },
       {
-        definitionId: 'broken_chair',
+        definitionId: 'broken_radio',
         weight: 5,
         minQty: 1,
         maxQty: 1,
@@ -1738,8 +1732,8 @@ const DISTRICTS = {
         maxQty: 1,
       },
       {
-        definitionId: 'withered_tree',
-        weight: 10,
+        definitionId: 'collapsed_shelf',
+        weight: 5,
         minQty: 1,
         maxQty: 1,
       },
@@ -1798,15 +1792,15 @@ const DISTRICTS = {
     lootTable: [
       {
         definitionId: 'scrap_metal',
-        weight: 25,
+        weight: 30,
         minQty: 2,
         maxQty: 4,
       },
       {
-        definitionId: 'cloth',
+        definitionId: 'rope',
         weight: 25,
-        minQty: 2,
-        maxQty: 4,
+        minQty: 1,
+        maxQty: 3,
       },
       {
         definitionId: 'glass_shard',
@@ -1827,7 +1821,7 @@ const DISTRICTS = {
         maxQty: 1,
       },
       {
-        definitionId: 'subway_gate',
+        definitionId: 'wrecked_bicycle',
         weight: 5,
         minQty: 1,
         maxQty: 1,
@@ -1845,7 +1839,7 @@ const DISTRICTS = {
         maxQty: 1,
       },
       {
-        definitionId: 'old_fire_extinguisher',
+        definitionId: 'wrecked_bus',
         weight: 5,
         minQty: 1,
         maxQty: 1,
@@ -1907,7 +1901,7 @@ const DISTRICTS = {
     lootTable: [
       {
         definitionId: 'cloth',
-        weight: 30,
+        weight: 25,
         minQty: 2,
         maxQty: 4,
       },
@@ -1918,8 +1912,8 @@ const DISTRICTS = {
         maxQty: 3,
       },
       {
-        definitionId: 'plastic',
-        weight: 25,
+        definitionId: 'nail',
+        weight: 27,
         minQty: 2,
         maxQty: 4,
       },
@@ -1930,25 +1924,25 @@ const DISTRICTS = {
         maxQty: 3,
       },
       {
-        definitionId: 'abandoned_fridge',
-        weight: 5,
-        minQty: 1,
-        maxQty: 1,
-      },
-      {
-        definitionId: 'broken_washing_machine',
-        weight: 5,
-        minQty: 1,
-        maxQty: 1,
-      },
-      {
         definitionId: 'broken_chair',
         weight: 5,
         minQty: 1,
         maxQty: 1,
       },
       {
-        definitionId: 'destroyed_kiosk',
+        definitionId: 'broken_radio',
+        weight: 5,
+        minQty: 1,
+        maxQty: 1,
+      },
+      {
+        definitionId: 'gravel_pile',
+        weight: 10,
+        minQty: 1,
+        maxQty: 1,
+      },
+      {
+        definitionId: 'broken_washing_machine',
         weight: 5,
         minQty: 1,
         maxQty: 1,
@@ -2007,7 +2001,7 @@ const DISTRICTS = {
     lootTable: [
       {
         definitionId: 'scrap_metal',
-        weight: 30,
+        weight: 35,
         minQty: 2,
         maxQty: 4,
       },
@@ -2030,25 +2024,25 @@ const DISTRICTS = {
         maxQty: 2,
       },
       {
-        definitionId: 'broken_radio',
-        weight: 5,
-        minQty: 1,
-        maxQty: 1,
-      },
-      {
         definitionId: 'telephone_booth',
         weight: 5,
         minQty: 1,
         maxQty: 1,
       },
       {
-        definitionId: 'subway_gate',
+        definitionId: 'abandoned_fridge',
         weight: 5,
         minQty: 1,
         maxQty: 1,
       },
       {
         definitionId: 'collapsed_guard_post',
+        weight: 5,
+        minQty: 1,
+        maxQty: 1,
+      },
+      {
+        definitionId: 'subway_gate',
         weight: 5,
         minQty: 1,
         maxQty: 1,
@@ -2119,7 +2113,7 @@ const DISTRICTS = {
       },
       {
         definitionId: 'wire',
-        weight: 25,
+        weight: 30,
         minQty: 1,
         maxQty: 3,
       },
@@ -2142,19 +2136,19 @@ const DISTRICTS = {
         maxQty: 1,
       },
       {
+        definitionId: 'telephone_booth',
+        weight: 5,
+        minQty: 1,
+        maxQty: 1,
+      },
+      {
+        definitionId: 'traffic_light',
+        weight: 5,
+        minQty: 1,
+        maxQty: 1,
+      },
+      {
         definitionId: 'subway_gate',
-        weight: 5,
-        minQty: 1,
-        maxQty: 1,
-      },
-      {
-        definitionId: 'wrecked_car',
-        weight: 5,
-        minQty: 1,
-        maxQty: 1,
-      },
-      {
-        definitionId: 'old_ac_unit',
         weight: 5,
         minQty: 1,
         maxQty: 1,
@@ -2221,7 +2215,7 @@ const DISTRICTS = {
       },
       {
         definitionId: 'wood',
-        weight: 25,
+        weight: 30,
         minQty: 2,
         maxQty: 4,
       },
@@ -2244,14 +2238,8 @@ const DISTRICTS = {
         maxQty: 3,
       },
       {
-        definitionId: 'withered_tree',
-        weight: 10,
-        minQty: 1,
-        maxQty: 1,
-      },
-      {
-        definitionId: 'tree_env',
-        weight: 10,
+        definitionId: 'old_fire_extinguisher',
+        weight: 5,
         minQty: 1,
         maxQty: 1,
       },
@@ -2264,6 +2252,12 @@ const DISTRICTS = {
       {
         definitionId: 'old_mailbox',
         weight: 5,
+        minQty: 1,
+        maxQty: 1,
+      },
+      {
+        definitionId: 'withered_tree',
+        weight: 10,
         minQty: 1,
         maxQty: 1,
       },
@@ -2322,12 +2316,12 @@ const DISTRICTS = {
     lootTable: [
       {
         definitionId: 'scrap_metal',
-        weight: 30,
+        weight: 35,
         minQty: 2,
         maxQty: 4,
       },
       {
-        definitionId: 'cloth',
+        definitionId: 'nail',
         weight: 25,
         minQty: 2,
         maxQty: 4,
@@ -2345,19 +2339,13 @@ const DISTRICTS = {
         maxQty: 2,
       },
       {
-        definitionId: 'traffic_light',
-        weight: 5,
+        definitionId: 'withered_tree',
+        weight: 10,
         minQty: 1,
         maxQty: 1,
       },
       {
         definitionId: 'telephone_booth',
-        weight: 5,
-        minQty: 1,
-        maxQty: 1,
-      },
-      {
-        definitionId: 'wrecked_bus',
         weight: 5,
         minQty: 1,
         maxQty: 1,
@@ -2369,7 +2357,13 @@ const DISTRICTS = {
         maxQty: 1,
       },
       {
-        definitionId: 'old_fire_extinguisher',
+        definitionId: 'wrecked_bus',
+        weight: 5,
+        minQty: 1,
+        maxQty: 1,
+      },
+      {
+        definitionId: 'wrecked_car',
         weight: 5,
         minQty: 1,
         maxQty: 1,
@@ -2428,13 +2422,13 @@ const DISTRICTS = {
     lootTable: [
       {
         definitionId: 'cloth',
-        weight: 35,
+        weight: 30,
         minQty: 2,
         maxQty: 4,
       },
       {
-        definitionId: 'canned_food',
-        weight: 20,
+        definitionId: 'thread',
+        weight: 18,
         minQty: 1,
         maxQty: 3,
       },
@@ -2451,7 +2445,7 @@ const DISTRICTS = {
         maxQty: 3,
       },
       {
-        definitionId: 'street_vendor_cart',
+        definitionId: 'vending_machine',
         weight: 5,
         minQty: 1,
         maxQty: 1,
@@ -2469,7 +2463,13 @@ const DISTRICTS = {
         maxQty: 1,
       },
       {
-        definitionId: 'telephone_booth',
+        definitionId: 'collapsed_scaffold',
+        weight: 5,
+        minQty: 1,
+        maxQty: 1,
+      },
+      {
+        definitionId: 'old_ac_unit',
         weight: 5,
         minQty: 1,
         maxQty: 1,
@@ -2544,7 +2544,7 @@ const DISTRICTS = {
       },
       {
         definitionId: 'wood',
-        weight: 25,
+        weight: 30,
         minQty: 2,
         maxQty: 4,
       },
@@ -2567,20 +2567,20 @@ const DISTRICTS = {
         maxQty: 1,
       },
       {
-        definitionId: 'weed_patch',
+        definitionId: 'gravel_pile',
         weight: 10,
-        minQty: 1,
-        maxQty: 1,
-      },
-      {
-        definitionId: 'broken_lamp',
-        weight: 5,
         minQty: 1,
         maxQty: 1,
       },
       {
         definitionId: 'wrecked_bicycle',
         weight: 5,
+        minQty: 1,
+        maxQty: 1,
+      },
+      {
+        definitionId: 'withered_tree',
+        weight: 10,
         minQty: 1,
         maxQty: 1,
       },
