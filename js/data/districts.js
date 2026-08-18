@@ -50,10 +50,10 @@ const DISTRICTS = {
         maxQty: 2,
       },
       {
-        definitionId: 'nail',
-        weight: 25,
-        minQty: 2,
-        maxQty: 4,
+        definitionId: 'leather',
+        weight: 20,
+        minQty: 1,
+        maxQty: 3,
       },
       {
         definitionId: 'old_fire_extinguisher',

@@ -142,6 +142,14 @@ describe('구 — 수요 상위 재료의 공급', () => {
     expect(districtCount('rubber')).toBeGreaterThan(0);
   });
 
+  it('반복 소비가 큰 재료도 3개 구 이상에서 나온다', () => {
+    // 실(요구 50 중 92%)·가죽(41 중 85%)은 옷·가방·방어구를 계속 만들어야 해서
+    // 거점 완공 뒤에도 수요가 이어진다. 건설에 몰린 못과 성격이 다르다.
+    for (const id of ['thread', 'leather']) {
+      expect(districtCount(id), `${id} ${districtCount(id)}개 구`).toBeGreaterThanOrEqual(3);
+    }
+  });
+
   it('천은 과잉 공급되지 않는다', () => {
     // 수요 69로 고철의 3분의 1인데 한때 13개 구에 깔려 있었다
     expect(districtCount('cloth')).toBeLessThanOrEqual(11);
