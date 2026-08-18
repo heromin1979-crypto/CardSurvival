@@ -49,13 +49,25 @@ export const LANDMARK_DATA = {
         firstEnterReward: {
           claimKey: 'jongno_vault_first',
           items: [
-            { id: 'royal_katana', qty: 1 },
+            {
+              id: 'royal_katana',
+              qty: 1,
+            },
           ],
         },
         lootTable: [
-          { id: 'cloth', weight: 4 },
-          { id: 'map_fragment', weight: 2 },
-          { id: 'antiseptic', weight: 3 },
+          {
+            id: 'cloth',
+            weight: 4,
+          },
+          {
+            id: 'map_fragment',
+            weight: 2,
+          },
+          {
+            id: 'antiseptic',
+            weight: 3,
+          },
         ],
       },
       {
@@ -229,16 +241,37 @@ export const LANDMARK_DATA = {
         firstEnterReward: {
           claimKey: 'cold_storage_first',
           items: [
-            { id: 'virus_sample',          qty: 1 },
-            { id: 'immunity_serum',        qty: 1 },
+            {
+              id: 'virus_sample',
+              qty: 1,
+            },
+            {
+              id: 'immunity_serum',
+              qty: 1,
+            },
           ],
         },
         lootTable: [
-          { id: 'antidote',            weight: 5 },
-          { id: 'rad_blocker',         weight: 4 },
-          { id: 'surgery_kit',         weight: 4 },
-          { id: 'antibiotics',         weight: 5 },
-          { id: 'stimulant',           weight: 3 },
+          {
+            id: 'antidote',
+            weight: 5,
+          },
+          {
+            id: 'rad_blocker',
+            weight: 4,
+          },
+          {
+            id: 'surgery_kit',
+            weight: 4,
+          },
+          {
+            id: 'antibiotics',
+            weight: 5,
+          },
+          {
+            id: 'stimulant',
+            weight: 3,
+          },
         ],
       },
       {
@@ -251,18 +284,45 @@ export const LANDMARK_DATA = {
         firstEnterReward: {
           claimKey: 'sofitel_pantry_first',
           items: [
-            { id: 'canned_food',    qty: 4 },
-            { id: 'purified_water', qty: 3 },
-            { id: 'herb',           qty: 3 },
-            { id: 'salt',           qty: 2 },
+            {
+              id: 'canned_food',
+              qty: 4,
+            },
+            {
+              id: 'purified_water',
+              qty: 3,
+            },
+            {
+              id: 'herb',
+              qty: 3,
+            },
+            {
+              id: 'salt',
+              qty: 2,
+            },
           ],
         },
         lootTable: [
-          { id: 'herb',             weight: 6 },
-          { id: 'salt',             weight: 6 },
-          { id: 'vitamins',         weight: 4 },
-          { id: 'alcohol_solution', weight: 4 },
-          { id: 'canned_food',      weight: 3 },
+          {
+            id: 'herb',
+            weight: 6,
+          },
+          {
+            id: 'salt',
+            weight: 6,
+          },
+          {
+            id: 'vitamins',
+            weight: 4,
+          },
+          {
+            id: 'alcohol_solution',
+            weight: 4,
+          },
+          {
+            id: 'canned_food',
+            weight: 3,
+          },
         ],
       },
       {
@@ -275,13 +335,25 @@ export const LANDMARK_DATA = {
         firstEnterReward: {
           claimKey: 'city_hall_safe_first',
           items: [
-            { id: 'seoul_emergency_plan', qty: 1 },
+            {
+              id: 'seoul_emergency_plan',
+              qty: 1,
+            },
           ],
         },
         lootTable: [
-          { id: 'survivor_note', weight: 6 },
-          { id: 'map_fragment', weight: 5 },
-          { id: 'emergency_kit', weight: 3 },
+          {
+            id: 'survivor_note',
+            weight: 6,
+          },
+          {
+            id: 'map_fragment',
+            weight: 5,
+          },
+          {
+            id: 'emergency_kit',
+            weight: 3,
+          },
         ],
       },
       {
@@ -450,14 +522,29 @@ export const LANDMARK_DATA = {
         firstEnterReward: {
           claimKey: 'yongsan_armory_first',
           items: [
-            { id: 'm4_carbine',            qty: 1 },
+            {
+              id: 'm4_carbine',
+              qty: 1,
+            },
           ],
         },
         lootTable: [
-          { id: 'pistol_ammo',         weight: 6 },
-          { id: 'shotgun_ammo',        weight: 4 },
-          { id: 'military_ration',     weight: 4 },
-          { id: 'flashbang',           weight: 3 },
+          {
+            id: 'pistol_ammo',
+            weight: 6,
+          },
+          {
+            id: 'shotgun_ammo',
+            weight: 4,
+          },
+          {
+            id: 'military_ration',
+            weight: 4,
+          },
+          {
+            id: 'flashbang',
+            weight: 3,
+          },
         ],
       },
       {
@@ -588,7 +675,7 @@ export const LANDMARK_DATA = {
         id: 'yongsan_arsenal',
         name: '무기고',
         icon: '💣',
-        desc: '실제 무기가 보관된 구역. 극도로 위험하다.',
+        desc: '실제 무기가 보관��� 구역. 극도로 위험하다.',
         dangerMod: 0.35,
         lootTable: [
           {
@@ -634,14 +721,29 @@ export const LANDMARK_DATA = {
         firstEnterReward: {
           claimKey: 'master_workshop_first',
           items: [
-            { id: 'master_toolkit',        qty: 1 },
+            {
+              id: 'master_toolkit',
+              qty: 1,
+            },
           ],
         },
         lootTable: [
-          { id: 'scrap_metal',         weight: 5 },
-          { id: 'pipe_wrench',         weight: 4 },
-          { id: 'duct_tape',           weight: 5 },
-          { id: 'spring',              weight: 4 },
+          {
+            id: 'scrap_metal',
+            weight: 5,
+          },
+          {
+            id: 'pipe_wrench',
+            weight: 4,
+          },
+          {
+            id: 'duct_tape',
+            weight: 5,
+          },
+          {
+            id: 'spring',
+            weight: 4,
+          },
         ],
       },
       {
@@ -654,17 +756,41 @@ export const LANDMARK_DATA = {
         firstEnterReward: {
           claimKey: 'dongho_shelter_first',
           items: [
-            { id: 'survival_journal', qty: 1 },
-            { id: 'canned_food',      qty: 3 },
-            { id: 'rope',             qty: 2 },
+            {
+              id: 'survival_journal',
+              qty: 1,
+            },
+            {
+              id: 'canned_food',
+              qty: 3,
+            },
+            {
+              id: 'rope',
+              qty: 2,
+            },
           ],
         },
         lootTable: [
-          { id: 'scrap_metal',   weight: 7 },
-          { id: 'cloth',         weight: 6 },
-          { id: 'empty_bottle',  weight: 6 },
-          { id: 'rope',          weight: 4 },
-          { id: 'survivor_note', weight: 3 },
+          {
+            id: 'scrap_metal',
+            weight: 7,
+          },
+          {
+            id: 'cloth',
+            weight: 6,
+          },
+          {
+            id: 'empty_bottle',
+            weight: 6,
+          },
+          {
+            id: 'rope',
+            weight: 4,
+          },
+          {
+            id: 'survivor_note',
+            weight: 3,
+          },
         ],
       },
       {
@@ -830,13 +956,25 @@ export const LANDMARK_DATA = {
         firstEnterReward: {
           claimKey: 'gwangjin_zoolab_first',
           items: [
-            { id: 'veterinary_tranquilizer', qty: 1 },
+            {
+              id: 'veterinary_tranquilizer',
+              qty: 1,
+            },
           ],
         },
         lootTable: [
-          { id: 'antiseptic', weight: 4 },
-          { id: 'hide', weight: 5 },
-          { id: 'bone', weight: 5 },
+          {
+            id: 'antiseptic',
+            weight: 4,
+          },
+          {
+            id: 'hide',
+            weight: 5,
+          },
+          {
+            id: 'bone',
+            weight: 5,
+          },
         ],
       },
       {
@@ -1001,13 +1139,25 @@ export const LANDMARK_DATA = {
         firstEnterReward: {
           claimKey: 'dongdaemun_workshop_first',
           items: [
-            { id: 'kevlar_fabric', qty: 1 },
+            {
+              id: 'kevlar_fabric',
+              qty: 1,
+            },
           ],
         },
         lootTable: [
-          { id: 'cloth', weight: 6 },
-          { id: 'thread', weight: 6 },
-          { id: 'large_cloth', weight: 3 },
+          {
+            id: 'cloth',
+            weight: 6,
+          },
+          {
+            id: 'thread',
+            weight: 6,
+          },
+          {
+            id: 'large_cloth',
+            weight: 3,
+          },
         ],
       },
       {
@@ -1205,13 +1355,25 @@ export const LANDMARK_DATA = {
         firstEnterReward: {
           claimKey: 'jungrang_control_first',
           items: [
-            { id: 'industrial_purifier', qty: 1 },
+            {
+              id: 'industrial_purifier',
+              qty: 1,
+            },
           ],
         },
         lootTable: [
-          { id: 'purified_water', weight: 8 },
-          { id: 'water_filter', weight: 5 },
-          { id: 'electronic_parts', weight: 4 },
+          {
+            id: 'purified_water',
+            weight: 8,
+          },
+          {
+            id: 'water_filter',
+            weight: 5,
+          },
+          {
+            id: 'electronic_parts',
+            weight: 4,
+          },
         ],
       },
       {
@@ -1376,13 +1538,25 @@ export const LANDMARK_DATA = {
         firstEnterReward: {
           claimKey: 'seongbuk_bunker_first',
           items: [
-            { id: 'experimental_antiviral', qty: 1 },
+            {
+              id: 'experimental_antiviral',
+              qty: 1,
+            },
           ],
         },
         lootTable: [
-          { id: 'antibiotics', weight: 4 },
-          { id: 'antiseptic', weight: 5 },
-          { id: 'electronic_parts', weight: 4 },
+          {
+            id: 'antibiotics',
+            weight: 4,
+          },
+          {
+            id: 'antiseptic',
+            weight: 5,
+          },
+          {
+            id: 'electronic_parts',
+            weight: 4,
+          },
         ],
       },
       {
@@ -1546,17 +1720,26 @@ export const LANDMARK_DATA = {
         name: '숨겨진 샘',
         icon: '💧',
         desc: '비가 와야 물길이 드러나는 바위 아래 샘. 마르면 흔적도 남지 않는다.',
-        dangerMod: 0.0,
+        dangerMod: 0,
         requiresHiddenLocation: 'hidden_gangbuk_mountain_spring',
         firstEnterReward: {
           claimKey: 'gangbuk_spring_first',
           items: [
-            { id: 'pristine_spring_water', qty: 1 },
+            {
+              id: 'pristine_spring_water',
+              qty: 1,
+            },
           ],
         },
         lootTable: [
-          { id: 'purified_water', weight: 8 },
-          { id: 'mountain_water', weight: 6 },
+          {
+            id: 'purified_water',
+            weight: 8,
+          },
+          {
+            id: 'mountain_water',
+            weight: 6,
+          },
         ],
       },
       {
@@ -1721,13 +1904,25 @@ export const LANDMARK_DATA = {
         firstEnterReward: {
           claimKey: 'dobong_hermit_first',
           items: [
-            { id: 'hermit_elixir', qty: 1 },
+            {
+              id: 'hermit_elixir',
+              qty: 1,
+            },
           ],
         },
         lootTable: [
-          { id: 'herb', weight: 6 },
-          { id: 'herbal_tea', weight: 4 },
-          { id: 'cloth', weight: 3 },
+          {
+            id: 'herb',
+            weight: 6,
+          },
+          {
+            id: 'herbal_tea',
+            weight: 4,
+          },
+          {
+            id: 'cloth',
+            weight: 3,
+          },
         ],
       },
       {
@@ -1888,13 +2083,25 @@ export const LANDMARK_DATA = {
         firstEnterReward: {
           claimKey: 'nowon_depot_first',
           items: [
-            { id: 'survivors_cache', qty: 1 },
+            {
+              id: 'survivors_cache',
+              qty: 1,
+            },
           ],
         },
         lootTable: [
-          { id: 'canned_food', weight: 5 },
-          { id: 'water_bottle', weight: 5 },
-          { id: 'bandage', weight: 4 },
+          {
+            id: 'canned_food',
+            weight: 5,
+          },
+          {
+            id: 'water_bottle',
+            weight: 5,
+          },
+          {
+            id: 'bandage',
+            weight: 4,
+          },
         ],
       },
       {
@@ -2096,18 +2303,45 @@ export const LANDMARK_DATA = {
         firstEnterReward: {
           claimKey: 'eunpyeong_station_first',
           items: [
-            { id: 'rope_ladder',       qty: 1 },
-            { id: 'crowbar',           qty: 1 },
-            { id: 'first_aid_kit',     qty: 2 },
-            { id: 'firefighter_badge', qty: 1 },
+            {
+              id: 'rope_ladder',
+              qty: 1,
+            },
+            {
+              id: 'crowbar',
+              qty: 1,
+            },
+            {
+              id: 'first_aid_kit',
+              qty: 2,
+            },
+            {
+              id: 'firefighter_badge',
+              qty: 1,
+            },
           ],
         },
         lootTable: [
-          { id: 'rope',        weight: 7 },
-          { id: 'wire',        weight: 6 },
-          { id: 'scrap_metal', weight: 6 },
-          { id: 'bandage',     weight: 4 },
-          { id: 'fuel_can',    weight: 3 },
+          {
+            id: 'rope',
+            weight: 7,
+          },
+          {
+            id: 'wire',
+            weight: 6,
+          },
+          {
+            id: 'scrap_metal',
+            weight: 6,
+          },
+          {
+            id: 'bandage',
+            weight: 4,
+          },
+          {
+            id: 'fuel_can',
+            weight: 3,
+          },
         ],
       },
       {
@@ -2268,14 +2502,29 @@ export const LANDMARK_DATA = {
         firstEnterReward: {
           claimKey: 'p4_lab_first',
           items: [
-            { id: 'virus_sample',          qty: 1 },
+            {
+              id: 'virus_sample',
+              qty: 1,
+            },
           ],
         },
         lootTable: [
-          { id: 'antibiotics',         weight: 5 },
-          { id: 'rad_blocker',         weight: 4 },
-          { id: 'first_aid_kit',       weight: 5 },
-          { id: 'antiseptic',          weight: 5 },
+          {
+            id: 'antibiotics',
+            weight: 5,
+          },
+          {
+            id: 'rad_blocker',
+            weight: 4,
+          },
+          {
+            id: 'first_aid_kit',
+            weight: 5,
+          },
+          {
+            id: 'antiseptic',
+            weight: 5,
+          },
         ],
       },
       {
@@ -2473,13 +2722,25 @@ export const LANDMARK_DATA = {
         firstEnterReward: {
           claimKey: 'mapo_club_first',
           items: [
-            { id: 'sound_dampener', qty: 1 },
+            {
+              id: 'sound_dampener',
+              qty: 1,
+            },
           ],
         },
         lootTable: [
-          { id: 'electronic_parts', weight: 5 },
-          { id: 'wire', weight: 5 },
-          { id: 'cloth', weight: 4 },
+          {
+            id: 'electronic_parts',
+            weight: 5,
+          },
+          {
+            id: 'wire',
+            weight: 5,
+          },
+          {
+            id: 'cloth',
+            weight: 4,
+          },
         ],
       },
       {
@@ -2648,13 +2909,25 @@ export const LANDMARK_DATA = {
         firstEnterReward: {
           claimKey: 'mokdong_shelter_first',
           items: [
-            { id: 'civil_defense_cache', qty: 1 },
+            {
+              id: 'civil_defense_cache',
+              qty: 1,
+            },
           ],
         },
         lootTable: [
-          { id: 'canned_food', weight: 8 },
-          { id: 'water_bottle', weight: 7 },
-          { id: 'bandage', weight: 5 },
+          {
+            id: 'canned_food',
+            weight: 8,
+          },
+          {
+            id: 'water_bottle',
+            weight: 7,
+          },
+          {
+            id: 'bandage',
+            weight: 5,
+          },
         ],
       },
       {
@@ -2823,14 +3096,29 @@ export const LANDMARK_DATA = {
         firstEnterReward: {
           claimKey: 'gimpo_hangar_first',
           items: [
-            { id: 'aircraft_parts',        qty: 1 },
+            {
+              id: 'aircraft_parts',
+              qty: 1,
+            },
           ],
         },
         lootTable: [
-          { id: 'scrap_metal',         weight: 6 },
-          { id: 'electronic_parts',    weight: 5 },
-          { id: 'rope',                weight: 4 },
-          { id: 'fuel_can',            weight: 3 },
+          {
+            id: 'scrap_metal',
+            weight: 6,
+          },
+          {
+            id: 'electronic_parts',
+            weight: 5,
+          },
+          {
+            id: 'rope',
+            weight: 4,
+          },
+          {
+            id: 'fuel_can',
+            weight: 3,
+          },
         ],
       },
       {
@@ -3028,13 +3316,25 @@ export const LANDMARK_DATA = {
         firstEnterReward: {
           claimKey: 'guro_forge_first',
           items: [
-            { id: 'master_forge', qty: 1 },
+            {
+              id: 'master_forge',
+              qty: 1,
+            },
           ],
         },
         lootTable: [
-          { id: 'scrap_metal', weight: 6 },
-          { id: 'charcoal', weight: 5 },
-          { id: 'sharp_blade', weight: 3 },
+          {
+            id: 'scrap_metal',
+            weight: 6,
+          },
+          {
+            id: 'charcoal',
+            weight: 5,
+          },
+          {
+            id: 'sharp_blade',
+            weight: 3,
+          },
         ],
       },
       {
@@ -3195,13 +3495,25 @@ export const LANDMARK_DATA = {
         firstEnterReward: {
           claimKey: 'geumcheon_line_first',
           items: [
-            { id: 'ammo_press', qty: 1 },
+            {
+              id: 'ammo_press',
+              qty: 1,
+            },
           ],
         },
         lootTable: [
-          { id: 'pistol_ammo', weight: 7 },
-          { id: 'gunpowder', weight: 5 },
-          { id: 'scrap_metal', weight: 6 },
+          {
+            id: 'pistol_ammo',
+            weight: 7,
+          },
+          {
+            id: 'gunpowder',
+            weight: 5,
+          },
+          {
+            id: 'scrap_metal',
+            weight: 6,
+          },
         ],
       },
       {
@@ -3532,10 +3844,6 @@ export const LANDMARK_DATA = {
       },
     ],
   },
-  // 여의도 63빌딩 — 강민준의 방송(KBS)과 탈출(헬리패드)이 같은 구에서 이어진다.
-  // 옥상 헬리패드는 hidden_yeongdeungpo_63_helipad를 발견해야 나타난다.
-  // 여의도 KBS 본관. 강민준의 서사가 방송(KBS)에서 시작해 탈출(63빌딩)로
-  // 끝나므로 두 건물을 같은 섬의 별개 랜드마크로 둔다.
   lm_kbs: {
     name: 'KBS 본관',
     desc: '여의도 방송국. 로비 전광판이 마지막 자막에서 멈춰 있다. 송신탑은 아직 서 있다.',
@@ -3554,14 +3862,29 @@ export const LANDMARK_DATA = {
         firstEnterReward: {
           claimKey: 'kbs_studio_first',
           items: [
-            { id: 'broadcast_equipment',   qty: 1 },
+            {
+              id: 'broadcast_equipment',
+              qty: 1,
+            },
           ],
         },
         lootTable: [
-          { id: 'electronic_parts',    weight: 6 },
-          { id: 'wire',                weight: 5 },
-          { id: 'radio',               weight: 3 },
-          { id: 'flashlight',          weight: 4 },
+          {
+            id: 'electronic_parts',
+            weight: 6,
+          },
+          {
+            id: 'wire',
+            weight: 5,
+          },
+          {
+            id: 'radio',
+            weight: 3,
+          },
+          {
+            id: 'flashlight',
+            weight: 4,
+          },
         ],
       },
       {
@@ -3571,9 +3894,18 @@ export const LANDMARK_DATA = {
         desc: '출입증이 바닥에 흩어져 있다. 분장실 거울 앞 의자가 아직 돌아간 채다.',
         dangerMod: 0.1,
         lootTable: [
-          { id: 'cloth',      weight: 6 },
-          { id: 'battery',    weight: 5 },
-          { id: 'flashlight', weight: 3 },
+          {
+            id: 'cloth',
+            weight: 6,
+          },
+          {
+            id: 'battery',
+            weight: 5,
+          },
+          {
+            id: 'flashlight',
+            weight: 3,
+          },
         ],
       },
       {
@@ -3583,9 +3915,18 @@ export const LANDMARK_DATA = {
         desc: '모니터 수십 대가 꺼진 채 늘어서 있다. 화이트보드에 마지막 큐시트가 남아 있다.',
         dangerMod: 0.15,
         lootTable: [
-          { id: 'survivor_note',    weight: 6 },
-          { id: 'electronic_parts', weight: 4 },
-          { id: 'paper',            weight: 4 },
+          {
+            id: 'survivor_note',
+            weight: 6,
+          },
+          {
+            id: 'electronic_parts',
+            weight: 4,
+          },
+          {
+            id: 'paper',
+            weight: 4,
+          },
         ],
       },
       {
@@ -3595,14 +3936,22 @@ export const LANDMARK_DATA = {
         desc: '옥상으로 이어지는 철제 계단. 급전선이 아직 팽팽하다.',
         dangerMod: 0.2,
         lootTable: [
-          { id: 'wire',        weight: 7 },
-          { id: 'scrap_metal', weight: 5 },
-          { id: 'copper_wire', weight: 3 },
+          {
+            id: 'wire',
+            weight: 7,
+          },
+          {
+            id: 'scrap_metal',
+            weight: 5,
+          },
+          {
+            id: 'copper_wire',
+            weight: 3,
+          },
         ],
       },
     ],
   },
-
   lm_63_building: {
     name: '63빌딩',
     desc: '여의도 63빌딩. 금빛 외벽이 그을렸지만 구조물은 성하다. 상층에서 한강 이남까지 내려다보인다.',
@@ -3618,10 +3967,22 @@ export const LANDMARK_DATA = {
         desc: '대리석 로비. 관광객 안내 데스크와 기념품 매대가 뒤집혀 있다.',
         dangerMod: 0.05,
         lootTable: [
-          { id: 'cloth', weight: 5 },
-          { id: 'plastic', weight: 4 },
-          { id: 'glass_shard', weight: 4 },
-          { id: 'canned_food', weight: 3 },
+          {
+            id: 'cloth',
+            weight: 5,
+          },
+          {
+            id: 'plastic',
+            weight: 4,
+          },
+          {
+            id: 'glass_shard',
+            weight: 4,
+          },
+          {
+            id: 'canned_food',
+            weight: 3,
+          },
         ],
       },
       {
@@ -3629,11 +3990,20 @@ export const LANDMARK_DATA = {
         name: '60층 전망대',
         icon: '🔭',
         desc: '통유리 전망대. 서울 서남부가 한눈에 들어온다. 망원경 거치대가 남아 있다.',
-        dangerMod: 0.10,
+        dangerMod: 0.1,
         lootTable: [
-          { id: 'binoculars', weight: 4 },
-          { id: 'electronic_parts', weight: 4 },
-          { id: 'glass_shard', weight: 5 },
+          {
+            id: 'binoculars',
+            weight: 4,
+          },
+          {
+            id: 'electronic_parts',
+            weight: 4,
+          },
+          {
+            id: 'glass_shard',
+            weight: 5,
+          },
         ],
       },
       {
@@ -3646,18 +4016,29 @@ export const LANDMARK_DATA = {
         firstEnterReward: {
           claimKey: 'yeongdeungpo_63_helipad_first',
           items: [
-            { id: 'military_radio_kit', qty: 1 },
+            {
+              id: 'military_radio_kit',
+              qty: 1,
+            },
           ],
         },
         lootTable: [
-          { id: 'battery', weight: 4 },
-          { id: 'electronic_parts', weight: 4 },
-          { id: 'wire', weight: 5 },
+          {
+            id: 'battery',
+            weight: 4,
+          },
+          {
+            id: 'electronic_parts',
+            weight: 4,
+          },
+          {
+            id: 'wire',
+            weight: 5,
+          },
         ],
       },
     ],
   },
-
   lm_boramae_hospital: {
     name: '보라매병원',
     desc: '서울시립 보라매병원. 응급실·수술실·약품 창고가 남아있고 감염 위험은 비교적 낮다.',
@@ -3876,6 +4257,27 @@ export const LANDMARK_DATA = {
           3,
         ],
       },
+      {
+        id: 'boramae_desk',
+        name: '병원접수처',
+        icon: '📍',
+        desc: '불이 꺼진 병원 데스크. 접수 전용 설비 — 병원 입구, 의료 접수처로 이곳을 통해 병원 내부로 들어간다.',
+        dangerMod: 0.01,
+        lootTable: [
+          {
+            id: 'antiseptic',
+            weight: 3,
+          },
+          {
+            id: 'gauze',
+            weight: 1,
+          },
+        ],
+        lootCount: [
+          1,
+          2,
+        ],
+      },
     ],
   },
   lm_dongjak: {
@@ -4038,7 +4440,10 @@ export const LANDMARK_DATA = {
         firstEnterReward: {
           claimKey: 'dongjak_bunker_first',
           items: [
-            { id: 'military_radio_kit', qty: 1 },
+            {
+              id: 'military_radio_kit',
+              qty: 1,
+            },
           ],
         },
         lootTable: [
@@ -4081,14 +4486,29 @@ export const LANDMARK_DATA = {
         firstEnterReward: {
           claimKey: 'snu_reactor_first',
           items: [
-            { id: 'nuclear_battery',       qty: 1 },
+            {
+              id: 'nuclear_battery',
+              qty: 1,
+            },
           ],
         },
         lootTable: [
-          { id: 'electronic_parts',    weight: 6 },
-          { id: 'rad_blocker',         weight: 4 },
-          { id: 'scrap_metal',         weight: 5 },
-          { id: 'wire',                weight: 4 },
+          {
+            id: 'electronic_parts',
+            weight: 6,
+          },
+          {
+            id: 'rad_blocker',
+            weight: 4,
+          },
+          {
+            id: 'scrap_metal',
+            weight: 5,
+          },
+          {
+            id: 'wire',
+            weight: 4,
+          },
         ],
       },
       {
@@ -4286,13 +4706,25 @@ export const LANDMARK_DATA = {
         firstEnterReward: {
           claimKey: 'seocho_evidence_first',
           items: [
-            { id: 'confiscated_sniper', qty: 1 },
+            {
+              id: 'confiscated_sniper',
+              qty: 1,
+            },
           ],
         },
         lootTable: [
-          { id: 'pistol_ammo', weight: 6 },
-          { id: 'lockpick', weight: 4 },
-          { id: 'survivor_note', weight: 4 },
+          {
+            id: 'pistol_ammo',
+            weight: 6,
+          },
+          {
+            id: 'lockpick',
+            weight: 4,
+          },
+          {
+            id: 'survivor_note',
+            weight: 4,
+          },
         ],
       },
       {
@@ -4457,14 +4889,29 @@ export const LANDMARK_DATA = {
         firstEnterReward: {
           claimKey: 'sealed_pharmacy_first',
           items: [
-            { id: 'surgical_grade_kit',    qty: 1 },
+            {
+              id: 'surgical_grade_kit',
+              qty: 1,
+            },
           ],
         },
         lootTable: [
-          { id: 'first_aid_kit',       weight: 5 },
-          { id: 'antibiotics',         weight: 4 },
-          { id: 'surgery_kit',         weight: 3 },
-          { id: 'painkiller',          weight: 5 },
+          {
+            id: 'first_aid_kit',
+            weight: 5,
+          },
+          {
+            id: 'antibiotics',
+            weight: 4,
+          },
+          {
+            id: 'surgery_kit',
+            weight: 3,
+          },
+          {
+            id: 'painkiller',
+            weight: 5,
+          },
         ],
       },
       {
@@ -4662,16 +5109,37 @@ export const LANDMARK_DATA = {
         firstEnterReward: {
           claimKey: 'songpa_fort_first',
           items: [
-            { id: 'battle_ration', qty: 3 },
-            { id: 'first_aid_kit', qty: 2 },
-            { id: 'debt_ledger',   qty: 1 },
+            {
+              id: 'battle_ration',
+              qty: 3,
+            },
+            {
+              id: 'first_aid_kit',
+              qty: 2,
+            },
+            {
+              id: 'debt_ledger',
+              qty: 1,
+            },
           ],
         },
         lootTable: [
-          { id: 'canned_food', weight: 7 },
-          { id: 'bandage',     weight: 6 },
-          { id: 'battery',     weight: 4 },
-          { id: 'rope',        weight: 4 },
+          {
+            id: 'canned_food',
+            weight: 7,
+          },
+          {
+            id: 'bandage',
+            weight: 6,
+          },
+          {
+            id: 'battery',
+            weight: 4,
+          },
+          {
+            id: 'rope',
+            weight: 4,
+          },
         ],
       },
       {
@@ -4685,14 +5153,29 @@ export const LANDMARK_DATA = {
         firstEnterReward: {
           claimKey: 'songpa_penthouse_first',
           items: [
-            { id: 'father_schematic', qty: 1 },
-            { id: 'binoculars_pro', qty: 1 },
+            {
+              id: 'father_schematic',
+              qty: 1,
+            },
+            {
+              id: 'binoculars_pro',
+              qty: 1,
+            },
           ],
         },
         lootTable: [
-          { id: 'premium_ration', weight: 4 },
-          { id: 'first_aid_kit', weight: 4 },
-          { id: 'stimulant', weight: 3 },
+          {
+            id: 'premium_ration',
+            weight: 4,
+          },
+          {
+            id: 'first_aid_kit',
+            weight: 4,
+          },
+          {
+            id: 'stimulant',
+            weight: 3,
+          },
         ],
       },
       {
@@ -4898,14 +5381,29 @@ export const LANDMARK_DATA = {
         firstEnterReward: {
           claimKey: 'gangdong_dock_first',
           items: [
-            { id: 'river_boat', qty: 1 },
-            { id: 'waterproof_container', qty: 1 },
+            {
+              id: 'river_boat',
+              qty: 1,
+            },
+            {
+              id: 'waterproof_container',
+              qty: 1,
+            },
           ],
         },
         lootTable: [
-          { id: 'rope', weight: 6 },
-          { id: 'plastic', weight: 5 },
-          { id: 'fuel_can', weight: 3 },
+          {
+            id: 'rope',
+            weight: 6,
+          },
+          {
+            id: 'plastic',
+            weight: 5,
+          },
+          {
+            id: 'fuel_can',
+            weight: 3,
+          },
         ],
       },
       {
