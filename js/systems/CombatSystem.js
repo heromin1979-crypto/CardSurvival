@@ -1902,6 +1902,48 @@ const CombatSystem = {
     };
   },
 
+  /**
+   * 치명타 연사 — combat.attacksPerRoundOnCrit이 선언된 무기(M4 카빈)가 치명타를 냈을 때
+   * 같은 대상에게 추가 타격을 넣는다. 추가분은 치명타 배율 없이 기본 피해로 들어간다.
+   * @returns {number} 실제로 들어간 추가 타격 횟수
+   */
+  _applyCritBurst(enemy, attacksPerRound, baseDamage, opts = {}) {
+    const extra = Math.max(0, Math.floor(attacksPerRound ?? 0) - 1);
+    if (extra <= 0 || !enemy || (enemy.currentHp ?? 0) <= 0) return 0;
+
+    let landed = 0;
+    for (let i = 0; i < extra; i += 1) {
+      if ((enemy.currentHp ?? 0) <= 0) break;
+      this._resolveDirectEnemyDamage(enemy, baseDamage, {
+        defensePierce: opts.defensePierce ?? 0,
+      });
+      landed += 1;
+    }
+    return landed;
+  },
+
+  /**
+   * 처치 시 도주 유발 — combat.onKill.enemyFleeChance(두목의 소총).
+   * 보스는 제외한다. 보스가 도중에 사라지면 보상·엔딩 흐름이 어긋난다.
+   * @returns {string[]} 도주한 적 id 목록
+   */
+  _applyOnKillFlee(onKill) {
+    const chance = onKill?.enemyFleeChance ?? 0;
+    if (chance <= 0) return [];
+    const gs = GameState;
+    const fled = [];
+    for (const e of gs.combat?.enemies ?? []) {
+      if ((e.currentHp ?? 0) <= 0) continue;
+      if (e.isBoss) continue;
+      if (Math.random() >= chance) continue;
+      e.currentHp = 0;
+      e._fled = true;
+      fled.push(e.id);
+      gs.combat.log.push(I18n.t('combatSys.enemyFled', { enemy: I18n.enemyName(e.id, e.name) }));
+    }
+    return fled;
+  },
+
   _attackAction(type, weaponId, enemy) {
     const gs = GameState;
     let damage = 0, accuracy = BALANCE.combat.baseUnarmedAccuracy ?? 0.70, noise = 5, durLoss = 0;
@@ -1927,6 +1969,12 @@ const CombatSystem = {
         durLoss        = def.combat.durabilityLoss ?? 0;
         critChance     = def.combat.critChance     ?? 0;
         critMultiplier = def.combat.critMultiplier ?? (BALANCE.combat.defaultCritMultiplier ?? 1.5);
+        // 장착 액세서리의 치명타 보정 (호랑이 이빨 목걸이 등)
+        {
+          const armorCrit = StatSystem.getArmorEffects();
+          critChance     = Math.min(1, critChance + armorCrit.critBonus);
+          critMultiplier += armorCrit.critMultiplierBonus;
+        }
         weaponName     = formatInstanceName(weaponInst, def);
         isRanged       = !!(def.combat.requiresAmmo);
         skillId        = isRanged ? 'ranged' : 'melee';
@@ -2069,6 +2117,17 @@ const CombatSystem = {
         gs.combat.log.push(`독 피해 +${poisonDmg}`);
       }
 
+      // 치명타 연사 — 추가 타격은 본 타격 직후, 처치 판정 전에 들어간다
+      if (isCrit && weaponId && gs.cards[weaponId]) {
+        const burstDef = gs.getCardDef(weaponId)?.combat?.attacksPerRoundOnCrit;
+        const landed = this._applyCritBurst(enemy, burstDef, attackLogDamage, {
+          defensePierce: Math.floor(mods.defensePierce),
+        });
+        if (landed > 0) {
+          gs.combat.log.push(I18n.t('combatSys.critBurst', { count: landed + 1 }));
+        }
+      }
+
       if (enemy.currentHp <= 0) {
         const wDef = (weaponId && gs.cards[weaponId]) ? gs.getCardDef(weaponId) : null;
         gs.combat._lastKillContext = {
@@ -2076,6 +2135,8 @@ const CombatSystem = {
           isSilent:   !!wDef?.tags?.includes('silent'),
           isMelee:    !wDef?.combat?.requiresAmmo,
         };
+        // 처치 시 도주 유발 (두목의 소총) — 보스는 제외
+        if (wDef?.combat?.onKill) this._applyOnKillFlee(wDef.combat.onKill);
       }
 
       // 무기 상태이상 부여 + 충전 적 인터럽트.
@@ -2310,7 +2371,9 @@ const CombatSystem = {
     const gs      = GameState;
     const alive   = this.getAliveEnemies();
     // 그룹 은신 난이도: 살아있는 적 중 최고값
-    const maxDiff = Math.max(...alive.map(e => e.stealthDifficulty ?? (BALANCE.combat.defaultStealthDifficulty ?? 0.5)));
+    const rawDiff = Math.max(...alive.map(e => e.stealthDifficulty ?? (BALANCE.combat.defaultStealthDifficulty ?? 0.5)));
+    // 위장복·은밀 슈트의 은신 보너스가 난이도를 깎는다
+    const maxDiff = Math.max(0, rawDiff - StatSystem.getArmorEffects().stealthBonus);
     const success = Math.random() > maxDiff;
     if (success) {
       this._stabilizePlayerAfterCombat();

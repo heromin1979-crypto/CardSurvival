@@ -23,7 +23,7 @@ const ITEMS_TOOLS = {
     id: 'water_filter', name: '정수 필터', type: 'tool', subtype: 'crafting',
     rarity: 'uncommon', weight: 0.2,
     defaultDurability: 100, defaultContamination: 0,
-    icon: '🔩', description: '정수기 제작에 사용. 오염수를 정화.',
+    icon: '🔩', description: '여러 겹의 여과층이 든 필터. 통에 물려 두면 흘려보내는 족족 물이 맑아진다.',
     tags: ['tool', 'craftable'],
     dismantle: [
       { definitionId: 'charcoal_filter', qty: 1, chance: 0.7 },
@@ -35,7 +35,7 @@ const ITEMS_TOOLS = {
     id: 'pipe_wrench', name: '파이프렌치', type: 'tool', subtype: 'utility',
     rarity: 'common', weight: 1.0,
     defaultDurability: 100, defaultContamination: 0,
-    icon: '🔧', description: '수리·제작 도구. 강화 무기 제작에 필요.',
+    icon: '🔧', description: '묵직한 배관용 렌치. 조이는 데도, 후려치는 데도 무리가 없다.',
     tags: ['tool'],
     combat: { damage: [4, 8], accuracy: 0.75, noiseOnUse: 3, durabilityLoss: 2, critChance: 0.10, critMultiplier: 1.5 },
     dismantle: [{ definitionId: 'scrap_metal', qty: 2, chance: 0.9 }],
@@ -83,7 +83,7 @@ const ITEMS_TOOLS = {
     defaultDurability: 100, defaultContamination: 0,
     icon: '📻', description: '생존자 주파수 감지. 특수 이벤트 발생 가능.',
     tags: ['tool', 'communication'],
-    onUse: { survivorSignal: true },
+
     dismantle: [
       { definitionId: 'electronic_parts', qty: 2, chance: 0.8 },
       { definitionId: 'wire', qty: 1, chance: 0.7 },
@@ -366,7 +366,7 @@ const ITEMS_TOOLS = {
     defaultDurability: 100, defaultContamination: 0,
     icon: '👓', description: '야간에도 선명한 시야를 제공하는 전자 고글.',
     tags: ['tool', 'exploration', 'light'],
-    onUse: { exploreBonus: 50, nightVision: true },
+    onUse: { exploreBonus: 50 },
     dismantle: [
       { definitionId: 'electronic_parts', qty: 3, chance: 0.7 },
       { definitionId: 'glass_shard', qty: 2, chance: 0.6 },
