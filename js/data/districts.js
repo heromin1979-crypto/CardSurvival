@@ -33,27 +33,27 @@ const DISTRICTS = {
     lootTable: [
       {
         definitionId: 'cloth',
+        weight: 30,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        definitionId: 'bandage',
         weight: 25,
         minQty: 1,
         maxQty: 3,
       },
       {
-        definitionId: 'scrap_metal',
+        definitionId: 'antiseptic',
         weight: 20,
         minQty: 1,
-        maxQty: 3,
-      },
-      {
-        definitionId: 'rope',
-        weight: 15,
-        minQty: 1,
         maxQty: 2,
       },
       {
-        definitionId: 'water_bottle',
-        weight: 10,
-        minQty: 1,
-        maxQty: 2,
+        definitionId: 'plastic',
+        weight: 25,
+        minQty: 2,
+        maxQty: 4,
       },
       {
         definitionId: 'broken_radio',
@@ -91,54 +91,43 @@ const DISTRICTS = {
         minQty: 1,
         maxQty: 1,
       },
-      {
-        definitionId: 'herb',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'nettle',
-        weight: 6,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'wild_root',
-        weight: 5,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'wild_berry',
-        weight: 6,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'sand',
-        weight: 8,
-        minQty: 1,
-        maxQty: 3,
-      },
-      {
-        definitionId: 'pebble',
-        weight: 15,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'vegetable',
-        weight: 4,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0,
-      },
     ],
     special: 'samsung_hospital',
     landmarks: [
       'lm_gangnam',
       'lm_hangang_gangnam',
+    ],
+    explorationYields: [
+      {
+        at: 30,
+        items: [
+          {
+            definitionId: 'alcohol_solution',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+      {
+        at: 60,
+        items: [
+          {
+            definitionId: 'herb_powder',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+      {
+        at: 100,
+        items: [
+          {
+            definitionId: 'infected_blood_sample',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
     ],
   },
   gangdong: {
@@ -161,34 +150,27 @@ const DISTRICTS = {
     lootTable: [
       {
         definitionId: 'cloth',
+        weight: 30,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        definitionId: 'water_bottle',
         weight: 25,
         minQty: 1,
         maxQty: 3,
       },
       {
-        definitionId: 'water_bottle',
+        definitionId: 'canned_food',
         weight: 20,
         minQty: 1,
-        maxQty: 2,
-        contamChance: 0.1,
+        maxQty: 3,
       },
       {
-        definitionId: 'rope',
-        weight: 15,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'scrap_metal',
-        weight: 10,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'wood',
-        weight: 10,
-        minQty: 1,
-        maxQty: 2,
+        definitionId: 'plastic',
+        weight: 25,
+        minQty: 2,
+        maxQty: 4,
       },
       {
         definitionId: 'broken_radio',
@@ -220,62 +202,43 @@ const DISTRICTS = {
         minQty: 1,
         maxQty: 1,
       },
-      {
-        definitionId: 'matches',
-        weight: 5,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'dry_grass',
-        weight: 5,
-        minQty: 1,
-        maxQty: 1,
-      },
-      {
-        definitionId: 'nettle',
-        weight: 6,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'sand',
-        weight: 8,
-        minQty: 1,
-        maxQty: 3,
-      },
-      {
-        definitionId: 'pebble',
-        weight: 15,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'herb',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0,
-      },
-      {
-        definitionId: 'wild_berry',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0,
-      },
-      {
-        definitionId: 'vegetable',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0,
-      },
     ],
     special: null,
     landmarks: [
       'lm_gangdong',
       'lm_hangang_gangdong',
+    ],
+    explorationYields: [
+      {
+        at: 30,
+        items: [
+          {
+            definitionId: 'firestone',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+      {
+        at: 60,
+        items: [
+          {
+            definitionId: 'woven_fabric',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+      {
+        at: 100,
+        items: [
+          {
+            definitionId: 'grain_seed',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
     ],
   },
   gangbuk: {
@@ -297,39 +260,32 @@ const DISTRICTS = {
     landmark: 'lm_gangbuk',
     lootTable: [
       {
-        definitionId: 'contaminated_water',
-        weight: 20,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0.35,
-      },
-      {
-        definitionId: 'cloth',
-        weight: 15,
-        minQty: 1,
-        maxQty: 3,
-      },
-      {
-        definitionId: 'rope',
-        weight: 15,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'tree_log',
-        weight: 20,
-        minQty: 1,
-        maxQty: 2,
+        definitionId: 'wood',
+        weight: 30,
+        minQty: 2,
+        maxQty: 4,
       },
       {
         definitionId: 'herb',
-        weight: 15,
+        weight: 25,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        definitionId: 'wild_berry',
+        weight: 20,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        definitionId: 'water_bottle',
+        weight: 25,
         minQty: 1,
         maxQty: 3,
       },
       {
-        definitionId: 'wood',
-        weight: 15,
+        definitionId: 'bait_worm',
+        weight: 8,
         minQty: 1,
         maxQty: 3,
       },
@@ -382,92 +338,45 @@ const DISTRICTS = {
         maxQty: 1,
       },
       {
-        definitionId: 'pine_cone',
-        weight: 8,
-        minQty: 1,
-        maxQty: 3,
-      },
-      {
-        definitionId: 'dry_grass',
-        weight: 7,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'pebble',
-        weight: 8,
-        minQty: 1,
-        maxQty: 3,
-      },
-      {
-        definitionId: 'firestone',
-        weight: 5,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'wild_berry',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'mushroom_edible',
-        weight: 7,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'acorn',
-        weight: 7,
-        minQty: 1,
-        maxQty: 3,
-      },
-      {
-        definitionId: 'pine_needle',
-        weight: 8,
-        minQty: 2,
-        maxQty: 4,
-      },
-      {
-        definitionId: 'wild_garlic',
-        weight: 6,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'dandelion',
-        weight: 7,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'wild_wheat',
-        weight: 6,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'bait_worm',
-        weight: 8,
-        minQty: 1,
-        maxQty: 3,
-      },
-      {
         definitionId: 'stream_spring',
         weight: 15,
         minQty: 1,
         maxQty: 1,
       },
-      {
-        definitionId: 'vegetable',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0,
-      },
     ],
     special: null,
+    explorationYields: [
+      {
+        at: 30,
+        items: [
+          {
+            definitionId: 'firestone',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+      {
+        at: 60,
+        items: [
+          {
+            definitionId: 'herb_seed',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+      {
+        at: 100,
+        items: [
+          {
+            definitionId: 'honey',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+    ],
   },
   gangseo: {
     id: 'gangseo',
@@ -487,31 +396,25 @@ const DISTRICTS = {
     lootTable: [
       {
         definitionId: 'scrap_metal',
-        weight: 30,
+        weight: 35,
         minQty: 2,
         maxQty: 4,
       },
       {
-        definitionId: 'rope',
+        definitionId: 'wire',
+        weight: 25,
+        minQty: 1,
+        maxQty: 3,
+      },
+      {
+        definitionId: 'duct_tape',
         weight: 20,
         minQty: 1,
-        maxQty: 2,
+        maxQty: 3,
       },
       {
-        definitionId: 'cloth',
-        weight: 15,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'wire',
-        weight: 10,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'nail',
-        weight: 10,
+        definitionId: 'rope',
+        weight: 20,
         minQty: 1,
         maxQty: 3,
       },
@@ -545,35 +448,40 @@ const DISTRICTS = {
         minQty: 1,
         maxQty: 1,
       },
-      {
-        definitionId: 'circuit_board',
-        weight: 5,
-        minQty: 1,
-        maxQty: 1,
-      },
-      {
-        definitionId: 'herb',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0,
-      },
-      {
-        definitionId: 'wild_berry',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0,
-      },
-      {
-        definitionId: 'vegetable',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0,
-      },
     ],
     special: null,
+    explorationYields: [
+      {
+        at: 30,
+        items: [
+          {
+            definitionId: 'brass_fragment',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+      {
+        at: 60,
+        items: [
+          {
+            definitionId: 'aviation_alloy',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+      {
+        at: 100,
+        items: [
+          {
+            definitionId: 'rotor_blade',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+    ],
   },
   gwanak: {
     id: 'gwanak',
@@ -593,40 +501,34 @@ const DISTRICTS = {
     landmark: 'lm_gwanak',
     lootTable: [
       {
-        definitionId: 'scrap_metal',
-        weight: 20,
-        minQty: 1,
-        maxQty: 3,
-      },
-      {
-        definitionId: 'cloth',
-        weight: 20,
-        minQty: 1,
-        maxQty: 3,
-      },
-      {
         definitionId: 'herb',
+        weight: 25,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        definitionId: 'glass_shard',
+        weight: 25,
+        minQty: 1,
+        maxQty: 3,
+      },
+      {
+        definitionId: 'plastic',
+        weight: 25,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        definitionId: 'alcohol_solution',
         weight: 15,
         minQty: 1,
-        maxQty: 3,
-      },
-      {
-        definitionId: 'rope',
-        weight: 10,
-        minQty: 1,
         maxQty: 2,
       },
       {
-        definitionId: 'tree_log',
+        definitionId: 'bait_worm',
         weight: 8,
         minQty: 1,
-        maxQty: 1,
-      },
-      {
-        definitionId: 'wood',
-        weight: 10,
-        minQty: 1,
-        maxQty: 2,
+        maxQty: 3,
       },
       {
         definitionId: 'broken_radio',
@@ -671,92 +573,45 @@ const DISTRICTS = {
         maxQty: 1,
       },
       {
-        definitionId: 'pine_cone',
-        weight: 7,
-        minQty: 1,
-        maxQty: 3,
-      },
-      {
-        definitionId: 'dry_grass',
-        weight: 7,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'firestone',
-        weight: 5,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'bamboo_shoot',
-        weight: 12,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'wild_berry',
-        weight: 8,
-        minQty: 1,
-        maxQty: 3,
-      },
-      {
-        definitionId: 'mushroom_edible',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'acorn',
-        weight: 7,
-        minQty: 1,
-        maxQty: 3,
-      },
-      {
-        definitionId: 'dandelion',
-        weight: 8,
-        minQty: 1,
-        maxQty: 3,
-      },
-      {
-        definitionId: 'wild_root',
-        weight: 6,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'herb_seed',
-        weight: 3,
-        minQty: 1,
-        maxQty: 1,
-      },
-      {
-        definitionId: 'wild_wheat',
-        weight: 6,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'bait_worm',
-        weight: 8,
-        minQty: 1,
-        maxQty: 3,
-      },
-      {
         definitionId: 'stream_spring',
         weight: 12,
         minQty: 1,
         maxQty: 1,
       },
-      {
-        definitionId: 'vegetable',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0,
-      },
     ],
     special: 'snu_lab',
+    explorationYields: [
+      {
+        at: 30,
+        items: [
+          {
+            definitionId: 'charcoal_filter',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+      {
+        at: 60,
+        items: [
+          {
+            definitionId: 'saltpeter',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+      {
+        at: 100,
+        items: [
+          {
+            definitionId: 'circuit_module',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+    ],
   },
   gwangjin: {
     id: 'gwangjin',
@@ -777,28 +632,33 @@ const DISTRICTS = {
     lootTable: [
       {
         definitionId: 'cloth',
+        weight: 30,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        definitionId: 'water_bottle',
         weight: 25,
         minQty: 1,
         maxQty: 3,
       },
       {
-        definitionId: 'water_bottle',
+        definitionId: 'wild_berry',
         weight: 20,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0.1,
+        minQty: 2,
+        maxQty: 4,
       },
       {
         definitionId: 'rope',
-        weight: 15,
+        weight: 20,
         minQty: 1,
-        maxQty: 2,
+        maxQty: 3,
       },
       {
-        definitionId: 'wood',
-        weight: 10,
+        definitionId: 'bait_worm',
+        weight: 8,
         minQty: 1,
-        maxQty: 2,
+        maxQty: 3,
       },
       {
         definitionId: 'broken_radio',
@@ -842,79 +702,43 @@ const DISTRICTS = {
         minQty: 1,
         maxQty: 1,
       },
-      {
-        definitionId: 'dry_grass',
-        weight: 6,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'pebble',
-        weight: 6,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'matches',
-        weight: 4,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'nettle',
-        weight: 10,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'dandelion',
-        weight: 10,
-        minQty: 1,
-        maxQty: 3,
-      },
-      {
-        definitionId: 'wild_root',
-        weight: 7,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'wild_berry',
-        weight: 12,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'sand',
-        weight: 8,
-        minQty: 1,
-        maxQty: 3,
-      },
-      {
-        definitionId: 'bait_worm',
-        weight: 8,
-        minQty: 1,
-        maxQty: 3,
-      },
-      {
-        definitionId: 'herb',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0,
-      },
-      {
-        definitionId: 'vegetable',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0,
-      },
     ],
     special: null,
     landmarks: [
       'lm_gwangjin',
       'lm_hangang_gwangjin',
+    ],
+    explorationYields: [
+      {
+        at: 30,
+        items: [
+          {
+            definitionId: 'vegetable_seed',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+      {
+        at: 60,
+        items: [
+          {
+            definitionId: 'herb_powder',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+      {
+        at: 100,
+        items: [
+          {
+            definitionId: 'honey',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
     ],
   },
   guro: {
@@ -936,39 +760,27 @@ const DISTRICTS = {
     lootTable: [
       {
         definitionId: 'scrap_metal',
-        weight: 35,
+        weight: 30,
         minQty: 2,
-        maxQty: 5,
-      },
-      {
-        definitionId: 'rope',
-        weight: 15,
-        minQty: 1,
-        maxQty: 3,
+        maxQty: 4,
       },
       {
         definitionId: 'electronic_parts',
-        weight: 15,
+        weight: 25,
         minQty: 1,
         maxQty: 3,
       },
       {
         definitionId: 'wire',
-        weight: 12,
+        weight: 25,
         minQty: 1,
         maxQty: 3,
       },
       {
-        definitionId: 'nail',
-        weight: 10,
+        definitionId: 'plastic',
+        weight: 20,
         minQty: 2,
-        maxQty: 5,
-      },
-      {
-        definitionId: 'cloth',
-        weight: 5,
-        minQty: 1,
-        maxQty: 2,
+        maxQty: 4,
       },
       {
         definitionId: 'broken_radio',
@@ -1013,70 +825,45 @@ const DISTRICTS = {
         maxQty: 1,
       },
       {
-        definitionId: 'sulfur',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'saltpeter',
-        weight: 6,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
         definitionId: 'gravel_pile',
         weight: 8,
         minQty: 1,
         maxQty: 1,
       },
-      {
-        definitionId: 'soil_bag',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'dandelion',
-        weight: 5,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'circuit_board',
-        weight: 5,
-        minQty: 1,
-        maxQty: 1,
-      },
-      {
-        definitionId: 'sand',
-        weight: 8,
-        minQty: 1,
-        maxQty: 3,
-      },
-      {
-        definitionId: 'herb',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0,
-      },
-      {
-        definitionId: 'wild_berry',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0,
-      },
-      {
-        definitionId: 'vegetable',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0,
-      },
     ],
     special: null,
+    explorationYields: [
+      {
+        at: 30,
+        items: [
+          {
+            definitionId: 'copper_coil',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+      {
+        at: 60,
+        items: [
+          {
+            definitionId: 'microchip',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+      {
+        at: 100,
+        items: [
+          {
+            definitionId: 'circuit_module',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+    ],
   },
   geumcheon: {
     id: 'geumcheon',
@@ -1096,37 +883,25 @@ const DISTRICTS = {
     lootTable: [
       {
         definitionId: 'scrap_metal',
-        weight: 40,
+        weight: 35,
         minQty: 2,
-        maxQty: 6,
-      },
-      {
-        definitionId: 'rope',
-        weight: 15,
-        minQty: 1,
-        maxQty: 3,
-      },
-      {
-        definitionId: 'electronic_parts',
-        weight: 12,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'wire',
-        weight: 12,
-        minQty: 1,
-        maxQty: 3,
+        maxQty: 4,
       },
       {
         definitionId: 'nail',
-        weight: 10,
+        weight: 25,
         minQty: 2,
-        maxQty: 5,
+        maxQty: 4,
       },
       {
-        definitionId: 'cloth',
-        weight: 5,
+        definitionId: 'wire',
+        weight: 25,
+        minQty: 1,
+        maxQty: 3,
+      },
+      {
+        definitionId: 'spring',
+        weight: 15,
         minQty: 1,
         maxQty: 2,
       },
@@ -1173,71 +948,45 @@ const DISTRICTS = {
         maxQty: 1,
       },
       {
-        definitionId: 'sulfur',
-        weight: 10,
-        minQty: 1,
-        maxQty: 3,
-      },
-      {
-        definitionId: 'saltpeter',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
         definitionId: 'gravel_pile',
         weight: 8,
         minQty: 1,
         maxQty: 1,
       },
-      {
-        definitionId: 'soil_bag',
-        weight: 10,
-        minQty: 1,
-        maxQty: 3,
-      },
-      {
-        definitionId: 'dandelion',
-        weight: 5,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'contaminated_water',
-        weight: 12,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0.5,
-      },
-      {
-        definitionId: 'circuit_board',
-        weight: 5,
-        minQty: 1,
-        maxQty: 1,
-      },
-      {
-        definitionId: 'herb',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0,
-      },
-      {
-        definitionId: 'wild_berry',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0,
-      },
-      {
-        definitionId: 'vegetable',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0,
-      },
     ],
     special: null,
+    explorationYields: [
+      {
+        at: 30,
+        items: [
+          {
+            definitionId: 'refined_metal',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+      {
+        at: 60,
+        items: [
+          {
+            definitionId: 'lead_ingot',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+      {
+        at: 100,
+        items: [
+          {
+            definitionId: 'steel_plate',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+    ],
   },
   nowon: {
     id: 'nowon',
@@ -1257,33 +1006,33 @@ const DISTRICTS = {
     lootTable: [
       {
         definitionId: 'cloth',
+        weight: 30,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        definitionId: 'water_bottle',
         weight: 25,
         minQty: 1,
         maxQty: 3,
       },
       {
-        definitionId: 'water_bottle',
+        definitionId: 'empty_can',
+        weight: 25,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        definitionId: 'canned_food',
         weight: 20,
         minQty: 1,
-        maxQty: 2,
+        maxQty: 3,
       },
       {
-        definitionId: 'rope',
-        weight: 15,
+        definitionId: 'bait_worm',
+        weight: 8,
         minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'scrap_metal',
-        weight: 10,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'wood',
-        weight: 10,
-        minQty: 1,
-        maxQty: 2,
+        maxQty: 3,
       },
       {
         definitionId: 'broken_radio',
@@ -1316,93 +1065,45 @@ const DISTRICTS = {
         maxQty: 1,
       },
       {
-        definitionId: 'matches',
-        weight: 5,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'dry_grass',
-        weight: 5,
-        minQty: 1,
-        maxQty: 1,
-      },
-      {
-        definitionId: 'pine_nut',
-        weight: 12,
-        minQty: 1,
-        maxQty: 3,
-      },
-      {
-        definitionId: 'wild_strawberry',
-        weight: 10,
-        minQty: 1,
-        maxQty: 3,
-      },
-      {
-        definitionId: 'acorn',
-        weight: 10,
-        minQty: 1,
-        maxQty: 4,
-      },
-      {
-        definitionId: 'chestnut',
-        weight: 9,
-        minQty: 1,
-        maxQty: 3,
-      },
-      {
-        definitionId: 'wild_berry',
-        weight: 8,
-        minQty: 1,
-        maxQty: 3,
-      },
-      {
-        definitionId: 'mushroom_edible',
-        weight: 7,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'pine_needle',
-        weight: 6,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'wild_wheat',
-        weight: 6,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'bait_worm',
-        weight: 8,
-        minQty: 1,
-        maxQty: 3,
-      },
-      {
         definitionId: 'stream_spring',
         weight: 12,
         minQty: 1,
         maxQty: 1,
       },
-      {
-        definitionId: 'herb',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0,
-      },
-      {
-        definitionId: 'vegetable',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0,
-      },
     ],
     special: null,
+    explorationYields: [
+      {
+        at: 30,
+        items: [
+          {
+            definitionId: 'duct_tape',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+      {
+        at: 60,
+        items: [
+          {
+            definitionId: 'woven_fabric',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+      {
+        at: 100,
+        items: [
+          {
+            definitionId: 'grain_seed',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+    ],
   },
   dobong: {
     id: 'dobong',
@@ -1421,48 +1122,34 @@ const DISTRICTS = {
     landmark: 'lm_dobong',
     lootTable: [
       {
-        definitionId: 'contaminated_water',
-        weight: 25,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0.3,
-      },
-      {
-        definitionId: 'tree_log',
-        weight: 25,
-        minQty: 1,
-        maxQty: 2,
+        definitionId: 'wood',
+        weight: 30,
+        minQty: 2,
+        maxQty: 4,
       },
       {
         definitionId: 'herb',
+        weight: 25,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        definitionId: 'mushroom_edible',
         weight: 20,
         minQty: 1,
         maxQty: 3,
       },
       {
-        definitionId: 'wood',
-        weight: 20,
-        minQty: 1,
-        maxQty: 3,
-      },
-      {
-        definitionId: 'rope',
+        definitionId: 'hide',
         weight: 15,
         minQty: 1,
-        maxQty: 2,
+        maxQty: 3,
       },
       {
-        definitionId: 'cloth',
-        weight: 10,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'water_bottle',
+        definitionId: 'bait_worm',
         weight: 8,
         minQty: 1,
-        maxQty: 1,
-        contamChance: 0.1,
+        maxQty: 3,
       },
       {
         definitionId: 'broken_radio',
@@ -1485,12 +1172,6 @@ const DISTRICTS = {
       {
         definitionId: 'broken_chair',
         weight: 4,
-        minQty: 1,
-        maxQty: 1,
-      },
-      {
-        definitionId: 'whetstone',
-        weight: 5,
         minQty: 1,
         maxQty: 1,
       },
@@ -1519,146 +1200,45 @@ const DISTRICTS = {
         maxQty: 1,
       },
       {
-        definitionId: 'pine_cone',
-        weight: 8,
-        minQty: 1,
-        maxQty: 3,
-      },
-      {
-        definitionId: 'dry_grass',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'pebble',
-        weight: 10,
-        minQty: 1,
-        maxQty: 3,
-      },
-      {
-        definitionId: 'firestone',
-        weight: 6,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'wild_berry',
-        weight: 12,
-        minQty: 1,
-        maxQty: 3,
-      },
-      {
-        definitionId: 'mushroom_edible',
-        weight: 10,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'mushroom_toxic',
-        weight: 3,
-        minQty: 1,
-        maxQty: 1,
-      },
-      {
-        definitionId: 'acorn',
-        weight: 10,
-        minQty: 2,
-        maxQty: 4,
-      },
-      {
-        definitionId: 'pine_needle',
-        weight: 10,
-        minQty: 2,
-        maxQty: 4,
-      },
-      {
-        definitionId: 'wild_garlic',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'dandelion',
-        weight: 8,
-        minQty: 1,
-        maxQty: 3,
-      },
-      {
-        definitionId: 'wild_root',
-        weight: 6,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'herb_seed',
-        weight: 3,
-        minQty: 1,
-        maxQty: 1,
-      },
-      {
-        definitionId: 'vegetable_seed',
-        weight: 2,
-        minQty: 1,
-        maxQty: 1,
-      },
-      {
-        definitionId: 'wild_strawberry',
-        weight: 12,
-        minQty: 1,
-        maxQty: 3,
-      },
-      {
-        definitionId: 'chestnut',
-        weight: 10,
-        minQty: 1,
-        maxQty: 3,
-      },
-      {
-        definitionId: 'wild_grape',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'pine_nut',
-        weight: 7,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'apple_wild',
-        weight: 6,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'wild_wheat',
-        weight: 6,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'bait_worm',
-        weight: 8,
-        minQty: 1,
-        maxQty: 3,
-      },
-      {
         definitionId: 'stream_spring',
         weight: 15,
         minQty: 1,
         maxQty: 1,
       },
-      {
-        definitionId: 'vegetable',
-        weight: 4,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0,
-      },
     ],
     special: null,
+    explorationYields: [
+      {
+        at: 30,
+        items: [
+          {
+            definitionId: 'firestone',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+      {
+        at: 60,
+        items: [
+          {
+            definitionId: 'mushroom_toxic',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+      {
+        at: 100,
+        items: [
+          {
+            definitionId: 'honey',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+    ],
   },
   dongdaemun: {
     id: 'dongdaemun',
@@ -1680,31 +1260,25 @@ const DISTRICTS = {
     lootTable: [
       {
         definitionId: 'cloth',
-        weight: 35,
+        weight: 40,
         minQty: 2,
-        maxQty: 5,
+        maxQty: 4,
       },
       {
-        definitionId: 'leather',
-        weight: 15,
+        definitionId: 'thread',
+        weight: 25,
         minQty: 1,
         maxQty: 3,
       },
       {
-        definitionId: 'thread',
-        weight: 15,
-        minQty: 2,
-        maxQty: 5,
-      },
-      {
-        definitionId: 'rope',
-        weight: 15,
+        definitionId: 'leather',
+        weight: 20,
         minQty: 1,
-        maxQty: 2,
+        maxQty: 3,
       },
       {
-        definitionId: 'scrap_metal',
-        weight: 8,
+        definitionId: 'large_cloth',
+        weight: 10,
         minQty: 1,
         maxQty: 2,
       },
@@ -1744,47 +1318,40 @@ const DISTRICTS = {
         minQty: 1,
         maxQty: 1,
       },
-      {
-        definitionId: 'dry_grass',
-        weight: 5,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'dandelion',
-        weight: 5,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'matches',
-        weight: 4,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'herb',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0,
-      },
-      {
-        definitionId: 'wild_berry',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0,
-      },
-      {
-        definitionId: 'vegetable',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0,
-      },
     ],
     special: null,
+    explorationYields: [
+      {
+        at: 30,
+        items: [
+          {
+            definitionId: 'large_cloth',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+      {
+        at: 60,
+        items: [
+          {
+            definitionId: 'woven_fabric',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+      {
+        at: 100,
+        items: [
+          {
+            definitionId: 'reinforced_fabric',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+    ],
   },
   dongjak: {
     id: 'dongjak',
@@ -1808,33 +1375,27 @@ const DISTRICTS = {
     lootTable: [
       {
         definitionId: 'cloth',
+        weight: 30,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        definitionId: 'water_bottle',
         weight: 25,
         minQty: 1,
         maxQty: 3,
       },
       {
-        definitionId: 'water_bottle',
+        definitionId: 'bandage',
         weight: 20,
         minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'rope',
-        weight: 15,
-        minQty: 1,
-        maxQty: 2,
+        maxQty: 3,
       },
       {
         definitionId: 'wood',
-        weight: 12,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'scrap_metal',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
+        weight: 20,
+        minQty: 2,
+        maxQty: 4,
       },
       {
         definitionId: 'broken_radio',
@@ -1884,88 +1445,40 @@ const DISTRICTS = {
         minQty: 1,
         maxQty: 1,
       },
-      {
-        definitionId: 'dry_grass',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'pebble',
-        weight: 8,
-        minQty: 1,
-        maxQty: 3,
-      },
-      {
-        definitionId: 'matches',
-        weight: 4,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'dandelion',
-        weight: 10,
-        minQty: 1,
-        maxQty: 3,
-      },
-      {
-        definitionId: 'wild_root',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'wild_garlic',
-        weight: 6,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'nettle',
-        weight: 6,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'herb',
-        weight: 6,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'vegetable_seed',
-        weight: 2,
-        minQty: 1,
-        maxQty: 1,
-      },
-      {
-        definitionId: 'sand',
-        weight: 8,
-        minQty: 1,
-        maxQty: 3,
-      },
-      {
-        definitionId: 'wild_wheat',
-        weight: 6,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'wild_berry',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0,
-      },
-      {
-        definitionId: 'vegetable',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0,
-      },
     ],
     special: null,
+    explorationYields: [
+      {
+        at: 30,
+        items: [
+          {
+            definitionId: 'alcohol_solution',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+      {
+        at: 60,
+        items: [
+          {
+            definitionId: 'brass_fragment',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+      {
+        at: 100,
+        items: [
+          {
+            definitionId: 'kevlar_fabric',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+    ],
   },
   mapo: {
     id: 'mapo',
@@ -1988,33 +1501,26 @@ const DISTRICTS = {
       {
         definitionId: 'cloth',
         weight: 25,
-        minQty: 1,
-        maxQty: 3,
+        minQty: 2,
+        maxQty: 4,
       },
       {
-        definitionId: 'scrap_metal',
+        definitionId: 'empty_bottle',
         weight: 25,
-        minQty: 1,
-        maxQty: 3,
+        minQty: 2,
+        maxQty: 4,
       },
       {
-        definitionId: 'rope',
-        weight: 15,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'water_bottle',
-        weight: 10,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0.15,
+        definitionId: 'plastic',
+        weight: 25,
+        minQty: 2,
+        maxQty: 4,
       },
       {
         definitionId: 'wire',
-        weight: 8,
+        weight: 20,
         minQty: 1,
-        maxQty: 2,
+        maxQty: 3,
       },
       {
         definitionId: 'broken_radio',
@@ -2046,51 +1552,43 @@ const DISTRICTS = {
         minQty: 1,
         maxQty: 1,
       },
-      {
-        definitionId: 'contaminated_water',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0.35,
-      },
-      {
-        definitionId: 'nettle',
-        weight: 6,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'sand',
-        weight: 8,
-        minQty: 1,
-        maxQty: 3,
-      },
-      {
-        definitionId: 'herb',
-        weight: 4,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0,
-      },
-      {
-        definitionId: 'wild_berry',
-        weight: 4,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0,
-      },
-      {
-        definitionId: 'vegetable',
-        weight: 4,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0,
-      },
     ],
     special: null,
     landmarks: [
       'lm_mapo',
       'lm_hangang_mapo',
+    ],
+    explorationYields: [
+      {
+        at: 30,
+        items: [
+          {
+            definitionId: 'copper_coil',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+      {
+        at: 60,
+        items: [
+          {
+            definitionId: 'battery',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+      {
+        at: 100,
+        items: [
+          {
+            definitionId: 'electric_motor',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
     ],
   },
   seodaemun: {
@@ -2111,33 +1609,26 @@ const DISTRICTS = {
     landmark: 'lm_seodaemun',
     lootTable: [
       {
-        definitionId: 'cloth',
+        definitionId: 'bandage',
         weight: 25,
         minQty: 1,
         maxQty: 3,
       },
       {
-        definitionId: 'scrap_metal',
-        weight: 20,
+        definitionId: 'glass_shard',
+        weight: 25,
         minQty: 1,
         maxQty: 3,
       },
       {
-        definitionId: 'water_bottle',
+        definitionId: 'antiseptic',
+        weight: 20,
+        minQty: 1,
+        maxQty: 2,
+      },
+      {
+        definitionId: 'painkiller',
         weight: 15,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0.1,
-      },
-      {
-        definitionId: 'rope',
-        weight: 10,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'herb',
-        weight: 10,
         minQty: 1,
         maxQty: 2,
       },
@@ -2171,40 +1662,40 @@ const DISTRICTS = {
         minQty: 1,
         maxQty: 1,
       },
-      {
-        definitionId: 'tree_log',
-        weight: 8,
-        minQty: 1,
-        maxQty: 1,
-      },
-      {
-        definitionId: 'pine_cone',
-        weight: 5,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'dandelion',
-        weight: 5,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'wild_berry',
-        weight: 4,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0,
-      },
-      {
-        definitionId: 'vegetable',
-        weight: 4,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0,
-      },
     ],
     special: 'severance',
+    explorationYields: [
+      {
+        at: 30,
+        items: [
+          {
+            definitionId: 'alcohol_solution',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+      {
+        at: 60,
+        items: [
+          {
+            definitionId: 'herb_powder',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+      {
+        at: 100,
+        items: [
+          {
+            definitionId: 'virus_sample',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+    ],
   },
   seocho: {
     id: 'seocho',
@@ -2225,25 +1716,25 @@ const DISTRICTS = {
     lootTable: [
       {
         definitionId: 'scrap_metal',
-        weight: 25,
-        minQty: 1,
-        maxQty: 3,
+        weight: 30,
+        minQty: 2,
+        maxQty: 4,
       },
       {
         definitionId: 'cloth',
+        weight: 25,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        definitionId: 'rope',
         weight: 20,
         minQty: 1,
         maxQty: 3,
       },
       {
-        definitionId: 'water_bottle',
+        definitionId: 'empty_cartridge',
         weight: 15,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'rope',
-        weight: 10,
         minQty: 1,
         maxQty: 2,
       },
@@ -2289,42 +1780,43 @@ const DISTRICTS = {
         minQty: 1,
         maxQty: 1,
       },
-      {
-        definitionId: 'herb',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'tree_log',
-        weight: 6,
-        minQty: 1,
-        maxQty: 1,
-      },
-      {
-        definitionId: 'wild_berry',
-        weight: 5,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'dry_grass',
-        weight: 5,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'vegetable',
-        weight: 4,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0,
-      },
     ],
     special: null,
     landmarks: [
       'lm_seocho',
       'lm_hangang_seocho',
+    ],
+    explorationYields: [
+      {
+        at: 30,
+        items: [
+          {
+            definitionId: 'empty_cartridge',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+      {
+        at: 60,
+        items: [
+          {
+            definitionId: 'black_powder',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+      {
+        at: 100,
+        items: [
+          {
+            definitionId: 'detonator_cap',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
     ],
   },
   seongdong: {
@@ -2347,43 +1839,25 @@ const DISTRICTS = {
     lootTable: [
       {
         definitionId: 'scrap_metal',
-        weight: 40,
+        weight: 35,
         minQty: 2,
-        maxQty: 6,
-      },
-      {
-        definitionId: 'rope',
-        weight: 15,
-        minQty: 1,
-        maxQty: 3,
-      },
-      {
-        definitionId: 'electronic_parts',
-        weight: 15,
-        minQty: 1,
-        maxQty: 3,
+        maxQty: 4,
       },
       {
         definitionId: 'wire',
-        weight: 12,
+        weight: 25,
         minQty: 1,
         maxQty: 3,
       },
       {
         definitionId: 'nail',
-        weight: 10,
+        weight: 25,
         minQty: 2,
-        maxQty: 5,
+        maxQty: 4,
       },
       {
-        definitionId: 'leather',
-        weight: 10,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'cloth',
-        weight: 5,
+        definitionId: 'refined_metal',
+        weight: 15,
         minQty: 1,
         maxQty: 2,
       },
@@ -2430,62 +1904,48 @@ const DISTRICTS = {
         maxQty: 1,
       },
       {
-        definitionId: 'sulfur',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
         definitionId: 'gravel_pile',
         weight: 8,
         minQty: 1,
         maxQty: 1,
-      },
-      {
-        definitionId: 'soil_bag',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'contaminated_water',
-        weight: 12,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0.5,
-      },
-      {
-        definitionId: 'circuit_board',
-        weight: 5,
-        minQty: 1,
-        maxQty: 1,
-      },
-      {
-        definitionId: 'herb',
-        weight: 4,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0,
-      },
-      {
-        definitionId: 'wild_berry',
-        weight: 4,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0,
-      },
-      {
-        definitionId: 'vegetable',
-        weight: 4,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0,
       },
     ],
     special: null,
     landmarks: [
       'lm_seongdong',
       'lm_hangang_seongdong',
+    ],
+    explorationYields: [
+      {
+        at: 30,
+        items: [
+          {
+            definitionId: 'refined_metal',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+      {
+        at: 60,
+        items: [
+          {
+            definitionId: 'alloy_ingot',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+      {
+        at: 100,
+        items: [
+          {
+            definitionId: 'steel_plate',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
     ],
   },
   seongbuk: {
@@ -2507,39 +1967,27 @@ const DISTRICTS = {
     lootTable: [
       {
         definitionId: 'cloth',
+        weight: 30,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        definitionId: 'plastic',
         weight: 25,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        definitionId: 'canned_food',
+        weight: 20,
         minQty: 1,
         maxQty: 3,
       },
       {
-        definitionId: 'water_bottle',
+        definitionId: 'thread',
         weight: 20,
         minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'rope',
-        weight: 15,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'wood',
-        weight: 12,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'scrap_metal',
-        weight: 10,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'tree_log',
-        weight: 5,
-        minQty: 1,
-        maxQty: 1,
+        maxQty: 3,
       },
       {
         definitionId: 'broken_radio',
@@ -2577,70 +2025,40 @@ const DISTRICTS = {
         minQty: 1,
         maxQty: 1,
       },
-      {
-        definitionId: 'pine_cone',
-        weight: 6,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'matches',
-        weight: 4,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'dandelion',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'wild_garlic',
-        weight: 6,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'herb_seed',
-        weight: 3,
-        minQty: 1,
-        maxQty: 1,
-      },
-      {
-        definitionId: 'wild_berry',
-        weight: 6,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'mushroom_edible',
-        weight: 5,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'acorn',
-        weight: 5,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'herb',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0,
-      },
-      {
-        definitionId: 'vegetable',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0,
-      },
     ],
     special: null,
+    explorationYields: [
+      {
+        at: 30,
+        items: [
+          {
+            definitionId: 'herb_powder',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+      {
+        at: 60,
+        items: [
+          {
+            definitionId: 'saltpeter',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+      {
+        at: 100,
+        items: [
+          {
+            definitionId: 'grain_seed',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+    ],
   },
   songpa: {
     id: 'songpa',
@@ -2663,30 +2081,24 @@ const DISTRICTS = {
       {
         definitionId: 'scrap_metal',
         weight: 25,
-        minQty: 1,
-        maxQty: 3,
+        minQty: 2,
+        maxQty: 4,
       },
       {
         definitionId: 'cloth',
-        weight: 20,
+        weight: 25,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        definitionId: 'glass_shard',
+        weight: 25,
         minQty: 1,
         maxQty: 3,
       },
       {
-        definitionId: 'water_bottle',
-        weight: 15,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'rope',
-        weight: 10,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'wire',
-        weight: 8,
+        definitionId: 'battery',
+        weight: 12,
         minQty: 1,
         maxQty: 2,
       },
@@ -2720,50 +2132,43 @@ const DISTRICTS = {
         minQty: 1,
         maxQty: 1,
       },
-      {
-        definitionId: 'nettle',
-        weight: 6,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'wild_root',
-        weight: 5,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'sand',
-        weight: 8,
-        minQty: 1,
-        maxQty: 3,
-      },
-      {
-        definitionId: 'herb',
-        weight: 4,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0,
-      },
-      {
-        definitionId: 'wild_berry',
-        weight: 4,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0,
-      },
-      {
-        definitionId: 'vegetable',
-        weight: 4,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0,
-      },
     ],
     special: 'lotte_tower',
     landmarks: [
       'lm_songpa',
       'lm_hangang_songpa',
+    ],
+    explorationYields: [
+      {
+        at: 30,
+        items: [
+          {
+            definitionId: 'battery',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+      {
+        at: 60,
+        items: [
+          {
+            definitionId: 'alloy_ingot',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+      {
+        at: 100,
+        items: [
+          {
+            definitionId: 'power_cell',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
     ],
   },
   yangcheon: {
@@ -2784,33 +2189,27 @@ const DISTRICTS = {
     lootTable: [
       {
         definitionId: 'cloth',
+        weight: 30,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        definitionId: 'water_bottle',
         weight: 25,
         minQty: 1,
         maxQty: 3,
       },
       {
-        definitionId: 'water_bottle',
+        definitionId: 'plastic',
+        weight: 25,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        definitionId: 'canned_food',
         weight: 20,
         minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'rope',
-        weight: 15,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'scrap_metal',
-        weight: 10,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'wood',
-        weight: 10,
-        minQty: 1,
-        maxQty: 2,
+        maxQty: 3,
       },
       {
         definitionId: 'broken_radio',
@@ -2842,53 +2241,40 @@ const DISTRICTS = {
         minQty: 1,
         maxQty: 1,
       },
-      {
-        definitionId: 'matches',
-        weight: 5,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'dry_grass',
-        weight: 5,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'wild_root',
-        weight: 5,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'dandelion',
-        weight: 5,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'herb',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0,
-      },
-      {
-        definitionId: 'wild_berry',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0,
-      },
-      {
-        definitionId: 'vegetable',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0,
-      },
     ],
     special: null,
+    explorationYields: [
+      {
+        at: 30,
+        items: [
+          {
+            definitionId: 'duct_tape',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+      {
+        at: 60,
+        items: [
+          {
+            definitionId: 'brass_fragment',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+      {
+        at: 100,
+        items: [
+          {
+            definitionId: 'reinforced_fabric',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+    ],
   },
   yeongdeungpo: {
     id: 'yeongdeungpo',
@@ -2909,31 +2295,25 @@ const DISTRICTS = {
     lootTable: [
       {
         definitionId: 'scrap_metal',
+        weight: 30,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        definitionId: 'electronic_parts',
         weight: 25,
         minQty: 1,
         maxQty: 3,
       },
       {
-        definitionId: 'cloth',
-        weight: 20,
-        minQty: 1,
-        maxQty: 3,
-      },
-      {
-        definitionId: 'wire',
+        definitionId: 'empty_cartridge',
         weight: 15,
-        minQty: 1,
-        maxQty: 3,
-      },
-      {
-        definitionId: 'rope',
-        weight: 10,
         minQty: 1,
         maxQty: 2,
       },
       {
-        definitionId: 'electronic_parts',
-        weight: 10,
+        definitionId: 'copper_coil',
+        weight: 12,
         minQty: 1,
         maxQty: 2,
       },
@@ -2979,39 +2359,6 @@ const DISTRICTS = {
         minQty: 1,
         maxQty: 1,
       },
-      {
-        definitionId: 'nettle',
-        weight: 6,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'circuit_board',
-        weight: 5,
-        minQty: 1,
-        maxQty: 1,
-      },
-      {
-        definitionId: 'herb',
-        weight: 4,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0,
-      },
-      {
-        definitionId: 'wild_berry',
-        weight: 4,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0,
-      },
-      {
-        definitionId: 'vegetable',
-        weight: 4,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0,
-      },
     ],
     special: 'kbs',
     landmarks: [
@@ -3019,6 +2366,38 @@ const DISTRICTS = {
       'lm_63_building',
       'lm_kbs',
       'lm_hangang_yeongdeungpo',
+    ],
+    explorationYields: [
+      {
+        at: 30,
+        items: [
+          {
+            definitionId: 'copper_coil',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+      {
+        at: 60,
+        items: [
+          {
+            definitionId: 'circuit_module',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+      {
+        at: 100,
+        items: [
+          {
+            definitionId: 'generator_core',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
     ],
   },
   yongsan: {
@@ -3040,31 +2419,25 @@ const DISTRICTS = {
     lootTable: [
       {
         definitionId: 'electronic_parts',
-        weight: 25,
-        minQty: 2,
-        maxQty: 5,
-      },
-      {
-        definitionId: 'scrap_metal',
-        weight: 20,
+        weight: 30,
         minQty: 1,
         maxQty: 3,
       },
       {
         definitionId: 'wire',
-        weight: 15,
+        weight: 25,
         minQty: 1,
         maxQty: 3,
       },
       {
-        definitionId: 'cloth',
-        weight: 10,
+        definitionId: 'battery',
+        weight: 12,
         minQty: 1,
         maxQty: 2,
       },
       {
-        definitionId: 'rope',
-        weight: 8,
+        definitionId: 'microchip',
+        weight: 10,
         minQty: 1,
         maxQty: 2,
       },
@@ -3087,13 +2460,6 @@ const DISTRICTS = {
         maxQty: 1,
       },
       {
-        definitionId: 'combat_knife',
-        weight: 2,
-        minQty: 1,
-        maxQty: 1,
-        cls: 'expedition',
-      },
-      {
         definitionId: 'wrecked_car',
         weight: 5,
         minQty: 1,
@@ -3111,43 +2477,43 @@ const DISTRICTS = {
         minQty: 1,
         maxQty: 1,
       },
-      {
-        definitionId: 'nettle',
-        weight: 5,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'herb',
-        weight: 6,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'circuit_board',
-        weight: 5,
-        minQty: 1,
-        maxQty: 1,
-      },
-      {
-        definitionId: 'wild_berry',
-        weight: 4,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0,
-      },
-      {
-        definitionId: 'vegetable',
-        weight: 4,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0,
-      },
     ],
     special: 'us_base',
     landmarks: [
       'lm_yongsan',
       'lm_hangang_yongsan',
+    ],
+    explorationYields: [
+      {
+        at: 30,
+        items: [
+          {
+            definitionId: 'microchip',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+      {
+        at: 60,
+        items: [
+          {
+            definitionId: 'circuit_module',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+      {
+        at: 100,
+        items: [
+          {
+            definitionId: 'kevlar_fabric',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
     ],
   },
   eunpyeong: {
@@ -3166,40 +2532,34 @@ const DISTRICTS = {
     landmark: 'lm_eunpyeong',
     lootTable: [
       {
-        definitionId: 'tree_log',
-        weight: 20,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
         definitionId: 'herb',
-        weight: 28,
-        minQty: 1,
-        maxQty: 3,
+        weight: 30,
+        minQty: 2,
+        maxQty: 4,
       },
       {
         definitionId: 'wood',
-        weight: 15,
-        minQty: 1,
-        maxQty: 2,
+        weight: 25,
+        minQty: 2,
+        maxQty: 4,
       },
       {
-        definitionId: 'cloth',
-        weight: 15,
-        minQty: 1,
-        maxQty: 2,
+        definitionId: 'tree_log',
+        weight: 20,
+        minQty: 2,
+        maxQty: 4,
       },
       {
-        definitionId: 'water_bottle',
-        weight: 10,
-        minQty: 1,
-        maxQty: 2,
+        definitionId: 'nettle',
+        weight: 20,
+        minQty: 2,
+        maxQty: 4,
       },
       {
-        definitionId: 'rope',
-        weight: 10,
+        definitionId: 'bait_worm',
+        weight: 8,
         minQty: 1,
-        maxQty: 2,
+        maxQty: 3,
       },
       {
         definitionId: 'broken_radio',
@@ -3255,123 +2615,40 @@ const DISTRICTS = {
         minQty: 1,
         maxQty: 1,
       },
-      {
-        definitionId: 'pine_cone',
-        weight: 10,
-        minQty: 1,
-        maxQty: 3,
-      },
-      {
-        definitionId: 'dry_grass',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'pebble',
-        weight: 8,
-        minQty: 1,
-        maxQty: 3,
-      },
-      {
-        definitionId: 'firestone',
-        weight: 6,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'wild_berry',
-        weight: 10,
-        minQty: 1,
-        maxQty: 3,
-      },
-      {
-        definitionId: 'mushroom_edible',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'acorn',
-        weight: 8,
-        minQty: 2,
-        maxQty: 4,
-      },
-      {
-        definitionId: 'pine_needle',
-        weight: 10,
-        minQty: 2,
-        maxQty: 4,
-      },
-      {
-        definitionId: 'wild_garlic',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'dandelion',
-        weight: 8,
-        minQty: 1,
-        maxQty: 3,
-      },
-      {
-        definitionId: 'wild_root',
-        weight: 6,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'herb_seed',
-        weight: 3,
-        minQty: 1,
-        maxQty: 1,
-      },
-      {
-        definitionId: 'chestnut',
-        weight: 10,
-        minQty: 1,
-        maxQty: 3,
-      },
-      {
-        definitionId: 'apple_wild',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'wild_strawberry',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'pine_nut',
-        weight: 6,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'wild_wheat',
-        weight: 6,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'bait_worm',
-        weight: 8,
-        minQty: 1,
-        maxQty: 3,
-      },
-      {
-        definitionId: 'vegetable',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0,
-      },
     ],
     special: null,
+    explorationYields: [
+      {
+        at: 30,
+        items: [
+          {
+            definitionId: 'firestone',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+      {
+        at: 60,
+        items: [
+          {
+            definitionId: 'wild_garlic',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+      {
+        at: 100,
+        items: [
+          {
+            definitionId: 'herb_seed',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+    ],
   },
   jongno: {
     id: 'jongno',
@@ -3393,25 +2670,25 @@ const DISTRICTS = {
     lootTable: [
       {
         definitionId: 'scrap_metal',
-        weight: 25,
+        weight: 30,
         minQty: 2,
         maxQty: 4,
       },
       {
         definitionId: 'cloth',
-        weight: 15,
-        minQty: 1,
-        maxQty: 3,
+        weight: 25,
+        minQty: 2,
+        maxQty: 4,
       },
       {
-        definitionId: 'rope',
-        weight: 10,
+        definitionId: 'empty_cartridge',
+        weight: 15,
         minQty: 1,
         maxQty: 2,
       },
       {
-        definitionId: 'wire',
-        weight: 10,
+        definitionId: 'sulfur',
+        weight: 12,
         minQty: 1,
         maxQty: 2,
       },
@@ -3469,42 +2746,40 @@ const DISTRICTS = {
         minQty: 1,
         maxQty: 1,
       },
-      {
-        definitionId: 'contaminated_water',
-        weight: 15,
-        minQty: 1,
-        maxQty: 3,
-        contamChance: 0.8,
-      },
-      {
-        definitionId: 'sulfur',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'herb',
-        weight: 4,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0,
-      },
-      {
-        definitionId: 'wild_berry',
-        weight: 4,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0,
-      },
-      {
-        definitionId: 'vegetable',
-        weight: 4,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0,
-      },
     ],
     special: 'gwanghwamun',
+    explorationYields: [
+      {
+        at: 30,
+        items: [
+          {
+            definitionId: 'empty_cartridge',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+      {
+        at: 60,
+        items: [
+          {
+            definitionId: 'black_powder',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+      {
+        at: 100,
+        items: [
+          {
+            definitionId: 'steel_plate',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+    ],
   },
   junggoo: {
     id: 'junggoo',
@@ -3525,33 +2800,27 @@ const DISTRICTS = {
     lootTable: [
       {
         definitionId: 'cloth',
-        weight: 30,
+        weight: 35,
         minQty: 2,
-        maxQty: 5,
+        maxQty: 4,
       },
       {
-        definitionId: 'leather',
-        weight: 12,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'thread',
-        weight: 10,
+        definitionId: 'canned_food',
+        weight: 20,
         minQty: 1,
         maxQty: 3,
       },
       {
-        definitionId: 'water_bottle',
-        weight: 10,
-        minQty: 1,
-        maxQty: 2,
+        definitionId: 'empty_bottle',
+        weight: 20,
+        minQty: 2,
+        maxQty: 4,
       },
       {
-        definitionId: 'scrap_metal',
-        weight: 10,
+        definitionId: 'leather',
+        weight: 15,
         minQty: 1,
-        maxQty: 2,
+        maxQty: 3,
       },
       {
         definitionId: 'broken_radio',
@@ -3595,42 +2864,43 @@ const DISTRICTS = {
         minQty: 1,
         maxQty: 1,
       },
-      {
-        definitionId: 'matches',
-        weight: 5,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'dry_grass',
-        weight: 4,
-        minQty: 1,
-        maxQty: 1,
-      },
-      {
-        definitionId: 'herb',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'wild_berry',
-        weight: 6,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'vegetable',
-        weight: 4,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0,
-      },
     ],
     special: 'seoul_city_hall',
     landmarks: [
       'lm_junggoo',
       'lm_hangang_junggoo',
+    ],
+    explorationYields: [
+      {
+        at: 30,
+        items: [
+          {
+            definitionId: 'large_cloth',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+      {
+        at: 60,
+        items: [
+          {
+            definitionId: 'lead_ingot',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+      {
+        at: 100,
+        items: [
+          {
+            definitionId: 'alloy_ingot',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
     ],
   },
   jungrang: {
@@ -3651,35 +2921,34 @@ const DISTRICTS = {
     landmark: 'lm_jungrang',
     lootTable: [
       {
-        definitionId: 'contaminated_water',
-        weight: 20,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0.25,
-      },
-      {
-        definitionId: 'cloth',
-        weight: 20,
-        minQty: 1,
-        maxQty: 3,
-      },
-      {
         definitionId: 'herb',
-        weight: 15,
-        minQty: 1,
-        maxQty: 3,
+        weight: 25,
+        minQty: 2,
+        maxQty: 4,
       },
       {
-        definitionId: 'rope',
-        weight: 12,
-        minQty: 1,
-        maxQty: 2,
+        definitionId: 'nettle',
+        weight: 25,
+        minQty: 2,
+        maxQty: 4,
       },
       {
         definitionId: 'wood',
-        weight: 12,
+        weight: 25,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        definitionId: 'wild_berry',
+        weight: 20,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        definitionId: 'bait_worm',
+        weight: 8,
         minQty: 1,
-        maxQty: 2,
+        maxQty: 3,
       },
       {
         definitionId: 'broken_radio',
@@ -3729,76 +2998,40 @@ const DISTRICTS = {
         minQty: 1,
         maxQty: 1,
       },
-      {
-        definitionId: 'dry_grass',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'pine_cone',
-        weight: 6,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'nettle',
-        weight: 12,
-        minQty: 1,
-        maxQty: 3,
-      },
-      {
-        definitionId: 'bamboo_shoot',
-        weight: 10,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'dandelion',
-        weight: 10,
-        minQty: 1,
-        maxQty: 3,
-      },
-      {
-        definitionId: 'wild_root',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'mushroom_edible',
-        weight: 6,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'wild_wheat',
-        weight: 6,
-        minQty: 1,
-        maxQty: 2,
-      },
-      {
-        definitionId: 'bait_worm',
-        weight: 8,
-        minQty: 1,
-        maxQty: 3,
-      },
-      {
-        definitionId: 'wild_berry',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0,
-      },
-      {
-        definitionId: 'vegetable',
-        weight: 8,
-        minQty: 1,
-        maxQty: 2,
-        contamChance: 0,
-      },
     ],
     special: null,
+    explorationYields: [
+      {
+        at: 30,
+        items: [
+          {
+            definitionId: 'wild_garlic',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+      {
+        at: 60,
+        items: [
+          {
+            definitionId: 'vegetable_seed',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+      {
+        at: 100,
+        items: [
+          {
+            definitionId: 'honey',
+            minQty: 3,
+            maxQty: 5,
+          },
+        ],
+      },
+    ],
   },
 };
 

@@ -24,6 +24,50 @@ import GameData            from '../data/GameData.js';
 import SystemRegistry      from '../core/SystemRegistry.js';
 import { locationPathText } from '../ui/locationPath.js';
 
+/** minQty~maxQty 범위 수량. 범위 미지정 시 qty(기본 1) 고정. */
+function rollQty(entry) {
+  if (!Number.isFinite(entry?.minQty)) return entry?.qty ?? 1;
+  const min = entry.minQty;
+  const max = Number.isFinite(entry.maxQty) ? entry.maxQty : min;
+  return min + Math.floor(Math.random() * (max - min + 1));
+}
+
+/**
+ * 가중치 테이블에서 count개를 뽑는다. 세부장소·랜드마크가 같은 규칙을 쓴다.
+ * 테이블 엔트리는 { id, weight, minQty?, maxQty?, contamChance? } 형식.
+ * @param {Array} table
+ * @param {[number, number]} countRange
+ * @param {number} stockRatio 재고 비율(0~1). 1 = 풀스톡.
+ */
+function rollWeightedLoot(table = [], countRange = [1, 3], stockRatio = 1.0) {
+  if (!table.length) return [];
+  const [minCount, maxCount] = countRange ?? [1, 3];
+  let count = minCount + Math.floor(Math.random() * (maxCount - minCount + 1));
+  count = Math.max(0, Math.round(count * stockRatio));
+
+  const totalWeight = table.reduce((sum, e) => sum + (e.weight ?? 0), 0);
+  if (totalWeight <= 0) return [];
+  const items   = GameData?.items ?? {};
+  const results = [];
+
+  for (let i = 0; i < count; i++) {
+    let rand = Math.random() * totalWeight;
+    for (const entry of table) {
+      rand -= (entry.weight ?? 0);
+      if (rand > 0) continue;
+      if (!items[entry.id]) break;  // 아이템 정의 없으면 스킵
+      const contaminated = Math.random() < (entry.contamChance ?? 0);
+      results.push({
+        definitionId:  entry.id,
+        quantity:      rollQty(entry),
+        contamination: contaminated ? 60 : 0,
+      });
+      break;
+    }
+  }
+  return results;
+}
+
 const ExploreSystem = {
   // W3-2 Phase C — 일자 경과 재고 감소 추적 (tpAdvance 시 day 변경 감지)
   _currentDayForDecay: -Infinity,
@@ -381,6 +425,22 @@ const ExploreSystem = {
       gs.location.nodesVisited.push(districtId);
     }
 
+    // 랜드마크 안에서 누른 탐색은 랜드마크 자체 테이블을 쓴다.
+    // 구 자원(EcologySystem 표면 재생)과 구 탐사도는 건드리지 않는다 —
+    // 같은 자리에서 구를 반복 채집하면 구별 자원 모델이 무의미해진다.
+    const landmarkKey = gs.location.currentLandmark;
+    if (landmarkKey && landmarkKey !== 'basecamp') {
+      const lmLoot = this._generateLandmarkLoot(landmarkKey);
+      if (lmLoot.length > 0) {
+        this._placeLoot(lmLoot);
+      } else {
+        EventBus.emit('notify', { message: I18n.t('exploreSys.alreadyLooted', { name: locationPathText() }), type: 'info' });
+      }
+      EventBus.emit('notify', { message: I18n.t('exploreSys.exploreComplete', { name: locationPathText() }), type: 'info' });
+      EventBus.emit('boardChanged', {});
+      return;
+    }
+
     if (district.lootTable?.length) {
       // ── 자원 이원화 모델 (표면=연속 재생 / 탐사=상시) + 지역 탐사도 ──
       // 표면 산출은 구의 자원 레벨(EcologySystem)에 비례, 탐색 1회마다 줄었다 시간 경과로 재생.
@@ -481,7 +541,8 @@ const ExploreSystem = {
       for (const y of yields) {
         if (!(y.at > prev && y.at <= next)) continue;  // 이번 탐사로 통과한 임계값만
         for (const it of (y.items ?? [])) {
-          if (GameData?.items[it.definitionId]) loot.push({ definitionId: it.definitionId, quantity: it.qty ?? 1, contamination: 0 });
+          if (!GameData?.items[it.definitionId]) continue;
+          loot.push({ definitionId: it.definitionId, quantity: rollQty(it), contamination: 0 });
         }
       }
       if (loot.length > 0) {
@@ -958,35 +1019,19 @@ const ExploreSystem = {
   },
 
   _generateSubLocationLoot(sub) {
-    const table      = sub.lootTable ?? [];
-    const [minCount, maxCount] = sub.lootCount ?? [1, 3];
-    let count        = minCount + Math.floor(Math.random() * (maxCount - minCount + 1));
-
-    // W3-2 Phase B — subLocationStock 재고 비율 반영 (보라매 하드코드 대체)
     // 재고 미초기화 = 1.0 (풀스톡), 고갈 시 0
     const stockRatio = GameState.getSubLocationStockRatio?.(sub.id) ?? 1.0;
-    count = Math.max(0, Math.round(count * stockRatio));
-    const totalWeight = table.reduce((s, e) => s + e.weight, 0);
-    const results    = [];
-    const items      = GameData?.items ?? {};
+    return rollWeightedLoot(sub.lootTable, sub.lootCount, stockRatio);
+  },
 
-    for (let i = 0; i < count; i++) {
-      let rand = Math.random() * totalWeight;
-      for (const entry of table) {
-        rand -= entry.weight;
-        if (rand <= 0) {
-          if (!items[entry.id]) break; // 아이템 정의 없으면 스킵
-          const contaminated = Math.random() < (entry.contamChance ?? 0);
-          results.push({
-            definitionId:  entry.id,
-            quantity:      1,
-            contamination: contaminated ? 60 : 0,
-          });
-          break;
-        }
-      }
-    }
-    return results;
+  /**
+   * 랜드마크 자체의 드랍. 세부장소가 아니라 랜드마크 안에서 '탐색'을 눌렀을 때 쓴다.
+   * 구 테이블과 완전히 분리돼 있어 같은 자리에서 구 자원을 반복 채집하지 못한다.
+   */
+  _generateLandmarkLoot(landmarkKey) {
+    const lm = getLandmarkData(landmarkKey);
+    if (!lm?.lootTable?.length) return [];
+    return rollWeightedLoot(lm.lootTable, lm.lootCount);
   },
 
   // ── 랜드마크 퇴장 ────────────────────────────────────────

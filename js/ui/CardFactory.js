@@ -739,6 +739,8 @@ const CARD_IMAGES = {
 // noSceneImage를 선언한 장소는 경로를 만들지 않고 아이콘 폴백으로 넘긴다.
 function subLocationImage(def) {
   if (def?.noSceneImage) return null;
+  // 전용 배경이 없는 세부장소(랜드마크 입구 등)는 데이터가 대체 경로를 직접 지정한다.
+  if (def?.sceneImage) return def.sceneImage;
   const key = def?.subLocationId ?? def?.id?.replace(/^sl_/, '');
   return key ? `assets/images/sublocations/${key}.png` : null;
 }
