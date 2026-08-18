@@ -263,7 +263,7 @@ function helpFor(key) { return FIELD_HELP[key] || ''; }
 const BAL_CAT_LABEL = {
   design: '설계 목표', stats: '스탯 감소율(/TP)', hydration: '수분', armor: '방어력',
   noise: '소음', travel: '이동', crafting: '제작', quality: '제작 품질', combat: '전투',
-  campfire: '모닥불', explore: '탐색 루팅', encounter: '조우', disease: '질병',
+  campfire: '모닥불', acidRain: '산성비 노출', explore: '탐색 루팅', encounter: '조우', disease: '질병',
   moraleTiers: '사기 구간', raidEvents: '레이드 이벤트', hordeWaves: '무리 웨이브',
   hospitalSiege: '병원 공성', patientIntake: '환자 유입', raiderEvents: '약탈자 이벤트',
   night: '야간', medicalStation: '의료소', fishing: '낚시', seasonal: '계절 보너스 루팅',
@@ -430,6 +430,10 @@ const BAL_HELP = {
   fuelConsumePerTP: 'TP당 연료(내구도) 소모.',
   noFuelTempBoost: '연료 없을 때 체온 상승량.',
   weatherDouseChancePerTP: '비·눈에 화기가 꺼질 TP당 확률(0~1). weather_resistant 태그 구조물은 면역.',
+  // acidRain
+  hpLossPerTP: '산성비 야외 노출 TP당 HP 감소량. acidImmunity 장비 착용 시 면제.',
+  infectionGainPerTP: '산성비 야외 노출 TP당 감염 증가량. acidImmunity 장비 착용 시 면제.',
+  warnIntervalTP: '산성비 노출 경고를 다시 띄우는 간격(TP). 지속 피해를 놓치지 않게 한다.',
   // encounter
   reductionCap: '조우 확률 감소 상한(0~1).',
   structureReductCap: '구조물 조우 감소 상한(0~1).',

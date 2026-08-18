@@ -257,6 +257,15 @@ const BALANCE = {
     weatherDouseChancePerTP: 0.02,  // 비·눈에 화기가 꺼질 TP당 확률
   },
 
+  // ── 산성비 노출 ─────────────────────────────────────
+  // 안전 지대(베이스캠프 완공 + 메인 화면) 밖에서 산성비를 맞는 동안 TP마다 적용.
+  // acidImmunity 장비(내산성 망토)를 입으면 전부 면제된다.
+  acidRain: {
+    hpLossPerTP:        1,   // 산성비 노출 TP당 HP 감소
+    infectionGainPerTP: 1,   // 산성 화상 상처로 들어오는 감염 증가
+    warnIntervalTP:     10,  // 노출 경고 재발화 간격(TP) — 지속 피해를 놓치지 않게 한다
+  },
+
   // ── 탐색 루팅 ───────────────────────────────────────
   explore: {
     lootCountMin: 1,  // (기존 2~5 → 1~3으로 감소)

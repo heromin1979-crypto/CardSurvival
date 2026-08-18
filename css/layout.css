@@ -305,6 +305,8 @@
 .bc-weather-badge[data-weather="blizzard"]{ background: rgba(160,200,240,0.20); color: #c0e0ff; }
 .bc-weather-badge[data-weather="snow"]    { background: rgba(180,220,255,0.15); color: #b0d8f8; }
 .bc-weather-badge[data-weather="rainy"]   { background: rgba(60,100,140,0.20); color: #80b0d0; }
+/* 산성비 — 오염 계열이므로 --stat-radiation(#99cc22) 황록을 낮춰 쓴다 */
+.bc-weather-badge[data-weather="acid_rain"]{ background: rgba(153,204,34,0.18); color: #a8c445; }
 
 /* ── 온도 표시 ───────────────────────────────────────────── */
 .bc-temp-display {
