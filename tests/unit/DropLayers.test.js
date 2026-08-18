@@ -36,6 +36,53 @@ describe('구 — 반복 재료는 소수만 남는다', () => {
   });
 });
 
+describe('구 — 1회 자원은 지역색을 갖는다', () => {
+  const onceOf = (d) => (d.lootTable ?? []).filter(e => isOnceLoot(e.definitionId)).map(e => e.definitionId);
+
+  it('구마다 4~5종이다', () => {
+    for (const [id, d] of Object.entries(DISTRICTS)) {
+      const n = onceOf(d).length;
+      expect(n, `${id} 1회 자원 ${n}종`).toBeGreaterThanOrEqual(4);
+      expect(n, `${id} 1회 자원 ${n}종`).toBeLessThanOrEqual(5);
+    }
+  });
+
+  it('한 항목이 6개 구 이상에 깔리지 않는다', () => {
+    // regression: 고장난 라디오·소화기가 25개 구 전부에 있어 어느 구를 털어도 같은 잔해가 나왔다
+    const usage = {};
+    for (const [id, d] of Object.entries(DISTRICTS)) {
+      for (const defId of onceOf(d)) (usage[defId] ??= []).push(id);
+    }
+    const overused = Object.entries(usage).filter(([, ds]) => ds.length > 5);
+    expect(overused.map(([defId, ds]) => `${defId}:${ds.length}`)).toEqual([]);
+  });
+
+  it('어느 두 구도 1회 자원 3종 이상을 공유하지 않는다', () => {
+    const ids = Object.keys(DISTRICTS);
+    const sets = Object.fromEntries(ids.map(id => [id, onceOf(DISTRICTS[id])]));
+    const heavy = [];
+    for (let i = 0; i < ids.length; i++) {
+      for (let j = i + 1; j < ids.length; j++) {
+        const shared = sets[ids[i]].filter(x => sets[ids[j]].includes(x));
+        if (shared.length >= 3) heavy.push(`${ids[i]}↔${ids[j]}: ${shared.join(',')}`);
+      }
+    }
+    expect(heavy).toEqual([]);
+  });
+
+  it('구마다 조합이 서로 다르다', () => {
+    const keys = Object.values(DISTRICTS).map(d => [...onceOf(d)].sort().join('|'));
+    expect(new Set(keys).size).toBe(keys.length);
+  });
+
+  it('산·계곡 구는 물 공급원(산개울)을 유지한다', () => {
+    // stream_spring을 빼면 그 구의 식수 확보 경로가 통째로 사라진다
+    for (const id of ['gangbuk', 'gwanak', 'nowon', 'dobong']) {
+      expect(onceOf(DISTRICTS[id]), `${id}`).toContain('stream_spring');
+    }
+  });
+});
+
 describe('구 — 탐사도 임계 보상(explorationYields)', () => {
   it('25개 구 전부가 30/60/100% 세 단계를 갖는다', () => {
     for (const [id, d] of Object.entries(DISTRICTS)) {
