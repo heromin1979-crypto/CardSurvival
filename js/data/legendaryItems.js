@@ -157,7 +157,7 @@ const LEGENDARY_ITEMS = {
     id: 'acid_resistant_cloak', name: '내산성 망토', type: 'armor', subtype: 'body',
     rarity: 'legendary', legendary: true, weight: 1.2,
     defaultDurability: 150, defaultContamination: 0,
-    icon: '☣️', description: '산성 면역 특수 소재 망토. 오염 피해를 90% 차단한다.',
+    icon: '☣️', description: '산성 면역 특수 소재 망토. 산성비 노출과 전투의 산성 상태이상을 무효화한다.',
     tags: ['armor', 'legendary', 'body'],
     onWear: { acidImmunity: true, contaminationMult: 0.10 },
     dismantle: [

@@ -14,6 +14,7 @@ import CharDialogue  from '../data/charDialogues.js';
 import GameData      from '../data/GameData.js';
 import { consumeEffectMultiplier, getConsumableEffect, normalizeConsumeEffect } from './ItemEffectSystem.js';
 import { BOTTOM_PAGE1_SIZE } from '../data/bagSlots.js';
+import { isAcidWeather, isWeatherSheltered } from './WeatherSystem.js';
 
 // 내구도가 닳는 의료 시설 — onTick 계열('medical')과 지속 효과 계열('medical_structure')
 const MEDICAL_STRUCTURE_SUBTYPES = new Set(['medical', 'medical_structure']);
@@ -112,6 +113,9 @@ const StatSystem = {
 
     // Temperature management
     this._applyTemperatureLogic();
+
+    // 산성비 야외 노출
+    this._applyAcidRainExposure(gs.player.armorEffects);
 
     // Structure passive effects (medical_station, barricade 등)
     this._applyStructureEffects();
@@ -415,6 +419,47 @@ const StatSystem = {
     }
   },
 
+  /**
+   * 산성비를 맞는 동안 TP마다 살이 타고 그 상처로 감염이 들어온다.
+   * 안전 지대(베이스캠프 완공 + 메인 화면)는 다른 날씨 패널티와 같은 기준으로 면제되고,
+   * acidImmunity 장비(내산성 망토)를 입으면 노출 자체가 무효가 된다.
+   */
+  _applyAcidRainExposure(armorEffects = this.getArmorEffects()) {
+    const gs = GameState;
+    const exposed = isAcidWeather(gs.weather) && !isWeatherSheltered(gs);
+    if (!exposed) {
+      gs.flags._acidRainWarnedTP = null;
+      gs.flags._acidRainBlockedNotified = false;
+      return;
+    }
+
+    // 막아냈다는 소식은 비 한 번에 한 번이면 된다 — 아무 일도 일어나지 않으므로 되풀이하지 않는다
+    if (armorEffects?.acidImmunity) {
+      if (!gs.flags._acidRainBlockedNotified) {
+        gs.flags._acidRainBlockedNotified = true;
+        EventBus.emit('notify', { message: I18n.t('statSys.acidRainBlocked'), type: 'good' });
+      }
+      return;
+    }
+
+    const hpLoss = BALANCE.acidRain.hpLossPerTP ?? 0;
+    if (hpLoss > 0) {
+      const oldHp = gs.player.hp.current;
+      gs.player.hp.current = Math.max(0, oldHp - hpLoss);
+      EventBus.emit('statChanged', { stat: 'hp', oldVal: oldHp, newVal: gs.player.hp.current });
+    }
+    this.addInfection(BALANCE.acidRain.infectionGainPerTP ?? 0);
+
+    // 피해는 매 TP 들어오는데 경고가 한 번뿐이면 체력이 왜 줄어드는지 놓친다 — 주기적으로 다시 알린다
+    const now      = Math.floor(gs.time?.totalTP ?? 0);
+    const lastWarn = gs.flags._acidRainWarnedTP;
+    const interval = BALANCE.acidRain.warnIntervalTP ?? 10;
+    if (!Number.isFinite(lastWarn) || now - lastWarn >= interval) {
+      gs.flags._acidRainWarnedTP = now;
+      EventBus.emit('notify', { message: I18n.t('statSys.acidRainExposed'), type: 'danger' });
+    }
+  },
+
   // 화기 구조물(subtype:'heat') 전체의 체온 회복·연료 소모·날씨 소화를 한 번에 처리한다.
   // 화기별 소모율은 아이템 def.fuelConsumePerTP가 우선이며, 내구도와 짝을 이뤄 수명을 정한다
   // (임시 화톳불 15 / 5 = 3TP).
@@ -691,6 +736,7 @@ const StatSystem = {
       coldResistMult:        1.0,   // 곱 — 체온 하강 완화
       hypothermiaChanceMult: 1.0,   // 곱 — 저체온증 누적 속도
       coldImmunity:          false,
+      acidImmunity:          false,  // 산성비 노출·전투 산성 상태이상 무효
       temperatureMin:        null,  // 체온 하한 (가장 낮은 값 채택)
       temperatureImmunity:   null,  // 고온 상한 (가장 높은 값 채택)
     };
@@ -723,6 +769,7 @@ const StatSystem = {
       if (w?.coldResistMult)        result.coldResistMult        *= w.coldResistMult;
       if (w?.hypothermiaChanceMult) result.hypothermiaChanceMult *= w.hypothermiaChanceMult;
       if (w?.coldImmunity)      result.coldImmunity = true;
+      if (w?.acidImmunity)      result.acidImmunity = true;
       if (typeof w?.temperatureMin === 'number') {
         result.temperatureMin = result.temperatureMin == null
           ? w.temperatureMin : Math.min(result.temperatureMin, w.temperatureMin);

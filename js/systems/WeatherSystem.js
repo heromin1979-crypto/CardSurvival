@@ -87,6 +87,23 @@ export function isRainyWeather(weatherId) {
   return RAINY_WEATHER_IDS.includes(weatherId);
 }
 
+/** 산성비 계열인지. 날씨 테이블은 id가 아니라 gardenKill 플래그로 산성을 표시한다. */
+export function isAcidWeather(weather) {
+  return weather?.gardenKill === true || weather?.id === 'acid_rain';
+}
+
+/**
+ * 날씨 패널티가 면제되는 안전 지대인지 (베이스캠프 완공 + 메인 화면).
+ * 체온 보정·식량 오염·산성비 노출이 같은 기준을 봐야 해서 한곳에 둔다.
+ */
+export function isWeatherSheltered(gs = GameState) {
+  return gs?.basecamp?.buildStage >= 3 && gs?.ui?.currentState === 'main';
+}
+
+// 알림을 띄우는 날씨 — 눈에 띄는 것만. 전환(_changeWeather)과 초기화(_initWeather)가
+// 같은 목록을 봐야 세이브를 산성비 한복판에서 열었을 때도 안내가 나간다.
+const NOTABLE_WEATHER_IDS = ['hot', 'storm', 'monsoon', 'blizzard', 'snow', 'acid_rain'];
+
 // ── WeatherSystem ──────────────────────────────────────────────
 
 const WeatherSystem = {
@@ -170,7 +187,7 @@ const WeatherSystem = {
     if (!gs.weather || !gs.weather.id) this._initWeather(gs);
 
     // 베이스캠프 완공 + 베이스캠프 화면: 날씨 패널티 면제 (안전 지대 효과)
-    const inSafeZone = gs.basecamp?.buildStage >= 3 && gs.ui?.currentState === 'main';
+    const inSafeZone = isWeatherSheltered(gs);
 
     // 체온에 날씨 영향 적용 (미세 조정 — 계절 효과와 별도)
     const weather = gs.weather;
@@ -217,6 +234,10 @@ const WeatherSystem = {
     Object.assign(gs.weather, w);
     gs.weather.tpRemaining = this._rollDuration();
     gs.weather.tempJitter  = parseFloat((Math.random() * 4 - 2).toFixed(1));
+    // 시작·로드 시점부터 위험 날씨면 전환 알림이 없어 그냥 지나간다 — 여기서 한 번 알린다
+    if (NOTABLE_WEATHER_IDS.includes(w.id)) {
+      EventBus.emit('notify', { message: `🌤 날씨: ${w.icon} ${w.name}`, type: 'info' });
+    }
     // 구버전 세이브 호환: environment 행 orphan 정리
     this._cleanupEnvironmentRow(gs);
   },
@@ -230,8 +251,7 @@ const WeatherSystem = {
     gs.weather.tempJitter  = parseFloat((Math.random() * 4 - 2).toFixed(1));
 
     // 날씨 변경 알림 (눈에 띄는 날씨만)
-    const notifyIds = ['hot', 'storm', 'monsoon', 'blizzard', 'snow', 'acid_rain'];
-    if (notifyIds.includes(w.id) && w.id !== prev) {
+    if (NOTABLE_WEATHER_IDS.includes(w.id) && w.id !== prev) {
       EventBus.emit('notify', { message: `🌤 날씨 변화: ${w.icon} ${w.name}`, type: 'info' });
     }
 

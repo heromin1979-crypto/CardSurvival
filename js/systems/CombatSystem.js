@@ -48,6 +48,7 @@ import {
   consumeEnemyDamageShield,
   enemyStatusModifiers,
   healCombatant,
+  isAcidStatusId,
   tickPlayerActionStatuses,
   tickStatusEffects,
 } from './combat/CombatStatusSystem.js';
@@ -774,7 +775,12 @@ const CombatSystem = {
         GameState.modStat('radiation', effect.radiationPerTurn);
       }
       if (Number.isFinite(effect.hpLossPerRound) && effect.hpLossPerRound > 0) {
+        const acidField = isAcidStatusId(status.id);
         for (const targetId of targetIds) {
+          // 산성 장판은 내산성 장비를 입은 플레이어만 비껴간다 — 동료는 그대로 밟는다
+          if (targetId === 'player' && acidField && StatSystem.getArmorEffects().acidImmunity) {
+            continue;
+          }
           this._dealDamageToAlly({
             npcId: targetId === 'player' ? null : targetId,
             rawDamage: effect.hpLossPerRound,

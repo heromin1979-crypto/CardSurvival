@@ -40,6 +40,36 @@ export const LANDMARK_DATA = {
     icon: '🏯',
     subLocations: [
       {
+        id: 'jongno_gwanghwamun',
+        name: '광화문 광장',
+        icon: '🏛️',
+        desc: '넓은 광장. 군 최후 방어선 잔해. 위험하지만 군용 물자가 흩어져 있다.',
+        dangerMod: 0.25,
+        lootTable: [
+          {
+            id: 'scrap_metal',
+            weight: 4,
+          },
+          {
+            id: 'iron_pipe',
+            weight: 3,
+          },
+          {
+            id: 'nail',
+            weight: 3,
+          },
+          {
+            id: 'pistol_ammo',
+            weight: 3,
+          },
+        ],
+        lootCount: [
+          2,
+          4,
+        ],
+        isEntrance: true,
+      },
+      {
         id: 'sl_jongno_royal_vault',
         name: '지하 왕실 금고',
         icon: '👑',
@@ -136,16 +166,12 @@ export const LANDMARK_DATA = {
         dangerMod: 0.2,
         lootTable: [
           {
-            id: 'electronic_parts',
-            weight: 2,
-          },
-          {
             id: 'wire',
             weight: 3,
           },
           {
-            id: 'lockpick',
-            weight: 1,
+            id: 'electronic_parts',
+            weight: 2,
           },
           {
             id: 'flashlight',
@@ -190,39 +216,36 @@ export const LANDMARK_DATA = {
           2,
         ],
       },
+    ],
+    lootTable: [
       {
-        id: 'jongno_gwanghwamun',
-        name: '광화문 광장',
-        icon: '🏛️',
-        desc: '넓은 광장. 군 최후 방어선 잔해. 위험하지만 군용 물자가 흩어져 있다.',
-        dangerMod: 0.25,
-        lootTable: [
-          {
-            id: 'scrap_metal',
-            weight: 4,
-          },
-          {
-            id: 'iron_pipe',
-            weight: 3,
-          },
-          {
-            id: 'nail',
-            weight: 3,
-          },
-          {
-            id: 'pistol_ammo',
-            weight: 3,
-          },
-          {
-            id: 'smoke_bomb',
-            weight: 2,
-          },
-        ],
-        lootCount: [
-          2,
-          4,
-        ],
+        id: 'wood',
+        weight: 30,
+        minQty: 2,
+        maxQty: 4,
       },
+      {
+        id: 'cloth',
+        weight: 25,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        id: 'firestone',
+        weight: 15,
+        minQty: 1,
+        maxQty: 2,
+      },
+      {
+        id: 'herb',
+        weight: 20,
+        minQty: 2,
+        maxQty: 4,
+      },
+    ],
+    lootCount: [
+      1,
+      2,
     ],
   },
   junggoo: {
@@ -230,6 +253,39 @@ export const LANDMARK_DATA = {
     desc: '서울 최대 재래시장. 식료품, 의류, 잡화 등 온갖 생존 물자가 있을 수 있다.',
     icon: '🏪',
     subLocations: [
+      {
+        id: 'junggu_market_gate',
+        name: '남대문 초입',
+        icon: '⛩️',
+        desc: '숭례문 아래 시장 초입. 뒤집힌 좌판이 길을 반쯤 막았다.',
+        dangerMod: 0.05,
+        isEntrance: true,
+        lootTable: [
+          {
+            id: 'cloth',
+            weight: 35,
+            minQty: 2,
+            maxQty: 4,
+          },
+          {
+            id: 'empty_bottle',
+            weight: 25,
+            minQty: 2,
+            maxQty: 4,
+          },
+          {
+            id: 'canned_food',
+            weight: 20,
+            minQty: 1,
+            maxQty: 3,
+          },
+        ],
+        lootCount: [
+          1,
+          2,
+        ],
+        sceneImage: 'assets/images/landmarks/lm_junggoo.png',
+      },
       {
         id: 'sl_junggoo_cold_storage',
         name: '냉동 창고',
@@ -257,20 +313,16 @@ export const LANDMARK_DATA = {
             weight: 5,
           },
           {
+            id: 'antibiotics',
+            weight: 5,
+          },
+          {
             id: 'rad_blocker',
             weight: 4,
           },
           {
             id: 'surgery_kit',
             weight: 4,
-          },
-          {
-            id: 'antibiotics',
-            weight: 5,
-          },
-          {
-            id: 'stimulant',
-            weight: 3,
           },
         ],
       },
@@ -318,10 +370,6 @@ export const LANDMARK_DATA = {
           {
             id: 'alcohol_solution',
             weight: 4,
-          },
-          {
-            id: 'canned_food',
-            weight: 3,
           },
         ],
       },
@@ -495,10 +543,6 @@ export const LANDMARK_DATA = {
             id: 'scrap_metal',
             weight: 2,
           },
-          {
-            id: 'bandage',
-            weight: 2,
-          },
         ],
         lootCount: [
           2,
@@ -506,12 +550,75 @@ export const LANDMARK_DATA = {
         ],
       },
     ],
+    lootTable: [
+      {
+        id: 'cloth',
+        weight: 35,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        id: 'canned_food',
+        weight: 20,
+        minQty: 1,
+        maxQty: 3,
+      },
+      {
+        id: 'leather',
+        weight: 15,
+        minQty: 1,
+        maxQty: 3,
+      },
+      {
+        id: 'empty_bottle',
+        weight: 20,
+        minQty: 2,
+        maxQty: 4,
+      },
+    ],
+    lootCount: [
+      1,
+      2,
+    ],
   },
   yongsan: {
     name: '전쟁기념관',
     desc: '한국 전쟁사 기념관. 군사 장비 전시물과 지하 벙커가 있다.',
     icon: '🪖',
     subLocations: [
+      {
+        id: 'yongsan_front_gate',
+        name: '기념관 정문',
+        icon: '🎖️',
+        desc: '전차 두 대가 지키던 정문. 한 대는 포탑이 돌아간 채 멈춰 있다.',
+        dangerMod: 0.05,
+        isEntrance: true,
+        lootTable: [
+          {
+            id: 'scrap_metal',
+            weight: 35,
+            minQty: 2,
+            maxQty: 4,
+          },
+          {
+            id: 'cloth',
+            weight: 25,
+            minQty: 2,
+            maxQty: 4,
+          },
+          {
+            id: 'duct_tape',
+            weight: 20,
+            minQty: 1,
+            maxQty: 3,
+          },
+        ],
+        lootCount: [
+          1,
+          2,
+        ],
+        sceneImage: 'assets/images/landmarks/lm_yongsan.png',
+      },
       {
         id: 'sl_yongsan_armory',
         name: '미군기지 무기고',
@@ -642,10 +749,6 @@ export const LANDMARK_DATA = {
         dangerMod: 0.3,
         lootTable: [
           {
-            id: 'tactical_vest',
-            weight: 2,
-          },
-          {
             id: 'first_aid_kit',
             weight: 3,
           },
@@ -654,15 +757,11 @@ export const LANDMARK_DATA = {
             weight: 3,
           },
           {
-            id: 'painkiller',
-            weight: 2,
-          },
-          {
             id: 'canned_food',
             weight: 3,
           },
           {
-            id: 'pistol_ammo',
+            id: 'tactical_vest',
             weight: 2,
           },
         ],
@@ -675,13 +774,9 @@ export const LANDMARK_DATA = {
         id: 'yongsan_arsenal',
         name: '무기고',
         icon: '💣',
-        desc: '실제 무기가 보관��� 구역. 극도로 위험하다.',
+        desc: '실제 무기가 보관된 구역. 극도로 위험하다.',
         dangerMod: 0.35,
         lootTable: [
-          {
-            id: 'molotov_cocktail',
-            weight: 2,
-          },
           {
             id: 'machete',
             weight: 3,
@@ -691,12 +786,12 @@ export const LANDMARK_DATA = {
             weight: 3,
           },
           {
-            id: 'smoke_bomb',
-            weight: 2,
-          },
-          {
             id: 'pistol_ammo',
             weight: 3,
+          },
+          {
+            id: 'molotov_cocktail',
+            weight: 2,
           },
         ],
         lootCount: [
@@ -705,12 +800,75 @@ export const LANDMARK_DATA = {
         ],
       },
     ],
+    lootTable: [
+      {
+        id: 'scrap_metal',
+        weight: 30,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        id: 'empty_cartridge',
+        weight: 18,
+        minQty: 1,
+        maxQty: 2,
+      },
+      {
+        id: 'duct_tape',
+        weight: 20,
+        minQty: 1,
+        maxQty: 3,
+      },
+      {
+        id: 'kevlar_fabric',
+        weight: 6,
+        minQty: 1,
+        maxQty: 2,
+      },
+    ],
+    lootCount: [
+      1,
+      2,
+    ],
   },
   seongdong: {
     name: '성수 공장지대',
     desc: '서울의 산업 심장부. 가죽 공방, 금속 가공소 등이 밀집해 있다.',
     icon: '🏭',
     subLocations: [
+      {
+        id: 'seongdong_gateway',
+        name: '공장지대 진입로',
+        icon: '🏭',
+        desc: '철제 아치 아래 진입로. 바닥에 절삭유가 굳어 미끄럽다.',
+        dangerMod: 0.05,
+        isEntrance: true,
+        lootTable: [
+          {
+            id: 'scrap_metal',
+            weight: 35,
+            minQty: 2,
+            maxQty: 4,
+          },
+          {
+            id: 'nail',
+            weight: 25,
+            minQty: 2,
+            maxQty: 4,
+          },
+          {
+            id: 'wire',
+            weight: 22,
+            minQty: 1,
+            maxQty: 3,
+          },
+        ],
+        lootCount: [
+          1,
+          2,
+        ],
+        sceneImage: 'assets/images/landmarks/lm_seongdong.png',
+      },
       {
         id: 'sl_seongdong_master_workshop',
         name: '장인의 작업실',
@@ -786,10 +944,6 @@ export const LANDMARK_DATA = {
           {
             id: 'rope',
             weight: 4,
-          },
-          {
-            id: 'survivor_note',
-            weight: 3,
           },
         ],
       },
@@ -917,8 +1071,10 @@ export const LANDMARK_DATA = {
         dangerMod: 0.15,
         lootTable: [
           {
-            id: 'pipe_wrench',
-            weight: 2,
+            id: 'whetstone',
+            weight: 15,
+            minQty: 1,
+            maxQty: 2,
           },
           {
             id: 'nail',
@@ -939,12 +1095,72 @@ export const LANDMARK_DATA = {
         ],
       },
     ],
+    lootTable: [
+      {
+        id: 'scrap_metal',
+        weight: 35,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        id: 'wire',
+        weight: 25,
+        minQty: 1,
+        maxQty: 3,
+      },
+      {
+        id: 'nail',
+        weight: 25,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        id: 'refined_metal',
+        weight: 12,
+        minQty: 1,
+        maxQty: 2,
+      },
+    ],
+    lootCount: [
+      1,
+      2,
+    ],
   },
   gwangjin: {
     name: '어린이대공원',
     desc: '서울 동부의 대형 공원. 동물원, 식물원, 유원지가 있다.',
     icon: '🎡',
     subLocations: [
+      {
+        id: 'gwangjin_gate',
+        name: '정문 광장',
+        icon: '🚪',
+        desc: '공원 입구. 좀비가 집결해 있지만 넘어온 물자도 있다.',
+        dangerMod: 0.25,
+        lootTable: [
+          {
+            id: 'baseball_bat',
+            weight: 2,
+          },
+          {
+            id: 'flashlight',
+            weight: 2,
+          },
+          {
+            id: 'bandage',
+            weight: 3,
+          },
+          {
+            id: 'scrap_metal',
+            weight: 2,
+          },
+        ],
+        lootCount: [
+          1,
+          2,
+        ],
+        isEntrance: true,
+      },
       {
         id: 'sl_gwangjin_zoo_lab',
         name: '동물 연구소',
@@ -997,8 +1213,10 @@ export const LANDMARK_DATA = {
             weight: 2,
           },
           {
-            id: 'knife',
-            weight: 1,
+            id: 'bamboo_shoot',
+            weight: 18,
+            minQty: 1,
+            maxQty: 3,
           },
         ],
         lootCount: [
@@ -1026,8 +1244,10 @@ export const LANDMARK_DATA = {
             weight: 2,
           },
           {
-            id: 'antidote',
-            weight: 1,
+            id: 'wild_strawberry',
+            weight: 22,
+            minQty: 1,
+            maxQty: 3,
           },
         ],
         lootCount: [
@@ -1093,35 +1313,36 @@ export const LANDMARK_DATA = {
           3,
         ],
       },
+    ],
+    lootTable: [
       {
-        id: 'gwangjin_gate',
-        name: '정문 광장',
-        icon: '🚪',
-        desc: '공원 입구. 좀비가 집결해 있지만 넘어온 물자도 있다.',
-        dangerMod: 0.25,
-        lootTable: [
-          {
-            id: 'baseball_bat',
-            weight: 2,
-          },
-          {
-            id: 'flashlight',
-            weight: 2,
-          },
-          {
-            id: 'bandage',
-            weight: 3,
-          },
-          {
-            id: 'scrap_metal',
-            weight: 2,
-          },
-        ],
-        lootCount: [
-          1,
-          2,
-        ],
+        id: 'wild_berry',
+        weight: 25,
+        minQty: 2,
+        maxQty: 4,
       },
+      {
+        id: 'herb',
+        weight: 25,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        id: 'wood',
+        weight: 25,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        id: 'rope',
+        weight: 20,
+        minQty: 1,
+        maxQty: 3,
+      },
+    ],
+    lootCount: [
+      1,
+      2,
     ],
   },
   dongdaemun: {
@@ -1129,6 +1350,39 @@ export const LANDMARK_DATA = {
     desc: '대형 종합병원. 의약품과 의료 장비의 보고지만 감염 위험이 높다.',
     icon: '🏥',
     subLocations: [
+      {
+        id: 'dongdaemun_lobby',
+        name: '의료원 현관',
+        icon: '🏥',
+        desc: '회전문이 반쯤 열린 채 멈췄다. 접수대 유리에 손자국이 겹겹이 남았다.',
+        dangerMod: 0.05,
+        isEntrance: true,
+        lootTable: [
+          {
+            id: 'bandage',
+            weight: 30,
+            minQty: 1,
+            maxQty: 3,
+          },
+          {
+            id: 'cloth',
+            weight: 28,
+            minQty: 2,
+            maxQty: 4,
+          },
+          {
+            id: 'plastic',
+            weight: 22,
+            minQty: 2,
+            maxQty: 4,
+          },
+        ],
+        lootCount: [
+          1,
+          2,
+        ],
+        sceneImage: 'assets/images/landmarks/lm_dongdaemun.png',
+      },
       {
         id: 'sl_dongdaemun_workshop',
         name: '재단사의 공방',
@@ -1317,19 +1571,15 @@ export const LANDMARK_DATA = {
             weight: 3,
           },
           {
-            id: 'flashlight',
-            weight: 2,
-          },
-          {
             id: 'duct_tape',
             weight: 3,
           },
           {
-            id: 'pipe_wrench',
+            id: 'flashlight',
             weight: 2,
           },
           {
-            id: 'wire',
+            id: 'pipe_wrench',
             weight: 2,
           },
         ],
@@ -1339,12 +1589,72 @@ export const LANDMARK_DATA = {
         ],
       },
     ],
+    lootTable: [
+      {
+        id: 'bandage',
+        weight: 30,
+        minQty: 1,
+        maxQty: 3,
+      },
+      {
+        id: 'antiseptic',
+        weight: 22,
+        minQty: 1,
+        maxQty: 2,
+      },
+      {
+        id: 'painkiller',
+        weight: 15,
+        minQty: 1,
+        maxQty: 2,
+      },
+      {
+        id: 'alcohol_solution',
+        weight: 12,
+        minQty: 1,
+        maxQty: 2,
+      },
+    ],
+    lootCount: [
+      1,
+      2,
+    ],
   },
   jungrang: {
     name: '용마랜드 폐유원지',
     desc: '수십 년째 방치된 유원지. 녹슨 놀이기구와 음산한 분위기.',
     icon: '🎠',
     subLocations: [
+      {
+        id: 'jungnang_ticket',
+        name: '매표소',
+        icon: '🎫',
+        desc: '유원지 입구 매표소. 조용한 편이다.',
+        dangerMod: 0.05,
+        lootTable: [
+          {
+            id: 'painkiller',
+            weight: 2,
+          },
+          {
+            id: 'bandage',
+            weight: 3,
+          },
+          {
+            id: 'flashlight',
+            weight: 2,
+          },
+          {
+            id: 'plastic',
+            weight: 2,
+          },
+        ],
+        lootCount: [
+          1,
+          2,
+        ],
+        isEntrance: true,
+      },
       {
         id: 'sl_jungrang_water_control',
         name: '정수장 컨트롤룸',
@@ -1492,35 +1802,36 @@ export const LANDMARK_DATA = {
           3,
         ],
       },
+    ],
+    lootTable: [
       {
-        id: 'jungnang_ticket',
-        name: '매표소',
-        icon: '🎫',
-        desc: '유원지 입구 매표소. 조용한 편이다.',
-        dangerMod: 0.05,
-        lootTable: [
-          {
-            id: 'painkiller',
-            weight: 2,
-          },
-          {
-            id: 'bandage',
-            weight: 3,
-          },
-          {
-            id: 'flashlight',
-            weight: 2,
-          },
-          {
-            id: 'plastic',
-            weight: 2,
-          },
-        ],
-        lootCount: [
-          1,
-          2,
-        ],
+        id: 'scrap_metal',
+        weight: 30,
+        minQty: 2,
+        maxQty: 4,
       },
+      {
+        id: 'plastic',
+        weight: 25,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        id: 'spring',
+        weight: 15,
+        minQty: 1,
+        maxQty: 2,
+      },
+      {
+        id: 'cloth',
+        weight: 25,
+        minQty: 2,
+        maxQty: 4,
+      },
+    ],
+    lootCount: [
+      1,
+      2,
     ],
   },
   seongbuk: {
@@ -1528,6 +1839,39 @@ export const LANDMARK_DATA = {
     desc: '명문 대학 캠퍼스. 법학·의학·체육 시설이 혼재하며 물자가 다양하다.',
     icon: '🎓',
     subLocations: [
+      {
+        id: 'seongbuk_main_gate',
+        name: '대학 정문',
+        icon: '🎓',
+        desc: '돌기둥 사이 정문. 게시판에 대피 안내문이 빗물에 번져 있다.',
+        dangerMod: 0.05,
+        isEntrance: true,
+        lootTable: [
+          {
+            id: 'cloth',
+            weight: 30,
+            minQty: 2,
+            maxQty: 4,
+          },
+          {
+            id: 'plastic',
+            weight: 25,
+            minQty: 2,
+            maxQty: 4,
+          },
+          {
+            id: 'thread',
+            weight: 20,
+            minQty: 1,
+            maxQty: 3,
+          },
+        ],
+        lootCount: [
+          1,
+          2,
+        ],
+        sceneImage: 'assets/images/landmarks/lm_seongbuk.png',
+      },
       {
         id: 'sl_seongbuk_research_bunker',
         name: '지하 연구 벙커',
@@ -1609,10 +1953,6 @@ export const LANDMARK_DATA = {
           },
           {
             id: 'work_gloves',
-            weight: 2,
-          },
-          {
-            id: 'painkiller',
             weight: 2,
           },
         ],
@@ -1709,39 +2049,42 @@ export const LANDMARK_DATA = {
         ],
       },
     ],
+    lootTable: [
+      {
+        id: 'glass_shard',
+        weight: 28,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        id: 'plastic',
+        weight: 25,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        id: 'thread',
+        weight: 20,
+        minQty: 1,
+        maxQty: 3,
+      },
+      {
+        id: 'alcohol_solution',
+        weight: 12,
+        minQty: 1,
+        maxQty: 2,
+      },
+    ],
+    lootCount: [
+      1,
+      2,
+    ],
   },
   gangbuk: {
     name: '북한산성',
     desc: '조선 시대 산성. 산 위에 위치해 물자는 적지만 안전하고 전망이 좋다.',
     icon: '🏔️',
     subLocations: [
-      {
-        id: 'sl_gangbuk_hidden_spring',
-        name: '숨겨진 샘',
-        icon: '💧',
-        desc: '비가 와야 물길이 드러나는 바위 아래 샘. 마르면 흔적도 남지 않는다.',
-        dangerMod: 0,
-        requiresHiddenLocation: 'hidden_gangbuk_mountain_spring',
-        firstEnterReward: {
-          claimKey: 'gangbuk_spring_first',
-          items: [
-            {
-              id: 'pristine_spring_water',
-              qty: 1,
-            },
-          ],
-        },
-        lootTable: [
-          {
-            id: 'purified_water',
-            weight: 8,
-          },
-          {
-            id: 'mountain_water',
-            weight: 6,
-          },
-        ],
-      },
       {
         id: 'gangbuk_gate',
         name: '성문',
@@ -1770,6 +2113,34 @@ export const LANDMARK_DATA = {
           1,
           3,
         ],
+        isEntrance: true,
+      },
+      {
+        id: 'sl_gangbuk_hidden_spring',
+        name: '숨겨진 샘',
+        icon: '💧',
+        desc: '비가 와야 물길이 드러나는 바위 아래 샘. 마르면 흔적도 남지 않는다.',
+        dangerMod: 0,
+        requiresHiddenLocation: 'hidden_gangbuk_mountain_spring',
+        firstEnterReward: {
+          claimKey: 'gangbuk_spring_first',
+          items: [
+            {
+              id: 'pristine_spring_water',
+              qty: 1,
+            },
+          ],
+        },
+        lootTable: [
+          {
+            id: 'purified_water',
+            weight: 8,
+          },
+          {
+            id: 'mountain_water',
+            weight: 6,
+          },
+        ],
       },
       {
         id: 'gangbuk_beacon',
@@ -1787,8 +2158,10 @@ export const LANDMARK_DATA = {
             weight: 3,
           },
           {
-            id: 'flashlight',
-            weight: 1,
+            id: 'pine_nut',
+            weight: 20,
+            minQty: 1,
+            maxQty: 2,
           },
           {
             id: 'herb',
@@ -1808,8 +2181,8 @@ export const LANDMARK_DATA = {
         dangerMod: 0.25,
         lootTable: [
           {
-            id: 'crowbar',
-            weight: 2,
+            id: 'canned_food',
+            weight: 4,
           },
           {
             id: 'knife',
@@ -1820,12 +2193,10 @@ export const LANDMARK_DATA = {
             weight: 3,
           },
           {
-            id: 'canned_food',
-            weight: 4,
-          },
-          {
-            id: 'pistol_ammo',
-            weight: 2,
+            id: 'wild_root',
+            weight: 20,
+            minQty: 1,
+            maxQty: 3,
           },
         ],
         lootCount: [
@@ -1888,12 +2259,72 @@ export const LANDMARK_DATA = {
         ],
       },
     ],
+    lootTable: [
+      {
+        id: 'wood',
+        weight: 30,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        id: 'herb',
+        weight: 25,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        id: 'hide',
+        weight: 15,
+        minQty: 1,
+        maxQty: 3,
+      },
+      {
+        id: 'firestone',
+        weight: 15,
+        minQty: 1,
+        maxQty: 2,
+      },
+    ],
+    lootCount: [
+      1,
+      2,
+    ],
   },
   dobong: {
     name: '도봉산 등산로',
     desc: '울창한 산림과 암벽이 있는 등산 명소. 야생 약초와 자원이 풍부하다.',
     icon: '⛰️',
     subLocations: [
+      {
+        id: 'dobong_entrance',
+        name: '등산 초입부',
+        icon: '🌲',
+        desc: '등산로 입구. 목재와 로프를 구할 수 있다.',
+        dangerMod: 0.1,
+        lootTable: [
+          {
+            id: 'wood',
+            weight: 5,
+          },
+          {
+            id: 'rope',
+            weight: 3,
+          },
+          {
+            id: 'vitamins',
+            weight: 3,
+          },
+          {
+            id: 'bandage',
+            weight: 1,
+          },
+        ],
+        lootCount: [
+          2,
+          4,
+        ],
+        isEntrance: true,
+      },
       {
         id: 'sl_dobong_hermit_cave',
         name: '은자의 동굴',
@@ -1926,35 +2357,6 @@ export const LANDMARK_DATA = {
         ],
       },
       {
-        id: 'dobong_entrance',
-        name: '등산 초입부',
-        icon: '🌲',
-        desc: '등산로 입구. 목재와 로프를 구할 수 있다.',
-        dangerMod: 0.1,
-        lootTable: [
-          {
-            id: 'wood',
-            weight: 5,
-          },
-          {
-            id: 'rope',
-            weight: 3,
-          },
-          {
-            id: 'vitamins',
-            weight: 3,
-          },
-          {
-            id: 'bandage',
-            weight: 1,
-          },
-        ],
-        lootCount: [
-          2,
-          4,
-        ],
-      },
-      {
         id: 'dobong_lodge',
         name: '산장',
         icon: '🏠',
@@ -1970,8 +2372,10 @@ export const LANDMARK_DATA = {
             weight: 3,
           },
           {
-            id: 'flashlight',
-            weight: 2,
+            id: 'chestnut',
+            weight: 22,
+            minQty: 2,
+            maxQty: 4,
           },
           {
             id: 'painkiller',
@@ -1991,8 +2395,10 @@ export const LANDMARK_DATA = {
         dangerMod: 0.2,
         lootTable: [
           {
-            id: 'first_aid_kit',
-            weight: 2,
+            id: 'wild_grape',
+            weight: 20,
+            minQty: 1,
+            maxQty: 3,
           },
           {
             id: 'painkiller',
@@ -2031,6 +2437,12 @@ export const LANDMARK_DATA = {
             id: 'contaminated_water',
             weight: 1,
           },
+          {
+            id: 'acorn',
+            weight: 22,
+            minQty: 2,
+            maxQty: 4,
+          },
         ],
         lootCount: [
           2,
@@ -2057,8 +2469,10 @@ export const LANDMARK_DATA = {
             weight: 2,
           },
           {
-            id: 'splint',
-            weight: 1,
+            id: 'pine_cone',
+            weight: 22,
+            minQty: 2,
+            maxQty: 4,
           },
         ],
         lootCount: [
@@ -2067,12 +2481,75 @@ export const LANDMARK_DATA = {
         ],
       },
     ],
+    lootTable: [
+      {
+        id: 'wood',
+        weight: 30,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        id: 'herb',
+        weight: 25,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        id: 'mushroom_edible',
+        weight: 20,
+        minQty: 1,
+        maxQty: 3,
+      },
+      {
+        id: 'wild_berry',
+        weight: 20,
+        minQty: 2,
+        maxQty: 4,
+      },
+    ],
+    lootCount: [
+      1,
+      2,
+    ],
   },
   nowon: {
     name: '태릉선수촌',
     desc: '1966년 설립된 국가 대표 엘리트 훈련 기지. 폐허가 됐지만 시설이 견고하다.',
     icon: '🏅',
     subLocations: [
+      {
+        id: 'nowon_main_gate',
+        name: '선수촌 정문',
+        icon: '🏅',
+        desc: '차단기가 내려간 정문. 경비실 안에 방문자 명부가 펼쳐져 있다.',
+        dangerMod: 0.05,
+        isEntrance: true,
+        lootTable: [
+          {
+            id: 'cloth',
+            weight: 30,
+            minQty: 2,
+            maxQty: 4,
+          },
+          {
+            id: 'canned_food',
+            weight: 22,
+            minQty: 1,
+            maxQty: 3,
+          },
+          {
+            id: 'rope',
+            weight: 20,
+            minQty: 1,
+            maxQty: 3,
+          },
+        ],
+        lootCount: [
+          1,
+          2,
+        ],
+        sceneImage: 'assets/images/landmarks/lm_nowon.png',
+      },
       {
         id: 'sl_nowon_hidden_depot',
         name: '지하 비축 창고',
@@ -2125,10 +2602,6 @@ export const LANDMARK_DATA = {
           },
           {
             id: 'work_gloves',
-            weight: 2,
-          },
-          {
-            id: 'painkiller',
             weight: 2,
           },
         ],
@@ -2189,10 +2662,6 @@ export const LANDMARK_DATA = {
             id: 'purified_water',
             weight: 2,
           },
-          {
-            id: 'painkiller',
-            weight: 2,
-          },
         ],
         lootCount: [
           2,
@@ -2207,8 +2676,8 @@ export const LANDMARK_DATA = {
         dangerMod: 0.1,
         lootTable: [
           {
-            id: 'first_aid_kit',
-            weight: 2,
+            id: 'bandage',
+            weight: 4,
           },
           {
             id: 'antiseptic',
@@ -2219,11 +2688,7 @@ export const LANDMARK_DATA = {
             weight: 3,
           },
           {
-            id: 'bandage',
-            weight: 4,
-          },
-          {
-            id: 'painkiller',
+            id: 'first_aid_kit',
             weight: 2,
           },
         ],
@@ -2287,12 +2752,75 @@ export const LANDMARK_DATA = {
         ],
       },
     ],
+    lootTable: [
+      {
+        id: 'cloth',
+        weight: 30,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        id: 'canned_food',
+        weight: 22,
+        minQty: 1,
+        maxQty: 3,
+      },
+      {
+        id: 'duct_tape',
+        weight: 18,
+        minQty: 1,
+        maxQty: 3,
+      },
+      {
+        id: 'rope',
+        weight: 20,
+        minQty: 1,
+        maxQty: 3,
+      },
+    ],
+    lootCount: [
+      1,
+      2,
+    ],
   },
   eunpyeong: {
     name: '진관사',
     desc: '북한산 자락의 천년 고찰. 고요하고 약초원이 잘 보존돼 있다.',
     icon: '⛩️',
     subLocations: [
+      {
+        id: 'eunpyeong_iljumun',
+        name: '일주문',
+        icon: '⛩️',
+        desc: '기둥 넷이 떠받친 산문. 풍경 소리 대신 바람만 지난다.',
+        dangerMod: 0,
+        isEntrance: true,
+        lootTable: [
+          {
+            id: 'herb',
+            weight: 35,
+            minQty: 2,
+            maxQty: 4,
+          },
+          {
+            id: 'wood',
+            weight: 25,
+            minQty: 2,
+            maxQty: 4,
+          },
+          {
+            id: 'cloth',
+            weight: 20,
+            minQty: 2,
+            maxQty: 4,
+          },
+        ],
+        lootCount: [
+          1,
+          2,
+        ],
+        sceneImage: 'assets/images/landmarks/lm_eunpyeong.png',
+      },
       {
         id: 'sl_eunpyeong_fire_station',
         name: '불광 소방서',
@@ -2337,10 +2865,6 @@ export const LANDMARK_DATA = {
           {
             id: 'bandage',
             weight: 4,
-          },
-          {
-            id: 'fuel_can',
-            weight: 3,
           },
         ],
       },
@@ -2393,8 +2917,10 @@ export const LANDMARK_DATA = {
             weight: 3,
           },
           {
-            id: 'rope',
-            weight: 2,
+            id: 'apple_wild',
+            weight: 20,
+            minQty: 1,
+            maxQty: 3,
           },
         ],
         lootCount: [
@@ -2450,6 +2976,12 @@ export const LANDMARK_DATA = {
             id: 'purified_water',
             weight: 3,
           },
+          {
+            id: 'vegetable',
+            weight: 20,
+            minQty: 1,
+            maxQty: 3,
+          },
         ],
         lootCount: [
           2,
@@ -2476,8 +3008,10 @@ export const LANDMARK_DATA = {
             weight: 3,
           },
           {
-            id: 'painkiller',
-            weight: 2,
+            id: 'pine_needle',
+            weight: 25,
+            minQty: 2,
+            maxQty: 4,
           },
         ],
         lootCount: [
@@ -2486,12 +3020,75 @@ export const LANDMARK_DATA = {
         ],
       },
     ],
+    lootTable: [
+      {
+        id: 'herb',
+        weight: 35,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        id: 'wood',
+        weight: 25,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        id: 'cloth',
+        weight: 20,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        id: 'dandelion',
+        weight: 15,
+        minQty: 1,
+        maxQty: 3,
+      },
+    ],
+    lootCount: [
+      1,
+      2,
+    ],
   },
   seodaemun: {
     name: '신촌 세브란스병원',
     desc: '연세대 부속 종합병원. 감염 위험이 높으나 의약품이 풍부하다.',
     icon: '🏥',
     subLocations: [
+      {
+        id: 'seodaemun_lobby',
+        name: '병원 정문',
+        icon: '🏥',
+        desc: '응급 차량 진입로가 들것으로 막혔다. 자동문은 전원이 끊겼다.',
+        dangerMod: 0.05,
+        isEntrance: true,
+        lootTable: [
+          {
+            id: 'bandage',
+            weight: 30,
+            minQty: 1,
+            maxQty: 3,
+          },
+          {
+            id: 'glass_shard',
+            weight: 25,
+            minQty: 2,
+            maxQty: 4,
+          },
+          {
+            id: 'cloth',
+            weight: 22,
+            minQty: 2,
+            maxQty: 4,
+          },
+        ],
+        lootCount: [
+          1,
+          2,
+        ],
+        sceneImage: 'assets/images/landmarks/lm_seodaemun.png',
+      },
       {
         id: 'sl_seodaemun_p4_lab',
         name: 'P4 연구실',
@@ -2688,15 +3285,11 @@ export const LANDMARK_DATA = {
             weight: 3,
           },
           {
-            id: 'wire',
-            weight: 2,
-          },
-          {
             id: 'bandage',
             weight: 3,
           },
           {
-            id: 'pipe_wrench',
+            id: 'wire',
             weight: 2,
           },
         ],
@@ -2706,12 +3299,75 @@ export const LANDMARK_DATA = {
         ],
       },
     ],
+    lootTable: [
+      {
+        id: 'bandage',
+        weight: 30,
+        minQty: 1,
+        maxQty: 3,
+      },
+      {
+        id: 'antiseptic',
+        weight: 22,
+        minQty: 1,
+        maxQty: 2,
+      },
+      {
+        id: 'painkiller',
+        weight: 15,
+        minQty: 1,
+        maxQty: 2,
+      },
+      {
+        id: 'glass_shard',
+        weight: 20,
+        minQty: 2,
+        maxQty: 4,
+      },
+    ],
+    lootCount: [
+      1,
+      2,
+    ],
   },
   mapo: {
     name: '홍대 클럽가',
     desc: '서울의 젊음이 모이던 거리. 가게들이 밀집해 생존 물자를 찾을 수 있다.',
     icon: '🎵',
     subLocations: [
+      {
+        id: 'mapo_street_entry',
+        name: '클럽가 초입',
+        icon: '🎸',
+        desc: '네온 간판이 죽은 골목 초입. 깨진 병이 카펫처럼 깔려 있다.',
+        dangerMod: 0.05,
+        isEntrance: true,
+        lootTable: [
+          {
+            id: 'empty_bottle',
+            weight: 35,
+            minQty: 2,
+            maxQty: 4,
+          },
+          {
+            id: 'cloth',
+            weight: 25,
+            minQty: 2,
+            maxQty: 4,
+          },
+          {
+            id: 'plastic',
+            weight: 22,
+            minQty: 2,
+            maxQty: 4,
+          },
+        ],
+        lootCount: [
+          1,
+          2,
+        ],
+        sceneImage: 'assets/images/landmarks/lm_mapo.png',
+      },
       {
         id: 'sl_mapo_club_basement',
         name: '라이브클럽 지하',
@@ -2784,20 +3440,18 @@ export const LANDMARK_DATA = {
             weight: 5,
           },
           {
-            id: 'painkiller',
-            weight: 3,
-          },
-          {
-            id: 'bandage',
-            weight: 3,
-          },
-          {
             id: 'purified_water',
             weight: 4,
           },
           {
-            id: 'dried_meat',
-            weight: 2,
+            id: 'matches',
+            weight: 18,
+            minQty: 1,
+            maxQty: 3,
+          },
+          {
+            id: 'bandage',
+            weight: 3,
           },
         ],
         lootCount: [
@@ -2893,12 +3547,75 @@ export const LANDMARK_DATA = {
         ],
       },
     ],
+    lootTable: [
+      {
+        id: 'empty_bottle',
+        weight: 30,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        id: 'cloth',
+        weight: 25,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        id: 'plastic',
+        weight: 22,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        id: 'battery',
+        weight: 8,
+        minQty: 1,
+        maxQty: 2,
+      },
+    ],
+    lootCount: [
+      1,
+      2,
+    ],
   },
   yangcheon: {
     name: '목동 경기장',
     desc: '서울 서부의 종합 스포츠 경기장. 의무실과 기계실이 있다.',
     icon: '🏟️',
     subLocations: [
+      {
+        id: 'yangcheon_ticket_gate',
+        name: '경기장 매표소',
+        icon: '🎫',
+        desc: '회전식 개찰구가 줄줄이 잠겼다. 매표 창구 유리가 깨져 있다.',
+        dangerMod: 0.05,
+        isEntrance: true,
+        lootTable: [
+          {
+            id: 'cloth',
+            weight: 30,
+            minQty: 2,
+            maxQty: 4,
+          },
+          {
+            id: 'plastic',
+            weight: 25,
+            minQty: 2,
+            maxQty: 4,
+          },
+          {
+            id: 'rope',
+            weight: 20,
+            minQty: 1,
+            maxQty: 3,
+          },
+        ],
+        lootCount: [
+          1,
+          2,
+        ],
+        sceneImage: 'assets/images/landmarks/lm_yangcheon.png',
+      },
       {
         id: 'sl_yangcheon_civil_shelter',
         name: '민방위 대피소',
@@ -2980,10 +3697,6 @@ export const LANDMARK_DATA = {
           },
           {
             id: 'antiseptic',
-            weight: 2,
-          },
-          {
-            id: 'first_aid_kit',
             weight: 2,
           },
         ],
@@ -3080,12 +3793,75 @@ export const LANDMARK_DATA = {
         ],
       },
     ],
+    lootTable: [
+      {
+        id: 'cloth',
+        weight: 30,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        id: 'plastic',
+        weight: 25,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        id: 'rope',
+        weight: 20,
+        minQty: 1,
+        maxQty: 3,
+      },
+      {
+        id: 'canned_food',
+        weight: 20,
+        minQty: 1,
+        maxQty: 3,
+      },
+    ],
+    lootCount: [
+      1,
+      2,
+    ],
   },
   gangseo: {
     name: '김포공항',
     desc: '국내선 공항. 화물터미널과 격납고에 다양한 물자가 있을 수 있다.',
     icon: '✈️',
     subLocations: [
+      {
+        id: 'gangseo_terminal_entry',
+        name: '국내선 청사 입구',
+        icon: '✈️',
+        desc: '캐리어가 뒤엉킨 출입구. 안내 전광판이 마지막 편명을 붙들고 있다.',
+        dangerMod: 0.05,
+        isEntrance: true,
+        lootTable: [
+          {
+            id: 'scrap_metal',
+            weight: 30,
+            minQty: 2,
+            maxQty: 4,
+          },
+          {
+            id: 'duct_tape',
+            weight: 25,
+            minQty: 1,
+            maxQty: 3,
+          },
+          {
+            id: 'cloth',
+            weight: 22,
+            minQty: 2,
+            maxQty: 4,
+          },
+        ],
+        lootCount: [
+          1,
+          2,
+        ],
+        sceneImage: 'assets/images/landmarks/lm_gangseo.png',
+      },
       {
         id: 'sl_gangseo_hangar',
         name: '격납고',
@@ -3187,20 +3963,16 @@ export const LANDMARK_DATA = {
         dangerMod: 0.25,
         lootTable: [
           {
-            id: 'wire',
-            weight: 4,
-          },
-          {
             id: 'electronic_parts',
             weight: 5,
           },
           {
-            id: 'scrap_metal',
+            id: 'wire',
             weight: 4,
           },
           {
-            id: 'rubber',
-            weight: 2,
+            id: 'scrap_metal',
+            weight: 4,
           },
           {
             id: 'duct_tape',
@@ -3224,20 +3996,16 @@ export const LANDMARK_DATA = {
             weight: 3,
           },
           {
-            id: 'stimulant',
-            weight: 2,
-          },
-          {
             id: 'antiseptic',
             weight: 3,
           },
           {
-            id: 'antibiotics',
-            weight: 2,
-          },
-          {
             id: 'vitamins',
             weight: 3,
+          },
+          {
+            id: 'stimulant',
+            weight: 2,
           },
         ],
         lootCount: [
@@ -3300,12 +4068,75 @@ export const LANDMARK_DATA = {
         ],
       },
     ],
+    lootTable: [
+      {
+        id: 'scrap_metal',
+        weight: 30,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        id: 'duct_tape',
+        weight: 22,
+        minQty: 1,
+        maxQty: 3,
+      },
+      {
+        id: 'wire',
+        weight: 22,
+        minQty: 1,
+        maxQty: 3,
+      },
+      {
+        id: 'brass_fragment',
+        weight: 10,
+        minQty: 1,
+        maxQty: 2,
+      },
+    ],
+    lootCount: [
+      1,
+      2,
+    ],
   },
   guro: {
     name: '구로디지털단지',
     desc: 'IT 기업이 밀집한 테크 단지. 전자 부품과 서버 장비가 있다.',
     icon: '💻',
     subLocations: [
+      {
+        id: 'guro_complex_entry',
+        name: '단지 진입로',
+        icon: '🏢',
+        desc: '사원증 게이트가 열린 채다. 자전거 거치대가 통째로 넘어져 있다.',
+        dangerMod: 0.05,
+        isEntrance: true,
+        lootTable: [
+          {
+            id: 'electronic_parts',
+            weight: 28,
+            minQty: 1,
+            maxQty: 3,
+          },
+          {
+            id: 'wire',
+            weight: 25,
+            minQty: 1,
+            maxQty: 3,
+          },
+          {
+            id: 'plastic',
+            weight: 25,
+            minQty: 2,
+            maxQty: 4,
+          },
+        ],
+        lootCount: [
+          1,
+          2,
+        ],
+        sceneImage: 'assets/images/landmarks/lm_guro.png',
+      },
       {
         id: 'sl_guro_secret_forge',
         name: '비밀 대장간',
@@ -3479,12 +4310,75 @@ export const LANDMARK_DATA = {
         ],
       },
     ],
+    lootTable: [
+      {
+        id: 'electronic_parts',
+        weight: 30,
+        minQty: 1,
+        maxQty: 3,
+      },
+      {
+        id: 'wire',
+        weight: 25,
+        minQty: 1,
+        maxQty: 3,
+      },
+      {
+        id: 'plastic',
+        weight: 22,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        id: 'copper_coil',
+        weight: 10,
+        minQty: 1,
+        maxQty: 2,
+      },
+    ],
+    lootCount: [
+      1,
+      2,
+    ],
   },
   geumcheon: {
     name: '독산동 공장지대',
     desc: '중공업 공장들이 밀집한 산업 단지. 금속과 화학 물자가 풍부하다.',
     icon: '🏗️',
     subLocations: [
+      {
+        id: 'geumcheon_front_gate',
+        name: '공장지대 정문',
+        icon: '🏭',
+        desc: '철망 정문이 안쪽으로 휘었다. 수위실 창에 금이 갔다.',
+        dangerMod: 0.05,
+        isEntrance: true,
+        lootTable: [
+          {
+            id: 'scrap_metal',
+            weight: 35,
+            minQty: 2,
+            maxQty: 4,
+          },
+          {
+            id: 'nail',
+            weight: 25,
+            minQty: 2,
+            maxQty: 4,
+          },
+          {
+            id: 'wire',
+            weight: 22,
+            minQty: 1,
+            maxQty: 3,
+          },
+        ],
+        lootCount: [
+          1,
+          2,
+        ],
+        sceneImage: 'assets/images/landmarks/lm_geumcheon.png',
+      },
       {
         id: 'sl_geumcheon_secret_factory',
         name: '지하 군수 라인',
@@ -3662,12 +4556,75 @@ export const LANDMARK_DATA = {
         ],
       },
     ],
+    lootTable: [
+      {
+        id: 'scrap_metal',
+        weight: 35,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        id: 'nail',
+        weight: 25,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        id: 'spring',
+        weight: 15,
+        minQty: 1,
+        maxQty: 2,
+      },
+      {
+        id: 'refined_metal',
+        weight: 12,
+        minQty: 1,
+        maxQty: 2,
+      },
+    ],
+    lootCount: [
+      1,
+      2,
+    ],
   },
   yeongdeungpo: {
     name: '영등포 타임스퀘어',
     desc: '대형 복합 쇼핑몰. 식품관과 의류·전자제품 매장이 있다.',
     icon: '🛒',
     subLocations: [
+      {
+        id: 'yeongdeungpo_mall_gate',
+        name: '쇼핑몰 정문',
+        icon: '🛍️',
+        desc: '회전문 앞에 쇼핑카트가 바리케이드처럼 쌓였다.',
+        dangerMod: 0.05,
+        isEntrance: true,
+        lootTable: [
+          {
+            id: 'cloth',
+            weight: 30,
+            minQty: 2,
+            maxQty: 4,
+          },
+          {
+            id: 'canned_food',
+            weight: 22,
+            minQty: 1,
+            maxQty: 3,
+          },
+          {
+            id: 'empty_can',
+            weight: 22,
+            minQty: 2,
+            maxQty: 4,
+          },
+        ],
+        lootCount: [
+          1,
+          2,
+        ],
+        sceneImage: 'assets/images/landmarks/lm_yeongdeungpo.png',
+      },
       {
         id: 'yeongdeungpo_food',
         name: '식품관',
@@ -3843,6 +4800,36 @@ export const LANDMARK_DATA = {
         ],
       },
     ],
+    lootTable: [
+      {
+        id: 'cloth',
+        weight: 30,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        id: 'canned_food',
+        weight: 22,
+        minQty: 1,
+        maxQty: 3,
+      },
+      {
+        id: 'plastic',
+        weight: 22,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        id: 'empty_can',
+        weight: 20,
+        minQty: 2,
+        maxQty: 4,
+      },
+    ],
+    lootCount: [
+      1,
+      2,
+    ],
   },
   lm_kbs: {
     name: 'KBS 본관',
@@ -3852,6 +4839,29 @@ export const LANDMARK_DATA = {
       'yeongdeungpo',
     ],
     subLocations: [
+      {
+        id: 'sl_kbs_lobby',
+        name: '로비·분장실',
+        icon: '🎬',
+        desc: '출입증이 바닥에 흩어져 있다. 분장실 거울 앞 의자가 아직 돌아간 채다.',
+        dangerMod: 0.1,
+        lootTable: [
+          {
+            id: 'cloth',
+            weight: 6,
+          },
+          {
+            id: 'battery',
+            weight: 5,
+          },
+          {
+            id: 'flashlight',
+            weight: 3,
+          },
+        ],
+        isEntrance: true,
+        noSceneImage: true,
+      },
       {
         id: 'sl_yeongdeungpo_kbs_studio',
         name: 'KBS 비밀 방송실',
@@ -3888,27 +4898,6 @@ export const LANDMARK_DATA = {
         ],
       },
       {
-        id: 'sl_kbs_lobby',
-        name: '로비·분장실',
-        icon: '🎬',
-        desc: '출입증이 바닥에 흩어져 있다. 분장실 거울 앞 의자가 아직 돌아간 채다.',
-        dangerMod: 0.1,
-        lootTable: [
-          {
-            id: 'cloth',
-            weight: 6,
-          },
-          {
-            id: 'battery',
-            weight: 5,
-          },
-          {
-            id: 'flashlight',
-            weight: 3,
-          },
-        ],
-      },
-      {
         id: 'sl_kbs_newsroom',
         name: '보도국',
         icon: '🗞',
@@ -3924,8 +4913,10 @@ export const LANDMARK_DATA = {
             weight: 4,
           },
           {
-            id: 'paper',
+            id: 'kindling',
             weight: 4,
+            minQty: 2,
+            maxQty: 4,
           },
         ],
       },
@@ -3950,6 +4941,36 @@ export const LANDMARK_DATA = {
           },
         ],
       },
+    ],
+    lootTable: [
+      {
+        id: 'electronic_parts',
+        weight: 30,
+        minQty: 1,
+        maxQty: 3,
+      },
+      {
+        id: 'copper_coil',
+        weight: 15,
+        minQty: 1,
+        maxQty: 2,
+      },
+      {
+        id: 'wire',
+        weight: 25,
+        minQty: 1,
+        maxQty: 3,
+      },
+      {
+        id: 'battery',
+        weight: 10,
+        minQty: 1,
+        maxQty: 2,
+      },
+    ],
+    lootCount: [
+      1,
+      2,
     ],
   },
   lm_63_building: {
@@ -3984,6 +5005,7 @@ export const LANDMARK_DATA = {
             weight: 3,
           },
         ],
+        isEntrance: true,
       },
       {
         id: 'sl_63_observatory',
@@ -4038,6 +5060,36 @@ export const LANDMARK_DATA = {
         ],
       },
     ],
+    lootTable: [
+      {
+        id: 'glass_shard',
+        weight: 30,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        id: 'cloth',
+        weight: 25,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        id: 'scrap_metal',
+        weight: 25,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        id: 'battery',
+        weight: 8,
+        minQty: 1,
+        maxQty: 2,
+      },
+    ],
+    lootCount: [
+      1,
+      2,
+    ],
   },
   lm_boramae_hospital: {
     name: '보라매병원',
@@ -4047,6 +5099,29 @@ export const LANDMARK_DATA = {
       'dongjak',
     ],
     subLocations: [
+      {
+        id: 'boramae_desk',
+        name: '병원접수처',
+        icon: '📍',
+        desc: '불이 꺼진 병원 데스크. 접수 전용 설비 — 병원 입구, 의료 접수처로 이곳을 통해 병원 내부로 들어간다.',
+        dangerMod: 0.01,
+        lootTable: [
+          {
+            id: 'antiseptic',
+            weight: 3,
+          },
+          {
+            id: 'gauze',
+            weight: 1,
+          },
+        ],
+        lootCount: [
+          1,
+          2,
+        ],
+        isEntrance: true,
+        sceneImage: 'assets/images/landmarks/lm_boramae_hospital.png',
+      },
       {
         id: 'boramae_emergency',
         name: '응급실',
@@ -4059,24 +5134,16 @@ export const LANDMARK_DATA = {
             weight: 6,
           },
           {
-            id: 'cloth',
-            weight: 3,
-          },
-          {
             id: 'alcohol_swab',
             weight: 4,
           },
           {
+            id: 'cloth',
+            weight: 3,
+          },
+          {
             id: 'painkiller',
             weight: 3,
-          },
-          {
-            id: 'antiseptic',
-            weight: 3,
-          },
-          {
-            id: 'splint',
-            weight: 1,
           },
         ],
         lootCount: [
@@ -4096,27 +5163,17 @@ export const LANDMARK_DATA = {
             weight: 3,
           },
           {
-            id: 'surgery_kit',
-            weight: 2,
-          },
-          {
-            id: 'combat_scalpel',
-            weight: 1,
-          },
-          {
             id: 'antiseptic',
             weight: 3,
           },
           {
+            id: 'combat_scalpel',
+            weight: 6,
+            minQty: 1,
+            maxQty: 1,
+          },
+          {
             id: 'first_aid_kit',
-            weight: 2,
-          },
-          {
-            id: 'antibiotics',
-            weight: 1,
-          },
-          {
-            id: 'cloth',
             weight: 2,
           },
         ],
@@ -4148,14 +5205,6 @@ export const LANDMARK_DATA = {
             id: 'stimulant',
             weight: 2,
           },
-          {
-            id: 'antidote',
-            weight: 1,
-          },
-          {
-            id: 'antiseptic',
-            weight: 2,
-          },
         ],
         lootCount: [
           2,
@@ -4170,24 +5219,20 @@ export const LANDMARK_DATA = {
         dangerMod: 0.18,
         lootTable: [
           {
-            id: 'iv_saline',
-            weight: 2,
-          },
-          {
-            id: 'reinforced_bandage',
-            weight: 2,
-          },
-          {
-            id: 'antidote',
-            weight: 2,
-          },
-          {
             id: 'contaminated_water',
             weight: 4,
           },
           {
             id: 'tattered_rags',
             weight: 4,
+          },
+          {
+            id: 'iv_saline',
+            weight: 2,
+          },
+          {
+            id: 'reinforced_bandage',
+            weight: 2,
           },
         ],
         lootCount: [
@@ -4247,37 +5292,42 @@ export const LANDMARK_DATA = {
             id: 'water_bottle',
             weight: 15,
           },
-          {
-            id: 'cooked_noodles',
-            weight: 10,
-          },
         ],
         lootCount: [
           2,
           3,
         ],
       },
+    ],
+    lootTable: [
       {
-        id: 'boramae_desk',
-        name: '병원접수처',
-        icon: '📍',
-        desc: '불이 꺼진 병원 데스크. 접수 전용 설비 — 병원 입구, 의료 접수처로 이곳을 통해 병원 내부로 들어간다.',
-        dangerMod: 0.01,
-        lootTable: [
-          {
-            id: 'antiseptic',
-            weight: 3,
-          },
-          {
-            id: 'gauze',
-            weight: 1,
-          },
-        ],
-        lootCount: [
-          1,
-          2,
-        ],
+        id: 'bandage',
+        weight: 30,
+        minQty: 1,
+        maxQty: 3,
       },
+      {
+        id: 'antiseptic',
+        weight: 22,
+        minQty: 1,
+        maxQty: 2,
+      },
+      {
+        id: 'painkiller',
+        weight: 15,
+        minQty: 1,
+        maxQty: 2,
+      },
+      {
+        id: 'alcohol_solution',
+        weight: 12,
+        minQty: 1,
+        maxQty: 2,
+      },
+    ],
+    lootCount: [
+      1,
+      2,
     ],
   },
   lm_dongjak: {
@@ -4285,6 +5335,39 @@ export const LANDMARK_DATA = {
     desc: '국가 유공자 묘역. 조용하고 넓은 숲이 있으며 관리 시설이 있다.',
     icon: '🎖️',
     subLocations: [
+      {
+        id: 'dongjak_hyeonchungmun',
+        name: '현충문',
+        icon: '🕊️',
+        desc: '거대한 문 아래 헌화대. 시든 국화가 그대로 쌓여 있다.',
+        dangerMod: 0.05,
+        isEntrance: true,
+        lootTable: [
+          {
+            id: 'cloth',
+            weight: 28,
+            minQty: 2,
+            maxQty: 4,
+          },
+          {
+            id: 'wood',
+            weight: 25,
+            minQty: 2,
+            maxQty: 4,
+          },
+          {
+            id: 'herb',
+            weight: 22,
+            minQty: 2,
+            maxQty: 4,
+          },
+        ],
+        lootCount: [
+          1,
+          2,
+        ],
+        sceneImage: 'assets/images/landmarks/lm_dongjak.png',
+      },
       {
         id: 'dongjak_memorial',
         name: '현충탑',
@@ -4470,12 +5553,75 @@ export const LANDMARK_DATA = {
         ],
       },
     ],
+    lootTable: [
+      {
+        id: 'cloth',
+        weight: 28,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        id: 'wood',
+        weight: 25,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        id: 'herb',
+        weight: 22,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        id: 'empty_cartridge',
+        weight: 12,
+        minQty: 1,
+        maxQty: 2,
+      },
+    ],
+    lootCount: [
+      1,
+      2,
+    ],
   },
   gwanak: {
     name: '서울대학교',
     desc: '국내 최고 명문대. 의학·화학·공학 실험실에 귀한 물자가 있다.',
     icon: '🎓',
     subLocations: [
+      {
+        id: 'gwanak_main_plaza',
+        name: '정문 광장',
+        icon: '🎓',
+        desc: '샤 모양 정문 앞 광장. 셔틀버스가 인도에 올라탄 채 멈췄다.',
+        dangerMod: 0.05,
+        isEntrance: true,
+        lootTable: [
+          {
+            id: 'glass_shard',
+            weight: 28,
+            minQty: 2,
+            maxQty: 4,
+          },
+          {
+            id: 'plastic',
+            weight: 25,
+            minQty: 2,
+            maxQty: 4,
+          },
+          {
+            id: 'cloth',
+            weight: 22,
+            minQty: 2,
+            maxQty: 4,
+          },
+        ],
+        lootCount: [
+          1,
+          2,
+        ],
+        sceneImage: 'assets/images/landmarks/lm_gwanak.png',
+      },
       {
         id: 'sl_gwanak_reactor',
         name: '연구용 원자로',
@@ -4577,6 +5723,10 @@ export const LANDMARK_DATA = {
         dangerMod: 0.15,
         lootTable: [
           {
+            id: 'electronic_parts',
+            weight: 5,
+          },
+          {
             id: 'wire',
             weight: 4,
           },
@@ -4585,15 +5735,7 @@ export const LANDMARK_DATA = {
             weight: 3,
           },
           {
-            id: 'electronic_parts',
-            weight: 5,
-          },
-          {
             id: 'nail',
-            weight: 2,
-          },
-          {
-            id: 'duct_tape',
             weight: 2,
           },
         ],
@@ -4690,12 +5832,75 @@ export const LANDMARK_DATA = {
         ],
       },
     ],
+    lootTable: [
+      {
+        id: 'glass_shard',
+        weight: 28,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        id: 'plastic',
+        weight: 25,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        id: 'alcohol_solution',
+        weight: 15,
+        minQty: 1,
+        maxQty: 2,
+      },
+      {
+        id: 'charcoal_filter',
+        weight: 10,
+        minQty: 1,
+        maxQty: 2,
+      },
+    ],
+    lootCount: [
+      1,
+      2,
+    ],
   },
   seocho: {
     name: '예술의전당',
     desc: '서울 대표 복합 문화 예술 공간. 넓은 건물과 지하 창고가 있다.',
     icon: '🎭',
     subLocations: [
+      {
+        id: 'seocho_plaza',
+        name: '전당 앞 광장',
+        icon: '🎭',
+        desc: '분수는 말랐고 공연 포스터가 반쯤 뜯겨 나부낀다.',
+        dangerMod: 0.05,
+        isEntrance: true,
+        lootTable: [
+          {
+            id: 'cloth',
+            weight: 30,
+            minQty: 2,
+            maxQty: 4,
+          },
+          {
+            id: 'plastic',
+            weight: 25,
+            minQty: 2,
+            maxQty: 4,
+          },
+          {
+            id: 'thread',
+            weight: 20,
+            minQty: 1,
+            maxQty: 3,
+          },
+        ],
+        lootCount: [
+          1,
+          2,
+        ],
+        sceneImage: 'assets/images/landmarks/lm_seocho.png',
+      },
       {
         id: 'sl_seocho_evidence_vault',
         name: '법원 증거물 보관소',
@@ -4873,12 +6078,75 @@ export const LANDMARK_DATA = {
         ],
       },
     ],
+    lootTable: [
+      {
+        id: 'cloth',
+        weight: 30,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        id: 'large_cloth',
+        weight: 12,
+        minQty: 1,
+        maxQty: 2,
+      },
+      {
+        id: 'thread',
+        weight: 22,
+        minQty: 1,
+        maxQty: 3,
+      },
+      {
+        id: 'plastic',
+        weight: 25,
+        minQty: 2,
+        maxQty: 4,
+      },
+    ],
+    lootCount: [
+      1,
+      2,
+    ],
   },
   gangnam: {
     name: '강남세브란스병원',
     desc: '강남 최대 병원. 최신 의료 시설과 대형 약품 창고가 있다.',
     icon: '🏥',
     subLocations: [
+      {
+        id: 'gangnam_front_gate',
+        name: '병원 정문',
+        icon: '🏥',
+        desc: '발레파킹 부스가 넘어져 있다. 자동문 틈에 휠체어가 끼었다.',
+        dangerMod: 0.05,
+        isEntrance: true,
+        lootTable: [
+          {
+            id: 'bandage',
+            weight: 30,
+            minQty: 1,
+            maxQty: 3,
+          },
+          {
+            id: 'glass_shard',
+            weight: 25,
+            minQty: 2,
+            maxQty: 4,
+          },
+          {
+            id: 'cloth',
+            weight: 22,
+            minQty: 2,
+            maxQty: 4,
+          },
+        ],
+        lootCount: [
+          1,
+          2,
+        ],
+        sceneImage: 'assets/images/landmarks/lm_gangnam.png',
+      },
       {
         id: 'sl_gangnam_sealed_pharmacy',
         name: '봉인 약제실',
@@ -5075,16 +6343,12 @@ export const LANDMARK_DATA = {
             weight: 3,
           },
           {
-            id: 'surgery_kit',
-            weight: 2,
-          },
-          {
             id: 'antibiotics',
             weight: 3,
           },
           {
-            id: 'rad_blocker',
-            weight: 1,
+            id: 'surgery_kit',
+            weight: 2,
           },
         ],
         lootCount: [
@@ -5093,12 +6357,72 @@ export const LANDMARK_DATA = {
         ],
       },
     ],
+    lootTable: [
+      {
+        id: 'bandage',
+        weight: 30,
+        minQty: 1,
+        maxQty: 3,
+      },
+      {
+        id: 'antiseptic',
+        weight: 22,
+        minQty: 1,
+        maxQty: 2,
+      },
+      {
+        id: 'painkiller',
+        weight: 15,
+        minQty: 1,
+        maxQty: 2,
+      },
+      {
+        id: 'glass_shard',
+        weight: 20,
+        minQty: 2,
+        maxQty: 4,
+      },
+    ],
+    lootCount: [
+      1,
+      2,
+    ],
   },
   songpa: {
     name: '롯데월드타워',
     desc: '555m 초고층 빌딩. 쇼핑몰, 호텔, 발전기실 등 다양한 구역.',
     icon: '🏙️',
     subLocations: [
+      {
+        id: 'songpa_lobby',
+        name: '로비',
+        icon: '🏛️',
+        desc: '웅장한 1층 로비. 좀비가 집결해 있다.',
+        dangerMod: 0.3,
+        lootTable: [
+          {
+            id: 'bandage',
+            weight: 3,
+          },
+          {
+            id: 'flashlight',
+            weight: 2,
+          },
+          {
+            id: 'scrap_metal',
+            weight: 3,
+          },
+          {
+            id: 'cloth',
+            weight: 2,
+          },
+        ],
+        lootCount: [
+          2,
+          3,
+        ],
+        isEntrance: true,
+      },
       {
         id: 'sl_songpa_survivor_fort',
         name: '생존자 요새',
@@ -5179,35 +6503,6 @@ export const LANDMARK_DATA = {
         ],
       },
       {
-        id: 'songpa_lobby',
-        name: '로비',
-        icon: '🏛️',
-        desc: '웅장한 1층 로비. 좀비가 집결해 있다.',
-        dangerMod: 0.3,
-        lootTable: [
-          {
-            id: 'bandage',
-            weight: 3,
-          },
-          {
-            id: 'flashlight',
-            weight: 2,
-          },
-          {
-            id: 'scrap_metal',
-            weight: 3,
-          },
-          {
-            id: 'cloth',
-            weight: 2,
-          },
-        ],
-        lootCount: [
-          2,
-          3,
-        ],
-      },
-      {
         id: 'songpa_mall_basement',
         name: '쇼핑몰 지하',
         icon: '🛒',
@@ -5228,10 +6523,6 @@ export const LANDMARK_DATA = {
           },
           {
             id: 'bandage',
-            weight: 3,
-          },
-          {
-            id: 'purified_water',
             weight: 3,
           },
         ],
@@ -5277,10 +6568,6 @@ export const LANDMARK_DATA = {
         dangerMod: 0.4,
         lootTable: [
           {
-            id: 'tactical_vest',
-            weight: 2,
-          },
-          {
             id: 'first_aid_kit',
             weight: 3,
           },
@@ -5289,11 +6576,11 @@ export const LANDMARK_DATA = {
             weight: 3,
           },
           {
-            id: 'pistol_ammo',
+            id: 'tactical_vest',
             weight: 2,
           },
           {
-            id: 'stimulant',
+            id: 'pistol_ammo',
             weight: 2,
           },
         ],
@@ -5354,10 +6641,6 @@ export const LANDMARK_DATA = {
             id: 'rubber',
             weight: 2,
           },
-          {
-            id: 'duct_tape',
-            weight: 2,
-          },
         ],
         lootCount: [
           3,
@@ -5365,12 +6648,75 @@ export const LANDMARK_DATA = {
         ],
       },
     ],
+    lootTable: [
+      {
+        id: 'glass_shard',
+        weight: 28,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        id: 'scrap_metal',
+        weight: 25,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        id: 'cloth',
+        weight: 25,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        id: 'battery',
+        weight: 8,
+        minQty: 1,
+        maxQty: 2,
+      },
+    ],
+    lootCount: [
+      1,
+      2,
+    ],
   },
   gangdong: {
     name: '암사동 선사유적지',
     desc: '신석기 시대 움집 복원 유적지. 한강변에 위치해 물을 구하기 쉽다.',
     icon: '🏺',
     subLocations: [
+      {
+        id: 'gangdong_ticket_office',
+        name: '유적지 매표소',
+        icon: '🏺',
+        desc: '목조 매표소. 발굴 안내 팸플릿이 젖어 뭉쳤다.',
+        dangerMod: 0.05,
+        isEntrance: true,
+        lootTable: [
+          {
+            id: 'wood',
+            weight: 30,
+            minQty: 2,
+            maxQty: 4,
+          },
+          {
+            id: 'bone',
+            weight: 22,
+            minQty: 1,
+            maxQty: 3,
+          },
+          {
+            id: 'herb',
+            weight: 22,
+            minQty: 2,
+            maxQty: 4,
+          },
+        ],
+        lootCount: [
+          1,
+          2,
+        ],
+        sceneImage: 'assets/images/landmarks/lm_gangdong.png',
+      },
       {
         id: 'sl_gangdong_secret_dock',
         name: '비밀 선착장',
@@ -5426,8 +6772,10 @@ export const LANDMARK_DATA = {
             weight: 3,
           },
           {
-            id: 'vitamins',
-            weight: 2,
+            id: 'soil_bag',
+            weight: 18,
+            minQty: 1,
+            maxQty: 3,
           },
         ],
         lootCount: [
@@ -5456,10 +6804,6 @@ export const LANDMARK_DATA = {
           },
           {
             id: 'flashlight',
-            weight: 2,
-          },
-          {
-            id: 'painkiller',
             weight: 2,
           },
         ],
@@ -5513,8 +6857,10 @@ export const LANDMARK_DATA = {
             weight: 3,
           },
           {
-            id: 'rope',
-            weight: 2,
+            id: 'sand',
+            weight: 22,
+            minQty: 2,
+            maxQty: 4,
           },
           {
             id: 'vitamins',
@@ -5546,12 +6892,10 @@ export const LANDMARK_DATA = {
             weight: 3,
           },
           {
-            id: 'crowbar',
-            weight: 2,
-          },
-          {
-            id: 'rope',
-            weight: 2,
+            id: 'wild_wheat',
+            weight: 20,
+            minQty: 1,
+            maxQty: 3,
           },
         ],
         lootCount: [
@@ -5559,6 +6903,36 @@ export const LANDMARK_DATA = {
           3,
         ],
       },
+    ],
+    lootTable: [
+      {
+        id: 'firestone',
+        weight: 18,
+        minQty: 1,
+        maxQty: 2,
+      },
+      {
+        id: 'bone',
+        weight: 22,
+        minQty: 1,
+        maxQty: 3,
+      },
+      {
+        id: 'wood',
+        weight: 28,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        id: 'herb',
+        weight: 22,
+        minQty: 2,
+        maxQty: 4,
+      },
+    ],
+    lootCount: [
+      1,
+      2,
     ],
   },
   hangang_gangnam: {
@@ -5628,20 +7002,18 @@ export const LANDMARK_DATA = {
             weight: 4,
           },
           {
-            id: 'dandelion',
-            weight: 3,
-          },
-          {
             id: 'pebble',
             weight: 4,
           },
           {
-            id: 'dry_grass',
-            weight: 3,
+            id: 'bait_insect',
+            weight: 10,
+            minQty: 1,
+            maxQty: 2,
           },
           {
-            id: 'bait_insect',
-            weight: 2,
+            id: 'dry_grass',
+            weight: 3,
           },
         ],
         lootCount: [
@@ -5651,6 +7023,36 @@ export const LANDMARK_DATA = {
       },
     ],
     districtId: 'gangnam',
+    lootTable: [
+      {
+        id: 'raw_fish',
+        weight: 25,
+        minQty: 1,
+        maxQty: 3,
+      },
+      {
+        id: 'water_bottle',
+        weight: 28,
+        minQty: 1,
+        maxQty: 3,
+      },
+      {
+        id: 'wood',
+        weight: 25,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        id: 'rope',
+        weight: 20,
+        minQty: 1,
+        maxQty: 3,
+      },
+    ],
+    lootCount: [
+      1,
+      2,
+    ],
   },
   hangang_gangdong: {
     name: '한강',
@@ -5719,20 +7121,18 @@ export const LANDMARK_DATA = {
             weight: 4,
           },
           {
-            id: 'dandelion',
-            weight: 3,
-          },
-          {
             id: 'pebble',
             weight: 4,
           },
           {
-            id: 'dry_grass',
-            weight: 3,
+            id: 'bait_insect',
+            weight: 10,
+            minQty: 1,
+            maxQty: 2,
           },
           {
-            id: 'bait_insect',
-            weight: 2,
+            id: 'dry_grass',
+            weight: 3,
           },
         ],
         lootCount: [
@@ -5742,6 +7142,36 @@ export const LANDMARK_DATA = {
       },
     ],
     districtId: 'gangdong',
+    lootTable: [
+      {
+        id: 'raw_fish',
+        weight: 25,
+        minQty: 1,
+        maxQty: 3,
+      },
+      {
+        id: 'water_bottle',
+        weight: 28,
+        minQty: 1,
+        maxQty: 3,
+      },
+      {
+        id: 'wood',
+        weight: 25,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        id: 'rope',
+        weight: 20,
+        minQty: 1,
+        maxQty: 3,
+      },
+    ],
+    lootCount: [
+      1,
+      2,
+    ],
   },
   hangang_gwangjin: {
     name: '한강',
@@ -5810,20 +7240,18 @@ export const LANDMARK_DATA = {
             weight: 4,
           },
           {
-            id: 'dandelion',
-            weight: 3,
-          },
-          {
             id: 'pebble',
             weight: 4,
           },
           {
-            id: 'dry_grass',
-            weight: 3,
+            id: 'bait_insect',
+            weight: 10,
+            minQty: 1,
+            maxQty: 2,
           },
           {
-            id: 'bait_insect',
-            weight: 2,
+            id: 'dry_grass',
+            weight: 3,
           },
         ],
         lootCount: [
@@ -5833,6 +7261,36 @@ export const LANDMARK_DATA = {
       },
     ],
     districtId: 'gwangjin',
+    lootTable: [
+      {
+        id: 'raw_fish',
+        weight: 25,
+        minQty: 1,
+        maxQty: 3,
+      },
+      {
+        id: 'water_bottle',
+        weight: 28,
+        minQty: 1,
+        maxQty: 3,
+      },
+      {
+        id: 'wood',
+        weight: 25,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        id: 'rope',
+        weight: 20,
+        minQty: 1,
+        maxQty: 3,
+      },
+    ],
+    lootCount: [
+      1,
+      2,
+    ],
   },
   hangang_mapo: {
     name: '한강',
@@ -5901,20 +7359,18 @@ export const LANDMARK_DATA = {
             weight: 4,
           },
           {
-            id: 'dandelion',
-            weight: 3,
-          },
-          {
             id: 'pebble',
             weight: 4,
           },
           {
-            id: 'dry_grass',
-            weight: 3,
+            id: 'bait_insect',
+            weight: 10,
+            minQty: 1,
+            maxQty: 2,
           },
           {
-            id: 'bait_insect',
-            weight: 2,
+            id: 'dry_grass',
+            weight: 3,
           },
         ],
         lootCount: [
@@ -5924,6 +7380,36 @@ export const LANDMARK_DATA = {
       },
     ],
     districtId: 'mapo',
+    lootTable: [
+      {
+        id: 'raw_fish',
+        weight: 25,
+        minQty: 1,
+        maxQty: 3,
+      },
+      {
+        id: 'water_bottle',
+        weight: 28,
+        minQty: 1,
+        maxQty: 3,
+      },
+      {
+        id: 'wood',
+        weight: 25,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        id: 'rope',
+        weight: 20,
+        minQty: 1,
+        maxQty: 3,
+      },
+    ],
+    lootCount: [
+      1,
+      2,
+    ],
   },
   hangang_seocho: {
     name: '한강',
@@ -5992,20 +7478,18 @@ export const LANDMARK_DATA = {
             weight: 4,
           },
           {
-            id: 'dandelion',
-            weight: 3,
-          },
-          {
             id: 'pebble',
             weight: 4,
           },
           {
-            id: 'dry_grass',
-            weight: 3,
+            id: 'bait_insect',
+            weight: 10,
+            minQty: 1,
+            maxQty: 2,
           },
           {
-            id: 'bait_insect',
-            weight: 2,
+            id: 'dry_grass',
+            weight: 3,
           },
         ],
         lootCount: [
@@ -6015,6 +7499,36 @@ export const LANDMARK_DATA = {
       },
     ],
     districtId: 'seocho',
+    lootTable: [
+      {
+        id: 'raw_fish',
+        weight: 25,
+        minQty: 1,
+        maxQty: 3,
+      },
+      {
+        id: 'water_bottle',
+        weight: 28,
+        minQty: 1,
+        maxQty: 3,
+      },
+      {
+        id: 'wood',
+        weight: 25,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        id: 'rope',
+        weight: 20,
+        minQty: 1,
+        maxQty: 3,
+      },
+    ],
+    lootCount: [
+      1,
+      2,
+    ],
   },
   hangang_seongdong: {
     name: '한강',
@@ -6083,20 +7597,18 @@ export const LANDMARK_DATA = {
             weight: 4,
           },
           {
-            id: 'dandelion',
-            weight: 3,
-          },
-          {
             id: 'pebble',
             weight: 4,
           },
           {
-            id: 'dry_grass',
-            weight: 3,
+            id: 'bait_insect',
+            weight: 10,
+            minQty: 1,
+            maxQty: 2,
           },
           {
-            id: 'bait_insect',
-            weight: 2,
+            id: 'dry_grass',
+            weight: 3,
           },
         ],
         lootCount: [
@@ -6106,6 +7618,36 @@ export const LANDMARK_DATA = {
       },
     ],
     districtId: 'seongdong',
+    lootTable: [
+      {
+        id: 'raw_fish',
+        weight: 25,
+        minQty: 1,
+        maxQty: 3,
+      },
+      {
+        id: 'water_bottle',
+        weight: 28,
+        minQty: 1,
+        maxQty: 3,
+      },
+      {
+        id: 'wood',
+        weight: 25,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        id: 'rope',
+        weight: 20,
+        minQty: 1,
+        maxQty: 3,
+      },
+    ],
+    lootCount: [
+      1,
+      2,
+    ],
   },
   hangang_songpa: {
     name: '한강',
@@ -6173,20 +7715,18 @@ export const LANDMARK_DATA = {
             weight: 4,
           },
           {
-            id: 'dandelion',
-            weight: 3,
-          },
-          {
             id: 'pebble',
             weight: 4,
           },
           {
-            id: 'dry_grass',
-            weight: 3,
+            id: 'bait_insect',
+            weight: 10,
+            minQty: 1,
+            maxQty: 2,
           },
           {
-            id: 'bait_insect',
-            weight: 2,
+            id: 'dry_grass',
+            weight: 3,
           },
         ],
         lootCount: [
@@ -6197,6 +7737,36 @@ export const LANDMARK_DATA = {
     ],
     districtId: 'songpa',
     hasFishing: true,
+    lootTable: [
+      {
+        id: 'raw_fish',
+        weight: 25,
+        minQty: 1,
+        maxQty: 3,
+      },
+      {
+        id: 'water_bottle',
+        weight: 28,
+        minQty: 1,
+        maxQty: 3,
+      },
+      {
+        id: 'wood',
+        weight: 25,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        id: 'rope',
+        weight: 20,
+        minQty: 1,
+        maxQty: 3,
+      },
+    ],
+    lootCount: [
+      1,
+      2,
+    ],
   },
   hangang_yeongdeungpo: {
     name: '한강',
@@ -6265,20 +7835,18 @@ export const LANDMARK_DATA = {
             weight: 4,
           },
           {
-            id: 'dandelion',
-            weight: 3,
-          },
-          {
             id: 'pebble',
             weight: 4,
           },
           {
-            id: 'dry_grass',
-            weight: 3,
+            id: 'bait_insect',
+            weight: 10,
+            minQty: 1,
+            maxQty: 2,
           },
           {
-            id: 'bait_insect',
-            weight: 2,
+            id: 'dry_grass',
+            weight: 3,
           },
         ],
         lootCount: [
@@ -6288,6 +7856,36 @@ export const LANDMARK_DATA = {
       },
     ],
     districtId: 'yeongdeungpo',
+    lootTable: [
+      {
+        id: 'raw_fish',
+        weight: 25,
+        minQty: 1,
+        maxQty: 3,
+      },
+      {
+        id: 'water_bottle',
+        weight: 28,
+        minQty: 1,
+        maxQty: 3,
+      },
+      {
+        id: 'wood',
+        weight: 25,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        id: 'rope',
+        weight: 20,
+        minQty: 1,
+        maxQty: 3,
+      },
+    ],
+    lootCount: [
+      1,
+      2,
+    ],
   },
   hangang_yongsan: {
     name: '한강',
@@ -6356,20 +7954,18 @@ export const LANDMARK_DATA = {
             weight: 4,
           },
           {
-            id: 'dandelion',
-            weight: 3,
-          },
-          {
             id: 'pebble',
             weight: 4,
           },
           {
-            id: 'dry_grass',
-            weight: 3,
+            id: 'bait_insect',
+            weight: 10,
+            minQty: 1,
+            maxQty: 2,
           },
           {
-            id: 'bait_insect',
-            weight: 2,
+            id: 'dry_grass',
+            weight: 3,
           },
         ],
         lootCount: [
@@ -6379,6 +7975,36 @@ export const LANDMARK_DATA = {
       },
     ],
     districtId: 'yongsan',
+    lootTable: [
+      {
+        id: 'raw_fish',
+        weight: 25,
+        minQty: 1,
+        maxQty: 3,
+      },
+      {
+        id: 'water_bottle',
+        weight: 28,
+        minQty: 1,
+        maxQty: 3,
+      },
+      {
+        id: 'wood',
+        weight: 25,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        id: 'rope',
+        weight: 20,
+        minQty: 1,
+        maxQty: 3,
+      },
+    ],
+    lootCount: [
+      1,
+      2,
+    ],
   },
   hangang_junggoo: {
     name: '한강',
@@ -6447,20 +8073,18 @@ export const LANDMARK_DATA = {
             weight: 4,
           },
           {
-            id: 'dandelion',
-            weight: 3,
-          },
-          {
             id: 'pebble',
             weight: 4,
           },
           {
-            id: 'dry_grass',
-            weight: 3,
+            id: 'bait_insect',
+            weight: 10,
+            minQty: 1,
+            maxQty: 2,
           },
           {
-            id: 'bait_insect',
-            weight: 2,
+            id: 'dry_grass',
+            weight: 3,
           },
         ],
         lootCount: [
@@ -6470,6 +8094,36 @@ export const LANDMARK_DATA = {
       },
     ],
     districtId: 'junggoo',
+    lootTable: [
+      {
+        id: 'raw_fish',
+        weight: 25,
+        minQty: 1,
+        maxQty: 3,
+      },
+      {
+        id: 'water_bottle',
+        weight: 28,
+        minQty: 1,
+        maxQty: 3,
+      },
+      {
+        id: 'wood',
+        weight: 25,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        id: 'rope',
+        weight: 20,
+        minQty: 1,
+        maxQty: 3,
+      },
+    ],
+    lootCount: [
+      1,
+      2,
+    ],
   },
   lm_raider_camp_small: {
     name: '소규모 약탈자 캠프',
@@ -6487,6 +8141,39 @@ export const LANDMARK_DATA = {
     rescueNpcId: 'npc_rescued_civilian',
     subLocations: [
       {
+        id: 'raider_small_gate',
+        name: '바리케이드 게이트',
+        icon: '🚧',
+        desc: '드럼통과 철판으로 엮은 입구. 감시 구멍이 뚫려 있다.',
+        dangerMod: 0.15,
+        isEntrance: true,
+        lootTable: [
+          {
+            id: 'cloth',
+            weight: 30,
+            minQty: 2,
+            maxQty: 4,
+          },
+          {
+            id: 'rope',
+            weight: 25,
+            minQty: 1,
+            maxQty: 3,
+          },
+          {
+            id: 'canned_food',
+            weight: 22,
+            minQty: 1,
+            maxQty: 3,
+          },
+        ],
+        lootCount: [
+          1,
+          2,
+        ],
+        sceneImage: 'assets/images/landmarks/lm_raider_camp_small.png',
+      },
+      {
         id: 'raider_small_search',
         name: '캠프 수색',
         icon: '🔦',
@@ -6498,10 +8185,6 @@ export const LANDMARK_DATA = {
             weight: 4,
           },
           {
-            id: 'sharpened_knife',
-            weight: 2,
-          },
-          {
             id: 'bandage',
             weight: 3,
           },
@@ -6510,11 +8193,7 @@ export const LANDMARK_DATA = {
             weight: 3,
           },
           {
-            id: 'pistol_ammo',
-            weight: 2,
-          },
-          {
-            id: 'rope',
+            id: 'sharpened_knife',
             weight: 2,
           },
         ],
@@ -6552,6 +8231,36 @@ export const LANDMARK_DATA = {
           3,
         ],
       },
+    ],
+    lootTable: [
+      {
+        id: 'cloth',
+        weight: 28,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        id: 'canned_food',
+        weight: 25,
+        minQty: 1,
+        maxQty: 3,
+      },
+      {
+        id: 'rope',
+        weight: 22,
+        minQty: 1,
+        maxQty: 3,
+      },
+      {
+        id: 'empty_cartridge',
+        weight: 15,
+        minQty: 1,
+        maxQty: 2,
+      },
+    ],
+    lootCount: [
+      1,
+      2,
     ],
   },
   lm_raider_camp_medium: {
@@ -6593,15 +8302,12 @@ export const LANDMARK_DATA = {
             id: 'rope',
             weight: 2,
           },
-          {
-            id: 'bandage',
-            weight: 2,
-          },
         ],
         lootCount: [
           2,
           4,
         ],
+        isEntrance: true,
       },
       {
         id: 'raider_medium_armory',
@@ -6619,16 +8325,14 @@ export const LANDMARK_DATA = {
             weight: 3,
           },
           {
-            id: 'sharpened_knife',
-            weight: 2,
-          },
-          {
-            id: 'smoke_bomb',
-            weight: 2,
-          },
-          {
             id: 'scrap_metal',
             weight: 3,
+          },
+          {
+            id: 'combat_knife',
+            weight: 12,
+            minQty: 1,
+            maxQty: 2,
           },
         ],
         lootCount: [
@@ -6659,16 +8363,42 @@ export const LANDMARK_DATA = {
             id: 'canned_food',
             weight: 2,
           },
-          {
-            id: 'cloth',
-            weight: 2,
-          },
         ],
         lootCount: [
           1,
           3,
         ],
       },
+    ],
+    lootTable: [
+      {
+        id: 'scrap_metal',
+        weight: 28,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        id: 'canned_food',
+        weight: 22,
+        minQty: 1,
+        maxQty: 3,
+      },
+      {
+        id: 'duct_tape',
+        weight: 20,
+        minQty: 1,
+        maxQty: 3,
+      },
+      {
+        id: 'empty_cartridge',
+        weight: 18,
+        minQty: 1,
+        maxQty: 2,
+      },
+    ],
+    lootCount: [
+      1,
+      2,
     ],
   },
   lm_power_station: {
@@ -6709,15 +8439,12 @@ export const LANDMARK_DATA = {
             id: 'wire',
             weight: 3,
           },
-          {
-            id: 'bandage',
-            weight: 2,
-          },
         ],
         lootCount: [
           2,
           4,
         ],
+        isEntrance: true,
       },
       {
         id: 'power_station_cooling',
@@ -6742,10 +8469,6 @@ export const LANDMARK_DATA = {
             id: 'electronic_parts',
             weight: 2,
           },
-          {
-            id: 'bandage',
-            weight: 2,
-          },
         ],
         lootCount: [
           2,
@@ -6768,16 +8491,12 @@ export const LANDMARK_DATA = {
             weight: 4,
           },
           {
-            id: 'circuit_board',
-            weight: 2,
-          },
-          {
-            id: 'flashlight',
-            weight: 2,
-          },
-          {
             id: 'pistol_ammo',
             weight: 3,
+          },
+          {
+            id: 'circuit_board',
+            weight: 2,
           },
         ],
         lootCount: [
@@ -6808,16 +8527,42 @@ export const LANDMARK_DATA = {
             id: 'rubber',
             weight: 3,
           },
-          {
-            id: 'iron_pipe',
-            weight: 3,
-          },
         ],
         lootCount: [
           3,
           5,
         ],
       },
+    ],
+    lootTable: [
+      {
+        id: 'copper_coil',
+        weight: 18,
+        minQty: 1,
+        maxQty: 2,
+      },
+      {
+        id: 'wire',
+        weight: 28,
+        minQty: 1,
+        maxQty: 3,
+      },
+      {
+        id: 'scrap_metal',
+        weight: 28,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        id: 'electric_motor',
+        weight: 6,
+        minQty: 1,
+        maxQty: 2,
+      },
+    ],
+    lootCount: [
+      1,
+      2,
     ],
   },
   lm_water_plant: {
@@ -6834,6 +8579,39 @@ export const LANDMARK_DATA = {
     ],
     enemyType: 'zombie',
     subLocations: [
+      {
+        id: 'water_plant_gate',
+        name: '정수장 정문',
+        icon: '💧',
+        desc: '염소 냄새가 밴 정문. 수질 경고판이 붉게 바랬다.',
+        dangerMod: 0.05,
+        isEntrance: true,
+        lootTable: [
+          {
+            id: 'plastic',
+            weight: 30,
+            minQty: 2,
+            maxQty: 4,
+          },
+          {
+            id: 'wire',
+            weight: 25,
+            minQty: 1,
+            maxQty: 3,
+          },
+          {
+            id: 'water_bottle',
+            weight: 25,
+            minQty: 1,
+            maxQty: 3,
+          },
+        ],
+        lootCount: [
+          1,
+          2,
+        ],
+        sceneImage: 'assets/images/landmarks/lm_water_plant.png',
+      },
       {
         id: 'water_plant_pump',
         name: '펌프실',
@@ -6857,10 +8635,6 @@ export const LANDMARK_DATA = {
             id: 'wire',
             weight: 3,
           },
-          {
-            id: 'bandage',
-            weight: 2,
-          },
         ],
         lootCount: [
           2,
@@ -6879,20 +8653,16 @@ export const LANDMARK_DATA = {
             weight: 4,
           },
           {
-            id: 'water_filter',
-            weight: 2,
-          },
-          {
             id: 'cloth',
             weight: 3,
           },
           {
-            id: 'rubber',
+            id: 'water_filter',
             weight: 2,
           },
           {
-            id: 'purified_water',
-            weight: 1,
+            id: 'rubber',
+            weight: 2,
           },
         ],
         lootCount: [
@@ -6912,19 +8682,15 @@ export const LANDMARK_DATA = {
             weight: 3,
           },
           {
-            id: 'purified_water',
-            weight: 2,
-          },
-          {
             id: 'charcoal',
             weight: 3,
           },
           {
-            id: 'water_filter',
+            id: 'purified_water',
             weight: 2,
           },
           {
-            id: 'glass_shard',
+            id: 'water_filter',
             weight: 2,
           },
         ],
@@ -6941,10 +8707,6 @@ export const LANDMARK_DATA = {
         dangerMod: 0.2,
         lootTable: [
           {
-            id: 'flashlight',
-            weight: 2,
-          },
-          {
             id: 'bandage',
             weight: 3,
           },
@@ -6953,12 +8715,12 @@ export const LANDMARK_DATA = {
             weight: 3,
           },
           {
-            id: 'painkiller',
+            id: 'flashlight',
             weight: 2,
           },
           {
-            id: 'pipe_wrench',
-            weight: 1,
+            id: 'painkiller',
+            weight: 2,
           },
         ],
         lootCount: [
@@ -6966,6 +8728,36 @@ export const LANDMARK_DATA = {
           3,
         ],
       },
+    ],
+    lootTable: [
+      {
+        id: 'charcoal_filter',
+        weight: 15,
+        minQty: 1,
+        maxQty: 2,
+      },
+      {
+        id: 'plastic',
+        weight: 28,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        id: 'wire',
+        weight: 25,
+        minQty: 1,
+        maxQty: 3,
+      },
+      {
+        id: 'water_bottle',
+        weight: 25,
+        minQty: 1,
+        maxQty: 3,
+      },
+    ],
+    lootCount: [
+      1,
+      2,
     ],
   },
   lm_comms_tower: {
@@ -6983,6 +8775,39 @@ export const LANDMARK_DATA = {
     enemyType: 'zombie',
     hasLeader: true,
     subLocations: [
+      {
+        id: 'comms_tower_approach',
+        name: '타워 진입로',
+        icon: '📡',
+        desc: '케이블카가 멈춰 선 진입로. 안테나 소음만 낮게 깔린다.',
+        dangerMod: 0.05,
+        isEntrance: true,
+        lootTable: [
+          {
+            id: 'electronic_parts',
+            weight: 28,
+            minQty: 1,
+            maxQty: 3,
+          },
+          {
+            id: 'wire',
+            weight: 25,
+            minQty: 1,
+            maxQty: 3,
+          },
+          {
+            id: 'scrap_metal',
+            weight: 22,
+            minQty: 2,
+            maxQty: 4,
+          },
+        ],
+        lootCount: [
+          1,
+          2,
+        ],
+        sceneImage: 'assets/images/landmarks/lm_comms_tower.png',
+      },
       {
         id: 'comms_tower_stairs',
         name: '계단부',
@@ -7003,10 +8828,6 @@ export const LANDMARK_DATA = {
             weight: 3,
           },
           {
-            id: 'bandage',
-            weight: 2,
-          },
-          {
             id: 'nail',
             weight: 3,
           },
@@ -7024,24 +8845,22 @@ export const LANDMARK_DATA = {
         dangerMod: 0.35,
         lootTable: [
           {
-            id: 'binoculars',
-            weight: 2,
-          },
-          {
             id: 'glass_shard',
             weight: 4,
           },
           {
-            id: 'canned_food',
-            weight: 2,
+            id: 'cloth',
+            weight: 3,
           },
           {
             id: 'compass',
-            weight: 1,
+            weight: 6,
+            minQty: 1,
+            maxQty: 1,
           },
           {
-            id: 'cloth',
-            weight: 3,
+            id: 'canned_food',
+            weight: 2,
           },
         ],
         lootCount: [
@@ -7067,10 +8886,6 @@ export const LANDMARK_DATA = {
           {
             id: 'circuit_board',
             weight: 3,
-          },
-          {
-            id: 'flashlight',
-            weight: 2,
           },
           {
             id: 'scrap_metal',
@@ -7105,16 +8920,42 @@ export const LANDMARK_DATA = {
             id: 'first_aid_kit',
             weight: 2,
           },
-          {
-            id: 'painkiller',
-            weight: 2,
-          },
         ],
         lootCount: [
           2,
           4,
         ],
       },
+    ],
+    lootTable: [
+      {
+        id: 'electronic_parts',
+        weight: 28,
+        minQty: 1,
+        maxQty: 3,
+      },
+      {
+        id: 'copper_coil',
+        weight: 15,
+        minQty: 1,
+        maxQty: 2,
+      },
+      {
+        id: 'wire',
+        weight: 25,
+        minQty: 1,
+        maxQty: 3,
+      },
+      {
+        id: 'battery',
+        weight: 10,
+        minQty: 1,
+        maxQty: 2,
+      },
+    ],
+    lootCount: [
+      1,
+      2,
     ],
   },
   lm_raider_camp_large: {
@@ -7156,15 +8997,12 @@ export const LANDMARK_DATA = {
             id: 'iron_pipe',
             weight: 3,
           },
-          {
-            id: 'smoke_bomb',
-            weight: 2,
-          },
         ],
         lootCount: [
           3,
           5,
         ],
+        isEntrance: true,
       },
       {
         id: 'raider_large_barracks',
@@ -7174,12 +9012,14 @@ export const LANDMARK_DATA = {
         dangerMod: 0.45,
         lootTable: [
           {
-            id: 'military_ration',
-            weight: 3,
-          },
-          {
             id: 'canned_food',
             weight: 4,
+          },
+          {
+            id: 'gas_mask',
+            weight: 8,
+            minQty: 1,
+            maxQty: 1,
           },
           {
             id: 'bandage',
@@ -7188,10 +9028,6 @@ export const LANDMARK_DATA = {
           {
             id: 'pistol_ammo',
             weight: 3,
-          },
-          {
-            id: 'gas_mask',
-            weight: 2,
           },
         ],
         lootCount: [
@@ -7222,10 +9058,6 @@ export const LANDMARK_DATA = {
             id: 'military_ration',
             weight: 2,
           },
-          {
-            id: 'sharpened_knife',
-            weight: 2,
-          },
         ],
         lootCount: [
           2,
@@ -7248,10 +9080,6 @@ export const LANDMARK_DATA = {
             weight: 3,
           },
           {
-            id: 'first_aid_kit',
-            weight: 2,
-          },
-          {
             id: 'canned_food',
             weight: 3,
           },
@@ -7265,6 +9093,36 @@ export const LANDMARK_DATA = {
           4,
         ],
       },
+    ],
+    lootTable: [
+      {
+        id: 'scrap_metal',
+        weight: 26,
+        minQty: 2,
+        maxQty: 4,
+      },
+      {
+        id: 'empty_cartridge',
+        weight: 22,
+        minQty: 1,
+        maxQty: 2,
+      },
+      {
+        id: 'black_powder',
+        weight: 10,
+        minQty: 1,
+        maxQty: 2,
+      },
+      {
+        id: 'kevlar_fabric',
+        weight: 6,
+        minQty: 1,
+        maxQty: 2,
+      },
+    ],
+    lootCount: [
+      1,
+      2,
     ],
   },
 };
@@ -7355,6 +9213,7 @@ export function registerSubLocationItems(items) {
         lootTable:             sub.lootTable,
         lootCount:             sub.lootCount,
         noSceneImage:          sub.noSceneImage,
+        sceneImage:            sub.sceneImage,
       };
     }
   }

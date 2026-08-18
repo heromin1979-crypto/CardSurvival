@@ -222,7 +222,11 @@ const FIELD_HELP = {
   contamChance: '오염(불결) 상태로 나올 확률(0~1). 예: 0.1 = 10%.',
   // 랜드마크
   dangerMod: '이 세부장소의 추가 위험도 보정값(클수록 위험).',
+  lootTable: '드랍 표. 구·랜드마크·세부장소가 각자 따로 가진다 — 랜드마크 안에서 탐색하면 랜드마크 표를, 세부장소에 진입하면 세부장소 표를 쓴다.',
   lootCount: '탐색 1회에 나오는 아이템 개수 범위 [최소, 최대].',
+  isEntrance: '랜드마크 진입 시 자동으로 들어가는 입구 구역 표시. 목록 맨 앞 세부장소가 입구가 된다.',
+  sceneImage: '카드 배경 이미지 경로 직접 지정. 전용 배경(assets/images/sublocations/<id>.png)이 없을 때 랜드마크 대표 이미지를 쓰는 용도.',
+  noSceneImage: '배경 이미지를 쓰지 않고 아이콘만 표시한다(true). 경로를 만들지 않아 404를 막는다.',
   requiresHiddenLocation: '이 숨겨진 장소를 발견해야 노출되는 세부 장소입니다.',
   // 퀘스트 기본
   title: '퀘스트 제목(화면에 표시되는 이름).',
@@ -263,7 +267,7 @@ function helpFor(key) { return FIELD_HELP[key] || ''; }
 const BAL_CAT_LABEL = {
   design: '설계 목표', stats: '스탯 감소율(/TP)', hydration: '수분', armor: '방어력',
   noise: '소음', travel: '이동', crafting: '제작', quality: '제작 품질', combat: '전투',
-  campfire: '모닥불', explore: '탐색 루팅', encounter: '조우', disease: '질병',
+  campfire: '모닥불', acidRain: '산성비 노출', explore: '탐색 루팅', encounter: '조우', disease: '질병',
   moraleTiers: '사기 구간', raidEvents: '레이드 이벤트', hordeWaves: '무리 웨이브',
   hospitalSiege: '병원 공성', patientIntake: '환자 유입', raiderEvents: '약탈자 이벤트',
   night: '야간', medicalStation: '의료소', fishing: '낚시', seasonal: '계절 보너스 루팅',
@@ -430,6 +434,10 @@ const BAL_HELP = {
   fuelConsumePerTP: 'TP당 연료(내구도) 소모.',
   noFuelTempBoost: '연료 없을 때 체온 상승량.',
   weatherDouseChancePerTP: '비·눈에 화기가 꺼질 TP당 확률(0~1). weather_resistant 태그 구조물은 면역.',
+  // acidRain
+  hpLossPerTP: '산성비 야외 노출 TP당 HP 감소량. acidImmunity 장비 착용 시 면제.',
+  infectionGainPerTP: '산성비 야외 노출 TP당 감염 증가량. acidImmunity 장비 착용 시 면제.',
+  warnIntervalTP: '산성비 노출 경고를 다시 띄우는 간격(TP). 지속 피해를 놓치지 않게 한다.',
   // encounter
   reductionCap: '조우 확률 감소 상한(0~1).',
   structureReductCap: '구조물 조우 감소 상한(0~1).',
