@@ -5100,36 +5100,26 @@ export const LANDMARK_DATA = {
     ],
     subLocations: [
       {
-        id: 'boramae_front_gate',
-        name: '병원 정문',
-        icon: '🏥',
-        desc: '구급차 두 대가 문을 막은 채 서 있다. 접수 번호표가 바닥에 흩어졌다.',
-        dangerMod: 0.05,
-        isEntrance: true,
+        id: 'boramae_desk',
+        name: '병원접수처',
+        icon: '📍',
+        desc: '불이 꺼진 병원 데스크. 접수 전용 설비 — 병원 입구, 의료 접수처로 이곳을 통해 병원 내부로 들어간다.',
+        dangerMod: 0.01,
         lootTable: [
           {
-            id: 'bandage',
-            weight: 30,
-            minQty: 1,
-            maxQty: 3,
+            id: 'antiseptic',
+            weight: 3,
           },
           {
-            id: 'cloth',
-            weight: 25,
-            minQty: 2,
-            maxQty: 4,
-          },
-          {
-            id: 'plastic',
-            weight: 22,
-            minQty: 2,
-            maxQty: 4,
+            id: 'gauze',
+            weight: 1,
           },
         ],
         lootCount: [
           1,
           2,
         ],
+        isEntrance: true,
         sceneImage: 'assets/images/landmarks/lm_boramae_hospital.png',
       },
       {
