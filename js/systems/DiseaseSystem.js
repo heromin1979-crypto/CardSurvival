@@ -71,7 +71,10 @@ const DiseaseSystem = {
 
     // ── 저체온증 (48TP ≈ 16시간 연속 저온) ────────────────────
     if (temp < 20) {
-      _coldExposureTicks++;
+      // 방한 장비가 저체온증 누적 속도를 늦춘다. StatSystem.onTP가 DiseaseSystem.onTP보다
+      // 먼저 돌며 player.armorEffects에 집계값을 캐시한다 (StructureEffectSystem과 같은 패턴).
+      // 직접 import하면 StatSystem → DiseaseSystem 순환이 된다.
+      _coldExposureTicks += (gs.player.armorEffects?.hypothermiaChanceMult ?? 1);
       if (_coldExposureTicks >= (BALANCE.disease.coldExposureTpThreshold ?? 48) && !this._hasDisease(gs, 'hypothermia')) {
         this._contract(gs, 'hypothermia');
         _coldExposureTicks = 0;
@@ -221,6 +224,16 @@ const DiseaseSystem = {
 
     const tags   = def.tags ?? [];
     const itemId = def.id;
+    const eff    = getConsumableEffect(def) ?? {};
+    const itemName = I18n.itemName(def.id, def.name);
+
+    // 만능 치료 — 툴팁에만 있고 적용되지 않던 항목
+    if (eff.cureAllDiseases) {
+      this._cureByFilter(gs, gs.player.diseases.map(d => d.id), itemName);
+    }
+    if (eff.cureAllPoisons) {
+      this._cureByFilter(gs, ['poisoning', 'dysentery', 'cholera'], itemName);
+    }
 
     // 항생제 → 세균성 질환 치료
     if (tags.includes('antibiotic')) {

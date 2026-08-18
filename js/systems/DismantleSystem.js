@@ -6,6 +6,8 @@ import I18n        from '../core/I18n.js';
 import TickEngine  from '../core/TickEngine.js';
 import SkillSystem  from './SkillSystem.js';
 import NightSystem  from './NightSystem.js';
+import StatSystem   from './StatSystem.js';
+import GameData     from '../data/GameData.js';
 
 const TP_PER_DAY = 72;
 
@@ -273,10 +275,29 @@ const DismantleSystem = {
    * 모르고 지나치지 않도록 UI가 crossesMidnight일 때 확인을 받는다.
    * @returns {{ cost: number, remainTP: number, canDismantle: boolean, crossesMidnight: boolean }}
    */
+  /**
+   * 구조물 한 개를 해체하는 데 드는 TP. 알맞은 도구를 지니고 있으면 줄어든다.
+   * 도끼는 목재 계열, 삽은 흙·자갈 계열, 망치는 건축물에 붙는다 (도구 정의의 onUse 보너스).
+   * 값이 음수인 항목도 있어(망치 -1) 절댓값을 감소량으로 쓴다. 최소 1TP는 남긴다.
+   */
+  dismantleTPFor(definitionId) {
+    const def = GameData?.items?.[definitionId];
+    const base = def?.dismantleTP ?? 0;
+    if (base <= 0) return base;
+    const tools = StatSystem.getToolEffects();
+    const tags = def.tags ?? [];
+    let reduction = 0;
+    if (tags.includes('wood') || def.subtype === 'natural') reduction += Math.abs(tools.woodChopBonus);
+    if (tags.includes('salvage') || def.subtype === 'natural') reduction += Math.abs(tools.digBonus);
+    if (tags.includes('crafted') && def.type === 'structure') reduction += Math.abs(tools.buildingBonus);
+    if (reduction <= 0) return base;
+    return Math.max(1, base - reduction);
+  },
+
   getTpStatus(instanceId, count = 1) {
     const def      = GameState.getCardDef(instanceId);
     const remainTP = TP_PER_DAY - (GameState.time?.tpInDay ?? 0);
-    const cost     = (def?.dismantleTP ?? 0) * Math.max(1, count | 0);
+    const cost     = this.dismantleTPFor(def?.id) * Math.max(1, count | 0);
     const status   = this.canDismantleNow(instanceId);
     return {
       cost,
