@@ -675,7 +675,7 @@ export const LANDMARK_DATA = {
         id: 'yongsan_arsenal',
         name: '무기고',
         icon: '💣',
-        desc: '실제 무기가 보관��� 구역. 극도로 위험하다.',
+        desc: '실제 무기가 보관된 구역. 극도로 위험하다.',
         dangerMod: 0.35,
         lootTable: [
           {
@@ -4048,6 +4048,27 @@ export const LANDMARK_DATA = {
     ],
     subLocations: [
       {
+        id: 'boramae_desk',
+        name: '병원접수처',
+        icon: '📍',
+        desc: '불이 꺼진 병원 데스크. 접수 전용 설비 — 병원 입구, 의료 접수처로 이곳을 통해 병원 내부로 들어간다.',
+        dangerMod: 0.01,
+        lootTable: [
+          {
+            id: 'antiseptic',
+            weight: 3,
+          },
+          {
+            id: 'gauze',
+            weight: 1,
+          },
+        ],
+        lootCount: [
+          1,
+          2,
+        ],
+      },
+      {
         id: 'boramae_emergency',
         name: '응급실',
         icon: '🚑',
@@ -4255,27 +4276,6 @@ export const LANDMARK_DATA = {
         lootCount: [
           2,
           3,
-        ],
-      },
-      {
-        id: 'boramae_desk',
-        name: '병원접수처',
-        icon: '📍',
-        desc: '불이 꺼진 병원 데스크. 접수 전용 설비 — 병원 입구, 의료 접수처로 이곳을 통해 병원 내부로 들어간다.',
-        dangerMod: 0.01,
-        lootTable: [
-          {
-            id: 'antiseptic',
-            weight: 3,
-          },
-          {
-            id: 'gauze',
-            weight: 1,
-          },
-        ],
-        lootCount: [
-          1,
-          2,
         ],
       },
     ],
