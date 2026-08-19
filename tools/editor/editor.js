@@ -1799,7 +1799,21 @@ function objectFields(obj, fileKey) {
 }
 
 // ─── rendering ───────────────────────────────────────────────
+// 같은 탭 재렌더(추가/삭제/순서이동 등) 시 사이드바 스크롤 위치 보존 — 탭 전환 시에는 최상단 시작
+let _lastRenderedTab = null;
+
 function render() {
+  const sameTab = _lastRenderedTab === state.tab;
+  const prevSidebarScroll = sameTab ? (view.querySelector('.sidebar')?.scrollTop ?? 0) : 0;
+  _renderTab();
+  _lastRenderedTab = state.tab;
+  if (prevSidebarScroll) {
+    const sb = view.querySelector('.sidebar');
+    if (sb) sb.scrollTop = prevSidebarScroll;
+  }
+}
+
+function _renderTab() {
   view.innerHTML = '';
   if (state.tab === 'settings') return renderSettings();
   if (state.tab === 'balance') return renderBalanceTab();
