@@ -7,6 +7,7 @@ import SystemRegistry  from '../core/SystemRegistry.js';
 import NoiseSystem  from './NoiseSystem.js';
 import StatSystem   from './StatSystem.js';
 import { formatInstanceName } from './ItemEffectSystem.js';
+import { getUnarmedGloveBonus, getWeaponModifiers } from './WeaponModifiers.js';
 import EndingSystem from './EndingSystem.js';
 import SkillSystem  from './SkillSystem.js';
 import NPCSystem     from './NPCSystem.js';
@@ -47,6 +48,7 @@ import {
   consumeEnemyDamageShield,
   enemyStatusModifiers,
   healCombatant,
+  isAcidStatusId,
   tickPlayerActionStatuses,
   tickStatusEffects,
 } from './combat/CombatStatusSystem.js';
@@ -66,6 +68,13 @@ import {
   getMagazineState,
   reload,
 } from './WeaponAmmoSystem.js';
+
+// 함정 발동 1회당 내구도 소모 — spike_trap의 defaultDurability(80) 기준 8회 사용
+const TRAP_DURABILITY_COST = 10;
+// 함정 출혈은 무기 statusInflict와 같은 표기를 써서 _normalizeStatusInflict를 그대로 탄다
+const TRAP_BLEED = Object.freeze({
+  id: 'bleed', name: '출혈', duration: 2, effect: { hpPerRound: -3 }, chance: 1,
+});
 
 const DIRECT_ACTION_TYPES = new Set([
   'melee',
@@ -170,6 +179,9 @@ const CombatSystem = {
       this._prepareCompanionTurn(initialActive.sourceId ?? initialActive.id);
     }
     this.beginActiveTurn();
+
+    // 설치된 함정은 적의 첫 행동 전에 발동한다
+    this._triggerCombatEntryTraps();
 
     // Phase 3 — 전투 시작 시 모든 적의 초기 의도 결정 (Into the Breach 방식 가시성)
     for (const e of gs.combat.enemies) {
@@ -763,7 +775,12 @@ const CombatSystem = {
         GameState.modStat('radiation', effect.radiationPerTurn);
       }
       if (Number.isFinite(effect.hpLossPerRound) && effect.hpLossPerRound > 0) {
+        const acidField = isAcidStatusId(status.id);
         for (const targetId of targetIds) {
+          // 산성 장판은 내산성 장비를 입은 플레이어만 비껴간다 — 동료는 그대로 밟는다
+          if (targetId === 'player' && acidField && StatSystem.getArmorEffects().acidImmunity) {
+            continue;
+          }
           this._dealDamageToAlly({
             npcId: targetId === 'player' ? null : targetId,
             rawDamage: effect.hpLossPerRound,
@@ -1782,6 +1799,7 @@ const CombatSystem = {
     bonusBeforeDefense = 0,
     bonusAfterDefense = 0,
     bypassBaseDefense = false,
+    defensePierce = 0,
   } = {}) {
     if (!enemy || (enemy.currentHp ?? 0) <= 0) {
       return {
@@ -1805,7 +1823,7 @@ const CombatSystem = {
       + modifiers.defenseIncrease;
     const resolveBeforeShield = incomingDamage => {
       if (incomingDamage <= 0) return 0;
-      let resolvedDamage = this._applyEnemyDefense(incomingDamage, defense);
+      let resolvedDamage = this._applyEnemyDefense(incomingDamage, defense, defensePierce);
       if (modifiers.incomingDamageReduction > 0) {
         resolvedDamage = Math.floor(
           resolvedDamage * (1 - modifiers.incomingDamageReduction),
@@ -1890,6 +1908,48 @@ const CombatSystem = {
     };
   },
 
+  /**
+   * 치명타 연사 — combat.attacksPerRoundOnCrit이 선언된 무기(M4 카빈)가 치명타를 냈을 때
+   * 같은 대상에게 추가 타격을 넣는다. 추가분은 치명타 배율 없이 기본 피해로 들어간다.
+   * @returns {number} 실제로 들어간 추가 타격 횟수
+   */
+  _applyCritBurst(enemy, attacksPerRound, baseDamage, opts = {}) {
+    const extra = Math.max(0, Math.floor(attacksPerRound ?? 0) - 1);
+    if (extra <= 0 || !enemy || (enemy.currentHp ?? 0) <= 0) return 0;
+
+    let landed = 0;
+    for (let i = 0; i < extra; i += 1) {
+      if ((enemy.currentHp ?? 0) <= 0) break;
+      this._resolveDirectEnemyDamage(enemy, baseDamage, {
+        defensePierce: opts.defensePierce ?? 0,
+      });
+      landed += 1;
+    }
+    return landed;
+  },
+
+  /**
+   * 처치 시 도주 유발 — combat.onKill.enemyFleeChance(두목의 소총).
+   * 보스는 제외한다. 보스가 도중에 사라지면 보상·엔딩 흐름이 어긋난다.
+   * @returns {string[]} 도주한 적 id 목록
+   */
+  _applyOnKillFlee(onKill) {
+    const chance = onKill?.enemyFleeChance ?? 0;
+    if (chance <= 0) return [];
+    const gs = GameState;
+    const fled = [];
+    for (const e of gs.combat?.enemies ?? []) {
+      if ((e.currentHp ?? 0) <= 0) continue;
+      if (e.isBoss) continue;
+      if (Math.random() >= chance) continue;
+      e.currentHp = 0;
+      e._fled = true;
+      fled.push(e.id);
+      gs.combat.log.push(I18n.t('combatSys.enemyFled', { enemy: I18n.enemyName(e.id, e.name) }));
+    }
+    return fled;
+  },
+
   _attackAction(type, weaponId, enemy) {
     const gs = GameState;
     let damage = 0, accuracy = BALANCE.combat.baseUnarmedAccuracy ?? 0.70, noise = 5, durLoss = 0;
@@ -1898,6 +1958,8 @@ const CombatSystem = {
     let isCrit = false;
     let skillId = 'unarmed';  // 사용 스킬 (XP 훅용)
     let isRanged = false;
+    // 부착물 보정 — 맨손이면 전부 0인 번들이 온다
+    const mods = getWeaponModifiers(gs.cards[weaponId]);
 
     if (weaponId && gs.cards[weaponId]) {
       const weaponInst = gs.cards[weaponId];
@@ -1906,12 +1968,19 @@ const CombatSystem = {
         const [dMin, dMax] = def.combat.damage;
         const rawDmg = dMin + Math.floor(Math.random() * (dMax - dMin + 1));
         const qualityMult = BALANCE.quality.tiers[weaponInst?._quality]?.mult ?? 1.0;
-        damage         = Math.round(rawDmg * qualityMult) + (weaponInst.damageBonus ?? 0);
-        accuracy       = def.combat.accuracy + (weaponInst.accuracyBonus ?? 0);
-        noise          = def.combat.noiseOnUse;
+        damage         = Math.round(rawDmg * qualityMult) + mods.damageBonus;
+        accuracy       = def.combat.accuracy + mods.accuracyBonus;
+        // 폭발 화살처럼 장전 탄약이 소음을 규정하면 그 값을 쓴다
+        noise          = mods.noiseOverride ?? def.combat.noiseOnUse;
         durLoss        = def.combat.durabilityLoss ?? 0;
         critChance     = def.combat.critChance     ?? 0;
         critMultiplier = def.combat.critMultiplier ?? (BALANCE.combat.defaultCritMultiplier ?? 1.5);
+        // 장착 액세서리의 치명타 보정 (호랑이 이빨 목걸이 등)
+        {
+          const armorCrit = StatSystem.getArmorEffects();
+          critChance     = Math.min(1, critChance + armorCrit.critBonus);
+          critMultiplier += armorCrit.critMultiplierBonus;
+        }
         weaponName     = formatInstanceName(weaponInst, def);
         isRanged       = !!(def.combat.requiresAmmo);
         skillId        = isRanged ? 'ranged' : 'melee';
@@ -1919,8 +1988,8 @@ const CombatSystem = {
         if (isRanged) {
           const roundResult = consumeRound(gs, weaponId);
           if (!roundResult.ok) return I18n.t('combatSys.emptyMagazine');
-          if (weaponInst._suppressor) {
-            noise = Math.max(0, Math.round(noise * (1 - Math.min(1, weaponInst._noiseReduction ?? 0.5))));
+          if (mods.noiseReduction > 0) {
+            noise = Math.max(0, Math.round(noise * (1 - mods.noiseReduction)));
           }
           // 원거리: 명중률·치명타 스킬 보너스 적용
           accuracy   = Math.min(1, accuracy   + SkillSystem.getBonus('ranged', 'accBonus'));
@@ -1931,7 +2000,7 @@ const CombatSystem = {
         if (durLoss > 0 && gs.cards[weaponId]) {
           // 근접무기 내구도 절약 (스킬 durSaveChance)
           const durSave = skillId === 'melee'
-            ? Math.random() < SkillSystem.getBonus('melee', 'durSaveChance')
+            ? Math.random() < Math.min(1, SkillSystem.getBonus('melee', 'durSaveChance') + mods.durabilitySave)
             : false;
           if (!durSave) {
             gs.cards[weaponId].durability = Math.max(0, gs.cards[weaponId].durability - durLoss);
@@ -1947,10 +2016,8 @@ const CombatSystem = {
       // 맨손: BALANCE 기반 데미지 + 스킬 dmgMult + 장갑류(hands) unarmedDmgBonus 적용
       const unarmedMult = SkillSystem.getBonus('unarmed', 'dmgMult');
       const [uMin, uMax] = BALANCE.combat.unarmedBaseDmg;
-      const handsId  = gs.player.equipped?.hands;
-      const handsDef = handsId ? gs.getCardDef(handsId) : null;
-      const handsBonus = handsDef?.onWear?.unarmedDmgBonus ?? 0;
-      damage = Math.floor((uMin + Math.floor(Math.random() * (uMax - uMin + 1))) * unarmedMult) + handsBonus;
+      damage = Math.floor((uMin + Math.floor(Math.random() * (uMax - uMin + 1))) * unarmedMult)
+        + getUnarmedGloveBonus(gs);
     }
 
     // 전투 자극제: 지속시간(totalTP 기준) 내 공격력 배율 적용
@@ -2043,16 +2110,28 @@ const CombatSystem = {
       const unarmedMasteryRawDamage = unarmedMasteryTriggered
         ? BALANCE.combat.unarmedStunDmg
         : 0;
-      const poisonDmg = Math.max(0, Math.floor(gs.cards[weaponId]?._poisonDamage ?? 0));
+      const poisonDmg = Math.floor(mods.poisonDamage);
       const damageResult = this._resolveDirectEnemyDamage(enemy, damage, {
         bonusBeforeDefense: unarmedMasteryRawDamage,
         bonusAfterDefense: poisonDmg,
+        defensePierce: Math.floor(mods.defensePierce),
       });
       const finalDmg = damageResult.damage;
       const unarmedMasteryDamage = damageResult.bonusBeforeDefenseDamage;
       const attackLogDamage = Math.max(0, finalDmg - unarmedMasteryDamage);
       if (damageResult.bonusApplied > 0) {
         gs.combat.log.push(`독 피해 +${poisonDmg}`);
+      }
+
+      // 치명타 연사 — 추가 타격은 본 타격 직후, 처치 판정 전에 들어간다
+      if (isCrit && weaponId && gs.cards[weaponId]) {
+        const burstDef = gs.getCardDef(weaponId)?.combat?.attacksPerRoundOnCrit;
+        const landed = this._applyCritBurst(enemy, burstDef, attackLogDamage, {
+          defensePierce: Math.floor(mods.defensePierce),
+        });
+        if (landed > 0) {
+          gs.combat.log.push(I18n.t('combatSys.critBurst', { count: landed + 1 }));
+        }
       }
 
       if (enemy.currentHp <= 0) {
@@ -2062,22 +2141,26 @@ const CombatSystem = {
           isSilent:   !!wDef?.tags?.includes('silent'),
           isMelee:    !wDef?.combat?.requiresAmmo,
         };
+        // 처치 시 도주 유발 (두목의 소총) — 보스는 제외
+        if (wDef?.combat?.onKill) this._applyOnKillFlee(wDef.combat.onKill);
       }
 
-      // 무기 기절 부여 + 충전 적 인터럽트
+      // 무기 상태이상 부여 + 충전 적 인터럽트.
+      // 부착물(톱니 개조 키트)이 심은 값이 정의값을 이긴다. 굴림은 한 번만 하고
+      // 인터럽트와 부여가 같은 판정을 공유한다 — 선언이 없으면 아예 굴리지 않는다.
       const wInst = (weaponId && gs.cards[weaponId]) ? gs.getCardDef(weaponId) : null;
-      const stunDef = wInst?.combat?.statusInflict;
-      if (stunDef?.id === 'stun' && enemy.currentHp > 0 && Math.random() < (stunDef.chance ?? 1)) {
-        if ((enemy._chargeRemaining ?? null) !== null && enemy.timedThreat?.counters?.stunDelays) {
+      const statusDef = mods.statusInflict ?? wInst?.combat?.statusInflict;
+      if (statusDef?.id && enemy.currentHp > 0 && Math.random() < (statusDef.chance ?? 1)) {
+        if (statusDef.id === 'stun'
+            && (enemy._chargeRemaining ?? null) !== null
+            && enemy.timedThreat?.counters?.stunDelays) {
           enemy._chargeRemaining = enemy.timedThreat.id === 'charge_strike'
             ? enemy.timedThreat.chargeTurns
             : enemy._chargeRemaining + 1;
           enemy._nextIntent = this._decideNextIntent(enemy, gs.combat, gs) ?? null;
           gs.combat.log.push(I18n.t('combatSys.chargeInterrupt', { enemy: I18n.enemyName(enemy.id, enemy.name) }));
         }
-      }
-      if (stunDef?.id !== 'stun' && enemy.currentHp > 0 && Math.random() < (stunDef?.chance ?? 1)) {
-        this._applyEnemyStatusInflict(enemy, stunDef, gs.combat.targetIndex);
+        this._applyEnemyStatusInflict(enemy, statusDef, gs.combat.targetIndex);
       }
       if (enemy.currentHp > 0) {
         this._applyCharacterOnHitIdentity(enemy, wInst);
@@ -2090,10 +2173,12 @@ const CombatSystem = {
       // 다중 타겟 (창/산탄총)
       if (weaponId && gs.cards[weaponId]) {
         const mDef = gs.getCardDef(weaponId);
-        if (mDef?.multiTarget > 1) {
+        // 폭발 화살을 장전하면 무기 정의보다 넓은 폭으로 휩쓴다
+        const spread = mods.multiTarget > 0 ? mods.multiTarget : (mDef?.multiTarget ?? 1);
+        if (spread > 1) {
           const extraLogs = applyMultiTarget(
             finalDmg,
-            mDef,
+            { ...mDef, multiTarget: spread },
             gs.combat.targetIndex,
             this,
             isRanged,
@@ -2170,14 +2255,69 @@ const CombatSystem = {
     return I18n.t('combatSys.miss', { weapon: weaponName });
   },
 
+  // 플레이어 출혈 제거. 레거시(playerStatus)와 랭크(combatants.player) 두 표현을 함께 맞춘다.
+  _curedPlayerBleeding() {
+    const combat = GameState.combat;
+    const before = (combat?.playerStatus ?? []).length;
+    if (!combat || before === 0) return false;
+    combat.playerStatus = combat.playerStatus.filter(status => status?.id !== 'bleed');
+    const rankedPlayer = combat.combatants?.player;
+    if (Array.isArray(rankedPlayer?.statusEffects)) {
+      rankedPlayer.statusEffects = rankedPlayer.statusEffects.filter(status => status?.id !== 'bleed');
+    }
+    return combat.playerStatus.length < before;
+  },
+
+  // 설치된 함정은 전투 시작 순간 1회 발동한다. 적 접근 판정은 진형 시스템과 얽히므로 다루지 않는다.
+  _triggerCombatEntryTraps() {
+    const gs = GameState;
+    const target = gs.combat?.enemies?.[0];
+    if (!target || (target.currentHp ?? 0) <= 0) return;
+
+    for (const card of gs.getBoardCards?.() ?? []) {
+      const def = gs.getCardDef?.(card.instanceId);
+      if (def?.subtype !== 'trap' || !def.onTrigger) continue;
+      if ((card.durability ?? 0) <= 0) continue;
+
+      const damage = Math.max(0, Math.floor(def.onTrigger.damage ?? 0));
+      if (damage > 0) {
+        target.currentHp = Math.max(0, (target.currentHp ?? 0) - damage);
+        gs.combat.log.push(I18n.t('combatSys.trapTriggered', {
+          trap: I18n.itemName(def.id, def.name),
+          enemy: I18n.enemyName(target.id, target.name),
+          damage,
+        }));
+      }
+      if (def.onTrigger.bleed && target.currentHp > 0) {
+        this._applyEnemyStatusInflict(target, TRAP_BLEED, 0);
+      }
+
+      card.durability = Math.max(0, (card.durability ?? 0) - TRAP_DURABILITY_COST);
+      if (card.durability <= 0) {
+        gs.removeCardInstance(card.instanceId);
+        EventBus.emit('cardRemoved', { instanceId: card.instanceId });
+      }
+    }
+  },
+
   _useItemAction(itemId) {
     const gs = GameState;
     if (!itemId || !gs.cards[itemId]) return I18n.t('combatSys.itemUnavail');
     const def = gs.getCardDef(itemId);
     if (!def?.onConsume) return I18n.t('combatSys.itemNoEffect');
 
-    const { hp, infection, morale, temporaryStaminaBoost, temporaryAttackBoost, duration } = def.onConsume;
+    const {
+      hp, infection, morale, temporaryStaminaBoost, temporaryAttackBoost, duration,
+      guardBoost, cureAllBleeding,
+    } = def.onConsume;
     const msgs = [];
+    if (guardBoost) {
+      gs.player.pendingGuardBoost = Math.max(gs.player.pendingGuardBoost ?? 0, guardBoost);
+      msgs.push(I18n.t('combatSys.guardBoost', { pct: Math.round(guardBoost * 100) }));
+    }
+    if (cureAllBleeding && this._curedPlayerBleeding()) {
+      msgs.push(I18n.t('combatSys.bleedingCured'));
+    }
     if (temporaryStaminaBoost) {
       gs.modStat('stamina', temporaryStaminaBoost);
       msgs.push(I18n.t('combatSys.staminaUp', { val: temporaryStaminaBoost }));
@@ -2237,7 +2377,9 @@ const CombatSystem = {
     const gs      = GameState;
     const alive   = this.getAliveEnemies();
     // 그룹 은신 난이도: 살아있는 적 중 최고값
-    const maxDiff = Math.max(...alive.map(e => e.stealthDifficulty ?? (BALANCE.combat.defaultStealthDifficulty ?? 0.5)));
+    const rawDiff = Math.max(...alive.map(e => e.stealthDifficulty ?? (BALANCE.combat.defaultStealthDifficulty ?? 0.5)));
+    // 위장복·은밀 슈트의 은신 보너스가 난이도를 깎는다
+    const maxDiff = Math.max(0, rawDiff - StatSystem.getArmorEffects().stealthBonus);
     const success = Math.random() > maxDiff;
     if (success) {
       this._stabilizePlayerAfterCombat();
@@ -2841,10 +2983,13 @@ const CombatSystem = {
       const def = gs.getCardDef(weaponId);
       if (def?.combat) {
         const [dMin, dMax] = def.combat.damage;
-        const qualMult = BALANCE.quality.tiers[gs.cards[weaponId]?._quality]?.mult ?? 1.0;
-        dmgMin     = this._applyEnemyDefense(Math.round(dMin * qualMult), enemy.defense);
-        dmgMax     = this._applyEnemyDefense(Math.round(dMax * qualMult), enemy.defense);
-        accuracy   = def.combat.accuracy;
+        const weaponInst = gs.cards[weaponId];
+        const qualMult = BALANCE.quality.tiers[weaponInst?._quality]?.mult ?? 1.0;
+        // 부착물이 남긴 인스턴스 보정을 실제 공격(_attackAction)과 동일하게 반영한다
+        const pierce = Math.max(0, Math.floor(weaponInst?._defensePierce ?? 0));
+        dmgMin     = this._applyEnemyDefense(Math.round(dMin * qualMult), enemy.defense, pierce);
+        dmgMax     = this._applyEnemyDefense(Math.round(dMax * qualMult), enemy.defense, pierce);
+        accuracy   = def.combat.accuracy + (weaponInst?.accuracyBonus ?? 0);
         critChance = def.combat.critChance ?? 0;
 
         if (def.combat.requiresAmmo) {

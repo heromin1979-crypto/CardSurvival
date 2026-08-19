@@ -6,11 +6,22 @@ import GameState from '../core/GameState.js';
 import GameData from '../data/GameData.js';
 import I18n from '../core/I18n.js';
 
-// 인스턴스 개조 상태(소음기 부착 등)를 카드 표시 이름에 반영
+// 인스턴스 개조 상태(부착물)를 카드 표시 이름에 반영 — 여러 개를 함께 달 수 있다
+const ATTACHMENT_TAGS = [
+  ['_suppressor',  'item.suppressorTag'],
+  ['_scope',       'item.scopeTag'],
+  ['_ammoMod',     'item.ammoModTag'],
+  ['_weaponOil',   'item.weaponOilTag'],
+  ['_serratedMod', 'item.serratedModTag'],
+  ['_knuckleWrap', 'item.knuckleWrapTag'],
+];
+
 export function formatInstanceName(inst, def) {
   const base = I18n.itemName(def?.id ?? inst?.definitionId, def?.name ?? inst?.definitionId ?? '');
-  if (inst?._suppressor) return `${base} (${I18n.t('item.suppressorTag')})`;
-  return base;
+  const tags = ATTACHMENT_TAGS
+    .filter(([field]) => inst?.[field])
+    .map(([, key]) => I18n.t(key));
+  return tags.length ? `${base} (${tags.join('·')})` : base;
 }
 
 const EFFECT_LABELS = {
@@ -170,8 +181,20 @@ export function formatCardEffectParts(def, inst = {}) {
 
 function formatAppliedModifierParts(inst = {}) {
   const parts = [];
+  // 숫돌 연마·못 박기·유리 박기·가죽 그립이 남기는 값 — 지금까지 카드에 드러나지 않았다
+  if (inst.damageBonus)   parts.push(`피해 +${inst.damageBonus}`);
+  if (inst.accuracyBonus && !inst._scope) parts.push(`명중 +${formatPercent(inst.accuracyBonus)}`);
   if (inst._poisonDamage) parts.push(`독 피해 +${inst._poisonDamage} 적중 시`);
   if (inst._suppressor) parts.push(`소음 -${formatPercent(inst._noiseReduction ?? 0.5)} 공격 시`);
+  if (inst._scope) parts.push(`명중 +${formatPercent(inst.accuracyBonus ?? 0.1)} 공격 시`);
+  if (inst._defensePierce) parts.push(`방어 무시 +${inst._defensePierce} 공격 시`);
+  if (inst._ammoCapacityBonus) parts.push(`탄창 +${inst._ammoCapacityBonus}`);
+  if (inst._durabilitySave) parts.push(`내구 절약 +${formatPercent(inst._durabilitySave)}`);
+  if (inst._statusInflict?.id === 'bleed') {
+    const bleed = inst._statusInflict;
+    parts.push(`출혈 ${formatPercent(bleed.chance ?? 0)} ${bleed.duration ?? 1}턴`);
+  }
+  if (inst._unarmedDmgBonus) parts.push(`맨손 피해 +${inst._unarmedDmgBonus}`);
   if (inst._defenseSalve) {
     const damageReduction = inst._damageReductionBonus ?? 0.05;
     const critReduction = inst._critReductionBonus ?? 0.02;

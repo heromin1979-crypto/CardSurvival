@@ -10,6 +10,7 @@ import SeasonSystem from './SeasonSystem.js';
 import DISEASES    from '../data/diseases.js';
 import BALANCE     from '../data/gameBalance.js';
 import StructureEffectSystem from './StructureEffectSystem.js';
+import SkillSystem  from './SkillSystem.js';
 import { getConsumableEffect } from './ItemEffectSystem.js';
 
 // ── 내부 노출 추적 카운터 (세이브 불필요 — 런타임 상태) ─────
@@ -70,7 +71,10 @@ const DiseaseSystem = {
 
     // ── 저체온증 (48TP ≈ 16시간 연속 저온) ────────────────────
     if (temp < 20) {
-      _coldExposureTicks++;
+      // 방한 장비가 저체온증 누적 속도를 늦춘다. StatSystem.onTP가 DiseaseSystem.onTP보다
+      // 먼저 돌며 player.armorEffects에 집계값을 캐시한다 (StructureEffectSystem과 같은 패턴).
+      // 직접 import하면 StatSystem → DiseaseSystem 순환이 된다.
+      _coldExposureTicks += (gs.player.armorEffects?.hypothermiaChanceMult ?? 1);
       if (_coldExposureTicks >= (BALANCE.disease.coldExposureTpThreshold ?? 48) && !this._hasDisease(gs, 'hypothermia')) {
         this._contract(gs, 'hypothermia');
         _coldExposureTicks = 0;
@@ -173,6 +177,28 @@ const DiseaseSystem = {
     }
   },
 
+  // ── 독성 물질 섭취 시 발병 체크 ───────────────────────────────
+  // StatSystem.consumeCard()에서 호출됨.
+  // checkContaminatedConsume은 contamination > 0에서만 동작하므로 오염도 0인 독성물
+  // (독버섯 등)은 그쪽에 걸리지 않는다. 아이템 정의가 contractsDisease로 직접 지정한다.
+
+  checkToxicConsume(def, gs) {
+    const spec = def?.contractsDisease;
+    if (!spec?.id) return;
+    if (!getConsumableEffect(def)) return;
+
+    // 오염 섭취와 같은 기준으로 의학 숙련의 독 저항을 적용한다 (Lv15 50% · Lv20 면역)
+    if (SkillSystem.getBonus('medicine', 'poisonImmune')) {
+      EventBus.emit('notify', { message: I18n.t('disease.poisonImmune'), type: 'good' });
+      return;
+    }
+    const resist = SkillSystem.getBonus('medicine', 'poisonResist') ?? 0;
+    const chance = (spec.chance ?? 1) * (1 - resist);
+    if (Math.random() >= chance) return;
+
+    this._contract(gs, spec.id);
+  },
+
   // ── 아이템 사용 시 치료 ───────────────────────────────────────
   // StatSystem.consumeCard() 후 호출됨
 
@@ -198,6 +224,16 @@ const DiseaseSystem = {
 
     const tags   = def.tags ?? [];
     const itemId = def.id;
+    const eff    = getConsumableEffect(def) ?? {};
+    const itemName = I18n.itemName(def.id, def.name);
+
+    // 만능 치료 — 툴팁에만 있고 적용되지 않던 항목
+    if (eff.cureAllDiseases) {
+      this._cureByFilter(gs, gs.player.diseases.map(d => d.id), itemName);
+    }
+    if (eff.cureAllPoisons) {
+      this._cureByFilter(gs, ['poisoning', 'dysentery', 'cholera'], itemName);
+    }
 
     // 항생제 → 세균성 질환 치료
     if (tags.includes('antibiotic')) {

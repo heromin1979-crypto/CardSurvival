@@ -268,7 +268,7 @@ const CARD_IMAGES = {
   spear:                 'assets/images/weapons/spear.png',
   iron_pipe:             'assets/images/weapons/iron_pipe.png',
   spiked_pipe:           'assets/images/weapons/spiked_pipe.png',
-  sling:                 'assets/images/weapons/sling.png',
+  sling:                 'assets/images/medical/splint.png',   // 삼각건 — 원거리 무기 슬링은 중복 키로 제거됨
   crossbow:              'assets/images/weapons/crossbow.png',
   crossbow_bolt:         'assets/images/weapons/crossbow_bolt.png',
   explosive_bolt:        'assets/images/weapons/explosive_bolt.png',
@@ -297,7 +297,6 @@ const CARD_IMAGES = {
   acid_crystal:          'assets/images/weapons/acid_crystal.png',
   royal_katana:          'assets/images/weapons/royal_katana.png',
   spike_trap:            'assets/images/weapons/spike_trap.png',
-  alarm_trap:            'assets/images/weapons/alarm_trap.png',
 
   // 확장 의료 (Phase 4)
   reinforced_bandage:    'assets/images/medical/bandage.png',
@@ -573,8 +572,6 @@ const CARD_IMAGES = {
   wild_wheat:            'assets/images/materials/wild_wheat.png',
   flour:                 'assets/images/materials/flour.png',
   bread_dough:           'assets/images/materials/bread_dough.png',
-  worm:                  'assets/images/materials/worm.png',
-  fishing_bait:          'assets/images/materials/fishing_bait.png',
 
   // 신규 음식
   baked_bread:           'assets/images/food/baked_bread.png',
@@ -742,6 +739,8 @@ const CARD_IMAGES = {
 // noSceneImage를 선언한 장소는 경로를 만들지 않고 아이콘 폴백으로 넘긴다.
 function subLocationImage(def) {
   if (def?.noSceneImage) return null;
+  // 전용 배경이 없는 세부장소(랜드마크 입구 등)는 데이터가 대체 경로를 직접 지정한다.
+  if (def?.sceneImage) return def.sceneImage;
   const key = def?.subLocationId ?? def?.id?.replace(/^sl_/, '');
   return key ? `assets/images/sublocations/${key}.png` : null;
 }

@@ -2020,6 +2020,7 @@ export const SECRET_ENEMIES = {
     ],
     dropGuaranteed: [
       { definitionId: 'sniper_scope', qty: 1 },
+      { definitionId: 'ai_chip', qty: 1 },
     ],
     infectionChance: 0,
     aiPattern: 'defensive',
@@ -2132,6 +2133,7 @@ export const SECRET_ENEMIES = {
     ],
     dropGuaranteed: [
       { definitionId: 'sewer_scale', qty: 1 },
+      { definitionId: 'conductor_key', qty: 1 },
     ],
     infectionChance: 0.25,
     aiPattern: 'defensive',
@@ -2360,6 +2362,7 @@ export const SECRET_ENEMIES = {
     ],
     dropGuaranteed: [
       { definitionId: 'soldier_dogtag', qty: 1 },
+      { definitionId: 'engineer_gear', qty: 1 },
     ],
     infectionChance: 0,
     aiPattern: 'aggressive',
@@ -2396,6 +2399,7 @@ export const SECRET_ENEMIES = {
     ],
     dropGuaranteed: [
       { definitionId: 'firefighter_badge', qty: 1 },
+      { definitionId: 'inferno_core', qty: 1 },
     ],
     infectionChance: 0.40,
     aiPattern: 'aggressive',

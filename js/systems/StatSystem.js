@@ -8,11 +8,13 @@ import DiseaseSystem from './DiseaseSystem.js';
 import SkillSystem   from './SkillSystem.js';
 import NPCSystem     from './NPCSystem.js';
 import StructureEffectSystem from './StructureEffectSystem.js';
+import MentalSystem   from './MentalSystem.js';
 import BALANCE       from '../data/gameBalance.js';
 import CharDialogue  from '../data/charDialogues.js';
 import GameData      from '../data/GameData.js';
 import { consumeEffectMultiplier, getConsumableEffect, normalizeConsumeEffect } from './ItemEffectSystem.js';
 import { BOTTOM_PAGE1_SIZE } from '../data/bagSlots.js';
+import { isAcidWeather, isWeatherSheltered } from './WeatherSystem.js';
 
 // 내구도가 닳는 의료 시설 — onTick 계열('medical')과 지속 효과 계열('medical_structure')
 const MEDICAL_STRUCTURE_SUBTYPES = new Set(['medical', 'medical_structure']);
@@ -36,14 +38,14 @@ const StatSystem = {
     return { id: 'despair', ...tiers.despair };
   },
 
-  onTP() {
+  /**
+   * 스탯 자연 감소 + 피로 자연 증가. 장착 방어구의 사기 억제·피로 배율이 여기서 반영된다.
+   * @returns {object} 사기 구간 (호출부가 이어서 쓴다)
+   */
+  _applyNaturalDecay(seasonMod = SeasonSystem.getModifiers()) {
     const gs = GameState;
-    if (!gs.player.isAlive) return;
+    const armor = this.getArmorEffects();
 
-    // 계절 보정값
-    const seasonMod = SeasonSystem.getModifiers();
-
-    // Apply decay for each stat (with seasonal multipliers)
     for (const [key, s] of Object.entries(gs.stats)) {
       if (s.decayPerTP === 0) continue;
 
@@ -59,7 +61,11 @@ const StatSystem = {
         } else if (key === 'nutrition') {
           decay = BALANCE.stats.nutritionDecayPerTP;
         } else if (key === 'morale') {
-          decay = BALANCE.stats.moraleDecayPerTP;
+          decay = BALANCE.stats.moraleDecayPerTP * (1 - armor.moraleDecayReduction);
+        } else if (key === 'temperature') {
+          // 한랭 면역은 체온 하강 자체를 막고, 방한 장비는 하강폭을 줄인다
+          if (armor.coldImmunity) decay = 0;
+          else decay *= armor.coldResistMult;
         }
         gs.modStat(key, -decay);
       }
@@ -67,10 +73,33 @@ const StatSystem = {
     }
 
     // Fatigue natural increase (BALANCE 단일 진리 + 직업 보정 + 사기 구간 가속)
-    // (이전: gs.stats.fatigue.decayPerTP 직접 — CharCreate가 0.8로 박은 dead store + 직업 보정 fatigueDecay와 불투명한 곱연산)
     const moraleTier = this.getMoraleTier();
-    const fatigueMult = (gs.player.fatigueDecayMult ?? 1.0);
+    const fatigueMult = (gs.player.fatigueDecayMult ?? 1.0) * armor.fatigueMult;
     gs.modStat('fatigue', BALANCE.stats.fatigueGainPerTP * fatigueMult * (moraleTier.fatigueGainMult ?? 1.0));
+
+    // 체온 하한 — 극한 방한복 등이 지정한 값 아래로는 내려가지 않는다
+    if (typeof armor.temperatureMin === 'number') {
+      const t = gs.stats.temperature;
+      if (t && t.current < armor.temperatureMin) t.current = Math.min(t.max, armor.temperatureMin);
+    }
+    return moraleTier;
+  },
+
+  onTP() {
+    const gs = GameState;
+    if (!gs.player.isAlive) return;
+
+    // 계절 보정값
+    const seasonMod = SeasonSystem.getModifiers();
+
+    // 장착 효과 집계값을 캐시한다 — DiseaseSystem 등 StatSystem을 import할 수 없는
+    // (순환이 되는) 소비처가 이 값을 읽는다.
+    gs.player.armorEffects = this.getArmorEffects();
+
+    const moraleTier = this._applyNaturalDecay(seasonMod);
+
+    // 장착 효과의 TP당 HP 회복
+    this._applyArmorRegen();
 
     // 스태미나 자연 회복 / 과적 소모
     this._updateStamina();
@@ -84,6 +113,9 @@ const StatSystem = {
 
     // Temperature management
     this._applyTemperatureLogic();
+
+    // 산성비 야외 노출
+    this._applyAcidRainExposure(gs.player.armorEffects);
 
     // Structure passive effects (medical_station, barricade 등)
     this._applyStructureEffects();
@@ -307,6 +339,7 @@ const StatSystem = {
     const PERISHABLE_SUB = new Set(['food', 'drink', 'food_raw', 'carcass']);
     const seasonId = gs.season?.current ?? SeasonSystem.getCurrentSeason?.(gs.time?.day ?? 1)?.id ?? 'spring';
     const seasonMult = SP.seasonMult?.[seasonId] ?? 1;
+    const tools = this.getToolEffects();
 
     // 밀폐 보관 가방(방수 컨테이너 등) 장착 시: 가방 페이지(2페이지) 칸의 식량은 부패 대상 제외
     const backpackId  = gs.player?.equipped?.backpack;
@@ -325,7 +358,9 @@ const StatSystem = {
       const inst = gs.cards[card.instanceId];
       if (!inst) continue;
       const spoilDays = def.spoilDays ?? SP.daysBySubtype?.[def.subtype] ?? SP.defaultDays ?? 5;
-      const perDay = Math.max(1, Math.round((100 / spoilDays) * seasonMult));
+      // 땅굴 저장고 등 저장 구조물이 부패 속도를 늦춘다 (onTick.food_decay, 음수 = 지연)
+      const decayMult = Math.max(0.1, 1 + tools.foodDecayDelta);
+      const perDay = Math.max(1, Math.round((100 / spoilDays) * seasonMult * decayMult));
       const before = inst.contamination ?? 0;
       if (before >= 100) continue;
       inst.contamination = Math.min(100, before + perDay);
@@ -381,6 +416,47 @@ const StatSystem = {
     // Extreme cold death tick
     if (temp <= 0) {
       gs.modStat('hydration', -5); // hypothermia increases dehydration sim
+    }
+  },
+
+  /**
+   * 산성비를 맞는 동안 TP마다 살이 타고 그 상처로 감염이 들어온다.
+   * 안전 지대(베이스캠프 완공 + 메인 화면)는 다른 날씨 패널티와 같은 기준으로 면제되고,
+   * acidImmunity 장비(내산성 망토)를 입으면 노출 자체가 무효가 된다.
+   */
+  _applyAcidRainExposure(armorEffects = this.getArmorEffects()) {
+    const gs = GameState;
+    const exposed = isAcidWeather(gs.weather) && !isWeatherSheltered(gs);
+    if (!exposed) {
+      gs.flags._acidRainWarnedTP = null;
+      gs.flags._acidRainBlockedNotified = false;
+      return;
+    }
+
+    // 막아냈다는 소식은 비 한 번에 한 번이면 된다 — 아무 일도 일어나지 않으므로 되풀이하지 않는다
+    if (armorEffects?.acidImmunity) {
+      if (!gs.flags._acidRainBlockedNotified) {
+        gs.flags._acidRainBlockedNotified = true;
+        EventBus.emit('notify', { message: I18n.t('statSys.acidRainBlocked'), type: 'good' });
+      }
+      return;
+    }
+
+    const hpLoss = BALANCE.acidRain.hpLossPerTP ?? 0;
+    if (hpLoss > 0) {
+      const oldHp = gs.player.hp.current;
+      gs.player.hp.current = Math.max(0, oldHp - hpLoss);
+      EventBus.emit('statChanged', { stat: 'hp', oldVal: oldHp, newVal: gs.player.hp.current });
+    }
+    this.addInfection(BALANCE.acidRain.infectionGainPerTP ?? 0);
+
+    // 피해는 매 TP 들어오는데 경고가 한 번뿐이면 체력이 왜 줄어드는지 놓친다 — 주기적으로 다시 알린다
+    const now      = Math.floor(gs.time?.totalTP ?? 0);
+    const lastWarn = gs.flags._acidRainWarnedTP;
+    const interval = BALANCE.acidRain.warnIntervalTP ?? 10;
+    if (!Number.isFinite(lastWarn) || now - lastWarn >= interval) {
+      gs.flags._acidRainWarnedTP = now;
+      EventBus.emit('notify', { message: I18n.t('statSys.acidRainExposed'), type: 'danger' });
     }
   },
 
@@ -646,6 +722,23 @@ const StatSystem = {
       radiationMult:     1.0,
       contaminationMult: 1.0,
       infectionMult:     1.0,
+      // 아래는 오랫동안 선언만 있고 집계되지 않던 필드들이다. 카드 설명에 적힌 값이
+      // 실제로 작동하도록 여기서 한 번에 모으고 각 소비처가 이 결과를 읽는다.
+      encounterReduction:    0,     // 합산 — ExploreSystem 조우 판정
+      stealthBonus:          0,     // 합산 — CombatSystem 은신 시도
+      moraleDecayReduction:  0,     // 합산 — 사기 자연 감소 억제
+      travelCostReduction:   0,     // 합산 — 구 이동 TP
+      craftSuccessBonus:     0,     // 합산 — 제작 성공률
+      critBonus:             0,     // 합산 — 치명타 확률
+      critMultiplierBonus:   0,     // 합산 — 치명타 배율
+      hpRegenPerTP:          0,     // 합산 — TP당 HP 회복
+      fatigueMult:           1.0,   // 곱 — 피로 증가 배율
+      coldResistMult:        1.0,   // 곱 — 체온 하강 완화
+      hypothermiaChanceMult: 1.0,   // 곱 — 저체온증 누적 속도
+      coldImmunity:          false,
+      acidImmunity:          false,  // 산성비 노출·전투 산성 상태이상 무효
+      temperatureMin:        null,  // 체온 하한 (가장 낮은 값 채택)
+      temperatureImmunity:   null,  // 고온 상한 (가장 높은 값 채택)
     };
     const equipped = GameState.player.equipped;
     if (!equipped) return result;
@@ -664,6 +757,27 @@ const StatSystem = {
       if (w?.radiationMult)     result.radiationMult     *= w.radiationMult;
       if (w?.contaminationMult) result.contaminationMult *= w.contaminationMult;
       if (w?.infectionMult)     result.infectionMult     *= w.infectionMult;
+      if (w?.encounterReduction)   result.encounterReduction   += w.encounterReduction;
+      if (w?.stealthBonus)         result.stealthBonus         += w.stealthBonus;
+      if (w?.moraleDecayReduction) result.moraleDecayReduction += w.moraleDecayReduction;
+      if (w?.travelCostReduction)  result.travelCostReduction  += w.travelCostReduction;
+      if (w?.craftSuccessBonus)    result.craftSuccessBonus    += w.craftSuccessBonus;
+      if (w?.critBonus)            result.critBonus            += w.critBonus;
+      if (w?.critMultiplierBonus)  result.critMultiplierBonus  += w.critMultiplierBonus;
+      if (w?.hpRegenPerTP)         result.hpRegenPerTP         += w.hpRegenPerTP;
+      if (w?.fatigueMult)           result.fatigueMult           *= w.fatigueMult;
+      if (w?.coldResistMult)        result.coldResistMult        *= w.coldResistMult;
+      if (w?.hypothermiaChanceMult) result.hypothermiaChanceMult *= w.hypothermiaChanceMult;
+      if (w?.coldImmunity)      result.coldImmunity = true;
+      if (w?.acidImmunity)      result.acidImmunity = true;
+      if (typeof w?.temperatureMin === 'number') {
+        result.temperatureMin = result.temperatureMin == null
+          ? w.temperatureMin : Math.min(result.temperatureMin, w.temperatureMin);
+      }
+      if (typeof w?.temperatureImmunity === 'number') {
+        result.temperatureImmunity = result.temperatureImmunity == null
+          ? w.temperatureImmunity : Math.max(result.temperatureImmunity, w.temperatureImmunity);
+      }
       if (armor?.damageReduction) result.damageReduction += armor.damageReduction;
       if (armor?.critReduction)   result.critReduction   += armor.critReduction;
       result.damageReduction += modDamageReduction;
@@ -672,7 +786,141 @@ const StatSystem = {
     // 상한 클램핑: BALANCE 상수 기반
     result.damageReduction = Math.min(BALANCE.armor.damageReductionCap, result.damageReduction);
     result.critReduction   = Math.min(BALANCE.armor.critReductionCap, result.critReduction);
+    // 비율 감소는 100%에 닿으면 해당 소비가 통째로 사라진다 — 0.9에서 멈춘다
+    result.moraleDecayReduction = Math.min(0.9, result.moraleDecayReduction);
+    result.travelCostReduction  = Math.min(0.9, result.travelCostReduction);
+    result.encounterReduction   = Math.min(0.9, result.encounterReduction);
     return result;
+  },
+
+  /**
+   * 소비재의 특수 효과. 오랫동안 툴팁 문구만 있고 적용되지 않던 항목들이다.
+   * 수치 스탯(hp·infection 등)은 consumeCard 본문이 처리하고, 여기서는 상태 조작만 맡는다.
+   */
+  _applySpecialConsumeEffects(eff, gs) {
+    if (!eff) return;
+
+    // 트라우마 회복 (도토리묵·베리 발효주)
+    if (eff.trauma) {
+      MentalSystem.ensureInitialized();
+      gs.mental.trauma = Math.max(0, (gs.mental.trauma ?? 0) + eff.trauma);
+    }
+
+    // 절망 해소 — 사기 0 연속 누적을 지운다
+    if (eff.cureDespair) gs.player.despairTicks = 0;
+
+    // 감염 저항 버프. 두 표기가 공존한다 —
+    //   보양식: infectionResist + infectionResistDuration / 송로 리조또: infectionResistBuff 객체
+    const buff = eff.infectionResistBuff
+      ?? (eff.infectionResist != null
+        ? { amount: eff.infectionResist, duration: eff.infectionResistDuration }
+        : null);
+    if (buff?.amount) {
+      const now = Math.floor(gs.time.totalTP ?? 0);
+      const until = now + Math.max(1, Math.floor(buff.duration ?? 0));
+      if (until > (gs.player.infectionResistUntilTP ?? 0)) {
+        gs.player.infectionResistUntilTP = until;
+      }
+      gs.player.infectionResistAmount = Math.max(gs.player.infectionResistAmount ?? 0, buff.amount);
+    }
+
+    if (eff.permanentInfectionResist) {
+      gs.player.permanentInfectionResist = Math.max(
+        gs.player.permanentInfectionResist ?? 0, eff.permanentInfectionResist,
+      );
+    }
+
+    // 함정 설치 — 바닥에 놓아야 장소별로 보존되고, 그 장소의 전투에서만 발동한다
+    if (eff.deployTrap) {
+      const trapId = typeof eff.deployTrap === 'string' ? eff.deployTrap : 'deployed_mine';
+      const inst = gs.createCardInstance(trapId);
+      if (inst) {
+        const placed = gs.placeCardInRow(inst.instanceId, 'middle');
+        EventBus.emit('notify', {
+          message: placed
+            ? I18n.t('trap.deployed', { name: I18n.itemName(trapId, GameData?.items?.[trapId]?.name) })
+            : I18n.t('trap.deployNoSpace'),
+          type: placed ? 'good' : 'warn',
+        });
+      }
+    }
+
+    // 상태이상 제거 (해장국의 숙취 등)
+    if (Array.isArray(eff.removeStatus) && eff.removeStatus.length > 0) {
+      gs.player.statusEffects = (gs.player.statusEffects ?? [])
+        .filter(s => !eff.removeStatus.includes(s?.id));
+    }
+  },
+
+  /**
+   * 감염 상승 진입점. 저항 버프(보양식·송로 리조또)와 영구 저항(완성형 항바이러스)을 적용한다.
+   * 감염을 올리는 다른 시스템도 이 함수를 거치게 하면 저항이 일괄 반영된다.
+   */
+  addInfection(amount) {
+    const gs = GameState;
+    if (!(amount > 0)) return;
+    const now = Math.floor(gs.time.totalTP ?? 0);
+    const timed = (gs.player.infectionResistUntilTP ?? 0) > now
+      ? (gs.player.infectionResistAmount ?? 0) : 0;
+    const permanent = gs.player.permanentInfectionResist ?? 0;
+    const resist = Math.min(0.9, timed + permanent);
+    const applied = Math.round(amount * (1 - resist));
+    if (applied > 0) gs.modStat('infection', applied);
+  },
+
+  /**
+   * 보드에 지닌 도구·구조물의 작업 보정을 집계한다.
+   * ExploreSystem._collectToolEffects는 탐색 관련 3종만 보므로, 그 밖의 onUse/onTick
+   * 필드는 여기서 모은다. 장착이 아니라 보드에 있기만 하면 적용된다 (나침반·쌍안경과 동일).
+   */
+  getToolEffects() {
+    const result = {
+      woodChopBonus: 0, digBonus: 0, buildingBonus: 0,
+      craftSuccessBonus: 0, craftTimeReduction: 0,
+      foodDecayDelta: 0,
+    };
+    for (const card of GameState.getBoardCards()) {
+      const def = GameState.getCardDef(card.instanceId);
+      if (!def) continue;
+      const u = def.onUse;
+      if (u) {
+        if (u.woodChopBonus)      result.woodChopBonus      += u.woodChopBonus;
+        if (u.digBonus)           result.digBonus           += u.digBonus;
+        if (u.buildingBonus)      result.buildingBonus      += u.buildingBonus;
+        if (u.craftSuccessBonus)  result.craftSuccessBonus  += u.craftSuccessBonus;
+        if (u.craftTimeReduction) result.craftTimeReduction += u.craftTimeReduction;
+      }
+      // 땅굴 저장고 등 — 음수면 부패가 느려진다
+      if (def.onTick?.food_decay) result.foodDecayDelta += def.onTick.food_decay;
+    }
+    result.craftTimeReduction = Math.min(0.8, result.craftTimeReduction);
+    return result;
+  },
+
+  /** 도구 보정이 반영된 제작 TP. 최소 1TP는 남긴다. */
+  applyCraftTime(baseCost) {
+    const reduction = this.getToolEffects().craftTimeReduction;
+    if (!reduction || !(baseCost > 0)) return baseCost;
+    return Math.max(1, Math.round(baseCost * (1 - reduction)));
+  },
+
+  /** 장착 효과가 반영된 이동 TP 비용. 최소 1TP는 남긴다. */
+  applyTravelCost(baseCost) {
+    const reduction = this.getArmorEffects().travelCostReduction;
+    if (!reduction) return baseCost;
+    return Math.max(1, Math.round(baseCost * (1 - reduction)));
+  },
+
+  /** 장착 효과의 TP당 HP 회복 (어머니의 목걸이 등) */
+  _applyArmorRegen() {
+    const gs = GameState;
+    const regen = this.getArmorEffects().hpRegenPerTP;
+    if (!regen) return;
+    const healed = Math.min(regen, gs.player.hp.max - gs.player.hp.current);
+    if (healed <= 0) return;
+    const before = gs.player.hp.current;
+    gs.player.hp.current = before + healed;
+    EventBus.emit('statChanged', { stat: 'hp', oldVal: before, newVal: gs.player.hp.current });
   },
 
   _applyGuaranteedStun(gs, duration) {
@@ -770,13 +1018,20 @@ const StatSystem = {
       gs.player.attackBoostUntilTP = Math.max(gs.player.attackBoostUntilTP ?? 0, now + Math.max(1, Math.floor(eff.duration)));
       EventBus.emit('notify', { message: `💊 공격력 +${Math.round(eff.temporaryAttackBoost * 100)}% 효과가 ${eff.duration}TP 동안 지속됩니다.`, type: 'good' });
     }
+    if (eff.guardBoost) {
+      gs.player.pendingGuardBoost = Math.max(gs.player.pendingGuardBoost ?? 0, eff.guardBoost);
+      EventBus.emit('notify', { message: `🛡️ 다음 방어의 피해 감소가 +${Math.round(eff.guardBoost * 100)}% 상승합니다.`, type: 'good' });
+    }
     if (eff.hp) {
       // 의사 능력: 붕대 사용 시 bandageHpBonus 추가 회복
       const isBandage = def.tags?.includes('bandage') ?? false;
       const bandageBonus = (isBandage && isMedical) ? (gs.player.bandageHpBonus ?? 0) : 0;
       const healed = Math.round(eff.hp * healMult) + bandageBonus;
-      gs.player.hp.current = Math.min(gs.player.hp.max, gs.player.hp.current + healed);
-      EventBus.emit('statChanged', { stat: 'hp', oldVal: gs.player.hp.current - healed, newVal: gs.player.hp.current });
+      // 독버섯·쐐기풀 생식처럼 hp가 음수인 섭취물이 있다. 사망 판정은 _checkDeaths가
+      // 다음 TP에 처리하므로, 그때까지 음수 HP가 노출되지 않도록 0에서 멈춘다.
+      const before = gs.player.hp.current;
+      gs.player.hp.current = Math.max(0, Math.min(gs.player.hp.max, before + healed));
+      EventBus.emit('statChanged', { stat: 'hp', oldVal: before, newVal: gs.player.hp.current });
     }
 
     // 감염/방사능 증가 — 카드 표기 수치(eff)를 오염도와 무관하게 그대로 적용.
@@ -794,7 +1049,7 @@ const StatSystem = {
         ? 0
         : Math.round(infSource * armor.infectionMult * medMult);
       if (radGain > 0) gs.modStat('radiation', radGain);
-      if (infGain > 0) gs.modStat('infection', infGain);
+      if (infGain > 0) this.addInfection(infGain);
       if (contam > 50 && !poisonImmune) {
         EventBus.emit('notify', { message: I18n.t('statSys.contamConsumed'), type: 'danger' });
       }
@@ -803,6 +1058,11 @@ const StatSystem = {
         DiseaseSystem.checkContaminatedConsume(def, inst.contamination, gs);
       }
     }
+
+    this._applySpecialConsumeEffects(eff, gs);
+
+    // 독성 물질 섭취 → 중독 발병 체크 (오염도와 무관하게 아이템 정의가 지정)
+    DiseaseSystem.checkToxicConsume(def, gs);
 
     // 아이템 사용 → 질병 치료 체크
     DiseaseSystem.onConsume(def, gs);

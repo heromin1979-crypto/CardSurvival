@@ -101,21 +101,6 @@ const ITEMS_STRUCTURES = {
     ],
   },
 
-  alarm_trap: {
-    id: 'alarm_trap', name: '경보 트랩', type: 'structure', subtype: 'trap',
-    rarity: 'uncommon', weight: 0.5,
-    defaultDurability: 60, defaultContamination: 0,
-    icon: '🔔', description: '적 접근 시 경보 발생. 기습 방지.',
-    tags: ['structure', 'trap', 'crafted'],
-    onTrigger: { earlyWarning: true, noise: 20 },
-    dismantleTP: 1,
-    dismantle: [
-      { definitionId: 'electronic_parts', qty: 1, chance: 0.7 },
-      { definitionId: 'wire', qty: 1, chance: 0.8 },
-      { definitionId: 'empty_can', qty: 1, chance: 0.9 },
-    ],
-  },
-
   spike_trap: {
     id: 'spike_trap', name: '가시 트랩', type: 'structure', subtype: 'trap',
     rarity: 'uncommon', weight: 1.5,
@@ -180,7 +165,7 @@ const ITEMS_STRUCTURES = {
     id: 'workbench', name: '작업대', type: 'structure', subtype: 'craft',
     rarity: 'uncommon', weight: 5.0,
     defaultDurability: 100, defaultContamination: 0,
-    icon: '🪚', description: '복잡한 제작을 가능하게 한다. 일부 레시피 필수.',
+    icon: '🪚', description: '바이스와 공구가 갖춰진 작업대. 맨손으로는 엄두가 안 나던 작업이 가능해진다.',
     tags: ['structure', 'crafted'],
     requiredForBlueprints: true,
     dismantleTP: 2,

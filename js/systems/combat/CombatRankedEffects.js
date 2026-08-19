@@ -26,6 +26,7 @@ import {
 } from './CombatResolution.js';
 import { getRank, moveCombatant } from './FormationSystem.js';
 import { consumeRound } from '../WeaponAmmoSystem.js';
+import { getUnarmedGloveBonus, getWeaponModifiers } from '../WeaponModifiers.js';
 import {
   normalizeBossActionState,
   reserveUltimateAfterDamage,
@@ -58,16 +59,18 @@ export const CombatRankedEffects = {
       gs.stats.stamina.current = Math.max(0, (gs.stats.stamina.current ?? 0) - stamina);
     }
 
+    const weaponInstanceId = skill?.equipmentInstanceId;
+    const mods = getWeaponModifiers(gs.cards?.[weaponInstanceId]);
+
     const noise = skill?.costs?.noise ?? 0;
-    if (noise > 0) NoiseSystem.addNoise(noise);
+    if (noise > 0) NoiseSystem.addNoise(Math.max(0, Math.round(noise * (1 - mods.noiseReduction))));
 
     const durLoss = skill?.costs?.durability ?? 0;
-    const weaponInstanceId = skill?.equipmentInstanceId;
     if (durLoss > 0 && weaponInstanceId && gs.cards?.[weaponInstanceId]) {
       const isMeleeEquipment = magazineRound <= 0;
       const durSave = actor?.sourceType === 'player'
         && isMeleeEquipment
-        && Math.random() < SkillSystem.getBonus('melee', 'durSaveChance');
+        && Math.random() < Math.min(1, SkillSystem.getBonus('melee', 'durSaveChance') + mods.durabilitySave);
       if (!durSave) {
         const inst = gs.cards[weaponInstanceId];
         inst.durability = Math.max(0, (inst.durability ?? 0) - durLoss);
@@ -196,7 +199,9 @@ export const CombatRankedEffects = {
     const gs = GameState;
     const weaponDef = this._rankedSkillWeaponDef(skill);
     const isFirearm = !!weaponDef?.combat?.requiresAmmo;
-    let accuracy = Number.isFinite(skill?.accuracy) ? skill.accuracy : 0.7;
+    // 부착물 명중 보정(조준경·가죽 그립)은 카드 인스턴스에 있어 스킬 정의에 실리지 않는다
+    const attachAcc = getWeaponModifiers(gs.cards?.[skill?.equipmentInstanceId]).accuracyBonus;
+    let accuracy = (Number.isFinite(skill?.accuracy) ? skill.accuracy : 0.7) + attachAcc;
     let critChance = Number.isFinite(skill?.critChance) ? skill.critChance : 0;
     let critMultiplier = skill?.critMultiplier;
 
@@ -657,7 +662,9 @@ export const CombatRankedEffects = {
       damage = this._applyEnemyDefense(
         damage,
         (legacyEnemy.defense ?? 0) + statusModifiers.defenseIncrease,
+        Math.floor(getWeaponModifiers(gs.cards?.[skill?.equipmentInstanceId]).defensePierce),
       );
+      damage += this._weaponPoisonBonus(skill, damage);
       if (statusModifiers.incomingDamageReduction > 0) {
         damage = Math.floor(damage * (1 - statusModifiers.incomingDamageReduction));
       }
@@ -864,10 +871,18 @@ export const CombatRankedEffects = {
       && (skill.effects ?? []).some(effect => effect?.type === 'damage');
   },
 
+  // 독날이 실은 추가 피해. 레거시와 동일하게 방어 차감 이후에 붙고, 피해가 0이면 붙지 않는다.
+  _weaponPoisonBonus(skill, damageAfterDefense) {
+    if (damageAfterDefense <= 0) return 0;
+    return Math.floor(getWeaponModifiers(GameState.cards?.[skill?.equipmentInstanceId]).poisonDamage);
+  },
+
   // 정액 방어 차감 + 관통 바닥: 방어가 피해를 원피해의 일정 비율 아래로 깎지 못한다
-  _applyEnemyDefense(damage, defense) {
+  // pierce는 부착물(탄약 개조 키트)이 무기 인스턴스에 남긴 방어 무시량이다
+  _applyEnemyDefense(damage, defense, pierce = 0) {
+    const effectiveDefense = Math.max(0, (defense ?? 0) - Math.max(0, pierce ?? 0));
     const floor = Math.max(1, Math.ceil(damage * (BALANCE.combat.defenseFloorRatio ?? 0)));
-    return Math.max(floor, damage - (defense ?? 0));
+    return Math.max(floor, damage - effectiveDefense);
   },
 
   _rankedXpSkillId(skill, weaponDef) {
@@ -888,8 +903,10 @@ export const CombatRankedEffects = {
       if (!weaponDef?.combat?.requiresAmmo) {
         damage = Math.floor(damage * SkillSystem.getBonus('melee', 'dmgMult'));
       }
+      damage += getWeaponModifiers(gs.cards[instanceId]).damageBonus;
     } else if (skill?.id === 'basic_strike') {
-      damage = Math.floor(damage * SkillSystem.getBonus('unarmed', 'dmgMult'));
+      damage = Math.floor(damage * SkillSystem.getBonus('unarmed', 'dmgMult'))
+        + getUnarmedGloveBonus(gs);
     }
 
     damage = Math.floor(damage * (gs.player.combatDmgBonus ?? 1.0));

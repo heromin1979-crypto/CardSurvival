@@ -39,7 +39,7 @@ const ITEMS_TECH = {
     id: 'microchip', name: '마이크로칩', type: 'material', subtype: 'tech',
     rarity: 'uncommon', weight: 0.05,
     defaultDurability: 100, defaultContamination: 0,
-    icon: '🔬', description: '정밀 회로가 새겨진 칩. 고급 전자장비 제작에 필수적이다.',
+    icon: '🔬', description: '손톱만 한 판에 회로가 빼곡하다. 이것 없이는 스스로 계산하는 물건을 만들 수 없다.',
     tags: ['tech', 'material'],
     dismantle: [],
   },
@@ -60,7 +60,7 @@ const ITEMS_TECH = {
     id: 'electric_motor', name: '전기 모터', type: 'material', subtype: 'tech',
     rarity: 'rare', weight: 1.5,
     defaultDurability: 100, defaultContamination: 0,
-    icon: '⚡', description: '구리 코일과 자석으로 구동되는 소형 모터.',
+    icon: '⚡', description: '구리 코일과 자석으로 구동되는 소형 모터. 전력만 물려주면 무엇이든 돌려낸다.',
     tags: ['tech', 'material', 'crafted'],
     dismantle: [
       { definitionId: 'copper_coil', qty: 1, chance: 0.8 },

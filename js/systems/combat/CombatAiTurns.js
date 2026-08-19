@@ -17,6 +17,7 @@ import {
   consumeToken,
   enemyStatusModifiers,
   healCombatant,
+  isAcidStatusId,
 } from './CombatStatusSystem.js';
 import { modifyIncomingDamage, modifyOutgoingDamage } from './CombatResolution.js';
 import { buildEnemyProfile } from './EnemyCombatAdapter.js';
@@ -974,6 +975,7 @@ export const CombatAiTurns = {
     };
 
     const damageTarget = (targetId, amount, metadata = {}) => {
+      let critHit = false;
       const npcId = targetId === 'player' ? null : targetId;
       const target = combat?.combatants?.[targetId] ?? null;
       let damage = modifyOutgoingDamage(amount, this._rankCombatantForEnemy(enemy));
@@ -981,6 +983,8 @@ export const CombatAiTurns = {
       if (outgoingIncrease > 0) {
         damage = Math.floor(damage * (1 + outgoingIncrease));
       }
+      // 치명타는 방어구 감소 이전에 굴린다 — 플레이어 공격과 순서를 맞춘다
+      ({ damage, isCrit: critHit } = this._rollEnemyCrit(damage));
 
       const threshold = Number.isFinite(metadata.executeThreshold)
         ? Math.max(0, Math.min(1, metadata.executeThreshold))
@@ -1016,10 +1020,10 @@ export const CombatAiTurns = {
       if (result.dodged) return result;
 
       if (npcId) {
-        combat.lastHit = { target: 'companion', damage: result.damage, npcId, isCrit: false };
+        combat.lastHit = { target: 'companion', damage: result.damage, npcId, isCrit: critHit };
         EventBus.emit('enemyAttackCompanion', { enemyId: enemy.id, npcId, damage: result.damage });
       } else {
-        combat.lastHit = { target: 'player', damage: result.damage, isCrit: false };
+        combat.lastHit = { target: 'player', damage: result.damage, isCrit: critHit };
         EventBus.emit('playerHit', { damage: result.damage });
         DiseaseSystem.checkCombatInjury(result.damage, gs);
         BodySystem.onCombatHit(result.damage, enemy);
@@ -1218,6 +1222,7 @@ export const CombatAiTurns = {
     const gs = GameState;
     const combat = gs.combat;
     const isPlayer = targetId === 'player';
+    if (isPlayer && this._playerBlocksAcidStatus(status)) return false;
     const combatant = combat?.combatants?.[targetId];
     if (!isPlayer && !combatant) return false;
 
@@ -1274,6 +1279,20 @@ export const CombatAiTurns = {
 
   _addPlayerStatus(status) {
     return this._addAllyStatus('player', status);
+  },
+
+  /**
+   * 내산성 장비를 입은 플레이어에게 산성 상태이상이 붙으려 할 때 막는다.
+   * 상태이상 진입로가 랭크 경로(_addAllyStatus)와 레거시 기본공격 경로로 나뉘어 있어
+   * 양쪽이 같은 판정을 쓰도록 한곳에 둔다. 동료와 직접 피해는 대상이 아니다.
+   */
+  _playerBlocksAcidStatus(status) {
+    if (!isAcidStatusId(status?.id)) return false;
+    if (!StatSystem.getArmorEffects().acidImmunity) return false;
+    GameState.combat?.log?.push(I18n.t('combatSys.acidImmune', {
+      status: status.name ?? status.id,
+    }));
+    return true;
   },
 
   _instantiateEnemyFromDefinition(def) {
@@ -1802,6 +1821,10 @@ export const CombatAiTurns = {
     let dmg = dMin + Math.floor(Math.random() * (dMax - dMin + 1));
 
     // 방어구 효과: 피해 감소 + 방어술 스킬 보너스
+    const specialCrit = this._rollEnemyCrit(dmg);
+    dmg = specialCrit.damage;
+    if (specialCrit.isCrit) gs.combat.log.push(I18n.t('combatSys.enemyCrit'));
+
     const armor         = StatSystem.getArmorEffects();
     const defSkillBonus = SkillSystem.getBonus('defense', 'damageReduction');
     const totalReduct   = Math.min(BALANCE.armor.specialDmgReductCap, armor.damageReduction + defSkillBonus);
@@ -1821,7 +1844,7 @@ export const CombatAiTurns = {
       return logs;
     }
     dmg = struck.damage;
-    gs.combat.lastHit = { target: 'player', damage: dmg, isCrit: false };
+    gs.combat.lastHit = { target: 'player', damage: dmg, isCrit: specialCrit.isCrit };
     EventBus.emit('playerHit', { damage: dmg });
     const enemyIndex = gs.combat.enemies.indexOf(enemy);
     this._fx(createActionFx({
@@ -1894,6 +1917,20 @@ export const CombatAiTurns = {
     }
     return result;
 
+  },
+
+  // 적 치명타 유효 확률 — 방어구 critReduction이 비례로 깎는다
+  _enemyCritChance() {
+    const armor = StatSystem.getArmorEffects();
+    const base = BALANCE.combat.enemyCritChance ?? 0;
+    return Math.max(0, base * (1 - Math.min(1, armor.critReduction ?? 0)));
+  },
+
+  _rollEnemyCrit(damage) {
+    if (damage <= 0) return { damage, isCrit: false };
+    if (Math.random() >= this._enemyCritChance()) return { damage, isCrit: false };
+    const mult = BALANCE.combat.enemyCritMultiplier ?? 1.5;
+    return { damage: Math.floor(damage * mult), isCrit: true };
   },
 
   _rankCombatantForEnemy(enemy) {
@@ -1973,8 +2010,17 @@ export const CombatAiTurns = {
     const hit    = Math.random() < this._getEnemyAccuracyAgainstPlayer(enemy.attack.accuracy);
 
     if (hit) {
+      // 적 공격도 소음을 낸다 — 전투가 길어질수록 추가 조우 압박이 커진다.
+      // 특수스킬 소음은 EnemyActionExecutor가 따로 처리하므로 여기서는 기본 공격만 본다.
+      const attackNoise = enemy.attack?.noiseOnAttack ?? 0;
+      if (attackNoise > 0) NoiseSystem.addNoise(attackNoise);
+
       // 적 자신의 토큰(hesitation/strength 등) — 랭크 combatant에 기록된 것을 소비
       damage = modifyOutgoingDamage(damage, this._rankCombatantForEnemy(enemy));
+
+      const critRoll = this._rollEnemyCrit(damage);
+      damage = critRoll.damage;
+      if (critRoll.isCrit) gs.combat.log.push(I18n.t('combatSys.enemyCrit'));
 
       // 방어구 효과 + 방어술 스킬 감소
       const armor         = StatSystem.getArmorEffects();
@@ -2064,7 +2110,7 @@ export const CombatAiTurns = {
         return I18n.t('combatSys.enemyDodge', { enemy: I18n.enemyName(enemy.id, enemy.name) });
       }
       damage = struck.damage;
-      gs.combat.lastHit    = { target: 'player', damage, isCrit: false };
+      gs.combat.lastHit    = { target: 'player', damage, isCrit: critRoll.isCrit };
       EventBus.emit('playerHit', { damage });
       const enemyIndex = gs.combat.enemies.indexOf(enemy);
       const playerTarget = allyActionCombatant(gs.combat, 'player');
@@ -2098,7 +2144,7 @@ export const CombatAiTurns = {
         if (enemy.onHitEffect.infection) gs.modStat('infection', enemy.onHitEffect.infection);
         if (enemy.onHitEffect.radiation) gs.modStat('radiation', enemy.onHitEffect.radiation);
       }
-      if (enemy.statusInflict) {
+      if (enemy.statusInflict && !this._playerBlocksAcidStatus(enemy.statusInflict)) {
         const inflict = { ...enemy.statusInflict, effect: { ...enemy.statusInflict.effect } };
         // 방치 비용: 축적된 만큼 상태이상 피해가 커진다 (zombie_acid 등)
         if (enemy._inflictEscalation && Number.isFinite(inflict.effect.hpLossPerRound)) {

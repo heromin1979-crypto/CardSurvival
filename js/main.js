@@ -166,6 +166,9 @@ function init() {
   SkillSystem.init();
   BasecampSystem.init();
   QuestSystem.init();
+  // init()이 힌트 리스너(장소 발견·스킬 레벨업)를 등록한다. 등록만 하고 init을 빠뜨리면
+  // SKILL_HINTS·LOCATION_HINTS 두 테이블이 통째로 죽어 NPC 힌트만 남는다.
+  SecretCombinationSystem.init();
   SystemRegistry.register('SecretCombinationSystem', SecretCombinationSystem);
   SoundSystem.init();
   BGMSystem.init();

@@ -131,24 +131,6 @@ const BLUEPRINTS = {
     ],
   },
 
-  alarm_trap: {
-    id: 'alarm_trap', name: '경보 트랩', category: 'structure',
-    hidden: true, unlockConditions: { minSkillLevel: { building: 2, crafting: 1 } },
-    description: '적 접근 시 경보를 울린다.',
-    output: [{ definitionId: 'alarm_trap', qty: 1 }],
-    requiredTools: [],
-    requiredSkills: { building: 2, crafting: 1 },
-    stages: [{
-      stageIndex: 0, label: '트랩 조립', tpCost: 3,
-      requiredItems: [
-        { definitionId: 'electronic_parts', qty: 1 },
-        { definitionId: 'wire', qty: 1 },
-        { definitionId: 'empty_can', qty: 1 },
-      ],
-      consumeAt: 'start',
-    }],
-  },
-
   spike_trap: {
     id: 'spike_trap', name: '가시 트랩', category: 'structure',
     hidden: true, unlockConditions: { minSkillLevel: { building: 3, weaponcraft: 1 } },
@@ -2028,9 +2010,9 @@ const BLUEPRINTS = {
   },
 
   forge_bolt_tip: {
-    id: 'forge_bolt_tip', name: '볼트 촉 제작', category: 'material',
+    id: 'forge_bolt_tip', name: '화살촉 제작', category: 'material',
     hidden: true, unlockConditions: { minSkillLevel: { weaponcraft: 2 } },
-    description: '고철을 단조해 날카로운 볼트 촉을 5개 만든다.',
+    description: '고철을 단조해 날카로운 화살촉을 5개 만든다.',
     output: [{ definitionId: 'bolt_tip', qty: 5 }],
     requiredTools: ['field_forge'],
     requiredSkills: { weaponcraft: 2 },
@@ -2149,9 +2131,9 @@ const BLUEPRINTS = {
   },
 
   craft_bolt_shaft: {
-    id: 'craft_bolt_shaft', name: '볼트 샤프트 제작', category: 'material',
+    id: 'craft_bolt_shaft', name: '화살대 제작', category: 'material',
     hidden: true, unlockConditions: { minSkillLevel: { weaponcraft: 2 } },
-    description: '나무 막대를 다듬어 볼트 샤프트 5개를 만든다.',
+    description: '나무 막대를 다듬어 화살대 5개를 만든다.',
     output: [{ definitionId: 'bolt_shaft', qty: 5 }],
     requiredTools: ['carpentry_bench'],
     requiredSkills: { weaponcraft: 2 },
@@ -2165,14 +2147,14 @@ const BLUEPRINTS = {
   },
 
   craft_improved_crossbow_bolt: {
-    id: 'craft_improved_crossbow_bolt', name: '개선 석궁 볼트 제작', category: 'weapon',
+    id: 'craft_improved_crossbow_bolt', name: '강화 석궁 화살 제작', category: 'weapon',
     hidden: true, unlockConditions: { minSkillLevel: { weaponcraft: 3 } },
-    description: '단조 촉을 달아 관통력을 높인 석궁 볼트 5개.',
+    description: '단조 촉을 달아 관통력을 높인 석궁 화살 5개.',
     output: [{ definitionId: 'improved_crossbow_bolt', qty: 5 }],
     requiredTools: ['carpentry_bench'],
     requiredSkills: { weaponcraft: 3 },
     stages: [{
-      stageIndex: 0, label: '볼트 조립', tpCost: 3,
+      stageIndex: 0, label: '화살 조립', tpCost: 3,
       requiredItems: [
         { definitionId: 'bolt_shaft', qty: 5 },
         { definitionId: 'bolt_tip',   qty: 5 },
@@ -2224,8 +2206,8 @@ const BLUEPRINTS = {
   synthesize_poison: {
     id: 'synthesize_poison', name: '독 추출물 합성', category: 'material',
     hidden: true, unlockConditions: { minDay: 20, minSkillLevel: { medicine: 3 } },
-    description: '약초에서 독성 성분을 추출한다. 무기 도포 또는 함정에 사용.',
-    output: [{ definitionId: 'antiseptic', qty: 2 }],
+    description: '약초에서 독성 성분을 농축해 독을 만든다. 근접 무기에 겹쳐 바를 수 있다.',
+    output: [{ definitionId: 'poison', qty: 1 }],
     requiredTools: ['chemistry_bench'],
     requiredSkills: { medicine: 3 },
     stages: [{
@@ -2327,14 +2309,14 @@ const BLUEPRINTS = {
   },
 
   craft_improved_crossbow_bolt_ammo: {
-    id: 'craft_improved_crossbow_bolt_ammo', name: '개선 볼트 탄약 조립', category: 'weapon',
+    id: 'craft_improved_crossbow_bolt_ammo', name: '강화 화살 탄약 조립', category: 'weapon',
     hidden: true, unlockConditions: { minSkillLevel: { weaponcraft: 3 } },
-    description: '탄약 제조대에서 볼트 촉을 정밀 연마해 개선 볼트 5발을 만든다.',
+    description: '탄약 제조대에서 화살촉을 정밀 연마해 강화 석궁 화살 5발을 만든다.',
     output: [{ definitionId: 'improved_crossbow_bolt', qty: 5 }],
     requiredTools: ['ammo_bench'],
     requiredSkills: { weaponcraft: 3 },
     stages: [{
-      stageIndex: 0, label: '볼트 정밀 조립', tpCost: 3,
+      stageIndex: 0, label: '화살 정밀 조립', tpCost: 3,
       requiredItems: [
         { definitionId: 'bolt_shaft', qty: 5 },
         { definitionId: 'bolt_tip',   qty: 5 },
@@ -2787,7 +2769,7 @@ const BLUEPRINTS = {
 
   grind_acorn: {
     id: 'grind_acorn', name: '도토리 빻기', category: 'food',
-    description: '절구로 도토리를 빻아 가루로 만든다. 도토리묵·죽의 핵심 재료.',
+    description: '절구로 도토리를 빻아 가루로 만든다. 도토리묵의 핵심 재료.',
     output: [{ definitionId: 'acorn_flour', qty: 1 }],
     requiredTools: ['mortar_pestle'],
     requiredSkills: {},
@@ -3203,41 +3185,6 @@ const BLUEPRINTS = {
       consumeAt: 'start',
     }],
   },
-
-  bait_worm: {
-    id: 'bait_worm', name: '지렁이 미끼', category: 'tool',
-    description: '흙을 파서 지렁이를 잡아 미끼로 만든다. 낚시·통발에 사용.',
-    output: [{ definitionId: 'bait_worm', qty: 2 }],
-    requiredTools: [],
-    requiredSkills: {},
-    stages: [{
-      stageIndex: 0, label: '미끼 준비', tpCost: 1,
-      requiredItems: [
-        { definitionId: 'dry_grass', qty: 1 },
-      ],
-      consumeAt: 'start',
-    }],
-  },
-
-  bait_insect: {
-    id: 'bait_insect', name: '곤충 미끼', category: 'tool',
-    description: '풀밭에서 잡은 곤충으로 만든 미끼. 지렁이 미끼보다 효과가 좋다.',
-    output: [{ definitionId: 'bait_insect', qty: 2 }],
-    requiredTools: [],
-    requiredSkills: { fishing: 2 },
-    stages: [{
-      stageIndex: 0, label: '곤충 채집', tpCost: 1,
-      requiredItems: [
-        { definitionId: 'dry_grass', qty: 1 },
-        { definitionId: 'herb',      qty: 1 },
-      ],
-      consumeAt: 'start',
-    }],
-  },
-
-  // ══════════════════════════════════════════════════════════════
-  //  훈련용 아이템 (Training Items) — skillOverride로 특정 스킬 XP 부여
-  // ══════════════════════════════════════════════════════════════
 
   practice_bandage: {
     id: 'practice_bandage', name: '연습용 붕대', category: 'medical',

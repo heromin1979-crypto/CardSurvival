@@ -354,7 +354,7 @@ const ITEMS_MISC = {
   },
   fire_bolt: {
     id: 'fire_bolt',
-    name: '화염 볼트',
+    name: '화염 화살',
     type: 'consumable',
     subtype: 'ammo',
     rarity: 'uncommon',
@@ -364,46 +364,17 @@ const ITEMS_MISC = {
     defaultDurability: 100,
     defaultContamination: 0,
     icon: '🔥',
-    description: '불에 담근 크로스보우 볼트. 추가 화상 데미지.',
+    description: '불에 담근 석궁 화살. 장전하면 적중 시 화상을 입힌다.',
+    ammoType: 'crossbow_bolt',
+    roundsPerPack: 8,
+    ammoEffect: {
+      statusInflict: { id: 'burn', name: '화상', duration: 2, effect: { hpPerRound: -3 }, chance: 0.40 },
+    },
     tags: [
       'ammo',
       'ranged',
     ],
     dismantle: [],
-  },
-  sling: {
-    id: 'sling',
-    name: '슬링',
-    type: 'weapon',
-    subtype: 'ranged',
-    rarity: 'common',
-    weight: 0.3,
-    stackable: false,
-    maxStack: 1,
-    defaultDurability: 100,
-    defaultContamination: 0,
-    icon: '🪢',
-    description: '천과 로프로 만든 원시 투석기.',
-    combat: {
-      damage: [
-        3,
-        8,
-      ],
-      accuracy: 0.55,
-      noiseOnAttack: 2,
-    },
-    tags: [
-      'ranged',
-      'weapon',
-    ],
-    equipSlot: 'weapon_sub',
-    dismantle: [
-      {
-        definitionId: 'cloth',
-        qty: 1,
-        chance: 0.5,
-      },
-    ],
   },
   thorn_wire: {
     id: 'thorn_wire',
@@ -483,7 +454,7 @@ const ITEMS_MISC = {
     defaultDurability: 100,
     defaultContamination: 0,
     icon: '🔋',
-    description: '아직 충전이 남아있는 배터리.',
+    description: '아직 충전이 남아있는 배터리. 전자 장비를 깨우기도 하고, 껍데기를 벗기면 묵직한 금속이 나온다.',
     tags: [
       'material',
       'electronic',
@@ -562,7 +533,7 @@ const ITEMS_MISC = {
     icon: '🪱',
     stackable: true,
     maxStack: 10,
-    description: '땅을 파서 구한 지렁이. 낚시 확률 +10%.',
+    description: '땅을 파서 구한 지렁이. 낚싯대에 걸어 물고기를 낚거나 통발에 넣어 쓴다. 낚시 확률 +10%.',
     tags: [
       'bait',
       'fishing',
@@ -581,7 +552,7 @@ const ITEMS_MISC = {
     icon: '🦗',
     stackable: true,
     maxStack: 10,
-    description: '잡은 곤충. 낚시 확률 +5%.',
+    description: '잡은 곤충. 낚싯대에 걸어 물고기를 낚거나 통발에 넣어 쓴다. 낚시 확률 +5%.',
     tags: [
       'bait',
       'fishing',
@@ -898,7 +869,7 @@ const ITEMS_MISC = {
     defaultDurability: 100,
     defaultContamination: 0,
     icon: '☠️',
-    description: '독버섯에서 추출한 독. 무기에 바르거나 함정에 사용할 수 있다.',
+    description: '독버섯이나 약초에서 추출한 독. 근접 무기에 바르면 적중 시 독 피해를 준다.',
     tags: [
       'consumable',
       'poison',
@@ -916,7 +887,8 @@ const ITEMS_MISC = {
     defaultDurability: 100,
     defaultContamination: 0,
     icon: '🛡️',
-    description: '가죽끈과 로프로 만든 방어 보조 키트. 사용 시 가드 효율이 일시적으로 상승한다.',
+    description: '가죽끈과 로프로 만든 방어 보조 키트. 사용하면 다음 방어의 피해 감소가 올라간다.',
+    onConsume: { guardBoost: 0.15 },
     tags: [
       'enhancement',
       'defense',
@@ -1365,8 +1337,8 @@ const ITEMS_MISC = {
       accuracy: 0.75,
       noiseOnUse: 2,
       durabilityLoss: 50,
+      statusInflict: { id: 'bleed', name: '출혈', duration: 2, effect: { hpPerRound: -3 }, chance: 0.25 },
     },
-    bleedChance: 0.25,
     dismantle: [
       {
         definitionId: 'glass_shard',
@@ -2299,7 +2271,7 @@ const ITEMS_MISC = {
     defaultDurability: 100,
     defaultContamination: 0,
     icon: '🧭',
-    description: '자기장 센서가 결합된 나침반. 숨겨진 장소 2곳을 드러내고 조우 확률을 줄인다.',
+    description: '자기장 센서가 결합된 나침반. 사람이 다닌 길과 그렇지 않은 길이 구분돼 마주칠 일이 줄어든다.',
     tags: [
       'tool',
       'navigation',
@@ -2307,7 +2279,6 @@ const ITEMS_MISC = {
     ],
     onUse: {
       encounterReduction: 0.15,
-      revealHiddenLocations: 2,
     },
     dismantle: [
       {
@@ -2625,7 +2596,7 @@ const ITEMS_MISC = {
     defaultDurability: 120,
     defaultContamination: 0,
     icon: '🔬',
-    description: '정밀 수술 가능. 고급 의료 제작에 필요.',
+    description: '조명과 기구대를 갖춘 수술대. 여기 눕히면 손댈 수 있는 처치의 범위가 달라진다.',
     tags: [
       'structure',
       'medical',
@@ -2827,7 +2798,7 @@ const ITEMS_MISC = {
     defaultDurability: 120,
     defaultContamination: 0,
     icon: '🧪',
-    description: '고급 연구 시설. 히든 의료 레시피 해금.',
+    description: '현미경과 배양 설비를 갖춘 연구 시설. 여기서라야 손댈 수 있는 의료 기술이 있다.',
     tags: [
       'structure',
       'medical',

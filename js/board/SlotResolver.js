@@ -207,12 +207,12 @@ const SlotResolver = {
       }
     }
 
-    // 소모 처리
-    if (result.consumeSrc) {
+    // 소모 처리 — 규칙은 재료 1개분을 뜻하므로 스택은 낱개만 덜어낸다
+    if (result.consumeSrc && !gs.consumeCardUnit(sourceId)) {
       BoardManager.removeCard(sourceId);
       gs.removeCardInstance(sourceId);
     }
-    if (result.consumeTgt) {
+    if (result.consumeTgt && !gs.consumeCardUnit(targetId)) {
       BoardManager.removeCard(targetId);
       gs.removeCardInstance(targetId);
     }
@@ -260,13 +260,21 @@ const SlotResolver = {
       return true;
     }
 
-    const result = SecretCombinationSystem.applyCombination(check.combo, srcInst, tgtInst);
+    // 인스턴스 상태 제약 (이미 상한까지 발라진 독 등) — 재료를 소모하기 전에 막는다
+    const instCheck = SecretCombinationSystem.checkInstances(check.combo, srcInst, tgtInst, check.reversed);
+    if (!instCheck.ok) {
+      EventBus.emit('notify', { message: instCheck.reason, type: 'warn' });
+      return true;
+    }
 
-    if (result.consumeSrc) {
+    const result = SecretCombinationSystem.applyCombination(check.combo, srcInst, tgtInst, check.reversed);
+
+    // additionalReq는 applyCombination이 이미 수량대로 덜어냈다. 여기서는 주재료 1개분만 뺀다.
+    if (result.consumeSrc && !gs.consumeCardUnit(sourceId)) {
       BoardManager.removeCard(sourceId);
       gs.removeCardInstance(sourceId);
     }
-    if (result.consumeTgt) {
+    if (result.consumeTgt && !gs.consumeCardUnit(targetId)) {
       BoardManager.removeCard(targetId);
       gs.removeCardInstance(targetId);
     }

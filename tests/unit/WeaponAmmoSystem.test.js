@@ -4,6 +4,8 @@ import {
   canReload,
   consumeRound,
   getLoadedAmmo,
+  getMagazineCapacity,
+  getMagazineState,
   isMagazineWeapon,
   reload,
 } from '../../js/systems/WeaponAmmoSystem.js';
@@ -124,5 +126,45 @@ describe('WeaponAmmoSystem', () => {
       .toMatchObject({ ok: false, reason: 'magazine_not_empty', loadedAmmo: 20 });
     expect(fullMagazine.cards.pistol_1.loadedAmmo).toBe(27);
     expect(fullMagazine.cards.ammo_1.quantity).toBe(2);
+  });
+});
+
+// 탄약 개조 키트 장착으로 붙는 인스턴스 보정. 용량이 전역 상수 하나로 고정돼 있어
+// "이 총만 23발"을 표현할 수 없던 것을 카드별 계산으로 바꾼다.
+describe('WeaponAmmoSystem — 탄창 인스턴스 보정', () => {
+  function makeModdedState({ loadedAmmo = 0, bonus = 3, ammoQuantity = 0 } = {}) {
+    const gs = makeState({ loadedAmmo, ammoQuantity });
+    gs.cards.pistol_1._ammoCapacityBonus = bonus;
+    return gs;
+  }
+
+  it('보정이 없는 무기는 기본 20발을 유지한다', () => {
+    expect(getMagazineState(makeState({ loadedAmmo: 0 }), 'pistol_1').capacity).toBe(20);
+    expect(getMagazineCapacity(GameData.items.pistol)).toBe(20);
+  });
+
+  it('_ammoCapacityBonus가 붙은 무기는 용량이 그만큼 늘어난다', () => {
+    expect(getMagazineState(makeModdedState(), 'pistol_1').capacity).toBe(23);
+    expect(getMagazineCapacity(GameData.items.pistol, { _ammoCapacityBonus: 3 })).toBe(23);
+  });
+
+  it('재장전은 늘어난 용량까지 채운다', () => {
+    const gs = makeModdedState({ loadedAmmo: 0, ammoQuantity: 2 });
+    expect(reload(gs, 'pistol_1')).toMatchObject({ ok: true, loadedAmmo: 23, capacity: 23 });
+    expect(gs.cards.ammo_1.quantity).toBe(1);
+  });
+
+  it('잔탄 정규화 상한도 늘어난 용량을 따른다', () => {
+    const gs = makeModdedState({ loadedAmmo: 30 });
+    expect(getLoadedAmmo(gs, 'pistol_1')).toBe(23);
+    expect(gs.cards.pistol_1.loadedAmmo).toBe(23);
+  });
+
+  it('보정값이 음수여도 기본 용량 아래로 내려가지 않는다', () => {
+    expect(getMagazineState(makeModdedState({ bonus: -5 }), 'pistol_1').capacity).toBe(20);
+  });
+
+  it('탄창을 쓰지 않는 아이템은 보정과 무관하게 용량이 0이다', () => {
+    expect(getMagazineCapacity(GameData.items.scrap_metal, { _ammoCapacityBonus: 3 })).toBe(0);
   });
 });

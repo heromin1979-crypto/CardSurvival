@@ -1,8 +1,25 @@
 import GameData from './GameData.js';
 import EventBus from '../core/EventBus.js';
+import BALANCE  from './gameBalance.js';
 
 function _defFor(inst) {
   return inst ? GameData.items?.[inst.definitionId] : null;
+}
+
+// 추출한 독은 extractedMax까지 겹쳐 바를 수 있다. 독버섯 직접 도포(rawMax)보다 상한이
+// 높은 것이 절구·의학 비용에 대한 보상이다 — 상한 판정은 gameBalance.combat.poisonCoating.
+function _canCoatPoison(weaponInst) {
+  const { extractedMax } = BALANCE.combat.poisonCoating;
+  if ((weaponInst._poisonDamage ?? 0) >= extractedMax) {
+    return { ok: false, reason: `이미 독 피해 ${extractedMax} 상한까지 발라진 무기입니다.` };
+  }
+  return { ok: true };
+}
+
+function _coatPoison(weaponInst) {
+  const { perApply, extractedMax } = BALANCE.combat.poisonCoating;
+  weaponInst._poisonDamage = Math.min(extractedMax, (weaponInst._poisonDamage ?? 0) + perApply);
+  return weaponInst._poisonDamage;
 }
 
 function _isPoisonableWeapon(inst) {
@@ -18,6 +35,145 @@ function _isPoisonableWeapon(inst) {
 function _isSuppressorTarget(inst) {
   const def = _defFor(inst);
   return def?.type === 'weapon' && !!def.combat?.requiresAmmo;
+}
+
+// 조준경·탄약 개조 키트 장착 대상. 석궁류도 탄약을 쓰지만 화약 총기가 아니라 제외한다
+// (석궁의 조준 장치 교체는 '정밀 석궁' 제작 청사진이 담당).
+function _isFirearmTarget(inst) {
+  const def = _defFor(inst);
+  return def?.type === 'weapon' && def.subtype === 'firearm';
+}
+
+// 근접무기 부착 대상 — 독 바르기와 동일한 판정 기준을 쓴다
+function _isMeleeAttachTarget(inst) {
+  return _isPoisonableWeapon(inst);
+}
+
+// 너클 랩 부착 대상 — 주먹에 감는 물건이라 hands 슬롯 방어구에만 붙는다
+function _isHandsArmor(inst) {
+  const def = _defFor(inst);
+  return def?.type === 'armor' && def.subtype === 'hands';
+}
+
+const SCOPE_ACCURACY_BONUS   = 0.10;
+const AMMO_MOD_DEFENSE_PIERCE = 3;
+const AMMO_MOD_CAPACITY_BONUS = 3;
+
+function _checkScopeTarget(inst) {
+  if (!_isFirearmTarget(inst)) return { ok: false, reason: '조준경은 화약 총기에만 장착할 수 있습니다.' };
+  if (inst._scope) return { ok: false, reason: '이미 조준경이 장착된 무기입니다.' };
+  return { ok: true };
+}
+
+// 명중률은 CombatSystem이 무기 인스턴스의 accuracyBonus를 읽어 반영한다 (가죽 그립과 동일 필드)
+function _attachScope(weaponInst) {
+  weaponInst._scope = true;
+  weaponInst.accuracyBonus = (weaponInst.accuracyBonus ?? 0) + SCOPE_ACCURACY_BONUS;
+  return { message: `총기에 조준경을 장착했습니다. 명중률 +${Math.round(SCOPE_ACCURACY_BONUS * 100)}%.` };
+}
+
+function _checkAmmoModTarget(inst) {
+  if (!_isFirearmTarget(inst)) return { ok: false, reason: '탄약 개조 키트는 화약 총기에만 장착할 수 있습니다.' };
+  if (inst._ammoMod) return { ok: false, reason: '이미 탄약이 개조된 무기입니다.' };
+  return { ok: true };
+}
+
+function _attachAmmoMod(weaponInst) {
+  weaponInst._ammoMod = true;
+  weaponInst._defensePierce     = (weaponInst._defensePierce ?? 0) + AMMO_MOD_DEFENSE_PIERCE;
+  weaponInst._ammoCapacityBonus = (weaponInst._ammoCapacityBonus ?? 0) + AMMO_MOD_CAPACITY_BONUS;
+  return {
+    message: `총기 탄약을 개조했습니다. 적 방어 무시 +${AMMO_MOD_DEFENSE_PIERCE}, 탄창 +${AMMO_MOD_CAPACITY_BONUS}.`,
+  };
+}
+
+const WHETSTONE_WEAR      = 15;   // 1회 사용당 숫돌이 닳는 양
+const WHETSTONE_REPAIR    = 30;   // 날붙이 내구도 회복량 (덕테이프 +25보다 높다)
+const WHETSTONE_SHARP_DMG = 3;    // 첫 연마에만 붙는 데미지 보너스
+
+// 숫돌 대상은 날붙이만. 둔기에 숫돌을 대는 그림은 어색하고, 둔기 수리는 덕테이프가 맡는다.
+function _isBladeWeapon(inst) {
+  const def = _defFor(inst);
+  return def?.type === 'weapon' && def.weaponType === 'blade';
+}
+
+function _checkSharpenTarget(stoneInst, bladeInst) {
+  if (!_isBladeWeapon(bladeInst)) return { ok: false, reason: '숫돌은 날붙이 무기에만 쓸 수 있습니다.' };
+  if ((stoneInst.durability ?? 100) < WHETSTONE_WEAR) return { ok: false, reason: '숫돌이 너무 닳았다.' };
+  const atFullDurability = (bladeInst.durability ?? 100) >= 100;
+  if (bladeInst.sharpened && atFullDurability) {
+    return { ok: false, reason: '이미 연마했고 날도 멀쩡하다.' };
+  }
+  return { ok: true };
+}
+
+// 연마와 수리를 한 번에 처리한다. 데미지 보너스는 첫 연마에만 붙고, 수리는 몇 번이든 된다.
+function _applySharpen(stoneInst, bladeInst, { stoneIsSrc }) {
+  const firstSharpen = !bladeInst.sharpened;
+  if (firstSharpen) {
+    bladeInst.sharpened = true;
+    bladeInst.damageBonus = (bladeInst.damageBonus ?? 0) + WHETSTONE_SHARP_DMG;
+  }
+  bladeInst.durability = Math.min(100, (bladeInst.durability ?? 100) + WHETSTONE_REPAIR);
+  stoneInst.durability = Math.max(0, (stoneInst.durability ?? 100) - WHETSTONE_WEAR);
+
+  const stoneSpent = (stoneInst.durability ?? 0) <= 0;
+  return {
+    message: firstSharpen
+      ? `숫돌로 날을 세웠다. 내구도 +${WHETSTONE_REPAIR}, 데미지 +${WHETSTONE_SHARP_DMG}.`
+      : `숫돌로 날을 다시 세웠다. 내구도 +${WHETSTONE_REPAIR}.`,
+    consumeSrc: stoneIsSrc ? stoneSpent : false,
+    consumeTgt: stoneIsSrc ? false : stoneSpent,
+    noise: 2,
+  };
+}
+
+const WEAPON_OIL_DURABILITY_SAVE = 0.15;
+const KNUCKLE_WRAP_UNARMED_BONUS = 2;
+// 무기 정의의 combat.statusInflict와 같은 표기 — _normalizeStatusInflict가 hpPerRound를 정규화한다
+const SERRATED_BLEED = Object.freeze({
+  id: 'bleed', name: '출혈', duration: 2, effect: { hpPerRound: -3 }, chance: 0.25,
+});
+
+function _checkWeaponOilTarget(inst) {
+  if (!_isMeleeAttachTarget(inst)) return { ok: false, reason: '무기 정비유는 근접무기에만 바를 수 있습니다.' };
+  if (inst._weaponOil) return { ok: false, reason: '이미 정비유를 바른 무기입니다.' };
+  return { ok: true };
+}
+
+// 내구도 절약은 CombatSystem·CombatRankedEffects의 durSaveChance 굴림에 가산된다
+function _attachWeaponOil(weaponInst) {
+  weaponInst._weaponOil = true;
+  weaponInst._durabilitySave = (weaponInst._durabilitySave ?? 0) + WEAPON_OIL_DURABILITY_SAVE;
+  return {
+    message: `무기에 정비유를 발랐습니다. 내구도 절약 +${Math.round(WEAPON_OIL_DURABILITY_SAVE * 100)}%.`,
+  };
+}
+
+function _checkSerratedModTarget(inst) {
+  if (!_isMeleeAttachTarget(inst)) return { ok: false, reason: '톱니 개조 키트는 근접무기에만 장착할 수 있습니다.' };
+  if (inst._serratedMod) return { ok: false, reason: '이미 톱니를 단 무기입니다.' };
+  return { ok: true };
+}
+
+function _attachSerratedMod(weaponInst) {
+  weaponInst._serratedMod = true;
+  weaponInst._statusInflict = { ...SERRATED_BLEED, effect: { ...SERRATED_BLEED.effect } };
+  return {
+    message: `무기 날에 톱니를 달았습니다. 적중 시 ${Math.round(SERRATED_BLEED.chance * 100)}% 확률로 출혈.`,
+  };
+}
+
+function _checkKnuckleWrapTarget(inst) {
+  if (!_isHandsArmor(inst)) return { ok: false, reason: '너클 랩은 장갑류에만 감을 수 있습니다.' };
+  if (inst._knuckleWrap) return { ok: false, reason: '이미 너클 랩을 감은 장갑입니다.' };
+  return { ok: true };
+}
+
+function _attachKnuckleWrap(glovesInst) {
+  glovesInst._knuckleWrap = true;
+  glovesInst._unarmedDmgBonus = (glovesInst._unarmedDmgBonus ?? 0) + KNUCKLE_WRAP_UNARMED_BONUS;
+  return { message: `장갑에 너클 랩을 감았습니다. 맨손 피해 +${KNUCKLE_WRAP_UNARMED_BONUS}.` };
 }
 
 // === CARD INTERACTION RULES ===
@@ -940,31 +1096,19 @@ const INTERACTION_RULES = [
   },
 
   // D23. 숫돌 + 근접무기 → 데미지 +3 (연마)
-  { id: 'sharpen_melee', source: { id: 'whetstone' }, target: { tag: 'melee' },
-    hint: '숫돌로 무기 연마 → 데미지 +3',
-    canApply(s, t) {
-      if (t.sharpened) return { ok: false, reason: '이미 연마된 무기다.' };
-      if ((s.durability ?? 100) < 15) return { ok: false, reason: '숫돌이 너무 닳았다.' };
-      return { ok: true };
-    },
-    apply(s, t) {
-      t.sharpened = true; t.damageBonus = (t.damageBonus ?? 0) + 3;
-      s.durability = Math.max(0, (s.durability ?? 100) - 15);
-      return { message: '숫돌로 무기를 연마했다. 데미지 +3.', consumeSrc: (s.durability ?? 0) <= 0, consumeTgt: false, noise: 2 };
-    },
+  // D23. 숫돌 + 날붙이 → 내구도 회복 + 첫 연마 시 데미지 +3
+  // 예전에는 '연마(근접 전체)'와 '칼갈이(knife 한정)' 두 규칙이 따로 있었는데,
+  // findInteraction이 먼저 매칭된 하나만 돌려주는 탓에 칼갈이가 사실상 도달 불가였다.
+  // 하나로 합치고 대상을 날붙이(weaponType:'blade') 전체로 넓힌다.
+  { id: 'sharpen_blade', source: { id: 'whetstone' }, target: { type: 'weapon' },
+    hint: '숫돌로 날 세우기 → 내구도 +30, 첫 연마 시 데미지 +3',
+    canApply(s, t) { return _checkSharpenTarget(s, t); },
+    apply(s, t) { return _applySharpen(s, t, { stoneIsSrc: true }); },
   },
-  { id: 'sharpen_melee_rev', source: { tag: 'melee' }, target: { id: 'whetstone' },
-    hint: '숫돌로 무기 연마 → 데미지 +3',
-    canApply(s, t) {
-      if (s.sharpened) return { ok: false, reason: '이미 연마된 무기다.' };
-      if ((t.durability ?? 100) < 15) return { ok: false, reason: '숫돌이 너무 닳았다.' };
-      return { ok: true };
-    },
-    apply(s, t) {
-      s.sharpened = true; s.damageBonus = (s.damageBonus ?? 0) + 3;
-      t.durability = Math.max(0, (t.durability ?? 100) - 15);
-      return { message: '숫돌로 무기를 연마했다. 데미지 +3.', consumeSrc: false, consumeTgt: (t.durability ?? 0) <= 0, noise: 2 };
-    },
+  { id: 'sharpen_blade_rev', source: { type: 'weapon' }, target: { id: 'whetstone' },
+    hint: '숫돌로 날 세우기 → 내구도 +30, 첫 연마 시 데미지 +3',
+    canApply(s, t) { return _checkSharpenTarget(t, s); },
+    apply(s, t) { return _applySharpen(t, s, { stoneIsSrc: false }); },
   },
 
   // D24. 고철 + 방어구 → 내구도 +20 (소음)
@@ -987,33 +1131,6 @@ const INTERACTION_RULES = [
     },
   },
 
-  // D25. 숫돌 + 칼 → 칼 내구도 완전 복원
-  { id: 'sharpen_knife', source: { id: 'whetstone' }, target: { id: 'knife' },
-    hint: '숫돌로 칼갈이 → 내구도 완전 복원',
-    canApply(s, t) {
-      if ((t.durability ?? 100) >= 70) return { ok: false, reason: '칼이 아직 충분히 날카롭다.' };
-      if ((s.durability ?? 100) < 20) return { ok: false, reason: '숫돌이 너무 닳았다.' };
-      return { ok: true };
-    },
-    apply(s, t) {
-      t.durability = 70;
-      s.durability = Math.max(0, (s.durability ?? 100) - 20);
-      return { message: '숫돌로 칼을 날카롭게 갈았다.', consumeSrc: (s.durability ?? 0) <= 0, consumeTgt: false, noise: 1 };
-    },
-  },
-  { id: 'sharpen_knife_rev', source: { id: 'knife' }, target: { id: 'whetstone' },
-    hint: '숫돌로 칼갈이 → 내구도 완전 복원',
-    canApply(s, t) {
-      if ((s.durability ?? 100) >= 70) return { ok: false, reason: '칼이 아직 충분히 날카롭다.' };
-      if ((t.durability ?? 100) < 20) return { ok: false, reason: '숫돌이 너무 닳았다.' };
-      return { ok: true };
-    },
-    apply(s, t) {
-      s.durability = 70;
-      t.durability = Math.max(0, (t.durability ?? 100) - 20);
-      return { message: '숫돌로 칼을 날카롭게 갈았다.', consumeSrc: false, consumeTgt: (t.durability ?? 0) <= 0, noise: 1 };
-    },
-  },
 
   // ── E. 음식 가공 (3종) ──────────────────────────────────
 
@@ -1663,13 +1780,12 @@ const INTERACTION_RULES = [
     hint: '독을 근접 무기에 바르기',
     canApply(srcInst, tgtInst) {
       if (!_isPoisonableWeapon(tgtInst)) return { ok: false, reason: '독은 칼날이 있는 근접 무기에만 바를 수 있습니다.' };
-      if ((tgtInst._poisonDamage ?? 0) > 0) return { ok: false, reason: '이미 독이 발라진 무기입니다.' };
-      return { ok: true };
+      return _canCoatPoison(tgtInst);
     },
     apply(srcInst, tgtInst) {
-      tgtInst._poisonDamage = 3;
+      const total = _coatPoison(tgtInst);
       return {
-        message: '무기에 독을 발랐습니다. 공격 적중 시 독 피해 +3.',
+        message: `무기에 독을 발랐습니다. 공격 적중 시 독 피해 +${total}.`,
         consumeSrc: true,
         consumeTgt: false,
       };
@@ -1694,13 +1810,12 @@ const INTERACTION_RULES = [
     hint: '독을 근접 무기에 바르기',
     canApply(srcInst, tgtInst) {
       if (!_isPoisonableWeapon(srcInst)) return { ok: false, reason: '독은 칼날이 있는 근접 무기에만 바를 수 있습니다.' };
-      if ((srcInst._poisonDamage ?? 0) > 0) return { ok: false, reason: '이미 독이 발라진 무기입니다.' };
-      return { ok: true };
+      return _canCoatPoison(srcInst);
     },
     apply(srcInst, tgtInst) {
-      srcInst._poisonDamage = 3;
+      const total = _coatPoison(srcInst);
       return {
-        message: '무기에 독을 발랐습니다. 공격 적중 시 독 피해 +3.',
+        message: `무기에 독을 발랐습니다. 공격 적중 시 독 피해 +${total}.`,
         consumeSrc: false,
         consumeTgt: true,
       };
@@ -1796,6 +1911,126 @@ const INTERACTION_RULES = [
         consumeSrc: false,
         consumeTgt: true,
       };
+    },
+  },
+  {
+    id: 'apply_scope',
+    source: { id: 'weapon_scope' },
+    target: { type: 'weapon' },
+    hint: '총기에 조준경 장착',
+    canApply(srcInst, tgtInst) {
+      return _checkScopeTarget(tgtInst);
+    },
+    apply(srcInst, tgtInst) {
+      return { ...(_attachScope(tgtInst)), consumeSrc: true, consumeTgt: false };
+    },
+  },
+  {
+    id: 'apply_scope_rev',
+    source: { type: 'weapon' },
+    target: { id: 'weapon_scope' },
+    hint: '총기에 조준경 장착',
+    canApply(srcInst) {
+      return _checkScopeTarget(srcInst);
+    },
+    apply(srcInst) {
+      return { ...(_attachScope(srcInst)), consumeSrc: false, consumeTgt: true };
+    },
+  },
+  {
+    id: 'apply_ammo_mod',
+    source: { id: 'ammo_mod' },
+    target: { type: 'weapon' },
+    hint: '총기에 탄약 개조 키트 장착',
+    canApply(srcInst, tgtInst) {
+      return _checkAmmoModTarget(tgtInst);
+    },
+    apply(srcInst, tgtInst) {
+      return { ...(_attachAmmoMod(tgtInst)), consumeSrc: true, consumeTgt: false };
+    },
+  },
+  {
+    id: 'apply_ammo_mod_rev',
+    source: { type: 'weapon' },
+    target: { id: 'ammo_mod' },
+    hint: '총기에 탄약 개조 키트 장착',
+    canApply(srcInst) {
+      return _checkAmmoModTarget(srcInst);
+    },
+    apply(srcInst) {
+      return { ...(_attachAmmoMod(srcInst)), consumeSrc: false, consumeTgt: true };
+    },
+  },
+  {
+    id: 'apply_weapon_oil',
+    source: { id: 'weapon_oil' },
+    target: { type: 'weapon' },
+    hint: '근접무기에 정비유 바르기',
+    canApply(srcInst, tgtInst) {
+      return _checkWeaponOilTarget(tgtInst);
+    },
+    apply(srcInst, tgtInst) {
+      return { ...(_attachWeaponOil(tgtInst)), consumeSrc: true, consumeTgt: false };
+    },
+  },
+  {
+    id: 'apply_weapon_oil_rev',
+    source: { type: 'weapon' },
+    target: { id: 'weapon_oil' },
+    hint: '근접무기에 정비유 바르기',
+    canApply(srcInst) {
+      return _checkWeaponOilTarget(srcInst);
+    },
+    apply(srcInst) {
+      return { ...(_attachWeaponOil(srcInst)), consumeSrc: false, consumeTgt: true };
+    },
+  },
+  {
+    id: 'apply_serrated_mod',
+    source: { id: 'serrated_mod' },
+    target: { type: 'weapon' },
+    hint: '근접무기에 톱니 장착',
+    canApply(srcInst, tgtInst) {
+      return _checkSerratedModTarget(tgtInst);
+    },
+    apply(srcInst, tgtInst) {
+      return { ...(_attachSerratedMod(tgtInst)), consumeSrc: true, consumeTgt: false };
+    },
+  },
+  {
+    id: 'apply_serrated_mod_rev',
+    source: { type: 'weapon' },
+    target: { id: 'serrated_mod' },
+    hint: '근접무기에 톱니 장착',
+    canApply(srcInst) {
+      return _checkSerratedModTarget(srcInst);
+    },
+    apply(srcInst) {
+      return { ...(_attachSerratedMod(srcInst)), consumeSrc: false, consumeTgt: true };
+    },
+  },
+  {
+    id: 'apply_knuckle_wrap',
+    source: { id: 'knuckle_wrap' },
+    target: { type: 'armor' },
+    hint: '장갑에 너클 랩 감기',
+    canApply(srcInst, tgtInst) {
+      return _checkKnuckleWrapTarget(tgtInst);
+    },
+    apply(srcInst, tgtInst) {
+      return { ...(_attachKnuckleWrap(tgtInst)), consumeSrc: true, consumeTgt: false };
+    },
+  },
+  {
+    id: 'apply_knuckle_wrap_rev',
+    source: { type: 'armor' },
+    target: { id: 'knuckle_wrap' },
+    hint: '장갑에 너클 랩 감기',
+    canApply(srcInst) {
+      return _checkKnuckleWrapTarget(srcInst);
+    },
+    apply(srcInst) {
+      return { ...(_attachKnuckleWrap(srcInst)), consumeSrc: false, consumeTgt: true };
     },
   },
 ];

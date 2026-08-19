@@ -175,6 +175,15 @@ const BALANCE = {
     unarmedBaseDmg:     [3, 7],
     unarmedStunChance:  0.10,
     unarmedStunDmg:     5,
+    // ── 무기 독 도포 상한 ──
+    // 독 피해는 bonusAfterDefense로 들어가 적 방어를 우회하므로 상한이 필요하다.
+    // 값싼 경로(독버섯 직접)를 rawMax로 묶고, 절구·의학이 드는 추출 독에만
+    // extractedMax까지 허용해 비용과 효과의 순서를 맞춘다.
+    poisonCoating: {
+      perApply:     3,  // 1회 도포로 오르는 독 피해
+      rawMax:       3,  // 독버섯 직접 도포(sc_poison_blade) 상한
+      extractedMax: 9,  // 추출한 독(poison) 도포 상한
+    },
     masteryCounterChance: 0.15,
     masteryCounterDmg:   5,
     ammoSaveChance:     0.20,
@@ -197,6 +206,10 @@ const BALANCE = {
     critBonusXp:        2,
     defenseXp:          1,
     combatLogMaxEntries: 50,
+    // ── 적 치명타 ──
+    // 방어구의 critReduction이 확률을 낮춘다 (캡: armor.critReductionCap)
+    enemyCritChance:     0.10,   // 적 공격의 기본 치명타 확률
+    enemyCritMultiplier: 1.5,    // 적 치명타 피해 배율
     // ── 방어 ──
     guardDamageReduction: 0.40,  // 방어 시 피해 40% 감소
     guardCounterBonus:    0.25,  // 방어 후 반격 데미지 +25%
@@ -242,6 +255,15 @@ const BALANCE = {
     fuelConsumePerTP:   0.5,   // 내구도 0.5/TP 소모 (아이템 def.fuelConsumePerTP 미지정 시 기본값)
     noFuelTempBoost:    0,
     weatherDouseChancePerTP: 0.02,  // 비·눈에 화기가 꺼질 TP당 확률
+  },
+
+  // ── 산성비 노출 ─────────────────────────────────────
+  // 안전 지대(베이스캠프 완공 + 메인 화면) 밖에서 산성비를 맞는 동안 TP마다 적용.
+  // acidImmunity 장비(내산성 망토)를 입으면 전부 면제된다.
+  acidRain: {
+    hpLossPerTP:        1,   // 산성비 노출 TP당 HP 감소
+    infectionGainPerTP: 1,   // 산성 화상 상처로 들어오는 감염 증가
+    warnIntervalTP:     10,  // 노출 경고 재발화 간격(TP) — 지속 피해를 놓치지 않게 한다
   },
 
   // ── 탐색 루팅 ───────────────────────────────────────

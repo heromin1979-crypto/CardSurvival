@@ -1,5 +1,14 @@
 import BALANCE from '../../data/gameBalance.js';
 
+// 산성 계열 상태이상 id. 적 정의·보스 패턴·전설 무기가 각자 선언하므로 소비처가
+// 리터럴을 따로 들면 하나만 빠뜨려도 조용히 새어나간다 — 목록을 한곳에 둔다.
+export const ACID_STATUS_IDS = ['acid_burn', 'acid_corrosion', 'armor_corrosion', 'acid_pool'];
+
+/** acidImmunity 장비가 막아야 할 산성 상태이상인지. */
+export function isAcidStatusId(statusId) {
+  return ACID_STATUS_IDS.includes(statusId);
+}
+
 function isObject(value) {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
 }

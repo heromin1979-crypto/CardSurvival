@@ -1177,10 +1177,57 @@ async function validate() {
           console.log(`❌ [${id}] explorationYields[${yi}].items[${ii}] "${it.definitionId}" not found in items`);
           errors++; clsBad++;
         }
+        // 수량은 qty 고정 또는 minQty~maxQty 범위. 범위가 뒤집히면 추첨이 음수 폭이 된다.
+        if (it.minQty != null || it.maxQty != null) {
+          const lo = it.minQty, hi = it.maxQty ?? it.minQty;
+          if (!Number.isFinite(lo) || !Number.isFinite(hi) || lo < 1 || hi < lo) {
+            console.log(`❌ [${id}] explorationYields[${yi}].items[${ii}] 수량 범위 이상 (minQty ${lo} / maxQty ${hi})`);
+            errors++; clsBad++;
+          }
+        }
       }
     }
   }
   console.log(`  검사한 드랍 항목: ${clsChecked}, 잘못된 cls/seasons/exploration: ${clsBad}`);
+
+  // 10-b. 3층 드랍 구조 — 구 / 랜드마크 / 세부장소가 각자 표를 갖는지
+  console.log('\n=== LANDMARK LOOT LAYER CHECK ===');
+  const landmarksData = await import('./landmarks.js');
+  const lmAll = landmarksData.LANDMARK_DATA ?? landmarksData.default ?? {};
+  let lmChecked = 0, lmBad = 0, entranceCount = 0;
+  for (const [key, lm] of Object.entries(lmAll)) {
+    if (key === 'basecamp') continue;   // 내 거점 — 탐색 대상이 아니다
+    lmChecked++;
+    if (!Array.isArray(lm.lootTable) || lm.lootTable.length === 0) {
+      console.log(`❌ [${key}] 랜드마크 lootTable 없음 — 랜드마크 안에서 탐색하면 아무것도 나오지 않는다`);
+      errors++; lmBad++;
+    }
+    for (const [i, e] of (lm.lootTable ?? []).entries()) {
+      if (!e.id || !allItemIds.has(e.id)) {
+        console.log(`❌ [${key}] lootTable[${i}] "${e.id}" not found in items`);
+        errors++; lmBad++;
+      }
+    }
+    if (!Array.isArray(lm.lootCount) || lm.lootCount.length !== 2 || lm.lootCount[0] > lm.lootCount[1]) {
+      console.log(`❌ [${key}] lootCount는 [최소, 최대] 형식이어야 함 — ${JSON.stringify(lm.lootCount)}`);
+      errors++; lmBad++;
+    }
+    const subs = lm.subLocations ?? [];
+    if (subs.length && subs[0].isEntrance !== true && subs.some(sub => sub.isEntrance)) {
+      console.log(`❌ [${key}] isEntrance 세부장소가 목록 맨 앞이 아님 — 진입 시 자동 입장 대상이 어긋난다`);
+      errors++; lmBad++;
+    }
+    if (subs[0]?.isEntrance) entranceCount++;
+    for (const sub of subs) {
+      for (const [i, e] of (sub.lootTable ?? []).entries()) {
+        if (!e.id || !allItemIds.has(e.id)) {
+          console.log(`❌ [${key}/${sub.id}] lootTable[${i}] "${e.id}" not found in items`);
+          errors++; lmBad++;
+        }
+      }
+    }
+  }
+  console.log(`  검사한 랜드마크: ${lmChecked}, 입구 보유: ${entranceCount}, 오류: ${lmBad}`);
 
   // 11. 구조물 harvest(텃밭 자동수확)·forage(살살 채취) 산출 아이템 참조 검증
   console.log('\n=== STRUCTURE HARVEST/FORAGE CHECK ===');

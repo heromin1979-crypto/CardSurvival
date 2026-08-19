@@ -2,6 +2,7 @@
 import EventBus        from '../core/EventBus.js';
 import GameState       from '../core/GameState.js';
 import EquipmentSystem from '../systems/EquipmentSystem.js';
+import StatSystem      from '../systems/StatSystem.js';
 import I18n            from '../core/I18n.js';
 import SystemRegistry  from '../core/SystemRegistry.js';
 import StatRenderer    from './StatRenderer.js';
@@ -265,27 +266,10 @@ const EquipmentModal = {
       </div>`).join('');
   },
 
+  // 전투가 실제로 쓰는 계산을 그대로 보여준다. 예전에는 같은 로직을 여기 다시 구현했는데,
+  // 방어연고(_damageReductionBonus)를 빠뜨리고 상한도 0.75/0.90으로 달라 표시가 어긋났다.
   _getEffects() {
-    const result = { damageReduction:0, critReduction:0, radiationMult:1, contaminationMult:1, infectionMult:1 };
-    const eq = GameState.player.equipped;
-    if (!eq) return result;
-    for (const id of Object.values(eq)) {
-      if (!id) continue;
-      const def = GameState.getCardDef(id);
-      const w = def?.onWear;
-      const armor = def?.armor;
-      if (!w && !armor) continue;
-      if (w?.damageReduction)   result.damageReduction   += w.damageReduction;
-      if (w?.critReduction)     result.critReduction     += w.critReduction;
-      if (w?.radiationMult)     result.radiationMult     *= w.radiationMult;
-      if (w?.contaminationMult) result.contaminationMult *= w.contaminationMult;
-      if (w?.infectionMult)     result.infectionMult     *= w.infectionMult;
-      if (armor?.damageReduction) result.damageReduction += armor.damageReduction;
-      if (armor?.critReduction)   result.critReduction   += armor.critReduction;
-    }
-    result.damageReduction = Math.min(0.75, result.damageReduction);
-    result.critReduction   = Math.min(0.90, result.critReduction);
-    return result;
+    return StatSystem.getArmorEffects();
   },
 
   // ── 캐릭터 & 슬롯 패널 (중앙) ───────────────────────

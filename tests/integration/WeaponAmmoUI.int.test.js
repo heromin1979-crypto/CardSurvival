@@ -148,11 +148,18 @@ describe('플레이어 무기 탄창 UI', () => {
     expect(ModalManager._box.textContent).toContain('1팩 = 20발');
   });
 
-  it.each(['improved_crossbow_bolt', 'fire_bolt', 'explosive_bolt'])('%s처럼 무기가 참조하지 않는 특수 탄약에는 20발 팩 정보를 표시하지 않는다', definitionId => {
+  // 특수 화살도 석궁 탄종으로 편입되면서 팩 정보가 표시된다. 다만 희소할수록 적게 들어가므로
+  // '20발'을 그대로 쓰면 안 되고 화살별 발수를 보여줘야 한다.
+  it.each([
+    ['improved_crossbow_bolt', 12],
+    ['fire_bolt', 8],
+    ['explosive_bolt', 4],
+  ])('%s는 팩 정보에 %i발을 표시한다', (definitionId, rounds) => {
     GameState.cards.ammo_1.definitionId = definitionId;
     ModalManager.showCardInspect('ammo_1');
 
-    expect(ModalManager._box.textContent).not.toContain('탄약 팩');
+    expect(ModalManager._box.textContent).toContain('탄약 팩');
+    expect(ModalManager._box.textContent).toContain(`1팩 = ${rounds}발`);
     expect(ModalManager._box.textContent).not.toContain('1팩 = 20발');
   });
 
