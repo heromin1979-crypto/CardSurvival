@@ -253,6 +253,49 @@ export const ENDINGS = {
     ],
   },
 
+  // 아래 셋은 탈것 카드의 출발 액션으로만 발동한다(EscapeVehicleSystem).
+  // condition을 두지 않아 EndingSystem의 일일 검사에서 제외된다 —
+  // 준비물을 갖췄다는 이유만으로 게임이 멋대로 끝나면 안 된다.
+
+  escape_river_boat: {
+    id: 'escape_river_boat', category: 'escape',
+    title: '뱃길',                  subtitle: '한강 보트 · 자력 도하',
+    gradient: 'linear-gradient(160deg,#001624 0%,#012032 60%,#000c16 100%)',
+    narrative: [
+      '선착장 밧줄을 풀었다. 연료통 두 개가 바닥에서 굴렀다.',
+      '시동은 세 번째에 걸렸다. 물이 갈라지기 시작한다.',
+      '뒤를 돌아보지 않기로 했는데, 결국 돌아봤다.',
+      '강폭이 이렇게 넓은 줄 몰랐다.',
+    ],
+  },
+
+  escape_light_aircraft: {
+    id: 'escape_light_aircraft', category: 'escape',
+    title: '활주로 끝에서',          subtitle: '김포공항 격납고 · 경비행기 복원',
+    gradient: 'linear-gradient(160deg,#0a1420 0%,#122438 60%,#050b12 100%)',
+    narrative: [
+      '잭에 올라간 채로 몇 달을 버틴 기체였다. 부품을 맞춰 넣자 자세가 잡혔다.',
+      '합금 패널을 덧대고 볼트를 조였다. 손끝이 기억하는 각도가 있었다.',
+      '항공 가솔린 두 드럼. 탱크가 차오르는 소리가 격납고를 울렸다.',
+      '활주로에는 아무것도 없었다. 관제도, 허가도, 말릴 사람도.',
+      '스로틀을 밀었다. 아스팔트의 이음매가 빠르게 지나간다.',
+      '기수가 들렸다. 서울이 창밖에서 기울어지며 작아졌다.',
+    ],
+  },
+
+  escape_rescue_signal: {
+    id: 'escape_rescue_signal', category: 'escape',
+    title: '응답',                  subtitle: '무선 송신기 · 구조 신호',
+    gradient: 'linear-gradient(160deg,#141405 0%,#24240a 60%,#0c0c03 100%)',
+    narrative: [
+      '배터리 두 개를 물리고 주파수를 맞췄다. 좌표를 반복해서 실어 보냈다.',
+      '며칠을 잡음만 들었다. 대답이 없는 쪽으로 계속 말하는 일이었다.',
+      '그러다 잡음 사이로 사람 목소리가 섞였다. 좌표를 그대로 되읽어 주었다.',
+      '"거기 그대로 계세요."',
+      '누군가 나를 찾으러 오고 있었다. 그 문장 하나가 오래 걸렸다.',
+    ],
+  },
+
   escape_north: {
     id: 'escape_north', category: 'escape',
     title: '북쪽 탈출로',            subtitle: '서울 전역 답파',

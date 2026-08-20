@@ -163,8 +163,16 @@ const ITEMS_TECH = {
     id: 'radio_transmitter', name: '무선 송신기', type: 'tool', subtype: 'tech',
     rarity: 'rare', weight: 1.0,
     defaultDurability: 100, defaultContamination: 0,
-    icon: '📡', description: '전파를 발신할 수 있는 장치. 구조 요청이나 통신에 사용된다.',
+    icon: '📡', description: '전파를 발신할 수 있는 장치. 배터리 2개를 물리면 구조 신호를 쏘아올릴 수 있다. 응답까지는 시간이 걸린다.',
     tags: ['tech', 'tool', 'communication'],
+    // 구조대가 서울까지 들어오려면 바깥 사정이 정리되어야 한다 — 그래서 날짜 하한이 붙는다.
+    escapeVehicle: {
+      endingId: 'escape_rescue_signal',
+      minDay: 150,
+      requires: [{ definitionId: 'battery', qty: 2 }],
+      labelKey: 'escapeVehicle.actionSignal',
+      confirmKey: 'escapeVehicle.confirmSignal',
+    },
     dismantle: [
       { definitionId: 'circuit_module', qty: 1, chance: 0.5 },
       { definitionId: 'copper_wire', qty: 2, chance: 0.7 },

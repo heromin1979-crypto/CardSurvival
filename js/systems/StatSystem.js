@@ -22,6 +22,16 @@ const MEDICAL_STRUCTURE_SUBTYPES = new Set(['medical', 'medical_structure']);
 // 화기를 꺼뜨리는 날씨 — 비·눈 계열. 'weather_resistant' 태그 구조물은 면역.
 const FIRE_DOUSING_WEATHER = new Set(['rainy', 'storm', 'monsoon', 'acid_rain', 'snow', 'blizzard']);
 
+// 빗물을 받는 구조물('rain_catch' 태그)의 날씨별 수집 배율.
+// 급수탑·배관 시스템·물 재활용기처럼 하늘에서 받지 않는 시설은 이 표를 타지 않는다.
+const RAIN_CATCH_WEATHER_MULT = {
+  rainy: 2.0, monsoon: 2.5, storm: 1.5,   // 비/장마/폭풍: 대량 수집
+  snow: 0.5, blizzard: 0.3,               // 눈/폭설: 눈 녹인 물 (소량)
+  cloudy: 0.3, overcast: 0.3, foggy: 0.2, // 흐림/안개: 이슬 수준
+  sunny: 0.1, clear: 0.1, hot: 0.0,       // 맑음/폭염: 거의 없음
+  windy: 0.1,                              // 바람: 증발
+};
+
 const StatSystem = {
   init() {
     EventBus.on('tpAdvance', () => this.onTP());
@@ -228,53 +238,11 @@ const StatSystem = {
       }
     }
 
-    // 빗물 수집기: 날씨 연동 수분 보급 + 내구도 소모
-    // 비/장마/눈 → 수집량 증가, 맑음/흐림 → 감소, 산성비 → 중단+경고
-    const collectorCard = gs.getBoardCards().find(c => c.definitionId === 'rain_collector');
-    if (collectorCard && gs.cards[collectorCard.instanceId]) {
-      const cInst = gs.cards[collectorCard.instanceId];
-      if ((cInst.durability ?? 0) > 0) {
-        const cDef = gs.getCardDef(collectorCard.instanceId);
-        const baseHydration = cDef?.onTick?.hydration ?? 0.3;
-        const cWeather = gs.weather;
-        const cWeatherId = cWeather?.id ?? 'sunny';
-        const cIsAcidRain = cWeather?.gardenKill === true;
-
-        // 날씨별 수집 배율
-        const COLLECTOR_WEATHER_MULT = {
-          rainy: 2.0, monsoon: 2.5, storm: 1.5,  // 비/장마/폭풍: 대량 수집
-          snow: 0.5, blizzard: 0.3,               // 눈/폭설: 눈 녹인 물 (소량)
-          cloudy: 0.3, overcast: 0.3, foggy: 0.2, // 흐림/안개: 이슬 수준
-          sunny: 0.1, clear: 0.1, hot: 0.0,       // 맑음/폭염: 거의 없음
-          windy: 0.1,                              // 바람: 증발
-        };
-        const weatherMult = cIsAcidRain ? 0 : (COLLECTOR_WEATHER_MULT[cWeatherId] ?? 0.1);
-
-        const hydrationGain = baseHydration * weatherMult;
-        if (hydrationGain > 0) {
-          gs.modStat('hydration', hydrationGain);
-        }
-
-        // 산성비 경고 (수집기 전용)
-        if (cIsAcidRain && !gs.flags._collectorAcidWarned) {
-          gs.flags._collectorAcidWarned = true;
-          EventBus.emit('notify', {
-            message: I18n.t('statSys.acidRainCollector'),
-            type: 'danger',
-          });
-        } else if (!cIsAcidRain) {
-          gs.flags._collectorAcidWarned = false;
-        }
-
-        // 산성비가 아닐 때만 내구도 소모 (닫혀있으면 마모 없음)
-        if (!cIsAcidRain) {
-          cInst.durability = Math.max(0, cInst.durability - BALANCE.campfire.fuelConsumePerTP);
-          if (cInst.durability <= 0) {
-            EventBus.emit('notify', { message: I18n.t('statSys.collectorBroken'), type: 'warn' });
-          }
-        }
-      }
-    }
+    // 물 공급 구조물: 수분 보급 + 내구도 소모
+    // 'rain_catch' 태그가 있으면 빗물을 받는 구조라 날씨 배율을 타고 산성비에 멈춘다.
+    // 태그가 없으면(급수탑·배관 시스템·물 재활용기) 날씨와 무관하게 선언값을 그대로 공급한다.
+    // 특정 id를 지목하지 않으므로 물 구조물이 늘어도 여기를 고칠 필요가 없다.
+    this._applyWaterSupply(gs);
 
     // 텃밭: 영양 보급 + 내구도 소모 (계절 + 날씨 gardenYieldMult 적용)
     const gardenCard = gs.getBoardCards().find(c => c.definitionId === 'garden');
@@ -325,6 +293,62 @@ const StatSystem = {
 
     // 이번 TP에 붕괴한 시설이 있으면 집계값이 낡는다 — 같은 TP 안에서 바로잡는다
     StructureEffectSystem.refresh(gs);
+  },
+
+  /**
+   * 보드의 물 공급 구조물을 훑어 수분을 보급하고 내구도를 닳린다.
+   * 대상은 subtype:'water' + onTick.hydration > 0인 구조물 전부.
+   * 여러 대를 세우면 합산되므로 BALANCE.waterSupply.maxHydrationPerTP로 상한을 둔다.
+   */
+  _applyWaterSupply(gs) {
+    const weather    = gs.weather;
+    const weatherId  = weather?.id ?? 'sunny';
+    const isAcidRain = weather?.gardenKill === true;
+    const cfg        = BALANCE.waterSupply;
+
+    let totalGain    = 0;
+    let sawRainCatch = false;
+
+    for (const card of gs.getBoardCards()) {
+      const def = gs.getCardDef(card.instanceId);
+      if (def?.subtype !== 'water') continue;
+      const base = def.onTick?.hydration;
+      if (!(base > 0)) continue;
+
+      const inst = gs.cards[card.instanceId];
+      if (!inst || (inst.durability ?? 0) <= 0) continue;
+
+      const catchesRain = (def.tags ?? []).includes('rain_catch');
+      if (catchesRain) sawRainCatch = true;
+
+      // 빗물 수집 계열만 날씨를 탄다. 산성비에는 뚜껑을 닫으므로 수집도 마모도 없다.
+      const mult = catchesRain
+        ? (isAcidRain ? 0 : (RAIN_CATCH_WEATHER_MULT[weatherId] ?? 0.1))
+        : 1;
+      totalGain += base * mult;
+
+      const wearing = catchesRain
+        ? (isAcidRain ? 0 : cfg.rainCatchDecayPerTP)
+        : cfg.supplyDecayPerTP;
+      if (wearing > 0) {
+        inst.durability = Math.max(0, inst.durability - wearing);
+        if (inst.durability <= 0) {
+          EventBus.emit('notify', { message: I18n.t('statSys.collectorBroken'), type: 'warn' });
+        }
+      }
+    }
+
+    if (totalGain > 0) {
+      gs.modStat('hydration', Math.min(cfg.maxHydrationPerTP, totalGain));
+    }
+
+    // 산성비 경고는 빗물을 받는 구조물이 있을 때만 의미가 있다
+    if (isAcidRain && sawRainCatch && !gs.flags._collectorAcidWarned) {
+      gs.flags._collectorAcidWarned = true;
+      EventBus.emit('notify', { message: I18n.t('statSys.acidRainCollector'), type: 'danger' });
+    } else if (!isAcidRain) {
+      gs.flags._collectorAcidWarned = false;
+    }
   },
 
   // ── 식량 부패 (여름 계절 효과) ──────────────────────────────────
