@@ -938,10 +938,16 @@ const ITEMS_MISC = {
       'melee',
       'training',
     ],
-    damage: [
-      2,
-      5,
-    ],
+    combat: {
+      damage: [
+        2,
+        5,
+      ],
+      accuracy: 0.8,
+      noiseOnUse: 2,
+      durabilityLoss: 3,
+      critChance: 0.05,
+    },
     dismantle: [
       {
         definitionId: 'wood_plank',
@@ -2208,7 +2214,7 @@ const ITEMS_MISC = {
       critMultiplier: 1.5,
     },
     onUse: {
-      craftSpeedBonus: 0.2,
+      craftTimeReduction: 0.2,
     },
     dismantle: [
       {

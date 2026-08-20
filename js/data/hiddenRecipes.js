@@ -1403,6 +1403,116 @@ const HIDDEN_RECIPES = {
     ],
   },
 
+  // 유령 변이체 잔류물의 유일한 사용처. 이미 있는 길리 수트를 상위 은밀 슈트로 올리는
+  // 경로라 신규 장비를 만들지 않는다. 동대문 공방 없이도 은밀 슈트에 닿는 두 번째 길이다.
+  upgrade_stealth_suit: {
+    id: 'upgrade_stealth_suit', name: '위장복 강화', category: 'armor',
+    description: '유령 변이체의 잔류물을 길리 수트에 먹여 은밀 슈트로 끌어올린다.',
+    hidden: true,
+    rarity: 'legendary',
+    output: [{ definitionId: 'stealth_suit', qty: 1 }],
+    requiredTools: ['workbench'],
+    unlockConditions: { bossKillId: 'boss_blizzard_wraith', minSkillLevel: { armorcraft: 7 } },
+    requiredSkills: { armorcraft: 7 },
+    stages: [
+      {
+        stageIndex: 0, label: '잔류물 침투', tpCost: 4,
+        requiredItems: [
+          { definitionId: 'ghillie_suit',   qty: 1 },
+          { definitionId: 'wraith_essence', qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '패턴 재단', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'camo_cloth', qty: 2 },
+          { definitionId: 'thread',     qty: 2 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+  },
+
+  // 전우의 인식표의 유일한 사용처. 기존 '복합 장갑 제작'(armorcraft 10 + 강철 장갑판 + 회로
+  // 모듈)보다 재료가 가볍고, 대신 보스를 잡아야 얻는 인식표를 요구한다.
+  forge_comrade_armor: {
+    id: 'forge_comrade_armor', name: '전우의 군장', category: 'armor',
+    description: '전우가 남긴 군번줄을 캐리어에 박아 넣고 케블라를 덧대 복합 장갑을 완성한다.',
+    hidden: true,
+    rarity: 'legendary',
+    output: [{ definitionId: 'composite_armor', qty: 1 }],
+    requiredTools: ['workbench'],
+    unlockConditions: { bossKillId: 'boss_soldier_nemesis', minSkillLevel: { armorcraft: 6 } },
+    requiredSkills: { armorcraft: 6 },
+    stages: [
+      {
+        stageIndex: 0, label: '군번줄 각인', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'soldier_dogtag', qty: 1 },
+          { definitionId: 'plate_carrier',  qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '케블라 덧대기', tpCost: 4,
+        requiredItems: [
+          { definitionId: 'kevlar_fabric', qty: 2 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+  },
+
+  pickle_bamboo_shoot: {
+    id: 'pickle_bamboo_shoot', name: '죽순 절임', category: 'food',
+    description: '죽순을 소금에 절여 오래 두고 먹을 수 있게 만든다.',
+    hidden: true,
+    unlockConditions: { minSkillLevel: { cooking: 3 } },
+    output: [{ definitionId: 'pickled_food', qty: 2 }],
+    requiredTools: ['fermentation_pot'],
+    requiredSkills: { cooking: 3 },
+    stages: [
+      {
+        stageIndex: 0, label: '절임', tpCost: 4,
+        requiredItems: [
+          { definitionId: 'bamboo_shoot', qty: 3 },
+          { definitionId: 'salt',         qty: 1 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+  },
+
+  make_radio_transmitter: {
+    id: 'make_radio_transmitter', name: '무선 송신기', category: 'tool',
+    description: '회로와 구리선으로 장거리 송신기를 조립한다. 구조 신호를 쏘아올릴 수 있다.',
+    hidden: true,
+    rarity: 'rare',
+    output: [{ definitionId: 'radio_transmitter', qty: 1 }],
+    requiredTools: ['workbench'],
+    unlockConditions: { minSkillLevel: { crafting: 6, building: 3 } },
+    requiredSkills: { crafting: 6, building: 3 },
+    stages: [
+      {
+        stageIndex: 0, label: '회로 조립', tpCost: 4,
+        requiredItems: [
+          { definitionId: 'circuit_module', qty: 1 },
+          { definitionId: 'electronic_parts', qty: 3 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '안테나 배선', tpCost: 3,
+        requiredItems: [
+          { definitionId: 'copper_wire', qty: 3 },
+          { definitionId: 'scrap_metal', qty: 2 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+  },
+
   build_electric_fence: {
     id: 'build_electric_fence', name: '전기 울타리', category: 'structure',
     description: '전류가 흐르는 방어 울타리를 설치한다.',

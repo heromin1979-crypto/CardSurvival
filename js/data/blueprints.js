@@ -2814,7 +2814,7 @@ const BLUEPRINTS = {
 
   process_nettle: {
     id: 'process_nettle', name: '쐐기풀 가공', category: 'food',
-    description: '쐐기풀을 익혀 독성을 제거하고 섬유를 추출한다. 로프 대용 가능.',
+    description: '쐐기풀을 익혀 독성을 제거하고 섬유를 추출한다. 꼬아서 로프를 만들 수 있다.',
     output: [{ definitionId: 'nettle_fiber', qty: 1 }],
     requiredTools: ['campfire'],
     requiredSkills: {},
@@ -2822,6 +2822,23 @@ const BLUEPRINTS = {
       stageIndex: 0, label: '찌기 및 섬유 추출', tpCost: 3,
       requiredItems: [
         { definitionId: 'nettle', qty: 3 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  // 로프는 지금까지 전리품으로만 나왔다. 구조물·덫 레시피 대부분이 로프를 요구하므로
+  // 쐐기풀에서 자급하는 경로를 둔다 — 섬유의 "로프 대용" 설명이 실제로 성립하는 지점.
+  twist_rope: {
+    id: 'twist_rope', name: '로프 꼬기', category: 'material',
+    description: '쐐기풀 섬유를 여러 겹으로 꼬아 로프를 만든다.',
+    output: [{ definitionId: 'rope', qty: 1 }],
+    requiredTools: [],
+    requiredSkills: { crafting: 1 },
+    stages: [{
+      stageIndex: 0, label: '섬유 꼬기', tpCost: 2,
+      requiredItems: [
+        { definitionId: 'nettle_fiber', qty: 3 },
       ],
       consumeAt: 'start',
     }],
