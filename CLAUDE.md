@@ -23,6 +23,7 @@
 - **신규 세부장소 추가 시**: `landmarks.js`에 데이터를 넣으면 카드 정의는 `registerSubLocationItems`가 자동 생성하지만, 배경 이미지는 `assets/images/sublocations/<subLocationId>.png`를 직접 넣어야 한다. 없으면 빈 카드로 렌더되고 404가 발생한다 (`CardFactory.js`의 `subLocationImage`가 경로를 무조건 생성).
 - 환경 오브젝트(`type:'environment'`): `items_misc.js` 등록 (stream_spring/dry_stream 패턴)
 - 검증: `node js/data/validate.js`
+- **아이템 세팅 전수 감사**: `node tools/audit-items.mjs` (node 20+ 필수). 배선 문제·표시 누락·참고·정상 4단계로 분류하고, 에디터 `📋 대장` 탭이 `/api/item-audit`으로 같은 결과를 보여준다. 획득/사용 경로는 `js/data/` 전체를 훑어 **역할 키**(`lootTable`·`output`·`requiredItems`·`trapData`…)로 분류하므로, 새 데이터 구조를 만들면 `--unclassified`로 확인해 `ROLES` 표에 등록해야 한다 — 안 하면 그 경로로만 얻는 아이템이 "획득 경로 없음"으로 오탐된다
 - **신규 필드/개념 추가 시 (에디터 설명)**: 데이터에 새 필드를 넣으면 에디터(`tools/editor/`)는 `objNode` 재귀로 **자동 렌더**되지만 마우스오버 *설명(툴팁)*은 사전 등록이 있어야 뜬다. `tools/editor/editor.js`의 도움말 사전에 한 줄 등록 — **아이템 필드 → `ITEM_HELP`**, **밸런스 필드 → `BAL_HELP`**, **공용(구·랜드마크·퀘스트 등) → `FIELD_HELP`**. 누락 검사: `node tools/editor/check-help-coverage.mjs` (아이템 필드 전수 대조, 누락 시 exit 1)
 
 ## 4. 장비 슬롯 · NPC · 시스템

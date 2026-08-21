@@ -36,7 +36,15 @@ try {
   await import('./editor.js');
   check('module boots without throwing', true);
   check('save button present', window.document.querySelector('#save-btn') !== null);
-  check('9 tabs present', window.document.querySelectorAll('.tab').length === 9);
+  // 개수 단정은 탭이 늘 때마다 낡는다 — 있어야 할 탭이 사라졌는지를 이름으로 본다
+  const EXPECTED_TABS = [
+    'balance', 'items', 'districts', 'landmarks', 'sublocations', 'hidden',
+    'quests', 'flow', 'changes', 'validate', 'ledger', 'settings',
+  ];
+  const presentTabs = [...window.document.querySelectorAll('.tab')].map((b) => b.dataset.tab);
+  const missingTabs = EXPECTED_TABS.filter((t) => !presentTabs.includes(t));
+  check(`tabs present (${presentTabs.length})${missingTabs.length ? ` — 누락: ${missingTabs.join(', ')}` : ''}`,
+    missingTabs.length === 0);
   // balance tab renders without throwing
   window.document.querySelector('[data-tab="balance"]').click();
   check('balance tab renders', /공용 변수|불러오는/.test(window.document.querySelector('#view').textContent));
@@ -52,6 +60,9 @@ try {
   // validate tab renders without throwing
   window.document.querySelector('[data-tab="validate"]').click();
   check('validate tab renders', /검증/.test(window.document.querySelector('#view').textContent));
+  // 대장 탭 — serve.js 없이 열면 감사 결과가 없으니 로딩/오류 안내가 떠야 한다
+  window.document.querySelector('[data-tab="ledger"]').click();
+  check('ledger tab renders', /대장|감사/.test(window.document.querySelector('#view').textContent));
   // settings tab renders local-settings box (no PAT fields)
   window.document.querySelector('[data-tab="settings"]').click();
   check('settings tab renders', window.document.querySelector('.settings-box') !== null);
