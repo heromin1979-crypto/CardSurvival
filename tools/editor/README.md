@@ -56,6 +56,28 @@ http://localhost:8080/tools/editor/
 5. **⚙️ 설정** 탭에서 커밋 메시지를 바꿀 수 있습니다.
 6. 우상단 **[저장 (커밋&푸시)]** → 로컬 기록 + 현재 브랜치로 커밋·푸시.
 
+### 드랍 표는 3계층 — 각각 다른 탭에서 편집합니다
+
+게임은 **어디에 서서 탐색했는지**에 따라 서로 다른 표를 굴립니다. 세 표는 데이터·코드 모두 분리돼 있어
+한쪽을 고쳐도 나머지는 바뀌지 않습니다.
+
+| 계층 | 언제 쓰이나 | 에디터 위치 | 데이터 |
+|------|-------------|-------------|--------|
+| **구(표면)** | 구에 서서 탐색 | **장소** 탭 → `lootTable (탐색 드랍 가중치)` | `districts.js` → `DISTRICTS[구].lootTable` |
+| **랜드마크 자체** | 랜드마크 안(세부장소 밖)에서 탐색 | **랜드마크** 탭 → `lootTable (랜드마크 전용 드랍)` | `landmarks.js` → `LANDMARK_DATA[키].lootTable` |
+| **세부장소** | 세부장소 첫 진입 | **세부장소** 탭 → `lootTable (세부장소 드랍)` | `landmarks.js` → `subLocations[].lootTable` |
+
+- 세 표 모두 `weight`(가중치) + `min`/`max`(1회 드랍 수량 `minQty`/`maxQty`) 열을 가집니다. `min`을 비우면 수량 1개 고정입니다.
+- `lootCount min/max`는 **탐색 1회에 뽑는 픽 수**입니다(구는 이 필드가 없고 공용 변수 `explore.lootCountMin~Max`를 씁니다).
+- **자원(`cls`)·제철(`seasons`)·오염% 열은 구 표에만 있습니다** — 랜드마크·세부장소 표에는 적용되지 않습니다.
+- 랜드마크 자체 표는 **재고·1회 제한이 없어 탐색마다 반복 획득**됩니다. 세부장소 표는 첫 진입 1회만 나오고 재고가 차감됩니다.
+  같은 아이템이라도 어느 계층에 넣는지에 따라 획득량이 크게 달라집니다.
+- 전용 표가 없는 랜드마크(베이스캠프)는 `+ 전용 드랍 표 만들기` 버튼으로 새로 만들 수 있습니다.
+
+> 계층별 동작 차이·전체 확률표: [`docs/analysis/LANDMARK_LOOT_TABLE.md`](../../docs/analysis/LANDMARK_LOOT_TABLE.md) ·
+> 구 표면 상세: [`docs/analysis/DISTRICT_LOOT_TABLE.md`](../../docs/analysis/DISTRICT_LOOT_TABLE.md)
+> (랜드마크 문서는 데이터 수정 후 `node scripts/generate_landmark_loot_doc.mjs`로 재생성)
+
 ## 주의
 
 - **데이터 블록 내부의 인라인 주석은 보존되지 않습니다.** push 후 `git diff`로 확인하세요.
