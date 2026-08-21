@@ -1087,6 +1087,10 @@ function collectIssues() {
 
   const lm = state.files.landmarks?.data || {};
   for (const [key, m] of Object.entries(lm)) {
+    // 랜드마크 자체 드랍 표 (세부장소 표와 별개)
+    (m.lootTable || []).forEach((r, i) => {
+      if (badItem(r.id)) issues.push({ fileKey: 'landmarks', entityKey: key, path: `lootTable[${i}].id`, id: r.id, msg: '존재하지 않는 아이템 ID' });
+    });
     (m.subLocations || []).forEach((sub, si) => {
       (sub.lootTable || []).forEach((r, i) => {
         if (badItem(r.id)) issues.push({ fileKey: 'landmarks', entityKey: key, path: `${sub.name || `세부장소#${si}`} ▸ lootTable[${i}].id`, id: r.id, msg: '존재하지 않는 아이템 ID' });
@@ -2120,6 +2124,48 @@ function deleteHidden(key) {
   render();
 }
 
+// 드랍 표 공용 수량 열 — 비우면 1개(기본). 구·랜드마크·세부장소 모두 같은 필드를 쓴다.
+const LOOT_QTY_COLS = [{ key: 'minQty', label: 'min' }, { key: 'maxQty', label: 'max' }];
+
+// [min, max] 배열 필드를 두 칸 숫자 입력으로. 배열이 없으면 첫 입력 때 생성한다(빈 diff 방지).
+function rangeInputs(obj, key, fileKey, labels, fallback) {
+  const mk = (i) => {
+    const cur = Array.isArray(obj[key]) ? obj[key][i] : undefined;
+    const inp = el('input', { type: 'number', value: cur ?? '', placeholder: String(fallback[i]) });
+    inp.addEventListener('input', () => {
+      if (!Array.isArray(obj[key])) obj[key] = fallback.slice();
+      obj[key][i] = Number(inp.value);
+      markDirty(fileKey);
+    });
+    return el('div', { class: 'field' }, [fieldLabel(labels[i], key), inp]);
+  };
+  return el('div', { class: 'field-row' }, [mk(0), mk(1)]);
+}
+
+/**
+ * 랜드마크 자체 드랍 표 — 랜드마크 안에서 「탐색」을 눌렀을 때 쓰는 표.
+ * 구 lootTable·세부장소 lootTable과 완전히 분리돼 있다 (ExploreSystem._generateLandmarkLoot).
+ */
+function renderLandmarkLootFieldset(lm) {
+  const fs = el('fieldset', {}, el('legend', { text: 'lootTable (랜드마크 전용 드랍)' }));
+  fs.append(el('div', {
+    class: 'hint',
+    text: '랜드마크 안에서 「탐색」을 눌렀을 때 나오는 표. 구·세부장소 표와 따로 굴러서, 같은 자리에서 구 자원을 반복 채집할 수 없습니다.',
+  }));
+  if (!Array.isArray(lm.lootTable)) {
+    // 표가 없는 랜드마크(베이스캠프 등) — 훑어보기만 해도 빈 배열이 생기지 않게 명시적으로 만든다.
+    fs.append(el('div', { class: 'hint', text: '이 랜드마크는 전용 드랍 표가 없습니다 — 랜드마크 자체 탐색에서 아무것도 나오지 않습니다.' }));
+    fs.append(el('button', {
+      class: 'ghost', text: '+ 전용 드랍 표 만들기',
+      onclick: () => { lm.lootTable = []; lm.lootCount = [1, 2]; markDirty('landmarks'); rerenderDetail(); },
+    }));
+    return fs;
+  }
+  fs.append(rangeInputs(lm, 'lootCount', 'landmarks', ['lootCount min', 'lootCount max'], [1, 2]));
+  fs.append(lootTableEditor(lm.lootTable, 'id', LOOT_QTY_COLS, 'landmarks'));
+  return fs;
+}
+
 function renderLandmarkDetail(root, lm) {
   const key = state.sel.landmarks;
   const protectedLm = isProtectedLandmark(key);
@@ -2167,8 +2213,12 @@ function renderLandmarkDetail(root, lm) {
   flagRow.append(optionalFlag(lm, 'isBasecampLandmark', 'landmarks'));
   root.append(el('fieldset', {}, [el('legend', { text: '기능 플래그' }), flagRow]));
 
+  // 랜드마크 전용 드랍 — 구/세부장소 표와 완전히 분리된 자체 표
+  root.append(renderLandmarkLootFieldset(lm));
+
   // 기타 필드 — 수제 폼이 다루지 않는 필드 자동 노출 (레이더 캠프 등)
-  const HANDLED = new Set(['name', 'icon', 'desc', 'subLocations', 'hasFishing', 'isBasecampLandmark']);
+  const HANDLED = new Set(['name', 'icon', 'desc', 'subLocations', 'hasFishing', 'isBasecampLandmark',
+    'lootTable', 'lootCount']);
   const extras = Object.keys(lm).filter((k) => !HANDLED.has(k));
   if (extras.length) {
     const exRow = el('div', { class: 'field-row' });
@@ -2206,7 +2256,7 @@ function renderLandmarkDetail(root, lm) {
       sfr.append(mk(0, 'lootCount min'), mk(1, 'lootCount max'));
     }
     fs.append(sfr);
-    fs.append(lootTableEditor(sub.lootTable || (sub.lootTable = []), 'id', [], 'landmarks'));
+    fs.append(lootTableEditor(sub.lootTable || (sub.lootTable = []), 'id', LOOT_QTY_COLS, 'landmarks'));
     subFs.append(fs);
   }
   root.append(subFs);
@@ -2581,7 +2631,7 @@ function renderSubLocationDetail(root) {
   }
 
   const fs = el('fieldset', {}, el('legend', { text: 'lootTable (세부장소 드랍)' }));
-  fs.append(lootTableEditor(sub.lootTable || (sub.lootTable = []), 'id', [], 'landmarks'));
+  fs.append(lootTableEditor(sub.lootTable || (sub.lootTable = []), 'id', LOOT_QTY_COLS, 'landmarks'));
   root.append(fs);
 }
 

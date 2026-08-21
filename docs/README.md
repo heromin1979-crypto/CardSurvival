@@ -57,6 +57,8 @@ simulation-data/                             # 시뮬레이션 데이터 (별도
 - [`SIMULATION_BEHAVIOR.md`](./SIMULATION_BEHAVIOR.md) — **시뮬 행동 프로파일 v16** (직업별 탐색구·제작·소비·낚시·전투·퀘스트 + 구조적 0 발견)
 
 ### 분석 문서
+- [`analysis/DISTRICT_LOOT_TABLE.md`](./analysis/DISTRICT_LOOT_TABLE.md) — 구(district) 표면 탐색 드랍 표·확률
+- [`analysis/LANDMARK_LOOT_TABLE.md`](./analysis/LANDMARK_LOOT_TABLE.md) ★ — **랜드마크 드랍 레퍼런스** (드랍 표 3계층 분리 구조 + 랜드마크 자체 표 + 세부장소 표, `scripts/generate_landmark_loot_doc.mjs`로 재생성)
 - [`analysis/CRAFT_DIVERSITY_ANALYSIS.md`](./analysis/CRAFT_DIVERSITY_ANALYSIS.md) — 크래프트 다양성 분석
 - [`analysis/VISUAL_TARGET_GAP_ANALYSIS.md`](./analysis/VISUAL_TARGET_GAP_ANALYSIS.md) — 비주얼 타겟 갭 분석
 

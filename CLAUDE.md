@@ -37,6 +37,7 @@
 - `--z-notify: 9000`: 알림은 모달(8000) 위, 사망 배너(9999) 아래 유지
 - `hydrationDecayPerTP: 1.0` — TP당 갈증 소모량 (gameBalance.js)
 - Sublocation 1회 한정 보상: `landmarks.js`의 `firstEnterReward`(claimKey + items) → `ExploreSystem._grantFirstEnterReward`가 `GameState.flags.firstEnterRewardsClaimed`로 중복 차단
+- **드랍 표는 3계층으로 완전히 분리**돼 있다 — 구(`DISTRICTS[구].lootTable` → `generateDistrictLoot`) / 랜드마크 자체(`LANDMARK_DATA[키].lootTable` → `_generateLandmarkLoot`) / 세부장소(`subLocations[].lootTable` → `_generateSubLocationLoot`). 랜드마크 안에서 누른 탐색은 `_arriveAtDistrict`가 조기 반환해 **구 자원·구 탐사도·제철 필터·도구/특성/스킬 보너스 픽을 전부 건너뛴다** — 반복 제한도 재고도 없으니 가중치·수량 조정 시 "1 TP 무제한 반복"을 전제로 볼 것. 계층별 차이·전체 확률표는 `docs/analysis/LANDMARK_LOOT_TABLE.md`(생성기: `scripts/generate_landmark_loot_doc.mjs` — 드랍 데이터 수정 후 재실행), 에디터 편집 위치는 `tools/editor/README.md` 참조
 - 구조물 지속 효과 `def.effect`(감염 저항·휴식 배율·차단 플래그)는 `onTick`과 경로가 다르다. `StructureEffectSystem`이 집계해 `player.structureEffects`에 캐시하고 소비처가 읽는다 — **집계·소비 배선 없이 `effect`만 선언하면 아무 동작도 하지 않는다**
 - 도구 역할 대체: `def.toolProvides: ['medical_station']` → 청사진 `requiredTools` 판정에서 id 일치와 동등 (`toolProvision.js`, CraftSystem·CraftDiscovery 양쪽 반영 필수)
 - 현재 날씨는 **`GameState.weather.id`**, 현재 계절은 **`GameState.season.current`** — 필드명이 서로 다르다. 날씨를 `.current`/`.currentWeather`로 읽으면 `?? 'sunny'` 폴백에 조용히 걸려 보정이 통째로 죽는다 (에러도 로그도 없음). 값도 `'rain'`이 아니라 **`'rainy'`**다. 비 계열 판정은 리터럴을 새로 쓰지 말고 `WeatherSystem`이 export하는 `isRainyWeather(id)` / `RAINY_WEATHER_IDS`를 쓴다
