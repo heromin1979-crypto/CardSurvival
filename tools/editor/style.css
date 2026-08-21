@@ -236,3 +236,113 @@ table.loot input.num { width: 72px; }
 .settings-box input { width: 100%; }
 .hint { color: var(--muted); font-size: 12px; line-height: 1.5; }
 .hint code { background: var(--panel2); padding: 1px 5px; border-radius: 4px; }
+
+/* ── 아이템 대장 (📋 대장 탭) ───────────────────────────────── */
+/* 상태 배지 — 4단계 판정. 좌측 색 띠로 심각도를 구분한다. */
+.badge {
+  display: inline-block; flex: 0 0 auto;
+  font-size: 11px; font-weight: 600; line-height: 1.6;
+  border-radius: 4px; padding: 1px 7px; white-space: nowrap;
+  border: 1px solid transparent;
+}
+.badge.bad  { color: var(--danger); background: rgba(255,107,107,.13); border-color: rgba(255,107,107,.35); }
+.badge.warn { color: var(--warn);   background: rgba(245,185,66,.13);  border-color: rgba(245,185,66,.35); }
+.badge.note { color: var(--accent); background: rgba(78,161,255,.13);  border-color: rgba(78,161,255,.32); }
+.badge.good { color: var(--ok);     background: rgba(78,201,122,.13);  border-color: rgba(78,201,122,.32); }
+
+.stat-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.stat-card {
+  text-align: left; cursor: pointer; font: inherit;
+  background: var(--panel); color: var(--text);
+  border: 1px solid var(--border); border-left-width: 4px; border-radius: 8px;
+  padding: 14px 16px;
+}
+.stat-card:hover { background: var(--panel2); }
+.stat-card.active { background: var(--panel2); border-color: var(--accent); }
+.stat-card.bad  { border-left-color: var(--danger); }
+.stat-card.warn { border-left-color: var(--warn); }
+.stat-card.note { border-left-color: var(--accent); }
+.stat-card.good { border-left-color: var(--ok); }
+.stat-num { font-size: 28px; font-weight: 700; line-height: 1.1; }
+.stat-card.bad  .stat-num { color: var(--danger); }
+.stat-card.warn .stat-num { color: var(--warn); }
+.stat-card.note .stat-num { color: var(--accent); }
+.stat-card.good .stat-num { color: var(--ok); }
+.stat-label { color: var(--muted); font-size: 12px; margin-top: 2px; }
+
+.criteria-panel {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 8px;
+  padding: 14px 16px; margin-bottom: 16px;
+}
+.criteria-title { font-size: 12px; color: var(--accent); text-transform: uppercase; margin-bottom: 8px; }
+.criteria-row { display: flex; gap: 10px; align-items: flex-start; margin-top: 6px; }
+.criteria-text { font-size: 12px; line-height: 1.55; color: var(--text); }
+
+.ledger-toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+.ledger-toolbar .field.grow { flex: 1 1 320px; }
+.ledger-toolbar input { width: 100%; box-sizing: border-box; }
+
+.filter-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+.filter-chip {
+  font: inherit; font-size: 12px; cursor: pointer;
+  background: var(--panel); color: var(--muted);
+  border: 1px solid var(--border); border-radius: 999px; padding: 3px 11px;
+}
+.filter-chip:hover { color: var(--text); background: var(--panel2); }
+.filter-chip.active { background: var(--accent); border-color: var(--accent); color: #06121f; font-weight: 600; }
+
+.ledger-list { display: flex; flex-direction: column; }
+.ledger-row { border-bottom: 1px solid var(--border); }
+.ledger-row.open { background: var(--panel); border-radius: 8px; border: 1px solid var(--border); margin: 6px 0; }
+.ledger-head {
+  width: 100%; display: flex; align-items: center; gap: 10px;
+  font: inherit; text-align: left; cursor: pointer;
+  background: none; border: 0; color: var(--text); padding: 9px 10px;
+}
+.ledger-head:hover { background: var(--panel2); }
+.ledger-icon { flex: 0 0 22px; font-size: 17px; text-align: center; }
+.ledger-names { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.ledger-name { font-weight: 600; }
+.ledger-desc {
+  color: var(--muted); font-size: 12px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.ledger-id { flex: 0 0 auto; color: var(--muted); font-size: 12px; }
+.ledger-type { flex: 0 0 90px; color: var(--muted); font-size: 12px; text-align: right; }
+
+.ledger-body { padding: 4px 14px 14px; }
+.finding { padding: 8px 0; border-top: 1px solid var(--border); }
+.finding-line { display: flex; gap: 8px; align-items: flex-start; }
+.finding-field { flex: 0 0 auto; color: var(--accent); font-size: 12px; }
+.finding-msg { font-size: 12px; line-height: 1.5; }
+
+/* 고치는 방법 — 담당(기획/개발)을 앞세우고 그 뒤에 실행 지시를 붙인다 */
+.fix-hint {
+  margin: 6px 0 0 6px; padding: 8px 10px;
+  background: var(--bg); border-radius: 6px;
+  border-left: 3px solid var(--border);
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline;
+}
+.fix-hint.planner { border-left-color: var(--ok); }
+.fix-hint.dev     { border-left-color: var(--muted); }
+.fix-text { font-size: 12px; line-height: 1.6; flex: 1 1 260px; min-width: 0; }
+.owner-badge {
+  flex: 0 0 auto; font-size: 11px; font-weight: 600; white-space: nowrap;
+  border-radius: 4px; padding: 1px 7px; border: 1px solid transparent;
+}
+.owner-badge.planner { color: var(--ok);    background: rgba(78,201,122,.13); border-color: rgba(78,201,122,.32); }
+.owner-badge.dev     { color: var(--muted); background: var(--panel2);        border-color: var(--border); }
+
+.owner-chips { margin-bottom: 8px; }
+.filter-chip.owner { font-weight: 600; }
+.filter-chip.owner.active { background: var(--ok); border-color: var(--ok); color: #06180e; }
+.path-block { margin-top: 10px; }
+.path-block .chips { margin: 6px 0 0; }
+
+/* 아이템 탭 사이드바 — 편집 중에도 상태가 보이게 하는 점 배지 */
+.side-item { display: flex; align-items: center; gap: 6px; }
+.side-dot { flex: 0 0 7px; width: 7px; height: 7px; border-radius: 50%; background: transparent; }
+.side-dot.bad  { background: var(--danger); }
+.side-dot.warn { background: var(--warn); }
+.side-dot.note { background: var(--accent); }
+.side-item-label { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
