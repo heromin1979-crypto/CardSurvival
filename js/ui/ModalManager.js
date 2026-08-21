@@ -6,6 +6,7 @@ import EquipmentSystem from '../systems/EquipmentSystem.js';
 import DismantleSystem from '../systems/DismantleSystem.js';
 import MentalSystem    from '../systems/MentalSystem.js';
 import HelicopterSystem from '../systems/HelicopterSystem.js';
+import EscapeVehicleSystem from '../systems/EscapeVehicleSystem.js';
 import { playDismantleFx } from './dismantleFx.js';
 import { formatCardEffectEntries, formatInstanceName, getConsumableEffect } from '../systems/ItemEffectSystem.js';
 import CardFactory     from './CardFactory.js';
@@ -324,6 +325,9 @@ const ModalManager = {
     // 비행체 — 연료·시동 열쇠가 갖춰져야 이륙 버튼이 열린다
     const canFly       = !!def.flight;
     const flightStatus = canFly ? HelicopterSystem.canTakeOff(instanceId) : { ok: false, reason: '' };
+    // 탈것 탈출(한강 보트·경비행기·구조 신호) — 준비물을 보드에 모으면 출발 버튼이 열린다
+    const canEscape    = !!def.escapeVehicle;
+    const escapeStatus = canEscape ? EscapeVehicleSystem.canLaunch(instanceId) : { ok: false, reason: '' };
     const canNest      = inst._stolenLoot?.length > 0;  // 동물 둥지 — 도난물 회수 가능
     const stackQty     = inst.quantity ?? 1;
     const equipSlots   = EquipmentSystem.getSlotsForDef(def);
@@ -484,7 +488,7 @@ const ModalManager = {
       </button>`
     ).join('');
 
-    const hasActions = canConsume || canDismantle || canForage || canDailyUse || canFly || canNest || canEquip || isFishingRod || isMedicalStructure || isTapeRepairable || canOpenBox || weatherActions.length > 0;
+    const hasActions = canConsume || canDismantle || canForage || canDailyUse || canFly || canEscape || canNest || canEquip || isFishingRod || isMedicalStructure || isTapeRepairable || canOpenBox || weatherActions.length > 0;
 
     // 장착 슬롯 버튼 목록 (슬롯이 여럿이면 각각 버튼 생성)
     const slotLabels = {
@@ -538,6 +542,9 @@ const ModalManager = {
             ${canFly ? `<button class="card-action-btn${flightStatus.ok ? '' : ' disabled'}"
               id="modal-takeoff-${instanceId}" ${flightStatus.ok ? '' : 'disabled'}
               title="${flightStatus.reason}">${I18n.t('heli.actionLabel')}</button>` : ''}
+            ${canEscape ? `<button class="card-action-btn${escapeStatus.ok ? '' : ' disabled'}"
+              id="modal-escape-${instanceId}" ${escapeStatus.ok ? '' : 'disabled'}
+              title="${escapeStatus.reason}">${I18n.t(def.escapeVehicle.labelKey ?? 'escapeVehicle.actionBoat')}</button>` : ''}
             ${canNest ? `<button class="card-action-btn" id="modal-nest-${instanceId}">🪺 둥지 뒤지기</button>` : ''}
             ${fishBtnHtml}
             ${gatherBtnHtml}
@@ -687,6 +694,17 @@ const ModalManager = {
       document.getElementById(`modal-takeoff-${instanceId}`)?.addEventListener('click', () => {
         this.close();
         HelicopterSystem.takeOff(instanceId);
+      });
+    }
+
+    // 엔딩은 되돌릴 수 없다 — 출발 직전에 한 번 더 묻는다
+    if (canEscape && escapeStatus.ok) {
+      document.getElementById(`modal-escape-${instanceId}`)?.addEventListener('click', () => {
+        this.close();
+        this.confirm(
+          I18n.t(def.escapeVehicle.confirmKey ?? 'escapeVehicle.confirmBoat'),
+          () => EscapeVehicleSystem.launch(instanceId),
+        );
       });
     }
 

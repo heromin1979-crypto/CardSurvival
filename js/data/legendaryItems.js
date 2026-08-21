@@ -699,8 +699,19 @@ const LEGENDARY_ITEMS = {
     id: 'aircraft_parts', name: '항공기 부품', type: 'material', subtype: 'key',
     rarity: 'legendary', legendary: true, weight: 8.0,
     defaultDurability: 100, defaultContamination: 0,
-    icon: '✈️', description: '경비행기 수리에 필요한 항공기 부품. 비행기 탈출 엔딩에 필수.',
+    icon: '✈️', description: '경비행기 수리에 필요한 항공기 부품. 김포공항 격납고의 기체에 달고 항공 가솔린 2드럼을 채우면 날 수 있다.',
     tags: ['key_item', 'legendary'],
+    // 부품만으로는 날 수 없다 — 잭에 올라간 기체가 있는 격납고에서만 조립이 성립한다.
+    escapeVehicle: {
+      endingId: 'escape_light_aircraft',
+      requiresSubLocation: 'sl_gangseo_hangar',
+      requires: [
+        { definitionId: 'avgas_drum', qty: 2 },
+        { definitionId: 'aviation_alloy', qty: 2 },
+      ],
+      labelKey: 'escapeVehicle.actionAircraft',
+      confirmKey: 'escapeVehicle.confirmAircraft',
+    },
     dismantle: [],
   },
 
@@ -728,8 +739,14 @@ const LEGENDARY_ITEMS = {
     id: 'river_boat', name: '한강 보트', type: 'tool', subtype: 'key',
     rarity: 'legendary', legendary: true, weight: 0,
     defaultDurability: 100, defaultContamination: 0,
-    icon: '⛵', description: '한강변에 정박된 보트. 강을 건너 탈출하는 엔딩에 사용된다.',
+    icon: '⛵', description: '한강변에 정박된 보트. 연료통 2개를 실으면 강을 건널 수 있다.',
     tags: ['key_item', 'legendary'],
+    escapeVehicle: {
+      endingId: 'escape_river_boat',
+      requires: [{ definitionId: 'fuel_can', qty: 2 }],
+      labelKey: 'escapeVehicle.actionBoat',
+      confirmKey: 'escapeVehicle.confirmBoat',
+    },
     dismantle: [],
   },
 
@@ -978,8 +995,9 @@ const LEGENDARY_ITEMS = {
     id: 'fireproof_barricade', name: '내화 방벽', type: 'structure', subtype: 'defense',
     rarity: 'legendary', legendary: true, weight: 5.0,
     defaultDurability: 200, defaultContamination: 0,
-    icon: '🧱', description: '소방관 배지의 내화 기술로 제작된 방벽. 화염 피해를 완전히 차단하고 내구도가 일반 방벽의 3배.',
+    icon: '🧱', description: '소방관 배지의 내화 기술로 제작된 방벽. 조우 확률 15% 감소, 내구도가 일반 방벽의 3배.',
     tags: ['structure', 'legendary', 'defense', 'fireproof'],
+    onTick: { encounterReduction: 0.15 },
     dismantle: [
       { definitionId: 'scrap_metal', qty: 3, chance: 0.7 },
       { definitionId: 'wood', qty: 2, chance: 0.5 },

@@ -20,6 +20,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:editor": "node tools/editor/serialize.test.mjs",
+    "check:wiring": "node tools/check-effect-wiring.mjs",
+    "check:help": "node tools/editor/check-help-coverage.mjs",
+    "check:data": "node js/data/validate.js",
     "test:e2e:combat": "node tests/e2e/combat-screen.playwright.mjs",
     "test:e2e:combat:full": "node tests/e2e/combat-full.playwright.mjs"
   },
