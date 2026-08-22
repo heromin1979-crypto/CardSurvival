@@ -22,6 +22,8 @@ const ITEMS_COMBAT = {
     defaultDurability: 100, defaultContamination: 0,
     icon: '🔪', description: '외과용 메스. 전투용으론 약하지만 정밀한 절개로 크리티컬 확률이 높다.',
     tags: ['weapon', 'melee', 'silent', 'medical'],
+    // 날붙이는 도살·분해 청사진의 sharp_blade 역할을 대신한다 (toolProvision.js)
+    toolProvides: ['sharp_blade'],
     weaponType: 'blade',
     combat: { damage: [8, 14], accuracy: 0.85, noiseOnUse: 0, durabilityLoss: 3, critChance: 0.30, critMultiplier: 2.0 },
     dismantle: [{ definitionId: 'sharp_blade', qty: 1, chance: 0.5 }],
@@ -33,6 +35,8 @@ const ITEMS_COMBAT = {
     defaultDurability: 100, defaultContamination: 0,
     icon: '🔪', description: '소음 없이 적을 처치. 고철로 날을 갈면 더 강해진다.',
     tags: ['weapon', 'melee', 'silent'],
+    // 날붙이는 도살·분해 청사진의 sharp_blade 역할을 대신한다 (toolProvision.js)
+    toolProvides: ['sharp_blade'],
     weaponType: 'blade',
     combat: { damage: [14, 22], accuracy: 0.80, noiseOnUse: 1, durabilityLoss: 5, critChance: 0.25, critMultiplier: 1.8 },
     dismantle: [{ definitionId: 'sharp_blade', qty: 1, chance: 0.7 }],
@@ -44,6 +48,8 @@ const ITEMS_COMBAT = {
     defaultDurability: 100, defaultContamination: 0,
     icon: '🗡️', description: '군용 전투 나이프. 정확하고 조용하며 쉽게 무뎌지지 않는다.',
     tags: ['weapon', 'melee', 'silent'],
+    // 날붙이는 도살·분해 청사진의 sharp_blade 역할을 대신한다 (toolProvision.js)
+    toolProvides: ['sharp_blade'],
     weaponType: 'blade',
     combat: { damage: [16, 26], accuracy: 0.85, noiseOnUse: 1, durabilityLoss: 4, critChance: 0.30, critMultiplier: 2.0 },
     dismantle: [
@@ -58,6 +64,8 @@ const ITEMS_COMBAT = {
     defaultDurability: 100, defaultContamination: 0,
     icon: '🗡️', description: '고철로 날을 갈아 강화된 칼. 더 깊은 상처를 입힌다.',
     tags: ['weapon', 'melee', 'silent', 'crafted'],
+    // 날붙이는 도살·분해 청사진의 sharp_blade 역할을 대신한다 (toolProvision.js)
+    toolProvides: ['sharp_blade'],
     weaponType: 'blade',
     combat: { damage: [18, 28], accuracy: 0.82, noiseOnUse: 1, durabilityLoss: 6, critChance: 0.30, critMultiplier: 2.0 },
     dismantle: [
@@ -128,6 +136,8 @@ const ITEMS_COMBAT = {
     defaultDurability: 100, defaultContamination: 0,
     icon: '🗡️', description: '정글 도검. 빠른 연속 공격에 특화.',
     tags: ['weapon', 'melee'],
+    // 날붙이는 도살·분해 청사진의 sharp_blade 역할을 대신한다 (toolProvision.js)
+    toolProvides: ['sharp_blade'],
     weaponType: 'blade',
     combat: { damage: [18, 30], accuracy: 0.82, noiseOnUse: 4, durabilityLoss: 4, critChance: 0.22, critMultiplier: 1.9 },
     dismantle: [
@@ -142,6 +152,8 @@ const ITEMS_COMBAT = {
     defaultDurability: 100, defaultContamination: 0,
     icon: '🏹', description: '장거리 근접 무기. 관통 공격으로 최대 2명 적에게 피해.',
     tags: ['weapon', 'melee', 'crafted'],
+    // 날붙이는 도살·분해 청사진의 sharp_blade 역할을 대신한다 (toolProvision.js)
+    toolProvides: ['sharp_blade'],
     weaponType: 'blade',
     multiTarget: 2,
     combat: { damage: [20, 32], accuracy: 0.65, noiseOnUse: 3, durabilityLoss: 4, critChance: 0.18, critMultiplier: 2.5 },
@@ -176,6 +188,8 @@ const ITEMS_COMBAT = {
     defaultDurability: 100, defaultContamination: 0,
     icon: '🪓', description: '나무를 베고 적을 공격하는 다용도 도구. 통나무 가공에 필수.',
     tags: ['weapon', 'melee', 'tool'],
+    // 날붙이는 도살·분해 청사진의 sharp_blade 역할을 대신한다 (toolProvision.js)
+    toolProvides: ['sharp_blade'],
     weaponType: 'blade',
     combat: { damage: [15, 25], accuracy: 0.78, noiseOnUse: 4, durabilityLoss: 3, critChance: 0.15, critMultiplier: 1.8 },
     dismantle: [
@@ -294,7 +308,7 @@ const ITEMS_COMBAT = {
     tags: ['weapon', 'throwable', 'utility', 'crafted'],
     weaponType: 'utility',
     throwableEffect: { type: 'guaranteed_flee' },
-    combat: { damage: [0, 0], accuracy: 1.0, noiseOnUse: 10, durabilityLoss: 100, specialEffect: 'smoke' },
+    combat: { damage: [0, 0], accuracy: 1.0, noiseOnUse: 10, durabilityLoss: 100 },
     dismantle: [],
   },
 
@@ -362,12 +376,14 @@ const ITEMS_COMBAT = {
     dismantle: [{ definitionId: 'charcoal_filter', qty: 1, chance: 0.6 }],
   },
 
+  // 방패는 weapon_sub(보조 무기 + offhand 겸용) 슬롯에 들어간다. combat을 두지 않는 것이
+  // 의도다 — 있으면 _getPlayerWeapon이 방패를 공격 무기로 집어 0딜 공격이 된다.
   shield: {
-    id: 'shield', name: '방패', type: 'armor', subtype: 'offhand',
+    id: 'shield', name: '방패', type: 'weapon', subtype: 'shield',
     rarity: 'rare', weight: 3.0,
     defaultDurability: 100, defaultContamination: 0,
     icon: '🛡️', description: '피해를 막는 방패. 방어 극대화.',
-    tags: ['armor', 'offhand', 'crafted'],
+    tags: ['shield', 'defense', 'crafted'],
     onWear: { damageReduction: 0.35 },
     dismantle: [
       { definitionId: 'scrap_metal', qty: 3, chance: 0.8 },
@@ -464,6 +480,8 @@ const ITEMS_COMBAT = {
     defaultDurability: 100, defaultContamination: 0,
     icon: '🪓', description: '야전 대장간에서 제작한 도끼. 전투 무기이자 벌목 도구. 통나무 가공 효율 2배.',
     tags: ['weapon', 'melee', 'tool', 'crafted'],
+    // 날붙이는 도살·분해 청사진의 sharp_blade 역할을 대신한다 (toolProvision.js)
+    toolProvides: ['sharp_blade'],
     weaponType: 'blade',
     combat: { damage: [22, 38], accuracy: 0.72, noiseOnUse: 6, durabilityLoss: 2, critChance: 0.20, critMultiplier: 2.2 },
     onUse: { woodChopBonus: 2.0 },
@@ -554,7 +572,8 @@ const ITEMS_COMBAT = {
     tags: ['weapon', 'ranged', 'crafted'],
     weaponType: 'bullet',
     // rare 화력 정체성 확보 (uncommon crossbow에 사실상 밀리던 문제 보정)
-    combat: { damage: [30, 46], accuracy: 0.65, noiseOnUse: 35, durabilityLoss: 4, critChance: 0.10, critMultiplier: 2.0 },
+    // requiresAmmo가 있어야 weapon_main 슬롯에 장착된다 (WeaponSlotPolicy는 탄약 무기만 주무기로 본다)
+    combat: { damage: [30, 46], accuracy: 0.65, noiseOnUse: 35, durabilityLoss: 4, requiresAmmo: 'shotgun_ammo', critChance: 0.10, critMultiplier: 2.0 },
     dismantle: [
       { definitionId: 'iron_pipe', qty: 1, chance: 0.7 },
       { definitionId: 'scrap_metal', qty: 2, chance: 0.8 },
@@ -568,6 +587,8 @@ const ITEMS_COMBAT = {
     defaultDurability: 100, defaultContamination: 0,
     icon: '⚔️', description: '합금으로 단조한 명검. 예리한 칼날이 적을 베어낸다.',
     tags: ['weapon', 'melee', 'crafted'],
+    // 날붙이는 도살·분해 청사진의 sharp_blade 역할을 대신한다 (toolProvision.js)
+    toolProvides: ['sharp_blade'],
     weaponType: 'blade',
     combat: { damage: [30, 45], accuracy: 0.85, noiseOnUse: 3, durabilityLoss: 2, critChance: 0.20, critMultiplier: 2.0 },
     dismantle: [
@@ -582,6 +603,8 @@ const ITEMS_COMBAT = {
     defaultDurability: 120, defaultContamination: 0,
     icon: '🗡️', description: '장인의 기술이 깃든 완벽한 도검. 베기의 극치.',
     tags: ['weapon', 'melee', 'crafted'],
+    // 날붙이는 도살·분해 청사진의 sharp_blade 역할을 대신한다 (toolProvision.js)
+    toolProvides: ['sharp_blade'],
     weaponType: 'blade',
     combat: { damage: [40, 60], accuracy: 0.90, noiseOnUse: 2, durabilityLoss: 1, critChance: 0.25, critMultiplier: 2.5 },
     dismantle: [

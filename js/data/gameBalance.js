@@ -45,6 +45,7 @@ const BALANCE = {
     damageReductionCap:  0.50,   // (기존 0.75 → 0.50)
     critReductionCap:    0.70,   // (기존 0.90 → 0.70)
     specialDmgReductCap: 0.60,   // 적 특수스킬 방어 캡
+    movePenaltyCap:      0.30,   // 중장갑 이동 TP 증가 상한 — 판금을 겹쳐도 이동이 배로 뛰지 않게
   },
 
   // ── 소음 ────────────────────────────────────────────
@@ -175,6 +176,8 @@ const BALANCE = {
     unarmedBaseDmg:     [3, 7],
     unarmedStunChance:  0.10,
     unarmedStunDmg:     5,
+    // 처형(combat.special: 'execute') 발동선. 타격 후 남은 체력 비율이 이 값 미만이면 즉사.
+    executeHpRatio:     0.50,
     // ── 무기 독 도포 상한 ──
     // 독 피해는 bonusAfterDefense로 들어가 적 방어를 우회하므로 상한이 필요하다.
     // 값싼 경로(독버섯 직접)를 rawMax로 묶고, 절구·의학이 드는 추출 독에만
@@ -580,6 +583,14 @@ const BALANCE = {
     trapCheckIntervalTP:  8,     // 통발 자동 수확 주기 (TP)
     trapBaseCatch:        0.40,  // 통발 기본 어획률
     trapMaxCatch:         0.60,  // 통발 최대 어획률 (fishingQuality 3 기준)
+    // districts.js의 fishingQuality를 어획률로 환산한다. 기준치와 같으면 보정 0,
+    // 1포인트 넘을 때마다 qualityBonusPerStep을 더한다. 미선언 구는 기준치로 본다.
+    fishingQualityBase:   2,
+    qualityBonusPerStep:  0.10,
+    netQtyBonus:          1,     // 투망 보유 시 낚시 성공 수량 보너스
+    lureRareBonus:        0.15,  // 명인의 루어 희귀어 확률 보너스
+    crabTrapBonus:        0.10,  // 게 통발 보유 시 통발 어획률 보너스
+    autoTrapBaitSave:     0.5,   // 자동 포획 장치: 미끼 소모를 건너뛸 확률
     xpPerCast:            3,     // 낚시 시도 XP
     xpPerRareFish:        10,    // 희귀어 XP
     xpPerTrapHarvest:     1,     // 통발 수확 XP

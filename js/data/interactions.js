@@ -1,6 +1,7 @@
 import GameData from './GameData.js';
 import EventBus from '../core/EventBus.js';
 import BALANCE  from './gameBalance.js';
+import { getBaitCapacity, acceptsBait, describeBaitTags } from '../systems/baitable.js';
 
 function _defFor(inst) {
   return inst ? GameData.items?.[inst.definitionId] : null;
@@ -47,6 +48,39 @@ function _isFirearmTarget(inst) {
 // 근접무기 부착 대상 — 독 바르기와 동일한 판정 기준을 쓴다
 function _isMeleeAttachTarget(inst) {
   return _isPoisonableWeapon(inst);
+}
+
+// 덫에 끌어다 놓을 수 있는 카드의 태그. 실제로 받아주는지는 canApply가
+// 덫별 baitTags로 다시 거른다 — 여기서는 드래그 힌트가 뜨는 범위만 정한다.
+const BAIT_SOURCE_TAGS = ['food', 'food_raw'];
+
+// 미끼 → 덫 판정. 가시 트랩·설치된 지뢰처럼 tags에 'trap'이 있어도 미끼를 받지 않는
+// 카드가 있어 용량(baitCapacity) 선언 여부로 대상을 가른다.
+function _canBaitTrap(trapInst, baitInst) {
+  const trapDef = _defFor(trapInst);
+  const cap = getBaitCapacity(trapDef);
+  if (!cap) return { ok: false, reason: '미끼를 넣을 수 있는 덫이 아닙니다.' };
+  if (!acceptsBait(trapDef, _defFor(baitInst))) {
+    return { ok: false, reason: `이 덫은 ${describeBaitTags(trapDef)}만 미끼로 받습니다.` };
+  }
+  if ((trapInst._baitCharges ?? 0) >= cap) {
+    return { ok: false, reason: '덫에 미끼가 가득 차 있습니다.' };
+  }
+  return { ok: true };
+}
+
+function _applyBaitTrap(trapInst, baitInst, { baitIsSrc }) {
+  const cap = getBaitCapacity(_defFor(trapInst));
+  trapInst._baitCharges = Math.min(cap, (trapInst._baitCharges ?? 0) + cap);
+  baitInst.quantity = Math.max(0, (baitInst.quantity ?? 1) - 1);
+  const spent = baitInst.quantity <= 0;
+  EventBus.emit('refreshCard', { instanceId: trapInst.instanceId });
+  return {
+    message:    `덫에 미끼를 넣었습니다. 남은 사용 횟수: ${trapInst._baitCharges}회`,
+    consumeSrc: baitIsSrc ? spent : false,
+    consumeTgt: baitIsSrc ? false : spent,
+    noise:      0,
+  };
 }
 
 // 너클 랩 부착 대상 — 주먹에 감는 물건이라 hands 슬롯 방어구에만 붙는다
@@ -1743,7 +1777,9 @@ const INTERACTION_RULES = [
     },
   },
 
-  // ── 미끼 → 통발 ───────────────────────────────────────────
+  // ── 미끼 → 채집형 도구 ────────────────────────────────────
+  // 통발과 덫이 같은 조작을 쓴다. 바닥 같은 행에 미끼를 늘어놓는 방식은 도구 여러 개가
+  // 미끼 한 장을 몰래 공유해서, 어느 도구에 무엇이 걸렸는지 인스턴스가 들게 바꿨다.
   {
     id: 'bait_to_fish_trap',
     source: { tag: 'bait' },
@@ -1753,7 +1789,8 @@ const INTERACTION_RULES = [
       if (!tgtInst._isInstalled) {
         return { ok: false, reason: '통발이 설치되어 있지 않습니다. 한강 랜드마크에서 바닥에 내려놓아 설치하세요.' };
       }
-      if ((tgtInst._baitCharges ?? 0) >= 8) {
+      const cap = getBaitCapacity(_defFor(tgtInst));
+      if ((tgtInst._baitCharges ?? 0) >= cap) {
         return { ok: false, reason: '통발에 미끼가 가득 차 있습니다.' };
       }
       return { ok: true };
@@ -1771,6 +1808,23 @@ const INTERACTION_RULES = [
         noise:      0,
       };
     },
+  },
+
+  {
+    id: 'bait_to_trap',
+    source: { anyTag: BAIT_SOURCE_TAGS },
+    target: { tag: 'trap' },
+    hint: '덫에 미끼를 넣습니다',
+    canApply(srcInst, tgtInst) { return _canBaitTrap(tgtInst, srcInst); },
+    apply(srcInst, tgtInst)    { return _applyBaitTrap(tgtInst, srcInst, { baitIsSrc: true }); },
+  },
+  {
+    id: 'bait_to_trap_rev',
+    source: { tag: 'trap' },
+    target: { anyTag: BAIT_SOURCE_TAGS },
+    hint: '덫에 미끼를 넣습니다',
+    canApply(srcInst, tgtInst) { return _canBaitTrap(srcInst, tgtInst); },
+    apply(srcInst, tgtInst)    { return _applyBaitTrap(srcInst, tgtInst, { baitIsSrc: false }); },
   },
 
   {
@@ -2048,6 +2102,9 @@ function _matchesCriteria(def, criteria) {
   if (criteria.id   && def.id   !== criteria.id)           return false;
   if (criteria.type && def.type !== criteria.type)         return false;
   if (criteria.tag  && !def.tags?.includes(criteria.tag)) return false;
+  // 미끼처럼 한 태그로 묶이지 않는 대상용. 'food'와 'food_raw'는 서로 겹치지 않아
+  // 둘 중 하나만 걸면 조리식품이나 생재료 한쪽이 통째로 빠진다.
+  if (criteria.anyTag && !criteria.anyTag.some(t => def.tags?.includes(t))) return false;
   return true;
 }
 

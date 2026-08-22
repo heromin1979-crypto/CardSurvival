@@ -293,7 +293,7 @@ function formatEquipmentEffectParts(def) {
   if (armor?.defense) parts.push(`방어 ${armor.defense} 장착 중`);
   if (armor?.damageReduction) parts.push(`피해 -${formatPercent(armor.damageReduction)} 장착 중`);
   if (armor?.critReduction) parts.push(`치명 -${formatPercent(armor.critReduction)} 장착 중`);
-  if (armor?.movePenalty) parts.push(`이동 -${formatPercent(armor.movePenalty)} 장착 중`);
+  if (armor?.movePenalty) parts.push(`이동 TP +${formatPercent(armor.movePenalty)} 장착 중`);
 
   if (wear?.damageReduction) parts.push(`피해 -${formatPercent(wear.damageReduction)} 장착 중`);
   if (wear?.critReduction) parts.push(`치명 -${formatPercent(wear.critReduction)} 장착 중`);
@@ -304,7 +304,9 @@ function formatEquipmentEffectParts(def) {
   if (wear?.temperatureMin != null) parts.push(`${wear.temperatureMin}도 보호 장착 중`);
   if (wear?.acidImmunity) parts.push('산성 면역 장착 중');
   if (wear?.temperatureImmunity) parts.push(`${wear.temperatureImmunity}도 내열 장착 중`);
-  if (wear?.waterproof) parts.push('방수 장착 중');
+  if (wear?.waterproof) parts.push('비·눈 체온 하강 무효 장착 중');
+  if (wear?.restFatigueMult) parts.push(`휴식 피로 회복 ×${wear.restFatigueMult} 장착 중`);
+  if (wear?.coldResistMult) parts.push(`체온 하강 ×${wear.coldResistMult} 장착 중`);
   if (wear?.encounterReduction) parts.push(`조우 -${formatPercent(wear.encounterReduction)} 장착 중`);
   if (wear?.stealthBonus) parts.push(`은신 +${formatPercent(wear.stealthBonus)} 장착 중`);
   if (wear?.noiseReduction) parts.push(`소음 -${formatPercent(wear.noiseReduction)} 장착 중`);

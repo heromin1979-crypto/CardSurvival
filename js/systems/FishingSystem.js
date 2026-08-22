@@ -10,6 +10,8 @@ import { SKILL_DEFS } from '../data/skillDefs.js';
 import BALANCE     from '../data/gameBalance.js';
 import GameData    from '../data/GameData.js';
 import { landmarkHasFishing } from '../data/landmarks.js';
+import { DISTRICTS }         from '../data/districts.js';
+import { getBaitCapacity }  from './baitable.js';
 
 const B = BALANCE.fishing;
 
@@ -65,15 +67,82 @@ export function isFishingRod(def) {
   return !!def?.tags?.includes('rod');
 }
 
-/** board.middle에서 설치된 통발 인스턴스 반환 */
-function _findInstalledTrap() {
+/** 구의 fishingQuality를 어획률 보정으로 환산. 미선언 구는 기준치로 본다. */
+function _qualityBonus(districtId) {
+  const q = DISTRICTS?.[districtId]?.fishingQuality ?? B.fishingQualityBase;
+  return (q - B.fishingQualityBase) * B.qualityBonusPerStep;
+}
+
+/** 휴대(bottom)·바닥(middle)에 해당 도구가 있는지 */
+function _hasTool(defId) {
   const gs = GameState;
-  for (const instId of gs.board?.middle ?? []) {
-    if (!instId) continue;
-    const inst = gs.cards?.[instId];
-    if (inst?.definitionId === 'fish_trap' && inst._isInstalled) return { instId, inst };
+  for (const row of [gs.board?.bottom ?? [], gs.board?.middle ?? []]) {
+    for (const instId of row) {
+      if (instId && gs.cards?.[instId]?.definitionId === defId) return true;
+    }
   }
-  return null;
+  return false;
+}
+
+/**
+ * locationFloors 키에서 구 ID를 뽑는다. 키는 구 ID / 랜드마크 키 / 'sl:<구>:<세부장소>'
+ * 세 가지가 섞여 있다. 랜드마크 키는 DISTRICTS에 없어 _qualityBonus의 기준치 폴백으로 떨어진다.
+ */
+function _floorDistrict(key) {
+  return key.startsWith('sl:') ? key.split(':')[1] : key;
+}
+
+/**
+ * 설치된 통발을 전부 수집한다. 현재 바닥(board.middle)을 먼저 훑고,
+ * includeRemote면 다른 장소에 두고 온 바닥(locationFloors)까지 훑는다.
+ * locationFloors에는 현재 장소의 스냅샷이 그대로 남아 있어(ExploreSystem은 복원 시
+ * 키를 지우지 않는다) 같은 인스턴스가 두 번 잡힌다 — instanceId로 중복을 제거한다.
+ */
+function _findInstalledTraps(includeRemote) {
+  const gs    = GameState;
+  const found = new Map();
+  const scan = (slots, ctx) => {
+    for (const instId of slots ?? []) {
+      if (!instId || found.has(instId)) continue;
+      const inst = gs.cards?.[instId];
+      if (inst?.definitionId === 'fish_trap' && inst._isInstalled) {
+        found.set(instId, { instId, inst, ...ctx });
+      }
+    }
+  };
+
+  scan(gs.board?.middle, {
+    isRemote:   false,
+    floor:      null,
+    districtId: gs.location?.currentDistrict,
+  });
+
+  if (includeRemote) {
+    for (const [key, floor] of Object.entries(gs.locationFloors ?? {})) {
+      if (Array.isArray(floor)) {
+        scan(floor, { isRemote: true, floor, districtId: _floorDistrict(key) });
+      }
+    }
+  }
+  return [...found.values()];
+}
+
+/**
+ * 두고 온 바닥에 물고기를 놓는다. 빈 칸이 없으면 false —
+ * 호출부가 미끼를 소모하지 않고 다음 주기로 미룬다.
+ */
+function _placeOnFloor(floor, fishId) {
+  const gs      = GameState;
+  const maxSize = gs.board?.middle?.length ?? 10;
+  let slot = floor.findIndex(v => !v);
+  if (slot < 0) {
+    if (floor.length >= maxSize) return false;
+    slot = floor.length;
+  }
+  const caught = gs.createCardInstance(fishId, { quantity: 1 });
+  if (!caught) return false;
+  floor[slot] = caught.instanceId;
+  return true;
 }
 
 const FishingSystem = {
@@ -148,6 +217,7 @@ const FishingSystem = {
 
     catchChance += this.getRodBonus(rodId);
     catchChance += baitBonus;
+    catchChance += _qualityBonus(gs.location?.currentDistrict);
 
     const weather = gs.weather?.id ?? 'sunny';
     catchChance  += WEATHER_MOD[weather] ?? 0;
@@ -179,12 +249,15 @@ const FishingSystem = {
       return;
     }
 
-    // 어종 결정
-    const isRare = Math.random() < (bonuses.rareFishChance ?? 0);
+    // 어종 결정 — 명인의 루어는 희귀어 확률을, 투망은 마릿수를 올린다
+    const rareChance = (bonuses.rareFishChance ?? 0)
+                     + (_hasTool('master_angler_lure') ? B.lureRareBonus : 0);
+    const isRare = Math.random() < rareChance;
     const fishId = isRare ? 'fish_large' : (Math.random() < (BALANCE.fishing.nonRareSmallChance ?? 0.45) ? 'fish_small' : 'fish_medium');
     const fishDef = GameData?.items?.[fishId];
     const fishName = fishDef?.name ?? '물고기';
-    const qty    = 1 + (bonuses.catchQtyBonus ?? 0);
+    const qty    = 1 + (bonuses.catchQtyBonus ?? 0)
+                     + (_hasTool('fishing_net') ? B.netQtyBonus : 0);
     const caught = gs.createCardInstance(fishId, { quantity: qty });
     if (caught) gs.placeCardInRow(caught.instanceId, 'middle');
 
@@ -236,7 +309,9 @@ const FishingSystem = {
 
     const baitDef = GameData?.items?.[baitInst.definitionId];
     const addedCharges = baitDef?.id === 'bait_worm' ? 4 : 3;
-    const newCharges   = (trapInst._baitCharges ?? 0) + addedCharges;
+    // 상한을 넘겨 넣으면 미끼만 사라진다 — def의 baitCapacity로 자른다.
+    const capacity     = getBaitCapacity(GameData?.items?.[trapInst.definitionId]);
+    const newCharges   = Math.min(capacity, (trapInst._baitCharges ?? 0) + addedCharges);
 
     trapInst._baitCharges = newCharges;
 
@@ -252,53 +327,85 @@ const FishingSystem = {
     EventBus.emit('saveGame');
   },
 
-  /** 통발 패시브 수확 — trapCheckIntervalTP마다 호출 */
+  /**
+   * 통발 패시브 수확 — trapCheckIntervalTP마다 호출.
+   * 설치된 통발을 전부 독립 처리한다. 자동 포획 장치를 소지하면 낚시터를 떠나 있어도
+   * 두고 온 통발까지 돌고, 잡힌 물고기는 그 통발이 있는 바닥에 쌓인다.
+   */
   checkFishTrap() {
-    if (!_isInFishingLandmark()) return;
+    const gs   = GameState;
+    const here = _isInFishingLandmark();
+    const auto = _hasTool('automated_fish_trap');
+    if (!here && !auto) return;
 
-    const gs         = GameState;
-    const trapResult = _findInstalledTrap();
-    if (!trapResult) return;
+    const traps = _findInstalledTraps(auto);
+    if (!traps.length) return;
 
-    const { instId, inst } = trapResult;
+    const ctx = {
+      weather:   gs.weather?.id ?? 'sunny',
+      crabBonus: _hasTool('crab_trap') ? B.crabTrapBonus : 0,
+      auto,
+    };
+    let touched = false;
+    for (const trap of traps) {
+      if (this._harvestTrap(trap, ctx)) touched = true;
+    }
+    if (touched) EventBus.emit('saveGame');
+  },
+
+  /** 통발 1기 수확 판정. 상태가 바뀌었으면 true */
+  _harvestTrap(trap, ctx) {
+    const gs = GameState;
+    const { instId, inst, isRemote, floor, districtId } = trap;
     const charges = inst._baitCharges ?? 0;
 
     if (charges <= 0) {
-      // 미끼 없음 → 알림 (중복 방지: 마지막 알림 TP 기록)
-      const lastWarnTP = inst._noMikeWarnTP ?? -999;
-      if ((GameState.time?.totalTP ?? 0) - lastWarnTP > B.trapCheckIntervalTP * 3) {
-        EventBus.emit('notify', { message: '🪤 통발의 미끼가 없습니다. 미끼를 보충하세요.', type: 'warning' });
-        inst._noMikeWarnTP = GameState.time?.totalTP ?? 0;
+      // 미끼 없음 → 알림 (중복 방지: 마지막 알림 TP 기록). 두고 온 통발은 조용히 넘긴다.
+      if (!isRemote) {
+        const lastWarnTP = inst._noMikeWarnTP ?? -999;
+        if ((gs.time?.totalTP ?? 0) - lastWarnTP > B.trapCheckIntervalTP * 3) {
+          EventBus.emit('notify', { message: '🪤 통발의 미끼가 없습니다. 미끼를 보충하세요.', type: 'warning' });
+          inst._noMikeWarnTP = gs.time?.totalTP ?? 0;
+        }
       }
-      return;
+      return false;
     }
 
-    // 어획 확률 계산
-    const weather    = gs.weather?.id ?? 'sunny';
-    let baseChance   = B.trapBaseCatch;
-    baseChance      += WEATHER_MOD[weather] ?? 0;
-    baseChance       = Math.min(B.trapMaxCatch, Math.max(0.10, baseChance));
+    // 어획 확률 = 기본 + 날씨 + 구 fishingQuality + 게 통발
+    let chance = B.trapBaseCatch;
+    chance += WEATHER_MOD[ctx.weather] ?? 0;
+    chance += _qualityBonus(districtId);
+    chance += ctx.crabBonus;
+    chance  = Math.min(B.trapMaxCatch, Math.max(0.10, chance));
 
-    if (Math.random() < baseChance) {
-      const fishId = Math.random() < (BALANCE.fishing.trapMediumChance ?? 0.3) ? 'fish_medium' : 'fish_small';
-      const caught = gs.createCardInstance(fishId, { quantity: 1 });
-      if (caught) {
-        gs.placeCardInRow(caught.instanceId, 'middle');
-        SkillSystem.gainXp('fishing', B.xpPerTrapHarvest);
+    if (Math.random() < chance) {
+      const fishId = Math.random() < (B.trapMediumChance ?? 0.3) ? 'fish_medium' : 'fish_small';
+      let placed;
+      if (isRemote) {
+        placed = _placeOnFloor(floor, fishId);
+      } else {
+        const caught = gs.createCardInstance(fishId, { quantity: 1 });
+        placed = !!caught && !!gs.placeCardInRow(caught.instanceId, 'middle');
+      }
+      // 놓을 자리가 없으면 미끼를 태우지 않고 다음 주기로 미룬다
+      if (!placed) return false;
+
+      SkillSystem.gainXp('fishing', B.xpPerTrapHarvest);
+      if (!isRemote) {
         EventBus.emit('notify', { message: '🪤 통발에 물고기가 걸렸습니다!', type: 'good' });
       }
     }
 
-    // 미끼 소진 (수확 시도마다 1회 차감)
-    const newCharges = charges - 1;
-    inst._baitCharges = newCharges;
-
-    if (newCharges <= 0) {
-      EventBus.emit('notify', { message: '🪤 통발 미끼가 모두 소진되었습니다. 다시 미끼를 보충하세요.', type: 'warning' });
+    // 미끼 소진 (수확 시도마다 1회). 자동 포획 장치는 절반 확률로 소모를 건너뛴다.
+    if (!(ctx.auto && Math.random() < B.autoTrapBaitSave)) {
+      inst._baitCharges = charges - 1;
+      if (inst._baitCharges <= 0 && !isRemote) {
+        EventBus.emit('notify', { message: '🪤 통발 미끼가 모두 소진되었습니다. 다시 미끼를 보충하세요.', type: 'warning' });
+      }
     }
 
     EventBus.emit('refreshCard', { instanceId: instId });
-    EventBus.emit('saveGame');
+    return true;
   },
 
   init() {

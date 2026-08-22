@@ -1309,6 +1309,60 @@ const BLUEPRINTS = {
     ],
   },
 
+  make_hiking_boots: {
+    id: 'make_hiking_boots', name: '등산화 제작', category: 'armor',
+    hidden: true, unlockConditions: { minSkillLevel: { armorcraft: 2 } },
+    description: '가죽에 고무 밑창을 대어 발을 보호한다. 감염 위험과 피로가 줄어든다.',
+    output: [{ definitionId: 'hiking_boots', qty: 1 }],
+    requiredTools: [],
+    requiredSkills: { armorcraft: 2 },
+    stages: [{
+      stageIndex: 0, label: '갑피 재단과 밑창 접합', tpCost: 4,
+      requiredItems: [
+        { definitionId: 'leather', qty: 2 },
+        { definitionId: 'rubber', qty: 1 },
+        { definitionId: 'rope', qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  make_hazmat_boots: {
+    id: 'make_hazmat_boots', name: '방호화 제작', category: 'armor',
+    hidden: true, unlockConditions: { minSkillLevel: { armorcraft: 5 } },
+    description: '고무를 겹쳐 밀폐한 장화. 방사선과 오염을 발밑에서 막는다.',
+    output: [{ definitionId: 'hazmat_boots', qty: 1 }],
+    requiredTools: ['workbench'],
+    requiredSkills: { armorcraft: 5 },
+    stages: [{
+      stageIndex: 0, label: '고무 성형과 밀폐', tpCost: 5,
+      requiredItems: [
+        { definitionId: 'rubber', qty: 3 },
+        { definitionId: 'duct_tape', qty: 2 },
+        { definitionId: 'plastic', qty: 2 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  make_makeshift_shield: {
+    id: 'make_makeshift_shield', name: '임시 방패 제작', category: 'armor',
+    hidden: true, unlockConditions: { minSkillLevel: { armorcraft: 1 } },
+    description: '나무판에 고철을 덧대 급조한 방패. 강화 방패의 바탕이 된다.',
+    output: [{ definitionId: 'makeshift_shield', qty: 1 }],
+    requiredTools: [],
+    requiredSkills: { armorcraft: 1 },
+    stages: [{
+      stageIndex: 0, label: '판때기 보강', tpCost: 3,
+      requiredItems: [
+        { definitionId: 'wood', qty: 2 },
+        { definitionId: 'scrap_metal', qty: 2 },
+        { definitionId: 'rope', qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
   // ══════════════════════════════════════════════════════════════
   //  도구 (Tools)
   // ══════════════════════════════════════════════════════════════
@@ -1516,6 +1570,85 @@ const BLUEPRINTS = {
         { definitionId: 'cloth', qty: 4 },
         { definitionId: 'rope', qty: 2 },
         { definitionId: 'leather', qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  // 가방 사다리: 작은 가방(8) → 메신저백(11) → 배낭(14) → 더플백(17) → 군용 배낭(20).
+  // 칸 수는 bagSlots.js가 단일 진리이고, 여기서는 획득 난이도만 계단으로 맞춘다.
+  make_messenger_bag: {
+    id: 'make_messenger_bag', name: '메신저백 제작', category: 'tool',
+    hidden: true, unlockConditions: { minSkillLevel: { crafting: 1 } },
+    description: '어깨에 메는 넉넉한 가방. 작은 가방보다 세 칸 넓다.',
+    output: [{ definitionId: 'messenger_bag', qty: 1 }],
+    requiredTools: [],
+    requiredSkills: { crafting: 1 },
+    stages: [{
+      stageIndex: 0, label: '몸판 봉제와 어깨끈', tpCost: 3,
+      requiredItems: [
+        { definitionId: 'cloth', qty: 3 },
+        { definitionId: 'rope', qty: 2 },
+        { definitionId: 'leather', qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  make_military_bag: {
+    id: 'make_military_bag', name: '군용 배낭 제작', category: 'tool',
+    hidden: true, unlockConditions: { minDay: 30, minSkillLevel: { crafting: 5 } },
+    description: '군용 규격 배낭. 휴대 칸이 가장 넓다.',
+    output: [{ definitionId: 'military_bag', qty: 1 }],
+    requiredTools: ['workbench'],
+    requiredSkills: { crafting: 5 },
+    stages: [
+      {
+        stageIndex: 0, label: '본체 재단', tpCost: 6,
+        requiredItems: [
+          { definitionId: 'cloth', qty: 5 },
+          { definitionId: 'leather', qty: 3 },
+        ],
+        consumeAt: 'start',
+      },
+      {
+        stageIndex: 1, label: '프레임 보강', tpCost: 4,
+        requiredItems: [
+          { definitionId: 'duct_tape', qty: 2 },
+          { definitionId: 'rope', qty: 2 },
+        ],
+        consumeAt: 'start',
+      },
+    ],
+  },
+
+  make_gas_mask_filter: {
+    id: 'make_gas_mask_filter', name: '방독면 필터 제작', category: 'tool',
+    hidden: true, unlockConditions: { minSkillLevel: { crafting: 2 } },
+    description: '숯 필터를 천으로 감싸 방독면 규격에 맞춘 교체 필터.',
+    output: [{ definitionId: 'gas_mask_filter', qty: 1 }],
+    requiredTools: [],
+    requiredSkills: { crafting: 2 },
+    stages: [{
+      stageIndex: 0, label: '여과층 적층', tpCost: 3,
+      requiredItems: [
+        { definitionId: 'charcoal_filter', qty: 1 },
+        { definitionId: 'cloth', qty: 1 },
+        { definitionId: 'duct_tape', qty: 1 },
+      ],
+      consumeAt: 'start',
+    }],
+  },
+
+  break_bottle: {
+    id: 'break_bottle', name: '병 깨뜨리기', category: 'weapon',
+    description: '빈 병의 목을 잡고 깨뜨린다. 급할 때 손에 쥘 무기가 된다.',
+    output: [{ definitionId: 'broken_bottle', qty: 1 }],
+    requiredTools: [],
+    stages: [{
+      stageIndex: 0, label: '병목 파단', tpCost: 1,
+      requiredItems: [
+        { definitionId: 'empty_bottle', qty: 1 },
       ],
       consumeAt: 'start',
     }],

@@ -7,6 +7,7 @@ import TickEngine   from '../core/TickEngine.js';
 import NightSystem  from '../systems/NightSystem.js';
 import MentalSystem from '../systems/MentalSystem.js';
 import SeasonSystem from '../systems/SeasonSystem.js';
+import StatSystem   from '../systems/StatSystem.js';
 import StructureEffectSystem from '../systems/StructureEffectSystem.js';
 import BALANCE      from '../data/gameBalance.js';
 
@@ -94,14 +95,16 @@ const Rest = {
     // ── 수면 품질 판정 ──────────────────────────────────────
     const sleepQ = NightSystem.getSleepQuality();
 
-    // Apply effects (의료 침대 배율 → 수면 품질 순으로 반영)
+    // Apply effects (의료 침대 배율 → 수면 품질 → 침구 장착 순으로 반영)
     const effect = StructureEffectSystem.scaleRestRecovery(opt.effect, gs);
+    // 담요·침낭처럼 몸에 걸치는 침구는 피로 회복량을 키운다 (onWear.restFatigueMult)
+    const gearFatigueMult = StatSystem.getArmorEffects().restFatigueMult;
     for (const [key, val] of Object.entries(effect)) {
       if (key === 'hp') {
         gs.player.hp.current = Math.min(gs.player.hp.max, gs.player.hp.current + val);
       } else if (key === 'fatigue') {
-        // 음수(회복)일 때만 품질 배율 적용
-        const adjusted = val < 0 ? Math.round(val * sleepQ.fatigueMult) : val;
+        // 음수(회복)일 때만 품질·침구 배율 적용
+        const adjusted = val < 0 ? Math.round(val * sleepQ.fatigueMult * gearFatigueMult) : val;
         gs.modStat(key, adjusted);
       } else {
         gs.modStat(key, val);

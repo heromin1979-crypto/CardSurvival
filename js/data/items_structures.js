@@ -852,6 +852,9 @@ const ITEMS_STRUCTURES = {
     icon: '🪤', stackable: false, isStructure: true,
     description: '강물에 설치하는 통발. 8턴마다 자동으로 물고기를 수확한다.',
     tags: ['structure', 'fishing', 'crafted'],
+    // 미끼 카드를 통발 위로 끌어다 넣는다. 지렁이 4회 / 곤충 3회분이 충전된다.
+    baitTags: ['bait'],
+    baitCapacity: 8,
     dismantleTP: 2,
     dismantle: [
       { definitionId: 'rope', qty: 1, chance: 0.7 },

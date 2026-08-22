@@ -161,7 +161,7 @@ describe('통발 수확 — 확률 상한', () => {
 
   it('상한을 밸런스 상수(trapMaxCatch)로 잡는다', () => {
     expect(B.trapMaxCatch).toBeDefined();
-    const src = FishingSystem.checkFishTrap.toString();
+    const src = FishingSystem._harvestTrap.toString();
     expect(src).toContain('trapMaxCatch');
   });
 });

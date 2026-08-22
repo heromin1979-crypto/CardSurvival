@@ -384,9 +384,13 @@ function buildPlayerAttackSkills(gs) {
     const ranged = buildEquipmentSkill(mainId, mainDefinition, gs?.cards?.[mainId]);
     if (ranged) attacks.push(ranged);
   }
-  if (weaponSlotForDefinition(subDefinition) === 'weapon_sub') {
-    const melee = buildEquipmentSkill(subId, subDefinition, gs?.cards?.[subId]);
-    if (melee) attacks.push(melee);
+  // 방패처럼 combat이 없는 보조 장비를 끼면 근접 공격은 맨손으로 돌아간다.
+  // 슬롯이 찼다는 이유만으로 else를 건너뛰면 근접 수단이 통째로 사라진다.
+  const melee = weaponSlotForDefinition(subDefinition) === 'weapon_sub'
+    ? buildEquipmentSkill(subId, subDefinition, gs?.cards?.[subId])
+    : null;
+  if (melee) {
+    attacks.push(melee);
   } else {
     const unarmed = getCombatSkill('basic_strike');
     if (unarmed) attacks.push(cloneValue(unarmed));
