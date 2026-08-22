@@ -38,3 +38,18 @@ export function saveFiles(files) {
 export function pushChanges(message, paths, body) {
   return postJSON('/api/push', { message, paths, body });
 }
+
+/**
+ * 아이템 대장 감사 결과. serve.js가 tools/audit-items.mjs를 새 프로세스로 돌려
+ * 디스크의 최신 데이터로 재계산한다 (저장 직후에도 갱신된 값이 온다).
+ */
+export async function getItemAudit() {
+  const res = await fetch('/api/item-audit', { cache: 'no-store' });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const e = new Error(data.error || `아이템 감사 실패 (${res.status})`);
+    e.detail = data.detail || '';
+    throw e;
+  }
+  return data;
+}

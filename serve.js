@@ -7,6 +7,9 @@
 //   /api/info   → 현재 git 브랜치 등 정보
 //   /api/save   → 수정된 데이터 파일을 로컬 디스크에 기록 (화이트리스트만 허용)
 //   /api/push   → git add/commit/push (현재 브랜치)
+//
+// 데이터 에디터용 로컬 API (GET):
+//   /api/item-audit → 아이템 대장 감사 결과 (tools/audit-items.mjs)
 const http = require('http');
 const fs   = require('fs');
 const path = require('path');
@@ -14,7 +17,8 @@ const { exec, execFile } = require('child_process');
 const { mergeMotionLibrary } = require('./tools/motionLibraryStore.cjs');
 const animProjects = require('./tools/animProjectStore.cjs');
 
-const PORT = 8080;
+// 기본 8080. 이미 서버가 떠 있을 때 다른 포트로 띄우려면 PORT 환경변수로 바꾼다.
+const PORT = Number(process.env.PORT) || 8080;
 const ROOT = __dirname;
 
 // 에디터가 디스크에 쓸 수 있는 파일 화이트리스트 (그 외 경로 기록 거부)
@@ -103,6 +107,19 @@ function git(args, opts = {}) {
   });
 }
 
+// 지금 이 서버를 돌리는 것과 같은 node로 스크립트 실행.
+// PATH의 `node`가 구버전이면 js/data/*.js의 ESM 임포트가 깨지므로 execPath를 쓴다.
+// 매 호출마다 새 프로세스라 ESM 모듈 캐시를 타지 않고 디스크의 최신 데이터를 읽는다.
+function runSelfNode(args, timeout = 120000) {
+  return new Promise((resolve, reject) => {
+    execFile(process.execPath, args, { cwd: ROOT, timeout, maxBuffer: 32 * 1024 * 1024 },
+      (err, stdout, stderr) => {
+        if (err) { err.stdout = stdout; err.stderr = stderr; reject(err); }
+        else resolve({ stdout, stderr });
+      });
+  });
+}
+
 // node 스크립트 실행 헬퍼 (시뮬 baseline 측정용)
 function runNode(args) {
   return new Promise((resolve, reject) => {
@@ -116,6 +133,25 @@ function runNode(args) {
 async function handleApi(req, res, urlPath) {
   // 읽기 전용 GET 라우트 (시뮬 결과 뷰어용)
   if (req.method === 'GET') {
+    if (urlPath === '/api/item-audit') {
+      // 아이템 대장 — 아이템 659종의 배선·표시·잔여 필드 전수 감사
+      try {
+        const { stdout } = await runSelfNode(['tools/audit-items.mjs', '--json']);
+        let data;
+        try { data = JSON.parse(stdout); }
+        catch { sendJSON(res, 500, { error: '감사 결과 파싱 실패', detail: (stdout || '').slice(0, 500) }); return; }
+        sendJSON(res, 200, data);
+      } catch (e) {
+        // 가장 흔한 실패: node 구버전에서 js/data/*.js의 ESM 임포트가 깨진다
+        const stderr = String(e.stderr || '');
+        const detail = /Cannot use import statement outside a module/.test(stderr)
+          ? `node ${process.versions.node}에서는 js/data/*.js를 ESM으로 읽지 못합니다. `
+            + 'node 20 이상으로 serve.js를 다시 실행하세요.'
+          : stderr.slice(-1000);
+        sendJSON(res, 500, { error: '아이템 감사 실행 실패: ' + e.message, detail });
+      }
+      return;
+    }
     if (urlPath === '/api/sim/strategies') {
       // 전략 비교 — compareStrategies.mjs 실행
       const q = new URLSearchParams(req.url.split('?')[1] || '');

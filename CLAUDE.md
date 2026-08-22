@@ -23,6 +23,7 @@
 - **신규 세부장소 추가 시**: `landmarks.js`에 데이터를 넣으면 카드 정의는 `registerSubLocationItems`가 자동 생성하지만, 배경 이미지는 `assets/images/sublocations/<subLocationId>.png`를 직접 넣어야 한다. 없으면 빈 카드로 렌더되고 404가 발생한다 (`CardFactory.js`의 `subLocationImage`가 경로를 무조건 생성).
 - 환경 오브젝트(`type:'environment'`): `items_misc.js` 등록 (stream_spring/dry_stream 패턴)
 - 검증: `node js/data/validate.js`
+- **아이템 세팅 전수 감사**: `node tools/audit-items.mjs` (node 20+ 필수). 배선 문제·표시 누락·참고·정상 4단계로 분류하고, 에디터 `📋 대장` 탭이 `/api/item-audit`으로 같은 결과를 보여준다. 획득/사용 경로는 `js/data/` 전체를 훑어 **역할 키**(`lootTable`·`output`·`requiredItems`·`trapData`…)로 분류하므로, 새 데이터 구조를 만들면 `--unclassified`로 확인해 `ROLES` 표에 등록해야 한다 — 안 하면 그 경로로만 얻는 아이템이 "획득 경로 없음"으로 오탐된다
 - **신규 필드/개념 추가 시 (에디터 설명)**: 데이터에 새 필드를 넣으면 에디터(`tools/editor/`)는 `objNode` 재귀로 **자동 렌더**되지만 마우스오버 *설명(툴팁)*은 사전 등록이 있어야 뜬다. `tools/editor/editor.js`의 도움말 사전에 한 줄 등록 — **아이템 필드 → `ITEM_HELP`**, **밸런스 필드 → `BAL_HELP`**, **공용(구·랜드마크·퀘스트 등) → `FIELD_HELP`**. 누락 검사: `node tools/editor/check-help-coverage.mjs` (아이템 필드 전수 대조, 누락 시 exit 1)
 
 ## 4. 장비 슬롯 · NPC · 시스템
@@ -37,6 +38,7 @@
 - `--z-notify: 9000`: 알림은 모달(8000) 위, 사망 배너(9999) 아래 유지
 - `hydrationDecayPerTP: 1.0` — TP당 갈증 소모량 (gameBalance.js)
 - Sublocation 1회 한정 보상: `landmarks.js`의 `firstEnterReward`(claimKey + items) → `ExploreSystem._grantFirstEnterReward`가 `GameState.flags.firstEnterRewardsClaimed`로 중복 차단
+- **드랍 표는 3계층으로 완전히 분리**돼 있다 — 구(`DISTRICTS[구].lootTable` → `generateDistrictLoot`) / 랜드마크 자체(`LANDMARK_DATA[키].lootTable` → `_generateLandmarkLoot`) / 세부장소(`subLocations[].lootTable` → `_generateSubLocationLoot`). 랜드마크 안에서 누른 탐색은 `_arriveAtDistrict`가 조기 반환해 **구 자원·구 탐사도·제철 필터·도구/특성/스킬 보너스 픽을 전부 건너뛴다** — 반복 제한도 재고도 없으니 가중치·수량 조정 시 "1 TP 무제한 반복"을 전제로 볼 것. 계층별 차이·전체 확률표는 `docs/analysis/LANDMARK_LOOT_TABLE.md`(생성기: `scripts/generate_landmark_loot_doc.mjs` — 드랍 데이터 수정 후 재실행), 에디터 편집 위치는 `tools/editor/README.md` 참조
 - 구조물 지속 효과 `def.effect`(감염 저항·휴식 배율·차단 플래그)는 `onTick`과 경로가 다르다. `StructureEffectSystem`이 집계해 `player.structureEffects`에 캐시하고 소비처가 읽는다 — **집계·소비 배선 없이 `effect`만 선언하면 아무 동작도 하지 않는다**
 - 도구 역할 대체: `def.toolProvides: ['medical_station']` → 청사진 `requiredTools` 판정에서 id 일치와 동등 (`toolProvision.js`, CraftSystem·CraftDiscovery 양쪽 반영 필수)
 - 현재 날씨는 **`GameState.weather.id`**, 현재 계절은 **`GameState.season.current`** — 필드명이 서로 다르다. 날씨를 `.current`/`.currentWeather`로 읽으면 `?? 'sunny'` 폴백에 조용히 걸려 보정이 통째로 죽는다 (에러도 로그도 없음). 값도 `'rain'`이 아니라 **`'rainy'`**다. 비 계열 판정은 리터럴을 새로 쓰지 말고 `WeatherSystem`이 export하는 `isRainyWeather(id)` / `RAINY_WEATHER_IDS`를 쓴다

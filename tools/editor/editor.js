@@ -12,6 +12,7 @@ import {
   getFileText,
   saveFiles,
   pushChanges,
+  getItemAudit,
 } from './api.js';
 
 const state = {
@@ -26,6 +27,19 @@ const state = {
   itemSearch: '',       // 아이템 탭 검색어
   tab: 'balance',
   sel: {},              // tab -> selected sub-key
+  // 아이템 대장 — serve.js가 tools/audit-items.mjs로 계산한 감사 결과
+  audit: null,          // { criteria, summary, byType, byCode, items }
+  auditByItem: null,    // id -> status (아이템 탭 사이드바 점 배지)
+  auditLoading: false,
+  auditError: '',
+  ledger: {
+    q: '',
+    types: new Set(),     // 비면 전체
+    statuses: new Set(),  // 비면 전체
+    owners: new Set(),    // 'planner' | 'dev' — 비면 전체
+    expanded: new Set(),
+    expandAll: false,
+  },
 };
 
 const $ = (sel, root = document) => root.querySelector(sel);
@@ -1015,6 +1029,9 @@ async function loadAll() {
     status(`불러오기 완료. ⚠️ git 사용 불가(${state.gitReason}) — 저장은 로컬 디스크에만 기록되고 푸시는 생략됩니다. 수동 커밋이 필요합니다.`, 'info');
   }
   render();
+  // 대장 감사(약 1초)는 편집을 막지 않는다 — 뒤에서 받아 탭 배지·사이드바 점을 채운다.
+  // 실패해도 편집 기능에는 영향이 없으므로 에러는 대장 탭에서만 보여준다.
+  loadAudit().then(() => { if (state.tab === 'items') render(); });
 }
 
 // ─── 저장 + 커밋 + 푸시 (로컬 git) ───────────────────────────
@@ -1057,6 +1074,7 @@ async function saveAll() {
     if (!state.gitAvailable) {
       for (const key of changed) state.files[key].original = structuredClone(state.files[key].data);
       refreshChangeCount();
+      invalidateAudit();
       status(`💾 로컬 파일 ${files.length}개 저장 완료. git 사용 불가로 푸시 생략 — 수동으로 커밋/푸시하세요.`, 'info');
       return;
     }
@@ -1068,6 +1086,7 @@ async function saveAll() {
     // 성공 → 변경 baseline 갱신 (이제 "변경 없음" → 버튼 비활성화)
     for (const key of changed) state.files[key].original = structuredClone(state.files[key].data);
     refreshChangeCount();
+    invalidateAudit();
 
     if (result.committed && result.pushed) {
       status(`✅ 커밋 + 푸시 완료 → ${result.branch}  (${changed.length}개 파일)`, 'ok');
@@ -1100,6 +1119,10 @@ function collectIssues() {
 
   const lm = state.files.landmarks?.data || {};
   for (const [key, m] of Object.entries(lm)) {
+    // 랜드마크 자체 드랍 표 (세부장소 표와 별개)
+    (m.lootTable || []).forEach((r, i) => {
+      if (badItem(r.id)) issues.push({ fileKey: 'landmarks', entityKey: key, path: `lootTable[${i}].id`, id: r.id, msg: '존재하지 않는 아이템 ID' });
+    });
     (m.subLocations || []).forEach((sub, si) => {
       (sub.lootTable || []).forEach((r, i) => {
         if (badItem(r.id)) issues.push({ fileKey: 'landmarks', entityKey: key, path: `${sub.name || `세부장소#${si}`} ▸ lootTable[${i}].id`, id: r.id, msg: '존재하지 않는 아이템 ID' });
@@ -1197,6 +1220,296 @@ function renderValidationTab() {
   view.append(wrap);
 }
 
+// ─── 아이템 대장 탭 (감사 결과 열람 → 그 자리에서 편집) ───────
+// serve.js가 tools/audit-items.mjs를 돌려 준 결과를 상태별로 보여준다.
+// 검증 탭이 '참조 무결성'(없는 ID를 가리키는가)을 보는 것과 달리, 대장은
+// '아이템 자체의 세팅'(효과가 배선됐는가·획득 경로가 있는가·값이 화면에 뜨는가)을 본다.
+
+const TYPE_LABEL = {
+  consumable: '소비품', material: '재료', structure: '구조물', location: '장소',
+  tool: '도구', weapon: '무기', armor: '방어구', misc: '기타',
+  special: '특수', environment: '환경',
+};
+
+const STATUS_META = {
+  wiring:  { label: '배선 문제', cls: 'bad' },
+  display: { label: '표시 누락', cls: 'warn' },
+  info:    { label: '참고',      cls: 'note' },
+  ok:      { label: '정상',      cls: 'good' },
+};
+const STATUS_SEQ = ['ok', 'info', 'display', 'wiring'];
+
+/** 감사 결과를 불러온다. force=true면 캐시를 버리고 다시 계산시킨다. */
+async function loadAudit(force = false) {
+  if (state.audit && !force) return;
+  state.auditLoading = true;
+  state.auditError = '';
+  if (state.tab === 'ledger') render();
+  try {
+    state.audit = await getItemAudit();
+    state.auditByItem = Object.fromEntries(state.audit.items.map((i) => [i.id, i.status]));
+    refreshLedgerCount();
+  } catch (e) {
+    state.auditError = e.detail ? `${e.message}\n${e.detail}` : e.message;
+  } finally {
+    state.auditLoading = false;
+    if (state.tab === 'ledger') render();
+  }
+}
+
+/**
+ * 디스크가 바뀌었으니 판정을 버린다. 저장 직후 호출.
+ * 대장 탭을 보고 있으면 즉시 재계산하고, 아니면 다음에 탭을 열 때 다시 받는다.
+ */
+function invalidateAudit() {
+  state.audit = null;
+  state.auditByItem = null;
+  refreshLedgerCount();
+  if (state.tab === 'ledger') loadAudit(true);
+}
+
+// 탭 배지 — 손댈 거리(배선 문제 + 표시 누락)만 센다. 참고는 배지에 넣지 않는다.
+function refreshLedgerCount() {
+  const badge = $('#ledger-count');
+  if (!badge) return;
+  const s = state.audit?.summary;
+  badge.textContent = s ? String(s.wiring + s.display) : '';
+}
+
+/** 대장 검색 — 이름·ID·설명·지적 내용·획득처/사용처 라벨(구 이름 포함)을 훑는다 */
+function ledgerMatches(item, q) {
+  if (!q) return true;
+  const hay = [
+    item.id, item.name, item.description, item.subtype,
+    TYPE_LABEL[item.type] || item.type,
+    ...item.findings.map((f) => `${f.field} ${f.msg} ${f.fix || ''}`),
+    ...item.acquisition.map((a) => a.label),
+    ...item.usage.map((u) => u.label),
+  ].join(' ').toLowerCase();
+  return hay.includes(q);
+}
+
+function ledgerFiltered() {
+  const L = state.ledger;
+  const q = L.q.trim().toLowerCase();
+  return (state.audit?.items || []).filter((it) =>
+    (!L.types.size || L.types.has(it.type))
+    && (!L.statuses.size || L.statuses.has(it.status))
+    // 담당 필터는 '정상'을 제외한다 — 지적이 없는 카드에는 담당이 없다
+    && (!L.owners.size || (it.status !== 'ok' && it.owners.some((o) => L.owners.has(o))))
+    && ledgerMatches(it, q));
+}
+
+/** 상태 카드 — 클릭하면 그 상태만 보도록 토글 */
+function ledgerStatCard(key, count) {
+  const meta = STATUS_META[key];
+  const on = state.ledger.statuses.has(key);
+  return el('button', {
+    class: `stat-card ${meta.cls}${on ? ' active' : ''}`,
+    title: on ? '클릭하면 이 상태 필터를 해제합니다' : '클릭하면 이 상태만 봅니다',
+    onclick: () => {
+      const s = state.ledger.statuses;
+      if (s.has(key)) s.delete(key); else s.add(key);
+      render();
+    },
+  }, [
+    el('div', { class: 'stat-num', text: String(count) }),
+    el('div', { class: 'stat-label', text: meta.label }),
+  ]);
+}
+
+/** 아이템 한 줄 — 접힌 상태에서는 요약, 펼치면 지적 내용 + 획득처/사용처 */
+function ledgerRow(item) {
+  const L = state.ledger;
+  const open = L.expandAll || L.expanded.has(item.id);
+  const meta = STATUS_META[item.status];
+  const typeText = [TYPE_LABEL[item.type] || item.type, item.slot].filter(Boolean).join('·');
+
+  const head = el('button', {
+    class: 'ledger-head',
+    onclick: () => {
+      // 전체 펼침 중에 개별 행을 누르면 그 행만 접히도록 전체 펼침을 해제하고 나머지를 유지
+      if (L.expandAll) {
+        L.expandAll = false;
+        for (const i of ledgerFiltered()) L.expanded.add(i.id);
+      }
+      if (L.expanded.has(item.id)) L.expanded.delete(item.id); else L.expanded.add(item.id);
+      render();
+    },
+  }, [
+    el('span', { class: 'ledger-icon', text: item.icon || '·' }),
+    el('span', { class: 'ledger-names' }, [
+      el('span', { class: 'ledger-name', text: item.name || item.id }),
+      el('span', { class: 'ledger-desc', text: item.description || '' }),
+    ]),
+    el('code', { class: 'ledger-id', text: item.id }),
+    el('span', { class: 'ledger-type', text: typeText }),
+    el('span', { class: `badge ${meta.cls}`, text: meta.label }),
+  ]);
+
+  if (!open) return el('div', { class: 'ledger-row' }, [head]);
+
+  const body = el('div', { class: 'ledger-body' });
+
+  if (item.findings.length) {
+    for (const f of item.findings) {
+      const fm = STATUS_META[f.status];
+      const block = el('div', { class: 'finding' }, [
+        el('div', { class: 'finding-line' }, [
+          el('span', { class: `badge ${fm.cls}`, text: fm.label }),
+          el('code', { class: 'finding-field', text: f.field }),
+          el('span', { class: 'finding-msg', text: f.msg }),
+        ]),
+      ]);
+      // 고치는 방법 — 기획자가 읽고 바로 움직일 수 있게 담당과 함께 보여준다
+      if (f.fix) {
+        block.append(el('div', { class: `fix-hint ${f.owner}` }, [
+          el('span', { class: `owner-badge ${f.owner}`, text: f.owner === 'planner' ? '🧩 기획에서 수정 가능' : '🔧 개발 배선 필요' }),
+          el('span', { class: 'fix-text', text: f.fix }),
+        ]));
+      }
+      body.append(block);
+    }
+  } else {
+    body.append(el('div', { class: 'hint', text: '지적 사항이 없습니다.' }));
+  }
+
+  const pathList = (title, rows, emptyText) => el('div', { class: 'path-block' }, [
+    el('div', { class: 'kv-title', text: title }),
+    rows.length
+      ? el('div', { class: 'chips' }, rows.slice(0, 40).map((r) => el('span', { class: 'chip', text: r.label })))
+      : el('div', { class: 'hint', text: emptyText }),
+    ...(rows.length > 40 ? [el('div', { class: 'hint', text: `외 ${rows.length - 40}건` })] : []),
+  ]);
+
+  body.append(pathList('획득처', item.acquisition, '없음 — 플레이 중 등장할 수 없습니다'));
+  body.append(pathList('사용처', item.usage, '없음'));
+
+  body.append(el('div', { class: 'field-row', style: 'margin-top:12px' }, [
+    el('button', {
+      class: 'ghost', text: '→ 아이템 탭에서 편집',
+      onclick: () => {
+        const fk = buildItemIndex()[item.id];
+        if (!fk) { status(`${item.id}는 편집 가능한 아이템 소스에 없습니다 (파생 카드일 수 있습니다).`, 'warn'); return; }
+        gotoEntity(fk, item.id);
+      },
+    }),
+  ]));
+
+  return el('div', { class: 'ledger-row open' }, [head, body]);
+}
+
+function renderLedgerTab() {
+  const wrap = el('div');
+
+  if (state.auditError) {
+    wrap.append(el('h2', { text: '📋 아이템 대장' }));
+    wrap.append(el('div', { class: 'status err', style: 'border-radius:8px', text: state.auditError }));
+    wrap.append(el('button', { class: 'ghost row-add', text: '🔄 다시 시도', onclick: () => loadAudit(true) }));
+    view.append(wrap);
+    return;
+  }
+  if (!state.audit) {
+    wrap.append(el('div', { class: 'empty', text: state.auditLoading ? '아이템 659종 감사 중…' : '감사 결과를 불러오는 중…' }));
+    view.append(wrap);
+    if (!state.auditLoading) loadAudit();
+    return;
+  }
+
+  const { summary, criteria, byType } = state.audit;
+  const L = state.ledger;
+
+  // 상태 카드 4장 — 아티팩트와 같은 순서(정상 → 참고 → 표시 누락 → 배선 문제)
+  wrap.append(el('div', { class: 'stat-cards' }, STATUS_SEQ.map((k) => ledgerStatCard(k, summary[k]))));
+
+  // 판정 기준 — 엔진이 실제로 쓰는 규칙을 그대로 내려받아 표시한다 (문구가 갈리지 않게)
+  wrap.append(el('div', { class: 'criteria-panel' }, [
+    el('div', { class: 'criteria-title', text: '판정 기준' }),
+    ...criteria.filter((c) => c.key !== 'ok').map((c) => el('div', { class: 'criteria-row' }, [
+      el('span', { class: `badge ${c.tone === 'bad' ? 'bad' : c.tone === 'warn' ? 'warn' : 'note'}`, text: c.label }),
+      el('span', { class: 'criteria-text', text: c.text }),
+    ])),
+    el('div', { class: 'criteria-row' }, [
+      el('span', { class: 'criteria-text hint', text: '‘획득처’는 드랍표·제작·보상·덫·분해 등 데이터에 등재된 경로이고, 시스템 산출은 코드가 카드를 직접 만드는 경로입니다. 판정은 배타적이라 아이템 1개당 상태 1개이며, 배선 문제 > 표시 누락 > 참고 순으로 대표 상태가 정해집니다.' }),
+    ]),
+    el('div', { class: 'criteria-row' }, [
+      el('span', { class: 'owner-badge planner', text: '🧩 기획에서 수정 가능' }),
+      el('span', { class: 'criteria-text', text: '에디터에서 데이터만 고쳐 해결됩니다 — 각 지적 아래에 어느 탭 어느 필드를 어떻게 만지면 되는지 적혀 있습니다.' }),
+    ]),
+    el('div', { class: 'criteria-row' }, [
+      el('span', { class: 'owner-badge dev', text: '🔧 개발 배선 필요' }),
+      el('span', { class: 'criteria-text', text: '읽는 코드가 없어 데이터만 고쳐도 동작하지 않습니다. 개발자에게 넘기고, 그때까지는 설명문이 없는 효과를 약속하지 않게 문구만 맞춰 주세요.' }),
+    ]),
+  ]));
+
+  // 검색 + 전체 펼치기
+  const search = el('input', {
+    value: L.q, placeholder: '이름 · ID · 설명 · 지적 내용 · 획득처(구 이름)로 검색',
+  });
+  search.addEventListener('input', () => { L.q = search.value; L.expandAll = false; renderLedgerRows(); });
+
+  const rows = ledgerFiltered();
+  const countLabel = el('span', { class: 'hint', text: `${rows.length} / ${summary.total}종` });
+  const expandBtn = el('button', {
+    class: 'ghost', text: L.expandAll ? '모두 접기' : '보이는 항목 모두 펼치기',
+    onclick: () => { L.expandAll = !L.expandAll; if (!L.expandAll) L.expanded.clear(); render(); },
+  });
+
+  wrap.append(el('div', { class: 'ledger-toolbar' }, [
+    el('div', { class: 'field grow' }, [search]),
+    countLabel,
+    expandBtn,
+    el('button', { class: 'ghost', text: '🔄 다시 검사', title: '데이터를 고친 뒤 눌러 재계산합니다', onclick: () => loadAudit(true) }),
+  ]));
+
+  // 담당 칩 — "지금 내가(기획이) 손댈 수 있는 것만" 이 대장의 첫 번째 용도다
+  const ownerChips = el('div', { class: 'filter-chips owner-chips' });
+  for (const key of ['planner', 'dev']) {
+    const n = state.audit.byOwner?.[key] ?? 0;
+    ownerChips.append(el('button', {
+      class: 'filter-chip owner' + (L.owners.has(key) ? ' active' : ''),
+      title: key === 'planner'
+        ? '에디터에서 데이터만 고쳐서 해결되는 항목'
+        : '코드 배선이 필요해 개발자에게 넘겨야 하는 항목',
+      text: `${key === 'planner' ? '🧩' : '🔧'} ${state.audit.ownerLabels?.[key] || key} ${n}`,
+      onclick: () => { if (L.owners.has(key)) L.owners.delete(key); else L.owners.add(key); render(); },
+    }));
+  }
+  wrap.append(ownerChips);
+
+  // 분류 칩 — 종류별
+  const typeChips = el('div', { class: 'filter-chips' });
+  for (const [type, n] of Object.entries(byType).sort((a, b) => b[1] - a[1])) {
+    typeChips.append(el('button', {
+      class: 'filter-chip' + (L.types.has(type) ? ' active' : ''),
+      text: `${TYPE_LABEL[type] || type} ${n}`,
+      onclick: () => { if (L.types.has(type)) L.types.delete(type); else L.types.add(type); render(); },
+    }));
+  }
+  wrap.append(typeChips);
+
+  const listBox = el('div', { class: 'ledger-list' });
+  wrap.append(listBox);
+
+  // 행만 다시 그린다 — 검색 중 입력 포커스를 잃지 않도록 전체 render()를 피한다
+  function renderLedgerRows() {
+    const list = ledgerFiltered();
+    countLabel.textContent = `${list.length} / ${summary.total}종`;
+    listBox.innerHTML = '';
+    if (!list.length) {
+      listBox.append(el('div', { class: 'empty', text: '조건에 맞는 아이템이 없습니다.' }));
+      return;
+    }
+    for (const it of list.slice(0, 400)) listBox.append(ledgerRow(it));
+    if (list.length > 400) {
+      listBox.append(el('div', { class: 'hint', text: `※ 상위 400개만 표시 — 검색·필터로 좁히세요 (총 ${list.length}건).` }));
+    }
+  }
+  renderLedgerRows();
+
+  view.append(wrap);
+}
+
 // ─── 아이템 탭 (소스 직접 편집) ───────────────────────────────
 // 편집 가능한 아이템 소스 파일에서 id → fileKey 인덱스 구성
 function buildItemIndex() {
@@ -1289,11 +1602,17 @@ function renderItemsTab() {
     listBox.append(el('div', { class: 'side-group', text: `${matched.length} / ${ids.length}개` }));
     for (const id of matched.slice(0, 500)) {
       const it = state.files[idx[id]].data[id];
+      // 대장 감사 결과가 있으면 상태를 점으로 표시 — 편집 중에도 문제 여부가 보인다
+      const st = state.auditByItem?.[id];
+      const dotCls = st && st !== 'ok' ? STATUS_META[st].cls : '';
       listBox.append(el('button', {
         class: 'side-item' + (id === state.sel.items ? ' active' : ''),
-        text: `${it.icon || ''} ${it.name || id}`,
+        title: st ? `대장 판정: ${STATUS_META[st].label}` : '',
         onclick: () => { state.sel.items = id; renderList(); renderDetail(); },
-      }));
+      }, [
+        el('span', { class: `side-dot ${dotCls}` }),
+        el('span', { class: 'side-item-label', text: `${it.icon || ''} ${it.name || id}` }),
+      ]));
     }
     if (matched.length > 500) listBox.append(el('div', { class: 'hint', text: '※ 상위 500개만 표시 — 검색으로 좁히세요.' }));
   };
@@ -1834,6 +2153,7 @@ function _renderTab() {
   if (state.tab === 'flow') return renderFlowTab();
   if (state.tab === 'changes') return renderChangesTab();
   if (state.tab === 'validate') return renderValidationTab();
+  if (state.tab === 'ledger') return renderLedgerTab();
   // 세부장소·퀘스트는 단일 state.files 키가 없다(세부장소=landmarks.js 내부, 퀘스트=19파일 병합)
   // → 파일 가드보다 먼저 처리.
   if (state.tab === 'sublocations') return renderSubLocationsTab();
@@ -2133,6 +2453,48 @@ function deleteHidden(key) {
   render();
 }
 
+// 드랍 표 공용 수량 열 — 비우면 1개(기본). 구·랜드마크·세부장소 모두 같은 필드를 쓴다.
+const LOOT_QTY_COLS = [{ key: 'minQty', label: 'min' }, { key: 'maxQty', label: 'max' }];
+
+// [min, max] 배열 필드를 두 칸 숫자 입력으로. 배열이 없으면 첫 입력 때 생성한다(빈 diff 방지).
+function rangeInputs(obj, key, fileKey, labels, fallback) {
+  const mk = (i) => {
+    const cur = Array.isArray(obj[key]) ? obj[key][i] : undefined;
+    const inp = el('input', { type: 'number', value: cur ?? '', placeholder: String(fallback[i]) });
+    inp.addEventListener('input', () => {
+      if (!Array.isArray(obj[key])) obj[key] = fallback.slice();
+      obj[key][i] = Number(inp.value);
+      markDirty(fileKey);
+    });
+    return el('div', { class: 'field' }, [fieldLabel(labels[i], key), inp]);
+  };
+  return el('div', { class: 'field-row' }, [mk(0), mk(1)]);
+}
+
+/**
+ * 랜드마크 자체 드랍 표 — 랜드마크 안에서 「탐색」을 눌렀을 때 쓰는 표.
+ * 구 lootTable·세부장소 lootTable과 완전히 분리돼 있다 (ExploreSystem._generateLandmarkLoot).
+ */
+function renderLandmarkLootFieldset(lm) {
+  const fs = el('fieldset', {}, el('legend', { text: 'lootTable (랜드마크 전용 드랍)' }));
+  fs.append(el('div', {
+    class: 'hint',
+    text: '랜드마크 안에서 「탐색」을 눌렀을 때 나오는 표. 구·세부장소 표와 따로 굴러서, 같은 자리에서 구 자원을 반복 채집할 수 없습니다.',
+  }));
+  if (!Array.isArray(lm.lootTable)) {
+    // 표가 없는 랜드마크(베이스캠프 등) — 훑어보기만 해도 빈 배열이 생기지 않게 명시적으로 만든다.
+    fs.append(el('div', { class: 'hint', text: '이 랜드마크는 전용 드랍 표가 없습니다 — 랜드마크 자체 탐색에서 아무것도 나오지 않습니다.' }));
+    fs.append(el('button', {
+      class: 'ghost', text: '+ 전용 드랍 표 만들기',
+      onclick: () => { lm.lootTable = []; lm.lootCount = [1, 2]; markDirty('landmarks'); rerenderDetail(); },
+    }));
+    return fs;
+  }
+  fs.append(rangeInputs(lm, 'lootCount', 'landmarks', ['lootCount min', 'lootCount max'], [1, 2]));
+  fs.append(lootTableEditor(lm.lootTable, 'id', LOOT_QTY_COLS, 'landmarks'));
+  return fs;
+}
+
 function renderLandmarkDetail(root, lm) {
   const key = state.sel.landmarks;
   const protectedLm = isProtectedLandmark(key);
@@ -2180,8 +2542,12 @@ function renderLandmarkDetail(root, lm) {
   flagRow.append(optionalFlag(lm, 'isBasecampLandmark', 'landmarks'));
   root.append(el('fieldset', {}, [el('legend', { text: '기능 플래그' }), flagRow]));
 
+  // 랜드마크 전용 드랍 — 구/세부장소 표와 완전히 분리된 자체 표
+  root.append(renderLandmarkLootFieldset(lm));
+
   // 기타 필드 — 수제 폼이 다루지 않는 필드 자동 노출 (레이더 캠프 등)
-  const HANDLED = new Set(['name', 'icon', 'desc', 'subLocations', 'hasFishing', 'isBasecampLandmark']);
+  const HANDLED = new Set(['name', 'icon', 'desc', 'subLocations', 'hasFishing', 'isBasecampLandmark',
+    'lootTable', 'lootCount']);
   const extras = Object.keys(lm).filter((k) => !HANDLED.has(k));
   if (extras.length) {
     const exRow = el('div', { class: 'field-row' });
@@ -2219,7 +2585,7 @@ function renderLandmarkDetail(root, lm) {
       sfr.append(mk(0, 'lootCount min'), mk(1, 'lootCount max'));
     }
     fs.append(sfr);
-    fs.append(lootTableEditor(sub.lootTable || (sub.lootTable = []), 'id', [], 'landmarks'));
+    fs.append(lootTableEditor(sub.lootTable || (sub.lootTable = []), 'id', LOOT_QTY_COLS, 'landmarks'));
     subFs.append(fs);
   }
   root.append(subFs);
@@ -2594,7 +2960,7 @@ function renderSubLocationDetail(root) {
   }
 
   const fs = el('fieldset', {}, el('legend', { text: 'lootTable (세부장소 드랍)' }));
-  fs.append(lootTableEditor(sub.lootTable || (sub.lootTable = []), 'id', [], 'landmarks'));
+  fs.append(lootTableEditor(sub.lootTable || (sub.lootTable = []), 'id', LOOT_QTY_COLS, 'landmarks'));
   root.append(fs);
 }
 
