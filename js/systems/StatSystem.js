@@ -756,10 +756,13 @@ const StatSystem = {
       critBonus:             0,     // 합산 — 치명타 확률
       critMultiplierBonus:   0,     // 합산 — 치명타 배율
       hpRegenPerTP:          0,     // 합산 — TP당 HP 회복
+      movePenalty:           0,     // 합산 — 구 이동 TP 증가 (중장갑). travelCostReduction과 상쇄된다
+      restFatigueMult:       1.0,   // 곱 — 휴식 피로 회복 배율 (담요·침낭)
       fatigueMult:           1.0,   // 곱 — 피로 증가 배율
       coldResistMult:        1.0,   // 곱 — 체온 하강 완화
       hypothermiaChanceMult: 1.0,   // 곱 — 저체온증 누적 속도
       coldImmunity:          false,
+      waterproof:            false,  // 비·눈 체온 하강 무효 (WeatherSystem이 캐시를 읽는다)
       acidImmunity:          false,  // 산성비 노출·전투 산성 상태이상 무효
       temperatureMin:        null,  // 체온 하한 (가장 낮은 값 채택)
       temperatureImmunity:   null,  // 고온 상한 (가장 높은 값 채택)
@@ -789,10 +792,12 @@ const StatSystem = {
       if (w?.critBonus)            result.critBonus            += w.critBonus;
       if (w?.critMultiplierBonus)  result.critMultiplierBonus  += w.critMultiplierBonus;
       if (w?.hpRegenPerTP)         result.hpRegenPerTP         += w.hpRegenPerTP;
+      if (w?.restFatigueMult)       result.restFatigueMult       *= w.restFatigueMult;
       if (w?.fatigueMult)           result.fatigueMult           *= w.fatigueMult;
       if (w?.coldResistMult)        result.coldResistMult        *= w.coldResistMult;
       if (w?.hypothermiaChanceMult) result.hypothermiaChanceMult *= w.hypothermiaChanceMult;
       if (w?.coldImmunity)      result.coldImmunity = true;
+      if (w?.waterproof)        result.waterproof   = true;
       if (w?.acidImmunity)      result.acidImmunity = true;
       if (typeof w?.temperatureMin === 'number') {
         result.temperatureMin = result.temperatureMin == null
@@ -804,6 +809,7 @@ const StatSystem = {
       }
       if (armor?.damageReduction) result.damageReduction += armor.damageReduction;
       if (armor?.critReduction)   result.critReduction   += armor.critReduction;
+      if (armor?.movePenalty)     result.movePenalty     += armor.movePenalty;
       result.damageReduction += modDamageReduction;
       result.critReduction   += modCritReduction;
     }
@@ -814,6 +820,8 @@ const StatSystem = {
     result.moraleDecayReduction = Math.min(0.9, result.moraleDecayReduction);
     result.travelCostReduction  = Math.min(0.9, result.travelCostReduction);
     result.encounterReduction   = Math.min(0.9, result.encounterReduction);
+    // 중장갑 이동 패널티는 상한을 둔다 — 판금 여러 겹으로 이동 비용이 배로 뛰지 않게
+    result.movePenalty          = Math.min(BALANCE.armor.movePenaltyCap, result.movePenalty);
     return result;
   },
 
@@ -928,11 +936,16 @@ const StatSystem = {
     return Math.max(1, Math.round(baseCost * (1 - reduction)));
   },
 
-  /** 장착 효과가 반영된 이동 TP 비용. 최소 1TP는 남긴다. */
+  /**
+   * 장착 효과가 반영된 이동 TP 비용. 최소 1TP는 남긴다.
+   * 감소(승무원 통행증)와 증가(판금 계열 movePenalty)를 같은 축에서 상쇄한다 —
+   * 두 값을 따로 곱하면 통행증을 끼고도 갑옷 때문에 비용이 늘어나는 순서 의존이 생긴다.
+   */
   applyTravelCost(baseCost) {
-    const reduction = this.getArmorEffects().travelCostReduction;
-    if (!reduction) return baseCost;
-    return Math.max(1, Math.round(baseCost * (1 - reduction)));
+    const armor = this.getArmorEffects();
+    const net = armor.travelCostReduction - armor.movePenalty;
+    if (!net) return baseCost;
+    return Math.max(1, Math.round(baseCost * (1 - net)));
   },
 
   /** 장착 효과의 TP당 HP 회복 (어머니의 목걸이 등) */

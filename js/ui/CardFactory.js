@@ -10,6 +10,7 @@ import { HANGANG_DISTRICTS } from '../data/landmarks.js';
 import { getMagazineState } from '../systems/WeaponAmmoSystem.js';
 import { formatInstanceName } from '../systems/ItemEffectSystem.js';
 import { canCollectWater, isWaterSource } from '../systems/waterSource.js';
+import { baitState } from '../systems/baitable.js';
 import { uiIcon } from './UiIcon.js';
 import { dataIcon } from './DataIcon.js';
 
@@ -92,6 +93,10 @@ const CARD_IMAGES = {
   rat_trap:             'assets/images/tools/rat_trap.png',
   pigeon_snare:         'assets/images/tools/pigeon_snare.png',
   alley_pit_trap:       'assets/images/tools/alley_pit_trap.png',
+  // 미끼가 들어간 상태의 변형. cardImageFor가 '<id>_baited'로 찾는다.
+  rat_trap_baited:      'assets/images/tools/rat_trap_baited.png',
+  pigeon_snare_baited:  'assets/images/tools/pigeon_snare_baited.png',
+  alley_pit_trap_baited:'assets/images/tools/alley_pit_trap_baited.png',
   live_rat:             'assets/images/food/live_rat.png',
   live_pigeon:          'assets/images/food/live_pigeon.png',
   live_stray_animal:    'assets/images/food/live_stray_animal.png',
@@ -464,6 +469,7 @@ const CARD_IMAGES = {
   fermentation_pot:      'assets/images/structures/fermentation_pot.png',
   field_forge:           'assets/images/structures/field_forge.png',
   fish_trap:             'assets/images/structures/fish_trap.png',
+  fish_trap_baited:      'assets/images/structures/fish_trap_baited.png',
   garden_bed_grain:      'assets/images/structures/garden_bed_grain.png',
   garden_bed_herb:       'assets/images/structures/garden_bed_herb.png',
   garden_bed_veggie:     'assets/images/structures/garden_bed_veggie.png',
@@ -737,6 +743,20 @@ const CARD_IMAGES = {
 
 // 경로를 무조건 만들면 배경 이미지가 없는 세부장소는 404 + 빈 카드가 된다.
 // noSceneImage를 선언한 장소는 경로를 만들지 않고 아이콘 폴백으로 넘긴다.
+/**
+ * 미끼가 들어간 도구는 '<id>_baited' 이미지로 바꿔 그린다.
+ * 아직 에셋이 없으면 기본 이미지로 떨어뜨린다 — 없는 경로를 그대로 물리면 404가 난다.
+ */
+function cardImageFor(inst, def) {
+  const base = CARD_IMAGES[inst.definitionId] ?? null;
+  if (!base) return null;
+  const bait = baitState(inst);
+  if (bait && bait.charges > 0) {
+    return CARD_IMAGES[`${inst.definitionId}_baited`] ?? base;
+  }
+  return base;
+}
+
 function subLocationImage(def) {
   if (def?.noSceneImage) return null;
   // 전용 배경이 없는 세부장소(랜드마크 입구 등)는 데이터가 대체 경로를 직접 지정한다.
@@ -1303,10 +1323,17 @@ const CardFactory = {
         <div class="card-durability-fill ${durClass}" style="width:${durPct}%"></div>
       </div>` : '';
 
-    const imgSrc = CARD_IMAGES[inst.definitionId] ?? null;
+    const imgSrc = cardImageFor(inst, def);
+    // 미끼 상태는 카드 테두리가 아니라 아트 영역에 그린다 — 테두리·코너 브래킷은
+    // 희귀도가 이미 쓰고 있어 덮어쓰면 등급 정보가 사라진다.
+    const bait = baitState(inst);
+    const baitClass = bait ? (bait.charges > 0 ? ' is-baited' : ' is-unbaited') : '';
     const artHtml = imgSrc
-      ? `<div class="card-art card-art--img"><img class="card-img" src="${imgSrc}" alt="${def.name ?? ''}"></div>`
-      : `<div class="card-art">${dataIcon(def.icon ?? '📦')}</div>`;
+      ? `<div class="card-art card-art--img${baitClass}"><img class="card-img" src="${imgSrc}" alt="${def.name ?? ''}"></div>`
+      : `<div class="card-art${baitClass}">${dataIcon(def.icon ?? '📦')}</div>`;
+    const baitBadge = bait
+      ? `<span class="card-bait-badge${bait.charges > 0 ? ' loaded' : ' empty'}">🪱 ${bait.charges}</span>`
+      : '';
 
     // CST 통합 — 신규 subtype 시각 신호
     let subtypeBadge = '';
@@ -1317,15 +1344,19 @@ const CardFactory = {
     } else if (def.subtype === 'carcass') {
       subtypeBadge = `<span class="card-carcass-marker" aria-hidden="true">🩸</span>`;
       actionHint = I18n.t('card.actionButcher');
-    } else if (def.subtype === 'trap') {
-      // 트랩 진행도 슬롯 (트랙 H — TrapSystem이 채움)
+    } else if (def.subtype === 'trap' && def.trapData) {
+      // 트랩 진행도 슬롯 (트랙 H — TrapSystem이 채움). 가시 트랩은 subtype만 'trap'이라
+      // trapData를 함께 보지 않으면 발동 규칙이 없는 카드에 0/0이 그려진다.
       const TrapSystem = SystemRegistry.get('TrapSystem');
       const progress = TrapSystem?.getProgress(inst.instanceId) ?? 0;
-      const tpTotal = def.trapData?.tpToTrigger ?? 0;
-      const progressClass = (tpTotal > 0 && progress >= tpTotal * 0.7) ? ' near-trigger' : '';
+      const tpTotal = def.trapData.tpToTrigger ?? 0;
+      const hasBait = (inst._baitCharges ?? 0) > 0;
+      const progressClass = (hasBait && tpTotal > 0 && progress >= tpTotal * 0.7)
+        ? ' near-trigger'
+        : (hasBait ? ' baited' : '');
       subtypeBadge = `<span class="card-trap-slot${progressClass}" data-trap-progress="${progress}">${progress}/${tpTotal}</span>`;
-      const baitTags = def.trapData?.baitTags?.join(', ') ?? '';
-      actionHint = baitTags ? I18n.t('card.actionTrapBait', { tags: baitTags }) : '';
+      const baitTags = def.trapData.baitTags?.join(', ') ?? '';
+      actionHint = hasBait ? '' : (baitTags ? I18n.t('card.actionTrapBait', { tags: baitTags }) : '');
     }
 
     const catKey = def.subtype ?? def.type ?? '';
@@ -1345,7 +1376,7 @@ const CardFactory = {
       <div class="card-header">
         <span class="card-icon">${dataIcon(def.icon ?? '📦')}</span>
         <span class="card-name">${formatInstanceName(inst, def)}${nameRemainder ? ' ' : ''}${nameRemainder}</span>
-        ${ammoBadge}${qualityBadge}${contamBadge}${subtypeBadge}
+        ${ammoBadge}${qualityBadge}${contamBadge}${baitBadge}${subtypeBadge}
       </div>
       <div class="card-body">
         <div class="card-type-row">
@@ -1455,6 +1486,11 @@ const CardFactory = {
 // CST 통합 — 트랩 진행도 변화 시 해당 카드만 리렌더 (트랙 H)
 EventBus.on('trapStateChange', ({ trapId }) => {
   if (trapId) CardFactory.update(trapId);
+});
+
+// 통발 설치·미끼 보충처럼 인스턴스 플래그만 바뀌는 변화는 boardChanged를 타지 않는다.
+EventBus.on('refreshCard', ({ instanceId }) => {
+  if (instanceId) CardFactory.update(instanceId);
 });
 
 export function getCardImage(definitionId) {

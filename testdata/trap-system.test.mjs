@@ -1,6 +1,6 @@
 // === TrapSystem 단위 테스트 ===
-// trap 도구가 같은 행에 bait가 있을 때 tpToTrigger TP 후 successRate로 발동.
-// CST 패턴 적응: bait 있을 때만 진행, bait 없으면 진행 보류.
+// 미끼를 채워둔 trap 도구가 tpToTrigger TP 후 successRate로 발동.
+// 미끼는 카드 합치기로 덫 안에 들어가 _baitCharges로 남는다 — 충전이 있을 때만 진행.
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 const { ebMock, gsMock, gdMock, i18nMock } = vi.hoisted(() => ({
@@ -20,6 +20,8 @@ const { ebMock, gsMock, gdMock, i18nMock } = vi.hoisted(() => ({
     },
     cards: {},
     _nextId: 1,
+    // 덫은 잡은 동물을 놓을 자리가 있는지 먼저 본다 — 자리가 없으면 발동을 미룬다
+    findEmptySlot: vi.fn(() => 0),
     getBoardCards: vi.fn(),
     createCardInstance: vi.fn(),
     placeCardInRow: vi.fn(),
@@ -65,14 +67,16 @@ function setupBoard({ trap, bait, baitRow = 'middle' }) {
 
 const TRAP_DEF = {
   id: 'rat_trap', name: '쥐덫', subtype: 'trap',
-  trapData: { targetCard: 'live_rat', baitTags: ['food', 'grain'], tpToTrigger: 3, successRate: 1.0 },
+  trapData: {
+    targetCard: 'live_rat', baitTags: ['food', 'grain'],
+    baitCapacity: 4, tpToTrigger: 3, successRate: 1.0,
+  },
 };
 const BAIT_DEF = { id: 'rice', name: '쌀', tags: ['food', 'grain'] };
 const TARGET_DEF = { id: 'live_rat', name: '산 쥐' };
 
 describe('TrapSystem', () => {
   beforeEach(() => {
-    TrapSystem._progress = {};
     vi.clearAllMocks();
     gdMock.items = {
       rat_trap: TRAP_DEF,
@@ -98,47 +102,57 @@ describe('TrapSystem', () => {
 
     TrapSystem._onTP();
 
-    expect(TrapSystem._progress.t1).toBeUndefined();
+    expect(trap._trapProgress).toBeUndefined();
   });
 
   it('bait 있으면 매 TP마다 진행도 +1', () => {
-    const trap = { instanceId: 't1', definitionId: 'rat_trap', quantity: 1 };
-    const bait = { instanceId: 'b1', definitionId: 'rice', quantity: 5 };
-    setupBoard({ trap, bait });
+    const trap = { instanceId: 't1', definitionId: 'rat_trap', quantity: 1, _baitCharges: 4 };
+    setupBoard({ trap, bait: null });
 
     TrapSystem._onTP();
-    expect(TrapSystem._progress.t1).toBe(1);
+    expect(trap._trapProgress).toBe(1);
 
     TrapSystem._onTP();
-    expect(TrapSystem._progress.t1).toBe(2);
+    expect(trap._trapProgress).toBe(2);
   });
 
-  it('tpToTrigger 도달 시 발동: 산 동물 spawn + bait 1개 소모 + 진행도 리셋', () => {
-    const trap = { instanceId: 't1', definitionId: 'rat_trap', quantity: 1 };
-    const bait = { instanceId: 'b1', definitionId: 'rice', quantity: 5 };
-    setupBoard({ trap, bait });
+  it('tpToTrigger 도달 시 발동: 산 동물 spawn + 충전 1회 소모 + 진행도 리셋', () => {
+    const trap = { instanceId: 't1', definitionId: 'rat_trap', quantity: 1, _baitCharges: 4 };
+    setupBoard({ trap, bait: null });
 
     // tpToTrigger=3, successRate=1.0 → 3번째 TP에 확정 발동
     TrapSystem._onTP();
     TrapSystem._onTP();
     TrapSystem._onTP();
 
-    expect(TrapSystem._progress.t1).toBe(0);
-    expect(bait.quantity).toBe(4); // 5 → 4
+    expect(trap._trapProgress).toBe(0);
+    expect(trap._baitCharges).toBe(3); // 4 → 3
     expect(gsMock.createCardInstance).toHaveBeenCalledWith('live_rat', { quantity: 1 });
     expect(ebMock.emit).toHaveBeenCalledWith('trapTriggered', expect.objectContaining({
       trapId: 't1', targetCard: 'live_rat',
     }));
   });
 
-  it('bait quantity 1일 때 발동하면 카드 자체 제거', () => {
-    const trap = { instanceId: 't1', definitionId: 'rat_trap', quantity: 1 };
-    const bait = { instanceId: 'b1', definitionId: 'rice', quantity: 1 };
-    setupBoard({ trap, bait });
+  it('마지막 충전을 쓰면 미끼 소진을 알린다', () => {
+    const trap = { instanceId: 't1', definitionId: 'rat_trap', quantity: 1, _baitCharges: 1 };
+    setupBoard({ trap, bait: null });
 
     for (let i = 0; i < 3; i++) TrapSystem._onTP();
 
-    expect(gsMock.removeCardInstance).toHaveBeenCalledWith('b1');
+    expect(trap._baitCharges).toBe(0);
+    expect(ebMock.emit).toHaveBeenCalledWith('notify', expect.objectContaining({
+      type: 'warning',
+    }));
+  });
+
+  it('충전이 없으면 진행도가 오르지 않는다', () => {
+    const trap = { instanceId: 't1', definitionId: 'rat_trap', quantity: 1, _baitCharges: 0 };
+    setupBoard({ trap, bait: null });
+
+    for (let i = 0; i < 5; i++) TrapSystem._onTP();
+
+    expect(trap._trapProgress).toBeUndefined();
+    expect(gsMock.createCardInstance).not.toHaveBeenCalled();
   });
 
   it('successRate 0 → 발동해도 산 동물 spawn 안 함, trapMissed emit', () => {
@@ -148,14 +162,13 @@ describe('TrapSystem', () => {
     };
     gdMock.items.rat_trap = trapDef;
 
-    const trap = { instanceId: 't1', definitionId: 'rat_trap', quantity: 1 };
-    const bait = { instanceId: 'b1', definitionId: 'rice', quantity: 5 };
-    setupBoard({ trap, bait });
+    const trap = { instanceId: 't1', definitionId: 'rat_trap', quantity: 1, _baitCharges: 4 };
+    setupBoard({ trap, bait: null });
 
     for (let i = 0; i < 3; i++) TrapSystem._onTP();
 
     expect(gsMock.createCardInstance).not.toHaveBeenCalled();
-    expect(bait.quantity).toBe(4); // bait는 여전히 소모됨 (시도 비용)
+    expect(trap._baitCharges).toBe(3); // 충전은 여전히 소모됨 (시도 비용)
     expect(ebMock.emit).toHaveBeenCalledWith('trapMissed', expect.objectContaining({
       trapId: 't1',
     }));
@@ -170,7 +183,7 @@ describe('TrapSystem', () => {
 
     TrapSystem._onTP();
 
-    expect(TrapSystem._progress.n1).toBeUndefined();
+    expect(notTrap._trapProgress).toBeUndefined();
   });
 
   it('baitTags 매칭 안 되면 bait 인식 안 함', () => {
@@ -181,7 +194,7 @@ describe('TrapSystem', () => {
 
     TrapSystem._onTP();
 
-    expect(TrapSystem._progress.t1).toBeUndefined();
+    expect(trap._trapProgress).toBeUndefined();
   });
 
   // 트랙 H — UI 시각화 지원
@@ -189,14 +202,15 @@ describe('TrapSystem', () => {
     it('getProgress는 진행도 0 또는 누적값 반환', () => {
       expect(TrapSystem.getProgress('unknown')).toBe(0);
 
-      TrapSystem._progress.t1 = 5;
+      const trap = { instanceId: 't1', definitionId: 'rat_trap', quantity: 1 };
+      setupBoard({ trap, bait: null });
+      trap._trapProgress = 5;
       expect(TrapSystem.getProgress('t1')).toBe(5);
     });
 
     it('bait 있으면 trapStateChange emit (hasBait: true + progress)', () => {
-      const trap = { instanceId: 't1', definitionId: 'rat_trap', quantity: 1 };
-      const bait = { instanceId: 'b1', definitionId: 'rice', quantity: 5 };
-      setupBoard({ trap, bait });
+      const trap = { instanceId: 't1', definitionId: 'rat_trap', quantity: 1, _baitCharges: 4 };
+      setupBoard({ trap, bait: null });
 
       TrapSystem._onTP();
 

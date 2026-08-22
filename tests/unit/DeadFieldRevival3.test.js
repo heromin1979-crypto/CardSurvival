@@ -56,9 +56,12 @@ describe('1. 목검 — 무기 능력치', () => {
     expect(typeof c.durabilityLoss).toBe('number');
   });
 
-  it('type:weapon인 아이템에 combat이 빠진 것이 없다', () => {
+  // 방패는 weapon_sub를 쓰는 방어 장비라 combat이 없는 것이 의도다.
+  // combat을 두면 _getPlayerWeapon이 방패를 공격 무기로 집어 0딜 공격이 나간다
+  // (EquipWiringFix.test.js가 방패 쪽을 따로 지킨다).
+  it('type:weapon인 아이템에 combat이 빠진 것이 없다 (방패 제외)', () => {
     const missing = Object.values(ITEMS)
-      .filter(d => d.type === 'weapon' && !d.combat)
+      .filter(d => d.type === 'weapon' && d.subtype !== 'shield' && !d.combat)
       .map(d => `${d.name}(${d.id})`);
     expect(missing, `combat 누락: ${missing.join(', ')}`).toEqual([]);
   });

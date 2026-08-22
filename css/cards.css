@@ -432,6 +432,10 @@
   font-size: 8px;
   margin-right: 2px;
 }
+/* 미끼가 들어간 덫 — 대기 중임을 앰버로 알린다 */
+.card[data-subtype="trap"] .card-trap-slot.baited {
+  color: var(--accent-primary, #c8a060);
+}
 /* 트랩 70%+ — trigger 임박 시 강조 + 펄스 */
 .card[data-subtype="trap"] .card-trap-slot.near-trigger {
   background: rgba(200,160,96,0.35);
@@ -441,6 +445,40 @@
 @keyframes card-trap-pulse {
   0%, 100% { opacity: 0.85; }
   50%      { opacity: 1.0; }
+}
+
+/* ── 미끼 상태 (통발·덫 공용) ─────────────────────────────
+   카드 테두리와 코너 브래킷은 희귀도가 쓰고 있어, 미끼는 한 층 안쪽인
+   아트 영역에 그린다. 두 정보가 같은 픽셀을 다투지 않는다. */
+.card-art.is-unbaited {
+  filter: grayscale(0.55) brightness(0.85);
+}
+.card-art.is-baited {
+  box-shadow: inset 0 0 0 1px var(--accent-dim);
+  transition: box-shadow var(--transition-fast, 120ms) ease-out;
+}
+.card-art.is-baited.card-art--img { border-radius: var(--radius-sm, 4px); }
+
+.card-bait-badge {
+  font-size: 9px;
+  line-height: 1;
+  padding: 1px 3px;
+  border-radius: var(--radius-sm, 4px);
+  font-weight: bold;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.card-bait-badge.loaded {
+  background: rgba(200,160,96,0.22);
+  color: var(--accent-primary, #c8a060);
+}
+.card-bait-badge.empty {
+  background: rgba(80,80,80,0.35);
+  color: var(--text-dim, #555040);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-art.is-baited { transition: none; }
 }
 
 /* 액션 힌트 푸터 */

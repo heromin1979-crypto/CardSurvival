@@ -266,7 +266,7 @@ const ITEMS_TOOLS = {
     id: 'automated_fish_trap', name: '자동 포획 장치', type: 'tool', subtype: 'fishing',
     rarity: 'rare', weight: 2.0,
     defaultDurability: 100, defaultContamination: 0,
-    icon: '🐟', description: '회로 모듈로 자동화된 어획 장치.',
+    icon: '🐟', description: '회로 모듈로 자동화된 어획 장치. 지니고 있으면 낚시터를 떠나 있어도 통발이 계속 돌고, 미끼 소모가 절반으로 준다.',
     tags: ['tool', 'fishing', 'crafted'],
     dismantle: [
       { definitionId: 'electronic_parts', qty: 2, chance: 0.7 },
@@ -279,7 +279,7 @@ const ITEMS_TOOLS = {
     id: 'fishing_net', name: '투망', type: 'tool', subtype: 'fishing',
     rarity: 'uncommon', weight: 0.8,
     defaultDurability: 100, defaultContamination: 0,
-    icon: '🕸️', description: '실과 로프로 엮은 그물. 물고기를 한 번에 잡을 수 있다.',
+    icon: '🕸️', description: '실과 로프로 엮은 그물. 지니고 있으면 낚시 성공 시 물고기를 한 마리 더 건진다.',
     tags: ['tool', 'fishing', 'crafted'],
     dismantle: [
       { definitionId: 'rope', qty: 2, chance: 0.7 },
@@ -291,7 +291,7 @@ const ITEMS_TOOLS = {
     id: 'crab_trap', name: '게 통발', type: 'tool', subtype: 'fishing',
     rarity: 'uncommon', weight: 1.5,
     defaultDurability: 100, defaultContamination: 0,
-    icon: '🦀', description: '파이프와 그물로 만든 통발. 갑각류 포획에 특화.',
+    icon: '🦀', description: '파이프와 그물로 만든 보조 통발. 지니고 있으면 통발 어획률이 10% 오른다.',
     tags: ['tool', 'fishing', 'crafted'],
     dismantle: [
       { definitionId: 'iron_pipe', qty: 1, chance: 0.6 },
@@ -304,7 +304,7 @@ const ITEMS_TOOLS = {
     id: 'master_angler_lure', name: '명인의 루어', type: 'tool', subtype: 'fishing',
     rarity: 'legendary', weight: 0.2,
     defaultDurability: 100, defaultContamination: 0,
-    icon: '🪝', description: '합금으로 정교하게 만든 루어. 전설의 물고기도 유혹한다.',
+    icon: '🪝', description: '합금으로 정교하게 만든 루어. 지니고 있으면 희귀 대형어 확률이 15% 오른다.',
     tags: ['tool', 'fishing', 'crafted'],
     dismantle: [
       { definitionId: 'refined_metal', qty: 1, chance: 0.6 },
@@ -401,18 +401,20 @@ const ITEMS_TOOLS = {
   },
 
   // ─── 트랩 (3) ─────────────────────────────────────────────
-  // bait를 보드 같은 행에 놓으면 일정 TP 후 산 동물 산출 (TrapSystem 처리).
-  // trapData: { targetCard, baitTags, tpToTrigger, successRate }
+  // 미끼 카드를 덫 카드 위로 끌어다 넣으면 baitCapacity회분이 충전되고,
+  // 충전이 남아 있는 동안만 진행도가 오른다 (TrapSystem 처리).
+  // trapData: { targetCard, baitTags, baitCapacity, tpToTrigger, successRate }
 
   rat_trap: {
     id: 'rat_trap', name: '쥐덫', type: 'tool', subtype: 'trap',
     rarity: 'common', weight: 0.5,
     defaultDurability: 100, defaultContamination: 0,
-    icon: '🪤', description: '쥐를 산 채로 잡는 덫. 같은 행에 음식을 놓아두면 8TP 후 작동한다.',
+    icon: '🪤', description: '쥐를 산 채로 잡는 덫. 음식을 미끼로 넣으면 8TP마다 작동한다.',
     tags: ['tool', 'trap', 'small'],
     trapData: {
       targetCard: 'live_rat',
-      baitTags: ['food', 'grain'],
+      baitTags: ['food', 'food_raw'],
+      baitCapacity: 4,
       tpToTrigger: 8,
       successRate: 0.65,
     },
@@ -426,11 +428,12 @@ const ITEMS_TOOLS = {
     id: 'pigeon_snare', name: '비둘기 올가미', type: 'tool', subtype: 'trap',
     rarity: 'common', weight: 0.3,
     defaultDurability: 100, defaultContamination: 0,
-    icon: '🪢', description: '비둘기를 잡는 올가미. 같은 행에 음식을 놓아두면 6TP 후 작동한다.',
+    icon: '🪢', description: '비둘기를 잡는 올가미. 음식을 미끼로 넣으면 6TP마다 작동한다.',
     tags: ['tool', 'trap', 'small'],
     trapData: {
       targetCard: 'live_pigeon',
-      baitTags: ['food', 'grain'],
+      baitTags: ['food', 'food_raw'],
+      baitCapacity: 4,
       tpToTrigger: 6,
       successRate: 0.55,
     },
@@ -443,11 +446,12 @@ const ITEMS_TOOLS = {
     id: 'alley_pit_trap', name: '골목 함정', type: 'tool', subtype: 'trap',
     rarity: 'uncommon', weight: 2.0,
     defaultDurability: 100, defaultContamination: 0,
-    icon: '🕳️', description: '떠돌이 동물(개·고양이)을 잡는 함정. 같은 행에 음식을 놓아두면 12TP 후 작동한다.',
+    icon: '🕳️', description: '떠돌이 동물(개·고양이)을 잡는 함정. 음식을 미끼로 넣으면 12TP마다 작동한다.',
     tags: ['tool', 'trap', 'large'],
     trapData: {
       targetCard: 'live_stray_animal',
       baitTags: ['food', 'meat'],
+      baitCapacity: 4,
       tpToTrigger: 12,
       successRate: 0.45,
     },

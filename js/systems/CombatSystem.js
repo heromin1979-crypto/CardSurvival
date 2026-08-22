@@ -1929,6 +1929,27 @@ const CombatSystem = {
   },
 
   /**
+   * 처형 마무리 — combat.special === 'execute'(압수 저격소총).
+   * 타격이 들어간 뒤 남은 체력이 최대치의 executeHpRatio 미만이면 즉사시킨다.
+   * 보스는 제외한다 — 단계형 패턴을 건너뛰면 보스전이 성립하지 않는다.
+   * @returns {boolean} 처형이 발동했는지
+   */
+  _applyExecuteFinisher(enemy, weaponId) {
+    const gs = GameState;
+    if (!enemy || (enemy.currentHp ?? 0) <= 0 || enemy.isBoss) return false;
+    if (!weaponId || !gs.cards[weaponId]) return false;
+    if (gs.getCardDef(weaponId)?.combat?.special !== 'execute') return false;
+
+    const maxHp = enemy.maxHp ?? 0;
+    if (maxHp <= 0) return false;
+    if (enemy.currentHp / maxHp >= BALANCE.combat.executeHpRatio) return false;
+
+    enemy.currentHp = 0;
+    gs.combat.log.push(I18n.t('combatSys.executed', { enemy: I18n.enemyName(enemy.id, enemy.name) }));
+    return true;
+  },
+
+  /**
    * 처치 시 도주 유발 — combat.onKill.enemyFleeChance(두목의 소총).
    * 보스는 제외한다. 보스가 도중에 사라지면 보상·엔딩 흐름이 어긋난다.
    * @returns {string[]} 도주한 적 id 목록
@@ -2134,6 +2155,10 @@ const CombatSystem = {
         }
       }
 
+      // 처형 (압수 저격소총) — 타격 후 체력이 절반 아래로 떨어진 적을 즉사시킨다.
+      // 보스는 제외한다. 패턴 단계를 건너뛰면 보스전이 성립하지 않는다.
+      this._applyExecuteFinisher(enemy, weaponId);
+
       if (enemy.currentHp <= 0) {
         const wDef = (weaponId && gs.cards[weaponId]) ? gs.getCardDef(weaponId) : null;
         gs.combat._lastKillContext = {
@@ -2170,11 +2195,14 @@ const CombatSystem = {
         enemy.currentMorale = Math.max(0, enemy.currentMorale - BALANCE.combat.moraleBreak.critMoraleDmg);
       }
 
-      // 다중 타겟 (창/산탄총)
+      // 다중 타겟 (창/산탄총) — combat.aoe 무기는 닿는 적 전원을 휩쓴다
       if (weaponId && gs.cards[weaponId]) {
         const mDef = gs.getCardDef(weaponId);
         // 폭발 화살을 장전하면 무기 정의보다 넓은 폭으로 휩쓴다
-        const spread = mods.multiTarget > 0 ? mods.multiTarget : (mDef?.multiTarget ?? 1);
+        const declared = mods.multiTarget > 0 ? mods.multiTarget : (mDef?.multiTarget ?? 1);
+        const spread = mDef?.combat?.aoe
+          ? Math.max(declared, this.getReachableEnemies(isRanged).length)
+          : declared;
         if (spread > 1) {
           const extraLogs = applyMultiTarget(
             finalDmg,
@@ -2702,7 +2730,8 @@ const CombatSystem = {
     const weapSub  = gs.player.equipped?.weapon_sub;
     const weapInst = weapMain ? gs.cards[weapMain] : (weapSub ? gs.cards[weapSub] : null);
     const weapDef  = weapInst ? gs.getCardDef(weapInst.instanceId) : null;
-    const killSkill = weapDef?.combat?.requiresAmmo ? 'ranged' : (weapDef ? 'melee' : 'unarmed');
+    // combat이 없는 장비(방패)는 무기가 아니다 — 맨손 처치로 센다
+    const killSkill = weapDef?.combat?.requiresAmmo ? 'ranged' : (weapDef?.combat ? 'melee' : 'unarmed');
     SkillSystem.gainXp(killSkill, 5);
 
     // 근접 킬/은신 킬 추적
@@ -2916,10 +2945,11 @@ const CombatSystem = {
     }
 
     // 보드 무기 (장착되지 않은 것, 장소/랜드마크 제외)
+    // combat이 없는 weapon은 방패다 — 공격 목록에 넣으면 0딜 공격 버튼이 생긴다
     for (const card of gs.getBoardCards()) {
       if (seen.has(card.instanceId)) continue;
       const def = gs.getCardDef(card.instanceId);
-      if (def?.type === 'weapon') result.push(card);
+      if (def?.type === 'weapon' && def.combat) result.push(card);
     }
 
     return result;

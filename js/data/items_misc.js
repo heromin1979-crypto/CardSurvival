@@ -329,21 +329,11 @@ const ITEMS_MISC = {
     defaultContamination: 0,
     icon: '🛡️',
     description: '고철로 보강한 방패. 높은 방어력.',
-    combat: {
-      damage: [
-        0,
-        0,
-      ],
-      accuracy: 0,
-      defense: 25,
-      noiseOnAttack: 1,
-    },
     onWear: { damageReduction: 0.25, critReduction: 0.12 },
     tags: [
       'shield',
       'defense',
     ],
-    equipSlot: 'offhand',
     dismantle: [
       {
         definitionId: 'scrap_metal',
@@ -414,21 +404,11 @@ const ITEMS_MISC = {
     defaultContamination: 0,
     icon: '🛡️',
     description: '나무와 고철로 만든 임시 방패.',
-    combat: {
-      damage: [
-        0,
-        0,
-      ],
-      accuracy: 0,
-      defense: 12,
-      noiseOnAttack: 2,
-    },
     onWear: { damageReduction: 0.12, critReduction: 0.06 },
     tags: [
       'shield',
       'defense',
     ],
-    equipSlot: 'offhand',
     dismantle: [
       {
         definitionId: 'wood',
@@ -971,7 +951,6 @@ const ITEMS_MISC = {
       'armor',
       'training',
     ],
-    defense: 2,
     armor: { defense: 2, damageReduction: 0.02, critReduction: 0.01, movePenalty: 0.00 },
     dismantle: [
       {
@@ -984,8 +963,8 @@ const ITEMS_MISC = {
   training_shield: {
     id: 'training_shield',
     name: '훈련용 방패',
-    type: 'armor',
-    subtype: 'offhand',
+    type: 'weapon',
+    subtype: 'shield',
     rarity: 'common',
     weight: 1.2,
     defaultDurability: 100,
@@ -997,7 +976,7 @@ const ITEMS_MISC = {
       'shield',
       'training',
     ],
-    defense: 3,
+    onWear: { damageReduction: 0.06 },
     dismantle: [
       {
         definitionId: 'wood_plank',
@@ -1052,9 +1031,8 @@ const ITEMS_MISC = {
       'homeless',
       'blanket',
     ],
-    defense: 1,
-    warmthBonus: 5,
-    sleepFatigueMult: 1.2,
+    // 체온 유지는 coldResistMult(하강 완화), 수면 회복은 restFatigueMult로 표현한다.
+    onWear: { coldResistMult: 0.8, restFatigueMult: 1.2 },
     armor: { defense: 1, damageReduction: 0.01, critReduction: 0.00, movePenalty: 0.00 },
     dismantle: [
       {
@@ -1292,6 +1270,8 @@ const ITEMS_MISC = {
       'blade',
       'homeless',
     ],
+    // 날붙이는 도살·분해 청사진의 sharp_blade 역할을 대신한다 (toolProvision.js)
+    toolProvides: ['sharp_blade'],
     weaponType: 'blade',
     combat: {
       damage: [
@@ -1335,6 +1315,8 @@ const ITEMS_MISC = {
       'homeless',
       'disposable',
     ],
+    // 날붙이는 도살·분해 청사진의 sharp_blade 역할을 대신한다 (toolProvision.js)
+    toolProvides: ['sharp_blade'],
     combat: {
       damage: [
         3,
@@ -1796,6 +1778,8 @@ const ITEMS_MISC = {
       'silent',
       'upgraded',
     ],
+    // 날붙이는 도살·분해 청사진의 sharp_blade 역할을 대신한다 (toolProvision.js)
+    toolProvides: ['sharp_blade'],
     weaponType: 'blade',
     combat: {
       damage: [
@@ -1883,6 +1867,8 @@ const ITEMS_MISC = {
       'melee',
       'upgraded',
     ],
+    // 날붙이는 도살·분해 청사진의 sharp_blade 역할을 대신한다 (toolProvision.js)
+    toolProvides: ['sharp_blade'],
     weaponType: 'blade',
     combat: {
       damage: [
@@ -1933,6 +1919,8 @@ const ITEMS_MISC = {
       'melee',
       'upgraded',
     ],
+    // 날붙이는 도살·분해 청사진의 sharp_blade 역할을 대신한다 (toolProvision.js)
+    toolProvides: ['sharp_blade'],
     weaponType: 'blade',
     multiTarget: 2,
     combat: {

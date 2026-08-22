@@ -8325,14 +8325,14 @@ export const LANDMARK_DATA = {
             weight: 3,
           },
           {
-            id: 'scrap_metal',
-            weight: 3,
-          },
-          {
             id: 'combat_knife',
             weight: 12,
             minQty: 1,
             maxQty: 2,
+          },
+          {
+            id: 'shotgun',
+            weight: 2,
           },
         ],
         lootCount: [

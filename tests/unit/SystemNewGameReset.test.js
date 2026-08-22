@@ -17,11 +17,14 @@ import GuardSystem         from '../../js/systems/GuardSystem.js';
 import DispatchSystem      from '../../js/systems/DispatchSystem.js';
 import HospitalSiegeSystem from '../../js/systems/HospitalSiegeSystem.js';
 import NPCRelationSystem   from '../../js/systems/NPCRelationSystem.js';
-import TrapSystem          from '../../js/systems/TrapSystem.js';
 import SubwaySystem        from '../../js/systems/SubwaySystem.js';
 import HiddenElementSystem from '../../js/systems/HiddenElementSystem.js';
 import EcologySystem       from '../../js/systems/EcologySystem.js';
 import ExploreSystem       from '../../js/systems/ExploreSystem.js';
+
+// TrapSystem은 여기 없다 — 덫 진행도를 모듈 맵에서 카드 인스턴스(_trapProgress)로
+// 옮겨 모듈 싱글톤 상태가 사라졌고, CharCreate._startGame이 gs.cards를 비우면서
+// 함께 지워진다 (tests/unit/TrapProgressPersistence.test.js가 영속성을 검사).
 
 // [시스템, 모듈, 오염 함수, 검증 함수]
 const CASES = [
@@ -90,10 +93,6 @@ const CASES = [
   ['NPCRelationSystem', 'NPCRelationSystem', NPCRelationSystem,
     s => { s._pendingMemories = [{ npcId: 'a' }]; },
     s => { expect(s._pendingMemories).toEqual([]); }],
-
-  ['TrapSystem', 'TrapSystem', TrapSystem,
-    s => { s._progress = { trap_a: 3 }; },
-    s => { expect(s._progress).toEqual({}); }],
 
   ['SubwaySystem', 'SubwaySystem', SubwaySystem,
     s => { s._pendingTravel = { to: 'dobong' }; },

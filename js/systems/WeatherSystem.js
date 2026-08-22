@@ -87,6 +87,15 @@ export function isRainyWeather(weatherId) {
   return RAINY_WEATHER_IDS.includes(weatherId);
 }
 
+// 몸이 젖는 날씨. 방수 장비(onWear.waterproof)가 체온 하강을 막는 대상이다.
+// 산성비는 여기 넣지 않는다 — 산을 막는 것은 acidImmunity의 몫이다.
+export const WET_WEATHER_IDS = [...RAINY_WEATHER_IDS, 'snow', 'blizzard'];
+
+/** 젖는 날씨인지 (비·눈 계열). */
+export function isWetWeather(weatherId) {
+  return WET_WEATHER_IDS.includes(weatherId);
+}
+
 /** 산성비 계열인지. 날씨 테이블은 id가 아니라 gardenKill 플래그로 산성을 표시한다. */
 export function isAcidWeather(weather) {
   return weather?.gardenKill === true || weather?.id === 'acid_rain';
@@ -190,8 +199,14 @@ const WeatherSystem = {
     const inSafeZone = isWeatherSheltered(gs);
 
     // 체온에 날씨 영향 적용 (미세 조정 — 계절 효과와 별도)
+    // 방수 장비를 입으면 비·눈으로 인한 체온 하강만 면제된다. 폭염(양수)과 산성비는 그대로다.
     const weather = gs.weather;
-    if (!inSafeZone && weather.tempMod && weather.tempMod !== 0) {
+    // 집계값은 StatSystem.onTP가 같은 TP에 먼저 캐시한다 (DiseaseSystem과 같은 경로).
+    // 직접 import하면 StatSystem → WeatherSystem 순환이 생긴다.
+    const shedsWet = weather.tempMod < 0
+      && isWetWeather(weather.id)
+      && gs.player?.armorEffects?.waterproof === true;
+    if (!inSafeZone && !shedsWet && weather.tempMod && weather.tempMod !== 0) {
       gs.modStat('temperature', weather.tempMod);
     }
 

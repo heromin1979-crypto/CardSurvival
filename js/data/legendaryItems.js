@@ -12,6 +12,8 @@ const LEGENDARY_ITEMS = {
     defaultDurability: 150, defaultContamination: 0,
     icon: '⚔️', description: '조선 왕실에서 전해진 명검. 크리티컬 공격 시 거의 무소음으로 적을 베어낸다.',
     tags: ['weapon', 'melee', 'legendary'],
+    // 날붙이는 도살·분해 청사진의 sharp_blade 역할을 대신한다 (toolProvision.js)
+    toolProvides: ['sharp_blade'],
     combat: {
       damage: [35, 55], accuracy: 0.85, noiseOnUse: 1, durabilityLoss: 3,
       critChance: 0.30, critMultiplier: 2.5,
@@ -64,6 +66,8 @@ const LEGENDARY_ITEMS = {
     defaultDurability: 120, defaultContamination: 0,
     icon: '❄️', description: '극저온 냉각 합금으로 벼린 칼날. 30% 확률로 적을 동결시켜 1턴 기절.',
     tags: ['weapon', 'melee', 'legendary'],
+    // 날붙이는 도살·분해 청사진의 sharp_blade 역할을 대신한다 (toolProvision.js)
+    toolProvides: ['sharp_blade'],
     combat: {
       damage: [30, 48], accuracy: 0.82, noiseOnUse: 2, durabilityLoss: 4,
       critChance: 0.20, critMultiplier: 2.0,
@@ -778,6 +782,8 @@ const LEGENDARY_ITEMS = {
     defaultDurability: 120, defaultContamination: 0,
     icon: '⚡', description: '전류가 흐르는 칼날. 25% 확률로 적을 감전시켜 1턴 행동불능.',
     tags: ['weapon', 'melee', 'legendary'],
+    // 날붙이는 도살·분해 청사진의 sharp_blade 역할을 대신한다 (toolProvision.js)
+    toolProvides: ['sharp_blade'],
     combat: {
       damage: [32, 50], accuracy: 0.83, noiseOnUse: 3, durabilityLoss: 4,
       critChance: 0.20, critMultiplier: 2.0,
