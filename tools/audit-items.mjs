@@ -151,6 +151,7 @@ const ROLES = {
   // ── 사용 ──────────────────────────────────────────────────
   requiredItems:      ['use', '제작 재료/조건'],
   requiredTools:      ['use', '요구 도구'],
+  toolProvides:       ['use', '도구 역할 대행'],
   requiredItemQty:    ['use', '요구 수량 조건'],
   requiresAmmo:       ['use', '탄약 소비'],
   ammoType:           ['use', '탄약 규격'],
@@ -316,6 +317,26 @@ function sweepReferences(mods, itemIds) {
   return { acq, use, unclassified };
 }
 
+/**
+ * 태그로 소비되는 아이템을 찾기 위한 사전 수집.
+ * baitTags는 아이템 ID가 아니라 태그 이름을 담아 sweepReferences가 건너뛴다
+ * (NOT_A_REFERENCE). 그래서 덫·통발이 미끼를 먹는데도 미끼 카드는 "사용처 없음"으로
+ * 잡혔다 — 코드가 id를 직접 부르는 지렁이만 통과하고 곤충 미끼는 걸렸다.
+ */
+function collectBaitTags(mods) {
+  const tags = new Set();
+  const walk = (node) => {
+    if (!node || typeof node !== 'object') return;
+    if (Array.isArray(node)) { for (const v of node) walk(v); return; }
+    for (const [k, v] of Object.entries(node)) {
+      if (k === 'baitTags' && Array.isArray(v)) { for (const t of v) if (typeof t === 'string') tags.add(t); continue; }
+      walk(v);
+    }
+  };
+  for (const { mod } of mods) for (const value of Object.values(mod)) walk(value);
+  return tags;
+}
+
 // ══════════════════════════════════════════════════════════════
 //  판정
 // ══════════════════════════════════════════════════════════════
@@ -459,6 +480,7 @@ export async function auditItems() {
   const itemIds = new Set(Object.keys(ITEMS));
   const mods = await loadDataModules();
   const { acq, use, unclassified } = sweepReferences(mods, itemIds);
+  const baitTags = collectBaitTags(mods);
 
   const corpus = buildCorpus();
   const readByLogic = makeReader(corpus.logic);
@@ -518,6 +540,11 @@ export async function auditItems() {
 
     // ── 3) 사용처·기능 둘 다 없음 ───────────────────────────
     const usage = [...(use.get(id) || [])];
+    // 덫·통발은 아이템을 id가 아니라 태그로 집어 먹는다 (baitTags)
+    const baitedBy = (def.tags || []).filter((t) => baitTags.has(t));
+    if (baitedBy.length) {
+      usage.push({ role: 'baitTags', label: `덫·통발 미끼 — ${baitedBy.join('·')} 태그`, where: 'js/data/' });
+    }
     // 코드가 이 아이템 id를 직접 다루면(예: WeatherSystem이 dry_stream을 되채움)
     // 필드가 없어도 전용 처리가 있는 것이다 — 환경 오브젝트가 여기 해당한다.
     const codeHandled = systemSpawn(id);
