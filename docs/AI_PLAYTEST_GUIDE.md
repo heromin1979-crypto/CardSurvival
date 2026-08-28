@@ -319,7 +319,7 @@ Electron 및 Android는 1단계 웹 어댑터가 안정된 뒤에만 다룬다. 
 
 ## 15. 지금 바로 하는 플레이테스트
 
-현재 저장소에는 이 문서가 제안한 자동 AI 워커가 아직 구현되어 있지 않다. 따라서 지금은 **기존 자동 검증으로 빌드 상태를 확인한 뒤, 브라우저 또는 Electron에서 수동으로 플레이**하는 방식으로 테스트한다. 아래 명령은 프로젝트 루트에서 실행한다.
+웹 MVP에는 자동 AI 워커가 구현되어 있다. 먼저 `doctor`로 Codex CLI·Playwright Chromium·웹 빌드 상태를 확인하고, `first_time_player` 또는 `hook` 모드로 실행한다. `qa`, `regression`, Electron, Android, iOS는 아직 지원하지 않으므로 수동 절차와 기존 자동 테스트를 사용한다. 아래 명령은 프로젝트 루트에서 실행한다.
 
 ### 15.1 준비와 사전 검증
 
@@ -345,7 +345,28 @@ npm run test:e2e:combat:full
 
 명령 중 하나라도 실패하면 수동 플레이 결과와 섞어 판단하지 않는다. 먼저 실패한 테스트의 원인을 분리해 해결하거나, 플레이 노트에 사전 검증 실패로 기록한다.
 
-### 15.2 브라우저에서 새 게임을 플레이한다
+### 15.2 자동 AI 화면 플레이를 실행한다
+
+~~~powershell
+# Codex CLI, Playwright Chromium, 기존 웹 빌드 상태 점검
+npm run playtest:doctor
+
+# 웹 빌드를 격리 런으로만 준비
+npm run playtest:prepare -- --mode hook
+
+# AI가 새 브라우저 프로필에서 화면 전용 도구로 플레이
+npm run playtest -- --mode first_time_player --persona casual
+~~~
+
+`playtest`는 먼저 `npm run build:web`를 실행하고, 산출물만 `.ai-playtest/runs/<run-id>/game/`으로 복사한다. 각 런에는 신규 Chromium 프로필, 스크린샷, 체크포인트, `report.json`, `report.md`가 생성된다. `doctor`가 실패하면 부족한 항목을 해결한 뒤 다시 실행하며, 원본 소스나 저장 데이터를 AI에 제공하지 않는다.
+
+이미 생성한 빌드 산출물의 격리 동작만 확인할 때는 `--skip-build`를 덧붙일 수 있다.
+
+~~~powershell
+npm run playtest:prepare -- --mode hook --skip-build
+~~~
+
+### 15.3 브라우저에서 새 게임을 수동으로 플레이한다
 
 ```powershell
 npm run dev:web -- --host 127.0.0.1
@@ -362,7 +383,7 @@ Vite가 출력한 로컬 주소(일반적으로 `http://127.0.0.1:5173`)를 브�
 
 개발 서버는 테스트를 마치면 실행한 터미널에서 `Ctrl+C`로 종료한다.
 
-### 15.3 Electron 빌드로 확인한다
+### 15.4 Electron 빌드로 확인한다
 
 브라우저판과 데스크톱 패키징의 차이를 확인해야 한다면 다음을 사용한다.
 
@@ -378,7 +399,7 @@ npm run build
 
 패키징은 시간이 더 걸리며 `dist/` 산출물을 만든다. 일반 게임 흐름 검증은 먼저 브라우저판에서 수행하고, 창 동작·패키징·파일 경로 관련 문제만 Electron으로 재확인한다.
 
-### 15.4 밸런스 수치도 함께 확인한다
+### 15.5 밸런스 수치도 함께 확인한다
 
 화면 플레이에서 생존 난이도나 특정 직업의 체감 문제가 보이면, 화면 결과와 별도로 시뮬레이션을 실행한다.
 
@@ -388,7 +409,7 @@ node tools/sim/v2/run_baseline.mjs
 
 이 명령은 6직업 × 100회 결과를 `simulation-data/baselines/raw/`에 저장한다. 화면 플레이의 경험적 관찰과 시뮬레이션의 수치를 같은 결론으로 단정하지 말고, 예를 들어 “초보 플레이에서 음식 경로가 불명확했다”와 “시뮬레이션에서도 아사 비중이 높다”처럼 서로를 뒷받침하는 정황으로 함께 기록한다.
 
-### 15.5 기록 양식
+### 15.6 기록 양식
 
 세션마다 아래 양식으로 남기면 AI 러너가 도입된 뒤에도 같은 형식으로 비교할 수 있다.
 
@@ -415,4 +436,4 @@ node tools/sim/v2/run_baseline.mjs
 - 재현을 위한 시작 조건:
 ```
 
-자동 AI 플레이테스트는 이 문서의 4.2 단계 1~4를 구현한 뒤에 `first_time_player`, `hook`, `qa`, `regression` 모드로 실행한다. 그 전까지는 위 수동 절차가 현재 프로젝트에서 실행 가능한 정식 플레이테스트 경로다.
+자동 AI 플레이테스트 웹 MVP는 `first_time_player`와 `hook` 모드만 실행한다. AI 런의 관찰은 `.ai-playtest/runs/<run-id>/report.md`에서 검토하고, 원인 가설·데이터 검증·회귀 케이스 확정은 기존 Vitest·Playwright·시뮬레이터·수동 절차를 함께 사용한다.

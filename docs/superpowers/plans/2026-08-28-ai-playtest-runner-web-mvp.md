@@ -220,7 +220,7 @@ Document npm run playtest:doctor, npm run playtest:prepare -- --mode hook, and n
 
 - [ ] **Step 4: Run focused, full, and build verification**
 
-Run: npm test -- tests/unit/AiPlaytest*.test.js
+Run: npm run test:playtest
 
 Run: npm run check:data
 

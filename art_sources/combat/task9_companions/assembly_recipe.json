@@ -2,7 +2,7 @@
     "version":  2,
     "hashScheme":  "combat-provenance-sha256-v2",
     "assemblyScript":  "/tools/build_companion_motion_sheets.ps1",
-    "assemblyScriptSha256":  "bbf9ce3f75db12ba13beab7cbc177780a235233333c06d5836d8c13c661b4e65",
+    "assemblyScriptSha256":  "ea61096f8df817ff965c8cb5b8b0f4c77da1cbd6afa97bbe8691ba0960babc90",
     "qualityAnalyzerPath":  "/tools/companion_motion_quality.mjs",
     "qualityAnalyzerSha256":  "f5a328e959655154b2547da7b0dd019f387706974d9c323e96ac654fc1d4be26",
     "rangedValidatorPath":  "/tools/verify_companion_ranged_contract.mjs",

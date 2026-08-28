@@ -17,7 +17,7 @@
   "contactPath": "/art_sources/combat/task9_companions/companion_motion_contact_sheet.png",
   "contactSha256": "c95a34d36046f2f7a4ffe7bba26ee1b5ca4a6ed004cb621ebad75bae91fb3a8b",
   "assemblyRecipePath": "/art_sources/combat/task9_companions/assembly_recipe.json",
-  "assemblyRecipeSha256": "b18ae2a7a852d7f0a20b5c9bf4fd652c6cc98a73e93df7f599e579335bbff7cf",
+  "assemblyRecipeSha256": "e5ed70b77199c92822df366e6459757e08ce804b694af0c9219ece53fbdf1d05",
   "companions": [
     {
       "npcId": "npc_old_survivor",

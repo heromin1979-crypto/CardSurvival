@@ -24,7 +24,11 @@
     "check:help": "node tools/editor/check-help-coverage.mjs",
     "check:data": "node js/data/validate.js",
     "test:e2e:combat": "node tests/e2e/combat-screen.playwright.mjs",
-    "test:e2e:combat:full": "node tests/e2e/combat-full.playwright.mjs"
+    "test:e2e:combat:full": "node tests/e2e/combat-full.playwright.mjs",
+    "test:playtest": "vitest run tests/unit/AiPlaytestConfig.test.js tests/unit/AiPlaytestReport.test.js tests/unit/AiPlaytestRunManager.test.js tests/unit/AiPlaytestStaticServer.test.js tests/unit/AiPlaytestWebSession.test.js tests/unit/AiPlaytestMcpServer.test.js tests/unit/AiPlaytestWorker.test.js tests/unit/AiPlaytestCli.test.js",
+    "playtest": "node tools/ai-playtest-runner/src/cli.mjs run",
+    "playtest:doctor": "node tools/ai-playtest-runner/src/cli.mjs doctor",
+    "playtest:prepare": "node tools/ai-playtest-runner/src/cli.mjs prepare"
   },
   "devDependencies": {
     "@playwright/test": "^1.61.0",
@@ -100,6 +104,8 @@
     "@capacitor/haptics": "^8.0.2",
     "@capacitor/splash-screen": "^8.0.1",
     "@capacitor/status-bar": "^8.0.2",
-    "@revenuecat/purchases-capacitor": "^12.3.1"
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "@revenuecat/purchases-capacitor": "^12.3.1",
+    "zod": "^4.4.3"
   }
 }

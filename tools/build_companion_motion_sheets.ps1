@@ -736,7 +736,19 @@ function Get-Sha256([string]$path) {
     if ($LASTEXITCODE -ne 0) { throw "Canonical provenance hashing failed: $path" }
     return ([string]$hash).Trim()
   }
-  return (Get-FileHash -Algorithm SHA256 -LiteralPath $path).Hash.ToLowerInvariant()
+  $sha256 = [System.Security.Cryptography.SHA256]::Create()
+  try {
+    $stream = [System.IO.File]::OpenRead($path)
+    try {
+      return ([System.BitConverter]::ToString($sha256.ComputeHash($stream))).Replace('-', '').ToLowerInvariant()
+    }
+    finally {
+      $stream.Dispose()
+    }
+  }
+  finally {
+    $sha256.Dispose()
+  }
 }
 
 $workRoot = if ($Check) { Join-Path ([System.IO.Path]::GetTempPath()) ('card-survival-task9-' + [guid]::NewGuid().ToString('N')) } else { $root }

@@ -15,5 +15,6 @@ output/
 outputs/
 .superpowers/
 .worktrees/
+.ai-playtest/
 __pycache__/
 *.pyc
