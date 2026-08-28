@@ -14,5 +14,6 @@ tmp/
 output/
 outputs/
 .superpowers/
+.worktrees/
 __pycache__/
 *.pyc
