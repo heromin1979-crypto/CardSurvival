@@ -216,6 +216,11 @@ html, body {
   }
   .bc-sidebar > *:last-child { border-right: none; }
 
+  /* 데스크톱 사이드바는 제목 붙은 섹션으로 묶여 있다. 여기서는 order 트릭이 직계 자식에만
+     걸리므로 섹션 껍데기를 걷어내 상태·소음·무게가 다시 직계 자식이 되게 한다. */
+  .bc-side-section { display: contents; }
+  .bc-side-title   { display: none; }
+
   /* ── 숨길 요소 ────────────────────────────────── */
   .bc-minimap,
   .bc-quests-block,
@@ -522,6 +527,9 @@ html, body {
     border-right: 1px solid var(--border-dim);
   }
   .bc-sidebar > *:last-child { border-right: none; }
+
+  .bc-side-section { display: contents; }
+  .bc-side-title   { display: none; }
 
   .bc-minimap,
   .bc-quests-block,

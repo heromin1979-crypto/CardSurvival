@@ -168,38 +168,51 @@ const Basecamp = {
           <div id="weather-widget" class="bc-weather-widget"></div>
         </div>
 
-        <!-- Character (클릭 → 장비 창) -->
-        <div class="bc-char-block" id="bc-char-block" style="cursor:pointer;" title="${I18n.t('basecamp.equipHint')}">
-          <div class="bc-avatar">👤</div>
-          <div class="bc-char-info">
-            <div class="bc-char-name" id="bc-char-name">${I18n.t('basecamp.survivor')}</div>
-            <div class="bc-char-sub" id="bc-district-name">${uiIcon('location')} 마포구</div>
+        <!-- 상태 — 목표 이미지에 없는 캐릭터 행(이름·위치·장비 진입)을 이 섹션의 머리로 흡수했다 -->
+        <section class="bc-side-section" id="bc-status-section">
+          <div class="bc-side-title">상태 <span class="bc-side-title-en">(STATUS)</span></div>
+
+          <!-- Character (클릭 → 장비 창) -->
+          <div class="bc-char-block" id="bc-char-block" style="cursor:pointer;" title="${I18n.t('basecamp.equipHint')}">
+            <div class="bc-avatar">👤</div>
+            <div class="bc-char-info">
+              <div class="bc-char-name" id="bc-char-name">${I18n.t('basecamp.survivor')}</div>
+              <div class="bc-char-sub" id="bc-district-name">${uiIcon('location')} 마포구</div>
+            </div>
+            <!-- 위험 stat 경고 아이콘 (사이드바 축약 표시) -->
+            <div class="bc-char-danger-icons" id="bc-danger-icons"></div>
           </div>
-          <!-- 위험 stat 경고 아이콘 (사이드바 축약 표시) -->
-          <div class="bc-char-danger-icons" id="bc-danger-icons"></div>
-        </div>
 
-        <!-- 질병 상태 표시 (DiseaseSystem이 채움) -->
-        <div id="disease-status" class="bc-disease-status" style="display:none;"></div>
+          <!-- 질병 상태 표시 (DiseaseSystem이 채움) -->
+          <div id="disease-status" class="bc-disease-status" style="display:none;"></div>
 
-        <!-- Stat bars: 필수 4개만 (HP·수분·영양·피로) -->
-        <div id="hud-stat-bars" class="stat-bars"></div>
+          <!-- Stat bars: 필수 4개만 (HP·수분·영양·피로) -->
+          <div id="hud-stat-bars" class="stat-bars"></div>
+        </section>
 
-        <!-- Noise -->
-        <div class="bc-noise-block">
-          <div class="noise-label">
-            <span>${I18n.t('basecamp.noise')}</span>
-            <span id="noise-val">0</span>
+        <!-- 소음 수치 -->
+        <section class="bc-side-section" id="bc-noise-section">
+          <div class="bc-side-title">소음 수치 <span class="bc-side-title-en">(NOISE METER)</span></div>
+          <div class="bc-noise-block">
+            <div class="noise-label">
+              <span>${I18n.t('basecamp.noise')}</span>
+              <span id="noise-val">0</span>
+            </div>
+            <div class="noise-track" id="noise-track">
+              <div class="noise-fill" id="noise-fill" style="width:0%"></div>
+            </div>
           </div>
-          <div class="noise-track" id="noise-track">
-            <div class="noise-fill" id="noise-fill" style="width:0%"></div>
-          </div>
-        </div>
+        </section>
 
-        <!-- Encumbrance -->
-        <div class="bc-enc-block">⚖ <span id="hud-enc">0/30kg</span></div>
+        <!-- 휴대 무게 -->
+        <section class="bc-side-section" id="bc-weight-section">
+          <div class="bc-side-title">휴대 무게 <span class="bc-side-title-en">(WEIGHT)</span></div>
+          <div class="bc-enc-block">⚖ <span id="hud-enc">0/30kg</span></div>
+        </section>
 
-        <!-- 행동 버튼 (동적 교체) -->
+        <!-- 퀘스트 자리 — INBOX 2군이 여기를 채운다. 행동 메뉴 위가 목표 순서다. -->
+
+        <!-- 행동 버튼 (동적 교체) — 목표 이미지에 없지만 게임의 유일한 진입 경로라 맨 아래에 남긴다 -->
         <div class="bc-sidebar-btns">
           <div id="bc-action-section"></div>
           <div class="bc-toolbar-divider"></div>
