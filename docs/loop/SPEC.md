@@ -18,11 +18,20 @@
 - `css/` 전체
 - `js/screens/Basecamp.js`, `js/screens/Main.js` (보드·사이드바 골격)
 - `js/ui/` 의 렌더러·컴포넌트 (`BoardRenderer.js`, `CardFactory.js`, `HeaderBar.js`, `QuestPanel.js`, `js/ui/components/`)
+- `js/systems/` — 화면 표시에 관여하는 부분 (예: `OnboardingSystem.js` 의 안내 툴팁)
+
+`js/systems/` 는 게임 로직도 함께 들어 있는 디렉터리다. 열어 둔 이유는
+화면 문제의 원인이 거기 있을 때 CSS 로만 우회하면 반쪽짜리 수정이 되기 때문이다.
+대신 두 가지를 지킨다.
+
+- INBOX 항목이 요구하는 것만 고친다. 지나가다 보이는 로직을 손보지 않는다.
+- `npm test` 3378건이 회귀를 잡는다. 하나라도 깨지면 커밋하지 않는다 (⑥).
 
 ## 3. 만들지 않는 것
 
-- **게임 로직·밸런스·데이터**: `js/systems/`, `js/data/` 는 건드리지 않는다.
-  단 하나의 예외도 두지 않는다 — 화면이 바뀌었는데 게임이 달라지면 원인을 못 가린다.
+- **게임 데이터**: `js/data/` 는 건드리지 않는다. 아이템·레시피·퀘스트·구 데이터가
+  같이 움직이면 화면 문제인지 데이터 문제인지 가릴 수 없다. 밸런스 수치
+  (`js/data/gameBalance.js`)도 여기 포함이다.
 - **색·폰트·간격 토큰 신설**: `css/variables.css` 에 없는 값을 새로 만들지 않는다.
   목업의 팔레트는 이미 `DESIGN.md` 와 일치한다. 새 토큰이 필요하면 INBOX 에 남긴다.
 - **한/영 병기 (`nameEn`)**: 이번 라운드 범위 밖이다. 아래 4절 참조.
