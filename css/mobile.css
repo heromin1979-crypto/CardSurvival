@@ -135,6 +135,11 @@ html, body {
   .lc-corner        { font-size: 7px; gap: 2px; }
   .lc-corner--right { font-size: 9px; }
   .lc-badge-n       { font-size: 7px; }
+  /* 수량·내구 게이지는 접지 않고 줄인다 — 이 두 줄이 이름 옆 ×N·N% 배지를 대신하므로
+     접으면 카드에 남는 수량 표시가 없어진다 (설명 줄과 다른 선택이다) */
+  .card-gauge-label,
+  .card-gauge-val   { font-size: 7px; }
+  .card-gauge-track { height: 2px; margin-top: 1px; }
 
   /* 모달 */
   .equip-modal-box,
@@ -372,6 +377,9 @@ html, body {
   .lc-corner       { font-size: 6px; gap: 2px; }
   .lc-corner--right{ font-size: 8px; }
   .lc-badge-n      { font-size: 6px; }
+  .card-gauge-label,
+  .card-gauge-val  { font-size: 6px; }
+  .card-gauge-track{ height: 2px; margin-top: 1px; }
 
   /* ── 모달 → 바텀시트 ─────────────────────────── */
   .modal-overlay { align-items: flex-end; }
@@ -607,6 +615,9 @@ html, body {
   .lc-corner       { font-size: 6px; gap: 2px; }
   .lc-corner--right{ font-size: 8px; }
   .lc-badge-n      { font-size: 6px; }
+  .card-gauge-label,
+  .card-gauge-val  { font-size: 6px; }
+  .card-gauge-track{ height: 2px; margin-top: 1px; }
 }
 
 

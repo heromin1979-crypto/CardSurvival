@@ -125,30 +125,6 @@
   gap: 3px;
 }
 
-/* 이름 옆 수량 표시 (소모품) */
-.card-name-qty {
-  font-size: 9px;
-  font-weight: bold;
-  color: var(--text-good);
-  background: rgba(96,176,96,0.15);
-  padding: 0 3px;
-  border-radius: 2px;
-  flex-shrink: 0;
-  letter-spacing: 0;
-}
-
-/* 이름 옆 내구도 표시 */
-.card-name-dur {
-  font-size: 9px;
-  font-weight: normal;
-  color: var(--text-secondary);
-  flex-shrink: 0;
-  letter-spacing: 0;
-}
-
-.card-name-dur.low  { color: var(--text-warn); }
-.card-name-dur.crit { color: var(--text-danger); }
-
 .card-ammo-badge {
   flex-shrink: 0;
   font-family: var(--font-mono);
@@ -260,8 +236,6 @@
   min-width: 0;
 }
 
-.card-durability { order: 3; flex-shrink: 0; }
-
 .card-art {
   flex: 1;
   min-height: 0;
@@ -305,36 +279,58 @@
   flex-shrink: 0;
 }
 
-/* Durability bar */
-.card-durability {
+/* 아트 아래 두 게이지 — 라벨(좌) · 현재/최대(우) 윗줄 + 채움 바 아랫줄.
+   공용 Gauge.html 을 쓰지 않는다: .gauge-row 는 auto 1fr auto 3열에 트랙이 8px 라
+   202px 카드에 둘을 쌓으면 아트를 먹고, showValue 는 max 가 100 이면 분모를 지워
+   목표 형식(`45/100`)이 도구 대부분에서 `45` 로 줄어든다. */
+.card-gauge {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  column-gap: 4px;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.card-gauge--qty { order: 3; }
+.card-gauge--dur { order: 4; }
+
+.card-gauge-label {
+  font-size: 8px;
+  color: var(--text-dim);
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.card-gauge-val {
+  font-size: 8px;
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-gauge-track {
+  grid-column: 1 / -1;
   height: 3px;
+  margin-top: 2px;
   background: var(--border-dim);
   border-radius: 1px;
   overflow: hidden;
-  margin: 2px 0;
 }
 
-.card-durability-fill {
+.card-gauge-fill {
   height: 100%;
   background: var(--accent-primary);
   transition: width var(--transition-mid);
 }
 
-.card-durability-fill.low   { background: var(--text-warn); }
-.card-durability-fill.crit  { background: var(--text-danger); }
-
-/* Stack count */
-.card-stack {
-  position: absolute;
-  bottom: 4px;
-  right: 5px;
-  font-size: 10px;
-  color: var(--text-secondary);
-  background: rgba(0,0,0,0.6);
-  padding: 1px 4px;
-  border-radius: 3px;
-  font-weight: bold;
-}
+/* 수량은 소모의 반대편이라 액센트가 아니라 긍정 색을 쓴다 (예전 이름 옆 ×N 배지와 같은 색) */
+.card-gauge--qty .card-gauge-fill { background: var(--text-good); }
+.card-gauge-fill.low  { background: var(--text-warn); }
+.card-gauge-fill.crit { background: var(--text-danger); }
 
 /* Contamination indicator */
 .card-contamination {

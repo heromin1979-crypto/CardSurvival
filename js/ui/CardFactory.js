@@ -1355,22 +1355,32 @@ const CardFactory = {
 
   // ── 일반 카드 내부 HTML ──────────────────────────────────
 
-  _buildInner(inst, def) {
-    const durPct   = Math.round(inst.durability ?? 100);
-    const durClass = durPct > 50 ? '' : durPct > 25 ? 'low' : 'crit';
-    const hasDur   = def.defaultDurability != null && def.type !== 'consumable';
-    const qty      = inst.quantity ?? 1;
+  // 아이템 카드의 `라벨 현재/최대 + 채움 바` 한 칸. 수량과 내구도가 같은 상자를 쓴다 —
+  // 두 게이지가 한 카드에 위아래로 서므로 서식이 갈리면 바로 어긋나 보인다.
+  _cardGauge(kind, label, cur, max, fillClass = '') {
+    const pct = max > 0 ? Math.min(100, Math.round(cur / max * 100)) : 0;
+    return `
+      <div class="card-gauge card-gauge--${kind}">
+        <span class="card-gauge-label">${label}</span>
+        <span class="card-gauge-val">${cur}/${max}</span>
+        <div class="card-gauge-track">
+          <div class="card-gauge-fill ${fillClass}" style="width:${pct}%"></div>
+        </div>
+      </div>`;
+  },
 
-    // ── 이름 옆 남은 표시 ──────────────────────────────────
-    // 소모품: 스택 수량 (×N)
-    // 내구도 아이템: 내구도% (< 100일 때만)
-    let nameRemainder = '';
-    if (def.type === 'consumable' && def.stackable) {
-      // 스택 가능 소모품: 항상 수량 표시 (×1 포함)
-      nameRemainder = `<span class="card-name-qty">×${qty}</span>`;
-    } else if (hasDur && durPct < 100) {
-      nameRemainder = `<span class="card-name-dur ${durClass}">${durPct}%</span>`;
-    }
+  _buildInner(inst, def) {
+    // 내구도는 퍼센트가 아니라 절대값이다 (createCardInstance 가 defaultDurability 를 그대로
+    // 넣고, 전투·함정이 durabilityLoss 만큼 뺀다). 최대치가 100이 아닌 아이템이 많아
+    // 값을 그대로 채움 폭에 쓰면 갓 딴 야생 베리(20/20)가 20% 로 보인다.
+    const durMax   = def.defaultDurability ?? 0;
+    const durCur   = Math.max(0, Math.round(inst.durability ?? durMax));
+    const durPct   = durMax > 0 ? Math.min(100, Math.round(durCur / durMax * 100)) : 0;
+    const durClass = durPct > 50 ? '' : durPct > 25 ? 'low' : 'crit';
+    // 전설 장신구 4개는 defaultDurability 가 Infinity 다 — 닳지 않는 물건에 남은 양을
+    // 그릴 수 없다 (예전 코드는 width:Infinity% 를 내보내 바가 늘 가득 차 보였다).
+    const hasDur   = Number.isFinite(def.defaultDurability) && def.type !== 'consumable';
+    const qty      = inst.quantity ?? 1;
 
     const contam = inst.contamination ?? 0;
     const contamBadge = contam > 0
@@ -1381,17 +1391,15 @@ const CardFactory = {
       ? `<span class="card-quality-badge quality-${quality}">${QUALITY_LABELS[quality]}</span>`
       : '';
 
-    // 스택 배지: 소모품이 아닌 stackable (수량 뱃지가 이름에 없는 경우)
-    const stackBadge = (def.stackable && qty > 1 && def.type !== 'consumable')
-      ? `<span class="card-stack">×${qty}</span>` : '';
-
     const weightBadge = def.weight
       ? `<span class="card-weight">${def.weight}kg</span>` : '';
 
-    const durBar = hasDur ? `
-      <div class="card-durability">
-        <div class="card-durability-fill ${durClass}" style="width:${durPct}%"></div>
-      </div>` : '';
+    // 아트 아래 두 게이지. 이름 옆 ×N·N% 배지와 아트 위 스택 배지가 하던 일을 이 둘이
+    // 받는다 — 같은 값을 한 카드에 두 번 그리지 않는다.
+    // 스택 상한은 겹치는 아이템에만 뜻이 있다 (stackable 과 maxStack>1 은 589개 전부에서 일치).
+    const qtyBar = def.stackable
+      ? this._cardGauge('qty', '수량', qty, def.maxStack ?? qty) : '';
+    const durBar = hasDur ? this._cardGauge('dur', '내구', durCur, durMax, durClass) : '';
 
     const imgSrc = cardImageFor(inst, def);
     // 미끼 상태는 카드 테두리가 아니라 아트 영역에 그린다 — 테두리·코너 브래킷은
@@ -1445,7 +1453,7 @@ const CardFactory = {
     return `
       <div class="card-header">
         <span class="card-icon">${dataIcon(def.icon ?? '📦')}</span>
-        <span class="card-name">${formatInstanceName(inst, def)}${nameRemainder ? ' ' : ''}${nameRemainder}</span>
+        <span class="card-name">${formatInstanceName(inst, def)}</span>
         ${ammoBadge}${qualityBadge}${contamBadge}${baitBadge}${subtypeBadge}
       </div>
       <div class="card-body">
@@ -1453,11 +1461,11 @@ const CardFactory = {
           <span class="${typeBadgeClass}" data-cat="${catKey}">${typeBadgeText}</span>
         </div>
         ${artHtml}
+        ${qtyBar}
         ${durBar}
       </div>
       <div class="card-footer">
         ${weightBadge}
-        ${stackBadge}
         ${actionHintHtml}
       </div>
     `;
