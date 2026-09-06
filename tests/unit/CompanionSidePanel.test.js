@@ -11,6 +11,7 @@ import CompanionPanel   from '../../js/ui/CompanionPanel.js';
 
 const LAYOUT_CSS = readFileSync(path.resolve('css/layout.css'), 'utf8');
 const VARS_CSS   = readFileSync(path.resolve('css/variables.css'), 'utf8');
+const PANEL_CSS  = readFileSync(path.resolve('css/companion-panel.css'), 'utf8');
 
 const SCREEN_W    = 1920;   // 고정 해상도 (Scale 방식)
 const SIDEBAR_W   = 200;
@@ -95,5 +96,84 @@ describe('동료 패널 — 내용', () => {
 
     expect(el.querySelector('.bc-comp-card')).toBeNull();
     expect(el.querySelector('.bc-comp-empty')).not.toBeNull();
+  });
+});
+
+describe('동료 패널 — 사기·유대 블록', () => {
+  it('사기는 동료가 없어도 플레이어 전역 수치로 보인다', () => {
+    GameState.stats.morale.current = 70;
+    GameState.stats.morale.max     = 100;
+
+    const el = mountPanel();
+    const status = el.querySelector('#bc-comp-status');
+
+    expect(status).not.toBeNull();
+    expect(status.textContent).toContain('사기 (MORALE)');
+    expect(status.textContent).toContain('70/100');
+    // 동료가 없어도 사기 게이지는 남는다
+    expect(status.querySelector('.bc-comp-stat .gauge-fill--morale').style.width).toBe('70%');
+    expect(status.querySelector('.bc-comp-bond.empty')).not.toBeNull();
+  });
+
+  it('사기 구간이 바뀌면 설명도 바뀐다', () => {
+    GameState.stats.morale.current = 5;   // gameBalance despair 구간 (< 15)
+    expect(mountPanel().querySelector('.bc-comp-stat-note').textContent).toContain('절망');
+
+    GameState.stats.morale.current = 80;  // high 구간 (>= 70)
+    expect(mountPanel().querySelector('.bc-comp-stat-note').textContent).toContain('높음');
+  });
+
+  it('유대는 동료마다 이름표를 단 게이지로 나뉜다', () => {
+    GameState.companions  = ['npc_nurse', 'npc_mechanic'];
+    GameState.npcs.states = {
+      npc_nurse:    { spawned: true, isCompanion: true, hp: 100, bond: 45, woundLevel: 0, infectionLevel: 0 },
+      npc_mechanic: { spawned: true, isCompanion: true, hp: 100, bond: 0,  woundLevel: 0, infectionLevel: 0 },
+    };
+
+    const bonds = mountPanel().querySelectorAll('.bc-comp-bond');
+
+    expect(bonds).toHaveLength(2);
+    expect(bonds[0].querySelector('.bc-comp-scope').textContent.trim()).not.toBe('나');
+    expect(bonds[0].textContent).toContain('45 · 우호');   // 31~60 → 우호
+    expect(bonds[1].textContent).toContain('0 · 경계');
+    expect(bonds[0].querySelector('.gauge-fill').style.width).toBe('45%');
+  });
+
+  it('블록은 스크롤하는 동료 목록 밖에 있다', () => {
+    // 동료가 둘 이상이면 목록이 넘치는데, 블록이 목록 안에 있으면 화면 밖으로 밀린다
+    GameState.companions  = ['npc_nurse', 'npc_mechanic'];
+    GameState.npcs.states = {
+      npc_nurse:    { spawned: true, isCompanion: true, hp: 100, bond: 0, woundLevel: 0, infectionLevel: 0 },
+      npc_mechanic: { spawned: true, isCompanion: true, hp: 100, bond: 0, woundLevel: 0, infectionLevel: 0 },
+    };
+
+    const el = mountPanel();
+
+    expect(el.querySelector('.bc-comp-list .bc-comp-card')).not.toBeNull();
+    expect(el.querySelector('.bc-comp-list #bc-comp-status')).toBeNull();
+    expect(el.querySelector('#bc-comp-status').parentElement).toBe(el);
+  });
+
+  it('게이지 트랙이 폭을 갖도록 공용 gauge-row 3열 그리드를 덮어쓴다', () => {
+    // 공용 .gauge-row는 `auto 1fr auto`라 라벨·수치 없이 트랙만 넣으면 폭이 0이 된다.
+    // happy-dom은 레이아웃을 계산하지 않아 선언 자체를 검사한다.
+    expect(PANEL_CSS).toMatch(/\.bc-comp-status\s+\.gauge-row\s*\{[^}]*grid-template-columns:\s*1fr/);
+  });
+
+  it('사기가 바뀌면 동료 카드를 다시 그리지 않고 블록만 갱신한다', () => {
+    GameState.companions  = ['npc_nurse'];
+    GameState.npcs.states = {
+      npc_nurse: { spawned: true, isCompanion: true, hp: 100, bond: 10, woundLevel: 0, infectionLevel: 0 },
+    };
+    GameState.stats.morale.current = 70;
+
+    const el   = mountPanel();
+    const card = el.querySelector('.bc-comp-card');
+
+    GameState.stats.morale.current = 40;
+    CompanionPanel.renderStatus();
+
+    expect(el.querySelector('.bc-comp-card')).toBe(card);   // 같은 노드 = 재렌더 없음
+    expect(el.querySelector('#bc-comp-status').textContent).toContain('40/100');
   });
 });
