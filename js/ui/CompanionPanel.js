@@ -68,8 +68,8 @@ const CompanionPanel = {
     return `
       <div class="bc-comp-empty">
         <span class="bc-comp-empty-icon">👥</span>
-        동행 중인 동료 없음
-        <span class="bc-comp-empty-hint">NPC 의뢰를 끝내 신뢰를 쌓으면 동행을 제안할 수 있다.</span>
+        동료 없음
+        <span class="bc-comp-empty-hint">NPC 의뢰를 끝내면 동행을 제안할 수 있다.</span>
       </div>
     `;
   },
@@ -98,7 +98,9 @@ const CompanionPanel = {
         <div class="bc-comp-name">${name}</div>
         <div class="bc-comp-meta">
           <span class="bc-comp-hp ${hpCls}">HP ${hpPct}%</span>
-          <span class="bc-comp-status">상태: <span class="bc-comp-status-value ${status.cls}">${status.label}</span></span>
+        </div>
+        <div class="bc-comp-meta">
+          상태: <span class="bc-comp-status-value ${status.cls}">${status.label}</span>
         </div>
         <div class="bc-comp-section">Equipped</div>
         <div class="bc-comp-slots">${this._renderGear(npcDef)}</div>

@@ -33,9 +33,10 @@
   border: 1px dashed var(--border-dim);
   border-radius: var(--radius-sm);
   font-size: var(--font-size-xs);
-  color: var(--text-dim);
+  color: var(--text-secondary);
   text-align: center;
   line-height: 1.5;
+  word-break: keep-all;   /* 폭 180px — 글자 단위로 끊기면 "없 음"처럼 쪼개진다 */
 }
 
 .bc-comp-empty-icon {
@@ -45,7 +46,6 @@
 
 .bc-comp-empty-hint {
   color: var(--text-dim);
-  opacity: 0.7;
 }
 
 /* ── 동료 카드 ── */
@@ -116,7 +116,6 @@
 .bc-comp-section {
   font-size: var(--font-size-xs);
   color: var(--text-dim);
-  text-transform: uppercase;
   letter-spacing: 1px;
   padding-top: 2px;
 }
