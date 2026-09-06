@@ -292,6 +292,10 @@ html, body {
   .bc-noise-block { min-width: 60px; }
   .noise-label    { font-size: 9px; }
   .noise-track    { width: 38px; }
+  /* 60px 블록에서 두 줄로 접혀 HUD 바 전체를 밀어 올린다.
+     게이지가 빨갛게 맥동하고 influx 알림 토스트가 따로 뜨므로 여기서는 생략한다. */
+  .noise-decay,
+  .bc-noise-warn  { display: none; }
 
   /* ── 무게 ────────────────────────────────────── */
   .bc-enc-block { font-size: 11px; white-space: nowrap; }
@@ -564,6 +568,8 @@ html, body {
 
   .bc-noise-block  { min-width: 60px; }
   .noise-track     { width: 36px; }
+  .noise-decay,
+  .bc-noise-warn   { display: none; }
   .bc-enc-block    { font-size: 9px; }
 
   .bc-sidebar-btns { flex-direction: row; gap: 3px; margin-top: 0; }

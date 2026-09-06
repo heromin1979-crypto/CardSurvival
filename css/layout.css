@@ -544,7 +544,10 @@
 
 /* Noise block in sidebar */
 .bc-noise-block {
-  padding: 4px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 2px 0;
   flex-shrink: 0;
 }
 
@@ -554,6 +557,9 @@
 
 /* Enc block in sidebar */
 .bc-enc-block {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
   font-size: var(--font-size-xs);
   color: var(--text-dim);
   padding: 2px 0;

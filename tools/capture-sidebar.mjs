@@ -4,7 +4,12 @@
 // capture-header-chip.mjs 와 같은 경로(일반 플레이 흐름)로 screen-main 까지 들어간다.
 import { spawn } from 'node:child_process';
 import path from 'node:path';
+// NOISE / ENC_MAX 를 주면 소음·무게를 그 값으로 밀어 넣고 찍는다 (낮을 때/높을 때 비교용).
+// 훅은 기존 ?tool=combat 핸들(window.__combatTool)을 그대로 쓴다 — 새 디버그 경로를 만들지 않는다.
 const port=43183, base=`http://127.0.0.1:${port}`, OUT=process.env.SHOT_DIR;
+const TAG=process.env.SHOT_TAG ? `-${process.env.SHOT_TAG}` : '';
+const NOISE=process.env.NOISE, ENC_MAX=process.env.ENC_MAX;
+const NEEDS_HOOK = NOISE !== undefined || ENC_MAX !== undefined;
 const vite=spawn(process.execPath,[path.resolve('node_modules/vite/bin/vite.js'),'--host','127.0.0.1','--port',String(port),'--strictPort'],{stdio:['ignore','pipe','pipe']});
 vite.stderr.on('data',d=>process.stderr.write(`[vite] ${d}`));
 async function waitServer(ms=20000){const t=Date.now();while(Date.now()-t<ms){try{const r=await fetch(base+'/index.html');if(r.ok)return;}catch{}await new Promise(r=>setTimeout(r,250));}throw new Error('vite timeout');}
@@ -14,7 +19,7 @@ const browser=await chromium.launch();
 const page=await browser.newPage({viewport:{width:1920,height:1080}});
 const errs=[]; page.on('pageerror',e=>errs.push(e.message));
 page.on('console',m=>{if(m.type()==='error')errs.push('console: '+m.text().slice(0,140));});
-await page.goto(base+'/index.html',{waitUntil:'networkidle'});
+await page.goto(base+'/index.html'+(NEEDS_HOOK?'?tool=combat':''),{waitUntil:'networkidle'});
 await page.waitForTimeout(2500);
 await page.locator('text=새 게임').first().click(); await page.waitForTimeout(1200);
 await page.locator('.slot-card[data-slot="0"]').click(); await page.waitForTimeout(600);
@@ -30,6 +35,22 @@ for(let i=0;i<8;i++){
   if(!t) break; await page.waitForTimeout(1200);
 }
 await page.waitForTimeout(2500);
+if(NEEDS_HOOK){
+  const applied = await page.evaluate(({noise,encMax})=>{
+    const h=window.__combatTool; if(!h) return {hook:false};
+    if(noise!==undefined) h.GameState.noise.level=Number(noise);
+    // 무게는 상한만 낮추고 GameState._updateEncumbrance() 가 pct·tier 를 다시 계산하게 둔다.
+    // 도구가 구간을 직접 정하면 밸런스와 갈린 화면을 찍게 된다.
+    if(encMax!==undefined){
+      h.GameState.player.encumbrance.max=Number(encMax);
+      h.GameState._updateEncumbrance();
+    }
+    h.EventBus.emit('statChanged',{stat:'noise'});
+    return {hook:true, noise:h.GameState.noise.level, enc:{...h.GameState.player.encumbrance}};
+  },{noise:NOISE,encMax:ENC_MAX});
+  console.log('APPLIED', JSON.stringify(applied));
+  await page.waitForTimeout(600);
+}
 console.log('STATE', JSON.stringify(await page.evaluate(()=>({screen:document.querySelector('.screen.active')?.id}))));
 
 const sidebar = await page.evaluate(()=>{
@@ -50,6 +71,9 @@ const sidebar = await page.evaluate(()=>{
     contentH: bar.scrollHeight, viewH: bar.clientHeight,
     order: rows,
     actionMenuLast: bar.lastElementChild?.classList.contains('bc-sidebar-btns'),
+    // 퀘스트 블록(INBOX 2군)이 들어갈 수 있는 세로 여백. 0 이 되면 다음 블록은 잘린다.
+    freeBelow: Math.round(br.bottom - parseFloat(getComputedStyle(bar).paddingBottom)
+                          - (bar.lastElementChild?.getBoundingClientRect().bottom ?? br.bottom)),
     // 가로로 넘쳐 잘린 글자 — 200px 컬럼에서 라벨이 조용히 잘린 전례가 있다
     overflowX: [...bar.querySelectorAll('.bc-side-title, .toolbar-btn')]
       .filter(e => e.scrollWidth > e.clientWidth + 1)
@@ -58,10 +82,25 @@ const sidebar = await page.evaluate(()=>{
     wrappedTitles: [...bar.querySelectorAll('.bc-side-title')]
       .filter(e => e.getBoundingClientRect().height > parseFloat(getComputedStyle(e).lineHeight) * 1.6)
       .map(e => e.textContent.replace(/\s+/g,' ').trim()),
+    // 소음·무게 블록의 실제 표시값 — 캡처를 눈으로 읽지 않고 문자열로 확인한다
+    noise: (()=>{
+      const t=(id)=>document.getElementById(id);
+      const f=t('noise-fill'), w=t('noise-warn');
+      return { pct: t('noise-val')?.textContent, decay: t('noise-decay')?.textContent,
+               fillClass: f?.className, fillW: f?.style.width,
+               trackH: f ? Math.round(f.getBoundingClientRect().height) : null,
+               warnShown: !!(w && w.getBoundingClientRect().height > 0) };
+    })(),
+    weight: (()=>{
+      const t=(id)=>document.getElementById(id);
+      const f=t('hud-enc-fill');
+      return { value: t('hud-enc')?.textContent, tier: t('hud-enc-tier')?.textContent,
+               tierClass: t('hud-enc-tier')?.className, fillClass: f?.className, fillW: f?.style.width };
+    })(),
   };
 });
 console.log('SIDEBAR', JSON.stringify(sidebar, null, 2));
-await page.screenshot({path:path.join(OUT,'sidebar-full.png')});
-await page.locator('.bc-sidebar').screenshot({path:path.join(OUT,'sidebar.png')});
+await page.screenshot({path:path.join(OUT,`sidebar-full${TAG}.png`)});
+await page.locator('.bc-sidebar').screenshot({path:path.join(OUT,`sidebar${TAG}.png`)});
 if(errs.length) console.log('ERRORS', [...new Set(errs)].slice(0,6));
 await browser.close(); vite.kill(); process.exit(0);

@@ -195,19 +195,28 @@ const Basecamp = {
           <div class="bc-side-title">소음 수치 <span class="bc-side-title-en">(NOISE METER)</span></div>
           <div class="bc-noise-block">
             <div class="noise-label">
-              <span>${I18n.t('basecamp.noise')}</span>
-              <span id="noise-val">0</span>
+              <span class="noise-decay" id="noise-decay"></span>
+              <span class="noise-val" id="noise-val">0%</span>
             </div>
             <div class="noise-track" id="noise-track">
               <div class="noise-fill" id="noise-fill" style="width:0%"></div>
             </div>
+            <div class="bc-noise-warn" id="noise-warn" hidden>위험! 소음 발생</div>
           </div>
         </section>
 
         <!-- 휴대 무게 -->
         <section class="bc-side-section" id="bc-weight-section">
           <div class="bc-side-title">휴대 무게 <span class="bc-side-title-en">(WEIGHT)</span></div>
-          <div class="bc-enc-block">⚖ <span id="hud-enc">0/30kg</span></div>
+          <div class="bc-enc-block">
+            <div class="bc-enc-label">
+              <span id="hud-enc">0 / 30kg</span>
+              <span class="bc-enc-tier" id="hud-enc-tier"></span>
+            </div>
+            <div class="bc-enc-track">
+              <div class="bc-enc-fill" id="hud-enc-fill" style="width:0%"></div>
+            </div>
+          </div>
         </section>
 
         <!-- 퀘스트 자리 — INBOX 2군이 여기를 채운다. 행동 메뉴 위가 목표 순서다. -->
