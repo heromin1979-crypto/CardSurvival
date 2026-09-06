@@ -797,6 +797,9 @@ const CardFactory = {
 
     // ── 장소 카드 ────────────────────────────────────────────
     if (def.type === 'location') {
+      // 카드에 그리는 설명은 두 줄에서 말줄임되므로 전문은 툴팁이 받는다
+      el.title = def.description ?? '';
+
       // ── 세부 장소 카드 (랜드마크 내부 탐색 슬롯) ─────────
       if (def.sublocation) {
         el.className = 'card location-card sublocation-card spawning';
@@ -1047,18 +1050,35 @@ const CardFactory = {
 
   // ── 장소 카드 내부 HTML ──────────────────────────────────
 
+  // 설명 2줄 — 원문이 카드 폭보다 길면 CSS 가 말줄임한다. 전문은 카드 title 툴팁이 받는다.
+  _locationDesc(def) {
+    return `<div class="lc-desc">${def.description ?? ''}</div>`;
+  },
+
+  // 목표 이미지의 `Requirement: N` 자리 — 이 카드를 누를 때 실제로 드는 TP.
+  _locationReq(tp) {
+    return `<span class="lc-req">${tp > 0 ? `요구 ${tp}TP` : '요구 없음'}</span>`;
+  },
+
   _buildLandmarkInner(def, isCurrent = false) {
     const lmImg = LANDMARK_IMAGES[def.id] ?? null;
     const lmBg  = lmImg ? `style="background-image:url('${lmImg}');background-size:cover;background-position:center;"` : '';
 
     if (isCurrent) {
+      // 랜드마크 진입 자체는 무료지만 ExploreSystem.enterLandmark 가 첫 세부장소로 자동 진입하며
+      // 1 TP 를 쓴다. 베이스캠프만 그 자동 진입에서 제외된다.
+      const enterTP = def.id === 'basecamp_landmark' ? 0 : 1;
       return `
         <div class="lc-header lm-header">
           <span class="lm-badge">${I18n.t('card.landmark')}</span>
         </div>
         <div class="lc-scene" ${lmBg}></div>
         <div class="lc-name">${I18n.itemName(def.id, def.name)}</div>
+        ${this._locationDesc(def)}
         <div class="lm-bonus">${def.landmarkBonus ?? ''}</div>
+        <div class="lc-meta">
+          ${this._locationReq(enterTP)}
+        </div>
       `;
     }
 
@@ -1076,9 +1096,10 @@ const CardFactory = {
       </div>
       <div class="lc-scene" ${lmBg}></div>
       <div class="lc-name">${I18n.itemName(def.id, def.name)}</div>
+      ${this._locationDesc(def)}
       <div class="lc-danger" style="color:${color};">${dangerDots}</div>
       <div class="lc-meta">
-        <span>${costTP}TP</span>
+        ${this._locationReq(costTP)}
         <span>${encPct > 0 ? I18n.t('card.encounter', { pct: encPct }) : I18n.t('card.safe')}</span>
       </div>
     `;
@@ -1099,8 +1120,6 @@ const CardFactory = {
       ? `<span class="lc-visited-dot">✓</span>` : '';
     const encounterText = def.encounterChance > 0
       ? I18n.t('card.encounter', { pct: Math.round(def.encounterChance * 100) }) : I18n.t('card.safe');
-    const tpText = def.travelCostTP > 0
-      ? `${def.travelCostTP}TP` : 'Free';
 
     const locImg = LOCATION_IMAGES[def.subtype] ?? null;
     const locBg  = locImg ? `style="background-image:url('${locImg}');background-size:cover;background-position:center;"` : '';
@@ -1111,11 +1130,12 @@ const CardFactory = {
       </div>
       <div class="lc-scene" ${locBg}></div>
       <div class="lc-name">${I18n.districtName(def.nodeId, def.name)}</div>
+      ${this._locationDesc(def)}
       <div class="lc-danger" style="color:${color};">
         ${dangerDots}
       </div>
       <div class="lc-meta">
-        <span>${tpText}</span>
+        ${this._locationReq(def.travelCostTP ?? 0)}
         <span>${encounterText}</span>
       </div>
     `;
@@ -1134,12 +1154,13 @@ const CardFactory = {
       </div>
       <div class="lc-scene lc-scene--sublocation" ${subBg}>${subImg ? '' : `<span class="lc-scene-icon">${def.icon ? dataIcon(def.icon) : uiIcon('location')}</span>`}</div>
       <div class="lc-name">${I18n.itemName(def.id ?? def.subLocationId, def.name)}</div>
+      ${this._locationDesc(def)}
       <div class="lc-danger" style="color:${dangerColor}; font-size:9px; margin-top:2px;">
         ${dangerPct > 0 ? I18n.t('card.dangerHigh', { pct: dangerPct }) : I18n.t('card.dangerLow')}
       </div>
       <div class="lc-meta">
+        ${this._locationReq(1)}
         <span>${I18n.t('card.explore')}</span>
-        <span>1TP</span>
       </div>
     `;
   },

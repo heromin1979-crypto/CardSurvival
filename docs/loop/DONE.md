@@ -12,6 +12,28 @@
 
 ## 완료한 지시 (INBOX 에서 내려옴)
 
+- [x] [2026-09-06] **장소 카드에 설명과 요구치를 넣는다.** (3군)
+  → [2026-09-07] 이름 아래에 **설명 2줄(`.lc-desc`)** 을, 맨 아래 정보 줄 왼쪽에
+  **`요구 NTP`(`.lc-req`)** 를 넣었다. 목표의 `Requirement: 12` 자리를 **이 카드를 누를 때
+  실제로 드는 TP** 로 채웠다 — 없는 수치를 만들지 않았다.
+  **빌더 셋을 다 고쳤다** (`_buildSubLocationInner` · `_buildLandmarkInner` ·
+  `_buildLocationInner`). 한 곳만 고치면 랜드마크 안과 구 목록의 화면이 갈린다.
+  요구치의 출처: 세부장소 = `enterSubLocation` 의 `applyCost(1)` → `요구 1TP`,
+  구 카드 = `travelCostTP` → `요구 2TP`, 현재 구 랜드마크 = 진입이 첫 세부장소로 자동 진입해
+  1 TP 를 쓰므로 `요구 1TP`, 베이스캠프만 그 자동 진입에서 빠져 `요구 없음`.
+  **위험도·조우 확률은 하나도 지우지 않았다** — 위험 줄(`.lc-danger`)은 그대로 두고
+  기존 `.lc-meta` 의 TP 자리에 라벨만 붙였다 (`2TP` → `요구 2TP`, `Free` → `요구 없음`).
+  ※ 설명 원문은 25개 구 중앙값 43자·세부장소 239개 중앙값 30자로 **두 줄에 다 들어가지 않는다.**
+    9px 두 줄이 31자 남짓이라 대부분 `…` 로 접힌다 — 전문은 카드 `title` 툴팁이 받는다.
+    설명이 비어 있는 장소는 0개였다 (`js/data/` 는 읽기만 했다, SPEC 3절).
+  `js/ui/CardFactory.js` + `css/cards.css` + `css/mobile.css`(좁은 화면 3곳에서 설명 접기) +
+  `tools/capture-location-cards.mjs`(신설) + `tests/unit/LocationCardDescription.test.js`(15건 신설)
+  검증: `reference/main-screen-loccard-2026-09-07.png` ·
+  `loccard-row-sub-2026-09-07.png` · `loccard-row-district-2026-09-07.png` —
+  세부장소 8장 높이 205px 동일 · 설명 줄 y=249 · 요구 줄 y=291 전부 일치,
+  구 목록 6장도 요구 줄 y=291 일치 · `anyClipped: []` · `anyCovered: []`,
+  `npm test` 3476건 전건 통과, `validate.js` Errors 0 / (커밋 해시는 아래 커밋)
+
 - [x] [2026-09-06] **섹션 헤더를 목표 형식으로 바꾼다.** (3군)
   → [2026-09-07] 보드 세 행 헤더를 `장소 (LOCATIONS)` / `바닥 (GROUND ITEMS)` /
   `휴대 (CARRIED INVENTORY)` 로 바꿨다. 영문은 `ROW_CONFIG` 의 `labelEn` 리터럴이다 —

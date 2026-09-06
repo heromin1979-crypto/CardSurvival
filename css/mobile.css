@@ -129,6 +129,8 @@ html, body {
   .card-stat        { font-size: 8px; }
   .lc-name          { font-size: 9px; }
   .lc-meta          { font-size: 7px; }
+  /* 설명 2줄(24px)은 78px 폭 카드에서 씬을 먹는다 — 전문은 길게 누르면 title 툴팁이 받는다 */
+  .lc-desc          { display: none; }
 
   /* 모달 */
   .equip-modal-box,
@@ -361,6 +363,7 @@ html, body {
   .lc-icon         { font-size: 22px; }
   .lc-name         { font-size: 8px; }
   .lc-meta         { font-size: 7px; }
+  .lc-desc         { display: none; }
   .lm-badge        { font-size: 6px; padding: 1px 3px; }
 
   /* ── 모달 → 바텀시트 ─────────────────────────── */
@@ -592,6 +595,8 @@ html, body {
     scrollbar-width: none;
   }
   .board-row.row-top .board-row-slots::-webkit-scrollbar { display: none; }
+  /* 104px 카드에 설명 두 줄을 넣을 자리가 없다 (≤480px 규칙은 가로 모드 폭에 걸리지 않는다) */
+  .lc-desc { display: none; }
 }
 
 
