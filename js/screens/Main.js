@@ -14,6 +14,7 @@ import BodyStatusModal from '../ui/BodyStatusModal.js';
 import LandmarkModal   from '../ui/LandmarkModal.js';
 import SkillModal      from '../ui/SkillModal.js';
 import CompanionModal  from '../ui/CompanionModal.js';
+import CompanionPanel  from '../ui/CompanionPanel.js';
 import BasecampModal  from '../ui/BasecampModal.js';
 import DoctorPatientModal from '../ui/DoctorPatientModal.js';
 import EmergencyRoomModal      from '../ui/EmergencyRoomModal.js';
@@ -99,6 +100,7 @@ const Basecamp = {
     LandmarkModal.init();
     SkillModal.init();
     CompanionModal.init();
+    CompanionPanel.init();
     BasecampModal.init();
     DoctorPatientModal.init();
     EmergencyRoomModal.init();
@@ -202,6 +204,9 @@ const Basecamp = {
       <main class="bc-main" id="bc-main">
         <div id="board-container"></div>
       </main>
+
+      <!-- 동료 패널 (CompanionPanel.js가 채움) -->
+      <aside class="bc-companion" id="bc-companion" aria-label="동료"></aside>
 
       <!-- Equipment modal -->
       <div class="modal-overlay" id="equip-modal">

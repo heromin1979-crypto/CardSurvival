@@ -1,0 +1,197 @@
+/* === 우측 동료 패널 (#bc-companion) === */
+/* 메인 화면 3번째 컬럼. 동료 요약만 담고 상세는 동료 모달(companion-modal.css)이 맡는다.
+   동료가 없어도 컬럼을 유지한다 — 영입/해제마다 보드 폭이 흔들리면 카드 배치가 튄다. */
+
+.bc-companion {
+  background: var(--bg-surface);
+  border-left: 1px solid var(--border-dim);
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+  padding: var(--gap-sm);
+  z-index: var(--z-hud);
+}
+
+.bc-comp-header {
+  font-size: var(--font-size-sm);
+  color: var(--accent-primary);
+  letter-spacing: 2px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border-dim);
+  flex-shrink: 0;
+}
+
+/* ── 빈 상태 ── */
+.bc-comp-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: var(--gap-lg) var(--gap-xs);
+  border: 1px dashed var(--border-dim);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  color: var(--text-dim);
+  text-align: center;
+  line-height: 1.5;
+}
+
+.bc-comp-empty-icon {
+  font-size: 26px;
+  opacity: 0.35;
+}
+
+.bc-comp-empty-hint {
+  color: var(--text-dim);
+  opacity: 0.7;
+}
+
+/* ── 동료 카드 ── */
+.bc-comp-card {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 6px;
+  background: rgba(0,0,0,0.25);
+  border: 1px solid var(--border-dim);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+.bc-comp-card:hover {
+  border-color: var(--accent-dim);
+  background: rgba(200,160,96,0.06);
+}
+
+.bc-comp-portrait {
+  position: relative;
+  aspect-ratio: 1 / 1.05;
+  background: var(--bg-raised);
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.bc-comp-portrait img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.bc-comp-portrait-icon { font-size: 42px; }
+
+.bc-comp-name {
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+  font-weight: bold;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bc-comp-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 4px;
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+.bc-comp-hp { font-weight: 600; }
+.bc-comp-hp.good { color: var(--text-good); }
+.bc-comp-hp.warn { color: var(--text-warn); }
+.bc-comp-hp.crit { color: var(--text-danger); }
+
+.bc-comp-status-value.ok     { color: var(--text-good); }
+.bc-comp-status-value.stable { color: var(--text-warn); }
+.bc-comp-status-value.wound  { color: var(--text-danger); }
+.bc-comp-status-value.infect { color: var(--stat-infection); }
+
+.bc-comp-section {
+  font-size: var(--font-size-xs);
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding-top: 2px;
+}
+
+/* ── Equipped 슬롯 ── */
+.bc-comp-slots {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.bc-comp-slot {
+  position: relative;
+  height: 40px;
+  background: var(--slot-empty);
+  border: 1px solid var(--border-dim);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.bc-comp-slot.empty { border-style: dashed; }
+.bc-comp-slot img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 2px;
+}
+.bc-comp-slot-icon { font-size: 20px; }
+.bc-comp-slot-qty {
+  position: absolute;
+  right: 4px;
+  bottom: 2px;
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+.bc-comp-slot-empty-mark {
+  font-size: var(--font-size-xs);
+  color: var(--text-dim);
+}
+
+/* ── Active Skill ── */
+.bc-comp-skill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid var(--accent-dim);
+  border-radius: var(--radius-sm);
+}
+.bc-comp-skill.empty {
+  border-color: var(--border-dim);
+  border-style: dashed;
+  justify-content: center;
+}
+.bc-comp-skill-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.bc-comp-skill-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.bc-comp-skill-name {
+  font-size: var(--font-size-xs);
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.bc-comp-skill.empty .bc-comp-skill-name { color: var(--text-dim); }
