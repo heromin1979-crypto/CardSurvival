@@ -119,16 +119,12 @@
   animation: nightFlicker 9s ease-in-out infinite;
 }
 
-/* Minimap block */
+/* Minimap block — 높이는 지도 SVG 가 정한다 (아래 .bc-minimap-preview 주석) */
 .bc-minimap {
   background: rgba(0,0,0,0.4);
   border: 1px solid var(--border-dim);
   border-radius: var(--radius-sm);
-  min-height: 120px;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 0;
+  display: block;
   color: var(--text-dim);
   flex-shrink: 0;
   cursor: pointer;
@@ -148,26 +144,15 @@
   border-color: var(--border-dim);
 }
 
-.bc-minimap-header {
+/* 조각 배지를 제목 오른쪽 끝에 붙인다 — 퀘스트 섹션의 `+N`과 같은 자리다 */
+#bc-map-section .bc-side-title {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 6px 8px;
-  font-size: 16px;
-  flex-shrink: 0;
-  border-bottom: 1px solid var(--border-dim);
-}
-
-.bc-minimap-label {
-  font-size: 11px;
-  color: var(--text-dim);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  flex: 1;
+  align-items: baseline;
+  gap: 4px;
 }
 
 .bc-map-fragment-badge {
+  margin-left: auto;
   font-size: 10px;
   color: var(--accent-primary);
   background: rgba(200,160,96,0.12);
@@ -178,16 +163,16 @@
   line-height: 1.4;
 }
 
+/* 높이를 고정하지 않는다. 지도 SVG 의 뷰박스(SeoulMapModal.MINIMAP_VIEWBOX)가 가로세로비를
+   정하고 블록은 거기에 맞춰 늘어난다 — 높이를 CSS 에 또 적으면 뷰박스와 갈리는 순간
+   위아래에 빈 띠(letterbox)가 다시 생긴다. */
 .bc-minimap-preview {
-  flex: 1;
-  min-height: 80px;
+  display: block;
   overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 /* Locked minimap placeholder */
+/* 잠긴 상태에는 SVG 가 없다 — 블록 높이를 지도 대신 이 자리표시가 정한다 */
 .minimap-locked-placeholder {
   display: flex;
   flex-direction: column;
@@ -196,7 +181,7 @@
   gap: 4px;
   padding: 8px;
   width: 100%;
-  height: 100%;
+  min-height: 140px;
 }
 .minimap-lock-icon {
   font-size: 22px;
@@ -218,7 +203,7 @@
 
 .bc-minimap-preview svg {
   width: 100%;
-  height: 100%;
+  height: auto;
   display: block;
 }
 
@@ -269,7 +254,6 @@
 .bc-season-weather-row {
   display: flex;
   gap: 4px;
-  margin-top: 2px;
 }
 
 /* 계절 배지 */
@@ -313,7 +297,6 @@
 .bc-temp-display {
   font-size: var(--font-size-xs);
   padding: 2px 8px;
-  margin-top: 3px;
   border-radius: 10px;
   text-align: center;
   background: rgba(255,255,255,0.05);
@@ -481,7 +464,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 8px;
+  padding: 4px 8px;
   background: rgba(0,0,0,0.2);
   border: 1px solid var(--border-dim);
   border-radius: var(--radius-sm);

@@ -112,7 +112,6 @@ html, body {
     gap: 4px;
   }
   .bc-minimap       { padding: 8px 4px; }
-  .bc-minimap-label { display: none; }
   .bc-day           { font-size: 13px; }
   .bc-clock         { font-size: 10px; }
   .bc-char-block    { gap: 6px; }

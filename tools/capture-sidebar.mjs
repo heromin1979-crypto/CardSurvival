@@ -82,6 +82,24 @@ const sidebar = await page.evaluate(()=>{
     wrappedTitles: [...bar.querySelectorAll('.bc-side-title')]
       .filter(e => e.getBoundingClientRect().height > parseFloat(getComputedStyle(e).lineHeight) * 1.6)
       .map(e => e.textContent.replace(/\s+/g,' ').trim()),
+    // 지도 블록 — 그려진 지도가 블록을 꽉 채우는지(letterbox 없음), 마커가 몇 개인지.
+    // 눈으로는 "지도가 커졌다"를 못 잰다. svg 가 preview 보다 낮으면 위아래에 빈 띠가 남은 것이다.
+    map: (()=>{
+      const pv = document.getElementById('minimap-preview');
+      const svg = pv?.querySelector('svg');
+      if (!pv) return null;
+      const pr = pv.getBoundingClientRect(), sr = svg?.getBoundingClientRect();
+      return {
+        preview: { w: Math.round(pr.width), h: Math.round(pr.height) },
+        svg: sr ? { w: Math.round(sr.width), h: Math.round(sr.height) } : null,
+        viewBox: svg?.getAttribute('viewBox') ?? null,
+        letterbox: sr ? Math.round(pr.height - sr.height) : null,
+        fillsWidth: sr ? Math.abs(sr.width - pr.width) <= 1 : false,
+        markers: pv.querySelectorAll('.sm-mini-marker').length,
+        markersShown: [...pv.querySelectorAll('.sm-mini-marker')]
+          .filter(g => g.getBoundingClientRect().height > 0).length,
+      };
+    })(),
     // 소음·무게 블록의 실제 표시값 — 캡처를 눈으로 읽지 않고 문자열로 확인한다
     noise: (()=>{
       const t=(id)=>document.getElementById(id);

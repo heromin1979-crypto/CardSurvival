@@ -135,15 +135,16 @@ const Basecamp = {
       <header id="game-header" class="game-header" role="banner" aria-label="게임 헤더"></header>
 
       <aside class="bc-sidebar">
-        <!-- Minimap -->
-        <div class="bc-minimap" data-action="open-seoul-map" title="${I18n.t('basecamp.viewMap')}">
-          <div class="bc-minimap-header">
-            ${uiIcon('map')}
-            <span class="bc-minimap-label">${I18n.t('basecamp.cityMap')}</span>
+        <!-- 지도 — 제목은 다른 섹션과 같은 서식, 조각 배지는 제목 오른쪽 끝 -->
+        <section class="bc-side-section" id="bc-map-section">
+          <div class="bc-side-title">
+            지도 <span class="bc-side-title-en">(MAP)</span>
             <span id="map-fragment-badge" class="bc-map-fragment-badge"></span>
           </div>
-          <div class="bc-minimap-preview" id="minimap-preview"></div>
-        </div>
+          <div class="bc-minimap" data-action="open-seoul-map" title="${I18n.t('basecamp.viewMap')}">
+            <div class="bc-minimap-preview" id="minimap-preview"></div>
+          </div>
+        </section>
 
         <!-- Day / Time / TP -->
         <div class="bc-time-block">

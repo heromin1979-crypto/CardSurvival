@@ -43,6 +43,20 @@ const MAP_LANDMARK_ICON_IMAGES = Object.fromEntries(
 const MAP_W = 1376;
 const MAP_H = 768;
 
+// 사이드바 미니맵이 쓰는 뷰박스. 아트워크 전체(1376×768)는 좌우에 눈금·범례 여백이 넓어
+// 200px 컬럼에 넣으면 지도가 폭의 절반 높이로 그려지고 위아래에 빈 띠가 남는다.
+// 구 25개 폴리곤의 외곽(x 201..1150 · y 48..727)만 남기고 가로 여백을 잘라 같은 폭에서
+// 1.4배로 키운다. 세로는 아트워크 전체를 쓴다 — 더 자르면 도봉·관악이 테두리에 붙는다.
+// 이 비율이 미니맵 블록의 높이를 정한다 (css/layout.css `.bc-minimap-preview`).
+const MINIMAP_VIEWBOX = { x: 193, y: 0, w: 965, h: MAP_H };
+
+// 미니맵 마커 크기 (뷰박스 단위). 965 유닛이 181px 로 그려지므로 52 ≈ 9.8px 다.
+// 마커는 구 이름 위로 44 유닛 올려 찍는다 — 아트워크에 인쇄된 이름이 label 좌표에
+// 걸쳐 있어 그 자리에 그대로 얹으면 글자와 겹쳐 둘 다 안 읽힌다.
+const MINIMAP_MARKER_SIZE = 52;
+const MINIMAP_MARKER_RISE = 44;
+const MINIMAP_CURRENT_SIZE = 74;
+
 // District hit-zone polygons, auto-traced from the blueprint map artwork (coordinate
 // space = MAP_W×MAP_H = image/2). Do not hand-maintain: if the artwork changes,
 // regenerate via tools/minimap-trace/ (see its README) and paste the output here.
@@ -411,11 +425,11 @@ const SeoulMapModal = {
     // The blueprint artwork is embedded directly in the SVG so the district hit
     // polygons (traced against that same artwork) line up with the drawn borders
     // exactly, at any render size. Coordinate space = 0..MAP_W × 0..MAP_H.
-    const w = MAP_W;
-    const h = MAP_H;
+    const view = compact ? MINIMAP_VIEWBOX : { x: 0, y: 0, w: MAP_W, h: MAP_H };
     const visitedSet = new Set(GameState.location.districtsVisited ?? []);
     const districtPolygons = [];
     const districtAnnotations = [];
+    const districtMarkers = [];
 
     DRAWN_MAP_DISTRICTS.forEach(shape => {
       const intel = this._getDistrictIntel(shape.id);
@@ -448,16 +462,31 @@ const SeoulMapModal = {
           ${label}
         </g>
       `);
+
+      // 미니맵에서 구 이름은 아트워크에 이미 인쇄돼 있지만 그 크기에서는 읽히지 않는다.
+      // 대신 구마다 랜드마크 마커를 찍어 어디에 무엇이 있는지를 형태로 남긴다.
+      // 새 정보를 만들지 않는다 — 구 지도 창이 이미 25개 구의 랜드마크를 모두 보여준다.
+      if (compact) {
+        districtMarkers.push(`
+          <g class="sm-mini-marker ${isVisited ? 'is-visited' : ''} ${isCurrent ? 'is-current' : ''}">
+            ${isCurrent
+              ? `<image href="${MAP_ICON_IMAGES.current}" x="${lx - MINIMAP_CURRENT_SIZE / 2}" y="${ly - MINIMAP_CURRENT_SIZE / 2}" width="${MINIMAP_CURRENT_SIZE}" height="${MINIMAP_CURRENT_SIZE}" class="sm-map-icon sm-map-icon--current"/>`
+              : this._landmarkIconSvg(intel.primaryLandmarkId, lx, ly - MINIMAP_MARKER_RISE, MINIMAP_MARKER_SIZE)}
+          </g>
+        `);
+      }
     });
 
     const districts = districtPolygons.join('');
     const annotations = districtAnnotations.join('');
+    const markers = districtMarkers.join('');
 
     return `
-      <svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="seoul-map-svg seoul-map-svg--ops seoul-map-svg--drawn-seoul">
-        <image href="${MAP_CONCEPT_IMAGE}" x="0" y="0" width="${w}" height="${h}" preserveAspectRatio="none" class="sm-map-artwork"/>
+      <svg width="${view.w}" height="${view.h}" viewBox="${view.x} ${view.y} ${view.w} ${view.h}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="seoul-map-svg seoul-map-svg--ops seoul-map-svg--drawn-seoul">
+        <image href="${MAP_CONCEPT_IMAGE}" x="0" y="0" width="${MAP_W}" height="${MAP_H}" preserveAspectRatio="none" class="sm-map-artwork"/>
         <g>${districts}</g>
         <g class="sm-annotation-layer">${annotations}</g>
+        <g class="sm-mini-marker-layer">${markers}</g>
       </svg>
     `;
   },

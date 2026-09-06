@@ -31,7 +31,7 @@ describe('좌측 사이드바 섹션 순서', () => {
     const order = [...sidebar().children].map(label);
 
     expect(order).toEqual([
-      'bc-minimap',
+      '지도 (MAP)',
       'bc-time-block',
       '상태 (STATUS)',
       '소음 수치 (NOISE METER)',
