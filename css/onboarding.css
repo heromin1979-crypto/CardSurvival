@@ -1,43 +1,65 @@
 /* === ONBOARDING (OnboardingSystem) === */
 
-/* 첫 드래그 안내 오버레이 — _showBoardTooltip */
+/* 첫 드래그 안내 오버레이 — _showBoardTooltip
+   화면 정중앙에 두면 바닥 행 카드를 덮으므로 상단 헤더 띠(56px, 사이드바 200px 오른쪽)에 얹는다 */
 #onboarding-board-tooltip {
   position: fixed;
   inset: 0;
   z-index: 500; /* 패널(--z-panel 300) 위, 모달(--z-modal 900) 아래 — 기존 인라인 값 유지 */
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: var(--gap-sm) 0 0 calc(200px + var(--gap-sm));
   pointer-events: none;
 }
 
 .onboarding-tooltip-card {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-sm);
   background: rgba(13, 13, 13, 0.94);
   border: 1px solid var(--accent-primary);
-  padding: 16px 20px;
+  padding: 6px 8px 6px 12px;
   border-radius: 2px;
-  max-width: 260px;
   font-family: var(--font-mono);
   color: var(--accent-primary);
   font-size: 12px;
-  text-align: center;
+  text-align: left;
   pointer-events: auto;
   box-shadow: 0 0 20px rgba(200, 160, 96, 0.12);
 }
 
 .onboarding-tooltip-icon {
-  font-size: 22px;
-  margin-bottom: 8px;
+  font-size: 18px;
+  line-height: 1;
 }
 
 .onboarding-tooltip-text {
-  line-height: 1.6;
+  line-height: 1.4;
+  white-space: nowrap;
 }
 
 .onboarding-tooltip-sub {
-  margin-top: 8px;
   color: var(--text-dim);
   font-size: 10px;
+  white-space: nowrap;
+}
+
+.onboarding-tooltip-close {
+  background: none;
+  border: 1px solid var(--accent-dim);
+  border-radius: 2px;
+  color: var(--accent-primary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1;
+  padding: 3px 6px;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.onboarding-tooltip-close:hover {
+  background: rgba(200, 160, 96, 0.12);
 }
 
 /* 1회성 안내 모달 본문 — ModalManager.open으로 표시되는 시스템 해금 안내 */
