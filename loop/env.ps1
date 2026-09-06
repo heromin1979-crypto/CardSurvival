@@ -30,6 +30,14 @@ $LOOP_MAX_CYCLES = 0
 # 루프를 좁히고 싶으면 이 값이 아니라 settings.json 의 permissions.deny 를 손봐야 한다.
 $LOOP_PERMISSION_MODE = 'acceptEdits'
 
+# 루프가 돌아도 되는 브랜치.
+# 시작할 때 현재 브랜치를 확인하고, 다르면 그 바퀴를 건너뛴다.
+# PROMPT.md 의 "브랜치를 옮기지 않는다"는 루프에게 하는 부탁이지 강제가 아니다.
+# 사람이 다른 브랜치로 옮겨둔 채 루프를 켜두면, 루프는 규칙을 지키면서
+# 엉뚱한 브랜치에 커밋한다. 그걸 막는다.
+# 빈 문자열로 두면 검사하지 않는다 (아무 브랜치에서나 돈다).
+$LOOP_ALLOWED_BRANCH = 'loop/ui-improve'
+
 # claude 실행 파일. PATH 에서 찾게 하려면 'claude' 그대로 둔다.
 $LOOP_CLAUDE_BIN = 'claude'
 

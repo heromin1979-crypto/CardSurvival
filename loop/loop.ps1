@@ -66,6 +66,35 @@ while ($true) {
     . $EnvFile
     $env:PATH = (($LOOP_PATH_PREPEND -join ';') + ';' + $OriginalPath)
 
+    # 브랜치 확인. 다르면 바퀴를 시작하지 않는다.
+    # 확인 자체가 실패해도 거부한다 - 어디에 커밋될지 모르는 채로 돌리지 않는다.
+    if ($LOOP_ALLOWED_BRANCH) {
+        $currentBranch = $null
+        try {
+            # 파이프라인으로 Select-Object 를 걸지 않는다. PowerShell 5.1 에서
+            # -First 가 파이프라인을 조기 종료시키면 $LASTEXITCODE 가 -1 이 되어
+            # 값이 멀쩡해도 실패로 잡힌다.
+            $out = @(& git rev-parse --abbrev-ref HEAD 2>&1)
+            if ($LASTEXITCODE -eq 0 -and $out.Count -gt 0) {
+                $currentBranch = "$($out[0])".Trim()
+            }
+        }
+        catch { }
+
+        if ($currentBranch -ne $LOOP_ALLOWED_BRANCH) {
+            $shown = if ($currentBranch) { $currentBranch } else { '(확인 불가)' }
+            Write-LoopLog "브랜치가 달라 이번 바퀴를 건너뛴다. 허용=$LOOP_ALLOWED_BRANCH 현재=$shown" 'WARN'
+
+            # 건너뛰는 중에도 STOP 은 듣는다.
+            if (Test-Path $StopFile) {
+                Write-LoopLog 'STOP 파일을 확인했다. 멈춘다.'
+                break
+            }
+            Start-Sleep -Seconds $LOOP_SLEEP_SECONDS
+            continue
+        }
+    }
+
     $cycle++
     if ($LOOP_MAX_CYCLES -gt 0 -and $cycle -gt $LOOP_MAX_CYCLES) {
         Write-LoopLog "최대 바퀴 수($LOOP_MAX_CYCLES) 도달. 멈춘다."
@@ -97,8 +126,14 @@ while ($true) {
     )
 
     $exitCode = 0
+    # 자식 프로세스의 stderr 는 경고도 섞여 온다. ErrorActionPreference 가 Stop 인 채로
+    # 2>&1 을 걸면 경고 한 줄이 종료 오류로 승격되어 바퀴가 통째로 죽는다.
+    $prevEap = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
     try {
-        & $bin @claudeArgs 2>&1 | ForEach-Object {
+        # $null 을 파이프로 흘려 stdin 을 즉시 닫는다.
+        # 안 그러면 claude 가 stdin 입력을 3초 기다리며 경고를 낸다.
+        $null | & $bin @claudeArgs 2>&1 | ForEach-Object {
             $_ | Out-File -FilePath $logFile -Append -Encoding utf8
             Write-Host $_
         }
@@ -107,6 +142,9 @@ while ($true) {
     catch {
         Write-LoopLog "세션이 예외로 끝났다: $($_.Exception.Message)" 'ERROR'
         $exitCode = 1
+    }
+    finally {
+        $ErrorActionPreference = $prevEap
     }
 
     $elapsed = [int]((Get-Date) - $started).TotalSeconds
