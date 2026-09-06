@@ -29,7 +29,7 @@
   온보딩 안내 칩과 알림 패널이 쓴다.
   `js/ui/HeaderBar.js` + `js/screens/Main.js` + `index.html` + `css/header.css` +
   `js/ui/locationPath.js` + `tests/unit/HeaderHudChip.test.js` +
-  `tools/capture-header-chip.mjs` / (해시는 STATUS 참조)
+  `tools/capture-header-chip.mjs` / ce8676d
 
 - [x] [2026-09-06] **온보딩 툴팁이 바닥 카드를 가린다.** (0군)
   → [2026-09-06] 오버레이를 화면 정중앙에서 상단 헤더 띠(56px, 사이드바 200px 오른쪽)로 옮기고

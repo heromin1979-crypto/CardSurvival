@@ -22,7 +22,7 @@
 - [2026-09-06] 상단 중앙 HUD 칩 복구. `Main._buildLayout()`의 innerHTML 교체가 `#game-header`
   노드를 지워 HeaderBar 가 떨어져 나간 노드에 그리고 있던 것을 고쳤다. 같이 드러난 배선 오류
   2건(온도가 없는 필드 `weather.temp`를 읽어 늘 0°C / 분 산식이 60을 넘어 잘림)도 잡았다.
-  회귀 검사 8건, 좌표 측정 캡처 도구 `tools/capture-header-chip.mjs` 신설 / (이번 커밋)
+  회귀 검사 8건, 좌표 측정 캡처 도구 `tools/capture-header-chip.mjs` 신설 / ce8676d
 
 ## 다음에 할 것
 
