@@ -444,10 +444,13 @@
   flex-shrink: 0;
 }
 
+/* letter-spacing 은 0 이다 — 2px 을 주면 `지 도` `상 태` `휴 대 무 게` 처럼 한글이
+   글자 단위로 벌어져 낱말로 읽히지 않는다. 보드 행 헤더와 같은 이유로 맞췄다
+   (`.board-row-label`). 자간을 줄이면 폭만 좁아지므로 두 줄 접힘은 되레 멀어진다. */
 .bc-side-title {
   font-size: var(--font-size-sm);
   color: var(--accent-primary);
-  letter-spacing: 2px;
+  letter-spacing: 0;
   padding-bottom: 3px;
   border-bottom: 1px solid var(--border-dim);
 }

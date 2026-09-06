@@ -20,15 +20,25 @@
   border-bottom: 1px solid var(--border-dim);
 }
 
+/* letter-spacing 은 0 이다 — 2px 을 주면 두 글자짜리 한글 이름이 `휴 대` 로 벌어져
+   낱말이 아니라 두 단어로 읽힌다. */
 .board-row-label {
   font-size: var(--font-size-xs);
   color: var(--text-secondary);
   text-transform: uppercase;
-  letter-spacing: 2px;
+  letter-spacing: 0;
   padding: 0 2px 4px;
   display: flex;
   align-items: center;
   gap: 6px;
+}
+
+/* 좌측 사이드바 `.bc-side-title-en` 과 같은 규칙 — 두 컬럼의 영문 병기가 갈리면
+   한 화면이 두 개의 UI 로 읽힌다. */
+.board-row-label-en {
+  font-size: 11px;
+  color: var(--text-dim);
+  letter-spacing: 0;
 }
 
 /* 행 헤더: 라벨 + 페이저(있을 때) 가로 배치 — 슬롯 그리드와 분리되어 슬롯 폭에 영향 없음 */

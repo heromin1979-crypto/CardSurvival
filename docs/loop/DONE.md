@@ -12,6 +12,26 @@
 
 ## 완료한 지시 (INBOX 에서 내려옴)
 
+- [x] [2026-09-06] **섹션 헤더를 목표 형식으로 바꾼다.** (3군)
+  → [2026-09-07] 보드 세 행 헤더를 `장소 (LOCATIONS)` / `바닥 (GROUND ITEMS)` /
+  `휴대 (CARRIED INVENTORY)` 로 바꿨다. 영문은 `ROW_CONFIG` 의 `labelEn` 리터럴이다 —
+  `locales.js` 는 `js/data/` 라 SPEC 3절에 걸리고, 헤더가 3개뿐이라 INBOX 도 하드코딩을
+  허락했다. 카드 이름은 손대지 않았다 (SPEC 4절).
+  **한글 이름과 영문 병기를 각각 제 span 에 넣었다** (`.board-row-label-ko` /
+  `.board-row-label-en`). 한 노드에 합치면 `_updateFloorLabel()` 의 `textContent` 교체가
+  영문 병기를 함께 지운다 — 구에 들어가 바닥 이름이 `바닥 — 동작구` 로 바뀌는 동안에만
+  사라지므로 베이스캠프 캡처로는 안 잡히는 회귀다. 그 함수의 셀렉터도 `-ko` 로 옮겼다.
+  `휴 대` 의 공백은 문자열이 아니라 `.board-row-label { letter-spacing: 2px }` 였다
+  (`locales.js` 의 값은 `'휴대'` 로 멀쩡하다). 0 으로 내렸다.
+  ※ **좌측 사이드바 `.bc-side-title` 도 같이 고쳤다** — 같은 2px 이 `지 도` `상 태` 를
+    벌리고 있었고, 한 캡처 안에서 보드는 `휴대`, 사이드바는 `휴 대 무 게` 로 갈렸다.
+    자간을 줄이면 폭만 좁아져 세로 여백은 그대로다 (`freeBelow` 13px 유지).
+  `js/ui/BoardRenderer.js` + `css/board.css` + `css/layout.css` +
+  `tests/unit/BoardSectionHeader.test.js`(8건 신설)
+  검증: `reference/main-screen-header-2026-09-07.png` · `sidebar-header-2026-09-07.png` —
+  `scrolls: false` · `clipped` 없음 · `overflowX: []` · `freeBelow: 13`,
+  `npm test` 3461건 전건 통과, `validate.js` Errors 0 / d823a91
+
 - [x] [2026-09-06] **지도 영역을 키우고 목표의 밀도에 맞춘다.** (2군)
   → [2026-09-07] 지도 블록을 `지도 (MAP)` 제목 붙은 섹션으로 바꾸고(조각 배지는 제목 오른쪽
   끝, 퀘스트 `+N` 과 같은 자리) 지도가 블록을 꽉 채우게 했다. **165 → 176px.**
@@ -29,7 +49,7 @@
   `css/mobile.css` + `tools/capture-sidebar.mjs`(지도 측정 추가) +
   `tests/unit/SidebarMapBlock.test.js`(14건 신설) + `tests/unit/SidebarSectionOrder.test.js`(제목 갱신)
   검증: `reference/sidebar-map-2026-09-07.png` · `main-screen-map-2026-09-07.png` ·
-  `minimap-zoom-2026-09-07.png`(마커 확인용 3배) — `scrolls: false`, `clipped` 없음
+  `minimap-zoom-2026-09-07.png`(마커 확인용 3배) — `scrolls: false`, `clipped` 없음 / da3c892
 
 - [x] [2026-09-06] **퀘스트 체크리스트를 사이드바에 상시 노출한다.** (2군)
   → [2026-09-06] `퀘스트 (QUESTS)` 섹션을 행동 메뉴 바로 위에 넣고 진행 중인 퀘스트를
@@ -129,6 +149,35 @@
 
 ## 결정과 근거 (STATUS 에서 내려옴 — 상한 20개를 넘겨서)
 
+- [2026-09-06] **헤더 띠의 좌우(위치 브레드크럼 · 계절/날씨 아이콘)를 걷어냈다** /
+  목표 이미지의 띠에는 가운데 칩 하나뿐이고, 좌우는 이미 온보딩 안내 칩과 알림 패널
+  (`#notification-container`, top/right 16px)이 쓰는 자리다. 정보가 사라지지도 않는다 —
+  브레드크럼은 사이드바 `#bc-district-name`, 계절·날씨·온도는 `#season-badge`/`#weather-display`/
+  `#outdoor-temp` 가 그대로 보여준다. 이 셋은 어차피 화면에 뜬 적이 없었다(위 항목).
+  ※ 이 정리로 `locationPath.js` 의 `locationKey()` 가 소비처를 잃어 같이 지웠다.
+  ※ 내려온 이유: 헤더 띠 작업이 끝났고 3군은 보드 카드 작업이라 이 띠를 건드리지 않는다.
+- [2026-09-06] **사기와 유대를 한 블록에 두되 게이지 구조를 다르게 했다** /
+  레퍼런스는 둘을 나란히 그렸지만 사기는 플레이어 한 명의 전역 수치(`GameState.stats.morale`),
+  유대는 동료마다 따로 쌓이는 수치(`NPCSystem` bond)다. 같은 모양으로 그리면 "동료의 사기"로
+  읽힌다. 그래서 **사기는 게이지 하나에 주인 표시 `나`**, **유대는 동료 수만큼 이름표를 단
+  게이지**로 나눴고, 블록 제목 아래에 `사기는 나 전체 · 유대는 동료마다` 한 줄을 고정했다.
+  동료가 없으면 사기는 그대로 보이고 유대만 점선 `동행 중인 동료 없음`이 된다.
+  ※ 확인해 보니 `state.morale`(동료 개별 사기)이 실제로 존재한다 — `NPCSystem.modNpcMorale`,
+    팀 리더십·요리 품질 계산용이고 `CompanionModal`이 이미 보여준다. 이 블록은 INBOX 지시대로
+    **전역 사기**를 쓴다. 나중에 동료별 사기를 여기 넣고 싶으면 `나` 자리에 이름표를 붙이면 된다.
+- [2026-09-06] 사기 구간 문구(`높음/보통/낮음/절망`)를 `gameBalance.moraleTiers` 판정
+  (`StatSystem.getMoraleTier()`)에 붙였다 / 임계값을 UI가 다시 정하면 밸런스를 고칠 때
+  화면만 옛 구간을 말하게 된다. 문구는 그 구간의 실제 효과(accBonus·craftFailMult·blockExplore)를
+  옮긴 것뿐이다.
+- [2026-09-06] 동료 목록만 스크롤하고 `동료 상태`는 컬럼 아래 **고정**으로 뒀다 /
+  처음엔 패널 전체를 스크롤시켰더니 동료가 2명일 때 블록이 화면 밖으로 밀려 아예 안 보였다
+  (캡처로 확인). 늘 보여야 하는 수치라 목록(`.bc-comp-list`)만 `overflow-y:auto`로 뺐다.
+- [2026-09-06] 좌측 `동료 (0)` 메뉴 버튼을 지우지 않았다 /
+  패널은 현황만 보여주고 상세·장착·해제는 기존 모달이 한다. 버튼을 지우면 그 경로가 사라진다.
+  ※ 위 넷이 함께 내려온 이유: 우측 동료 패널이 1군에서 끝났고 남은 3군은 보드 카드 작업이라
+    이 컬럼을 건드리지 않는다. `.gauge-row` 폭 0 함정만 STATUS 에 남겼다 — 3군의
+    `Qty`·`Durability` 게이지가 같은 공용 컴포넌트를 쓸 수 있어서다.
+
 - [2026-09-06] **목표 이미지가 v2 로 갱신됐다** / 사람이 레퍼런스 7장을 새로 넘겼다.
   `reference/ui-refs/main-screen-v2.png` 가 이번 라운드의 기준이고, 구버전
   `reference/main-screen-target.jpg` 와 다르면 v2 가 이긴다. 나머지 6장(전투·장비×2·
@@ -161,6 +210,10 @@
 
 ## 끝난 것 (STATUS 에서 내려옴)
 
+- [2026-09-06] 퀘스트 요약을 사이드바에 상시 노출 (INBOX 2군 마지막 건). 목록·긴급 판정·
+  진행도를 사이드바가 다시 만들지 않고 `QuestPanel.activeSummary()`(신설, 모달과 같은
+  `_collect()`)에서 읽는다. 두 줄 + `+N`, 섹션 클릭 → 기존 퀘스트 창. 회귀 검사 14건 신설,
+  순서 검사 1건 갱신. 여백 76 → **7px** / af700e0
 - [2026-09-06] 소음·무게를 게이지 블록으로 승격 (INBOX 2군 두 건). 구간 판정을 화면이
   복사해 두지 않고 `BALANCE.noise` · `EncumbranceSystem.getTierLabel()` 에서 읽게 했다.
   그 과정에서 tier 4(이동 불가)가 라벨 표에서 빠져 있던 것을 채웠다. 회귀 검사 16건,
