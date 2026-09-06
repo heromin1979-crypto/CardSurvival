@@ -10,9 +10,15 @@
 
 ## 2. 만드는 것
 
-- 목표 이미지: `docs/loop/reference/main-screen-target.jpg`
+- **목표 이미지: `docs/loop/reference/ui-refs/main-screen-v2.png`**
+- 구버전 목표: `docs/loop/reference/main-screen-target.jpg` — 비교용. **둘이 다르면 v2 가 이긴다.**
 - 현재 상태 (2026-09-06 캡처): `docs/loop/reference/main-screen-current-2026-09-06.png`
 - 작업 대상은 `docs/loop/INBOX.md` 에 항목으로 적힌 것뿐이다.
+
+`docs/loop/reference/ui-refs/` 에 목표 이미지가 7장 있지만 **이번 라운드가 보는 것은
+`main-screen-v2.png` 하나뿐이다.** 나머지 6장(전투·장비×2·퀘스트×2·대화)은 다음 라운드
+후보이며, 그중 셋은 UI 가 아니라 시스템 작업이다. 이유는 `ui-refs/README.md` 에 적었다.
+**다른 화면이 눈에 들어와도 이번 라운드에 손대지 마라.**
 
 건드려도 되는 곳:
 - `css/` 전체
