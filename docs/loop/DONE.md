@@ -32,7 +32,7 @@
   `loccard-row-sub-2026-09-07.png` · `loccard-row-district-2026-09-07.png` —
   세부장소 8장 높이 205px 동일 · 설명 줄 y=249 · 요구 줄 y=291 전부 일치,
   구 목록 6장도 요구 줄 y=291 일치 · `anyClipped: []` · `anyCovered: []`,
-  `npm test` 3476건 전건 통과, `validate.js` Errors 0 / (커밋 해시는 아래 커밋)
+  `npm test` 3476건 전건 통과, `validate.js` Errors 0 / ae74c11
 
 - [x] [2026-09-06] **섹션 헤더를 목표 형식으로 바꾼다.** (3군)
   → [2026-09-07] 보드 세 행 헤더를 `장소 (LOCATIONS)` / `바닥 (GROUND ITEMS)` /

@@ -29,8 +29,7 @@
   빌더 셋(`_buildSubLocationInner` · `_buildLandmarkInner` · `_buildLocationInner`)을 다 고쳤고
   위험도·조우 확률은 그대로 뒀다. 설명은 데이터 원문이 두 줄보다 길어 말줄임되고 전문은
   카드 `title` 툴팁이 받는다. 씬 126 → 96px, 카드 높이 205px 는 그대로.
-  측정용 `tools/capture-location-cards.mjs` 신설, 회귀 검사 15건 신설 /
-  (이 바퀴의 커밋)
+  측정용 `tools/capture-location-cards.mjs` 신설, 회귀 검사 15건 신설 / ae74c11
 
 ## 다음에 할 것
 
