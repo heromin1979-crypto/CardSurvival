@@ -29,7 +29,7 @@
   한글·영문을 각각 span 으로 나눠 `_updateFloorLabel()` 의 textContent 교체가 영문 병기를
   지우지 않게 했다. `휴 대` 의 공백은 문자열이 아니라 `letter-spacing: 2px` 였다 —
   사이드바 `.bc-side-title` 의 같은 2px 도 함께 0 으로 내렸다. 회귀 검사 8건 신설.
-  여백 13px 유지 / d823a91
+  여백 13px 유지 / 9167202
 
 ## 다음에 할 것
 

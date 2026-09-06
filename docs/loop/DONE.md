@@ -30,7 +30,7 @@
   `tests/unit/BoardSectionHeader.test.js`(8건 신설)
   검증: `reference/main-screen-header-2026-09-07.png` · `sidebar-header-2026-09-07.png` —
   `scrolls: false` · `clipped` 없음 · `overflowX: []` · `freeBelow: 13`,
-  `npm test` 3461건 전건 통과, `validate.js` Errors 0 / d823a91
+  `npm test` 3461건 전건 통과, `validate.js` Errors 0 / 9167202
 
 - [x] [2026-09-06] **지도 영역을 키우고 목표의 밀도에 맞춘다.** (2군)
   → [2026-09-07] 지도 블록을 `지도 (MAP)` 제목 붙은 섹션으로 바꾸고(조각 배지는 제목 오른쪽
