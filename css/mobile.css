@@ -131,6 +131,10 @@ html, body {
   .lc-meta          { font-size: 7px; }
   /* 설명 2줄(24px)은 78px 폭 카드에서 씬을 먹는다 — 전문은 길게 누르면 title 툴팁이 받는다 */
   .lc-desc          { display: none; }
+  /* 모서리 배지도 같이 줄인다. 좌 2개 + 가운데 텍스트 + 우 1개가 한 줄에 서야 한다 */
+  .lc-corner        { font-size: 7px; gap: 2px; }
+  .lc-corner--right { font-size: 9px; }
+  .lc-badge-n       { font-size: 7px; }
 
   /* 모달 */
   .equip-modal-box,
@@ -365,6 +369,9 @@ html, body {
   .lc-meta         { font-size: 7px; }
   .lc-desc         { display: none; }
   .lm-badge        { font-size: 6px; padding: 1px 3px; }
+  .lc-corner       { font-size: 6px; gap: 2px; }
+  .lc-corner--right{ font-size: 8px; }
+  .lc-badge-n      { font-size: 6px; }
 
   /* ── 모달 → 바텀시트 ─────────────────────────── */
   .modal-overlay { align-items: flex-end; }
@@ -597,6 +604,9 @@ html, body {
   .board-row.row-top .board-row-slots::-webkit-scrollbar { display: none; }
   /* 104px 카드에 설명 두 줄을 넣을 자리가 없다 (≤480px 규칙은 가로 모드 폭에 걸리지 않는다) */
   .lc-desc { display: none; }
+  .lc-corner       { font-size: 6px; gap: 2px; }
+  .lc-corner--right{ font-size: 8px; }
+  .lc-badge-n      { font-size: 6px; }
 }
 
 

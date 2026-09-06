@@ -15,7 +15,8 @@ async function waitServer(ms=20000){const t=Date.now();while(Date.now()-t<ms){tr
 const { chromium } = await import('@playwright/test');
 await waitServer();
 const browser=await chromium.launch();
-const page=await browser.newPage({viewport:{width:1920,height:1080}});
+// ZOOM: 배지처럼 9px 안팎인 요소는 1배 캡처로는 눈으로 판정할 수 없다 (좌표는 CSS px 그대로다)
+const page=await browser.newPage({viewport:{width:1920,height:1080},deviceScaleFactor:Number(process.env.ZOOM ?? 1)});
 const errs=[]; page.on('pageerror',e=>errs.push(e.message));
 page.on('console',m=>{if(m.type()==='error')errs.push('console: '+m.text().slice(0,140));});
 await page.goto(base+'/index.html',{waitUntil:'networkidle'});
@@ -74,7 +75,10 @@ const row = await page.evaluate(()=>{
       // line-clamp 로 말줄임된 것(설계된 축약)과 상자 밖으로 넘쳐 잘린 것을 가른다.
       const clamped = st.webkitLineClamp && st.webkitLineClamp !== 'none';
       return { ...box(e), text: e.textContent.replace(/\s+/g,' ').trim().slice(0,60),
-               ellipsis: clamped && over, clipped: !clamped && over }; };
+               ellipsis: clamped && over, clipped: !clamped && over,
+               // 넘쳤다면 가로인지 세로인지, 얼마나인지까지 적는다 — 눈으로는 못 가른다
+               ...(over ? { over: { sw: e.scrollWidth, cw: e.clientWidth,
+                                    sh: e.scrollHeight, ch: e.clientHeight } } : {}) }; };
     // 카드 한가운데 위/아래 두 점이 정말 이 카드에 닿는지 — fixed 요소가 덮은 전례가 있다
     const cx = r.x + r.width/2;
     const covered = [r.y + 8, r.bottom - 8].map(y => {
@@ -89,10 +93,16 @@ const row = await page.evaluate(()=>{
       covered,
       scene: part('.lc-scene'), desc: part('.lc-desc'), bonus: part('.lm-bonus'),
       danger: part('.lc-danger'), meta: part('.lc-meta'), req: part('.lc-req'),
+      header: part('.lc-header'),
+      // 모서리 배지가 씬을 밀어내지 않는지 — 헤더가 커지면 씬이 그만큼 줄어든다
+      badges: {
+        left:  c.querySelectorAll('.lc-corner--left .lc-badge').length,
+        right: !!c.querySelector('.lc-corner--right')?.firstElementChild,
+      },
     };
   });
   const hs = [...new Set(cards.map(c => c.h))];
-  const parts = c => [c.desc, c.name, c.req, c.meta, c.bonus, c.danger];
+  const parts = c => [c.desc, c.name, c.req, c.meta, c.bonus, c.danger, c.header];
   return {
     slots: { y: Math.round(sr.y), h: Math.round(sr.height) },
     count: cards.length,
@@ -100,6 +110,8 @@ const row = await page.evaluate(()=>{
     // 설명 줄 위치가 카드마다 다르면 8장이 눈에 어긋나 보인다
     descY: [...new Set(cards.map(c => c.desc?.y ?? null))],
     reqY: [...new Set(cards.map(c => c.req?.y ?? null))],
+    headerH: [...new Set(cards.map(c => c.header?.h ?? null))],
+    sceneH: [...new Set(cards.map(c => c.scene?.h ?? null))],
     ellipsized: cards.filter(c => parts(c).some(p => p?.ellipsis)).map(c => c.name),
     anyClipped: cards.filter(c => parts(c).some(p => p?.clipped)).map(c => c.name),
     anyCovered: cards.filter(c => c.covered.length).map(c => ({ name: c.name, by: c.covered })),

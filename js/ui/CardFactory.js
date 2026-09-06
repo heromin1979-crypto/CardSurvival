@@ -6,7 +6,7 @@ import EventBus        from '../core/EventBus.js';
 import SystemRegistry  from '../core/SystemRegistry.js';
 import I18n      from '../core/I18n.js';
 import GameData  from '../data/GameData.js';
-import { HANGANG_DISTRICTS } from '../data/landmarks.js';
+import { HANGANG_DISTRICTS, getLandmarkData, getVisibleSubLocations } from '../data/landmarks.js';
 import { getMagazineState } from '../systems/WeaponAmmoSystem.js';
 import { formatInstanceName } from '../systems/ItemEffectSystem.js';
 import { canCollectWater, isWaterSource } from '../systems/waterSource.js';
@@ -1060,6 +1060,33 @@ const CardFactory = {
     return `<span class="lc-req">${tp > 0 ? `요구 ${tp}TP` : '요구 없음'}</span>`;
   },
 
+  // 모서리 배지 하나. 수치가 있으면 아이콘 오른쪽에 붙는다 (목표 이미지의 `❄ 3` 형태).
+  _locationBadge(iconHtml, value, label, className = '') {
+    const num = value == null ? '' : `<b class="lc-badge-n">${value}</b>`;
+    return `<span class="lc-badge${className ? ` ${className}` : ''}" title="${label}">${iconHtml}${num}</span>`;
+  },
+
+  // 장소 카드 머리 — 좌상단은 들어가기 전에 알아야 할 조건, 우상단은 장소의 성격 아이콘,
+  // 가운데는 기존 텍스트 배지(현재 위치·랜드마크·내부) 자리다.
+  // 세 빌더가 이 상자 하나를 공유한다. 정렬을 여기서만 정해야 화면이 갈리지 않는다.
+  _locationHeader(def, { left = [], center = '', className = '', style = '' } = {}) {
+    const cls = `lc-header${className ? ` ${className}` : ''}`;
+    return `
+      <div class="${cls}"${style ? ` style="${style}"` : ''}>
+        <span class="lc-corner lc-corner--left">${left.filter(Boolean).join('')}</span>
+        <span class="lc-corner lc-corner--center">${center}</span>
+        <span class="lc-corner lc-corner--right">${dataIcon(def.icon, { label: def.name ?? '' })}</span>
+      </div>`;
+  },
+
+  // 랜드마크가 열어 주는 세부장소 수. 숨겨진 장소는 발견 전까지 보드에 놓이지 않으므로
+  // ExploreSystem._updateTopRowForLandmark 와 같은 함수로 세어야 숫자가 실제 카드 수와 맞는다.
+  _landmarkSubBadge(def) {
+    const key = def.id === 'basecamp_landmark' ? 'basecamp' : def.id;
+    const n = getVisibleSubLocations(key, GameState.flags?.hiddenLocationsDiscovered ?? []).length;
+    return n > 0 ? this._locationBadge(uiIcon('location'), n, `세부 장소 ${n}곳`) : '';
+  },
+
   _buildLandmarkInner(def, isCurrent = false) {
     const lmImg = LANDMARK_IMAGES[def.id] ?? null;
     const lmBg  = lmImg ? `style="background-image:url('${lmImg}');background-size:cover;background-position:center;"` : '';
@@ -1069,9 +1096,11 @@ const CardFactory = {
       // 1 TP 를 쓴다. 베이스캠프만 그 자동 진입에서 제외된다.
       const enterTP = def.id === 'basecamp_landmark' ? 0 : 1;
       return `
-        <div class="lc-header lm-header">
-          <span class="lm-badge">${I18n.t('card.landmark')}</span>
-        </div>
+        ${this._locationHeader(def, {
+          className: 'lm-header',
+          left: [this._landmarkSubBadge(def)],
+          center: `<span class="lm-badge">${I18n.t('card.landmark')}</span>`,
+        })}
         <div class="lc-scene" ${lmBg}></div>
         <div class="lc-name">${I18n.itemName(def.id, def.name)}</div>
         ${this._locationDesc(def)}
@@ -1091,9 +1120,11 @@ const CardFactory = {
     const encPct     = district ? Math.round((district.encounterChance ?? 0) * 100) : 0;
 
     return `
-      <div class="lc-header lm-header">
-        <span class="lm-badge">${I18n.t('card.landmark')}</span>
-      </div>
+      ${this._locationHeader(def, {
+        className: 'lm-header',
+        left: [this._landmarkSubBadge(def)],
+        center: `<span class="lm-badge">${I18n.t('card.landmark')}</span>`,
+      })}
       <div class="lc-scene" ${lmBg}></div>
       <div class="lc-name">${I18n.itemName(def.id, def.name)}</div>
       ${this._locationDesc(def)}
@@ -1124,10 +1155,21 @@ const CardFactory = {
     const locImg = LOCATION_IMAGES[def.subtype] ?? null;
     const locBg  = locImg ? `style="background-image:url('${locImg}');background-size:cover;background-position:center;"` : '';
 
+    // 방사능과 랜드마크 수는 구 데이터에만 있고 카드 어디에도 나오지 않는다.
+    // 방사능은 도착·탐색마다 피폭되므로(ExploreSystem.applyRadiation) 먼저 읽혀야 한다.
+    const district = GameData?.districts?.[def.nodeId];
+    const rad      = district?.radiation ?? 0;
+    const lmCount  = district?.landmarks?.length ?? (district?.landmark ? 1 : 0);
+
     return `
-      <div class="lc-header" style="border-bottom-color:${color}22;">
-        ${currentBadge}${visitedDot}
-      </div>
+      ${this._locationHeader(def, {
+        style: `border-bottom-color:${color}22;`,
+        left: [
+          rad > 0 ? this._locationBadge(dataIcon('☢️'), rad, `방사능 ${rad}`, 'lc-badge--warn') : '',
+          lmCount > 0 ? this._locationBadge(uiIcon('location'), lmCount, `랜드마크 ${lmCount}곳`) : '',
+        ],
+        center: `${currentBadge}${visitedDot}`,
+      })}
       <div class="lc-scene" ${locBg}></div>
       <div class="lc-name">${I18n.districtName(def.nodeId, def.name)}</div>
       ${this._locationDesc(def)}
@@ -1148,10 +1190,17 @@ const CardFactory = {
     const dangerColor = dangerPct <= 10 ? '#449944' : dangerPct <= 20 ? '#cc8822' : '#cc3333';
     const subImg      = subLocationImage(def);
     const subBg       = subImg ? `style="background-image:url('${subImg}');background-size:cover;background-position:center;"` : '';
+    // 숨겨진 세부장소는 발견해야 카드가 나온다(getVisibleSubLocations). 화면에 있다는 것
+    // 자체가 "열었다"는 뜻이라 자물쇠 배지로 그 사실만 표시한다.
+    const sub    = getLandmarkData(def.districtId)?.subLocations
+      ?.find(s => s.id === (def.subLocationId ?? def.id));
+    const hidden = !!sub?.requiresHiddenLocation;
+
     return `
-      <div class="lc-header">
-        <span class="lm-badge">${I18n.t('card.interior')}</span>
-      </div>
+      ${this._locationHeader(def, {
+        left: [hidden ? this._locationBadge(uiIcon('lock'), null, '숨겨진 장소 — 발견으로 열렸다') : ''],
+        center: `<span class="lm-badge">${I18n.t('card.interior')}</span>`,
+      })}
       <div class="lc-scene lc-scene--sublocation" ${subBg}>${subImg ? '' : `<span class="lc-scene-icon">${def.icon ? dataIcon(def.icon) : uiIcon('location')}</span>`}</div>
       <div class="lc-name">${I18n.itemName(def.id ?? def.subLocationId, def.name)}</div>
       ${this._locationDesc(def)}
