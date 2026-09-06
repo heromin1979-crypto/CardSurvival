@@ -19,6 +19,12 @@ $EnvFile    = Join-Path $LoopDir  'env.ps1'
 Set-Location $RepoRoot
 if (-not (Test-Path $LogDir)) { New-Item -ItemType Directory -Path $LogDir | Out-Null }
 
+# 자식 프로세스(claude)의 stdout 을 UTF-8 로 읽는다.
+# 이걸 안 하면 PowerShell 이 콘솔 OEM 코드페이지로 디코딩해 한글이 깨진다.
+# 로그가 루프를 들여다보는 유일한 창구이므로 여기서 깨지면 아무것도 못 본다.
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$OutputEncoding = [System.Text.Encoding]::UTF8
+
 # 설정을 다시 읽어도 PATH 가 계속 길어지지 않도록 원본을 붙잡아 둔다.
 $OriginalPath = $env:PATH
 
