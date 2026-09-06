@@ -334,5 +334,11 @@
     `CombatUI.js` · `CraftUI.js` · `EquipmentModal.js` 넷만 잡는다 (`BoardRenderer.js` ·
     `CardFactory.js` · `js/board/` 는 여전히 0건). **막힘은 유효하다. 사람이 (A)/(B) 를 고를 때까지
     다음 바퀴도 이 항목에 손대지 마라** — 근거가 낡아서 막힌 게 아니다.
+  ※ **[2026-09-07 대기 35바퀴째 — (A)의 크기 측정]** 결정을 돕기 위해 접점을 셌다.
+    `EquipmentSystem.equip/unequip` 호출부는 **3곳**(`js/ui/EquipmentModal.js:596,610` ·
+    `js/ui/ModalManager.js:589`), 보드 만차 경로는 **2줄**(`EquipmentSystem.js:76,125`).
+    즉 (A)의 **코드 접점은 작다** — 어려운 것은 코드가 아니라 휴대 20칸의 실질 용량이 줄고
+    무게 계산이 함께 움직인다는 **게임 규칙 쪽**이다. 이 숫자는 (A)를 싸 보이게 하려는 게 아니라
+    "코드가 무서워서 막힌 게 아니다" 를 남기기 위한 것이다. 판단은 여전히 사람 몫이다.
 
 
