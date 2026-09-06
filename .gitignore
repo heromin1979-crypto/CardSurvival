@@ -18,3 +18,8 @@ outputs/
 .ai-playtest/
 __pycache__/
 *.pyc
+
+# 자율 루프 (loop/)
+logs/
+loop/STOP
+.wt-check/
