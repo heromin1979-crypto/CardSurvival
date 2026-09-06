@@ -1,4 +1,4 @@
-import { access, readFile, writeFile } from 'node:fs/promises';
+import { access, appendFile, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createDefaultConfig, validateConfig } from './config.mjs';
@@ -169,18 +169,30 @@ export async function executeCli(argv, {
       workerResult.stderr,
       '',
     ].join('\n'), 'utf8');
-    fallbackReport.status = workerResult.code === 0 ? 'completed' : 'failed';
+    let completedReport = false;
+    try {
+      const report = JSON.parse(await readFile(path.join(run.runDir, 'report.json'), 'utf8'));
+      completedReport = report.status === 'completed';
+    } catch {
+      // 아래 finally에서 완료되지 않은 워커용 실패 보고서를 작성한다.
+    }
+    const ok = workerResult.code === 0 && completedReport;
+    fallbackReport.status = 'failed';
     fallbackReport.summary = workerResult.code === 0
-      ? 'Codex 워커가 종료되었습니다.'
+      ? 'Codex 워커가 finalize 보고서를 남기지 않았습니다.'
       : 'Codex 워커가 실패했습니다.';
-    return { ok: workerResult.code === 0, run, worker: workerResult };
+    return { ok, run, worker: workerResult };
   } finally {
-    await server.close();
-    await removeWorkerWorkspace(workerDir);
     try {
       await readFile(path.join(run.runDir, 'report.json'), 'utf8');
     } catch {
       await writeReport(run.runDir, fallbackReport);
+    }
+    await server.close();
+    try {
+      await removeWorkerWorkspace(workerDir);
+    } catch (error) {
+      await appendFile(path.join(run.logsDir, 'cleanup.log'), String(error.stack || error.message) + '\n', 'utf8');
     }
   }
 }

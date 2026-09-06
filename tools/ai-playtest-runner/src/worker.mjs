@@ -13,9 +13,10 @@ export function buildWorkerPrompt({ mode, url }) {
     objective,
     '게임 주소: ' + url,
     '제공된 playtest MCP 도구만 사용하세요.',
+    '도구 목록에 playtest MCP가 바로 표시되지 않으면 도구 검색 기능으로 playtest를 검색해 도구를 로드하세요.',
     '소스 코드, DOM, 개발자 도구, 콘솔, 네트워크, 저장소, 이전 보고서를 읽거나 추측하지 마세요.',
-    '의미 있는 장면마다 screenshot과 checkpoint를 남기세요.',
-    '종료 전에 finalize로 요약과 상태를 기록하세요.',
+    'screenshot은 화면이 의미 있게 바뀐 경우에만 최대 6회 사용하고, 각 장면의 판단을 checkpoint로 남기세요.',
+    '시작 후 3분 30초가 지나면 새 조작을 시작하지 말고 finalize로 요약과 상태를 기록하세요.',
   ].join('\n');
 }
 
@@ -81,6 +82,12 @@ function tomlString(value) {
   return JSON.stringify(value);
 }
 
+function tomlInlineTable(values) {
+  return '{' + Object.entries(values)
+    .map(([key, value]) => tomlString(key) + '=' + tomlString(value))
+    .join(',') + '}';
+}
+
 export async function spawnCodexWorker({
   workerDir,
   prompt,
@@ -90,8 +97,7 @@ export async function spawnCodexWorker({
   commandRunner = runCommand,
 }) {
   const args = [
-    '--ask-for-approval',
-    'never',
+    '--approve-for-me',
     'exec',
     '--ephemeral',
     '--ignore-rules',
@@ -104,6 +110,10 @@ export async function spawnCodexWorker({
     'mcp_servers.playtest.command=' + tomlString(process.execPath),
     '-c',
     'mcp_servers.playtest.args=' + JSON.stringify([mcpEntry]),
+    '-c',
+    'mcp_servers.playtest.env=' + tomlInlineTable(environment),
+    '-c',
+    'mcp_servers.playtest.startup_timeout_sec=30',
     prompt,
   ];
 

@@ -10,7 +10,10 @@ describe('AI 플레이테스트 Codex 워커', () => {
     });
 
     expect(prompt).toContain('5분');
+    expect(prompt).toContain('3분 30초');
+    expect(prompt).toContain('최대 6회');
     expect(prompt).toContain('소스 코드');
+    expect(prompt).toContain('도구 검색');
     expect(prompt).not.toContain(projectRoot);
   });
 
@@ -21,7 +24,9 @@ describe('AI 플레이테스트 Codex 워커', () => {
       workerDir: 'C:/temp/playtest-worker',
       prompt: 'test',
       mcpEntry: 'C:/temp/mcp-entry.mjs',
-      environment: {},
+      environment: {
+        PLAYTEST_RUN_DIR: 'C:/temp/playtest-run',
+      },
       timeoutMs: 300000,
       commandRunner: async (_command, args, options) => {
         receivedArgs = args;
@@ -31,7 +36,11 @@ describe('AI 플레이테스트 Codex 워커', () => {
     });
 
     expect(receivedOptions.timeoutMs).toBe(300000);
-    expect(receivedArgs.indexOf('--ask-for-approval')).toBeLessThan(receivedArgs.indexOf('exec'));
+    expect(receivedArgs.indexOf('--approve-for-me')).toBeGreaterThanOrEqual(0);
+    expect(receivedArgs.indexOf('--approve-for-me')).toBeLessThan(receivedArgs.indexOf('exec'));
+    expect(receivedArgs).not.toContain('--ask-for-approval');
+    expect(receivedArgs).toContain('mcp_servers.playtest.env={"PLAYTEST_RUN_DIR"="C:/temp/playtest-run"}');
+    expect(receivedArgs).toContain('mcp_servers.playtest.startup_timeout_sec=30');
   });
 
   it('시간 제한을 넘긴 워커 프로세스를 실패 상태로 종료한다', async () => {

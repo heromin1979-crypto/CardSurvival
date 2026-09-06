@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { readFile } from 'node:fs/promises';
 import { z } from 'zod';
 
 function textResult(value) {
@@ -8,12 +9,18 @@ function textResult(value) {
   };
 }
 
-export function createPlaytestToolHandlers(session, report) {
+export function createPlaytestToolHandlers(session, report, { onFinalize = async () => {} } = {}) {
   return {
     async screenshot({ label = 'screen' } = {}) {
       const artifactPath = await session.screenshot(label);
       report.artifacts.push({ kind: 'screenshot', path: artifactPath, at: new Date().toISOString() });
-      return textResult(artifactPath);
+      const image = await readFile(artifactPath);
+      return {
+        content: [
+          { type: 'image', data: image.toString('base64'), mimeType: 'image/png' },
+          { type: 'text', text: artifactPath },
+        ],
+      };
     },
     async click({ x, y }) {
       await session.click({ x, y });
@@ -46,13 +53,14 @@ export function createPlaytestToolHandlers(session, report) {
     async finalize({ summary = '', status = 'completed' } = {}) {
       report.summary = summary;
       report.status = status;
+      await onFinalize(report);
       return textResult('플레이테스트 보고서 확정');
     },
   };
 }
 
-export async function startPlaytestMcpServer({ session, report }) {
-  const handlers = createPlaytestToolHandlers(session, report);
+export async function startPlaytestMcpServer({ session, report, onFinalize }) {
+  const handlers = createPlaytestToolHandlers(session, report, { onFinalize });
   const server = new McpServer({
     name: 'card-survival-playtest',
     version: '1.0.0',

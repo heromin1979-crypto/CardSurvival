@@ -77,4 +77,35 @@ describe('AI 플레이테스트 CLI', () => {
     await expect(readFile(path.join(result.run.logsDir, 'codex-worker.log'), 'utf8'))
       .resolves.toContain('worker failure');
   });
+
+  it('finalize 보고서 없이 종료한 Codex 워커는 플레이테스트 성공으로 처리하지 않는다', async () => {
+    const projectRoot = await mkdtemp(path.join(os.tmpdir(), 'ai-playtest-cli-unfinalized-'));
+    temporaryDirectories.push(projectRoot);
+    const buildDir = path.join(projectRoot, 'dist-web');
+    await mkdir(buildDir);
+    await writeFile(path.join(buildDir, 'index.html'), '<h1>fixture</h1>', 'utf8');
+
+    const result = await executeCli([
+      'run',
+      '--project-root',
+      projectRoot,
+      '--mode',
+      'hook',
+      '--run-id',
+      'unfinalized-worker',
+      '--skip-build',
+    ], {
+      browserChecker: async () => true,
+      commandRunner: async (_command, args) => (
+        args.includes('exec')
+          ? { code: 0, stdout: '도구를 찾지 못했습니다.', stderr: '' }
+          : { code: 0, stdout: 'codex-cli', stderr: '' }
+      ),
+    });
+
+    expect(result.ok).toBe(false);
+    const report = JSON.parse(await readFile(path.join(result.run.runDir, 'report.json'), 'utf8'));
+    expect(report.status).toBe('failed');
+    expect(report.summary).toContain('finalize');
+  });
 });
