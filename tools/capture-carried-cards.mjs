@@ -5,6 +5,7 @@
 //   (3) 스택 재료(산딸기) — 둘 다 (내구도 최대치가 100이 아닌 표본)
 //   (4) 둘 다 없는 카드 — 시작 소지품이 그대로 남아 섞인다
 // 그래서 표본을 휴대 행에 직접 꽂고(placeCardInRow) 한 화면에서 넷을 같이 본다.
+// 세 행의 빈 슬롯 플레이스홀더(`::after`)도 같이 잰다 — 계산된 값이라 DOM 검사로는 안 잡힌다.
 // capture-location-cards.mjs 와 같은 경로로 screen-main 까지 들어간다.
 import { spawn } from 'node:child_process';
 import path from 'node:path';
@@ -113,6 +114,26 @@ const row = await page.evaluate(()=>{
   };
 });
 console.log('ROW', JSON.stringify(row, null, 2));
+
+// 빈 슬롯 플레이스홀더 — 세 행 모두. ::after 는 DOM 검사로 안 잡히므로 계산된 값을 읽는다.
+// 재는 순서가 중요하다: 마우스는 **마지막 클릭 자리에 남아** 그 칸만 hover 상태로 찍힌다
+// (실제로 바닥 행 한 칸이 hover 문구로 나왔다). 보드 밖으로 치우고 잰다.
+await page.mouse.move(1919, 1);
+await page.waitForTimeout(300);
+const hints = await page.evaluate(() => {
+  const out = {};
+  for (const key of ['top', 'middle', 'bottom']) {
+    const slots = [...document.querySelectorAll(`.board-row.row-${key} .slot`)]
+      .filter(s => !s.classList.contains('slot-empty-bg') && !s.children.length);
+    const s = slots[0];
+    if (!s) { out[key] = { empty: 0 }; continue; }
+    const st = getComputedStyle(s, '::after');
+    out[key] = { empty: slots.length, hint: s.getAttribute('data-hint'),
+                 content: st.content, fontSize: st.fontSize, opacity: st.opacity, color: st.color };
+  }
+  return out;
+});
+console.log('EMPTY_SLOT_HINTS', JSON.stringify(hints));
 await page.screenshot({path:path.join(OUT,`carried-full${TAG}.png`)});
 const rowEl = page.locator('.board-row.row-bottom');
 if (await rowEl.count()) await rowEl.first().screenshot({path:path.join(OUT,`carried-row${TAG}.png`)});
