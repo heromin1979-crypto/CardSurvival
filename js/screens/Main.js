@@ -7,6 +7,7 @@ import TickEngine      from '../core/TickEngine.js';
 import CraftUI        from '../ui/CraftUI.js';
 import { bindCraftModalTitleUpdates, formatCraftModalTitle } from '../ui/CraftModalHeader.js';
 import BoardRenderer  from '../ui/BoardRenderer.js';
+import HeaderBar      from '../ui/HeaderBar.js';
 import StatRenderer   from '../ui/StatRenderer.js';
 import SaveManager    from '../persistence/SaveManager.js';
 import EquipmentModal  from '../ui/EquipmentModal.js';
@@ -94,6 +95,9 @@ const Basecamp = {
     if (nameEl) nameEl.textContent = GameState.player.name;
     // Update current location display (구 › 랜드마크 › 세부장소 브레드크럼)
     this._updateLocation();
+    // _buildLayout()이 헤더 노드를 새로 만들므로 여기서 다시 채운다.
+    // HeaderBar 자신의 stateTransition 리스너는 이 시점보다 먼저 돌아 헛돈다.
+    HeaderBar.render();
     CraftUI.init();
     EquipmentModal.init();
     BodyStatusModal.init();
@@ -125,6 +129,9 @@ const Basecamp = {
 
   _buildLayout() {
     this._el.innerHTML = `
+      <!-- 상단 HUD 띠 — 껍데기만 만들고 내용은 HeaderBar.render()가 채운다 -->
+      <header id="game-header" class="game-header" role="banner" aria-label="게임 헤더"></header>
+
       <aside class="bc-sidebar">
         <!-- Minimap -->
         <div class="bc-minimap" data-action="open-seoul-map" title="${I18n.t('basecamp.viewMap')}">

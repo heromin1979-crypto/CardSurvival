@@ -12,6 +12,25 @@
 
 ## 완료한 지시 (INBOX 에서 내려옴)
 
+- [x] [2026-09-06] **상단 중앙 HUD 칩을 만든다.** (1군)
+  → [2026-09-06] 칩을 "만든" 게 아니라 **죽어 있던 것을 살렸다.** `HeaderBar.js`에는 이미
+  중앙 `Day | HH:MM | Temp` 마크업이 있었고 `main.js`가 init 도 했지만, `Main._buildLayout()`이
+  `#screen-main`의 innerHTML 을 통째로 갈아 끼우면서 `index.html`이 선언한 `#game-header`
+  노드를 지웠다. HeaderBar 는 init 때 잡아 둔 참조를 계속 들고 있어 **떨어져 나간 노드에**
+  그리고 있었다 — 그래서 56px 띠만 비어 있었다.
+  고친 것: (1) 헤더 껍데기를 `_buildLayout()` 템플릿 안으로 옮기고 `index.html`에서 뺐다
+  (2) `HeaderBar.render()`가 매번 노드를 다시 찾는다 (3) `_onEnter()`가 레이아웃을 만든 뒤
+  `HeaderBar.render()`를 명시적으로 부른다 — HeaderBar 자신의 `stateTransition` 리스너는
+  Main 보다 먼저 등록돼 있어 헛돈다.
+  덤으로 같이 드러난 배선 오류 둘: 온도가 `gs.weather.temp`(없는 필드)를 읽어 늘 `0°C`가 될
+  참이었고(→ `WeatherSystem.getOutdoorTemperature()`), 분이 `tpInDay * (60/18)`이라 값이
+  60을 넘어 `Math.min(59,…)`로 잘리고 있었다(→ 3 TP = 1시간이므로 `(tpInDay % 3) * 20`).
+  띠의 좌우(브레드크럼·계절/날씨 아이콘)는 걷어냈다 — 목표 이미지에 없고, 그 자리는 이미
+  온보딩 안내 칩과 알림 패널이 쓴다.
+  `js/ui/HeaderBar.js` + `js/screens/Main.js` + `index.html` + `css/header.css` +
+  `js/ui/locationPath.js` + `tests/unit/HeaderHudChip.test.js` +
+  `tools/capture-header-chip.mjs` / (해시는 STATUS 참조)
+
 - [x] [2026-09-06] **온보딩 툴팁이 바닥 카드를 가린다.** (0군)
   → [2026-09-06] 오버레이를 화면 정중앙에서 상단 헤더 띠(56px, 사이드바 200px 오른쪽)로 옮기고
   카드를 한 줄로 눕혔다. 드래그 말고도 나갈 수 있게 `✕` 닫기 버튼을 넣었다.

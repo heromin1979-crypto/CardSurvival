@@ -9,29 +9,37 @@
 
 메인 화면이 3컬럼이 됐다 — 좌 사이드바 200px / 보드 1540px / 우 동료 패널 180px.
 우측 컬럼은 v2 레퍼런스대로 두 블록이 됐다 — 위쪽 `동료`(스크롤) + 아래쪽 고정 `동료 상태`
-(사기 게이지 1개 + 동료별 유대 게이지). `#game-header`(56px)는 왼쪽에 온보딩 안내 칩만 있고
-가운데·오른쪽은 아직 비어 있다. 0군과 1군 첫 두 항목이 끝났고 남은 1군은 상단 HUD 칩과
-사이드바 재편이다. 캡처(동료 0명·2명 두 상태)에서 장소 10칸 · 바닥 10칸 · 휴대 10열×2행이
-그대로고, 우측 컬럼 폭 180px 안에서 블록이 넘치지 않는다 (측정: 블록 163×290px).
+(사기 게이지 1개 + 동료별 유대 게이지). `#game-header`(56px) 가운데에 HUD 칩
+`Day 1 | 06:00 | 12°C` 가 뜬다 — 왼쪽 온보딩 안내 칩, 오른쪽 알림 패널과 셋이 한 줄에
+겹치지 않고 들어간다 (측정: 칩 358×48, 중심 오차 0px, 보드 첫 행과 겹침 없음).
+0군이 끝났고 1군에 남은 것은 좌측 사이드바 재편 하나다. 캡처에서 장소 10칸 · 바닥 10칸 ·
+휴대 10열×2행이 그대로다.
 
 ## 끝난 것
 
 <!-- 이번 바퀴가 한 일만 한 줄 적는다. 다음 바퀴가 여기를 비우고 DONE.md 맨 위로 내린다. -->
+
+- [2026-09-06] 상단 중앙 HUD 칩 복구. `Main._buildLayout()`의 innerHTML 교체가 `#game-header`
+  노드를 지워 HeaderBar 가 떨어져 나간 노드에 그리고 있던 것을 고쳤다. 같이 드러난 배선 오류
+  2건(온도가 없는 필드 `weather.temp`를 읽어 늘 0°C / 분 산식이 60을 넘어 잘림)도 잡았다.
+  회귀 검사 8건, 좌표 측정 캡처 도구 `tools/capture-header-chip.mjs` 신설 / (이번 커밋)
 
 ## 다음에 할 것
 
 <!-- 하나만. 가장 위가 다음 바퀴가 집을 작업이다. -->
 <!-- 형식: - [ ] 무엇을 / 어디 파일 / 무엇을 보면 됐다고 판단하는가 -->
 
-- [ ] INBOX 1군 첫 항목 — 상단 중앙 HUD 칩(`Day 18 | 14:32 | -4°C`)을 만든다 /
-  `js/ui/HeaderBar.js` + `#game-header`(56px). 지금 이 띠는 왼쪽 `game-header__left`
-  (위치 브레드크럼)와 온보딩 안내 칩만 쓰고 가운데는 비어 있다 /
-  캡처 상단 중앙에 칩이 보이고 보드 첫 행(장소 카드)을 가리지 않으면 됐다.
-  ※ 헤더 왼쪽은 온보딩 안내 칩 자리, 오른쪽은 알림 패널(`#notification-container`) 자리다.
-     둘 다 뺏지 말고 가운데만 쓴다 (아래 "결정과 근거" 참조).
-  ※ 우하단 `.notif-log-btn`(fixed, bottom 20px, 32px)처럼 **화면에 떠 있는 기존 요소가
-     새 블록을 가리는 일이 또 있다.** 캡처를 눈으로만 보지 말고 좌표를 재라 —
-     `tools/capture-companion-panel.mjs` 의 `FIT` 출력이 그 예다.
+- [ ] INBOX 1군에 남은 하나 — 좌측 사이드바를 목표 순서로 재편한다 /
+  `js/screens/Main.js` 의 `_buildLayout()` 사이드바 블록(`<aside class="bc-sidebar">`) +
+  `css/layout.css`. 목표 순서는 지도 → Day/시각/계절/날씨/온도 → 상태 → 소음 → 무게 → 퀘스트 /
+  캡처의 좌측 패널 섹션 순서가 `reference/ui-refs/main-screen-v2.png` 와 같으면 됐다.
+  ※ 행동 메뉴(탐색·퀘스트·동료·제작·숙련도·휴식)는 목표 이미지에 없지만 **없애지 마라.**
+     지금 사이드바 맨 아래 `.bc-sidebar-btns` 에 있고, 여기가 게임의 유일한 진입 경로다.
+  ※ 사이드바의 Day/시각은 이제 상단 HUD 칩과 **이중 표시**다. 목표 이미지도 둘 다 그리므로
+     지우지 말 것 — 다만 표시 형식이 갈리면 안 된다 (사이드바는 `HH:00`, 칩은 `HH:MM`).
+  ※ **캡처를 눈으로만 보지 말고 좌표를 재라.** 화면에 fixed 로 떠 있는 기존 요소가 새 블록을
+     가린 전례가 두 번 있다 (`.notif-log-btn`, 알림 패널). `tools/capture-header-chip.mjs` ·
+     `tools/capture-companion-panel.mjs` 의 `FIT` 출력이 그 방식이다.
 
 ## 결정과 근거
 
@@ -40,6 +48,33 @@
 <!-- 단, 지금도 유효한 결정은 개수와 무관하게 남긴다 — 내리면 다음 바퀴가 되돌린다. -->
 <!-- 형식: - [YYYY-MM-DD] 무엇을 이렇게 정했다 / 왜 -->
 
+- [2026-09-06] **`#screen-main` 안에 놓은 정적 마크업은 `Main._buildLayout()`이 지운다** /
+  `_buildLayout()`이 `this._el.innerHTML = ...` 로 화면을 통째로 다시 만든다. `index.html`에
+  선언돼 있던 `#game-header`가 여기서 사라졌고, HeaderBar 는 init 때 잡아 둔 참조를 계속 들고
+  **떨어져 나간 노드에** 그리고 있었다. 에러도 경고도 없이 56px 띠만 비어 보였다.
+  그래서 헤더 껍데기를 `_buildLayout()` 템플릿 안으로 옮기고 `index.html`에서 뺐다.
+  **메인 화면에 새 상시 요소를 붙일 때는 `_buildLayout()` 안에 넣어라.** `index.html`에 두면
+  첫 진입에 조용히 사라진다.
+- [2026-09-06] **HeaderBar 는 render 마다 노드를 다시 찾고, `_onEnter()`가 명시적으로 부른다** /
+  노드가 매번 새로 만들어지므로 참조를 캐시할 수 없다. 그리고 HeaderBar 의 `stateTransition`
+  리스너는 `main.js:180`에서, Main 의 것은 `main.js:210`에서 등록돼 **HeaderBar 가 먼저 돈다** —
+  아직 레이아웃이 만들어지기 전이라 헛돈다. 이벤트 순서에 기대지 말고 Main 이 레이아웃을 만든
+  뒤 직접 부르게 했다.
+- [2026-09-06] **헤더 띠의 좌우(위치 브레드크럼 · 계절/날씨 아이콘)를 걷어냈다** /
+  목표 이미지의 띠에는 가운데 칩 하나뿐이고, 좌우는 이미 온보딩 안내 칩과 알림 패널
+  (`#notification-container`, top/right 16px)이 쓰는 자리다. 정보가 사라지지도 않는다 —
+  브레드크럼은 사이드바 `#bc-district-name`, 계절·날씨·온도는 `#season-badge`/`#weather-display`/
+  `#outdoor-temp` 가 그대로 보여준다. 이 셋은 어차피 화면에 뜬 적이 없었다(위 항목).
+  ※ 이 정리로 `locationPath.js` 의 `locationKey()` 가 소비처를 잃어 같이 지웠다.
+- [2026-09-06] **칩의 온도를 `WeatherSystem.getOutdoorTemperature()` 로 통일했다** /
+  기존 코드는 `gs.weather?.temp ?? gs.stats?.temperature?.outdoor ?? 0` 을 읽는데
+  **둘 다 없는 필드다** (`GameState.weather`는 id·name·icon·tempMod·tpRemaining·tempJitter,
+  `stats.temperature`는 `{current,max}` 체온). 그대로 켰으면 칩은 늘 `0°C`, 사이드바는 `12°C`로
+  갈렸을 것이다. 한 화면에 같은 값이 두 번 나오면 계산도 한 곳에서 와야 한다.
+  분도 같은 종류의 오류였다 — `tpInDay * (60/18)` 이 60을 넘어 `Math.min(59,…)`에 잘리고 있었다.
+  `TickEngine` 의 `hour = floor(tpInDay/3)+6` 과 같은 분모를 써서 `(tpInDay % 3) * 20` 으로 고쳤다.
+  ※ 부작용 하나: `render()`가 이제 실제로 돌면서 `#screen-main[data-time-of-day]` 가 붙는다.
+    `css/layout.css` 의 시간대별 배경 틴트·야간 스캔라인이 그동안 죽어 있다가 **살아났다.**
 - [2026-09-06] **사기와 유대를 한 블록에 두되 게이지 구조를 다르게 했다** /
   레퍼런스는 둘을 나란히 그렸지만 사기는 플레이어 한 명의 전역 수치(`GameState.stats.morale`),
   유대는 동료마다 따로 쌓이는 수치(`NPCSystem` bond)다. 같은 모양으로 그리면 "동료의 사기"로

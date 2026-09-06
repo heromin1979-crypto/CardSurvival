@@ -1,56 +1,35 @@
-/* === GAME HEADER (트랙 C) ====================================
- * 메인 보드 상단 거대 헤더. Day | HH:MM | Temp 중앙 표시.
- * AD_GUIDE_UI_REVAMP.md 트랙 C 명세
+/* === GAME HEADER — 상단 중앙 HUD 칩 ==========================
+ * `Day 18 | 14:32 | -4°C` 하나만 띄운다.
+ * 띠의 왼쪽은 온보딩 안내 칩, 오른쪽은 알림 패널(#notification-container)이
+ * 이미 쓰는 자리라 가운데만 점유한다 (docs/loop/STATUS.md 결정).
  * ============================================================ */
 
 .game-header {
   background: linear-gradient(180deg, rgba(15, 20, 28, 0.95) 0%, rgba(10, 14, 20, 0.85) 100%);
   border-bottom: 1px solid var(--border-dim, rgba(120, 90, 50, 0.18));
-  padding: 0 16px;
   display: flex;
   align-items: center;
   z-index: var(--z-hud, 50);
 }
 
 .game-header__inner {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  display: flex;
   align-items: center;
+  justify-content: center;
   width: 100%;
   height: 100%;
 }
 
-/* 좌측 슬롯 */
-.game-header__inner::before {
-  content: '';
-  grid-column: 1;
-}
-
-.game-header__left {
-  grid-column: 1;
-  justify-self: start;
-  padding-left: 16px;
-}
-
-/* 위치 브레드크럼 컨테이너 (헤더) */
-.game-header__location {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: nowrap;
-  max-width: 42vw;
-  overflow: hidden;
-  font-family: var(--font-ui, 'Geist', sans-serif);
-  font-size: 14px;
-  letter-spacing: 0.5px;
-}
-
-/* 중앙: Day | Time | Temp 거대 표시 */
+/* 중앙 칩: Day | Time | Temp */
 .game-header__center {
-  grid-column: 2;
   display: flex;
   align-items: baseline;
   gap: 14px;
+  padding: 4px 22px;
+  border: 1px solid var(--border-mid);
+  border-top: none;
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+  background: rgba(0, 0, 0, 0.55);
   font-family: var(--font-title, 'Geist', sans-serif);
   font-size: 28px;
   font-weight: 700;
@@ -58,15 +37,14 @@
   white-space: nowrap;
 }
 
-.game-header__center.day .game-header__time { color: var(--accent-primary, #c8a060); }
-.game-header__center.night .game-header__time { color: var(--text-info, #7eaad4); }
+.game-header__center.night .game-header__time { color: var(--text-info); }
 
 .game-header__day {
-  color: var(--text-primary);
+  color: var(--accent-primary);
 }
 
 .game-header__time {
-  color: var(--accent-primary, #c8a060);
+  color: var(--text-primary);
   font-variant-numeric: tabular-nums;
   min-width: 80px;
   text-align: center;
@@ -83,35 +61,6 @@
   color: var(--text-dim);
   font-weight: 300;
   font-size: 24px;
-}
-
-/* 우측: 계절 + 날씨 아이콘 */
-.game-header__right {
-  grid-column: 3;
-  justify-self: end;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 22px;
-}
-
-.game-header__season,
-.game-header__weather {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--border-dim, rgba(120, 90, 50, 0.18));
-  cursor: default;
-  transition: background 200ms ease;
-}
-
-.game-header__season:hover,
-.game-header__weather:hover {
-  background: rgba(200, 160, 96, 0.12);
 }
 
 /* 모바일 대응 — 1920×1080 미만 (자체 mobile.css가 추가 처리) */
