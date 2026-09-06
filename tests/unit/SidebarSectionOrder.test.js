@@ -27,7 +27,7 @@ const label = (e) =>
   ?? e.className;
 
 describe('좌측 사이드바 섹션 순서', () => {
-  it('지도 → 시간 → 상태 → 소음 → 무게 → 행동 메뉴 순으로 놓인다', () => {
+  it('지도 → 시간 → 상태 → 소음 → 무게 → 퀘스트 → 행동 메뉴 순으로 놓인다', () => {
     const order = [...sidebar().children].map(label);
 
     expect(order).toEqual([
@@ -36,6 +36,7 @@ describe('좌측 사이드바 섹션 순서', () => {
       '상태 (STATUS)',
       '소음 수치 (NOISE METER)',
       '휴대 무게 (WEIGHT)',
+      '퀘스트 (QUESTS)',
       'bc-sidebar-btns',
     ]);
   });

@@ -64,6 +64,24 @@ const QuestPanel = {
     }
   },
 
+  /**
+   * 사이드바 상시 노출용 요약 — 진행 중(메인·긴급)인 것만 급한 순으로 준다.
+   * 목록·분류·진행도를 사이드바가 다시 만들지 않게 모달과 같은 `_collect()`를 쓴다.
+   * 정렬은 `_ui.sort`(사용자가 모달에서 고르는 것)에 기대지 않는다 — 창을 만졌다고
+   * 사이드바 두 줄의 순서가 바뀌면 안 된다.
+   * `total`은 잘라내기 전 개수다. 사이드바가 "더 있다"를 이 값으로 표시한다.
+   */
+  activeSummary(limit) {
+    const rank = q => (q.category === 'urgent' ? 0 : 1);
+    const active = this._collect()
+      .filter(q => q.category === 'urgent' || q.category === 'main')
+      .sort((a, b) => {
+        if (rank(a) !== rank(b)) return rank(a) - rank(b);
+        return (a.daysLeft ?? Infinity) - (b.daysLeft ?? Infinity);
+      });
+    return { total: active.length, items: active.slice(0, limit) };
+  },
+
   // ── 이벤트 배선 ────────────────────────────────────────
 
   _bindRoot(rootEl) {

@@ -26,6 +26,7 @@ import SeasonSystem    from '../systems/SeasonSystem.js';
 import WeatherSystem   from '../systems/WeatherSystem.js';
 import SeoulMapModal   from '../ui/SeoulMapModal.js';
 import QuestPanel      from '../ui/QuestPanel.js';
+import QuestSidebar    from '../ui/QuestSidebar.js';
 import GameData        from '../data/GameData.js';
 import { breadcrumbHTML } from '../ui/locationPath.js';
 import { uiIcon } from '../ui/UiIcon.js';
@@ -105,6 +106,7 @@ const Basecamp = {
     SkillModal.init();
     CompanionModal.init();
     CompanionPanel.init();
+    QuestSidebar.init();
     BasecampModal.init();
     DoctorPatientModal.init();
     EmergencyRoomModal.init();
@@ -219,7 +221,14 @@ const Basecamp = {
           </div>
         </section>
 
-        <!-- 퀘스트 자리 — INBOX 2군이 여기를 채운다. 행동 메뉴 위가 목표 순서다. -->
+        <!-- 퀘스트 — 진행 중 상위 2건만 상시 노출하고 전체는 퀘스트 창(QuestPanel)이 받는다 -->
+        <section class="bc-side-section" id="bc-quest-section" title="퀘스트 창 열기">
+          <div class="bc-side-title">
+            퀘스트 <span class="bc-side-title-en">(QUESTS)</span>
+            <span class="bc-quest-more" id="bc-quest-more"></span>
+          </div>
+          <div class="bc-quests-block" id="bc-quest-list"></div>
+        </section>
 
         <!-- 행동 버튼 (동적 교체) — 목표 이미지에 없지만 게임의 유일한 진입 경로라 맨 아래에 남긴다 -->
         <div class="bc-sidebar-btns">
@@ -391,6 +400,12 @@ const Basecamp = {
     // Equipment modal open (char block 클릭)
     this._el.querySelector('#bc-char-block')?.addEventListener('click', () => {
       EquipmentModal.open();
+    });
+
+    // 사이드바 퀘스트 요약은 두 줄만 보여준다 — 나머지는 퀘스트 창이 받는다
+    this._el.querySelector('#bc-quest-section')?.addEventListener('click', () => {
+      this._refreshQuestModal();
+      document.getElementById('quest-modal')?.classList.add('open');
     });
 
     // Craft modal close (button)

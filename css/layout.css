@@ -566,15 +566,6 @@
   flex-shrink: 0;
 }
 
-/* Quest/blueprint block */
-.bc-quests-block {
-  border: 1px solid var(--border-dim);
-  border-radius: var(--radius-sm);
-  padding: 6px 8px;
-  flex: 1;
-  min-height: 40px;
-}
-
 .bc-block-title {
   font-size: var(--font-size-xs);
   color: var(--text-dim);
@@ -588,47 +579,61 @@
   color: var(--text-secondary);
 }
 
-/* ── 퀘스트 패널 ── */
+/* ── 퀘스트 요약 (사이드바 상시 노출) ──
+   목표 이미지의 한 줄은 `☑ 북촌 탐색 (진행중)` 뿐이다. 게이지·배지를 붙이면 줄 높이가
+   두 배가 되고, 남은 여백이 76px 뿐이라 맨 아래 행동 메뉴가 스크롤 밖으로 밀린다.
+   상세(진행 바·보상·위치)는 퀘스트 창이 이미 보여준다. */
+.bc-quests-block {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* 섹션 전체가 퀘스트 창으로 가는 클릭 상자다 */
+#bc-quest-section { cursor: pointer; }
+
+/* `+N`을 제목 오른쪽 끝에 붙인다 — 줄을 하나 더 쓰지 않고 "더 있다"를 말하는 유일한 자리 */
+#bc-quest-section .bc-side-title {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.bc-quest-more {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
 .bc-quest-empty {
-  font-size: var(--font-size-xs);
+  font-size: 12px;
   color: var(--text-dim);
   font-style: italic;
 }
 
 .bc-quest-item {
   display: flex;
-  flex-direction: column;
-  gap: 3px;
-  padding: 4px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  align-items: baseline;
+  gap: 4px;
+  font-size: 12px;   /* 200px 컬럼에서 제목 + 상태가 한 줄에 들어가는 상한 */
+  line-height: 1.35;
 }
 
-.bc-quest-item:last-child { border-bottom: none; }
+.bc-quest-check { color: var(--text-good); flex-shrink: 0; }
 
+/* 제목만 줄여서 자른다 — 상태(D-2 · 3/5)는 잘리면 뜻이 바뀐다 */
 .bc-quest-title {
-  font-size: var(--font-size-xs);
   color: var(--text-primary);
-  font-weight: 600;
-}
-
-.bc-quest-progress-bar {
-  height: 3px;
-  background: rgba(255,255,255,0.08);
-  border-radius: 2px;
+  min-width: 0;
+  white-space: nowrap;
   overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.bc-quest-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #c8a060, #f0c040);
-  border-radius: 2px;
-  transition: width 0.4s ease;
-}
+.bc-quest-state { color: var(--text-good); flex-shrink: 0; }
 
-.bc-quest-meta {
-  font-size: var(--font-size-xs);
-  color: var(--text-dim);
-}
+.bc-quest-item.urgent .bc-quest-check,
+.bc-quest-item.urgent .bc-quest-state { color: var(--text-danger); }
 
 /* Sidebar footer buttons */
 .bc-sidebar-btns {
