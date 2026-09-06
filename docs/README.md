@@ -42,6 +42,7 @@ simulation-data/                             # 시뮬레이션 데이터 (별도
 - [`/CLAUDE.md`](../CLAUDE.md) — 프로젝트 가이드, AI 행동 규칙, 보드 레이아웃 룰, 5곳 등록 룰
 - [`/DESIGN.md`](../DESIGN.md) — 디자인 시스템 (폰트·색상·간격·미적 방향)
 - [`/prompt_plan.md`](../prompt_plan.md) — 현재 진행 트랙 체크리스트 (M3 종결, M4 진입 대기)
+- [`AI_PLAYTEST_GUIDE.md`](./AI_PLAYTEST_GUIDE.md) — AI 화면 기반 플레이테스트의 격리·운영·도입 기준
 
 ### ★ 기획 현황 종합 (최신)
 - [`PLANNING_STATE.md`](./PLANNING_STATE.md) — **2026-05-13 기준 기획 현황 전체 요약** (게임 정체성·7직업·5곳 등록 룰·KPI 추세·페르소나 분담·M4 진입 작업)
