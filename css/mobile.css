@@ -492,11 +492,14 @@ html, body {
 }
 
 /* ── 스팀 기준 Full HD (≥ 1920px) ── */
+/* 폭 값은 variables.css 와 반드시 같이 움직인다. 여기가 우선순위가 높아서
+   variables.css 만 고치면 조용히 무시된다 — 2026-09-07 카드 겹침의 원인이었다.
+   보드 폭 1540 = 1920 - 사이드바 200 - 동료 패널 180 기준으로 계산한다. */
 @media (min-width: 1920px) {
   :root {
-    --card-w:          160px;
+    --card-w:          133px;
     --card-h:          266px;
-    --slot-w:          170px;
+    --slot-w:          143px;
     --slot-h:          276px;
     --font-size-xs:    15px;
     --font-size-sm:    16px;
