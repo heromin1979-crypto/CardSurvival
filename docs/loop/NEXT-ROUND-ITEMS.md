@@ -115,6 +115,12 @@ js/data/npcs.js:1050      npc_jisu      — '이지수 의사', canRecruit: true
 **UI 작업에 가깝다 (먼저 열 것)**
 - `dialogue.png` — NPC 대화. 초상화 + 선택지 4개. 기존 `NPCDialogueModal.js` 위에 얹기 좋다
 - `equipment-simple.png` — 장비 관리 간소판. 3패널(효과·페이퍼돌·인벤토리)
+  - **가운데 페이퍼돌 패널이 위아래로 잘린다.** 머리(⛑️) 슬롯 윗단과 신발(👟) 슬롯 아랫단이
+    모달 본문 높이를 넘어 보이지 않는다. 슬롯 9칸(각 108px) + 간격이 본문에 안 들어간다.
+    2026-09-07 UI 라운드에서 발견했지만 **그 라운드가 만든 문제가 아니다** — 장착 강조를
+    넣기 전 캡처(`reference/equip-modal-before-2026-09-07-slots.png`)에서도 똑같이 잘리고,
+    전후 패널 크기가 448×621 로 같다. SPEC 3절이 모달을 범위 밖으로 뒀기 때문에 그 라운드는
+    손대지 않았다. 재현: `SHOT_DIR=. node tools/capture-equip-modal.mjs`
 
 **UI 가 아니라 시스템 작업이다 (그림만 따라 만들면 껍데기가 된다)**
 - `combat.png` — 3인 파티 + 적 3마리, 전위/중위/후위 위치, 공포(Fear) 스탯.
