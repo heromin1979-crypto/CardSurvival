@@ -68,10 +68,17 @@ describe('_autoSwitchPage — 휴대(bottom) 행', () => {
     expect(GameState.ui.bottomPage).toBe(1);
   });
 
-  it('1페이지를 보는 중 2페이지에 배치되면 전환된다', () => {
+  it('1페이지를 보는 중 뒤 페이지에 배치되면 전환된다', () => {
+    // 페이지 경계는 BOTTOM_PAGE_SIZE 에 달려 있다. 칸 수를 바꿔도 깨지지 않도록
+    // 기대값을 상수로 박지 않고 GameState 가 알려주는 경계에서 구한다.
+    const SLOT = 25;
+    const ranges = GameState._getPageRanges('bottom');
+    const expected = ranges.findIndex(r => SLOT >= r.start && SLOT < r.start + r.size);
+    expect(expected).toBeGreaterThan(0);   // 1페이지가 아니어야 시험이 성립한다
+
     GameState.ui.bottomPage = 0;
-    BoardRenderer._autoSwitchPage('bottom', 25);
-    expect(GameState.ui.bottomPage).toBe(1);
+    BoardRenderer._autoSwitchPage('bottom', SLOT);
+    expect(GameState.ui.bottomPage).toBe(expected);
   });
 });
 

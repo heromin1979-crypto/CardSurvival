@@ -51,12 +51,13 @@ describe('동료 패널 — 3컬럼 골격', () => {
     }
   });
 
-  it('슬롯·카드 폭이 좁아진 보드 폭 안에 8칸으로 들어간다', () => {
+  it('슬롯·카드 폭이 좁아진 보드 폭 안에 9칸으로 들어간다', () => {
     const boardW = SCREEN_W - SIDEBAR_W - COMPANION_W;
     // board-row padding 12×2 + slots padding 4×2 + border 1×2 + gap 8×9
-    const usable = boardW - 24 - 8 - 2 - 56;   // 8칸 → 간격 7개 × 8px
+    const SLOTS = 9;                                  // 장소·바닥·휴대 공통
+    const usable = boardW - 24 - 8 - 2 - (SLOTS - 1) * 8;
 
-    expect(cssVar('--slot-w')).toBeLessThanOrEqual(Math.floor(usable / 8));
+    expect(cssVar('--slot-w')).toBeLessThanOrEqual(Math.floor(usable / SLOTS));
     expect(cssVar('--card-w')).toBeLessThanOrEqual(cssVar('--slot-w'));
   });
 });

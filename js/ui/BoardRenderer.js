@@ -9,7 +9,7 @@ import GameData   from '../data/GameData.js';
 
 // row.slots = 페이지화되지 않은 행의 슬롯 수 / paged: true는 GameState._getPageRanges로 결정
 const ROW_CONFIG = [
-  { key: 'top',    slots: 8, labelKey: 'board.location',  labelEn: 'LOCATIONS',          hintKey: 'board.locationHint', paged: false },
+  { key: 'top',    slots: 9, labelKey: 'board.location',  labelEn: 'LOCATIONS',          hintKey: 'board.locationHint', paged: false },
   { key: 'middle',            labelKey: 'board.floor',     labelEn: 'GROUND ITEMS',       hintKey: 'board.floorHint',    paged: true },
   { key: 'bottom',            labelKey: 'board.inventory', labelEn: 'CARRIED INVENTORY',  hintKey: 'board.inventoryHint', paged: true },
 ];
@@ -17,9 +17,9 @@ const ROW_CONFIG = [
 const MIDDLE_PAGE_SIZE  = 8;
 const BOTTOM_PAGE1_SIZE = 20;
 // 휴대 행 표시 그리드는 항상 10×2 = 20셀(페이지 2가 작아도 빈 셀로 채움)
-// 휴대 표시 그리드는 항상 8×2 = 16셀 (마지막 페이지가 작아도 빈 셀로 채움).
-// 소지 용량 20 은 GameState 가 16 + 4 페이지로 나눠 준다 — 용량은 줄지 않는다.
-const BOTTOM_DISPLAY_CELLS = 16;
+// 휴대 표시 그리드는 항상 9×1 = 9셀 (마지막 페이지가 작아도 빈 셀로 채움).
+// 소지 용량 20 은 GameState 가 9 + 9 + 2 페이지로 나눠 준다 — 용량은 줄지 않는다.
+const BOTTOM_DISPLAY_CELLS = 9;
 
 const BoardRenderer = {
   _container: null,

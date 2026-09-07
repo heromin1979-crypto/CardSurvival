@@ -258,15 +258,15 @@
   transform: translateX(-50%) translateY(-3px);
 }
 
-/* ── 휴대 행: 2행 그리드 레이아웃 (5열×2행 = 10슬롯) ── */
+/* ── 휴대 행: 1행 그리드 (9열 × 1행 = 9슬롯, 용량 20 은 3페이지) ── */
 .board-row.row-bottom {
-  flex: 1.84;                     /* top/middle보다 약간 크게 — 2행 카드를 수용하면서 높이 균등 */
+  flex: 1.15;                     /* 1행이 된 뒤 값이다. 2행 시절의 1.84 를 두면 카드가 두 배로 길어진다 */
 }
 
 .board-row.row-bottom .board-row-slots {
   display: grid;
-  grid-template-columns: repeat(8, 1fr);  /* 8열 고정 — 8슬롯×3행 = 24셀 (용량은 20) */
-  grid-template-rows: 1fr 1fr;             /* 2행: 컨테이너 높이를 동등 분할 */
+  grid-template-columns: repeat(9, 1fr);  /* 9열 고정 — 한 페이지 9칸 (용량 20 은 3페이지로 나뉜다) */
+  grid-template-rows: 1fr;                 /* 1행 */
   overflow-x: hidden;
   overflow-y: hidden;
   flex-wrap: unset;               /* flex-wrap 비활성 (grid 사용) */

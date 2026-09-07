@@ -497,9 +497,9 @@ html, body {
    보드 폭 1540 = 1920 - 사이드바 200 - 동료 패널 180 기준으로 계산한다. */
 @media (min-width: 1920px) {
   :root {
-    --card-w:          161px;
+    --card-w:          141px;
     --card-h:          266px;
-    --slot-w:          171px;
+    --slot-w:          151px;
     --slot-h:          276px;
     --font-size-xs:    15px;
     --font-size-sm:    16px;

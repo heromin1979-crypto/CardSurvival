@@ -7,9 +7,9 @@ import { isMagazineWeapon, normalizeMagazineCards } from '../systems/WeaponAmmoS
 import { normalizeEquippedWeaponSlots } from '../systems/WeaponSlotPolicy.js';
 
 // 페이지 단위 행 정의 — 압축·해금 트리거가 참조
-const MIDDLE_PAGE_SIZE = 8;
+const MIDDLE_PAGE_SIZE = 9;
 const BOTTOM_PAGE1_SIZE = 20;   // 휴대 소지 용량 (게임 규칙 — 표시 칸 수가 아니다)
-const BOTTOM_PAGE_SIZE  = 16;   // 휴대 한 페이지 표시 칸 (8열 × 2행). 20칸을 16 + 4 로 나눈다
+const BOTTOM_PAGE_SIZE  = 9;    // 휴대 한 페이지 표시 칸 (9열 × 1행). 20칸을 9 + 9 + 2 로 나눈다
 
 /**
  * 새 게임 시작 시 사용할 flags 기본값을 생성한다.
@@ -177,14 +177,14 @@ const GameState = {
 
   // ── board ─────────────────────────────────────────────
   // Each row: array of slot entries (null | instanceId)
-  // middle: 8칸 × 3페이지 (page3 은 middlePage3Unlocked 시)
-  // bottom: 용량 20 (+extraSlots) 를 16칸씩 페이지로 나눠 보여준다 — page1(0~15) + page2(16~19…)
+  // middle: 9칸 × 3페이지 (page3 은 middlePage3Unlocked 시)
+  // bottom: 용량 20 (+extraSlots) 를 8칸씩 페이지로 나눠 보여준다 — page1(0~8) + page2(9~17) + page3(18~19…)
   board: {
-    top:         [null, null, null, null, null, null, null, null], // 8칸
+    top:         [null, null, null, null, null, null, null, null, null], // 9칸
     environment: [null, null, null],  // 3칸
-    middle:      [null,null,null,null,null,null,null,null,
-                  null,null,null,null,null,null,null,null,
-                  null,null,null,null,null,null,null,null],  // 바닥 24칸 (8칸 × 3페이지)
+    middle:      [null,null,null,null,null,null,null,null,null,
+                  null,null,null,null,null,null,null,null,null,
+                  null,null,null,null,null,null,null,null,null],  // 바닥 27칸 (9칸 × 3페이지)
     bottom:      [null,null,null,null,null,null,null,null,null,null,
                   null,null,null,null,null,null,null,null,null,null],  // 휴대 page1 20칸
   },
