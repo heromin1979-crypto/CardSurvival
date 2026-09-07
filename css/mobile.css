@@ -112,7 +112,6 @@ html, body {
     gap: 4px;
   }
   .bc-minimap       { padding: 8px 4px; }
-  .bc-minimap-label { display: none; }
   .bc-day           { font-size: 13px; }
   .bc-clock         { font-size: 10px; }
   .bc-char-block    { gap: 6px; }
@@ -130,6 +129,17 @@ html, body {
   .card-stat        { font-size: 8px; }
   .lc-name          { font-size: 9px; }
   .lc-meta          { font-size: 7px; }
+  /* 설명 2줄(24px)은 78px 폭 카드에서 씬을 먹는다 — 전문은 길게 누르면 title 툴팁이 받는다 */
+  .lc-desc          { display: none; }
+  /* 모서리 배지도 같이 줄인다. 좌 2개 + 가운데 텍스트 + 우 1개가 한 줄에 서야 한다 */
+  .lc-corner        { font-size: 7px; gap: 2px; }
+  .lc-corner--right { font-size: 9px; }
+  .lc-badge-n       { font-size: 7px; }
+  /* 수량·내구 게이지는 접지 않고 줄인다 — 이 두 줄이 이름 옆 ×N·N% 배지를 대신하므로
+     접으면 카드에 남는 수량 표시가 없어진다 (설명 줄과 다른 선택이다) */
+  .card-gauge-label,
+  .card-gauge-val   { font-size: 7px; }
+  .card-gauge-track { height: 2px; margin-top: 1px; }
 
   /* 모달 */
   .equip-modal-box,
@@ -216,6 +226,11 @@ html, body {
   }
   .bc-sidebar > *:last-child { border-right: none; }
 
+  /* 데스크톱 사이드바는 제목 붙은 섹션으로 묶여 있다. 여기서는 order 트릭이 직계 자식에만
+     걸리므로 섹션 껍데기를 걷어내 상태·소음·무게가 다시 직계 자식이 되게 한다. */
+  .bc-side-section { display: contents; }
+  .bc-side-title   { display: none; }
+
   /* ── 숨길 요소 ────────────────────────────────── */
   .bc-minimap,
   .bc-quests-block,
@@ -287,6 +302,10 @@ html, body {
   .bc-noise-block { min-width: 60px; }
   .noise-label    { font-size: 9px; }
   .noise-track    { width: 38px; }
+  /* 60px 블록에서 두 줄로 접혀 HUD 바 전체를 밀어 올린다.
+     게이지가 빨갛게 맥동하고 influx 알림 토스트가 따로 뜨므로 여기서는 생략한다. */
+  .noise-decay,
+  .bc-noise-warn  { display: none; }
 
   /* ── 무게 ────────────────────────────────────── */
   .bc-enc-block { font-size: 11px; white-space: nowrap; }
@@ -353,7 +372,14 @@ html, body {
   .lc-icon         { font-size: 22px; }
   .lc-name         { font-size: 8px; }
   .lc-meta         { font-size: 7px; }
+  .lc-desc         { display: none; }
   .lm-badge        { font-size: 6px; padding: 1px 3px; }
+  .lc-corner       { font-size: 6px; gap: 2px; }
+  .lc-corner--right{ font-size: 8px; }
+  .lc-badge-n      { font-size: 6px; }
+  .card-gauge-label,
+  .card-gauge-val  { font-size: 6px; }
+  .card-gauge-track{ height: 2px; margin-top: 1px; }
 
   /* ── 모달 → 바텀시트 ─────────────────────────── */
   .modal-overlay { align-items: flex-end; }
@@ -466,11 +492,14 @@ html, body {
 }
 
 /* ── 스팀 기준 Full HD (≥ 1920px) ── */
+/* 폭 값은 variables.css 와 반드시 같이 움직인다. 여기가 우선순위가 높아서
+   variables.css 만 고치면 조용히 무시된다 — 2026-09-07 카드 겹침의 원인이었다.
+   보드 폭 1540 = 1920 - 사이드바 200 - 동료 패널 180 기준으로 계산한다. */
 @media (min-width: 1920px) {
   :root {
-    --card-w:          160px;
+    --card-w:          141px;
     --card-h:          266px;
-    --slot-w:          170px;
+    --slot-w:          151px;
     --slot-h:          276px;
     --font-size-xs:    15px;
     --font-size-sm:    16px;
@@ -523,6 +552,9 @@ html, body {
   }
   .bc-sidebar > *:last-child { border-right: none; }
 
+  .bc-side-section { display: contents; }
+  .bc-side-title   { display: none; }
+
   .bc-minimap,
   .bc-quests-block,
   #disease-status,
@@ -556,6 +588,8 @@ html, body {
 
   .bc-noise-block  { min-width: 60px; }
   .noise-track     { width: 36px; }
+  .noise-decay,
+  .bc-noise-warn   { display: none; }
   .bc-enc-block    { font-size: 9px; }
 
   .bc-sidebar-btns { flex-direction: row; gap: 3px; margin-top: 0; }
@@ -579,6 +613,14 @@ html, body {
     scrollbar-width: none;
   }
   .board-row.row-top .board-row-slots::-webkit-scrollbar { display: none; }
+  /* 104px 카드에 설명 두 줄을 넣을 자리가 없다 (≤480px 규칙은 가로 모드 폭에 걸리지 않는다) */
+  .lc-desc { display: none; }
+  .lc-corner       { font-size: 6px; gap: 2px; }
+  .lc-corner--right{ font-size: 8px; }
+  .lc-badge-n      { font-size: 6px; }
+  .card-gauge-label,
+  .card-gauge-val  { font-size: 6px; }
+  .card-gauge-track{ height: 2px; margin-top: 1px; }
 }
 
 

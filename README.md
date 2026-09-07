@@ -17,12 +17,14 @@
 | `loop/ctl.ps1` | 제어 (install · start · stop · kill · status · uninstall) |
 | `loop/PROMPT.md` | 지시서. 매 바퀴 세션에 그대로 넘어간다 |
 | `loop/STOP` | 있으면 이번 바퀴를 마치고 멈춘다 (git 무시) |
-| `docs/DESIGN.md` | 무엇을 만드는가. 거의 안 고침 |
-| `docs/STATUS.md` | 어디까지 했고 다음은 뭔가. 매 바퀴 갱신 |
-| `docs/feedback/INBOX.md` | 사람이 던지는 지시. 가장 먼저 처리 |
+| `docs/loop/SPEC.md` | 이번 라운드에 무엇을 만드는가. 거의 안 고침 |
+| `docs/loop/STATUS.md` | 어디까지 했고 다음은 뭔가. 매 바퀴 갱신 |
+| `docs/loop/INBOX.md` | 사람이 던지는 지시. 가장 먼저 처리. **남은 건수가 곧 합격 기준** |
 | `logs/loop-YYYY-MM-DD.log` | 날짜별 로그 (git 무시) |
 
-**문서 세 개는 지금 빈 틀이다.** 채우기 전에는 루프가 할 일을 고르지 못한다.
+**`docs/loop/SPEC.md` 는 저장소 루트의 `DESIGN.md`(디자인 시스템)와 다른 파일이다.**
+
+`INBOX.md` 가 비어 있으면 루프는 아무것도 만들지 않고 대기한다. 그렇게 만들어 뒀다.
 
 ---
 

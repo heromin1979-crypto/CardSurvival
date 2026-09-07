@@ -536,27 +536,7 @@
     drop-shadow(0 7px 14px rgba(0, 0, 0, 0.76));
 }
 
-.slot-img-btn-label {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #f6d58a;
-  font-family: var(--font-display, var(--font-base));
-  font-size: 20px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-shadow:
-    0 2px 4px rgba(0, 0, 0, 0.94),
-    0 0 10px rgba(224, 170, 74, 0.42);
-  pointer-events: none;
-}
 
-.slot-img-btn.is-waiting .slot-img-btn-label {
-  color: rgba(226, 196, 138, 0.72);
-}
 
 .slot-img-btn--back  { background-image: url('../assets/images/menu/btn-back-idle.png'); }
 .slot-img-btn--back::after  { background-image: url('../assets/images/menu/btn-back-active.png'); }
