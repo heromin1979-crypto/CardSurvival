@@ -133,9 +133,13 @@ while ($true) {
     try {
         # $null 을 파이프로 흘려 stdin 을 즉시 닫는다.
         # 안 그러면 claude 가 stdin 입력을 3초 기다리며 경고를 낸다.
+        $script:hitSessionLimit = $false
         $null | & $bin @claudeArgs 2>&1 | ForEach-Object {
-            $_ | Out-File -FilePath $logFile -Append -Encoding utf8
-            Write-Host $_
+            $line = "$_"
+            # 사용량 한도는 재시도로 풀리지 않는다. 60초마다 두드리면 로그만 더럽힌다.
+            if ($line -match 'session limit|usage limit|rate limit') { $script:hitSessionLimit = $true }
+            $line | Out-File -FilePath $logFile -Append -Encoding utf8
+            Write-Host $line
         }
         $exitCode = $LASTEXITCODE
     }
@@ -152,6 +156,12 @@ while ($true) {
         Write-LoopLog "바퀴 #$cycle 끝. ${elapsed}초. 종료코드=0"
     } else {
         Write-LoopLog "바퀴 #$cycle 끝. ${elapsed}초. 종료코드=$exitCode" 'ERROR'
+    }
+
+    # 사용량 한도를 만났으면 멈춘다. 기다린다고 이번 바퀴가 되살아나지 않는다.
+    if ($script:hitSessionLimit) {
+        Write-LoopLog '사용량 한도에 걸렸다. 재시도해도 풀리지 않으므로 루프를 멈춘다. 한도가 회복되면 ctl.ps1 start 로 다시 켜라.' 'ERROR'
+        break
     }
 
     # STOP 은 바퀴가 끝난 뒤에 본다. 시작한 바퀴는 끝까지 돈다.
