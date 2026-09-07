@@ -20,7 +20,7 @@
 /* === BASECAMP: HEADER + 3-COLUMN (트랙 C) === */
 #screen-main.active {
   display: grid;
-  grid-template-columns: 200px 1fr 180px;
+  grid-template-columns: 240px 1fr 220px;
   grid-template-rows: 56px 1fr;
   grid-template-areas:
     "header  header header"
@@ -58,7 +58,7 @@
 .bc-main::before {
   content: '';
   position: fixed;
-  inset: 0 180px 0 200px;
+  inset: 0 220px 0 240px;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
   pointer-events: none;
   z-index: 0;
@@ -68,7 +68,7 @@
 .bc-main::after {
   content: '';
   position: fixed;
-  inset: 56px 180px 0 200px;
+  inset: 56px 220px 0 240px;
   background: radial-gradient(ellipse at 50% 45%, transparent 52%, rgba(0,0,0,0.70) 100%);
   pointer-events: none;
   z-index: 0;

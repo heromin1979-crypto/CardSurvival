@@ -265,7 +265,7 @@
 
 .board-row.row-bottom .board-row-slots {
   display: grid;
-  grid-template-columns: repeat(10, 1fr);  /* 10열 고정 — 10슬롯×2행 = 20 */
+  grid-template-columns: repeat(8, 1fr);  /* 8열 고정 — 8슬롯×3행 = 24셀 (용량은 20) */
   grid-template-rows: 1fr 1fr;             /* 2행: 컨테이너 높이를 동등 분할 */
   overflow-x: hidden;
   overflow-y: hidden;

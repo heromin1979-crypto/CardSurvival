@@ -48,7 +48,7 @@ describe('플레이어 무기 슬롯 정책', () => {
     };
     save.player.equipped.weapon_main = 'knife_old';
     save.player.equipped.weapon_sub = 'pistol_old';
-    save.board.middle = Array(20).fill(null);
+    save.board.middle = Array(24).fill(null);
     save.board.bottom = Array(20).fill(null);
     save.pendingLoot = [];
 
@@ -65,7 +65,7 @@ describe('플레이어 무기 슬롯 정책', () => {
       shield_old: { instanceId: 'shield_old', definitionId: 'reinforced_shield', durability: 75 },
     };
     save.player.equipped.weapon_sub = 'shield_old';
-    save.board.middle = Array(20).fill(null);
+    save.board.middle = Array(24).fill(null);
     save.board.bottom = Array(20).fill(null);
 
     GameState.deserialize(JSON.stringify(save));
@@ -75,7 +75,7 @@ describe('플레이어 무기 슬롯 정책', () => {
 
   it('보드가 가득 차면 부적합 장비를 pendingLoot으로 보존한다', () => {
     const save = JSON.parse(GameState.serialize());
-    const fillerIds = Array.from({ length: 40 }, (_, index) => `filler_${index}`);
+    const fillerIds = Array.from({ length: 44 }, (_, index) => `filler_${index}`);
     save.cards = Object.fromEntries([
       ['molotov_old', {
         instanceId: 'molotov_old',
@@ -89,8 +89,8 @@ describe('플레이어 무기 슬롯 정책', () => {
       }]),
     ]);
     save.player.equipped.weapon_sub = 'molotov_old';
-    save.board.middle = fillerIds.slice(0, 20);
-    save.board.bottom = fillerIds.slice(20, 40);
+    save.board.middle = fillerIds.slice(0, 24);
+    save.board.bottom = fillerIds.slice(24, 44);
     save.pendingLoot = [];
 
     GameState.deserialize(JSON.stringify(save));
@@ -103,7 +103,7 @@ describe('플레이어 무기 슬롯 정책', () => {
 
   it('만차 슬롯 마이그레이션은 무기의 내구도와 잔탄을 저장 왕복과 보드 복구 뒤에도 보존한다', () => {
     const save = JSON.parse(GameState.serialize());
-    const fillerIds = Array.from({ length: 40 }, (_, index) => `filler_${index}`);
+    const fillerIds = Array.from({ length: 44 }, (_, index) => `filler_${index}`);
     save.cards = Object.fromEntries([
       ['pistol_keep', {
         instanceId: 'pistol_keep',
@@ -125,8 +125,8 @@ describe('플레이어 무기 슬롯 정책', () => {
     ]);
     save.player.equipped.weapon_main = 'pistol_keep';
     save.player.equipped.weapon_sub = 'shotgun_overflow';
-    save.board.middle = fillerIds.slice(0, 20);
-    save.board.bottom = fillerIds.slice(20, 40);
+    save.board.middle = fillerIds.slice(0, 24);
+    save.board.bottom = fillerIds.slice(24, 44);
     save.pendingLoot = [];
 
     GameState.deserialize(JSON.stringify(save));

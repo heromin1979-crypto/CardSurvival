@@ -14,8 +14,8 @@ const VARS_CSS   = readFileSync(path.resolve('css/variables.css'), 'utf8');
 const PANEL_CSS  = readFileSync(path.resolve('css/companion-panel.css'), 'utf8');
 
 const SCREEN_W    = 1920;   // 고정 해상도 (Scale 방식)
-const SIDEBAR_W   = 200;
-const COMPANION_W = 180;
+const SIDEBAR_W   = 240;
+const COMPANION_W = 220;
 
 function cssVar(name) {
   return Number(VARS_CSS.match(new RegExp(`${name}:\\s*(\\d+)px`))[1]);
@@ -51,12 +51,12 @@ describe('동료 패널 — 3컬럼 골격', () => {
     }
   });
 
-  it('슬롯·카드 폭이 좁아진 보드 폭 안에 10칸으로 들어간다', () => {
+  it('슬롯·카드 폭이 좁아진 보드 폭 안에 8칸으로 들어간다', () => {
     const boardW = SCREEN_W - SIDEBAR_W - COMPANION_W;
     // board-row padding 12×2 + slots padding 4×2 + border 1×2 + gap 8×9
-    const usable = boardW - 24 - 8 - 2 - 72;
+    const usable = boardW - 24 - 8 - 2 - 56;   // 8칸 → 간격 7개 × 8px
 
-    expect(cssVar('--slot-w')).toBeLessThanOrEqual(Math.floor(usable / 10));
+    expect(cssVar('--slot-w')).toBeLessThanOrEqual(Math.floor(usable / 8));
     expect(cssVar('--card-w')).toBeLessThanOrEqual(cssVar('--slot-w'));
   });
 });

@@ -7,8 +7,9 @@ import { isMagazineWeapon, normalizeMagazineCards } from '../systems/WeaponAmmoS
 import { normalizeEquippedWeaponSlots } from '../systems/WeaponSlotPolicy.js';
 
 // 페이지 단위 행 정의 — 압축·해금 트리거가 참조
-const MIDDLE_PAGE_SIZE = 10;
-const BOTTOM_PAGE1_SIZE = 20;
+const MIDDLE_PAGE_SIZE = 8;
+const BOTTOM_PAGE1_SIZE = 20;   // 휴대 소지 용량 (게임 규칙 — 표시 칸 수가 아니다)
+const BOTTOM_PAGE_SIZE  = 16;   // 휴대 한 페이지 표시 칸 (8열 × 2행). 20칸을 16 + 4 로 나눈다
 
 /**
  * 새 게임 시작 시 사용할 flags 기본값을 생성한다.
@@ -176,13 +177,14 @@ const GameState = {
 
   // ── board ─────────────────────────────────────────────
   // Each row: array of slot entries (null | instanceId)
-  // middle: page1(0~9) + page2(10~19) 항상, page3(20~29)은 middlePage3Unlocked 시
-  // bottom: page1(0~19) + page2(20~20+extraSlots-1, 가방 장착 시)
+  // middle: 8칸 × 3페이지 (page3 은 middlePage3Unlocked 시)
+  // bottom: 용량 20 (+extraSlots) 를 16칸씩 페이지로 나눠 보여준다 — page1(0~15) + page2(16~19…)
   board: {
-    top:         [null, null, null, null, null, null, null, null, null, null], // 10칸
+    top:         [null, null, null, null, null, null, null, null], // 8칸
     environment: [null, null, null],  // 3칸
-    middle:      [null,null,null,null,null,null,null,null,null,null,
-                  null,null,null,null,null,null,null,null,null,null],  // 바닥 20칸 (page1 10 + page2 10)
+    middle:      [null,null,null,null,null,null,null,null,
+                  null,null,null,null,null,null,null,null,
+                  null,null,null,null,null,null,null,null],  // 바닥 24칸 (8칸 × 3페이지)
     bottom:      [null,null,null,null,null,null,null,null,null,null,
                   null,null,null,null,null,null,null,null,null,null],  // 휴대 page1 20칸
   },
@@ -458,8 +460,11 @@ const GameState = {
     }
     if (row === 'bottom') {
       const extra = this.player?.extraSlots ?? 0;
-      const ranges = [{ start: 0, size: BOTTOM_PAGE1_SIZE }];
-      if (extra > 0) ranges.push({ start: BOTTOM_PAGE1_SIZE, size: extra });
+      const total = BOTTOM_PAGE1_SIZE + extra;   // 용량은 그대로. 표시만 나눈다
+      const ranges = [];
+      for (let start = 0; start < total; start += BOTTOM_PAGE_SIZE) {
+        ranges.push({ start, size: Math.min(BOTTOM_PAGE_SIZE, total - start) });
+      }
       return ranges;
     }
     return null;

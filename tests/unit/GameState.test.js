@@ -84,7 +84,7 @@ describe('GameState 장착 무기 슬롯 저장 마이그레이션', () => {
       pistol_old: { instanceId: 'pistol_old', definitionId: 'pistol' },
     };
     save.player.equipped.weapon_main = 'pistol_old';
-    save.board.middle = Array(20).fill(null);
+    save.board.middle = Array(24).fill(null);
     save.board.bottom = Array(20).fill(null);
 
     GameState.deserialize(JSON.stringify(save));
@@ -119,7 +119,7 @@ describe('GameState 장착 무기 슬롯 저장 마이그레이션', () => {
       weapon_old: { instanceId: 'weapon_old', definitionId },
     };
     save.player.equipped.weapon_main = 'weapon_old';
-    save.board.middle = Array(20).fill(null);
+    save.board.middle = Array(24).fill(null);
     save.board.bottom = Array(20).fill(null);
 
     GameState.deserialize(JSON.stringify(save));
@@ -129,7 +129,7 @@ describe('GameState 장착 무기 슬롯 저장 마이그레이션', () => {
 
   it('보드가 가득 찬 레거시 무기 슬롯의 회수 전리품을 다음 저장에도 보존한다', () => {
     const save = JSON.parse(GameState.serialize());
-    const fillerIds = Array.from({ length: 40 }, (_, index) => `filler_${index}`);
+    const fillerIds = Array.from({ length: 44 }, (_, index) => `filler_${index}`);
     save.cards = Object.fromEntries([
       ['molotov_old', {
         instanceId: 'molotov_old',
@@ -143,8 +143,8 @@ describe('GameState 장착 무기 슬롯 저장 마이그레이션', () => {
       }]),
     ]);
     save.player.equipped.weapon_sub = 'molotov_old';
-    save.board.middle = fillerIds.slice(0, 20);
-    save.board.bottom = fillerIds.slice(20, 40);
+    save.board.middle = fillerIds.slice(0, 24);
+    save.board.bottom = fillerIds.slice(24, 44);
     save.pendingLoot = [];
 
     GameState.deserialize(JSON.stringify(save));
