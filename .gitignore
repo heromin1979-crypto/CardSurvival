@@ -23,3 +23,6 @@ __pycache__/
 logs/
 loop/STOP
 .wt-check/
+.loop-shots/
+# 캡처 도구가 SHOT_DIR 로 쓰는 임시 스크린샷·로그 (docs/loop/reference/ 로 복사한 것만 남긴다)
+.tmp/

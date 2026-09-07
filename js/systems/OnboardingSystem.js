@@ -24,13 +24,16 @@ function _showBoardTooltip() {
   if (localStorage.getItem(STORAGE_KEY)) return;
   localStorage.setItem(STORAGE_KEY, '1');
 
+  // 안내가 보드 카드를 덮지 않도록 한 줄로 눕힌다 (배치는 css/onboarding.css의 헤더 띠 정렬).
+  // 드래그 외에 빠져나갈 길이 보이도록 닫기 버튼을 함께 둔다 — 클릭은 카드 전체의 dismiss로 버블링된다
   const overlay = document.createElement('div');
   overlay.id = 'onboarding-board-tooltip';
   overlay.innerHTML = `
     <div class="onboarding-tooltip-card">
       <div class="onboarding-tooltip-icon">✋</div>
-      <div class="onboarding-tooltip-text">카드를 끌어다<br>다른 카드 위에 놓으세요</div>
+      <div class="onboarding-tooltip-text">카드를 끌어다 다른 카드 위에 놓으세요</div>
       <div class="onboarding-tooltip-sub">아무 카드나 드래그하면 사라집니다</div>
+      <button type="button" class="onboarding-tooltip-close" aria-label="안내 닫기">✕</button>
     </div>`;
 
   document.body.appendChild(overlay);

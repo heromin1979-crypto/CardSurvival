@@ -5,6 +5,8 @@ import GameState       from '../core/GameState.js';
 import GameData        from '../data/GameData.js';
 import I18n            from '../core/I18n.js';
 import NightSystem     from '../systems/NightSystem.js';
+import EncumbranceSystem from '../systems/EncumbranceSystem.js';
+import BALANCE         from '../data/gameBalance.js';
 import BodyStatusModal from './BodyStatusModal.js';
 
 // 사이드바에 표시할 필수 스탯 (4개)
@@ -259,40 +261,53 @@ const StatRenderer = {
       hpEl.textContent = `HP ${hp.current}/${hp.max}`;
     }
 
-    // Noise
-    const noiseEl   = document.getElementById('noise-fill');
-    const noiseVal  = document.getElementById('noise-val');
-    const noiseTrack= document.getElementById('noise-track');
+    // Noise — 임계값은 NoiseSystem이 쓰는 값을 그대로 읽는다.
+    // 화면이 임계값을 다시 정하면 밸런스를 고칠 때 표시만 옛 구간을 말한다.
+    const n = gs.noise;
+    const noisePct   = Math.round(Math.min(100, (n.level / BALANCE.noise.max) * 100));
+    const noiseState = n.level >= n.influxThreshold      ? 'critical'
+                     : n.level >= BALANCE.noise.warnLevel ? 'warn'
+                     : 'calm';
+
+    const noiseEl = document.getElementById('noise-fill');
     if (noiseEl) {
-      const n = gs.noise;
-      noiseEl.style.width = Math.min(100, n.level) + '%';
-      noiseEl.classList.toggle('critical', n.level >= n.influxThreshold);
+      noiseEl.style.width = `${noisePct}%`;
+      noiseEl.className = `noise-fill ${noiseState}`;
     }
+    const noiseVal = document.getElementById('noise-val');
     if (noiseVal) {
-      // 현재 TP당 소음 감소율 계산: base 1.0 + scaledBonus (threshold 기반) + basecamp 보너스
-      const baseDecay = 1.0;
-      let scaledBonus = 0;
-      const lvl = gs.noise.level;
-      if (lvl >= 90)      scaledBonus = 1.5;
-      else if (lvl >= 80) scaledBonus = 1.0;
-      else if (lvl >= 70) scaledBonus = 0.5;
-      const decayRate = (baseDecay + scaledBonus).toFixed(1);
-      noiseVal.textContent = `${Math.round(lvl)} (-${decayRate}/TP)`;
+      noiseVal.textContent = `${noisePct}%`;
+      noiseVal.className = `noise-val ${noiseState}`;
     }
+    // TP당 감소율은 게이지만으로는 읽히지 않는다 — 소음이 저절로 잦아든다는 유일한 단서라 남긴다
+    const noiseDecay = document.getElementById('noise-decay');
+    if (noiseDecay) {
+      let scaledBonus = 0;
+      for (const bp of BALANCE.noise.scaledDecayBreakpoints) {
+        if (n.level >= bp.threshold) scaledBonus = bp.bonusDecay;
+      }
+      noiseDecay.textContent = `-${(BALANCE.noise.baseDecayPerTP + scaledBonus).toFixed(1)}/TP`;
+    }
+    const noiseWarn = document.getElementById('noise-warn');
+    if (noiseWarn) noiseWarn.hidden = n.level < n.influxThreshold;
 
     // Encumbrance
     const encEl = document.getElementById('hud-enc');
     if (encEl) {
       const enc    = gs.player.encumbrance;
       const pctVal = Math.round((enc.weightPct ?? 0) * 100);
-      encEl.textContent = `${enc.current.toFixed(1)}/${enc.max}kg (${pctVal}%)`;
-      encEl.style.color = enc.tier >= 4 ? 'var(--text-danger)'
-                        : enc.tier >= 3 ? 'var(--text-warn)'
-                        : '';
+      // tier 3부터 tpMult 1.2가 붙는다 — 색이 갈리는 지점을 그 페널티에 맞춘다
+      const encState = enc.tier >= 4 ? 'danger' : enc.tier >= 3 ? 'warn' : 'ok';
+      encEl.textContent = `${enc.current.toFixed(1)} / ${enc.max}kg`;
+      const encTier = document.getElementById('hud-enc-tier');
+      if (encTier) {
+        encTier.textContent = EncumbranceSystem.getTierLabel();
+        encTier.className = `bc-enc-tier ${encState}`;
+      }
       const encFill = document.getElementById('hud-enc-fill');
       if (encFill) {
         encFill.style.width = `${Math.min(100, pctVal)}%`;
-        encFill.className = `bc-enc-fill${enc.tier >= 4 ? ' danger' : enc.tier >= 3 ? ' warn' : ''}`;
+        encFill.className = `bc-enc-fill ${encState}`;
       }
     }
 

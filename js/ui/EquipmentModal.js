@@ -357,6 +357,7 @@ const EquipmentModal = {
       : '';
     return `
       <div class="equip-mini-card">
+        <div class="equip-mini-tag">${I18n.t('equip.equipped')}</div>
         <div class="equip-mini-icon">${def.icon ?? '?'}</div>
         <div class="equip-mini-name">${formatInstanceName(inst, def)}</div>
         ${ammoHtml}

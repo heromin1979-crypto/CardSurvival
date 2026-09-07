@@ -232,11 +232,18 @@
   background: var(--bg-hover);
 }
 
+/* 장착 중인 슬롯. 앰버 실선으로 빈 슬롯(점선 + border-mid)과 한눈에 갈린다 */
 .equip-slot.has-item {
-  border: 1.5px solid var(--border-mid);
+  border: 1.5px solid var(--accent-primary);
   background: var(--bg-surface);
 }
 
+/* 위 :hover 규칙이 특이도에서 이겨 앰버를 accent-dim 으로 내린다. 장착 표시가
+   마우스를 올렸다고 약해지면 안 되므로 되돌린다 */
+.equip-slot.has-item:hover:not(.locked):not(.highlight-valid) { border-color: var(--accent-primary); }
+
+/* 유효 슬롯 초록은 뒤에 와서 앰버를 이긴다 — 카드를 든 동안은 "어디에 놓을 수 있나"가
+   "무엇이 장착돼 있나"보다 급하다. 순서를 바꾸지 말 것 */
 .equip-slot.highlight-valid {
   border-color: var(--text-good);
   background: rgba(80,160,80,0.12);
@@ -286,6 +293,20 @@
   justify-content: center;
   gap: 2px;
   padding: 4px;
+}
+
+/* 빈 슬롯의 .equip-slot-label 이 서던 자리를 장착 표시가 받는다 */
+.equip-mini-tag {
+  font-family: var(--font-mono);
+  font-size: 7px;
+  line-height: 1;
+  color: var(--accent-primary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 .equip-mini-icon { font-size: 22px; }

@@ -19,6 +19,12 @@ $EnvFile    = Join-Path $LoopDir  'env.ps1'
 Set-Location $RepoRoot
 if (-not (Test-Path $LogDir)) { New-Item -ItemType Directory -Path $LogDir | Out-Null }
 
+# 자식 프로세스(claude)의 stdout 을 UTF-8 로 읽는다.
+# 이걸 안 하면 PowerShell 이 콘솔 OEM 코드페이지로 디코딩해 한글이 깨진다.
+# 로그가 루프를 들여다보는 유일한 창구이므로 여기서 깨지면 아무것도 못 본다.
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$OutputEncoding = [System.Text.Encoding]::UTF8
+
 # 설정을 다시 읽어도 PATH 가 계속 길어지지 않도록 원본을 붙잡아 둔다.
 $OriginalPath = $env:PATH
 
@@ -60,6 +66,35 @@ while ($true) {
     . $EnvFile
     $env:PATH = (($LOOP_PATH_PREPEND -join ';') + ';' + $OriginalPath)
 
+    # 브랜치 확인. 다르면 바퀴를 시작하지 않는다.
+    # 확인 자체가 실패해도 거부한다 - 어디에 커밋될지 모르는 채로 돌리지 않는다.
+    if ($LOOP_ALLOWED_BRANCH) {
+        $currentBranch = $null
+        try {
+            # 파이프라인으로 Select-Object 를 걸지 않는다. PowerShell 5.1 에서
+            # -First 가 파이프라인을 조기 종료시키면 $LASTEXITCODE 가 -1 이 되어
+            # 값이 멀쩡해도 실패로 잡힌다.
+            $out = @(& git rev-parse --abbrev-ref HEAD 2>&1)
+            if ($LASTEXITCODE -eq 0 -and $out.Count -gt 0) {
+                $currentBranch = "$($out[0])".Trim()
+            }
+        }
+        catch { }
+
+        if ($currentBranch -ne $LOOP_ALLOWED_BRANCH) {
+            $shown = if ($currentBranch) { $currentBranch } else { '(확인 불가)' }
+            Write-LoopLog "브랜치가 달라 이번 바퀴를 건너뛴다. 허용=$LOOP_ALLOWED_BRANCH 현재=$shown" 'WARN'
+
+            # 건너뛰는 중에도 STOP 은 듣는다.
+            if (Test-Path $StopFile) {
+                Write-LoopLog 'STOP 파일을 확인했다. 멈춘다.'
+                break
+            }
+            Start-Sleep -Seconds $LOOP_SLEEP_SECONDS
+            continue
+        }
+    }
+
     $cycle++
     if ($LOOP_MAX_CYCLES -gt 0 -and $cycle -gt $LOOP_MAX_CYCLES) {
         Write-LoopLog "최대 바퀴 수($LOOP_MAX_CYCLES) 도달. 멈춘다."
@@ -91,10 +126,20 @@ while ($true) {
     )
 
     $exitCode = 0
+    # 자식 프로세스의 stderr 는 경고도 섞여 온다. ErrorActionPreference 가 Stop 인 채로
+    # 2>&1 을 걸면 경고 한 줄이 종료 오류로 승격되어 바퀴가 통째로 죽는다.
+    $prevEap = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
     try {
-        & $bin @claudeArgs 2>&1 | ForEach-Object {
-            $_ | Out-File -FilePath $logFile -Append -Encoding utf8
-            Write-Host $_
+        # $null 을 파이프로 흘려 stdin 을 즉시 닫는다.
+        # 안 그러면 claude 가 stdin 입력을 3초 기다리며 경고를 낸다.
+        $script:hitSessionLimit = $false
+        $null | & $bin @claudeArgs 2>&1 | ForEach-Object {
+            $line = "$_"
+            # 사용량 한도는 재시도로 풀리지 않는다. 60초마다 두드리면 로그만 더럽힌다.
+            if ($line -match 'session limit|usage limit|rate limit') { $script:hitSessionLimit = $true }
+            $line | Out-File -FilePath $logFile -Append -Encoding utf8
+            Write-Host $line
         }
         $exitCode = $LASTEXITCODE
     }
@@ -102,12 +147,21 @@ while ($true) {
         Write-LoopLog "세션이 예외로 끝났다: $($_.Exception.Message)" 'ERROR'
         $exitCode = 1
     }
+    finally {
+        $ErrorActionPreference = $prevEap
+    }
 
     $elapsed = [int]((Get-Date) - $started).TotalSeconds
     if ($exitCode -eq 0) {
         Write-LoopLog "바퀴 #$cycle 끝. ${elapsed}초. 종료코드=0"
     } else {
         Write-LoopLog "바퀴 #$cycle 끝. ${elapsed}초. 종료코드=$exitCode" 'ERROR'
+    }
+
+    # 사용량 한도를 만났으면 멈춘다. 기다린다고 이번 바퀴가 되살아나지 않는다.
+    if ($script:hitSessionLimit) {
+        Write-LoopLog '사용량 한도에 걸렸다. 재시도해도 풀리지 않으므로 루프를 멈춘다. 한도가 회복되면 ctl.ps1 start 로 다시 켜라.' 'ERROR'
+        break
     }
 
     # STOP 은 바퀴가 끝난 뒤에 본다. 시작한 바퀴는 끝까지 돈다.

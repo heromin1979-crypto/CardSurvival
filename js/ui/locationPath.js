@@ -1,18 +1,12 @@
 // === LOCATION PATH (위치 브레드크럼) ===
 // 플레이어의 현재 위치를 `구 › 랜드마크 › 세부장소` 계층 경로로 표현한다.
 // GameState.location 의 currentDistrict / currentLandmark / currentSubLocation 를 읽어
-// 존재하는 단계만 라벨로 만든다. 사이드바(Main.js)·헤더(HeaderBar.js) 공용.
+// 존재하는 단계만 라벨로 만든다. 사이드바(Main.js) 브레드크럼용.
 
 import GameState from '../core/GameState.js';
 import I18n      from '../core/I18n.js';
 import { DISTRICTS } from '../data/districts.js';
 import LANDMARK_DATA, { getLandmarkData } from '../data/landmarks.js';
-
-// 중복 렌더 방지용 시그니처
-export function locationKey() {
-  const loc = GameState.location ?? {};
-  return `${loc.currentDistrict ?? ''}|${loc.currentLandmark ?? ''}|${loc.currentSubLocation ?? ''}`;
-}
 
 // 구 > 랜드마크 > 세부장소 라벨 배열 (존재하는 단계만 포함)
 export function locationSegments() {

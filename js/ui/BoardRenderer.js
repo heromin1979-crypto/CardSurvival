@@ -9,15 +9,17 @@ import GameData   from '../data/GameData.js';
 
 // row.slots = 페이지화되지 않은 행의 슬롯 수 / paged: true는 GameState._getPageRanges로 결정
 const ROW_CONFIG = [
-  { key: 'top',    slots: 10, labelKey: 'board.location',  hintKey: 'board.locationHint', paged: false },
-  { key: 'middle',            labelKey: 'board.floor',     hintKey: 'board.floorHint',    paged: true },
-  { key: 'bottom',            labelKey: 'board.inventory', hintKey: 'board.inventoryHint', paged: true },
+  { key: 'top',    slots: 9, labelKey: 'board.location',  labelEn: 'LOCATIONS',          hintKey: 'board.locationHint', paged: false },
+  { key: 'middle',            labelKey: 'board.floor',     labelEn: 'GROUND ITEMS',       hintKey: 'board.floorHint',    paged: true },
+  { key: 'bottom',            labelKey: 'board.inventory', labelEn: 'CARRIED INVENTORY',  hintKey: 'board.inventoryHint', paged: true },
 ];
 
-const MIDDLE_PAGE_SIZE  = 10;
+const MIDDLE_PAGE_SIZE  = 8;
 const BOTTOM_PAGE1_SIZE = 20;
 // 휴대 행 표시 그리드는 항상 10×2 = 20셀(페이지 2가 작아도 빈 셀로 채움)
-const BOTTOM_DISPLAY_CELLS = 20;
+// 휴대 표시 그리드는 항상 9×1 = 9셀 (마지막 페이지가 작아도 빈 셀로 채움).
+// 소지 용량 20 은 GameState 가 9 + 9 + 2 페이지로 나눠 준다 — 용량은 줄지 않는다.
+const BOTTOM_DISPLAY_CELLS = 9;
 
 const BoardRenderer = {
   _container: null,
@@ -110,9 +112,21 @@ const BoardRenderer = {
       const header = document.createElement('div');
       header.className = 'board-row-header';
 
+      // 한글 이름과 영문 병기를 각각 span 으로 나눈다 — _updateLocationLabels 가 바닥 행
+      // 이름만 다시 쓰는데, 한 노드에 두면 textContent 교체가 영문 병기를 함께 지운다.
       const label = document.createElement('div');
       label.className = 'board-row-label';
-      label.textContent = I18n.t(row.labelKey);
+
+      const labelKo = document.createElement('span');
+      labelKo.className = 'board-row-label-ko';
+      labelKo.textContent = I18n.t(row.labelKey);
+      label.appendChild(labelKo);
+
+      const labelEn = document.createElement('span');
+      labelEn.className = 'board-row-label-en';
+      labelEn.textContent = `(${row.labelEn})`;
+      label.appendChild(labelEn);
+
       header.appendChild(label);
 
       if (row.paged) {
@@ -457,7 +471,7 @@ const BoardRenderer = {
     const isBasecamp = GameState.ui.currentState === 'main';
 
     // 바닥 행 레이블
-    const middleLabel = this._container?.querySelector('.board-row.row-middle .board-row-label');
+    const middleLabel = this._container?.querySelector('.board-row.row-middle .board-row-label-ko');
     if (middleLabel) {
       middleLabel.textContent = isBasecamp ? I18n.t('board.floor') : I18n.t('board.floorLabel', { name: I18n.districtName(currentId, nodeName) });
     }

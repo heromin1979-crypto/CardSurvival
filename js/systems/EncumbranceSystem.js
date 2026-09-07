@@ -21,7 +21,8 @@ const EncumbranceSystem = {
   },
 
   getTierLabel() {
-    const tiers = ['여유', '약간 무거움', '무거움', '과부하'];
+    // tier 4(>200%, 이동 불가)까지 채워야 한다 — 빠지면 폴백이 걸려 가장 무거운 상태가 '여유'로 표시된다
+    const tiers = ['여유', '약간 무거움', '무거움', '과부하', '이동 불가'];
     return tiers[GameState.player.encumbrance.tier] ?? '여유';
   },
 };

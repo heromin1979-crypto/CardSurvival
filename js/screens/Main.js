@@ -7,6 +7,7 @@ import TickEngine      from '../core/TickEngine.js';
 import CraftUI        from '../ui/CraftUI.js';
 import { bindCraftModalTitleUpdates, formatCraftModalTitle } from '../ui/CraftModalHeader.js';
 import BoardRenderer  from '../ui/BoardRenderer.js';
+import HeaderBar      from '../ui/HeaderBar.js';
 import StatRenderer   from '../ui/StatRenderer.js';
 import SaveManager    from '../persistence/SaveManager.js';
 import EquipmentModal  from '../ui/EquipmentModal.js';
@@ -14,6 +15,7 @@ import BodyStatusModal from '../ui/BodyStatusModal.js';
 import LandmarkModal   from '../ui/LandmarkModal.js';
 import SkillModal      from '../ui/SkillModal.js';
 import CompanionModal  from '../ui/CompanionModal.js';
+import CompanionPanel  from '../ui/CompanionPanel.js';
 import BasecampModal  from '../ui/BasecampModal.js';
 import DoctorPatientModal from '../ui/DoctorPatientModal.js';
 import EmergencyRoomModal      from '../ui/EmergencyRoomModal.js';
@@ -24,6 +26,7 @@ import SeasonSystem    from '../systems/SeasonSystem.js';
 import WeatherSystem   from '../systems/WeatherSystem.js';
 import SeoulMapModal   from '../ui/SeoulMapModal.js';
 import QuestPanel      from '../ui/QuestPanel.js';
+import QuestSidebar    from '../ui/QuestSidebar.js';
 import GameData        from '../data/GameData.js';
 import { breadcrumbHTML } from '../ui/locationPath.js';
 import { uiIcon } from '../ui/UiIcon.js';
@@ -93,12 +96,17 @@ const Basecamp = {
     if (nameEl) nameEl.textContent = GameState.player.name;
     // Update current location display (구 › 랜드마크 › 세부장소 브레드크럼)
     this._updateLocation();
+    // _buildLayout()이 헤더 노드를 새로 만들므로 여기서 다시 채운다.
+    // HeaderBar 자신의 stateTransition 리스너는 이 시점보다 먼저 돌아 헛돈다.
+    HeaderBar.render();
     CraftUI.init();
     EquipmentModal.init();
     BodyStatusModal.init();
     LandmarkModal.init();
     SkillModal.init();
     CompanionModal.init();
+    CompanionPanel.init();
+    QuestSidebar.init();
     BasecampModal.init();
     DoctorPatientModal.init();
     EmergencyRoomModal.init();
@@ -123,16 +131,20 @@ const Basecamp = {
 
   _buildLayout() {
     this._el.innerHTML = `
+      <!-- 상단 HUD 띠 — 껍데기만 만들고 내용은 HeaderBar.render()가 채운다 -->
+      <header id="game-header" class="game-header" role="banner" aria-label="게임 헤더"></header>
+
       <aside class="bc-sidebar">
-        <!-- Minimap -->
-        <div class="bc-minimap" data-action="open-seoul-map" title="${I18n.t('basecamp.viewMap')}">
-          <div class="bc-minimap-header">
-            ${uiIcon('map')}
-            <span class="bc-minimap-label">${I18n.t('basecamp.cityMap')}</span>
+        <!-- 지도 — 제목은 다른 섹션과 같은 서식, 조각 배지는 제목 오른쪽 끝 -->
+        <section class="bc-side-section" id="bc-map-section">
+          <div class="bc-side-title">
+            지도 <span class="bc-side-title-en">(MAP)</span>
             <span id="map-fragment-badge" class="bc-map-fragment-badge"></span>
           </div>
-          <div class="bc-minimap-preview" id="minimap-preview"></div>
-        </div>
+          <div class="bc-minimap" data-action="open-seoul-map" title="${I18n.t('basecamp.viewMap')}">
+            <div class="bc-minimap-preview" id="minimap-preview"></div>
+          </div>
+        </section>
 
         <!-- Day / Time / TP -->
         <div class="bc-time-block">
@@ -159,38 +171,67 @@ const Basecamp = {
           <div id="weather-widget" class="bc-weather-widget"></div>
         </div>
 
-        <!-- Character (클릭 → 장비 창) -->
-        <div class="bc-char-block" id="bc-char-block" style="cursor:pointer;" title="${I18n.t('basecamp.equipHint')}">
-          <div class="bc-avatar">👤</div>
-          <div class="bc-char-info">
-            <div class="bc-char-name" id="bc-char-name">${I18n.t('basecamp.survivor')}</div>
-            <div class="bc-char-sub" id="bc-district-name">${uiIcon('location')} 마포구</div>
+        <!-- 상태 — 목표 이미지에 없는 캐릭터 행(이름·위치·장비 진입)을 이 섹션의 머리로 흡수했다 -->
+        <section class="bc-side-section" id="bc-status-section">
+          <div class="bc-side-title">상태 <span class="bc-side-title-en">(STATUS)</span></div>
+
+          <!-- Character (클릭 → 장비 창) -->
+          <div class="bc-char-block" id="bc-char-block" style="cursor:pointer;" title="${I18n.t('basecamp.equipHint')}">
+            <div class="bc-avatar">👤</div>
+            <div class="bc-char-info">
+              <div class="bc-char-name" id="bc-char-name">${I18n.t('basecamp.survivor')}</div>
+              <div class="bc-char-sub" id="bc-district-name">${uiIcon('location')} 마포구</div>
+            </div>
+            <!-- 위험 stat 경고 아이콘 (사이드바 축약 표시) -->
+            <div class="bc-char-danger-icons" id="bc-danger-icons"></div>
           </div>
-          <!-- 위험 stat 경고 아이콘 (사이드바 축약 표시) -->
-          <div class="bc-char-danger-icons" id="bc-danger-icons"></div>
-        </div>
 
-        <!-- 질병 상태 표시 (DiseaseSystem이 채움) -->
-        <div id="disease-status" class="bc-disease-status" style="display:none;"></div>
+          <!-- 질병 상태 표시 (DiseaseSystem이 채움) -->
+          <div id="disease-status" class="bc-disease-status" style="display:none;"></div>
 
-        <!-- Stat bars: 필수 4개만 (HP·수분·영양·피로) -->
-        <div id="hud-stat-bars" class="stat-bars"></div>
+          <!-- Stat bars: 필수 4개만 (HP·수분·영양·피로) -->
+          <div id="hud-stat-bars" class="stat-bars"></div>
+        </section>
 
-        <!-- Noise -->
-        <div class="bc-noise-block">
-          <div class="noise-label">
-            <span>${I18n.t('basecamp.noise')}</span>
-            <span id="noise-val">0</span>
+        <!-- 소음 수치 -->
+        <section class="bc-side-section" id="bc-noise-section">
+          <div class="bc-side-title">소음 수치 <span class="bc-side-title-en">(NOISE METER)</span></div>
+          <div class="bc-noise-block">
+            <div class="noise-label">
+              <span class="noise-decay" id="noise-decay"></span>
+              <span class="noise-val" id="noise-val">0%</span>
+            </div>
+            <div class="noise-track" id="noise-track">
+              <div class="noise-fill" id="noise-fill" style="width:0%"></div>
+            </div>
+            <div class="bc-noise-warn" id="noise-warn" hidden>위험! 소음 발생</div>
           </div>
-          <div class="noise-track" id="noise-track">
-            <div class="noise-fill" id="noise-fill" style="width:0%"></div>
+        </section>
+
+        <!-- 휴대 무게 -->
+        <section class="bc-side-section" id="bc-weight-section">
+          <div class="bc-side-title">휴대 무게 <span class="bc-side-title-en">(WEIGHT)</span></div>
+          <div class="bc-enc-block">
+            <div class="bc-enc-label">
+              <span id="hud-enc">0 / 30kg</span>
+              <span class="bc-enc-tier" id="hud-enc-tier"></span>
+            </div>
+            <div class="bc-enc-track">
+              <div class="bc-enc-fill" id="hud-enc-fill" style="width:0%"></div>
+            </div>
           </div>
-        </div>
+        </section>
 
-        <!-- Encumbrance -->
-        <div class="bc-enc-block">⚖ <span id="hud-enc">0/30kg</span></div>
+        <!-- 퀘스트 — 진행 중 상위 2건만 상시 노출하고 전체는 퀘스트 창(QuestPanel)이 받는다 -->
+        <section class="bc-side-section" id="bc-quest-section" title="퀘스트 창 열기">
+          <div class="bc-side-title">
+            퀘스트 <span class="bc-side-title-en">(QUESTS)</span>
+            <span class="bc-quest-more" id="bc-quest-more"></span>
+          </div>
+          <div class="bc-quests-block" id="bc-quest-list"></div>
+        </section>
 
-        <!-- 행동 버튼 (동적 교체) -->
+        <!-- 행동 버튼 (동적 교체) — 목표 이미지에 없지만 게임의 유일한 진입 경로라 맨 아래에 남긴다 -->
         <div class="bc-sidebar-btns">
           <div id="bc-action-section"></div>
           <div class="bc-toolbar-divider"></div>
@@ -202,6 +243,9 @@ const Basecamp = {
       <main class="bc-main" id="bc-main">
         <div id="board-container"></div>
       </main>
+
+      <!-- 동료 패널 (CompanionPanel.js가 채움) -->
+      <aside class="bc-companion" id="bc-companion" aria-label="동료"></aside>
 
       <!-- Equipment modal -->
       <div class="modal-overlay" id="equip-modal">
@@ -357,6 +401,12 @@ const Basecamp = {
     // Equipment modal open (char block 클릭)
     this._el.querySelector('#bc-char-block')?.addEventListener('click', () => {
       EquipmentModal.open();
+    });
+
+    // 사이드바 퀘스트 요약은 두 줄만 보여준다 — 나머지는 퀘스트 창이 받는다
+    this._el.querySelector('#bc-quest-section')?.addEventListener('click', () => {
+      this._refreshQuestModal();
+      document.getElementById('quest-modal')?.classList.add('open');
     });
 
     // Craft modal close (button)

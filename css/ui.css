@@ -302,11 +302,56 @@
   border-radius: 2px;
   transition: width var(--transition-mid);
 }
+.bc-enc-fill.ok     { background: var(--text-good); }
 .bc-enc-fill.warn   { background: var(--text-warn); }
 .bc-enc-fill.danger { background: var(--text-danger); animation: dangerPulse 0.8s ease infinite; }
 
-/* 노이즈 트랙 풀폭 */
-.bc-noise-block .noise-track { width: 100%; }
+/* 무게 값 행 — 값은 중립색, 구간 라벨만 색으로 상태를 말한다 */
+.bc-enc-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 4px;
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+.bc-enc-tier {
+  font-size: 12px;
+  white-space: nowrap;
+}
+.bc-enc-tier.ok     { color: var(--text-good); }
+.bc-enc-tier.warn   { color: var(--text-warn); }
+.bc-enc-tier.danger { color: var(--text-danger); }
+
+/* 노이즈 트랙 풀폭 — 사이드바에서는 게이지가 블록의 주인공이라 두껍게 */
+.bc-noise-block .noise-track { width: 100%; height: 8px; border-radius: 4px; }
+.bc-enc-block .bc-enc-track  { height: 8px; border-radius: 4px; margin-top: 0; }
+
+/* 소음 퍼센트 — 게이지 위 오른쪽. 색이 곧 구간이다 */
+.noise-val {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  letter-spacing: 0;
+}
+.noise-val.calm     { color: var(--text-good); }
+.noise-val.warn     { color: var(--text-warn); }
+.noise-val.critical { color: var(--text-danger); }
+
+/* TP당 감소율 — 퍼센트보다 뒤로 물린다 */
+.noise-decay {
+  font-size: 11px;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--text-dim);
+}
+
+/* 유입 임계 초과 경고문 — 임계를 넘었을 때만 나타난다 (StatRenderer가 hidden 토글) */
+.bc-noise-warn {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-danger);
+  text-align: center;
+}
 
 /* Noise meter */
 .noise-meter {
@@ -341,6 +386,9 @@
   transition: width var(--transition-mid);
 }
 
+/* 구간 색은 BALANCE.noise 의 warnLevel·influxThreshold 가 정한다 (StatRenderer) */
+.noise-fill.calm     { background: var(--text-good); }
+.noise-fill.warn     { background: var(--text-warn); }
 .noise-fill.critical { background: var(--text-danger); animation: dangerPulse 0.6s ease infinite; }
 
 /* === TOOLBAR BUTTONS === */
