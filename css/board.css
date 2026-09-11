@@ -1,12 +1,12 @@
-/* === 4-ROW BOARD — flex-fill: 4 rows share viewport height equally === */
+/* 장소·바닥·휴대의 높이는 슬롯 내용과 관계없이 고정 비율로 나눈다. */
 .board {
   width: 100%;
   flex: 1;
   min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 0;
-  padding: 0;
+  gap: var(--gap-sm);
+  padding: var(--gap-sm);
 }
 
 /* Row — flex: 1 so all rows split the available height equally */
@@ -17,7 +17,7 @@
   flex-direction: column;
   gap: var(--gap-xs);
   padding: var(--gap-md);
-  border-bottom: 1px solid var(--border-dim);
+  border-bottom: none;
 }
 
 /* letter-spacing 은 0 이다 — 2px 을 주면 두 글자짜리 한글 이름이 `휴 대` 로 벌어져
@@ -27,7 +27,11 @@
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0;
-  padding: 0 2px 4px;
+  padding: var(--gap-xs) var(--gap-md);
+  background: var(--section-band);
+  border-left: 3px solid var(--accent-primary);
+  min-width: 220px;
+  font-weight: 700;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -36,8 +40,8 @@
 /* 좌측 사이드바 `.bc-side-title-en` 과 같은 규칙 — 두 컬럼의 영문 병기가 갈리면
    한 화면이 두 개의 UI 로 읽힌다. */
 .board-row-label-en {
-  font-size: 11px;
-  color: var(--text-dim);
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
   letter-spacing: 0;
 }
 
@@ -64,8 +68,9 @@
   overflow-y: hidden;
   align-items: stretch;       /* 슬롯이 컨테이너 높이를 꽉 채움 — 고정 높이 초과로 잘리는 현상 방지 */
   padding: var(--gap-xs);
-  background: rgba(0,0,0,0.15);
-  border: 1px solid var(--border-dim);
+  background: var(--panel-glass);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
   border-radius: var(--radius-sm);
 }
 
@@ -149,7 +154,7 @@
 .slot {
   width: var(--slot-w);
   height: 100%;               /* 컨테이너 높이에 맞춤 — 고정값 대신 동적 */
-  background: var(--slot-empty);
+  background: rgba(10, 12, 13, 0.46);
   border: 1px dashed var(--border-dim);
   border-radius: var(--radius-sm);
   position: relative;
@@ -248,6 +253,8 @@
 /* Card within slot — 슬롯 높이를 100% 채움 (고정 높이로 위로 삐져나와 행 레이블에 가리는 현상 방지) */
 .slot .card {
   position: absolute;
+  width: 100%;
+  max-width: var(--card-w);
   top: 0;
   left: 50%;
   transform: translateX(-50%);
@@ -279,17 +286,13 @@
 }
 
 /* Row section colors */
-.row-top    { background: rgba(0,0,0,0.1); }
-.row-middle { background: var(--bg-base); }
-.row-bottom { background: rgba(200,160,96,0.02); border-bottom: none; }
+.row-top, .row-middle, .row-bottom { background: transparent; }
 
 .row-top    .board-row-label { color: var(--accent-primary); font-size: var(--font-size-sm); }
-.row-middle .board-row-label { color: var(--text-secondary); }
-.row-bottom .board-row-label { color: var(--stat-hydration); }
+.row-middle .board-row-label, .row-bottom .board-row-label { color: var(--text-primary); }
 
-.row-top    .board-row-label::before { content: "📍"; }
-.row-middle .board-row-label::before { content: "◆"; color: var(--accent-primary); }
-.row-bottom .board-row-label::before { content: "🎒"; }
+.row-top .board-row-label::before, .row-middle .board-row-label::before,
+.row-bottom .board-row-label::before { content: none; }
 
 /* ── 장소 정보 패널 ── */
 .location-info-bar {
@@ -410,4 +413,8 @@
 
 .bc-night-indicator.night-flicker {
   animation: nightFlicker 9s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-entering, .bc-night-indicator.night-flicker { animation: none; }
 }

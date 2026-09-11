@@ -1,0 +1,103 @@
+.npc-scene-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: calc(var(--z-overlay) + 1);
+  display: none;
+  padding: 48px 64px;
+  background: var(--bg-overlay);
+}
+.npc-scene-overlay.open { display: grid; place-items: center; }
+.npc-scene {
+  width: 100%;
+  height: 100%;
+  max-height: 960px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.8fr) minmax(440px, 1fr);
+  overflow: hidden;
+  color: var(--text-primary);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-bright);
+  box-shadow: 0 24px 80px var(--bg-void);
+  font-family: var(--font-mono);
+}
+.npc-scene-stage { position: relative; overflow: hidden; min-width: 0; background: var(--bg-base); }
+.npc-scene-background { position: absolute; width: 100%; height: 100%; object-fit: cover; opacity: .6; filter: saturate(.45); }
+.npc-scene-stage::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(0deg, var(--bg-void), transparent 36%), linear-gradient(90deg, transparent 55%, var(--bg-surface));
+}
+.npc-scene-location { position: absolute; z-index: 2; top: 32px; left: 32px; font-size: var(--font-size-md); }
+.npc-scene-location span { display: block; margin-top: 8px; color: var(--text-secondary); font-size: var(--font-size-xs); }
+.npc-scene-person {
+  position: absolute;
+  width: 440px;
+  aspect-ratio: 1;
+  max-width: 80%;
+  bottom: 18%;
+  left: 50%;
+  transform: translateX(-50%);
+  overflow: hidden;
+  filter: drop-shadow(12px 20px 20px rgba(0,0,0,.65));
+}
+.npc-scene-character { width: 100%; height: 100%; object-fit: contain; }
+.npc-scene-person.has-portrait { width: 85%; height: 100%; max-width: none; aspect-ratio: auto; bottom: 0; mask-image: linear-gradient(90deg, transparent, #000 16%, #000 84%, transparent); }
+.npc-scene-person.has-portrait .npc-scene-character { object-fit: cover; object-position: center 25%; }
+.npc-scene-person.has-sheet .npc-scene-character { position: absolute; left: 0; max-width: none; object-fit: fill; }
+.npc-scene-fallback { position: absolute; inset: 0; display: grid; place-items: center; font-size: 160px; }
+.npc-scene [hidden] { display: none; }
+.npc-scene-caption { position: absolute; z-index: 2; bottom: 40px; left: 40px; font-size: 36px; font-family: var(--font-title); }
+.npc-scene-caption span { display: block; color: var(--text-secondary); font-size: var(--font-size-sm); margin-top: 12px; }
+.npc-scene-panel { padding: 36px 32px 24px; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; border-left: 1px solid var(--border-mid); }
+.npc-scene-eyebrow { font-size: var(--font-size-xs); color: var(--accent-primary); }
+.npc-scene-header h2 { font-size: 36px; font-family: var(--font-title); font-weight: 500; margin: 8px 0 12px; }
+.npc-scene .npc-trust, .npc-scene .npc-trust-dot.filled { color: var(--accent-primary); }
+.npc-scene .npc-greeting { margin: 0; font-style: normal; font-size: var(--font-size-md); line-height: 1.8; padding: 20px 0; border-top: 1px solid var(--border-mid); border-bottom: 1px solid var(--border-mid); }
+.npc-scene-choices { display: grid; gap: 8px; }
+.npc-scene-choices button, .npc-scene-leave { display: flex; justify-content: space-between; align-items: center; gap: 12px; width: 100%; min-height: 52px; text-align: left; }
+.npc-scene button { font: inherit; font-size: var(--font-size-sm); color: var(--text-primary); border: 1px solid var(--border-mid); background: var(--bg-raised); border-radius: var(--radius-sm); padding: 12px 16px; cursor: pointer; transition: background var(--transition-fast), border-color var(--transition-fast); }
+.npc-scene button:hover:not(:disabled) { background: var(--bg-hover); border-color: var(--accent-dim); }
+.npc-scene button[aria-pressed="true"] { border-color: var(--accent-primary); color: var(--accent-primary); background: var(--slot-hover); }
+.npc-scene button:focus-visible, .dilemma-overlay button:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 3px; }
+.npc-scene button:disabled { opacity: .6; cursor: not-allowed; }
+.npc-scene-detail:empty { display: none; }
+.npc-scene-detail { padding: 16px; border: 1px solid var(--accent-dim); background: var(--bg-base); overflow-wrap: anywhere; }
+.npc-scene-detail-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+.npc-scene-detail-heading h3 { margin: 0; font-size: var(--font-size-md); }
+.npc-scene-detail-heading button { padding: 4px 8px; font-size: var(--font-size-xs); }
+.npc-scene .npc-section-title, .npc-scene .npc-comp-stat, .npc-scene .npc-quest-step,
+.npc-scene .npc-hint, .npc-scene .npc-emotion-badge, .npc-scene .npc-arc-hint,
+.npc-scene .npc-arc-title, .npc-scene .npc-arc-complete { font-size: var(--font-size-xs); line-height: 1.65; color: var(--text-secondary); }
+.npc-scene .npc-section-title { color: var(--text-primary); letter-spacing: 0; }
+.npc-scene .npc-quest-step.done { color: var(--text-good); }
+.npc-scene .npc-comp-stat { padding: 5px 0; gap: 16px; }
+.npc-scene .npc-trade-row { display: grid; grid-template-columns: 1fr 20px 1fr; gap: 8px; padding: 12px 0; font-size: var(--font-size-xs); border-bottom: 1px solid var(--border-mid); }
+.npc-scene .npc-trade-row small { display: block; font-size: var(--font-size-xs); margin-top: 6px; color: var(--text-secondary); }
+.npc-scene .npc-trade-give { color: var(--text-primary); }
+.npc-scene .npc-trade-recv { color: var(--text-good); }
+.npc-scene .npc-trade-btn { grid-column: 1 / -1; }
+.npc-scene .npc-action-btn { width: 100%; margin-top: 12px; }
+.npc-scene .npc-treatment-note { font-size: var(--font-size-xs); color: var(--text-secondary); margin: 8px 0; line-height: 1.65; }
+.npc-scene .npc-treatment-note.healed { color: var(--text-good); }
+.dilemma-overlay { z-index: calc(var(--z-overlay) + 2); }
+.npc-scene .npc-scene-leave { margin-top: auto; flex-shrink: 0; background: transparent; color: var(--text-secondary); }
+.npc-scene-leave span { font-size: var(--font-size-xs); }
+@media (max-width: 900px) {
+  .npc-scene-overlay { padding: 16px; }
+  .npc-scene { grid-template-columns: minmax(0, 1fr) minmax(320px, 1fr); }
+  .npc-scene-panel { padding: 20px; gap: 16px; }
+}
+@media (max-width: 600px) {
+  .npc-scene-overlay { padding: 8px; }
+  .npc-scene { grid-template-columns: 1fr; grid-template-rows: 28% minmax(0, 1fr); }
+  .npc-scene-person { height: 160%; width: auto; left: 60%; bottom: -30%; }
+  .npc-scene-person.has-portrait { height: 260%; width: 65%; left: 65%; bottom: -160%; }
+  .npc-scene-caption { font-size: var(--font-size-lg); left: 20px; bottom: 20px; }
+  .npc-scene-caption span, .npc-scene-location { display: none; }
+  .npc-scene-panel { padding: 16px; }
+  .npc-scene-header h2 { font-size: var(--font-size-xl); }
+  .npc-scene .npc-greeting { font-size: var(--font-size-base); padding: 12px 0; }
+}
+@media (prefers-reduced-motion: reduce) { .npc-scene button { transition: none; } }

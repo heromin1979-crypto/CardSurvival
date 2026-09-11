@@ -8,6 +8,10 @@ import SystemRegistry  from '../core/SystemRegistry.js';
 import StatRenderer    from './StatRenderer.js';
 import { getMagazineState } from '../systems/WeaponAmmoSystem.js';
 import { formatInstanceName } from '../systems/ItemEffectSystem.js';
+import { getCardImage } from './CardFactory.js';
+import { CHARACTERS } from '../data/characters.js';
+
+const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
 // ── 부상 타입 → 이모지 매핑 ────────────────────────────────────
 const INJURY_ICONS = {
@@ -108,6 +112,10 @@ const EquipmentModal = {
   _activeMainTab:  'status',   // 메인 탭 상태 유지 (status | equip)
   _slotMenuId:     null,
   _bodyDetailPart: null,   // 클릭된 신체 부위 키 (상세 팝업용)
+  _isOpen: false,
+  _previousModalOpen: false,
+  _previousFocus: null,
+  _boundOverlay: null,
 
   init() {
     // _overlay는 Basecamp가 매번 DOM을 재빌드하므로 항상 새로 캐시
@@ -118,10 +126,23 @@ const EquipmentModal = {
     if (!this._initialized) {
       this._initialized = true;
 
-      // Escape 키
+      // 공용 모달/Pause의 버블 리스너보다 먼저 현재 모달의 키 입력을 처리한다.
       document.addEventListener('keydown', e => {
-        if (e.key === 'Escape' && this._overlay?.classList.contains('open')) this.close();
-      });
+        if (!this._isOpen || !this._overlay?.classList.contains('open')) return;
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          this.close();
+        } else if (e.key === 'Tab') {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          const focusable = this._getFocusable();
+          const current = focusable.indexOf(document.activeElement);
+          const next = current < 0 ? (e.shiftKey ? focusable.length - 1 : 0)
+            : (current + (e.shiftKey ? -1 : 1) + focusable.length) % focusable.length;
+          (focusable[next] ?? this._overlay.querySelector('.equip-modal-box'))?.focus();
+        }
+      }, true);
 
       // 장착 변경 시 자동 재렌더
       EventBus.on('equipChanged', () => {
@@ -133,18 +154,28 @@ const EquipmentModal = {
     }
 
     // 오버레이 클릭으로 닫기 (DOM 재빌드 후 매번 재바인딩)
+    if (this._boundOverlay === this._overlay) return;
+    this._boundOverlay = this._overlay;
     this._overlay.addEventListener('click', e => {
       if (e.target === this._overlay) this.close();
     });
   },
 
   open() {
-    if (!this._initialized) this.init();
+    this.init();
+    if (!this._overlay) return;
+    if (!this._isOpen) {
+      this._previousModalOpen = GameState.ui.modalOpen;
+      this._previousFocus = document.activeElement;
+      this._isOpen = true;
+    }
+    GameState.ui.modalOpen = true;
     this._selectedId = null;
     this._slotMenuId = null;
     this._bodyDetailPart = null;
     this._render();
     this._overlay?.classList.add('open');
+    this._getFocusable()[0]?.focus();
   },
 
   close() {
@@ -152,6 +183,17 @@ const EquipmentModal = {
     this._selectedId = null;
     this._slotMenuId = null;
     this._bodyDetailPart = null;
+    if (this._isOpen) {
+      this._isOpen = false;
+      GameState.ui.modalOpen = this._previousModalOpen;
+      if (this._previousFocus?.isConnected) this._previousFocus.focus();
+      this._previousFocus = null;
+    }
+  },
+
+  _getFocusable() {
+    return [...(this._overlay?.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), [tabindex]:not([tabindex="-1"])') ?? [])]
+      .filter(el => !el.closest('[hidden]') && el.closest('.equip-tab-content')?.style.display !== 'none');
   },
 
   // ── 렌더링 ───────────────────────────────────────────
@@ -159,6 +201,14 @@ const EquipmentModal = {
   _render() {
     const box = this._overlay?.querySelector('.equip-modal-box');
     if (!box) return;
+    box.setAttribute('role', 'dialog');
+    box.setAttribute('aria-modal', 'true');
+    box.setAttribute('aria-label', I18n.t('equip.title'));
+    box.setAttribute('tabindex', '-1');
+    const focused = box.contains(document.activeElement) ? document.activeElement : null;
+    const focusKey = focused?.dataset.invId ? ['inv-id', focused.dataset.invId]
+      : focused?.dataset.slot ? ['slot', focused.dataset.slot]
+      : focused?.classList.contains('equip-inv-tab') ? ['tab', focused.dataset.tab] : null;
 
     box.innerHTML = `
       <div class="equip-modal-header">
@@ -202,6 +252,7 @@ const EquipmentModal = {
       btn.addEventListener('click', () => {
         const tab = btn.dataset.tab;
         this._activeMainTab = tab;
+        box.querySelector('#equip-modal-body').dataset.activeTab = tab;
         box.querySelectorAll('.equip-tab-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         box.querySelectorAll('.equip-tab-content').forEach(c => {
@@ -217,6 +268,11 @@ const EquipmentModal = {
     this._bindInvEvents(box);
     this._bindTabEvents(box);
     this._bindBodyEvents(box);
+    box.querySelectorAll('img').forEach(img => img.addEventListener('error', () => { img.hidden = true; }));
+    if (focusKey) {
+      const target = [...box.querySelectorAll(`[data-${focusKey[0]}]`)].find(el => el.getAttribute(`data-${focusKey[0]}`) === focusKey[1]);
+      target?.focus({ preventScroll: true });
+    }
   },
 
   // ── 효과 패널 (왼쪽) ─────────────────────────────────
@@ -275,24 +331,21 @@ const EquipmentModal = {
   // ── 캐릭터 & 슬롯 패널 (중앙) ───────────────────────
 
   _renderCharPanel() {
+    const character = CHARACTERS.find(c => c.id === GameState.player.characterId);
+    const left = ['head', 'face', 'body', 'hands', 'boots'];
+    const right = ['backpack', 'accessory', 'weapon_main', 'weapon_sub'];
     return `
       <div class="equip-char-panel">
+        <div class="equip-character-heading"><strong>${escapeHTML(GameState.player.name || character?.name || '생존자')}</strong><span>${escapeHTML(character?.title ?? '')}</span></div>
         <div class="equip-char-layout">
+          <div class="equip-slot-column">${left.map(id => this._renderSlot(id)).join('')}</div>
           <div class="equip-char-figure">
-            <div class="equip-char-silhouette">👤</div>
+            <div class="equip-char-silhouette" aria-hidden="true">${character?.portrait ?? '👤'}</div>
+            ${character?.portraitFull ? `<img class="equip-character-image" src="${character.portraitFull}" alt="${escapeHTML(character.name)}">` : ''}
           </div>
-          <div class="equip-char-grid">
-            <div class="equip-grid-full">${this._renderSlot('head')}</div>
-            ${this._renderSlot('face')}
-            ${this._renderSlot('body')}
-            ${this._renderSlot('hands')}
-            ${this._renderSlot('backpack')}
-            <div class="equip-grid-full">${this._renderSlot('accessory')}</div>
-            ${this._renderSlot('weapon_main')}
-            ${this._renderSlot('weapon_sub')}
-            <div class="equip-grid-full">${this._renderSlot('boots')}</div>
-          </div>
+          <div class="equip-slot-column">${right.map(id => this._renderSlot(id)).join('')}</div>
         </div>
+        <p class="equip-workflow-hint">아이템을 선택한 뒤 표시된 슬롯에 장착하세요.</p>
       </div>
     `;
   },
@@ -326,18 +379,19 @@ const EquipmentModal = {
     const cls = [
       'equip-slot',
       equipped ? 'has-item' : '',
+      isMenuOpen ? 'menu-open' : '',
       isLocked ? 'locked' : '',
       isHighlighted ? 'highlight-valid' : '',
     ].filter(Boolean).join(' ');
 
-    return `<div class="${cls}" data-slot="${slotId}">${innerHtml}</div>`;
+    return `<div class="${cls}" data-slot="${slotId}" role="button" tabindex="0" aria-label="${escapeHTML(slotLabel(slotId))}${equipped ? ' · ' + I18n.t('equip.equipped') : ''}"><span class="equip-slot-heading">${slotLabel(slotId)}</span>${innerHtml}</div>`;
   },
 
   _renderSlotMenu(slotId, instanceId) {
     const def = GameState.getCardDef(instanceId);
     return `
       <div class="equip-slot-menu">
-        <div style="font-size:9px;color:var(--text-dim);margin-bottom:2px;">${def ? formatInstanceName(GameState.cards[instanceId], def) : I18n.t('equip.equipped')}</div>
+        <div class="equip-slot-menu-name">${def ? escapeHTML(formatInstanceName(GameState.cards[instanceId], def)) : I18n.t('equip.equipped')}</div>
         <button class="equip-slot-menu-btn danger" data-action="unequip" data-slot="${slotId}">${I18n.t('equip.unequip')}</button>
         <button class="equip-slot-menu-btn" data-action="cancel-menu">${I18n.t('equip.cancel')}</button>
       </div>
@@ -358,8 +412,8 @@ const EquipmentModal = {
     return `
       <div class="equip-mini-card">
         <div class="equip-mini-tag">${I18n.t('equip.equipped')}</div>
-        <div class="equip-mini-icon">${def.icon ?? '?'}</div>
-        <div class="equip-mini-name">${formatInstanceName(inst, def)}</div>
+        ${this._renderItemImage(inst, def, 'equip-mini-icon')}
+        <div class="equip-mini-name">${escapeHTML(formatInstanceName(inst, def))}</div>
         ${ammoHtml}
         ${durPct ? `<div class="equip-mini-dur">${durPct}</div>` : ''}
       </div>
@@ -391,7 +445,7 @@ const EquipmentModal = {
       const isActive = this._bodyDetailPart === key;
 
       return `
-        <div class="body-part ${colorCls}${isActive ? ' active' : ''}" style="grid-area:${gridArea}" data-bodypart="${key}">
+        <div class="body-part ${colorCls}${isActive ? ' active' : ''}" style="grid-area:${gridArea}" data-bodypart="${key}" role="button" tabindex="0" aria-label="${I18n.t('body.' + key)} ${hp}%">
           <div class="body-part-name">${I18n.t('body.' + key)}</div>
           <div class="body-part-hp">${hp}%</div>
           ${injuryIcons ? `<div class="body-part-injuries">${injuryIcons}</div>` : ''}
@@ -490,6 +544,7 @@ const EquipmentModal = {
 
   _bindBodyEvents(box) {
     box.querySelectorAll('.body-part').forEach(el => {
+      this._bindKeyboard(el);
       el.addEventListener('click', () => {
         const key = el.dataset.bodypart;
         this._bodyDetailPart = this._bodyDetailPart === key ? null : key;
@@ -527,8 +582,10 @@ const EquipmentModal = {
 
     return `
       <div class="equip-inv-panel">
+        <div class="equip-inventory-heading"><strong>휴대품 / 장비</strong><span>${GameState.board.bottom.filter(Boolean).length} / ${GameState.board.bottom.length}칸</span></div>
         <div class="equip-inv-tabs">${tabsHtml}</div>
         <div class="equip-inv-list">${listHtml}</div>
+        ${this._renderItemDetail()}
       </div>
     `;
   },
@@ -571,20 +628,50 @@ const EquipmentModal = {
       : slotsLabel;
 
     return `
-      <div class="equip-inv-row${isSelected ? ' selected' : ''}${opts.isInventory ? ' inv-item' : ''}" data-inv-id="${instanceId}">
-        <div class="equip-inv-icon">${def.icon ?? '?'}</div>
+      <div class="equip-inv-row${isSelected ? ' selected' : ''}${opts.isInventory ? ' inv-item' : ''}" data-inv-id="${instanceId}" role="button" tabindex="0" aria-pressed="${isSelected}" aria-label="${escapeHTML(formatInstanceName(inst, def) + qtyStr + durStr)}">
+        ${this._renderItemImage(inst, def, 'equip-inv-icon')}
+        ${Object.values(GameState.player.equipped ?? {}).includes(instanceId) ? `<span class="equip-inv-equipped">${I18n.t('equip.equipped')}</span>` : ''}
+        ${qtyStr ? `<span class="equip-inv-quantity">${qtyStr}</span>` : ''}
         <div class="equip-inv-info">
-          <div class="equip-inv-name">${formatInstanceName(inst, def)}${qtyStr}</div>
-          <div class="equip-inv-sub">${subLabel}${durStr}</div>
+          <div class="equip-inv-name">${escapeHTML(formatInstanceName(inst, def))}</div>
+          <div class="equip-inv-sub">${escapeHTML(subLabel)}</div>
+          ${inst.durability != null ? `<div class="equip-durability"><span style="width:${Math.max(0, Math.min(100, inst.durability))}%"></span></div><span class="equip-durability-value">${Math.round(inst.durability)}%</span>` : ''}
         </div>
       </div>
     `;
+  },
+
+  _renderItemImage(inst, def, className) {
+    const path = getCardImage(inst.definitionId);
+    return `<div class="${className} equip-item-art"><span aria-hidden="true">${def.icon ?? '?'}</span>${path ? `<img src="${escapeHTML(path)}" alt="" loading="lazy">` : ''}</div>`;
+  },
+
+  _renderItemDetail() {
+    const inst = GameState.cards[this._selectedId];
+    const def = inst && GameState.getCardDef(this._selectedId);
+    if (!def) return '<section class="equip-item-detail equip-detail-empty">아이템을 선택하면 정보와 장착 위치를 확인할 수 있습니다.</section>';
+    const slots = EquipmentSystem.getSlotsForDef(def);
+    return `<section class="equip-item-detail" aria-live="polite">
+      <h3>${escapeHTML(formatInstanceName(inst, def))}</h3>
+      <div class="equip-detail-facts"><span>수량 ${inst.quantity ?? 1}</span>${inst.durability != null ? `<span>내구도 ${Math.round(inst.durability)}%</span>` : ''}${def.weight != null ? `<span>${def.weight} kg</span>` : ''}</div>
+      ${def.description ? `<p>${escapeHTML(def.description)}</p>` : ''}
+      <p class="equip-detail-slots">${slots.length ? '장착 위치 · ' + slots.map(slotLabel).join(' / ') : '장착할 수 없는 소지품입니다.'}</p>
+    </section>`;
+  },
+
+  _bindKeyboard(el) {
+    el.addEventListener('keydown', e => {
+      if (e.target !== el || !['Enter', ' '].includes(e.key)) return;
+      e.preventDefault();
+      el.click();
+    });
   },
 
   // ── 이벤트 바인딩 ────────────────────────────────────
 
   _bindSlotEvents(box) {
     box.querySelectorAll('.equip-slot').forEach(el => {
+      this._bindKeyboard(el);
       el.addEventListener('click', e => {
         const slotId = el.dataset.slot;
         if (!slotId) return;
@@ -610,7 +697,6 @@ const EquipmentModal = {
         if (this._selectedId) {
           const ok = EquipmentSystem.equip(this._selectedId, slotId);
           if (ok) this._selectedId = null;
-          else    this._selectedId = null;
           this._render();
           return;
         }
@@ -627,11 +713,11 @@ const EquipmentModal = {
 
   _bindInvEvents(box) {
     box.querySelectorAll('.equip-inv-row').forEach(el => {
+      this._bindKeyboard(el);
       el.addEventListener('click', () => {
         const id = el.dataset.invId;
         const def = GameState.getCardDef(id);
-        // 소지품 탭에서 장착 불가 아이템은 선택 무시
-        if (def && EquipmentSystem.getSlotsForDef(def).length === 0) return;
+        if (!def) return;
 
         if (this._selectedId === id) {
           this._selectedId = null;

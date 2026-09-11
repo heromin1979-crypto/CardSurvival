@@ -2,28 +2,31 @@
 
 /* ── 오버레이 & 박스 ── */
 #equip-modal .equip-modal-box {
-  background: var(--bg-surface);
-  border: 1px solid var(--border-mid);
+  background: var(--panel-metal);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
   border-radius: var(--radius-lg);
-  width: min(940px, 96vw);
-  height: min(680px, 92vh);
+  /* #app이 이미 viewport에 맞게 scale되므로 overlay의 설계 좌표를 기준으로 한다. */
+  width: min(1580px, 96%);
+  height: min(920px, 92%);
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
 
 .equip-modal-header {
+  background: var(--panel-glass);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 16px;
+  padding: 18px 24px;
   border-bottom: 1px solid var(--border-dim);
   flex-shrink: 0;
 }
 
 .equip-modal-title {
-  font-family: var(--font-mono);
-  font-size: var(--font-size-md);
+  font-family: var(--font-title);
+  font-size: var(--font-size-lg);
   color: var(--accent-primary);
   text-transform: uppercase;
   letter-spacing: 2px;
@@ -39,7 +42,7 @@
   border: 1px solid var(--border-dim);
   border-radius: var(--radius-sm);
   color: var(--text-dim);
-  font-size: 11px;
+  font-size: 14px;
   padding: 3px 10px;
   cursor: pointer;
   transition: all var(--transition-fast);
@@ -56,14 +59,10 @@
 
 /* 캐릭터 상태 탭 패널 */
 .char-status-panel {
-  padding: 16px;
-  width: 100%;
-  height: 100%;
-  overflow-y: auto;
-  box-sizing: border-box;
+  padding: 24px; width: 50%; overflow-y: auto; box-sizing: border-box;
 }
 .char-status-title {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--accent-primary);
   font-weight: 600;
   margin-bottom: 12px;
@@ -77,8 +76,8 @@
   max-width: 480px;
 }
 .char-status-bars .stat-bar-track { height: 10px; }
-.char-status-bars .stat-bar-name  { font-size: 12px; }
-.char-status-bars .stat-bar-value { font-size: 12px; }
+.char-status-bars .stat-bar-name  { font-size: 14px; }
+.char-status-bars .stat-bar-value { font-size: 14px; }
 
 .equip-modal-close {
   background: none;
@@ -115,12 +114,13 @@
 
 /* 장비 3-패널 탭: 좌/중/우 수평 배치 */
 .equip-tab-3panel {
-  flex-direction: row;
+  display: grid; grid-template-columns: 250px minmax(480px, 1fr) 450px;
 }
 
 /* ── Left column: 효과 + 신체 ── */
 .equip-left-col {
-  width: 210px;
+  background: var(--panel-glass);
+  width: 250px;
   flex-shrink: 0;
   border-right: 1px solid var(--border-dim);
   overflow-y: auto;
@@ -139,7 +139,7 @@
 .equip-effects-title {
   font-family: var(--font-mono);
   font-size: var(--font-size-xs);
-  color: var(--text-dim);
+  color: var(--accent-primary);
   text-transform: uppercase;
   letter-spacing: 1.5px;
   margin-bottom: 4px;
@@ -151,7 +151,7 @@
   align-items: center;
   padding: 4px 6px;
   border-radius: var(--radius-sm);
-  background: var(--bg-raised);
+  background: var(--panel-glass);
   font-family: var(--font-mono);
 }
 
@@ -172,59 +172,28 @@
 
 /* ── Center: 캐릭터 + 슬롯 ── */
 .equip-char-panel {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 12px;
+  min-width: 0; min-height: 0; display: flex; flex-direction: column; padding: 20px 12px 12px; background: radial-gradient(ellipse at center, var(--bg-raised), var(--bg-base));
 }
 
-/* 캐릭터(왼쪽) + 슬롯 그리드(오른쪽) 가로 배치 */
+/* 캐릭터 양옆 장착 슬롯 */
 .equip-char-layout {
-  display: flex;
-  align-items: flex-start;
-  gap: 16px;
+  flex: 1; min-height: 0; display: grid; grid-template-columns: 112px minmax(0, 1fr) 112px; gap: 8px;
 }
 
-/* 캐릭터 실루엣: 아래로 내려 중간쯤 위치 */
+
 .equip-char-figure {
-  display: flex;
-  justify-content: center;
-  padding-top: 90px;
-  flex-shrink: 0;
+  position: relative; min-width: 0; overflow: hidden; display: grid; place-items: center; border-block: 1px solid var(--border-mid);
 }
 
-/* 슬롯 그리드: 2열 */
-.equip-char-grid {
-  display: grid;
-  grid-template-columns: 90px 90px;
-  gap: 6px;
-  align-items: center;
-  justify-items: center;
-}
 
-/* head / boots: 2열 전체 점유, 중앙 정렬 */
-.equip-grid-full {
-  grid-column: 1 / span 2;
-  display: flex;
-  justify-content: center;
-}
+
+
+
+
 
 /* ── 장비 슬롯 카드 ── */
 .equip-slot {
-  width: 82px;
-  height: 108px;
-  border: 1.5px dashed var(--border-mid);
-  border-radius: var(--radius-md);
-  background: var(--bg-raised);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  position: relative;
-  transition: all var(--transition-fast);
-  overflow: hidden;
+  width: 100%; height: 120px; min-height: 96px; position: relative; overflow: hidden; border: 1px dashed var(--border-mid); background: var(--bg-raised); border-radius: var(--radius-sm); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: border-color var(--transition-fast);
 }
 
 .equip-slot:hover:not(.locked) {
@@ -256,13 +225,7 @@
 }
 
 .equip-slot-label {
-  font-family: var(--font-mono);
-  font-size: 9px;
-  color: var(--text-dim);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-top: 4px;
-  text-align: center;
+  display: none;
 }
 
 .equip-slot-empty-icon {
@@ -277,43 +240,24 @@
 
 /* 캐릭터 실루엣 */
 .equip-char-silhouette {
-  font-size: 80px;
-  line-height: 1;
-  pointer-events: none;
-  user-select: none;
+  font-size: 90px; opacity: .5;
 }
 
 /* ── 미니카드 (슬롯 내부) ── */
 .equip-mini-card {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-  padding: 4px;
+  width: 100%; height: 100%; padding: 24px 6px 4px; display: flex; flex-direction: column; align-items: center; gap: 2px; box-sizing: border-box;
 }
 
 /* 빈 슬롯의 .equip-slot-label 이 서던 자리를 장착 표시가 받는다 */
 .equip-mini-tag {
-  font-family: var(--font-mono);
-  font-size: 7px;
-  line-height: 1;
-  color: var(--accent-primary);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
+  color: var(--accent-primary); font-size: 14px; position: absolute; top: 26px; right: 4px; z-index: 1; background: var(--bg-base);
 }
 
-.equip-mini-icon { font-size: 22px; }
+.equip-mini-icon { width: 100%; min-height: 24px; flex: 1; }
 
 .equip-mini-name {
   font-family: var(--font-mono);
-  font-size: 8px;
+  font-size: 14px;
   color: var(--text-primary);
   text-align: center;
   white-space: nowrap;
@@ -325,13 +269,13 @@
 
 .equip-mini-dur {
   font-family: var(--font-mono);
-  font-size: 7px;
+  font-size: 14px;
   color: var(--text-dim);
 }
 
 .equip-mini-ammo {
   font-family: var(--font-mono);
-  font-size: 8px;
+  font-size: 14px;
   font-weight: 700;
   letter-spacing: 0.04em;
 }
@@ -341,12 +285,7 @@
 
 /* ── Right: 인벤토리 패널 ── */
 .equip-inv-panel {
-  width: 280px;
-  flex-shrink: 0;
-  border-left: 1px solid var(--border-dim);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+  min-width: 0; min-height: 0; border-left: 1px solid var(--border-mid); display: flex; flex-direction: column; background: var(--bg-base);
 }
 
 .equip-inv-tabs {
@@ -360,7 +299,7 @@
   padding: 7px 4px;
   text-align: center;
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 14px;
   color: var(--text-dim);
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -377,25 +316,12 @@
 .equip-inv-tab.active  { color: var(--accent-primary); border-bottom-color: var(--accent-primary); }
 
 .equip-inv-list {
-  flex: 1;
-  overflow-y: auto;
-  padding: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+  flex: 1; min-height: 150px; overflow-y: auto; padding: 12px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-content: start; gap: 8px;
 }
 
 /* ── 인벤토리 행 ── */
 .equip-inv-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 8px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border-dim);
-  background: var(--bg-raised);
-  cursor: pointer;
-  transition: all var(--transition-fast);
+  min-width: 0; position: relative; border: 1px solid var(--border-mid); border-radius: var(--radius-sm); background: var(--bg-raised); cursor: pointer; overflow: hidden; transition: border-color var(--transition-fast);
 }
 
 .equip-inv-row:hover {
@@ -408,13 +334,15 @@
   background: rgba(200,160,96,0.08);
 }
 
-.equip-inv-icon { font-size: 18px; flex-shrink: 0; }
+.equip-inv-icon { width: 100%; height: 100px; }
 
-.equip-inv-info { flex: 1; min-width: 0; }
+.equip-inv-info {
+  padding: 8px; position: relative; min-width: 0;
+}
 
 .equip-inv-name {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 14px;
   color: var(--text-primary);
   white-space: nowrap;
   overflow: hidden;
@@ -423,16 +351,12 @@
 
 .equip-inv-sub {
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 14px;
   color: var(--text-dim);
 }
 
 .equip-inv-empty {
-  font-family: var(--font-mono);
-  font-size: var(--font-size-xs);
-  color: var(--text-dim);
-  text-align: center;
-  padding: 24px 0;
+  grid-column: 1 / -1; padding: 40px 12px; color: var(--text-secondary); text-align: center; font-size: 14px;
 }
 
 /* ── 슬롯 컨텍스트 메뉴 ── */
@@ -453,7 +377,7 @@
   width: 90%;
   padding: 5px 6px;
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 14px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   border-radius: var(--radius-sm);
@@ -527,7 +451,7 @@
 
 .body-part-name {
   font-family: var(--font-mono);
-  font-size: 8px;
+  font-size: 14px;
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -538,7 +462,7 @@
 
 .body-part-hp {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 14px;
   font-weight: bold;
   margin: 1px 0;
 }
@@ -557,7 +481,7 @@
 }
 
 .body-injury-icon {
-  font-size: 10px;
+  font-size: 14px;
   line-height: 1;
 }
 
@@ -577,7 +501,7 @@
 
 .body-effect-row {
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 14px;
   padding: 2px 5px;
   border-radius: var(--radius-sm);
   background: var(--bg-raised);
@@ -598,7 +522,7 @@
 
 .body-detail-header {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 14px;
   font-weight: bold;
   color: var(--text-primary);
   margin-bottom: 6px;
@@ -608,7 +532,7 @@
 
 .body-detail-normal {
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 14px;
   color: var(--text-good);
   text-align: center;
   padding: 4px 0;
@@ -626,7 +550,7 @@
 }
 
 .body-detail-icon {
-  font-size: 12px;
+  font-size: 14px;
   flex-shrink: 0;
 }
 
@@ -639,19 +563,19 @@
 
 .body-detail-type {
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 14px;
   color: var(--text-primary);
 }
 
 .body-detail-tp {
   font-family: var(--font-mono);
-  font-size: 8px;
+  font-size: 14px;
   color: var(--text-dim);
 }
 
 .body-detail-treat {
   font-family: var(--font-mono);
-  font-size: 8px;
+  font-size: 14px;
   color: var(--text-good);
   background: rgba(80,160,80,0.15);
   border: 1px solid rgba(80,160,80,0.3);
@@ -659,3 +583,38 @@
   padding: 1px 4px;
   white-space: nowrap;
 }
+
+.equip-character-heading { display: flex; flex-direction: column; align-items: center; gap: 4px; margin-bottom: 16px; }
+.equip-character-heading strong { font-family: var(--font-title); font-size: 24px; }
+.equip-character-heading span { font-size: 14px; color: var(--text-secondary); }
+.equip-slot-column { display: flex; flex-direction: column; justify-content: space-evenly; gap: 8px; min-height: 0; }
+.equip-character-image { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; }
+.equip-workflow-hint { font-size: 14px; color: var(--text-secondary); text-align: center; margin: 12px 0 0; }
+.equip-slot-heading { position: absolute; top: 5px; left: 6px; right: 6px; text-align: center; color: var(--text-secondary); font-size: 14px; z-index: 1; }
+.equip-slot.highlight-valid .equip-slot-heading { color: var(--text-good); }
+.equip-item-art { position: relative; display: grid; place-items: center; overflow: hidden; background: var(--bg-base); }
+.equip-item-art img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+.equip-item-art span { font-size: 32px; }
+.equip-inventory-heading { display: flex; justify-content: space-between; align-items: center; padding: 20px 16px; font-size: 14px; border-bottom: 1px solid var(--border-dim); }
+.equip-inventory-heading strong { font-size: 17px; color: var(--accent-primary); }
+.equip-inventory-heading span { color: var(--text-secondary); }
+.equip-inv-quantity, .equip-inv-equipped { position: absolute; right: 5px; top: 6px; padding: 2px 5px; background: var(--bg-base); font-size: 14px; color: var(--text-primary); }
+.equip-inv-equipped { left: 4px; right: auto; color: var(--accent-primary); }
+.equip-durability { background: var(--border-dim); height: 3px; margin: 10px 35px 7px 0; }
+.equip-durability span { display: block; height: 100%; background: var(--accent-primary); }
+.equip-durability-value { position: absolute; bottom: 8px; right: 6px; font-size: 14px; color: var(--text-secondary); }
+.equip-item-detail { flex-shrink: 0; padding: 16px; border-top: 1px solid var(--accent-dim); min-height: 150px; max-height: 250px; overflow-y: auto; font-size: 14px; }
+.equip-item-detail h3 { margin: 0 0 12px; font-family: var(--font-title); font-size: 19px; color: var(--accent-primary); }
+.equip-item-detail p { line-height: 1.6; color: var(--text-secondary); margin: 12px 0 0; }
+.equip-detail-facts { display: flex; flex-wrap: wrap; gap: 16px; }
+.equip-item-detail .equip-detail-slots { color: var(--text-good); }
+.equip-detail-empty { display: grid; place-items: center; color: var(--text-secondary); line-height: 1.7; }
+#equip-modal :focus-visible { outline: 2px solid var(--accent-primary); outline-offset: -3px; }
+.char-abilities-panel { flex: 1; padding: 24px; }
+@media (max-width: 1150px) {
+  .equip-tab-3panel { grid-template-columns: 210px minmax(400px, 1fr) 350px; overflow-x: auto; }
+  .equip-left-col { width: 210px; }
+  .equip-inv-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+.equip-slot-menu-name { font-size: 14px; color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+.equip-slot.menu-open > .equip-slot-heading { visibility: hidden; }

@@ -5,7 +5,7 @@
  * ============================================================ */
 
 .game-header {
-  background: linear-gradient(180deg, rgba(15, 20, 28, 0.95) 0%, rgba(10, 14, 20, 0.85) 100%);
+  background: var(--panel-metal);
   border-bottom: 1px solid var(--border-dim, rgba(120, 90, 50, 0.18));
   display: flex;
   align-items: center;
@@ -26,10 +26,11 @@
   align-items: baseline;
   gap: 14px;
   padding: 4px 22px;
-  border: 1px solid var(--border-mid);
+  border: 1px solid var(--panel-border);
   border-top: none;
   border-radius: 0 0 var(--radius-md) var(--radius-md);
-  background: rgba(0, 0, 0, 0.55);
+  background: var(--panel-metal);
+  box-shadow: var(--panel-shadow);
   font-family: var(--font-title, 'Geist', sans-serif);
   font-size: 28px;
   font-weight: 700;
