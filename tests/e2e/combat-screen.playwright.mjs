@@ -243,6 +243,30 @@ async function main() {
     }
 
     await mkdir(path.dirname(defaultScreenshotPath), { recursive: true });
+    const readableHud = await page.evaluate(() => {
+      const round = document.querySelector('.combat-round-medallion').getBoundingClientRect();
+      const slots = [...document.querySelectorAll('.combat-round-track .init-slot')];
+      const costLabels = [...document.querySelectorAll('.combat-skill-button .action-cost')];
+      return {
+        roundOverlap: slots.some(slot => {
+          const box = slot.getBoundingClientRect();
+          return box.left < round.right && box.right > round.left
+            && box.top < round.bottom && box.bottom > round.top;
+        }),
+        activeLabel: document.querySelector('.init-slot.active .init-order')?.textContent,
+        costLabels: costLabels.map(label => label.textContent),
+        minCostFont: Math.min(...costLabels.map(label => parseFloat(getComputedStyle(label).fontSize))),
+        missingItemReason: document.querySelector('.combat-item-slot.disabled .skill-range')?.textContent,
+        hpLabels: [...document.querySelectorAll('.combat-status-card em:first-of-type')].map(label => label.textContent),
+      };
+    });
+    if (readableHud.roundOverlap || readableHud.activeLabel !== '행동 중'
+      || readableHud.minCostFont < 14
+      || readableHud.costLabels.some(label => !label.includes('스태미나'))
+      || !readableHud.missingItemReason?.includes('아이템 없음')
+      || readableHud.hpLabels.some(label => !label.startsWith('HP '))) {
+      throw new Error(`Combat HUD readability failed: ${JSON.stringify(readableHud)}`);
+    }
     await page.screenshot({ path: defaultScreenshotPath, fullPage: true });
 
     // 공격 스킬 선택 → 유효 타겟 하이라이트 → 대상 지정으로 피해 발생 확인
@@ -256,6 +280,17 @@ async function main() {
     await page.waitForSelector('.combat-skill-button.selected');
     await page.mouse.move(960, 30);
     await page.screenshot({ path: selectedScreenshotPath, fullPage: true });
+    const activeBeforeCancel = await page.evaluate(() => window.GameState.combat.activeCombatantId);
+    await page.locator('.combat-cancel-selection').click();
+    const cancelled = await page.evaluate(() => ({
+      phase: window.GameState.combat.phase,
+      skill: window.GameState.combat.selectedSkillId,
+      actor: window.GameState.combat.activeCombatantId,
+    }));
+    if (cancelled.phase !== 'await_ally_input' || cancelled.skill !== null || cancelled.actor !== activeBeforeCancel) {
+      throw new Error(`Target cancellation consumed or changed the turn: ${JSON.stringify(cancelled)}`);
+    }
+    await page.locator('.combat-skill-button:not(.disabled)').first().click();
     await page.locator('.combatant-piece.targetable').first().click();
     await page.waitForFunction(previous => {
       const combat = window.GameState.combat;

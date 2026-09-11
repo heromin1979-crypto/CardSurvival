@@ -4091,7 +4091,9 @@
 }
 
 .combat-round-track {
-  height: 56px;
+  height: 98px;
+  flex-shrink: 0;
+  gap: 28px;
   position: relative;
   display: flex;
   align-items: center;
@@ -4101,7 +4103,8 @@
 }
 
 .combat-round-track .initiative-bar {
-  width: min(900px, 72vw);
+  width: auto;
+  max-width: 82%;
   height: 100%;
   padding: 0;
   display: flex;
@@ -4118,22 +4121,23 @@
 
 .combat-round-track .init-slots {
   width: 100%;
-  display: grid;
-  grid-template-columns: repeat(7, minmax(64px, 1fr));
+  display: flex;
   align-items: center;
   justify-items: center;
-  gap: 10px;
+  gap: 20px;
 }
 
 /* 육각 초상화 스트립 (샘플 UI) — 아군 청 프레임 / 적 적 프레임, 턴 순서 그대로 배치 */
 .combat-round-track .init-slot {
   --hex-frame: var(--combat-blue);
-  width: 54px;
+  width: 88px;
   min-width: 0;
-  height: 48px;
+  height: 86px;
   position: relative;
-  padding: 0;
+  padding: 2px 0;
   display: flex;
+  flex-direction: column;
+  gap: 2px;
   align-items: center;
   justify-content: center;
   border: 0;
@@ -4146,7 +4150,10 @@
 }
 
 .combat-round-track .init-label {
-  display: none;
+  display: block;
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 1.2;
 }
 
 .combat-round-track .init-portrait {
@@ -4212,19 +4219,20 @@
 }
 
 .combat-round-medallion {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 58px;
-  height: 58px;
+  position: relative;
+  flex-shrink: 0;
+  left: auto;
+  top: auto;
+  width: 84px;
+  height: 72px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transform: translate(-50%, -50%) rotate(45deg);
+  transform: none;
   border: 2px double rgba(200, 160, 96, 0.78);
   color: var(--accent-primary);
   background: radial-gradient(circle, rgba(43, 25, 8, 0.96), rgba(6, 4, 2, 0.98));
-  box-shadow: 0 0 26px rgba(200, 160, 96, 0.30), inset 0 0 18px rgba(200, 160, 96, 0.18);
+  box-shadow: inset 0 0 18px rgba(200, 160, 96, 0.12);
   font-family: var(--font-title);
   line-height: 1;
   text-shadow: 0 0 12px rgba(200, 160, 96, 0.55);
@@ -4241,14 +4249,14 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
-  transform: rotate(-45deg);
+  gap: 6px;
+  transform: none;
 }
 
 .combat-round-context small {
   color: rgba(212, 201, 168, 0.66);
   font-family: var(--font-mono);
-  font-size: 8px;
+  font-size: 14px;
   font-weight: 500;
   letter-spacing: 1px;
 }
@@ -4260,18 +4268,20 @@
 }
 
 .combat-focused .combat-battlefield {
+  container-type: size;
+  --combat-figure-height: clamp(150px, calc(100cqh - 10px), 375px);
   flex: 1;
   min-height: 0;
-  padding: 34px 92px 158px;
+  padding: 20px 56px 166px;
   display: flex;
   align-items: center;
   justify-content: center;
   background-image:
-    linear-gradient(rgba(82, 74, 64, 0.26), rgba(82, 74, 64, 0.26)),
+    linear-gradient(rgba(80, 144, 192, 0.08), rgba(13, 13, 13, 0.16)),
     var(--combat-bg-image);
   background-position: center;
   background-size: cover;
-  background-blend-mode: screen, normal;
+  background-blend-mode: normal;
   box-shadow:
     inset 0 72px 94px rgba(0, 0, 0, 0.38),
     inset 0 -118px 104px rgba(0, 0, 0, 0.54);
@@ -4321,11 +4331,11 @@
 }
 
 .combat-focused .combat-focused-lineup {
-  width: min(1480px, 100%);
-  min-height: 430px;
-  grid-template-columns: minmax(0, 1fr) 150px minmax(0, 1fr);
+  width: 100%;
+  min-height: 0;
+  grid-template-columns: minmax(0, 1fr) 120px minmax(0, 1fr);
   align-items: end;
-  gap: 18px;
+  gap: 20px;
   z-index: 2;
 }
 
@@ -4340,18 +4350,21 @@
   align-items: center;
   justify-content: center;
   border-radius: 0;
-  transform: rotate(45deg);
+  transform: none;
   color: rgba(200, 160, 96, 0.85);
   background: rgba(10, 6, 2, 0.78);
 }
 
 .combat-focused .combat-formation {
-  gap: clamp(20px, 3vw, 44px);
+  width: 100%;
+  gap: 12px;
 }
 
 .combat-focused .formation-slot {
-  width: clamp(112px, 9vw, 158px);
-  min-height: clamp(245px, 31vh, 360px);
+  width: 0;
+  flex: 1;
+  min-width: 0;
+  min-height: var(--combat-figure-height);
   padding: 0;
   background: radial-gradient(ellipse at 50% 97%, rgba(0, 0, 0, 0.72), transparent 62%);
 }
@@ -4374,7 +4387,7 @@
 .combat-focused .combatant-piece.cv-ally,
 .combat-focused .combatant-piece.cv-enemy-sprite {
   width: 100%;
-  min-height: clamp(230px, 30vh, 340px);
+  min-height: var(--combat-figure-height);
   padding: 0;
   overflow: visible;
   display: flex;
@@ -4396,7 +4409,7 @@
 
 .combat-focused .combatant-portrait {
   width: 100%;
-  min-height: clamp(170px, 23vh, 270px);
+  min-height: var(--combat-figure-height);
   position: relative;
   display: flex;
   align-items: flex-end;
@@ -4408,21 +4421,23 @@
 .combat-focused .combatant-rank-badge,
 .combat-focused .combatant-intent,
 .combat-focused .combat-status-orbs {
-  opacity: 0;
+  opacity: 1;
 }
 
 .combat-focused .combatant-portrait img {
-  max-width: min(180%, calc(var(--combat-sprite-w, 240px) * 1.08));
-  height: min(var(--combat-sprite-h, 320px), clamp(180px, 26vh, 340px));
+  max-width: 160%;
+  height: calc(var(--combat-sprite-h, 320px) * 1.16);
+  max-height: var(--combat-figure-height);
   object-fit: contain;
   object-position: center bottom;
   border: 0;
-  filter: contrast(1.05) saturate(0.78) brightness(0.78) drop-shadow(0 22px 20px rgba(0, 0, 0, 0.92));
+  filter: contrast(1.05) saturate(0.78) brightness(0.92) drop-shadow(0 22px 20px rgba(0, 0, 0, 0.92));
 }
 
 .combat-focused .combatant-portrait > .combat-motion-sheet {
-  width: min(180%, calc(var(--combat-sprite-w, 240px) * 1.08));
-  height: min(var(--combat-sprite-h, 320px), clamp(180px, 26vh, 340px));
+  width: 160%;
+  height: calc(var(--combat-sprite-h, 320px) * 1.16);
+  max-height: var(--combat-figure-height);
 }
 
 .combat-focused .combatant-portrait > .combat-motion-sheet ~ img,
@@ -4431,7 +4446,7 @@
 }
 
 .combat-focused .combatant-piece.enemy .combatant-portrait img {
-  filter: contrast(1.15) saturate(0.55) brightness(0.68) sepia(0.18) drop-shadow(0 20px 18px rgba(0, 0, 0, 0.96));
+  filter: contrast(1.15) saturate(0.55) brightness(0.84) sepia(0.18) drop-shadow(0 20px 18px rgba(0, 0, 0, 0.96));
 }
 
 .combat-sprite[data-motion-state] img {
@@ -4466,7 +4481,7 @@
 .combat-focused .combatant-rank-badge {
   position: absolute;
   left: 14px;
-  bottom: 46px;
+  bottom: 4px;
   width: 24px;
   height: 24px;
   display: flex;
@@ -4476,7 +4491,7 @@
   color: var(--accent-primary);
   background: rgba(0, 0, 0, 0.74);
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: 14px;
   z-index: 3;
 }
 
@@ -4575,14 +4590,14 @@
 }
 
 .combat-focused .combat-status-orbs i {
-  max-width: 54px;
+  max-width: 110px;
   padding: 2px 5px;
   overflow: hidden;
   border: 1px solid rgba(200, 160, 96, 0.36);
   border-radius: 99px;
   color: #f1cf76;
   background: rgba(0, 0, 0, 0.68);
-  font-size: 9px;
+  font-size: 14px;
   font-style: normal;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -4590,20 +4605,20 @@
 
 .combat-status-board {
   position: absolute;
-  left: 9%;
-  right: 9%;
+  left: 56px;
+  right: 56px;
   bottom: 68px;
   z-index: 3;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: clamp(72px, 11vw, 200px);
+  gap: 160px;
   pointer-events: none;
 }
 
 .combat-status-panels {
   display: flex;
   align-items: flex-end;
-  gap: 14px;
+  gap: 12px;
   min-width: 0;
 }
 
@@ -4611,13 +4626,15 @@
 .combat-status-panels.enemy { justify-content: flex-start; }
 
 .combat-status-card {
-  width: clamp(168px, 11.5vw, 216px);
-  min-height: 94px;
-  padding: 12px 16px 12px 46px;
+  width: 232px;
+  min-width: 0;
+  flex: 0 1 232px;
+  min-height: 106px;
+  padding: 12px;
   position: relative;
   display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 5px 12px;
+  grid-template-columns: minmax(18px, 1fr) auto;
+  gap: 8px;
   border: 1px solid rgba(200, 160, 96, 0.38);
   color: rgba(212, 201, 168, 0.92);
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.055), transparent 28%), rgba(6, 5, 4, 0.88);
@@ -4653,20 +4670,24 @@
 .combat-status-card strong {
   grid-column: 1 / 3;
   color: var(--text-primary);
-  font-size: 14px;
+  font-size: 15px;
+  padding-left: 30px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-weight: 700;
 }
 
 .combat-status-card em {
-  color: var(--text-secondary);
+  color: var(--text-primary);
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 14px;
   font-style: normal;
   align-self: center;
 }
 
 .combat-status-card .status-bar {
-  height: 5px;
+  height: 7px;
   overflow: hidden;
   align-self: center;
   border-radius: 99px;
@@ -4684,6 +4705,8 @@
 
 .combat-focused .combat-stage-center {
   position: absolute;
+  display: flex;
+  gap: 8px;
   left: 50%;
   right: auto;
   bottom: 20px;
@@ -4694,6 +4717,7 @@
 
 .combat-focused .combat-event-ticker {
   width: 100%;
+  min-width: 0;
   min-height: 38px;
   padding: 10px 14px;
   border-color: rgba(200, 160, 96, 0.34);
@@ -4706,11 +4730,12 @@
 }
 
 .combat-focused .combat-command-deck {
-  min-height: 286px;
+  min-height: 290px;
+  flex-shrink: 0;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) clamp(156px, 12vw, 190px);
-  gap: 22px;
-  padding: 20px clamp(56px, 8vw, 180px) 26px;
+  grid-template-columns: minmax(0, 1fr) 240px;
+  gap: 16px;
+  padding: 16px 56px 20px;
   border-top: 1px solid rgba(200, 160, 96, 0.28);
   background: linear-gradient(180deg, rgba(10, 6, 2, 0.76), rgba(3, 2, 1, 0.98)), rgba(0, 0, 0, 0.94);
   box-shadow: 0 -24px 48px rgba(0, 0, 0, 0.62);
@@ -4718,9 +4743,13 @@
 
 .combat-focused .combat-skill-bar {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(170px, 100%), 1fr));
+  grid-template-columns: none;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(190px, 1fr);
+  overflow-x: auto;
+  padding-top: 4px;
   align-items: stretch;
-  gap: 22px;
+  gap: 16px;
 }
 
 .combat-focused.manual-companion-turn .combat-command-deck {
@@ -4735,14 +4764,14 @@
 }
 
 .combat-focused .combat-action-card {
-  min-height: 236px;
+  min-height: 252px;
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  gap: 6px;
-  padding: 28px 20px 22px;
+  gap: 4px;
+  padding: 12px 16px;
   border: 1px solid rgba(200, 160, 96, 0.42);
   border-radius: 0;
   color: rgba(212, 201, 168, 0.82);
@@ -4765,7 +4794,7 @@
 }
 
 .combat-focused .combat-action-card::after {
-  inset: auto 18px 82px;
+  inset: auto 18px 76px;
   height: 1px;
   border: 0;
   background: linear-gradient(90deg, transparent, rgba(200, 160, 96, 0.32), transparent);
@@ -4774,7 +4803,7 @@
 .combat-focused .combat-action-card:hover:not(:disabled) {
   color: var(--text-primary);
   border-color: rgba(200, 160, 96, 0.78);
-  transform: translateY(-8px);
+  transform: translateY(-4px);
   background-image:
     radial-gradient(circle at 50% 35%, rgba(200, 160, 96, 0.18), transparent 44%),
     linear-gradient(180deg, rgba(44, 33, 19, 0.95), rgba(10, 8, 5, 0.98));
@@ -4788,7 +4817,7 @@
   align-content: center;
   align-items: center;
   gap: 2px 8px;
-  padding: 12px 34px 12px 10px;
+  padding: 10px 12px;
   text-align: left;
 }
 
@@ -4824,7 +4853,7 @@
 .combat-focused .combat-utility-rail .skill-range {
   grid-column: 2;
   grid-row: 2;
-  font-size: 11px;
+  font-size: 14px;
 }
 
 .combat-focused .combat-utility-rail .skill-icon {
@@ -4846,8 +4875,9 @@
 
 .combat-focused .combat-action-card:disabled,
 .combat-focused .combat-action-card.disabled {
+  opacity: 1;
   border-color: rgba(200, 160, 96, 0.18);
-  color: rgba(212, 201, 168, 0.36);
+  color: var(--text-secondary);
   cursor: not-allowed;
 }
 
@@ -4855,7 +4885,7 @@
 .combat-focused .combat-action-card.disabled:not(.selected) > :not(.skill-icon),
 .combat-focused .combat-action-card:disabled:not(.selected) .skill-icon-img,
 .combat-focused .combat-action-card.disabled:not(.selected) .skill-icon-img {
-  opacity: 0.42;
+  opacity: 0.78;
 }
 
 .combat-focused .combat-action-card.selected:disabled,
@@ -4866,27 +4896,28 @@
 }
 
 .combat-focused .action-cost {
-  position: absolute;
+  position: static;
   top: 16px;
   right: 16px;
-  width: 38px;
-  height: 38px;
+  width: auto;
+  padding: 3px 8px;
+  min-height: 22px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transform: rotate(45deg);
+  transform: none;
   border: 1px solid rgba(200, 160, 96, 0.60);
   color: var(--accent-primary);
   background: rgba(0, 0, 0, 0.60);
   font-family: var(--font-mono);
-  font-size: 16px;
+  font-size: 14px;
 }
 
 .combat-focused .skill-name {
-  margin-top: 10px;
+  margin-top: 2px;
   color: inherit;
   font-family: var(--font-title);
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 700;
   white-space: normal;
 }
@@ -4910,7 +4941,7 @@
 .combat-focused .skill-icon-img {
   display: block;
   max-width: min(82%, 190px);
-  max-height: 116px;
+  max-height: 70px;
   object-fit: contain;
   mix-blend-mode: screen;
   -webkit-mask-image: radial-gradient(ellipse at center, #000 48%, rgba(0, 0, 0, 0.82) 64%, transparent 86%);
@@ -4926,6 +4957,7 @@
 .combat-focused .skill-detail,
 .combat-focused .skill-lock {
   min-height: 18px;
+  flex-shrink: 0;
   color: rgba(212, 201, 168, 0.72);
   font-size: 14px;
   text-align: center;
@@ -4933,6 +4965,37 @@
 
 .combat-focused .skill-lock {
   color: var(--text-danger);
+}
+
+
+.init-order { display: none; }
+.combat-round-track .init-order {
+  display: block;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.2;
+}
+.combat-round-track .init-slot.active .init-order { color: var(--accent-primary); }
+.combat-status-card.is-active,
+.combat-status-card.targetable {
+  border-color: var(--accent-primary);
+  box-shadow: inset 0 2px var(--accent-primary), 0 8px 18px rgba(0, 0, 0, 0.5);
+}
+.combat-status-card.is-dead { opacity: 0.55; }
+.combat-focused .combat-action-card:disabled .skill-lock { opacity: 1; }
+.combat-cancel-selection {
+  flex-shrink: 0;
+  pointer-events: auto;
+  padding: 8px 12px;
+  border: 1px solid var(--accent-primary);
+  color: var(--text-primary);
+  background: var(--bg-surface);
+  font-size: 14px;
+  cursor: pointer;
+}
+.combat-cancel-selection:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 3px;
 }
 
 /* Focused procedural combat FX */

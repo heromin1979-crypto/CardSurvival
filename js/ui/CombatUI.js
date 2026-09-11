@@ -157,7 +157,8 @@ const CombatUI = {
       return `
         <div class="${cls.join(' ')}" data-init-idx="${i}" data-init-type="${entry.type}">
           ${portraitHtml}
-          <span class="init-label">${label}</span>
+          <span class="init-label">${this._escape(label)}</span>
+          <span class="init-order">${isActive ? '행동 중' : i < activeIdx ? '행동 완료' : `다음 ${i - activeIdx}`}</span>
           <div class="init-hp-bar"><div class="init-hp-fill" style="width:${hpPct.toFixed(0)}%"></div></div>
           ${intentHtml}${reservedIntentHtml}${countdownHtml}
         </div>`;
@@ -387,7 +388,8 @@ const CombatUI = {
   _renderTopHud(combat, gs) {
     const districtName = DISTRICTS[gs.location?.currentDistrict]?.name ?? (gs.location?.currentDistrict ?? '종로3가역 승강장');
     const gameHour = String(gs.time?.hour ?? 1).padStart(2, '0');
-    const weatherName = gs.weather?.name ?? '어둡고 비';
+    const gameMinute = String(((gs.time?.tpInDay ?? 0) % 3) * 20).padStart(2, '0');
+    const weatherName = gs.weather?.name ?? gs.weather?.id ?? '정보 없음';
     const dangerLv = combat.dangerLevel ?? 3;
     const dangerText = DANGER_LABEL[Math.min(dangerLv, 5)] ?? '위험';
     return `
@@ -398,7 +400,7 @@ const CombatUI = {
         </div>
         <div class="ctb-right">
           <span class="ctb-chip">지역 ${this._escape(districtName)}</span>
-          <span class="ctb-chip">시간 ${gameHour}:42</span>
+          <span class="ctb-chip">시간 ${gameHour}:${gameMinute}</span>
           <span class="ctb-chip">날씨 ${this._escape(weatherName)}</span>
           <span class="ctb-chip danger-chip">위험 레벨 <b>${this._escape(dangerText)}</b></span>
           <button class="ctb-chip fx-speed-toggle" type="button" title="전투 연출 배속 (빈 전장 클릭 = 연출 스킵)">연출 ×${this._fxSpeed}</button>
@@ -526,13 +528,13 @@ const CombatUI = {
           : { current: combatant.stress ?? 0, max: 10 };
         const secPct = Math.max(0, Math.min(100, ((secondary.current ?? 0) / Math.max(1, secondary.max ?? 1)) * 100));
         return `
-          <button class="combat-status-card ${combatant.side}" data-combatant-id="${this._escape(combatant.id)}">
+          <button class="combat-status-card ${combatant.side}${combat.activeCombatantId === combatant.id ? ' is-active' : ''}${combatant.dead ? ' is-dead' : ''}${this._targetableIds?.has(combatant.id) ? ' targetable' : ''}" data-combatant-id="${this._escape(combatant.id)}">
             <span class="status-rank">${getRank(combat.formations, combatant.id) ?? '-'}</span>
             <strong>${this._escape(this._combatantLabel(combatant))}</strong>
             <span class="status-bar hp"><i style="width:${hpPct.toFixed(0)}%"></i></span>
-            <em>${hp}/${maxHp}</em>
+            <em>HP ${hp}/${maxHp}</em>
             <span class="status-bar aux"><i style="width:${secPct.toFixed(0)}%"></i></span>
-            <em>${secondary.current ?? 0}/${secondary.max ?? 10}</em>
+            <em>${combatant.id === 'player' ? '기력' : '스트레스'} ${secondary.current ?? 0}/${secondary.max ?? 10}</em>
           </button>`;
       }).join('');
     return `<div class="combat-status-panels ${side}">${cards}</div>`;
@@ -549,7 +551,8 @@ const CombatUI = {
           const label = this._skillLabel(skill);
           const isAttack = (skill.effects ?? []).some(effect => effect?.type === 'damage');
           const rangeLabel = skill.target?.side === 'ally' ? '보조' : (skill.target?.ranks?.length >= 4 ? '원거리' : '근접');
-          const costLabel = skill.costs?.ammo ? '탄약 1' : skill.costs?.stamina ? `스태미나 ${skill.costs.stamina}` : '행동 1';
+          const costLabel = activeCombatant?.sourceType === 'player' && skill.costs?.stamina
+            ? `스태미나 ${skill.costs.stamina}` : '스태미나 소모 없음';
           const dmg = (skill.effects ?? []).find(effect => effect?.type === 'damage')?.value;
           const preview = CombatSystem.previewRankedSkill?.(skillId);
           const magazineAction = this._magazineActionState(activeCombatant, skill);
@@ -583,11 +586,11 @@ const CombatUI = {
             || invalidOrigin
             || onCooldown
             || combat.phase !== 'await_ally_input';
-          const title = invalidOrigin
-            ? `현재 위치(rank ${activeRank})에서는 사용할 수 없습니다.`
-            : onCooldown
-              ? `쿨다운 ${cooldown}턴`
-            : '';
+          const lockReason = invalidOrigin ? '위치 변경 필요'
+            : onCooldown ? `쿨다운 ${cooldown}턴`
+            : isEmpty ? '탄약 부족'
+            : selected ? '대상을 선택하세요'
+            : combat.phase !== 'await_ally_input' ? '행동 대기' : '';
           const statRows = [];
           if (dmg) statRows.push(`<span class="skill-stat">피해 ${dmg[0]}-${dmg[1]}</span>`);
           if (isAttack && preview && !preview.supportive) {
@@ -601,14 +604,14 @@ const CombatUI = {
                     data-skill-id="${this._escape(skillId)}"
                     data-command="${command}"
                     data-weapon-instance-id="${this._escape(skill.equipmentInstanceId ?? '')}"
-                    title="${this._escape(title)}"
+                    title="${this._escape(lockReason)}"
                     ${disabled ? 'disabled' : ''}>
-              <span class="action-cost">${skill.costs?.stamina ?? 1}</span>
+              <span class="action-cost">${this._escape(reloadMode ? I18n.t('combat.reloadPackCost') : costLabel)}</span>
               <span class="skill-name">${this._escape(displayLabel)}</span>
               <span class="skill-range">${this._escape(rangeLabel)}</span>
               <span class="skill-icon">${this._skillIconHtml(skill.icon, isAttack)}</span>
-              <span class="skill-detail skill-stats">${ammoDetail ? `<span class="skill-stat">${this._escape(ammoDetail)}</span>` : statRows.join('')}</span>
-              ${invalidOrigin ? '<span class="skill-lock">(위치 변경 필요)</span>' : ''}
+              <span class="skill-detail skill-stats">${!reloadMode && !isEmpty ? statRows.join('') : ''}${ammoDetail ? `<span class="skill-stat">${this._escape(ammoDetail)}</span>` : ''}</span>
+              <span class="skill-lock">${this._escape(lockReason)}</span>
             </button>`;
         }).join('')}
       </div>`;
@@ -641,14 +644,14 @@ const CombatUI = {
 
   _renderCombatItemSlot(activeCombatant) {
     const itemId = this._firstCombatItemId();
-    const disabled = activeCombatant?.itemUsedThisTurn || !itemId;
+    const disabled = activeCombatant?.itemUsedThisTurn || !itemId || GameState.combat?.phase !== 'await_ally_input';
+    const reason = activeCombatant?.itemUsedThisTurn ? '이번 턴 사용 완료' : !itemId ? '사용 가능한 아이템 없음' : '보조';
     return `<button class="combat-item-slot combat-action-card${disabled ? ' disabled' : ''}"
                     data-command="item"
                     data-item-id="${this._escape(itemId ?? '')}"
                     ${disabled ? 'disabled' : ''}>
-              <span class="action-cost">1</span>
               <span class="skill-name">아이템 사용</span>
-              <span class="skill-range">보조</span>
+              <span class="skill-range">${reason}</span>
               <span class="skill-icon">${this._skillIconHtml('item')}</span>
               <span class="skill-detail">아이템을 사용합니다</span>
             </button>`;
@@ -707,7 +710,7 @@ const CombatUI = {
           ${this._renderInitiativeBar(combat, gs)}
           <div class="combat-round-medallion">
             <span class="combat-round-context">
-              <small>ROUND</small>
+              <small>라운드</small>
               <strong>${combat.roundNumber ?? 1}</strong>
             </span>
           </div>
@@ -731,7 +734,10 @@ const CombatUI = {
             ${this._renderStatusPanels('ally', combat)}
             ${this._renderStatusPanels('enemy', combat)}
           </div>
-          <div class="combat-stage-center">${this._renderEventTicker(combat)}</div>
+          <div class="combat-stage-center">
+            ${combat.phase === 'select_target' ? '<button class="combat-cancel-selection" type="button">대상 선택 취소</button>' : ''}
+            ${this._renderEventTicker(combat)}
+          </div>
         </main>
         <footer class="combat-command-deck">
           ${this._renderSkillBar(active, combat)}
@@ -741,16 +747,14 @@ const CombatUI = {
               <button class="combat-common-command combat-action-card${canMove ? '' : ' disabled'}"
                       data-command="move"
                       ${(!canMove || commandDisabled) ? 'disabled' : ''}>
-                <span class="action-cost">1</span>
                 <span class="skill-name">이동</span>
-                <span class="skill-range">기동</span>
+                <span class="skill-range">${canMove ? '위치 변경' : '이동 불가'}</span>
                 <span class="skill-icon">${this._skillIconHtml('move')}</span>
                 <span class="skill-detail">위치 변경</span>
               </button>
               <button class="combat-common-command combat-action-card"
                       data-command="flee"
                       ${commandDisabled ? 'disabled' : ''}>
-                <span class="action-cost">1</span>
                 <span class="skill-name">도주</span>
                 <span class="skill-range">탈출</span>
                 <span class="skill-icon">${this._skillIconHtml('move')}</span>
@@ -764,6 +768,10 @@ const CombatUI = {
   },
 
   _bindFocusedCombatEvents(combat) {
+    this._screen.querySelector('.combat-cancel-selection')?.addEventListener('click', () => {
+      CombatSystem.cancelSelection();
+      this.render();
+    });
     this._screen.querySelectorAll('.combat-skill-button').forEach(button => {
       button.addEventListener('click', () => {
         if (button.disabled) return;

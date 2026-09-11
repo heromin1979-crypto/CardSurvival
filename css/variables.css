@@ -37,6 +37,14 @@
   /* UI accents */
   --accent-primary:  #c8a060;
   --accent-dim:      #6b5535;
+  --panel-metal:     linear-gradient(145deg, #252827, #141616 48%, #101212);
+  --panel-glass:     rgba(13, 16, 17, 0.78);
+  --panel-border:    #52534d;
+  --panel-shadow:    0 5px 16px rgba(0, 0, 0, 0.45);
+  --section-band:    linear-gradient(100deg, #6b5535, rgba(107, 85, 53, 0.08));
+  --scene-night:     rgba(9, 13, 18, 0.56);
+  --scene-dawn:      rgba(13, 16, 19, 0.25);
+  --scene-dusk:      rgba(39, 26, 15, 0.36);
 
   /* 전투 진영 컬러 (전투 UI 리뉴얼 2026.07) — 아군 청 / 적 적 */
   --combat-ally:     #2e86c8;

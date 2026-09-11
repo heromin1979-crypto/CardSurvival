@@ -85,15 +85,17 @@
   - `--gap-xs: 4px`
   - `--gap-sm: 8px`
   - `--gap-md: 12px`
-  - `--gap-lg: 16px`
-  - `--gap-xl: 24px`
+  - `--gap-lg: 20px`
+  - `--gap-xl: 32px`
 
 ## Layout
 
 - **Approach:** grid-disciplined
-- **Basecamp:** `200px` 사이드바 + `1fr` 메인 그리드
-- **카드:** `110px × 150px` 고정 (유지)
-- **슬롯:** `120px × 160px` 고정 (유지)
+- **설계 화면:** 1920×1080, 앱 전체를 비율 유지 Scale로 표시
+- **Basecamp:** `240px` 사이드바 + `1fr` 보드 + `220px` 동료 패널, 헤더 `56px`
+- **카드:** 기본 폭 상한 `141px`, 보드 슬롯 폭보다 넓어지지 않음. 보드 카드 높이는 행의 남은 높이를 채움
+- **슬롯:** 장소·바닥은 행 폭을 나누고, 휴대는 9열 1행. 실제 소지 용량과 표시 페이지 수는 GameState가 결정
+- **치수 토큰:** `--card-h: 155px`, `--slot-w: 151px`, `--slot-h: 155px`는 기본/참고 값이며 보드는 동적 크기를 사용
 - **Max content width:** 제한 없음 (전체 뷰포트)
 - **Border radius:** 계층적
   - `--radius-sm: 4px` — 버튼, 배지, 소형 요소
@@ -111,13 +113,16 @@
 - **새로 추가할 애니메이션:**
   1. **카드 입장** `150-180ms ease` — `translateY(6px) + opacity 0→1 + scale(0.97→1)`, 40ms stagger
   2. **야간 HUD 플리커** `8s ease-in-out infinite` — opacity 1→0.85→0.92→0.88→1, 야간 상태 전용
-  3. **야간 배경 틴트** CSS 변수 전환으로 구현, `--bg-base` 값 교체
+  3. **야간 배경 틴트** `--scene-night/dawn/dusk`로 배경 위의 명암을 조절. 전체 화면의 반복 플리커는 사용하지 않음
 - **이미 구현됨:** 알림 slideInRight + fadeOut ✓, 모달 scale transition ✓, 호버 전환 ✓
 
 ## Decisions Log
 
 | Date | Decision | Rationale |
 |------|----------|-----------|
+| 2026-09-12 | 4화면 샘플 적용, 기존 치수 문서 동기화 | 현행 카드/슬롯/간격 값을 기록하고 실제 용량·게임 규칙은 보존 |
+| 2026-09-12 | 공통 금속 패널과 투명 보드 트레이 | `--panel-metal`, `--panel-glass`, `--panel-border`, `--panel-shadow`, `--section-band` 사용. 기존 앰버/청색 의미 유지 |
+| 2026-09-12 | 필수 수치 14px, 대화 인물·선택지 분리 | 카드 수량/내구·장소 비용을 읽기 쉽게 표시하고 장비/대화는 기존 인물 자산을 재사용 |
 | 2026-04-01 | JetBrains Mono로 폰트 전환 | Courier New는 14px에서 가독성 저하. JetBrains Mono는 화면 렌더링 최적화 모노스페이스로 산업 톤 유지하며 가독성 확보 |
 | 2026-04-01 | 모달 타이틀에 Geist 추가 | 동일 산업 어휘 내에서 계층 구조 생성. 모달과 일반 UI 라벨 구분 |
 | 2026-04-01 | 야간 액센트 전략 확립 | `--text-info: #5090c0`을 야간 전용 액센트로 공식화. 웜(앰버)=낮, 콜드(블루)=야간 이분법 |
