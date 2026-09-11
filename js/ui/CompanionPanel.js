@@ -11,6 +11,7 @@ import GameData  from '../data/GameData.js';
 import CompanionModal from './CompanionModal.js';
 import Gauge     from './components/Gauge.js';
 import { getCardImage } from './CardFactory.js';
+import { getNPCPortrait } from './npcPortraits.js';
 import { NPC_ITEMS }    from '../data/npcs.js';
 import { COMPANION_COMBAT_LOADOUTS, getCombatSkill } from '../data/combatSkills.js';
 import { combatAssetManifest } from '../data/combatAssets.js';
@@ -91,6 +92,18 @@ const CompanionPanel = {
 
     el.querySelectorAll('.bc-comp-card').forEach(card => {
       card.addEventListener('click', () => CompanionModal.open(card.dataset.npcId));
+      card.addEventListener('keydown', event => {
+        if (event.key !== 'Enter' && event.key !== ' ') return;
+        event.preventDefault();
+        CompanionModal.open(card.dataset.npcId);
+      });
+      const portrait = card.querySelector('.bc-comp-portrait img');
+      if (portrait) portrait.onerror = () => {
+        const fallback = document.createElement('span');
+        fallback.className = 'bc-comp-portrait-icon';
+        fallback.innerHTML = dataIcon(NPC_ITEMS[card.dataset.npcId]?.icon ?? '👤');
+        portrait.replaceWith(fallback);
+      };
     });
   },
 
@@ -187,10 +200,10 @@ const CompanionPanel = {
     const hpPct  = Math.min(100, Math.round((curHp / maxHp) * 100));
     const hpCls  = hpPct > 60 ? 'good' : hpPct > 30 ? 'warn' : 'crit';
     const status = statusOf(state);
-    const imgSrc = getCardImage(npcId);
+    const imgSrc = getNPCPortrait(npcId);
 
     return `
-      <div class="bc-comp-card" data-npc-id="${npcId}" title="${name} — 동료창 열기">
+      <div class="bc-comp-card" role="button" tabindex="0" aria-label="${name} — 동료창 열기" data-npc-id="${npcId}" title="${name} — 동료창 열기">
         <div class="bc-comp-portrait">
           ${imgSrc
             ? `<img src="${imgSrc}" alt="">`

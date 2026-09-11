@@ -34,8 +34,8 @@
 
 /* Left sidebar */
 .bc-sidebar {
-  background: var(--bg-surface);
-  border-right: 1px solid var(--border-dim);
+  background: var(--panel-metal);
+  border-right: 1px solid var(--panel-border);
   overflow-y: auto;
   overflow-x: hidden;
   display: flex;
@@ -57,9 +57,9 @@
 /* 그레인 레이어 */
 .bc-main::before {
   content: '';
-  position: fixed;
-  inset: 0 220px 0 240px;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  position: absolute;
+  inset: 0;
+  background: url('../assets/images/locations/urban.png') center 58% / cover no-repeat;
   pointer-events: none;
   z-index: 0;
 }
@@ -67,9 +67,9 @@
 /* 비네팅 레이어 */
 .bc-main::after {
   content: '';
-  position: fixed;
-  inset: 56px 220px 0 240px;
-  background: radial-gradient(ellipse at 50% 45%, transparent 52%, rgba(0,0,0,0.70) 100%);
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(var(--scene-tint, var(--scene-dawn)), var(--scene-tint, var(--scene-dawn))), radial-gradient(ellipse at 50% 45%, transparent 45%, var(--bg-void) 100%);
   pointer-events: none;
   z-index: 0;
 }
@@ -81,42 +81,16 @@
 
 /* 시간대별 배경 색조 */
 #screen-main[data-time-of-day="night"] .bc-main {
-  background: #090d12;
-  transition: background 3s ease;
+  --scene-tint: var(--scene-night);
 }
 #screen-main[data-time-of-day="dawn"] .bc-main {
-  background: #0e0c09;
-  transition: background 3s ease;
+  --scene-tint: var(--scene-dawn);
 }
 #screen-main[data-time-of-day="dusk"] .bc-main {
-  background: #100c08;
-  transition: background 3s ease;
+  --scene-tint: var(--scene-dusk);
 }
 #screen-main[data-time-of-day="day"] .bc-main {
-  background: var(--bg-base);
-  transition: background 3s ease;
-}
-
-/* 야간 스캔라인 오버레이 — bc-main::after에 레이어 추가 */
-@keyframes nightFlicker {
-  0%, 92%, 100% { opacity: 1; }
-  93%           { opacity: 0.97; }
-  94%           { opacity: 1; }
-  95%           { opacity: 0.95; }
-  96%           { opacity: 0.99; }
-}
-
-#screen-main[data-time-of-day="night"] .bc-main::after {
-  background:
-    repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 3px,
-      rgba(0,0,0,0.04) 3px,
-      rgba(0,0,0,0.04) 4px
-    ),
-    radial-gradient(ellipse at 50% 45%, transparent 52%, rgba(0,0,0,0.70) 100%);
-  animation: nightFlicker 9s ease-in-out infinite;
+  --scene-tint: transparent;
 }
 
 /* Minimap block — 높이는 지도 SVG 가 정한다 (아래 .bc-minimap-preview 주석) */
@@ -449,10 +423,10 @@
    (`.board-row-label`). 자간을 줄이면 폭만 좁아지므로 두 줄 접힘은 되레 멀어진다. */
 .bc-side-title {
   font-size: var(--font-size-sm);
-  color: var(--accent-primary);
+  color: var(--text-primary);
   letter-spacing: 0;
   padding-bottom: 3px;
-  border-bottom: 1px solid var(--border-dim);
+  border-bottom: 1px solid var(--panel-border);
 }
 
 /* 영문 병기는 200px 컬럼에서 `소음 수치 (NOISE METER)` 가 두 줄로 접히지 않을 만큼만 작게 */
