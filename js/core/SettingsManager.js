@@ -8,12 +8,14 @@ const DEFAULTS = {
   language: 'ko',
   sound: { enabled: true, volume: 0.3 },
   bgm: { enabled: true },
+  combatFx: { enhanced: true, reduceShake: false },
 };
 
 let _settings = {
   language: DEFAULTS.language,
   sound: { ...DEFAULTS.sound },
   bgm: { ...DEFAULTS.bgm },
+  combatFx: { ...DEFAULTS.combatFx },
 };
 
 const SettingsManager = {
@@ -31,6 +33,10 @@ const SettingsManager = {
           bgm: {
             enabled: saved.bgm?.enabled ?? DEFAULTS.bgm.enabled,
           },
+          combatFx: {
+            enhanced:    saved.combatFx?.enhanced    ?? DEFAULTS.combatFx.enhanced,
+            reduceShake: saved.combatFx?.reduceShake ?? DEFAULTS.combatFx.reduceShake,
+          },
         };
       } catch { /* corrupted → use defaults */ }
     }
@@ -41,6 +47,8 @@ const SettingsManager = {
     if (key === 'sound.enabled') return _settings.sound.enabled;
     if (key === 'sound.volume')  return _settings.sound.volume;
     if (key === 'bgm.enabled')   return _settings.bgm.enabled;
+    if (key === 'combatFx.enhanced')    return _settings.combatFx.enhanced;
+    if (key === 'combatFx.reduceShake') return _settings.combatFx.reduceShake;
     return undefined;
   },
 
@@ -49,6 +57,8 @@ const SettingsManager = {
     else if (key === 'sound.enabled') _settings.sound.enabled = !!value;
     else if (key === 'sound.volume')  _settings.sound.volume = Math.max(0, Math.min(1, value));
     else if (key === 'bgm.enabled')   _settings.bgm.enabled = !!value;
+    else if (key === 'combatFx.enhanced')    _settings.combatFx.enhanced = !!value;
+    else if (key === 'combatFx.reduceShake') _settings.combatFx.reduceShake = !!value;
     else return;
 
     this._save();
@@ -56,7 +66,7 @@ const SettingsManager = {
   },
 
   getAll() {
-    return { language: _settings.language, sound: { ..._settings.sound }, bgm: { ..._settings.bgm } };
+    return { language: _settings.language, sound: { ..._settings.sound }, bgm: { ..._settings.bgm }, combatFx: { ..._settings.combatFx } };
   },
 
   _save() {

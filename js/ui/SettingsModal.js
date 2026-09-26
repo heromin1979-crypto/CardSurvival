@@ -39,6 +39,8 @@ const SettingsModal = {
     const sndOn   = SettingsManager.get('sound.enabled');
     const vol     = Math.round(SettingsManager.get('sound.volume') * 100);
     const bgmOn   = SettingsManager.get('bgm.enabled') ?? true;
+    const fxOn    = SettingsManager.get('combatFx.enhanced') !== false;
+    const calmOn  = SettingsManager.get('combatFx.reduceShake') === true;
 
     this._el.innerHTML = `
       <div class="settings-box">
@@ -73,6 +75,22 @@ const SettingsModal = {
             <span class="settings-sound-label">${t('settings.bgm')}</span>
             <button class="settings-toggle-btn${bgmOn ? '' : ' active'}" id="settings-bgm">
               ${bgmOn ? t('settings.off') : t('settings.on')}
+            </button>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-label">${t('settings.combatFx')}</div>
+          <div class="settings-sound-row">
+            <span class="settings-sound-label">${t('settings.combatFxEnhanced')}</span>
+            <button class="settings-toggle-btn${fxOn ? '' : ' active'}" id="settings-combat-fx">
+              ${fxOn ? t('settings.off') : t('settings.on')}
+            </button>
+          </div>
+          <div class="settings-sound-row">
+            <span class="settings-sound-label">${t('settings.reduceShake')}</span>
+            <button class="settings-toggle-btn${calmOn ? ' active' : ''}" id="settings-reduce-shake">
+              ${calmOn ? t('settings.off') : t('settings.on')}
             </button>
           </div>
         </div>
@@ -117,6 +135,16 @@ const SettingsModal = {
       const current = SettingsManager.get('bgm.enabled') ?? true;
       SettingsManager.set('bgm.enabled', !current);
       if (current) BGMSystem.stop(); else BGMSystem.init();
+      this._render();
+    });
+
+    // 전투 연출 (개선 연출 / 흔들림 줄이기)
+    this._el.querySelector('#settings-combat-fx')?.addEventListener('click', () => {
+      SettingsManager.set('combatFx.enhanced', SettingsManager.get('combatFx.enhanced') === false);
+      this._render();
+    });
+    this._el.querySelector('#settings-reduce-shake')?.addEventListener('click', () => {
+      SettingsManager.set('combatFx.reduceShake', SettingsManager.get('combatFx.reduceShake') !== true);
       this._render();
     });
 

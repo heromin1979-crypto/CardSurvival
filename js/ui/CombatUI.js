@@ -13,6 +13,7 @@ import { getRank }   from '../systems/combat/FormationSystem.js';
 import { canReload, getMagazineState } from '../systems/WeaponAmmoSystem.js';
 import { formatInstanceName } from '../systems/ItemEffectSystem.js';
 import { CombatFxPlayer } from './combat/CombatFxPlayer.js';
+import CombatStageRenderer from './combat/CombatStageRenderer.js';
 import { COMPANION_ICONS, INIT_TYPE_ICONS } from './combat/combatUiAssets.js';
 
 const PLAYER_IMG_M = './assets/images/player_M.jpg';
@@ -835,6 +836,7 @@ const CombatUI = {
   render() {
     try {
       this._renderInternal();
+      this._mountStageFx();
     } catch (err) {
       console.error('[CombatUI] render 실패 — 원인:', err);
       console.error('[CombatUI] 상태:', {
@@ -852,6 +854,15 @@ const CombatUI = {
             <button class="toolbar-btn" onclick="location.reload()">페이지 새로고침</button>
           </div>`;
       }
+    }
+  },
+
+  // 배경 깊이·날씨·광원 캔버스 (개선 연출 설정이 꺼져 있거나 캔버스 미지원이면 아무것도 하지 않음)
+  _mountStageFx() {
+    try {
+      CombatStageRenderer.mount(this._screen?.querySelector('.combat-visual'));
+    } catch (err) {
+      console.warn('[CombatUI] 무대 연출 생략:', err);
     }
   },
 
