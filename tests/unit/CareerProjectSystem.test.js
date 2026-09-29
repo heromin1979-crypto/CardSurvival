@@ -1,0 +1,247 @@
+import { beforeEach, afterEach, it, expect, vi } from 'vitest';
+import GameState, { createDefaultFlags } from '../../js/core/GameState.js';
+import EventBus from '../../js/core/EventBus.js';
+import TickEngine from '../../js/core/TickEngine.js';
+import Projects from '../../js/systems/CareerProjectSystem.js';
+import DEFINITIONS, { getCareerFacilities, migrateCareerProjects } from '../../js/data/careerProjects.js';
+import QuestSystem from '../../js/systems/QuestSystem.js';
+import MAIN_QUESTS from '../../js/data/mainQuests/index.js';
+import CraftSystem from '../../js/systems/CraftSystem.js';
+import StructureEffectSystem from '../../js/systems/StructureEffectSystem.js';
+import NPCSystem from '../../js/systems/NPCSystem.js';
+import HiddenElementSystem from '../../js/systems/HiddenElementSystem.js';
+import GameData from '../../js/data/GameData.js';
+
+function add(id, quantity = 1) {
+  const c = GameState.createCardInstance(id, { quantity });
+  GameState.board.bottom.push(c.instanceId);
+  return c;
+}
+beforeEach(() => {
+  EventBus._listeners = {};
+  GameState.flags = createDefaultFlags();
+  GameState.quests = { active: [{ id: 'mq_soldier_04', progress: 0 }], completed: [] };
+  GameState.location = { currentDistrict: 'yongsan', installedStructures: {} };
+  GameState.board = { top: [], environment: [], middle: [], bottom: [] };
+  GameState.cards = {}; GameState.pendingLoot = []; GameState.npcs = { states: {} };
+  GameState.player.isAlive = true; GameState.player.hp.current = 100;
+  GameState.ui.currentState = 'main'; GameState.combat.active = false;
+  GameState.time.totalTP = 0;
+  GameState.time.day = 1; GameState.questProgress = null; QuestSystem.resetForNewGame(); Projects.init();
+  vi.spyOn(TickEngine, 'skipTP').mockImplementation(n => { GameState.time.totalTP += n; });
+  vi.spyOn(GameState, '_updateEncumbrance').mockImplementation(() => {});
+  vi.spyOn(GameState, '_compactRow').mockImplementation(() => {});
+});
+afterEach(() => vi.restoreAllMocks());
+it('지역 발전은 연료를 소비해 저장 가능한 전력을 만들고 작업대 정비가 소모한다', () => {
+  GameState.quests.completed = ['mq_eng_02', 'mq_eng_08'];
+  for (const id of ['engineer_workbench', 'engineer_power']) GameState.flags.careerProjects.projects[id] = { projectId: id, active: true, installedInputs: {}, uses: 0 };
+  add('scrap_metal', 3); add('wire');
+  const before = GameState.serialize();
+  expect(Projects.operate('engineer_workbench').ok).toBe(false);
+  expect(GameState.serialize()).toBe(before);
+  add('fuel_can');
+  expect(Projects.operate('engineer_power').ok).toBe(true);
+  expect(GameState.flags.careerProjects.districtPower.yongsan).toBe(3);
+  expect(GameState.countOnBoard('fuel_can')).toBe(0);
+  expect(Projects.operate('engineer_workbench').ok).toBe(true);
+  expect(GameState.flags.careerProjects.districtPower.yongsan).toBe(2);
+  GameState.deserialize(GameState.serialize());
+  expect(GameState.flags.careerProjects.districtPower.yongsan).toBe(2);
+  expect(Projects.operate('engineer_power').ok).toBe(false);
+  GameState.location.currentDistrict = 'jongno';
+  expect(Projects.inspect('engineer_workbench').ok).toBe(false);
+});
+it.each([false, true])('완료 연구 해금만 이관하며 버전1=%s 반복 로드도 무보상이다', version1 => {
+  GameState.quests.completed = ['mq_doctor_a_13'];
+  GameState.flags.hiddenRecipesUnlocked = [];
+  if (!version1) delete GameState.flags.careerProjects;
+  else GameState.flags.careerProjects.projects.doctor_research = { projectId: 'doctor_research', active: true, legacy: true };
+  migrateCareerProjects(GameState); migrateCareerProjects(GameState);
+  expect(GameState.flags.hiddenRecipesUnlocked).toEqual(['vaccine']);
+  expect(GameState.pendingLoot).toEqual([]);
+  expect(GameState.countOnBoard('virus_sample')).toBe(0);
+  expect(getCareerFacilities(GameState)).toEqual([]);
+});
+it.each([['fire_power', 'fire_handover'], ['engineer_grid', 'engineer_pump']])('%s 발전 → %s 시운전·반복 정수와 한도 검사를 연결한다', (producer, consumer) => {
+  const power = DEFINITIONS[producer], pump = DEFINITIONS[consumer];
+  GameState.location.currentDistrict = power.districtId;
+  GameState.quests.active = [{ id: power.questId, progress: 0 }, { id: pump.questId, progress: 0 }];
+  for (const id of power.requires) GameState.flags.careerProjects.projects[id] = { active: true };
+  if (power.crafted) GameState.flags.careerProjects.crafted[power.crafted] = 1;
+  for (const def of [power, pump]) for (const a of def.actions) {
+    for (const r of a.items) add(r.definitionId, r.qty);
+    if (a.foodCount) add('cooked_rice', a.foodCount);
+  }
+  GameState.flags.careerProjects.districtPower[power.districtId] = 6;
+  const fullBefore = GameState.serialize();
+  expect(Projects.contribute(producer, 'stock').ok).toBe(false);
+  expect(GameState.serialize()).toBe(fullBefore);
+  GameState.flags.careerProjects.districtPower[power.districtId] = 0;
+  for (const a of power.actions) expect(Projects.contribute(producer, a.id).ok).toBe(true);
+  expect(Projects.activate(producer).ok).toBe(true);
+  expect(GameState.flags.careerProjects.districtPower[power.districtId]).toBe(power.powerOutput);
+  for (const a of pump.actions) expect(Projects.contribute(consumer, a.id).ok).toBe(true);
+  expect(Projects.activate(consumer).ok).toBe(true);
+  expect(GameState.flags.careerProjects.districtPower[power.districtId]).toBe(power.powerOutput - 1);
+  for (const cost of pump.operation.costs) add(cost.definitionId, cost.qty);
+  expect(Projects.operate(consumer).ok).toBe(true);
+  expect(GameState.flags.careerProjects.districtPower[power.districtId]).toBe(power.powerOutput - 2);
+  GameState.time.totalTP += 100;
+  GameState.flags.careerProjects.districtPower[power.districtId] = 0;
+  for (const cost of pump.operation.costs) add(cost.definitionId, cost.qty);
+  const emptyBefore = GameState.serialize();
+  expect(Projects.operate(consumer).ok).toBe(false);
+  expect(GameState.serialize()).toBe(emptyBefore);
+  add('fuel_can', 2);
+  GameState.flags.careerProjects.districtPower[power.districtId] = 4;
+  const capBefore = GameState.serialize();
+  expect(Projects.operate(producer).ok).toBe(false);
+  expect(GameState.serialize()).toBe(capBefore);
+  GameState.flags.careerProjects.districtPower[power.districtId] = 3;
+  expect(Projects.operate(producer).ok).toBe(true);
+  expect(GameState.flags.careerProjects.districtPower[power.districtId]).toBe(6);
+});
+it('사망 후 기여·가동·운영·회수는 상태를 바꾸지 않는다', () => {
+  add('electronic_parts', 2); add('wire'); add('battery');
+  GameState.player.isAlive = false;
+  const before = GameState.serialize();
+  expect(Projects.contribute('soldier_radio', 'restore').ok).toBe(false);
+  expect(Projects.activate('soldier_radio').ok).toBe(false);
+  expect(Projects.operate('soldier_radio').ok).toBe(false);
+  expect(Projects.recover('soldier_relay', 'circuit_board').ok).toBe(false);
+  expect(GameState.serialize()).toBe(before);
+});
+it('다른 프로젝트에 이미 소비한 모듈을 중복 장착하지 못한다', () => {
+  GameState.location.currentDistrict = 'yeongdeungpo';
+  GameState.flags.careerProjects.projects.soldier_broadcast = { active: true };
+  GameState.quests.active = [{ id: 'mq_soldier_end_b1', progress: 0 }];
+  add('circuit_module'); add('copper_coil', 2);
+  expect(Projects.contribute('soldier_national', 'install').ok).toBe(true);
+  expect(GameState.countOnBoard('circuit_module')).toBe(0);
+  GameState.location.currentDistrict = 'guro';
+  const def = DEFINITIONS.engineer_vehicle_power;
+  GameState.quests.active = [{ id: def.questId, progress: 0 }];
+  for (const id of def.requires) GameState.flags.careerProjects.projects[id] = { active: true };
+  for (const req of def.actions[0].items) if (req.definitionId !== 'circuit_module') add(req.definitionId, req.qty);
+  expect(Projects.contribute(def.id, def.actions[0].id).ok).toBe(false);
+  expect(GameState.countOnBoard('circuit_module')).toBe(0);
+});
+it('지역과 전원 검사 실패 시 재료와 시간은 보존된다', () => {
+  add('electronic_parts', 2); add('wire');
+  expect(Projects.contribute('soldier_radio', 'restore').ok).toBe(true);
+  expect(Projects.activate('soldier_radio').ok).toBe(false);
+  expect(GameState.time.totalTP).toBe(0);
+  add('battery');
+  GameState.location.currentDistrict = 'jongno';
+  expect(Projects.contribute('soldier_radio', 'power').ok).toBe(false);
+  expect(GameState.countOnBoard('battery')).toBe(1);
+});
+it('가동은 한 번만 효과를 적용하고 보유는 설치가 아니다', () => {
+  add('electronic_parts', 2); add('wire'); add('battery');
+  expect(Projects.activate('soldier_radio').ok).toBe(false);
+  expect(Projects.contribute('soldier_radio', 'restore').ok).toBe(true);
+  expect(Projects.contribute('soldier_radio', 'power').ok).toBe(true);
+  const completed = vi.fn(); EventBus.on('careerProjectCompleted', completed);
+  expect(Projects.activate('soldier_radio').ok).toBe(true);
+  expect(Projects.activate('soldier_radio').ok).toBe(false);
+  expect(completed).toHaveBeenCalledOnce();
+  expect(GameState.countOnBoard('battery')).toBe(0);
+});
+it('퀘스트 원본은 가동 이력을 요구하고 구형 활성 진행도를 재해석한다', () => {
+  expect(MAIN_QUESTS.mq_soldier_04.objective.type).toBe('career_project');
+  const q = GameState.quests.active[0]; q.progress = 2;
+  QuestSystem._checkAllProgress();
+  expect(q.progress).toBe(0);
+  expect(GameState.quests.completed).not.toContain(q.id);
+});
+it('유한 환자를 모두 완치한 뒤 받은 임상 퀘스트는 기존 이력을 인정한다', () => {
+  GameState.quests.active = [];
+  GameState.npcs.states = { a: { healed: true }, b: { healed: true }, c: { healed: true } };
+  QuestSystem.startQuest('mq_doctor_a_14');
+  expect(GameState.quests.completed).toContain('mq_doctor_a_14');
+});
+it('부품 분할스택은 전체 입력이 있을 때만 소비되고 중복 설치되지 않는다', () => {
+  add('electronic_parts'); add('wire');
+  expect(Projects.contribute('soldier_radio', 'restore').ok).toBe(false);
+  expect(GameState.countOnBoard('wire')).toBe(1);
+  add('electronic_parts');
+  expect(Projects.contribute('soldier_radio', 'restore').ok).toBe(true);
+  expect(Projects.contribute('soldier_radio', 'restore').ok).toBe(false);
+  expect(GameState.countOnBoard('electronic_parts')).toBe(0);
+});
+it('구세이브 완료 이력은 접근권만 복구하고 물품·설비는 재지급하지 않는다', () => {
+  delete GameState.flags.careerProjects;
+  GameState.quests.completed = ['mq_soldier_04'];
+  migrateCareerProjects(GameState);
+  expect(GameState.flags.careerProjects.projects.soldier_radio.active).toBe(true);
+  expect(getCareerFacilities(GameState)).toEqual([]);
+  expect(GameState.pendingLoot).toEqual([]);
+});
+it('완료 프로젝트의 효과는 해당 구역에서만 제공된다', () => {
+  add('electronic_parts', 2); add('wire'); add('battery');
+  Projects.contribute('soldier_radio', 'restore'); Projects.contribute('soldier_radio', 'power'); Projects.activate('soldier_radio');
+  expect(getCareerFacilities(GameState).map(c => c.definitionId)).toContain('radio');
+  GameState.location.currentDistrict = 'jongno';
+  expect(getCareerFacilities(GameState)).toEqual([]);
+});
+it('배식은 음식 제작·보유만으로 충족되지 않고 실제 소비가 필요하다', () => {
+  GameState.location.currentDistrict = 'junggoo';
+  GameState.quests.active = [{ id: 'mq_chef_06', progress: 0 }];
+  add('canned_food', 3);
+  expect(Projects.contribute('chef_first_meal', 'serve').ok).toBe(false);
+  add('cooked_rice');
+  expect(Projects.activate('chef_first_meal').ok).toBe(false);
+  expect(Projects.contribute('chef_first_meal', 'serve').ok).toBe(true);
+  expect(GameState.countOnBoard('cooked_rice')).toBe(0);
+  expect(Projects.activate('chef_first_meal').ok).toBe(true);
+});
+it('설치 작업대는 실제 제작 도구로 쓰이고 다른 구에서는 쓸 수 없다', () => {
+  GameState.quests.active = [{ id: 'mq_eng_02', progress: 0 }]; add('workbench');
+  EventBus.emit('craftComplete', { blueprintId: 'workbench' });
+  Projects.contribute('engineer_workbench', 'install'); Projects.activate('engineer_workbench');
+  expect(CraftSystem._checkStageReqs({ requiredItems: [] }, 'vaccine').reason).not.toContain('작업대');
+  add('medical_station');
+  expect(CraftSystem._checkStageReqs({ requiredItems: [] }, 'vaccine').ok).toBe(true);
+  GameState.location.currentDistrict = 'jongno';
+  expect(CraftSystem._checkStageReqs({ requiredItems: [] }, 'vaccine').ok).toBe(false);
+});
+it('설치 침상은 기존 회복 효과 소비처에 연결된다', () => {
+  const def = DEFINITIONS.fire_relief;
+  GameState.quests.active = [{ id: def.questId, progress: 0 }];
+  for (const a of def.actions) for (const r of a.items) add(r.definitionId, r.qty);
+  for (const a of def.actions) Projects.contribute(def.id, a.id);
+  Projects.activate(def.id);
+  expect(StructureEffectSystem.refresh().restHealMult).toBeGreaterThan(1);
+});
+it('만차 NPC 거래도 비용 1회와 수령 대기권을 함께 확정한다', () => {
+  vi.spyOn(NPCSystem, 'getAvailableTrades').mockReturnValue([{ give: { id: 'scrap_metal', qty: 4 }, receive: { id: 'canned_food', qty: 2 } }]);
+  add('scrap_metal', 5);
+  vi.spyOn(GameState, 'placeCardInRow').mockReturnValue(false);
+  const trade = vi.fn(); EventBus.on('npcTradeCompleted', trade);
+  expect(NPCSystem.executeTrade('npc_tower_merchant', 0)).toBe(true);
+  expect(GameState.countOnBoard('scrap_metal')).toBe(1);
+  expect(GameState.pendingLoot).toContainEqual(expect.objectContaining({ definitionId: 'canned_food', quantity: 2 }));
+  expect(trade).toHaveBeenCalledOnce();
+});
+it('기계공의 실제 시작 숙련으로 Day2 작업대를 해금하고 두 단계를 제작·설치한다', () => {
+  vi.spyOn(Math, 'random').mockReturnValue(0.99);
+  GameState.board.middle = Array(27).fill(null);
+  const engineer = GameData.characters.find(c => c.id === 'engineer');
+  GameState.player.characterId = 'engineer'; GameState.player.craftSaveChance = 0;
+  GameState.player.skills = Object.fromEntries(Object.entries(engineer.startingSkills).map(([id,level])=>[id,{level,xp:0}]));
+  GameState.time.day=2; GameState.time.hour=12;
+  GameState.crafting.activeQueue=[];
+  GameState.quests.active=[{id:'mq_eng_02',progress:0}];
+  HiddenElementSystem._checkRecipeUnlocks();
+  expect(GameState.flags.hiddenRecipesUnlocked).toContain('workbench');
+  for(const [id,qty] of [['wood',5],['scrap_metal',3],['rope',1],['nail',5]]) add(id,qty);
+  expect(CraftSystem.canStartBlueprint('workbench')).toEqual({ok:true});
+  CraftSystem.startBlueprint('workbench');
+  const entry=GameState.crafting.activeQueue[0];
+  expect(entry).toBeDefined();
+  expect(CraftSystem.advanceCraftStage(entry.craftCardId)).toBe(true);
+  expect(GameState.flags.careerProjects.crafted.workbench).toBe(1);
+  expect(Projects.contribute('engineer_workbench','install').ok).toBe(true);
+  expect(Projects.activate('engineer_workbench').ok).toBe(true);
+});

@@ -1,6 +1,8 @@
+import NPCS from '../../js/data/npcs.js';
 // @vitest-environment happy-dom
 import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
 import Dialogue from '../../js/ui/NPCDialogueModal.js';
+import Scene from '../../js/ui/DialogueScene.js';
 import NPCSystem from '../../js/systems/NPCSystem.js';
 import NPCQuestSystem from '../../js/systems/NPCQuestSystem.js';
 import GameState from '../../js/core/GameState.js';
@@ -10,6 +12,9 @@ import SkillSystem from '../../js/systems/SkillSystem.js';
 
 describe('NPC 대화 씬의 상태와 입력 수명', () => {
   beforeEach(() => {
+    Scene.reset();
+    GameState.combat.active = false;
+    GameState.ui.currentState = 'main';
     document.body.innerHTML = '<div id="app"><button id="origin">대화</button><div id="modal-overlay"><div id="modal-box">기존 모달</div></div></div>';
     GameState.ui.modalOpen = false;
     vi.spyOn(NPCSystem, 'getNPCDef').mockReturnValue({ maxHp: 50, companion: { canRecruit: true, recruitTrust: 3 } });
@@ -25,7 +30,7 @@ describe('NPC 대화 씬의 상태와 입력 수명', () => {
     Dialogue.init();
     document.getElementById('origin').focus();
   });
-  afterEach(() => { Dialogue._close(); vi.restoreAllMocks(); });
+  afterEach(() => { Scene.reset(); Dialogue._close(); vi.restoreAllMocks(); });
 
   it('의뢰/거래 탐색과 거래 후 갱신은 대화 진입 효과를 다시 실행하지 않는다', () => {
     Dialogue.show('npc_nurse');
@@ -103,23 +108,29 @@ describe('NPC 대화 씬의 상태와 입력 수명', () => {
     expect(NPCSystem.talkTo).toHaveBeenCalledTimes(1);
   });
 
-  it('부상 치료는 재료·단계·신뢰도 및 완치 이벤트 계약을 유지한다', () => {
+  it('부상 치료는 공통 서비스로 소비하며 재진입은 치료를 반복하지 않는다', () => {
+    const npcId = 'npc_wounded_soldier';
     const state = { spawned: true, trust: 0, isCompanion: false, woundLevel: 1 };
-    const def = { maxHp: 50, woundHealItem: 'bandage', woundHealQty: 2, companion: { canRecruit: false, recruitTrust: 3 } };
-    NPCSystem.getNPCDef.mockReturnValue(def);
+    GameState.npcs = { states: { [npcId]: state } };
+    NPCSystem.getNPCDef.mockReturnValue(NPCS[npcId]);
     NPCSystem.getNPCState.mockReturnValue(state);
+    const originalRecruit = NPCS[npcId].companion.canRecruit;
     const bandages = { definitionId: 'bandage', quantity: 3 };
     vi.spyOn(GameState, 'getBoardCards').mockReturnValue([bandages]);
+    vi.spyOn(GameState, 'flushPendingLoot').mockImplementation(() => {});
     vi.spyOn(SkillSystem, 'gainXp').mockImplementation(() => {});
     vi.spyOn(EventBus, 'emit').mockImplementation(() => {});
-    Dialogue.show('npc_soldier_deserter');
+    Dialogue.show(npcId);
     document.querySelector('[data-dialogue-view="heal"]').click();
+    expect(bandages.quantity).toBe(3);
     document.getElementById('npc-wound-heal-btn').click();
-    expect(bandages.quantity).toBe(1);
+    expect(bandages.quantity).toBe(2);
     expect(state).toMatchObject({ woundLevel: 0, trust: 1, healed: true });
-    expect(def.companion.canRecruit).toBe(true);
-    expect(EventBus.emit).toHaveBeenCalledWith('npcWoundHealed', { npcId: 'npc_soldier_deserter' });
-    expect(NPCSystem.talkTo).toHaveBeenCalledTimes(1);
+    expect(NPCS[npcId].companion.canRecruit).toBe(originalRecruit);
+    expect(EventBus.emit).toHaveBeenCalledWith('npcWoundHealed', { npcId, profileId: null });
+    Dialogue._close(); Dialogue.show(npcId);
+    expect(bandages.quantity).toBe(2);
+    expect(EventBus.emit.mock.calls.filter(([event]) => event === 'npcWoundHealed')).toHaveLength(1);
   });
 
   it.each(['recruit', 'dismiss', 'dispatch'])('%s 선택은 기존 동료 명령을 실행하고 씬을 닫는다', action => {
@@ -186,4 +197,72 @@ describe('NPC 대화 씬의 상태와 입력 수명', () => {
     expect(GameState.ui.modalOpen).toBe(false);
     expect(document.activeElement.id).toBe('origin');
   });
+  it.each(['leave', 'escape', 'recruit', 'dispatch'])('예약 NPC %s 종료가 다음 장면에 큐를 반환한다', action => {
+    const companion = action === 'dispatch';
+    NPCSystem.getNPCState.mockReturnValue({ spawned: true, trust: 5, isCompanion: companion, hp: 50 });
+    NPCSystem.canRecruit.mockReturnValue(true);
+    vi.spyOn(NPCSystem, 'recruit').mockReturnValue(true);
+    Scene.enqueue({ id: 'first', dismissible: true });
+    Dialogue.show('npc_nurse');
+    Scene.enqueue({ id: 'after', dismissible: true });
+    Scene.close();
+    expect(Scene._active.id).toBe('npc:npc_nurse');
+    if (action === 'leave') document.getElementById('npc-leave-btn').click();
+    else if (action === 'escape') document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    else {
+      document.querySelector('[data-dialogue-view="companion"]').click();
+      document.getElementById(action === 'recruit' ? 'npc-recruit-btn' : 'npc-dispatch-btn').click();
+    }
+    expect(Scene._active.id).toBe('after');
+    Scene.close();
+    expect(Scene._active).toBeNull();
+    expect(GameState.ui.modalOpen).toBe(false);
+    expect(document.activeElement.id).toBe('origin');
+  });
+
+  it('예약 NPC 명령의 강제 딜레마가 끝난 뒤 다음 장면을 표시한다', () => {
+    const chosen = vi.fn();
+    Scene.enqueue({ id: 'first', dismissible: true });
+    Dialogue.show('npc_nurse');
+    Scene.enqueue({ id: 'after', dismissible: true });
+    Scene.close();
+    Dialogue._showDilemma({ title: '강제 선택', choices: [{ id: 'stay', label: '남는다' }], onChoice: chosen });
+    Dialogue._close();
+    expect(Scene._active.id).toBe('npc:npc_nurse');
+    expect(GameState.ui.modalOpen).toBe(true);
+    const button = document.querySelector('.dilemma-choice-btn');
+    button.click(); button.click();
+    expect(chosen).toHaveBeenCalledTimes(1);
+    expect(Scene._active.id).toBe('after');
+    Scene.close();
+    expect(GameState.ui.modalOpen).toBe(false);
+  });
+
+  it('예약 NPC·딜레마를 reset하면 cleanup 재진입 없이 입력과 큐가 정리된다', () => {
+    const chosen = vi.fn();
+    Scene.enqueue({ id: 'first', dismissible: true });
+    Dialogue.show('npc_nurse');
+    Scene.close();
+    Dialogue._showDilemma({ title: '강제 선택', choices: [{ id: 'stay', label: '남는다' }], onChoice: chosen });
+    Dialogue._close();
+    Scene.reset(); Scene.reset();
+    expect(document.getElementById('dilemma-overlay')).toBeNull();
+    expect(Scene._active).toBeNull();
+    expect(GameState.ui.modalOpen).toBe(false);
+    expect(chosen).not.toHaveBeenCalled();
+  });
+
+  it('표시 불가능한 예약 NPC의 동기 완료 cleanup이 다음 NPC를 닫지 않는다', () => {
+    NPCSystem.getNPCDef.mockImplementation(id => id === 'missing' ? null : { maxHp: 50, companion: { canRecruit: true, recruitTrust: 3 } });
+    Scene.enqueue({ id: 'first', dismissible: true });
+    Dialogue.show('missing');
+    Dialogue.show('npc_nurse');
+    Scene.enqueue({ id: 'after', dismissible: true });
+    Scene.close();
+    expect(Scene._active.id).toBe('npc:npc_nurse');
+    expect(Dialogue._overlay.classList.contains('open')).toBe(true);
+    Dialogue._close();
+    expect(Scene._active.id).toBe('after');
+  });
+
 });

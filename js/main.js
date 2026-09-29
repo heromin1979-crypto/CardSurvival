@@ -1,3 +1,4 @@
+import PatientTreatmentSystem from './systems/PatientTreatmentSystem.js';
 // === GAME ENTRY POINT ===
 // Import order matters: core → data → systems → board → ui → screens → persistence
 
@@ -39,6 +40,8 @@ import ExploreSystem        from './systems/ExploreSystem.js';
 import SkillSystem          from './systems/SkillSystem.js';
 import BasecampSystem       from './systems/BasecampSystem.js';
 import QuestSystem          from './systems/QuestSystem.js';
+import CareerProjectSystem from './systems/CareerProjectSystem.js';
+import CareerProjectScene from './ui/CareerProjectScene.js';
 import SoundSystem          from './systems/SoundSystem.js';
 import HiddenElementSystem  from './systems/HiddenElementSystem.js';
 import TrapSystem           from './systems/TrapSystem.js';
@@ -88,6 +91,10 @@ import LandmarkModal       from './ui/LandmarkModal.js';
 import PatientBoardBridge  from './ui/PatientBoardBridge.js';
 import SettingsModal       from './ui/SettingsModal.js';
 import NPCDialogueModal   from './ui/NPCDialogueModal.js';
+import DialogueScene      from './ui/DialogueScene.js';
+import CareerDialogueSystem from './systems/CareerDialogueSystem.js';
+import CareerDialogueScene from './ui/CareerDialogueScene.js';
+import CareerPresentationScene from './ui/CareerPresentationScene.js';
 import SecretGalleryTab   from './ui/SecretGalleryTab.js';
 import CinematicScene     from './ui/CinematicScene.js';
 
@@ -147,6 +154,7 @@ function init() {
   SystemRegistry.register('GuardSystem', GuardSystem);
   PatientIntakeSystem.init();
   SystemRegistry.register('PatientIntakeSystem', PatientIntakeSystem);
+  SystemRegistry.register('PatientTreatmentSystem', PatientTreatmentSystem);
   PatientBoardBridge.init();
   // HospitalSiegeSystem은 GuardSystem + PatientIntakeSystem 이후에 init
   // (siegeResolved 구독 순서 보장 + patientDied 연쇄)
@@ -165,6 +173,8 @@ function init() {
   ExploreSystem.init();
   SkillSystem.init();
   BasecampSystem.init();
+  CareerProjectSystem.init();
+  CareerProjectScene.init();
   QuestSystem.init();
   // init()이 힌트 리스너(장소 발견·스킬 레벨업)를 등록한다. 등록만 하고 init을 빠뜨리면
   // SKILL_HINTS·LOCATION_HINTS 두 테이블이 통째로 죽어 NPC 힌트만 남는다.
@@ -197,6 +207,10 @@ function init() {
 
   // Settings modal
   SettingsModal.init();
+  DialogueScene.init();
+  CareerDialogueSystem.init();
+  CareerDialogueScene.init();
+  CareerPresentationScene.init();
   NPCDialogueModal.init();
   NPCQuestSystem.init();
   SecretGalleryTab.init();

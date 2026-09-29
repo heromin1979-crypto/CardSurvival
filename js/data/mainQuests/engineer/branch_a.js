@@ -10,7 +10,7 @@ const ENGINEER_BRANCH_A = {
   mq_eng_a_11: {
     id: 'mq_eng_a_11', title: '구로 공장 도착',
     desc: '구로구에 도달하라. 탈출 차량을 만들 공장이 있다.',
-    icon: '🏭', characterId: 'engineer', dayTrigger: 65,
+    icon: '🏭', characterId: 'engineer', dayTrigger: 25,
     prerequisite: 'mq_eng_10', requiresFlag: 'eng_branch_a',
     objective: { type: 'visit_district', districtId: 'guro', count: 1 },
     reward: { morale: 15, items: [{ definitionId: 'scrap_metal', qty: 3 }, { definitionId: 'wire', qty: 2 }] },
@@ -23,12 +23,13 @@ const ENGINEER_BRANCH_A = {
 
   mq_eng_a_12: {
     id: 'mq_eng_a_12', title: '차량 프레임',
-    desc: '고철 6개를 수집하라. 탈출 차량의 골격 재료다.',
-    icon: '🚗', characterId: 'engineer', dayTrigger: 81,
+    desc: '구로구에서 구로 탈출 차량 골격 공정에 재료를 투입하고 가동하라. 설비 설치.',
+    icon: '🚗', characterId: 'engineer', dayTrigger: 25,
     prerequisite: 'mq_eng_a_11', requiresFlag: 'eng_branch_a',
-    objective: { type: 'collect_item', definitionId: 'scrap_metal', count: 6 },
+    actionHint: '행동 메뉴의 프로젝트 또는 퀘스트 목표의 공정 보기에서 부족 재료를 확인하세요. 재료는 제작·분해·지역 탐사로 마련합니다. 설치물은 이 구역에 남습니다.',
+    objective: { type: 'career_project', projectId: 'engineer_vehicle_frame', stageId: 'commissioned', districtId: 'guro', count: 1 },
     reward: { morale: 10, items: [{ definitionId: 'rubber', qty: 2 }, { definitionId: 'leather', qty: 1 }] },
-    failPenalty: { morale: -5 }, deadlineDays: 150,
+    failPenalty: { morale: -5 }, deadlineDays: Infinity,
     narrative: {
       start: '차량 프레임 설계 완료. 고철 6개면 충분하다. 구로 일대 폐자동차에서 구할 수 있다.',
       complete: '고철 확보. 폐차에서 고무 패킹과 가죽 시트도 뜯어냈다. 방수와 충격 흡수에 쓸 수 있다. 차량 골격 제작 시작. 아버지 설계대로다.',
@@ -37,12 +38,13 @@ const ENGINEER_BRANCH_A = {
 
   mq_eng_a_13: {
     id: 'mq_eng_a_13', title: '전기 시스템',
-    desc: '전자부품 4개를 수집하라. 탈출 차량의 전기 동력 시스템이다.',
-    icon: '⚡', characterId: 'engineer', dayTrigger: 97,
+    desc: '구로구에서 차량 전기 동력 설치 공정에 재료를 투입하고 가동하라. 설비 설치 → 전원 연결.',
+    icon: '⚡', characterId: 'engineer', dayTrigger: 25,
     prerequisite: 'mq_eng_a_12', requiresFlag: 'eng_branch_a',
-    objective: { type: 'collect_item', definitionId: 'electronic_parts', count: 4 },
+    actionHint: '행동 메뉴의 프로젝트 또는 퀘스트 목표의 공정 보기에서 부족 재료를 확인하세요. 재료는 제작·분해·지역 탐사로 마련합니다. 설치물은 이 구역에 남습니다.',
+    objective: { type: 'career_project', projectId: 'engineer_vehicle_power', stageId: 'commissioned', districtId: 'guro', count: 1 },
     reward: { morale: 12, items: [{ definitionId: 'electronic_parts', qty: 2 }] },
-    failPenalty: { morale: -5 }, deadlineDays: 185,
+    failPenalty: { morale: -5 }, deadlineDays: Infinity,
     narrative: {
       start: '아버지의 설계는 전기 동력이다. 연료 없이 움직인다. 전자부품으로 모터를 만든다.',
       complete: '전기 모터 조립 완료. 수집 중 여분 부품도 챙겼다. 예비 전자부품은 언제나 필요하다. 아버지, 20년 전 아이디어가 지금 실현되고 있어요.',
@@ -51,12 +53,13 @@ const ENGINEER_BRANCH_A = {
 
   mq_eng_a_14: {
     id: 'mq_eng_a_14', title: '최종 조립',
-    desc: '로프 4개를 수집하라. 조향 장치 완성에 필요하다.',
-    icon: '🔧', characterId: 'engineer', dayTrigger: 113,
+    desc: '구로구에서 차량 조향 조립 공정에 재료를 투입하고 가동하라. 설비 설치.',
+    icon: '🔧', characterId: 'engineer', dayTrigger: 25,
     prerequisite: 'mq_eng_a_13', requiresFlag: 'eng_branch_a',
-    objective: { type: 'collect_item', definitionId: 'rope', count: 4 },
+    actionHint: '행동 메뉴의 프로젝트 또는 퀘스트 목표의 공정 보기에서 부족 재료를 확인하세요. 재료는 제작·분해·지역 탐사로 마련합니다. 설치물은 이 구역에 남습니다.',
+    objective: { type: 'career_project', projectId: 'engineer_vehicle_controls', stageId: 'commissioned', districtId: 'guro', count: 1 },
     reward: { morale: 10, items: [{ definitionId: 'duct_tape', qty: 3 }] },
-    failPenalty: { morale: -5 }, deadlineDays: 225,
+    failPenalty: { morale: -5 }, deadlineDays: Infinity,
     narrative: {
       start: '조향 장치는 로프 기반이다. 아버지의 설계에서 가장 독창적인 부분. 고장 날 부품이 적다.',
       complete: '조향 장치 완성. 조립 마무리에 덕트 테이프를 아낌없이 썼다. 여분도 충분히 챙겼다. 핸들을 돌리면 로프가 당겨진다. 차량이 형태를 갖췄다.',
@@ -65,10 +68,11 @@ const ENGINEER_BRANCH_A = {
 
   mq_eng_a_15: {
     id: 'mq_eng_a_15', title: '탈출 방향 결정',
-    desc: '100일 이상 생존하라. 탈출 차량이 완성에 가까워졌다.',
-    icon: '⚖️', characterId: 'engineer', dayTrigger: 127,
+    desc: '구로구에서 차량 주행 시험 공정에 재료를 투입하고 가동하라. 운영 물자 투입.',
+    icon: '⚖️', characterId: 'engineer', dayTrigger: 25,
     prerequisite: 'mq_eng_a_14', requiresFlag: 'eng_branch_a',
-    objective: { type: 'survive_days', count: 100 },
+    actionHint: '행동 메뉴의 프로젝트 또는 퀘스트 목표의 공정 보기에서 부족 재료를 확인하세요. 재료는 제작·분해·지역 탐사로 마련합니다. 설치물은 이 구역에 남습니다.',
+    objective: { type: 'career_project', projectId: 'engineer_vehicle_test', stageId: 'commissioned', districtId: 'guro', count: 1 },
     reward: { morale: 8, items: [{ definitionId: 'binoculars', qty: 1 }] },
     failPenalty: null, deadlineDays: Infinity,
     isBranchPoint: true,
@@ -94,10 +98,11 @@ const ENGINEER_BRANCH_A = {
 
   mq_eng_a1_prep: {
     id: 'mq_eng_a1_prep', title: '탈출 보강 작업',
-    desc: '차량 최종 보강. 구조물 2개를 제작하고 식량 8개를 비축하라.',
-    icon: '🔧', characterId: 'engineer', dayTrigger: 140,
+    desc: '구로구에서 탈출 차량 보강 공정에 재료를 투입하고 가동하라. 설비 설치 → 운영 물자 투입.',
+    icon: '🔧', characterId: 'engineer', dayTrigger: 25,
     prerequisite: 'mq_eng_a_15', requiresFlag: 'eng_end_a1',
-    objective: { type: 'craft_item', category: 'structure', count: 2 },
+    actionHint: '행동 메뉴의 프로젝트 또는 퀘스트 목표의 공정 보기에서 부족 재료를 확인하세요. 재료는 제작·분해·지역 탐사로 마련합니다. 설치물은 이 구역에 남습니다.',
+    objective: { type: 'career_project', projectId: 'engineer_escape_prep', stageId: 'commissioned', districtId: 'guro', count: 1 },
     reward: { morale: 10 },
     failPenalty: { morale: -5 }, deadlineDays: Infinity,
     narrative: {
@@ -108,10 +113,11 @@ const ENGINEER_BRANCH_A = {
 
   mq_eng_end_a1: {
     id: 'mq_eng_end_a1', title: '서울 탈출',
-    desc: '탈출 식량 8개를 비축하고 출발하라.',
-    icon: '🚗', characterId: 'engineer', dayTrigger: 154,
+    desc: '구로구에서 차량 출발 공정에 재료를 투입하고 가동하라. 운영 물자 투입.',
+    icon: '🚗', characterId: 'engineer', dayTrigger: 25,
     prerequisite: 'mq_eng_a1_prep', requiresFlag: 'eng_end_a1',
-    objective: { type: 'collect_item_type', itemType: 'food', count: 8 },
+    actionHint: '행동 메뉴의 프로젝트 또는 퀘스트 목표의 공정 보기에서 부족 재료를 확인하세요. 재료는 제작·분해·지역 탐사로 마련합니다. 설치물은 이 구역에 남습니다.',
+    objective: { type: 'career_project', projectId: 'engineer_escape', stageId: 'commissioned', districtId: 'guro', count: 1 },
     reward: { morale: 20, items: [{ definitionId: 'battle_ration', qty: 3 }], flags: { mainQuestComplete_engineer: true, engineer_ending: 'a1_escape' } },
     failPenalty: { morale: -10 }, deadlineDays: Infinity,
     narrative: {
@@ -124,10 +130,11 @@ const ENGINEER_BRANCH_A = {
 
   mq_eng_a3_prep: {
     id: 'mq_eng_a3_prep', title: '거점 인프라 구축',
-    desc: '구로 공장을 거점으로 만들어라. 구조물 3개를 제작하라.',
-    icon: '🏗️', characterId: 'engineer', dayTrigger: 140,
+    desc: '구로구에서 구로 생산 거점 공정에 재료를 투입하고 가동하라. 설비 설치 → 운영 물자 투입.',
+    icon: '🏗️', characterId: 'engineer', dayTrigger: 25,
     prerequisite: 'mq_eng_a_15', requiresFlag: 'eng_end_a3',
-    objective: { type: 'craft_item', category: 'structure', count: 3 },
+    actionHint: '행동 메뉴의 프로젝트 또는 퀘스트 목표의 공정 보기에서 부족 재료를 확인하세요. 재료는 제작·분해·지역 탐사로 마련합니다. 설치물은 이 구역에 남습니다.',
+    objective: { type: 'career_project', projectId: 'engineer_factory', stageId: 'commissioned', districtId: 'guro', count: 1 },
     reward: { morale: 10 },
     failPenalty: { morale: -5 }, deadlineDays: Infinity,
     narrative: {
@@ -138,10 +145,11 @@ const ENGINEER_BRANCH_A = {
 
   mq_eng_end_a3: {
     id: 'mq_eng_end_a3', title: '구로 거점 완성',
-    desc: '식량 10개를 비축하라. 거점 운영에 필요한 물자를 확보한다.',
-    icon: '🏠', characterId: 'engineer', dayTrigger: 154,
+    desc: '구로구에서 구로 공장 운영 인계 공정에 재료를 투입하고 가동하라. 운영 물자 투입.',
+    icon: '🏠', characterId: 'engineer', dayTrigger: 25,
     prerequisite: 'mq_eng_a3_prep', requiresFlag: 'eng_end_a3',
-    objective: { type: 'collect_item_type', itemType: 'food', count: 10 },
+    actionHint: '행동 메뉴의 프로젝트 또는 퀘스트 목표의 공정 보기에서 부족 재료를 확인하세요. 재료는 제작·분해·지역 탐사로 마련합니다. 설치물은 이 구역에 남습니다.',
+    objective: { type: 'career_project', projectId: 'engineer_factory_handover', stageId: 'commissioned', districtId: 'guro', count: 1 },
     reward: { morale: 15, items: [{ definitionId: 'rope_ladder', qty: 1 }, { definitionId: 'flashlight', qty: 1 }], flags: { mainQuestComplete_engineer: true, engineer_ending: 'a3_base' } },
     failPenalty: { morale: -5 }, deadlineDays: Infinity,
     narrative: {

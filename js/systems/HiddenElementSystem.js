@@ -9,7 +9,6 @@ import { HIDDEN_LOCATIONS }  from '../data/hiddenLocations.js';
 import { SECRET_ENEMIES }    from '../data/secretEnemies.js';
 import SECRET_EVENTS         from '../data/secretEvents.js';
 import HIDDEN_RECIPES        from '../data/hiddenRecipes.js';
-import BLUEPRINTS            from '../data/blueprints.js';
 import GameData from '../data/GameData.js';
 
 const HiddenElementSystem = {
@@ -694,10 +693,7 @@ const HiddenElementSystem = {
     // 세이브 호환: 필드 없으면 초기화
     if (!gs.flags.hiddenRecipesUnlocked) gs.flags.hiddenRecipesUnlocked = [];
 
-    const allRecipeSources = [
-      ...Object.entries(HIDDEN_RECIPES),
-      ...Object.entries(BLUEPRINTS),
-    ];
+    const allRecipeSources = Object.entries(GameData.blueprints);
 
     for (const [recipeId, recipe] of allRecipeSources) {
       if (!recipe || typeof recipe !== 'object') continue;

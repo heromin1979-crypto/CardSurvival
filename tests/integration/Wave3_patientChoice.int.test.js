@@ -1,14 +1,18 @@
 // === W3-1 통합 테스트 — 환자 기여 선택권 end-to-end ===
 // 목적: 실제 EventBus 이벤트 전파 + SystemRegistry 연결부 검증.
-//   - npcHealed 이벤트 → PatientIntakeSystem._onNpcHealed
+//   - PatientTreatmentSystem 완치 → npcWoundHealed → PatientIntakeSystem
 //   - altContributions 있는 환자 → contributionChoiceNeeded 이벤트 발행
 //   - chooseContribution(npcId, index) → _rescued 이동 + 외부 시스템(DispatchSystem/GuardSystem) register 호출
 //   - primary vs alt 선택 시 type 분기 확인
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import EventBus            from '../../js/core/EventBus.js';
 import GameState           from '../../js/core/GameState.js';
 import SystemRegistry      from '../../js/core/SystemRegistry.js';
 import PatientIntakeSystem from '../../js/systems/PatientIntakeSystem.js';
+
+import Treatment from '../../js/systems/PatientTreatmentSystem.js';
+import TickEngine from '../../js/core/TickEngine.js';
+import SkillSystem from '../../js/systems/SkillSystem.js';
 
 const TEST_NPC_ID = 'patient_lee_junho_16';  // primary=dispatch, alt[0]=sponsor
 
@@ -16,18 +20,25 @@ function resetEventBus() {
   EventBus._listeners = {};
 }
 
-function resetSystemRegistry() {
-  // SystemRegistry 내부는 module-level const이므로 직접 리셋 불가
-  // register는 덮어쓰기 가능 → 각 테스트가 필요한 stub만 덮어쓴다
-}
-
 function resetGameState() {
   GameState.time.day   = 1;
   GameState.time.totalTP = 0;
   GameState.pendingLoot = [];
+  GameState.flags = {};
+  GameState.cards = {};
+  GameState.board = { top: [], environment: [], middle: [], bottom: [] };
+  GameState.npcs = { states: {} };
+  GameState.location = { currentDistrict: 'dongjak', currentLandmark: 'lm_boramae_hospital' };
+  SystemRegistry.register('PatientIntakeSystem', PatientIntakeSystem);
+  vi.spyOn(TickEngine, 'skipTP').mockImplementation(() => {});
+  vi.spyOn(SkillSystem, 'gainXp').mockImplementation(() => {});
+  vi.spyOn(GameState, 'flushPendingLoot').mockImplementation(() => {});
+  vi.spyOn(GameState, '_compactRow').mockImplementation(() => {});
+  vi.spyOn(GameState, '_updateEncumbrance').mockImplementation(() => {});
 }
 
 function setupPatientAdmitted(npcId) {
+  GameState.npcs.states[npcId] = { spawned: true, woundLevel: 2, healed: false, hp: 60 };
   PatientIntakeSystem._admitted = [npcId];
   PatientIntakeSystem._patientMeta = {
     [npcId]: { admissionTP: 0, hp: 60 },
@@ -36,7 +47,27 @@ function setupPatientAdmitted(npcId) {
   PatientIntakeSystem._pendingChoices = {};
 }
 
-describe('W3-1 통합 — npcHealed → contributionChoiceNeeded 이벤트 전파', () => {
+function curePatient() {
+  for (const definitionId of ['boiled_water', 'rice_porridge', 'medical_bed']) {
+    GameState.cards[definitionId] = { instanceId: definitionId, definitionId, quantity: 1 };
+    GameState.board.middle.push(definitionId);
+  }
+  for (const action of ['diagnose', 'hydrate', 'nutrition', 'recover']) {
+    expect(Treatment.treat(TEST_NPC_ID, action).ok).toBe(true);
+    if (action !== 'recover') {
+      expect(PatientIntakeSystem.getPendingChoice(TEST_NPC_ID)).toBeNull();
+      expect(GameState.npcs.states[TEST_NPC_ID].healed).toBe(false);
+    }
+  }
+  expect(GameState.npcs.states[TEST_NPC_ID].healed).toBe(true);
+  expect(GameState.countOnBoard('boiled_water')).toBe(0);
+  expect(GameState.countOnBoard('rice_porridge')).toBe(0);
+  expect(GameState.countOnBoard('medical_bed')).toBe(1);
+}
+
+afterEach(() => { PatientIntakeSystem._reset(); vi.restoreAllMocks(); });
+
+describe('W3-1 통합 — 실제 완치 → contributionChoiceNeeded 이벤트 전파', () => {
   beforeEach(() => {
     resetEventBus();
     resetGameState();
@@ -48,7 +79,7 @@ describe('W3-1 통합 — npcHealed → contributionChoiceNeeded 이벤트 전�
     const listener = vi.fn();
     EventBus.on('contributionChoiceNeeded', listener);
 
-    EventBus.emit('npcHealed', { npcId: TEST_NPC_ID });
+    curePatient();
 
     expect(listener).toHaveBeenCalledTimes(1);
     const payload = listener.mock.calls[0][0];
@@ -60,18 +91,27 @@ describe('W3-1 통합 — npcHealed → contributionChoiceNeeded 이벤트 전�
   });
 
   it('pendingChoice 상태로 전환되고 _admitted에는 남아있다 (rescue 지연)', () => {
-    EventBus.emit('npcHealed', { npcId: TEST_NPC_ID });
+    curePatient();
 
-    expect(PatientIntakeSystem.getPendingChoice(TEST_NPC_ID)).toBeDefined();
+    expect(PatientIntakeSystem.getPendingChoice(TEST_NPC_ID)).toBeTruthy();
     expect(PatientIntakeSystem._admitted).toContain(TEST_NPC_ID);
     expect(PatientIntakeSystem._rescued[TEST_NPC_ID]).toBeUndefined();
   });
 
-  it('비환자 NPC npcHealed는 무시된다 (no-op)', () => {
+  it('HP 회복만으로 기여 선택을 열지 않는다', () => {
+    const listener = vi.fn();
+    EventBus.on('contributionChoiceNeeded', listener);
+    EventBus.emit('npcHealed', { npcId: TEST_NPC_ID });
+    expect(listener).not.toHaveBeenCalled();
+    expect(PatientIntakeSystem.getPendingChoice(TEST_NPC_ID)).toBeNull();
+    expect(PatientIntakeSystem.chooseContribution(TEST_NPC_ID, 0)).toBe(false);
+  });
+
+  it('비환자 NPC npcWoundHealed는 무시된다 (no-op)', () => {
     const listener = vi.fn();
     EventBus.on('contributionChoiceNeeded', listener);
 
-    EventBus.emit('npcHealed', { npcId: 'unknown_npc_999' });
+    EventBus.emit('npcWoundHealed', { npcId: 'unknown_npc_999' });
 
     expect(listener).not.toHaveBeenCalled();
   });
@@ -92,7 +132,7 @@ describe('W3-1 통합 — chooseContribution 외부 시스템 등록', () => {
 
     PatientIntakeSystem.init();
     setupPatientAdmitted(TEST_NPC_ID);
-    EventBus.emit('npcHealed', { npcId: TEST_NPC_ID });
+    curePatient();
   });
 
   it('index=0 (primary) 선택 → dispatch type → DispatchSystem.register 호출', () => {
@@ -106,6 +146,8 @@ describe('W3-1 통합 — chooseContribution 외부 시스템 등록', () => {
 
     expect(dispatchRegister).toHaveBeenCalledTimes(1);
     expect(dispatchRegister.mock.calls[0][0]).toBe(TEST_NPC_ID);
+    expect(PatientIntakeSystem.chooseContribution(TEST_NPC_ID, 0)).toBe(false);
+    expect(dispatchRegister).toHaveBeenCalledTimes(1);
 
     // _admitted에서 제거되어야 함
     expect(PatientIntakeSystem._admitted).not.toContain(TEST_NPC_ID);
@@ -134,7 +176,7 @@ describe('W3-1 통합 — chooseContribution 외부 시스템 등록', () => {
     expect(ok).toBe(false);
     expect(PatientIntakeSystem._rescued[TEST_NPC_ID]).toBeUndefined();
     // pending은 아직 남아있음
-    expect(PatientIntakeSystem.getPendingChoice(TEST_NPC_ID)).toBeDefined();
+    expect(PatientIntakeSystem.getPendingChoice(TEST_NPC_ID)).toBeTruthy();
   });
 
   it('pending choice 없는 npcId에 chooseContribution → false 반환', () => {
@@ -150,7 +192,7 @@ describe('W3-1 통합 — patientCured 이벤트 발행', () => {
     SystemRegistry.register('DispatchSystem', { register: vi.fn() });
     PatientIntakeSystem.init();
     setupPatientAdmitted(TEST_NPC_ID);
-    EventBus.emit('npcHealed', { npcId: TEST_NPC_ID });
+    curePatient();
   });
 
   it('chooseContribution 완료 시 patientCured 이벤트가 발행된다', () => {

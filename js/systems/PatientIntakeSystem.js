@@ -1,3 +1,4 @@
+import TREATMENT_PROFILES from '../data/treatmentProfiles.js';
 // === PATIENT INTAKE SYSTEM ===
 // 응급실 허브 환자 유입·타이머·기여 관리 (Pull-First + Day Cap + Timer + Contribution).
 //
@@ -12,7 +13,7 @@
 //     - HP ≤ 0 → `patientDied` (morale -3)
 //     - 48TP 경과 + 미완치 → `patientLeft` (morale -2)
 //
-//   [기여] npcHealed 구독으로 완치 감지:
+//   [기여] npcWoundHealed 구독으로 완치 감지:
 //     - _admitted → _rescued 이동
 //     - immediate 아이템 → GameState.pendingLoot
 //     - sponsor recurring: intervalDays 경과 시 maxCount까지 pendingLoot 지급
@@ -53,6 +54,7 @@ const PatientIntakeSystem = {
   _initialized:     false,
   _unsubscribeTP:   null,
   _unsubscribeHeal: null,
+  _unsubscribeLifecycle: [],
 
   // 새 게임 시작 시 이전 게임 상태 제거 — GameState.resetForNewGame이 발행하는
   // newGameStarted를 init에서 구독한다. 구독 핸들·초기화 플래그는 건드리지 않는다.
@@ -68,8 +70,13 @@ const PatientIntakeSystem = {
 
   // ── 초기화 ─────────────────────────────────────────
   init() {
-    EventBus.on('newGameStarted', () => this.resetForNewGame());
     this._unsubscribeAll();
+    this._unsubscribeLifecycle = [
+      EventBus.on('newGameStarted', () => this.resetForNewGame()),
+      EventBus.on('patientDied', ({ npcId }) => this._removeFromRoster(npcId)),
+      EventBus.on('patientLeft', ({ npcId }) => this._removeFromRoster(npcId)),
+      EventBus.on('loaded', () => queueMicrotask(() => this.resumePendingChoices())),
+    ];
 
     this._lastIntakeDay   = -Infinity;
     this._admitted        = [];
@@ -84,12 +91,57 @@ const PatientIntakeSystem = {
       this._tickTimers();
       this._tickRecurring();
     });
-    this._unsubscribeHeal = EventBus.on('npcHealed', ({ npcId } = {}) => {
+    this._unsubscribeHeal = EventBus.on('npcWoundHealed', ({ npcId } = {}) => {
       this._onNpcHealed(npcId);
     });
   },
 
   // ── 공개 API ───────────────────────────────────────
+
+  serialize() {
+    return {
+      admitted: this._admitted,
+      patientMeta: this._patientMeta,
+      rescued: this._rescued,
+      pendingChoiceIds: Object.keys(this._pendingChoices),
+      lastIntakeDay: Number.isFinite(this._lastIntakeDay) ? this._lastIntakeDay : null,
+      admittedToday: this._admittedToday,
+      currentDay: Number.isFinite(this._currentDay) ? this._currentDay : null,
+    };
+  },
+
+  restore(snapshot) {
+    this.resetForNewGame();
+    if (snapshot) {
+      this._admitted = (snapshot.admitted ?? []).filter(id => PATIENT_POOL[id] && !GameState.npcs?.states?.[id]?.patientUnavailable && !GameState.npcs?.states?.[id]?.dismissed);
+      this._patientMeta = snapshot.patientMeta ?? {};
+      this._rescued = snapshot.rescued ?? {};
+      this._lastIntakeDay = snapshot.lastIntakeDay ?? -Infinity;
+      this._admittedToday = snapshot.admittedToday ?? 0;
+      this._currentDay = snapshot.currentDay ?? -Infinity;
+      for (const id of snapshot.pendingChoiceIds ?? []) {
+        const def = PATIENT_POOL[id];
+        if (def && this._admitted.includes(id)) this._pendingChoices[id] = { primary: def.contributionOnCure, alts: def.altContributions ?? [], def };
+      }
+      return;
+    }
+    // 구버전은 입원 시각·지급 횟수가 없다. 살아 있는 부상자만 재입원하고,
+    // 이미 완치한 환자는 보상 재지급 없이 기록해 중복 기여를 방지한다.
+    for (const [id, state] of Object.entries(GameState.npcs?.states ?? {})) {
+      if (!PATIENT_POOL[id] || state.dismissed || state.patientUnavailable || !state.spawned) continue;
+      if (state.healed || state.woundLevel === 0) {
+        this._rescued[id] = { curedDay: GameState.time?.day ?? 0, type: PATIENT_POOL[id].contributionOnCure?.type ?? 'sponsor' };
+      } else if (state.woundLevel > 0) {
+        this._admitted.push(id);
+        this._patientMeta[id] = { admissionTP: GameState.time?.totalTP ?? 0, hp: Math.max(1, state.hp ?? INITIAL_HP) };
+      }
+    }
+    if (this._admitted.length) {
+      this._lastIntakeDay = GameState.time?.day ?? 0;
+      this._currentDay = this._lastIntakeDay;
+      this._admittedToday = this._admitted.length;
+    }
+  },
 
   tryIntake() {
     this._rolloverDayIfNeeded();
@@ -165,7 +217,7 @@ const PatientIntakeSystem = {
   // W3-1: 선택된 기여 타입으로 cure 확정 (0 = primary, 1+ = alt 인덱스)
   chooseContribution(npcId, optionIndex = 0) {
     const pending = this._pendingChoices?.[npcId];
-    if (!pending) return false;
+    if (!pending || !this._canChooseContribution(npcId) || !Number.isInteger(optionIndex) || optionIndex < 0) return false;
     const chosen = optionIndex === 0 ? pending.primary : pending.alts[optionIndex - 1];
     if (!chosen) return false;
 
@@ -180,6 +232,28 @@ const PatientIntakeSystem = {
     return this._pendingChoices?.[npcId] ?? null;
   },
 
+  resumePendingChoices() {
+    for (const [npcId, pending] of Object.entries(this._pendingChoices)) {
+      if (!this._canChooseContribution(npcId)) continue;
+      EventBus.emit('contributionChoiceNeeded', { npcId, options: [pending.primary, ...pending.alts] });
+    }
+  },
+
+  _canChooseContribution(npcId) {
+    const state = GameState.npcs?.states?.[npcId];
+    return this._admitted.includes(npcId) && !this._rescued[npcId]
+      && state?.spawned && !state.dismissed && !state.patientUnavailable
+      && (state.healed || state.woundLevel === 0);
+  },
+
+  getSelectedContribution(npcId) {
+    const entry = this._rescued[npcId];
+    const state = GameState.npcs?.states?.[npcId];
+    if (!entry || state?.dismissed || state?.patientUnavailable) return null;
+    const def = PATIENT_POOL[npcId];
+    return entry.contribution ?? [def?.contributionOnCure, ...(def?.altContributions ?? [])].find(option => option?.type === entry.type) ?? null;
+  },
+
   _applyContribution(npcId, contribution) {
     // 로스터 이동: _admitted → _rescued
     this._admitted = this._admitted.filter(id => id !== npcId);
@@ -190,6 +264,7 @@ const PatientIntakeSystem = {
     const rescuedEntry = {
       curedDay,
       type: contribution?.type ?? 'sponsor',
+      contribution,
     };
 
     // immediate 아이템 지급
@@ -279,7 +354,7 @@ const PatientIntakeSystem = {
       const npcState   = GameState.npcs?.states?.[npcId];
       const woundLevel = npcState?.woundLevel ?? 0;
 
-      if (woundLevel <= 0) continue;
+      if (woundLevel <= 0 || npcState?.treatment?.stabilized) continue;
 
       if (elapsed >= HP_DECAY_START_TP && woundLevel >= HP_DECAY_THRESHOLD) {
         meta.hp = meta.hp - 1;
@@ -320,6 +395,12 @@ const PatientIntakeSystem = {
   },
 
   _removeFromRoster(npcId) {
+    delete this._pendingChoices[npcId];
+    const state = GameState.npcs?.states?.[npcId];
+    if (state) { state.patientUnavailable = true; state.dismissed = true; state.spawned = false; }
+    for (const card of Object.values(GameState.cards)) {
+      if (card.definitionId === npcId) GameState.removeCardInstance(card.instanceId);
+    }
     this._admitted = this._admitted.filter(id => id !== npcId);
     const { [npcId]: _, ...rest } = this._patientMeta;
     this._patientMeta = rest;
@@ -357,7 +438,7 @@ const PatientIntakeSystem = {
   _isAtHospital() {
     const loc = GameState.location ?? {};
     // dongjak landmark (보라매병원) 또는 boramae_* 서브로케이션
-    if (loc.currentLandmark === 'dongjak') return true;
+    if (loc.currentLandmark === 'dongjak' || loc.currentLandmark === 'lm_boramae_hospital') return true;
     if (typeof loc.currentSubLocation === 'string'
         && loc.currentSubLocation.startsWith('boramae_')) return true;
     return false;
@@ -389,7 +470,11 @@ const PatientIntakeSystem = {
   //   후반(Day 30+): 파견/영입 편향 (확장)
 
   _rollPersona(characterId) {
-    const poolIds = Object.keys(PATIENT_POOL).filter(id => !this._admitted.includes(id)
+    const poolIds = Object.keys(PATIENT_POOL).filter(id => !GameState.npcs?.states?.[id]?.patientUnavailable
+                                                        && !GameState.npcs?.states?.[id]?.dismissed
+                                                        && !GameState.npcs?.states?.[id]?.healed
+                                                        && (GameState.time?.day ?? 0) >= (TREATMENT_PROFILES[PATIENT_POOL[id].treatmentProfile]?.minDay ?? MIN_DAY)
+                                                        && !this._admitted.includes(id)
                                                         && !this._rescued[id]);
     if (poolIds.length === 0) return null;
 
@@ -435,6 +520,8 @@ const PatientIntakeSystem = {
   },
 
   _unsubscribeAll() {
+    this._unsubscribeLifecycle.forEach(unsubscribe => unsubscribe());
+    this._unsubscribeLifecycle = [];
     if (this._unsubscribeTP)   { this._unsubscribeTP();   this._unsubscribeTP   = null; }
     if (this._unsubscribeHeal) { this._unsubscribeHeal(); this._unsubscribeHeal = null; }
   },

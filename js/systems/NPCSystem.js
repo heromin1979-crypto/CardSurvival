@@ -1,3 +1,5 @@
+import PATIENT_POOL from '../data/patientPool.js';
+import SystemRegistry from '../core/SystemRegistry.js';
 // === NPC SYSTEM ===
 // Manages NPC lifecycle: spawning, trust, dialogue, companion bonuses, trade.
 // NPCs appear as non-draggable cards on the middle row.
@@ -12,6 +14,7 @@ import NPCS, { NPC_ITEMS }    from '../data/npcs.js';
 import { NPC_CHEMISTRY }       from '../data/npcChemistry.js';
 import BALANCE                 from '../data/gameBalance.js';
 import GameData from '../data/GameData.js';
+import AutoSave from '../persistence/AutoSave.js';
 import { isRainyWeather }      from './WeatherSystem.js';
 
 // ── NPC → Secret Combination Hint Mapping ─────────────────────
@@ -28,6 +31,7 @@ const NPC_HINT_MAP = {
 const NPCSystem = {
 
   init() {
+    EventBus.on('newGameStarted', () => { this._lastTrackedDay = undefined; });
     // Register NPC item definitions so CardFactory can render them
     this._registerNPCItems();
 
@@ -134,6 +138,8 @@ const NPCSystem = {
       if ((GameState.companions ?? []).includes(npcId)) continue;
 
       // Check spawn conditions
+      const requiredCharacter = npcDef.spawnCondition?.requiredCharacter;
+      if (requiredCharacter && GameState.player.characterId !== requiredCharacter) continue;
       if (day >= npcDef.spawnDay && district === npcDef.spawnDistrict) {
         this._spawnNPC(npcId, npcDef);
       }
@@ -618,7 +624,14 @@ const NPCSystem = {
     const state = GameState.npcs.states[npcId];
     const trust = state?.trust ?? 0;
 
-    const lines = npcDef.dialogues[type];
+    if (PATIENT_POOL[npcId] && !npcDef.dialogues) {
+      if (type === 'greet') {
+        const recovered = npcDef.hiddenBackground?.storyFragments?.find(fragment => fragment.stage === 'wound1to0');
+        return state?.healed ? (recovered?.lines?.join(' ') ?? '치료해 주셔서 감사합니다.') : (npcDef.admissionDialogue ?? '진료를 기다리고 있습니다.');
+      }
+      return type === 'hint' ? (npcDef.visibleSymptoms ?? []).join(', ') : '';
+    }
+    const lines = npcDef.dialogues?.[type];
     if (!lines) return '';
 
     // If it's a single string (like reject), just return it
@@ -743,9 +756,8 @@ const NPCSystem = {
   canRecruit(npcId) {
     this.ensureInitialized();
     const npcDef = NPCS[npcId];
-    if (!npcDef?.companion?.canRecruit) return false;
-
     const state = GameState.npcs.states[npcId];
+    if (!npcDef?.companion || !(npcDef.companion.canRecruit || state?.healed)) return false;
     if (!state || state.isCompanion) return false;
 
     return state.trust >= npcDef.companion.recruitTrust;
@@ -773,6 +785,7 @@ const NPCSystem = {
     if (state.isCompanion) return true;
     state.isCompanion    = true;
     state.companionSince = GameState.time?.day ?? 0;
+    state.storyLastTP = GameState.time?.totalTP ?? 0;
     state.neglectDays    = 0;
     if (state.bond === undefined) state.bond = 0;
 
@@ -801,6 +814,7 @@ const NPCSystem = {
     const state          = GameState.npcs.states[npcId];
     state.isCompanion    = true;
     state.companionSince = GameState.time?.day ?? 0;
+    state.storyLastTP = GameState.time?.totalTP ?? 0;
     state.neglectDays    = 0;
     if (state.bond === undefined) state.bond = 0;
 
@@ -894,11 +908,15 @@ const NPCSystem = {
   /** Execute a trade by index */
   executeTrade(npcId, tradeIndex) {
     const trades = this.getAvailableTrades(npcId);
-    if (tradeIndex < 0 || tradeIndex >= trades.length) return false;
+    if (!Number.isInteger(tradeIndex) || tradeIndex < 0 || tradeIndex >= trades.length) return false;
 
     const trade = trades[tradeIndex];
+    if (!GameData.items[trade.receive.id] || GameState.player.isAlive === false) return false;
     const giveCount = GameState.countOnBoard(trade.give.id);
     if (giveCount < trade.give.qty) return false;
+
+    return AutoSave.deferUntilComplete(() => {
+    EventBus.batch(() => {
 
     // Remove given items
     let remaining = trade.give.qty;
@@ -910,7 +928,7 @@ const NPCSystem = {
       const qty = card.quantity ?? 1;
       if (qty <= remaining) {
         remaining -= qty;
-        GameState.removeCardInstance(card.instanceId);
+        GameState.removeCardInstanceSilent(card.instanceId);
       } else {
         card.quantity = qty - remaining;
         remaining = 0;
@@ -922,10 +940,12 @@ const NPCSystem = {
     if (inst) {
       const placed = GameState.placeCardInRow(inst.instanceId, 'bottom');
       if (!placed) {
-        GameState.removeCardInstance(inst.instanceId);
-        return false;
+          GameState.removeCardInstanceSilent(inst.instanceId);
+          GameState.pendingLoot.push({ definitionId: trade.receive.id, quantity: trade.receive.qty, contamination: 0 });
       }
     }
+
+    });
 
     const giveItemDef = GameData.items[trade.give.id];
     const receiveItemDef = GameData.items[trade.receive.id];
@@ -942,8 +962,11 @@ const NPCSystem = {
     if (trade.receive.id?.startsWith('map_fragment_')) {
       this._collectMapFragment(trade.receive.id);
     }
+    EventBus.emit('npcTradeCompleted', { npcId, give: trade.give, receive: trade.receive });
     EventBus.emit('boardChanged', {});
+    EventBus.emit('saveGame');
     return true;
+    });
   },
 
   // ── 지도 조각 수집 ─────────────────────────────────────────────
@@ -1075,7 +1098,8 @@ const NPCSystem = {
       const npcDef = NPCS[npcId];
       if (!npcDef) continue;
 
-      if (state.isCompanion || npcDef.spawnDistrict === district) {
+      const patientPresent = PATIENT_POOL[npcId] && SystemRegistry.get('PatientIntakeSystem')?._isAtHospital();
+      if (state.isCompanion || npcDef.spawnDistrict === district || patientPresent) {
         result.push({ npcId, state, def: npcDef });
       }
     }

@@ -151,7 +151,7 @@ const BLUEPRINTS = {
 
   workbench: {
     id: 'workbench', name: '작업대', category: 'structure',
-    hidden: true, unlockConditions: { minDay: 15, minSkillLevel: { building: 3 } },
+    hidden: true, unlockConditions: { minSkillLevel: { building: 3, crafting: 2 } },
     description: '복잡한 제작을 가능하게 한다.',
     output: [{ definitionId: 'workbench', qty: 1 }],
     requiredTools: [],
@@ -508,6 +508,15 @@ const BLUEPRINTS = {
       requiredItems: [{ definitionId: 'wood', qty: 2 }],
       consumeAt: 'start',
     }],
+  },
+
+  assemble_water_filter: {
+    id: 'assemble_water_filter', name: '정수기 필터 조립', category: 'material',
+    description: '숯 필터와 용기 재료로 정수기에 장착할 필터를 조립한다.',
+    output: [{ definitionId: 'water_filter', qty: 1 }],
+    requiredTools: [], requiredSkills: { crafting: 1 },
+    stages: [{ stageIndex: 0, label: '정수 필터 조립', tpCost: 2,
+      requiredItems: [{ definitionId: 'charcoal_filter', qty: 1 }, { definitionId: 'plastic', qty: 2 }, { definitionId: 'sand', qty: 2 }], consumeAt: 'start' }],
   },
 
   make_charcoal_filter: {

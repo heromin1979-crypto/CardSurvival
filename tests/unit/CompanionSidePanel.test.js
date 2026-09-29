@@ -42,12 +42,15 @@ describe('동료 패널 — 3컬럼 골격', () => {
   });
 
   it('그레인·비네팅 레이어가 동료 컬럼을 덮지 않는다', () => {
-    const insets = [...LAYOUT_CSS.matchAll(/inset:\s*([^;]+);/g)].map(m => m[1]);
-    const mainLayers = insets.filter(v => v.includes(`${SIDEBAR_W}px`));
-
-    expect(mainLayers.length).toBeGreaterThan(0);
-    for (const inset of mainLayers) {
-      expect(inset).toContain(`${COMPANION_W}px`);
+    // 레이어가 전체 화면에서 보드의 가상 요소로 이동했으므로 부모의 경계로 검사한다.
+    const board = [...LAYOUT_CSS.matchAll(/\.bc-main\s*\{([^}]*)\}/g)].map(m => m[1]).join('\n');
+    expect(board).toMatch(/position:\s*relative/);
+    expect(board).toMatch(/overflow:\s*hidden/);
+    for (const pseudo of ['before', 'after']) {
+      const layer = LAYOUT_CSS.match(new RegExp(`\\.bc-main::${pseudo}\\s*\\{([^}]*)\\}`))[1];
+      expect(layer).toMatch(/position:\s*absolute/);
+      expect(layer).toMatch(/inset:\s*0\s*;/);
+      expect(layer).toMatch(/pointer-events:\s*none/);
     }
   });
 

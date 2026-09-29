@@ -58,6 +58,7 @@ const CompanionPanel = {
       EventBus.on('npcDismissed',   refresh);
       EventBus.on('npcPanelUpdate', refresh);
       EventBus.on('npcHealed',      refresh);
+      EventBus.on('npcWoundHealed', refresh);
 
       // 사기는 TP마다 자연 감소한다 — 전체 재렌더는 초상화·장비 이미지를 매 TP 다시 물린다
       const refreshStatus = () => {

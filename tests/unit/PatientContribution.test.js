@@ -1,9 +1,9 @@
 // === PatientIntakeSystem — 증분 4 (Contribution Engine) ===
 // 검증:
-//  - npcHealed 리스너: 완치된 환자 감지 → _admitted 제거 + _rescued 추가
+//  - npcWoundHealed 리스너: 완치된 환자 감지 → _admitted 제거 + _rescued 추가
 //  - immediate 아이템: pendingLoot에 즉시 추가
 //  - recurring sponsor: intervalDays 경과 후 pendingLoot 추가, maxCount 도달 후 중단
-//  - 비환자 npcHealed는 무시
+//  - 비환자 npcWoundHealed는 무시
 //  - patientCured 이벤트 발행
 import { describe, it, expect, beforeEach } from 'vitest';
 import EventBus             from '../../js/core/EventBus.js';
@@ -48,11 +48,11 @@ function admitSpecificPatient(npcId = PILOT_ID) {
 beforeEach(resetWorld);
 
 describe('PatientIntakeSystem — 증분 4: 완치 감지', () => {
-  it('환자의 npcHealed 이벤트 수신 시 _admitted에서 _rescued로 이동', () => {
+  it('환자의 npcWoundHealed 이벤트 수신 시 _admitted에서 _rescued로 이동', () => {
     const npcId = admitSpecificPatient();
     expect(PatientIntakeSystem.getActivePatients()).toContain(npcId);
 
-    EventBus.emit('npcHealed', { npcId });
+    EventBus.emit('npcWoundHealed', { npcId });
 
     expect(PatientIntakeSystem.getActivePatients()).not.toContain(npcId);
     expect(PatientIntakeSystem.getRescuedRoster()).toContain(npcId);
@@ -63,17 +63,17 @@ describe('PatientIntakeSystem — 증분 4: 완치 감지', () => {
     let captured = null;
     EventBus.on('patientCured', (p) => { captured = p; });
 
-    EventBus.emit('npcHealed', { npcId });
+    EventBus.emit('npcWoundHealed', { npcId });
 
     expect(captured).not.toBeNull();
     expect(captured.npcId).toBe(npcId);
   });
 
-  it('비환자 NPC의 npcHealed는 무시 (rescued에 추가되지 않음)', () => {
+  it('비환자 NPC의 npcWoundHealed는 무시 (rescued에 추가되지 않음)', () => {
     PatientIntakeSystem.init();
     const nonPatientId = 'npc_nurse';
 
-    EventBus.emit('npcHealed', { npcId: nonPatientId });
+    EventBus.emit('npcWoundHealed', { npcId: nonPatientId });
 
     expect(PatientIntakeSystem.getRescuedRoster()).not.toContain(nonPatientId);
   });
@@ -85,7 +85,7 @@ describe('PatientIntakeSystem — 증분 4: immediate 아이템 지급', () => {
     const def = PATIENT_POOL[npcId];
     const expectedImmediate = def.contributionOnCure?.immediate ?? [];
 
-    EventBus.emit('npcHealed', { npcId });
+    EventBus.emit('npcWoundHealed', { npcId });
 
     for (const { id, qty } of expectedImmediate) {
       const found = GameState.pendingLoot.find(l => l.definitionId === id);
@@ -102,7 +102,7 @@ describe('PatientIntakeSystem — 증분 4: recurring sponsor 스케줄링', () 
     const def = PATIENT_POOL[npcId];
     const interval = def.contributionOnCure?.recurring?.intervalDays ?? 6;
 
-    EventBus.emit('npcHealed', { npcId });
+    EventBus.emit('npcWoundHealed', { npcId });
     const loot0 = GameState.pendingLoot.length;
 
     // intervalDays - 1일 경과: 아직 배달 X
@@ -119,7 +119,7 @@ describe('PatientIntakeSystem — 증분 4: recurring sponsor 스케줄링', () 
     const interval = def.contributionOnCure?.recurring?.intervalDays ?? 6;
     const recurItems = def.contributionOnCure?.recurring?.items ?? [];
 
-    EventBus.emit('npcHealed', { npcId });
+    EventBus.emit('npcWoundHealed', { npcId });
     const loot0 = GameState.pendingLoot.length;
 
     GameState.time.day = 10 + interval;
@@ -140,7 +140,7 @@ describe('PatientIntakeSystem — 증분 4: recurring sponsor 스케줄링', () 
     const def = PATIENT_POOL[npcId];
     const { intervalDays, maxCount } = def.contributionOnCure?.recurring ?? {};
 
-    EventBus.emit('npcHealed', { npcId });
+    EventBus.emit('npcWoundHealed', { npcId });
 
     // maxCount회 진행
     for (let i = 1; i <= maxCount; i++) {
@@ -165,7 +165,7 @@ describe('PatientIntakeSystem — 증분 4: recurring sponsor 스케줄링', () 
     let deliveryCount = 0;
     EventBus.on('sponsorDelivery', () => { deliveryCount++; });
 
-    EventBus.emit('npcHealed', { npcId });
+    EventBus.emit('npcWoundHealed', { npcId });
 
     GameState.time.day = 10 + interval;
     EventBus.emit('tpAdvance', {});
@@ -178,7 +178,7 @@ describe('PatientIntakeSystem — 증분 4: rescued 로스터 영속성', () => 
   it('완치 환자는 rescued 로스터에 누적된다 (상한 영향 없음)', () => {
     // 첫 환자 완치
     const npcId1 = admitSpecificPatient(PILOT_ID);
-    EventBus.emit('npcHealed', { npcId: npcId1 });
+    EventBus.emit('npcWoundHealed', { npcId: npcId1 });
 
     // 두 번째 환자는 상한 소진 X (rescued는 _admitted와 별개)
     expect(PatientIntakeSystem.getActivePatients().length).toBe(0);

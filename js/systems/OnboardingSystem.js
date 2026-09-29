@@ -198,7 +198,7 @@ const OnboardingSystem = {
     const isDoctor = () => GameState.player?.characterId === 'doctor';
 
     // 첫 NPC 치료 성공 시 — 의료 스킬 성장 안내 (의사 전용)
-    EventBus.on('npcHealed', () => {
+    EventBus.on('npcWoundHealed', () => {
       if (!isDoctor()) return;
       if (_shown('doctor_skill')) return;
       _markShown('doctor_skill');

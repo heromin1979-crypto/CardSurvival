@@ -8,7 +8,7 @@ const CHEF_BRANCH_B = {
   mq_chef_b_11: {
     id: 'mq_chef_b_11', title: '용산 탐색',
     desc: '용산구에 도달하라. 소피텔 동료 셰프 박민호가 용산에 있다는 소문이다.',
-    icon: '🔍', characterId: 'chef', dayTrigger: 65,
+    icon: '🔍', characterId: 'chef', dayTrigger: 25,
     prerequisite: 'mq_chef_10', requiresFlag: 'chef_branch_b',
     objective: { type: 'visit_district', districtId: 'yongsan', count: 1 },
     reward: { morale: 15, items: [{ definitionId: 'scrap_metal', qty: 2 }] },
@@ -22,7 +22,7 @@ const CHEF_BRANCH_B = {
   mq_chef_b_12: {
     id: 'mq_chef_b_12', title: '주방 설비 수집',
     desc: '고철 5개를 수집하라. 박민호와 전문 주방 설비를 만든다.',
-    icon: '🔩', characterId: 'chef', dayTrigger: 81,
+    icon: '🔩', characterId: 'chef', dayTrigger: 25,
     prerequisite: 'mq_chef_b_11', requiresFlag: 'chef_branch_b',
     objective: { type: 'collect_item', definitionId: 'scrap_metal', count: 5 },
     reward: { morale: 12, items: [{ definitionId: 'wood', qty: 2 }] },
@@ -35,12 +35,13 @@ const CHEF_BRANCH_B = {
 
   mq_chef_b_13: {
     id: 'mq_chef_b_13', title: '전문 주방 건설',
-    desc: '구조물 2개를 제작하라. 호텔급 주방을 만든다.',
-    icon: '🏗️', characterId: 'chef', dayTrigger: 95,
+    desc: '용산구에서 용산 전문 주방 공정에 재료를 투입하고 가동하라. 설비 설치 → 운영 물자 투입 → 조리한 식사 제공.',
+    icon: '🏗️', characterId: 'chef', dayTrigger: 25,
     prerequisite: 'mq_chef_b_12', requiresFlag: 'chef_branch_b',
-    objective: { type: 'craft_item', category: 'structure', count: 2 },
+    actionHint: '행동 메뉴의 프로젝트 또는 퀘스트 목표의 공정 보기에서 부족 재료를 확인하세요. 재료는 제작·분해·지역 탐사로 마련합니다. 설치물은 이 구역에 남습니다.',
+    objective: { type: 'career_project', projectId: 'chef_professional', stageId: 'commissioned', districtId: 'yongsan', count: 1 },
     reward: { morale: 12, items: [{ definitionId: 'salt', qty: 2 }] },
-    failPenalty: { morale: -5 }, deadlineDays: 180,
+    failPenalty: { morale: -5 }, deadlineDays: Infinity,
     narrative: {
       start: '셰프 두 명의 경험을 합치면 폐허에서도 호텔 주방을 만들 수 있다. 조리대, 화구, 환기 시스템.',
       complete: '전문 주방 완성. 소금도 확보했다. 박민호: "소피텔 주방보다는 작지만, 기능은 다 갖췄어요." 재혁: "여기서 미식을 되살린다."',
@@ -50,7 +51,7 @@ const CHEF_BRANCH_B = {
   mq_chef_b_14: {
     id: 'mq_chef_b_14', title: '고급 식재료',
     desc: '식량 8개를 수집하라. 미식 복원에 쓸 엄선된 재료가 필요하다.',
-    icon: '🛒', characterId: 'chef', dayTrigger: 106,
+    icon: '🛒', characterId: 'chef', dayTrigger: 25,
     prerequisite: 'mq_chef_b_13', requiresFlag: 'chef_branch_b',
     objective: { type: 'collect_item_type', itemType: 'food', count: 8 },
     reward: { morale: 10, items: [{ definitionId: 'canned_food', qty: 2 }] },
@@ -63,12 +64,13 @@ const CHEF_BRANCH_B = {
 
   mq_chef_b_15: {
     id: 'mq_chef_b_15', title: '셰프 특선 메뉴',
-    desc: '음식 아이템 3개를 제작하라. 전문 주방에서 본격적인 요리를 시작한다.',
-    icon: '👨‍🍳', characterId: 'chef', dayTrigger: 117,
+    desc: '용산구에서 셰프 특선 제공 공정에 재료를 투입하고 가동하라. 특선 메뉴 제공.',
+    icon: '👨‍🍳', characterId: 'chef', dayTrigger: 25,
     prerequisite: 'mq_chef_b_14', requiresFlag: 'chef_branch_b',
-    objective: { type: 'craft_item', category: 'food', count: 3 },
+    actionHint: '행동 메뉴의 프로젝트 또는 퀘스트 목표의 공정 보기에서 부족 재료를 확인하세요. 재료는 제작·분해·지역 탐사로 마련합니다. 설치물은 이 구역에 남습니다.',
+    objective: { type: 'career_project', projectId: 'chef_menu', stageId: 'commissioned', districtId: 'yongsan', count: 1 },
     reward: { morale: 12, items: [{ definitionId: 'herbal_tea', qty: 2 }] },
-    failPenalty: { morale: -5 }, deadlineDays: 230,
+    failPenalty: { morale: -5 }, deadlineDays: Infinity,
     narrative: {
       start: '통조림 죽이 아니라 제대로 된 음식을 만든다. 소피텔 셰프 두 명이 힘을 합친다. 생존 음식이 아닌 "요리".',
       complete: '셰프 특선 메뉴 3종 완성. 허브차도 만들었다. 생존자들이 줄을 섰다. "이게 진짜 음식이에요." 박민호: "형, 우리 다시 셰프가 됐어요."',
@@ -78,7 +80,7 @@ const CHEF_BRANCH_B = {
   mq_chef_b_16: {
     id: 'mq_chef_b_16', title: '식수 확보 체계',
     desc: '깨끗한 물 5개를 확보하라. 섬세한 조리에 안정적 식수가 필수다.',
-    icon: '💧', characterId: 'chef', dayTrigger: 128,
+    icon: '💧', characterId: 'chef', dayTrigger: 25,
     prerequisite: 'mq_chef_b_15', requiresFlag: 'chef_branch_b',
     objective: { type: 'collect_item_type', itemType: 'clean', count: 5 },
     reward: { morale: 10, items: [{ definitionId: 'water_filter', qty: 1 }] },
@@ -92,7 +94,7 @@ const CHEF_BRANCH_B = {
   mq_chef_b_17: {
     id: 'mq_chef_b_17', title: '조미료 비축',
     desc: '소금 5개를 수집하라. 정교한 간 조절에 양질의 소금이 필요하다.',
-    icon: '🧂', characterId: 'chef', dayTrigger: 139,
+    icon: '🧂', characterId: 'chef', dayTrigger: 25,
     prerequisite: 'mq_chef_b_16', requiresFlag: 'chef_branch_b',
     objective: { type: 'collect_item', definitionId: 'salt', count: 5 },
     reward: { morale: 10, items: [{ definitionId: 'salt', qty: 1 }] },
@@ -105,12 +107,13 @@ const CHEF_BRANCH_B = {
 
   mq_chef_b_18: {
     id: 'mq_chef_b_18', title: '다이닝 공간',
-    desc: '구조물 2개를 추가 제작하라. 식사 자체를 경험으로 만든다.',
-    icon: '🍽️', characterId: 'chef', dayTrigger: 156,
+    desc: '용산구에서 다이닝 식사 경험 공정에 재료를 투입하고 가동하라. 설비 설치 → 조리한 식사 제공.',
+    icon: '🍽️', characterId: 'chef', dayTrigger: 25,
     prerequisite: 'mq_chef_b_17', requiresFlag: 'chef_branch_b',
-    objective: { type: 'craft_item', category: 'structure', count: 2 },
+    actionHint: '행동 메뉴의 프로젝트 또는 퀘스트 목표의 공정 보기에서 부족 재료를 확인하세요. 재료는 제작·분해·지역 탐사로 마련합니다. 설치물은 이 구역에 남습니다.',
+    objective: { type: 'career_project', projectId: 'chef_dining', stageId: 'commissioned', districtId: 'yongsan', count: 1 },
     reward: { morale: 12, items: [{ definitionId: 'cloth', qty: 2 }] },
-    failPenalty: { morale: -5 }, deadlineDays: 300,
+    failPenalty: { morale: -5 }, deadlineDays: Infinity,
     narrative: {
       start: '주방만으로는 미식이 되지 않는다. 테이블, 조명, 공간. 앉아서 먹는다는 것 자체가 사람을 사람답게 한다.',
       complete: '다이닝 공간 완성. 천으로 테이블보를 깔았다. 이제 "식당"이다. 박민호: "다시는 못 볼 줄 알았던 풍경이에요."',
@@ -119,12 +122,13 @@ const CHEF_BRANCH_B = {
 
   mq_chef_b_19: {
     id: 'mq_chef_b_19', title: '허브 정원',
-    desc: '약초 6개를 수집하라. 신선 허브 없이 미식은 완성되지 않는다.',
-    icon: '🌿', characterId: 'chef', dayTrigger: 172,
+    desc: '용산구에서 주방 허브 정원 공정에 재료를 투입하고 가동하라. 설비 설치 → 운영 물자 투입.',
+    icon: '🌿', characterId: 'chef', dayTrigger: 25,
     prerequisite: 'mq_chef_b_18', requiresFlag: 'chef_branch_b',
-    objective: { type: 'collect_item', definitionId: 'herb', count: 6 },
+    actionHint: '행동 메뉴의 프로젝트 또는 퀘스트 목표의 공정 보기에서 부족 재료를 확인하세요. 재료는 제작·분해·지역 탐사로 마련합니다. 설치물은 이 구역에 남습니다.',
+    objective: { type: 'career_project', projectId: 'chef_herb_garden', stageId: 'commissioned', districtId: 'yongsan', count: 1 },
     reward: { morale: 12, items: [{ definitionId: 'herbal_tea', qty: 2 }] },
-    failPenalty: { morale: -5 }, deadlineDays: 330,
+    failPenalty: { morale: -5 }, deadlineDays: Infinity,
     narrative: {
       start: '마지막 퍼즐은 신선 허브다. 바질, 로즈마리, 타임. 용산 주방 창가에 허브 정원을 만든다. 손끝에서 바로 뜯어 쓰는 향신료.',
       complete: '허브 6종 확보. 허브차도 추가로 만들었다. 박민호: "이제 진짜 다 갖춰졌어요. 셰프 두 명, 주방, 재료, 허브, 손님들." 재혁은 조용히 웃었다.',
@@ -133,10 +137,11 @@ const CHEF_BRANCH_B = {
 
   mq_chef_end_b1: {
     id: 'mq_chef_end_b1', title: '용산 미식 복원',
-    desc: '365일을 생존하라. 두 셰프의 주방이 종말 이후 최고의 요리를 되살린다.',
-    icon: '⭐', characterId: 'chef', dayTrigger: 194,
+    desc: '용산구에서 미식 복원 첫 만찬 공정에 재료를 투입하고 가동하라. 복원 만찬 제공.',
+    icon: '⭐', characterId: 'chef', dayTrigger: 25,
     prerequisite: 'mq_chef_b_19', requiresFlag: 'chef_branch_b',
-    objective: { type: 'survive_days', count: 365 },
+    actionHint: '행동 메뉴의 프로젝트 또는 퀘스트 목표의 공정 보기에서 부족 재료를 확인하세요. 재료는 제작·분해·지역 탐사로 마련합니다. 설치물은 이 구역에 남습니다.',
+    objective: { type: 'career_project', projectId: 'chef_restoration', stageId: 'commissioned', districtId: 'yongsan', count: 1 },
     reward: { morale: 25, items: [{ definitionId: 'canned_food', qty: 3 }, { definitionId: 'herbal_tea', qty: 3 }], flags: { mainQuestComplete_chef: true, chef_ending: 'b1_ascension' } },
     failPenalty: null, deadlineDays: Infinity,
     narrative: {

@@ -460,7 +460,6 @@ const CINEMATIC_SCENES = {
 
   cin_char_chef: {
     id: 'cin_char_chef',
-    image: `${IMG}char_chef_final.webp`,
     gradient: 'linear-gradient(160deg,#1a0a00 0%,#302000 60%,#100800 100%)',
     title: '윤재혁: 첫 급식 완료',
     subtitle: '생존자 급식소 개소',

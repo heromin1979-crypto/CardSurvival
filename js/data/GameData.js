@@ -8,6 +8,7 @@
 
 import ITEMS       from './items.js';
 import BLUEPRINTS  from './blueprints.js';
+import BLUEPRINTS_ADV from './blueprints_advanced.js';
 import NODES, { DISTRICTS, SUB_LOCATIONS } from './nodes.js';
 import ENEMIES     from './enemies.js';
 import CHARACTERS  from './characters.js';
@@ -18,7 +19,7 @@ import HIDDEN_RECIPES from './hiddenRecipes.js';
 
 const GameData = Object.freeze({
   items:           ITEMS,
-  blueprints:      { ...BLUEPRINTS, ...HIDDEN_RECIPES },
+  blueprints:      { ...BLUEPRINTS, ...BLUEPRINTS_ADV, ...HIDDEN_RECIPES },
   nodes:           NODES,
   districts:       DISTRICTS,
   subLocations:    SUB_LOCATIONS,

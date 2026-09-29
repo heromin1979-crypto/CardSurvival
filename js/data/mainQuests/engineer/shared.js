@@ -18,11 +18,12 @@ const ENGINEER_SHARED = {
 
   mq_eng_02: {
     id: 'mq_eng_02', title: '작업장 확보',
-    desc: '구조물을 제작하라. 안전한 작업 공간이 필요하다.',
+    desc: '용산구에서 용산 작업대 설치 공정에 재료를 투입하고 가동하라. 설비 설치.',
     icon: '🏗️', characterId: 'engineer', dayTrigger: 2, prerequisite: 'mq_eng_01',
-    objective: { type: 'craft_item', category: 'structure', count: 1 },
+    actionHint: '행동 메뉴의 프로젝트 또는 퀘스트 목표의 공정 보기에서 부족 재료를 확인하세요. 재료는 제작·분해·지역 탐사로 마련합니다. 설치물은 이 구역에 남습니다.',
+    objective: { type: 'career_project', projectId: 'engineer_workbench', stageId: 'commissioned', districtId: 'yongsan', count: 1 },
     reward: { morale: 5, items: [{ definitionId: 'scrap_metal', qty: 2 }] },
-    failPenalty: { morale: -5 }, deadlineDays: 12,
+    failPenalty: { morale: -5 }, deadlineDays: Infinity,
     narrative: {
       start: '작업할 공간 없이는 아무것도 만들 수 없다. 바리케이드를 세워 작업장을 확보한다.',
       complete: '작업장 완성. 이제 조용히 작업할 수 있다.',
@@ -82,27 +83,29 @@ const ENGINEER_SHARED = {
   },
 
   mq_eng_07: {
-    id: 'mq_eng_07', title: '아버지의 메모',
+    id: 'mq_eng_07', title: '성수 원정용 결속재',
     desc: '로프 2개를 수집하라. 성수 공장으로 가기 전 기초 재료를 준비한다.',
     icon: '📐', characterId: 'engineer', dayTrigger: 13, prerequisite: 'mq_eng_06',
+    suppressFlashback: true,
     objective: { type: 'collect_item', definitionId: 'rope', count: 2 },
     reward: { morale: 8, items: [{ definitionId: 'compass', qty: 1 }] },
     failPenalty: { morale: -5 }, deadlineDays: 23,
     narrative: {
-      start: '발전기를 수리하다가 아버지의 메모를 발견했다. 작은 노트. "대한아, 성수 공장 서랍 안에 설계도가 있다. 아버지가 20년 전에 그린 것." 가야 한다.',
+      start: '성수 공장에 남겨진 아버지의 설계도를 찾으러 가야 한다. 부품과 짐이 이동 중 흩어지지 않도록 로프를 준비한다. 메모와 설계도의 기억은 공장에 도착해 확인할 것이다.',
       complete: '로프 확보. 성수 공장 이동을 위한 나침반도 챙겼다. 갈 준비가 됐다.',
     },
   },
 
   mq_eng_08: {
     id: 'mq_eng_08', title: '발전기 부품 수집',
-    desc: '전자 부품 3개를 수집하라. 발전기 제어 회로 교체에 필요하다.',
+    desc: '용산구에서 용산 발전 계통 복원 공정에 재료를 투입하고 가동하라. 설비 설치 → 운영 물자 투입.',
     icon: '🔋', characterId: 'engineer', dayTrigger: 15, prerequisite: 'mq_eng_07',
-    objective: { type: 'collect_item', definitionId: 'electronic_parts', count: 3 },
+    actionHint: '행동 메뉴의 프로젝트 또는 퀘스트 목표의 공정 보기에서 부족 재료를 확인하세요. 재료는 제작·분해·지역 탐사로 마련합니다. 설치물은 이 구역에 남습니다.',
+    objective: { type: 'career_project', projectId: 'engineer_power', stageId: 'commissioned', districtId: 'yongsan', count: 1 },
     reward: { morale: 8, items: [{ definitionId: 'flashlight', qty: 1 }] },
-    failPenalty: { morale: -5 }, deadlineDays: 30,
+    failPenalty: { morale: -5 }, deadlineDays: Infinity,
     narrative: {
-      start: '성수 공장 발전기를 완전히 수리하면 전력을 쓸 수 있다. 전동 공구가 없으면 이동수단 제작이 느려진다.',
+      start: '용산 작업장의 발전기를 완전히 수리하면 전력을 쓸 수 있다. 전동 공구가 없으면 이동수단 제작이 느려진다.',
       complete: '발전기 수리 완료. 이제 전력이 들어온다. 어두운 공장에서 쓸 손전등도 챙겼다.',
     },
   },
@@ -167,7 +170,7 @@ const ENGINEER_SHARED = {
   mq_eng_side_02: {
     id: 'mq_eng_side_02', title: '전자상가 위험 탐사',
     desc: '용산 전자상가 깊숙한 곳을 탐사하라. 전자부품 5개 + 와이어 3개.',
-    icon: '🔦', characterId: 'engineer', dayTrigger: 30, prerequisite: 'mq_eng_10',
+    icon: '🔦', characterId: 'engineer', dayTrigger: 25, prerequisite: 'mq_eng_10',
     objective: { type: 'collect_item', definitionId: 'electronic_parts', count: 5 },
     reward: { morale: 10, items: [{ definitionId: 'wire', qty: 3 }, { definitionId: 'battery', qty: 2 }] },
     failPenalty: { morale: -5 }, deadlineDays: 70,
@@ -180,7 +183,7 @@ const ENGINEER_SHARED = {
   mq_eng_side_03: {
     id: 'mq_eng_side_03', title: '폐공장 탐험',
     desc: '성수동 외곽 폐공장을 탐사하라. 성동구 방문 + 도구 2개 제작.',
-    icon: '🏭', characterId: 'engineer', dayTrigger: 35, prerequisite: 'mq_eng_10',
+    icon: '🏭', characterId: 'engineer', dayTrigger: 25, prerequisite: 'mq_eng_10',
     objective: { type: 'visit_district', districtId: 'seongdong', count: 1 },
     reward: { morale: 8, items: [{ definitionId: 'refined_metal', qty: 3 }, { definitionId: 'spring', qty: 4 }] },
     failPenalty: { morale: -3 }, deadlineDays: 75,
@@ -193,7 +196,7 @@ const ENGINEER_SHARED = {
   mq_eng_side_04: {
     id: 'mq_eng_side_04', title: '군수공장 잠입',
     desc: '군수공장 위치 정보를 확보하라. 방사선 주의 지역. 종로구 방문.',
-    icon: '🎯', characterId: 'engineer', dayTrigger: 40, prerequisite: 'mq_eng_10',
+    icon: '🎯', characterId: 'engineer', dayTrigger: 25, prerequisite: 'mq_eng_10',
     objective: { type: 'visit_district', districtId: 'jongno', count: 1 },
     reward: { morale: 12, items: [{ definitionId: 'gunpowder', qty: 3 }, { definitionId: 'electronic_parts', qty: 3 }] },
     failPenalty: { morale: -5 }, deadlineDays: 85,
@@ -206,7 +209,7 @@ const ENGINEER_SHARED = {
   mq_eng_side_05: {
     id: 'mq_eng_side_05', title: '연구소 기계 분석',
     desc: '서울대 연구소에서 도면 분석 자료를 확보하라. 관악구 방문 + 구조물 1개 제작.',
-    icon: '📚', characterId: 'engineer', dayTrigger: 45, prerequisite: 'mq_eng_side_02',
+    icon: '📚', characterId: 'engineer', dayTrigger: 25, prerequisite: 'mq_eng_side_02',
     objective: { type: 'visit_district', districtId: 'gwanak', count: 1 },
     reward: { morale: 15, items: [{ definitionId: 'electronic_parts', qty: 4 }, { definitionId: 'wire', qty: 5 }] },
     failPenalty: { morale: -5 }, deadlineDays: 90,
@@ -219,7 +222,7 @@ const ENGINEER_SHARED = {
   mq_eng_side_06: {
     id: 'mq_eng_side_06', title: '장비 개조 마스터',
     desc: '기존 장비를 개조해 상위 버전으로 교체하라. 개조 작업 3개 완료.',
-    icon: '🛠️', characterId: 'engineer', dayTrigger: 50, prerequisite: 'mq_eng_side_01',
+    icon: '🛠️', characterId: 'engineer', dayTrigger: 25, prerequisite: 'mq_eng_side_01',
     objective: { type: 'craft_item', category: 'upgrade', count: 3 },
     reward: { morale: 15, items: [{ definitionId: 'spring', qty: 3 }, { definitionId: 'electronic_parts', qty: 2 }] },
     failPenalty: { morale: -5 }, deadlineDays: 95,

@@ -19,15 +19,17 @@ const CHEF_SHARED = {
   },
 
   mq_chef_02: {
-    id: 'mq_chef_02', title: '임시 조리대',
-    desc: '구조물을 제작하라. 조리를 위한 안정된 공간이 필요하다.',
+    id: 'mq_chef_02', title: '조리솥 거치대',
+    desc: '캠프파이어를 준비한 뒤 조리솥 거치대를 직접 제작하라. 건축 2가 필요하다.',
     icon: '🔥', characterId: 'chef', dayTrigger: 2, prerequisite: 'mq_chef_01',
-    objective: { type: 'craft_item', category: 'structure', count: 1 },
+    objectiveRevision: 1,
+    objective: { type: 'craft_item', definitionId: 'cooking_pot_stand', count: 1 },
+    actionHint: '캠프파이어를 준비하고 건축 2를 익힌다. 조리솥 거치대 레시피에는 고철 3·철사 2·못 4가 필요하다.',
     reward: { morale: 5, items: [{ definitionId: 'salt', qty: 2 }] },
     failPenalty: { morale: -5 }, deadlineDays: 12,
     narrative: {
       start: '날것은 위험하다. 제대로 조리하려면 안정된 화기와 작업대가 필요하다.',
-      complete: '임시 조리대가 완성됐다. 불을 피울 수 있다. 소금도 찾았다. 이제 요리다운 요리를 할 수 있다.',
+      complete: '조리솥 거치대가 완성됐다. 캠프파이어 위에 솥을 올릴 자리가 생겼다. 소금도 찾았다. 이제 요리다운 요리를 할 수 있다.',
     },
   },
 
@@ -72,9 +74,10 @@ const CHEF_SHARED = {
 
   mq_chef_06: {
     id: 'mq_chef_06', title: '첫 번째 급식',
-    desc: '음식 아이템 1개를 제작하라. 손님이 은근히 기대한 메뉴가 있다. (일치 시 보너스)',
+    desc: '중구에서 남대문 첫 배식 공정에 재료를 투입하고 가동하라. 조리한 식사 제공.',
     icon: '🍲', characterId: 'chef', dayTrigger: 10, prerequisite: 'mq_chef_05',
-    objective: { type: 'craft_item', category: 'food', count: 1 },
+    actionHint: '행동 메뉴의 프로젝트 또는 퀘스트 목표의 공정 보기에서 부족 재료를 확인하세요. 재료는 제작·분해·지역 탐사로 마련합니다. 설치물은 이 구역에 남습니다.',
+    objective: { type: 'career_project', projectId: 'chef_first_meal', stageId: 'commissioned', districtId: 'junggoo', count: 1 },
     reward: { morale: 10, items: [{ definitionId: 'boiled_water', qty: 1 }] },
     prescriptionOptions: {
       '따뜻한 밥 한 끼':   'cooked_rice',
@@ -90,7 +93,7 @@ const CHEF_SHARED = {
     },
     bonusCondition: { type: 'prescriptionMatch' },
     bonusReward: { morale: 8, items: [{ definitionId: 'canned_food', qty: 1 }] },
-    failPenalty: { morale: -3 }, deadlineDays: 20,
+    failPenalty: { morale: -3 }, deadlineDays: Infinity,
     narrative: {
       start: '재료가 갖춰졌다. 시장 광장에 도착한 생존자 중 한 명이 중얼거린다 — "혹시…" 오늘의 한 끼 메뉴가 정해졌다. 셰프의 귀가 기억한다.',
       complete: '첫 급식 완료. 시장 골목에서 세 명이 찾아왔다. 눈물을 흘리며 먹었다. "따뜻한 밥이 이렇게 좋은 거였어요." 요리는 생존이 아니라 희망이다.',
@@ -103,11 +106,12 @@ const CHEF_SHARED = {
 
   mq_chef_07: {
     id: 'mq_chef_07', title: '급식소 확장',
-    desc: '구조물 1개를 추가 제작하라. 급식 규모를 늘린다.',
+    desc: '중구에서 손질과 저장 작업장 공정에 재료를 투입하고 가동하라. 설비 설치 → 운영 물자 투입.',
     icon: '🏗️', characterId: 'chef', dayTrigger: 13, prerequisite: 'mq_chef_06',
-    objective: { type: 'craft_item', category: 'structure', count: 1 },
+    actionHint: '행동 메뉴의 프로젝트 또는 퀘스트 목표의 공정 보기에서 부족 재료를 확인하세요. 재료는 제작·분해·지역 탐사로 마련합니다. 설치물은 이 구역에 남습니다.',
+    objective: { type: 'career_project', projectId: 'chef_pantry', stageId: 'commissioned', districtId: 'junggoo', count: 1 },
     reward: { morale: 8, items: [{ definitionId: 'salt', qty: 1 }] },
-    failPenalty: { morale: -5 }, deadlineDays: 23,
+    failPenalty: { morale: -5 }, deadlineDays: Infinity,
     narrative: {
       start: '찾아오는 사람이 늘고 있다. 임시 조리대 하나로는 부족하다. 좌석과 보관 공간이 필요하다.',
       complete: '급식소가 제법 모양새를 갖췄다. 조리대, 간이 테이블, 식재료 보관함. 남대문 급식소. 이름을 붙였다.',
@@ -142,11 +146,12 @@ const CHEF_SHARED = {
 
   mq_chef_10: {
     id: 'mq_chef_10', title: '급식소 안정화',
-    desc: '식량 5개를 추가 비축하라. 급식소 운영이 안정기에 접어든다.',
+    desc: '중구에서 남대문 정기 급식 공정에 재료를 투입하고 가동하라. 조리한 식사 제공 → 운영 물자 투입.',
     icon: '🍽️', characterId: 'chef', dayTrigger: 21, prerequisite: 'mq_chef_09',
-    objective: { type: 'collect_item_type', itemType: 'food', count: 5 },
+    actionHint: '행동 메뉴의 프로젝트 또는 퀘스트 목표의 공정 보기에서 부족 재료를 확인하세요. 재료는 제작·분해·지역 탐사로 마련합니다. 설치물은 이 구역에 남습니다.',
+    objective: { type: 'career_project', projectId: 'chef_regular', stageId: 'commissioned', districtId: 'junggoo', count: 1 },
     reward: { morale: 12, items: [{ definitionId: 'herbal_tea', qty: 2 }, { definitionId: 'salt', qty: 1 }] },
-    failPenalty: { morale: -3 }, deadlineDays: 40,
+    failPenalty: { morale: -3 }, deadlineDays: Infinity,
     cinematicId: 'cin_branch_chef',
     isBranchPoint: true,
     branchOptions: [
@@ -186,7 +191,7 @@ const CHEF_SHARED = {
   mq_chef_side_02: {
     id: 'mq_chef_side_02', title: '희귀 식재료 확보',
     desc: '희귀 식재료를 총 8개 수집하라. 송로·송이·한우·전복 등이 있다.',
-    icon: '🍄', characterId: 'chef', dayTrigger: 35, prerequisite: 'mq_chef_10',
+    icon: '🍄', characterId: 'chef', dayTrigger: 25, prerequisite: 'mq_chef_10',
     objective: { type: 'collect_item_type', itemType: 'food', count: 8 },
     reward: { morale: 15, items: [{ definitionId: 'wild_honey', qty: 1 }, { definitionId: 'saffron_dried', qty: 1 }] },
     failPenalty: { morale: -6 }, deadlineDays: 55,
@@ -199,7 +204,7 @@ const CHEF_SHARED = {
   mq_chef_side_03: {
     id: 'mq_chef_side_03', title: '식량 약탈자 소탕',
     desc: '급식소로 향하는 보급로를 위협하는 식량 약탈자 5명을 처치하라.',
-    icon: '⚔️', characterId: 'chef', dayTrigger: 45, prerequisite: 'mq_chef_10',
+    icon: '⚔️', characterId: 'chef', dayTrigger: 25, prerequisite: 'mq_chef_10',
     objective: { type: 'track_infected', enemyType: 'human', count: 5 },
     reward: { morale: 12, items: [{ definitionId: 'canned_food', qty: 3 }, { definitionId: 'knife', qty: 1 }] },
     failPenalty: { morale: -8 }, deadlineDays: 60,
@@ -212,7 +217,7 @@ const CHEF_SHARED = {
   mq_chef_side_04: {
     id: 'mq_chef_side_04', title: '특별 요리 제작',
     desc: '희귀 식재료 기반 특별 요리 5개를 제작하라. 동료들의 사기를 극적으로 끌어올린다.',
-    icon: '🍽️', characterId: 'chef', dayTrigger: 55, prerequisite: 'mq_chef_side_02',
+    icon: '🍽️', characterId: 'chef', dayTrigger: 25, prerequisite: 'mq_chef_side_02',
     objective: { type: 'craft_item', category: 'food', count: 5 },
     reward: { morale: 20, items: [{ definitionId: 'traditional_feast', qty: 1 }, { definitionId: 'herbal_tea', qty: 3 }] },
     failPenalty: { morale: -5 }, deadlineDays: 70,
@@ -225,7 +230,7 @@ const CHEF_SHARED = {
   mq_chef_side_05: {
     id: 'mq_chef_side_05', title: '암시장 보스 대면',
     desc: '중구 가락시장 뒷골목을 장악한 식량 군벌을 처단하라.',
-    icon: '👑', characterId: 'chef', dayTrigger: 68, prerequisite: 'mq_chef_side_03',
+    icon: '👑', characterId: 'chef', dayTrigger: 25, prerequisite: 'mq_chef_side_03',
     objective: { type: 'track_infected', enemyId: 'food_warlord', count: 1 },
     reward: { morale: 20, items: [{ definitionId: 'king_crab', qty: 2 }, { definitionId: 'ginseng_6years', qty: 1 }, { definitionId: 'truffle', qty: 1 }] },
     failPenalty: { morale: -12 }, deadlineDays: 90,
@@ -238,7 +243,7 @@ const CHEF_SHARED = {
   mq_chef_side_06: {
     id: 'mq_chef_side_06', title: '주방 팀 구성',
     desc: '요리 10가지를 제작해 팀 동료들의 신뢰와 사기를 쌓아라.',
-    icon: '🧑‍🍳', characterId: 'chef', dayTrigger: 60, prerequisite: 'mq_chef_side_04',
+    icon: '🧑‍🍳', characterId: 'chef', dayTrigger: 25, prerequisite: 'mq_chef_side_04',
     objective: { type: 'craft_item', category: 'food', count: 10 },
     reward: { morale: 15, items: [{ definitionId: 'wagyu_scrap', qty: 2 }, { definitionId: 'wild_honey', qty: 2 }], flags: { chef_team_assembled: true } },
     failPenalty: { morale: -5 }, deadlineDays: 85,

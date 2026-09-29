@@ -590,7 +590,7 @@ const BLUEPRINTS_ADVANCED = {
     hidden: true, unlockConditions: { minSkillLevel: { medicine: 3 } },
     description: '약초를 곱게 빻아 가루로 만든다.',
     output: [{ definitionId: 'herb_powder', qty: 3 }],
-    requiredTools: ['workbench'],
+    requiredTools: ['medical_station'],
     requiredSkills: { medicine: 3 },
     stages: [{
       stageIndex: 0, label: '분쇄', tpCost: 1,
@@ -640,7 +640,7 @@ const BLUEPRINTS_ADVANCED = {
     hidden: true, unlockConditions: { minSkillLevel: { medicine: 5 } },
     description: '약초 추출물로 통증을 억제하는 마취제를 만든다.',
     output: [{ definitionId: 'anesthetic', qty: 1 }],
-    requiredTools: ['workbench'],
+    requiredTools: ['medical_station'],
     requiredSkills: { medicine: 5 },
     stages: [{
       stageIndex: 0, label: '마취제 추출', tpCost: 3,
@@ -694,7 +694,7 @@ const BLUEPRINTS_ADVANCED = {
     hidden: true, unlockConditions: { minSkillLevel: { medicine: 4 } },
     description: '약초 추출액을 정제·농축해 혈청으로 만든다. 의사만의 공정.',
     output: [{ definitionId: 'concentrated_serum', qty: 1 }],
-    requiredTools: ['workbench'],
+    requiredTools: ['medical_station'],
     requiredSkills: { medicine: 4 },
     stages: [{
       stageIndex: 0, label: '정제 농축', tpCost: 3,
@@ -747,7 +747,7 @@ const BLUEPRINTS_ADVANCED = {
     description: '조제약을 정제하여 효능을 높인다.',
     output: [{ definitionId: 'purified_medicine', qty: 1 }],
     requiredTools: ['workbench'],
-    requiredSkills: { medicine: 9 },
+    requiredSkills: { medicine: 7 },
     stages: [{
       stageIndex: 0, label: '약 정제', tpCost: 5,
       requiredItems: [

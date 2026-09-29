@@ -369,6 +369,8 @@ const Basecamp = {
       section.innerHTML = `
         <div class="bc-toolbar-label">${uiIcon('action')} 행동</div>
         <button class="toolbar-btn primary" id="btn-explore">${uiIcon('explore')} 탐색</button>
+        <button class="toolbar-btn" data-action="open-local-supplies">공급처</button>
+        <button class="toolbar-btn" data-action="open-career-projects">프로젝트</button>
         <button class="toolbar-btn" id="btn-quest">${uiIcon('quest')} 퀘스트</button>
         <button class="toolbar-btn" id="btn-companions">${uiIcon('companion')} 동료 (${(GameState.companions ?? []).length})</button>
         <button class="toolbar-btn" id="btn-craft">${uiIcon('craft')} ${I18n.t('basecamp.craft')}</button>

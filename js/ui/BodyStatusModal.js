@@ -1,3 +1,4 @@
+import PatientTreatmentSystem from '../systems/PatientTreatmentSystem.js';
 // === BODY STATUS MODAL ===
 // 상단 HP 클릭으로 진입. 6부위 상태 + 현재 질병 + 부상 NPC 진단 현황.
 import EventBus      from '../core/EventBus.js';
@@ -39,6 +40,7 @@ const BodyStatusModal = {
       });
       EventBus.on('bodyInjury',      () => { if (this._isOpen()) this._render(); });
       EventBus.on('diseaseChanged',  () => { if (this._isOpen()) this._render(); });
+      EventBus.on('patientTreatmentChanged', () => { if (this._isOpen()) this._render(); });
       EventBus.on('npcWoundHealed',  () => { if (this._isOpen()) this._render(); });
       EventBus.on('npcDiagnosed',    () => { if (this._isOpen()) this._render(); });
       EventBus.on('statChanged',     () => { if (this._isOpen()) this._render(); });
@@ -209,10 +211,8 @@ const BodyStatusModal = {
       const discovered = state.woundDiscovered === true;
       const name       = I18n.itemName(npcId, def?.name ?? npcId);
       const levelText  = discovered ? `부상 ${state.woundLevel}단계` : '부상 의심 (미진단)';
-      const healItem   = def?.woundHealItem ?? 'bandage';
-      const hint       = discovered
-        ? `${healItem} 드롭하여 치료`
-        : '청진기 또는 진단 키트로 진단 필요';
+      const treatment = PatientTreatmentSystem.inspect(npcId);
+      const hint = treatment.ok ? `대화 → 부상 치료: ${treatment.stageLabel} · ${treatment.actions.map(a => a.label).join(' / ')}` : treatment.reason;
       return `
         <div class="body-npc-row ${discovered ? 'known' : 'unknown'}">
           <span class="body-npc-icon">🚑</span>

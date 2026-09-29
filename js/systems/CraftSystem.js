@@ -14,6 +14,7 @@ import NightSystem     from './NightSystem.js';
 import TickEngine      from '../core/TickEngine.js';
 import GameData from '../data/GameData.js';
 import { providesTool, isUnlitFire } from './toolProvision.js';
+import { getCareerFacilities } from '../data/careerProjects.js';
 
 // 히든 레시피 포함 전체 레시피
 const BLUEPRINTS = { ...BLUEPRINTS_BASE, ...BLUEPRINTS_ADV, ...HIDDEN_RECIPES };
@@ -73,7 +74,7 @@ const CraftSystem = {
     const bp = BLUEPRINTS[bpId];
     if (bp?.requiredTools?.length) {
       for (const toolId of bp.requiredTools) {
-        const onBoard = gs.getBoardCards().some(c =>
+        const onBoard = [...gs.getBoardCards(), ...getCareerFacilities(gs)].some(c =>
           providesTool(c.definitionId, toolId) && !isUnlitFire(c.definitionId, c.durability));
         const installed = gs.location.installedStructures?.[gs.location.currentDistrict];
         const isInstalled = installed?.id

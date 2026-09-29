@@ -10,6 +10,11 @@ import PATIENT_POOL, { PATIENT_ITEMS } from './patientPool.js';
 // ── NPC Card Item Definitions (type: 'npc') ─────────────────────
 // Registered at boot so CardFactory can render them.
 export const NPC_ITEMS = {
+  npc_early_resident: {
+    id: 'npc_early_resident', name: '구조 주민 김도윤', type: 'npc', rarity: 'uncommon', weight: 0,
+    stackable: false, maxStack: 1, defaultDurability: 100, defaultContamination: 0,
+    icon: '🩹', description: '은평 잔해에서 구조한 주민. 이재훈과는 다른 신규 구조 대상이다.', tags: ['npc'], dismantle: [],
+  },
   npc_old_survivor: {
     id: 'npc_old_survivor', name: '늙은 생존자', type: 'npc',
     rarity: 'uncommon', weight: 0, stackable: false, maxStack: 1,
@@ -221,6 +226,13 @@ export const NPC_ITEMS = {
 
 // ── NPC Data Definitions ────────────────────────────────────────
 const NPCS = {
+  npc_early_resident: {
+    id: 'npc_early_resident', personality: 'timid', maxHp: 50, spawnDistrict: 'eunpyeong', spawnDay: Infinity,
+    spawnCondition: { requiredCharacter: 'firefighter' }, woundLevel: 1, woundHealItem: 'bandage', woundHealQty: 1,
+    dialogues: { greet: ['꺼내 주셔서 고맙습니다. 팔에 난 상처를 봐 주실 수 있나요?'], hint: ['가족을 찾는다면 용산 집결소의 기록을 확인해 보세요.'], reject: '조금만 쉬겠습니다.' },
+    trustGainPerTalk: 0, backstory: '은평의 무너진 건물에 고립되었다가 구조된 주민 김도윤.',
+    companion: null, gifts: [], trades: null, forageItems: [], spontaneous: [], trustEvents: [], quests: [], specialDays: [],
+  },
 
   npc_old_survivor: {
     id: 'npc_old_survivor',

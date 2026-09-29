@@ -2592,6 +2592,7 @@ export const en = {
   // ── NPC Cards ─────────────────────────────────────────────────
   '_item.npc_old_survivor':      'Old Survivor',
   '_item.npc_nurse':             'Nurse',
+  '_item.npc_early_resident':    'Rescued Resident Kim Do-yun',
   '_item.npc_soldier_deserter':  'Deserter',
   '_item.npc_child':             'Child',
   '_item.npc_mechanic':          'Mechanic',

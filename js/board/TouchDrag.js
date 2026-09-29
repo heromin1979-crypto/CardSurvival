@@ -1,3 +1,4 @@
+import PatientTreatmentSystem from '../systems/PatientTreatmentSystem.js';
 // === TOUCH DRAG ===
 // Pointer Events 기반 모바일 터치 드래그.
 // HTML5 DragDrop API는 모바일에서 미지원 → PointerEvent로 구현.
@@ -9,7 +10,6 @@ import EventBus        from '../core/EventBus.js';
 import SystemRegistry  from '../core/SystemRegistry.js';
 import CraftDiscovery  from '../systems/CraftDiscovery.js';
 import HiddenElementSystem from '../systems/HiddenElementSystem.js';
-import SkillSystem     from '../systems/SkillSystem.js';
 import QuickCraftPrompt from '../ui/QuickCraftPrompt.js';
 import BodyStatusModal  from '../ui/BodyStatusModal.js';
 
@@ -272,6 +272,10 @@ const TouchDrag = {
     const NPCSystem = SystemRegistry.get('NPCSystem');
     if (!NPCSystem) return false;
 
+    const treatment = PatientTreatmentSystem.inspect(tgtInst.definitionId);
+    if (treatment.profile && treatment.stage === 'diagnosis') {
+      return PatientTreatmentSystem.treat(tgtInst.definitionId, 'diagnose').ok;
+    }
     const ok = NPCSystem.diagnoseNPC(tgtInst.definitionId);
     if (!ok) return false;
 
@@ -287,59 +291,20 @@ const TouchDrag = {
   // ── 부상 NPC 치료 헬퍼 ─────────────────────────────────────
 
   _isWoundHealDrag(sourceId, targetId) {
-    const srcInst = GameState.cards[sourceId];
-    const tgtInst = GameState.cards[targetId];
-    if (!srcInst || !tgtInst) return false;
-    const tgtDef = GameState.getCardDef(targetId);
-    if (tgtDef?.type !== 'npc') return false;
-    const NPCSystem = SystemRegistry.get('NPCSystem');
-    const npcDef = NPCSystem?.getNPCDef?.(tgtInst.definitionId);
-    const npcState = NPCSystem?.getNPCState?.(tgtInst.definitionId);
-    if (!npcDef?.woundHealItem || !npcState || (npcState.woundLevel ?? 0) <= 0) return false;
-    return srcInst.definitionId === npcDef.woundHealItem;
+    const source = GameState.cards[sourceId];
+    const target = GameState.cards[targetId];
+    return !!(source && target && PatientTreatmentSystem.actionForItem(target.definitionId, source.definitionId));
   },
 
   _tryWoundHeal(sourceId, targetId) {
     if (!this._isWoundHealDrag(sourceId, targetId)) return false;
-    const srcInst = GameState.cards[sourceId];
-    const tgtInst = GameState.cards[targetId];
-    const NPCSystem = SystemRegistry.get('NPCSystem');
-    const npcDef = NPCSystem.getNPCDef(tgtInst.definitionId);
-    const npcState = NPCSystem.getNPCState(tgtInst.definitionId);
-    const healQty = npcDef.woundHealQty ?? 1;
-    const srcQty = srcInst.quantity ?? 1;
-    if (srcQty < healQty) {
-      EventBus.emit('notify', { message: `붕대가 부족합니다 (필요: ${healQty}개)`, type: 'warn' });
-      return true;
-    }
-    // 붕대 소모
-    if (srcQty <= healQty) {
-      BoardManager.removeCard(sourceId);
-    } else {
-      srcInst.quantity = srcQty - healQty;
-    }
-    // 부상 단계 감소
-    const oldWound = npcState.woundLevel;
-    npcState.woundLevel = Math.max(0, oldWound - 1);
-    SkillSystem.gainXp('medicine', 3);
-    if (npcState.woundLevel <= 0) {
-      npcState.healed = true;
-      const prevTrust = npcState.trust ?? 0;
-      npcState.trust = Math.max(prevTrust, 1);
-      const comp = npcDef.companion;
-      if (comp) comp.canRecruit = true;
-      EventBus.emit('notify', { message: '🩹 부상이 완치되었습니다! 이제 동료로 영입할 수 있습니다.', type: 'good' });
-      EventBus.emit('npcWoundHealed', { npcId: tgtInst.definitionId });
-      EventBus.emit('npcHealed',      { npcId: tgtInst.definitionId });
-      if (npcState.trust > prevTrust) {
-        EventBus.emit('npcTrustChanged', { npcId: tgtInst.definitionId, oldTrust: prevTrust, newTrust: npcState.trust });
-      }
-    } else {
-      EventBus.emit('notify', { message: `🩹 부상 치료 (${oldWound}단계 → ${npcState.woundLevel}단계)`, type: 'info' });
-    }
-    EventBus.emit('boardChanged', {});
+    const npcId = GameState.cards[targetId].definitionId;
+    const actionId = PatientTreatmentSystem.actionForItem(npcId, GameState.cards[sourceId].definitionId);
+    const result = PatientTreatmentSystem.treat(npcId, actionId);
+    EventBus.emit('notify', { message: result.ok ? (result.stage === 'healed' ? '부상이 완치되었습니다.' : '치료를 진행했습니다.') : result.reason, type: result.ok ? 'good' : 'warn' });
     return true;
   },
+
 };
 
 export default TouchDrag;

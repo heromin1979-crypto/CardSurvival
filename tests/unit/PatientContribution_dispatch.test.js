@@ -68,7 +68,7 @@ describe('PatientIntakeSystem × DispatchSystem — dispatch 분기', () => {
     admitSpecific(npcId);
     const spy = vi.spyOn(DispatchSystem, 'register');
 
-    EventBus.emit('npcHealed', { npcId });
+    EventBus.emit('npcWoundHealed', { npcId });
 
     expect(spy).toHaveBeenCalledWith(npcId, PATIENT_POOL[npcId].contributionOnCure);
     expect(DispatchSystem.getDispatchable()).toContain(npcId);
@@ -81,7 +81,7 @@ describe('PatientIntakeSystem × DispatchSystem — dispatch 분기', () => {
     DispatchSystem.init();
     admitSpecific(npcId);
 
-    EventBus.emit('npcHealed', { npcId });
+    EventBus.emit('npcWoundHealed', { npcId });
 
     const info = PatientIntakeSystem.getRescuedInfo(npcId);
     expect(info?.assignment?.status).toBe('idle');
@@ -98,7 +98,7 @@ describe('PatientIntakeSystem × DispatchSystem — dispatch 분기', () => {
     admitSpecific(sponsorId);
     const spy = vi.spyOn(DispatchSystem, 'register');
 
-    EventBus.emit('npcHealed', { npcId: sponsorId });
+    EventBus.emit('npcWoundHealed', { npcId: sponsorId });
 
     expect(spy).not.toHaveBeenCalled();
     spy.mockRestore();

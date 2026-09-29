@@ -26,3 +26,7 @@ loop/STOP
 .loop-shots/
 # 캡처 도구가 SHOT_DIR 로 쓰는 임시 스크린샷·로그 (docs/loop/reference/ 로 복사한 것만 남긴다)
 .tmp/
+
+# SDD 실행 기록 (task별 diff·로그·playwright test-results — 디스크에만 보존)
+docs/analysis/*-execution/
+Claude outputs/

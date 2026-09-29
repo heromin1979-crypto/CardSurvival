@@ -339,12 +339,12 @@ describe('PatientIntakeSystem — W3-1: 기여 타입 선택권', () => {
     PatientIntakeSystem.init();
     // 직접 주입 — rollPersona 의존 제거
     PatientIntakeSystem._admitted = ['patient_lee_junho_16'];
-    GameState.npcs.states['patient_lee_junho_16'] = { woundLevel: 0 };
+    GameState.npcs.states['patient_lee_junho_16'] = { spawned: true, healed: true, woundLevel: 0 };
 
     const spy = vi.fn();
     EventBus.on('contributionChoiceNeeded', spy);
 
-    EventBus.emit('npcHealed', { npcId: 'patient_lee_junho_16' });
+    EventBus.emit('npcWoundHealed', { npcId: 'patient_lee_junho_16' });
 
     expect(spy).toHaveBeenCalledOnce();
     const payload = spy.mock.calls[0][0];
@@ -358,9 +358,9 @@ describe('PatientIntakeSystem — W3-1: 기여 타입 선택권', () => {
     GameState.time.day = 10;
     PatientIntakeSystem.init();
     PatientIntakeSystem._admitted = ['patient_lee_junho_16'];
-    GameState.npcs.states['patient_lee_junho_16'] = { woundLevel: 0 };
+    GameState.npcs.states['patient_lee_junho_16'] = { spawned: true, healed: true, woundLevel: 0 };
 
-    EventBus.emit('npcHealed', { npcId: 'patient_lee_junho_16' });
+    EventBus.emit('npcWoundHealed', { npcId: 'patient_lee_junho_16' });
     const ok = PatientIntakeSystem.chooseContribution('patient_lee_junho_16', 1);
 
     expect(ok).toBe(true);
@@ -372,9 +372,9 @@ describe('PatientIntakeSystem — W3-1: 기여 타입 선택권', () => {
     GameState.time.day = 10;
     PatientIntakeSystem.init();
     PatientIntakeSystem._admitted = ['patient_lee_junho_16'];
-    GameState.npcs.states['patient_lee_junho_16'] = { woundLevel: 0 };
+    GameState.npcs.states['patient_lee_junho_16'] = { spawned: true, healed: true, woundLevel: 0 };
 
-    EventBus.emit('npcHealed', { npcId: 'patient_lee_junho_16' });
+    EventBus.emit('npcWoundHealed', { npcId: 'patient_lee_junho_16' });
     PatientIntakeSystem.chooseContribution('patient_lee_junho_16', 0);
 
     const info = PatientIntakeSystem.getRescuedInfo('patient_lee_junho_16');
@@ -427,7 +427,7 @@ describe('PatientIntakeSystem — W2-1: 위치 체크 + 간호사 자동 대행'
     // 의사는 원정 나감 (보라매 아님) + 간호사 상주
     GameState.location.currentLandmark = 'yongsan';
     GameState.location.currentSubLocation = null;
-    GameState.npcs.states['npc_nurse'] = { woundLevel: 0 };
+    GameState.npcs.states['npc_nurse'] = { spawned: true, healed: true, woundLevel: 0 };
 
     // 48TP 경과하지만 간호사가 타이머 동결 → patientLeft 발행되지 않음
     const leftSpy = vi.fn();
@@ -449,7 +449,7 @@ describe('PatientIntakeSystem — W2-1: 위치 체크 + 간호사 자동 대행'
 
     GameState.location.currentLandmark = 'yongsan';
     GameState.location.currentSubLocation = null;
-    GameState.npcs.states['npc_nurse'] = { woundLevel: 0 };
+    GameState.npcs.states['npc_nurse'] = { spawned: true, healed: true, woundLevel: 0 };
     GameState.companions = ['npc_nurse'];
 
     const leftSpy = vi.fn();

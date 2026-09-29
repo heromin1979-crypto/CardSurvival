@@ -1,7 +1,7 @@
 // === Doctor mid-game engagement 통합 테스트 ===
 // 목적: Phase 0/1/4 — 의사 캐릭터 중반 몰입 기능의 end-to-end 동작 검증.
 //   - mq_doctor_01~07 데이터에 subObjectives/locationHint/actionHint 노출
-//   - npcHealed/itemCollected 이벤트 → _progress 누적 → subObjective 자동 체크
+//   - npcWoundHealed/itemCollected 이벤트 → _progress 누적 → subObjective 자동 체크
 //   - 데드라인 D-2 토스트 1회 발화, 같은 단계 중복 호출 방어
 //   - cardPlaced 브리지 → collected 누적 (definitionId/type/tag 정규화)
 import { describe, it, expect, beforeEach } from 'vitest';
@@ -68,10 +68,17 @@ describe('Doctor mid-game engagement — 데이터 노출', () => {
 describe('Doctor mid-game engagement — 이벤트 → subObjective 자동 체크', () => {
   beforeEach(resetAll);
 
-  it('npcHealed emit → _progress.treatedNpcs/treatedNpcCount 누적', () => {
+  it('HP 회복 npcHealed는 치료 횟수나 퀘스트를 진행시키지 않는다', () => {
+    GameState.quests.active = [{ id: 'mq_doctor_03', startDay: 4, progress: 0 }];
+    EventBus.emit('npcHealed', { npcId: 'npc_wounded_soldier' });
+    expect(QuestSystem._progress.treatedNpcCount).toBe(0);
+    expect(GameState.quests.active[0].progress).toBe(0);
+  });
+
+  it('npcWoundHealed emit → _progress.treatedNpcs/treatedNpcCount 누적', () => {
     GameState.quests.active = [{ id: 'mq_doctor_01', startDay: 1, deadline: 4, progress: 0 }];
 
-    EventBus.emit('npcHealed', { npcId: 'npc_wounded_soldier' });
+    EventBus.emit('npcWoundHealed', { npcId: 'npc_wounded_soldier' });
 
     expect(QuestSystem._progress.treatedNpcs.has('npc_wounded_soldier')).toBe(true);
     expect(QuestSystem._progress.treatedNpcCount).toBe(1);
@@ -81,16 +88,13 @@ describe('Doctor mid-game engagement — 이벤트 → subObjective 자동 체�
     // mq_doctor_03 유지: count=2 → 1회 emit 후에는 main objective도 완료되지 않아 active에 남아 있음
     GameState.quests.active = [{ id: 'mq_doctor_03', startDay: 4, deadline: 12, progress: 0 }];
 
-    EventBus.emit('npcHealed', { npcId: 'npc_patient_a' });
+    EventBus.emit('npcWoundHealed', { npcId: 'npc_patient_a' });
     expect(GameState.subObjectiveProgress?.mq_doctor_03?.so_d03_02).not.toBe(true);
 
-    EventBus.emit('npcHealed', { npcId: 'npc_patient_b' });
-    // 2번째 치료로 main objective도 완료되어 quest는 active에서 빠짐 — subObjective는 그 직전 _reevaluate에서 마킹됨
-    // _onNpcHealed가 _checkCompletion 전에 _subscribeProgressEvents 리스너로 _reevaluateSubObjectives를 호출하므로
-    // 2번째 시점에 so_d03_02가 마킹된 뒤 main이 완료된다 — 등록 순서: _onNpcHealed가 먼저, 그 다음 _subscribeProgressEvents 리스너.
-    // 등록 순서상 첫 emit에서 _onNpcHealed가 q.progress=1로만 만들고 완료 안 시킴 → 두 번째 emit에서
-    // _onNpcHealed가 progress=2로 완료 처리(splice), 직후 _subscribeProgressEvents 리스너가 active 빈 채 _reevaluate 호출 → 마킹 안 됨.
-    // 따라서 이 케이스는 main objective 완료(quests.completed 진입)로 검증한다.
+    EventBus.emit('npcWoundHealed', { npcId: 'npc_patient_a' });
+    expect(QuestSystem._progress.treatedNpcCount).toBe(1);
+    expect(GameState.quests.completed).not.toContain('mq_doctor_03');
+    EventBus.emit('npcWoundHealed', { npcId: 'npc_patient_b' });
     expect(GameState.quests.completed).toContain('mq_doctor_03');
   });
 
@@ -104,14 +108,15 @@ describe('Doctor mid-game engagement — 이벤트 → subObjective 자동 체�
     expect(GameState.subObjectiveProgress?.mq_doctor_06?.so_d06_02).toBe(true);
   });
 
-  it('itemCrafted(category=medical) → mq_doctor_07 craft_item match 자동 완료', () => {
+  it('craftComplete(의료 청사진) → mq_doctor_07 완료와 제작 이력 누적', () => {
     GameState.quests.active = [{ id: 'mq_doctor_07', startDay: 13, deadline: 36, progress: 0 }];
 
-    EventBus.emit('itemCrafted', { recipeId: 'first_aid_kit', category: 'medical', qty: 1 });
-
-    const so7 = GameState.subObjectiveProgress?.mq_doctor_07 ?? {};
-    const matchedCount = Object.values(so7).filter(v => v === true).length;
-    expect(matchedCount).toBeGreaterThanOrEqual(1);
+    EventBus.emit('craftComplete', { blueprintId: 'make_first_aid_kit' });
+    expect(GameState.quests.completed).toContain('mq_doctor_07');
+    expect(QuestSystem._progress.craftedCategoryCounts.medical).toBe(1);
+    expect(QuestSystem._progress.craftedRecipes).toContain('first_aid_kit');
+    const craftObjective = MAIN_QUESTS.mq_doctor_07.subObjectives.find(so => so.id === 'so_d07_02');
+    expect(QuestSystem._matchSubObjective(craftObjective, QuestSystem._progress)).toBe(true);
   });
 
   it('마포 도착 → mq_doctor_09.so_d09_02 자동 완료 (판정 원천은 도착 시각)', () => {

@@ -539,16 +539,14 @@ const INTERACTION_RULES = [
     hint: '목재를 태워 숯 생성',
     canApply() { return { ok: true }; },
     apply(s) {
-      s.quantity = (s.quantity ?? 1) * 2;
-      return { transformSrc: 'charcoal', consumeSrc: false, consumeTgt: false, noise: 2, message: '목재를 태워 숯을 만들었다.' };
+      return { transformSrc: 'charcoal', transformSrcQty: 2, consumeSrc: false, consumeTgt: false, noise: 2, message: '목재를 태워 숯을 만들었다.' };
     },
   },
   { id: 'wood_to_charcoal_rev', source: { id: 'campfire' }, target: { id: 'wood' },
     hint: '목재를 태워 숯 생성',
     canApply() { return { ok: true }; },
     apply(s, t) {
-      t.quantity = (t.quantity ?? 1) * 2;
-      return { transformTgt: 'charcoal', consumeSrc: false, consumeTgt: false, noise: 2, message: '목재를 태워 숯을 만들었다.' };
+      return { transformTgt: 'charcoal', transformTgtQty: 2, consumeSrc: false, consumeTgt: false, noise: 2, message: '목재를 태워 숯을 만들었다.' };
     },
   },
 
@@ -558,8 +556,7 @@ const INTERACTION_RULES = [
     canApply(s) { return (s.durability ?? 100) >= 10 ? { ok: true } : { ok: false, reason: '칼의 내구도가 너무 낮다.' }; },
     apply(s, t) {
       s.durability = Math.max(0, (s.durability ?? 100) - 10);
-      t.quantity = (t.quantity ?? 1) * 3;
-      return { transformTgt: 'cloth_scrap', consumeSrc: false, consumeTgt: false, message: '칼로 천을 잘라 천 조각을 만들었다.' };
+      return { transformTgt: 'cloth_scrap', transformTgtQty: 3, consumeSrc: false, consumeTgt: false, message: '칼로 천을 잘라 천 조각을 만들었다.' };
     },
   },
   { id: 'cut_cloth_rev', source: { id: 'cloth' }, target: { id: 'knife' },
@@ -567,8 +564,7 @@ const INTERACTION_RULES = [
     canApply(s, t) { return (t.durability ?? 100) >= 10 ? { ok: true } : { ok: false, reason: '칼의 내구도가 너무 낮다.' }; },
     apply(s, t) {
       t.durability = Math.max(0, (t.durability ?? 100) - 10);
-      s.quantity = (s.quantity ?? 1) * 3;
-      return { transformSrc: 'cloth_scrap', consumeSrc: false, consumeTgt: false, message: '칼로 천을 잘라 천 조각을 만들었다.' };
+      return { transformSrc: 'cloth_scrap', transformSrcQty: 3, consumeSrc: false, consumeTgt: false, message: '칼로 천을 잘라 천 조각을 만들었다.' };
     },
   },
 
@@ -630,8 +626,7 @@ const INTERACTION_RULES = [
     canApply(s) { return (s.durability ?? 100) >= 8 ? { ok: true } : { ok: false, reason: '도끼 내구도가 너무 낮다.' }; },
     apply(s, t) {
       s.durability = Math.max(0, (s.durability ?? 100) - 8);
-      t.quantity = 3;
-      return { transformTgt: 'wood', consumeSrc: false, consumeTgt: false, noise: 4, message: '도끼로 통나무를 쪼개 목재를 얻었다.' };
+      return { transformTgt: 'wood', transformTgtQty: 3, consumeSrc: false, consumeTgt: false, noise: 4, message: '도끼로 통나무를 쪼개 목재를 얻었다.' };
     },
   },
   { id: 'chop_log_rev', source: { id: 'tree_log' }, target: { id: 'hand_axe' },
@@ -639,8 +634,7 @@ const INTERACTION_RULES = [
     canApply(s, t) { return (t.durability ?? 100) >= 8 ? { ok: true } : { ok: false, reason: '도끼 내구도가 너무 낮다.' }; },
     apply(s, t) {
       t.durability = Math.max(0, (t.durability ?? 100) - 8);
-      s.quantity = 3;
-      return { transformSrc: 'wood', consumeSrc: false, consumeTgt: false, noise: 4, message: '도끼로 통나무를 쪼개 목재를 얻었다.' };
+      return { transformSrc: 'wood', transformSrcQty: 3, consumeSrc: false, consumeTgt: false, noise: 4, message: '도끼로 통나무를 쪼개 목재를 얻었다.' };
     },
   },
 
@@ -668,8 +662,7 @@ const INTERACTION_RULES = [
     canApply(s) { return (s.durability ?? 100) >= 10 ? { ok: true } : { ok: false, reason: '렌치 내구도 부족.' }; },
     apply(s, t) {
       s.durability = Math.max(0, (s.durability ?? 100) - 10);
-      t.quantity = 5;
-      return { transformTgt: 'nail', consumeSrc: false, consumeTgt: false, noise: 3, message: '고철을 두드려 못을 만들었다.' };
+      return { transformTgt: 'nail', transformTgtQty: 5, consumeSrc: false, consumeTgt: false, noise: 3, message: '고철을 두드려 못을 만들었다.' };
     },
   },
   { id: 'forge_nails_rev', source: { id: 'scrap_metal' }, target: { id: 'pipe_wrench' },
@@ -677,8 +670,7 @@ const INTERACTION_RULES = [
     canApply(s, t) { return (t.durability ?? 100) >= 10 ? { ok: true } : { ok: false, reason: '렌치 내구도 부족.' }; },
     apply(s, t) {
       t.durability = Math.max(0, (t.durability ?? 100) - 10);
-      s.quantity = 5;
-      return { transformSrc: 'nail', consumeSrc: false, consumeTgt: false, noise: 3, message: '고철을 두드려 못을 만들었다.' };
+      return { transformSrc: 'nail', transformSrcQty: 5, consumeSrc: false, consumeTgt: false, noise: 3, message: '고철을 두드려 못을 만들었다.' };
     },
   },
 
@@ -690,8 +682,7 @@ const INTERACTION_RULES = [
     canApply(s) { return (s.durability ?? 100) >= 15 ? { ok: true } : { ok: false, reason: '칼의 내구도가 너무 낮다.' }; },
     apply(s, t) {
       s.durability = Math.max(0, (s.durability ?? 100) - 15);
-      t.quantity = 2;
-      return { transformTgt: 'wood', consumeSrc: false, consumeTgt: false, message: '칼로 통나무를 깎아 목재를 얻었다. (비효율적)' };
+      return { transformTgt: 'wood', transformTgtQty: 2, consumeSrc: false, consumeTgt: false, message: '칼로 통나무를 깎아 목재를 얻었다. (비효율적)' };
     },
   },
   { id: 'carve_log_rev', source: { id: 'tree_log' }, target: { id: 'knife' },
@@ -699,8 +690,7 @@ const INTERACTION_RULES = [
     canApply(s, t) { return (t.durability ?? 100) >= 15 ? { ok: true } : { ok: false, reason: '칼의 내구도가 너무 낮다.' }; },
     apply(s, t) {
       t.durability = Math.max(0, (t.durability ?? 100) - 15);
-      s.quantity = 2;
-      return { transformSrc: 'wood', consumeSrc: false, consumeTgt: false, message: '칼로 통나무를 깎아 목재를 얻었다. (비효율적)' };
+      return { transformSrc: 'wood', transformSrcQty: 2, consumeSrc: false, consumeTgt: false, message: '칼로 통나무를 깎아 목재를 얻었다. (비효율적)' };
     },
   },
 
@@ -709,16 +699,14 @@ const INTERACTION_RULES = [
     hint: '통나무 태우기 → 숯 ×4',
     canApply() { return { ok: true }; },
     apply(s) {
-      s.quantity = 4;
-      return { transformSrc: 'charcoal', consumeSrc: false, consumeTgt: false, noise: 3, message: '통나무를 태워 대량의 숯을 만들었다.' };
+      return { transformSrc: 'charcoal', transformSrcQty: 4, consumeSrc: false, consumeTgt: false, noise: 3, message: '통나무를 태워 대량의 숯을 만들었다.' };
     },
   },
   { id: 'burn_log_rev', source: { id: 'campfire' }, target: { id: 'tree_log' },
     hint: '통나무 태우기 → 숯 ×4',
     canApply() { return { ok: true }; },
     apply(s, t) {
-      t.quantity = 4;
-      return { transformTgt: 'charcoal', consumeSrc: false, consumeTgt: false, noise: 3, message: '통나무를 태워 대량의 숯을 만들었다.' };
+      return { transformTgt: 'charcoal', transformTgtQty: 4, consumeSrc: false, consumeTgt: false, noise: 3, message: '통나무를 태워 대량의 숯을 만들었다.' };
     },
   },
 
@@ -728,8 +716,7 @@ const INTERACTION_RULES = [
     canApply(s) { return (s.durability ?? 100) >= 5 ? { ok: true } : { ok: false, reason: '칼의 내구도가 너무 낮다.' }; },
     apply(s, t) {
       s.durability = Math.max(0, (s.durability ?? 100) - 5);
-      t.quantity = 3;
-      return { transformTgt: 'thread', consumeSrc: false, consumeTgt: false, message: '칼로 로프를 풀어 실을 얻었다.' };
+      return { transformTgt: 'thread', transformTgtQty: 3, consumeSrc: false, consumeTgt: false, message: '칼로 로프를 풀어 실을 얻었다.' };
     },
   },
   { id: 'unravel_rope_rev', source: { id: 'rope' }, target: { id: 'knife' },
@@ -737,8 +724,7 @@ const INTERACTION_RULES = [
     canApply(s, t) { return (t.durability ?? 100) >= 5 ? { ok: true } : { ok: false, reason: '칼의 내구도가 너무 낮다.' }; },
     apply(s, t) {
       t.durability = Math.max(0, (t.durability ?? 100) - 5);
-      s.quantity = 3;
-      return { transformSrc: 'thread', consumeSrc: false, consumeTgt: false, message: '칼로 로프를 풀어 실을 얻었다.' };
+      return { transformSrc: 'thread', transformSrcQty: 3, consumeSrc: false, consumeTgt: false, message: '칼로 로프를 풀어 실을 얻었다.' };
     },
   },
 
@@ -747,16 +733,14 @@ const INTERACTION_RULES = [
     hint: '빈병 가열 → 유리파편 ×2',
     canApply() { return { ok: true }; },
     apply(s) {
-      s.quantity = 2;
-      return { transformSrc: 'glass_shard', consumeSrc: false, consumeTgt: false, noise: 2, message: '빈병을 깨뜨려 유리파편을 얻었다.' };
+      return { transformSrc: 'glass_shard', transformSrcQty: 2, consumeSrc: false, consumeTgt: false, noise: 2, message: '빈병을 깨뜨려 유리파편을 얻었다.' };
     },
   },
   { id: 'smash_bottle_rev', source: { id: 'campfire' }, target: { id: 'empty_bottle' },
     hint: '빈병 가열 → 유리파편 ×2',
     canApply() { return { ok: true }; },
     apply(s, t) {
-      t.quantity = 2;
-      return { transformTgt: 'glass_shard', consumeSrc: false, consumeTgt: false, noise: 2, message: '빈병을 깨뜨려 유리파편을 얻었다.' };
+      return { transformTgt: 'glass_shard', transformTgtQty: 2, consumeSrc: false, consumeTgt: false, noise: 2, message: '빈병을 깨뜨려 유리파편을 얻었다.' };
     },
   },
 
@@ -814,8 +798,7 @@ const INTERACTION_RULES = [
     canApply(s) { return (s.durability ?? 100) >= 10 ? { ok: true } : { ok: false, reason: '칼의 내구도가 너무 낮다.' }; },
     apply(s, t) {
       s.durability = Math.max(0, (s.durability ?? 100) - 10);
-      t.quantity = 2;
-      return { transformTgt: 'thread', consumeSrc: false, consumeTgt: false, message: '가죽을 잘라 가죽끈(실)을 만들었다.' };
+      return { transformTgt: 'thread', transformTgtQty: 2, consumeSrc: false, consumeTgt: false, message: '가죽을 잘라 가죽끈(실)을 만들었다.' };
     },
   },
   { id: 'cut_leather_strips_rev', source: { id: 'leather' }, target: { id: 'knife' },
@@ -823,8 +806,7 @@ const INTERACTION_RULES = [
     canApply(s, t) { return (t.durability ?? 100) >= 10 ? { ok: true } : { ok: false, reason: '칼의 내구도가 너무 낮다.' }; },
     apply(s, t) {
       t.durability = Math.max(0, (t.durability ?? 100) - 10);
-      s.quantity = 2;
-      return { transformSrc: 'thread', consumeSrc: false, consumeTgt: false, message: '가죽을 잘라 가죽끈(실)을 만들었다.' };
+      return { transformSrc: 'thread', transformSrcQty: 2, consumeSrc: false, consumeTgt: false, message: '가죽을 잘라 가죽끈(실)을 만들었다.' };
     },
   },
 

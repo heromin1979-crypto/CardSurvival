@@ -174,6 +174,27 @@ function canDeleteSubLocation(sub) {
 
 // ─── 필드 설명 (마우스 오버 툴팁) ────────────────────────────
 const FIELD_HELP = {
+  projectId: '직업 공정 정의의 ID. 실제 재료 투입과 가동 상태로 완료를 판정합니다.',
+  stageId: '프로젝트의 저장 가능한 단계 ID. 이전 수집 진행도와 분리합니다.',
+  installedInputs: '공정별 실제 소비된 물품 기록. 다른 프로젝트에 중복 사용할 수 없습니다.',
+  powerCost: '이 구역 설비 전력의 운영 가능 횟수를 소비합니다. 다른 구역 전력은 사용할 수 없습니다.',
+  powerOutput: '연료 발전으로 확보하는 지역 설비 운영 가능 횟수입니다. 저장 한도는 6회입니다.',
+  districtPower: '구역별 설비 운영 전력 잔량. TP나 전지 아이템이 아닌 지역 전용 운영 횟수입니다.',
+  recovery: '이 프로젝트에서만 허용된 비전문 회수 교환 품목 목록입니다.',
+  clinicalProfile: '실제 완치 사례 유형. 이전에 완치한 환자도 인정합니다.',
+  clinicalAlternativeCount: '특정 사례를 놓친 경우 인정하는 다른 실제 완치 경험 수입니다.',
+  operated: '최종 가동 전에 실제로 반복 운영해야 하는 선행 설비입니다.',
+  version: '보상 청구 데이터 버전. 구 ID·보상 ID·버전으로 수령 이력을 저장합니다. 이미 통과한 임계값은 다시 지급하지 않습니다.',
+  discovery: '100% 보상에서 해금할 progressionSupplies 공급처 ID. 물품과 함께 한 번 해금됩니다.',
+  discoveryRequired: '탐사 보상으로 발견한 뒤 이용할 수 있는 공급처입니다.',
+  purpose: '탐사 보상 원료의 제작·프로젝트 용도. 지도 다음 보상 안내에 표시합니다.',
+  seasonalFallback: '프로젝트 재배가 겨울·산성비로 중단될 때 표시하는 유료 교환 운영. 비용·산출·TP·재사용 대기를 별도로 정의하며 실제 운영 이력에 포함됩니다.',
+  supplyPolicy: '로비 공급 정책. finite는 유한 회수, renewable은 주기 재생, trade는 지도에서 대가를 지급하는 교환입니다.',
+  capacity: '공급처 최대 재고. 로비는 추첨 항목 수, 지도 공급처는 표시한 물품 묶음 수입니다.',
+  restockTP: '재입고 주기(TP). 유한 회수에는 지정하지 않습니다.',
+
+  treatmentProfile: '환자 단계 사례 ID: dehydration(14일), infection_risk(14일), complex_trauma(21일). treatmentProfiles.js에서 진단·안정화·처치·회복을 정의합니다. 생략하면 지정 woundHealItem 또는 붕대 1개로 부상 1단계를 치료합니다. 안정화 이후 응급 퇴원 타이머는 정지합니다.',
+  woundHealQty: '단계당 소모 수량. 생략 시 1개이며 드래그·터치·대화 모두 분할 스택을 합산합니다.',
   // 장소(구)
   dangerLevel: '위험도 등급(1~4). 높을수록 조우·전투 위험이 큽니다.',
   travelCostTP: '이 구역으로 이동할 때 드는 시간(TP). 1TP = 게임 내 15분.',
@@ -2339,11 +2360,16 @@ function renderExplorationYields(root, dist) {
         onclick: () => { list.splice(idx, 1); markDirty('districts'); rerenderDetail(); } }),
     ]);
     box.append(head);
+    box.append(scalarInput(y, 'id', 'districts'));
+    box.append(scalarInput(y, 'version', 'districts'));
+    box.append(scalarInput(y, 'purpose', 'districts'));
+    if (!('discovery' in y)) y.discovery = '';
+    box.append(scalarInput(y, 'discovery', 'districts'));
     box.append(itemRows(y.items || (y.items = []), 'districts'));  // {definitionId, qty} 행 편집 재사용
     fs.append(box);
   });
   fs.append(el('button', { class: 'ghost row-add', text: '+ 임계값 추가',
-    onclick: () => { list.push({ at: 50, items: [] }); markDirty('districts'); rerenderDetail(); } }));
+    onclick: () => { list.push({ id: 'milestone_' + Date.now(), version: 1, at: 50, items: [] }); markDirty('districts'); rerenderDetail(); } }));
   root.append(fs);
 }
 

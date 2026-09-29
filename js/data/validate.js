@@ -1,3 +1,9 @@
+import { PROGRESSION_SUPPLIES } from './progressionSupplies.js';
+import CAREER_PROJECTS, { PROJECT_RECOVERY } from './careerProjects.js';
+import CAREER_QUESTS from './mainQuests/index.js';
+import { validateCareerProjects } from './validateCareerProjects.js';
+import { validateProgressionSupplies } from './validateProgressionSupplies.js';
+import TREATMENT_PROFILES from './treatmentProfiles.js';
 // === DATA INTEGRITY VALIDATOR ===
 // Run: node js/data/validate.js
 
@@ -861,6 +867,11 @@ async function validate() {
   let warnings = 0;
 
   console.log('=== DATA INTEGRITY CHECK ===\n');
+  for (const message of validateTreatmentProfiles(TREATMENT_PROFILES, patientPool, items)) {
+    console.log(`❌ [treatmentProfiles] ${message}`);
+    errors++;
+  }
+
 
   // 1. Check all blueprint inputs/outputs reference existing items
   for (const [id, recipe] of Object.entries(allBlueprints)) {
@@ -1088,7 +1099,7 @@ async function validate() {
   let mqChecked = 0;
   let mqItemRefBad = 0;
   for (const [id, q] of Object.entries(MAIN_QUESTS)) {
-    const r = validateMainQuestSchema({ ...q, id }, { knownDistricts, knownLandmarks, npcQuestStepCounts });
+    const r = validateMainQuestSchema({ ...q, id }, { knownDistricts, knownLandmarks, npcQuestStepCounts, knownItems: allItemIds, blueprints: allBlueprints });
     for (const e of r.errors) {
       console.log(`\u274C [main quest] ${e}`);
       errors++;
@@ -1194,6 +1205,12 @@ async function validate() {
   console.log('\n=== LANDMARK LOOT LAYER CHECK ===');
   const landmarksData = await import('./landmarks.js');
   const lmAll = landmarksData.LANDMARK_DATA ?? landmarksData.default ?? {};
+  for (const message of validateProgressionSupplies(districtsMod.DISTRICTS, lmAll, PROGRESSION_SUPPLIES, items)) {
+    console.log('❌ ' + message); errors++;
+  }
+  for (const message of validateCareerProjects(CAREER_PROJECTS, CAREER_QUESTS, items, districtsMod.DISTRICTS, PROJECT_RECOVERY)) {
+    console.log('❌ ' + message); errors++;
+  }
   let lmChecked = 0, lmBad = 0, entranceCount = 0;
   for (const [key, lm] of Object.entries(lmAll)) {
     if (key === 'basecamp') continue;   // 내 거점 — 탐색 대상이 아니다
@@ -1591,6 +1608,29 @@ async function validate() {
 export function validateMainQuestSchema(quest, ctx = {}) {
   const errors = [];
   const { knownDistricts = null, knownLandmarks = null, npcQuestStepCounts = null } = ctx;
+  const validateCraft = (objective, path) => {
+    if (objective?.type !== 'craft_item') return;
+    if (!Number.isInteger(objective.count ?? 1) || (objective.count ?? 1) <= 0) {
+      errors.push(`${quest.id}: ${path}.count must be a positive integer (craft completions)`);
+    }
+    for (const field of ['definitionId', 'blueprintId', 'category']) {
+      if (objective[field] != null && (typeof objective[field] !== 'string' || !objective[field].trim())) {
+        errors.push(`${quest.id}: ${path}.${field} must be a non-empty string`);
+      }
+    }
+    if (objective.definitionId && ctx.knownItems && !ctx.knownItems.has(objective.definitionId)) {
+      errors.push(`${quest.id}: ${path}.definitionId "${objective.definitionId}" unknown output item (use blueprintId for recipes)`);
+    }
+    if (ctx.blueprints && !Object.entries(ctx.blueprints).some(([id, bp]) => {
+      const outputs = Array.isArray(bp.output) ? bp.output : (bp.output ? [bp.output] : []);
+      return (!objective.blueprintId || objective.blueprintId === id)
+        && (!objective.category || objective.category === bp.category)
+        && (!objective.definitionId || outputs.some(out => out.definitionId === objective.definitionId));
+    })) {
+      errors.push(`${quest.id}: ${path} craft filters match no blueprint output`);
+    }
+  };
+  validateCraft(quest.objective, 'objective');
 
   // 랜드마크 키는 두 표기가 공존한다: 런타임 진입 키는 항상 카드 아이템 ID(`lm_*`)이고
   // LANDMARK_DATA는 45개 중 35개가 접두사 없는 구 키다. getLandmarkData가 `lm_`를 벗겨
@@ -1619,6 +1659,7 @@ export function validateMainQuestSchema(quest, ctx = {}) {
     } else {
       const seenIds = new Set();
       quest.subObjectives.forEach((so, i) => {
+        validateCraft(so.match, `subObjectives[${i}].match`);
         if (!so.id) errors.push(`${quest.id}: subObjectives[${i}].id missing`);
         if (!so.text) errors.push(`${quest.id}: subObjectives[${i}].text missing`);
         if (so.id && seenIds.has(so.id)) {
@@ -1664,4 +1705,27 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     console.error('Validation failed:', e);
     process.exitCode = 1;
   });
+}
+
+// 환자와 사례·물품 ID 연결이 끊어지면 배포 전 검출한다.
+export function validateTreatmentProfiles(profiles, patients, items) {
+  const errors = [];
+  for (const [id, patient] of Object.entries(patients)) {
+    if (patient.treatmentProfile && !profiles[patient.treatmentProfile]) errors.push(`${id}: unknown treatmentProfile ${patient.treatmentProfile}`);
+  }
+  for (const [id, profile] of Object.entries(profiles)) {
+    if (!Number.isInteger(profile.minDay) || profile.minDay < 3) errors.push(`${id}: invalid minDay`);
+    if (profile.stages?.map(stage => stage.id).join(',') !== 'diagnosis,stabilization,treatment,recovery') errors.push(`${id}: invalid stages`);
+    const ids = new Set();
+    for (const stage of profile.stages ?? []) for (const action of stage.actions ?? []) {
+      if (!action.id || ids.has(action.id)) errors.push(`${id}: duplicate/missing action`);
+      ids.add(action.id);
+      if (!Number.isInteger(action.tpCost) || action.tpCost < 0) errors.push(`${id}: invalid tpCost`);
+      for (const req of action.items ?? []) {
+        if (!items[req.definitionId] || !Number.isInteger(req.qty) || req.qty <= 0) errors.push(`${id}: invalid item ${req.definitionId}`);
+      }
+      for (const itemId of [...(action.tools ?? []), ...(action.facilities ?? [])]) if (!items[itemId]) errors.push(`${id}: unknown tool/facility ${itemId}`);
+    }
+  }
+  return errors;
 }
