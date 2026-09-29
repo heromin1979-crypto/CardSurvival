@@ -10,7 +10,7 @@ const HOMELESS_BRANCH_A = {
   mq_homeless_a_11: {
     id: 'mq_homeless_a_11', title: '이지수 합류',
     desc: '강남구에 도달하라. 이지수 의사가 있는 치료소다.',
-    icon: '🏥', characterId: 'homeless', dayTrigger: 65,
+    icon: '🏥', characterId: 'homeless', dayTrigger: 25,
     prerequisite: 'mq_homeless_10', requiresFlag: 'homeless_branch_a',
     objective: { type: 'visit_district', districtId: 'gangnam', count: 1 },
     reward: { morale: 15, items: [{ definitionId: 'bandage', qty: 2 }] },
@@ -23,12 +23,13 @@ const HOMELESS_BRANCH_A = {
 
   mq_homeless_a_12: {
     id: 'mq_homeless_a_12', title: '공동 거점 구축',
-    desc: '구조물 2개를 제작하라. 치료소 겸 커뮤니티 거점을 만든다.',
-    icon: '🏗️', characterId: 'homeless', dayTrigger: 95,
+    desc: '강남구에서 강남 공동 치료소 공정에 재료를 투입하고 가동하라. 설비 설치 → 운영 물자 투입.',
+    icon: '🏗️', characterId: 'homeless', dayTrigger: 25,
     prerequisite: 'mq_homeless_a_11', requiresFlag: 'homeless_branch_a',
-    objective: { type: 'craft_item', category: 'structure', count: 2 },
+    actionHint: '행동 메뉴의 프로젝트 또는 퀘스트 목표의 공정 보기에서 부족 재료를 확인하세요. 재료는 제작·분해·지역 탐사로 마련합니다. 설치물은 이 구역에 남습니다.',
+    objective: { type: 'career_project', projectId: 'homeless_clinic', stageId: 'commissioned', districtId: 'gangnam', count: 1 },
     reward: { morale: 10, items: [{ definitionId: 'rope', qty: 2 }] },
-    failPenalty: { morale: -5 }, deadlineDays: 150,
+    failPenalty: { morale: -5 }, deadlineDays: Infinity,
     narrative: {
       start: '치료소와 거주 공간을 함께 짓는다. 도면은 내가 그린다. 동선, 격리 구획, 자재 순서 — 현장 소장 시절 몸에 밴 일이다. 이지수는 의료 동선만 짚어주면 된다.',
       complete: '공동 거점 완성. 작업 중 로프도 챙겼다. 이지수가 도면을 보고 말했다. "이 구조라면 환자 15명은 동시에 봐요. 저는 못 그릴 그림이네요."',
@@ -38,7 +39,7 @@ const HOMELESS_BRANCH_A = {
   mq_homeless_a_13: {
     id: 'mq_homeless_a_13', title: '집단 식량 확보',
     desc: '식량 8개를 수집하라. 함께 사는 사람들을 먹여야 한다.',
-    icon: '🍱', characterId: 'homeless', dayTrigger: 125,
+    icon: '🍱', characterId: 'homeless', dayTrigger: 25,
     prerequisite: 'mq_homeless_a_12', requiresFlag: 'homeless_branch_a',
     objective: { type: 'collect_item_type', itemType: 'food', count: 8 },
     reward: { morale: 10, items: [{ definitionId: 'canned_food', qty: 3 }] },
@@ -51,12 +52,13 @@ const HOMELESS_BRANCH_A = {
 
   mq_homeless_a_14: {
     id: 'mq_homeless_a_14', title: '집단 치료',
-    desc: '의료 아이템 5개를 수집하라. 치료소가 본격적으로 운영된다.',
-    icon: '⚕️', characterId: 'homeless', dayTrigger: 155,
+    desc: '강남구에서 공동 치료소 운영 공정에 재료를 투입하고 가동하라. 운영 물자 투입.',
+    icon: '⚕️', characterId: 'homeless', dayTrigger: 25,
     prerequisite: 'mq_homeless_a_13', requiresFlag: 'homeless_branch_a',
-    objective: { type: 'collect_item_type', itemType: 'medical', count: 5 },
+    actionHint: '행동 메뉴의 프로젝트 또는 퀘스트 목표의 공정 보기에서 부족 재료를 확인하세요. 재료는 제작·분해·지역 탐사로 마련합니다. 설치물은 이 구역에 남습니다.',
+    objective: { type: 'career_project', projectId: 'homeless_clinic_service', stageId: 'commissioned', districtId: 'gangnam', count: 1 },
     reward: { morale: 10, items: [{ definitionId: 'painkiller', qty: 2 }, { definitionId: 'antiseptic', qty: 1 }] },
-    failPenalty: { morale: -5 }, deadlineDays: 225,
+    failPenalty: { morale: -5 }, deadlineDays: Infinity,
     narrative: {
       start: '"강남에 의사가 있고, 물자도 있다." 소문은 내가 거리 인맥에 흘린 것이다. 하루 환자 8명. 물자가 빠르게 빈다. 보급은 끊기면 안 된다. 그게 내 책임이다.',
       complete: '치료 물자 보충 완료. 진통제와 소독약도 챙겼다. 이지수: "오늘 7명 봤어요. 형식 씨가 물자 안 끊으니까 가능한 거예요." 시스템이 돈다. 내가 설계한 시스템이.',
@@ -65,10 +67,11 @@ const HOMELESS_BRANCH_A = {
 
   mq_homeless_a_15: {
     id: 'mq_homeless_a_15', title: '마을을 넘기다',
-    desc: '100일 이상 생존하라. 거점을 남은 사람들에게 넘기고 이지수와 떠날 준비를 한다.',
-    icon: '🤝', characterId: 'homeless', dayTrigger: 185,
+    desc: '강남구에서 마을 운영 인계 공정에 재료를 투입하고 가동하라. 조리한 식사 제공 → 운영 물자 투입.',
+    icon: '🤝', characterId: 'homeless', dayTrigger: 25,
     prerequisite: 'mq_homeless_a_14', requiresFlag: 'homeless_branch_a',
-    objective: { type: 'survive_days', count: 100 },
+    actionHint: '행동 메뉴의 프로젝트 또는 퀘스트 목표의 공정 보기에서 부족 재료를 확인하세요. 재료는 제작·분해·지역 탐사로 마련합니다. 설치물은 이 구역에 남습니다.',
+    objective: { type: 'career_project', projectId: 'homeless_clinic_handover', stageId: 'commissioned', districtId: 'gangnam', count: 1 },
     // 선택지가 하나뿐인 분기점이었다. 버튼이 하나면 선택이 아니라 확인
     // 절차가 되므로, 다른 A-15/B-15처럼 reward.flags로 플래그를 심는다.
     reward: {
@@ -87,10 +90,11 @@ const HOMELESS_BRANCH_A = {
 
   mq_homeless_end_a3: {
     id: 'mq_homeless_end_a3', title: '함께 이주',
-    desc: '식량 6개를 비축하라. 이지수와 함께 더 좋은 곳을 찾아 떠난다.',
-    icon: '🚶', characterId: 'homeless', dayTrigger: 205,
+    desc: '강남구에서 공동 이주 보급 공정에 재료를 투입하고 가동하라. 운영 물자 투입.',
+    icon: '🚶', characterId: 'homeless', dayTrigger: 25,
     prerequisite: 'mq_homeless_a_15', requiresFlag: 'homeless_end_a3',
-    objective: { type: 'collect_item_type', itemType: 'food', count: 6 },
+    actionHint: '행동 메뉴의 프로젝트 또는 퀘스트 목표의 공정 보기에서 부족 재료를 확인하세요. 재료는 제작·분해·지역 탐사로 마련합니다. 설치물은 이 구역에 남습니다.',
+    objective: { type: 'career_project', projectId: 'homeless_migration', stageId: 'commissioned', districtId: 'gangnam', count: 1 },
     reward: { morale: 15, items: [{ definitionId: 'canned_food', qty: 5 }], flags: { mainQuestComplete_homeless: true, homeless_ending: 'a3_journey' } },
     failPenalty: { morale: -5 }, deadlineDays: Infinity,
     narrative: {

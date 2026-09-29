@@ -8,6 +8,7 @@ import GameData   from '../data/GameData.js';
 import BALANCE    from '../data/gameBalance.js';
 import NPCSystem  from './NPCSystem.js';
 import NPCQuestSystem from './NPCQuestSystem.js';
+import { clinicalPatients } from './CareerProjectSystem.js';
 import { getLandmarkData, normalizeLandmarkKey } from '../data/landmarks.js';
 import { QUEST_TO_FLASHBACK } from '../data/cinematicScenes.js';
 
@@ -104,12 +105,19 @@ function _getQuestDef(questId) {
   return QUEST_DEFS[questId] ?? MAIN_QUESTS[questId] ?? null;
 }
 
-// 진행도 누적 구조의 단일 정의처. 초기값·세이브 복원·새 게임 리셋이 모두 이 함수를 쓴다
-// (필드 목록이 여러 곳에 손으로 적히면 한쪽만 갱신되어 조용히 누락된다).
+// 산출물 ID와 레시피 ID를 구분하고 지정된 필터를 모두 만족해야 인정한다.
+function matchesCraft(objective, craft) {
+  return (!objective.blueprintId || objective.blueprintId === craft.blueprintId)
+    && (!objective.category || objective.category === craft.category)
+    && (!objective.definitionId || craft.definitionIds.includes(objective.definitionId));
+}
+
+// 초기화·세이브 복원·새 게임 리셋이 공유하는 누적 구조.
 function createEmptyQuestProgress() {
   return {
     collected:              {},
     collectedByTypeOrTag:   {},
+    craftedBatches:         {},
     craftedRecipes:         [],
     craftedCategoryCounts:  {},
     usedItemCounts:         {},
@@ -135,9 +143,12 @@ const QuestSystem = {
     this._progress             = createEmptyQuestProgress();
     this._warnedDeadlines      = {};
     this._lastDeadlineCheckDay = -1;
+    if (GameState.quests) GameState.quests.pendingBranches = [];
   },
 
   init() {
+    EventBus.on('careerProjectCompleted', () => this._checkAllProgress());
+    EventBus.on('npcTradeCompleted', () => this._checkAllProgress());
     EventBus.on('newGameStarted', () => this.resetForNewGame());
     // 계절 이벤트 발생 시 연결된 퀘스트 자동 시작
     EventBus.on('seasonalEvent', ({ eventId }) => this._onSeasonalEvent(eventId));
@@ -172,6 +183,8 @@ const QuestSystem = {
       this._restoreProgressFromSave();
       this._checkAllProgress();
       this._reevaluateSubObjectives();
+      // 화면 초기화와 세이브 역직렬화가 끝난 뒤 데이터로 미결 선택을 복원한다.
+      queueMicrotask(() => this.restorePendingBranches());
     });
 
     // 베이스캠프 진입 시 즉시 메인 퀘스트 트리거 체크 (Day 1 포함)
@@ -185,7 +198,7 @@ const QuestSystem = {
     // 적 처치 시 track_infected 체크 (감염자/보스 추적)
     EventBus.on('enemyKilled',    ({ enemyId, enemyType }) => this._onEnemyKilled(enemyId, enemyType));
     // NPC 치료 시 treat_npc 체크
-    EventBus.on('npcHealed',      ({ npcId }) => this._onNpcHealed(npcId));
+    EventBus.on('npcWoundHealed',      ({ npcId }) => this._onNpcHealed(npcId));
     // 랜드마크 노드 정리 시 rescue_npc 체크 (약탈자 소굴 소탕 등)
     EventBus.on('landmarkCleared',({ landmarkId, rescuedNpcId }) => this._onLandmarkCleared(landmarkId, rescuedNpcId));
     // NPC 퀘스트 완료 시 npc_quest_complete 체크 (메인 퀘스트 크로스오버)
@@ -206,7 +219,7 @@ const QuestSystem = {
    * match.type:
    *  - collect_item       { definitionId, count? }
    *  - collect_item_type  { itemType, count? }       — itemType은 top-level type 또는 tag
-   *  - craft_item         { definitionId? | category?, count? }
+   *  - craft_item         { definitionId?, blueprintId?, category?, count? } — 제작 완료 횟수
    *  - visit_district     { districtId }        — entry.startTp 이후의 도착만 인정
    *  - visit_landmark     { landmarkId }        — 한 구에 랜드마크가 둘 이상일 때 쓴다. 동일 규칙
    *  - discover_location  { locationId }        — flags.hiddenLocationsDiscovered 기준(생애 누적)
@@ -234,8 +247,13 @@ const QuestSystem = {
         return have >= (m.count ?? 1);
       }
       case 'craft_item': {
+        const have = Object.values(state.craftedBatches ?? {}).reduce((sum, craft) =>
+          sum + (matchesCraft(m, craft) ? craft.count : 0), 0);
+        if (have >= (m.count ?? 1)) return true;
+        // 구버전 저장에는 조건 교집합과 산출물별 횟수가 없어 단일 조건만 복원한다.
+        if (m.blueprintId || (m.definitionId && m.category)) return false;
         if (m.definitionId) {
-          return (state.craftedRecipes ?? []).includes(m.definitionId);
+          return (m.count ?? 1) === 1 && (state.craftedRecipes ?? []).includes(m.definitionId);
         }
         if (m.category) {
           const have = state.craftedCategoryCounts?.[m.category] ?? 0;
@@ -260,6 +278,10 @@ const QuestSystem = {
         return have >= (m.count ?? 1);
       }
       case 'treat_npc': {
+        if (entry?.excludedPatientIds) {
+          const patients = [...(state.treatedNpcs ?? [])].filter(id => !entry.excludedPatientIds.includes(id));
+          return m.npcId ? patients.includes(m.npcId) : patients.length >= (m.count ?? 1);
+        }
         if (m.npcId) {
           return (state.treatedNpcs ?? new Set()).has(m.npcId);
         }
@@ -289,15 +311,6 @@ const QuestSystem = {
       }
       this._reevaluateSubObjectives();
     });
-    EventBus.on('itemCrafted', ({ recipeId, category, qty = 1 } = {}) => {
-      if (recipeId && !this._progress.craftedRecipes.includes(recipeId)) {
-        this._progress.craftedRecipes.push(recipeId);
-      }
-      if (category) {
-        this._progress.craftedCategoryCounts[category] = (this._progress.craftedCategoryCounts[category] ?? 0) + qty;
-      }
-      this._reevaluateSubObjectives();
-    });
     EventBus.on('districtVisited', () => this._reevaluateSubObjectives());
     EventBus.on('itemUsed', ({ definitionId, qty = 1 } = {}) => {
       if (definitionId) {
@@ -305,9 +318,9 @@ const QuestSystem = {
       }
       this._reevaluateSubObjectives();
     });
-    EventBus.on('npcHealed', ({ npcId } = {}) => {
+    EventBus.on('npcWoundHealed', ({ npcId } = {}) => {
       if (npcId) this._progress.treatedNpcs.add(npcId);
-      this._progress.treatedNpcCount += 1;
+      this._progress.treatedNpcCount = this._progress.treatedNpcs.size;
       this._reevaluateSubObjectives();
     });
     EventBus.on('structureBuilt', ({ structureId } = {}) => {
@@ -318,28 +331,6 @@ const QuestSystem = {
     // ── 브리지: 기존 정통 이벤트 → 매처 입력 정규화 ──
     // 외부 시스템(CraftSystem/ExploreSystem/SubwaySystem/GameState)을 수정하지 않고
     // QuestSystem 내부에서 페이로드 형태만 변환해 _progress에 누적한다.
-
-    // craftComplete({blueprintId}) → itemCrafted({recipeId, category}) + structureBuilt
-    EventBus.on('craftComplete', ({ blueprintId } = {}) => {
-      const bp = GameData?.blueprints?.[blueprintId];
-      if (!bp) return;
-      const category = bp.category ?? null;
-      const outputs  = Array.isArray(bp.output) ? bp.output : (bp.output ? [bp.output] : []);
-      const recipeId = outputs[0]?.definitionId ?? bp.id ?? blueprintId;
-      const qty      = outputs[0]?.qty ?? 1;
-
-      if (recipeId && !this._progress.craftedRecipes.includes(recipeId)) {
-        this._progress.craftedRecipes.push(recipeId);
-      }
-      if (category) {
-        this._progress.craftedCategoryCounts[category] =
-          (this._progress.craftedCategoryCounts[category] ?? 0) + qty;
-      }
-      if (category === 'structure' && recipeId) {
-        this._progress.builtStructures.add(recipeId);
-      }
-      this._reevaluateSubObjectives();
-    });
 
     // 도착 기록은 ExploreSystem/SubwaySystem이 GameState.recordDistrictArrival로 남긴다.
     // 여기서는 재평가만 걸어 이동 직후 체크리스트가 갱신되게 한다.
@@ -435,6 +426,7 @@ const QuestSystem = {
     gs.questProgress = {
       collected:              { ...this._progress.collected },
       collectedByTypeOrTag:   { ...this._progress.collectedByTypeOrTag },
+      craftedBatches:         structuredClone(this._progress.craftedBatches),
       craftedRecipes:         [...this._progress.craftedRecipes],
       craftedCategoryCounts:  { ...this._progress.craftedCategoryCounts },
       usedItemCounts:         { ...this._progress.usedItemCounts },
@@ -453,6 +445,7 @@ const QuestSystem = {
     this._progress = {
       collected:              { ...(saved.collected ?? {}) },
       collectedByTypeOrTag:   { ...(saved.collectedByTypeOrTag ?? {}) },
+      craftedBatches:         structuredClone(saved.craftedBatches ?? {}),
       craftedRecipes:         [...(saved.craftedRecipes ?? [])],
       craftedCategoryCounts:  { ...(saved.craftedCategoryCounts ?? {}) },
       usedItemCounts:         { ...(saved.usedItemCounts ?? {}) },
@@ -466,7 +459,7 @@ const QuestSystem = {
   _onComboApplied(comboId) {
     if (!comboId) return;
     let changed = false;
-    for (const q of GameState.quests.active) {
+    for (const q of [...GameState.quests.active]) {
       const qDef = _getQuestDef(q.id);
       if (!qDef || qDef.objective.type !== 'trigger_combo') continue;
       const obj = qDef.objective;
@@ -498,17 +491,20 @@ const QuestSystem = {
 
   /** NPC 치료 진행도 */
   _onNpcHealed(npcId) {
+    if (this._progress.treatedNpcs.has(npcId)) return;
+    this._progress.treatedNpcs.add(npcId);
+    this._progress.treatedNpcCount = this._progress.treatedNpcs.size;
+    this._reevaluateSubObjectives();
     // 의사 전용: 누적 환자 카운터 (엔딩 사기 보너스 + 마일스톤 알림)
     this._recordDoctorPatient(npcId);
 
     let changed = false;
-    for (const q of GameState.quests.active) {
+    for (const q of [...GameState.quests.active]) {
       const qDef = _getQuestDef(q.id);
       if (!qDef || qDef.objective.type !== 'treat_npc') continue;
       const targetNpc = qDef.objective.npcId;
       if (targetNpc && npcId !== targetNpc) continue;
-      q.progress = Math.min(qDef.objective.count ?? 1, q.progress + 1);
-      this._checkCompletion(q, qDef);
+      this._syncCareerProgress(q, qDef);
       changed = true;
     }
     if (changed) EventBus.emit('questListChanged', {});
@@ -616,6 +612,7 @@ const QuestSystem = {
       startTp:    gs.time.totalTP ?? 0,
       deadline:   deadlineDays === Infinity ? Infinity : gs.time.day + deadlineDays,
     };
+    this._migrateObjective(entry, def);
     // 처방전 시스템: def.prescriptionOptions = { symptomKey: definitionId } 맵이면
     // 시작 시 랜덤 증상 1개 선택 후 entry에 보관. _onCraft에서 매칭 체크.
     if (def.prescriptionOptions && typeof def.prescriptionOptions === 'object') {
@@ -628,6 +625,10 @@ const QuestSystem = {
     }
 
     gs.quests.active.push(entry);
+    EventBus.emit('questStarted', { questId, def });
+    if (['treat_npc', 'career_project', 'npc_trade'].includes(def.objective?.type)) {
+      this._syncCareerProgress(entry, def);
+    }
 
     // 메인 퀘스트 내러티브 알림
     if (def.narrative?.start) {
@@ -654,7 +655,6 @@ const QuestSystem = {
       }
     }
 
-    EventBus.emit('questStarted', { questId, def });
     const title = def.titleKey ? I18n.t(def.titleKey) : def.title;
     EventBus.emit('notify', { message: I18n.t('quest.newQuest', { icon: def.icon, title }), type: 'info' });
 
@@ -686,15 +686,27 @@ const QuestSystem = {
   _onCraft(blueprintId) {
     const bp = GameData?.blueprints?.[blueprintId];
     if (!bp) return;
-    const outDefId = Array.isArray(bp.output) ? bp.output[0]?.definitionId : null;
-    for (const q of GameState.quests.active) {
+    const outputs = Array.isArray(bp.output) ? bp.output : (bp.output ? [bp.output] : []);
+    const craft = { blueprintId, category: bp.category, definitionIds: [...new Set(outputs.map(out => out.definitionId).filter(Boolean))] };
+    const key = JSON.stringify(craft);
+    const batches = this._progress.craftedBatches;
+    batches[key] = { ...craft, count: (batches[key]?.count ?? 0) + 1 };
+    for (const definitionId of craft.definitionIds) {
+      if (!this._progress.craftedRecipes.includes(definitionId)) this._progress.craftedRecipes.push(definitionId);
+      if (bp.category === 'structure') this._progress.builtStructures.add(definitionId);
+    }
+    if (bp.category) {
+      this._progress.craftedCategoryCounts[bp.category] = (this._progress.craftedCategoryCounts[bp.category] ?? 0) + 1;
+    }
+    for (const q of [...GameState.quests.active]) {
       const qDef = _getQuestDef(q.id);
       if (!qDef) continue;
+      this._migrateObjective(q, qDef);
 
       // 처방전 매칭: 이 퀘스트에 증상이 배정되어 있고 output이 일치하면 flag 세팅
-      if (q.prescription && qDef.prescriptionOptions && outDefId) {
+      if (q.prescription && qDef.prescriptionOptions && craft.definitionIds.length) {
         const required = qDef.prescriptionOptions[q.prescription];
-        if (outDefId === required && !q.prescriptionMatched) {
+        if (craft.definitionIds.includes(required) && !q.prescriptionMatched) {
           q.prescriptionMatched = true;
           EventBus.emit('notify', {
             message: '⭐ 처방전 일치 — 증상과 약품이 맞았다. 완료 시 추가 보상.',
@@ -704,12 +716,13 @@ const QuestSystem = {
       }
 
       if (qDef.objective.type === 'craft_item') {
-        if (!qDef.objective.category || bp.category === qDef.objective.category) {
-          q.progress = Math.min(qDef.objective.count, q.progress + 1);
+        if (matchesCraft(qDef.objective, craft)) {
+          q.progress = Math.min(qDef.objective.count ?? 1, q.progress + 1);
           this._checkCompletion(q, qDef);
         }
       }
     }
+    this._reevaluateSubObjectives();
     EventBus.emit('questListChanged', {});
   },
 
@@ -802,7 +815,7 @@ const QuestSystem = {
       if (!qDef) continue;
 
       // 기한 초과 → 실패 처리
-      if (q.deadline !== Infinity && day > q.deadline) {
+      if (qDef.deadlineDays !== Infinity && Number.isFinite(q.deadline) && day > q.deadline) {
         gs.quests.active.splice(i, 1);
         delete this._warnedDeadlines[q.id];
 
@@ -975,8 +988,11 @@ const QuestSystem = {
     for (const q of [...GameState.quests.active]) {
       const qDef = _getQuestDef(q.id);
       if (!qDef) continue;
+      this._migrateObjective(q, qDef);
       const obj = qDef.objective;
-      if (obj.type === 'collect_item' || obj.type === 'collect_item_type') {
+      if (['career_project', 'treat_npc', 'npc_trade'].includes(obj.type)) {
+        this._syncCareerProgress(q, qDef);
+      } else if (obj.type === 'collect_item' || obj.type === 'collect_item_type') {
         this._syncCollectProgress(q, qDef);
       } else if (obj.type === 'visit_district') {
         // 퀘스트 시작 이후 도착한 경우만 완료. 생애 방문 이력으로 판정하던 시절에는
@@ -1001,6 +1017,32 @@ const QuestSystem = {
       }
     }
     EventBus.emit('questListChanged', {});
+  },
+
+  // 기존 완료 이력은 유지하고, 증거 형식이 바뀐 진행 중 목표만 새 판정으로 이전한다.
+  _migrateObjective(q, def) {
+    if (!def.objectiveRevision || q.objectiveRevision === def.objectiveRevision) return;
+    q.progress = 0;
+    q.objectiveRevision = def.objectiveRevision;
+    if (def.objective.afterStart) q.excludedPatientIds = [...clinicalPatients()];
+    if (GameState.subObjectiveProgress) delete GameState.subObjectiveProgress[q.id];
+  },
+
+  _syncCareerProgress(q, def) {
+    this._migrateObjective(q, def);
+    const objective = def.objective;
+    if (objective.type === 'career_project') {
+      q.deadline = Infinity;
+      const state = GameState.flags.careerProjects?.projects?.[objective.projectId];
+      // 수집형 구세이브의 숫자는 설치·가동 증거가 아니다.
+      q.progress = state?.active && state.stageId === objective.stageId ? 1 : 0;
+    } else if (objective.type === 'npc_trade') {
+      q.progress = Math.min(objective.count, GameState.flags.careerProjects?.trades?.[objective.npcId] ?? 0);
+    } else {
+      const healed = new Set([...clinicalPatients()].filter(id => !q.excludedPatientIds?.includes(id)));
+      q.progress = Math.min(objective.count ?? 1, objective.npcId ? Number(healed.has(objective.npcId)) : healed.size);
+    }
+    this._checkCompletion(q, def);
   },
 
   _updateCollectQuests(itemDef) {
@@ -1150,6 +1192,12 @@ const QuestSystem = {
     }
 
     const compTitle = qDef.titleKey ? I18n.t(qDef.titleKey) : qDef.title;
+    if (qDef.isBranchPoint && qDef.branchOptions) {
+      gs.quests.pendingBranches ??= [];
+      if (!gs.quests.pendingBranches.some(branch => branch.questId === q.id)) {
+        gs.quests.pendingBranches.push({ questId: q.id, choiceIds: qDef.branchOptions.map(option => option.id ?? option.setsFlag) });
+      }
+    }
     EventBus.emit('questCompleted', { questId: q.id, def: qDef, bonusGranted });
     EventBus.emit('notify', { message: I18n.t('quest.completed', { icon: qDef.icon, title: compTitle }), type: 'good' });
     EventBus.emit('questListChanged', {});
@@ -1171,6 +1219,44 @@ const QuestSystem = {
       EventBus.emit('showCinematic', { sceneId: qDef.cinematicId, onComplete: openBranchChoice });
     } else {
       openBranchChoice();
+    }
+  },
+
+  getPendingBranch(questId) {
+    const def = _getQuestDef(questId);
+    const saved = GameState.quests.pendingBranches?.find(branch => branch.questId === questId);
+    if (!saved || !def?.isBranchPoint || !GameState.quests.completed.includes(questId)) return null;
+    if (def.branchOptions.some(option => GameState.flags[option.setsFlag])) return null;
+    const options = def.branchOptions.filter(option => saved.choiceIds.includes(option.id ?? option.setsFlag));
+    return options.length ? { def, options } : null;
+  },
+
+  chooseBranch(questId, choiceId) {
+    const pending = this.getPendingBranch(questId);
+    const option = pending?.options.find(item => (item.id ?? item.setsFlag) === choiceId);
+    if (!option) return false;
+    // 효과보다 먼저 선택을 확정해 재진입·연속 입력에도 한 번만 실행한다.
+    GameState.quests.pendingBranches = GameState.quests.pendingBranches.filter(branch => branch.questId !== questId);
+    GameState.flags[option.setsFlag] = true;
+    if (option.recruitNpc) NPCSystem.forceRecruit(option.recruitNpc);
+    EventBus.emit('branchChosen', { questId, choiceId, setsFlag: option.setsFlag });
+    return true;
+  },
+
+  restorePendingBranches() {
+    const saved = GameState.quests.pendingBranches;
+    const legacySave = !Array.isArray(saved);
+    // 미결 필드 자체가 없는 구버전만 보충한다. 저장된 선택 범위는 확대하지 않는다.
+    GameState.quests.pendingBranches = GameState.quests.completed.flatMap(questId => {
+      const def = _getQuestDef(questId);
+      if (!def?.isBranchPoint || !def.branchOptions?.length || def.branchOptions.some(option => GameState.flags[option.setsFlag])) return [];
+      const validIds = def.branchOptions.map(option => option.id ?? option.setsFlag);
+      const storedIds = legacySave ? null : saved.find(branch => branch.questId === questId)?.choiceIds;
+      const choiceIds = legacySave ? validIds : [...new Set((Array.isArray(storedIds) ? storedIds : []).filter(id => validIds.includes(id)))];
+      return choiceIds.length ? [{ questId, choiceIds }] : [];
+    });
+    for (const pending of GameState.quests.pendingBranches) {
+      EventBus.emit('branchChoice', { questId: pending.questId, options: this.getPendingBranch(pending.questId).options });
     }
   },
 
@@ -1224,6 +1310,7 @@ const QuestSystem = {
 
   /** 퀘스트 완료 시 매핑된 플래시백을 1회 재생 */
   _triggerFlashbackIfAny(questId) {
+    if (_getQuestDef(questId)?.suppressFlashback) return;
     const sceneId = QUEST_TO_FLASHBACK[questId];
     if (!sceneId) return;
 

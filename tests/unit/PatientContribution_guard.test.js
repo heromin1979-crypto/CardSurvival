@@ -59,7 +59,7 @@ describe('PatientIntakeSystem × GuardSystem — guard 분기', () => {
     admitSpecific(npcId);
     const spy = vi.spyOn(GuardSystem, 'register');
 
-    EventBus.emit('npcHealed', { npcId });
+    EventBus.emit('npcWoundHealed', { npcId });
 
     expect(spy).toHaveBeenCalledWith(npcId, PATIENT_POOL[npcId].contributionOnCure);
     expect(GuardSystem.getRegistered()).toContain(npcId);
@@ -72,7 +72,7 @@ describe('PatientIntakeSystem × GuardSystem — guard 분기', () => {
     GuardSystem.init();
     admitSpecific(npcId);
 
-    EventBus.emit('npcHealed', { npcId });
+    EventBus.emit('npcWoundHealed', { npcId });
 
     const info = PatientIntakeSystem.getRescuedInfo(npcId);
     expect(info?.assignment?.status).toBe('idle');
@@ -87,7 +87,7 @@ describe('PatientIntakeSystem × GuardSystem — guard 분기', () => {
     const expectedImmediate = def.immediate ?? [];
     if (expectedImmediate.length === 0) return;
 
-    EventBus.emit('npcHealed', { npcId });
+    EventBus.emit('npcWoundHealed', { npcId });
 
     const lootIds = GameState.pendingLoot.map(l => l.definitionId);
     for (const { id } of expectedImmediate) {

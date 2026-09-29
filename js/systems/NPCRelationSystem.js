@@ -9,6 +9,7 @@ import { NPC_MEMORY_TRIGGERS } from '../data/npcMemories.js';
 import { NPC_RELATIONS }       from '../data/npcRelations.js';
 import { NPC_ITEMS }           from '../data/npcs.js';
 import I18n                    from '../core/I18n.js';
+import { isPresentCompanion } from './npcParticipation.js';
 
 // ── Emotion modifier table ──────────────────────────────────────
 // Each emotion applies multipliers to daily bonuses from companion
@@ -71,6 +72,7 @@ const NPCRelationSystem = {
     const companions = gs.companions ?? [];
 
     for (const npcId of companions) {
+      if (!isPresentCompanion(gs, npcId)) continue;
       const triggers = NPC_MEMORY_TRIGGERS[npcId];
       if (!triggers) continue;
 
@@ -105,6 +107,8 @@ const NPCRelationSystem = {
     const remaining = [];
 
     for (const mem of this._pendingMemories) {
+      // 현장을 떠나거나 사망하면 예약을 취소한다. 귀환 뒤 새 사건으로 다시 기억할 수 있다.
+      if (!isPresentCompanion(gs, mem.npcId)) continue;
       if (now < mem.fireAtTP) {
         remaining.push(mem);
         continue;

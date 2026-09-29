@@ -46,7 +46,7 @@ const EmergencyRoomModal = {
     const rerenderIfOpen = () => {
       if (this._el.classList.contains('open')) this.render();
     };
-    ['patientAdmitted', 'patientDied', 'patientLeft', 'npcHealed',
+    ['patientAdmitted', 'patientDied', 'patientLeft', 'npcHealed', 'npcWoundHealed', 'patientTreatmentChanged',
      'guardStationed', 'guardDismissed', 'guardKilled', 'guardStarved',
      'dispatchDeployed', 'dispatchReturned', 'dispatchFailed',
      'siegeResolved', 'hospitalRewards', 'hospitalDamaged',

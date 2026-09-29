@@ -1,3 +1,4 @@
+import SystemRegistry from '../core/SystemRegistry.js';
 // === GUARD SYSTEM (T3) ===
 // 완치된 NPC 중 contributionOnCure.type === 'guard'인 페르소나를 보라매병원에 상주 배치.
 //
@@ -38,6 +39,7 @@ const GuardSystem = {
   _unsubscribeSiege:   null,
   _unsubscribeDied:    null,
   _unsubscribeLeft:    null,
+  _unsubscribeNewGame: null,
   _initialized:        false,
 
   // 새 게임 시작 시 이전 게임 상태 제거 — GameState.resetForNewGame이 발행하는
@@ -45,12 +47,13 @@ const GuardSystem = {
   resetForNewGame() {
     this._entries = {};
     this._currentDay = -Infinity;
+    GameState.hospital = { stationedGuards: [], defenseRating: 0, siegeHistory: [] };
   },
 
   // ── 초기화 ─────────────────────────────────────────
   init() {
-    EventBus.on('newGameStarted', () => this.resetForNewGame());
     this._unsubscribeAll();
+    this._unsubscribeNewGame = EventBus.on('newGameStarted', () => this.resetForNewGame());
     this._ensureHospitalSlice();
 
     this._entries    = {};
@@ -67,6 +70,31 @@ const GuardSystem = {
     if (!GameState.hospital) {
       GameState.hospital = { stationedGuards: [], defenseRating: 0, siegeHistory: [] };
     }
+  },
+
+  serialize() {
+    return { entries: this._entries, currentDay: Number.isFinite(this._currentDay) ? this._currentDay : null };
+  },
+
+  restore(snapshot) {
+    this._entries = {};
+    this._currentDay = snapshot?.currentDay ?? GameState.time?.day ?? -Infinity;
+    if (snapshot) {
+      for (const [id, entry] of Object.entries(snapshot.entries ?? {})) {
+        const state = GameState.npcs?.states?.[id];
+        if (!state?.dismissed && !state?.patientUnavailable && entry.def?.type === 'guard') this._entries[id] = entry;
+      }
+    } else {
+      const intake = SystemRegistry.get('PatientIntakeSystem');
+      for (const id of intake?.getRescuedRoster?.() ?? []) {
+        const contribution = intake.getSelectedContribution?.(id);
+        if (contribution?.type !== 'guard') continue;
+        this.register(id, contribution);
+      }
+    }
+    this._ensureHospitalSlice();
+    GameState.hospital.stationedGuards = (GameState.hospital.stationedGuards ?? []).filter(id => this._entries[id]);
+    this._recalcDefense();
   },
 
   // ── 등록 / station / dismiss ──────────────────────
@@ -250,6 +278,7 @@ const GuardSystem = {
   // ── 테스트 유틸 ────────────────────────────────────
 
   _unsubscribeAll() {
+    this._unsubscribeNewGame?.(); this._unsubscribeNewGame = null;
     if (this._unsubscribeTP)    { this._unsubscribeTP();    this._unsubscribeTP    = null; }
     if (this._unsubscribeSiege) { this._unsubscribeSiege(); this._unsubscribeSiege = null; }
     if (this._unsubscribeDied)  { this._unsubscribeDied();  this._unsubscribeDied  = null; }

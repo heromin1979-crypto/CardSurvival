@@ -1,5 +1,9 @@
+import { createExplorationSupplyState, migrateExplorationSupply } from '../data/progressionSupplies.js';
+import { createCareerProjectState, migrateCareerProjects } from '../data/careerProjects.js';
+import { DISTRICTS as SUPPLY_DISTRICTS } from '../data/districts.js';
 // === CENTRAL GAME STATE SINGLETON ===
 import EventBus  from './EventBus.js';
+import SystemRegistry from './SystemRegistry.js';
 import GameData  from '../data/GameData.js';
 import { lookupBagExtraSlots } from '../data/bagSlots.js';
 import { normalizeLandmarkKey } from '../data/landmarks.js';
@@ -18,12 +22,15 @@ const BOTTOM_PAGE_SIZE  = 9;    // 휴대 한 페이지 표시 칸 (9열 × 1행
  */
 /**
  * 새 게임 시작 시 초기값으로 되돌릴 GameState 최상위 필드 목록.
- * CharCreate가 직접 다루는 필드(time·stats·player·board·cards·location·noise·crafting·
+ * CharCreate가 직접 다루는 필드(time·stats·player·board·cards·noise·crafting·
  * ui·pendingLoot·weather·season·flags)는 여기 넣지 않는다 — 캐릭터별 시작값을 덮어쓰기 때문.
  * 필드를 새로 추가하면 이 목록이나 CharCreate 중 한 곳에 반드시 들어가야 한다
  * (tests/unit/NewGameReset.test.js의 완전성 가드가 검사).
  */
 export const NEW_GAME_RESET_KEYS = [
+  'location',
+  'npcs',
+  'companions',
   'quests',
   'subObjectiveProgress',
   'questProgress',
@@ -39,6 +46,10 @@ export const NEW_GAME_RESET_KEYS = [
 
 export function createDefaultFlags() {
   return {
+    explorationSupply: createExplorationSupplyState(),
+    careerProjects: createCareerProjectState(),
+    careerDialogues: { version: 1, topics: {}, introduced: false, pendingTopic: null },
+    careerPresentation: { seen: {}, pending: {} },
     tutorialSeen:         false,
     firstBlood:           false,
     firstNightHintShown:  false,
@@ -329,6 +340,8 @@ const GameState = {
   },
 
   // ── flags ─────────────────────────────────────────────
+  npcs: { states: {} },
+  companions: [],
   flags: createDefaultFlags(),
 
   // ── 런타임 랜드마크 오버라이드 ────────────────────────
@@ -846,6 +859,9 @@ const GameState = {
       body:            this.body ?? null,
       landmarkOverrides: this.landmarkOverrides ?? {},
       hospital:          this.hospital ?? null,
+      patientIntake: SystemRegistry.get('PatientIntakeSystem')?.serialize() ?? null,
+      guardRoster: SystemRegistry.get('GuardSystem')?.serialize?.() ?? null,
+      dispatchRoster: SystemRegistry.get('DispatchSystem')?.serialize?.() ?? null,
     });
   },
 
@@ -1013,6 +1029,10 @@ const GameState = {
     if (this.ui.bottomPage > maxBottomPage) this.ui.bottomPage = 0;
     if (this.ui.middlePage > maxMiddlePage) this.ui.middlePage = 0;
     if (d.flags) Object.assign(this.flags, d.flags);
+    // 이전 슬롯에만 있던 대화·연출 기록이 구버전 슬롯에 섞이지 않게 한다.
+    this.flags.careerDialogues = d.flags?.careerDialogues ?? createDefaultFlags().careerDialogues;
+    this.flags.careerPresentation = d.flags?.careerPresentation ?? createDefaultFlags().careerPresentation;
+    this.flags.explorationSupply = migrateExplorationSupply(d.flags ?? {}, d.location, SUPPLY_DISTRICTS);
     // 구버전 세이브 호환: 지도 조각 필드
     if (!this.flags.mapFragments) this.flags.mapFragments = [];
     if (this.flags.mapUnlocked === undefined) this.flags.mapUnlocked = false;
@@ -1075,9 +1095,15 @@ const GameState = {
       if (!this.basecamp.landmarkCardInstanceId) this.basecamp.landmarkCardInstanceId = null;
     }
     // 퀘스트 복원
-    if (d.quests) Object.assign(this.quests, d.quests);
+    if (d.quests) {
+      // 구버전의 필드 부재가 현재 세션의 미결 목록으로 덮이지 않게 한다.
+      delete this.quests.pendingBranches;
+      Object.assign(this.quests, d.quests);
+    }
     this.subObjectiveProgress = d.subObjectiveProgress ?? {};
     this.questProgress        = d.questProgress ?? null;
+    this.flags.careerProjects = d.flags?.careerProjects;
+    migrateCareerProjects(this);
     // 생태계 복원 (구버전 세이브 호환: EcologySystem.ensureInitialized()가 처리)
     if (d.ecology) this.ecology = d.ecology;
     // 심리 상태 복원 (구버전 세이브 호환: MentalSystem.ensureInitialized()가 처리)
@@ -1091,7 +1117,10 @@ const GameState = {
     if (d.body) this.body = d.body;
     // 런타임 랜드마크 오버라이드 (HospitalSiegeSystem 등에서 누적)
     this.landmarkOverrides = d.landmarkOverrides ?? {};
-    if (d.hospital) this.hospital = d.hospital;
+    this.hospital = d.hospital ?? { stationedGuards: [], defenseRating: 0, siegeHistory: [] };
+    SystemRegistry.get('PatientIntakeSystem')?.restore(d.patientIntake);
+    SystemRegistry.get('GuardSystem')?.restore?.(d.guardRoster);
+    SystemRegistry.get('DispatchSystem')?.restore?.(d.dispatchRoster);
     // diseases 필드 복원 (구버전 세이브 호환)
     if (!this.player.diseases) this.player.diseases = [];
     // 구버전 세이브 호환: 필드 없으면 기본값

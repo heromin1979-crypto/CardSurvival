@@ -2,6 +2,7 @@
 // 생사의 기로 딜레마: 플레이어가 NPC와 자원을 두고 선택해야 하는 상황.
 // condition: (gs) => boolean — 딜레마 발동 조건
 // choices[].effect: 선택 시 적용될 변화
+import { getPresentCompanions } from '../systems/npcParticipation.js';
 
 export const DILEMMAS = [
 
@@ -77,12 +78,12 @@ export const DILEMMAS = [
     title:   '위험한 구출',
     trigger: 'exploreCompleted',
     condition: (gs) => {
-      const hasCompanion = (gs.companions?.length ?? 0) > 0;
+      const hasCompanion = getPresentCompanions(gs).length > 0;
       const day = gs.time?.day ?? 0;
       return hasCompanion && day >= 15 && !gs.flags.rescueDilemmaShown;
     },
     getContext: (gs) => {
-      const npcId = gs.companions?.[0] ?? null;
+      const npcId = getPresentCompanions(gs)[0] ?? null;
       return { npcId };
     },
     body: '탐색 중 생존자의 울음소리가 들린다. 하지만 좀비가 가득한 구역이다. {npcName}은 구하러 가자고 한다.',

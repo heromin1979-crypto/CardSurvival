@@ -7,6 +7,7 @@ const ADULTS = {
   // ── 이준호 (16·남) — 고교 식물부, dispatch 샘플 ─────────────────
   patient_lee_junho_16: {
     id: 'patient_lee_junho_16',
+    treatmentProfile: 'dehydration',
     name: '이준호',
     age: 16,
     gender: 'male',
@@ -84,6 +85,7 @@ const ADULTS = {
   // ── 윤태현 (27·남) — 경찰 준비생, guard 샘플 ────────────────────
   patient_yoon_taehyun_27: {
     id: 'patient_yoon_taehyun_27',
+    treatmentProfile: 'complex_trauma',
     name: '윤태현',
     age: 27,
     gender: 'male',
@@ -142,6 +144,7 @@ const ADULTS = {
 
   patient_park_jiyoung_42: {
     id: 'patient_park_jiyoung_42',
+    treatmentProfile: 'infection_risk',
     name: '박지영',
     age: 42,
     gender: 'female',

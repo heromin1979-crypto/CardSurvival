@@ -10,7 +10,7 @@ const SOLDIER_BRANCH_B = {
   mq_soldier_b_11: {
     id: 'mq_soldier_b_11', title: '전우의 칼',
     desc: '나이프 2개를 수습하라. 쓰러진 전우들이 쥐고 있던 무기다.',
-    icon: '🎖️', characterId: 'soldier', dayTrigger: 65,
+    icon: '🎖️', characterId: 'soldier', dayTrigger: 25,
     prerequisite: 'mq_soldier_10', requiresFlag: 'soldier_branch_b',
     objective: { type: 'collect_item', definitionId: 'knife', count: 2 },
     reward: { morale: 15, items: [{ definitionId: 'alcohol_swab', qty: 2 }, { definitionId: 'painkiller', qty: 1 }] },
@@ -23,12 +23,13 @@ const SOLDIER_BRANCH_B = {
 
   mq_soldier_b_12: {
     id: 'mq_soldier_b_12', title: '전진 거점',
-    desc: '구조물 2개를 세워라. 여의도 이동 전 전진 기지가 필요하다.',
-    icon: '🏕️', characterId: 'soldier', dayTrigger: 95,
+    desc: '영등포구에서 여의도 전진 거점 공정에 재료를 투입하고 가동하라. 설비 설치 → 전원 연결.',
+    icon: '🏕️', characterId: 'soldier', dayTrigger: 25,
     prerequisite: 'mq_soldier_b_11', requiresFlag: 'soldier_branch_b',
-    objective: { type: 'craft_item', category: 'structure', count: 2 },
+    actionHint: '행동 메뉴의 프로젝트 또는 퀘스트 목표의 공정 보기에서 부족 재료를 확인하세요. 재료는 제작·분해·지역 탐사로 마련합니다. 설치물은 이 구역에 남습니다.',
+    objective: { type: 'career_project', projectId: 'soldier_forward', stageId: 'commissioned', districtId: 'yeongdeungpo', count: 1 },
     reward: { morale: 8, items: [{ definitionId: 'spike_trap', qty: 1 }] },
-    failPenalty: { morale: -5 }, deadlineDays: 150,
+    failPenalty: { morale: -5 }, deadlineDays: Infinity,
     narrative: {
       start: '여의도까지 직선 거리 3km. 중간 거점을 확보해야 한다. 진지 구축 표준 절차.',
       complete: '전진 기지 구축 완료. 경보 트랩도 설치했다. 혼자 자는 동안 접근을 알려줄 것이다. 여기서 하루 쉬고 여의도로 간다.',
@@ -38,7 +39,7 @@ const SOLDIER_BRANCH_B = {
   mq_soldier_b_13: {
     id: 'mq_soldier_b_13', title: '야간 이동 장비',
     desc: '손전등 2개를 확보하라. 야간 이동에 필수다.',
-    icon: '🔦', characterId: 'soldier', dayTrigger: 125,
+    icon: '🔦', characterId: 'soldier', dayTrigger: 25,
     prerequisite: 'mq_soldier_b_12', requiresFlag: 'soldier_branch_b',
     objective: { type: 'collect_item', definitionId: 'flashlight', count: 2 },
     reward: { morale: 8, items: [{ definitionId: 'sharpened_knife', qty: 1 }] },
@@ -52,7 +53,7 @@ const SOLDIER_BRANCH_B = {
   mq_soldier_b_14: {
     id: 'mq_soldier_b_14', title: '장거리 보급',
     desc: '식량 8개를 비축하라. 여의도 체류 기간을 위한 보급이다.',
-    icon: '🥫', characterId: 'soldier', dayTrigger: 155,
+    icon: '🥫', characterId: 'soldier', dayTrigger: 25,
     prerequisite: 'mq_soldier_b_13', requiresFlag: 'soldier_branch_b',
     objective: { type: 'collect_item_type', itemType: 'food', count: 8 },
     reward: { morale: 8, items: [{ definitionId: 'military_ration', qty: 2 }] },
@@ -65,10 +66,11 @@ const SOLDIER_BRANCH_B = {
 
   mq_soldier_b_15: {
     id: 'mq_soldier_b_15', title: '약 2개월 생존',
-    desc: '100일 이상 생존하라. 살아있는 것 자체가 임무다.',
-    icon: '⏱️', characterId: 'soldier', dayTrigger: 175,
+    desc: '영등포구에서 KBS 비상 송출 시험 공정에 재료를 투입하고 가동하라. 설비 설치 → 전원 연결.',
+    icon: '⏱️', characterId: 'soldier', dayTrigger: 25,
     prerequisite: 'mq_soldier_b_14', requiresFlag: 'soldier_branch_b',
-    objective: { type: 'survive_days', count: 100 },
+    actionHint: '행동 메뉴의 프로젝트 또는 퀘스트 목표의 공정 보기에서 부족 재료를 확인하세요. 재료는 제작·분해·지역 탐사로 마련합니다. 설치물은 이 구역에 남습니다.',
+    objective: { type: 'career_project', projectId: 'soldier_broadcast', stageId: 'commissioned', districtId: 'yeongdeungpo', count: 1 },
     reward: { morale: 10, items: [{ definitionId: 'radio', qty: 1 }] },
     failPenalty: null, deadlineDays: Infinity,
     isBranchPoint: true,
@@ -99,10 +101,11 @@ const SOLDIER_BRANCH_B = {
 
   mq_soldier_end_b1: {
     id: 'mq_soldier_end_b1', title: '전국 통신망 완성',
-    desc: '전자부품 5개를 수집하라. 전국 통신망의 마지막 증폭기를 완성한다.',
-    icon: '🌐', characterId: 'soldier', dayTrigger: 205,
+    desc: '영등포구에서 전국 통신망 송출 공정에 재료를 투입하고 가동하라. 설비 설치 → 전원 연결.',
+    icon: '🌐', characterId: 'soldier', dayTrigger: 25,
     prerequisite: 'mq_soldier_b_15', requiresFlag: 'soldier_end_b1',
-    objective: { type: 'collect_item', definitionId: 'electronic_parts', count: 5 },
+    actionHint: '행동 메뉴의 프로젝트 또는 퀘스트 목표의 공정 보기에서 부족 재료를 확인하세요. 재료는 제작·분해·지역 탐사로 마련합니다. 설치물은 이 구역에 남습니다.',
+    objective: { type: 'career_project', projectId: 'soldier_national', stageId: 'commissioned', districtId: 'yeongdeungpo', count: 1 },
     reward: { morale: 22, items: [{ definitionId: 'stimulant', qty: 2 }], flags: { mainQuestComplete_soldier: true, soldier_ending: 'b1_network' } },
     failPenalty: { morale: -10 }, deadlineDays: Infinity,
     narrative: {
@@ -118,7 +121,7 @@ const SOLDIER_BRANCH_B = {
   mq_soldier_end_b2_1: {
     id: 'mq_soldier_end_b2_1', title: '착륙장 확보',
     desc: '63빌딩 옥상 헬리패드를 찾아내라. 고층 진입에 로프사다리가 필요하다.',
-    icon: '🛬', characterId: 'soldier', dayTrigger: 185,
+    icon: '🛬', characterId: 'soldier', dayTrigger: 25,
     prerequisite: 'mq_soldier_b_15', requiresFlag: 'soldier_end_b2',
     objective: { type: 'collect_item', definitionId: 'military_radio_kit', count: 1 },
     reward: { morale: 18, items: [{ definitionId: 'rope', qty: 3 }] },
@@ -131,10 +134,11 @@ const SOLDIER_BRANCH_B = {
 
   mq_soldier_end_b2: {
     id: 'mq_soldier_end_b2', title: '유도 착륙',
-    desc: '유도등을 밝히고 좌표를 송출하라. 배터리 4개로 착륙 유도등을 세운다.',
-    icon: '🚁', characterId: 'soldier', dayTrigger: 205,
+    desc: '영등포구에서 헬리패드 유도 착륙 공정에 재료를 투입하고 가동하라. 설비 설치 → 유도등 전원 연결.',
+    icon: '🚁', characterId: 'soldier', dayTrigger: 25,
     prerequisite: 'mq_soldier_end_b2_1', requiresFlag: 'soldier_end_b2',
-    objective: { type: 'collect_item', definitionId: 'battery', count: 4 },
+    actionHint: '행동 메뉴의 프로젝트 또는 퀘스트 목표의 공정 보기에서 부족 재료를 확인하세요. 재료는 제작·분해·지역 탐사로 마련합니다. 설치물은 이 구역에 남습니다.',
+    objective: { type: 'career_project', projectId: 'soldier_landing', stageId: 'commissioned', districtId: 'yeongdeungpo', count: 1 },
     reward: { morale: 25, items: [{ definitionId: 'stimulant', qty: 1 }], flags: { mainQuestComplete_soldier: true, soldier_ending: 'b2_helicopter' } },
     failPenalty: { morale: -10 }, deadlineDays: Infinity,
     narrative: {
@@ -147,10 +151,11 @@ const SOLDIER_BRANCH_B = {
 
   mq_soldier_end_b3: {
     id: 'mq_soldier_end_b3', title: '수원 이동',
-    desc: '식량 8개를 확보하라. 마지막 방송을 마치고 수원으로 이동한다.',
-    icon: '🚶', characterId: 'soldier', dayTrigger: 205,
+    desc: '영등포구에서 수원 이동 보급 인계 공정에 재료를 투입하고 가동하라. 운영 물자 투입.',
+    icon: '🚶', characterId: 'soldier', dayTrigger: 25,
     prerequisite: 'mq_soldier_b_15', requiresFlag: 'soldier_end_b3',
-    objective: { type: 'collect_item_type', itemType: 'food', count: 8 },
+    actionHint: '행동 메뉴의 프로젝트 또는 퀘스트 목표의 공정 보기에서 부족 재료를 확인하세요. 재료는 제작·분해·지역 탐사로 마련합니다. 설치물은 이 구역에 남습니다.',
+    objective: { type: 'career_project', projectId: 'soldier_departure', stageId: 'commissioned', districtId: 'yeongdeungpo', count: 1 },
     reward: { morale: 15, items: [{ definitionId: 'battle_ration', qty: 3 }], flags: { mainQuestComplete_soldier: true, soldier_ending: 'b3_suwon' } },
     failPenalty: { morale: -5 }, deadlineDays: Infinity,
     narrative: {

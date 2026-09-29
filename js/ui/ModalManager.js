@@ -11,7 +11,7 @@ import { playDismantleFx } from './dismantleFx.js';
 import { formatCardEffectEntries, formatInstanceName, getConsumableEffect } from '../systems/ItemEffectSystem.js';
 import CardFactory     from './CardFactory.js';
 import GameData        from '../data/GameData.js';
-import NPCSystem       from '../systems/NPCSystem.js';
+import DialogueScene from './DialogueScene.js';
 import { landmarkHasFishing } from '../data/landmarks.js';
 import { isFishingRod as isRod } from '../systems/FishingSystem.js';
 import { MAGAZINE_CAPACITY, getMagazineState, isMagazineAmmoPack } from '../systems/WeaponAmmoSystem.js';
@@ -39,13 +39,13 @@ const ModalManager = {
 
     // Escape key
     document.addEventListener('keydown', e => {
-      if (e.key === 'Escape' && GameState.ui.modalOpen) {
+      if (e.key === 'Escape' && this._overlay.classList.contains('open')) {
         if (this._nonDismissible) return;
         this.close(); return;
       }
 
       // 포커스 트랩: Tab 키를 모달 내부 focusable 요소 사이에서 순환
-      if (e.key === 'Tab' && GameState.ui.modalOpen) {
+      if (e.key === 'Tab' && this._overlay.classList.contains('open')) {
         const focusable = [...this._box.querySelectorAll(FOCUSABLE)];
         if (focusable.length === 0) return;
         const first = focusable[0];
@@ -59,7 +59,6 @@ const ModalManager = {
     });
 
     EventBus.on('openCardInspect', ({ instanceId }) => this.showCardInspect(instanceId));
-    EventBus.on('branchChoice',    ({ options, questId }) => this.showBranchChoice(options, questId));
     EventBus.on('openStructureRepair', ({ districtId }) => this.showStructureRepair(districtId));
     EventBus.on('openingScene',    (config) => this.showOpeningScene(config));
   },
@@ -197,53 +196,7 @@ const ModalManager = {
 
   /** 스토리 분기 선택 모달 — 닫기 불가 */
   showBranchChoice(options, questId) {
-    if (!this._overlay) return;
-    this._nonDismissible = true;
-    this._prevFocus = document.activeElement;
-
-    const btns = options.map((opt, i) => {
-      const npcBadge = opt.recruitNpc
-        ? `<div class="branch-npc-badge">👤 동반자 합류</div>`
-        : '';
-      const warnBadge = opt.warning
-        ? `<div class="branch-warning-badge" style="color:var(--text-warn);margin-top:6px;font-size:0.85em;">⚠️ ${opt.warning}</div>`
-        : '';
-      return `
-        <button class="branch-choice-btn" id="branch-opt-${i}">
-          <div class="branch-choice-title">${opt.label}</div>
-          <div class="branch-choice-desc">${opt.desc ?? ''}</div>
-          ${npcBadge}
-          ${warnBadge}
-        </button>`;
-    }).join('');
-
-    this._box.innerHTML = `
-      <div class="modal-title">⚡ 선택의 갈림길</div>
-      <div class="modal-body branch-choice-body">
-        <p class="branch-choice-hint">이 선택은 이후 스토리를 결정합니다.</p>
-        <div class="branch-choice-options">${btns}</div>
-      </div>
-    `;
-    this._overlay.classList.add('open');
-    GameState.ui.modalOpen = true;
-
-    options.forEach((opt, i) => {
-      document.getElementById(`branch-opt-${i}`).onclick = () => {
-        // 플래그 설정
-        GameState.flags[opt.setsFlag] = true;
-        // NPC 강제 영입
-        if (opt.recruitNpc) {
-          NPCSystem.forceRecruit(opt.recruitNpc);
-        }
-        this.close();
-        EventBus.emit('branchChosen', { setsFlag: opt.setsFlag });
-      };
-    });
-
-    requestAnimationFrame(() => {
-      const first = this._box.querySelector('.branch-choice-btn');
-      if (first) first.focus();
-    });
+    DialogueScene.showBranch(questId);
   },
 
   confirm(message, onConfirm, onCancel = null) {

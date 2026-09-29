@@ -10,7 +10,7 @@ const FIREFIGHTER_BRANCH_B = {
   mq_fire_b_11: {
     id: 'mq_fire_b_11', title: '정대한의 공장',
     desc: '성동구로 이동하라. 정대한 기계공의 성수동 공장이 있다.',
-    icon: '🏭', characterId: 'firefighter', dayTrigger: 65,
+    icon: '🏭', characterId: 'firefighter', dayTrigger: 25,
     prerequisite: 'mq_fire_10', requiresFlag: 'fire_branch_b',
     objective: { type: 'visit_district', districtId: 'seongdong', count: 1 },
     reward: { morale: 15, items: [{ definitionId: 'flashlight', qty: 1 }] },
@@ -24,7 +24,7 @@ const FIREFIGHTER_BRANCH_B = {
   mq_fire_b_12: {
     id: 'mq_fire_b_12', title: '대피소 자재',
     desc: '고철 6개를 수집하라. 대형 대피소의 뼈대가 될 자재다.',
-    icon: '🔧', characterId: 'firefighter', dayTrigger: 95,
+    icon: '🔧', characterId: 'firefighter', dayTrigger: 25,
     prerequisite: 'mq_fire_b_11', requiresFlag: 'fire_branch_b',
     objective: { type: 'collect_item', definitionId: 'scrap_metal', count: 6 },
     reward: { morale: 10, items: [{ definitionId: 'duct_tape', qty: 2 }, { definitionId: 'nail', qty: 5 }] },
@@ -37,12 +37,13 @@ const FIREFIGHTER_BRANCH_B = {
 
   mq_fire_b_13: {
     id: 'mq_fire_b_13', title: '대피소 골격',
-    desc: '구조물 3개를 제작하라. 대형 대피소의 기본 골격을 완성한다.',
-    icon: '🏗️', characterId: 'firefighter', dayTrigger: 125,
+    desc: '성동구에서 성수 대형 대피소 공정에 재료를 투입하고 가동하라. 설비 설치 → 운영 물자 투입.',
+    icon: '🏗️', characterId: 'firefighter', dayTrigger: 25,
     prerequisite: 'mq_fire_b_12', requiresFlag: 'fire_branch_b',
-    objective: { type: 'craft_item', category: 'structure', count: 3 },
+    actionHint: '행동 메뉴의 프로젝트 또는 퀘스트 목표의 공정 보기에서 부족 재료를 확인하세요. 재료는 제작·분해·지역 탐사로 마련합니다. 설치물은 이 구역에 남습니다.',
+    objective: { type: 'career_project', projectId: 'fire_large', stageId: 'commissioned', districtId: 'seongdong', count: 1 },
     reward: { morale: 10, items: [{ definitionId: 'rope', qty: 2 }] },
-    failPenalty: { morale: -5 }, deadlineDays: 185,
+    failPenalty: { morale: -5 }, deadlineDays: Infinity,
     narrative: {
       start: '정대한의 기계 지식 + 박영철의 구조 안전 감각. 두 사람이 함께하니 속도가 두 배가 됐다.',
       complete: '첫 구역 골격이 섰다. 작업 중 로프도 발견했다. 한 번에 수십 명은 아니다. 한 구역씩, 사람이 오는 만큼 늘려간다. 정대한: "소방관이 옆에 있으니 안전하게 잘 됩니다." 박영철: "기계공이 있으니 빠르게 됩니다."',
@@ -51,12 +52,13 @@ const FIREFIGHTER_BRANCH_B = {
 
   mq_fire_b_14: {
     id: 'mq_fire_b_14', title: '발전기 설치',
-    desc: '전자부품 3개를 수집하라. 대피소에 전력을 공급할 발전기가 필요하다.',
-    icon: '⚡', characterId: 'firefighter', dayTrigger: 155,
+    desc: '성동구에서 대피소 전력 가동 공정에 재료를 투입하고 가동하라. 설비 설치 → 운영 물자 투입.',
+    icon: '⚡', characterId: 'firefighter', dayTrigger: 25,
     prerequisite: 'mq_fire_b_13', requiresFlag: 'fire_branch_b',
-    objective: { type: 'collect_item', definitionId: 'electronic_parts', count: 3 },
+    actionHint: '행동 메뉴의 프로젝트 또는 퀘스트 목표의 공정 보기에서 부족 재료를 확인하세요. 재료는 제작·분해·지역 탐사로 마련합니다. 설치물은 이 구역에 남습니다.',
+    objective: { type: 'career_project', projectId: 'fire_power', stageId: 'commissioned', districtId: 'seongdong', count: 1 },
     reward: { morale: 10, items: [{ definitionId: 'electronic_parts', qty: 2 }] },
-    failPenalty: { morale: -5 }, deadlineDays: 225,
+    failPenalty: { morale: -5 }, deadlineDays: Infinity,
     narrative: {
       start: '정대한: "발전기만 있으면 조명도 되고 의료 장비도 쓸 수 있어요. 전자 부품이 필요해요." 빛이 있어야 사람이 모인다.',
       complete: '발전기 가동. 공장에 빛이 들어왔다. 부품 수집 중 여분 전자부품도 챙겼다. 정대한: "이제 진짜 대피소가 됐어요."',
@@ -65,10 +67,11 @@ const FIREFIGHTER_BRANCH_B = {
 
   mq_fire_b_15: {
     id: 'mq_fire_b_15', title: '대피소를 맡기다',
-    desc: '100일 이상 생존하라. 대피소를 생존자들에게 넘기고 떠날 준비를 한다.',
-    icon: '🤝', characterId: 'firefighter', dayTrigger: 185,
+    desc: '성동구에서 대피소 급수와 운영 인계 공정에 재료를 투입하고 가동하라. 설비 설치 → 조리한 식사 제공.',
+    icon: '🤝', characterId: 'firefighter', dayTrigger: 25,
     prerequisite: 'mq_fire_b_14', requiresFlag: 'fire_branch_b',
-    objective: { type: 'survive_days', count: 100 },
+    actionHint: '행동 메뉴의 프로젝트 또는 퀘스트 목표의 공정 보기에서 부족 재료를 확인하세요. 재료는 제작·분해·지역 탐사로 마련합니다. 설치물은 이 구역에 남습니다.',
+    objective: { type: 'career_project', projectId: 'fire_handover', stageId: 'commissioned', districtId: 'seongdong', count: 1 },
     // 선택지가 하나뿐인 분기점이었다. isBranchPoint는 "⚡ 선택의 갈림길 —
     // 이 선택은 이후 스토리를 결정합니다" 모달을 닫을 수 없게 띄우는데,
     // 버튼이 하나면 선택이 아니라 확인 절차가 된다. 다른 A-15/B-15처럼
@@ -89,10 +92,11 @@ const FIREFIGHTER_BRANCH_B = {
 
   mq_fire_end_b3: {
     id: 'mq_fire_end_b3', title: '함께 탈출',
-    desc: '식량 10개를 확보하라. 정대한과 함께 서울을 벗어난다.',
-    icon: '🚗', characterId: 'firefighter', dayTrigger: 205,
+    desc: '성동구에서 탈출 전 보급 인계 공정에 재료를 투입하고 가동하라. 운영 물자 투입.',
+    icon: '🚗', characterId: 'firefighter', dayTrigger: 25,
     prerequisite: 'mq_fire_b_15', requiresFlag: 'fire_end_b3',
-    objective: { type: 'collect_item_type', itemType: 'food', count: 10 },
+    actionHint: '행동 메뉴의 프로젝트 또는 퀘스트 목표의 공정 보기에서 부족 재료를 확인하세요. 재료는 제작·분해·지역 탐사로 마련합니다. 설치물은 이 구역에 남습니다.',
+    objective: { type: 'career_project', projectId: 'fire_departure', stageId: 'commissioned', districtId: 'seongdong', count: 1 },
     reward: { morale: 15, items: [{ definitionId: 'battle_ration', qty: 3 }], flags: { mainQuestComplete_firefighter: true, fire_ending: 'b3_escape' } },
     failPenalty: { morale: -5 }, deadlineDays: Infinity,
     narrative: {

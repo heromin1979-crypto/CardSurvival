@@ -119,7 +119,7 @@ export const NPC_MEMORY_TRIGGERS = {
   npc_mechanic: [
     {
       id:        'mechanic_mem_craft',
-      trigger:   'craftCompleted',
+      trigger:   'craftComplete',
       condition: () => true,
       delay:     18,
       line:      '"잘 만들었어. 더 좋은 재료 있으면 업그레이드도 가능해."',

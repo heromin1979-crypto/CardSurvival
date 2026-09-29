@@ -1,6 +1,6 @@
 // === OnboardingSystem — 의사 우선 튜토리얼 힌트 ===
 // 검증:
-//  - 의사 전용 힌트: npcHealed / npcSpawned(청진기 진단) / statChanged(감염도) /
+//  - 의사 전용 힌트: npcWoundHealed / npcSpawned(청진기 진단) / statChanged(감염도) /
 //    patientCured·contributionChoiceNeeded / openingChoice
 //  - 안내 모달 승격: patientAdmitted / diseaseContracted(잠복 발현) → ModalManager.open,
 //    다른 모달이 열려 있으면 토스트 폴백
@@ -62,18 +62,18 @@ beforeEach(() => resetWorld());
 afterEach(() => vi.useRealTimers());
 
 describe('OnboardingSystem — 의사 전용 힌트', () => {
-  it('npcHealed 최초 1회에만 의료 스킬 안내', () => {
-    EventBus.emit('npcHealed', { npcId: 'npc_wounded_soldier' });
-    EventBus.emit('npcHealed', { npcId: 'npc_wounded_soldier' });
+  it('npcWoundHealed 최초 1회에만 의료 스킬 안내', () => {
+    EventBus.emit('npcWoundHealed', { npcId: 'npc_wounded_soldier' });
+    EventBus.emit('npcWoundHealed', { npcId: 'npc_wounded_soldier' });
 
     const hints = notifications.filter(n => n.message.includes('medicine'));
     expect(hints).toHaveLength(1);
     expect(GameState.flags.onboarding_doctor_skill).toBe(true);
   });
 
-  it('비의사 직업은 npcHealed에 반응하지 않음', () => {
+  it('비의사 직업은 npcWoundHealed에 반응하지 않음', () => {
     resetWorld({ characterId: 'soldier' });
-    EventBus.emit('npcHealed', { npcId: 'npc_x' });
+    EventBus.emit('npcWoundHealed', { npcId: 'npc_x' });
     expect(notifications).toHaveLength(0);
   });
 

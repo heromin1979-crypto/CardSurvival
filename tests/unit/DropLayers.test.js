@@ -13,6 +13,8 @@ import ExploreSystem from '../../js/systems/ExploreSystem.js';
 import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 
+import { PROGRESSION_SUPPLIES } from '../../js/data/progressionSupplies.js';
+
 const items = GameData.items;
 const isOnceLoot = (id) => {
   const d = items[id];
@@ -163,24 +165,35 @@ describe('구 — 탐사도 임계 보상(explorationYields)', () => {
     }
   });
 
-  it('각 임계값은 1종을 3~5개 준다', () => {
+  it('75개 보상은 안정된 ID·버전과 실존 원료의 고정 양을 갖는다', () => {
+    let count = 0;
     for (const [id, d] of Object.entries(DISTRICTS)) {
+      expect(new Set(d.explorationYields.map(y => y.id)).size).toBe(3);
       for (const y of d.explorationYields) {
-        expect(y.items, `${id} ${y.at}%`).toHaveLength(1);
-        const [it] = y.items;
-        expect(items[it.definitionId], `${id} ${y.at}% ${it.definitionId}`).toBeTruthy();
-        expect(it.minQty).toBe(3);
-        expect(it.maxQty).toBe(5);
+        count++;
+        expect(y.id, id).toBe(`milestone_${y.at}`);
+        expect(Number.isInteger(y.version) && y.version >= 1).toBe(true);
+        expect(y.purpose).toBeTruthy();
+        expect(y.items.length).toBeGreaterThan(0);
+        for (const item of y.items) {
+          expect(items[item.definitionId], `${id} ${y.at}% ${item.definitionId}`).toBeTruthy();
+          expect(Number.isInteger(item.qty) && item.qty > 0).toBe(true);
+          expect(item.minQty).toBeUndefined();
+          expect(item.maxQty).toBeUndefined();
+        }
       }
     }
+    expect(count).toBe(75);
   });
 
-  it('임계 보상은 흔한 기본 재료가 아니라 희귀 재료다', () => {
-    const COMMON = new Set(['cloth', 'scrap_metal', 'wood', 'rope', 'plastic', 'nail', 'wire']);
+  it('100% 보상은 같은 구의 반복 공급처를 발견한다', () => {
     for (const [id, d] of Object.entries(DISTRICTS)) {
-      for (const y of d.explorationYields) {
-        expect(COMMON.has(y.items[0].definitionId), `${id} ${y.at}%`).toBe(false);
-      }
+      const reward = d.explorationYields.find(y => y.at === 100);
+      const supply = PROGRESSION_SUPPLIES[reward.discovery];
+      expect(supply, id).toBeTruthy();
+      expect(supply.districtId).toBe(id);
+      expect(supply.discoveryRequired).toBe(true);
+      expect(supply.restockTP).toBeGreaterThan(0);
     }
   });
 });

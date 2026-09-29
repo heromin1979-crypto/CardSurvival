@@ -387,7 +387,7 @@ export const CHARACTERS = [
         desc: '나이프/칼 무기 데미지 +25%, 시작 시 주방 칼 지급',
         effect: {
           knifeDmgBonus: 1.25,
-          startingItems: ['knife', 'contaminated_water'],
+          startingItems: ['knife', 'contaminated_water', 'salt', 'salt', 'salt'],
         },
       },
       {

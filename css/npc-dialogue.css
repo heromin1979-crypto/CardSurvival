@@ -3,31 +3,28 @@
   inset: 0;
   z-index: calc(var(--z-overlay) + 1);
   display: none;
-  padding: 48px 64px;
+  padding: 0;
   background: var(--bg-overlay);
 }
 .npc-scene-overlay.open { display: grid; place-items: center; }
 .npc-scene {
   width: 100%;
   height: 100%;
-  max-height: 960px;
-  display: grid;
-  grid-template-columns: minmax(0, 1.8fr) minmax(440px, 1fr);
+  position: relative;
+  display: block;
   overflow: hidden;
   color: var(--text-primary);
-  background: var(--bg-surface);
-  border: 1px solid var(--border-bright);
-  box-shadow: 0 24px 80px var(--bg-void);
+  background: var(--bg-base);
   font-family: var(--font-mono);
 }
-.npc-scene-stage { position: relative; overflow: hidden; min-width: 0; background: var(--bg-base); }
-.npc-scene-background { position: absolute; width: 100%; height: 100%; object-fit: cover; opacity: .6; filter: saturate(.45); }
+.npc-scene-stage { position: absolute; inset: 0; overflow: hidden; min-width: 0; background: var(--bg-base); }
+.npc-scene-background { position: absolute; width: 100%; height: 100%; object-fit: cover; opacity: .8; filter: saturate(.65); }
 .npc-scene-stage::after {
   content: '';
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: linear-gradient(0deg, var(--bg-void), transparent 36%), linear-gradient(90deg, transparent 55%, var(--bg-surface));
+  background: linear-gradient(0deg, var(--bg-void), transparent 36%), linear-gradient(90deg, transparent 40%, var(--bg-void));
 }
 .npc-scene-location { position: absolute; z-index: 2; top: 32px; left: 32px; font-size: var(--font-size-md); }
 .npc-scene-location span { display: block; margin-top: 8px; color: var(--text-secondary); font-size: var(--font-size-xs); }
@@ -37,20 +34,29 @@
   aspect-ratio: 1;
   max-width: 80%;
   bottom: 18%;
-  left: 50%;
+  left: 32%;
   transform: translateX(-50%);
   overflow: hidden;
   filter: drop-shadow(12px 20px 20px rgba(0,0,0,.65));
 }
 .npc-scene-character { width: 100%; height: 100%; object-fit: contain; }
-.npc-scene-person.has-portrait { width: 85%; height: 100%; max-width: none; aspect-ratio: auto; bottom: 0; mask-image: linear-gradient(90deg, transparent, #000 16%, #000 84%, transparent); }
-.npc-scene-person.has-portrait .npc-scene-character { object-fit: cover; object-position: center 25%; }
+.npc-scene-person.has-portrait { width: 60%; height: 100%; max-width: none; aspect-ratio: auto; bottom: 0; mask-image: linear-gradient(90deg, transparent, #000 16%, #000 84%, transparent); }
+.npc-scene-person.has-portrait .npc-scene-character { display: block; width: auto; max-width: 100%; margin: auto; object-fit: contain; object-position: var(--portrait-position, center bottom); mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); }
 .npc-scene-person.has-sheet .npc-scene-character { position: absolute; left: 0; max-width: none; object-fit: fill; }
 .npc-scene-fallback { position: absolute; inset: 0; display: grid; place-items: center; font-size: 160px; }
 .npc-scene [hidden] { display: none; }
 .npc-scene-caption { position: absolute; z-index: 2; bottom: 40px; left: 40px; font-size: 36px; font-family: var(--font-title); }
 .npc-scene-caption span { display: block; color: var(--text-secondary); font-size: var(--font-size-sm); margin-top: 12px; }
-.npc-scene-panel { padding: 36px 32px 24px; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; border-left: 1px solid var(--border-mid); }
+.npc-scene-panel { position: absolute; right: 80px; bottom: 80px; width: 480px; max-height: min(820px, calc(100% - 120px)); box-sizing: border-box; padding: 28px; min-height: 0; display: flex; flex-direction: column; gap: 20px; border: 1px solid var(--panel-border); border-top: 2px solid var(--accent-primary); border-radius: var(--radius-lg); background: var(--panel-glass); box-shadow: var(--panel-shadow); backdrop-filter: blur(12px); }
+.npc-scene-header { flex-shrink: 0; }
+.npc-scene-body { overflow-y: auto; min-height: 0; overscroll-behavior: contain; white-space: pre-line; }
+.npc-scene-choices { flex-shrink: 0; }
+.npc-scene-choices small { display: block; margin-top: 8px; color: var(--text-secondary); font-size: var(--font-size-xs); line-height: 1.5; white-space: pre-line; }
+.npc-scene-avatar { float: left; width: 64px; height: 64px; margin: 8px 16px 0 0; overflow: hidden; border: 1px solid var(--accent-dim); border-radius: 50%; background: var(--panel-metal); }
+.npc-scene-avatar img { width: 100%; height: 100%; object-fit: cover; object-position: center 20%; }
+.npc-scene-body h3 { font-size: var(--font-size-md); color: var(--accent-primary); }
+.npc-scene-detail summary { cursor: pointer; color: var(--text-info); font-size: var(--font-size-sm); }
+.npc-scene-detail p { line-height: 1.7; font-size: var(--font-size-sm); }
 .npc-scene-eyebrow { font-size: var(--font-size-xs); color: var(--accent-primary); }
 .npc-scene-header h2 { font-size: 36px; font-family: var(--font-title); font-weight: 500; margin: 8px 0 12px; }
 .npc-scene .npc-trust, .npc-scene .npc-trust-dot.filled { color: var(--accent-primary); }
@@ -59,7 +65,7 @@
 .npc-scene-choices button, .npc-scene-leave { display: flex; justify-content: space-between; align-items: center; gap: 12px; width: 100%; min-height: 52px; text-align: left; }
 .npc-scene button { font: inherit; font-size: var(--font-size-sm); color: var(--text-primary); border: 1px solid var(--border-mid); background: var(--bg-raised); border-radius: var(--radius-sm); padding: 12px 16px; cursor: pointer; transition: background var(--transition-fast), border-color var(--transition-fast); }
 .npc-scene button:hover:not(:disabled) { background: var(--bg-hover); border-color: var(--accent-dim); }
-.npc-scene button[aria-pressed="true"] { border-color: var(--accent-primary); color: var(--accent-primary); background: var(--slot-hover); }
+.npc-scene button[aria-pressed="true"] { border-color: var(--text-info); color: var(--text-info); background: var(--slot-hover); }
 .npc-scene button:focus-visible, .dilemma-overlay button:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 3px; }
 .npc-scene button:disabled { opacity: .6; cursor: not-allowed; }
 .npc-scene-detail:empty { display: none; }
@@ -85,19 +91,48 @@
 .npc-scene .npc-scene-leave { margin-top: auto; flex-shrink: 0; background: transparent; color: var(--text-secondary); }
 .npc-scene-leave span { font-size: var(--font-size-xs); }
 @media (max-width: 900px) {
-  .npc-scene-overlay { padding: 16px; }
-  .npc-scene { grid-template-columns: minmax(0, 1fr) minmax(320px, 1fr); }
-  .npc-scene-panel { padding: 20px; gap: 16px; }
+  .npc-scene-panel { right: 40px; bottom: 40px; max-height: calc(100% - 80px); }
 }
-@media (max-width: 600px) {
-  .npc-scene-overlay { padding: 8px; }
-  .npc-scene { grid-template-columns: 1fr; grid-template-rows: 28% minmax(0, 1fr); }
-  .npc-scene-person { height: 160%; width: auto; left: 60%; bottom: -30%; }
-  .npc-scene-person.has-portrait { height: 260%; width: 65%; left: 65%; bottom: -160%; }
-  .npc-scene-caption { font-size: var(--font-size-lg); left: 20px; bottom: 20px; }
-  .npc-scene-caption span, .npc-scene-location { display: none; }
-  .npc-scene-panel { padding: 16px; }
-  .npc-scene-header h2 { font-size: var(--font-size-xl); }
-  .npc-scene .npc-greeting { font-size: var(--font-size-base); padding: 12px 0; }
+@media (max-width: 600px) and (orientation: portrait) {
+  .npc-scene-panel { right: 4%; bottom: 4%; width: 56%; max-height: 88%; padding: 24px; }
+  .npc-scene-person.has-portrait { width: 55%; left: 22%; }
+  .npc-scene-caption, .npc-scene-location { display: none; }
 }
 @media (prefers-reduced-motion: reduce) { .npc-scene button { transition: none; } }
+/* 대화의 선택지를 가리지 않도록 알림은 기록에 남기고 장면이 끝난 뒤 다시 표시한다. */
+#app:has(.npc-scene-overlay.open) #notification-container { visibility: hidden; }
+.npc-scene-person.has-fallback { width: 120px; bottom: 34%; opacity: .45; }
+.npc-scene-person.has-fallback .npc-scene-fallback { font-size: 96px; filter: grayscale(1); }
+/* 전체 앱 Scale은 유지하고 대화 패널의 텍스트·터치 영역만 실제 픽셀로 보정한다. */
+.npc-scene.is-compact .npc-scene-panel {
+  transform: scale(calc(1 / var(--dialogue-scale)));
+  transform-origin: bottom right;
+  right: calc(12px / var(--dialogue-scale));
+  bottom: calc(12px / var(--dialogue-scale));
+  width: min(480px, calc(var(--dialogue-width) - 24px));
+  max-height: calc(var(--dialogue-height) - 24px);
+  padding: 12px;
+  gap: 8px;
+}
+.npc-scene.is-compact .npc-scene-header h2 { font-size: 24px; margin: 4px 0; }
+.npc-scene.is-compact .npc-scene-avatar { width: 40px; height: 40px; margin: 0 12px 0 0; }
+.npc-scene.is-compact .npc-scene-body { white-space: normal; flex: 1 1 auto; min-height: 72px; }
+.npc-scene.is-compact .npc-greeting { font-size: var(--font-size-base); line-height: 1.5; padding: 8px 0; white-space: pre-line; }
+.npc-scene.is-compact .npc-scene-body h3 { font-size: var(--font-size-base); margin: 4px 0; }
+.npc-scene.is-compact .npc-scene-detail { padding: 8px; }
+.npc-scene.is-compact button, .npc-scene.is-compact summary { box-sizing: border-box; min-height: 40px; padding: 8px 12px; }
+.npc-scene.is-compact summary { display: flex; align-items: center; }
+.npc-scene.is-compact .npc-scene-choices { min-height: 48px; flex: 0 1 auto; max-height: calc(var(--dialogue-height) * .35); overflow-y: auto; }
+.npc-scene.is-compact .npc-scene-choices small { margin-top: 4px; line-height: 1.4; }
+.npc-scene.is-compact .npc-scene-leave { margin-top: 0; }
+.npc-scene summary:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 3px; }
+.npc-scene.is-compact .npc-scene-caption { display: none; }
+.npc-scene.is-compact .npc-scene-location { transform: scale(calc(1 / var(--dialogue-scale))); transform-origin: top left; top: calc(12px / var(--dialogue-scale)); left: calc(12px / var(--dialogue-scale)); }
+
+body:has(.npc-scene-overlay.open) :is(#onboarding-board-tooltip, #notif-log-btn) { visibility: hidden; }
+
+.career-outcome { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gap-sm); padding: var(--gap-md); border-left: 3px solid var(--accent-primary); background: var(--bg-raised); font-size: var(--font-size-sm); }
+.career-outcome > span:first-child { color: var(--text-secondary); }
+.career-outcome strong { color: var(--accent-primary); animation: career-result-reveal 2s ease-out both; }
+@keyframes career-result-reveal { from { opacity: .35; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .career-outcome strong { animation: none; } }

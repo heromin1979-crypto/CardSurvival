@@ -9,6 +9,7 @@ import { findInteraction }     from '../data/interactions.js';
 import SecretCombinationSystem from '../systems/SecretCombinationSystem.js';
 import GameData                from '../data/GameData.js';
 import { isUnlitFire }         from '../systems/toolProvision.js';
+import AutoSave                from '../persistence/AutoSave.js';
 
 // 이동 불가 판정 — 태그 'immovable' 기본 + 필드 immovable:true 하위호환 (preserved 패턴)
 export function isImmovable(def) {
@@ -27,6 +28,29 @@ export function isUncarriable(def) {
 function blocksOnUnlitFire(srcInst, tgtInst) {
   return isUnlitFire(srcInst.definitionId, srcInst.durability)
       || isUnlitFire(tgtInst.definitionId, tgtInst.durability);
+}
+
+function transformCardUnit(inst, definitionId, quantity = 1) {
+  const def = GameData.items[definitionId];
+  if (!def) return;
+  const updates = { definitionId, quantity };
+  if (def.defaultContamination !== undefined) updates.contamination = def.defaultContamination;
+  if (def.defaultDurability !== undefined) updates.durability = def.defaultDurability;
+  if ((inst.quantity ?? 1) <= 1) {
+    Object.assign(inst, updates);
+    return;
+  }
+  // 변환 규칙도 재료 한 개분이다. 원료 스택의 나머지 상태는 그대로 둔다.
+  inst.quantity -= 1;
+  const result = GameState.createCardInstance(definitionId, {
+    quantity,
+    contamination: updates.contamination ?? inst.contamination,
+    durability: updates.durability ?? inst.durability,
+  });
+  if (!GameState.placeCardInRow(result.instanceId)) {
+    GameState.pendingLoot.push({ definitionId, quantity: result.quantity, contamination: result.contamination });
+    GameState.removeCardInstanceSilent(result.instanceId);
+  }
 }
 
 const SlotResolver = {
@@ -162,6 +186,7 @@ const SlotResolver = {
   // 카드-위-카드 드랍: 상호작용 규칙 테이블로 처리
   // 반환값: true = 상호작용 발생(성공/실패 무관), false = 상호작용 없음
   resolveInteraction(sourceId, targetId) {
+    if (sourceId === targetId) return false;
     const gs      = GameState;
     const srcDef  = gs.getCardDef(sourceId);
     const tgtDef  = gs.getCardDef(targetId);
@@ -186,53 +211,46 @@ const SlotResolver = {
       return true; // 규칙은 매칭됐지만 조건 불충족 — 드랍 차단
     }
 
-    // 상호작용 실행
-    const result = rule.apply(srcInst, tgtInst, gs);
+    return AutoSave.deferUntilComplete(() => EventBus.batch(() => {
+      // 상호작용 실행
+      const result = rule.apply(srcInst, tgtInst, gs);
 
-    // 카드 변환 처리 (소모보다 먼저 — 소모될 카드는 변환하지 않음)
-    if (result.transformSrc && !result.consumeSrc) {
-      const newDef = GameData?.items[result.transformSrc];
-      if (newDef) {
-        srcInst.definitionId = result.transformSrc;
-        if (newDef.defaultContamination !== undefined) srcInst.contamination = newDef.defaultContamination;
-        if (newDef.defaultDurability   !== undefined) srcInst.durability    = newDef.defaultDurability;
+      // 카드 변환 처리 (소모보다 먼저 — 소모될 카드는 변환하지 않음)
+      if (result.transformSrc && !result.consumeSrc) {
+        transformCardUnit(srcInst, result.transformSrc, result.transformSrcQty);
       }
-    }
-    if (result.transformTgt && !result.consumeTgt) {
-      const newDef = GameData?.items[result.transformTgt];
-      if (newDef) {
-        tgtInst.definitionId = result.transformTgt;
-        if (newDef.defaultContamination !== undefined) tgtInst.contamination = newDef.defaultContamination;
-        if (newDef.defaultDurability   !== undefined) tgtInst.durability    = newDef.defaultDurability;
+      if (result.transformTgt && !result.consumeTgt) {
+        transformCardUnit(tgtInst, result.transformTgt, result.transformTgtQty);
       }
-    }
 
-    // 소모 처리 — 규칙은 재료 1개분을 뜻하므로 스택은 낱개만 덜어낸다
-    if (result.consumeSrc && !gs.consumeCardUnit(sourceId)) {
-      BoardManager.removeCard(sourceId);
-      gs.removeCardInstance(sourceId);
-    }
-    if (result.consumeTgt && !gs.consumeCardUnit(targetId)) {
-      BoardManager.removeCard(targetId);
-      gs.removeCardInstance(targetId);
-    }
-
-    // 아이템 생성 (양동이 물 끓이기·정수 등 — 용기는 유지하고 결과물만 생성)
-    if (result.spawnItem) {
-      const qty = result.spawnQty ?? 1;
-      for (let i = 0; i < qty; i++) {
-        const inst = gs.createCardInstance(result.spawnItem,
-          result.spawnContamination != null ? { contamination: result.spawnContamination } : {});
-        if (inst) gs.placeCardInRow(inst.instanceId);
+      // 소모 처리 — 규칙은 재료 1개분을 뜻하므로 스택은 낱개만 덜어낸다
+      if (result.consumeSrc && !gs.consumeCardUnit(sourceId)) {
+        BoardManager.removeCard(sourceId);
+        gs.removeCardInstance(sourceId);
       }
-    }
+      if (result.consumeTgt && !gs.consumeCardUnit(targetId)) {
+        BoardManager.removeCard(targetId);
+        gs.removeCardInstance(targetId);
+      }
 
-    // 소음 추가
-    if (result.noise) NoiseSystem.addNoise(result.noise);
+      // 아이템 생성 (양동이 물 끓이기·정수 등 — 용기는 유지하고 결과물만 생성)
+      if (result.spawnItem) {
+        const qty = result.spawnQty ?? 1;
+        for (let i = 0; i < qty; i++) {
+          const inst = gs.createCardInstance(result.spawnItem,
+            result.spawnContamination != null ? { contamination: result.spawnContamination } : {});
+          if (inst) gs.placeCardInRow(inst.instanceId);
+        }
+      }
 
-    EventBus.emit('notify', { message: result.message, type: 'good' });
-    EventBus.emit('boardChanged', {});
-    return true;
+      // 소음 추가
+      if (result.noise) NoiseSystem.addNoise(result.noise);
+
+      EventBus.emit('notify', { message: result.message, type: 'good' });
+      gs._updateEncumbrance();
+      EventBus.emit('boardChanged', {});
+      return true;
+    }));
   },
 
   // 비밀 조합 체크 및 실행

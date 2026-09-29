@@ -20,9 +20,11 @@ const HOMELESS_SHARED = {
 
   mq_homeless_02: {
     id: 'mq_homeless_02', title: '첫 번째 불',
-    desc: '밤이 추워졌다. 구조물을 제작해 캠프파이어를 만들어라.',
+    desc: '캠프파이어 레시피의 화롯대 준비와 점화를 모두 완료하라.',
     icon: '🔥', characterId: 'homeless', dayTrigger: 2, prerequisite: 'mq_homeless_01',
-    objective: { type: 'craft_item', category: 'structure', count: 1 },
+    objectiveRevision: 1,
+    objective: { type: 'craft_item', definitionId: 'campfire', count: 1 },
+    actionHint: '자갈 3·나무판자 2·불쏘시개 3으로 화롯대를 준비하고 불꽃 1로 점화한다. 불꽃은 라이터나 마찰 점화로 마련한다.',
     reward: { morale: 5, items: [{ definitionId: 'lighter', qty: 1 }] },
     failPenalty: { morale: -5 }, deadlineDays: 12,
     narrative: {
@@ -33,11 +35,12 @@ const HOMELESS_SHARED = {
 
   mq_homeless_03: {
     id: 'mq_homeless_03', title: '거리의 기술',
-    desc: '쓸모 있는 재료 5개를 수집하라. 남들이 버린 것에서 가치를 찾는다.',
+    desc: '광진구에서 거리 회수품 재생 공정에 재료를 투입하고 가동하라. 회수 고철 선별.',
     icon: '🔍', characterId: 'homeless', dayTrigger: 4, prerequisite: 'mq_homeless_02',
-    objective: { type: 'collect_item_type', itemType: 'material', count: 5 },
+    actionHint: '행동 메뉴의 프로젝트 또는 퀘스트 목표의 공정 보기에서 부족 재료를 확인하세요. 재료는 제작·분해·지역 탐사로 마련합니다. 설치물은 이 구역에 남습니다.',
+    objective: { type: 'career_project', projectId: 'homeless_reclaim', stageId: 'commissioned', districtId: 'gwangjin', count: 1 },
     reward: { morale: 5, items: [{ definitionId: 'scrap_metal', qty: 2 }] },
-    failPenalty: { morale: -5 }, deadlineDays: 14,
+    failPenalty: { morale: -5 }, deadlineDays: Infinity,
     narrative: {
       start: '쓰레기통 속에서 보물을 찾는 법을 안다. 2년의 거리 생활이 가르쳐준 것. 이제 이 기술이 진짜 생존에 쓰인다.',
       complete: '재료가 모였다. 남들이 버린 것 중에 쓸 만한 고철도 따로 챙겼다. 이게 거리의 기술이다.',
@@ -45,7 +48,7 @@ const HOMELESS_SHARED = {
   },
 
   mq_homeless_04: {
-    id: 'mq_homeless_04', title: '한강 정수',
+    id: 'mq_homeless_04', title: '한강 식수 비축',
     desc: '깨끗한 물 3개를 확보하라. 한강변에서 정수하는 법을 안다.',
     icon: '🌊', characterId: 'homeless', dayTrigger: 6, prerequisite: 'mq_homeless_03',
     objective: { type: 'collect_item_type', itemType: 'clean', count: 3 },
@@ -53,7 +56,7 @@ const HOMELESS_SHARED = {
     failPenalty: { morale: -3 }, deadlineDays: 16,
     narrative: {
       start: '한강은 오염됐지만, 정수하는 법이 있다. 숯과 천. 2년 동안 이 방법으로 마셨다.',
-      complete: '깨끗한 물이 생겼다. 정수하면서 숯도 만들었고, 버려진 정수 필터도 발견했다. 사업할 때 몰랐던 사실이다.',
+      complete: '깨끗한 물을 비축했다. 다음 정수에 쓸 숯과 버려진 필터도 챙겼다. 사업할 때 몰랐던 사실이다.',
     },
   },
 
@@ -80,11 +83,12 @@ const HOMELESS_SHARED = {
 
   mq_homeless_06: {
     id: 'mq_homeless_06', title: '고철 채집',
-    desc: '고철 3개를 수집하라. 거처를 강화하고 물물교환에 쓸 수 있다.',
+    desc: '광진구에서 광진 첫 물물교환 공정에 재료를 투입하고 가동하라. 운영 물자 투입.',
     icon: '♻️', characterId: 'homeless', dayTrigger: 10, prerequisite: 'mq_homeless_05',
-    objective: { type: 'collect_item', definitionId: 'scrap_metal', count: 3 },
+    actionHint: '행동 메뉴의 프로젝트 또는 퀘스트 목표의 공정 보기에서 부족 재료를 확인하세요. 낚시꾼 공동체의 공급 교환입니다. NPC 개인 거래와 별개로 재고는 72TP마다 보충됩니다.',
+    objective: { type: 'career_project', projectId: 'homeless_trade', stageId: 'commissioned', districtId: 'gwangjin', count: 1 },
     reward: { morale: 5, items: [{ definitionId: 'nail', qty: 3 }, { definitionId: 'wire', qty: 2 }] },
-    failPenalty: { morale: -3 }, deadlineDays: 24,
+    failPenalty: { morale: -3 }, deadlineDays: Infinity,
     narrative: {
       start: '건설회사 대표 시절, 고철의 시세를 줄줄이 외웠다. 지금은 고철이 돈보다 쓸모 있다.',
       complete: '고철을 모았다. 함께 쏟아진 못과 철사도 챙겼다. 아이러니하게도 이게 더 편하다.',
@@ -93,11 +97,12 @@ const HOMELESS_SHARED = {
 
   mq_homeless_07: {
     id: 'mq_homeless_07', title: '임시 거점',
-    desc: '구조물 2개를 제작하라. 한강변에 좀 더 나은 거처를 만든다.',
+    desc: '광진구에서 한강 운반·저장 거점 공정에 재료를 투입하고 가동하라. 설비 설치 → 운영 물자 투입.',
     icon: '⛺', characterId: 'homeless', dayTrigger: 13, prerequisite: 'mq_homeless_06',
-    objective: { type: 'craft_item', category: 'structure', count: 2 },
+    actionHint: '행동 메뉴의 프로젝트 또는 퀘스트 목표의 공정 보기에서 부족 재료를 확인하세요. 재료는 제작·분해·지역 탐사로 마련합니다. 설치물은 이 구역에 남습니다.',
+    objective: { type: 'career_project', projectId: 'homeless_storage', stageId: 'commissioned', districtId: 'gwangjin', count: 1 },
     reward: { morale: 8, items: [{ definitionId: 'rope', qty: 2 }] },
-    failPenalty: { morale: -5 }, deadlineDays: 23,
+    failPenalty: { morale: -5 }, deadlineDays: Infinity,
     narrative: {
       start: '강을 건너기 전에 제대로 된 거처가 필요하다. 강 이남 어딘가에 자리를 잡아야 한다. 롯데타워든, 다른 거점이든.',
       complete: '거처가 완성됐다. 구조물 만들면서 쓰고 남은 로프도 챙겼다. 2년 전 다리 아래보다 훨씬 낫다.',
@@ -106,11 +111,12 @@ const HOMELESS_SHARED = {
 
   mq_homeless_08: {
     id: 'mq_homeless_08', title: '잠실대교 도하',
-    desc: '구조물을 1개 제작하라. 파손된 교량 구간에 임시 발판을 만든다.',
+    desc: '송파구에서 잠실대교 운반 발판 공정에 재료를 투입하고 가동하라. 설비 설치.',
     icon: '🌉', characterId: 'homeless', dayTrigger: 15, prerequisite: 'mq_homeless_07',
-    objective: { type: 'craft_item', category: 'structure', count: 1 },
+    actionHint: '행동 메뉴의 프로젝트 또는 퀘스트 목표의 공정 보기에서 부족 재료를 확인하세요. 재료는 제작·분해·지역 탐사로 마련합니다. 설치물은 이 구역에 남습니다.',
+    objective: { type: 'career_project', projectId: 'homeless_crossing', stageId: 'commissioned', districtId: 'songpa', count: 1 },
     reward: { morale: 10, items: [{ definitionId: 'crowbar', qty: 1 }] },
-    failPenalty: { morale: -5 }, deadlineDays: 32,
+    failPenalty: { morale: -5 }, deadlineDays: Infinity,
     narrative: {
       start: '잠실대교 중간 구간이 무너져 있다. 건설회사 대표 출신이 이것을 못 건너면 말이 안 된다. 남은 자재로 임시 발판을 만든다.',
       complete: '발판을 세우고 건넜다. 강남. 작업하면서 쇠지렛대도 발견했다. 드디어 강을 건넜다.',
@@ -165,11 +171,12 @@ const HOMELESS_SHARED = {
 
   mq_homeless_side_01: {
     id: 'mq_homeless_side_01', title: '타워 경비대와 친해지기',
-    desc: '타워 경비대장 김정호를 두 번 치료해 신뢰를 쌓아라.',
-    icon: '🛡️', characterId: 'homeless', dayTrigger: 35, prerequisite: 'mq_homeless_10',
-    objective: { type: 'treat_npc', npcId: 'npc_tower_security', count: 2 },
+    desc: '송파구에서 타워 경비대 구급 지원 공정에 재료를 투입하고 가동하라. 운영 물자 투입.',
+    icon: '🛡️', characterId: 'homeless', dayTrigger: 25, prerequisite: 'mq_homeless_10',
+    actionHint: '행동 메뉴의 프로젝트 또는 퀘스트 목표의 공정 보기에서 부족 재료를 확인하세요. 재료는 제작·분해·지역 탐사로 마련합니다. 설치물은 이 구역에 남습니다.',
+    objective: { type: 'career_project', projectId: 'homeless_guard_care', stageId: 'commissioned', districtId: 'songpa', count: 1 },
     reward: { morale: 12, items: [{ definitionId: 'bandage', qty: 3 }, { definitionId: 'combat_knife', qty: 1 }] },
-    failPenalty: { morale: -3 }, deadlineDays: 30,
+    failPenalty: { morale: -3 }, deadlineDays: Infinity,
     narrative: {
       start: '타워 경비대장 김정호. 40대, 입이 무거운 사람이다. 외곽 순찰에서 자주 다쳐 돌아온다. 그를 돌봐주면 타워 안에서 자리가 생긴다.',
       complete: '김정호가 고개를 끄덕였다. "형식 씨, 이제 같은 편이지." 경비대가 내 뒤를 봐준다.',
@@ -181,14 +188,14 @@ const HOMELESS_SHARED = {
 
   mq_homeless_side_02: {
     id: 'mq_homeless_side_02', title: '상인과의 거래',
-    desc: '재료 10개를 모아 떠돌이 상인 이해진과의 거래 물량을 준비하라.',
-    icon: '🎒', characterId: 'homeless', dayTrigger: 40, prerequisite: 'mq_homeless_side_01',
-    objective: { type: 'collect_item_type', itemType: 'material', count: 10 },
+    desc: '송파의 떠돌이 상인 이해진과 실제로 한 번 거래하라. 재료 보유만으로는 완료되지 않는다.',
+    icon: '🎒', characterId: 'homeless', dayTrigger: 25, prerequisite: 'mq_homeless_side_01',
+    objective: { type: 'npc_trade', npcId: 'npc_tower_merchant', count: 1 },
     reward: { morale: 10, items: [{ definitionId: 'canned_food', qty: 3 }, { definitionId: 'rope', qty: 2 }] },
     failPenalty: { morale: -3 }, deadlineDays: 28,
     narrative: {
       start: '이해진이라는 상인이 타워 1층에 좌판을 깔았다. "형씨, 재료만 충분히 모아오면 좋은 물건 내드릴게." 거리에서 배운 눈썰미를 쓸 때다.',
-      complete: '재료 10개를 모아 이해진 앞에 내려놓았다. "형씨, 사업가 출신답네." 그가 통조림과 로프를 내밀었다.',
+      complete: '이해진과 물자를 교환했다. "형씨, 사업가 출신답네." 그가 통조림과 로프를 내밀었다.',
     },
     companionEpilogue: {
       default: '이해진: "형씨, 다음에도 괜찮은 물건 보이면 내가 먼저 연락하지."',
@@ -198,7 +205,7 @@ const HOMELESS_SHARED = {
   mq_homeless_side_03: {
     id: 'mq_homeless_side_03', title: '주방 도우미',
     desc: '음식 5개를 조리해 주방장 박수미의 저녁 배식을 도와라. (오늘의 메뉴와 일치하면 보너스)',
-    icon: '👩‍🍳', characterId: 'homeless', dayTrigger: 45, prerequisite: 'mq_homeless_side_02',
+    icon: '👩‍🍳', characterId: 'homeless', dayTrigger: 25, prerequisite: 'mq_homeless_side_02',
     objective: { type: 'craft_item', category: 'food', count: 5 },
     reward: { morale: 15, items: [{ definitionId: 'canned_food', qty: 4 }, { definitionId: 'herb', qty: 3 }] },
     prescriptionOptions: {
@@ -229,7 +236,7 @@ const HOMELESS_SHARED = {
   mq_homeless_side_04: {
     id: 'mq_homeless_side_04', title: '타워 정비 지원',
     desc: '재료 아이템 8개를 제작해 정비공 한지성의 타워 복구 작업을 도와라.',
-    icon: '🔧', characterId: 'homeless', dayTrigger: 50, prerequisite: 'mq_homeless_side_03',
+    icon: '🔧', characterId: 'homeless', dayTrigger: 25, prerequisite: 'mq_homeless_side_03',
     objective: { type: 'craft_item', category: 'material', count: 8 },
     reward: { morale: 12, items: [{ definitionId: 'scrap_metal', qty: 4 }, { definitionId: 'wire', qty: 3 }, { definitionId: 'duct_tape', qty: 2 }] },
     failPenalty: { morale: -5 }, deadlineDays: 22,
@@ -245,7 +252,7 @@ const HOMELESS_SHARED = {
   mq_homeless_side_05: {
     id: 'mq_homeless_side_05', title: '진료소 협력',
     desc: '타워 진료소 환자 3명을 치료해 의사 최지윤을 도와라.',
-    icon: '👩‍⚕️', characterId: 'homeless', dayTrigger: 55, prerequisite: 'mq_homeless_side_04',
+    icon: '👩‍⚕️', characterId: 'homeless', dayTrigger: 25, prerequisite: 'mq_homeless_side_04',
     objective: { type: 'treat_npc', count: 3 },
     reward: { morale: 15, items: [{ definitionId: 'first_aid_kit', qty: 1 }, { definitionId: 'painkiller', qty: 3 }, { definitionId: 'bandage', qty: 4 }] },
     failPenalty: { morale: -5 }, deadlineDays: 20,

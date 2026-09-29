@@ -1,3 +1,4 @@
+import PatientTreatmentSystem from '../systems/PatientTreatmentSystem.js';
 // === NPC DIALOGUE MODAL ===
 // Shows NPC dialogue, trust level, trade interface, and recruit/dismiss buttons.
 // Opened via EventBus 'openNPCDialogue' event (fired by CardFactory on dblclick of NPC cards).
@@ -8,12 +9,13 @@ import GameState       from '../core/GameState.js';
 import I18n            from '../core/I18n.js';
 import NPCSystem       from '../systems/NPCSystem.js';
 import NPCQuestSystem, { isNpcQuestStepComplete } from '../systems/NPCQuestSystem.js';
-import SkillSystem     from '../systems/SkillSystem.js';
 import { NPC_ITEMS }   from '../data/npcs.js';
 import GameData        from '../data/GameData.js';
 import { getNPCPortrait } from './npcPortraits.js';
 import { COMPANION_SPRITE_KEYS, COMBAT_SPRITE_SHEETS } from './combat/combatUiAssets.js';
-import { getLandmarkData, normalizeLandmarkKey } from '../data/landmarks.js';
+import { getDialogueLocation } from '../data/questScenes.js';
+import DialogueScene, { renderDialogueStage, bindDialogueImages, handleDialogueKeys, fitDialogueViewport } from './DialogueScene.js';
+import CareerDialogues from '../systems/CareerDialogueSystem.js';
 
 const FOCUSABLE = 'button:not(:disabled), [href], [tabindex="0"]';
 
@@ -58,6 +60,28 @@ const NPCDialogueModal = {
   },
 
   show(npcId) {
+    if (DialogueScene._active) {
+      DialogueScene.enqueueTask('npc:' + npcId, done => {
+        this._queuedDone = done;
+        this._showNow(npcId);
+        if (!this._overlay?.classList.contains('open')) done();
+        return () => {
+          this._queuedDone = null;
+          const dilemma = document.getElementById('dilemma-overlay');
+          if (dilemma?._ownerDone === done) {
+            dilemma._queuedDone = null;
+            dilemma._cleanup();
+            dilemma.remove();
+          }
+          this._close();
+        };
+      });
+      return;
+    }
+    this._showNow(npcId);
+  },
+
+  _showNow(npcId) {
     if (!this._overlay || !this._box) return;
 
     const npcDef  = NPCSystem.getNPCDef(npcId);
@@ -94,6 +118,8 @@ const NPCDialogueModal = {
       document.addEventListener('keydown', this._keyHandler, true);
     }
     this._render(npcId);
+    this._releaseViewport?.();
+    this._releaseViewport = fitDialogueViewport(this._box);
   },
 
   _render(npcId = this._npcId) {
@@ -121,7 +147,7 @@ const NPCDialogueModal = {
 
     // Companion stats section
     let companionHtml = '';
-    if (comp?.canRecruit) {
+    if (comp && (comp.canRecruit || npcState.healed)) {
       const statsRows = [];
       if (comp.combatDmg > 0)           statsRows.push([I18n.t('npc.statCombat'),   `+${Math.round((comp.combatDmg - 1) * 100)}%`]);
       if (comp.healBonus > 0)            statsRows.push([I18n.t('npc.statHeal'),     `+${Math.round((comp.healBonus - 1) * 100)}%`]);
@@ -271,33 +297,19 @@ const NPCDialogueModal = {
       }
     }
 
-    // 부상 군인 치료 섹션
-    let woundHealHtml = '';
-    const woundLevel = npcState.woundLevel ?? 0;
-    const npcDefFull = NPCSystem.getNPCDef(npcId);
-    if (woundLevel > 0 && npcDefFull?.woundHealItem) {
-      const healItemId = npcDefFull.woundHealItem;
-      const healQty    = npcDefFull.woundHealQty ?? 2;
-      const healItemDef = GameData.items[healItemId];
-      const haveHealItem = GameState.countOnBoard?.(healItemId) ?? 0;
-      const canWoundHeal = haveHealItem >= healQty;
-      woundHealHtml = `
-        <div class="npc-heal-section">
-          <div class="npc-section-title">🩹 부상 단계: ${woundLevel}/3</div>
-          <div class="npc-treatment-note">
-            치료 재료: ${healItemDef?.icon ?? '📦'} ${healItemDef?.name ?? healItemId} ×${healQty} (보유: ${haveHealItem})
-          </div>
-          <button class="npc-action-btn heal ${canWoundHeal ? '' : 'disabled'}"
-                  id="npc-wound-heal-btn" ${canWoundHeal ? '' : 'disabled'}>
-            🩹 부상 치료 (${woundLevel}단계 → ${woundLevel - 1}단계)
-          </button>
-        </div>`;
-    } else if (woundLevel === 0 && npcDefFull?.woundHealItem && !isCompanion) {
-      woundHealHtml = `
-        <div class="npc-heal-section">
-          <div class="npc-treatment-note healed">✅ 부상이 완치되었습니다. 이제 친밀도를 쌓을 수 있습니다.</div>
-        </div>`;
-    }
+    const treatment = PatientTreatmentSystem.inspect(npcId);
+    const itemName = id => GameData.items[id]?.name ?? id;
+    const woundHealHtml = treatment.ok ? `
+      <div class="npc-heal-section">
+        <div class="npc-section-title">치료 · ${treatment.stageLabel}</div>
+        ${treatment.actions.map((action, index) => `
+          <div class="npc-treatment-note">${action.items.map(r => `${itemName(r.definitionId)} ×${r.qty} (보유 ${GameState.countOnBoard(r.definitionId)})`).join(', ') || '소모품 없음'}
+          ${action.tools.length ? ' · 도구 유지: ' + action.tools.map(itemName).join(', ') : ''}
+          ${action.facilities.length ? ' · 설비: ' + action.facilities.map(itemName).join(' / ') : ''}
+          · ${action.tpCost}TP${action.reason ? '<br>' + action.reason : ''}</div>
+          <button class="npc-action-btn heal" ${index === 0 ? 'id="npc-wound-heal-btn"' : ''} data-treatment-action="${action.id}" ${action.ok ? '' : 'disabled'}>${action.label}</button>
+        `).join('')}
+      </div>` : npcState.healed ? '<div class="npc-treatment-note healed">부상이 완치되었습니다.</div>' : '';
 
     const views = [
       { id: 'quest', label: '의뢰', html: questHtml },
@@ -310,58 +322,42 @@ const NPCDialogueModal = {
     const standalone = getNPCPortrait(npcId, { full: true });
     const sprite = standalone ? null : COMBAT_SPRITE_SHEETS[COMPANION_SPRITE_KEYS[npcId]];
     const portrait = standalone ?? sprite?.src?.replace(/^\//, '');
-    const districtId = GameState.location?.currentDistrict;
-    const district = GameData.districts?.[districtId];
-    const landmarkKey = normalizeLandmarkKey(GameState.location?.currentLandmark);
-    const landmark = getLandmarkData(landmarkKey);
-    const subLocation = landmark?.subLocations?.find(sub => sub.id === GameState.location?.currentSubLocation);
-    const locationName = subLocation?.name ?? landmark?.name ?? I18n.districtName(districtId, district?.name ?? '서울');
-    const neutralBackground = 'assets/images/locations/urban.png';
-    const background = subLocation ? `assets/images/sublocations/${subLocation.id}.png`
-      : landmarkKey === 'basecamp' ? 'assets/images/landmarks/basecamp.png'
-      : district ? `assets/images/landmarks/lm_${landmarkKey || districtId}.png` : neutralBackground;
+    const location = getDialogueLocation();
     this._box.innerHTML = `
-      <div class="npc-scene-stage">
-        <img class="npc-scene-background" src="${background}" alt="">
-        <div class="npc-scene-location">${locationName} <span>생존자와의 대화</span></div>
-        <div class="npc-scene-person ${sprite ? 'has-sheet' : 'has-portrait'}">
-          <span class="npc-scene-fallback" ${portrait ? 'hidden' : ''} aria-label="${name}">${icon}</span>
-          ${portrait ? `<img class="npc-scene-character" src="${portrait}" alt="${name}" ${sprite ? `style="width:${sprite.cols * 100}%;height:${sprite.rows * 100}%;top:-${(sprite.motions.idle?.row ?? 0) * 100}%"` : ''}>` : ''}
-        </div>
-        <div class="npc-scene-caption">${name}<span>${isCompanion ? '함께 생존하는 동료' : '폐허에서 만난 생존자'}</span></div>
-      </div>
+      ${renderDialogueStage({ ...location, portrait, sprite, speakerName: name, icon, caption: isCompanion ? "함께 생존하는 동료" : "생존자와의 대화" })}
       <div class="npc-scene-panel">
         <header class="npc-scene-header">
           <div class="npc-scene-eyebrow">대화</div>
+          ${portrait ? `<span class="npc-scene-avatar"><img src="${getNPCPortrait(npcId) ?? portrait}" alt=""></span>` : ''}
           <h2 id="npc-scene-name">${name}</h2>
           <div class="npc-trust" aria-label="친밀도 ${trust}/5">${trustDots}</div>
           ${emotionHtml}
         </header>
+        <div class="npc-scene-body">
         <p class="npc-greeting">${greeting ? `“${greeting}”` : itemDef?.description ?? ''}</p>
         <nav class="npc-scene-choices" aria-label="대화 주제">
+          ${CareerDialogues.list().filter(topic => topic.speakerId === npcId).map(topic => `<button data-npc-career-topic="${topic.id}">${topic.title}<span aria-hidden="true">›</span></button>`).join('')}
           ${views.map(view => `<button id="npc-view-${view.id}" data-dialogue-view="${view.id}" aria-pressed="${this._view === view.id}" aria-controls="npc-scene-detail">${view.label}<span aria-hidden="true">›</span></button>`).join('')}
         </nav>
         <section id="npc-scene-detail" class="npc-scene-detail" aria-label="${currentView?.label ?? '대화 상세'}" ${currentView ? '' : 'hidden'}>
           ${currentView ? `<div class="npc-scene-detail-heading"><h3>${currentView.label}</h3><button id="npc-back-btn">접기</button></div>${currentView.html}` : ''}
         </section>
+        </div>
         <button id="npc-leave-btn" class="npc-scene-leave">대화를 마친다 <span>Esc</span></button>
       </div>`;
-    const image = this._box.querySelector('.npc-scene-character');
-    if (image) image.onerror = () => {
-      image.hidden = true;
-      this._box.querySelector('.npc-scene-fallback').hidden = false;
-    };
-    const bg = this._box.querySelector('.npc-scene-background');
-    bg.onerror = () => {
-      if (bg.getAttribute('src') !== neutralBackground) bg.src = neutralBackground;
-      else bg.hidden = true;
-    };
+    bindDialogueImages(this._box);
     this._bindEvents(npcId);
     const focusTarget = focusedId && this._box.querySelector(`#${focusedId}:not(:disabled)`);
     (focusTarget || this._box.querySelector(FOCUSABLE))?.focus();
   },
 
   _bindEvents(npcId) {
+    this._box.querySelectorAll('[data-npc-career-topic]').forEach(button => {
+      button.onclick = () => {
+        this._close();
+        EventBus.emit('openCareerDialogue', { topicId: button.dataset.npcCareerTopic });
+      };
+    });
     this._box.querySelectorAll('[data-dialogue-view]').forEach(btn => {
       btn.onclick = () => { this._view = btn.dataset.dialogueView; this._render(npcId); };
     });
@@ -427,68 +423,18 @@ const NPCDialogueModal = {
       });
     }
 
-    // Wound heal button (부상 군인 치료)
-    const woundHealBtn = document.getElementById('npc-wound-heal-btn');
-    if (woundHealBtn) {
-      woundHealBtn.addEventListener('click', () => {
-        const state = NPCSystem.getNPCState(npcId);
-        const npcDef = NPCSystem.getNPCDef(npcId);
-        if (!state || !npcDef) return;
-        const healItemId = npcDef.woundHealItem;
-        const healQty    = npcDef.woundHealQty ?? 2;
-        // 재료 소모
-        let remaining = healQty;
-        for (const card of (GameState.getBoardCards?.() ?? [])) {
-          if (remaining <= 0) break;
-          if (card.definitionId !== healItemId) continue;
-          const qty = card.quantity ?? 1;
-          if (qty <= remaining) {
-            remaining -= qty;
-            GameState.removeCardInstance(card.instanceId);
-          } else {
-            card.quantity = qty - remaining;
-            remaining = 0;
-          }
-        }
-        // 부상 단계 감소 + trust 증가
-        state.woundLevel = Math.max(0, (state.woundLevel ?? 0) - 1);
-        const oldTrust = state.trust ?? 0;
-        state.trust = Math.min(5, oldTrust + 1);
-        SkillSystem.gainXp('medicine', 3);
-        EventBus.emit('npcTrustChanged', { npcId, oldTrust, newTrust: state.trust });
-        EventBus.emit('boardChanged', {});
-        if (state.woundLevel <= 0) {
-          // 완치 → 동료 가능 상태로 변경
-          state.healed = true;
-          const comp = npcDef.companion;
-          if (comp) comp.canRecruit = true;
-          EventBus.emit('notify', { message: `🩹 ${I18n.itemName(npcId, NPC_ITEMS[npcId]?.name)}의 부상이 완치되었습니다!`, type: 'good' });
-          // 간호사 퀘스트 진행 체크
-          EventBus.emit('npcWoundHealed', { npcId });
-          EventBus.emit('npcHealed',      { npcId });
-        } else {
-          EventBus.emit('notify', { message: `🩹 부상 치료 (${state.woundLevel + 1}단계 → ${state.woundLevel}단계)`, type: 'info' });
-        }
+    this._box.querySelectorAll('[data-treatment-action]').forEach(button => {
+      button.addEventListener('click', () => {
+        const result = PatientTreatmentSystem.treat(npcId, button.dataset.treatmentAction);
+        if (!result.ok) EventBus.emit('notify', { message: result.reason, type: 'warn' });
         this._render(npcId);
       });
-    }
+    });
 
   },
 
   _handleKeys(e, container, close) {
-    // 공용 ModalManager의 키 처리까지 전달되면 뒤에 남은 모달도 닫히므로 capture 단계에서 소유한다.
-    if (e.key !== 'Escape' && e.key !== 'Tab') return;
-    e.stopImmediatePropagation();
-    if (e.key === 'Escape') { e.preventDefault(); close?.(); return; }
-    const elements = [...container.querySelectorAll(FOCUSABLE)];
-    const first = elements[0];
-    const last = elements.at(-1);
-    if (!first) { e.preventDefault(); return; }
-    if (!container.contains(document.activeElement) || (e.shiftKey && document.activeElement === first)) {
-      e.preventDefault(); (e.shiftKey ? last : first).focus();
-    } else if (!e.shiftKey && document.activeElement === last) {
-      e.preventDefault(); first.focus();
-    }
+    handleDialogueKeys(e, container, close);
   },
 
   _close() {
@@ -497,16 +443,23 @@ const NPCDialogueModal = {
     this._box.innerHTML = '';
     document.removeEventListener('keydown', this._keyHandler, true);
     this._keyHandler = null;
+    this._releaseViewport?.();
+    this._releaseViewport = null;
+    const done = this._queuedDone;
+    this._queuedDone = null;
     const dilemma = document.getElementById('dilemma-overlay');
     if (dilemma) {
       // 명령 실행으로 강제 선택이 열린 경우, 그 선택이 끝난 뒤 원래 화면으로 복귀시킨다.
       dilemma._previousModalOpen = this._previousModalOpen;
       dilemma._previousFocus = this._previousFocus;
+      // 강제 선택이 끝날 때까지 예약 NPC의 큐 소유권을 넘기지 않는다.
+      dilemma._queuedDone = done;
     } else {
       this._previousFocus?.isConnected && this._previousFocus.focus();
     }
     GameState.ui.modalOpen = !!dilemma || this._previousModalOpen;
     this._previousFocus = null;
+    if (!dilemma) done?.();
   },
 
   // ── W-3: Dilemma Modal ─────────────────────────────────────────
@@ -514,6 +467,8 @@ const NPCDialogueModal = {
   _showDilemma({ dilemmaId, title, body, choices, onChoice }) {
     // Create overlay
     const existing = document.getElementById('dilemma-overlay');
+    const ownerDone = existing?._ownerDone ?? this._queuedDone;
+    const queuedDone = existing?._queuedDone;
     if (existing) { existing._cleanup?.(); existing.remove(); }
     const previousFocus = document.activeElement;
     const previousModalOpen = GameState.ui.modalOpen;
@@ -524,6 +479,8 @@ const NPCDialogueModal = {
     overlay.className = 'dilemma-overlay';
     overlay._previousModalOpen = previousModalOpen;
     overlay._previousFocus = previousFocus;
+    overlay._ownerDone = ownerDone;
+    overlay._queuedDone = queuedDone;
 
     const choicesHtml = choices.map(c => `
       <button class="dilemma-choice-btn" data-choice="${c.id}">
@@ -551,12 +508,16 @@ const NPCDialogueModal = {
     overlay.querySelector('button')?.focus();
 
     // Bind choice buttons (no close-on-bg-click — must choose)
+    let chosen = false;
     overlay.querySelectorAll('.dilemma-choice-btn').forEach(btn => {
       btn.addEventListener('click', () => {
+        if (chosen) return;
+        chosen = true;
         const choiceId = btn.dataset.choice;
         overlay._cleanup();
         overlay.remove();
-        onChoice?.(choiceId);
+        try { onChoice?.(choiceId); }
+        finally { overlay._queuedDone?.(); overlay._queuedDone = null; }
       });
     });
   },

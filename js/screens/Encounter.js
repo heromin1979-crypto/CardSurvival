@@ -7,6 +7,7 @@ import ExploreSystem from '../systems/ExploreSystem.js';
 import HospitalSiegeSystem from '../systems/HospitalSiegeSystem.js';
 import { rollEnemyGroup } from '../data/enemies.js';
 import StatSystem  from '../systems/StatSystem.js';
+import { CAREER_RISK_GUIDANCE, COMMON_RISK_GUIDANCE } from '../data/careerRiskGuidance.js';
 
 const Encounter = {
   _el:     null,
@@ -69,6 +70,7 @@ const Encounter = {
         ${noiseTag}<br>
         ${d.noiseInflux ? `<span style="color:var(--text-danger);">${I18n.t('encounter.noiseInflux')}</span>` : ''}
       </div>
+      <p class="encounter-career-guidance">${CAREER_RISK_GUIDANCE[GameState.player.characterId] ?? ''}<br>${COMMON_RISK_GUIDANCE}</p>
       <div class="encounter-choices">
         <button class="toolbar-btn" id="enc-fight">${I18n.t('encounter.fight')}</button>
         <button class="toolbar-btn" id="enc-stealth">${I18n.t('encounter.stealth')}</button>

@@ -69,6 +69,13 @@ const SoundSystem = {
     // 전투 타격 단위 효과음 — CombatFxPlayer._playFx가 발행하는 combatSfx 구독
     EventBus.on('combatSfx', (fx) => this._playCombatSfx(fx));
 
+    // 실제 완료 장면이 표시될 때만 짧게 알린다. 기존 무음·음량 설정을 따른다.
+    EventBus.on('careerPresentationShown', ({ characterId, kind }) => {
+      if (kind !== 'success') return;
+      const frequency = { doctor: 440, soldier: 330, firefighter: 392, homeless: 294, chef: 523, engineer: 220 }[characterId];
+      if (frequency) playTone(frequency, 0.5, 'sine', volume * 0.3);
+    });
+
     // 전투 효과음
     EventBus.on('combatEnd', ({ outcome }) => {
       if (outcome === 'victory') {
