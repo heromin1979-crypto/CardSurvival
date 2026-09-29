@@ -19,9 +19,9 @@ function resetWorld() {
     lootTable: [{ definitionId: 'cloth', weight: 1, minQty: 1, maxQty: 1 }],
     exploreIncrement: 5,
     explorationYields: [
-      { at: 30, items: [{ definitionId: 'scrap_metal', qty: 2 }] },
-      { at: 60, items: [{ definitionId: 'scrap_metal', qty: 2 }] },
-      { at: 100, items: [{ definitionId: 'scrap_metal', qty: 1 }] },
+      { id: 'milestone_30', version: 1, at: 30, items: [{ definitionId: 'scrap_metal', qty: 2 }] },
+      { id: 'milestone_60', version: 1, at: 60, items: [{ definitionId: 'scrap_metal', qty: 2 }] },
+      { id: 'milestone_100', version: 1, at: 100, items: [{ definitionId: 'scrap_metal', qty: 1 }] },
     ],
   };
 }
@@ -50,7 +50,12 @@ describe('임계값 특수자원 — 고정 산출(확률 아님)', () => {
     const scrap = GameState.board.middle.filter(Boolean)
       .map(id => GameState.cards[id]).filter(c => c?.definitionId === 'scrap_metal');
     const total = scrap.reduce((s, c) => s + (c.quantity ?? 1), 0);
-    expect(total).toBe(2);  // 30% 임계값 고정 수량
+    expect(total).toBe(2);
+    expect(GameState.flags.explorationSupply.claims).toEqual([`${TID}:milestone_30:1`]);
+    GameState.flags.districtExploration[TID] = 28;
+    ExploreSystem._advanceExploration(TID);
+    expect(GameState.countOnBoard('scrap_metal')).toBe(2);
+    expect(GameState.flags.explorationSupply.claims).toHaveLength(1);
     expect(GameState.board.middle.filter(Boolean).length).toBe(before + scrap.length);
   });
 

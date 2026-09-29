@@ -4,6 +4,7 @@
 // effect는 "감염 증가분 -20%"처럼 다른 계산에 곱해지는 값이라 조회형으로 분리했다.
 import EventBus  from '../core/EventBus.js';
 import GameState from '../core/GameState.js';
+import { getCareerFacilities } from '../data/careerProjects.js';
 import GameData  from '../data/GameData.js';
 import BALANCE   from '../data/gameBalance.js';
 
@@ -19,7 +20,7 @@ const NEUTRAL = {
 const StructureEffectSystem = {
 
   init() {
-    for (const event of ['boardChanged', 'cardRemoved', 'saveLoaded']) {
+    for (const event of ['boardChanged', 'cardRemoved', 'saveLoaded', 'loaded', 'districtChanged']) {
       EventBus.on(event, () => this.refresh());
     }
     this.refresh();
@@ -86,7 +87,7 @@ const StructureEffectSystem = {
   _activeStructures(gs) {
     const found = [];
 
-    for (const card of gs.getBoardCards()) {
+    for (const card of [...gs.getBoardCards(), ...getCareerFacilities(gs)]) {
       const def = GameData.items[card.definitionId];
       if (!this._hasPassive(def)) continue;
       if ((card.durability ?? 0) <= 0) continue;

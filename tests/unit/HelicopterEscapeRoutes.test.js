@@ -17,6 +17,8 @@ import ITEMS from '../../js/data/items.js';
 import SOLDIER_B from '../../js/data/mainQuests/soldier/branch_b.js';
 import ENGINEER_B from '../../js/data/mainQuests/engineer/branch_b.js';
 
+import { CAREER_PROJECTS } from '../../js/data/careerProjects.js';
+
 const HELIPAD = 'hidden_yeongdeungpo_63_helipad';
 const LOTTE = 'hidden_songpa_lotte_penthouse';
 
@@ -80,7 +82,14 @@ describe('두 경로 — 제작과 발견', () => {
 
   it('군인 b2는 착륙장 확보 → 유도등 점등 순으로 이어진다', () => {
     expect(SOLDIER_B.mq_soldier_end_b2_1.objective.definitionId).toBe('military_radio_kit');
-    expect(SOLDIER_B.mq_soldier_end_b2.objective.definitionId).toBe('battery');
+    const objective = SOLDIER_B.mq_soldier_end_b2.objective;
+    expect(objective).toMatchObject({ type: 'career_project', projectId: 'soldier_landing', stageId: 'commissioned', districtId: 'yeongdeungpo' });
+    const project = CAREER_PROJECTS[objective.projectId];
+    expect(project.questId).toBe('mq_soldier_end_b2');
+    expect(project.requires).toContain('soldier_broadcast');
+    expect(project.actions.map(action => action.id)).toEqual(['install', 'power']);
+    expect(project.actions[0].items).toContainEqual({ definitionId: 'military_radio_kit', qty: 1 });
+    expect(project.actions[1].items).toEqual([{ definitionId: 'battery', qty: 4 }]);
     expect(SOLDIER_B.mq_soldier_end_b2.prerequisite).toBe('mq_soldier_end_b2_1');
   });
 

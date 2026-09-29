@@ -38,13 +38,13 @@ const DISTRICTS = {
         maxQty: 4,
       },
       {
-        definitionId: 'bandage',
+        definitionId: 'cloth_scrap',
         weight: 25,
-        minQty: 1,
-        maxQty: 3,
+        minQty: 2,
+        maxQty: 4,
       },
       {
-        definitionId: 'antiseptic',
+        definitionId: 'alcohol_solution',
         weight: 20,
         minQty: 1,
         maxQty: 2,
@@ -87,35 +87,54 @@ const DISTRICTS = {
     ],
     explorationYields: [
       {
+        id: 'milestone_30',
+        version: 1,
         at: 30,
         items: [
           {
-            definitionId: 'alcohol_solution',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'cloth_scrap',
+            qty: 4
           },
+          {
+            definitionId: 'alcohol_solution',
+            qty: 1
+          }
         ],
+        purpose: '붕대·소독·의료 소모재 제작'
       },
       {
+        id: 'milestone_60',
+        version: 1,
         at: 60,
         items: [
           {
-            definitionId: 'herb_powder',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'rubber',
+            qty: 2
           },
+          {
+            definitionId: 'glass_shard',
+            qty: 2
+          }
         ],
+        purpose: '붕대·소독·의료 소모재 제작'
       },
       {
+        id: 'milestone_100',
+        version: 1,
         at: 100,
         items: [
           {
-            definitionId: 'infected_blood_sample',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'plastic',
+            qty: 3
           },
+          {
+            definitionId: 'alcohol_solution',
+            qty: 2
+          }
         ],
-      },
+        purpose: '붕대·소독·의료 소모재 제작',
+        discovery: 'gangnam_medical'
+      }
     ],
   },
   gangdong: {
@@ -192,35 +211,54 @@ const DISTRICTS = {
     ],
     explorationYields: [
       {
+        id: 'milestone_30',
+        version: 1,
         at: 30,
         items: [
           {
-            definitionId: 'firestone',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'pebble',
+            qty: 4
           },
+          {
+            definitionId: 'sand',
+            qty: 2
+          }
         ],
+        purpose: '텃밭 설치와 곡물 재배'
       },
       {
+        id: 'milestone_60',
+        version: 1,
         at: 60,
         items: [
           {
-            definitionId: 'woven_fabric',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'soil_bag',
+            qty: 4
           },
+          {
+            definitionId: 'vegetable_seed',
+            qty: 2
+          }
         ],
+        purpose: '텃밭 설치와 곡물 재배'
       },
       {
+        id: 'milestone_100',
+        version: 1,
         at: 100,
+        discovery: 'gangdong_garden',
         items: [
           {
             definitionId: 'grain_seed',
-            minQty: 3,
-            maxQty: 5,
+            qty: 3
           },
+          {
+            definitionId: 'soil_bag',
+            qty: 5
+          }
         ],
-      },
+        purpose: '텃밭 설치와 곡물 재배'
+      }
     ],
   },
   gangbuk: {
@@ -299,35 +337,54 @@ const DISTRICTS = {
     special: null,
     explorationYields: [
       {
+        id: 'milestone_30',
+        version: 1,
         at: 30,
         items: [
           {
-            definitionId: 'firestone',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'wood',
+            qty: 3
           },
+          {
+            definitionId: 'herb',
+            qty: 3
+          }
         ],
+        purpose: '약초 추출·약초밭 설치'
       },
       {
+        id: 'milestone_60',
+        version: 1,
         at: 60,
         items: [
           {
             definitionId: 'herb_seed',
-            minQty: 3,
-            maxQty: 5,
+            qty: 2
           },
+          {
+            definitionId: 'soil_bag',
+            qty: 3
+          }
         ],
+        purpose: '약초 추출·약초밭 설치'
       },
       {
+        id: 'milestone_100',
+        version: 1,
         at: 100,
         items: [
           {
-            definitionId: 'honey',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'herb',
+            qty: 6
           },
+          {
+            definitionId: 'nettle',
+            qty: 4
+          }
         ],
-      },
+        purpose: '약초 추출·약초밭 설치',
+        discovery: 'gangbuk_herbs'
+      }
     ],
   },
   gangseo: {
@@ -398,35 +455,54 @@ const DISTRICTS = {
     special: null,
     explorationYields: [
       {
+        id: 'milestone_30',
+        version: 1,
         at: 30,
         items: [
           {
-            definitionId: 'brass_fragment',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'scrap_metal',
+            qty: 5
           },
+          {
+            definitionId: 'rubber',
+            qty: 2
+          }
         ],
+        purpose: '항공 부품 회수 뒤 전자·금속 가공'
       },
       {
+        id: 'milestone_60',
+        version: 1,
         at: 60,
         items: [
           {
-            definitionId: 'aviation_alloy',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'wire',
+            qty: 3
           },
+          {
+            definitionId: 'spring',
+            qty: 2
+          }
         ],
+        purpose: '항공 부품 회수 뒤 전자·금속 가공'
       },
       {
+        id: 'milestone_100',
+        version: 1,
         at: 100,
         items: [
           {
-            definitionId: 'rotor_blade',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'circuit_board',
+            qty: 1
           },
+          {
+            definitionId: 'scrap_metal',
+            qty: 5
+          }
         ],
-      },
+        purpose: '항공 부품 회수 뒤 전자·금속 가공',
+        discovery: 'gangseo_hangar'
+      }
     ],
   },
   gwanak: {
@@ -504,35 +580,54 @@ const DISTRICTS = {
     special: 'snu_lab',
     explorationYields: [
       {
+        id: 'milestone_30',
+        version: 1,
         at: 30,
         items: [
           {
-            definitionId: 'charcoal_filter',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'charcoal',
+            qty: 2
           },
+          {
+            definitionId: 'cloth_scrap',
+            qty: 2
+          }
         ],
+        purpose: '연구 용기와 약초밭 설치'
       },
       {
+        id: 'milestone_60',
+        version: 1,
         at: 60,
         items: [
           {
-            definitionId: 'saltpeter',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'glass_shard',
+            qty: 2
           },
+          {
+            definitionId: 'empty_bottle',
+            qty: 2
+          }
         ],
+        purpose: '연구 용기와 약초밭 설치'
       },
       {
+        id: 'milestone_100',
+        version: 1,
         at: 100,
         items: [
           {
-            definitionId: 'circuit_module',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'herb_seed',
+            qty: 2
           },
+          {
+            definitionId: 'soil_bag',
+            qty: 3
+          }
         ],
-      },
+        purpose: '연구 용기와 약초밭 설치',
+        discovery: 'gwanak_research'
+      }
     ],
   },
   gwangjin: {
@@ -614,35 +709,54 @@ const DISTRICTS = {
     ],
     explorationYields: [
       {
+        id: 'milestone_30',
+        version: 1,
         at: 30,
         items: [
           {
-            definitionId: 'vegetable_seed',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'rope',
+            qty: 2
           },
+          {
+            definitionId: 'wood',
+            qty: 3
+          }
         ],
+        purpose: '낚시 동선·식품 보존·재배'
       },
       {
+        id: 'milestone_60',
+        version: 1,
         at: 60,
         items: [
           {
-            definitionId: 'herb_powder',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'salt',
+            qty: 2
           },
+          {
+            definitionId: 'empty_bottle',
+            qty: 2
+          }
         ],
+        purpose: '낚시 동선·식품 보존·재배'
       },
       {
+        id: 'milestone_100',
+        version: 1,
         at: 100,
         items: [
           {
-            definitionId: 'honey',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'vegetable_seed',
+            qty: 2
           },
+          {
+            definitionId: 'soil_bag',
+            qty: 4
+          }
         ],
-      },
+        purpose: '낚시 동선·식품 보존·재배',
+        discovery: 'gwangjin_exchange'
+      }
     ],
   },
   guro: {
@@ -714,35 +828,54 @@ const DISTRICTS = {
     special: null,
     explorationYields: [
       {
+        id: 'milestone_30',
+        version: 1,
         at: 30,
         items: [
           {
-            definitionId: 'copper_coil',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'scrap_metal',
+            qty: 5
           },
+          {
+            definitionId: 'spring',
+            qty: 2
+          }
         ],
+        purpose: '기판 추출과 차량 전장 제작'
       },
       {
+        id: 'milestone_60',
+        version: 1,
         at: 60,
         items: [
           {
-            definitionId: 'microchip',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'circuit_board',
+            qty: 1
           },
+          {
+            definitionId: 'wire',
+            qty: 3
+          }
         ],
+        purpose: '기판 추출과 차량 전장 제작'
       },
       {
+        id: 'milestone_100',
+        version: 1,
         at: 100,
+        discovery: 'guro_parts',
         items: [
           {
-            definitionId: 'circuit_module',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'circuit_board',
+            qty: 2
           },
+          {
+            definitionId: 'rubber',
+            qty: 2
+          }
         ],
-      },
+        purpose: '기판 추출과 차량 전장 제작'
+      }
     ],
   },
   geumcheon: {
@@ -813,35 +946,54 @@ const DISTRICTS = {
     special: null,
     explorationYields: [
       {
+        id: 'milestone_30',
+        version: 1,
         at: 30,
         items: [
           {
-            definitionId: 'refined_metal',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'scrap_metal',
+            qty: 6
           },
+          {
+            definitionId: 'nail',
+            qty: 4
+          }
         ],
+        purpose: '제련과 금속 부품 가공'
       },
       {
+        id: 'milestone_60',
+        version: 1,
         at: 60,
         items: [
           {
-            definitionId: 'lead_ingot',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'charcoal',
+            qty: 3
           },
+          {
+            definitionId: 'scrap_metal',
+            qty: 4
+          }
         ],
+        purpose: '제련과 금속 부품 가공'
       },
       {
+        id: 'milestone_100',
+        version: 1,
         at: 100,
         items: [
           {
-            definitionId: 'steel_plate',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'scrap_metal',
+            qty: 8
           },
+          {
+            definitionId: 'spring',
+            qty: 3
+          }
         ],
-      },
+        purpose: '제련과 금속 부품 가공',
+        discovery: 'geumcheon_metal'
+      }
     ],
   },
   nowon: {
@@ -918,35 +1070,54 @@ const DISTRICTS = {
     special: null,
     explorationYields: [
       {
+        id: 'milestone_30',
+        version: 1,
         at: 30,
         items: [
           {
-            definitionId: 'duct_tape',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'cloth_scrap',
+            qty: 4
           },
+          {
+            definitionId: 'plastic',
+            qty: 2
+          }
         ],
+        purpose: '생활 용기·수납·텃밭 설치'
       },
       {
+        id: 'milestone_60',
+        version: 1,
         at: 60,
         items: [
           {
-            definitionId: 'woven_fabric',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'empty_bottle',
+            qty: 2
           },
+          {
+            definitionId: 'wood',
+            qty: 3
+          }
         ],
+        purpose: '생활 용기·수납·텃밭 설치'
       },
       {
+        id: 'milestone_100',
+        version: 1,
         at: 100,
         items: [
           {
-            definitionId: 'grain_seed',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'vegetable_seed',
+            qty: 2
           },
+          {
+            definitionId: 'soil_bag',
+            qty: 4
+          }
         ],
-      },
+        purpose: '생활 용기·수납·텃밭 설치',
+        discovery: 'nowon_household'
+      }
     ],
   },
   dobong: {
@@ -1023,35 +1194,54 @@ const DISTRICTS = {
     special: null,
     explorationYields: [
       {
+        id: 'milestone_30',
+        version: 1,
         at: 30,
         items: [
           {
-            definitionId: 'firestone',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'wood',
+            qty: 3
           },
+          {
+            definitionId: 'pebble',
+            qty: 4
+          }
         ],
+        purpose: '산지 약초·가죽 가공'
       },
       {
+        id: 'milestone_60',
+        version: 1,
         at: 60,
         items: [
           {
-            definitionId: 'mushroom_toxic',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'herb',
+            qty: 4
           },
+          {
+            definitionId: 'nettle',
+            qty: 3
+          }
         ],
+        purpose: '산지 약초·가죽 가공'
       },
       {
+        id: 'milestone_100',
+        version: 1,
         at: 100,
         items: [
           {
-            definitionId: 'honey',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'hide',
+            qty: 2
           },
+          {
+            definitionId: 'herb_seed',
+            qty: 2
+          }
         ],
-      },
+        purpose: '산지 약초·가죽 가공',
+        discovery: 'dobong_mountain'
+      }
     ],
   },
   dongdaemun: {
@@ -1091,10 +1281,10 @@ const DISTRICTS = {
         maxQty: 3,
       },
       {
-        definitionId: 'large_cloth',
+        definitionId: 'cloth_scrap',
         weight: 10,
-        minQty: 1,
-        maxQty: 2,
+        minQty: 2,
+        maxQty: 4,
       },
       {
         definitionId: 'street_vendor_cart',
@@ -1124,35 +1314,54 @@ const DISTRICTS = {
     special: null,
     explorationYields: [
       {
+        id: 'milestone_30',
+        version: 1,
         at: 30,
         items: [
           {
-            definitionId: 'large_cloth',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'cloth',
+            qty: 3
           },
+          {
+            definitionId: 'thread',
+            qty: 2
+          }
         ],
+        purpose: '직물 직조와 봉제'
       },
       {
+        id: 'milestone_60',
+        version: 1,
         at: 60,
         items: [
           {
-            definitionId: 'woven_fabric',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'cloth',
+            qty: 4
           },
+          {
+            definitionId: 'leather',
+            qty: 2
+          }
         ],
+        purpose: '직물 직조와 봉제'
       },
       {
+        id: 'milestone_100',
+        version: 1,
         at: 100,
         items: [
           {
-            definitionId: 'reinforced_fabric',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'thread',
+            qty: 5
           },
+          {
+            definitionId: 'cloth',
+            qty: 5
+          }
         ],
-      },
+        purpose: '직물 직조와 봉제',
+        discovery: 'dongdaemun_textile'
+      }
     ],
   },
   dongjak: {
@@ -1175,6 +1384,7 @@ const DISTRICTS = {
       'lm_dongjak',
     ],
     lootTable: [
+      { definitionId: 'herb', weight: 10, minQty: 1, maxQty: 2, seasons: ['spring', 'summer', 'autumn'] },
       {
         definitionId: 'cloth',
         weight: 25,
@@ -1188,10 +1398,10 @@ const DISTRICTS = {
         maxQty: 3,
       },
       {
-        definitionId: 'bandage',
+        definitionId: 'cloth_scrap',
         weight: 20,
-        minQty: 1,
-        maxQty: 3,
+        minQty: 2,
+        maxQty: 4,
       },
       {
         definitionId: 'wood',
@@ -1227,35 +1437,54 @@ const DISTRICTS = {
     special: null,
     explorationYields: [
       {
+        id: 'milestone_30',
+        version: 1,
         at: 30,
         items: [
           {
-            definitionId: 'alcohol_solution',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'cloth_scrap',
+            qty: 4
           },
+          {
+            definitionId: 'herb',
+            qty: 2
+          }
         ],
+        purpose: '붕대·소독과 병원 약초밭 설치'
       },
       {
+        id: 'milestone_60',
+        version: 1,
         at: 60,
         items: [
           {
-            definitionId: 'brass_fragment',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'alcohol_solution',
+            qty: 2
           },
+          {
+            definitionId: 'empty_bottle',
+            qty: 2
+          }
         ],
+        purpose: '붕대·소독과 병원 약초밭 설치'
       },
       {
+        id: 'milestone_100',
+        version: 1,
         at: 100,
         items: [
           {
-            definitionId: 'kevlar_fabric',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'herb_seed',
+            qty: 2
           },
+          {
+            definitionId: 'soil_bag',
+            qty: 3
+          }
         ],
-      },
+        purpose: '붕대·소독과 병원 약초밭 설치',
+        discovery: 'dongjak_garden'
+      }
     ],
   },
   mapo: {
@@ -1332,35 +1561,54 @@ const DISTRICTS = {
     ],
     explorationYields: [
       {
+        id: 'milestone_30',
+        version: 1,
         at: 30,
         items: [
           {
-            definitionId: 'copper_coil',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'empty_bottle',
+            qty: 3
           },
+          {
+            definitionId: 'rubber',
+            qty: 2
+          }
         ],
+        purpose: '용기·전자 부품 수리'
       },
       {
+        id: 'milestone_60',
+        version: 1,
         at: 60,
         items: [
           {
-            definitionId: 'battery',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'circuit_board',
+            qty: 1
           },
+          {
+            definitionId: 'wire',
+            qty: 3
+          }
         ],
+        purpose: '용기·전자 부품 수리'
       },
       {
+        id: 'milestone_100',
+        version: 1,
         at: 100,
         items: [
           {
-            definitionId: 'electric_motor',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'battery',
+            qty: 1
           },
+          {
+            definitionId: 'circuit_board',
+            qty: 2
+          }
         ],
-      },
+        purpose: '용기·전자 부품 수리',
+        discovery: 'mapo_repair'
+      }
     ],
   },
   seodaemun: {
@@ -1381,10 +1629,10 @@ const DISTRICTS = {
     landmark: 'lm_seodaemun',
     lootTable: [
       {
-        definitionId: 'bandage',
+        definitionId: 'cloth_scrap',
         weight: 25,
-        minQty: 1,
-        maxQty: 3,
+        minQty: 2,
+        maxQty: 4,
       },
       {
         definitionId: 'glass_shard',
@@ -1393,16 +1641,16 @@ const DISTRICTS = {
         maxQty: 3,
       },
       {
-        definitionId: 'antiseptic',
+        definitionId: 'alcohol_solution',
         weight: 20,
         minQty: 1,
         maxQty: 2,
       },
       {
-        definitionId: 'painkiller',
+        definitionId: 'herb',
         weight: 15,
-        minQty: 1,
-        maxQty: 2,
+        minQty: 2,
+        maxQty: 3,
       },
       {
         definitionId: 'collapsed_shelf',
@@ -1432,35 +1680,54 @@ const DISTRICTS = {
     special: 'severance',
     explorationYields: [
       {
+        id: 'milestone_30',
+        version: 1,
         at: 30,
         items: [
           {
             definitionId: 'alcohol_solution',
-            minQty: 3,
-            maxQty: 5,
+            qty: 2
           },
+          {
+            definitionId: 'cloth_scrap',
+            qty: 6
+          }
         ],
+        purpose: '연구실 의료 소모품과 기판 가공'
       },
       {
+        id: 'milestone_60',
+        version: 1,
         at: 60,
         items: [
           {
-            definitionId: 'herb_powder',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'rubber',
+            qty: 3
           },
+          {
+            definitionId: 'glass_shard',
+            qty: 3
+          }
         ],
+        purpose: '연구실 의료 소모품과 기판 가공'
       },
       {
+        id: 'milestone_100',
+        version: 1,
         at: 100,
         items: [
           {
-            definitionId: 'virus_sample',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'circuit_board',
+            qty: 2
           },
+          {
+            definitionId: 'alcohol_solution',
+            qty: 3
+          }
         ],
-      },
+        purpose: '연구실 의료 소모품과 기판 가공',
+        discovery: 'seodaemun_lab'
+      }
     ],
   },
   seocho: {
@@ -1536,35 +1803,54 @@ const DISTRICTS = {
     ],
     explorationYields: [
       {
+        id: 'milestone_30',
+        version: 1,
         at: 30,
         items: [
           {
-            definitionId: 'empty_cartridge',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'scrap_metal',
+            qty: 6
           },
+          {
+            definitionId: 'wire',
+            qty: 3
+          }
         ],
+        purpose: '전원 장치와 전자 부품 가공'
       },
       {
+        id: 'milestone_60',
+        version: 1,
         at: 60,
         items: [
           {
-            definitionId: 'black_powder',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'rubber',
+            qty: 3
           },
+          {
+            definitionId: 'plastic',
+            qty: 3
+          }
         ],
+        purpose: '전원 장치와 전자 부품 가공'
       },
       {
+        id: 'milestone_100',
+        version: 1,
         at: 100,
         items: [
           {
-            definitionId: 'detonator_cap',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'circuit_board',
+            qty: 2
           },
+          {
+            definitionId: 'battery',
+            qty: 1
+          }
         ],
-      },
+        purpose: '전원 장치와 전자 부품 가공',
+        discovery: 'seocho_power'
+      }
     ],
   },
   seongdong: {
@@ -1604,10 +1890,10 @@ const DISTRICTS = {
         maxQty: 4,
       },
       {
-        definitionId: 'refined_metal',
+        definitionId: 'charcoal',
         weight: 15,
-        minQty: 1,
-        maxQty: 2,
+        minQty: 2,
+        maxQty: 3,
       },
       {
         definitionId: 'gravel_pile',
@@ -1641,35 +1927,54 @@ const DISTRICTS = {
     ],
     explorationYields: [
       {
+        id: 'milestone_30',
+        version: 1,
         at: 30,
         items: [
           {
-            definitionId: 'refined_metal',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'scrap_metal',
+            qty: 6
           },
+          {
+            definitionId: 'nail',
+            qty: 6
+          }
         ],
+        purpose: '정밀 금속·발전 설비 제작'
       },
       {
+        id: 'milestone_60',
+        version: 1,
         at: 60,
         items: [
           {
-            definitionId: 'alloy_ingot',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'charcoal',
+            qty: 4
           },
+          {
+            definitionId: 'spring',
+            qty: 3
+          }
         ],
+        purpose: '정밀 금속·발전 설비 제작'
       },
       {
+        id: 'milestone_100',
+        version: 1,
         at: 100,
         items: [
           {
-            definitionId: 'steel_plate',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'circuit_board',
+            qty: 2
           },
+          {
+            definitionId: 'scrap_metal',
+            qty: 8
+          }
         ],
-      },
+        purpose: '정밀 금속·발전 설비 제작',
+        discovery: 'seongdong_workshop'
+      }
     ],
   },
   seongbuk: {
@@ -1741,35 +2046,54 @@ const DISTRICTS = {
     special: null,
     explorationYields: [
       {
+        id: 'milestone_30',
+        version: 1,
         at: 30,
         items: [
           {
-            definitionId: 'herb_powder',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'cloth',
+            qty: 3
           },
+          {
+            definitionId: 'thread',
+            qty: 3
+          }
         ],
+        purpose: '봉제·수납·공동 약초밭 설치'
       },
       {
+        id: 'milestone_60',
+        version: 1,
         at: 60,
         items: [
           {
-            definitionId: 'saltpeter',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'wood',
+            qty: 4
           },
+          {
+            definitionId: 'rope',
+            qty: 2
+          }
         ],
+        purpose: '봉제·수납·공동 약초밭 설치'
       },
       {
+        id: 'milestone_100',
+        version: 1,
         at: 100,
         items: [
           {
-            definitionId: 'grain_seed',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'herb_seed',
+            qty: 2
           },
+          {
+            definitionId: 'soil_bag',
+            qty: 3
+          }
         ],
-      },
+        purpose: '봉제·수납·공동 약초밭 설치',
+        discovery: 'seongbuk_workshop'
+      }
     ],
   },
   songpa: {
@@ -1852,35 +2176,54 @@ const DISTRICTS = {
     ],
     explorationYields: [
       {
+        id: 'milestone_30',
+        version: 1,
         at: 30,
         items: [
           {
-            definitionId: 'battery',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'rope',
+            qty: 3
           },
+          {
+            definitionId: 'scrap_metal',
+            qty: 6
+          }
         ],
+        purpose: '물류시설·전원·거점 자재'
       },
       {
+        id: 'milestone_60',
+        version: 1,
         at: 60,
         items: [
           {
-            definitionId: 'alloy_ingot',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'rubber',
+            qty: 3
           },
+          {
+            definitionId: 'wire',
+            qty: 4
+          }
         ],
+        purpose: '물류시설·전원·거점 자재'
       },
       {
+        id: 'milestone_100',
+        version: 1,
         at: 100,
         items: [
           {
-            definitionId: 'power_cell',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'circuit_board',
+            qty: 2
           },
+          {
+            definitionId: 'battery',
+            qty: 2
+          }
         ],
-      },
+        purpose: '물류시설·전원·거점 자재',
+        discovery: 'songpa_logistics'
+      }
     ],
   },
   yangcheon: {
@@ -1951,35 +2294,54 @@ const DISTRICTS = {
     special: null,
     explorationYields: [
       {
+        id: 'milestone_30',
+        version: 1,
         at: 30,
         items: [
           {
-            definitionId: 'duct_tape',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'wood',
+            qty: 3
           },
+          {
+            definitionId: 'nail',
+            qty: 4
+          }
         ],
+        purpose: '거주 설비와 생활 재배'
       },
       {
+        id: 'milestone_60',
+        version: 1,
         at: 60,
         items: [
           {
-            definitionId: 'brass_fragment',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'cloth',
+            qty: 3
           },
+          {
+            definitionId: 'rope',
+            qty: 2
+          }
         ],
+        purpose: '거주 설비와 생활 재배'
       },
       {
+        id: 'milestone_100',
+        version: 1,
         at: 100,
         items: [
           {
-            definitionId: 'reinforced_fabric',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'vegetable_seed',
+            qty: 2
           },
+          {
+            definitionId: 'soil_bag',
+            qty: 4
+          }
         ],
-      },
+        purpose: '거주 설비와 생활 재배',
+        discovery: 'yangcheon_materials'
+      }
     ],
   },
   yeongdeungpo: {
@@ -2018,10 +2380,10 @@ const DISTRICTS = {
         maxQty: 2,
       },
       {
-        definitionId: 'copper_coil',
+        definitionId: 'circuit_board',
         weight: 12,
         minQty: 1,
-        maxQty: 2,
+        maxQty: 1,
       },
       {
         definitionId: 'telephone_booth',
@@ -2057,35 +2419,54 @@ const DISTRICTS = {
     ],
     explorationYields: [
       {
+        id: 'milestone_30',
+        version: 1,
         at: 30,
         items: [
           {
-            definitionId: 'copper_coil',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'wire',
+            qty: 4
           },
+          {
+            definitionId: 'scrap_metal',
+            qty: 6
+          }
         ],
+        purpose: '방송 복구·통신 부품 제작'
       },
       {
+        id: 'milestone_60',
+        version: 1,
         at: 60,
         items: [
           {
-            definitionId: 'circuit_module',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'circuit_board',
+            qty: 2
           },
+          {
+            definitionId: 'rubber',
+            qty: 2
+          }
         ],
+        purpose: '방송 복구·통신 부품 제작'
       },
       {
+        id: 'milestone_100',
+        version: 1,
         at: 100,
         items: [
           {
-            definitionId: 'generator_core',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'circuit_board',
+            qty: 3
           },
+          {
+            definitionId: 'battery',
+            qty: 2
+          }
         ],
-      },
+        purpose: '방송 복구·통신 부품 제작',
+        discovery: 'yeongdeungpo_broadcast'
+      }
     ],
   },
   yongsan: {
@@ -2124,10 +2505,10 @@ const DISTRICTS = {
         maxQty: 2,
       },
       {
-        definitionId: 'microchip',
+        definitionId: 'circuit_board',
         weight: 10,
         minQty: 1,
-        maxQty: 2,
+        maxQty: 1,
       },
       {
         definitionId: 'broken_radio',
@@ -2161,35 +2542,54 @@ const DISTRICTS = {
     ],
     explorationYields: [
       {
+        id: 'milestone_30',
+        version: 1,
         at: 30,
         items: [
           {
-            definitionId: 'microchip',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'wire',
+            qty: 3
           },
+          {
+            definitionId: 'circuit_board',
+            qty: 1
+          }
         ],
+        purpose: '기판 추출·모터·발전 부품 제작'
       },
       {
+        id: 'milestone_60',
+        version: 1,
         at: 60,
         items: [
           {
-            definitionId: 'circuit_module',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'circuit_board',
+            qty: 2
           },
+          {
+            definitionId: 'rubber',
+            qty: 2
+          }
         ],
+        purpose: '기판 추출·모터·발전 부품 제작'
       },
       {
+        id: 'milestone_100',
+        version: 1,
         at: 100,
+        discovery: 'yongsan_parts',
         items: [
           {
-            definitionId: 'kevlar_fabric',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'circuit_board',
+            qty: 3
           },
+          {
+            definitionId: 'battery',
+            qty: 1
+          }
         ],
-      },
+        purpose: '기판 추출·모터·발전 부품 제작'
+      }
     ],
   },
   eunpyeong: {
@@ -2265,35 +2665,54 @@ const DISTRICTS = {
     special: null,
     explorationYields: [
       {
+        id: 'milestone_30',
+        version: 1,
         at: 30,
         items: [
           {
-            definitionId: 'firestone',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'wood',
+            qty: 3
           },
+          {
+            definitionId: 'pebble',
+            qty: 4
+          }
         ],
+        purpose: '대피소 섬유·방수·약초 재배'
       },
       {
+        id: 'milestone_60',
+        version: 1,
         at: 60,
         items: [
           {
-            definitionId: 'wild_garlic',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'nettle',
+            qty: 4
           },
+          {
+            definitionId: 'cloth',
+            qty: 2
+          }
         ],
+        purpose: '대피소 섬유·방수·약초 재배'
       },
       {
+        id: 'milestone_100',
+        version: 1,
         at: 100,
         items: [
           {
             definitionId: 'herb_seed',
-            minQty: 3,
-            maxQty: 5,
+            qty: 2
           },
+          {
+            definitionId: 'soil_bag',
+            qty: 3
+          }
         ],
-      },
+        purpose: '대피소 섬유·방수·약초 재배',
+        discovery: 'eunpyeong_shelter'
+      }
     ],
   },
   jongno: {
@@ -2372,35 +2791,54 @@ const DISTRICTS = {
     special: 'gwanghwamun',
     explorationYields: [
       {
+        id: 'milestone_30',
+        version: 1,
         at: 30,
         items: [
           {
-            definitionId: 'empty_cartridge',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'scrap_metal',
+            qty: 6
           },
+          {
+            definitionId: 'wire',
+            qty: 3
+          }
         ],
+        purpose: '통신·경계 장비와 탄피 재활용'
       },
       {
+        id: 'milestone_60',
+        version: 1,
         at: 60,
         items: [
           {
-            definitionId: 'black_powder',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'empty_cartridge',
+            qty: 4
           },
+          {
+            definitionId: 'cloth',
+            qty: 3
+          }
         ],
+        purpose: '통신·경계 장비와 탄피 재활용'
       },
       {
+        id: 'milestone_100',
+        version: 1,
         at: 100,
         items: [
           {
-            definitionId: 'steel_plate',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'circuit_board',
+            qty: 2
           },
+          {
+            definitionId: 'battery',
+            qty: 2
+          }
         ],
-      },
+        purpose: '통신·경계 장비와 탄피 재활용',
+        discovery: 'jongno_signal'
+      }
     ],
   },
   junggoo: {
@@ -2482,35 +2920,54 @@ const DISTRICTS = {
     ],
     explorationYields: [
       {
+        id: 'milestone_30',
+        version: 1,
         at: 30,
         items: [
           {
-            definitionId: 'large_cloth',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'salt',
+            qty: 3
           },
+          {
+            definitionId: 'empty_bottle',
+            qty: 3
+          }
         ],
+        purpose: '시장 식품 보존·급식·재배'
       },
       {
+        id: 'milestone_60',
+        version: 1,
         at: 60,
         items: [
           {
-            definitionId: 'lead_ingot',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'salt',
+            qty: 3
           },
+          {
+            definitionId: 'cloth',
+            qty: 4
+          }
         ],
+        purpose: '시장 식품 보존·급식·재배'
       },
       {
+        id: 'milestone_100',
+        version: 1,
         at: 100,
+        discovery: 'junggu_market',
         items: [
           {
-            definitionId: 'alloy_ingot',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'vegetable_seed',
+            qty: 2
           },
+          {
+            definitionId: 'soil_bag',
+            qty: 4
+          }
         ],
-      },
+        purpose: '시장 식품 보존·급식·재배'
+      }
     ],
   },
   jungrang: {
@@ -2588,38 +3045,56 @@ const DISTRICTS = {
     special: null,
     explorationYields: [
       {
+        id: 'milestone_30',
+        version: 1,
         at: 30,
         items: [
           {
-            definitionId: 'wild_garlic',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'nettle',
+            qty: 4
           },
+          {
+            definitionId: 'wood',
+            qty: 3
+          }
         ],
+        purpose: '재배와 숯 필터 제작'
       },
       {
+        id: 'milestone_60',
+        version: 1,
         at: 60,
         items: [
           {
             definitionId: 'vegetable_seed',
-            minQty: 3,
-            maxQty: 5,
+            qty: 2
           },
+          {
+            definitionId: 'soil_bag',
+            qty: 4
+          }
         ],
+        purpose: '재배와 숯 필터 제작'
       },
       {
+        id: 'milestone_100',
+        version: 1,
         at: 100,
+        discovery: 'jungnang_filter',
         items: [
           {
-            definitionId: 'honey',
-            minQty: 3,
-            maxQty: 5,
+            definitionId: 'sand',
+            qty: 4
           },
+          {
+            definitionId: 'charcoal',
+            qty: 3
+          }
         ],
-      },
+        purpose: '재배와 숯 필터 제작'
+      }
     ],
-  },
-};
+  },};
 
 // ── 헬퍼 함수 ──────────────────────────────────────────────────
 

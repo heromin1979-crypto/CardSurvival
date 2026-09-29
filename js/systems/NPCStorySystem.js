@@ -8,6 +8,7 @@ import GameState      from '../core/GameState.js';
 import { DILEMMAS }   from '../data/npcDilemmas.js';
 import { NPC_ITEMS }  from '../data/npcs.js';
 import I18n           from '../core/I18n.js';
+import { isPresentCompanion } from './npcParticipation.js';
 
 // ── Role Lock definitions ───────────────────────────────────────
 // Maps action type → required NPC(s). Any one of the listed NPCs satisfies the lock.
@@ -71,7 +72,7 @@ const PERSONAL_ARCS = {
   npc_mechanic: {
     id:    'arc_mechanic_workshop',
     steps: [
-      { type: 'event', value: 'craftCompleted', hint: '정비사와 함께 제작을 완료한다.' },
+      { type: 'event', value: 'craftComplete', hint: '정비사와 함께 제작을 완료한다.' },
       { type: 'trust', value: 3,                hint: '신뢰 3에서 설계도를 공개한다.' },
     ],
     completionLine: '"이 설계도는 내 아버지한테 받은 거야. 자네한테 줄게."',
@@ -80,7 +81,7 @@ const PERSONAL_ARCS = {
   npc_student: {
     id:    'arc_student_thesis',
     steps: [
-      { type: 'event', value: 'exploreCompleted', hint: '탐색을 5회 완료한다.' },
+      { type: 'event', value: 'exploreCompleted', count: 5, hint: '탐색을 5회 완료한다.' },
       { type: 'trust', value: 3,                  hint: '학생이 연구 노트를 꺼낸다.' },
     ],
     completionLine: '"이 데이터만 있으면 탈출 경로를 계산할 수 있어. 같이 해보자."',
@@ -107,6 +108,11 @@ const NPCStorySystem = {
 
     // Per-TP checks
     EventBus.on('tpAdvance', () => this._onTP());
+    EventBus.on('npcForageReturn', ({ npcId }) => {
+      const state = GameState.npcs?.states?.[npcId];
+      // 귀환 이벤트가 TP 리스너보다 먼저 발생하므로 방금 끝난 파견 구간을 제외한다.
+      if (state) state.storyLastTP = GameState.time?.totalTP ?? 0;
+    });
   },
 
   // ── W-3: Sacrifice Dilemma ─────────────────────────────────────
@@ -125,8 +131,8 @@ const NPCStorySystem = {
 
       // Cooldown check
       const cooldownFlag = `dilemma_cooldown_${dilemma.id}`;
-      const lastDay      = gs.flags?.[cooldownFlag] ?? 0;
-      if ((gs.time?.day ?? 0) - lastDay < dilemma.cooldownDays) continue;
+      const lastDay      = gs.flags?.[cooldownFlag];
+      if (lastDay != null && (gs.time?.day ?? 0) - lastDay < dilemma.cooldownDays) continue;
 
       // One-time flag
       if (dilemma.setFlag && gs.flags?.[dilemma.setFlag]) continue;
@@ -267,9 +273,16 @@ const NPCStorySystem = {
   },
 
   _onTP() {
-    // Check day-based arc steps
-    const day = GameState.time?.day ?? 0;
-    this._checkArcStep('day', day);
+    const totalTP = GameState.time?.totalTP ?? 0;
+    for (const [npcId, state] of Object.entries(GameState.npcs?.states ?? {})) {
+      // 저장된 TP를 기준으로 같은 틱 재처리를 막고 파견·이탈 시간을 제외한다.
+      const lastTP = state.storyLastTP ?? totalTP;
+      if (isPresentCompanion(GameState, npcId)) {
+        state.storyCompanionTP = (state.storyCompanionTP ?? 0) + Math.max(0, totalTP - lastTP);
+      }
+      state.storyLastTP = totalTP;
+    }
+    this._checkArcStep('day', null);
     // Check trust-based arc steps
     for (const npcId of (GameState.companions ?? [])) {
       const trust = GameState.npcs?.states?.[npcId]?.trust ?? 0;
@@ -283,6 +296,8 @@ const NPCStorySystem = {
 
     for (const npcId of companions) {
       if (specificNpcId && npcId !== specificNpcId) continue;
+      const npcState = gs.npcs?.states?.[npcId];
+      if (!isPresentCompanion(gs, npcId)) continue;
 
       const arc = PERSONAL_ARCS[npcId];
       if (!arc) continue;
@@ -298,12 +313,16 @@ const NPCStorySystem = {
 
       // Check step condition
       let met = false;
-      if (type === 'day')   met = value >= step.value;
+      if (type === 'day')   met = (npcState.storyCompanionTP ?? 0) >= step.value * 72;
       if (type === 'trust') {
         const trust = gs.npcs?.states?.[npcId]?.trust ?? 0;
         met = trust >= step.value;
       }
-      if (type === 'event') met = step.value === value;
+      if (type === 'event' && step.value === value) {
+        arcState.eventCounts ??= {};
+        arcState.eventCounts[currentStep] = (arcState.eventCounts[currentStep] ?? 0) + 1;
+        met = arcState.eventCounts[currentStep] >= (step.count ?? 1);
+      }
 
       if (!met) continue;
 
@@ -357,12 +376,10 @@ const NPCStorySystem = {
   },
 
   _ensureArcState(npcId, arc) {
-    const gs = GameState;
-    if (!gs.npcArcs) gs.npcArcs = {};
-    if (!gs.npcArcs[npcId]) {
-      gs.npcArcs[npcId] = { arcId: arc.id, currentStep: 0, completed: false };
-    }
-    return gs.npcArcs[npcId];
+    const state = GameState.npcs?.states?.[npcId];
+    if (!state) return { arcId: arc.id, currentStep: 0, completed: false };
+    state.storyArc ??= { arcId: arc.id, currentStep: 0, completed: false };
+    return state.storyArc;
   },
 
   /** Get arc progress for display in dialogue modal */

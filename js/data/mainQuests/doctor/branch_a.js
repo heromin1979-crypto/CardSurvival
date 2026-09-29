@@ -10,7 +10,7 @@ const DOCTOR_BRANCH_A = {
   mq_doctor_a_11: {
     id: 'mq_doctor_a_11', title: '서울대 연구소',
     desc: '관악구에 도달하라. 한소희 약사가 있는 연구소다.',
-    icon: '🔬', characterId: 'doctor', dayTrigger: 65,
+    icon: '🔬', characterId: 'doctor', dayTrigger: 25,
     prerequisite: 'mq_doctor_10', requiresFlag: 'doctor_branch_a',
     objective: { type: 'visit_district', districtId: 'gwanak', count: 1 },
     reward: { morale: 15, items: [{ definitionId: 'herb', qty: 3 }] },
@@ -23,10 +23,10 @@ const DOCTOR_BRANCH_A = {
 
   mq_doctor_a_12: {
     id: 'mq_doctor_a_12', title: '공동 연구 물자',
-    desc: '연구에 필요한 의료 아이템 6개를 수집하라.',
-    icon: '⚗️', characterId: 'doctor', dayTrigger: 95,
+    desc: '공동 연구용 농축 혈청 2개를 확보하라.',
+    icon: '⚗️', characterId: 'doctor', dayTrigger: 25,
     prerequisite: 'mq_doctor_a_11', requiresFlag: 'doctor_branch_a',
-    objective: { type: 'collect_item_type', itemType: 'medical', count: 6 },
+    objective: { type: 'collect_item', definitionId: 'concentrated_serum', count: 2 },
     reward: { morale: 10, items: [{ definitionId: 'antiseptic', qty: 2 }] },
     failPenalty: { morale: -5 }, deadlineDays: 150,
     narrative: {
@@ -37,12 +37,13 @@ const DOCTOR_BRANCH_A = {
 
   mq_doctor_a_13: {
     id: 'mq_doctor_a_13', title: '1차 합성',
-    desc: '의료 아이템을 2개 제작하라. 공동 연구의 첫 결과물이다.',
-    icon: '💉', characterId: 'doctor', dayTrigger: 125,
+    desc: '관악구에서 관악 공동 연구실 공정에 재료를 투입하고 가동하라. 설비 설치 → 운영 물자 투입.',
+    icon: '💉', characterId: 'doctor', dayTrigger: 25,
     prerequisite: 'mq_doctor_a_12', requiresFlag: 'doctor_branch_a',
-    objective: { type: 'craft_item', category: 'medical', count: 2 },
+    actionHint: '행동 메뉴의 프로젝트 또는 퀘스트 목표의 공정 보기에서 부족 재료를 확인하세요. 공동 연구실에서 검증된 표본과 일반 백신 설계 정보를 받습니다. 0번 환자 표본은 단독 연구용입니다.',
+    objective: { type: 'career_project', projectId: 'doctor_research', stageId: 'commissioned', districtId: 'gwanak', count: 1 },
     reward: { morale: 12, items: [{ definitionId: 'antibiotics', qty: 1 }] },
-    failPenalty: { morale: -5 }, deadlineDays: 185,
+    failPenalty: { morale: -5 }, deadlineDays: Infinity,
     narrative: {
       start: '한소희의 합성 기술은 예상보다 뛰어났다. 두 사람이 함께 작업하니 속도가 빨라졌다.',
       complete: '1차 제제 완성. 합성 과정에서 항생제도 만들어졌다. 한소희: "이 비율은 내 손에서 나온 거예요. 세브란스 데이터가 아니라. 그게 없으니 우리가 직접 만든 거고요 — 그래서 이건 검증된 적 없는 처방이에요. 누군가에게 써봐야 압니다."',
@@ -51,22 +52,22 @@ const DOCTOR_BRANCH_A = {
 
   mq_doctor_a_14: {
     id: 'mq_doctor_a_14', title: '임상 시험',
-    desc: '150일 이상 생존하라. 제제를 현장에서 검증한다.',
-    icon: '📋', characterId: 'doctor', dayTrigger: 155,
+    desc: '현장에서 환자 3명을 완치하여 임상 경험을 쌓아라.',
+    icon: '📋', characterId: 'doctor', dayTrigger: 25,
     prerequisite: 'mq_doctor_a_13', requiresFlag: 'doctor_branch_a',
-    objective: { type: 'survive_days', count: 150 },
+    objective: { type: 'treat_npc', count: 3 },
     reward: { morale: 10, items: [{ definitionId: 'stamina_tonic', qty: 2 }] },
     failPenalty: null, deadlineDays: Infinity,
     narrative: {
       start: '이론은 완성됐다. 이제 실제 환자에게 적용해본다.',
-      complete: '임상 결과: 치료 환자 22명 중 17명 회복. 회복률 77%. 환자들의 체력 회복을 돕기 위해 강장제도 제조했다. 한소희: "데이터가 쌓이고 있어요."',
+      complete: '세 명의 완치 기록을 정리했다. 한소희가 진료를 이어갈 수 있도록 비축한 강장제를 건넸다. 한소희: "데이터가 쌓이고 있어요."',
     },
   },
 
   mq_doctor_a_15: {
     id: 'mq_doctor_a_15', title: '연구 분기점',
     desc: '약초 5개를 확보하라. 최종 합성의 재료가 된다.',
-    icon: '🌿', characterId: 'doctor', dayTrigger: 185,
+    icon: '🌿', characterId: 'doctor', dayTrigger: 25,
     prerequisite: 'mq_doctor_a_14', requiresFlag: 'doctor_branch_a',
     objective: { type: 'collect_item', definitionId: 'herb', count: 5 },
     reward: { morale: 8, items: [{ definitionId: 'first_aid_kit', qty: 1 }] },
@@ -94,15 +95,16 @@ const DOCTOR_BRANCH_A = {
 
   mq_doctor_end_a1: {
     id: 'mq_doctor_end_a1', title: '백신 연구 완성',
-    desc: '의료 아이템 4개를 제작하라. 백신 대량 생산의 마지막 단계다.',
-    icon: '💉', characterId: 'doctor', dayTrigger: 205,
+    desc: '관악구에서 공동 백신 검증 공정에 재료를 투입하고 가동하라. 직접 합성한 백신 투입.',
+    icon: '💉', characterId: 'doctor', dayTrigger: 25,
     prerequisite: 'mq_doctor_a_15', requiresFlag: 'doctor_end_a1',
-    objective: { type: 'craft_item', category: 'medical', count: 4 },
+    actionHint: '행동 메뉴의 프로젝트 또는 퀘스트 목표의 공정 보기에서 부족 재료를 확인하세요. 재료는 제작·분해·지역 탐사로 마련합니다. 설치물은 이 구역에 남습니다.',
+    objective: { type: 'career_project', projectId: 'doctor_vaccine', stageId: 'commissioned', districtId: 'gwanak', count: 1 },
     reward: { morale: 20, items: [{ definitionId: 'antibiotics', qty: 2 }, { definitionId: 'surgery_kit', qty: 1 }], flags: { mainQuestComplete_doctor: true, doctor_ending: 'a1_vaccine' } },
     failPenalty: { morale: -10 }, deadlineDays: Infinity,
     narrative: {
       start: '모든 것을 쏟아붓는다. 한소희와 이지수, 48시간 연속 작업.',
-      complete: 'D+100. 백신 프로토타입 32세트 완성. 정밀 수술 도구 세트와 항생제도 연구실 비축분에서 나왔다. 한소희: "됐어요. 진짜 됐어요." 이제 서울에 나눠줄 일만 남았다.',
+      complete: '첫 역병 백신을 완성했다. 정밀 수술 도구 세트와 항생제도 연구실 비축분에서 나왔다. 한소희: "됐어요. 진짜 됐어요." 이제 서울에 나눠줄 일만 남았다.',
     },
   },
 
@@ -110,10 +112,11 @@ const DOCTOR_BRANCH_A = {
 
   mq_doctor_end_a3: {
     id: 'mq_doctor_end_a3', title: '연구 노트 완성',
-    desc: '식량 8개를 비축하라. 연구 데이터를 들고 떠날 준비를 한다.',
-    icon: '📖', characterId: 'doctor', dayTrigger: 205,
+    desc: '관악구에서 임상 연구 기록 인계 공정에 재료를 투입하고 가동하라. 운영 물자 투입.',
+    icon: '📖', characterId: 'doctor', dayTrigger: 25,
     prerequisite: 'mq_doctor_a_15', requiresFlag: 'doctor_end_a3',
-    objective: { type: 'collect_item_type', itemType: 'food', count: 8 },
+    actionHint: '행동 메뉴의 프로젝트 또는 퀘스트 목표의 공정 보기에서 부족 재료를 확인하세요. 재료는 제작·분해·지역 탐사로 마련합니다. 설치물은 이 구역에 남습니다.',
+    objective: { type: 'career_project', projectId: 'doctor_notes', stageId: 'commissioned', districtId: 'gwanak', count: 1 },
     reward: { morale: 15, items: [{ definitionId: 'antibiotics', qty: 1 }, { definitionId: 'herbal_tea', qty: 3 }], flags: { mainQuestComplete_doctor: true, doctor_ending: 'a3_data' } },
     failPenalty: { morale: -5 }, deadlineDays: Infinity,
     narrative: {

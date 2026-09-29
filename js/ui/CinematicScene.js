@@ -8,6 +8,7 @@
 //   'showCinematic' { sceneId, onComplete } — 외부에서 트리거 가능
 
 import EventBus from '../core/EventBus.js';
+import DialogueScene from './DialogueScene.js';
 import CINEMATIC_SCENES from '../data/cinematicScenes.js';
 
 const CinematicScene = {
@@ -22,6 +23,7 @@ const CinematicScene = {
   _keyHandler: null,
   _autoTimer: null,
   _ctaTimer: null,
+  _timers: [],
 
   init() {
     this._buildDOM();
@@ -62,17 +64,33 @@ const CinematicScene = {
   },
 
   show(sceneId, onComplete) {
+    DialogueScene.enqueueTask(null, done => {
+      this._showNow(sceneId, () => {
+        try { onComplete?.(); } finally { done(); }
+      });
+      return () => {
+        this._active = false;
+        this._clearTimers();
+        this._removeListeners();
+        this._el?.classList.remove('active', 'exiting');
+        this._reset();
+      };
+    });
+  },
+
+  _later(callback, delay) {
+    const timer = setTimeout(callback, delay);
+    this._timers.push(timer);
+    return timer;
+  },
+
+  _showNow(sceneId, onComplete) {
     const scene = CINEMATIC_SCENES[sceneId];
     if (!scene) {
       onComplete?.();
       return;
     }
 
-    // 이미 활성 중이면 큐에 추가하지 않고 건너뜀
-    if (this._active) {
-      onComplete?.();
-      return;
-    }
     this._active = true;
 
     this._clearTimers();
@@ -112,14 +130,14 @@ const CinematicScene = {
 
     // 텍스트 라인 순차 fadeIn (첫 라인 800ms 후 시작, 이후 900ms 간격)
     lineEls.forEach((lineEl, i) => {
-      setTimeout(() => {
+      this._later(() => {
         if (this._active) lineEl.classList.add('visible');
       }, 800 + i * 900);
     });
 
     // 모든 라인 표시 후 CTA 표시
     const allLinesDelay = 800 + Math.max(0, lines.length - 1) * 900 + 700;
-    this._ctaTimer = setTimeout(() => {
+    this._ctaTimer = this._later(() => {
       if (!this._active) return;
       this._ctaEl.style.opacity = '1';
       this._ctaEl.style.animation = 'cinematicPulse 2s ease-in-out infinite';
@@ -130,7 +148,7 @@ const CinematicScene = {
 
     // 클릭/탭 해제 (최소 1.5초 후에만 허용 — 실수 클릭 방지)
     this._dismissHandler = dismiss;
-    setTimeout(() => {
+    this._later(() => {
       if (this._active) {
         this._el.addEventListener('click', dismiss, { once: true });
         this._el.addEventListener('touchend', dismiss, { once: true, passive: true });
@@ -141,19 +159,20 @@ const CinematicScene = {
     this._keyHandler = (e) => {
       if (e.code === 'Space' || e.code === 'Enter' || e.code === 'Escape') {
         e.preventDefault();
+        e.stopImmediatePropagation();
         this._dismiss(onComplete);
       }
     };
-    setTimeout(() => {
+    this._later(() => {
       if (this._active) {
-        document.addEventListener('keydown', this._keyHandler);
+        document.addEventListener('keydown', this._keyHandler, true);
       }
     }, 1500);
 
     // 자동 진행 (displayMs > 0)
     if ((scene.displayMs ?? 0) > 0) {
       const autoDelay = Math.max(scene.displayMs, allLinesDelay + 2000);
-      this._autoTimer = setTimeout(() => {
+      this._autoTimer = this._later(() => {
         this._dismiss(onComplete);
       }, autoDelay);
     }
@@ -170,7 +189,7 @@ const CinematicScene = {
     this._el.classList.remove('active');
     this._el.classList.add('exiting');
 
-    setTimeout(() => {
+    this._later(() => {
       this._el.classList.remove('exiting');
       this._reset();
       onComplete?.();
@@ -187,6 +206,8 @@ const CinematicScene = {
   },
 
   _clearTimers() {
+    this._timers.forEach(clearTimeout);
+    this._timers = [];
     if (this._ctaTimer)  { clearTimeout(this._ctaTimer);  this._ctaTimer  = null; }
     if (this._autoTimer) { clearTimeout(this._autoTimer); this._autoTimer = null; }
   },
@@ -198,7 +219,7 @@ const CinematicScene = {
       this._dismissHandler = null;
     }
     if (this._keyHandler) {
-      document.removeEventListener('keydown', this._keyHandler);
+      document.removeEventListener('keydown', this._keyHandler, true);
       this._keyHandler = null;
     }
   },

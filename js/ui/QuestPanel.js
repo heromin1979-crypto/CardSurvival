@@ -195,6 +195,7 @@ const QuestPanel = {
     return `
       <div class="fmd-header">
         <div class="fmd-title" id="fmd-title">${uiIcon('quest')} 퀘스트</div>
+        <button type="button" class="toolbar-btn" data-action="open-career-dialogues">직업 대화·다음 동선</button>
         <div class="fmd-chips">
           <span class="fmd-chip day">DAY ${day}</span>
           <span class="fmd-chip time">${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}</span>
@@ -263,6 +264,7 @@ const QuestPanel = {
           ` : ''}
           <div class="fmd-sec-label">세부 목표</div>
           <div class="fmd-objs">${this._renderObjectives(q)}</div>
+          ${q.projectId ? `<button type="button" class="fmd-btn primary" data-career-project="${this._escape(q.projectId)}">공정 보기</button>` : ''}
         </div>
         <div class="fmd-col">
           ${q.lockReason ? `
@@ -456,6 +458,7 @@ const QuestPanel = {
 
     return {
       id: def.id,
+      projectId: def.objective?.projectId,
       title: def.title ?? def.id,
       desc: def.desc ?? '',
       icon: def.icon ?? '📌',

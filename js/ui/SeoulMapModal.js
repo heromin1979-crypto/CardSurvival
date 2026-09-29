@@ -7,6 +7,9 @@ import I18n          from '../core/I18n.js';
 import GameData      from '../data/GameData.js';
 import { DISTRICTS } from '../data/districts.js';
 import MAIN_QUESTS   from '../data/mainQuests/index.js';
+import ExploreSystem from '../systems/ExploreSystem.js';
+import { PROGRESSION_SUPPLIES } from '../data/progressionSupplies.js';
+import { getCareerRoute } from '../data/careerRoutes.js';
 
 const DEV_FORCE_MAP_UNLOCK = true;
 const MAP_CONCEPT_IMAGE = '/assets/images/ui/minimap-map/seoul-blueprint-map-final00-clean.png';
@@ -153,6 +156,7 @@ const SeoulMapModal = {
   init() {
     document.addEventListener('click', (e) => {
       if (e.target.closest('[data-action="open-seoul-map"]')) this.open();
+      if (e.target.closest('[data-action="open-local-supplies"]')) this.open(true);
     });
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && this._overlay) this._close();
@@ -170,8 +174,8 @@ const SeoulMapModal = {
     EventBus.on('mainQuestCompleted', refresh);
   },
 
-  open() {
-    if (!this._isMapUnlocked()) {
+  open(suppliesOnly = false) {
+    if (!suppliesOnly && !this._isMapUnlocked()) {
       const n = GameState.flags.mapFragments?.length ?? 0;
       EventBus.emit('notify', {
         message: `지도 조각 ${n}/3 수집 필요`,
@@ -181,13 +185,14 @@ const SeoulMapModal = {
     }
 
     this._close();
+    this._suppliesOnly = suppliesOnly;
     this._selectedDistrictId = GameState.location.currentDistrict ?? 'mapo';
 
     const overlay = document.createElement('div');
     overlay.className = 'seoul-map-overlay';
     overlay.id = 'seoul-map-overlay';
     overlay.innerHTML = `
-      <div class="seoul-map-modal seoul-map-modal--ops">
+      <div class="seoul-map-modal seoul-map-modal--ops ${suppliesOnly ? 'sm-supplies-only' : ''}">
         <div class="seoul-map-content">
           ${this._buildModalContent()}
         </div>
@@ -198,6 +203,13 @@ const SeoulMapModal = {
     this._overlay = overlay;
 
     overlay.addEventListener('click', (e) => {
+      const supplyButton = e.target.closest('[data-map-supply]');
+      if (supplyButton) {
+        const result = ExploreSystem.useSupply(supplyButton.dataset.mapSupply);
+        if (!result.ok) EventBus.emit('notify', { message: result.reason, type: 'warn' });
+        this._refreshOpenModal();
+        return;
+      }
       if (e.target === overlay || e.target.closest('[data-map-close]')) this._close();
       const districtButton = e.target.closest('[data-map-district]');
       if (districtButton) {
@@ -258,6 +270,7 @@ const SeoulMapModal = {
 
   _buildModalContent() {
     const currentId = GameState.location.currentDistrict ?? 'mapo';
+    if (this._suppliesOnly) return `<div class="seoul-map-header"><strong>${this._escapeHtml(DISTRICTS[currentId]?.name ?? currentId)} 공급처</strong><button type="button" class="toolbar-btn" data-map-close>닫기</button></div><div class="sm-local-supplies">${this._buildCareerRoute()}${this._buildProgressionHint(currentId)}${this._buildSupplyActions(currentId)}</div>`;
     const selectedId = this._selectedDistrictId ?? currentId;
     const selectedIntel = this._getDistrictIntel(selectedId);
     const currentIntel = this._getDistrictIntel(currentId);
@@ -287,6 +300,7 @@ const SeoulMapModal = {
 
       <div class="seoul-map-shell">
         <aside class="sm-dossier">
+          ${this._buildCareerRoute()}
           ${this._buildDistrictDossier(selectedIntel)}
         </aside>
 
@@ -303,6 +317,12 @@ const SeoulMapModal = {
       </div>
 
     `;
+  },
+
+  _buildCareerRoute() {
+    const route = getCareerRoute(GameState);
+    if (!route) return '';
+    return `<div class="sm-career-route"><strong>${route.complete ? '다음 단서로 이동' : '첫 약속을 이어갈 곳'}</strong><p>${route.path.map(id => this._escapeHtml(DISTRICTS[id].name)).join(' → ')}</p><p>${this._escapeHtml(route.hint)}</p><small>이동 전 경유 구역의 위험도와 물자를 확인하세요.</small></div>`;
   },
 
   _buildStatusChips(stats) {
@@ -404,6 +424,16 @@ const SeoulMapModal = {
       </div>
 
       <div class="sm-dossier-section">
+        <div class="sm-dossier-label">탐사 보상과 재방문</div>
+        ${this._buildProgressionHint(intel.id)}
+      </div>
+
+      <div class="sm-dossier-section">
+        <div class="sm-dossier-label">공급처 / SUPPLIES</div>
+        ${this._buildSupplyActions(intel.id)}
+      </div>
+
+      <div class="sm-dossier-section">
         <div class="sm-dossier-label">주요 자원 / KEY RESOURCES</div>
         <div class="sm-key-resource-grid">${resources}</div>
       </div>
@@ -419,6 +449,30 @@ const SeoulMapModal = {
         <div class="sm-enemy-line"><span>조우 위험</span><b>${intel.encounterPct}%</b></div>
       </div>
     `;
+  },
+
+  _buildProgressionHint(districtId) {
+    const district = DISTRICTS[districtId];
+    const exploration = GameState.flags.districtExploration?.[districtId] ?? 0;
+    const next = district.explorationYields.find(reward => reward.at > exploration);
+    const names = entries => entries.map(item => `${this._escapeHtml(GameData.items[item.definitionId]?.name ?? item.definitionId)} ×${item.qty}`).join(', ');
+    const reward = next
+      ? `<p>다음 ${next.at}%: ${names(next.items)}</p><p>용도: ${this._escapeHtml(next.purpose ?? '')}</p>`
+      : '<p>탐사 보상 수령 구간 완료 · 100% 보상은 반복 지급되지 않습니다.</p>';
+    const source = PROGRESSION_SUPPLIES[district.explorationYields.find(entry => entry.discovery)?.discovery];
+    return `<div class="sm-supply-entry">${reward}${source ? `<p>100% 공급 단서: ${this._escapeHtml(source.name)} · ${names(source.items)}</p>` : ''}<p>거리 자원: 고갈 뒤 시간에 따라 재생. 세부장소: 개별 재고 소진. 로비: 장소별 유한 회수·재생·교환 정책 적용.</p></div>`;
+  },
+
+  _buildSupplyActions(districtId) {
+    const names = entries => (entries ?? []).map(item => `${this._escapeHtml(GameData.items[item.definitionId]?.name ?? item.definitionId)} ×${item.qty}`).join(', ');
+    return Object.entries(PROGRESSION_SUPPLIES).filter(([, source]) => source.districtId === districtId).map(([id, source]) => {
+      const status = ExploreSystem.getSupplyStatus(id);
+      const type = { finite: '유한 회수', renewable: '재생 채집', trade: '교환 보급' }[source.type];
+      const stock = `${status.stock.remaining}/${source.capacity}묶음`;
+      const restock = source.restockTP ? ` · ${status.waitTP}TP 후 재입고` : ' · 재생 없음';
+      const season = source.seasons ? ' · 봄·여름·가을 채집 (겨울 중단)' : ' · 사계절';
+      return `<div class="sm-supply-entry"><strong>${this._escapeHtml(source.name)}</strong><p>${type} · 재고 ${stock}${restock}${season}</p><p>수령: ${names(source.items)}</p><p>비용: ${source.tpCost}TP${source.costs?.length ? ' · ' + names(source.costs) : ''}</p><button type="button" data-map-supply="${id}" ${status.ok ? '' : 'disabled'}>${status.ok ? '공급처 이용' : this._escapeHtml(status.reason)}</button></div>`;
+    }).join('') || '<p>알려진 공급처 없음</p>';
   },
 
   _buildMapSVG({ currentId, selectedId, compact, interactive }) {
@@ -480,11 +534,15 @@ const SeoulMapModal = {
     const districts = districtPolygons.join('');
     const annotations = districtAnnotations.join('');
     const markers = districtMarkers.join('');
+    const route = compact ? null : getCareerRoute(GameState);
+    const routePoints = route?.path.map(id => DRAWN_MAP_DISTRICTS.find(shape => shape.id === id)?.label).filter(Boolean);
+    const routeLine = routePoints?.length > 1 ? `<polyline class="sm-career-route-line" points="${pointsToString(routePoints)}" fill="none" stroke="var(--accent-primary)" stroke-width="4" stroke-dasharray="9 7" pointer-events="none"><title>다음 단서까지의 경유 구역</title></polyline>` : '';
 
     return `
       <svg width="${view.w}" height="${view.h}" viewBox="${view.x} ${view.y} ${view.w} ${view.h}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="seoul-map-svg seoul-map-svg--ops seoul-map-svg--drawn-seoul">
         <image href="${MAP_CONCEPT_IMAGE}" x="0" y="0" width="${MAP_W}" height="${MAP_H}" preserveAspectRatio="none" class="sm-map-artwork"/>
         <g>${districts}</g>
+        ${routeLine}
         <g class="sm-annotation-layer">${annotations}</g>
         <g class="sm-mini-marker-layer">${markers}</g>
       </svg>

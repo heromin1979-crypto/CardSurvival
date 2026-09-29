@@ -1,3 +1,4 @@
+import SystemRegistry from '../core/SystemRegistry.js';
 // === DISPATCH SYSTEM (T2) ===
 // 완치된 NPC 중 contributionOnCure.type === 'dispatch'인 페르소나를 특정 구로 파견.
 // 일정 일수 경과 후 yield(확률 기반)를 pendingLoot으로 반환.
@@ -30,6 +31,7 @@ const DispatchSystem = {
   _unsubscribeTP:   null,
   _unsubscribeDied: null,
   _unsubscribeLeft: null,
+  _unsubscribeNewGame: null,
   _initialized:     false,
 
   // 새 게임 시작 시 이전 게임 상태 제거 — GameState.resetForNewGame이 발행하는
@@ -41,8 +43,8 @@ const DispatchSystem = {
 
   // ── 초기화 ─────────────────────────────────────────
   init() {
-    EventBus.on('newGameStarted', () => this.resetForNewGame());
     this._unsubscribeAll();
+    this._unsubscribeNewGame = EventBus.on('newGameStarted', () => this.resetForNewGame());
 
     this._entries    = {};
     this._currentDay = GameState.time?.day ?? -Infinity;
@@ -57,6 +59,30 @@ const DispatchSystem = {
     this._unsubscribeLeft = EventBus.on('patientLeft', ({ npcId } = {}) => {
       this._cleanup(npcId);
     });
+  },
+
+  serialize() {
+    return { entries: this._entries, currentDay: Number.isFinite(this._currentDay) ? this._currentDay : null };
+  },
+
+  restore(snapshot) {
+    this._entries = {};
+    this._currentDay = snapshot?.currentDay ?? GameState.time?.day ?? -Infinity;
+    if (snapshot) {
+      for (const [id, entry] of Object.entries(snapshot.entries ?? {})) {
+        const state = GameState.npcs?.states?.[id];
+        if (!state?.dismissed && !state?.patientUnavailable && entry.def?.type === 'dispatch') this._entries[id] = entry;
+      }
+    } else {
+      const intake = SystemRegistry.get('PatientIntakeSystem');
+      for (const id of intake?.getRescuedRoster?.() ?? []) {
+        const contribution = intake.getSelectedContribution?.(id);
+        if (contribution?.type !== 'dispatch') continue;
+        this.register(id, contribution);
+        // 구버전은 실제 원정 횟수를 저장하지 않았다. 임의로 잔여 보상을 재발급하지 않는다.
+        this._entries[id].assignment = { status: 'retired', deployedTo: null, returnDay: null, runsCompleted: contribution.dispatch.maxRuns ?? 0 };
+      }
+    }
   },
 
   // ── 등록 / 배치 / 복귀 ─────────────────────────────
@@ -221,6 +247,7 @@ const DispatchSystem = {
   // ── 테스트 유틸 ────────────────────────────────────
 
   _unsubscribeAll() {
+    this._unsubscribeNewGame?.(); this._unsubscribeNewGame = null;
     if (this._unsubscribeTP)   { this._unsubscribeTP();   this._unsubscribeTP   = null; }
     if (this._unsubscribeDied) { this._unsubscribeDied(); this._unsubscribeDied = null; }
     if (this._unsubscribeLeft) { this._unsubscribeLeft(); this._unsubscribeLeft = null; }

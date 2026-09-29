@@ -67,6 +67,20 @@ describe('히든 레시피 — 해금 경로 보장', () => {
 describe('히든 레시피 — 스킬 도달 시 해금', () => {
   beforeEach(resetWorld);
 
+  it('고급 구리 코일·전기 모터도 실제 숙련 도달 시 자동 해금된다', () => {
+    setSkills({ crafting: 4 });
+    HiddenElementSystem._checkRecipeUnlocks();
+    expect(GameState.flags.hiddenRecipesUnlocked).not.toContain('wind_copper_coil');
+    setSkills({ crafting: 5 });
+    HiddenElementSystem._checkRecipeUnlocks();
+    expect(GameState.flags.hiddenRecipesUnlocked).toContain('wind_copper_coil');
+    expect(GameState.flags.hiddenRecipesUnlocked).not.toContain('build_electric_motor');
+    setSkills({ crafting: 8 });
+    HiddenElementSystem._checkRecipeUnlocks();
+    HiddenElementSystem._checkRecipeUnlocks();
+    expect(GameState.flags.hiddenRecipesUnlocked.filter(id => id === 'build_electric_motor')).toHaveLength(1);
+  });
+
   it('스킬이 모자라면 해금되지 않는다', () => {
     setSkills({ weaponcraft: 10 });
     HiddenElementSystem._checkRecipeUnlocks();

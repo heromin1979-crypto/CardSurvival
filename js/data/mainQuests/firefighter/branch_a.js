@@ -10,7 +10,7 @@ const FIREFIGHTER_BRANCH_A = {
   mq_fire_a_11: {
     id: 'mq_fire_a_11', title: '은평 도착',
     desc: '은평구에 도달하라. 가족이 기다리고 있다.',
-    icon: '🏠', characterId: 'firefighter', dayTrigger: 65,
+    icon: '🏠', characterId: 'firefighter', dayTrigger: 25,
     prerequisite: 'mq_fire_10', requiresFlag: 'fire_branch_a',
     objective: { type: 'visit_district', districtId: 'eunpyeong', count: 1 },
     reward: { morale: 15, items: [{ definitionId: 'bandage', qty: 3 }] },
@@ -24,7 +24,7 @@ const FIREFIGHTER_BRANCH_A = {
   mq_fire_a_12: {
     id: 'mq_fire_a_12', title: '가족 식량',
     desc: '식량 5개를 비축하라. 가족이 배고프다.',
-    icon: '🍚', characterId: 'firefighter', dayTrigger: 95,
+    icon: '🍚', characterId: 'firefighter', dayTrigger: 25,
     prerequisite: 'mq_fire_a_11', requiresFlag: 'fire_branch_a',
     objective: { type: 'collect_item_type', itemType: 'food', count: 5 },
     reward: { morale: 10, items: [{ definitionId: 'canned_food', qty: 3 }] },
@@ -37,12 +37,13 @@ const FIREFIGHTER_BRANCH_A = {
 
   mq_fire_a_13: {
     id: 'mq_fire_a_13', title: '임시 은신처',
-    desc: '구조물 2개를 제작하라. 가족을 위한 안전한 거점을 만든다.',
-    icon: '🏡', characterId: 'firefighter', dayTrigger: 125,
+    desc: '은평구에서 은평 가족 거처 공정에 재료를 투입하고 가동하라. 출입구 보강 → 지붕 방수.',
+    icon: '🏡', characterId: 'firefighter', dayTrigger: 25,
     prerequisite: 'mq_fire_a_12', requiresFlag: 'fire_branch_a',
-    objective: { type: 'craft_item', category: 'structure', count: 2 },
+    actionHint: '행동 메뉴의 프로젝트 또는 퀘스트 목표의 공정 보기에서 부족 재료를 확인하세요. 재료는 제작·분해·지역 탐사로 마련합니다. 설치물은 이 구역에 남습니다.',
+    objective: { type: 'career_project', projectId: 'fire_family', stageId: 'commissioned', districtId: 'eunpyeong', count: 1 },
     reward: { morale: 10, items: [{ definitionId: 'rope', qty: 2 }, { definitionId: 'flashlight', qty: 1 }] },
-    failPenalty: { morale: -5 }, deadlineDays: 185,
+    failPenalty: { morale: -5 }, deadlineDays: Infinity,
     narrative: {
       start: '아파트 3층만으로는 부족하다. 층계 아래, 현관 입구, 창문. 모두 막아야 한다.',
       complete: '방벽이 세워졌다. 작업 중 로프와 손전등도 발견했다. 아이가 말했다. "아빠가 만들면 튼튼해." 그 말이 힘이 됐다.',
@@ -51,12 +52,13 @@ const FIREFIGHTER_BRANCH_A = {
 
   mq_fire_a_14: {
     id: 'mq_fire_a_14', title: '가족 치료',
-    desc: '붕대 5개를 확보하라. 아내가 다쳤다.',
-    icon: '🩹', characterId: 'firefighter', dayTrigger: 155,
+    desc: '은평구에서 가족 회복 지원 공정에 재료를 투입하고 가동하라. 운영 물자 투입 → 조리한 식사 제공.',
+    icon: '🩹', characterId: 'firefighter', dayTrigger: 25,
     prerequisite: 'mq_fire_a_13', requiresFlag: 'fire_branch_a',
-    objective: { type: 'collect_item', definitionId: 'bandage', count: 5 },
+    actionHint: '행동 메뉴의 프로젝트 또는 퀘스트 목표의 공정 보기에서 부족 재료를 확인하세요. 재료는 제작·분해·지역 탐사로 마련합니다. 설치물은 이 구역에 남습니다.',
+    objective: { type: 'career_project', projectId: 'fire_family_care', stageId: 'commissioned', districtId: 'eunpyeong', count: 1 },
     reward: { morale: 8, items: [{ definitionId: 'first_aid_kit', qty: 1 }] },
-    failPenalty: { morale: -5 }, deadlineDays: 225,
+    failPenalty: { morale: -5 }, deadlineDays: Infinity,
     narrative: {
       start: '아내의 팔에 깊은 상처가 있었다. "넘어졌어." 애써 괜찮은 척하는 것이 더 마음 아팠다.',
       complete: '상처를 치료했다. 수색 중 구급키트도 발견했다. 아내가 말했다. "영철이 덕분에 살았어." 눈이 시리다.',
@@ -65,10 +67,11 @@ const FIREFIGHTER_BRANCH_A = {
 
   mq_fire_a_15: {
     id: 'mq_fire_a_15', title: '은평의 선택',
-    desc: '100일 이상 생존하라. 가족과 함께 다음을 결정한다.',
-    icon: '⚖️', characterId: 'firefighter', dayTrigger: 185,
+    desc: '은평구에서 가족 대피소 운영 시험 공정에 재료를 투입하고 가동하라. 설비 설치 → 운영 물자 투입.',
+    icon: '⚖️', characterId: 'firefighter', dayTrigger: 25,
     prerequisite: 'mq_fire_a_14', requiresFlag: 'fire_branch_a',
-    objective: { type: 'survive_days', count: 100 },
+    actionHint: '행동 메뉴의 프로젝트 또는 퀘스트 목표의 공정 보기에서 부족 재료를 확인하세요. 재료는 제작·분해·지역 탐사로 마련합니다. 설치물은 이 구역에 남습니다.',
+    objective: { type: 'career_project', projectId: 'fire_family_handover', stageId: 'commissioned', districtId: 'eunpyeong', count: 1 },
     reward: { morale: 8, items: [{ definitionId: 'lighter', qty: 1 }, { definitionId: 'binoculars', qty: 1 }] },
     failPenalty: null, deadlineDays: Infinity,
     isBranchPoint: true,
@@ -94,10 +97,11 @@ const FIREFIGHTER_BRANCH_A = {
 
   mq_fire_end_a1: {
     id: 'mq_fire_end_a1', title: '은평 대피소 완성',
-    desc: '구조물 3개를 제작하라. 은평 대피소의 완전한 기반을 갖춘다.',
-    icon: '🛡️', characterId: 'firefighter', dayTrigger: 205,
+    desc: '은평구에서 은평 대피소 인계 공정에 재료를 투입하고 가동하라. 설비 설치 → 조리한 식사 제공.',
+    icon: '🛡️', characterId: 'firefighter', dayTrigger: 25,
     prerequisite: 'mq_fire_a_15', requiresFlag: 'fire_end_a1',
-    objective: { type: 'craft_item', category: 'structure', count: 3 },
+    actionHint: '행동 메뉴의 프로젝트 또는 퀘스트 목표의 공정 보기에서 부족 재료를 확인하세요. 재료는 제작·분해·지역 탐사로 마련합니다. 설치물은 이 구역에 남습니다.',
+    objective: { type: 'career_project', projectId: 'fire_shelter', stageId: 'commissioned', districtId: 'eunpyeong', count: 1 },
     reward: { morale: 20, items: [{ definitionId: 'first_aid_kit', qty: 2 }], flags: { mainQuestComplete_firefighter: true, fire_ending: 'a1_shelter' } },
     failPenalty: { morale: -10 }, deadlineDays: Infinity,
     narrative: {
@@ -110,10 +114,11 @@ const FIREFIGHTER_BRANCH_A = {
 
   mq_fire_end_a3: {
     id: 'mq_fire_end_a3', title: '이재훈 추모',
-    desc: '로프 5개를 비축하라. 이재훈의 이름으로 대피소 연결망을 완성한다.',
-    icon: '🕯️', characterId: 'firefighter', dayTrigger: 205,
+    desc: '은평구에서 이재훈 구조 연결망 공정에 재료를 투입하고 가동하라. 설비 설치 → 전원 연결.',
+    icon: '🕯️', characterId: 'firefighter', dayTrigger: 25,
     prerequisite: 'mq_fire_a_15', requiresFlag: 'fire_end_a3',
-    objective: { type: 'collect_item', definitionId: 'rope', count: 5 },
+    actionHint: '행동 메뉴의 프로젝트 또는 퀘스트 목표의 공정 보기에서 부족 재료를 확인하세요. 재료는 제작·분해·지역 탐사로 마련합니다. 설치물은 이 구역에 남습니다.',
+    objective: { type: 'career_project', projectId: 'fire_memorial', stageId: 'commissioned', districtId: 'eunpyeong', count: 1 },
     reward: { morale: 15, items: [{ definitionId: 'lighter', qty: 1 }, { definitionId: 'herbal_tea', qty: 3 }], flags: { mainQuestComplete_firefighter: true, fire_ending: 'a3_memorial' } },
     failPenalty: { morale: -5 }, deadlineDays: Infinity,
     narrative: {

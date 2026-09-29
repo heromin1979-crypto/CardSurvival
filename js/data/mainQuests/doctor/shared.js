@@ -138,7 +138,7 @@ const DOCTOR_SHARED = {
   },
 
   mq_doctor_04: {
-    id: 'mq_doctor_04', title: '환자 수액',
+    id: 'mq_doctor_04', title: '환자용 식수 비축',
     desc: '탈수 환자가 발생했다. 깨끗한 음용수 3개를 확보하라. (정수 물병 / 끓인 물 / 멸균수 등)',
     icon: '💧', characterId: 'doctor', dayTrigger: 6, prerequisite: 'mq_doctor_03',
     objective: { type: 'collect_item_type', itemType: 'clean', count: 3 },
@@ -146,7 +146,7 @@ const DOCTOR_SHARED = {
     failPenalty: { morale: -3 }, deadlineDays: 16,
     narrative: {
       start: '병원 복도에서 탈수 상태의 생존자를 발견했다. 깨끗한 음용수가 필요하다. 카페테리아 물병이든, 빗물을 모아 끓인 것이든 상관없다.',
-      complete: '수분을 공급했다. 환자가 눈을 떴다. 고맙다는 말을 하며 진통제를 내밀었다.',
+      complete: '환자에게 줄 깨끗한 음용수를 확보했다. 간호사가 다음 처치에 쓸 진통제를 건넸다.',
     },
     locationHint: {
       districtId: 'dongjak',
@@ -164,8 +164,8 @@ const DOCTOR_SHARED = {
       },
       {
         id: 'so_d04_02',
-        text: '양동이 물·시냇물 정수 또는 끓이기',
-        textEn: 'Purify or boil bucket water / stream water',
+        text: '깨끗한 음용수 2개 확보',
+        textEn: 'Stock 2 clean drinking waters',
         hint: '비 올 때 양동이로 집수하거나 물가에서 채운 뒤 정수·끓이기',
         match: { type: 'objective_progress', value: 2 },
       },
@@ -182,9 +182,10 @@ const DOCTOR_SHARED = {
 
   mq_doctor_05: {
     id: 'mq_doctor_05', title: '첫 외래 환자',
-    desc: '응급실 잔류 환자 1명을 치료하라. (부상 NPC 드래그 치료)',
+    desc: '이 목표를 받은 뒤 아직 완치하지 않은 환자 1명을 치료하라. 응급실에서 새 환자를 받을 수 있다.',
     icon: '🩺', characterId: 'doctor', dayTrigger: 8, prerequisite: 'mq_doctor_04',
-    objective: { type: 'treat_npc', count: 1 },
+    objectiveRevision: 1,
+    objective: { type: 'treat_npc', afterStart: true, count: 1 },
     reward: { morale: 10, items: [{ definitionId: 'first_aid_kit', qty: 1 }, { definitionId: 'antibiotics', qty: 1 }] },
     failPenalty: { morale: -3 }, deadlineDays: 18,
     narrative: {
@@ -421,8 +422,8 @@ const DOCTOR_SHARED = {
   },
 
   mq_doctor_10: {
-    id: 'mq_doctor_10', title: '자기 처방',
-    desc: '이동 중 상처가 났다. 의료 아이템 1개를 직접 제작해 스스로를 치료하라.',
+    id: 'mq_doctor_10', title: '자신을 위한 약 준비',
+    desc: '다음 원정에서 자신을 돌볼 의료 아이템 1개를 직접 제작하라.',
     icon: '🧴', characterId: 'doctor', dayTrigger: 21, prerequisite: 'mq_doctor_09',
     objective: { type: 'craft_item', category: 'medical', count: 1 },
     reward: { morale: 8, items: [{ definitionId: 'antiseptic', qty: 1 }, { definitionId: 'stimulant', qty: 1 }] },
@@ -450,8 +451,8 @@ const DOCTOR_SHARED = {
       },
     ],
     narrative: {
-      start: '유리 파편에 손을 베었다. 의사가 감염으로 쓰러지면 안 된다. 다른 이의 약을 빌릴 수 없다 — 내 손으로 처방해야 한다. 이 한 개의 약이 앞으로의 정체성을 증명한다.',
-      complete: '자기 처방으로 상처를 다스렸다. 비상용 각성제와 소독약이 추가로 확보됐다. 세 갈래가 동시에 손짓한다 — 한소희의 합성 장비, 강민준의 보급로, 그리고 아무도 없는 보라매의 연구대. 어느 하나를 잡는 순간 나머지 둘은 닫힌다. 이지수는 베인 손을 폈다. 무엇을 끝내고 싶은지부터 정해야 했다.',
+      start: '의사가 감염으로 쓰러지면 안 된다. 남의 약을 빌리는 대신 자신을 돌볼 약도 직접 준비한다. 이 한 개의 약이 앞으로의 정체성을 증명한다.',
+      complete: '자신을 위한 의료 물자를 만들었다. 비상용 각성제와 소독약도 확보됐다. 세 갈래가 동시에 손짓한다 — 한소희의 합성 장비, 강민준의 보급로, 그리고 아무도 없는 보라매의 연구대. 어느 하나를 잡는 순간 나머지 둘은 닫힌다. 무엇을 끝내고 싶은지부터 정해야 했다.',
     },
     locationHint: {
       districtId: 'mapo',
@@ -474,14 +475,14 @@ const DOCTOR_SHARED = {
       },
       {
         id: 'so_d10_03',
-        text: '제작한 약으로 자기 처방 (분기 선택 직전)',
-        textEn: 'Self-administer the crafted medicine before choosing a branch',
-        hint: '완성된 약을 본인 카드에 사용',
+        text: '자기 의료 물자 준비 완료 (분기 선택 직전)',
+        textEn: 'Prepare personal medical supplies before choosing a branch',
+        hint: '의료 아이템 제작 완료',
         match: { type: 'objective_progress', value: 1 },
       },
     ],
-    actionHint: '이동 중에도 제작대를 열어 약 1개를 직접 만들고, 본인에게 사용한 뒤 분기 선택지로 진행.',
-    actionHintEn: 'Open the bench mid-route, craft a single medicine, self-apply it, then proceed to the branching choice.',
+    actionHint: '이동 중에도 제작대를 열어 의료 아이템 1개를 직접 만들면 분기 선택지로 진행한다.',
+    actionHintEn: 'Open the bench mid-route and craft one medical item to proceed to the branching choice.',
   },
 
   // ── 사이드 퀘스트 (선택, 메인 체인 비차단) ─────────────────────
@@ -647,7 +648,7 @@ const DOCTOR_SHARED = {
   mq_doctor_side_03: {
     id: 'mq_doctor_side_03', title: '역학 조사',
     desc: '서울역 중심부(중구)에 진입해 전염병 확산 경로를 지도화하라.',
-    icon: '🗺️', characterId: 'doctor', dayTrigger: 30,
+    icon: '🗺️', characterId: 'doctor', dayTrigger: 25,
     prerequisite: 'mq_doctor_10', requiresFlag: 'doctor_branch_c',
     objective: { type: 'visit_district', districtId: 'junggoo', count: 1 },
     reward: { morale: 15, items: [{ definitionId: 'antidote', qty: 1 }, { definitionId: 'herb', qty: 3 }] },
@@ -660,22 +661,23 @@ const DOCTOR_SHARED = {
 
   mq_doctor_side_04: {
     id: 'mq_doctor_side_04', title: '격리 거점 구축',
-    desc: '감염자 격리를 위한 의료 아이템 3개를 제작하라.',
-    icon: '⚗️', characterId: 'doctor', dayTrigger: 35,
+    desc: '중구에서 중구 격리 거점 공정에 재료를 투입하고 가동하라. 설비 설치 → 운영 물자 투입.',
+    icon: '⚗️', characterId: 'doctor', dayTrigger: 25,
     prerequisite: 'mq_doctor_10', requiresFlag: 'doctor_branch_c',
-    objective: { type: 'craft_item', category: 'medical', count: 3 },
+    actionHint: '행동 메뉴의 프로젝트 또는 퀘스트 목표의 공정 보기에서 부족 재료를 확인하세요. 재료는 제작·분해·지역 탐사로 마련합니다. 설치물은 이 구역에 남습니다.',
+    objective: { type: 'career_project', projectId: 'doctor_isolation', stageId: 'commissioned', districtId: 'junggoo', count: 1 },
     reward: { morale: 10, items: [{ definitionId: 'antiseptic', qty: 2 }, { definitionId: 'bandage', qty: 3 }] },
-    failPenalty: { morale: -6 }, deadlineDays: 55,
+    failPenalty: { morale: -6 }, deadlineDays: Infinity,
     narrative: {
       start: '새로 들어오는 생존자는 반드시 격리한다. 잠복기 동안 증상이 나타나면… 결정을 내려야 한다. 격리실에 둘 소독약, 붕대, 진정제가 필요하다.',
-      complete: '격리 공간이 갖춰졌다. 벽에는 비닐이 붙었고, 선반엔 제작한 약품이 놓였다. 누구도 이곳에서 죽지 않기를 — 의사의 기도다.',
+      complete: '소독약 세 묶음을 제작해 위생 물자를 확보했다. 이 물자가 환자들을 지키기를 — 의사의 기도다.',
     },
   },
 
   mq_doctor_side_05: {
     id: 'mq_doctor_side_05', title: '특수 감염자 표본',
     desc: '0번 환자(patient zero) 표본을 확보하라. 연구에 필수적이다.',
-    icon: '🧪', characterId: 'doctor', dayTrigger: 45,
+    icon: '🧪', characterId: 'doctor', dayTrigger: 25,
     prerequisite: 'mq_doctor_side_01', requiresFlag: 'doctor_branch_c',
     objective: { type: 'track_infected', enemyId: 'boss_patient_zero', count: 1 },
     reward: { morale: 15, items: [{ definitionId: 'antidote', qty: 2 }, { definitionId: 'stimulant', qty: 1 }, { definitionId: 'first_aid_kit', qty: 1 }] },
@@ -688,19 +690,20 @@ const DOCTOR_SHARED = {
 
   mq_doctor_side_06: {
     id: 'mq_doctor_side_06', title: '야전병원 확장',
-    desc: '의료 구조물 3개를 세워 본격적인 야전병원을 구축하라.',
-    icon: '🏥', characterId: 'doctor', dayTrigger: 50,
+    desc: '중구에서 중구 야전병원 공정에 재료를 투입하고 가동하라. 설비 설치 → 운영 물자 투입.',
+    icon: '🏥', characterId: 'doctor', dayTrigger: 25,
     prerequisite: 'mq_doctor_side_04', requiresFlag: 'doctor_branch_c',
-    objective: { type: 'craft_item', category: 'structure', count: 3 },
+    actionHint: '행동 메뉴의 프로젝트 또는 퀘스트 목표의 공정 보기에서 부족 재료를 확인하세요. 재료는 제작·분해·지역 탐사로 마련합니다. 설치물은 이 구역에 남습니다.',
+    objective: { type: 'career_project', projectId: 'doctor_hospital', stageId: 'commissioned', districtId: 'junggoo', count: 1 },
     reward: { morale: 20, items: [
       { definitionId: 'reinforced_bandage', qty: 3 },
       { definitionId: 'vitamin_complex', qty: 3 },
       { definitionId: 'iv_saline', qty: 1 },
     ], flags: { doctor_field_hospital: true } },
-    failPenalty: { morale: -8 }, deadlineDays: 85,
+    failPenalty: { morale: -8 }, deadlineDays: Infinity,
     narrative: {
       start: '격리 거점이 갖춰졌으니 이제 확장이다. 수술대, 격리 병동, 약품 보관장. 세 가지만 있어도 중환자실 수준의 진료가 가능하다. 이지수는 청사진을 그리기 시작했다.',
-      complete: '야전병원이 완성됐다. 수술대 위에 무영등이 켜지고, 격리 병동 문이 닫혔다. 약품 보관장에 의약품이 정리됐다. "이제 제대로 된 병원이다." 이지수는 처음으로 의사 가운을 다시 걸쳤다.',
+      complete: '야전 수술대를 제작했다. "시술할 공간이 생겼다." 이지수는 병동과 약품 보관 설비를 함께 운영할 계획을 수첩에 적었다.',
     },
   },
 
@@ -708,10 +711,11 @@ const DOCTOR_SHARED = {
 
   mq_doctor_side_end: {
     id: 'mq_doctor_side_end', title: '역병의 종결 — 백신 합성',
-    desc: '0번 환자 혈액 표본으로 역병 백신을 직접 합성하라. (C루트 단독 연구의 종착점)',
-    icon: '💠', characterId: 'doctor', dayTrigger: 55,
+    desc: '중구에서 0번 환자 단독 연구 완료 공정에 재료를 투입하고 가동하라. 직접 합성한 역병 백신 투입.',
+    icon: '💠', characterId: 'doctor', dayTrigger: 25,
     prerequisite: 'mq_doctor_side_05', requiresFlag: 'doctor_branch_c',
-    objective: { type: 'craft_item', definitionId: 'plague_vaccine', count: 1 },
+    actionHint: '행동 메뉴의 프로젝트 또는 퀘스트 목표의 공정 보기에서 부족 재료를 확인하세요. 재료는 제작·분해·지역 탐사로 마련합니다. 설치물은 이 구역에 남습니다.',
+    objective: { type: 'career_project', projectId: 'doctor_plague', stageId: 'commissioned', districtId: 'junggoo', count: 1 },
     reward: { morale: 35, items: [
       { definitionId: 'universal_cure', qty: 1 },
       { definitionId: 'surgery_kit',    qty: 1 },
@@ -721,7 +725,7 @@ const DOCTOR_SHARED = {
       mainQuestComplete_doctor:      true,
       doctor_ending:                 'c_vaccine',
     } },
-    failPenalty: { morale: -15 }, deadlineDays: 90,
+    failPenalty: { morale: -15 }, deadlineDays: Infinity,
     narrative: {
       start: '0번 환자의 심장 조직 샘플. 현미경 너머로 항원 구조가 드러난다 — 인간이 만든 바이러스가 아니다. 그러나 의사의 손이 닿는 한, 만들지 못할 백신도 없다. 광범위 항생제와 농축 혈청, 그리고 감염 혈액 표본. 합성의 마지막 단계다.',
       complete: '첫 번째 역병 백신. 유리병 속 은은한 빛. 이지수는 자신의 팔에 주사했다. 손끝의 떨림이 멈췄다. "이제 끝낼 수 있다." 서울의 어느 의사가 인류를 구했다 — 기록되지 않을 수도 있는, 그러나 진실한 승리.',

@@ -1,6 +1,20 @@
 // === EVENT BUS (pub/sub) ===
 const EventBus = {
   _listeners: {},
+  _batchQueue: null,
+
+  // 물품 배치와 청구 상태가 함께 확정된 뒤 저장·UI 구독자에게 알린다.
+  batch(callback) {
+    if (this._batchQueue) return callback();
+    this._batchQueue = [];
+    try {
+      return callback();
+    } finally {
+      const queued = this._batchQueue;
+      this._batchQueue = null;
+      for (const [event, data] of queued) this.emit(event, data);
+    }
+  },
 
   on(event, cb) {
     if (!this._listeners[event]) this._listeners[event] = [];
@@ -14,6 +28,7 @@ const EventBus = {
   },
 
   emit(event, data) {
+    if (this._batchQueue) { this._batchQueue.push([event, data]); return; }
     if (!this._listeners[event]) return;
     this._listeners[event].forEach(fn => {
       try { fn(data); }

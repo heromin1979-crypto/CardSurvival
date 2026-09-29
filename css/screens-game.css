@@ -3219,6 +3219,9 @@
    so hover hit-zones line up with the printed borders. Suppress the old CSS
    background-image layers so the map is not doubled/offset behind the SVG. */
 .seoul-map-stage { aspect-ratio: 1376 / 768; }
+.sm-career-route { border-left: 3px solid var(--accent-primary); background: var(--bg-raised); padding: var(--gap-md); margin-bottom: var(--gap-md); color: var(--text-primary); font-size: var(--font-size-sm); line-height: 1.5; }
+.sm-career-route p { margin: var(--gap-sm) 0; }
+.sm-career-route small { font-size: var(--font-size-xs); color: var(--text-secondary); }
 .seoul-map-stage::before,
 .minimap-ops-shell::before { display: none !important; }
 .sm-map-artwork { opacity: 1; }
@@ -4121,3 +4124,10 @@
     font-size: 14px;
   }
 }
+
+.sm-supply-entry { padding: var(--gap-sm); margin-bottom: var(--gap-sm); border: 1px solid var(--border-mid); background: var(--bg-surface); font-size: var(--font-size-xs); }
+.sm-supply-entry p { margin: var(--gap-xs) 0; color: var(--text-secondary); }
+.sm-supply-entry button { padding: var(--gap-xs) var(--gap-sm); color: var(--text-primary); background: var(--bg-raised); border: 1px solid var(--accent-dim); font: inherit; cursor: pointer; }
+.sm-supply-entry button:disabled { color: var(--text-secondary); cursor: default; }
+.seoul-map-modal.sm-supplies-only { width: 520px; max-width: 90vw; height: auto; max-height: 90vh; }
+.sm-local-supplies { padding: var(--gap-md); overflow-y: auto; max-height: 72vh; }

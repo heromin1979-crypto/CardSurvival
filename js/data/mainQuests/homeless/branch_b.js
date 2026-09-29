@@ -11,7 +11,7 @@ const HOMELESS_BRANCH_B = {
   mq_homeless_b_11: {
     id: 'mq_homeless_b_11', title: '롯데타워 입주',
     desc: '송파구에 도달하라. 타워를 본거지로 삼는다.',
-    icon: '🗼', characterId: 'homeless', dayTrigger: 65,
+    icon: '🗼', characterId: 'homeless', dayTrigger: 25,
     prerequisite: 'mq_homeless_10', requiresFlag: 'homeless_branch_b',
     objective: { type: 'visit_district', districtId: 'songpa', count: 1 },
     reward: { morale: 15, items: [{ definitionId: 'rope', qty: 2 }] },
@@ -24,12 +24,13 @@ const HOMELESS_BRANCH_B = {
 
   mq_homeless_b_12: {
     id: 'mq_homeless_b_12', title: '타워 구조 점검',
-    desc: '구조물 2개를 제작하라. 건설 전문가의 눈으로 타워의 취약 구간을 보강한다.',
-    icon: '🏗️', characterId: 'homeless', dayTrigger: 95,
+    desc: '송파구에서 타워 보강·저장소 공정에 재료를 투입하고 가동하라. 설비 설치 → 운영 물자 투입.',
+    icon: '🏗️', characterId: 'homeless', dayTrigger: 25,
     prerequisite: 'mq_homeless_b_11', requiresFlag: 'homeless_branch_b',
-    objective: { type: 'craft_item', category: 'structure', count: 2 },
+    actionHint: '행동 메뉴의 프로젝트 또는 퀘스트 목표의 공정 보기에서 부족 재료를 확인하세요. 재료는 제작·분해·지역 탐사로 마련합니다. 설치물은 이 구역에 남습니다.',
+    objective: { type: 'career_project', projectId: 'homeless_tower', stageId: 'commissioned', districtId: 'songpa', count: 1 },
     reward: { morale: 10, items: [{ definitionId: 'nail', qty: 5 }, { definitionId: 'scrap_metal', qty: 2 }] },
-    failPenalty: { morale: -5 }, deadlineDays: 150,
+    failPenalty: { morale: -5 }, deadlineDays: Infinity,
     narrative: {
       start: '타워 1~4층 구조를 점검했다. 비상계단 3번 출입구가 취약하다. 주차장 쪽 철문 경첩이 부식됐다. 현장 소장 시절처럼 꼼꼼하게 본다. 사람이 살 곳은 안전해야 한다.',
       complete: '보강 완료. 작업 중 못과 고철 자재도 발견했다. 타워 사람들이 신뢰하기 시작했다. "어떻게 이런 걸 아세요?" 건설회사 대표가 뭔지 보여줄 시간이다.',
@@ -38,12 +39,13 @@ const HOMELESS_BRANCH_B = {
 
   mq_homeless_b_13: {
     id: 'mq_homeless_b_13', title: '외부 공급망 구축',
-    desc: '강남구에 도달하라. 타워만으로는 자급자족이 불가능하다. 외부 물자 루트를 확보한다.',
-    icon: '🔗', characterId: 'homeless', dayTrigger: 125,
+    desc: '강남구에서 강남 외부 교환망 공정에 재료를 투입하고 가동하라. 운영 물자 투입.',
+    icon: '🔗', characterId: 'homeless', dayTrigger: 25,
     prerequisite: 'mq_homeless_b_12', requiresFlag: 'homeless_branch_b',
-    objective: { type: 'visit_district', districtId: 'gangnam', count: 1 },
+    actionHint: '행동 메뉴의 프로젝트 또는 퀘스트 목표의 공정 보기에서 부족 재료를 확인하세요. 재료는 제작·분해·지역 탐사로 마련합니다. 설치물은 이 구역에 남습니다.',
+    objective: { type: 'career_project', projectId: 'homeless_external_route', stageId: 'commissioned', districtId: 'gangnam', count: 1 },
     reward: { morale: 12, items: [{ definitionId: 'canned_food', qty: 3 }] },
-    failPenalty: { morale: -5 }, deadlineDays: 185,
+    failPenalty: { morale: -5 }, deadlineDays: Infinity,
     narrative: {
       start: '건설회사 때 배운 것 중 가장 중요한 것은 공급망이다. 최고의 빌딩도 자재가 없으면 못 짓는다. 강남구 일대를 정찰하며 물자 루트를 만든다. 2년간 쌓은 거리 인맥이 여기서 빛을 발한다.',
       complete: '강남구 생존자 집단 3곳과 접선했다. 물물교환 네트워크 구성. CEO 시절 계약처럼 손을 잡았다. 통조림도 첫 교환품으로 받았다. 타워는 안전, 그들은 식량을 제공한다.',
@@ -53,7 +55,7 @@ const HOMELESS_BRANCH_B = {
   mq_homeless_b_14: {
     id: 'mq_homeless_b_14', title: '인원 비축',
     desc: '식량 10개를 수집하라. 타워 거주자 30명의 2주치 식량이다. 직원을 먹이는 것도 대표의 일이다.',
-    icon: '🍱', characterId: 'homeless', dayTrigger: 155,
+    icon: '🍱', characterId: 'homeless', dayTrigger: 25,
     prerequisite: 'mq_homeless_b_13', requiresFlag: 'homeless_branch_b',
     objective: { type: 'collect_item_type', itemType: 'food', count: 10 },
     reward: { morale: 10, items: [{ definitionId: 'painkiller', qty: 2 }, { definitionId: 'bandage', qty: 2 }] },
@@ -66,10 +68,11 @@ const HOMELESS_BRANCH_B = {
 
   mq_homeless_b_15: {
     id: 'mq_homeless_b_15', title: '두 번째 회사',
-    desc: '100일 이상 생존하라. 타워 커뮤니티의 방향을 결정할 시간이다.',
-    icon: '⚖️', characterId: 'homeless', dayTrigger: 185,
+    desc: '송파구에서 타워 공동체 운영 검증 공정에 재료를 투입하고 가동하라. 조리한 식사 제공 → 운영 물자 투입.',
+    icon: '⚖️', characterId: 'homeless', dayTrigger: 25,
     prerequisite: 'mq_homeless_b_14', requiresFlag: 'homeless_branch_b',
-    objective: { type: 'survive_days', count: 100 },
+    actionHint: '행동 메뉴의 프로젝트 또는 퀘스트 목표의 공정 보기에서 부족 재료를 확인하세요. 재료는 제작·분해·지역 탐사로 마련합니다. 설치물은 이 구역에 남습니다.',
+    objective: { type: 'career_project', projectId: 'homeless_tower_service', stageId: 'commissioned', districtId: 'songpa', count: 1 },
     reward: { morale: 8, items: [{ definitionId: 'lighter', qty: 1 }, { definitionId: 'flashlight', qty: 1 }] },
     failPenalty: null, deadlineDays: Infinity,
     isBranchPoint: true,
@@ -95,10 +98,11 @@ const HOMELESS_BRANCH_B = {
 
   mq_homeless_end_b1: {
     id: 'mq_homeless_end_b1', title: '두 번째 제국',
-    desc: '구조물 4개를 더 제작하라. 롯데타워를 서울 최대 자치 커뮤니티로 완성한다.',
-    icon: '🏯', characterId: 'homeless', dayTrigger: 205,
+    desc: '송파구에서 타워 자치 시설 인계 공정에 재료를 투입하고 가동하라. 설비 설치 → 운영 물자 투입.',
+    icon: '🏯', characterId: 'homeless', dayTrigger: 25,
     prerequisite: 'mq_homeless_b_15', requiresFlag: 'homeless_end_b1',
-    objective: { type: 'craft_item', category: 'structure', count: 4 },
+    actionHint: '행동 메뉴의 프로젝트 또는 퀘스트 목표의 공정 보기에서 부족 재료를 확인하세요. 재료는 제작·분해·지역 탐사로 마련합니다. 설치물은 이 구역에 남습니다.',
+    objective: { type: 'career_project', projectId: 'homeless_autonomy', stageId: 'commissioned', districtId: 'songpa', count: 1 },
     reward: { morale: 20, items: [{ definitionId: 'crowbar', qty: 1 }, { definitionId: 'rope_ladder', qty: 1 }], flags: { mainQuestComplete_homeless: true, homeless_ending: 'b1_kingdom' } },
     failPenalty: { morale: -10 }, deadlineDays: Infinity,
     narrative: {
@@ -111,10 +115,11 @@ const HOMELESS_BRANCH_B = {
 
   mq_homeless_end_b3: {
     id: 'mq_homeless_end_b3', title: '서울 중개자',
-    desc: '종로구로 이동하라. 서울 전역 생존자를 연결하는 물자 중개 네트워크를 완성한다.',
-    icon: '🕸️', characterId: 'homeless', dayTrigger: 205,
+    desc: '종로구에서 서울 중개망 순환 완료 공정에 재료를 투입하고 가동하라. 운영 물자 투입.',
+    icon: '🕸️', characterId: 'homeless', dayTrigger: 25,
     prerequisite: 'mq_homeless_b_15', requiresFlag: 'homeless_end_b3',
-    objective: { type: 'visit_district', districtId: 'jongno', count: 1 },
+    actionHint: '행동 메뉴의 프로젝트 또는 퀘스트 목표의 공정 보기에서 부족 재료를 확인하세요. 재료는 제작·분해·지역 탐사로 마련합니다. 설치물은 이 구역에 남습니다.',
+    objective: { type: 'career_project', projectId: 'homeless_broker', stageId: 'commissioned', districtId: 'jongno', count: 1 },
     reward: { morale: 15, items: [{ definitionId: 'compass', qty: 1 }, { definitionId: 'binoculars', qty: 1 }], flags: { mainQuestComplete_homeless: true, homeless_ending: 'b3_network' } },
     failPenalty: { morale: -5 }, deadlineDays: Infinity,
     narrative: {

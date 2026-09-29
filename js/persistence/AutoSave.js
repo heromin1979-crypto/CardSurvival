@@ -12,6 +12,33 @@ const AutoSave = {
   SAVE_INTERVAL_TP: 10,
   TIMER_INTERVAL_MS: 60_000,
   THROTTLE_MS: 5_000,
+  _deferDepth: 0,
+  _deferredRequested: false,
+  _deferredFailed: false,
+
+  // 짧은 동기 행동만 감싼다. 게임 틱은 즉시 실행하고 저장 요청만 완료까지 미룬다.
+  deferUntilComplete(callback) {
+    if (this._deferDepth === 0) {
+      this._deferredRequested = false;
+      this._deferredFailed = false;
+    }
+    this._deferDepth++;
+    try {
+      return callback();
+    } catch (error) {
+      this._deferredFailed = true;
+      throw error;
+    } finally {
+      this._deferDepth--;
+      if (this._deferDepth === 0) {
+        const shouldSave = this._deferredRequested && !this._deferredFailed;
+        this._deferredRequested = false;
+        this._deferredFailed = false;
+        // 중간 요청이 최근 저장의 스로틀에 막혀 완료 상태까지 유실되지 않게 한다.
+        if (shouldSave) this._trySave({ force: true });
+      }
+    }
+  },
 
   init() {
     // Auto-save on state transitions
@@ -56,6 +83,10 @@ const AutoSave = {
 
   // force: 스로틀 무시 (백그라운드 전환처럼 마지막 기회인 시점)
   _trySave({ force = false } = {}) {
+    if (this._deferDepth > 0) {
+      this._deferredRequested = true;
+      return;
+    }
     if (!GameState.player.isAlive) return;
     if (MENU_STATES.includes(GameState.ui.currentState)) return;
 

@@ -10,7 +10,7 @@ const SOLDIER_BRANCH_A = {
   mq_soldier_a_11: {
     id: 'mq_soldier_a_11', title: '박영철과 합류',
     desc: '서대문구로 이동하라. 박영철 소방관이 구조 작전을 준비 중이다.',
-    icon: '🚒', characterId: 'soldier', dayTrigger: 65,
+    icon: '🚒', characterId: 'soldier', dayTrigger: 25,
     prerequisite: 'mq_soldier_10', requiresFlag: 'soldier_branch_a',
     objective: { type: 'visit_district', districtId: 'seodaemun', count: 1 },
     reward: { morale: 15, items: [{ definitionId: 'flashlight', qty: 1 }] },
@@ -24,7 +24,7 @@ const SOLDIER_BRANCH_A = {
   mq_soldier_a_12: {
     id: 'mq_soldier_a_12', title: '구조 의료 물자',
     desc: '붕대 6개를 수집하라. 구조 작전 중 부상자 치료가 필요하다.',
-    icon: '🩹', characterId: 'soldier', dayTrigger: 95,
+    icon: '🩹', characterId: 'soldier', dayTrigger: 25,
     prerequisite: 'mq_soldier_a_11', requiresFlag: 'soldier_branch_a',
     objective: { type: 'collect_item', definitionId: 'bandage', count: 6 },
     reward: { morale: 10, items: [{ definitionId: 'first_aid_kit', qty: 1 }] },
@@ -37,12 +37,13 @@ const SOLDIER_BRANCH_A = {
 
   mq_soldier_a_13: {
     id: 'mq_soldier_a_13', title: '임시 대피소',
-    desc: '구조물 2개를 제작하라. 구조 생존자를 위한 임시 대피소가 필요하다.',
-    icon: '🏕️', characterId: 'soldier', dayTrigger: 125,
+    desc: '서대문구에서 서대문 구조 거점 공정에 재료를 투입하고 가동하라. 설비 설치 → 운영 물자 투입.',
+    icon: '🏕️', characterId: 'soldier', dayTrigger: 25,
     prerequisite: 'mq_soldier_a_12', requiresFlag: 'soldier_branch_a',
-    objective: { type: 'craft_item', category: 'structure', count: 2 },
+    actionHint: '행동 메뉴의 프로젝트 또는 퀘스트 목표의 공정 보기에서 부족 재료를 확인하세요. 재료는 제작·분해·지역 탐사로 마련합니다. 설치물은 이 구역에 남습니다.',
+    objective: { type: 'career_project', projectId: 'soldier_rescue', stageId: 'commissioned', districtId: 'seodaemun', count: 1 },
     reward: { morale: 10, items: [{ definitionId: 'spike_trap', qty: 1 }] },
-    failPenalty: { morale: -5 }, deadlineDays: 185,
+    failPenalty: { morale: -5 }, deadlineDays: Infinity,
     narrative: {
       start: '구조된 생존자들이 임시로 머물 곳이 없다. 방어선 구축은 군인의 전문 분야다.',
       complete: '임시 대피소 완성. 입구에 가시 트랩도 설치했다. 박영철: "구조대원과 군인의 조합이 이렇게 효율적일 줄 몰랐어요."',
@@ -51,12 +52,13 @@ const SOLDIER_BRANCH_A = {
 
   mq_soldier_a_14: {
     id: 'mq_soldier_a_14', title: '구조 생존자 보급',
-    desc: '식량 8개를 수집하라. 구조된 생존자 50명에게 보급한다.',
-    icon: '🥫', characterId: 'soldier', dayTrigger: 155,
+    desc: '서대문구에서 구조자 배식 공정에 재료를 투입하고 가동하라. 조리한 식사 제공.',
+    icon: '🥫', characterId: 'soldier', dayTrigger: 25,
     prerequisite: 'mq_soldier_a_13', requiresFlag: 'soldier_branch_a',
-    objective: { type: 'collect_item_type', itemType: 'food', count: 8 },
+    actionHint: '행동 메뉴의 프로젝트 또는 퀘스트 목표의 공정 보기에서 부족 재료를 확인하세요. 재료는 제작·분해·지역 탐사로 마련합니다. 설치물은 이 구역에 남습니다.',
+    objective: { type: 'career_project', projectId: 'soldier_rations', stageId: 'commissioned', districtId: 'seodaemun', count: 1 },
     reward: { morale: 10, items: [{ definitionId: 'battle_ration', qty: 2 }] },
-    failPenalty: { morale: -5 }, deadlineDays: 225,
+    failPenalty: { morale: -5 }, deadlineDays: Infinity,
     narrative: {
       start: '구조 생존자가 50명을 넘었다. 박영철: "밥이 없으면 살려도 죽어요." 보급이 전술이다.',
       complete: '식량 배급 완료. 군용 전투 식량도 따로 챙겼다. 박영철: "강민준 하사, 덕분에 50명이 살았어요." 그 말이 어떤 명령보다 무겁게 들렸다.',
@@ -65,10 +67,11 @@ const SOLDIER_BRANCH_A = {
 
   mq_soldier_a_15: {
     id: 'mq_soldier_a_15', title: '작전 확대 결정',
-    desc: '100일 이상 생존하라. 구조 작전을 서울 전역으로 확대할 때다.',
-    icon: '⚖️', characterId: 'soldier', dayTrigger: 175,
+    desc: '서대문구에서 구조망 연락 시험 공정에 재료를 투입하고 가동하라. 운영 물자 투입.',
+    icon: '⚖️', characterId: 'soldier', dayTrigger: 25,
     prerequisite: 'mq_soldier_a_14', requiresFlag: 'soldier_branch_a',
-    objective: { type: 'survive_days', count: 100 },
+    actionHint: '행동 메뉴의 프로젝트 또는 퀘스트 목표의 공정 보기에서 부족 재료를 확인하세요. 재료는 제작·분해·지역 탐사로 마련합니다. 설치물은 이 구역에 남습니다.',
+    objective: { type: 'career_project', projectId: 'soldier_network_test', stageId: 'commissioned', districtId: 'seodaemun', count: 1 },
     reward: { morale: 8, items: [{ definitionId: 'stimulant', qty: 1 }], flags: { soldier_end_a1: true } },
     failPenalty: null, deadlineDays: Infinity,
     narrative: {
@@ -81,10 +84,11 @@ const SOLDIER_BRANCH_A = {
 
   mq_soldier_end_a1: {
     id: 'mq_soldier_end_a1', title: '서울 집결 완성',
-    desc: '구조물 4개를 제작하라. 서울 전역 구조 작전의 기반을 완성한다.',
-    icon: '🏙️', characterId: 'soldier', dayTrigger: 205,
+    desc: '서대문구에서 서울 구조망 인계 공정에 재료를 투입하고 가동하라. 설비 설치 → 운영 물자 투입.',
+    icon: '🏙️', characterId: 'soldier', dayTrigger: 25,
     prerequisite: 'mq_soldier_a_15', requiresFlag: 'soldier_end_a1',
-    objective: { type: 'craft_item', category: 'structure', count: 4 },
+    actionHint: '행동 메뉴의 프로젝트 또는 퀘스트 목표의 공정 보기에서 부족 재료를 확인하세요. 재료는 제작·분해·지역 탐사로 마련합니다. 설치물은 이 구역에 남습니다.',
+    objective: { type: 'career_project', projectId: 'soldier_rescue_network', stageId: 'commissioned', districtId: 'seodaemun', count: 1 },
     reward: { morale: 20, items: [{ definitionId: 'radio', qty: 1 }], flags: { mainQuestComplete_soldier: true, soldier_ending: 'a1_rescue' } },
     failPenalty: { morale: -10 }, deadlineDays: Infinity,
     narrative: {

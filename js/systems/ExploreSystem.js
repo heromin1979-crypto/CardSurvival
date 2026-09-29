@@ -1,3 +1,6 @@
+import { PROGRESSION_SUPPLIES, createExplorationSupplyState, milestoneClaimKey, supplyStock } from '../data/progressionSupplies.js';
+import { normalizeLandmarkKey } from '../data/landmarks.js';
+import AutoSave from '../persistence/AutoSave.js';
 // === EXPLORE SYSTEM (서울 25구 지역 시스템) ===
 import EventBus    from '../core/EventBus.js';
 import GameState   from '../core/GameState.js';
@@ -438,6 +441,7 @@ const ExploreSystem = {
       }
       EventBus.emit('notify', { message: I18n.t('exploreSys.exploreComplete', { name: locationPathText() }), type: 'info' });
       EventBus.emit('boardChanged', {});
+      this._emitExploreCompleted(districtId, 'landmark');
       return;
     }
 
@@ -510,6 +514,16 @@ const ExploreSystem = {
     EventBus.emit('notify', { message: I18n.t('exploreSys.exploreComplete', { name: locationPathText() }), type: 'info' });
     EventBus.emit('locationChanged', { nodeId: districtId, node: district });
     EventBus.emit('boardChanged', {});
+    this._emitExploreCompleted(districtId, 'district');
+  },
+
+  _emitExploreCompleted(districtId, source) {
+    EventBus.emit('exploreCompleted', {
+      districtId,
+      landmarkId: GameState.location.currentLandmark ?? null,
+      subLocationId: GameState.location.currentSubLocation ?? null,
+      source,
+    });
   },
 
   // ── 지역 탐사도 (Phase 3) ────────────────────────────────
@@ -522,35 +536,109 @@ const ExploreSystem = {
   /**
    * 탐사 1회 분 탐사도 누적 + 임계값 특수자원(explorationYields) 고정 산출.
    * 특수자원은 확률이 아니라 `prev < at <= next` 임계값 통과 시 정해진 수량을 1회 지급한다.
-   * (탐사도는 단조 증가하므로 구간 판정만으로 중복 지급이 없다. 100% 도달 후 특수자원 끝.)
+   * 구/보상 ID/버전 청구 이력은 물품과 공급처 발견을 함께 보호한다.
    */
-  _advanceExploration(districtId) {
+  _advanceExploration(districtId, increment) {
     const gs = GameState;
-    if (!gs.flags.districtExploration) gs.flags.districtExploration = {};
-    const prev = gs.flags.districtExploration[districtId] ?? 0;
+    const state = gs.flags.explorationSupply ??= createExplorationSupplyState();
+    const progress = gs.flags.districtExploration ??= {};
+    const prev = progress[districtId] ?? 0;
     if (prev >= 100) return;
-
-    const inc  = DISTRICTS[districtId]?.exploreIncrement ?? BALANCE.explore.explorationPerExplore ?? 5;
+    const inc = increment ?? DISTRICTS[districtId]?.exploreIncrement ?? BALANCE.explore.explorationPerExplore ?? 5;
     const next = Math.min(100, prev + inc);
-    gs.flags.districtExploration[districtId] = next;
-    EventBus.emit('explorationProgressChanged', { districtId, pct: next });
-
-    const yields = DISTRICTS[districtId]?.explorationYields;
-    if (Array.isArray(yields)) {
-      const loot = [];
-      for (const y of yields) {
-        if (!(y.at > prev && y.at <= next)) continue;  // 이번 탐사로 통과한 임계값만
-        for (const it of (y.items ?? [])) {
-          if (!GameData?.items[it.definitionId]) continue;
-          loot.push({ definitionId: it.definitionId, quantity: rollQty(it), contamination: 0 });
-        }
-      }
-      if (loot.length > 0) {
-        this._placeLoot(loot);
-        const names = loot.map(l => GameData?.items[l.definitionId]?.name ?? l.definitionId).join(', ');
-        EventBus.emit('notify', { message: `⛏ 탐사도 ${next}% 돌파 — 특수 자원 발견: ${names}`, type: 'good' });
+    const rewards = (DISTRICTS[districtId]?.explorationYields ?? []).filter(reward =>
+      reward.at > prev && reward.at <= next && !state.claims.includes(milestoneClaimKey(districtId, reward)));
+    // 데이터 오류가 있으면 진행도와 청구 이력을 바꾸기 전에 중단한다.
+    for (const reward of rewards) {
+      if (!reward.id || !Number.isInteger(reward.version) || reward.version < 1 ||
+          (reward.discovery && !PROGRESSION_SUPPLIES[reward.discovery]) ||
+          (reward.items ?? []).some(item => !GameData.items[item.definitionId] || !Number.isInteger(item.qty) || item.qty < 1)) {
+        throw new Error('잘못된 탐사 보상: ' + districtId + ':' + reward.id);
       }
     }
+    const loot = rewards.flatMap(reward => (reward.items ?? []).map(item => ({ definitionId: item.definitionId, quantity: item.qty, contamination: 0 })));
+    EventBus.batch(() => {
+      progress[districtId] = next;
+      // 이벤트 재진입과 저장에 앞서 물품·발견·청구를 모두 확정한다.
+      for (const reward of rewards) {
+        state.claims.push(milestoneClaimKey(districtId, reward));
+        if (reward.discovery && !state.discoveries.includes(reward.discovery)) state.discoveries.push(reward.discovery);
+      }
+      if (loot.length) this._placeLoot(loot);
+    });
+    EventBus.emit('explorationProgressChanged', { districtId, pct: next });
+    for (const reward of rewards) if (reward.discovery) EventBus.emit('supplyDiscovered', { districtId, discoveryId: reward.discovery });
+    if (rewards.length) EventBus.emit('notify', { message: '탐사도 ' + next + '% 보상 확보' + (rewards.some(r => r.discovery) ? ' · 새 공급처 발견 (서울 지도)' : ''), type: 'good' });
+  },
+
+  _completeSubLocationSurvey(subId, districtId) {
+    const state = GameState.flags.explorationSupply ??= createExplorationSupplyState();
+    if (state.surveyed.includes(subId)) return;
+    EventBus.batch(() => {
+      this._advanceExploration(districtId);
+      state.surveyed.push(subId);
+    });
+  },
+
+  getSupplyStatus(id) {
+    const source = PROGRESSION_SUPPLIES[id];
+    if (!source) return { ok: false, reason: '알 수 없는 공급처' };
+    const gs = GameState;
+    const state = gs.flags.explorationSupply ?? createExplorationSupplyState();
+    const stock = supplyStock(state, id, source, gs.time.totalTP);
+    let reason = '';
+    if (source.discoveryRequired && !state.discoveries.includes(id)) reason = '탐사도 100% 발견 필요';
+    else if (gs.location.currentDistrict !== source.districtId || gs.location.currentLandmark) reason = '해당 구 거리에서 이용 가능';
+    else if (!['main', 'explore'].includes(gs.ui.currentState)) reason = '현재 행동 중에는 이용 불가';
+    else if (gs.player.isAlive === false || (gs.player.hp?.current ?? 1) <= 0 || (gs.stats.stamina?.current ?? 1) <= 0) reason = '행동할 체력 부족';
+    else if ((gs.player.encumbrance?.weightPct ?? 0) >= 2) reason = '과적 상태';
+    else if (source.seasons && !source.seasons.includes(SeasonSystem.getCurrentSeason(gs.time.day).id)) reason = '겨울 채집 중단 · 저장 재료와 교환처 이용';
+    else if (stock.remaining <= 0) reason = source.type === 'finite' ? '회수 완료' : '재입고 대기';
+    const cards = [...new Set([...(gs.board.middle ?? []), ...(gs.board.bottom ?? [])])].map(key => gs.cards[key]).filter(Boolean);
+    const costs = new Map();
+    for (const cost of source.costs ?? []) costs.set(cost.definitionId, (costs.get(cost.definitionId) ?? 0) + cost.qty);
+    const consumption = [];
+    for (const [definitionId, qty] of costs) {
+      let remaining = qty;
+      for (const card of cards.filter(card => card.definitionId === definitionId)) {
+        const take = Math.min(remaining, card.quantity ?? 1);
+        if (take > 0) consumption.push({ instanceId: card.instanceId, qty: take });
+        remaining -= take;
+      }
+      if (remaining > 0 && !reason) reason = '교환 물품 부족';
+    }
+    return { ok: !reason, reason, source, stock, consumption, waitTP: Math.max(0, stock.refillAt - gs.time.totalTP) };
+  },
+
+  useSupply(id) {
+    const result = this.getSupplyStatus(id);
+    if (!result.ok) return result;
+    const { source, stock, consumption } = result;
+    const tpCost = EncumbranceSystem.applyCost(source.tpCost);
+    if (source.items.some(item => !GameData.items[item.definitionId] || !Number.isInteger(item.qty) || item.qty <= 0)) {
+      return { ok: false, reason: '공급 물품 데이터 오류' };
+    }
+    const gs = GameState;
+    const state = gs.flags.explorationSupply ??= createExplorationSupplyState();
+    return AutoSave.deferUntilComplete(() => {
+      EventBus.batch(() => {
+        // 외부 이벤트 없이 비용과 재고, 수령 대기 물품을 먼저 함께 확정한다.
+        for (const cost of consumption) {
+          const card = gs.cards[cost.instanceId];
+          card.quantity = (card.quantity ?? 1) - cost.qty;
+          if (card.quantity <= 0) gs.removeCardInstanceSilent(cost.instanceId);
+        }
+        state.stocks[id] = { ...stock, remaining: stock.remaining - 1 };
+        const loot = source.items.map(item => ({ definitionId: item.definitionId, quantity: item.qty, contamination: 0 }));
+        gs._updateEncumbrance();
+
+        this._placeLoot(loot, { skillXp: false });
+      });
+      TickEngine.skipTP(tpCost, source.name);
+      EventBus.emit('supplyUsed', { supplyId: id, districtId: source.districtId, items: source.items });
+      EventBus.emit('boardChanged', {});
+      return { ok: true };
+    });
   },
 
   // ── travelTo (보드 위치 카드 클릭 → 위임) ────────────────
@@ -651,11 +739,12 @@ const ExploreSystem = {
         foundNames.push(`${def?.icon ?? ''} ${def?.name ?? entry.definitionId}`);
       } else {
         // 배치 실패 — pendingLoot 큐에 보관 (인스턴스 삭제 후 원시 데이터로 보관)
+        const remainingQuantity = inst.quantity;
         gs.removeCardInstanceSilent(inst.instanceId);
         if (!gs.pendingLoot) gs.pendingLoot = [];
         gs.pendingLoot.push({
           definitionId:  entry.definitionId,
-          quantity:      entry.quantity,
+          quantity:      remainingQuantity,
           contamination: entry.contamination ?? 0,
         });
         const def = GameData?.items[entry.definitionId];
@@ -826,8 +915,8 @@ const ExploreSystem = {
 
     // 이미 루팅한 세부장소 체크
     if (!gs.location.subLocationsLooted) gs.location.subLocationsLooted = [];
-    const subKey       = `${districtId}:${subLocationId}`;
-    const isFirstLoot  = !gs.location.subLocationsLooted.includes(subKey);
+    const subKey       = `${normalizeLandmarkKey(districtId)}:${subLocationId}`;
+    const isFirstLoot  = !gs.location.subLocationsLooted.some(key => key.slice(key.indexOf(':') + 1) === subLocationId);
 
     // W3-2 Phase B — 재고 lazy-init (sub.lootCount[1] = max를 baseStock으로)
     const baseStock = sub.lootCount?.[1] ?? 0;
@@ -909,6 +998,7 @@ const ExploreSystem = {
       const loot = this._generateSubLocationLoot(sub);
       this._placeLoot(loot);
       gs.location.subLocationsLooted.push(subKey);
+      this._completeSubLocationSurvey(sub.id, actualDistrictId);
       // W3-2 Phase B — 실제 루팅 수만큼 재고 차감 (stockRatio는 _generateSubLocationLoot가 이미 반영)
       if (loot.length > 0) gs.consumeSubLocationStock(subLocationId, loot.length);
     } else {
@@ -921,6 +1011,8 @@ const ExploreSystem = {
 
     // 캐릭터당 1회 한정 자동 보상 (한강 낚시터 진입 시 fishing_rod 등)
     this._grantFirstEnterReward(sub, subKey);
+
+    if (isFirstLoot) this._emitExploreCompleted(actualDistrictId, 'sublocation');
 
     // 히든 보스는 문을 연 순간 마주친다. 보상을 먼저 주고 전투로 넘긴다.
     if (sub.bossId && HiddenElementSystem.spawnSubLocationBoss(sub.bossId, subKey)) return;
@@ -950,8 +1042,10 @@ const ExploreSystem = {
     if (gs.flags.firstEnterRewardsClaimed.includes(claimKey)) return;
 
     const loot = items.map(it => ({ definitionId: it.id, quantity: it.qty ?? 1 }));
-    this._placeLoot(loot);
-    gs.flags.firstEnterRewardsClaimed.push(claimKey);
+    EventBus.batch(() => {
+        gs.flags.firstEnterRewardsClaimed.push(claimKey);
+        this._placeLoot(loot);
+    });
   },
 
   /**
@@ -1031,7 +1125,17 @@ const ExploreSystem = {
   _generateLandmarkLoot(landmarkKey) {
     const lm = getLandmarkData(landmarkKey);
     if (!lm?.lootTable?.length) return [];
-    return rollWeightedLoot(lm.lootTable, lm.lootCount);
+    const policy = lm.supplyPolicy;
+    if (!policy) throw new Error('로비 공급 유형 누락: ' + landmarkKey);
+    if (policy.type === 'trade') return [];
+    const state = GameState.flags.explorationSupply ??= createExplorationSupplyState();
+    const key = 'lobby:' + normalizeLandmarkKey(landmarkKey);
+    const stock = supplyStock(state, key, policy, GameState.time.totalTP);
+    if (stock.remaining <= 0) return [];
+    const loot = rollWeightedLoot(lm.lootTable, lm.lootCount).slice(0, stock.remaining);
+    stock.remaining -= loot.length;
+    state.stocks[key] = stock;
+    return loot;
   },
 
   // ── 랜드마크 퇴장 ────────────────────────────────────────

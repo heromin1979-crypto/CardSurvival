@@ -10,6 +10,7 @@ import { LEVEL_XP_TABLE } from '../data/skillDefs.js';
 import ExploreSystem   from '../systems/ExploreSystem.js';
 import GameData        from '../data/GameData.js';
 import NPCS            from '../data/npcs.js';
+import NPCSystem       from '../systems/NPCSystem.js';
 
 const DANGER_COLORS = ['#336633', '#4a7a33', '#886622', '#882222', '#550000', '#330000'];
 
@@ -392,8 +393,7 @@ const CharCreate = {
     // 시작 구의 도착 시각은 0 — 이후 시작되는 퀘스트(startTp ≥ 0)의 "가라" 조건을
     // 시작 지점만으로 충족시키지 않는다
     gs.location.districtArrivals   = { [districtId]: 0 };
-    // location은 NEW_GAME_RESET_KEYS 대상이 아니라 여기서 직접 비운다 —
-    // 남겨두면 이전 게임의 랜드마크 진입 기록으로 새 게임 퀘스트가 완료된다
+    // 초기화된 위치 상태에 이번 캐릭터의 시작 구만 기록한다.
     gs.location.landmarkArrivals   = {};
     gs.location.districtsLooted    = [];
     gs.location.installedStructures = {};
@@ -509,8 +509,7 @@ const CharCreate = {
 
     // ── 캐릭터 전용 시작 동반자 ─────────────────────────────
     if (char.startingCompanion) {
-      const compInst = gs.createCardInstance(char.startingCompanion);
-      if (compInst) gs.placeCardInRow(compInst.instanceId, 'middle');
+      NPCSystem.forceRecruit(char.startingCompanion);
     }
 
     // ── 의사 전용 오프닝: 보라매병원 응급실 씬 ───────────────

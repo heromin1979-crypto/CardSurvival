@@ -1,0 +1,1017 @@
+{
+  "date": "2026-09-21",
+  "scope": "캐릭터별 shared 01~10의 정의·호출 경로 정적 점검. 연속 플레이 빈도 측정 아님.",
+  "characters": [
+    {
+      "id": "doctor",
+      "name": "이지수",
+      "homeDist": "dongjak",
+      "startingNPCs": [
+        "npc_wounded_soldier",
+        "npc_nurse"
+      ],
+      "startingCompanion": null,
+      "questTypes": {
+        "treat_npc": 3,
+        "npc_quest_complete": 1,
+        "collect_item_type": 1,
+        "collect_item": 1,
+        "craft_item": 3,
+        "visit_district": 1
+      },
+      "quests": [
+        {
+          "id": "mq_doctor_01",
+          "title": "응급실의 첫 환자",
+          "day": 1,
+          "objective": {
+            "type": "treat_npc",
+            "npcId": "npc_wounded_soldier",
+            "count": 1
+          },
+          "cinematicId": null,
+          "flashback": null
+        },
+        {
+          "id": "mq_doctor_02",
+          "title": "간호사와의 공조",
+          "day": 2,
+          "objective": {
+            "type": "npc_quest_complete",
+            "npcId": "npc_nurse",
+            "questId": "nurse_quest_emergency",
+            "count": 1
+          },
+          "cinematicId": null,
+          "flashback": null
+        },
+        {
+          "id": "mq_doctor_03",
+          "title": "보라매의 환자들",
+          "day": 4,
+          "objective": {
+            "type": "treat_npc",
+            "count": 2
+          },
+          "cinematicId": null,
+          "flashback": null
+        },
+        {
+          "id": "mq_doctor_04",
+          "title": "환자 수액",
+          "day": 6,
+          "objective": {
+            "type": "collect_item_type",
+            "itemType": "clean",
+            "count": 3
+          },
+          "cinematicId": null,
+          "flashback": null
+        },
+        {
+          "id": "mq_doctor_05",
+          "title": "첫 외래 환자",
+          "day": 8,
+          "objective": {
+            "type": "treat_npc",
+            "count": 1
+          },
+          "cinematicId": null,
+          "flashback": null
+        },
+        {
+          "id": "mq_doctor_06",
+          "title": "약초 채취",
+          "day": 10,
+          "objective": {
+            "type": "collect_item",
+            "definitionId": "herb",
+            "count": 3
+          },
+          "cinematicId": null,
+          "flashback": null
+        },
+        {
+          "id": "mq_doctor_07",
+          "title": "첫 번째 치료약",
+          "day": 13,
+          "objective": {
+            "type": "craft_item",
+            "category": "medical",
+            "count": 1
+          },
+          "cinematicId": null,
+          "flashback": null
+        },
+        {
+          "id": "mq_doctor_08",
+          "title": "원정 의료 물자 제작",
+          "day": 15,
+          "objective": {
+            "type": "craft_item",
+            "category": "medical",
+            "count": 3
+          },
+          "cinematicId": null,
+          "flashback": null
+        },
+        {
+          "id": "mq_doctor_09",
+          "title": "홍대 약국 경유",
+          "day": 18,
+          "objective": {
+            "type": "visit_district",
+            "districtId": "mapo",
+            "count": 1
+          },
+          "cinematicId": null,
+          "flashback": null
+        },
+        {
+          "id": "mq_doctor_10",
+          "title": "자기 처방",
+          "day": 21,
+          "objective": {
+            "type": "craft_item",
+            "category": "medical",
+            "count": 1
+          },
+          "cinematicId": "cin_branch_doctor",
+          "flashback": null
+        }
+      ]
+    },
+    {
+      "id": "soldier",
+      "name": "강민준",
+      "homeDist": "dobong",
+      "startingNPCs": [],
+      "startingCompanion": "npc_dog",
+      "questTypes": {
+        "collect_item": 4,
+        "craft_item": 1,
+        "collect_item_type": 2,
+        "career_project": 2,
+        "visit_district": 1
+      },
+      "quests": [
+        {
+          "id": "mq_soldier_01",
+          "title": "용산 기지 생존",
+          "day": 1,
+          "objective": {
+            "type": "collect_item",
+            "definitionId": "knife",
+            "count": 1
+          },
+          "cinematicId": null,
+          "flashback": null
+        },
+        {
+          "id": "mq_soldier_02",
+          "title": "방어선 구축",
+          "day": 2,
+          "objective": {
+            "type": "craft_item",
+            "category": "structure",
+            "count": 1
+          },
+          "cinematicId": null,
+          "flashback": null
+        },
+        {
+          "id": "mq_soldier_03",
+          "title": "야전 보급",
+          "day": 4,
+          "objective": {
+            "type": "collect_item_type",
+            "itemType": "food",
+            "count": 5
+          },
+          "cinematicId": null,
+          "flashback": null
+        },
+        {
+          "id": "mq_soldier_04",
+          "title": "무전기 복원",
+          "day": 6,
+          "objective": {
+            "type": "career_project",
+            "projectId": "soldier_radio",
+            "stageId": "commissioned",
+            "districtId": "yongsan",
+            "count": 1
+          },
+          "cinematicId": null,
+          "flashback": null
+        },
+        {
+          "id": "mq_soldier_05",
+          "title": "야전 응급처치",
+          "day": 8,
+          "objective": {
+            "type": "collect_item",
+            "definitionId": "bandage",
+            "count": 3
+          },
+          "cinematicId": null,
+          "flashback": null
+        },
+        {
+          "id": "mq_soldier_06",
+          "title": "무기 정비",
+          "day": 10,
+          "objective": {
+            "type": "collect_item",
+            "definitionId": "scrap_metal",
+            "count": 3
+          },
+          "cinematicId": null,
+          "flashback": null
+        },
+        {
+          "id": "mq_soldier_07",
+          "title": "원정 식량",
+          "day": 13,
+          "objective": {
+            "type": "collect_item_type",
+            "itemType": "food",
+            "count": 3
+          },
+          "cinematicId": null,
+          "flashback": null
+        },
+        {
+          "id": "mq_soldier_08",
+          "title": "광화문 돌파",
+          "day": 15,
+          "objective": {
+            "type": "visit_district",
+            "districtId": "jongno",
+            "count": 1
+          },
+          "cinematicId": null,
+          "flashback": null
+        },
+        {
+          "id": "mq_soldier_09",
+          "title": "탈출 로프",
+          "day": 18,
+          "objective": {
+            "type": "collect_item",
+            "definitionId": "rope",
+            "count": 2
+          },
+          "cinematicId": null,
+          "flashback": null
+        },
+        {
+          "id": "mq_soldier_10",
+          "title": "통신 강화",
+          "day": 21,
+          "objective": {
+            "type": "career_project",
+            "projectId": "soldier_relay",
+            "stageId": "commissioned",
+            "districtId": "jongno",
+            "count": 1
+          },
+          "cinematicId": "cin_branch_soldier",
+          "flashback": null
+        }
+      ]
+    },
+    {
+      "id": "firefighter",
+      "name": "박영철",
+      "homeDist": "eunpyeong",
+      "startingNPCs": [],
+      "startingCompanion": null,
+      "questTypes": {
+        "collect_item_type": 5,
+        "career_project": 3,
+        "collect_item": 1,
+        "visit_district": 1
+      },
+      "quests": [
+        {
+          "id": "mq_fire_01",
+          "title": "화재 현장 탈출",
+          "day": 1,
+          "objective": {
+            "type": "collect_item_type",
+            "itemType": "food",
+            "count": 3
+          },
+          "cinematicId": null,
+          "flashback": null
+        },
+        {
+          "id": "mq_fire_02",
+          "title": "임시 구호소",
+          "day": 2,
+          "objective": {
+            "type": "career_project",
+            "projectId": "fire_relief",
+            "stageId": "commissioned",
+            "districtId": "yongsan",
+            "count": 1
+          },
+          "cinematicId": null,
+          "flashback": null
+        },
+        {
+          "id": "mq_fire_03",
+          "title": "이재훈을 위해",
+          "day": 4,
+          "objective": {
+            "type": "collect_item_type",
+            "itemType": "medical",
+            "count": 3
+          },
+          "cinematicId": null,
+          "flashback": null
+        },
+        {
+          "id": "mq_fire_04",
+          "title": "로프 확보",
+          "day": 6,
+          "objective": {
+            "type": "career_project",
+            "projectId": "fire_access",
+            "stageId": "commissioned",
+            "districtId": "yongsan",
+            "count": 1
+          },
+          "cinematicId": null,
+          "flashback": null
+        },
+        {
+          "id": "mq_fire_05",
+          "title": "동료의 식량",
+          "day": 8,
+          "objective": {
+            "type": "collect_item_type",
+            "itemType": "food",
+            "count": 5
+          },
+          "cinematicId": null,
+          "flashback": null
+        },
+        {
+          "id": "mq_fire_06",
+          "title": "부상자 치료",
+          "day": 10,
+          "objective": {
+            "type": "collect_item",
+            "definitionId": "bandage",
+            "count": 5
+          },
+          "cinematicId": null,
+          "flashback": null
+        },
+        {
+          "id": "mq_fire_07",
+          "title": "소방서 거점",
+          "day": 13,
+          "objective": {
+            "type": "career_project",
+            "projectId": "fire_station",
+            "stageId": "commissioned",
+            "districtId": "yongsan",
+            "count": 1
+          },
+          "cinematicId": null,
+          "flashback": null
+        },
+        {
+          "id": "mq_fire_08",
+          "title": "이동 식량",
+          "day": 15,
+          "objective": {
+            "type": "collect_item_type",
+            "itemType": "food",
+            "count": 5
+          },
+          "cinematicId": null,
+          "flashback": null
+        },
+        {
+          "id": "mq_fire_09",
+          "title": "서대문 돌파",
+          "day": 18,
+          "objective": {
+            "type": "visit_district",
+            "districtId": "seodaemun",
+            "count": 1
+          },
+          "cinematicId": null,
+          "flashback": null
+        },
+        {
+          "id": "mq_fire_10",
+          "title": "서대문 도착",
+          "day": 21,
+          "objective": {
+            "type": "collect_item_type",
+            "itemType": "medical",
+            "count": 3
+          },
+          "cinematicId": "cin_branch_firefighter",
+          "flashback": null
+        }
+      ]
+    },
+    {
+      "id": "homeless",
+      "name": "최형식",
+      "homeDist": "gwangjin",
+      "startingNPCs": [],
+      "startingCompanion": null,
+      "questTypes": {
+        "collect_item_type": 4,
+        "craft_item": 1,
+        "career_project": 4,
+        "visit_landmark": 1
+      },
+      "quests": [
+        {
+          "id": "mq_homeless_01",
+          "title": "다리 아래 생존",
+          "day": 1,
+          "objective": {
+            "type": "collect_item_type",
+            "itemType": "food",
+            "count": 3
+          },
+          "cinematicId": null,
+          "flashback": null
+        },
+        {
+          "id": "mq_homeless_02",
+          "title": "첫 번째 불",
+          "day": 2,
+          "objective": {
+            "type": "craft_item",
+            "category": "structure",
+            "count": 1
+          },
+          "cinematicId": null,
+          "flashback": null
+        },
+        {
+          "id": "mq_homeless_03",
+          "title": "거리의 기술",
+          "day": 4,
+          "objective": {
+            "type": "career_project",
+            "projectId": "homeless_reclaim",
+            "stageId": "commissioned",
+            "districtId": "gwangjin",
+            "count": 1
+          },
+          "cinematicId": null,
+          "flashback": null
+        },
+        {
+          "id": "mq_homeless_04",
+          "title": "한강 정수",
+          "day": 6,
+          "objective": {
+            "type": "collect_item_type",
+            "itemType": "clean",
+            "count": 3
+          },
+          "cinematicId": null,
+          "flashback": null
+        },
+        {
+          "id": "mq_homeless_05",
+          "title": "광진 낚시 거점",
+          "day": 8,
+          "objective": {
+            "type": "visit_landmark",
+            "landmarkId": "lm_hangang_gwangjin",
+            "count": 1
+          },
+          "cinematicId": null,
+          "flashback": null
+        },
+        {
+          "id": "mq_homeless_06",
+          "title": "고철 채집",
+          "day": 10,
+          "objective": {
+            "type": "career_project",
+            "projectId": "homeless_trade",
+            "stageId": "commissioned",
+            "districtId": "gwangjin",
+            "count": 1
+          },
+          "cinematicId": null,
+          "flashback": null
+        },
+        {
+          "id": "mq_homeless_07",
+          "title": "임시 거점",
+          "day": 13,
+          "objective": {
+            "type": "career_project",
+            "projectId": "homeless_storage",
+            "stageId": "commissioned",
+            "districtId": "gwangjin",
+            "count": 1
+          },
+          "cinematicId": null,
+          "flashback": null
+        },
+        {
+          "id": "mq_homeless_08",
+          "title": "잠실대교 도하",
+          "day": 15,
+          "objective": {
+            "type": "career_project",
+            "projectId": "homeless_crossing",
+            "stageId": "commissioned",
+            "districtId": "songpa",
+            "count": 1
+          },
+          "cinematicId": null,
+          "flashback": null
+        },
+        {
+          "id": "mq_homeless_09",
+          "title": "이동 식량",
+          "day": 18,
+          "objective": {
+            "type": "collect_item_type",
+            "itemType": "food",
+            "count": 8
+          },
+          "cinematicId": null,
+          "flashback": null
+        },
+        {
+          "id": "mq_homeless_10",
+          "title": "집단 생활 준비",
+          "day": 21,
+          "objective": {
+            "type": "collect_item_type",
+            "itemType": "medical",
+            "count": 3
+          },
+          "cinematicId": "cin_branch_homeless",
+          "flashback": null
+        }
+      ]
+    },
+    {
+      "id": "chef",
+      "name": "윤재혁",
+      "homeDist": "junggoo",
+      "startingNPCs": [],
+      "startingCompanion": null,
+      "questTypes": {
+        "collect_item_type": 3,
+        "craft_item": 1,
+        "collect_item": 2,
+        "career_project": 3,
+        "visit_district": 1
+      },
+      "quests": [
+        {
+          "id": "mq_chef_01",
+          "title": "식재료 확보",
+          "day": 1,
+          "objective": {
+            "type": "collect_item_type",
+            "itemType": "food",
+            "count": 3
+          },
+          "cinematicId": null,
+          "flashback": null
+        },
+        {
+          "id": "mq_chef_02",
+          "title": "임시 조리대",
+          "day": 2,
+          "objective": {
+            "type": "craft_item",
+            "category": "structure",
+            "count": 1
+          },
+          "cinematicId": null,
+          "flashback": null
+        },
+        {
+          "id": "mq_chef_03",
+          "title": "소금 확보",
+          "day": 4,
+          "objective": {
+            "type": "collect_item",
+            "definitionId": "salt",
+            "count": 3
+          },
+          "cinematicId": null,
+          "flashback": null
+        },
+        {
+          "id": "mq_chef_04",
+          "title": "식수 확보",
+          "day": 6,
+          "objective": {
+            "type": "collect_item_type",
+            "itemType": "clean",
+            "count": 3
+          },
+          "cinematicId": null,
+          "flashback": null
+        },
+        {
+          "id": "mq_chef_05",
+          "title": "허브 채집",
+          "day": 8,
+          "objective": {
+            "type": "collect_item",
+            "definitionId": "herb",
+            "count": 3
+          },
+          "cinematicId": null,
+          "flashback": null
+        },
+        {
+          "id": "mq_chef_06",
+          "title": "첫 번째 급식",
+          "day": 10,
+          "objective": {
+            "type": "career_project",
+            "projectId": "chef_first_meal",
+            "stageId": "commissioned",
+            "districtId": "junggoo",
+            "count": 1
+          },
+          "cinematicId": null,
+          "flashback": null
+        },
+        {
+          "id": "mq_chef_07",
+          "title": "급식소 확장",
+          "day": 13,
+          "objective": {
+            "type": "career_project",
+            "projectId": "chef_pantry",
+            "stageId": "commissioned",
+            "districtId": "junggoo",
+            "count": 1
+          },
+          "cinematicId": null,
+          "flashback": null
+        },
+        {
+          "id": "mq_chef_08",
+          "title": "식량 비축",
+          "day": 15,
+          "objective": {
+            "type": "collect_item_type",
+            "itemType": "food",
+            "count": 5
+          },
+          "cinematicId": null,
+          "flashback": null
+        },
+        {
+          "id": "mq_chef_09",
+          "title": "동대문 탐색",
+          "day": 18,
+          "objective": {
+            "type": "visit_district",
+            "districtId": "dongdaemun",
+            "count": 1
+          },
+          "cinematicId": null,
+          "flashback": null
+        },
+        {
+          "id": "mq_chef_10",
+          "title": "급식소 안정화",
+          "day": 21,
+          "objective": {
+            "type": "career_project",
+            "projectId": "chef_regular",
+            "stageId": "commissioned",
+            "districtId": "junggoo",
+            "count": 1
+          },
+          "cinematicId": "cin_branch_chef",
+          "flashback": null
+        }
+      ]
+    },
+    {
+      "id": "engineer",
+      "name": "정대한",
+      "homeDist": "yongsan",
+      "startingNPCs": [],
+      "startingCompanion": null,
+      "questTypes": {
+        "collect_item": 7,
+        "career_project": 2,
+        "visit_district": 1
+      },
+      "quests": [
+        {
+          "id": "mq_eng_01",
+          "title": "기본 고철",
+          "day": 1,
+          "objective": {
+            "type": "collect_item",
+            "definitionId": "scrap_metal",
+            "count": 3
+          },
+          "cinematicId": null,
+          "flashback": null
+        },
+        {
+          "id": "mq_eng_02",
+          "title": "작업장 확보",
+          "day": 2,
+          "objective": {
+            "type": "career_project",
+            "projectId": "engineer_workbench",
+            "stageId": "commissioned",
+            "districtId": "yongsan",
+            "count": 1
+          },
+          "cinematicId": null,
+          "flashback": null
+        },
+        {
+          "id": "mq_eng_03",
+          "title": "전자부품 수거",
+          "day": 4,
+          "objective": {
+            "type": "collect_item",
+            "definitionId": "electronic_parts",
+            "count": 3
+          },
+          "cinematicId": null,
+          "flashback": null
+        },
+        {
+          "id": "mq_eng_04",
+          "title": "배선 재료",
+          "day": 6,
+          "objective": {
+            "type": "collect_item",
+            "definitionId": "wire",
+            "count": 3
+          },
+          "cinematicId": null,
+          "flashback": null
+        },
+        {
+          "id": "mq_eng_05",
+          "title": "밀봉재 확보",
+          "day": 8,
+          "objective": {
+            "type": "collect_item",
+            "definitionId": "cloth",
+            "count": 3
+          },
+          "cinematicId": null,
+          "flashback": null
+        },
+        {
+          "id": "mq_eng_06",
+          "title": "목재 프레임",
+          "day": 10,
+          "objective": {
+            "type": "collect_item",
+            "definitionId": "wood",
+            "count": 5
+          },
+          "cinematicId": null,
+          "flashback": null
+        },
+        {
+          "id": "mq_eng_07",
+          "title": "아버지의 메모",
+          "day": 13,
+          "objective": {
+            "type": "collect_item",
+            "definitionId": "rope",
+            "count": 2
+          },
+          "cinematicId": null,
+          "flashback": "flashback_last_words"
+        },
+        {
+          "id": "mq_eng_08",
+          "title": "발전기 부품 수집",
+          "day": 15,
+          "objective": {
+            "type": "career_project",
+            "projectId": "engineer_power",
+            "stageId": "commissioned",
+            "districtId": "yongsan",
+            "count": 1
+          },
+          "cinematicId": null,
+          "flashback": null
+        },
+        {
+          "id": "mq_eng_09",
+          "title": "성수동 공장 첫 방문",
+          "day": 18,
+          "objective": {
+            "type": "visit_district",
+            "districtId": "seongdong",
+            "count": 1
+          },
+          "cinematicId": null,
+          "flashback": "flashback_young_dae"
+        },
+        {
+          "id": "mq_eng_10",
+          "title": "성수동 복귀",
+          "day": 21,
+          "objective": {
+            "type": "collect_item",
+            "definitionId": "scrap_metal",
+            "count": 3
+          },
+          "cinematicId": "cin_branch_engineer",
+          "flashback": null
+        }
+      ]
+    }
+  ],
+  "npcSpawns": [
+    {
+      "id": "npc_old_survivor",
+      "day": 10,
+      "district": "gangbuk",
+      "condition": null
+    },
+    {
+      "id": "npc_nurse",
+      "day": 1,
+      "district": "dongjak",
+      "condition": null
+    },
+    {
+      "id": "npc_wounded_soldier",
+      "day": 1,
+      "district": "dongjak",
+      "condition": null
+    },
+    {
+      "id": "npc_soldier_deserter",
+      "day": 30,
+      "district": "yongsan",
+      "condition": null
+    },
+    {
+      "id": "npc_child",
+      "day": 20,
+      "district": "nowon",
+      "condition": null
+    },
+    {
+      "id": "npc_mechanic",
+      "day": 25,
+      "district": "guro",
+      "condition": null
+    },
+    {
+      "id": "npc_trader",
+      "day": 12,
+      "district": "yeongdeungpo",
+      "condition": null
+    },
+    {
+      "id": "npc_student",
+      "day": 18,
+      "district": "gwanak",
+      "condition": null
+    },
+    {
+      "id": "npc_dog",
+      "day": 1,
+      "district": "dobong",
+      "condition": null
+    },
+    {
+      "id": "npc_former_colleague",
+      "day": 10,
+      "district": "yangcheon",
+      "condition": {
+        "requiredCharacter": "homeless"
+      }
+    },
+    {
+      "id": "npc_tower_security",
+      "day": 30,
+      "district": "songpa",
+      "condition": null
+    },
+    {
+      "id": "npc_tower_merchant",
+      "day": 25,
+      "district": "songpa",
+      "condition": null
+    },
+    {
+      "id": "npc_tower_cook",
+      "day": 35,
+      "district": "songpa",
+      "condition": null
+    },
+    {
+      "id": "npc_tower_engineer",
+      "day": 40,
+      "district": "songpa",
+      "condition": null
+    },
+    {
+      "id": "npc_tower_doctor",
+      "day": 30,
+      "district": "songpa",
+      "condition": null
+    },
+    {
+      "id": "npc_sous_chef",
+      "day": 35,
+      "district": "junggoo",
+      "condition": null
+    },
+    {
+      "id": "npc_kitchen_helper",
+      "day": 25,
+      "district": "junggoo",
+      "condition": null
+    },
+    {
+      "id": "npc_er_patient_child",
+      "day": 999,
+      "district": "dongjak",
+      "condition": null
+    },
+    {
+      "id": "npc_er_patient_elder",
+      "day": 999,
+      "district": "dongjak",
+      "condition": null
+    },
+    {
+      "id": "npc_er_patient_civilian",
+      "day": 999,
+      "district": "dongjak",
+      "condition": null
+    },
+    {
+      "id": "npc_civilian_wounded_01",
+      "day": 999,
+      "district": "mapo",
+      "condition": null
+    },
+    {
+      "id": "npc_civilian_wounded_02",
+      "day": 999,
+      "district": "mapo",
+      "condition": null
+    },
+    {
+      "id": "npc_civilian_wounded_03",
+      "day": 999,
+      "district": "mapo",
+      "condition": null
+    }
+  ],
+  "cinematics": {
+    "definitions": 48,
+    "imageReferences": 31,
+    "missingImages": [
+      {
+        "id": "cin_char_chef",
+        "path": "assets/images/cinematic/char_chef_final.webp"
+      }
+    ]
+  },
+  "focusedReproductions": [
+    {
+      "case": "CharCreate._startGame(soldier) + NPCSystem.init, DOM 조회 stub, 실제 main 전이",
+      "result": {
+        "npcDogCards": 2,
+        "companions": [],
+        "isCompanion": false
+      }
+    },
+    {
+      "case": "NPCSystem._checkSpawns; engineer, day10, yangcheon",
+      "result": {
+        "npc_former_colleague_spawned": true
+      }
+    }
+  ]
+}

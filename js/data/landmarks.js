@@ -15,6 +15,7 @@ export const HANGANG_DISTRICTS = [
 
 export const LANDMARK_DATA = {
   basecamp: {
+    supplyPolicy: { type: 'finite', capacity: 12 },
     name: '베이스캠프',
     desc: '직접 건설한 안전 거점. 업그레이드와 휴식이 가능하다.',
     icon: '🏕',
@@ -35,6 +36,7 @@ export const LANDMARK_DATA = {
     ],
   },
   jongno: {
+    supplyPolicy: { type: 'finite', capacity: 12 },
     name: '경복궁',
     desc: '조선 왕조의 법궁. 광활한 궁역에 유물과 역사의 흔적이 남아 있다.',
     icon: '🏯',
@@ -249,6 +251,7 @@ export const LANDMARK_DATA = {
     ],
   },
   junggoo: {
+    supplyPolicy: { type: 'trade', capacity: 3, restockTP: 72 },
     name: '남대문시장',
     desc: '서울 최대 재래시장. 식료품, 의류, 잡화 등 온갖 생존 물자가 있을 수 있다.',
     icon: '🏪',
@@ -406,6 +409,7 @@ export const LANDMARK_DATA = {
       },
       {
         id: 'junggu_food',
+        firstEnterReward: { claimKey: 'supply_junggu_food', items: [{ id: 'salt', qty: 3 }] },
         name: '식료품 구역',
         icon: '🥫',
         desc: '식품 가게들이 밀집한 구역. 상한 음식과 온전한 식량이 뒤섞여 있다.',
@@ -582,6 +586,7 @@ export const LANDMARK_DATA = {
     ],
   },
   yongsan: {
+    supplyPolicy: { type: 'finite', capacity: 12 },
     name: '전쟁기념관',
     desc: '한국 전쟁사 기념관. 군사 장비 전시물과 지하 벙커가 있다.',
     icon: '🪖',
@@ -685,6 +690,7 @@ export const LANDMARK_DATA = {
       },
       {
         id: 'yongsan_history',
+        firstEnterReward: { claimKey: 'supply_yongsan_history', items: [{ id: 'circuit_board', qty: 2 }] },
         name: '전쟁역사관',
         icon: '🏛️',
         desc: '전쟁 역사 전시관. 의무 물자가 남아있을 가능성.',
@@ -832,6 +838,7 @@ export const LANDMARK_DATA = {
     ],
   },
   seongdong: {
+    supplyPolicy: { type: 'finite', capacity: 12 },
     name: '성수 공장지대',
     desc: '서울의 산업 심장부. 가죽 공방, 금속 가공소 등이 밀집해 있다.',
     icon: '🏭',
@@ -1065,6 +1072,7 @@ export const LANDMARK_DATA = {
       },
       {
         id: 'seongdong_workshop',
+        firstEnterReward: { claimKey: 'supply_seongdong_workshop', items: [{ id: 'water_filter', qty: 1 }] },
         name: '작업장',
         icon: '🔧',
         desc: '공구와 부품이 가득한 작업실.',
@@ -1127,6 +1135,7 @@ export const LANDMARK_DATA = {
     ],
   },
   gwangjin: {
+    supplyPolicy: { type: 'finite', capacity: 12 },
     name: '어린이대공원',
     desc: '서울 동부의 대형 공원. 동물원, 식물원, 유원지가 있다.',
     icon: '🎡',
@@ -1346,6 +1355,7 @@ export const LANDMARK_DATA = {
     ],
   },
   dongdaemun: {
+    supplyPolicy: { type: 'finite', capacity: 12 },
     name: '경희의료원',
     desc: '대형 종합병원. 의약품과 의료 장비의 보고지만 감염 위험이 높다.',
     icon: '🏥',
@@ -1621,6 +1631,7 @@ export const LANDMARK_DATA = {
     ],
   },
   jungrang: {
+    supplyPolicy: { type: 'finite', capacity: 12 },
     name: '용마랜드 폐유원지',
     desc: '수십 년째 방치된 유원지. 녹슨 놀이기구와 음산한 분위기.',
     icon: '🎠',
@@ -1835,6 +1846,7 @@ export const LANDMARK_DATA = {
     ],
   },
   seongbuk: {
+    supplyPolicy: { type: 'finite', capacity: 12 },
     name: '고려대학교',
     desc: '명문 대학 캠퍼스. 법학·의학·체육 시설이 혼재하며 물자가 다양하다.',
     icon: '🎓',
@@ -2081,6 +2093,7 @@ export const LANDMARK_DATA = {
     ],
   },
   gangbuk: {
+    supplyPolicy: { type: 'finite', capacity: 12 },
     name: '북한산성',
     desc: '조선 시대 산성. 산 위에 위치해 물자는 적지만 안전하고 전망이 좋다.',
     icon: '🏔️',
@@ -2291,6 +2304,7 @@ export const LANDMARK_DATA = {
     ],
   },
   dobong: {
+    supplyPolicy: { type: 'finite', capacity: 12 },
     name: '도봉산 등산로',
     desc: '울창한 산림과 암벽이 있는 등산 명소. 야생 약초와 자원이 풍부하다.',
     icon: '⛰️',
@@ -2513,6 +2527,7 @@ export const LANDMARK_DATA = {
     ],
   },
   nowon: {
+    supplyPolicy: { type: 'finite', capacity: 12 },
     name: '태릉선수촌',
     desc: '1966년 설립된 국가 대표 엘리트 훈련 기지. 폐허가 됐지만 시설이 견고하다.',
     icon: '🏅',
@@ -2784,6 +2799,7 @@ export const LANDMARK_DATA = {
     ],
   },
   eunpyeong: {
+    supplyPolicy: { type: 'finite', capacity: 12 },
     name: '진관사',
     desc: '북한산 자락의 천년 고찰. 고요하고 약초원이 잘 보존돼 있다.',
     icon: '⛩️',
@@ -3052,6 +3068,7 @@ export const LANDMARK_DATA = {
     ],
   },
   seodaemun: {
+    supplyPolicy: { type: 'finite', capacity: 12 },
     name: '신촌 세브란스병원',
     desc: '연세대 부속 종합병원. 감염 위험이 높으나 의약품이 풍부하다.',
     icon: '🏥',
@@ -3331,6 +3348,7 @@ export const LANDMARK_DATA = {
     ],
   },
   mapo: {
+    supplyPolicy: { type: 'finite', capacity: 12 },
     name: '홍대 클럽가',
     desc: '서울의 젊음이 모이던 거리. 가게들이 밀집해 생존 물자를 찾을 수 있다.',
     icon: '🎵',
@@ -3579,6 +3597,7 @@ export const LANDMARK_DATA = {
     ],
   },
   yangcheon: {
+    supplyPolicy: { type: 'finite', capacity: 12 },
     name: '목동 경기장',
     desc: '서울 서부의 종합 스포츠 경기장. 의무실과 기계실이 있다.',
     icon: '🏟️',
@@ -3825,6 +3844,7 @@ export const LANDMARK_DATA = {
     ],
   },
   gangseo: {
+    supplyPolicy: { type: 'finite', capacity: 12 },
     name: '김포공항',
     desc: '국내선 공항. 화물터미널과 격납고에 다양한 물자가 있을 수 있다.',
     icon: '✈️',
@@ -4100,6 +4120,7 @@ export const LANDMARK_DATA = {
     ],
   },
   guro: {
+    supplyPolicy: { type: 'finite', capacity: 12 },
     name: '구로디지털단지',
     desc: 'IT 기업이 밀집한 테크 단지. 전자 부품과 서버 장비가 있다.',
     icon: '💻',
@@ -4253,6 +4274,7 @@ export const LANDMARK_DATA = {
       },
       {
         id: 'guro_parts_store',
+        firstEnterReward: { claimKey: 'supply_guro_parts_store', items: [{ id: 'circuit_board', qty: 2 }] },
         name: '전자 부품 상점',
         icon: '🔌',
         desc: '전자 부품 전문 소매점.',
@@ -4342,6 +4364,7 @@ export const LANDMARK_DATA = {
     ],
   },
   geumcheon: {
+    supplyPolicy: { type: 'finite', capacity: 12 },
     name: '독산동 공장지대',
     desc: '중공업 공장들이 밀집한 산업 단지. 금속과 화학 물자가 풍부하다.',
     icon: '🏗️',
@@ -4588,6 +4611,7 @@ export const LANDMARK_DATA = {
     ],
   },
   yeongdeungpo: {
+    supplyPolicy: { type: 'finite', capacity: 12 },
     name: '영등포 타임스퀘어',
     desc: '대형 복합 쇼핑몰. 식품관과 의류·전자제품 매장이 있다.',
     icon: '🛒',
@@ -4832,6 +4856,7 @@ export const LANDMARK_DATA = {
     ],
   },
   lm_kbs: {
+    supplyPolicy: { type: 'finite', capacity: 12 },
     name: 'KBS 본관',
     desc: '여의도 방송국. 로비 전광판이 마지막 자막에서 멈춰 있다. 송신탑은 아직 서 있다.',
     icon: '📺',
@@ -4974,6 +4999,7 @@ export const LANDMARK_DATA = {
     ],
   },
   lm_63_building: {
+    supplyPolicy: { type: 'finite', capacity: 12 },
     name: '63빌딩',
     desc: '여의도 63빌딩. 금빛 외벽이 그을렸지만 구조물은 성하다. 상층에서 한강 이남까지 내려다보인다.',
     icon: '🏢',
@@ -5092,6 +5118,7 @@ export const LANDMARK_DATA = {
     ],
   },
   lm_boramae_hospital: {
+    supplyPolicy: { type: 'finite', capacity: 12 },
     name: '보라매병원',
     desc: '서울시립 보라매병원. 응급실·수술실·약품 창고가 남아있고 감염 위험은 비교적 낮다.',
     icon: '🏥',
@@ -5331,6 +5358,7 @@ export const LANDMARK_DATA = {
     ],
   },
   lm_dongjak: {
+    supplyPolicy: { type: 'finite', capacity: 12 },
     name: '국립현충원',
     desc: '국가 유공자 묘역. 조용하고 넓은 숲이 있으며 관리 시설이 있다.',
     icon: '🎖️',
@@ -5585,6 +5613,7 @@ export const LANDMARK_DATA = {
     ],
   },
   gwanak: {
+    supplyPolicy: { type: 'finite', capacity: 12 },
     name: '서울대학교',
     desc: '국내 최고 명문대. 의학·화학·공학 실험실에 귀한 물자가 있다.',
     icon: '🎓',
@@ -5864,6 +5893,7 @@ export const LANDMARK_DATA = {
     ],
   },
   seocho: {
+    supplyPolicy: { type: 'finite', capacity: 12 },
     name: '예술의전당',
     desc: '서울 대표 복합 문화 예술 공간. 넓은 건물과 지하 창고가 있다.',
     icon: '🎭',
@@ -6110,6 +6140,7 @@ export const LANDMARK_DATA = {
     ],
   },
   gangnam: {
+    supplyPolicy: { type: 'finite', capacity: 12 },
     name: '강남세브란스병원',
     desc: '강남 최대 병원. 최신 의료 시설과 대형 약품 창고가 있다.',
     icon: '🏥',
@@ -6389,6 +6420,7 @@ export const LANDMARK_DATA = {
     ],
   },
   songpa: {
+    supplyPolicy: { type: 'finite', capacity: 12 },
     name: '롯데월드타워',
     desc: '555m 초고층 빌딩. 쇼핑몰, 호텔, 발전기실 등 다양한 구역.',
     icon: '🏙️',
@@ -6680,6 +6712,7 @@ export const LANDMARK_DATA = {
     ],
   },
   gangdong: {
+    supplyPolicy: { type: 'finite', capacity: 12 },
     name: '암사동 선사유적지',
     desc: '신석기 시대 움집 복원 유적지. 한강변에 위치해 물을 구하기 쉽다.',
     icon: '🏺',
@@ -6936,6 +6969,7 @@ export const LANDMARK_DATA = {
     ],
   },
   hangang_gangnam: {
+    supplyPolicy: { type: 'renewable', capacity: 6, restockTP: 72 },
     name: '한강',
     desc: '서울을 가로지르는 한강. 오염된 강물이지만 물고기는 살아있다.',
     icon: '🌊',
@@ -7055,6 +7089,7 @@ export const LANDMARK_DATA = {
     ],
   },
   hangang_gangdong: {
+    supplyPolicy: { type: 'renewable', capacity: 6, restockTP: 72 },
     name: '한강',
     desc: '서울을 가로지르는 한강. 오염된 강물이지만 물고기는 살아있다.',
     icon: '🌊',
@@ -7174,6 +7209,7 @@ export const LANDMARK_DATA = {
     ],
   },
   hangang_gwangjin: {
+    supplyPolicy: { type: 'renewable', capacity: 6, restockTP: 72 },
     name: '한강',
     desc: '서울을 가로지르는 한강. 오염된 강물이지만 물고기는 살아있다.',
     icon: '🌊',
@@ -7293,6 +7329,7 @@ export const LANDMARK_DATA = {
     ],
   },
   hangang_mapo: {
+    supplyPolicy: { type: 'renewable', capacity: 6, restockTP: 72 },
     name: '한강',
     desc: '서울을 가로지르는 한강. 오염된 강물이지만 물고기는 살아있다.',
     icon: '🌊',
@@ -7412,6 +7449,7 @@ export const LANDMARK_DATA = {
     ],
   },
   hangang_seocho: {
+    supplyPolicy: { type: 'renewable', capacity: 6, restockTP: 72 },
     name: '한강',
     desc: '서울을 가로지르는 한강. 오염된 강물이지만 물고기는 살아있다.',
     icon: '🌊',
@@ -7531,6 +7569,7 @@ export const LANDMARK_DATA = {
     ],
   },
   hangang_seongdong: {
+    supplyPolicy: { type: 'renewable', capacity: 6, restockTP: 72 },
     name: '한강',
     desc: '서울을 가로지르는 한강. 오염된 강물이지만 물고기는 살아있다.',
     icon: '🌊',
@@ -7650,6 +7689,7 @@ export const LANDMARK_DATA = {
     ],
   },
   hangang_songpa: {
+    supplyPolicy: { type: 'renewable', capacity: 6, restockTP: 72 },
     name: '한강',
     desc: '서울을 가로지르는 한강. 오염된 강물이지만 물고기는 살아있다.',
     icon: '🌊',
@@ -7769,6 +7809,7 @@ export const LANDMARK_DATA = {
     ],
   },
   hangang_yeongdeungpo: {
+    supplyPolicy: { type: 'renewable', capacity: 6, restockTP: 72 },
     name: '한강',
     desc: '서울을 가로지르는 한강. 오염된 강물이지만 물고기는 살아있다.',
     icon: '🌊',
@@ -7888,6 +7929,7 @@ export const LANDMARK_DATA = {
     ],
   },
   hangang_yongsan: {
+    supplyPolicy: { type: 'renewable', capacity: 6, restockTP: 72 },
     name: '한강',
     desc: '서울을 가로지르는 한강. 오염된 강물이지만 물고기는 살아있다.',
     icon: '🌊',
@@ -8007,6 +8049,7 @@ export const LANDMARK_DATA = {
     ],
   },
   hangang_junggoo: {
+    supplyPolicy: { type: 'renewable', capacity: 6, restockTP: 72 },
     name: '한강',
     desc: '서울을 가로지르는 한강. 오염된 강물이지만 물고기는 살아있다.',
     icon: '🌊',
@@ -8126,6 +8169,7 @@ export const LANDMARK_DATA = {
     ],
   },
   lm_raider_camp_small: {
+    supplyPolicy: { type: 'finite', capacity: 12 },
     name: '소규모 약탈자 캠프',
     desc: '도봉산 기슭에 자리 잡은 약탈자 임시 캠프. 인질로 잡힌 민간인이 숨겨져 있다.',
     icon: '🏴',
@@ -8264,6 +8308,7 @@ export const LANDMARK_DATA = {
     ],
   },
   lm_raider_camp_medium: {
+    supplyPolicy: { type: 'finite', capacity: 12 },
     name: '중형 약탈자 거점',
     desc: '광화문 인근의 폐건물을 개조한 약탈자 중간 거점. 리더와 호위대가 주둔한다.',
     icon: '⚠️',
@@ -8402,6 +8447,7 @@ export const LANDMARK_DATA = {
     ],
   },
   lm_power_station: {
+    supplyPolicy: { type: 'finite', capacity: 12 },
     name: '구로 발전소',
     desc: '구로 화력 발전소. 붕괴 전 서울 서남부 전력 공급의 핵심 시설. 약탈자 무리와 냉각탑 내부의 좀비 군집이 점거 중이다.',
     icon: '⚡',
@@ -8566,6 +8612,7 @@ export const LANDMARK_DATA = {
     ],
   },
   lm_water_plant: {
+    supplyPolicy: { type: 'finite', capacity: 12 },
     name: '은평 정수장',
     desc: '은평구 상수도 정수장. 펌프와 배관이 파손돼 수도 공급이 끊긴 상태. 비교적 약한 감염자들이 배회하지만 복구에는 정밀 작업이 필요하다.',
     icon: '💧',
@@ -8761,6 +8808,7 @@ export const LANDMARK_DATA = {
     ],
   },
   lm_comms_tower: {
+    supplyPolicy: { type: 'finite', capacity: 12 },
     name: 'N서울타워',
     desc: '남산 N서울타워. 붕괴 전 서울 통신 백본의 중계 거점. 고층부는 감염자가 뒤엉켜 있고 계단부 일부가 무너졌다.',
     icon: '📡',
@@ -8959,6 +9007,7 @@ export const LANDMARK_DATA = {
     ],
   },
   lm_raider_camp_large: {
+    supplyPolicy: { type: 'finite', capacity: 12 },
     name: '대형 약탈자 요새',
     desc: '영등포의 폐쇄된 공장을 요새화한 약탈자 본거지. 보스와 중무장 부대가 주둔한다.',
     icon: '💀',
