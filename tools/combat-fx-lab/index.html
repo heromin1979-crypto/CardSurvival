@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Card Survival — 전투 FX 랩</title>
+  <link rel="stylesheet" href="./lab.css" />
+</head>
+<body>
+  <header class="topbar">
+    <a class="back" href="../" title="툴 목록">←</a>
+    <h1>✨ 전투 FX 랩</h1>
+    <div class="seg" id="view-seg" role="tablist" aria-label="보기">
+      <button data-v="before">개선 전</button>
+      <button data-v="after">개선 후</button>
+      <button data-v="split" class="on">슬라이더 비교</button>
+      <button data-v="sbs">나란히</button>
+    </div>
+    <div class="seg" id="scope-seg" title="'이 항목만' = 지금 탭의 항목만 전/후가 다르고 나머지는 동일">
+      <button data-s="tab" class="on">이 항목만 비교</button>
+      <button data-s="all">전체 비교</button>
+    </div>
+    <label class="mini">속도
+      <select id="speed">
+        <option value="0.25">×0.25</option><option value="0.5">×0.5</option><option value="1" selected>×1</option><option value="1.5">×1.5</option>
+      </select>
+    </label>
+    <div class="spacer"></div>
+    <span class="stat" id="stat"></span>
+    <button class="ghost" id="export-btn" title="개선안 설정 + 이펙트 라이브러리 JSON 다운로드">⤓ 내보내기</button>
+    <label class="ghost file-btn" title="내보낸 JSON 불러오기">⤒ 불러오기<input type="file" id="import-file" accept="application/json" hidden></label>
+  </header>
+
+  <main class="lab">
+    <section class="stage-col">
+      <div class="stage-wrap" id="stage-wrap">
+        <canvas id="stage" width="1280" height="720"></canvas>
+        <div class="split-handle" id="split-handle"><span>⇆</span></div>
+        <div class="badge left" id="badge-left">개선 전</div>
+        <div class="badge right" id="badge-right">개선 후</div>
+        <div class="loading" id="loading">에셋 불러오는 중…</div>
+      </div>
+
+      <div class="action-bar">
+        <div class="actions" id="actions"></div>
+        <label class="chk"><input type="checkbox" id="opt-crit"> 치명타</label>
+        <label class="chk"><input type="checkbox" id="opt-kill"> 처치</label>
+        <label class="chk"><input type="checkbox" id="opt-loop" checked> 자동 반복</label>
+        <div class="spacer"></div>
+        <label class="mini">캐릭터 <select id="sel-player"></select></label>
+        <label class="mini">적 <select id="sel-enemy"></select></label>
+        <label class="mini">뒤 적 <select id="sel-enemy2"></select></label>
+      </div>
+
+      <div class="dock" id="dock"></div>
+    </section>
+
+    <aside class="panel">
+      <nav class="tabs" id="tabs">
+        <button data-tab="bg" class="on">③ 배경</button>
+        <button data-tab="env">④ 날씨·광원</button>
+        <button data-tab="fx">⑤ 이펙트</button>
+        <button data-tab="node">⑥ 노드</button>
+        <button data-tab="bind">⑦ 바인딩</button>
+        <button data-tab="feel">⑧ 타격감</button>
+      </nav>
+      <div class="tab-body" id="tab-body"></div>
+    </aside>
+  </main>
+
+  <script type="module" src="./js/main.js"></script>
+</body>
+</html>

@@ -22,6 +22,8 @@ import {
   PLAYER_SPRITE_KEYS,
   STATUS_MOTION_CLASSES,
 } from './combatUiAssets.js';
+import CombatFxCanvas from './CombatFxCanvas.js';
+import { COMBAT_FEEL, FX_PARTICLE_MAP, ACTION_BINDINGS } from '../../data/combatFxConfig.js';
 
 export const CombatFxPlayer = {
   // ── 전투 연출 재생 (CombatSystem.fxQueue → 순차 재생) ──
@@ -85,7 +87,8 @@ export const CombatFxPlayer = {
       this._cancelActorMotionSlot(element, 'sprite');
       this._restoreCurrentActorMotion(element);
     }
-    this._screen?.querySelectorAll('.cv-fx, .dmg-popup').forEach(element => element.remove());
+    this._screen?.querySelectorAll('.cv-fx, .dmg-popup, .combat-afterimage').forEach(element => element.remove());
+    CombatFxCanvas.clear();
     const visual = this._screen?.querySelector('.combat-visual');
     visual?.classList.remove('hitstop', 'shake', 'crit-flash', 'skill-flash', ...CAMERA_CLASSES, 'camera-work-active');
     if (visual?.dataset) delete visual.dataset.cameraWorkToken;
@@ -230,7 +233,11 @@ export const CombatFxPlayer = {
         );
         this._animate(player, presentation.movementClass ? 'attacking' : 'attacking-stationary');
         this._motion(player, [presentation.movementClass, this._playerAttackMotion(fx)], 780);
-        if (fx.fx === 'shot') this._spawnFxOverlay(player, 'muzzle');
+        this._actionWindup(player, presentation, 1);
+        if (fx.fx === 'shot') {
+          this._spawnFxOverlay(player, 'muzzle');
+          if (!fx.miss) this._spawnTracer(player, target);
+        }
         this._cameraWork(fx.miss ? 'ally-whiff' : 'ally-strike', fx.crit ? 760 : 640);
         if (fx.miss) {
           this._motion(player, [presentation.movementClass, 'motion-whiff'], 720);
@@ -247,7 +254,7 @@ export const CombatFxPlayer = {
         this._motion(target, ['motion-zombie-hit', this._hitReactionMotion(fx)], 560);
         this._animate(target, 'hit');
         this._spawnFloatText(target, `-${fx.dmg}`, fx.crit ? 'crit' : 'dmg');
-        this._hitstop(fx.crit ? 120 : 70);
+        this._impactFeel(target, player, fx);
         if (fx.crit) this._critFlash();
         if (fx.killed) this._deathBurst(target);
         if (fx.crit || fx.killed) this._shakeVisual();
@@ -271,7 +278,7 @@ export const CombatFxPlayer = {
         this._motion(player, ['motion-player-hit', this._hitReactionMotion(fx)], 620);
         this._animate(player, 'hit');
         this._spawnFloatText(player, `-${fx.dmg}`, fx.crit ? 'crit' : 'dmg');
-        this._hitstop(fx.crit ? 120 : 70);
+        this._impactFeel(player, enemyEl, fx);
         if (fx.crit) { this._critFlash(); this._shakeVisual(); }
         break;
       }
@@ -293,6 +300,7 @@ export const CombatFxPlayer = {
         this._motion(ally, ['motion-player-hit', this._hitReactionMotion(fx)], 620);
         this._animate(ally, 'hit');
         this._spawnFloatText(ally, `-${fx.dmg}`, 'dmg');
+        if (this._enhancedFx()) this._impactFeel(ally, enemyEl, fx);
         break;
       }
       case 'companionAttack': {
@@ -306,6 +314,7 @@ export const CombatFxPlayer = {
         );
         this._animate(ally, presentation.movementClass ? 'attacking' : 'attacking-stationary');
         this._motion(ally, [presentation.movementClass, this._allyAttackMotion(fx)], 780);
+        this._actionWindup(ally, presentation, 1);
         this._cameraWork(fx.miss ? 'ally-whiff' : 'ally-strike', 620);
         if (fx.miss) {
           this._motion(ally, [presentation.movementClass, 'motion-whiff'], 720);
@@ -322,7 +331,7 @@ export const CombatFxPlayer = {
         this._motion(target, ['motion-zombie-hit', this._hitReactionMotion(fx)], 560);
         this._animate(target, 'hit');
         this._spawnFloatText(target, `-${fx.dmg}`, fx.crit ? 'crit' : 'dmg');
-        this._hitstop(fx.crit ? 120 : 70);
+        this._impactFeel(target, ally, fx);
         if (fx.crit) this._critFlash();
         if (fx.killed) this._deathBurst(target);
         break;
@@ -363,6 +372,7 @@ export const CombatFxPlayer = {
         this._animate(this._screen.querySelector('.combat-visual'), 'skill-flash', 500);
         this._animate(player, 'glowing');
         this._playActorActionMotion(player, this._playerSpriteSheetKey(), fx, 760);
+        this._bindingFx(player, ACTION_BINDINGS.skillCast, 1);
         this._motion(
           player,
           fx.healing > 0 || fx.impactFx === 'heal'
@@ -943,8 +953,171 @@ export const CombatFxPlayer = {
     return classes.join(' ');
   },
 
-  _shakeVisual() {
-    this._animate(this._screen?.querySelector('.combat-visual'), 'shake', 400);
+  _shakeVisual(amp) {
+    const visual = this._screen?.querySelector('.combat-visual');
+    if (!this._enhancedFx()) {
+      this._animate(visual, 'shake', 400);
+      return;
+    }
+    // 개선 연출: 타격감 테이블 진폭으로 감쇠 흔들림. 같은 명중에서 두 번 흔들지 않는다.
+    const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+    if (amp == null && now - (this._lastShakeAt ?? -1e9) < 80) return;
+    this._lastShakeAt = now;
+    if (CombatFxCanvas.reduceShake() || typeof visual?.animate !== 'function') return;
+    const feel = COMBAT_FEEL.enhanced;
+    const a = amp ?? feel.critShake;
+    const frames = [];
+    for (let i = 0; i <= 8; i += 1) {
+      const k = (1 - i / 8) ** 2;
+      frames.push({ transform: `translate(${((i % 2 ? 1 : -1) * a * k).toFixed(1)}px, ${((Math.random() - 0.5) * a * 0.6 * k).toFixed(1)}px)` });
+    }
+    visual.animate(frames, { duration: this._effectiveFxDuration(feel.shakeMs), composite: 'add' });
+  },
+
+  // ── 개선 연출 (tools/combat-fx-lab 에서 확정한 값: js/data/combatFxConfig.js) ──
+  _enhancedFx() {
+    return CombatFxCanvas.enabled() && Boolean(this._screen?.querySelector('.combat-visual'));
+  },
+
+  _isEnemyEl(el) {
+    return Boolean(el?.matches?.('.cv-enemy-sprite, [data-side="enemy"]') || el?.closest?.('.combat-line-zone-enemy'));
+  },
+
+  // 명중 순간 타격감: 정지(+대상 진동) → 넉백·반동 · 흰 섬광 · 흔들림 · 치명 줌
+  _impactFeel(target, attacker, fx = {}) {
+    const crit = fx.crit === true;
+    if (!this._enhancedFx()) {
+      this._hitstop(crit ? COMBAT_FEEL.legacy.critHitstop : COMBAT_FEEL.legacy.hitstop);
+      return;
+    }
+    const feel = COMBAT_FEEL.enhanced;
+    const stop = crit ? feel.critHitstop : feel.hitstop;
+    this._hitstop(stop);
+    CombatFxCanvas.freeze(this._effectiveFxDuration(stop));
+    const stopMs = this._effectiveFxDuration(stop);
+    const dir = this._isEnemyEl(target) ? 1 : -1; // 맞은 쪽이 밀려나는 방향
+    const body = target?.querySelector?.('.combat-sprite-sheet, .cv-player-img, .cv-enemy-img, .cv-ally-icon, img') ?? null;
+    // 이동(진동·넉백)은 배우 엘리먼트에, 섬광은 스프라이트 본체에 — 본체는 좌우 반전(scaleX)돼 있을 수 있어 방향이 뒤집힌다
+    if (typeof target?.animate === 'function') {
+      const jit = feel.targetJitter;
+      const kb = feel.knockback * (crit ? 1.4 : 1) * (fx.killed ? 1.3 : 1) * dir;
+      target.animate([
+        { transform: 'translateX(0)' },
+        { transform: `translateX(${jit}px)`, offset: 0.12 },
+        { transform: `translateX(${-jit}px)`, offset: 0.24 },
+        { transform: `translateX(${jit * 0.5}px)`, offset: 0.36 },
+        { transform: 'translateX(0)', offset: 0.45 },
+        { transform: `translateX(${kb}px)`, offset: 0.62 },
+        { transform: 'translateX(0)' },
+      ], { duration: stopMs / 0.45 + this._effectiveFxDuration(260), composite: 'add', easing: 'ease-out' });
+    }
+    if (body && typeof body.animate === 'function') {
+      if (feel.hitFlashMs > 0) {
+        body.animate([
+          { filter: 'brightness(3.2) saturate(0)' },
+          { filter: 'brightness(1)' },
+        ], { duration: this._effectiveFxDuration(feel.hitFlashMs) });
+      }
+    }
+    if (typeof attacker?.animate === 'function' && feel.recoil) {
+      attacker.animate([
+        { transform: 'translateX(0)' },
+        { transform: `translateX(${-feel.recoil * dir}px)`, offset: 0.25 },
+        { transform: 'translateX(0)' },
+      ], { duration: this._effectiveFxDuration(260), delay: stopMs, composite: 'add', easing: 'ease-out' });
+    }
+    if (feel.shakeEveryHit || crit || fx.killed) this._shakeVisual(crit || fx.killed ? feel.critShake : feel.shake);
+    const visual = this._screen?.querySelector('.combat-visual');
+    if (fx.killed && feel.killSlowmo < 1) this._killSlowmo(visual, feel.killSlowmo, this._effectiveFxDuration(stop + feel.killSlowmoMs));
+    if (crit && feel.zoomPunch && typeof visual?.animate === 'function' && !CombatFxCanvas.reduceShake()) {
+      visual.animate([
+        { transform: `scale(${1 + feel.zoomPunch})` },
+        { transform: 'scale(1)' },
+      ], { duration: this._effectiveFxDuration(220), composite: 'add', easing: 'ease-out' });
+    }
+  },
+
+  // 처치 슬로모션 — 전장 안의 모든 애니메이션(CSS 모션·스프라이트 시트·넉백)과 파티클을 잠깐 늦춘다.
+  // 연출 큐 타이머는 건드리지 않는다(길이 320ms라 다음 연출과 겹치지 않음).
+  _killSlowmo(visual, scale, ms) {
+    CombatFxCanvas.slowmo(scale, ms);
+    if (typeof visual?.getAnimations !== 'function') return;
+    // 넉백 등 이번 프레임에 만든 애니메이션까지 잡도록 한 틱 뒤에 적용
+    const apply = () => {
+      const anims = visual.getAnimations({ subtree: true });
+      anims.forEach(a => { a.playbackRate = scale; });
+      this._scheduleFxTimer(() => anims.forEach(a => { try { a.playbackRate = 1; } catch { /* 끝남 */ } }), ms);
+    };
+    if (typeof requestAnimationFrame === 'function') requestAnimationFrame(apply); else apply();
+  },
+
+  // 발동 단계: 접근 공격이면 흙먼지 + 잔상
+  _actionWindup(actor, presentation, facing) {
+    if (!actor || !this._enhancedFx()) return;
+    if (presentation?.movementClass) {
+      this._bindingFx(actor, ACTION_BINDINGS.meleeApproach, facing);
+      this._spawnAfterimages(actor, facing);
+    }
+  },
+
+  _bindingFx(actor, list, facing = 1) {
+    if (!actor || !Array.isArray(list) || !this._enhancedFx()) return;
+    const visual = this._screen.querySelector('.combat-visual');
+    for (const ev of list) {
+      const run = () => CombatFxCanvas.spawnOn(visual, actor, ev.id, { socket: ev.socket, facing, rot: ev.rot, power: ev.power });
+      if (ev.at > 0) this._scheduleFxTimer(run, this._effectiveFxDuration(ev.at)); else run();
+    }
+  },
+
+  _spawnTracer(from, to) {
+    if (!from || !to || !this._enhancedFx()) return;
+    const visual = this._screen.querySelector('.combat-visual');
+    CombatFxCanvas.attach(visual);
+    const a = CombatFxCanvas.locate(from, 'weapon', 1);
+    const b = CombatFxCanvas.locate(to, 'center', 1);
+    if (!a || !b) return;
+    const rot = Math.atan2(b.y - a.y, b.x - a.x) * 180 / Math.PI;
+    CombatFxCanvas.spawnOn(visual, from, 'tracer', { socket: 'weapon', facing: 1, rot });
+  },
+
+  // 잔상: 스프라이트를 복제해 현재 화면 위치에 남기고 서서히 지운다 (접근 모션 동안)
+  _spawnAfterimages(actor, facing = 1) {
+    const feel = COMBAT_FEEL.enhanced;
+    if (!feel.afterimage) return;
+    const visual = this._screen?.querySelector('.combat-visual');
+    const body = actor?.querySelector?.('.combat-sprite-sheet, .cv-player-img, .cv-ally-icon');
+    if (!visual || !body) return;
+    for (let i = 1; i <= feel.ghostCount; i += 1) {
+      this._scheduleFxTimer(() => {
+        if (!body.isConnected) return;
+        const vr = visual.getBoundingClientRect();
+        const br = body.getBoundingClientRect();
+        if (!vr.width || !br.width) return;
+        const k = visual.offsetWidth / vr.width;
+        const ghost = body.cloneNode(false);
+        const cs = getComputedStyle(body);
+        ghost.classList.add('combat-afterimage');
+        ghost.removeAttribute('aria-label');
+        ghost.setAttribute('aria-hidden', 'true');
+        Object.assign(ghost.style, {
+          position: 'absolute',
+          left: `${(br.left - vr.left) * k}px`,
+          top: `${(br.top - vr.top) * k}px`,
+          width: `${br.width * k}px`,
+          height: `${br.height * k}px`,
+          backgroundPosition: cs.backgroundPosition,
+          backgroundSize: cs.backgroundSize,
+          animation: 'none',
+          transform: 'none',
+        });
+        visual.appendChild(ghost);
+        const done = () => ghost.remove();
+        if (typeof ghost.animate === 'function') {
+          ghost.animate([{ opacity: 0.55 }, { opacity: 0 }], { duration: this._effectiveFxDuration(feel.ghostFade), easing: 'ease-out' }).onfinish = done;
+        }
+        this._scheduleFxTimer(done, this._effectiveFxDuration(feel.ghostFade + 40));
+      }, this._effectiveFxDuration(i * feel.ghostInterval));
+    }
   },
 
   // 타격 이펙트 오버레이 (슬래시 궤적/이모지 버스트)
@@ -970,6 +1143,18 @@ export const CombatFxPlayer = {
     const fx = document.createElement('div');
     fx.className = `cv-fx cv-fx-${displayType}`;
     if (FX_EMOJI[displayType]) fx.textContent = FX_EMOJI[displayType];
+    // 개선 연출: 같은 자리에 캔버스 파티클을 띄우고 PNG/이모지는 숨긴다 (DOM 마커는 유지 — 테스트·폴백용)
+    const particles = FX_PARTICLE_MAP[displayType];
+    if (particles && this._enhancedFx()) {
+      const visual = this._screen.querySelector('.combat-visual');
+      const enemySide = this._isEnemyEl(anchor);
+      let spawned = false;
+      for (const p of particles) {
+        const facing = p.self ? (enemySide ? -1 : 1) : (enemySide ? 1 : -1);
+        spawned = CombatFxCanvas.spawnOn(visual, anchor, p.id, { socket: p.socket, facing, rot: p.rot, dx: p.dx, power: p.power }) || spawned;
+      }
+      if (spawned) fx.classList.add('cv-fx--particle');
+    }
     const prevPos = getComputedStyle(anchor).position;
     if (prevPos === 'static') anchor.style.position = 'relative';
     anchor.appendChild(fx);
