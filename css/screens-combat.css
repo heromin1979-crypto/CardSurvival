@@ -5562,3 +5562,41 @@
     min-height: 216px;
   }
 }
+
+/* ── 개선 전투 연출 (CombatFxCanvas · combatFxConfig) ── */
+.combat-fx-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 30;
+}
+.cv-fx.cv-fx--particle,
+.cv-fx.cv-fx--particle::before,
+.cv-fx.cv-fx--particle::after {
+  opacity: 0 !important;
+}
+.combat-afterimage {
+  pointer-events: none;
+  z-index: 0;
+  mix-blend-mode: screen;
+  filter: brightness(1.5) sepia(1) hue-rotate(160deg) saturate(3);
+}
+
+/* ── 무대 연출: 배경 깊이 · 날씨 · 광원 (CombatStageRenderer) ── */
+.combat-env-back,
+.combat-env-front {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.combat-env-back { z-index: 0; }
+.combat-env-front { z-index: 20; }
+.combat-visual.env-enhanced .combatant-portrait {
+  filter: brightness(var(--env-actor-bright, 1)) drop-shadow(-2px -2px 1px var(--env-rim, transparent)) drop-shadow(0 18px 20px rgba(0, 0, 0, 0.92));
+}
+/* 기존 CSS 그라데이션은 캔버스 어둠·안개와 겹치므로 약하게 */
+.combat-visual.env-enhanced::before { opacity: 0.45; }

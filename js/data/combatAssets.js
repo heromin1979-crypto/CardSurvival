@@ -100,6 +100,26 @@ export const COMBAT_ASSETS = {
     jongno_subway_ruin: {
       id: 'jongno_subway_ruin',
       backdrop: `${IMG}combat_jongno_subway_clean_v2.png`,
+      // 무대 연출 메타 (CombatStageRenderer) — 좌표는 전장 영역 대비 비율
+      env: {
+        indoor: true, // 실내: 비·눈은 천장 틈(shafts)으로만, 양 1/3
+        horizon: 0.5,
+        shafts: [0.2, 0.61],
+        fire: { x: 0.845, y: 0.62 },
+        emergency: { x: 0.9, y: 0.16 },
+      },
+    },
+    // 실외 배경 — GameState.combat.sceneId = 'overpass_rail' 일 때 사용. 선택 규칙은 미정(계획 문서 참고)
+    overpass_rail: {
+      id: 'overpass_rail',
+      backdrop: `${IMG}battle_bg.jpg`,
+      env: {
+        indoor: false, // 실외: 비·눈이 화면 전체, 번개 볼트 표시
+        horizon: 0.36,
+        shafts: [],
+        fire: { x: 0.12, y: 0.74 },
+        emergency: null,
+      },
     },
   },
   ui: {
